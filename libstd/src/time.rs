@@ -3,8 +3,7 @@
 use core::cmp::{Ordering, PartialEq};
 use core::ops::{Add, Sub};
 
-use syscall::sys_clock_gettime;
-use syscall::common::{CLOCK_REALTIME, CLOCK_MONOTONIC, TimeSpec};
+use system::syscall::{sys_clock_gettime, CLOCK_REALTIME, CLOCK_MONOTONIC, TimeSpec};
 
 pub const NANOS_PER_MICRO: i32 = 1_000;
 pub const NANOS_PER_MILLI: i32 = 1_000_000;

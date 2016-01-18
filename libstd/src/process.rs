@@ -2,8 +2,8 @@ use io::Result;
 use string::{String, ToString};
 use vec::Vec;
 
-use syscall::{SysError, sys_clone, sys_execve, sys_spawnve, sys_exit, sys_waitpid, CLONE_VM,
-              CLONE_VFORK};
+use system::error::Error;
+use system::syscall::{sys_clone, sys_execve, sys_spawnve, sys_exit, sys_waitpid, CLONE_VM, CLONE_VFORK};
 
 pub struct ExitStatus {
     status: usize,
@@ -34,7 +34,7 @@ impl Child {
         if result >= 0 {
             Ok(ExitStatus { status: status })
         } else {
-            Err(SysError::new(-result))
+            Err(Error::new(-result))
         }
     }
 }
@@ -82,7 +82,7 @@ impl Command {
         } else if pid > 0 {
             Ok(Child { pid: pid })
         } else {
-            Err(SysError::new(-pid))
+            Err(Error::new(-pid))
         }
     }
 

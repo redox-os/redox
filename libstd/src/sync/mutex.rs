@@ -2,7 +2,7 @@ use core::cell::UnsafeCell;
 use core::ops::{Deref, DerefMut, Drop};
 use core::sync::atomic::{AtomicBool, Ordering};
 
-use syscall::sys_yield;
+use thread;
 
 /// A mutex, i.e. a form of safe shared memory between threads. See rust std's Mutex.
 pub struct Mutex<T: ?Sized> {
@@ -24,7 +24,7 @@ impl<T: ?Sized> Mutex<T> {
     /// Lock the mutex
     pub fn lock(&self) -> Result<MutexGuard<T>, ()> {
         while self.lock.compare_and_swap(false, true, Ordering::SeqCst) {
-            unsafe { sys_yield() };
+            thread::yield_now();
         }
         Ok(MutexGuard::new(&self.lock, &self.value))
     }
@@ -40,7 +40,7 @@ pub struct StaticMutex {
 
 impl StaticMutex {
     /// Create a new mutex with value `value`.
-    pub fn new() -> Self {
+    pub const fn new() -> Self {
         StaticMutex {
             lock: AtomicBool::new(false),
         }
@@ -49,7 +49,7 @@ impl StaticMutex {
     /// Lock the mutex
     pub fn lock(&'static self) -> Result<MutexGuard<()>, ()> {
         while self.lock.compare_and_swap(false, true, Ordering::SeqCst) {
-            unsafe { sys_yield() };
+            thread::yield_now();
         }
         Ok(MutexGuard::new(&self.lock, &DUMMY.0)) // TODO catch panics
     }

@@ -1,9 +1,9 @@
 use std::fs::File;
 use std::io::{Read, Write};
 
-use scheme::{Packet, Scheme};
+use system::scheme::{Packet, Scheme};
 
-extern crate scheme;
+extern crate system;
 
 struct ExampleScheme;
 

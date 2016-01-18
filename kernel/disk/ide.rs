@@ -13,7 +13,7 @@ use drivers::pio::*;
 
 use schemes::Result;
 
-use syscall::{SysError, EIO};
+use syscall::{Error, EIO};
 
 /// An disk extent
 #[derive(Copy, Clone)]
@@ -402,7 +402,7 @@ impl IdeDisk {
                 let err = self.ide_poll(true);
                 if err > 0 {
                     debugln!("IDE Error: {:X}", err);
-                    return Err(SysError::new(EIO));
+                    return Err(Error::new(EIO));
                 }
 
                 if write {
@@ -424,7 +424,7 @@ impl IdeDisk {
             Ok(sectors as usize * 512)
         } else {
             debugln!("Invalid request");
-            Err(SysError::new(EIO))
+            Err(Error::new(EIO))
         }
     }
 
@@ -456,7 +456,7 @@ impl IdeDisk {
             Ok(sectors * 512)
         } else {
             debugln!("Invalid request");
-            Err(SysError::new(EIO))
+            Err(Error::new(EIO))
         }
     }
 
@@ -549,13 +549,13 @@ impl IdeDisk {
 
             if status & STS_ERR == STS_ERR {
                 debugln!("IDE DMA Read Error");
-                return Err(SysError::new(EIO));
+                return Err(Error::new(EIO));
             }
 
             Ok(sectors as usize * 512)
         } else {
             debugln!("Invalid request");
-            Err(SysError::new(EIO))
+            Err(Error::new(EIO))
         }
     }
 
@@ -587,7 +587,7 @@ impl IdeDisk {
             Ok(sectors * 512)
         } else {
             debugln!("Invalid request");
-            Err(SysError::new(EIO))
+            Err(Error::new(EIO))
         }
     }
 }

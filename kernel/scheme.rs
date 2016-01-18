@@ -1,4 +1,3 @@
-#![crate_type="staticlib"]
 #![allow(unused_features)]
 #![feature(rand)]
 #![feature(asm)]
@@ -8,6 +7,8 @@
 
 extern crate orbital;
 
+extern crate system;
+
 use scheme::{Resource, Scheme};
 
 #[path="SCHEME_PATH"]
@@ -15,24 +16,24 @@ pub mod scheme;
 
 use std::io::{Read, Write, Seek, SeekFrom};
 use std::{ptr, slice, str};
-use std::syscall::{SysError, EINVAL};
 
-#[no_mangle]
-pub fn main(){
+use system::error::{Error, EINVAL};
+
+fn main(){
     println!("This is a scheme, it cannot be run like a normal program");
 }
 
 #[cold]
 #[inline(never)]
 #[no_mangle]
-pub unsafe extern "C" fn _start() -> *mut Scheme {
+pub unsafe extern "C" fn _construct() -> *mut Scheme {
     Box::into_raw(Scheme::new())
 }
 
 #[cold]
 #[inline(never)]
 #[no_mangle]
-pub unsafe extern "C" fn _stop(scheme: *mut Scheme) {
+pub unsafe extern "C" fn _destruct(scheme: *mut Scheme) {
     drop(Box::from_raw(scheme));
 }
 
@@ -48,7 +49,7 @@ pub unsafe extern "C" fn _open(scheme: *mut Scheme, path: *const u8, flags: usiz
         }
     }
 
-    SysError::mux(
+    Error::mux(
         match (*scheme).open(str::from_utf8_unchecked(slice::from_raw_parts(path, len)), flags) {
             Ok(resource) => Ok(Box::into_raw(resource) as usize),
             Err(err) => Err(err)
@@ -61,7 +62,7 @@ pub unsafe extern "C" fn _open(scheme: *mut Scheme, path: *const u8, flags: usiz
 #[inline(never)]
 #[no_mangle]
 pub unsafe extern "C" fn _dup(resource: *mut Resource) -> usize {
-    SysError::mux(
+    Error::mux(
         match (*resource).dup() {
             Ok(resource) => Ok(Box::into_raw(resource) as usize),
             Err(err) => Err(err)
@@ -73,7 +74,7 @@ pub unsafe extern "C" fn _dup(resource: *mut Resource) -> usize {
 #[inline(never)]
 #[no_mangle]
 pub unsafe extern "C" fn _fpath(resource: *mut Resource, buf: *mut u8, len: usize) -> usize {
-    SysError::mux(
+    Error::mux(
         match (*resource).path() {
             Ok(string) => {
                 let mut buf = slice::from_raw_parts_mut(buf, len);
@@ -99,7 +100,7 @@ pub unsafe extern "C" fn _fpath(resource: *mut Resource, buf: *mut u8, len: usiz
 #[inline(never)]
 #[no_mangle]
 pub unsafe extern "C" fn _read(resource: *mut Resource, buf: *mut u8, len: usize) -> usize {
-    SysError::mux(
+    Error::mux(
         (*resource).read(slice::from_raw_parts_mut(buf, len))
     )
 }
@@ -108,7 +109,7 @@ pub unsafe extern "C" fn _read(resource: *mut Resource, buf: *mut u8, len: usize
 #[inline(never)]
 #[no_mangle]
 pub unsafe extern "C" fn _write(resource: *mut Resource, buf: *const u8, len: usize) -> usize {
-    SysError::mux(
+    Error::mux(
         (*resource).write(slice::from_raw_parts(buf, len))
     )
 }
@@ -127,10 +128,10 @@ pub unsafe extern "C" fn _lseek(resource: *mut Resource, offset: isize, whence: 
     } else if whence == SEEK_END {
         (*resource).seek(SeekFrom::End(offset as i64))
     } else {
-        Err(SysError::new(EINVAL))
+        Err(Error::new(EINVAL))
     };
 
-    SysError::mux(
+    Error::mux(
         match result {
             Ok(len) => Ok(len as usize),
             Err(err) => Err(err)
@@ -142,7 +143,7 @@ pub unsafe extern "C" fn _lseek(resource: *mut Resource, offset: isize, whence: 
 #[inline(never)]
 #[no_mangle]
 pub unsafe extern "C" fn _fsync(resource: *mut Resource) -> usize {
-    SysError::mux(
+    Error::mux(
         match (*resource).sync() {
             Ok(_) => Ok(0),
             Err(err) => Err(err)

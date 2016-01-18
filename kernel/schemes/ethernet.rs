@@ -13,7 +13,7 @@ use network::ethernet::*;
 
 use schemes::{Result, KScheme, Resource, Url};
 
-use syscall::{SysError, EBADF, ENOENT};
+use syscall::{Error, EBADF, ENOENT};
 
 /// A ethernet resource
 pub struct EthernetResource {
@@ -48,7 +48,7 @@ impl Resource for EthernetResource {
 
     fn read(&mut self, _: &mut [u8]) -> Result<usize> {
         debug::d("TODO: Implement read for ethernet:\n");
-        Err(SysError::new(EBADF))
+        Err(Error::new(EBADF))
     }
 
     fn read_to_end(&mut self, vec: &mut Vec<u8>) -> Result<usize> {
@@ -154,6 +154,6 @@ impl KScheme for EthernetScheme {
             debug::d("Ethernet: No host provided\n");
         }
 
-        Err(SysError::new(ENOENT))
+        Err(Error::new(ENOENT))
     }
 }

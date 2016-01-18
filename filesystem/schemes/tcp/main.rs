@@ -1,3 +1,5 @@
+extern crate system;
+
 use std::boxed::Box;
 use std::fs::File;
 use std::io::{Result, Read, Write, SeekFrom};
@@ -6,11 +8,11 @@ use std::net::*;
 use std::rand;
 use std::slice;
 use std::string::{String, ToString};
-use std::syscall::SysError;
-use std::syscall::{ENOENT, EPIPE, ESPIPE};
 use std::to_num::*;
 use std::vec::Vec;
 use std::url::Url;
+
+use system::error::{Error, ENOENT, EPIPE, ESPIPE};
 
 #[derive(Copy, Clone)]
 #[repr(packed)]
@@ -202,25 +204,23 @@ impl Resource {
         }
 
         match self.ip.write(&tcp.to_bytes()) {
-            Ok(size) => {
-                loop {
-                    // Wait for ACK
-                    let mut bytes: Vec<u8> = Vec::new();
-                    match self.ip.read_to_end(&mut bytes) {
-                        Ok(_) => {
-                            if let Some(segment) = Tcp::from_bytes(bytes) {
-                                if segment.header.dst.get() == self.host_port &&
-                                   segment.header.src.get() == self.peer_port {
-                                    return if (segment.header.flags.get() &
-                                               (TCP_PSH | TCP_SYN | TCP_ACK)) ==
-                                              TCP_ACK {
-                                        self.sequence = segment.header.ack_num.get();
-                                        self.acknowledge = segment.header.sequence.get();
-                                        Ok(size)
-                                    } else {
-                                        Err(SysError::new(EPIPE))
-                                    };
-                                }
+            Ok(size) => loop {
+                // Wait for ACK
+                let mut bytes: Vec<u8> = Vec::new();
+                match self.ip.read_to_end(&mut bytes) {
+                    Ok(_) => {
+                        if let Some(segment) = Tcp::from_bytes(bytes) {
+                            if segment.header.dst.get() == self.host_port &&
+                               segment.header.src.get() == self.peer_port {
+                                return if (segment.header.flags.get() &
+                                           (TCP_PSH | TCP_SYN | TCP_ACK)) ==
+                                          TCP_ACK {
+                                    self.sequence = segment.header.ack_num.get();
+                                    self.acknowledge = segment.header.sequence.get();
+                                    Ok(size)
+                                } else {
+                                    Err(Error::new(EPIPE))
+                                };
                             }
                         }
                         Err(err) => return Err(err),
@@ -232,7 +232,7 @@ impl Resource {
     }
 
     pub fn seek(&mut self, _: SeekFrom) -> Result<u64> {
-        Err(SysError::new(ESPIPE))
+        Err(Error::new(ESPIPE))
     }
 
     pub fn sync(&mut self) -> Result<()> {
@@ -526,6 +526,6 @@ impl Scheme {
             }
         }
 
-        Err(SysError::new(ENOENT))
+        Err(Error::new(ENOENT))
     }
 }

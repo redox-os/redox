@@ -33,7 +33,6 @@ use sync::StaticMutex;
 ///     // run initialization here
 /// });
 /// ```
-#[stable(feature = "rust1", since = "1.0.0")]
 pub struct Once {
     mutex: StaticMutex,
     cnt: AtomicIsize,
@@ -41,12 +40,10 @@ pub struct Once {
 }
 
 /// Initialization value for static `Once` values.
-#[stable(feature = "rust1", since = "1.0.0")]
 pub const ONCE_INIT: Once = Once::new();
 
 impl Once {
     /// Creates a new `Once` value.
-    #[stable(feature = "once_new", since = "1.2.0")]
     pub const fn new() -> Once {
         Once {
             mutex: StaticMutex::new(),
@@ -68,7 +65,6 @@ impl Once {
     /// be reliably observed by other threads at this point (there is a
     /// happens-before relation between the closure and code executing after the
     /// return).
-    #[stable(feature = "rust1", since = "1.0.0")]
     pub fn call_once<F>(&'static self, f: F) where F: FnOnce() {
         // Optimize common path: load is much cheaper than fetch_add.
         if self.cnt.load(Ordering::SeqCst) < 0 {
