@@ -1,8 +1,9 @@
 use super::mpsc_queue::Queue;
-use alloc::boxed::Box;
+use alloc::arc::Arc;
 
+#[derive(Clone)]
 pub struct Sender<T> {
-    pub queue: Box<Queue<T>>,
+    pub queue: Arc<Queue<T>>,//Box<Queue<T>>,
 }
 
 impl<T> Sender<T> {
