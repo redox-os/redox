@@ -62,12 +62,11 @@ use schemes::Url;
 use schemes::arp::*;
 use schemes::context::*;
 use schemes::debug::*;
+use schemes::display::*;
 use schemes::ethernet::*;
-use schemes::icmp::*;
 use schemes::interrupt::*;
 use schemes::ip::*;
 use schemes::memory::*;
-// use schemes::display::*;
 
 use syscall::execute::execute;
 use syscall::handle::*;
@@ -79,10 +78,10 @@ pub use system::externs::*;
 pub mod common;
 #[macro_use]
 pub mod macros;
-/// ACPI
-pub mod acpi;
 /// Allocation
 pub mod alloc_system;
+/// ACPI
+pub mod acpi;
 /// Audio
 pub mod audio;
 /// Disk drivers
@@ -213,14 +212,6 @@ fn event_loop() {
                             console.redraw = true;
                         } else {
                             // TODO: Magical orbital hack
-                            unsafe {
-                                for scheme in env().schemes.iter() {
-                                    if (*scheme.get()).scheme() == "orbital" {
-                                        (*scheme.get()).event(&event);
-                                        break;
-                                    }
-                                }
-                            }
                         }
                     }
                 }
@@ -298,17 +289,14 @@ unsafe fn init(font_data: usize, tss_data: usize) {
             pci::pci_init(env);
 
             env.schemes.push(UnsafeCell::new(DebugScheme::new()));
+            env.schemes.push(UnsafeCell::new(box DisplayScheme));
             env.schemes.push(UnsafeCell::new(box ContextScheme));
             env.schemes.push(UnsafeCell::new(box InterruptScheme));
             env.schemes.push(UnsafeCell::new(box MemoryScheme));
-            // session.items.push(box RandomScheme);
-            // session.items.push(box TimeScheme);
 
             env.schemes.push(UnsafeCell::new(box EthernetScheme));
             env.schemes.push(UnsafeCell::new(box ArpScheme));
-            env.schemes.push(UnsafeCell::new(box IcmpScheme));
             env.schemes.push(UnsafeCell::new(box IpScheme { arp: Vec::new() }));
-            // session.items.push(box DisplayScheme);
 
             Context::spawn("kpoll".to_string(),
             box move || {
@@ -323,11 +311,6 @@ unsafe fn init(font_data: usize, tss_data: usize) {
             Context::spawn("karp".to_string(),
             box move || {
                 ArpScheme::reply_loop();
-            });
-
-            Context::spawn("kicmp".to_string(),
-            box move || {
-                IcmpScheme::reply_loop();
             });
 
             env.contexts.lock().enabled = true;

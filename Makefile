@@ -212,7 +212,7 @@ $(BUILD)/libsystem.rlib: crates/system/lib.rs crates/system/*.rs $(BUILD)/libcor
 $(BUILD)/liborbital.rlib: liborbital/lib.rs liborbital/*.rs $(BUILD)/libstd.rlib
 	$(RUSTC) $(RUSTCFLAGS) --crate-name orbital -o $@ $<
 
-$(BUILD)/kernel.rlib: kernel/main.rs kernel/*.rs kernel/*/*.rs kernel/*/*/*.rs $(BUILD)/libcore.rlib $(BUILD)/liballoc.rlib $(BUILD)/libcollections.rlib
+$(BUILD)/kernel.rlib: kernel/main.rs kernel/*.rs kernel/*/*.rs kernel/*/*/*.rs $(BUILD)/libcore.rlib $(BUILD)/liballoc.rlib $(BUILD)/libcollections.rlib $(BUILD)/libsystem.rlib
 	$(RUSTC) $(RUSTCFLAGS) -C lto -o $@ $<
 
 $(BUILD)/kernel.bin: $(BUILD)/kernel.rlib kernel/kernel.ld
@@ -263,7 +263,7 @@ filesystem/apps/example/main.bin: filesystem/apps/example/main.rs filesystem/app
 filesystem/apps/%/main.bin: filesystem/apps/%/main.rs filesystem/apps/%/*.rs $(BUILD)/crt0.o $(BUILD)/libstd.rlib $(BUILD)/liborbital.rlib $(BUILD)/liborbtk.rlib
 	$(RUSTC) $(RUSTCFLAGS) --crate-type bin -o $@ $<
 
-filesystem/schemes/%/main.bin: filesystem/schemes/%/main.rs filesystem/schemes/%/*.rs kernel/scheme.rs $(BUILD)/libstd.rlib $(BUILD)/liborbital.rlib $(BUILD)/liborbtk.rlib
+filesystem/schemes/%/main.bin: filesystem/schemes/%/main.rs filesystem/schemes/%/*.rs $(BUILD)/libstd.rlib $(BUILD)/liborbital.rlib $(BUILD)/liborbtk.rlib
 	$(SED) "s|SCHEME_PATH|../../../$<|" kernel/scheme.rs > $(BUILD)/schemes_$*.gen
 	$(RUSTC) $(RUSTCFLAGS) --crate-type bin -o $@ $(BUILD)/schemes_$*.gen
 
