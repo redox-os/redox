@@ -196,8 +196,8 @@ pub struct SchemeItem {
     responses: Intex<VecDeque<*mut Response>>,
     /// The handle
     handle: usize,
-    _start: usize,
-    _stop: usize,
+    _construct: usize,
+    _destruct: usize,
     _open: usize,
     _dup: usize,
     _fpath: usize,
@@ -219,8 +219,8 @@ impl SchemeItem {
             binary: Url::from_string(url.to_string() + "main.bin"),
             responses: Intex::new(VecDeque::new()),
             handle: 0,
-            _start: 0,
-            _stop: 0,
+            _construct: 0,
+            _destruct: 0,
             _open: 0,
             _dup: 0,
             _fpath: 0,
@@ -248,8 +248,8 @@ impl SchemeItem {
             unsafe {
                 let executable = Elf::from_data(vec.as_ptr() as usize);
 
-                scheme_item._start = executable.symbol("_start");
-                scheme_item._stop = executable.symbol("_stop");
+                scheme_item._construct = executable.symbol("_construct");
+                scheme_item._destruct = executable.symbol("_destruct");
                 scheme_item._open = executable.symbol("_open");
                 scheme_item._dup = executable.symbol("_dup");
                 scheme_item._fpath = executable.symbol("_fpath");
@@ -377,15 +377,15 @@ impl SchemeItem {
 
             if let Some(response_ptr) = response_option {
                 let ret = match unsafe { (*response_ptr).msg } {
-                    Msg::Start => if self.valid(self._start) {
-                        let fn_ptr: *const usize = &self._start;
+                    Msg::Start => if self.valid(self._construct) {
+                        let fn_ptr: *const usize = &self._construct;
                         unsafe { (*(fn_ptr as *const extern "C" fn() -> usize))() }
                     } else {
                         0
                     },
-                    Msg::Stop => if self.valid(self._stop) {
+                    Msg::Stop => if self.valid(self._destruct) {
                         running = false;
-                        let fn_ptr: *const usize = &self._stop;
+                        let fn_ptr: *const usize = &self._destruct;
                         unsafe { (*(fn_ptr as *const extern "C" fn(usize) -> usize))(self.handle) }
                     } else {
                         usize::MAX

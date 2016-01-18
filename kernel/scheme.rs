@@ -1,4 +1,3 @@
-#![crate_type="staticlib"]
 #![allow(unused_features)]
 #![feature(asm)]
 #![feature(box_syntax)]
@@ -19,22 +18,21 @@ use std::{ptr, slice, str};
 
 use system::error::{Error, EINVAL};
 
-#[no_mangle]
-pub fn main(){
+fn main(){
     println!("This is a scheme, it cannot be run like a normal program");
 }
 
 #[cold]
 #[inline(never)]
 #[no_mangle]
-pub unsafe extern "C" fn _start() -> *mut Scheme {
+pub unsafe extern "C" fn _construct() -> *mut Scheme {
     Box::into_raw(Scheme::new())
 }
 
 #[cold]
 #[inline(never)]
 #[no_mangle]
-pub unsafe extern "C" fn _stop(scheme: *mut Scheme) {
+pub unsafe extern "C" fn _destruct(scheme: *mut Scheme) {
     drop(Box::from_raw(scheme));
 }
 

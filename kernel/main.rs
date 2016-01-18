@@ -336,21 +336,6 @@ unsafe fn init(font_data: usize, tss_data: usize) {
 
             env.contexts.lock().enabled = true;
 
-            if let Ok(mut resource) = Url::from_str("file:/schemes/").open() {
-                let mut vec: Vec<u8> = Vec::new();
-                let _ = resource.read_to_end(&mut vec);
-
-                for folder in String::from_utf8_unchecked(vec).lines() {
-                    if folder.ends_with('/') {
-                        let scheme_item = SchemeItem::from_url(&Url::from_string("file:/schemes/"
-                                                                                 .to_string() +
-                                                                                 &folder));
-
-                        env.schemes.push(UnsafeCell::new(scheme_item));
-                    }
-                }
-            }
-
             Context::spawn("kinit".to_string(),
             box move || {
                 {
@@ -363,7 +348,7 @@ unsafe fn init(font_data: usize, tss_data: usize) {
                     do_sys_open(stdio_c.as_ptr(), 0);
                 }
 
-                execute(Url::from_str("file:/apps/login/main.bin"), Vec::new());
+                execute(Url::from_str("file:/apps/init/main.bin"), Vec::new());
                 debug!("INIT: Failed to execute\n");
 
                 loop {
