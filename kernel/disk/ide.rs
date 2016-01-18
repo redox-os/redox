@@ -9,7 +9,7 @@ use common::memory::Memory;
 use disk::Disk;
 
 use drivers::pci::config::PciConfig;
-use drivers::pio::*;
+use drivers::io::{Io, Pio};
 
 use schemes::Result;
 
@@ -221,26 +221,24 @@ impl IdeDisk {
     }
 
     unsafe fn ide_read(&self, reg: u16) -> u8 {
-        let ret;
         if reg < 0x08 {
-            ret = inb(self.base + reg - 0x00);
+            Pio::<u8>::new(self.base + reg - 0x00).read()
         } else if reg < 0x0C {
-            ret = inb(self.base + reg - 0x06);
+            Pio::<u8>::new(self.base + reg - 0x06).read()
         } else if reg < 0x0E {
-            ret = inb(self.ctrl + reg - 0x0A);
+            Pio::<u8>::new(self.ctrl + reg - 0x0A).read()
         } else {
-            ret = 0;
+            0
         }
-        ret
     }
 
     unsafe fn ide_write(&self, reg: u16, data: u8) {
         if reg < 0x08 {
-            outb(self.base + reg - 0x00, data);
+            Pio::<u8>::new(self.base + reg - 0x00).write(data);
         } else if reg < 0x0C {
-            outb(self.base + reg - 0x06, data);
+            Pio::<u8>::new(self.base + reg - 0x06).write(data);
         } else if reg < 0x0E {
-            outb(self.ctrl + reg - 0x0A, data);
+            Pio::<u8>::new(self.ctrl + reg - 0x0A).write(data);
         }
     }
 
@@ -406,17 +404,17 @@ impl IdeDisk {
                 }
 
                 if write {
+                    let mut data_io = Pio::<u16>::new(self.base + ATA_REG_DATA);
                     for word in 0..256 {
-                        outw(self.base + ATA_REG_DATA,
-                             ptr::read((buf + sector * 512 + word * 2) as *const u16));
+                        data_io.write(ptr::read((buf + sector * 512 + word * 2) as *const u16));
                     }
 
                     self.ide_write(ATA_REG_COMMAND, ATA_CMD_CACHE_FLUSH_EXT);
                     self.ide_poll(false);
                 } else {
+                    let data_io = Pio::<u16>::new(self.base + ATA_REG_DATA);
                     for word in 0..256 {
-                        ptr::write((buf + sector * 512 + word * 2) as *mut u16,
-                                   inw(self.base + ATA_REG_DATA));
+                        ptr::write((buf + sector * 512 + word * 2) as *mut u16, data_io.read());
                     }
                 }
             }

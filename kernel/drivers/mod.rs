@@ -1,9 +1,7 @@
-/// MMIO
-pub mod mmio;
+/// IO
+pub mod io;
 /// PCI
 pub mod pci;
-/// PIO
-pub mod pio;
 /// PS2
 pub mod ps2;
 /// RTC

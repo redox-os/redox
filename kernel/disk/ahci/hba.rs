@@ -5,7 +5,7 @@ use core::u32;
 
 use disk::Disk;
 
-use drivers::mmio::Mmio;
+use drivers::io::{Io, Mmio};
 
 use schemes::Result;
 

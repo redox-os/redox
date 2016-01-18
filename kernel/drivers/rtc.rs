@@ -1,6 +1,6 @@
 use common::time::Duration;
 
-use drivers::pio::*;
+use drivers::io::{Io, Pio};
 
 use sync::Intex;
 

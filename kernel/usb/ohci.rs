@@ -5,7 +5,7 @@ use collections::vec::Vec;
 use core::intrinsics::volatile_load;
 use core::mem;
 
-use drivers::mmio::Mmio;
+use drivers::io::{Io, Mmio};
 use drivers::pci::config::PciConfig;
 
 use scheduler::context::context_switch;

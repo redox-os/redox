@@ -4,7 +4,7 @@ use core::cmp;
 
 use common::event::{KeyEvent, MouseEvent};
 
-use drivers::pio::*;
+use drivers::io::{Io, Pio};
 
 use graphics::display::VBEMODEINFO;
 
