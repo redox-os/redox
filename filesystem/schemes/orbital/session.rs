@@ -87,11 +87,13 @@ impl Session {
             let mut remove = false;
 
             match self.windows.get(i) {
-                Some(window_ptr) => if *window_ptr == remove_window_ptr {
-                    remove = true;
-                } else {
-                    i += 1;
-                },
+                Some(window_ptr) => {
+                    if *window_ptr == remove_window_ptr {
+                        remove = true;
+                    } else {
+                        i += 1;
+                    }
+                }
                 None => break,
             }
 
@@ -105,11 +107,13 @@ impl Session {
             let mut remove = false;
 
             match self.windows_ordered.get(i) {
-                Some(window_ptr) => if *window_ptr == remove_window_ptr {
-                    remove = true;
-                } else {
-                    i += 1;
-                },
+                Some(window_ptr) => {
+                    if *window_ptr == remove_window_ptr {
+                        remove = true;
+                    } else {
+                        i += 1;
+                    }
+                }
                 None => break,
             }
 
@@ -124,12 +128,10 @@ impl Session {
     fn on_key(&mut self, key_event: KeyEvent) {
         if !self.windows.is_empty() {
             match self.windows.get(self.windows.len() - 1) {
-                Some(window_ptr) => {
-                    unsafe {
-                        (**window_ptr).on_key(key_event);
-                        self.redraw = true;
-                    }
-                }
+                Some(window_ptr) => unsafe {
+                    (**window_ptr).on_key(key_event);
+                    self.redraw = true;
+                },
                 None => (),
             }
         }
@@ -144,8 +146,7 @@ impl Session {
 
                 let mut chars = 32;
                 while chars > 4 &&
-                      (x as usize + (chars * 8 + 3 * 4) * self.windows.len()) >
-                      self.display.width {
+                      (x as usize + (chars * 8 + 3 * 4) * self.windows.len()) > self.display.width {
                     chars -= 1;
                 }
 
@@ -155,17 +156,20 @@ impl Session {
                     if mouse_event.x >= x && mouse_event.x < x + w as i32 {
                         for j in 0..self.windows.len() {
                             match self.windows.get(j) {
-                                Some(catcher_window_ptr) => if catcher_window_ptr == window_ptr {
-                                    unsafe {
-                                        if j == self.windows.len() - 1 {
-                                            (**window_ptr).minimized = !(**window_ptr).minimized;
-                                        } else {
-                                            catcher = j as isize;
-                                            (**window_ptr).minimized = false;
+                                Some(catcher_window_ptr) => {
+                                    if catcher_window_ptr == window_ptr {
+                                        unsafe {
+                                            if j == self.windows.len() - 1 {
+                                                (**window_ptr).minimized = !(**window_ptr)
+                                                                                .minimized;
+                                            } else {
+                                                catcher = j as isize;
+                                                (**window_ptr).minimized = false;
+                                            }
                                         }
+                                        break;
                                     }
-                                    break;
-                                },
+                                }
                                 None => break,
                             }
                         }
@@ -174,6 +178,19 @@ impl Session {
                     }
                     x += w as i32;
                 }
+<<<<<<< HEAD
+=======
+
+
+                if self.shutdown.has_data() {
+                    x = self.display.width as i32 - self.shutdown.width() as i32;
+                    let y = self.display.height as isize - self.shutdown.height() as isize;
+                    if mouse_event.y >= y as i32 && mouse_event.x >= x &&
+                       mouse_event.x < x + self.shutdown.width() as i32 {
+                        File::create("acpi:off");
+                    }
+                }
+>>>>>>> 0722138ddfb10642d6d33d15a2456bca511dfe15
             }
         } else {
             let mut active_window = true;
@@ -241,8 +258,7 @@ impl Session {
 
             let mut chars = 32;
             while chars > 4 &&
-                  (x as usize + (chars * 8 + 3 * 4) * self.windows.len()) >
-                  self.display.width {
+                  (x as usize + (chars * 8 + 3 * 4) * self.windows.len()) > self.display.width {
                 chars -= 1;
             }
 
@@ -273,6 +289,24 @@ impl Session {
                     i += 1;
                 }
                 x += 8;
+            }
+
+            if self.shutdown.has_data() {
+                x = self.display.width as i32 - self.shutdown.width() as i32;
+                let y = self.display.height as isize - self.shutdown.height() as isize;
+                if mouse_point.y >= y as i32 && mouse_point.x >= x &&
+                   mouse_point.x < x + self.shutdown.width() as i32 {
+                    self.display.rect(Point::new(x as i32, y as i32),
+                                      Size::new(self.shutdown.width() as u32,
+                                                self.shutdown.height() as u32),
+                                      Color::rgba(128, 128, 128, 128));
+                }
+
+                self.display.image_alpha(Point::new(x as i32, y as i32),
+                                         (&self.shutdown).as_ptr(),
+                                         Size::new(self.shutdown.width() as u32,
+                                                   self.shutdown.height() as u32));
+                x = x + self.shutdown.width() as i32;
             }
 
             if self.cursor.has_data() {
