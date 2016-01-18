@@ -204,23 +204,25 @@ impl Resource {
         }
 
         match self.ip.write(&tcp.to_bytes()) {
-            Ok(size) => loop {
-                // Wait for ACK
-                let mut bytes: Vec<u8> = Vec::new();
-                match self.ip.read_to_end(&mut bytes) {
-                    Ok(_) => {
-                        if let Some(segment) = Tcp::from_bytes(bytes) {
-                            if segment.header.dst.get() == self.host_port &&
-                               segment.header.src.get() == self.peer_port {
-                                return if (segment.header.flags.get() &
-                                           (TCP_PSH | TCP_SYN | TCP_ACK)) ==
-                                          TCP_ACK {
-                                    self.sequence = segment.header.ack_num.get();
-                                    self.acknowledge = segment.header.sequence.get();
-                                    Ok(size)
-                                } else {
-                                    Err(Error::new(EPIPE))
-                                };
+            Ok(size) => {
+                loop {
+                    // Wait for ACK
+                    let mut bytes: Vec<u8> = Vec::new();
+                    match self.ip.read_to_end(&mut bytes) {
+                        Ok(_) => {
+                            if let Some(segment) = Tcp::from_bytes(bytes) {
+                                if segment.header.dst.get() == self.host_port &&
+                                   segment.header.src.get() == self.peer_port {
+                                    return if (segment.header.flags.get() &
+                                               (TCP_PSH | TCP_SYN | TCP_ACK)) ==
+                                              TCP_ACK {
+                                        self.sequence = segment.header.ack_num.get();
+                                        self.acknowledge = segment.header.sequence.get();
+                                        Ok(size)
+                                    } else {
+                                        Err(Error::new(EPIPE))
+                                    };
+                                }
                             }
                         }
                         Err(err) => return Err(err),

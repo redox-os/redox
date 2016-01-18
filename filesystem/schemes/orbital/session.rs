@@ -178,19 +178,6 @@ impl Session {
                     }
                     x += w as i32;
                 }
-<<<<<<< HEAD
-=======
-
-
-                if self.shutdown.has_data() {
-                    x = self.display.width as i32 - self.shutdown.width() as i32;
-                    let y = self.display.height as isize - self.shutdown.height() as isize;
-                    if mouse_event.y >= y as i32 && mouse_event.x >= x &&
-                       mouse_event.x < x + self.shutdown.width() as i32 {
-                        File::create("acpi:off");
-                    }
-                }
->>>>>>> 0722138ddfb10642d6d33d15a2456bca511dfe15
             }
         } else {
             let mut active_window = true;
@@ -289,24 +276,6 @@ impl Session {
                     i += 1;
                 }
                 x += 8;
-            }
-
-            if self.shutdown.has_data() {
-                x = self.display.width as i32 - self.shutdown.width() as i32;
-                let y = self.display.height as isize - self.shutdown.height() as isize;
-                if mouse_point.y >= y as i32 && mouse_point.x >= x &&
-                   mouse_point.x < x + self.shutdown.width() as i32 {
-                    self.display.rect(Point::new(x as i32, y as i32),
-                                      Size::new(self.shutdown.width() as u32,
-                                                self.shutdown.height() as u32),
-                                      Color::rgba(128, 128, 128, 128));
-                }
-
-                self.display.image_alpha(Point::new(x as i32, y as i32),
-                                         (&self.shutdown).as_ptr(),
-                                         Size::new(self.shutdown.width() as u32,
-                                                   self.shutdown.height() as u32));
-                x = x + self.shutdown.width() as i32;
             }
 
             if self.cursor.has_data() {
