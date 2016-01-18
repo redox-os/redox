@@ -136,10 +136,18 @@ unsafe fn idle_loop() {
 
 
         if halt {
-            asm!("sti" : : : : "intel", "volatile");
-            asm!("hlt" : : : : "intel", "volatile");
+            asm!("sti
+                  hlt"
+                  :
+                  :
+                  :
+                  : "intel", "volatile");
         } else {
-            asm!("sti" : : : : "intel", "volatile");
+            asm!("sti"
+                :
+                :
+                :
+                : "intel", "volatile");
         }
 
 
