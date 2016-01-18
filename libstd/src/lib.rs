@@ -17,6 +17,7 @@
 #![feature(core_intrinsics)]
 #![feature(core_panic)]
 #![feature(const_fn)]
+#![feature(dropck_parametricity)]
 #![feature(int_error_internals)]
 #![feature(lang_items)]
 #![feature(macro_reexport)]
@@ -29,6 +30,12 @@
 #![feature(box_patterns)]
 #![feature(vec_push_all)]
 #![feature(prelude_import)]
+#![feature(type_ascription)]
+#![feature(oom)]
+#![feature(unique)]
+#![feature(heap_api)]
+#![feature(wrapping)]
+#![feature(filling_drop)]
 #![no_std]
 
 // #![warn(missing_docs)]
@@ -165,9 +172,7 @@ pub mod hashmap;
 // unstable module so we can get our build working.
     #[doc(hidden)]
 // TODO #[unstable(feature = "rand", issue = "0")]
-pub mod rand {
-    pub use core_rand::Rng;
-}
+pub use core_rand as rand;
 // } STD COPY
 
 pub use rand_old::*;

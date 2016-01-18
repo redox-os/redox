@@ -1,15 +1,27 @@
 use super::mpsc_queue::{Queue};
+use alloc::arc::Arc;
+use super::mpsc_queue::PopResult::*;
+
+pub enum TryRecvError {
+    Empty,
+    Disconnected,
+}
 
 pub struct Receiver<T> {
-    pub queue: *const Queue<T>,
+    pub queue: Arc<Queue<T>>,
 }
 
 impl<T> Receiver<T> {
-    fn recv(&self, t: T) -> Result<T, ()> {
-        use super::mpsc_queue::PopResult::*;
+    fn try_recv(&self, t: T) -> Result<T, TryRecvError> {
+        match self.queue.pop() {
+            Data(t) => Ok(t),
+            _ => Err(TryRecvError::Empty),
+        }
+    }
 
+    fn recv(&self, t: T) -> Result<T, ()> {
         loop {
-            match unsafe { (*self.queue).pop() } {
+            match self.queue.pop() {
                 Data(t) => return Ok(t),
                 _ => continue,
             }
