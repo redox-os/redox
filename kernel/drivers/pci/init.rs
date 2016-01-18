@@ -40,10 +40,10 @@ pub unsafe fn pci_device(env: &mut Environment,
                 env.schemes.push(UnsafeCell::new(module));
             }
         }
-        (SERIAL_BUS, USB, UHCI) => env.schemes.push(UnsafeCell::new(Uhci::new(pci))),
-        (SERIAL_BUS, USB, OHCI) => env.schemes.push(UnsafeCell::new(Ohci::new(pci))),
-        (SERIAL_BUS, USB, EHCI) => env.schemes.push(UnsafeCell::new(Ehci::new(pci))),
-        (SERIAL_BUS, USB, XHCI) => {
+        //(SERIAL_BUS, USB, UHCI) => env.schemes.push(UnsafeCell::new(Uhci::new(pci))),
+        //(SERIAL_BUS, USB, OHCI) => env.schemes.push(UnsafeCell::new(Ohci::new(pci))),
+        //(SERIAL_BUS, USB, EHCI) => env.schemes.push(UnsafeCell::new(Ehci::new(pci))),
+        /*(SERIAL_BUS, USB, XHCI) => {
             let base = pci.read(0x10) as usize;
             let mut module = box Xhci {
                 pci: pci,
@@ -53,7 +53,7 @@ pub unsafe fn pci_device(env: &mut Environment,
             };
             module.init();
             env.schemes.push(UnsafeCell::new(module));
-        }
+        }*/
         _ => {
             match (vendor_code, device_code) {
                 //(REALTEK, RTL8139) => env.schemes.push(UnsafeCell::new(Rtl8139::new(pci))),
@@ -88,6 +88,7 @@ pub unsafe fn pci_init(env: &mut Environment) {
                 if (id & 0xFFFF) != 0xFFFF {
                     let class_id = pci.read(8);
 
+                    /*
                     debug!(" * PCI {}, {}, {}: ID {:X} CL {:X}",
                            bus,
                            slot,
@@ -111,6 +112,7 @@ pub unsafe fn pci_init(env: &mut Environment) {
                     }
 
                     debug::dl();
+                    */
 
                     pci_device(env,
                                pci,

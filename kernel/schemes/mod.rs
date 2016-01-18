@@ -1,4 +1,3 @@
-use common::event::Event;
 use common::get_slice::GetSlice;
 
 use alloc::boxed::Box;

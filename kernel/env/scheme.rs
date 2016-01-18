@@ -1,4 +1,3 @@
-use collections::string::String;
 use collections::BTreeMap;
 
 use scheduler::context::context_switch;

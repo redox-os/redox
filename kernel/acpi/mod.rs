@@ -42,11 +42,13 @@ impl Acpi {
                 for addr in acpi.rsdt.addrs.iter() {
                     let header = unsafe { &*(*addr as *const SDTHeader) };
 
+                    /*
                     debug!("ACPI Table: ");
                     for b in header.signature.iter() {
                         debug!("{}", *b as char);
                     }
                     debugln!("");
+                    */
 
                     if let Some(fadt) = FADT::new(header) {
                         // Why does this hang? debugln!("{:#?}", fadt);
