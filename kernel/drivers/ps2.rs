@@ -15,9 +15,9 @@ use drivers::kb_layouts::layouts;
 /// PS2
 pub struct Ps2 {
     /// The data
-    data: Pio8,
+    data: Pio<u8>,
     /// The command
-    cmd: Pio8,
+    cmd: Pio<u8>,
     /// Left shift?
     lshift: bool,
     /// Right shift?
@@ -45,8 +45,8 @@ impl Ps2 {
     /// Create new PS2 data
     pub fn new() -> Box<Self> {
         let mut module = box Ps2 {
-            data: Pio8::new(0x60),
-            cmd: Pio8::new(0x64),
+            data: Pio::<u8>::new(0x60),
+            cmd: Pio::<u8>::new(0x64),
             lshift: false,
             rshift: false,
             caps_lock: false,
@@ -120,7 +120,7 @@ impl Ps2 {
 
     /// Keyboard interrupt
     pub fn keyboard_interrupt(&mut self) -> Option<KeyEvent> {
-        let mut scancode = unsafe { self.data.read() };
+        let mut scancode = self.data.read();
 
         if scancode == 0 {
             return None;
@@ -144,7 +144,7 @@ impl Ps2 {
                 self.caps_lock = false;
             }
         } else if scancode == 0xE0 {
-            let scancode_byte_2 = unsafe { self.data.read() };
+            let scancode_byte_2 = self.data.read();
             if scancode_byte_2 == 0x38 {
                 self.altgr = true;
             } else if scancode_byte_2 == 0xB8 {
@@ -197,7 +197,7 @@ impl Ps2 {
 
     /// Mouse interrupt
     pub fn mouse_interrupt(&mut self) -> Option<MouseEvent> {
-        let byte = unsafe { self.data.read() };
+        let byte = self.data.read();
         if self.mouse_i == 0 {
             if byte & 0x8 == 0x8 {
                 self.mouse_packet[0] = byte;
@@ -272,7 +272,7 @@ impl KScheme for Ps2 {
 
     fn on_poll(&mut self) {
         loop {
-            let status = unsafe { self.cmd.read() };
+            let status = self.cmd.read();
             if status & 0x21 == 1 {
                 if let Some(key_event) = self.keyboard_interrupt() {
                     ::env().events.lock().push_back(key_event.to_event());
