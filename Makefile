@@ -141,6 +141,7 @@ docs: kernel/main.rs $(BUILD)/libcore.rlib $(BUILD)/liballoc.rlib
 apps: filesystem/apps/editor/main.bin \
 	  filesystem/apps/example/main.bin \
 	  filesystem/apps/file_manager/main.bin \
+	  filesystem/apps/init/main.bin \
 	  filesystem/apps/launcher/main.bin \
 	  filesystem/apps/login/main.bin \
 	  filesystem/apps/orbtk/main.bin \
@@ -211,6 +212,9 @@ $(BUILD)/libsystem.rlib: crates/system/lib.rs crates/system/*.rs $(BUILD)/libcor
 $(BUILD)/liborbital.rlib: liborbital/lib.rs liborbital/*.rs $(BUILD)/libstd.rlib
 	$(RUSTC) $(RUSTCFLAGS) --crate-name orbital -o $@ $<
 
+$(BUILD)/kernel.rlib: kernel/main.rs kernel/*.rs kernel/*/*.rs kernel/*/*/*.rs $(BUILD)/libcore.rlib $(BUILD)/liballoc.rlib $(BUILD)/libcollections.rlib
+	$(RUSTC) $(RUSTCFLAGS) -C lto -o $@ $<
+
 $(BUILD)/kernel.bin: $(BUILD)/kernel.rlib kernel/kernel.ld
 	$(LD) $(LDARGS) -o $@ -T kernel/kernel.ld $<
 
@@ -232,9 +236,6 @@ else
 endif
 
 #Cargo stuff
-$(BUILD)/kernel.rlib: FORCE $(BUILD)/libcore.rlib $(BUILD)/liballoc.rlib $(BUILD)/libcollections.rlib $(BUILD)/libsystem.rlib
-	$(CARGO) --manifest-path kernel/Cargo.toml --lib $(CARGOFLAGS) -C lto
-
 $(BUILD)/libstd.rlib: FORCE $(BUILD)/libcore.rlib $(BUILD)/liballoc.rlib $(BUILD)/libcollections.rlib $(BUILD)/librand.rlib $(BUILD)/libsystem.rlib
 	$(CARGO) --manifest-path libstd/Cargo.toml --lib $(CARGOFLAGS)
 
@@ -264,8 +265,7 @@ filesystem/apps/%/main.bin: filesystem/apps/%/main.rs filesystem/apps/%/*.rs $(B
 
 filesystem/schemes/%/main.bin: filesystem/schemes/%/main.rs filesystem/schemes/%/*.rs kernel/scheme.rs $(BUILD)/libstd.rlib $(BUILD)/liborbital.rlib $(BUILD)/liborbtk.rlib
 	$(SED) "s|SCHEME_PATH|../../../$<|" kernel/scheme.rs > $(BUILD)/schemes_$*.gen
-	$(RUSTC) $(RUSTCFLAGS) -C lto -o $(BUILD)/schemes_$*.rlib $(BUILD)/schemes_$*.gen
-	$(LD) $(LDARGS) -o $@ $(BUILD)/schemes_$*.rlib
+	$(RUSTC) $(RUSTCFLAGS) --crate-type bin -o $@ $(BUILD)/schemes_$*.gen
 
 filesystem/%.list: filesystem/%.bin
 	$(OBJDUMP) -C -M intel -D $< > $@
