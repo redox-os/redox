@@ -10,22 +10,16 @@ use core::cmp::{min, max};
 
 use syscall::{Error, O_CREAT, O_RDWR, O_TRUNC, EBADF, ENOENT};
 
-/// ARP scheme
-pub mod arp;
 /// Context scheme
 pub mod context;
 /// Debug scheme
 pub mod debug;
 /// Display Scheme
 pub mod display;
-/// Ethernet scheme
-pub mod ethernet;
 /// File scheme
 pub mod file;
 /// Interrupt scheme
 pub mod interrupt;
-/// IP scheme
-pub mod ip;
 /// Memory scheme
 pub mod memory;
 /// Pipes

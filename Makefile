@@ -83,7 +83,7 @@ else
 	endif
 endif
 
-.PHONY: help all docs apps schemes tests clean \
+.PHONY: help all docs apps tests clean \
 	bochs \
 	qemu qemu_bare qemu_tap \
 	virtualbox virtualbox_tap \
@@ -119,9 +119,6 @@ help:
 	@echo "    make apps"
 	@echo "        Build apps for Redox."
 	@echo
-	@echo "    make schemes"
-	@echo "        Build schemes for Redox."
-	@echo
 	@echo "    make tests"
 	@echo "        Run tests on Redox."
 	@echo
@@ -152,10 +149,6 @@ apps: filesystem/apps/editor/main.bin \
 	  filesystem/apps/test/main.bin \
 	  filesystem/apps/viewer/main.bin \
 	  filesystem/apps/zfs/main.bin
-
-schemes: filesystem/schemes/orbital/main.bin \
-  	  	 filesystem/schemes/tcp/main.bin \
-	  	 filesystem/schemes/udp/main.bin
 
 tests: tests/success tests/failure
 
@@ -267,10 +260,6 @@ filesystem/apps/example/main.bin: filesystem/apps/example/main.rs filesystem/app
 filesystem/apps/%/main.bin: filesystem/apps/%/main.rs filesystem/apps/%/*.rs $(BUILD)/crt0.o $(BUILD)/libstd.rlib $(BUILD)/liborbital.rlib $(BUILD)/liborbtk.rlib
 	$(RUSTC) $(RUSTCFLAGS) --crate-type bin -o $@ $<
 
-filesystem/schemes/%/main.bin: filesystem/schemes/%/main.rs filesystem/schemes/%/*.rs $(BUILD)/libstd.rlib $(BUILD)/liborbital.rlib $(BUILD)/liborbtk.rlib
-	$(SED) "s|SCHEME_PATH|../../../$<|" kernel/scheme.rs > $(BUILD)/schemes_$*.gen
-	$(RUSTC) $(RUSTCFLAGS) --crate-type bin -o $@ $(BUILD)/schemes_$*.gen
-
 filesystem/%.list: filesystem/%.bin
 	$(OBJDUMP) -C -M intel -D $< > $@
 
@@ -288,7 +277,7 @@ filesystem/apps/zfs/zfs.img:
 	-sudo zpool destroy redox_zfs
 	sudo losetup -d /dev/loop0
 
-$(BUILD)/filesystem.gen: apps schemes
+$(BUILD)/filesystem.gen: apps
 	$(FIND) filesystem -not -path '*/\.*' -type f -o -type l | $(CUT) -d '/' -f2- | $(SORT) | $(AWK) '{printf("file %d,\"%s\"\n", NR, $$0)}' > $@
 
 $(BUILD)/harddrive.bin: kernel/harddrive.asm $(BUILD)/kernel.bin $(BUILD)/filesystem.gen

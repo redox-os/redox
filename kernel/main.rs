@@ -59,13 +59,10 @@ use scheduler::{Context, Regs, TSS};
 use scheduler::context::context_switch;
 
 use schemes::Url;
-use schemes::arp::*;
 use schemes::context::*;
 use schemes::debug::*;
 use schemes::display::*;
-use schemes::ethernet::*;
 use schemes::interrupt::*;
-use schemes::ip::*;
 use schemes::memory::*;
 
 use syscall::execute::execute;
@@ -82,8 +79,6 @@ pub mod macros;
 pub mod alloc_system;
 /// ACPI
 pub mod acpi;
-/// Audio
-pub mod audio;
 /// Disk drivers
 pub mod disk;
 /// Various drivers
@@ -94,8 +89,6 @@ pub mod env;
 pub mod fs;
 /// Various graphical methods
 pub mod graphics;
-/// Network
-pub mod network;
 /// Panic
 pub mod panic;
 /// Schemes
@@ -294,10 +287,6 @@ unsafe fn init(font_data: usize, tss_data: usize) {
             env.schemes.push(UnsafeCell::new(box InterruptScheme));
             env.schemes.push(UnsafeCell::new(box MemoryScheme));
 
-            env.schemes.push(UnsafeCell::new(box EthernetScheme));
-            env.schemes.push(UnsafeCell::new(box ArpScheme));
-            env.schemes.push(UnsafeCell::new(box IpScheme { arp: Vec::new() }));
-
             Context::spawn("kpoll".to_string(),
             box move || {
                 poll_loop();
@@ -306,11 +295,6 @@ unsafe fn init(font_data: usize, tss_data: usize) {
             Context::spawn("kevent".to_string(),
             box move || {
                 event_loop();
-            });
-
-            Context::spawn("karp".to_string(),
-            box move || {
-                ArpScheme::reply_loop();
             });
 
             env.contexts.lock().enabled = true;
