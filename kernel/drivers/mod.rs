@@ -1,5 +1,5 @@
-/// IO
-pub mod io;
+extern crate io;
+
 /// PCI
 pub mod pci;
 /// PS2
