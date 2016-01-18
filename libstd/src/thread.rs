@@ -1,6 +1,6 @@
 use alloc::boxed::Box;
 
-use syscall::{sys_clone, sys_exit, sys_yield, sys_nanosleep, CLONE_VM, CLONE_FS, CLONE_FILES,
+use system::syscall::{sys_clone, sys_exit, sys_yield, sys_nanosleep, CLONE_VM, CLONE_FS, CLONE_FILES,
               TimeSpec};
 
 use time::Duration;

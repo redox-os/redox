@@ -1,4 +1,4 @@
 [root]
-name = "redox"
+name = "redox_std"
 version = "0.1.0"
 

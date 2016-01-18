@@ -10,7 +10,7 @@ use common::debug;
 
 use schemes::{Result, Resource, ResourceSeek, Url};
 
-use syscall::{SysError, EBADF};
+use syscall::{Error, EBADF};
 
 use sync::Intex;
 
@@ -70,7 +70,7 @@ impl Resource for NetworkResource {
 
     fn read(&mut self, _: &mut [u8]) -> Result<usize> {
         debug::d("TODO: Implement read for RTL8139\n");
-        Err(SysError::new(EBADF))
+        Err(Error::new(EBADF))
     }
 
     fn read_to_end(&mut self, vec: &mut Vec<u8>) -> Result<usize> {
@@ -103,7 +103,7 @@ impl Resource for NetworkResource {
     }
 
     fn seek(&mut self, _: ResourceSeek) -> Result<usize> {
-        Err(SysError::new(EBADF))
+        Err(Error::new(EBADF))
     }
 
     fn sync(&mut self) -> Result<()> {

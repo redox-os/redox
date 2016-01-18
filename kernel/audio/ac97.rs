@@ -11,7 +11,7 @@ use drivers::pio::*;
 
 use schemes::{Result, KScheme};
 
-use syscall::{SysError, EBADF};
+use syscall::{Error, EBADF};
 
 #[repr(packed)]
 struct BD {
@@ -37,7 +37,7 @@ impl Resource for AC97Resource {
     }
 
     fn read(&mut self, _: &mut [u8]) -> Result<usize> {
-        Err(SysError::new(EBADF))
+        Err(Error::new(EBADF))
     }
 
     fn write(&mut self, buf: &[u8]) -> Result<usize> {
@@ -156,11 +156,11 @@ impl Resource for AC97Resource {
     }
 
     fn seek(&mut self, _: ResourceSeek) -> Result<usize> {
-        Err(SysError::new(EBADF))
+        Err(Error::new(EBADF))
     }
 
     fn sync(&mut self) -> Result<()> {
-        Err(SysError::new(EBADF))
+        Err(Error::new(EBADF))
     }
 }
 

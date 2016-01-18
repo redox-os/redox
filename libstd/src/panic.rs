@@ -1,7 +1,7 @@
 use core::fmt::{self, Write};
 use core::result;
 
-use syscall::*;
+use system::syscall::{sys_debug, sys_exit};
 
 pub struct DebugStream;
 

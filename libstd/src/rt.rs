@@ -1,7 +1,7 @@
 use core::{fmt, mem, ptr, slice, str};
 use panic::panic_impl;
 use env::{args_init, args_destroy};
-use syscall::sys_exit;
+use system::syscall::sys_exit;
 use vec::Vec;
 
 pub fn begin_unwind(string: &'static str, file_line: &(&'static str, u32)) -> ! {

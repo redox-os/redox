@@ -14,7 +14,7 @@ use scheduler::context::ContextManager;
 
 use schemes::{Result, KScheme, Resource, VecResource, Url};
 
-use syscall::{SysError, ENOENT};
+use syscall::{Error, ENOENT};
 
 use self::console::Console;
 
@@ -93,7 +93,7 @@ impl Environment {
 
                 Ok(box VecResource::new(Url::new(), list.into_bytes()))
             } else{
-                Err(SysError::new(ENOENT))
+                Err(Error::new(ENOENT))
             }
         } else {
             for scheme in self.schemes.iter() {
@@ -102,7 +102,7 @@ impl Environment {
                     return unsafe { (*scheme.get()).open(url, flags) };
                 }
             }
-            Err(SysError::new(ENOENT))
+            Err(Error::new(ENOENT))
         }
     }
 
@@ -117,6 +117,6 @@ impl Environment {
                 }
             }
         }
-        Err(SysError::new(ENOENT))
+        Err(Error::new(ENOENT))
     }
 }

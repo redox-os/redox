@@ -10,7 +10,7 @@ use common::time::{self, Duration};
 
 use schemes::{Result, KScheme, Resource, ResourceSeek, Url};
 
-use syscall::{SysError, EBADF};
+use syscall::{Error, EBADF};
 
 #[repr(packed)]
 struct Stream {
@@ -57,7 +57,7 @@ impl Resource for IntelHDAResource {
     }
 
     fn read(&mut self, _: &mut [u8]) -> Result<usize> {
-        Err(SysError::new(EBADF))
+        Err(Error::new(EBADF))
     }
 
     fn write(&mut self, buf: &[u8]) -> Result<usize> {
@@ -195,11 +195,11 @@ impl Resource for IntelHDAResource {
     }
 
     fn seek(&mut self, _: ResourceSeek) -> Result<usize> {
-        Err(SysError::new(EBADF))
+        Err(Error::new(EBADF))
     }
 
     fn sync(&mut self) -> Result<()> {
-        Err(SysError::new(EBADF))
+        Err(Error::new(EBADF))
     }
 }
 

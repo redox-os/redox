@@ -1,13 +1,17 @@
 extern crate orbital;
 
+extern crate system;
+
 use orbital::Color;
 
 use std::fs::File;
 use std::io::{Read, Write};
 use std::ops::Deref;
 use std::sync::Arc;
-use std::syscall::*;
 use std::thread;
+
+use system::error::Error;
+use system::syscall::*;
 
 use window::ConsoleWindow;
 
@@ -25,7 +29,7 @@ macro_rules! readln {
 
 pub fn pipe() -> [usize; 2] {
     let mut fds = [0; 2];
-    SysError::demux(unsafe { sys_pipe2(fds.as_mut_ptr(), 0) }).unwrap();
+    Error::demux(unsafe { sys_pipe2(fds.as_mut_ptr(), 0) }).unwrap();
     fds
 }
 
@@ -34,7 +38,7 @@ fn main() {
     let from_shell_fds = pipe();
 
     unsafe {
-        if SysError::demux(sys_clone(0)).unwrap() == 0 {
+        if Error::demux(sys_clone(0)).unwrap() == 0 {
             // Close STDIO
             sys_close(2);
             sys_close(1);

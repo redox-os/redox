@@ -141,6 +141,7 @@ docs: kernel/main.rs $(BUILD)/libcore.rlib $(BUILD)/liballoc.rlib
 apps: filesystem/apps/editor/main.bin \
 	  filesystem/apps/example/main.bin \
 	  filesystem/apps/file_manager/main.bin \
+	  filesystem/apps/init/main.bin \
 	  filesystem/apps/launcher/main.bin \
 	  filesystem/apps/login/main.bin \
 	  filesystem/apps/orbtk/main.bin \
@@ -158,7 +159,12 @@ schemes: filesystem/schemes/orbital/main.bin \
 
 tests: tests/success tests/failure
 
-test: kernel/main.rs rust/src/libtest/lib.rs $(BUILD)/libcore.rlib $(BUILD)/liballoc.rlib $(BUILD)/libcollections.rlib
+test: kernel/main.rs \
+	  rust/src/libtest/lib.rs \
+	  $(BUILD)/libcore.rlib \
+	  $(BUILD)/liballoc.rlib \
+	  $(BUILD)/libcollections.rlib \
+	  $(BUILD)/libtest.rlib
 	$(RUSTC) $(RUSTCFLAGS) --test $<
 
 clean:
@@ -200,14 +206,11 @@ $(BUILD)/libcollections.rlib: rust/src/libcollections/lib.rs $(BUILD)/libcore.rl
 $(BUILD)/librand.rlib: rust/src/librand/lib.rs $(BUILD)/libcore.rlib $(BUILD)/liballoc.rlib $(BUILD)/librustc_unicode.rlib $(BUILD)/libcollections.rlib
 	$(RUSTC) $(RUSTCFLAGS) -o $@ $<
 
-$(BUILD)/libstd.rlib: libredox/src/lib.rs libredox/src/*.rs libredox/src/*/*.rs $(BUILD)/libcore.rlib $(BUILD)/liballoc.rlib $(BUILD)/libcollections.rlib $(BUILD)/librand.rlib
-	$(RUSTC) $(RUSTCFLAGS) --crate-name std -o $@ $<
+$(BUILD)/libsystem.rlib: crates/system/lib.rs crates/system/*.rs $(BUILD)/libcore.rlib
+	$(RUSTC) $(RUSTCFLAGS) --crate-name system -o $@ $<
 
 $(BUILD)/liborbital.rlib: liborbital/lib.rs liborbital/*.rs $(BUILD)/libstd.rlib
 	$(RUSTC) $(RUSTCFLAGS) --crate-name orbital -o $@ $<
-
-$(BUILD)/libscheme.rlib: crates/scheme/lib.rs crates/scheme/*.rs $(BUILD)/libstd.rlib
-	$(RUSTC) $(RUSTCFLAGS) --crate-name scheme -o $@ $<
 
 $(BUILD)/kernel.rlib: kernel/main.rs kernel/*.rs kernel/*/*.rs kernel/*/*/*.rs $(BUILD)/libcore.rlib $(BUILD)/liballoc.rlib $(BUILD)/libcollections.rlib
 	$(RUSTC) $(RUSTCFLAGS) -C lto -o $@ $<
@@ -232,8 +235,10 @@ else
 	$(AS) -f elf -o $@ $<
 endif
 
-
 #Cargo stuff
+$(BUILD)/libstd.rlib: FORCE $(BUILD)/libcore.rlib $(BUILD)/liballoc.rlib $(BUILD)/libcollections.rlib $(BUILD)/librand.rlib $(BUILD)/libsystem.rlib
+	$(CARGO) --manifest-path libstd/Cargo.toml --lib $(CARGOFLAGS)
+
 $(BUILD)/liborbclient.rlib: FORCE $(BUILD)/libstd.rlib
 	$(CARGO) --manifest-path crates/orbclient/Cargo.toml --lib $(CARGOFLAGS)
 
@@ -252,7 +257,7 @@ filesystem/apps/shell/main.bin: $(BUILD)/ion-shell.bin
 filesystem/apps/sodium/main.bin: $(BUILD)/sodium.bin
 	cp $< $@
 
-filesystem/apps/example/main.bin: filesystem/apps/example/main.rs filesystem/apps/example/*.rs $(BUILD)/crt0.o $(BUILD)/libstd.rlib $(BUILD)/libscheme.rlib
+filesystem/apps/example/main.bin: filesystem/apps/example/main.rs filesystem/apps/example/*.rs $(BUILD)/crt0.o $(BUILD)/libstd.rlib
 	$(RUSTC) $(RUSTCFLAGS) --crate-type bin -o $@ $<
 
 filesystem/apps/%/main.bin: filesystem/apps/%/main.rs filesystem/apps/%/*.rs $(BUILD)/crt0.o $(BUILD)/libstd.rlib $(BUILD)/liborbital.rlib $(BUILD)/liborbtk.rlib
@@ -260,8 +265,7 @@ filesystem/apps/%/main.bin: filesystem/apps/%/main.rs filesystem/apps/%/*.rs $(B
 
 filesystem/schemes/%/main.bin: filesystem/schemes/%/main.rs filesystem/schemes/%/*.rs kernel/scheme.rs $(BUILD)/libstd.rlib $(BUILD)/liborbital.rlib $(BUILD)/liborbtk.rlib
 	$(SED) "s|SCHEME_PATH|../../../$<|" kernel/scheme.rs > $(BUILD)/schemes_$*.gen
-	$(RUSTC) $(RUSTCFLAGS) -C lto -o $(BUILD)/schemes_$*.rlib $(BUILD)/schemes_$*.gen
-	$(LD) $(LDARGS) -o $@ $(BUILD)/schemes_$*.rlib
+	$(RUSTC) $(RUSTCFLAGS) --crate-type bin -o $@ $(BUILD)/schemes_$*.gen
 
 filesystem/%.list: filesystem/%.bin
 	$(OBJDUMP) -C -M intel -D $< > $@

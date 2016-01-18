@@ -3,7 +3,7 @@ use core::ops::{Deref, DerefMut};
 
 use sync::Mutex;
 
-use syscall::sys_yield;
+use thread;
 
 struct RwLockInner {
     writer: bool,
@@ -39,7 +39,7 @@ impl<T: ?Sized> RwLock<T> {
                     break;
                 }
             }
-            unsafe { sys_yield() };
+            thread::yield_now();
         }
         RwLockReadGuard::new(&self.inner, &self.value)
     }
@@ -54,7 +54,7 @@ impl<T: ?Sized> RwLock<T> {
                     break;
                 }
             }
-            unsafe { sys_yield() };
+            thread::yield_now();
         }
         RwLockWriteGuard::new(&self.inner, &self.value)
     }

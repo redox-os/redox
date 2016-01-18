@@ -1,7 +1,8 @@
 // use core::simd::*;
 
 use std::{cmp, mem};
-use std::syscall::{sys_alloc, sys_unalloc};
+
+use system::syscall::{sys_alloc, sys_unalloc};
 
 use orbital::Color;
 use orbital::Point;

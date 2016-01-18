@@ -119,14 +119,14 @@ pub fn do_sys_brk(addr: usize) -> usize {
 
 pub extern "cdecl" fn do_sys_chdir(path: *const u8) -> usize {
     let contexts = ::env().contexts.lock();
-    SysError::mux(if let Some(current) = contexts.current() {
+    Error::mux(if let Some(current) = contexts.current() {
         unsafe {
             *current.cwd.get() =
                 current.canonicalize(&str::from_utf8_unchecked(&c_string_to_slice(path)));
         }
         Ok(0)
     } else {
-        Err(SysError::new(ESRCH))
+        Err(Error::new(ESRCH))
     })
 }
 
@@ -169,7 +169,7 @@ pub fn do_sys_clone(flags: usize) -> usize {
         context_switch(false);
     }
 
-    SysError::mux(if clone_pid != usize::MAX {
+    Error::mux(if clone_pid != usize::MAX {
         let contexts = ::env().contexts.lock();
         if let Some(current) = contexts.current() {
             if current.pid == clone_pid {
@@ -185,17 +185,17 @@ pub fn do_sys_clone(flags: usize) -> usize {
                 Ok(clone_pid)
             }
         } else {
-            Err(SysError::new(ESRCH))
+            Err(Error::new(ESRCH))
         }
     } else {
-        Err(SysError::new(ESRCH))
+        Err(Error::new(ESRCH))
     })
 }
 
 pub fn do_sys_close(fd: usize) -> usize {
     let contexts = ::env().contexts.lock();
-    SysError::mux(if let Some(current) = contexts.current() {
-        let mut ret = Err(SysError::new(EBADF));
+    Error::mux(if let Some(current) = contexts.current() {
+        let mut ret = Err(Error::new(EBADF));
 
         for i in 0..unsafe { (*current.files.get()).len() } {
             let mut remove = false;
@@ -218,14 +218,14 @@ pub fn do_sys_close(fd: usize) -> usize {
 
         ret
     } else {
-        Err(SysError::new(ESRCH))
+        Err(Error::new(ESRCH))
     })
 }
 
 pub fn do_sys_clock_gettime(clock: usize, tp: *mut TimeSpec) -> usize {
     let _intex = Intex::static_lock();
 
-    SysError::mux(if tp as usize > 0 {
+    Error::mux(if tp as usize > 0 {
         match clock {
             CLOCK_REALTIME => {
                 let clock_realtime = ::env().clock_realtime.lock();
@@ -243,16 +243,16 @@ pub fn do_sys_clock_gettime(clock: usize, tp: *mut TimeSpec) -> usize {
                 }
                 Ok(0)
             }
-            _ => Err(SysError::new(EINVAL)),
+            _ => Err(Error::new(EINVAL)),
         }
     } else {
-        Err(SysError::new(EFAULT))
+        Err(Error::new(EFAULT))
     })
 }
 
 pub fn do_sys_dup(fd: usize) -> usize {
     let contexts = ::env().contexts.lock();
-    SysError::mux(if let Some(current) = contexts.current() {
+    Error::mux(if let Some(current) = contexts.current() {
         if let Some(resource) = unsafe { current.get_file(fd) } {
             match resource.dup() {
                 Ok(new_resource) => {
@@ -270,10 +270,10 @@ pub fn do_sys_dup(fd: usize) -> usize {
                 Err(err) => Err(err),
             }
         } else {
-            Err(SysError::new(EBADF))
+            Err(Error::new(EBADF))
         }
     } else {
-        Err(SysError::new(ESRCH))
+        Err(Error::new(ESRCH))
     })
 }
 
@@ -297,7 +297,7 @@ pub fn do_sys_execve(path: *const u8, args: *const *const u8) -> usize {
 
     execute(path_url, args_vec);
 
-    SysError::mux(Err(SysError::new(EACCES)))
+    Error::mux(Err(Error::new(EACCES)))
 }
 
 pub fn do_sys_spawnve(path: *const u8, args: *const *const u8) -> usize {
@@ -383,7 +383,7 @@ pub fn do_sys_exit(status: usize) {
 
 pub fn do_sys_fpath(fd: usize, buf: *mut u8, len: usize) -> usize {
     let contexts = ::env().contexts.lock();
-    SysError::mux(if let Some(current) = contexts.current() {
+    Error::mux(if let Some(current) = contexts.current() {
         if let Some(resource) = unsafe { current.get_file(fd) } {
             let mut ret = 0;
             // TODO: Improve performance
@@ -400,51 +400,51 @@ pub fn do_sys_fpath(fd: usize, buf: *mut u8, len: usize) -> usize {
 
             Ok(ret)
         } else {
-            Err(SysError::new(EBADF))
+            Err(Error::new(EBADF))
         }
     } else {
-        Err(SysError::new(ESRCH))
+        Err(Error::new(ESRCH))
     })
 }
 
 pub fn do_sys_fsync(fd: usize) -> usize {
     let mut contexts = ::env().contexts.lock();
-    SysError::mux(if let Some(mut current) = contexts.current_mut() {
+    Error::mux(if let Some(mut current) = contexts.current_mut() {
         if let Some(mut resource) = unsafe { current.get_file_mut(fd) } {
             match resource.sync() {
                 Ok(_) => Ok(0),
                 Err(err) => Err(err),
             }
         } else {
-            Err(SysError::new(EBADF))
+            Err(Error::new(EBADF))
         }
     } else {
-        Err(SysError::new(ESRCH))
+        Err(Error::new(ESRCH))
     })
 }
 
 pub fn do_sys_ftruncate(fd: usize, len: usize) -> usize {
     let mut contexts = ::env().contexts.lock();
-    SysError::mux(if let Some(mut current) = contexts.current_mut() {
+    Error::mux(if let Some(mut current) = contexts.current_mut() {
         if let Some(mut resource) = unsafe { current.get_file_mut(fd) } {
             match resource.truncate(len) {
                 Ok(_) => Ok(0),
                 Err(err) => Err(err),
             }
         } else {
-            Err(SysError::new(EBADF))
+            Err(Error::new(EBADF))
         }
     } else {
-        Err(SysError::new(ESRCH))
+        Err(Error::new(ESRCH))
     })
 }
 
 pub fn do_sys_getpid() -> usize {
     let contexts = ::env().contexts.lock();
-    SysError::mux(if let Some(current) = contexts.current() {
+    Error::mux(if let Some(current) = contexts.current() {
         Ok(current.pid)
     } else {
-        Err(SysError::new(ESRCH))
+        Err(Error::new(ESRCH))
     })
 }
 
@@ -452,19 +452,19 @@ pub fn do_sys_getpid() -> usize {
 
 pub fn do_sys_lseek(fd: usize, offset: isize, whence: usize) -> usize {
     let mut contexts = ::env().contexts.lock();
-    SysError::mux(if let Some(mut current) = contexts.current_mut() {
+    Error::mux(if let Some(mut current) = contexts.current_mut() {
         if let Some(mut resource) = unsafe { current.get_file_mut(fd) } {
             match whence {
                 SEEK_SET => resource.seek(ResourceSeek::Start(offset as usize)),
                 SEEK_CUR => resource.seek(ResourceSeek::Current(offset)),
                 SEEK_END => resource.seek(ResourceSeek::End(offset)),
-                _ => Err(SysError::new(EINVAL)),
+                _ => Err(Error::new(EINVAL)),
             }
         } else {
-            Err(SysError::new(EBADF))
+            Err(Error::new(EBADF))
         }
     } else {
-        Err(SysError::new(ESRCH))
+        Err(Error::new(ESRCH))
     })
 }
 
@@ -475,7 +475,7 @@ pub fn do_sys_mkdir(_: *const u8, _: usize) -> usize {
 }
 
 pub fn do_sys_nanosleep(req: *const TimeSpec, rem: *mut TimeSpec) -> usize {
-    SysError::mux(if req as usize > 0 {
+    Error::mux(if req as usize > 0 {
         Duration::new(unsafe { (*req).tv_sec }, unsafe { (*req).tv_nsec }).sleep();
 
         if rem as usize > 0 {
@@ -489,13 +489,13 @@ pub fn do_sys_nanosleep(req: *const TimeSpec, rem: *mut TimeSpec) -> usize {
 
         Ok(0)
     } else {
-        Err(SysError::new(EFAULT))
+        Err(Error::new(EFAULT))
     })
 }
 
 pub fn do_sys_open(path: *const u8, flags: usize) -> usize {
     let contexts = ::env().contexts.lock();
-    SysError::mux(if let Some(current) = contexts.current() {
+    Error::mux(if let Some(current) = contexts.current() {
         let path_string = unsafe {
             current.canonicalize(str::from_utf8_unchecked(c_string_to_slice(path)))
         };
@@ -516,13 +516,13 @@ pub fn do_sys_open(path: *const u8, flags: usize) -> usize {
             Err(err) => Err(err),
         }
     } else {
-        Err(SysError::new(ESRCH))
+        Err(Error::new(ESRCH))
     })
 }
 
 pub fn do_sys_pipe2(fds: *mut usize, _flags: usize) -> usize {
     let contexts = ::env().contexts.lock();
-    SysError::mux(if let Some(current) = contexts.current() {
+    Error::mux(if let Some(current) = contexts.current() {
         if fds as usize > 0 {
             let read = box PipeRead::new();
             let write = box PipeWrite::new(&read);
@@ -543,29 +543,29 @@ pub fn do_sys_pipe2(fds: *mut usize, _flags: usize) -> usize {
 
             Ok(0)
         } else {
-            Err(SysError::new(EFAULT))
+            Err(Error::new(EFAULT))
         }
     } else {
-        Err(SysError::new(ESRCH))
+        Err(Error::new(ESRCH))
     })
 }
 
 pub fn do_sys_read(fd: usize, buf: *mut u8, count: usize) -> usize {
     let mut contexts = ::env().contexts.lock();
-    SysError::mux(if let Some(mut current) = contexts.current_mut() {
+    Error::mux(if let Some(mut current) = contexts.current_mut() {
         if let Some(resource) = unsafe { current.get_file_mut(fd) } {
             resource.read(unsafe { slice::from_raw_parts_mut(buf, count) })
         } else {
-            Err(SysError::new(EBADF))
+            Err(Error::new(EBADF))
         }
     } else {
-        Err(SysError::new(ESRCH))
+        Err(Error::new(ESRCH))
     })
 }
 
 pub fn do_sys_unlink(path: *const u8) -> usize {
     let contexts = ::env().contexts.lock();
-    SysError::mux(if let Some(current) = contexts.current() {
+    Error::mux(if let Some(current) = contexts.current() {
         let path_string = unsafe {
             current.canonicalize(str::from_utf8_unchecked(c_string_to_slice(path)))
         };
@@ -575,12 +575,12 @@ pub fn do_sys_unlink(path: *const u8) -> usize {
             Err(err) => Err(err),
         }
     } else {
-        Err(SysError::new(ESRCH))
+        Err(Error::new(ESRCH))
     })
 }
 
 pub fn do_sys_waitpid(pid: isize, status: *mut usize, options: usize) -> usize {
-    let mut ret = Err(SysError::new(ECHILD));
+    let mut ret = Err(Error::new(ECHILD));
 
     loop {
         {
@@ -630,19 +630,19 @@ pub fn do_sys_waitpid(pid: isize, status: *mut usize, options: usize) -> usize {
         }
     }
 
-    SysError::mux(ret)
+    Error::mux(ret)
 }
 
 pub fn do_sys_write(fd: usize, buf: *const u8, count: usize) -> usize {
     let mut contexts = ::env().contexts.lock();
-    SysError::mux(if let Some(mut current) = contexts.current_mut() {
+    Error::mux(if let Some(mut current) = contexts.current_mut() {
         if let Some(resource) = unsafe { current.get_file_mut(fd) } {
             resource.write(unsafe { slice::from_raw_parts(buf, count) })
         } else {
-            Err(SysError::new(EBADF))
+            Err(Error::new(EBADF))
         }
     } else {
-        Err(SysError::new(ESRCH))
+        Err(Error::new(ESRCH))
     })
 }
 
