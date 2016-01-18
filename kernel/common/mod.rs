@@ -23,8 +23,6 @@ pub mod parse_path;
 pub mod parse_ip;
 /// A module for pseudorandom generator
 pub mod random;
-/// A module for getting pointers and length from slices
-pub mod slice_data;
 /// A module for time
 pub mod time;
 /// String to number

@@ -1,5 +1,4 @@
 use core::intrinsics::{volatile_load, volatile_store};
-use core::{u8, u16, u32, u64};
 
 use super::Io;
 

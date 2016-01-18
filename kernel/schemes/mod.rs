@@ -22,8 +22,6 @@ pub mod display;
 pub mod ethernet;
 /// File scheme
 pub mod file;
-/// ICMP scheme
-pub mod icmp;
 /// Interrupt scheme
 pub mod interrupt;
 /// IP scheme
@@ -47,11 +45,6 @@ pub trait KScheme {
 
     fn scheme(&self) -> &str {
         ""
-    }
-
-    // TODO: Hack for orbital
-    fn event(&mut self, event: &Event) {
-
     }
 
     fn open(&mut self, url: &Url, flags: usize) -> Result<Box<Resource>> {
