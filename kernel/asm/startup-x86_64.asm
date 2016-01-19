@@ -86,11 +86,11 @@ long_mode:
     mov rdi, kernel_file
     mov rsi, rdi
     add rsi, 0xB000
-    mov rcx, (kernel_file.font - kernel_file)
+    mov rcx, (kernel_file.end - kernel_file)
     cld
     rep movsb
 
-    mov rdi, kernel_file.font
+    mov rdi, kernel_file.end
     mov rcx, 0xB000
     xor rax, rax
     std
