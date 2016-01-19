@@ -1,79 +1,42 @@
 use core::slice;
 use core::str;
+use core::ops::Range;
+use core::cmp;
 
-/// Bounded slice abstraction
-///
-/// # Code Migration
-///
-/// `foo[a..b]` => `foo.get_slice(Some(a), Some(b))`
-///
-/// `foo[a..]` => `foo.get_slice(Some(a), None)`
-///
-/// `foo[..b]` => `foo.get_slice(None, Some(b))`
-///
+fn option_bound(len: usize, a: Option<usize>, b: Option<usize>) -> Range<usize> {
+    let start = cmp::min(a.unwrap_or(0), len);
+    let end = cmp::min(a.unwrap_or(len), len);
+
+    if start <= end {
+        start..end
+    } else {
+        0..0
+    }
+}
+
 pub trait OptionSlice {
-    fn option_slice(&self, a: Option<usize>, b: Option<usize>) -> &Self; }
+    fn option_slice(&self, a: Option<usize>, b: Option<usize>) -> &Self;
+    fn option_slice_mut(&mut self, a: Option<usize>, b: Option<usize>) -> &mut Self;
+}
 
 impl OptionSlice for str {
     fn option_slice(&self, a: Option<usize>, b: Option<usize>) -> &Self {
-        let slice = unsafe { slice::from_raw_parts(self.as_ptr(), self.len()) };
-        let a = if let Some(tmp) = a {
-            let len = slice.len();
-            if tmp > len {
-                len
-            } else {
-                tmp
-            }
-        } else {
-            0
-        };
-        let b = if let Some(tmp) = b {
-            let len = slice.len();
-            if tmp > len {
-                len
-            } else {
-                tmp
-            }
-        } else {
-            slice.len()
-        };
+        &self[option_bound(self.len(), a, b)]
+    }
 
-        if a >= b {
-            return "";
-        }
-
-        unsafe { str::from_utf8_unchecked(&slice[a..b]) }
+    fn option_slice_mut(&mut self, a: Option<usize>, b: Option<usize>) -> &mut Self {
+        let len = self.len();
+        &mut self[option_bound(len, a, b)]
     }
 }
 
 impl<T> OptionSlice for [T] {
     fn option_slice(&self, a: Option<usize>, b: Option<usize>) -> &Self {
-        let slice = unsafe { slice::from_raw_parts(self.as_ptr(), self.len()) };
-        let a = if let Some(tmp) = a {
-            let len = slice.len();
-            if tmp > len {
-                len
-            } else {
-                tmp
-            }
-        } else {
-            0
-        };
-        let b = if let Some(tmp) = b {
-            let len = slice.len();
-            if tmp > len {
-                len
-            } else {
-                tmp
-            }
-        } else {
-            slice.len()
-        };
+        &self[option_bound(self.len(), a, b)]
+    }
 
-        if a >= b {
-            return &[];
-        }
-
-        &slice[a..b]
+    fn option_slice_mut(&mut self, a: Option<usize>, b: Option<usize>) -> &mut Self {
+        let len = self.len();
+        &mut self[option_bound(len, a, b)]
     }
 }
