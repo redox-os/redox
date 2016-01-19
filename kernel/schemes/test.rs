@@ -17,31 +17,39 @@ impl KScheme for TestScheme {
         let mut string = String::new();
 
         macro_rules! test {
-            ($ cond : expr) => (
+            ($cond:expr) => (
                 if ! string.is_empty() {
                     string.push('\n');
                 }
                 if $ cond {
-                    string.push_str(&format!(concat!("\x1B[32mSUCCESS: ", stringify!($ cond), "\x1B[0m")));
+                    string.push_str("\x1B[32mSUCCESS: ");
                 } else {
-                    string.push_str(&format!(concat!("\x1B[31mFAILURE: ", stringify!($ cond), "\x1B[0m")));
+                    string.push_str("\x1B[31mFAILURE: ");
                 }
+                string.push_str(stringify!($cond));
+                string.push_str("\x1B[0m");
             );
-            ($ cond : expr , $ ($ arg : tt) +) => (
+            ($cond:expr, $($arg:tt)*) => (
                 if ! string.is_empty() {
                     string.push('\n');
                 }
                 if $ cond {
-                    string.push_str(&format!(concat!("\x1B[32mSUCCESS: ", stringify!($ cond), "\x1B[0m")));
+                    string.push_str("\x1B[32mSUCCESS: ");
                 } else {
-                    string.push_str(&format!(concat!("\x1B[31mFAILURE: ", stringify!($ cond), "\x1B[0m")));
+                    string.push_str("\x1B[31mFAILURE: ");
                 }
+                string.push_str(stringify!($cond));
+                string.push_str(": ");
+                string.push_str(&format!($($arg)*));
+                string.push_str("\x1B[0m");
             );
         }
 
         {
             test!(true == true);
             test!(true == false);
+            test!(false, "Failing test with description");
+            test!(true, "Passing test with format {:X}", 0x12345678);
         }
 
         Ok(box VecResource::new(Url::from_str("test:"), string.into_bytes()))
