@@ -3,7 +3,7 @@ use alloc::boxed::Box;
 use collections::string::{String, ToString};
 use collections::vec::Vec;
 
-use common::get_slice::GetSlice;
+use common::slice::GetSlice;
 use common::memory::Memory;
 
 use core::{cmp, ptr, slice};

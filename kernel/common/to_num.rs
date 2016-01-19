@@ -1,6 +1,6 @@
 //! Types convertable to integers
 
-use common::get_slice::GetSlice;
+use common::slice::GetSlice;
 
 /// Parse the string to a integer using a given radix
 pub trait ToNum {
