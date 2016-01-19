@@ -43,7 +43,7 @@ impl ToNum for str {
     /// Parse the string as a signed integer using a given radix
     fn to_num_radix_signed(&self, radix: usize) -> isize {
         if self.starts_with('-') {
-            -(self.get_slice(Some(1), None).to_num_radix(radix) as isize)
+            -(self.get_slice(1..).to_num_radix(radix) as isize)
         } else {
             self.to_num_radix(radix) as isize
         }
