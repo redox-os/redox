@@ -479,4 +479,3 @@ pub extern "cdecl" fn kernel(interrupt: usize, mut regs: &mut Regs) {
         _ => exception!("Unknown Interrupt"),
     }
 }
-
