@@ -19,10 +19,14 @@ pub fn parse_port(string: &str) -> &str {
         }
     }
 
-    string.get_slice(string.find(':').map(|a| a + 1), Some(b))
+    if let Some(a) = string.find(':').map(|a| a + 1) {
+        string.get_slice(a..b)
+    } else {
+        string.get_slice(..b)
+    }
 }
 
 /// Get the host from a string (ip)
 pub fn parse_host(string: &str) -> &str {
-    string.get_slice(None, string.find(|c| c == ':' || c == '/').map(|b| b + 1))
+    string.get_slice(..string.find(|c| c == ':' || c == '/').map(|b| b + 1).unwrap_or(0))
 }
