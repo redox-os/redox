@@ -1,79 +1,44 @@
 use core::slice;
 use core::str;
+use collections::range::RangeArgument;
+use core::cmp::{max, min};
 
 /// Bounded slice abstraction
 ///
 /// # Code Migration
 ///
-/// `foo[a..b]` => `foo.get_slice(Some(a), Some(b))`
+/// `foo[a..b]` => `foo.get_slice(a..b)`
 ///
-/// `foo[a..]` => `foo.get_slice(Some(a), None)`
+/// `foo[a..]` => `foo.get_slice(a..)`
 ///
-/// `foo[..b]` => `foo.get_slice(None, Some(b))`
+/// `foo[..b]` => `foo.get_slice(..b)`
 ///
 pub trait GetSlice {
-    fn get_slice(&self, a: Option<usize>, b: Option<usize>) -> &Self; }
+    fn get_slice<T: RangeArgument<usize>>(&self, a: T) -> &Self;
+}
 
 impl GetSlice for str {
-    fn get_slice(&self, a: Option<usize>, b: Option<usize>) -> &Self {
-        let slice = unsafe { slice::from_raw_parts(self.as_ptr(), self.len()) };
-        let a = if let Some(tmp) = a {
-            let len = slice.len();
-            if tmp > len {
-                len
-            } else {
-                tmp
-            }
-        } else {
-            0
-        };
-        let b = if let Some(tmp) = b {
-            let len = slice.len();
-            if tmp > len {
-                len
-            } else {
-                tmp
-            }
-        } else {
-            slice.len()
-        };
+    fn get_slice<T: RangeArgument<usize>>(&self, a: T) -> &Self {
+        let start = min(a.start().map(|&x| x).unwrap_or(self.len() - 1), self.len() - 1);
+        let end = min(a.end().map(|&x| x).unwrap_or(self.len() - 1), self.len() - 1);
 
-        if a >= b {
-            return "";
+        if start <= end {
+            &self[start..end + 1]
+        } else {
+            ""
         }
-
-        unsafe { str::from_utf8_unchecked(&slice[a..b]) }
     }
 }
 
 impl<T> GetSlice for [T] {
-    fn get_slice(&self, a: Option<usize>, b: Option<usize>) -> &Self {
-        let slice = unsafe { slice::from_raw_parts(self.as_ptr(), self.len()) };
-        let a = if let Some(tmp) = a {
-            let len = slice.len();
-            if tmp > len {
-                len
-            } else {
-                tmp
-            }
-        } else {
-            0
-        };
-        let b = if let Some(tmp) = b {
-            let len = slice.len();
-            if tmp > len {
-                len
-            } else {
-                tmp
-            }
-        } else {
-            slice.len()
-        };
+    fn get_slice<U: RangeArgument<usize>>(&self, a: U) -> &Self {
+        let start = min(a.start().map(|&x| x).unwrap_or(self.len() - 1), self.len() - 1);
+        let end = min(a.end().map(|&x| x).unwrap_or(self.len() - 1), self.len() - 1);
 
-        if a >= b {
-            return &[];
+        if start <= end {
+            &self[start..end + 1]
+        } else {
+            &[]
         }
-
-        &slice[a..b]
     }
 }

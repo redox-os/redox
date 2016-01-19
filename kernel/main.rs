@@ -19,6 +19,8 @@
 #![feature(unwind_attributes)]
 #![feature(vec_push_all)]
 #![feature(zero_one)]
+#![feature(collections_range)]
+#![feature(old_wrapping)]
 #![no_std]
 
 #[macro_use]

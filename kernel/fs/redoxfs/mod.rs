@@ -87,7 +87,7 @@ impl FileSystem {
 
         for node in self.nodes.iter() {
             if node.name.starts_with(directory) {
-                ret.push(node.name.get_slice(Some(directory.len()), None).to_string());
+                ret.push(node.name.get_slice(directory.len()..).to_string());
             }
         }
 

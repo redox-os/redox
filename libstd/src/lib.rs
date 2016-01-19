@@ -30,6 +30,7 @@
 #![feature(box_patterns)]
 #![feature(vec_push_all)]
 #![feature(prelude_import)]
+#![feature(old_wrapping)]
 #![feature(type_ascription)]
 #![feature(oom)]
 #![feature(unique)]
