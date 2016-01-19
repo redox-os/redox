@@ -5,8 +5,8 @@ pub mod debug;
 pub mod elf;
 /// Event input
 pub mod event;
-/// Get slice implementation
-pub mod get_slice;
+/// Slice-related traits
+pub mod slice;
 /// Kernel memory allocation
 pub mod memory;
 /// Paging (x86)
