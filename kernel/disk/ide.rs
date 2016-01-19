@@ -1,5 +1,6 @@
 use alloc::boxed::Box;
 
+use collections::string::String;
 use collections::vec::Vec;
 
 use core::ptr;
@@ -591,6 +592,18 @@ impl IdeDisk {
 }
 
 impl Disk for IdeDisk {
+    fn name(&self) -> String {
+        format!("IDE {} {}", if self.irq == 0xE {
+            "Primary"
+        } else {
+            "Secondary"
+        }, if self.master {
+            "Master"
+        } else {
+            "Slave"
+        })
+    }
+
     fn read(&mut self, block: u64, buffer: &mut [u8]) -> Result<usize> {
         self.ata_dma(block, buffer.len() / 512, buffer.as_ptr() as usize, false)
     }

@@ -32,7 +32,7 @@ impl FileSystem {
 
             let header = unsafe { ptr::read(data.ptr as *const Header) };
             if header.valid() {
-                debugln!(" Redox Filesystem");
+                debugln!("{}: Redox Filesystem", disk.name());
 
                 let mut nodes = Vec::new();
                 for extent in &header.extents {
@@ -63,7 +63,7 @@ impl FileSystem {
                     nodes: nodes,
                 });
             } else {
-                debugln!(" Unknown Filesystem");
+                debugln!("{}: Unknown Filesystem", disk.name());
             }
         }
 
