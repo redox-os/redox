@@ -24,6 +24,8 @@ pub mod interrupt;
 pub mod memory;
 /// Pipes
 pub mod pipe;
+/// Tests
+pub mod test;
 
 pub type Result<T> = ::core::result::Result<T, Error>;
 

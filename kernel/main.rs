@@ -66,6 +66,7 @@ use schemes::debug::*;
 use schemes::display::*;
 use schemes::interrupt::*;
 use schemes::memory::*;
+use schemes::test::*;
 
 use syscall::execute::execute;
 use syscall::handle::*;
@@ -295,6 +296,7 @@ unsafe fn init(tss_data: usize) {
             env.schemes.push(UnsafeCell::new(box ContextScheme));
             env.schemes.push(UnsafeCell::new(box InterruptScheme));
             env.schemes.push(UnsafeCell::new(box MemoryScheme));
+            env.schemes.push(UnsafeCell::new(box TestScheme));
 
             Context::spawn("kpoll".to_string(),
             box move || {
