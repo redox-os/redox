@@ -480,15 +480,18 @@ pub extern "cdecl" fn kernel(interrupt: usize, mut regs: &mut Regs) {
 
 #[test]
 fn get_slice_test() {
+    use common::get_slice::GetSlice;
     let array = [1, 2, 3, 4, 5];
-    assert_eq!(array.get_slice(2, None), array[2..]);
-    assert_eq!(array.get_slice(2, array.len()), array[2..array.len()]);
-    assert_eq!(array.get_slice(None, 2), array[..2]);
-    assert_eq!(array.get_slice(0, 2), array[0..2]);
-    assert_eq!(array.get_slice(1, array.len()), array[1..array.len()]);
-    assert_eq!(array.get_slice(1, array.len() + 1), array[1..array.len()]);
-    assert_eq!(array.get_slice(array.len(), array.len()),
-               array[array.len()..array.len()]);
-    assert_eq!(array.get_slice(array.len() + 2, array.len() + 2),
-               array[array.len()..array.len()]);
+
+    assert_eq!(array.get_slice(100..100), &[]);
+    assert_eq!(array.get_slice(..100), &array);
+    assert_eq!(array.get_slice(1..), &array[1..]);
+    assert_eq!(array.get_slice(1..2), &[2]);
+    assert_eq!(array.get_slice(3..5), &[4, 5]);
+    assert_eq!(array.get_slice(3..7), &[4, 5]);
+    assert_eq!(array.get_slice(3..4), &[4]);
+    assert_eq!(array.get_slice(4..2), &[]);
+    assert_eq!(array.get_slice(4..1), &[]);
+    assert_eq!(array.get_slice(20..), &[]);
+    assert_eq!(array.get_slice(..), &array);
 }
