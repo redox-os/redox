@@ -20,7 +20,7 @@ pub trait GetSlice {
 }
 
 fn bound<T: RangeArgument<usize>>(len: usize, a: T) -> Range<usize> {
-    let start = min(a.start().map(|&x| x).unwrap_or(0), len - 1);
+    let start = min(a.start().map(|&x| x).unwrap_or(0), len);
     let end = min(a.end().map(|&x| x).unwrap_or(len), len);
 
     if start <= end {
