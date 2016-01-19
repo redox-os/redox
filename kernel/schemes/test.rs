@@ -46,10 +46,25 @@ impl KScheme for TestScheme {
         }
 
         {
-            test!(true == true);
-            test!(true == false);
-            test!(false, "Failing test with description");
             test!(true, "Passing test with format {:X}", 0x12345678);
+            test!(false, "Failing test with description");
+        }
+
+        {
+            use common::get_slice::GetSlice;
+            let array = [1, 2, 3, 4, 5];
+
+            test!(array.get_slice(100..100) == &[]);
+            test!(array.get_slice(..100) == &array);
+            test!(array.get_slice(1..) == &array[1..]);
+            test!(array.get_slice(1..2) == &[2]);
+            test!(array.get_slice(3..5) == &[4, 5]);
+            test!(array.get_slice(3..7) == &[4, 5]);
+            test!(array.get_slice(3..4) == &[4]);
+            test!(array.get_slice(4..2) == &[]);
+            test!(array.get_slice(4..1) == &[]);
+            test!(array.get_slice(20..) == &[]);
+            test!(array.get_slice(..) == &array);
         }
 
         Ok(box VecResource::new(Url::from_str("test:"), string.into_bytes()))
