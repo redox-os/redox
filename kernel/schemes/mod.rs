@@ -8,6 +8,7 @@ use collections::vec::Vec;
 use core::cmp::{min, max};
 
 use syscall::{Error, O_CREAT, O_RDWR, O_TRUNC, EBADF, ENOENT};
+use env;
 
 /// Context scheme
 pub mod context;
@@ -99,7 +100,7 @@ pub trait Resource {
                 Ok(0) => return Ok(read),
                 Err(err) => return Err(err),
                 Ok(count) => {
-                    vec.push_all(bytes.get_slice(None, Some(count)));
+                    vec.push_all(bytes.get_slice(..count));
                     read += count;
                 }
             }
@@ -140,22 +141,22 @@ impl Url {
 
     /// Open this URL (returns a resource)
     pub fn open(&self) -> Result<Box<Resource>> {
-        ::env().open(&self, O_RDWR)
+        env().open(&self, O_RDWR)
     }
 
     /// Create this URL (returns a resource)
     pub fn create(&self) -> Result<Box<Resource>> {
-        ::env().open(&self, O_CREAT | O_RDWR | O_TRUNC)
+        env().open(&self, O_CREAT | O_RDWR | O_TRUNC)
     }
 
     /// Return the scheme of this url
     pub fn scheme(&self) -> &str {
-        self.string.get_slice(None, self.string.find(':'))
+        self.string.get_slice(..self.string.find(':').unwrap_or(self.string.len()))
     }
 
     /// Get the reference (after the ':') of the url
     pub fn reference(&self) -> &str {
-        self.string.get_slice(self.string.find(':').map(|a| a + 1), None)
+        self.string.get_slice(self.string.find(':').map(|a| a + 1).unwrap_or(0)..)
     }
 
 }

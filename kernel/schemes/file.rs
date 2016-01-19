@@ -260,7 +260,7 @@ impl KScheme for FileScheme {
                 let mut line = String::new();
                 match file.find('/') {
                     Some(index) => {
-                        let dirname = file.get_slice(None, Some(index + 1)).to_string();
+                        let dirname = file.get_slice(..index + 1).to_string();
                         let mut found = false;
                         for dir in dirs.iter() {
                             if dirname == *dir {
