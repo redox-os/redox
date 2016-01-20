@@ -1,4 +1,4 @@
-use common::get_slice::GetSlice;
+use common::slice::GetSlice;
 
 use alloc::boxed::Box;
 

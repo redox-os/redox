@@ -1,5 +1,5 @@
 pub fn test() -> bool {
-    use common::get_slice::GetSlice;
+    use common::slice::GetSlice;
     let array = [1, 2, 3, 4, 5];
 
     test!(array.get_slice(100..100) == &[]);
