@@ -47,8 +47,8 @@ VBM_CLEANUP=\
 ifeq ($(OS),Windows_NT)
 	SHELL=windows\sh
 	LD=windows/$(ARCH)-elf-ld
-	CARGOFLAGS += -C ar=windows/$(ARCH)-elf-ar -C linker=windows/$(ARCH)-elf-gcc
-	RUSTCFLAGS += -C ar=windows/$(ARCH)-elf-ar -C linker=windows/$(ARCH)-elf-gcc
+	CARGOFLAGS += -C ar=windows/$(ARCH)-elf-ar -C linker=windows/$(ARCH)-elf-gcc -C link-args="-v -fno-use-linker-plugin"
+	RUSTCFLAGS += -C ar=windows/$(ARCH)-elf-ar -C linker=windows/$(ARCH)-elf-gcc -C link-args="-v -fno-use-linker-plugin"
 	AS=windows/nasm
 	AWK=windows/awk
 	BASENAME=windows/basename
