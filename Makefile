@@ -47,6 +47,8 @@ VBM_CLEANUP=\
 ifeq ($(OS),Windows_NT)
 	SHELL=windows\sh
 	LD=windows/$(ARCH)-elf-ld
+	CARGOFLAGS += -C ar=windows/$(ARCH)-elf-ar -C linker=windows/$(ARCH)-elf-gcc
+	RUSTCFLAGS += -C ar=windows/$(ARCH)-elf-ar -C linker=windows/$(ARCH)-elf-gcc
 	AS=windows/nasm
 	AWK=windows/awk
 	BASENAME=windows/basename
@@ -54,7 +56,7 @@ ifeq ($(OS),Windows_NT)
 	FIND=windows/find
 	MAKE=windows/make
 	MKDIR=windows/mkdir
-	OBJDUMP=windows/objdump
+	OBJDUMP=windows/i386-elf-objdump
 	RM=windows/rm
 	SED=windows/sed
 	SORT=windows/sort
