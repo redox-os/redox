@@ -153,12 +153,12 @@ impl Url {
 
     /// Return the scheme of this url
     pub fn scheme(&self) -> &str {
-        self.string.option_slice(None, self.string.find(':'))
+        self.string.option_slice(..self.string.find(':'))
     }
 
     /// Get the reference (after the ':') of the url
     pub fn reference(&self) -> &str {
-        self.string.option_slice(self.string.find(':').map(|a| a + 1), None)
+        self.string.option_slice(self.string.find(':').map(|a| a + 1)..)
     }
 
 }
