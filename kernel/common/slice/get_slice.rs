@@ -2,6 +2,8 @@ use collections::range::RangeArgument;
 use core::ops::Range;
 use core::cmp;
 
+use super::AsOption;
+
 /// Bounded slice abstraction
 ///
 /// # Code Migration
@@ -13,13 +15,13 @@ use core::cmp;
 /// `foo[..b]` => `foo.get_slice(..b)`
 ///
 pub trait GetSlice {
-    fn get_slice<T: RangeArgument<usize>>(&self, a: T) -> &Self;
-    fn get_slice_mut<T: RangeArgument<usize>>(&mut self, a: T) -> &mut Self;
+    fn get_slice<T: AsOption<usize>, U: RangeArgument<T>>(&self, a: U) -> &Self;
+    fn get_slice_mut<T: AsOption<usize>, U: RangeArgument<T>>(&mut self, a: U) -> &mut Self;
 }
 
-fn bound<T: RangeArgument<usize>>(len: usize, a: T) -> Range<usize> {
-    let start = cmp::min(a.start().map(|&x| x).unwrap_or(0), len);
-    let end = cmp::min(a.end().map(|&x| x).unwrap_or(len), len);
+fn bound<T: AsOption<usize>, U: RangeArgument<T>>(len: usize, a: U) -> Range<usize> {
+    let start = cmp::min(a.start().map(|x| x.as_option()).unwrap_or(Some(0)).unwrap(), len);
+    let end = cmp::min(a.end().map(|x| x.as_option()).unwrap_or(Some(len)).unwrap(), len);
 
     if start <= end {
         start..end
@@ -29,22 +31,22 @@ fn bound<T: RangeArgument<usize>>(len: usize, a: T) -> Range<usize> {
 }
 
 impl GetSlice for str {
-    fn get_slice<T: RangeArgument<usize>>(&self, a: T) -> &Self {
+    fn get_slice<T: AsOption<usize>, U: RangeArgument<T>>(&self, a: U) -> &Self {
         &self[bound(self.len(), a)]
     }
 
-    fn get_slice_mut<T: RangeArgument<usize>>(&mut self, a: T) -> &mut Self {
+    fn get_slice_mut<T: AsOption<usize>, U: RangeArgument<T>>(&mut self, a: U) -> &mut Self {
         let len = self.len();
         &mut self[bound(len, a)]
     }
 }
 
 impl<T> GetSlice for [T] {
-    fn get_slice<U: RangeArgument<usize>>(&self, a: U) -> &Self {
+    fn get_slice<U: AsOption<usize>, V: RangeArgument<U>>(&self, a: V) -> &Self {
         &self[bound(self.len(), a)]
     }
 
-    fn get_slice_mut<U: RangeArgument<usize>>(&mut self, a: U) -> &mut Self {
+    fn get_slice_mut<U: AsOption<usize>, V: RangeArgument<U>>(&mut self, a: V) -> &mut Self {
         let len = self.len();
         &mut self[bound(len, a)]
     }
