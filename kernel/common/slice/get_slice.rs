@@ -1,8 +1,6 @@
-use core::slice;
-use core::str;
 use collections::range::RangeArgument;
 use core::ops::Range;
-use core::cmp::{max, min};
+use core::cmp;
 
 /// Bounded slice abstraction
 ///
@@ -20,8 +18,8 @@ pub trait GetSlice {
 }
 
 fn bound<T: RangeArgument<usize>>(len: usize, a: T) -> Range<usize> {
-    let start = min(a.start().map(|&x| x).unwrap_or(0), len);
-    let end = min(a.end().map(|&x| x).unwrap_or(len), len);
+    let start = cmp::min(a.start().map(|&x| x).unwrap_or(0), len);
+    let end = cmp::min(a.end().map(|&x| x).unwrap_or(len), len);
 
     if start <= end {
         start..end
