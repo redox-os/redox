@@ -5,6 +5,7 @@ use collections::{BTreeMap, String};
 use collections::string::ToString;
 
 use core::cell::Cell;
+use core::mem::size_of;
 
 use scheduler::context::context_switch;
 
@@ -13,6 +14,8 @@ use schemes::{Result, Resource, ResourceSeek, KScheme, Url};
 use sync::Intex;
 
 use system::error::{Error, EBADF, EINVAL, ENOENT, ESPIPE};
+use system::scheme::Packet;
+use system::syscall::SYS_OPEN;
 
 struct SchemeInner {
     name: String,
@@ -31,7 +34,37 @@ impl SchemeInner {
         }
     }
 
-    fn call(&self, regs: &mut (usize, usize, usize, usize)) {
+    fn recv(&self, packet: &mut Packet) {
+        loop {
+            {
+                let mut todo = self.todo.lock();
+
+                packet.id = if let Some(id) = todo.keys().next() {
+                    *id
+                } else {
+                    0
+                };
+
+                if packet.id > 0 {
+                    if let Some(regs) = todo.remove(&packet.id) {
+                        packet.a = regs.0;
+                        packet.b = regs.1;
+                        packet.c = regs.2;
+                        packet.d = regs.3;
+                        return
+                    }
+                }
+            }
+
+            unsafe { context_switch(false) } ;
+        }
+    }
+
+    fn send(&self, packet: &Packet) {
+        self.done.lock().insert(packet.id, (packet.a, packet.b, packet.c, packet.d));
+    }
+
+    fn call(&self, a: usize, b: usize, c: usize, d: usize) -> usize {
         let id = self.next_id.get();
 
         //TODO: What should be done about collisions in self.todo or self.done?
@@ -43,12 +76,11 @@ impl SchemeInner {
             self.next_id.set(next_id);
         }
 
-        self.todo.lock().insert(id, *regs);
+        self.todo.lock().insert(id, (a, b, c, d));
 
         loop {
-            if let Some(new_regs) = self.done.lock().remove(&id) {
-                *regs = new_regs;
-                return
+            if let Some(regs) = self.done.lock().remove(&id) {
+                return regs.0;
             }
 
             unsafe { context_switch(false) } ;
@@ -123,7 +155,14 @@ impl Resource for SchemeServerResource {
     /// Read data to buffer
     fn read(&mut self, buf: &mut [u8]) -> Result<usize> {
         if let Some(scheme) = self.inner.upgrade() {
-            Ok(0)
+            if buf.len() == size_of::<Packet>() {
+                let packet_ptr: *mut Packet = buf.as_mut_ptr() as *mut Packet;
+                scheme.recv(unsafe { &mut *packet_ptr });
+
+                Ok(size_of::<Packet>())
+            } else {
+                Err(Error::new(EINVAL))
+            }
         }else {
             Err(Error::new(EBADF))
         }
@@ -132,7 +171,14 @@ impl Resource for SchemeServerResource {
     /// Write to resource
     fn write(&mut self, buf: &[u8]) -> Result<usize> {
         if let Some(scheme) = self.inner.upgrade() {
-            Ok(0)
+            if buf.len() == size_of::<Packet>() {
+                let packet_ptr: *const Packet = buf.as_ptr() as *const Packet;
+                scheme.send(unsafe { &*packet_ptr });
+
+                Ok(size_of::<Packet>())
+            } else {
+                Err(Error::new(EINVAL))
+            }
         }else {
             Err(Error::new(EBADF))
         }
@@ -198,6 +244,9 @@ impl KScheme for Scheme {
     }
 
     fn open(&mut self, url: &Url, flags: usize) -> Result<Box<Resource>> {
+        let c_str = url.string.clone() + "\0";
+        debugln!("{} open: {}", self.inner.name, self.inner.call(SYS_OPEN, c_str.as_ptr() as usize, 0, 0));
+
         Err(Error::new(ENOENT))
     }
 
