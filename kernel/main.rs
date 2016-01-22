@@ -281,22 +281,22 @@ unsafe fn init(tss_data: usize) {
             debug!("Redox {} bits\n", mem::size_of::<usize>() * 8);
 
             if let Some(acpi) = Acpi::new() {
-                env.schemes.push(UnsafeCell::new(acpi));
+                env.schemes.lock().push(acpi);
             }
 
             *(env.clock_realtime.lock()) = Rtc::new().time();
 
-            env.schemes.push(UnsafeCell::new(Ps2::new()));
-            env.schemes.push(UnsafeCell::new(Serial::new(0x3F8, 0x4)));
+            env.schemes.lock().push(Ps2::new());
+            env.schemes.lock().push(Serial::new(0x3F8, 0x4));
 
             pci::pci_init(env);
 
-            env.schemes.push(UnsafeCell::new(DebugScheme::new()));
-            env.schemes.push(UnsafeCell::new(box DisplayScheme));
-            env.schemes.push(UnsafeCell::new(box ContextScheme));
-            env.schemes.push(UnsafeCell::new(box InterruptScheme));
-            env.schemes.push(UnsafeCell::new(box MemoryScheme));
-            env.schemes.push(UnsafeCell::new(box TestScheme));
+            env.schemes.lock().push(DebugScheme::new());
+            env.schemes.lock().push(box DisplayScheme);
+            env.schemes.lock().push(box ContextScheme);
+            env.schemes.lock().push(box InterruptScheme);
+            env.schemes.lock().push(box MemoryScheme);
+            env.schemes.lock().push(box TestScheme);
 
             Context::spawn("kpoll".to_string(),
             box move || {
