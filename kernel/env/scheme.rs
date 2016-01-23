@@ -15,7 +15,7 @@ use sync::Intex;
 
 use system::error::{Error, EBADF, EINVAL, ENOENT, ESPIPE};
 use system::scheme::Packet;
-use system::syscall::SYS_OPEN;
+use system::syscall::{SYS_FSYNC, SYS_FTRUNCATE, SYS_LSEEK, SEEK_SET, SEEK_CUR, SEEK_END, SYS_OPEN, SYS_READ, SYS_WRITE, SYS_UNLINK};
 
 struct SchemeInner {
     name: String,
@@ -107,26 +107,52 @@ impl Resource for SchemeResource {
     // TODO: Make use of Write and Read trait
     /// Read data to buffer
     fn read(&mut self, buf: &mut [u8]) -> Result<usize> {
-        Err(Error::new(EBADF))
+        if let Some(scheme) = self.inner.upgrade() {
+            Error::demux(scheme.call(SYS_READ, self.file_id, buf.as_mut_ptr() as usize, buf.len()))
+        } else {
+            Err(Error::new(EBADF))
+        }
     }
 
     /// Write to resource
     fn write(&mut self, buf: &[u8]) -> Result<usize> {
-        Err(Error::new(EBADF))
+        if let Some(scheme) = self.inner.upgrade() {
+            Error::demux(scheme.call(SYS_WRITE, self.file_id, buf.as_ptr() as usize, buf.len()))
+        } else {
+            Err(Error::new(EBADF))
+        }
     }
 
     /// Seek
     fn seek(&mut self, pos: ResourceSeek) -> Result<usize> {
-        Err(Error::new(EBADF))
+        if let Some(scheme) = self.inner.upgrade() {
+            let (whence, offset) = match pos {
+                ResourceSeek::Start(offset) => (SEEK_SET, offset as usize),
+                ResourceSeek::Current(offset) => (SEEK_CUR, offset as usize),
+                ResourceSeek::End(offset) => (SEEK_END, offset as usize)
+            };
+
+            Error::demux(scheme.call(SYS_LSEEK, self.file_id, offset, whence))
+        } else {
+            Err(Error::new(EBADF))
+        }
     }
 
     /// Sync the resource
     fn sync(&mut self) -> Result<()> {
-        Err(Error::new(EBADF))
+        if let Some(scheme) = self.inner.upgrade() {
+            Error::demux(scheme.call(SYS_FSYNC, self.file_id, 0, 0)).and(Ok(()))
+        } else {
+            Err(Error::new(EBADF))
+        }
     }
 
     fn truncate(&mut self, len: usize) -> Result<()> {
-        Err(Error::new(EBADF))
+        if let Some(scheme) = self.inner.upgrade() {
+            Error::demux(scheme.call(SYS_FTRUNCATE, self.file_id, len, 0)).and(Ok(()))
+        } else {
+            Err(Error::new(EBADF))
+        }
     }
 }
 
@@ -245,12 +271,17 @@ impl KScheme for Scheme {
 
     fn open(&mut self, url: &Url, flags: usize) -> Result<Box<Resource>> {
         let c_str = url.string.clone() + "\0";
-        debugln!("{} open: {}", self.inner.name, self.inner.call(SYS_OPEN, c_str.as_ptr() as usize, 0, 0));
-
-        Err(Error::new(ENOENT))
+        match Error::demux(self.inner.call(SYS_OPEN, c_str.as_ptr() as usize, 0, 0)) {
+            Ok(file_id) => Ok(box SchemeResource {
+                inner: Arc::downgrade(&self.inner),
+                file_id: file_id,
+            }),
+            Err(err) => Err(err)
+        }
     }
 
     fn unlink(&mut self, url: &Url) -> Result<()> {
-        Err(Error::new(ENOENT))
+        let c_str = url.string.clone() + "\0";
+        Error::demux(self.inner.call(SYS_UNLINK, c_str.as_ptr() as usize, 0, 0)).and(Ok(()))
     }
 }
