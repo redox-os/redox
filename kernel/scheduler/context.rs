@@ -326,6 +326,7 @@ impl ContextMemory {
             }
         }
     }
+    
     pub unsafe fn unmap(&mut self) {
         for i in 0..(self.virtual_size + 4095) / 4096 {
             Page::new(self.virtual_address + i * 4096).map_identity();

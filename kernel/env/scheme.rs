@@ -13,9 +13,11 @@ use schemes::{Result, Resource, ResourceSeek, KScheme, Url};
 
 use sync::Intex;
 
-use system::error::{Error, EBADF, EINVAL, ENOENT, ESPIPE};
+use system::error::{Error, EBADF, EFAULT, EINVAL, ENOENT, ESPIPE, ESRCH};
 use system::scheme::Packet;
-use system::syscall::{SYS_FSYNC, SYS_FTRUNCATE, SYS_LSEEK, SEEK_SET, SEEK_CUR, SEEK_END, SYS_OPEN, SYS_READ, SYS_WRITE, SYS_UNLINK};
+use system::syscall::{SYS_CLOSE, SYS_FSYNC, SYS_FTRUNCATE,
+                    SYS_LSEEK, SEEK_SET, SEEK_CUR, SEEK_END,
+                    SYS_OPEN, SYS_READ, SYS_WRITE, SYS_UNLINK};
 
 struct SchemeInner {
     name: String,
@@ -104,11 +106,19 @@ impl Resource for SchemeResource {
         Url::new()
     }
 
-    // TODO: Make use of Write and Read trait
     /// Read data to buffer
     fn read(&mut self, buf: &mut [u8]) -> Result<usize> {
         if let Some(scheme) = self.inner.upgrade() {
-            Error::demux(scheme.call(SYS_READ, self.file_id, buf.as_mut_ptr() as usize, buf.len()))
+            let contexts = ::env().contexts.lock();
+            if let Some(current) = contexts.current() {
+                if let Some(translated) = unsafe { current.translate(buf.as_mut_ptr() as usize) } {
+                    Error::demux(scheme.call(SYS_READ, self.file_id, translated, buf.len()))
+                } else {
+                    Err(Error::new(EFAULT))
+                }
+            } else {
+                Err(Error::new(ESRCH))
+            }
         } else {
             Err(Error::new(EBADF))
         }
@@ -117,7 +127,16 @@ impl Resource for SchemeResource {
     /// Write to resource
     fn write(&mut self, buf: &[u8]) -> Result<usize> {
         if let Some(scheme) = self.inner.upgrade() {
-            Error::demux(scheme.call(SYS_WRITE, self.file_id, buf.as_ptr() as usize, buf.len()))
+            let contexts = ::env().contexts.lock();
+            if let Some(current) = contexts.current() {
+                if let Some(translated) = unsafe { current.translate(buf.as_ptr() as usize) } {
+                    Error::demux(scheme.call(SYS_WRITE, self.file_id, translated, buf.len()))
+                } else {
+                    Err(Error::new(EFAULT))
+                }
+            } else {
+                Err(Error::new(ESRCH))
+            }
         } else {
             Err(Error::new(EBADF))
         }
@@ -152,6 +171,14 @@ impl Resource for SchemeResource {
             Error::demux(scheme.call(SYS_FTRUNCATE, self.file_id, len, 0)).and(Ok(()))
         } else {
             Err(Error::new(EBADF))
+        }
+    }
+}
+
+impl Drop for SchemeResource {
+    fn drop(&mut self) {
+        if let Some(scheme) = self.inner.upgrade() {
+            scheme.call(SYS_CLOSE, self.file_id, 0, 0);
         }
     }
 }
@@ -271,7 +298,7 @@ impl KScheme for Scheme {
 
     fn open(&mut self, url: &Url, flags: usize) -> Result<Box<Resource>> {
         let c_str = url.string.clone() + "\0";
-        match Error::demux(self.inner.call(SYS_OPEN, c_str.as_ptr() as usize, 0, 0)) {
+        match Error::demux(self.inner.call(SYS_OPEN, c_str.as_ptr() as usize, flags, 0)) {
             Ok(file_id) => Ok(box SchemeResource {
                 inner: Arc::downgrade(&self.inner),
                 file_id: file_id,
