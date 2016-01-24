@@ -212,7 +212,6 @@ pub unsafe extern "cdecl" fn context_clone(parent_ptr: *const Context,
                 },
                 loadable: parent.loadable,
 
-                args: parent.args.clone(),
                 cwd: if flags & CLONE_FS == CLONE_FS {
                     parent.cwd.clone()
                 } else {
@@ -326,7 +325,7 @@ impl ContextMemory {
             }
         }
     }
-    
+
     pub unsafe fn unmap(&mut self) {
         for i in 0..(self.virtual_size + 4095) / 4096 {
             Page::new(self.virtual_address + i * 4096).map_identity();
@@ -384,8 +383,6 @@ pub struct Context {
 // }
 
 // These members are cloned for threads, copied or created for processes {
-// Program arguments, cloned for threads, copied or created for processes. It is usually read-only, but is modified by execute
-    pub args: Arc<UnsafeCell<Vec<String>>>,
 /// Program working directory, cloned for threads, copied or created for processes. Modified by chdir
     pub cwd: Arc<UnsafeCell<String>>,
 /// Program memory, cloned for threads, copied or created for processes. Modified by memory allocation
@@ -445,7 +442,6 @@ impl Context {
             stack: None,
             loadable: false,
 
-            args: Arc::new(UnsafeCell::new(Vec::new())),
             cwd: Arc::new(UnsafeCell::new(String::new())),
             memory: Arc::new(UnsafeCell::new(Vec::new())),
             files: Arc::new(UnsafeCell::new(Vec::new())),
@@ -473,7 +469,6 @@ impl Context {
             stack: None,
             loadable: false,
 
-            args: Arc::new(UnsafeCell::new(Vec::new())),
             cwd: Arc::new(UnsafeCell::new(String::new())),
             memory: Arc::new(UnsafeCell::new(Vec::new())),
             files: Arc::new(UnsafeCell::new(Vec::new())),
