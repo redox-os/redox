@@ -264,8 +264,8 @@ impl Hci for Ehci {
                 usb_cmd.writef(1 << 5 | 1, true);
 
                 for td in tds.iter().rev() {
-                    while unsafe { volatile_load(td as *const Qtd).token } & 1 << 7 == 1 << 7 {
-                        unsafe { context_switch(false) };
+                    while volatile_load(td as *const Qtd).token & 1 << 7 == 1 << 7 {
+                        context_switch(false);
                     }
                 }
 
