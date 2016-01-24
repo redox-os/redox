@@ -239,7 +239,7 @@ impl Resource for SchemeServerResource {
 
     /// Seek
     fn seek(&mut self, pos: ResourceSeek) -> Result<usize> {
-        if let Some(scheme) = self.inner.upgrade() {
+        if let Some(_scheme) = self.inner.upgrade() {
             Err(Error::new(ESPIPE))
         }else {
             Err(Error::new(EBADF))
@@ -248,7 +248,7 @@ impl Resource for SchemeServerResource {
 
     /// Sync the resource
     fn sync(&mut self) -> Result<()> {
-        if let Some(scheme) = self.inner.upgrade() {
+        if let Some(_scheme) = self.inner.upgrade() {
             Err(Error::new(EINVAL))
         }else {
             Err(Error::new(EBADF))
@@ -256,7 +256,7 @@ impl Resource for SchemeServerResource {
     }
 
     fn truncate(&mut self, len: usize) -> Result<()> {
-        if let Some(scheme) = self.inner.upgrade() {
+        if let Some(_scheme) = self.inner.upgrade() {
             Err(Error::new(EINVAL))
         }else {
             Err(Error::new(EBADF))

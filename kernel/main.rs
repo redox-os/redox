@@ -20,7 +20,6 @@
 #![feature(vec_push_all)]
 #![feature(zero_one)]
 #![feature(collections_range)]
-#![feature(old_wrapping)]
 #![no_std]
 
 #[macro_use]
@@ -38,7 +37,6 @@ use alloc::boxed::Box;
 use collections::string::{String, ToString};
 use collections::vec::Vec;
 
-use core::cell::UnsafeCell;
 use core::{ptr, mem, usize};
 use core::slice::SliceExt;
 
@@ -54,8 +52,6 @@ use drivers::rtc::*;
 use drivers::serial::*;
 
 use env::Environment;
-
-use graphics::display;
 
 use scheduler::{Context, Regs, TSS};
 use scheduler::context::context_switch;

@@ -1,6 +1,4 @@
-use core::cell::UnsafeCell;
-
-use common::debug;
+//use common::debug;
 
 use disk::ahci::Ahci;
 use disk::ide::Ide;
@@ -9,10 +7,12 @@ use env::Environment;
 
 use schemes::file::FileScheme;
 
+/*
 use usb::ehci::Ehci;
 use usb::ohci::Ohci;
 use usb::uhci::Uhci;
 use usb::xhci::Xhci;
+*/
 
 use super::config::PciConfig;
 use super::common::class::*;

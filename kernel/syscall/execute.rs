@@ -107,7 +107,7 @@ pub fn execute(url: Url, mut args: Vec<String>) -> bool {
                     let virtual_address = unsafe { context.next_mem() };
                     let virtual_size = arg.len();
 
-                    unsafe { mem::forget(arg) };
+                    mem::forget(arg);
 
                     unsafe {
                         (*context.memory.get()).push(ContextMemory {

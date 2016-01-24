@@ -8,8 +8,6 @@ use common::event::Event;
 use sync::Intex;
 use common::time::Duration;
 
-use core::cell::UnsafeCell;
-
 use scheduler::context::ContextManager;
 
 use schemes::{Result, KScheme, Resource, VecResource, Url};
