@@ -17,7 +17,7 @@ struct ExampleFile {
 impl ExampleFile {
     fn new() -> ExampleFile {
         ExampleFile {
-            data: Vec::from("Example\n"),
+            data: Vec::from("Example"),
             seek: 0,
         }
     }

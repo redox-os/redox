@@ -1,12 +1,18 @@
+#![feature(box_syntax)]
+
+extern crate orbital;
+
 extern crate system;
 
 use std::url::Url;
 use std::{cmp, mem, ptr};
+use std::fs::File;
 use std::io::{Result, Read, Write, Seek, SeekFrom};
 use std::ops::DerefMut;
 use std::to_num::ToNum;
 
 use system::error::{Error, ENOENT};
+use system::scheme::{Packet, Scheme};
 
 use orbital::event::Event;
 use orbital::Point;
@@ -22,6 +28,7 @@ pub mod window;
 
 pub static mut session_ptr: *mut Session = 0 as *mut Session;
 
+/*
 /// A window resource
 pub struct Resource {
     /// The window
@@ -202,11 +209,31 @@ impl Scheme {
         }
     }
 }
+*/
 
-// TODO: This is a hack and it will go away
-#[cold]
-#[inline(never)]
-#[no_mangle]
-pub unsafe extern "C" fn _event(scheme: *mut Scheme, event: *const Event) {
-    (*scheme).event(&*event);
+struct OrbitalScheme;
+
+impl OrbitalScheme {
+    fn new() -> OrbitalScheme {
+        OrbitalScheme
+    }
+}
+
+impl Scheme for OrbitalScheme {}
+
+fn main() {
+    let mut scheme = OrbitalScheme::new();
+    let mut socket = File::create(":orbital").unwrap();
+    loop {
+        let mut packet = Packet::default();
+        if socket.read(&mut packet).unwrap() == 0 {
+            panic!("Unexpected EOF");
+        }
+        //println!("Recv {:?}", packet);
+
+        scheme.handle(&mut packet);
+
+        socket.write(&packet).unwrap();
+        //println!("Sent {:?}", packet);
+    }
 }
