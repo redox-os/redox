@@ -94,9 +94,13 @@ impl Environment {
             } else{
                 debugln!("Creating scheme {}", url_path);
 
-                let (scheme, server) = Scheme::new(url_path.to_string());
-                self.schemes.lock().push(scheme);
-                Ok(server)
+                match Scheme::new(url_path.to_string()) {
+                    Ok((scheme, server)) => {
+                        self.schemes.lock().push(scheme);
+                        Ok(server)
+                    },
+                    Err(err) => Err(err)
+                }
             }
         } else {
             for mut scheme in self.schemes.lock().iter_mut() {
