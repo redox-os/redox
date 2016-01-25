@@ -59,6 +59,7 @@ pub trait Scheme {
             SYS_LSEEK => self.seek(packet.b, packet.c, packet.d),
             SYS_FSYNC => self.sync(packet.b),
             SYS_FTRUNCATE => self.truncate(packet.b, packet.c),
+            SYS_CLOSE => self.close(packet.b),
 
             _ => Err(Error::new(ENOSYS))
         });
@@ -105,6 +106,11 @@ pub trait Scheme {
 
     #[allow(unused_variables)]
     fn truncate(&mut self, id: usize, len: usize) -> Result {
+        Err(Error::new(EBADF))
+    }
+
+    #[allow(unused_variables)]
+    fn close(&mut self, id: usize) -> Result {
         Err(Error::new(EBADF))
     }
 }
