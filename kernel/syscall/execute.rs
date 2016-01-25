@@ -58,7 +58,8 @@ pub fn execute(url: Url, mut args: Vec<String>) -> bool {
                         physical_address: physical_address,
                         virtual_address: virtual_address - hack,
                         virtual_size: virtual_size + hack,
-                        writeable: segment.flags & 2 == 2
+                        writeable: segment.flags & 2 == 2,
+                        allocated: true,
                     });
                 }
             }
@@ -114,7 +115,8 @@ pub fn execute(url: Url, mut args: Vec<String>) -> bool {
                             physical_address: physical_address,
                             virtual_address: virtual_address,
                             virtual_size: virtual_size,
-                            writeable: true, /*Should this be true or false?*/
+                            writeable: false,
+                            allocated: true,
                         });
                     }
 
@@ -130,7 +132,8 @@ pub fn execute(url: Url, mut args: Vec<String>) -> bool {
                 physical_address: unsafe { memory::alloc(CONTEXT_STACK_SIZE) },
                 virtual_address: CONTEXT_STACK_ADDR,
                 virtual_size: CONTEXT_STACK_SIZE,
-                writeable: true
+                writeable: true,
+                allocated: true,
             });
 
             let user_sp = if let Some(ref stack) = context.stack {

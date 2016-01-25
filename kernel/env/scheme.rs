@@ -6,8 +6,9 @@ use collections::string::ToString;
 
 use core::cell::Cell;
 use core::mem::size_of;
+use core::ops::DerefMut;
 
-use scheduler::context::context_switch;
+use scheduler::context::{context_switch, Context, ContextMemory};
 
 use schemes::{Result, Resource, ResourceSeek, KScheme, Url};
 
@@ -20,14 +21,16 @@ use system::syscall::{SYS_CLOSE, SYS_FSYNC, SYS_FTRUNCATE,
                     SYS_OPEN, SYS_READ, SYS_WRITE, SYS_UNLINK};
 
 struct SchemeInner {
+    context: *mut Context,
     next_id: Cell<usize>,
     todo: Intex<BTreeMap<usize, (usize, usize, usize, usize)>>,
     done: Intex<BTreeMap<usize, (usize, usize, usize, usize)>>,
 }
 
 impl SchemeInner {
-    fn new() -> SchemeInner {
+    fn new(context: *mut Context) -> SchemeInner {
         SchemeInner {
+            context: context,
             next_id: Cell::new(1),
             todo: Intex::new(BTreeMap::new()),
             done: Intex::new(BTreeMap::new()),
@@ -91,8 +94,37 @@ impl Resource for SchemeResource {
     fn read(&mut self, buf: &mut [u8]) -> Result<usize> {
         let contexts = ::env().contexts.lock();
         if let Some(current) = contexts.current() {
-            if let Some(translated) = unsafe { current.translate(buf.as_mut_ptr() as usize) } {
-                self.call(SYS_READ, self.file_id, translated, buf.len())
+            if let Some(physical_address) = unsafe { current.translate(buf.as_mut_ptr() as usize) } {
+                let mut virtual_address = 0;
+                if let Some(scheme) = self.inner.upgrade() {
+                    unsafe {
+                        virtual_address = (*scheme.context).next_mem();
+                        (*(*scheme.context).memory.get()).push(ContextMemory {
+                            physical_address: physical_address,
+                            virtual_address: virtual_address,
+                            virtual_size: buf.len(),
+                            writeable: true,
+                            allocated: false,
+                        });
+                    }
+                }
+
+                if virtual_address > 0 {
+                    let result = self.call(SYS_READ, self.file_id, virtual_address, buf.len());
+
+                    if let Some(scheme) = self.inner.upgrade() {
+                        unsafe {
+                            if let Some(mut mem) = (*scheme.context).get_mem_mut(virtual_address) {
+                                mem.virtual_size = 0;
+                            }
+                            (*scheme.context).clean_mem();
+                        }
+                    }
+
+                    result
+                } else {
+                    Err(Error::new(EBADF))
+                }
             } else {
                 Err(Error::new(EFAULT))
             }
@@ -105,8 +137,37 @@ impl Resource for SchemeResource {
     fn write(&mut self, buf: &[u8]) -> Result<usize> {
         let contexts = ::env().contexts.lock();
         if let Some(current) = contexts.current() {
-            if let Some(translated) = unsafe { current.translate(buf.as_ptr() as usize) } {
-                self.call(SYS_WRITE, self.file_id, translated, buf.len())
+            if let Some(physical_address) = unsafe { current.translate(buf.as_ptr() as usize) } {
+                let mut virtual_address = 0;
+                if let Some(scheme) = self.inner.upgrade() {
+                    unsafe {
+                        virtual_address = (*scheme.context).next_mem();
+                        (*(*scheme.context).memory.get()).push(ContextMemory {
+                            physical_address: physical_address,
+                            virtual_address: virtual_address,
+                            virtual_size: buf.len(),
+                            writeable: false,
+                            allocated: false,
+                        });
+                    }
+                }
+
+                if virtual_address > 0 {
+                    let result = self.call(SYS_WRITE, self.file_id, virtual_address, buf.len());
+
+                    if let Some(scheme) = self.inner.upgrade() {
+                        unsafe {
+                            if let Some(mut mem) = (*scheme.context).get_mem_mut(virtual_address) {
+                                mem.virtual_size = 0;
+                            }
+                            (*scheme.context).clean_mem();
+                        }
+                    }
+
+                    result
+                } else {
+                    Err(Error::new(EBADF))
+                }
             } else {
                 Err(Error::new(EFAULT))
             }
@@ -227,16 +288,20 @@ pub struct Scheme {
 }
 
 impl Scheme {
-    pub fn new(name: String) -> (Box<Scheme>, Box<Resource>) {
-        let server = box SchemeServerResource {
-            path: ":".to_string() + &name,
-            inner: Arc::new(SchemeInner::new())
-        };
-        let scheme = box Scheme {
-            name: name,
-            inner: Arc::downgrade(&server.inner)
-        };
-        (scheme, server)
+    pub fn new(name: String) -> Result<(Box<Scheme>, Box<Resource>)> {
+        if let Some(context) = ::env().contexts.lock().current_mut() {
+            let server = box SchemeServerResource {
+                path: ":".to_string() + &name,
+                inner: Arc::new(SchemeInner::new(context.deref_mut()))
+            };
+            let scheme = box Scheme {
+                name: name,
+                inner: Arc::downgrade(&server.inner)
+            };
+            Ok((scheme, server))
+        } else {
+            Err(Error::new(ESRCH))
+        }
     }
 
     fn call(&self, a: usize, b: usize, c: usize, d: usize) -> Result<usize> {
@@ -259,17 +324,81 @@ impl KScheme for Scheme {
 
     fn open(&mut self, url: &Url, flags: usize) -> Result<Box<Resource>> {
         let c_str = url.string.clone() + "\0";
-        match self.call(SYS_OPEN, c_str.as_ptr() as usize, flags, 0) {
-            Ok(file_id) => Ok(box SchemeResource {
-                inner: self.inner.clone(),
-                file_id: file_id,
-            }),
-            Err(err) => Err(err)
+
+        let physical_address = c_str.as_ptr() as usize;
+
+        let mut virtual_address = 0;
+        if let Some(scheme) = self.inner.upgrade() {
+            unsafe {
+                virtual_address = (*scheme.context).next_mem();
+                (*(*scheme.context).memory.get()).push(ContextMemory {
+                    physical_address: physical_address,
+                    virtual_address: virtual_address,
+                    virtual_size: c_str.len(),
+                    writeable: false,
+                    allocated: false,
+                });
+            }
+        }
+
+        if virtual_address > 0 {
+            let result = self.call(SYS_OPEN, virtual_address, flags, 0);
+
+            if let Some(scheme) = self.inner.upgrade() {
+                unsafe {
+                    if let Some(mut mem) = (*scheme.context).get_mem_mut(virtual_address) {
+                        mem.virtual_size = 0;
+                    }
+                    (*scheme.context).clean_mem();
+                }
+            }
+
+            match result {
+                Ok(file_id) => Ok(box SchemeResource {
+                    inner: self.inner.clone(),
+                    file_id: file_id,
+                }),
+                Err(err) => Err(err)
+            }
+        } else {
+            Err(Error::new(EBADF))
         }
     }
 
     fn unlink(&mut self, url: &Url) -> Result<()> {
         let c_str = url.string.clone() + "\0";
-        self.call(SYS_UNLINK, c_str.as_ptr() as usize, 0, 0).and(Ok(()))
+
+        let physical_address = c_str.as_ptr() as usize;
+
+        let mut virtual_address = 0;
+        if let Some(scheme) = self.inner.upgrade() {
+            unsafe {
+                virtual_address = (*scheme.context).next_mem();
+                (*(*scheme.context).memory.get()).push(ContextMemory {
+                    physical_address: physical_address,
+                    virtual_address: virtual_address,
+                    virtual_size: c_str.len(),
+                    writeable: false,
+                    allocated: false,
+                });
+            }
+        }
+
+        if virtual_address > 0 {
+            let result = self.call(SYS_UNLINK, virtual_address, 0, 0);
+
+            if let Some(scheme) = self.inner.upgrade() {
+                unsafe {
+                    if let Some(mut mem) = (*scheme.context).get_mem_mut(virtual_address) {
+                        mem.virtual_size = 0;
+                    }
+                    (*scheme.context).clean_mem();
+                }
+            }
+
+            result.and(Ok(()))
+        } else {
+            Err(Error::new(EBADF))
+        }
     }
 }

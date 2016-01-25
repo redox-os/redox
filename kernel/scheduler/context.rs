@@ -203,6 +203,7 @@ pub unsafe extern "cdecl" fn context_clone(parent_ptr: *const Context,
                             virtual_address: entry.virtual_address,
                             virtual_size: entry.virtual_size,
                             writeable: entry.writeable,
+                            allocated: true,
                         })
                     } else {
                         None
@@ -232,6 +233,7 @@ pub unsafe extern "cdecl" fn context_clone(parent_ptr: *const Context,
                                 virtual_address: entry.virtual_address,
                                 virtual_size: entry.virtual_size,
                                 writeable: entry.writeable,
+                                allocated: true,
                             });
                         }
                     }
@@ -305,12 +307,12 @@ pub unsafe extern "cdecl" fn context_box(box_fn_ptr: usize) {
     do_sys_exit(0);
 }
 
-///TODO: Investigate for double frees
 pub struct ContextMemory {
     pub physical_address: usize,
     pub virtual_address: usize,
     pub virtual_size: usize,
     pub writeable: bool,
+    pub allocated: bool,
 }
 
 impl ContextMemory {
@@ -335,7 +337,9 @@ impl ContextMemory {
 
 impl Drop for ContextMemory {
     fn drop(&mut self) {
-        unsafe { memory::unalloc(self.physical_address) };
+        if self.allocated {
+            unsafe { memory::unalloc(self.physical_address) };
+        }
     }
 }
 
