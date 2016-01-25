@@ -114,7 +114,7 @@ pub fn execute(url: Url, mut args: Vec<String>) -> bool {
                             physical_address: physical_address,
                             virtual_address: virtual_address,
                             virtual_size: virtual_size,
-                            writeable: false,
+                            writeable: true, /*Should this be true or false?*/
                         });
                     }
 
