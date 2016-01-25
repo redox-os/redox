@@ -95,14 +95,16 @@ impl Resource for SchemeResource {
         let contexts = ::env().contexts.lock();
         if let Some(current) = contexts.current() {
             if let Some(physical_address) = unsafe { current.translate(buf.as_mut_ptr() as usize) } {
+                let offset = physical_address % 4096;
+
                 let mut virtual_address = 0;
                 if let Some(scheme) = self.inner.upgrade() {
                     unsafe {
                         virtual_address = (*scheme.context).next_mem();
                         (*(*scheme.context).memory.get()).push(ContextMemory {
-                            physical_address: physical_address,
+                            physical_address: physical_address - offset,
                             virtual_address: virtual_address,
-                            virtual_size: buf.len(),
+                            virtual_size: buf.len() + offset,
                             writeable: true,
                             allocated: false,
                         });
@@ -110,7 +112,7 @@ impl Resource for SchemeResource {
                 }
 
                 if virtual_address > 0 {
-                    let result = self.call(SYS_READ, self.file_id, virtual_address, buf.len());
+                    let result = self.call(SYS_READ, self.file_id, virtual_address + offset, buf.len());
 
                     if let Some(scheme) = self.inner.upgrade() {
                         unsafe {
@@ -138,14 +140,16 @@ impl Resource for SchemeResource {
         let contexts = ::env().contexts.lock();
         if let Some(current) = contexts.current() {
             if let Some(physical_address) = unsafe { current.translate(buf.as_ptr() as usize) } {
+                let offset = physical_address % 4096;
+
                 let mut virtual_address = 0;
                 if let Some(scheme) = self.inner.upgrade() {
                     unsafe {
                         virtual_address = (*scheme.context).next_mem();
                         (*(*scheme.context).memory.get()).push(ContextMemory {
-                            physical_address: physical_address,
+                            physical_address: physical_address - offset,
                             virtual_address: virtual_address,
-                            virtual_size: buf.len(),
+                            virtual_size: buf.len() + offset,
                             writeable: false,
                             allocated: false,
                         });
@@ -153,7 +157,7 @@ impl Resource for SchemeResource {
                 }
 
                 if virtual_address > 0 {
-                    let result = self.call(SYS_WRITE, self.file_id, virtual_address, buf.len());
+                    let result = self.call(SYS_WRITE, self.file_id, virtual_address + offset, buf.len());
 
                     if let Some(scheme) = self.inner.upgrade() {
                         unsafe {
