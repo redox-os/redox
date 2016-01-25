@@ -143,6 +143,7 @@ apps: filesystem/apps/editor/main.bin \
 	  filesystem/apps/init/main.bin \
 	  filesystem/apps/launcher/main.bin \
 	  filesystem/apps/login/main.bin \
+	  filesystem/apps/orbital/main.bin \
 	  filesystem/apps/orbtk/main.bin \
 	  filesystem/apps/player/main.bin \
 	  filesystem/apps/shell/main.bin \
