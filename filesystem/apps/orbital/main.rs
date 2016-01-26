@@ -8,6 +8,7 @@ use std::url::Url;
 use std::{cmp, mem, ptr, slice};
 use std::fs::File;
 use std::io::{Result, Read, Write, Seek, SeekFrom};
+use std::mem::size_of;
 use std::ops::DerefMut;
 use std::to_num::ToNum;
 use std::thread;
@@ -15,21 +16,23 @@ use std::thread;
 use system::error::{Error, ENOENT};
 use system::scheme::{Packet, Scheme};
 
+use orbital::Color;
 use orbital::event::Event;
 use orbital::Point;
 use orbital::Size;
 
 use self::display::Display;
+
+pub mod display;
+/*
 use self::session::Session;
 use self::window::Window;
 
-pub mod display;
 pub mod session;
 pub mod window;
 
 pub static mut session_ptr: *mut Session = 0 as *mut Session;
 
-/*
 /// A window resource
 pub struct Resource {
     /// The window
@@ -223,26 +226,48 @@ impl OrbitalScheme {
 impl Scheme for OrbitalScheme {}
 
 fn main() {
-    match File::open("display:") {
+    match Display::new() {
         Ok(mut display) => {
-            let path = display.path().unwrap().to_string();
-            let res = path.split(":").nth(1).unwrap();
-            let width = res.split("x").nth(0).unwrap().parse::<u32>().unwrap();
-            let height = res.split("x").nth(1).unwrap().parse::<u32>().unwrap();
-
-            println!("- Orbital: Found Display {}x{}", width, height);
+            println!("- Orbital: Found Display {}x{}", display.width(), display.height());
             println!("    Console: Press F1");
             println!("    Desktop: Press F2");
 
-            let mut data: Vec<u32> = Vec::new();
-            for b in 0..width * height {
-                data.push(0xFFFFFFFF);
+            let mut x = 0;
+            let mut y = 0;
+            let w = 50;
+            let h = 50;
+            let mut dx = 1;
+            let mut dy = 1;
+            let fg = Color::rgb(224, 224, 224);
+            let bg = Color::rgb(75, 163, 253);
+
+            display.set(bg);
+            loop {
+                display.rect(x, y, w, h, fg);
+                display.flip();
+
+                display.rect(x, y, w, h, bg);
+
+                x += dx;
+                if x < 0 {
+                    dx = 1;
+                }
+                if x + w >= display.width() {
+                    dx = -1;
+                }
+
+                y += dy;
+                if y < 0 {
+                    dy = 1;
+                }
+                if y + h >= display.height() {
+                    dy = -1;
+                }
+
+                thread::yield_now();
             }
 
-            display.seek(SeekFrom::Start(0)).unwrap();
-            display.write(unsafe { & slice::from_raw_parts(data.as_ptr() as *const u8, data.len() * 4) }).unwrap();
-            display.sync_all().unwrap();
-
+            /*
             let mut scheme = OrbitalScheme::new();
             let mut socket = File::create(":orbital").unwrap();
             loop {
@@ -257,6 +282,7 @@ fn main() {
                 socket.write(&packet).unwrap();
                 //println!("Sent {:?}", packet);
             }
+            */
         },
         Err(err) => println!("- Orbital: No Display Found: {}", err)
     }
