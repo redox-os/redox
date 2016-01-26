@@ -224,7 +224,9 @@ fn event_loop() {
             console.instant = false;
             if console.draw && console.redraw {
                 console.redraw = false;
-                console.display.flip();
+                if let Some(ref mut display) = console.display {
+                    display.flip();
+                }
             }
         }
 

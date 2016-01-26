@@ -5,11 +5,12 @@ extern crate orbital;
 extern crate system;
 
 use std::url::Url;
-use std::{cmp, mem, ptr};
+use std::{cmp, mem, ptr, slice};
 use std::fs::File;
 use std::io::{Result, Read, Write, Seek, SeekFrom};
 use std::ops::DerefMut;
 use std::to_num::ToNum;
+use std::thread;
 
 use system::error::{Error, ENOENT};
 use system::scheme::{Packet, Scheme};
@@ -222,18 +223,43 @@ impl OrbitalScheme {
 impl Scheme for OrbitalScheme {}
 
 fn main() {
-    let mut scheme = OrbitalScheme::new();
-    let mut socket = File::create(":orbital").unwrap();
-    loop {
-        let mut packet = Packet::default();
-        if socket.read(&mut packet).unwrap() == 0 {
-            panic!("Unexpected EOF");
-        }
-        //println!("Recv {:?}", packet);
+    match File::open("display:") {
+        Ok(mut display) => {
+            let path = display.path().unwrap().to_string();
+            let res = path.split(":").nth(1).unwrap();
+            let width = res.split("x").nth(0).unwrap().parse::<u32>().unwrap();
+            let height = res.split("x").nth(1).unwrap().parse::<u32>().unwrap();
 
-        scheme.handle(&mut packet);
+            println!("- Orbital: Found Display {}x{}", width, height);
+            println!("    Console: Press F1");
+            println!("    Desktop: Press F2");
 
-        socket.write(&packet).unwrap();
-        //println!("Sent {:?}", packet);
+            let mut data: Vec<u32> = Vec::new();
+            for b in 0..width * height {
+                data.push(0xFFFFFFFF);
+            }
+
+            display.seek(SeekFrom::Start(0)).unwrap();
+            display.write(unsafe { & slice::from_raw_parts(data.as_ptr() as *const u8, data.len() * 4) }).unwrap();
+            display.sync_all().unwrap();
+
+            /*
+            let mut scheme = OrbitalScheme::new();
+            let mut socket = File::create(":orbital").unwrap();
+            loop {
+                let mut packet = Packet::default();
+                if socket.read(&mut packet).unwrap() == 0 {
+                    panic!("Unexpected EOF");
+                }
+                //println!("Recv {:?}", packet);
+
+                scheme.handle(&mut packet);
+
+                socket.write(&packet).unwrap();
+                //println!("Sent {:?}", packet);
+            }
+            */
+        },
+        Err(err) => println!("- Orbital: No Display Found: {}", err)
     }
 }
