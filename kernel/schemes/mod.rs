@@ -53,6 +53,7 @@ pub trait KScheme {
 }
 
 /// Resource seek
+#[derive(Copy, Clone, Debug)]
 pub enum ResourceSeek {
     /// Start point
     Start(usize),

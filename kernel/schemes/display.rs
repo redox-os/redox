@@ -6,6 +6,8 @@ use graphics::display::Display;
 
 use schemes::{Result, KScheme, Resource, ResourceSeek, Url};
 
+use system::error::{Error, ENOENT};
+
 pub struct DisplayScheme;
 
 // Should there only be one display per session?
@@ -20,36 +22,35 @@ pub struct DisplayResource {
 impl Resource for DisplayResource {
     /// Return the URL for display resource
     fn url(&self) -> Url {
-        Url::from_str("display:")
+        Url::from_string(format!("display:{}x{}", self.display.width, self.display.height))
     }
 
-
     fn write(&mut self, buf: &[u8]) -> Result<usize> {
-        let display = &mut self.display;
+        let size = cmp::max(0, cmp::min(self.display.size as isize - self.seek as isize, buf.len() as isize)) as usize;
 
-        let size = cmp::min(display.size - self.seek, buf.len());
-        unsafe {
-            Display::copy_run(buf.as_ptr() as usize, display.offscreen + self.seek, size);
+        if size > 0 {
+            unsafe {
+                Display::copy_run(buf.as_ptr() as usize, self.display.offscreen + self.seek, size);
+            }
+            self.seek += size;
         }
-        self.seek += size;
-        return Ok(size);
+
+        Ok(size)
     }
 
     fn seek(&mut self, pos: ResourceSeek) -> Result<usize> {
-        let end = self.display.size;
-
         self.seek = match pos {
-            ResourceSeek::Start(offset) => cmp::min(end, cmp::max(0, offset)),
-            ResourceSeek::Current(offset) =>
-                cmp::min(end, cmp::max(0, self.seek as isize + offset) as usize),
-            ResourceSeek::End(offset) => cmp::min(end, cmp::max(0, end as isize + offset) as usize),
+            ResourceSeek::Start(offset) => cmp::min(self.display.size, cmp::max(0, offset)),
+            ResourceSeek::Current(offset) => cmp::min(self.display.size, cmp::max(0, self.seek as isize + offset) as usize),
+            ResourceSeek::End(offset) => cmp::min(self.display.size, cmp::max(0, self.display.size as isize + offset) as usize),
         };
 
-        return Ok(self.seek);
+        Ok(self.seek)
     }
 
     fn sync(&mut self) -> Result<()> {
         self.display.flip();
+
         Ok(())
     }
 }
@@ -60,16 +61,13 @@ impl KScheme for DisplayScheme {
     }
 
     fn open(&mut self, _: &Url, _: usize) -> Result<Box<Resource>> {
-        // TODO: ponder these things:
-        // - should display: be the only only valid url
-        //      for this scheme?
-        // - maybe "read" should support displays at some other location
-        //      like built in screen sharing capability or something
-        unsafe {
-            return Ok(box DisplayResource {
-                display: Display::root(),
+        if let Some(display) = unsafe { Display::root() } {
+            Ok(box DisplayResource {
+                display: display,
                 seek: 0,
-            });
+            })
+        } else {
+            Err(Error::new(ENOENT))
         }
     }
 }
