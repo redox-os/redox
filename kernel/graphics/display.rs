@@ -193,44 +193,25 @@ impl Display {
     /// Draw a rectangle
     pub fn rect(&self, point: Point, size: Size, color: Color) {
         let data = color.data;
-        let alpha = (color.data & 0xFF000000) >> 24;
 
-        if alpha > 0 {
-            let start_y = cmp::max(0, cmp::min(self.height as isize - 1, point.y)) as usize;
-            let end_y = cmp::max(0,
-                                 cmp::min(self.height as isize - 1,
-                                          point.y +
-                                          size.height as isize)) as usize;
+        let start_y = cmp::max(0, cmp::min(self.height as isize - 1, point.y)) as usize;
+        let end_y = cmp::max(0,
+                             cmp::min(self.height as isize - 1,
+                                      point.y +
+                                      size.height as isize)) as usize;
 
-            let start_x = cmp::max(0, cmp::min(self.width as isize - 1, point.x)) as usize * 4;
-            let len = cmp::max(0,
-                               cmp::min(self.width as isize - 1,
-                                        point.x +
-                                        size.width as isize)) as usize * 4 -
-                      start_x;
+        let start_x = cmp::max(0, cmp::min(self.width as isize - 1, point.x)) as usize * 4;
+        let len = cmp::max(0,
+                           cmp::min(self.width as isize - 1,
+                                    point.x +
+                                    size.width as isize)) as usize * 4 -
+                  start_x;
 
-            if alpha >= 255 {
-                for y in start_y..end_y {
-                    unsafe {
-                        Display::set_run(data,
-                                         self.offscreen + y * self.bytesperrow + start_x,
-                                         len);
-                    }
-                }
-            } else {
-                let n_alpha = 255 - alpha;
-                let r = (((data >> 16) & 0xFF) * alpha) >> 8;
-                let g = (((data >> 8) & 0xFF) * alpha) >> 8;
-                let b = ((data & 0xFF) * alpha) >> 8;
-                let premul = (r << 16) | (g << 8) | b;
-                for y in start_y..end_y {
-                    unsafe {
-                        Display::set_run_alpha(premul,
-                                               n_alpha,
-                                               self.offscreen + y * self.bytesperrow + start_x,
-                                               len);
-                    }
-                }
+        for y in start_y..end_y {
+            unsafe {
+                Display::set_run(data,
+                                 self.offscreen + y * self.bytesperrow + start_x,
+                                 len);
             }
         }
     }
@@ -243,47 +224,6 @@ impl Display {
                 *((self.offscreen + point.y as usize * self.bytesperrow +
                    point.x as usize * 4) as *mut u32) = color.data;
             }
-        }
-    }
-
-    // TODO: SIMD to optimize
-    pub unsafe fn set_run_alpha(premul: u32, n_alpha: u32, dst: usize, len: usize) {
-        let mut i = 0;
-        while len - i >= mem::size_of::<u32>() {
-            let orig = *((dst + i) as *const u32);
-            let r = (((orig >> 16) & 0xFF) * n_alpha) >> 8;
-            let g = (((orig >> 8) & 0xFF) * n_alpha) >> 8;
-            let b = ((orig & 0xFF) * n_alpha) >> 8;
-            *((dst + i) as *mut u32) = ((r << 16) | (g << 8) | b) + premul;
-            i += mem::size_of::<u32>();
-        }
-    }
-
-    // TODO: SIMD to optimize
-    pub unsafe fn copy_run_alpha(src: usize, dst: usize, len: usize) {
-        let mut i = 0;
-        while len - i >= mem::size_of::<u32>() {
-            let new = *((src + i) as *const u32);
-            let alpha = (new >> 24) & 0xFF;
-            if alpha > 0 {
-                if alpha >= 255 {
-                    *((dst + i) as *mut u32) = new;
-                } else {
-                    let n_r = (((new >> 16) & 0xFF) * alpha) >> 8;
-                    let n_g = (((new >> 8) & 0xFF) * alpha) >> 8;
-                    let n_b = ((new & 0xFF) * alpha) >> 8;
-
-                    let orig = *((dst + i) as *const u32);
-                    let n_alpha = 255 - alpha;
-                    let o_r = (((orig >> 16) & 0xFF) * n_alpha) >> 8;
-                    let o_g = (((orig >> 8) & 0xFF) * n_alpha) >> 8;
-                    let o_b = ((orig & 0xFF) * n_alpha) >> 8;
-
-                    *((dst + i) as *mut u32) = ((o_r << 16) | (o_g << 8) | o_b) +
-                                               ((n_r << 16) | (n_g << 8) | n_b);
-                }
-            }
-            i += mem::size_of::<u32>();
         }
     }
 
