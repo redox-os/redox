@@ -1,6 +1,6 @@
 use std::cmp::{min, max};
 
-use orbital::Color;
+use super::Color;
 
 pub struct ImageRoi<'a> {
     x1: i32,
@@ -85,15 +85,11 @@ pub struct Image {
 
 impl Image {
     pub fn new(width: i32, height: i32) -> Image {
-        Image::new_with_color(width, height, Color::rgb(0, 0, 0))
-    }
-
-    pub fn new_with_color(width: i32, height: i32, color: Color) -> Image {
         let mut data: Vec<Color> = Vec::new();
         {
             let size = width as usize * height as usize;
             while data.len() < size {
-                data.push(color);
+                data.push(Color::rgb(0, 0, 0));
             }
         }
 

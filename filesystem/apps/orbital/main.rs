@@ -1,99 +1,129 @@
-#![feature(box_syntax)]
-
-extern crate orbital;
-
 extern crate system;
 
-use std::thread;
+use std::collections::BTreeMap;
+use std::fs::File;
+use std::io::{Read, Write};
 
-use system::error::{Error, ENOENT};
+use system::error::{Error, Result, ENOENT, EBADF};
 use system::scheme::{Packet, Scheme};
 
-use orbital::Color;
+pub use self::color::Color;
+pub use self::display::Display;
+pub use self::image::{Image, ImageRoi};
+pub use self::window::Window;
 
-use self::display::Display;
-use self::image::Image;
-
+pub mod color;
 pub mod display;
 pub mod image;
+pub mod window;
 
-struct OrbitalScheme;
+struct OrbitalScheme {
+    next_id: isize,
+    order: Vec<usize>,
+    windows: BTreeMap<usize, Window>,
+}
 
 impl OrbitalScheme {
     fn new() -> OrbitalScheme {
-        OrbitalScheme
+        OrbitalScheme {
+            next_id: 1,
+            order: Vec::new(),
+            windows: BTreeMap::new()
+        }
+    }
+
+    fn draw(&mut self, display: &mut Display) {
+        display.as_roi().set(Color::rgb(75, 163, 253));
+        for key in self.order.iter() {
+            if let Some(mut window) = self.windows.get_mut(&key) {
+                window.draw(display);
+            }
+        }
+        display.flip();
     }
 }
 
-impl Scheme for OrbitalScheme {}
+impl Scheme for OrbitalScheme {
+    #[allow(unused_variables)]
+    fn open(&mut self, path: &str, flags: usize, mode: usize) -> Result {
+        let res = path.split(":").nth(1).unwrap_or("");
+        let x = res.split("/").nth(0).unwrap_or("").parse::<i32>().unwrap_or(0);
+        let y = res.split("/").nth(1).unwrap_or("").parse::<i32>().unwrap_or(0);
+        let width = res.split("/").nth(2).unwrap_or("").parse::<i32>().unwrap_or(0);
+        let height = res.split("/").nth(3).unwrap_or("").parse::<i32>().unwrap_or(0);
 
-struct Window {
-    x: i32,
-    y: i32,
-    image: Image
-}
+        let id = self.next_id as usize;
+        self.next_id += 1;
+        if self.next_id < 0 {
+            self.next_id = 1;
+        }
 
-impl Window {
-    fn draw(&mut self, display: &mut Display) {
-        let mut display_roi = display.image.roi(self.x, self.y, self.image.width(), self.image.height());
-        display_roi.blend(&self.image.as_roi());
+        self.order.push(id);
+        self.windows.insert(id, Window::new(x, y, width, height));
+
+        Ok(id)
+    }
+
+    fn read(&mut self, id: usize, buf: &mut [u8]) -> Result {
+        if let Some(mut window) = self.windows.get_mut(&id) {
+            window.read(buf)
+        } else {
+            Err(Error::new(EBADF))
+        }
+    }
+
+    fn write(&mut self, id: usize, buf: &[u8]) -> Result {
+        if let Some(mut window) = self.windows.get_mut(&id) {
+            window.write(buf)
+        } else {
+            Err(Error::new(EBADF))
+        }
+    }
+
+    fn close(&mut self, id: usize) -> Result {
+        let mut i = 0;
+        while i < self.order.len() {
+            let mut remove = false;
+            if let Some(key) = self.order.get(i) {
+                if *key == id {
+                    remove = true;
+                }
+            }
+
+            if remove {
+                self.order.remove(i);
+            } else {
+                i += 1;
+            }
+        }
+
+        if let Some(window) = self.windows.remove(&id) {
+            Ok(0)
+        } else {
+            Err(Error::new(EBADF))
+        }
     }
 }
 
 fn main() {
+    let mut socket = File::create(":orbital").unwrap();
+    let mut scheme = OrbitalScheme::new();
     match Display::new() {
         Ok(mut display) => {
             println!("- Orbital: Found Display {}x{}", display.width(), display.height());
             println!("    Console: Press F1");
             println!("    Desktop: Press F2");
-
-            let bg = Color::rgb(32, 32, 32);;
-
-            let mut windows = Vec::new();
-
-            windows.push(Window {
-                x: 50,
-                y: 50,
-                image: Image::new_with_color(400, 200, Color::rgba(255, 255, 255, 128))
-            });
-
-            windows.push(Window {
-                x: 100,
-                y: 100,
-                image: Image::new_with_color(200, 200, Color::rgba(253, 163, 75, 128))
-            });
-
-            windows.push(Window {
-                x: 200,
-                y: 200,
-                image: Image::new_with_color(200, 200, Color::rgba(75, 163, 253, 128))
-            });
-
-            loop {
-                for window in windows.iter_mut() {
-                    window.draw(&mut display);
-                }
-                display.flip();
-
-                thread::yield_now();
-            }
-
-            /*
-            let mut scheme = OrbitalScheme::new();
-            let mut socket = File::create(":orbital").unwrap();
             loop {
                 let mut packet = Packet::default();
                 if socket.read(&mut packet).unwrap() == 0 {
                     panic!("Unexpected EOF");
                 }
-                //println!("Recv {:?}", packet);
 
                 scheme.handle(&mut packet);
+                scheme.draw(&mut display);
 
                 socket.write(&packet).unwrap();
-                //println!("Sent {:?}", packet);
             }
-            */
         },
         Err(err) => println!("- Orbital: No Display Found: {}", err)
     }

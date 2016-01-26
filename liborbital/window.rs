@@ -36,7 +36,7 @@ impl Window {
             font_file.read_to_end(&mut font);
         }
 
-        match File::open(&format!("orbital:///{}/{}/{}/{}/{}", x, y, w, h, title)) {
+        match File::open(&format!("orbital:{}/{}/{}/{}/{}", x, y, w, h, title)) {
             Ok(file) => {
                 Some(box Window {
                     x: x,
@@ -110,8 +110,27 @@ impl Window {
     /// Draw a pixel
     pub fn pixel(&mut self, x: i32, y: i32, color: Color) {
         if x >= 0 && y >= 0 && x < self.w as i32 && y < self.h as i32 {
-            let offset = y as u32 * self.w + x as u32;
-            self.data[offset as usize] = color.data;
+            let new = color.data;
+
+            let alpha = (new >> 24) & 0xFF;
+            if alpha > 0 {
+                let old = &mut self.data[y as usize * self.w as usize + x as usize];
+                if alpha >= 255 {
+                    *old = new;
+                } else {
+                    let n_r = (((new >> 16) & 0xFF) * alpha) >> 8;
+                    let n_g = (((new >> 8) & 0xFF) * alpha) >> 8;
+                    let n_b = ((new & 0xFF) * alpha) >> 8;
+
+                    let n_alpha = 255 - alpha;
+                    let o_a = (((*old >> 24) & 0xFF) * n_alpha) >> 8;
+                    let o_r = (((*old >> 16) & 0xFF) * n_alpha) >> 8;
+                    let o_g = (((*old >> 8) & 0xFF) * n_alpha) >> 8;
+                    let o_b = ((*old & 0xFF) * n_alpha) >> 8;
+
+                    *old = ((o_a << 24) | (o_r << 16) | (o_g << 8) | o_b) + ((alpha << 24) | (n_r << 16) | (n_g << 8) | n_b);
+                }
+            }
         }
     }
 
@@ -190,12 +209,10 @@ impl Window {
 
     /// Flip the window buffer
     pub fn sync(&mut self) -> bool {
-        self.file.seek(SeekFrom::Start(0));
         self.file.write(&unsafe {
             slice::from_raw_parts(self.data.as_ptr() as *const u8,
                                   self.data.len() * mem::size_of::<u32>())
-        });
-        return self.file.sync_all().is_ok();
+        }).is_ok()
     }
 
     /// Return a iterator over events

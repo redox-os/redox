@@ -1,16 +1,13 @@
-use std::cmp::{min, max};
 use std::fs::File;
-use std::io::{Result, Seek, SeekFrom, Write};
+use std::io::{Result, Write};
 use std::mem::size_of;
 use std::slice;
 
-use orbital::Color;
-
-use super::image::Image;
+use super::{Color, Image, ImageRoi};
 
 pub struct Display {
     file: File,
-    pub image: Image,
+    image: Image,
 }
 
 impl Display {
@@ -19,8 +16,8 @@ impl Display {
 
         let path = try!(file.path()).to_string();
         let res = path.split(":").nth(1).unwrap_or("");
-        let width = res.split("x").nth(0).unwrap_or("").parse::<i32>().unwrap_or(0);
-        let height = res.split("x").nth(1).unwrap_or("").parse::<i32>().unwrap_or(0);
+        let width = res.split("/").nth(0).unwrap_or("").parse::<i32>().unwrap_or(0);
+        let height = res.split("/").nth(1).unwrap_or("").parse::<i32>().unwrap_or(0);
 
         Ok(Display {
             file: file,
@@ -34,6 +31,14 @@ impl Display {
 
     pub fn height(&self) -> i32 {
         self.image.height()
+    }
+
+    pub fn as_roi(&mut self) -> ImageRoi {
+        self.image.as_roi()
+    }
+
+    pub fn roi(&mut self, x: i32, y: i32, w: i32, h: i32) -> ImageRoi {
+        self.image.roi(x, y, w, h)
     }
 
     pub fn flip(&mut self) -> Result<()> {
