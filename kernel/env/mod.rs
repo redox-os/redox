@@ -12,7 +12,8 @@ use scheduler::context::ContextManager;
 
 use schemes::{Result, KScheme, Resource, VecResource, Url};
 
-use syscall::{Error, ENOENT};
+use syscall::{Error, ENOENT, EEXIST};
+use syscall::O_CREAT;
 
 use self::console::Console;
 use self::scheme::Scheme;
@@ -76,7 +77,7 @@ impl Environment {
         let url_scheme = url.scheme();
         if url_scheme.is_empty() {
             let url_path = url.reference();
-            if url_path.is_empty() {
+            if url_path.trim_matches('/').is_empty() {
                 let mut list = String::new();
 
                 for scheme in self.schemes.lock().iter() {
@@ -91,8 +92,12 @@ impl Environment {
                 }
 
                 Ok(box VecResource::new(Url::new(), list.into_bytes()))
-            } else{
-                debugln!("Creating scheme {}", url_path);
+            } else if flags & O_CREAT == O_CREAT {
+                for mut scheme in self.schemes.lock().iter_mut() {
+                    if scheme.scheme() == url_path {
+                        return Err(Error::new(EEXIST));
+                    }
+                }
 
                 match Scheme::new(url_path.to_string()) {
                     Ok((scheme, server)) => {
@@ -101,6 +106,8 @@ impl Environment {
                     },
                     Err(err) => Err(err)
                 }
+            } else {
+                Err(Error::new(ENOENT))
             }
         } else {
             for mut scheme in self.schemes.lock().iter_mut() {

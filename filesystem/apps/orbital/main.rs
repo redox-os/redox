@@ -243,7 +243,6 @@ fn main() {
             display.write(unsafe { & slice::from_raw_parts(data.as_ptr() as *const u8, data.len() * 4) }).unwrap();
             display.sync_all().unwrap();
 
-            /*
             let mut scheme = OrbitalScheme::new();
             let mut socket = File::create(":orbital").unwrap();
             loop {
@@ -258,7 +257,6 @@ fn main() {
                 socket.write(&packet).unwrap();
                 //println!("Sent {:?}", packet);
             }
-            */
         },
         Err(err) => println!("- Orbital: No Display Found: {}", err)
     }
