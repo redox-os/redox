@@ -225,6 +225,44 @@ impl OrbitalScheme {
 
 impl Scheme for OrbitalScheme {}
 
+struct Window {
+    x: i32,
+    y: i32,
+    w: i32,
+    h: i32,
+    dx: i32,
+    dy: i32,
+    color: Color,
+}
+
+impl Window {
+    fn draw(&self, display: &mut Display) {
+        display.rect(self.x, self.y, self.w, self.h, self.color);
+    }
+
+    fn clear(&self, display: &mut Display, color: Color) {
+        display.rect(self.x, self.y, self.w, self.h, color);
+    }
+
+    fn update(&mut self, display: &Display) {
+        self.x += self.dx;
+        if self.x < 0 {
+            self.dx = 1;
+        }
+        if self.x + self.w >= display.width() {
+            self.dx = -1;
+        }
+
+        self.y += self.dy;
+        if self.y < 0 {
+            self.dy = 1;
+        }
+        if self.y + self.h >= display.height() {
+            self.dy = -1;
+        }
+    }
+}
+
 fn main() {
     match Display::new() {
         Ok(mut display) => {
@@ -232,36 +270,63 @@ fn main() {
             println!("    Console: Press F1");
             println!("    Desktop: Press F2");
 
-            let mut x = 0;
-            let mut y = 0;
-            let w = 50;
-            let h = 50;
-            let mut dx = 1;
-            let mut dy = 1;
-            let fg = Color::rgb(224, 224, 224);
-            let bg = Color::rgb(75, 163, 253);
+
+            let mut windows = Vec::new();
+
+            windows.push(Window {
+                x: 0,
+                y: 0,
+                w: 50,
+                h: 50,
+                dx: 1,
+                dy: 1,
+                color: Color::rgb(224, 0, 0)
+            });
+
+            windows.push(Window {
+                x: 100,
+                y: 0,
+                w: 50,
+                h: 50,
+                dx: -1,
+                dy: 1,
+                color: Color::rgb(0, 224, 0)
+            });
+
+            windows.push(Window {
+                x: 0,
+                y: 100,
+                w: 50,
+                h: 50,
+                dx: 1,
+                dy: -1,
+                color: Color::rgb(0, 0, 224)
+            });
+
+            windows.push(Window {
+                x: 100,
+                y: 100,
+                w: 50,
+                h: 50,
+                dx: -1,
+                dy: -1,
+                color: Color::rgb(224, 224, 224)
+            });
+
+
+            let bg = Color::rgb(32, 32, 32); //Color::rgb(75, 163, 253);
 
             display.set(bg);
             loop {
-                display.rect(x, y, w, h, fg);
+                for window in windows.iter() {
+                    window.draw(&mut display);
+                }
                 display.flip();
-
-                display.rect(x, y, w, h, bg);
-
-                x += dx;
-                if x < 0 {
-                    dx = 1;
+                for window in windows.iter() {
+                    window.clear(&mut display, bg);
                 }
-                if x + w >= display.width() {
-                    dx = -1;
-                }
-
-                y += dy;
-                if y < 0 {
-                    dy = 1;
-                }
-                if y + h >= display.height() {
-                    dy = -1;
+                for window in windows.iter_mut() {
+                    window.update(&display);
                 }
 
                 thread::yield_now();
