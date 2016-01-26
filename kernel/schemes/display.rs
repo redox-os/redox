@@ -30,9 +30,8 @@ impl Resource for DisplayResource {
 
         if size > 0 {
             unsafe {
-                Display::copy_run(buf.as_ptr() as usize, self.display.offscreen + self.seek, size);
+                Display::copy_run(buf.as_ptr() as usize, self.display.onscreen + self.seek, size);
             }
-            self.seek += size;
         }
 
         Ok(size)
@@ -49,8 +48,6 @@ impl Resource for DisplayResource {
     }
 
     fn sync(&mut self) -> Result<()> {
-        self.display.flip();
-
         Ok(())
     }
 }
