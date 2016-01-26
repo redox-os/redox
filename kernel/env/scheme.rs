@@ -21,6 +21,7 @@ use system::syscall::{SYS_CLOSE, SYS_FSYNC, SYS_FTRUNCATE,
                     SYS_OPEN, SYS_READ, SYS_WRITE, SYS_UNLINK};
 
 struct SchemeInner {
+    name: String,
     context: *mut Context,
     next_id: Cell<usize>,
     todo: Intex<BTreeMap<usize, (usize, usize, usize, usize)>>,
@@ -28,8 +29,9 @@ struct SchemeInner {
 }
 
 impl SchemeInner {
-    fn new(context: *mut Context) -> SchemeInner {
+    fn new(name: String, context: *mut Context) -> SchemeInner {
         SchemeInner {
+            name: name,
             context: context,
             next_id: Cell::new(1),
             todo: Intex::new(BTreeMap::new()),
@@ -64,6 +66,28 @@ impl SchemeInner {
             }
 
             unsafe { context_switch(false) } ;
+        }
+    }
+}
+
+impl Drop for SchemeInner {
+    fn drop(&mut self) {
+        let mut schemes = ::env().schemes.lock();
+
+        let mut i = 0;
+        while i < schemes.len() {
+            let mut remove = false;
+            if let Some(scheme) = schemes.get(i){
+                if scheme.scheme() == self.name {
+                    remove = true;
+                }
+            }
+
+            if remove {
+                schemes.remove(i);
+            } else {
+                i += 1;
+            }
         }
     }
 }
@@ -208,7 +232,6 @@ impl Drop for SchemeResource {
 }
 
 pub struct SchemeServerResource {
-    path: String,
     inner: Arc<SchemeInner>,
 }
 
@@ -216,14 +239,13 @@ impl Resource for SchemeServerResource {
     /// Duplicate the resource
     fn dup(&self) -> Result<Box<Resource>> {
         Ok(box SchemeServerResource {
-            path: self.path.clone(),
             inner: self.inner.clone()
         })
     }
 
     /// Return the url of this resource
     fn url(&self) -> Url {
-        Url::from_str(&self.path)
+        Url::from_string(":".to_string() + &self.inner.name)
     }
 
     // TODO: Make use of Write and Read trait
@@ -295,8 +317,7 @@ impl Scheme {
     pub fn new(name: String) -> Result<(Box<Scheme>, Box<Resource>)> {
         if let Some(context) = ::env().contexts.lock().current_mut() {
             let server = box SchemeServerResource {
-                path: ":".to_string() + &name,
-                inner: Arc::new(SchemeInner::new(context.deref_mut()))
+                inner: Arc::new(SchemeInner::new(name.clone(), context.deref_mut()))
             };
             let scheme = box Scheme {
                 name: name,
