@@ -14,8 +14,10 @@ pub use self::event::{Event, EventOption};
 pub use self::image::{Image, ImageRoi};
 pub use self::window::Window;
 
-use self::event::EVENT_KEY;
+use self::bmp::BmpFile;
+use self::event::{EVENT_KEY, EVENT_MOUSE};
 
+pub mod bmp;
 pub mod color;
 pub mod display;
 #[path="../../../kernel/common/event.rs"]
@@ -25,6 +27,9 @@ pub mod window;
 
 struct OrbitalScheme {
     next_id: isize,
+    cursor: Image,
+    cursor_x: i32,
+    cursor_y: i32,
     order: Vec<usize>,
     windows: BTreeMap<usize, Window>,
 }
@@ -33,6 +38,9 @@ impl OrbitalScheme {
     fn new() -> OrbitalScheme {
         OrbitalScheme {
             next_id: 1,
+            cursor: BmpFile::from_path("/ui/cursor.bmp"),
+            cursor_x: 0,
+            cursor_y: 0,
             order: Vec::new(),
             windows: BTreeMap::new()
         }
@@ -46,6 +54,9 @@ impl OrbitalScheme {
                         window.event(event);
                     }
                 }
+            } else if event.code == EVENT_MOUSE {
+                self.cursor_x = event.a as i32;
+                self.cursor_y = event.b as i32;
             }
         }
 
@@ -55,6 +66,7 @@ impl OrbitalScheme {
                 window.draw(display);
             }
         }
+        display.roi(self.cursor_x, self.cursor_y, self.cursor.width(), self.cursor.height()).blend(&self.cursor.as_roi());
         display.flip();
     }
 }

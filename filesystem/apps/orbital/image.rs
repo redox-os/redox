@@ -85,18 +85,26 @@ pub struct Image {
 
 impl Image {
     pub fn new(width: i32, height: i32) -> Image {
+        Image::from_color(width, height, Color::rgb(0, 0, 0))
+    }
+
+    pub fn from_color(width: i32, height: i32, color: Color) -> Image {
         let mut data: Vec<Color> = Vec::new();
         {
             let size = width as usize * height as usize;
             while data.len() < size {
-                data.push(Color::rgb(0, 0, 0));
+                data.push(color);
             }
         }
 
+        Image::from_data(width, height, data.into_boxed_slice())
+    }
+
+    pub fn from_data(width: i32, height: i32, data: Box<[Color]>) -> Image {
         Image {
             w: width,
             h: height,
-            data: data.into_boxed_slice()
+            data: data
         }
     }
 
