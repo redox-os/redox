@@ -54,7 +54,7 @@ fn main() {
         println!("Failed to read shutdown icon");
     }
 
-    let mut window = Window::new(0, 0, 640, 32, "Launcher").unwrap();
+    let mut window = Window::new(0, 448, 640, 32, "Launcher").unwrap();
 
     window.set(Color::rgba(0, 0, 0, 128));
 
