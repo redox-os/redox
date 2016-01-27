@@ -162,6 +162,7 @@ fn main() {
             println!("    Console: Press F1");
             println!("    Desktop: Press F2");
 
+            /*
             let _launcher: Option<Child> = match Command::new("/apps/launcher/main.bin").spawn() {
                 Ok(child) => Some(child),
                 Err(err) => {
@@ -169,6 +170,7 @@ fn main() {
                     None
                 },
             };
+            */
 
             loop{
                 let mut packet = Packet::default();
