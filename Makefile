@@ -160,15 +160,17 @@ filesystem/bin/%: crates/coreutils/src/bin/%.rs $(BUILD)/crt0.o $(BUILD)/libstd.
 coreutils: filesystem/bin/cat \
 		filesystem/bin/echo \
  		filesystem/bin/false \
+		filesystem/bin/ls \
 		filesystem/bin/mkdir \
 		filesystem/bin/ps \
 		filesystem/bin/pwd \
+		filesystem/bin/rm \
 		filesystem/bin/rmdir \
 		filesystem/bin/shutdown \
 		filesystem/bin/sleep \
 		filesystem/bin/touch \
 		filesystem/bin/true
-	#filesystem/bin/env filesystem/bin/ls filesystem/bin/rm filesystem/bin/yes
+	#filesystem/bin/env filesystem/bin/yes
 
 tests: tests/success tests/failure
 
