@@ -12,14 +12,14 @@ pub struct Receiver<T> {
 }
 
 impl<T> Receiver<T> {
-    fn try_recv(&self) -> Result<T, TryRecvError> {
+    pub fn try_recv(&self) -> Result<T, TryRecvError> {
         match self.queue.pop() {
             Data(t) => Ok(t),
             _ => Err(TryRecvError::Empty),
         }
     }
 
-    fn recv(&self) -> Result<T, ()> {
+    pub fn recv(&self) -> Result<T, ()> {
         loop {
             match self.queue.pop() {
                 Data(t) => return Ok(t),
