@@ -89,6 +89,22 @@ pub trait Seek {
     fn seek(&mut self, pos: SeekFrom) -> Result<u64>;
 }
 
+pub fn copy<R: ?Sized, W: ?Sized>(reader: &mut R, writer: &mut W) -> Result<u64> where R: Read, W: Write {
+    let mut copied = 0;
+    loop {
+        let mut bytes = [0; 4096];
+        match reader.read(&mut bytes) {
+            Ok(0) => return Ok(copied),
+            Err(err) => return Err(err),
+            Ok(count) => match writer.write(&bytes[0 .. count]){
+                Ok(0) => return Ok(copied),
+                Err(err) => return Err(err),
+                Ok(count) => copied += count as u64
+            }
+        }
+    }
+}
+
 /// Standard Input
 pub struct Stdin;
 

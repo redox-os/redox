@@ -153,6 +153,23 @@ apps: filesystem/apps/editor/main.bin \
 	  filesystem/apps/viewer/main.bin \
 	  filesystem/apps/zfs/main.bin
 
+filesystem/bin/%: crates/coreutils/src/bin/%.rs $(BUILD)/crt0.o $(BUILD)/libstd.rlib
+	mkdir -p filesystem/bin/
+	$(RUSTC) $(RUSTCFLAGS) --crate-type bin -o filesystem/bin/$* $<
+
+coreutils: filesystem/bin/cat \
+		filesystem/bin/echo \
+ 		filesystem/bin/false \
+		filesystem/bin/mkdir \
+		filesystem/bin/ps \
+		filesystem/bin/pwd \
+		filesystem/bin/rmdir \
+		filesystem/bin/shutdown \
+		filesystem/bin/sleep \
+		filesystem/bin/touch \
+		filesystem/bin/true
+	#filesystem/bin/env filesystem/bin/ls filesystem/bin/rm filesystem/bin/yes
+
 tests: tests/success tests/failure
 
 test: kernel/main.rs \
@@ -164,7 +181,7 @@ test: kernel/main.rs \
 	$(RUSTC) $(RUSTCFLAGS) --test $<
 
 clean:
-	$(RM) -rf build filesystem/*.bin filesystem/*.list filesystem/apps/*/*.bin filesystem/apps/*/*.list filesystem/schemes/*/*.bin filesystem/schemes/*/*.list
+	$(RM) -rf build filesystem/*.bin filesystem/*.list filesystem/apps/*/*.bin filesystem/apps/*/*.list filesystem/schemes/*/*.bin filesystem/schemes/*/*.list filesystem/bin/
 
 FORCE:
 
@@ -280,7 +297,7 @@ filesystem/apps/zfs/zfs.img:
 	-sudo zpool destroy redox_zfs
 	sudo losetup -d /dev/loop0
 
-$(BUILD)/filesystem.gen: apps
+$(BUILD)/filesystem.gen: apps coreutils
 	$(FIND) filesystem -not -path '*/\.*' -type f -o -type l | $(CUT) -d '/' -f2- | $(SORT) | $(AWK) '{printf("file %d,\"%s\"\n", NR, $$0)}' > $@
 
 $(BUILD)/harddrive.bin: kernel/harddrive.asm $(BUILD)/kernel.bin $(BUILD)/filesystem.gen
