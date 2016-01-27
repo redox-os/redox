@@ -1,9 +1,9 @@
 use std::fs::File;
-use std::io::{Result, Write};
+use std::io::{Result, Read, Write};
 use std::mem::size_of;
 use std::slice;
 
-use super::{Color, Image, ImageRoi};
+use super::{Color, Event, Image, ImageRoi};
 
 pub struct Display {
     file: File,
@@ -41,9 +41,19 @@ impl Display {
         self.image.roi(x, y, w, h)
     }
 
-    pub fn flip(&mut self) -> Result<()> {
+    pub fn poll(&mut self) -> Option<Event> {
+        let mut event = Event::new();
+        let event_ptr = &mut event as *mut Event;
+        if let Ok(count) = self.file.read(unsafe { slice::from_raw_parts_mut(event_ptr as *mut u8, size_of::<Event>()) }) {
+            if count == size_of::<Event>() {
+                return Some(event);
+            }
+        }
+        None
+    }
+
+    pub fn flip(&mut self) {
         let data = self.image.data();
-        try!(self.file.write(unsafe { & slice::from_raw_parts(data.as_ptr() as *const u8, data.len() * size_of::<Color>()) }));
-        Ok(())
+        self.file.write(unsafe { slice::from_raw_parts(data.as_ptr() as *const u8, data.len() * size_of::<Color>()) });
     }
 }

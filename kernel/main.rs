@@ -172,60 +172,63 @@ fn event_loop() {
 
     let mut cmd = String::new();
     loop {
-        loop {
-            let mut console = env().console.lock();
-            match env().events.lock().pop_front() {
-                Some(event) => {
-                    if console.draw {
-                        match event.to_option() {
-                            EventOption::Key(key_event) => {
-                                if key_event.pressed {
-                                    match key_event.scancode {
-                                        event::K_F2 => {
-                                            console.draw = false;
-                                        }
-                                        event::K_BKSP => if !cmd.is_empty() {
-                                            console.write(&[8]);
-                                            cmd.pop();
-                                        },
-                                        _ => match key_event.character {
-                                            '\0' => (),
-                                            '\n' => {
-                                                console.command = Some(cmd.clone());
-
-                                                cmd.clear();
-                                                console.write(&[10]);
-                                            }
-                                            _ => {
-                                                cmd.push(key_event.character);
-                                                console.write(&[key_event.character as u8]);
-                                            }
-                                        },
-                                    }
-                                }
-                            }
-                            _ => (),
-                        }
-                    } else {
-                        if event.code == EVENT_KEY && event.b as u8 == event::K_F1 && event.c > 0 {
-                            console.draw = true;
-                            console.redraw = true;
-                        } else {
-                            // TODO: Magical orbital hack
-                        }
-                    }
-                }
-                None => break,
-            }
-        }
-
         {
             let mut console = env().console.lock();
-            console.instant = false;
-            if console.draw && console.redraw {
-                console.redraw = false;
-                if let Some(ref mut display) = console.display {
-                    display.flip();
+            if console.draw {
+                while let Some(event) = env().events.lock().pop_front() {
+                    match event.to_option() {
+                        EventOption::Key(key_event) => {
+                            if key_event.pressed {
+                                match key_event.scancode {
+                                    event::K_F1 => {
+                                        console.draw = true;
+                                        console.redraw = true;
+                                    },
+                                    event::K_F2 => {
+                                        console.draw = false;
+                                    },
+                                    event::K_BKSP => if !cmd.is_empty() {
+                                        console.write(&[8]);
+                                        cmd.pop();
+                                    },
+                                    _ => match key_event.character {
+                                        '\0' => (),
+                                        '\n' => {
+                                            console.command = Some(cmd.clone());
+
+                                            cmd.clear();
+                                            console.write(&[10]);
+                                        }
+                                        _ => {
+                                            cmd.push(key_event.character);
+                                            console.write(&[key_event.character as u8]);
+                                        }
+                                    },
+                                }
+                            }
+                        }
+                        _ => (),
+                    }
+                }
+
+                console.instant = false;
+                if console.redraw {
+                    console.redraw = false;
+                    if let Some(ref mut display) = console.display {
+                        display.flip();
+                    }
+                }
+            } else {
+                for event in env().events.lock().iter() {
+                    if event.code == EVENT_KEY && event.c > 0 {
+                        if event.b as u8 == event::K_F1 {
+                            console.draw = true;
+                            console.redraw = true;
+                        }
+                        if event.b as u8 == event::K_F2 {
+                            console.draw = false;
+                        }
+                    }
                 }
             }
         }
