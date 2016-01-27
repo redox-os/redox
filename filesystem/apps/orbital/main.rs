@@ -4,6 +4,7 @@ extern crate system;
 use std::collections::BTreeMap;
 use std::fs::File;
 use std::io::{Read, Write};
+use std::process::{Child, Command};
 
 use system::error::{Error, Result, EBADF};
 use system::scheme::{Packet, Scheme};
@@ -32,6 +33,7 @@ struct OrbitalScheme {
     cursor_y: i32,
     order: Vec<usize>,
     windows: BTreeMap<usize, Window>,
+    redraw: bool,
 }
 
 impl OrbitalScheme {
@@ -42,12 +44,13 @@ impl OrbitalScheme {
             cursor_x: 0,
             cursor_y: 0,
             order: Vec::new(),
-            windows: BTreeMap::new()
+            windows: BTreeMap::new(),
+            redraw: true,
         }
     }
 
     fn update(&mut self, display: &mut Display) {
-        while let Some(event) = display.poll() {
+        while let Some(mut event) = display.poll() {
             if event.code == EVENT_KEY {
                 if let Some(id) = self.order.last() {
                     if let Some(mut window) = self.windows.get_mut(&id) {
@@ -57,17 +60,29 @@ impl OrbitalScheme {
             } else if event.code == EVENT_MOUSE {
                 self.cursor_x = event.a as i32;
                 self.cursor_y = event.b as i32;
+                self.redraw = true;
+
+                if let Some(id) = self.order.last() {
+                    if let Some(mut window) = self.windows.get_mut(&id) {
+                        event.a -= window.x as i64;
+                        event.b -= window.y as i64;
+                        window.event(event);
+                    }
+                }
             }
         }
 
-        display.as_roi().set(Color::rgb(75, 163, 253));
-        for id in self.order.iter() {
-            if let Some(mut window) = self.windows.get_mut(&id) {
-                window.draw(display);
+        if self.redraw {
+            self.redraw = false;
+            display.as_roi().set(Color::rgb(75, 163, 253));
+            for id in self.order.iter() {
+                if let Some(mut window) = self.windows.get_mut(&id) {
+                    window.draw(display);
+                }
             }
+            display.roi(self.cursor_x, self.cursor_y, self.cursor.width(), self.cursor.height()).blend(&self.cursor.as_roi());
+            display.flip();
         }
-        display.roi(self.cursor_x, self.cursor_y, self.cursor.width(), self.cursor.height()).blend(&self.cursor.as_roi());
-        display.flip();
     }
 }
 
@@ -88,6 +103,7 @@ impl Scheme for OrbitalScheme {
 
         self.order.push(id);
         self.windows.insert(id, Window::new(x, y, width, height));
+        self.redraw = true;
 
         Ok(id)
     }
@@ -102,6 +118,7 @@ impl Scheme for OrbitalScheme {
 
     fn write(&mut self, id: usize, buf: &[u8]) -> Result {
         if let Some(mut window) = self.windows.get_mut(&id) {
+            self.redraw = true;
             window.write(buf)
         } else {
             Err(Error::new(EBADF))
@@ -126,6 +143,7 @@ impl Scheme for OrbitalScheme {
         }
 
         if self.windows.remove(&id).is_some() {
+            self.redraw = true;
             Ok(0)
         } else {
             Err(Error::new(EBADF))
@@ -141,6 +159,15 @@ fn main() {
             println!("- Orbital: Found Display {}x{}", display.width(), display.height());
             println!("    Console: Press F1");
             println!("    Desktop: Press F2");
+
+            let _launcher: Option<Child> = match Command::new("/apps/launcher/main.bin").spawn() {
+                Ok(child) => Some(child),
+                Err(err) => {
+                    println!("Failed to launch launcher: {}", err);
+                    None
+                },
+            };
+
             loop {
                 let mut packet = Packet::default();
                 if socket.read(&mut packet).unwrap() == 0 {
@@ -149,9 +176,9 @@ fn main() {
 
                 scheme.handle(&mut packet);
 
-                scheme.update(&mut display);
-
                 socket.write(&packet).unwrap();
+
+                scheme.update(&mut display);
             }
         },
         Err(err) => println!("- Orbital: No Display Found: {}", err)

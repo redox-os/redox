@@ -1,5 +1,3 @@
 apps/example/main.bin
 apps/orbital/main.bin
 apps/login/main.bin
-apps/launcher/main.bin
-apps/file_manager/main.bin /home

@@ -7,8 +7,8 @@ use super::{Color, Display, Event, Image, ImageRoi};
 use system::error::{Error, Result, EINVAL};
 
 pub struct Window {
-    x: i32,
-    y: i32,
+    pub x: i32,
+    pub y: i32,
     image: Image,
     events: VecDeque<Event>,
 }
