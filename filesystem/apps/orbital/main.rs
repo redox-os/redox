@@ -4,9 +4,11 @@ extern crate system;
 use std::collections::BTreeMap;
 use std::fs::File;
 use std::io::{Read, Write};
+use std::mem::size_of;
 use std::process::{Child, Command};
+use std::thread;
 
-use system::error::{Error, Result, EBADF};
+use system::error::{Error, Result, EBADF, ENOENT};
 use system::scheme::{Packet, Scheme};
 
 pub use self::color::Color;
@@ -168,17 +170,16 @@ fn main() {
                 },
             };
 
-            loop {
+            loop{
                 let mut packet = Packet::default();
-                if socket.read(&mut packet).unwrap() == 0 {
-                    panic!("Unexpected EOF");
+                while socket.read(&mut packet).unwrap() == size_of::<Packet>() {
+                    scheme.handle(&mut packet);
+                    socket.write(&packet).unwrap();
                 }
 
-                scheme.handle(&mut packet);
-
-                socket.write(&packet).unwrap();
-
                 scheme.update(&mut display);
+
+                thread::yield_now();
             }
         },
         Err(err) => println!("- Orbital: No Display Found: {}", err)

@@ -161,9 +161,9 @@ impl Window {
     // TODO: Improve speed
     #[allow(unused_variables)]
     pub fn set(&mut self, color: Color) {
-        let w = self.w;
-        let h = self.h;
-        self.rect(0, 0, w, h, color);
+        for mut d in self.data.iter_mut() {
+            *d = color.data;
+        }
     }
 
     /// Draw rectangle

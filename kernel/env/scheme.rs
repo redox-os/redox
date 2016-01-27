@@ -254,29 +254,28 @@ impl Resource for SchemeServerResource {
         if buf.len() == size_of::<Packet>() {
             let packet_ptr: *mut Packet = buf.as_mut_ptr() as *mut Packet;
             let packet = unsafe { &mut *packet_ptr };
-            loop {
-                let mut todo = self.inner.todo.lock();
 
-                packet.id = if let Some(id) = todo.keys().next() {
-                    *id
-                } else {
-                    0
-                };
+            let mut todo = self.inner.todo.lock();
 
-                if packet.id > 0 {
-                    if let Some(regs) = todo.remove(&packet.id) {
-                        packet.a = regs.0;
-                        packet.b = regs.1;
-                        packet.c = regs.2;
-                        packet.d = regs.3;
-                        return Ok(size_of::<Packet>())
-                    }
+            packet.id = if let Some(id) = todo.keys().next() {
+                *id
+            } else {
+                0
+            };
+
+            if packet.id > 0 {
+                if let Some(regs) = todo.remove(&packet.id) {
+                    packet.a = regs.0;
+                    packet.b = regs.1;
+                    packet.c = regs.2;
+                    packet.d = regs.3;
+                    return Ok(size_of::<Packet>())
                 }
-
-                unsafe { context_switch(false) };
             }
+
+            Ok(0)
         } else {
-            return Err(Error::new(EINVAL))
+            Err(Error::new(EINVAL))
         }
     }
 
@@ -286,9 +285,9 @@ impl Resource for SchemeServerResource {
             let packet_ptr: *const Packet = buf.as_ptr() as *const Packet;
             let packet = unsafe { & *packet_ptr };
             self.inner.done.lock().insert(packet.id, (packet.a, packet.b, packet.c, packet.d));
-            return Ok(size_of::<Packet>())
+            Ok(size_of::<Packet>())
         } else {
-            return Err(Error::new(EINVAL))
+            Err(Error::new(EINVAL))
         }
     }
 

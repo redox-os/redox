@@ -2,6 +2,8 @@ use std::cmp::{min, max};
 use std::collections::BTreeMap;
 use std::fs::File;
 use std::io::{Read, Write};
+use std::mem::size_of;
+use std::thread;
 
 use system::error::{Error, Result, ENOENT, EBADF, EINVAL};
 use system::scheme::{Packet, Scheme};
@@ -166,14 +168,13 @@ fn main() {
    let mut socket = File::create(":example").unwrap();
    loop {
        let mut packet = Packet::default();
-       if socket.read(&mut packet).unwrap() == 0 {
-           panic!("Unexpected EOF");
+       while socket.read(&mut packet).unwrap() == size_of::<Packet>() {
+           //println!("Recv {:?}", packet);
+           scheme.handle(&mut packet);
+           socket.write(&packet).unwrap();
+           //println!("Sent {:?}", packet);
        }
-       //println!("Recv {:?}", packet);
 
-       scheme.handle(&mut packet);
-
-       socket.write(&packet).unwrap();
-       //println!("Sent {:?}", packet);
+       thread::yield_now();
    }
 }
