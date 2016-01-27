@@ -2,7 +2,6 @@ use super::{Color, Image};
 
 use std::fs::File;
 use std::io::Read;
-use std::ops::Deref;
 
 pub struct BmpFile;
 
