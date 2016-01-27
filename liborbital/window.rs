@@ -194,11 +194,10 @@ impl Window {
     /// Poll for an event
     // TODO: clean this up
     pub fn poll(&mut self) -> Option<Event> {
-        let mut event = Event::new();
-        let event_ptr: *mut Event = &mut event;
         loop {
+            let mut event = Event::new();
             match self.file.read(&mut unsafe {
-                slice::from_raw_parts_mut(event_ptr as *mut u8, mem::size_of::<Event>())
+                slice::from_raw_parts_mut((&mut event as *mut Event) as *mut u8, mem::size_of::<Event>())
             }) {
                 Ok(0) => thread::yield_now(),
                 Ok(_) => return Some(event),
