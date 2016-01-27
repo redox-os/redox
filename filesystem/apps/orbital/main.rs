@@ -5,7 +5,7 @@ use std::collections::BTreeMap;
 use std::fs::File;
 use std::io::{Read, Write};
 
-use system::error::{Error, Result, ENOENT, EBADF};
+use system::error::{Error, Result, EBADF};
 use system::scheme::{Packet, Scheme};
 
 pub use self::color::Color;
@@ -125,7 +125,7 @@ impl Scheme for OrbitalScheme {
             }
         }
 
-        if let Some(window) = self.windows.remove(&id) {
+        if self.windows.remove(&id).is_some() {
             Ok(0)
         } else {
             Err(Error::new(EBADF))
