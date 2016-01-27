@@ -1,12 +1,17 @@
 use alloc::boxed::Box;
 
-use core::cmp;
+use common::event::Event;
+
+use core::{cmp, ptr};
+use core::mem::size_of;
 
 use graphics::display::Display;
 
+use scheduler::context::context_switch;
+
 use schemes::{Result, KScheme, Resource, ResourceSeek, Url};
 
-use system::error::{Error, ENOENT};
+use system::error::{Error, ENOENT, EINVAL};
 
 pub struct DisplayScheme;
 
@@ -25,16 +30,35 @@ impl Resource for DisplayResource {
         Url::from_string(format!("display:{}/{}", self.display.width, self.display.height))
     }
 
-    fn write(&mut self, buf: &[u8]) -> Result<usize> {
-        let size = cmp::max(0, cmp::min(self.display.size as isize - self.seek as isize, buf.len() as isize)) as usize;
-
-        if size > 0 {
-            unsafe {
-                Display::copy_run(buf.as_ptr() as usize, self.display.onscreen + self.seek, size);
+    fn read(&mut self, buf: &mut [u8]) -> Result<usize> {
+        if buf.len() == size_of::<Event>() {
+            if ! ::env().console.lock().draw {
+                if let Some(event) = ::env().events.lock().pop_front() {
+                    unsafe { ptr::write(buf.as_mut_ptr() as *mut Event, event) };
+                    return Ok(size_of::<Event>());
+                }
             }
-        }
 
-        Ok(size)
+            Ok(0)
+        } else {
+            Err(Error::new(EINVAL))
+        }
+    }
+
+    fn write(&mut self, buf: &[u8]) -> Result<usize> {
+        if ! ::env().console.lock().draw {
+            let size = cmp::max(0, cmp::min(self.display.size as isize - self.seek as isize, buf.len() as isize)) as usize;
+
+            if size > 0 {
+                unsafe {
+                    Display::copy_run(buf.as_ptr() as usize, self.display.onscreen + self.seek, size);
+                }
+            }
+
+            Ok(size)
+        } else {
+            Ok(0)
+        }
     }
 
     fn seek(&mut self, pos: ResourceSeek) -> Result<usize> {
@@ -59,6 +83,7 @@ impl KScheme for DisplayScheme {
 
     fn open(&mut self, _: &Url, _: usize) -> Result<Box<Resource>> {
         if let Some(display) = unsafe { Display::root() } {
+            ::env().console.lock().draw = false;
             Ok(box DisplayResource {
                 display: display,
                 seek: 0,

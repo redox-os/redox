@@ -1,14 +1,16 @@
+use std::collections::VecDeque;
 use std::mem::size_of;
-use std::slice;
+use std::{ptr, slice};
 
-use super::{Color, Display, Image, ImageRoi};
+use super::{Color, Display, Event, Image, ImageRoi};
 
-use system::error::Result;
+use system::error::{Error, Result, EINVAL};
 
 pub struct Window {
     x: i32,
     y: i32,
-    image: Image
+    image: Image,
+    events: VecDeque<Event>,
 }
 
 impl Window {
@@ -16,7 +18,8 @@ impl Window {
         Window {
             x: x,
             y: y,
-            image: Image::new(w, h)
+            image: Image::new(w, h),
+            events: VecDeque::new()
         }
     }
 
@@ -41,8 +44,21 @@ impl Window {
         display_roi.blend(&self.as_roi());
     }
 
+    pub fn event(&mut self, event: Event) {
+        self.events.push_back(event);
+    }
+
     pub fn read(&mut self, buf: &mut [u8]) -> Result {
-        Ok(0)
+        if buf.len() == size_of::<Event>() {
+            if let Some(event) = self.events.pop_front() {
+                unsafe { ptr::write(buf.as_mut_ptr() as *mut Event, event) };
+                Ok(size_of::<Event>())
+            } else {
+                Ok(0)
+            }
+        } else {
+            Err(Error::new(EINVAL))
+        }
     }
 
     pub fn write(&mut self, buf: &[u8]) -> Result {

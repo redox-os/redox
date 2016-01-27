@@ -1,3 +1,4 @@
+extern crate core;
 extern crate system;
 
 use std::collections::BTreeMap;
@@ -9,11 +10,16 @@ use system::scheme::{Packet, Scheme};
 
 pub use self::color::Color;
 pub use self::display::Display;
+pub use self::event::{Event, EventOption};
 pub use self::image::{Image, ImageRoi};
 pub use self::window::Window;
 
+use self::event::EVENT_KEY;
+
 pub mod color;
 pub mod display;
+#[path="../../../kernel/common/event.rs"]
+pub mod event;
 pub mod image;
 pub mod window;
 
@@ -32,10 +38,20 @@ impl OrbitalScheme {
         }
     }
 
-    fn draw(&mut self, display: &mut Display) {
+    fn update(&mut self, display: &mut Display) {
+        while let Some(event) = display.poll() {
+            if event.code == EVENT_KEY {
+                if let Some(id) = self.order.last() {
+                    if let Some(mut window) = self.windows.get_mut(&id) {
+                        window.event(event);
+                    }
+                }
+            }
+        }
+
         display.as_roi().set(Color::rgb(75, 163, 253));
-        for key in self.order.iter() {
-            if let Some(mut window) = self.windows.get_mut(&key) {
+        for id in self.order.iter() {
+            if let Some(mut window) = self.windows.get_mut(&id) {
                 window.draw(display);
             }
         }
@@ -120,7 +136,8 @@ fn main() {
                 }
 
                 scheme.handle(&mut packet);
-                scheme.draw(&mut display);
+
+                scheme.update(&mut display);
 
                 socket.write(&packet).unwrap();
             }
