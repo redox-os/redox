@@ -177,7 +177,7 @@ impl Resource for SchemeResource {
                         (*(*scheme.context).memory.get()).push(ContextMemory {
                             physical_address: physical_address - offset,
                             virtual_address: virtual_address,
-                            virtual_size: buf.len() + offset,
+                            virtual_size: virtual_size,
                             writeable: true,
                             allocated: false,
                         });
