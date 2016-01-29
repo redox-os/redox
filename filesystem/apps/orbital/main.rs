@@ -68,7 +68,9 @@ impl OrbitalScheme {
                     if let Some(mut window) = self.windows.get_mut(&id) {
                         event.a -= window.x as i64;
                         event.b -= window.y as i64;
-                        window.event(event);
+                        if event.a >= 0 && event.b >= 0 && event.a < window.width() as i64 && event.b < window.height() as i64 {
+                            window.event(event);
+                        }
                     }
                 }
             }
@@ -161,16 +163,6 @@ fn main() {
             println!("- Orbital: Found Display {}x{}", display.width(), display.height());
             println!("    Console: Press F1");
             println!("    Desktop: Press F2");
-
-            /*
-            let _launcher: Option<Child> = match Command::new("/apps/launcher/main.bin").spawn() {
-                Ok(child) => Some(child),
-                Err(err) => {
-                    println!("Failed to launch launcher: {}", err);
-                    None
-                },
-            };
-            */
 
             loop{
                 let mut packet = Packet::default();

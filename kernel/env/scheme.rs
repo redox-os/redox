@@ -122,13 +122,14 @@ impl Resource for SchemeResource {
                 let offset = physical_address % 4096;
 
                 let mut virtual_address = 0;
+                let virtual_size = (buf.len() + offset + 4095)/4096 * 4096;
                 if let Some(scheme) = self.inner.upgrade() {
                     unsafe {
                         virtual_address = (*scheme.context).next_mem();
                         (*(*scheme.context).memory.get()).push(ContextMemory {
                             physical_address: physical_address - offset,
                             virtual_address: virtual_address,
-                            virtual_size: buf.len() + offset,
+                            virtual_size: virtual_size,
                             writeable: true,
                             allocated: false,
                         });
@@ -137,6 +138,8 @@ impl Resource for SchemeResource {
 
                 if virtual_address > 0 {
                     let result = self.call(SYS_READ, self.file_id, virtual_address + offset, buf.len());
+
+                    //debugln!("Read {:X} mapped from {:X} to {:X} offset {} length {} size {} result {:?}", physical_address, buf.as_ptr() as usize, virtual_address + offset, offset, buf.len(), virtual_size, result);
 
                     if let Some(scheme) = self.inner.upgrade() {
                         unsafe {
@@ -167,6 +170,7 @@ impl Resource for SchemeResource {
                 let offset = physical_address % 4096;
 
                 let mut virtual_address = 0;
+                let virtual_size = (buf.len() + offset + 4095)/4096 * 4096;
                 if let Some(scheme) = self.inner.upgrade() {
                     unsafe {
                         virtual_address = (*scheme.context).next_mem();
@@ -174,7 +178,7 @@ impl Resource for SchemeResource {
                             physical_address: physical_address - offset,
                             virtual_address: virtual_address,
                             virtual_size: buf.len() + offset,
-                            writeable: false,
+                            writeable: true,
                             allocated: false,
                         });
                     }
@@ -182,6 +186,8 @@ impl Resource for SchemeResource {
 
                 if virtual_address > 0 {
                     let result = self.call(SYS_WRITE, self.file_id, virtual_address + offset, buf.len());
+
+                    //debugln!("Write {:X} mapped from {:X} to {:X} offset {} length {} size {} result {:?}", physical_address, buf.as_ptr() as usize, virtual_address + offset, offset, buf.len(), virtual_size, result);
 
                     if let Some(scheme) = self.inner.upgrade() {
                         unsafe {
@@ -248,7 +254,6 @@ impl Resource for SchemeServerResource {
         Url::from_string(":".to_string() + &self.inner.name)
     }
 
-    // TODO: Make use of Write and Read trait
     /// Read data to buffer
     fn read(&mut self, buf: &mut [u8]) -> Result<usize> {
         if buf.len() == size_of::<Packet>() {

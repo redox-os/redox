@@ -19,8 +19,7 @@ fn draw(window: &mut Window, packages: &Vec<Box<Package>>, shutdown: &BmpFile, m
         if package.icon.has_data() {
             let y = window.height() as isize - package.icon.height() as isize;
 
-            if mouse_y >= y as i32 && mouse_x >= x &&
-               mouse_x < x + package.icon.width() as i32 {
+            if mouse_y >= y as i32 && mouse_x >= x && mouse_x < x + package.icon.width() as i32 {
                 window.rect(x as i32, y as i32,
                                   package.icon.width() as u32, package.icon.height() as u32,
                                   Color::rgba(128, 128, 128, 128));
