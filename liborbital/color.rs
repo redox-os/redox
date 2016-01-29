@@ -1,5 +1,6 @@
 /// A color
 #[derive(Copy, Clone)]
+#[repr(packed)]
 pub struct Color {
     pub data: u32,
 }

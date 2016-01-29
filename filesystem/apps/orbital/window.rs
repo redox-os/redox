@@ -63,7 +63,7 @@ impl Window {
 
     pub fn write(&mut self, buf: &[u8]) -> Result {
         let old = self.image.data_mut();
-        let new = unsafe { & slice::from_raw_parts(buf.as_ptr() as *const Color, buf.len() / size_of::<Color>()) };
+        let new = unsafe { slice::from_raw_parts(buf.as_ptr() as *const Color, buf.len() / size_of::<Color>()) };
 
         let mut i = 0;
         while i < old.len() && i < new.len() {

@@ -25,7 +25,7 @@ pub struct Window {
     /// Font file
     font: Vec<u8>,
     /// Window data
-    data: Vec<u32>,
+    data: Box<[Color]>,
 }
 
 impl Window {
@@ -46,7 +46,7 @@ impl Window {
                     t: title.to_string(),
                     file: file,
                     font: font,
-                    data: vec![0; (w * h * 4) as usize],
+                    data: vec![Color::rgb(0, 0, 0); (w * h * 4) as usize].into_boxed_slice(),
                 })
             }
             Err(_) => None,
@@ -114,7 +114,7 @@ impl Window {
 
             let alpha = (new >> 24) & 0xFF;
             if alpha > 0 {
-                let old = &mut self.data[y as usize * self.w as usize + x as usize];
+                let old = &mut self.data[y as usize * self.w as usize + x as usize].data;
                 if alpha >= 255 {
                     *old = new;
                 } else {
@@ -162,7 +162,7 @@ impl Window {
     #[allow(unused_variables)]
     pub fn set(&mut self, color: Color) {
         for mut d in self.data.iter_mut() {
-            *d = color.data;
+            *d = color;
         }
     }
 
@@ -196,11 +196,12 @@ impl Window {
     pub fn poll(&mut self) -> Option<Event> {
         loop {
             let mut event = Event::new();
-            match self.file.read(&mut unsafe {
-                slice::from_raw_parts_mut((&mut event as *mut Event) as *mut u8, mem::size_of::<Event>())
-            }) {
+            match self.file.read(&mut event) {
                 Ok(0) => thread::yield_now(),
-                Ok(_) => return Some(event),
+                Ok(_) => {
+                    println!("{:?}", event);
+                    return Some(event);
+                },
                 Err(_) => return None,
             }
         }
@@ -208,9 +209,9 @@ impl Window {
 
     /// Flip the window buffer
     pub fn sync(&mut self) -> bool {
-        self.file.write(&unsafe {
+        self.file.write(unsafe {
             slice::from_raw_parts(self.data.as_ptr() as *const u8,
-                                  self.data.len() * mem::size_of::<u32>())
+                                  self.data.len() * mem::size_of::<Color>())
         }).is_ok()
     }
 

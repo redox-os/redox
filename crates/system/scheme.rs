@@ -46,7 +46,6 @@ impl DerefMut for Packet {
     }
 }
 
-
 pub trait Scheme {
     fn handle(&mut self, packet: &mut Packet) {
         packet.a = Error::mux(match packet.a {

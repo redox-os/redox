@@ -43,8 +43,7 @@ impl Display {
 
     pub fn poll(&mut self) -> Option<Event> {
         let mut event = Event::new();
-        let event_ptr = &mut event as *mut Event;
-        if let Ok(count) = self.file.read(unsafe { slice::from_raw_parts_mut(event_ptr as *mut u8, size_of::<Event>()) }) {
+        if let Ok(count) = self.file.read(&mut event) {
             if count == size_of::<Event>() {
                 return Some(event);
             }
