@@ -1,3 +1,5 @@
+use common::memory;
+
 use core::ptr;
 
 // PAGE_DIRECTORY:
@@ -6,6 +8,90 @@ use core::ptr;
 // 1024 * 1024 dwords pointing to pages
 // PAGE_END:
 //
+
+//Page flags
+pub const PF_PRESENT: usize = 1;
+pub const PF_WRITE: usize = 1 << 1;
+pub const PF_USER: usize = 1 << 2;
+pub const PF_WRITE_THROUGH: usize = 1 << 3;
+pub const PF_CACHE_DISABLE: usize = 1 << 4;
+pub const PF_ACCESSED: usize = 1 << 5;
+pub const PF_DIRTY: usize = 1 << 6;
+pub const PF_SIZE: usize = 1 << 7;
+pub const PF_GLOBAL: usize = 1 << 8;
+//Extra flags (Redox specific)
+pub const PF_ALLOC: usize = 1 << 9;
+pub const PF_EXEC: usize = 1 << 10;
+pub const PF_STACK: usize = 1 << 11;
+
+pub const PF_ALL: usize =  0xFFF;
+pub const PF_NONE: usize = 0xFFFFF000;
+
+pub struct Pager {
+    directory: *mut PageDirectory
+}
+
+impl Pager {
+    pub unsafe fn new() -> Pager {
+        let directory = memory::alloc_type();
+        ptr::write(directory, PageDirectory {
+            tables: [0; 1024]
+        });
+        Pager {
+            directory: directory
+        }
+    }
+
+    pub unsafe fn map(&self) {
+        asm!("mov cr3, $0"
+            :
+            : "r"(self.directory as u32)
+            : "memory"
+            : "intel", "volatile");
+    }
+}
+
+impl Drop for Pager {
+    fn drop(&mut self) {
+        unsafe {
+            drop(ptr::read(self.directory));
+            memory::unalloc_type(self.directory);
+        }
+    }
+}
+
+#[repr(packed)]
+pub struct PageDirectory {
+    tables: [usize; 1024]
+}
+
+impl Drop for PageDirectory {
+    fn drop(&mut self) {
+        for table in self.tables.iter() {
+            if table & PF_ALLOC == PF_ALLOC {
+                unsafe {
+                    drop(ptr::read((*table & PF_NONE) as *mut PageTable));
+                    memory::unalloc(*table & PF_NONE);
+                }
+            }
+        }
+    }
+}
+
+#[repr(packed)]
+pub struct PageTable {
+    pages: [usize; 1024]
+}
+
+impl Drop for PageTable {
+    fn drop(&mut self) {
+        for page in self.pages.iter() {
+            if page & PF_ALLOC == PF_ALLOC {
+                unsafe { memory::unalloc(*page & PF_NONE) };
+            }
+        }
+    }
+}
 
 pub const PAGE_TABLE_SIZE: usize = 1024;
 pub const PAGE_ENTRY_SIZE: usize = 4;

@@ -290,6 +290,10 @@ pub unsafe fn unalloc(ptr: usize) {
     }
 }
 
+pub unsafe fn unalloc_type<T>(ptr: *mut T) {
+    unalloc(ptr as usize);
+}
+
 pub unsafe fn realloc(ptr: usize, size: usize) -> usize {
     // Memory allocation must be atomic
     let _intex = Intex::static_lock();
