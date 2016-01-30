@@ -34,7 +34,7 @@ impl BmpFile {
     pub fn from_path(path: &str) -> Self {
         let mut data: Vec<u8> = Vec::new();
         if let Ok(mut file) = File::open(path) {
-            file.read_to_end(&mut data);
+            let _ = file.read_to_end(&mut data); // TODO handle error case
         }
         Self::from_data(&data)
     }

@@ -2,6 +2,8 @@
 #![feature(associated_consts)]
 #![feature(box_syntax)]
 
+#![deny(warnings)]
+
 extern crate core;
 
 pub use bmp::BmpFile;

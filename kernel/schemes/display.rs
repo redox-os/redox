@@ -65,11 +65,9 @@ impl KScheme for DisplayScheme {
         //      for this scheme?
         // - maybe "read" should support displays at some other location
         //      like built in screen sharing capability or something
-        unsafe {
-            return Ok(box DisplayResource {
-                display: Display::root(),
-                seek: 0,
-            });
-        }
+        Ok(box DisplayResource {
+            display: unsafe { Display::root() },
+            seek: 0,
+        })
     }
 }

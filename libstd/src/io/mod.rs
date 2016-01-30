@@ -51,7 +51,7 @@ pub trait Read {
     fn bytes(&mut self) -> IntoIter<u8> {
         // TODO: This is only a temporary implementation. Make this read one byte at a time.
         let mut buf = Vec::new();
-        self.read_to_end(&mut buf);
+        let _ = self.read_to_end(&mut buf);
 
         buf.into_iter()
     }
