@@ -1,5 +1,3 @@
-use core::cell::UnsafeCell;
-
 use disk::ahci::Ahci;
 use disk::ide::Ide;
 

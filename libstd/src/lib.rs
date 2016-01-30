@@ -39,7 +39,7 @@
 #![no_std]
 
 // TODO
-// #![deny(missing_docs)]
+//#![deny(missing_docs)]
 #![deny(warnings)]
 
 // STD COPY {
