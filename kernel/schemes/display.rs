@@ -7,8 +7,6 @@ use core::mem::size_of;
 
 use graphics::display::Display;
 
-use scheduler::context::context_switch;
-
 use schemes::{Result, KScheme, Resource, ResourceSeek, Url};
 
 use system::error::{Error, ENOENT, EINVAL};

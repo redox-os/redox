@@ -581,7 +581,7 @@ pub fn do_sys_unlink(path: *const u8) -> usize {
     })
 }
 
-pub fn do_sys_waitpid(pid: isize, status: *mut usize, options: usize) -> usize {
+pub fn do_sys_waitpid(pid: isize, status: *mut usize, _options: usize) -> usize {
     let mut ret = Err(Error::new(ECHILD));
 
     loop {

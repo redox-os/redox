@@ -33,7 +33,7 @@ impl Window {
     pub fn new(x: i32, y: i32, w: u32, h: u32, title: &str) -> Option<Box<Self>> {
         let mut font = Vec::new();
         if let Ok(mut font_file) = File::open("file:/ui/unifont.font") {
-            font_file.read_to_end(&mut font);
+            let _ = font_file.read_to_end(&mut font);
         }
 
         match File::open(&format!("orbital:{}/{}/{}/{}/{}", x, y, w, h, title)) {

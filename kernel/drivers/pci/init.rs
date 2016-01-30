@@ -1,5 +1,3 @@
-//use common::debug;
-
 use disk::ahci::Ahci;
 use disk::ide::Ide;
 
@@ -7,23 +5,14 @@ use env::Environment;
 
 use schemes::file::FileScheme;
 
-/*
-use usb::ehci::Ehci;
-use usb::ohci::Ohci;
-use usb::uhci::Uhci;
-use usb::xhci::Xhci;
-*/
-
 use super::config::PciConfig;
 use super::common::class::*;
 use super::common::subclass::*;
 use super::common::programming_interface::*;
-use super::common::vendorid::*;
-use super::common::deviceid::*;
 
 /// PCI device
 pub unsafe fn pci_device(env: &mut Environment,
-                         mut pci: PciConfig,
+                         pci: PciConfig,
                          class_id: u8,
                          subclass_id: u8,
                          interface_id: u8,

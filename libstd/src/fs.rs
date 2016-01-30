@@ -169,7 +169,7 @@ impl Iterator for ReadDir {
                         path.push_str(unsafe { str::from_utf8_unchecked(&buf[..count]) });
                     }
                 }
-                Err(err) => break,
+                Err(_err) => break,
             }
         }
         if path.is_empty() {
@@ -211,7 +211,7 @@ pub fn read_dir(path: &str) -> Result<ReadDir> {
     }
 }
 
-pub fn remove_dir(path: &str) -> Result<()> {
+pub fn remove_dir(_path: &str) -> Result<()> {
     Err(Error::new(EACCES))
 }
 

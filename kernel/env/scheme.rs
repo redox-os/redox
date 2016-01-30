@@ -14,7 +14,7 @@ use schemes::{Result, Resource, ResourceSeek, KScheme, Url};
 
 use sync::Intex;
 
-use system::error::{Error, EBADF, EFAULT, EINVAL, ENOENT, ESPIPE, ESRCH};
+use system::error::{Error, EBADF, EFAULT, EINVAL, ESPIPE, ESRCH};
 use system::scheme::Packet;
 use system::syscall::{SYS_CLOSE, SYS_FSYNC, SYS_FTRUNCATE,
                     SYS_LSEEK, SEEK_SET, SEEK_CUR, SEEK_END,
@@ -297,7 +297,7 @@ impl Resource for SchemeServerResource {
     }
 
     /// Seek
-    fn seek(&mut self, pos: ResourceSeek) -> Result<usize> {
+    fn seek(&mut self, _pos: ResourceSeek) -> Result<usize> {
         Err(Error::new(ESPIPE))
     }
 
@@ -306,7 +306,7 @@ impl Resource for SchemeServerResource {
         Err(Error::new(EINVAL))
     }
 
-    fn truncate(&mut self, len: usize) -> Result<()> {
+    fn truncate(&mut self, _len: usize) -> Result<()> {
         Err(Error::new(EINVAL))
     }
 }
@@ -339,7 +339,7 @@ impl Scheme {
 }
 
 impl KScheme for Scheme {
-    fn on_irq(&mut self, irq: u8) {
+    fn on_irq(&mut self, _irq: u8) {
 
     }
 

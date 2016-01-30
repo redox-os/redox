@@ -172,7 +172,7 @@ impl Ohci {
 
 
 impl Hci for Ohci {
-    fn msg(&mut self, address: u8, endpoint: u8, pipe: Pipe, msgs: &[Packet]) -> usize {
+    fn msg(&mut self, address: u8, endpoint: u8, _pipe: Pipe, msgs: &[Packet]) -> usize {
         let mut tds = Vec::new();
         for msg in msgs.iter() {
             match *msg {
