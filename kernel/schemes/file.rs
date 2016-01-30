@@ -146,7 +146,7 @@ impl Resource for FileResource {
                     }
 
                     unsafe {
-                        (*self.scheme).fs.disk.write(extent.block, &self.vec[pos .. pos + max_size]);
+                        let _ = (*self.scheme).fs.disk.write(extent.block, &self.vec[pos .. pos + max_size]);
                     }
 
                     self.vec.truncate(pos + size);
@@ -165,7 +165,7 @@ impl Resource for FileResource {
                             node_data.write(0, self.node.data());
 
                             let mut buffer = slice::from_raw_parts(node_data.address() as *mut u8, 512);
-                            (*self.scheme).fs.disk.write(self.node.block, &mut buffer);
+                            let _ = (*self.scheme).fs.disk.write(self.node.block, &mut buffer);
 
                             debug::d("Renode\n");
 
@@ -233,7 +233,7 @@ impl FileScheme {
 }
 
 impl KScheme for FileScheme {
-    fn on_irq(&mut self, irq: u8) {
+    fn on_irq(&mut self, _irq: u8) {
         /*if irq == self.fs.disk.irq {
             self.on_poll();
         }*/
@@ -308,7 +308,7 @@ impl KScheme for FileScheme {
                                 vec.push(0);
                             }
 
-                            self.fs.disk.read(extent.block, &mut vec[pos..pos + max_size]);
+                            let _ = self.fs.disk.read(extent.block, &mut vec[pos..pos + max_size]);
 
                             vec.truncate(pos + size);
                         }

@@ -93,7 +93,7 @@ impl Environment {
 
                 Ok(box VecResource::new(Url::new(), list.into_bytes()))
             } else if flags & O_CREAT == O_CREAT {
-                for mut scheme in self.schemes.lock().iter_mut() {
+                for scheme in self.schemes.lock().iter_mut() {
                     if scheme.scheme() == url_path {
                         return Err(Error::new(EEXIST));
                     }

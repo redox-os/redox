@@ -7,7 +7,7 @@ pub struct Sender<T> {
 }
 
 impl<T> Sender<T> {
-    fn send(&self, t: T) -> Result<(), ()> {
+    pub fn send(&self, t: T) -> Result<(), ()> {
         self.queue.push(t);
         Ok(())
     }

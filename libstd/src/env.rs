@@ -76,6 +76,6 @@ pub fn set_current_dir(path: &str) -> Result<()> {
 }
 
 // TODO: Fully implement `env::var()`
-pub fn var(key: &str) -> Result<String> {
+pub fn var(_key: &str) -> Result<String> {
     Ok("This is code filler".to_string())
 }
