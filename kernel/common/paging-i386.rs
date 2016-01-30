@@ -28,7 +28,7 @@ impl Page {
             ptr::write((PAGE_DIRECTORY + table_i * PAGE_ENTRY_SIZE) as *mut u32,
                        // TODO: Use more restrictive flags
                        (PAGE_TABLES + table_i * PAGE_TABLE_SIZE * PAGE_ENTRY_SIZE) as u32 |
-                       0b11 << 1 | 1); //Allow userspace, read/write, present
+                       1 << 2 | 1 << 1 | 1); //Allow userspace, read/write, present
 
             for entry_i in 0..PAGE_TABLE_SIZE {
                 Page::new((table_i * PAGE_TABLE_SIZE + entry_i) * PAGE_SIZE).map_identity();
@@ -81,8 +81,7 @@ impl Page {
     /// Map the memory page to a given physical memory address
     pub unsafe fn map(&mut self, physical_address: usize) {
         ptr::write(self.entry_address() as *mut u32,
-                   // TODO: Remove 1 << 2 which is there to allow for userspace arg access
-                   (physical_address as u32 & 0xFFFFF000) | 1 << 2 | 1); //read/write, present
+                   (physical_address as u32 & 0xFFFFF000) | 1); //read/write, present
         self.flush();
     }
 

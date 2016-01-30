@@ -47,6 +47,8 @@ VBM_CLEANUP=\
 ifeq ($(OS),Windows_NT)
 	SHELL=windows\sh
 	LD=windows/$(ARCH)-elf-ld
+	CARGOFLAGS += -C ar=windows/$(ARCH)-elf-ar -C linker=windows/$(ARCH)-elf-gcc -C link-args="-v -fno-use-linker-plugin"
+	RUSTCFLAGS += -C ar=windows/$(ARCH)-elf-ar -C linker=windows/$(ARCH)-elf-gcc -C link-args="-v -fno-use-linker-plugin"
 	AS=windows/nasm
 	AWK=windows/awk
 	BASENAME=windows/basename
@@ -54,7 +56,7 @@ ifeq ($(OS),Windows_NT)
 	FIND=windows/find
 	MAKE=windows/make
 	MKDIR=windows/mkdir
-	OBJDUMP=windows/objdump
+	OBJDUMP=windows/i386-elf-objdump
 	RM=windows/rm
 	SED=windows/sed
 	SORT=windows/sort
@@ -141,6 +143,7 @@ apps: filesystem/apps/editor/main.bin \
 	  filesystem/apps/init/main.bin \
 	  filesystem/apps/launcher/main.bin \
 	  filesystem/apps/login/main.bin \
+	  filesystem/apps/orbital/main.bin \
 	  filesystem/apps/orbtk/main.bin \
 	  filesystem/apps/player/main.bin \
 	  filesystem/apps/shell/main.bin \
@@ -149,6 +152,25 @@ apps: filesystem/apps/editor/main.bin \
 	  filesystem/apps/test/main.bin \
 	  filesystem/apps/viewer/main.bin \
 	  filesystem/apps/zfs/main.bin
+
+filesystem/bin/%: crates/coreutils/src/bin/%.rs $(BUILD)/crt0.o $(BUILD)/libstd.rlib
+	mkdir -p filesystem/bin/
+	$(RUSTC) $(RUSTCFLAGS) --crate-type bin -o filesystem/bin/$* $<
+
+coreutils: filesystem/bin/cat \
+		filesystem/bin/echo \
+ 		filesystem/bin/false \
+		filesystem/bin/ls \
+		filesystem/bin/mkdir \
+		filesystem/bin/ps \
+		filesystem/bin/pwd \
+		filesystem/bin/rm \
+		filesystem/bin/rmdir \
+		filesystem/bin/shutdown \
+		filesystem/bin/sleep \
+		filesystem/bin/touch \
+		filesystem/bin/true
+	#filesystem/bin/env filesystem/bin/yes
 
 tests: tests/success tests/failure
 
@@ -161,7 +183,7 @@ test: kernel/main.rs \
 	$(RUSTC) $(RUSTCFLAGS) --test $<
 
 clean:
-	$(RM) -rf build filesystem/*.bin filesystem/*.list filesystem/apps/*/*.bin filesystem/apps/*/*.list filesystem/schemes/*/*.bin filesystem/schemes/*/*.list
+	$(RM) -rf build filesystem/*.bin filesystem/*.list filesystem/apps/*/*.bin filesystem/apps/*/*.list filesystem/schemes/*/*.bin filesystem/schemes/*/*.list filesystem/bin/
 
 FORCE:
 
@@ -206,7 +228,7 @@ $(BUILD)/liborbital.rlib: liborbital/lib.rs liborbital/*.rs $(BUILD)/libstd.rlib
 $(BUILD)/libio.rlib: crates/io/lib.rs crates/io/*.rs $(BUILD)/libcore.rlib
 	$(RUSTC) $(RUSTCFLAGS) --crate-name io -o $@ $<
 
-$(BUILD)/libsystem.rlib: crates/system/lib.rs crates/system/*.rs $(BUILD)/libcore.rlib
+$(BUILD)/libsystem.rlib: crates/system/lib.rs crates/system/*.rs crates/system/*/*.rs $(BUILD)/libcore.rlib
 	$(RUSTC) $(RUSTCFLAGS) --crate-name system -o $@ $<
 
 $(BUILD)/kernel.rlib: kernel/main.rs kernel/*.rs kernel/*/*.rs kernel/*/*/*.rs $(BUILD)/libcore.rlib $(BUILD)/liballoc.rlib $(BUILD)/libcollections.rlib $(BUILD)/libio.rlib $(BUILD)/libsystem.rlib
@@ -277,7 +299,7 @@ filesystem/apps/zfs/zfs.img:
 	-sudo zpool destroy redox_zfs
 	sudo losetup -d /dev/loop0
 
-$(BUILD)/filesystem.gen: apps
+$(BUILD)/filesystem.gen: apps coreutils
 	$(FIND) filesystem -not -path '*/\.*' -type f -o -type l | $(CUT) -d '/' -f2- | $(SORT) | $(AWK) '{printf("file %d,\"%s\"\n", NR, $$0)}' > $@
 
 $(BUILD)/harddrive.bin: kernel/harddrive.asm $(BUILD)/kernel.bin $(BUILD)/filesystem.gen

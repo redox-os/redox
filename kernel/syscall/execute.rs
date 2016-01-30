@@ -58,7 +58,8 @@ pub fn execute(url: Url, mut args: Vec<String>) -> bool {
                         physical_address: physical_address,
                         virtual_address: virtual_address - hack,
                         virtual_size: virtual_size + hack,
-                        writeable: segment.flags & 2 == 2
+                        writeable: segment.flags & 2 == 2,
+                        allocated: true,
                     });
                 }
             }
@@ -70,7 +71,6 @@ pub fn execute(url: Url, mut args: Vec<String>) -> bool {
             let mut contexts = ::env().contexts.lock();
             if let Some(mut context) = contexts.current_mut() {
                 context.name = url.string;
-                context.args = Arc::new(UnsafeCell::new(args));
                 context.cwd = Arc::new(UnsafeCell::new(unsafe { (*context.cwd.get()).clone() }));
 
                 unsafe { context.unmap() };
@@ -90,19 +90,37 @@ pub fn execute(url: Url, mut args: Vec<String>) -> bool {
         Context::spawn("kexec".to_string(), box move || {
             let _intex = Intex::static_lock();
 
+
             let context = unsafe { &mut *context_ptr };
 
             let mut context_args: Vec<usize> = Vec::new();
             context_args.push(0); // ENVP
             context_args.push(0); // ARGV NULL
             let mut argc = 0;
-            for i in 0..unsafe { (*context.args.get()).len() } {
-                let reverse_i = unsafe { (*context.args.get()).len() } - i - 1;
-                if let Some(ref mut arg) = unsafe { (*context.args.get()).get_mut(reverse_i) } {
+            for i in 0..args.len() {
+                let reverse_i = args.len() - i - 1;
+                if let Some(ref mut arg) = args.get_mut(reverse_i) {
                     if ! arg.ends_with('\0') {
                         arg.push('\0');
                     }
-                    context_args.push(arg.as_ptr() as usize);
+
+                    let physical_address = arg.as_ptr() as usize;
+                    let virtual_address = unsafe { context.next_mem() };
+                    let virtual_size = arg.len();
+
+                    mem::forget(arg);
+
+                    unsafe {
+                        (*context.memory.get()).push(ContextMemory {
+                            physical_address: physical_address,
+                            virtual_address: virtual_address,
+                            virtual_size: virtual_size,
+                            writeable: false,
+                            allocated: true,
+                        });
+                    }
+
+                    context_args.push(virtual_address as usize);
                     argc += 1;
                 }
             }
@@ -114,7 +132,8 @@ pub fn execute(url: Url, mut args: Vec<String>) -> bool {
                 physical_address: unsafe { memory::alloc(CONTEXT_STACK_SIZE) },
                 virtual_address: CONTEXT_STACK_ADDR,
                 virtual_size: CONTEXT_STACK_SIZE,
-                writeable: true
+                writeable: true,
+                allocated: true,
             });
 
             let user_sp = if let Some(ref stack) = context.stack {

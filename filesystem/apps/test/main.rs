@@ -4,6 +4,7 @@
 
 extern crate system;
 
+use std::io::{Read, Write, stdin, stdout};
 use std::rand;
 use std::ptr;
 use std::slice::SliceConcatExt;
@@ -15,7 +16,7 @@ use system::syscall::sys_exit;
 macro_rules! readln {
     () => ({
         let mut buffer = String::new();
-        match std::io::stdin().read_line(&mut buffer) {
+        match stdin().read_line(&mut buffer) {
             Ok(_) => Some(buffer),
             Err(_) => None
         }
@@ -26,6 +27,8 @@ fn main() {
     println!("Type help for a command list");
     loop {
         print!("# ");
+        stdout().flush();
+
         if let Some(line) = readln!() {
             let args: Vec<String> = line.trim().split(' ').map(|arg| arg.to_string()).collect();
 
