@@ -1,4 +1,4 @@
-use common::get_slice::GetSlice;
+use common::slice::GetSlice;
 
 use alloc::boxed::Box;
 
@@ -53,6 +53,7 @@ pub trait KScheme {
 }
 
 /// Resource seek
+#[derive(Copy, Clone, Debug)]
 pub enum ResourceSeek {
     /// Start point
     Start(usize),
@@ -153,12 +154,12 @@ impl Url {
 
     /// Return the scheme of this url
     pub fn scheme(&self) -> &str {
-        self.string.get_slice(..self.string.find(':').unwrap_or(self.string.len()))
+        self.string.get_slice(..self.string.find(':'))
     }
 
     /// Get the reference (after the ':') of the url
     pub fn reference(&self) -> &str {
-        self.string.get_slice(self.string.find(':').map(|a| a + 1).unwrap_or(0)..)
+        self.string.get_slice(self.string.find(':').map(|a| a + 1)..)
     }
 
 }

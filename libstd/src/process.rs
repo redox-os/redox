@@ -108,3 +108,9 @@ impl Command {
         }
     }
 }
+
+pub fn exit(code: i32) -> ! {
+    loop {
+        unsafe { sys_exit(code as isize) };
+    }
+}

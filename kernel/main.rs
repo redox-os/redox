@@ -20,7 +20,6 @@
 #![feature(vec_push_all)]
 #![feature(zero_one)]
 #![feature(collections_range)]
-
 #![no_std]
 #![deny(warnings)]
 
@@ -39,7 +38,6 @@ use alloc::boxed::Box;
 use collections::string::{String, ToString};
 use collections::vec::Vec;
 
-use core::cell::UnsafeCell;
 use core::{ptr, mem, usize};
 use core::slice::SliceExt;
 
@@ -175,59 +173,64 @@ fn event_loop() {
 
     let mut cmd = String::new();
     loop {
-        loop {
+        {
             let mut console = env().console.lock();
-            match env().events.lock().pop_front() {
-                Some(event) => {
-                    if console.draw {
-                        match event.to_option() {
-                            EventOption::Key(key_event) => {
-                                if key_event.pressed {
-                                    match key_event.scancode {
-                                        event::K_F2 => {
-                                            console.draw = false;
-                                        }
-                                        event::K_BKSP => if !cmd.is_empty() {
-                                            console.write(&[8]);
-                                            cmd.pop();
-                                        },
-                                        _ => match key_event.character {
-                                            '\0' => (),
-                                            '\n' => {
-                                                console.command = Some(cmd.clone());
+            if console.draw {
+                while let Some(event) = env().events.lock().pop_front() {
+                    match event.to_option() {
+                        EventOption::Key(key_event) => {
+                            if key_event.pressed {
+                                match key_event.scancode {
+                                    event::K_F1 => {
+                                        console.draw = true;
+                                        console.redraw = true;
+                                    },
+                                    event::K_F2 => {
+                                        console.draw = false;
+                                    },
+                                    event::K_BKSP => if !cmd.is_empty() {
+                                        console.write(&[8]);
+                                        cmd.pop();
+                                    },
+                                    _ => match key_event.character {
+                                        '\0' => (),
+                                        '\n' => {
+                                            console.command = Some(cmd.clone());
 
-                                                cmd.clear();
-                                                console.write(&[10]);
-                                            }
-                                            _ => {
-                                                cmd.push(key_event.character);
-                                                console.write(&[key_event.character as u8]);
-                                            }
-                                        },
-                                    }
+                                            cmd.clear();
+                                            console.write(&[10]);
+                                        }
+                                        _ => {
+                                            cmd.push(key_event.character);
+                                            console.write(&[key_event.character as u8]);
+                                        }
+                                    },
                                 }
                             }
-                            _ => (),
                         }
-                    } else {
-                        if event.code == EVENT_KEY && event.b as u8 == event::K_F1 && event.c > 0 {
+                        _ => (),
+                    }
+                }
+
+                console.instant = false;
+                if console.redraw {
+                    console.redraw = false;
+                    if let Some(ref mut display) = console.display {
+                        display.flip();
+                    }
+                }
+            } else {
+                for event in env().events.lock().iter() {
+                    if event.code == EVENT_KEY && event.c > 0 {
+                        if event.b as u8 == event::K_F1 {
                             console.draw = true;
                             console.redraw = true;
-                        } else {
-                            // TODO: Magical orbital hack
+                        }
+                        if event.b as u8 == event::K_F2 {
+                            console.draw = false;
                         }
                     }
                 }
-                None => break,
-            }
-        }
-
-        {
-            let mut console = env().console.lock();
-            console.instant = false;
-            if console.draw && console.redraw {
-                console.redraw = false;
-                console.display.flip();
             }
         }
 
@@ -280,22 +283,22 @@ unsafe fn init(tss_data: usize) {
             debug!("Redox {} bits\n", mem::size_of::<usize>() * 8);
 
             if let Some(acpi) = Acpi::new() {
-                env.schemes.push(UnsafeCell::new(acpi));
+                env.schemes.lock().push(acpi);
             }
 
             *(env.clock_realtime.lock()) = Rtc::new().time();
 
-            env.schemes.push(UnsafeCell::new(Ps2::new()));
-            env.schemes.push(UnsafeCell::new(Serial::new(0x3F8, 0x4)));
+            env.schemes.lock().push(Ps2::new());
+            env.schemes.lock().push(Serial::new(0x3F8, 0x4));
 
             pci::pci_init(env);
 
-            env.schemes.push(UnsafeCell::new(DebugScheme::new()));
-            env.schemes.push(UnsafeCell::new(box DisplayScheme));
-            env.schemes.push(UnsafeCell::new(box ContextScheme));
-            env.schemes.push(UnsafeCell::new(box InterruptScheme));
-            env.schemes.push(UnsafeCell::new(box MemoryScheme));
-            env.schemes.push(UnsafeCell::new(box TestScheme));
+            env.schemes.lock().push(DebugScheme::new());
+            env.schemes.lock().push(box DisplayScheme);
+            env.schemes.lock().push(box ContextScheme);
+            env.schemes.lock().push(box InterruptScheme);
+            env.schemes.lock().push(box MemoryScheme);
+            env.schemes.lock().push(box TestScheme);
 
             Context::spawn("kpoll".to_string(),
             box move || {

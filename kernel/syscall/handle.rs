@@ -88,7 +88,7 @@ pub fn do_sys_brk(addr: usize) -> usize {
 
         // TODO: Make this smarter, currently it attempt to resize the entire data segment
         if let Some(mut mem) = unsafe { (*current.memory.get()).last_mut() } {
-            if mem.writeable {
+            if mem.writeable && mem.allocated {
                 if addr >= mem.virtual_address {
                     let size = addr - mem.virtual_address;
                     let physical_address = unsafe { memory::realloc(mem.physical_address, size) };
@@ -102,8 +102,10 @@ pub fn do_sys_brk(addr: usize) -> usize {
                     }
                 }
             } else {
-                debug!("BRK: End segment not writeable\n");
+                debug!("BRK: End segment not writeable or allocated\n");
             }
+        } else {
+            debug!("BRK: No segments\n")
         }
 
         unsafe {
@@ -663,6 +665,7 @@ pub fn do_sys_alloc(size: usize) -> usize {
                     virtual_address: ret,
                     virtual_size: size,
                     writeable: true,
+                    allocated: true,
                 });
             }
         }

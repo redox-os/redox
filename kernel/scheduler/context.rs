@@ -1,4 +1,4 @@
-use common::get_slice::GetSlice;
+use common::slice::GetSlice;
 
 use alloc::arc::Arc;
 use alloc::boxed::{Box, FnBox};
@@ -203,6 +203,7 @@ pub unsafe extern "cdecl" fn context_clone(parent_ptr: *const Context,
                             virtual_address: entry.virtual_address,
                             virtual_size: entry.virtual_size,
                             writeable: entry.writeable,
+                            allocated: true,
                         })
                     } else {
                         None
@@ -212,7 +213,6 @@ pub unsafe extern "cdecl" fn context_clone(parent_ptr: *const Context,
                 },
                 loadable: parent.loadable,
 
-                args: parent.args.clone(),
                 cwd: if flags & CLONE_FS == CLONE_FS {
                     parent.cwd.clone()
                 } else {
@@ -233,6 +233,7 @@ pub unsafe extern "cdecl" fn context_clone(parent_ptr: *const Context,
                                 virtual_address: entry.virtual_address,
                                 virtual_size: entry.virtual_size,
                                 writeable: entry.writeable,
+                                allocated: true,
                             });
                         }
                     }
@@ -306,12 +307,12 @@ pub unsafe extern "cdecl" fn context_box(box_fn_ptr: usize) {
     do_sys_exit(0);
 }
 
-///TODO: Investigate for double frees
 pub struct ContextMemory {
     pub physical_address: usize,
     pub virtual_address: usize,
     pub virtual_size: usize,
     pub writeable: bool,
+    pub allocated: bool,
 }
 
 impl ContextMemory {
@@ -326,6 +327,7 @@ impl ContextMemory {
             }
         }
     }
+
     pub unsafe fn unmap(&mut self) {
         for i in 0..(self.virtual_size + 4095) / 4096 {
             Page::new(self.virtual_address + i * 4096).map_identity();
@@ -335,7 +337,9 @@ impl ContextMemory {
 
 impl Drop for ContextMemory {
     fn drop(&mut self) {
-        unsafe { memory::unalloc(self.physical_address) };
+        if self.allocated {
+            unsafe { memory::unalloc(self.physical_address) };
+        }
     }
 }
 
@@ -383,8 +387,6 @@ pub struct Context {
 // }
 
 // These members are cloned for threads, copied or created for processes {
-// Program arguments, cloned for threads, copied or created for processes. It is usually read-only, but is modified by execute
-    pub args: Arc<UnsafeCell<Vec<String>>>,
 /// Program working directory, cloned for threads, copied or created for processes. Modified by chdir
     pub cwd: Arc<UnsafeCell<String>>,
 /// Program memory, cloned for threads, copied or created for processes. Modified by memory allocation
@@ -444,7 +446,6 @@ impl Context {
             stack: None,
             loadable: false,
 
-            args: Arc::new(UnsafeCell::new(Vec::new())),
             cwd: Arc::new(UnsafeCell::new(String::new())),
             memory: Arc::new(UnsafeCell::new(Vec::new())),
             files: Arc::new(UnsafeCell::new(Vec::new())),
@@ -472,7 +473,6 @@ impl Context {
             stack: None,
             loadable: false,
 
-            args: Arc::new(UnsafeCell::new(Vec::new())),
             cwd: Arc::new(UnsafeCell::new(String::new())),
             memory: Arc::new(UnsafeCell::new(Vec::new())),
             files: Arc::new(UnsafeCell::new(Vec::new())),
