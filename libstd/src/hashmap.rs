@@ -2699,7 +2699,7 @@ impl RandomState {
     #[allow(deprecated)] // rand
     pub fn new() -> RandomState {
         use rand::XorShiftRng;
-        let mut r = SeedableRng::from_seed([34330269583275, 23843948374, 3294234708234, 3214093874081234]): XorShiftRng;
+        let mut r = SeedableRng::from_seed([342275, 283987, 32924834, 321984834]): XorShiftRng;
         RandomState { k0: r.gen(), k1: r.gen() }
     }
 }
