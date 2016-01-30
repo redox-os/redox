@@ -20,8 +20,9 @@
 #![feature(vec_push_all)]
 #![feature(zero_one)]
 #![feature(collections_range)]
-#![feature(old_wrapping)]
+
 #![no_std]
+#![deny(warnings)]
 
 #[macro_use]
 extern crate alloc;
@@ -54,8 +55,6 @@ use drivers::rtc::*;
 use drivers::serial::*;
 
 use env::Environment;
-
-use graphics::display;
 
 use scheduler::{Context, Regs, TSS};
 use scheduler::context::context_switch;

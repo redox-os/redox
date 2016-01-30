@@ -1,8 +1,6 @@
-use core::slice;
-use core::str;
 use collections::range::RangeArgument;
 use core::ops::Range;
-use core::cmp::{max, min};
+use core::cmp::min;
 
 /// Bounded slice abstraction
 ///

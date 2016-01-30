@@ -4,7 +4,7 @@ use common::event::MouseEvent;
 use common::memory;
 use common::time::{self, Duration};
 
-use core::{cmp, mem, ptr, slice, str};
+use core::{cmp, mem, ptr, slice};
 
 use graphics::display::VBEMODEINFO;
 

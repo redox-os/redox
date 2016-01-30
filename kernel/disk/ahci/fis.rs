@@ -1,4 +1,4 @@
-use drivers::io::{Io, Mmio};
+use drivers::io::Mmio;
 
 pub const FIS_TYPE_REG_H2D: u8 = 0x27;   // Register FIS - host to device
 pub const FIS_TYPE_REG_D2H: u8 = 0x34;   // Register FIS - device to host
