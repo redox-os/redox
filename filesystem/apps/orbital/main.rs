@@ -164,6 +164,8 @@ fn main() {
             println!("    Console: Press F1");
             println!("    Desktop: Press F2");
 
+            Command::new("/apps/orbtk/main.bin").spawn();
+
             loop{
                 let mut packet = Packet::default();
                 while socket.read(&mut packet).unwrap() == size_of::<Packet>() {

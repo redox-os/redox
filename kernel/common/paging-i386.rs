@@ -81,7 +81,7 @@ impl Page {
     /// Map the memory page to a given physical memory address
     pub unsafe fn map(&mut self, physical_address: usize) {
         ptr::write(self.entry_address() as *mut u32,
-                   (physical_address as u32 & 0xFFFFF000) | 1); //read/write, present
+                   (physical_address as u32 & 0xFFFFF000) | 1); //present
         self.flush();
     }
 
