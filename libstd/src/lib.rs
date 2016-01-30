@@ -35,11 +35,12 @@
 #![feature(oom)]
 #![feature(unique)]
 #![feature(heap_api)]
-#![feature(wrapping)]
 #![feature(filling_drop)]
 #![no_std]
 
-// #![warn(missing_docs)]
+// TODO
+// #![deny(missing_docs)]
+#![deny(warnings)]
 
 // STD COPY {
 // We want to reexport a few macros from core but libcore has already been
