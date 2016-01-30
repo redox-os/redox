@@ -285,15 +285,13 @@ impl Display {
 
     /// Draw a char
     pub fn char(&self, point: Point, character: char, color: Color) {
-        unsafe {
-            let font_i = 16 * (character as usize);
-            for row in 0..16 {
-                let row_data = FONT[font_i + row];
-                for col in 0..8 {
-                    let pixel = (row_data >> (7 - col)) & 1;
-                    if pixel > 0 {
-                        self.pixel(Point::new(point.x + col, point.y + row as isize), color);
-                    }
+        let font_i = 16 * (character as usize);
+        for row in 0..16 {
+            let row_data = FONT[font_i + row];
+            for col in 0..8 {
+                let pixel = (row_data >> (7 - col)) & 1;
+                if pixel > 0 {
+                    self.pixel(Point::new(point.x + col, point.y + row as isize), color);
                 }
             }
         }
