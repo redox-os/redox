@@ -117,42 +117,40 @@ pub unsafe fn context_switch(interrupted: bool) {
     let mut current_ptr: *mut Context = 0 as *mut Context;
     let mut next_ptr: *mut Context = 0 as *mut Context;
 
-    let mut contexts = ::env().contexts.lock();
-    if contexts.enabled {
-        let current_i = contexts.i;
-        contexts.i += 1;
-        contexts.clean();
+    {
+        let mut contexts = ::env().contexts.lock();
+        if contexts.enabled {
+            let current_i = contexts.i;
+            contexts.i += 1;
+            contexts.clean();
 
-        if contexts.i != current_i {
-            if let Some(mut current) = contexts.get_mut(current_i) {
-                current.interrupted = interrupted;
+            if contexts.i != current_i {
+                if let Some(mut current) = contexts.get_mut(current_i) {
+                    current.interrupted = interrupted;
 
-                current.unmap();
+                    current.unmap();
 
-                current_ptr = current.deref_mut();
-            }
-
-            if let Some(mut next) = contexts.current_mut() {
-                next.interrupted = false;
-                next.slices = if interrupted {
-                    CONTEXT_SLICES
-                } else {
-                    CONTEXT_SLICES + 1
-                };
-
-                if next.kernel_stack > 0 {
-                    if let Some(ref mut tss) = ::TSS_PTR {
-                        tss.sp0 = next.kernel_stack + CONTEXT_STACK_SIZE - 128;
-                    }
-                } else {
-                    if let Some(ref mut tss) = ::TSS_PTR {
-                        tss.sp0 = 0x200000 - 128;
-                    }
+                    current_ptr = current.deref_mut();
                 }
 
-                next.map();
+                if let Some(mut next) = contexts.current_mut() {
+                    next.interrupted = false;
+                    next.slices = CONTEXT_SLICES;
 
-                next_ptr = next.deref_mut();
+                    if next.kernel_stack > 0 {
+                        if let Some(ref mut tss) = ::TSS_PTR {
+                            tss.sp0 = next.kernel_stack + CONTEXT_STACK_SIZE - 128;
+                        }
+                    } else {
+                        if let Some(ref mut tss) = ::TSS_PTR {
+                            tss.sp0 = 0x200000 - 128;
+                        }
+                    }
+
+                    next.map();
+
+                    next_ptr = next.deref_mut();
+                }
             }
         }
     }
