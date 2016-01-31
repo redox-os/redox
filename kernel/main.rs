@@ -1,3 +1,4 @@
+#![crate_name="kernel"]
 #![crate_type="staticlib"]
 #![feature(alloc)]
 #![feature(allocator)]

@@ -1,3 +1,4 @@
+#![crate_name="system"]
 #![crate_type="lib"]
 #![feature(asm)]
 #![feature(lang_items)]

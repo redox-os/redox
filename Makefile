@@ -13,11 +13,12 @@ CARGOFLAGS=--target=$(ARCH)-unknown-redox.json -- \
 	-A dead_code -A deprecated \
 	-L $(BUILD)
 RUSTC=RUST_BACKTRACE=1 rustc
-RUSTCFLAGS=--target=$(ARCH)-unknown-redox.json \
+RUSTDOC=rustdoc --target=$(ARCH)-unknown-redox.json -L $(BUILD) \
+	--no-defaults --passes collapse-docs --passes unindent-comments
+RUSTCFLAGS=--target=$(ARCH)-unknown-redox.json -L $(BUILD) \
 	-C no-prepopulate-passes -C no-stack-check -C opt-level=2 \
 	-Z no-landing-pads \
-	-A dead_code -A deprecated \
-	-L $(BUILD)
+	-A dead_code -A deprecated
 AS=nasm
 AWK=awk
 BASENAME=basename
@@ -85,7 +86,7 @@ else
 	endif
 endif
 
-.PHONY: help all docs apps tests clean \
+.PHONY: help all doc apps tests clean \
 	bochs \
 	qemu qemu_bare qemu_tap \
 	virtualbox virtualbox_tap \
@@ -134,9 +135,6 @@ help:
 
 all: $(BUILD)/harddrive.bin
 
-docs: kernel/main.rs $(BUILD)/libcore.rlib $(BUILD)/liballoc.rlib
-	rustdoc --target=$(ARCH)-unknown-redox.json -L$(BUILD) $<
-
 apps: filesystem/apps/editor/main.bin \
 	  filesystem/apps/example/main.bin \
 	  filesystem/apps/file_manager/main.bin \
@@ -183,12 +181,44 @@ test: kernel/main.rs \
 	$(RUSTC) $(RUSTCFLAGS) --test $<
 
 clean:
-	$(RM) -rf build filesystem/*.bin filesystem/*.list filesystem/apps/*/*.bin filesystem/apps/*/*.list filesystem/schemes/*/*.bin filesystem/schemes/*/*.list filesystem/bin/
+	$(RM) -rf build doc filesystem/*.bin filesystem/*.list filesystem/apps/*/*.bin filesystem/apps/*/*.list filesystem/schemes/*/*.bin filesystem/schemes/*/*.list filesystem/bin/
 
 FORCE:
 
 tests/%: FORCE
 	@$(SHELL) $@ && echo "$*: PASSED" || echo "$*: FAILED"
+
+doc/core: rust/src/libcore/lib.rs $(BUILD)/libcore.rlib
+	$(RUSTDOC) $<
+
+doc/alloc_system: liballoc_system/lib.rs $(BUILD)/liballoc_system.rlib doc/core
+	$(RUSTDOC) $<
+
+doc/alloc: rust/src/liballoc/lib.rs $(BUILD)/liballoc.rlib doc/alloc_system
+	$(RUSTDOC) $<
+
+doc/rustc_unicode: rust/src/librustc_unicode/lib.rs $(BUILD)/librustc_unicode.rlib doc/core
+	$(RUSTDOC) $<
+
+doc/collections: rust/src/libcollections/lib.rs $(BUILD)/libcollections.rlib doc/alloc doc/rustc_unicode
+	$(RUSTDOC) $<
+
+doc/rand: rust/src/librand/lib.rs $(BUILD)/librand.rlib doc/collections
+	$(RUSTDOC) $<
+
+doc/io: crates/io/lib.rs crates/io/*.rs $(BUILD)/libio.rlib doc/core
+	$(RUSTDOC) $<
+
+doc/system: crates/system/lib.rs crates/system/*.rs crates/system/*/*.rs $(BUILD)/libsystem.rlib doc/core
+	$(RUSTDOC) $<
+
+doc/kernel: kernel/main.rs kernel/*.rs kernel/*/*.rs kernel/*/*/*.rs $(BUILD)/kernel.rlib doc/collections doc/io doc/system
+	$(RUSTDOC) $<
+
+doc/std: libstd/src/lib.rs libstd/src/*.rs libstd/src/*/*.rs libstd/src/*/*/*.rs $(BUILD)/libstd.rlib doc/rand doc/system
+	$(RUSTDOC) --crate-name=std $<
+
+doc: doc/kernel doc/std
 
 $(BUILD)/libcore.rlib: rust/src/libcore/lib.rs
 	$(MKDIR) -p $(BUILD)
@@ -226,10 +256,10 @@ $(BUILD)/liborbital.rlib: liborbital/lib.rs liborbital/*.rs $(BUILD)/libstd.rlib
 
 #Kernel stuff
 $(BUILD)/libio.rlib: crates/io/lib.rs crates/io/*.rs $(BUILD)/libcore.rlib
-	$(RUSTC) $(RUSTCFLAGS) --crate-name io -o $@ $<
+	$(RUSTC) $(RUSTCFLAGS) -o $@ $<
 
 $(BUILD)/libsystem.rlib: crates/system/lib.rs crates/system/*.rs crates/system/*/*.rs $(BUILD)/libcore.rlib
-	$(RUSTC) $(RUSTCFLAGS) --crate-name system -o $@ $<
+	$(RUSTC) $(RUSTCFLAGS) -o $@ $<
 
 $(BUILD)/kernel.rlib: kernel/main.rs kernel/*.rs kernel/*/*.rs kernel/*/*/*.rs $(BUILD)/libcore.rlib $(BUILD)/liballoc.rlib $(BUILD)/libcollections.rlib $(BUILD)/libio.rlib $(BUILD)/libsystem.rlib
 	$(RUSTC) $(RUSTCFLAGS) -C lto -o $@ $<
