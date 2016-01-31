@@ -1,4 +1,5 @@
 use fmt;
+use mem;
 use string::String;
 
 pub struct Display<'a> {
@@ -8,6 +9,37 @@ pub struct Display<'a> {
 impl<'a> fmt::Display for Display<'a> {
     fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
         write!(f, "{}", self.string)
+    }
+}
+
+pub struct Path {
+    pub inner: str,
+}
+
+impl Path {
+    /// Create a new path
+    /// # Safety
+    /// This uses the same logic in libstd, it should be safe for valid &str
+    pub fn new<S: AsRef<str> + ?Sized>(s: &S) -> &Path {
+        unsafe { mem::transmute(s.as_ref()) }
+    }
+}
+
+impl AsRef<Path> for str {
+    fn as_ref(&self) -> &Path {
+        Path::new(self)
+    }
+}
+
+impl AsRef<Path> for String {
+    fn as_ref(&self) -> &Path {
+        Path::new(self)
+    }
+}
+
+impl AsRef<Path> for PathBuf {
+    fn as_ref(&self) -> &Path {
+        Path::new(&self.inner)
     }
 }
 

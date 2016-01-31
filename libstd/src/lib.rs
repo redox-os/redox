@@ -165,7 +165,6 @@ pub mod rt;
 pub use __core::panicking;
 
 pub mod rand_old;
-pub mod hashmap;
 
 // Some external utilities of the standard library rely on randomness (aka
 // rustc_back::TempDir and tests) and need a way to get at the OS rng we've got

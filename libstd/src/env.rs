@@ -3,7 +3,7 @@
 use alloc::boxed::Box;
 
 use fs::File;
-use path::PathBuf;
+use path::{Path, PathBuf};
 use io::Result;
 use slice::Iter;
 use string::{String, ToString};
@@ -47,11 +47,11 @@ pub fn current_dir() -> Result<PathBuf> {
 }
 
 /// Set the current directory
-pub fn set_current_dir(path: &str) -> Result<()> {
-    let file_result = if path.is_empty() || path.ends_with('/') {
-        File::open(path)
+pub fn set_current_dir<P: AsRef<Path>>(path: P) -> Result<()> {
+    let file_result = if path.as_ref().inner.is_empty() || path.as_ref().inner.ends_with('/') {
+        File::open(&path.as_ref().inner)
     } else {
-        File::open(&(path.to_string() + "/"))
+        File::open(&(path.as_ref().inner.to_string() + "/"))
     };
 
     match file_result {
