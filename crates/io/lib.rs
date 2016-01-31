@@ -1,3 +1,4 @@
+#![crate_name="io"]
 #![crate_type="lib"]
 #![feature(asm)]
 #![feature(core_intrinsics)]
