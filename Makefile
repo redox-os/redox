@@ -144,6 +144,7 @@ apps: filesystem/apps/editor/main.bin \
 	  filesystem/apps/orbital/main.bin \
 	  filesystem/apps/orbtk/main.bin \
 	  filesystem/apps/player/main.bin \
+	  filesystem/apps/rusthello/main.bin \
 	  filesystem/apps/shell/main.bin \
 	  filesystem/apps/sodium/main.bin \
 	  filesystem/apps/terminal/main.bin \
