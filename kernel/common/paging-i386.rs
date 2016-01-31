@@ -28,50 +28,129 @@ pub const PF_ALL: usize =  0xFFF;
 pub const PF_NONE: usize = 0xFFFFF000;
 
 pub struct Pager {
-    directory: *mut PageDirectory
+    directory: usize,
+    flags: usize,
 }
 
 impl Pager {
-    pub unsafe fn new() -> Pager {
-        let directory = memory::alloc_type();
-        ptr::write(directory, PageDirectory {
-            tables: [0; 1024]
-        });
+    /// Create a new Pager for x86
+    /// # Safety
+    /// - Allocates and initializes a new page directory
+    /// - *Will fail if memory allocation fails*
+    pub fn new(flags: usize) -> Pager {
+        let directory;
+        unsafe {
+            directory = memory::alloc_type();
+            ptr::write(directory, PageDirectory::new());
+        }
         Pager {
-            directory: directory
+            directory: directory as usize | PF_ALLOC,
+            flags: flags,
         }
     }
 
-    pub unsafe fn map(&self) {
+    /// Use this Pager for memory operations
+    /// # Safety
+    /// - Sets CR3 to the page directory location, ensuring that flags are removed
+    /// - *Will fail if memory allocation failed in Pager::new()*
+    pub unsafe fn enable(&self) {
         asm!("mov cr3, $0"
             :
-            : "r"(self.directory as u32)
+            : "r"(self.directory & PF_NONE)
             : "memory"
             : "intel", "volatile");
+    }
+
+    /// Map a virtual address to a physical address
+    /// # Safety
+    /// - Calls PageDirectory::map() using a raw pointer
+    /// - *Will fail if memory allocation failed in Pager::new()*
+    pub unsafe fn map(&mut self, virtual_address: usize, physical_address: usize) {
+        let directory_ptr = (self.directory & PF_NONE) as *mut PageDirectory;
+        let directory = &mut *directory_ptr;
+        directory.map(virtual_address, physical_address, self.flags);
+    }
+
+    /// Unmap a virtual address
+    /// # Safety
+    /// - Calls PageDirectory::unmap() using a raw pointer
+    /// - *Will fail if memory allocation failed in Pager::new()*
+    pub unsafe fn unmap(&mut self, virtual_address: usize) {
+        let directory_ptr = (self.directory & PF_NONE) as *mut PageDirectory;
+        let directory = &mut *directory_ptr;
+        directory.unmap(virtual_address);
     }
 }
 
 impl Drop for Pager {
+    /// Drop the Pager
+    /// # Safety
+    /// - Calls drop on a raw pointer
+    /// - *Will fail if memory allocation failed in Pager::new()*
+    /// - *CR3 should be set to a different pager before dropping*
     fn drop(&mut self) {
-        unsafe {
-            drop(ptr::read(self.directory));
-            memory::unalloc_type(self.directory);
+        if self.directory & PF_ALLOC == PF_ALLOC {
+            unsafe {
+                let directory_ptr = (self.directory & PF_NONE) as *mut PageDirectory;
+                drop(ptr::read(directory_ptr));
+                memory::unalloc_type(directory_ptr);
+            }
         }
     }
 }
 
 #[repr(packed)]
 pub struct PageDirectory {
-    tables: [usize; 1024]
+    entries: [usize; 1024]
+}
+
+impl PageDirectory {
+    /// Create a new and empty PageDirectory
+    fn new() -> PageDirectory {
+        PageDirectory {
+            entries: [0; 1024]
+        }
+    }
+
+    /// Map a virtual address to a physical address
+    /// # Safety
+    /// - Calls PageTable::map() using a raw pointer
+    /// - *Will fail if memory allocation failed*
+    unsafe fn map(&mut self, virtual_address: usize, physical_address: usize, flags: usize) {
+        let entry = &mut self.entries[(virtual_address >> 22) & 1023];
+        if *entry & PF_NONE == 0 {
+            let table_ptr = memory::alloc_type();
+            ptr::write(table_ptr, PageTable::new());
+            *entry = table_ptr as usize | PF_ALLOC | PF_PRESENT;
+        }
+
+        let table_ptr = (*entry & PF_NONE) as *mut PageTable;
+        let table = &mut *table_ptr;
+        table.map(virtual_address, physical_address, flags);
+    }
+
+    /// Unmap a virtual address
+    /// # Safety
+    /// - Calls PageTable::unmap() using a raw pointer
+    /// - *Will fail if memory allocation failed*
+    unsafe fn unmap(&mut self, virtual_address: usize){
+        let entry = &mut self.entries[(virtual_address >> 22) & 1023];
+        if *entry & PF_NONE > 0 {
+            let table_ptr = (*entry & PF_NONE) as *mut PageTable;
+            let table = &mut *table_ptr;
+            table.unmap(virtual_address);
+        }
+    }
 }
 
 impl Drop for PageDirectory {
     fn drop(&mut self) {
-        for table in self.tables.iter() {
-            if table & PF_ALLOC == PF_ALLOC {
+        for entry in self.entries.iter() {
+            if *entry & PF_ALLOC == PF_ALLOC {
                 unsafe {
-                    drop(ptr::read((*table & PF_NONE) as *mut PageTable));
-                    memory::unalloc(*table & PF_NONE);
+                    let table_ptr = (*entry & PF_NONE) as *mut PageTable;
+                    drop(ptr::read(table_ptr));
+                    memory::unalloc_type(table_ptr);
                 }
             }
         }
@@ -80,14 +159,39 @@ impl Drop for PageDirectory {
 
 #[repr(packed)]
 pub struct PageTable {
-    pages: [usize; 1024]
+    entries: [usize; 1024]
+}
+
+impl PageTable {
+    /// Create a new and empty PageTable
+    fn new() -> PageTable {
+        PageTable {
+            entries: [0; 1024]
+        }
+    }
+
+    unsafe fn map(&mut self, virtual_address: usize, physical_address: usize, flags: usize) {
+        let entry = &mut self.entries[(virtual_address >> 12) & 1023];
+        if *entry & PF_ALLOC == PF_ALLOC {
+            memory::unalloc(*entry & PF_NONE);
+        }
+        *entry = physical_address & PF_NONE | flags;
+    }
+
+    unsafe fn unmap(&mut self, virtual_address: usize){
+        let entry = &mut self.entries[(virtual_address >> 12) & 1023];
+        if *entry & PF_ALLOC == PF_ALLOC {
+            memory::unalloc(*entry & PF_NONE);
+        }
+        *entry = 0;
+    }
 }
 
 impl Drop for PageTable {
     fn drop(&mut self) {
-        for page in self.pages.iter() {
-            if page & PF_ALLOC == PF_ALLOC {
-                unsafe { memory::unalloc(*page & PF_NONE) };
+        for entry in self.entries.iter() {
+            if *entry & PF_ALLOC == PF_ALLOC {
+                unsafe { memory::unalloc(*entry & PF_NONE) };
             }
         }
     }
@@ -156,32 +260,32 @@ impl Page {
 
     /// Get the current physical address
     pub fn phys_addr(&self) -> usize {
-        unsafe { (ptr::read(self.entry_address() as *mut u32) & 0xFFFFF000) as usize }
+        unsafe { (ptr::read(self.entry_address() as *mut usize) & PF_NONE) as usize }
     }
 
     /// Get the current virtual address
     pub fn virt_addr(&self) -> usize {
-        self.virtual_address & 0xFFFFF000
+        self.virtual_address & PF_NONE
     }
 
     /// Map the memory page to a given physical memory address
     pub unsafe fn map(&mut self, physical_address: usize) {
-        ptr::write(self.entry_address() as *mut u32,
-                   (physical_address as u32 & 0xFFFFF000) | 1); //present
+        ptr::write(self.entry_address() as *mut usize,
+                   (physical_address & PF_NONE) | PF_PRESENT);
         self.flush();
     }
 
     /// Map the memory page to a given physical memory address, and allow userspace read access
     pub unsafe fn map_user_read(&mut self, physical_address: usize) {
-        ptr::write(self.entry_address() as *mut u32,
-                   (physical_address as u32 & 0xFFFFF000) | 1 << 2 | 1); //Allow userspace, present
+        ptr::write(self.entry_address() as *mut usize,
+                   (physical_address & PF_NONE) | PF_USER | PF_PRESENT);
         self.flush();
     }
 
     /// Map the memory page to a given physical memory address, and allow userspace read/write access
     pub unsafe fn map_user_write(&mut self, physical_address: usize) {
-        ptr::write(self.entry_address() as *mut u32,
-                   (physical_address as u32 & 0xFFFFF000) | 1 << 2 | 1 << 1 | 1); //Allow userspace, read/write, present
+        ptr::write(self.entry_address() as *mut usize,
+                   (physical_address & PF_NONE) | PF_USER | PF_WRITE | PF_PRESENT);
         self.flush();
     }
 
@@ -193,7 +297,7 @@ impl Page {
 
     /// Unmap the memory page
     pub unsafe fn unmap(&mut self) {
-        ptr::write(self.entry_address() as *mut u32, 0);
+        ptr::write(self.entry_address() as *mut usize, 0);
         self.flush();
     }
 }
