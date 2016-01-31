@@ -4,7 +4,7 @@ use core::{cmp, intrinsics, mem};
 use core::ops::{Index, IndexMut};
 use core::ptr;
 
-use common::paging::PAGE_END;
+use super::paging::PAGE_END;
 
 use sync::Intex;
 

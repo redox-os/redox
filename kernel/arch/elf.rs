@@ -1,20 +1,22 @@
 //! ELF executables
 
+use arch::memory;
+
 use collections::vec::Vec;
 
 use core::{ptr, str, slice};
 
-use common::{debug, memory};
+use common::{debug};
 
-pub use self::elf_arch::*;
+pub use self::arch::*;
 
 #[cfg(target_arch = "x86")]
-#[path="elf_arch-i386.rs"]
-pub mod elf_arch;
+#[path="x86/elf.rs"]
+mod arch;
 
 #[cfg(target_arch = "x86_64")]
-#[path="elf_arch-x86_64.rs"]
-pub mod elf_arch;
+#[path="x86_64/elf.rs"]
+mod arch;
 
 /// An ELF executable
 pub struct Elf {

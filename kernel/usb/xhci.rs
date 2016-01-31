@@ -5,7 +5,7 @@ use core::mem::size_of;
 use common::debug;
 //For old code vvv
 use common::debug::*;
-use common::memory::*;
+use arch::memory::*;
 
 use schemes::KScheme;
 

@@ -11,7 +11,7 @@ use common::debug;
 use drivers::io::{Io, Mmio};
 use drivers::pci::config::PciConfig;
 
-use scheduler::context::context_switch;
+use arch::context::context_switch;
 
 use schemes::KScheme;
 

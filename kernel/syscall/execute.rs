@@ -1,17 +1,15 @@
 use alloc::arc::Arc;
 
+use arch::context::{CONTEXT_STACK_SIZE, CONTEXT_STACK_ADDR, context_switch, context_userspace, Context, ContextMemory};
+use arch::elf::Elf;
+use arch::memory;
+
 use collections::string::{String, ToString};
 use collections::vec::Vec;
 
 use core::cell::UnsafeCell;
 use core::ops::DerefMut;
 use core::{mem, ptr};
-
-use common::elf::Elf;
-use common::memory;
-
-use scheduler::context::{CONTEXT_STACK_SIZE, CONTEXT_STACK_ADDR, context_switch,
-context_userspace, Context, ContextMemory};
 
 use schemes::Url;
 

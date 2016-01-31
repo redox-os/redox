@@ -14,7 +14,7 @@ use disk::ide::Extent;
 use fs::redoxfs::{FileSystem, Node, NodeData};
 
 use common::debug;
-use common::memory::Memory;
+use arch::memory::Memory;
 
 use schemes::{Result, KScheme, Resource, ResourceSeek, Url, VecResource};
 

@@ -1,7 +1,7 @@
 use core::cmp::Ordering;
 use core::ops::{Add, Sub};
 
-use scheduler::context;
+use arch::context;
 
 pub const NANOS_PER_MICRO: i32 = 1000;
 pub const NANOS_PER_MILLI: i32 = 1000000;

@@ -5,7 +5,7 @@ use collections::vec_deque::VecDeque;
 
 use schemes::{Result, Resource, Url};
 
-use scheduler::context::context_switch;
+use arch::context::context_switch;
 
 use sync::Intex;
 
