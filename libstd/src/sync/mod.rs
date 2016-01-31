@@ -4,7 +4,7 @@ pub use self::mutex::{Mutex, MutexGuard, StaticMutex};
 pub use self::rwlock::{RwLock, RwLockReadGuard, RwLockWriteGuard};
 pub use self::once::Once;
 
-mod mpsc;
+pub mod mpsc;
 mod mutex;
 mod once;
 mod rwlock;
