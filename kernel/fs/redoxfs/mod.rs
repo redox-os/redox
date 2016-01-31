@@ -4,7 +4,7 @@ use collections::string::{String, ToString};
 use collections::vec::Vec;
 
 use common::slice::GetSlice;
-use common::memory::Memory;
+use arch::memory::Memory;
 
 use core::{cmp, ptr, slice};
 

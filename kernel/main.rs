@@ -35,6 +35,12 @@ use acpi::Acpi;
 
 use alloc::boxed::Box;
 
+use arch::context::{context_switch, Context};
+use arch::memory;
+use arch::paging::Page;
+use arch::regs::Regs;
+use arch::tss::TSS;
+
 use collections::string::{String, ToString};
 use collections::vec::Vec;
 
@@ -42,8 +48,6 @@ use core::{ptr, mem, usize};
 use core::slice::SliceExt;
 
 use common::event::{self, EVENT_KEY, EventOption};
-use common::memory;
-use common::paging::Page;
 use common::time::Duration;
 
 use drivers::pci;
@@ -53,9 +57,6 @@ use drivers::rtc::*;
 use drivers::serial::*;
 
 use env::Environment;
-
-use scheduler::{Context, Regs, TSS};
-use scheduler::context::context_switch;
 
 use schemes::Url;
 use schemes::context::*;
@@ -79,6 +80,8 @@ pub mod macros;
 pub mod alloc_system;
 /// ACPI
 pub mod acpi;
+/// Architecture dependant
+pub mod arch;
 /// Disk drivers
 pub mod disk;
 /// Various drivers
@@ -93,8 +96,6 @@ pub mod graphics;
 pub mod panic;
 /// Schemes
 pub mod schemes;
-/// Scheduling
-pub mod scheduler;
 /// Sync primatives
 pub mod sync;
 /// System calls

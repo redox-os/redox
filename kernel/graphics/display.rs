@@ -3,7 +3,7 @@ use alloc::boxed::Box;
 use core::{cmp, mem};
 // use core::simd::*;
 
-use common::memory;
+use arch::memory;
 
 use sync::Intex;
 

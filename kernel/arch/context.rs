@@ -3,6 +3,9 @@ use common::slice::GetSlice;
 use alloc::arc::Arc;
 use alloc::boxed::{Box, FnBox};
 
+use arch::memory;
+use arch::paging::Page;
+
 use collections::string::{String, ToString};
 use collections::vec::Vec;
 
@@ -10,9 +13,6 @@ use core::cell::UnsafeCell;
 use core::slice::{Iter, IterMut};
 use core::{mem, ptr};
 use core::ops::DerefMut;
-
-use common::memory;
-use common::paging::Page;
 
 use schemes::Resource;
 

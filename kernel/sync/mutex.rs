@@ -2,7 +2,7 @@ use core::cell::UnsafeCell;
 use core::ops::{Deref, DerefMut, Drop};
 use core::sync::atomic::{AtomicBool, Ordering};
 
-use scheduler::context::context_switch;
+use arch::context::context_switch;
 
 /// A mutex, i.e. a form of safe shared memory between threads. See rust std's Mutex.
 pub struct Mutex<T: ?Sized> {

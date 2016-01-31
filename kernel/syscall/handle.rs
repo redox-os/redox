@@ -1,19 +1,18 @@
 use alloc::arc::Arc;
 
+use arch::context::{context_clone, context_switch, Context, ContextMemory, ContextFile, ContextStatus};
+use arch::memory;
+use arch::regs::Regs;
+
 use collections::string::{String, ToString};
 use collections::vec::Vec;
 
 use core::ops::Deref;
 use core::{mem, ptr, slice, str, usize};
 
-use common::memory;
 use common::time::Duration;
 
 use drivers::io::{Io, Pio};
-
-use scheduler::Regs;
-use scheduler::context::{context_clone, context_switch, Context, ContextMemory, ContextFile,
-                         ContextStatus};
 
 use schemes::{Resource, ResourceSeek, Url};
 use schemes::pipe::{PipeRead, PipeWrite};

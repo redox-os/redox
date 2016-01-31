@@ -5,9 +5,9 @@ use collections::vec::Vec;
 use core::intrinsics::volatile_load;
 use core::mem;
 
-use scheduler::context::context_switch;
+use arch::context::context_switch;
 use common::debug;
-use common::memory::Memory;
+use arch::memory::Memory;
 
 use drivers::pci::config::PciConfig;
 use drivers::io::{Io, Pio};

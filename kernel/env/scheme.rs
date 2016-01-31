@@ -8,7 +8,7 @@ use core::cell::Cell;
 use core::mem::size_of;
 use core::ops::DerefMut;
 
-use scheduler::context::{context_switch, Context, ContextMemory};
+use arch::context::{context_switch, Context, ContextMemory};
 
 use schemes::{Result, Resource, ResourceSeek, KScheme, Url};
 

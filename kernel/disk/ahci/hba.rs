@@ -1,4 +1,4 @@
-use common::memory;
+use arch::memory;
 
 use core::mem::size_of;
 use core::u32;

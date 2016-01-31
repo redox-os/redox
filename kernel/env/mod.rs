@@ -8,7 +8,7 @@ use common::event::Event;
 use sync::Intex;
 use common::time::Duration;
 
-use scheduler::context::ContextManager;
+use arch::context::ContextManager;
 
 use schemes::{Result, KScheme, Resource, VecResource, Url};
 

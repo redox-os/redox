@@ -5,7 +5,7 @@ use collections::vec::Vec;
 
 use core::ptr;
 
-use common::memory::Memory;
+use arch::memory::Memory;
 
 use disk::Disk;
 
