@@ -164,7 +164,7 @@ fn main() {
             println!("    Console: Press F1");
             println!("    Desktop: Press F2");
 
-            Command::new("/apps/orbtk/main.bin").spawn();
+            Command::new("/apps/launcher/main.bin").spawn().unwrap();
 
             loop{
                 let mut packet = Packet::default();
