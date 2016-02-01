@@ -13,7 +13,6 @@ pub const SYS_CLOCK_GETTIME: usize = 265;
     pub const CLOCK_MONOTONIC: usize = 4;
 pub const SYS_DUP: usize = 41;
 pub const SYS_EXECVE: usize = 11;
-pub const SYS_SPAWNVE: usize = 911; //Extra to fix scheme execve
 pub const SYS_EXIT: usize = 1;
 pub const SYS_FPATH: usize = 928;
 pub const SYS_FSTAT: usize = 28;
@@ -86,11 +85,6 @@ pub unsafe fn sys_dup(fd: usize) -> usize {
 #[no_mangle]
 pub unsafe fn sys_execve(path: *const u8, args: *const *const u8) -> usize {
     syscall2(SYS_EXECVE, path as usize, args as usize)
-}
-
-#[no_mangle]
-pub unsafe fn sys_spawnve(path: *const u8, args: *const *const u8) -> usize {
-    syscall2(SYS_SPAWNVE, path as usize, args as usize)
 }
 
 #[no_mangle]

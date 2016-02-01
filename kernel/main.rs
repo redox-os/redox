@@ -43,7 +43,6 @@ use arch::regs::Regs;
 use arch::tss::TSS;
 
 use collections::string::{String, ToString};
-use collections::vec::Vec;
 
 use core::{ptr, mem, usize};
 use core::slice::SliceExt;
@@ -59,7 +58,6 @@ use drivers::serial::*;
 
 use env::Environment;
 
-use schemes::Url;
 use schemes::context::*;
 use schemes::debug::*;
 use schemes::display::*;
@@ -282,7 +280,7 @@ unsafe fn init(tss_data: usize) {
             env.contexts.lock().push(Context::root());
             env.console.lock().draw = true;
 
-            debug!("Redox {} bits\n", mem::size_of::<usize>() * 8);
+            debugln!("Redox {} bits", mem::size_of::<usize>() * 8);
 
             if let Some(acpi) = Acpi::new() {
                 env.schemes.lock().push(acpi);
@@ -326,11 +324,8 @@ unsafe fn init(tss_data: usize) {
                     do_sys_open(stdio_c.as_ptr(), 0);
                 }
 
-                execute(Url::from_str("file:/apps/init/main.bin"), Vec::new());
-                debug!("INIT: Failed to execute\n");
-
-                loop {
-                    context_switch(false);
+                if let Err(err) = execute(vec!["file:/apps/init/main.bin".to_string()]) {
+                    debugln!("INIT: Failed to execute: {}", err);
                 }
             });
         },

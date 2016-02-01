@@ -4,7 +4,7 @@ use arch::context::{context_clone, context_switch, Context, ContextMemory, Conte
 use arch::memory;
 use arch::regs::Regs;
 
-use collections::string::{String, ToString};
+use collections::string::{ToString};
 use collections::vec::Vec;
 
 use core::ops::Deref;
@@ -280,59 +280,12 @@ pub fn do_sys_dup(fd: usize) -> usize {
 
 pub fn do_sys_execve(path: *const u8, args: *const *const u8) -> usize {
     let mut args_vec = Vec::new();
-    let path_url = {
-        let contexts = ::env().contexts.lock();
-        if let Some(current) = contexts.current() {
-            for arg in c_array_to_slice(args) {
-                args_vec.push(unsafe { str::from_utf8_unchecked(c_string_to_slice(*arg)) }
-                                  .to_string());
-            }
+    args_vec.push(unsafe { str::from_utf8_unchecked(c_string_to_slice(path)) }.to_string());
+    for arg in c_array_to_slice(args) {
+        args_vec.push(unsafe { str::from_utf8_unchecked(c_string_to_slice(*arg)) }.to_string());
+    }
 
-            Url::from_string(unsafe {
-                current.canonicalize(str::from_utf8_unchecked(c_string_to_slice(path)))
-            })
-        } else {
-            Url::from_string(String::new())
-        }
-    };
-
-    execute(path_url, args_vec);
-
-    Error::mux(Err(Error::new(EACCES)))
-}
-
-pub fn do_sys_spawnve(path: *const u8, args: *const *const u8) -> usize {
-    let mut args_vec = Vec::new();
-    let path_url = {
-        let contexts = ::env().contexts.lock();
-        if let Some(current) = contexts.current() {
-            for arg in c_array_to_slice(args) {
-                args_vec.push(unsafe { str::from_utf8_unchecked(c_string_to_slice(*arg)) }
-                                  .to_string());
-            }
-
-            Url::from_string(unsafe {
-                current.canonicalize(str::from_utf8_unchecked(c_string_to_slice(path)))
-            })
-        } else {
-            Url::from_string(String::new())
-        }
-    };
-
-    return Context::spawn("kspawn".to_string(),
-                          box move || {
-                              let wd_c = "file:/\0";
-                              do_sys_chdir(wd_c.as_ptr());
-
-                              let stdio_c = "debug:\0";
-                              do_sys_open(stdio_c.as_ptr(), 0);
-                              do_sys_open(stdio_c.as_ptr(), 0);
-                              do_sys_open(stdio_c.as_ptr(), 0);
-
-                              execute(path_url, args_vec);
-
-                              do_sys_exit(127);
-                          });
+    Error::mux(execute(args_vec))
 }
 
 /// Exit context
@@ -752,7 +705,6 @@ pub fn syscall_handle(regs: &mut Regs) -> bool {
         SYS_CLOCK_GETTIME => regs.ax = do_sys_clock_gettime(regs.bx, regs.cx as *mut TimeSpec),
         SYS_DUP => regs.ax = do_sys_dup(regs.bx),
         SYS_EXECVE => regs.ax = do_sys_execve(regs.bx as *const u8, regs.cx as *const *const u8),
-        SYS_SPAWNVE => regs.ax = do_sys_spawnve(regs.bx as *const u8, regs.cx as *const *const u8),
         SYS_EXIT => do_sys_exit(regs.bx),
         SYS_FPATH => regs.ax = do_sys_fpath(regs.bx, regs.cx as *mut u8, regs.dx),
         // TODO: fstat
