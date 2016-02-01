@@ -1,9 +1,10 @@
+use boxed::Box;
 use io::Result;
 use string::{String, ToString};
 use vec::Vec;
 
 use system::error::Error;
-use system::syscall::{sys_clone, sys_execve, sys_spawnve, sys_exit, sys_waitpid, CLONE_VM, CLONE_VFORK};
+use system::syscall::{sys_clone, sys_execve, sys_exit, sys_waitpid, CLONE_VM, CLONE_VFORK};
 
 pub struct ExitStatus {
     status: usize,
@@ -58,53 +59,36 @@ impl Command {
     }
 
     pub fn spawn(&mut self) -> Result<Child> {
-        let path_c = self.path.to_string() + "\0";
-
-        let mut args_vec: Vec<String> = Vec::new();
-        for arg in self.args.iter() {
-            args_vec.push(arg.to_string() + "\0");
-        }
-
-        let mut args_c: Vec<*const u8> = Vec::new();
-        for arg_vec in args_vec.iter() {
-            args_c.push(arg_vec.as_ptr());
-        }
-        args_c.push(0 as *const u8);
-
+        let mut res = Box::new(0);
         let pid = unsafe { sys_clone(CLONE_VM | CLONE_VFORK) } as isize;
         if pid == 0 {
+            let path_c = self.path.to_string() + "\0";
+
+            let mut args_vec: Vec<String> = Vec::new();
+            for arg in self.args.iter() {
+                args_vec.push(arg.to_string() + "\0");
+            }
+
+            let mut args_c: Vec<*const u8> = Vec::new();
+            for arg_vec in args_vec.iter() {
+                args_c.push(arg_vec.as_ptr());
+            }
+            args_c.push(0 as *const u8);
+
             unsafe {
-                sys_execve(path_c.as_ptr(), args_c.as_ptr());
+                *res = sys_execve(path_c.as_ptr(), args_c.as_ptr());
                 loop {
                     sys_exit(127);
                 }
             }
         } else if pid > 0 {
-            Ok(Child { pid: pid })
+            if let Err(err) = Error::demux(*res) {
+                Err(err)
+            } else {
+                Ok(Child { pid: pid })
+            }
         } else {
             Err(Error::new(-pid))
-        }
-    }
-
-    pub fn spawn_scheme(&mut self) -> Option<Child> {
-        let path_c = self.path.to_string() + "\0";
-
-        let mut args_vec: Vec<String> = Vec::new();
-        for arg in self.args.iter() {
-            args_vec.push(arg.to_string() + "\0");
-        }
-
-        let mut args_c: Vec<*const u8> = Vec::new();
-        for arg_vec in args_vec.iter() {
-            args_c.push(arg_vec.as_ptr());
-        }
-        args_c.push(0 as *const u8);
-
-        let pid = unsafe { sys_spawnve(path_c.as_ptr(), args_c.as_ptr()) } as isize;
-        if pid > 0 {
-            Some(Child { pid: pid })
-        } else {
-            None
         }
     }
 }

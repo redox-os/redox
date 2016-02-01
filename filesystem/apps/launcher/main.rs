@@ -125,8 +125,8 @@ fn main() {
                         for package in packages.iter() {
                             if package.icon.has_data() {
                                 if mouse_event.x >= x && mouse_event.x < x + package.icon.width() as i32 {
-                                    if Command::new(&package.binary).spawn_scheme().is_none() {
-                                        println!("{}: Failed to launch", package.binary);
+                                    if let Err(err) = Command::new(&package.binary).spawn() {
+                                        println!("{}: Failed to launch: {}", package.binary, err);
                                     }
                                 }
                                 x = x + package.icon.width() as i32;
