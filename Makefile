@@ -23,6 +23,7 @@ AS=nasm
 AWK=awk
 BASENAME=basename
 CUT=cut
+DATE=date
 FIND=find
 LD=ld
 LDARGS=-m elf_$(ARCH)
@@ -54,6 +55,7 @@ ifeq ($(OS),Windows_NT)
 	AWK=windows/awk
 	BASENAME=windows/basename
 	CUT=windows/cut
+	DATE=windows/date
 	FIND=windows/find
 	MAKE=windows/make
 	MKDIR=windows/mkdir
@@ -334,10 +336,7 @@ $(BUILD)/filesystem.gen: apps coreutils
 	$(FIND) filesystem -not -path '*/\.*' -type f -o -type l | $(CUT) -d '/' -f2- | $(SORT) | $(AWK) '{printf("file %d,\"%s\"\n", NR, $$0)}' > $@
 
 $(BUILD)/harddrive.bin: kernel/harddrive.asm $(BUILD)/kernel.bin $(BUILD)/filesystem.gen
-	$(AS) -f bin -o $@ -D ARCH_$(ARCH) -i$(BUILD)/ -ikernel/ -ifilesystem/ $<
-
-$(BUILD)/harddrive.list: kernel/harddrive.asm $(BUILD)/kernel.bin $(BUILD)/filesystem.gen
-	$(AS) -f bin -o $(BUILD)/harddrive.bin -l $@ -D ARCH_$(ARCH) -i$(BUILD)/ -ikernel/ -ifilesystem/ $<
+	$(AS) -f bin -o $@ -l $(BUILD)/harddrive.list -D ARCH_$(ARCH) -D TIME="`$(DATE) "+%F %T"`" -i$(BUILD)/ -ikernel/ -ifilesystem/ $<
 
 virtualbox: $(BUILD)/harddrive.bin
 	echo "Delete VM"
