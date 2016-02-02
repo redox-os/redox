@@ -39,6 +39,10 @@ impl Window {
         self.image.roi(x, y, w, h)
     }
 
+    pub fn contains(&self, x: i32, y: i32) -> bool {
+        x >= self.x && y >= self.y && x < self.x + self.width() && y < self.y + self.height()
+    }
+
     pub fn draw(&mut self, display: &mut Display) {
         let mut display_roi = display.roi(self.x, self.y, self.width(), self.height());
         display_roi.blend(&self.as_roi());
