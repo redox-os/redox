@@ -73,7 +73,7 @@ fn execute_inner<'a>(url: &Url, args: &'a [&'a str]) -> Result<(*mut Context<'a>
             context.memory = Arc::new(UnsafeCell::new(memory));
             unsafe { context.map() };
 
-            Ok((&mut **context as *mut _, entry))
+            Ok((&mut *context as *mut _, entry))
         } else {
             Err(Error::new(ESRCH))
         }
@@ -83,7 +83,7 @@ fn execute_inner<'a>(url: &Url, args: &'a [&'a str]) -> Result<(*mut Context<'a>
 }
 
 pub fn execute_outer(context_ptr: *mut Context, entry: usize, mut args: &[&str]) -> ! {
-    Context::spawn("kexec", box move || {
+    Context::spawn("kexec", move || {
         let context = unsafe { &mut *context_ptr };
 
         let mut context_args: Vec<usize> = Vec::new();

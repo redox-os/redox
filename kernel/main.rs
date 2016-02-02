@@ -302,17 +302,17 @@ unsafe fn init(tss_data: usize) {
             env.schemes.lock().push(box MemoryScheme);
             env.schemes.lock().push(box TestScheme);
 
-            Context::spawn("kpoll", box move || { // TODO Do not box! Use static dispatch
+            Context::spawn("kpoll", move || { // TODO Do not box! Use static dispatch
                 poll_loop();
             });
 
-            Context::spawn("kevent", box move || {
+            Context::spawn("kevent", move || {
                 event_loop();
             });
 
             env.contexts.lock().enabled = true;
 
-            Context::spawn("kinit", box move || {
+            Context::spawn("kinit", move || {
                 {
                     let wd_c = "file:/\0";
                     do_sys_chdir(wd_c.as_ptr());

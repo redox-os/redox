@@ -314,11 +314,11 @@ impl<'a> Resource for SchemeServerResource<'a> {
 /// Scheme has to be wrapped
 pub struct Scheme<'a> {
     name: &'a str,
-    inner: Weak<SchemeInner<'a>>
+    inner: Weak<SchemeInner<'a>>,
 }
 
 impl<'a> Scheme<'a> {
-    pub fn new(name: &'static str) -> Result<(Scheme<'a>, Box<Resource + 'a>)> {
+    pub fn new(name: &'a str) -> Result<(Scheme<'a>, Box<Resource + 'a>)> {
         if let Some(context) = ::env().contexts.lock().current_mut() {
             let server = box SchemeServerResource {
                 inner: Arc::new(SchemeInner::new(&name.to_string(), context.deref_mut()))
