@@ -72,23 +72,7 @@ impl<'a> SchemeInner<'a> {
 
 impl<'a> Drop for SchemeInner<'a> {
     fn drop(&mut self) {
-        let mut schemes = ::env().schemes.lock();
-
-        let mut i = 0;
-        while i < schemes.len() {
-            let mut remove = false;
-            if let Some(scheme) = schemes.get(i){
-                if scheme.scheme() == self.name {
-                    remove = true;
-                }
-            }
-
-            if remove {
-                schemes.remove(i);
-            } else {
-                i += 1;
-            }
-        }
+        ::env().schemes.lock().retain(|scheme| scheme.scheme() != self.name);
     }
 }
 
