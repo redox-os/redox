@@ -171,11 +171,13 @@ bins: filesystem/bin \
 		filesystem/bin/echo \
 		filesystem/bin/example \
  		filesystem/bin/false \
+ 		filesystem/bin/free \
 		filesystem/bin/init \
 		filesystem/bin/init.rc \
+ 		filesystem/bin/ints \
 		filesystem/bin/ion \
-		filesystem/bin/lua \
 		filesystem/bin/login \
+		filesystem/bin/lua \
 		filesystem/bin/ls \
 		filesystem/bin/mkdir \
 		filesystem/bin/orbital \
