@@ -10,6 +10,11 @@ use super::common::class::*;
 use super::common::subclass::*;
 use super::common::programming_interface::*;
 
+use usb::uhci::Uhci;
+use usb::ohci::Ohci;
+use usb::ehci::Ehci;
+use usb::xhci::Xhci;
+
 /// PCI device
 pub unsafe fn pci_device(env: &mut Environment,
                          pci: PciConfig,
@@ -29,20 +34,10 @@ pub unsafe fn pci_device(env: &mut Environment,
                 env.schemes.lock().push(module);
             }
         }
-        //(SERIAL_BUS, USB, UHCI) => env.schemes.lock().push(Uhci::new(pci)),
-        //(SERIAL_BUS, USB, OHCI) => env.schemes.lock().push(Ohci::new(pci)),
-        //(SERIAL_BUS, USB, EHCI) => env.schemes.lock().push(Ehci::new(pci)),
-        /*(SERIAL_BUS, USB, XHCI) => {
-            let base = pci.read(0x10) as usize;
-            let mut module = box Xhci {
-                pci: pci,
-                base: base & 0xFFFFFFF0,
-                memory_mapped: base & 1 == 0,
-                irq: pci.read(0x3C) as u8 & 0xF,
-            };
-            module.init();
-            env.schemes.lock().push(module));
-        }*/
+        (SERIAL_BUS, USB, UHCI) => env.schemes.lock().push(Uhci::new(pci)),
+        (SERIAL_BUS, USB, OHCI) => env.schemes.lock().push(Ohci::new(pci)),
+        (SERIAL_BUS, USB, EHCI) => env.schemes.lock().push(Ehci::new(pci)),
+        (SERIAL_BUS, USB, XHCI) => env.schemes.lock().push(Xhci::new(pci)),
         _ => {
             match (vendor_code, device_code) {
                 //(REALTEK, RTL8139) => env.schemes.lock().push(Rtl8139::new(pci)),
