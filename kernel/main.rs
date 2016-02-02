@@ -22,6 +22,8 @@
 #![feature(zero_one)]
 #![feature(collections_range)]
 #![no_std]
+
+#![allow(deprecated)]
 #![deny(warnings)]
 
 #[macro_use]

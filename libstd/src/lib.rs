@@ -38,6 +38,7 @@
 #![feature(filling_drop)]
 #![no_std]
 
+#![allow(deprecated)]
 // TODO
 //#![deny(missing_docs)]
 #![deny(warnings)]
