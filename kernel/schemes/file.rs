@@ -18,8 +18,6 @@ use arch::memory::Memory;
 
 use schemes::{Result, KScheme, Resource, ResourceSeek, Url, VecResource};
 
-use sync::Intex;
-
 use syscall::{Error, O_CREAT, ENOENT, EIO};
 
 /// A file resource
@@ -105,8 +103,6 @@ impl Resource for FileResource {
                     debug::dl();
 
                     unsafe {
-                        let _intex = Intex::static_lock();
-
                         let sectors = ((remaining + 511) / 512) as u64;
                         if (*self.scheme).fs.header.free_space.length >= sectors * 512 {
                             extent.block = (*self.scheme).fs.header.free_space.block;
@@ -169,13 +165,9 @@ impl Resource for FileResource {
 
                             debug::d("Renode\n");
 
-                            {
-                                let _intex = Intex::static_lock();
-
-                                for mut node in (*self.scheme).fs.nodes.iter_mut() {
-                                    if node.block == self.node.block {
-                                        *node = self.node.clone();
-                                    }
+                            for mut node in (*self.scheme).fs.nodes.iter_mut() {
+                                if node.block == self.node.block {
+                                    *node = self.node.clone();
                                 }
                             }
                         }

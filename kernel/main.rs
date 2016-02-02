@@ -22,7 +22,7 @@
 #![feature(zero_one)]
 #![feature(collections_range)]
 #![no_std]
-//#![deny(warnings)]
+#![deny(warnings)]
 
 #[macro_use]
 extern crate alloc;

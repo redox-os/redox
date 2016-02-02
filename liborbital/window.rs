@@ -198,10 +198,7 @@ impl Window {
             let mut event = Event::new();
             match self.file.read(&mut event) {
                 Ok(0) => thread::yield_now(),
-                Ok(_) => {
-                    println!("{:?}", event);
-                    return Some(event);
-                },
+                Ok(_) => return Some(event),
                 Err(_) => return None,
             }
         }

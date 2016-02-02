@@ -5,8 +5,6 @@ use core::{cmp, mem};
 
 use arch::memory;
 
-use sync::Intex;
-
 use super::FONT;
 use super::color::Color;
 use super::point::Point;
@@ -180,7 +178,6 @@ impl Display {
     /// Flip the display
     pub fn flip(&self) {
         unsafe {
-            let _intex = Intex::static_lock();
             if self.root {
                 Display::copy_run(self.offscreen, self.onscreen, self.size);
             } else {
