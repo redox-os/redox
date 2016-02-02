@@ -17,8 +17,6 @@ use drivers::io::{Io, Pio};
 use schemes::{Resource, ResourceSeek, Url};
 use schemes::pipe::{PipeRead, PipeWrite};
 
-use sync::Intex;
-
 use syscall::*;
 
 use super::execute::execute;
@@ -224,8 +222,6 @@ pub fn do_sys_close(fd: usize) -> usize {
 }
 
 pub fn do_sys_clock_gettime(clock: usize, tp: *mut TimeSpec) -> usize {
-    let _intex = Intex::static_lock();
-
     Error::mux(if tp as usize > 0 {
         match clock {
             CLOCK_REALTIME => {
@@ -603,7 +599,7 @@ pub fn do_sys_write(fd: usize, buf: *const u8, count: usize) -> usize {
 pub fn do_sys_alloc(size: usize) -> usize {
     let mut ret = 0;
 
-    let mut contexts = ::env().contexts.lock();
+    let contexts = ::env().contexts.lock();
     if let Some(current) = contexts.current() {
         let physical_address = unsafe { memory::alloc(size) };
         if physical_address > 0 {
