@@ -116,7 +116,6 @@ fn main() {
     draw(&mut window, &packages, &shutdown, -1, -1);
     'running: loop {
         for event in window.events() {
-            println!("{:?}", event.to_option());
             match event.to_option() {
                 EventOption::Mouse(mouse_event) => {
                     draw(&mut window, &packages, &shutdown, mouse_event.x, mouse_event.y);
