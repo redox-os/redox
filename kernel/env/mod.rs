@@ -24,9 +24,9 @@ pub mod console;
 pub mod scheme;
 
 /// The kernel environment
-pub struct Environment {
+pub struct Environment<'a> {
     /// Contexts
-    pub contexts: Intex<ContextManager>,
+    pub contexts: Intex<ContextManager<'a>>,
 
     /// Clock realtime (default)
     pub clock_realtime: Intex<Duration>,
@@ -44,8 +44,8 @@ pub struct Environment {
     pub interrupts: Intex<[u64; 256]>,
 }
 
-impl Environment {
-    pub fn new() -> Box<Environment> {
+impl<'a> Environment<'a> {
+    pub fn new() -> Box<Environment<'a>> {
         box Environment {
             contexts: Intex::new(ContextManager::new()),
 
@@ -73,7 +73,7 @@ impl Environment {
     }
 
     /// Open a new resource
-    pub fn open(&self, url: &Url, flags: usize) -> Result<Box<Resource>> {
+    pub fn open<'b>(&'b self, url: &Url, flags: usize) -> Result<Box<Resource + 'b>> {
         let url_scheme = url.scheme();
         if url_scheme.is_empty() {
             let url_path = url.reference();
@@ -99,9 +99,9 @@ impl Environment {
                     }
                 }
 
-                match Scheme::new(url_path.to_string()) {
+                match Scheme::new(url_path) {
                     Ok((scheme, server)) => {
-                        self.schemes.lock().push(scheme);
+                        self.schemes.lock().push(box scheme);
                         Ok(server)
                     },
                     Err(err) => Err(err)

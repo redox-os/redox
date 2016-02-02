@@ -151,7 +151,7 @@ pub fn do_sys_clone(flags: usize) -> usize {
             context_clone_args.push(0); //Return address, 0 catches bad code
 
             Some(unsafe {
-                Context::new(format!("kclone {}", parent.name),
+                Context::new(&format!("kclone {}", parent.name),
                              context_clone as usize,
                              &context_clone_args)
             })
@@ -276,12 +276,12 @@ pub fn do_sys_dup(fd: usize) -> usize {
 
 pub fn do_sys_execve(path: *const u8, args: *const *const u8) -> usize {
     let mut args_vec = Vec::new();
-    args_vec.push(unsafe { str::from_utf8_unchecked(c_string_to_slice(path)) }.to_string());
+    args_vec.push(unsafe { str::from_utf8_unchecked(c_string_to_slice(path)) });
     for arg in c_array_to_slice(args) {
-        args_vec.push(unsafe { str::from_utf8_unchecked(c_string_to_slice(*arg)) }.to_string());
+        args_vec.push(unsafe { str::from_utf8_unchecked(c_string_to_slice(*arg)) });
     }
 
-    Error::mux(execute(args_vec))
+    Error::mux(execute(&args_vec))
 }
 
 /// Exit context
