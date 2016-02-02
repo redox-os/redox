@@ -29,15 +29,19 @@ impl Resource for DisplayResource {
     }
 
     fn read(&mut self, buf: &mut [u8]) -> Result<usize> {
-        if buf.len() == size_of::<Event>() {
+        if buf.len() >= size_of::<Event>() {
+            let mut i = 0;
             if ! ::env().console.lock().draw {
-                if let Some(event) = ::env().events.lock().pop_front() {
-                    unsafe { ptr::write(buf.as_mut_ptr() as *mut Event, event) };
-                    return Ok(size_of::<Event>());
+                while i <= buf.len() - size_of::<Event>() {
+                    if let Some(event) = ::env().events.lock().pop_front() {
+                        unsafe { ptr::write(buf.as_mut_ptr().offset(i as isize) as *mut Event, event) };
+                        i += size_of::<Event>();
+                    } else {
+                        break;
+                    }
                 }
             }
-
-            Ok(0)
+            Ok(i)
         } else {
             Err(Error::new(EINVAL))
         }
