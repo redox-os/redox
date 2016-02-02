@@ -5,10 +5,10 @@ use std::collections::BTreeMap;
 use std::fs::File;
 use std::io::{Read, Write};
 use std::mem::size_of;
-use std::process::{Child, Command};
+use std::process::Command;
 use std::thread;
 
-use system::error::{Error, Result, EBADF, ENOENT};
+use system::error::{Error, Result, EBADF};
 use system::scheme::{Packet, Scheme};
 
 pub use self::color::Color;
