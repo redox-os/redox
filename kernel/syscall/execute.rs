@@ -103,7 +103,8 @@ pub fn execute_outer(context_ptr: *mut Context, entry: usize, mut args: Vec<Stri
                         physical_address: physical_address,
                         virtual_address: virtual_address,
                         virtual_size: virtual_size,
-                        writeable: false,
+                        //TODO: Remove this hack for brk
+                        writeable: true,
                         allocated: true,
                     });
                 }
