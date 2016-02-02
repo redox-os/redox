@@ -584,21 +584,7 @@ impl Context {
 
     /// Cleanup empty memory
     pub unsafe fn clean_mem(&mut self) {
-        let mut i = 0;
-        while i < (*self.memory.get()).len() {
-            let mut remove = false;
-            if let Some(mem) = (*self.memory.get()).get(i) {
-                if mem.virtual_size == 0 {
-                    remove = true;
-                }
-            }
-
-            if remove {
-                drop((*self.memory.get()).remove(i));
-            } else {
-                i += 1;
-            }
-        }
+        (*self.memory.get()).retain(|mem| mem.virtual_size > 0);
     }
 
     /// Get the next available file descriptor
