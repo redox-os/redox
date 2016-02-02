@@ -1,6 +1,6 @@
 use std::fs::File;
 use std::io::{Result, Read, Write};
-use std::mem::size_of;
+use std::mem;
 use std::slice;
 
 use super::{Color, Event, Image, ImageRoi};
@@ -41,18 +41,49 @@ impl Display {
         self.image.roi(x, y, w, h)
     }
 
-    pub fn poll(&mut self) -> Option<Event> {
-        let mut event = Event::new();
-        if let Ok(count) = self.file.read(&mut event) {
-            if count == size_of::<Event>() {
-                return Some(event);
-            }
+    /// Return a iterator over events
+    pub fn events(&mut self) -> EventIter {
+        let mut iter = EventIter {
+            events: [Event::new(); 128],
+            i: 0,
+            count: 0,
+        };
+
+        match self.file.read(unsafe {
+            slice::from_raw_parts_mut(iter.events.as_mut_ptr() as *mut u8, iter.events.len() * mem::size_of::<Event>())
+        }){
+            Ok(count) => iter.count = count/mem::size_of::<Event>(),
+            Err(_) => (),
         }
-        None
+
+        iter
     }
 
     pub fn flip(&mut self) {
         let data = self.image.data();
-        self.file.write(unsafe { slice::from_raw_parts(data.as_ptr() as *const u8, data.len() * size_of::<Color>()) });
+        self.file.write(unsafe { slice::from_raw_parts(data.as_ptr() as *const u8, data.len() * mem::size_of::<Color>()) });
+    }
+}
+
+/// Event iterator
+pub struct EventIter {
+    events: [Event; 128],
+    i: usize,
+    count: usize,
+}
+
+impl Iterator for EventIter {
+    type Item = Event;
+    fn next(&mut self) -> Option<Event> {
+        if self.i < self.count {
+            if let Some(event) = self.events.get(self.i) {
+                self.i += 1;
+                Some(*event)
+            } else {
+                None
+            }
+        } else {
+            None
+        }
     }
 }

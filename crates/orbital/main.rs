@@ -52,54 +52,64 @@ impl OrbitalScheme {
         }
     }
 
-    fn update(&mut self, display: &mut Display) {
-        while let Some(event) = display.poll() {
-            if event.code == EVENT_KEY {
-                if let Some(id) = self.order.get(0) {
-                    if let Some(mut window) = self.windows.get_mut(&id) {
-                        window.event(event);
-                    }
-                }
-            } else if event.code == EVENT_MOUSE {
-                self.cursor_x = event.a as i32;
-                self.cursor_y = event.b as i32;
-                self.redraw = true;
-
-                let mut focus = 0;
-                let mut i = 0;
-                for id in self.order.iter() {
-                    if let Some(mut window) = self.windows.get_mut(&id) {
-                        if window.contains(event.a as i32, event.b as i32) {
-                            let mut window_event = event;
-                            window_event.a -= window.x as i64;
-                            window_event.b -= window.y as i64;
-                            window.event(window_event);
-                            if event.c > 0 {
-                                focus = i;
-                            }
-                            break;
+    fn event_loop(&mut self, socket: &mut File, display: &mut Display) {
+        loop {
+            for event in display.events() {
+                if event.code == EVENT_KEY {
+                    if let Some(id) = self.order.get(0) {
+                        if let Some(mut window) = self.windows.get_mut(&id) {
+                            window.event(event);
                         }
                     }
-                    i += 1;
-                }
-                if focus > 0 {
-                    if let Some(id) = self.order.remove(focus) {
-                        self.order.push_front(id);
+                } else if event.code == EVENT_MOUSE {
+                    self.cursor_x = event.a as i32;
+                    self.cursor_y = event.b as i32;
+                    self.redraw = true;
+
+                    let mut focus = 0;
+                    let mut i = 0;
+                    for id in self.order.iter() {
+                        if let Some(mut window) = self.windows.get_mut(&id) {
+                            if window.contains(event.a as i32, event.b as i32) {
+                                let mut window_event = event;
+                                window_event.a -= window.x as i64;
+                                window_event.b -= window.y as i64;
+                                window.event(window_event);
+                                if event.c > 0 {
+                                    focus = i;
+                                }
+                                break;
+                            }
+                        }
+                        i += 1;
+                    }
+                    if focus > 0 {
+                        if let Some(id) = self.order.remove(focus) {
+                            self.order.push_front(id);
+                        }
                     }
                 }
             }
-        }
 
-        if self.redraw {
-            self.redraw = false;
-            display.as_roi().set(Color::rgb(75, 163, 253));
-            for id in self.order.iter().rev() {
-                if let Some(mut window) = self.windows.get_mut(&id) {
-                    window.draw(display);
-                }
+            let mut packet = Packet::default();
+            while socket.read(&mut packet).unwrap() == size_of::<Packet>() {
+                self.handle(&mut packet);
+                socket.write(&packet).unwrap();
             }
-            display.roi(self.cursor_x, self.cursor_y, self.cursor.width(), self.cursor.height()).blend(&self.cursor.as_roi());
-            display.flip();
+
+            if self.redraw {
+                self.redraw = false;
+                display.as_roi().set(Color::rgb(75, 163, 253));
+                for id in self.order.iter().rev() {
+                    if let Some(mut window) = self.windows.get_mut(&id) {
+                        window.draw(display);
+                    }
+                }
+                display.roi(self.cursor_x, self.cursor_y, self.cursor.width(), self.cursor.height()).blend(&self.cursor.as_roi());
+                display.flip();
+            }
+
+            thread::yield_now();
         }
     }
 }
@@ -144,21 +154,7 @@ impl Scheme for OrbitalScheme {
     }
 
     fn close(&mut self, id: usize) -> Result {
-        let mut i = 0;
-        while i < self.order.len() {
-            let mut remove = false;
-            if let Some(key) = self.order.get(i) {
-                if *key == id {
-                    remove = true;
-                }
-            }
-
-            if remove {
-                self.order.remove(i);
-            } else {
-                i += 1;
-            }
-        }
+        self.order.retain(|&e| e != id);
 
         if self.windows.remove(&id).is_some() {
             self.redraw = true;
@@ -180,17 +176,7 @@ fn main() {
 
             Command::new("/apps/launcher/main.bin").spawn().unwrap();
 
-            loop{
-                let mut packet = Packet::default();
-                while socket.read(&mut packet).unwrap() == size_of::<Packet>() {
-                    scheme.handle(&mut packet);
-                    socket.write(&packet).unwrap();
-                }
-
-                scheme.update(&mut display);
-
-                thread::yield_now();
-            }
+            scheme.event_loop(&mut socket, &mut display);
         },
         Err(err) => println!("- Orbital: No Display Found: {}", err)
     }
