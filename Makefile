@@ -167,6 +167,7 @@ filesystem/bin/init.rc: crates/init/init.rc
 
 bins: filesystem/bin \
 		filesystem/bin/cat \
+		filesystem/bin/du \
 		filesystem/bin/echo \
 		filesystem/bin/example \
  		filesystem/bin/false \
