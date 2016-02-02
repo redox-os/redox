@@ -55,11 +55,6 @@ impl ConsoleWindow {
                           .unwrap();
     }
 
-    /// Poll the window
-    pub fn poll(&mut self) -> Option<Event> {
-        self.window.poll()
-    }
-
     /// Print to the window
     pub fn print(&mut self, string: &str, color: Color) {
         for c in string.chars() {
@@ -73,89 +68,89 @@ impl ConsoleWindow {
 
     /// Read input
     pub fn read(&mut self) -> Option<String> {
-        while let Some(event) = self.poll() {
-            match event.to_option() {
-                EventOption::Key(key_event) => {
-                    if key_event.pressed {
-                        match key_event.scancode {
-                            K_BKSP => {
-                                if self.offset > 0 {
-                                    self.history[self.history_i as usize] =
-                                        self.history[self.history_i as usize][0..self.offset - 1]
-                                            .to_string() +
-                                        &self.history[self.history_i as usize][self.offset..];
-                                    self.offset -= 1;
-                                }
-                            }
-                            K_DEL => {
-                                if (self.offset) < self.history[self.history_i as usize].len() {
-                                    self.history[self.history_i as usize] =
-                                self.history[self.history_i as usize][0..self.offset].to_string() +
-                                &self.history[self.history_i as usize][self.offset + 1..self.history[self.history_i as usize].len() - 1];
-                                }
-                            }
-                            K_HOME => self.offset = 0,
-                            K_UP => {
-                                if self.history_i as usize + 1 < self.history.len() {
-                                    self.history_i += 1;
-                                }
-                                self.offset = self.history[self.history_i as usize].len();
-                            }
-                            K_LEFT => {
-                                if self.offset > 0 {
-                                    self.offset -= 1;
-                                }
-                            }
-                            K_RIGHT => {
-                                if (self.offset) < self.history[self.history_i as usize].len() {
-                                    self.offset += 1;
-                                }
-                            }
-                            K_END => self.offset = self.history[self.history_i as usize].len(),
-                            K_DOWN => {
-                                if self.history_i > 0 {
-                                    self.history_i -= 1;
-                                }
-                                self.offset = self.history[self.history_i as usize].len();
-                            }
-                            _ => {
-                                match key_event.character {
-                                    '\x00' => (),
-                                    '\n' => {
-                                        let command = self.history[self.history_i as usize].clone();
-                                        self.offset = 0;
-                                        self.history_i = 0;
-                                        if !self.history[0].is_empty() {
-                                            self.history.insert(0, "".to_string());
-                                        }
-                                        while self.history.len() > 1000 {
-                                            self.history.pop();
-                                        }
-                                        self.print(&command, Color::WHITE);
-                                        self.print("\n", Color::WHITE);
-                                        return Some(command);
-                                    }
-                                    '\x1B' => (),
-                                    _ => {
+        loop {
+            for event in self.window.events() {
+                match event.to_option() {
+                    EventOption::Key(key_event) => {
+                        if key_event.pressed {
+                            match key_event.scancode {
+                                K_BKSP => {
+                                    if self.offset > 0 {
                                         self.history[self.history_i as usize] =
-                                            self.history[self.history_i as usize][0..self.offset]
+                                            self.history[self.history_i as usize][0..self.offset - 1]
                                                 .to_string() +
-                                            &key_event.character.to_string() +
                                             &self.history[self.history_i as usize][self.offset..];
+                                        self.offset -= 1;
+                                    }
+                                }
+                                K_DEL => {
+                                    if (self.offset) < self.history[self.history_i as usize].len() {
+                                        self.history[self.history_i as usize] =
+                                    self.history[self.history_i as usize][0..self.offset].to_string() +
+                                    &self.history[self.history_i as usize][self.offset + 1..self.history[self.history_i as usize].len() - 1];
+                                    }
+                                }
+                                K_HOME => self.offset = 0,
+                                K_UP => {
+                                    if self.history_i as usize + 1 < self.history.len() {
+                                        self.history_i += 1;
+                                    }
+                                    self.offset = self.history[self.history_i as usize].len();
+                                }
+                                K_LEFT => {
+                                    if self.offset > 0 {
+                                        self.offset -= 1;
+                                    }
+                                }
+                                K_RIGHT => {
+                                    if (self.offset) < self.history[self.history_i as usize].len() {
                                         self.offset += 1;
                                     }
                                 }
+                                K_END => self.offset = self.history[self.history_i as usize].len(),
+                                K_DOWN => {
+                                    if self.history_i > 0 {
+                                        self.history_i -= 1;
+                                    }
+                                    self.offset = self.history[self.history_i as usize].len();
+                                }
+                                _ => {
+                                    match key_event.character {
+                                        '\x00' => (),
+                                        '\n' => {
+                                            let command = self.history[self.history_i as usize].clone();
+                                            self.offset = 0;
+                                            self.history_i = 0;
+                                            if !self.history[0].is_empty() {
+                                                self.history.insert(0, "".to_string());
+                                            }
+                                            while self.history.len() > 1000 {
+                                                self.history.pop();
+                                            }
+                                            self.print(&command, Color::WHITE);
+                                            self.print("\n", Color::WHITE);
+                                            return Some(command);
+                                        }
+                                        '\x1B' => (),
+                                        _ => {
+                                            self.history[self.history_i as usize] =
+                                                self.history[self.history_i as usize][0..self.offset]
+                                                    .to_string() +
+                                                &key_event.character.to_string() +
+                                                &self.history[self.history_i as usize][self.offset..];
+                                            self.offset += 1;
+                                        }
+                                    }
+                                }
                             }
+                            self.sync();
                         }
-                        self.sync();
                     }
+                    EventOption::Quit(_quit_event) => return None,
+                    _ => (),
                 }
-                EventOption::Quit(_quit_event) => return None,
-                _ => (),
             }
         }
-
-        None
     }
 
     /// Redraw the window

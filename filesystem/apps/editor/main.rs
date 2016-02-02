@@ -170,84 +170,86 @@ impl Editor {
         self.reload();
         self.draw_content(&mut window);
 
-        while let Some(event) = window.poll() {
-            if let EventOption::Key(key_event) = event.to_option() {
-                if key_event.pressed {
-                    match key_event.scancode {
-                        K_ESC => break,
-                        K_BKSP => {
-                            if self.offset > 0 {
-                                self.string = self.string[0..self.offset - 1].to_string() +
-                                              &self.string[self.offset..self.string.len()];
-                                self.offset -= 1;
-                            }
-                        }
-                        K_DEL => {
-                            if (self.offset) < self.string.len() {
-                                self.string = self.string[0..self.offset].to_string() +
-                                              &self.string[self.offset + 1..self.string.len() - 1];
-                            }
-                        }
-                        K_F5 => self.reload(),
-                        K_F6 => self.save(&window),
-                        K_HOME => self.offset = 0,
-                        K_UP => {
-                            let mut new_offset = 0;
-                            for i in 2..self.offset {
-                                match self.string.as_bytes()[(self.offset - i) as usize] {
-                                    0 => break,
-                                    10 => {
-                                        new_offset = self.offset - i + 1;
-                                        break;
-                                    }
-                                    _ => (),
-                                }
-                            }
-                            self.offset = new_offset;
-                        }
-                        K_LEFT => {
-                            if self.offset > 0 {
-                                self.offset -= 1;
-                            }
-                        }
-                        K_RIGHT => {
-                            if (self.offset) < self.string.len() {
-                                self.offset += 1;
-                            }
-                        }
-                        K_END => self.offset = self.string.len(),
-                        K_DOWN => {
-                            let mut new_offset = self.string.len();
-                            for i in self.offset..self.string.len() {
-                                match self.string.as_bytes()[i] {
-                                    0 => break,
-                                    10 => {
-                                        new_offset = i + 1;
-                                        break;
-                                    }
-                                    _ => (),
-                                }
-                            }
-                            self.offset = new_offset;
-                        }
-                        _ => {
-                            match key_event.character {
-                                '\0' => (),
-                                _ => {
-                                    self.string = self.string[0..self.offset].to_string() +
-                                                  &key_event.character.to_string() +
+        loop {
+            for event in window.events() {
+                if let EventOption::Key(key_event) = event.to_option() {
+                    if key_event.pressed {
+                        match key_event.scancode {
+                            K_ESC => return,
+                            K_BKSP => {
+                                if self.offset > 0 {
+                                    self.string = self.string[0..self.offset - 1].to_string() +
                                                   &self.string[self.offset..self.string.len()];
+                                    self.offset -= 1;
+                                }
+                            }
+                            K_DEL => {
+                                if (self.offset) < self.string.len() {
+                                    self.string = self.string[0..self.offset].to_string() +
+                                                  &self.string[self.offset + 1..self.string.len() - 1];
+                                }
+                            }
+                            K_F5 => self.reload(),
+                            K_F6 => self.save(&window),
+                            K_HOME => self.offset = 0,
+                            K_UP => {
+                                let mut new_offset = 0;
+                                for i in 2..self.offset {
+                                    match self.string.as_bytes()[(self.offset - i) as usize] {
+                                        0 => break,
+                                        10 => {
+                                            new_offset = self.offset - i + 1;
+                                            break;
+                                        }
+                                        _ => (),
+                                    }
+                                }
+                                self.offset = new_offset;
+                            }
+                            K_LEFT => {
+                                if self.offset > 0 {
+                                    self.offset -= 1;
+                                }
+                            }
+                            K_RIGHT => {
+                                if (self.offset) < self.string.len() {
                                     self.offset += 1;
                                 }
                             }
+                            K_END => self.offset = self.string.len(),
+                            K_DOWN => {
+                                let mut new_offset = self.string.len();
+                                for i in self.offset..self.string.len() {
+                                    match self.string.as_bytes()[i] {
+                                        0 => break,
+                                        10 => {
+                                            new_offset = i + 1;
+                                            break;
+                                        }
+                                        _ => (),
+                                    }
+                                }
+                                self.offset = new_offset;
+                            }
+                            _ => {
+                                match key_event.character {
+                                    '\0' => (),
+                                    _ => {
+                                        self.string = self.string[0..self.offset].to_string() +
+                                                      &key_event.character.to_string() +
+                                                      &self.string[self.offset..self.string.len()];
+                                        self.offset += 1;
+                                    }
+                                }
+                            }
                         }
-                    }
 
-                    self.draw_content(&mut window);
+                        self.draw_content(&mut window);
+                    }
                 }
-            }
-            if let EventOption::Quit(_) = event.to_option() {
-                break;
+                if let EventOption::Quit(_) = event.to_option() {
+                    return;
+                }
             }
         }
     }
