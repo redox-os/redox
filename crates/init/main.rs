@@ -3,7 +3,7 @@ use std::io::Read;
 use std::process::Command;
 
 fn main() {
-    let mut file = File::open("/apps/init/cmds").unwrap();
+    let mut file = File::open("/bin/init.rc").unwrap();
 
     let mut string = String::new();
     file.read_to_string(&mut string).unwrap();

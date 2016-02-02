@@ -324,7 +324,7 @@ unsafe fn init(tss_data: usize) {
                     do_sys_open(stdio_c.as_ptr(), 0);
                 }
 
-                if let Err(err) = execute(vec!["file:/apps/init/main.bin".to_string()]) {
+                if let Err(err) = execute(vec!["init".to_string()]) {
                     debugln!("INIT: Failed to execute: {}", err);
                 }
             });
@@ -429,6 +429,14 @@ pub extern "cdecl" fn kernel(interrupt: usize, mut regs: &mut Regs) {
                 *clock_realtime = *clock_realtime + PIT_DURATION;
             }
 
+            {
+                let mut contexts = ::env().contexts.lock();
+                if let Some(mut context) = contexts.current_mut() {
+                    context.slice_total += 1;
+                }
+            }
+
+            /*
             let switch = {
                 let mut contexts = ::env().contexts.lock();
                 if let Some(mut context) = contexts.current_mut() {
@@ -443,11 +451,10 @@ pub extern "cdecl" fn kernel(interrupt: usize, mut regs: &mut Regs) {
             if switch {
                 unsafe { context_switch(true) };
             }
+            */
         }
         i @ 0x21 ... 0x2F => env().on_irq(i as u8 - 0x20),
-        0x80 => if !syscall_handle(regs) {
-            exception!("Unknown Syscall");
-        },
+        0x80 => syscall_handle(regs),
         0xFF => {
             unsafe {
                 init(regs.ax);

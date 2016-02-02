@@ -88,7 +88,7 @@ else
 	endif
 endif
 
-.PHONY: help all doc apps tests clean \
+.PHONY: help all doc apps bins tests clean \
 	bochs \
 	qemu qemu_bare qemu_tap \
 	virtualbox virtualbox_tap \
@@ -138,39 +138,57 @@ help:
 all: $(BUILD)/harddrive.bin
 
 apps: filesystem/apps/editor/main.bin \
-	  filesystem/apps/example/main.bin \
 	  filesystem/apps/file_manager/main.bin \
-	  filesystem/apps/init/main.bin \
 	  filesystem/apps/launcher/main.bin \
-	  filesystem/apps/login/main.bin \
-	  filesystem/apps/orbital/main.bin \
 	  filesystem/apps/orbtk/main.bin \
 	  filesystem/apps/player/main.bin \
 	  filesystem/apps/rusthello/main.bin \
-	  filesystem/apps/shell/main.bin \
 	  filesystem/apps/sodium/main.bin \
 	  filesystem/apps/terminal/main.bin \
-	  filesystem/apps/test/main.bin \
-	  filesystem/apps/viewer/main.bin \
-	  filesystem/apps/zfs/main.bin
+	  filesystem/apps/viewer/main.bin
+
+filesystem/bin:
+	mkdir -p filesystem/bin/
 
 filesystem/bin/%: crates/coreutils/src/bin/%.rs $(BUILD)/crt0.o $(BUILD)/libstd.rlib
-	mkdir -p filesystem/bin/
 	$(RUSTC) $(RUSTCFLAGS) --crate-type bin -o filesystem/bin/$* $<
 
-coreutils: filesystem/bin/cat \
+filesystem/bin/%: crates/%/main.rs crates/%/*.rs $(BUILD)/crt0.o $(BUILD)/libstd.rlib
+	$(RUSTC) $(RUSTCFLAGS) --crate-type bin -o $@ $<
+
+filesystem/bin/%: unix/%
+	cp $< $@
+
+filesystem/bin/ion: $(BUILD)/ion-shell.bin
+	cp $< $@
+
+filesystem/bin/init.rc: crates/init/init.rc
+	cp $< $@
+
+bins: filesystem/bin \
+		filesystem/bin/cat \
 		filesystem/bin/echo \
+		filesystem/bin/example \
  		filesystem/bin/false \
+		filesystem/bin/init \
+		filesystem/bin/init.rc \
+		filesystem/bin/ion \
+		filesystem/bin/lua \
+		filesystem/bin/login \
 		filesystem/bin/ls \
 		filesystem/bin/mkdir \
+		filesystem/bin/orbital \
 		filesystem/bin/ps \
 		filesystem/bin/pwd \
 		filesystem/bin/rm \
 		filesystem/bin/rmdir \
 		filesystem/bin/shutdown \
 		filesystem/bin/sleep \
+		filesystem/bin/tar \
+		filesystem/bin/test \
 		filesystem/bin/touch \
-		filesystem/bin/true
+		filesystem/bin/true \
+		filesystem/bin/zfs
 	#filesystem/bin/env filesystem/bin/yes
 
 tests: tests/success tests/failure
@@ -303,9 +321,6 @@ $(BUILD)/ion-shell.bin: FORCE $(BUILD)/libstd.rlib
 $(BUILD)/sodium.bin: FORCE $(BUILD)/libstd.rlib $(BUILD)/liborbital.rlib
 	$(CARGO) --manifest-path filesystem/apps/sodium/Cargo.toml --bin sodium --features orbital $(CARGOFLAGS)
 
-filesystem/apps/shell/main.bin: $(BUILD)/ion-shell.bin
-	cp $< $@
-
 filesystem/apps/sodium/main.bin: $(BUILD)/sodium.bin
 	cp $< $@
 
@@ -332,7 +347,7 @@ filesystem/apps/zfs/zfs.img:
 	-sudo zpool destroy redox_zfs
 	sudo losetup -d /dev/loop0
 
-$(BUILD)/filesystem.gen: apps coreutils
+$(BUILD)/filesystem.gen: apps bins
 	$(FIND) filesystem -not -path '*/\.*' -type f -o -type l | $(CUT) -d '/' -f2- | $(SORT) | $(AWK) '{printf("file %d,\"%s\"\n", NR, $$0)}' > $@
 
 $(BUILD)/harddrive.bin: kernel/harddrive.asm $(BUILD)/kernel.bin $(BUILD)/filesystem.gen

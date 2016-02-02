@@ -161,8 +161,6 @@ impl Ide {
 
         let busmaster = unsafe { pci.read(0x20) } as u16 & 0xFFF0;
 
-        debugln!("IDE on {:X}", busmaster);
-
         debug!("Primary Master:");
         if let Some(disk) = IdeDisk::new(busmaster, 0x1F0, 0x3F4, 0xE, true) {
             ret.push(box disk);
