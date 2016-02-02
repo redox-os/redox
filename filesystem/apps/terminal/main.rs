@@ -56,7 +56,7 @@ fn main() {
             sys_close(from_shell_fds[1]);
 
             // Execute the shell
-            let shell = "file:/apps/shell/main.bin\0";
+            let shell = "ion\0";
             sys_execve(shell.as_ptr(), 0 as *const *const u8);
             panic!("Shell not found");
         } else {
