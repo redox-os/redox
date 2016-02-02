@@ -2,6 +2,7 @@ extern crate core;
 extern crate system;
 
 use std::collections::BTreeMap;
+use std::collections::VecDeque;
 use std::fs::File;
 use std::io::{Read, Write};
 use std::mem::size_of;
@@ -33,7 +34,7 @@ struct OrbitalScheme {
     cursor: Image,
     cursor_x: i32,
     cursor_y: i32,
-    order: Vec<usize>,
+    order: VecDeque<usize>,
     windows: BTreeMap<usize, Window>,
     redraw: bool,
 }
@@ -45,16 +46,16 @@ impl OrbitalScheme {
             cursor: BmpFile::from_path("/ui/cursor.bmp"),
             cursor_x: 0,
             cursor_y: 0,
-            order: Vec::new(),
+            order: VecDeque::new(),
             windows: BTreeMap::new(),
             redraw: true,
         }
     }
 
     fn update(&mut self, display: &mut Display) {
-        while let Some(mut event) = display.poll() {
+        while let Some(event) = display.poll() {
             if event.code == EVENT_KEY {
-                if let Some(id) = self.order.last() {
+                if let Some(id) = self.order.get(0) {
                     if let Some(mut window) = self.windows.get_mut(&id) {
                         window.event(event);
                     }
@@ -64,13 +65,26 @@ impl OrbitalScheme {
                 self.cursor_y = event.b as i32;
                 self.redraw = true;
 
-                if let Some(id) = self.order.last() {
+                let mut focus = 0;
+                let mut i = 0;
+                for id in self.order.iter() {
                     if let Some(mut window) = self.windows.get_mut(&id) {
-                        event.a -= window.x as i64;
-                        event.b -= window.y as i64;
-                        if event.a >= 0 && event.b >= 0 && event.a < window.width() as i64 && event.b < window.height() as i64 {
-                            window.event(event);
+                        if window.contains(event.a as i32, event.b as i32) {
+                            let mut window_event = event;
+                            window_event.a -= window.x as i64;
+                            window_event.b -= window.y as i64;
+                            window.event(window_event);
+                            if event.c > 0 {
+                                focus = i;
+                            }
+                            break;
                         }
+                    }
+                    i += 1;
+                }
+                if focus > 0 {
+                    if let Some(id) = self.order.remove(focus) {
+                        self.order.push_front(id);
                     }
                 }
             }
@@ -79,7 +93,7 @@ impl OrbitalScheme {
         if self.redraw {
             self.redraw = false;
             display.as_roi().set(Color::rgb(75, 163, 253));
-            for id in self.order.iter() {
+            for id in self.order.iter().rev() {
                 if let Some(mut window) = self.windows.get_mut(&id) {
                     window.draw(display);
                 }
@@ -105,7 +119,7 @@ impl Scheme for OrbitalScheme {
             self.next_id = 1;
         }
 
-        self.order.push(id);
+        self.order.push_front(id);
         self.windows.insert(id, Window::new(x, y, width, height));
         self.redraw = true;
 
