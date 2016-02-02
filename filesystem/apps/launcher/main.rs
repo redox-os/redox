@@ -115,7 +115,7 @@ fn main() {
 
     draw(&mut window, &packages, &shutdown, -1, -1);
     'running: loop {
-        while let Some(event) = window.poll() {
+        for event in window.events() {
             match event.to_option() {
                 EventOption::Mouse(mouse_event) => {
                     draw(&mut window, &packages, &shutdown, mouse_event.x, mouse_event.y);

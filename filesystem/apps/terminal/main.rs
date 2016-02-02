@@ -78,7 +78,6 @@ fn main() {
                     let window_ptr =
                         (window.deref() as *const Box<ConsoleWindow>) as *mut Box<ConsoleWindow>;
                     unsafe { &mut *window_ptr }.print(&output, Color::rgb(255, 255, 255));
-                    unsafe { &mut *window_ptr }.sync();
                 } else {
                     break;
                 }

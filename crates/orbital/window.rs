@@ -49,13 +49,17 @@ impl Window {
     }
 
     pub fn read(&mut self, buf: &mut [u8]) -> Result {
-        if buf.len() == size_of::<Event>() {
-            if let Some(event) = self.events.pop_front() {
-                unsafe { ptr::write(buf.as_mut_ptr() as *mut Event, event) };
-                Ok(size_of::<Event>())
-            } else {
-                Ok(0)
+        if buf.len() >= size_of::<Event>() {
+            let mut i = 0;
+            while i <= buf.len() - size_of::<Event>() {
+                if let Some(event) = self.events.pop_front() {
+                    unsafe { ptr::write(buf.as_mut_ptr().offset(i as isize) as *mut Event, event) };
+                    i += size_of::<Event>();
+                } else {
+                    break;
+                }
             }
+            Ok(i)
         } else {
             Err(Error::new(EINVAL))
         }

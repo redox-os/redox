@@ -191,8 +191,14 @@ impl Window {
         }
     }
 
+    /// Return a iterator over events
+    pub fn events(&mut self) -> EventIter {
+        EventIter::new(self)
+    }
+
     /// Poll for an event
-    // TODO: clean this up
+    // TODO: Replace with events()
+    #[deprecated]
     pub fn poll(&mut self) -> Option<Event> {
         loop {
             let mut event = Event::new();
@@ -207,25 +213,56 @@ impl Window {
     /// Flip the window buffer
     pub fn sync(&mut self) -> bool {
         self.file.write(unsafe {
-            slice::from_raw_parts(self.data.as_ptr() as *const u8,
-                                  self.data.len() * mem::size_of::<Color>())
+            slice::from_raw_parts(self.data.as_ptr() as *const u8, self.data.len() * mem::size_of::<Color>())
         }).is_ok()
-    }
-
-    /// Return a iterator over events
-    pub fn event_iter<'a>(&'a mut self) -> EventIter<'a> {
-        EventIter { window: self }
     }
 }
 
 /// Event iterator
-pub struct EventIter<'a> {
-    window: &'a mut Window,
+pub struct EventIter {
+    events: [Event; 128],
+    i: usize,
+    count: usize,
 }
 
-impl<'a> Iterator for EventIter<'a> {
+impl EventIter {
+    pub fn new(window: &mut Window) -> EventIter {
+        let mut iter = EventIter {
+            events: [Event::new(); 128],
+            i: 0,
+            count: 0,
+        };
+
+        'blocking: loop {
+            //Should it be cleared? iter.events = [Event::new(); 128];
+            match window.file.read(unsafe {
+                slice::from_raw_parts_mut(iter.events.as_mut_ptr() as *mut u8, iter.events.len() * mem::size_of::<Event>())
+            }){
+                Ok(0) => thread::yield_now(),
+                Ok(count) => {
+                    iter.count = count/mem::size_of::<Event>();
+                    break 'blocking;
+                },
+                Err(_) => break 'blocking,
+            }
+        }
+
+        iter
+    }
+}
+
+impl Iterator for EventIter {
     type Item = Event;
     fn next(&mut self) -> Option<Event> {
-        self.window.poll()
+        if self.i < self.count {
+            if let Some(event) = self.events.get(self.i) {
+                self.i += 1;
+                Some(*event)
+            } else {
+                None
+            }
+        } else {
+            None
+        }
     }
 }

@@ -7,18 +7,17 @@ BUILD=build/$(ARCH)-unknown-redox/debug
 QEMU?=qemu-system-$(ARCH)
 
 CARGO=CARGO_TARGET_DIR=build cargo rustc
-CARGOFLAGS=--target=$(ARCH)-unknown-redox.json -- \
+CARGOFLAGS=--target=$(ARCH)-unknown-redox.json -- -L $(BUILD) \
 	-C no-prepopulate-passes -C no-stack-check -C opt-level=2 \
 	-Z no-landing-pads \
-	-A dead_code -A deprecated \
-	-L $(BUILD)
+	-A dead_code
 RUSTC=RUST_BACKTRACE=1 rustc
 RUSTDOC=rustdoc --target=$(ARCH)-unknown-redox.json -L $(BUILD) \
 	--no-defaults --passes collapse-docs --passes unindent-comments
 RUSTCFLAGS=--target=$(ARCH)-unknown-redox.json -L $(BUILD) \
 	-C no-prepopulate-passes -C no-stack-check -C opt-level=2 \
 	-Z no-landing-pads \
-	-A dead_code -A deprecated
+	-A dead_code
 AS=nasm
 AWK=awk
 BASENAME=basename
