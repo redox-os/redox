@@ -604,26 +604,23 @@ pub fn do_sys_alloc(size: usize) -> usize {
     let mut ret = 0;
 
     let mut contexts = ::env().contexts.lock();
-    if let Some(mut current) = contexts.current_mut() {
-        unsafe {
-            current.unmap();
-        }
+    if let Some(current) = contexts.current() {
         let physical_address = unsafe { memory::alloc(size) };
         if physical_address > 0 {
-            ret = unsafe { current.next_mem() };
+            let mut mem = ContextMemory {
+                physical_address: physical_address,
+                virtual_address: unsafe { current.next_mem() },
+                virtual_size: size,
+                writeable: true,
+                allocated: true,
+            };
+
+            ret = mem.virtual_address;
+
             unsafe {
-                (*current.memory.get()).push(ContextMemory {
-                    physical_address: physical_address,
-                    virtual_address: ret,
-                    virtual_size: size,
-                    writeable: true,
-                    allocated: true,
-                });
+                mem.map();
+                (*current.memory.get()).push(mem);
             }
-        }
-        unsafe {
-            current.clean_mem();
-            current.map();
         }
     }
 
@@ -635,10 +632,9 @@ pub fn do_sys_realloc(ptr: usize, size: usize) -> usize {
 
     let mut contexts = ::env().contexts.lock();
     if let Some(mut current) = contexts.current_mut() {
-        unsafe {
-            current.unmap();
-        }
         if let Some(mut mem) = unsafe { current.get_mem_mut(ptr) } {
+            unsafe { mem.unmap(); }
+
             let physical_address = unsafe { memory::realloc(mem.physical_address, size) };
             if physical_address > 0 {
                 mem.physical_address = physical_address;
@@ -647,11 +643,10 @@ pub fn do_sys_realloc(ptr: usize, size: usize) -> usize {
             } else {
                 mem.virtual_size = 0;
             }
+
+            unsafe { mem.map(); }
         }
-        unsafe {
-            current.clean_mem();
-            current.map();
-        }
+        unsafe { current.clean_mem(); }
     }
 
     ret
@@ -662,17 +657,15 @@ pub fn do_sys_realloc_inplace(ptr: usize, size: usize) -> usize {
 
     let mut contexts = ::env().contexts.lock();
     if let Some(mut current) = contexts.current_mut() {
-        unsafe {
-            current.unmap();
-        }
         if let Some(mut mem) = unsafe { current.get_mem_mut(ptr) } {
+            unsafe { mem.unmap(); }
+
             mem.virtual_size = unsafe { memory::realloc_inplace(mem.physical_address, size) };
             ret = mem.virtual_size;
+
+            unsafe {mem.map(); }
         }
-        unsafe {
-            current.clean_mem();
-            current.map();
-        }
+        unsafe { current.clean_mem(); }
     }
 
     ret
@@ -681,16 +674,12 @@ pub fn do_sys_realloc_inplace(ptr: usize, size: usize) -> usize {
 pub fn do_sys_unalloc(ptr: usize) {
     let mut contexts = ::env().contexts.lock();
     if let Some(mut current) = contexts.current_mut() {
-        unsafe {
-            current.unmap();
-        }
         if let Some(mut mem) = unsafe { current.get_mem_mut(ptr) } {
+            unsafe { mem.unmap() };
+
             mem.virtual_size = 0;
         }
-        unsafe {
-            current.clean_mem();
-            current.map();
-        }
+        unsafe { current.clean_mem(); }
     }
 }
 

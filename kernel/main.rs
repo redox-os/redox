@@ -22,7 +22,7 @@
 #![feature(zero_one)]
 #![feature(collections_range)]
 #![no_std]
-#![deny(warnings)]
+//#![deny(warnings)]
 
 #[macro_use]
 extern crate alloc;
@@ -405,14 +405,6 @@ pub extern "cdecl" fn kernel(interrupt: usize, mut regs: &mut Regs) {
         })
     };
 
-    if interrupt >= 0x20 && interrupt < 0x30 {
-        if interrupt >= 0x28 {
-            Pio::<u8>::new(0xA0).write(0x20);
-        }
-
-        Pio::<u8>::new(0x20).write(0x20);
-    }
-
     //Do not catch init interrupt
     if interrupt < 0xFF {
         env().interrupts.lock()[interrupt as usize] += 1;
@@ -429,14 +421,6 @@ pub extern "cdecl" fn kernel(interrupt: usize, mut regs: &mut Regs) {
                 *clock_realtime = *clock_realtime + PIT_DURATION;
             }
 
-            {
-                let mut contexts = ::env().contexts.lock();
-                if let Some(mut context) = contexts.current_mut() {
-                    context.slice_total += 1;
-                }
-            }
-
-            /*
             let switch = {
                 let mut contexts = ::env().contexts.lock();
                 if let Some(mut context) = contexts.current_mut() {
@@ -451,7 +435,6 @@ pub extern "cdecl" fn kernel(interrupt: usize, mut regs: &mut Regs) {
             if switch {
                 unsafe { context_switch(true) };
             }
-            */
         }
         i @ 0x21 ... 0x2F => env().on_irq(i as u8 - 0x20),
         0x80 => syscall_handle(regs),
@@ -483,5 +466,13 @@ pub extern "cdecl" fn kernel(interrupt: usize, mut regs: &mut Regs) {
         0x14 => exception!("Virtualization exception"),
         0x1E => exception_error!("Security exception"),
         _ => exception!("Unknown Interrupt"),
+    }
+
+    if interrupt >= 0x20 && interrupt < 0x30 {
+        if interrupt >= 0x28 {
+            Pio::<u8>::new(0xA0).write(0x20);
+        }
+
+        Pio::<u8>::new(0x20).write(0x20);
     }
 }
