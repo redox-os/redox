@@ -43,7 +43,7 @@ pub trait KScheme {
         ""
     }
 
-    fn open(&mut self, url: &Url, flags: usize) -> Result<Box<Resource>> {
+    fn open<'a>(&'a mut self, url: &Url, flags: usize) -> Result<Box<Resource + 'a>> {
         Err(Error::new(ENOENT))
     }
 
@@ -67,7 +67,7 @@ pub enum ResourceSeek {
 #[allow(unused_variables)]
 pub trait Resource {
     /// Duplicate the resource
-    fn dup(&self) -> Result<Box<Resource>> {
+    fn dup<'a>(&'a self) -> Result<Box<Resource + 'a>> {
         Err(Error::new(EBADF))
     }
     /// Return the url of this resource

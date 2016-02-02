@@ -20,16 +20,16 @@ use system::syscall::{SYS_CLOSE, SYS_FSYNC, SYS_FTRUNCATE,
                     SYS_LSEEK, SEEK_SET, SEEK_CUR, SEEK_END,
                     SYS_OPEN, SYS_READ, SYS_WRITE, SYS_UNLINK};
 
-struct SchemeInner {
-    name: String,
-    context: *mut Context,
+struct SchemeInner<'a> {
+    name: &'a str,
+    context: *mut Context<'a>,
     next_id: Cell<usize>,
     todo: Intex<BTreeMap<usize, (usize, usize, usize, usize)>>,
     done: Intex<BTreeMap<usize, (usize, usize, usize, usize)>>,
 }
 
-impl SchemeInner {
-    fn new(name: String, context: *mut Context) -> SchemeInner {
+impl<'a> SchemeInner<'a> {
+    fn new(name: &'a str, context: *mut Context<'a>) -> SchemeInner<'a> {
         SchemeInner {
             name: name,
             context: context,
@@ -70,7 +70,7 @@ impl SchemeInner {
     }
 }
 
-impl Drop for SchemeInner {
+impl<'a> Drop for SchemeInner<'a> {
     fn drop(&mut self) {
         let mut schemes = ::env().schemes.lock();
 
@@ -92,18 +92,18 @@ impl Drop for SchemeInner {
     }
 }
 
-pub struct SchemeResource {
-    inner: Weak<SchemeInner>,
+pub struct SchemeResource<'a> {
+    inner: Weak<SchemeInner<'a>>,
     file_id: usize,
 }
 
-impl SchemeResource {
+impl<'a> SchemeResource<'a> {
     fn call(&self, a: usize, b: usize, c: usize, d: usize) -> Result<usize> {
         SchemeInner::call(&self.inner, a, b, c, d)
     }
 }
 
-impl Resource for SchemeResource {
+impl<'a> Resource for SchemeResource<'a> {
     /// Duplicate the resource
     fn dup(&self) -> Result<Box<Resource>> {
         Err(Error::new(EBADF))
@@ -231,19 +231,19 @@ impl Resource for SchemeResource {
     }
 }
 
-impl Drop for SchemeResource {
+impl<'a> Drop for SchemeResource<'a> {
     fn drop(&mut self) {
         let _ = self.call(SYS_CLOSE, self.file_id, 0, 0);
     }
 }
 
-pub struct SchemeServerResource {
-    inner: Arc<SchemeInner>,
+pub struct SchemeServerResource<'a> {
+    inner: Arc<SchemeInner<'a>>,
 }
 
-impl Resource for SchemeServerResource {
+impl<'a> Resource for SchemeServerResource<'a> {
     /// Duplicate the resource
-    fn dup(&self) -> Result<Box<Resource>> {
+    fn dup<'b>(&'b self) -> Result<Box<Resource + 'b>> {
         Ok(box SchemeServerResource {
             inner: self.inner.clone()
         })
@@ -312,18 +312,18 @@ impl Resource for SchemeServerResource {
 }
 
 /// Scheme has to be wrapped
-pub struct Scheme {
-    name: String,
-    inner: Weak<SchemeInner>
+pub struct Scheme<'a> {
+    name: &'a str,
+    inner: Weak<SchemeInner<'a>>
 }
 
-impl Scheme {
-    pub fn new(name: String) -> Result<(Box<Scheme>, Box<Resource>)> {
+impl<'a> Scheme<'a> {
+    pub fn new(name: &'static str) -> Result<(Scheme<'a>, Box<Resource + 'a>)> {
         if let Some(context) = ::env().contexts.lock().current_mut() {
             let server = box SchemeServerResource {
-                inner: Arc::new(SchemeInner::new(name.clone(), context.deref_mut()))
+                inner: Arc::new(SchemeInner::new(&name.to_string(), context.deref_mut()))
             };
-            let scheme = box Scheme {
+            let scheme = Scheme {
                 name: name,
                 inner: Arc::downgrade(&server.inner)
             };
@@ -338,7 +338,7 @@ impl Scheme {
     }
 }
 
-impl KScheme for Scheme {
+impl<'a> KScheme for Scheme<'a> {
     fn on_irq(&mut self, _irq: u8) {
 
     }
@@ -351,7 +351,7 @@ impl KScheme for Scheme {
         &self.name
     }
 
-    fn open(&mut self, url: &Url, flags: usize) -> Result<Box<Resource>> {
+    fn open<'b>(&'b mut self, url: &Url, flags: usize) -> Result<Box<Resource + 'b>> {
         let c_str = url.string.clone() + "\0";
 
         let physical_address = c_str.as_ptr() as usize;

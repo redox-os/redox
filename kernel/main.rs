@@ -105,9 +105,9 @@ pub mod syscall;
 pub mod usb;
 
 pub static mut TSS_PTR: Option<&'static mut TSS> = None;
-pub static mut ENV_PTR: Option<&'static mut Environment> = None;
+pub static mut ENV_PTR: Option<&'static mut Environment<'static>> = None;
 
-pub fn env() -> &'static Environment {
+pub fn env() -> &'static Environment<'static> {
     unsafe {
         match ENV_PTR {
             Some(&mut ref p) => p,
@@ -302,20 +302,17 @@ unsafe fn init(tss_data: usize) {
             env.schemes.lock().push(box MemoryScheme);
             env.schemes.lock().push(box TestScheme);
 
-            Context::spawn("kpoll".to_string(),
-            box move || {
+            Context::spawn("kpoll", box move || { // TODO Do not box! Use static dispatch
                 poll_loop();
             });
 
-            Context::spawn("kevent".to_string(),
-            box move || {
+            Context::spawn("kevent", box move || {
                 event_loop();
             });
 
             env.contexts.lock().enabled = true;
 
-            Context::spawn("kinit".to_string(),
-            box move || {
+            Context::spawn("kinit", box move || {
                 {
                     let wd_c = "file:/\0";
                     do_sys_chdir(wd_c.as_ptr());
@@ -326,7 +323,7 @@ unsafe fn init(tss_data: usize) {
                     do_sys_open(stdio_c.as_ptr(), 0);
                 }
 
-                if let Err(err) = execute(vec!["init".to_string()]) {
+                if let Err(err) = execute(&["init"]) {
                     debugln!("INIT: Failed to execute: {}", err);
                 }
             });

@@ -11,11 +11,16 @@ use core::cell::UnsafeCell;
 use core::ops::DerefMut;
 use core::{mem, ptr};
 
+use memcpy;
+use memset;
+
 use schemes::{Result, Url};
 
 use system::error::{Error, ESRCH, ENOEXEC};
 
-fn execute_inner(url: &Url, args: &Vec<String>) -> Result<(*mut Context, usize)> {
+use core::result::Result as Res;
+
+fn execute_inner<'a>(url: &Url, args: &'a [&'a str]) -> Result<(*mut Context<'a>, usize)> {
     let mut resource = try!(url.open());
 
     let mut vec: Vec<u8> = Vec::new();
@@ -35,12 +40,12 @@ fn execute_inner(url: &Url, args: &Vec<String>) -> Result<(*mut Context, usize)>
 
             if physical_address > 0 {
                 // Copy progbits
-                ::memcpy((physical_address + offset) as *mut u8,
+                memcpy((physical_address + offset) as *mut u8,
                          (executable.data + segment.off as usize) as *const u8,
                          segment.file_len as usize);
                 // Zero bss
                 if segment.mem_len > segment.file_len {
-                    ::memset((physical_address + offset + segment.file_len as usize) as *mut u8,
+                    memset((physical_address + offset + segment.file_len as usize) as *mut u8,
                             0,
                             segment.mem_len as usize - segment.file_len as usize);
                 }
@@ -56,11 +61,11 @@ fn execute_inner(url: &Url, args: &Vec<String>) -> Result<(*mut Context, usize)>
         }
     }
 
-    if entry > 0 && ! memory.is_empty() {
+    if entry > 0 && !memory.is_empty() {
         let mut contexts = ::env().contexts.lock();
         if let Some(mut context) = contexts.current_mut() {
-            if let Some(arg) = args.get(0) {
-                context.name = arg.clone();
+            if let Some(&arg) = args.first() {
+                context.name = arg;
             }
             context.cwd = Arc::new(UnsafeCell::new(unsafe { (*context.cwd.get()).clone() }));
 
@@ -68,7 +73,7 @@ fn execute_inner(url: &Url, args: &Vec<String>) -> Result<(*mut Context, usize)>
             context.memory = Arc::new(UnsafeCell::new(memory));
             unsafe { context.map() };
 
-            Ok((context.deref_mut(), entry))
+            Ok((&mut **context as *mut _, entry))
         } else {
             Err(Error::new(ESRCH))
         }
@@ -77,8 +82,8 @@ fn execute_inner(url: &Url, args: &Vec<String>) -> Result<(*mut Context, usize)>
     }
 }
 
-pub fn execute_outer(context_ptr: *mut Context, entry: usize, mut args: Vec<String>) -> ! {
-    Context::spawn("kexec".to_string(), box move || {
+pub fn execute_outer(context_ptr: *mut Context, entry: usize, mut args: &[&str]) -> ! {
+    Context::spawn("kexec", box move || {
         let context = unsafe { &mut *context_ptr };
 
         let mut context_args: Vec<usize> = Vec::new();
@@ -88,8 +93,9 @@ pub fn execute_outer(context_ptr: *mut Context, entry: usize, mut args: Vec<Stri
         for i in 0..args.len() {
             let reverse_i = args.len() - i - 1;
             if let Some(ref mut arg) = args.get_mut(reverse_i) {
-                if ! arg.ends_with('\0') {
-                    arg.push('\0');
+                if !arg.ends_with('\0') {
+                    debug!("Error argument {} did not end on \\0. Aborting.", i);
+                    return;
                 }
 
                 let physical_address = arg.as_ptr() as usize;
@@ -152,14 +158,18 @@ pub fn execute_outer(context_ptr: *mut Context, entry: usize, mut args: Vec<Stri
 }
 
 /// Execute an executable
-pub fn execute(args: Vec<String>) -> Result<usize> {
+pub fn execute(args: &[&str]) -> Result<usize> {
     let contexts = ::env().contexts.lock();
     if let Some(current) = contexts.current() {
-        let path = args.get(0).map_or(String::new(), |p| p.clone());
+        let path = *args.get(0).unwrap_or(&"");
 
-        if let Ok((context_ptr, entry)) = execute_inner(&Url::from_string(unsafe { current.canonicalize(&path) }), &args) {
+        if let Ok((context_ptr, entry)) = execute_inner(
+            &Url::from_string(unsafe {
+                current.canonicalize(&path)
+            }
+         ), &args) {
             execute_outer(context_ptr, entry, args);
-        }else{
+        } else {
             let (context_ptr, entry) = try!(execute_inner(&Url::from_string("file:/bin/".to_string() + &path), &args));
             execute_outer(context_ptr, entry, args);
         }
