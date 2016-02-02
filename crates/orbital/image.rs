@@ -29,10 +29,36 @@ impl<'a> ImageRoi<'a> {
     }
 
     pub fn set(&mut self, color: Color) {
-        for y in self.y1..self.y2 {
-            let row = y * self.image.width();
-            for x in self.x1..self.x2 {
-                self.image.data[(row + x) as usize] = color;
+        let new = color.data;
+
+        let alpha = (new >> 24) & 0xFF;
+        if alpha > 0 {
+            if alpha >= 255 {
+                for y in self.y1..self.y2 {
+                    let row = y * self.image.width();
+                    for x in self.x1..self.x2 {
+                        self.image.data[(row + x) as usize].data = new;
+                    }
+                }
+            } else {
+                let n_r = (((new >> 16) & 0xFF) * alpha) >> 8;
+                let n_g = (((new >> 8) & 0xFF) * alpha) >> 8;
+                let n_b = ((new & 0xFF) * alpha) >> 8;
+
+                let n_alpha = 255 - alpha;
+
+                for y in self.y1..self.y2 {
+                    let row = y * self.image.width();
+                    for x in self.x1..self.x2 {
+                        let old = &mut self.image.data[(row + x) as usize].data;
+
+                        let o_r = (((*old >> 16) & 0xFF) * n_alpha) >> 8;
+                        let o_g = (((*old >> 8) & 0xFF) * n_alpha) >> 8;
+                        let o_b = ((*old & 0xFF) * n_alpha) >> 8;
+
+                        *old = ((o_r << 16) | (o_g << 8) | o_b) + ((n_r << 16) | (n_g << 8) | n_b);
+                    }
+                }
             }
         }
     }
