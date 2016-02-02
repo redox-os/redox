@@ -23,7 +23,7 @@ use self::event::{EVENT_KEY, EVENT_MOUSE};
 pub mod bmp;
 pub mod color;
 pub mod display;
-#[path="../../../kernel/common/event.rs"]
+#[path="../../kernel/common/event.rs"]
 pub mod event;
 pub mod image;
 pub mod window;

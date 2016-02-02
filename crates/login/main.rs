@@ -9,7 +9,7 @@ fn main() {
         let mut buffer = String::new();
         stdin().read_line(&mut buffer);
 
-        let path = "/apps/shell/main.bin";
+        let path = "ion";
         match Command::new(path).spawn() {
             Ok(mut child) => {
                 if let Err(err) = child.wait() {

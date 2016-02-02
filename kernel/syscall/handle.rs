@@ -694,7 +694,7 @@ pub fn do_sys_unalloc(ptr: usize) {
     }
 }
 
-pub fn syscall_handle(regs: &mut Regs) -> bool {
+pub fn syscall_handle(regs: &mut Regs) {
     match regs.ax {
         SYS_DEBUG => do_sys_debug(regs.bx as *const u8, regs.cx),
         // Linux
@@ -730,8 +730,6 @@ pub fn syscall_handle(regs: &mut Regs) -> bool {
         SYS_REALLOC_INPLACE => regs.ax = do_sys_realloc_inplace(regs.bx, regs.cx),
         SYS_UNALLOC => do_sys_unalloc(regs.bx),
 
-        _ => return false,
+        _ => regs.ax = Error::mux(Err(Error::new(ENOSYS))),
     }
-
-    true
 }
