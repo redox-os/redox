@@ -1,3 +1,4 @@
+use std::cmp::max;
 use std::collections::VecDeque;
 use std::mem::size_of;
 use std::{ptr, slice};
@@ -50,15 +51,19 @@ impl Window {
     }
 
     pub fn draw(&mut self, display: &mut Display, focused: bool) {
+        let rx = max(0, -self.x);
+        let ry = max(0, -self.y);
+        let rw = max(0, self.width() - rx);
+        let rh = max(0, self.height() - ry);
         if ! self.title.is_empty() {
             if focused {
-                display.roi(self.x, self.y - 18, self.width(), 18).set(Color::rgba(192, 192, 192, 224));
+                display.roi(self.x, self.y - 18, rw, 18).set(Color::rgba(192, 192, 192, 224));
             } else {
-                display.roi(self.x, self.y - 18, self.width(), 18).set(Color::rgba(64, 64, 64, 224));
+                display.roi(self.x, self.y - 18, rw, 18).set(Color::rgba(64, 64, 64, 224));
             }
         }
         let mut display_roi = display.roi(self.x, self.y, self.width(), self.height());
-        display_roi.blend(&self.as_roi());
+        display_roi.blend(&self.roi(rx, ry, rw, rh));
     }
 
     pub fn event(&mut self, event: Event) {
