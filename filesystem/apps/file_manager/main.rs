@@ -128,7 +128,7 @@ impl FileManager {
                 right_button: false,
             },
             click_time: Duration::new(0, 0),
-            window: Window::new(0, 0, 0, 0, "").unwrap(),
+            window: Window::new(-1, -1, 0, 0, "").unwrap(),
         }
     }
 

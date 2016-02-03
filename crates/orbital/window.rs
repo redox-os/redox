@@ -10,15 +10,17 @@ pub struct Window {
     pub x: i32,
     pub y: i32,
     image: Image,
+    title: String,
     events: VecDeque<Event>,
 }
 
 impl Window {
-    pub fn new(x: i32, y: i32, w: i32, h: i32) -> Window {
+    pub fn new(x: i32, y: i32, w: i32, h: i32, title: &str) -> Window {
         Window {
             x: x,
             y: y,
             image: Image::new(w, h),
+            title: title.to_string(),
             events: VecDeque::new()
         }
     }
@@ -43,7 +45,18 @@ impl Window {
         x >= self.x && y >= self.y && x < self.x + self.width() && y < self.y + self.height()
     }
 
-    pub fn draw(&mut self, display: &mut Display) {
+    pub fn title_contains(&self, x: i32, y: i32) -> bool {
+        ! self.title.is_empty() && x >= self.x && y >= self.y - 18 && x < self.x + self.width() && y < self.y
+    }
+
+    pub fn draw(&mut self, display: &mut Display, focused: bool) {
+        if ! self.title.is_empty() {
+            if focused {
+                display.roi(self.x, self.y - 18, self.width(), 18).set(Color::rgba(192, 192, 192, 224));
+            } else {
+                display.roi(self.x, self.y - 18, self.width(), 18).set(Color::rgba(64, 64, 64, 224));
+            }
+        }
         let mut display_roi = display.roi(self.x, self.y, self.width(), self.height());
         display_roi.blend(&self.as_roi());
     }

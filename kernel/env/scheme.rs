@@ -9,10 +9,9 @@ use core::mem::size_of;
 use core::ops::DerefMut;
 
 use arch::context::{context_switch, Context, ContextMemory};
+use arch::intex::Intex;
 
 use schemes::{Result, Resource, ResourceSeek, KScheme, Url};
-
-use sync::Intex;
 
 use system::error::{Error, EBADF, EFAULT, EINVAL, ESPIPE, ESRCH};
 use system::scheme::Packet;
