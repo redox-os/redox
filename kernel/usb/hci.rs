@@ -128,7 +128,7 @@ pub trait Hci {
 
                         if hid {
                             let this = self as *mut Hci;
-                            Context::spawn("kuhci_hid".to_string(), box move || {
+                            Context::spawn("kuhci_hid", move || {
                                 debugln!("Starting HID driver");
 
                                 let in_ptr = memory::alloc(in_len) as *mut u8;

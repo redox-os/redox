@@ -28,7 +28,7 @@ impl KScheme for InterruptScheme {
         "interrupt"
     }
 
-    fn open(&mut self, _: &Url, _: usize) -> Result<Box<Resource>> {
+    fn open<'a, 'b: 'a>(&'a mut self, _: Url<'b>, _: usize) -> Result<Box<Resource + 'a>> {
         let mut string = format!("{:<6}{:<16}{}", "INT", "COUNT", "DESCRIPTION");
 
         {

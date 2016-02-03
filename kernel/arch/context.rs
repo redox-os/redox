@@ -19,19 +19,22 @@ use schemes::Resource;
 use syscall::{CLONE_FILES, CLONE_FS, CLONE_VM};
 use syscall::handle::do_sys_exit;
 
+use memcpy;
+use env;
+
 pub const CONTEXT_STACK_SIZE: usize = 1024 * 1024;
 pub const CONTEXT_STACK_ADDR: usize = 0x70000000;
 pub const CONTEXT_SLICES: usize = 4;
 
-pub struct ContextManager {
-    pub inner: Vec<Box<Context>>,
+pub struct ContextManager<'a> {
+    pub inner: Vec<Context<'a>>,
     pub enabled: bool,
     pub i: usize,
     pub next_pid: usize,
 }
 
-impl ContextManager {
-    pub fn new() -> ContextManager {
+impl<'a> ContextManager<'a> {
+    pub fn new() -> ContextManager<'a> {
         ContextManager {
             inner: Vec::new(),
             enabled: false,
@@ -40,25 +43,25 @@ impl ContextManager {
         }
     }
 
-    pub fn current(&self) -> Option<&Box<Context>> {
+    pub fn current(&'a self) -> Option<&'a Context> {
         let i = self.i;
         self.get(i)
     }
 
-    pub fn current_mut(&mut self) -> Option<&mut Box<Context>> {
+    pub fn current_mut(&'a mut self) -> Option<&mut Context<'a>> {
         let i = self.i;
         self.get_mut(i)
     }
 
-    pub fn iter(&self) -> Iter<Box<Context>> {
+    pub fn iter(&self) -> Iter<Context<'a>> {
         self.inner.iter()
     }
 
-    pub fn iter_mut(&mut self) -> IterMut<Box<Context>> {
+    pub fn iter_mut(&mut self) -> IterMut<Context<'a>> {
         self.inner.iter_mut()
     }
 
-    pub fn get(&self, i: usize) -> Option<&Box<Context>> {
+    pub fn get(&self, i: usize) -> Option<&Context> {
         if self.enabled {
             self.inner.get(i)
         } else{
@@ -66,7 +69,7 @@ impl ContextManager {
         }
     }
 
-    pub fn get_mut(&mut self, i: usize) -> Option<&mut Box<Context>> {
+    pub fn get_mut(&mut self, i: usize) -> Option<&mut Context<'a>> {
         if self.enabled {
             self.inner.get_mut(i)
         } else{
@@ -78,7 +81,7 @@ impl ContextManager {
         self.inner.len()
     }
 
-    pub unsafe fn push(&mut self, context: Box<Context>) {
+    pub unsafe fn push(&mut self, context: Context<'a>) {
         self.inner.push(context);
     }
 
@@ -167,30 +170,29 @@ pub unsafe extern "cdecl" fn context_clone(parent_ptr: *const Context,
                                            flags: usize,
                                            clone_pid: usize) {
     {
-        let mut contexts = ::env().contexts.lock();
+        let mut contexts = env().contexts.lock();
 
         let kernel_stack = memory::alloc(CONTEXT_STACK_SIZE + 512);
         if kernel_stack > 0 {
-            let parent = &*parent_ptr;
 
-            ::memcpy(kernel_stack as *mut u8,
-                     parent.kernel_stack as *const u8,
-                     CONTEXT_STACK_SIZE + 512);
+            memcpy(kernel_stack as *mut u8,
+                   (*parent_ptr).kernel_stack as *const u8,
+                   CONTEXT_STACK_SIZE + 512);
 
-            let context = box Context {
+            let context = Context {
                 pid: clone_pid,
-                ppid: parent.pid,
-                name: parent.name.clone(),
-                interrupted: parent.interrupted,
-                exited: parent.exited,
+                ppid: (*parent_ptr).pid,
+                name: &(*parent_ptr).name.to_string(),
+                interrupted: (*parent_ptr).interrupted,
+                exited: (*parent_ptr).exited,
                 slices: CONTEXT_SLICES,
                 slice_total: 0,
 
                 kernel_stack: kernel_stack,
-                sp: parent.sp - parent.kernel_stack + kernel_stack,
-                flags: parent.flags,
+                sp: (*parent_ptr).sp - (*parent_ptr).kernel_stack + kernel_stack,
+                flags: (*parent_ptr).flags,
                 fx: kernel_stack + CONTEXT_STACK_SIZE,
-                stack: if let Some(ref entry) = parent.stack {
+                stack: if let Some(ref entry) = (*parent_ptr).stack {
                     let physical_address = memory::alloc(entry.virtual_size);
                     if physical_address > 0 {
                         ::memcpy(physical_address as *mut u8,
@@ -209,18 +211,18 @@ pub unsafe extern "cdecl" fn context_clone(parent_ptr: *const Context,
                 } else {
                     None
                 },
-                loadable: parent.loadable,
+                loadable: (*parent_ptr).loadable,
 
                 cwd: if flags & CLONE_FS == CLONE_FS {
-                    parent.cwd.clone()
+                    (*parent_ptr).cwd
                 } else {
-                    Arc::new(UnsafeCell::new((*parent.cwd.get()).clone()))
+                    Arc::new(UnsafeCell::new(*((*parent_ptr).cwd.get())))
                 },
                 memory: if flags & CLONE_VM == CLONE_VM {
-                    parent.memory.clone()
+                    (*parent_ptr).memory.clone()
                 } else {
                     let mut mem: Vec<ContextMemory> = Vec::new();
-                    for entry in (*parent.memory.get()).iter() {
+                    for entry in (*(*parent_ptr).memory.get()).iter() {
                         let physical_address = memory::alloc(entry.virtual_size);
                         if physical_address > 0 {
                             ::memcpy(physical_address as *mut u8,
@@ -238,10 +240,10 @@ pub unsafe extern "cdecl" fn context_clone(parent_ptr: *const Context,
                     Arc::new(UnsafeCell::new(mem))
                 },
                 files: if flags & CLONE_FILES == CLONE_FILES {
-                    parent.files.clone()
+                    (*parent_ptr).files.clone()
                 } else {
                     let mut files: Vec<ContextFile> = Vec::new();
-                    for file in (*parent.files.get()).iter() {
+                    for file in (*(*parent_ptr).files.get()).iter() {
                         if let Ok(resource) = file.resource.dup() {
                             files.push(ContextFile {
                                 fd: file.fd,
@@ -258,6 +260,7 @@ pub unsafe extern "cdecl" fn context_clone(parent_ptr: *const Context,
             contexts.push(context);
         }
     }
+
 
     do_sys_exit(0);
 }
@@ -351,53 +354,53 @@ pub struct ContextStatus {
     pub status: usize,
 }
 
-pub struct Context {
+pub struct Context<'a> {
 // These members are used for control purposes by the scheduler {
 // The PID of the context
     pub pid: usize,
-/// The PID of the parent
+    /// The PID of the parent
     pub ppid: usize,
-/// The name of the context
-    pub name: String,
-/// Indicates that the context was interrupted, used for prioritizing active contexts
+    /// The name of the context
+    pub name: &'a str,
+    /// Indicates that the context was interrupted, used for prioritizing active contexts
     pub interrupted: bool,
-/// Indicates that the context exited
+    /// Indicates that the context exited
     pub exited: bool,
-/// The number of time slices left
+    /// The number of time slices left
     pub slices: usize,
-/// The total of all used slices
+    /// The total of all used slices
     pub slice_total: usize,
-// }
+    // }
 
-// These members control the stack and registers and are unique to each context {
-// The kernel stack
+    // These members control the stack and registers and are unique to each context {
+    // The kernel stack
     pub kernel_stack: usize,
-/// The current kernel stack pointer
+    /// The current kernel stack pointer
     pub sp: usize,
-/// The current kernel flags
+    /// The current kernel flags
     pub flags: usize,
-/// The location used to save and load SSE and FPU registers
+    /// The location used to save and load SSE and FPU registers
     pub fx: usize,
-/// The context stack
+    /// The context stack
     pub stack: Option<ContextMemory>,
-/// Indicates that registers can be loaded (they must be saved first)
+    /// Indicates that registers can be loaded (they must be saved first)
     pub loadable: bool,
-// }
+    // }
 
-// These members are cloned for threads, copied or created for processes {
-/// Program working directory, cloned for threads, copied or created for processes. Modified by chdir
+    // These members are cloned for threads, copied or created for processes {
+    /// Program working directory, cloned for threads, copied or created for processes. Modified by chdir
     pub cwd: Arc<UnsafeCell<String>>,
-/// Program memory, cloned for threads, copied or created for processes. Modified by memory allocation
+    /// Program memory, cloned for threads, copied or created for processes. Modified by memory allocation
     pub memory: Arc<UnsafeCell<Vec<ContextMemory>>>,
-/// Program files, cloned for threads, copied or created for processes. Modified by file operations
+    /// Program files, cloned for threads, copied or created for processes. Modified by file operations
     pub files: Arc<UnsafeCell<Vec<ContextFile>>>,
-// }
+    // }
 
-/// Exit statuses of children
+    /// Exit statuses of children
     pub statuses: Vec<ContextStatus>,
 }
 
-impl Context {
+impl<'a> Context<'a> {
     pub unsafe fn next_pid() -> usize {
         let mut contexts = ::env().contexts.lock();
 
@@ -427,11 +430,11 @@ impl Context {
         ret
     }
 
-    pub unsafe fn root() -> Box<Self> {
-        box Context {
+    pub unsafe fn root() -> Self {
+        Context {
             pid: Context::next_pid(),
             ppid: 0,
-            name: "kidle".to_string(),
+            name: "kidle",
             interrupted: false,
             exited: false,
             slices: CONTEXT_SLICES,
@@ -452,10 +455,10 @@ impl Context {
         }
     }
 
-    pub unsafe fn new(name: String, call: usize, args: &Vec<usize>) -> Box<Self> {
+    pub unsafe fn new(name: &'a str, call: usize, args: &Vec<usize>) -> Self {
         let kernel_stack = memory::alloc(CONTEXT_STACK_SIZE + 512);
 
-        let mut ret = box Context {
+        let mut ret = Context {
             pid: Context::next_pid(),
             ppid: 0,
             name: name,
@@ -487,18 +490,18 @@ impl Context {
         ret
     }
 
-    pub fn spawn(name: String, box_fn: Box<FnBox()>) -> usize {
+    pub fn spawn<F: FnBox()>(name: &'a str, fn_: F) -> usize {
         let ret;
 
         unsafe {
-            let box_fn_ptr: *mut Box<FnBox()> = memory::alloc_type();
-            ptr::write(box_fn_ptr, box_fn);
+            let fn_ptr: *mut Box<FnBox()> = memory::alloc_type();
+            ptr::write(fn_ptr, box fn_);
 
-            let mut context_box_args: Vec<usize> = Vec::new();
-            context_box_args.push(box_fn_ptr as usize);
-            context_box_args.push(0); //Return address, 0 catches bad code
+            let mut context_args = Vec::new();
+            context_args.push(fn_ptr as usize);
+            context_args.push(0); // Return address, 0 catches bad code
 
-            let context = Context::new(name, context_box as usize, &context_box_args);
+            let context = Context::new(&name.to_string(), fn_ptr as usize, &context_args);
 
             ret = context.pid;
 
@@ -561,7 +564,7 @@ impl Context {
     }
 
     /// Get a memory map from a pointer
-    pub unsafe fn get_mem<'a>(&self, ptr: usize) -> Option<&'a ContextMemory> {
+    pub unsafe fn get_mem(&self, ptr: usize) -> Option<&ContextMemory> {
         for mem in (*self.memory.get()).iter() {
             if mem.virtual_address == ptr {
                 return Some(mem);
@@ -572,7 +575,7 @@ impl Context {
     }
 
     /// Get a mutable memory map from a pointer
-    pub unsafe fn get_mem_mut<'a>(&mut self, ptr: usize) -> Option<&'a mut ContextMemory> {
+    pub unsafe fn get_mem_mut(&mut self, ptr: usize) -> Option<&mut ContextMemory> {
         for mem in (*self.memory.get()).iter_mut() {
             if mem.virtual_address == ptr {
                 return Some(mem);
@@ -607,7 +610,7 @@ impl Context {
     }
 
     /// Get a resource from a file descriptor
-    pub unsafe fn get_file<'a>(&self, fd: usize) -> Option<&'a Box<Resource>> {
+    pub unsafe fn get_file(&self, fd: usize) -> Option<&Box<Resource>> {
         for file in (*self.files.get()).iter() {
             if file.fd == fd {
                 return Some(&file.resource);
@@ -618,7 +621,7 @@ impl Context {
     }
 
     /// Get a mutable resource from a file descriptor
-    pub unsafe fn get_file_mut<'a>(&mut self, fd: usize) -> Option<&'a mut Box<Resource>> {
+    pub unsafe fn get_file_mut(&mut self, fd: usize) -> Option<&mut Box<Resource>> {
         for file in (*self.files.get()).iter_mut() {
             if file.fd == fd {
                 return Some(&mut file.resource);
@@ -750,7 +753,7 @@ impl Context {
     }
 }
 
-impl Drop for Context {
+impl<'a> Drop for Context<'a> {
     fn drop(&mut self) {
         if self.kernel_stack > 0 {
             unsafe { memory::unalloc(self.kernel_stack) };

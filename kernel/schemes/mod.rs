@@ -43,11 +43,11 @@ pub trait KScheme {
         ""
     }
 
-    fn open(&mut self, url: &Url, flags: usize) -> Result<Box<Resource>> {
+    fn open<'a, 'b: 'a>(&'a mut self, url: Url<'b>, flags: usize) -> Result<Box<Resource + 'a>> {
         Err(Error::new(ENOENT))
     }
 
-    fn unlink(&mut self, url: &Url) -> Result<()> {
+    fn unlink<'a>(&mut self, url: Url<'a>) -> Result<()> {
         Err(Error::new(ENOENT))
     }
 }
@@ -67,7 +67,7 @@ pub enum ResourceSeek {
 #[allow(unused_variables)]
 pub trait Resource {
     /// Duplicate the resource
-    fn dup(&self) -> Result<Box<Resource>> {
+    fn dup<'a>(&'a self) -> Result<Box<Resource + 'a>> {
         Err(Error::new(EBADF))
     }
     /// Return the url of this resource
@@ -112,73 +112,67 @@ pub trait Resource {
 }
 
 /// An URL, see wiki
-pub struct Url {
-    pub string: String,
+#[derive(Clone, Copy)]
+pub struct Url<'a> {
+    pub scheme: &'a str,
+    pub reference: &'a str,
 }
 
-impl Url {
+impl<'a> Url<'a> {
     /// Create a new empty URL
-    pub fn new() -> Self {
-        Url { string: String::new() }
+    pub const fn new() -> Self {
+        Url {
+            scheme: "",
+            reference: "",
+        }
     }
 
     /// Create an URL from a string literal
-    pub fn from_str(url_str: &str) -> Self {
-        Url::from_string(url_str.to_string())
-    }
-
-    /// Create an URL from `String`
-    pub fn from_string(url_string: String) -> Self {
-        Url { string: url_string }
+    pub fn from_str(url_str: &'a str) -> Self {
+        url_str.into()
     }
 
     /// Convert to string
     pub fn to_string(&self) -> String {
-        self.string.clone()
+        self.scheme.to_string() + ":" + self.reference
     }
 
     /// Get the length of this URL
     pub fn len(&self) -> usize {
-        self.string.len()
+        self.scheme.len() + self.reference.len() + 1
     }
 
     /// Open this URL (returns a resource)
-    pub fn open(&self) -> Result<Box<Resource>> {
-        env().open(&self, O_RDWR)
+    pub fn open<'b>(self) -> Result<Box<Resource + 'b>> {
+        env().open(self, O_RDWR)
     }
 
     /// Create this URL (returns a resource)
-    pub fn create(&self) -> Result<Box<Resource>> {
-        env().open(&self, O_CREAT | O_RDWR | O_TRUNC)
+    pub fn create(self) -> Result<Box<Resource>> {
+        env().open(self, O_CREAT | O_RDWR | O_TRUNC)
     }
-
-    /// Return the scheme of this url
-    pub fn scheme(&self) -> &str {
-        self.string.get_slice(..self.string.find(':'))
-    }
-
-    /// Get the reference (after the ':') of the url
-    pub fn reference(&self) -> &str {
-        self.string.get_slice(self.string.find(':').map(|a| a + 1)..)
-    }
-
 }
 
-impl Clone for Url {
-    fn clone(&self) -> Self {
-        Url { string: self.string.clone() }
+impl<'a> From<&'a str> for Url<'a> {
+    fn from(s: &'a str) -> Url<'a> {
+        let splitter = s.find(':');
+
+        Url {
+            scheme: s.get_slice(..splitter),
+            reference: s.get_slice(splitter.map(|a| a + 1)..),
+        }
     }
 }
 
 /// A vector resource
-pub struct VecResource {
-    url: Url,
-    vec: Vec<u8>,
+pub struct VecResource<'a> {
+    url: Url<'a>,
+    vec: Vec<u8>, // TODO it seems that the length of this vec is often known. Consider using a slice instead.
     seek: usize,
 }
 
-impl VecResource {
-    pub fn new(url: Url, vec: Vec<u8>) -> Self {
+impl<'a> VecResource<'a> {
+    pub fn new(url: Url<'a>, vec: Vec<u8>) -> Self {
         VecResource {
             url: url,
             vec: vec,
@@ -191,17 +185,17 @@ impl VecResource {
     }
 }
 
-impl Resource for VecResource {
-    fn dup(&self) -> Result<Box<Resource>> {
+impl<'a> Resource for VecResource<'a> {
+    fn dup<'b>(&'b self) -> Result<Box<Resource + 'b>> {
         Ok(box VecResource {
-            url: self.url.clone(),
+            url: self.url,
             vec: self.vec.clone(),
             seek: self.seek,
         })
     }
 
     fn url(&self) -> Url {
-        return self.url.clone();
+        self.url
     }
 
     fn read(&mut self, buf: &mut [u8]) -> Result<usize> {
