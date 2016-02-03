@@ -97,8 +97,6 @@ pub mod graphics;
 pub mod panic;
 /// Schemes
 pub mod schemes;
-/// Sync primatives
-pub mod sync;
 /// System calls
 pub mod syscall;
 /// USB input/output

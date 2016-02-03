@@ -30,33 +30,45 @@ pub mod image;
 pub mod window;
 
 struct OrbitalScheme {
-    next_id: isize,
+    display: Display,
     cursor: Image,
     cursor_x: i32,
     cursor_y: i32,
+    dragging: bool,
+    drag_x: i32,
+    drag_y: i32,
+    next_id: isize,
+    next_x: i32,
+    next_y: i32,
     order: VecDeque<usize>,
     windows: BTreeMap<usize, Window>,
     redraw: bool,
 }
 
 impl OrbitalScheme {
-    fn new() -> OrbitalScheme {
+    fn new(display: Display) -> OrbitalScheme {
         OrbitalScheme {
-            next_id: 1,
+            display: display,
             cursor: BmpFile::from_path("/ui/cursor.bmp"),
             cursor_x: 0,
             cursor_y: 0,
+            dragging: false,
+            drag_x: 0,
+            drag_y: 0,
+            next_id: 1,
+            next_x: 20,
+            next_y: 20,
             order: VecDeque::new(),
             windows: BTreeMap::new(),
             redraw: true,
         }
     }
 
-    fn event_loop(&mut self, socket: &mut File, display: &mut Display) {
+    fn event_loop(&mut self, socket: &mut File) {
         loop {
-            for event in display.events() {
+            for event in self.display.events() {
                 if event.code == EVENT_KEY {
-                    if let Some(id) = self.order.get(0) {
+                    if let Some(id) = self.order.front() {
                         if let Some(mut window) = self.windows.get_mut(&id) {
                             window.event(event);
                         }
@@ -66,26 +78,53 @@ impl OrbitalScheme {
                     self.cursor_y = event.b as i32;
                     self.redraw = true;
 
-                    let mut focus = 0;
-                    let mut i = 0;
-                    for id in self.order.iter() {
-                        if let Some(mut window) = self.windows.get_mut(&id) {
-                            if window.contains(event.a as i32, event.b as i32) {
-                                let mut window_event = event;
-                                window_event.a -= window.x as i64;
-                                window_event.b -= window.y as i64;
-                                window.event(window_event);
-                                if event.c > 0 {
-                                    focus = i;
+                    if self.dragging {
+                        if event.c > 0 {
+                            if let Some(id) = self.order.front() {
+                                if let Some(mut window) = self.windows.get_mut(&id) {
+                                    window.x += self.cursor_x - self.drag_x;
+                                    window.y += self.cursor_y - self.drag_y;
+                                    self.drag_x = self.cursor_x;
+                                    self.drag_y = self.cursor_y;
+                                } else {
+                                    self.dragging = false;
                                 }
-                                break;
+                            } else {
+                                self.dragging = false;
                             }
+                        } else {
+                            self.dragging = false;
                         }
-                        i += 1;
-                    }
-                    if focus > 0 {
-                        if let Some(id) = self.order.remove(focus) {
-                            self.order.push_front(id);
+                    } else {
+                        let mut focus = 0;
+                        let mut i = 0;
+                        for id in self.order.iter() {
+                            if let Some(mut window) = self.windows.get_mut(&id) {
+                                if window.contains(event.a as i32, event.b as i32) {
+                                    let mut window_event = event;
+                                    window_event.a -= window.x as i64;
+                                    window_event.b -= window.y as i64;
+                                    window.event(window_event);
+                                    if event.c > 0 {
+                                        focus = i;
+                                    }
+                                    break;
+                                } else if window.title_contains(event.a as i32, event.b as i32) {
+                                    if event.c > 0 {
+                                        focus = i;
+                                        self.dragging = true;
+                                        self.drag_x = self.cursor_x;
+                                        self.drag_y = self.cursor_y;
+                                    }
+                                    break;
+                                }
+                            }
+                            i += 1;
+                        }
+                        if focus > 0 {
+                            if let Some(id) = self.order.remove(focus) {
+                                self.order.push_front(id);
+                            }
                         }
                     }
                 }
@@ -99,14 +138,18 @@ impl OrbitalScheme {
 
             if self.redraw {
                 self.redraw = false;
-                display.as_roi().set(Color::rgb(75, 163, 253));
+                self.display.as_roi().set(Color::rgb(75, 163, 253));
+
+                let mut i = self.order.len();
                 for id in self.order.iter().rev() {
+                    i -= 1;
                     if let Some(mut window) = self.windows.get_mut(&id) {
-                        window.draw(display);
+                        window.draw(&mut self.display, i == 0);
                     }
                 }
-                display.roi(self.cursor_x, self.cursor_y, self.cursor.width(), self.cursor.height()).blend(&self.cursor.as_roi());
-                display.flip();
+
+                self.display.roi(self.cursor_x, self.cursor_y, self.cursor.width(), self.cursor.height()).blend(&self.cursor.as_roi());
+                self.display.flip();
             }
 
             thread::yield_now();
@@ -117,11 +160,12 @@ impl OrbitalScheme {
 impl Scheme for OrbitalScheme {
     #[allow(unused_variables)]
     fn open(&mut self, path: &str, flags: usize, mode: usize) -> Result {
-        let res = path.split(":").nth(1).unwrap_or("");
-        let x = res.split("/").nth(0).unwrap_or("").parse::<i32>().unwrap_or(0);
-        let y = res.split("/").nth(1).unwrap_or("").parse::<i32>().unwrap_or(0);
-        let width = res.split("/").nth(2).unwrap_or("").parse::<i32>().unwrap_or(0);
-        let height = res.split("/").nth(3).unwrap_or("").parse::<i32>().unwrap_or(0);
+        let mut parts = path.split(":").nth(1).unwrap_or("").split("/");
+        let mut x = parts.next().unwrap_or("").parse::<i32>().unwrap_or(0);
+        let mut y = parts.next().unwrap_or("").parse::<i32>().unwrap_or(0);
+        let width = parts.next().unwrap_or("").parse::<i32>().unwrap_or(0);
+        let height = parts.next().unwrap_or("").parse::<i32>().unwrap_or(0);
+        let title = parts.next().unwrap_or("");
 
         let id = self.next_id as usize;
         self.next_id += 1;
@@ -129,8 +173,22 @@ impl Scheme for OrbitalScheme {
             self.next_id = 1;
         }
 
+        if x < 0 && y < 0 {
+            x = self.next_x;
+            y = self.next_y;
+
+            self.next_x += 20;
+            if self.next_x + 20 >= self.display.width() {
+                self.next_x = 20;
+            }
+            self.next_y += 20;
+            if self.next_y + 20 >= self.display.height() {
+                self.next_y = 20;
+            }
+        }
+
         self.order.push_front(id);
-        self.windows.insert(id, Window::new(x, y, width, height));
+        self.windows.insert(id, Window::new(x, y, width, height, title));
         self.redraw = true;
 
         Ok(id)
@@ -167,7 +225,6 @@ impl Scheme for OrbitalScheme {
 
 fn main() {
     let mut socket = File::create(":orbital").unwrap();
-    let mut scheme = OrbitalScheme::new();
     match Display::new() {
         Ok(mut display) => {
             println!("- Orbital: Found Display {}x{}", display.width(), display.height());
@@ -176,7 +233,8 @@ fn main() {
 
             Command::new("/apps/launcher/main.bin").spawn().unwrap();
 
-            scheme.event_loop(&mut socket, &mut display);
+            let mut scheme = OrbitalScheme::new(display);
+            scheme.event_loop(&mut socket);
         },
         Err(err) => println!("- Orbital: No Display Found: {}", err)
     }
