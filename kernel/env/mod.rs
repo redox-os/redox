@@ -42,7 +42,7 @@ pub struct Environment<'a> {
     /// Pending events
     pub events: Intex<VecDeque<Event>>,
     /// Schemes
-    pub schemes: Intex<Vec<Box<KScheme>>>,
+    pub schemes: Intex<Vec<Box<KScheme + 'a>>>,
 
     /// Interrupt stats
     pub interrupts: Intex<[u64; 256]>,
@@ -77,11 +77,9 @@ impl<'a> Environment<'a> {
     }
 
     /// Open a new resource
-    pub fn open<'b>(&'b self, url: &Url<'b>, flags: usize) -> Result<Box<Resource + 'b>> {
-        let url_scheme = url.scheme;
-        if url_scheme.is_empty() {
-            let url_path = url.reference;
-            if url_path.trim_matches('/').is_empty() {
+    pub fn open(&self, url: Url, flags: usize) -> Result<Box<Resource>> {
+        if url.scheme.is_empty() {
+            if url.reference.trim_matches('/').is_empty() {
                 let mut list = String::new();
 
                 for scheme in self.schemes.lock().iter() {
@@ -98,13 +96,13 @@ impl<'a> Environment<'a> {
                 Ok(box VecResource::new(Url::new(), list.into_bytes()))
             } else if flags & O_CREAT == O_CREAT {
                 for scheme in self.schemes.lock().iter_mut() {
-                    if scheme.scheme() == url_path {
+                    if scheme.scheme() == url.reference {
                         return Err(Error::new(EEXIST));
                     }
                 }
 
                 if let Some(context) = env().contexts.lock().current_mut() {
-                    let (scheme, server) = Scheme::new(url_path, context);
+                    let (scheme, server) = Scheme::new(url.reference, context);
                     self.schemes.lock().push(box scheme);
 
                     Ok(box server)
@@ -115,8 +113,8 @@ impl<'a> Environment<'a> {
                 Err(Error::new(ENOENT))
             }
         } else {
-            for mut scheme in self.schemes.lock().iter_mut() {
-                if scheme.scheme() == url_scheme {
+            for scheme in self.schemes.lock().iter_mut() {
+                if scheme.scheme() == url.scheme {
                     return scheme.open(url, flags);
                 }
             }
@@ -125,7 +123,7 @@ impl<'a> Environment<'a> {
     }
 
     /// Unlink a resource
-    pub fn unlink(&self, url: &Url) -> Result<()> {
+    pub fn unlink(&self, url: Url) -> Result<()> {
         let url_scheme = url.scheme;
         if !url_scheme.is_empty() {
             for mut scheme in self.schemes.lock().iter_mut() {

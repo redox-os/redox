@@ -80,7 +80,7 @@ impl KScheme for Acpi {
         "acpi"
     }
 
-    fn open(&mut self, url: &Url, flags: usize) -> Result<Box<Resource>> {
+    fn open<'a, 'b: 'a>(&'a mut self, url: Url<'b>, flags: usize) -> Result<Box<Resource + 'a>> {
         if url.reference == "off" && flags & O_CREAT == O_CREAT {
             match self.fadt {
                 Some(fadt) => {

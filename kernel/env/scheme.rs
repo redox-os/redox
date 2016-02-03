@@ -333,7 +333,7 @@ impl<'a> KScheme for Scheme<'a> {
         &self.name
     }
 
-    fn open<'b>(&'b mut self, url: &Url<'b>, flags: usize) -> Result<Box<Resource + 'b>> {
+    fn open<'b, 'c: 'b>(&'b mut self, url: Url<'c>, flags: usize) -> Result<Box<Resource + 'b>> {
         let c_str = url.to_string() + "\0";
 
         let physical_address = c_str.as_ptr() as usize;
@@ -376,7 +376,7 @@ impl<'a> KScheme for Scheme<'a> {
         }
     }
 
-    fn unlink(&mut self, url: &Url) -> Result<()> {
+    fn unlink<'b>(&mut self, url: Url<'b>) -> Result<()> {
         let c_str = url.to_string() + "\0";
 
         let physical_address = c_str.as_ptr() as usize;

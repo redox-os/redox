@@ -12,7 +12,7 @@ impl KScheme for MemoryScheme {
         "memory"
     }
 
-    fn open(&mut self, _: &Url, _: usize) -> Result<Box<Resource>> {
+    fn open<'a, 'b: 'a>(&'a mut self, _: Url<'b>, _: usize) -> Result<Box<Resource + 'a>> {
         let string = format!("Memory Used: {} KB\nMemory Free: {} KB",
                              memory::memory_used() / 1024,
                              memory::memory_free() / 1024);

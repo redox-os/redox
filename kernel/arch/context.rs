@@ -43,12 +43,12 @@ impl<'a> ContextManager<'a> {
         }
     }
 
-    pub fn current(&self) -> Option<&Context> {
+    pub fn current(&'a self) -> Option<&'a Context> {
         let i = self.i;
         self.get(i)
     }
 
-    pub fn current_mut(&mut self) -> Option<&mut Context<'a>> {
+    pub fn current_mut(&'a mut self) -> Option<&mut Context<'a>> {
         let i = self.i;
         self.get_mut(i)
     }
@@ -370,10 +370,10 @@ pub struct Context<'a> {
     pub slices: usize,
     /// The total of all used slices
     pub slice_total: usize,
-// }
+    // }
 
-// These members control the stack and registers and are unique to each context {
-// The kernel stack
+    // These members control the stack and registers and are unique to each context {
+    // The kernel stack
     pub kernel_stack: usize,
     /// The current kernel stack pointer
     pub sp: usize,
@@ -385,18 +385,18 @@ pub struct Context<'a> {
     pub stack: Option<ContextMemory>,
     /// Indicates that registers can be loaded (they must be saved first)
     pub loadable: bool,
-// }
+    // }
 
-// These members are cloned for threads, copied or created for processes {
-/// Program working directory, cloned for threads, copied or created for processes. Modified by chdir
+    // These members are cloned for threads, copied or created for processes {
+    /// Program working directory, cloned for threads, copied or created for processes. Modified by chdir
     pub cwd: Arc<UnsafeCell<String>>,
-/// Program memory, cloned for threads, copied or created for processes. Modified by memory allocation
+    /// Program memory, cloned for threads, copied or created for processes. Modified by memory allocation
     pub memory: Arc<UnsafeCell<Vec<ContextMemory>>>,
-/// Program files, cloned for threads, copied or created for processes. Modified by file operations
+    /// Program files, cloned for threads, copied or created for processes. Modified by file operations
     pub files: Arc<UnsafeCell<Vec<ContextFile>>>,
-// }
+    // }
 
-/// Exit statuses of children
+    /// Exit statuses of children
     pub statuses: Vec<ContextStatus>,
 }
 

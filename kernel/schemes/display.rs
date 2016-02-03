@@ -86,7 +86,7 @@ impl KScheme for DisplayScheme {
         "display"
     }
 
-    fn open(&mut self, _: &Url, _: usize) -> Result<Box<Resource>> {
+    fn open<'a, 'b: 'a>(&'a mut self, _: Url<'b>, _: usize) -> Result<Box<Resource + 'a>> {
         if let Some(display) = unsafe { Display::root() } {
             ::env().console.lock().draw = false;
             Ok(box DisplayResource {

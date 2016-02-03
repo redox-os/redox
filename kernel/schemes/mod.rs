@@ -43,11 +43,11 @@ pub trait KScheme {
         ""
     }
 
-    fn open<'a>(&'a mut self, url: &Url<'a>, flags: usize) -> Result<Box<Resource + 'a>> {
+    fn open<'a, 'b: 'a>(&'a mut self, url: Url<'b>, flags: usize) -> Result<Box<Resource + 'a>> {
         Err(Error::new(ENOENT))
     }
 
-    fn unlink(&mut self, url: &Url) -> Result<()> {
+    fn unlink<'a>(&mut self, url: Url<'a>) -> Result<()> {
         Err(Error::new(ENOENT))
     }
 }
@@ -143,12 +143,12 @@ impl<'a> Url<'a> {
     }
 
     /// Open this URL (returns a resource)
-    pub fn open<'b>(&'b self) -> Result<Box<Resource + 'b>> {
+    pub fn open<'b>(self) -> Result<Box<Resource + 'b>> {
         env().open(self, O_RDWR)
     }
 
     /// Create this URL (returns a resource)
-    pub fn create<'b>(&'b self) -> Result<Box<Resource + 'b>> {
+    pub fn create(self) -> Result<Box<Resource>> {
         env().open(self, O_CREAT | O_RDWR | O_TRUNC)
     }
 }
