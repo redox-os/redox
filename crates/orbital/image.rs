@@ -19,15 +19,6 @@ impl<'a> ImageRoi<'a> {
         self.y2 - self.y1
     }
 
-    pub fn roi(&mut self, x: i32, y: i32, w: i32, h: i32) -> ImageRoi {
-        let start_x = min(self.x2, max(self.x1, x));
-        let end_x = min(self.x2, start_x + max(0, w));
-        let start_y = min(self.y2, max(self.y1, y));
-        let end_y = min(self.y2, start_y + max(0, h));
-
-        self.image.roi(start_x, start_y, end_x - start_x, end_y - start_y)
-    }
-
     pub fn set(&mut self, color: Color) {
         let new = color.data;
 
