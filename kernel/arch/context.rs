@@ -27,7 +27,7 @@ pub const CONTEXT_STACK_ADDR: usize = 0x70000000;
 pub const CONTEXT_SLICES: usize = 4;
 
 pub struct ContextManager<'a> {
-    pub inner: Vec<Box<Context<'a>>>,
+    pub inner: Vec<Context<'a>>,
     pub enabled: bool,
     pub i: usize,
     pub next_pid: usize,
@@ -43,25 +43,25 @@ impl<'a> ContextManager<'a> {
         }
     }
 
-    pub fn current(&self) -> Option<&Box<Context>> {
+    pub fn current(&'a self) -> Option<&'a Context> {
         let i = self.i;
         self.get(i)
     }
 
-    pub fn current_mut(&mut self) -> Option<&mut Box<Context<'a>>> {
+    pub fn current_mut(&'a mut self) -> Option<&mut Context<'a>> {
         let i = self.i;
         self.get_mut(i)
     }
 
-    pub fn iter(&self) -> Iter<Box<Context>> {
+    pub fn iter(&self) -> Iter<Context<'a>> {
         self.inner.iter()
     }
 
-    pub fn iter_mut(&mut self) -> IterMut<Box<Context<'a>>> {
+    pub fn iter_mut(&mut self) -> IterMut<Context<'a>> {
         self.inner.iter_mut()
     }
 
-    pub fn get(&self, i: usize) -> Option<&Box<Context>> {
+    pub fn get(&self, i: usize) -> Option<&Context> {
         if self.enabled {
             self.inner.get(i)
         } else{
@@ -69,7 +69,7 @@ impl<'a> ContextManager<'a> {
         }
     }
 
-    pub fn get_mut(&mut self, i: usize) -> Option<&mut Box<Context<'a>>> {
+    pub fn get_mut(&mut self, i: usize) -> Option<&mut Context<'a>> {
         if self.enabled {
             self.inner.get_mut(i)
         } else{
@@ -81,7 +81,7 @@ impl<'a> ContextManager<'a> {
         self.inner.len()
     }
 
-    pub unsafe fn push(&mut self, context: Box<Context<'a>>) {
+    pub unsafe fn push(&mut self, context: Context<'a>) {
         self.inner.push(context);
     }
 
@@ -179,7 +179,7 @@ pub unsafe extern "cdecl" fn context_clone(parent_ptr: *const Context,
                    (*parent_ptr).kernel_stack as *const u8,
                    CONTEXT_STACK_SIZE + 512);
 
-            let context = box Context {
+            let context = Context {
                 pid: clone_pid,
                 ppid: (*parent_ptr).pid,
                 name: &(*parent_ptr).name.to_string(),
@@ -370,10 +370,10 @@ pub struct Context<'a> {
     pub slices: usize,
     /// The total of all used slices
     pub slice_total: usize,
-// }
+    // }
 
-// These members control the stack and registers and are unique to each context {
-// The kernel stack
+    // These members control the stack and registers and are unique to each context {
+    // The kernel stack
     pub kernel_stack: usize,
     /// The current kernel stack pointer
     pub sp: usize,
@@ -385,18 +385,18 @@ pub struct Context<'a> {
     pub stack: Option<ContextMemory>,
     /// Indicates that registers can be loaded (they must be saved first)
     pub loadable: bool,
-// }
+    // }
 
-// These members are cloned for threads, copied or created for processes {
-/// Program working directory, cloned for threads, copied or created for processes. Modified by chdir
+    // These members are cloned for threads, copied or created for processes {
+    /// Program working directory, cloned for threads, copied or created for processes. Modified by chdir
     pub cwd: Arc<UnsafeCell<String>>,
-/// Program memory, cloned for threads, copied or created for processes. Modified by memory allocation
+    /// Program memory, cloned for threads, copied or created for processes. Modified by memory allocation
     pub memory: Arc<UnsafeCell<Vec<ContextMemory>>>,
-/// Program files, cloned for threads, copied or created for processes. Modified by file operations
+    /// Program files, cloned for threads, copied or created for processes. Modified by file operations
     pub files: Arc<UnsafeCell<Vec<ContextFile>>>,
-// }
+    // }
 
-/// Exit statuses of children
+    /// Exit statuses of children
     pub statuses: Vec<ContextStatus>,
 }
 
@@ -430,8 +430,8 @@ impl<'a> Context<'a> {
         ret
     }
 
-    pub unsafe fn root() -> Box<Self> {
-        box Context {
+    pub unsafe fn root() -> Self {
+        Context {
             pid: Context::next_pid(),
             ppid: 0,
             name: "kidle",
@@ -455,10 +455,10 @@ impl<'a> Context<'a> {
         }
     }
 
-    pub unsafe fn new(name: &'a str, call: usize, args: &Vec<usize>) -> Box<Self> {
+    pub unsafe fn new(name: &'a str, call: usize, args: &Vec<usize>) -> Self {
         let kernel_stack = memory::alloc(CONTEXT_STACK_SIZE + 512);
 
-        let mut ret = box Context {
+        let mut ret = Context {
             pid: Context::next_pid(),
             ppid: 0,
             name: name,
@@ -490,18 +490,18 @@ impl<'a> Context<'a> {
         ret
     }
 
-    pub fn spawn(name: &'a str, box_fn: Box<FnBox()>) -> usize {
+    pub fn spawn<F: FnBox()>(name: &'a str, fn_: F) -> usize {
         let ret;
 
         unsafe {
-            let box_fn_ptr: *mut Box<FnBox()> = memory::alloc_type();
-            ptr::write(box_fn_ptr, box_fn);
+            let fn_ptr: *mut Box<FnBox()> = memory::alloc_type();
+            ptr::write(fn_ptr, box fn_);
 
-            let mut context_box_args: Vec<usize> = Vec::new();
-            context_box_args.push(box_fn_ptr as usize);
-            context_box_args.push(0); // Return address, 0 catches bad code
+            let mut context_args = Vec::new();
+            context_args.push(fn_ptr as usize);
+            context_args.push(0); // Return address, 0 catches bad code
 
-            let context = Context::new(&name.to_string(), context_box as usize, &context_box_args);
+            let context = Context::new(&name.to_string(), fn_ptr as usize, &context_args);
 
             ret = context.pid;
 
@@ -587,21 +587,7 @@ impl<'a> Context<'a> {
 
     /// Cleanup empty memory
     pub unsafe fn clean_mem(&mut self) {
-        let mut i = 0;
-        while i < (*self.memory.get()).len() {
-            let mut remove = false;
-            if let Some(mem) = (*self.memory.get()).get(i) {
-                if mem.virtual_size == 0 {
-                    remove = true;
-                }
-            }
-
-            if remove {
-                drop((*self.memory.get()).remove(i));
-            } else {
-                i += 1;
-            }
-        }
+        (*self.memory.get()).retain(|mem| mem.virtual_size > 0);
     }
 
     /// Get the next available file descriptor

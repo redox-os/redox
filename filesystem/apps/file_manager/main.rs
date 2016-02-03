@@ -128,7 +128,7 @@ impl FileManager {
                 right_button: false,
             },
             click_time: Duration::new(0, 0),
-            window: Window::new(0, 0, 0, 0, "").unwrap(),
+            window: Window::new(-1, -1, 0, 0, "").unwrap(),
         }
     }
 
@@ -345,15 +345,15 @@ impl FileManager {
         self.draw_content();
     }
 
-    fn event_loop(&mut self) -> Option<FileManagerCommand> {
+    fn event_loop(&mut self) -> Vec<FileManagerCommand> {
         let mut redraw = false;
-        let mut command = None;
-        if let Some(event) = self.window.poll() {
+        let mut commands = Vec::new();
+        for event in self.window.events() {
             match event.to_option() {
                 EventOption::Key(key_event) => {
                     if key_event.pressed {
                         match key_event.scancode {
-                            event::K_ESC => return Some(FileManagerCommand::Quit),
+                            event::K_ESC => commands.push(FileManagerCommand::Quit),
                             event::K_HOME => self.selected = 0,
                             event::K_UP => {
                                 if self.selected > 0 {
@@ -377,9 +377,9 @@ impl FileManager {
                                             match self.files.get(self.selected as usize) {
                                                 Some(file) => {
                                                     if file.ends_with('/') {
-                                                        command = Some(FileManagerCommand::ChangeDir(file.clone()));
+                                                        commands.push(FileManagerCommand::ChangeDir(file.clone()));
                                                     } else {
-                                                        command = Some(FileManagerCommand::Execute(file.clone()));
+                                                        commands.push(FileManagerCommand::Execute(file.clone()));
                                                     }
                                                 }
                                                 None => (),
@@ -399,8 +399,8 @@ impl FileManager {
                                 }
                             }
                         }
-                        if command.is_none() && redraw {
-                            command = Some(FileManagerCommand::Redraw);
+                        if redraw {
+                            commands.push(FileManagerCommand::Redraw);
                         }
                     }
                 }
@@ -447,9 +447,9 @@ impl FileManager {
                             if self.selected >= 0 && self.selected < self.files.len() as isize {
                                 if let Some(file) = self.files.get(self.selected as usize) {
                                     if file.ends_with('/') {
-                                        command = Some(FileManagerCommand::ChangeDir(file.clone()));
+                                        commands.push(FileManagerCommand::ChangeDir(file.clone()));
                                     } else {
-                                        command = Some(FileManagerCommand::Execute(file.clone()));
+                                        commands.push(FileManagerCommand::Execute(file.clone()));
                                     }
                                 }
                             }
@@ -460,22 +460,22 @@ impl FileManager {
                     }
                     self.last_mouse_event = mouse_event;
 
-                    if command.is_none() && redraw {
-                        command = Some(FileManagerCommand::Redraw);
+                    if redraw {
+                        commands.push(FileManagerCommand::Redraw);
                     }
                 }
-                EventOption::Quit(_) => command = Some(FileManagerCommand::Quit),
+                EventOption::Quit(_) => commands.push(FileManagerCommand::Quit),
                 _ => (),
             }
         }
-        command
+        commands
     }
 
     fn main(&mut self, path: &str) {
         let mut current_path = path.to_string();
         self.set_path(path);
         loop {
-            if let Some(event) = self.event_loop() {
+            for event in self.event_loop() {
                 match event {
                     FileManagerCommand::ChangeDir(dir) => {
                         if dir == "../" {
@@ -492,7 +492,7 @@ impl FileManager {
                         File::open(&("orbital://launch/".to_string() + &current_path + &cmd));
                     }
                     FileManagerCommand::Redraw => (),
-                    FileManagerCommand::Quit => break,
+                    FileManagerCommand::Quit => return,
                 };
                 self.draw_content();
             }

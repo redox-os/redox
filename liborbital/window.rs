@@ -36,7 +36,7 @@ impl Window {
             let _ = font_file.read_to_end(&mut font);
         }
 
-        match File::open(&format!("orbital:{}/{}/{}/{}/{}", x, y, w, h, title)) {
+        match File::open(&format!("orbital:/{}/{}/{}/{}/{}", x, y, w, h, title)) {
             Ok(file) => {
                 Some(box Window {
                     x: x,
@@ -193,7 +193,27 @@ impl Window {
 
     /// Return a iterator over events
     pub fn events(&mut self) -> EventIter {
-        EventIter::new(self)
+        let mut iter = EventIter {
+            events: [Event::new(); 128],
+            i: 0,
+            count: 0,
+        };
+
+        'blocking: loop {
+            //Should it be cleared? iter.events = [Event::new(); 128];
+            match self.file.read(unsafe {
+                slice::from_raw_parts_mut(iter.events.as_mut_ptr() as *mut u8, iter.events.len() * mem::size_of::<Event>())
+            }){
+                Ok(0) => thread::yield_now(),
+                Ok(count) => {
+                    iter.count = count/mem::size_of::<Event>();
+                    break 'blocking;
+                },
+                Err(_) => break 'blocking,
+            }
+        }
+
+        iter
     }
 
     /// Poll for an event
@@ -223,32 +243,6 @@ pub struct EventIter {
     events: [Event; 128],
     i: usize,
     count: usize,
-}
-
-impl EventIter {
-    pub fn new(window: &mut Window) -> EventIter {
-        let mut iter = EventIter {
-            events: [Event::new(); 128],
-            i: 0,
-            count: 0,
-        };
-
-        'blocking: loop {
-            //Should it be cleared? iter.events = [Event::new(); 128];
-            match window.file.read(unsafe {
-                slice::from_raw_parts_mut(iter.events.as_mut_ptr() as *mut u8, iter.events.len() * mem::size_of::<Event>())
-            }){
-                Ok(0) => thread::yield_now(),
-                Ok(count) => {
-                    iter.count = count/mem::size_of::<Event>();
-                    break 'blocking;
-                },
-                Err(_) => break 'blocking,
-            }
-        }
-
-        iter
-    }
 }
 
 impl Iterator for EventIter {

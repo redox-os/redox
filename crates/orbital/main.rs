@@ -2,6 +2,7 @@ extern crate core;
 extern crate system;
 
 use std::collections::BTreeMap;
+use std::collections::VecDeque;
 use std::fs::File;
 use std::io::{Read, Write};
 use std::mem::size_of;
@@ -14,78 +15,150 @@ use system::scheme::{Packet, Scheme};
 pub use self::color::Color;
 pub use self::display::Display;
 pub use self::event::{Event, EventOption};
+pub use self::font::Font;
 pub use self::image::{Image, ImageRoi};
 pub use self::window::Window;
 
 use self::bmp::BmpFile;
-use self::event::{EVENT_KEY, EVENT_MOUSE};
+use self::event::{EVENT_KEY, EVENT_MOUSE, QuitEvent};
 
 pub mod bmp;
 pub mod color;
 pub mod display;
 #[path="../../kernel/common/event.rs"]
 pub mod event;
+pub mod font;
 pub mod image;
 pub mod window;
 
 struct OrbitalScheme {
-    next_id: isize,
+    display: Display,
     cursor: Image,
     cursor_x: i32,
     cursor_y: i32,
-    order: Vec<usize>,
+    dragging: bool,
+    drag_x: i32,
+    drag_y: i32,
+    next_id: isize,
+    next_x: i32,
+    next_y: i32,
+    order: VecDeque<usize>,
     windows: BTreeMap<usize, Window>,
     redraw: bool,
 }
 
 impl OrbitalScheme {
-    fn new() -> OrbitalScheme {
+    fn new(display: Display) -> OrbitalScheme {
         OrbitalScheme {
-            next_id: 1,
+            display: display,
             cursor: BmpFile::from_path("/ui/cursor.bmp"),
             cursor_x: 0,
             cursor_y: 0,
-            order: Vec::new(),
+            dragging: false,
+            drag_x: 0,
+            drag_y: 0,
+            next_id: 1,
+            next_x: 20,
+            next_y: 20,
+            order: VecDeque::new(),
             windows: BTreeMap::new(),
             redraw: true,
         }
     }
 
-    fn update(&mut self, display: &mut Display) {
-        while let Some(mut event) = display.poll() {
-            if event.code == EVENT_KEY {
-                if let Some(id) = self.order.last() {
-                    if let Some(mut window) = self.windows.get_mut(&id) {
-                        window.event(event);
-                    }
-                }
-            } else if event.code == EVENT_MOUSE {
-                self.cursor_x = event.a as i32;
-                self.cursor_y = event.b as i32;
-                self.redraw = true;
-
-                if let Some(id) = self.order.last() {
-                    if let Some(mut window) = self.windows.get_mut(&id) {
-                        event.a -= window.x as i64;
-                        event.b -= window.y as i64;
-                        if event.a >= 0 && event.b >= 0 && event.a < window.width() as i64 && event.b < window.height() as i64 {
+    fn event_loop(&mut self, socket: &mut File) {
+        loop {
+            for event in self.display.events() {
+                if event.code == EVENT_KEY {
+                    if let Some(id) = self.order.front() {
+                        if let Some(mut window) = self.windows.get_mut(&id) {
                             window.event(event);
+                        }
+                    }
+                } else if event.code == EVENT_MOUSE {
+                    self.cursor_x = event.a as i32;
+                    self.cursor_y = event.b as i32;
+                    self.redraw = true;
+
+                    if self.dragging {
+                        if event.c > 0 {
+                            if let Some(id) = self.order.front() {
+                                if let Some(mut window) = self.windows.get_mut(&id) {
+                                    window.x += self.cursor_x - self.drag_x;
+                                    window.y += self.cursor_y - self.drag_y;
+                                    self.drag_x = self.cursor_x;
+                                    self.drag_y = self.cursor_y;
+                                } else {
+                                    self.dragging = false;
+                                }
+                            } else {
+                                self.dragging = false;
+                            }
+                        } else {
+                            self.dragging = false;
+                        }
+                    } else {
+                        let mut focus = 0;
+                        let mut i = 0;
+                        for id in self.order.iter() {
+                            if let Some(mut window) = self.windows.get_mut(&id) {
+                                if window.contains(event.a as i32, event.b as i32) {
+                                    let mut window_event = event;
+                                    window_event.a -= window.x as i64;
+                                    window_event.b -= window.y as i64;
+                                    window.event(window_event);
+                                    if event.c > 0 {
+                                        focus = i;
+                                    }
+                                    break;
+                                } else if window.title_contains(event.a as i32, event.b as i32) {
+                                    if event.c > 0 {
+                                        focus = i;
+                                        if window.exit_contains(event.a as i32, event.b as i32) {
+                                            window.event(QuitEvent.to_event());
+                                        } else {
+                                            self.dragging = true;
+                                            self.drag_x = self.cursor_x;
+                                            self.drag_y = self.cursor_y;
+                                        }
+                                    }
+                                    break;
+                                }
+                            }
+                            i += 1;
+                        }
+                        if focus > 0 {
+                            if let Some(id) = self.order.remove(focus) {
+                                self.order.push_front(id);
+                            }
                         }
                     }
                 }
             }
-        }
 
-        if self.redraw {
-            self.redraw = false;
-            display.as_roi().set(Color::rgb(75, 163, 253));
-            for id in self.order.iter() {
-                if let Some(mut window) = self.windows.get_mut(&id) {
-                    window.draw(display);
-                }
+            let mut packet = Packet::default();
+            while socket.read(&mut packet).unwrap() == size_of::<Packet>() {
+                self.handle(&mut packet);
+                socket.write(&packet).unwrap();
             }
-            display.roi(self.cursor_x, self.cursor_y, self.cursor.width(), self.cursor.height()).blend(&self.cursor.as_roi());
-            display.flip();
+
+            if self.redraw {
+                self.redraw = false;
+                self.display.as_roi().set(Color::rgb(75, 163, 253));
+
+                let mut i = self.order.len();
+                for id in self.order.iter().rev() {
+                    i -= 1;
+                    if let Some(mut window) = self.windows.get_mut(&id) {
+                        window.draw(&mut self.display, i == 0);
+                    }
+                }
+
+                self.display.roi(self.cursor_x, self.cursor_y, self.cursor.width(), self.cursor.height()).blend(&self.cursor.as_roi());
+                self.display.flip();
+            }
+
+            thread::yield_now();
         }
     }
 }
@@ -93,11 +166,18 @@ impl OrbitalScheme {
 impl Scheme for OrbitalScheme {
     #[allow(unused_variables)]
     fn open(&mut self, path: &str, flags: usize, mode: usize) -> Result {
-        let res = path.split(":").nth(1).unwrap_or("");
-        let x = res.split("/").nth(0).unwrap_or("").parse::<i32>().unwrap_or(0);
-        let y = res.split("/").nth(1).unwrap_or("").parse::<i32>().unwrap_or(0);
-        let width = res.split("/").nth(2).unwrap_or("").parse::<i32>().unwrap_or(0);
-        let height = res.split("/").nth(3).unwrap_or("").parse::<i32>().unwrap_or(0);
+        let mut parts = path.split("/").skip(1);
+
+        let mut x = parts.next().unwrap_or("").parse::<i32>().unwrap_or(0);
+        let mut y = parts.next().unwrap_or("").parse::<i32>().unwrap_or(0);
+        let width = parts.next().unwrap_or("").parse::<i32>().unwrap_or(0);
+        let height = parts.next().unwrap_or("").parse::<i32>().unwrap_or(0);
+
+        let mut title = parts.next().unwrap_or("").to_string();
+        for part in parts {
+            title.push('/');
+            title.push_str(part);
+        }
 
         let id = self.next_id as usize;
         self.next_id += 1;
@@ -105,8 +185,22 @@ impl Scheme for OrbitalScheme {
             self.next_id = 1;
         }
 
-        self.order.push(id);
-        self.windows.insert(id, Window::new(x, y, width, height));
+        if x < 0 && y < 0 {
+            x = self.next_x;
+            y = self.next_y;
+
+            self.next_x += 20;
+            if self.next_x + 20 >= self.display.width() {
+                self.next_x = 20;
+            }
+            self.next_y += 20;
+            if self.next_y + 20 >= self.display.height() {
+                self.next_y = 20;
+            }
+        }
+
+        self.order.push_front(id);
+        self.windows.insert(id, Window::new(x, y, width, height, title));
         self.redraw = true;
 
         Ok(id)
@@ -130,21 +224,7 @@ impl Scheme for OrbitalScheme {
     }
 
     fn close(&mut self, id: usize) -> Result {
-        let mut i = 0;
-        while i < self.order.len() {
-            let mut remove = false;
-            if let Some(key) = self.order.get(i) {
-                if *key == id {
-                    remove = true;
-                }
-            }
-
-            if remove {
-                self.order.remove(i);
-            } else {
-                i += 1;
-            }
-        }
+        self.order.retain(|&e| e != id);
 
         if self.windows.remove(&id).is_some() {
             self.redraw = true;
@@ -157,26 +237,16 @@ impl Scheme for OrbitalScheme {
 
 fn main() {
     let mut socket = File::create(":orbital").unwrap();
-    let mut scheme = OrbitalScheme::new();
     match Display::new() {
-        Ok(mut display) => {
+        Ok(display) => {
             println!("- Orbital: Found Display {}x{}", display.width(), display.height());
             println!("    Console: Press F1");
             println!("    Desktop: Press F2");
 
             Command::new("/apps/launcher/main.bin").spawn().unwrap();
 
-            loop{
-                let mut packet = Packet::default();
-                while socket.read(&mut packet).unwrap() == size_of::<Packet>() {
-                    scheme.handle(&mut packet);
-                    socket.write(&packet).unwrap();
-                }
-
-                scheme.update(&mut display);
-
-                thread::yield_now();
-            }
+            let mut scheme = OrbitalScheme::new(display);
+            scheme.event_loop(&mut socket);
         },
         Err(err) => println!("- Orbital: No Display Found: {}", err)
     }

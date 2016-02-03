@@ -19,39 +19,16 @@ impl<'a> ImageRoi<'a> {
         self.y2 - self.y1
     }
 
-    pub fn roi(&mut self, x: i32, y: i32, w: i32, h: i32) -> ImageRoi {
-        let start_x = min(self.x2, max(self.x1, x));
-        let end_x = min(self.x2, start_x + max(0, w));
-        let start_y = min(self.y2, max(self.y1, y));
-        let end_y = min(self.y2, start_y + max(0, h));
-
-        self.image.roi(start_x, start_y, end_x - start_x, end_y - start_y)
-    }
-
-    pub fn set(&mut self, color: Color) {
-        for y in self.y1..self.y2 {
-            let row = y * self.image.width();
-            for x in self.x1..self.x2 {
-                self.image.data[(row + x) as usize] = color;
-            }
-        }
-    }
-
-    pub fn blit(&mut self, other: &ImageRoi) {
-        for y in 0..min(self.height(), other.height()) {
-            let row = (self.y1 + y) * self.image.width();
-            let other_row = (other.y1 + y) * other.image.width();
-            for x in 0..min(self.width(), other.width()) {
-                self.image.data[(row + self.x1 + x) as usize] = other.image.data[(other_row + other.x1 + x) as usize];
-            }
-        }
-    }
-
     pub fn blend(&mut self, other: &ImageRoi) {
-        for y in 0..min(self.height(), other.height()) {
+        let start_y = max(-self.y1, -other.y1);
+        let end_y = min(min(self.image.height(), self.y2) - self.y1, min(other.image.height(), other.y2) - other.y1);
+        let start_x = max(-self.x1, -other.x1);
+        let end_x = min(min(self.image.width(), self.x2) - self.x1, min(other.image.width(), other.x2) - other.x1);
+
+        for y in start_y..end_y {
             let row = (self.y1 + y) * self.image.width();
             let other_row = (other.y1 + y) * other.image.width();
-            for x in 0..min(self.width(), other.width()) {
+            for x in start_x..end_x {
                 let new = other.image.data[(other_row + other.x1 + x) as usize].data;
 
                 let alpha = (new >> 24) & 0xFF;
@@ -65,6 +42,41 @@ impl<'a> ImageRoi<'a> {
                         let n_b = ((new & 0xFF) * alpha) >> 8;
 
                         let n_alpha = 255 - alpha;
+                        let o_r = (((*old >> 16) & 0xFF) * n_alpha) >> 8;
+                        let o_g = (((*old >> 8) & 0xFF) * n_alpha) >> 8;
+                        let o_b = ((*old & 0xFF) * n_alpha) >> 8;
+
+                        *old = ((o_r << 16) | (o_g << 8) | o_b) + ((n_r << 16) | (n_g << 8) | n_b);
+                    }
+                }
+            }
+        }
+    }
+
+    pub fn set(&mut self, color: Color) {
+        let new = color.data;
+
+        let alpha = (new >> 24) & 0xFF;
+        if alpha > 0 {
+            if alpha >= 255 {
+                for y in max(0, self.y1) .. min(self.image.height(), self.y2) {
+                    let row = y * self.image.width();
+                    for x in max(0, self.x1) .. min(self.image.width(), self.x2) {
+                        self.image.data[(row + x) as usize].data = new;
+                    }
+                }
+            } else {
+                let n_r = (((new >> 16) & 0xFF) * alpha) >> 8;
+                let n_g = (((new >> 8) & 0xFF) * alpha) >> 8;
+                let n_b = ((new & 0xFF) * alpha) >> 8;
+
+                let n_alpha = 255 - alpha;
+
+                for y in max(0, self.y1) .. min(self.image.height(), self.y2) {
+                    let row = y * self.image.width();
+                    for x in max(0, self.x1) .. min(self.image.width(), self.x2) {
+                        let old = &mut self.image.data[(row + x) as usize].data;
+
                         let o_r = (((*old >> 16) & 0xFF) * n_alpha) >> 8;
                         let o_g = (((*old >> 8) & 0xFF) * n_alpha) >> 8;
                         let o_b = ((*old & 0xFF) * n_alpha) >> 8;
@@ -135,16 +147,11 @@ impl Image {
     }
 
     pub fn roi(&mut self, x: i32, y: i32, w: i32, h: i32) -> ImageRoi {
-        let start_x = min(self.width(), max(0, x));
-        let end_x = min(self.width(), start_x + max(0, w));
-        let start_y = min(self.height(), max(0, y));
-        let end_y = min(self.height(), start_y + max(0, h));
-
         ImageRoi {
-            x1: start_x,
-            x2: end_x,
-            y1: start_y,
-            y2: end_y,
+            x1: x,
+            x2: x + w,
+            y1: y,
+            y2: y + h,
             image: self
         }
     }

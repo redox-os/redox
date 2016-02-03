@@ -97,8 +97,6 @@ pub mod graphics;
 pub mod panic;
 /// Schemes
 pub mod schemes;
-/// Sync primatives
-pub mod sync;
 /// System calls
 pub mod syscall;
 /// USB input/output
@@ -125,44 +123,37 @@ static PIT_DURATION: Duration = Duration {
 /// Idle loop (active while idle)
 unsafe fn idle_loop() {
     loop {
-        asm!("cli" : : : : "intel", "volatile");
+        {
+            asm!("cli" : : : : "intel", "volatile");
 
-        let mut halt = true;
+            let mut halt = true;
 
-        for i in env().contexts.lock().iter().skip(1) {
-            if i.interrupted {
-                halt = false;
-                break;
+            for i in env().contexts.lock().iter().skip(1) {
+                if i.interrupted {
+                    halt = false;
+                    break;
+                }
+            }
+
+
+            if halt {
+                asm!("sti
+                      hlt"
+                      :
+                      :
+                      :
+                      : "intel", "volatile");
+            } else {
+                asm!("sti"
+                    :
+                    :
+                    :
+                    : "intel", "volatile");
             }
         }
 
 
-        if halt {
-            asm!("sti
-                  hlt"
-                  :
-                  :
-                  :
-                  : "intel", "volatile");
-        } else {
-            asm!("sti"
-                :
-                :
-                :
-                : "intel", "volatile");
-        }
-
-
         context_switch(false);
-    }
-}
-
-/// Event poll loop
-fn poll_loop() {
-    loop {
-        env().on_poll();
-
-        unsafe { context_switch(false) };
     }
 }
 
@@ -176,6 +167,8 @@ fn event_loop() {
     let mut cmd = String::new();
     loop {
         {
+            env().on_poll();
+
             let mut console = env().console.lock();
             if console.draw {
                 while let Some(event) = env().events.lock().pop_front() {
@@ -302,17 +295,13 @@ unsafe fn init(tss_data: usize) {
             env.schemes.lock().push(box MemoryScheme);
             env.schemes.lock().push(box TestScheme);
 
-            Context::spawn("kpoll", box move || { // TODO Do not box! Use static dispatch
-                poll_loop();
-            });
-
-            Context::spawn("kevent", box move || {
+            Context::spawn("kevent", move || {
                 event_loop();
             });
 
             env.contexts.lock().enabled = true;
 
-            Context::spawn("kinit", box move || {
+            Context::spawn("kinit", move || {
                 {
                     let wd_c = "file:/\0";
                     do_sys_chdir(wd_c.as_ptr());

@@ -1,22 +1,26 @@
 use alloc::boxed::Box;
 
+use arch::intex::Intex;
+
 use collections::string::{String, ToString};
 use collections::vec::Vec;
 use collections::vec_deque::VecDeque;
 
 use common::event::Event;
-use sync::Intex;
 use common::time::Duration;
 
 use arch::context::ContextManager;
 
 use schemes::{Result, KScheme, Resource, VecResource, Url};
 
-use syscall::{Error, ENOENT, EEXIST};
+use syscall::{Error, ENOENT, EEXIST, ESRCH};
+
 use syscall::O_CREAT;
 
 use self::console::Console;
 use self::scheme::Scheme;
+
+use env;
 
 /// The Kernel Console
 pub mod console;
@@ -38,7 +42,7 @@ pub struct Environment<'a> {
     /// Pending events
     pub events: Intex<VecDeque<Event>>,
     /// Schemes
-    pub schemes: Intex<Vec<Box<KScheme>>>,
+    pub schemes: Intex<Vec<Box<KScheme + 'a>>>,
 
     /// Interrupt stats
     pub interrupts: Intex<[u64; 256]>,
@@ -73,11 +77,9 @@ impl<'a> Environment<'a> {
     }
 
     /// Open a new resource
-    pub fn open<'b>(&'b self, url: &Url, flags: usize) -> Result<Box<Resource + 'b>> {
-        let url_scheme = url.scheme();
-        if url_scheme.is_empty() {
-            let url_path = url.reference();
-            if url_path.trim_matches('/').is_empty() {
+    pub fn open(&self, url: Url, flags: usize) -> Result<Box<Resource>> {
+        if url.scheme.is_empty() {
+            if url.reference.trim_matches('/').is_empty() {
                 let mut list = String::new();
 
                 for scheme in self.schemes.lock().iter() {
@@ -94,24 +96,25 @@ impl<'a> Environment<'a> {
                 Ok(box VecResource::new(Url::new(), list.into_bytes()))
             } else if flags & O_CREAT == O_CREAT {
                 for scheme in self.schemes.lock().iter_mut() {
-                    if scheme.scheme() == url_path {
+                    if scheme.scheme() == url.reference {
                         return Err(Error::new(EEXIST));
                     }
                 }
 
-                match Scheme::new(url_path) {
-                    Ok((scheme, server)) => {
-                        self.schemes.lock().push(box scheme);
-                        Ok(server)
-                    },
-                    Err(err) => Err(err)
+                if let Some(context) = env().contexts.lock().current_mut() {
+                    let (scheme, server) = Scheme::new(url.reference, context);
+                    self.schemes.lock().push(box scheme);
+
+                    Ok(box server)
+                } else {
+                    Err(Error::new(ESRCH))
                 }
             } else {
                 Err(Error::new(ENOENT))
             }
         } else {
-            for mut scheme in self.schemes.lock().iter_mut() {
-                if scheme.scheme() == url_scheme {
+            for scheme in self.schemes.lock().iter_mut() {
+                if scheme.scheme() == url.scheme {
                     return scheme.open(url, flags);
                 }
             }
@@ -120,8 +123,8 @@ impl<'a> Environment<'a> {
     }
 
     /// Unlink a resource
-    pub fn unlink(&self, url: &Url) -> Result<()> {
-        let url_scheme = url.scheme();
+    pub fn unlink(&self, url: Url) -> Result<()> {
+        let url_scheme = url.scheme;
         if !url_scheme.is_empty() {
             for mut scheme in self.schemes.lock().iter_mut() {
                 if scheme.scheme() == url_scheme {

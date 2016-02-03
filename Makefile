@@ -171,11 +171,13 @@ bins: filesystem/bin \
 		filesystem/bin/echo \
 		filesystem/bin/example \
  		filesystem/bin/false \
+ 		filesystem/bin/free \
 		filesystem/bin/init \
 		filesystem/bin/init.rc \
+ 		filesystem/bin/ints \
 		filesystem/bin/ion \
-		filesystem/bin/lua \
 		filesystem/bin/login \
+		filesystem/bin/lua \
 		filesystem/bin/ls \
 		filesystem/bin/mkdir \
 		filesystem/bin/orbital \
@@ -246,18 +248,6 @@ $(BUILD)/libcore.rlib: rust/src/libcore/lib.rs
 	$(MKDIR) -p $(BUILD)
 	$(RUSTC) $(RUSTCFLAGS) -o $@ $<
 
-$(BUILD)/libtest.rlib: rust/src/libtest/lib.rs $(BUILD)/libstd.rlib $(BUILD)/libgetopts.rlib
-	$(RUSTC) $(RUSTCFLAGS) -o $@ $<
-
-$(BUILD)/libgetopts.rlib: rust/src/libgetopts/lib.rs $(BUILD)/libserialize.rlib $(BUILD)/liblog.rlib
-	$(RUSTC) $(RUSTCFLAGS) -o $@ $<
-
-$(BUILD)/libserialize.rlib: rust/src/libserialize/lib.rs $(BUILD)/liblog.rlib
-	$(RUSTC) $(RUSTCFLAGS) -o $@ $<
-
-$(BUILD)/liblog.rlib: rust/src/liblog/lib.rs $(BUILD)/libstd.rlib
-	$(RUSTC) $(RUSTCFLAGS) -o $@ $<
-
 $(BUILD)/liballoc_system.rlib: liballoc_system/lib.rs $(BUILD)/libcore.rlib
 	$(RUSTC) $(RUSTCFLAGS) -o $@ $<
 
@@ -268,6 +258,9 @@ $(BUILD)/librustc_unicode.rlib: rust/src/librustc_unicode/lib.rs $(BUILD)/libcor
 	$(RUSTC) $(RUSTCFLAGS) -o $@ $<
 
 $(BUILD)/libcollections.rlib: rust/src/libcollections/lib.rs $(BUILD)/libcore.rlib $(BUILD)/liballoc.rlib $(BUILD)/librustc_unicode.rlib
+	$(RUSTC) $(RUSTCFLAGS) -o $@ $<
+
+$(BUILD)/libgetopts.rlib: rust/src/libgetopts/lib.rs $(BUILD)/libserialize.rlib $(BUILD)/liblog.rlib
 	$(RUSTC) $(RUSTCFLAGS) -o $@ $<
 
 $(BUILD)/librand.rlib: rust/src/librand/lib.rs $(BUILD)/libcore.rlib $(BUILD)/liballoc.rlib $(BUILD)/librustc_unicode.rlib $(BUILD)/libcollections.rlib
@@ -305,6 +298,41 @@ ifeq ($(ARCH),x86_64)
 else
 	$(AS) -f elf -o $@ $<
 endif
+
+#Rustc
+$(BUILD)/liblog.rlib: rust/src/liblog/lib.rs $(BUILD)/libstd.rlib
+	$(RUSTC) $(RUSTCFLAGS) -o $@ $<
+
+$(BUILD)/librustc_%.rlib: rust/src/librustc_%/lib.rs $(BUILD)/libsyntax.rlib
+	$(RUSTC) $(RUSTCFLAGS) -o $@ $<
+
+$(BUILD)/libserialize.rlib: rust/src/libserialize/lib.rs $(BUILD)/liblog.rlib
+	$(RUSTC) $(RUSTCFLAGS) -o $@ $<
+
+$(BUILD)/libsyntax.rlib: rust/src/libsyntax/lib.rs $(BUILD)/libserialize.rlib
+	$(RUSTC) $(RUSTCFLAGS) -o $@ $<
+
+$(BUILD)/libtest.rlib: rust/src/libtest/lib.rs $(BUILD)/libstd.rlib $(BUILD)/libgetopts.rlib
+	$(RUSTC) $(RUSTCFLAGS) -o $@ $<
+
+rustc: $(BUILD)/librustc_back.rlib \
+	$(BUILD)/librustc_bitflags.rlib \
+	$(BUILD)/librustc_borrowck.rlib \
+	$(BUILD)/librustc_data_structures.rlib \
+	$(BUILD)/librustc_driver.rlib \
+	$(BUILD)/librustc_front.rlib \
+	$(BUILD)/librustc_lint.rlib \
+	$(BUILD)/librustc_llvm.rlib \
+	$(BUILD)/librustc_metadata.rlib \
+	$(BUILD)/librustc_mir.rlib \
+	$(BUILD)/librustc_passes.rlib \
+	$(BUILD)/librustc_platform_intrinsics.rlib \
+	$(BUILD)/librustc_plugin.rlib \
+	$(BUILD)/librustc_privacy.rlib \
+	$(BUILD)/librustc_resolve.rlib \
+	$(BUILD)/librustc_trans.rlib \
+	$(BUILD)/librustc_typeck.rlib \
+	$(BUILD)/librustc_unicode.rlib
 
 #Cargo stuff
 $(BUILD)/libstd.rlib: FORCE $(BUILD)/libcore.rlib $(BUILD)/liballoc.rlib $(BUILD)/libcollections.rlib $(BUILD)/librand.rlib $(BUILD)/libsystem.rlib

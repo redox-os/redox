@@ -9,10 +9,9 @@ use core::mem::size_of;
 use core::ops::DerefMut;
 
 use arch::context::{context_switch, Context, ContextMemory};
+use arch::intex::Intex;
 
 use schemes::{Result, Resource, ResourceSeek, KScheme, Url};
-
-use sync::Intex;
 
 use system::error::{Error, EBADF, EFAULT, EINVAL, ESPIPE, ESRCH};
 use system::scheme::Packet;
@@ -22,14 +21,14 @@ use system::syscall::{SYS_CLOSE, SYS_FSYNC, SYS_FTRUNCATE,
 
 struct SchemeInner<'a> {
     name: &'a str,
-    context: *mut Context<'a>,
+    context: &'a mut Context<'a>,
     next_id: Cell<usize>,
     todo: Intex<BTreeMap<usize, (usize, usize, usize, usize)>>,
     done: Intex<BTreeMap<usize, (usize, usize, usize, usize)>>,
 }
 
 impl<'a> SchemeInner<'a> {
-    fn new(name: &'a str, context: *mut Context<'a>) -> SchemeInner<'a> {
+    fn new(name: &'a str, context: &'a mut Context<'a>) -> SchemeInner<'a> {
         SchemeInner {
             name: name,
             context: context,
@@ -72,23 +71,7 @@ impl<'a> SchemeInner<'a> {
 
 impl<'a> Drop for SchemeInner<'a> {
     fn drop(&mut self) {
-        let mut schemes = ::env().schemes.lock();
-
-        let mut i = 0;
-        while i < schemes.len() {
-            let mut remove = false;
-            if let Some(scheme) = schemes.get(i){
-                if scheme.scheme() == self.name {
-                    remove = true;
-                }
-            }
-
-            if remove {
-                schemes.remove(i);
-            } else {
-                i += 1;
-            }
-        }
+        ::env().schemes.lock().retain(|scheme| scheme.scheme() != self.name);
     }
 }
 
@@ -251,7 +234,10 @@ impl<'a> Resource for SchemeServerResource<'a> {
 
     /// Return the url of this resource
     fn url(&self) -> Url {
-        Url::from_string(":".to_string() + &self.inner.name)
+        Url {
+            scheme: "",
+            reference: &self.inner.name,
+        }
     }
 
     /// Read data to buffer
@@ -314,23 +300,19 @@ impl<'a> Resource for SchemeServerResource<'a> {
 /// Scheme has to be wrapped
 pub struct Scheme<'a> {
     name: &'a str,
-    inner: Weak<SchemeInner<'a>>
+    inner: Weak<SchemeInner<'a>>,
 }
 
 impl<'a> Scheme<'a> {
-    pub fn new(name: &'static str) -> Result<(Scheme<'a>, Box<Resource + 'a>)> {
-        if let Some(context) = ::env().contexts.lock().current_mut() {
-            let server = box SchemeServerResource {
-                inner: Arc::new(SchemeInner::new(&name.to_string(), context.deref_mut()))
-            };
-            let scheme = Scheme {
-                name: name,
-                inner: Arc::downgrade(&server.inner)
-            };
-            Ok((scheme, server))
-        } else {
-            Err(Error::new(ESRCH))
-        }
+    pub fn new(name: &'a str, context: &'a mut Context<'a>) -> (Scheme<'a>, SchemeServerResource<'a>) {
+        let server = SchemeServerResource {
+            inner: Arc::new(SchemeInner::new(name, context))
+        };
+        let scheme = Scheme {
+            name: name,
+            inner: Arc::downgrade(&server.inner)
+        };
+        (scheme, server)
     }
 
     fn call(&self, a: usize, b: usize, c: usize, d: usize) -> Result<usize> {
@@ -351,8 +333,8 @@ impl<'a> KScheme for Scheme<'a> {
         &self.name
     }
 
-    fn open<'b>(&'b mut self, url: &Url, flags: usize) -> Result<Box<Resource + 'b>> {
-        let c_str = url.string.clone() + "\0";
+    fn open<'b, 'c: 'b>(&'b mut self, url: Url<'c>, flags: usize) -> Result<Box<Resource + 'b>> {
+        let c_str = url.to_string() + "\0";
 
         let physical_address = c_str.as_ptr() as usize;
 
@@ -394,8 +376,8 @@ impl<'a> KScheme for Scheme<'a> {
         }
     }
 
-    fn unlink(&mut self, url: &Url) -> Result<()> {
-        let c_str = url.string.clone() + "\0";
+    fn unlink<'b>(&mut self, url: Url<'b>) -> Result<()> {
+        let c_str = url.to_string() + "\0";
 
         let physical_address = c_str.as_ptr() as usize;
 
@@ -430,4 +412,4 @@ impl<'a> KScheme for Scheme<'a> {
             Err(Error::new(EBADF))
         }
     }
-}
+

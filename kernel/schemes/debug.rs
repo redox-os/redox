@@ -85,7 +85,7 @@ impl KScheme for DebugScheme {
         "debug"
     }
 
-    fn open(&mut self, _: &Url, _: usize) -> Result<Box<Resource>> {
+    fn open<'a, 'b: 'a>(&'a mut self, _: Url<'b>, _: usize) -> Result<Box<Resource + 'a>> {
         Ok(box DebugResource {
             command: String::new(),
             line_toggle: false,
