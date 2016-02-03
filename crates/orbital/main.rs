@@ -20,7 +20,7 @@ pub use self::image::{Image, ImageRoi};
 pub use self::window::Window;
 
 use self::bmp::BmpFile;
-use self::event::{EVENT_KEY, EVENT_MOUSE};
+use self::event::{EVENT_KEY, EVENT_MOUSE, QuitEvent};
 
 pub mod bmp;
 pub mod color;
@@ -114,9 +114,13 @@ impl OrbitalScheme {
                                 } else if window.title_contains(event.a as i32, event.b as i32) {
                                     if event.c > 0 {
                                         focus = i;
-                                        self.dragging = true;
-                                        self.drag_x = self.cursor_x;
-                                        self.drag_y = self.cursor_y;
+                                        if window.exit_contains(event.a as i32, event.b as i32) {
+                                            window.event(QuitEvent.to_event());
+                                        } else {
+                                            self.dragging = true;
+                                            self.drag_x = self.cursor_x;
+                                            self.drag_y = self.cursor_y;
+                                        }
                                     }
                                     break;
                                 }
