@@ -86,11 +86,11 @@ long_mode:
     mov rdi, kernel_file
     mov rsi, rdi
     add rsi, 0xB000
-    mov rcx, (kernel_file.font - kernel_file)
+    mov rcx, (kernel_file.end - kernel_file)
     cld
     rep movsb
 
-    mov rdi, kernel_file.font
+    mov rdi, kernel_file.end
     mov rcx, 0xB000
     xor rax, rax
     std
@@ -105,8 +105,7 @@ long_mode:
     mov [0x100000], rax
     mov eax, [kernel_file + 0x18]
     mov [interrupts.handler], rax
-    mov rax, kernel_file.font
-    mov rbx, tss
+    mov rax, tss
     int 255
 .lp:
     sti

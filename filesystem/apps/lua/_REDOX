@@ -1,5 +1,0 @@
-name=Lua
-binary=lua
-author=http://www.lua.org/authors.html
-author=Jeremy Soller
-description=Lua for Redox

@@ -1,14 +1,14 @@
+use arch::context::Context;
+use arch::memory;
+
 use collections::string::ToString;
 
 use common::event::MouseEvent;
-use common::memory;
 use common::time::{self, Duration};
 
-use core::{cmp, mem, ptr, slice, str};
+use core::{cmp, mem, ptr, slice};
 
 use graphics::display::VBEMODEINFO;
-
-use scheduler::Context;
 
 use super::{Packet, Pipe, Setup};
 use super::desc::*;

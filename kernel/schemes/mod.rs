@@ -1,5 +1,4 @@
-use common::event::Event;
-use common::get_slice::GetSlice;
+use common::slice::GetSlice;
 
 use alloc::boxed::Box;
 
@@ -8,32 +7,27 @@ use collections::vec::Vec;
 
 use core::cmp::{min, max};
 
-use syscall::{SysError, O_CREAT, O_RDWR, O_TRUNC, EBADF, ENOENT};
+use syscall::{Error, O_CREAT, O_RDWR, O_TRUNC, EBADF, ENOENT};
+use env;
 
-/// ARP scheme
-pub mod arp;
 /// Context scheme
 pub mod context;
 /// Debug scheme
 pub mod debug;
 /// Display Scheme
 pub mod display;
-/// Ethernet scheme
-pub mod ethernet;
 /// File scheme
 pub mod file;
-/// ICMP scheme
-pub mod icmp;
 /// Interrupt scheme
 pub mod interrupt;
-/// IP scheme
-pub mod ip;
 /// Memory scheme
 pub mod memory;
 /// Pipes
 pub mod pipe;
+/// Tests
+pub mod test;
 
-pub type Result<T> = ::core::result::Result<T, SysError>;
+pub type Result<T> = ::core::result::Result<T, Error>;
 
 #[allow(unused_variables)]
 pub trait KScheme {
@@ -49,21 +43,17 @@ pub trait KScheme {
         ""
     }
 
-    // TODO: Hack for orbital
-    fn event(&mut self, event: &Event) {
-
-    }
-
     fn open(&mut self, url: &Url, flags: usize) -> Result<Box<Resource>> {
-        Err(SysError::new(ENOENT))
+        Err(Error::new(ENOENT))
     }
 
     fn unlink(&mut self, url: &Url) -> Result<()> {
-        Err(SysError::new(ENOENT))
+        Err(Error::new(ENOENT))
     }
 }
 
 /// Resource seek
+#[derive(Copy, Clone, Debug)]
 pub enum ResourceSeek {
     /// Start point
     Start(usize),
@@ -78,30 +68,30 @@ pub enum ResourceSeek {
 pub trait Resource {
     /// Duplicate the resource
     fn dup(&self) -> Result<Box<Resource>> {
-        Err(SysError::new(EBADF))
+        Err(Error::new(EBADF))
     }
     /// Return the url of this resource
     fn url(&self) -> Url;
     // TODO: Make use of Write and Read trait
     /// Read data to buffer
     fn read(&mut self, buf: &mut [u8]) -> Result<usize> {
-        Err(SysError::new(EBADF))
+        Err(Error::new(EBADF))
     }
     /// Write to resource
     fn write(&mut self, buf: &[u8]) -> Result<usize> {
-        Err(SysError::new(EBADF))
+        Err(Error::new(EBADF))
     }
     /// Seek
     fn seek(&mut self, pos: ResourceSeek) -> Result<usize> {
-        Err(SysError::new(EBADF))
+        Err(Error::new(EBADF))
     }
     /// Sync the resource
     fn sync(&mut self) -> Result<()> {
-        Err(SysError::new(EBADF))
+        Err(Error::new(EBADF))
     }
 
     fn truncate(&mut self, len: usize) -> Result<()> {
-        Err(SysError::new(EBADF))
+        Err(Error::new(EBADF))
     }
 
     // Helper functions
@@ -113,7 +103,7 @@ pub trait Resource {
                 Ok(0) => return Ok(read),
                 Err(err) => return Err(err),
                 Ok(count) => {
-                    vec.push_all(bytes.get_slice(None, Some(count)));
+                    vec.push_all(bytes.get_slice(..count));
                     read += count;
                 }
             }
@@ -154,22 +144,22 @@ impl Url {
 
     /// Open this URL (returns a resource)
     pub fn open(&self) -> Result<Box<Resource>> {
-        ::env().open(&self, O_RDWR)
+        env().open(&self, O_RDWR)
     }
 
     /// Create this URL (returns a resource)
     pub fn create(&self) -> Result<Box<Resource>> {
-        ::env().open(&self, O_CREAT | O_RDWR | O_TRUNC)
+        env().open(&self, O_CREAT | O_RDWR | O_TRUNC)
     }
 
     /// Return the scheme of this url
     pub fn scheme(&self) -> &str {
-        self.string.get_slice(None, self.string.find(':'))
+        self.string.get_slice(..self.string.find(':'))
     }
 
     /// Get the reference (after the ':') of the url
     pub fn reference(&self) -> &str {
-        self.string.get_slice(self.string.find(':').map(|a| a + 1), None)
+        self.string.get_slice(self.string.find(':').map(|a| a + 1)..)
     }
 
 }

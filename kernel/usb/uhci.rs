@@ -5,12 +5,12 @@ use collections::vec::Vec;
 use core::intrinsics::volatile_load;
 use core::mem;
 
-use scheduler::context::context_switch;
+use arch::context::context_switch;
 use common::debug;
-use common::memory::Memory;
+use arch::memory::Memory;
 
 use drivers::pci::config::PciConfig;
-use drivers::pio::*;
+use drivers::io::{Io, Pio};
 
 
 use schemes::KScheme;
@@ -69,74 +69,74 @@ impl Uhci {
         debugln!("UHCI on: {:X}, IRQ: {:X}", self.base, self.irq);
 
         let base = self.base as u16;
-        let usbcmd = base;
-        let usbsts = base + 02;
-        let usbintr = base + 0x4;
-        let frnum = base + 0x6;
-        let flbaseadd = base + 0x8;
-        let portsc1 = base + 0x10;
-        let portsc2 = base + 0x12;
+        let mut usbcmd = Pio::<u16>::new(base);
+        let usbsts = Pio::<u16>::new(base + 0x2);
+        let usbintr = Pio::<u16>::new(base + 0x4);
+        let mut frnum = Pio::<u16>::new(base + 0x6);
+        let mut flbaseadd = Pio::<u32>::new(base + 0x8);
+        let mut portsc1 = Pio::<u16>::new(base + 0x10);
+        let mut portsc2 = Pio::<u16>::new(base + 0x12);
 
         debug::d(" CMD ");
-        debug::dh(inw(usbcmd) as usize);
-        outw(usbcmd, 1 << 2 | 1 << 1);
+        debug::dh(usbcmd.read() as usize);
+        usbcmd.write(1 << 2 | 1 << 1);
         debug::d(" to ");
-        debug::dh(inw(usbcmd) as usize);
+        debug::dh(usbcmd.read() as usize);
 
-        outw(usbcmd, 0);
+        usbcmd.write(0);
         debug::d(" to ");
-        debug::dh(inw(usbcmd) as usize);
+        debug::dh(usbcmd.read() as usize);
 
         debug::d(" STS ");
-        debug::dh(inw(usbsts) as usize);
+        debug::dh(usbsts.read() as usize);
 
         debug::d(" INTR ");
-        debug::dh(inw(usbintr) as usize);
+        debug::dh(usbintr.read() as usize);
 
         debug::d(" FRNUM ");
-        debug::dh(inw(frnum) as usize);
-        outw(frnum, 0);
+        debug::dh(frnum.read() as usize);
+        frnum.write(0);
         debug::d(" to ");
-        debug::dh(inw(frnum) as usize);
+        debug::dh(frnum.read() as usize);
 
         debug::d(" FLBASEADD ");
-        debug::dh(ind(flbaseadd) as usize);
+        debug::dh(flbaseadd.read() as usize);
         for i in 0..1024 {
             self.frame_list.write(i, 1);
         }
-        outd(flbaseadd, self.frame_list.address() as u32);
+        flbaseadd.write(self.frame_list.address() as u32);
         debug::d(" to ");
-        debug::dh(ind(flbaseadd) as usize);
+        debug::dh(flbaseadd.read() as usize);
 
         debug::d(" CMD ");
-        debug::dh(inw(usbcmd) as usize);
-        outw(usbcmd, 1);
+        debug::dh(usbcmd.read() as usize);
+        usbcmd.write(1);
         debug::d(" to ");
-        debug::dh(inw(usbcmd) as usize);
+        debug::dh(usbcmd.read() as usize);
 
         debug::dl();
 
         {
             debug::d(" PORTSC1 ");
-            debug::dh(inw(portsc1) as usize);
+            debug::dh(portsc1.read() as usize);
 
-            outw(portsc1, 1 << 9);
+            portsc1.write(1 << 9);
             debug::d(" to ");
-            debug::dh(inw(portsc1) as usize);
+            debug::dh(portsc1.read() as usize);
 
-            outw(portsc1, 0);
+            portsc1.write(0);
             debug::d(" to ");
-            debug::dh(inw(portsc1) as usize);
+            debug::dh(portsc1.read() as usize);
 
             debug::dl();
 
-            if inw(portsc1) & 1 == 1 {
+            if portsc1.read() & 1 == 1 {
                 debug::d(" Device Found ");
-                debug::dh(inw(portsc1) as usize);
+                debug::dh(portsc1.read() as usize);
 
-                outw(portsc1, 4);
+                portsc1.write(4);
                 debug::d(" to ");
-                debug::dh(inw(portsc1) as usize);
+                debug::dh(portsc1.read() as usize);
                 debug::dl();
 
                 self.device(1);
@@ -145,25 +145,25 @@ impl Uhci {
 
         {
             debug::d(" PORTSC2 ");
-            debug::dh(inw(portsc2) as usize);
+            debug::dh(portsc2.read() as usize);
 
-            outw(portsc2, 1 << 9);
+            portsc2.write(1 << 9);
             debug::d(" to ");
-            debug::dh(inw(portsc2) as usize);
+            debug::dh(portsc2.read() as usize);
 
-            outw(portsc2, 0);
+            portsc2.write(0);
             debug::d(" to ");
-            debug::dh(inw(portsc2) as usize);
+            debug::dh(portsc2.read() as usize);
 
             debug::dl();
 
-            if inw(portsc2) & 1 == 1 {
+            if portsc2.read() & 1 == 1 {
                 debug::d(" Device Found ");
-                debug::dh(inw(portsc2) as usize);
+                debug::dh(portsc2.read() as usize);
 
-                outw(portsc2, 4);
+                portsc2.write(4);
                 debug::d(" to ");
-                debug::dh(inw(portsc2) as usize);
+                debug::dh(portsc2.read() as usize);
                 debug::dl();
 
                 self.device(2);

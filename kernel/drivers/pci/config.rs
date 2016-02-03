@@ -1,4 +1,4 @@
-use drivers::pio::*;
+use drivers::io::{Io, Pio};
 
 /// A PCI configuration
 #[derive(Copy, Clone)]

@@ -1,3 +1,4 @@
+#![crate_name="kernel"]
 #![crate_type="staticlib"]
 #![feature(alloc)]
 #![feature(allocator)]
@@ -19,7 +20,11 @@
 #![feature(unwind_attributes)]
 #![feature(vec_push_all)]
 #![feature(zero_one)]
+#![feature(collections_range)]
 #![no_std]
+
+#![allow(deprecated)]
+#![deny(warnings)]
 
 #[macro_use]
 extern crate alloc;
@@ -27,86 +32,71 @@ extern crate alloc;
 #[macro_use]
 extern crate collections;
 
+extern crate system;
+
 use acpi::Acpi;
 
 use alloc::boxed::Box;
 
-use collections::string::{String, ToString};
-use collections::vec::Vec;
+use arch::context::{context_switch, Context};
+use arch::memory;
+use arch::paging::Page;
+use arch::regs::Regs;
+use arch::tss::TSS;
 
-use core::cell::UnsafeCell;
+use collections::string::{String, ToString};
+
 use core::{ptr, mem, usize};
 use core::slice::SliceExt;
 
 use common::event::{self, EVENT_KEY, EventOption};
-use common::memory;
-use common::paging::Page;
 use common::time::Duration;
 
 use drivers::pci;
-use drivers::pio::*;
+use drivers::io::{Io, Pio};
 use drivers::ps2::*;
 use drivers::rtc::*;
 use drivers::serial::*;
 
 use env::Environment;
 
-pub use externs::*;
-
-use graphics::display;
-
-use programs::executor::execute;
-use programs::scheme::*;
-
-use scheduler::{Context, Regs, TSS};
-use scheduler::context::context_switch;
-
-use schemes::Url;
-use schemes::arp::*;
 use schemes::context::*;
 use schemes::debug::*;
-use schemes::ethernet::*;
-use schemes::icmp::*;
+use schemes::display::*;
 use schemes::interrupt::*;
-use schemes::ip::*;
 use schemes::memory::*;
-// use schemes::display::*;
+use schemes::test::*;
 
+use syscall::execute::execute;
 use syscall::handle::*;
+
+pub use system::externs::*;
 
 /// Common std-like functionality
 #[macro_use]
 pub mod common;
-/// ACPI
-pub mod acpi;
+#[macro_use]
+pub mod macros;
 /// Allocation
 pub mod alloc_system;
-/// Audio
-pub mod audio;
+/// ACPI
+pub mod acpi;
+/// Architecture dependant
+pub mod arch;
 /// Disk drivers
 pub mod disk;
 /// Various drivers
 pub mod drivers;
 /// Environment
 pub mod env;
-/// Externs
-pub mod externs;
 /// Filesystems
 pub mod fs;
 /// Various graphical methods
 pub mod graphics;
-/// Network
-pub mod network;
 /// Panic
 pub mod panic;
-/// Programs
-pub mod programs;
 /// Schemes
 pub mod schemes;
-/// Scheduling
-pub mod scheduler;
-/// Sync primatives
-pub mod sync;
 /// System calls
 pub mod syscall;
 /// USB input/output
@@ -133,36 +123,37 @@ static PIT_DURATION: Duration = Duration {
 /// Idle loop (active while idle)
 unsafe fn idle_loop() {
     loop {
-        asm!("cli" : : : : "intel", "volatile");
+        {
+            asm!("cli" : : : : "intel", "volatile");
 
-        let mut halt = true;
+            let mut halt = true;
 
-        for i in env().contexts.lock().iter().skip(1) {
-            if i.interrupted {
-                halt = false;
-                break;
+            for i in env().contexts.lock().iter().skip(1) {
+                if i.interrupted {
+                    halt = false;
+                    break;
+                }
+            }
+
+
+            if halt {
+                asm!("sti
+                      hlt"
+                      :
+                      :
+                      :
+                      : "intel", "volatile");
+            } else {
+                asm!("sti"
+                    :
+                    :
+                    :
+                    : "intel", "volatile");
             }
         }
 
 
-        if halt {
-            asm!("sti" : : : : "intel", "volatile");
-            asm!("hlt" : : : : "intel", "volatile");
-        } else {
-            asm!("sti" : : : : "intel", "volatile");
-        }
-
-
         context_switch(false);
-    }
-}
-
-/// Event poll loop
-fn poll_loop() {
-    loop {
-        env().on_poll();
-
-        unsafe { context_switch(false) };
     }
 }
 
@@ -175,67 +166,66 @@ fn event_loop() {
 
     let mut cmd = String::new();
     loop {
-        loop {
-            let mut console = env().console.lock();
-            match env().events.lock().pop_front() {
-                Some(event) => {
-                    if console.draw {
-                        match event.to_option() {
-                            EventOption::Key(key_event) => {
-                                if key_event.pressed {
-                                    match key_event.scancode {
-                                        event::K_F2 => {
-                                            console.draw = false;
-                                        }
-                                        event::K_BKSP => if !cmd.is_empty() {
-                                            console.write(&[8]);
-                                            cmd.pop();
-                                        },
-                                        _ => match key_event.character {
-                                            '\0' => (),
-                                            '\n' => {
-                                                console.command = Some(cmd.clone());
+        {
+            env().on_poll();
 
-                                                cmd.clear();
-                                                console.write(&[10]);
-                                            }
-                                            _ => {
-                                                cmd.push(key_event.character);
-                                                console.write(&[key_event.character as u8]);
-                                            }
-                                        },
-                                    }
+            let mut console = env().console.lock();
+            if console.draw {
+                while let Some(event) = env().events.lock().pop_front() {
+                    match event.to_option() {
+                        EventOption::Key(key_event) => {
+                            if key_event.pressed {
+                                match key_event.scancode {
+                                    event::K_F1 => {
+                                        console.draw = true;
+                                        console.redraw = true;
+                                    },
+                                    event::K_F2 => {
+                                        console.draw = false;
+                                    },
+                                    event::K_BKSP => if !cmd.is_empty() {
+                                        console.write(&[8]);
+                                        cmd.pop();
+                                    },
+                                    _ => match key_event.character {
+                                        '\0' => (),
+                                        '\n' => {
+                                            console.command = Some(cmd.clone());
+
+                                            cmd.clear();
+                                            console.write(&[10]);
+                                        }
+                                        _ => {
+                                            cmd.push(key_event.character);
+                                            console.write(&[key_event.character as u8]);
+                                        }
+                                    },
                                 }
                             }
-                            _ => (),
                         }
-                    } else {
-                        if event.code == EVENT_KEY && event.b as u8 == event::K_F1 && event.c > 0 {
+                        _ => (),
+                    }
+                }
+
+                console.instant = false;
+                if console.redraw {
+                    console.redraw = false;
+                    if let Some(ref mut display) = console.display {
+                        display.flip();
+                    }
+                }
+            } else {
+                for event in env().events.lock().iter() {
+                    if event.code == EVENT_KEY && event.c > 0 {
+                        if event.b as u8 == event::K_F1 {
                             console.draw = true;
                             console.redraw = true;
-                        } else {
-                            // TODO: Magical orbital hack
-                            unsafe {
-                                for scheme in env().schemes.iter() {
-                                    if (*scheme.get()).scheme() == "orbital" {
-                                        (*scheme.get()).event(&event);
-                                        break;
-                                    }
-                                }
-                            }
+                        }
+                        if event.b as u8 == event::K_F2 {
+                            console.draw = false;
                         }
                     }
                 }
-                None => break,
-            }
-        }
-
-        {
-            let mut console = env().console.lock();
-            console.instant = false;
-            if console.draw && console.redraw {
-                console.redraw = false;
-                console.display.flip();
             }
         }
 
@@ -247,7 +237,11 @@ static BSS_TEST_ZERO: usize = 0;
 static BSS_TEST_NONZERO: usize = usize::MAX;
 
 /// Initialize kernel
-unsafe fn init(font_data: usize, tss_data: usize) {
+unsafe fn init(tss_data: usize) {
+
+    // Test
+    assume!(true);
+
     // Zero BSS, this initializes statics that are set to 0
     {
         extern {
@@ -273,7 +267,6 @@ unsafe fn init(font_data: usize, tss_data: usize) {
     // Unmap first page to catch null pointer errors (after reading memory map)
     Page::new(0).unmap();
 
-    display::fonts = font_data;
     TSS_PTR = Some(&mut *(tss_data as *mut TSS));
     ENV_PTR = Some(&mut *Box::into_raw(Environment::new()));
 
@@ -282,68 +275,32 @@ unsafe fn init(font_data: usize, tss_data: usize) {
             env.contexts.lock().push(Context::root());
             env.console.lock().draw = true;
 
-            debug!("Redox {} bits\n", mem::size_of::<usize>() * 8);
+            debugln!("Redox {} bits", mem::size_of::<usize>() * 8);
 
             if let Some(acpi) = Acpi::new() {
-                env.schemes.push(UnsafeCell::new(acpi));
+                env.schemes.lock().push(acpi);
             }
 
             *(env.clock_realtime.lock()) = Rtc::new().time();
 
-            env.schemes.push(UnsafeCell::new(Ps2::new()));
-            env.schemes.push(UnsafeCell::new(Serial::new(0x3F8, 0x4)));
+            env.schemes.lock().push(Ps2::new());
+            env.schemes.lock().push(Serial::new(0x3F8, 0x4));
 
             pci::pci_init(env);
 
-            env.schemes.push(UnsafeCell::new(DebugScheme::new()));
-            env.schemes.push(UnsafeCell::new(box ContextScheme));
-            env.schemes.push(UnsafeCell::new(box InterruptScheme));
-            env.schemes.push(UnsafeCell::new(box MemoryScheme));
-            // session.items.push(box RandomScheme);
-            // session.items.push(box TimeScheme);
-
-            env.schemes.push(UnsafeCell::new(box EthernetScheme));
-            env.schemes.push(UnsafeCell::new(box ArpScheme));
-            env.schemes.push(UnsafeCell::new(box IcmpScheme));
-            env.schemes.push(UnsafeCell::new(box IpScheme { arp: Vec::new() }));
-            // session.items.push(box DisplayScheme);
-
-            Context::spawn("kpoll".to_string(),
-            box move || {
-                poll_loop();
-            });
+            env.schemes.lock().push(DebugScheme::new());
+            env.schemes.lock().push(box DisplayScheme);
+            env.schemes.lock().push(box ContextScheme);
+            env.schemes.lock().push(box InterruptScheme);
+            env.schemes.lock().push(box MemoryScheme);
+            env.schemes.lock().push(box TestScheme);
 
             Context::spawn("kevent".to_string(),
             box move || {
                 event_loop();
             });
 
-            Context::spawn("karp".to_string(),
-            box move || {
-                ArpScheme::reply_loop();
-            });
-
-            Context::spawn("kicmp".to_string(),
-            box move || {
-                IcmpScheme::reply_loop();
-            });
-
             env.contexts.lock().enabled = true;
-
-            if let Ok(mut resource) = Url::from_str("file:/schemes/").open() {
-                let mut vec: Vec<u8> = Vec::new();
-                let _ = resource.read_to_end(&mut vec);
-
-                for folder in String::from_utf8_unchecked(vec).lines() {
-                    if folder.ends_with('/') {
-                        let scheme_item = SchemeItem::from_url(&Url::from_string("file:/schemes/"
-                                                                                 .to_string() +
-                                                                                 &folder));
-
-                        env.schemes.push(UnsafeCell::new(scheme_item));
-                    }
-                }
-            }
 
             Context::spawn("kinit".to_string(),
             box move || {
@@ -357,11 +314,8 @@ unsafe fn init(font_data: usize, tss_data: usize) {
                     do_sys_open(stdio_c.as_ptr(), 0);
                 }
 
-                execute(Url::from_str("file:/apps/login/main.bin"), Vec::new());
-                debug!("INIT: Failed to execute\n");
-
-                loop {
-                    context_switch(false);
+                if let Err(err) = execute(vec!["init".to_string()]) {
+                    debugln!("INIT: Failed to execute: {}", err);
                 }
             });
         },
@@ -441,14 +395,6 @@ pub extern "cdecl" fn kernel(interrupt: usize, mut regs: &mut Regs) {
         })
     };
 
-    if interrupt >= 0x20 && interrupt < 0x30 {
-        if interrupt >= 0x28 {
-            Pio::<u8>::new(0xA0).write(0x20);
-        }
-
-        Pio::<u8>::new(0x20).write(0x20);
-    }
-
     //Do not catch init interrupt
     if interrupt < 0xFF {
         env().interrupts.lock()[interrupt as usize] += 1;
@@ -481,12 +427,10 @@ pub extern "cdecl" fn kernel(interrupt: usize, mut regs: &mut Regs) {
             }
         }
         i @ 0x21 ... 0x2F => env().on_irq(i as u8 - 0x20),
-        0x80 => if !syscall_handle(regs) {
-            exception!("Unknown Syscall");
-        },
+        0x80 => syscall_handle(regs),
         0xFF => {
             unsafe {
-                init(regs.ax, regs.bx);
+                init(regs.ax);
                 idle_loop();
             }
         },
@@ -512,5 +456,13 @@ pub extern "cdecl" fn kernel(interrupt: usize, mut regs: &mut Regs) {
         0x14 => exception!("Virtualization exception"),
         0x1E => exception_error!("Security exception"),
         _ => exception!("Unknown Interrupt"),
+    }
+
+    if interrupt >= 0x20 && interrupt < 0x30 {
+        if interrupt >= 0x28 {
+            Pio::<u8>::new(0xA0).write(0x20);
+        }
+
+        Pio::<u8>::new(0x20).write(0x20);
     }
 }

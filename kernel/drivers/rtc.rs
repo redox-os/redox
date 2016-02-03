@@ -1,8 +1,6 @@
 use common::time::Duration;
 
-use drivers::pio::*;
-
-use sync::Intex;
+use drivers::io::{Io, Pio};
 
 fn cvt_bcd(value: usize) -> usize {
     (value & 0xF) + ((value / 16) * 10)
@@ -45,7 +43,6 @@ impl Rtc {
         let mut year;
         let register_b;
         unsafe {
-            let _intex = Intex::static_lock();
             self.wait();
             second = self.read(0) as usize;
             minute = self.read(2) as usize;

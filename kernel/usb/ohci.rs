@@ -5,10 +5,10 @@ use collections::vec::Vec;
 use core::intrinsics::volatile_load;
 use core::mem;
 
-use drivers::mmio::Mmio;
+use drivers::io::{Io, Mmio};
 use drivers::pci::config::PciConfig;
 
-use scheduler::context::context_switch;
+use arch::context::context_switch;
 
 use schemes::KScheme;
 
@@ -172,7 +172,7 @@ impl Ohci {
 
 
 impl Hci for Ohci {
-    fn msg(&mut self, address: u8, endpoint: u8, pipe: Pipe, msgs: &[Packet]) -> usize {
+    fn msg(&mut self, address: u8, endpoint: u8, _pipe: Pipe, msgs: &[Packet]) -> usize {
         let mut tds = Vec::new();
         for msg in msgs.iter() {
             match *msg {

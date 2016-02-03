@@ -42,12 +42,13 @@ fn get_special_keys_from_layout(layout: &Layout, scancode: u8) -> [char; 3] {
 /// Function to return the character associated with the scancode, and the layout
 pub fn char_for_scancode(scancode: u8, shift: bool, altgr: bool, layout: &Layout) -> char {
     let character;
-    let mut characters: [char; 3] = ['\0', '\0', '\0'];
-    if scancode < 58 {
-        characters = get_scancode_from_layout(layout, scancode);
+
+    let characters = if scancode < 58 {
+        get_scancode_from_layout(layout, scancode)
     } else {
-        characters = get_special_keys_from_layout(layout, scancode);
-    }
+        get_special_keys_from_layout(layout, scancode)
+    };
+
     if altgr {
         character = characters[2];
     } else if shift {
@@ -55,6 +56,7 @@ pub fn char_for_scancode(scancode: u8, shift: bool, altgr: bool, layout: &Layout
     } else {
         character = characters[0];
     }
+    
     character
 }
 

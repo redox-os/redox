@@ -3,7 +3,7 @@ use alloc::boxed::Box;
 use collections::String;
 use collections::Vec;
 
-use drivers::pio::{Pio,ReadWrite};
+use drivers::io::{Io, Pio};
 
 use graphics::color::Color;
 use graphics::display::Display;
@@ -20,7 +20,7 @@ const CYAN: Color = Color::new(51, 187, 200);
 const WHITE: Color = Color::new(203, 204, 205);
 
 pub struct Console {
-    pub display: Box<Display>,
+    pub display: Option<Box<Display>>,
     pub point: Point,
     pub foreground: Color,
     pub background: Color,
@@ -122,7 +122,9 @@ impl Console {
             self.point.y = 0;
             self.foreground = WHITE;
             self.background = BLACK;
-            self.display.set(self.background);
+            if let Some(ref mut display) = self.display {
+                display.set(self.background);
+            }
             self.redraw = true;
 
             self.escape = false;
@@ -134,36 +136,38 @@ impl Console {
     }
 
     pub fn character(&mut self, c: char) {
-        self.display.rect(self.point, Size::new(8, 16), self.background);
-        if c == '\x00' {
-            // Ignore null character
-        } else if c == '\x1B' {
-            self.escape = true;
-        } else if c == '\n' {
-            self.point.x = 0;
-            self.point.y += 16;
-        } else if c == '\t' {
-            self.point.x = ((self.point.x / 64) + 1) * 64;
-        } else if c == '\x08' {
-            self.point.x -= 8;
-            if self.point.x < 0 {
-                self.point.x = 0
+        if let Some(ref mut display) = self.display {
+            display.rect(self.point, Size::new(8, 16), self.background);
+            if c == '\x00' {
+                // Ignore null character
+            } else if c == '\x1B' {
+                self.escape = true;
+            } else if c == '\n' {
+                self.point.x = 0;
+                self.point.y += 16;
+            } else if c == '\t' {
+                self.point.x = ((self.point.x / 64) + 1) * 64;
+            } else if c == '\x08' {
+                self.point.x -= 8;
+                if self.point.x < 0 {
+                    self.point.x = 0
+                }
+                display.rect(self.point, Size::new(8, 16), self.background);
+            } else {
+                display.char(self.point, c, self.foreground);
+                self.point.x += 8;
             }
-            self.display.rect(self.point, Size::new(8, 16), self.background);
-        } else {
-            self.display.char(self.point, c, self.foreground);
-            self.point.x += 8;
+            if self.point.x >= display.width as isize {
+                self.point.x = 0;
+                self.point.y += 16;
+            }
+            while self.point.y + 16 > display.height as isize {
+                display.scroll(16);
+                self.point.y -= 16;
+            }
+            display.rect(self.point, Size::new(8, 16), self.foreground);
+            self.redraw = true;
         }
-        if self.point.x >= self.display.width as isize {
-            self.point.x = 0;
-            self.point.y += 16;
-        }
-        while self.point.y + 16 > self.display.height as isize {
-            self.display.scroll(16);
-            self.point.y -= 16;
-        }
-        self.display.rect(self.point, Size::new(8, 16), self.foreground);
-        self.redraw = true;
     }
 
     pub fn write(&mut self, bytes: &[u8]) {
@@ -193,7 +197,9 @@ impl Console {
         // If contexts disabled, probably booting up
         if self.instant && self.draw && self.redraw {
             self.redraw = false;
-            self.display.flip();
+            if let Some(ref mut display) = self.display {
+                display.flip();
+            }
         }
     }
 }

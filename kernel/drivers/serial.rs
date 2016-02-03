@@ -3,7 +3,7 @@ use env;
 
 use common::event;
 
-use drivers::pio::*;
+use drivers::io::{Io, Pio};
 
 use schemes::KScheme;
 
