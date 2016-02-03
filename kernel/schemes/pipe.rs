@@ -6,8 +6,7 @@ use collections::vec_deque::VecDeque;
 use schemes::{Result, Resource, Url};
 
 use arch::context::context_switch;
-
-use sync::Intex;
+use arch::intex::Intex;
 
 use syscall::{Error, EPIPE};
 

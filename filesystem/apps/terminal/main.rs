@@ -66,7 +66,7 @@ fn main() {
         }
     };
 
-    let window = Arc::new(ConsoleWindow::new(0, 0, 576, 400, "Terminal"));
+    let window = Arc::new(ConsoleWindow::new(-1, -1, 576, 400, "Terminal"));
 
     let window_weak = Arc::downgrade(&window);
     thread::spawn(move || {

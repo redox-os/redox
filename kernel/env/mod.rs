@@ -1,11 +1,12 @@
 use alloc::boxed::Box;
 
+use arch::intex::Intex;
+
 use collections::string::{String, ToString};
 use collections::vec::Vec;
 use collections::vec_deque::VecDeque;
 
 use common::event::Event;
-use sync::Intex;
 use common::time::Duration;
 
 use arch::context::ContextManager;
