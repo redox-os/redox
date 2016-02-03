@@ -51,7 +51,7 @@ impl Window {
     }
 
     pub fn exit_contains(&self, x: i32, y: i32) -> bool {
-        ! self.title.is_empty() && x >= max(self.x, self.x + self.width() - 8)  && y >= self.y - 18 && x < self.x + self.width() && y < self.y
+        ! self.title.is_empty() && x >= max(self.x, self.x + self.width() - 10)  && y >= self.y - 18 && x < self.x + self.width() && y < self.y
     }
 
     pub fn draw(&mut self, display: &mut Display, focused: bool) {
@@ -64,7 +64,7 @@ impl Window {
 
             let mut x = self.x + 2;
             for c in self.title.chars() {
-                if x + 10 <= self.x + self.width() - 10 {
+                if x + 8 <= self.x + self.width() - 10 {
                     display.roi(x, self.y - 17, 8, 16).blend(&Font::render(c, Color::rgb(255, 255, 255)).as_roi());
                 } else {
                     break;
