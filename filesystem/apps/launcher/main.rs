@@ -12,7 +12,9 @@ use package::Package;
 pub mod package;
 
 fn draw(window: &mut Window, packages: &Vec<Box<Package>>, shutdown: &BmpFile, mouse_x: i32, mouse_y: i32){
-    window.set(Color::rgba(0, 0, 0, 128));
+    window.set(Color::rgba(0, 0, 0, 0));
+    let w = window.width();
+    window.rect(0, 16, w, 32, Color::rgba(0, 0, 0, 128));
 
     let mut x = 0;
     for package in packages.iter() {
@@ -24,20 +26,15 @@ fn draw(window: &mut Window, packages: &Vec<Box<Package>>, shutdown: &BmpFile, m
                                   package.icon.width() as u32, package.icon.height() as u32,
                                   Color::rgba(128, 128, 128, 128));
 
-                /*
                 window.rect(x as i32, y as i32 - 16,
                     package.name.len() as u32 * 8, 16,
                     Color::rgba(0, 0, 0, 128));
 
                 let mut c_x = x;
                 for c in package.name.chars() {
-                    window.char(c_x as i32, y as i32 - 16,
-                              c,
-                              Color::rgb(255, 255, 255),
-                              self.font.as_ptr() as usize);
+                    window.char(c_x as i32, y as i32 - 16, c, Color::rgb(255, 255, 255));
                     c_x += 8;
                 }
-                */
             }
 
             window.image(x as i32, y as i32,
@@ -111,7 +108,7 @@ fn main() {
         println!("Failed to read shutdown icon");
     }
 
-    let mut window = Window::new(0, 568, 800, 32, "").unwrap();
+    let mut window = Window::new(0, 600 - 48, 800, 48, "").unwrap();
 
     draw(&mut window, &packages, &shutdown, -1, -1);
     'running: loop {
@@ -124,7 +121,9 @@ fn main() {
                         let mut x = 0;
                         for package in packages.iter() {
                             if package.icon.has_data() {
-                                if mouse_event.x >= x && mouse_event.x < x + package.icon.width() as i32 {
+                                let y = window.height() as i32 - package.icon.height() as i32;
+                                if mouse_event.y >= y && mouse_event.x >= x &&
+                                   mouse_event.x < x + package.icon.width() as i32 {
                                     if let Err(err) = Command::new(&package.binary).spawn() {
                                         println!("{}: Failed to launch: {}", package.binary, err);
                                     }
