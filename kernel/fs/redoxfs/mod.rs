@@ -3,8 +3,8 @@ use alloc::boxed::Box;
 use collections::string::{String, ToString};
 use collections::vec::Vec;
 
-use common::get_slice::GetSlice;
-use common::memory::Memory;
+use common::slice::GetSlice;
+use arch::memory::Memory;
 
 use core::{cmp, ptr, slice};
 
@@ -28,11 +28,13 @@ impl FileSystem {
     pub fn from_disk(mut disk: Box<Disk>) -> Option<Self> {
         if let Some(data) = Memory::<u8>::new(512) {
             let mut buffer = unsafe { slice::from_raw_parts_mut(data.ptr, 512) };
-            disk.read(1, &mut buffer);
+            if let Err(_) = disk.read(1, &mut buffer) {
+                return None;
+            }
 
             let header = unsafe { ptr::read(data.ptr as *const Header) };
             if header.valid() {
-                debugln!(" Redox Filesystem");
+                debugln!("{}: Redox Filesystem", disk.name());
 
                 let mut nodes = Vec::new();
                 for extent in &header.extents {
@@ -46,7 +48,7 @@ impl FileSystem {
                             let mut buffer = unsafe {
                                 slice::from_raw_parts_mut(data.ptr, max_size)
                             };
-                            disk.read(extent.block, &mut buffer);
+                            let _ = disk.read(extent.block, &mut buffer);
 
                             for i in 0..size / 512 {
                                 nodes.push(Node::new(extent.block + i as u64, unsafe {
@@ -63,7 +65,7 @@ impl FileSystem {
                     nodes: nodes,
                 });
             } else {
-                debugln!(" Unknown Filesystem");
+                debugln!("{}: Unknown Filesystem", disk.name());
             }
         }
 
@@ -87,7 +89,7 @@ impl FileSystem {
 
         for node in self.nodes.iter() {
             if node.name.starts_with(directory) {
-                ret.push(node.name.get_slice(Some(directory.len()), None).to_string());
+                ret.push(node.name.get_slice(directory.len()..).to_string());
             }
         }
 

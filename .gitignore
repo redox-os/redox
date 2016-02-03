@@ -16,6 +16,7 @@
 libc/build/
 setup/rust/
 build
+filesystem/bin/
 target
 *.swp
 doc

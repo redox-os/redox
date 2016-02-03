@@ -1,15 +1,15 @@
-use common::memory;
+use arch::memory;
 
 use core::mem::size_of;
 use core::u32;
 
 use disk::Disk;
 
-use drivers::mmio::Mmio;
+use drivers::io::{Io, Mmio};
 
 use schemes::Result;
 
-use syscall::{SysError, EIO};
+use syscall::{Error, EIO};
 
 use super::fis::{FIS_TYPE_REG_H2D, FisRegH2D};
 
@@ -191,22 +191,22 @@ impl HbaPort {
                 // debugln!("Completion Wait");
                 while self.ci.readf(1 << slot) {
                     if self.is.readf(HBA_PORT_IS_TFES) {
-                        return Err(SysError::new(EIO));
+                        return Err(Error::new(EIO));
                     }
                 }
 
                 if self.is.readf(HBA_PORT_IS_TFES) {
-                    return Err(SysError::new(EIO));
+                    return Err(Error::new(EIO));
                 }
 
                 Ok(sectors * 512)
             } else {
                 debugln!("No Command Slots");
-                Err(SysError::new(EIO))
+                Err(Error::new(EIO))
             }
         } else {
             debugln!("Empty request");
-            Err(SysError::new(EIO))
+            Err(Error::new(EIO))
         }
     }
 }

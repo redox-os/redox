@@ -1,6 +1,6 @@
 use alloc::boxed::Box;
 use schemes::{Result, KScheme, Resource, Url};
-use syscall::{SysError, O_CREAT, ENOENT};
+use syscall::{Error, O_CREAT, ENOENT};
 pub use self::dsdt::DSDT;
 pub use self::fadt::FADT;
 pub use self::madt::MADT;
@@ -41,13 +41,6 @@ impl Acpi {
 
                 for addr in acpi.rsdt.addrs.iter() {
                     let header = unsafe { &*(*addr as *const SDTHeader) };
-
-                    debug!("ACPI Table: ");
-                    for b in header.signature.iter() {
-                        debug!("{}", *b as char);
-                    }
-                    debugln!("");
-
                     if let Some(fadt) = FADT::new(header) {
                         // Why does this hang? debugln!("{:#?}", fadt);
                         if let Some(dsdt) = DSDT::new(unsafe {
@@ -65,7 +58,10 @@ impl Acpi {
                     } else if let Some(madt) = MADT::new(header) {
                         acpi.madt = Some(madt);
                     } else {
-                        debugln!("    Unknown Table");
+                        for b in header.signature.iter() {
+                            debug!("{}", *b as char);
+                        }
+                        debugln!(": Unknown Table");
                     }
                 }
 
@@ -99,6 +95,6 @@ impl KScheme for Acpi {
             }
         }
 
-        Err(SysError::new(ENOENT))
+        Err(Error::new(ENOENT))
     }
 }

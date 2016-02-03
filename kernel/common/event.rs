@@ -1,4 +1,5 @@
-use core::char;
+use core::{char, mem, slice};
+use core::ops::{Deref, DerefMut};
 
 pub const EVENT_NONE: i64 = 0;
 pub const EVENT_MOUSE: i64 = 1;
@@ -50,6 +51,23 @@ impl Event {
             EVENT_KEY => EventOption::Key(KeyEvent::from_event(self)),
             EVENT_QUIT => EventOption::Quit(QuitEvent::from_event(self)),
             _ => EventOption::Unknown(self),
+        }
+    }
+}
+
+impl Deref for Event {
+    type Target = [u8];
+    fn deref(&self) -> &[u8] {
+        unsafe {
+            slice::from_raw_parts(self as *const Event as *const u8, mem::size_of::<Event>()) as &[u8]
+        }
+    }
+}
+
+impl DerefMut for Event {
+    fn deref_mut(&mut self) -> &mut [u8] {
+        unsafe {
+            slice::from_raw_parts_mut(self as *mut Event as *mut u8, mem::size_of::<Event>()) as &mut [u8]
         }
     }
 }

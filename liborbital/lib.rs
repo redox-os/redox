@@ -1,6 +1,9 @@
 #![crate_type="lib"]
 #![feature(associated_consts)]
 #![feature(box_syntax)]
+#![feature(deprecated)]
+
+#![deny(warnings)]
 
 extern crate core;
 

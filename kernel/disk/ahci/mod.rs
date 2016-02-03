@@ -1,9 +1,11 @@
 use alloc::boxed::Box;
 
+use collections::string::String;
 use collections::vec::Vec;
 
 use disk::Disk;
 
+use drivers::io::Io;
 use drivers::pci::config::PciConfig;
 
 use schemes::Result;
@@ -45,15 +47,23 @@ impl Ahci {
 
 pub struct AhciDisk {
     port: &'static mut HbaPort,
+    port_index: usize,
 }
 
 impl AhciDisk {
     fn new(base: usize, port_index: usize) -> Self {
-        AhciDisk { port: &mut unsafe { &mut *(base as *mut HbaMem) }.ports[port_index] }
+        AhciDisk {
+            port: &mut unsafe { &mut *(base as *mut HbaMem) }.ports[port_index],
+            port_index: port_index
+        }
     }
 }
 
 impl Disk for AhciDisk {
+    fn name(&self) -> String {
+        format!("AHCI Port {}", self.port_index)
+    }
+
     fn read(&mut self, block: u64, buffer: &mut [u8]) -> Result<usize> {
         self.port.ata_dma(block, buffer.len() / 512, buffer.as_ptr() as usize, false)
     }

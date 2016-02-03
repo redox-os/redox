@@ -1,0 +1,8 @@
+[package]
+name = "redox_std"
+version = "0.1.0"
+authors = ["Jeremy Soller <jackpot51@gmail.com>"]
+
+[lib]
+name = "std"
+path = "src/lib.rs"

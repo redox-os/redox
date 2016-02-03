@@ -1,4 +1,4 @@
-use common::get_slice::GetSlice;
+use common::slice::GetSlice;
 
 use alloc::boxed::Box;
 
@@ -14,13 +14,11 @@ use disk::ide::Extent;
 use fs::redoxfs::{FileSystem, Node, NodeData};
 
 use common::debug;
-use common::memory::Memory;
+use arch::memory::Memory;
 
 use schemes::{Result, KScheme, Resource, ResourceSeek, Url, VecResource};
 
-use sync::Intex;
-
-use syscall::{SysError, O_CREAT, ENOENT, EIO};
+use syscall::{Error, O_CREAT, ENOENT, EIO};
 
 /// A file resource
 pub struct FileResource {
@@ -105,8 +103,6 @@ impl Resource for FileResource {
                     debug::dl();
 
                     unsafe {
-                        let _intex = Intex::static_lock();
-
                         let sectors = ((remaining + 511) / 512) as u64;
                         if (*self.scheme).fs.header.free_space.length >= sectors * 512 {
                             extent.block = (*self.scheme).fs.header.free_space.block;
@@ -146,7 +142,7 @@ impl Resource for FileResource {
                     }
 
                     unsafe {
-                        (*self.scheme).fs.disk.write(extent.block, &self.vec[pos .. pos + max_size]);
+                        let _ = (*self.scheme).fs.disk.write(extent.block, &self.vec[pos .. pos + max_size]);
                     }
 
                     self.vec.truncate(pos + size);
@@ -165,17 +161,13 @@ impl Resource for FileResource {
                             node_data.write(0, self.node.data());
 
                             let mut buffer = slice::from_raw_parts(node_data.address() as *mut u8, 512);
-                            (*self.scheme).fs.disk.write(self.node.block, &mut buffer);
+                            let _ = (*self.scheme).fs.disk.write(self.node.block, &mut buffer);
 
                             debug::d("Renode\n");
 
-                            {
-                                let _intex = Intex::static_lock();
-
-                                for mut node in (*self.scheme).fs.nodes.iter_mut() {
-                                    if node.block == self.node.block {
-                                        *node = self.node.clone();
-                                    }
+                            for mut node in (*self.scheme).fs.nodes.iter_mut() {
+                                if node.block == self.node.block {
+                                    *node = self.node.clone();
                                 }
                             }
                         }
@@ -191,7 +183,7 @@ impl Resource for FileResource {
                 debug::d("Need to defragment file, extra: ");
                 debug::ds(remaining);
                 debug::dl();
-                return Err(SysError::new(EIO));
+                return Err(Error::new(EIO));
             }
         }
         Ok(())
@@ -233,7 +225,7 @@ impl FileScheme {
 }
 
 impl KScheme for FileScheme {
-    fn on_irq(&mut self, irq: u8) {
+    fn on_irq(&mut self, _irq: u8) {
         /*if irq == self.fs.disk.irq {
             self.on_poll();
         }*/
@@ -260,7 +252,7 @@ impl KScheme for FileScheme {
                 let mut line = String::new();
                 match file.find('/') {
                     Some(index) => {
-                        let dirname = file.get_slice(None, Some(index + 1)).to_string();
+                        let dirname = file.get_slice(..index + 1).to_string();
                         let mut found = false;
                         for dir in dirs.iter() {
                             if dirname == *dir {
@@ -289,7 +281,7 @@ impl KScheme for FileScheme {
             if list.len() > 0 {
                 Ok(box VecResource::new(url.clone(), list.into_bytes()))
             } else {
-                Err(SysError::new(ENOENT))
+                Err(Error::new(ENOENT))
             }
         } else {
             match self.fs.node(path) {
@@ -308,7 +300,7 @@ impl KScheme for FileScheme {
                                 vec.push(0);
                             }
 
-                            self.fs.disk.read(extent.block, &mut vec[pos..pos + max_size]);
+                            let _ = self.fs.disk.read(extent.block, &mut vec[pos..pos + max_size]);
 
                             vec.truncate(pos + size);
                         }
@@ -351,7 +343,7 @@ impl KScheme for FileScheme {
                             dirty: false,
                         })
                     } else {
-                        Err(SysError::new(ENOENT))
+                        Err(Error::new(ENOENT))
                     }
                 }
             }
@@ -359,7 +351,7 @@ impl KScheme for FileScheme {
     }
 
     fn unlink(&mut self, url: &Url) -> Result<()> {
-        let mut ret = Err(SysError::new(ENOENT));
+        let mut ret = Err(Error::new(ENOENT));
 
         let mut path = url.reference();
         while path.starts_with('/') {

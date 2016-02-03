@@ -1,6 +1,6 @@
 use alloc::boxed::Box;
 
-use common::memory;
+use arch::memory;
 
 use schemes::{Result, KScheme, Resource, Url, VecResource};
 

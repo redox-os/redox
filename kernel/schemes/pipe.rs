@@ -5,11 +5,10 @@ use collections::vec_deque::VecDeque;
 
 use schemes::{Result, Resource, Url};
 
-use scheduler::context::context_switch;
+use arch::context::context_switch;
+use arch::intex::Intex;
 
-use sync::Intex;
-
-use syscall::{SysError, EPIPE};
+use syscall::{Error, EPIPE};
 
 /// Read side of a pipe
 pub struct PipeRead {
@@ -107,7 +106,7 @@ impl Resource for PipeWrite {
                 }
                 Ok(i)
             },
-            None => Err(SysError::new(EPIPE))
+            None => Err(Error::new(EPIPE))
         }
     }
 }

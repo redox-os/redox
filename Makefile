@@ -7,21 +7,22 @@ BUILD=build/$(ARCH)-unknown-redox/debug
 QEMU?=qemu-system-$(ARCH)
 
 CARGO=CARGO_TARGET_DIR=build cargo rustc
-CARGOFLAGS=--target=$(ARCH)-unknown-redox.json -- \
+CARGOFLAGS=--target=$(ARCH)-unknown-redox.json -- -L $(BUILD) \
 	-C no-prepopulate-passes -C no-stack-check -C opt-level=2 \
 	-Z no-landing-pads \
-	-A dead_code -A deprecated \
-	-L $(BUILD)
+	-A dead_code
 RUSTC=RUST_BACKTRACE=1 rustc
-RUSTCFLAGS=--target=$(ARCH)-unknown-redox.json \
+RUSTDOC=rustdoc --target=$(ARCH)-unknown-redox.json -L $(BUILD) \
+	--no-defaults --passes collapse-docs --passes unindent-comments
+RUSTCFLAGS=--target=$(ARCH)-unknown-redox.json -L $(BUILD) \
 	-C no-prepopulate-passes -C no-stack-check -C opt-level=2 \
 	-Z no-landing-pads \
-	-A dead_code -A deprecated \
-	-L $(BUILD)
+	-A dead_code
 AS=nasm
 AWK=awk
 BASENAME=basename
 CUT=cut
+DATE=date
 FIND=find
 LD=ld
 LDARGS=-m elf_$(ARCH)
@@ -47,14 +48,17 @@ VBM_CLEANUP=\
 ifeq ($(OS),Windows_NT)
 	SHELL=windows\sh
 	LD=windows/$(ARCH)-elf-ld
+	CARGOFLAGS += -C ar=windows/$(ARCH)-elf-ar -C linker=windows/$(ARCH)-elf-gcc -C link-args="-v -fno-use-linker-plugin"
+	RUSTCFLAGS += -C ar=windows/$(ARCH)-elf-ar -C linker=windows/$(ARCH)-elf-gcc -C link-args="-v -fno-use-linker-plugin"
 	AS=windows/nasm
 	AWK=windows/awk
 	BASENAME=windows/basename
 	CUT=windows/cut
+	DATE=windows/date
 	FIND=windows/find
 	MAKE=windows/make
 	MKDIR=windows/mkdir
-	OBJDUMP=windows/objdump
+	OBJDUMP=windows/i386-elf-objdump
 	RM=windows/rm
 	SED=windows/sed
 	SORT=windows/sort
@@ -83,7 +87,7 @@ else
 	endif
 endif
 
-.PHONY: help all docs apps schemes tests clean \
+.PHONY: help all doc apps bins tests clean \
 	bochs \
 	qemu qemu_bare qemu_tap \
 	virtualbox virtualbox_tap \
@@ -119,9 +123,6 @@ help:
 	@echo "    make apps"
 	@echo "        Build apps for Redox."
 	@echo
-	@echo "    make schemes"
-	@echo "        Build schemes for Redox."
-	@echo
 	@echo "    make tests"
 	@echo "        Run tests on Redox."
 	@echo
@@ -135,37 +136,128 @@ help:
 
 all: $(BUILD)/harddrive.bin
 
-docs: kernel/main.rs $(BUILD)/libcore.rlib $(BUILD)/liballoc.rlib
-	rustdoc --target=$(ARCH)-unknown-redox.json -L$(BUILD) $<
-
 apps: filesystem/apps/editor/main.bin \
 	  filesystem/apps/file_manager/main.bin \
-	  filesystem/apps/login/main.bin \
+	  filesystem/apps/launcher/main.bin \
 	  filesystem/apps/orbtk/main.bin \
 	  filesystem/apps/player/main.bin \
-	  filesystem/apps/shell/main.bin \
+	  filesystem/apps/rusthello/main.bin \
 	  filesystem/apps/sodium/main.bin \
 	  filesystem/apps/terminal/main.bin \
-	  filesystem/apps/test/main.bin \
-	  filesystem/apps/viewer/main.bin \
-	  filesystem/apps/zfs/main.bin
+	  filesystem/apps/viewer/main.bin
 
-schemes: filesystem/schemes/orbital/main.bin \
-  	  	 filesystem/schemes/tcp/main.bin \
-	  	 filesystem/schemes/udp/main.bin
+filesystem/bin:
+	mkdir -p filesystem/bin/
+
+filesystem/bin/%: crates/coreutils/src/bin/%.rs $(BUILD)/crt0.o $(BUILD)/libstd.rlib
+	$(RUSTC) $(RUSTCFLAGS) --crate-type bin -o filesystem/bin/$* $<
+
+filesystem/bin/%: crates/%/main.rs crates/%/*.rs $(BUILD)/crt0.o $(BUILD)/libstd.rlib
+	$(RUSTC) $(RUSTCFLAGS) --crate-type bin -o $@ $<
+
+filesystem/bin/%: unix/%
+	cp $< $@
+
+filesystem/bin/ion: $(BUILD)/ion-shell.bin
+	cp $< $@
+
+filesystem/bin/init.rc: crates/init/init.rc
+	cp $< $@
+
+bins: filesystem/bin \
+		filesystem/bin/cat \
+		filesystem/bin/cp \
+		filesystem/bin/du \
+		filesystem/bin/echo \
+		filesystem/bin/example \
+ 		filesystem/bin/false \
+ 		filesystem/bin/free \
+		filesystem/bin/init \
+		filesystem/bin/init.rc \
+ 		filesystem/bin/ints \
+		filesystem/bin/ion \
+		filesystem/bin/login \
+		filesystem/bin/lua \
+		filesystem/bin/ls \
+		filesystem/bin/mkdir \
+		filesystem/bin/orbital \
+		filesystem/bin/ps \
+		filesystem/bin/pwd \
+		filesystem/bin/rm \
+		filesystem/bin/rmdir \
+		filesystem/bin/shutdown \
+		filesystem/bin/sleep \
+		filesystem/bin/tar \
+		filesystem/bin/test \
+		filesystem/bin/touch \
+		filesystem/bin/true \
+		filesystem/bin/zfs
+	#filesystem/bin/env filesystem/bin/yes
 
 tests: tests/success tests/failure
 
+test: kernel/main.rs \
+	  rust/src/libtest/lib.rs \
+	  $(BUILD)/libcore.rlib \
+	  $(BUILD)/liballoc.rlib \
+	  $(BUILD)/libcollections.rlib \
+	  $(BUILD)/libtest.rlib
+	$(RUSTC) $(RUSTCFLAGS) --test $<
+
 clean:
-	$(RM) -rf build filesystem/*.bin filesystem/*.list filesystem/apps/*/*.bin filesystem/apps/*/*.list filesystem/schemes/*/*.bin filesystem/schemes/*/*.list
+	$(RM) -rf build doc filesystem/*.bin filesystem/*.list filesystem/apps/*/*.bin filesystem/apps/*/*.list filesystem/schemes/*/*.bin filesystem/schemes/*/*.list filesystem/bin/
 
 FORCE:
 
 tests/%: FORCE
 	@$(SHELL) $@ && echo "$*: PASSED" || echo "$*: FAILED"
 
+doc/core: rust/src/libcore/lib.rs $(BUILD)/libcore.rlib
+	$(RUSTDOC) $<
+
+doc/alloc_system: liballoc_system/lib.rs $(BUILD)/liballoc_system.rlib doc/core
+	$(RUSTDOC) $<
+
+doc/alloc: rust/src/liballoc/lib.rs $(BUILD)/liballoc.rlib doc/alloc_system
+	$(RUSTDOC) $<
+
+doc/rustc_unicode: rust/src/librustc_unicode/lib.rs $(BUILD)/librustc_unicode.rlib doc/core
+	$(RUSTDOC) $<
+
+doc/collections: rust/src/libcollections/lib.rs $(BUILD)/libcollections.rlib doc/alloc doc/rustc_unicode
+	$(RUSTDOC) $<
+
+doc/rand: rust/src/librand/lib.rs $(BUILD)/librand.rlib doc/collections
+	$(RUSTDOC) $<
+
+doc/io: crates/io/lib.rs crates/io/*.rs $(BUILD)/libio.rlib doc/core
+	$(RUSTDOC) $<
+
+doc/system: crates/system/lib.rs crates/system/*.rs crates/system/*/*.rs $(BUILD)/libsystem.rlib doc/core
+	$(RUSTDOC) $<
+
+doc/kernel: kernel/main.rs kernel/*.rs kernel/*/*.rs kernel/*/*/*.rs $(BUILD)/kernel.rlib doc/collections doc/io doc/system
+	$(RUSTDOC) $<
+
+doc/std: libstd/src/lib.rs libstd/src/*.rs libstd/src/*/*.rs libstd/src/*/*/*.rs $(BUILD)/libstd.rlib doc/rand doc/system
+	$(RUSTDOC) --crate-name=std $<
+
+doc: doc/kernel doc/std
+
 $(BUILD)/libcore.rlib: rust/src/libcore/lib.rs
 	$(MKDIR) -p $(BUILD)
+	$(RUSTC) $(RUSTCFLAGS) -o $@ $<
+
+$(BUILD)/libtest.rlib: rust/src/libtest/lib.rs $(BUILD)/libstd.rlib $(BUILD)/libgetopts.rlib
+	$(RUSTC) $(RUSTCFLAGS) -o $@ $<
+
+$(BUILD)/libgetopts.rlib: rust/src/libgetopts/lib.rs $(BUILD)/libserialize.rlib $(BUILD)/liblog.rlib
+	$(RUSTC) $(RUSTCFLAGS) -o $@ $<
+
+$(BUILD)/libserialize.rlib: rust/src/libserialize/lib.rs $(BUILD)/liblog.rlib
+	$(RUSTC) $(RUSTCFLAGS) -o $@ $<
+
+$(BUILD)/liblog.rlib: rust/src/liblog/lib.rs $(BUILD)/libstd.rlib
 	$(RUSTC) $(RUSTCFLAGS) -o $@ $<
 
 $(BUILD)/liballoc_system.rlib: liballoc_system/lib.rs $(BUILD)/libcore.rlib
@@ -183,16 +275,17 @@ $(BUILD)/libcollections.rlib: rust/src/libcollections/lib.rs $(BUILD)/libcore.rl
 $(BUILD)/librand.rlib: rust/src/librand/lib.rs $(BUILD)/libcore.rlib $(BUILD)/liballoc.rlib $(BUILD)/librustc_unicode.rlib $(BUILD)/libcollections.rlib
 	$(RUSTC) $(RUSTCFLAGS) -o $@ $<
 
-$(BUILD)/libstd.rlib: libredox/src/lib.rs libredox/src/*.rs libredox/src/*/*.rs $(BUILD)/libcore.rlib $(BUILD)/liballoc.rlib $(BUILD)/libcollections.rlib $(BUILD)/librand.rlib
-	$(RUSTC) $(RUSTCFLAGS) --crate-name std -o $@ $<
-
 $(BUILD)/liborbital.rlib: liborbital/lib.rs liborbital/*.rs $(BUILD)/libstd.rlib
 	$(RUSTC) $(RUSTCFLAGS) --crate-name orbital -o $@ $<
 
-$(BUILD)/liborbtk.rlib: FORCE
-	$(CARGO) --manifest-path crates/orbtk/Cargo.toml --lib $(CARGOFLAGS)
+#Kernel stuff
+$(BUILD)/libio.rlib: crates/io/lib.rs crates/io/*.rs $(BUILD)/libcore.rlib
+	$(RUSTC) $(RUSTCFLAGS) -o $@ $<
 
-$(BUILD)/kernel.rlib: kernel/main.rs kernel/*.rs kernel/*/*.rs kernel/*/*/*.rs $(BUILD)/libcore.rlib $(BUILD)/liballoc.rlib $(BUILD)/libcollections.rlib
+$(BUILD)/libsystem.rlib: crates/system/lib.rs crates/system/*.rs crates/system/*/*.rs $(BUILD)/libcore.rlib
+	$(RUSTC) $(RUSTCFLAGS) -o $@ $<
+
+$(BUILD)/kernel.rlib: kernel/main.rs kernel/*.rs kernel/*/*.rs kernel/*/*/*.rs $(BUILD)/libcore.rlib $(BUILD)/liballoc.rlib $(BUILD)/libcollections.rlib $(BUILD)/libio.rlib $(BUILD)/libsystem.rlib
 	$(RUSTC) $(RUSTCFLAGS) -C lto -o $@ $<
 
 $(BUILD)/kernel.bin: $(BUILD)/kernel.rlib kernel/kernel.ld
@@ -215,25 +308,30 @@ else
 	$(AS) -f elf -o $@ $<
 endif
 
-$(BUILD)/ion-shell.bin: FORCE
+#Cargo stuff
+$(BUILD)/libstd.rlib: FORCE $(BUILD)/libcore.rlib $(BUILD)/liballoc.rlib $(BUILD)/libcollections.rlib $(BUILD)/librand.rlib $(BUILD)/libsystem.rlib
+	$(CARGO) --manifest-path libstd/Cargo.toml --lib $(CARGOFLAGS)
+
+$(BUILD)/liborbclient.rlib: FORCE $(BUILD)/libstd.rlib
+	$(CARGO) --manifest-path crates/orbclient/Cargo.toml --lib $(CARGOFLAGS)
+
+$(BUILD)/liborbtk.rlib: FORCE $(BUILD)/libstd.rlib $(BUILD)/liborbital.rlib
+	$(CARGO) --manifest-path crates/orbtk/Cargo.toml --lib $(CARGOFLAGS)
+
+$(BUILD)/ion-shell.bin: FORCE $(BUILD)/libstd.rlib
 	$(CARGO) --manifest-path crates/ion/Cargo.toml --bin ion-shell $(CARGOFLAGS)
 
-$(BUILD)/sodium.bin: FORCE
+$(BUILD)/sodium.bin: FORCE $(BUILD)/libstd.rlib $(BUILD)/liborbital.rlib
 	$(CARGO) --manifest-path filesystem/apps/sodium/Cargo.toml --bin sodium --features orbital $(CARGOFLAGS)
-
-filesystem/apps/shell/main.bin: $(BUILD)/ion-shell.bin
-	cp $< $@
 
 filesystem/apps/sodium/main.bin: $(BUILD)/sodium.bin
 	cp $< $@
 
-filesystem/apps/%/main.bin: filesystem/apps/%/main.rs filesystem/apps/%/*.rs $(BUILD)/crt0.o $(BUILD)/libstd.rlib $(BUILD)/liborbital.rlib $(BUILD)/liborbtk.rlib
+filesystem/apps/example/main.bin: filesystem/apps/example/main.rs filesystem/apps/example/*.rs $(BUILD)/crt0.o $(BUILD)/libstd.rlib
 	$(RUSTC) $(RUSTCFLAGS) --crate-type bin -o $@ $<
 
-filesystem/schemes/%/main.bin: filesystem/schemes/%/main.rs filesystem/schemes/%/*.rs kernel/scheme.rs $(BUILD)/libstd.rlib $(BUILD)/liborbital.rlib $(BUILD)/liborbtk.rlib
-	$(SED) "s|SCHEME_PATH|../../../$<|" kernel/scheme.rs > $(BUILD)/schemes_$*.gen
-	$(RUSTC) $(RUSTCFLAGS) -C lto -o $(BUILD)/schemes_$*.rlib $(BUILD)/schemes_$*.gen
-	$(LD) $(LDARGS) -o $@ $(BUILD)/schemes_$*.rlib
+filesystem/apps/%/main.bin: filesystem/apps/%/main.rs filesystem/apps/%/*.rs $(BUILD)/crt0.o $(BUILD)/libstd.rlib $(BUILD)/liborbital.rlib $(BUILD)/liborbtk.rlib
+	$(RUSTC) $(RUSTCFLAGS) --crate-type bin -o $@ $<
 
 filesystem/%.list: filesystem/%.bin
 	$(OBJDUMP) -C -M intel -D $< > $@
@@ -252,14 +350,11 @@ filesystem/apps/zfs/zfs.img:
 	-sudo zpool destroy redox_zfs
 	sudo losetup -d /dev/loop0
 
-$(BUILD)/filesystem.gen: apps schemes
+$(BUILD)/filesystem.gen: apps bins
 	$(FIND) filesystem -not -path '*/\.*' -type f -o -type l | $(CUT) -d '/' -f2- | $(SORT) | $(AWK) '{printf("file %d,\"%s\"\n", NR, $$0)}' > $@
 
 $(BUILD)/harddrive.bin: kernel/harddrive.asm $(BUILD)/kernel.bin $(BUILD)/filesystem.gen
-	$(AS) -f bin -o $@ -D ARCH_$(ARCH) -i$(BUILD)/ -ikernel/ -ifilesystem/ $<
-
-$(BUILD)/harddrive.list: kernel/harddrive.asm $(BUILD)/kernel.bin $(BUILD)/filesystem.gen
-	$(AS) -f bin -o $(BUILD)/harddrive.bin -l $@ -D ARCH_$(ARCH) -i$(BUILD)/ -ikernel/ -ifilesystem/ $<
+	$(AS) -f bin -o $@ -l $(BUILD)/harddrive.list -D ARCH_$(ARCH) -D TIME="`$(DATE) "+%F %T"`" -i$(BUILD)/ -ikernel/ -ifilesystem/ $<
 
 virtualbox: $(BUILD)/harddrive.bin
 	echo "Delete VM"

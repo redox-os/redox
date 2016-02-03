@@ -2,7 +2,7 @@ use alloc::boxed::Box;
 
 use collections::string::String;
 
-use scheduler::context;
+use arch::context;
 
 use schemes::{Result, KScheme, Resource, Url, VecResource};
 

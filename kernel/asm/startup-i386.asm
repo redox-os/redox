@@ -50,8 +50,7 @@ protected_mode:
     mov [0x100000], eax
     mov eax, [kernel_file + 0x18]
     mov [interrupts.handler], eax
-    mov eax, kernel_file.font
-    mov ebx, tss
+    mov eax, tss
     int 255
 .lp:
     sti

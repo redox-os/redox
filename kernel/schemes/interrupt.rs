@@ -4,6 +4,25 @@ use schemes::{Result, KScheme, Resource, Url, VecResource};
 
 pub struct InterruptScheme;
 
+static IRQ_NAME: [&'static str; 16] = [
+    "Programmable Interval Timer",
+    "Keyboard",
+    "Cascade",
+    "Serial 2 and 4",
+    "Serial 1 and 3",
+    "Parallel 2",
+    "Floppy",
+    "Parallel 1",
+    "Realtime Clock",
+    "PCI 1",
+    "PCI 2",
+    "PCI 3",
+    "Mouse",
+    "Coprocessor",
+    "IDE Primary",
+    "IDE Secondary",
+];
+
 impl KScheme for InterruptScheme {
     fn scheme(&self) -> &str {
         "interrupt"
@@ -19,22 +38,7 @@ impl KScheme for InterruptScheme {
 
                 if count > 0 {
                     let description = match interrupt {
-                        0x20 => "Programmable Interval Timer",
-                        0x21 => "Keyboard",
-                        0x22 => "Cascade",
-                        0x23 => "Serial 2 and 4",
-                        0x24 => "Serial 1 and 3",
-                        0x25 => "Parallel 2",
-                        0x26 => "Floppy",
-                        0x27 => "Parallel 1",
-                        0x28 => "Realtime Clock",
-                        0x29 => "PCI 1",
-                        0x2A => "PCI 2",
-                        0x2B => "PCI 3",
-                        0x2C => "Mouse",
-                        0x2D => "Coprocessor",
-                        0x2E => "IDE Primary",
-                        0x2F => "IDE Secondary",
+                        i @ 0x20 ... 0x30 => IRQ_NAME[i - 0x20],
                         0x80 => "System Call",
                         0x0 => "Divide by zero exception",
                         0x1 => "Debug exception",
