@@ -74,10 +74,10 @@ impl<'a> Environment<'a> {
     }
 
     /// Open a new resource
-    pub fn open<'b>(&'b self, url: &Url, flags: usize) -> Result<Box<Resource + 'b>> {
-        let url_scheme = url.scheme();
+    pub fn open<'b>(&'b self, url: &Url<'b>, flags: usize) -> Result<Box<Resource + 'b>> {
+        let url_scheme = url.scheme;
         if url_scheme.is_empty() {
-            let url_path = url.reference();
+            let url_path = url.reference;
             if url_path.trim_matches('/').is_empty() {
                 let mut list = String::new();
 
@@ -122,7 +122,7 @@ impl<'a> Environment<'a> {
 
     /// Unlink a resource
     pub fn unlink(&self, url: &Url) -> Result<()> {
-        let url_scheme = url.scheme();
+        let url_scheme = url.scheme;
         if !url_scheme.is_empty() {
             for mut scheme in self.schemes.lock().iter_mut() {
                 if scheme.scheme() == url_scheme {

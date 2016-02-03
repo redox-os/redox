@@ -164,13 +164,16 @@ pub fn execute(args: &[&str]) -> Result<usize> {
         let path = *args.get(0).unwrap_or(&"");
 
         if let Ok((context_ptr, entry)) = execute_inner(
-            &Url::from_string(unsafe {
-                current.canonicalize(&path)
+            &Url::from_str(unsafe {
+                &current.canonicalize(&path)
             }
          ), &args) {
             execute_outer(context_ptr, entry, args);
         } else {
-            let (context_ptr, entry) = try!(execute_inner(&Url::from_string("file:/bin/".to_string() + &path), &args));
+            let (context_ptr, entry) = try!(execute_inner(&Url {
+                scheme: "file",
+                reference: &("/bin/".to_string() + &path),
+            }, &args));
             execute_outer(context_ptr, entry, args);
         }
     } else {

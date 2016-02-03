@@ -25,7 +25,10 @@ pub struct DisplayResource {
 impl Resource for DisplayResource {
     /// Return the URL for display resource
     fn url(&self) -> Url {
-        Url::from_string(format!("display:{}/{}", self.display.width, self.display.height))
+        Url {
+            scheme: "display",
+            reference: &format!("{}/{}", self.display.width, self.display.height),
+        }
     }
 
     fn read(&mut self, buf: &mut [u8]) -> Result<usize> {

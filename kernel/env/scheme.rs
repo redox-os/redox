@@ -234,7 +234,10 @@ impl<'a> Resource for SchemeServerResource<'a> {
 
     /// Return the url of this resource
     fn url(&self) -> Url {
-        Url::from_string(":".to_string() + &self.inner.name)
+        Url {
+            scheme: "",
+            reference: &self.inner.name,
+        }
     }
 
     /// Read data to buffer
@@ -301,7 +304,7 @@ pub struct Scheme<'a> {
 }
 
 impl<'a> Scheme<'a> {
-    pub fn new(name: &'a str) -> Result<(Scheme<'a>, Box<Resource + 'a>)> {
+    pub fn new<'b>(name: &str) -> Result<(Scheme<'b>, Box<Resource + 'b>)> {
         if let Some(context) = ::env().contexts.lock().current_mut() {
             let server = box SchemeServerResource {
                 inner: Arc::new(SchemeInner::new(&name.to_string(), context.deref_mut()))
@@ -334,8 +337,8 @@ impl<'a> KScheme for Scheme<'a> {
         &self.name
     }
 
-    fn open<'b>(&'b mut self, url: &Url, flags: usize) -> Result<Box<Resource + 'b>> {
-        let c_str = url.string.clone() + "\0";
+    fn open<'b>(&'b mut self, url: &Url<'b>, flags: usize) -> Result<Box<Resource + 'b>> {
+        let c_str = url.to_string() + "\0";
 
         let physical_address = c_str.as_ptr() as usize;
 
@@ -378,7 +381,7 @@ impl<'a> KScheme for Scheme<'a> {
     }
 
     fn unlink(&mut self, url: &Url) -> Result<()> {
-        let c_str = url.string.clone() + "\0";
+        let c_str = url.to_string() + "\0";
 
         let physical_address = c_str.as_ptr() as usize;
 

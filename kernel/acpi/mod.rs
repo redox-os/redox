@@ -81,7 +81,7 @@ impl KScheme for Acpi {
     }
 
     fn open(&mut self, url: &Url, flags: usize) -> Result<Box<Resource>> {
-        if url.reference() == "off" && flags & O_CREAT == O_CREAT {
+        if url.reference == "off" && flags & O_CREAT == O_CREAT {
             match self.fadt {
                 Some(fadt) => {
                     debugln!("Powering Off");

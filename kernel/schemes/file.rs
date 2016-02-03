@@ -41,7 +41,10 @@ impl Resource for FileResource {
     }
 
     fn url(&self) -> Url {
-        Url::from_string("file:/".to_string() + &self.node.name)
+        Url {
+            scheme: "file",
+            reference: &self.node.name,
+        }
     }
 
     fn read(&mut self, buf: &mut [u8]) -> Result<usize> {
@@ -239,8 +242,8 @@ impl KScheme for FileScheme {
         "file"
     }
 
-    fn open(&mut self, url: &Url, flags: usize) -> Result<Box<Resource>> {
-        let mut path = url.reference();
+    fn open<'a>(&'a mut self, url: &Url<'a>, flags: usize) -> Result<Box<Resource + 'a>> {
+        let mut path = url.reference;
         while path.starts_with('/') {
             path = &path[1..];
         }
@@ -279,7 +282,7 @@ impl KScheme for FileScheme {
             }
 
             if list.len() > 0 {
-                Ok(box VecResource::new(url.clone(), list.into_bytes()))
+                Ok(box VecResource::new(*url, list.into_bytes()))
             } else {
                 Err(Error::new(ENOENT))
             }
@@ -353,7 +356,7 @@ impl KScheme for FileScheme {
     fn unlink(&mut self, url: &Url) -> Result<()> {
         let mut ret = Err(Error::new(ENOENT));
 
-        let mut path = url.reference();
+        let mut path = url.reference;
         while path.starts_with('/') {
             path = &path[1..];
         }
