@@ -13,8 +13,8 @@ fn main() {
     };
 
     let bmp = BmpFile::from_path(url);
-    let mut window = Window::new(0,
-                                 0,
+    let mut window = Window::new(-1,
+                                 -1,
                                  max(320, bmp.width() as u32),
                                  max(32, bmp.height() as u32),
                                  &("Viewer (".to_string() + &url + ")"))
