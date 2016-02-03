@@ -226,7 +226,7 @@ impl Scheme for OrbitalScheme {
 fn main() {
     let mut socket = File::create(":orbital").unwrap();
     match Display::new() {
-        Ok(mut display) => {
+        Ok(display) => {
             println!("- Orbital: Found Display {}x{}", display.width(), display.height());
             println!("    Console: Press F1");
             println!("    Desktop: Press F2");
