@@ -1,9 +1,8 @@
-use std::cmp::max;
 use std::collections::VecDeque;
 use std::mem::size_of;
 use std::{ptr, slice};
 
-use super::{Color, Display, Event, Image, ImageRoi};
+use super::{Color, Display, Event, Font, Image, ImageRoi};
 
 use system::error::{Error, Result, EINVAL};
 
@@ -16,12 +15,12 @@ pub struct Window {
 }
 
 impl Window {
-    pub fn new(x: i32, y: i32, w: i32, h: i32, title: &str) -> Window {
+    pub fn new(x: i32, y: i32, w: i32, h: i32, title: String) -> Window {
         Window {
             x: x,
             y: y,
             image: Image::new(w, h),
-            title: title.to_string(),
+            title: title,
             events: VecDeque::new()
         }
     }
@@ -51,19 +50,25 @@ impl Window {
     }
 
     pub fn draw(&mut self, display: &mut Display, focused: bool) {
-        let rx = max(0, -self.x);
-        let ry = max(0, -self.y);
-        let rw = max(0, self.width() - rx);
-        let rh = max(0, self.height() - ry);
         if ! self.title.is_empty() {
             if focused {
-                display.roi(self.x, self.y - 18, rw, 18).set(Color::rgba(192, 192, 192, 224));
+                display.roi(self.x, self.y - 18, self.width(), 18).set(Color::rgba(192, 192, 192, 224));
             } else {
-                display.roi(self.x, self.y - 18, rw, 18).set(Color::rgba(64, 64, 64, 224));
+                display.roi(self.x, self.y - 18, self.width(), 18).set(Color::rgba(64, 64, 64, 224));
+            }
+
+            let mut x = self.x;
+            for c in self.title.chars() {
+                if x + 8 <= self.x + self.width() {
+                    display.roi(x, self.y - 17, 8, 16).blend(&Font::render(c, Color::rgb(255, 255, 255)).as_roi());
+                } else {
+                    break;
+                }
+                x += 8;
             }
         }
         let mut display_roi = display.roi(self.x, self.y, self.width(), self.height());
-        display_roi.blend(&self.roi(rx, ry, rw, rh));
+        display_roi.blend(&self.as_roi());
     }
 
     pub fn event(&mut self, event: Event) {

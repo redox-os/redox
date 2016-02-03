@@ -36,7 +36,7 @@ impl Window {
             let _ = font_file.read_to_end(&mut font);
         }
 
-        match File::open(&format!("orbital:{}/{}/{}/{}/{}", x, y, w, h, title)) {
+        match File::open(&format!("orbital:/{}/{}/{}/{}/{}", x, y, w, h, title)) {
             Ok(file) => {
                 Some(box Window {
                     x: x,

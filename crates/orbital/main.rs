@@ -15,6 +15,7 @@ use system::scheme::{Packet, Scheme};
 pub use self::color::Color;
 pub use self::display::Display;
 pub use self::event::{Event, EventOption};
+pub use self::font::Font;
 pub use self::image::{Image, ImageRoi};
 pub use self::window::Window;
 
@@ -26,6 +27,7 @@ pub mod color;
 pub mod display;
 #[path="../../kernel/common/event.rs"]
 pub mod event;
+pub mod font;
 pub mod image;
 pub mod window;
 
@@ -160,12 +162,18 @@ impl OrbitalScheme {
 impl Scheme for OrbitalScheme {
     #[allow(unused_variables)]
     fn open(&mut self, path: &str, flags: usize, mode: usize) -> Result {
-        let mut parts = path.split(":").nth(1).unwrap_or("").split("/");
+        let mut parts = path.split("/").skip(1);
+
         let mut x = parts.next().unwrap_or("").parse::<i32>().unwrap_or(0);
         let mut y = parts.next().unwrap_or("").parse::<i32>().unwrap_or(0);
         let width = parts.next().unwrap_or("").parse::<i32>().unwrap_or(0);
         let height = parts.next().unwrap_or("").parse::<i32>().unwrap_or(0);
-        let title = parts.next().unwrap_or("");
+
+        let mut title = parts.next().unwrap_or("").to_string();
+        for part in parts {
+            title.push('/');
+            title.push_str(part);
+        }
 
         let id = self.next_id as usize;
         self.next_id += 1;
