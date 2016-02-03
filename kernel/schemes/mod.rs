@@ -148,8 +148,8 @@ impl<'a> Url<'a> {
     }
 
     /// Create this URL (returns a resource)
-    pub fn create<'b>(&self) -> Result<Box<Resource + 'b>> {
-        env().open(&self, O_CREAT | O_RDWR | O_TRUNC)
+    pub fn create<'b>(&'b self) -> Result<Box<Resource + 'b>> {
+        env().open(self, O_CREAT | O_RDWR | O_TRUNC)
     }
 }
 

@@ -21,14 +21,14 @@ use system::syscall::{SYS_CLOSE, SYS_FSYNC, SYS_FTRUNCATE,
 
 struct SchemeInner<'a> {
     name: &'a str,
-    context: *mut Context<'a>,
+    context: &'a mut Context<'a>,
     next_id: Cell<usize>,
     todo: Intex<BTreeMap<usize, (usize, usize, usize, usize)>>,
     done: Intex<BTreeMap<usize, (usize, usize, usize, usize)>>,
 }
 
 impl<'a> SchemeInner<'a> {
-    fn new(name: &'a str, context: *mut Context<'a>) -> SchemeInner<'a> {
+    fn new(name: &'a str, context: &'a mut Context<'a>) -> SchemeInner<'a> {
         SchemeInner {
             name: name,
             context: context,
@@ -304,19 +304,15 @@ pub struct Scheme<'a> {
 }
 
 impl<'a> Scheme<'a> {
-    pub fn new<'b>(name: &str) -> Result<(Scheme<'b>, Box<Resource + 'b>)> {
-        if let Some(context) = ::env().contexts.lock().current_mut() {
-            let server = box SchemeServerResource {
-                inner: Arc::new(SchemeInner::new(&name.to_string(), context.deref_mut()))
-            };
-            let scheme = Scheme {
-                name: name,
-                inner: Arc::downgrade(&server.inner)
-            };
-            Ok((scheme, server))
-        } else {
-            Err(Error::new(ESRCH))
-        }
+    pub fn new(name: &'a str, context: &'a mut Context<'a>) -> (Scheme<'a>, SchemeServerResource<'a>) {
+        let server = SchemeServerResource {
+            inner: Arc::new(SchemeInner::new(name, context))
+        };
+        let scheme = Scheme {
+            name: name,
+            inner: Arc::downgrade(&server.inner)
+        };
+        (scheme, server)
     }
 
     fn call(&self, a: usize, b: usize, c: usize, d: usize) -> Result<usize> {

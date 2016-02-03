@@ -13,11 +13,14 @@ use arch::context::ContextManager;
 
 use schemes::{Result, KScheme, Resource, VecResource, Url};
 
-use syscall::{Error, ENOENT, EEXIST};
+use syscall::{Error, ENOENT, EEXIST, ESRCH};
+
 use syscall::O_CREAT;
 
 use self::console::Console;
 use self::scheme::Scheme;
+
+use env;
 
 /// The Kernel Console
 pub mod console;
@@ -100,12 +103,13 @@ impl<'a> Environment<'a> {
                     }
                 }
 
-                match Scheme::new(url_path) {
-                    Ok((scheme, server)) => {
-                        self.schemes.lock().push(box scheme);
-                        Ok(server)
-                    },
-                    Err(err) => Err(err)
+                if let Some(context) = env().contexts.lock().current_mut() {
+                    let (scheme, server) = Scheme::new(url_path, context);
+                    self.schemes.lock().push(box scheme);
+
+                    Ok(box server)
+                } else {
+                    Err(Error::new(ESRCH))
                 }
             } else {
                 Err(Error::new(ENOENT))
