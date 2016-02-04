@@ -86,15 +86,15 @@ long_mode:
     mov rdi, kernel_file
     mov rsi, rdi
     add rsi, 0xB000
-    mov rcx, (kernel_file.end - kernel_file)
+    mov rcx, (kernel_file.end - kernel_file) / 8
     cld
-    rep movsb
+    rep movsq
 
     mov rdi, kernel_file.end
-    mov rcx, 0xB000
+    mov rcx, 0xB000 / 8
     xor rax, rax
     std
-    rep stosb
+    rep stosq
     cld
 
     mov rax, gdt.tss
