@@ -13,9 +13,9 @@ startup:
   call initialize.pit
   call initialize.pic
 
-  ; load protected mode GDT and IDT
   cli
-
+  ; setting up Page Tables
+  ; Identity Mapping first 512GB
   mov ax, 0x8000
   mov es, ax
 
@@ -31,7 +31,7 @@ startup:
   ;Link first PDP to PD
   mov DWORD [es:edi], 0x82000 | 1 << 1 | 1
   add edi, 0x1000
-  ;Link first PD to 1 GB of memory
+  ;Link all PD's (512 per PDP) to 1 GB of memory
   mov ebx, 1 << 7 | 1 << 1 | 1
   mov ecx, 512
 .setpd:
@@ -43,26 +43,30 @@ startup:
   xor ax, ax
   mov es, ax
 
+  ;cr3 holds pointer to PML4
   mov edi, 0x80000
   mov cr3, edi
 
+  ;enable Page Address Extension and Page Size Extension
   mov eax, cr4
   or eax, 1 << 5 | 1 << 4
   mov cr4, eax
 
+  ; load protected mode GDT and IDT
   lgdt [gdtr]
   lidt [idtr]
 
   mov ecx, 0xC0000080               ; Read from the EFER MSR.
   rdmsr
-  or eax, 0x00000100                ; Set the LME bit.
+  or eax, 0x00000100                ; Set the Long-Mode-Enable bit.
   wrmsr
 
-  mov ebx, cr0                      ; Activate long mode -
-  or ebx, 0x80000001                 ; - by enabling paging and protection simultaneously.
+  ;enabling paging and protection simultaneously
+  mov ebx, cr0
+  or ebx, 0x80000001                ;Bit 31: Paging, Bit 0: Protected Mode
   mov cr0, ebx
 
-  ; far jump to load CS with 32 bit segment
+  ; far jump to enable Long Mode and load CS with 32 bit segment
   jmp 0x08:long_mode
 
 %include "asm/memory_map.asm"
