@@ -2,13 +2,11 @@ SECTION .text
 [BITS 16]
 ;Generate a memory map at 0x500 to 0x5000 (available memory not used for kernel or bootloader)
 memory_map:
-	xor ebx, ebx
+	xor eax, eax
 	mov di, 0x500
-.clear:
-	mov [di], ebx
-	add di, 4
-	cmp di, 0x5000
-	jb .clear
+    mov ecx, 0x5000 - 0x500
+    cld
+    rep stosd
 
 	mov di, 0x500
 	mov edx, 0x534D4150
