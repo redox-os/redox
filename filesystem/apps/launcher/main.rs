@@ -2,7 +2,9 @@ extern crate orbital;
 
 use orbital::{BmpFile, Color, EventOption, Window};
 
+use std::env;
 use std::fs::File;
+use std::get_slice::GetSlice;
 use std::io::Read;
 use std::process::Command;
 use std::thread;
@@ -82,71 +84,75 @@ fn main() {
         }
         Err(err) => println!("Failed to open apps: {}", err),
     }
-    /*
-        for package in packages.iter() {
-            let mut accepted = false;
-            for accept in package.accepts.iter() {
-                if (accept.starts_with('*') &&
-                    path.ends_with(&accept.get_slice(Some(1), None))) ||
-                   (accept.ends_with('*') &&
-                    path.starts_with(&accept.get_slice(None, Some(accept.len() - 1)))) {
-                    accepted = true;
+
+    let paths = env::args().skip(1);
+    if paths.len() > 0 {
+        for ref path in paths {
+            for package in packages.iter() {
+                let mut accepted = false;
+                for accept in package.accepts.iter() {
+                    if (accept.starts_with('*') &&
+                        path.ends_with(&accept.get_slice(Some(1), None))) ||
+                       (accept.ends_with('*') &&
+                        path.starts_with(&accept.get_slice(None, Some(accept.len() - 1)))) {
+                        accepted = true;
+                        break;
+                    }
+                }
+                if accepted {
+                    if let Err(err) = Command::new(&package.binary).arg(&path).spawn() {
+                        println!("launcher: failed to launch '{}': {}", package.binary, err);
+                    }
                     break;
                 }
             }
-            if accepted {
-                if Command::new(&package.binary).arg(&path).spawn_scheme().is_none() {
-                    println!("{}: Failed to launch", package.binary);
-                }
-                break;
-            }
         }
-    */
+    } else {
+        let shutdown = BmpFile::from_path("file:/ui/actions/system-shutdown.bmp");
+        if ! shutdown.has_data() {
+            println!("Failed to read shutdown icon");
+        }
 
-    let shutdown = BmpFile::from_path("file:/ui/actions/system-shutdown.bmp");
-    if ! shutdown.has_data() {
-        println!("Failed to read shutdown icon");
-    }
+        let mut window = Window::new(0, 600 - 48, 800, 48, "").unwrap();
 
-    let mut window = Window::new(0, 600 - 48, 800, 48, "").unwrap();
+        draw(&mut window, &packages, &shutdown, -1, -1);
+        'running: loop {
+            for event in window.events() {
+                match event.to_option() {
+                    EventOption::Mouse(mouse_event) => {
+                        draw(&mut window, &packages, &shutdown, mouse_event.x, mouse_event.y);
 
-    draw(&mut window, &packages, &shutdown, -1, -1);
-    'running: loop {
-        for event in window.events() {
-            match event.to_option() {
-                EventOption::Mouse(mouse_event) => {
-                    draw(&mut window, &packages, &shutdown, mouse_event.x, mouse_event.y);
-
-                    if mouse_event.left_button {
-                        let mut x = 0;
-                        for package in packages.iter() {
-                            if package.icon.has_data() {
-                                let y = window.height() as i32 - package.icon.height() as i32;
-                                if mouse_event.y >= y && mouse_event.x >= x &&
-                                   mouse_event.x < x + package.icon.width() as i32 {
-                                    if let Err(err) = Command::new(&package.binary).spawn() {
-                                        println!("{}: Failed to launch: {}", package.binary, err);
+                        if mouse_event.left_button {
+                            let mut x = 0;
+                            for package in packages.iter() {
+                                if package.icon.has_data() {
+                                    let y = window.height() as i32 - package.icon.height() as i32;
+                                    if mouse_event.y >= y && mouse_event.x >= x &&
+                                       mouse_event.x < x + package.icon.width() as i32 {
+                                        if let Err(err) = Command::new(&package.binary).spawn() {
+                                            println!("{}: Failed to launch: {}", package.binary, err);
+                                        }
                                     }
+                                    x = x + package.icon.width() as i32;
                                 }
-                                x = x + package.icon.width() as i32;
                             }
-                        }
 
-                        if shutdown.has_data() {
-                            x = window.width() as i32 - shutdown.width() as i32;
-                            let y = window.height() as i32 - shutdown.height() as i32;
-                            if mouse_event.y >= y && mouse_event.x >= x &&
-                               mouse_event.x < x + shutdown.width() as i32 {
-                                   File::create("acpi:off");
+                            if shutdown.has_data() {
+                                x = window.width() as i32 - shutdown.width() as i32;
+                                let y = window.height() as i32 - shutdown.height() as i32;
+                                if mouse_event.y >= y && mouse_event.x >= x &&
+                                   mouse_event.x < x + shutdown.width() as i32 {
+                                       File::create("acpi:off");
+                                }
                             }
                         }
-                    }
-                },
-                EventOption::Quit(_) => break 'running,
-                _ => ()
+                    },
+                    EventOption::Quit(_) => break 'running,
+                    _ => ()
+                }
             }
-        }
 
-        thread::yield_now();
+            thread::yield_now();
+        }
     }
 }

@@ -6,9 +6,10 @@ use std::{cmp, env};
 use std::collections::BTreeMap;
 use std::fs::{self, File};
 use std::io::{Seek, SeekFrom};
+use std::process::Command;
+use std::string::{String, ToString};
 use std::time::{self, Duration};
 use std::vec::Vec;
-use std::string::{String, ToString};
 
 use orbital::{event, BmpFile, Color, EventOption, MouseEvent, Window};
 
@@ -488,9 +489,8 @@ impl FileManager {
                         self.set_path(&current_path);
                     }
                     FileManagerCommand::Execute(cmd) => {
-                        // TODO: What is the best way to request a launch?
-                        File::open(&("orbital://launch/".to_string() + &current_path + &cmd));
-                    }
+                        Command::new("/apps/launcher/main.bin").arg(&(current_path.clone() + &cmd)).spawn();
+                    },
                     FileManagerCommand::Redraw => (),
                     FileManagerCommand::Quit => return,
                 };
