@@ -7,19 +7,28 @@ use arch::memory;
 use collections::string::{String, ToString};
 use collections::vec::Vec;
 
+use common::slice::GetSlice;
+
 use core::cell::UnsafeCell;
 use core::ops::DerefMut;
 use core::{mem, ptr};
 
-use schemes::{Result, Url};
+use fs::Url;
 
-use system::error::{Error, ESRCH, ENOEXEC};
+use system::error::{Error, Result, ESRCH, ENOEXEC};
 
 fn execute_inner(url: &Url, args: &Vec<String>) -> Result<(*mut Context, usize)> {
     let mut resource = try!(url.open());
 
     let mut vec: Vec<u8> = Vec::new();
-    try!(resource.read_to_end(&mut vec));
+    'reading: loop {
+        let mut bytes = [0; 4096];
+        match resource.read(&mut bytes) {
+            Ok(0) => break 'reading,
+            Ok(count) => vec.push_all(bytes.get_slice(.. count)),
+            Err(err) => return Err(err)
+        }
+    }
 
     let executable = Elf::from_data(vec.as_ptr() as usize);
     let entry = unsafe { executable.entry() };

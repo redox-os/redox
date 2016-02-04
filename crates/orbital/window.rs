@@ -85,7 +85,7 @@ impl Window {
         self.events.push_back(event);
     }
 
-    pub fn read(&mut self, buf: &mut [u8]) -> Result {
+    pub fn read(&mut self, buf: &mut [u8]) -> Result<usize> {
         if buf.len() >= size_of::<Event>() {
             let mut i = 0;
             while i <= buf.len() - size_of::<Event>() {
@@ -102,7 +102,7 @@ impl Window {
         }
     }
 
-    pub fn write(&mut self, buf: &[u8]) -> Result {
+    pub fn write(&mut self, buf: &[u8]) -> Result<usize> {
         let old = self.image.data_mut();
         let new = unsafe { slice::from_raw_parts(buf.as_ptr() as *const Color, buf.len() / size_of::<Color>()) };
 

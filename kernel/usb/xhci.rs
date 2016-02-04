@@ -10,7 +10,7 @@ use common::debug;
 //For old code vvv
 use common::debug::*;
 
-use schemes::KScheme;
+use fs::KScheme;
 
 #[repr(packed)]
 struct Ste {

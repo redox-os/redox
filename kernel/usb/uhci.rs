@@ -12,8 +12,7 @@ use arch::memory::Memory;
 use drivers::pci::config::PciConfig;
 use drivers::io::{Io, Pio};
 
-
-use schemes::KScheme;
+use fs::KScheme;
 
 use super::{Hci, Packet, Pipe, Setup};
 

@@ -14,7 +14,7 @@ use core::slice::{Iter, IterMut};
 use core::{mem, ptr};
 use core::ops::DerefMut;
 
-use schemes::Resource;
+use fs::Resource;
 
 use syscall::{CLONE_FILES, CLONE_FS, CLONE_VM};
 use syscall::handle::do_sys_exit;

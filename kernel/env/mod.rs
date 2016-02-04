@@ -11,18 +11,15 @@ use common::time::Duration;
 
 use arch::context::ContextManager;
 
-use schemes::{Result, KScheme, Resource, VecResource, Url};
+use fs::{KScheme, Resource, Scheme, VecResource, Url};
 
-use syscall::{Error, ENOENT, EEXIST};
-use syscall::O_CREAT;
+use system::error::{Error, Result, ENOENT, EEXIST};
+use system::syscall::O_CREAT;
 
 use self::console::Console;
-use self::scheme::Scheme;
 
 /// The Kernel Console
 pub mod console;
-/// New scheme module
-pub mod scheme;
 
 /// The kernel environment
 pub struct Environment {
@@ -92,7 +89,7 @@ impl Environment {
                     }
                 }
 
-                Ok(box VecResource::new(Url::new(), list.into_bytes()))
+                Ok(box VecResource::new(":", list.into_bytes()))
             } else if flags & O_CREAT == O_CREAT {
                 for scheme in self.schemes.lock().iter_mut() {
                     if scheme.scheme() == url_path {

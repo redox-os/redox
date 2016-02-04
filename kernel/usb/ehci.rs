@@ -13,7 +13,7 @@ use drivers::pci::config::PciConfig;
 
 use arch::context::context_switch;
 
-use schemes::KScheme;
+use fs::KScheme;
 
 use super::{Hci, Packet, Pipe, Setup};
 
