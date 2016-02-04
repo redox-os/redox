@@ -59,21 +59,15 @@ impl KScheme for TestScheme {
 
         macro_rules! reg_test {
             (! $test:path) => (
-                if !string.is_empty() {
-                    string.push('\n');
-                }
                 if !$test() {
                     string.push_str("\x1B[32mSUCCESS: ");
                 } else {
                     string.push_str("\x1B[31mFAILURE: ");
                 }
                 string.push_str(stringify!($test));
-                string.push_str("\x1B[0m");
+                string.push_str("\x1B[0m\n");
             );
             (! $test:path, $($arg:tt)*) => (
-                if !string.is_empty() {
-                    string.push('\n');
-                }
                 if !$test() {
                     string.push_str("\x1B[32mSUCCESS: ");
                 } else {
@@ -82,24 +76,18 @@ impl KScheme for TestScheme {
                 string.push_str(stringify!($test));
                 string.push_str(": ");
                 string.push_str(&format!($($arg)*));
-                string.push_str("\x1B[0m");
+                string.push_str("\x1B[0m\n");
             );
             ($test:path) => (
-                if !string.is_empty() {
-                    string.push('\n');
-                }
                 if $test() {
                     string.push_str("\x1B[32mSUCCESS: ");
                 } else {
                     string.push_str("\x1B[31mFAILURE: ");
                 }
                 string.push_str(stringify!($test));
-                string.push_str("\x1B[0m");
+                string.push_str("\x1B[0m\n");
             );
             ($test:path, $($arg:tt)*) => (
-                if !string.is_empty() {
-                    string.push('\n');
-                }
                 if $test() {
                     string.push_str("\x1B[32mSUCCESS: ");
                 } else {
@@ -108,7 +96,7 @@ impl KScheme for TestScheme {
                 string.push_str(stringify!($test));
                 string.push_str(": ");
                 string.push_str(&format!($($arg)*));
-                string.push_str("\x1B[0m");
+                string.push_str("\x1B[0m\n");
             );
         }
 

@@ -174,7 +174,6 @@ bins: filesystem/bin \
  		filesystem/bin/free \
 		filesystem/bin/init \
 		filesystem/bin/init.rc \
- 		filesystem/bin/ints \
 		filesystem/bin/ion \
 		filesystem/bin/login \
 		filesystem/bin/lua \
@@ -183,6 +182,7 @@ bins: filesystem/bin \
 		filesystem/bin/orbital \
 		filesystem/bin/ps \
 		filesystem/bin/pwd \
+		filesystem/bin/realpath \
 		filesystem/bin/rm \
 		filesystem/bin/rmdir \
 		filesystem/bin/shutdown \

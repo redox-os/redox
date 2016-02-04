@@ -24,6 +24,16 @@ impl ExampleFile {
         }
     }
 
+    fn path(&mut self, buf: &mut [u8]) -> Result<usize> {
+        let mut i = 0;
+        let path = b"example:file";
+        while i < buf.len() && i < path.len() {
+            buf[i] = path[i];
+            i += 1;
+        }
+        Ok(i)
+    }
+
     fn read(&mut self, buf: &mut [u8]) -> Result<usize> {
         let mut i = 0;
         while i < buf.len() && self.seek < self.data.len() {
@@ -106,6 +116,15 @@ impl Scheme for ExampleScheme {
     }
 
     /* Resource operations */
+    #[allow(unused_variables)]
+    fn path(&mut self, id: usize, buf: &mut [u8]) -> Result<usize> {
+        println!("path {}, {:X}, {}", id, buf.as_mut_ptr() as usize, buf.len());
+        if let Some(mut file) = self.files.get_mut(&id) {
+            file.path(buf)
+        } else {
+            Err(Error::new(EBADF))
+        }
+    }
 
     #[allow(unused_variables)]
     fn read(&mut self, id: usize, buf: &mut [u8]) -> Result<usize> {

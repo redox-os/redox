@@ -206,6 +206,14 @@ impl Scheme for OrbitalScheme {
         Ok(id)
     }
 
+    fn path(&mut self, id: usize, buf: &mut [u8]) -> Result<usize> {
+        if let Some(mut window) = self.windows.get_mut(&id) {
+            window.path(buf)
+        } else {
+            Err(Error::new(EBADF))
+        }
+    }
+
     fn read(&mut self, id: usize, buf: &mut [u8]) -> Result<usize> {
         if let Some(mut window) = self.windows.get_mut(&id) {
             window.read(buf)

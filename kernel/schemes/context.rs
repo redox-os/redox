@@ -16,7 +16,7 @@ impl KScheme for ContextScheme {
     }
 
     fn open(&mut self, _: &Url, _: usize) -> Result<Box<Resource>> {
-        let mut string = format!("{:<6}{:<6}{:<8}{:<8}{:<6}{:<6}{}",
+        let mut string = format!("{:<6}{:<6}{:<8}{:<8}{:<6}{:<6}{}\n",
                                  "PID",
                                  "PPID",
                                  "TIME",
@@ -63,16 +63,14 @@ impl KScheme for ContextScheme {
                     flags_string.push('E');
                 }
 
-                let line = format!("{:<6}{:<6}{:<8}{:<8}{:<6}{:<6}{}",
+                string.push_str(&format!("{:<6}{:<6}{:<8}{:<8}{:<6}{:<6}{}\n",
                                    context.pid,
                                    context.ppid,
                                    context.slice_total,
                                    memory_string,
                                    unsafe { (*context.files.get()).len() },
                                    flags_string,
-                                   context.name);
-
-                string = string + "\n" + &line;
+                                   context.name));
             }
         }
 

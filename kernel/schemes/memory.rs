@@ -15,7 +15,7 @@ impl KScheme for MemoryScheme {
     }
 
     fn open(&mut self, _: &Url, _: usize) -> Result<Box<Resource>> {
-        let string = format!("Memory Used: {} KB\nMemory Free: {} KB",
+        let string = format!("Memory Used: {} KB\nMemory Free: {} KB\n",
                              memory::memory_used() / 1024,
                              memory::memory_free() / 1024);
         Ok(box VecResource::new("memory:", string.into_bytes()))
