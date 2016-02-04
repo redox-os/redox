@@ -503,7 +503,7 @@ impl FileManager {
 
 fn main() {
     match env::args().nth(1) {
-        Some(arg) => FileManager::new().main(arg),
+        Some(ref arg) => FileManager::new().main(arg),
         None => FileManager::new().main("file:/"),
     }
 }
