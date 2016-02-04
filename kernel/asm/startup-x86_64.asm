@@ -1,3 +1,5 @@
+%define break xchg bx, bx
+
 startup:
   ; a20
   in al, 0x92
@@ -13,9 +15,9 @@ startup:
   call initialize.pit
   call initialize.pic
 
-  cli
   ; setting up Page Tables
   ; Identity Mapping first 512GB
+  cli
   mov ax, 0x8000
   mov es, ax
 
@@ -53,9 +55,8 @@ startup:
   or eax, 1 << 5 | 1 << 4
   mov cr4, eax
 
-  ; load protected mode GDT and IDT
+  ; load protected mode GDT
   lgdt [gdtr]
-  lidt [idtr]
 
   mov ecx, 0xC0000080               ; Read from the EFER MSR.
   rdmsr
@@ -67,56 +68,85 @@ startup:
   or ebx, 0x80000001                ;Bit 31: Paging, Bit 0: Protected Mode
   mov cr0, ebx
 
-  ; far jump to enable Long Mode and load CS with 32 bit segment
-  jmp 0x08:long_mode
+  ; far jump to enable Long Mode and load CS with 64 bit code segment
+  jmp gdt.kernel_code:long_mode
 
 %include "asm/memory_map.asm"
 %include "asm/vesa.asm"
 %include "asm/initialize.asm"
 
+use64
 long_mode:
-    use64
 
-    ; load all the other segments with 32 bit data segments
-    mov rax, 0x10
+    ; load all the other segments with 64 bit data segments
+    mov rax, gdt.kernel_data
     mov ds, rax
     mov es, rax
     mov fs, rax
     mov gs, rax
     mov ss, rax
 
+    ; load long mode IDT
+    lidt [idtr]
+
+    ; provide stack
     mov rsp, 0x200000 - 128
-
-    ;move kernel image
-    mov rdi, kernel_file
-    mov rsi, rdi
-    add rsi, 0xB000
-    mov rcx, (kernel_file.end - kernel_file) / 8
-    cld
-    rep movsq
-
-    mov rdi, kernel_file.end
-    mov rcx, 0xB000 / 8
-    xor rax, rax
-    std
-    rep stosq
-    cld
 
     mov rax, gdt.tss
     ltr ax
 
+    break
     ;rust init
     xor rax, rax
     mov [0x100000], rax
     mov eax, [kernel_file + 0x18]
     mov [interrupts.handler], rax
     mov rax, tss
-    int 255
+    int 0xFF
 .lp:
     sti
     hlt
     jmp .lp
 
+struc GDTEntry
+    .limitl resw 1
+    .basel resw 1
+    .basem resb 1
+    .access resb 1
+        ;both
+        .present equ 1 << 7
+        .ring1 equ 1 << 5
+        .ring2 equ 1 << 6
+        .ring3 equ 1 << 5 | 1 << 6
+        .user equ 1 << 4
+        ;user
+        .code equ 1 << 3
+        .code_conforming equ 1 << 2
+        .code_readable equ 1 << 1
+        .data_expand_down equ 1 << 2
+        .data_writable equ 1 << 1
+        .accessed equ 1 << 0
+        ;system
+        .ldt32 equ 0x2
+        .tssAvailabe64 equ 0x9
+        .tssBusy64 equ 0xB
+        .callGate64 equ 0xC
+        .interrupt64 equ 0xE
+        .trap64 equ 0xF
+    .flags__limith resb 1
+        ;both
+        .granularity equ 1 << 7
+        .available equ 1 << 4
+        ;user
+        .default_operand_size equ 1 << 6
+        .code_long_mode equ 1 << 5
+        .data_reserved equ 1 << 5
+    .baseh resb 1
+endstruc
+struc GDTEntry64
+    .extended_address resd 1
+    .reserved resd 1
+endstruc
 gdtr:
     dw gdt.end + 1  ; size
     dq gdt          ; offset
@@ -126,45 +156,57 @@ gdt:
     dq 0
 
 .kernel_code equ $ - gdt
-    dw 0xffff       ; limit 0:15
-    dw 0       ; base 0:15
-    db 0         ; base 16:23
-    db 0b10011010   ; access byte - code
-    db 0b10101111   ; flags/(limit 16:19)
-    db 0        ; base 24:31
+istruc GDTEntry
+    at GDTEntry.limitl, dw 0
+    at GDTEntry.basel, dw 0
+    at GDTEntry.basem, db 0
+    at GDTEntry.access, db GDTEntry.present | GDTEntry.user | GDTEntry.code
+    at GDTEntry.flags__limith, db GDTEntry.code_long_mode
+    at GDTEntry.baseh, db 0
+iend
 
 .kernel_data equ $ - gdt
-    dw 0xffff       ; limit 0:15
-    dw 0       ; base 0:15
-    db 0        ; base 16:23
-    db 0b10010010   ; access byte - data
-    db 0b10101111   ; flags/(limit 16:19)
-    db 0        ; base 24:31
+istruc GDTEntry
+    at GDTEntry.limitl, dw 0
+    at GDTEntry.basel, dw 0
+    at GDTEntry.basem, db 0
+; AMD System Programming Manual states that the writeable bit is ignored in long mode, but ss can not be set to this descriptor without it
+    at GDTEntry.access, db GDTEntry.present | GDTEntry.user | GDTEntry.data_writable
+    at GDTEntry.flags__limith, db 0
+    at GDTEntry.baseh, db 0
+iend
 
 .user_code equ $ - gdt
-    dw 0xffff       ; limit 0:15
-    dw 0       ; base 0:15
-    db 0         ; base 16:23
-    db 0b11111010   ; access byte - code
-    db 0b10101111   ; flags/(limit 16:19)
-    db 0        ; base 24:31
+istruc GDTEntry
+    at GDTEntry.limitl, dw 0
+    at GDTEntry.basel, dw 0
+    at GDTEntry.basem, db 0
+    at GDTEntry.access, db GDTEntry.present | GDTEntry.ring3 | GDTEntry.user | GDTEntry.code
+    at GDTEntry.flags__limith, db GDTEntry.code_long_mode
+    at GDTEntry.baseh, db 0
+iend
 
 .user_data equ $ - gdt
-    dw 0xffff       ; limit 0:15
-    dw 0       ; base 0:15
-    db 0        ; base 16:23
-    db 0b11110010   ; access byte - data
-    db 0b10101111   ; flags/(limit 16:19)
-    db 0        ; base 24:31
+istruc GDTEntry
+    at GDTEntry.limitl, dw 0
+    at GDTEntry.basel, dw 0
+    at GDTEntry.basem, db 0
+; AMD System Programming Manual states that the writeable bit is ignored in long mode, but ss can not be set to this descriptor without it
+    at GDTEntry.access, db GDTEntry.present | GDTEntry.ring3 | GDTEntry.user | GDTEntry.data_writable
+    at GDTEntry.flags__limith, db 0
+    at GDTEntry.baseh, db 0
+iend
 
 .tss equ $ - gdt
-    dw (tss.end-tss) & 0xFFFF         ; limit 0:15
-    dw (tss-$$+0x7C00) & 0xFFFF             ; base 0:15
-    db ((tss-$$+0x7C00) >> 16) & 0xFF       ; base 16:23
-    db 0b11101001                           ; access byte - data
-    db 0b01100000 | ((tss.end-tss) >> 16) & 0xF    ; flags/(limit 16:19). flag is set to 32 bit protected mode
-    db ((tss-$$+0x7C00) >> 24) & 0xFF       ; base 24:31
-    dq 0
+istruc GDTEntry
+    at GDTEntry.limitl, dw (tss.end-tss) & 0xFFFF
+    at GDTEntry.basel, dw (tss-$$+0x7C00) & 0xFFFF
+    at GDTEntry.basem, db ((tss-$$+0x7C00) >> 16) & 0xFF
+    at GDTEntry.access, db GDTEntry.present | GDTEntry.ring3 | GDTEntry.tssAvailabe64
+    at GDTEntry.flags__limith, db ((tss.end-tss) >> 16) & 0xF
+    at GDTEntry.baseh, db ((tss-$$+0x7C00) >> 24) & 0xFF
+iend
+dq 0 ;tss descriptors are extended to 16 Bytes
 
 .end equ $ - gdt
 

@@ -1,10 +1,10 @@
 struc IDTEntry
 	.offsetl resw 1
 	.selector resw 1
-	.zero1 resb 1
+	.ist resb 1
 	.attribute resb 1
 		.present equ 1 << 7
-		.ring1	equ 1 << 5
+		.ring1 equ 1 << 5
 		.ring2 equ 1 << 6
 		.ring3 equ 1 << 5 | 1 << 6
 		.ldt32 equ 0x2
@@ -15,7 +15,7 @@ struc IDTEntry
 		.trap64 equ 0xF
 	.offsetm resw 1
 	.offseth resd 1
-	.zero2 resd 1
+	.reserved resd 1
 endstruc
 
 [section .text]
@@ -104,11 +104,11 @@ idt:
 	istruc IDTEntry
 		at IDTEntry.offsetl, dw interrupts+(interrupts.second-interrupts.first)*i
 		at IDTEntry.selector, dw gdt.kernel_code
-		at IDTEntry.zero1, db 0
+		at IDTEntry.ist, db 0
 		at IDTEntry.attribute, db IDTEntry.present | IDTEntry.interrupt64
 		at IDTEntry.offsetm, dw 0
 		at IDTEntry.offseth, dd 0
-		at IDTEntry.zero2, dd 0
+		at IDTEntry.reserved, dd 0
 	iend
 %assign i i+1
 %endrep
@@ -117,11 +117,11 @@ idt:
 istruc IDTEntry
 	at IDTEntry.offsetl, dw interrupts+(interrupts.second-interrupts.first)*i
 	at IDTEntry.selector, dw gdt.kernel_code
-	at IDTEntry.zero1, db 0
-	at IDTEntry.attribute, db IDTEntry.ring3 | IDTEntry.present | IDTEntry.interrupt64
+	at IDTEntry.ist, db 0
+	at IDTEntry.attribute, db IDTEntry.present | IDTEntry.interrupt64
 	at IDTEntry.offsetm, dw 0
 	at IDTEntry.offseth, dd 0
-	at IDTEntry.zero2, dd 0
+	at IDTEntry.reserved, dd 0
 iend
 %assign i i+1
 
@@ -130,11 +130,11 @@ iend
 	istruc IDTEntry
 		at IDTEntry.offsetl, dw interrupts+(interrupts.second-interrupts.first)*i
 		at IDTEntry.selector, dw gdt.kernel_code
-		at IDTEntry.zero1, db 0
+		at IDTEntry.ist, db 0
 		at IDTEntry.attribute, db IDTEntry.present | IDTEntry.interrupt64
 		at IDTEntry.offsetm, dw 0
 		at IDTEntry.offseth, dd 0
-		at IDTEntry.zero2, dd 0
+		at IDTEntry.reserved, dd 0
 	iend
 %assign i i+1
 %endrep
