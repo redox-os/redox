@@ -188,6 +188,19 @@ impl Iterator for ReadDir {
     }
 }
 
+/// Find the canonical path of a file
+pub fn canonicalize(path: &str) -> Result<PathBuf> {
+    match File::open(path) {
+        Ok(file) => {
+            match file.path() {
+                Ok(realpath) => Ok(realpath),
+                Err(err) => Err(err)
+            }
+        },
+        Err(err) => Err(err)
+    }
+}
+
 /// Create a new directory, using a path
 /// The default mode of the directory is 744
 pub fn create_dir(path: &str) -> Result<()> {
