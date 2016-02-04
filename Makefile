@@ -185,6 +185,7 @@ bins: filesystem/bin \
 		filesystem/bin/realpath \
 		filesystem/bin/rm \
 		filesystem/bin/rmdir \
+		filesystem/bin/seq \
 		filesystem/bin/shutdown \
 		filesystem/bin/sleep \
 		filesystem/bin/tar \
