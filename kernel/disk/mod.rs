@@ -1,6 +1,6 @@
 use collections::string::String;
 
-use schemes::Result;
+use system::error::Result;
 
 pub mod ahci;
 pub mod ide;

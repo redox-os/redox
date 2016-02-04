@@ -67,49 +67,49 @@ pub trait Scheme {
     /* Scheme operations */
 
     #[allow(unused_variables)]
-    fn open(&mut self, path: &str, flags: usize, mode: usize) -> Result {
+    fn open(&mut self, path: &str, flags: usize, mode: usize) -> Result<usize> {
         Err(Error::new(ENOENT))
     }
 
     #[allow(unused_variables)]
-    fn unlink(&mut self, path: &str) -> Result {
+    fn unlink(&mut self, path: &str) -> Result<usize> {
         Err(Error::new(ENOENT))
     }
 
     #[allow(unused_variables)]
-    fn mkdir(&mut self, path: &str, mode: usize) -> Result {
+    fn mkdir(&mut self, path: &str, mode: usize) -> Result<usize> {
         Err(Error::new(ENOENT))
     }
 
     /* Resource operations */
 
     #[allow(unused_variables)]
-    fn read(&mut self, id: usize, buf: &mut [u8]) -> Result {
+    fn read(&mut self, id: usize, buf: &mut [u8]) -> Result<usize> {
         Err(Error::new(EBADF))
     }
 
     #[allow(unused_variables)]
-    fn write(&mut self, id: usize, buf: &[u8]) -> Result {
+    fn write(&mut self, id: usize, buf: &[u8]) -> Result<usize> {
         Err(Error::new(EBADF))
     }
 
     #[allow(unused_variables)]
-    fn seek(&mut self, id: usize, pos: usize, whence: usize) -> Result {
+    fn seek(&mut self, id: usize, pos: usize, whence: usize) -> Result<usize> {
         Err(Error::new(EBADF))
     }
 
     #[allow(unused_variables)]
-    fn sync(&mut self, id: usize) -> Result {
+    fn sync(&mut self, id: usize) -> Result<usize> {
         Err(Error::new(EBADF))
     }
 
     #[allow(unused_variables)]
-    fn truncate(&mut self, id: usize, len: usize) -> Result {
+    fn truncate(&mut self, id: usize, len: usize) -> Result<usize> {
         Err(Error::new(EBADF))
     }
 
     #[allow(unused_variables)]
-    fn close(&mut self, id: usize) -> Result {
+    fn close(&mut self, id: usize) -> Result<usize> {
         Err(Error::new(EBADF))
     }
 }

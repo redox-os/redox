@@ -8,7 +8,7 @@ use drivers::io::{Io, Pio};
 
 use graphics::display::VBEMODEINFO;
 
-use schemes::KScheme;
+use fs::KScheme;
 
 use drivers::kb_layouts::layouts;
 

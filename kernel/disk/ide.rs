@@ -12,9 +12,7 @@ use disk::Disk;
 use drivers::pci::config::PciConfig;
 use drivers::io::{Io, Pio};
 
-use schemes::Result;
-
-use syscall::{Error, EIO};
+use system::error::{Error, Result, EIO};
 
 /// An disk extent
 #[derive(Copy, Clone)]

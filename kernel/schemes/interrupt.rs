@@ -1,6 +1,8 @@
 use alloc::boxed::Box;
 
-use schemes::{Result, KScheme, Resource, Url, VecResource};
+use fs::{KScheme, Resource, Url, VecResource};
+
+use system::error::Result;
 
 pub struct InterruptScheme;
 
@@ -68,6 +70,6 @@ impl KScheme for InterruptScheme {
             }
         }
 
-        Ok(box VecResource::new(Url::from_str("interrupt:"), string.into_bytes()))
+        Ok(box VecResource::new("interrupt:", string.into_bytes()))
     }
 }

@@ -4,7 +4,9 @@ use collections::string::String;
 
 use arch::context::context_switch;
 
-use schemes::{Result, KScheme, Resource, Url};
+use fs::{KScheme, Resource, Url};
+
+use system::error::Result;
 
 /// A debug resource
 pub struct DebugResource {
@@ -20,8 +22,16 @@ impl Resource for DebugResource {
         })
     }
 
-    fn url(&self) -> Url {
-        return Url::from_str("debug:");
+    fn path(&self, buf: &mut [u8]) -> Result <usize> {
+        let path = b"debug:";
+
+        let mut i = 0;
+        while i < buf.len() && i < path.len() {
+            buf[i] = path[i];
+            i += 1;
+        }
+
+        Ok(i)
     }
 
     fn read(&mut self, buf: &mut [u8]) -> Result<usize> {

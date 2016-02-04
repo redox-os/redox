@@ -5,7 +5,7 @@ use common::event;
 
 use drivers::io::{Io, Pio};
 
-use schemes::KScheme;
+use fs::KScheme;
 
 #[repr(packed)]
 struct SerialInfo {

@@ -3,12 +3,12 @@ use alloc::boxed::Box;
 
 use collections::vec_deque::VecDeque;
 
-use schemes::{Result, Resource, Url};
+use fs::Resource;
 
 use arch::context::context_switch;
 use arch::intex::Intex;
 
-use syscall::{Error, EPIPE};
+use system::error::{Error, Result, EPIPE};
 
 /// Read side of a pipe
 pub struct PipeRead {
@@ -33,8 +33,16 @@ impl Resource for PipeRead {
         })
     }
 
-    fn url(&self) -> Url {
-        return Url::from_str("pipe:r");
+    fn path(&self, buf: &mut [u8]) -> Result <usize> {
+        let path = b"pipe:r";
+
+        let mut i = 0;
+        while i < buf.len() && i < path.len() {
+            buf[i] = path[i];
+            i += 1;
+        }
+
+        Ok(i)
     }
 
     fn read(&mut self, buf: &mut [u8]) -> Result<usize> {
@@ -91,8 +99,16 @@ impl Resource for PipeWrite {
         })
     }
 
-    fn url(&self) -> Url {
-        return Url::from_str("pipe:w");
+    fn path(&self, buf: &mut [u8]) -> Result <usize> {
+        let path = b"pipe:w";
+
+        let mut i = 0;
+        while i < buf.len() && i < path.len() {
+            buf[i] = path[i];
+            i += 1;
+        }
+
+        Ok(i)
     }
 
     fn write(&mut self, buf: &[u8]) -> Result<usize> {

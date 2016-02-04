@@ -24,7 +24,7 @@ impl ExampleFile {
         }
     }
 
-    fn read(&mut self, buf: &mut [u8]) -> Result {
+    fn read(&mut self, buf: &mut [u8]) -> Result<usize> {
         let mut i = 0;
         while i < buf.len() && self.seek < self.data.len() {
             buf[i] = self.data[self.seek];
@@ -34,7 +34,7 @@ impl ExampleFile {
         Ok(i)
     }
 
-    fn write(&mut self, buf: &[u8]) -> Result {
+    fn write(&mut self, buf: &[u8]) -> Result<usize> {
         let mut i = 0;
         while i < buf.len() && self.seek < self.data.len() {
             self.data[self.seek] = buf[i];
@@ -44,7 +44,7 @@ impl ExampleFile {
         Ok(i)
     }
 
-    fn seek(&mut self, offset: usize, whence: usize) -> Result {
+    fn seek(&mut self, offset: usize, whence: usize) -> Result<usize> {
         match whence {
             SEEK_SET => {
                 self.seek = min(0, max(self.data.len() as isize, offset as isize)) as usize;
@@ -62,7 +62,7 @@ impl ExampleFile {
         }
     }
 
-    fn sync(&mut self) -> Result {
+    fn sync(&mut self) -> Result<usize> {
         Ok(0)
     }
 }
@@ -82,7 +82,7 @@ impl ExampleScheme {
 }
 
 impl Scheme for ExampleScheme {
-    fn open(&mut self, path: &str, flags: usize, mode: usize) -> Result {
+    fn open(&mut self, path: &str, flags: usize, mode: usize) -> Result<usize> {
         println!("open {:X} = {}, {:X}, {:X}", path.as_ptr() as usize, path, flags, mode);
         let id = self.next_id as usize;
         self.next_id += 1;
@@ -94,13 +94,13 @@ impl Scheme for ExampleScheme {
     }
 
     #[allow(unused_variables)]
-    fn unlink(&mut self, path: &str) -> Result {
+    fn unlink(&mut self, path: &str) -> Result<usize> {
         println!("unlink {}", path);
         Err(Error::new(ENOENT))
     }
 
     #[allow(unused_variables)]
-    fn mkdir(&mut self, path: &str, mode: usize) -> Result {
+    fn mkdir(&mut self, path: &str, mode: usize) -> Result<usize> {
         println!("mkdir {}, {:X}", path, mode);
         Err(Error::new(ENOENT))
     }
@@ -108,7 +108,7 @@ impl Scheme for ExampleScheme {
     /* Resource operations */
 
     #[allow(unused_variables)]
-    fn read(&mut self, id: usize, buf: &mut [u8]) -> Result {
+    fn read(&mut self, id: usize, buf: &mut [u8]) -> Result<usize> {
         println!("read {}, {:X}, {}", id, buf.as_mut_ptr() as usize, buf.len());
         if let Some(mut file) = self.files.get_mut(&id) {
             file.read(buf)
@@ -118,7 +118,7 @@ impl Scheme for ExampleScheme {
     }
 
     #[allow(unused_variables)]
-    fn write(&mut self, id: usize, buf: &[u8]) -> Result {
+    fn write(&mut self, id: usize, buf: &[u8]) -> Result<usize> {
         println!("write {}, {:X}, {}", id, buf.as_ptr() as usize, buf.len());
         if let Some(mut file) = self.files.get_mut(&id) {
             file.write(buf)
@@ -128,7 +128,7 @@ impl Scheme for ExampleScheme {
     }
 
     #[allow(unused_variables)]
-    fn seek(&mut self, id: usize, pos: usize, whence: usize) -> Result {
+    fn seek(&mut self, id: usize, pos: usize, whence: usize) -> Result<usize> {
         println!("seek {}, {}, {}", id, pos, whence);
         if let Some(mut file) = self.files.get_mut(&id) {
             file.seek(pos, whence)
@@ -138,7 +138,7 @@ impl Scheme for ExampleScheme {
     }
 
     #[allow(unused_variables)]
-    fn sync(&mut self, id: usize) -> Result {
+    fn sync(&mut self, id: usize) -> Result<usize> {
         println!("sync {}", id);
         if let Some(mut file) = self.files.get_mut(&id) {
             file.sync()
@@ -148,12 +148,12 @@ impl Scheme for ExampleScheme {
     }
 
     #[allow(unused_variables)]
-    fn truncate(&mut self, id: usize, len: usize) -> Result {
+    fn truncate(&mut self, id: usize, len: usize) -> Result<usize> {
         println!("truncate {}, {}", id, len);
         Err(Error::new(EBADF))
     }
 
-    fn close(&mut self, id: usize) -> Result {
+    fn close(&mut self, id: usize) -> Result<usize> {
         if let Some(file) = self.files.remove(&id) {
             Ok(0)
         } else {

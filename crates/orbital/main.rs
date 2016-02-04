@@ -165,7 +165,7 @@ impl OrbitalScheme {
 
 impl Scheme for OrbitalScheme {
     #[allow(unused_variables)]
-    fn open(&mut self, path: &str, flags: usize, mode: usize) -> Result {
+    fn open(&mut self, path: &str, flags: usize, mode: usize) -> Result<usize> {
         let mut parts = path.split("/").skip(1);
 
         let mut x = parts.next().unwrap_or("").parse::<i32>().unwrap_or(0);
@@ -206,7 +206,7 @@ impl Scheme for OrbitalScheme {
         Ok(id)
     }
 
-    fn read(&mut self, id: usize, buf: &mut [u8]) -> Result {
+    fn read(&mut self, id: usize, buf: &mut [u8]) -> Result<usize> {
         if let Some(mut window) = self.windows.get_mut(&id) {
             window.read(buf)
         } else {
@@ -214,7 +214,7 @@ impl Scheme for OrbitalScheme {
         }
     }
 
-    fn write(&mut self, id: usize, buf: &[u8]) -> Result {
+    fn write(&mut self, id: usize, buf: &[u8]) -> Result<usize> {
         if let Some(mut window) = self.windows.get_mut(&id) {
             self.redraw = true;
             window.write(buf)
@@ -223,7 +223,7 @@ impl Scheme for OrbitalScheme {
         }
     }
 
-    fn close(&mut self, id: usize) -> Result {
+    fn close(&mut self, id: usize) -> Result<usize> {
         self.order.retain(|&e| e != id);
 
         if self.windows.remove(&id).is_some() {

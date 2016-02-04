@@ -16,9 +16,9 @@ use fs::redoxfs::{FileSystem, Node, NodeData};
 use common::debug;
 use arch::memory::Memory;
 
-use schemes::{Result, KScheme, Resource, ResourceSeek, Url, VecResource};
+use fs::{KScheme, Resource, ResourceSeek, Url, VecResource};
 
-use syscall::{Error, O_CREAT, ENOENT, EIO};
+use syscall::{Error, Result, O_CREAT, ENOENT, EIO};
 
 /// A file resource
 pub struct FileResource {
@@ -40,8 +40,22 @@ impl Resource for FileResource {
         })
     }
 
-    fn url(&self) -> Url {
-        Url::from_string("file:/".to_string() + &self.node.name)
+    fn path(&self, buf: &mut [u8]) -> Result <usize> {
+        let mut i = 0;
+
+        let path_a = b"file:/";
+        while i < buf.len() && i < path_a.len() {
+            buf[i] = path_a[i];
+            i += 1;
+        }
+
+        let path_b = self.node.name.as_bytes();
+        while i < buf.len() && i - path_a.len() < path_b.len() {
+            buf[i] = path_b[i - path_a.len()];
+            i += 1;
+        }
+
+        Ok(i)
     }
 
     fn read(&mut self, buf: &mut [u8]) -> Result<usize> {
@@ -279,7 +293,7 @@ impl KScheme for FileScheme {
             }
 
             if list.len() > 0 {
-                Ok(box VecResource::new(url.clone(), list.into_bytes()))
+                Ok(box VecResource::new(&url.string, list.into_bytes()))
             } else {
                 Err(Error::new(ENOENT))
             }

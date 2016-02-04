@@ -2,7 +2,6 @@ use alloc::arc::{Arc, Weak};
 use alloc::boxed::Box;
 
 use collections::{BTreeMap, String};
-use collections::string::ToString;
 
 use core::cell::Cell;
 use core::mem::size_of;
@@ -11,11 +10,11 @@ use core::ops::DerefMut;
 use arch::context::{context_switch, Context, ContextMemory};
 use arch::intex::Intex;
 
-use schemes::{Result, Resource, ResourceSeek, KScheme, Url};
+use super::{Resource, ResourceSeek, KScheme, Url};
 
-use system::error::{Error, EBADF, EFAULT, EINVAL, ESPIPE, ESRCH};
+use system::error::{Error, Result, EBADF, EFAULT, EINVAL, ESPIPE, ESRCH};
 use system::scheme::Packet;
-use system::syscall::{SYS_CLOSE, SYS_FSYNC, SYS_FTRUNCATE,
+use system::syscall::{SYS_CLOSE, SYS_FPATH, SYS_FSYNC, SYS_FTRUNCATE,
                     SYS_LSEEK, SEEK_SET, SEEK_CUR, SEEK_END,
                     SYS_OPEN, SYS_READ, SYS_WRITE, SYS_UNLINK};
 
@@ -93,8 +92,51 @@ impl Resource for SchemeResource {
     }
 
     /// Return the url of this resource
-    fn url(&self) -> Url {
-        Url::new()
+    fn path(&self, buf: &mut [u8]) -> Result <usize> {
+        let contexts = ::env().contexts.lock();
+        if let Some(current) = contexts.current() {
+            if let Some(physical_address) = unsafe { current.translate(buf.as_mut_ptr() as usize) } {
+                let offset = physical_address % 4096;
+
+                let mut virtual_address = 0;
+                let virtual_size = (buf.len() + offset + 4095)/4096 * 4096;
+                if let Some(scheme) = self.inner.upgrade() {
+                    unsafe {
+                        virtual_address = (*scheme.context).next_mem();
+                        (*(*scheme.context).memory.get()).push(ContextMemory {
+                            physical_address: physical_address - offset,
+                            virtual_address: virtual_address,
+                            virtual_size: virtual_size,
+                            writeable: true,
+                            allocated: false,
+                        });
+                    }
+                }
+
+                if virtual_address > 0 {
+                    let result = self.call(SYS_FPATH, self.file_id, virtual_address + offset, buf.len());
+
+                    //debugln!("Read {:X} mapped from {:X} to {:X} offset {} length {} size {} result {:?}", physical_address, buf.as_ptr() as usize, virtual_address + offset, offset, buf.len(), virtual_size, result);
+
+                    if let Some(scheme) = self.inner.upgrade() {
+                        unsafe {
+                            if let Some(mut mem) = (*scheme.context).get_mem_mut(virtual_address) {
+                                mem.virtual_size = 0;
+                            }
+                            (*scheme.context).clean_mem();
+                        }
+                    }
+
+                    result
+                } else {
+                    Err(Error::new(EBADF))
+                }
+            } else {
+                Err(Error::new(EFAULT))
+            }
+        } else {
+            Err(Error::new(ESRCH))
+        }
     }
 
     /// Read data to buffer
@@ -233,9 +275,24 @@ impl Resource for SchemeServerResource {
     }
 
     /// Return the url of this resource
-    fn url(&self) -> Url {
-        Url::from_string(":".to_string() + &self.inner.name)
+    fn path(&self, buf: &mut [u8]) -> Result <usize> {
+        let mut i = 0;
+
+        let path_a = b":";
+        while i < buf.len() && i < path_a.len() {
+            buf[i] = path_a[i];
+            i += 1;
+        }
+
+        let path_b = self.inner.name.as_bytes();
+        while i < buf.len() && i - path_a.len() < path_b.len() {
+            buf[i] = path_b[i - path_a.len()];
+            i += 1;
+        }
+
+        Ok(i)
     }
+
 
     /// Read data to buffer
     fn read(&mut self, buf: &mut [u8]) -> Result<usize> {

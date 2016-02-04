@@ -14,7 +14,7 @@ use common::time::Duration;
 
 use drivers::io::{Io, Pio};
 
-use schemes::{Resource, ResourceSeek, Url};
+use fs::{Resource, ResourceSeek, Url};
 use schemes::pipe::{PipeRead, PipeWrite};
 
 use syscall::*;
@@ -331,24 +331,11 @@ pub fn do_sys_exit(status: usize) {
     }
 }
 
-pub fn do_sys_fpath(fd: usize, buf: *mut u8, len: usize) -> usize {
+pub fn do_sys_fpath(fd: usize, buf: *mut u8, count: usize) -> usize {
     let contexts = ::env().contexts.lock();
     Error::mux(if let Some(current) = contexts.current() {
         if let Some(resource) = unsafe { current.get_file(fd) } {
-            let mut ret = 0;
-            // TODO: Improve performance
-            for b in resource.url().to_string().as_bytes().iter() {
-                if ret < len {
-                    unsafe {
-                        ptr::write(buf.offset(ret as isize), *b);
-                    }
-                } else {
-                    break;
-                }
-                ret += 1;
-            }
-
-            Ok(ret)
+            resource.path(unsafe { slice::from_raw_parts_mut(buf, count) })
         } else {
             Err(Error::new(EBADF))
         }

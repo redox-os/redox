@@ -2,7 +2,9 @@ use alloc::boxed::Box;
 
 use collections::string::String;
 
-use schemes::{Result, KScheme, Resource, Url, VecResource};
+use fs::{KScheme, Resource, Url, VecResource};
+
+use system::error::Result;
 
 pub struct TestScheme;
 
@@ -115,6 +117,6 @@ impl KScheme for TestScheme {
         reg_test!(!meta_test_woah_fail, "Testing the fail testing (wut)");
         reg_test!(tests::get_slice::test, "GetSlice");
 
-        Ok(box VecResource::new(Url::from_str("test:"), string.into_bytes()))
+        Ok(box VecResource::new("test:", string.into_bytes()))
     }
 }

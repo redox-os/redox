@@ -4,7 +4,9 @@ use collections::string::String;
 
 use arch::context;
 
-use schemes::{Result, KScheme, Resource, Url, VecResource};
+use fs::{KScheme, Resource, Url, VecResource};
+
+use system::error::Result;
 
 pub struct ContextScheme;
 
@@ -74,6 +76,6 @@ impl KScheme for ContextScheme {
             }
         }
 
-        Ok(box VecResource::new(Url::from_str("context:"), string.into_bytes()))
+        Ok(box VecResource::new("context:", string.into_bytes()))
     }
 }
