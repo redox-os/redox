@@ -22,7 +22,7 @@ use core::result::Result as Res;
 
 use env;
 
-fn execute_inner<'a, 'b: 'a>(url: Url<'b>, args: &'b [&'a str]) -> Result<(&'b mut Context<'a>, usize)> {
+fn execute_inner<'a, 'b: 'a>(url: Url<'b>, args: &'b [&'a str]) -> Result<(&'b mut Context, usize)> {
     let mut resource = try!(url.open());
 
     let mut vec: Vec<u8> = Vec::new();

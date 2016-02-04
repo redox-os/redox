@@ -28,9 +28,9 @@ pub mod console;
 pub mod scheme;
 
 /// The kernel environment
-pub struct Environment<'a> {
+pub struct Environment {
     /// Contexts
-    pub contexts: Intex<ContextManager<'a>>,
+    pub contexts: Intex<ContextManager>,
 
     /// Clock realtime (default)
     pub clock_realtime: Intex<Duration>,
@@ -42,14 +42,14 @@ pub struct Environment<'a> {
     /// Pending events
     pub events: Intex<VecDeque<Event>>,
     /// Schemes
-    pub schemes: Intex<Vec<Box<KScheme + 'a>>>,
+    pub schemes: Intex<Vec<Box<KScheme>>>,
 
     /// Interrupt stats
     pub interrupts: Intex<[u64; 256]>,
 }
 
-impl<'a> Environment<'a> {
-    pub fn new() -> Box<Environment<'a>> {
+impl Environment {
+    pub fn new() -> Box<Environment> {
         box Environment {
             contexts: Intex::new(ContextManager::new()),
 
@@ -77,7 +77,7 @@ impl<'a> Environment<'a> {
     }
 
     /// Open a new resource
-    pub fn open(&self, url: Url, flags: usize) -> Result<Box<Resource>> {
+    pub fn open<'a>(&'a self, url: Url<'a>, flags: usize) -> Result<Box<Resource + 'a>> {
         if url.scheme.is_empty() {
             if url.reference.trim_matches('/').is_empty() {
                 let mut list = String::new();

@@ -103,9 +103,9 @@ pub mod syscall;
 pub mod usb;
 
 pub static mut TSS_PTR: Option<&'static mut TSS> = None;
-pub static mut ENV_PTR: Option<&'static mut Environment<'static>> = None;
+pub static mut ENV_PTR: Option<&'static mut Environment> = None;
 
-pub fn env() -> &'static Environment<'static> {
+pub fn env() -> &'static Environment {
     unsafe {
         match ENV_PTR {
             Some(&mut ref p) => p,

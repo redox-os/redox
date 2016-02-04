@@ -26,15 +26,15 @@ pub const CONTEXT_STACK_SIZE: usize = 1024 * 1024;
 pub const CONTEXT_STACK_ADDR: usize = 0x70000000;
 pub const CONTEXT_SLICES: usize = 4;
 
-pub struct ContextManager<'a> {
-    pub inner: Vec<Context<'a>>,
+pub struct ContextManager {
+    pub inner: Vec<Context>,
     pub enabled: bool,
     pub i: usize,
     pub next_pid: usize,
 }
 
-impl<'a> ContextManager<'a> {
-    pub fn new() -> ContextManager<'a> {
+impl ContextManager {
+    pub fn new() -> ContextManager {
         ContextManager {
             inner: Vec::new(),
             enabled: false,
@@ -43,21 +43,21 @@ impl<'a> ContextManager<'a> {
         }
     }
 
-    pub fn current(&'a self) -> Option<&'a Context> {
+    pub fn current(&self) -> Option<&Context> {
         let i = self.i;
         self.get(i)
     }
 
-    pub fn current_mut(&'a mut self) -> Option<&mut Context<'a>> {
+    pub fn current_mut(&mut self) -> Option<&mut Context> {
         let i = self.i;
         self.get_mut(i)
     }
 
-    pub fn iter(&self) -> Iter<Context<'a>> {
+    pub fn iter(&self) -> Iter<Context> {
         self.inner.iter()
     }
 
-    pub fn iter_mut(&mut self) -> IterMut<Context<'a>> {
+    pub fn iter_mut(&mut self) -> IterMut<Context> {
         self.inner.iter_mut()
     }
 
@@ -69,7 +69,7 @@ impl<'a> ContextManager<'a> {
         }
     }
 
-    pub fn get_mut(&mut self, i: usize) -> Option<&mut Context<'a>> {
+    pub fn get_mut(&mut self, i: usize) -> Option<&mut Context> {
         if self.enabled {
             self.inner.get_mut(i)
         } else{
@@ -81,7 +81,7 @@ impl<'a> ContextManager<'a> {
         self.inner.len()
     }
 
-    pub unsafe fn push(&mut self, context: Context<'a>) {
+    pub unsafe fn push(&mut self, context: Context) {
         self.inner.push(context);
     }
 
@@ -354,14 +354,14 @@ pub struct ContextStatus {
     pub status: usize,
 }
 
-pub struct Context<'a> {
+pub struct Context {
 // These members are used for control purposes by the scheduler {
 // The PID of the context
     pub pid: usize,
     /// The PID of the parent
     pub ppid: usize,
     /// The name of the context
-    pub name: &'a str,
+    pub name: &'static str,
     /// Indicates that the context was interrupted, used for prioritizing active contexts
     pub interrupted: bool,
     /// Indicates that the context exited
@@ -400,7 +400,7 @@ pub struct Context<'a> {
     pub statuses: Vec<ContextStatus>,
 }
 
-impl<'a> Context<'a> {
+impl Context {
     pub unsafe fn next_pid() -> usize {
         let mut contexts = ::env().contexts.lock();
 
@@ -455,7 +455,7 @@ impl<'a> Context<'a> {
         }
     }
 
-    pub unsafe fn new(name: &'a str, call: usize, args: &Vec<usize>) -> Self {
+    pub unsafe fn new(name: &'static str, call: usize, args: &Vec<usize>) -> Self {
         let kernel_stack = memory::alloc(CONTEXT_STACK_SIZE + 512);
 
         let mut ret = Context {
@@ -490,7 +490,7 @@ impl<'a> Context<'a> {
         ret
     }
 
-    pub fn spawn<F: FnBox()>(name: &'a str, fn_: F) -> usize {
+    pub fn spawn<F: FnBox()>(name: &'static str, fn_: F) -> usize {
         let ret;
 
         unsafe {
@@ -753,7 +753,7 @@ impl<'a> Context<'a> {
     }
 }
 
-impl<'a> Drop for Context<'a> {
+impl Drop for Context {
     fn drop(&mut self) {
         if self.kernel_stack > 0 {
             unsafe { memory::unalloc(self.kernel_stack) };

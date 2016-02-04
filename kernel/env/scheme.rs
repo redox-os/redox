@@ -21,14 +21,14 @@ use system::syscall::{SYS_CLOSE, SYS_FSYNC, SYS_FTRUNCATE,
 
 struct SchemeInner<'a> {
     name: &'a str,
-    context: &'a mut Context<'a>,
+    context: &'a mut Context,
     next_id: Cell<usize>,
     todo: Intex<BTreeMap<usize, (usize, usize, usize, usize)>>,
     done: Intex<BTreeMap<usize, (usize, usize, usize, usize)>>,
 }
 
 impl<'a> SchemeInner<'a> {
-    fn new(name: &'a str, context: &'a mut Context<'a>) -> SchemeInner<'a> {
+    fn new(name: &'a str, context: &'a mut Context) -> SchemeInner<'a> {
         SchemeInner {
             name: name,
             context: context,
@@ -304,7 +304,7 @@ pub struct Scheme<'a> {
 }
 
 impl<'a> Scheme<'a> {
-    pub fn new(name: &'a str, context: &'a mut Context<'a>) -> (Scheme<'a>, SchemeServerResource<'a>) {
+    pub fn new(name: &'a str, context: &'a mut Context) -> (Scheme<'a>, SchemeServerResource<'a>) {
         let server = SchemeServerResource {
             inner: Arc::new(SchemeInner::new(name, context))
         };
