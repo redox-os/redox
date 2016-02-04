@@ -12,8 +12,8 @@ mod wav;
 
 fn main() {
     let url = match env::args().nth(1) {
-        Some(arg) => arg.clone(),
-        None => "none:",
+        Some(arg) => arg,
+        None => "none:".to_string(),
     };
 
     let mut vec: Vec<u8> = Vec::new();

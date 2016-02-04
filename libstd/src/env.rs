@@ -5,7 +5,6 @@ use alloc::boxed::Box;
 use fs::File;
 use path::{Path, PathBuf};
 use io::Result;
-use slice::Iter;
 use string::{String, ToString};
 use vec::Vec;
 
@@ -14,9 +13,35 @@ use system::syscall::sys_chdir;
 
 static mut _args: *mut Vec<&'static str> = 0 as *mut Vec<&'static str>;
 
+pub struct Args {
+    i: usize
+}
+
+impl Iterator for Args {
+    //Yes, this is supposed to be String, do not change it!
+    //Only change it if https://doc.rust-lang.org/std/env/struct.Args.html changes from String
+    type Item = String;
+    fn next(&mut self) -> Option<String> {
+        if let Some(arg) = unsafe { (*_args).get(self.i) } {
+            self.i += 1;
+            Some(arg.to_string())
+        } else {
+            None
+        }
+    }
+}
+
+impl ExactSizeIterator for Args {
+    fn len(&self) -> usize {
+        unsafe { (*_args).len() }
+    }
+}
+
 /// Arguments
-pub fn args<'a>() -> Iter<'a, &'static str> {
-    unsafe { (*_args).iter() }
+pub fn args() -> Args {
+    Args {
+        i: 0
+    }
 }
 
 /// Initialize arguments
