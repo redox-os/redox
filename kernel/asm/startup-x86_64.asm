@@ -21,9 +21,9 @@ startup:
 
   xor edi, edi
   xor eax, eax
-  mov ecx, 3 * 1024 / 4 ;PML4, PDP, PD / moves 4 Bytes at once
+  mov ecx, 3 * 4096 / 8 ;PML4, PDP, PD / moves 4 Bytes at once
   cld
-  rep stosd
+  rep stosq
 
   xor edi, edi
   ;Link first PML4 to PDP
