@@ -4,7 +4,7 @@ SECTION .text
 memory_map:
 	xor eax, eax
 	mov di, 0x500
-	mov ecx, (0x5000 - 0x500) / 4 ; moving 4bytes at once
+	mov ecx, (0x5000 - 0x500) / 4 ; moving 4 Bytes at once
 	cld
 	rep stosd
 
