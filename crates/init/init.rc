@@ -1,8 +1,11 @@
-# Start example scheme
+# Example scheme
 example
 
-# Start orbital scheme
+# Log scheme
+logger
+
+# Orbital scheme, handles displays
 orbital
 
-# Start login process
+# Login process, handles debug console
 login
