@@ -1,5 +1,3 @@
-%define break xchg bx, bx
-
 startup:
   ; a20
   in al, 0x92
@@ -95,7 +93,6 @@ long_mode:
     mov rax, gdt.tss
     ltr ax
 
-    break
     ;rust init
     xor rax, rax
     mov [0x100000], rax
