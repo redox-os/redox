@@ -21,7 +21,7 @@ startup:
 
   xor edi, edi
   xor eax, eax
-  mov ecx, 3 * 4096 / 8 ;PML4, PDP, P8 / moves 4 Bytes at once
+  mov ecx, 3 * 4096 / 8 ;PML4, PDP, PD / moves 8 Bytes at once
   cld
   rep stosq
 
