@@ -96,7 +96,7 @@ pub fn copy<R: ?Sized, W: ?Sized>(reader: &mut R, writer: &mut W) -> Result<u64>
         match reader.read(&mut bytes) {
             Ok(0) => return Ok(copied),
             Err(err) => return Err(err),
-            Ok(count) => match writer.write(&bytes[0 .. count]){
+            Ok(count) => match writer.write(&bytes[.. count]){
                 Ok(0) => return Ok(copied),
                 Err(err) => return Err(err),
                 Ok(count) => copied += count as u64

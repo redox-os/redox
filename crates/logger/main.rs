@@ -11,22 +11,22 @@ use system::syscall::{SEEK_SET, SEEK_CUR, SEEK_END};
 
 extern crate system;
 
-struct ExampleFile {
+struct LogFile {
     data: Vec<u8>,
     seek: usize,
 }
 
-impl ExampleFile {
-    fn new() -> ExampleFile {
-        ExampleFile {
-            data: Vec::from("Example"),
+impl LogFile {
+    fn new() -> LogFile {
+        LogFile {
+            data: Vec::from("Log"),
             seek: 0,
         }
     }
 
     fn path(&mut self, buf: &mut [u8]) -> Result<usize> {
         let mut i = 0;
-        let path = b"example:/file";
+        let path = b"log:/file";
         while i < buf.len() && i < path.len() {
             buf[i] = path[i];
             i += 1;
@@ -77,21 +77,21 @@ impl ExampleFile {
     }
 }
 
-struct ExampleScheme {
+struct LogScheme {
     next_id: isize,
-    files: BTreeMap<usize, ExampleFile>
+    files: BTreeMap<usize, LogFile>
 }
 
-impl ExampleScheme {
-    fn new() -> ExampleScheme {
-        ExampleScheme {
+impl LogScheme {
+    fn new() -> LogScheme {
+        LogScheme {
             next_id: 1,
             files: BTreeMap::new()
         }
     }
 }
 
-impl Scheme for ExampleScheme {
+impl Scheme for LogScheme {
     fn open(&mut self, path: &str, flags: usize, mode: usize) -> Result<usize> {
         println!("open {:X} = {}, {:X}, {:X}", path.as_ptr() as usize, path, flags, mode);
         let id = self.next_id as usize;
@@ -99,7 +99,7 @@ impl Scheme for ExampleScheme {
         if self.next_id < 0 {
             self.next_id = 1;
         }
-        self.files.insert(id, ExampleFile::new());
+        self.files.insert(id, LogFile::new());
         Ok(id)
     }
 
@@ -182,16 +182,14 @@ impl Scheme for ExampleScheme {
 }
 
 fn main() {
-   //In order to handle example:, we create :example
-   let mut scheme = ExampleScheme::new();
-   let mut socket = File::create(":example").unwrap();
+   let mut scheme = LogScheme::new();
+   let mut socket = File::create(":log").unwrap();
+   println!("Logger started on log:");
    loop {
        let mut packet = Packet::default();
        while socket.read(&mut packet).unwrap() == size_of::<Packet>() {
-           //println!("Recv {:?}", packet);
            scheme.handle(&mut packet);
            socket.write(&packet).unwrap();
-           //println!("Sent {:?}", packet);
        }
 
        thread::yield_now();

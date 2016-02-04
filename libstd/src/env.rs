@@ -29,13 +29,18 @@ impl Iterator for Args {
             None
         }
     }
-}
 
-impl ExactSizeIterator for Args {
-    fn len(&self) -> usize {
-        unsafe { (*_args).len() }
+    fn size_hint(&self) -> (usize, Option<usize>) {
+        let len = if self.i <= unsafe { (*_args).len() } {
+            unsafe { (*_args).len() - self.i }
+        } else {
+            0
+        };
+        (len, Some(len))
     }
 }
+
+impl ExactSizeIterator for Args {}
 
 /// Arguments
 pub fn args() -> Args {
