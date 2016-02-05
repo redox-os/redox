@@ -92,7 +92,7 @@ long_mode:
 
     mov rax, gdt.tss
     ltr ax
-    xchg bx, bx
+
     ;rust init
     xor rax, rax
     mov [0x100000], rax
