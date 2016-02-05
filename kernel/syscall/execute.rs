@@ -30,59 +30,66 @@ fn execute_inner(url: &Url, args: &Vec<String>) -> Result<(*mut Context, usize)>
         }
     }
 
-    let executable = Elf::from_data(vec.as_ptr() as usize);
-    let entry = unsafe { executable.entry() };
-    let mut memory = Vec::new();
-    unsafe {
-        for segment in executable.load_segment().iter() {
-            let virtual_address = segment.vaddr as usize;
-            let virtual_size = segment.mem_len as usize;
+    match Elf::from(&vec) {
+        Ok(executable) => {
+            let entry = unsafe { executable.entry() };
+            let mut memory = Vec::new();
+            unsafe {
+                for segment in executable.load_segment().iter() {
+                    let virtual_address = segment.vaddr as usize;
+                    let virtual_size = segment.mem_len as usize;
 
-            let offset = virtual_address % 4096;
+                    let offset = virtual_address % 4096;
 
-            let physical_address = memory::alloc(virtual_size + offset);
+                    let physical_address = memory::alloc(virtual_size + offset);
 
-            if physical_address > 0 {
-                // Copy progbits
-                ::memcpy((physical_address + offset) as *mut u8,
-                         (executable.data + segment.off as usize) as *const u8,
-                         segment.file_len as usize);
-                // Zero bss
-                if segment.mem_len > segment.file_len {
-                    ::memset((physical_address + offset + segment.file_len as usize) as *mut u8,
-                            0,
-                            segment.mem_len as usize - segment.file_len as usize);
+                    if physical_address > 0 {
+                        // Copy progbits
+                        ::memcpy((physical_address + offset) as *mut u8,
+                                 (executable.data.as_ptr() as usize + segment.off as usize) as *const u8,
+                                 segment.file_len as usize);
+                        // Zero bss
+                        if segment.mem_len > segment.file_len {
+                            ::memset((physical_address + offset + segment.file_len as usize) as *mut u8,
+                                    0,
+                                    segment.mem_len as usize - segment.file_len as usize);
+                        }
+
+                        memory.push(ContextMemory {
+                            physical_address: physical_address,
+                            virtual_address: virtual_address - offset,
+                            virtual_size: virtual_size + offset,
+                            writeable: segment.flags & 2 == 2,
+                            allocated: true,
+                        });
+                    }
                 }
-
-                memory.push(ContextMemory {
-                    physical_address: physical_address,
-                    virtual_address: virtual_address - offset,
-                    virtual_size: virtual_size + offset,
-                    writeable: segment.flags & 2 == 2,
-                    allocated: true,
-                });
             }
-        }
-    }
 
-    if entry > 0 && ! memory.is_empty() {
-        let mut contexts = ::env().contexts.lock();
-        if let Some(mut context) = contexts.current_mut() {
-            if let Some(arg) = args.get(0) {
-                context.name = arg.clone();
+            if entry > 0 && ! memory.is_empty() {
+                let mut contexts = ::env().contexts.lock();
+                if let Some(mut context) = contexts.current_mut() {
+                    if let Some(arg) = args.get(0) {
+                        context.name = arg.clone();
+                    }
+                    context.cwd = Arc::new(UnsafeCell::new(unsafe { (*context.cwd.get()).clone() }));
+
+                    unsafe { context.unmap() };
+                    context.memory = Arc::new(UnsafeCell::new(memory));
+                    unsafe { context.map() };
+
+                    Ok((context.deref_mut(), entry))
+                } else {
+                    Err(Error::new(ESRCH))
+                }
+            } else {
+                Err(Error::new(ENOEXEC))
             }
-            context.cwd = Arc::new(UnsafeCell::new(unsafe { (*context.cwd.get()).clone() }));
-
-            unsafe { context.unmap() };
-            context.memory = Arc::new(UnsafeCell::new(memory));
-            unsafe { context.map() };
-
-            Ok((context.deref_mut(), entry))
-        } else {
-            Err(Error::new(ESRCH))
+        },
+        Err(msg) => {
+            debugln!("execute: failed to exec '{}': {}", url.string, msg);
+            Err(Error::new(ENOEXEC))
         }
-    } else {
-        Err(Error::new(ENOEXEC))
     }
 }
 
