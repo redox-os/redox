@@ -92,7 +92,7 @@ long_mode:
 
     mov rax, gdt.tss
     ltr ax
-
+    xchg bx, bx
     ;rust init
     xor rax, rax
     mov [0x100000], rax
@@ -140,10 +140,7 @@ struc GDTEntry
         .data_reserved equ 1 << 5
     .baseh resb 1
 endstruc
-struc GDTEntry64
-    .extended_address resd 1
-    .reserved resd 1
-endstruc
+
 gdtr:
     dw gdt.end + 1  ; size
     dq gdt          ; offset
