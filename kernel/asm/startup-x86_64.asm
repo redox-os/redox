@@ -97,6 +97,7 @@ long_mode:
     xor rax, rax
     mov [0x100000], rax
     mov rax, [kernel_file + 0x18]
+    add rax, kernel_file
     mov [interrupts.handler], rax
     mov rax, tss
     int 0xFF
