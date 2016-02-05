@@ -282,7 +282,7 @@ $(BUILD)/kernel.rlib: kernel/main.rs kernel/*.rs kernel/*/*.rs kernel/*/*/*.rs $
 	$(RUSTC) $(RUSTCFLAGS) -C lto -o $@ $<
 
 $(BUILD)/kernel.bin: $(BUILD)/kernel.rlib kernel/kernel.ld
-	$(LD) $(LDARGS) -o $@ -T kernel/kernel.ld $<
+	$(LD) $(LDARGS) -o $@ -T kernel/kernel.ld -z max-page-size=0x1000 $<
 
 $(BUILD)/kernel.list: $(BUILD)/kernel.bin
 	$(OBJDUMP) -C -M intel -D $< > $@

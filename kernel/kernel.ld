@@ -1,33 +1,33 @@
 ENTRY(kernel)
 
-MEMORY {
-	lowmem : org = 0xC000, l = 464K
-}
-
 SECTIONS {
-	.text : {
-		*(.text*)
-	} >lowmem
+	. = 0xC000;
 
-	.rodata : {
-            *(.rodata*)
-    } >lowmem
+    .text : AT(ADDR(.text) - 0xC000) {
+        *(.text*)
+		. = ALIGN(4096);
+    }
 
-    .data : {
-            *(.data*)
-    } >lowmem
+	.rodata : AT(ADDR(.rodata) - 0xC000) {
+        *(.rodata*)
+		. = ALIGN(4096);
+    }
 
-	.bss : {
-		. = ALIGN(4);
-		__bss_start = .;
-		*(.bss*)
-		. = ALIGN(4);
-		__bss_end = .;
-	} >lowmem
+    .data : AT(ADDR(.data) - 0xC000) {
+        *(.data*)
+		. = ALIGN(4096);
+    }
 
-	/DISCARD/ : {
-		*(.comment)
-		*(.eh_frame)
-		*(.rel.eh_frame)
-	}
+    .bss : AT(ADDR(.bss) - 0xC000) {
+        __bss_start = .;
+        *(.bss*)
+        . = ALIGN(4096);
+        __bss_end = .;
+    }
+
+    /DISCARD/ : {
+        *(.comment)
+        *(.eh_frame)
+        *(.rel.eh_frame)
+    }
 }
