@@ -107,13 +107,13 @@ line: db 13,10,0
 disk: db 0
 
 DAPACK:
-        db	0x10
-        db	0
-.count: dw	0	; int 13 resets this to # of blocks actually read/written
-.buf:   dw	0 ; memory buffer destination address (0:7c00)
-.seg:   dw	0	; in memory page zero
-.addr:  dd	0	; put the lba to read in this spot
-        dd	0	; more storage bytes only for big lba's ( > 4 bytes )
+        db 0x10
+        db 0
+.count: dw 0 ; int 13 resets this to # of blocks actually read/written
+.buf:   dw 0 ; memory buffer destination address (0:7c00)
+.seg:   dw 0 ; in memory page zero
+.addr:  dd 0 ; put the lba to read in this spot
+        dd 0 ; more storage bytes only for big lba's ( > 4 bytes )
 
 times 510-($-$$) db 0
 db 0x55
