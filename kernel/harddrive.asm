@@ -24,6 +24,7 @@ fs_header:
 %ifdef ARCH_x86_64
     %include "asm/startup-x86_64.asm"
 %endif
+startup_end:
 
 times (0xC000-0x1000)-0x7C00-($-$$) db 0
 
