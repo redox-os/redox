@@ -1,29 +1,29 @@
 startup:
-  ; a20
-  in al, 0x92
-  or al, 2
-  out 0x92, al
+    ; a20
+    in al, 0x92
+    or al, 2
+    out 0x92, al
 
-  call memory_map
+    call memory_map
 
-  call vesa
+    call vesa
 
-  call initialize.fpu
-  call initialize.sse
-  call initialize.pit
-  call initialize.pic
+    call initialize.fpu
+    call initialize.sse
+    call initialize.pit
+    call initialize.pic
 
-  ; load protected mode GDT and IDT
-  cli
-  lgdt [gdtr]
-  lidt [idtr]
-  ; set protected mode bit of cr0
-  mov eax, cr0
-  or eax, 1
-  mov cr0, eax
+    ; load protected mode GDT and IDT
+    cli
+    lgdt [gdtr]
+    lidt [idtr]
+    ; set protected mode bit of cr0
+    mov eax, cr0
+    or eax, 1
+    mov cr0, eax
 
-  ; far jump to load CS with 32 bit segment
-  jmp gdt.kernel_code:protected_mode
+    ; far jump to load CS with 32 bit segment
+    jmp gdt.kernel_code:protected_mode
 
 %include "asm/memory_map.asm"
 %include "asm/vesa.asm"

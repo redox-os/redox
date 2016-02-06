@@ -22,9 +22,9 @@ boot: ; dl comes with disk
     call print_num
     call print_line
 
-    mov ax, (fs_header - boot)/512
+    mov ax, (fs_header - boot) / 512
     mov bx, fs_header
-    mov cx, (kernel_file.end - fs_header)/512
+    mov cx, (kernel_file.end - fs_header) / 512
     xor dx, dx
     call load
 
@@ -132,13 +132,13 @@ print:
     ret
 
 error:
-  mov si, errored
-  call print
-  call print_line
+    mov si, errored
+    call print
+    call print_line
 .halt:
-  cli
-  hlt
-  jmp .halt
+    cli
+    hlt
+    jmp .halt
 
 name: db "Redox Loader",0
 loading: db "Loading",0

@@ -1,4 +1,4 @@
-%include "asm/sector.asm"
+%include "asm/bootsector.asm"
 
 fs_header:
 .signature:

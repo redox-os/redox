@@ -76,35 +76,35 @@ idt:
 
 ;Below system call
 %rep 128
-	istruc IDTEntry
-		at IDTEntry.offsetl, dw interrupts+(interrupts.second-interrupts.first)*i
-		at IDTEntry.selector, dw gdt.kernel_code
+    istruc IDTEntry
+        at IDTEntry.offsetl, dw interrupts+(interrupts.second-interrupts.first)*i
+        at IDTEntry.selector, dw gdt.kernel_code
         at IDTEntry.zero, db 0
-		at IDTEntry.attribute, db IDTEntry.present | IDTEntry.interrupt32
+        at IDTEntry.attribute, db IDTEntry.present | IDTEntry.interrupt32
         at IDTEntry.offseth, dw 0
-	iend
+    iend
 %assign i i+1
 %endrep
 
 ;System call
 istruc IDTEntry
-	at IDTEntry.offsetl, dw interrupts+(interrupts.second-interrupts.first)*i
-	at IDTEntry.selector, dw gdt.kernel_code
+    at IDTEntry.offsetl, dw interrupts+(interrupts.second-interrupts.first)*i
+    at IDTEntry.selector, dw gdt.kernel_code
     at IDTEntry.zero, db 0
-	at IDTEntry.attribute, db IDTEntry.ring3 | IDTEntry.present | IDTEntry.interrupt32
+    at IDTEntry.attribute, db IDTEntry.ring3 | IDTEntry.present | IDTEntry.interrupt32
     at IDTEntry.offseth, dw 0
 iend
 %assign i i+1
 
 ;Above system call
 %rep 127
-	istruc IDTEntry
-		at IDTEntry.offsetl, dw interrupts+(interrupts.second-interrupts.first)*i
-		at IDTEntry.selector, dw gdt.kernel_code
+    istruc IDTEntry
+        at IDTEntry.offsetl, dw interrupts+(interrupts.second-interrupts.first)*i
+        at IDTEntry.selector, dw gdt.kernel_code
         at IDTEntry.zero, db 0
-		at IDTEntry.attribute, db IDTEntry.present | IDTEntry.interrupt32
+        at IDTEntry.attribute, db IDTEntry.present | IDTEntry.interrupt32
         at IDTEntry.offseth, dw 0
-	iend
+    iend
 %assign i i+1
 %endrep
 idt_end:
