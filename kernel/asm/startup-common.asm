@@ -18,7 +18,7 @@ buffer_size_bytes equ buffer_size_sectors * 512
 kernel_base equ 0x100000
 
     ; how often do we need to call load and move memory
-    mov cx, kernel_file.length_sectors / buffer_size_sectors
+    mov ecx, kernel_file.length_sectors / buffer_size_sectors
 
     mov ax, (kernel_file - boot) / 512
     mov edi, kernel_base
@@ -52,6 +52,9 @@ kernel_base equ 0x100000
 
     ; load the part of the kernel that does not fill the buffer completely
     mov cx, kernel_file.length_sectors % buffer_size_sectors
+    test cx, cx
+    jz finished_loading ; if cx = 0 => skip
+
     mov bx, startup_end
     mov dx, 0x0
     call load
@@ -62,6 +65,8 @@ kernel_base equ 0x100000
     mov esi, startup_end
     mov ecx, (kernel_file.length_sectors % buffer_size_bytes) / 4
     a32 rep movsd
+finished_loading:
+
 
     call memory_map
 
