@@ -10,7 +10,7 @@ startup:
 
 ; buffersize in multiple of sectors (512 Bytes)
 ; min 1
-; max (0x80000 - startup_end) / 512
+; max (0x70000 - startup_end) / 512
 buffer_size_sectors equ 64
 ; buffer size in Bytes
 buffer_size_bytes equ buffer_size_sectors * 512
