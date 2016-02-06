@@ -6,12 +6,12 @@ fs_header:
 .version:
     dq 1
 .free_space:
-    dq (fs_free_space - boot)/512
+    dq (fs_free_space - boot) / 512
     dq (fs_free_space.end - fs_free_space)
 .padding:
     align 256, db 0
 .extents:
-    dq (fs_root_node_list - boot)/512
+    dq (fs_root_node_list - boot) / 512
     dq (fs_root_node_list.end - fs_root_node_list)
 
     align 512, db 0
@@ -45,7 +45,7 @@ fs_root_node_list:
         align 256, db 0
 
     .extents:
-        dq (fs_data.%1 - boot)/512
+        dq (fs_data.%1 - boot) / 512
         dq (fs_data.%1.end - fs_data.%1)
 
         align 512, db 0
