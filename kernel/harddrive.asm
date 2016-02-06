@@ -24,14 +24,17 @@ fs_header:
 %ifdef ARCH_x86_64
     %include "asm/startup-x86_64.asm"
 %endif
+align 512, db 0
 startup_end:
 
-times (0xC000-0x1000)-0x7C00-($-$$) db 0
+;times (0xC000-0x1000)-0x7C00-($-$$) db 0
 
 kernel_file:
   incbin "kernel.bin"
   align 512, db 0
 .end:
+.length equ kernel_file.end - kernel_file
+.length_sectors equ .length / 512
 
 fs_root_node_list:
 %macro file 2+

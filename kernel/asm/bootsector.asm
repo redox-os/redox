@@ -1,6 +1,5 @@
-use16
-
-org 0x7C00
+ORG 0x7C00
+USE16
 
 boot: ; dl comes with disk
     ; initialize segment registers
@@ -35,6 +34,17 @@ boot: ; dl comes with disk
 
     jmp startup
 
+; load some sectors from disk to a buffer in memory
+; buffer has to be below 1MiB
+; IN
+;   ax: start sector
+;   bx: offset of buffer
+;   cx: number of sectors (512 Bytes each)
+;   dx: segment of buffer
+; CLOBBER
+;   ax, bx, cx, dx, si
+; TODO rewrite to (eventually) move larger parts at once
+; if that is done increase buffer_size_sectors in startup-common to that (max 0x80000 - startup_end)
 load:
     cmp cx, 64
     jbe .good_size
@@ -96,7 +106,7 @@ error:
     hlt
     jmp .halt
 
-    %include "asm/print16.asm"
+%include "asm/print16.asm"
 
 name: db "Redox Loader",0
 loading: db "Loading",0

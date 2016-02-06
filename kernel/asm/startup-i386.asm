@@ -1,5 +1,6 @@
 %include "asm/startup-common.asm"
 
+startup_arch:
     ; load protected mode GDT and IDT
     cli
     lgdt [gdtr]
@@ -12,12 +13,8 @@
     ; far jump to load CS with 32 bit segment
     jmp gdt.kernel_code:protected_mode
 
-%include "asm/memory_map.asm"
-%include "asm/vesa.asm"
-%include "asm/initialize.asm"
-
+USE32
 protected_mode:
-    use32
 
     ; load all the other segments with 32 bit data segments
     mov eax, gdt.kernel_data
@@ -46,7 +43,7 @@ protected_mode:
 
 gdtr:
     dw gdt.end + 1  ; size
-    dd gdt                  ; offset
+    dd gdt          ; offset
 
 gdt:
 .null equ $ - gdt

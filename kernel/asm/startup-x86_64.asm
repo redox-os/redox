@@ -57,10 +57,6 @@
     ; far jump to enable Long Mode and load CS with 32 bit segment
     jmp 0x08:long_mode
 
-%include "asm/memory_map.asm"
-%include "asm/vesa.asm"
-%include "asm/initialize.asm"
-
 long_mode:
     use64
 
