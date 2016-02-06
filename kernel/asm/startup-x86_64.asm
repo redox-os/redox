@@ -59,7 +59,6 @@ startup_arch:
 
 USE64
 long_mode:
-    xchg bx, bx
     ; load all the other segments with 64 bit data segments
     mov rax, gdt.kernel_data
     mov ds, rax
