@@ -30,8 +30,6 @@ protected_mode:
     ltr ax
 
     ;rust init
-    xor eax, eax
-    xchg bx, bx
     mov eax, [kernel_base + 0x18]
     mov [interrupts.handler], eax
     mov eax, tss
