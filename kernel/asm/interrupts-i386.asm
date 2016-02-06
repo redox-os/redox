@@ -19,12 +19,12 @@ endstruc
 [BITS 32]
 interrupts:
 .first:
-    mov [0x100000], byte 0
+    mov [.entry], byte 0
     jmp dword .handle
 .second:
 %assign i 1
 %rep 255
-    mov [0x100000], byte i
+    mov [.entry], byte i
     jmp dword .handle
 %assign i i+1
 %endrep
@@ -37,7 +37,7 @@ interrupts:
     push ebx
     push eax
     push esp
-    push dword [0x100000]
+    push dword [.entry]
 
     mov eax, gdt.kernel_data
     mov ds, eax

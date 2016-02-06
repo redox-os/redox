@@ -74,28 +74,8 @@ kernel_base equ 0x100000
 
     jmp startup_arch
 
+%include "asm/gdt_entry.inc"
 %include "asm/unreal.asm"
 %include "asm/memory_map.asm"
 %include "asm/vesa.asm"
 %include "asm/initialize.asm"
-
-%include "asm/gdt_entry.inc"
-
-unreal_gdtr:
-    dw unreal_gdt.end + 1  ; size
-    dd unreal_gdt          ; offset
-
-unreal_gdt:
-.null equ $ - unreal_gdt
-    dq 0
-.data equ $ - unreal_gdt
-    istruc GDTEntry
-        at GDTEntry.limitl,        dw 0xFFFF
-        at GDTEntry.basel,         dw 0x0
-        at GDTEntry.basem,         db 0x0
-        at GDTEntry.access,        db GDTEntry.present | GDTEntry.user | GDTEntry.data_writable
-        at GDTEntry.flags__limith, db 0xFF | GDTEntry.granularity | GDTEntry.default_operand_size
-        at GDTEntry.baseh,         db 0x0
-
-    iend
-.end equ $ - unreal_gdt
