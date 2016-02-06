@@ -8,6 +8,7 @@ boot: ; dl comes with disk
     mov ds, ax
     mov es, ax
     mov ss, ax
+
     ; initialize stack
     mov sp, 0x7C00
 
@@ -24,7 +25,7 @@ boot: ; dl comes with disk
 
     mov ax, (fs_header - boot) / 512
     mov bx, fs_header
-    mov cx, (kernel_file.end - fs_header) / 512
+    mov cx, (startup_end - fs_header) / 512
     xor dx, dx
     call load
 
@@ -43,7 +44,7 @@ load:
     call load
     popa
     add ax, 64
-    add dx, 64*512/16
+    add dx, 64 * 512 / 16
     sub cx, 64
 
     jmp load
@@ -86,51 +87,6 @@ load:
     jc error
     ret
 
-print_char:
-    mov ah, 0x0e
-    int 0x10
-    ret
-
-print_num:
-    mov cx, 4
-.loop:
-    mov al, bh
-    shr al, 4
-    and al, 0xF
-
-    cmp al, 0xA
-    jb .below_a
-
-    add al, 'A' - '0' - 0xA
-.below_a:
-    add al, '0'
-
-    push cx
-    push bx
-    call print_char
-    pop bx
-    pop cx
-
-    shl bx, 4
-    loop .loop
-
-    ret
-
-print_line:
-    mov si, line
-    call print
-    ret
-
-print:
-.loop:
-    lodsb
-    or al, al
-    jz .done
-    call print_char
-    jmp .loop
-.done:
-    ret
-
 error:
     mov si, errored
     call print
@@ -139,6 +95,8 @@ error:
     cli
     hlt
     jmp .halt
+
+    %include "asm/print16.asm"
 
 name: db "Redox Loader",0
 loading: db "Loading",0

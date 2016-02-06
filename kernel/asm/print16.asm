@@ -4,7 +4,7 @@ SECTION .text
 USE16
 
 ; a newline
-newline: db 13, 10, 0
+newline: db 0xD, 0xA, 0
 
 ; print a string and a newline
 ; IN
@@ -12,7 +12,6 @@ newline: db 13, 10, 0
 ; CLOBBER
 ;   ax
 print_line:
-    call print
     mov si, newline
     call print
     ret
