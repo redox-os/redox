@@ -3,8 +3,8 @@
 startup_arch:
     cli
     ; setting up Page Tables
-    ; Identity Mapping first 512GB
-    mov ax, 0x500
+    ; Identity Mapping first GB
+    mov ax, 0x7000
     mov es, ax
 
     xor edi, edi
@@ -15,12 +15,12 @@ startup_arch:
 
     xor edi, edi
     ;Link first PML4 to PDP
-    mov DWORD [es:edi], 0x6000 | 1 << 1 | 1
+    mov DWORD [es:edi], 0x71000 | 1 << 1 | 1
     add edi, 0x1000
     ;Link first PDP to PD
-    mov DWORD [es:edi], 0x7000 | 1 << 1 | 1
+    mov DWORD [es:edi], 0x72000 | 1 << 1 | 1
     add edi, 0x1000
-    ;Link all PD's (512 per PDP) to 1 GB of memory
+    ;Link all PD's (512 per PDP, 2MB each)y
     mov ebx, 1 << 7 | 1 << 1 | 1
     mov ecx, 512
 .setpd:
@@ -33,7 +33,7 @@ startup_arch:
     mov es, ax
 
     ;cr3 holds pointer to PML4
-    mov edi, 0x5000
+    mov edi, 0x70000
     mov cr3, edi
 
     ;enable Page Address Extension and Page Size Extension
