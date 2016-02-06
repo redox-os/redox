@@ -35,7 +35,6 @@ kernel_base equ 0x100000
         mov bx, startup_end
         mov dx, 0x0
 
-; TODO test if other registers are affected
         push ax
         call load
 
