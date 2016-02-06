@@ -24,7 +24,6 @@ kernel_base equ 0x100000
     mov edi, kernel_base
     cld
 .lp:
-xchg bx, bx
     ; saving counter
     push cx
 
@@ -50,7 +49,6 @@ xchg bx, bx
 
     pop cx
     loop .lp
-    xchg bx, bx
 
     ; load the part of the kernel that does not fill the buffer completely
     mov cx, kernel_file.length_sectors % buffer_size_sectors
@@ -58,16 +56,13 @@ xchg bx, bx
     mov dx, 0x0
     call load
 
-    xchg bx, bx
     ; moving remnants of kernel
     call unreal
 
-    xchg bx, bx
     mov esi, startup_end
     mov ecx, (kernel_file.length_sectors % buffer_size_bytes) / 4
     a32 rep movsd
 
-    xchg bx, bx
     call memory_map
 
     call vesa
@@ -77,7 +72,6 @@ xchg bx, bx
     call initialize.pit
     call initialize.pic
 
-    xchg bx, bx
     jmp startup_arch
 
 %include "asm/unreal.asm"
