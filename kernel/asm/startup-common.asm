@@ -81,6 +81,7 @@ finished_loading:
 
     jmp startup_arch
 
+%include "asm/descriptor_flags.inc"
 %include "asm/gdt_entry.inc"
 %include "asm/unreal.asm"
 %include "asm/memory_map.asm"
