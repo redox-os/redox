@@ -15,8 +15,9 @@ struc IDTEntry
     .offseth resw 1
 endstruc
 
-[section .text]
-[BITS 32]
+SECTION .text
+USE32
+
 interrupts:
 .first:
     mov [.entry], byte 0
@@ -69,7 +70,7 @@ interrupts:
 .entry: dd 0
 
 idtr:
-    dw (idt_end - idt) + 1
+    dw (idt.end - idt) + 1
     dd idt
 
 idt:
@@ -108,4 +109,4 @@ iend
     iend
 %assign i i+1
 %endrep
-idt_end:
+.end:
