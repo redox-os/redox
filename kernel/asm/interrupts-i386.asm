@@ -66,6 +66,7 @@ interrupts:
     iretd
 
 .handler: dd 0
+.entry: dd 0
 
 idtr:
     dw (idt_end - idt) + 1
