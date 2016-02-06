@@ -1,3 +1,6 @@
+SECTION .text
+USE16
+
 startup:
     ; enable A20-Line via IO-Port 92, might not work on all motherboards
     in al, 0x92

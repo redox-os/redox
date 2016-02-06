@@ -1,3 +1,6 @@
+SECTION .text
+USE16
+
 ; switch to unreal mode; ds and es can address up to 4GiB
 unreal:
     cli

@@ -1,7 +1,7 @@
-; provide function for printing in x86 real mode
-
 SECTION .text
 USE16
+; provide function for printing in x86 real mode
+
 
 ; a newline
 newline: db 0xD, 0xA, 0

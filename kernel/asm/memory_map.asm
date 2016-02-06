@@ -1,5 +1,5 @@
 SECTION .text
-[BITS 16]
+USE16
 ;Generate a memory map at 0x500 to 0x5000 (available memory not used for kernel or bootloader)
 memory_map:
 .start  equ 0x0500

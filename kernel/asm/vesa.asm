@@ -1,6 +1,6 @@
 %include "asm/vesa.inc"
-[section .text]
-[BITS 16]
+SECTION .text
+USE16
 vesa:
 .getcardinfo:
     mov ax, 0x4F00

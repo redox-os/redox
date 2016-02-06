@@ -1,4 +1,5 @@
 ORG 0x7C00
+SECTION .text
 USE16
 
 boot: ; dl comes with disk

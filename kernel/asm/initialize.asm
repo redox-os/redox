@@ -1,5 +1,6 @@
 SECTION .text
-[BITS 16]
+USE16
+
 initialize:
 .fpu: ;enable fpu
     mov eax, cr4
