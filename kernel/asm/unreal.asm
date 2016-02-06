@@ -47,8 +47,8 @@ unreal_gdt:
         at GDTEntry.limitl,        dw 0xFFFF
         at GDTEntry.basel,         dw 0x0
         at GDTEntry.basem,         db 0x0
-        at GDTEntry.access,        db GDTEntry.present | GDTEntry.user | GDTEntry.data_writable
-        at GDTEntry.flags__limith, db 0xFF | GDTEntry.granularity | GDTEntry.default_operand_size
+        at GDTEntry.attribute,        db attrib.present | attrib.user | attrib.writable
+        at GDTEntry.flags__limith, db 0xFF | flags.granularity | flags.default_operand_size
         at GDTEntry.baseh,         db 0x0
     iend
 .end equ $ - unreal_gdt

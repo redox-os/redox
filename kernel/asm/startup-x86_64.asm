@@ -98,8 +98,8 @@ long_mode:
         at GDTEntry.limitl, dw 0
         at GDTEntry.basel, dw 0
         at GDTEntry.basem, db 0
-        at GDTEntry.access, db GDTEntry.present | GDTEntry.user | GDTEntry.code
-        at GDTEntry.flags__limith, db GDTEntry.code_long_mode
+        at GDTEntry.attribute, db attrib.present | attrib.user | attrib.code
+        at GDTEntry.flags__limith, db flags.long_mode
         at GDTEntry.baseh, db 0
     iend
 
@@ -109,7 +109,7 @@ long_mode:
         at GDTEntry.basel, dw 0
         at GDTEntry.basem, db 0
     ; AMD System Programming Manual states that the writeable bit is ignored in long mode, but ss can not be set to this descriptor without it
-        at GDTEntry.access, db GDTEntry.present | GDTEntry.user | GDTEntry.data_writable
+        at GDTEntry.attribute, db attrib.present | attrib.user | attrib.writable
         at GDTEntry.flags__limith, db 0
         at GDTEntry.baseh, db 0
     iend
@@ -119,8 +119,8 @@ long_mode:
         at GDTEntry.limitl, dw 0
         at GDTEntry.basel, dw 0
         at GDTEntry.basem, db 0
-        at GDTEntry.access, db GDTEntry.present | GDTEntry.ring3 | GDTEntry.user | GDTEntry.code
-        at GDTEntry.flags__limith, db GDTEntry.code_long_mode
+        at GDTEntry.attribute, db attrib.present | attrib.ring3 | attrib.user | attrib.code
+        at GDTEntry.flags__limith, db flags.long_mode
         at GDTEntry.baseh, db 0
     iend
 
@@ -130,18 +130,18 @@ long_mode:
         at GDTEntry.basel, dw 0
         at GDTEntry.basem, db 0
     ; AMD System Programming Manual states that the writeable bit is ignored in long mode, but ss can not be set to this descriptor without it
-        at GDTEntry.access, db GDTEntry.present | GDTEntry.ring3 | GDTEntry.user | GDTEntry.data_writable
+        at GDTEntry.attribute, db attrib.present | attrib.ring3 | attrib.user | attrib.writable
         at GDTEntry.flags__limith, db 0
         at GDTEntry.baseh, db 0
     iend
 
     .tss equ $ - gdt
     istruc GDTEntry
-        at GDTEntry.limitl, dw (tss.end-tss) & 0xFFFF
+        at GDTEntry.limitl, dw (tss.end - tss) & 0xFFFF
         at GDTEntry.basel, dw (tss-$$+0x7C00) & 0xFFFF
         at GDTEntry.basem, db ((tss-$$+0x7C00) >> 16) & 0xFF
-        at GDTEntry.access, db GDTEntry.present | GDTEntry.ring3 | GDTEntry.tssAvailabe64
-        at GDTEntry.flags__limith, db ((tss.end-tss) >> 16) & 0xF
+        at GDTEntry.attribute, db attrib.present | attrib.ring3 | attrib.tssAvailabe64
+        at GDTEntry.flags__limith, db ((tss.end - tss) >> 16) & 0xF
         at GDTEntry.baseh, db ((tss-$$+0x7C00) >> 24) & 0xFF
     iend
     dq 0 ;tss descriptors are extended to 16 Bytes
