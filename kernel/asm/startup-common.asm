@@ -1,5 +1,5 @@
 startup:
-    xchg bx, bx
+    ; enable A20-Line via IO-Port 92, might not work on all motherboards
     in al, 0x92
     or al, 2
     out 0x92, al

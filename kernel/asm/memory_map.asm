@@ -2,13 +2,17 @@ SECTION .text
 [BITS 16]
 ;Generate a memory map at 0x500 to 0x5000 (available memory not used for kernel or bootloader)
 memory_map:
+.start  equ 0x0500
+.end    equ 0x5000
+.length equ .end - .start
+
     xor eax, eax
-    mov di, 0x500
-    mov ecx, (0x5000 - 0x500) / 4 ; moving 4 Bytes at once
+    mov di, .start
+    mov ecx, .length / 4 ; moving 4 Bytes at once
     cld
     rep stosd
 
-    mov di, 0x500
+    mov di, .start
     mov edx, 0x534D4150
     xor ebx, ebx
 .lp:
@@ -22,7 +26,7 @@ memory_map:
     je .done ; Finished
 
     add di, 24
-    cmp di, 0x5000
+    cmp di, .end
     jb .lp ; Still have buffer space
 .done:
     ret
