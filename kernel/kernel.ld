@@ -1,24 +1,25 @@
 ENTRY(kernel)
 
 SECTIONS {
-	. = 0xC000;
+    kernel_base = 0x101000;
+	. = kernel_base;
 
-    .text : AT(ADDR(.text) - 0xC000) {
+    .text : AT(ADDR(.text) - kernel_base) {
         *(.text*)
 		. = ALIGN(4096);
     }
 
-	.rodata : AT(ADDR(.rodata) - 0xC000) {
+	.rodata : AT(ADDR(.rodata) - kernel_base) {
         *(.rodata*)
 		. = ALIGN(4096);
     }
 
-    .data : AT(ADDR(.data) - 0xC000) {
+    .data : AT(ADDR(.data) - kernel_base) {
         *(.data*)
 		. = ALIGN(4096);
     }
 
-    .bss : AT(ADDR(.bss) - 0xC000) {
+    .bss : AT(ADDR(.bss) - kernel_base) {
         __bss_start = .;
         *(.bss*)
         . = ALIGN(4096);
