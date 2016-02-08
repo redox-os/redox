@@ -1,10 +1,10 @@
-extern crate orbital;
+extern crate orbclient;
 
-use std::fs::File;
-
-use orbital::*;
-use std::io::*;
 use std::env;
+use std::fs::File;
+use std::io::*;
+
+use orbclient::*;
 
 pub struct Editor {
     url: String,

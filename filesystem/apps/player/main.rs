@@ -1,4 +1,4 @@
-extern crate orbital;
+extern crate orbclient;
 
 use std::fs::File;
 use std::env;
@@ -6,7 +6,7 @@ use std::io::{Read, Write};
 
 use wav::WavFile;
 
-use orbital::*;
+use orbclient::{EventOption, Window, K_ESC};
 
 mod wav;
 
