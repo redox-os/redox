@@ -1,6 +1,4 @@
-extern crate orbital;
-
-use orbital::{BmpFile, Color, EventOption, Window};
+extern crate orbclient;
 
 use std::env;
 use std::fs::File;
@@ -8,6 +6,8 @@ use std::get_slice::GetSlice;
 use std::io::Read;
 use std::process::Command;
 use std::thread;
+
+use orbclient::{BmpFile, Color, EventOption, Window};
 
 use package::Package;
 

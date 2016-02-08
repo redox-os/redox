@@ -2,7 +2,7 @@ use std::get_slice::GetSlice;
 use std::fs::File;
 use std::io::Read;
 
-use orbital::BmpFile;
+use orbclient::BmpFile;
 
 /// A package (_REDOX content serialized)
 pub struct Package {

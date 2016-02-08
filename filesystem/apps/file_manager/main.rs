@@ -1,6 +1,6 @@
 #![feature(iter_arith)]
 
-extern crate orbital;
+extern crate orbclient;
 
 use std::{cmp, env};
 use std::collections::BTreeMap;
@@ -11,7 +11,7 @@ use std::string::{String, ToString};
 use std::time::{self, Duration};
 use std::vec::Vec;
 
-use orbital::{event, BmpFile, Color, EventOption, MouseEvent, Window};
+use orbclient::{event, BmpFile, Color, EventOption, MouseEvent, Window};
 
 struct FileType {
     description: &'static str,

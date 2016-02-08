@@ -1,5 +1,5 @@
 
-use orbital::*;
+use orbclient::*;
 
 /// A console char
 pub struct ConsoleChar {

@@ -260,9 +260,6 @@ $(BUILD)/libgetopts.rlib: rust/src/libgetopts/lib.rs $(BUILD)/libserialize.rlib 
 $(BUILD)/librand.rlib: rust/src/librand/lib.rs $(BUILD)/libcore.rlib $(BUILD)/liballoc.rlib $(BUILD)/librustc_unicode.rlib $(BUILD)/libcollections.rlib
 	$(RUSTC) $(RUSTCFLAGS) -o $@ $<
 
-$(BUILD)/liborbital.rlib: liborbital/lib.rs liborbital/*.rs $(BUILD)/libstd.rlib
-	$(RUSTC) $(RUSTCFLAGS) --crate-name orbital -o $@ $<
-
 #Kernel stuff
 $(BUILD)/libio.rlib: crates/io/lib.rs crates/io/*.rs $(BUILD)/libcore.rlib
 	$(RUSTC) $(RUSTCFLAGS) -o $@ $<
@@ -335,13 +332,13 @@ $(BUILD)/libstd.rlib: FORCE $(BUILD)/libcore.rlib $(BUILD)/liballoc.rlib $(BUILD
 $(BUILD)/liborbclient.rlib: FORCE $(BUILD)/libstd.rlib
 	$(CARGO) --manifest-path crates/orbclient/Cargo.toml --lib $(CARGOFLAGS)
 
-$(BUILD)/liborbtk.rlib: FORCE $(BUILD)/libstd.rlib $(BUILD)/liborbital.rlib
+$(BUILD)/liborbtk.rlib: FORCE $(BUILD)/libstd.rlib $(BUILD)/liborbclient.rlib
 	$(CARGO) --manifest-path crates/orbtk/Cargo.toml --lib $(CARGOFLAGS)
 
 $(BUILD)/ion-shell.bin: FORCE $(BUILD)/libstd.rlib
 	$(CARGO) --manifest-path crates/ion/Cargo.toml --bin ion-shell $(CARGOFLAGS)
 
-$(BUILD)/sodium.bin: FORCE $(BUILD)/libstd.rlib $(BUILD)/liborbital.rlib
+$(BUILD)/sodium.bin: FORCE $(BUILD)/libstd.rlib $(BUILD)/liborbclient.rlib
 	$(CARGO) --manifest-path filesystem/apps/sodium/Cargo.toml --bin sodium --features orbital $(CARGOFLAGS)
 
 filesystem/apps/sodium/main.bin: $(BUILD)/sodium.bin
@@ -350,7 +347,7 @@ filesystem/apps/sodium/main.bin: $(BUILD)/sodium.bin
 filesystem/apps/example/main.bin: filesystem/apps/example/main.rs filesystem/apps/example/*.rs $(BUILD)/crt0.o $(BUILD)/libstd.rlib
 	$(RUSTC) $(RUSTCFLAGS) --crate-type bin -o $@ $<
 
-filesystem/apps/%/main.bin: filesystem/apps/%/main.rs filesystem/apps/%/*.rs $(BUILD)/crt0.o $(BUILD)/libstd.rlib $(BUILD)/liborbital.rlib $(BUILD)/liborbtk.rlib
+filesystem/apps/%/main.bin: filesystem/apps/%/main.rs filesystem/apps/%/*.rs $(BUILD)/crt0.o $(BUILD)/libstd.rlib $(BUILD)/liborbclient.rlib $(BUILD)/liborbtk.rlib
 	$(RUSTC) $(RUSTCFLAGS) --crate-type bin -o $@ $<
 
 filesystem/%.list: filesystem/%.bin

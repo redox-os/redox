@@ -1,10 +1,10 @@
-extern crate orbital;
+extern crate orbclient;
 
 use std::cmp::max;
 
 use std::*;
 
-use orbital::*;
+use orbclient::*;
 
 fn main() {
     let url = match env::args().nth(1) {

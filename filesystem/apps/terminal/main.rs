@@ -1,8 +1,8 @@
-extern crate orbital;
+extern crate orbclient;
 
 extern crate system;
 
-use orbital::Color;
+use orbclient::Color;
 
 use std::fs::File;
 use std::io::{Read, Write};
