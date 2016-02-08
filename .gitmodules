@@ -16,3 +16,6 @@
 [submodule "crates/orbclient"]
 	path = crates/orbclient
 	url = https://github.com/redox-os/orbclient
+[submodule "libc"]
+	path = libc
+	url = https://github.com/redox-os/libc.git
