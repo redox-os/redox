@@ -87,7 +87,7 @@ else
 	endif
 endif
 
-.PHONY: help all doc apps bins tests clean \
+.PHONY: help all doc apps bins clean \
 	bochs \
 	qemu qemu_bare qemu_tap \
 	virtualbox virtualbox_tap \
@@ -122,9 +122,6 @@ help:
 	@echo
 	@echo "    make apps"
 	@echo "        Build apps for Redox."
-	@echo
-	@echo "    make tests"
-	@echo "        Run tests on Redox."
 	@echo
 	@echo "    make clean"
 	@echo "        Clean build directory."
@@ -196,8 +193,6 @@ bins: filesystem/bin \
 		filesystem/bin/zfs
 	#filesystem/bin/env filesystem/bin/yes
 
-tests: tests/success tests/failure
-
 test: kernel/main.rs \
 	  rust/src/libtest/lib.rs \
 	  $(BUILD)/libcore.rlib \
@@ -210,9 +205,6 @@ clean:
 	$(RM) -rf build doc filesystem/*.bin filesystem/*.list filesystem/apps/*/*.bin filesystem/apps/*/*.list filesystem/schemes/*/*.bin filesystem/schemes/*/*.list filesystem/bin/
 
 FORCE:
-
-tests/%: FORCE
-	@$(SHELL) $@ && echo "$*: PASSED" || echo "$*: FAILED"
 
 doc/core: rust/src/libcore/lib.rs $(BUILD)/libcore.rlib
 	$(RUSTDOC) $<
