@@ -5,6 +5,7 @@
 //! support and windowing, a basic filesystem, audio support, a simple console
 //! with shell style functions, an event system, and environment argument support.
 
+#![crate_name="std"]
 #![crate_type="rlib"]
 #![feature(alloc)]
 #![feature(allocator)]
