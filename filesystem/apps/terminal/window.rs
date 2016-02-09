@@ -127,8 +127,8 @@ impl ConsoleWindow {
                                             while self.history.len() > 1000 {
                                                 self.history.pop();
                                             }
-                                            self.print(&command, Color::WHITE);
-                                            self.print("\n", Color::WHITE);
+                                            self.print(&command, Color::rgb(255, 255, 255));
+                                            self.print("\n", Color::rgb(255, 255, 255));
                                             return Some(command);
                                         }
                                         '\x1B' => (),
@@ -164,7 +164,7 @@ impl ConsoleWindow {
         let rows = self.window.height() as i32 / 16;
 
         {
-            self.window.set(Color::BLACK);
+            self.window.set(Color::rgb(0, 0, 0));
 
             for c in self.output.iter() {
                 if self.wrap && col >= cols {
@@ -193,7 +193,7 @@ impl ConsoleWindow {
                 }
 
                 if self.offset == i && col >= 0 && col < cols && row >= 0 && row < rows {
-                    self.window.char(8 * col, 16 * row, '_', Color::WHITE);
+                    self.window.char(8 * col, 16 * row, '_', Color::rgb(255, 255, 255));
                 }
 
                 if c == '\n' {
@@ -203,7 +203,7 @@ impl ConsoleWindow {
                     col += 8 - col % 8;
                 } else {
                     if col >= 0 && col < cols && row >= 0 && row < rows {
-                        self.window.char(8 * col, 16 * row, c, Color::WHITE);
+                        self.window.char(8 * col, 16 * row, c, Color::rgb(255, 255, 255));
                     }
                     col += 1;
                 }
@@ -217,7 +217,7 @@ impl ConsoleWindow {
             }
 
             if self.offset == i && col >= 0 && col < cols && row >= 0 && row < rows {
-                self.window.char(8 * col, 16 * row, '_', Color::WHITE);
+                self.window.char(8 * col, 16 * row, '_', Color::rgb(255, 255, 255));
             }
         }
 

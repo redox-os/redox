@@ -77,7 +77,7 @@ impl Editor {
 
         {
             let gray = Color::rgba(128, 128, 128, 128);
-            window.set(Color::WHITE);
+            window.set(Color::rgb(255, 255, 255));
 
             let scroll_x = self.scroll_x;
             let scroll_y = self.scroll_y;
@@ -121,7 +121,7 @@ impl Editor {
                     col += 8 - col % 8;
                 } else {
                     if col >= 0 && col < cols && row >= 0 && row < rows {
-                        window.char(8 * col, 16 * row, c, Color::BLACK);
+                        window.char(8 * col, 16 * row, c, Color::rgb(0, 0, 0));
                     }
                     col += 1;
                 }

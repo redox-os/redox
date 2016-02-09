@@ -134,7 +134,7 @@ impl FileManager {
     }
 
     fn draw_content(&mut self) {
-        self.window.set(Color::WHITE);
+        self.window.set(Color::rgb(255, 255, 255));
 
         let mut i = 0;
         let mut row = 0;
@@ -183,7 +183,7 @@ impl FileManager {
                     col += 8 - col % 8;
                 } else {
                     if col < self.window.width() / 8 && row < self.window.height() / 32 {
-                        self.window.char(8 * col as i32 + 40, 32 * row as i32 + 8, c, Color::BLACK);
+                        self.window.char(8 * col as i32 + 40, 32 * row as i32 + 8, c, Color::rgb(0, 0, 0));
                         col += 1;
                     }
                 }
@@ -203,7 +203,7 @@ impl FileManager {
                     col += 8 - col % 8;
                 } else {
                     if col < self.window.width() / 8 && row < self.window.height() / 32 {
-                        self.window.char(8 * col as i32 + 40, 32 * row as i32 + 8, c, Color::BLACK);
+                        self.window.char(8 * col as i32 + 40, 32 * row as i32 + 8, c, Color::rgb(0, 0, 0));
                         col += 1;
                     }
                 }
@@ -224,7 +224,7 @@ impl FileManager {
                     col += 8 - col % 8;
                 } else {
                     if col < self.window.width() / 8 && row < self.window.height() / 32 {
-                        self.window.char(8 * col as i32 + 40, 32 * row as i32 + 8, c, Color::BLACK);
+                        self.window.char(8 * col as i32 + 40, 32 * row as i32 + 8, c, Color::rgb(0, 0, 0));
                         col += 1;
                     }
                 }
