@@ -19,3 +19,6 @@
 [submodule "crates/orbclient"]
 	path = crates/orbclient
 	url = https://github.com/redox-os/orbclient
+[submodule "crates/orbutils"]
+	path = crates/orbutils
+	url = https://github.com/redox-os/orbutils.git
