@@ -19,7 +19,7 @@ fn main() {
                                  max(32, bmp.height() as u32),
                                  &("Viewer (".to_string() + &url + ")"))
                          .unwrap();
-    window.set(Color::BLACK);
+    window.set(Color::rgb(0, 0, 0));
     window.image(0, 0, bmp.width() as u32, bmp.height() as u32, &bmp);
     window.sync();
 
