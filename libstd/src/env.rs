@@ -64,7 +64,7 @@ pub unsafe fn args_destroy() {
 /// Private function to get the path from a custom location
 /// If the custom directory cannot be found, None will be returned
 fn get_path_from(location : &str) -> Result<PathBuf> {
-    match File::open(dir) {
+    match File::open(location) {
         Ok(file) => {
             match file.path() {
                 Ok(path) => Ok(path),
