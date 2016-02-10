@@ -78,12 +78,12 @@ fn get_path_from(location : &str) -> Result<PathBuf> {
 /// Method to return the current directory
 pub fn current_dir() -> Result<PathBuf> {
     // Return the current path
-    get_dir("./")
+    get_path_from("./")
 }
 
 /// Method to return the home directory
 pub fn home_dir() -> Result<PathBuf> {
-    get_dir("/home/")
+    get_path_from("/home/")
 }
 
 /// Set the current directory
