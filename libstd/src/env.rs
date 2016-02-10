@@ -80,6 +80,12 @@ pub fn current_dir() -> Result<PathBuf> {
     // Return the current path
     get_dir("./")
 }
+
+/// Method to return the home directory
+pub fn home_dir() -> Result<PathBuf> {
+    get_dir("/home/")
+}
+
 /// Set the current directory
 pub fn set_current_dir<P: AsRef<Path>>(path: P) -> Result<()> {
     let file_result = if path.as_ref().inner.is_empty() || path.as_ref().inner.ends_with('/') {
