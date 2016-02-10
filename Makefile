@@ -345,11 +345,8 @@ rustc: $(BUILD)/librustc_back.rlib \
 $(BUILD)/ion-shell.bin: FORCE $(BUILD)/libstd.rlib
 	$(CARGO) --manifest-path crates/ion/Cargo.toml --bin ion-shell $(CARGOFLAGS)
 
-$(BUILD)/sodium.bin: FORCE $(BUILD)/libstd.rlib $(BUILD)/liborbclient.rlib
-	$(CARGO) --manifest-path filesystem/apps/sodium/Cargo.toml --bin sodium --features orbital $(CARGOFLAGS)
-
-filesystem/apps/sodium/main.bin: $(BUILD)/sodium.bin
-	cp $< $@
+filesystem/apps/sodium/main.bin: filesystem/apps/sodium/src/main.rs filesystem/apps/sodium/src/*.rs $(BUILD)/libstd.rlib $(BUILD)/liborbclient.rlib
+	$(RUSTC) $(RUSTCFLAGS) --crate-type bin -o $@ $< --cfg 'feature="orbital"'
 
 filesystem/apps/example/main.bin: filesystem/apps/example/main.rs filesystem/apps/example/*.rs $(BUILD)/crt0.o $(BUILD)/libstd.rlib
 	$(RUSTC) $(RUSTCFLAGS) --crate-type bin -o $@ $<
