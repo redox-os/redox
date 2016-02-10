@@ -133,6 +133,9 @@ help:
 
 all: $(BUILD)/harddrive.bin
 
+filesystem/apps/%/main.bin: crates/orbutils/src/%/main.rs crates/orbutils/src/%/*.rs $(BUILD)/crt0.o $(BUILD)/libstd.rlib $(BUILD)/liborbclient.rlib $(BUILD)/liborbtk.rlib
+	$(RUSTC) $(RUSTCFLAGS) --crate-type bin -o $@ $<
+
 apps: filesystem/apps/editor/main.bin \
 	  filesystem/apps/file_manager/main.bin \
 	  filesystem/apps/launcher/main.bin \
@@ -147,7 +150,7 @@ filesystem/bin:
 	mkdir -p filesystem/bin/
 
 filesystem/bin/%: crates/coreutils/src/bin/%.rs $(BUILD)/crt0.o $(BUILD)/libstd.rlib
-	$(RUSTC) $(RUSTCFLAGS) --crate-type bin -o filesystem/bin/$* $<
+	$(RUSTC) $(RUSTCFLAGS) --crate-type bin -o $@ $<
 
 filesystem/bin/%: crates/%/main.rs crates/%/*.rs $(BUILD)/crt0.o $(BUILD)/libstd.rlib
 	$(RUSTC) $(RUSTCFLAGS) --crate-type bin -o $@ $<
@@ -159,6 +162,9 @@ filesystem/bin/ion: $(BUILD)/ion-shell.bin
 	cp $< $@
 
 filesystem/bin/init.rc: crates/init/init.rc
+	cp $< $@
+
+filesystem/bin/sh: $(BUILD)/ion-shell.bin
 	cp $< $@
 
 bins: filesystem/bin \
@@ -186,6 +192,7 @@ bins: filesystem/bin \
 		filesystem/bin/seq \
 		filesystem/bin/shutdown \
 		filesystem/bin/sleep \
+		filesystem/bin/sh \
 		filesystem/bin/tar \
 		filesystem/bin/test \
 		filesystem/bin/touch \
