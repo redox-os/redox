@@ -75,6 +75,11 @@ fn get_path_from(location : &str) -> Result<PathBuf> {
     }
 }
 
+/// Method to return the current directory
+pub fn current_dir() -> Result<PathBuf> {
+    // Return the current path
+    get_dir("./")
+}
 /// Set the current directory
 pub fn set_current_dir<P: AsRef<Path>>(path: P) -> Result<()> {
     let file_result = if path.as_ref().inner.is_empty() || path.as_ref().inner.ends_with('/') {
