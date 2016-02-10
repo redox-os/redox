@@ -108,7 +108,7 @@ It's completely fine to just submit a small pull request without first making an
 * **Don't hesitate to ask for help!**
 * **Before implementing something, discuss it! Open an issue, or join the chat.**
 
-On the more technical side:
+##### On the more technical side:
 * Test, test, and test!
 * Follow the style conventions
 * Use `std::mem::replace` and `std::mem::swap` when you can.
