@@ -61,11 +61,10 @@ pub unsafe fn args_destroy() {
     }
 }
 
-/// Method to return the current directory
-/// If the current directory cannot be found, None will be returned
-pub fn current_dir() -> Result<PathBuf> {
-    // Return the current path
-    match File::open("./") {
+/// Private function to get the path from a custom location
+/// If the custom directory cannot be found, None will be returned
+fn get_path_from(location : &str) -> Result<PathBuf> {
+    match File::open(dir) {
         Ok(file) => {
             match file.path() {
                 Ok(path) => Ok(path),
