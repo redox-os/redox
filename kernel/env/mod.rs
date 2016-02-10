@@ -117,6 +117,19 @@ impl Environment {
         }
     }
 
+    /// Makes a directory
+    pub fn mkdir(&self, url: &Url, flags: usize) -> Result<()> {
+        let url_scheme = url.scheme();
+        if !url_scheme.is_empty() {
+            for mut scheme in self.schemes.lock().iter_mut() {
+                if scheme.scheme() == url_scheme {
+                    return scheme.mkdir(url, flags);
+                }
+            }
+        }
+        Err(Error::new(ENOENT))
+    }
+
     /// Unlink a resource
     pub fn unlink(&self, url: &Url) -> Result<()> {
         let url_scheme = url.scheme();

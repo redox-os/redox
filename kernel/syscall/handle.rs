@@ -405,10 +405,20 @@ pub fn do_sys_lseek(fd: usize, offset: isize, whence: usize) -> usize {
     })
 }
 
-pub fn do_sys_mkdir(_: *const u8, _: usize) -> usize {
-    // Implement body of do_sys_mkdir
+pub fn do_sys_mkdir(path: *const u8, flags: usize) -> usize {
+    let contexts = ::env().contexts.lock();
+    Error::mux(if let Some(current) = contexts.current() {
+        let path_string = unsafe {
+            current.canonicalize(str::from_utf8_unchecked(c_string_to_slice(path)))
+        };
 
-    usize::MAX
+        match (::env()).mkdir(&Url::from_string(path_string), flags) {
+            Ok(_) => Ok(0),
+            Err(err) => Err(err),
+        }
+    } else {
+        Err(Error::new(ESRCH))
+    })
 }
 
 pub fn do_sys_nanosleep(req: *const TimeSpec, rem: *mut TimeSpec) -> usize {

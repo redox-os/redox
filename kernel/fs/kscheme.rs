@@ -22,6 +22,10 @@ pub trait KScheme {
         Err(Error::new(ENOENT))
     }
 
+    fn mkdir(&mut self, path: &Url, flags: usize) -> Result<()> {
+        Err(Error::new(ENOENT))
+    }
+
     fn unlink(&mut self, path: &Url) -> Result<()> {
         Err(Error::new(ENOENT))
     }
