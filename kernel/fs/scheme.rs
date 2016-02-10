@@ -12,10 +12,10 @@ use arch::intex::Intex;
 
 use super::{Resource, ResourceSeek, KScheme, Url};
 
-use system::error::{Error, Result, EBADF, EFAULT, EINVAL, ESPIPE, ESRCH};
+use system::error::{Error, Result, EBADF, EFAULT, EINVAL, ENOENT, ESPIPE, ESRCH};
 use system::scheme::Packet;
 use system::syscall::{SYS_CLOSE, SYS_FPATH, SYS_FSYNC, SYS_FTRUNCATE,
-                    SYS_LSEEK, SEEK_SET, SEEK_CUR, SEEK_END,
+                    SYS_LSEEK, SEEK_SET, SEEK_CUR, SEEK_END, SYS_MKDIR,
                     SYS_OPEN, SYS_READ, SYS_WRITE, SYS_UNLINK};
 
 struct SchemeInner {
@@ -430,7 +430,44 @@ impl KScheme for Scheme {
                 Err(err) => Err(err)
             }
         } else {
-            Err(Error::new(EBADF))
+            Err(Error::new(ENOENT))
+        }
+    }
+
+    fn mkdir(&mut self, url: &Url, flags: usize) -> Result<()> {
+        let c_str = url.string.clone() + "\0";
+
+        let physical_address = c_str.as_ptr() as usize;
+
+        let mut virtual_address = 0;
+        if let Some(scheme) = self.inner.upgrade() {
+            unsafe {
+                virtual_address = (*scheme.context).next_mem();
+                (*(*scheme.context).memory.get()).push(ContextMemory {
+                    physical_address: physical_address,
+                    virtual_address: virtual_address,
+                    virtual_size: c_str.len(),
+                    writeable: false,
+                    allocated: false,
+                });
+            }
+        }
+
+        if virtual_address > 0 {
+            let result = self.call(SYS_MKDIR, virtual_address, flags, 0);
+
+            if let Some(scheme) = self.inner.upgrade() {
+                unsafe {
+                    if let Some(mut mem) = (*scheme.context).get_mem_mut(virtual_address) {
+                        mem.virtual_size = 0;
+                    }
+                    (*scheme.context).clean_mem();
+                }
+            }
+
+            result.and(Ok(()))
+        } else {
+            Err(Error::new(ENOENT))
         }
     }
 
@@ -467,7 +504,7 @@ impl KScheme for Scheme {
 
             result.and(Ok(()))
         } else {
-            Err(Error::new(EBADF))
+            Err(Error::new(ENOENT))
         }
     }
 }
