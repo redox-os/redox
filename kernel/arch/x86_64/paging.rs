@@ -15,7 +15,7 @@ pub const PAGE_TABLE_SIZE: usize = 512;
 pub const PAGE_ENTRY_SIZE: usize = 8;
 pub const PAGE_SIZE: usize = 4096;
 
-pub const PAGE_LEVEL_4: usize = 0x300000;
+pub const PAGE_LEVEL_4: usize = 0x200000;
 pub const PAGE_DIR_PTRS: usize = PAGE_LEVEL_4 + PAGE_TABLE_SIZE * PAGE_ENTRY_SIZE;
 pub const PAGE_DIRECTORIES: usize = PAGE_DIR_PTRS + PAGE_TABLE_SIZE * PAGE_ENTRY_SIZE;
 pub const PAGE_TABLES: usize = PAGE_DIRECTORIES + 4 * PAGE_TABLE_SIZE * PAGE_ENTRY_SIZE;
@@ -89,7 +89,7 @@ impl Page {
     unsafe fn flush(&self) {
         asm!("invlpg [$0]"
             :
-            : "{eax}"(self.virtual_address)
+            : "{rax}"(self.virtual_address)
             : "memory"
             : "intel", "volatile");
     }
