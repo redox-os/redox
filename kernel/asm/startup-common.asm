@@ -12,8 +12,10 @@ startup:
 ; repeat until all of the kernel is loaded
 
 ; buffersize in multiple of sectors (512 Bytes)
-; min 1
-; max (0x70000 - startup_end) / 512
+; min: 1
+; i386:   max: (pdp_table  - startup_end) / 512
+; x86_64: max: (pml4_table - startup_end) / 512
+; filling the whole space from startup_end up to the page tables
 buffer_size_sectors equ 64
 ; buffer size in Bytes
 buffer_size_bytes equ buffer_size_sectors * 512
@@ -54,21 +56,21 @@ kernel_base equ 0x100000
 
     ; load the part of the kernel that does not fill the buffer completely
     mov cx, kernel_file.length_sectors % buffer_size_sectors
+    ; TODO replace conditional jump by conditional compilation
     test cx, cx
     jz finished_loading ; if cx = 0 => skip
 
+    ; fill buffer partly
     mov bx, startup_end
     mov dx, 0x0
     call load
 
     ; moving remnants of kernel
     call unreal
-
     mov esi, startup_end
     mov ecx, (kernel_file.length_sectors % buffer_size_bytes) / 4
     a32 rep movsd
 finished_loading:
-
 
     call memory_map
 

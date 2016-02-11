@@ -1,7 +1,8 @@
 ENTRY(kernel)
 
 SECTIONS {
-    kernel_base = 0x101000;
+    kernel_image = 0xC0100000;
+    kernel_base = kernel_image + 0x1000;
 	. = kernel_base;
 
     .text : AT(ADDR(.text) - kernel_base) {
