@@ -1,4 +1,4 @@
 name=Terminal
-icon=file:/ui/apps/utilities-terminal.bmp
+icon=ui/apps/utilities-terminal.bmp
 author=Jeremy Soller
 description=Terminal for Redox
