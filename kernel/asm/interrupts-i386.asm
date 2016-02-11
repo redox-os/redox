@@ -11,13 +11,13 @@ USE32
 
 interrupts:
 .first:
-    mov [.entry], byte 0
-    jmp dword .handle
+    mov [high + .entry], byte 0
+    jmp dword .handle ; relative jump, no need to add high
 .second:
 %assign i 1
 %rep 255
-    mov [.entry], byte i
-    jmp dword .handle
+    mov [high + .entry], byte i
+    jmp dword .handle ; relative jump, no need to add high
 %assign i i+1
 %endrep
 .handle:
@@ -29,7 +29,7 @@ interrupts:
     push ebx
     push eax
     push esp
-    push dword [.entry]
+    push dword [high + .entry]
 
     mov eax, gdt.kernel_data
     mov ds, eax
@@ -37,7 +37,7 @@ interrupts:
     mov fs, eax
     mov gs, eax
 
-    call [.handler]
+    call [high + .handler]
 
     add esp, 8 ;Skip interrupt and reg pointer
 
@@ -62,7 +62,7 @@ interrupts:
 
 idtr:
     dw (idt.end - idt) + 1
-    dd idt
+    dd high + idt
 
 idt:
 %assign i 0
@@ -70,33 +70,33 @@ idt:
 ;Below system call
 %rep 128
     istruc IDTEntry
-        at IDTEntry.offsetl, dw interrupts+(interrupts.second-interrupts.first)*i
+        at IDTEntry.offsetl, dw interrupts + (interrupts.second - interrupts.first) * i
         at IDTEntry.selector, dw gdt.kernel_code
         at IDTEntry.zero, db 0
         at IDTEntry.attribute, db attrib.present | attrib.interrupt32
-        at IDTEntry.offseth, dw 0
+        at IDTEntry.offseth, dw (high >> 16) & 0xFFFF
     iend
 %assign i i+1
 %endrep
 
 ;System call
 istruc IDTEntry
-    at IDTEntry.offsetl, dw interrupts+(interrupts.second-interrupts.first)*i
+    at IDTEntry.offsetl, dw interrupts + (interrupts.second - interrupts.first) * i
     at IDTEntry.selector, dw gdt.kernel_code
     at IDTEntry.zero, db 0
     at IDTEntry.attribute, db attrib.present | attrib.ring3 | attrib.interrupt32
-    at IDTEntry.offseth, dw 0
+    at IDTEntry.offseth, dw (high >> 16) & 0xFFFF
 iend
 %assign i i+1
 
 ;Above system call
 %rep 127
     istruc IDTEntry
-        at IDTEntry.offsetl, dw interrupts+(interrupts.second-interrupts.first)*i
+        at IDTEntry.offsetl, dw interrupts + (interrupts.second - interrupts.first) * i
         at IDTEntry.selector, dw gdt.kernel_code
         at IDTEntry.zero, db 0
         at IDTEntry.attribute, db attrib.present | attrib.interrupt32
-        at IDTEntry.offseth, dw 0
+        at IDTEntry.offseth, dw (high >> 16) & 0xFFFF
     iend
 %assign i i+1
 %endrep
