@@ -1,23 +1,10 @@
 
 use core::ops::{Deref, DerefMut};
-use core::{mem, ptr, slice, str};
+use core::{mem, slice};
 
 use super::error::*;
 use super::syscall::*;
-
-/// Helper function for handling C strings, please do not copy it or make it pub or change it
-fn c_string_to_str<'a>(ptr: *const u8) -> &'a str {
-    if ptr > 0 as *const u8 {
-        let mut len = 0;
-        while unsafe { ptr::read(ptr.offset(len as isize)) } > 0 {
-            len += 1;
-        }
-
-        unsafe { str::from_utf8_unchecked(slice::from_raw_parts(ptr, len)) }
-    } else {
-        ""
-    }
-}
+use super::c_string_to_str;
 
 #[derive(Copy, Clone, Debug, Default)]
 #[repr(packed)]

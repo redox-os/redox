@@ -16,8 +16,7 @@ use core::ops::DerefMut;
 
 use fs::Resource;
 
-use syscall::{CLONE_FILES, CLONE_FS, CLONE_VM};
-use syscall::handle::do_sys_exit;
+use syscall::{do_sys_exit, CLONE_FILES, CLONE_FS, CLONE_VM};
 
 pub const CONTEXT_STACK_SIZE: usize = 1024 * 1024;
 pub const CONTEXT_STACK_ADDR: usize = 0x70000000;
@@ -627,9 +626,9 @@ impl Context {
         ret
     }
 
-    pub unsafe fn canonicalize(&self, path: &str) -> String {
+    pub fn canonicalize(&self, path: &str) -> String {
         if path.find(':').is_none() {
-            let cwd = &*self.cwd.get();
+            let cwd = unsafe { &*self.cwd.get() };
             if path.starts_with("../") {
                 cwd.get_slice(..cwd.get_slice(..cwd.len() - 1)
                                    .rfind('/')

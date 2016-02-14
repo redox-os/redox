@@ -68,7 +68,7 @@ use schemes::memory::*;
 use schemes::test::*;
 
 use syscall::execute::execute;
-use syscall::handle::*;
+use syscall::{do_sys_chdir, do_sys_exit, do_sys_open, syscall_handle};
 
 pub use system::externs::*;
 
