@@ -1,5 +1,5 @@
 name=Viewer
-icon=file:/ui/mimetypes/image-x-generic.bmp
+icon=ui/mimetypes/image-x-generic.bmp
 accept=*.bmp
 author=Jeremy Soller
 description=Image Viewer for Redox

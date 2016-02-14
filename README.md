@@ -7,7 +7,6 @@ Documentation can be found [here](http://ticki.github.io/redocs/redox/).
 Please make sure you use the **latest nightly** of `rustc` before building (for more troubleshooting, see ["Help! Redox won't compile!"](#compile-help)).
 
 [![Travis Build Status](https://travis-ci.org/redox-os/redox.svg?branch=master)](https://travis-ci.org/redox-os/redox)
-[![AppVeyor Build Status](https://ci.appveyor.com/api/projects/status/2r793q73f6bpyh0n/branch/master?svg=true)](https://ci.appveyor.com/project/jackpot51/redox/branch/master)
 [![MIT licensed](https://img.shields.io/badge/license-MIT-blue.svg)](./LICENSE.md)
 
 ## Contents
