@@ -16,7 +16,7 @@ use core::ops::DerefMut;
 
 use fs::Resource;
 
-use syscall::{do_sys_exit, CLONE_FILES, CLONE_FS, CLONE_VM};
+use syscall::{do_sys_exit, Error, Result, CLONE_FILES, CLONE_FS, CLONE_VM, EBADF, ESRCH};
 
 pub const CONTEXT_STACK_SIZE: usize = 1024 * 1024;
 pub const CONTEXT_STACK_ADDR: usize = 0x70000000;
@@ -39,12 +39,12 @@ impl ContextManager {
         }
     }
 
-    pub fn current(&self) -> Option<&Box<Context>> {
+    pub fn current(&self) -> Result<&Box<Context>> {
         let i = self.i;
         self.get(i)
     }
 
-    pub fn current_mut(&mut self) -> Option<&mut Box<Context>> {
+    pub fn current_mut(&mut self) -> Result<&mut Box<Context>> {
         let i = self.i;
         self.get_mut(i)
     }
@@ -57,19 +57,19 @@ impl ContextManager {
         self.inner.iter_mut()
     }
 
-    pub fn get(&self, i: usize) -> Option<&Box<Context>> {
+    pub fn get(&self, i: usize) -> Result<&Box<Context>> {
         if self.enabled {
-            self.inner.get(i)
+            self.inner.get(i).ok_or(Error::new(ESRCH))
         } else{
-            None
+            Err(Error::new(ESRCH))
         }
     }
 
-    pub fn get_mut(&mut self, i: usize) -> Option<&mut Box<Context>> {
+    pub fn get_mut(&mut self, i: usize) -> Result<&mut Box<Context>> {
         if self.enabled {
-            self.inner.get_mut(i)
+            self.inner.get_mut(i).ok_or(Error::new(ESRCH))
         } else{
-            None
+            Err(Error::new(ESRCH))
         }
     }
 
@@ -88,7 +88,7 @@ impl ContextManager {
             }
 
             let mut remove = false;
-            if let Some(next) = self.current() {
+            if let Ok(next) = self.current() {
                 if next.exited {
                     remove = true;
                 }
@@ -124,7 +124,7 @@ pub unsafe fn context_switch(interrupted: bool) {
             contexts.clean();
 
             if contexts.i != current_i {
-                if let Some(mut current) = contexts.get_mut(current_i) {
+                if let Ok(mut current) = contexts.get_mut(current_i) {
                     current.interrupted = interrupted;
 
                     current.unmap();
@@ -132,7 +132,7 @@ pub unsafe fn context_switch(interrupted: bool) {
                     current_ptr = current.deref_mut();
                 }
 
-                if let Some(mut next) = contexts.current_mut() {
+                if let Ok(mut next) = contexts.current_mut() {
                     next.interrupted = false;
                     next.slices = CONTEXT_SLICES;
 
@@ -725,25 +725,25 @@ impl Context {
     }
 
     /// Get a resource from a file descriptor
-    pub unsafe fn get_file<'a>(&self, fd: usize) -> Option<&'a Box<Resource>> {
-        for file in (*self.files.get()).iter() {
+    pub fn get_file<'a>(&self, fd: usize) -> Result<&'a Box<Resource>> {
+        for file in unsafe { (*self.files.get()).iter() } {
             if file.fd == fd {
-                return Some(&file.resource);
+                return Ok(&file.resource);
             }
         }
 
-        None
+        Err(Error::new(EBADF))
     }
 
     /// Get a mutable resource from a file descriptor
-    pub unsafe fn get_file_mut<'a>(&mut self, fd: usize) -> Option<&'a mut Box<Resource>> {
-        for file in (*self.files.get()).iter_mut() {
+    pub fn get_file_mut<'a>(&mut self, fd: usize) -> Result<&'a mut Box<Resource>> {
+        for file in unsafe { (*self.files.get()).iter_mut() } {
             if file.fd == fd {
-                return Some(&mut file.resource);
+                return Ok(&mut file.resource);
             }
         }
 
-        None
+        Err(Error::new(EBADF))
     }
 
     pub unsafe fn push(&mut self, data: usize) {

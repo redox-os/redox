@@ -2,7 +2,9 @@ use core::slice;
 
 use drivers::io::{Io, Pio};
 
-pub fn do_sys_debug(ptr: *const u8, len: usize) {
+use super::Result;
+
+pub fn do_sys_debug(ptr: *const u8, len: usize) -> Result<usize> {
     let bytes = unsafe { slice::from_raw_parts(ptr, len) };
 
     if unsafe { ::ENV_PTR.is_some() } {
@@ -24,4 +26,6 @@ pub fn do_sys_debug(ptr: *const u8, len: usize) {
             }
         }
     }
+
+    Ok(len)
 }

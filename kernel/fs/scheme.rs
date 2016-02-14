@@ -12,7 +12,7 @@ use arch::intex::Intex;
 
 use super::{Resource, ResourceSeek, KScheme, Url};
 
-use system::error::{Error, Result, EBADF, EFAULT, EINVAL, ENOENT, ESPIPE, ESRCH};
+use system::error::{Error, Result, EBADF, EFAULT, EINVAL, ENOENT, ESPIPE};
 use system::scheme::Packet;
 use system::syscall::{SYS_CLOSE, SYS_FPATH, SYS_FSYNC, SYS_FTRUNCATE,
                     SYS_LSEEK, SEEK_SET, SEEK_CUR, SEEK_END, SYS_MKDIR,
@@ -94,144 +94,135 @@ impl Resource for SchemeResource {
     /// Return the url of this resource
     fn path(&self, buf: &mut [u8]) -> Result <usize> {
         let contexts = ::env().contexts.lock();
-        if let Some(current) = contexts.current() {
-            if let Some(physical_address) = unsafe { current.translate(buf.as_mut_ptr() as usize) } {
-                let offset = physical_address % 4096;
+        let current = try!(contexts.current());
+        if let Some(physical_address) = unsafe { current.translate(buf.as_mut_ptr() as usize) } {
+            let offset = physical_address % 4096;
 
-                let mut virtual_address = 0;
-                let virtual_size = (buf.len() + offset + 4095)/4096 * 4096;
+            let mut virtual_address = 0;
+            let virtual_size = (buf.len() + offset + 4095)/4096 * 4096;
+            if let Some(scheme) = self.inner.upgrade() {
+                unsafe {
+                    virtual_address = (*scheme.context).next_mem();
+                    (*(*scheme.context).memory.get()).push(ContextMemory {
+                        physical_address: physical_address - offset,
+                        virtual_address: virtual_address,
+                        virtual_size: virtual_size,
+                        writeable: true,
+                        allocated: false,
+                    });
+                }
+            }
+
+            if virtual_address > 0 {
+                let result = self.call(SYS_FPATH, self.file_id, virtual_address + offset, buf.len());
+
+                //debugln!("Read {:X} mapped from {:X} to {:X} offset {} length {} size {} result {:?}", physical_address, buf.as_ptr() as usize, virtual_address + offset, offset, buf.len(), virtual_size, result);
+
                 if let Some(scheme) = self.inner.upgrade() {
                     unsafe {
-                        virtual_address = (*scheme.context).next_mem();
-                        (*(*scheme.context).memory.get()).push(ContextMemory {
-                            physical_address: physical_address - offset,
-                            virtual_address: virtual_address,
-                            virtual_size: virtual_size,
-                            writeable: true,
-                            allocated: false,
-                        });
-                    }
-                }
-
-                if virtual_address > 0 {
-                    let result = self.call(SYS_FPATH, self.file_id, virtual_address + offset, buf.len());
-
-                    //debugln!("Read {:X} mapped from {:X} to {:X} offset {} length {} size {} result {:?}", physical_address, buf.as_ptr() as usize, virtual_address + offset, offset, buf.len(), virtual_size, result);
-
-                    if let Some(scheme) = self.inner.upgrade() {
-                        unsafe {
-                            if let Some(mut mem) = (*scheme.context).get_mem_mut(virtual_address) {
-                                mem.virtual_size = 0;
-                            }
-                            (*scheme.context).clean_mem();
+                        if let Some(mut mem) = (*scheme.context).get_mem_mut(virtual_address) {
+                            mem.virtual_size = 0;
                         }
+                        (*scheme.context).clean_mem();
                     }
-
-                    result
-                } else {
-                    Err(Error::new(EBADF))
                 }
+
+                result
             } else {
-                Err(Error::new(EFAULT))
+                Err(Error::new(EBADF))
             }
         } else {
-            Err(Error::new(ESRCH))
+            Err(Error::new(EFAULT))
         }
     }
 
     /// Read data to buffer
     fn read(&mut self, buf: &mut [u8]) -> Result<usize> {
         let contexts = ::env().contexts.lock();
-        if let Some(current) = contexts.current() {
-            if let Some(physical_address) = unsafe { current.translate(buf.as_mut_ptr() as usize) } {
-                let offset = physical_address % 4096;
+        let current = try!(contexts.current());
+        if let Some(physical_address) = unsafe { current.translate(buf.as_mut_ptr() as usize) } {
+            let offset = physical_address % 4096;
 
-                let mut virtual_address = 0;
-                let virtual_size = (buf.len() + offset + 4095)/4096 * 4096;
+            let mut virtual_address = 0;
+            let virtual_size = (buf.len() + offset + 4095)/4096 * 4096;
+            if let Some(scheme) = self.inner.upgrade() {
+                unsafe {
+                    virtual_address = (*scheme.context).next_mem();
+                    (*(*scheme.context).memory.get()).push(ContextMemory {
+                        physical_address: physical_address - offset,
+                        virtual_address: virtual_address,
+                        virtual_size: virtual_size,
+                        writeable: true,
+                        allocated: false,
+                    });
+                }
+            }
+
+            if virtual_address > 0 {
+                let result = self.call(SYS_READ, self.file_id, virtual_address + offset, buf.len());
+
+                //debugln!("Read {:X} mapped from {:X} to {:X} offset {} length {} size {} result {:?}", physical_address, buf.as_ptr() as usize, virtual_address + offset, offset, buf.len(), virtual_size, result);
+
                 if let Some(scheme) = self.inner.upgrade() {
                     unsafe {
-                        virtual_address = (*scheme.context).next_mem();
-                        (*(*scheme.context).memory.get()).push(ContextMemory {
-                            physical_address: physical_address - offset,
-                            virtual_address: virtual_address,
-                            virtual_size: virtual_size,
-                            writeable: true,
-                            allocated: false,
-                        });
-                    }
-                }
-
-                if virtual_address > 0 {
-                    let result = self.call(SYS_READ, self.file_id, virtual_address + offset, buf.len());
-
-                    //debugln!("Read {:X} mapped from {:X} to {:X} offset {} length {} size {} result {:?}", physical_address, buf.as_ptr() as usize, virtual_address + offset, offset, buf.len(), virtual_size, result);
-
-                    if let Some(scheme) = self.inner.upgrade() {
-                        unsafe {
-                            if let Some(mut mem) = (*scheme.context).get_mem_mut(virtual_address) {
-                                mem.virtual_size = 0;
-                            }
-                            (*scheme.context).clean_mem();
+                        if let Some(mut mem) = (*scheme.context).get_mem_mut(virtual_address) {
+                            mem.virtual_size = 0;
                         }
+                        (*scheme.context).clean_mem();
                     }
-
-                    result
-                } else {
-                    Err(Error::new(EBADF))
                 }
+
+                result
             } else {
-                Err(Error::new(EFAULT))
+                Err(Error::new(EBADF))
             }
         } else {
-            Err(Error::new(ESRCH))
+            Err(Error::new(EFAULT))
         }
     }
 
     /// Write to resource
     fn write(&mut self, buf: &[u8]) -> Result<usize> {
         let contexts = ::env().contexts.lock();
-        if let Some(current) = contexts.current() {
-            if let Some(physical_address) = unsafe { current.translate(buf.as_ptr() as usize) } {
-                let offset = physical_address % 4096;
+        let current = try!(contexts.current());
+        if let Some(physical_address) = unsafe { current.translate(buf.as_ptr() as usize) } {
+            let offset = physical_address % 4096;
 
-                let mut virtual_address = 0;
-                let virtual_size = (buf.len() + offset + 4095)/4096 * 4096;
+            let mut virtual_address = 0;
+            let virtual_size = (buf.len() + offset + 4095)/4096 * 4096;
+            if let Some(scheme) = self.inner.upgrade() {
+                unsafe {
+                    virtual_address = (*scheme.context).next_mem();
+                    (*(*scheme.context).memory.get()).push(ContextMemory {
+                        physical_address: physical_address - offset,
+                        virtual_address: virtual_address,
+                        virtual_size: virtual_size,
+                        writeable: true,
+                        allocated: false,
+                    });
+                }
+            }
+
+            if virtual_address > 0 {
+                let result = self.call(SYS_WRITE, self.file_id, virtual_address + offset, buf.len());
+
+                //debugln!("Write {:X} mapped from {:X} to {:X} offset {} length {} size {} result {:?}", physical_address, buf.as_ptr() as usize, virtual_address + offset, offset, buf.len(), virtual_size, result);
+
                 if let Some(scheme) = self.inner.upgrade() {
                     unsafe {
-                        virtual_address = (*scheme.context).next_mem();
-                        (*(*scheme.context).memory.get()).push(ContextMemory {
-                            physical_address: physical_address - offset,
-                            virtual_address: virtual_address,
-                            virtual_size: virtual_size,
-                            writeable: true,
-                            allocated: false,
-                        });
-                    }
-                }
-
-                if virtual_address > 0 {
-                    let result = self.call(SYS_WRITE, self.file_id, virtual_address + offset, buf.len());
-
-                    //debugln!("Write {:X} mapped from {:X} to {:X} offset {} length {} size {} result {:?}", physical_address, buf.as_ptr() as usize, virtual_address + offset, offset, buf.len(), virtual_size, result);
-
-                    if let Some(scheme) = self.inner.upgrade() {
-                        unsafe {
-                            if let Some(mut mem) = (*scheme.context).get_mem_mut(virtual_address) {
-                                mem.virtual_size = 0;
-                            }
-                            (*scheme.context).clean_mem();
+                        if let Some(mut mem) = (*scheme.context).get_mem_mut(virtual_address) {
+                            mem.virtual_size = 0;
                         }
+                        (*scheme.context).clean_mem();
                     }
-
-                    result
-                } else {
-                    Err(Error::new(EBADF))
                 }
+
+                result
             } else {
-                Err(Error::new(EFAULT))
+                Err(Error::new(EBADF))
             }
         } else {
-            Err(Error::new(ESRCH))
+            Err(Error::new(EFAULT))
         }
     }
 
@@ -359,18 +350,16 @@ pub struct Scheme {
 
 impl Scheme {
     pub fn new(name: String) -> Result<(Box<Scheme>, Box<Resource>)> {
-        if let Some(context) = ::env().contexts.lock().current_mut() {
-            let server = box SchemeServerResource {
-                inner: Arc::new(SchemeInner::new(name.clone(), context.deref_mut()))
-            };
-            let scheme = box Scheme {
-                name: name,
-                inner: Arc::downgrade(&server.inner)
-            };
-            Ok((scheme, server))
-        } else {
-            Err(Error::new(ESRCH))
-        }
+        let mut contexts = ::env().contexts.lock();
+        let mut current = try!(contexts.current_mut());
+        let server = box SchemeServerResource {
+            inner: Arc::new(SchemeInner::new(name.clone(), current.deref_mut()))
+        };
+        let scheme = box Scheme {
+            name: name,
+            inner: Arc::downgrade(&server.inner)
+        };
+        Ok((scheme, server))
     }
 
     fn call(&self, a: usize, b: usize, c: usize, d: usize) -> Result<usize> {

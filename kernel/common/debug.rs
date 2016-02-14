@@ -18,11 +18,11 @@ macro_rules! debugln {
 }
 
 pub fn d(msg: &str) {
-    do_sys_debug(msg.as_ptr(), msg.len());
+    let _ = do_sys_debug(msg.as_ptr(), msg.len());
 }
 
 pub fn db(byte: u8) {
-    do_sys_debug(&byte, 1);
+    let _ = do_sys_debug(&byte, 1);
 }
 
 pub fn dbh(byte: u8) {
