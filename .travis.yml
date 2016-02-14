@@ -8,7 +8,6 @@ addons:
       - nasm
 os:
   - linux
-  - osx
 before_install:
     - if [ `uname` = "Darwin" ]; then
         brew tap altkatz/homebrew-gcc_cross_compilers;
@@ -20,5 +19,4 @@ script:
   - make clean
   - make all
 notifications:
-  slack: redox-os:t5jWurX9sFfgurPznqdECoKN
   email: false

@@ -1,4 +1,4 @@
 name=OrbTK
-icon=file:/ui/actions/view-form.bmp
+icon=ui/actions/view-form.bmp
 author=Jeremy Soller
 description=OrbTK test application

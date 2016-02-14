@@ -1,5 +1,5 @@
 name=Editor
-icon=file:/ui/apps/accessories-text-editor.bmp
+icon=ui/apps/accessories-text-editor.bmp
 accept=*_REDOX
 accept=*.md
 accept=*.asm
