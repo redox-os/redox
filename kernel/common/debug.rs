@@ -1,6 +1,6 @@
 use core::str::StrExt;
 
-use syscall::handle::do_sys_debug;
+use syscall::do_sys_debug;
 
 /// Debug to console
 #[macro_export]
