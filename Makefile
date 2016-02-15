@@ -1,6 +1,6 @@
 #Modify for different target support
-#ARCH?=i386
-ARCH?=x86_64
+ARCH?=i386
+#ARCH?=x86_64
 
 BUILD=build/$(ARCH)-unknown-redox/debug
 
@@ -209,7 +209,7 @@ test: kernel/main.rs \
 	$(RUSTC) $(RUSTCFLAGS) --test $<
 
 clean:
-	$(RM) -rf build doc filesystem/*.bin filesystem/*.list filesystem/apps/*/*.bin filesystem/apps/*/*.list filesystem/schemes/*/*.bin filesystem/schemes/*/*.list filesystem/bin/
+	$(RM) -rf build doc filesystem/bin/ filesystem/apps/*/*.bin filesystem/apps/*/*.list
 
 FORCE:
 

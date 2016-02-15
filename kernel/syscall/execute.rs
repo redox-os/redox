@@ -116,8 +116,7 @@ pub fn execute_outer(context_ptr: *mut Context, entry: usize, mut args: Vec<Stri
                         physical_address: physical_address,
                         virtual_address: virtual_address,
                         virtual_size: virtual_size,
-                        //TODO: Remove this hack for brk
-                        writeable: true,
+                        writeable: false,
                         allocated: true,
                     });
                 }
@@ -152,7 +151,8 @@ pub fn execute_outer(context_ptr: *mut Context, entry: usize, mut args: Vec<Stri
         unsafe {
             context.push(0x20 | 3);
             context.push(user_sp);
-            context.push(1 << 9);
+            //context.push(1 << 9);
+            context.push(0);
             context.push(0x18 | 3);
             context.push(entry);
             context.push(context_userspace as usize);
@@ -170,12 +170,11 @@ pub fn execute(args: Vec<String>) -> Result<usize> {
 
     let contexts = ::env().contexts.lock();
     let current = try!(contexts.current());
-    let path = args.get(0).map_or(String::new(), |p| p.clone());
 
-    if let Ok((context_ptr, entry)) = execute_inner(Url::from_string(current.canonicalize(&path))) {
+    if let Ok((context_ptr, entry)) = execute_inner(Url::from_string(current.canonicalize(args.get(0).map_or("", |p| &p)))) {
         execute_outer(context_ptr, entry, args);
     }else{
-        let (context_ptr, entry) = try!(execute_inner(Url::from_string("file:/bin/".to_string() + &path)));
+        let (context_ptr, entry) = try!(execute_inner(Url::from_string("file:/bin/".to_string() + args.get(0).map_or("", |p| &p))));
         execute_outer(context_ptr, entry, args);
     }
 }

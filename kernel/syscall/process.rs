@@ -18,31 +18,16 @@ pub fn do_sys_clone(flags: usize) -> Result<usize> {
     let mut mem_count = 0;
 
     {
-        let mut contexts = ::env().contexts.lock();
-
-        let child_option = if let Ok(parent) = contexts.current() {
+        let contexts = ::env().contexts.lock();
+        if let Ok(parent) = contexts.current() {
             clone_pid = Context::next_pid();
             mem_count = Arc::strong_count(&parent.memory);
-
-            let parent_ptr: *const Context = parent.deref();
-
-            let mut context_clone_args: Vec<usize> = Vec::new();
-            context_clone_args.push(clone_pid);
-            context_clone_args.push(flags);
-            context_clone_args.push(parent_ptr as usize);
-            context_clone_args.push(0); //Return address, 0 catches bad code
-
-            Some(unsafe {
-                Context::new(format!("kclone {}", parent.name),
-                             context_clone as usize,
-                             &context_clone_args)
-            })
-        } else {
-            None
-        };
-
-        if let Some(child) = child_option {
-            unsafe { contexts.push(child) };
+            let parent_ptr = parent.deref() as *const Context;
+            unsafe {
+                Context::spawn(format!("kclone {}", parent.name), box move || {
+                    context_clone(parent_ptr, flags, clone_pid);
+                });
+            }
         }
     }
 
