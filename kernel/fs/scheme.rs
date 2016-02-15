@@ -95,7 +95,7 @@ impl Resource for SchemeResource {
     fn path(&self, buf: &mut [u8]) -> Result <usize> {
         let contexts = ::env().contexts.lock();
         let current = try!(contexts.current());
-        if let Some(physical_address) = unsafe { current.translate(buf.as_mut_ptr() as usize) } {
+        if let Ok(physical_address) = current.translate(buf.as_mut_ptr() as usize, buf.len()) {
             let offset = physical_address % 4096;
 
             let mut virtual_address = 0;
@@ -120,7 +120,7 @@ impl Resource for SchemeResource {
 
                 if let Some(scheme) = self.inner.upgrade() {
                     unsafe {
-                        if let Some(mut mem) = (*scheme.context).get_mem_mut(virtual_address) {
+                        if let Ok(mut mem) = (*scheme.context).get_mem_mut(virtual_address) {
                             mem.virtual_size = 0;
                         }
                         (*scheme.context).clean_mem();
@@ -140,7 +140,7 @@ impl Resource for SchemeResource {
     fn read(&mut self, buf: &mut [u8]) -> Result<usize> {
         let contexts = ::env().contexts.lock();
         let current = try!(contexts.current());
-        if let Some(physical_address) = unsafe { current.translate(buf.as_mut_ptr() as usize) } {
+        if let Ok(physical_address) = current.translate(buf.as_mut_ptr() as usize, buf.len()) {
             let offset = physical_address % 4096;
 
             let mut virtual_address = 0;
@@ -165,7 +165,7 @@ impl Resource for SchemeResource {
 
                 if let Some(scheme) = self.inner.upgrade() {
                     unsafe {
-                        if let Some(mut mem) = (*scheme.context).get_mem_mut(virtual_address) {
+                        if let Ok(mut mem) = (*scheme.context).get_mem_mut(virtual_address) {
                             mem.virtual_size = 0;
                         }
                         (*scheme.context).clean_mem();
@@ -185,7 +185,7 @@ impl Resource for SchemeResource {
     fn write(&mut self, buf: &[u8]) -> Result<usize> {
         let contexts = ::env().contexts.lock();
         let current = try!(contexts.current());
-        if let Some(physical_address) = unsafe { current.translate(buf.as_ptr() as usize) } {
+        if let Ok(physical_address) = current.translate(buf.as_ptr() as usize, buf.len()) {
             let offset = physical_address % 4096;
 
             let mut virtual_address = 0;
@@ -210,7 +210,7 @@ impl Resource for SchemeResource {
 
                 if let Some(scheme) = self.inner.upgrade() {
                     unsafe {
-                        if let Some(mut mem) = (*scheme.context).get_mem_mut(virtual_address) {
+                        if let Ok(mut mem) = (*scheme.context).get_mem_mut(virtual_address) {
                             mem.virtual_size = 0;
                         }
                         (*scheme.context).clean_mem();
@@ -404,7 +404,7 @@ impl KScheme for Scheme {
 
             if let Some(scheme) = self.inner.upgrade() {
                 unsafe {
-                    if let Some(mut mem) = (*scheme.context).get_mem_mut(virtual_address) {
+                    if let Ok(mut mem) = (*scheme.context).get_mem_mut(virtual_address) {
                         mem.virtual_size = 0;
                     }
                     (*scheme.context).clean_mem();
@@ -447,7 +447,7 @@ impl KScheme for Scheme {
 
             if let Some(scheme) = self.inner.upgrade() {
                 unsafe {
-                    if let Some(mut mem) = (*scheme.context).get_mem_mut(virtual_address) {
+                    if let Ok(mut mem) = (*scheme.context).get_mem_mut(virtual_address) {
                         mem.virtual_size = 0;
                     }
                     (*scheme.context).clean_mem();
@@ -484,7 +484,7 @@ impl KScheme for Scheme {
 
             if let Some(scheme) = self.inner.upgrade() {
                 unsafe {
-                    if let Some(mut mem) = (*scheme.context).get_mem_mut(virtual_address) {
+                    if let Ok(mut mem) = (*scheme.context).get_mem_mut(virtual_address) {
                         mem.virtual_size = 0;
                     }
                     (*scheme.context).clean_mem();

@@ -14,7 +14,7 @@ pub fn do_sys_brk(addr: usize) -> Result<usize> {
             current.unmap();
         }
 
-        ret = unsafe { current.next_mem() };
+        ret = current.next_mem();
 
         // TODO: Make this smarter, currently it attempt to resize the entire data segment
         if let Some(mut mem) = unsafe { (*current.memory.get()).last_mut() } {
@@ -56,15 +56,15 @@ pub fn do_sys_alloc(size: usize) -> Result<usize> {
     if let Ok(current) = contexts.current() {
         let physical_address = unsafe { memory::alloc(size) };
         if physical_address > 0 {
+            ret = current.next_mem();
+
             let mut mem = ContextMemory {
                 physical_address: physical_address,
-                virtual_address: unsafe { current.next_mem() },
+                virtual_address: ret,
                 virtual_size: size,
                 writeable: true,
                 allocated: true,
             };
-
-            ret = mem.virtual_address;
 
             unsafe {
                 mem.map();
@@ -81,7 +81,7 @@ pub fn do_sys_realloc(ptr: usize, size: usize) -> Result<usize> {
 
     let mut contexts = ::env().contexts.lock();
     if let Ok(mut current) = contexts.current_mut() {
-        if let Some(mut mem) = unsafe { current.get_mem_mut(ptr) } {
+        if let Ok(mut mem) = current.get_mem_mut(ptr) {
             unsafe { mem.unmap(); }
 
             let physical_address = unsafe { memory::realloc(mem.physical_address, size) };
@@ -106,7 +106,7 @@ pub fn do_sys_realloc_inplace(ptr: usize, size: usize) -> Result<usize> {
 
     let mut contexts = ::env().contexts.lock();
     if let Ok(mut current) = contexts.current_mut() {
-        if let Some(mut mem) = unsafe { current.get_mem_mut(ptr) } {
+        if let Ok(mut mem) = current.get_mem_mut(ptr) {
             unsafe { mem.unmap(); }
 
             mem.virtual_size = unsafe { memory::realloc_inplace(mem.physical_address, size) };
@@ -123,7 +123,7 @@ pub fn do_sys_realloc_inplace(ptr: usize, size: usize) -> Result<usize> {
 pub fn do_sys_unalloc(ptr: usize) -> Result<usize> {
     let mut contexts = ::env().contexts.lock();
     if let Ok(mut current) = contexts.current_mut() {
-        if let Some(mut mem) = unsafe { current.get_mem_mut(ptr) } {
+        if let Ok(mut mem) = current.get_mem_mut(ptr) {
             unsafe { mem.unmap() };
 
             mem.virtual_size = 0;

@@ -106,7 +106,7 @@ pub fn execute_outer(context_ptr: *mut Context, entry: usize, mut args: Vec<Stri
                 }
 
                 let physical_address = arg.as_ptr() as usize;
-                let virtual_address = unsafe { context.next_mem() };
+                let virtual_address = context.next_mem();
                 let virtual_size = arg.len();
 
                 mem::forget(arg);
