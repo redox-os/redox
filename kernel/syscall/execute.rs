@@ -17,16 +17,18 @@ use fs::Url;
 
 use system::error::{Error, Result, ENOEXEC};
 
-fn execute_inner(url: &Url, args: &Vec<String>) -> Result<(*mut Context, usize)> {
-    let mut resource = try!(url.open());
-
+fn execute_inner(url: Url) -> Result<(*mut Context, usize)> {
     let mut vec: Vec<u8> = Vec::new();
-    'reading: loop {
-        let mut bytes = [0; 4096];
-        match resource.read(&mut bytes) {
-            Ok(0) => break 'reading,
-            Ok(count) => vec.push_all(bytes.get_slice(.. count)),
-            Err(err) => return Err(err)
+
+    {
+        let mut resource = try!(url.open());
+        'reading: loop {
+            let mut bytes = [0; 4096];
+            match resource.read(&mut bytes) {
+                Ok(0) => break 'reading,
+                Ok(count) => vec.push_all(bytes.get_slice(.. count)),
+                Err(err) => return Err(err)
+            }
         }
     }
 
@@ -69,9 +71,7 @@ fn execute_inner(url: &Url, args: &Vec<String>) -> Result<(*mut Context, usize)>
             if entry > 0 && ! memory.is_empty() {
                 let mut contexts = ::env().contexts.lock();
                 let mut context = try!(contexts.current_mut());
-                if let Some(arg) = args.get(0) {
-                    context.name = arg.clone();
-                }
+                context.name = url.string;
                 context.cwd = Arc::new(UnsafeCell::new(unsafe { (*context.cwd.get()).clone() }));
 
                 unsafe { context.unmap() };
@@ -166,14 +166,16 @@ pub fn execute_outer(context_ptr: *mut Context, entry: usize, mut args: Vec<Stri
 
 /// Execute an executable
 pub fn execute(args: Vec<String>) -> Result<usize> {
+    debugln!("execute {:?}", args);
+
     let contexts = ::env().contexts.lock();
     let current = try!(contexts.current());
     let path = args.get(0).map_or(String::new(), |p| p.clone());
 
-    if let Ok((context_ptr, entry)) = execute_inner(&Url::from_string(current.canonicalize(&path)), &args) {
+    if let Ok((context_ptr, entry)) = execute_inner(Url::from_string(current.canonicalize(&path))) {
         execute_outer(context_ptr, entry, args);
     }else{
-        let (context_ptr, entry) = try!(execute_inner(&Url::from_string("file:/bin/".to_string() + &path), &args));
+        let (context_ptr, entry) = try!(execute_inner(Url::from_string("file:/bin/".to_string() + &path)));
         execute_outer(context_ptr, entry, args);
     }
 }
