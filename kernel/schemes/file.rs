@@ -2,9 +2,13 @@ use common::slice::GetSlice;
 
 use alloc::boxed::Box;
 
+use arch::memory::Memory;
+
 use collections::slice;
 use collections::string::{String, ToString};
 use collections::vec::Vec;
+
+use common::debug;
 
 use core::cmp;
 
@@ -12,9 +16,6 @@ use disk::Disk;
 use disk::ide::Extent;
 
 use fs::redoxfs::{FileSystem, Node, NodeData};
-
-use common::debug;
-use arch::memory::Memory;
 
 use fs::{KScheme, Resource, ResourceSeek, Url, VecResource};
 

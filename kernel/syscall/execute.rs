@@ -173,7 +173,7 @@ pub fn execute(args: Vec<String>) -> Result<usize> {
     if let Some(current) = contexts.current() {
         let path = args.get(0).map_or(String::new(), |p| p.clone());
 
-        if let Ok((context_ptr, entry)) = execute_inner(&Url::from_string(unsafe { current.canonicalize(&path) }), &args) {
+        if let Ok((context_ptr, entry)) = execute_inner(&Url::from_string(current.canonicalize(&path)), &args) {
             execute_outer(context_ptr, entry, args);
         }else{
             let (context_ptr, entry) = try!(execute_inner(&Url::from_string("file:/bin/".to_string() + &path), &args));
