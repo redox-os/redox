@@ -22,7 +22,6 @@ pub fn do_sys_chdir(path: *const u8) -> Result<usize> {
 pub fn do_sys_close(fd: usize) -> Result<usize> {
     let contexts = ::env().contexts.lock();
     let current = try!(contexts.current());
-    let mut ret = Err(Error::new(EBADF));
 
     for i in 0..unsafe { (*current.files.get()).len() } {
         let mut remove = false;
@@ -36,14 +35,12 @@ pub fn do_sys_close(fd: usize) -> Result<usize> {
             if i < unsafe { (*current.files.get()).len() } {
                 drop(unsafe { (*current.files.get()).remove(i) });
 
-                ret = Ok(0);
+                return Ok(0);
             }
-
-            break;
         }
     }
 
-    ret
+    Err(Error::new(EBADF))
 }
 
 pub fn do_sys_dup(fd: usize) -> Result<usize> {
@@ -51,7 +48,7 @@ pub fn do_sys_dup(fd: usize) -> Result<usize> {
     let current = try!(contexts.current());
     let resource = try!(current.get_file(fd));
     let new_resource = try!(resource.dup());
-    let new_fd = unsafe { current.next_fd() };
+    let new_fd = current.next_fd();
     unsafe {
         (*current.files.get()).push(ContextFile {
             fd: new_fd,
@@ -108,7 +105,7 @@ pub fn do_sys_open(path: *const u8, flags: usize) -> Result<usize> {
     let current = try!(contexts.current());
     let path_string = current.canonicalize(c_string_to_str(path));
     let resource = try!(::env().open(&Url::from_string(path_string), flags));
-    let fd = unsafe { current.next_fd() };
+    let fd = current.next_fd();
     unsafe {
         (*current.files.get()).push(ContextFile {
             fd: fd,

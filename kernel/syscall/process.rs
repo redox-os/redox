@@ -21,7 +21,7 @@ pub fn do_sys_clone(flags: usize) -> Result<usize> {
         let mut contexts = ::env().contexts.lock();
 
         let child_option = if let Ok(parent) = contexts.current() {
-            clone_pid = unsafe { Context::next_pid() };
+            clone_pid = Context::next_pid();
             mem_count = Arc::strong_count(&parent.memory);
 
             let parent_ptr: *const Context = parent.deref();

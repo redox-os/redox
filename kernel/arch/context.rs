@@ -16,7 +16,7 @@ use core::ops::DerefMut;
 
 use fs::Resource;
 
-use syscall::{do_sys_exit, Error, Result, CLONE_FILES, CLONE_FS, CLONE_VM, EBADF, ESRCH};
+use syscall::{do_sys_exit, Error, Result, CLONE_FILES, CLONE_FS, CLONE_VM, EBADF, EFAULT, ENOMEM, ESRCH};
 
 pub const CONTEXT_STACK_SIZE: usize = 1024 * 1024;
 pub const CONTEXT_STACK_ADDR: usize = 0x70000000;
@@ -516,7 +516,7 @@ pub struct Context {
 }
 
 impl Context {
-    pub unsafe fn next_pid() -> usize {
+    pub fn next_pid() -> usize {
         let mut contexts = ::env().contexts.lock();
 
         let mut next_pid = contexts.next_pid;
@@ -647,10 +647,10 @@ impl Context {
     }
 
     /// Get the next available memory map address
-    pub unsafe fn next_mem(&self) -> usize {
+    pub fn next_mem(&self) -> usize {
         let mut next_mem = 0;
 
-        for mem in (*self.memory.get()).iter() {
+        for mem in unsafe { (*self.memory.get()).iter() } {
             let pages = (mem.virtual_size + 4095) / 4096;
             let end = mem.virtual_address + pages * 4096;
             if next_mem < end {
@@ -662,42 +662,42 @@ impl Context {
     }
 
     /// Translate to physical if a ptr is inside of the mapped memory
-    pub unsafe fn translate(&self, ptr: usize) -> Option<usize> {
+    pub fn translate(&self, ptr: usize, len: usize) -> Result<usize> {
         if let Some(ref stack) = self.stack {
-            if ptr >= stack.virtual_address && ptr < stack.virtual_address + stack.virtual_size {
-                return Some(ptr - stack.virtual_address + stack.physical_address);
+            if ptr >= stack.virtual_address && ptr + len <= stack.virtual_address + stack.virtual_size {
+                return Ok(ptr - stack.virtual_address + stack.physical_address);
             }
         }
 
-        for mem in (*self.memory.get()).iter() {
+        for mem in unsafe { (*self.memory.get()).iter() } {
             if ptr >= mem.virtual_address && ptr < mem.virtual_address + mem.virtual_size {
-                return Some(ptr - mem.virtual_address + mem.physical_address);
+                return Ok(ptr - mem.virtual_address + mem.physical_address);
             }
         }
 
-        None
+        Err(Error::new(EFAULT))
     }
 
     /// Get a memory map from a pointer
-    pub unsafe fn get_mem<'a>(&self, ptr: usize) -> Option<&'a ContextMemory> {
-        for mem in (*self.memory.get()).iter() {
+    pub fn get_mem<'a>(&self, ptr: usize) -> Result<&'a ContextMemory> {
+        for mem in unsafe { (*self.memory.get()).iter() } {
             if mem.virtual_address == ptr {
-                return Some(mem);
+                return Ok(mem);
             }
         }
 
-        None
+        Err(Error::new(ENOMEM))
     }
 
     /// Get a mutable memory map from a pointer
-    pub unsafe fn get_mem_mut<'a>(&mut self, ptr: usize) -> Option<&'a mut ContextMemory> {
-        for mem in (*self.memory.get()).iter_mut() {
+    pub fn get_mem_mut<'a>(&mut self, ptr: usize) -> Result<&'a mut ContextMemory> {
+        for mem in unsafe { (*self.memory.get()).iter_mut() } {
             if mem.virtual_address == ptr {
-                return Some(mem);
+                return Ok(mem);
             }
         }
 
-        None
+        Err(Error::new(ENOMEM))
     }
 
     /// Cleanup empty memory
@@ -706,13 +706,13 @@ impl Context {
     }
 
     /// Get the next available file descriptor
-    pub unsafe fn next_fd(&self) -> usize {
+    pub fn next_fd(&self) -> usize {
         let mut next_fd = 0;
 
         let mut collision = true;
         while collision {
             collision = false;
-            for file in (*self.files.get()).iter() {
+            for file in unsafe { (*self.files.get()).iter() } {
                 if next_fd == file.fd {
                     next_fd = file.fd + 1;
                     collision = true;
