@@ -272,9 +272,7 @@ unsafe fn init(tss_data: usize) {
 
     match ENV_PTR {
         Some(ref mut env) => {
-            Context::spawn("kidle".to_string(), box move || {
-                idle_loop();
-            });
+            env.contexts.lock().push(Context::root());
 
             env.console.lock().draw = true;
 

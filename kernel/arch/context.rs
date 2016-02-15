@@ -137,7 +137,11 @@ pub unsafe fn context_switch(interrupted: bool) {
                     next.slices = CONTEXT_SLICES;
 
                     if let Some(ref mut tss) = ::TSS_PTR {
-                        tss.sp0 = next.kernel_stack + CONTEXT_STACK_SIZE - 128;
+                        if next.kernel_stack > 0 {
+                            tss.sp0 = next.kernel_stack + CONTEXT_STACK_SIZE - 128;
+                        } else {
+                            tss.sp0 = 0x200000 - 128;
+                        }
                     }
 
                     next.map();
@@ -539,6 +543,31 @@ impl Context {
         ret
     }
 
+    pub unsafe fn root() -> Box<Self> {
+        box Context {
+            pid: Context::next_pid(),
+            ppid: 0,
+            name: "kidle".to_string(),
+            interrupted: false,
+            exited: false,
+            slices: CONTEXT_SLICES,
+            slice_total: 0,
+
+            kernel_stack: 0,
+            sp: 0,
+            flags: 0,
+            fx: memory::alloc(512),
+            stack: None,
+            loadable: false,
+
+            cwd: Arc::new(UnsafeCell::new(String::new())),
+            memory: Arc::new(UnsafeCell::new(Vec::new())),
+            files: Arc::new(UnsafeCell::new(Vec::new())),
+
+            statuses: Vec::new(),
+        }
+    }
+
     pub unsafe fn new(name: String, call: usize, args: &Vec<usize>) -> Box<Self> {
         let kernel_stack = memory::alloc(CONTEXT_STACK_SIZE + 512);
 
@@ -839,6 +868,8 @@ impl Context {
 
 impl Drop for Context {
     fn drop(&mut self) {
-        unsafe { memory::unalloc(self.kernel_stack) };
+        if self.kernel_stack > 0 {
+            unsafe { memory::unalloc(self.kernel_stack) };
+        }
     }
 }
