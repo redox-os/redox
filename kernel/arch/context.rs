@@ -392,7 +392,8 @@ pub unsafe extern "cdecl" fn context_userspace(/*Throw away extra params from AB
                                                flags: usize,
                                                sp: usize,
                                                ss: usize) {
-    asm!("mov rax, [esp + 32]
+    asm!("xchg bx, bx
+    mov rax, [esp + 32]
     mov ds, rax
     mov es, rax
     mov fs, rax
