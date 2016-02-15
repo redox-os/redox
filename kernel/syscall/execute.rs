@@ -151,8 +151,7 @@ pub fn execute_outer(context_ptr: *mut Context, entry: usize, mut args: Vec<Stri
         unsafe {
             context.push(0x20 | 3);
             context.push(user_sp);
-            //context.push(1 << 9);
-            context.push(0);
+            context.push(1 << 9);
             context.push(0x18 | 3);
             context.push(entry);
             context.push(context_userspace as usize);
