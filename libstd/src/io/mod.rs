@@ -2,13 +2,34 @@
 
 use {fmt, str};
 use string::String;
-use vec::{IntoIter, Vec};
+use vec::Vec;
 pub use system::error::Error;
 use system::syscall::{sys_read, sys_write};
 
 pub mod prelude;
 
 pub type Result<T> = ::core::result::Result<T, Error>;
+
+pub struct Bytes<R: Read> {
+    reader: R,
+}
+
+impl<R: Read> Iterator for Bytes<R> {
+    type Item = Result<u8>;
+
+    fn next(&mut self) -> Option<Result<u8>> {
+        let mut byte = [4];
+        if let Ok(1) = self.reader.read(&mut byte) {
+            if byte[0] == 4 {
+                None
+            } else {
+                Some(Ok(byte[0]))
+            }
+        } else {
+            None
+        }
+    }
+}
 
 /// Types you can read
 pub trait Read {
@@ -48,12 +69,10 @@ pub trait Read {
     }
 
     /// Return an iterator of the bytes
-    fn bytes(&mut self) -> IntoIter<u8> {
-        // TODO: This is only a temporary implementation. Make this read one byte at a time.
-        let mut buf = Vec::new();
-        let _ = self.read_to_end(&mut buf);
-
-        buf.into_iter()
+    fn bytes(self) -> Bytes<Self> where Self: Sized {
+        Bytes {
+            reader: self,
+        }
     }
 }
 
