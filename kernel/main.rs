@@ -272,7 +272,10 @@ unsafe fn init(tss_data: usize) {
 
     match ENV_PTR {
         Some(ref mut env) => {
-            env.contexts.lock().push(Context::root());
+            Context::spawn("kidle".to_string(), box move || {
+                idle_loop();
+            });
+
             env.console.lock().draw = true;
 
             debugln!("Redox {} bits", mem::size_of::<usize>() * 8);
@@ -431,7 +434,7 @@ pub extern "cdecl" fn kernel(interrupt: usize, mut regs: &mut Regs) {
         0xFF => {
             unsafe {
                 init(regs.ax);
-                idle_loop();
+                context_switch(false);
             }
         },
         0x0 => exception!("Divide by zero exception"),
