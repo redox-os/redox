@@ -5,6 +5,7 @@ use alloc::boxed::{Box, FnBox};
 
 use arch::memory;
 use arch::paging::Page;
+use arch::regs::Regs;
 
 use collections::string::{String, ToString};
 use collections::vec::Vec;
@@ -174,6 +175,10 @@ pub unsafe fn context_clone(parent_ptr: *const Context,
                      parent.kernel_stack as *const u8,
                      CONTEXT_STACK_SIZE + 512);
 
+            let mut regs = parent.regs;
+            regs.sp = regs.sp - parent.kernel_stack + kernel_stack;
+            regs.bp = regs.bp - parent.kernel_stack + kernel_stack;
+
             let context = box Context {
                 pid: clone_pid,
                 ppid: parent.pid,
@@ -184,9 +189,7 @@ pub unsafe fn context_clone(parent_ptr: *const Context,
                 slice_total: 0,
 
                 kernel_stack: kernel_stack,
-                sp: parent.sp - parent.kernel_stack + kernel_stack,
-                bp: parent.bp - parent.kernel_stack + kernel_stack,
-                flags: parent.flags,
+                regs: regs,
                 fx: kernel_stack + CONTEXT_STACK_SIZE,
                 stack: if let Some(ref entry) = parent.stack {
                     let physical_address = memory::alloc(entry.virtual_size);
@@ -383,12 +386,8 @@ pub struct Context {
 // These members control the stack and registers and are unique to each context {
 // The kernel stack
     pub kernel_stack: usize,
-/// The current kernel stack pointer
-    pub sp: usize,
-/// The current kernel base pointer
-    pub bp: usize,
-/// The current kernel flags
-    pub flags: usize,
+/// The current kernel registers
+    pub regs: Regs,
 /// The location used to save and load SSE and FPU registers
     pub fx: usize,
 /// The context stack
@@ -451,9 +450,7 @@ impl Context {
             slice_total: 0,
 
             kernel_stack: 0,
-            sp: 0,
-            bp: 0,
-            flags: 0,
+            regs: Regs::default(),
             fx: memory::alloc(512),
             stack: None,
             loadable: false,
@@ -469,6 +466,9 @@ impl Context {
     pub unsafe fn new(name: String, call: usize, args: &Vec<usize>) -> Box<Self> {
         let kernel_stack = memory::alloc(CONTEXT_STACK_SIZE + 512);
 
+        let mut regs = Regs::default();
+        regs.sp = kernel_stack + CONTEXT_STACK_SIZE - 128;
+
         let mut ret = box Context {
             pid: Context::next_pid(),
             ppid: 0,
@@ -479,9 +479,7 @@ impl Context {
             slice_total: 0,
 
             kernel_stack: kernel_stack,
-            sp: kernel_stack + CONTEXT_STACK_SIZE - 128,
-            bp: kernel_stack + CONTEXT_STACK_SIZE - 128,
-            flags: 0,
+            regs: regs,
             fx: kernel_stack + CONTEXT_STACK_SIZE,
             stack: None,
             loadable: false,
@@ -644,8 +642,8 @@ impl Context {
     }
 
     pub unsafe fn push(&mut self, data: usize) {
-        self.sp -= mem::size_of::<usize>();
-        ptr::write(self.sp as *mut usize, data);
+        self.regs.sp -= mem::size_of::<usize>();
+        ptr::write(self.regs.sp as *mut usize, data);
     }
 
     pub unsafe fn map(&mut self) {
@@ -671,59 +669,29 @@ impl Context {
     #[cold]
     #[inline(never)]
     pub unsafe fn switch_to(&mut self, next: &mut Context) {
-        asm!("fxsave [$0]"
-            :
-            : "r"(self.fx)
-            : "memory"
-            : "intel", "volatile");
-
+        asm!("fxsave [$0]" : : "r"(self.fx) : "memory" : "intel", "volatile");
         self.loadable = true;
-
         if next.loadable {
-            asm!("fxrstor [$0]"
-                :
-                : "r"(next.fx)
-                : "memory"
-                : "intel", "volatile");
+            asm!("fxrstor [$0]" : : "r"(next.fx) : "memory" : "intel", "volatile");
         }
 
-        asm!("pushfd
-            pop $0"
-            : "=r"(self.flags)
-            :
-            : "memory"
-            : "intel", "volatile");
+        asm!("pushfd ; pop $0" : "=r"(self.regs.flags) : : "memory" : "intel", "volatile");
+        asm!("push $0 ; popfd" : : "r"(next.regs.flags) : "memory" : "intel", "volatile");
 
-        asm!("push $0
-            popfd"
-            :
-            : "r"(next.flags)
-            : "memory"
-            : "intel", "volatile");
+        asm!("mov $0, ebx" : "=r"(self.regs.bx) : : "memory" : "intel", "volatile");
+        asm!("mov ebx, $0" : : "r"(next.regs.bx) : "memory" : "intel", "volatile");
 
-        asm!("mov $0, ebp"
-            : "=r"(self.bp)
-            :
-            : "memory"
-            : "intel", "volatile");
+        asm!("mov $0, edi" : "=r"(self.regs.di) : : "memory" : "intel", "volatile");
+        asm!("mov edi, $0" : : "r"(next.regs.di) : "memory" : "intel", "volatile");
 
-        asm!("mov ebp, $0"
-            :
-            : "r"(next.bp)
-            : "memory"
-            : "intel", "volatile");
+        asm!("mov $0, esi" : "=r"(self.regs.si) : : "memory" : "intel", "volatile");
+        asm!("mov esi, $0" : : "r"(next.regs.si) : "memory" : "intel", "volatile");
 
-        asm!(""
-            : "={esp}"(self.sp)
-            :
-            : "memory"
-            : "intel", "volatile");
+        asm!("mov $0, ebp" : "=r"(self.regs.bp) : : "memory" : "intel", "volatile");
+        asm!("mov ebp, $0" : : "r"(next.regs.bp) : "memory" : "intel", "volatile");
 
-        asm!(""
-            :
-            : "{esp}"(next.sp)
-            : "memory"
-            : "intel", "volatile");
+        asm!("mov $0, esp" : "=r"(self.regs.sp) : : "memory" : "intel", "volatile");
+        asm!("mov esp, $0" : : "r"(next.regs.sp) : "memory" : "intel", "volatile");
     }
 
     // This function must not push or pop
@@ -731,59 +699,35 @@ impl Context {
     #[cold]
     #[inline(never)]
     pub unsafe fn switch_to(&mut self, next: &mut Context) {
-        asm!("fxsave [$0]"
-            :
-            : "r"(self.fx)
-            : "memory"
-            : "intel", "volatile");
-
+        asm!("fxsave [$0]" : : "r"(self.fx) : "memory" : "intel", "volatile");
         self.loadable = true;
-
         if next.loadable {
-            asm!("fxrstor [$0]"
-                :
-                : "r"(next.fx)
-                : "memory"
-                : "intel", "volatile");
+            asm!("fxrstor [$0]" : : "r"(next.fx) : "memory" : "intel", "volatile");
         }
 
-        asm!("pushfq
-            pop $0"
-            : "=r"(self.flags)
-            :
-            : "memory"
-            : "intel", "volatile");
+        asm!("pushfq ; pop $0" : "=r"(self.regs.flags) : : "memory" : "intel", "volatile");
+        asm!("push $0 ; popfq" : : "r"(next.regs.flags) : "memory" : "intel", "volatile");
 
-        asm!("push $0
-            popfq"
-            :
-            : "r"(next.flags)
-            : "memory"
-            : "intel", "volatile");
+        asm!("mov $0, rbx" : "=r"(self.regs.bx) : : "memory" : "intel", "volatile");
+        asm!("mov rbx, $0" : : "r"(next.regs.bx) : "memory" : "intel", "volatile");
 
-        asm!("mov $0, rbp"
-            : "=r"(self.bp)
-            :
-            : "memory"
-            : "intel", "volatile");
+        asm!("mov $0, r12" : "=r"(self.regs.r12) : : "memory" : "intel", "volatile");
+        asm!("mov r12, $0" : : "r"(next.regs.r12) : "memory" : "intel", "volatile");
 
-        asm!("mov rbp, $0"
-            :
-            : "r"(next.bp)
-            : "memory"
-            : "intel", "volatile");
+        asm!("mov $0, r13" : "=r"(self.regs.r13) : : "memory" : "intel", "volatile");
+        asm!("mov r13, $0" : : "r"(next.regs.r13) : "memory" : "intel", "volatile");
 
-        asm!(""
-            : "={rsp}"(self.sp)
-            :
-            : "memory"
-            : "intel", "volatile");
+        asm!("mov $0, r14" : "=r"(self.regs.r14) : : "memory" : "intel", "volatile");
+        asm!("mov r14, $0" : : "r"(next.regs.r14) : "memory" : "intel", "volatile");
 
-        asm!(""
-            :
-            : "{rsp}"(next.sp)
-            : "memory"
-            : "intel", "volatile");
+        asm!("mov $0, r15" : "=r"(self.regs.r15) : : "memory" : "intel", "volatile");
+        asm!("mov r15, $0" : : "r"(next.regs.r15) : "memory" : "intel", "volatile");
+
+        asm!("mov $0, rbp" : "=r"(self.regs.bp) : : "memory" : "intel", "volatile");
+        asm!("mov rbp, $0" : : "r"(next.regs.bp) : "memory" : "intel", "volatile");
+
+        asm!("mov $0, rsp" : "=r"(self.regs.sp) : : "memory" : "intel", "volatile");
+        asm!("mov rsp, $0" : : "r"(next.regs.sp) : "memory" : "intel", "volatile");
     }
 }
 
