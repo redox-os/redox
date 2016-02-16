@@ -38,14 +38,16 @@ interrupts:
 	push rbx
 	push rax
 
+	mov rsi, rsp
+	push rsi
+	mov rdi, qword [.entry]
+	push rdi
+
     mov rax, gdt.kernel_data
     mov ds, rax
     mov es, rax
     mov fs, rax
     mov gs, rax
-
-	mov rdi, qword [.entry]
-	mov rsi, rsp
 
 		;Stack Align
 		mov rbp, rsp
@@ -61,6 +63,8 @@ interrupts:
     mov es, rax
     mov fs, rax
     mov gs, rax
+
+	add rsp, 16 ; Skip interrupt code and reg pointer
 
 	pop rax
 	pop rbx
