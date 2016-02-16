@@ -668,19 +668,6 @@ impl Context {
     #[cold]
     #[inline(never)]
     pub unsafe fn switch_to(&mut self, next: &mut Context) {
-        asm!("pushfd
-            pop $0"
-            : "=r"(self.flags)
-            :
-            : "memory"
-            : "intel", "volatile");
-
-        asm!(""
-            : "={esp}"(self.sp)
-            :
-            : "memory"
-            : "intel", "volatile");
-
         asm!("fxsave [$0]"
             :
             : "r"(self.fx)
@@ -697,17 +684,29 @@ impl Context {
                 : "intel", "volatile");
         }
 
-        asm!(""
+        asm!("pushfd
+            pop $0"
+            : "=r"(self.flags)
             :
-            : "{esp}"(next.sp)
             : "memory"
             : "intel", "volatile");
-
 
         asm!("push $0
             popfd"
             :
             : "r"(next.flags)
+            : "memory"
+            : "intel", "volatile");
+
+        asm!("mov $0, esp"
+            : "=r"(self.sp)
+            :
+            : "memory"
+            : "intel", "volatile");
+
+        asm!("mov esp, $0"
+            :
+            : "r"(next.sp)
             : "memory"
             : "intel", "volatile");
     }
@@ -717,19 +716,6 @@ impl Context {
     #[cold]
     #[inline(never)]
     pub unsafe fn switch_to(&mut self, next: &mut Context) {
-        asm!("pushfq
-            pop $0"
-            : "=r"(self.flags)
-            :
-            : "memory"
-            : "intel", "volatile");
-
-        asm!(""
-            : "={rsp}"(self.sp)
-            :
-            : "memory"
-            : "intel", "volatile");
-
         asm!("fxsave [$0]"
             :
             : "r"(self.fx)
@@ -746,17 +732,29 @@ impl Context {
                 : "intel", "volatile");
         }
 
-        asm!(""
+        asm!("pushfq
+            pop $0"
+            : "=r"(self.flags)
             :
-            : "{rsp}"(next.sp)
             : "memory"
             : "intel", "volatile");
-
 
         asm!("push $0
             popfq"
             :
             : "r"(next.flags)
+            : "memory"
+            : "intel", "volatile");
+
+        asm!("mov $0, rsp"
+            : "=r"(self.sp)
+            :
+            : "memory"
+            : "intel", "volatile");
+
+        asm!("mov rsp, $0"
+            :
+            : "r"(next.sp)
             : "memory"
             : "intel", "volatile");
     }
