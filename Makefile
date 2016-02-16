@@ -209,7 +209,7 @@ test: kernel/main.rs \
 	$(RUSTC) $(RUSTCFLAGS) --test $<
 
 clean:
-	$(RM) -rf build doc filesystem/*.bin filesystem/*.list filesystem/apps/*/*.bin filesystem/apps/*/*.list filesystem/schemes/*/*.bin filesystem/schemes/*/*.list filesystem/bin/
+	$(RM) -rf build doc filesystem/bin/ filesystem/apps/*/*.bin filesystem/apps/*/*.list
 
 FORCE:
 
@@ -354,7 +354,7 @@ filesystem/apps/example/main.bin: filesystem/apps/example/main.rs filesystem/app
 filesystem/apps/%/main.bin: filesystem/apps/%/main.rs filesystem/apps/%/*.rs $(BUILD)/crt0.o $(BUILD)/libstd.rlib $(BUILD)/liborbclient.rlib $(BUILD)/liborbtk.rlib
 	$(RUSTC) $(RUSTCFLAGS) --crate-type bin -o $@ $<
 
-filesystem/%.list: filesystem/%.bin
+filesystem/%.list: filesystem/%
 	$(OBJDUMP) -C -M intel -D $< > $@
 
 filesystem/apps/zfs/zfs.img:

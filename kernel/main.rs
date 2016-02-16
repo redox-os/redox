@@ -273,6 +273,7 @@ unsafe fn init(tss_data: usize) {
     match ENV_PTR {
         Some(ref mut env) => {
             env.contexts.lock().push(Context::root());
+
             env.console.lock().draw = true;
 
             debugln!("Redox {} bits", mem::size_of::<usize>() * 8);
@@ -306,12 +307,12 @@ unsafe fn init(tss_data: usize) {
             box move || {
                 {
                     let wd_c = "file:/\0";
-                    do_sys_chdir(wd_c.as_ptr());
+                    do_sys_chdir(wd_c.as_ptr()).unwrap();
 
                     let stdio_c = "debug:\0";
-                    do_sys_open(stdio_c.as_ptr(), 0);
-                    do_sys_open(stdio_c.as_ptr(), 0);
-                    do_sys_open(stdio_c.as_ptr(), 0);
+                    do_sys_open(stdio_c.as_ptr(), 0).unwrap();
+                    do_sys_open(stdio_c.as_ptr(), 0).unwrap();
+                    do_sys_open(stdio_c.as_ptr(), 0).unwrap();
                 }
 
                 if let Err(err) = execute(vec!["init".to_string()]) {
@@ -332,7 +333,7 @@ pub extern "cdecl" fn kernel(interrupt: usize, mut regs: &mut Regs) {
         ($name:expr) => ({
             {
                 let contexts = ::env().contexts.lock();
-                if let Some(context) = contexts.current() {
+                if let Ok(context) = contexts.current() {
                     debugln!("PID {}: {}", context.pid, context.name);
                 }
             }
@@ -413,7 +414,7 @@ pub extern "cdecl" fn kernel(interrupt: usize, mut regs: &mut Regs) {
 
             let switch = {
                 let mut contexts = ::env().contexts.lock();
-                if let Some(mut context) = contexts.current_mut() {
+                if let Ok(mut context) = contexts.current_mut() {
                     context.slices -= 1;
                     context.slice_total += 1;
                     context.slices == 0
@@ -431,7 +432,7 @@ pub extern "cdecl" fn kernel(interrupt: usize, mut regs: &mut Regs) {
         0xFF => {
             unsafe {
                 init(regs.ax);
-                idle_loop();
+                context_switch(false);
             }
         },
         0x0 => exception!("Divide by zero exception"),

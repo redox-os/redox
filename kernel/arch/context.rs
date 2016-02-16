@@ -16,7 +16,7 @@ use core::ops::DerefMut;
 
 use fs::Resource;
 
-use syscall::{do_sys_exit, CLONE_FILES, CLONE_FS, CLONE_VM};
+use syscall::{do_sys_exit, Error, Result, CLONE_FILES, CLONE_FS, CLONE_VM, EBADF, EFAULT, ENOMEM, ESRCH};
 
 pub const CONTEXT_STACK_SIZE: usize = 1024 * 1024;
 pub const CONTEXT_STACK_ADDR: usize = 0x70000000;
@@ -39,12 +39,12 @@ impl ContextManager {
         }
     }
 
-    pub fn current(&self) -> Option<&Box<Context>> {
+    pub fn current(&self) -> Result<&Box<Context>> {
         let i = self.i;
         self.get(i)
     }
 
-    pub fn current_mut(&mut self) -> Option<&mut Box<Context>> {
+    pub fn current_mut(&mut self) -> Result<&mut Box<Context>> {
         let i = self.i;
         self.get_mut(i)
     }
@@ -57,19 +57,19 @@ impl ContextManager {
         self.inner.iter_mut()
     }
 
-    pub fn get(&self, i: usize) -> Option<&Box<Context>> {
+    pub fn get(&self, i: usize) -> Result<&Box<Context>> {
         if self.enabled {
-            self.inner.get(i)
+            self.inner.get(i).ok_or(Error::new(ESRCH))
         } else{
-            None
+            Err(Error::new(ESRCH))
         }
     }
 
-    pub fn get_mut(&mut self, i: usize) -> Option<&mut Box<Context>> {
+    pub fn get_mut(&mut self, i: usize) -> Result<&mut Box<Context>> {
         if self.enabled {
-            self.inner.get_mut(i)
+            self.inner.get_mut(i).ok_or(Error::new(ESRCH))
         } else{
-            None
+            Err(Error::new(ESRCH))
         }
     }
 
@@ -88,7 +88,7 @@ impl ContextManager {
             }
 
             let mut remove = false;
-            if let Some(next) = self.current() {
+            if let Ok(next) = self.current() {
                 if next.exited {
                     remove = true;
                 }
@@ -124,7 +124,7 @@ pub unsafe fn context_switch(interrupted: bool) {
             contexts.clean();
 
             if contexts.i != current_i {
-                if let Some(mut current) = contexts.get_mut(current_i) {
+                if let Ok(mut current) = contexts.get_mut(current_i) {
                     current.interrupted = interrupted;
 
                     current.unmap();
@@ -132,16 +132,14 @@ pub unsafe fn context_switch(interrupted: bool) {
                     current_ptr = current.deref_mut();
                 }
 
-                if let Some(mut next) = contexts.current_mut() {
+                if let Ok(mut next) = contexts.current_mut() {
                     next.interrupted = false;
                     next.slices = CONTEXT_SLICES;
 
-                    if next.kernel_stack > 0 {
-                        if let Some(ref mut tss) = ::TSS_PTR {
+                    if let Some(ref mut tss) = ::TSS_PTR {
+                        if next.kernel_stack > 0 {
                             tss.sp0 = next.kernel_stack + CONTEXT_STACK_SIZE - 128;
-                        }
-                    } else {
-                        if let Some(ref mut tss) = ::TSS_PTR {
+                        } else {
                             tss.sp0 = 0x200000 - 128;
                         }
                     }
@@ -162,8 +160,7 @@ pub unsafe fn context_switch(interrupted: bool) {
 /// Clone context
 /// # Safety
 /// Unsafe due to interrupt disabling, C memory handling, and raw pointers
-#[cfg(target_arch="x86")]
-pub unsafe extern "cdecl" fn context_clone(parent_ptr: *const Context,
+pub unsafe fn context_clone(parent_ptr: *const Context,
                                            flags: usize,
                                            clone_pid: usize) {
     {
@@ -188,110 +185,7 @@ pub unsafe extern "cdecl" fn context_clone(parent_ptr: *const Context,
 
                 kernel_stack: kernel_stack,
                 sp: parent.sp - parent.kernel_stack + kernel_stack,
-                flags: parent.flags,
-                fx: kernel_stack + CONTEXT_STACK_SIZE,
-                stack: if let Some(ref entry) = parent.stack {
-                    let physical_address = memory::alloc(entry.virtual_size);
-                    if physical_address > 0 {
-                        ::memcpy(physical_address as *mut u8,
-                                 entry.physical_address as *const u8,
-                                 entry.virtual_size);
-                        Some(ContextMemory {
-                            physical_address: physical_address,
-                            virtual_address: entry.virtual_address,
-                            virtual_size: entry.virtual_size,
-                            writeable: entry.writeable,
-                            allocated: true,
-                        })
-                    } else {
-                        None
-                    }
-                } else {
-                    None
-                },
-                loadable: parent.loadable,
-
-                cwd: if flags & CLONE_FS == CLONE_FS {
-                    parent.cwd.clone()
-                } else {
-                    Arc::new(UnsafeCell::new((*parent.cwd.get()).clone()))
-                },
-                memory: if flags & CLONE_VM == CLONE_VM {
-                    parent.memory.clone()
-                } else {
-                    let mut mem: Vec<ContextMemory> = Vec::new();
-                    for entry in (*parent.memory.get()).iter() {
-                        let physical_address = memory::alloc(entry.virtual_size);
-                        if physical_address > 0 {
-                            ::memcpy(physical_address as *mut u8,
-                                     entry.physical_address as *const u8,
-                                     entry.virtual_size);
-                            mem.push(ContextMemory {
-                                physical_address: physical_address,
-                                virtual_address: entry.virtual_address,
-                                virtual_size: entry.virtual_size,
-                                writeable: entry.writeable,
-                                allocated: true,
-                            });
-                        }
-                    }
-                    Arc::new(UnsafeCell::new(mem))
-                },
-                files: if flags & CLONE_FILES == CLONE_FILES {
-                    parent.files.clone()
-                } else {
-                    let mut files: Vec<ContextFile> = Vec::new();
-                    for file in (*parent.files.get()).iter() {
-                        if let Ok(resource) = file.resource.dup() {
-                            files.push(ContextFile {
-                                fd: file.fd,
-                                resource: resource,
-                            });
-                        }
-                    }
-                    Arc::new(UnsafeCell::new(files))
-                },
-
-                statuses: Vec::new(),
-            };
-
-            contexts.push(context);
-        }
-    }
-
-    do_sys_exit(0);
-}
-
-/// Clone context
-/// # Safety
-/// Unsafe due to interrupt disabling, C memory handling, and raw pointers
-#[cfg(target_arch="x86_64")]
-pub unsafe extern "cdecl" fn context_clone(/*Throw away extra params from ABI*/_rdi: usize, _rsi: usize, _rdx: usize, _rcx: usize, _r8: usize, _r9: usize,
-                                           parent_ptr: *const Context,
-                                           flags: usize,
-                                           clone_pid: usize) {
-    {
-        let mut contexts = ::env().contexts.lock();
-
-        let kernel_stack = memory::alloc(CONTEXT_STACK_SIZE + 512);
-        if kernel_stack > 0 {
-            let parent = &*parent_ptr;
-
-            ::memcpy(kernel_stack as *mut u8,
-                     parent.kernel_stack as *const u8,
-                     CONTEXT_STACK_SIZE + 512);
-
-            let context = box Context {
-                pid: clone_pid,
-                ppid: parent.pid,
-                name: parent.name.clone(),
-                interrupted: parent.interrupted,
-                exited: parent.exited,
-                slices: CONTEXT_SLICES,
-                slice_total: 0,
-
-                kernel_stack: kernel_stack,
-                sp: parent.sp - parent.kernel_stack + kernel_stack,
+                bp: parent.bp - parent.kernel_stack + kernel_stack,
                 flags: parent.flags,
                 fx: kernel_stack + CONTEXT_STACK_SIZE,
                 stack: if let Some(ref entry) = parent.stack {
@@ -374,8 +268,7 @@ pub unsafe extern "cdecl" fn context_userspace(ip: usize,
                                                flags: usize,
                                                sp: usize,
                                                ss: usize) {
-    asm!("xchg bx, bx
-    mov eax, [esp + 16]
+    asm!("mov eax, [esp + 16]
     mov ds, eax
     mov es, eax
     mov fs, eax
@@ -492,6 +385,8 @@ pub struct Context {
     pub kernel_stack: usize,
 /// The current kernel stack pointer
     pub sp: usize,
+/// The current kernel base pointer
+    pub bp: usize,
 /// The current kernel flags
     pub flags: usize,
 /// The location used to save and load SSE and FPU registers
@@ -516,7 +411,7 @@ pub struct Context {
 }
 
 impl Context {
-    pub unsafe fn next_pid() -> usize {
+    pub fn next_pid() -> usize {
         let mut contexts = ::env().contexts.lock();
 
         let mut next_pid = contexts.next_pid;
@@ -557,6 +452,7 @@ impl Context {
 
             kernel_stack: 0,
             sp: 0,
+            bp: 0,
             flags: 0,
             fx: memory::alloc(512),
             stack: None,
@@ -584,6 +480,7 @@ impl Context {
 
             kernel_stack: kernel_stack,
             sp: kernel_stack + CONTEXT_STACK_SIZE - 128,
+            bp: kernel_stack + CONTEXT_STACK_SIZE - 128,
             flags: 0,
             fx: kernel_stack + CONTEXT_STACK_SIZE,
             stack: None,
@@ -647,10 +544,10 @@ impl Context {
     }
 
     /// Get the next available memory map address
-    pub unsafe fn next_mem(&self) -> usize {
+    pub fn next_mem(&self) -> usize {
         let mut next_mem = 0;
 
-        for mem in (*self.memory.get()).iter() {
+        for mem in unsafe { (*self.memory.get()).iter() } {
             let pages = (mem.virtual_size + 4095) / 4096;
             let end = mem.virtual_address + pages * 4096;
             if next_mem < end {
@@ -662,42 +559,42 @@ impl Context {
     }
 
     /// Translate to physical if a ptr is inside of the mapped memory
-    pub unsafe fn translate(&self, ptr: usize) -> Option<usize> {
+    pub fn translate(&self, ptr: usize, len: usize) -> Result<usize> {
         if let Some(ref stack) = self.stack {
-            if ptr >= stack.virtual_address && ptr < stack.virtual_address + stack.virtual_size {
-                return Some(ptr - stack.virtual_address + stack.physical_address);
+            if ptr >= stack.virtual_address && ptr + len <= stack.virtual_address + stack.virtual_size {
+                return Ok(ptr - stack.virtual_address + stack.physical_address);
             }
         }
 
-        for mem in (*self.memory.get()).iter() {
+        for mem in unsafe { (*self.memory.get()).iter() } {
             if ptr >= mem.virtual_address && ptr < mem.virtual_address + mem.virtual_size {
-                return Some(ptr - mem.virtual_address + mem.physical_address);
+                return Ok(ptr - mem.virtual_address + mem.physical_address);
             }
         }
 
-        None
+        Err(Error::new(EFAULT))
     }
 
     /// Get a memory map from a pointer
-    pub unsafe fn get_mem<'a>(&self, ptr: usize) -> Option<&'a ContextMemory> {
-        for mem in (*self.memory.get()).iter() {
+    pub fn get_mem<'a>(&self, ptr: usize) -> Result<&'a ContextMemory> {
+        for mem in unsafe { (*self.memory.get()).iter() } {
             if mem.virtual_address == ptr {
-                return Some(mem);
+                return Ok(mem);
             }
         }
 
-        None
+        Err(Error::new(ENOMEM))
     }
 
     /// Get a mutable memory map from a pointer
-    pub unsafe fn get_mem_mut<'a>(&mut self, ptr: usize) -> Option<&'a mut ContextMemory> {
-        for mem in (*self.memory.get()).iter_mut() {
+    pub fn get_mem_mut<'a>(&mut self, ptr: usize) -> Result<&'a mut ContextMemory> {
+        for mem in unsafe { (*self.memory.get()).iter_mut() } {
             if mem.virtual_address == ptr {
-                return Some(mem);
+                return Ok(mem);
             }
         }
 
-        None
+        Err(Error::new(ENOMEM))
     }
 
     /// Cleanup empty memory
@@ -706,13 +603,13 @@ impl Context {
     }
 
     /// Get the next available file descriptor
-    pub unsafe fn next_fd(&self) -> usize {
+    pub fn next_fd(&self) -> usize {
         let mut next_fd = 0;
 
         let mut collision = true;
         while collision {
             collision = false;
-            for file in (*self.files.get()).iter() {
+            for file in unsafe { (*self.files.get()).iter() } {
                 if next_fd == file.fd {
                     next_fd = file.fd + 1;
                     collision = true;
@@ -725,25 +622,25 @@ impl Context {
     }
 
     /// Get a resource from a file descriptor
-    pub unsafe fn get_file<'a>(&self, fd: usize) -> Option<&'a Box<Resource>> {
-        for file in (*self.files.get()).iter() {
+    pub fn get_file<'a>(&self, fd: usize) -> Result<&'a Box<Resource>> {
+        for file in unsafe { (*self.files.get()).iter() } {
             if file.fd == fd {
-                return Some(&file.resource);
+                return Ok(&file.resource);
             }
         }
 
-        None
+        Err(Error::new(EBADF))
     }
 
     /// Get a mutable resource from a file descriptor
-    pub unsafe fn get_file_mut<'a>(&mut self, fd: usize) -> Option<&'a mut Box<Resource>> {
-        for file in (*self.files.get()).iter_mut() {
+    pub fn get_file_mut<'a>(&mut self, fd: usize) -> Result<&'a mut Box<Resource>> {
+        for file in unsafe { (*self.files.get()).iter_mut() } {
             if file.fd == fd {
-                return Some(&mut file.resource);
+                return Ok(&mut file.resource);
             }
         }
 
-        None
+        Err(Error::new(EBADF))
     }
 
     pub unsafe fn push(&mut self, data: usize) {
@@ -774,10 +671,45 @@ impl Context {
     #[cold]
     #[inline(never)]
     pub unsafe fn switch_to(&mut self, next: &mut Context) {
+        asm!("fxsave [$0]"
+            :
+            : "r"(self.fx)
+            : "memory"
+            : "intel", "volatile");
+
+        self.loadable = true;
+
+        if next.loadable {
+            asm!("fxrstor [$0]"
+                :
+                : "r"(next.fx)
+                : "memory"
+                : "intel", "volatile");
+        }
+
         asm!("pushfd
             pop $0"
             : "=r"(self.flags)
             :
+            : "memory"
+            : "intel", "volatile");
+
+        asm!("push $0
+            popfd"
+            :
+            : "r"(next.flags)
+            : "memory"
+            : "intel", "volatile");
+
+        asm!("mov $0, ebp"
+            : "=r"(self.bp)
+            :
+            : "memory"
+            : "intel", "volatile");
+
+        asm!("mov ebp, $0"
+            :
+            : "r"(next.bp)
             : "memory"
             : "intel", "volatile");
 
@@ -787,33 +719,9 @@ impl Context {
             : "memory"
             : "intel", "volatile");
 
-        asm!("fxsave [$0]"
-            :
-            : "r"(self.fx)
-            : "memory"
-            : "intel", "volatile");
-
-        self.loadable = true;
-
-        if next.loadable {
-            asm!("fxrstor [$0]"
-                :
-                : "r"(next.fx)
-                : "memory"
-                : "intel", "volatile");
-        }
-
         asm!(""
             :
             : "{esp}"(next.sp)
-            : "memory"
-            : "intel", "volatile");
-
-
-        asm!("push $0
-            popfd"
-            :
-            : "r"(next.flags)
             : "memory"
             : "intel", "volatile");
     }
@@ -823,19 +731,6 @@ impl Context {
     #[cold]
     #[inline(never)]
     pub unsafe fn switch_to(&mut self, next: &mut Context) {
-        asm!("pushfq
-            pop $0"
-            : "=r"(self.flags)
-            :
-            : "memory"
-            : "intel", "volatile");
-
-        asm!(""
-            : "={rsp}"(self.sp)
-            :
-            : "memory"
-            : "intel", "volatile");
-
         asm!("fxsave [$0]"
             :
             : "r"(self.fx)
@@ -852,17 +747,41 @@ impl Context {
                 : "intel", "volatile");
         }
 
-        asm!(""
+        asm!("pushfq
+            pop $0"
+            : "=r"(self.flags)
             :
-            : "{rsp}"(next.sp)
             : "memory"
             : "intel", "volatile");
-
 
         asm!("push $0
             popfq"
             :
             : "r"(next.flags)
+            : "memory"
+            : "intel", "volatile");
+
+        asm!("mov $0, rbp"
+            : "=r"(self.bp)
+            :
+            : "memory"
+            : "intel", "volatile");
+
+        asm!("mov rbp, $0"
+            :
+            : "r"(next.bp)
+            : "memory"
+            : "intel", "volatile");
+
+        asm!(""
+            : "={rsp}"(self.sp)
+            :
+            : "memory"
+            : "intel", "volatile");
+
+        asm!(""
+            :
+            : "{rsp}"(next.sp)
             : "memory"
             : "intel", "volatile");
     }

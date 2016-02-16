@@ -1,9 +1,9 @@
 use common::time::Duration;
 
-use super::{Error, CLOCK_MONOTONIC, CLOCK_REALTIME, EFAULT, EINVAL, TimeSpec};
+use super::{Error, Result, CLOCK_MONOTONIC, CLOCK_REALTIME, EFAULT, EINVAL, TimeSpec};
 
-pub fn do_sys_clock_gettime(clock: usize, tp: *mut TimeSpec) -> usize {
-    Error::mux(if tp as usize > 0 {
+pub fn do_sys_clock_gettime(clock: usize, tp: *mut TimeSpec) -> Result<usize> {
+    if tp as usize > 0 {
         match clock {
             CLOCK_REALTIME => {
                 let clock_realtime = ::env().clock_realtime.lock();
@@ -25,11 +25,11 @@ pub fn do_sys_clock_gettime(clock: usize, tp: *mut TimeSpec) -> usize {
         }
     } else {
         Err(Error::new(EFAULT))
-    })
+    }
 }
 
-pub fn do_sys_nanosleep(req: *const TimeSpec, rem: *mut TimeSpec) -> usize {
-    Error::mux(if req as usize > 0 {
+pub fn do_sys_nanosleep(req: *const TimeSpec, rem: *mut TimeSpec) -> Result<usize> {
+    if req as usize > 0 {
         Duration::new(unsafe { (*req).tv_sec }, unsafe { (*req).tv_nsec }).sleep();
 
         if rem as usize > 0 {
@@ -44,5 +44,5 @@ pub fn do_sys_nanosleep(req: *const TimeSpec, rem: *mut TimeSpec) -> usize {
         Ok(0)
     } else {
         Err(Error::new(EFAULT))
-    })
+    }
 }
