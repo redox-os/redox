@@ -17,7 +17,7 @@ pub mod process;
 pub mod time;
 
 pub fn syscall_handle(regs: &mut Regs) {
-    debugln!("{:X}: {} {:X} {:X} {:X}", regs.ip, regs.ax, regs.bx, regs.cx, regs.dx);
+    //debugln!("{:X}: {} {:X} {:X} {:X}", regs.ip, regs.ax, regs.bx, regs.cx, regs.dx);
     regs.ax = Error::mux(match regs.ax {
         SYS_DEBUG => do_sys_debug(regs.bx as *const u8, regs.cx),
 
@@ -55,5 +55,5 @@ pub fn syscall_handle(regs: &mut Regs) {
 
         _ => Err(Error::new(ENOSYS)),
     });
-    debugln!("={:X}", regs.ax);
+    //debugln!("={:X}", regs.ax);
 }

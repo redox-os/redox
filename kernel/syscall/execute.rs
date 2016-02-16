@@ -165,8 +165,6 @@ pub fn execute_outer(context_ptr: *mut Context, entry: usize, mut args: Vec<Stri
 
 /// Execute an executable
 pub fn execute(args: Vec<String>) -> Result<usize> {
-    debugln!("execute {:?}", args);
-
     let contexts = ::env().contexts.lock();
     let current = try!(contexts.current());
 
