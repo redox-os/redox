@@ -28,6 +28,7 @@ interrupts:
     push ecx
     push ebx
     push eax
+
     push esp
     push dword [.entry]
 
@@ -37,15 +38,15 @@ interrupts:
     mov fs, eax
     mov gs, eax
 
-    call [.handler]
-
-    add esp, 8 ;Skip interrupt and reg pointer
+    	call dword [.handler]
 
     mov eax, gdt.user_data | 3 ;[esp + 44] ;Use new SS as DS
     mov ds, eax
     mov es, eax
     mov fs, eax
     mov gs, eax
+
+    add esp, 8 ; Skip interrupt code and reg pointer
 
     pop eax
     pop ebx

@@ -158,28 +158,32 @@ pub unsafe fn context_switch(interrupted: bool) {
     }
 }
 
-/// Clone context
-/// # Safety
-/// Unsafe due to interrupt disabling, C memory handling, and raw pointers
-pub unsafe fn context_clone(parent_ptr: *const Context,
-                                           flags: usize,
-                                           clone_pid: usize) {
-    {
-        let mut contexts = ::env().contexts.lock();
+pub unsafe fn context_clone(regs: &Regs) -> Result<usize> {
+    let mut contexts = ::env().contexts.lock();
+    let flags = regs.ax;
 
-        let kernel_stack = memory::alloc(CONTEXT_STACK_SIZE + 512);
-        if kernel_stack > 0 {
-            let parent = &*parent_ptr;
+    let kernel_stack = memory::alloc(CONTEXT_STACK_SIZE + 512);
+    if kernel_stack > 0 {
+        let clone_pid = Context::next_pid();
 
-            ::memcpy(kernel_stack as *mut u8,
-                     parent.kernel_stack as *const u8,
-                     CONTEXT_STACK_SIZE + 512);
+        let context = {
+            let parent = try!(contexts.current());
 
-            let mut regs = parent.regs;
-            regs.sp = regs.sp - parent.kernel_stack + kernel_stack;
-            regs.bp = regs.bp - parent.kernel_stack + kernel_stack;
+            let regs_size = mem::size_of::<Regs>();
+            let extra_size = mem::size_of::<usize>() * 3; /* Return pointer, interrupt code, regs pointer */
+            let parent_regs_addr = (regs as *const Regs) as usize;
+            let child_regs_addr = parent_regs_addr - parent.kernel_stack + kernel_stack;
+            ::memcpy((child_regs_addr - extra_size) as *mut u8,
+                     (parent_regs_addr - extra_size) as *const u8,
+                     regs_size + extra_size);
 
-            let context = box Context {
+            let child_regs = &mut *(child_regs_addr as *mut Regs);
+            child_regs.ax = 0;
+
+            let mut kernel_regs = parent.regs;
+            kernel_regs.sp = child_regs_addr - extra_size;
+
+            box Context {
                 pid: clone_pid,
                 ppid: parent.pid,
                 name: parent.name.clone(),
@@ -189,7 +193,7 @@ pub unsafe fn context_clone(parent_ptr: *const Context,
                 slice_total: 0,
 
                 kernel_stack: kernel_stack,
-                regs: regs,
+                regs: kernel_regs,
                 fx: kernel_stack + CONTEXT_STACK_SIZE,
                 stack: if let Some(ref entry) = parent.stack {
                     let physical_address = memory::alloc(entry.virtual_size);
@@ -254,13 +258,15 @@ pub unsafe fn context_clone(parent_ptr: *const Context,
                 },
 
                 statuses: Vec::new(),
-            };
+            }
+        };
 
-            contexts.push(context);
-        }
+        contexts.push(context);
+
+        Ok(clone_pid)
+    } else {
+        Err(Error::new(ENOMEM))
     }
-
-    do_sys_exit(0);
 }
 
 // Must have absolutely no pushes or pops
@@ -669,6 +675,8 @@ impl Context {
     #[cold]
     #[inline(never)]
     pub unsafe fn switch_to(&mut self, next: &mut Context) {
+        //asm!("xchg bx, bx" : : : "memory" : "intel", "volatile");
+
         asm!("fxsave [$0]" : : "r"(self.fx) : "memory" : "intel", "volatile");
         self.loadable = true;
         if next.loadable {
@@ -699,6 +707,8 @@ impl Context {
     #[cold]
     #[inline(never)]
     pub unsafe fn switch_to(&mut self, next: &mut Context) {
+        //asm!("xchg bx, bx" : : : "memory" : "intel", "volatile");
+
         asm!("fxsave [$0]" : : "r"(self.fx) : "memory" : "intel", "volatile");
         self.loadable = true;
         if next.loadable {
