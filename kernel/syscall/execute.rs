@@ -1,4 +1,5 @@
 use alloc::arc::Arc;
+use alloc::boxed::Box;
 
 use arch::context::{CONTEXT_STACK_SIZE, CONTEXT_STACK_ADDR, context_switch, context_userspace, Context, ContextMemory};
 use arch::elf::Elf;
@@ -99,32 +100,27 @@ pub fn execute_outer(context_ptr: *mut Context, entry: usize, mut args: Vec<Stri
         context_args.push(0); // ENVP
         context_args.push(0); // ARGV NULL
         let mut argc = 0;
-        for i in 0..args.len() {
-            let reverse_i = args.len() - i - 1;
-            if let Some(ref mut arg) = args.get_mut(reverse_i) {
-                if ! arg.ends_with('\0') {
-                    arg.push('\0');
-                }
-
-                let physical_address = arg.as_ptr() as usize;
-                let virtual_address = context.next_mem();
-                let virtual_size = arg.len();
-
-                mem::forget(arg);
-
-                unsafe {
-                    (*context.memory.get()).push(ContextMemory {
-                        physical_address: physical_address,
-                        virtual_address: virtual_address,
-                        virtual_size: virtual_size,
-                        writeable: false,
-                        allocated: true,
-                    });
-                }
-
-                context_args.push(virtual_address as usize);
-                argc += 1;
+        while let Some(mut arg) = args.pop() {
+            if ! arg.ends_with('\0') {
+                arg.push('\0');
             }
+
+            let virtual_address = context.next_mem();
+
+            unsafe {
+                let arg_ptr = Box::into_raw(arg.into_boxed_str());
+
+                (*context.memory.get()).push(ContextMemory {
+                    physical_address: (*arg_ptr).as_ptr() as usize,
+                    virtual_address: virtual_address,
+                    virtual_size: (*arg_ptr).len(),
+                    writeable: false,
+                    allocated: true,
+                });
+            }
+
+            context_args.push(virtual_address as usize);
+            argc += 1;
         }
         context_args.push(argc);
 
