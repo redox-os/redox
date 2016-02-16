@@ -3,6 +3,7 @@ use alloc::arc::Arc;
 use arch::context::{CONTEXT_STACK_SIZE, CONTEXT_STACK_ADDR, context_switch, context_userspace, Context, ContextMemory};
 use arch::elf::Elf;
 use arch::memory;
+use arch::regs::Regs;
 
 use collections::string::{String, ToString};
 use collections::vec::Vec;
@@ -127,7 +128,8 @@ pub fn execute_outer(context_ptr: *mut Context, entry: usize, mut args: Vec<Stri
         }
         context_args.push(argc);
 
-        context.sp = context.kernel_stack + CONTEXT_STACK_SIZE - 128;
+        context.regs = Regs::default();
+        context.regs.sp = context.kernel_stack + CONTEXT_STACK_SIZE - 128;
 
         context.stack = Some(ContextMemory {
             physical_address: unsafe { memory::alloc(CONTEXT_STACK_SIZE) },

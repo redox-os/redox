@@ -1,58 +1,18 @@
-use alloc::arc::Arc;
-
-use arch::context::{context_clone, context_switch, Context, ContextStatus};
+use arch::context::{context_clone, context_switch, ContextStatus};
+use arch::regs::Regs;
 
 use collections::Vec;
 use collections::string::ToString;
 
-use core::{mem, ptr, usize};
-use core::ops::Deref;
+use core::{mem, ptr};
 
 use system::{c_array_to_slice, c_string_to_str};
 
-use super::{Error, Result, CLONE_VFORK, ECHILD, ESRCH};
+use super::{Error, Result, ECHILD};
 use super::execute::execute;
 
-pub fn do_sys_clone(flags: usize) -> Result<usize> {
-    let mut clone_pid = usize::MAX;
-    let mut mem_count = 0;
-
-    {
-        let contexts = ::env().contexts.lock();
-        if let Ok(parent) = contexts.current() {
-            clone_pid = Context::next_pid();
-            mem_count = Arc::strong_count(&parent.memory);
-            let parent_ptr = parent.deref() as *const Context;
-            unsafe {
-                Context::spawn(format!("kclone {}", parent.name), box move || {
-                    context_clone(parent_ptr, flags, clone_pid);
-                });
-            }
-        }
-    }
-
-    unsafe {
-        context_switch(false);
-    }
-
-    if clone_pid != usize::MAX {
-        let contexts = ::env().contexts.lock();
-        let current = try!(contexts.current());
-        if current.pid == clone_pid {
-            Ok(0)
-        } else {
-            if flags & CLONE_VFORK == CLONE_VFORK {
-                while Arc::strong_count(&current.memory) > mem_count {
-                    unsafe {
-                        context_switch(false);
-                    }
-                }
-            }
-            Ok(clone_pid)
-        }
-    } else {
-        Err(Error::new(ESRCH))
-    }
+pub fn do_sys_clone(regs: &Regs) -> Result<usize> {
+    unsafe { context_clone(regs) }
 }
 
 pub fn do_sys_execve(path: *const u8, args: *const *const u8) -> Result<usize> {

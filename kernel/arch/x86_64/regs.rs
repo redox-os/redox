@@ -1,4 +1,4 @@
-#[derive(Copy, Clone, Default)]
+#[derive(Copy, Clone, Debug, Default)]
 #[repr(packed)]
 pub struct Regs {
     pub ax: usize,
