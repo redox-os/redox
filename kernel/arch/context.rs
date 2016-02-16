@@ -185,6 +185,7 @@ pub unsafe fn context_clone(parent_ptr: *const Context,
 
                 kernel_stack: kernel_stack,
                 sp: parent.sp - parent.kernel_stack + kernel_stack,
+                bp: parent.bp - parent.kernel_stack + kernel_stack,
                 flags: parent.flags,
                 fx: kernel_stack + CONTEXT_STACK_SIZE,
                 stack: if let Some(ref entry) = parent.stack {
@@ -267,8 +268,7 @@ pub unsafe extern "cdecl" fn context_userspace(ip: usize,
                                                flags: usize,
                                                sp: usize,
                                                ss: usize) {
-    asm!("xchg bx, bx
-    mov eax, [esp + 16]
+    asm!("mov eax, [esp + 16]
     mov ds, eax
     mov es, eax
     mov fs, eax
@@ -285,8 +285,7 @@ pub unsafe extern "cdecl" fn context_userspace(/*Throw away extra params from AB
                                                flags: usize,
                                                sp: usize,
                                                ss: usize) {
-    asm!("xchg bx, bx
-    mov rax, [esp + 32]
+    asm!("mov rax, [esp + 32]
     mov ds, rax
     mov es, rax
     mov fs, rax
@@ -386,6 +385,8 @@ pub struct Context {
     pub kernel_stack: usize,
 /// The current kernel stack pointer
     pub sp: usize,
+/// The current kernel base pointer
+    pub bp: usize,
 /// The current kernel flags
     pub flags: usize,
 /// The location used to save and load SSE and FPU registers
@@ -451,6 +452,7 @@ impl Context {
 
             kernel_stack: 0,
             sp: 0,
+            bp: 0,
             flags: 0,
             fx: memory::alloc(512),
             stack: None,
@@ -478,6 +480,7 @@ impl Context {
 
             kernel_stack: kernel_stack,
             sp: kernel_stack + CONTEXT_STACK_SIZE - 128,
+            bp: kernel_stack + CONTEXT_STACK_SIZE - 128,
             flags: 0,
             fx: kernel_stack + CONTEXT_STACK_SIZE,
             stack: None,
@@ -698,6 +701,18 @@ impl Context {
             : "memory"
             : "intel", "volatile");
 
+        asm!("mov $0, ebp"
+            : "=r"(self.bp)
+            :
+            : "memory"
+            : "intel", "volatile");
+
+        asm!("mov ebp, $0"
+            :
+            : "r"(next.bp)
+            : "memory"
+            : "intel", "volatile");
+
         asm!(""
             : "={esp}"(self.sp)
             :
@@ -743,6 +758,18 @@ impl Context {
             popfq"
             :
             : "r"(next.flags)
+            : "memory"
+            : "intel", "volatile");
+
+        asm!("mov $0, rbp"
+            : "=r"(self.bp)
+            :
+            : "memory"
+            : "intel", "volatile");
+
+        asm!("mov rbp, $0"
+            :
+            : "r"(next.bp)
             : "memory"
             : "intel", "volatile");
 
