@@ -109,7 +109,7 @@ istruc IDTEntry
 	at IDTEntry.offsetl, dw interrupts+(interrupts.second-interrupts.first)*i
 	at IDTEntry.selector, dw gdt.kernel_code
 	at IDTEntry.ist, db 0
-	at IDTEntry.attribute, db attrib.present | attrib.interrupt64
+	at IDTEntry.attribute, db attrib.present | attrib.ring3 | attrib.interrupt64
 	at IDTEntry.offsetm, dw 0
 	at IDTEntry.offseth, dd 0
 	at IDTEntry.reserved, dd 0

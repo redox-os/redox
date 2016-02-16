@@ -15,18 +15,20 @@ use core::{mem, ptr};
 
 use fs::Url;
 
-use system::error::{Error, Result, ESRCH, ENOEXEC};
+use system::error::{Error, Result, ENOEXEC};
 
-fn execute_inner(url: &Url, args: &Vec<String>) -> Result<(*mut Context, usize)> {
-    let mut resource = try!(url.open());
-
+fn execute_inner(url: Url) -> Result<(*mut Context, usize)> {
     let mut vec: Vec<u8> = Vec::new();
-    'reading: loop {
-        let mut bytes = [0; 4096];
-        match resource.read(&mut bytes) {
-            Ok(0) => break 'reading,
-            Ok(count) => vec.push_all(bytes.get_slice(.. count)),
-            Err(err) => return Err(err)
+
+    {
+        let mut resource = try!(url.open());
+        'reading: loop {
+            let mut bytes = [0; 4096];
+            match resource.read(&mut bytes) {
+                Ok(0) => break 'reading,
+                Ok(count) => vec.push_all(bytes.get_slice(.. count)),
+                Err(err) => return Err(err)
+            }
         }
     }
 
@@ -68,20 +70,15 @@ fn execute_inner(url: &Url, args: &Vec<String>) -> Result<(*mut Context, usize)>
 
             if entry > 0 && ! memory.is_empty() {
                 let mut contexts = ::env().contexts.lock();
-                if let Some(mut context) = contexts.current_mut() {
-                    if let Some(arg) = args.get(0) {
-                        context.name = arg.clone();
-                    }
-                    context.cwd = Arc::new(UnsafeCell::new(unsafe { (*context.cwd.get()).clone() }));
+                let mut context = try!(contexts.current_mut());
+                context.name = url.string;
+                context.cwd = Arc::new(UnsafeCell::new(unsafe { (*context.cwd.get()).clone() }));
 
-                    unsafe { context.unmap() };
-                    context.memory = Arc::new(UnsafeCell::new(memory));
-                    unsafe { context.map() };
+                unsafe { context.unmap() };
+                context.memory = Arc::new(UnsafeCell::new(memory));
+                unsafe { context.map() };
 
-                    Ok((context.deref_mut(), entry))
-                } else {
-                    Err(Error::new(ESRCH))
-                }
+                Ok((context.deref_mut(), entry))
             } else {
                 Err(Error::new(ENOEXEC))
             }
@@ -109,7 +106,7 @@ pub fn execute_outer(context_ptr: *mut Context, entry: usize, mut args: Vec<Stri
                 }
 
                 let physical_address = arg.as_ptr() as usize;
-                let virtual_address = unsafe { context.next_mem() };
+                let virtual_address = context.next_mem();
                 let virtual_size = arg.len();
 
                 mem::forget(arg);
@@ -119,8 +116,7 @@ pub fn execute_outer(context_ptr: *mut Context, entry: usize, mut args: Vec<Stri
                         physical_address: physical_address,
                         virtual_address: virtual_address,
                         virtual_size: virtual_size,
-                        //TODO: Remove this hack for brk
-                        writeable: true,
+                        writeable: false,
                         allocated: true,
                     });
                 }
@@ -170,16 +166,12 @@ pub fn execute_outer(context_ptr: *mut Context, entry: usize, mut args: Vec<Stri
 /// Execute an executable
 pub fn execute(args: Vec<String>) -> Result<usize> {
     let contexts = ::env().contexts.lock();
-    if let Some(current) = contexts.current() {
-        let path = args.get(0).map_or(String::new(), |p| p.clone());
+    let current = try!(contexts.current());
 
-        if let Ok((context_ptr, entry)) = execute_inner(&Url::from_string(current.canonicalize(&path)), &args) {
-            execute_outer(context_ptr, entry, args);
-        }else{
-            let (context_ptr, entry) = try!(execute_inner(&Url::from_string("file:/bin/".to_string() + &path), &args));
-            execute_outer(context_ptr, entry, args);
-        }
-    } else {
-        Err(Error::new(ESRCH))
+    if let Ok((context_ptr, entry)) = execute_inner(Url::from_string(current.canonicalize(args.get(0).map_or("", |p| &p)))) {
+        execute_outer(context_ptr, entry, args);
+    }else{
+        let (context_ptr, entry) = try!(execute_inner(Url::from_string("file:/bin/".to_string() + args.get(0).map_or("", |p| &p))));
+        execute_outer(context_ptr, entry, args);
     }
 }

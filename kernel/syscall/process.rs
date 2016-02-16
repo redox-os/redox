@@ -10,39 +10,24 @@ use core::ops::Deref;
 
 use system::{c_array_to_slice, c_string_to_str};
 
-use super::{Error, CLONE_VFORK, ECHILD, ESRCH};
+use super::{Error, Result, CLONE_VFORK, ECHILD, ESRCH};
 use super::execute::execute;
 
-pub fn do_sys_clone(flags: usize) -> usize {
+pub fn do_sys_clone(flags: usize) -> Result<usize> {
     let mut clone_pid = usize::MAX;
     let mut mem_count = 0;
 
     {
-        let mut contexts = ::env().contexts.lock();
-
-        let child_option = if let Some(parent) = contexts.current() {
-            clone_pid = unsafe { Context::next_pid() };
+        let contexts = ::env().contexts.lock();
+        if let Ok(parent) = contexts.current() {
+            clone_pid = Context::next_pid();
             mem_count = Arc::strong_count(&parent.memory);
-
-            let parent_ptr: *const Context = parent.deref();
-
-            let mut context_clone_args: Vec<usize> = Vec::new();
-            context_clone_args.push(clone_pid);
-            context_clone_args.push(flags);
-            context_clone_args.push(parent_ptr as usize);
-            context_clone_args.push(0); //Return address, 0 catches bad code
-
-            Some(unsafe {
-                Context::new(format!("kclone {}", parent.name),
-                             context_clone as usize,
-                             &context_clone_args)
-            })
-        } else {
-            None
-        };
-
-        if let Some(child) = child_option {
-            unsafe { contexts.push(child) };
+            let parent_ptr = parent.deref() as *const Context;
+            unsafe {
+                Context::spawn(format!("kclone {}", parent.name), box move || {
+                    context_clone(parent_ptr, flags, clone_pid);
+                });
+            }
         }
     }
 
@@ -50,49 +35,47 @@ pub fn do_sys_clone(flags: usize) -> usize {
         context_switch(false);
     }
 
-    Error::mux(if clone_pid != usize::MAX {
+    if clone_pid != usize::MAX {
         let contexts = ::env().contexts.lock();
-        if let Some(current) = contexts.current() {
-            if current.pid == clone_pid {
-                Ok(0)
-            } else {
-                if flags & CLONE_VFORK == CLONE_VFORK {
-                    while Arc::strong_count(&current.memory) > mem_count {
-                        unsafe {
-                            context_switch(false);
-                        }
+        let current = try!(contexts.current());
+        if current.pid == clone_pid {
+            Ok(0)
+        } else {
+            if flags & CLONE_VFORK == CLONE_VFORK {
+                while Arc::strong_count(&current.memory) > mem_count {
+                    unsafe {
+                        context_switch(false);
                     }
                 }
-                Ok(clone_pid)
             }
-        } else {
-            Err(Error::new(ESRCH))
+            Ok(clone_pid)
         }
     } else {
         Err(Error::new(ESRCH))
-    })
+    }
 }
 
-pub fn do_sys_execve(path: *const u8, args: *const *const u8) -> usize {
+pub fn do_sys_execve(path: *const u8, args: *const *const u8) -> Result<usize> {
     let mut args_vec = Vec::new();
     args_vec.push(c_string_to_str(path).to_string());
     for arg in c_array_to_slice(args) {
         args_vec.push(c_string_to_str(*arg).to_string());
     }
 
-    Error::mux(execute(args_vec))
+    execute(args_vec)
 }
 
 /// Exit context
 ///
 /// Unsafe due to interrupt disabling and raw pointers
-pub fn do_sys_exit(status: usize) {
+pub fn do_sys_exit(status: usize) -> ! {
+    //TODO: DOUBLE CHECK THIS FUNCTION
     {
         let mut contexts = ::env().contexts.lock();
 
         let mut statuses = Vec::new();
         let (pid, ppid) = {
-            if let Some(mut current) = contexts.current_mut() {
+            if let Ok(mut current) = contexts.current_mut() {
                 current.exited = true;
                 mem::swap(&mut statuses, &mut current.statuses);
                 (current.pid, current.ppid)
@@ -130,22 +113,19 @@ pub fn do_sys_exit(status: usize) {
     }
 }
 
-pub fn do_sys_getpid() -> usize {
+pub fn do_sys_getpid() -> Result<usize> {
     let contexts = ::env().contexts.lock();
-    Error::mux(if let Some(current) = contexts.current() {
-        Ok(current.pid)
-    } else {
-        Err(Error::new(ESRCH))
-    })
+    let current = try!(contexts.current());
+    Ok(current.pid)
 }
 
-pub fn do_sys_waitpid(pid: isize, status: *mut usize, _options: usize) -> usize {
+pub fn do_sys_waitpid(pid: isize, status: *mut usize, _options: usize) -> Result<usize> {
     let mut ret = Err(Error::new(ECHILD));
 
     loop {
         {
             let mut contexts = ::env().contexts.lock();
-            if let Some(mut current) = contexts.current_mut() {
+            if let Ok(mut current) = contexts.current_mut() {
                 let mut found = false;
                 let mut i = 0;
                 while i < current.statuses.len() {
@@ -190,11 +170,12 @@ pub fn do_sys_waitpid(pid: isize, status: *mut usize, _options: usize) -> usize 
         }
     }
 
-    Error::mux(ret)
+    ret
 }
 
-pub fn do_sys_yield(){
+pub fn do_sys_yield() -> Result<usize> {
     unsafe {
         context_switch(false);
     }
+    Ok(0)
 }
