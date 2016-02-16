@@ -49,14 +49,7 @@ interrupts:
     mov fs, rax
     mov gs, rax
 
-		;Stack Align
-		mov rbp, rsp
-		and rsp, 0xFFFFFFFFFFFFFFF0
-
 		call qword [.handler]
-
-		;Stack Restore
-		mov rsp, rbp
 
 	mov rax, gdt.user_data | 3 ;[esp + 44] ;Use new SS as DS
     mov ds, rax
