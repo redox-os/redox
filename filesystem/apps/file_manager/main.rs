@@ -307,11 +307,11 @@ impl FileManager {
                                 match file.seek(SeekFrom::End(0)) {
                                     Ok(size) => {
                                         if size >= 1_000_000_000 {
-                                            format!("{:.1} GB", (size as f64) / 1_000_000_000.0)
+                                            format!("{:.1} GB", (size as u64) / 1_000_000_000)
                                         } else if size >= 1_000_000 {
-                                            format!("{:.1} MB", (size as f64) / 1_000_000.0)
+                                            format!("{:.1} MB", (size as u64) / 1_000_000)
                                         } else if size >= 1_000 {
-                                            format!("{:.1} KB", (size as f64) / 1_000.0)
+                                            format!("{:.1} KB", (size as u64) / 1_000)
                                         } else {
                                             format!("{:.1} bytes", size)
                                         }
