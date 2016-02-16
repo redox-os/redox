@@ -698,15 +698,15 @@ impl Context {
             : "memory"
             : "intel", "volatile");
 
-        asm!("mov $0, esp"
-            : "=r"(self.sp)
+        asm!(""
+            : "={esp}"(self.sp)
             :
             : "memory"
             : "intel", "volatile");
 
-        asm!("mov esp, $0"
+        asm!(""
             :
-            : "r"(next.sp)
+            : "{esp}"(next.sp)
             : "memory"
             : "intel", "volatile");
     }
@@ -746,15 +746,15 @@ impl Context {
             : "memory"
             : "intel", "volatile");
 
-        asm!("mov $0, rsp"
-            : "=r"(self.sp)
+        asm!(""
+            : "={rsp}"(self.sp)
             :
             : "memory"
             : "intel", "volatile");
 
-        asm!("mov rsp, $0"
+        asm!(""
             :
-            : "r"(next.sp)
+            : "{rsp}"(next.sp)
             : "memory"
             : "intel", "volatile");
     }
