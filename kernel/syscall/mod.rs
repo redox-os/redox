@@ -30,7 +30,7 @@ pub fn syscall_handle(regs: &mut Regs) {
         // Linux
         SYS_BRK => do_sys_brk(regs.bx),
         SYS_CHDIR => do_sys_chdir(regs.bx as *const u8),
-        SYS_CLONE => do_sys_clone(regs.bx),
+        SYS_CLONE => do_sys_clone(regs),
         SYS_CLOSE => do_sys_close(regs.bx),
         SYS_CLOCK_GETTIME => do_sys_clock_gettime(regs.bx, regs.cx as *mut TimeSpec),
         SYS_DUP => do_sys_dup(regs.bx),
