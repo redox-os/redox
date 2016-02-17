@@ -97,7 +97,7 @@ impl KScheme for DisplayScheme {
     }
 
     fn open(&mut self, _: &Url, _: usize) -> Result<Box<Resource>> {
-        if let Some(display) = unsafe { Display::root() } {
+        if let Some(display) = Display::root() {
             let path = format!("display:{}/{}", display.width, display.height);
             ::env().console.lock().draw = false;
             Ok(box DisplayResource {

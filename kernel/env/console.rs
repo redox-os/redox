@@ -36,7 +36,7 @@ pub struct Console {
 impl Console {
     pub fn new() -> Console {
         Console {
-            display: unsafe { Display::root() },
+            display: Display::root(),
             point: Point::new(0, 0),
             foreground: WHITE,
             background: BLACK,

@@ -62,13 +62,13 @@ pub struct Display {
 }
 
 impl Display {
-    pub unsafe fn root() -> Option<Box<Self>> {
-        let mode_info = &*VBEMODEINFO;
+    pub fn root() -> Option<Box<Self>> {
+        let mode_info = unsafe { &*VBEMODEINFO };
 
         if mode_info.physbaseptr > 0 {
             let ret = box Display {
-                offscreen: memory::alloc(mode_info.bytesperscanline as usize *
-                                         mode_info.yresolution as usize),
+                offscreen: unsafe { memory::alloc(mode_info.bytesperscanline as usize *
+                                         mode_info.yresolution as usize) },
                 onscreen: mode_info.physbaseptr as usize,
                 size: mode_info.bytesperscanline as usize * mode_info.yresolution as usize,
                 bytesperrow: mode_info.bytesperscanline as usize,
@@ -83,29 +83,6 @@ impl Display {
             Some(ret)
         } else {
             None
-        }
-    }
-
-    /// Create a new display
-    pub fn new(width: usize, height: usize) -> Box<Self> {
-        unsafe {
-            let bytesperrow = width * 4;
-            let memory_size = bytesperrow * height;
-
-            let ret = box Display {
-                offscreen: memory::alloc(memory_size),
-                onscreen: memory::alloc(memory_size),
-                size: memory_size,
-                bytesperrow: bytesperrow,
-                width: width,
-                height: height,
-                root: false,
-            };
-
-            ret.set(Color::new(0, 0, 0));
-            ret.flip();
-
-            ret
         }
     }
 
