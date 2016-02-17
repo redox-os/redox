@@ -8,7 +8,6 @@ use system::error::Result;
 
 pub struct TestScheme;
 
-
 #[macro_export]
 macro_rules! test {
     ($test:expr) => (
@@ -44,10 +43,7 @@ fn meta_test_woah() -> bool {
     succ!();
 }
 
-mod tests {
-    // Add your test here!
-    pub mod get_slice;
-}
+mod tests;
 
 impl KScheme for TestScheme {
     fn scheme(&self) -> &str {
