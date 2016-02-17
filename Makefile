@@ -1,6 +1,6 @@
 #Modify for different target support
-#ARCH?=i386
-ARCH?=x86_64
+ARCH?=i386
+#ARCH?=x86_64
 
 BUILD=build/$(ARCH)-unknown-redox/debug
 
