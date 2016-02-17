@@ -121,10 +121,10 @@ static PIT_DURATION: Duration = Duration {
 };
 
 /// Idle loop (active while idle)
-unsafe fn idle_loop() {
+fn idle_loop() {
     loop {
         {
-            asm!("cli" : : : : "intel", "volatile");
+            unsafe { asm!("cli" : : : : "intel", "volatile"); }
 
             let mut halt = true;
 
@@ -137,23 +137,14 @@ unsafe fn idle_loop() {
 
 
             if halt {
-                asm!("sti
-                      hlt"
-                      :
-                      :
-                      :
-                      : "intel", "volatile");
+                unsafe { asm!("sti ; hlt" : : : : "intel", "volatile"); }
             } else {
-                asm!("sti"
-                    :
-                    :
-                    :
-                    : "intel", "volatile");
+                unsafe { asm!("sti" : : : : "intel", "volatile"); }
             }
         }
 
 
-        context_switch(false);
+        unsafe { context_switch(false); }
     }
 }
 
