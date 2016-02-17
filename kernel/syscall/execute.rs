@@ -1,5 +1,4 @@
 use alloc::arc::Arc;
-use alloc::boxed::Box;
 
 use arch::context::{CONTEXT_STACK_SIZE, CONTEXT_STACK_ADDR, context_switch, context_userspace, Context, ContextMemory};
 use arch::elf::Elf;
@@ -105,15 +104,17 @@ pub fn execute_outer(context_ptr: *mut Context, entry: usize, mut args: Vec<Stri
                 arg.push('\0');
             }
 
+            let physical_address = arg.as_ptr() as usize;
             let virtual_address = context.next_mem();
+            let virtual_size = arg.len();
+
+            mem::forget(arg);
 
             unsafe {
-                let arg_ptr = Box::into_raw(arg.into_boxed_str());
-
                 (*context.memory.get()).push(ContextMemory {
-                    physical_address: (*arg_ptr).as_ptr() as usize,
+                    physical_address: physical_address,
                     virtual_address: virtual_address,
-                    virtual_size: (*arg_ptr).len(),
+                    virtual_size: virtual_size,
                     writeable: false,
                     allocated: true,
                 });

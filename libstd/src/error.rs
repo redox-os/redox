@@ -138,6 +138,7 @@ impl Error for num::ParseIntError {
     }
 }
 
+#[cfg(not(disable_float))]
 impl Error for num::ParseFloatError {
     fn description(&self) -> &str {
         self.__description()
