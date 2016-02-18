@@ -1,5 +1,5 @@
 name=File Manager
-icon=ui/apps/system-file-manager.bmp
+icon=/ui/apps/system-file-manager.bmp
 accept=*/
 author=Jeremy Soller
 description=File Manager for Redox
