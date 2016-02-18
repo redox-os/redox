@@ -22,9 +22,9 @@ pub const SYS_FTRUNCATE: usize = 93;
 pub const SYS_GETPID: usize = 20;
 pub const SYS_LINK: usize = 9;
 pub const SYS_LSEEK: usize = 19;
-pub const SEEK_SET: usize = 0;
-pub const SEEK_CUR: usize = 1;
-pub const SEEK_END: usize = 2;
+    pub const SEEK_SET: usize = 0;
+    pub const SEEK_CUR: usize = 1;
+    pub const SEEK_END: usize = 2;
 pub const SYS_MKDIR: usize = 39;
 pub const SYS_NANOSLEEP: usize = 162;
 pub const SYS_OPEN: usize = 5;
@@ -47,6 +47,12 @@ pub const SYS_UNLINK: usize = 10;
 pub const SYS_WAITPID: usize = 7;
 pub const SYS_WRITE: usize = 4;
 pub const SYS_YIELD: usize = 158;
+
+#[repr(packed)]
+pub struct Stat {
+    pub st_mode: usize,
+    pub st_size: usize
+}
 
 #[repr(packed)]
 pub struct TimeSpec {
@@ -90,7 +96,9 @@ pub fn sys_fpath(fd: usize, buf: &mut [u8]) -> Result<usize> {
     unsafe { syscall3(SYS_FPATH, fd, buf.as_mut_ptr() as usize, buf.len()) }
 }
 
-// TODO: FSTAT
+pub fn sys_fstat(fd: usize, stat: &mut Stat) -> Result<usize> {
+    unsafe { syscall2(SYS_FSTAT, fd, stat as *mut Stat as usize) }
+}
 
 pub fn sys_fsync(fd: usize) -> Result<usize> {
     unsafe { syscall1(SYS_FSYNC, fd) }
