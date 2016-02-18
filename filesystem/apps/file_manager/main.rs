@@ -8,7 +8,6 @@ use std::fs::{self, File};
 use std::io::{Seek, SeekFrom};
 use std::process::Command;
 use std::string::{String, ToString};
-use std::time::{self, Duration};
 use std::vec::Vec;
 
 use orbclient::{event, BmpFile, Color, EventOption, MouseEvent, Window};
@@ -105,13 +104,11 @@ pub struct FileManager {
     file_sizes: Vec<String>,
     selected: isize,
     last_mouse_event: MouseEvent,
-    click_time: Duration,
     window: Box<Window>,
 }
 
 fn load_icon(path: &str) -> BmpFile {
-    let full_path = "file:///ui/mimetypes/".to_string() + path + ".bmp";
-    BmpFile::from_path(&full_path)
+    BmpFile::from_path(&format!("/ui/mimetypes/{}.bmp", path))
 }
 
 impl FileManager {
@@ -128,7 +125,6 @@ impl FileManager {
                 middle_button: false,
                 right_button: false,
             },
-            click_time: Duration::new(0, 0),
             window: Window::new(-1, -1, 0, 0, "").unwrap(),
         }
     }
@@ -437,13 +433,8 @@ impl FileManager {
                         i += 1;
                     }
 
-                    // Check for double click
                     if mouse_event.left_button {
-                        let click_time = Duration::realtime();
-
-                        if click_time - self.click_time <
-                           Duration::new(0, 500 * time::NANOS_PER_MILLI) &&
-                           self.last_mouse_event.x == mouse_event.x &&
+                        if self.last_mouse_event.x == mouse_event.x &&
                            self.last_mouse_event.y == mouse_event.y {
                             if self.selected >= 0 && self.selected < self.files.len() as isize {
                                 if let Some(file) = self.files.get(self.selected as usize) {
@@ -454,9 +445,6 @@ impl FileManager {
                                     }
                                 }
                             }
-                            self.click_time = Duration::new(0, 0);
-                        } else {
-                            self.click_time = click_time;
                         }
                     }
                     self.last_mouse_event = mouse_event;
@@ -475,7 +463,7 @@ impl FileManager {
     fn main(&mut self, path: &str) {
         let mut current_path = path.to_string();
         self.set_path(path);
-        loop {
+        'events: loop {
             for event in self.event_loop() {
                 match event {
                     FileManagerCommand::ChangeDir(dir) => {
@@ -492,18 +480,17 @@ impl FileManager {
                         Command::new("/apps/launcher/main.bin").arg(&(current_path.clone() + &cmd)).spawn();
                     },
                     FileManagerCommand::Redraw => (),
-                    FileManagerCommand::Quit => return,
+                    FileManagerCommand::Quit => break 'events,
                 };
                 self.draw_content();
             }
         }
-
     }
 }
 
 fn main() {
     match env::args().nth(1) {
         Some(ref arg) => FileManager::new().main(arg),
-        None => FileManager::new().main("file:/"),
+        None => FileManager::new().main("/home/"),
     }
 }
