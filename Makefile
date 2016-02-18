@@ -147,13 +147,35 @@ apps: filesystem/apps/editor/main.bin \
 	  filesystem/apps/viewer/main.bin
 
 filesystem/bin:
-	mkdir -p filesystem/bin/
 
 $(BUILD)/libcoreutils.rlib: crates/coreutils/src/lib.rs $(BUILD)/libstd.rlib
 	$(RUSTC) $(RUSTCFLAGS) --crate-name coreutils --crate-type lib -o $@ $<
 
 filesystem/bin/%: crates/coreutils/src/bin/%.rs $(BUILD)/crt0.o $(BUILD)/libcoreutils.rlib
 	$(RUSTC) $(RUSTCFLAGS) --crate-type bin -o $@ $<
+
+coreutils: \
+	filesystem/bin/cat \
+	filesystem/bin/cp \
+	filesystem/bin/du \
+	filesystem/bin/echo \
+	filesystem/bin/false \
+	filesystem/bin/free \
+	filesystem/bin/ls \
+	filesystem/bin/mkdir \
+	filesystem/bin/ps \
+	filesystem/bin/pwd \
+	filesystem/bin/realpath \
+	filesystem/bin/rm \
+	filesystem/bin/rmdir \
+	filesystem/bin/seq \
+	filesystem/bin/shutdown \
+	filesystem/bin/sleep \
+	filesystem/bin/touch \
+	filesystem/bin/wc \
+	filesystem/bin/true \
+	filesystem/bin/yes
+	#filesystem/bin/env
 
 filesystem/bin/%: crates/%/main.rs crates/%/*.rs $(BUILD)/crt0.o $(BUILD)/libstd.rlib
 	$(RUSTC) $(RUSTCFLAGS) --crate-type bin -o $@ $<
@@ -170,37 +192,20 @@ filesystem/bin/init.rc: crates/init/init.rc
 filesystem/bin/sh: $(BUILD)/ion-shell.bin
 	cp $< $@
 
-bins: filesystem/bin \
-		filesystem/bin/cat \
-		filesystem/bin/cp \
-		filesystem/bin/du \
-		filesystem/bin/echo \
-		filesystem/bin/example \
- 		filesystem/bin/false \
- 		filesystem/bin/free \
-		filesystem/bin/init \
-		filesystem/bin/init.rc \
-		filesystem/bin/ion \
-		filesystem/bin/login \
-		filesystem/bin/lua \
-		filesystem/bin/ls \
-		filesystem/bin/mkdir \
-		filesystem/bin/orbital \
-		filesystem/bin/ps \
-		filesystem/bin/pwd \
-		filesystem/bin/realpath \
-		filesystem/bin/rm \
-		filesystem/bin/rmdir \
-		filesystem/bin/seq \
-		filesystem/bin/shutdown \
-		filesystem/bin/sleep \
-		filesystem/bin/sh \
-		filesystem/bin/tar \
-		filesystem/bin/test \
-		filesystem/bin/touch \
-		filesystem/bin/true \
-		filesystem/bin/zfs
-	#filesystem/bin/env filesystem/bin/yes
+bins: \
+	filesystem/bin \
+	coreutils \
+	filesystem/bin/example \
+	filesystem/bin/init \
+  	filesystem/bin/init.rc \
+  	filesystem/bin/ion \
+  	filesystem/bin/login \
+  	filesystem/bin/orbital \
+  	filesystem/bin/sh \
+	filesystem/bin/tar \
+	filesystem/bin/test \
+	filesystem/bin/zfs
+
 
 test: kernel/main.rs \
 	  rust/src/libtest/lib.rs \
