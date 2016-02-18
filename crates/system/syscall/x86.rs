@@ -1,59 +1,61 @@
-pub unsafe fn syscall0(mut a: usize) -> usize {
+use error::{Error, Result};
+
+pub unsafe fn syscall0(mut a: usize) -> Result<usize> {
     asm!("int 0x80"
         : "={eax}"(a)
         : "{eax}"(a)
         : "memory"
         : "intel", "volatile");
 
-    a
+    Error::demux(a)
 }
 
-pub unsafe fn syscall1(mut a: usize, b: usize) -> usize {
+pub unsafe fn syscall1(mut a: usize, b: usize) -> Result<usize> {
     asm!("int 0x80"
         : "={eax}"(a)
         : "{eax}"(a), "{ebx}"(b)
         : "memory"
         : "intel", "volatile");
 
-    a
+    Error::demux(a)
 }
 
-pub unsafe fn syscall2(mut a: usize, b: usize, c: usize) -> usize {
+pub unsafe fn syscall2(mut a: usize, b: usize, c: usize) -> Result<usize> {
     asm!("int 0x80"
         : "={eax}"(a)
         : "{eax}"(a), "{ebx}"(b), "{ecx}"(c)
         : "memory"
         : "intel", "volatile");
 
-    a
+    Error::demux(a)
 }
 
-pub unsafe fn syscall3(mut a: usize, b: usize, c: usize, d: usize) -> usize {
+pub unsafe fn syscall3(mut a: usize, b: usize, c: usize, d: usize) -> Result<usize> {
     asm!("int 0x80"
         : "={eax}"(a)
         : "{eax}"(a), "{ebx}"(b), "{ecx}"(c), "{edx}"(d)
         : "memory"
         : "intel", "volatile");
 
-    a
+    Error::demux(a)
 }
 
-pub unsafe fn syscall4(mut a: usize, b: usize, c: usize, d: usize, e: usize) -> usize {
+pub unsafe fn syscall4(mut a: usize, b: usize, c: usize, d: usize, e: usize) -> Result<usize> {
     asm!("int 0x80"
         : "={eax}"(a)
         : "{eax}"(a), "{ebx}"(b), "{ecx}"(c), "{edx}"(d), "{esi}"(e)
         : "memory"
         : "intel", "volatile");
 
-    a
+    Error::demux(a)
 }
 
-pub unsafe fn syscall5(mut a: usize, b: usize, c: usize, d: usize, e: usize, f: usize) -> usize {
+pub unsafe fn syscall5(mut a: usize, b: usize, c: usize, d: usize, e: usize, f: usize) -> Result<usize> {
     asm!("int 0x80"
         : "={eax}"(a)
         : "{eax}"(a), "{ebx}"(b), "{ecx}"(c), "{edx}"(d), "{esi}"(e), "{edi}"(f)
         : "memory"
         : "intel", "volatile");
 
-    a
+    Error::demux(a)
 }

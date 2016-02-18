@@ -152,7 +152,7 @@ impl Stdin {
 /// Read implementation for standard input
 impl Read for Stdin {
     fn read(&mut self, buf: &mut [u8]) -> Result<usize> {
-        Error::demux(unsafe { sys_read(0, buf.as_mut_ptr(), buf.len()) })
+        sys_read(0, buf)
     }
 }
 
@@ -167,7 +167,7 @@ pub fn stdout() -> Stdout {
 /// Write implementation for standard output
 impl Write for Stdout {
     fn write(&mut self, buf: &[u8]) -> Result<usize> {
-        Error::demux(unsafe { sys_write(1, buf.as_ptr(), buf.len()) })
+        sys_write(1, buf)
     }
 }
 
@@ -182,7 +182,7 @@ pub fn stderr() -> Stderr {
 /// Write implementation for standard error
 impl Write for Stderr {
     fn write(&mut self, buf: &[u8]) -> Result<usize> {
-        Error::demux(unsafe { sys_write(2, buf.as_ptr(), buf.len()) })
+        sys_write(2, buf)
     }
 }
 

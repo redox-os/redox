@@ -18,14 +18,14 @@ pub fn begin_unwind_fmt(fmt: fmt::Arguments, file_line: &(&'static str, u32)) ->
 #[inline(never)]
 pub unsafe extern "C" fn _start_stack(stack: *const usize) {
     extern "C" {
-        fn main(argc: isize, argv: *const *const u8) -> isize;
+        fn main(argc: usize, argv: *const *const u8) -> usize;
     }
 
-    sys_exit(main(*stack as isize, stack.offset(1) as *const *const u8));
+    sys_exit(main(*stack, stack.offset(1) as *const *const u8)).unwrap();
 }
 
 #[lang = "start"]
-fn lang_start(main: *const u8, argc: isize, argv: *const *const u8) -> isize {
+fn lang_start(main: *const u8, argc: usize, argv: *const *const u8) -> usize {
     unsafe {
         let mut args: Vec<&'static str> = Vec::new();
         for i in 0..argc as isize {
