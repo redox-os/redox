@@ -1,22 +1,18 @@
+use std::env;
 use std::io::{stdin, stdout, Write};
 use std::process::Command;
 
 fn main() {
     loop {
         print!("redox login: ");
-        stdout().flush();
+        stdout().flush().unwrap();
 
         let mut buffer = String::new();
-        stdin().read_line(&mut buffer);
+        stdin().read_line(&mut buffer).unwrap();
 
-        let path = "ion";
-        match Command::new(path).spawn() {
-            Ok(mut child) => {
-                if let Err(err) = child.wait() {
-                    println!("{}: Failed to wait: {}", path, err)
-                }
-            }
-            Err(err) => println!("{}: Failed to execute: {}", path, err),
-        }
+        env::set_current_dir("/home/").unwrap();
+
+        let mut child = Command::new("/bin/sh").spawn().unwrap();
+        child.wait().unwrap();
     }
 }
