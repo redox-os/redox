@@ -14,7 +14,7 @@ impl<T> JoinHandle<T> {
     pub fn join(self) -> Option<T> {
         unsafe {
             while (*self.result_ptr).is_none() {
-                sys_yield();
+                let _ = sys_yield();
             }
 
             *Box::from_raw(self.result_ptr)
@@ -34,7 +34,7 @@ pub fn sleep(duration: Duration) {
         tv_nsec: 0,
     };
 
-    unsafe { sys_nanosleep(&req, &mut rem) };
+    let _ = sys_nanosleep(&req, &mut rem);
 
     // Duration::new(rem.tv_sec, rem.tv_nsec)
 }
@@ -55,9 +55,11 @@ pub fn spawn<F, T>(f: F) -> JoinHandle<T>
     unsafe {
         let result_ptr: *mut Option<T> = Box::into_raw(box None);
 
-        if sys_clone(CLONE_VM | CLONE_FS | CLONE_FILES) == 0 {
+        if sys_clone(CLONE_VM | CLONE_FS | CLONE_FILES).unwrap() == 0 {
             *result_ptr = Some(f());
-            sys_exit(0);
+            loop {
+                let _ = sys_exit(0);
+            }
         }
 
         JoinHandle { result_ptr: result_ptr }
@@ -65,5 +67,5 @@ pub fn spawn<F, T>(f: F) -> JoinHandle<T>
 }
 
 pub fn yield_now() {
-    unsafe { sys_yield() };
+    let _ = sys_yield();
 }

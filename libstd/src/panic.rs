@@ -7,9 +7,7 @@ pub struct DebugStream;
 
 impl Write for DebugStream {
     fn write_str(&mut self, s: &str) -> fmt::Result {
-        unsafe {
-            sys_debug(s.as_ptr(), s.len());
-        }
+        let _ = sys_debug(s.as_bytes());
 
         result::Result::Ok(())
     }
@@ -22,11 +20,7 @@ pub extern "C" fn panic_impl(args: fmt::Arguments, file: &'static str, line: u32
     fmt::write(&mut stream, args);
     fmt::write(&mut stream, format_args!(" in {}:{}\n", file, line));
 
-    unsafe {
-        sys_exit(-1);
-        loop {
-            asm!("sti");
-            asm!("hlt");
-        }
+    loop {
+        let _ = sys_exit(128);
     }
 }

@@ -41,7 +41,7 @@ impl Duration {
             tv_nsec: 0,
         };
 
-        unsafe { sys_clock_gettime(CLOCK_MONOTONIC, &mut tp) };
+        sys_clock_gettime(CLOCK_MONOTONIC, &mut tp).unwrap();
 
         Duration::new(tp.tv_sec, tp.tv_nsec)
     }
@@ -53,7 +53,7 @@ impl Duration {
             tv_nsec: 0,
         };
 
-        unsafe { sys_clock_gettime(CLOCK_REALTIME, &mut tp) };
+        sys_clock_gettime(CLOCK_REALTIME, &mut tp).unwrap();
 
         Duration::new(tp.tv_sec, tp.tv_nsec)
     }
