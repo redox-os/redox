@@ -1,4 +1,4 @@
 name=rusthello
-icon=ui/apps/rusthello.bmp
+icon=/ui/apps/rusthello.bmp
 author=Enrico Ghiorzi
 description=A simple Othello game, written in Rust with love
