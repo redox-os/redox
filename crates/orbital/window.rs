@@ -85,17 +85,6 @@ impl Window {
         self.events.push_back(event);
     }
 
-    pub fn path(&mut self, buf: &mut [u8]) -> Result<usize> {
-        let mut i = 0;
-        let path_str = format!("orbital:/{}/{}/{}/{}/{}", self.x, self.y, self.width(), self.height(), self.title);
-        let path = path_str.as_bytes();
-        while i < buf.len() && i < path.len() {
-            buf[i] = path[i];
-            i += 1;
-        }
-        Ok(i)
-    }
-
     pub fn read(&mut self, buf: &mut [u8]) -> Result<usize> {
         if buf.len() >= size_of::<Event>() {
             let mut i = 0;
@@ -124,5 +113,16 @@ impl Window {
         }
 
         Ok(i * size_of::<Color>())
+    }
+
+    pub fn path(&self, buf: &mut [u8]) -> Result<usize> {
+        let mut i = 0;
+        let path_str = format!("orbital:/{}/{}/{}/{}/{}", self.x, self.y, self.width(), self.height(), self.title);
+        let path = path_str.as_bytes();
+        while i < buf.len() && i < path.len() {
+            buf[i] = path[i];
+            i += 1;
+        }
+        Ok(i)
     }
 }

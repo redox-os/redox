@@ -7,7 +7,7 @@ use std::thread;
 
 use system::error::{Error, Result, ENOENT, EBADF, EINVAL};
 use system::scheme::{Packet, Scheme};
-use system::syscall::{SEEK_SET, SEEK_CUR, SEEK_END};
+use system::syscall::{Stat, SEEK_SET, SEEK_CUR, SEEK_END};
 
 extern crate system;
 
@@ -22,16 +22,6 @@ impl ExampleFile {
             data: Vec::from("Example"),
             seek: 0,
         }
-    }
-
-    fn path(&mut self, buf: &mut [u8]) -> Result<usize> {
-        let mut i = 0;
-        let path = b"example:/file";
-        while i < buf.len() && i < path.len() {
-            buf[i] = path[i];
-            i += 1;
-        }
-        Ok(i)
     }
 
     fn read(&mut self, buf: &mut [u8]) -> Result<usize> {
@@ -70,6 +60,20 @@ impl ExampleFile {
             },
             _ => Err(Error::new(EINVAL))
         }
+    }
+    
+    fn path(&self, buf: &mut [u8]) -> Result<usize> {
+        let mut i = 0;
+        let path = b"example:/file";
+        while i < buf.len() && i < path.len() {
+            buf[i] = path[i];
+            i += 1;
+        }
+        Ok(i)
+    }
+
+    fn stat(&self, stat: &mut Stat) -> Result<usize> {
+        Ok(0)
     }
 
     fn sync(&mut self) -> Result<usize> {
@@ -117,16 +121,6 @@ impl Scheme for ExampleScheme {
 
     /* Resource operations */
     #[allow(unused_variables)]
-    fn path(&mut self, id: usize, buf: &mut [u8]) -> Result<usize> {
-        println!("path {}, {:X}, {}", id, buf.as_mut_ptr() as usize, buf.len());
-        if let Some(mut file) = self.files.get_mut(&id) {
-            file.path(buf)
-        } else {
-            Err(Error::new(EBADF))
-        }
-    }
-
-    #[allow(unused_variables)]
     fn read(&mut self, id: usize, buf: &mut [u8]) -> Result<usize> {
         println!("read {}, {:X}, {}", id, buf.as_mut_ptr() as usize, buf.len());
         if let Some(mut file) = self.files.get_mut(&id) {
@@ -157,8 +151,28 @@ impl Scheme for ExampleScheme {
     }
 
     #[allow(unused_variables)]
-    fn sync(&mut self, id: usize) -> Result<usize> {
-        println!("sync {}", id);
+    fn fpath(&self, id: usize, buf: &mut [u8]) -> Result<usize> {
+        println!("fpath {}, {:X}, {}", id, buf.as_mut_ptr() as usize, buf.len());
+        if let Some(file) = self.files.get(&id) {
+            file.path(buf)
+        } else {
+            Err(Error::new(EBADF))
+        }
+    }
+
+    #[allow(unused_variables)]
+    fn fstat(&self, id: usize, stat: &mut Stat) -> Result<usize> {
+        println!("fstat {}, {:X}", id, stat as *mut Stat as usize);
+        if let Some(file) = self.files.get(&id) {
+            file.stat(stat)
+        } else {
+            Err(Error::new(EBADF))
+        }
+    }
+
+    #[allow(unused_variables)]
+    fn fsync(&mut self, id: usize) -> Result<usize> {
+        println!("fsync {}", id);
         if let Some(mut file) = self.files.get_mut(&id) {
             file.sync()
         } else {
@@ -167,12 +181,13 @@ impl Scheme for ExampleScheme {
     }
 
     #[allow(unused_variables)]
-    fn truncate(&mut self, id: usize, len: usize) -> Result<usize> {
-        println!("truncate {}, {}", id, len);
+    fn ftruncate(&mut self, id: usize, len: usize) -> Result<usize> {
+        println!("ftruncate {}, {}", id, len);
         Err(Error::new(EBADF))
     }
 
     fn close(&mut self, id: usize) -> Result<usize> {
+        println!("close {}", id);
         if let Some(file) = self.files.remove(&id) {
             Ok(0)
         } else {

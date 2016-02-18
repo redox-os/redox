@@ -1,11 +1,8 @@
-# Example scheme
-example
-
-# Log scheme
-logger
-
 # Orbital scheme, handles displays
 orbital
+
+# Example scheme
+example
 
 # Login process, handles debug console
 login

@@ -178,7 +178,6 @@ bins: filesystem/bin \
 		filesystem/bin/init \
 		filesystem/bin/init.rc \
 		filesystem/bin/ion \
-		filesystem/bin/logger \
 		filesystem/bin/login \
 		filesystem/bin/lua \
 		filesystem/bin/ls \

@@ -37,7 +37,7 @@ pub fn syscall_handle(regs: &mut Regs) {
         SYS_EXECVE => do_sys_execve(regs.bx as *const u8, regs.cx as *const *const u8),
         SYS_EXIT => do_sys_exit(regs.bx),
         SYS_FPATH => do_sys_fpath(regs.bx, regs.cx as *mut u8, regs.dx),
-        // TODO: fstat
+        SYS_FSTAT => do_sys_fstat(regs.bx, regs.cx as *mut Stat),
         SYS_FSYNC => do_sys_fsync(regs.bx),
         SYS_FTRUNCATE => do_sys_ftruncate(regs.bx, regs.cx),
         SYS_GETPID => do_sys_getpid(),
