@@ -10,8 +10,8 @@ if a == a
       echo true 3 > 2
     else
       echo false 3 > 2
-    fi
-  fi
+    end
+  end
 else
   echo false a == a
-fi
+end
