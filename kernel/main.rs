@@ -119,7 +119,7 @@ pub fn env() -> &'static Environment {
 /// Pit duration
 static PIT_DURATION: Duration = Duration {
     secs: 0,
-    nanos: 2250286,
+    nanos: 4500572,
 };
 
 /// Idle loop (active while idle)
@@ -152,7 +152,7 @@ fn event_loop() {
     let mut cmd = String::new();
     loop {
         env().events.wait();
-        
+
         let mut console = env().console.lock();
         if console.draw {
             let mut events = ::env().events.inner.lock();
