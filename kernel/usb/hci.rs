@@ -160,6 +160,9 @@ pub trait Hci {
                                     }
 
                                     Duration::new(0, 10 * time::NANOS_PER_MILLI).sleep();
+
+                                    debugln!("HID Support disabled");
+                                    break;
                                 }
                             });
                         }
