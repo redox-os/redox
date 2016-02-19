@@ -23,11 +23,9 @@ const WHITE: Color = Color::new(203, 204, 205);
 
 pub struct Console {
     pub display: Option<Box<Display>>,
-    pub displays: usize,
     pub point: Point,
     pub foreground: Color,
     pub background: Color,
-    pub instant: bool,
     pub draw: bool,
     pub redraw: bool,
     pub commands: WaitQueue<String>,
@@ -40,11 +38,9 @@ impl Console {
     pub fn new() -> Console {
         Console {
             display: Display::root(),
-            displays: 0,
             point: Point::new(0, 0),
             foreground: WHITE,
             background: BLACK,
-            instant: true,
             draw: false,
             redraw: true,
             commands: WaitQueue::new(),
@@ -198,8 +194,8 @@ impl Console {
                 serial_data.write(8);
             }
         }
-        // If contexts disabled, probably booting up
-        if self.instant && self.draw && self.redraw {
+        
+        if self.draw && self.redraw {
             self.redraw = false;
             if let Some(ref mut display) = self.display {
                 display.flip();
