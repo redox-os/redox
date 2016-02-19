@@ -74,7 +74,7 @@ impl Resource for PipeRead {
                 }
             }
 
-            unsafe { context_switch(false) };
+            unsafe { context_switch() };
         }
     }
 }

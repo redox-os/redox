@@ -158,7 +158,7 @@ pub fn execute_outer(context_ptr: *mut Context, entry: usize, mut args: Vec<Stri
     });
 
     loop {
-        unsafe { context_switch(false) };
+        unsafe { context_switch() };
     }
 }
 

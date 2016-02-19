@@ -53,7 +53,7 @@ impl Duration {
             if elapsed > *self {
                 break;
             } else {
-                unsafe { context::context_switch(false) };
+                unsafe { context::context_switch() };
             }
         }
     }

@@ -2,7 +2,7 @@ use alloc::boxed::Box;
 
 use collections::String;
 
-use common::event::Event;
+use common::event::{self, Event};
 
 use core::{cmp, ptr};
 use core::mem::size_of;
@@ -44,9 +44,18 @@ impl Resource for DisplayResource {
     fn read(&mut self, buf: &mut [u8]) -> Result<usize> {
         if buf.len() >= size_of::<Event>() {
             let mut i = 0;
-            if ! ::env().console.lock().draw {
+            let mut console = ::env().console.lock();
+            if ! console.draw {
+                let mut events = ::env().events.inner.lock();
                 while i <= buf.len() - size_of::<Event>() {
-                    if let Some(event) = ::env().events.lock().pop_front() {
+                    if let Some(event) = events.pop_front() {
+                        if event.code == event::EVENT_KEY && event.b as u8 == event::K_F1 && event.c > 0 {
+                            console.draw = true;
+                            console.redraw = true;
+                            events.push_back(event);
+                            break;
+                        }
+
                         unsafe { ptr::write(buf.as_mut_ptr().offset(i as isize) as *mut Event, event) };
                         i += size_of::<Event>();
                     } else {
@@ -91,6 +100,16 @@ impl Resource for DisplayResource {
     }
 }
 
+impl Drop for DisplayResource {
+    fn drop(&mut self) {
+        let mut console = ::env().console.lock();
+        console.displays -= 1;
+        if console.displays == 0 {
+            console.draw = true;
+        }
+    }
+}
+
 impl KScheme for DisplayScheme {
     fn scheme(&self) -> &str {
         "display"
@@ -99,7 +118,11 @@ impl KScheme for DisplayScheme {
     fn open(&mut self, _: &Url, _: usize) -> Result<Box<Resource>> {
         if let Some(display) = Display::root() {
             let path = format!("display:{}/{}", display.width, display.height);
-            ::env().console.lock().draw = false;
+            {
+                let mut console = ::env().console.lock();
+                console.displays += 1;
+                //console.draw = false;
+            }
             Ok(box DisplayResource {
                 path: path,
                 display: display,

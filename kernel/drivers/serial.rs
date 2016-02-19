@@ -93,7 +93,7 @@ impl KScheme for Serial {
                     scancode: sc,
                     pressed: true,
                 };
-                env().events.lock().push_back(key_event.to_event());
+                env().events.send(key_event.to_event());
             }
         }
     }

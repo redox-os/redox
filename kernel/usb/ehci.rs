@@ -265,7 +265,7 @@ impl Hci for Ehci {
 
                 for td in tds.iter().rev() {
                     while volatile_load(td as *const Qtd).token & 1 << 7 == 1 << 7 {
-                        context_switch(false);
+                        context_switch();
                     }
                 }
 

@@ -2,8 +2,6 @@ use alloc::boxed::Box;
 
 use collections::string::String;
 
-use arch::context::context_switch;
-
 use fs::{KScheme, Resource, Url};
 
 use system::error::Result;
@@ -41,21 +39,7 @@ impl Resource for DebugResource {
         }
 
         if self.command.is_empty() {
-            loop {
-                {
-                    let mut console = ::env().console.lock();
-
-                    if console.command.is_some() {
-                        if let Some(ref command) = console.command {
-                            self.command = command.clone();
-                        }
-                        console.command = None;
-                        break;
-                    }
-                }
-
-                unsafe { context_switch(false) };
-            }
+            self.command = ::env().console.lock().commands.receive();
         }
 
         // TODO: Unicode
