@@ -241,7 +241,7 @@ impl Hci for Ohci {
                 //debugln!("  TD: {:X}, FLG: {:X}, BUF: {:X}, NEXT: {:X}, END: {:X}", (td as *const Gtd) as usize, td.flags, td.buffer, td.next, td.end);
 
                 while unsafe { volatile_load(td as *const Gtd).flags } & 0b1111 << 28 == 0b1111 << 28 {
-                    unsafe { context_switch(false) };
+                    unsafe { context_switch() };
                 }
 
                 let condition = (unsafe { volatile_load(td as *const Gtd).flags } & 0b1111 << 28) >> 28;

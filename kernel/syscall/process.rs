@@ -1,10 +1,11 @@
-use arch::context::{context_clone, context_switch, ContextStatus};
+use arch::context::{context_clone, context_switch};
 use arch::regs::Regs;
 
-use collections::Vec;
+use collections::{BTreeMap, Vec};
 use collections::string::ToString;
 
 use core::{mem, ptr};
+use core::ops::DerefMut;
 
 use system::{c_array_to_slice, c_string_to_str};
 
@@ -33,11 +34,11 @@ pub fn do_sys_exit(status: usize) -> ! {
     {
         let mut contexts = ::env().contexts.lock();
 
-        let mut statuses = Vec::new();
+        let mut statuses = BTreeMap::new();
         let (pid, ppid) = {
             if let Ok(mut current) = contexts.current_mut() {
                 current.exited = true;
-                mem::swap(&mut statuses, &mut current.statuses);
+                mem::swap(&mut statuses, &mut current.statuses.inner.lock().deref_mut());
                 (current.pid, current.ppid)
             } else {
                 (0, 0)
@@ -47,15 +48,9 @@ pub fn do_sys_exit(status: usize) -> ! {
         for mut context in contexts.iter_mut() {
             // Add exit status to parent
             if context.pid == ppid {
-                context.statuses.push(ContextStatus {
-                    pid: pid,
-                    status: status,
-                });
-                for status in statuses.iter() {
-                    context.statuses.push(ContextStatus {
-                        pid: status.pid,
-                        status: status.status,
-                    });
+                context.statuses.send(pid, status);
+                for (pid, status) in statuses.iter() {
+                    context.statuses.send(*pid, *status);
                 }
             }
 
@@ -68,7 +63,7 @@ pub fn do_sys_exit(status: usize) -> ! {
 
     loop {
         unsafe {
-            context_switch(false);
+            context_switch();
         }
     }
 }
@@ -79,63 +74,29 @@ pub fn do_sys_getpid() -> Result<usize> {
     Ok(current.pid)
 }
 
-pub fn do_sys_waitpid(pid: isize, status: *mut usize, _options: usize) -> Result<usize> {
-    let mut ret = Err(Error::new(ECHILD));
+//TODO: Finish implementation, add more functions to WaitMap so that matching any or using WNOHANG works
+pub fn do_sys_waitpid(pid: isize, status_ptr: *mut usize, _options: usize) -> Result<usize> {
+    let mut contexts = ::env().contexts.lock();
+    let current = try!(contexts.current_mut());
 
-    loop {
-        {
-            let mut contexts = ::env().contexts.lock();
-            if let Ok(mut current) = contexts.current_mut() {
-                let mut found = false;
-                let mut i = 0;
-                while i < current.statuses.len() {
-                    if let Some(current_status) = current.statuses.get(i) {
-                        if pid > 0 && pid as usize == current_status.pid {
-                            // Specific child
-                            found = true;
-                        } else if pid == 0 {
-                            // TODO Any child whose PGID is equal to this process
-                        } else if pid == -1 {
-                            // Any child
-                            found = true;
-                        } else {
-                            // TODO Any child whose PGID is equal to abs(pid)
-                        }
-                    }
-                    if found {
-                        let current_status = current.statuses.remove(i);
+    if pid > 0 {
+        let status = current.statuses.receive(&(pid as usize));
 
-                        ret = Ok(current_status.pid);
-                        if status as usize > 0 {
-                            unsafe {
-                                ptr::write(status, current_status.status);
-                            }
-                        }
-
-                        break;
-                    } else {
-                        i += 1;
-                    }
-                }
-                if found {
-                    break;
-                }
-            } else {
-                break;
+        if status_ptr as usize > 0 {
+            unsafe {
+                ptr::write(status_ptr, status);
             }
         }
 
-        unsafe {
-            context_switch(false);
-        }
+        Ok(pid as usize)
+    } else {
+        Err(Error::new(ECHILD))
     }
-
-    ret
 }
 
 pub fn do_sys_yield() -> Result<usize> {
     unsafe {
-        context_switch(false);
+        context_switch();
     }
     Ok(0)
 }

@@ -3,7 +3,6 @@ use std::collections::BTreeMap;
 use std::fs::File;
 use std::io::{Read, Write};
 use std::mem::size_of;
-use std::thread;
 
 use system::error::{Error, Result, ENOENT, EBADF, EINVAL};
 use system::scheme::{Packet, Scheme};
@@ -61,7 +60,7 @@ impl ExampleFile {
             _ => Err(Error::new(EINVAL))
         }
     }
-    
+
     fn path(&self, buf: &mut [u8]) -> Result<usize> {
         let mut i = 0;
         let path = b"example:/file";
@@ -72,7 +71,7 @@ impl ExampleFile {
         Ok(i)
     }
 
-    fn stat(&self, stat: &mut Stat) -> Result<usize> {
+    fn stat(&self, _stat: &mut Stat) -> Result<usize> {
         Ok(0)
     }
 
@@ -188,7 +187,7 @@ impl Scheme for ExampleScheme {
 
     fn close(&mut self, id: usize) -> Result<usize> {
         println!("close {}", id);
-        if let Some(file) = self.files.remove(&id) {
+        if self.files.remove(&id).is_some() {
             Ok(0)
         } else {
             Err(Error::new(EBADF))
@@ -203,12 +202,10 @@ fn main() {
    loop {
        let mut packet = Packet::default();
        while socket.read(&mut packet).unwrap() == size_of::<Packet>() {
-           //println!("Recv {:?}", packet);
+           println!("Recv {:?}", packet);
            scheme.handle(&mut packet);
            socket.write(&packet).unwrap();
-           //println!("Sent {:?}", packet);
+           println!("Sent {:?}", packet);
        }
-
-       thread::yield_now();
    }
 }

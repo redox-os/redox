@@ -10,6 +10,8 @@ use graphics::display::Display;
 use graphics::point::Point;
 use graphics::size::Size;
 
+use sync::WaitQueue;
+
 const BLACK: Color = Color::new(0, 0, 0);
 const RED: Color = Color::new(194, 54, 33);
 const GREEN: Color = Color::new(37, 188, 36);
@@ -21,13 +23,14 @@ const WHITE: Color = Color::new(203, 204, 205);
 
 pub struct Console {
     pub display: Option<Box<Display>>,
+    pub displays: usize,
     pub point: Point,
     pub foreground: Color,
     pub background: Color,
     pub instant: bool,
     pub draw: bool,
     pub redraw: bool,
-    pub command: Option<String>,
+    pub commands: WaitQueue<String>,
     pub escape: bool,
     pub escape_sequence: bool,
     pub sequence: Vec<String>,
@@ -37,13 +40,14 @@ impl Console {
     pub fn new() -> Console {
         Console {
             display: Display::root(),
+            displays: 0,
             point: Point::new(0, 0),
             foreground: WHITE,
             background: BLACK,
             instant: true,
             draw: false,
             redraw: true,
-            command: None,
+            commands: WaitQueue::new(),
             escape: false,
             escape_sequence: false,
             sequence: Vec::new(),

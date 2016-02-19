@@ -77,9 +77,6 @@ impl Display {
                 root: true,
             };
 
-            ret.set(Color::new(0, 0, 0));
-            ret.flip();
-
             Some(ret)
         } else {
             None

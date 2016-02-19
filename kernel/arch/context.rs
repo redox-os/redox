@@ -19,9 +19,10 @@ use fs::Resource;
 
 use syscall::{do_sys_exit, Error, Result, CLONE_FILES, CLONE_FS, CLONE_VM, EBADF, EFAULT, ENOMEM, ESRCH};
 
+use sync::WaitMap;
+
 pub const CONTEXT_STACK_SIZE: usize = 1024 * 1024;
 pub const CONTEXT_STACK_ADDR: usize = 0x70000000;
-pub const CONTEXT_SLICES: usize = 4;
 
 pub struct ContextManager {
     pub inner: Vec<Box<Context>>,
@@ -113,7 +114,7 @@ impl ContextManager {
 /// Switch context
 ///
 /// Unsafe due to interrupt disabling, raw pointers, and unsafe Context functions
-pub unsafe fn context_switch(interrupted: bool) {
+pub unsafe fn context_switch() {
     let mut current_ptr: *mut Context = 0 as *mut Context;
     let mut next_ptr: *mut Context = 0 as *mut Context;
 
@@ -121,21 +122,28 @@ pub unsafe fn context_switch(interrupted: bool) {
         let mut contexts = ::env().contexts.lock();
         if contexts.enabled {
             let current_i = contexts.i;
-            contexts.i += 1;
-            contexts.clean();
+            'searching: loop {
+                contexts.i += 1;
+                contexts.clean();
+                if let Ok(next) = contexts.current() {
+                    if ! next.blocked {
+                        break 'searching;
+                    }
+                }
+                if contexts.i == current_i {
+                    break 'searching;
+                }
+            }
 
             if contexts.i != current_i {
                 if let Ok(mut current) = contexts.get_mut(current_i) {
-                    current.interrupted = interrupted;
-
                     current.unmap();
 
                     current_ptr = current.deref_mut();
                 }
 
                 if let Ok(mut next) = contexts.current_mut() {
-                    next.interrupted = false;
-                    next.slices = CONTEXT_SLICES;
+                    next.switch += 1;
 
                     if let Some(ref mut tss) = ::TSS_PTR {
                         if next.kernel_stack > 0 {
@@ -187,10 +195,10 @@ pub unsafe fn context_clone(regs: &Regs) -> Result<usize> {
                 pid: clone_pid,
                 ppid: parent.pid,
                 name: parent.name.clone(),
-                interrupted: parent.interrupted,
-                exited: parent.exited,
-                slices: CONTEXT_SLICES,
-                slice_total: 0,
+                blocked: false,
+                exited: false,
+                switch: 0,
+                time: 0,
 
                 kernel_stack: kernel_stack,
                 regs: kernel_regs,
@@ -257,7 +265,7 @@ pub unsafe fn context_clone(regs: &Regs) -> Result<usize> {
                     Arc::new(UnsafeCell::new(files))
                 },
 
-                statuses: Vec::new(),
+                statuses: WaitMap::new(),
             }
         };
 
@@ -366,11 +374,6 @@ pub struct ContextFile {
     pub resource: Box<Resource>,
 }
 
-pub struct ContextStatus {
-    pub pid: usize,
-    pub status: usize,
-}
-
 pub struct Context {
 // These members are used for control purposes by the scheduler {
 // The PID of the context
@@ -379,14 +382,14 @@ pub struct Context {
     pub ppid: usize,
 /// The name of the context
     pub name: String,
-/// Indicates that the context was interrupted, used for prioritizing active contexts
-    pub interrupted: bool,
+/// Indicates that the context is blocked, and should not be switched to
+    pub blocked: bool,
 /// Indicates that the context exited
     pub exited: bool,
-/// The number of time slices left
-    pub slices: usize,
-/// The total of all used slices
-    pub slice_total: usize,
+/// How many times was the context switched to
+    pub switch: usize,
+/// The number of time slices used
+    pub time: usize,
 // }
 
 // These members control the stack and registers and are unique to each context {
@@ -412,7 +415,7 @@ pub struct Context {
 // }
 
 /// Exit statuses of children
-    pub statuses: Vec<ContextStatus>,
+    pub statuses: WaitMap<usize, usize>,
 }
 
 impl Context {
@@ -450,10 +453,10 @@ impl Context {
             pid: Context::next_pid(),
             ppid: 0,
             name: "kidle".to_string(),
-            interrupted: false,
+            blocked: false,
             exited: false,
-            slices: CONTEXT_SLICES,
-            slice_total: 0,
+            switch: 0,
+            time: 0,
 
             kernel_stack: 0,
             regs: Regs::default(),
@@ -465,7 +468,7 @@ impl Context {
             memory: Arc::new(UnsafeCell::new(Vec::new())),
             files: Arc::new(UnsafeCell::new(Vec::new())),
 
-            statuses: Vec::new(),
+            statuses: WaitMap::new(),
         }
     }
 
@@ -479,10 +482,10 @@ impl Context {
             pid: Context::next_pid(),
             ppid: 0,
             name: name,
-            interrupted: false,
+            blocked: false,
             exited: false,
-            slices: CONTEXT_SLICES,
-            slice_total: 0,
+            switch: 0,
+            time: 0,
 
             kernel_stack: kernel_stack,
             regs: regs,
@@ -494,7 +497,7 @@ impl Context {
             memory: Arc::new(UnsafeCell::new(Vec::new())),
             files: Arc::new(UnsafeCell::new(Vec::new())),
 
-            statuses: Vec::new(),
+            statuses: WaitMap::new(),
         };
 
         for arg in args.iter() {

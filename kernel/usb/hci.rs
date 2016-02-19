@@ -156,7 +156,7 @@ pub trait Hci {
                                             middle_button: buttons & 4 == 4,
                                             right_button: buttons & 2 == 2,
                                         };
-                                        ::env().events.lock().push_back(mouse_event.to_event());
+                                        ::env().events.send(mouse_event.to_event());
                                     }
 
                                     Duration::new(0, 10 * time::NANOS_PER_MILLI).sleep();
