@@ -149,19 +149,11 @@ fn idle_loop() {
 
 /// Event loop
 fn event_loop() {
-    {
-        let mut console = env().console.lock();
-        console.instant = false;
-    }
-
     let mut cmd = String::new();
     loop {
         env().events.wait();
+        
         let mut console = env().console.lock();
-        if ! console.draw && console.displays == 0 {
-            console.draw = true;
-            console.redraw = true;
-        }
         if console.draw {
             let mut events = ::env().events.inner.lock();
             while let Some(event) = events.pop_front() {
@@ -169,10 +161,6 @@ fn event_loop() {
                     EventOption::Key(key_event) => {
                         if key_event.pressed {
                             match key_event.scancode {
-                                event::K_F2 => if console.displays > 0 {
-                                    console.draw = false;
-                                    events.push_back(event);
-                                },
                                 event::K_BKSP => if !cmd.is_empty() {
                                     console.write(&[8]);
                                     cmd.pop();
@@ -195,14 +183,6 @@ fn event_loop() {
                         }
                     }
                     _ => (),
-                }
-            }
-
-            console.instant = false;
-            if console.redraw {
-                console.redraw = false;
-                if let Some(ref mut display) = console.display {
-                    display.flip();
                 }
             }
         }
