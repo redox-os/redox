@@ -169,7 +169,6 @@ pub unsafe fn context_switch() {
 pub unsafe fn context_clone(regs: &Regs) -> Result<usize> {
     let mut contexts = ::env().contexts.lock();
     let flags = regs.bx;
-    debugln!("Clone {:X}", flags);
 
     let kernel_stack = memory::alloc(CONTEXT_STACK_SIZE + 512);
     if kernel_stack > 0 {
