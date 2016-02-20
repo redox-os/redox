@@ -141,50 +141,47 @@ fn idle_loop() {
         if halt {
             unsafe { asm!("sti ; hlt" : : : : "intel", "volatile"); }
         } else {
-            unsafe { asm!("sti" : : : : "intel", "volatile"); }
+            unsafe { asm!("sti ; nop" : : : : "intel", "volatile"); }
             unsafe { context_switch(); }
         }
     }
 }
 
 /// Event loop
+//TODO: Allow restart, block on console draw boolean
 fn event_loop() {
     let mut cmd = String::new();
-    loop {
-        if ::env().console.lock().draw {
-            for event in ::env().events.receive_all() {
-                match event.to_option() {
-                    EventOption::Key(key_event) => {
-                        if key_event.pressed {
-                            let mut console = ::env().console.lock();
-                            match key_event.scancode {
-                                event::K_BKSP => if !cmd.is_empty() {
-                                    console.write(&[8]);
-                                    cmd.pop();
-                                },
-                                _ => match key_event.character {
-                                    '\0' => (),
-                                    '\n' => {
-                                        let mut swap_cmd = String::new();
-                                        mem::swap(&mut cmd, &mut swap_cmd);
-                                        console.commands.send(swap_cmd);
+    while ::env().console.lock().draw {
+        for event in ::env().events.receive_all() {
+            match event.to_option() {
+                EventOption::Key(key_event) => {
+                    if key_event.pressed {
+                        let mut console = ::env().console.lock();
+                        match key_event.scancode {
+                            event::K_BKSP => if !cmd.is_empty() {
+                                console.write(&[8]);
+                                cmd.pop();
+                            },
+                            _ => match key_event.character {
+                                '\0' => (),
+                                '\n' => {
+                                    let mut swap_cmd = String::new();
+                                    mem::swap(&mut cmd, &mut swap_cmd);
+                                    console.commands.send(swap_cmd);
 
-                                        console.write(&[10]);
-                                    }
-                                    _ => {
-                                        cmd.push(key_event.character);
-                                        console.write(&[key_event.character as u8]);
-                                    }
-                                },
-                            }
+                                    console.write(&[10]);
+                                }
+                                _ => {
+                                    cmd.push(key_event.character);
+                                    console.write(&[key_event.character as u8]);
+                                }
+                            },
                         }
                     }
-                    _ => (),
                 }
+                _ => (),
             }
         }
-
-        unsafe { context_switch(); }
     }
 }
 

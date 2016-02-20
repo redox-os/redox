@@ -31,6 +31,7 @@ pub mod window;
 
 struct OrbitalScheme {
     image: Image,
+    background: Image,
     cursor: Image,
     cursor_x: i32,
     cursor_y: i32,
@@ -49,6 +50,7 @@ impl OrbitalScheme {
     fn new(width: i32, height: i32) -> OrbitalScheme {
         OrbitalScheme {
             image: Image::new(width, height),
+            background: BmpFile::from_path("/ui/background.bmp"),
             cursor: BmpFile::from_path("/ui/cursor.bmp"),
             cursor_x: 0,
             cursor_y: 0,
@@ -69,6 +71,7 @@ impl OrbitalScheme {
             println!("Redraw {}", self.windows.len());
             self.redraw = false;
             self.image.as_roi().set(Color::rgb(75, 163, 253));
+            self.image.as_roi().blend(&self.background.as_roi());
 
             let mut i = self.order.len();
             for id in self.order.iter().rev() {
@@ -250,6 +253,7 @@ fn event_loop(scheme_mutex: Arc<Mutex<OrbitalScheme>>, display: Socket){
                 scheme.event(event);
             }
         }
+        println!("Events: {}", count);
     }
 }
 
@@ -262,13 +266,16 @@ fn server_loop(scheme_mutex: Arc<Mutex<OrbitalScheme>>, display: Socket, socket:
 
         let mut packets = [Packet::default(); 128];
         let count = socket.receive_type(&mut packets).unwrap();
+        /*
         {
             let mut scheme = scheme_mutex.lock().unwrap();
-            for mut packet in packets[..count].iter_mut() {
+            for mut packet in packets[.. count].iter_mut() {
                 scheme.handle(packet);
             }
         }
-        socket.send_type(&packets).unwrap();
+        socket.send_type(&packets[.. count]).unwrap();
+        */
+        println!("Packets: {}", count);
     }
 }
 
