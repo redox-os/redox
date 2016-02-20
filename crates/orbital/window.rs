@@ -3,7 +3,7 @@ use std::collections::VecDeque;
 use std::mem::size_of;
 use std::{ptr, slice};
 
-use super::{Color, Display, Event, Font, Image, ImageRoi};
+use super::{Color, Event, Font, Image, ImageRoi};
 
 use system::error::{Error, Result, EINVAL};
 
@@ -54,18 +54,18 @@ impl Window {
         ! self.title.is_empty() && x >= max(self.x, self.x + self.width() - 10)  && y >= self.y - 18 && x < self.x + self.width() && y < self.y
     }
 
-    pub fn draw(&mut self, display: &mut Display, focused: bool) {
+    pub fn draw(&mut self, image: &mut Image, focused: bool) {
         if ! self.title.is_empty() {
             if focused {
-                display.roi(self.x, self.y - 18, self.width(), 18).set(Color::rgba(192, 192, 192, 224));
+                image.roi(self.x, self.y - 18, self.width(), 18).set(Color::rgba(192, 192, 192, 224));
             } else {
-                display.roi(self.x, self.y - 18, self.width(), 18).set(Color::rgba(64, 64, 64, 224));
+                image.roi(self.x, self.y - 18, self.width(), 18).set(Color::rgba(64, 64, 64, 224));
             }
 
             let mut x = self.x + 2;
             for c in self.title.chars() {
                 if x + 8 <= self.x + self.width() - 10 {
-                    display.roi(x, self.y - 17, 8, 16).blend(&Font::render(c, Color::rgb(255, 255, 255)).as_roi());
+                    image.roi(x, self.y - 17, 8, 16).blend(&Font::render(c, Color::rgb(255, 255, 255)).as_roi());
                 } else {
                     break;
                 }
@@ -74,11 +74,11 @@ impl Window {
 
             x = max(self.x + 2, self.x + self.width() - 10);
             if x + 10 <= self.x + self.width() {
-                display.roi(x, self.y - 17, 8, 16).blend(&Font::render('X', Color::rgb(255, 255, 255)).as_roi());
+                image.roi(x, self.y - 17, 8, 16).blend(&Font::render('X', Color::rgb(255, 255, 255)).as_roi());
             }
         }
-        let mut display_roi = display.roi(self.x, self.y, self.width(), self.height());
-        display_roi.blend(&self.as_roi());
+        let mut image_roi = image.roi(self.x, self.y, self.width(), self.height());
+        image_roi.blend(&self.as_roi());
     }
 
     pub fn event(&mut self, event: Event) {

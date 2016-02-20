@@ -1,3 +1,4 @@
+use alloc::arc::Arc;
 use alloc::boxed::Box;
 
 use collections::String;
@@ -21,14 +22,22 @@ pub struct DisplayResource {
     /// Path
     path: String,
     /// The display
-    display: Box<Display>,
+    display: Arc<Box<Display>>,
     /// Seek
     seek: usize,
 }
 
 impl Resource for DisplayResource {
+    fn dup(&self) -> Result<Box<Resource>> {
+        Ok(Box::new(DisplayResource {
+            path: self.path.clone(),
+            display: self.display.clone(),
+            seek: self.seek
+        }))
+    }
+
     /// Return the URL for display resource
-    fn path(&self, buf: &mut [u8]) -> Result <usize> {
+    fn path(&self, buf: &mut [u8]) -> Result<usize> {
         let path = self.path.as_bytes();
 
         let mut i = 0;
@@ -39,7 +48,6 @@ impl Resource for DisplayResource {
 
         Ok(i)
     }
-
 
     fn read(&mut self, buf: &mut [u8]) -> Result<usize> {
         if buf.len() >= size_of::<Event>() {
@@ -109,7 +117,7 @@ impl KScheme for DisplayScheme {
 
                 Ok(box DisplayResource {
                     path: format!("display:{}/{}", display.width, display.height),
-                    display: display,
+                    display: Arc::new(display),
                     seek: 0,
                 })
             } else {
