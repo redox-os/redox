@@ -10,6 +10,9 @@ pub struct Socket {
     file: UnsafeCell<File>
 }
 
+unsafe impl Send for Socket {}
+unsafe impl Sync for Socket {}
+
 impl Socket {
     pub fn open(path: &str) -> Result<Socket> {
         let file = try!(File::open(path));
@@ -20,13 +23,6 @@ impl Socket {
 
     pub fn create(path: &str) -> Result<Socket> {
         let file = try!(File::create(path));
-        Ok(Socket {
-            file: UnsafeCell::new(file)
-        })
-    }
-
-    pub fn dup(&self) -> Result<Socket> {
-        let file = try!(unsafe { (*self.file.get()).dup() });
         Ok(Socket {
             file: UnsafeCell::new(file)
         })

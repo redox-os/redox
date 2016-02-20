@@ -72,7 +72,6 @@ impl OrbitalScheme {
 
     fn redraw(&mut self, display: &Socket){
         if self.redraw {
-            println!("Redraw {}", self.windows.len());
             self.redraw = false;
             self.image.as_roi().set(Color::rgb(75, 163, 253));
             self.image.as_roi().blend(&self.background.as_roi());
@@ -161,8 +160,6 @@ impl OrbitalScheme {
 
 impl Scheme for OrbitalScheme {
     fn open(&mut self, path: &str, _flags: usize, _mode: usize) -> Result<usize> {
-        println!("Open {}", path);
-
         let mut parts = path.split("/").skip(1);
 
         let mut x = parts.next().unwrap_or("").parse::<i32>().unwrap_or(0);
@@ -229,8 +226,6 @@ impl Scheme for OrbitalScheme {
     }
 
     fn close(&mut self, id: usize) -> Result<usize> {
-        println!("Close {}", id);
-
         self.order.retain(|&e| e != id);
 
         if self.windows.remove(&id).is_some() {
@@ -242,7 +237,7 @@ impl Scheme for OrbitalScheme {
     }
 }
 
-fn event_loop(scheme_mutex: Arc<Mutex<OrbitalScheme>>, display: Socket, socket: Socket){
+fn event_loop(scheme_mutex: Arc<Mutex<OrbitalScheme>>, display: Arc<Socket>, socket: Arc<Socket>){
     loop {
         {
             let mut scheme = scheme_mutex.lock().unwrap();
@@ -264,22 +259,19 @@ fn event_loop(scheme_mutex: Arc<Mutex<OrbitalScheme>>, display: Socket, socket: 
                 let delay = packet.a == SYS_READ;
                 scheme.handle(packet);
                 if delay && packet.a == 0 {
-                    println!("Event TODO");
                     scheme.todo.push(*packet);
                 }else{
                     responses.push(*packet);
                 }
             }
         }
-        println!("Events: {}", count);
         if ! responses.is_empty() {
-            println!("Event Responses: {}", responses.len());
             socket.send_type(&responses).unwrap();
         }
     }
 }
 
-fn server_loop(scheme_mutex: Arc<Mutex<OrbitalScheme>>, display: Socket, socket: Socket){
+fn server_loop(scheme_mutex: Arc<Mutex<OrbitalScheme>>, display: Arc<Socket>, socket: Arc<Socket>){
     loop {
         {
             let mut scheme = scheme_mutex.lock().unwrap();
@@ -295,25 +287,22 @@ fn server_loop(scheme_mutex: Arc<Mutex<OrbitalScheme>>, display: Socket, socket:
                 let delay = packet.a == SYS_READ;
                 scheme.handle(packet);
                 if delay && packet.a == 0 {
-                    println!("Packet TODO");
                     scheme.todo.push(*packet);
                 } else {
                     responses.push(*packet);
                 }
             }
         }
-        println!("Packets: {}", count);
         if ! responses.is_empty() {
-            println!("Packet Responses: {}", responses.len());
             socket.send_type(&responses).unwrap();
         }
     }
 }
 
 fn main() {
-    let socket = Socket::create(":orbital").unwrap();
+    let socket = Socket::create(":orbital").map(|socket| Arc::new(socket)).unwrap();
 
-    match Socket::open("display:") {
+    match Socket::open("display:").map(|display| Arc::new(display)) {
         Ok(display) => {
             let path = display.path().unwrap().to_string();
             let res = path.split(":").nth(1).unwrap_or("");
@@ -327,8 +316,8 @@ fn main() {
             let scheme = Arc::new(Mutex::new(OrbitalScheme::new(width, height)));
 
             let scheme_event = scheme.clone();
-            let display_event = display.dup().unwrap();
-            let socket_event = socket.dup().unwrap();
+            let display_event = display.clone();
+            let socket_event = socket.clone();
 
             let server_thread = thread::spawn(move || {
                 server_loop(scheme, display, socket);
