@@ -4,7 +4,6 @@ extern crate system;
 use std::collections::BTreeMap;
 use std::collections::VecDeque;
 use std::io::{Read, Write};
-use std::process::Command;
 use std::sync::{Arc, Mutex};
 use std::thread;
 
@@ -67,6 +66,7 @@ impl OrbitalScheme {
 
     fn redraw(&mut self, display: &Socket){
         if self.redraw {
+            println!("Redraw {}", self.windows.len());
             self.redraw = false;
             self.image.as_roi().set(Color::rgb(75, 163, 253));
 
@@ -153,8 +153,9 @@ impl OrbitalScheme {
 }
 
 impl Scheme for OrbitalScheme {
-    #[allow(unused_variables)]
-    fn open(&mut self, path: &str, flags: usize, mode: usize) -> Result<usize> {
+    fn open(&mut self, path: &str, _flags: usize, _mode: usize) -> Result<usize> {
+        println!("Open {}", path);
+
         let mut parts = path.split("/").skip(1);
 
         let mut x = parts.next().unwrap_or("").parse::<i32>().unwrap_or(0);
@@ -221,6 +222,8 @@ impl Scheme for OrbitalScheme {
     }
 
     fn close(&mut self, id: usize) -> Result<usize> {
+        println!("Close {}", id);
+
         self.order.retain(|&e| e != id);
 
         if self.windows.remove(&id).is_some() {
