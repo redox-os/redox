@@ -329,11 +329,14 @@ fn main() {
             let scheme_event = scheme.clone();
             let display_event = display.dup().unwrap();
             let socket_event = socket.dup().unwrap();
-            thread::spawn(move || {
-                event_loop(scheme_event, display_event, socket_event);
+
+            let server_thread = thread::spawn(move || {
+                server_loop(scheme, display, socket);
             });
 
-            server_loop(scheme, display, socket);
+            event_loop(scheme_event, display_event, socket_event);
+
+            server_thread.join().unwrap();
         },
         Err(err) => println!("- Orbital: No Display Found: {}", err)
     }
