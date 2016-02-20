@@ -10,6 +10,8 @@ use arch::regs::Regs;
 use collections::string::{String, ToString};
 use collections::vec::Vec;
 
+use common::time::Duration;
+
 use core::cell::UnsafeCell;
 use core::slice::{Iter, IterMut};
 use core::{mem, ptr};
@@ -125,8 +127,16 @@ pub unsafe fn context_switch() {
             'searching: loop {
                 contexts.i += 1;
                 contexts.clean();
-                if let Ok(next) = contexts.current() {
-                    if ! next.blocked {
+                if let Ok(mut next) = contexts.current_mut() {
+                    if next.blocked {
+                        if let Some(wake) = next.wake {
+                            if wake < Duration::monotonic() {
+                                next.blocked = false;
+                                next.wake = None;
+                                break 'searching;
+                            }
+                        }
+                    } else {
                         break 'searching;
                     }
                 }
@@ -205,6 +215,7 @@ pub unsafe fn context_clone(regs: &Regs) -> Result<usize> {
                 } else {
                     None
                 },
+                wake: None,
 
                 kernel_stack: kernel_stack,
                 regs: kernel_regs,
@@ -402,6 +413,8 @@ pub struct Context {
     pub time: usize,
 /// Indicates that the context needs to unblock parent
     pub vfork: Option<*mut Context>,
+/// When to wake up
+    pub wake: Option<Duration>,
 // }
 
 // These members control the stack and registers and are unique to each context {
@@ -470,6 +483,7 @@ impl Context {
             switch: 0,
             time: 0,
             vfork: None,
+            wake: None,
 
             kernel_stack: 0,
             regs: Regs::default(),
@@ -500,6 +514,7 @@ impl Context {
             switch: 0,
             time: 0,
             vfork: None,
+            wake: None,
 
             kernel_stack: kernel_stack,
             regs: regs,
