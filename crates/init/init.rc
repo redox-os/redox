@@ -1,5 +1,5 @@
 # Orbital scheme, handles displays
-orbital
+#orbital
 
 # Example scheme
 example
@@ -8,4 +8,4 @@ example
 login
 
 # The app launcher
-/apps/launcher/main.bin
+#/apps/launcher/main.bin

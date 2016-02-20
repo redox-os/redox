@@ -17,7 +17,7 @@ use core::ops::DerefMut;
 
 use fs::Resource;
 
-use syscall::{do_sys_exit, Error, Result, CLONE_FILES, CLONE_FS, CLONE_VM, EBADF, EFAULT, ENOMEM, ESRCH};
+use syscall::{do_sys_exit, Error, Result, CLONE_FILES, CLONE_FS, CLONE_VM, CLONE_VFORK, EBADF, EFAULT, ENOMEM, ESRCH};
 
 use sync::WaitMap;
 
@@ -168,14 +168,15 @@ pub unsafe fn context_switch() {
 
 pub unsafe fn context_clone(regs: &Regs) -> Result<usize> {
     let mut contexts = ::env().contexts.lock();
-    let flags = regs.ax;
+    let flags = regs.bx;
+    debugln!("Clone {:X}", flags);
 
     let kernel_stack = memory::alloc(CONTEXT_STACK_SIZE + 512);
     if kernel_stack > 0 {
         let clone_pid = Context::next_pid();
 
         let context = {
-            let parent = try!(contexts.current());
+            let mut parent = try!(contexts.current_mut());
 
             let regs_size = mem::size_of::<Regs>();
             let extra_size = mem::size_of::<usize>() * 3; /* Return pointer, interrupt code, regs pointer */
@@ -199,6 +200,12 @@ pub unsafe fn context_clone(regs: &Regs) -> Result<usize> {
                 exited: false,
                 switch: 0,
                 time: 0,
+                vfork: if flags & CLONE_VFORK == CLONE_VFORK {
+                    parent.blocked = true;
+                    Some(parent.deref_mut())
+                } else {
+                    None
+                },
 
                 kernel_stack: kernel_stack,
                 regs: kernel_regs,
@@ -270,6 +277,10 @@ pub unsafe fn context_clone(regs: &Regs) -> Result<usize> {
         };
 
         contexts.push(context);
+
+        if flags & CLONE_VFORK == CLONE_VFORK {
+            context_switch();
+        }
 
         Ok(clone_pid)
     } else {
@@ -390,6 +401,8 @@ pub struct Context {
     pub switch: usize,
 /// The number of time slices used
     pub time: usize,
+/// Indicates that the context needs to unblock parent
+    pub vfork: Option<*mut Context>,
 // }
 
 // These members control the stack and registers and are unique to each context {
@@ -457,6 +470,7 @@ impl Context {
             exited: false,
             switch: 0,
             time: 0,
+            vfork: None,
 
             kernel_stack: 0,
             regs: Regs::default(),
@@ -486,6 +500,7 @@ impl Context {
             exited: false,
             switch: 0,
             time: 0,
+            vfork: None,
 
             kernel_stack: kernel_stack,
             regs: regs,
@@ -746,8 +761,11 @@ impl Context {
 
 impl Drop for Context {
     fn drop(&mut self) {
+        if let Some(vfork) = self.vfork.take() {
+            unsafe { (*vfork).blocked = false; }
+        }
         if self.kernel_stack > 0 {
-            unsafe { memory::unalloc(self.kernel_stack) };
+            unsafe { memory::unalloc(self.kernel_stack); }
         }
     }
 }
