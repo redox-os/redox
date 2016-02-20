@@ -1,8 +1,6 @@
 use core::cmp::Ordering;
 use core::ops::{Add, Sub};
 
-use arch::context;
-
 pub const NANOS_PER_MICRO: i32 = 1000;
 pub const NANOS_PER_MILLI: i32 = 1000000;
 pub const NANOS_PER_SEC: i32 = 1000000000;
@@ -43,19 +41,6 @@ impl Duration {
     /// Get the realtime
     pub fn realtime() -> Self {
         ::env().clock_realtime.lock().clone()
-    }
-
-    /// Sleep the duration
-    pub fn sleep(&self) {
-        let start_time = Duration::monotonic();
-        loop {
-            let elapsed = Duration::monotonic() - start_time;
-            if elapsed > *self {
-                break;
-            } else {
-                unsafe { context::context_switch() };
-            }
-        }
     }
 }
 
