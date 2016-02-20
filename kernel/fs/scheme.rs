@@ -283,11 +283,23 @@ impl Resource for SchemeServerResource {
 
     /// Read data to buffer
     fn read(&mut self, buf: &mut [u8]) -> Result<usize> {
-        if buf.len() == size_of::<Packet>() {
-            let packet = self.inner.todo.receive();
-            unsafe { ptr::write(buf.as_mut_ptr() as *mut Packet, packet); }
+        if buf.len() >= size_of::<Packet>() {
+            let mut i = 0;
 
-            Ok(size_of::<Packet>())
+            let packet = self.inner.todo.receive();
+            unsafe { ptr::write(buf.as_mut_ptr().offset(i as isize) as *mut Packet, packet); }
+            i += size_of::<Packet>();
+
+            while i <= buf.len() - size_of::<Packet>() {
+                if let Some(packet) = self.inner.todo.inner.lock().pop_front() {
+                    unsafe { ptr::write(buf.as_mut_ptr().offset(i as isize) as *mut Packet, packet); }
+                    i += size_of::<Packet>();
+                } else {
+                    break;
+                }
+            }
+
+            Ok(i)
         } else {
             Err(Error::new(EINVAL))
         }
@@ -295,13 +307,16 @@ impl Resource for SchemeServerResource {
 
     /// Write to resource
     fn write(&mut self, buf: &[u8]) -> Result<usize> {
-        if buf.len() == size_of::<Packet>() {
-            let packet_ptr: *const Packet = buf.as_ptr() as *const Packet;
-            let packet = unsafe { & *packet_ptr };
+        if buf.len() >= size_of::<Packet>() {
+            let mut i = 0;
 
-            self.inner.done.send(packet.id, (packet.a, packet.b, packet.c, packet.d));
+            while i <= buf.len() - size_of::<Packet>() {
+                let packet = unsafe { & *(buf.as_ptr().offset(i as isize) as *const Packet) };
+                self.inner.done.send(packet.id, (packet.a, packet.b, packet.c, packet.d));
+                i += size_of::<Packet>();
+            }
 
-            Ok(size_of::<Packet>())
+            Ok(i)
         } else {
             Err(Error::new(EINVAL))
         }
