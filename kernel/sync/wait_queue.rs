@@ -46,13 +46,4 @@ impl<T> WaitQueue<T> {
         self.inner.lock().push_back(value);
         unsafe { self.condition.notify(); }
     }
-
-    pub fn wait(&self) {
-        loop {
-            if ! self.inner.lock().is_empty() {
-                return;
-            }
-            unsafe { self.condition.wait(); }
-        }
-    }
 }

@@ -1,25 +1,27 @@
 use arch::context::{context_switch, Context};
 
-use collections::vec_deque::VecDeque;
+use collections::Vec;
 
+use core::mem;
 use core::ops::DerefMut;
 
 use super::Intex;
 
 pub struct WaitCondition {
-    contexts: Intex<VecDeque<*mut Context>>
+    contexts: Intex<Vec<*mut Context>>
 }
 
 impl WaitCondition {
     pub fn new() -> WaitCondition {
         WaitCondition {
-            contexts: Intex::new(VecDeque::new())
+            contexts: Intex::new(Vec::new())
         }
     }
 
     pub unsafe fn notify(&self) {
-        let mut contexts = self.contexts.lock();
-        while let Some(context) = contexts.pop_front() {
+        let mut contexts = Vec::new();
+        mem::swap(self.contexts.lock().deref_mut(), &mut contexts);
+        for &context in contexts.iter() {
             (*context).blocked = false;
         }
     }
@@ -27,7 +29,7 @@ impl WaitCondition {
     pub unsafe fn wait(&self) {
         if let Ok(mut context) = ::env().contexts.lock().current_mut() {
             let mut contexts = self.contexts.lock();
-            contexts.push_back(context.deref_mut() as *mut Context);
+            contexts.push(context.deref_mut() as *mut Context);
             (*context).blocked = true;
         }
         context_switch();

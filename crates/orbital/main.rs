@@ -68,7 +68,25 @@ impl OrbitalScheme {
 
     fn event_loop(&mut self, socket: &mut File) {
         loop {
+            if self.redraw {
+                println!("Redraw");
+                self.redraw = false;
+                self.display.as_roi().set(Color::rgb(75, 163, 253));
+
+                let mut i = self.order.len();
+                for id in self.order.iter().rev() {
+                    i -= 1;
+                    if let Some(mut window) = self.windows.get_mut(&id) {
+                        window.draw(&mut self.display, i == 0);
+                    }
+                }
+
+                self.display.roi(self.cursor_x, self.cursor_y, self.cursor.width(), self.cursor.height()).blend(&self.cursor.as_roi());
+                self.display.flip();
+            }
+
             for event in self.display.events() {
+                println!("{:?}", event);
                 if event.code == EVENT_KEY {
                     if let Some(id) = self.order.front() {
                         if let Some(mut window) = self.windows.get_mut(&id) {
@@ -137,28 +155,10 @@ impl OrbitalScheme {
             }
 
             let mut packet = Packet::default();
-            while socket.read(&mut packet).unwrap() == size_of::<Packet>() {
+            if socket.read(&mut packet).unwrap() == size_of::<Packet>() {
                 self.handle(&mut packet);
                 socket.write(&packet).unwrap();
             }
-
-            if self.redraw {
-                self.redraw = false;
-                self.display.as_roi().set(Color::rgb(75, 163, 253));
-
-                let mut i = self.order.len();
-                for id in self.order.iter().rev() {
-                    i -= 1;
-                    if let Some(mut window) = self.windows.get_mut(&id) {
-                        window.draw(&mut self.display, i == 0);
-                    }
-                }
-
-                self.display.roi(self.cursor_x, self.cursor_y, self.cursor.width(), self.cursor.height()).blend(&self.cursor.as_roi());
-                self.display.flip();
-            }
-
-            thread::yield_now();
         }
     }
 }

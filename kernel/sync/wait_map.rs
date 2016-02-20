@@ -29,13 +29,4 @@ impl<K, V> WaitMap<K, V> where K: Ord {
             unsafe { self.condition.wait(); }
         }
     }
-
-    pub fn wait(&self) {
-        loop {
-            if ! self.inner.lock().is_empty() {
-                return;
-            }
-            unsafe { self.condition.wait(); }
-        }
-    }
 }
