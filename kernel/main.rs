@@ -151,15 +151,12 @@ fn idle_loop() {
 fn event_loop() {
     let mut cmd = String::new();
     loop {
-        env().events.wait();
-
-        let mut console = env().console.lock();
-        if console.draw {
-            let mut events = ::env().events.inner.lock();
-            while let Some(event) = events.pop_front() {
+        if ::env().console.lock().draw {
+            for event in ::env().events.receive_all() {
                 match event.to_option() {
                     EventOption::Key(key_event) => {
                         if key_event.pressed {
+                            let mut console = ::env().console.lock();
                             match key_event.scancode {
                                 event::K_BKSP => if !cmd.is_empty() {
                                     console.write(&[8]);
@@ -186,6 +183,8 @@ fn event_loop() {
                 }
             }
         }
+
+        unsafe { context_switch(); }
     }
 }
 
