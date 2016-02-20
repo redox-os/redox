@@ -1,23 +1,28 @@
 use alloc::boxed::Box;
 
-use system::syscall::{sys_clone, sys_exit, sys_yield, sys_nanosleep, CLONE_VM, CLONE_FS, CLONE_FILES,
+use system::syscall::{sys_clone, sys_exit, sys_yield, sys_nanosleep, sys_waitpid, CLONE_VM, CLONE_FS, CLONE_FILES,
               TimeSpec};
 
 use time::Duration;
 
 // TODO: Mutex the result
 pub struct JoinHandle<T> {
+    pid: usize,
     result_ptr: *mut Option<T>,
 }
 
 impl<T> JoinHandle<T> {
-    pub fn join(self) -> Option<T> {
-        unsafe {
-            while (*self.result_ptr).is_none() {
-                let _ = sys_yield();
+    pub fn join(self) -> Option<T> where T: ::core::fmt::Debug {
+        let mut status = 0;
+        match sys_waitpid(self.pid, &mut status, 0) {
+            Ok(pid) => {
+                println!("JoinHandle::join {}: {:?}", pid, unsafe { &*self.result_ptr });
+                unsafe { *Box::from_raw(self.result_ptr) }
+            },
+            Err(err) => {
+                println!("JoinHandle::join: Failed to wait_pid: {}", err);
+                None
             }
-
-            *Box::from_raw(self.result_ptr)
         }
     }
 }
@@ -50,19 +55,28 @@ pub fn sleep_ms(ms: u32) {
 pub fn spawn<F, T>(f: F) -> JoinHandle<T>
     where F: FnOnce() -> T,
           F: Send + 'static,
-          T: Send + 'static
+          T: ::core::fmt::Debug + Send + 'static
 {
-    unsafe {
-        let result_ptr: *mut Option<T> = Box::into_raw(box None);
+    let result_ptr: *mut Option<T> = Box::into_raw(box None);
 
-        if sys_clone(CLONE_VM | CLONE_FS | CLONE_FILES).unwrap() == 0 {
-            *result_ptr = Some(f());
-            loop {
-                let _ = sys_exit(0);
-            }
+    let child_code = move || -> ! {
+        unsafe { *result_ptr = Some(f()) };
+        println!("{:?}", unsafe { &*result_ptr });
+        loop {
+            let _ = sys_exit(0);
         }
+    };
 
-        JoinHandle { result_ptr: result_ptr }
+    let parent_code = move |pid: usize| -> JoinHandle<T> {
+        JoinHandle {
+            pid: pid,
+            result_ptr: result_ptr
+        }
+    };
+
+    match unsafe { sys_clone(CLONE_VM | CLONE_FS | CLONE_FILES).unwrap() } {
+        0 => child_code(),
+        pid => parent_code(pid)
     }
 }
 

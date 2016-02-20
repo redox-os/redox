@@ -155,6 +155,10 @@ pub fn execute_outer(context_ptr: *mut Context, entry: usize, mut args: Vec<Stri
             context.push(entry);
             context.push(context_userspace as usize);
         }
+
+        if let Some(vfork) = context.vfork.take() {
+            unsafe { (*vfork).blocked = false; }
+        }
     });
 
     loop {

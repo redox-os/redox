@@ -63,6 +63,9 @@ impl KScheme for ContextScheme {
                 if context.exited {
                     flags_string.push('E');
                 }
+                if context.vfork.is_some() {
+                    flags_string.push('V');
+                }
 
                 string.push_str(&format!("{:<6}{:<6}{:<8}{:<8}{:<8}{:<6}{:<6}{}\n",
                                    context.pid,

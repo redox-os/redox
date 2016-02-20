@@ -4,11 +4,13 @@ extern crate system;
 use std::collections::BTreeMap;
 use std::collections::VecDeque;
 use std::io::{Read, Write};
+use std::mem;
 use std::sync::{Arc, Mutex};
 use std::thread;
 
 use system::error::{Error, Result, EBADF};
 use system::scheme::{Packet, Scheme};
+use system::syscall::SYS_READ;
 
 pub use self::color::Color;
 pub use self::event::{Event, EventOption};
@@ -44,6 +46,7 @@ struct OrbitalScheme {
     order: VecDeque<usize>,
     windows: BTreeMap<usize, Window>,
     redraw: bool,
+    todo: Vec<Packet>
 }
 
 impl OrbitalScheme {
@@ -63,6 +66,7 @@ impl OrbitalScheme {
             order: VecDeque::new(),
             windows: BTreeMap::new(),
             redraw: true,
+            todo: Vec::new()
         }
     }
 
@@ -238,7 +242,7 @@ impl Scheme for OrbitalScheme {
     }
 }
 
-fn event_loop(scheme_mutex: Arc<Mutex<OrbitalScheme>>, display: Socket){
+fn event_loop(scheme_mutex: Arc<Mutex<OrbitalScheme>>, display: Socket, socket: Socket){
     loop {
         {
             let mut scheme = scheme_mutex.lock().unwrap();
@@ -247,13 +251,31 @@ fn event_loop(scheme_mutex: Arc<Mutex<OrbitalScheme>>, display: Socket){
 
         let mut events = [Event::new(); 128];
         let count = display.receive_type(&mut events).unwrap();
+        let mut responses = Vec::new();
         {
             let mut scheme = scheme_mutex.lock().unwrap();
             for &event in events[.. count].iter() {
                 scheme.event(event);
             }
+
+            let mut packets = Vec::new();
+            mem::swap(&mut scheme.todo, &mut packets);
+            for mut packet in packets.iter_mut() {
+                let delay = packet.a == SYS_READ;
+                scheme.handle(packet);
+                if delay && packet.a == 0 {
+                    println!("Event TODO");
+                    scheme.todo.push(*packet);
+                }else{
+                    responses.push(*packet);
+                }
+            }
         }
         println!("Events: {}", count);
+        if ! responses.is_empty() {
+            println!("Event Responses: {}", responses.len());
+            socket.send_type(&responses).unwrap();
+        }
     }
 }
 
@@ -266,16 +288,25 @@ fn server_loop(scheme_mutex: Arc<Mutex<OrbitalScheme>>, display: Socket, socket:
 
         let mut packets = [Packet::default(); 128];
         let count = socket.receive_type(&mut packets).unwrap();
-        /*
+        let mut responses = Vec::new();
         {
             let mut scheme = scheme_mutex.lock().unwrap();
             for mut packet in packets[.. count].iter_mut() {
+                let delay = packet.a == SYS_READ;
                 scheme.handle(packet);
+                if delay && packet.a == 0 {
+                    println!("Packet TODO");
+                    scheme.todo.push(*packet);
+                } else {
+                    responses.push(*packet);
+                }
             }
         }
-        socket.send_type(&packets[.. count]).unwrap();
-        */
         println!("Packets: {}", count);
+        if ! responses.is_empty() {
+            println!("Packet Responses: {}", responses.len());
+            socket.send_type(&responses).unwrap();
+        }
     }
 }
 
@@ -295,10 +326,11 @@ fn main() {
 
             let scheme = Arc::new(Mutex::new(OrbitalScheme::new(width, height)));
 
-            let display_event = display.dup().unwrap();
             let scheme_event = scheme.clone();
+            let display_event = display.dup().unwrap();
+            let socket_event = socket.dup().unwrap();
             thread::spawn(move || {
-                event_loop(scheme_event, display_event);
+                event_loop(scheme_event, display_event, socket_event);
             });
 
             server_loop(scheme, display, socket);
