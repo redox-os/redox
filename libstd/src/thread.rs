@@ -15,14 +15,8 @@ impl<T> JoinHandle<T> {
     pub fn join(self) -> Option<T> where T: ::core::fmt::Debug {
         let mut status = 0;
         match sys_waitpid(self.pid, &mut status, 0) {
-            Ok(pid) => {
-                println!("JoinHandle::join {}: {:?}", pid, unsafe { &*self.result_ptr });
-                unsafe { *Box::from_raw(self.result_ptr) }
-            },
-            Err(err) => {
-                println!("JoinHandle::join: Failed to wait_pid: {}", err);
-                None
-            }
+            Ok(_) => unsafe { *Box::from_raw(self.result_ptr) },
+            Err(_) => None
         }
     }
 }
@@ -40,8 +34,6 @@ pub fn sleep(duration: Duration) {
     };
 
     let _ = sys_nanosleep(&req, &mut rem);
-
-    // Duration::new(rem.tv_sec, rem.tv_nsec)
 }
 
 // Sleep for a number of milliseconds
@@ -61,7 +53,6 @@ pub fn spawn<F, T>(f: F) -> JoinHandle<T>
 
     let child_code = move || -> ! {
         unsafe { *result_ptr = Some(f()) };
-        println!("{:?}", unsafe { &*result_ptr });
         loop {
             let _ = sys_exit(0);
         }

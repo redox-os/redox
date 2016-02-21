@@ -20,7 +20,7 @@ pub use self::socket::Socket;
 pub use self::window::Window;
 
 use self::bmp::BmpFile;
-use self::event::{EVENT_KEY, EVENT_MOUSE, QuitEvent};
+use self::event::{EVENT_KEY, EVENT_MOUSE, K_F1, QuitEvent};
 
 pub mod bmp;
 pub mod color;
@@ -91,6 +91,9 @@ impl OrbitalScheme {
 
     fn event(&mut self, event: Event){
         if event.code == EVENT_KEY {
+            if event.b as u8 == K_F1 && event.c > 0 {
+                ::std::process::Command::new("ps").spawn();
+            }
             if let Some(id) = self.order.front() {
                 if let Some(mut window) = self.windows.get_mut(&id) {
                     window.event(event);
