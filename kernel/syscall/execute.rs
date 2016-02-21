@@ -128,6 +128,24 @@ pub fn execute_outer(context_ptr: *mut Context, entry: usize, mut args: Vec<Stri
         }
         context_args.push(argc);
 
+        //TODO: No default heap, fix brk
+        {
+            let virtual_address = context.next_mem();
+            let virtual_size = 4096;
+            let physical_address = unsafe { memory::alloc(virtual_size) };
+            if physical_address > 0 {
+                unsafe {
+                    (*context.memory.get()).push(ContextMemory {
+                        physical_address: physical_address,
+                        virtual_address: virtual_address,
+                        virtual_size: virtual_size,
+                        writeable: true,
+                        allocated: true
+                    });
+                }
+            }
+        }
+
         context.regs = Regs::default();
         context.regs.sp = context.kernel_stack + CONTEXT_STACK_SIZE - 128;
 
