@@ -33,30 +33,6 @@ impl Duration {
             nanos: nanos,
         }
     }
-
-    /// Get the monotonic time
-    pub fn monotonic() -> Self {
-        let mut tp = TimeSpec {
-            tv_sec: 0,
-            tv_nsec: 0,
-        };
-
-        sys_clock_gettime(CLOCK_MONOTONIC, &mut tp).unwrap();
-
-        Duration::new(tp.tv_sec, tp.tv_nsec)
-    }
-
-    /// Get the realtime
-    pub fn realtime() -> Self {
-        let mut tp = TimeSpec {
-            tv_sec: 0,
-            tv_nsec: 0,
-        };
-
-        sys_clock_gettime(CLOCK_REALTIME, &mut tp).unwrap();
-
-        Duration::new(tp.tv_sec, tp.tv_nsec)
-    }
 }
 
 impl Add for Duration {
@@ -96,5 +72,35 @@ impl PartialOrd for Duration {
         } else {
             Some(Ordering::Equal)
         }
+    }
+}
+
+pub struct Instant(Duration);
+
+impl Instant {
+    pub fn now() -> Instant {
+        let mut tp = TimeSpec {
+            tv_sec: 0,
+            tv_nsec: 0,
+        };
+
+        sys_clock_gettime(CLOCK_MONOTONIC, &mut tp).unwrap();
+
+        Instant(Duration::new(tp.tv_sec, tp.tv_nsec))
+    }
+}
+
+pub struct SystemTime(Duration);
+
+impl SystemTime {
+    pub fn now() -> SystemTime {
+        let mut tp = TimeSpec {
+            tv_sec: 0,
+            tv_nsec: 0,
+        };
+
+        sys_clock_gettime(CLOCK_REALTIME, &mut tp).unwrap();
+
+        SystemTime(Duration::new(tp.tv_sec, tp.tv_nsec))
     }
 }
