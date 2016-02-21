@@ -7,6 +7,7 @@ use std::io::{Read, Write};
 use std::mem;
 use std::sync::{Arc, Mutex};
 use std::thread;
+use std::time::Instant;
 
 use system::error::{Error, Result, EBADF};
 use system::scheme::{Packet, Scheme};
@@ -32,6 +33,7 @@ pub mod socket;
 pub mod window;
 
 struct OrbitalScheme {
+    start: Instant,
     image: Image,
     background: Image,
     cursor: Image,
@@ -52,6 +54,7 @@ struct OrbitalScheme {
 impl OrbitalScheme {
     fn new(width: i32, height: i32) -> OrbitalScheme {
         OrbitalScheme {
+            start: Instant::now(),
             image: Image::new(width, height),
             background: BmpFile::from_path("/ui/background.bmp"),
             cursor: BmpFile::from_path("/ui/cursor.bmp"),
@@ -72,6 +75,9 @@ impl OrbitalScheme {
 
     fn redraw(&mut self, display: &Socket){
         if self.redraw {
+            let elapsed = self.start.elapsed();
+            println!("redraw {} {}", elapsed.secs, elapsed.nanos);
+
             self.redraw = false;
             self.image.as_roi().set(Color::rgb(75, 163, 253));
             self.image.as_roi().blend(&self.background.as_roi());
