@@ -187,6 +187,8 @@ pub unsafe fn context_clone(regs: &Regs) -> Result<usize> {
         let context = {
             let mut parent = try!(contexts.current_mut());
 
+            //debugln!("{}: {}: clone to {}: {:X}", parent.pid, parent.name, clone_pid, flags);
+
             let regs_size = mem::size_of::<Regs>();
             let extra_size = mem::size_of::<usize>() * 3; /* Return pointer, interrupt code, regs pointer */
             let parent_regs_addr = (regs as *const Regs) as usize;
@@ -247,6 +249,8 @@ pub unsafe fn context_clone(regs: &Regs) -> Result<usize> {
                     Arc::new(UnsafeCell::new((*parent.cwd.get()).clone()))
                 },
                 memory: if flags & CLONE_VM == CLONE_VM {
+                    //debugln!("{}: {}: clone memory for {}", parent.pid, parent.name, clone_pid);
+
                     parent.memory.clone()
                 } else {
                     let mut mem: Vec<ContextMemory> = Vec::new();
@@ -256,6 +260,9 @@ pub unsafe fn context_clone(regs: &Regs) -> Result<usize> {
                             ::memcpy(physical_address as *mut u8,
                                      entry.physical_address as *const u8,
                                      entry.virtual_size);
+
+                            //debugln!("{}: {}: dup memory {:X}:{:X} for {}", parent.pid, parent.name, entry.virtual_address, entry.virtual_address + entry.virtual_size, clone_pid);
+
                             mem.push(ContextMemory {
                                 physical_address: physical_address,
                                 virtual_address: entry.virtual_address,
@@ -263,20 +270,29 @@ pub unsafe fn context_clone(regs: &Regs) -> Result<usize> {
                                 writeable: entry.writeable,
                                 allocated: true,
                             });
+                        } else {
+                            //debugln!("{}: {}: failed to dup memory {:X}:{:X} for {}", parent.pid, parent.name, entry.virtual_address, entry.virtual_address + entry.virtual_size, clone_pid);
                         }
                     }
                     Arc::new(UnsafeCell::new(mem))
                 },
                 files: if flags & CLONE_FILES == CLONE_FILES {
+                    //debugln!("{}: {}: clone resources for {}", parent.pid, parent.name, clone_pid);
+
                     parent.files.clone()
                 } else {
                     let mut files: Vec<ContextFile> = Vec::new();
                     for file in (*parent.files.get()).iter() {
-                        if let Ok(resource) = file.resource.dup() {
-                            files.push(ContextFile {
-                                fd: file.fd,
-                                resource: resource,
-                            });
+                        match file.resource.dup() {
+                            Ok(resource) => {
+                                //debugln!("{}: {}: dup resource {} for {}", parent.pid, parent.name, file.fd, clone_pid);
+
+                                files.push(ContextFile {
+                                    fd: file.fd,
+                                    resource: resource,
+                                });
+                            },
+                            Err(_err) => () //debugln!("{}: {}: failed to dup resource {} for {}: {}", parent.pid, parent.name, file.fd, clone_pid, err)
                         }
                     }
                     Arc::new(UnsafeCell::new(files))
@@ -665,6 +681,8 @@ impl Context {
             }
         }
 
+        //debugln!("{}: {}: file number {} not found", self.pid, self.name, fd);
+
         Err(Error::new(EBADF))
     }
 
@@ -675,6 +693,8 @@ impl Context {
                 return Ok(&mut file.resource);
             }
         }
+
+        //debugln!("{}: {}: file number {} not found", self.pid, self.name, fd);
 
         Err(Error::new(EBADF))
     }

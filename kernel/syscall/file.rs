@@ -23,6 +23,8 @@ pub fn do_sys_close(fd: usize) -> Result<usize> {
     let contexts = ::env().contexts.lock();
     let current = try!(contexts.current());
 
+    //debugln!("{}: {}: close {}", current.pid, current.name, fd);
+
     for i in 0..unsafe { (*current.files.get()).len() } {
         let mut remove = false;
         if let Some(file) = unsafe { (*current.files.get()).get(i) } {
@@ -49,6 +51,9 @@ pub fn do_sys_dup(fd: usize) -> Result<usize> {
     let resource = try!(current.get_file(fd));
     let new_resource = try!(resource.dup());
     let new_fd = current.next_fd();
+
+    //debugln!("{}: {}: dup {} as {}", current.pid, current.name, fd, new_fd);
+
     unsafe {
         (*current.files.get()).push(ContextFile {
             fd: new_fd,
@@ -114,9 +119,12 @@ pub fn do_sys_mkdir(path: *const u8, flags: usize) -> Result<usize> {
 pub fn do_sys_open(path: *const u8, flags: usize) -> Result<usize> {
     let contexts = ::env().contexts.lock();
     let current = try!(contexts.current());
-    let path_string = current.canonicalize(c_string_to_str(path));
-    let resource = try!(::env().open(&Url::from_string(path_string), flags));
+    let url = Url::from_string(current.canonicalize(c_string_to_str(path)));
+    let resource = try!(::env().open(&url, flags));
     let fd = current.next_fd();
+
+    //debugln!("{}: {}: open {} as {}", current.pid, current.name, url.string, fd);
+
     unsafe {
         (*current.files.get()).push(ContextFile {
             fd: fd,
