@@ -72,6 +72,9 @@ fn execute_inner(url: Url) -> Result<(*mut Context, usize)> {
             if entry > 0 && ! memory.is_empty() {
                 let mut contexts = ::env().contexts.lock();
                 let mut context = try!(contexts.current_mut());
+
+                //debugln!("{}: {}: execute {}", context.pid, context.name, url.string);
+
                 context.name = url.string;
                 context.cwd = Arc::new(UnsafeCell::new(unsafe { (*context.cwd.get()).clone() }));
 
