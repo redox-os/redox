@@ -130,7 +130,7 @@ pub unsafe fn context_switch() {
                 if let Ok(mut next) = contexts.current_mut() {
                     if next.blocked {
                         if let Some(wake) = next.wake {
-                            if wake < Duration::monotonic() {
+                            if wake <= Duration::monotonic() {
                                 next.blocked = false;
                                 next.wake = None;
                                 break 'searching;
