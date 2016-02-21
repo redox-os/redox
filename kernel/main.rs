@@ -164,16 +164,15 @@ fn event_loop() {
                             },
                             _ => match key_event.character {
                                 '\0' => (),
-                                '\n' => {
-                                    let mut swap_cmd = String::new();
-                                    mem::swap(&mut cmd, &mut swap_cmd);
-                                    console.commands.send(swap_cmd);
+                                c => {
+                                    cmd.push(c);
+                                    console.write(&[c as u8]);
 
-                                    console.write(&[10]);
-                                }
-                                _ => {
-                                    cmd.push(key_event.character);
-                                    console.write(&[key_event.character as u8]);
+                                    if c == '\n' {
+                                        let mut swap_cmd = String::new();
+                                        mem::swap(&mut cmd, &mut swap_cmd);
+                                        console.commands.send(swap_cmd);
+                                    }
                                 }
                             },
                         }
