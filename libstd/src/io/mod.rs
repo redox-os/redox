@@ -1,6 +1,6 @@
 //! IO
 
-use {fmt, str};
+use fmt;
 use string::String;
 use vec::Vec;
 pub use system::error::Error;
@@ -18,15 +18,11 @@ impl<R: Read> Iterator for Bytes<R> {
     type Item = Result<u8>;
 
     fn next(&mut self) -> Option<Result<u8>> {
-        let mut byte = [4];
-        if let Ok(1) = self.reader.read(&mut byte) {
-            if byte[0] == 4 {
-                None
-            } else {
-                Some(Ok(byte[0]))
-            }
-        } else {
-            None
+        let mut byte = [0];
+        match self.reader.read(&mut byte) {
+            Ok(0) => None,
+            Ok(_) => Some(Ok(byte[0])),
+            Err(err) => Some(Err(err))
         }
     }
 }
@@ -40,12 +36,12 @@ pub trait Read {
     fn read_to_end(&mut self, vec: &mut Vec<u8>) -> Result<usize> {
         let mut read = 0;
         loop {
-            let mut bytes = [0; 4096];
-            match self.read(&mut bytes) {
+            let mut buf = [0; 4096];
+            match self.read(&mut buf) {
                 Ok(0) => return Ok(read),
                 Err(err) => return Err(err),
                 Ok(count) => {
-                    vec.push_all(&bytes[0..count]);
+                    vec.extend_from_slice(&buf[0..count]);
                     read += count;
                 }
             }
@@ -56,12 +52,12 @@ pub trait Read {
     fn read_to_string(&mut self, string: &mut String) -> Result<usize> {
         let mut read = 0;
         loop {
-            let mut bytes = [0; 4096];
-            match self.read(&mut bytes) {
+            let mut buf = [0; 4096];
+            match self.read(&mut buf) {
                 Ok(0) => return Ok(read),
                 Err(err) => return Err(err),
                 Ok(count) => {
-                    string.push_str(unsafe { &str::from_utf8_unchecked(&bytes[0..count]) });
+                    unsafe { string.as_mut_vec().extend_from_slice(&buf[.. count]); }
                     read += count;
                 }
             }
@@ -134,16 +130,19 @@ pub fn stdin() -> Stdin {
 
 impl Stdin {
     pub fn read_line(&mut self, string: &mut String) -> Result<usize> {
-        let mut read = 0;
+        let mut i = 0;
         loop {
-            let mut bytes = [0; 4096];
-            match self.read(&mut bytes) {
-                Ok(0) => return Ok(read),
-                Err(err) => return Err(err),
-                Ok(count) => {
-                    string.push_str(unsafe { &str::from_utf8_unchecked(&bytes[0..count]) });
-                    read += count;
-                }
+            let mut byte = [0];
+            match sys_read(0, &mut byte) {
+                Ok(0) => return Ok(i),
+                Ok(_) => {
+                    unsafe { string.as_mut_vec().push(byte[0]) };
+                    i += 1;
+                    if byte[0] == b'\n' {
+                        return Ok(i);
+                    }
+                },
+                Err(err) => return Err(err)
             }
         }
     }

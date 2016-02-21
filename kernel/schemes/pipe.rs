@@ -9,15 +9,13 @@ use system::error::{Error, Result, EPIPE};
 
 /// Read side of a pipe
 pub struct PipeRead {
-    vec: Arc<WaitQueue<u8>>,
-    eof_toggle: bool,
+    vec: Arc<WaitQueue<u8>>
 }
 
 impl PipeRead {
     pub fn new() -> Self {
         PipeRead {
-            vec: Arc::new(WaitQueue::new()),
-            eof_toggle: false,
+            vec: Arc::new(WaitQueue::new())
         }
     }
 }
@@ -26,7 +24,6 @@ impl Resource for PipeRead {
     fn dup(&self) -> Result<Box<Resource>> {
         Ok(box PipeRead {
             vec: self.vec.clone(),
-            eof_toggle: self.eof_toggle,
         })
     }
 
@@ -43,11 +40,7 @@ impl Resource for PipeRead {
     }
 
     fn read(&mut self, buf: &mut [u8]) -> Result<usize> {
-        if self.eof_toggle {
-            self.eof_toggle = false;
-
-            Ok(0)
-        }else if Arc::weak_count(&self.vec) == 0 && self.vec.inner.lock().is_empty() {
+        if Arc::weak_count(&self.vec) == 0 && self.vec.inner.lock().is_empty() {
             Ok(0)
         } else {
             let mut i = 0;
@@ -63,10 +56,7 @@ impl Resource for PipeRead {
                         buf[i] = b;
                         i += 1;
                     },
-                    None => {
-                        self.eof_toggle = true;
-                        break;
-                    }
+                    None => break
                 }
             }
 

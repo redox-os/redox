@@ -9,14 +9,12 @@ use system::error::Result;
 /// A debug resource
 pub struct DebugResource {
     pub command: String,
-    pub line_toggle: bool,
 }
 
 impl Resource for DebugResource {
     fn dup(&self) -> Result<Box<Resource>> {
         Ok(box DebugResource {
             command: self.command.clone(),
-            line_toggle: self.line_toggle,
         })
     }
 
@@ -33,24 +31,14 @@ impl Resource for DebugResource {
     }
 
     fn read(&mut self, buf: &mut [u8]) -> Result<usize> {
-        if self.line_toggle {
-            self.line_toggle = false;
-            return Ok(0);
-        }
-
         if self.command.is_empty() {
             self.command = ::env().console.lock().commands.receive();
         }
 
-        // TODO: Unicode
         let mut i = 0;
-        while i < buf.len() && !self.command.is_empty() {
+        while i < buf.len() && ! self.command.is_empty() {
             buf[i] = unsafe { self.command.as_mut_vec().remove(0) };
             i += 1;
-        }
-
-        if i > 0 && self.command.is_empty() {
-            self.line_toggle = true;
         }
 
         Ok(i)
@@ -81,8 +69,7 @@ impl KScheme for DebugScheme {
 
     fn open(&mut self, _: &Url, _: usize) -> Result<Box<Resource>> {
         Ok(box DebugResource {
-            command: String::new(),
-            line_toggle: false,
+            command: String::new()
         })
     }
 }
