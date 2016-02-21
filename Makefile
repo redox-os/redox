@@ -146,12 +146,11 @@ apps: filesystem/apps/editor/main.bin \
 	  filesystem/apps/terminal/main.bin \
 	  filesystem/apps/viewer/main.bin
 
-filesystem/bin:
-
 $(BUILD)/libcoreutils.rlib: crates/coreutils/src/lib.rs $(BUILD)/libstd.rlib
 	$(RUSTC) $(RUSTCFLAGS) --crate-name coreutils --crate-type lib -o $@ $<
 
 filesystem/bin/%: crates/coreutils/src/bin/%.rs $(BUILD)/crt0.o $(BUILD)/libcoreutils.rlib
+	mkdir -p filesystem/bin
 	$(RUSTC) $(RUSTCFLAGS) --crate-type bin -o $@ $<
 
 coreutils: \
@@ -178,22 +177,26 @@ coreutils: \
 	#filesystem/bin/env
 
 filesystem/bin/%: crates/%/main.rs crates/%/*.rs $(BUILD)/crt0.o $(BUILD)/libstd.rlib
+	mkdir -p filesystem/bin
 	$(RUSTC) $(RUSTCFLAGS) --crate-type bin -o $@ $<
 
 filesystem/bin/%: unix/%
+	mkdir -p filesystem/bin
 	cp $< $@
 
 filesystem/bin/ion: $(BUILD)/ion-shell.bin
+	mkdir -p filesystem/bin
 	cp $< $@
 
 filesystem/bin/init.rc: crates/init/init.rc
+	mkdir -p filesystem/bin
 	cp $< $@
 
 filesystem/bin/sh: $(BUILD)/ion-shell.bin
+	mkdir -p filesystem/bin
 	cp $< $@
 
 bins: \
-	filesystem/bin \
 	coreutils \
 	filesystem/bin/example \
 	filesystem/bin/init \
