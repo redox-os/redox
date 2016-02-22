@@ -180,7 +180,7 @@ filesystem/bin/%: crates/%/main.rs crates/%/*.rs $(BUILD)/crt0.o $(BUILD)/libstd
 	mkdir -p filesystem/bin
 	$(RUSTC) $(RUSTCFLAGS) --crate-type bin -o $@ $<
 
-filesystem/bin/%: unix/%
+filesystem/bin/%: libc/bin/%
 	mkdir -p filesystem/bin
 	cp $< $@
 
@@ -198,6 +198,7 @@ filesystem/bin/sh: $(BUILD)/ion-shell.bin
 
 bins: \
 	coreutils \
+	filesystem/bin/c-test \
 	filesystem/bin/example \
 	filesystem/bin/init \
   	filesystem/bin/init.rc \
