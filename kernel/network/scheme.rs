@@ -1,16 +1,15 @@
 use alloc::boxed::Box;
 
+use arch::context::context_switch;
+
 use collections::vec::Vec;
 use collections::vec_deque::VecDeque;
 
 use core::ops::DerefMut;
 
-use scheduler::context::context_switch;
-use common::debug;
+use fs::Resource;
 
-use schemes::{Result, Resource, ResourceSeek, Url};
-
-use syscall::{Error, EBADF};
+use syscall::Result;
 
 use sync::Intex;
 
@@ -64,16 +63,19 @@ impl Resource for NetworkResource {
         Ok(ret)
     }
 
-    fn url(&self) -> Url {
-        Url::from_str("network:")
+    fn path(&self, buf: &mut [u8]) -> Result<usize> {
+        let path = b"network:";
+
+        let mut i = 0;
+        while i < buf.len() && i < path.len() {
+            buf[i] = path[i];
+            i += 1;
+        }
+
+        Ok(i)
     }
 
-    fn read(&mut self, _: &mut [u8]) -> Result<usize> {
-        debug::d("TODO: Implement read for RTL8139\n");
-        Err(Error::new(EBADF))
-    }
-
-    fn read_to_end(&mut self, vec: &mut Vec<u8>) -> Result<usize> {
+    fn read(&mut self, buf: &mut [u8]) -> Result<usize> {
         loop {
             unsafe {
                 {
@@ -82,12 +84,16 @@ impl Resource for NetworkResource {
                     let option = (*self.ptr).inbound.lock().pop_front();
 
                     if let Some(bytes) = option {
-                        vec.push_all(&bytes);
+                        let mut i = 0;
+                        while i < bytes.len() && i < buf.len() {
+                            buf[i] = bytes[i];
+                            i += 1;
+                        }
                         return Ok(bytes.len());
                     }
                 }
 
-                context_switch(false);
+                context_switch();
             }
         }
     }
@@ -100,10 +106,6 @@ impl Resource for NetworkResource {
         }
 
         Ok(buf.len())
-    }
-
-    fn seek(&mut self, _: ResourceSeek) -> Result<usize> {
-        Err(Error::new(EBADF))
     }
 
     fn sync(&mut self) -> Result<()> {

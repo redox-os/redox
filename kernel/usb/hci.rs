@@ -158,7 +158,12 @@ pub trait Hci {
                                             middle_button: buttons & 4 == 4,
                                             right_button: buttons & 2 == 2,
                                         };
-                                        ::env().events.send(mouse_event.to_event());
+
+                                        if ::env().console.lock().draw {
+                                            //ignore mouse event
+                                        } else {
+                                            ::env().events.send(mouse_event.to_event());
+                                        }
                                     }
 
                                     let req = TimeSpec {

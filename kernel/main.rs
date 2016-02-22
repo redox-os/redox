@@ -44,12 +44,11 @@ use arch::paging::Page;
 use arch::regs::Regs;
 use arch::tss::TSS;
 
-use collections::string::{String, ToString};
+use collections::string::ToString;
 
 use core::{ptr, mem, usize};
 use core::slice::SliceExt;
 
-use common::event::{self, EventOption};
 use common::time::Duration;
 
 use drivers::pci;
@@ -83,6 +82,8 @@ pub mod alloc_system;
 pub mod acpi;
 /// Architecture dependant
 pub mod arch;
+/// Audio
+pub mod audio;
 /// Disk drivers
 pub mod disk;
 /// Various drivers
@@ -93,6 +94,8 @@ pub mod env;
 pub mod fs;
 /// Various graphical methods
 pub mod graphics;
+/// Networking
+pub mod network;
 /// Panic
 pub mod panic;
 /// Schemes
@@ -143,43 +146,6 @@ fn idle_loop() {
         } else {
             unsafe { asm!("sti ; nop" : : : : "intel", "volatile"); }
             unsafe { context_switch(); }
-        }
-    }
-}
-
-/// Event loop
-//TODO: Allow restart, block on console draw boolean
-fn event_loop() {
-    let mut cmd = String::new();
-    while ::env().console.lock().draw {
-        for event in ::env().events.receive_all() {
-            match event.to_option() {
-                EventOption::Key(key_event) => {
-                    if key_event.pressed {
-                        let mut console = ::env().console.lock();
-                        match key_event.scancode {
-                            event::K_BKSP => if !cmd.is_empty() {
-                                console.write(&[8]);
-                                cmd.pop();
-                            },
-                            _ => match key_event.character {
-                                '\0' => (),
-                                c => {
-                                    cmd.push(c);
-                                    console.write(&[c as u8]);
-
-                                    if c == '\n' {
-                                        let mut swap_cmd = String::new();
-                                        mem::swap(&mut cmd, &mut swap_cmd);
-                                        console.commands.send(swap_cmd);
-                                    }
-                                }
-                            },
-                        }
-                    }
-                }
-                _ => (),
-            }
         }
     }
 }
@@ -246,11 +212,6 @@ unsafe fn init(tss_data: usize) {
             env.schemes.lock().push(box InterruptScheme);
             env.schemes.lock().push(box MemoryScheme);
             env.schemes.lock().push(box TestScheme);
-
-            Context::spawn("kevent".to_string(),
-            box move || {
-                event_loop();
-            });
 
             env.contexts.lock().enabled = true;
 
