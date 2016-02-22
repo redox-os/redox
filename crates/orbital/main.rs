@@ -22,7 +22,7 @@ pub use self::socket::Socket;
 pub use self::window::Window;
 
 use self::bmp::BmpFile;
-use self::event::{EVENT_KEY, EVENT_MOUSE, K_F1, QuitEvent};
+use self::event::{EVENT_KEY, EVENT_MOUSE, QuitEvent};
 
 pub mod bmp;
 pub mod color;
