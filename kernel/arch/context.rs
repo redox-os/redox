@@ -733,6 +733,8 @@ impl Context {
         self.loadable = true;
         if next.loadable {
             asm!("fxrstor [$0]" : : "r"(next.fx) : "memory" : "intel", "volatile");
+        }else{
+            asm!("fninit" : : : "memory" : "intel", "volatile");
         }
 
         asm!("pushfd ; pop $0" : "=r"(self.regs.flags) : : "memory" : "intel", "volatile");
@@ -765,6 +767,8 @@ impl Context {
         self.loadable = true;
         if next.loadable {
             asm!("fxrstor [$0]" : : "r"(next.fx) : "memory" : "intel", "volatile");
+        }else{
+            asm!("fninit" : : : "memory" : "intel", "volatile");
         }
 
         asm!("pushfq ; pop $0" : "=r"(self.regs.flags) : : "memory" : "intel", "volatile");
