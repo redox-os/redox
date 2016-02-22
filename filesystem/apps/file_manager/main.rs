@@ -477,7 +477,7 @@ impl FileManager {
                         self.set_path(&current_path);
                     }
                     FileManagerCommand::Execute(cmd) => {
-                        Command::new("/apps/launcher/main.bin").arg(&(current_path.clone() + &cmd)).spawn();
+                        Command::new("launcher").arg(&(current_path.clone() + &cmd)).spawn();
                     },
                     FileManagerCommand::Redraw => (),
                     FileManagerCommand::Quit => break 'events,
