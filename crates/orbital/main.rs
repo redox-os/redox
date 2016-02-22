@@ -213,9 +213,6 @@ impl OrbitalScheme {
 
     fn event(&mut self, event: Event){
         if event.code == EVENT_KEY {
-            if event.b as u8 == K_F1 && event.c > 0 {
-                ::std::process::Command::new("ps").spawn();
-            }
             if let Some(id) = self.order.front() {
                 if let Some(mut window) = self.windows.get_mut(&id) {
                     window.event(event);

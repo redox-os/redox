@@ -1,5 +1,7 @@
 use alloc::boxed::Box;
 
+use collections::string::String;
+
 use common::event;
 
 use drivers::io::{Io, Pio};
@@ -65,6 +67,8 @@ impl KScheme for Serial {
             } else if self.cursor_control {
                 self.cursor_control = false;
 
+                c = '\0';
+
                 if c == 'A' {
                     sc = event::K_UP;
                 } else if c == 'B' {
@@ -74,16 +78,20 @@ impl KScheme for Serial {
                 } else if c == 'D' {
                     sc = event::K_LEFT;
                 }
-
+            } else if c == '\x03' {
+                ::env().console.lock().write(b"^C\n");
+                ::env().console.lock().commands.send(String::new());
+                
                 c = '\0';
+                sc = 0;
             } else if c == '\x1B' {
                 self.escape = true;
                 c = '\0';
             } else if c == '\r' {
                 c = '\n';
             } else if c == '\x7F' {
-                sc = event::K_BKSP;
                 c = '\0';
+                sc = event::K_BKSP;
             }
 
             if c != '\0' || sc != 0 {
