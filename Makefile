@@ -199,6 +199,7 @@ filesystem/bin/sh: $(BUILD)/ion-shell.bin
 bins: \
 	coreutils \
 	filesystem/bin/c-test \
+	filesystem/bin/dosbox \
 	filesystem/bin/example \
 	filesystem/bin/init \
   	filesystem/bin/init.rc \
