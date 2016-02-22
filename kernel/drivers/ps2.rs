@@ -275,11 +275,11 @@ impl KScheme for Ps2 {
             let status = self.cmd.read();
             if status & 0x21 == 1 {
                 if let Some(key_event) = self.keyboard_interrupt() {
-                    ::env().events.lock().push_back(key_event.to_event());
+                    ::env().events.send(key_event.to_event());
                 }
             } else if status & 0x21 == 0x21 {
                 if let Some(mouse_event) = self.mouse_interrupt() {
-                    ::env().events.lock().push_back(mouse_event.to_event());
+                    ::env().events.send(mouse_event.to_event());
                 }
             } else {
                 break;

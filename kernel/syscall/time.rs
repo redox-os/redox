@@ -1,3 +1,5 @@
+use arch::context::context_switch;
+
 use common::time::Duration;
 
 use super::{Error, Result, CLOCK_MONOTONIC, CLOCK_REALTIME, EFAULT, EINVAL, TimeSpec};
@@ -30,7 +32,15 @@ pub fn do_sys_clock_gettime(clock: usize, tp: *mut TimeSpec) -> Result<usize> {
 
 pub fn do_sys_nanosleep(req: *const TimeSpec, rem: *mut TimeSpec) -> Result<usize> {
     if req as usize > 0 {
-        Duration::new(unsafe { (*req).tv_sec }, unsafe { (*req).tv_nsec }).sleep();
+        let mut contexts = ::env().contexts.lock();
+        let mut context = try!(contexts.current_mut());
+
+        context.blocked = true;
+        context.wake = Some(
+            Duration::monotonic() + Duration::new(unsafe { (*req).tv_sec }, unsafe { (*req).tv_nsec })
+        );
+
+        unsafe { context_switch(); }
 
         if rem as usize > 0 {
             unsafe {

@@ -1,12 +1,11 @@
 use boxed::Box;
-use fs::File;
 use io::{Result, Read, Write};
 use ops::DerefMut;
 use string::{String, ToString};
 use vec::Vec;
 
 use system::error::Error;
-use system::syscall::{sys_clone, sys_close, sys_dup, sys_execve, sys_exit, sys_pipe2, sys_waitpid, CLONE_VM, CLONE_VFORK};
+use system::syscall::{sys_clone, sys_close, sys_dup, sys_execve, sys_exit, sys_pipe2, sys_read, sys_write, sys_waitpid, CLONE_VM, CLONE_VFORK};
 
 pub struct ExitStatus {
     status: usize,
@@ -23,32 +22,32 @@ impl ExitStatus {
 }
 
 pub struct ChildStdin {
-    inner: File,
+    fd: usize,
 }
 
 impl Write for ChildStdin {
     fn write(&mut self, buf: &[u8]) -> Result<usize> {
-        self.inner.write(buf)
+        sys_write(self.fd, buf)
     }
 }
 
 pub struct ChildStdout {
-    inner: File,
+    fd: usize,
 }
 
 impl Read for ChildStdout {
     fn read(&mut self, buf: &mut [u8]) -> Result<usize> {
-        self.inner.read(buf)
+        sys_read(self.fd, buf)
     }
 }
 
 pub struct ChildStderr {
-    inner: File,
+    fd: usize,
 }
 
 impl Read for ChildStderr {
     fn read(&mut self, buf: &mut [u8]) -> Result<usize> {
-        self.inner.read(buf)
+        sys_read(self.fd, buf)
     }
 }
 
@@ -131,10 +130,9 @@ impl Command {
         let child_stdin = self.stdin.inner;
         let child_code = move || -> Result<usize> {
             match child_stderr {
-                StdioType::Piped(read, write) => {
+                StdioType::Piped(_read, write) => {
                     try!(sys_close(2));
                     try!(sys_dup(write));
-                    try!(sys_close(read));
                 },
                 StdioType::Null => {
                     try!(sys_close(2));
@@ -143,10 +141,9 @@ impl Command {
             }
 
             match child_stdout {
-                StdioType::Piped(read, write) => {
+                StdioType::Piped(_read, write) => {
                     try!(sys_close(1));
                     try!(sys_dup(write));
-                    try!(sys_close(read));
                 },
                 StdioType::Null => {
                     try!(sys_close(1));
@@ -155,10 +152,9 @@ impl Command {
             }
 
             match child_stdin {
-                StdioType::Piped(read, write) => {
+                StdioType::Piped(read, _write) => {
                     try!(sys_close(0));
                     try!(sys_dup(read));
-                    try!(sys_close(write));
                 },
                 StdioType::Null => {
                     try!(sys_close(0));
@@ -176,28 +172,25 @@ impl Command {
                 Ok(Child {
                     pid: pid,
                     stdin: match self.stdin.inner {
-                        StdioType::Piped(read, write) => {
-                            try!(sys_close(read));
+                        StdioType::Piped(_read, write) => {
                             Some(ChildStdin {
-                                inner: File::from_fd(write)
+                                fd: write
                             })
                         },
                         _ => None
                     },
                     stdout: match self.stdout.inner {
-                        StdioType::Piped(read, write) => {
-                            try!(sys_close(write));
+                        StdioType::Piped(read, _write) => {
                             Some(ChildStdout {
-                                inner: File::from_fd(read)
+                                fd: read
                             })
                         },
                         _ => None
                     },
                     stderr: match self.stderr.inner {
-                        StdioType::Piped(read, write) => {
-                            try!(sys_close(write));
+                        StdioType::Piped(read, _write) => {
                             Some(ChildStderr {
-                                inner: File::from_fd(read)
+                                fd: read
                             })
                         },
                         _ => None

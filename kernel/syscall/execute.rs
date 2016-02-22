@@ -72,6 +72,9 @@ fn execute_inner(url: Url) -> Result<(*mut Context, usize)> {
             if entry > 0 && ! memory.is_empty() {
                 let mut contexts = ::env().contexts.lock();
                 let mut context = try!(contexts.current_mut());
+
+                //debugln!("{}: {}: execute {}", context.pid, context.name, url.string);
+
                 context.name = url.string;
                 context.cwd = Arc::new(UnsafeCell::new(unsafe { (*context.cwd.get()).clone() }));
 
@@ -125,6 +128,24 @@ pub fn execute_outer(context_ptr: *mut Context, entry: usize, mut args: Vec<Stri
         }
         context_args.push(argc);
 
+        //TODO: No default heap, fix brk
+        {
+            let virtual_address = context.next_mem();
+            let virtual_size = 4096;
+            let physical_address = unsafe { memory::alloc(virtual_size) };
+            if physical_address > 0 {
+                unsafe {
+                    (*context.memory.get()).push(ContextMemory {
+                        physical_address: physical_address,
+                        virtual_address: virtual_address,
+                        virtual_size: virtual_size,
+                        writeable: true,
+                        allocated: true
+                    });
+                }
+            }
+        }
+
         context.regs = Regs::default();
         context.regs.sp = context.kernel_stack + CONTEXT_STACK_SIZE - 128;
 
@@ -155,10 +176,14 @@ pub fn execute_outer(context_ptr: *mut Context, entry: usize, mut args: Vec<Stri
             context.push(entry);
             context.push(context_userspace as usize);
         }
+
+        if let Some(vfork) = context.vfork.take() {
+            unsafe { (*vfork).blocked = false; }
+        }
     });
 
     loop {
-        unsafe { context_switch(false) };
+        unsafe { context_switch() };
     }
 }
 

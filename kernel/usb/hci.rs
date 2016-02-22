@@ -4,11 +4,13 @@ use arch::memory;
 use collections::string::ToString;
 
 use common::event::MouseEvent;
-use common::time::{self, Duration};
+use common::time;
 
 use core::{cmp, mem, ptr, slice};
 
 use graphics::display::VBEMODEINFO;
+
+use syscall::{do_sys_nanosleep, TimeSpec};
 
 use super::{Packet, Pipe, Setup};
 use super::desc::*;
@@ -156,10 +158,18 @@ pub trait Hci {
                                             middle_button: buttons & 4 == 4,
                                             right_button: buttons & 2 == 2,
                                         };
-                                        ::env().events.lock().push_back(mouse_event.to_event());
+                                        ::env().events.send(mouse_event.to_event());
                                     }
 
-                                    Duration::new(0, 10 * time::NANOS_PER_MILLI).sleep();
+                                    let req = TimeSpec {
+                                        tv_sec: 0,
+                                        tv_nsec: 10 * time::NANOS_PER_MILLI
+                                    };
+                                    let mut rem = TimeSpec {
+                                        tv_sec: 0,
+                                        tv_nsec: 0,
+                                    };
+                                    do_sys_nanosleep(&req, &mut rem).unwrap();
                                 }
                             });
                         }

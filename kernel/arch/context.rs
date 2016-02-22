@@ -10,6 +10,8 @@ use arch::regs::Regs;
 use collections::string::{String, ToString};
 use collections::vec::Vec;
 
+use common::time::Duration;
+
 use core::cell::UnsafeCell;
 use core::slice::{Iter, IterMut};
 use core::{mem, ptr};
@@ -17,11 +19,12 @@ use core::ops::DerefMut;
 
 use fs::Resource;
 
-use syscall::{do_sys_exit, Error, Result, CLONE_FILES, CLONE_FS, CLONE_VM, EBADF, EFAULT, ENOMEM, ESRCH};
+use syscall::{do_sys_exit, Error, Result, CLONE_FILES, CLONE_FS, CLONE_VM, CLONE_VFORK, EBADF, EFAULT, ENOMEM, ESRCH};
+
+use sync::WaitMap;
 
 pub const CONTEXT_STACK_SIZE: usize = 1024 * 1024;
 pub const CONTEXT_STACK_ADDR: usize = 0x70000000;
-pub const CONTEXT_SLICES: usize = 4;
 
 pub struct ContextManager {
     pub inner: Vec<Box<Context>>,
@@ -113,7 +116,7 @@ impl ContextManager {
 /// Switch context
 ///
 /// Unsafe due to interrupt disabling, raw pointers, and unsafe Context functions
-pub unsafe fn context_switch(interrupted: bool) {
+pub unsafe fn context_switch() {
     let mut current_ptr: *mut Context = 0 as *mut Context;
     let mut next_ptr: *mut Context = 0 as *mut Context;
 
@@ -121,21 +124,36 @@ pub unsafe fn context_switch(interrupted: bool) {
         let mut contexts = ::env().contexts.lock();
         if contexts.enabled {
             let current_i = contexts.i;
-            contexts.i += 1;
-            contexts.clean();
+            'searching: loop {
+                contexts.i += 1;
+                contexts.clean();
+                if let Ok(mut next) = contexts.current_mut() {
+                    if next.blocked {
+                        if let Some(wake) = next.wake {
+                            if wake <= Duration::monotonic() {
+                                next.blocked = false;
+                                next.wake = None;
+                                break 'searching;
+                            }
+                        }
+                    } else {
+                        break 'searching;
+                    }
+                }
+                if contexts.i == current_i {
+                    break 'searching;
+                }
+            }
 
             if contexts.i != current_i {
                 if let Ok(mut current) = contexts.get_mut(current_i) {
-                    current.interrupted = interrupted;
-
                     current.unmap();
 
                     current_ptr = current.deref_mut();
                 }
 
                 if let Ok(mut next) = contexts.current_mut() {
-                    next.interrupted = false;
-                    next.slices = CONTEXT_SLICES;
+                    next.switch += 1;
 
                     if let Some(ref mut tss) = ::TSS_PTR {
                         if next.kernel_stack > 0 {
@@ -160,14 +178,16 @@ pub unsafe fn context_switch(interrupted: bool) {
 
 pub unsafe fn context_clone(regs: &Regs) -> Result<usize> {
     let mut contexts = ::env().contexts.lock();
-    let flags = regs.ax;
+    let flags = regs.bx;
 
     let kernel_stack = memory::alloc(CONTEXT_STACK_SIZE + 512);
     if kernel_stack > 0 {
         let clone_pid = Context::next_pid();
 
         let context = {
-            let parent = try!(contexts.current());
+            let mut parent = try!(contexts.current_mut());
+
+            //debugln!("{}: {}: clone to {}: {:X}", parent.pid, parent.name, clone_pid, flags);
 
             let regs_size = mem::size_of::<Regs>();
             let extra_size = mem::size_of::<usize>() * 3; /* Return pointer, interrupt code, regs pointer */
@@ -187,10 +207,17 @@ pub unsafe fn context_clone(regs: &Regs) -> Result<usize> {
                 pid: clone_pid,
                 ppid: parent.pid,
                 name: parent.name.clone(),
-                interrupted: parent.interrupted,
-                exited: parent.exited,
-                slices: CONTEXT_SLICES,
-                slice_total: 0,
+                blocked: false,
+                exited: false,
+                switch: 0,
+                time: 0,
+                vfork: if flags & CLONE_VFORK == CLONE_VFORK {
+                    parent.blocked = true;
+                    Some(parent.deref_mut())
+                } else {
+                    None
+                },
+                wake: None,
 
                 kernel_stack: kernel_stack,
                 regs: kernel_regs,
@@ -222,6 +249,8 @@ pub unsafe fn context_clone(regs: &Regs) -> Result<usize> {
                     Arc::new(UnsafeCell::new((*parent.cwd.get()).clone()))
                 },
                 memory: if flags & CLONE_VM == CLONE_VM {
+                    //debugln!("{}: {}: clone memory for {}", parent.pid, parent.name, clone_pid);
+
                     parent.memory.clone()
                 } else {
                     let mut mem: Vec<ContextMemory> = Vec::new();
@@ -231,6 +260,9 @@ pub unsafe fn context_clone(regs: &Regs) -> Result<usize> {
                             ::memcpy(physical_address as *mut u8,
                                      entry.physical_address as *const u8,
                                      entry.virtual_size);
+
+                            //debugln!("{}: {}: dup memory {:X}:{:X} for {}", parent.pid, parent.name, entry.virtual_address, entry.virtual_address + entry.virtual_size, clone_pid);
+
                             mem.push(ContextMemory {
                                 physical_address: physical_address,
                                 virtual_address: entry.virtual_address,
@@ -238,30 +270,43 @@ pub unsafe fn context_clone(regs: &Regs) -> Result<usize> {
                                 writeable: entry.writeable,
                                 allocated: true,
                             });
+                        } else {
+                            //debugln!("{}: {}: failed to dup memory {:X}:{:X} for {}", parent.pid, parent.name, entry.virtual_address, entry.virtual_address + entry.virtual_size, clone_pid);
                         }
                     }
                     Arc::new(UnsafeCell::new(mem))
                 },
                 files: if flags & CLONE_FILES == CLONE_FILES {
+                    //debugln!("{}: {}: clone resources for {}", parent.pid, parent.name, clone_pid);
+
                     parent.files.clone()
                 } else {
                     let mut files: Vec<ContextFile> = Vec::new();
                     for file in (*parent.files.get()).iter() {
-                        if let Ok(resource) = file.resource.dup() {
-                            files.push(ContextFile {
-                                fd: file.fd,
-                                resource: resource,
-                            });
+                        match file.resource.dup() {
+                            Ok(resource) => {
+                                //debugln!("{}: {}: dup resource {} for {}", parent.pid, parent.name, file.fd, clone_pid);
+
+                                files.push(ContextFile {
+                                    fd: file.fd,
+                                    resource: resource,
+                                });
+                            },
+                            Err(_err) => () //debugln!("{}: {}: failed to dup resource {} for {}: {}", parent.pid, parent.name, file.fd, clone_pid, err)
                         }
                     }
                     Arc::new(UnsafeCell::new(files))
                 },
 
-                statuses: Vec::new(),
+                statuses: WaitMap::new(),
             }
         };
 
         contexts.push(context);
+
+        if flags & CLONE_VFORK == CLONE_VFORK {
+            context_switch();
+        }
 
         Ok(clone_pid)
     } else {
@@ -366,11 +411,6 @@ pub struct ContextFile {
     pub resource: Box<Resource>,
 }
 
-pub struct ContextStatus {
-    pub pid: usize,
-    pub status: usize,
-}
-
 pub struct Context {
 // These members are used for control purposes by the scheduler {
 // The PID of the context
@@ -379,14 +419,18 @@ pub struct Context {
     pub ppid: usize,
 /// The name of the context
     pub name: String,
-/// Indicates that the context was interrupted, used for prioritizing active contexts
-    pub interrupted: bool,
+/// Indicates that the context is blocked, and should not be switched to
+    pub blocked: bool,
 /// Indicates that the context exited
     pub exited: bool,
-/// The number of time slices left
-    pub slices: usize,
-/// The total of all used slices
-    pub slice_total: usize,
+/// How many times was the context switched to
+    pub switch: usize,
+/// The number of time slices used
+    pub time: usize,
+/// Indicates that the context needs to unblock parent
+    pub vfork: Option<*mut Context>,
+/// When to wake up
+    pub wake: Option<Duration>,
 // }
 
 // These members control the stack and registers and are unique to each context {
@@ -412,7 +456,7 @@ pub struct Context {
 // }
 
 /// Exit statuses of children
-    pub statuses: Vec<ContextStatus>,
+    pub statuses: WaitMap<usize, usize>,
 }
 
 impl Context {
@@ -450,10 +494,12 @@ impl Context {
             pid: Context::next_pid(),
             ppid: 0,
             name: "kidle".to_string(),
-            interrupted: false,
+            blocked: false,
             exited: false,
-            slices: CONTEXT_SLICES,
-            slice_total: 0,
+            switch: 0,
+            time: 0,
+            vfork: None,
+            wake: None,
 
             kernel_stack: 0,
             regs: Regs::default(),
@@ -465,7 +511,7 @@ impl Context {
             memory: Arc::new(UnsafeCell::new(Vec::new())),
             files: Arc::new(UnsafeCell::new(Vec::new())),
 
-            statuses: Vec::new(),
+            statuses: WaitMap::new(),
         }
     }
 
@@ -479,10 +525,12 @@ impl Context {
             pid: Context::next_pid(),
             ppid: 0,
             name: name,
-            interrupted: false,
+            blocked: false,
             exited: false,
-            slices: CONTEXT_SLICES,
-            slice_total: 0,
+            switch: 0,
+            time: 0,
+            vfork: None,
+            wake: None,
 
             kernel_stack: kernel_stack,
             regs: regs,
@@ -494,7 +542,7 @@ impl Context {
             memory: Arc::new(UnsafeCell::new(Vec::new())),
             files: Arc::new(UnsafeCell::new(Vec::new())),
 
-            statuses: Vec::new(),
+            statuses: WaitMap::new(),
         };
 
         for arg in args.iter() {
@@ -633,6 +681,8 @@ impl Context {
             }
         }
 
+        //debugln!("{}: {}: file number {} not found", self.pid, self.name, fd);
+
         Err(Error::new(EBADF))
     }
 
@@ -643,6 +693,8 @@ impl Context {
                 return Ok(&mut file.resource);
             }
         }
+
+        //debugln!("{}: {}: file number {} not found", self.pid, self.name, fd);
 
         Err(Error::new(EBADF))
     }
@@ -743,8 +795,11 @@ impl Context {
 
 impl Drop for Context {
     fn drop(&mut self) {
+        if let Some(vfork) = self.vfork.take() {
+            unsafe { (*vfork).blocked = false; }
+        }
         if self.kernel_stack > 0 {
-            unsafe { memory::unalloc(self.kernel_stack) };
+            unsafe { memory::unalloc(self.kernel_stack); }
         }
     }
 }

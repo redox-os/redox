@@ -66,6 +66,8 @@ pub fn do_sys_alloc(size: usize) -> Result<usize> {
                 allocated: true,
             };
 
+            //debugln!("{}: {}: allocate {:X}:{:X}", current.pid, current.name, mem.virtual_address, mem.virtual_address + mem.virtual_size);
+
             unsafe {
                 mem.map();
                 (*current.memory.get()).push(mem);
@@ -84,6 +86,8 @@ pub fn do_sys_realloc(ptr: usize, size: usize) -> Result<usize> {
         if let Ok(mut mem) = current.get_mem_mut(ptr) {
             unsafe { mem.unmap(); }
 
+            //debug!("{}: {}: reallocate {:X}:{:X}", current.pid, current.name, mem.virtual_address, mem.virtual_address + mem.virtual_size);
+
             let physical_address = unsafe { memory::realloc(mem.physical_address, size) };
             if physical_address > 0 {
                 mem.physical_address = physical_address;
@@ -92,6 +96,8 @@ pub fn do_sys_realloc(ptr: usize, size: usize) -> Result<usize> {
             } else {
                 mem.virtual_size = 0;
             }
+
+            //debugln!(" to {:X}:{:X}", mem.virtual_address, mem.virtual_address + mem.virtual_size);
 
             unsafe { mem.map(); }
         }
@@ -109,8 +115,12 @@ pub fn do_sys_realloc_inplace(ptr: usize, size: usize) -> Result<usize> {
         if let Ok(mut mem) = current.get_mem_mut(ptr) {
             unsafe { mem.unmap(); }
 
+            //debug!("{}: {}: reallocate {:X}:{:X}", current.pid, current.name, mem.virtual_address, mem.virtual_address + mem.virtual_size);
+
             mem.virtual_size = unsafe { memory::realloc_inplace(mem.physical_address, size) };
             ret = mem.virtual_size;
+
+            //debugln!(" to {:X}:{:X}", mem.virtual_address, mem.virtual_address + mem.virtual_size);
 
             unsafe {mem.map(); }
         }
@@ -125,6 +135,8 @@ pub fn do_sys_unalloc(ptr: usize) -> Result<usize> {
     if let Ok(mut current) = contexts.current_mut() {
         if let Ok(mut mem) = current.get_mem_mut(ptr) {
             unsafe { mem.unmap() };
+
+            //debugln!("{}: {}: unallocate {:X}:{:X}", current.pid, current.name, mem.virtual_address, mem.virtual_address + mem.virtual_size);
 
             mem.virtual_size = 0;
         }

@@ -6,3 +6,9 @@ example
 
 # Login process, handles debug console
 login
+
+# The app launcher
+/apps/launcher/main.bin
+
+# A terminal
+/apps/terminal/main.bin
