@@ -138,7 +138,6 @@ filesystem/apps/%/main.bin: crates/orbutils/src/%/main.rs crates/orbutils/src/%/
 
 apps: filesystem/apps/editor/main.bin \
 	  filesystem/apps/file_manager/main.bin \
-	  filesystem/apps/launcher/main.bin \
 	  filesystem/apps/orbtk/main.bin \
 	  filesystem/apps/player/main.bin \
 	  filesystem/apps/rusthello/main.bin \
@@ -184,17 +183,21 @@ filesystem/bin/%: libc/bin/%
 	mkdir -p filesystem/bin
 	cp $< $@
 
-filesystem/bin/ion: $(BUILD)/ion-shell.bin
+filesystem/bin/init.rc: crates/init/init.rc
 	mkdir -p filesystem/bin
 	cp $< $@
 
-filesystem/bin/init.rc: crates/init/init.rc
+filesystem/bin/ion: $(BUILD)/ion-shell.bin
 	mkdir -p filesystem/bin
 	cp $< $@
 
 filesystem/bin/sh: $(BUILD)/ion-shell.bin
 	mkdir -p filesystem/bin
 	cp $< $@
+
+filesystem/bin/launcher: crates/orbutils/src/launcher/main.rs crates/orbutils/src/launcher/*.rs $(BUILD)/crt0.o $(BUILD)/libstd.rlib $(BUILD)/liborbclient.rlib $(BUILD)/liborbtk.rlib
+	mkdir -p filesystem/bin
+	$(RUSTC) $(RUSTCFLAGS) --crate-type bin -o $@ $<
 
 bins: \
 	coreutils \
@@ -204,6 +207,7 @@ bins: \
 	filesystem/bin/init \
   	filesystem/bin/init.rc \
   	filesystem/bin/ion \
+	filesystem/bin/launcher \
   	filesystem/bin/lua \
   	filesystem/bin/login \
   	filesystem/bin/orbital \
