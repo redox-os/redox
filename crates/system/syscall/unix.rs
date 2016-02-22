@@ -3,12 +3,12 @@ use error::Result;
 
 pub const SYS_BRK: usize = 45;
 pub const SYS_CHDIR: usize = 12;
-pub const SYS_CLOSE: usize = 6;
 pub const SYS_CLONE: usize = 120;
     pub const CLONE_VM: usize = 0x100;
     pub const CLONE_FS: usize = 0x200;
     pub const CLONE_FILES: usize = 0x400;
     pub const CLONE_VFORK: usize = 0x4000;
+pub const SYS_CLOSE: usize = 6;
 pub const SYS_CLOCK_GETTIME: usize = 265;
     pub const CLOCK_REALTIME: usize = 1;
     pub const CLOCK_MONOTONIC: usize = 4;
