@@ -493,6 +493,8 @@ impl Context {
     }
 
     pub unsafe fn root() -> Box<Self> {
+        let fx = memory::alloc(512);
+
         box Context {
             pid: Context::next_pid(),
             ppid: 0,
@@ -506,7 +508,7 @@ impl Context {
 
             kernel_stack: 0,
             regs: Regs::default(),
-            fx: memory::alloc(512),
+            fx: fx,
             stack: None,
             loadable: false,
 
@@ -524,6 +526,8 @@ impl Context {
         let mut regs = Regs::default();
         regs.sp = kernel_stack + CONTEXT_STACK_SIZE - 128;
 
+        let fx = kernel_stack + CONTEXT_STACK_SIZE;
+
         let mut ret = box Context {
             pid: Context::next_pid(),
             ppid: 0,
@@ -537,7 +541,7 @@ impl Context {
 
             kernel_stack: kernel_stack,
             regs: regs,
-            fx: kernel_stack + CONTEXT_STACK_SIZE,
+            fx: fx,
             stack: None,
             loadable: false,
 
