@@ -4,7 +4,6 @@ use arch::intex::Intex;
 
 use collections::string::{String, ToString};
 use collections::vec::Vec;
-use collections::vec_deque::VecDeque;
 
 use common::event::Event;
 use common::time::Duration;
@@ -12,6 +11,8 @@ use common::time::Duration;
 use arch::context::ContextManager;
 
 use fs::{KScheme, Resource, Scheme, VecResource, Url};
+
+use sync::WaitQueue;
 
 use system::error::{Error, Result, ENOENT, EEXIST};
 use system::syscall::O_CREAT;
@@ -34,7 +35,7 @@ pub struct Environment {
     /// Default console
     pub console: Intex<Console>,
     /// Pending events
-    pub events: Intex<VecDeque<Event>>,
+    pub events: WaitQueue<Event>,
     /// Schemes
     pub schemes: Intex<Vec<Box<KScheme>>>,
 
@@ -51,7 +52,7 @@ impl Environment {
             clock_monotonic: Intex::new(Duration::new(0, 0)),
 
             console: Intex::new(Console::new()),
-            events: Intex::new(VecDeque::new()),
+            events: WaitQueue::new(),
             schemes: Intex::new(Vec::new()),
 
             interrupts: Intex::new([0; 256]),

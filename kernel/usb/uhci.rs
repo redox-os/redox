@@ -227,7 +227,7 @@ impl Hci for Uhci {
 
             for td in tds.iter().rev() {
                 while unsafe { volatile_load(td as *const Td).ctrl_sts } & 1 << 23 == 1 << 23 {
-                    unsafe { context_switch(false) };
+                    unsafe { context_switch() };
                 }
                 count += (unsafe { volatile_load(td as *const Td).ctrl_sts } & 0x7FF) as usize;
             }

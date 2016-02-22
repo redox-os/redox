@@ -202,6 +202,7 @@ bins: \
 	filesystem/bin/init \
   	filesystem/bin/init.rc \
   	filesystem/bin/ion \
+  	filesystem/bin/lua \
   	filesystem/bin/login \
   	filesystem/bin/orbital \
   	filesystem/bin/sh \

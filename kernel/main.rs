@@ -49,7 +49,7 @@ use collections::string::{String, ToString};
 use core::{ptr, mem, usize};
 use core::slice::SliceExt;
 
-use common::event::{self, EVENT_KEY, EventOption};
+use common::event::{self, EventOption};
 use common::time::Duration;
 
 use drivers::pci;
@@ -97,6 +97,8 @@ pub mod graphics;
 pub mod panic;
 /// Schemes
 pub mod schemes;
+/// Synchronization
+pub mod sync;
 /// System calls
 pub mod syscall;
 /// USB input/output
@@ -117,110 +119,68 @@ pub fn env() -> &'static Environment {
 /// Pit duration
 static PIT_DURATION: Duration = Duration {
     secs: 0,
-    nanos: 2250286,
+    nanos: 4500572,
 };
 
 /// Idle loop (active while idle)
 fn idle_loop() {
     loop {
-        {
-            unsafe { asm!("cli" : : : : "intel", "volatile"); }
+        unsafe { asm!("cli" : : : : "intel", "volatile"); }
 
-            let mut halt = true;
+        env().on_poll();
 
-            for i in env().contexts.lock().iter().skip(1) {
-                if i.interrupted {
-                    halt = false;
-                    break;
-                }
-            }
+        let mut halt = true;
 
-
-            if halt {
-                unsafe { asm!("sti ; hlt" : : : : "intel", "volatile"); }
-            } else {
-                unsafe { asm!("sti" : : : : "intel", "volatile"); }
+        for context in env().contexts.lock().iter().skip(1) {
+            if ! context.blocked {
+                halt = false;
+                break;
             }
         }
 
-
-        unsafe { context_switch(false); }
+        if halt {
+            unsafe { asm!("sti ; hlt" : : : : "intel", "volatile"); }
+        } else {
+            unsafe { asm!("sti ; nop" : : : : "intel", "volatile"); }
+            unsafe { context_switch(); }
+        }
     }
 }
 
 /// Event loop
+//TODO: Allow restart, block on console draw boolean
 fn event_loop() {
-    {
-        let mut console = env().console.lock();
-        console.instant = false;
-    }
-
     let mut cmd = String::new();
-    loop {
-        {
-            env().on_poll();
+    while ::env().console.lock().draw {
+        for event in ::env().events.receive_all() {
+            match event.to_option() {
+                EventOption::Key(key_event) => {
+                    if key_event.pressed {
+                        let mut console = ::env().console.lock();
+                        match key_event.scancode {
+                            event::K_BKSP => if !cmd.is_empty() {
+                                console.write(&[8]);
+                                cmd.pop();
+                            },
+                            _ => match key_event.character {
+                                '\0' => (),
+                                c => {
+                                    cmd.push(c);
+                                    console.write(&[c as u8]);
 
-            let mut console = env().console.lock();
-            if console.draw {
-                while let Some(event) = env().events.lock().pop_front() {
-                    match event.to_option() {
-                        EventOption::Key(key_event) => {
-                            if key_event.pressed {
-                                match key_event.scancode {
-                                    event::K_F1 => {
-                                        console.draw = true;
-                                        console.redraw = true;
-                                    },
-                                    event::K_F2 => {
-                                        console.draw = false;
-                                    },
-                                    event::K_BKSP => if !cmd.is_empty() {
-                                        console.write(&[8]);
-                                        cmd.pop();
-                                    },
-                                    _ => match key_event.character {
-                                        '\0' => (),
-                                        '\n' => {
-                                            console.command = Some(cmd.clone());
-
-                                            cmd.clear();
-                                            console.write(&[10]);
-                                        }
-                                        _ => {
-                                            cmd.push(key_event.character);
-                                            console.write(&[key_event.character as u8]);
-                                        }
-                                    },
+                                    if c == '\n' {
+                                        let mut swap_cmd = String::new();
+                                        mem::swap(&mut cmd, &mut swap_cmd);
+                                        console.commands.send(swap_cmd);
+                                    }
                                 }
-                            }
-                        }
-                        _ => (),
-                    }
-                }
-
-                console.instant = false;
-                if console.redraw {
-                    console.redraw = false;
-                    if let Some(ref mut display) = console.display {
-                        display.flip();
-                    }
-                }
-            } else {
-                for event in env().events.lock().iter() {
-                    if event.code == EVENT_KEY && event.c > 0 {
-                        if event.b as u8 == event::K_F1 {
-                            console.draw = true;
-                            console.redraw = true;
-                        }
-                        if event.b as u8 == event::K_F2 {
-                            console.draw = false;
+                            },
                         }
                     }
                 }
+                _ => (),
             }
         }
-
-        unsafe { context_switch(false) };
     }
 }
 
@@ -403,27 +363,18 @@ pub extern "cdecl" fn kernel(interrupt: usize, mut regs: &mut Regs) {
                 *clock_realtime = *clock_realtime + PIT_DURATION;
             }
 
-            let switch = {
-                let mut contexts = ::env().contexts.lock();
-                if let Ok(mut context) = contexts.current_mut() {
-                    context.slices -= 1;
-                    context.slice_total += 1;
-                    context.slices == 0
-                } else {
-                    false
-                }
-            };
-
-            if switch {
-                unsafe { context_switch(true) };
+            if let Ok(mut current) = env().contexts.lock().current_mut() {
+                current.time += 1;
             }
+
+            unsafe { context_switch(); }
         }
         i @ 0x21 ... 0x2F => env().on_irq(i as u8 - 0x20),
         0x80 => syscall_handle(regs),
         0xFF => {
             unsafe {
                 init(regs.ax);
-                context_switch(false);
+                idle_loop();
             }
         },
         0x0 => exception!("Divide by zero exception"),

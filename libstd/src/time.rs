@@ -75,6 +75,7 @@ impl PartialOrd for Duration {
     }
 }
 
+#[derive(Copy, Clone)]
 pub struct Instant(Duration);
 
 impl Instant {
@@ -88,8 +89,17 @@ impl Instant {
 
         Instant(Duration::new(tp.tv_sec, tp.tv_nsec))
     }
+
+    pub fn duration_from_earlier(&self, earlier: Instant) -> Duration {
+        self.0 - earlier.0
+    }
+
+    pub fn elapsed(&self) -> Duration {
+        Instant::now().0 - self.0
+    }
 }
 
+#[derive(Copy, Clone)]
 pub struct SystemTime(Duration);
 
 impl SystemTime {

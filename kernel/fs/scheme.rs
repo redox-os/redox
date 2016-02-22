@@ -1,16 +1,16 @@
 use alloc::arc::{Arc, Weak};
 use alloc::boxed::Box;
 
-use collections::{BTreeMap, String};
+use collections::String;
 
 use core::cell::Cell;
 use core::mem::size_of;
 use core::ops::DerefMut;
+use core::ptr;
 
-use arch::context::{context_switch, Context, ContextMemory};
-use arch::intex::Intex;
+use arch::context::{Context, ContextMemory};
 
-use super::{Resource, ResourceSeek, KScheme, Url};
+use sync::{WaitMap, WaitQueue};
 
 use system::error::{Error, Result, EBADF, EFAULT, EINVAL, ENOENT, ESPIPE};
 use system::scheme::Packet;
@@ -18,12 +18,14 @@ use system::syscall::{SYS_CLOSE, SYS_FPATH, SYS_FSYNC, SYS_FTRUNCATE,
                     SYS_LSEEK, SEEK_SET, SEEK_CUR, SEEK_END, SYS_MKDIR,
                     SYS_OPEN, SYS_READ, SYS_WRITE, SYS_UNLINK};
 
+use super::{Resource, ResourceSeek, KScheme, Url};
+
 struct SchemeInner {
     name: String,
     context: *mut Context,
     next_id: Cell<usize>,
-    todo: Intex<BTreeMap<usize, (usize, usize, usize, usize)>>,
-    done: Intex<BTreeMap<usize, (usize, usize, usize, usize)>>,
+    todo: WaitQueue<Packet>,
+    done: WaitMap<usize, (usize, usize, usize, usize)>,
 }
 
 impl SchemeInner {
@@ -32,15 +34,14 @@ impl SchemeInner {
             name: name,
             context: context,
             next_id: Cell::new(1),
-            todo: Intex::new(BTreeMap::new()),
-            done: Intex::new(BTreeMap::new()),
+            todo: WaitQueue::new(),
+            done: WaitMap::new(),
         }
     }
 
     fn call(inner: &Weak<SchemeInner>, a: usize, b: usize, c: usize, d: usize) -> Result<usize> {
-        let id;
         if let Some(scheme) = inner.upgrade() {
-            id = scheme.next_id.get();
+            let id = scheme.next_id.get();
 
             //TODO: What should be done about collisions in self.todo or self.done?
             let mut next_id = id + 1;
@@ -49,21 +50,16 @@ impl SchemeInner {
             }
             scheme.next_id.set(next_id);
 
-            scheme.todo.lock().insert(id, (a, b, c, d));
+            scheme.todo.send(Packet {
+                id: id,
+                a: a,
+                b: b,
+                c: c,
+                d: d
+            });
+            Error::demux(scheme.done.receive(&id).0)
         } else {
-            return Err(Error::new(EBADF));
-        }
-
-        loop {
-            if let Some(scheme) = inner.upgrade() {
-                if let Some(regs) = scheme.done.lock().remove(&id) {
-                    return Error::demux(regs.0);
-                }
-            } else {
-                return Err(Error::new(EBADF));
-            }
-
-            unsafe { context_switch(false) } ;
+            Err(Error::new(EBADF))
         }
     }
 }
@@ -266,7 +262,7 @@ impl Resource for SchemeServerResource {
     }
 
     /// Return the url of this resource
-    fn path(&self, buf: &mut [u8]) -> Result <usize> {
+    fn path(&self, buf: &mut [u8]) -> Result<usize> {
         let mut i = 0;
 
         let path_a = b":";
@@ -287,29 +283,23 @@ impl Resource for SchemeServerResource {
 
     /// Read data to buffer
     fn read(&mut self, buf: &mut [u8]) -> Result<usize> {
-        if buf.len() == size_of::<Packet>() {
-            let packet_ptr: *mut Packet = buf.as_mut_ptr() as *mut Packet;
-            let packet = unsafe { &mut *packet_ptr };
+        if buf.len() >= size_of::<Packet>() {
+            let mut i = 0;
 
-            let mut todo = self.inner.todo.lock();
+            let packet = self.inner.todo.receive();
+            unsafe { ptr::write(buf.as_mut_ptr().offset(i as isize) as *mut Packet, packet); }
+            i += size_of::<Packet>();
 
-            packet.id = if let Some(id) = todo.keys().next() {
-                *id
-            } else {
-                0
-            };
-
-            if packet.id > 0 {
-                if let Some(regs) = todo.remove(&packet.id) {
-                    packet.a = regs.0;
-                    packet.b = regs.1;
-                    packet.c = regs.2;
-                    packet.d = regs.3;
-                    return Ok(size_of::<Packet>())
+            while i + size_of::<Packet>() <= buf.len() {
+                if let Some(packet) = self.inner.todo.inner.lock().pop_front() {
+                    unsafe { ptr::write(buf.as_mut_ptr().offset(i as isize) as *mut Packet, packet); }
+                    i += size_of::<Packet>();
+                } else {
+                    break;
                 }
             }
 
-            Ok(0)
+            Ok(i)
         } else {
             Err(Error::new(EINVAL))
         }
@@ -317,11 +307,16 @@ impl Resource for SchemeServerResource {
 
     /// Write to resource
     fn write(&mut self, buf: &[u8]) -> Result<usize> {
-        if buf.len() == size_of::<Packet>() {
-            let packet_ptr: *const Packet = buf.as_ptr() as *const Packet;
-            let packet = unsafe { & *packet_ptr };
-            self.inner.done.lock().insert(packet.id, (packet.a, packet.b, packet.c, packet.d));
-            Ok(size_of::<Packet>())
+        if buf.len() >= size_of::<Packet>() {
+            let mut i = 0;
+
+            while i <= buf.len() - size_of::<Packet>() {
+                let packet = unsafe { & *(buf.as_ptr().offset(i as isize) as *const Packet) };
+                self.inner.done.send(packet.id, (packet.a, packet.b, packet.c, packet.d));
+                i += size_of::<Packet>();
+            }
+
+            Ok(i)
         } else {
             Err(Error::new(EINVAL))
         }
