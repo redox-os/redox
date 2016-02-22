@@ -3,6 +3,10 @@ use alloc::boxed::Box;
 use collections::String;
 use collections::Vec;
 
+use common::event::{self, Event, EventOption};
+
+use core::mem;
+
 use drivers::io::{Io, Pio};
 
 use graphics::color::Color;
@@ -28,6 +32,7 @@ pub struct Console {
     pub background: Color,
     pub draw: bool,
     pub redraw: bool,
+    pub command: String,
     pub commands: WaitQueue<String>,
     pub escape: bool,
     pub escape_sequence: bool,
@@ -43,6 +48,7 @@ impl Console {
             background: BLACK,
             draw: false,
             redraw: true,
+            command: String::new(),
             commands: WaitQueue::new(),
             escape: false,
             escape_sequence: false,
@@ -170,6 +176,35 @@ impl Console {
         }
     }
 
+    pub fn event(&mut self, event: Event) {
+        match event.to_option() {
+            EventOption::Key(key_event) => {
+                if key_event.pressed {
+                    match key_event.scancode {
+                        event::K_BKSP => if ! self.command.is_empty() {
+                            self.write(&[8]);
+                            self.command.pop();
+                        },
+                        _ => match key_event.character {
+                            '\0' => (),
+                            c => {
+                                self.command.push(c);
+                                self.write(&[c as u8]);
+
+                                if c == '\n' {
+                                    let mut command = String::new();
+                                    mem::swap(&mut self.command, &mut command);
+                                    self.commands.send(command);
+                                }
+                            }
+                        },
+                    }
+                }
+            }
+            _ => (),
+        }
+    }
+
     pub fn write(&mut self, bytes: &[u8]) {
         let serial_status = Pio::<u8>::new(0x3F8 + 5);
         let mut serial_data = Pio::<u8>::new(0x3F8);
@@ -194,7 +229,7 @@ impl Console {
                 serial_data.write(8);
             }
         }
-        
+
         if self.draw && self.redraw {
             self.redraw = false;
             if let Some(ref mut display) = self.display {

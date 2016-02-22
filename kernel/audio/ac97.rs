@@ -1,17 +1,18 @@
 use alloc::boxed::Box;
 
+use arch::context::context_switch;
+use arch::memory;
+
 use core::{cmp, ptr, mem};
 
-use common::memory;
-use schemes::{Resource, ResourceSeek, Url};
-use common::time::{self, Duration};
+use common::time;
 
 use drivers::pci::config::PciConfig;
 use drivers::io::{Io, Pio};
 
-use schemes::{Result, KScheme};
+use fs::{KScheme, Resource, Url};
 
-use syscall::{Error, EBADF};
+use syscall::{do_sys_nanosleep, Result, TimeSpec};
 
 #[repr(packed)]
 struct BD {
@@ -19,25 +20,29 @@ struct BD {
     samples: u32,
 }
 
-struct AC97Resource {
+struct Ac97Resource {
     audio: usize,
     bus_master: usize,
 }
 
-impl Resource for AC97Resource {
+impl Resource for Ac97Resource {
     fn dup(&self) -> Result<Box<Resource>> {
-        Ok(box AC97Resource {
+        Ok(box Ac97Resource {
             audio: self.audio,
             bus_master: self.bus_master,
         })
     }
 
-    fn url(&self) -> Url {
-        Url::from_str("audio:")
-    }
+    fn path(&self, buf: &mut [u8]) -> Result <usize> {
+        let path = b"audio:";
 
-    fn read(&mut self, _: &mut [u8]) -> Result<usize> {
-        Err(Error::new(EBADF))
+        let mut i = 0;
+        while i < buf.len() && i < path.len() {
+            buf[i] = path[i];
+            i += 1;
+        }
+
+        Ok(i)
     }
 
     fn write(&mut self, buf: &[u8]) -> Result<usize> {
@@ -61,7 +66,7 @@ impl Resource for AC97Resource {
                 if po_cr.read() & 1 == 0 {
                     break;
                 }
-                Duration::new(0, 10 * time::NANOS_PER_MILLI).sleep();
+                context_switch();
             }
 
             po_cr.write(0);
@@ -101,7 +106,16 @@ impl Resource for AC97Resource {
                     if po_civ.read() != lvi as u8 {
                         break;
                     }
-                    Duration::new(0, 10 * time::NANOS_PER_MILLI).sleep();
+
+                    let req = TimeSpec {
+                        tv_sec: 0,
+                        tv_nsec: 10 * time::NANOS_PER_MILLI
+                    };
+                    let mut rem = TimeSpec {
+                        tv_sec: 0,
+                        tv_nsec: 0,
+                    };
+                    try!(do_sys_nanosleep(&req, &mut rem));
                 }
 
                 debug!("{} / {}: {} / {}\n",
@@ -146,7 +160,16 @@ impl Resource for AC97Resource {
                     po_cr.write(0);
                     break;
                 }
-                Duration::new(0, 10 * time::NANOS_PER_MILLI).sleep();
+
+                let req = TimeSpec {
+                    tv_sec: 0,
+                    tv_nsec: 10 * time::NANOS_PER_MILLI
+                };
+                let mut rem = TimeSpec {
+                    tv_sec: 0,
+                    tv_nsec: 0,
+                };
+                try!(do_sys_nanosleep(&req, &mut rem));
             }
 
             debug!("Finished {} / {}\n", po_civ.read(), lvi);
@@ -154,29 +177,21 @@ impl Resource for AC97Resource {
 
         Ok(buf.len())
     }
-
-    fn seek(&mut self, _: ResourceSeek) -> Result<usize> {
-        Err(Error::new(EBADF))
-    }
-
-    fn sync(&mut self) -> Result<()> {
-        Err(Error::new(EBADF))
-    }
 }
 
-pub struct AC97 {
+pub struct Ac97 {
     pub audio: usize,
     pub bus_master: usize,
     pub irq: u8,
 }
 
-impl KScheme for AC97 {
+impl KScheme for Ac97 {
     fn scheme(&self) -> &str {
         "audio"
     }
 
     fn open(&mut self, _: &Url, _: usize) -> Result<Box<Resource>> {
-        Ok(box AC97Resource {
+        Ok(box Ac97Resource {
             audio: self.audio,
             bus_master: self.bus_master,
         })
@@ -191,11 +206,11 @@ impl KScheme for AC97 {
     fn on_poll(&mut self) {}
 }
 
-impl AC97 {
-    pub unsafe fn new(mut pci: PciConfig) -> Box<AC97> {
+impl Ac97 {
+    pub unsafe fn new(mut pci: PciConfig) -> Box<Ac97> {
         pci.flag(4, 4, true); // Bus mastering
 
-        let module = box AC97 {
+        let module = box Ac97 {
             audio: pci.read(0x10) as usize & 0xFFFFFFF0,
             bus_master: pci.read(0x14) as usize & 0xFFFFFFF0,
             irq: pci.read(0x3C) as u8 & 0xF,

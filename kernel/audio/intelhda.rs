@@ -1,16 +1,17 @@
 use alloc::boxed::Box;
 
+use arch::memory;
+
 use core::{ptr, mem};
 
 use drivers::pci::config::PciConfig;
 
 use common::debug;
-use common::memory;
-use common::time::{self, Duration};
+use common::time;
 
-use schemes::{Result, KScheme, Resource, ResourceSeek, Url};
+use fs::{KScheme, Resource, Url};
 
-use syscall::{Error, EBADF};
+use syscall::{do_sys_nanosleep, Result, TimeSpec};
 
 #[repr(packed)]
 struct Stream {
@@ -43,21 +44,25 @@ struct BD {
     ioc: u32,
 }
 
-struct IntelHDAResource {
+struct IntelHdaResource {
     base: usize,
 }
 
-impl Resource for IntelHDAResource {
+impl Resource for IntelHdaResource {
     fn dup(&self) -> Result<Box<Resource>> {
-        Ok(box IntelHDAResource { base: self.base })
+        Ok(box IntelHdaResource { base: self.base })
     }
 
-    fn url(&self) -> Url {
-        Url::from_str("audio:")
-    }
+    fn path(&self, buf: &mut [u8]) -> Result <usize> {
+        let path = b"audio:";
 
-    fn read(&mut self, _: &mut [u8]) -> Result<usize> {
-        Err(Error::new(EBADF))
+        let mut i = 0;
+        while i < buf.len() && i < path.len() {
+            buf[i] = path[i];
+            i += 1;
+        }
+
+        Ok(i)
     }
 
     fn write(&mut self, buf: &[u8]) -> Result<usize> {
@@ -176,7 +181,16 @@ impl Resource for IntelHDAResource {
                 if stream.status & 4 == 4 {
                     break;
                 }
-                Duration::new(0, 10 * time::NANOS_PER_MILLI).sleep();
+
+                let req = TimeSpec {
+                    tv_sec: 0,
+                    tv_nsec: 10 * time::NANOS_PER_MILLI
+                };
+                let mut rem = TimeSpec {
+                    tv_sec: 0,
+                    tv_nsec: 0,
+                };
+                try!(do_sys_nanosleep(&req, &mut rem));
             }
 
             debug::d("Finished\n");
@@ -193,30 +207,22 @@ impl Resource for IntelHDAResource {
             Ok(buf.len())
         }
     }
-
-    fn seek(&mut self, _: ResourceSeek) -> Result<usize> {
-        Err(Error::new(EBADF))
-    }
-
-    fn sync(&mut self) -> Result<()> {
-        Err(Error::new(EBADF))
-    }
 }
 
-pub struct IntelHDA {
+pub struct IntelHda {
     pub pci: PciConfig,
     pub base: usize,
     pub memory_mapped: bool,
     pub irq: u8,
 }
 
-impl KScheme for IntelHDA {
+impl KScheme for IntelHda {
     fn scheme(&self) -> &str {
         "hda"
     }
 
     fn open(&mut self, _: &Url, _: usize) -> Result<Box<Resource>> {
-        Ok(box IntelHDAResource { base: self.base })
+        Ok(box IntelHdaResource { base: self.base })
     }
 
     fn on_irq(&mut self, irq: u8) {
@@ -228,7 +234,19 @@ impl KScheme for IntelHDA {
     fn on_poll(&mut self) {}
 }
 
-impl IntelHDA {
+impl IntelHda {
+    pub unsafe fn new(mut pci: PciConfig) -> Box<IntelHda> {
+        let base = pci.read(0x10) as usize;
+        let mut module = box IntelHda {
+            pci: pci,
+            base: base & 0xFFFFFFF0,
+            memory_mapped: base & 1 == 0,
+            irq: pci.read(0x3C) as u8 & 0xF,
+        };
+        module.init();
+        module
+    }
+
     pub unsafe fn init(&mut self) {
         debug::d("Intel HDA on: ");
         debug::dh(self.base);

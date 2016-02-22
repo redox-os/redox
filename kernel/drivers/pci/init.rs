@@ -8,7 +8,15 @@ use schemes::file::FileScheme;
 use super::config::PciConfig;
 use super::common::class::*;
 use super::common::subclass::*;
+use super::common::vendorid::*;
+use super::common::deviceid::*;
 use super::common::programming_interface::*;
+
+use audio::ac97::Ac97;
+use audio::intelhda::IntelHda;
+
+use network::rtl8139::Rtl8139;
+use network::intel8254x::Intel8254x;
 
 use usb::uhci::Uhci;
 use usb::ohci::Ohci;
@@ -38,25 +46,13 @@ pub unsafe fn pci_device(env: &mut Environment,
         (SERIAL_BUS, USB, OHCI) => env.schemes.lock().push(Ohci::new(pci)),
         (SERIAL_BUS, USB, EHCI) => env.schemes.lock().push(Ehci::new(pci)),
         (SERIAL_BUS, USB, XHCI) => env.schemes.lock().push(Xhci::new(pci)),
-        _ => {
-            match (vendor_code, device_code) {
-                //(REALTEK, RTL8139) => env.schemes.lock().push(Rtl8139::new(pci)),
-                //(INTEL, GBE_82540EM) => env.schemes.lock().push(Intel8254x::new(pci)),
-                //(INTEL, AC97_82801AA) => env.schemes.lock().push(AC97::new(pci)),
-                //(INTEL, AC97_ICH4) => env.schemes.lock().push(AC97::new(pci)),
-                /*(INTEL, INTELHDA_ICH6) => {
-                    let base = pci.read(0x10) as usize;
-                    let mut module = box IntelHDA {
-                        pci: pci,
-                        base: base & 0xFFFFFFF0,
-                        memory_mapped: base & 1 == 0,
-                        irq: pci.read(0x3C) as u8 & 0xF,
-                    };
-                    module.init();
-                    env.schemes.lock().push(module);
-                }*/
-                _ => (),
-            }
+        _ => match (vendor_code, device_code) {
+            (REALTEK, RTL8139) => env.schemes.lock().push(Rtl8139::new(pci)),
+            (INTEL, GBE_82540EM) => env.schemes.lock().push(Intel8254x::new(pci)),
+            (INTEL, AC97_82801AA) => env.schemes.lock().push(Ac97::new(pci)),
+            (INTEL, AC97_ICH4) => env.schemes.lock().push(Ac97::new(pci)),
+            (INTEL, INTELHDA_ICH6) => env.schemes.lock().push(IntelHda::new(pci)),
+            _ => (),
         }
     }
 }
@@ -72,7 +68,6 @@ pub unsafe fn pci_init(env: &mut Environment) {
                 if (id & 0xFFFF) != 0xFFFF {
                     let class_id = pci.read(8);
 
-                    /*
                     debug!(" * PCI {}, {}, {}: ID {:X} CL {:X}",
                            bus,
                            slot,
@@ -95,8 +90,7 @@ pub unsafe fn pci_init(env: &mut Environment) {
                         }
                     }
 
-                    debug::dl();
-                    */
+                    debugln!("");
 
                     pci_device(env,
                                pci,
