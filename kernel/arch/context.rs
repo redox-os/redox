@@ -203,6 +203,9 @@ pub unsafe fn context_clone(regs: &Regs) -> Result<usize> {
             let mut kernel_regs = parent.regs;
             kernel_regs.sp = child_regs_addr - extra_size;
 
+            let fx = kernel_stack + CONTEXT_STACK_SIZE;
+            ::memcpy(fx as *mut u8, parent.fx as *const u8, 512);
+
             box Context {
                 pid: clone_pid,
                 ppid: parent.pid,
@@ -221,7 +224,7 @@ pub unsafe fn context_clone(regs: &Regs) -> Result<usize> {
 
                 kernel_stack: kernel_stack,
                 regs: kernel_regs,
-                fx: kernel_stack + CONTEXT_STACK_SIZE,
+                fx: fx,
                 stack: if let Some(ref entry) = parent.stack {
                     let physical_address = memory::alloc(entry.virtual_size);
                     if physical_address > 0 {
@@ -727,7 +730,7 @@ impl Context {
     #[cold]
     #[inline(never)]
     pub unsafe fn switch_to(&mut self, next: &mut Context) {
-        //asm!("xchg bx, bx" : : : "memory" : "intel", "volatile");
+        asm!("xchg bx, bx" : : : "memory" : "intel", "volatile");
 
         asm!("fxsave [$0]" : : "r"(self.fx) : "memory" : "intel", "volatile");
         self.loadable = true;
@@ -761,7 +764,7 @@ impl Context {
     #[cold]
     #[inline(never)]
     pub unsafe fn switch_to(&mut self, next: &mut Context) {
-        //asm!("xchg bx, bx" : : : "memory" : "intel", "volatile");
+        asm!("xchg bx, bx" : : : "memory" : "intel", "volatile");
 
         asm!("fxsave [$0]" : : "r"(self.fx) : "memory" : "intel", "volatile");
         self.loadable = true;

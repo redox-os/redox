@@ -307,6 +307,14 @@ pub extern "cdecl" fn kernel(interrupt: usize, mut regs: &mut Regs) {
             }
             debugln!("    CR0: {:08X}    CR2: {:08X}    CR3: {:08X}    CR4: {:08X}", cr0, cr2, cr3, cr4);
 
+            let mut fsw: usize = 0;
+            let mut fcw: usize = 0;
+            unsafe {
+                asm!("fnstsw $0" : "=*m"(&mut fsw) : : : "intel", "volatile");
+                asm!("fnstcw $0" : "=*m"(&mut fcw) : : : "intel", "volatile");
+            }
+            debugln!("    FSW: {:08X}    FCW: {:08X}", fsw, fcw);
+
             let sp = regs.sp as *const u32;
             for y in -15..16 {
                 debug!("    {:>3}:", y * 8 * 4);

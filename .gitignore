@@ -13,6 +13,7 @@
 *.iso
 .directory
 .DS_Store
+bx_enh_dbg.ini
 libc/build/
 setup/rust/
 build
