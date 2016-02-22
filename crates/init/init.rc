@@ -8,5 +8,7 @@ example
 login
 
 # The app launcher
-# /apps/launcher/main.bin
+/apps/launcher/main.bin
+
+# A terminal
 /apps/terminal/main.bin
