@@ -1,6 +1,6 @@
 use std::cell::UnsafeCell;
 use std::fs::File;
-use std::io::{Read, Write, Result};
+use std::io::{Read, Write, Result, Seek, SeekFrom};
 use std::mem;
 use std::path::PathBuf;
 use std::slice;
@@ -38,6 +38,10 @@ impl Socket {
 
     pub fn receive_type<T: Copy>(&self, buf: &mut [T]) -> Result<usize> {
         self.receive(unsafe { slice::from_raw_parts_mut(buf.as_mut_ptr() as *mut u8, buf.len() * mem::size_of::<T>()) }).map(|count| count/mem::size_of::<T>())
+    }
+
+    pub unsafe fn seek(&self, from: SeekFrom) -> Result<u64> {
+        (*self.file.get()).seek(from)
     }
 
     pub fn send(&self, buf: &[u8]) -> Result<usize> {

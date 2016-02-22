@@ -19,7 +19,7 @@ impl<'a> ImageRoi<'a> {
         self.y2 - self.y1
     }
 
-    pub fn blend(&mut self, other: &ImageRoi) {
+    pub fn blend(&'a mut self, other: &ImageRoi) -> &'a mut ImageRoi {
         let start_y = max(-self.y1, -other.y1);
         let end_y = min(min(self.image.height(), self.y2) - self.y1, min(other.image.height(), other.y2) - other.y1);
         let start_x = max(-self.x1, -other.x1);
@@ -51,9 +51,11 @@ impl<'a> ImageRoi<'a> {
                 }
             }
         }
+
+        self
     }
 
-    pub fn set(&mut self, color: Color) {
+    pub fn set(&'a mut self, color: Color) -> &'a mut ImageRoi {
         let new = color.data;
 
         let alpha = (new >> 24) & 0xFF;
@@ -86,6 +88,8 @@ impl<'a> ImageRoi<'a> {
                 }
             }
         }
+
+        self
     }
 }
 

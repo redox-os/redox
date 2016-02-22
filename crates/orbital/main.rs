@@ -1,9 +1,10 @@
 extern crate core;
 extern crate system;
 
+use std::cmp::{min, max};
 use std::collections::BTreeMap;
 use std::collections::VecDeque;
-use std::io::{Read, Write};
+use std::io::{Read, Write, SeekFrom};
 use std::mem;
 use std::sync::{Arc, Mutex};
 use std::thread;
@@ -32,6 +33,100 @@ pub mod image;
 pub mod socket;
 pub mod window;
 
+#[derive(Copy, Clone, Debug, Default)]
+pub struct Rect {
+    pub x: i32,
+    pub y: i32,
+    pub w: i32,
+    pub h: i32
+}
+
+impl Rect {
+    pub fn new(x: i32, y: i32, w: i32, h: i32) -> Rect {
+        Rect{
+            x: x,
+            y: y,
+            w: w,
+            h: h
+        }
+    }
+
+    pub fn area(&self) -> i32 {
+        self.w * self.h
+    }
+
+    pub fn container(&self, other: &Rect) -> Rect {
+        let x = min(self.x, other.x);
+        let y = min(self.y, other.y);
+
+        Rect {
+            x: x,
+            y: y,
+            w: max(self.x + self.w, other.x + other.w) - x,
+            h: max(self.y + self.h, other.y + other.h) - y
+        }
+    }
+
+    pub fn contains(&self, other: &Rect) -> bool {
+        self.x <= other.x
+        && self.x + self.w >= other.x + other.w
+        && self.y <= other.y
+        && self.y + self.h >= other.y + other.h
+    }
+
+    pub fn is_empty(&self) -> bool {
+        self.w == 0 || self.h == 0
+    }
+
+    pub fn intersects(&self, other: &Rect) -> bool {
+        let x = max(self.x, other.x);
+        let y = max(self.y, other.y);
+
+        min(self.x + self.w, other.x + other.w) > x
+        && min(self.y + self.h, other.y + other.h) > y
+    }
+
+    pub fn intersection(&self, other: &Rect) -> Rect {
+        let x = max(self.x, other.x);
+        let y = max(self.y, other.y);
+
+        Rect {
+            x: x,
+            y: y,
+            w: min(self.x + self.w, other.x + other.w) - x,
+            h: min(self.y + self.h, other.y + other.h) - y
+        }
+    }
+}
+
+fn schedule(redraws: &mut Vec<Rect>, x: i32, y: i32, w: i32, h: i32) {
+    //println!("schedule redraw: {},{} {},{}", x, y, w, h);
+
+    let request = Rect::new(x, y, w, h);
+
+    let mut push = true;
+    for mut rect in redraws.iter_mut() {
+        //If contained, ignore new redraw request
+        if rect.contains(&request) {
+            //println!("redraw ignored");
+            push = false;
+            break;
+        } else {
+            let container = rect.container(&request);
+            if container.area() < rect.area() + request.area() {
+                //println!("container more efficient");
+                *rect = container;
+                push = false;
+                break;
+            }
+        }
+    }
+
+    if push {
+        redraws.push(request);
+    }
+}
+
 struct OrbitalScheme {
     start: Instant,
     image: Image,
@@ -47,7 +142,7 @@ struct OrbitalScheme {
     next_y: i32,
     order: VecDeque<usize>,
     windows: BTreeMap<usize, Window>,
-    redraw: bool,
+    redraws: Vec<Rect>,
     todo: Vec<Packet>
 }
 
@@ -68,30 +163,51 @@ impl OrbitalScheme {
             next_y: 20,
             order: VecDeque::new(),
             windows: BTreeMap::new(),
-            redraw: true,
+            redraws: vec![Rect::new(0, 0, width, height)],
             todo: Vec::new()
         }
     }
 
     fn redraw(&mut self, display: &Socket){
-        if self.redraw {
-            let elapsed = self.start.elapsed();
-            println!("redraw {} {}", elapsed.secs, elapsed.nanos);
+        let mut redraws = Vec::new();
+        mem::swap(&mut self.redraws, &mut redraws);
 
-            self.redraw = false;
-            self.image.as_roi().set(Color::rgb(75, 163, 253));
-            self.image.as_roi().blend(&self.background.as_roi());
+        //TODO: Optimize redraws
+
+        for rect in redraws.iter() {
+            //let elapsed = self.start.elapsed();
+            //println!("redraw {} {}: {},{} {},{}", elapsed.secs, elapsed.nanos, rect.x, rect.y, rect.w, rect.h);
+
+            self.image.roi(rect.x, rect.y, rect.w, rect.h)
+                    .set(Color::rgb(75, 163, 253))
+                    .blend(&self.background.roi(rect.x, rect.y, rect.w, rect.h));
 
             let mut i = self.order.len();
             for id in self.order.iter().rev() {
                 i -= 1;
                 if let Some(mut window) = self.windows.get_mut(&id) {
-                    window.draw(&mut self.image, i == 0);
+                    if rect.x < window.x + window.width() && rect.x + rect.w >= window.x && rect.y < window.y + window.height() && rect.y + rect.h >= window.y - 18 {
+                        window.draw(&mut self.image, i == 0);
+                    }
                 }
             }
 
-            self.image.roi(self.cursor_x, self.cursor_y, self.cursor.width(), self.cursor.height()).blend(&self.cursor.as_roi());
-            display.send_type(self.image.data()).unwrap();
+            if rect.x < self.cursor_x + self.cursor.width() && rect.x + rect.w >= self.cursor_x && rect.y < self.cursor_y + self.cursor.height() && rect.y + rect.h >= self.cursor_y {
+                self.image.roi(self.cursor_x, self.cursor_y, self.cursor.width(), self.cursor.height()).blend(&self.cursor.as_roi());
+            }
+
+            let data = self.image.data();
+            let x1 = max(0, min(self.image.width(), rect.x));
+            let x2 = max(x1, min(self.image.width(), rect.x + rect.w));
+            let y1 = max(0, min(self.image.height(), rect.y));
+            let y2 = max(y1, min(self.image.height(), rect.y + rect.h));
+            for row in y1..y2 {
+                let off1 = row * self.image.width() + x1;
+                let off2 = row * self.image.width() + x2;
+
+                unsafe { display.seek(SeekFrom::Start(off1 as u64 * 4)).unwrap(); }
+                display.send_type(&data[off1 as usize .. off2 as usize]).unwrap();
+            }
         }
     }
 
@@ -106,18 +222,25 @@ impl OrbitalScheme {
                 }
             }
         } else if event.code == EVENT_MOUSE {
-            self.cursor_x = event.a as i32;
-            self.cursor_y = event.b as i32;
-            self.redraw = true;
+            if event.a as i32 != self.cursor_x || event.b as i32 != self.cursor_y {
+                schedule(&mut self.redraws, self.cursor_x, self.cursor_y, self.cursor.width(), self.cursor.height());
+                self.cursor_x = event.a as i32;
+                self.cursor_y = event.b as i32;
+                schedule(&mut self.redraws, self.cursor_x, self.cursor_y, self.cursor.width(), self.cursor.height());
+            }
 
             if self.dragging {
                 if event.c > 0 {
                     if let Some(id) = self.order.front() {
                         if let Some(mut window) = self.windows.get_mut(&id) {
-                            window.x += self.cursor_x - self.drag_x;
-                            window.y += self.cursor_y - self.drag_y;
-                            self.drag_x = self.cursor_x;
-                            self.drag_y = self.cursor_y;
+                            if self.drag_x != self.cursor_x || self.drag_y != self.cursor_y {
+                                schedule(&mut self.redraws, window.x, window.y - 18, window.width(), window.height() + 18);
+                                window.x += self.cursor_x - self.drag_x;
+                                window.y += self.cursor_y - self.drag_y;
+                                self.drag_x = self.cursor_x;
+                                self.drag_y = self.cursor_y;
+                                schedule(&mut self.redraws, window.x, window.y - 18, window.width(), window.height() + 18);
+                            }
                         } else {
                             self.dragging = false;
                         }
@@ -204,7 +327,7 @@ impl Scheme for OrbitalScheme {
 
         self.order.push_front(id);
         self.windows.insert(id, Window::new(x, y, width, height, title));
-        self.redraw = true;
+        schedule(&mut self.redraws, x, y - 18, width, height + 18);
 
         Ok(id)
     }
@@ -219,7 +342,7 @@ impl Scheme for OrbitalScheme {
 
     fn write(&mut self, id: usize, buf: &[u8]) -> Result<usize> {
         if let Some(mut window) = self.windows.get_mut(&id) {
-            self.redraw = true;
+            schedule(&mut self.redraws, window.x, window.y - 18, window.width(), window.height() + 18);
             window.write(buf)
         } else {
             Err(Error::new(EBADF))
@@ -237,8 +360,8 @@ impl Scheme for OrbitalScheme {
     fn close(&mut self, id: usize) -> Result<usize> {
         self.order.retain(|&e| e != id);
 
-        if self.windows.remove(&id).is_some() {
-            self.redraw = true;
+        if let Some(window) = self.windows.remove(&id) {
+            schedule(&mut self.redraws, window.x, window.y - 18, window.width(), window.height() + 18);
             Ok(0)
         } else {
             Err(Error::new(EBADF))
