@@ -64,17 +64,17 @@ impl Window {
 
     pub fn draw_title(&mut self, image: &mut Image, rect: &Rect, focused: bool) {
         let title_rect = self.title_rect();
-        let intersect = rect.intersection(&title_rect);
-        if ! intersect.is_empty() {
+        let title_intersect = rect.intersection(&title_rect);
+        if ! title_intersect.is_empty() {
             if focused {
-                image.roi(&intersect).set(Color::rgba(192, 192, 192, 224));
+                image.roi(&title_intersect).set(Color::rgba(192, 192, 192, 224));
             } else {
-                image.roi(&intersect).set(Color::rgba(64, 64, 64, 224));
+                image.roi(&title_intersect).set(Color::rgba(64, 64, 64, 224));
             }
 
             {
                 let image_rect = Rect::new(title_rect.left() + 4, title_rect.top() + 1, self.title_image.width(), self.title_image.height());
-                let image_intersect = intersect.intersection(&image_rect);
+                let image_intersect = rect.intersection(&image_rect);
                 if ! image_intersect.is_empty() {
                     image.roi(&image_intersect).blend(&self.title_image.roi(&image_intersect.offset(-image_rect.left(), -image_rect.top())));
                 }
@@ -83,8 +83,8 @@ impl Window {
             let x = max(self.x + 2, self.x + self.width() - 10);
             if x + 10 <= self.x + self.width() {
                 let mut font_image = Font::render('X', Color::rgb(255, 255, 255));
-                let image_rect = Rect::new(title_rect.left() + 4, title_rect.top() + 1, font_image.width(), font_image.height());
-                let image_intersect = intersect.intersection(&image_rect);
+                let image_rect = Rect::new(x, title_rect.top() + 1, font_image.width(), font_image.height());
+                let image_intersect = rect.intersection(&image_rect);
                 if ! image_intersect.is_empty() {
                     image.roi(&image_intersect).blend(&font_image.roi(&image_intersect.offset(-image_rect.left(), -image_rect.top())));
                 }
@@ -94,7 +94,7 @@ impl Window {
 
     pub fn draw(&mut self, image: &mut Image, rect: &Rect) {
         let self_rect = self.rect();
-        let intersect = rect.intersection(&self_rect);
+        let intersect = self_rect.intersection(&rect);
         if ! intersect.is_empty() {
             image.roi(&intersect).blend(&self.image.roi(&intersect.offset(-self_rect.left(), -self_rect.top())));
         }

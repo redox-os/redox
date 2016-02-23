@@ -22,10 +22,12 @@ pub use self::socket::Socket;
 pub use self::window::Window;
 
 use self::bmp::BmpFile;
+use self::config::Config;
 use self::event::{EVENT_KEY, EVENT_MOUSE, QuitEvent};
 
 pub mod bmp;
 pub mod color;
+pub mod config;
 #[path="../../kernel/common/event.rs"]
 pub mod event;
 pub mod font;
@@ -39,7 +41,7 @@ fn schedule(redraws: &mut Vec<Rect>, request: Rect) {
     for mut rect in redraws.iter_mut() {
         //If contained, ignore new redraw request
         let container = rect.container(&request);
-        if container.area() < rect.area() + request.area() {
+        if container.area() <= rect.area() + request.area() {
             *rect = container;
             push = false;
             break;
@@ -71,12 +73,12 @@ struct OrbitalScheme {
 }
 
 impl OrbitalScheme {
-    fn new(width: i32, height: i32) -> OrbitalScheme {
+    fn new(width: i32, height: i32, config: &Config) -> OrbitalScheme {
         OrbitalScheme {
             start: Instant::now(),
             image: Image::new(width, height),
-            background: BmpFile::from_path("/ui/background.bmp"),
-            cursor: BmpFile::from_path("/ui/cursor.bmp"),
+            background: BmpFile::from_path(&config.background),
+            cursor: BmpFile::from_path(&config.cursor),
             cursor_x: 0,
             cursor_y: 0,
             dragging: false,
@@ -92,52 +94,80 @@ impl OrbitalScheme {
         }
     }
 
+    fn cursor_rect(&self) -> Rect {
+        Rect::new(self.cursor_x, self.cursor_y, self.cursor.width(), self.cursor.height())
+    }
+
+    fn screen_rect(&self) -> Rect {
+        Rect::new(0, 0, self.image.width(), self.image.height())
+    }
+
     fn redraw(&mut self, display: &Socket){
         let mut redraws = Vec::new();
         mem::swap(&mut self.redraws, &mut redraws);
 
-        //TODO: Optimize redraws
+        let screen_rect = self.screen_rect();
 
-        let mut sync = Rect::default();
-        for rect in redraws.iter() {
-            if sync.area() == 0 {
-                sync = *rect;
-            } else {
-                sync = sync.container(&rect);
-            }
+        for mut rect in redraws.iter_mut() {
+            *rect = rect.intersection(&screen_rect);
 
-            self.image.roi(&rect).set(Color::rgb(75, 163, 253)).blend(&self.background.roi(rect));
+            if ! rect.is_empty() {
+                self.image.roi(&rect).set(Color::rgb(75, 163, 253)).blend(&self.background.roi(rect));
 
-            let mut i = self.order.len();
-            for id in self.order.iter().rev() {
-                i -= 1;
-                if let Some(mut window) = self.windows.get_mut(&id) {
-                    window.draw_title(&mut self.image, &rect, i == 0);
-                    window.draw(&mut self.image, &rect);
+                let mut i = self.order.len();
+                for id in self.order.iter().rev() {
+                    i -= 1;
+                    if let Some(mut window) = self.windows.get_mut(&id) {
+                        window.draw_title(&mut self.image, &rect, i == 0);
+                        window.draw(&mut self.image, &rect);
+                    }
                 }
-            }
 
-            let cursor_rect = rect.intersection(&Rect::new(self.cursor_x, self.cursor_y, self.cursor.width(), self.cursor.height()));
-            if ! cursor_rect.is_empty() {
-                self.image.roi(&cursor_rect).blend(&self.cursor.roi(&cursor_rect.offset(-self.cursor_x, -self.cursor_y)));
+                let cursor_rect = self.cursor_rect();
+                let cursor_intersect = rect.intersection(&cursor_rect);
+                if ! cursor_intersect.is_empty() {
+                    self.image.roi(&cursor_intersect).blend(&self.cursor.roi(&cursor_intersect.offset(-cursor_rect.left(), -cursor_rect.top())));
+                }
             }
         }
 
-        sync = sync.intersection(&Rect::new(0, 0, self.image.width(), self.image.height()));
-        if sync.area() > 0 {
-            let data = self.image.data();
-            for row in sync.top()..sync.bottom() {
-                let off1 = row * self.image.width() + sync.left();
-                let off2 = row * self.image.width() + sync.right();
+        for rect in redraws.iter_mut() {
+            if ! rect.is_empty() {
+                let data = self.image.data();
+                for row in rect.top()..rect.bottom() {
+                    let off1 = row * self.image.width() + rect.left();
+                    let off2 = row * self.image.width() + rect.right();
 
-                unsafe { display.seek(SeekFrom::Start(off1 as u64 * 4)).unwrap(); }
-                display.send_type(&data[off1 as usize .. off2 as usize]).unwrap();
+                    unsafe { display.seek(SeekFrom::Start(off1 as u64 * 4)).unwrap(); }
+                    display.send_type(&data[off1 as usize .. off2 as usize]).unwrap();
+                }
             }
         }
     }
 
     fn event(&mut self, event: Event){
         if event.code == EVENT_KEY {
+            if event.c > 0 {
+                if event.b as u8 == event::K_F1 {
+                    let cursor_rect = self.cursor_rect();
+                    schedule(&mut self.redraws, cursor_rect);
+
+                    self.cursor_x = 0;
+                    self.cursor_y = 0;
+
+                    let cursor_rect = self.cursor_rect();
+                    schedule(&mut self.redraws, cursor_rect);
+                } else if event.b as u8 == event::K_F2 {
+                    let cursor_rect = self.cursor_rect();
+                    schedule(&mut self.redraws, cursor_rect);
+
+                    self.cursor_x = self.screen_rect().width();
+                    self.cursor_y = self.screen_rect().height();
+
+                    let cursor_rect = self.cursor_rect();
+                    schedule(&mut self.redraws, cursor_rect);
+                }
+            }
             if let Some(id) = self.order.front() {
                 if let Some(mut window) = self.windows.get_mut(&id) {
                     window.event(event);
@@ -145,10 +175,14 @@ impl OrbitalScheme {
             }
         } else if event.code == EVENT_MOUSE {
             if event.a as i32 != self.cursor_x || event.b as i32 != self.cursor_y {
-                schedule(&mut self.redraws, Rect::new(self.cursor_x, self.cursor_y, self.cursor.width(), self.cursor.height()));
+                let cursor_rect = self.cursor_rect();
+                schedule(&mut self.redraws, cursor_rect);
+
                 self.cursor_x = event.a as i32;
                 self.cursor_y = event.b as i32;
-                schedule(&mut self.redraws, Rect::new(self.cursor_x, self.cursor_y, self.cursor.width(), self.cursor.height()));
+
+                let cursor_rect = self.cursor_rect();
+                schedule(&mut self.redraws, cursor_rect);
             }
 
             if self.dragging {
@@ -372,7 +406,9 @@ fn main() {
             println!("    Console: Press F1");
             println!("    Desktop: Press F2");
 
-            let scheme = Arc::new(Mutex::new(OrbitalScheme::new(width, height)));
+            let config = Config::from_path("/etc/orbital.conf");
+
+            let scheme = Arc::new(Mutex::new(OrbitalScheme::new(width, height, &config)));
 
             let scheme_event = scheme.clone();
             let display_event = display.clone();

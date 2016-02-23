@@ -7,5 +7,5 @@ example
 # Login process, handles debug console
 login
 
-# The app launcher
+# Application launcher
 launcher

@@ -183,10 +183,6 @@ filesystem/bin/%: libc/bin/%
 	mkdir -p filesystem/bin
 	cp $< $@
 
-filesystem/bin/init.rc: crates/init/init.rc
-	mkdir -p filesystem/bin
-	cp $< $@
-
 filesystem/bin/ion: $(BUILD)/ion-shell.bin
 	mkdir -p filesystem/bin
 	cp $< $@
@@ -199,6 +195,14 @@ filesystem/bin/launcher: crates/orbutils/src/launcher/main.rs crates/orbutils/sr
 	mkdir -p filesystem/bin
 	$(RUSTC) $(RUSTCFLAGS) --crate-type bin -o $@ $<
 
+filesystem/bin/init.rc: crates/init/init.rc
+	mkdir -p filesystem/etc
+	cp $< $@
+
+filesystem/bin/orbital.conf: crates/orbital/orbital.conf
+	mkdir -p filesystem/etc
+	cp $< $@
+
 bins: \
 	coreutils \
 	filesystem/bin/c-test \
@@ -206,7 +210,6 @@ bins: \
 	filesystem/bin/ed \
 	filesystem/bin/example \
 	filesystem/bin/init \
-  	filesystem/bin/init.rc \
   	filesystem/bin/ion \
 	filesystem/bin/launcher \
   	filesystem/bin/lua \
