@@ -203,6 +203,7 @@ bins: \
 	coreutils \
 	filesystem/bin/c-test \
 	filesystem/bin/dosbox \
+	filesystem/bin/ed \
 	filesystem/bin/example \
 	filesystem/bin/init \
   	filesystem/bin/init.rc \
