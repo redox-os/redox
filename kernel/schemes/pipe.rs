@@ -1,6 +1,8 @@
 use alloc::arc::{Arc, Weak};
 use alloc::boxed::Box;
 
+use core::cmp;
+
 use fs::Resource;
 
 use sync::WaitQueue;
@@ -88,26 +90,21 @@ impl Resource for PipeWrite {
     fn path(&self, buf: &mut [u8]) -> Result <usize> {
         let path = b"pipe:w";
 
-        let mut i = 0;
-        while i < buf.len() && i < path.len() {
-            buf[i] = path[i];
-            i += 1;
+        for (b, p) in buf.iter_mut().zip(path.iter()) {
+            *b = *p;
         }
 
-        Ok(i)
+        Ok(cmp::min(buf.len(), path.len()))
     }
 
     fn write(&mut self, buf: &[u8]) -> Result<usize> {
         match self.vec.upgrade() {
             Some(vec) => {
-                let mut i = 0;
-
-                while i < buf.len() {
-                    vec.send(buf[i]);
-                    i += 1;
+                for &b in buf.iter() {
+                    vec.send(b);
                 }
 
-                Ok(i)
+                Ok(buf.len())
             },
             None => Err(Error::new(EPIPE))
         }
