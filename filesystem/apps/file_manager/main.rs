@@ -50,13 +50,15 @@ impl FileTypesInfo {
         file_types.insert("c", FileType::new("C source code", "text-x-csrc"));
         file_types.insert("cpp", FileType::new("C++ source code", "text-x-c++src"));
         file_types.insert("h", FileType::new("C header", "text-x-chdr"));
+        file_types.insert("ion", FileType::new("Ion script", "text-x-script"));
+        file_types.insert("rc", FileType::new("Init script", "text-x-script"));
         file_types.insert("sh", FileType::new("Shell script", "text-x-script"));
         file_types.insert("lua", FileType::new("Lua script", "text-x-script"));
-        file_types.insert("txt",
-                          FileType::new("Plain text document", "text-x-generic"));
-        file_types.insert("md", FileType::new("Markdown document", "text-x-generic"));
-        file_types.insert("toml", FileType::new("TOML document", "text-x-generic"));
-        file_types.insert("json", FileType::new("JSON document", "text-x-generic"));
+        file_types.insert("conf", FileType::new("Config file", "text-x-generic"));
+        file_types.insert("txt", FileType::new("Plain text file", "text-x-generic"));
+        file_types.insert("md", FileType::new("Markdown file", "text-x-generic"));
+        file_types.insert("toml", FileType::new("TOML file", "text-x-generic"));
+        file_types.insert("json", FileType::new("JSON file", "text-x-generic"));
         file_types.insert("REDOX", FileType::new("Redox package", "text-x-generic"));
         file_types.insert("", FileType::new("Unknown file", "unknown"));
         FileTypesInfo { file_types: file_types }
