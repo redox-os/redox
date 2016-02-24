@@ -40,22 +40,18 @@ impl Resource for DisplayResource {
     fn path(&self, buf: &mut [u8]) -> Result<usize> {
         let path = self.path.as_bytes();
 
-        let mut i = 0;
-        while i < buf.len() && i < path.len() {
-            buf[i] = path[i];
-            i += 1;
+        for (b, p) in buf.iter_mut().zip(path.iter()) {
+            *b = *p;
         }
 
-        Ok(i)
+        Ok(cmp::min(buf.len(), path.len()))
     }
 
     fn read(&mut self, buf: &mut [u8]) -> Result<usize> {
         if buf.len() >= size_of::<Event>() {
-            let mut i = 0;
-
             let event = ::env().events.receive();
-            unsafe { ptr::write(buf.as_mut_ptr().offset(i as isize) as *mut Event, event) };
-            i += size_of::<Event>();
+            unsafe { ptr::write(buf.as_mut_ptr().offset(0isize) as *mut Event, event) };
+            let mut i = size_of::<Event>();
 
             while i + size_of::<Event>() <= buf.len() {
                 if let Some(event) = ::env().events.inner.lock().pop_front() {
