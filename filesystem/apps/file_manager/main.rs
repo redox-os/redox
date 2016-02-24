@@ -463,7 +463,9 @@ impl FileManager {
     fn main(&mut self, path: &str) {
         let mut current_path = path.to_string();
         self.set_path(path);
+        self.draw_content();
         'events: loop {
+            let mut redraw = false;
             for event in self.event_loop() {
                 match event {
                     FileManagerCommand::ChangeDir(dir) => {
@@ -479,9 +481,11 @@ impl FileManager {
                     FileManagerCommand::Execute(cmd) => {
                         Command::new("launcher").arg(&(current_path.clone() + &cmd)).spawn();
                     },
-                    FileManagerCommand::Redraw => (),
+                    FileManagerCommand::Redraw => redraw = true,
                     FileManagerCommand::Quit => break 'events,
                 };
+            }
+            if redraw {
                 self.draw_content();
             }
         }
