@@ -240,7 +240,19 @@ impl OrbitalScheme {
                     i += 1;
                 }
                 if focus > 0 {
+                    //Redraw old focused window
+                    if let Some(id) = self.order.front() {
+                        if let Some(window) = self.windows.get(&id){
+                            schedule(&mut self.redraws, window.title_rect());
+                            schedule(&mut self.redraws, window.rect());
+                        }
+                    }
+                    //Redraw new focused window
                     if let Some(id) = self.order.remove(focus) {
+                        if let Some(window) = self.windows.get(&id){
+                            schedule(&mut self.redraws, window.title_rect());
+                            schedule(&mut self.redraws, window.rect());
+                        }
                         self.order.push_front(id);
                     }
                 }
