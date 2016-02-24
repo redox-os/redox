@@ -1,39 +1,106 @@
-use std::cmp::{min, max};
+use std::mem;
 
-use super::Color;
+use super::{Color, Rect};
+
+pub struct ImageRoiRows<'a> {
+    rect: Rect,
+    image: &'a Image,
+    i: i32,
+}
+
+impl<'a> Iterator for ImageRoiRows<'a> {
+    type Item = &'a [Color];
+    fn next(&mut self) -> Option<Self::Item> {
+        if self.i < self.rect.height() {
+            let start = (self.rect.top() + self.i) * self.image.width() + self.rect.left();
+            let end = start + self.rect.width();
+            self.i += 1;
+            Some(& self.image.data[start as usize .. end as usize])
+        } else {
+            None
+        }
+    }
+}
+
+pub struct ImageRoiRowsMut<'a> {
+    rect: Rect,
+    image: &'a mut Image,
+    i: i32,
+}
+
+impl<'a> Iterator for ImageRoiRowsMut<'a> {
+    type Item = &'a mut [Color];
+    fn next(&mut self) -> Option<Self::Item> {
+        if self.i < self.rect.height() {
+            let start = (self.rect.top() + self.i) * self.image.width() + self.rect.left();
+            let end = start + self.rect.width();
+            self.i += 1;
+            // it does not appear to be possible to do this in safe rust
+            Some(unsafe { mem::transmute(&mut self.image.data[start as usize .. end as usize]) })
+        } else {
+            None
+        }
+    }
+}
 
 pub struct ImageRoi<'a> {
-    x1: i32,
-    x2: i32,
-    y1: i32,
-    y2: i32,
+    rect: Rect,
     image: &'a mut Image
 }
 
 impl<'a> ImageRoi<'a> {
+    pub fn rect(&self) -> Rect {
+        self.rect
+    }
+
+    pub fn left(&self) -> i32 {
+        self.rect.left()
+    }
+
+    pub fn right(&self) -> i32 {
+        self.rect.right()
+    }
+
+    pub fn top(&self) -> i32 {
+        self.rect.top()
+    }
+
+    pub fn bottom(&self) -> i32 {
+        self.rect.bottom()
+    }
+
     pub fn width(&self) -> i32 {
-        self.x2 - self.x1
+        self.rect.width()
     }
 
     pub fn height(&self) -> i32 {
-        self.y2 - self.y1
+        self.rect.height()
     }
 
-    pub fn blend(&'a mut self, other: &ImageRoi) -> &'a mut ImageRoi {
-        let start_y = max(-self.y1, -other.y1);
-        let end_y = min(min(self.image.height(), self.y2) - self.y1, min(other.image.height(), other.y2) - other.y1);
-        let start_x = max(-self.x1, -other.x1);
-        let end_x = min(min(self.image.width(), self.x2) - self.x1, min(other.image.width(), other.x2) - other.x1);
+    pub fn rows(&'a self) -> ImageRoiRows<'a> {
+        ImageRoiRows {
+            rect: self.rect,
+            image: self.image,
+            i: 0
+        }
+    }
 
-        for y in start_y..end_y {
-            let row = (self.y1 + y) * self.image.width();
-            let other_row = (other.y1 + y) * other.image.width();
-            for x in start_x..end_x {
-                let new = other.image.data[(other_row + other.x1 + x) as usize].data;
+    pub fn rows_mut(&'a mut self) -> ImageRoiRowsMut<'a> {
+        ImageRoiRowsMut {
+            rect: self.rect,
+            image: self.image,
+            i: 0
+        }
+    }
+
+    pub fn blend(&'a mut self, other: &ImageRoi) {
+        for (mut self_row, other_row) in self.rows_mut().zip(other.rows()) {
+            for(mut self_pixel, other_pixel) in self_row.iter_mut().zip(other_row.iter()) {
+                let new = other_pixel.data;
 
                 let alpha = (new >> 24) & 0xFF;
                 if alpha > 0 {
-                    let old = &mut self.image.data[(row + self.x1 + x) as usize].data;
+                    let old = &mut self_pixel.data;
                     if alpha >= 255 {
                         *old = new;
                     } else {
@@ -51,20 +118,17 @@ impl<'a> ImageRoi<'a> {
                 }
             }
         }
-
-        self
     }
 
-    pub fn set(&'a mut self, color: Color) -> &'a mut ImageRoi {
+    pub fn set(&'a mut self, color: Color) {
         let new = color.data;
 
         let alpha = (new >> 24) & 0xFF;
         if alpha > 0 {
             if alpha >= 255 {
-                for y in max(0, self.y1) .. min(self.image.height(), self.y2) {
-                    let row = y * self.image.width();
-                    for x in max(0, self.x1) .. min(self.image.width(), self.x2) {
-                        self.image.data[(row + x) as usize].data = new;
+                for mut self_row in self.rows_mut() {
+                    for mut self_pixel in self_row.iter_mut() {
+                        self_pixel.data = new;
                     }
                 }
             } else {
@@ -74,10 +138,9 @@ impl<'a> ImageRoi<'a> {
 
                 let n_alpha = 255 - alpha;
 
-                for y in max(0, self.y1) .. min(self.image.height(), self.y2) {
-                    let row = y * self.image.width();
-                    for x in max(0, self.x1) .. min(self.image.width(), self.x2) {
-                        let old = &mut self.image.data[(row + x) as usize].data;
+                for mut self_row in self.rows_mut() {
+                    for mut self_pixel in self_row.iter_mut() {
+                        let old = &mut self_pixel.data;
 
                         let o_r = (((*old >> 16) & 0xFF) * n_alpha) >> 8;
                         let o_g = (((*old >> 8) & 0xFF) * n_alpha) >> 8;
@@ -88,8 +151,6 @@ impl<'a> ImageRoi<'a> {
                 }
             }
         }
-
-        self
     }
 }
 
@@ -142,20 +203,14 @@ impl Image {
 
     pub fn as_roi(&mut self) -> ImageRoi {
         ImageRoi {
-            x1: 0,
-            x2: self.w,
-            y1: 0,
-            y2: self.h,
+            rect: Rect::new(0, 0, self.w, self.h),
             image: self
         }
     }
 
-    pub fn roi(&mut self, x: i32, y: i32, w: i32, h: i32) -> ImageRoi {
+    pub fn roi(&mut self, rect: &Rect) -> ImageRoi {
         ImageRoi {
-            x1: x,
-            x2: x + w,
-            y1: y,
-            y2: y + h,
+            rect: *rect,
             image: self
         }
     }

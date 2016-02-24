@@ -106,9 +106,6 @@ impl KScheme for Ohci {
             // d("OHCI IRQ\n");
         }
     }
-
-    fn on_poll(&mut self) {
-    }
 }
 
 impl Ohci {

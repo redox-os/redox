@@ -215,13 +215,14 @@ impl Page {
     /// Initialize the memory page
     pub unsafe fn init() {
         for table_i in 0..PAGE_TABLE_SIZE {
-            ptr::write((PAGE_DIRECTORY + table_i * PAGE_ENTRY_SIZE) as *mut u32,
+            ptr::write((PAGE_DIRECTORY + table_i * PAGE_ENTRY_SIZE) as *mut usize,
                        // TODO: Use more restrictive flags
-                       (PAGE_TABLES + table_i * PAGE_TABLE_SIZE * PAGE_ENTRY_SIZE) as u32 |
-                       1 << 2 | 1 << 1 | 1); //Allow userspace, read/write, present
+                       (PAGE_TABLES + table_i * PAGE_TABLE_SIZE * PAGE_ENTRY_SIZE) |
+                       PF_USER | PF_WRITE | PF_PRESENT); //Allow userspace, read/write, present
 
             for entry_i in 0..PAGE_TABLE_SIZE {
-                Page::new((table_i * PAGE_TABLE_SIZE + entry_i) * PAGE_SIZE).map_identity();
+                let addr = (table_i * PAGE_TABLE_SIZE + entry_i) * PAGE_SIZE;
+                Page::new(addr).map_kernel_write(addr);
             }
         }
 
@@ -230,7 +231,7 @@ impl Page {
             or $0, $1
             mov cr0, $0"
             :
-            : "r"(PAGE_DIRECTORY), "r"(0x80000000 as usize)
+            : "r"(PAGE_DIRECTORY), "r"(1 << 31 | 1 << 16)
             : "memory"
             : "intel", "volatile");
     }
@@ -269,9 +270,16 @@ impl Page {
     }
 
     /// Map the memory page to a given physical memory address
-    pub unsafe fn map(&mut self, physical_address: usize) {
+    pub unsafe fn map_kernel_read(&mut self, physical_address: usize) {
         ptr::write(self.entry_address() as *mut usize,
                    (physical_address & PF_NONE) | PF_PRESENT);
+        self.flush();
+    }
+
+    /// Map the memory page to a given physical memory address
+    pub unsafe fn map_kernel_write(&mut self, physical_address: usize) {
+        ptr::write(self.entry_address() as *mut usize,
+                   (physical_address & PF_NONE) | PF_WRITE | PF_PRESENT);
         self.flush();
     }
 
@@ -287,12 +295,6 @@ impl Page {
         ptr::write(self.entry_address() as *mut usize,
                    (physical_address & PF_NONE) | PF_USER | PF_WRITE | PF_PRESENT);
         self.flush();
-    }
-
-    /// Map to the virtual address
-    pub unsafe fn map_identity(&mut self) {
-        let physical_address = self.virtual_address;
-        self.map(physical_address);
     }
 
     /// Unmap the memory page

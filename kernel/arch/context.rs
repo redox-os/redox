@@ -396,7 +396,8 @@ impl ContextMemory {
 
     pub unsafe fn unmap(&mut self) {
         for i in 0..(self.virtual_size + 4095) / 4096 {
-            Page::new(self.virtual_address + i * 4096).map_identity();
+            Page::new(self.virtual_address + i * 4096)
+                .map_kernel_write(self.virtual_address + i * 4096);
         }
     }
 }
@@ -734,7 +735,7 @@ impl Context {
     #[cold]
     #[inline(never)]
     pub unsafe fn switch_to(&mut self, next: &mut Context) {
-        asm!("xchg bx, bx" : : : "memory" : "intel", "volatile");
+        //asm!("xchg bx, bx" : : : "memory" : "intel", "volatile");
 
         asm!("fxsave [$0]" : : "r"(self.fx) : "memory" : "intel", "volatile");
         self.loadable = true;
@@ -768,7 +769,7 @@ impl Context {
     #[cold]
     #[inline(never)]
     pub unsafe fn switch_to(&mut self, next: &mut Context) {
-        asm!("xchg bx, bx" : : : "memory" : "intel", "volatile");
+        //asm!("xchg bx, bx" : : : "memory" : "intel", "volatile");
 
         asm!("fxsave [$0]" : : "r"(self.fx) : "memory" : "intel", "volatile");
         self.loadable = true;

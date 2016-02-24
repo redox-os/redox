@@ -2,16 +2,13 @@
 #![feature(rand)]
 #![feature(slice_concat_ext)]
 
-extern crate system;
-
-use std::io::{Read, Write, stdin, stdout};
+use std::io::{Write, stdin, stdout};
 use std::rand;
+use std::process;
 use std::ptr;
 use std::slice::SliceConcatExt;
 use std::string::*;
 use std::thread;
-
-use system::syscall::sys_exit;
 
 macro_rules! readln {
     () => ({
@@ -32,74 +29,53 @@ fn main() {
         if let Some(line) = readln!() {
             let args: Vec<String> = line.trim().split(' ').map(|arg| arg.to_string()).collect();
 
-            if let Some(a_command) = args.get(0) {
-                let console_commands = ["exit",
-                                        "panic",
-                                        "ptr_write",
-                                        "box_write",
-                                        "reboot",
-                                        "shutdown",
-                                        "clone",
-                                        "leak_test",
-                                        "test_hm",
-                                        "int3"];
-
-                match &a_command[..] {
-                    command if command == console_commands[0] => unsafe {
-                        sys_exit(0);
-                    },
-                    command if command == console_commands[1] => panic!("Test panic"),
-                    command if command == console_commands[2] => {
-                        let a_ptr = rand() as *mut u8;
-                        unsafe {
-                            ptr::write(a_ptr, rand() as u8);
-                        }
+            if let Some(command) = args.get(0) {
+                if command == "exit" {
+                    process::exit(0);
+                } else if command == "panic" {
+                    panic!("Test panic")
+                } else if command == "ptr_write" {
+                    let a_ptr = rand() as *mut u8;
+                    unsafe {
+                        ptr::write(a_ptr, rand() as u8);
                     }
-                    command if command == console_commands[3] => {
-                        let a_box = Box::new(rand() as u8);
-                        unsafe {
-                            ptr::write(Box::into_raw(a_box), rand() as u8);
-                        }
-                    }
-                    command if command == console_commands[4] => unsafe {
+                } else if command == "reboot" {
+                    unsafe {
                         let mut good: u8 = 2;
                         while good & 2 == 2 {
                             asm!("in al, dx" : "={al}"(good) : "{dx}"(0x64) : : "intel", "volatile");
                         }
                         asm!("out dx, al" : : "{dx}"(0x64), "{al}"(0xFE) : : "intel", "volatile");
-                        loop {
+                    }
+                } else if command == "halt" {
+                    loop {
+                        unsafe {
                             asm!("cli" : : : : "intel", "volatile");
                             asm!("hlt" : : : : "intel", "volatile");
                         }
-                    },
-                    command if command == console_commands[5] => unsafe {
-                        loop {
-                            asm!("cli" : : : : "intel", "volatile");
-                            asm!("hlt" : : : : "intel", "volatile");
-                        }
-                    },
-                    command if command == console_commands[6] => {
-                        let parent_message = "Parent Message";
-                        let handle = thread::spawn(move || {
-                            println!("Child after spawn: {}", parent_message);
-                            return "Child message";
-                        });
-                        println!("Parent after spawn: {}", parent_message);
-                        match handle.join() {
-                            Some(child_message) => println!("Parent after join: {}", child_message),
-                            None => println!("Failed to join"),
-                        }
-                    },
-                    command if command == console_commands[7] => {
-                        let mut stack_it: Vec<Box<u8>> = Vec::new();
-                        loop {
-                            stack_it.push(Box::new(rand() as u8))
-                        }
-                    },
-                    command if command == console_commands[9] => unsafe {
+                    }
+                } else if command == "clone" {
+                    let parent_message = "Parent Message";
+                    let handle = thread::spawn(move || {
+                        println!("Child after spawn: {}", parent_message);
+                        return "Child message";
+                    });
+                    println!("Parent after spawn: {}", parent_message);
+                    match handle.join() {
+                        Some(child_message) => println!("Parent after join: {}", child_message),
+                        None => println!("Failed to join"),
+                    }
+                } else if command == "leak_test" {
+                    let mut stack_it: Vec<u8> = Vec::new();
+                    loop {
+                        stack_it.extend_from_slice(&[0; 4096]);
+                    }
+                } else if command == "int3" {
+                    unsafe {
                         asm!("int 3" : : : : "intel", "volatile");
-                    },
-                    _ => println!("Commands: {}", console_commands.join(" ")),
+                    }
+                } else {
+                    println!("Commands: exit panic ptr_write reboot halt clone leak_test int3");
                 }
             }
         } else {

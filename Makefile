@@ -183,10 +183,6 @@ filesystem/bin/%: libc/bin/%
 	mkdir -p filesystem/bin
 	cp $< $@
 
-filesystem/bin/init.rc: crates/init/init.rc
-	mkdir -p filesystem/bin
-	cp $< $@
-
 filesystem/bin/ion: $(BUILD)/ion-shell.bin
 	mkdir -p filesystem/bin
 	cp $< $@
@@ -206,7 +202,6 @@ bins: \
 	filesystem/bin/ed \
 	filesystem/bin/example \
 	filesystem/bin/init \
-  	filesystem/bin/init.rc \
   	filesystem/bin/ion \
 	filesystem/bin/launcher \
   	filesystem/bin/lua \

@@ -10,10 +10,6 @@ pub trait KScheme {
 
     }
 
-    fn on_poll(&mut self) {
-
-    }
-
     fn scheme(&self) -> &str {
         ""
     }
