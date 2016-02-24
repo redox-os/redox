@@ -49,9 +49,7 @@ impl Serial {
 impl KScheme for Serial {
     fn on_irq(&mut self, irq: u8) {
         if irq == self.irq {
-            while self.status.read() & 1 == 0 {
-                break;
-            }
+            while self.status.read() & 1 == 0 {}
 
             let mut c = self.data.read() as char;
             let mut sc = 0;
@@ -81,7 +79,7 @@ impl KScheme for Serial {
             } else if c == '\x03' {
                 ::env().console.lock().write(b"^C\n");
                 ::env().console.lock().commands.send(String::new());
-                
+
                 c = '\0';
                 sc = 0;
             } else if c == '\x1B' {

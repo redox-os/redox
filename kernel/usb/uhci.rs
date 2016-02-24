@@ -28,9 +28,6 @@ impl KScheme for Uhci {
             // d("UHCI IRQ\n");
         }
     }
-
-    fn on_poll(&mut self) {
-    }
 }
 
 #[repr(packed)]
@@ -56,7 +53,7 @@ impl Uhci {
         let mut module = box Uhci {
             base: pci.read(0x20) as usize & 0xFFFFFFF0,
             irq: pci.read(0x3C) as u8 & 0xF,
-            frame_list: Memory::new(1024).unwrap(),
+            frame_list: Memory::new_align(1024, 4096).unwrap(),
         };
 
         module.init();

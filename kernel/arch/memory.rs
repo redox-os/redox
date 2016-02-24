@@ -222,14 +222,14 @@ pub unsafe fn alloc_aligned(size: usize, align: usize) -> usize {
                     number = i;
                 }
                 count += 1;
-                if count * CLUSTER_SIZE > size {
+                if count * CLUSTER_SIZE >= size {
                     break;
                 }
             } else {
                 count = 0;
             }
         }
-        if count * CLUSTER_SIZE > size {
+        if count * CLUSTER_SIZE >= size {
             let address = cluster_to_address(number);
 
             ::memset(address as *mut u8, 0, count * CLUSTER_SIZE);

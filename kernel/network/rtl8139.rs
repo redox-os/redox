@@ -109,7 +109,7 @@ impl Rtl8139 {
         let pci_id = unsafe { pci.read(0x00) };
         let revision = (unsafe { pci.read(0x08) } & 0xFF) as u8;
         if pci_id == 0x813910EC && revision < 0x20 {
-            debug::d("Not an 8139C+ compatible chip")
+            debugln!("Not an 8139C+ compatible chip")
         }
 
         let base = unsafe { pci.read(0x10) as usize };
@@ -281,10 +281,6 @@ impl KScheme for Rtl8139 {
 
             self.sync();
         }
-    }
-
-    fn on_poll(&mut self) {
-        self.sync();
     }
 }
 
