@@ -150,6 +150,17 @@ fn idle_loop() {
     }
 }
 
+extern {
+    static mut __text_start: u8;
+    static mut __text_end: u8;
+    static mut __rodata_start: u8;
+    static mut __rodata_end: u8;
+    static mut __data_start: u8;
+    static mut __data_end: u8;
+    static mut __bss_start: u8;
+    static mut __bss_end: u8;
+}
+
 static BSS_TEST_ZERO: usize = 0;
 static BSS_TEST_NONZERO: usize = usize::MAX;
 
@@ -161,16 +172,11 @@ unsafe fn init(tss_data: usize) {
 
     // Zero BSS, this initializes statics that are set to 0
     {
-        extern {
-            static mut __bss_start: u8;
-            static mut __bss_end: u8;
-        }
+        let start_ptr = &mut __bss_start as *mut u8;
+        let end_ptr = & __bss_end as *const u8 as usize;
 
-        let start_ptr = &mut __bss_start;
-        let end_ptr = &mut __bss_end;
-
-        if start_ptr as *const _ as usize <= end_ptr as *const _ as usize {
-            let size = end_ptr as *const _ as usize - start_ptr as *const _ as usize;
+        if start_ptr as usize <= end_ptr {
+            let size = end_ptr - start_ptr as usize;
             memset(start_ptr, 0, size);
         }
 
@@ -183,6 +189,32 @@ unsafe fn init(tss_data: usize) {
     memory::cluster_init();
     // Unmap first page to catch null pointer errors (after reading memory map)
     Page::new(0).unmap();
+
+    //Remap text
+    {
+        let start_ptr = & __text_start as *const u8 as usize;
+        let end_ptr = & __text_end as *const u8 as usize;
+        if start_ptr as usize <= end_ptr {
+            let size = end_ptr - start_ptr as usize;
+            for page in 0..(size + 4095)/4096 {
+                Page::new(start_ptr as usize + page * 4096).
+                    map_kernel_read(start_ptr as usize + page * 4096);
+            }
+        }
+    }
+
+    //Remap rodata
+    {
+        let start_ptr = & __rodata_start as *const u8 as usize;
+        let end_ptr = & __rodata_end as *const u8 as usize;
+        if start_ptr <= end_ptr {
+            let size = end_ptr - start_ptr;
+            for page in 0..(size + 4095)/4096 {
+                Page::new(start_ptr + page * 4096).
+                    map_kernel_read(start_ptr + page * 4096);
+            }
+        }
+    }
 
     TSS_PTR = Some(&mut *(tss_data as *mut TSS));
     ENV_PTR = Some(&mut *Box::into_raw(Environment::new()));
