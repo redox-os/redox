@@ -41,22 +41,18 @@ impl Resource for FileResource {
         })
     }
 
-    fn path(&self, buf: &mut [u8]) -> Result <usize> {
-        let mut i = 0;
-
+    fn path(&self, buf: &mut [u8]) -> Result<usize> {
         let path_a = b"file:/";
-        while i < buf.len() && i < path_a.len() {
-            buf[i] = path_a[i];
-            i += 1;
+        for (b, p) in buf.iter_mut().zip(path_a.iter()) {
+            *b = *p;
         }
 
         let path_b = self.node.name.as_bytes();
-        while i < buf.len() && i - path_a.len() < path_b.len() {
-            buf[i] = path_b[i - path_a.len()];
-            i += 1;
+        for (b, p) in buf.iter_mut().skip(path_a.len()).zip(path_b.iter()) {
+            *b = *p;
         }
 
-        Ok(i)
+        Ok(cmp::min(buf.len(), path_a.len() + path_b.len()))
     }
 
     fn read(&mut self, buf: &mut [u8]) -> Result<usize> {
