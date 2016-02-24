@@ -59,6 +59,8 @@ use drivers::serial::*;
 
 use env::Environment;
 
+use graphics::display;
+
 use schemes::context::*;
 use schemes::debug::*;
 use schemes::display::*;
@@ -185,8 +187,22 @@ unsafe fn init(tss_data: usize) {
     // Setup paging, this allows for memory allocation
     Page::init();
     memory::cluster_init();
-    // Unmap first page to catch null pointer errors (after reading memory map)
-    Page::new(0).unmap();
+
+    //Get the VBE information before unmapping the first megabyte
+    display::vbe_init();
+
+    // Unmap first page (TODO: Unmap more)
+    {
+        let start_ptr = 0;
+        let end_ptr = 0x1000;
+
+        if start_ptr as usize <= end_ptr {
+            let size = end_ptr - start_ptr as usize;
+            for page in 0..(size + 4095)/4096 {
+                Page::new(start_ptr as usize + page * 4096).unmap();
+            }
+        }
+    }
 
     //Remap text
     {

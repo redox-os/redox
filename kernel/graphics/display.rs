@@ -11,7 +11,7 @@ use super::point::Point;
 use super::size::Size;
 
 /// The info of the VBE mode
-#[derive(Copy, Clone)]
+#[derive(Copy, Clone, Default, Debug)]
 #[repr(packed)]
 pub struct VBEModeInfo {
     attributes: u16,
@@ -48,7 +48,16 @@ pub struct VBEModeInfo {
     offscreenmemsize: u16,
 }
 
-pub const VBEMODEINFO: *const VBEModeInfo = 0x5200 as *const VBEModeInfo;
+pub static mut VBEMODEINFO: Option<VBEModeInfo> = None;
+
+pub unsafe fn vbe_init(){
+    let mode_info = *(0x5200 as *const VBEModeInfo);
+    if mode_info.physbaseptr > 0 {
+        VBEMODEINFO = Some(mode_info);
+    }else{
+        VBEMODEINFO = None;
+    }
+}
 
 /// A display
 pub struct Display {
@@ -63,9 +72,7 @@ pub struct Display {
 
 impl Display {
     pub fn root() -> Option<Box<Self>> {
-        let mode_info = unsafe { &*VBEMODEINFO };
-
-        if mode_info.physbaseptr > 0 {
+        if let Some(mode_info) = unsafe { VBEMODEINFO } {
             let ret = box Display {
                 offscreen: unsafe { memory::alloc(mode_info.bytesperscanline as usize *
                                          mode_info.yresolution as usize) },
