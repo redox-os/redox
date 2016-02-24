@@ -282,10 +282,6 @@ impl KScheme for Rtl8139 {
             self.sync();
         }
     }
-
-    fn on_poll(&mut self) {
-        self.sync();
-    }
 }
 
 impl NetworkScheme for Rtl8139 {

@@ -230,8 +230,6 @@ impl KScheme for IntelHda {
             // d("HDA IRQ\n");
         }
     }
-
-    fn on_poll(&mut self) {}
 }
 
 impl IntelHda {

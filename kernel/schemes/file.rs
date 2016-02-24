@@ -242,12 +242,7 @@ impl FileScheme {
 impl KScheme for FileScheme {
     fn on_irq(&mut self, _irq: u8) {
         /*if irq == self.fs.disk.irq {
-            self.on_poll();
         }*/
-    }
-
-    fn on_poll(&mut self) {
-        //self.fs.disk.on_poll();
     }
 
     fn scheme(&self) -> &str {
