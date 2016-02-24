@@ -29,28 +29,25 @@ impl Resource for PipeRead {
         })
     }
 
-    fn path(&self, buf: &mut [u8]) -> Result <usize> {
+    fn path(&self, buf: &mut [u8]) -> Result<usize> {
         let path = b"pipe:r";
 
-        let mut i = 0;
-        while i < buf.len() && i < path.len() {
-            buf[i] = path[i];
-            i += 1;
+        for (b, p) in buf.iter_mut().zip(path.iter()) {
+            *b = *p;
         }
 
-        Ok(i)
+        Ok(cmp::min(buf.len(), path.len()))
     }
 
     fn read(&mut self, buf: &mut [u8]) -> Result<usize> {
         if Arc::weak_count(&self.vec) == 0 && self.vec.inner.lock().is_empty() {
             Ok(0)
         } else {
-            let mut i = 0;
-
-            if i < buf.len() {
-                buf[i] = self.vec.receive();
-                i += 1;
+            if !buf.is_empty() {
+                buf[0] = self.vec.receive();
             }
+
+            let mut i = 1;
 
             while i < buf.len() {
                 match self.vec.inner.lock().pop_front() {
@@ -87,7 +84,7 @@ impl Resource for PipeWrite {
         })
     }
 
-    fn path(&self, buf: &mut [u8]) -> Result <usize> {
+    fn path(&self, buf: &mut [u8]) -> Result<usize> {
         let path = b"pipe:w";
 
         for (b, p) in buf.iter_mut().zip(path.iter()) {
