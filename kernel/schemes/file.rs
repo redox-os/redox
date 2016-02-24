@@ -43,12 +43,8 @@ impl Resource for FileResource {
 
     fn path(&self, buf: &mut [u8]) -> Result<usize> {
         let path_a = b"file:/";
-        for (b, p) in buf.iter_mut().zip(path_a.iter()) {
-            *b = *p;
-        }
-
         let path_b = self.node.name.as_bytes();
-        for (b, p) in buf.iter_mut().skip(path_a.len()).zip(path_b.iter()) {
+        for (b, p) in buf.iter_mut().zip(path_a.iter().chain(path_b.iter())) {
             *b = *p;
         }
 
