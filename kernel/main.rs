@@ -130,8 +130,6 @@ fn idle_loop() {
     loop {
         unsafe { asm!("cli" : : : : "intel", "volatile"); }
 
-        env().on_poll();
-
         let mut halt = true;
 
         for context in env().contexts.lock().iter().skip(1) {
@@ -370,7 +368,9 @@ pub extern "cdecl" fn kernel(interrupt: usize, mut regs: &mut Regs) {
 
             unsafe { context_switch(); }
         }
-        i @ 0x21 ... 0x2F => env().on_irq(i as u8 - 0x20),
+        i @ 0x21 ... 0x2F => {
+            env().on_irq(i as u8 - 0x20);
+        },
         0x80 => syscall_handle(regs),
         0xFF => {
             unsafe {

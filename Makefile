@@ -195,14 +195,6 @@ filesystem/bin/launcher: crates/orbutils/src/launcher/main.rs crates/orbutils/sr
 	mkdir -p filesystem/bin
 	$(RUSTC) $(RUSTCFLAGS) --crate-type bin -o $@ $<
 
-filesystem/bin/init.rc: crates/init/init.rc
-	mkdir -p filesystem/etc
-	cp $< $@
-
-filesystem/bin/orbital.conf: crates/orbital/orbital.conf
-	mkdir -p filesystem/etc
-	cp $< $@
-
 bins: \
 	coreutils \
 	filesystem/bin/c-test \

@@ -735,7 +735,7 @@ impl Context {
     #[cold]
     #[inline(never)]
     pub unsafe fn switch_to(&mut self, next: &mut Context) {
-        asm!("xchg bx, bx" : : : "memory" : "intel", "volatile");
+        //asm!("xchg bx, bx" : : : "memory" : "intel", "volatile");
 
         asm!("fxsave [$0]" : : "r"(self.fx) : "memory" : "intel", "volatile");
         self.loadable = true;
@@ -769,7 +769,7 @@ impl Context {
     #[cold]
     #[inline(never)]
     pub unsafe fn switch_to(&mut self, next: &mut Context) {
-        asm!("xchg bx, bx" : : : "memory" : "intel", "volatile");
+        //asm!("xchg bx, bx" : : : "memory" : "intel", "volatile");
 
         asm!("fxsave [$0]" : : "r"(self.fx) : "memory" : "intel", "volatile");
         self.loadable = true;

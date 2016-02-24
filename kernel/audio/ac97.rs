@@ -202,8 +202,6 @@ impl KScheme for Ac97 {
             // d("AC97 IRQ\n");
         }
     }
-
-    fn on_poll(&mut self) {}
 }
 
 impl Ac97 {

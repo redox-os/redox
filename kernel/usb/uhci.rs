@@ -28,9 +28,6 @@ impl KScheme for Uhci {
             // d("UHCI IRQ\n");
         }
     }
-
-    fn on_poll(&mut self) {
-    }
 }
 
 #[repr(packed)]

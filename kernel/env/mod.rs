@@ -65,12 +65,6 @@ impl Environment {
         }
     }
 
-    pub fn on_poll(&self) {
-        for mut scheme in self.schemes.lock().iter_mut() {
-            scheme.on_poll();
-        }
-    }
-
     /// Open a new resource
     pub fn open(&self, url: &Url, flags: usize) -> Result<Box<Resource>> {
         let url_scheme = url.scheme();

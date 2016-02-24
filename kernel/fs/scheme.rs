@@ -367,10 +367,6 @@ impl KScheme for Scheme {
 
     }
 
-    fn on_poll(&mut self) {
-
-    }
-
     fn scheme(&self) -> &str {
         &self.name
     }

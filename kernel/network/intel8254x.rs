@@ -131,10 +131,6 @@ impl KScheme for Intel8254x {
             self.sync();
         }
     }
-
-    fn on_poll(&mut self) {
-        self.sync();
-    }
 }
 
 impl NetworkScheme for Intel8254x {
