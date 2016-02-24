@@ -22,3 +22,6 @@
 [submodule "crates/orbutils"]
 	path = crates/orbutils
 	url = https://github.com/redox-os/orbutils.git
+[submodule "crates/redoxfs"]
+	path = crates/redoxfs
+	url = https://github.com/redox-os/redoxfs.git
