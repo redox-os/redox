@@ -131,50 +131,53 @@ pub trait Hci {
                         if hid {
                             let this = self as *mut Hci;
                             Context::spawn("kuhci_hid".to_string(), box move || {
-                                debugln!("Starting HID driver");
+                                if let Some(mode_info) = VBEMODEINFO {
+                                    debugln!("Starting HID driver");
 
-                                let in_ptr = memory::alloc(in_len) as *mut u8;
+                                    let in_ptr = memory::alloc_aligned(in_len, 4096) as *mut u8;
 
-                                loop {
-                                    for i in 0..in_len as isize {
-                                        ptr::write(in_ptr.offset(i), 0);
-                                    }
-
-                                    if (*this).msg(address, endpoint, Pipe::Isochronous, &[
-                                        Packet::In(&mut slice::from_raw_parts_mut(in_ptr, in_len))
-                                    ]) > 0 {
-                                        let buttons = ptr::read(in_ptr.offset(0) as *const u8) as usize;
-                                        let x = ptr::read(in_ptr.offset(1) as *const u16) as usize;
-                                        let y = ptr::read(in_ptr.offset(3) as *const u16) as usize;
-
-                                        let mode_info = &*VBEMODEINFO;
-                                        let mouse_x = (x * mode_info.xresolution as usize) / 32768;
-                                        let mouse_y = (y * mode_info.yresolution as usize) / 32768;
-
-                                        let mouse_event = MouseEvent {
-                                            x: cmp::max(0, cmp::min(mode_info.xresolution as i32 - 1, mouse_x as i32)),
-                                            y: cmp::max(0, cmp::min(mode_info.yresolution as i32 - 1, mouse_y as i32)),
-                                            left_button: buttons & 1 == 1,
-                                            middle_button: buttons & 4 == 4,
-                                            right_button: buttons & 2 == 2,
-                                        };
-
-                                        if ::env().console.lock().draw {
-                                            //ignore mouse event
-                                        } else {
-                                            ::env().events.send(mouse_event.to_event());
+                                    loop {
+                                        for i in 0..in_len as isize {
+                                            ptr::write(in_ptr.offset(i), 0);
                                         }
+
+                                        if (*this).msg(address, endpoint, Pipe::Isochronous, &[
+                                            Packet::In(&mut slice::from_raw_parts_mut(in_ptr, in_len))
+                                        ]) > 0 {
+                                            let buttons = ptr::read(in_ptr.offset(0) as *const u8) as usize;
+                                            let x = ptr::read(in_ptr.offset(1) as *const u16) as usize;
+                                            let y = ptr::read(in_ptr.offset(3) as *const u16) as usize;
+
+                                            let mouse_x = (x * mode_info.xresolution as usize) / 32768;
+                                            let mouse_y = (y * mode_info.yresolution as usize) / 32768;
+
+                                            let mouse_event = MouseEvent {
+                                                x: cmp::max(0, cmp::min(mode_info.xresolution as i32 - 1, mouse_x as i32)),
+                                                y: cmp::max(0, cmp::min(mode_info.yresolution as i32 - 1, mouse_y as i32)),
+                                                left_button: buttons & 1 == 1,
+                                                middle_button: buttons & 4 == 4,
+                                                right_button: buttons & 2 == 2,
+                                            };
+
+                                            if ::env().console.lock().draw {
+                                                //ignore mouse event
+                                            } else {
+                                                ::env().events.send(mouse_event.to_event());
+                                            }
+                                        }
+
+                                        let req = TimeSpec {
+                                            tv_sec: 0,
+                                            tv_nsec: 10 * time::NANOS_PER_MILLI
+                                        };
+                                        let mut rem = TimeSpec {
+                                            tv_sec: 0,
+                                            tv_nsec: 0,
+                                        };
+                                        do_sys_nanosleep(&req, &mut rem).unwrap();
                                     }
 
-                                    let req = TimeSpec {
-                                        tv_sec: 0,
-                                        tv_nsec: 10 * time::NANOS_PER_MILLI
-                                    };
-                                    let mut rem = TimeSpec {
-                                        tv_sec: 0,
-                                        tv_nsec: 0,
-                                    };
-                                    do_sys_nanosleep(&req, &mut rem).unwrap();
+                                    //memory::unalloc(in_ptr as usize);
                                 }
                             });
                         }
