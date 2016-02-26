@@ -112,7 +112,7 @@ impl OrbitalScheme {
             *rect = rect.intersection(&screen_rect);
 
             if ! rect.is_empty() {
-                self.image.roi(&rect).set(Color::rgb(75, 163, 253));
+                //TODO: Allow background to have different size: self.image.roi(&rect).set(Color::rgb(75, 163, 253));
                 self.image.roi(&rect).blend(&self.background.roi(rect));
 
                 let mut i = self.order.len();
