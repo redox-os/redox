@@ -1,14 +1,31 @@
 //! IO
 
-use {fmt, str};
+use fmt;
 use string::String;
-use vec::{IntoIter, Vec};
+use vec::Vec;
 pub use system::error::Error;
 use system::syscall::{sys_read, sys_write};
 
 pub mod prelude;
 
 pub type Result<T> = ::core::result::Result<T, Error>;
+
+pub struct Bytes<R: Read> {
+    reader: R,
+}
+
+impl<R: Read> Iterator for Bytes<R> {
+    type Item = Result<u8>;
+
+    fn next(&mut self) -> Option<Result<u8>> {
+        let mut byte = [0];
+        match self.reader.read(&mut byte) {
+            Ok(0) => None,
+            Ok(_) => Some(Ok(byte[0])),
+            Err(err) => Some(Err(err))
+        }
+    }
+}
 
 /// Types you can read
 pub trait Read {
@@ -19,12 +36,12 @@ pub trait Read {
     fn read_to_end(&mut self, vec: &mut Vec<u8>) -> Result<usize> {
         let mut read = 0;
         loop {
-            let mut bytes = [0; 4096];
-            match self.read(&mut bytes) {
+            let mut buf = [0; 4096];
+            match self.read(&mut buf) {
                 Ok(0) => return Ok(read),
                 Err(err) => return Err(err),
                 Ok(count) => {
-                    vec.push_all(&bytes[0..count]);
+                    vec.extend_from_slice(&buf[0..count]);
                     read += count;
                 }
             }
@@ -35,12 +52,12 @@ pub trait Read {
     fn read_to_string(&mut self, string: &mut String) -> Result<usize> {
         let mut read = 0;
         loop {
-            let mut bytes = [0; 4096];
-            match self.read(&mut bytes) {
+            let mut buf = [0; 4096];
+            match self.read(&mut buf) {
                 Ok(0) => return Ok(read),
                 Err(err) => return Err(err),
                 Ok(count) => {
-                    string.push_str(unsafe { &str::from_utf8_unchecked(&bytes[0..count]) });
+                    unsafe { string.as_mut_vec().extend_from_slice(&buf[.. count]); }
                     read += count;
                 }
             }
@@ -48,12 +65,10 @@ pub trait Read {
     }
 
     /// Return an iterator of the bytes
-    fn bytes(&mut self) -> IntoIter<u8> {
-        // TODO: This is only a temporary implementation. Make this read one byte at a time.
-        let mut buf = Vec::new();
-        self.read_to_end(&mut buf);
-
-        buf.into_iter()
+    fn bytes(self) -> Bytes<Self> where Self: Sized {
+        Bytes {
+            reader: self,
+        }
     }
 }
 
@@ -89,6 +104,22 @@ pub trait Seek {
     fn seek(&mut self, pos: SeekFrom) -> Result<u64>;
 }
 
+pub fn copy<R: ?Sized, W: ?Sized>(reader: &mut R, writer: &mut W) -> Result<u64> where R: Read, W: Write {
+    let mut copied = 0;
+    loop {
+        let mut bytes = [0; 4096];
+        match reader.read(&mut bytes) {
+            Ok(0) => return Ok(copied),
+            Err(err) => return Err(err),
+            Ok(count) => match writer.write(&bytes[.. count]){
+                Ok(0) => return Ok(copied),
+                Err(err) => return Err(err),
+                Ok(count) => copied += count as u64
+            }
+        }
+    }
+}
+
 /// Standard Input
 pub struct Stdin;
 
@@ -99,16 +130,19 @@ pub fn stdin() -> Stdin {
 
 impl Stdin {
     pub fn read_line(&mut self, string: &mut String) -> Result<usize> {
-        let mut read = 0;
+        let mut i = 0;
         loop {
-            let mut bytes = [0; 4096];
-            match self.read(&mut bytes) {
-                Ok(0) => return Ok(read),
-                Err(err) => return Err(err),
-                Ok(count) => {
-                    string.push_str(unsafe { &str::from_utf8_unchecked(&bytes[0..count]) });
-                    read += count;
-                }
+            let mut byte = [0];
+            match sys_read(0, &mut byte) {
+                Ok(0) => return Ok(i),
+                Ok(_) => {
+                    unsafe { string.as_mut_vec().push(byte[0]) };
+                    i += 1;
+                    if byte[0] == b'\n' {
+                        return Ok(i);
+                    }
+                },
+                Err(err) => return Err(err)
             }
         }
     }
@@ -117,7 +151,7 @@ impl Stdin {
 /// Read implementation for standard input
 impl Read for Stdin {
     fn read(&mut self, buf: &mut [u8]) -> Result<usize> {
-        Error::demux(unsafe { sys_read(0, buf.as_mut_ptr(), buf.len()) })
+        sys_read(0, buf)
     }
 }
 
@@ -132,7 +166,7 @@ pub fn stdout() -> Stdout {
 /// Write implementation for standard output
 impl Write for Stdout {
     fn write(&mut self, buf: &[u8]) -> Result<usize> {
-        Error::demux(unsafe { sys_write(1, buf.as_ptr(), buf.len()) })
+        sys_write(1, buf)
     }
 }
 
@@ -147,7 +181,7 @@ pub fn stderr() -> Stderr {
 /// Write implementation for standard error
 impl Write for Stderr {
     fn write(&mut self, buf: &[u8]) -> Result<usize> {
-        Error::demux(unsafe { sys_write(2, buf.as_ptr(), buf.len()) })
+        sys_write(2, buf)
     }
 }
 

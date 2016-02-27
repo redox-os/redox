@@ -1,4 +1,4 @@
-use common::memory;
+use arch::memory;
 
 use core::mem::size_of;
 use core::u32;
@@ -7,9 +7,7 @@ use disk::Disk;
 
 use drivers::io::{Io, Mmio};
 
-use schemes::Result;
-
-use syscall::{Error, EIO};
+use system::error::{Error, Result, EIO};
 
 use super::fis::{FIS_TYPE_REG_H2D, FisRegH2D};
 

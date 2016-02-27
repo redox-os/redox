@@ -55,6 +55,10 @@ archLinux()
 	echo "Detected Arch Linux"
 	echo "Updating system..."
 	sudo pacman -Syu
+    if [ -z "$(which nasm)" ]; then
+        echo "Installing nasm..."
+        sudo pacman -S nasm
+    fi
 	if [ -z "$(which git)" ]; then
 		echo "Installing git..."
 		sudo pacman -S git

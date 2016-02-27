@@ -1,14 +1,16 @@
+use arch::context::Context;
+use arch::memory;
+
 use collections::string::ToString;
 
 use common::event::MouseEvent;
-use common::memory;
-use common::time::{self, Duration};
+use common::time;
 
-use core::{cmp, mem, ptr, slice, str};
+use core::{cmp, mem, ptr, slice};
 
 use graphics::display::VBEMODEINFO;
 
-use scheduler::Context;
+use syscall::{do_sys_nanosleep, TimeSpec};
 
 use super::{Packet, Pipe, Setup};
 use super::desc::*;
@@ -41,7 +43,7 @@ pub trait Hci {
                         0,
                         (&mut *desc_dev as *mut DeviceDescriptor) as usize,
                         mem::size_of_val(&*desc_dev));
-        debugln!("{:#?}", *desc_dev);
+        //debugln!("{:#?}", *desc_dev);
 
         if desc_dev.manufacturer_string > 0 {
             let mut desc_str = box StringDescriptor::default();
@@ -86,7 +88,7 @@ pub trait Hci {
                             desc_cfg_len);
 
             let desc_cfg = ptr::read(desc_cfg_buf as *const ConfigDescriptor);
-            debugln!("{:#?}", desc_cfg);
+            //debugln!("{:#?}", desc_cfg);
 
             if desc_cfg.string > 0 {
                 let mut desc_str = box StringDescriptor::default();
@@ -95,7 +97,7 @@ pub trait Hci {
                                 desc_cfg.string,
                                 (&mut *desc_str as *mut StringDescriptor) as usize,
                                 mem::size_of_val(&*desc_str));
-                debugln!("Configuration: {}", desc_str.str());
+                //debugln!("Configuration: {}", desc_str.str());
             }
 
             let mut hid = false;
@@ -107,7 +109,7 @@ pub trait Hci {
                 match descriptor_type {
                     DESC_INT => {
                         let desc_int = ptr::read(desc_cfg_buf.offset(i) as *const InterfaceDescriptor);
-                        debugln!("{:#?}", desc_int);
+                        //debugln!("{:#?}", desc_int);
 
                         if desc_int.string > 0 {
                             let mut desc_str = box StringDescriptor::default();
@@ -116,12 +118,12 @@ pub trait Hci {
                                             desc_int.string,
                                             (&mut *desc_str as *mut StringDescriptor) as usize,
                                             mem::size_of_val(&*desc_str));
-                            debugln!("Interface: {}", desc_str.str());
+                            //debugln!("Interface: {}", desc_str.str());
                         }
                     }
                     DESC_END => {
                         let desc_end = ptr::read(desc_cfg_buf.offset(i) as *const EndpointDescriptor);
-                        debugln!("{:#?}", desc_end);
+                        //debugln!("{:#?}", desc_end);
 
                         let endpoint = desc_end.address & 0xF;
                         let in_len = desc_end.max_packet_size as usize;
@@ -129,44 +131,60 @@ pub trait Hci {
                         if hid {
                             let this = self as *mut Hci;
                             Context::spawn("kuhci_hid".to_string(), box move || {
-                                debugln!("Starting HID driver");
+                                if let Some(mode_info) = VBEMODEINFO {
+                                    debugln!("Starting HID driver");
 
-                                let in_ptr = memory::alloc(in_len) as *mut u8;
+                                    let in_ptr = memory::alloc_aligned(in_len, 4096) as *mut u8;
 
-                                loop {
-                                    for i in 0..in_len as isize {
-                                        ptr::write(in_ptr.offset(i), 0);
-                                    }
+                                    loop {
+                                        for i in 0..in_len as isize {
+                                            ptr::write(in_ptr.offset(i), 0);
+                                        }
 
-                                    if (*this).msg(address, endpoint, Pipe::Isochronous, &[
-                                        Packet::In(&mut slice::from_raw_parts_mut(in_ptr, in_len))
-                                    ]) > 0 {
-                                        let buttons = ptr::read(in_ptr.offset(0) as *const u8) as usize;
-                                        let x = ptr::read(in_ptr.offset(1) as *const u16) as usize;
-                                        let y = ptr::read(in_ptr.offset(3) as *const u16) as usize;
+                                        if (*this).msg(address, endpoint, Pipe::Isochronous, &[
+                                            Packet::In(&mut slice::from_raw_parts_mut(in_ptr, in_len))
+                                        ]) > 0 {
+                                            let buttons = ptr::read(in_ptr.offset(0) as *const u8) as usize;
+                                            let x = ptr::read(in_ptr.offset(1) as *const u16) as usize;
+                                            let y = ptr::read(in_ptr.offset(3) as *const u16) as usize;
 
-                                        let mode_info = &*VBEMODEINFO;
-                                        let mouse_x = (x * mode_info.xresolution as usize) / 32768;
-                                        let mouse_y = (y * mode_info.yresolution as usize) / 32768;
+                                            let mouse_x = (x * mode_info.xresolution as usize) / 32768;
+                                            let mouse_y = (y * mode_info.yresolution as usize) / 32768;
 
-                                        let mouse_event = MouseEvent {
-                                            x: cmp::max(0, cmp::min(mode_info.xresolution as i32 - 1, mouse_x as i32)),
-                                            y: cmp::max(0, cmp::min(mode_info.yresolution as i32 - 1, mouse_y as i32)),
-                                            left_button: buttons & 1 == 1,
-                                            middle_button: buttons & 4 == 4,
-                                            right_button: buttons & 2 == 2,
+                                            let mouse_event = MouseEvent {
+                                                x: cmp::max(0, cmp::min(mode_info.xresolution as i32 - 1, mouse_x as i32)),
+                                                y: cmp::max(0, cmp::min(mode_info.yresolution as i32 - 1, mouse_y as i32)),
+                                                left_button: buttons & 1 == 1,
+                                                middle_button: buttons & 4 == 4,
+                                                right_button: buttons & 2 == 2,
+                                            };
+
+                                            if ::env().console.lock().draw {
+                                                //ignore mouse event
+                                            } else {
+                                                ::env().events.send(mouse_event.to_event());
+                                            }
+                                        }
+
+                                        let req = TimeSpec {
+                                            tv_sec: 0,
+                                            tv_nsec: 10 * time::NANOS_PER_MILLI
                                         };
-                                        ::env().events.lock().push_back(mouse_event.to_event());
+                                        let mut rem = TimeSpec {
+                                            tv_sec: 0,
+                                            tv_nsec: 0,
+                                        };
+                                        do_sys_nanosleep(&req, &mut rem).unwrap();
                                     }
 
-                                    Duration::new(0, 10 * time::NANOS_PER_MILLI).sleep();
+                                    //memory::unalloc(in_ptr as usize);
                                 }
                             });
                         }
                     }
                     DESC_HID => {
-                        let desc_hid = &*(desc_cfg_buf.offset(i) as *const HIDDescriptor);
-                        debugln!("{:#?}", desc_hid);
+                        //let desc_hid = &*(desc_cfg_buf.offset(i) as *const HIDDescriptor);
+                        //debugln!("{:#?}", desc_hid);
                         hid = true;
                     }
                     _ => {

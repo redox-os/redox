@@ -1,9 +1,11 @@
-use io::Result;
+use boxed::Box;
+use io::{Result, Read, Write};
+use ops::DerefMut;
 use string::{String, ToString};
 use vec::Vec;
 
 use system::error::Error;
-use system::syscall::{sys_clone, sys_execve, sys_spawnve, sys_exit, sys_waitpid, CLONE_VM, CLONE_VFORK};
+use system::syscall::{sys_clone, sys_close, sys_dup, sys_execve, sys_exit, sys_pipe2, sys_read, sys_write, sys_waitpid, CLONE_VM, CLONE_VFORK};
 
 pub struct ExitStatus {
     status: usize,
@@ -19,8 +21,41 @@ impl ExitStatus {
     }
 }
 
+pub struct ChildStdin {
+    fd: usize,
+}
+
+impl Write for ChildStdin {
+    fn write(&mut self, buf: &[u8]) -> Result<usize> {
+        sys_write(self.fd, buf)
+    }
+}
+
+pub struct ChildStdout {
+    fd: usize,
+}
+
+impl Read for ChildStdout {
+    fn read(&mut self, buf: &mut [u8]) -> Result<usize> {
+        sys_read(self.fd, buf)
+    }
+}
+
+pub struct ChildStderr {
+    fd: usize,
+}
+
+impl Read for ChildStderr {
+    fn read(&mut self, buf: &mut [u8]) -> Result<usize> {
+        sys_read(self.fd, buf)
+    }
+}
+
 pub struct Child {
-    pid: isize,
+    pid: usize,
+    pub stdin: Option<ChildStdin>,
+    pub stdout: Option<ChildStdout>,
+    pub stderr: Option<ChildStderr>,
 }
 
 impl Child {
@@ -30,18 +65,16 @@ impl Child {
 
     pub fn wait(&mut self) -> Result<ExitStatus> {
         let mut status: usize = 0;
-        let result = unsafe { sys_waitpid(self.pid, &mut status, 0) } as isize;
-        if result >= 0 {
-            Ok(ExitStatus { status: status })
-        } else {
-            Err(Error::new(-result))
-        }
+        sys_waitpid(self.pid, &mut status, 0).map(|_| ExitStatus { status: status })
     }
 }
 
 pub struct Command {
     pub path: String,
     pub args: Vec<String>,
+    stdin: Stdio,
+    stdout: Stdio,
+    stderr: Stdio,
 }
 
 impl Command {
@@ -49,6 +82,9 @@ impl Command {
         Command {
             path: path.to_string(),
             args: Vec::new(),
+            stdin: Stdio::inherit(),
+            stdout: Stdio::inherit(),
+            stderr: Stdio::inherit(),
         }
     }
 
@@ -57,7 +93,24 @@ impl Command {
         self
     }
 
+    pub fn stdin(&mut self, cfg: Stdio) -> &mut Command {
+        self.stdin = cfg;
+        self
+    }
+
+    pub fn stdout(&mut self, cfg: Stdio) -> &mut Command {
+        self.stdout = cfg;
+        self
+    }
+
+    pub fn stderr(&mut self, cfg: Stdio) -> &mut Command {
+        self.stderr = cfg;
+        self
+    }
+
     pub fn spawn(&mut self) -> Result<Child> {
+        let mut res = Box::new(0);
+
         let path_c = self.path.to_string() + "\0";
 
         let mut args_vec: Vec<String> = Vec::new();
@@ -71,40 +124,135 @@ impl Command {
         }
         args_c.push(0 as *const u8);
 
-        let pid = unsafe { sys_clone(CLONE_VM | CLONE_VFORK) } as isize;
-        if pid == 0 {
-            unsafe {
-                sys_execve(path_c.as_ptr(), args_c.as_ptr());
-                loop {
-                    sys_exit(127);
-                }
+        let child_res = res.deref_mut() as *mut usize;
+        let child_stderr = self.stderr.inner;
+        let child_stdout = self.stdout.inner;
+        let child_stdin = self.stdin.inner;
+        let child_code = move || -> Result<usize> {
+            match child_stderr {
+                StdioType::Piped(_read, write) => {
+                    try!(sys_close(2));
+                    try!(sys_dup(write));
+                },
+                StdioType::Null => {
+                    try!(sys_close(2));
+                },
+                _ => ()
             }
-        } else if pid > 0 {
-            Ok(Child { pid: pid })
+
+            match child_stdout {
+                StdioType::Piped(_read, write) => {
+                    try!(sys_close(1));
+                    try!(sys_dup(write));
+                },
+                StdioType::Null => {
+                    try!(sys_close(1));
+                },
+                _ => ()
+            }
+
+            match child_stdin {
+                StdioType::Piped(read, _write) => {
+                    try!(sys_close(0));
+                    try!(sys_dup(read));
+                },
+                StdioType::Null => {
+                    try!(sys_close(0));
+                },
+                _ => ()
+            }
+
+            unsafe { sys_execve(path_c.as_ptr(), args_c.as_ptr()) }
+        };
+
+        let parent_code = move |pid: usize| -> Result<Child> {
+            if let Err(err) = Error::demux(*res) {
+                Err(err)
+            } else {
+                Ok(Child {
+                    pid: pid,
+                    stdin: match self.stdin.inner {
+                        StdioType::Piped(_read, write) => {
+                            Some(ChildStdin {
+                                fd: write
+                            })
+                        },
+                        _ => None
+                    },
+                    stdout: match self.stdout.inner {
+                        StdioType::Piped(read, _write) => {
+                            Some(ChildStdout {
+                                fd: read
+                            })
+                        },
+                        _ => None
+                    },
+                    stderr: match self.stderr.inner {
+                        StdioType::Piped(read, _write) => {
+                            Some(ChildStderr {
+                                fd: read
+                            })
+                        },
+                        _ => None
+                    }
+                })
+            }
+        };
+
+        match unsafe { sys_clone(CLONE_VM | CLONE_VFORK) } {
+            Ok(0) => {
+                let error = child_code();
+
+                unsafe { *child_res = Error::mux(error); }
+
+                loop {
+                    let _ = sys_exit(127);
+                }
+            },
+            Ok(pid) => parent_code(pid),
+            Err(err) => Err(err)
+        }
+    }
+}
+
+#[derive(Copy, Clone)]
+enum StdioType {
+    Piped(usize, usize),
+    Inherit,
+    Null,
+}
+
+pub struct Stdio {
+    inner: StdioType,
+}
+
+impl Stdio {
+    pub fn piped() -> Stdio {
+        let mut fds = [0; 2];
+        if unsafe { sys_pipe2(fds.as_mut_ptr(), 0).is_ok() } {
+            Stdio {
+                inner: StdioType::Piped(fds[0], fds[1])
+            }
         } else {
-            Err(Error::new(-pid))
+            Stdio::null()
         }
     }
 
-    pub fn spawn_scheme(&mut self) -> Option<Child> {
-        let path_c = self.path.to_string() + "\0";
-
-        let mut args_vec: Vec<String> = Vec::new();
-        for arg in self.args.iter() {
-            args_vec.push(arg.to_string() + "\0");
+    pub fn inherit() -> Stdio {
+        Stdio {
+            inner: StdioType::Inherit
         }
+    }
 
-        let mut args_c: Vec<*const u8> = Vec::new();
-        for arg_vec in args_vec.iter() {
-            args_c.push(arg_vec.as_ptr());
+    pub fn null() -> Stdio {
+        Stdio {
+            inner: StdioType::Null
         }
-        args_c.push(0 as *const u8);
+    }
+}
 
-        let pid = unsafe { sys_spawnve(path_c.as_ptr(), args_c.as_ptr()) } as isize;
-        if pid > 0 {
-            Some(Child { pid: pid })
-        } else {
-            None
-        }
+pub fn exit(code: i32) -> ! {
+    loop {
+        let _ = sys_exit(code as usize);
     }
 }

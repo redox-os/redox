@@ -5,6 +5,7 @@
 //! support and windowing, a basic filesystem, audio support, a simple console
 //! with shell style functions, an event system, and environment argument support.
 
+#![crate_name="std"]
 #![crate_type="rlib"]
 #![feature(alloc)]
 #![feature(allocator)]
@@ -28,18 +29,19 @@
 #![feature(unicode)]
 #![feature(unsafe_no_drop_flag)]
 #![feature(box_patterns)]
-#![feature(vec_push_all)]
 #![feature(prelude_import)]
 #![feature(old_wrapping)]
 #![feature(type_ascription)]
 #![feature(oom)]
 #![feature(unique)]
 #![feature(heap_api)]
-#![feature(wrapping)]
 #![feature(filling_drop)]
 #![no_std]
 
-// #![warn(missing_docs)]
+#![allow(deprecated)]
+// TODO
+//#![deny(missing_docs)]
+#![deny(warnings)]
 
 // STD COPY {
 // We want to reexport a few macros from core but libcore has already been
@@ -164,7 +166,6 @@ pub mod rt;
 pub use __core::panicking;
 
 pub mod rand_old;
-pub mod hashmap;
 
 // Some external utilities of the standard library rely on randomness (aka
 // rustc_back::TempDir and tests) and need a way to get at the OS rng we've got

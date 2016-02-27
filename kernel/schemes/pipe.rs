@@ -1,27 +1,23 @@
 use alloc::arc::{Arc, Weak};
 use alloc::boxed::Box;
 
-use collections::vec_deque::VecDeque;
+use core::cmp;
 
-use schemes::{Result, Resource, Url};
+use fs::Resource;
 
-use scheduler::context::context_switch;
+use sync::WaitQueue;
 
-use sync::Intex;
-
-use syscall::{Error, EPIPE};
+use system::error::{Error, Result, EPIPE};
 
 /// Read side of a pipe
 pub struct PipeRead {
-    vec: Arc<Intex<VecDeque<u8>>>,
-    eof_toggle: bool,
+    vec: Arc<WaitQueue<u8>>
 }
 
 impl PipeRead {
     pub fn new() -> Self {
         PipeRead {
-            vec: Arc::new(Intex::new(VecDeque::new())),
-            eof_toggle: false,
+            vec: Arc::new(WaitQueue::new())
         }
     }
 }
@@ -30,51 +26,47 @@ impl Resource for PipeRead {
     fn dup(&self) -> Result<Box<Resource>> {
         Ok(box PipeRead {
             vec: self.vec.clone(),
-            eof_toggle: self.eof_toggle,
         })
     }
 
-    fn url(&self) -> Url {
-        return Url::from_str("pipe:r");
+    fn path(&self, buf: &mut [u8]) -> Result<usize> {
+        let path = b"pipe:r";
+
+        for (b, p) in buf.iter_mut().zip(path.iter()) {
+            *b = *p;
+        }
+
+        Ok(cmp::min(buf.len(), path.len()))
     }
 
     fn read(&mut self, buf: &mut [u8]) -> Result<usize> {
-        if self.eof_toggle {
-            self.eof_toggle = false;
-            return Ok(0);
-        }
+        if Arc::weak_count(&self.vec) == 0 && self.vec.inner.lock().is_empty() {
+            Ok(0)
+        } else {
+            if !buf.is_empty() {
+                buf[0] = self.vec.receive();
+            }
 
-        loop {
-            {
-                let mut vec = self.vec.lock();
-                if vec.is_empty() {
-                    if Arc::weak_count(&self.vec) == 0 {
-                        return Ok(0);
-                    }
-                } else {
-                    let mut i = 0;
-                    while i < buf.len() {
-                        match vec.pop_front() {
-                            Some(b) => {
-                                buf[i] = b;
-                                i += 1;
-                            },
-                            None => break
-                        }
-                    }
-                    self.eof_toggle = true;
-                    return Ok(i);
+            let mut i = 1;
+
+            while i < buf.len() {
+                match self.vec.inner.lock().pop_front() {
+                    Some(b) => {
+                        buf[i] = b;
+                        i += 1;
+                    },
+                    None => break
                 }
             }
 
-            unsafe { context_switch(false) };
+            Ok(i)
         }
     }
 }
 
 /// Read side of a pipe
 pub struct PipeWrite {
-    vec: Weak<Intex<VecDeque<u8>>>,
+    vec: Weak<WaitQueue<u8>>,
 }
 
 impl PipeWrite {
@@ -92,20 +84,24 @@ impl Resource for PipeWrite {
         })
     }
 
-    fn url(&self) -> Url {
-        return Url::from_str("pipe:w");
+    fn path(&self, buf: &mut [u8]) -> Result<usize> {
+        let path = b"pipe:w";
+
+        for (b, p) in buf.iter_mut().zip(path.iter()) {
+            *b = *p;
+        }
+
+        Ok(cmp::min(buf.len(), path.len()))
     }
 
     fn write(&mut self, buf: &[u8]) -> Result<usize> {
         match self.vec.upgrade() {
-            Some(vec_intex) => {
-                let mut vec = vec_intex.lock();
-                let mut i = 0;
-                while i < buf.len() {
-                    vec.push_back(buf[i]);
-                    i += 1;
+            Some(vec) => {
+                for &b in buf.iter() {
+                    vec.send(b);
                 }
-                Ok(i)
+
+                Ok(buf.len())
             },
             None => Err(Error::new(EPIPE))
         }

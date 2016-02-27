@@ -2,9 +2,11 @@ use alloc::boxed::Box;
 
 use collections::string::String;
 
-use scheduler::context;
+use arch::context;
 
-use schemes::{Result, KScheme, Resource, Url, VecResource};
+use fs::{KScheme, Resource, Url, VecResource};
+
+use system::error::Result;
 
 pub struct ContextScheme;
 
@@ -14,9 +16,10 @@ impl KScheme for ContextScheme {
     }
 
     fn open(&mut self, _: &Url, _: usize) -> Result<Box<Resource>> {
-        let mut string = format!("{:<6}{:<6}{:<8}{:<8}{:<6}{:<6}{}",
+        let mut string = format!("{:<6}{:<6}{:<8}{:<8}{:<8}{:<6}{:<6}{}\n",
                                  "PID",
                                  "PPID",
+                                 "SWITCH",
                                  "TIME",
                                  "MEM",
                                  "FDS",
@@ -54,26 +57,31 @@ impl KScheme for ContextScheme {
                 } else {
                     flags_string.push('K');
                 }
-                if context.interrupted {
-                    flags_string.push('I');
+                if context.blocked {
+                    flags_string.push('B');
                 }
                 if context.exited {
                     flags_string.push('E');
                 }
+                if context.vfork.is_some() {
+                    flags_string.push('V');
+                }
+                if context.wake.is_some() {
+                    flags_string.push('S');
+                }
 
-                let line = format!("{:<6}{:<6}{:<8}{:<8}{:<6}{:<6}{}",
+                string.push_str(&format!("{:<6}{:<6}{:<8}{:<8}{:<8}{:<6}{:<6}{}\n",
                                    context.pid,
                                    context.ppid,
-                                   context.slice_total,
+                                   context.switch,
+                                   context.time,
                                    memory_string,
                                    unsafe { (*context.files.get()).len() },
                                    flags_string,
-                                   context.name);
-
-                string = string + "\n" + &line;
+                                   context.name));
             }
         }
 
-        Ok(box VecResource::new(Url::from_str("context:"), string.into_bytes()))
+        Ok(box VecResource::new("context:", string.into_bytes()))
     }
 }

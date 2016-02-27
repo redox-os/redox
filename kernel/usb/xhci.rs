@@ -1,3 +1,7 @@
+use alloc::boxed::Box;
+
+use arch::memory::*;
+
 use drivers::pci::config::PciConfig;
 
 use core::mem::size_of;
@@ -5,9 +9,8 @@ use core::mem::size_of;
 use common::debug;
 //For old code vvv
 use common::debug::*;
-use common::memory::*;
 
-use schemes::KScheme;
+use fs::KScheme;
 
 #[repr(packed)]
 struct Ste {
@@ -43,7 +46,6 @@ impl Trb {
 pub struct Xhci {
     pub pci: PciConfig,
     pub base: usize,
-    pub memory_mapped: bool,
     pub irq: u8,
 }
 
@@ -56,14 +58,19 @@ impl KScheme for Xhci {
 }
 
 impl Xhci {
+    pub unsafe fn new(mut pci: PciConfig) -> Box<Xhci> {
+        let mut module = box Xhci {
+            pci: pci,
+            base: pci.read(0x10) as usize & 0xFFFFFFF0,
+            irq: pci.read(0x3C) as u8 & 0xF,
+        };
+        module.init();
+        module
+    }
+
     pub unsafe fn init(&mut self) {
         debug::d("XHCI on: ");
         debug::dh(self.base);
-        if self.memory_mapped {
-            debug::d(" memory mapped");
-        } else {
-            debug::d(" port mapped");
-        }
         debug::d(" IRQ: ");
         debug::dbh(self.irq);
         debug::dl();

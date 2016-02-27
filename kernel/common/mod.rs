@@ -1,22 +1,10 @@
 /// Debug
 #[macro_use]
 pub mod debug;
-/// ELF File Support
-pub mod elf;
 /// Event input
 pub mod event;
-/// Get slice implementation
-pub mod get_slice;
-/// Kernel memory allocation
-pub mod memory;
-/// Paging (x86)
-#[cfg(target_arch = "x86")]
-#[path="paging-i386.rs"]
-pub mod paging;
-/// Paging (x86_64)
-#[cfg(target_arch = "x86_64")]
-#[path="paging-x86_64.rs"]
-pub mod paging;
+/// Slice-related traits
+pub mod slice;
 /// A module for parsing paths
 pub mod parse_path;
 /// A module for parsing IP related string

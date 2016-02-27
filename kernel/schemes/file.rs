@@ -1,10 +1,14 @@
-use common::get_slice::GetSlice;
+use common::slice::GetSlice;
 
 use alloc::boxed::Box;
+
+use arch::memory::Memory;
 
 use collections::slice;
 use collections::string::{String, ToString};
 use collections::vec::Vec;
+
+use common::debug;
 
 use core::cmp;
 
@@ -13,14 +17,9 @@ use disk::ide::Extent;
 
 use fs::redoxfs::{FileSystem, Node, NodeData};
 
-use common::debug;
-use common::memory::Memory;
+use fs::{KScheme, Resource, ResourceSeek, Url, VecResource};
 
-use schemes::{Result, KScheme, Resource, ResourceSeek, Url, VecResource};
-
-use sync::Intex;
-
-use syscall::{Error, O_CREAT, ENOENT, EIO};
+use syscall::{Error, Result, O_CREAT, ENOENT, EIO};
 
 /// A file resource
 pub struct FileResource {
@@ -42,8 +41,14 @@ impl Resource for FileResource {
         })
     }
 
-    fn url(&self) -> Url {
-        Url::from_string("file:/".to_string() + &self.node.name)
+    fn path(&self, buf: &mut [u8]) -> Result<usize> {
+        let path_a = b"file:/";
+        let path_b = self.node.name.as_bytes();
+        for (b, p) in buf.iter_mut().zip(path_a.iter().chain(path_b.iter())) {
+            *b = *p;
+        }
+
+        Ok(cmp::min(buf.len(), path_a.len() + path_b.len()))
     }
 
     fn read(&mut self, buf: &mut [u8]) -> Result<usize> {
@@ -105,8 +110,6 @@ impl Resource for FileResource {
                     debug::dl();
 
                     unsafe {
-                        let _intex = Intex::static_lock();
-
                         let sectors = ((remaining + 511) / 512) as u64;
                         if (*self.scheme).fs.header.free_space.length >= sectors * 512 {
                             extent.block = (*self.scheme).fs.header.free_space.block;
@@ -146,7 +149,7 @@ impl Resource for FileResource {
                     }
 
                     unsafe {
-                        (*self.scheme).fs.disk.write(extent.block, &self.vec[pos .. pos + max_size]);
+                        let _ = (*self.scheme).fs.disk.write(extent.block, &self.vec[pos .. pos + max_size]);
                     }
 
                     self.vec.truncate(pos + size);
@@ -165,17 +168,13 @@ impl Resource for FileResource {
                             node_data.write(0, self.node.data());
 
                             let mut buffer = slice::from_raw_parts(node_data.address() as *mut u8, 512);
-                            (*self.scheme).fs.disk.write(self.node.block, &mut buffer);
+                            let _ = (*self.scheme).fs.disk.write(self.node.block, &mut buffer);
 
                             debug::d("Renode\n");
 
-                            {
-                                let _intex = Intex::static_lock();
-
-                                for mut node in (*self.scheme).fs.nodes.iter_mut() {
-                                    if node.block == self.node.block {
-                                        *node = self.node.clone();
-                                    }
+                            for mut node in (*self.scheme).fs.nodes.iter_mut() {
+                                if node.block == self.node.block {
+                                    *node = self.node.clone();
                                 }
                             }
                         }
@@ -233,14 +232,9 @@ impl FileScheme {
 }
 
 impl KScheme for FileScheme {
-    fn on_irq(&mut self, irq: u8) {
+    fn on_irq(&mut self, _irq: u8) {
         /*if irq == self.fs.disk.irq {
-            self.on_poll();
         }*/
-    }
-
-    fn on_poll(&mut self) {
-        //self.fs.disk.on_poll();
     }
 
     fn scheme(&self) -> &str {
@@ -287,7 +281,7 @@ impl KScheme for FileScheme {
             }
 
             if list.len() > 0 {
-                Ok(box VecResource::new(url.clone(), list.into_bytes()))
+                Ok(box VecResource::new(&url.string, list.into_bytes()))
             } else {
                 Err(Error::new(ENOENT))
             }
@@ -308,7 +302,7 @@ impl KScheme for FileScheme {
                                 vec.push(0);
                             }
 
-                            self.fs.disk.read(extent.block, &mut vec[pos..pos + max_size]);
+                            let _ = self.fs.disk.read(extent.block, &mut vec[pos..pos + max_size]);
 
                             vec.truncate(pos + size);
                         }

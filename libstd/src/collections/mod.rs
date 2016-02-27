@@ -367,28 +367,9 @@ pub use core_collections::{LinkedList, VecDeque};
 pub use core_collections::{binary_heap, btree_map, btree_set};
 pub use core_collections::{linked_list, vec_deque};
 
-// pub use self::hash_map::HashMap;
-// pub use self::hash_set::HashSet;
-//
-// pub mod hash;
-//
-// #[stable(feature = "rust1", since = "1.0.0")]
-// pub mod hash_map {
-// A hashmap
-// pub use super::hash::map::*;
-// }
-//
-// #[stable(feature = "rust1", since = "1.0.0")]
-// pub mod hash_set {
-// A hashset
-// pub use super::hash::set::*;
-// }
-//
-// Experimental support for providing custom hash algorithms to a HashMap and
-// HashSet.
-// #[unstable(feature = "hashmap_hasher", reason = "module was recently added",
-// issue = "27713")]
-// pub mod hash_state {
-// pub use super::hash::state::*;
-// }
-//
+pub use self::hash_map::HashMap;
+pub use self::hash_set::HashSet;
+
+pub mod hash_map;
+pub mod hash_set;
+pub mod hash_state;

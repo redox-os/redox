@@ -4,21 +4,21 @@ pub struct Error {
     errno: isize,
 }
 
-pub type Result = result::Result<usize, Error>;
+pub type Result<T> = result::Result<T, Error>;
 
 impl Error {
     pub fn new(errno: isize) -> Error {
         Error { errno: errno }
     }
 
-    pub fn mux(result: Result) -> usize {
+    pub fn mux(result: Result<usize>) -> usize {
         match result {
             Ok(value) => value,
             Err(error) => -error.errno as usize,
         }
     }
 
-    pub fn demux(value: usize) -> Result {
+    pub fn demux(value: usize) -> Result<usize> {
         let errno = -(value as isize);
         if errno >= 1 && errno < STR_ERROR.len() as isize {
             Err(Error::new(errno))

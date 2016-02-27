@@ -57,6 +57,7 @@ use result::Result::{self, Ok, Err};
 use raw::TraitObject;
 use str;
 use string::{self, String};
+use system;
 
 /// Base functionality for all errors in Rust.
 pub trait Error: Debug + Display + Reflect {
@@ -138,6 +139,7 @@ impl Error for num::ParseIntError {
     }
 }
 
+#[cfg(not(disable_float))]
 impl Error for num::ParseFloatError {
     fn description(&self) -> &str {
         self.__description()
@@ -153,6 +155,12 @@ impl Error for string::FromUtf8Error {
 impl Error for string::FromUtf16Error {
     fn description(&self) -> &str {
         "invalid utf-16"
+    }
+}
+
+impl Error for system::error::Error {
+    fn description(&self) -> &str {
+        self.text()
     }
 }
 
