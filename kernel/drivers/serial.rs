@@ -1,11 +1,12 @@
 use alloc::boxed::Box;
-use env;
+
+use collections::string::String;
 
 use common::event;
 
 use drivers::io::{Io, Pio};
 
-use schemes::KScheme;
+use fs::KScheme;
 
 #[repr(packed)]
 struct SerialInfo {
@@ -48,9 +49,7 @@ impl Serial {
 impl KScheme for Serial {
     fn on_irq(&mut self, irq: u8) {
         if irq == self.irq {
-            while self.status.read() & 1 == 0 {
-                break;
-            }
+            while self.status.read() & 1 == 0 {}
 
             let mut c = self.data.read() as char;
             let mut sc = 0;
@@ -66,6 +65,8 @@ impl KScheme for Serial {
             } else if self.cursor_control {
                 self.cursor_control = false;
 
+                c = '\0';
+
                 if c == 'A' {
                     sc = event::K_UP;
                 } else if c == 'B' {
@@ -75,16 +76,20 @@ impl KScheme for Serial {
                 } else if c == 'D' {
                     sc = event::K_LEFT;
                 }
+            } else if c == '\x03' {
+                ::env().console.lock().write(b"^C\n");
+                ::env().console.lock().commands.send(String::new());
 
                 c = '\0';
+                sc = 0;
             } else if c == '\x1B' {
                 self.escape = true;
                 c = '\0';
             } else if c == '\r' {
                 c = '\n';
             } else if c == '\x7F' {
-                sc = event::K_BKSP;
                 c = '\0';
+                sc = event::K_BKSP;
             }
 
             if c != '\0' || sc != 0 {
@@ -93,7 +98,8 @@ impl KScheme for Serial {
                     scancode: sc,
                     pressed: true,
                 };
-                env().events.lock().push_back(key_event.to_event());
+
+                ::env().console.lock().event(key_event.to_event());
             }
         }
     }

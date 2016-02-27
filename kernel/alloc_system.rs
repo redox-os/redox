@@ -1,4 +1,4 @@
-use common::memory::*;
+use arch::memory::*;
 
 #[allocator]
 #[allow(unused_variables)]

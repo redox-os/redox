@@ -33,7 +33,7 @@ There are many ways to help us out and we appreciate all of them.
 
 ### <a name="chat"> Chat </a>
 
-The quickest and most open way to communicate with the Redox team is on our [chat server](https://chat.redox-os.org/redox). Currently, the only way to join it is by sending an email to [info@redox-os.org](mailto:info@redox-os.org), which might take a little while, since it's not automated. We're currently working on an easier way to do this, but this is the most convenient way right now.
+The quickest and most open way to communicate with the Redox team is on our chat server. Currently, the only way to join it is by sending an email to [info@redox-os.org](mailto:info@redox-os.org), which might take a little while, since it's not automated. We're currently working on an easier way to do this, but this is the most convenient way right now.
 
 ### <a name="reddit"> Reddit </a>
 
@@ -65,7 +65,7 @@ You can find Redox on Reddit in [/r/rust/](https://www.reddit.com/r/rust) and [/
 
 ### <a name="gh-issues"> GitHub Issues </a>
 
-A bit more formal way of communication with fellow Redox devs, but a little less quick and convenient like the Slack chat (unless of course you aren't in it yet, which if you're going to be involved in this project really at all, it is recommended that you request to join). These are for more specific topics.
+A bit more formal way of communication with fellow Redox devs, but a little less quick and convenient like the chat (unless of course you aren't in it yet, which if you're going to be involved in this project really at all, it is recommended that you request to join). These are for more specific topics.
 
 ### <a name="prs"> Pull Requests </a>
 
@@ -90,7 +90,7 @@ It's completely fine to just submit a small pull request without first making an
 6. Make changes
 7. Commit (`git add . --all; git commit -m "my commit"`)
 8. Optionally run [rustfmt](https://github.com/rust-lang-nursery/rustfmt) on the files you changed and commit again if it did anything (check with `git diff` first)
-9. Test your changes with `make qemu` or `make virtualbox` (you might have to use `make qemu kvm=no`, formerly `make qemu_no_kvm`) 
+9. Test your changes with `make qemu` or `make virtualbox` (you might have to use `make qemu kvm=no`, formerly `make qemu_no_kvm`)
 (see [Best Practices and Guidelines](#best-practices))
 10. Pull from upstream (`git fetch upstream; git rebase upstream/master`) (Note: try not to use `git pull`, it is equivalent to doing `git fetch upstream; git merge master upstream/master`, which is not usually preferred for local/fork repositories, although it is fine in some cases.)
 11. Repeat step 9 to make sure the rebase still builds and starts
@@ -108,7 +108,7 @@ It's completely fine to just submit a small pull request without first making an
 * **Don't hesitate to ask for help!**
 * **Before implementing something, discuss it! Open an issue, or join the chat.**
 
-On the more technical side:
+##### On the more technical side:
 * Test, test, and test!
 * Follow the style conventions
 * Use `std::mem::replace` and `std::mem::swap` when you can.
@@ -123,7 +123,7 @@ On the more technical side:
 * When `unsafe` is unnecessary, don't use it. 10 lines longer safe code is better than more compact unsafe code!
 * Be sure to mark parts that need work with `TODO`, `FIXME`, `BUG`, `UNOPTIMIZED`, `REWRITEME`, `DOCME`, and `PRETTYFYME`.
 * Use the compiler hint attributes, such as `#[inline]`, `#[cold]`, etc. when it makes sense to do so.
-* Check [Slack](#slack), [the Website](http://redox-os.org), and [the Rust subreddit](https://www.reddit.com/r/rust) frequently.
+* Check the [chat](#chat), [the Website](http://redox-os.org), and [the Rust subreddit](https://www.reddit.com/r/rust) frequently.
 
 ### <a name="kernel"> Kernel </a>
 
@@ -154,7 +154,7 @@ Since Rust is a relatively small and new language compared to others like C, the
 * Try to remove useless duplicate/merge commits from PRs as these clutter up history, and may make it hard to read.
 * Usually, when syncing your local copy with the master branch, you will want to rebase instead of merge. This is because it will create duplicate commits that don't actually do anything when merged into the master branch.
 * When you start to make changes, you will want to create a separate branch, and keep the `master` branch of your fork identical to the main repository, so that you can compare your changes with the main branch and test out a more stable build if you need to.
-* You should have a fork of the repository on GitHub and a local copy on your computer. The local copy should have two remotes; `upstream` and `origin`, `upstream` should be set to the main repository and `origin` should be your fork. 
+* You should have a fork of the repository on GitHub and a local copy on your computer. The local copy should have two remotes; `upstream` and `origin`, `upstream` should be set to the main repository and `origin` should be your fork.
 
 ## <a name="other"> Other Ways to Contribute </a>
 

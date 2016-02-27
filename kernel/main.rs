@@ -1,3 +1,4 @@
+#![crate_name="kernel"]
 #![crate_type="staticlib"]
 #![feature(alloc)]
 #![feature(allocator)]
@@ -20,8 +21,10 @@
 #![feature(vec_push_all)]
 #![feature(zero_one)]
 #![feature(collections_range)]
-#![feature(old_wrapping)]
 #![no_std]
+
+#![allow(deprecated)]
+#![deny(warnings)]
 
 #[macro_use]
 extern crate alloc;
@@ -35,16 +38,17 @@ use acpi::Acpi;
 
 use alloc::boxed::Box;
 
-use collections::string::{String, ToString};
-use collections::vec::Vec;
+use arch::context::{context_switch, Context};
+use arch::memory;
+use arch::paging::Page;
+use arch::regs::Regs;
+use arch::tss::TSS;
 
-use core::cell::UnsafeCell;
+use collections::string::ToString;
+
 use core::{ptr, mem, usize};
 use core::slice::SliceExt;
 
-use common::event::{self, EVENT_KEY, EventOption};
-use common::memory;
-use common::paging::Page;
 use common::time::Duration;
 
 use drivers::pci;
@@ -57,10 +61,6 @@ use env::Environment;
 
 use graphics::display;
 
-use scheduler::{Context, Regs, TSS};
-use scheduler::context::context_switch;
-
-use schemes::Url;
 use schemes::context::*;
 use schemes::debug::*;
 use schemes::display::*;
@@ -69,7 +69,7 @@ use schemes::memory::*;
 use schemes::test::*;
 
 use syscall::execute::execute;
-use syscall::handle::*;
+use syscall::{do_sys_chdir, do_sys_exit, do_sys_open, syscall_handle};
 
 pub use system::externs::*;
 
@@ -82,6 +82,10 @@ pub mod macros;
 pub mod alloc_system;
 /// ACPI
 pub mod acpi;
+/// Architecture dependant
+pub mod arch;
+/// Audio
+pub mod audio;
 /// Disk drivers
 pub mod disk;
 /// Various drivers
@@ -92,13 +96,13 @@ pub mod env;
 pub mod fs;
 /// Various graphical methods
 pub mod graphics;
+/// Networking
+pub mod network;
 /// Panic
 pub mod panic;
 /// Schemes
 pub mod schemes;
-/// Scheduling
-pub mod scheduler;
-/// Sync primatives
+/// Synchronization
 pub mod sync;
 /// System calls
 pub mod syscall;
@@ -120,120 +124,41 @@ pub fn env() -> &'static Environment {
 /// Pit duration
 static PIT_DURATION: Duration = Duration {
     secs: 0,
-    nanos: 2250286,
+    nanos: 4500572,
 };
 
 /// Idle loop (active while idle)
-unsafe fn idle_loop() {
+fn idle_loop() {
     loop {
-        asm!("cli" : : : : "intel", "volatile");
+        unsafe { asm!("cli" : : : : "intel", "volatile"); }
 
         let mut halt = true;
 
-        for i in env().contexts.lock().iter().skip(1) {
-            if i.interrupted {
+        for context in env().contexts.lock().iter().skip(1) {
+            if ! context.blocked {
                 halt = false;
                 break;
             }
         }
 
-
         if halt {
-            asm!("sti
-                  hlt"
-                  :
-                  :
-                  :
-                  : "intel", "volatile");
+            unsafe { asm!("sti ; hlt" : : : : "intel", "volatile"); }
         } else {
-            asm!("sti"
-                :
-                :
-                :
-                : "intel", "volatile");
+            unsafe { asm!("sti ; nop" : : : : "intel", "volatile"); }
+            unsafe { context_switch(); }
         }
-
-
-        context_switch(false);
     }
 }
 
-/// Event poll loop
-fn poll_loop() {
-    loop {
-        env().on_poll();
-
-        unsafe { context_switch(false) };
-    }
-}
-
-/// Event loop
-fn event_loop() {
-    {
-        let mut console = env().console.lock();
-        console.instant = false;
-    }
-
-    let mut cmd = String::new();
-    loop {
-        loop {
-            let mut console = env().console.lock();
-            match env().events.lock().pop_front() {
-                Some(event) => {
-                    if console.draw {
-                        match event.to_option() {
-                            EventOption::Key(key_event) => {
-                                if key_event.pressed {
-                                    match key_event.scancode {
-                                        event::K_F2 => {
-                                            console.draw = false;
-                                        }
-                                        event::K_BKSP => if !cmd.is_empty() {
-                                            console.write(&[8]);
-                                            cmd.pop();
-                                        },
-                                        _ => match key_event.character {
-                                            '\0' => (),
-                                            '\n' => {
-                                                console.command = Some(cmd.clone());
-
-                                                cmd.clear();
-                                                console.write(&[10]);
-                                            }
-                                            _ => {
-                                                cmd.push(key_event.character);
-                                                console.write(&[key_event.character as u8]);
-                                            }
-                                        },
-                                    }
-                                }
-                            }
-                            _ => (),
-                        }
-                    } else {
-                        if event.code == EVENT_KEY && event.b as u8 == event::K_F1 && event.c > 0 {
-                            console.draw = true;
-                            console.redraw = true;
-                        } else {
-                            // TODO: Magical orbital hack
-                        }
-                    }
-                }
-                None => break,
-            }
-        }
-
-        {
-            let mut console = env().console.lock();
-            console.instant = false;
-            if console.draw && console.redraw {
-                console.redraw = false;
-                console.display.flip();
-            }
-        }
-
-        unsafe { context_switch(false) };
-    }
+extern {
+    static mut __text_start: u8;
+    static mut __text_end: u8;
+    static mut __rodata_start: u8;
+    static mut __rodata_end: u8;
+    static mut __data_start: u8;
+    static mut __data_end: u8;
+    static mut __bss_start: u8;
+    static mut __bss_end: u8;
 }
 
 static BSS_TEST_ZERO: usize = 0;
@@ -247,16 +172,11 @@ unsafe fn init(tss_data: usize) {
 
     // Zero BSS, this initializes statics that are set to 0
     {
-        extern {
-            static mut __bss_start: u8;
-            static mut __bss_end: u8;
-        }
+        let start_ptr = &mut __bss_start as *mut u8;
+        let end_ptr = & __bss_end as *const u8 as usize;
 
-        let start_ptr = &mut __bss_start;
-        let end_ptr = &mut __bss_end;
-
-        if start_ptr as *const _ as usize <= end_ptr as *const _ as usize {
-            let size = end_ptr as *const _ as usize - start_ptr as *const _ as usize;
+        if start_ptr as usize <= end_ptr {
+            let size = end_ptr - start_ptr as usize;
             memset(start_ptr, 0, size);
         }
 
@@ -267,8 +187,48 @@ unsafe fn init(tss_data: usize) {
     // Setup paging, this allows for memory allocation
     Page::init();
     memory::cluster_init();
-    // Unmap first page to catch null pointer errors (after reading memory map)
-    Page::new(0).unmap();
+
+    //Get the VBE information before unmapping the first megabyte
+    display::vbe_init();
+
+    // Unmap first page (TODO: Unmap more)
+    {
+        let start_ptr = 0;
+        let end_ptr = 0x1000;
+
+        if start_ptr as usize <= end_ptr {
+            let size = end_ptr - start_ptr as usize;
+            for page in 0..(size + 4095)/4096 {
+                Page::new(start_ptr as usize + page * 4096).unmap();
+            }
+        }
+    }
+
+    //Remap text
+    {
+        let start_ptr = & __text_start as *const u8 as usize;
+        let end_ptr = & __text_end as *const u8 as usize;
+        if start_ptr as usize <= end_ptr {
+            let size = end_ptr - start_ptr as usize;
+            for page in 0..(size + 4095)/4096 {
+                Page::new(start_ptr as usize + page * 4096).
+                    map_kernel_read(start_ptr as usize + page * 4096);
+            }
+        }
+    }
+
+    //Remap rodata
+    {
+        let start_ptr = & __rodata_start as *const u8 as usize;
+        let end_ptr = & __rodata_end as *const u8 as usize;
+        if start_ptr <= end_ptr {
+            let size = end_ptr - start_ptr;
+            for page in 0..(size + 4095)/4096 {
+                Page::new(start_ptr + page * 4096).
+                    map_kernel_read(start_ptr + page * 4096);
+            }
+        }
+    }
 
     TSS_PTR = Some(&mut *(tss_data as *mut TSS));
     ENV_PTR = Some(&mut *Box::into_raw(Environment::new()));
@@ -276,37 +236,28 @@ unsafe fn init(tss_data: usize) {
     match ENV_PTR {
         Some(ref mut env) => {
             env.contexts.lock().push(Context::root());
+
             env.console.lock().draw = true;
 
-            debug!("Redox {} bits\n", mem::size_of::<usize>() * 8);
+            debugln!("Redox {} bits", mem::size_of::<usize>() * 8);
 
             if let Some(acpi) = Acpi::new() {
-                env.schemes.push(UnsafeCell::new(acpi));
+                env.schemes.lock().push(acpi);
             }
 
             *(env.clock_realtime.lock()) = Rtc::new().time();
 
-            env.schemes.push(UnsafeCell::new(Ps2::new()));
-            env.schemes.push(UnsafeCell::new(Serial::new(0x3F8, 0x4)));
+            env.schemes.lock().push(Ps2::new());
+            env.schemes.lock().push(Serial::new(0x3F8, 0x4));
 
             pci::pci_init(env);
 
-            env.schemes.push(UnsafeCell::new(DebugScheme::new()));
-            env.schemes.push(UnsafeCell::new(box DisplayScheme));
-            env.schemes.push(UnsafeCell::new(box ContextScheme));
-            env.schemes.push(UnsafeCell::new(box InterruptScheme));
-            env.schemes.push(UnsafeCell::new(box MemoryScheme));
-            env.schemes.push(UnsafeCell::new(box TestScheme));
-
-            Context::spawn("kpoll".to_string(),
-            box move || {
-                poll_loop();
-            });
-
-            Context::spawn("kevent".to_string(),
-            box move || {
-                event_loop();
-            });
+            env.schemes.lock().push(DebugScheme::new());
+            env.schemes.lock().push(box DisplayScheme);
+            env.schemes.lock().push(box ContextScheme);
+            env.schemes.lock().push(box InterruptScheme);
+            env.schemes.lock().push(box MemoryScheme);
+            env.schemes.lock().push(box TestScheme);
 
             env.contexts.lock().enabled = true;
 
@@ -314,19 +265,16 @@ unsafe fn init(tss_data: usize) {
             box move || {
                 {
                     let wd_c = "file:/\0";
-                    do_sys_chdir(wd_c.as_ptr());
+                    do_sys_chdir(wd_c.as_ptr()).unwrap();
 
                     let stdio_c = "debug:\0";
-                    do_sys_open(stdio_c.as_ptr(), 0);
-                    do_sys_open(stdio_c.as_ptr(), 0);
-                    do_sys_open(stdio_c.as_ptr(), 0);
+                    do_sys_open(stdio_c.as_ptr(), 0).unwrap();
+                    do_sys_open(stdio_c.as_ptr(), 0).unwrap();
+                    do_sys_open(stdio_c.as_ptr(), 0).unwrap();
                 }
 
-                execute(Url::from_str("file:/apps/init/main.bin"), Vec::new());
-                debug!("INIT: Failed to execute\n");
-
-                loop {
-                    context_switch(false);
+                if let Err(err) = execute(vec!["init".to_string()]) {
+                    debugln!("INIT: Failed to execute: {}", err);
                 }
             });
         },
@@ -343,7 +291,7 @@ pub extern "cdecl" fn kernel(interrupt: usize, mut regs: &mut Regs) {
         ($name:expr) => ({
             {
                 let contexts = ::env().contexts.lock();
-                if let Some(context) = contexts.current() {
+                if let Ok(context) = contexts.current() {
                     debugln!("PID {}: {}", context.pid, context.name);
                 }
             }
@@ -365,6 +313,14 @@ pub extern "cdecl" fn kernel(interrupt: usize, mut regs: &mut Regs) {
                 asm!("mov $0, cr4" : "=r"(cr4) : : : "intel", "volatile");
             }
             debugln!("    CR0: {:08X}    CR2: {:08X}    CR3: {:08X}    CR4: {:08X}", cr0, cr2, cr3, cr4);
+
+            let mut fsw: usize = 0;
+            let mut fcw: usize = 0;
+            unsafe {
+                asm!("fnstsw $0" : "=*m"(&mut fsw) : : : "intel", "volatile");
+                asm!("fnstcw $0" : "=*m"(&mut fcw) : : : "intel", "volatile");
+            }
+            debugln!("    FSW: {:08X}    FCW: {:08X}", fsw, fcw);
 
             let sp = regs.sp as *const u32;
             for y in -15..16 {
@@ -406,14 +362,6 @@ pub extern "cdecl" fn kernel(interrupt: usize, mut regs: &mut Regs) {
         })
     };
 
-    if interrupt >= 0x20 && interrupt < 0x30 {
-        if interrupt >= 0x28 {
-            Pio::<u8>::new(0xA0).write(0x20);
-        }
-
-        Pio::<u8>::new(0x20).write(0x20);
-    }
-
     //Do not catch init interrupt
     if interrupt < 0xFF {
         env().interrupts.lock()[interrupt as usize] += 1;
@@ -430,25 +378,16 @@ pub extern "cdecl" fn kernel(interrupt: usize, mut regs: &mut Regs) {
                 *clock_realtime = *clock_realtime + PIT_DURATION;
             }
 
-            let switch = {
-                let mut contexts = ::env().contexts.lock();
-                if let Some(mut context) = contexts.current_mut() {
-                    context.slices -= 1;
-                    context.slice_total += 1;
-                    context.slices == 0
-                } else {
-                    false
-                }
-            };
-
-            if switch {
-                unsafe { context_switch(true) };
+            if let Ok(mut current) = env().contexts.lock().current_mut() {
+                current.time += 1;
             }
+
+            unsafe { context_switch(); }
         }
-        i @ 0x21 ... 0x2F => env().on_irq(i as u8 - 0x20),
-        0x80 => if !syscall_handle(regs) {
-            exception!("Unknown Syscall");
+        i @ 0x21 ... 0x2F => {
+            env().on_irq(i as u8 - 0x20);
         },
+        0x80 => syscall_handle(regs),
         0xFF => {
             unsafe {
                 init(regs.ax);
@@ -477,5 +416,13 @@ pub extern "cdecl" fn kernel(interrupt: usize, mut regs: &mut Regs) {
         0x14 => exception!("Virtualization exception"),
         0x1E => exception_error!("Security exception"),
         _ => exception!("Unknown Interrupt"),
+    }
+
+    if interrupt >= 0x20 && interrupt < 0x30 {
+        if interrupt >= 0x28 {
+            Pio::<u8>::new(0xA0).write(0x20);
+        }
+
+        Pio::<u8>::new(0x20).write(0x20);
     }
 }

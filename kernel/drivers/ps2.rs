@@ -8,7 +8,7 @@ use drivers::io::{Io, Pio};
 
 use graphics::display::VBEMODEINFO;
 
-use schemes::KScheme;
+use fs::KScheme;
 
 use drivers::kb_layouts::layouts;
 
@@ -116,6 +116,19 @@ impl Ps2 {
         self.data.write(1);
         self.wait0();
         self.data.read();
+
+        // The Init Dance
+        self.wait1();
+        self.cmd.write(0xAE);
+
+        self.wait1();
+        self.cmd.write(0x20);
+        self.wait0();
+        let status = self.data.read() | 1;
+        self.wait1();
+        self.cmd.write(0x60);
+        self.wait1();
+        self.data.write(status);
     }
 
     /// Keyboard interrupt
@@ -230,12 +243,9 @@ impl Ps2 {
                 y = 0;
             }
 
-            unsafe {
-                let mode_info = &*VBEMODEINFO;
-                self.mouse_x = cmp::max(0,
-                                        cmp::min(mode_info.xresolution as i32, self.mouse_x + x));
-                self.mouse_y = cmp::max(0,
-                                        cmp::min(mode_info.yresolution as i32, self.mouse_y + y));
+            if let Some(mode_info) = unsafe { VBEMODEINFO } {
+                self.mouse_x = cmp::max(0, cmp::min(mode_info.xresolution as i32, self.mouse_x + x));
+                self.mouse_y = cmp::max(0, cmp::min(mode_info.yresolution as i32, self.mouse_y + y));
             }
 
             self.mouse_i = 0;
@@ -266,23 +276,27 @@ impl Ps2 {
 impl KScheme for Ps2 {
     fn on_irq(&mut self, irq: u8) {
         if irq == 0x1 || irq == 0xC {
-            self.on_poll();
-        }
-    }
-
-    fn on_poll(&mut self) {
-        loop {
-            let status = self.cmd.read();
-            if status & 0x21 == 1 {
-                if let Some(key_event) = self.keyboard_interrupt() {
-                    ::env().events.lock().push_back(key_event.to_event());
+            loop {
+                let status = self.cmd.read();
+                if status & 0x21 == 0x21 {
+                    if let Some(mouse_event) = self.mouse_interrupt() {
+                        if ::env().console.lock().draw {
+                            //Ignore mouse event
+                        } else {
+                            ::env().events.send(mouse_event.to_event());
+                        }
+                    }
+                } else if status & 0x21 == 1 {
+                    if let Some(key_event) = self.keyboard_interrupt() {
+                        if ::env().console.lock().draw {
+                            ::env().console.lock().event(key_event.to_event());
+                        } else {
+                            ::env().events.send(key_event.to_event());
+                        }
+                    }
+                } else {
+                    break;
                 }
-            } else if status & 0x21 == 0x21 {
-                if let Some(mouse_event) = self.mouse_interrupt() {
-                    ::env().events.lock().push_back(mouse_event.to_event());
-                }
-            } else {
-                break;
             }
         }
     }

@@ -8,9 +8,9 @@ use core::mem;
 use drivers::io::{Io, Mmio};
 use drivers::pci::config::PciConfig;
 
-use scheduler::context::context_switch;
+use arch::context::context_switch;
 
-use schemes::KScheme;
+use fs::KScheme;
 
 use super::{Hci, Packet, Pipe, Setup};
 
@@ -106,9 +106,6 @@ impl KScheme for Ohci {
             // d("OHCI IRQ\n");
         }
     }
-
-    fn on_poll(&mut self) {
-    }
 }
 
 impl Ohci {
@@ -172,7 +169,7 @@ impl Ohci {
 
 
 impl Hci for Ohci {
-    fn msg(&mut self, address: u8, endpoint: u8, pipe: Pipe, msgs: &[Packet]) -> usize {
+    fn msg(&mut self, address: u8, endpoint: u8, _pipe: Pipe, msgs: &[Packet]) -> usize {
         let mut tds = Vec::new();
         for msg in msgs.iter() {
             match *msg {
@@ -241,7 +238,7 @@ impl Hci for Ohci {
                 //debugln!("  TD: {:X}, FLG: {:X}, BUF: {:X}, NEXT: {:X}, END: {:X}", (td as *const Gtd) as usize, td.flags, td.buffer, td.next, td.end);
 
                 while unsafe { volatile_load(td as *const Gtd).flags } & 0b1111 << 28 == 0b1111 << 28 {
-                    unsafe { context_switch(false) };
+                    unsafe { context_switch() };
                 }
 
                 let condition = (unsafe { volatile_load(td as *const Gtd).flags } & 0b1111 << 28) >> 28;

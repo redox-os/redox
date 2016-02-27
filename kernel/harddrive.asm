@@ -1,4 +1,4 @@
-%include "asm/sector.asm"
+%include "asm/bootsector.asm"
 
 fs_header:
 .signature:
@@ -6,12 +6,12 @@ fs_header:
 .version:
     dq 1
 .free_space:
-    dq (fs_free_space - boot)/512
+    dq (fs_free_space - boot) / 512
     dq (fs_free_space.end - fs_free_space)
 .padding:
     align 256, db 0
 .extents:
-    dq (fs_root_node_list - boot)/512
+    dq (fs_root_node_list - boot) / 512
     dq (fs_root_node_list.end - fs_root_node_list)
 
     align 512, db 0
@@ -24,13 +24,17 @@ fs_header:
 %ifdef ARCH_x86_64
     %include "asm/startup-x86_64.asm"
 %endif
+align 512, db 0
+startup_end:
 
-times (0xC000-0x1000)-0x7C00-($-$$) db 0
+;times (0xC000-0x1000)-0x7C00-($-$$) db 0
 
 kernel_file:
   incbin "kernel.bin"
   align 512, db 0
 .end:
+.length equ kernel_file.end - kernel_file
+.length_sectors equ .length / 512
 
 fs_root_node_list:
 %macro file 2+
@@ -41,7 +45,7 @@ fs_root_node_list:
         align 256, db 0
 
     .extents:
-        dq (fs_data.%1 - boot)/512
+        dq (fs_data.%1 - boot) / 512
         dq (fs_data.%1.end - fs_data.%1)
 
         align 512, db 0

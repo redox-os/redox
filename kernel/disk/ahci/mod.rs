@@ -8,7 +8,7 @@ use disk::Disk;
 use drivers::io::Io;
 use drivers::pci::config::PciConfig;
 
-use schemes::Result;
+use system::error::Result;
 
 use self::hba::{HbaMem, HbaPort, HbaPortType};
 

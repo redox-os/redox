@@ -1,6 +1,8 @@
 use alloc::boxed::Box;
 
-use schemes::{Result, KScheme, Resource, Url, VecResource};
+use fs::{KScheme, Resource, Url, VecResource};
+
+use system::error::Result;
 
 pub struct InterruptScheme;
 
@@ -29,7 +31,7 @@ impl KScheme for InterruptScheme {
     }
 
     fn open(&mut self, _: &Url, _: usize) -> Result<Box<Resource>> {
-        let mut string = format!("{:<6}{:<16}{}", "INT", "COUNT", "DESCRIPTION");
+        let mut string = format!("{:<6}{:<16}{}\n", "INT", "COUNT", "DESCRIPTION");
 
         {
             let interrupts = ::env().interrupts.lock();
@@ -63,11 +65,11 @@ impl KScheme for InterruptScheme {
                         _ => "Unknown Interrupt",
                     };
 
-                    string = string + "\n" + &format!("{:<6X}{:<16}{}", interrupt, count, description);
+                    string.push_str(&format!("{:<6X}{:<16}{}\n", interrupt, count, description));
                 }
             }
         }
 
-        Ok(box VecResource::new(Url::from_str("interrupt:"), string.into_bytes()))
+        Ok(box VecResource::new("interrupt:", string.into_bytes()))
     }
 }

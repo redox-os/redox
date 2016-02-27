@@ -11,9 +11,9 @@ use common::debug;
 use drivers::io::{Io, Mmio};
 use drivers::pci::config::PciConfig;
 
-use scheduler::context::context_switch;
+use arch::context::context_switch;
 
-use schemes::KScheme;
+use fs::KScheme;
 
 use super::{Hci, Packet, Pipe, Setup};
 
@@ -198,7 +198,7 @@ impl Ehci {
 }
 
 impl Hci for Ehci {
-    fn msg(&mut self, address: u8, endpoint: u8, pipe: Pipe, msgs: &[Packet]) -> usize {
+    fn msg(&mut self, address: u8, endpoint: u8, _pipe: Pipe, msgs: &[Packet]) -> usize {
         let mut tds = Vec::new();
         for msg in msgs.iter().rev() {
             let link_ptr = match tds.last() {
@@ -264,8 +264,8 @@ impl Hci for Ehci {
                 usb_cmd.writef(1 << 5 | 1, true);
 
                 for td in tds.iter().rev() {
-                    while unsafe { volatile_load(td as *const Qtd).token } & 1 << 7 == 1 << 7 {
-                        unsafe { context_switch(false) };
+                    while volatile_load(td as *const Qtd).token & 1 << 7 == 1 << 7 {
+                        context_switch();
                     }
                 }
 

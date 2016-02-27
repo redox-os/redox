@@ -13,6 +13,15 @@
 [submodule "crates/coreutils"]
 	path = crates/coreutils
 	url = https://github.com/redox-os/coreutils.git
+[submodule "libc"]
+	path = libc
+	url = https://github.com/redox-os/libc.git
 [submodule "crates/orbclient"]
 	path = crates/orbclient
 	url = https://github.com/redox-os/orbclient
+[submodule "crates/orbutils"]
+	path = crates/orbutils
+	url = https://github.com/redox-os/orbutils.git
+[submodule "crates/redoxfs"]
+	path = crates/redoxfs
+	url = https://github.com/redox-os/redoxfs.git

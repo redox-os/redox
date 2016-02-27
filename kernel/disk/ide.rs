@@ -5,16 +5,14 @@ use collections::vec::Vec;
 
 use core::ptr;
 
-use common::memory::Memory;
+use arch::memory::Memory;
 
 use disk::Disk;
 
 use drivers::pci::config::PciConfig;
 use drivers::io::{Io, Pio};
 
-use schemes::Result;
-
-use syscall::{Error, EIO};
+use system::error::{Error, Result, EIO};
 
 /// An disk extent
 #[derive(Copy, Clone)]
@@ -160,8 +158,6 @@ impl Ide {
         unsafe { pci.flag(4, 4, true) }; // Bus mastering
 
         let busmaster = unsafe { pci.read(0x20) } as u16 & 0xFFF0;
-
-        debugln!("IDE on {:X}", busmaster);
 
         debug!("Primary Master:");
         if let Some(disk) = IdeDisk::new(busmaster, 0x1F0, 0x3F4, 0xE, true) {

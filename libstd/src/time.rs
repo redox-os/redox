@@ -33,30 +33,6 @@ impl Duration {
             nanos: nanos,
         }
     }
-
-    /// Get the monotonic time
-    pub fn monotonic() -> Self {
-        let mut tp = TimeSpec {
-            tv_sec: 0,
-            tv_nsec: 0,
-        };
-
-        unsafe { sys_clock_gettime(CLOCK_MONOTONIC, &mut tp) };
-
-        Duration::new(tp.tv_sec, tp.tv_nsec)
-    }
-
-    /// Get the realtime
-    pub fn realtime() -> Self {
-        let mut tp = TimeSpec {
-            tv_sec: 0,
-            tv_nsec: 0,
-        };
-
-        unsafe { sys_clock_gettime(CLOCK_REALTIME, &mut tp) };
-
-        Duration::new(tp.tv_sec, tp.tv_nsec)
-    }
 }
 
 impl Add for Duration {
@@ -96,5 +72,45 @@ impl PartialOrd for Duration {
         } else {
             Some(Ordering::Equal)
         }
+    }
+}
+
+#[derive(Copy, Clone)]
+pub struct Instant(Duration);
+
+impl Instant {
+    pub fn now() -> Instant {
+        let mut tp = TimeSpec {
+            tv_sec: 0,
+            tv_nsec: 0,
+        };
+
+        sys_clock_gettime(CLOCK_MONOTONIC, &mut tp).unwrap();
+
+        Instant(Duration::new(tp.tv_sec, tp.tv_nsec))
+    }
+
+    pub fn duration_from_earlier(&self, earlier: Instant) -> Duration {
+        self.0 - earlier.0
+    }
+
+    pub fn elapsed(&self) -> Duration {
+        Instant::now().0 - self.0
+    }
+}
+
+#[derive(Copy, Clone)]
+pub struct SystemTime(Duration);
+
+impl SystemTime {
+    pub fn now() -> SystemTime {
+        let mut tp = TimeSpec {
+            tv_sec: 0,
+            tv_nsec: 0,
+        };
+
+        sys_clock_gettime(CLOCK_REALTIME, &mut tp).unwrap();
+
+        SystemTime(Duration::new(tp.tv_sec, tp.tv_nsec))
     }
 }

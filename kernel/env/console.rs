@@ -3,12 +3,18 @@ use alloc::boxed::Box;
 use collections::String;
 use collections::Vec;
 
+use common::event::{self, Event, EventOption};
+
+use core::mem;
+
 use drivers::io::{Io, Pio};
 
 use graphics::color::Color;
 use graphics::display::Display;
 use graphics::point::Point;
 use graphics::size::Size;
+
+use sync::WaitQueue;
 
 const BLACK: Color = Color::new(0, 0, 0);
 const RED: Color = Color::new(194, 54, 33);
@@ -20,14 +26,14 @@ const CYAN: Color = Color::new(51, 187, 200);
 const WHITE: Color = Color::new(203, 204, 205);
 
 pub struct Console {
-    pub display: Box<Display>,
+    pub display: Option<Box<Display>>,
     pub point: Point,
     pub foreground: Color,
     pub background: Color,
-    pub instant: bool,
     pub draw: bool,
     pub redraw: bool,
-    pub command: Option<String>,
+    pub command: String,
+    pub commands: WaitQueue<String>,
     pub escape: bool,
     pub escape_sequence: bool,
     pub sequence: Vec<String>,
@@ -36,14 +42,14 @@ pub struct Console {
 impl Console {
     pub fn new() -> Console {
         Console {
-            display: unsafe { Display::root() },
+            display: Display::root(),
             point: Point::new(0, 0),
             foreground: WHITE,
             background: BLACK,
-            instant: true,
             draw: false,
             redraw: true,
-            command: None,
+            command: String::new(),
+            commands: WaitQueue::new(),
             escape: false,
             escape_sequence: false,
             sequence: Vec::new(),
@@ -122,7 +128,9 @@ impl Console {
             self.point.y = 0;
             self.foreground = WHITE;
             self.background = BLACK;
-            self.display.set(self.background);
+            if let Some(ref mut display) = self.display {
+                display.set(self.background);
+            }
             self.redraw = true;
 
             self.escape = false;
@@ -134,36 +142,67 @@ impl Console {
     }
 
     pub fn character(&mut self, c: char) {
-        self.display.rect(self.point, Size::new(8, 16), self.background);
-        if c == '\x00' {
-            // Ignore null character
-        } else if c == '\x1B' {
-            self.escape = true;
-        } else if c == '\n' {
-            self.point.x = 0;
-            self.point.y += 16;
-        } else if c == '\t' {
-            self.point.x = ((self.point.x / 64) + 1) * 64;
-        } else if c == '\x08' {
-            self.point.x -= 8;
-            if self.point.x < 0 {
-                self.point.x = 0
+        if let Some(ref mut display) = self.display {
+            display.rect(self.point, Size::new(8, 16), self.background);
+            if c == '\x00' {
+                // Ignore null character
+            } else if c == '\x1B' {
+                self.escape = true;
+            } else if c == '\n' {
+                self.point.x = 0;
+                self.point.y += 16;
+            } else if c == '\t' {
+                self.point.x = ((self.point.x / 64) + 1) * 64;
+            } else if c == '\x08' {
+                self.point.x -= 8;
+                if self.point.x < 0 {
+                    self.point.x = 0
+                }
+                display.rect(self.point, Size::new(8, 16), self.background);
+            } else {
+                display.char(self.point, c, self.foreground);
+                self.point.x += 8;
             }
-            self.display.rect(self.point, Size::new(8, 16), self.background);
-        } else {
-            self.display.char(self.point, c, self.foreground);
-            self.point.x += 8;
+            if self.point.x >= display.width as isize {
+                self.point.x = 0;
+                self.point.y += 16;
+            }
+            while self.point.y + 16 > display.height as isize {
+                display.scroll(16);
+                self.point.y -= 16;
+            }
+            display.rect(self.point, Size::new(8, 16), self.foreground);
+            self.redraw = true;
         }
-        if self.point.x >= self.display.width as isize {
-            self.point.x = 0;
-            self.point.y += 16;
+    }
+
+    pub fn event(&mut self, event: Event) {
+        match event.to_option() {
+            EventOption::Key(key_event) => {
+                if key_event.pressed {
+                    match key_event.scancode {
+                        event::K_BKSP => if ! self.command.is_empty() {
+                            self.write(&[8]);
+                            self.command.pop();
+                        },
+                        _ => match key_event.character {
+                            '\0' => (),
+                            c => {
+                                self.command.push(c);
+                                self.write(&[c as u8]);
+
+                                if c == '\n' {
+                                    let mut command = String::new();
+                                    mem::swap(&mut self.command, &mut command);
+                                    self.commands.send(command);
+                                }
+                            }
+                        },
+                    }
+                }
+            }
+            _ => (),
         }
-        while self.point.y + 16 > self.display.height as isize {
-            self.display.scroll(16);
-            self.point.y -= 16;
-        }
-        self.display.rect(self.point, Size::new(8, 16), self.foreground);
-        self.redraw = true;
     }
 
     pub fn write(&mut self, bytes: &[u8]) {
@@ -190,10 +229,12 @@ impl Console {
                 serial_data.write(8);
             }
         }
-        // If contexts disabled, probably booting up
-        if self.instant && self.draw && self.redraw {
+
+        if self.draw && self.redraw {
             self.redraw = false;
-            self.display.flip();
+            if let Some(ref mut display) = self.display {
+                display.flip();
+            }
         }
     }
 }

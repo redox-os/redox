@@ -5,15 +5,14 @@ use collections::vec::Vec;
 use core::intrinsics::volatile_load;
 use core::mem;
 
-use scheduler::context::context_switch;
+use arch::context::context_switch;
 use common::debug;
-use common::memory::Memory;
+use arch::memory::Memory;
 
 use drivers::pci::config::PciConfig;
 use drivers::io::{Io, Pio};
 
-
-use schemes::KScheme;
+use fs::KScheme;
 
 use super::{Hci, Packet, Pipe, Setup};
 
@@ -28,9 +27,6 @@ impl KScheme for Uhci {
         if irq == self.irq {
             // d("UHCI IRQ\n");
         }
-    }
-
-    fn on_poll(&mut self) {
     }
 }
 
@@ -57,7 +53,7 @@ impl Uhci {
         let mut module = box Uhci {
             base: pci.read(0x20) as usize & 0xFFFFFFF0,
             irq: pci.read(0x3C) as u8 & 0xF,
-            frame_list: Memory::new(1024).unwrap(),
+            frame_list: Memory::new_align(1024, 4096).unwrap(),
         };
 
         module.init();
@@ -228,7 +224,7 @@ impl Hci for Uhci {
 
             for td in tds.iter().rev() {
                 while unsafe { volatile_load(td as *const Td).ctrl_sts } & 1 << 23 == 1 << 23 {
-                    unsafe { context_switch(false) };
+                    unsafe { context_switch() };
                 }
                 count += (unsafe { volatile_load(td as *const Td).ctrl_sts } & 0x7FF) as usize;
             }

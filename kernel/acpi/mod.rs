@@ -1,6 +1,7 @@
 use alloc::boxed::Box;
-use schemes::{Result, KScheme, Resource, Url};
-use syscall::{Error, O_CREAT, ENOENT};
+use fs::{KScheme, Resource, Url};
+use system::error::{Error, Result, ENOENT};
+use system::syscall::O_CREAT;
 pub use self::dsdt::DSDT;
 pub use self::fadt::FADT;
 pub use self::madt::MADT;
