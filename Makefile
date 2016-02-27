@@ -195,6 +195,11 @@ filesystem/bin/launcher: crates/orbutils/src/launcher/main.rs crates/orbutils/sr
 	mkdir -p filesystem/bin
 	$(RUSTC) $(RUSTCFLAGS) --crate-type bin -o $@ $<
 
+
+filesystem/bin/redoxfsd: crates/redoxfs/scheme/main.rs crates/redoxfs/scheme/*.rs $(BUILD)/crt0.o $(BUILD)/libstd.rlib $(BUILD)/libredoxfs.rlib
+	mkdir -p filesystem/bin
+	$(RUSTC) $(RUSTCFLAGS) --crate-type bin -o $@ $<
+
 bins: \
 	coreutils \
 	filesystem/bin/c-test \
@@ -207,6 +212,7 @@ bins: \
   	filesystem/bin/lua \
   	filesystem/bin/login \
   	filesystem/bin/orbital \
+  	filesystem/bin/redoxfsd \
   	filesystem/bin/sh \
 	filesystem/bin/tar \
 	filesystem/bin/test \
@@ -227,7 +233,7 @@ clean:
 FORCE:
 
 doc/core: rust/src/libcore/lib.rs $(BUILD)/libcore.rlib
-	$(RUSTDOC) $<
+	$(RUSTDOC) --cfg disable_float $<
 
 doc/alloc_system: liballoc_system/lib.rs $(BUILD)/liballoc_system.rlib doc/core
 	$(RUSTDOC) $<
@@ -242,7 +248,7 @@ doc/collections: rust/src/libcollections/lib.rs $(BUILD)/libcollections.rlib doc
 	$(RUSTDOC) $<
 
 doc/rand: rust/src/librand/lib.rs $(BUILD)/librand.rlib doc/collections
-	$(RUSTDOC) $<
+	$(RUSTDOC) --cfg disable_float $<
 
 doc/io: crates/io/lib.rs crates/io/*.rs $(BUILD)/libio.rlib doc/core
 	$(RUSTDOC) $<
@@ -250,11 +256,14 @@ doc/io: crates/io/lib.rs crates/io/*.rs $(BUILD)/libio.rlib doc/core
 doc/system: crates/system/lib.rs crates/system/*.rs crates/system/*/*.rs $(BUILD)/libsystem.rlib doc/core
 	$(RUSTDOC) $<
 
-doc/kernel: kernel/main.rs kernel/*.rs kernel/*/*.rs kernel/*/*/*.rs $(BUILD)/kernel.rlib doc/collections doc/io doc/system
+doc/redoxfs: crates/redoxfs/src/lib.rs crates/redoxfs/src/*.rs doc/system doc/alloc doc/collections
+	$(RUSTDOC) $<
+
+doc/kernel: kernel/main.rs kernel/*.rs kernel/*/*.rs kernel/*/*/*.rs $(BUILD)/kernel.rlib doc/io doc/redoxfs
 	$(RUSTDOC) $<
 
 doc/std: libstd/src/lib.rs libstd/src/*.rs libstd/src/*/*.rs libstd/src/*/*/*.rs $(BUILD)/libstd.rlib doc/rand doc/system
-	$(RUSTDOC) --crate-name=std $<
+	$(RUSTDOC) --cfg disable_float --crate-name=std $<
 
 doc: doc/kernel doc/std
 
@@ -296,7 +305,10 @@ $(BUILD)/libio.rlib: crates/io/lib.rs crates/io/*.rs $(BUILD)/libcore.rlib
 $(BUILD)/libsystem.rlib: crates/system/lib.rs crates/system/*.rs crates/system/*/*.rs $(BUILD)/libcore.rlib
 	$(RUSTC) $(RUSTCFLAGS) -o $@ $<
 
-$(BUILD)/kernel.rlib: kernel/main.rs kernel/*.rs kernel/*/*.rs kernel/*/*/*.rs $(BUILD)/libcore.rlib $(BUILD)/liballoc.rlib $(BUILD)/libcollections.rlib $(BUILD)/libio.rlib $(BUILD)/libsystem.rlib
+$(BUILD)/libredoxfs.rlib: crates/redoxfs/src/lib.rs crates/redoxfs/src/*.rs $(BUILD)/libsystem.rlib $(BUILD)/liballoc.rlib $(BUILD)/libcollections.rlib
+	$(RUSTC) $(RUSTCFLAGS) -o $@ $<
+
+$(BUILD)/kernel.rlib: kernel/main.rs kernel/*.rs kernel/*/*.rs kernel/*/*/*.rs  $(BUILD)/libio.rlib $(BUILD)/libredoxfs.rlib
 	$(RUSTC) $(RUSTCFLAGS) -C lto -o $@ $<
 
 $(BUILD)/kernel.bin: $(BUILD)/kernel.rlib kernel/kernel.ld
