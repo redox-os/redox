@@ -7,6 +7,7 @@
 use core::{ptr, slice, str};
 
 pub mod error;
+#[cfg(target_os="redox")]
 pub mod externs;
 pub mod scheme;
 pub mod syscall;
