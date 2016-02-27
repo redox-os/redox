@@ -1,0 +1,9 @@
+[package]
+name = "redox-system"
+description = "The Redox Syterm Calls"
+version = "0.1.0"
+authors = ["Jeremy Soller <jackpot51@gmail.com>"]
+
+[lib]
+name = "system"
+path = "lib.rs"
