@@ -133,6 +133,18 @@ help:
 
 all: $(BUILD)/harddrive.bin
 
+filesystem/apps/rusthello/main.bin: filesystem/apps/rusthello/main.rs filesystem/apps/rusthello/*.rs filesystem/apps/rusthello/*/*.rs $(BUILD)/crt0.o $(BUILD)/libstd.rlib
+	$(RUSTC) $(RUSTCFLAGS) --crate-type bin -o $@ $<
+
+filesystem/apps/sodium/main.bin: filesystem/apps/sodium/src/main.rs filesystem/apps/sodium/src/*.rs $(BUILD)/libstd.rlib $(BUILD)/liborbclient.rlib
+	$(RUSTC) $(RUSTCFLAGS) --crate-type bin -o $@ $< --cfg 'feature="orbital"'
+
+filesystem/apps/example/main.bin: filesystem/apps/example/main.rs filesystem/apps/example/*.rs $(BUILD)/crt0.o $(BUILD)/libstd.rlib
+	$(RUSTC) $(RUSTCFLAGS) --crate-type bin -o $@ $<
+
+filesystem/apps/%/main.bin: filesystem/apps/%/main.rs filesystem/apps/%/*.rs $(BUILD)/crt0.o $(BUILD)/libstd.rlib $(BUILD)/liborbclient.rlib $(BUILD)/liborbtk.rlib
+	$(RUSTC) $(RUSTCFLAGS) --crate-type bin -o $@ $<
+
 filesystem/apps/%/main.bin: crates/orbutils/src/%/main.rs crates/orbutils/src/%/*.rs $(BUILD)/crt0.o $(BUILD)/libstd.rlib $(BUILD)/liborbclient.rlib $(BUILD)/liborbtk.rlib
 	$(RUSTC) $(RUSTCFLAGS) --crate-type bin -o $@ $<
 
@@ -182,6 +194,9 @@ filesystem/bin/%: crates/%/main.rs crates/%/*.rs $(BUILD)/crt0.o $(BUILD)/libstd
 filesystem/bin/%: libc/bin/%
 	mkdir -p filesystem/bin
 	cp $< $@
+
+$(BUILD)/ion-shell.bin: FORCE $(BUILD)/libstd.rlib
+	$(CARGO) --manifest-path crates/ion/Cargo.toml --bin ion-shell $(CARGOFLAGS)
 
 filesystem/bin/ion: $(BUILD)/ion-shell.bin
 	mkdir -p filesystem/bin
@@ -366,19 +381,6 @@ rustc: $(BUILD)/librustc_back.rlib \
 	$(BUILD)/librustc_trans.rlib \
 	$(BUILD)/librustc_typeck.rlib \
 	$(BUILD)/librustc_unicode.rlib
-
-#Cargo stuff
-$(BUILD)/ion-shell.bin: FORCE $(BUILD)/libstd.rlib
-	$(CARGO) --manifest-path crates/ion/Cargo.toml --bin ion-shell $(CARGOFLAGS)
-
-filesystem/apps/sodium/main.bin: filesystem/apps/sodium/src/main.rs filesystem/apps/sodium/src/*.rs $(BUILD)/libstd.rlib $(BUILD)/liborbclient.rlib
-	$(RUSTC) $(RUSTCFLAGS) --crate-type bin -o $@ $< --cfg 'feature="orbital"'
-
-filesystem/apps/example/main.bin: filesystem/apps/example/main.rs filesystem/apps/example/*.rs $(BUILD)/crt0.o $(BUILD)/libstd.rlib
-	$(RUSTC) $(RUSTCFLAGS) --crate-type bin -o $@ $<
-
-filesystem/apps/%/main.bin: filesystem/apps/%/main.rs filesystem/apps/%/*.rs $(BUILD)/crt0.o $(BUILD)/libstd.rlib $(BUILD)/liborbclient.rlib $(BUILD)/liborbtk.rlib
-	$(RUSTC) $(RUSTCFLAGS) --crate-type bin -o $@ $<
 
 filesystem/%.list: filesystem/%
 	$(OBJDUMP) -C -M intel -D $< > $@
