@@ -141,21 +141,19 @@ pub fn execute(mut args: Vec<String>) -> Result<usize> {
         if let Some(mut arg) = args.get_mut(0) {
             *arg = url.string;
         }
-        if let Some(line) = unsafe { str::from_utf8_unchecked(&vec[2..]) }.lines().next() {
-            let mut i = 0;
-            for arg in line.trim().split(' ') {
-                if ! arg.is_empty() {
-                    args.insert(i, arg.to_string());
-                    i += 1;
-                }
+
+        let line = unsafe { str::from_utf8_unchecked(&vec[2..]) }.lines().next().unwrap_or("");
+        let mut i = 0;
+        for arg in line.trim().split(' ') {
+            if ! arg.is_empty() {
+                args.insert(i, arg.to_string());
+                i += 1;
             }
-            if i == 0 {
-                args.insert(i, "/bin/sh".to_string());
-            }
-            execute(args)
-        } else {
-            Err(Error::new(ENOEXEC))
         }
+        if i == 0 {
+            args.insert(i, "/bin/sh".to_string());
+        }
+        execute(args)
     } else {
         match Elf::from(&vec) {
             Ok(executable) => {
