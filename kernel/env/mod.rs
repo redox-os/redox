@@ -92,7 +92,7 @@ impl Environment {
                     }
                 }
 
-                match Scheme::new(url_path.to_string()) {
+                match Scheme::new(url_path) {
                     Ok((scheme, server)) => {
                         self.schemes.lock().push(scheme);
                         Ok(server)

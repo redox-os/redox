@@ -2,6 +2,7 @@ use alloc::arc::{Arc, Weak};
 use alloc::boxed::Box;
 
 use collections::String;
+use collections::borrow::ToOwned;
 
 use core::cell::Cell;
 use core::mem::size_of;
@@ -29,9 +30,9 @@ struct SchemeInner {
 }
 
 impl SchemeInner {
-    fn new(name: String, context: *mut Context) -> SchemeInner {
+    fn new(name: &str, context: *mut Context) -> SchemeInner {
         SchemeInner {
-            name: name,
+            name: name.to_owned(),
             context: context,
             next_id: Cell::new(1),
             todo: WaitQueue::new(),
@@ -344,14 +345,14 @@ pub struct Scheme {
 }
 
 impl Scheme {
-    pub fn new(name: String) -> Result<(Box<Scheme>, Box<Resource>)> {
+    pub fn new(name: &str) -> Result<(Box<Scheme>, Box<Resource>)> {
         let mut contexts = ::env().contexts.lock();
         let mut current = try!(contexts.current_mut());
         let server = box SchemeServerResource {
-            inner: Arc::new(SchemeInner::new(name.clone(), current.deref_mut()))
+            inner: Arc::new(SchemeInner::new(name, current.deref_mut()))
         };
         let scheme = box Scheme {
-            name: name,
+            name: name.to_owned(),
             inner: Arc::downgrade(&server.inner)
         };
         Ok((scheme, server))
@@ -415,7 +416,7 @@ impl KScheme for Scheme {
     }
 
     fn mkdir(&mut self, url: Url, flags: usize) -> Result<()> {
-        let c_str = url.to_string().clone() + "\0";
+        let c_str = url.to_string() + "\0";
 
         let physical_address = c_str.as_ptr() as usize;
 
@@ -452,7 +453,7 @@ impl KScheme for Scheme {
     }
 
     fn unlink(&mut self, url: Url) -> Result<()> {
-        let c_str = url.to_string().clone() + "\0";
+        let c_str = url.to_string() + "\0";
 
         let physical_address = c_str.as_ptr() as usize;
 
