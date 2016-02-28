@@ -202,6 +202,7 @@ filesystem/bin/redoxfsd: crates/redoxfs/scheme/main.rs crates/redoxfs/scheme/*.r
 
 bins: \
 	coreutils \
+	filesystem/bin/ansi-test \
 	filesystem/bin/c-test \
 	filesystem/bin/dosbox \
 	filesystem/bin/ed \
