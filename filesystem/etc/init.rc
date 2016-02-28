@@ -4,8 +4,8 @@ example
 # New file scheme
 redoxfsd /etc/redoxfs.bin
 
-# Login process, handles debug console
-login
-
 # Orbital scheme, handles displays
 orbital
+
+# Login process, handles debug console
+login
