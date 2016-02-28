@@ -40,7 +40,7 @@ impl KScheme for TestScheme {
         "test"
     }
 
-    fn open(&mut self, _: &Url, _: usize) -> Result<Box<Resource>> {
+    fn open(&mut self, _: Url, _: usize) -> Result<Box<Resource>> {
         let mut string = String::new();
 
         macro_rules! reg_test {

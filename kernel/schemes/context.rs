@@ -15,7 +15,7 @@ impl KScheme for ContextScheme {
         "context"
     }
 
-    fn open(&mut self, _: &Url, _: usize) -> Result<Box<Resource>> {
+    fn open(&mut self, _: Url, _: usize) -> Result<Box<Resource>> {
         let mut string = format!("{:<6}{:<6}{:<8}{:<8}{:<8}{:<6}{:<6}{}\n",
                                  "PID",
                                  "PPID",
