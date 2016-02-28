@@ -5,6 +5,7 @@ use std::collections::BTreeMap;
 use std::collections::VecDeque;
 use std::io::{Read, Write, SeekFrom};
 use std::mem;
+use std::process::Command;
 use std::sync::{Arc, Mutex};
 use std::thread;
 use std::time::Instant;
@@ -112,7 +113,7 @@ impl OrbitalScheme {
             *rect = rect.intersection(&screen_rect);
 
             if ! rect.is_empty() {
-                self.image.roi(&rect).set(Color::rgb(75, 163, 253));
+                //TODO: Allow background to have different size: self.image.roi(&rect).set(Color::rgb(75, 163, 253));
                 self.image.roi(&rect).blend(&self.background.roi(rect));
 
                 let mut i = self.order.len();
@@ -405,36 +406,65 @@ fn server_loop(scheme_mutex: Arc<Mutex<OrbitalScheme>>, display: Arc<Socket>, so
     }
 }
 
+enum Status {
+    Starting,
+    Running,
+    Stopping
+}
+
 fn main() {
-    let socket = Socket::create(":orbital").map(|socket| Arc::new(socket)).unwrap();
+    let status_mutex = Arc::new(Mutex::new(Status::Starting));
 
-    match Socket::open("display:").map(|display| Arc::new(display)) {
-        Ok(display) => {
-            let path = display.path().unwrap().to_string();
-            let res = path.split(":").nth(1).unwrap_or("");
-            let width = res.split("/").nth(0).unwrap_or("").parse::<i32>().unwrap_or(0);
-            let height = res.split("/").nth(1).unwrap_or("").parse::<i32>().unwrap_or(0);
+    let status_daemon = status_mutex.clone();
+    let daemon_thread = thread::spawn(move || {
+        match Socket::create(":orbital").map(|socket| Arc::new(socket)) {
+            Ok(socket) => match Socket::open("display:").map(|display| Arc::new(display)) {
+                Ok(display) => {
+                    let path = display.path().map(|path| path.to_string()).unwrap_or(String::new());
+                    let res = path.split(":").nth(1).unwrap_or("");
+                    let width = res.split("/").nth(0).unwrap_or("").parse::<i32>().unwrap_or(0);
+                    let height = res.split("/").nth(1).unwrap_or("").parse::<i32>().unwrap_or(0);
 
-            println!("- Orbital: Found Display {}x{}", width, height);
-            println!("    Console: Press F1");
-            println!("    Desktop: Press F2");
+                    println!("orbital: found display {}x{}", width, height);
 
-            let config = Config::from_path("/etc/orbital.conf");
+                    let config = Config::from_path("/etc/orbital.conf");
 
-            let scheme = Arc::new(Mutex::new(OrbitalScheme::new(width, height, &config)));
+                    let scheme = Arc::new(Mutex::new(OrbitalScheme::new(width, height, &config)));
 
-            let scheme_event = scheme.clone();
-            let display_event = display.clone();
-            let socket_event = socket.clone();
+                    *status_daemon.lock().unwrap() = Status::Running;
 
-            let server_thread = thread::spawn(move || {
-                server_loop(scheme, display, socket);
-            });
+                    let scheme_event = scheme.clone();
+                    let display_event = display.clone();
+                    let socket_event = socket.clone();
 
-            event_loop(scheme_event, display_event, socket_event);
+                    let server_thread = thread::spawn(move || {
+                        server_loop(scheme, display, socket);
+                    });
 
-            server_thread.join().unwrap();
-        },
-        Err(err) => println!("- Orbital: No Display Found: {}", err)
+                    event_loop(scheme_event, display_event, socket_event);
+
+                    let _ = server_thread.join();
+                },
+                Err(err) => println!("orbital: no display found: {}", err)
+            },
+            Err(err) => println!("orbital: could not register orbital: {}", err)
+        }
+
+        *status_daemon.lock().unwrap() = Status::Stopping;
+    });
+
+    'waiting: loop {
+        match *status_mutex.lock().unwrap() {
+            Status::Starting => (),
+            Status::Running => {
+                Command::new("launcher").spawn().unwrap().wait().unwrap();
+                break 'waiting;
+            },
+            Status::Stopping => break 'waiting,
+        }
+
+        thread::sleep_ms(30);
     }
+
+    daemon_thread.join().unwrap();
 }

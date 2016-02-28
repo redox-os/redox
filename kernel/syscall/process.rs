@@ -30,7 +30,6 @@ pub fn do_sys_execve(path: *const u8, args: *const *const u8) -> Result<usize> {
 ///
 /// Unsafe due to interrupt disabling and raw pointers
 pub fn do_sys_exit(status: usize) -> ! {
-    //TODO: DOUBLE CHECK THIS FUNCTION
     {
         let mut contexts = ::env().contexts.lock();
 

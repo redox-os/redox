@@ -20,6 +20,7 @@
 #![feature(const_fn)]
 #![feature(dropck_parametricity)]
 #![feature(int_error_internals)]
+#![feature(into_cow)]
 #![feature(lang_items)]
 #![feature(macro_reexport)]
 #![feature(rand)]

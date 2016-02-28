@@ -1,3 +1,4 @@
+#! ion
 if a == a
   echo true a == a
 
