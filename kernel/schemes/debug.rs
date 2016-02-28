@@ -2,6 +2,8 @@ use alloc::boxed::Box;
 
 use collections::string::String;
 
+use core::cmp;
+
 use fs::{KScheme, Resource, Url};
 
 use system::error::Result;
@@ -21,13 +23,11 @@ impl Resource for DebugResource {
     fn path(&self, buf: &mut [u8]) -> Result <usize> {
         let path = b"debug:";
 
-        let mut i = 0;
-        while i < buf.len() && i < path.len() {
-            buf[i] = path[i];
-            i += 1;
+        for (b, p) in buf.iter_mut().zip(path.iter()) {
+            *b = *p;
         }
 
-        Ok(i)
+        Ok(cmp::min(buf.len(), path.len()))
     }
 
     fn read(&mut self, buf: &mut [u8]) -> Result<usize> {

@@ -1,4 +1,5 @@
 use boxed::Box;
+use core::mem;
 use io::{Result, Read, Write};
 use ops::DerefMut;
 use string::{String, ToString};
@@ -128,11 +129,13 @@ impl Command {
         let child_stderr = self.stderr.inner;
         let child_stdout = self.stdout.inner;
         let child_stdin = self.stdin.inner;
-        let child_code = move || -> Result<usize> {
+        let child_code = Box::new(move || -> Result<usize> {
             match child_stderr {
-                StdioType::Piped(_read, write) => {
+                StdioType::Piped(read, write) => {
+                    try!(sys_close(read));
                     try!(sys_close(2));
                     try!(sys_dup(write));
+                    try!(sys_close(write));
                 },
                 StdioType::Null => {
                     try!(sys_close(2));
@@ -141,9 +144,11 @@ impl Command {
             }
 
             match child_stdout {
-                StdioType::Piped(_read, write) => {
+                StdioType::Piped(read, write) => {
+                    try!(sys_close(read));
                     try!(sys_close(1));
                     try!(sys_dup(write));
+                    try!(sys_close(write));
                 },
                 StdioType::Null => {
                     try!(sys_close(1));
@@ -152,9 +157,11 @@ impl Command {
             }
 
             match child_stdin {
-                StdioType::Piped(read, _write) => {
+                StdioType::Piped(read, write) => {
+                    try!(sys_close(write));
                     try!(sys_close(0));
                     try!(sys_dup(read));
+                    try!(sys_close(read));
                 },
                 StdioType::Null => {
                     try!(sys_close(0));
@@ -163,41 +170,7 @@ impl Command {
             }
 
             unsafe { sys_execve(path_c.as_ptr(), args_c.as_ptr()) }
-        };
-
-        let parent_code = move |pid: usize| -> Result<Child> {
-            if let Err(err) = Error::demux(*res) {
-                Err(err)
-            } else {
-                Ok(Child {
-                    pid: pid,
-                    stdin: match self.stdin.inner {
-                        StdioType::Piped(_read, write) => {
-                            Some(ChildStdin {
-                                fd: write
-                            })
-                        },
-                        _ => None
-                    },
-                    stdout: match self.stdout.inner {
-                        StdioType::Piped(read, _write) => {
-                            Some(ChildStdout {
-                                fd: read
-                            })
-                        },
-                        _ => None
-                    },
-                    stderr: match self.stderr.inner {
-                        StdioType::Piped(read, _write) => {
-                            Some(ChildStderr {
-                                fd: read
-                            })
-                        },
-                        _ => None
-                    }
-                })
-            }
-        };
+        });
 
         match unsafe { sys_clone(CLONE_VM | CLONE_VFORK) } {
             Ok(0) => {
@@ -209,7 +182,44 @@ impl Command {
                     let _ = sys_exit(127);
                 }
             },
-            Ok(pid) => parent_code(pid),
+            Ok(pid) => {
+                //Must forget child_code to prevent double free
+                mem::forget(child_code);
+                if let Err(err) = Error::demux(*res) {
+                    Err(err)
+                } else {
+                    Ok(Child {
+                        pid: pid,
+                        stdin: match self.stdin.inner {
+                            StdioType::Piped(read, write) => {
+                                try!(sys_close(read));
+                                Some(ChildStdin {
+                                    fd: write
+                                })
+                            },
+                            _ => None
+                        },
+                        stdout: match self.stdout.inner {
+                            StdioType::Piped(read, write) => {
+                                try!(sys_close(write));
+                                Some(ChildStdout {
+                                    fd: read
+                                })
+                            },
+                            _ => None
+                        },
+                        stderr: match self.stderr.inner {
+                            StdioType::Piped(read, write) => {
+                                try!(sys_close(write));
+                                Some(ChildStderr {
+                                    fd: read
+                                })
+                            },
+                            _ => None
+                        }
+                    })
+                }
+            }
             Err(err) => Err(err)
         }
     }

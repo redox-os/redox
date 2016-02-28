@@ -1,7 +1,7 @@
 use core::{fmt, result};
 
 pub struct Error {
-    errno: isize,
+    pub errno: isize,
 }
 
 pub type Result<T> = result::Result<T, Error>;

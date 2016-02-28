@@ -1,5 +1,7 @@
 use alloc::boxed::Box;
 
+use core::mem;
+
 use system::syscall::{sys_clone, sys_exit, sys_yield, sys_nanosleep, sys_waitpid, CLONE_VM, CLONE_FS, CLONE_FILES,
               TimeSpec};
 
@@ -47,27 +49,27 @@ pub fn sleep_ms(ms: u32) {
 pub fn spawn<F, T>(f: F) -> JoinHandle<T>
     where F: FnOnce() -> T,
           F: Send + 'static,
-          T: ::core::fmt::Debug + Send + 'static
+          T: Send + 'static
 {
     let result_ptr: *mut Option<T> = Box::into_raw(box None);
-
-    let child_code = move || -> ! {
-        unsafe { *result_ptr = Some(f()) };
-        loop {
-            let _ = sys_exit(0);
-        }
-    };
-
-    let parent_code = move |pid: usize| -> JoinHandle<T> {
-        JoinHandle {
-            pid: pid,
-            result_ptr: result_ptr
-        }
-    };
+    //This must only be used by the child
+    let boxed_f = Box::new(f);
 
     match unsafe { sys_clone(CLONE_VM | CLONE_FS | CLONE_FILES).unwrap() } {
-        0 => child_code(),
-        pid => parent_code(pid)
+        0 => {
+            unsafe { *result_ptr = Some(boxed_f()) };
+            loop {
+                let _ = sys_exit(0);
+            }
+        },
+        pid => {
+            //Forget so that the parent will not drop while the child is using
+            mem::forget(boxed_f);
+            JoinHandle {
+                pid: pid,
+                result_ptr: result_ptr
+            }
+        }
     }
 }
 
