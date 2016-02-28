@@ -109,6 +109,23 @@ impl Console {
                 }
 
                 self.escape_sequence = false;
+            } else if c == 'H' || c == 'f' {
+                if let Some(ref mut display) = self.display {
+                    display.rect(self.point, Size::new(8, 16), self.background);
+                }
+
+                let row = self.sequence.get(0).map_or("", |p| &p).parse::<isize>().unwrap_or(0);
+                self.point.y = row * 16;
+
+                let col = self.sequence.get(1).map_or("", |p| &p).parse::<isize>().unwrap_or(0);
+                self.point.x = col * 8;
+
+                if let Some(ref mut display) = self.display {
+                    display.rect(self.point, Size::new(8, 16), self.foreground);
+                }
+                self.redraw = true;
+
+                self.escape_sequence = false;
             } else {
                 self.escape_sequence = false;
             }

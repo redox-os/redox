@@ -1,5 +1,5 @@
 # Orbital scheme, handles displays
-# orbital
+orbital
 
 # Example scheme
 example
@@ -11,4 +11,4 @@ redoxfsd /etc/redoxfs.bin
 login
 
 # Application launcher
-# launcher
+launcher
