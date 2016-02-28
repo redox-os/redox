@@ -190,7 +190,7 @@ impl KScheme for Ac97 {
         "audio"
     }
 
-    fn open(&mut self, _: &Url, _: usize) -> Result<Box<Resource>> {
+    fn open(&mut self, _: Url, _: usize) -> Result<Box<Resource>> {
         Ok(box Ac97Resource {
             audio: self.audio,
             bus_master: self.bus_master,

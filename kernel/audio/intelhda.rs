@@ -221,7 +221,7 @@ impl KScheme for IntelHda {
         "hda"
     }
 
-    fn open(&mut self, _: &Url, _: usize) -> Result<Box<Resource>> {
+    fn open(&mut self, _: Url, _: usize) -> Result<Box<Resource>> {
         Ok(box IntelHdaResource { base: self.base })
     }
 

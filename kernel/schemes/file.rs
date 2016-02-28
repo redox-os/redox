@@ -241,7 +241,7 @@ impl KScheme for FileScheme {
         "file"
     }
 
-    fn open(&mut self, url: &Url, flags: usize) -> Result<Box<Resource>> {
+    fn open(&mut self, url: Url, flags: usize) -> Result<Box<Resource>> {
         let mut path = url.reference();
         while path.starts_with('/') {
             path = &path[1..];
@@ -281,7 +281,7 @@ impl KScheme for FileScheme {
             }
 
             if list.len() > 0 {
-                Ok(box VecResource::new(&url.string, list.into_bytes()))
+                Ok(box VecResource::new(&url.to_string(), list.into_bytes()))
             } else {
                 Err(Error::new(ENOENT))
             }
@@ -352,7 +352,7 @@ impl KScheme for FileScheme {
         }
     }
 
-    fn unlink(&mut self, url: &Url) -> Result<()> {
+    fn unlink(&mut self, url: Url) -> Result<()> {
         let mut ret = Err(Error::new(ENOENT));
 
         let mut path = url.reference();

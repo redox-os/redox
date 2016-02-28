@@ -66,7 +66,7 @@ impl Environment {
     }
 
     /// Open a new resource
-    pub fn open(&self, url: &Url, flags: usize) -> Result<Box<Resource>> {
+    pub fn open(&self, url: Url, flags: usize) -> Result<Box<Resource>> {
         let url_scheme = url.scheme();
         if url_scheme.is_empty() {
             let url_path = url.reference();
@@ -113,7 +113,7 @@ impl Environment {
     }
 
     /// Makes a directory
-    pub fn mkdir(&self, url: &Url, flags: usize) -> Result<()> {
+    pub fn mkdir(&self, url: Url, flags: usize) -> Result<()> {
         let url_scheme = url.scheme();
         if !url_scheme.is_empty() {
             for mut scheme in self.schemes.lock().iter_mut() {
@@ -126,7 +126,7 @@ impl Environment {
     }
 
     /// Unlink a resource
-    pub fn unlink(&self, url: &Url) -> Result<()> {
+    pub fn unlink(&self, url: Url) -> Result<()> {
         let url_scheme = url.scheme();
         if !url_scheme.is_empty() {
             for mut scheme in self.schemes.lock().iter_mut() {

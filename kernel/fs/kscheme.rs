@@ -14,15 +14,15 @@ pub trait KScheme {
         ""
     }
 
-    fn open(&mut self, path: &Url, flags: usize) -> Result<Box<Resource>> {
+    fn open(&mut self, path: Url, flags: usize) -> Result<Box<Resource>> {
         Err(Error::new(ENOENT))
     }
 
-    fn mkdir(&mut self, path: &Url, flags: usize) -> Result<()> {
+    fn mkdir(&mut self, path: Url, flags: usize) -> Result<()> {
         Err(Error::new(ENOENT))
     }
 
-    fn unlink(&mut self, path: &Url) -> Result<()> {
+    fn unlink(&mut self, path: Url) -> Result<()> {
         Err(Error::new(ENOENT))
     }
 }
