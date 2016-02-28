@@ -371,8 +371,8 @@ impl KScheme for Scheme {
         &self.name
     }
 
-    fn open(&mut self, url: &Url, flags: usize) -> Result<Box<Resource>> {
-        let c_str = url.string.clone() + "\0";
+    fn open(&mut self, url: Url, flags: usize) -> Result<Box<Resource>> {
+        let c_str = url.to_string() + "\0";
 
         let physical_address = c_str.as_ptr() as usize;
 
@@ -414,8 +414,8 @@ impl KScheme for Scheme {
         }
     }
 
-    fn mkdir(&mut self, url: &Url, flags: usize) -> Result<()> {
-        let c_str = url.string.clone() + "\0";
+    fn mkdir(&mut self, url: Url, flags: usize) -> Result<()> {
+        let c_str = url.to_string().clone() + "\0";
 
         let physical_address = c_str.as_ptr() as usize;
 
@@ -451,8 +451,8 @@ impl KScheme for Scheme {
         }
     }
 
-    fn unlink(&mut self, url: &Url) -> Result<()> {
-        let c_str = url.string.clone() + "\0";
+    fn unlink(&mut self, url: Url) -> Result<()> {
+        let c_str = url.to_string().clone() + "\0";
 
         let physical_address = c_str.as_ptr() as usize;
 

@@ -3,70 +3,111 @@ use super::Resource;
 use alloc::boxed::Box;
 
 use collections::String;
-use collections::string::ToString;
+use collections::borrow::ToOwned;
+
+use core::result::Result::{Ok, Err};
 
 use common::slice::GetSlice;
 
-use system::error::Result;
+use system::error::{Result, Error};
 use system::syscall::{O_CREAT, O_RDWR, O_TRUNC};
 
-/// A URL, see wiki
-pub struct Url {
-    pub string: String,
+/// An URL, see wiki
+#[derive(Copy, Clone, PartialEq, Eq, Debug, Hash)]
+pub struct Url<'a> {
+    scheme: &'a str,
+    reference: &'a str,
 }
 
-impl Url {
+impl<'a> Url<'a> {
     /// Create a new empty URL
-    pub fn new() -> Url {
+    pub fn new() -> Url<'static> {
         Url {
-            string: String::new()
+            scheme: "",
+            reference: "",
         }
     }
 
     /// Create from str
-    pub fn from_str(string: &str) -> Url {
-        Url {
-            string: string.to_string()
-        }
+    pub fn from_str(string: &'a str) -> Result<Url<'a>> {
+        let split = if let Some(x) = string.find(':') {
+            x
+        } else {
+            return Err(Error::new(22));
+        };
+
+        Ok(Url {
+            scheme: string.get_slice(..split),
+            reference: string.get_slice(split + 1..),
+        })
     }
 
-    /// Create from string
-    pub fn from_string(string: String) -> Url {
-        Url {
-            string: string
-        }
+    /// Convert the url to string
+    pub fn to_string(self) -> String {
+        self.scheme.to_owned() + self.reference
     }
 
     /// Get the length of this URL
-    pub fn len(&self) -> usize {
-        self.string.len()
+    pub fn len(self) -> usize {
+        self.scheme.len() + self.reference.len() + 1
     }
 
     /// Open this URL (returns a resource)
-    pub fn open(&self) -> Result<Box<Resource>> {
-        ::env().open(&self, O_RDWR)
+    pub fn open(self) -> Result<Box<Resource>> {
+        ::env().open(self, O_RDWR)
     }
 
     /// Create this URL (returns a resource)
-    pub fn create(&self) -> Result<Box<Resource>> {
-        ::env().open(&self, O_CREAT | O_RDWR | O_TRUNC)
+    pub fn create(self) -> Result<Box<Resource>> {
+        ::env().open(self, O_CREAT | O_RDWR | O_TRUNC)
     }
 
     /// Return the scheme of this url
-    pub fn scheme(&self) -> &str {
-        self.string.get_slice(..self.string.find(':'))
+    pub fn scheme(self) -> &'a str {
+        self.scheme
     }
 
     /// Get the reference (after the ':') of the url
-    pub fn reference(&self) -> &str {
-        self.string.get_slice(self.string.find(':').map(|a| a + 1)..)
+    pub fn reference(self) -> &'a str {
+        self.reference
+    }
+
+    /// To owned equivalent
+    pub fn to_owned(&self) -> OwnedUrl {
+        OwnedUrl {
+            scheme: self.scheme.to_owned(),
+            reference: self.reference.to_owned(),
+        }
     }
 }
 
-impl Clone for Url {
-    fn clone(&self) -> Url {
+impl Clone for OwnedUrl {
+    fn clone(&self) -> OwnedUrl {
+        OwnedUrl {
+            scheme: self.scheme.clone(),
+            reference: self.reference.clone(),
+        }
+    }
+}
+
+pub struct OwnedUrl {
+    scheme: String,
+    reference: String,
+}
+
+impl OwnedUrl {
+    /// Create a new empty URL
+    pub fn new() -> OwnedUrl {
+        OwnedUrl {
+            scheme: String::new(),
+            reference: String::new(),
+        }
+    }
+
+    pub fn as_url(&self) -> Url {
         Url {
-            string: self.string.clone()
+            scheme: &self.scheme,
+            reference: &self.reference,
         }
     }
 }

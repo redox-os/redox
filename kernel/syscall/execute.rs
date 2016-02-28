@@ -75,7 +75,7 @@ fn execute_inner(url: Url) -> Result<(*mut Context, usize)> {
 
                 //debugln!("{}: {}: execute {}", context.pid, context.name, url.string);
 
-                context.name = url.string;
+                context.name = url.to_string();
                 context.cwd = Arc::new(UnsafeCell::new(unsafe { (*context.cwd.get()).clone() }));
 
                 unsafe { context.unmap() };
@@ -88,7 +88,7 @@ fn execute_inner(url: Url) -> Result<(*mut Context, usize)> {
             }
         },
         Err(msg) => {
-            debugln!("execute: failed to exec '{}': {}", url.string, msg);
+            debugln!("execute: failed to exec '{}': {}", url.to_string(), msg);
             Err(Error::new(ENOEXEC))
         }
     }
@@ -192,10 +192,10 @@ pub fn execute(args: Vec<String>) -> Result<usize> {
     let contexts = ::env().contexts.lock();
     let current = try!(contexts.current());
 
-    if let Ok((context_ptr, entry)) = execute_inner(Url::from_string(current.canonicalize(args.get(0).map_or("", |p| &p)))) {
+    if let Ok((context_ptr, entry)) = execute_inner(try!(Url::from_str(&current.canonicalize(args.get(0).map_or("", |p| &p))))) {
         execute_outer(context_ptr, entry, args);
-    }else{
-        let (context_ptr, entry) = try!(execute_inner(Url::from_string("file:/bin/".to_string() + args.get(0).map_or("", |p| &p))));
+    } else {
+        let (context_ptr, entry) = try!(execute_inner(Url::from_str(&("file:/bin/".to_string() + args.get(0).map_or("", |p| &p))).unwrap_or(Url::new())));
         execute_outer(context_ptr, entry, args);
     }
 }
