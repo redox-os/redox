@@ -1,5 +1,6 @@
 use fmt;
 use mem;
+use core_collections::borrow::{Cow, IntoCow};
 use string::String;
 
 pub struct Display<'a> {
@@ -57,6 +58,10 @@ impl From<String> for PathBuf {
 impl PathBuf {
     pub fn to_str(&self) -> Option<&str> {
         Some(&self.inner)
+    }
+
+    pub fn to_string_lossy(&self) -> Cow<str> {
+        self.inner.clone().into_cow()
     }
 
     pub fn to_string(&self) -> String {
