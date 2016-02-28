@@ -118,13 +118,15 @@ pub fn execute(mut args: Vec<String>) -> Result<usize> {
 
     let mut vec: Vec<u8> = Vec::new();
 
-    let mut url = Url::from_string(current.canonicalize(args.get(0).map_or("", |p| &p)));
+    let path = current.canonicalize(args.get(0).map_or("", |p| &p));
+    let mut url = try!(Url::from_str(&path)).to_cow();
     {
-        let mut resource = if let Ok(resource) = url.open() {
+        let mut resource = if let Ok(resource) = url.as_url().open() {
             resource
         } else {
-            url = Url::from_string("file:/bin/".to_string() + args.get(0).map_or("", |p| &p));
-            try!(url.open())
+            let path = "file:/bin/".to_string() + args.get(0).map_or("", |p| &p);
+            url = try!(Url::from_str(&path)).to_owned().into_cow();
+            try!(url.as_url().open())
         };
 
         'reading: loop {
@@ -139,7 +141,7 @@ pub fn execute(mut args: Vec<String>) -> Result<usize> {
 
     if vec.starts_with(b"#!") {
         if let Some(mut arg) = args.get_mut(0) {
-            *arg = url.string;
+            *arg = url.as_url().to_string();
         }
 
         let line = unsafe { str::from_utf8_unchecked(&vec[2..]) }.lines().next().unwrap_or("");
@@ -197,7 +199,7 @@ pub fn execute(mut args: Vec<String>) -> Result<usize> {
 
                     //debugln!("{}: {}: execute {}", context.pid, context.name, url.string);
 
-                    context.name = url.string;
+                    context.name = url.as_url().to_string();
                     context.cwd = Arc::new(UnsafeCell::new(unsafe { (*context.cwd.get()).clone() }));
 
                     unsafe { context.unmap() };
@@ -210,7 +212,7 @@ pub fn execute(mut args: Vec<String>) -> Result<usize> {
                 }
             },
             Err(msg) => {
-                debugln!("execute: failed to exec '{}': {}", url.string, msg);
+                debugln!("execute: failed to exec '{:?}': {}", url, msg);
                 Err(Error::new(ENOEXEC))
             }
         }

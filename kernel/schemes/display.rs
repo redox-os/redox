@@ -106,7 +106,7 @@ impl KScheme for DisplayScheme {
         "display"
     }
 
-    fn open(&mut self, _: &Url, _: usize) -> Result<Box<Resource>> {
+    fn open(&mut self, _: Url, _: usize) -> Result<Box<Resource>> {
         if ::env().console.lock().draw {
             if let Some(display) = Display::root() {
                 ::env().console.lock().draw = false;
