@@ -1,6 +1,3 @@
-# Orbital scheme, handles displays
-orbital
-
 # Example scheme
 example
 
@@ -10,5 +7,5 @@ redoxfsd /etc/redoxfs.bin
 # Login process, handles debug console
 login
 
-# Application launcher
-launcher
+# Orbital scheme, handles displays
+orbital

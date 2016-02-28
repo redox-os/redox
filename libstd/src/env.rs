@@ -82,8 +82,8 @@ pub fn current_dir() -> Result<PathBuf> {
 }
 
 /// Method to return the home directory
-pub fn home_dir() -> Result<PathBuf> {
-    get_path_from("/home/")
+pub fn home_dir() -> Option<PathBuf> {
+    get_path_from("/home/").ok()
 }
 
 /// Set the current directory
