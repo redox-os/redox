@@ -1,4 +1,4 @@
-extern crate io;
+pub extern crate io;
 
 /// PCI
 pub mod pci;
