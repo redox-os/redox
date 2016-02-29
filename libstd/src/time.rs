@@ -33,6 +33,10 @@ impl Duration {
             nanos: nanos,
         }
     }
+
+    pub fn from_millis(millis: u64) -> Self {
+        Duration::new((millis / 1000) as i64, (millis % 1000) as i32 * NANOS_PER_MILLI)
+    }
 }
 
 impl Add for Duration {
