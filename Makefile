@@ -157,7 +157,7 @@ apps: filesystem/apps/editor/main.bin \
 	  filesystem/apps/terminal/main.bin \
 	  filesystem/apps/viewer/main.bin
 
-$(BUILD)/libcoreutils.rlib: crates/coreutils/src/lib.rs $(BUILD)/libstd.rlib
+$(BUILD)/libcoreutils.rlib: crates/coreutils/src/lib.rs crates/coreutils/src/*.rs $(BUILD)/libstd.rlib
 	$(RUSTC) $(RUSTCFLAGS) --crate-name coreutils --crate-type lib -o $@ $<
 
 filesystem/bin/%: crates/coreutils/src/bin/%.rs $(BUILD)/crt0.o $(BUILD)/libcoreutils.rlib
@@ -185,7 +185,29 @@ coreutils: \
 	filesystem/bin/wc \
 	filesystem/bin/true \
 	filesystem/bin/yes
-	#filesystem/bin/env
+	#TODO: filesystem/bin/env
+
+$(BUILD)/libbinutils.rlib: crates/binutils/src/lib.rs crates/binutils/src/*.rs $(BUILD)/libcoreutils.rlib
+	$(RUSTC) $(RUSTCFLAGS) --crate-name binutils --crate-type lib -o $@ $<
+
+filesystem/bin/%: crates/binutils/src/bin/%.rs $(BUILD)/crt0.o $(BUILD)/libbinutils.rlib
+	mkdir -p filesystem/bin
+	$(RUSTC) $(RUSTCFLAGS) --crate-type bin -o $@ $<
+
+binutils: \
+	filesystem/bin/hex \
+	filesystem/bin/hexdump \
+	filesystem/bin/strings
+
+filesystem/bin/%: crates/extrautils/src/bin/%.rs $(BUILD)/crt0.o $(BUILD)/libcoreutils.rlib
+	mkdir -p filesystem/bin
+	$(RUSTC) $(RUSTCFLAGS) --crate-type bin -o $@ $<
+
+extrautils: \
+	filesystem/bin/cur \
+	filesystem/bin/cksum \
+	filesystem/bin/rem
+	#TODO: filesystem/bin/mtxt
 
 filesystem/bin/%: crates/%/main.rs crates/%/*.rs $(BUILD)/crt0.o $(BUILD)/libstd.rlib
 	mkdir -p filesystem/bin
@@ -217,6 +239,7 @@ filesystem/bin/redoxfsd: crates/redoxfs/scheme/main.rs crates/redoxfs/scheme/*.r
 
 bins: \
 	coreutils \
+	extrautils \
 	filesystem/bin/ansi-test \
 	filesystem/bin/c-test \
 	filesystem/bin/dosbox \
@@ -233,6 +256,7 @@ bins: \
 	filesystem/bin/tar \
 	filesystem/bin/test \
 	filesystem/bin/zfs
+	#TODO: binutils
 
 
 test: kernel/main.rs \
