@@ -5,7 +5,7 @@ example
 redoxfsd /etc/redoxfs.bin
 
 # Orbital scheme, handles displays
-orbital
+echo `orbital` to start GUI
 
 # Login process, handles debug console
 login
