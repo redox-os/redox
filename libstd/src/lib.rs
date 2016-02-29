@@ -57,7 +57,7 @@ extern crate core as __core;
 extern crate collections as core_collections;
 
 #[allow(deprecated)]
-extern crate rand as core_rand;
+pub extern crate rand as core_rand;
 extern crate alloc;
 extern crate rustc_unicode;
 // TODO extern crate libc;
