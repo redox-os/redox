@@ -17,7 +17,7 @@ use system::error::{Error, Result, EBADF, EFAULT, EINVAL, ENOENT, ESPIPE};
 use system::scheme::Packet;
 use system::syscall::{SYS_CLOSE, SYS_FPATH, SYS_FSYNC, SYS_FTRUNCATE,
                     SYS_LSEEK, SEEK_SET, SEEK_CUR, SEEK_END, SYS_MKDIR,
-                    SYS_OPEN, SYS_READ, SYS_WRITE, SYS_UNLINK};
+                    SYS_OPEN, SYS_READ, SYS_WRITE, SYS_RMDIR, SYS_UNLINK};
 
 use super::{Resource, ResourceSeek, KScheme, Url};
 
@@ -436,6 +436,43 @@ impl KScheme for Scheme {
 
         if virtual_address > 0 {
             let result = self.call(SYS_MKDIR, virtual_address, flags, 0);
+
+            if let Some(scheme) = self.inner.upgrade() {
+                unsafe {
+                    if let Ok(mut mem) = (*scheme.context).get_mem_mut(virtual_address) {
+                        mem.virtual_size = 0;
+                    }
+                    (*scheme.context).clean_mem();
+                }
+            }
+
+            result.and(Ok(()))
+        } else {
+            Err(Error::new(ENOENT))
+        }
+    }
+
+    fn rmdir(&mut self, url: Url) -> Result<()> {
+        let c_str = url.to_string() + "\0";
+
+        let physical_address = c_str.as_ptr() as usize;
+
+        let mut virtual_address = 0;
+        if let Some(scheme) = self.inner.upgrade() {
+            unsafe {
+                virtual_address = (*scheme.context).next_mem();
+                (*(*scheme.context).memory.get()).push(ContextMemory {
+                    physical_address: physical_address,
+                    virtual_address: virtual_address,
+                    virtual_size: c_str.len(),
+                    writeable: false,
+                    allocated: false,
+                });
+            }
+        }
+
+        if virtual_address > 0 {
+            let result = self.call(SYS_RMDIR, virtual_address, 0, 0);
 
             if let Some(scheme) = self.inner.upgrade() {
                 unsafe {

@@ -125,6 +125,19 @@ impl Environment {
         Err(Error::new(ENOENT))
     }
 
+    /// Remove a directory
+    pub fn rmdir(&self, url: Url) -> Result<()> {
+        let url_scheme = url.scheme();
+        if !url_scheme.is_empty() {
+            for mut scheme in self.schemes.lock().iter_mut() {
+                if scheme.scheme() == url_scheme {
+                    return scheme.rmdir(url);
+                }
+            }
+        }
+        Err(Error::new(ENOENT))
+    }
+
     /// Unlink a resource
     pub fn unlink(&self, url: Url) -> Result<()> {
         let url_scheme = url.scheme();
