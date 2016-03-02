@@ -169,6 +169,13 @@ pub fn do_sys_read(fd: usize, buf: *mut u8, count: usize) -> Result<usize> {
     resource.read(unsafe { slice::from_raw_parts_mut(buf, count) })
 }
 
+pub fn do_sys_rmdir(path: *const u8) -> Result<usize> {
+    let contexts = ::env().contexts.lock();
+    let current = try!(contexts.current());
+    let path_string = current.canonicalize(c_string_to_str(path));
+    ::env().rmdir(try!(Url::from_str(&path_string))).and(Ok(0))
+}
+
 pub fn do_sys_unlink(path: *const u8) -> Result<usize> {
     let contexts = ::env().contexts.lock();
     let current = try!(contexts.current());
