@@ -3,7 +3,6 @@
 #![feature(alloc)]
 #![feature(allocator)]
 #![feature(arc_counts)]
-#![feature(augmented_assignments)]
 #![feature(asm)]
 #![feature(box_syntax)]
 #![feature(collections)]
