@@ -311,7 +311,7 @@ doc: doc/kernel doc/std
 
 $(BUILD)/libcore.rlib: rust/src/libcore/lib.rs
 	$(MKDIR) -p $(BUILD)
-	$(RUSTC) $(RUSTCFLAGS) --cfg disable_float -o $@ $<
+	$(RUSTC) $(RUSTCFLAGS) -o $@ $<
 
 $(BUILD)/liballoc_system.rlib: liballoc_system/lib.rs $(BUILD)/libcore.rlib
 	$(RUSTC) $(RUSTCFLAGS) -o $@ $<
@@ -329,10 +329,16 @@ $(BUILD)/libgetopts.rlib: rust/src/libgetopts/lib.rs $(BUILD)/libserialize.rlib 
 	$(RUSTC) $(RUSTCFLAGS) -o $@ $<
 
 $(BUILD)/librand.rlib: rust/src/librand/lib.rs $(BUILD)/libcore.rlib $(BUILD)/liballoc.rlib $(BUILD)/librustc_unicode.rlib $(BUILD)/libcollections.rlib
-	$(RUSTC) $(RUSTCFLAGS) --cfg disable_float -o $@ $<
+	$(RUSTC) $(RUSTCFLAGS) -o $@ $<
+
+$(BUILD)/liblibc.rlib: rust/src/liblibc/src/lib.rs $(BUILD)/libcore.rlib
+	$(RUSTC) $(RUSTCFLAGS) -o $@ $<
+
+$(BUILD)/librealstd.rlib: rust/src/libstd/lib.rs $(BUILD)/libcore.rlib $(BUILD)/liblibc.rlib $(BUILD)/liballoc.rlib $(BUILD)/librustc_unicode.rlib $(BUILD)/libcollections.rlib $(BUILD)/librand.rlib
+	$(RUSTC) $(RUSTCFLAGS) --cfg unix -o $@ $<
 
 $(BUILD)/libstd.rlib: libstd/src/lib.rs libstd/src/*.rs libstd/src/*/*.rs libstd/src/*/*/*.rs $(BUILD)/libcore.rlib $(BUILD)/liballoc.rlib $(BUILD)/libcollections.rlib $(BUILD)/librand.rlib $(BUILD)/libsystem.rlib
-	$(RUSTC) $(RUSTCFLAGS) --cfg disable_float -o $@ $<
+	$(RUSTC) $(RUSTCFLAGS) -o $@ $<
 
 $(BUILD)/liborbclient.rlib: crates/orbclient/src/lib.rs crates/orbclient/src/*.rs crates/orbclient/src/*/*.rs $(BUILD)/libstd.rlib
 	$(RUSTC) $(RUSTCFLAGS) -o $@ $<
@@ -350,7 +356,7 @@ $(BUILD)/libsystem.rlib: crates/system/lib.rs crates/system/*.rs crates/system/*
 $(BUILD)/libredoxfs.rlib: crates/redoxfs/src/lib.rs crates/redoxfs/src/*.rs $(BUILD)/libsystem.rlib $(BUILD)/liballoc.rlib $(BUILD)/libcollections.rlib
 	$(RUSTC) $(RUSTCFLAGS) -o $@ $<
 
-$(BUILD)/kernel.rlib: kernel/main.rs kernel/*.rs kernel/*/*.rs kernel/*/*/*.rs  $(BUILD)/libio.rlib $(BUILD)/libredoxfs.rlib
+$(BUILD)/kernel.rlib: kernel/main.rs kernel/*.rs kernel/*/*.rs kernel/*/*/*.rs  $(BUILD)/libio.rlib $(BUILD)/libredoxfs.rlib filesystem/bin/redoxfsd
 	$(RUSTC) $(RUSTCFLAGS) -C lto -o $@ $<
 
 $(BUILD)/kernel.bin: $(BUILD)/kernel.rlib kernel/kernel.ld
