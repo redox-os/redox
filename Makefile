@@ -283,6 +283,17 @@ doc/std: libstd/src/lib.rs libstd/src/*.rs libstd/src/*/*.rs libstd/src/*/*/*.rs
 
 doc: doc/kernel doc/std
 
+man: filesystem/man
+
+filesystem/man:
+	mkdir man \
+	rm -rf filesystem/man |& true \
+	cd crates/docgen \
+	cargo build --release \
+	cd ../../ \
+	./crates/docgen/target/release/docgen \
+	mv man filesystem
+
 $(BUILD)/libcore.rlib: rust/src/libcore/lib.rs
 	$(MKDIR) -p $(BUILD)
 	$(RUSTC) $(RUSTCFLAGS) --cfg disable_float -o $@ $<
