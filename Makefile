@@ -233,10 +233,6 @@ filesystem/bin/launcher: crates/orbutils/src/launcher/main.rs crates/orbutils/sr
 	$(RUSTC) $(RUSTCFLAGS) --crate-type bin -o $@ $<
 
 
-filesystem/bin/redoxfsd: crates/redoxfs/scheme/main.rs crates/redoxfs/scheme/*.rs $(BUILD)/crt0.o $(BUILD)/libstd.rlib $(BUILD)/libredoxfs.rlib
-	mkdir -p filesystem/bin
-	$(RUSTC) $(RUSTCFLAGS) --crate-type bin -o $@ $<
-
 bins: \
 	coreutils \
 	extrautils \
@@ -251,7 +247,6 @@ bins: \
   	filesystem/bin/lua \
   	filesystem/bin/login \
   	filesystem/bin/orbital \
-  	filesystem/bin/redoxfsd \
   	filesystem/bin/sdl-test \
   	filesystem/bin/sdl-ttf-test \
   	filesystem/bin/sh \
@@ -260,6 +255,22 @@ bins: \
 	filesystem/bin/zfs
 	#TODO: binutils
 
+initfs/redoxfsd: crates/redoxfs/scheme/main.rs crates/redoxfs/scheme/*.rs $(BUILD)/crt0.o $(BUILD)/libstd.rlib $(BUILD)/libredoxfs.rlib
+	mkdir -p initfs/
+	$(RUSTC) $(RUSTCFLAGS) --crate-type bin -o $@ $<
+
+initfs: \
+	initfs/redoxfsd
+
+build/initfs.gen: initfs FORCE
+	echo 'use collections::BTreeMap;' > $@
+	echo 'pub fn gen() -> BTreeMap<&'"'"'static str, &'"'"'static [u8]> {' >> $@
+	echo '    let mut files: BTreeMap<&'"'"'static str, &'"'"'static [u8]> = BTreeMap::new();' >> $@
+	$(FIND) initfs -not -path '*/\.*' -type f -o -type l | $(CUT) -d '/' -f2- | $(SORT) \
+		| $(AWK) '{printf("    files.insert(\"%s\", include_bytes!(\"../initfs/%s\"));\n", $$0, $$0)}' \
+		>> $@
+	echo '    files' >> $@
+	echo '}' >> $@
 
 test: kernel/main.rs \
 	  rust/src/libtest/lib.rs \
@@ -270,7 +281,7 @@ test: kernel/main.rs \
 	$(RUSTC) $(RUSTCFLAGS) --test $<
 
 clean:
-	$(RM) -rf build doc filesystem/bin/ filesystem/apps/*/*.bin filesystem/apps/*/*.list
+	$(RM) -rf build doc filesystem/bin/ initfs/bin/ filesystem/apps/*/*.bin filesystem/apps/*/*.list
 
 FORCE:
 
@@ -356,7 +367,7 @@ $(BUILD)/libsystem.rlib: crates/system/lib.rs crates/system/*.rs crates/system/*
 $(BUILD)/libredoxfs.rlib: crates/redoxfs/src/lib.rs crates/redoxfs/src/*.rs $(BUILD)/libsystem.rlib $(BUILD)/liballoc.rlib $(BUILD)/libcollections.rlib
 	$(RUSTC) $(RUSTCFLAGS) -o $@ $<
 
-$(BUILD)/kernel.rlib: kernel/main.rs kernel/*.rs kernel/*/*.rs kernel/*/*/*.rs  $(BUILD)/libio.rlib $(BUILD)/libredoxfs.rlib filesystem/bin/redoxfsd
+$(BUILD)/kernel.rlib: kernel/main.rs kernel/*.rs kernel/*/*.rs kernel/*/*/*.rs  $(BUILD)/libio.rlib build/initfs.gen
 	$(RUSTC) $(RUSTCFLAGS) -C lto -o $@ $<
 
 $(BUILD)/kernel.bin: $(BUILD)/kernel.rlib kernel/kernel.ld

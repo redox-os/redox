@@ -6,6 +6,9 @@ use fs::{KScheme, Resource, Url, VecResource};
 
 use system::error::{Error, Result, ENOENT};
 
+#[path="../../build/initfs.gen"]
+pub mod gen;
+
 /// A memory scheme
 pub struct InitFsScheme {
     pub files: BTreeMap<&'static str, &'static [u8]>
@@ -13,12 +16,8 @@ pub struct InitFsScheme {
 
 impl InitFsScheme {
     pub fn new() -> Box<InitFsScheme> {
-        let mut files: BTreeMap<&'static str, &'static [u8]> = BTreeMap::new();
-
-        files.insert("redoxfsd", include_bytes!("../../filesystem/bin/redoxfsd"));
-
         Box::new(InitFsScheme {
-            files: files
+            files: gen::gen()
         })
     }
 }
