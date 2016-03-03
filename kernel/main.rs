@@ -63,6 +63,7 @@ use graphics::display;
 use schemes::context::*;
 use schemes::debug::*;
 use schemes::display::*;
+use schemes::initfs::*;
 use schemes::interrupt::*;
 use schemes::memory::*;
 use schemes::test::*;
@@ -252,8 +253,9 @@ unsafe fn init(tss_data: usize) {
             pci::pci_init(env);
 
             env.schemes.lock().push(DebugScheme::new());
-            env.schemes.lock().push(box DisplayScheme);
+            env.schemes.lock().push(InitFsScheme::new());
             env.schemes.lock().push(box ContextScheme);
+            env.schemes.lock().push(box DisplayScheme);
             env.schemes.lock().push(box InterruptScheme);
             env.schemes.lock().push(box MemoryScheme);
             env.schemes.lock().push(box TestScheme);

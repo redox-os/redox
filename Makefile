@@ -252,6 +252,8 @@ bins: \
   	filesystem/bin/login \
   	filesystem/bin/orbital \
   	filesystem/bin/redoxfsd \
+  	filesystem/bin/sdl-test \
+  	filesystem/bin/sdl-ttf-test \
   	filesystem/bin/sh \
 	filesystem/bin/tar \
 	filesystem/bin/test \

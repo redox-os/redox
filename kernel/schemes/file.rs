@@ -281,7 +281,7 @@ impl KScheme for FileScheme {
             }
 
             if list.len() > 0 {
-                Ok(box VecResource::new(&url.to_string(), list.into_bytes()))
+                Ok(box VecResource::new(url.to_string(), list.into_bytes()))
             } else {
                 Err(Error::new(ENOENT))
             }

@@ -84,7 +84,7 @@ impl Environment {
                     }
                 }
 
-                Ok(box VecResource::new(":", list.into_bytes()))
+                Ok(box VecResource::new(":".to_string(), list.into_bytes()))
             } else if flags & O_CREAT == O_CREAT {
                 for scheme in self.schemes.lock().iter_mut() {
                     if scheme.scheme() == url_path {
