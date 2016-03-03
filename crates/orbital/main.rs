@@ -297,6 +297,13 @@ impl Scheme for OrbitalScheme {
             }
         }
 
+        if let Some(id) = self.order.front() {
+            if let Some(window) = self.windows.get(&id){
+                schedule(&mut self.redraws, window.title_rect());
+                schedule(&mut self.redraws, window.rect());
+            }
+        }
+
         let window = Window::new(x, y, width, height, title);
         schedule(&mut self.redraws, window.title_rect());
         schedule(&mut self.redraws, window.rect());
@@ -333,6 +340,13 @@ impl Scheme for OrbitalScheme {
 
     fn close(&mut self, id: usize) -> Result<usize> {
         self.order.retain(|&e| e != id);
+
+        if let Some(id) = self.order.front() {
+            if let Some(window) = self.windows.get(&id){
+                schedule(&mut self.redraws, window.title_rect());
+                schedule(&mut self.redraws, window.rect());
+            }
+        }
 
         if let Some(window) = self.windows.remove(&id) {
             schedule(&mut self.redraws, window.title_rect());
