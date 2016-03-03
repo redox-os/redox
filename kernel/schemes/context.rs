@@ -1,6 +1,6 @@
 use alloc::boxed::Box;
 
-use collections::string::String;
+use collections::string::{String, ToString};
 
 use arch::context;
 
@@ -82,6 +82,6 @@ impl KScheme for ContextScheme {
             }
         }
 
-        Ok(box VecResource::new("context:", string.into_bytes()))
+        Ok(box VecResource::new("context:".to_string(), string.into_bytes()))
     }
 }

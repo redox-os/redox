@@ -1,5 +1,7 @@
 use alloc::boxed::Box;
 
+use collections::string::ToString;
+
 use fs::{KScheme, Resource, Url, VecResource};
 
 use system::error::Result;
@@ -70,6 +72,6 @@ impl KScheme for InterruptScheme {
             }
         }
 
-        Ok(box VecResource::new("interrupt:", string.into_bytes()))
+        Ok(box VecResource::new("interrupt:".to_string(), string.into_bytes()))
     }
 }
