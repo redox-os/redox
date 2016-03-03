@@ -363,7 +363,6 @@
 pub use core_collections::Bound;
 pub use core_collections::{BinaryHeap, BTreeMap, BTreeSet};
 pub use core_collections::{LinkedList, VecDeque};
-
 pub use core_collections::{binary_heap, btree_map, btree_set};
 pub use core_collections::{linked_list, vec_deque};
 

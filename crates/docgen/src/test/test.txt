@@ -1,0 +1,17 @@
+@MANSTART{test1}
+here you go
+@MANEND
+
+@MANSTART{test2}
+yeah test 2
+@MANEND
+
+/// <!- @MANSTART{doc} ->
+/// test doc mode
+/// <!- @MANEND ->
+
+/// <!- @MANSTART{doc-ml} ->
+/// test doc mode
+/// myltiline
+/// Oh, snap.
+/// <!- @MANEND ->

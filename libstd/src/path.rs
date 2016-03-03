@@ -13,6 +13,28 @@ impl<'a> fmt::Display for Display<'a> {
     }
 }
 
+/// A slice of a path (akin to `str`).
+///
+/// This type supports a number of operations for inspecting a path, including
+/// breaking the path into its components (separated by `/` or `\`, depending on
+/// the platform), extracting the file name, determining whether the path is
+/// absolute, and so on. More details about the overall approach can be found in
+/// the module documentation.
+///
+/// This is an *unsized* type, meaning that it must always be used behind a
+/// pointer like `&` or `Box`.
+///
+/// # Examples
+///
+/// ```
+/// use std::path::Path;
+///
+/// let path = Path::new("/tmp/foo/bar.txt");
+/// let file = path.file_name();
+/// let extension = path.extension();
+/// let parent_dir = path.parent();
+/// ```
+///
 pub struct Path {
     pub inner: str,
 }
@@ -44,7 +66,26 @@ impl AsRef<Path> for PathBuf {
     }
 }
 
-#[derive(Debug)]
+/// An owned, mutable path (akin to `String`).
+///
+/// This type provides methods like `push` and `set_extension` that mutate the
+/// path in place. It also implements `Deref` to `Path`, meaning that all
+/// methods on `Path` slices are available on `PathBuf` values as well.
+///
+/// More details about the overall approach can be found in
+/// the module documentation.
+///
+/// # Examples
+///
+/// ```
+/// use std::path::PathBuf;
+///
+/// let mut path = PathBuf::from("c:\\");
+/// path.push("windows");
+/// path.push("system32");
+/// path.set_extension("dll");
+/// ```
+#[derive(Clone, Debug)]
 pub struct PathBuf {
     pub inner: String,
 }
