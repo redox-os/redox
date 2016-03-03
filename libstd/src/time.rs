@@ -9,6 +9,30 @@ pub const NANOS_PER_MICRO: i32 = 1_000;
 pub const NANOS_PER_MILLI: i32 = 1_000_000;
 pub const NANOS_PER_SEC: i32 = 1_000_000_000;
 
+/// A duration type to represent a span of time, typically used for system
+/// timeouts.
+///
+/// Each duration is composed of a number of seconds and nanosecond precision.
+/// APIs binding a system timeout will typically round up the nanosecond
+/// precision if the underlying system does not support that level of precision.
+///
+/// Durations implement many common traits, including `Add`, `Sub`, and other
+/// ops traits. Currently a duration may only be inspected for its number of
+/// seconds and its nanosecond precision.
+///
+/// # Examples
+///
+/// ```
+/// use std::time::Duration;
+///
+/// let five_seconds = Duration::new(5, 0);
+/// let five_seconds_and_five_nanos = five_seconds + Duration::new(0, 5);
+///
+/// assert_eq!(five_seconds_and_five_nanos.as_secs(), 5);
+/// assert_eq!(five_seconds_and_five_nanos.subsec_nanos(), 5);
+///
+/// let ten_millis = Duration::from_millis(10);
+/// ```
 #[derive(Copy, Clone)]
 pub struct Duration {
     pub secs: i64,
@@ -16,7 +40,11 @@ pub struct Duration {
 }
 
 impl Duration {
-    /// Create a new duration
+    /// Creates a new `Duration` from the specified number of seconds and
+    /// additional nanosecond precision.
+    ///
+    /// If the nanoseconds is greater than 1 billion (the number of nanoseconds
+    /// in a second), then it will carry over into the seconds provided.
     pub fn new(mut secs: i64, mut nanos: i32) -> Self {
         while nanos >= NANOS_PER_SEC || (nanos > 0 && secs < 0) {
             secs += 1;
@@ -34,6 +62,7 @@ impl Duration {
         }
     }
 
+    /// Creates a new `Duration` from the specified number of milliseconds.
     pub fn from_millis(millis: u64) -> Self {
         Duration::new((millis / 1000) as i64, (millis % 1000) as i32 * NANOS_PER_MILLI)
     }
@@ -83,6 +112,7 @@ impl PartialOrd for Duration {
 pub struct Instant(Duration);
 
 impl Instant {
+    /// Returns an instant corresponding to "now".
     pub fn now() -> Instant {
         let mut tp = TimeSpec {
             tv_sec: 0,
@@ -94,10 +124,18 @@ impl Instant {
         Instant(Duration::new(tp.tv_sec, tp.tv_nsec))
     }
 
+    /// Deprecated, renamed to `duration_since`
     pub fn duration_from_earlier(&self, earlier: Instant) -> Duration {
         self.0 - earlier.0
     }
 
+    /// Returns the amount of time elapsed since this instant was created.
+    ///
+    /// # Panics
+    ///
+    /// This function may panic if the current time is earlier than this
+    /// instant, which is something that can happen if an `Instant` is
+    /// produced synthetically.
     pub fn elapsed(&self) -> Duration {
         Instant::now().0 - self.0
     }
@@ -107,6 +145,7 @@ impl Instant {
 pub struct SystemTime(Duration);
 
 impl SystemTime {
+    /// Returns the system time corresponding to "now".
     pub fn now() -> SystemTime {
         let mut tp = TimeSpec {
             tv_sec: 0,

@@ -11,6 +11,7 @@ pub trait ToNum {
 }
 
 impl ToNum for str {
+    /// Parse as an unsigned integer using a given radix
     fn to_num_radix(&self, radix: u32) -> u32 {
         if radix == 0 {
             return 0;
@@ -40,7 +41,7 @@ impl ToNum for str {
         num
     }
 
-    /// Parse the string as a signed integer using a given radix
+    /// Parse as a signed integer using a given radix
     fn to_num_radix_signed(&self, radix: u32) -> i32 {
         if self.starts_with('-') {
             -(self.get_slice(1..).to_num_radix(radix) as i32)
@@ -49,12 +50,12 @@ impl ToNum for str {
         }
     }
 
-    /// Parse it as a unsigned integer in base 10
+    /// Parse as a unsigned integer in base 10
     fn to_num(&self) -> u32 {
         self.to_num_radix(10)
     }
 
-    /// Parse it as a signed integer in base 10
+    /// Parse as a signed integer in base 10
     fn to_num_signed(&self) -> i32 {
         self.to_num_radix_signed(10)
     }
