@@ -37,7 +37,7 @@ impl<'a> Url<'a> {
         })
     }
 
-    /// Convert the url to string
+    /// Convert the URL to string
     pub fn to_string(self) -> String {
         self.scheme.to_owned() + ":" + self.reference
     }
@@ -47,12 +47,12 @@ impl<'a> Url<'a> {
         self.scheme.len() + self.reference.len() + 1
     }
 
-    /// Return the scheme of this url
+    /// Return the scheme of this URL
     pub fn scheme(self) -> &'a str {
         self.scheme
     }
 
-    /// Get the reference (after the ':') of the url
+    /// Get the reference (after the ':') of the URL
     pub fn reference(self) -> &'a str {
         self.reference
     }
@@ -65,12 +65,13 @@ impl<'a> Url<'a> {
         }
     }
 
-    /// Into a cow
+    /// Into a Copy-On-Write URL
     pub fn to_cow(self) -> CowUrl<'a> {
         CowUrl::Ref(self)
     }
 }
 
+/// An owned URL
 #[derive(Clone, PartialEq, Eq, Debug, Hash)]
 pub struct OwnedUrl {
     scheme: String,
@@ -86,7 +87,7 @@ impl OwnedUrl {
         }
     }
 
-    /// Into a cow
+    /// Into a Copy-On-Write URL
     pub fn into_cow<'a>(self) -> CowUrl<'a> {
         /*
              ______________
@@ -102,7 +103,7 @@ impl OwnedUrl {
         CowUrl::Owned(self)
     }
 
-    /// As an unowned URL
+    /// As an non-owned URL
     pub fn as_url(&self) -> Url {
         Url {
             scheme: &self.scheme,
