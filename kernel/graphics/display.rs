@@ -86,6 +86,16 @@ impl Display {
     }
 
     // Optimized {
+    pub unsafe fn copy_run(mut src: usize, mut dst: usize, len: usize) {
+        let end = dst + len;
+        while dst < end {
+            *(src as *mut u32) = *(dst as *mut u32);
+            src += 4;
+            dst += 4;
+        }
+    }
+
+    // Optimized {
     pub unsafe fn set_run(data: u32, mut dst: usize, len: usize) {
         let end = dst + len;
         while dst < end {
@@ -106,7 +116,7 @@ impl Display {
         if rows > 0 && rows < self.height {
             let offset = rows * self.bytesperrow;
             unsafe {
-                ::memmove(self.offscreen as *mut u8, (self.offscreen + offset) as *const u8, self.size - offset);
+                Display::copy_run(self.offscreen, self.offscreen + offset, self.size - offset);
                 Display::set_run(0, self.offscreen + self.size - offset, offset);
             }
         }
@@ -115,7 +125,7 @@ impl Display {
     /// Flip the display
     pub fn flip(&self) {
         unsafe {
-            ::memcpy(self.onscreen as *mut u8, self.offscreen as *const u8, self.size);
+            Display::copy_run(self.onscreen, self.offscreen, self.size);
         }
     }
 
@@ -149,11 +159,10 @@ impl Display {
                 let row_data = FONT[font_i + row];
                 for col in 0..8 {
                     if (row_data >> (7 - col)) & 1 == 1 {
-                        unsafe { *(dst as *mut u32) = data; }
+                        unsafe { *((dst + col * 4) as *mut u32) = data; }
                     }
-                    dst += 4;
                 }
-                dst += self.bytesperrow - 4 * 8;
+                dst += self.bytesperrow;
             }
         }
     }
