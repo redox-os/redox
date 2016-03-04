@@ -67,9 +67,9 @@ impl Window {
         let title_intersect = rect.intersection(&title_rect);
         if ! title_intersect.is_empty() {
             if focused {
-                image.roi(&title_intersect).set(Color::rgba(192, 192, 192, 224));
+                image.roi(&title_intersect).set(Color::rgb(192, 192, 192));
             } else {
-                image.roi(&title_intersect).set(Color::rgba(64, 64, 64, 224));
+                image.roi(&title_intersect).set(Color::rgb(64, 64, 64));
             }
 
             {
@@ -96,7 +96,7 @@ impl Window {
         let self_rect = self.rect();
         let intersect = self_rect.intersection(&rect);
         if ! intersect.is_empty() {
-            image.roi(&intersect).blend(&self.image.roi(&intersect.offset(-self_rect.left(), -self_rect.top())));
+            image.roi(&intersect).blit(&self.image.roi(&intersect.offset(-self_rect.left(), -self_rect.top())));
         }
     }
 
