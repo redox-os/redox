@@ -259,10 +259,7 @@ initfs/redoxfsd: crates/redoxfs/scheme/main.rs crates/redoxfs/scheme/*.rs $(BUIL
 	mkdir -p initfs/
 	$(RUSTC) $(RUSTCFLAGS) --crate-type bin -o $@ $<
 
-initfs: \
-	initfs/redoxfsd
-
-build/initfs.gen: initfs FORCE
+build/initfs.gen: initfs/redoxfsd
 	echo 'use collections::BTreeMap;' > $@
 	echo 'pub fn gen() -> BTreeMap<&'"'"'static str, &'"'"'static [u8]> {' >> $@
 	echo '    let mut files: BTreeMap<&'"'"'static str, &'"'"'static [u8]> = BTreeMap::new();' >> $@
@@ -483,9 +480,9 @@ virtualbox: $(BUILD)/harddrive.bin
 	$(VBM) convertfromraw $< $(BUILD)/harddrive.vdi
 	echo "Attach Disk"
 	#PATA
-	$(VBM) storagectl Redox --name ATA --add ide --controller PIIX4 --bootable on
+	#$(VBM) storagectl Redox --name ATA --add ide --controller PIIX4 --bootable on
 	#SATA
-	#$(VBM) storagectl Redox --name ATA --add sata --controller IntelAHCI --bootable on --portcount 1
+	$(VBM) storagectl Redox --name ATA --add sata --controller IntelAHCI --bootable on --portcount 1
 	$(VBM) storageattach Redox --storagectl ATA --port 0 --device 0 --type hdd --medium $(BUILD)/harddrive.vdi
 	echo "Run VM"
 	$(VB) --startvm Redox --dbg
