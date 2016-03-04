@@ -73,7 +73,7 @@ impl Resource for DisplayResource {
 
         if size > 0 {
             unsafe {
-                ::memcpy((self.display.onscreen + self.seek) as *mut u8, buf.as_ptr(), size);
+                Display::copy_run(self.display.onscreen + self.seek, buf.as_ptr() as usize, size);
             }
         }
 
