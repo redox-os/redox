@@ -24,6 +24,7 @@
 
 #![allow(deprecated)]
 #![deny(warnings)]
+//#![deny(missing_docs)]
 
 #[macro_use]
 extern crate alloc;
@@ -41,7 +42,7 @@ use arch::context::{context_switch, Context};
 use arch::memory;
 use arch::paging::Page;
 use arch::regs::Regs;
-use arch::tss::TSS;
+use arch::tss::Tss;
 
 use collections::string::ToString;
 
@@ -73,45 +74,114 @@ use syscall::{do_sys_chdir, do_sys_exit, do_sys_open, syscall_handle};
 
 pub use system::externs::*;
 
-/// Common std-like functionality
+/// Common std-like functionality.
+///
+/// This module implements basic primitives for kernel space. They are not exposed to userspace.
 #[macro_use]
 pub mod common;
+/// Macros used in the kernel.
 #[macro_use]
 pub mod macros;
-/// Allocation
+/// Allocation lang items.
+///
+/// This module defines __rust_allocate lang item and friends, simply wrapping the allocation
+/// method defined in `arch::memory`.
 pub mod alloc_system;
-/// ACPI
+/// ACPI implementation.
+///
+/// ACPI (Advanced Configuration and Power Interface) is the open standard for hardware detection,
+/// power management, and hardware configuration. This module contains support for a subset of the
+/// ACPI standard.
 pub mod acpi;
-/// Architecture dependant
+/// Architecture dependent objects.
+///
+/// This module contains various mechanisms and primitives, such as ELF loading, interrupt locking,
+/// memory paging, and so on.
+///
+/// This module is highly central to the kernel.
 pub mod arch;
-/// Audio
+/// Audio drivers.
+///
+/// Drivers for controlling, playing, and configuring audio output.
+///
+/// This module contains `ac97` and `intelhda` audio drivers. These are likely to be moved to
+/// userspace in the future.
 pub mod audio;
-/// Disk drivers
+/// Disk drivers.
+///
+/// Drivers for reading and writing disks. Currently includes drivers for following interfaces:
+/// AHCI (Advanced Host Controller Interface), IDE (Integrated Drive Electronics), and ATA-1 (AT
+/// Attachment Interface for Disk Drives).
 pub mod disk;
-/// Various drivers
+/// Miscellaneous drivers.
+///
+/// This module contains miscellaneous drivers, including PCI (Peripheral Component
+/// Interconnect), PS/2 (for keyboards and mice), RTC (real-time clock), SATA (Serial AT
+/// Attachment), and keyboard layouts.
 pub mod drivers;
-/// Environment
+/// The kernel environment.
+///
+/// This module defines the `Environment` struct, which has the job to track the state of the
+/// kernel. This includes context management, system console, scheme registrar, and so on.
 pub mod env;
-/// Filesystems
+/// File system.
+///
+/// This module manages virtual and non-virtual file systems. Furthermore, it defines URL,
+/// `Scheme`, and `Resource`.
 pub mod fs;
-/// Various graphical methods
+/// Graphic management.
+///
+/// This module contains the initial display manager and various graphics primitives.
 pub mod graphics;
-/// Networking
+/// Networking.
+///
+/// This module contains drivers (e.g, intel8254x and rtl8139), primitives, schemes, and data
+/// structures related to networking, providing Redox's networking stack.
 pub mod network;
-/// Panic
+/// Kernel panic handling.
+///
+/// This module defines the kernel panic mechanism, which will halt the kernel (i.e. `sti; hlt;`)
+/// in case of panics.
 pub mod panic;
-/// Schemes
+/// Schemes.
+///
+/// This module contains various schemes, such as `display:`, `debug:`, `memory:` and so on.
 pub mod schemes;
-/// Synchronization
+/// Synchronization primitives.
+///
+/// This module provides various primitives for performing synchronization to avoid data races,
+/// interrupts, and other unsafe conditions, when performing concurrent computation.
 pub mod sync;
-/// System calls
+/// System calls and system call handler.
+///
+/// This module defines the system call handler and system calls of Redox.
+///
+/// System calls are the only way an userspace application can communicate with the kernel space.
+/// Redox do, by design, have a very small number of syscalls when compared to Linux.
+///
+/// The system call interface is very similar to POSIX's system calls, making Redox able to run
+/// many Unix programs.
 pub mod syscall;
-/// USB input/output
+/// Drivers and primitives for USB input/output.
+///
+/// USB (Universal Serial Bus) is a standardized serial bus interface, used for many peripherals.
+/// This modules contains drivers and other tools for USB.
 pub mod usb;
 
-pub static mut TSS_PTR: Option<&'static mut TSS> = None;
+/// The TTS pointer.
+///
+/// This static contains a mutable pointer to the TSS (task state segment), which is a data
+/// structure used on x86-based architectures for holding information about a specific task. See
+/// `Tss` for more information.
+pub static mut TSS_PTR: Option<&'static mut Tss> = None;
+/// The environment pointer.
+///
+/// The pointer to the kernel environment, holding the state of the kernel.
 pub static mut ENV_PTR: Option<&'static mut Environment> = None;
 
+/// Get the environment pointer.
+///
+/// This is unsafe, due to reading of a mutable static variable.
 pub fn env() -> &'static Environment {
     unsafe {
         match ENV_PTR {
@@ -121,13 +191,18 @@ pub fn env() -> &'static Environment {
     }
 }
 
-/// Pit duration
+/// The PIT (programmable interval timer) duration.
+///
+/// This duration defines the PIT interval, which is added to the monotonic clock and the real time
+/// clock, when interrupt 0x20 is received.
 static PIT_DURATION: Duration = Duration {
     secs: 0,
     nanos: 4500572,
 };
 
-/// Idle loop (active while idle)
+/// The idle loop.
+///
+/// This loop runs while the system is idle.
 fn idle_loop() {
     loop {
         unsafe { asm!("cli" : : : : "intel", "volatile"); }
@@ -135,7 +210,7 @@ fn idle_loop() {
         let mut halt = true;
 
         for context in env().contexts.lock().iter().skip(1) {
-            if ! context.blocked {
+            if !context.blocked {
                 halt = false;
                 break;
             }
@@ -151,20 +226,35 @@ fn idle_loop() {
 }
 
 extern {
+    /// The starting byte of the text (code) data segment.
     static mut __text_start: u8;
+    /// The ending byte of the text (code) data segment.
     static mut __text_end: u8;
+    /// The starting byte of the _.rodata_ (read-only data) segment.
     static mut __rodata_start: u8;
+    /// The ending byte of the _.rodata_ (read-only data) segment.
     static mut __rodata_end: u8;
+    /// The starting byte of the _.data_ segment.
     static mut __data_start: u8;
+    /// The ending byte of the _.data_ segment.
     static mut __data_end: u8;
+    /// The starting byte of the _.bss_ (uninitialized data) segment.
     static mut __bss_start: u8;
+    /// The ending byte of the _.bss_ (uninitialized data) segment.
     static mut __bss_end: u8;
 }
 
+/// Test of zero values in BSS.
 static BSS_TEST_ZERO: usize = 0;
-static BSS_TEST_NONZERO: usize = usize::MAX;
+/// Test of non-zero values in BSS.
+static BSS_TEST_NONZERO: usize = !0;
 
-/// Initialize kernel
+/// Initialize the kernel.
+///
+/// This will initialize the kernel: the environment, the memory allocator, the memory pager, PCI and so
+/// on.
+///
+/// Note that this will not start the even loop.
 unsafe fn init(tss_data: usize) {
 
     // Test
@@ -180,15 +270,15 @@ unsafe fn init(tss_data: usize) {
             memset(start_ptr, 0, size);
         }
 
-        assert_eq!(BSS_TEST_ZERO, 0);
-        assert_eq!(BSS_TEST_NONZERO, usize::MAX);
+        debug_assert_eq!(BSS_TEST_ZERO, 0);
+        debug_assert_eq!(BSS_TEST_NONZERO, usize::MAX);
     }
 
     // Setup paging, this allows for memory allocation
     Page::init();
     memory::cluster_init();
 
-    //Get the VBE information before unmapping the first megabyte
+    // Get the VBE information before unmapping the first megabyte
     display::vbe_init();
 
     // Unmap first page (TODO: Unmap more)
@@ -204,7 +294,7 @@ unsafe fn init(tss_data: usize) {
         }
     }
 
-    //Remap text
+    // Remap text
     {
         let start_ptr = & __text_start as *const u8 as usize;
         let end_ptr = & __text_end as *const u8 as usize;
@@ -217,7 +307,7 @@ unsafe fn init(tss_data: usize) {
         }
     }
 
-    //Remap rodata
+    // Remap rodata
     {
         let start_ptr = & __rodata_start as *const u8 as usize;
         let end_ptr = & __rodata_end as *const u8 as usize;
@@ -230,7 +320,7 @@ unsafe fn init(tss_data: usize) {
         }
     }
 
-    TSS_PTR = Some(&mut *(tss_data as *mut TSS));
+    TSS_PTR = Some(&mut *(tss_data as *mut Tss));
     ENV_PTR = Some(&mut *Box::into_raw(Environment::new()));
 
     match ENV_PTR {
@@ -286,7 +376,7 @@ unsafe fn init(tss_data: usize) {
 #[cold]
 #[inline(never)]
 #[no_mangle]
-/// Take regs for kernel calls and exceptions
+/// Interrupt and exception handling.
 pub extern "cdecl" fn kernel(interrupt: usize, mut regs: &mut Regs) {
     macro_rules! exception_inner {
         ($name:expr) => ({
