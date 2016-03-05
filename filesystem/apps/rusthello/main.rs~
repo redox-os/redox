@@ -1,7 +1,7 @@
 //! A simple Reversi game written in Rust with love
 //! by Enrico Ghiorzi
 
-//extern crate rand;
+extern crate rand;
 
 // Import modules
 mod reversi;
