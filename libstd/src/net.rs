@@ -1,6 +1,7 @@
 //! A module dealing with network connections
 
-use string::{String, ToString};
+use string::String;
+use core_collections::borrow::ToOwned;
 use to_num::ToNum;
 use vec::Vec;
 
@@ -77,7 +78,7 @@ impl MACAddr {
 
         let mut i = 0;
         for part in string.split('.') {
-            let octet = part.to_string().to_num_radix(16) as u8;
+            let octet = part.to_owned().to_num_radix(16) as u8;
             match i {
                 0 => addr.bytes[0] = octet,
                 1 => addr.bytes[1] = octet,
@@ -93,7 +94,7 @@ impl MACAddr {
         addr
     }
 
-    pub fn to_string(&self) -> String {
+    pub fn to_owned(&self) -> String {
         format!("{:X}:{:X}:{:X}:{:X}:{:X}:{:X}",
                 self.bytes[0],
                 self.bytes[1],
@@ -128,7 +129,7 @@ impl IPv4Addr {
 
         let mut i = 0;
         for part in string.split('.') {
-            let octet = part.to_string().to_num() as u8;
+            let octet = part.to_owned().to_num() as u8;
             match i {
                 0 => addr.bytes[0] = octet,
                 1 => addr.bytes[1] = octet,
@@ -142,7 +143,7 @@ impl IPv4Addr {
         addr
     }
 
-    pub fn to_string(&self) -> String {
+    pub fn to_owned(&self) -> String {
         format!("{}.{}.{}.{}",
                 self.bytes[0],
                 self.bytes[1],
