@@ -2,7 +2,8 @@ use boxed::Box;
 use core::mem;
 use io::{Result, Read, Write};
 use ops::DerefMut;
-use string::{String, ToString};
+use string::String;
+use core_collections::borrow::ToOwned;
 use vec::Vec;
 
 use system::error::Error;
@@ -81,7 +82,7 @@ pub struct Command {
 impl Command {
     pub fn new(path: &str) -> Command {
         Command {
-            path: path.to_string(),
+            path: path.to_owned(),
             args: Vec::new(),
             stdin: Stdio::inherit(),
             stdout: Stdio::inherit(),
@@ -90,7 +91,7 @@ impl Command {
     }
 
     pub fn arg(&mut self, arg: &str) -> &mut Command {
-        self.args.push(arg.to_string());
+        self.args.push(arg.to_owned());
         self
     }
 
@@ -112,11 +113,11 @@ impl Command {
     pub fn spawn(&mut self) -> Result<Child> {
         let mut res = Box::new(0);
 
-        let path_c = self.path.to_string() + "\0";
+        let path_c = self.path.to_owned() + "\0";
 
         let mut args_vec: Vec<String> = Vec::new();
         for arg in self.args.iter() {
-            args_vec.push(arg.to_string() + "\0");
+            args_vec.push(arg.to_owned() + "\0");
         }
 
         let mut args_c: Vec<*const u8> = Vec::new();
