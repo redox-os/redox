@@ -23,8 +23,8 @@ use syscall::{do_sys_exit, Error, Result, CLONE_FILES, CLONE_FS, CLONE_VM, CLONE
 
 use sync::WaitMap;
 
-pub const CONTEXT_STACK_SIZE: usize = 1024 * 1024;
-pub const CONTEXT_STACK_ADDR: usize = 0x70000000;
+pub const CONTEXT_STACK_SIZE: usize = 64 * 1024;
+pub const CONTEXT_STACK_ADDR: usize = 0xB0000000;
 
 pub struct ContextManager {
     pub inner: Vec<Box<Context>>,
