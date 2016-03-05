@@ -62,7 +62,7 @@ When the game ends, the player with more disks turned to its side wins. \
 Ties are possible as well, if both player have the same number of disks.\n\n\n
 \tHOW TO USE RUSThello:\n
 To play RUSThello you first have to choose who is playing on each side, Dark and Light. \
-You can choose a human players or an AI. \
+You can choose among human players or AIs of various strength. \
 Choose human for both players and challenge a friend, or test your skills against an AI, or even relax and watch as two AIs compete with each other: all matches are possible!\n
 As a human player, you move by entering the coordinates (a letter and a number) of the square you want to place your disk on, e.g. all of 'c4', 'C4', '4c' and '4C' are valid and equivalent coordinates. \
 For your ease of use, all legal moves are marked on the board with a *.\n
