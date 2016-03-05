@@ -1311,7 +1311,7 @@ fn test_resize_policy() {
 /// impl Viking {
 ///     /// Create a new Viking.
 ///     fn new(name: &str, country: &str) -> Viking {
-///         Viking { name: name.to_string(), country: country.to_string() }
+///         Viking { name: name.to_owned(), country: country.to_owned() }
 ///     }
 /// }
 ///

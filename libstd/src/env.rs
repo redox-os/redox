@@ -2,6 +2,8 @@
 
 use alloc::boxed::Box;
 
+use core_collections::borrow::ToOwned;
+
 use fs::File;
 use path::{Path, PathBuf};
 use io::Result;
@@ -91,7 +93,7 @@ pub fn set_current_dir<P: AsRef<Path>>(path: P) -> Result<()> {
     let file_result = if path.as_ref().inner.is_empty() || path.as_ref().inner.ends_with('/') {
         File::open(&path.as_ref().inner)
     } else {
-        File::open(&(path.as_ref().inner.to_string() + "/"))
+        File::open(&(path.as_ref().inner.to_owned() + "/"))
     };
 
     match file_result {
@@ -99,7 +101,7 @@ pub fn set_current_dir<P: AsRef<Path>>(path: P) -> Result<()> {
             match file.path() {
                 Ok(path) => {
                     if let Some(path_str) = path.to_str() {
-                        let path_c = path_str.to_string() + "\0";
+                        let path_c = path_str.to_owned() + "\0";
                         unsafe {
                             sys_chdir(path_c.as_ptr()).and(Ok(()))
                         }
@@ -116,5 +118,5 @@ pub fn set_current_dir<P: AsRef<Path>>(path: P) -> Result<()> {
 
 // TODO: Fully implement `env::var()`
 pub fn var(_key: &str) -> Result<String> {
-    Ok("This is code filler".to_string())
+    Ok("This is code filler".to_owned())
 }
