@@ -1,7 +1,8 @@
+use core_collections::borrow::ToOwned;
 use io::{Read, Result, Write, Seek, SeekFrom};
 use path::PathBuf;
 use str;
-use string::{String, ToString};
+use string::String;
 use vec::Vec;
 
 use system::syscall::{sys_open, sys_dup, sys_close, sys_fpath, sys_ftruncate, sys_read,
@@ -23,7 +24,7 @@ impl File {
 
     /// Open a new file using a path
     pub fn open(path: &str) -> Result<File> {
-        let path_c = path.to_string() + "\0";
+        let path_c = path.to_owned() + "\0";
         unsafe {
             sys_open(path_c.as_ptr(), O_RDWR, 0).map(|fd| File::from_fd(fd) )
         }
@@ -31,7 +32,7 @@ impl File {
 
     /// Create a new file using a path
     pub fn create(path: &str) -> Result<File> {
-        let path_c = path.to_string() + "\0";
+        let path_c = path.to_owned() + "\0";
         unsafe {
             sys_open(path_c.as_ptr(), O_CREAT | O_RDWR | O_TRUNC, 0).map(|fd| File::from_fd(fd) )
         }
@@ -190,7 +191,7 @@ pub fn canonicalize(path: &str) -> Result<PathBuf> {
 /// Create a new directory, using a path
 /// The default mode of the directory is 744
 pub fn create_dir(path: &str) -> Result<()> {
-    let path_c = path.to_string() + "\0";
+    let path_c = path.to_owned() + "\0";
     unsafe {
         sys_mkdir(path_c.as_ptr(), 755).and(Ok(()))
     }
@@ -200,7 +201,7 @@ pub fn read_dir(path: &str) -> Result<ReadDir> {
     let file_result = if path.is_empty() || path.ends_with('/') {
         File::open(path)
     } else {
-        File::open(&(path.to_string() + "/"))
+        File::open(&(path.to_owned() + "/"))
     };
 
     match file_result {
@@ -210,14 +211,14 @@ pub fn read_dir(path: &str) -> Result<ReadDir> {
 }
 
 pub fn remove_dir(path: &str) -> Result<()> {
-    let path_c = path.to_string() + "\0";
+    let path_c = path.to_owned() + "\0";
     unsafe {
         sys_rmdir(path_c.as_ptr()).and(Ok(()))
     }
 }
 
 pub fn remove_file(path: &str) -> Result<()> {
-    let path_c = path.to_string() + "\0";
+    let path_c = path.to_owned() + "\0";
     unsafe {
         sys_unlink(path_c.as_ptr()).and(Ok(()))
     }
