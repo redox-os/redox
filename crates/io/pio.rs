@@ -1,6 +1,6 @@
 use core::marker::PhantomData;
 
-use super::Io;
+use super::io::Io;
 
 /// Generic PIO
 #[derive(Copy, Clone)]
