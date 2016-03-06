@@ -2,7 +2,9 @@ use arch::context::context_switch;
 
 use common::time::Duration;
 
-use super::{Error, Result, CLOCK_MONOTONIC, CLOCK_REALTIME, EFAULT, EINVAL, TimeSpec};
+use syscall::{CLOCK_MONOTONIC, CLOCK_REALTIME, TimeSpec};
+
+use system::error::{Error, Result, EFAULT, EINVAL};
 
 pub fn do_sys_clock_gettime(clock: usize, tp: *mut TimeSpec) -> Result<usize> {
     if tp as usize > 0 {

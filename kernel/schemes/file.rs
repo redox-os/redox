@@ -19,7 +19,9 @@ use fs::redoxfs::{FileSystem, Node, NodeData};
 
 use fs::{KScheme, Resource, ResourceSeek, Url, VecResource};
 
-use syscall::{Error, Result, O_CREAT, ENOENT, EIO};
+use syscall::O_CREAT;
+
+use system::error::{Error, Result, ENOENT, EIO};
 
 /// A file resource
 pub struct FileResource {
