@@ -3,7 +3,6 @@ use super::{Resource, ResourceSeek};
 use alloc::boxed::Box;
 
 use collections::{String, Vec};
-use collections::string::ToString;
 
 use core::cmp::{max, min};
 
@@ -17,9 +16,9 @@ pub struct VecResource {
 }
 
 impl VecResource {
-    pub fn new(path: &str, data: Vec<u8>) -> Self {
+    pub fn new(path: String, data: Vec<u8>) -> Self {
         VecResource {
-            path: path.to_string(),
+            path: path,
             data: data,
             seek: 0,
         }

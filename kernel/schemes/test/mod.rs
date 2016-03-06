@@ -1,6 +1,6 @@
 use alloc::boxed::Box;
 
-use collections::string::String;
+use collections::string::{String, ToString};
 
 use fs::{KScheme, Resource, Url, VecResource};
 
@@ -40,7 +40,7 @@ impl KScheme for TestScheme {
         "test"
     }
 
-    fn open(&mut self, _: &Url, _: usize) -> Result<Box<Resource>> {
+    fn open(&mut self, _: Url, _: usize) -> Result<Box<Resource>> {
         let mut string = String::new();
 
         macro_rules! reg_test {
@@ -91,6 +91,6 @@ impl KScheme for TestScheme {
         reg_test!(!meta::meta_test_woah_fail, "Testing the fail testing (wut)");
         reg_test!(get_slice::test, "GetSlice");
 
-        Ok(box VecResource::new("test:", string.into_bytes()))
+        Ok(box VecResource::new("test:".to_string(), string.into_bytes()))
     }
 }

@@ -23,8 +23,8 @@ use syscall::{do_sys_exit, Error, Result, CLONE_FILES, CLONE_FS, CLONE_VM, CLONE
 
 use sync::WaitMap;
 
-pub const CONTEXT_STACK_SIZE: usize = 1024 * 1024;
-pub const CONTEXT_STACK_ADDR: usize = 0x70000000;
+pub const CONTEXT_STACK_SIZE: usize = 64 * 1024;
+pub const CONTEXT_STACK_ADDR: usize = 0xB0000000;
 
 pub struct ContextManager {
     pub inner: Vec<Box<Context>>,
@@ -416,50 +416,50 @@ pub struct ContextFile {
 }
 
 pub struct Context {
-// These members are used for control purposes by the scheduler {
-// The PID of the context
+    // These members are used for control purposes by the scheduler {
+    // The PID of the context
     pub pid: usize,
-/// The PID of the parent
+    /// The PID of the parent
     pub ppid: usize,
-/// The name of the context
+    /// The name of the context
     pub name: String,
-/// Indicates that the context is blocked, and should not be switched to
+    /// Indicates that the context is blocked, and should not be switched to
     pub blocked: bool,
-/// Indicates that the context exited
+    /// Indicates that the context exited
     pub exited: bool,
-/// How many times was the context switched to
+    /// How many times was the context switched to
     pub switch: usize,
-/// The number of time slices used
+    /// The number of time slices used
     pub time: usize,
-/// Indicates that the context needs to unblock parent
+    /// Indicates that the context needs to unblock parent
     pub vfork: Option<*mut Context>,
-/// When to wake up
+    /// When to wake up
     pub wake: Option<Duration>,
-// }
+    // }
 
-// These members control the stack and registers and are unique to each context {
-// The kernel stack
+    // These members control the stack and registers and are unique to each context {
+    // The kernel stack
     pub kernel_stack: usize,
-/// The current kernel registers
+    /// The current kernel registers
     pub regs: Regs,
-/// The location used to save and load SSE and FPU registers
+    /// The location used to save and load SSE and FPU registers
     pub fx: usize,
-/// The context stack
+    /// The context stack
     pub stack: Option<ContextMemory>,
-/// Indicates that registers can be loaded (they must be saved first)
+    /// Indicates that registers can be loaded (they must be saved first)
     pub loadable: bool,
-// }
+    // }
 
-// These members are cloned for threads, copied or created for processes {
-/// Program working directory, cloned for threads, copied or created for processes. Modified by chdir
+    // These members are cloned for threads, copied or created for processes {
+    /// Program working directory, cloned for threads, copied or created for processes. Modified by chdir
     pub cwd: Arc<UnsafeCell<String>>,
-/// Program memory, cloned for threads, copied or created for processes. Modified by memory allocation
+    /// Program memory, cloned for threads, copied or created for processes. Modified by memory allocation
     pub memory: Arc<UnsafeCell<Vec<ContextMemory>>>,
-/// Program files, cloned for threads, copied or created for processes. Modified by file operations
+    /// Program files, cloned for threads, copied or created for processes. Modified by file operations
     pub files: Arc<UnsafeCell<Vec<ContextFile>>>,
-// }
+    // }
 
-/// Exit statuses of children
+    /// Exit statuses of children
     pub statuses: WaitMap<usize, usize>,
 }
 

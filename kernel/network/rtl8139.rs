@@ -267,7 +267,7 @@ impl KScheme for Rtl8139 {
         "network"
     }
 
-    fn open(&mut self, _: &Url, _: usize) -> Result<Box<Resource>> {
+    fn open(&mut self, _: Url, _: usize) -> Result<Box<Resource>> {
         Ok(NetworkResource::new(self))
     }
 

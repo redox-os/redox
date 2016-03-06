@@ -6,6 +6,8 @@ pub mod debug;
 pub mod display;
 /// File scheme
 pub mod file;
+/// Init Filesystem
+pub mod initfs;
 /// Interrupt scheme
 pub mod interrupt;
 /// Memory scheme

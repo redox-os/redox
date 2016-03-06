@@ -25,3 +25,9 @@
 [submodule "crates/redoxfs"]
 	path = crates/redoxfs
 	url = https://github.com/redox-os/redoxfs.git
+[submodule "crates/extrautils"]
+	path = crates/extrautils
+	url = https://github.com/redox-os/extrautils.git
+[submodule "crates/binutils"]
+	path = crates/binutils
+	url = https://github.com/redox-os/binutils.git

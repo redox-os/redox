@@ -11,8 +11,6 @@ use drivers::io::{Io, Pio};
 
 use graphics::color::Color;
 use graphics::display::Display;
-use graphics::point::Point;
-use graphics::size::Size;
 
 use sync::WaitQueue;
 
@@ -27,7 +25,8 @@ const WHITE: Color = Color::new(203, 204, 205);
 
 pub struct Console {
     pub display: Option<Box<Display>>,
-    pub point: Point,
+    pub point_x: usize,
+    pub point_y: usize,
     pub foreground: Color,
     pub background: Color,
     pub draw: bool,
@@ -43,7 +42,8 @@ impl Console {
     pub fn new() -> Console {
         Console {
             display: Display::root(),
-            point: Point::new(0, 0),
+            point_x: 0,
+            point_y: 0,
             foreground: WHITE,
             background: BLACK,
             draw: false,
@@ -109,6 +109,23 @@ impl Console {
                 }
 
                 self.escape_sequence = false;
+            } else if c == 'H' || c == 'f' {
+                if let Some(ref mut display) = self.display {
+                    display.rect(self.point_x, self.point_y, 8, 16, self.background);
+                }
+
+                let row = self.sequence.get(0).map_or("", |p| &p).parse::<usize>().unwrap_or(0);
+                self.point_y = row * 16;
+
+                let col = self.sequence.get(1).map_or("", |p| &p).parse::<usize>().unwrap_or(0);
+                self.point_x = col * 8;
+
+                if let Some(ref mut display) = self.display {
+                    display.rect(self.point_x, self.point_y, 8, 16, self.foreground);
+                }
+                self.redraw = true;
+
+                self.escape_sequence = false;
             } else {
                 self.escape_sequence = false;
             }
@@ -124,8 +141,8 @@ impl Console {
             self.sequence.push(String::new());
         } else if c == 'c' {
             // Reset
-            self.point.x = 0;
-            self.point.y = 0;
+            self.point_x = 0;
+            self.point_y = 0;
             self.foreground = WHITE;
             self.background = BLACK;
             if let Some(ref mut display) = self.display {
@@ -143,35 +160,34 @@ impl Console {
 
     pub fn character(&mut self, c: char) {
         if let Some(ref mut display) = self.display {
-            display.rect(self.point, Size::new(8, 16), self.background);
+            display.rect(self.point_x, self.point_y, 8, 16, self.background);
             if c == '\x00' {
                 // Ignore null character
             } else if c == '\x1B' {
                 self.escape = true;
             } else if c == '\n' {
-                self.point.x = 0;
-                self.point.y += 16;
+                self.point_x = 0;
+                self.point_y += 16;
             } else if c == '\t' {
-                self.point.x = ((self.point.x / 64) + 1) * 64;
+                self.point_x = ((self.point_x / 64) + 1) * 64;
             } else if c == '\x08' {
-                self.point.x -= 8;
-                if self.point.x < 0 {
-                    self.point.x = 0
+                if self.point_x >= 8 {
+                    self.point_x -= 8;
                 }
-                display.rect(self.point, Size::new(8, 16), self.background);
+                display.rect(self.point_x, self.point_y, 8, 16, self.background);
             } else {
-                display.char(self.point, c, self.foreground);
-                self.point.x += 8;
+                display.char(self.point_x, self.point_y, c, self.foreground);
+                self.point_x += 8;
             }
-            if self.point.x >= display.width as isize {
-                self.point.x = 0;
-                self.point.y += 16;
+            if self.point_x >= display.width {
+                self.point_x = 0;
+                self.point_y += 16;
             }
-            while self.point.y + 16 > display.height as isize {
+            while self.point_y + 16 > display.height {
                 display.scroll(16);
-                self.point.y -= 16;
+                self.point_y -= 16;
             }
-            display.rect(self.point, Size::new(8, 16), self.foreground);
+            display.rect(self.point_x, self.point_y, 8, 16, self.foreground);
             self.redraw = true;
         }
     }

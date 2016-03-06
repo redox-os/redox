@@ -113,14 +113,15 @@ pub fn do_sys_mkdir(path: *const u8, flags: usize) -> Result<usize> {
     let contexts = ::env().contexts.lock();
     let current = try!(contexts.current());
     let path_string = current.canonicalize(c_string_to_str(path));
-    ::env().mkdir(&Url::from_string(path_string), flags).and(Ok(0))
+    ::env().mkdir(try!(Url::from_str(&path_string)), flags).and(Ok(0))
 }
 
 pub fn do_sys_open(path: *const u8, flags: usize) -> Result<usize> {
     let contexts = ::env().contexts.lock();
     let current = try!(contexts.current());
-    let url = Url::from_string(current.canonicalize(c_string_to_str(path)));
-    let resource = try!(::env().open(&url, flags));
+    let path = current.canonicalize(c_string_to_str(path));
+    let url = try!(Url::from_str(&path));
+    let resource = try!(::env().open(url, flags));
     let fd = current.next_fd();
 
     //debugln!("{}: {}: open {} as {}", current.pid, current.name, url.string, fd);
@@ -168,11 +169,18 @@ pub fn do_sys_read(fd: usize, buf: *mut u8, count: usize) -> Result<usize> {
     resource.read(unsafe { slice::from_raw_parts_mut(buf, count) })
 }
 
+pub fn do_sys_rmdir(path: *const u8) -> Result<usize> {
+    let contexts = ::env().contexts.lock();
+    let current = try!(contexts.current());
+    let path_string = current.canonicalize(c_string_to_str(path));
+    ::env().rmdir(try!(Url::from_str(&path_string))).and(Ok(0))
+}
+
 pub fn do_sys_unlink(path: *const u8) -> Result<usize> {
     let contexts = ::env().contexts.lock();
     let current = try!(contexts.current());
     let path_string = current.canonicalize(c_string_to_str(path));
-    ::env().unlink(&Url::from_string(path_string)).and(Ok(0))
+    ::env().unlink(try!(Url::from_str(&path_string))).and(Ok(0))
 }
 
 pub fn do_sys_write(fd: usize, buf: *const u8, count: usize) -> Result<usize> {

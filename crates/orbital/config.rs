@@ -13,9 +13,9 @@ impl Config {
         match File::open(path) {
             Ok(mut file) => match file.read_to_string(&mut string) {
                 Ok(_) => (),
-                Err(err) => println!("Orbital: failed to read config '{}': {}", path, err)
+                Err(err) => println!("orbital: failed to read config '{}': {}", path, err)
             },
-            Err(err) => println!("Orbital: failed to open config '{}': {}", path, err)
+            Err(err) => println!("orbital: failed to open config '{}': {}", path, err)
         }
 
         Config::from_str(&string)

@@ -12,28 +12,16 @@ pub struct Window {
     pub y: i32,
     image: Image,
     title: String,
-    title_image: Image,
     events: VecDeque<Event>,
 }
 
 impl Window {
     pub fn new(x: i32, y: i32, w: i32, h: i32, title: String) -> Window {
-        let mut title_image = Image::new(title.chars().count() as i32 * 8, 16);
-        title_image.as_roi().set(Color::rgba(0, 0, 0, 0));
-        {
-            let mut x = 0;
-            for c in title.chars() {
-                title_image.roi(&Rect::new(x, 0, 8, 16)).blend(&Font::render(c, Color::rgb(255, 255, 255)).as_roi());
-                x += 8;
-            }
-        }
-
         Window {
             x: x,
             y: y,
             image: Image::new(w, h),
             title: title,
-            title_image: title_image,
             events: VecDeque::new()
         }
     }
@@ -67,20 +55,27 @@ impl Window {
         let title_intersect = rect.intersection(&title_rect);
         if ! title_intersect.is_empty() {
             if focused {
-                image.roi(&title_intersect).set(Color::rgba(192, 192, 192, 224));
+                image.roi(&title_intersect).set(Color::rgb(192, 192, 192));
             } else {
-                image.roi(&title_intersect).set(Color::rgba(64, 64, 64, 224));
+                image.roi(&title_intersect).set(Color::rgb(64, 64, 64));
             }
 
-            {
-                let image_rect = Rect::new(title_rect.left() + 4, title_rect.top() + 1, self.title_image.width(), self.title_image.height());
-                let image_intersect = rect.intersection(&image_rect);
-                if ! image_intersect.is_empty() {
-                    image.roi(&image_intersect).blend(&self.title_image.roi(&image_intersect.offset(-image_rect.left(), -image_rect.top())));
+            let mut x = self.x + 2;
+            for c in self.title.chars() {
+                if x < max(self.x + 2, self.x + self.width() - 10) {
+                    let mut font_image = Font::render(c, Color::rgb(255, 255, 255));
+                    let image_rect = Rect::new(x, title_rect.top() + 1, font_image.width(), font_image.height());
+                    let image_intersect = rect.intersection(&image_rect);
+                    if ! image_intersect.is_empty() {
+                        image.roi(&image_intersect).blend(&font_image.roi(&image_intersect.offset(-image_rect.left(), -image_rect.top())));
+                    }
+                    x += 8;
+                } else {
+                    break;
                 }
             }
 
-            let x = max(self.x + 2, self.x + self.width() - 10);
+            x = max(self.x + 2, self.x + self.width() - 10);
             if x + 10 <= self.x + self.width() {
                 let mut font_image = Font::render('X', Color::rgb(255, 255, 255));
                 let image_rect = Rect::new(x, title_rect.top() + 1, font_image.width(), font_image.height());
@@ -96,7 +91,7 @@ impl Window {
         let self_rect = self.rect();
         let intersect = self_rect.intersection(&rect);
         if ! intersect.is_empty() {
-            image.roi(&intersect).blend(&self.image.roi(&intersect.offset(-self_rect.left(), -self_rect.top())));
+            image.roi(&intersect).blit(&self.image.roi(&intersect.offset(-self_rect.left(), -self_rect.top())));
         }
     }
 

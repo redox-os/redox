@@ -446,8 +446,8 @@ mod tests {
             } else {
                 i
             };
-            assert_eq!((from_u32(i).unwrap()).to_string().to_ascii_uppercase(),
-                       (from_u32(upper).unwrap()).to_string());
+            assert_eq!((from_u32(i).unwrap()).to_owned().to_ascii_uppercase(),
+                       (from_u32(upper).unwrap()).to_owned());
         }
     }
 
@@ -464,8 +464,8 @@ mod tests {
             } else {
                 i
             };
-            assert_eq!((from_u32(i).unwrap()).to_string().to_ascii_lowercase(),
-                       (from_u32(lower).unwrap()).to_string());
+            assert_eq!((from_u32(i).unwrap()).to_owned().to_ascii_lowercase(),
+                       (from_u32(lower).unwrap()).to_owned());
         }
     }
 
@@ -488,7 +488,7 @@ mod tests {
         test!('a', 'a');
         test!('!', '!');
         test!(b"H\xc3\x89".to_vec(), b"h\xc3\x89");
-        test!("HİKß".to_string(), "hİKß");
+        test!("HİKß".to_owned(), "hİKß");
     }
 
 
@@ -511,9 +511,9 @@ mod tests {
         test!('A', 'A');
         test!('!', '!');
         test!(b"h\xc3\xa9".to_vec(), b"H\xc3\xa9");
-        test!("hıKß".to_string(), "HıKß");
+        test!("hıKß".to_owned(), "HıKß");
 
-        let mut x = "Hello".to_string();
+        let mut x = "Hellso".to_owned();
         x[..3].make_ascii_uppercase();  // Test IndexMut on String.
         assert_eq!(x, "HELlo")
     }
@@ -535,8 +535,8 @@ mod tests {
                 i
             };
             assert!((from_u32(i).unwrap())
-                        .to_string()
-                        .eq_ignore_ascii_case(&from_u32(lower).unwrap().to_string()));
+                        .()
+                        .eq_ignore_ascii_case(&from_u32(lower).unwrap().to_owned()));
         }
     }
 }

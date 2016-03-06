@@ -73,7 +73,7 @@ impl Resource for DisplayResource {
 
         if size > 0 {
             unsafe {
-                Display::copy_run(buf.as_ptr() as usize, self.display.onscreen + self.seek, size);
+                Display::copy_run(self.display.onscreen + self.seek, buf.as_ptr() as usize, size);
             }
         }
 
@@ -106,7 +106,7 @@ impl KScheme for DisplayScheme {
         "display"
     }
 
-    fn open(&mut self, _: &Url, _: usize) -> Result<Box<Resource>> {
+    fn open(&mut self, _: Url, _: usize) -> Result<Box<Resource>> {
         if ::env().console.lock().draw {
             if let Some(display) = Display::root() {
                 ::env().console.lock().draw = false;

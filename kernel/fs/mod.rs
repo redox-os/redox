@@ -3,7 +3,7 @@ pub mod redoxfs;
 pub use self::kscheme::KScheme;
 pub use self::resource::{Resource, ResourceSeek};
 pub use self::scheme::Scheme;
-pub use self::url::Url;
+pub use self::url::{Url, OwnedUrl};
 pub use self::vec_resource::VecResource;
 
 /// Kernel schemes
