@@ -8,7 +8,9 @@ use schemes::pipe::{PipeRead, PipeWrite};
 
 use system::c_string_to_str;
 
-use super::{Error, Result, Stat, EBADF, EFAULT, EINVAL, SEEK_CUR, SEEK_END, SEEK_SET};
+use syscall::{Stat, SEEK_CUR, SEEK_END, SEEK_SET};
+
+use system::error::{Error, Result, EBADF, EFAULT, EINVAL};
 
 pub fn do_sys_chdir(path: *const u8) -> Result<usize> {
     let contexts = ::env().contexts.lock();
