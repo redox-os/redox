@@ -1,4 +1,4 @@
-use syscall::{syscall0, syscall1, syscall2, syscall3};
+use syscall::arch::{syscall0, syscall1, syscall2, syscall3};
 use error::Result;
 
 pub const SYS_BRK: usize = 45;
