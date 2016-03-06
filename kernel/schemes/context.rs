@@ -1,6 +1,6 @@
 use alloc::boxed::Box;
 
-use collections::string::String;
+use collections::string::{String, ToString};
 
 use arch::context;
 
@@ -15,7 +15,7 @@ impl KScheme for ContextScheme {
         "context"
     }
 
-    fn open(&mut self, _: &Url, _: usize) -> Result<Box<Resource>> {
+    fn open(&mut self, _: Url, _: usize) -> Result<Box<Resource>> {
         let mut string = format!("{:<6}{:<6}{:<8}{:<8}{:<8}{:<6}{:<6}{}\n",
                                  "PID",
                                  "PPID",
@@ -82,6 +82,6 @@ impl KScheme for ContextScheme {
             }
         }
 
-        Ok(box VecResource::new("context:", string.into_bytes()))
+        Ok(box VecResource::new("context:".to_string(), string.into_bytes()))
     }
 }

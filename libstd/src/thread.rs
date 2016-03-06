@@ -1,10 +1,19 @@
 use alloc::boxed::Box;
 
+use core::mem;
+
 use system::syscall::{sys_clone, sys_exit, sys_yield, sys_nanosleep, sys_waitpid, CLONE_VM, CLONE_FS, CLONE_FILES,
               TimeSpec};
 
 use time::Duration;
 
+/// An owned permission to join on a thread (block on its termination).
+///
+/// A `JoinHandle` *detaches* the child thread when it is dropped.
+///
+/// Due to platform restrictions, it is not possible to `Clone` this
+/// handle: the ability to join a child thread is a uniquely-owned
+/// permission.
 // TODO: Mutex the result
 pub struct JoinHandle<T> {
     pid: usize,
@@ -12,6 +21,7 @@ pub struct JoinHandle<T> {
 }
 
 impl<T> JoinHandle<T> {
+    /// Waits for the associated thread to finish.
     pub fn join(self) -> Option<T> where T: ::core::fmt::Debug {
         let mut status = 0;
         match sys_waitpid(self.pid, &mut status, 0) {
@@ -21,7 +31,7 @@ impl<T> JoinHandle<T> {
     }
 }
 
-// Sleep for a duration
+/// Sleep for a duration
 pub fn sleep(duration: Duration) {
     let req = TimeSpec {
         tv_sec: duration.secs,
@@ -36,38 +46,52 @@ pub fn sleep(duration: Duration) {
     let _ = sys_nanosleep(&req, &mut rem);
 }
 
-// Sleep for a number of milliseconds
+/// Sleep for a number of milliseconds
 pub fn sleep_ms(ms: u32) {
     let secs = ms as i64 / 1000;
     let nanos = (ms % 1000) as i32 * 1000000;
     sleep(Duration::new(secs, nanos))
 }
 
+/// Spawns a new thread, returning a `JoinHandle` for it.
+///
+/// The join handle will implicitly *detach* the child thread upon being
+/// dropped. In this case, the child thread may outlive the parent (unless
+/// the parent thread is the main thread; the whole process is terminated when
+/// the main thread finishes.) Additionally, the join handle provides a `join`
+/// method that can be used to join the child thread. If the child thread
+/// panics, `join` will return an `Err` containing the argument given to
+/// `panic`.
+///
+/// # Panics
+///
+/// Panics if the OS fails to create a thread; use `Builder::spawn`
+/// to recover from such errors.
 // TODO: Catch panic
 pub fn spawn<F, T>(f: F) -> JoinHandle<T>
     where F: FnOnce() -> T,
           F: Send + 'static,
-          T: ::core::fmt::Debug + Send + 'static
+          T: Send + 'static
 {
     let result_ptr: *mut Option<T> = Box::into_raw(box None);
-
-    let child_code = move || -> ! {
-        unsafe { *result_ptr = Some(f()) };
-        loop {
-            let _ = sys_exit(0);
-        }
-    };
-
-    let parent_code = move |pid: usize| -> JoinHandle<T> {
-        JoinHandle {
-            pid: pid,
-            result_ptr: result_ptr
-        }
-    };
+    //This must only be used by the child
+    let boxed_f = Box::new(f);
 
     match unsafe { sys_clone(CLONE_VM | CLONE_FS | CLONE_FILES).unwrap() } {
-        0 => child_code(),
-        pid => parent_code(pid)
+        0 => {
+            unsafe { *result_ptr = Some(boxed_f()) };
+            loop {
+                let _ = sys_exit(0);
+            }
+        },
+        pid => {
+            //Forget so that the parent will not drop while the child is using
+            mem::forget(boxed_f);
+            JoinHandle {
+                pid: pid,
+                result_ptr: result_ptr
+            }
+        }
     }
 }
 

@@ -2,6 +2,8 @@ use alloc::boxed::Box;
 
 use arch::memory;
 
+use collections::string::ToString;
+
 use fs::{KScheme, Resource, Url, VecResource};
 
 use system::error::Result;
@@ -14,10 +16,10 @@ impl KScheme for MemoryScheme {
         "memory"
     }
 
-    fn open(&mut self, _: &Url, _: usize) -> Result<Box<Resource>> {
+    fn open(&mut self, _: Url, _: usize) -> Result<Box<Resource>> {
         let string = format!("Memory Used: {} KB\nMemory Free: {} KB\n",
                              memory::memory_used() / 1024,
                              memory::memory_free() / 1024);
-        Ok(box VecResource::new("memory:", string.into_bytes()))
+        Ok(box VecResource::new("memory:".to_string(), string.into_bytes()))
     }
 }

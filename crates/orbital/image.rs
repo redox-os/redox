@@ -1,4 +1,4 @@
-use std::mem;
+use std::{cmp, mem, ptr};
 
 use super::{Color, Rect};
 
@@ -117,6 +117,15 @@ impl<'a> ImageRoi<'a> {
                     }
                 }
             }
+        }
+    }
+
+    pub fn blit(&'a mut self, other: &ImageRoi) {
+        for (mut self_row, other_row) in self.rows_mut().zip(other.rows()) {
+            let dst = self_row.as_mut_ptr();
+            let src = other_row.as_ptr();
+            let len = cmp::min(self_row.len(), other_row.len());
+            unsafe { ptr::copy(src, dst, len); }
         }
     }
 

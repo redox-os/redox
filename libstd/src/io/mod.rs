@@ -129,6 +129,10 @@ pub fn stdin() -> Stdin {
 }
 
 impl Stdin {
+    pub fn lock(&self) -> StdinLock {
+        StdinLock
+    }
+
     pub fn read_line(&mut self, string: &mut String) -> Result<usize> {
         let mut i = 0;
         loop {
@@ -155,6 +159,17 @@ impl Read for Stdin {
     }
 }
 
+/// Standard Input lock
+//TODO: Implement locking
+pub struct StdinLock;
+
+/// Read implementation for standard input lock
+impl Read for StdinLock {
+    fn read(&mut self, buf: &mut [u8]) -> Result<usize> {
+        sys_read(0, buf)
+    }
+}
+
 /// Standard Output
 pub struct Stdout;
 
@@ -163,8 +178,25 @@ pub fn stdout() -> Stdout {
     Stdout
 }
 
+impl Stdout {
+    pub fn lock(&self) -> StdoutLock {
+        StdoutLock
+    }
+}
+
 /// Write implementation for standard output
 impl Write for Stdout {
+    fn write(&mut self, buf: &[u8]) -> Result<usize> {
+        sys_write(1, buf)
+    }
+}
+
+/// Standard Output lock
+//TODO: Implement locking
+pub struct StdoutLock;
+
+/// Write implementation for standard output lock
+impl Write for StdoutLock {
     fn write(&mut self, buf: &[u8]) -> Result<usize> {
         sys_write(1, buf)
     }
@@ -178,8 +210,25 @@ pub fn stderr() -> Stderr {
     Stderr
 }
 
+impl Stderr {
+    pub fn lock(&self) -> StderrLock {
+        StderrLock
+    }
+}
+
 /// Write implementation for standard error
 impl Write for Stderr {
+    fn write(&mut self, buf: &[u8]) -> Result<usize> {
+        sys_write(2, buf)
+    }
+}
+
+/// Standard Error lock
+//TODO: Implement locking
+pub struct StderrLock;
+
+/// Write implementation for standard error lock
+impl Write for StderrLock {
     fn write(&mut self, buf: &[u8]) -> Result<usize> {
         sys_write(2, buf)
     }

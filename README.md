@@ -87,7 +87,7 @@ $ cd redox/
 $ sudo <your package manager> install make nasm qemu
 
 # Install multirust
-$ curl -sf https://raw.githubusercontent.com/brson/multirust/master/blastoff.sh | sh
+$ curl -sf https://raw.githubusercontent.com/brson/multirust/master/quick-install.sh | sh
 
 # Set override toolchain to nightly build
 $ multirust override nightly

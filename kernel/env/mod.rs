@@ -66,7 +66,7 @@ impl Environment {
     }
 
     /// Open a new resource
-    pub fn open(&self, url: &Url, flags: usize) -> Result<Box<Resource>> {
+    pub fn open(&self, url: Url, flags: usize) -> Result<Box<Resource>> {
         let url_scheme = url.scheme();
         if url_scheme.is_empty() {
             let url_path = url.reference();
@@ -84,7 +84,7 @@ impl Environment {
                     }
                 }
 
-                Ok(box VecResource::new(":", list.into_bytes()))
+                Ok(box VecResource::new(":".to_string(), list.into_bytes()))
             } else if flags & O_CREAT == O_CREAT {
                 for scheme in self.schemes.lock().iter_mut() {
                     if scheme.scheme() == url_path {
@@ -92,7 +92,7 @@ impl Environment {
                     }
                 }
 
-                match Scheme::new(url_path.to_string()) {
+                match Scheme::new(url_path) {
                     Ok((scheme, server)) => {
                         self.schemes.lock().push(scheme);
                         Ok(server)
@@ -113,7 +113,7 @@ impl Environment {
     }
 
     /// Makes a directory
-    pub fn mkdir(&self, url: &Url, flags: usize) -> Result<()> {
+    pub fn mkdir(&self, url: Url, flags: usize) -> Result<()> {
         let url_scheme = url.scheme();
         if !url_scheme.is_empty() {
             for mut scheme in self.schemes.lock().iter_mut() {
@@ -125,8 +125,21 @@ impl Environment {
         Err(Error::new(ENOENT))
     }
 
+    /// Remove a directory
+    pub fn rmdir(&self, url: Url) -> Result<()> {
+        let url_scheme = url.scheme();
+        if !url_scheme.is_empty() {
+            for mut scheme in self.schemes.lock().iter_mut() {
+                if scheme.scheme() == url_scheme {
+                    return scheme.rmdir(url);
+                }
+            }
+        }
+        Err(Error::new(ENOENT))
+    }
+
     /// Unlink a resource
-    pub fn unlink(&self, url: &Url) -> Result<()> {
+    pub fn unlink(&self, url: Url) -> Result<()> {
         let url_scheme = url.scheme();
         if !url_scheme.is_empty() {
             for mut scheme in self.schemes.lock().iter_mut() {

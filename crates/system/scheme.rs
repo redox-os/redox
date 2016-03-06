@@ -37,8 +37,9 @@ pub trait Scheme {
     fn handle(&mut self, packet: &mut Packet) {
         packet.a = Error::mux(match packet.a {
             SYS_OPEN => self.open(c_string_to_str(packet.b as *const u8), packet.c, packet.d),
-            SYS_UNLINK => self.unlink(c_string_to_str(packet.b as *const u8)),
             SYS_MKDIR => self.mkdir(c_string_to_str(packet.b as *const u8), packet.c),
+            SYS_RMDIR => self.rmdir(c_string_to_str(packet.b as *const u8)),
+            SYS_UNLINK => self.unlink(c_string_to_str(packet.b as *const u8)),
 
             SYS_READ => self.read(packet.b, unsafe { slice::from_raw_parts_mut(packet.c as *mut u8, packet.d) }),
             SYS_WRITE => self.write(packet.b, unsafe { slice::from_raw_parts(packet.c as *const u8, packet.d) }),
@@ -61,12 +62,17 @@ pub trait Scheme {
     }
 
     #[allow(unused_variables)]
-    fn unlink(&mut self, path: &str) -> Result<usize> {
+    fn mkdir(&mut self, path: &str, mode: usize) -> Result<usize> {
         Err(Error::new(ENOENT))
     }
 
     #[allow(unused_variables)]
-    fn mkdir(&mut self, path: &str, mode: usize) -> Result<usize> {
+    fn rmdir(&mut self, path: &str) -> Result<usize> {
+        Err(Error::new(ENOENT))
+    }
+
+    #[allow(unused_variables)]
+    fn unlink(&mut self, path: &str) -> Result<usize> {
         Err(Error::new(ENOENT))
     }
 

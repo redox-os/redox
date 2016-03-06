@@ -12,89 +12,13 @@ use common::slice::GetSlice;
 
 use core::cell::UnsafeCell;
 use core::ops::DerefMut;
-use core::{mem, ptr};
+use core::{mem, ptr, str};
 
 use fs::Url;
 
 use system::error::{Error, Result, ENOEXEC};
 
-fn execute_inner(url: Url) -> Result<(*mut Context, usize)> {
-    let mut vec: Vec<u8> = Vec::new();
-
-    {
-        let mut resource = try!(url.open());
-        'reading: loop {
-            let mut bytes = [0; 4096];
-            match resource.read(&mut bytes) {
-                Ok(0) => break 'reading,
-                Ok(count) => vec.push_all(bytes.get_slice(.. count)),
-                Err(err) => return Err(err)
-            }
-        }
-    }
-
-    match Elf::from(&vec) {
-        Ok(executable) => {
-            let entry = unsafe { executable.entry() };
-            let mut memory = Vec::new();
-            unsafe {
-                for segment in executable.load_segment().iter() {
-                    let virtual_address = segment.vaddr as usize;
-                    let virtual_size = segment.mem_len as usize;
-
-                    let offset = virtual_address % 4096;
-
-                    let physical_address = memory::alloc(virtual_size + offset);
-
-                    if physical_address > 0 {
-                        // Copy progbits
-                        ::memcpy((physical_address + offset) as *mut u8,
-                                 (executable.data.as_ptr() as usize + segment.off as usize) as *const u8,
-                                 segment.file_len as usize);
-                        // Zero bss
-                        if segment.mem_len > segment.file_len {
-                            ::memset((physical_address + offset + segment.file_len as usize) as *mut u8,
-                                    0,
-                                    segment.mem_len as usize - segment.file_len as usize);
-                        }
-
-                        memory.push(ContextMemory {
-                            physical_address: physical_address,
-                            virtual_address: virtual_address - offset,
-                            virtual_size: virtual_size + offset,
-                            writeable: segment.flags & 2 == 2,
-                            allocated: true,
-                        });
-                    }
-                }
-            }
-
-            if entry > 0 && ! memory.is_empty() {
-                let mut contexts = ::env().contexts.lock();
-                let mut context = try!(contexts.current_mut());
-
-                //debugln!("{}: {}: execute {}", context.pid, context.name, url.string);
-
-                context.name = url.string;
-                context.cwd = Arc::new(UnsafeCell::new(unsafe { (*context.cwd.get()).clone() }));
-
-                unsafe { context.unmap() };
-                context.memory = Arc::new(UnsafeCell::new(memory));
-                unsafe { context.map() };
-
-                Ok((context.deref_mut(), entry))
-            } else {
-                Err(Error::new(ENOEXEC))
-            }
-        },
-        Err(msg) => {
-            debugln!("execute: failed to exec '{}': {}", url.string, msg);
-            Err(Error::new(ENOEXEC))
-        }
-    }
-}
-
-pub fn execute_outer(context_ptr: *mut Context, entry: usize, mut args: Vec<String>) -> ! {
+pub fn execute_thread(context_ptr: *mut Context, entry: usize, mut args: Vec<String>) -> ! {
     Context::spawn("kexec".to_string(), box move || {
         let context = unsafe { &mut *context_ptr };
 
@@ -188,14 +112,109 @@ pub fn execute_outer(context_ptr: *mut Context, entry: usize, mut args: Vec<Stri
 }
 
 /// Execute an executable
-pub fn execute(args: Vec<String>) -> Result<usize> {
+pub fn execute(mut args: Vec<String>) -> Result<usize> {
     let contexts = ::env().contexts.lock();
     let current = try!(contexts.current());
 
-    if let Ok((context_ptr, entry)) = execute_inner(Url::from_string(current.canonicalize(args.get(0).map_or("", |p| &p)))) {
-        execute_outer(context_ptr, entry, args);
-    }else{
-        let (context_ptr, entry) = try!(execute_inner(Url::from_string("file:/bin/".to_string() + args.get(0).map_or("", |p| &p))));
-        execute_outer(context_ptr, entry, args);
+    let mut vec: Vec<u8> = Vec::new();
+
+    let path = current.canonicalize(args.get(0).map_or("", |p| &p));
+    let mut url = try!(Url::from_str(&path)).to_cow();
+    {
+        let mut resource = if let Ok(resource) = url.as_url().open() {
+            resource
+        } else {
+            let path = "file:/bin/".to_string() + args.get(0).map_or("", |p| &p);
+            url = try!(Url::from_str(&path)).to_owned().into_cow();
+            try!(url.as_url().open())
+        };
+
+        'reading: loop {
+            let mut bytes = [0; 4096];
+            match resource.read(&mut bytes) {
+                Ok(0) => break 'reading,
+                Ok(count) => vec.push_all(bytes.get_slice(.. count)),
+                Err(err) => return Err(err)
+            }
+        }
+    }
+
+    if vec.starts_with(b"#!") {
+        if let Some(mut arg) = args.get_mut(0) {
+            *arg = url.as_url().to_string();
+        }
+
+        let line = unsafe { str::from_utf8_unchecked(&vec[2..]) }.lines().next().unwrap_or("");
+        let mut i = 0;
+        for arg in line.trim().split(' ') {
+            if ! arg.is_empty() {
+                args.insert(i, arg.to_string());
+                i += 1;
+            }
+        }
+        if i == 0 {
+            args.insert(i, "/bin/sh".to_string());
+        }
+        execute(args)
+    } else {
+        match Elf::from(&vec) {
+            Ok(executable) => {
+                let entry = unsafe { executable.entry() };
+                let mut memory = Vec::new();
+                unsafe {
+                    for segment in executable.load_segment().iter() {
+                        let virtual_address = segment.vaddr as usize;
+                        let virtual_size = segment.mem_len as usize;
+
+                        let offset = virtual_address % 4096;
+
+                        let physical_address = memory::alloc(virtual_size + offset);
+
+                        if physical_address > 0 {
+                            // Copy progbits
+                            ::memcpy((physical_address + offset) as *mut u8,
+                                     (executable.data.as_ptr() as usize + segment.off as usize) as *const u8,
+                                     segment.file_len as usize);
+                            // Zero bss
+                            if segment.mem_len > segment.file_len {
+                                ::memset((physical_address + offset + segment.file_len as usize) as *mut u8,
+                                        0,
+                                        segment.mem_len as usize - segment.file_len as usize);
+                            }
+
+                            memory.push(ContextMemory {
+                                physical_address: physical_address,
+                                virtual_address: virtual_address - offset,
+                                virtual_size: virtual_size + offset,
+                                writeable: segment.flags & 2 == 2,
+                                allocated: true,
+                            });
+                        }
+                    }
+                }
+
+                if entry > 0 && ! memory.is_empty() {
+                    let mut contexts = ::env().contexts.lock();
+                    let mut context = try!(contexts.current_mut());
+
+                    //debugln!("{}: {}: execute {}", context.pid, context.name, url.string);
+
+                    context.name = url.as_url().to_string();
+                    context.cwd = Arc::new(UnsafeCell::new(unsafe { (*context.cwd.get()).clone() }));
+
+                    unsafe { context.unmap() };
+                    context.memory = Arc::new(UnsafeCell::new(memory));
+                    unsafe { context.map() };
+
+                    execute_thread(context.deref_mut(), entry, args);
+                } else {
+                    Err(Error::new(ENOEXEC))
+                }
+            },
+            Err(msg) => {
+                debugln!("execute: failed to exec '{:?}': {}", url, msg);
+                Err(Error::new(ENOEXEC))
+            }
+        }
     }
 }

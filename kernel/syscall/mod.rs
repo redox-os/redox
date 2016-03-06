@@ -48,6 +48,7 @@ pub fn syscall_handle(regs: &mut Regs) {
         SYS_OPEN => do_sys_open(regs.bx as *const u8, regs.cx), //regs.cx as isize, regs.dx as isize),
         SYS_PIPE2 => do_sys_pipe2(regs.bx as *mut usize, regs.cx),
         SYS_READ => do_sys_read(regs.bx, regs.cx as *mut u8, regs.dx),
+        SYS_RMDIR => do_sys_rmdir(regs.bx as *const u8),
         SYS_UNLINK => do_sys_unlink(regs.bx as *const u8),
         SYS_WAITPID => do_sys_waitpid(regs.bx as isize, regs.cx as *mut usize, regs.dx),
         SYS_WRITE => do_sys_write(regs.bx, regs.cx as *mut u8, regs.dx),

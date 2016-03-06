@@ -2,6 +2,7 @@ use alloc::arc::{Arc, Weak};
 use alloc::boxed::Box;
 
 use collections::String;
+use collections::borrow::ToOwned;
 
 use core::cell::Cell;
 use core::mem::size_of;
@@ -16,7 +17,7 @@ use system::error::{Error, Result, EBADF, EFAULT, EINVAL, ENOENT, ESPIPE};
 use system::scheme::Packet;
 use system::syscall::{SYS_CLOSE, SYS_FPATH, SYS_FSYNC, SYS_FTRUNCATE,
                     SYS_LSEEK, SEEK_SET, SEEK_CUR, SEEK_END, SYS_MKDIR,
-                    SYS_OPEN, SYS_READ, SYS_WRITE, SYS_UNLINK};
+                    SYS_OPEN, SYS_READ, SYS_WRITE, SYS_RMDIR, SYS_UNLINK};
 
 use super::{Resource, ResourceSeek, KScheme, Url};
 
@@ -29,9 +30,9 @@ struct SchemeInner {
 }
 
 impl SchemeInner {
-    fn new(name: String, context: *mut Context) -> SchemeInner {
+    fn new(name: &str, context: *mut Context) -> SchemeInner {
         SchemeInner {
-            name: name,
+            name: name.to_owned(),
             context: context,
             next_id: Cell::new(1),
             todo: WaitQueue::new(),
@@ -344,14 +345,14 @@ pub struct Scheme {
 }
 
 impl Scheme {
-    pub fn new(name: String) -> Result<(Box<Scheme>, Box<Resource>)> {
+    pub fn new(name: &str) -> Result<(Box<Scheme>, Box<Resource>)> {
         let mut contexts = ::env().contexts.lock();
         let mut current = try!(contexts.current_mut());
         let server = box SchemeServerResource {
-            inner: Arc::new(SchemeInner::new(name.clone(), current.deref_mut()))
+            inner: Arc::new(SchemeInner::new(name, current.deref_mut()))
         };
         let scheme = box Scheme {
-            name: name,
+            name: name.to_owned(),
             inner: Arc::downgrade(&server.inner)
         };
         Ok((scheme, server))
@@ -371,8 +372,8 @@ impl KScheme for Scheme {
         &self.name
     }
 
-    fn open(&mut self, url: &Url, flags: usize) -> Result<Box<Resource>> {
-        let c_str = url.string.clone() + "\0";
+    fn open(&mut self, url: Url, flags: usize) -> Result<Box<Resource>> {
+        let c_str = url.to_string() + "\0";
 
         let physical_address = c_str.as_ptr() as usize;
 
@@ -414,8 +415,8 @@ impl KScheme for Scheme {
         }
     }
 
-    fn mkdir(&mut self, url: &Url, flags: usize) -> Result<()> {
-        let c_str = url.string.clone() + "\0";
+    fn mkdir(&mut self, url: Url, flags: usize) -> Result<()> {
+        let c_str = url.to_string() + "\0";
 
         let physical_address = c_str.as_ptr() as usize;
 
@@ -451,8 +452,45 @@ impl KScheme for Scheme {
         }
     }
 
-    fn unlink(&mut self, url: &Url) -> Result<()> {
-        let c_str = url.string.clone() + "\0";
+    fn rmdir(&mut self, url: Url) -> Result<()> {
+        let c_str = url.to_string() + "\0";
+
+        let physical_address = c_str.as_ptr() as usize;
+
+        let mut virtual_address = 0;
+        if let Some(scheme) = self.inner.upgrade() {
+            unsafe {
+                virtual_address = (*scheme.context).next_mem();
+                (*(*scheme.context).memory.get()).push(ContextMemory {
+                    physical_address: physical_address,
+                    virtual_address: virtual_address,
+                    virtual_size: c_str.len(),
+                    writeable: false,
+                    allocated: false,
+                });
+            }
+        }
+
+        if virtual_address > 0 {
+            let result = self.call(SYS_RMDIR, virtual_address, 0, 0);
+
+            if let Some(scheme) = self.inner.upgrade() {
+                unsafe {
+                    if let Ok(mut mem) = (*scheme.context).get_mem_mut(virtual_address) {
+                        mem.virtual_size = 0;
+                    }
+                    (*scheme.context).clean_mem();
+                }
+            }
+
+            result.and(Ok(()))
+        } else {
+            Err(Error::new(ENOENT))
+        }
+    }
+
+    fn unlink(&mut self, url: Url) -> Result<()> {
+        let c_str = url.to_string() + "\0";
 
         let physical_address = c_str.as_ptr() as usize;
 
