@@ -149,7 +149,7 @@ pub mod env;
 pub mod fs;
 pub mod io;
 pub mod net;
-// TODO pub mod os;
+pub mod os;
 pub mod path;
 pub mod process;
 pub mod sync;

@@ -25,16 +25,18 @@ impl File {
     }
 
     /// Open a new file using a path
-    pub fn open(path: &str) -> Result<File> {
-        let path_c = path.to_owned() + "\0";
+    pub fn open<P: AsRef<Path>>(path: P) -> Result<File> {
+        let path_str = &path.as_ref().inner;
+        let path_c = path_str.to_owned() + "\0";
         unsafe {
             sys_open(path_c.as_ptr(), O_RDWR, 0).map(|fd| File::from_fd(fd) )
         }
     }
 
     /// Create a new file using a path
-    pub fn create(path: &str) -> Result<File> {
-        let path_c = path.to_owned() + "\0";
+    pub fn create<P: AsRef<Path>>(path: P) -> Result<File> {
+        let path_str = &path.as_ref().inner;
+        let path_c = path_str.to_owned() + "\0";
         unsafe {
             sys_open(path_c.as_ptr(), O_CREAT | O_RDWR | O_TRUNC, 0).map(|fd| File::from_fd(fd) )
         }

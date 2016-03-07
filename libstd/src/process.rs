@@ -1,6 +1,7 @@
 use boxed::Box;
 use core::mem;
 use io::{Result, Read, Write};
+use os::unix::io::{AsRawFd, FromRawFd, RawFd};
 use ops::DerefMut;
 use string::String;
 use core_collections::borrow::ToOwned;
@@ -35,6 +36,12 @@ impl Write for ChildStdin {
 
 pub struct ChildStdout {
     fd: usize,
+}
+
+impl AsRawFd for ChildStdout {
+    fn as_raw_fd(&self) -> RawFd {
+        self.fd
+    }
 }
 
 impl Read for ChildStdout {
@@ -138,6 +145,11 @@ impl Command {
                     try!(sys_dup(write));
                     try!(sys_close(write));
                 },
+                StdioType::Raw(fd) => {
+                    try!(sys_close(2));
+                    try!(sys_dup(fd));
+                    try!(sys_close(fd));
+                },
                 StdioType::Null => {
                     try!(sys_close(2));
                 },
@@ -151,6 +163,11 @@ impl Command {
                     try!(sys_dup(write));
                     try!(sys_close(write));
                 },
+                StdioType::Raw(fd) => {
+                    try!(sys_close(1));
+                    try!(sys_dup(fd));
+                    try!(sys_close(fd));
+                },
                 StdioType::Null => {
                     try!(sys_close(1));
                 },
@@ -163,6 +180,11 @@ impl Command {
                     try!(sys_close(0));
                     try!(sys_dup(read));
                     try!(sys_close(read));
+                },
+                StdioType::Raw(fd) => {
+                    try!(sys_close(0));
+                    try!(sys_dup(fd));
+                    try!(sys_close(fd));
                 },
                 StdioType::Null => {
                     try!(sys_close(0));
@@ -229,6 +251,7 @@ impl Command {
 #[derive(Copy, Clone)]
 enum StdioType {
     Piped(usize, usize),
+    Raw(usize),
     Inherit,
     Null,
 }
@@ -258,6 +281,14 @@ impl Stdio {
     pub fn null() -> Stdio {
         Stdio {
             inner: StdioType::Null
+        }
+    }
+}
+
+impl FromRawFd for Stdio {
+    unsafe fn from_raw_fd(fd: RawFd) -> Self {
+        Stdio {
+            inner: StdioType::Raw(fd)
         }
     }
 }
