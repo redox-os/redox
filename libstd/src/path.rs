@@ -1,3 +1,4 @@
+use core::ops::Deref;
 use fmt;
 use mem;
 use core_collections::borrow::{Cow, IntoCow, ToOwned};
@@ -140,6 +141,13 @@ impl PathBuf {
 
     pub fn file_name(&self) -> Option<&str> {
         self.inner.split(is_separator).last()
+    }
+}
+
+impl Deref for PathBuf {
+    type Target = Path;
+    fn deref(&self) -> &Path {
+        unsafe { mem::transmute(self.inner.deref()) }
     }
 }
 

@@ -15,7 +15,7 @@ use fs::{KScheme, Resource, Scheme, VecResource, Url};
 use sync::WaitQueue;
 
 use system::error::{Error, Result, ENOENT, EEXIST};
-use system::syscall::O_CREAT;
+use system::syscall::{O_CREAT, Stat};
 
 use self::console::Console;
 
@@ -132,6 +132,19 @@ impl Environment {
             for mut scheme in self.schemes.lock().iter_mut() {
                 if scheme.scheme() == url_scheme {
                     return scheme.rmdir(url);
+                }
+            }
+        }
+        Err(Error::new(ENOENT))
+    }
+
+    /// Stat a path
+    pub fn stat(&self, url: Url, stat: &mut Stat) -> Result<()> {
+        let url_scheme = url.scheme();
+        if !url_scheme.is_empty() {
+            for mut scheme in self.schemes.lock().iter_mut() {
+                if scheme.scheme() == url_scheme {
+                    return scheme.stat(url, stat);
                 }
             }
         }
