@@ -19,7 +19,9 @@ use fs::redoxfs::{FileSystem, Node, NodeData};
 
 use fs::{KScheme, Resource, ResourceSeek, Url, VecResource};
 
-use syscall::{Error, Result, O_CREAT, ENOENT, EIO};
+use syscall::{O_CREAT, MODE_DIR, MODE_FILE, Stat};
+
+use system::error::{Error, Result, ENOENT, EIO};
 
 /// A file resource
 pub struct FileResource {
@@ -348,6 +350,72 @@ impl KScheme for FileScheme {
                         Err(Error::new(ENOENT))
                     }
                 }
+            }
+        }
+    }
+
+    fn stat(&mut self, url: Url, stat: &mut Stat) -> Result<()> {
+        let mut path = url.reference();
+        while path.starts_with('/') {
+            path = &path[1..];
+        }
+        if path.is_empty() || path.ends_with('/') {
+            let mut list = String::new();
+            let mut dirs: Vec<String> = Vec::new();
+
+            for file in self.fs.list(path).iter() {
+                let mut line = String::new();
+                match file.find('/') {
+                    Some(index) => {
+                        let dirname = file.get_slice(..index + 1).to_string();
+                        let mut found = false;
+                        for dir in dirs.iter() {
+                            if dirname == *dir {
+                                found = true;
+                                break;
+                            }
+                        }
+                        if found {
+                            line.clear();
+                        } else {
+                            line = dirname.clone();
+                            dirs.push(dirname);
+                        }
+                    }
+                    None => line = file.clone(),
+                }
+                if !line.is_empty() {
+                    if !list.is_empty() {
+                        list = list + "\n" + &line;
+                    } else {
+                        list = line;
+                    }
+                }
+            }
+
+            if list.len() > 0 {
+                stat.st_mode = MODE_DIR;
+                stat.st_size = list.len() as u64;
+
+                Ok(())
+            } else {
+                Err(Error::new(ENOENT))
+            }
+        } else {
+            match self.fs.node(path) {
+                Some(node) => {
+                    stat.st_mode = MODE_FILE;
+                    stat.st_size = 0;
+
+                    for extent in &node.extents {
+                        if extent.block > 0 && extent.length > 0 {
+                            stat.st_size += extent.length;
+                        }
+                    }
+
+                    Ok(())
+                }
+                None => Err(Error::new(ENOENT))
             }
         }
     }

@@ -6,8 +6,8 @@ BUILD=build/$(ARCH)-unknown-redox/debug
 
 QEMU?=qemu-system-$(ARCH)
 
-CARGO=CARGO_TARGET_DIR=build cargo rustc
-CARGOFLAGS=--target=$(ARCH)-unknown-redox.json -- -L $(BUILD) \
+CARGO=CARGO_TARGET_DIR=build RUSTC="./rustc-$(ARCH).sh" cargo rustc
+CARGOFLAGS=--verbose --target=$(ARCH)-unknown-redox.json -- -L $(BUILD) \
 	-C no-prepopulate-passes -C no-stack-check -C opt-level=2 \
 	-Z no-landing-pads \
 	-A dead_code
@@ -354,7 +354,7 @@ $(BUILD)/liblibc.rlib: rust/src/liblibc/src/lib.rs $(BUILD)/libcore.rlib
 	$(RUSTC) $(RUSTCFLAGS) -o $@ $<
 
 $(BUILD)/librealstd.rlib: rust/src/libstd/lib.rs $(BUILD)/libcore.rlib $(BUILD)/liblibc.rlib $(BUILD)/liballoc.rlib $(BUILD)/librustc_unicode.rlib $(BUILD)/libcollections.rlib $(BUILD)/librand.rlib
-	$(RUSTC) $(RUSTCFLAGS) --cfg unix -o $@ $<
+	$(RUSTC) $(RUSTCFLAGS) --cfg unix --crate-type rlib -o $@ $<
 
 $(BUILD)/libstd.rlib: libstd/src/lib.rs libstd/src/*.rs libstd/src/*/*.rs libstd/src/*/*/*.rs $(BUILD)/libcore.rlib $(BUILD)/liballoc.rlib $(BUILD)/libcollections.rlib $(BUILD)/librand.rlib $(BUILD)/libsystem.rlib
 	$(RUSTC) $(RUSTCFLAGS) -o $@ $<
