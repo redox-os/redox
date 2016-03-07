@@ -168,6 +168,8 @@ impl Console {
             } else if c == '\n' {
                 self.point_x = 0;
                 self.point_y += 16;
+            } else if c == '\r' {
+                self.point_x = 0;
             } else if c == '\t' {
                 self.point_x = ((self.point_x / 64) + 1) * 64;
             } else if c == '\x08' {
