@@ -133,7 +133,7 @@ help:
 
 all: $(BUILD)/harddrive.bin
 
-filesystem/apps/rusthello/main.bin: filesystem/apps/rusthello/main.rs filesystem/apps/rusthello/*.rs filesystem/apps/rusthello/*/*.rs $(BUILD)/crt0.o $(BUILD)/libstd.rlib
+filesystem/apps/rusthello/main.bin: filesystem/apps/rusthello/src/main.rs filesystem/apps/rusthello/src/*.rs filesystem/apps/rusthello/src/*/*.rs $(BUILD)/crt0.o $(BUILD)/libstd.rlib
 	$(RUSTC) $(RUSTCFLAGS) --crate-type bin -o $@ $<
 
 filesystem/apps/sodium/main.bin: filesystem/apps/sodium/src/main.rs filesystem/apps/sodium/src/*.rs $(BUILD)/libstd.rlib $(BUILD)/liborbclient.rlib

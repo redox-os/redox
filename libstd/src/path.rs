@@ -142,6 +142,14 @@ impl PathBuf {
     pub fn file_name(&self) -> Option<&str> {
         self.inner.split(is_separator).last()
     }
+
+    pub fn push<P: AsRef<Path>>(&mut self, path: P) {
+        let path_str = &path.as_ref().inner;
+        if ! self.inner.is_empty() && ! self.inner.ends_with('/') && ! path_str.starts_with('/') {
+            self.inner.push('/');
+        }
+        self.inner.push_str(path_str);
+    }
 }
 
 impl Deref for PathBuf {
