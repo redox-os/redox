@@ -36,6 +36,7 @@ pub struct Console {
     pub escape: bool,
     pub escape_sequence: bool,
     pub sequence: Vec<String>,
+    pub raw_mode: bool,
 }
 
 impl Console {
@@ -53,138 +54,155 @@ impl Console {
             escape: false,
             escape_sequence: false,
             sequence: Vec::new(),
+            raw_mode: false,
         }
     }
 
     pub fn code(&mut self, c: char) {
         if self.escape_sequence {
-            if c >= '0' && c <= '9' {
-                // Add a number to the sequence list
-                if let Some(mut value) = self.sequence.last_mut() {
-                    value.push(c);
-                }
-            } else if c == ';' {
-                // Split sequence into list
-                self.sequence.push(String::new());
-            } else if c == 'm' {
-                // Display attributes
-                for value in self.sequence.iter() {
-                    if value == "0" {
-                        // Reset all
-                        self.foreground = WHITE;
-                        self.background = BLACK;
-                    } else if value == "30" {
-                        self.foreground = BLACK;
-                    } else if value == "31" {
-                        self.foreground = RED;
-                    } else if value == "32" {
-                        self.foreground = GREEN;
-                    } else if value == "33" {
-                        self.foreground = YELLOW;
-                    } else if value == "34" {
-                        self.foreground = BLUE;
-                    } else if value == "35" {
-                        self.foreground = MAGENTA;
-                    } else if value == "36" {
-                        self.foreground = CYAN;
-                    } else if value == "37" {
-                        self.foreground = WHITE;
-                    } else if value == "40" {
-                        self.background = BLACK;
-                    } else if value == "41" {
-                        self.background = RED;
-                    } else if value == "42" {
-                        self.background = GREEN;
-                    } else if value == "43" {
-                        self.background = YELLOW;
-                    } else if value == "44" {
-                        self.background = BLUE;
-                    } else if value == "45" {
-                        self.background = MAGENTA;
-                    } else if value == "46" {
-                        self.background = CYAN;
-                    } else if value == "47" {
-                        self.background = WHITE;
+            match c {
+                '0' ... '9' => {
+                    // Add a number to the sequence list
+                    if let Some(mut value) = self.sequence.last_mut() {
+                        value.push(c);
                     }
-                }
+                },
+                ';' => {
+                    // Split sequence into list
+                    self.sequence.push(String::new());
+                },
+                'm' => {
+                    // Display attributes
+                    for value in self.sequence.iter() {
+                        match value.as_str() {
+                            "0" => {
+                                self.foreground = WHITE;
+                                self.background = BLACK;
+                            },
+                            "30" => self.foreground = BLACK,
+                            "31" => self.foreground = RED,
+                            "32" => self.foreground = GREEN,
+                            "33" => self.foreground = YELLOW,
+                            "34" => self.foreground = BLUE,
+                            "35" => self.foreground = MAGENTA,
+                            "36" => self.foreground = CYAN,
+                            "37" => self.foreground = WHITE,
+                            "40" => self.background = BLACK,
+                            "41" => self.background = RED,
+                            "42" => self.background = GREEN,
+                            "43" => self.background = YELLOW,
+                            "44" => self.background = BLUE,
+                            "45" => self.background = MAGENTA,
+                            "46" => self.background = CYAN,
+                            "47" => self.background = WHITE,
+                            _ => {},
+                        }
+                    }
+                    self.escape_sequence = false;
+                },
+                'H' | 'f' => {
+                    if let Some(ref mut display) = self.display {
+                        display.rect(self.point_x, self.point_y, 8, 16, self.background);
+                    }
 
-                self.escape_sequence = false;
-            } else if c == 'H' || c == 'f' {
-                if let Some(ref mut display) = self.display {
-                    display.rect(self.point_x, self.point_y, 8, 16, self.background);
-                }
+                    let row = self.sequence.get(0).map_or("", |p| &p).parse::<usize>().unwrap_or(0);
+                    self.point_y = row * 16;
 
-                let row = self.sequence.get(0).map_or("", |p| &p).parse::<usize>().unwrap_or(0);
-                self.point_y = row * 16;
+                    let col = self.sequence.get(1).map_or("", |p| &p).parse::<usize>().unwrap_or(0);
+                    self.point_x = col * 8;
 
-                let col = self.sequence.get(1).map_or("", |p| &p).parse::<usize>().unwrap_or(0);
-                self.point_x = col * 8;
+                    if let Some(ref mut display) = self.display {
+                        display.rect(self.point_x, self.point_y, 8, 16, self.foreground);
+                    }
+                    self.redraw = true;
 
-                if let Some(ref mut display) = self.display {
-                    display.rect(self.point_x, self.point_y, 8, 16, self.foreground);
-                }
-                self.redraw = true;
+                    self.escape_sequence = false;
+                },
+/*
+@MANSTART{terminal-raw-mode}
+INTRODUCTION
+    Since Redox has no ioctl syscall, it uses escape codes for switching to raw mode.
 
-                self.escape_sequence = false;
-            } else {
-                self.escape_sequence = false;
+ENTERING AND EXITING RAW MODE
+    Entering raw mode is done using CSI-r (^[r). Unsetting raw mode is done by CSI-R (^[R).
+
+RAW MODE
+    Raw mode means that the stdin must be handled solely by the program itself. It will not automatically be printed nor will it be modified in any way (modulo escape codes).
+
+    This means that:
+        - stdin is not printed.
+        - newlines are interpreted as carriage returns in stdin.
+        - stdin is not buffered, meaning that the stream of bytes goes directly to the program, without the user having to press enter.
+@MANEND
+*/
+                'r' => self.raw_mode = true,
+                'R' => self.raw_mode = false,
+                _ => self.escape_sequence = false,
+
             }
 
             if !self.escape_sequence {
                 self.sequence.clear();
                 self.escape = false;
             }
-        } else if c == '[' {
-            // Control sequence initiator
-
-            self.escape_sequence = true;
-            self.sequence.push(String::new());
-        } else if c == 'c' {
-            // Reset
-            self.point_x = 0;
-            self.point_y = 0;
-            self.foreground = WHITE;
-            self.background = BLACK;
-            if let Some(ref mut display) = self.display {
-                display.set(self.background);
-            }
-            self.redraw = true;
-
-            self.escape = false;
         } else {
-            // Unknown escape character
+            match c {
+                '[' => {
+                    // Control sequence initiator
 
-            self.escape = false;
+                    self.escape_sequence = true;
+                    self.sequence.push(String::new());
+                },
+                'c' => {
+                    // Reset
+                    self.point_x = 0;
+                    self.point_y = 0;
+                    self.foreground = WHITE;
+                    self.background = BLACK;
+                    if let Some(ref mut display) = self.display {
+                        display.set(self.background);
+                    }
+                    self.redraw = true;
+
+                    self.escape = false;
+                }
+                _ => self.escape = false,
+            }
         }
     }
 
     pub fn character(&mut self, c: char) {
         if let Some(ref mut display) = self.display {
             display.rect(self.point_x, self.point_y, 8, 16, self.background);
-            if c == '\x00' {
-                // Ignore null character
-            } else if c == '\x1B' {
-                self.escape = true;
-            } else if c == '\n' {
-                self.point_x = 0;
-                self.point_y += 16;
-            } else if c == '\r' {
-                self.point_x = 0;
-            } else if c == '\t' {
-                self.point_x = ((self.point_x / 64) + 1) * 64;
-            } else if c == '\x08' {
-                if self.point_x >= 8 {
-                    self.point_x -= 8;
+
+            match c {
+                '\0' => {},
+                '\x1B' => self.escape = true,
+                '\n' if self.raw_mode => self.point_x = 0,
+                '\n' => {
+                    self.point_x = 0;
+                    self.point_y += 16;
+                },
+                '\t' => self.point_x = ((self.point_x / 64) + 1) * 64,
+                '\r' => self.point_x = 0,
+                '\x08' if self.raw_mode => {},
+                '\x08' => {
+                    if self.point_x >= 8 {
+                        self.point_x -= 8;
+                    }
+                    display.rect(self.point_x, self.point_y, 8, 16, self.background);
+                },
+                _ => {
+                    display.char(self.point_x, self.point_y, c, self.foreground);
+                    self.point_x += 8;
                 }
-                display.rect(self.point_x, self.point_y, 8, 16, self.background);
-            } else {
-                display.char(self.point_x, self.point_y, c, self.foreground);
-                self.point_x += 8;
             }
+
             if self.point_x >= display.width {
                 self.point_x = 0;
                 self.point_y += 16;
             }
+
             while self.point_y + 16 > display.height {
                 display.scroll(16);
                 self.point_y -= 16;
@@ -207,7 +225,9 @@ impl Console {
                             '\0' => (),
                             c => {
                                 self.command.push(c);
-                                self.write(&[c as u8]);
+                                if ! self.raw_mode {
+                                    self.write(&[c as u8]);
+                                }
 
                                 if c == '\n' {
                                     let mut command = String::new();
