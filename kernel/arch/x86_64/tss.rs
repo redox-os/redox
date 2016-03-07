@@ -1,5 +1,5 @@
 #[repr(packed)]
-pub struct TSS {
+pub struct Tss {
     pub reserved1: u32,
     pub sp0: usize,
     pub sp1: usize,
