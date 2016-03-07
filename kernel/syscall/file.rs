@@ -178,6 +178,18 @@ pub fn do_sys_rmdir(path: *const u8) -> Result<usize> {
     ::env().rmdir(try!(Url::from_str(&path_string))).and(Ok(0))
 }
 
+pub fn do_sys_stat(path: *const u8, stat: *mut Stat) -> Result<usize> {
+    let contexts = ::env().contexts.lock();
+    let current = try!(contexts.current());
+    let path = current.canonicalize(c_string_to_str(path));
+    let url = try!(Url::from_str(&path));
+    if stat as usize > 0 {
+        ::env().stat(url, unsafe { &mut *stat }).and(Ok(0))
+    } else {
+        Err(Error::new(EFAULT))
+    }
+}
+
 pub fn do_sys_unlink(path: *const u8) -> Result<usize> {
     let contexts = ::env().contexts.lock();
     let current = try!(contexts.current());

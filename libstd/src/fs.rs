@@ -1,13 +1,15 @@
+use core::ops::Deref;
 use core_collections::borrow::ToOwned;
 use io::{Read, Result, Write, Seek, SeekFrom};
+use mem;
 use path::{Path, PathBuf};
 use str;
 use string::String;
 use vec::Vec;
 
 use system::syscall::{sys_open, sys_dup, sys_close, sys_fpath, sys_ftruncate, sys_read,
-              sys_write, sys_lseek, sys_fsync, sys_mkdir, sys_rmdir, sys_unlink};
-use system::syscall::{O_RDWR, O_CREAT, O_TRUNC, SEEK_SET, SEEK_CUR, SEEK_END};
+              sys_write, sys_lseek, sys_fsync, sys_mkdir, sys_rmdir, sys_stat, sys_unlink};
+use system::syscall::{O_RDWR, O_CREAT, O_TRUNC, MODE_DIR, MODE_FILE, SEEK_SET, SEEK_CUR, SEEK_END, Stat};
 
 /// A Unix-style file
 pub struct File {
@@ -114,6 +116,31 @@ impl FileType {
     }
 }
 
+pub struct MetaData {
+    stat: Stat
+}
+
+impl MetaData {
+    pub fn file_type(&self) -> FileType {
+        FileType {
+            dir: self.stat.st_mode & MODE_DIR == MODE_DIR,
+            file: self.stat.st_mode & MODE_FILE == MODE_FILE
+        }
+    }
+
+    pub fn is_dir(&self) -> bool {
+        self.stat.st_mode & MODE_DIR == MODE_DIR
+    }
+
+    pub fn is_file(&self) -> bool {
+        self.stat.st_mode & MODE_FILE == MODE_FILE
+    }
+
+    pub fn len(&self) -> u64 {
+        self.stat.st_size
+    }
+}
+
 pub struct DirEntry {
     path: String,
     dir: bool,
@@ -121,8 +148,8 @@ pub struct DirEntry {
 }
 
 impl DirEntry {
-    pub fn file_name(&self) -> &str {
-        &self.path
+    pub fn file_name(&self) -> &Path {
+        unsafe { mem::transmute(self.path.deref()) }
     }
 
     pub fn file_type(&self) -> Result<FileType> {
@@ -186,6 +213,21 @@ pub fn canonicalize(path: &str) -> Result<PathBuf> {
         },
         Err(err) => Err(err)
     }
+}
+
+pub fn metadata<P: AsRef<Path>>(path: P) -> Result<MetaData> {
+    let path_str = &path.as_ref().inner;
+    let path_c = path_str.to_owned() + "\0";
+    let mut stat = Stat {
+        st_mode: 0,
+        st_size: 0
+    };
+    unsafe {
+        try!(sys_stat(path_c.as_ptr(), &mut stat));
+    }
+    Ok(MetaData {
+        stat: stat
+    })
 }
 
 /// Create a new directory, using a path
