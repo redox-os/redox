@@ -1,13 +1,15 @@
+use core::ops::Deref;
 use core_collections::borrow::ToOwned;
 use io::{Read, Result, Write, Seek, SeekFrom};
-use path::PathBuf;
+use mem;
+use path::{Path, PathBuf};
 use str;
 use string::String;
 use vec::Vec;
 
 use system::syscall::{sys_open, sys_dup, sys_close, sys_fpath, sys_ftruncate, sys_read,
-              sys_write, sys_lseek, sys_fsync, sys_mkdir, sys_rmdir, sys_unlink};
-use system::syscall::{O_RDWR, O_CREAT, O_TRUNC, SEEK_SET, SEEK_CUR, SEEK_END};
+              sys_write, sys_lseek, sys_fsync, sys_mkdir, sys_rmdir, sys_stat, sys_unlink};
+use system::syscall::{O_RDWR, O_CREAT, O_TRUNC, MODE_DIR, MODE_FILE, SEEK_SET, SEEK_CUR, SEEK_END, Stat};
 
 /// A Unix-style file
 pub struct File {
@@ -114,15 +116,40 @@ impl FileType {
     }
 }
 
+pub struct MetaData {
+    stat: Stat
+}
+
+impl MetaData {
+    pub fn file_type(&self) -> FileType {
+        FileType {
+            dir: self.stat.st_mode & MODE_DIR == MODE_DIR,
+            file: self.stat.st_mode & MODE_FILE == MODE_FILE
+        }
+    }
+
+    pub fn is_dir(&self) -> bool {
+        self.stat.st_mode & MODE_DIR == MODE_DIR
+    }
+
+    pub fn is_file(&self) -> bool {
+        self.stat.st_mode & MODE_FILE == MODE_FILE
+    }
+
+    pub fn len(&self) -> u64 {
+        self.stat.st_size
+    }
+}
+
 pub struct DirEntry {
-    path: PathBuf,
+    path: String,
     dir: bool,
     file: bool,
 }
 
 impl DirEntry {
-    pub fn file_name(&self) -> &PathBuf {
-        &self.path
+    pub fn file_name(&self) -> &Path {
+        unsafe { mem::transmute(self.path.deref()) }
     }
 
     pub fn file_type(&self) -> Result<FileType> {
@@ -132,8 +159,8 @@ impl DirEntry {
         })
     }
 
-    pub fn path(&self) -> &PathBuf {
-        &self.path
+    pub fn path(&self) -> PathBuf {
+        PathBuf::from(self.path.clone())
     }
 }
 
@@ -167,7 +194,7 @@ impl Iterator for ReadDir {
                 path.pop();
             }
             Some(Ok(DirEntry {
-                path: PathBuf::from(path),
+                path: path,
                 dir: dir,
                 file: !dir,
             }))
@@ -188,20 +215,37 @@ pub fn canonicalize(path: &str) -> Result<PathBuf> {
     }
 }
 
+pub fn metadata<P: AsRef<Path>>(path: P) -> Result<MetaData> {
+    let path_str = &path.as_ref().inner;
+    let path_c = path_str.to_owned() + "\0";
+    let mut stat = Stat {
+        st_mode: 0,
+        st_size: 0
+    };
+    unsafe {
+        try!(sys_stat(path_c.as_ptr(), &mut stat));
+    }
+    Ok(MetaData {
+        stat: stat
+    })
+}
+
 /// Create a new directory, using a path
 /// The default mode of the directory is 744
-pub fn create_dir(path: &str) -> Result<()> {
-    let path_c = path.to_owned() + "\0";
+pub fn create_dir<P: AsRef<Path>>(path: P) -> Result<()> {
+    let path_str = &path.as_ref().inner;
+    let path_c = path_str.to_owned() + "\0";
     unsafe {
         sys_mkdir(path_c.as_ptr(), 755).and(Ok(()))
     }
 }
 
-pub fn read_dir(path: &str) -> Result<ReadDir> {
-    let file_result = if path.is_empty() || path.ends_with('/') {
-        File::open(path)
+pub fn read_dir<P: AsRef<Path>>(path: P) -> Result<ReadDir> {
+    let path_str = &path.as_ref().inner;
+    let file_result = if path_str.is_empty() || path_str.ends_with('/') {
+        File::open(path_str)
     } else {
-        File::open(&(path.to_owned() + "/"))
+        File::open(&(path_str.to_owned() + "/"))
     };
 
     match file_result {

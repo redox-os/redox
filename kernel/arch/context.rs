@@ -19,7 +19,9 @@ use core::ops::DerefMut;
 
 use fs::Resource;
 
-use syscall::{do_sys_exit, Error, Result, CLONE_FILES, CLONE_FS, CLONE_VM, CLONE_VFORK, EBADF, EFAULT, ENOMEM, ESRCH};
+use syscall::{do_sys_exit, CLONE_FILES, CLONE_FS, CLONE_VM, CLONE_VFORK};
+
+use system::error::{Error, Result, EBADF, EFAULT, ENOMEM, ESRCH};
 
 use sync::WaitMap;
 

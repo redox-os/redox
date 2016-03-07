@@ -5,7 +5,6 @@ extern crate orbclient;
 use std::{cmp, env};
 use std::collections::BTreeMap;
 use std::fs::{self, File};
-use std::io::{Seek, SeekFrom};
 use std::process::Command;
 use std::string::{String, ToString};
 use std::vec::Vec;
@@ -285,14 +284,15 @@ impl FileManager {
                     };
 
                     let entry_path = match entry.file_name().to_str() {
-                        Some(path_str) => {
-                            if directory {
-                                path_str.to_string() + "/"
-                            } else {
-                                path_str.to_string()
-                            }
+                        Some(path_str) => if directory {
+                            path_str.to_string() + "/"
+                        } else {
+                            path_str.to_string()
+                        },
+                        None => {
+                            println!("Failed to read file name");
+                            String::new()
                         }
-                        None => "Failed to convert path to string".to_string(),
                     };
 
                     self.files.push(entry_path.clone());
@@ -300,21 +300,17 @@ impl FileManager {
                                          if entry_path.ends_with('/') {
                         FileManager::get_num_entries(&(path.to_string() + &entry_path))
                     } else {
-                        match File::open(&entry_path) {
-                            Ok(mut file) => {
-                                match file.seek(SeekFrom::End(0)) {
-                                    Ok(size) => {
-                                        if size >= 1_000_000_000 {
-                                            format!("{:.1} GB", (size as u64) / 1_000_000_000)
-                                        } else if size >= 1_000_000 {
-                                            format!("{:.1} MB", (size as u64) / 1_000_000)
-                                        } else if size >= 1_000 {
-                                            format!("{:.1} KB", (size as u64) / 1_000)
-                                        } else {
-                                            format!("{:.1} bytes", size)
-                                        }
-                                    }
-                                    Err(err) => format!("Failed to seek: {}", err),
+                        match fs::metadata(&entry_path) {
+                            Ok(metadata) => {
+                                let size = metadata.len();
+                                if size >= 1_000_000_000 {
+                                    format!("{:.1} GB", (size as u64) / 1_000_000_000)
+                                } else if size >= 1_000_000 {
+                                    format!("{:.1} MB", (size as u64) / 1_000_000)
+                                } else if size >= 1_000 {
+                                    format!("{:.1} KB", (size as u64) / 1_000)
+                                } else {
+                                    format!("{:.1} bytes", size)
                                 }
                             }
                             Err(err) => format!("Failed to open: {}", err),
