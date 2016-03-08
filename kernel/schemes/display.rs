@@ -13,6 +13,7 @@ use graphics::display::Display;
 use fs::{KScheme, Resource, ResourceSeek, Url};
 
 use system::error::{Error, Result, EACCES, ENOENT, EINVAL};
+use system::graphics::fast_copy;
 
 pub struct DisplayScheme;
 
@@ -69,11 +70,11 @@ impl Resource for DisplayResource {
     }
 
     fn write(&mut self, buf: &[u8]) -> Result<usize> {
-        let size = cmp::max(0, cmp::min(self.display.size as isize - self.seek as isize, buf.len() as isize)) as usize;
+        let size = cmp::max(0, cmp::min(self.display.size as isize - self.seek as isize, (buf.len()/4) as isize)) as usize;
 
         if size > 0 {
             unsafe {
-                Display::copy_run(self.display.onscreen + self.seek, buf.as_ptr() as usize, size);
+                fast_copy(self.display.onscreen.offset(self.seek as isize), buf.as_ptr() as *const u32, size);
             }
         }
 
