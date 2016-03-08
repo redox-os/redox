@@ -1,3 +1,5 @@
+#![feature(asm)]
+
 extern crate core;
 extern crate system;
 
@@ -140,7 +142,7 @@ impl OrbitalScheme {
                     let off1 = row * self.image.width() + rect.left();
                     let off2 = row * self.image.width() + rect.right();
 
-                    unsafe { display.seek(SeekFrom::Start(off1 as u64 * 4)).unwrap(); }
+                    unsafe { display.seek(SeekFrom::Start(off1 as u64)).unwrap(); }
                     display.send_type(&data[off1 as usize .. off2 as usize]).unwrap();
                 }
             }
