@@ -19,7 +19,7 @@ use fs::redoxfs::{FileSystem, Node, NodeData};
 
 use fs::{KScheme, Resource, ResourceSeek, Url, VecResource};
 
-use syscall::{O_CREAT, MODE_DIR, MODE_FILE, Stat};
+use syscall::{O_CREAT, O_TRUNC, MODE_DIR, MODE_FILE, Stat};
 
 use system::error::{Error, Result, ENOENT, EIO};
 
@@ -99,7 +99,6 @@ impl Resource for FileResource {
     }
 
     // TODO: Check to make sure proper amount of bytes written. See Disk::write
-    // TODO: Allow reallocation
     fn sync(&mut self) -> Result<()> {
         if self.dirty {
             let mut node_dirty = false;
@@ -310,13 +309,19 @@ impl KScheme for FileScheme {
                         }
                     }
 
-                    Ok(box FileResource {
+                    let mut resource = box FileResource {
                         scheme: self,
                         node: node,
                         vec: vec,
                         seek: 0,
                         dirty: false,
-                    })
+                    };
+
+                    if flags & O_TRUNC == O_TRUNC {
+                        try!(resource.truncate(0));
+                    }
+
+                    Ok(resource)
                 }
                 None => {
                     if flags & O_CREAT == O_CREAT {
