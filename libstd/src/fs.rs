@@ -2,6 +2,7 @@ use core::ops::Deref;
 use core_collections::borrow::ToOwned;
 use io::{Read, Result, Write, Seek, SeekFrom};
 use mem;
+use os::unix::io::{IntoRawFd, RawFd};
 use path::{Path, PathBuf};
 use str;
 use string::String;
@@ -69,6 +70,12 @@ impl File {
     /// Truncates the file
     pub fn set_len(&mut self, size: u64) -> Result<()> {
         sys_ftruncate(self.fd, size as usize).and(Ok(()))
+    }
+}
+
+impl IntoRawFd for File {
+    fn into_raw_fd(self) -> RawFd {
+        self.fd
     }
 }
 
