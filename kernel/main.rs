@@ -13,7 +13,6 @@
 #![feature(fnbox)]
 #![feature(fundamental)]
 #![feature(lang_items)]
-#![feature(op_assign_traits)]
 #![feature(unboxed_closures)]
 #![feature(unsafe_no_drop_flag)]
 #![feature(unwind_attributes)]

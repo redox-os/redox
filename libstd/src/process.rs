@@ -34,6 +34,12 @@ impl Write for ChildStdin {
     }
 }
 
+impl Drop for ChildStdin {
+    fn drop(&mut self) {
+        let _ = sys_close(self.fd);
+    }
+}
+
 pub struct ChildStdout {
     fd: usize,
 }
@@ -50,6 +56,12 @@ impl Read for ChildStdout {
     }
 }
 
+impl Drop for ChildStdout {
+    fn drop(&mut self) {
+        let _ = sys_close(self.fd);
+    }
+}
+
 pub struct ChildStderr {
     fd: usize,
 }
@@ -57,6 +69,12 @@ pub struct ChildStderr {
 impl Read for ChildStderr {
     fn read(&mut self, buf: &mut [u8]) -> Result<usize> {
         sys_read(self.fd, buf)
+    }
+}
+
+impl Drop for ChildStderr {
+    fn drop(&mut self) {
+        let _ = sys_close(self.fd);
     }
 }
 
@@ -220,6 +238,10 @@ impl Command {
                                     fd: write
                                 })
                             },
+                            StdioType::Raw(fd) => {
+                                try!(sys_close(fd));
+                                None
+                            },
                             _ => None
                         },
                         stdout: match self.stdout.inner {
@@ -229,6 +251,10 @@ impl Command {
                                     fd: read
                                 })
                             },
+                            StdioType::Raw(fd) => {
+                                try!(sys_close(fd));
+                                None
+                            },
                             _ => None
                         },
                         stderr: match self.stderr.inner {
@@ -237,6 +263,10 @@ impl Command {
                                 Some(ChildStderr {
                                     fd: read
                                 })
+                            },
+                            StdioType::Raw(fd) => {
+                                try!(sys_close(fd));
+                                None
                             },
                             _ => None
                         }

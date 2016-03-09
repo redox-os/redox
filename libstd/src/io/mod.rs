@@ -3,6 +3,7 @@
 use fmt;
 use string::String;
 use vec::Vec;
+use thread;
 pub use system::error::Error;
 use system::syscall::{sys_read, sys_write};
 
@@ -77,16 +78,30 @@ pub trait Write {
     /// Write to the file
     fn write(&mut self, buf: &[u8]) -> Result<usize>;
 
+    fn flush(&mut self) -> Result<()> {
+        Ok(())
+    }
+
+    //Attempt to write entire buffer
+    fn write_all(&mut self, buf: &[u8]) -> Result<()> {
+        let mut i = 0;
+        while i < buf.len() {
+            let count = try!(self.write(&buf[i..]));
+            if count > 0 {
+                i += count;
+            } else {
+                thread::yield_now();
+            }
+        }
+        Ok(())
+    }
+
     /// Write a format to the file
     fn write_fmt(&mut self, args: fmt::Arguments) -> Result<()> {
         match self.write(fmt::format(args).as_bytes()) {
             Ok(_) => Ok(()),
             Err(err) => Err(err),
         }
-    }
-
-    fn flush(&mut self) -> Result<()> {
-        Ok(())
     }
 }
 

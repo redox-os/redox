@@ -242,7 +242,7 @@ impl FileManager {
     fn get_parent_directory() -> Option<String> {
         if let Ok(parent_dir) = File::open("../") {
             if let Ok(path) = parent_dir.path() {
-                return Some(path.to_string());
+                return Some(path.into_os_string().into_string().unwrap_or("/".to_string()));
             }
         }
 
