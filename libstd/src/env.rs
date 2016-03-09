@@ -8,6 +8,7 @@ use fs::File;
 use path::{Path, PathBuf};
 use io::Result;
 use string::{String, ToString};
+use sys_common::AsInner;
 use vec::Vec;
 
 use system::error::{Error, ENOENT};
@@ -90,10 +91,13 @@ pub fn home_dir() -> Option<PathBuf> {
 
 /// Set the current directory
 pub fn set_current_dir<P: AsRef<Path>>(path: P) -> Result<()> {
-    let file_result = if path.as_ref().inner.is_empty() || path.as_ref().inner.ends_with('/') {
-        File::open(&path.as_ref().inner)
+    let path_str = path.as_ref().as_os_str().as_inner();
+    let file_result = if path_str.is_empty() || path_str.ends_with('/') {
+        File::open(path_str)
     } else {
-        File::open(&(path.as_ref().inner.to_owned() + "/"))
+        let mut path_string = path_str.to_owned();
+        path_string.push_str("/");
+        File::open(path_string)
     };
 
     match file_result {
@@ -101,7 +105,8 @@ pub fn set_current_dir<P: AsRef<Path>>(path: P) -> Result<()> {
             match file.path() {
                 Ok(path) => {
                     if let Some(path_str) = path.to_str() {
-                        let path_c = path_str.to_owned() + "\0";
+                        let mut path_c = path_str.to_owned();
+                        path_c.push_str("\0");
                         unsafe {
                             sys_chdir(path_c.as_ptr()).and(Ok(()))
                         }

@@ -165,6 +165,7 @@ filesystem/bin/%: crates/coreutils/src/bin/%.rs $(BUILD)/crt0.o $(BUILD)/libcore
 	$(RUSTC) $(RUSTCFLAGS) --crate-type bin -o $@ $<
 
 coreutils: \
+	filesystem/bin/basename \
 	filesystem/bin/cat \
 	filesystem/bin/cp \
 	filesystem/bin/du \
@@ -182,10 +183,11 @@ coreutils: \
 	filesystem/bin/shutdown \
 	filesystem/bin/sleep \
 	filesystem/bin/touch \
-	filesystem/bin/wc \
 	filesystem/bin/true \
+	filesystem/bin/wc \
 	filesystem/bin/yes
-	#TODO: filesystem/bin/env
+	#TODO: filesystem/bin/env filesystem/bin/test
+
 
 $(BUILD)/libbinutils.rlib: crates/binutils/src/lib.rs crates/binutils/src/*.rs $(BUILD)/libcoreutils.rlib
 	$(RUSTC) $(RUSTCFLAGS) --crate-name binutils --crate-type lib -o $@ $<
@@ -204,10 +206,11 @@ filesystem/bin/%: crates/extrautils/src/bin/%.rs $(BUILD)/crt0.o $(BUILD)/libcor
 	$(RUSTC) $(RUSTCFLAGS) --crate-type bin -o $@ $<
 
 extrautils: \
-	filesystem/bin/cur \
+	filesystem/bin/calc \
 	filesystem/bin/cksum \
+	filesystem/bin/cur \
 	filesystem/bin/rem
-	#TODO: filesystem/bin/mtxt
+	#TODO: filesystem/bin/mtxt filesystem/bin/grep
 
 filesystem/bin/%: crates/%/main.rs crates/%/*.rs $(BUILD)/crt0.o $(BUILD)/libstd.rlib
 	mkdir -p filesystem/bin
@@ -247,11 +250,11 @@ bins: \
   	filesystem/bin/lua \
   	filesystem/bin/login \
   	filesystem/bin/orbital \
+	filesystem/bin/std-test \
   	filesystem/bin/sdl-test \
   	filesystem/bin/sdl-ttf-test \
   	filesystem/bin/sh \
 	filesystem/bin/tar \
-	filesystem/bin/test \
 	filesystem/bin/zfs
 	#TODO: binutils
 

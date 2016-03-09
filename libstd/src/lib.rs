@@ -145,7 +145,7 @@ pub mod thread;
 pub mod collections;
 // TODO pub mod dynamic_lib;
 pub mod env;
-// TODO pub mod ffi;
+pub mod ffi;
 pub mod fs;
 pub mod io;
 pub mod net;
@@ -155,8 +155,8 @@ pub mod process;
 pub mod sync;
 pub mod time;
 
-// TODO #[macro_use]
-// TODO #[path = "sys/common/mod.rs"] mod sys_common;
+#[macro_use]
+#[path = "sys/common/mod.rs"] mod sys_common;
 
 // TODO #[cfg(unix)]
 // TODO #[path = "sys/unix/mod.rs"] mod sys;
