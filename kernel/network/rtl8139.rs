@@ -19,7 +19,7 @@ use network::scheme::*;
 
 use fs::{KScheme, Resource, Url};
 
-use syscall::Result;
+use system::error::Result;
 
 use sync::Intex;
 

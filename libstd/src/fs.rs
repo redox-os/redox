@@ -1,13 +1,15 @@
+use core::ops::Deref;
 use core_collections::borrow::ToOwned;
 use io::{Read, Error, Result, Write, Seek, SeekFrom};
 use path::PathBuf;
 use str;
 use string::String;
+use sys_common::AsInner;
 use vec::Vec;
 
 use system::syscall::{sys_open, sys_dup, sys_close, sys_fpath, sys_ftruncate, sys_read,
-              sys_write, sys_lseek, sys_fsync, sys_mkdir, sys_rmdir, sys_unlink};
-use system::syscall::{O_RDWR, O_CREAT, O_TRUNC, SEEK_SET, SEEK_CUR, SEEK_END};
+              sys_write, sys_lseek, sys_fsync, sys_mkdir, sys_rmdir, sys_stat, sys_unlink};
+use system::syscall::{O_RDWR, O_RDONLY, O_WRONLY, O_APPEND, O_CREAT, O_TRUNC, MODE_DIR, MODE_FILE, SEEK_SET, SEEK_CUR, SEEK_END, Stat};
 
 /// A Unix-style file
 pub struct File {
@@ -16,23 +18,21 @@ pub struct File {
 }
 
 impl File {
-    pub fn from_fd(fd: usize) -> File {
-        File {
-            fd: fd
-        }
-    }
-
     /// Open a new file using a path
-    pub fn open(path: &str) -> Result<File> {
-        let path_c = path.to_owned() + "\0";
+    pub fn open<P: AsRef<Path>>(path: P) -> Result<File> {
+        let path_str = path.as_ref().as_os_str().as_inner();
+        let mut path_c = path_str.to_owned();
+        path_c.push_str("\0");
         unsafe {
-            sys_open(path_c.as_ptr(), O_RDWR, 0).map(|fd| File::from_fd(fd) )
+            sys_open(path_c.as_ptr(), O_RDONLY, 0).map(|fd| File::from_raw_fd(fd) )
         }.map_err(|x| Error::from_sys(x))
     }
 
     /// Create a new file using a path
-    pub fn create(path: &str) -> Result<File> {
-        let path_c = path.to_owned() + "\0";
+    pub fn create<P: AsRef<Path>>(path: P) -> Result<File> {
+        let path_str = path.as_ref().as_os_str().as_inner();
+        let mut path_c = path_str.to_owned();
+        path_c.push_str("\0");
         unsafe {
             sys_open(path_c.as_ptr(), O_CREAT | O_RDWR | O_TRUNC, 0).map(|fd| File::from_fd(fd) )
         }.map_err(|x| Error::from_sys(x))
@@ -40,7 +40,7 @@ impl File {
 
     /// Duplicate the file
     pub fn dup(&self) -> Result<File> {
-        sys_dup(self.fd).map(|fd| File::from_fd(fd)).map_err(|x| Error::from_sys(x))
+        sys_dup(self.fd).map(|fd| File::from_raw_fd(fd)).map_err(|x| Error::from_sys(x))
     }
 
     /// Get the canonical path of the file
@@ -65,6 +65,28 @@ impl File {
     /// Truncates the file
     pub fn set_len(&mut self, size: u64) -> Result<()> {
         sys_ftruncate(self.fd, size as usize).and(Ok(())).map_err(|x| Error::from_sys(x))
+    }
+}
+
+impl AsRawFd for File {
+    fn as_raw_fd(&self) -> RawFd {
+        self.fd
+    }
+}
+
+impl FromRawFd for File {
+    unsafe fn from_raw_fd(fd: RawFd) -> Self {
+        File {
+            fd: fd
+        }
+    }
+}
+
+impl IntoRawFd for File {
+    fn into_raw_fd(self) -> RawFd {
+        let fd = self.fd;
+        mem::forget(self);
+        fd
     }
 }
 
@@ -117,15 +139,116 @@ impl FileType {
     }
 }
 
+pub struct OpenOptions {
+    read: bool,
+    write: bool,
+    append: bool,
+    create: bool,
+    truncate: bool,
+}
+
+impl OpenOptions {
+    pub fn new() -> OpenOptions {
+        OpenOptions {
+            read: false,
+            write: false,
+            append: false,
+            create: false,
+            truncate: false,
+        }
+    }
+
+    pub fn read(&mut self, read: bool) -> &mut OpenOptions {
+        self.read = read;
+        self
+    }
+
+    pub fn write(&mut self, write: bool) -> &mut OpenOptions {
+        self.write = write;
+        self
+    }
+
+    pub fn append(&mut self, append: bool) -> &mut OpenOptions {
+        self.append = append;
+        self
+    }
+
+    pub fn create(&mut self, create: bool) -> &mut OpenOptions {
+        self.create = create;
+        self
+    }
+
+    pub fn truncate(&mut self, truncate: bool) -> &mut OpenOptions {
+        self.truncate = truncate;
+        self
+    }
+
+    pub fn open<P: AsRef<Path>>(&self, path: P) -> Result<File> {
+        let mut flags = 0;
+
+        if self.read && self.write {
+            flags |= O_RDWR;
+        } else if self.read {
+            flags |= O_RDONLY;
+        } else if self.write {
+            flags |= O_WRONLY;
+        }
+
+        if self.append {
+            flags |= O_APPEND;
+        }
+
+        if self.create {
+            flags |= O_CREAT;
+        }
+
+        if self.truncate {
+            flags |= O_TRUNC;
+        }
+
+        let path_str = path.as_ref().as_os_str().as_inner();
+        let mut path_c = path_str.to_owned();
+        path_c.push_str("\0");
+        unsafe {
+            sys_open(path_c.as_ptr(), flags, 0).map(|fd| File::from_raw_fd(fd) )
+        }
+    }
+}
+
+pub struct Metadata {
+    stat: Stat
+}
+
+impl Metadata {
+    pub fn file_type(&self) -> FileType {
+        FileType {
+            dir: self.stat.st_mode & MODE_DIR == MODE_DIR,
+            file: self.stat.st_mode & MODE_FILE == MODE_FILE
+        }
+    }
+
+    pub fn is_dir(&self) -> bool {
+        self.stat.st_mode & MODE_DIR == MODE_DIR
+    }
+
+    pub fn is_file(&self) -> bool {
+        self.stat.st_mode & MODE_FILE == MODE_FILE
+    }
+
+    pub fn len(&self) -> u64 {
+        self.stat.st_size
+    }
+}
+
 pub struct DirEntry {
-    path: PathBuf,
+    path: String,
     dir: bool,
     file: bool,
 }
 
 impl DirEntry {
-    pub fn file_name(&self) -> &PathBuf {
-        &self.path
+    pub fn file_name(&self) -> &Path {
+        unsafe { mem::transmute(self.path.deref()) }
     }
 
     pub fn file_type(&self) -> Result<FileType> {
@@ -135,8 +258,8 @@ impl DirEntry {
         })
     }
 
-    pub fn path(&self) -> &PathBuf {
-        &self.path
+    pub fn path(&self) -> PathBuf {
+        PathBuf::from(self.path.clone())
     }
 }
 
@@ -170,7 +293,7 @@ impl Iterator for ReadDir {
                 path.pop();
             }
             Some(Ok(DirEntry {
-                path: PathBuf::from(path),
+                path: path,
                 dir: dir,
                 file: !dir,
             }))
@@ -179,7 +302,7 @@ impl Iterator for ReadDir {
 }
 
 /// Find the canonical path of a file
-pub fn canonicalize(path: &str) -> Result<PathBuf> {
+pub fn canonicalize<P: AsRef<Path>>(path: P) -> Result<PathBuf> {
     match File::open(path) {
         Ok(file) => {
             match file.path() {
@@ -191,20 +314,41 @@ pub fn canonicalize(path: &str) -> Result<PathBuf> {
     }
 }
 
+pub fn metadata<P: AsRef<Path>>(path: P) -> Result<Metadata> {
+    let mut stat = Stat {
+        st_mode: 0,
+        st_size: 0
+    };
+    let path_str = path.as_ref().as_os_str().as_inner();
+    let mut path_c = path_str.to_owned();
+    path_c.push_str("\0");
+    unsafe {
+        try!(sys_stat(path_c.as_ptr(), &mut stat));
+    }
+    Ok(Metadata {
+        stat: stat
+    })
+}
+
 /// Create a new directory, using a path
 /// The default mode of the directory is 744
-pub fn create_dir(path: &str) -> Result<()> {
-    let path_c = path.to_owned() + "\0";
+pub fn create_dir<P: AsRef<Path>>(path: P) -> Result<()> {
+    let path_str = path.as_ref().as_os_str().as_inner();
+    let mut path_c = path_str.to_owned();
+    path_c.push_str("\0");
     unsafe {
         sys_mkdir(path_c.as_ptr(), 755).and(Ok(())).map_err(|x| Error::from_sys(x))
     }
 }
 
-pub fn read_dir(path: &str) -> Result<ReadDir> {
-    let file_result = if path.is_empty() || path.ends_with('/') {
-        File::open(path)
+pub fn read_dir<P: AsRef<Path>>(path: P) -> Result<ReadDir> {
+    let path_str = path.as_ref().as_os_str().as_inner();
+    let file_result = if path_str.is_empty() || path_str.ends_with('/') {
+        File::open(path_str)
     } else {
-        File::open(&(path.to_owned() + "/"))
+        let mut path_string = path_str.to_owned();
+        path_string.push_str("/");
+        File::open(path_string)
     };
 
     match file_result {

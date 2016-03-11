@@ -6,8 +6,8 @@ BUILD=build/$(ARCH)-unknown-redox/debug
 
 QEMU?=qemu-system-$(ARCH)
 
-CARGO=CARGO_TARGET_DIR=build cargo rustc
-CARGOFLAGS=--target=$(ARCH)-unknown-redox.json -- -L $(BUILD) \
+CARGO=CARGO_TARGET_DIR=build RUSTC="./rustc-$(ARCH).sh" cargo rustc
+CARGOFLAGS=--verbose --target=$(ARCH)-unknown-redox.json -- -L $(BUILD) \
 	-C no-prepopulate-passes -C no-stack-check -C opt-level=2 \
 	-Z no-landing-pads \
 	-A dead_code
@@ -133,7 +133,7 @@ help:
 
 all: $(BUILD)/harddrive.bin
 
-filesystem/apps/rusthello/main.bin: filesystem/apps/rusthello/main.rs filesystem/apps/rusthello/*.rs filesystem/apps/rusthello/*/*.rs $(BUILD)/crt0.o $(BUILD)/libstd.rlib
+filesystem/apps/rusthello/main.bin: filesystem/apps/rusthello/src/main.rs filesystem/apps/rusthello/src/*.rs filesystem/apps/rusthello/src/*/*.rs $(BUILD)/crt0.o $(BUILD)/libstd.rlib
 	$(RUSTC) $(RUSTCFLAGS) --crate-type bin -o $@ $<
 
 filesystem/apps/sodium/main.bin: filesystem/apps/sodium/src/main.rs filesystem/apps/sodium/src/*.rs $(BUILD)/libstd.rlib $(BUILD)/liborbclient.rlib
@@ -165,6 +165,7 @@ filesystem/bin/%: crates/coreutils/src/bin/%.rs $(BUILD)/crt0.o $(BUILD)/libcore
 	$(RUSTC) $(RUSTCFLAGS) --crate-type bin -o $@ $<
 
 coreutils: \
+	filesystem/bin/basename \
 	filesystem/bin/cat \
 	filesystem/bin/cp \
 	filesystem/bin/du \
@@ -182,10 +183,11 @@ coreutils: \
 	filesystem/bin/shutdown \
 	filesystem/bin/sleep \
 	filesystem/bin/touch \
-	filesystem/bin/wc \
 	filesystem/bin/true \
+	filesystem/bin/wc \
 	filesystem/bin/yes
-	#TODO: filesystem/bin/env
+	#TODO: filesystem/bin/env filesystem/bin/test
+
 
 $(BUILD)/libbinutils.rlib: crates/binutils/src/lib.rs crates/binutils/src/*.rs $(BUILD)/libcoreutils.rlib
 	$(RUSTC) $(RUSTCFLAGS) --crate-name binutils --crate-type lib -o $@ $<
@@ -204,10 +206,11 @@ filesystem/bin/%: crates/extrautils/src/bin/%.rs $(BUILD)/crt0.o $(BUILD)/libcor
 	$(RUSTC) $(RUSTCFLAGS) --crate-type bin -o $@ $<
 
 extrautils: \
-	filesystem/bin/cur \
+	filesystem/bin/calc \
 	filesystem/bin/cksum \
+	filesystem/bin/cur \
 	filesystem/bin/rem
-	#TODO: filesystem/bin/mtxt
+	#TODO: filesystem/bin/mtxt filesystem/bin/grep
 
 filesystem/bin/%: crates/%/main.rs crates/%/*.rs $(BUILD)/crt0.o $(BUILD)/libstd.rlib
 	mkdir -p filesystem/bin
@@ -247,11 +250,11 @@ bins: \
   	filesystem/bin/lua \
   	filesystem/bin/login \
   	filesystem/bin/orbital \
+	filesystem/bin/std-test \
   	filesystem/bin/sdl-test \
   	filesystem/bin/sdl-ttf-test \
   	filesystem/bin/sh \
 	filesystem/bin/tar \
-	filesystem/bin/test \
 	filesystem/bin/zfs
 	#TODO: binutils
 
@@ -354,7 +357,7 @@ $(BUILD)/liblibc.rlib: rust/src/liblibc/src/lib.rs $(BUILD)/libcore.rlib
 	$(RUSTC) $(RUSTCFLAGS) -o $@ $<
 
 $(BUILD)/librealstd.rlib: rust/src/libstd/lib.rs $(BUILD)/libcore.rlib $(BUILD)/liblibc.rlib $(BUILD)/liballoc.rlib $(BUILD)/librustc_unicode.rlib $(BUILD)/libcollections.rlib $(BUILD)/librand.rlib
-	$(RUSTC) $(RUSTCFLAGS) --cfg unix -o $@ $<
+	$(RUSTC) $(RUSTCFLAGS) --cfg unix --crate-type rlib -o $@ $<
 
 $(BUILD)/libstd.rlib: libstd/src/lib.rs libstd/src/*.rs libstd/src/*/*.rs libstd/src/*/*/*.rs $(BUILD)/libcore.rlib $(BUILD)/liballoc.rlib $(BUILD)/libcollections.rlib $(BUILD)/librand.rlib $(BUILD)/libsystem.rlib
 	$(RUSTC) $(RUSTCFLAGS) -o $@ $<

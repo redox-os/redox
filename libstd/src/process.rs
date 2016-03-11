@@ -1,6 +1,7 @@
 use boxed::Box;
 use core::mem;
 use io::{Result, Read, Write};
+use os::unix::io::{AsRawFd, FromRawFd, RawFd};
 use ops::DerefMut;
 use string::String;
 use core_collections::borrow::ToOwned;
@@ -35,13 +36,31 @@ impl Write for ChildStdin {
     fn flush(&mut self) -> Result<()> { Ok(()) }
 }
 
+impl Drop for ChildStdin {
+    fn drop(&mut self) {
+        let _ = sys_close(self.fd);
+    }
+}
+
 pub struct ChildStdout {
     fd: usize,
+}
+
+impl AsRawFd for ChildStdout {
+    fn as_raw_fd(&self) -> RawFd {
+        self.fd
+    }
 }
 
 impl Read for ChildStdout {
     fn read(&mut self, buf: &mut [u8]) -> Result<usize> {
         sys_read(self.fd, buf).map_err(|x| Error::from_sys(x))
+    }
+}
+
+impl Drop for ChildStdout {
+    fn drop(&mut self) {
+        let _ = sys_close(self.fd);
     }
 }
 
@@ -52,6 +71,12 @@ pub struct ChildStderr {
 impl Read for ChildStderr {
     fn read(&mut self, buf: &mut [u8]) -> Result<usize> {
         sys_read(self.fd, buf).map_err(|x| Error::from_sys(x))
+    }
+}
+
+impl Drop for ChildStderr {
+    fn drop(&mut self) {
+        let _ = sys_close(self.fd);
     }
 }
 
@@ -140,6 +165,11 @@ impl Command {
                     try!(sys_dup(write).map_err(|x| Error::from_sys(x)));
                     try!(sys_close(write).map_err(|x| Error::from_sys(x)));
                 },
+                StdioType::Raw(fd) => {
+                    try!(sys_close(2));
+                    try!(sys_dup(fd));
+                    try!(sys_close(fd));
+                },
                 StdioType::Null => {
                     try!(sys_close(2).map_err(|x| Error::from_sys(x)));
                 },
@@ -153,6 +183,11 @@ impl Command {
                     try!(sys_dup(write).map_err(|x| Error::from_sys(x)));
                     try!(sys_close(write).map_err(|x| Error::from_sys(x)));
                 },
+                StdioType::Raw(fd) => {
+                    try!(sys_close(1));
+                    try!(sys_dup(fd));
+                    try!(sys_close(fd));
+                },
                 StdioType::Null => {
                     try!(sys_close(1).map_err(|x| Error::from_sys(x)));
                 },
@@ -165,6 +200,11 @@ impl Command {
                     try!(sys_close(0).map_err(|x| Error::from_sys(x)));
                     try!(sys_dup(read).map_err(|x| Error::from_sys(x)));
                     try!(sys_close(read).map_err(|x| Error::from_sys(x)));
+                },
+                StdioType::Raw(fd) => {
+                    try!(sys_close(0));
+                    try!(sys_dup(fd));
+                    try!(sys_close(fd));
                 },
                 StdioType::Null => {
                     try!(sys_close(0).map_err(|x| Error::from_sys(x)));
@@ -200,6 +240,10 @@ impl Command {
                                     fd: write
                                 })
                             },
+                            StdioType::Raw(fd) => {
+                                try!(sys_close(fd));
+                                None
+                            },
                             _ => None
                         },
                         stdout: match self.stdout.inner {
@@ -209,6 +253,10 @@ impl Command {
                                     fd: read
                                 })
                             },
+                            StdioType::Raw(fd) => {
+                                try!(sys_close(fd));
+                                None
+                            },
                             _ => None
                         },
                         stderr: match self.stderr.inner {
@@ -217,6 +265,10 @@ impl Command {
                                 Some(ChildStderr {
                                     fd: read
                                 })
+                            },
+                            StdioType::Raw(fd) => {
+                                try!(sys_close(fd));
+                                None
                             },
                             _ => None
                         }
@@ -231,6 +283,7 @@ impl Command {
 #[derive(Copy, Clone)]
 enum StdioType {
     Piped(usize, usize),
+    Raw(usize),
     Inherit,
     Null,
 }
@@ -260,6 +313,14 @@ impl Stdio {
     pub fn null() -> Stdio {
         Stdio {
             inner: StdioType::Null
+        }
+    }
+}
+
+impl FromRawFd for Stdio {
+    unsafe fn from_raw_fd(fd: RawFd) -> Self {
+        Stdio {
+            inner: StdioType::Raw(fd)
         }
     }
 }

@@ -1,4 +1,4 @@
-use std::cmp::max;
+use std::cmp::{min, max};
 use std::collections::VecDeque;
 use std::mem::size_of;
 use std::{ptr, slice};
@@ -6,6 +6,7 @@ use std::{ptr, slice};
 use super::{Color, Event, Font, Image, Rect};
 
 use system::error::{Error, Result, EINVAL};
+use system::graphics::fast_copy;
 
 pub struct Window {
     pub x: i32,
@@ -118,15 +119,14 @@ impl Window {
 
     pub fn write(&mut self, buf: &[u8]) -> Result<usize> {
         let old = self.image.data_mut();
-        let new = unsafe { slice::from_raw_parts(buf.as_ptr() as *const Color, buf.len() / size_of::<Color>()) };
+        let new = unsafe { slice::from_raw_parts(buf.as_ptr() as *const u32, buf.len() / 4) };
 
-        let mut i = 0;
-        while i < old.len() && i < new.len() {
-            old[i] = new[i];
-            i += 1;
+        let len = min(old.len(), new.len());
+        unsafe {
+            fast_copy(old.as_mut_ptr(), new.as_ptr(), len);
         }
 
-        Ok(i * size_of::<Color>())
+        Ok(len)
     }
 
     pub fn path(&self, buf: &mut [u8]) -> Result<usize> {

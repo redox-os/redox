@@ -9,7 +9,7 @@ use core::ops::DerefMut;
 
 use fs::Resource;
 
-use syscall::Result;
+use system::error::Result;
 
 use sync::Intex;
 

@@ -1,6 +1,6 @@
 use core::intrinsics::{volatile_load, volatile_store};
 
-use super::Io;
+use super::io::Io;
 
 #[repr(packed)]
 pub struct Mmio<T> {
