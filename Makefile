@@ -267,7 +267,7 @@ build/initfs.gen: initfs/redoxfsd
 	echo 'use collections::BTreeMap;' > $@
 	echo 'pub fn gen() -> BTreeMap<&'"'"'static str, &'"'"'static [u8]> {' >> $@
 	echo '    let mut files: BTreeMap<&'"'"'static str, &'"'"'static [u8]> = BTreeMap::new();' >> $@
-	$(FIND) initfs -not -path '*/\.*' -type f -o -type l | $(CUT) -d '/' -f2- | $(SORT) \
+	$(FIND) initfs -type f -o -type l | $(CUT) -d '/' -f2- | $(SORT) \
 		| $(AWK) '{printf("    files.insert(\"%s\", include_bytes!(\"../initfs/%s\"));\n", $$0, $$0)}' \
 		>> $@
 	echo '    files' >> $@
@@ -455,7 +455,7 @@ filesystem/apps/zfs/zfs.img:
 	sudo losetup -d /dev/loop0
 
 $(BUILD)/filesystem.gen: apps bins
-	$(FIND) filesystem -not -path '*/\.*' -type f -o -type l | $(CUT) -d '/' -f2- | $(SORT) | $(AWK) '{printf("file %d,\"%s\"\n", NR, $$0)}' > $@
+	$(FIND) filesystem -type f -o -type l | $(CUT) -d '/' -f2- | $(SORT) | $(AWK) '{printf("file %d,\"%s\"\n", NR, $$0)}' > $@
 
 $(BUILD)/harddrive.bin: kernel/harddrive.asm $(BUILD)/kernel.bin $(BUILD)/filesystem.gen
 	$(AS) -f bin -o $@ -l $(BUILD)/harddrive.list -D ARCH_$(ARCH) -D TIME="`$(DATE) "+%F %T"`" -i$(BUILD)/ -ikernel/ -ifilesystem/ $<
