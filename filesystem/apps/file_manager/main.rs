@@ -66,7 +66,7 @@ impl FileTypesInfo {
 
     pub fn description_for(&self, file_name: &str) -> String {
         if file_name.ends_with('/') {
-            self.file_types["/"].description.to_string()
+            self.file_types["/"].description.to_owned()
         } else {
             let pos = file_name.rfind('.').unwrap_or(0) + 1;
             let ext = &file_name[pos..];

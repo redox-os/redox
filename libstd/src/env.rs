@@ -6,12 +6,13 @@ use core_collections::borrow::ToOwned;
 
 use fs::File;
 use path::{Path, PathBuf};
-use io::Result;
 use string::{String, ToString};
 use vec::Vec;
 
-use system::error::{Error, ENOENT};
+use system::error::ENOENT;
 use system::syscall::sys_chdir;
+
+use io::{Error, Result};
 
 static mut _args: *mut Vec<&'static str> = 0 as *mut Vec<&'static str>;
 
@@ -104,9 +105,9 @@ pub fn set_current_dir<P: AsRef<Path>>(path: P) -> Result<()> {
                         let path_c = path_str.to_owned() + "\0";
                         unsafe {
                             sys_chdir(path_c.as_ptr()).and(Ok(()))
-                        }
+                        }.map_err(|x| Error::from_sys(x))
                     } else {
-                        Err(Error::new(ENOENT))
+                        Err(Error::new_sys(ENOENT))
                     }
                 }
                 Err(err) => Err(err),
