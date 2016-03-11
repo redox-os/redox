@@ -130,25 +130,6 @@ const ATA_SLAVE: u8 = 0x01;
 const IDE_ATA: u8 = 0x00;
 const IDE_ATAPI: u8 = 0x01;
 
-// Registers
-const ATA_REG_DATA: u16 = 0x00;
-const ATA_REG_ERROR: u16 = 0x01;
-const ATA_REG_FEATURES: u16 = 0x01;
-const ATA_REG_SECCOUNT0: u16 = 0x02;
-const ATA_REG_LBA0: u16 = 0x03;
-const ATA_REG_LBA1: u16 = 0x04;
-const ATA_REG_LBA2: u16 = 0x05;
-const ATA_REG_HDDEVSEL: u16 = 0x06;
-const ATA_REG_COMMAND: u16 = 0x07;
-const ATA_REG_STATUS: u16 = 0x07;
-const ATA_REG_SECCOUNT1: u16 = 0x08;
-const ATA_REG_LBA3: u16 = 0x09;
-const ATA_REG_LBA4: u16 = 0x0A;
-const ATA_REG_LBA5: u16 = 0x0B;
-const ATA_REG_CONTROL: u16 = 0x0C;
-const ATA_REG_ALTSTATUS: u16 = 0x0C;
-const ATA_REG_DEVADDRESS: u16 = 0x0D;
-
 pub struct Ide;
 
 impl Ide {
@@ -189,23 +170,37 @@ impl Ide {
 
 /// A disk (data storage)
 pub struct IdeDisk {
-    cmd: Pio<u8>,
-    sts: Pio<u8>,
+    buscmd: Pio<u8>,
+    bussts: Pio<u8>,
     prdt: Prdt,
-    base: u16,
-    ctrl: u16,
+    data: Pio<u16>,
+    feature: Pio<u8>,
+    seccount: Pio<u8>,
+    sector0: Pio<u8>,
+    sector1: Pio<u8>,
+    sector2: Pio<u8>,
+    devsel: Pio<u8>,
+    cmdsts: Pio<u8>,
+    ctrl: Pio<u8>,
     irq: u8,
     master: bool,
 }
 
 impl IdeDisk {
     pub fn new(busmaster: u16, base: u16, ctrl: u16, irq: u8, master: bool) -> Option<Self> {
-        let ret = IdeDisk {
-            cmd: Pio::<u8>::new(busmaster),
-            sts: Pio::<u8>::new(busmaster + 2),
+        let mut ret = IdeDisk {
+            buscmd: Pio::new(busmaster),
+            bussts: Pio::new(busmaster + 2),
             prdt: Prdt::new(busmaster + 4),
-            base: base,
-            ctrl: ctrl,
+            data: Pio::new(base),
+            feature: Pio::new(base + 1),
+            seccount: Pio::new(base + 2),
+            sector0: Pio::new(base + 3),
+            sector1: Pio::new(base + 4),
+            sector2: Pio::new(base + 5),
+            devsel: Pio::new(base + 6),
+            cmdsts: Pio::new(base + 7),
+            ctrl: Pio::new(ctrl),
             irq: irq,
             master: master,
         };
@@ -217,40 +212,11 @@ impl IdeDisk {
         }
     }
 
-    unsafe fn ide_read(&self, reg: u16) -> u8 {
-        if reg < 0x08 {
-            Pio::<u8>::new(self.base + reg - 0x00).read()
-        } else if reg < 0x0C {
-            Pio::<u8>::new(self.base + reg - 0x06).read()
-        } else if reg < 0x0E {
-            Pio::<u8>::new(self.ctrl + reg - 0x0A).read()
-        } else {
-            0
-        }
-    }
-
-    unsafe fn ide_write(&self, reg: u16, data: u8) {
-        if reg < 0x08 {
-            Pio::<u8>::new(self.base + reg - 0x00).write(data);
-        } else if reg < 0x0C {
-            Pio::<u8>::new(self.base + reg - 0x06).write(data);
-        } else if reg < 0x0E {
-            Pio::<u8>::new(self.ctrl + reg - 0x0A).write(data);
-        }
-    }
-
     unsafe fn ide_poll(&self, check_error: bool) -> u8 {
-        self.ide_read(ATA_REG_ALTSTATUS);
-        self.ide_read(ATA_REG_ALTSTATUS);
-        self.ide_read(ATA_REG_ALTSTATUS);
-        self.ide_read(ATA_REG_ALTSTATUS);
-
-        while self.ide_read(ATA_REG_STATUS) & ATA_SR_BSY == ATA_SR_BSY {
-
-        }
+        while self.cmdsts.readf(ATA_SR_BSY) {}
 
         if check_error {
-            let state = self.ide_read(ATA_REG_STATUS);
+            let state = self.cmdsts.read();
             if state & ATA_SR_ERR == ATA_SR_ERR {
                 return 2;
             }
@@ -266,31 +232,29 @@ impl IdeDisk {
     }
 
     /// Identify
-    pub unsafe fn identify(&self) -> bool {
-        if self.ide_read(ATA_REG_STATUS) == 0xFF {
+    pub unsafe fn identify(&mut self) -> bool {
+        if self.cmdsts.read() == 0xFF {
             debug!(" Floating Bus");
 
             return false;
         }
 
-        while self.ide_read(ATA_REG_STATUS) & ATA_SR_BSY == ATA_SR_BSY {
-
-        }
+        while self.cmdsts.readf(ATA_SR_BSY) {}
 
         if self.master {
-            self.ide_write(ATA_REG_HDDEVSEL, 0xA0);
+            self.devsel.write(0xA0);
         } else {
-            self.ide_write(ATA_REG_HDDEVSEL, 0xB0);
+            self.devsel.write(0xB0);
         }
 
-        self.ide_write(ATA_REG_SECCOUNT0, 0);
-        self.ide_write(ATA_REG_LBA0, 0);
-        self.ide_write(ATA_REG_LBA1, 0);
-        self.ide_write(ATA_REG_LBA2, 0);
+        self.seccount.write(0);
+        self.sector0.write(0);
+        self.sector1.write(0);
+        self.sector2.write(0);
 
-        self.ide_write(ATA_REG_COMMAND, ATA_CMD_IDENTIFY);
+        self.cmdsts.write(ATA_CMD_IDENTIFY);
 
-        let status = self.ide_read(ATA_REG_STATUS);
+        let status = self.cmdsts.read();
         debug!(" Status: {:X}", status);
 
         if status == 0 {
@@ -304,10 +268,9 @@ impl IdeDisk {
             return false;
         }
 
-        let data = Pio::<u16>::new(self.base + ATA_REG_DATA);
         let mut destination = Memory::<u16>::new(256).unwrap();
         for word in 0..256 {
-            destination.write(word, data.read());
+            destination.write(word, self.data.read());
         }
 
         debug!(" Serial: ");
@@ -369,28 +332,28 @@ impl IdeDisk {
                             write: bool)
                             -> Result<usize> {
         if buf > 0 {
-            while self.ide_read(ATA_REG_STATUS) & ATA_SR_BSY == ATA_SR_BSY {}
+            while self.cmdsts.readf(ATA_SR_BSY) {}
 
             if self.master {
-                self.ide_write(ATA_REG_HDDEVSEL, 0x40);
+                self.devsel.write(0x40);
             } else {
-                self.ide_write(ATA_REG_HDDEVSEL, 0x50);
+                self.devsel.write(0x50);
             }
 
-            self.ide_write(ATA_REG_SECCOUNT1, ((sectors >> 8) & 0xFF) as u8);
-            self.ide_write(ATA_REG_LBA3, ((block >> 24) & 0xFF) as u8);
-            self.ide_write(ATA_REG_LBA4, ((block >> 32) & 0xFF) as u8);
-            self.ide_write(ATA_REG_LBA5, ((block >> 40) & 0xFF) as u8);
+            self.seccount.write(((sectors >> 8) & 0xFF) as u8);
+            self.sector0.write(((block >> 24) & 0xFF) as u8);
+            self.sector1.write(((block >> 32) & 0xFF) as u8);
+            self.sector2.write(((block >> 40) & 0xFF) as u8);
 
-            self.ide_write(ATA_REG_SECCOUNT0, ((sectors >> 0) & 0xFF) as u8);
-            self.ide_write(ATA_REG_LBA0, ((block >> 0) & 0xFF) as u8);
-            self.ide_write(ATA_REG_LBA1, ((block >> 8) & 0xFF) as u8);
-            self.ide_write(ATA_REG_LBA2, ((block >> 16) & 0xFF) as u8);
+            self.seccount.write(((sectors >> 0) & 0xFF) as u8);
+            self.sector0.write(((block >> 0) & 0xFF) as u8);
+            self.sector1.write(((block >> 8) & 0xFF) as u8);
+            self.sector2.write(((block >> 16) & 0xFF) as u8);
 
             if write {
-                self.ide_write(ATA_REG_COMMAND, ATA_CMD_WRITE_PIO_EXT);
+                self.cmdsts.write(ATA_CMD_WRITE_PIO_EXT);
             } else {
-                self.ide_write(ATA_REG_COMMAND, ATA_CMD_READ_PIO_EXT);
+                self.cmdsts.write(ATA_CMD_READ_PIO_EXT);
             }
 
             for sector in 0..sectors as usize {
@@ -401,17 +364,15 @@ impl IdeDisk {
                 }
 
                 if write {
-                    let mut data_io = Pio::<u16>::new(self.base + ATA_REG_DATA);
                     for word in 0..256 {
-                        data_io.write(ptr::read((buf + sector * 512 + word * 2) as *const u16));
+                        self.data.write(ptr::read((buf + sector * 512 + word * 2) as *const u16));
                     }
 
-                    self.ide_write(ATA_REG_COMMAND, ATA_CMD_CACHE_FLUSH_EXT);
+                    self.cmdsts.write(ATA_CMD_CACHE_FLUSH_EXT);
                     self.ide_poll(false);
                 } else {
-                    let data_io = Pio::<u16>::new(self.base + ATA_REG_DATA);
                     for word in 0..256 {
-                        ptr::write((buf + sector * 512 + word * 2) as *mut u16, data_io.read());
+                        ptr::write((buf + sector * 512 + word * 2) as *mut u16, self.data.read());
                     }
                 }
             }
@@ -462,12 +423,12 @@ impl IdeDisk {
                             write: bool)
                             -> Result<usize> {
         if buf > 0 {
-            self.cmd.writef(CMD_ACT, false);
+            self.buscmd.writef(CMD_ACT, false);
 
             self.prdt.reg.write(0);
 
-            let status = self.sts.read();
-            self.sts.write(status);
+            let status = self.bussts.read();
+            self.bussts.write(status);
 
             let entries = if sectors == 0 {
                 512
@@ -505,42 +466,42 @@ impl IdeDisk {
 
             self.prdt.reg.write(self.prdt.mem.address() as u32);
 
-            self.cmd.writef(CMD_DIR, !write);
+            self.buscmd.writef(CMD_DIR, !write);
 
-            while self.ide_read(ATA_REG_STATUS) & ATA_SR_BSY == ATA_SR_BSY {}
+            while self.cmdsts.readf(ATA_SR_BSY) {}
 
             if self.master {
-                self.ide_write(ATA_REG_HDDEVSEL, 0x40);
+                self.devsel.write(0x40);
             } else {
-                self.ide_write(ATA_REG_HDDEVSEL, 0x50);
+                self.devsel.write(0x50);
             }
 
-            self.ide_write(ATA_REG_SECCOUNT1, ((sectors >> 8) & 0xFF) as u8);
-            self.ide_write(ATA_REG_LBA3, ((block >> 24) & 0xFF) as u8);
-            self.ide_write(ATA_REG_LBA4, ((block >> 32) & 0xFF) as u8);
-            self.ide_write(ATA_REG_LBA5, ((block >> 40) & 0xFF) as u8);
+            self.seccount.write(((sectors >> 8) & 0xFF) as u8);
+            self.sector0.write(((block >> 24) & 0xFF) as u8);
+            self.sector1.write(((block >> 32) & 0xFF) as u8);
+            self.sector2.write(((block >> 40) & 0xFF) as u8);
 
-            self.ide_write(ATA_REG_SECCOUNT0, ((sectors >> 0) & 0xFF) as u8);
-            self.ide_write(ATA_REG_LBA0, ((block >> 0) & 0xFF) as u8);
-            self.ide_write(ATA_REG_LBA1, ((block >> 8) & 0xFF) as u8);
-            self.ide_write(ATA_REG_LBA2, ((block >> 16) & 0xFF) as u8);
+            self.seccount.write(((sectors >> 0) & 0xFF) as u8);
+            self.sector0.write(((block >> 0) & 0xFF) as u8);
+            self.sector1.write(((block >> 8) & 0xFF) as u8);
+            self.sector2.write(((block >> 16) & 0xFF) as u8);
 
             if write {
-                self.ide_write(ATA_REG_COMMAND, ATA_CMD_WRITE_DMA_EXT);
+                self.cmdsts.write(ATA_CMD_WRITE_DMA_EXT);
             } else {
-                self.ide_write(ATA_REG_COMMAND, ATA_CMD_READ_DMA_EXT);
+                self.cmdsts.write(ATA_CMD_READ_DMA_EXT);
             }
 
-            self.cmd.writef(CMD_ACT, true);
+            self.buscmd.writef(CMD_ACT, true);
 
-            while self.sts.readf(STS_ACT) && !self.sts.readf(STS_INT) && !self.sts.readf(STS_ERR) {}
+            while self.bussts.readf(STS_ACT) && !self.bussts.readf(STS_INT) && !self.bussts.readf(STS_ERR) {}
 
-            self.cmd.writef(CMD_ACT, false);
+            self.buscmd.writef(CMD_ACT, false);
 
             self.prdt.reg.write(0);
 
-            let status = self.sts.read();
-            self.sts.write(status);
+            let status = self.bussts.read();
+            self.bussts.write(status);
 
             if status & STS_ERR == STS_ERR {
                 debugln!("IDE DMA Read Error");
@@ -601,10 +562,16 @@ impl Disk for IdeDisk {
     }
 
     fn read(&mut self, block: u64, buffer: &mut [u8]) -> Result<usize> {
+        if buffer.as_ptr() as usize % 512 > 0 {
+            panic!("IdeDisk::read not aligned");
+        }
         self.ata_dma(block, buffer.len() / 512, buffer.as_ptr() as usize, false)
     }
 
     fn write(&mut self, block: u64, buffer: &[u8]) -> Result<usize> {
+        if buffer.as_ptr() as usize % 512 > 0 {
+            panic!("IdeDisk::write not aligned");
+        }
         self.ata_dma(block, buffer.len() / 512, buffer.as_ptr() as usize, true)
     }
 }
