@@ -2,7 +2,7 @@ use get_slice::GetSlice;
 
 use core_collections::borrow::ToOwned;
 
-pub use system::error::Error;
+pub use io::Error;
 use io::Result as IoResult;
 
 use string::String;
@@ -28,7 +28,7 @@ impl<'a> Url<'a> {
         let split = if let Some(x) = string.find(':') {
             x
         } else {
-            return Err(Error::new(22));
+            return Err(Error::new_sys(22));
         };
 
         Ok(Url {

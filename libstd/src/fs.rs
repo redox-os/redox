@@ -1,5 +1,5 @@
 use core_collections::borrow::ToOwned;
-use io::{Read, Result, Write, Seek, SeekFrom};
+use io::{Read, Error, Result, Write, Seek, SeekFrom};
 use path::PathBuf;
 use str;
 use string::String;
@@ -27,7 +27,7 @@ impl File {
         let path_c = path.to_owned() + "\0";
         unsafe {
             sys_open(path_c.as_ptr(), O_RDWR, 0).map(|fd| File::from_fd(fd) )
-        }
+        }.map_err(|x| Error::from_sys(x))
     }
 
     /// Create a new file using a path
@@ -35,12 +35,12 @@ impl File {
         let path_c = path.to_owned() + "\0";
         unsafe {
             sys_open(path_c.as_ptr(), O_CREAT | O_RDWR | O_TRUNC, 0).map(|fd| File::from_fd(fd) )
-        }
+        }.map_err(|x| Error::from_sys(x))
     }
 
     /// Duplicate the file
     pub fn dup(&self) -> Result<File> {
-        sys_dup(self.fd).map(|fd| File::from_fd(fd))
+        sys_dup(self.fd).map(|fd| File::from_fd(fd)).map_err(|x| Error::from_sys(x))
     }
 
     /// Get the canonical path of the file
@@ -48,36 +48,39 @@ impl File {
         let mut buf: [u8; 4096] = [0; 4096];
         match sys_fpath(self.fd, &mut buf) {
             Ok(count) => Ok(PathBuf::from(unsafe { String::from_utf8_unchecked(Vec::from(&buf[0..count])) })),
-            Err(err) => Err(err),
+            Err(err) => Err(Error::from_sys(err)),
         }
     }
 
     /// Flush the file data and metadata
     pub fn sync_all(&mut self) -> Result<()> {
-        sys_fsync(self.fd).and(Ok(()))
+        sys_fsync(self.fd).and(Ok(())).map_err(|x| Error::from_sys(x))
     }
 
     /// Flush the file data
     pub fn sync_data(&mut self) -> Result<()> {
-        sys_fsync(self.fd).and(Ok(()))
+        sys_fsync(self.fd).and(Ok(())).map_err(|x| Error::from_sys(x))
     }
 
     /// Truncates the file
     pub fn set_len(&mut self, size: u64) -> Result<()> {
-        sys_ftruncate(self.fd, size as usize).and(Ok(()))
+        sys_ftruncate(self.fd, size as usize).and(Ok(())).map_err(|x| Error::from_sys(x))
     }
 }
 
 impl Read for File {
     fn read(&mut self, buf: &mut [u8]) -> Result<usize> {
-        sys_read(self.fd, buf)
+        sys_read(self.fd, buf).map_err(|x| Error::from_sys(x))
     }
 }
 
 impl Write for File {
     fn write(&mut self, buf: &[u8]) -> Result<usize> {
-        sys_write(self.fd, buf)
+        sys_write(self.fd, buf).map_err(|x| Error::from_sys(x))
     }
+
+    // TODO buffered fs
+    fn flush(&mut self) -> Result<()> { Ok(()) }
 }
 
 impl Seek for File {
@@ -89,7 +92,7 @@ impl Seek for File {
             SeekFrom::End(offset) => (SEEK_END, offset as isize),
         };
 
-        sys_lseek(self.fd, offset, whence).map(|position| position as u64)
+        sys_lseek(self.fd, offset, whence).map(|position| position as u64).map_err(|x| Error::from_sys(x))
     }
 }
 
@@ -193,7 +196,7 @@ pub fn canonicalize(path: &str) -> Result<PathBuf> {
 pub fn create_dir(path: &str) -> Result<()> {
     let path_c = path.to_owned() + "\0";
     unsafe {
-        sys_mkdir(path_c.as_ptr(), 755).and(Ok(()))
+        sys_mkdir(path_c.as_ptr(), 755).and(Ok(())).map_err(|x| Error::from_sys(x))
     }
 }
 
@@ -214,12 +217,12 @@ pub fn remove_dir(path: &str) -> Result<()> {
     let path_c = path.to_owned() + "\0";
     unsafe {
         sys_rmdir(path_c.as_ptr()).and(Ok(()))
-    }
+    }.map_err(|x| Error::from_sys(x))
 }
 
 pub fn remove_file(path: &str) -> Result<()> {
     let path_c = path.to_owned() + "\0";
     unsafe {
         sys_unlink(path_c.as_ptr()).and(Ok(()))
-    }
+    }.map_err(|x| Error::from_sys(x))
 }
