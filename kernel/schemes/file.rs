@@ -223,8 +223,11 @@ impl FileScheme {
     /// Create a new file scheme from an array of Disks
     pub fn new(mut disks: Vec<Box<Disk>>) -> Option<Box<Self>> {
         while ! disks.is_empty() {
-            if let Some(fs) = FileSystem::from_disk(disks.remove(0)) {
-                return Some(box FileScheme { fs: fs });
+            let disk = disks.remove(0);
+            let name = disk.name();
+            match FileSystem::from_disk(disk) {
+                Ok(fs) => return Some(box FileScheme { fs: fs }),
+                Err(err) => debugln!("{}: {}", name, err)
             }
         }
 
