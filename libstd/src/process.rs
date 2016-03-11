@@ -166,9 +166,9 @@ impl Command {
                     try!(sys_close(write).map_err(|x| Error::from_sys(x)));
                 },
                 StdioType::Raw(fd) => {
-                    try!(sys_close(2));
-                    try!(sys_dup(fd));
-                    try!(sys_close(fd));
+                    try!(sys_close(2).map_err(|x| Error::from_sys(x)));
+                    try!(sys_dup(fd).map_err(|x| Error::from_sys(x)));
+                    try!(sys_close(fd).map_err(|x| Error::from_sys(x)));
                 },
                 StdioType::Null => {
                     try!(sys_close(2).map_err(|x| Error::from_sys(x)));
@@ -184,9 +184,9 @@ impl Command {
                     try!(sys_close(write).map_err(|x| Error::from_sys(x)));
                 },
                 StdioType::Raw(fd) => {
-                    try!(sys_close(1));
-                    try!(sys_dup(fd));
-                    try!(sys_close(fd));
+                    try!(sys_close(1).map_err(|x| Error::from_sys(x)));
+                    try!(sys_dup(fd).map_err(|x| Error::from_sys(x)));
+                    try!(sys_close(fd).map_err(|x| Error::from_sys(x)));
                 },
                 StdioType::Null => {
                     try!(sys_close(1).map_err(|x| Error::from_sys(x)));
@@ -202,9 +202,9 @@ impl Command {
                     try!(sys_close(read).map_err(|x| Error::from_sys(x)));
                 },
                 StdioType::Raw(fd) => {
-                    try!(sys_close(0));
-                    try!(sys_dup(fd));
-                    try!(sys_close(fd));
+                    try!(sys_close(0).map_err(|x| Error::from_sys(x)));
+                    try!(sys_dup(fd).map_err(|x| Error::from_sys(x)));
+                    try!(sys_close(fd).map_err(|x| Error::from_sys(x)));
                 },
                 StdioType::Null => {
                     try!(sys_close(0).map_err(|x| Error::from_sys(x)));
@@ -241,7 +241,7 @@ impl Command {
                                 })
                             },
                             StdioType::Raw(fd) => {
-                                try!(sys_close(fd));
+                                try!(sys_close(fd).map_err(|x| Error::from_sys(x)));
                                 None
                             },
                             _ => None
@@ -254,7 +254,7 @@ impl Command {
                                 })
                             },
                             StdioType::Raw(fd) => {
-                                try!(sys_close(fd));
+                                try!(sys_close(fd).map_err(|x| Error::from_sys(x)));
                                 None
                             },
                             _ => None
@@ -267,7 +267,7 @@ impl Command {
                                 })
                             },
                             StdioType::Raw(fd) => {
-                                try!(sys_close(fd));
+                                try!(sys_close(fd).map_err(|x| Error::from_sys(x)));
                                 None
                             },
                             _ => None
