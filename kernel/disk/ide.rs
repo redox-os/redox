@@ -231,6 +231,35 @@ impl IdeDisk {
         0
     }
 
+    pub fn ata(&mut self, cmd: u8, block: u64, len: u16) {
+        while self.cmdsts.readf(ATA_SR_BSY) {}
+
+        self.devsel.write(if self.master {
+            0x40
+        } else {
+            0x40 | 0x10
+        });
+
+        self.ctrl.read();
+        self.ctrl.read();
+        self.ctrl.read();
+        self.ctrl.read();
+
+        while self.cmdsts.readf(ATA_SR_BSY) {}
+
+        self.seccount.write((len >> 8) as u8);
+        self.sector0.write((block >> 24) as u8);
+        self.sector1.write((block >> 32) as u8);
+        self.sector2.write((block >> 40) as u8);
+
+        self.seccount.write(len as u8);
+        self.sector0.write(block as u8);
+        self.sector1.write((block >> 8) as u8);
+        self.sector2.write((block >> 16) as u8);
+
+        self.cmdsts.write(cmd);
+    }
+
     /// Identify
     pub unsafe fn identify(&mut self) -> bool {
         if self.cmdsts.read() == 0xFF {
@@ -239,20 +268,7 @@ impl IdeDisk {
             return false;
         }
 
-        while self.cmdsts.readf(ATA_SR_BSY) {}
-
-        if self.master {
-            self.devsel.write(0xA0);
-        } else {
-            self.devsel.write(0xB0);
-        }
-
-        self.seccount.write(0);
-        self.sector0.write(0);
-        self.sector1.write(0);
-        self.sector2.write(0);
-
-        self.cmdsts.write(ATA_CMD_IDENTIFY);
+        self.ata(ATA_CMD_IDENTIFY, 0, 0);
 
         let status = self.cmdsts.read();
         debug!(" Status: {:X}", status);
@@ -332,29 +348,11 @@ impl IdeDisk {
                             write: bool)
                             -> Result<usize> {
         if buf > 0 {
-            while self.cmdsts.readf(ATA_SR_BSY) {}
-
-            if self.master {
-                self.devsel.write(0x40);
+            self.ata(if write {
+                ATA_CMD_WRITE_PIO_EXT
             } else {
-                self.devsel.write(0x50);
-            }
-
-            self.seccount.write(((sectors >> 8) & 0xFF) as u8);
-            self.sector0.write(((block >> 24) & 0xFF) as u8);
-            self.sector1.write(((block >> 32) & 0xFF) as u8);
-            self.sector2.write(((block >> 40) & 0xFF) as u8);
-
-            self.seccount.write(((sectors >> 0) & 0xFF) as u8);
-            self.sector0.write(((block >> 0) & 0xFF) as u8);
-            self.sector1.write(((block >> 8) & 0xFF) as u8);
-            self.sector2.write(((block >> 16) & 0xFF) as u8);
-
-            if write {
-                self.cmdsts.write(ATA_CMD_WRITE_PIO_EXT);
-            } else {
-                self.cmdsts.write(ATA_CMD_READ_PIO_EXT);
-            }
+                ATA_CMD_READ_PIO_EXT
+            }, block, sectors);
 
             for sector in 0..sectors as usize {
                 let err = self.ide_poll(true);
@@ -385,7 +383,7 @@ impl IdeDisk {
     }
 
     fn ata_pio(&mut self, block: u64, sectors: usize, buf: usize, write: bool) -> Result<usize> {
-        // debugln!("IDE PIO BLOCK: {:X} SECTORS: {} BUF: {:X} WRITE: {}", block, sectors, buf, write);
+        // debugln!("IDE PIO BLOCK: {} SECTORS: {} BUF: {:X} WRITE: {}", block, sectors, buf, write);
 
         if buf > 0 && sectors > 0 {
             let mut sector: usize = 0;
@@ -468,29 +466,12 @@ impl IdeDisk {
 
             self.buscmd.writef(CMD_DIR, !write);
 
-            while self.cmdsts.readf(ATA_SR_BSY) {}
 
-            if self.master {
-                self.devsel.write(0x40);
+            self.ata(if write {
+                ATA_CMD_WRITE_DMA_EXT
             } else {
-                self.devsel.write(0x50);
-            }
-
-            self.seccount.write(((sectors >> 8) & 0xFF) as u8);
-            self.sector0.write(((block >> 24) & 0xFF) as u8);
-            self.sector1.write(((block >> 32) & 0xFF) as u8);
-            self.sector2.write(((block >> 40) & 0xFF) as u8);
-
-            self.seccount.write(((sectors >> 0) & 0xFF) as u8);
-            self.sector0.write(((block >> 0) & 0xFF) as u8);
-            self.sector1.write(((block >> 8) & 0xFF) as u8);
-            self.sector2.write(((block >> 16) & 0xFF) as u8);
-
-            if write {
-                self.cmdsts.write(ATA_CMD_WRITE_DMA_EXT);
-            } else {
-                self.cmdsts.write(ATA_CMD_READ_DMA_EXT);
-            }
+                ATA_CMD_READ_DMA_EXT
+            }, block, sectors);
 
             self.buscmd.writef(CMD_ACT, true);
 
@@ -516,7 +497,7 @@ impl IdeDisk {
     }
 
     fn ata_dma(&mut self, block: u64, sectors: usize, buf: usize, write: bool) -> Result<usize> {
-        // debugln!("IDE DMA BLOCK: {:X} SECTORS: {} BUF: {:X} WRITE: {}", block, sectors, buf, write);
+        // debugln!("IDE DMA BLOCK: {} SECTORS: {} BUF: {:X} WRITE: {}", block, sectors, buf, write);
 
         if buf > 0 && sectors > 0 {
             let mut sector: usize = 0;
@@ -562,16 +543,10 @@ impl Disk for IdeDisk {
     }
 
     fn read(&mut self, block: u64, buffer: &mut [u8]) -> Result<usize> {
-        if buffer.as_ptr() as usize % 512 > 0 {
-            panic!("IdeDisk::read not aligned");
-        }
         self.ata_dma(block, buffer.len() / 512, buffer.as_ptr() as usize, false)
     }
 
     fn write(&mut self, block: u64, buffer: &[u8]) -> Result<usize> {
-        if buffer.as_ptr() as usize % 512 > 0 {
-            panic!("IdeDisk::write not aligned");
-        }
         self.ata_dma(block, buffer.len() / 512, buffer.as_ptr() as usize, true)
     }
 }
