@@ -1,7 +1,9 @@
 use core::ops::Deref;
 use core_collections::borrow::ToOwned;
 use io::{Read, Error, Result, Write, Seek, SeekFrom};
-use path::PathBuf;
+use os::unix::io::{AsRawFd, FromRawFd, IntoRawFd, RawFd};
+use mem;
+use path::{PathBuf, Path};
 use str;
 use string::String;
 use sys_common::AsInner;
@@ -34,13 +36,13 @@ impl File {
         let mut path_c = path_str.to_owned();
         path_c.push_str("\0");
         unsafe {
-            sys_open(path_c.as_ptr(), O_CREAT | O_RDWR | O_TRUNC, 0).map(|fd| File::from_fd(fd) )
+            sys_open(path_c.as_ptr(), O_CREAT | O_RDWR | O_TRUNC, 0).map(|fd| File::from_raw_fd(fd) )
         }.map_err(|x| Error::from_sys(x))
     }
 
     /// Duplicate the file
     pub fn dup(&self) -> Result<File> {
-        sys_dup(self.fd).map(|fd| File::from_raw_fd(fd)).map_err(|x| Error::from_sys(x))
+        sys_dup(self.fd).map(|fd| unsafe { File::from_raw_fd(fd) }).map_err(|x| Error::from_sys(x))
     }
 
     /// Get the canonical path of the file
@@ -210,8 +212,8 @@ impl OpenOptions {
         let mut path_c = path_str.to_owned();
         path_c.push_str("\0");
         unsafe {
-            sys_open(path_c.as_ptr(), flags, 0).map(|fd| File::from_raw_fd(fd) )
-        }
+            sys_open(path_c.as_ptr(), flags, 0).map(|fd| File::from_raw_fd(fd))
+        }.map_err(|x| Error::from_sys(x))
     }
 }
 
@@ -323,7 +325,7 @@ pub fn metadata<P: AsRef<Path>>(path: P) -> Result<Metadata> {
     let mut path_c = path_str.to_owned();
     path_c.push_str("\0");
     unsafe {
-        try!(sys_stat(path_c.as_ptr(), &mut stat));
+        try!(sys_stat(path_c.as_ptr(), &mut stat).map_err(|x| Error::from_sys(x)));
     }
     Ok(Metadata {
         stat: stat
