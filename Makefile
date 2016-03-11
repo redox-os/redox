@@ -209,8 +209,9 @@ extrautils: \
 	filesystem/bin/calc \
 	filesystem/bin/cksum \
 	filesystem/bin/cur \
+	filesystem/bin/grep \
 	filesystem/bin/rem
-	#TODO: filesystem/bin/mtxt filesystem/bin/grep
+	#TODO: filesystem/bin/mtxt
 
 filesystem/bin/%: crates/%/main.rs crates/%/*.rs $(BUILD)/crt0.o $(BUILD)/libstd.rlib
 	mkdir -p filesystem/bin
