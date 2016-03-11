@@ -1,4 +1,6 @@
-use std::{cmp, mem, ptr};
+use std::{cmp, mem};
+
+use system::graphics::{fast_copy, fast_set};
 
 use super::{Color, Rect};
 
@@ -9,7 +11,7 @@ pub struct ImageRoiRows<'a> {
 }
 
 impl<'a> Iterator for ImageRoiRows<'a> {
-    type Item = &'a [Color];
+    type Item = &'a [u32];
     fn next(&mut self) -> Option<Self::Item> {
         if self.i < self.rect.height() {
             let start = (self.rect.top() + self.i) * self.image.width() + self.rect.left();
@@ -29,7 +31,7 @@ pub struct ImageRoiRowsMut<'a> {
 }
 
 impl<'a> Iterator for ImageRoiRowsMut<'a> {
-    type Item = &'a mut [Color];
+    type Item = &'a mut [u32];
     fn next(&mut self) -> Option<Self::Item> {
         if self.i < self.rect.height() {
             let start = (self.rect.top() + self.i) * self.image.width() + self.rect.left();
@@ -95,26 +97,22 @@ impl<'a> ImageRoi<'a> {
 
     pub fn blend(&'a mut self, other: &ImageRoi) {
         for (mut self_row, other_row) in self.rows_mut().zip(other.rows()) {
-            for(mut self_pixel, other_pixel) in self_row.iter_mut().zip(other_row.iter()) {
-                let new = other_pixel.data;
+            for(mut old, new) in self_row.iter_mut().zip(other_row.iter()) {
+                let alpha = (*new >> 24) & 0xFF;
+                if alpha >= 255 {
+                    *old = *new;
+                } else if alpha > 0 {
+                    let n_r = (((*new >> 16) & 0xFF) * alpha) >> 8;
+                    let n_g = (((*new >> 8) & 0xFF) * alpha) >> 8;
+                    let n_b = ((*new & 0xFF) * alpha) >> 8;
 
-                let alpha = (new >> 24) & 0xFF;
-                if alpha > 0 {
-                    let old = &mut self_pixel.data;
-                    if alpha >= 255 {
-                        *old = new;
-                    } else {
-                        let n_r = (((new >> 16) & 0xFF) * alpha) >> 8;
-                        let n_g = (((new >> 8) & 0xFF) * alpha) >> 8;
-                        let n_b = ((new & 0xFF) * alpha) >> 8;
+                    let n_alpha = 255 - alpha;
 
-                        let n_alpha = 255 - alpha;
-                        let o_r = (((*old >> 16) & 0xFF) * n_alpha) >> 8;
-                        let o_g = (((*old >> 8) & 0xFF) * n_alpha) >> 8;
-                        let o_b = ((*old & 0xFF) * n_alpha) >> 8;
+                    let o_r = (((*old >> 16) & 0xFF) * n_alpha) >> 8;
+                    let o_g = (((*old >> 8) & 0xFF) * n_alpha) >> 8;
+                    let o_b = ((*old & 0xFF) * n_alpha) >> 8;
 
-                        *old = ((o_r << 16) | (o_g << 8) | o_b) + ((n_r << 16) | (n_g << 8) | n_b);
-                    }
+                    *old = ((o_r << 16) | (o_g << 8) | o_b) + ((n_r << 16) | (n_g << 8) | n_b);
                 }
             }
         }
@@ -122,10 +120,8 @@ impl<'a> ImageRoi<'a> {
 
     pub fn blit(&'a mut self, other: &ImageRoi) {
         for (mut self_row, other_row) in self.rows_mut().zip(other.rows()) {
-            let dst = self_row.as_mut_ptr();
-            let src = other_row.as_ptr();
             let len = cmp::min(self_row.len(), other_row.len());
-            unsafe { ptr::copy(src, dst, len); }
+            unsafe { fast_copy(self_row.as_mut_ptr() as *mut u32, other_row.as_ptr() as *const u32, len); }
         }
     }
 
@@ -133,30 +129,24 @@ impl<'a> ImageRoi<'a> {
         let new = color.data;
 
         let alpha = (new >> 24) & 0xFF;
-        if alpha > 0 {
-            if alpha >= 255 {
-                for mut self_row in self.rows_mut() {
-                    for mut self_pixel in self_row.iter_mut() {
-                        self_pixel.data = new;
-                    }
-                }
-            } else {
-                let n_r = (((new >> 16) & 0xFF) * alpha) >> 8;
-                let n_g = (((new >> 8) & 0xFF) * alpha) >> 8;
-                let n_b = ((new & 0xFF) * alpha) >> 8;
+        if alpha >= 255 {
+            for mut self_row in self.rows_mut() {
+                unsafe { fast_set(self_row.as_mut_ptr() as *mut u32, new, self_row.len()); }
+            }
+        } else if alpha > 0 {
+            let n_r = (((new >> 16) & 0xFF) * alpha) >> 8;
+            let n_g = (((new >> 8) & 0xFF) * alpha) >> 8;
+            let n_b = ((new & 0xFF) * alpha) >> 8;
 
-                let n_alpha = 255 - alpha;
+            let n_alpha = 255 - alpha;
 
-                for mut self_row in self.rows_mut() {
-                    for mut self_pixel in self_row.iter_mut() {
-                        let old = &mut self_pixel.data;
+            for mut self_row in self.rows_mut() {
+                for mut old in self_row.iter_mut() {
+                    let o_r = (((*old >> 16) & 0xFF) * n_alpha) >> 8;
+                    let o_g = (((*old >> 8) & 0xFF) * n_alpha) >> 8;
+                    let o_b = ((*old & 0xFF) * n_alpha) >> 8;
 
-                        let o_r = (((*old >> 16) & 0xFF) * n_alpha) >> 8;
-                        let o_g = (((*old >> 8) & 0xFF) * n_alpha) >> 8;
-                        let o_b = ((*old & 0xFF) * n_alpha) >> 8;
-
-                        *old = ((o_r << 16) | (o_g << 8) | o_b) + ((n_r << 16) | (n_g << 8) | n_b);
-                    }
+                    *old = ((o_r << 16) | (o_g << 8) | o_b) + ((n_r << 16) | (n_g << 8) | n_b);
                 }
             }
         }
@@ -166,7 +156,7 @@ impl<'a> ImageRoi<'a> {
 pub struct Image {
     w: i32,
     h: i32,
-    data: Box<[Color]>
+    data: Box<[u32]>
 }
 
 impl Image {
@@ -175,18 +165,18 @@ impl Image {
     }
 
     pub fn from_color(width: i32, height: i32, color: Color) -> Image {
-        let mut data: Vec<Color> = Vec::new();
+        let mut data: Vec<u32> = Vec::new();
         {
             let size = width as usize * height as usize;
             while data.len() < size {
-                data.push(color);
+                data.push(color.data);
             }
         }
 
         Image::from_data(width, height, data.into_boxed_slice())
     }
 
-    pub fn from_data(width: i32, height: i32, data: Box<[Color]>) -> Image {
+    pub fn from_data(width: i32, height: i32, data: Box<[u32]>) -> Image {
         Image {
             w: width,
             h: height,
@@ -202,11 +192,11 @@ impl Image {
         self.h
     }
 
-    pub fn data(&self) -> &[Color] {
+    pub fn data(&self) -> &[u32] {
         &self.data
     }
 
-    pub fn data_mut(&mut self) -> &mut [Color] {
+    pub fn data_mut(&mut self) -> &mut [u32] {
         &mut self.data
     }
 
