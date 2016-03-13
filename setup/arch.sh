@@ -8,7 +8,7 @@ sudo pacman -S --needed base-devel nasm lib32-glibc glibc
 
 #Install Virtual Box and Setup
 echo "Installing virtualbox and it's dependencies"
-sudo pacman -S --needed virtualbox virtualbox-host-modules virtualbox-guest-iso qt4
+sudo pacman -S --needed virtualbox virtualbox-host-dkms virtualbox-guest-iso qt4
 
 #Load kernel modules and set for persistence
 echo "Setting up virtualbox for persistence across reboots"
