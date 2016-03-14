@@ -7,7 +7,7 @@
     "env": "",
     "vendor": "unknown",
     "pre-link-args": ["-m64", "-nostdlib", "-static", "build/x86_64-unknown-redox/debug/crt0.o"],
-    "features": "-mmx,-sse,-sse2,-sse3,-ssse3,-sse4.1,-sse4.2,-3dnow,-3dnowa,-avx,-avx2",
+    "features": "-sse3,-ssse3,-sse4.1,-sse4.2,-3dnow,-3dnowa,-avx,-avx2",
     "dynamic-linking": false,
     "executables": true,
     "relocation-model": "static",

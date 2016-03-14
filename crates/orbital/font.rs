@@ -7,7 +7,7 @@ pub struct Font;
 
 impl Font {
     pub fn render(character: char, color: Color) -> Image {
-        let mut data = Box::new([Color::rgba(0, 0, 0, 0); 8*16]);
+        let mut data = Box::new([0; 8*16]);
 
         let font_i = 16 * (character as usize);
         if font_i + 16 <= FONT.len() {
@@ -16,7 +16,7 @@ impl Font {
                 let row_i = row * 8;
                 for col in 0..8 {
                     if (row_data >> (7 - col)) & 1 == 1 {
-                        data[row_i + col] = color;
+                        data[row_i + col] = color.data;
                     }
                 }
             }

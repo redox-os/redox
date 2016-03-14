@@ -1,3 +1,5 @@
+#![feature(asm)]
+
 extern crate core;
 extern crate system;
 
@@ -140,7 +142,7 @@ impl OrbitalScheme {
                     let off1 = row * self.image.width() + rect.left();
                     let off2 = row * self.image.width() + rect.right();
 
-                    unsafe { display.seek(SeekFrom::Start(off1 as u64 * 4)).unwrap(); }
+                    unsafe { display.seek(SeekFrom::Start(off1 as u64)).unwrap(); }
                     display.send_type(&data[off1 as usize .. off2 as usize]).unwrap();
                 }
             }
@@ -434,7 +436,7 @@ fn main() {
         match Socket::create(":orbital").map(|socket| Arc::new(socket)) {
             Ok(socket) => match Socket::open("display:").map(|display| Arc::new(display)) {
                 Ok(display) => {
-                    let path = display.path().map(|path| path.to_string()).unwrap_or(String::new());
+                    let path = display.path().map(|path| path.into_os_string().into_string().unwrap_or(String::new())).unwrap_or(String::new());
                     let res = path.split(":").nth(1).unwrap_or("");
                     let width = res.split("/").nth(0).unwrap_or("").parse::<i32>().unwrap_or(0);
                     let height = res.split("/").nth(1).unwrap_or("").parse::<i32>().unwrap_or(0);

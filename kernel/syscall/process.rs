@@ -9,7 +9,8 @@ use core::ops::DerefMut;
 
 use system::{c_array_to_slice, c_string_to_str};
 
-use super::{Error, Result, ECHILD};
+use system::error::{Error, Result, ECHILD};
+
 use super::execute::execute;
 
 pub fn do_sys_clone(regs: &Regs) -> Result<usize> {

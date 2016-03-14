@@ -10,6 +10,8 @@ use core::{cmp, ptr, slice};
 
 use disk::Disk;
 
+use system::error::{Error, Result, ENOMEM, EINVAL};
+
 pub use self::header::Header;
 pub use self::node::{Node, NodeData};
 
@@ -25,13 +27,10 @@ pub struct FileSystem {
 
 impl FileSystem {
     /// Create a file system from a disk
-    pub fn from_disk(mut disk: Box<Disk>) -> Option<Self> {
+    pub fn from_disk(mut disk: Box<Disk>) -> Result<Self> {
         if let Some(data) = Memory::<u8>::new(512) {
-            let mut buffer = unsafe { slice::from_raw_parts_mut(data.ptr, 512) };
-            if let Err(_) = disk.read(1, &mut buffer) {
-                return None;
-            }
-
+            try!(disk.read(1, unsafe { slice::from_raw_parts_mut(data.ptr, 512) }));
+            
             let header = unsafe { ptr::read(data.ptr as *const Header) };
             if header.valid() {
                 debugln!("{}: Redox Filesystem", disk.name());
@@ -48,7 +47,7 @@ impl FileSystem {
                             let mut buffer = unsafe {
                                 slice::from_raw_parts_mut(data.ptr, max_size)
                             };
-                            let _ = disk.read(extent.block, &mut buffer);
+                            try!(disk.read(extent.block, &mut buffer));
 
                             for i in 0..size / 512 {
                                 nodes.push(Node::new(extent.block + i as u64, unsafe {
@@ -59,17 +58,18 @@ impl FileSystem {
                     }
                 }
 
-                return Some(FileSystem {
+                Ok(FileSystem {
                     disk: disk,
                     header: header,
                     nodes: nodes,
-                });
+                })
             } else {
                 debugln!("{}: Unknown Filesystem", disk.name());
+                Err(Error::new(EINVAL))
             }
+        } else {
+            Err(Error::new(ENOMEM))
         }
-
-        None
     }
 
     /// Get node with a given filename
