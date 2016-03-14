@@ -4,6 +4,8 @@ use core::cmp;
 
 use arch::memory;
 
+use system::graphics::{fast_copy, fast_set};
+
 use super::FONT;
 use super::color::Color;
 
@@ -58,10 +60,9 @@ pub unsafe fn vbe_init(){
 
 /// A display
 pub struct Display {
-    pub offscreen: usize,
-    pub onscreen: usize,
+    pub offscreen: *mut u32,
+    pub onscreen: *mut u32,
     pub size: usize,
-    pub bytesperrow: usize,
     pub width: usize,
     pub height: usize,
 }
@@ -70,11 +71,10 @@ impl Display {
     pub fn root() -> Option<Box<Self>> {
         if let Some(mode_info) = unsafe { VBEMODEINFO } {
             let ret = box Display {
-                offscreen: unsafe { memory::alloc(mode_info.bytesperscanline as usize *
-                                         mode_info.yresolution as usize) },
-                onscreen: mode_info.physbaseptr as usize,
-                size: mode_info.bytesperscanline as usize * mode_info.yresolution as usize,
-                bytesperrow: mode_info.bytesperscanline as usize,
+                offscreen: unsafe { memory::alloc(mode_info.xresolution as usize *
+                                         mode_info.yresolution as usize * 4) as *mut u32 },
+                onscreen: mode_info.physbaseptr as usize as *mut u32,
+                size: mode_info.xresolution as usize * mode_info.yresolution as usize,
                 width: mode_info.xresolution as usize,
                 height: mode_info.yresolution as usize,
             };
@@ -85,39 +85,20 @@ impl Display {
         }
     }
 
-    // Optimized {
-    pub unsafe fn copy_run(mut src: usize, mut dst: usize, len: usize) {
-        let end = dst + len;
-        while dst < end {
-            *(src as *mut u32) = *(dst as *mut u32);
-            src += 4;
-            dst += 4;
-        }
-    }
-
-    // Optimized {
-    pub unsafe fn set_run(data: u32, mut dst: usize, len: usize) {
-        let end = dst + len;
-        while dst < end {
-            *(dst as *mut u32) = data;
-            dst += 4;
-        }
-    }
-
     /// Set the color
     pub fn set(&self, color: Color) {
         unsafe {
-            Display::set_run(color.data, self.offscreen, self.size);
+            fast_set(self.offscreen, color.data, self.size);
         }
     }
 
     /// Scroll the display
     pub fn scroll(&self, rows: usize) {
         if rows > 0 && rows < self.height {
-            let offset = rows * self.bytesperrow;
+            let offset = rows * self.width;
             unsafe {
-                Display::copy_run(self.offscreen, self.offscreen + offset, self.size - offset);
-                Display::set_run(0, self.offscreen + self.size - offset, offset);
+                fast_copy(self.offscreen, self.offscreen.offset(offset as isize), self.size - offset);
+                fast_set(self.offscreen.offset((self.size - offset) as isize), 0, offset);
             }
         }
     }
@@ -125,7 +106,7 @@ impl Display {
     /// Flip the display
     pub fn flip(&self) {
         unsafe {
-            Display::copy_run(self.onscreen, self.offscreen, self.size);
+            fast_copy(self.onscreen, self.offscreen, self.size);
         }
     }
 
@@ -136,14 +117,12 @@ impl Display {
         let start_y = cmp::min(self.height - 1, y);
         let end_y = cmp::min(self.height - 1, y + h);
 
-        let start_x = cmp::min(self.width - 1, x) * 4;
-        let len = cmp::min(self.width - 1, x + w) * 4 - start_x;
+        let start_x = cmp::min(self.width - 1, x);
+        let len = cmp::min(self.width - 1, x + w) - start_x;
 
         for y in start_y..end_y {
             unsafe {
-                Display::set_run(data,
-                                 self.offscreen + y * self.bytesperrow + start_x,
-                                 len);
+                fast_set(self.offscreen.offset((y * self.width + start_x) as isize), data, len);
             }
         }
     }
@@ -152,17 +131,17 @@ impl Display {
     pub fn char(&self, x: usize, y: usize, character: char, color: Color) {
         if x + 8 <= self.width && y + 16 <= self.height {
             let data = color.data;
-            let mut dst = self.offscreen + y * self.bytesperrow + x * 4;
+            let mut dst = unsafe { self.offscreen.offset((y * self.width + x) as isize) };
 
             let font_i = 16 * (character as usize);
             for row in 0..16 {
                 let row_data = FONT[font_i + row];
                 for col in 0..8 {
                     if (row_data >> (7 - col)) & 1 == 1 {
-                        unsafe { *((dst + col * 4) as *mut u32) = data; }
+                        unsafe { *dst.offset(col) = data; }
                     }
                 }
-                dst += self.bytesperrow;
+                dst = unsafe { dst.offset(self.width as isize) };
             }
         }
     }
@@ -171,8 +150,8 @@ impl Display {
 impl Drop for Display {
     fn drop(&mut self) {
         unsafe {
-            if self.offscreen > 0 {
-                memory::unalloc(self.offscreen);
+            if self.offscreen as usize > 0 {
+                memory::unalloc(self.offscreen as usize);
             }
         }
     }

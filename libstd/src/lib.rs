@@ -14,6 +14,7 @@
 #![feature(associated_consts)]
 #![feature(box_patterns)]
 #![feature(box_syntax)]
+#![feature(cfg_target_thread_local)]
 #![feature(collections)]
 #![feature(collections_bound)]
 #![feature(collections_range)]
@@ -34,6 +35,7 @@
 #![feature(raw)]
 #![feature(reflect_marker)]
 #![feature(slice_concat_ext)]
+#![feature(str_char)]
 #![feature(type_ascription)]
 #![feature(unicode)]
 #![feature(unique)]
@@ -106,7 +108,7 @@ pub mod macros;
 // TODO mod rtdeps;
 
 // The Prelude.
-    #[prelude_import]
+#[prelude_import]
 pub mod prelude;
 
 // Primitive types
@@ -139,24 +141,24 @@ pub mod ascii;
 
 // Runtime and platform support
 
-    #[macro_use]
+#[macro_use]
 pub mod thread;
 
 pub mod collections;
 // TODO pub mod dynamic_lib;
 pub mod env;
-// TODO pub mod ffi;
+pub mod ffi;
 pub mod fs;
 pub mod io;
 pub mod net;
-// TODO pub mod os;
+pub mod os;
 pub mod path;
 pub mod process;
 pub mod sync;
 pub mod time;
 
-// TODO #[macro_use]
-// TODO #[path = "sys/common/mod.rs"] mod sys_common;
+#[macro_use]
+#[path = "sys/common/mod.rs"] mod sys_common;
 
 // TODO #[cfg(unix)]
 // TODO #[path = "sys/unix/mod.rs"] mod sys;
