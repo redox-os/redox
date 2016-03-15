@@ -1,5 +1,6 @@
 use boxed::Box;
 use core::mem;
+use fmt;
 use io::{Result, Read, Write};
 use os::unix::io::{AsRawFd, FromRawFd, RawFd};
 use ops::DerefMut;
@@ -104,6 +105,16 @@ pub struct Command {
     stdin: Stdio,
     stdout: Stdio,
     stderr: Stdio,
+}
+
+impl fmt::Debug for Command {
+    fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
+        try!(write!(f, "{:?}", self.path));
+        for arg in &self.args {
+            try!(write!(f, " {:?}", arg));
+        }
+        Ok(())
+    }
 }
 
 impl Command {
