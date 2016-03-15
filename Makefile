@@ -221,6 +221,13 @@ filesystem/bin/%: libc/bin/%
 	mkdir -p filesystem/bin
 	cp $< $@
 
+$(BUILD)/minesweeper.bin: FORCE $(BUILD)/libstd.rlib
+	$(CARGO) --manifest-path crates/games/Cargo.toml $(CARGOFLAGS)
+
+filesystem/bin/minesweeper: $(BUILD)/minesweeper.bin
+	mkdir -p filesystem/bin
+	cp $< $@
+
 $(BUILD)/ion-shell.bin: FORCE $(BUILD)/libstd.rlib
 	$(CARGO) --manifest-path crates/ion/Cargo.toml --bin ion-shell $(CARGOFLAGS)
 
@@ -250,6 +257,7 @@ bins: \
 	filesystem/bin/launcher \
   	filesystem/bin/lua \
   	filesystem/bin/login \
+  	filesystem/bin/minesweeper \
   	filesystem/bin/orbital \
 	filesystem/bin/std-test \
   	filesystem/bin/sdl-test \
