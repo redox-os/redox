@@ -222,7 +222,7 @@ filesystem/bin/%: libc/bin/%
 	cp $< $@
 
 $(BUILD)/minesweeper.bin: FORCE $(BUILD)/libstd.rlib
-	$(CARGO) --manifest-path crates/games/Cargo.toml $(CARGOFLAGS)
+	$(CARGO) --manifest-path crates/games/Cargo.toml --bin minesweeper $(CARGOFLAGS)
 
 filesystem/bin/minesweeper: $(BUILD)/minesweeper.bin
 	mkdir -p filesystem/bin
