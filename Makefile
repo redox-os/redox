@@ -172,6 +172,7 @@ coreutils: \
 	filesystem/bin/echo \
 	filesystem/bin/false \
 	filesystem/bin/free \
+	filesystem/bin/head \
 	filesystem/bin/ls \
 	filesystem/bin/mkdir \
 	filesystem/bin/ps \
@@ -182,6 +183,7 @@ coreutils: \
 	filesystem/bin/seq \
 	filesystem/bin/shutdown \
 	filesystem/bin/sleep \
+	filesystem/bin/tail \
 	filesystem/bin/touch \
 	filesystem/bin/true \
 	filesystem/bin/wc \
