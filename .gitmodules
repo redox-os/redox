@@ -31,3 +31,6 @@
 [submodule "crates/binutils"]
 	path = crates/binutils
 	url = https://github.com/redox-os/binutils.git
+[submodule "crates/games"]
+	path = crates/games
+	url = https://github.com/redox-os/games-for-redox.git
