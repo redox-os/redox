@@ -265,7 +265,43 @@ initfs/redoxfsd: crates/redoxfs/scheme/main.rs crates/redoxfs/scheme/*.rs $(BUIL
 	mkdir -p initfs/
 	$(RUSTC) $(RUSTCFLAGS) --crate-type bin -o $@ $<
 
-build/initfs.gen: initfs/redoxfsd
+initfs/build-arch: FORCE
+	mkdir -p initfs/
+	echo $(ARCH) > $@
+
+initfs/build-branch: FORCE
+	mkdir -p initfs/
+	git rev-parse --abbrev-ref HEAD > $@
+
+initfs/build-cargo: FORCE
+	mkdir -p initfs/
+	cargo -V > $@
+
+initfs/build-date: FORCE
+	mkdir -p initfs/
+	date > $@
+
+initfs/build-host: FORCE
+	mkdir -p initfs/
+	uname -a > $@
+
+initfs/build-rustc: FORCE
+	mkdir -p initfs/
+	$(RUSTC) -V > $@
+
+initfs/build-rev: FORCE
+	mkdir -p initfs/
+	git rev-parse HEAD > $@
+
+build/initfs.gen: \
+		initfs/redoxfsd \
+		initfs/build-arch \
+		initfs/build-branch \
+		initfs/build-cargo \
+		initfs/build-date \
+		initfs/build-host \
+		initfs/build-rustc \
+		initfs/build-rev
 	echo 'use collections::BTreeMap;' > $@
 	echo 'pub fn gen() -> BTreeMap<&'"'"'static str, &'"'"'static [u8]> {' >> $@
 	echo '    let mut files: BTreeMap<&'"'"'static str, &'"'"'static [u8]> = BTreeMap::new();' >> $@
