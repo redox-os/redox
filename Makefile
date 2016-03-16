@@ -203,7 +203,10 @@ binutils: \
 	filesystem/bin/hexdump \
 	filesystem/bin/strings
 
-filesystem/bin/%: crates/extrautils/src/bin/%.rs $(BUILD)/crt0.o $(BUILD)/libcoreutils.rlib
+$(BUILD)/libtermion.rlib: crates/termion/src/lib.rs crates/termion/src/*.rs $(BUILD)/libstd.rlib
+	$(RUSTC) $(RUSTCFLAGS) --crate-name termion --crate-type lib -o $@ $< --cfg 'feature="nightly"'
+
+filesystem/bin/%: crates/extrautils/src/bin/%.rs $(BUILD)/crt0.o $(BUILD)/libcoreutils.rlib $(BUILD)/libtermion.rlib
 	mkdir -p filesystem/bin
 	$(RUSTC) $(RUSTCFLAGS) --crate-type bin -o $@ $<
 
@@ -212,6 +215,7 @@ extrautils: \
 	filesystem/bin/cksum \
 	filesystem/bin/cur \
 	filesystem/bin/grep \
+	filesystem/bin/less \
 	filesystem/bin/rem
 	#TODO: filesystem/bin/mtxt
 

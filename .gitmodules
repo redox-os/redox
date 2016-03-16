@@ -31,3 +31,6 @@
 [submodule "crates/binutils"]
 	path = crates/binutils
 	url = https://github.com/redox-os/binutils.git
+[submodule "crates/termion"]
+	path = crates/termion
+	url = https://github.com/jackpot51/termion.git
