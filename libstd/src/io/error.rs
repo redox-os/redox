@@ -17,6 +17,7 @@ use option::Option::{self, None};
 use result;
 
 use system::error::Error as SysError;
+use system::error::{ENOENT, EACCES, EEXIST, EINVAL, STR_ERROR};
 
 /// A specialized [`Result`](../result/enum.Result.html) type for I/O
 /// operations.
@@ -97,7 +98,13 @@ impl Error {
     /// Get the error kind of this IO error.
     pub fn kind(&self) -> ErrorKind {
         match &self.repr {
-            &Repr::Os(_) => ErrorKind::Other,
+            &Repr::Os(errno) => match errno {
+                ENOENT => ErrorKind::NotFound,
+                EACCES => ErrorKind::PermissionDenied,
+                EEXIST => ErrorKind::AlreadyExists,
+                EINVAL => ErrorKind::InvalidInput,
+                _ => ErrorKind::Other
+            },
             &Repr::Custom(ref c) => c.kind,
         }
     }
@@ -203,30 +210,15 @@ impl fmt::Display for Error {
 }
 
 impl error::Error for Error {
-    #[allow(deprecated)] // remove with UnexpectedEOF
     fn description(&self) -> &str {
         match self.repr {
-            Repr::Os(..) => match self.kind() {
-                ErrorKind::NotFound => "entity not found",
-                ErrorKind::PermissionDenied => "permission denied",
-                ErrorKind::ConnectionRefused => "connection refused",
-                ErrorKind::ConnectionReset => "connection reset",
-                ErrorKind::ConnectionAborted => "connection aborted",
-                ErrorKind::NotConnected => "not connected",
-                ErrorKind::AddrInUse => "address in use",
-                ErrorKind::AddrNotAvailable => "address not available",
-                ErrorKind::BrokenPipe => "broken pipe",
-                ErrorKind::AlreadyExists => "entity already exists",
-                ErrorKind::WouldBlock => "operation would block",
-                ErrorKind::InvalidInput => "invalid input parameter",
-                ErrorKind::InvalidData => "invalid data",
-                ErrorKind::TimedOut => "timed out",
-                ErrorKind::WriteZero => "write zero",
-                ErrorKind::Interrupted => "operation interrupted",
-                ErrorKind::Other => "other os error",
-                ErrorKind::UnexpectedEOF => "unexpected end of file",
-                ErrorKind::UnexpectedEof => "unexpected end of file",
-                ErrorKind::__Nonexhaustive => unreachable!()
+            Repr::Os(errno) => {
+                let err_i = errno as usize;
+                if err_i < STR_ERROR.len() {
+                    STR_ERROR[err_i]
+                } else {
+                    "unknown error"
+                }
             },
             Repr::Custom(ref c) => c.error.description(),
         }
