@@ -246,15 +246,14 @@ impl KScheme for FileScheme {
     }
 
     fn open(&mut self, url: Url, flags: usize) -> Result<Box<Resource>> {
-        let mut path = url.reference();
-        while path.starts_with('/') {
-            path = &path[1..];
-        }
-        if path.is_empty() || path.ends_with('/') {
+        let path = url.reference().trim_matches('/');
+
+        let children = self.fs.list(path);
+        if ! children.is_empty() {
             let mut list = String::new();
             let mut dirs: Vec<String> = Vec::new();
 
-            for file in self.fs.list(path).iter() {
+            for file in children.iter() {
                 let mut line = String::new();
                 match file.find('/') {
                     Some(index) => {
@@ -363,15 +362,14 @@ impl KScheme for FileScheme {
     }
 
     fn stat(&mut self, url: Url, stat: &mut Stat) -> Result<()> {
-        let mut path = url.reference();
-        while path.starts_with('/') {
-            path = &path[1..];
-        }
-        if path.is_empty() || path.ends_with('/') {
+        let path = url.reference().trim_matches('/');
+
+        let children = self.fs.list(path);
+        if ! children.is_empty() {
             let mut list = String::new();
             let mut dirs: Vec<String> = Vec::new();
 
-            for file in self.fs.list(path).iter() {
+            for file in children.iter() {
                 let mut line = String::new();
                 match file.find('/') {
                     Some(index) => {
@@ -431,10 +429,7 @@ impl KScheme for FileScheme {
     fn unlink(&mut self, url: Url) -> Result<()> {
         let mut ret = Err(Error::new(ENOENT));
 
-        let mut path = url.reference();
-        while path.starts_with('/') {
-            path = &path[1..];
-        }
+        let path = url.reference().trim_matches('/');
 
         let mut i = 0;
         while i < self.fs.nodes.len() {
