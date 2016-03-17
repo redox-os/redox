@@ -231,7 +231,7 @@ RAW MODE
             }
 
             while self.point_y + 16 > display.height {
-                display.scroll(16);
+                display.scroll(16, self.background);
                 self.point_y -= 16;
             }
             display.rect(self.point_x, self.point_y, 8, 16, self.foreground);
