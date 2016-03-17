@@ -176,6 +176,7 @@ coreutils: \
 	filesystem/bin/head \
 	filesystem/bin/ls \
 	filesystem/bin/mkdir \
+	filesystem/bin/mv \
 	filesystem/bin/ps \
 	filesystem/bin/pwd \
 	filesystem/bin/realpath \
