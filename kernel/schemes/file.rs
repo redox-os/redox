@@ -106,9 +106,11 @@ impl Resource for FileResource {
             let mut remaining = self.vec.len() as isize;
             for ref mut extent in &mut self.node.extents {
                 if remaining > 0 && extent.empty() {
+                    /*
                     debug::d("Reallocate file, extra: ");
                     debug::ds(remaining);
                     debug::dl();
+                    */
 
                     unsafe {
                         let sectors = ((remaining + 511) / 512) as u64;
@@ -161,7 +163,7 @@ impl Resource for FileResource {
             }
 
             if node_dirty {
-                debug::d("Node dirty, rewrite\n");
+                //debug::d("Node dirty, rewrite\n");
 
                 if self.node.block > 0 {
                     unsafe {
@@ -171,7 +173,7 @@ impl Resource for FileResource {
                             let mut buffer = slice::from_raw_parts(node_data.address() as *mut u8, 512);
                             let _ = (*self.scheme).fs.disk.write(self.node.block, &mut buffer);
 
-                            debug::d("Renode\n");
+                            //debug::d("Renode\n");
 
                             for mut node in (*self.scheme).fs.nodes.iter_mut() {
                                 if node.block == self.node.block {
