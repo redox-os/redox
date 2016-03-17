@@ -5,7 +5,7 @@ use collections::Vec;
 
 use common::event::{self, Event, EventOption};
 
-use core::mem;
+use core::{cmp, mem};
 
 use drivers::io::{Io, Pio};
 
@@ -128,11 +128,11 @@ impl Console {
                         display.rect(self.point_x, self.point_y, 8, 16, self.background);
                     }
 
-                    let row = self.sequence.get(0).map_or("", |p| &p).parse::<usize>().unwrap_or(0);
-                    self.point_y = row * 16;
+                    let row = self.sequence.get(0).map_or("", |p| &p).parse::<isize>().unwrap_or(1);
+                    self.point_y = cmp::max(0, row - 1) as usize * 16;
 
-                    let col = self.sequence.get(1).map_or("", |p| &p).parse::<usize>().unwrap_or(0);
-                    self.point_x = col * 8;
+                    let col = self.sequence.get(1).map_or("", |p| &p).parse::<isize>().unwrap_or(1);
+                    self.point_x = cmp::max(0, col - 1) as usize * 8;
 
                     if let Some(ref mut display) = self.display {
                         display.rect(self.point_x, self.point_y, 8, 16, self.foreground);
@@ -158,10 +158,15 @@ RAW MODE
         - stdin is not buffered, meaning that the stream of bytes goes directly to the program, without the user having to press enter.
 @MANEND
 */
-                'r' => self.raw_mode = true,
-                'R' => self.raw_mode = false,
+                'r' => {
+                    self.raw_mode = true;
+                    self.escape_sequence = false;
+                },
+                'R' => {
+                    self.raw_mode = false;
+                    self.escape_sequence = false;
+                },
                 _ => self.escape_sequence = false,
-
             }
 
             if !self.escape_sequence {
@@ -240,7 +245,7 @@ RAW MODE
                 if key_event.pressed {
                     if self.raw_mode {
                         match key_event.scancode {
-                            event::K_BKSP => self.command.push_str("\x08 \x08"),
+                            event::K_BKSP => self.command.push_str("\x08"),
                             event::K_UP => self.command.push_str("\x1B[A"),
                             event::K_DOWN => self.command.push_str("\x1B[B"),
                             event::K_RIGHT => self.command.push_str("\x1B[C"),
