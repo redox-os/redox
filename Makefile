@@ -271,31 +271,31 @@ initfs/redoxfsd: crates/redoxfs/scheme/main.rs crates/redoxfs/scheme/*.rs $(BUIL
 	mkdir -p initfs/
 	$(RUSTC) $(RUSTCFLAGS) --crate-type bin -o $@ $<
 
-initfs/build-arch: FORCE
+initfs/build-arch:
 	mkdir -p initfs/
 	echo $(ARCH) > $@
 
-initfs/build-branch: FORCE
+initfs/build-branch:
 	mkdir -p initfs/
 	git rev-parse --abbrev-ref HEAD > $@
 
-initfs/build-cargo: FORCE
+initfs/build-cargo:
 	mkdir -p initfs/
 	cargo -V > $@
 
-initfs/build-date: FORCE
+initfs/build-date:
 	mkdir -p initfs/
 	date > $@
 
-initfs/build-host: FORCE
+initfs/build-host:
 	mkdir -p initfs/
 	uname -a > $@
 
-initfs/build-rustc: FORCE
+initfs/build-rustc:
 	mkdir -p initfs/
 	$(RUSTC) -V > $@
 
-initfs/build-rev: FORCE
+initfs/build-rev:
 	mkdir -p initfs/
 	git rev-parse HEAD > $@
 
