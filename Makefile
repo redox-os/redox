@@ -227,6 +227,7 @@ filesystem/bin/%: crates/games/src/%.rs $(BUILD)/crt0.o $(BUILD)/libcoreutils.rl
 	$(RUSTC) $(RUSTCFLAGS) --crate-type bin -o $@ $<
 
 games: \
+	filesystem/bin/ice \
 	filesystem/bin/minesweeper
 
 filesystem/bin/%: crates/%/main.rs crates/%/*.rs $(BUILD)/crt0.o $(BUILD)/libstd.rlib
