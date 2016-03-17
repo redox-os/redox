@@ -167,6 +167,7 @@ filesystem/bin/%: crates/coreutils/src/bin/%.rs $(BUILD)/crt0.o $(BUILD)/libcore
 coreutils: \
 	filesystem/bin/basename \
 	filesystem/bin/cat \
+	filesystem/bin/clear \
 	filesystem/bin/cp \
 	filesystem/bin/du \
 	filesystem/bin/echo \
@@ -178,6 +179,7 @@ coreutils: \
 	filesystem/bin/ps \
 	filesystem/bin/pwd \
 	filesystem/bin/realpath \
+	filesystem/bin/reset \
 	filesystem/bin/rm \
 	filesystem/bin/rmdir \
 	filesystem/bin/seq \
@@ -242,7 +244,6 @@ filesystem/bin/launcher: crates/orbutils/src/launcher/main.rs crates/orbutils/sr
 	mkdir -p filesystem/bin
 	$(RUSTC) $(RUSTCFLAGS) --crate-type bin -o $@ $<
 
-
 bins: \
 	coreutils \
 	extrautils \
@@ -255,6 +256,7 @@ bins: \
   	filesystem/bin/ion \
 	filesystem/bin/launcher \
   	filesystem/bin/lua \
+  	filesystem/bin/luac \
   	filesystem/bin/login \
   	filesystem/bin/orbital \
 	filesystem/bin/std-test \
