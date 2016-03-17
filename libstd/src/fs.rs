@@ -344,19 +344,7 @@ pub fn create_dir<P: AsRef<Path>>(path: P) -> Result<()> {
 }
 
 pub fn read_dir<P: AsRef<Path>>(path: P) -> Result<ReadDir> {
-    let path_str = path.as_ref().as_os_str().as_inner();
-    let file_result = if path_str.is_empty() || path_str.ends_with('/') {
-        File::open(path_str)
-    } else {
-        let mut path_string = path_str.to_owned();
-        path_string.push_str("/");
-        File::open(path_string)
-    };
-
-    match file_result {
-        Ok(file) => Ok(ReadDir { file: file }),
-        Err(err) => Err(err),
-    }
+    File::open(path).map(|file| ReadDir { file: file })
 }
 
 pub fn remove_dir(path: &str) -> Result<()> {

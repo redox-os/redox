@@ -125,9 +125,6 @@ pub fn do_sys_open(path: *const u8, flags: usize) -> Result<usize> {
     let url = try!(Url::from_str(&path));
     let resource = try!(::env().open(url, flags));
     let fd = current.next_fd();
-
-    //debugln!("{}: {}: open {} as {}", current.pid, current.name, url.string, fd);
-
     unsafe {
         (*current.files.get()).push(ContextFile {
             fd: fd,
