@@ -45,7 +45,7 @@ pub fn syscall_handle(regs: &mut Regs) {
         SYS_LSEEK => do_sys_lseek(regs.bx, regs.cx as isize, regs.dx),
         SYS_MKDIR => do_sys_mkdir(regs.bx as *const u8, regs.cx),
         SYS_NANOSLEEP => do_sys_nanosleep(regs.bx as *const TimeSpec, regs.cx as *mut TimeSpec),
-        SYS_OPEN => do_sys_open(regs.bx as *const u8, regs.cx), //regs.cx as isize, regs.dx as isize),
+        SYS_OPEN => do_sys_open(regs.bx as *const u8, regs.cx),
         SYS_PIPE2 => do_sys_pipe2(regs.bx as *mut usize, regs.cx),
         SYS_READ => do_sys_read(regs.bx, regs.cx as *mut u8, regs.dx),
         SYS_RMDIR => do_sys_rmdir(regs.bx as *const u8),

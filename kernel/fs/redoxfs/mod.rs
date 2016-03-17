@@ -1,5 +1,6 @@
 use alloc::boxed::Box;
 
+use collections::borrow::ToOwned;
 use collections::string::{String, ToString};
 use collections::vec::Vec;
 
@@ -30,7 +31,7 @@ impl FileSystem {
     pub fn from_disk(mut disk: Box<Disk>) -> Result<Self> {
         if let Some(data) = Memory::<u8>::new(512) {
             try!(disk.read(1, unsafe { slice::from_raw_parts_mut(data.ptr, 512) }));
-            
+
             let header = unsafe { ptr::read(data.ptr as *const Header) };
             if header.valid() {
                 debugln!("{}: Redox Filesystem", disk.name());
@@ -84,11 +85,17 @@ impl FileSystem {
     }
 
     /// List nodes in a given directory
-    pub fn list(&self, directory: &str) -> Vec<String> {
+    pub fn list(&self, directory_str: &str) -> Vec<String> {
         let mut ret = Vec::new();
 
+        let directory = if directory_str.is_empty() {
+            directory_str.to_owned()
+        } else {
+            directory_str.to_owned() + "/"
+        };
+
         for node in self.nodes.iter() {
-            if node.name.starts_with(directory) {
+            if node.name.starts_with(&directory) {
                 ret.push(node.name.get_slice(directory.len()..).to_string());
             }
         }
