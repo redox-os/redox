@@ -12,9 +12,9 @@ use common::{debug, random};
 use common::to_num::ToNum;
 
 use schemes::arp::{Arp, ArpHeader};
-use schemes::{Result, KScheme, Resource, Url};
+use fs::{KScheme, Resource, Url};
 
-use syscall::{Error, EBADF, ENOENT};
+use system::error::{Error, Result, EBADF, ENOENT};
 
 /// A IP (internet protocole) resource
 pub struct IpResource {
@@ -39,8 +39,13 @@ impl Resource for IpResource {
         }
     }
 
-    fn url(&self) -> Url {
-        Url::from_string(format!("ip:{}/{:X}", self.peer_addr.to_string(), self.proto))
+    fn path(&self, buf: &mut [u8]) -> Result<usize> {
+        let path = format!("ip:{}/{:X}", self.peer_addr.to_string(), self.proto).as_bytes();
+        for (b, p) in buf.iter_mut().zip(path_a.iter()) {
+            *b = *p;
+        }
+
+        Ok(cmp::min(buf.len(), path.len()))
     }
 
     fn read(&mut self, _: &mut [u8]) -> Result<usize> {
@@ -128,7 +133,7 @@ impl KScheme for IpScheme {
         "ip"
     }
 
-    fn open(&mut self, url: &Url, _: usize) -> Result<Box<Resource>> {
+    fn open(&mut self, url: Url, _: usize) -> Result<Box<Resource>> {
         let parts: Vec<&str> = url.reference().split('/').collect();
         if let Some(host_string) = parts.get(0) {
             if let Some(proto_string) = parts.get(1) {
