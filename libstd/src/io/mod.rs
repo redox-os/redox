@@ -252,7 +252,7 @@ use cmp;
 use str;
 use result;
 use error as std_error;
-use system::syscall::{sys_read, sys_write};
+use system::syscall::{sys_read, sys_write, sys_fsync};
 
 pub mod prelude;
 mod buffered;
@@ -1950,8 +1950,9 @@ impl Write for Stdout {
         sys_write(1, buf).map_err(|x| Error::from_sys(x))
     }
 
-    // TODO buffered stdout
-    fn flush(&mut self) -> Result<()> { Ok(()) }
+    fn flush(&mut self) -> Result<()> {
+        sys_fsync(1).map_err(|x| Error::from_sys(x)).and(Ok(()))
+    }
 }
 
 /// Standard Output lock
@@ -1964,8 +1965,9 @@ impl Write for StdoutLock {
         sys_write(1, buf).map_err(|x| Error::from_sys(x))
     }
 
-    // TODO buffered stdout
-    fn flush(&mut self) -> Result<()> { Ok(()) }
+    fn flush(&mut self) -> Result<()> {
+        sys_fsync(1).map_err(|x| Error::from_sys(x)).and(Ok(()))
+    }
 }
 
 /// Standard Error
@@ -1987,8 +1989,10 @@ impl Write for Stderr {
     fn write(&mut self, buf: &[u8]) -> Result<usize> {
         sys_write(2, buf).map_err(|x| Error::from_sys(x))
     }
-    // TODO buffered stderr
-    fn flush(&mut self) -> Result<()> { Ok(()) }
+
+    fn flush(&mut self) -> Result<()> {
+        sys_fsync(2).map_err(|x| Error::from_sys(x)).and(Ok(()))
+    }
 }
 
 /// Standard Error lock
@@ -2000,8 +2004,10 @@ impl Write for StderrLock {
     fn write(&mut self, buf: &[u8]) -> Result<usize> {
         sys_write(2, buf).map_err(|x| Error::from_sys(x))
     }
-    // TODO buffered stderr
-    fn flush(&mut self) -> Result<()> { Ok(()) }
+
+    fn flush(&mut self) -> Result<()> {
+        sys_fsync(2).map_err(|x| Error::from_sys(x)).and(Ok(()))
+    }
 }
 
 #[allow(unused_must_use)]

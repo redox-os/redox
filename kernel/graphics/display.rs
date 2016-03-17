@@ -93,12 +93,12 @@ impl Display {
     }
 
     /// Scroll the display
-    pub fn scroll(&self, rows: usize) {
+    pub fn scroll(&self, rows: usize, color: Color) {
         if rows > 0 && rows < self.height {
             let offset = rows * self.width;
             unsafe {
                 fast_copy(self.offscreen, self.offscreen.offset(offset as isize), self.size - offset);
-                fast_set(self.offscreen.offset((self.size - offset) as isize), 0, offset);
+                fast_set(self.offscreen.offset((self.size - offset) as isize), color.data, offset);
             }
         }
     }
