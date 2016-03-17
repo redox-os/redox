@@ -210,6 +210,7 @@ RAW MODE
                 '\n' => {
                     self.point_x = 0;
                     self.point_y += 16;
+                    self.redraw = true;
                 },
                 '\t' => self.point_x = ((self.point_x / 64) + 1) * 64,
                 '\r' => self.point_x = 0,
@@ -235,7 +236,6 @@ RAW MODE
                 self.point_y -= 16;
             }
             display.rect(self.point_x, self.point_y, 8, 16, self.foreground);
-            self.redraw = true;
         }
     }
 
@@ -266,12 +266,16 @@ RAW MODE
                     } else {
                         match key_event.scancode {
                             event::K_BKSP => if ! self.command.is_empty() {
+                                self.redraw = true;
+
                                 self.write(&[8]);
                                 self.command.pop();
                             },
                             _ => match key_event.character {
                                 '\0' => (),
                                 c => {
+                                    self.redraw = true;
+
                                     self.write(&[c as u8]);
                                     self.command.push(c);
 
@@ -291,9 +295,6 @@ RAW MODE
     }
 
     pub fn write(&mut self, bytes: &[u8]) {
-        let serial_status = Pio::<u8>::new(0x3F8 + 5);
-        let mut serial_data = Pio::<u8>::new(0x3F8);
-
         for byte in bytes.iter() {
             let c = *byte as char;
 
@@ -303,15 +304,20 @@ RAW MODE
                 self.character(c);
             }
 
-            while !serial_status.readf(0x20) {}
-            serial_data.write(*byte);
-
-            if *byte == 8 {
-                while !serial_status.readf(0x20) {}
-                serial_data.write(0x20);
+            if self.display.is_none() {
+                let serial_status = Pio::<u8>::new(0x3F8 + 5);
+                let mut serial_data = Pio::<u8>::new(0x3F8);
 
                 while !serial_status.readf(0x20) {}
-                serial_data.write(8);
+                serial_data.write(*byte);
+
+                if *byte == 8 {
+                    while !serial_status.readf(0x20) {}
+                    serial_data.write(0x20);
+
+                    while !serial_status.readf(0x20) {}
+                    serial_data.write(8);
+                }
             }
         }
 
