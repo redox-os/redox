@@ -51,12 +51,14 @@ pub const SYS_WAITPID: usize = 7;
 pub const SYS_WRITE: usize = 4;
 pub const SYS_YIELD: usize = 158;
 
+#[derive(Copy, Clone, Debug, Default)]
 #[repr(packed)]
 pub struct Stat {
     pub st_mode: u16,
     pub st_size: u64
 }
 
+#[derive(Copy, Clone, Debug, Default)]
 #[repr(packed)]
 pub struct TimeSpec {
     pub tv_sec: i64,

@@ -8,7 +8,7 @@ use scheduler::context::context_switch;
 
 use network::common::*;
 
-use schemes::{KScheme, Url};
+use fs::{KScheme, Url};
 
 #[derive(Copy, Clone)]
 #[repr(packed)]

@@ -50,6 +50,9 @@ impl Resource for DebugResource {
     }
 
     fn sync(&mut self) -> Result<()> {
+        let mut console = ::env().console.lock();
+        console.redraw = true;
+        console.write(&[]);
         Ok(())
     }
 }
