@@ -222,6 +222,13 @@ extrautils: \
 	filesystem/bin/rem
 	#TODO: filesystem/bin/mtxt
 
+filesystem/bin/%: crates/games/src/%.rs $(BUILD)/crt0.o $(BUILD)/libcoreutils.rlib $(BUILD)/libtermion.rlib
+	mkdir -p filesystem/bin
+	$(RUSTC) $(RUSTCFLAGS) --crate-type bin -o $@ $<
+
+games: \
+	filesystem/bin/minesweeper
+
 filesystem/bin/%: crates/%/main.rs crates/%/*.rs $(BUILD)/crt0.o $(BUILD)/libstd.rlib
 	mkdir -p filesystem/bin
 	$(RUSTC) $(RUSTCFLAGS) --crate-type bin -o $@ $<
@@ -248,6 +255,7 @@ filesystem/bin/launcher: crates/orbutils/src/launcher/main.rs crates/orbutils/sr
 bins: \
 	coreutils \
 	extrautils \
+	games \
 	filesystem/bin/ansi-test \
 	filesystem/bin/c-test \
 	filesystem/bin/dosbox \
@@ -259,6 +267,7 @@ bins: \
   	filesystem/bin/lua \
   	filesystem/bin/luac \
   	filesystem/bin/login \
+  	filesystem/bin/minesweeper \
   	filesystem/bin/orbital \
 	filesystem/bin/std-test \
   	filesystem/bin/sdl-test \
