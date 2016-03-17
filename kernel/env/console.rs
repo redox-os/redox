@@ -75,7 +75,7 @@ impl Console {
                     // Display attributes
                     for value in self.sequence.iter() {
                         match value.as_str() {
-                            "0" => {
+                            "" | "0" => {
                                 self.foreground = WHITE;
                                 self.background = BLACK;
                             },
