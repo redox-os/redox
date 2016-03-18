@@ -67,8 +67,6 @@ impl KScheme for Serial {
             } else if self.cursor_control {
                 self.cursor_control = false;
 
-                c = '\0';
-
                 if c == 'A' {
                     sc = event::K_UP;
                 } else if c == 'B' {
@@ -78,6 +76,8 @@ impl KScheme for Serial {
                 } else if c == 'D' {
                     sc = event::K_LEFT;
                 }
+
+                c = '\0';
             } else if c == '\x03' {
                 console.write(b"^C\n");
                 console.commands.send(String::new());
