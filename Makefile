@@ -228,8 +228,7 @@ filesystem/bin/%: crates/games/src/%/main.rs crates/games/src/%/*.rs $(BUILD)/cr
 
 games: \
 	filesystem/bin/ice \
-	filesystem/bin/minesweeper \
-	filesystem/bin/snake
+	filesystem/bin/minesweeper
 
 filesystem/bin/%: crates/%/main.rs crates/%/*.rs $(BUILD)/crt0.o $(BUILD)/libstd.rlib
 	mkdir -p filesystem/bin
