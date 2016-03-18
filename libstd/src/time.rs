@@ -66,6 +66,14 @@ impl Duration {
     pub fn from_millis(millis: u64) -> Self {
         Duration::new((millis / 1000) as i64, (millis % 1000) as i32 * NANOS_PER_MILLI)
     }
+
+    pub fn as_secs(&self) -> u64 {
+        self.secs as u64
+    }
+
+    pub fn subsec_nanos(&self) -> u32 {
+        self.nanos as u32
+    }
 }
 
 impl Add for Duration {
@@ -124,8 +132,8 @@ impl Instant {
         Instant(Duration::new(tp.tv_sec, tp.tv_nsec))
     }
 
-    /// Deprecated, renamed to `duration_since`
-    pub fn duration_from_earlier(&self, earlier: Instant) -> Duration {
+    /// Returns the amount of time between two instants
+    pub fn duration_since(&self, earlier: Instant) -> Duration {
         self.0 - earlier.0
     }
 

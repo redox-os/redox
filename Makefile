@@ -222,13 +222,14 @@ extrautils: \
 	filesystem/bin/rem
 	#TODO: filesystem/bin/mtxt
 
-filesystem/bin/%: crates/games/src/%.rs $(BUILD)/crt0.o $(BUILD)/libcoreutils.rlib $(BUILD)/libtermion.rlib
+filesystem/bin/%: crates/games/src/%/main.rs crates/games/src/%/*.rs $(BUILD)/crt0.o $(BUILD)/libcoreutils.rlib $(BUILD)/libtermion.rlib
 	mkdir -p filesystem/bin
 	$(RUSTC) $(RUSTCFLAGS) --crate-type bin -o $@ $<
 
 games: \
 	filesystem/bin/ice \
-	filesystem/bin/minesweeper
+	filesystem/bin/minesweeper \
+	filesystem/bin/snake
 
 filesystem/bin/%: crates/%/main.rs crates/%/*.rs $(BUILD)/crt0.o $(BUILD)/libstd.rlib
 	mkdir -p filesystem/bin
