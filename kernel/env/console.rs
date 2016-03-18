@@ -249,40 +249,57 @@ RAW MODE
     }
 
     pub fn character(&mut self, c: char) {
+        let (width, height) = if let Some(ref mut display) = self.display {
+            (display.width, display.height)
+        } else {
+            (80, 30)
+        };
+
         if let Some(ref mut display) = self.display {
             display.rect(self.point_x, self.point_y, 8, 16, self.background);
+        }
 
-            match c {
-                '\0' => {},
-                '\x1B' => self.escape = true,
-                '\n' => {
-                    self.point_x = 0;
-                    self.point_y += 16;
-                    self.redraw = true;
-                },
-                '\t' => self.point_x = ((self.point_x / 64) + 1) * 64,
-                '\r' => self.point_x = 0,
-                '\x08' => {
-                    if self.point_x >= 8 {
-                        self.point_x -= 8;
-                    }
-                    display.rect(self.point_x, self.point_y, 8, 16, self.background);
-                },
-                _ => {
-                    display.char(self.point_x, self.point_y, c, self.foreground);
-                    self.point_x += 8;
-                }
-            }
-
-            if self.point_x >= display.width {
+        match c {
+            '\0' => {},
+            '\x1B' => self.escape = true,
+            '\n' => {
                 self.point_x = 0;
                 self.point_y += 16;
-            }
+                self.redraw = true;
+            },
+            '\t' => self.point_x = ((self.point_x / 64) + 1) * 64,
+            '\r' => self.point_x = 0,
+            '\x08' => {
+                if self.point_x >= 8 {
+                    self.point_x -= 8;
+                }
 
-            while self.point_y + 16 > display.height {
-                display.scroll(16, self.background);
-                self.point_y -= 16;
+                if let Some(ref mut display) = self.display {
+                    display.rect(self.point_x, self.point_y, 8, 16, self.background);
+                }
+            },
+            _ => {
+                if let Some(ref mut display) = self.display {
+                    display.char(self.point_x, self.point_y, c, self.foreground);
+                }
+
+                self.point_x += 8;
             }
+        }
+
+        if self.point_x >= width {
+            self.point_x = 0;
+            self.point_y += 16;
+        }
+
+        while self.point_y + 16 > height {
+            if let Some(ref mut display) = self.display {
+                display.scroll(16, self.background);
+            }
+            self.point_y -= 16;
+        }
+
+        if let Some(ref mut display) = self.display {
             display.rect(self.point_x, self.point_y, 8, 16, self.foreground);
         }
     }
