@@ -75,13 +75,13 @@ It's completely fine to just submit a small pull request without first making an
 
 1. Fork the repository
 2. Clone the original repository to your local PC using one of the following commands based on the protocol you are using:
- * HTTPS:`git clone https://github.com/redox-os/redox.git`
+ * HTTPS:`git clone https://github.com/redox-os/redox.git --origin upstream --recursive`
  * SSH:`git clone git@github.com:redox-os/redox.git --origin upstream --recursive`
  * Then rebase: `git rebase upstream master`  
  Use HTTPS if you don't know which one to use. (Recommended: learn about SSH if you don't want to have to login every time you push/pull!)
 3. Add your fork with
  * HTTPS:`git remote add origin https://github.com/your-username/redox.git`
- * SSH:`git remote add origin git@github.com:your-username/redox.git --origin upstream --recursive`
+ * SSH:`git remote add origin git@github.com:your-username/redox.git`
 4. Alternatively, if you already have a fork and copy of the repo, you can simply check to make sure you're up-to-date
  * Fetch the upstream:`git fetch upstream master`
  * Rebase with local commits:`git rebase upstream/master`
