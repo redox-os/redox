@@ -533,7 +533,8 @@ virtualbox: $(BUILD)/harddrive.bin
 	$(VBM) modifyvm Redox --uart1 0x3F8 4
 	$(VBM) modifyvm Redox --uartmode1 file $(BUILD)/serial.log
 	$(VBM) modifyvm Redox --usb on
-	$(VBM) modifyvm Redox --mouse usbtablet
+	$(VBM) modifyvm Redox --keyboard ps2
+	$(VBM) modifyvm Redox --mouse ps2
 	#$(VBM) modifyvm Redox --audio $(VB_AUDIO)
 	#$(VBM) modifyvm Redox --audiocontroller ac97
 	echo "Create Disk"
