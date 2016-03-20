@@ -1,0 +1,23 @@
+**Problem**: [describe the problem you try to solve with this PR.]
+
+**Solution**: [describe carefully what you change by this PR.]
+
+**Changes introduced by this pull request**:
+
+- [...]
+- [...]
+- [...]
+
+**Drawbacks**: [if any, describe the drawbacks of this pull request.]
+
+**TODOs**: [what is not done yet.]
+
+**Fixes**: [what issues this fixes.]
+
+**State**: [the state of this PR, e.g. WIP, ready, etc.]
+
+**Other**: [misc information.]
+
+------
+
+_The above template is not necessary for smaller PRs._
