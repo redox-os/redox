@@ -237,9 +237,9 @@ impl IdeDisk {
         while self.alt_sts.readf(ATA_SR_BSY) {}
 
         self.devsel.write(if self.master {
-            0x40
+            0b11100000
         } else {
-            0x40 | 0x10
+            0b11110000
         });
 
         self.alt_sts.read();
