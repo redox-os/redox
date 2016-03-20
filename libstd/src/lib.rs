@@ -17,7 +17,6 @@
 #![feature(cfg_target_thread_local)]
 #![feature(collections)]
 #![feature(collections_bound)]
-#![feature(collections_range)]
 #![feature(const_fn)]
 #![feature(core_intrinsics)]
 #![feature(core_panic)]
@@ -187,8 +186,4 @@ pub mod alloc_system;
 
 pub mod panic;
 
-pub mod url;
-
-pub mod get_slice;
 pub mod to_num;
-// } Additional Stuff
