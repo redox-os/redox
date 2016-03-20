@@ -54,7 +54,7 @@ You can find Redox on Reddit in [/r/rust/](https://www.reddit.com/r/rust) and [/
 
  * Apps development
  * Shell ([Ion](https://github.com/redox-os/ion)) development
- * Package manager ([Oxide](https://github.com/redox-os/oxide)) development
+ * Package manager ([Magnet](https://github.com/redox-os/magnet)) development
  * Other high-level code tasks
 
 * If you are fluent in Rust, and have experience with OS Dev:
