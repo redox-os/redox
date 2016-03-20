@@ -47,7 +47,7 @@ You can find Redox on Reddit in [/r/rust/](https://www.reddit.com/r/rust) and [/
 
  * Writing documentation
  * Using/testing Redox, filing issues for bugs and needed features
- * Web development (Redox website, separate repo)
+ * Web development ([Redox website, separate repo](https://github.com/redox-os/redox-os.github.io))
  * Writing unit tests (may require minimal knowledge of rust)
 
 * If you are fluent in Rust, but not OS Development:
