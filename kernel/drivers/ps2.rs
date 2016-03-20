@@ -179,12 +179,14 @@ impl Ps2 {
 
         // Both interrupts, system flag set, clocks enabled, translation disabled
         self.write(0x60, 0b00000111);
+
+        while (self.sts.read() & 0x1) == 1 {
+            debugln!("Extra: {:X}", self.data.read());
+        }
     }
 
     /// Keyboard interrupt
-    pub fn keyboard_interrupt(&mut self) -> Option<KeyEvent> {
-        let mut scancode = self.data.read();
-
+    pub fn keyboard_interrupt(&mut self, mut scancode: u8) -> Option<KeyEvent> {
         if scancode == 0 {
             return None;
         } else if scancode == 0x2A {
@@ -227,8 +229,7 @@ impl Ps2 {
     }
 
     /// Mouse interrupt
-    pub fn mouse_interrupt(&mut self) -> Option<MouseEvent> {
-        let byte = self.data.read();
+    pub fn mouse_interrupt(&mut self, byte: u8) -> Option<MouseEvent> {
         if self.mouse_i == 0 {
             if byte & 0x8 == 0x8 {
                 self.mouse_packet[0] = byte;
@@ -293,27 +294,22 @@ impl Ps2 {
 
 impl KScheme for Ps2 {
     fn on_irq(&mut self, irq: u8) {
-        if irq == 0x1 || irq == 0xC {
-            loop {
-                let status = self.sts.read();
-                if status & 0x21 == 0x21 {
-                    if let Some(mouse_event) = self.mouse_interrupt() {
-                        if ::env().console.lock().draw {
-                            //Ignore mouse event
-                        } else {
-                            ::env().events.send(mouse_event.to_event());
-                        }
-                    }
-                } else if status & 0x21 == 1 {
-                    if let Some(key_event) = self.keyboard_interrupt() {
-                        if ::env().console.lock().draw {
-                            ::env().console.lock().event(key_event.to_event());
-                        } else {
-                            ::env().events.send(key_event.to_event());
-                        }
-                    }
+        if irq == 0xC {
+            let data = self.data.read();
+            if let Some(mouse_event) = self.mouse_interrupt(data) {
+                if ::env().console.lock().draw {
+                    //Ignore mouse event
                 } else {
-                    break;
+                    ::env().events.send(mouse_event.to_event());
+                }
+            }
+        } else if irq == 0x1 {
+            let data = self.data.read();
+            if let Some(key_event) = self.keyboard_interrupt(data) {
+                if ::env().console.lock().draw {
+                    ::env().console.lock().event(key_event.to_event());
+                } else {
+                    ::env().events.send(key_event.to_event());
                 }
             }
         }
