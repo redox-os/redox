@@ -40,3 +40,9 @@
 [submodule "installer"]
 	path = installer
 	url = https://github.com/redox-os/installer.git
+[submodule "crates/zfs"]
+	path = crates/zfs
+	url = https://github.com/redox-os/zfs.git
+[submodule "crates/extra"]
+	path = crates/extra
+	url = https://github.com/redox-os/libextra.git
