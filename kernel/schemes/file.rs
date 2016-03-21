@@ -19,7 +19,9 @@ use fs::redoxfs::{FileSystem, Node, NodeData};
 
 use fs::{KScheme, Resource, ResourceSeek, Url, VecResource};
 
-use syscall::{Error, Result, O_CREAT, ENOENT, EIO};
+use syscall::{O_CREAT, O_TRUNC, MODE_DIR, MODE_FILE, Stat};
+
+use system::error::{Error, Result, ENOENT, EIO};
 
 /// A file resource
 pub struct FileResource {
@@ -97,7 +99,6 @@ impl Resource for FileResource {
     }
 
     // TODO: Check to make sure proper amount of bytes written. See Disk::write
-    // TODO: Allow reallocation
     fn sync(&mut self) -> Result<()> {
         if self.dirty {
             let mut node_dirty = false;
@@ -105,9 +106,11 @@ impl Resource for FileResource {
             let mut remaining = self.vec.len() as isize;
             for ref mut extent in &mut self.node.extents {
                 if remaining > 0 && extent.empty() {
+                    /*
                     debug::d("Reallocate file, extra: ");
                     debug::ds(remaining);
                     debug::dl();
+                    */
 
                     unsafe {
                         let sectors = ((remaining + 511) / 512) as u64;
@@ -160,7 +163,7 @@ impl Resource for FileResource {
             }
 
             if node_dirty {
-                debug::d("Node dirty, rewrite\n");
+                //debug::d("Node dirty, rewrite\n");
 
                 if self.node.block > 0 {
                     unsafe {
@@ -170,7 +173,7 @@ impl Resource for FileResource {
                             let mut buffer = slice::from_raw_parts(node_data.address() as *mut u8, 512);
                             let _ = (*self.scheme).fs.disk.write(self.node.block, &mut buffer);
 
-                            debug::d("Renode\n");
+                            //debug::d("Renode\n");
 
                             for mut node in (*self.scheme).fs.nodes.iter_mut() {
                                 if node.block == self.node.block {
@@ -222,8 +225,11 @@ impl FileScheme {
     /// Create a new file scheme from an array of Disks
     pub fn new(mut disks: Vec<Box<Disk>>) -> Option<Box<Self>> {
         while ! disks.is_empty() {
-            if let Some(fs) = FileSystem::from_disk(disks.remove(0)) {
-                return Some(box FileScheme { fs: fs });
+            let disk = disks.remove(0);
+            let name = disk.name();
+            match FileSystem::from_disk(disk) {
+                Ok(fs) => return Some(box FileScheme { fs: fs }),
+                Err(err) => debugln!("{}: {}", name, err)
             }
         }
 
@@ -242,15 +248,14 @@ impl KScheme for FileScheme {
     }
 
     fn open(&mut self, url: Url, flags: usize) -> Result<Box<Resource>> {
-        let mut path = url.reference();
-        while path.starts_with('/') {
-            path = &path[1..];
-        }
-        if path.is_empty() || path.ends_with('/') {
+        let path = url.reference().trim_matches('/');
+
+        let children = self.fs.list(path);
+        if ! children.is_empty() {
             let mut list = String::new();
             let mut dirs: Vec<String> = Vec::new();
 
-            for file in self.fs.list(path).iter() {
+            for file in children.iter() {
                 let mut line = String::new();
                 match file.find('/') {
                     Some(index) => {
@@ -308,13 +313,19 @@ impl KScheme for FileScheme {
                         }
                     }
 
-                    Ok(box FileResource {
+                    let mut resource = box FileResource {
                         scheme: self,
                         node: node,
                         vec: vec,
                         seek: 0,
                         dirty: false,
-                    })
+                    };
+
+                    if flags & O_TRUNC == O_TRUNC {
+                        try!(resource.truncate(0));
+                    }
+
+                    Ok(resource)
                 }
                 None => {
                     if flags & O_CREAT == O_CREAT {
@@ -352,13 +363,75 @@ impl KScheme for FileScheme {
         }
     }
 
+    fn stat(&mut self, url: Url, stat: &mut Stat) -> Result<()> {
+        let path = url.reference().trim_matches('/');
+
+        let children = self.fs.list(path);
+        if ! children.is_empty() {
+            let mut list = String::new();
+            let mut dirs: Vec<String> = Vec::new();
+
+            for file in children.iter() {
+                let mut line = String::new();
+                match file.find('/') {
+                    Some(index) => {
+                        let dirname = file.get_slice(..index + 1).to_string();
+                        let mut found = false;
+                        for dir in dirs.iter() {
+                            if dirname == *dir {
+                                found = true;
+                                break;
+                            }
+                        }
+                        if found {
+                            line.clear();
+                        } else {
+                            line = dirname.clone();
+                            dirs.push(dirname);
+                        }
+                    }
+                    None => line = file.clone(),
+                }
+                if !line.is_empty() {
+                    if !list.is_empty() {
+                        list = list + "\n" + &line;
+                    } else {
+                        list = line;
+                    }
+                }
+            }
+
+            if list.len() > 0 {
+                stat.st_mode = MODE_DIR;
+                stat.st_size = list.len() as u64;
+
+                Ok(())
+            } else {
+                Err(Error::new(ENOENT))
+            }
+        } else {
+            match self.fs.node(path) {
+                Some(node) => {
+                    stat.st_mode = MODE_FILE;
+                    stat.st_size = 0;
+
+                    for extent in &node.extents {
+                        if extent.block > 0 && extent.length > 0 {
+                            stat.st_size += extent.length;
+                        }
+                    }
+
+                    Ok(())
+                }
+                None => Err(Error::new(ENOENT))
+            }
+        }
+    }
+
     fn unlink(&mut self, url: Url) -> Result<()> {
         let mut ret = Err(Error::new(ENOENT));
 
-        let mut path = url.reference();
-        while path.starts_with('/') {
-            path = &path[1..];
-        }
+        let path = url.reference().trim_matches('/');
 
         let mut i = 0;
         while i < self.fs.nodes.len() {

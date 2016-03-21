@@ -1,7 +1,7 @@
 use arch::context::ContextMemory;
 use arch::memory;
 
-use super::Result;
+use system::error::Result;
 
 //TODO: Refactor file to propogate results
 

@@ -44,7 +44,10 @@ osx()
 	echo "Cloning Redox repo"
 	git clone -b "$1" --recursive https://github.com/redox-os/redox.git
 	echo "Running Redox setup script..."
-	sh redox/setup/osx-homebrew.sh
+	brew tap homebrew/versions
+	brew install gcc49
+	brew tap Nashenas88/homebrew-gcc_cross_compilers
+	brew install i386-elf-binutils i386-elf-gcc nasm
 	echo "Running rust install script"
 	sh redox/setup/binary.sh
 	endMessage

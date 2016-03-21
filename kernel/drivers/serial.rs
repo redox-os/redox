@@ -54,6 +54,8 @@ impl KScheme for Serial {
             let mut c = self.data.read() as char;
             let mut sc = 0;
 
+            let mut console = ::env().console.lock();
+
             if self.escape {
                 self.escape = false;
 
@@ -65,8 +67,6 @@ impl KScheme for Serial {
             } else if self.cursor_control {
                 self.cursor_control = false;
 
-                c = '\0';
-
                 if c == 'A' {
                     sc = event::K_UP;
                 } else if c == 'B' {
@@ -76,9 +76,11 @@ impl KScheme for Serial {
                 } else if c == 'D' {
                     sc = event::K_LEFT;
                 }
+
+                c = '\0';
             } else if c == '\x03' {
-                ::env().console.lock().write(b"^C\n");
-                ::env().console.lock().commands.send(String::new());
+                console.write(b"^C\n");
+                console.commands.send(String::new());
 
                 c = '\0';
                 sc = 0;
@@ -99,7 +101,7 @@ impl KScheme for Serial {
                     pressed: true,
                 };
 
-                ::env().console.lock().event(key_event.to_event());
+                console.event(key_event.to_event());
             }
         }
     }

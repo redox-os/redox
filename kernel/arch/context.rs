@@ -19,11 +19,13 @@ use core::ops::DerefMut;
 
 use fs::Resource;
 
-use syscall::{do_sys_exit, Error, Result, CLONE_FILES, CLONE_FS, CLONE_VM, CLONE_VFORK, EBADF, EFAULT, ENOMEM, ESRCH};
+use syscall::{do_sys_exit, CLONE_FILES, CLONE_FS, CLONE_VM, CLONE_VFORK};
+
+use system::error::{Error, Result, EBADF, EFAULT, ENOMEM, ESRCH};
 
 use sync::WaitMap;
 
-pub const CONTEXT_STACK_SIZE: usize = 64 * 1024;
+pub const CONTEXT_STACK_SIZE: usize = 1024 * 1024;
 pub const CONTEXT_STACK_ADDR: usize = 0xB0000000;
 
 pub struct ContextManager {
@@ -586,13 +588,20 @@ impl Context {
     pub fn canonicalize(&self, path: &str) -> String {
         if path.find(':').is_none() {
             let cwd = unsafe { &*self.cwd.get() };
-            if path.starts_with("../") {
+            if path == "." {
+                cwd.to_string()
+            } else if path == ".." {
+                cwd.get_slice(..cwd.get_slice(..cwd.len() - 1)
+                                   .rfind('/')
+                                   .map_or(cwd.len(), |i| i + 1))
+                   .to_string()
+            } else if path.starts_with("./") {
+                cwd.to_string() + &path.get_slice(2..)
+            } else if path.starts_with("../") {
                 cwd.get_slice(..cwd.get_slice(..cwd.len() - 1)
                                    .rfind('/')
                                    .map_or(cwd.len(), |i| i + 1))
                    .to_string() + &path.get_slice(3..)
-            } else if path.starts_with("./") {
-                cwd.to_string() + &path.get_slice(2..)
             } else if path.starts_with('/') {
                 cwd.get_slice(..cwd.find(':').map_or(1, |i| i + 1)).to_string() + &path
             } else {

@@ -1,4 +1,4 @@
-use syscall::{syscall1, syscall2};
+use syscall::arch::{syscall1, syscall2};
 use error::Result;
 
 pub const SYS_DEBUG: usize = 0;

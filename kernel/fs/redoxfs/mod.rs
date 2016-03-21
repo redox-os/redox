@@ -1,5 +1,6 @@
 use alloc::boxed::Box;
 
+use collections::borrow::ToOwned;
 use collections::string::{String, ToString};
 use collections::vec::Vec;
 
@@ -9,6 +10,8 @@ use arch::memory::Memory;
 use core::{cmp, ptr, slice};
 
 use disk::Disk;
+
+use system::error::{Error, Result, ENOMEM, EINVAL};
 
 pub use self::header::Header;
 pub use self::node::{Node, NodeData};
@@ -25,12 +28,9 @@ pub struct FileSystem {
 
 impl FileSystem {
     /// Create a file system from a disk
-    pub fn from_disk(mut disk: Box<Disk>) -> Option<Self> {
+    pub fn from_disk(mut disk: Box<Disk>) -> Result<Self> {
         if let Some(data) = Memory::<u8>::new(512) {
-            let mut buffer = unsafe { slice::from_raw_parts_mut(data.ptr, 512) };
-            if let Err(_) = disk.read(1, &mut buffer) {
-                return None;
-            }
+            try!(disk.read(1, unsafe { slice::from_raw_parts_mut(data.ptr, 512) }));
 
             let header = unsafe { ptr::read(data.ptr as *const Header) };
             if header.valid() {
@@ -48,7 +48,7 @@ impl FileSystem {
                             let mut buffer = unsafe {
                                 slice::from_raw_parts_mut(data.ptr, max_size)
                             };
-                            let _ = disk.read(extent.block, &mut buffer);
+                            try!(disk.read(extent.block, &mut buffer));
 
                             for i in 0..size / 512 {
                                 nodes.push(Node::new(extent.block + i as u64, unsafe {
@@ -59,17 +59,18 @@ impl FileSystem {
                     }
                 }
 
-                return Some(FileSystem {
+                Ok(FileSystem {
                     disk: disk,
                     header: header,
                     nodes: nodes,
-                });
+                })
             } else {
                 debugln!("{}: Unknown Filesystem", disk.name());
+                Err(Error::new(EINVAL))
             }
+        } else {
+            Err(Error::new(ENOMEM))
         }
-
-        None
     }
 
     /// Get node with a given filename
@@ -84,11 +85,17 @@ impl FileSystem {
     }
 
     /// List nodes in a given directory
-    pub fn list(&self, directory: &str) -> Vec<String> {
+    pub fn list(&self, directory_str: &str) -> Vec<String> {
         let mut ret = Vec::new();
 
+        let directory = if directory_str.is_empty() {
+            directory_str.to_owned()
+        } else {
+            directory_str.to_owned() + "/"
+        };
+
         for node in self.nodes.iter() {
-            if node.name.starts_with(directory) {
+            if node.name.starts_with(&directory) {
                 ret.push(node.name.get_slice(directory.len()..).to_string());
             }
         }

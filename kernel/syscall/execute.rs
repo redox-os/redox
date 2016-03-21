@@ -133,7 +133,7 @@ pub fn execute(mut args: Vec<String>) -> Result<usize> {
             let mut bytes = [0; 4096];
             match resource.read(&mut bytes) {
                 Ok(0) => break 'reading,
-                Ok(count) => vec.push_all(bytes.get_slice(.. count)),
+                Ok(count) => vec.extend_from_slice(bytes.get_slice(.. count)),
                 Err(err) => return Err(err)
             }
         }

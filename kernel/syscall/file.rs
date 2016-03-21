@@ -8,7 +8,9 @@ use schemes::pipe::{PipeRead, PipeWrite};
 
 use system::c_string_to_str;
 
-use super::{Error, Result, Stat, EBADF, EFAULT, EINVAL, SEEK_CUR, SEEK_END, SEEK_SET};
+use syscall::{Stat, SEEK_CUR, SEEK_END, SEEK_SET};
+
+use system::error::{Error, Result, EBADF, EFAULT, EINVAL};
 
 pub fn do_sys_chdir(path: *const u8) -> Result<usize> {
     let contexts = ::env().contexts.lock();
@@ -116,16 +118,14 @@ pub fn do_sys_mkdir(path: *const u8, flags: usize) -> Result<usize> {
     ::env().mkdir(try!(Url::from_str(&path_string)), flags).and(Ok(0))
 }
 
-pub fn do_sys_open(path: *const u8, flags: usize) -> Result<usize> {
+pub fn do_sys_open(path_c: *const u8, flags: usize) -> Result<usize> {
     let contexts = ::env().contexts.lock();
     let current = try!(contexts.current());
-    let path = current.canonicalize(c_string_to_str(path));
+    let path = current.canonicalize(c_string_to_str(path_c));
+    //debugln!("{}: {}: open {}", current.pid, current.name, path);
     let url = try!(Url::from_str(&path));
     let resource = try!(::env().open(url, flags));
     let fd = current.next_fd();
-
-    //debugln!("{}: {}: open {} as {}", current.pid, current.name, url.string, fd);
-
     unsafe {
         (*current.files.get()).push(ContextFile {
             fd: fd,
@@ -174,6 +174,18 @@ pub fn do_sys_rmdir(path: *const u8) -> Result<usize> {
     let current = try!(contexts.current());
     let path_string = current.canonicalize(c_string_to_str(path));
     ::env().rmdir(try!(Url::from_str(&path_string))).and(Ok(0))
+}
+
+pub fn do_sys_stat(path: *const u8, stat: *mut Stat) -> Result<usize> {
+    let contexts = ::env().contexts.lock();
+    let current = try!(contexts.current());
+    let path = current.canonicalize(c_string_to_str(path));
+    let url = try!(Url::from_str(&path));
+    if stat as usize > 0 {
+        ::env().stat(url, unsafe { &mut *stat }).and(Ok(0))
+    } else {
+        Err(Error::new(EFAULT))
+    }
 }
 
 pub fn do_sys_unlink(path: *const u8) -> Result<usize> {
