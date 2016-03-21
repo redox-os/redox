@@ -133,9 +133,6 @@ help:
 
 all: $(BUILD)/harddrive.bin
 
-filesystem/apps/rusthello/main.bin: filesystem/apps/rusthello/src/main.rs filesystem/apps/rusthello/src/*.rs filesystem/apps/rusthello/src/*/*.rs $(BUILD)/crt0.o $(BUILD)/libstd.rlib
-	$(RUSTC) $(RUSTCFLAGS) --crate-type bin -o $@ $<
-
 filesystem/apps/sodium/main.bin: filesystem/apps/sodium/src/main.rs filesystem/apps/sodium/src/*.rs $(BUILD)/libstd.rlib $(BUILD)/liborbclient.rlib
 	$(RUSTC) $(RUSTCFLAGS) --crate-type bin -o $@ $< --cfg 'feature="orbital"'
 
@@ -153,7 +150,6 @@ apps: filesystem/apps/calculator/main.bin \
 	  filesystem/apps/file_manager/main.bin \
 	  filesystem/apps/orbtk/main.bin \
 	  filesystem/apps/player/main.bin \
-	  filesystem/apps/rusthello/main.bin \
 	  filesystem/apps/sodium/main.bin \
 	  filesystem/apps/terminal/main.bin \
 	  filesystem/apps/viewer/main.bin
@@ -228,7 +224,8 @@ filesystem/bin/%: crates/games/src/%/main.rs crates/games/src/%/*.rs $(BUILD)/cr
 
 games: \
 	filesystem/bin/ice \
-	filesystem/bin/minesweeper
+	filesystem/bin/minesweeper \
+	filesystem/bin/rusthello \
 
 filesystem/bin/%: crates/%/main.rs crates/%/*.rs $(BUILD)/crt0.o $(BUILD)/libstd.rlib
 	mkdir -p filesystem/bin
