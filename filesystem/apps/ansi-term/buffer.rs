@@ -74,7 +74,7 @@ impl Buffer {
                     self.cursor.goto_x(0);
                 }
             }
-            Action::CursorUp(n) => self.cursor.x = self.cursor.x.saturating_sub(n),
+            Action::CursorLeft(n) => self.cursor.x = self.cursor.x.saturating_sub(n),
             Action::NextLine(n) => {
                 self.cursor.goto_x(0);
                 self.cursor.y += n;

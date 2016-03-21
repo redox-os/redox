@@ -10,7 +10,7 @@ use arch::memory::Memory;
 use disk::Disk;
 
 use drivers::pci::config::PciConfig;
-use drivers::io::{Io, Pio};
+use drivers::io::{Io, Pio, ReadOnly, WriteOnly};
 
 use system::error::{Error, Result, EIO};
 
@@ -174,14 +174,15 @@ pub struct IdeDisk {
     bussts: Pio<u8>,
     prdt: Prdt,
     data: Pio<u16>,
-    feature: Pio<u8>,
+    error: ReadOnly<u8, Pio<u8>>,
     seccount: Pio<u8>,
     sector0: Pio<u8>,
     sector1: Pio<u8>,
     sector2: Pio<u8>,
     devsel: Pio<u8>,
-    cmdsts: Pio<u8>,
-    ctrl: Pio<u8>,
+    sts: ReadOnly<u8, Pio<u8>>,
+    cmd: WriteOnly<u8, Pio<u8>>,
+    alt_sts: ReadOnly<u8, Pio<u8>>,
     irq: u8,
     master: bool,
 }
@@ -193,14 +194,15 @@ impl IdeDisk {
             bussts: Pio::new(busmaster + 2),
             prdt: Prdt::new(busmaster + 4),
             data: Pio::new(base),
-            feature: Pio::new(base + 1),
+            error: ReadOnly::new(Pio::new(base + 1)),
             seccount: Pio::new(base + 2),
             sector0: Pio::new(base + 3),
             sector1: Pio::new(base + 4),
             sector2: Pio::new(base + 5),
             devsel: Pio::new(base + 6),
-            cmdsts: Pio::new(base + 7),
-            ctrl: Pio::new(ctrl),
+            sts: ReadOnly::new(Pio::new(base + 7)),
+            cmd: WriteOnly::new(Pio::new(base + 7)),
+            alt_sts: ReadOnly::new(Pio::new(ctrl + 2)),
             irq: irq,
             master: master,
         };
@@ -213,10 +215,10 @@ impl IdeDisk {
     }
 
     unsafe fn ide_poll(&self, check_error: bool) -> u8 {
-        while self.cmdsts.readf(ATA_SR_BSY) {}
+        while self.alt_sts.readf(ATA_SR_BSY) {}
 
         if check_error {
-            let state = self.cmdsts.read();
+            let state = self.alt_sts.read();
             if state & ATA_SR_ERR == ATA_SR_ERR {
                 return 2;
             }
@@ -232,20 +234,20 @@ impl IdeDisk {
     }
 
     pub fn ata(&mut self, cmd: u8, block: u64, len: u16) {
-        while self.cmdsts.readf(ATA_SR_BSY) {}
+        while self.alt_sts.readf(ATA_SR_BSY) {}
 
         self.devsel.write(if self.master {
-            0x40
+            0b11100000
         } else {
-            0x40 | 0x10
+            0b11110000
         });
 
-        self.ctrl.read();
-        self.ctrl.read();
-        self.ctrl.read();
-        self.ctrl.read();
+        self.alt_sts.read();
+        self.alt_sts.read();
+        self.alt_sts.read();
+        self.alt_sts.read();
 
-        while self.cmdsts.readf(ATA_SR_BSY) {}
+        while self.alt_sts.readf(ATA_SR_BSY) {}
 
         self.seccount.write((len >> 8) as u8);
         self.sector0.write((block >> 24) as u8);
@@ -257,12 +259,12 @@ impl IdeDisk {
         self.sector1.write((block >> 8) as u8);
         self.sector2.write((block >> 16) as u8);
 
-        self.cmdsts.write(cmd);
+        self.cmd.write(cmd);
     }
 
     /// Identify
     pub unsafe fn identify(&mut self) -> bool {
-        if self.cmdsts.read() == 0xFF {
+        if self.alt_sts.read() == 0xFF {
             debug!(" Floating Bus");
 
             return false;
@@ -270,7 +272,7 @@ impl IdeDisk {
 
         self.ata(ATA_CMD_IDENTIFY, 0, 0);
 
-        let status = self.cmdsts.read();
+        let status = self.alt_sts.read();
         debug!(" Status: {:X}", status);
 
         if status == 0 {
@@ -293,11 +295,11 @@ impl IdeDisk {
         for word in 10..20 {
             let d = destination.read(word);
             let a = ((d >> 8) as u8) as char;
-            if a != ' ' {
+            if a != ' ' && a != '\0' {
                 debug!("{}", a);
             }
             let b = (d as u8) as char;
-            if b != ' ' {
+            if b != ' ' && b != '\0' {
                 debug!("{}", b);
             }
         }
@@ -306,11 +308,11 @@ impl IdeDisk {
         for word in 23..27 {
             let d = destination.read(word);
             let a = ((d >> 8) as u8) as char;
-            if a != ' ' {
+            if a != ' ' && a != '\0' {
                 debug!("{}", a);
             }
             let b = (d as u8) as char;
-            if b != ' ' {
+            if b != ' ' && b != '\0' {
                 debug!("{}", b);
             }
         }
@@ -319,11 +321,11 @@ impl IdeDisk {
         for word in 27..47 {
             let d = destination.read(word);
             let a = ((d >> 8) as u8) as char;
-            if a != ' ' {
+            if a != ' ' && a != '\0' {
                 debug!("{}", a);
             }
             let b = (d as u8) as char;
-            if b != ' ' {
+            if b != ' ' && b != '\0' {
                 debug!("{}", b);
             }
         }
@@ -366,7 +368,7 @@ impl IdeDisk {
                         self.data.write(ptr::read((buf + sector * 512 + word * 2) as *const u16));
                     }
 
-                    self.cmdsts.write(ATA_CMD_CACHE_FLUSH_EXT);
+                    self.cmd.write(ATA_CMD_CACHE_FLUSH_EXT);
                     self.ide_poll(false);
                 } else {
                     for word in 0..256 {

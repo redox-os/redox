@@ -16,7 +16,6 @@
 #![feature(unboxed_closures)]
 #![feature(unsafe_no_drop_flag)]
 #![feature(unwind_attributes)]
-#![feature(vec_push_all)]
 #![feature(zero_one)]
 #![feature(collections_range)]
 #![no_std]

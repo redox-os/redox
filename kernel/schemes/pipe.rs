@@ -106,4 +106,9 @@ impl Resource for PipeWrite {
             None => Err(Error::new(EPIPE))
         }
     }
+
+    fn sync(&mut self) -> Result<()> {
+        //TODO: Wait until empty
+        Ok(())
+    }
 }

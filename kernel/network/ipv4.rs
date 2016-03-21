@@ -52,8 +52,8 @@ impl ToBytes for Ipv4 {
             let header_ptr: *const Ipv4Header = &self.header;
             let mut ret = Vec::<u8>::from(slice::from_raw_parts(header_ptr as *const u8,
                                                                 mem::size_of::<Ipv4Header>()));
-            ret.push_all(&self.options);
-            ret.push_all(&self.data);
+            ret.extend_from_slice(&self.options);
+            ret.extend_from_slice(&self.data);
             ret
         }
     }
