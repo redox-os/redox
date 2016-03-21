@@ -10,7 +10,6 @@ use super::common::class::*;
 use super::common::subclass::*;
 use super::common::programming_interface::*;
 
-/*
 use super::common::vendorid::*;
 use super::common::deviceid::*;
 
@@ -24,8 +23,6 @@ use usb::uhci::Uhci;
 use usb::ohci::Ohci;
 use usb::ehci::Ehci;
 use usb::xhci::Xhci;
-*/
-
 
 /// PCI device
 pub unsafe fn pci_device(env: &mut Environment,
@@ -40,24 +37,22 @@ pub unsafe fn pci_device(env: &mut Environment,
             if let Some(module) = FileScheme::new(Ide::disks(pci)) {
                 env.schemes.lock().push(module);
             }
-        }
+        },
         (MASS_STORAGE, SATA, AHCI) => {
             if let Some(module) = FileScheme::new(Ahci::disks(pci)) {
                 env.schemes.lock().push(module);
             }
-        }
-        /*
+        },
         (SERIAL_BUS, USB, UHCI) => env.schemes.lock().push(Uhci::new(pci)),
         (SERIAL_BUS, USB, OHCI) => env.schemes.lock().push(Ohci::new(pci)),
         (SERIAL_BUS, USB, EHCI) => env.schemes.lock().push(Ehci::new(pci)),
         (SERIAL_BUS, USB, XHCI) => env.schemes.lock().push(Xhci::new(pci)),
-        */
         _ => match (vendor_code, device_code) {
-            //(REALTEK, RTL8139) => env.schemes.lock().push(Rtl8139::new(pci)),
-            //(INTEL, GBE_82540EM) => env.schemes.lock().push(Intel8254x::new(pci)),
-            //(INTEL, AC97_82801AA) => env.schemes.lock().push(Ac97::new(pci)),
-            //(INTEL, AC97_ICH4) => env.schemes.lock().push(Ac97::new(pci)),
-            //(INTEL, INTELHDA_ICH6) => env.schemes.lock().push(IntelHda::new(pci)),
+            (REALTEK, RTL8139) => env.schemes.lock().push(Rtl8139::new(pci)),
+            (INTEL, GBE_82540EM) => env.schemes.lock().push(Intel8254x::new(pci)),
+            (INTEL, AC97_82801AA) => env.schemes.lock().push(Ac97::new(pci)),
+            (INTEL, AC97_ICH4) => env.schemes.lock().push(Ac97::new(pci)),
+            (INTEL, INTELHDA_ICH6) => env.schemes.lock().push(IntelHda::new(pci)),
             _ => (),
         }
     }

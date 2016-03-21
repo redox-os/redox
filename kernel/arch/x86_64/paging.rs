@@ -1,5 +1,23 @@
 use core::ptr;
 
+//Page flags
+pub const PF_PRESENT: usize = 1;
+pub const PF_WRITE: usize = 1 << 1;
+pub const PF_USER: usize = 1 << 2;
+pub const PF_WRITE_THROUGH: usize = 1 << 3;
+pub const PF_CACHE_DISABLE: usize = 1 << 4;
+pub const PF_ACCESSED: usize = 1 << 5;
+pub const PF_DIRTY: usize = 1 << 6;
+pub const PF_SIZE: usize = 1 << 7;
+pub const PF_GLOBAL: usize = 1 << 8;
+//Extra flags (Redox specific)
+pub const PF_ALLOC: usize = 1 << 9;
+pub const PF_EXEC: usize = 1 << 10;
+pub const PF_STACK: usize = 1 << 11;
+
+pub const PF_ALL: usize =  0xFFF;
+pub const PF_NONE: usize = 0xFFFFFFFFFFFFF000;
+
 // PAGE_LEVEL_4:
 // 512 qwords pointing to page directory pointers
 // PAGE_DIR_PTRS:
@@ -32,32 +50,32 @@ impl Page {
     pub unsafe fn init() {
         for l4_i in 0..PAGE_TABLE_SIZE {
             if l4_i == 0 {
-                ptr::write((PAGE_LEVEL_4 + l4_i * PAGE_ENTRY_SIZE) as *mut u64,
-                           (PAGE_DIR_PTRS + l4_i * PAGE_TABLE_SIZE * PAGE_ENTRY_SIZE) as u64 |
-                           1 << 2 | 0b11 << 1 | 1); //Allow userspace, read/write, present
+                ptr::write((PAGE_LEVEL_4 + l4_i * PAGE_ENTRY_SIZE) as *mut usize,
+                           (PAGE_DIR_PTRS + l4_i * PAGE_TABLE_SIZE * PAGE_ENTRY_SIZE) |
+                           PF_USER | PF_WRITE | PF_PRESENT); //Allow userspace, read/write, present
             } else {
-                ptr::write((PAGE_LEVEL_4 + l4_i * PAGE_ENTRY_SIZE) as *mut u64, 0);
+                ptr::write((PAGE_LEVEL_4 + l4_i * PAGE_ENTRY_SIZE) as *mut usize, 0);
             }
         }
 
         for dp_i in 0..PAGE_TABLE_SIZE {
             if dp_i < 4 {
-                ptr::write((PAGE_DIR_PTRS + dp_i * PAGE_ENTRY_SIZE) as *mut u64,
-                           (PAGE_DIRECTORIES + dp_i * PAGE_TABLE_SIZE * PAGE_ENTRY_SIZE) as u64 |
-                           1 << 2 |
-                           0b11 << 1 | 1); //Allow userspace, read/write, present
+                ptr::write((PAGE_DIR_PTRS + dp_i * PAGE_ENTRY_SIZE) as *mut usize,
+                           (PAGE_DIRECTORIES + dp_i * PAGE_TABLE_SIZE * PAGE_ENTRY_SIZE) |
+                           PF_USER | PF_WRITE | PF_PRESENT); //Allow userspace, read/write, present
             } else {
-                ptr::write((PAGE_DIR_PTRS + dp_i * PAGE_ENTRY_SIZE) as *mut u64, 0);
+                ptr::write((PAGE_DIR_PTRS + dp_i * PAGE_ENTRY_SIZE) as *mut usize, 0);
             }
         }
 
         for table_i in 0..4 * PAGE_TABLE_SIZE {
-            ptr::write((PAGE_DIRECTORIES + table_i * PAGE_ENTRY_SIZE) as *mut u64,
-                       (PAGE_TABLES + table_i * PAGE_TABLE_SIZE * PAGE_ENTRY_SIZE) as u64 |
-                       1 << 2 | 0b11 << 1 | 1); //Allow userspace, read/write, present
+            ptr::write((PAGE_DIRECTORIES + table_i * PAGE_ENTRY_SIZE) as *mut usize,
+                       (PAGE_TABLES + table_i * PAGE_TABLE_SIZE * PAGE_ENTRY_SIZE) |
+                       PF_USER | PF_WRITE | PF_PRESENT); //Allow userspace, read/write, present
 
             for entry_i in 0..PAGE_TABLE_SIZE {
-                Page::new((table_i * PAGE_TABLE_SIZE + entry_i) * PAGE_SIZE).map_identity();
+                let addr = (table_i * PAGE_TABLE_SIZE + entry_i) * PAGE_SIZE;
+                Page::new(addr).map_kernel_write(addr);
             }
         }
 
@@ -66,7 +84,7 @@ impl Page {
             or $0, $1
             mov cr0, $0"
             :
-            : "r"(PAGE_LEVEL_4), "r"(0x80000000 as usize)
+            : "r"(PAGE_LEVEL_4), "r"((1 << 31 | 1 << 16) as usize)
             : "memory"
             : "intel", "volatile");
     }
@@ -96,44 +114,45 @@ impl Page {
 
     /// Get the current physical address
     pub fn phys_addr(&self) -> usize {
-        unsafe { (ptr::read(self.entry_address() as *mut u64) & 0xFFFFFFFFFFFFF000) as usize }
+        unsafe { (ptr::read(self.entry_address() as *mut usize) & PF_NONE) as usize }
     }
 
     /// Get the current virtual address
     pub fn virt_addr(&self) -> usize {
-        self.virtual_address & 0xFFFFFFFFFFFFF000
+        self.virtual_address & PF_NONE
     }
 
     /// Map the memory page to a given physical memory address
-    pub unsafe fn map(&mut self, physical_address: usize) {
-        ptr::write(self.entry_address() as *mut u64,
-                   (physical_address as u64 & 0xFFFFFFFFFFFFF000) | 1); //present
+    pub unsafe fn map_kernel_read(&mut self, physical_address: usize) {
+        ptr::write(self.entry_address() as *mut usize,
+                   (physical_address & PF_NONE) | PF_PRESENT); //present
+        self.flush();
+    }
+
+    /// Map the memory page to a given physical memory address and allow userspace read access
+    pub unsafe fn map_kernel_write(&mut self, physical_address: usize) {
+        ptr::write(self.entry_address() as *mut usize,
+                   (physical_address & PF_NONE) | PF_WRITE | PF_PRESENT); //Allow write, present
         self.flush();
     }
 
     /// Map the memory page to a given physical memory address and allow userspace read access
     pub unsafe fn map_user_read(&mut self, physical_address: usize) {
-        ptr::write(self.entry_address() as *mut u64,
-                   (physical_address as u64 & 0xFFFFFFFFFFFFF000) | 1 << 2 | 1); //Allow userspace, present
+        ptr::write(self.entry_address() as *mut usize,
+                   (physical_address & PF_NONE) | PF_USER | PF_PRESENT); //Allow userspace, present
         self.flush();
     }
 
     /// Map the memory page to a given physical memory address and allow userspace read/write access
     pub unsafe fn map_user_write(&mut self, physical_address: usize) {
-        ptr::write(self.entry_address() as *mut u64,
-                   (physical_address as u64 & 0xFFFFFFFFFFFFF000) | 1 << 2 | 1 << 1 | 1); //Allow userspace, read/write, present
+        ptr::write(self.entry_address() as *mut usize,
+                   (physical_address & PF_NONE) | PF_USER | PF_WRITE | PF_PRESENT); //Allow userspace, read/write, present
         self.flush();
-    }
-
-    /// Map to the virtual address
-    pub unsafe fn map_identity(&mut self) {
-        let physical_address = self.virtual_address;
-        self.map(physical_address);
     }
 
     /// Unmap the memory page
     pub unsafe fn unmap(&mut self) {
-        ptr::write(self.entry_address() as *mut u64, 0);
+        ptr::write(self.entry_address() as *mut usize, 0);
         self.flush();
     }
 }

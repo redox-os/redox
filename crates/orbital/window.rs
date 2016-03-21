@@ -1,4 +1,4 @@
-use std::cmp::max;
+use std::cmp::{min, max};
 use std::collections::VecDeque;
 use std::mem::size_of;
 use std::{ptr, slice};
@@ -6,22 +6,25 @@ use std::{ptr, slice};
 use super::{Color, Event, Font, Image, Rect};
 
 use system::error::{Error, Result, EINVAL};
+use system::graphics::fast_copy;
 
 pub struct Window {
     pub x: i32,
     pub y: i32,
+        pub async: bool,
     image: Image,
     title: String,
     events: VecDeque<Event>,
 }
 
 impl Window {
-    pub fn new(x: i32, y: i32, w: i32, h: i32, title: String) -> Window {
+    pub fn new(x: i32, y: i32, w: i32, h: i32, title: String, async: bool) -> Window {
         Window {
             x: x,
             y: y,
             image: Image::new(w, h),
             title: title,
+            async: async,
             events: VecDeque::new()
         }
     }
@@ -118,20 +121,19 @@ impl Window {
 
     pub fn write(&mut self, buf: &[u8]) -> Result<usize> {
         let old = self.image.data_mut();
-        let new = unsafe { slice::from_raw_parts(buf.as_ptr() as *const Color, buf.len() / size_of::<Color>()) };
+        let new = unsafe { slice::from_raw_parts(buf.as_ptr() as *const u32, buf.len() / 4) };
 
-        let mut i = 0;
-        while i < old.len() && i < new.len() {
-            old[i] = new[i];
-            i += 1;
+        let len = min(old.len(), new.len());
+        unsafe {
+            fast_copy(old.as_mut_ptr(), new.as_ptr(), len);
         }
 
-        Ok(i * size_of::<Color>())
+        Ok(len)
     }
 
     pub fn path(&self, buf: &mut [u8]) -> Result<usize> {
         let mut i = 0;
-        let path_str = format!("orbital:/{}/{}/{}/{}/{}", self.x, self.y, self.width(), self.height(), self.title);
+        let path_str = format!("orbital:{}/{}/{}/{}/{}/{}", if self.async { "a" } else { "" }, self.x, self.y, self.width(), self.height(), self.title);
         let path = path_str.as_bytes();
         while i < buf.len() && i < path.len() {
             buf[i] = path[i];

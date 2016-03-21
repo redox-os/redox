@@ -1,5 +1,5 @@
 # Redox FS, to be moved into initfs
-initfs:redoxfsd /etc/redoxfs.bin
+#initfs:redoxfsd /etc/redoxfs.bin
 
 # Example scheme
 example
