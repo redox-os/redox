@@ -16,7 +16,9 @@
 
 **State**: [the state of this PR, e.g. WIP, ready, etc.]
 
-**Other**: [misc information.]
+**Blocking/related**: [issues or PRs blocking or being related to this issue.]
+
+**Other**: [optional: for other relevant information that should be known or cannot be described in the other fields.]
 
 ------
 
