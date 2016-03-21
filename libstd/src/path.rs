@@ -101,7 +101,7 @@
 
 use ascii::*;
 #[allow(deprecated)]
-use borrow::{Borrow, IntoCow, ToOwned, Cow};
+use borrow::{Borrow, ToOwned, Cow};
 use cmp;
 use error::Error;
 use fmt;
@@ -1211,22 +1211,6 @@ impl ops::Deref for PathBuf {
 impl Borrow<Path> for PathBuf {
     fn borrow(&self) -> &Path {
         self.deref()
-    }
-}
-
-
-#[allow(deprecated)]
-impl IntoCow<'static, Path> for PathBuf {
-    fn into_cow(self) -> Cow<'static, Path> {
-        Cow::Owned(self)
-    }
-}
-
-
-#[allow(deprecated)]
-impl<'a> IntoCow<'a, Path> for &'a Path {
-    fn into_cow(self) -> Cow<'a, Path> {
-        Cow::Borrowed(self)
     }
 }
 
