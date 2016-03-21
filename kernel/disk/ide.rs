@@ -545,10 +545,10 @@ impl Disk for IdeDisk {
     }
 
     fn read(&mut self, block: u64, buffer: &mut [u8]) -> Result<usize> {
-        self.ata_dma(block, buffer.len() / 512, buffer.as_ptr() as usize, false)
+        self.ata_pio(block, buffer.len() / 512, buffer.as_ptr() as usize, false)
     }
 
     fn write(&mut self, block: u64, buffer: &[u8]) -> Result<usize> {
-        self.ata_dma(block, buffer.len() / 512, buffer.as_ptr() as usize, true)
+        self.ata_pio(block, buffer.len() / 512, buffer.as_ptr() as usize, true)
     }
 }

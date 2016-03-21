@@ -1,14 +1,14 @@
 use alloc::boxed::Box;
 
-use arch::memory::*;
+//use arch::memory::*;
 
 use drivers::pci::config::PciConfig;
 
-use core::mem::size_of;
+//use core::mem::size_of;
 
 use common::debug;
 //For old code vvv
-use common::debug::*;
+//use common::debug::*;
 
 use fs::KScheme;
 
@@ -75,6 +75,7 @@ impl Xhci {
         debug::dbh(self.irq);
         debug::dl();
 
+        /*
         self.pci.flag(4, 4, true); // Bus mastering
 
         let cap_base = self.base;
@@ -252,5 +253,6 @@ impl Xhci {
                 *doorbell = 0;
             }
         }
+        */
     }
 }
