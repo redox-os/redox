@@ -6,7 +6,9 @@
 
 **Build information**: [output of `rustc -V`, `git rev-parse HEAD`, `qemu-i386 -version`, `uname -a`, etc.]
 
-**Misc**: [...]
+**Blocking/related**: [issues or PRs blocking or being related to this issue.]
+
+**Misc**: [optional: for other relevant information that should be known or cannot be described in the other fields.]
 
 ------
 
