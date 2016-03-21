@@ -295,11 +295,11 @@ impl IdeDisk {
         for word in 10..20 {
             let d = destination.read(word);
             let a = ((d >> 8) as u8) as char;
-            if a != ' ' {
+            if a != ' ' && a != '\0' {
                 debug!("{}", a);
             }
             let b = (d as u8) as char;
-            if b != ' ' {
+            if b != ' ' && b != '\0' {
                 debug!("{}", b);
             }
         }
@@ -308,11 +308,11 @@ impl IdeDisk {
         for word in 23..27 {
             let d = destination.read(word);
             let a = ((d >> 8) as u8) as char;
-            if a != ' ' {
+            if a != ' ' && a != '\0' {
                 debug!("{}", a);
             }
             let b = (d as u8) as char;
-            if b != ' ' {
+            if b != ' ' && b != '\0' {
                 debug!("{}", b);
             }
         }
@@ -321,11 +321,11 @@ impl IdeDisk {
         for word in 27..47 {
             let d = destination.read(word);
             let a = ((d >> 8) as u8) as char;
-            if a != ' ' {
+            if a != ' ' && a != '\0' {
                 debug!("{}", a);
             }
             let b = (d as u8) as char;
-            if b != ' ' {
+            if b != ' ' && b != '\0' {
                 debug!("{}", b);
             }
         }

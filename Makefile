@@ -528,22 +528,22 @@ virtualbox: $(BUILD)/harddrive.bin
 	echo "Set Configuration"
 	$(VBM) modifyvm Redox --memory 1024
 	$(VBM) modifyvm Redox --vram 16
-	$(VBM) modifyvm Redox --nic1 nat
-	$(VBM) modifyvm Redox --nictype1 82540EM
-	$(VBM) modifyvm Redox --nictrace1 on
-	$(VBM) modifyvm Redox --nictracefile1 $(BUILD)/network.pcap
+	# $(VBM) modifyvm Redox --nic1 nat
+	# $(VBM) modifyvm Redox --nictype1 82540EM
+	# $(VBM) modifyvm Redox --nictrace1 on
+	# $(VBM) modifyvm Redox --nictracefile1 $(BUILD)/network.pcap
 	$(VBM) modifyvm Redox --uart1 0x3F8 4
 	$(VBM) modifyvm Redox --uartmode1 file $(BUILD)/serial.log
-	$(VBM) modifyvm Redox --usb on
+	$(VBM) modifyvm Redox --usb off # on
 	$(VBM) modifyvm Redox --keyboard ps2
 	$(VBM) modifyvm Redox --mouse ps2
-	#$(VBM) modifyvm Redox --audio $(VB_AUDIO)
-	#$(VBM) modifyvm Redox --audiocontroller ac97
+	# $(VBM) modifyvm Redox --audio $(VB_AUDIO)
+	# $(VBM) modifyvm Redox --audiocontroller ac97
 	echo "Create Disk"
 	$(VBM) convertfromraw $< $(BUILD)/harddrive.vdi
 	echo "Attach Disk"
 	#PATA
-	#$(VBM) storagectl Redox --name ATA --add ide --controller PIIX4 --bootable on
+	# $(VBM) storagectl Redox --name ATA --add ide --controller PIIX4 --bootable on
 	#SATA
 	$(VBM) storagectl Redox --name ATA --add sata --controller IntelAHCI --bootable on --portcount 1
 	$(VBM) storageattach Redox --storagectl ATA --port 0 --device 0 --type hdd --medium $(BUILD)/harddrive.vdi
