@@ -188,13 +188,11 @@ coreutils: \
 	filesystem/bin/shutdown \
 	filesystem/bin/sleep \
 	filesystem/bin/tail \
-	filesystem/bin/test \
 	filesystem/bin/touch \
 	filesystem/bin/true \
 	filesystem/bin/wc \
 	filesystem/bin/yes
-	#TODO: filesystem/bin/env
-
+	#TODO: filesystem/bin/env filesystem/bin/test
 
 $(BUILD)/libbinutils.rlib: crates/binutils/src/lib.rs crates/binutils/src/*.rs $(BUILD)/libextra.rlib
 	$(RUSTC) $(RUSTCFLAGS) --crate-name binutils --crate-type lib -o $@ $<
@@ -255,6 +253,10 @@ filesystem/bin/launcher: crates/orbutils/src/launcher/main.rs crates/orbutils/sr
 	mkdir -p filesystem/bin
 	$(RUSTC) $(RUSTCFLAGS) --crate-type bin -o $@ $<
 
+filesystem/bin/zfs: crates/zfs/src/main.rs crates/zfs/src/*.rs $(BUILD)/crt0.o $(BUILD)/libstd.rlib
+	mkdir -p filesystem/bin
+	$(RUSTC) $(RUSTCFLAGS) --crate-type bin -o $@ $<
+
 bins: \
 	coreutils \
 	extrautils \
@@ -277,8 +279,7 @@ bins: \
   	filesystem/bin/sdl-ttf-test \
   	filesystem/bin/sh \
 	filesystem/bin/tar \
-	filesystem/bin/zfs
-	#TODO: binutils
+	#TODO: binutils	filesystem/bin/zfs
 
 initfs/redoxfsd: crates/redoxfs/scheme/main.rs crates/redoxfs/scheme/*.rs $(BUILD)/crt0.o $(BUILD)/libstd.rlib $(BUILD)/libredoxfs.rlib
 	mkdir -p initfs/

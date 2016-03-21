@@ -8,7 +8,8 @@
 // option. This file may not be copied, modified, or distributed
 // except according to those terms.
 
-use borrow::{Borrow, Cow, IntoCow, ToOwned};
+use borrow::{Borrow, Cow, ToOwned};
+use convert::Into;
 use fmt::{self, Debug};
 use mem;
 use string::String;
@@ -245,7 +246,7 @@ impl OsStr {
     /// Any non-Unicode sequences are replaced with U+FFFD REPLACEMENT CHARACTER.
 
     pub fn to_string_lossy(&self) -> Cow<str> {
-        self.inner.into_cow()
+        self.inner.into()
     }
 
     /// Copies the slice into an owned `OsString`.
