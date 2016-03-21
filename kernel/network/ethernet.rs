@@ -40,7 +40,7 @@ impl ToBytes for EthernetII {
             let header_ptr: *const EthernetIIHeader = &self.header;
             let mut ret = Vec::from(slice::from_raw_parts(header_ptr as *const u8,
                                                           mem::size_of::<EthernetIIHeader>()));
-            ret.push_all(&self.data);
+            ret.extend_from_slice(&self.data);
             ret
         }
     }

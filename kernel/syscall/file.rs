@@ -118,16 +118,14 @@ pub fn do_sys_mkdir(path: *const u8, flags: usize) -> Result<usize> {
     ::env().mkdir(try!(Url::from_str(&path_string)), flags).and(Ok(0))
 }
 
-pub fn do_sys_open(path: *const u8, flags: usize) -> Result<usize> {
+pub fn do_sys_open(path_c: *const u8, flags: usize) -> Result<usize> {
     let contexts = ::env().contexts.lock();
     let current = try!(contexts.current());
-    let path = current.canonicalize(c_string_to_str(path));
+    let path = current.canonicalize(c_string_to_str(path_c));
+    //debugln!("{}: {}: open {}", current.pid, current.name, path);
     let url = try!(Url::from_str(&path));
     let resource = try!(::env().open(url, flags));
     let fd = current.next_fd();
-
-    //debugln!("{}: {}: open {} as {}", current.pid, current.name, url.string, fd);
-
     unsafe {
         (*current.files.get()).push(ContextFile {
             fd: fd,

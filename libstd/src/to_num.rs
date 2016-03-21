@@ -1,7 +1,5 @@
 //! Types convertable to integers
 
-use get_slice::GetSlice;
-
 /// Parse the string to a integer using a given radix
 pub trait ToNum {
     fn to_num_radix(&self, radix: u32) -> u32;
@@ -44,7 +42,7 @@ impl ToNum for str {
     /// Parse as a signed integer using a given radix
     fn to_num_radix_signed(&self, radix: u32) -> i32 {
         if self.starts_with('-') {
-            -(self.get_slice(1..).to_num_radix(radix) as i32)
+            -(self[1..].to_num_radix(radix) as i32)
         } else {
             self.to_num_radix(radix) as i32
         }
