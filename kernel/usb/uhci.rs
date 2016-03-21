@@ -6,7 +6,7 @@ use core::intrinsics::volatile_load;
 use core::mem;
 
 use arch::context::context_switch;
-use common::debug;
+//use common::debug;
 use arch::memory::Memory;
 
 use drivers::pci::config::PciConfig;
@@ -64,6 +64,7 @@ impl Uhci {
     pub unsafe fn init(&mut self) {
         debugln!("UHCI on: {:X}, IRQ: {:X}", self.base, self.irq);
 
+        /*
         let base = self.base as u16;
         let mut usbcmd = Pio::<u16>::new(base);
         let usbsts = Pio::<u16>::new(base + 0x2);
@@ -165,6 +166,7 @@ impl Uhci {
                 self.device(2);
             }
         }
+        */
     }
 }
 

@@ -135,6 +135,7 @@ impl Ohci {
     pub unsafe fn init(&mut self) {
         debugln!("OHCI on: {:X}, IRQ: {:X}", (self.regs as *mut OhciRegs) as usize, self.irq);
 
+        /*
         self.regs.hcca.write((&*self.hcca as *const OhciHcca) as u32);
 
         debugln!("Enable: {:X}", self.regs.control.read());
@@ -164,6 +165,7 @@ impl Ohci {
                 self.device(i as u8 + 1);
             }
         }
+        */
     }
 }
 
