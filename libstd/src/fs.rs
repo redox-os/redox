@@ -1,6 +1,6 @@
 use core::ops::Deref;
 use core_collections::borrow::ToOwned;
-use io::{Read, Error, Result, Write, Seek, SeekFrom};
+use io::{self, Read, Error, Result, Write, Seek, SeekFrom};
 use os::unix::io::{AsRawFd, FromRawFd, IntoRawFd, RawFd};
 use mem;
 use path::{PathBuf, Path};
@@ -341,6 +341,17 @@ pub fn create_dir<P: AsRef<Path>>(path: P) -> Result<()> {
     unsafe {
         sys_mkdir(path_c.as_ptr(), 755).and(Ok(())).map_err(|x| Error::from_sys(x))
     }
+}
+
+pub fn copy<P: AsRef<Path>, Q: AsRef<Path>>(from: P, to: Q) -> Result<u64> {
+    let mut infile = try!(File::open(from));
+    let mut outfile = try!(File::create(to));
+    io::copy(&mut infile, &mut outfile)
+}
+
+pub fn rename<P: AsRef<Path>, Q: AsRef<Path>>(from: P, to: Q) -> Result<()> {
+    try!(copy(Path::new(from.as_ref()), to));
+    remove_file(from)
 }
 
 pub fn read_dir<P: AsRef<Path>>(path: P) -> Result<ReadDir> {
