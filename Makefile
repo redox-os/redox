@@ -226,6 +226,7 @@ games: \
 	filesystem/bin/ice \
 	filesystem/bin/minesweeper \
 	filesystem/bin/rusthello \
+	filesystem/bin/snake
 
 filesystem/bin/%: crates/%/main.rs crates/%/*.rs $(BUILD)/crt0.o $(BUILD)/libstd.rlib
 	mkdir -p filesystem/bin
