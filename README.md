@@ -92,8 +92,10 @@ $ curl -sf https://raw.githubusercontent.com/brson/multirust/master/quick-instal
 # Set override toolchain to nightly build
 $ multirust override nightly
 
+# For successive builds start here. If this is your first build, just continue
+
 # Update git submodules
-$ git submodule update --init
+$ git submodule update --recursive --init
 
 # Build Redox
 $ make all
