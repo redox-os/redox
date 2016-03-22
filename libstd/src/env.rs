@@ -4,6 +4,7 @@ use alloc::boxed::Box;
 
 use core_collections::borrow::ToOwned;
 
+use ffi::OsString;
 use fs::File;
 use path::{Path, PathBuf};
 use string::{String, ToString};
@@ -90,6 +91,10 @@ pub fn home_dir() -> Option<PathBuf> {
     get_path_from("/home/").ok()
 }
 
+pub fn temp_dir() -> Option<PathBuf> {
+    get_path_from("/tmp/").ok()
+}
+
 /// Set the current directory
 pub fn set_current_dir<P: AsRef<Path>>(path: P) -> Result<()> {
     let path_str = path.as_ref().as_os_str().as_inner();
@@ -122,7 +127,25 @@ pub fn set_current_dir<P: AsRef<Path>>(path: P) -> Result<()> {
     }
 }
 
+pub enum VarError {
+    NotPresent,
+    NotUnicode(OsString),
+}
+
 // TODO: Fully implement `env::var()`
-pub fn var(_key: &str) -> Result<String> {
-    Ok("This is code filler".to_owned())
+pub fn var(_key: &str) -> ::core::result::Result<String, VarError> {
+    Err(VarError::NotPresent)
+}
+
+pub struct Vars;
+
+impl Iterator for Vars {
+    type Item = (String, String);
+    fn next(&mut self) -> Option<Self::Item> {
+        None
+    }
+}
+
+pub fn vars() -> Vars {
+    Vars
 }

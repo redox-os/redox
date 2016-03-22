@@ -168,6 +168,7 @@ coreutils: \
 	filesystem/bin/cp \
 	filesystem/bin/du \
 	filesystem/bin/echo \
+	filesystem/bin/env \
 	filesystem/bin/false \
 	filesystem/bin/free \
 	filesystem/bin/head \
@@ -188,7 +189,7 @@ coreutils: \
 	filesystem/bin/true \
 	filesystem/bin/wc \
 	filesystem/bin/yes
-	#TODO: filesystem/bin/env filesystem/bin/test
+	#TODO: filesystem/bin/test
 
 $(BUILD)/libbinutils.rlib: crates/binutils/src/lib.rs crates/binutils/src/*.rs $(BUILD)/libextra.rlib
 	$(RUSTC) $(RUSTCFLAGS) --crate-name binutils --crate-type lib -o $@ $<
