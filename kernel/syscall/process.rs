@@ -9,7 +9,7 @@ use core::ops::DerefMut;
 
 use system::{c_array_to_slice, c_string_to_str};
 
-use system::error::{Error, Result, ECHILD};
+use system::error::{Error, Result, ECHILD, EINVAL};
 
 use super::execute::execute;
 
@@ -72,6 +72,23 @@ pub fn do_sys_getpid() -> Result<usize> {
     let contexts = ::env().contexts.lock();
     let current = try!(contexts.current());
     Ok(current.pid)
+}
+
+#[cfg(target_arch = "x86")]
+pub fn do_sys_iopl(regs: &mut Regs) -> Result<usize> {
+    let level = regs.bx;
+    if level <= 3 {
+        let mut contexts = ::env().contexts.lock();
+        let mut current = try!(contexts.current_mut());
+        current.iopl = level;
+
+        regs.flags &= 0xFFFFFFFF - 0x3000;
+        regs.flags |= (current.iopl << 12) & 0x3000;
+
+        Ok(0)
+    } else {
+        Err(Error::new(EINVAL))
+    }
 }
 
 //TODO: Finish implementation, add more functions to WaitMap so that matching any or using WNOHANG works

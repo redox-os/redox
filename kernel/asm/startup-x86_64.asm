@@ -151,7 +151,7 @@ long_mode:
     struc TSS
         .reserved1 resd 1    ;The previous TSS - if we used hardware task switching this would form a linked list.
         .rsp0 resq 1        ;The stack pointer to load when we change to kernel mode.
-        .rsp1 resq 1        ;everything below here is unusued now..
+        .rsp1 resq 1        ;everything below here is unused now..
         .rsp2 resq 1
         .reserved2 resd 1
         .reserved3 resd 1
