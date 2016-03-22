@@ -102,7 +102,7 @@ struc TSS
     .prev_tss resd 1    ;The previous TSS - if we used hardware task switching this would form a linked list.
     .esp0 resd 1        ;The stack pointer to load when we change to kernel mode.
     .ss0 resd 1         ;The stack segment to load when we change to kernel mode.
-    .esp1 resd 1        ;everything below here is unusued now..
+    .esp1 resd 1        ;everything below here is unused now..
     .ss1 resd 1
     .esp2 resd 1
     .ss2 resd 1

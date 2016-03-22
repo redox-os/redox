@@ -20,6 +20,7 @@ pub const SYS_FSTAT: usize = 28;
 pub const SYS_FSYNC: usize = 118;
 pub const SYS_FTRUNCATE: usize = 93;
 pub const SYS_GETPID: usize = 20;
+pub const SYS_IOPL: usize = 110;
 pub const SYS_LINK: usize = 9;
 pub const SYS_LSEEK: usize = 19;
     pub const SEEK_SET: usize = 0;
@@ -115,6 +116,10 @@ pub fn sys_ftruncate(fd: usize, len: usize) -> Result<usize> {
 
 pub fn sys_getpid() -> Result<usize> {
     unsafe { syscall0(SYS_GETPID) }
+}
+
+pub unsafe fn sys_iopl(level: usize) -> Result<usize> {
+    syscall1(SYS_IOPL, level)
 }
 
 pub unsafe fn sys_link(old: *const u8, new: *const u8) -> Result<usize> {

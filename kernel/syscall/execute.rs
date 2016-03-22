@@ -70,6 +70,8 @@ pub fn execute_thread(context_ptr: *mut Context, entry: usize, mut args: Vec<Str
             }
         }
 
+        context.iopl = 0;
+
         context.regs = Regs::default();
         context.regs.sp = context.kernel_stack + CONTEXT_STACK_SIZE - 128;
 
