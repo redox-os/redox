@@ -212,6 +212,7 @@ pub unsafe fn context_clone(regs: &Regs) -> Result<usize> {
                 pid: clone_pid,
                 ppid: parent.pid,
                 name: parent.name.clone(),
+                iopl: parent.iopl,
                 blocked: false,
                 exited: false,
                 switch: 0,
@@ -425,6 +426,8 @@ pub struct Context {
     pub ppid: usize,
     /// The name of the context
     pub name: String,
+    /// The I/O privilege level
+    pub iopl: usize,
     /// Indicates that the context is blocked, and should not be switched to
     pub blocked: bool,
     /// Indicates that the context exited
@@ -502,6 +505,7 @@ impl Context {
             pid: Context::next_pid(),
             ppid: 0,
             name: "kidle".to_string(),
+            iopl: 3,
             blocked: false,
             exited: false,
             switch: 0,
@@ -535,6 +539,7 @@ impl Context {
             pid: Context::next_pid(),
             ppid: 0,
             name: name,
+            iopl: 3,
             blocked: false,
             exited: false,
             switch: 0,

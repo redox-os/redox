@@ -202,6 +202,13 @@ binutils: \
 	filesystem/bin/hexdump \
 	filesystem/bin/strings
 
+filesystem/bin/%: drivers/%/main.rs $(BUILD)/crt0.o $(BUILD)/libstd.rlib $(BUILD)/libio.rlib
+	mkdir -p filesystem/bin
+	$(RUSTC) $(RUSTCFLAGS) --crate-type bin -o $@ $<
+
+drivers: \
+	filesystem/bin/seriald
+
 $(BUILD)/libtermion.rlib: crates/termion/src/lib.rs crates/termion/src/*.rs $(BUILD)/libstd.rlib
 	$(RUSTC) $(RUSTCFLAGS) --crate-name termion --crate-type lib -o $@ $< --cfg 'feature="nightly"'
 
@@ -258,6 +265,7 @@ filesystem/bin/zfs: crates/zfs/src/main.rs crates/zfs/src/*.rs $(BUILD)/crt0.o $
 bins: \
 	coreutils \
 	extrautils \
+	drivers \
 	games \
 	filesystem/bin/ansi-test \
 	filesystem/bin/c-test \

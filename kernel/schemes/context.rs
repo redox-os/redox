@@ -16,7 +16,7 @@ impl KScheme for ContextScheme {
     }
 
     fn open(&mut self, _: Url, _: usize) -> Result<Box<Resource>> {
-        let mut string = format!("{:<6}{:<6}{:<8}{:<8}{:<8}{:<6}{:<6}{}\n",
+        let mut string = format!("{:<6}{:<6}{:<8}{:<8}{:<8}{:<6}{:<6}{:<6}{}\n",
                                  "PID",
                                  "PPID",
                                  "SWITCH",
@@ -24,6 +24,7 @@ impl KScheme for ContextScheme {
                                  "MEM",
                                  "FDS",
                                  "FLG",
+                                 "IOPL",
                                  "NAME");
         {
             let contexts = ::env().contexts.lock();
@@ -53,7 +54,7 @@ impl KScheme for ContextScheme {
 
                 let mut flags_string = String::new();
                 if context.stack.is_some() {
-                    flags_string.push('U')
+                    flags_string.push('U');
                 } else {
                     flags_string.push('K');
                 }
@@ -70,7 +71,7 @@ impl KScheme for ContextScheme {
                     flags_string.push('S');
                 }
 
-                string.push_str(&format!("{:<6}{:<6}{:<8}{:<8}{:<8}{:<6}{:<6}{}\n",
+                string.push_str(&format!("{:<6}{:<6}{:<8}{:<8}{:<8}{:<6}{:<6}{:<6}{}\n",
                                    context.pid,
                                    context.ppid,
                                    context.switch,
@@ -78,6 +79,7 @@ impl KScheme for ContextScheme {
                                    memory_string,
                                    unsafe { (*context.files.get()).len() },
                                    flags_string,
+                                   context.iopl,
                                    context.name));
             }
         }
