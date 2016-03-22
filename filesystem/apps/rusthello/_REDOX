@@ -1,4 +1,0 @@
-name=RUSThello
-icon=file:/ui/apps/rusthello.bmp
-author=Enrico Ghiorzi
-description=A simple Reversi game, written in Rust with love

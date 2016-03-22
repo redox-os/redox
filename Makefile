@@ -133,9 +133,6 @@ help:
 
 all: $(BUILD)/harddrive.bin
 
-filesystem/apps/rusthello/main.bin: filesystem/apps/rusthello/src/main.rs filesystem/apps/rusthello/src/*.rs filesystem/apps/rusthello/src/*/*.rs $(BUILD)/crt0.o $(BUILD)/libstd.rlib
-	$(RUSTC) $(RUSTCFLAGS) --crate-type bin -o $@ $<
-
 filesystem/apps/sodium/main.bin: filesystem/apps/sodium/src/main.rs filesystem/apps/sodium/src/*.rs $(BUILD)/libstd.rlib $(BUILD)/liborbclient.rlib
 	$(RUSTC) $(RUSTCFLAGS) --crate-type bin -o $@ $< --cfg 'feature="orbital"'
 
@@ -153,7 +150,6 @@ apps: filesystem/apps/calculator/main.bin \
 	  filesystem/apps/file_manager/main.bin \
 	  filesystem/apps/orbtk/main.bin \
 	  filesystem/apps/player/main.bin \
-	  filesystem/apps/rusthello/main.bin \
 	  filesystem/apps/sodium/main.bin \
 	  filesystem/apps/terminal/main.bin \
 	  filesystem/apps/viewer/main.bin
@@ -172,6 +168,7 @@ coreutils: \
 	filesystem/bin/cp \
 	filesystem/bin/du \
 	filesystem/bin/echo \
+	filesystem/bin/env \
 	filesystem/bin/false \
 	filesystem/bin/free \
 	filesystem/bin/head \
@@ -192,7 +189,7 @@ coreutils: \
 	filesystem/bin/true \
 	filesystem/bin/wc \
 	filesystem/bin/yes
-	#TODO: filesystem/bin/env filesystem/bin/test
+	#TODO: filesystem/bin/test
 
 $(BUILD)/libbinutils.rlib: crates/binutils/src/lib.rs crates/binutils/src/*.rs $(BUILD)/libextra.rlib
 	$(RUSTC) $(RUSTCFLAGS) --crate-name binutils --crate-type lib -o $@ $<
@@ -205,6 +202,13 @@ binutils: \
 	filesystem/bin/hex \
 	filesystem/bin/hexdump \
 	filesystem/bin/strings
+
+filesystem/bin/%: drivers/%/main.rs $(BUILD)/crt0.o $(BUILD)/libstd.rlib $(BUILD)/libio.rlib
+	mkdir -p filesystem/bin
+	$(RUSTC) $(RUSTCFLAGS) --crate-type bin -o $@ $<
+
+drivers: \
+	filesystem/bin/seriald
 
 $(BUILD)/libtermion.rlib: crates/termion/src/lib.rs crates/termion/src/*.rs $(BUILD)/libstd.rlib
 	$(RUSTC) $(RUSTCFLAGS) --crate-name termion --crate-type lib -o $@ $< --cfg 'feature="nightly"'
@@ -228,7 +232,9 @@ filesystem/bin/%: crates/games/src/%/main.rs crates/games/src/%/*.rs $(BUILD)/cr
 
 games: \
 	filesystem/bin/ice \
-	filesystem/bin/minesweeper
+	filesystem/bin/minesweeper \
+	filesystem/bin/rusthello \
+	filesystem/bin/snake
 
 filesystem/bin/%: crates/%/main.rs crates/%/*.rs $(BUILD)/crt0.o $(BUILD)/libstd.rlib
 	mkdir -p filesystem/bin
@@ -260,6 +266,7 @@ filesystem/bin/zfs: crates/zfs/src/main.rs crates/zfs/src/*.rs $(BUILD)/crt0.o $
 bins: \
 	coreutils \
 	extrautils \
+	drivers \
 	games \
 	filesystem/bin/ansi-test \
 	filesystem/bin/c-test \
