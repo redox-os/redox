@@ -347,15 +347,19 @@ pub fn read_dir<P: AsRef<Path>>(path: P) -> Result<ReadDir> {
     File::open(path).map(|file| ReadDir { file: file })
 }
 
-pub fn remove_dir(path: &str) -> Result<()> {
-    let path_c = path.to_owned() + "\0";
+pub fn remove_dir<P: AsRef<Path>>(path: P) -> Result<()> {
+    let path_str = path.as_ref().as_os_str().as_inner();
+    let mut path_c = path_str.to_owned();
+    path_c.push_str("\0");
     unsafe {
         sys_rmdir(path_c.as_ptr()).and(Ok(()))
     }.map_err(|x| Error::from_sys(x))
 }
 
-pub fn remove_file(path: &str) -> Result<()> {
-    let path_c = path.to_owned() + "\0";
+pub fn remove_file<P: AsRef<Path>>(path: P) -> Result<()> {
+    let path_str = path.as_ref().as_os_str().as_inner();
+    let mut path_c = path_str.to_owned();
+    path_c.push_str("\0");
     unsafe {
         sys_unlink(path_c.as_ptr()).and(Ok(()))
     }.map_err(|x| Error::from_sys(x))
