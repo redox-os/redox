@@ -34,8 +34,8 @@ impl<T> JoinHandle<T> {
 /// Sleep for a duration
 pub fn sleep(duration: Duration) {
     let req = TimeSpec {
-        tv_sec: duration.secs,
-        tv_nsec: duration.nanos,
+        tv_sec: duration.as_secs() as i64,
+        tv_nsec: duration.subsec_nanos() as i32,
     };
 
     let mut rem = TimeSpec {
@@ -48,8 +48,8 @@ pub fn sleep(duration: Duration) {
 
 /// Sleep for a number of milliseconds
 pub fn sleep_ms(ms: u32) {
-    let secs = ms as i64 / 1000;
-    let nanos = (ms % 1000) as i32 * 1000000;
+    let secs = ms as u64 / 1000;
+    let nanos = (ms % 1000) * 1000000;
     sleep(Duration::new(secs, nanos))
 }
 

@@ -1,13 +1,22 @@
 //! A module for time
 
-use core::cmp::{Ordering, PartialEq};
-use core::ops::{Add, Sub};
-
 use system::syscall::{sys_clock_gettime, CLOCK_REALTIME, CLOCK_MONOTONIC, TimeSpec};
 
-pub const NANOS_PER_MICRO: i32 = 1_000;
-pub const NANOS_PER_MILLI: i32 = 1_000_000;
-pub const NANOS_PER_SEC: i32 = 1_000_000_000;
+// Copyright 2012-2014 The Rust Project Developers. See the COPYRIGHT
+// file at the top-level directory of this distribution and at
+// http://rust-lang.org/COPYRIGHT.
+//
+// Licensed under the Apache License, Version 2.0 <LICENSE-APACHE or
+// http://www.apache.org/licenses/LICENSE-2.0> or the MIT license
+// <LICENSE-MIT or http://opensource.org/licenses/MIT>, at your
+// option. This file may not be copied, modified, or distributed
+// except according to those terms.
+
+use ops::{Add, Sub, Mul, Div};
+
+const NANOS_PER_SEC: u32 = 1_000_000_000;
+const NANOS_PER_MILLI: u32 = 1_000_000;
+const MILLIS_PER_SEC: u64 = 1_000;
 
 /// A duration type to represent a span of time, typically used for system
 /// timeouts.
@@ -33,10 +42,10 @@ pub const NANOS_PER_SEC: i32 = 1_000_000_000;
 ///
 /// let ten_millis = Duration::from_millis(10);
 /// ```
-#[derive(Copy, Clone)]
+#[derive(Clone, Copy, PartialEq, Eq, PartialOrd, Ord, Debug, Hash)]
 pub struct Duration {
-    pub secs: i64,
-    pub nanos: i32,
+    secs: u64,
+    nanos: u32, // Always 0 <= nanos < NANOS_PER_SEC
 }
 
 impl Duration {
@@ -45,74 +54,98 @@ impl Duration {
     ///
     /// If the nanoseconds is greater than 1 billion (the number of nanoseconds
     /// in a second), then it will carry over into the seconds provided.
-    pub fn new(mut secs: i64, mut nanos: i32) -> Self {
-        while nanos >= NANOS_PER_SEC || (nanos > 0 && secs < 0) {
-            secs += 1;
-            nanos -= NANOS_PER_SEC;
-        }
+    pub fn new(secs: u64, nanos: u32) -> Duration {
+        let secs = secs + (nanos / NANOS_PER_SEC) as u64;
+        let nanos = nanos % NANOS_PER_SEC;
+        Duration { secs: secs, nanos: nanos }
+    }
 
-        while nanos < 0 && secs > 0 {
-            secs -= 1;
-            nanos += NANOS_PER_SEC;
-        }
-
-        Duration {
-            secs: secs,
-            nanos: nanos,
-        }
+    /// Creates a new `Duration` from the specified number of seconds.
+    pub fn from_secs(secs: u64) -> Duration {
+        Duration { secs: secs, nanos: 0 }
     }
 
     /// Creates a new `Duration` from the specified number of milliseconds.
-    pub fn from_millis(millis: u64) -> Self {
-        Duration::new((millis / 1000) as i64, (millis % 1000) as i32 * NANOS_PER_MILLI)
+    pub fn from_millis(millis: u64) -> Duration {
+        let secs = millis / MILLIS_PER_SEC;
+        let nanos = ((millis % MILLIS_PER_SEC) as u32) * NANOS_PER_MILLI;
+        Duration { secs: secs, nanos: nanos }
     }
 
-    pub fn as_secs(&self) -> u64 {
-        self.secs as u64
-    }
+    /// Returns the number of whole seconds represented by this duration.
+    ///
+    /// The extra precision represented by this duration is ignored (e.g. extra
+    /// nanoseconds are not represented in the returned value).
+    pub fn as_secs(&self) -> u64 { self.secs }
 
-    pub fn subsec_nanos(&self) -> u32 {
-        self.nanos as u32
-    }
+    /// Returns the nanosecond precision represented by this duration.
+    ///
+    /// This method does **not** return the length of the duration when
+    /// represented by nanoseconds. The returned number always represents a
+    /// fractional portion of a second (e.g. it is less than one billion).
+    pub fn subsec_nanos(&self) -> u32 { self.nanos }
 }
 
 impl Add for Duration {
     type Output = Duration;
 
-    fn add(self, other: Self) -> Self {
-        Duration::new(self.secs + other.secs, self.nanos + other.nanos)
+    fn add(self, rhs: Duration) -> Duration {
+        let mut secs = self.secs.checked_add(rhs.secs)
+                           .expect("overflow when adding durations");
+        let mut nanos = self.nanos + rhs.nanos;
+        if nanos >= NANOS_PER_SEC {
+            nanos -= NANOS_PER_SEC;
+            secs = secs.checked_add(1).expect("overflow when adding durations");
+        }
+        debug_assert!(nanos < NANOS_PER_SEC);
+        Duration { secs: secs, nanos: nanos }
     }
 }
 
 impl Sub for Duration {
     type Output = Duration;
 
-    fn sub(self, other: Self) -> Self {
-        Duration::new(self.secs - other.secs, self.nanos - other.nanos)
-    }
-}
-
-impl PartialEq for Duration {
-    fn eq(&self, other: &Self) -> bool {
-        let dif = *self - *other;
-        dif.secs == 0 && dif.nanos == 0
-    }
-}
-
-impl PartialOrd for Duration {
-    fn partial_cmp(&self, other: &Self) -> Option<Ordering> {
-        let dif = *self - *other;
-        if dif.secs > 0 {
-            Some(Ordering::Greater)
-        } else if dif.secs < 0 {
-            Some(Ordering::Less)
-        } else if dif.nanos > 0 {
-            Some(Ordering::Greater)
-        } else if dif.nanos < 0 {
-            Some(Ordering::Less)
+    fn sub(self, rhs: Duration) -> Duration {
+        let mut secs = self.secs.checked_sub(rhs.secs)
+                           .expect("overflow when subtracting durations");
+        let nanos = if self.nanos >= rhs.nanos {
+            self.nanos - rhs.nanos
         } else {
-            Some(Ordering::Equal)
-        }
+            secs = secs.checked_sub(1)
+                       .expect("overflow when subtracting durations");
+            self.nanos + NANOS_PER_SEC - rhs.nanos
+        };
+        debug_assert!(nanos < NANOS_PER_SEC);
+        Duration { secs: secs, nanos: nanos }
+    }
+}
+
+impl Mul<u32> for Duration {
+    type Output = Duration;
+
+    fn mul(self, rhs: u32) -> Duration {
+        // Multiply nanoseconds as u64, because it cannot overflow that way.
+        let total_nanos = self.nanos as u64 * rhs as u64;
+        let extra_secs = total_nanos / (NANOS_PER_SEC as u64);
+        let nanos = (total_nanos % (NANOS_PER_SEC as u64)) as u32;
+        let secs = self.secs.checked_mul(rhs as u64)
+                       .and_then(|s| s.checked_add(extra_secs))
+                       .expect("overflow when multiplying duration");
+        debug_assert!(nanos < NANOS_PER_SEC);
+        Duration { secs: secs, nanos: nanos }
+    }
+}
+
+impl Div<u32> for Duration {
+    type Output = Duration;
+
+    fn div(self, rhs: u32) -> Duration {
+        let secs = self.secs / (rhs as u64);
+        let carry = self.secs - secs * (rhs as u64);
+        let extra_nanos = carry * (NANOS_PER_SEC as u64) / (rhs as u64);
+        let nanos = self.nanos / rhs + (extra_nanos as u32);
+        debug_assert!(nanos < NANOS_PER_SEC);
+        Duration { secs: secs, nanos: nanos }
     }
 }
 
@@ -129,7 +162,7 @@ impl Instant {
 
         sys_clock_gettime(CLOCK_MONOTONIC, &mut tp).unwrap();
 
-        Instant(Duration::new(tp.tv_sec, tp.tv_nsec))
+        Instant(Duration::new(tp.tv_sec as u64, tp.tv_nsec as u32))
     }
 
     /// Returns the amount of time between two instants
@@ -162,6 +195,6 @@ impl SystemTime {
 
         sys_clock_gettime(CLOCK_REALTIME, &mut tp).unwrap();
 
-        SystemTime(Duration::new(tp.tv_sec, tp.tv_nsec))
+        SystemTime(Duration::new(tp.tv_sec as u64, tp.tv_nsec as u32))
     }
 }
