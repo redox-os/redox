@@ -427,7 +427,7 @@ $(BUILD)/librealstd.rlib: rust/src/libstd/lib.rs $(BUILD)/libcore.rlib $(BUILD)/
 	$(RUSTC) $(RUSTCFLAGS) --cfg unix --crate-type rlib -o $@ $<
 
 $(BUILD)/libstd.rlib: libstd/src/lib.rs libstd/src/*.rs libstd/src/*/*.rs libstd/src/*/*/*.rs $(BUILD)/libcore.rlib $(BUILD)/liballoc.rlib $(BUILD)/libcollections.rlib $(BUILD)/librand.rlib $(BUILD)/libsystem.rlib
-	$(RUSTC) $(RUSTCFLAGS) -o $@ $<
+	$(RUSTC) $(RUSTCFLAGS) -o $@ $< -L native=libc/lib/
 
 $(BUILD)/liborbclient.rlib: crates/orbclient/src/lib.rs crates/orbclient/src/*.rs crates/orbclient/src/*/*.rs $(BUILD)/libstd.rlib
 	$(RUSTC) $(RUSTCFLAGS) -o $@ $<
@@ -594,12 +594,12 @@ ifneq ($(usb),no)
 	endif
 endif
 
-ifeq ($(storage),ahci)
-	QFLAGS += -device ahci,id=ahci -drive id=disk,file=$(BUILD)/harddrive.bin,format=raw,if=none -device ide-hd,drive=disk,bus=ahci.0
+ifeq ($(storage),ide)
+	QFLAGS += -drive file=$(BUILD)/harddrive.bin,format=raw,index=0,media=disk
 else ifeq ($(storage),usb)
 	QFLAGS += -device usb-ehci,id=flash_bus -drive id=flash_drive,file=$(BUILD)/harddrive.bin,format=raw,if=none -device usb-storage,drive=flash_drive,bus=flash_bus.0
 else
-	QFLAGS += -drive file=$(BUILD)/harddrive.bin,format=raw,index=0,media=disk
+	QFLAGS += -device ahci,id=ahci -drive id=disk,file=$(BUILD)/harddrive.bin,format=raw,if=none -device ide-hd,drive=disk,bus=ahci.0
 endif
 
 ifeq ($(net),no)

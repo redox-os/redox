@@ -19,15 +19,10 @@ pub mod time;
 pub fn syscall_handle(regs: &mut Regs) {
     //debugln!("{:X}: {} {:X} {:X} {:X}", regs.ip, regs.ax, regs.bx, regs.cx, regs.dx);
     regs.ax = Error::mux(match regs.ax {
+        // Redox
         SYS_DEBUG => do_sys_debug(regs.bx as *const u8, regs.cx),
 
-        // Rust Memory
-        SYS_ALLOC => do_sys_alloc(regs.bx),
-        SYS_REALLOC => do_sys_realloc(regs.bx, regs.cx),
-        SYS_REALLOC_INPLACE => do_sys_realloc_inplace(regs.bx, regs.cx),
-        SYS_UNALLOC => do_sys_unalloc(regs.bx),
-
-        // Linux
+        // Unix
         SYS_BRK => do_sys_brk(regs.bx),
         SYS_CHDIR => do_sys_chdir(regs.bx as *const u8),
         SYS_CLONE => do_sys_clone(regs),

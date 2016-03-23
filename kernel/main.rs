@@ -70,7 +70,7 @@ use schemes::test::*;
 use syscall::execute::execute;
 use syscall::{do_sys_chdir, do_sys_exit, do_sys_open, syscall_handle};
 
-pub use system::externs::*;
+pub use externs::*;
 
 /// Common std-like functionality.
 ///
@@ -122,6 +122,8 @@ pub mod drivers;
 /// This module defines the `Environment` struct, which has the job to track the state of the
 /// kernel. This includes context management, system console, scheme registrar, and so on.
 pub mod env;
+/// Functions required for the Rust runtime, like memcpy and memset
+pub mod externs;
 /// File system.
 ///
 /// This module manages virtual and non-virtual file systems. Furthermore, it defines URL,
