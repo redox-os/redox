@@ -4,9 +4,9 @@ use collections::vec::Vec;
 
 use core::intrinsics::volatile_load;
 use core::mem::size_of;
-use core::slice;
+//use core::slice;
 
-use common::debug;
+//use common::debug;
 
 use drivers::io::{Io, Mmio};
 use drivers::pci::config::PciConfig;
@@ -86,8 +86,9 @@ impl Ehci {
 
     #[allow(non_snake_case)]
     pub unsafe fn init(&mut self) {
-        debug!("EHCI on: {:X}, IRQ {:X}", self.base, self.irq);
+        debugln!("EHCI on: {:X}, IRQ {:X}", self.base, self.irq);
 
+        /*
         self.pci.flag(4, 4, true); // Bus master
 
         let cap_length = &mut *(self.base as *mut Mmio<u8>);
@@ -136,12 +137,10 @@ impl Ehci {
         let config_flag = &mut *((op_base + 0x40) as *mut Mmio<u32>);
         let port_scs = &mut slice::from_raw_parts_mut((op_base + 0x44) as *mut Mmio<u32>, ports);
 
-        /*
-        let FRINDEX = (opbase + 0xC) as *mut Mmio<u32>;
-        let CTRLDSSEGMENT = (opbase + 0x10) as *mut Mmio<u32>;
-        let PERIODICLISTBASE = (opbase + 0x14) as *mut Mmio<u32>;
-        let ASYNCLISTADDR = (opbase + 0x18) as *mut Mmio<u32>;
-        */
+        // let FRINDEX = (opbase + 0xC) as *mut Mmio<u32>;
+        // let CTRLDSSEGMENT = (opbase + 0x10) as *mut Mmio<u32>;
+        // let PERIODICLISTBASE = (opbase + 0x14) as *mut Mmio<u32>;
+        // let ASYNCLISTADDR = (opbase + 0x18) as *mut Mmio<u32>;
 
         //Halt
         if usb_sts.read() & 1 << 12 == 0 {
@@ -194,6 +193,7 @@ impl Ehci {
                 self.device(i as u8 + 1);
             }
         }
+        */
     }
 }
 

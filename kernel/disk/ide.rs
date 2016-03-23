@@ -249,10 +249,10 @@ impl IdeDisk {
 
         while self.alt_sts.readf(ATA_SR_BSY) {}
 
-        self.seccount.write((len >> 8) as u8);
+        /*self.seccount.write((len >> 8) as u8);
         self.sector0.write((block >> 24) as u8);
         self.sector1.write((block >> 32) as u8);
-        self.sector2.write((block >> 40) as u8);
+        self.sector2.write((block >> 40) as u8);*/
 
         self.seccount.write(len as u8);
         self.sector0.write(block as u8);
@@ -351,15 +351,15 @@ impl IdeDisk {
                             -> Result<usize> {
         if buf > 0 {
             self.ata(if write {
-                ATA_CMD_WRITE_PIO_EXT
+                ATA_CMD_WRITE_PIO //_EXT
             } else {
-                ATA_CMD_READ_PIO_EXT
+                ATA_CMD_READ_PIO //_EXT
             }, block, sectors);
 
             for sector in 0..sectors as usize {
                 let err = self.ide_poll(true);
                 if err > 0 {
-                    debugln!("IDE Error: {:X}", err);
+                    debugln!("IDE Error: {:X}={:X}", err, self.error.read());
                     return Err(Error::new(EIO));
                 }
 
@@ -389,14 +389,14 @@ impl IdeDisk {
 
         if buf > 0 && sectors > 0 {
             let mut sector: usize = 0;
-            while sectors - sector >= 65536 {
+            while sectors - sector >= 255 {
                 if let Err(err) = unsafe {
-                    self.ata_pio_small(block + sector as u64, 0, buf + sector * 512, write)
+                    self.ata_pio_small(block + sector as u64, 255, buf + sector * 512, write)
                 } {
                     return Err(err);
                 }
 
-                sector += 65536;
+                sector += 255;
             }
             if sector < sectors {
                 if let Err(err) = unsafe {
@@ -470,9 +470,9 @@ impl IdeDisk {
 
 
             self.ata(if write {
-                ATA_CMD_WRITE_DMA_EXT
+                ATA_CMD_WRITE_DMA //_EXT
             } else {
-                ATA_CMD_READ_DMA_EXT
+                ATA_CMD_READ_DMA //_EXT
             }, block, sectors);
 
             self.buscmd.writef(CMD_ACT, true);
@@ -503,14 +503,14 @@ impl IdeDisk {
 
         if buf > 0 && sectors > 0 {
             let mut sector: usize = 0;
-            while sectors - sector >= 65536 {
+            while sectors - sector >= 255 {
                 if let Err(err) = unsafe {
-                    self.ata_dma_small(block + sector as u64, 0, buf + sector * 512, write)
+                    self.ata_dma_small(block + sector as u64, 255, buf + sector * 512, write)
                 } {
                     return Err(err);
                 }
 
-                sector += 65536;
+                sector += 255;
             }
             if sector < sectors {
                 if let Err(err) = unsafe {
@@ -545,10 +545,10 @@ impl Disk for IdeDisk {
     }
 
     fn read(&mut self, block: u64, buffer: &mut [u8]) -> Result<usize> {
-        self.ata_dma(block, buffer.len() / 512, buffer.as_ptr() as usize, false)
+        self.ata_pio(block, buffer.len() / 512, buffer.as_ptr() as usize, false)
     }
 
     fn write(&mut self, block: u64, buffer: &[u8]) -> Result<usize> {
-        self.ata_dma(block, buffer.len() / 512, buffer.as_ptr() as usize, true)
+        self.ata_pio(block, buffer.len() / 512, buffer.as_ptr() as usize, true)
     }
 }

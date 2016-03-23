@@ -95,11 +95,11 @@ impl Ps2 {
     }
 
     fn wait_read(&self) {
-        while self.sts.read() & 1 == 0 {}
+        while ! self.sts.readf(1) {}
     }
 
     fn wait_write(&self) {
-        while self.sts.read() & 2 == 2 {}
+        while self.sts.readf(2) {}
     }
 
     fn cmd(&mut self, command: u8) {
@@ -132,56 +132,94 @@ impl Ps2 {
     }
 
     fn init(&mut self) {
-        while (self.sts.read() & 0x1) == 1 {
+        while self.sts.readf(1) {
             self.data.read();
         }
 
-        // No interrupts, system flag set, clocks enabled, translation disabled
-        self.write(0x60, 0b00000100);
+        // No interrupts, system flag set, clocks enabled, translation enabled
+        self.write(0x60, 0b01000100);
+
+        while self.sts.readf(1) {
+            debugln!("Extra {}: {:X}", line!(), self.data.read());
+        }
 
         // Enable First Port
+        debugln!("Enable keyboard");
         self.cmd(0xAE);
-        {
-            let mut keyboard = self.keyboard();
 
+        while self.sts.readf(1) {
+            debugln!("Extra {}: {:X}", line!(), self.data.read());
+        }
+
+        {
             // Reset
-            keyboard.cmd(0xFF);
+            debugln!("Reset {:X}", self.keyboard().cmd(0xFF));
+            self.wait_read();
+            debugln!("Response: {:X}", self.data.read());
+
+            while self.sts.readf(1) {
+                debugln!("Extra {}: {:X}", line!(), self.data.read());
+            }
 
             // Set defaults
-            keyboard.cmd(0xF6);
+            debugln!("Set defaults {:X}", self.keyboard().cmd(0xF6));
 
-            // Set LEDS
-            keyboard.cmd(0xED);
-            keyboard.cmd(0);
-
-            // Set Scancode Map:
-            keyboard.cmd(0xF0);
-            keyboard.cmd(1);
+            while self.sts.readf(1) {
+                debugln!("Extra {}: {:X}", line!(), self.data.read());
+            }
 
             // Enable Streaming
-            keyboard.cmd(0xF4);
+            debugln!("Enable streaming {:X}", self.keyboard().cmd(0xF4));
+
+            while self.sts.readf(1) {
+                debugln!("Extra {}: {:X}", line!(), self.data.read());
+            }
         }
 
         // Enable Second Port
+        debugln!("Enable mouse");
         self.cmd(0xA8);
-        {
-            let mut mouse = self.mouse();
 
-            // Reset
-            mouse.cmd(0xFF);
-
-            // Set defaults
-            mouse.cmd(0xF6);
-
-            // Enable Streaming
-            mouse.cmd(0xF4);
+        while self.sts.readf(1) {
+            debugln!("Extra {}: {:X}", line!(), self.data.read());
         }
 
-        // Both interrupts, system flag set, clocks enabled, translation disabled
-        self.write(0x60, 0b00000111);
+        {
+            // Reset
+            debugln!("Reset {:X}", self.keyboard().cmd(0xFF));
+            self.wait_read();
+            debugln!("Response: {:X}", self.data.read());
 
-        while (self.sts.read() & 0x1) == 1 {
-            debugln!("Extra: {:X}", self.data.read());
+            while self.sts.readf(1) {
+                debugln!("Extra {}: {:X}", line!(), self.data.read());
+            }
+
+            // Set defaults
+            debugln!("Set defaults {:X}", self.mouse().cmd(0xF6));
+
+            while self.sts.readf(1) {
+                debugln!("Extra {}: {:X}", line!(), self.data.read());
+            }
+
+            // Enable Streaming
+            debugln!("Enable streaming {:X}", self.mouse().cmd(0xF4));
+
+            while self.sts.readf(1) {
+                debugln!("Extra {}: {:X}", line!(), self.data.read());
+            }
+        }
+
+        // Key and mouse interrupts, system flag set, clocks enabled, translation enabled
+        self.write(0x60, 0b01000111);
+
+        while self.sts.readf(1) {
+            debugln!("Extra {}: {:X}", line!(), self.data.read());
+        }
+
+        debugln!("Flags {:X}", self.read(0x20));
+
+        while self.sts.readf(1) {
+            debugln!("Extra {}: {:X}", line!(), self.data.read());
         }
     }
 
@@ -295,21 +333,25 @@ impl Ps2 {
 impl KScheme for Ps2 {
     fn on_irq(&mut self, irq: u8) {
         if irq == 0xC {
-            let data = self.data.read();
-            if let Some(mouse_event) = self.mouse_interrupt(data) {
-                if ::env().console.lock().draw {
-                    //Ignore mouse event
-                } else {
-                    ::env().events.send(mouse_event.to_event());
+            while self.sts.readf(1) {
+                let data = self.data.read();
+                if let Some(mouse_event) = self.mouse_interrupt(data) {
+                    if ::env().console.lock().draw {
+                        //Ignore mouse event
+                    } else {
+                        ::env().events.send(mouse_event.to_event());
+                    }
                 }
             }
         } else if irq == 0x1 {
-            let data = self.data.read();
-            if let Some(key_event) = self.keyboard_interrupt(data) {
-                if ::env().console.lock().draw {
-                    ::env().console.lock().event(key_event.to_event());
-                } else {
-                    ::env().events.send(key_event.to_event());
+            while self.sts.readf(1) {
+                let data = self.data.read();
+                if let Some(key_event) = self.keyboard_interrupt(data) {
+                    if ::env().console.lock().draw {
+                        ::env().console.lock().event(key_event.to_event());
+                    } else {
+                        ::env().events.send(key_event.to_event());
+                    }
                 }
             }
         }
