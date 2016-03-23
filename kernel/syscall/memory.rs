@@ -7,18 +7,16 @@ use system::error::Result;
 pub fn do_sys_brk(addr: usize) -> Result<usize> {
     let mut ret = 0;
 
-    let mut contexts = ::env().contexts.lock();
-    if let Ok(mut current) = contexts.current_mut() {
-        unsafe {
-            current.unmap();
-        }
-
+    let contexts = ::env().contexts.lock();
+    if let Ok(current) = contexts.current() {
         ret = current.next_mem();
 
         // TODO: Make this smarter, currently it attempt to resize the entire data segment
         if let Some(mut mem) = unsafe { (*current.memory.get()).last_mut() } {
             if mem.writeable && mem.allocated {
                 if addr >= mem.virtual_address {
+                    unsafe { mem.unmap() };
+
                     let size = addr - mem.virtual_address;
                     let physical_address = unsafe { memory::realloc(mem.physical_address, size) };
                     if physical_address > 0 {
@@ -27,22 +25,20 @@ pub fn do_sys_brk(addr: usize) -> Result<usize> {
                         ret = mem.virtual_address + mem.virtual_size;
                     } else {
                         mem.virtual_size = 0;
-                        debug!("BRK: Realloc failed {:X}, {}\n", mem.virtual_address, size);
+                        debugln!("BRK: Realloc failed {:X}, {}\n", mem.virtual_address, size);
                     }
+
+                    unsafe { mem.map() };
                 }
             } else {
-                debug!("BRK: End segment not writeable or allocated\n");
+                debugln!("{:X}: {}", current.pid, current.name);
+                debugln!("BRK: End segment not writeable or allocated");
             }
         } else {
-            debug!("BRK: No segments\n")
-        }
-
-        unsafe {
-            current.clean_mem();
-            current.map();
+            debugln!("BRK: No segments");
         }
     } else {
-        debug!("BRK: Context not found\n");
+        debugln!("BRK: Context not found");
     }
 
     Ok(ret)
