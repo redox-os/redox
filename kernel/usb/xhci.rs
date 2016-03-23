@@ -69,11 +69,7 @@ impl Xhci {
     }
 
     pub unsafe fn init(&mut self) {
-        debug::d("XHCI on: ");
-        debug::dh(self.base);
-        debug::d(" IRQ: ");
-        debug::dbh(self.irq);
-        debug::dl();
+        debugln!(" + XHCI on: {:X}, IRQ: {:X}", self.base, self.irq);
 
         /*
         self.pci.flag(4, 4, true); // Bus mastering

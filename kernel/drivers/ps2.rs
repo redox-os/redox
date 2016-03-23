@@ -136,6 +136,8 @@ impl Ps2 {
             self.data.read();
         }
 
+        debugln!(" + PS/2");
+
         // No interrupts, system flag set, clocks enabled, translation enabled
         self.write(0x60, 0b01000100);
 
@@ -144,7 +146,7 @@ impl Ps2 {
         }
 
         // Enable First Port
-        debugln!("Enable keyboard");
+        debugln!("   + Keyboard");
         self.cmd(0xAE);
 
         while self.sts.readf(1) {
@@ -153,23 +155,23 @@ impl Ps2 {
 
         {
             // Reset
-            debugln!("Reset {:X}", self.keyboard().cmd(0xFF));
+            debug!("     - Reset {:X}", self.keyboard().cmd(0xFF));
             self.wait_read();
-            debugln!("Response: {:X}", self.data.read());
+            debugln!(", {:X}", self.data.read());
 
             while self.sts.readf(1) {
                 debugln!("Extra {}: {:X}", line!(), self.data.read());
             }
 
             // Set defaults
-            debugln!("Set defaults {:X}", self.keyboard().cmd(0xF6));
+            debugln!("     - Set defaults {:X}", self.keyboard().cmd(0xF6));
 
             while self.sts.readf(1) {
                 debugln!("Extra {}: {:X}", line!(), self.data.read());
             }
 
             // Enable Streaming
-            debugln!("Enable streaming {:X}", self.keyboard().cmd(0xF4));
+            debugln!("     - Enable streaming {:X}", self.keyboard().cmd(0xF4));
 
             while self.sts.readf(1) {
                 debugln!("Extra {}: {:X}", line!(), self.data.read());
@@ -177,7 +179,7 @@ impl Ps2 {
         }
 
         // Enable Second Port
-        debugln!("Enable mouse");
+        debugln!("   + PS/2 Mouse");
         self.cmd(0xA8);
 
         while self.sts.readf(1) {
@@ -186,23 +188,23 @@ impl Ps2 {
 
         {
             // Reset
-            debugln!("Reset {:X}", self.keyboard().cmd(0xFF));
+            debug!("     - Reset {:X}", self.keyboard().cmd(0xFF));
             self.wait_read();
-            debugln!("Response: {:X}", self.data.read());
+            debugln!(", {:X}", self.data.read());
 
             while self.sts.readf(1) {
                 debugln!("Extra {}: {:X}", line!(), self.data.read());
             }
 
             // Set defaults
-            debugln!("Set defaults {:X}", self.mouse().cmd(0xF6));
+            debugln!("     - Set defaults {:X}", self.mouse().cmd(0xF6));
 
             while self.sts.readf(1) {
                 debugln!("Extra {}: {:X}", line!(), self.data.read());
             }
 
             // Enable Streaming
-            debugln!("Enable streaming {:X}", self.mouse().cmd(0xF4));
+            debugln!("     - Enable streaming {:X}", self.mouse().cmd(0xF4));
 
             while self.sts.readf(1) {
                 debugln!("Extra {}: {:X}", line!(), self.data.read());
@@ -211,12 +213,6 @@ impl Ps2 {
 
         // Key and mouse interrupts, system flag set, clocks enabled, translation enabled
         self.write(0x60, 0b01000111);
-
-        while self.sts.readf(1) {
-            debugln!("Extra {}: {:X}", line!(), self.data.read());
-        }
-
-        debugln!("Flags {:X}", self.read(0x20));
 
         while self.sts.readf(1) {
             debugln!("Extra {}: {:X}", line!(), self.data.read());

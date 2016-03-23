@@ -53,7 +53,7 @@ pub unsafe fn pci_device(env: &mut Environment,
             (INTEL, AC97_82801AA) => env.schemes.lock().push(Ac97::new(pci)),
             (INTEL, AC97_ICH4) => env.schemes.lock().push(Ac97::new(pci)),
             (INTEL, INTELHDA_ICH6) => env.schemes.lock().push(IntelHda::new(pci)),
-            _ => (),
+            _ => debugln!(" ? CLASS {:02X}.{:02X}.{:02X} ID {:04X}:{:04X}", class_id, subclass_id, interface_id, vendor_code, device_code),
         }
     }
 }

@@ -246,16 +246,7 @@ impl IntelHda {
     }
 
     pub unsafe fn init(&mut self) {
-        debug::d("Intel HDA on: ");
-        debug::dh(self.base);
-        if self.memory_mapped {
-            debug::d(" memory mapped");
-        } else {
-            debug::d(" port mapped");
-        }
-        debug::d(", IRQ: ");
-        debug::dbh(self.irq);
-        debug::dl();
+        debugln!(" + Intel HDA on: {:X}, IRQ {:X}", self.base, self.irq);
 
         return;
         // let pci = &mut self.pci;

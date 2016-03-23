@@ -62,7 +62,7 @@ impl Uhci {
     }
 
     pub unsafe fn init(&mut self) {
-        debugln!("UHCI on: {:X}, IRQ: {:X}", self.base, self.irq);
+        debugln!(" + UHCI on: {:X}, IRQ: {:X}", self.base, self.irq);
 
         /*
         let base = self.base as u16;

@@ -138,31 +138,64 @@ impl Ide {
 
         unsafe { pci.flag(4, 4, true) }; // Bus mastering
 
-        let busmaster = unsafe { pci.read(0x20) } as u16 & 0xFFF0;
+        let bar0 = unsafe { pci.read(0x10) } as u16 & 0xFFF0;
+        let bar1 = unsafe { pci.read(0x14) } as u16 & 0xFFF0;
+        let bar2 = unsafe { pci.read(0x18) } as u16 & 0xFFF0;
+        let bar3 = unsafe { pci.read(0x1C) } as u16 & 0xFFF0;
+        let bar4 = unsafe { pci.read(0x20) } as u16 & 0xFFF0;
+        let irq = unsafe { pci.read(0x3C) } as u8 & 0xF;
 
-        debug!("Primary Master:");
-        if let Some(disk) = IdeDisk::new(busmaster, 0x1F0, 0x3F4, 0xE, true) {
-            ret.push(box disk);
-        }
-        debugln!("");
+        debugln!(" + IDE on {:X}, {:X}, {:X}, {:X}, {:X}, IRQ: {:X}", bar0, bar1, bar2, bar3, bar4, irq);
 
-        debug!("Primary Slave:");
-        if let Some(disk) = IdeDisk::new(busmaster, 0x1F0, 0x3F4, 0xE, false) {
-            ret.push(box disk);
-        }
-        debugln!("");
+        let port_or = |value: u16, or_value: u16| -> u16 {
+            if value > 0 {
+                value
+            } else {
+                or_value
+            }
+        };
 
-        debug!("Secondary Master:");
-        if let Some(disk) = IdeDisk::new(busmaster + 8, 0x170, 0x374, 0xF, true) {
-            ret.push(box disk);
-        }
-        debugln!("");
+        {
+            let busmaster = bar4;
+            let data = port_or(bar0, 0x1F0);
+            let control = port_or(bar1, 0x3F4);
+            let irq = 0xE;
 
-        debug!("Secondary Slave:");
-        if let Some(disk) = IdeDisk::new(busmaster + 8, 0x170, 0x374, 0xF, false) {
-            ret.push(box disk);
+            debugln!("   + Primary on: {:X}, {:X}, {:X}, IRQ {:X}", busmaster, data, control, irq);
+
+            debug!("     + Master:");
+            if let Some(disk) = IdeDisk::new(busmaster, data, control, irq, true) {
+                ret.push(box disk);
+            }
+            debugln!("");
+
+            debug!("     + Slave:");
+            if let Some(disk) = IdeDisk::new(busmaster, data, control, irq, false) {
+                ret.push(box disk);
+            }
+            debugln!("");
         }
-        debugln!("");
+
+        {
+            let busmaster = bar4 + 8;
+            let data = port_or(bar2, 0x170);
+            let control = port_or(bar3, 0x374);
+            let irq = 0xF;
+
+            debugln!("   + Secondary on: {:X}, {:X}, {:X}, IRQ {:X}", busmaster, data, control, irq);
+
+            debug!("     + Master:");
+            if let Some(disk) = IdeDisk::new(busmaster, data, control, irq, true) {
+                ret.push(box disk);
+            }
+            debugln!("");
+
+            debug!("     + Slave:");
+            if let Some(disk) = IdeDisk::new(busmaster, data, control, irq, false) {
+                ret.push(box disk);
+            }
+            debugln!("");
+        }
 
         ret
     }
