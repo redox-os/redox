@@ -214,10 +214,7 @@ impl Ac97 {
             irq: pci.read(0x3C) as u8 & 0xF,
         };
 
-        debug!("AC97 on: {:X}, {:X}, IRQ: {:X}\n",
-               module.audio,
-               module.bus_master,
-               module.irq);
+        debug!(" + AC97 on: {:X}, {:X}, IRQ: {:X}\n", module.audio, module.bus_master, module.irq);
 
         module
     }

@@ -311,15 +311,7 @@ impl Intel8254x {
     }
 
     pub unsafe fn init(&mut self) {
-        debug::d("Intel 8254x on: ");
-        debug::dh(self.base);
-        if self.memory_mapped {
-            debug::d(" memory mapped");
-        } else {
-            debug::d(" port mapped");
-        }
-        debug::d(", IRQ: ");
-        debug::dbh(self.irq);
+        debugln!(" + Intel 8254x on: {:X}, IRQ: {:X}", self.base, self.irq);
 
         self.pci.flag(4, 4, true); // Bus mastering
 

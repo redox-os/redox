@@ -134,15 +134,7 @@ impl Rtl8139 {
     }
 
     unsafe fn init(&mut self) {
-        debug::d("RTL8139 on: ");
-        debug::dh(self.base);
-        if self.memory_mapped {
-            debug::d(" memory mapped");
-        } else {
-            debug::d(" port mapped");
-        }
-        debug::d(" IRQ: ");
-        debug::dbh(self.irq);
+        debugln!(" + RTL8139 on: {:X}, IRQ: {:X}", self.base, self.irq);
 
         self.pci.flag(4, 4, true); // Bus mastering
 
@@ -152,7 +144,7 @@ impl Rtl8139 {
         self.port.cr.write(RTL8139_CR_RST);
         while self.port.cr.read() & RTL8139_CR_RST != 0 {}
 
-        debug::d(" MAC: ");
+        debug::d("   - MAC: ");
         MAC_ADDR = MacAddr {
             bytes: [self.port.idr[0].read(),
                     self.port.idr[1].read(),
