@@ -1,6 +1,3 @@
-#[lang="stack_exhausted"]
-extern "C" fn stack_exhausted() {}
-
 #[lang="eh_personality"]
 extern "C" fn eh_personality() {}
 
