@@ -1,5 +1,6 @@
 use alloc::boxed::Box;
 
+use collections::borrow::ToOwned;
 use collections::string::String;
 
 use core::cmp;
@@ -10,18 +11,20 @@ use system::error::Result;
 
 /// A debug resource
 pub struct DebugResource {
+    pub path: String,
     pub command: String,
 }
 
 impl Resource for DebugResource {
     fn dup(&self) -> Result<Box<Resource>> {
         Ok(box DebugResource {
+            path: self.path.clone(),
             command: self.command.clone(),
         })
     }
 
     fn path(&self, buf: &mut [u8]) -> Result <usize> {
-        let path = b"debug:";
+        let path = self.path.as_bytes();
 
         for (b, p) in buf.iter_mut().zip(path.iter()) {
             *b = *p;
@@ -71,8 +74,17 @@ impl KScheme for DebugScheme {
     }
 
     fn open(&mut self, _: Url, _: usize) -> Result<Box<Resource>> {
-        Ok(box DebugResource {
-            command: String::new()
-        })
+        let console = ::env().console.lock();
+        if let Some(ref display) = console.display {
+            Ok(box DebugResource {
+                path: format!("debug:{}/{}", display.width/8, display.height/16),
+                command: String::new()
+            })
+        } else {
+            Ok(box DebugResource {
+                path: "debug:".to_owned(),
+                command: String::new()
+            })
+        }
     }
 }
