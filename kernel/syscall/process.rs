@@ -91,6 +91,23 @@ pub fn do_sys_iopl(regs: &mut Regs) -> Result<usize> {
     }
 }
 
+#[cfg(target_arch = "x86_64")]
+pub fn do_sys_iopl(regs: &mut Regs) -> Result<usize> {
+    let level = regs.bx;
+    if level <= 3 {
+        let mut contexts = ::env().contexts.lock();
+        let mut current = try!(contexts.current_mut());
+        current.iopl = level;
+
+        regs.flags &= 0xFFFFFFFFFFFFFFFF - 0x3000;
+        regs.flags |= (current.iopl << 12) & 0x3000;
+
+        Ok(0)
+    } else {
+        Err(Error::new(EINVAL))
+    }
+}
+
 //TODO: Finish implementation, add more functions to WaitMap so that matching any or using WNOHANG works
 pub fn do_sys_waitpid(pid: isize, status_ptr: *mut usize, _options: usize) -> Result<usize> {
     let mut contexts = ::env().contexts.lock();
