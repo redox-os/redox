@@ -232,6 +232,7 @@ filesystem/bin/%: crates/games/src/%/main.rs crates/games/src/%/*.rs $(BUILD)/cr
 
 games: \
 	filesystem/bin/ice \
+	filesystem/bin/h4xx3r \
 	filesystem/bin/minesweeper \
 	filesystem/bin/rusthello \
 	filesystem/bin/snake
