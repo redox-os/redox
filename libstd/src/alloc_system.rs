@@ -1,40 +1,32 @@
-use system::syscall::{sys_alloc, sys_unalloc, sys_realloc, sys_realloc_inplace};
+#[link(name = "c", kind = "static")]
+extern {
+    fn malloc(size: usize) -> *mut u8;
+    fn realloc(ptr: *mut u8, size: usize) -> *mut u8;
+    fn free(ptr: *mut u8);
+}
 
 #[allocator]
-#[allow(unused_variables)]
 #[no_mangle]
-pub extern "C" fn __rust_allocate(size: usize, align: usize) -> *mut u8 {
-    unsafe { sys_alloc(size).unwrap() as *mut u8 }
+pub extern "C" fn __rust_allocate(size: usize, _align: usize) -> *mut u8 {
+    unsafe { malloc(size) }
 }
 
-#[allow(unused_variables)]
 #[no_mangle]
-pub extern "C" fn __rust_deallocate(ptr: *mut u8, old_size: usize, align: usize) {
-    unsafe { sys_unalloc(ptr as usize).unwrap() };
+pub extern "C" fn __rust_deallocate(ptr: *mut u8, _old_size: usize, _align: usize) {
+    unsafe { free(ptr) };
 }
 
-#[allow(unused_variables)]
 #[no_mangle]
-pub extern "C" fn __rust_reallocate(ptr: *mut u8,
-                                    old_size: usize,
-                                    size: usize,
-                                    align: usize)
-                                    -> *mut u8 {
-    unsafe { sys_realloc(ptr as usize, size).unwrap() as *mut u8 }
+pub extern "C" fn __rust_reallocate(ptr: *mut u8, _old_size: usize, size: usize, _align: usize) -> *mut u8 {
+    unsafe { realloc(ptr, size) }
 }
 
-#[allow(unused_variables)]
 #[no_mangle]
-pub extern "C" fn __rust_reallocate_inplace(ptr: *mut u8,
-                                            old_size: usize,
-                                            size: usize,
-                                            align: usize)
-                                            -> usize {
-    unsafe { sys_realloc_inplace(ptr as usize, size).unwrap() }
+pub extern "C" fn __rust_reallocate_inplace(_ptr: *mut u8, old_size: usize, _size: usize, _align: usize) -> usize {
+    old_size
 }
 
-#[allow(unused_variables)]
 #[no_mangle]
-pub extern "C" fn __rust_usable_size(size: usize, align: usize) -> usize {
+pub extern "C" fn __rust_usable_size(size: usize, _align: usize) -> usize {
     size
 }
