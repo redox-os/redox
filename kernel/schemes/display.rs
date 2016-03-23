@@ -12,7 +12,7 @@ use graphics::display::Display;
 
 use fs::{KScheme, Resource, ResourceSeek, Url};
 
-use system::error::{Error, Result, EACCES, ENOENT, EINVAL};
+use system::error::{Error, Result, ENOENT, EINVAL};
 use system::graphics::fast_copy;
 
 pub struct DisplayScheme;
@@ -108,20 +108,16 @@ impl KScheme for DisplayScheme {
     }
 
     fn open(&mut self, _: Url, _: usize) -> Result<Box<Resource>> {
-        if ::env().console.lock().draw {
-            if let Some(display) = Display::root() {
-                ::env().console.lock().draw = false;
+        if let Some(display) = Display::root() {
+            ::env().console.lock().draw = false;
 
-                Ok(box DisplayResource {
-                    path: format!("display:{}/{}", display.width, display.height),
-                    display: Arc::new(display),
-                    seek: 0,
-                })
-            } else {
-                Err(Error::new(ENOENT))
-            }
+            Ok(box DisplayResource {
+                path: format!("display:{}/{}", display.width, display.height),
+                display: Arc::new(display),
+                seek: 0,
+            })
         } else {
-            Err(Error::new(EACCES))
+            Err(Error::new(ENOENT))
         }
     }
 }
