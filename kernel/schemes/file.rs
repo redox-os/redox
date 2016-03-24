@@ -166,20 +166,19 @@ impl Resource for FileResource {
                 //debug::d("Node dirty, rewrite\n");
 
                 if self.node.block > 0 {
-                    unsafe {
-                        if let Some(mut node_data) = Memory::<NodeData>::new(1) {
-                            node_data.write(0, self.node.data());
+                    let mut node_data = try!(Memory::<NodeData>::new(1));
+                    node_data.write(0, self.node.data());
 
-                            let mut buffer = slice::from_raw_parts(node_data.address() as *mut u8, 512);
-                            let _ = (*self.scheme).fs.disk.write(self.node.block, &mut buffer);
+                    let scheme = unsafe { &mut *self.scheme };
 
-                            //debug::d("Renode\n");
+                    let buffer = unsafe { slice::from_raw_parts(node_data.as_ptr() as *const u8, 512) };
+                    try!(scheme.fs.disk.write(self.node.block, buffer));
 
-                            for mut node in (*self.scheme).fs.nodes.iter_mut() {
-                                if node.block == self.node.block {
-                                    *node = self.node.clone();
-                                }
-                            }
+                    //debug::d("Renode\n");
+
+                    for mut node in scheme.fs.nodes.iter_mut() {
+                        if node.block == self.node.block {
+                            *node = self.node.clone();
                         }
                     }
                 } else {
