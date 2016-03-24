@@ -136,7 +136,7 @@ all: $(BUILD)/harddrive.bin
 filesystem/apps/sodium/main.bin: filesystem/apps/sodium/src/main.rs filesystem/apps/sodium/src/*.rs $(BUILD)/libstd.rlib $(BUILD)/liborbclient.rlib
 	$(RUSTC) $(RUSTCFLAGS) --crate-type bin -o $@ $< --cfg 'feature="orbital"'
 
-filesystem/apps/example/main.bin: filesystem/apps/example/main.rs filesystem/apps/example/*.rs $(BUILD)/crt0.o $(BUILD)/libstd.rlib
+filesystem/apps/pixelcannon/main.bin: crates/pixelcannon/src/main.rs crates/pixelcannon/src/*.rs $(BUILD)/crt0.o $(BUILD)/libstd.rlib $(BUILD)/liborbclient.rlib
 	$(RUSTC) $(RUSTCFLAGS) --crate-type bin -o $@ $<
 
 filesystem/apps/%/main.bin: filesystem/apps/%/main.rs filesystem/apps/%/*.rs $(BUILD)/crt0.o $(BUILD)/libstd.rlib $(BUILD)/liborbclient.rlib $(BUILD)/liborbtk.rlib
@@ -149,6 +149,7 @@ apps: filesystem/apps/calculator/main.bin \
 	  filesystem/apps/editor/main.bin \
 	  filesystem/apps/file_manager/main.bin \
 	  filesystem/apps/orbtk/main.bin \
+	  filesystem/apps/pixelcannon/main.bin \
 	  filesystem/apps/player/main.bin \
 	  filesystem/apps/sodium/main.bin \
 	  filesystem/apps/terminal/main.bin \

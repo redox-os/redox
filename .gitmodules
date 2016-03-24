@@ -46,3 +46,6 @@
 [submodule "crates/extra"]
 	path = crates/extra
 	url = https://github.com/redox-os/libextra.git
+[submodule "crates/pixelcannon"]
+	path = crates/pixelcannon
+	url = https://github.com/pythoneer/pixelcannon.git
