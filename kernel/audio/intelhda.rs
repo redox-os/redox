@@ -1,6 +1,6 @@
 use alloc::boxed::Box;
 
-use arch::memory;
+use arch::memory::Memory;
 
 use core::{ptr, mem};
 
@@ -124,38 +124,34 @@ impl Resource for IntelHdaResource {
             debug::d(" Format ");
             debug::dh(stream.format as usize);
 
-            let bd_addr = memory::alloc(buf.len());
-            let bd_size = memory::alloc_size(bd_addr);
+            let mut bd_addr = try!(Memory::<u8>::new(buf.len()));
+            let bd_size = bd_addr.len();
 
-            ::memset(bd_addr as *mut u8, 0, bd_size);
-            ::memcpy(bd_addr as *mut u8, buf.as_ptr(), buf.len());
+            ::memset(bd_addr.as_mut_ptr(), 0, bd_size);
+            ::memcpy(bd_addr.as_mut_ptr(), buf.as_ptr(), buf.len());
 
-            let bdl = memory::alloc(2 * mem::size_of::<BD>()) as *mut BD;
-            ptr::write(bdl,
-                       BD {
-                           addr: bd_addr as u32,
-                           addru: 0,
-                           len: bd_size as u32,
-                           ioc: 1,
-                       });
-            ptr::write(bdl.offset(1),
-                       BD {
-                           addr: bd_addr as u32,
-                           addru: 0,
-                           len: bd_size as u32,
-                           ioc: 1,
-                       });
+            let mut bdl = try!(Memory::<BD>::new(2));
+            bdl.write(0, BD {
+                addr: bd_addr.address() as u32,
+                addru: 0,
+                len: bd_size as u32,
+                ioc: 1,
+            });
+            bdl.write(1, BD {
+                addr: bd_addr.address() as u32,
+                addru: 0,
+                len: bd_size as u32,
+                ioc: 1,
+            });
 
-            stream.bdlpl = bdl as u32;
+            stream.bdlpl = bdl.address() as u32;
 
             stream.cbl = (bd_size * 2) as u32;
 
-            debug::d(" CBL ");
-            debug::dd(stream.cbl as usize);
+            debug!(" CBL {}", stream.cbl);
 
             stream.lvi = 1;
-            debug::d(" LVI ");
-            debug::dd(stream.lvi as usize);
+            debug!(" LVI {}", stream.lvi);
 
             stream.interrupt = 1 << 2 | 1 << 1;
 
