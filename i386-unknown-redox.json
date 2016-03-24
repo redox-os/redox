@@ -6,7 +6,7 @@
     "os": "redox",
     "env": "",
     "vendor": "unknown",
-    "pre-link-args": ["-m32", "-nostdlib", "-static", "build/i386-unknown-redox/debug/crt0.o"],
+    "pre-link-args": ["-m32", "-nostdlib", "-static"],
     "features": "-mmx,-sse,-sse2,-sse3,-ssse3,-sse4.1,-sse4.2,-3dnow,-3dnowa,-avx,-avx2",
     "dynamic-linking": false,
     "executables": true,
