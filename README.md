@@ -2,7 +2,7 @@
 
 **Redox** is an operating system written in pure Rust, designed to be modular and secure. The development blog can be found at http://www.redox-os.org.
 
-Documentation can be found [here](http://ticki.github.io/redocs/redox/).
+Documentation can be found [here](https://doc.redox-os.org/doc/std/).
 
 Please make sure you use the **latest nightly** of `rustc` before building (for more troubleshooting, see ["Help! Redox won't compile!"](#compile-help)).
 
