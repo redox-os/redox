@@ -372,7 +372,7 @@ RAW MODE
                 self.character(c);
             }
 
-            if self.display.is_none() {
+            if self.display.is_none() || ! self.draw {
                 let serial_status = Pio::<u8>::new(0x3F8 + 5);
                 let mut serial_data = Pio::<u8>::new(0x3F8);
 
