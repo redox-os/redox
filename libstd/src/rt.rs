@@ -16,12 +16,38 @@ pub fn begin_unwind_fmt(fmt: fmt::Arguments, file_line: &(&'static str, u32)) ->
 
 #[no_mangle]
 #[inline(never)]
-pub unsafe extern "C" fn _start_stack(stack: *const usize) {
+#[naked]
+#[cfg(target_arch = "x86")]
+pub unsafe fn _start() {
     extern "C" {
         fn main(argc: usize, argv: *const *const u8) -> usize;
     }
 
-    sys_exit(main(*stack, stack.offset(1) as *const *const u8)).unwrap();
+    //asm!("xchg bx, bx" : : : "memory" : "intel", "volatile");
+
+    let sp: usize;
+    asm!("mov $0, esp" : "=r"(sp) : : "memory" : "intel", "volatile");
+    let stack = sp as *const usize;
+
+    let _ = sys_exit(main(*stack, stack.offset(1) as *const *const u8));
+}
+
+#[no_mangle]
+#[inline(never)]
+#[naked]
+#[cfg(target_arch = "x86_64")]
+pub unsafe fn _start() {
+    extern "C" {
+        fn main(argc: usize, argv: *const *const u8) -> usize;
+    }
+
+    //asm!("xchg bx, bx" : : : "memory" : "intel", "volatile");
+
+    let sp: usize;
+    asm!("mov $0, rsp" : "=r"(sp) : : "memory" : "intel", "volatile");
+    let stack = sp as *const usize;
+
+    let _ = sys_exit(main(*stack, stack.offset(1) as *const *const u8));
 }
 
 #[lang = "start"]
