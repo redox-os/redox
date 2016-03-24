@@ -164,7 +164,9 @@ impl Console {
                             if let Some(ref mut display) = self.display {
                                 display.set(self.background);
                             }
-                            self.redraw = true;
+                            if ! self.raw_mode {
+                                self.redraw = true;
+                            }
                         },
                         _ => {}
                     }
@@ -185,7 +187,6 @@ impl Console {
                     if let Some(ref mut display) = self.display {
                         display.rect(self.point_x, self.point_y, 8, 16, self.foreground);
                     }
-                    self.redraw = true;
 
                     self.escape_sequence = false;
                 },
@@ -265,7 +266,9 @@ RAW MODE
             '\n' => {
                 self.point_x = 0;
                 self.point_y += 16;
-                self.redraw = true;
+                if ! self.raw_mode {
+                    self.redraw = true;
+                }
             },
             '\t' => self.point_x = ((self.point_x / 64) + 1) * 64,
             '\r' => self.point_x = 0,
@@ -369,8 +372,7 @@ RAW MODE
                 self.character(c);
             }
 
-            //if self.display.is_none()
-            {
+            if self.display.is_none() {
                 let serial_status = Pio::<u8>::new(0x3F8 + 5);
                 let mut serial_data = Pio::<u8>::new(0x3F8);
 
