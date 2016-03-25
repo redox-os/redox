@@ -4,7 +4,7 @@ use core::{cmp, intrinsics, mem};
 use core::ops::{Index, IndexMut};
 use core::{ptr, slice};
 
-use super::paging::PAGE_END;
+use super::paging::{Page, PAGE_END};
 
 pub const CLUSTER_ADDRESS: usize = PAGE_END;
 pub const CLUSTER_COUNT: usize = 1024 * 1024; // 4 GiB
@@ -33,7 +33,7 @@ impl<T> Memory<T> {
     }
 
     /// Allocate memory, aligned
-    pub fn new_align(length: usize, align: usize) -> Result<Self> {
+    pub fn new_aligned(length: usize, align: usize) -> Result<Self> {
         let alloc = unsafe { alloc_aligned(length * mem::size_of::<T>(), align) };
         if alloc > 0 {
             Ok(Memory {
@@ -48,6 +48,20 @@ impl<T> Memory<T> {
     /// Reallocate the memory
     pub fn renew(mut self, length: usize) -> Result<Self> {
         let alloc = unsafe { realloc(self.ptr as usize, length * mem::size_of::<T>()) };
+        self.ptr = 0 as *mut T;
+        if alloc > 0 {
+            Ok(Memory {
+                ptr: alloc as *mut T,
+                length: length,
+            })
+        } else {
+            Err(Error::new(ENOMEM))
+        }
+    }
+
+    /// Reallocate the memory, aligned
+    pub fn renew_aligned(mut self, length: usize, align: usize) -> Result<Self> {
+        let alloc = unsafe { realloc_aligned(self.ptr as usize, length * mem::size_of::<T>(), align) };
         self.ptr = 0 as *mut T;
         if alloc > 0 {
             Ok(Memory {
@@ -224,38 +238,10 @@ pub unsafe fn cluster_init() {
 
 /// Allocate memory
 pub unsafe fn alloc(size: usize) -> usize {
-    if size > 0 {
-        let mut number = 0;
-        let mut count = 0;
-
-        for i in 0..CLUSTER_COUNT {
-            if cluster(i) == 0 {
-                if count == 0 {
-                    number = i;
-                }
-                count += 1;
-                if count * CLUSTER_SIZE >= size {
-                    break;
-                }
-            } else {
-                count = 0;
-            }
-        }
-        if count * CLUSTER_SIZE >= size {
-            let address = cluster_to_address(number);
-
-            ::memset(address as *mut u8, 0, count * CLUSTER_SIZE);
-
-            for i in number..number + count {
-                set_cluster(i, address);
-            }
-            return address;
-        }
-    }
-
-    0
+    alloc_aligned(size, 1)
 }
 
+/// Allocate memory, aligned
 pub unsafe fn alloc_aligned(size: usize, align: usize) -> usize {
     if size > 0 {
         let mut number = 0;
@@ -263,25 +249,34 @@ pub unsafe fn alloc_aligned(size: usize, align: usize) -> usize {
 
         for i in 0..CLUSTER_COUNT {
             if cluster(i) == 0 && (count > 0 || cluster_to_address(i) % align == 0) {
-                if count == 0 {
-                    number = i;
-                }
-                count += 1;
-                if count * CLUSTER_SIZE >= size {
-                    break;
+                //HACK FOR PAGING PROBLEMS
+                if Page::new(cluster_to_address(i)).phys_addr() == cluster_to_address(i) {
+                    if count == 0 {
+                        number = i;
+                    }
+
+                    count += 1;
+
+                    if count * CLUSTER_SIZE >= size {
+                        break;
+                    }
+                } else {
+                    count = 0;
                 }
             } else {
                 count = 0;
             }
         }
+
         if count * CLUSTER_SIZE >= size {
             let address = cluster_to_address(number);
-
-            ::memset(address as *mut u8, 0, count * CLUSTER_SIZE);
 
             for i in number..number + count {
                 set_cluster(i, address);
             }
+
+            ::memset(address as *mut u8, 0, count * CLUSTER_SIZE);
+
             return address;
         }
     }
@@ -289,6 +284,7 @@ pub unsafe fn alloc_aligned(size: usize, align: usize) -> usize {
     0
 }
 
+/// Allocate a type
 pub unsafe fn alloc_type<T>() -> *mut T {
     alloc(mem::size_of::<T>()) as *mut T
 }
@@ -325,7 +321,12 @@ pub unsafe fn unalloc_type<T>(ptr: *mut T) {
     unalloc(ptr as usize);
 }
 
+
 pub unsafe fn realloc(ptr: usize, size: usize) -> usize {
+    realloc_aligned(ptr, size, 1)
+}
+
+pub unsafe fn realloc_aligned(ptr: usize, size: usize, align: usize) -> usize {
     let mut ret = 0;
 
     if size == 0 {
@@ -337,7 +338,7 @@ pub unsafe fn realloc(ptr: usize, size: usize) -> usize {
         if size <= old_size {
             ret = ptr;
         } else {
-            ret = alloc(size);
+            ret = alloc_aligned(size, align);
             if ptr > 0 {
                 if ret > 0 {
                     let copy_size = cmp::min(old_size, size);
