@@ -15,39 +15,45 @@ pub fn begin_unwind_fmt(fmt: fmt::Arguments, file_line: &(&'static str, u32)) ->
 }
 
 #[no_mangle]
-#[inline(never)]
 #[naked]
 #[cfg(target_arch = "x86")]
 pub unsafe fn _start() {
-    extern "C" {
-        fn main(argc: usize, argv: *const *const u8) -> usize;
-    }
-
-    //asm!("xchg bx, bx" : : : "memory" : "intel", "volatile");
-
-    let sp: usize;
-    asm!("mov $0, esp" : "=r"(sp) : : "memory" : "intel", "volatile");
-    let stack = sp as *const usize;
-
-    let _ = sys_exit(main(*stack, stack.offset(1) as *const *const u8));
+    asm!("push esp
+        call _start_stack
+        pop esp"
+        :
+        :
+        : "memory"
+        : "intel", "volatile");
+    let _ = sys_exit(0);
 }
 
 #[no_mangle]
-#[inline(never)]
 #[naked]
 #[cfg(target_arch = "x86_64")]
 pub unsafe fn _start() {
+    asm!("push rsp
+        call _start_stack
+        pop rsp"
+        :
+        :
+        : "memory"
+        : "intel", "volatile");
+    let _ = sys_exit(0);
+}
+
+#[no_mangle]
+pub unsafe extern "C" fn _start_stack(sp: usize){
     extern "C" {
         fn main(argc: usize, argv: *const *const u8) -> usize;
     }
 
     //asm!("xchg bx, bx" : : : "memory" : "intel", "volatile");
 
-    let sp: usize;
-    asm!("mov $0, rsp" : "=r"(sp) : : "memory" : "intel", "volatile");
     let stack = sp as *const usize;
-
-    let _ = sys_exit(main(*stack, stack.offset(1) as *const *const u8));
+    let argc = *stack;
+    let argv = stack.offset(1) as *const *const u8;
+    let _ = sys_exit(main(argc, argv));
 }
 
 #[lang = "start"]
