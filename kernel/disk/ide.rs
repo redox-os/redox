@@ -63,7 +63,7 @@ impl Prdt {
 
         Prdt {
             reg: reg,
-            mem: Memory::new_align(512, 65536).unwrap(),
+            mem: Memory::new_aligned(512, 65536).unwrap(),
         }
     }
 }
