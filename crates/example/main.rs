@@ -3,6 +3,7 @@ use std::collections::BTreeMap;
 use std::fs::File;
 use std::io::{Read, Write};
 use std::mem::size_of;
+use std::thread;
 
 use system::error::{Error, Result, ENOENT, EBADF, EINVAL};
 use system::scheme::{Packet, Scheme};
@@ -197,15 +198,17 @@ impl Scheme for ExampleScheme {
 
 fn main() {
    //In order to handle example:, we create :example
-   let mut scheme = ExampleScheme::new();
-   let mut socket = File::create(":example").unwrap();
-   loop {
-       let mut packet = Packet::default();
-       while socket.read(&mut packet).unwrap() == size_of::<Packet>() {
-           println!("Recv {:?}", packet);
-           scheme.handle(&mut packet);
-           socket.write(&packet).unwrap();
-           println!("Sent {:?}", packet);
+   thread::spawn(|| {
+       let mut scheme = ExampleScheme::new();
+       let mut socket = File::create(":example").unwrap();
+       loop {
+           let mut packet = Packet::default();
+           while socket.read(&mut packet).unwrap() == size_of::<Packet>() {
+               println!("Recv {:?}", packet);
+               scheme.handle(&mut packet);
+               socket.write(&packet).unwrap();
+               println!("Sent {:?}", packet);
+           }
        }
-   }
+   });
 }

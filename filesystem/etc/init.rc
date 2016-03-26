@@ -1,11 +1,6 @@
-# Redox FS, to be moved into initfs
-#initfs:redoxfsd /etc/redoxfs.bin
-
-# Example scheme
-example
-
-# Orbital scheme, handles displays
-echo `orbital` to start GUI
+echo
+echo ** Redox has booted - press enter to login **
+echo
 
 # Login process, handles debug console
 login
