@@ -8,7 +8,6 @@ fn main() {
     let mut string = String::new();
     file.read_to_string(&mut string).unwrap();
 
-    let mut children = Vec::new();
     for line_untrimmed in string.lines() {
         let line = line_untrimmed.trim();
         if ! line.is_empty() && ! line.starts_with('#') {
@@ -20,16 +19,12 @@ fn main() {
                 }
 
                 match command.spawn() {
-                    Ok(child) => children.push(child),
+                    Ok(mut child) => if let Err(err) = child.wait() {
+                        println!("init: failed to wait for '{}': {}", line, err);
+                    },
                     Err(err) => println!("init: failed to execute '{}': {}", line, err),
                 }
             }
-        }
-    }
-
-    for mut child in children.iter_mut() {
-        if let Err(err) = child.wait() {
-            println!("init: failed to wait: {}", err)
         }
     }
 }

@@ -166,6 +166,7 @@ coreutils: \
 	filesystem/bin/cat \
 	filesystem/bin/clear \
 	filesystem/bin/cp \
+	filesystem/bin/cut \
 	filesystem/bin/du \
 	filesystem/bin/echo \
 	filesystem/bin/env \
