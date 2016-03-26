@@ -7,11 +7,11 @@ use collections::vec::Vec;
 use common::slice::GetSlice;
 use arch::memory::Memory;
 
-use core::{cmp, ptr, slice};
+use core::{cmp, ptr};
 
 use disk::Disk;
 
-use system::error::{Error, Result, ENOMEM, EINVAL};
+use system::error::{Error, Result, EINVAL};
 
 pub use self::header::Header;
 pub use self::node::{Node, NodeData};
@@ -29,47 +29,40 @@ pub struct FileSystem {
 impl FileSystem {
     /// Create a file system from a disk
     pub fn from_disk(mut disk: Box<Disk>) -> Result<Self> {
-        if let Some(data) = Memory::<u8>::new(512) {
-            try!(disk.read(1, unsafe { slice::from_raw_parts_mut(data.ptr, 512) }));
+        let mut header_data = try!(Memory::<u8>::new(512));
+        try!(disk.read(1, header_data.as_mut_slice()));
 
-            let header = unsafe { ptr::read(data.ptr as *const Header) };
-            if header.valid() {
-                debugln!("{}: Redox Filesystem", disk.name());
+        let header = unsafe { ptr::read(header_data.as_ptr() as *const Header) };
+        if header.valid() {
+            debugln!(" + Redox Filesystem on: {}", disk.name());
 
-                let mut nodes = Vec::new();
-                for extent in &header.extents {
-                    if extent.block > 0 && extent.length > 0 {
-                        let current_sectors = (extent.length as usize + 511) / 512;
-                        let max_size = current_sectors * 512;
+            let mut nodes = Vec::new();
+            for extent in &header.extents {
+                if extent.block > 0 && extent.length > 0 {
+                    let current_sectors = (extent.length as usize + 511) / 512;
+                    let max_size = current_sectors * 512;
 
-                        let size = cmp::min(extent.length as usize, max_size);
+                    let size = cmp::min(extent.length as usize, max_size);
 
-                        if let Some(data) = Memory::<u8>::new(max_size) {
-                            let mut buffer = unsafe {
-                                slice::from_raw_parts_mut(data.ptr, max_size)
-                            };
-                            try!(disk.read(extent.block, &mut buffer));
+                    let mut buffer = try!(Memory::<u8>::new(max_size));
+                    try!(disk.read(extent.block, buffer.as_mut_slice()));
 
-                            for i in 0..size / 512 {
-                                nodes.push(Node::new(extent.block + i as u64, unsafe {
-                                    &*(data.ptr.offset(i as isize * 512) as *const NodeData)
-                                }));
-                            }
-                        }
+                    for i in 0..size / 512 {
+                        nodes.push(Node::new(extent.block + i as u64, unsafe {
+                            &*(buffer.as_ptr().offset(i as isize * 512) as *const NodeData)
+                        }));
                     }
                 }
-
-                Ok(FileSystem {
-                    disk: disk,
-                    header: header,
-                    nodes: nodes,
-                })
-            } else {
-                debugln!("{}: Unknown Filesystem", disk.name());
-                Err(Error::new(EINVAL))
             }
+
+            Ok(FileSystem {
+                disk: disk,
+                header: header,
+                nodes: nodes,
+            })
         } else {
-            Err(Error::new(ENOMEM))
+            debugln!("{}: Unknown Filesystem", disk.name());
+            Err(Error::new(EINVAL))
         }
     }
 

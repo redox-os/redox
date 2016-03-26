@@ -18,7 +18,7 @@ pub fn do_sys_brk(addr: usize) -> Result<usize> {
                     unsafe { mem.unmap() };
 
                     let size = addr - mem.virtual_address;
-                    let physical_address = unsafe { memory::realloc(mem.physical_address, size) };
+                    let physical_address = unsafe { memory::realloc_aligned(mem.physical_address, size, 4096) };
                     if physical_address > 0 {
                         mem.physical_address = physical_address;
                         mem.virtual_size = size;
@@ -31,7 +31,7 @@ pub fn do_sys_brk(addr: usize) -> Result<usize> {
                     unsafe { mem.map() };
                 }
             } else {
-                debugln!("{:X}: {}", current.pid, current.name);
+                debugln!("{}: {}", current.pid, current.name);
                 debugln!("BRK: End segment not writeable or allocated");
             }
         } else {

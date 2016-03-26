@@ -56,7 +56,7 @@ pub fn execute_thread(context_ptr: *mut Context, entry: usize, mut args: Vec<Str
         {
             let virtual_address = context.next_mem();
             let virtual_size = 4096;
-            let physical_address = unsafe { memory::alloc(virtual_size) };
+            let physical_address = unsafe { memory::alloc_aligned(virtual_size, 4096) };
             if physical_address > 0 {
                 unsafe {
                     (*context.memory.get()).push(ContextMemory {
@@ -76,7 +76,7 @@ pub fn execute_thread(context_ptr: *mut Context, entry: usize, mut args: Vec<Str
         context.regs.sp = context.kernel_stack + CONTEXT_STACK_SIZE - 128;
 
         context.stack = Some(ContextMemory {
-            physical_address: unsafe { memory::alloc(CONTEXT_STACK_SIZE) },
+            physical_address: unsafe { memory::alloc_aligned(CONTEXT_STACK_SIZE, 4096) },
             virtual_address: CONTEXT_STACK_ADDR,
             virtual_size: CONTEXT_STACK_SIZE,
             writeable: true,
@@ -170,7 +170,7 @@ pub fn execute(mut args: Vec<String>) -> Result<usize> {
 
                         let offset = virtual_address % 4096;
 
-                        let physical_address = memory::alloc(virtual_size + offset);
+                        let physical_address = memory::alloc_aligned(virtual_size + offset, 4096);
 
                         if physical_address > 0 {
                             // Copy progbits

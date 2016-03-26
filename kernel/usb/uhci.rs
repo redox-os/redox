@@ -53,7 +53,7 @@ impl Uhci {
         let mut module = box Uhci {
             base: pci.read(0x20) as usize & 0xFFFFFFF0,
             irq: pci.read(0x3C) as u8 & 0xF,
-            frame_list: Memory::new_align(1024, 4096).unwrap(),
+            frame_list: Memory::new_aligned(1024, 4096).unwrap(),
         };
 
         module.init();
@@ -222,7 +222,7 @@ impl Hci for Uhci {
 
             let frnum = Pio::<u16>::new(self.base as u16 + 6);
             let frame = (frnum.read() + 1) & 0x3FF;
-            unsafe { self.frame_list.write(frame as usize, frame_ptr) };
+            self.frame_list.write(frame as usize, frame_ptr);
 
             for td in tds.iter().rev() {
                 while unsafe { volatile_load(td as *const Td).ctrl_sts } & 1 << 23 == 1 << 23 {
@@ -231,7 +231,7 @@ impl Hci for Uhci {
                 count += (unsafe { volatile_load(td as *const Td).ctrl_sts } & 0x7FF) as usize;
             }
 
-            unsafe { self.frame_list.write(frame as usize, 1) };
+            self.frame_list.write(frame as usize, 1);
         }
 
         count

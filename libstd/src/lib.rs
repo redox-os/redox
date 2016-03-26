@@ -26,6 +26,7 @@
 #![feature(int_error_internals)]
 #![feature(lang_items)]
 #![feature(macro_reexport)]
+#![feature(naked_functions)]
 #![feature(oom)]
 #![feature(prelude_import)]
 #![feature(rand)]

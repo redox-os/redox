@@ -2,85 +2,142 @@
 
 use core::{cmp, intrinsics, mem};
 use core::ops::{Index, IndexMut};
-use core::ptr;
+use core::{ptr, slice};
 
-use super::paging::PAGE_END;
+use super::paging::{Page, PAGE_END};
 
 pub const CLUSTER_ADDRESS: usize = PAGE_END;
 pub const CLUSTER_COUNT: usize = 1024 * 1024; // 4 GiB
 pub const CLUSTER_SIZE: usize = 4096; // Of 4 K chunks
 
+use system::error::{Result, Error, ENOMEM};
+
 /// A wrapper around raw pointers
 pub struct Memory<T> {
-    pub ptr: *mut T,
+    ptr: *mut T,
+    length: usize,
 }
 
 impl<T> Memory<T> {
-    /// Create an empty
-    pub fn new(count: usize) -> Option<Self> {
-        let alloc = unsafe { alloc(count * mem::size_of::<T>()) };
+    /// Allocate memory
+    pub fn new(length: usize) -> Result<Self> {
+        let alloc = unsafe { alloc(length * mem::size_of::<T>()) };
         if alloc > 0 {
-            Some(Memory { ptr: alloc as *mut T })
+            Ok(Memory {
+                ptr: alloc as *mut T,
+                length: length,
+            })
         } else {
-            None
+            Err(Error::new(ENOMEM))
         }
     }
 
-    pub fn new_align(count: usize, align: usize) -> Option<Self> {
-        let alloc = unsafe { alloc_aligned(count * mem::size_of::<T>(), align) };
+    /// Allocate memory, aligned
+    pub fn new_aligned(length: usize, align: usize) -> Result<Self> {
+        let alloc = unsafe { alloc_aligned(length * mem::size_of::<T>(), align) };
         if alloc > 0 {
-            Some(Memory { ptr: alloc as *mut T })
+            Ok(Memory {
+                ptr: alloc as *mut T,
+                length: length,
+            })
         } else {
-            None
+            Err(Error::new(ENOMEM))
         }
     }
 
-    /// Renew the memory
-    pub fn renew(&mut self, count: usize) -> bool {
-        let address = unsafe { realloc(self.ptr as usize, count * mem::size_of::<T>()) };
-        if address > 0 {
-            self.ptr = address as *mut T;
-            true
+    /// Reallocate the memory
+    pub fn renew(mut self, length: usize) -> Result<Self> {
+        let alloc = unsafe { realloc(self.ptr as usize, length * mem::size_of::<T>()) };
+        self.ptr = 0 as *mut T;
+        if alloc > 0 {
+            Ok(Memory {
+                ptr: alloc as *mut T,
+                length: length,
+            })
         } else {
-            false
+            Err(Error::new(ENOMEM))
         }
     }
 
-    /// Get the size in bytes
-    pub fn size(&self) -> usize {
-        unsafe { alloc_size(self.ptr as usize) }
+    /// Reallocate the memory, aligned
+    pub fn renew_aligned(mut self, length: usize, align: usize) -> Result<Self> {
+        let alloc = unsafe { realloc_aligned(self.ptr as usize, length * mem::size_of::<T>(), align) };
+        self.ptr = 0 as *mut T;
+        if alloc > 0 {
+            Ok(Memory {
+                ptr: alloc as *mut T,
+                length: length,
+            })
+        } else {
+            Err(Error::new(ENOMEM))
+        }
     }
 
     /// Get the length in T elements
-    pub fn length(&self) -> usize {
-        unsafe { alloc_size(self.ptr as usize) / mem::size_of::<T>() }
+    pub fn len(&self) -> usize {
+        self.length
     }
 
-    /// Get the address
-    pub unsafe fn address(&self) -> usize {
-        self.ptr as usize
+    #[inline(always)]
+    fn check_index(&self, i: usize) {
+        if i >= self.length {
+            panic!("Memory: {} >= {}", i, self.length);
+        }
     }
 
     /// Read the memory
-    pub unsafe fn read(&self, i: usize) -> T {
-        ptr::read(self.ptr.offset(i as isize))
+    pub fn read(&self, i: usize) -> T {
+        self.check_index(i);
+        unsafe { ptr::read(self.ptr.offset(i as isize)) }
     }
 
     /// Load the memory
-    pub unsafe fn load(&self, i: usize) -> T {
-        intrinsics::atomic_singlethreadfence();
-        ptr::read(self.ptr.offset(i as isize))
+    pub fn load(&self, i: usize) -> T {
+        self.check_index(i);
+        unsafe {
+            intrinsics::atomic_singlethreadfence();
+            ptr::read(self.ptr.offset(i as isize))
+        }
     }
 
     /// Overwrite the memory
-    pub unsafe fn write(&mut self, i: usize, value: T) {
-        ptr::write(self.ptr.offset(i as isize), value);
+    pub fn write(&mut self, i: usize, value: T) {
+        self.check_index(i);
+        unsafe { ptr::write(self.ptr.offset(i as isize), value) };
     }
 
     /// Store the memory
-    pub unsafe fn store(&mut self, i: usize, value: T) {
-        intrinsics::atomic_singlethreadfence();
-        ptr::write(self.ptr.offset(i as isize), value)
+    pub fn store(&mut self, i: usize, value: T) {
+        self.check_index(i);
+        unsafe {
+            intrinsics::atomic_singlethreadfence();
+            ptr::write(self.ptr.offset(i as isize), value)
+        }
+    }
+
+    /// Get the address
+    pub fn address(&self) -> usize {
+        self.ptr as usize
+    }
+
+    /// Borrow as a slice
+    pub fn as_slice(&self) -> &[T] {
+        unsafe { slice::from_raw_parts(self.ptr, self.length) }
+    }
+
+    /// Borrow as a mutable slice
+    pub fn as_mut_slice(&mut self) -> &mut [T] {
+        unsafe { slice::from_raw_parts_mut(self.ptr, self.length) }
+    }
+
+    /// Borrow as a raw pointer
+    pub unsafe fn as_ptr(&self) -> *const T {
+        self.ptr as *const T
+    }
+
+    /// Borrow as a mutable raw pointer
+    pub unsafe fn as_mut_ptr(&mut self) -> *mut T {
+        self.ptr as *mut T
     }
 
     /// Convert into a raw pointer
@@ -102,14 +159,16 @@ impl<T> Drop for Memory<T> {
 impl<T> Index<usize> for Memory<T> {
     type Output = T;
 
-    fn index<'a>(&'a self, _index: usize) -> &'a T {
-        unsafe { &*self.ptr.offset(_index as isize) }
+    fn index<'a>(&'a self, i: usize) -> &'a T {
+        self.check_index(i);
+        unsafe { &*self.ptr.offset(i as isize) }
     }
 }
 
 impl<T> IndexMut<usize> for Memory<T> {
-    fn index_mut<'a>(&'a mut self, _index: usize) -> &'a mut T {
-        unsafe { &mut *self.ptr.offset(_index as isize) }
+    fn index_mut<'a>(&'a mut self, i: usize) -> &'a mut T {
+        self.check_index(i);
+        unsafe { &mut *self.ptr.offset(i as isize) }
     }
 }
 
@@ -179,38 +238,10 @@ pub unsafe fn cluster_init() {
 
 /// Allocate memory
 pub unsafe fn alloc(size: usize) -> usize {
-    if size > 0 {
-        let mut number = 0;
-        let mut count = 0;
-
-        for i in 0..CLUSTER_COUNT {
-            if cluster(i) == 0 {
-                if count == 0 {
-                    number = i;
-                }
-                count += 1;
-                if count * CLUSTER_SIZE >= size {
-                    break;
-                }
-            } else {
-                count = 0;
-            }
-        }
-        if count * CLUSTER_SIZE >= size {
-            let address = cluster_to_address(number);
-
-            ::memset(address as *mut u8, 0, count * CLUSTER_SIZE);
-
-            for i in number..number + count {
-                set_cluster(i, address);
-            }
-            return address;
-        }
-    }
-
-    0
+    alloc_aligned(size, 1)
 }
 
+/// Allocate memory, aligned
 pub unsafe fn alloc_aligned(size: usize, align: usize) -> usize {
     if size > 0 {
         let mut number = 0;
@@ -218,25 +249,34 @@ pub unsafe fn alloc_aligned(size: usize, align: usize) -> usize {
 
         for i in 0..CLUSTER_COUNT {
             if cluster(i) == 0 && (count > 0 || cluster_to_address(i) % align == 0) {
-                if count == 0 {
-                    number = i;
-                }
-                count += 1;
-                if count * CLUSTER_SIZE >= size {
-                    break;
+                //HACK FOR PAGING PROBLEMS
+                if Page::new(cluster_to_address(i)).phys_addr() == cluster_to_address(i) {
+                    if count == 0 {
+                        number = i;
+                    }
+
+                    count += 1;
+
+                    if count * CLUSTER_SIZE >= size {
+                        break;
+                    }
+                } else {
+                    count = 0;
                 }
             } else {
                 count = 0;
             }
         }
+
         if count * CLUSTER_SIZE >= size {
             let address = cluster_to_address(number);
-
-            ::memset(address as *mut u8, 0, count * CLUSTER_SIZE);
 
             for i in number..number + count {
                 set_cluster(i, address);
             }
+
+            ::memset(address as *mut u8, 0, count * CLUSTER_SIZE);
+
             return address;
         }
     }
@@ -244,6 +284,7 @@ pub unsafe fn alloc_aligned(size: usize, align: usize) -> usize {
     0
 }
 
+/// Allocate a type
 pub unsafe fn alloc_type<T>() -> *mut T {
     alloc(mem::size_of::<T>()) as *mut T
 }
@@ -280,7 +321,12 @@ pub unsafe fn unalloc_type<T>(ptr: *mut T) {
     unalloc(ptr as usize);
 }
 
+
 pub unsafe fn realloc(ptr: usize, size: usize) -> usize {
+    realloc_aligned(ptr, size, 1)
+}
+
+pub unsafe fn realloc_aligned(ptr: usize, size: usize, align: usize) -> usize {
     let mut ret = 0;
 
     if size == 0 {
@@ -292,7 +338,7 @@ pub unsafe fn realloc(ptr: usize, size: usize) -> usize {
         if size <= old_size {
             ret = ptr;
         } else {
-            ret = alloc(size);
+            ret = alloc_aligned(size, align);
             if ptr > 0 {
                 if ret > 0 {
                     let copy_size = cmp::min(old_size, size);
