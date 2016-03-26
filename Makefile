@@ -135,19 +135,20 @@ all: $(BUILD)/harddrive.bin
 filesystem/apps/sodium/main.bin: filesystem/apps/sodium/src/main.rs filesystem/apps/sodium/src/*.rs $(BUILD)/libstd.rlib $(BUILD)/liborbclient.rlib
 	$(RUSTC) $(RUSTCFLAGS) --crate-type bin -o $@ $< --cfg 'feature="orbital"'
 
-filesystem/apps/example/main.bin: filesystem/apps/example/main.rs filesystem/apps/example/*.rs $(BUILD)/crt0.o $(BUILD)/libstd.rlib
+filesystem/apps/pixelcannon/main.bin: crates/pixelcannon/src/main.rs crates/pixelcannon/src/*.rs $(BUILD)/libstd.rlib $(BUILD)/liborbclient.rlib
 	$(RUSTC) $(RUSTCFLAGS) --crate-type bin -o $@ $<
 
-filesystem/apps/%/main.bin: filesystem/apps/%/main.rs filesystem/apps/%/*.rs $(BUILD)/crt0.o $(BUILD)/libstd.rlib $(BUILD)/liborbclient.rlib $(BUILD)/liborbtk.rlib
+filesystem/apps/%/main.bin: filesystem/apps/%/main.rs filesystem/apps/%/*.rs $(BUILD)/libstd.rlib $(BUILD)/liborbclient.rlib $(BUILD)/liborbtk.rlib
 	$(RUSTC) $(RUSTCFLAGS) --crate-type bin -o $@ $<
 
-filesystem/apps/%/main.bin: crates/orbutils/src/%/main.rs crates/orbutils/src/%/*.rs $(BUILD)/crt0.o $(BUILD)/libstd.rlib $(BUILD)/liborbclient.rlib $(BUILD)/liborbtk.rlib
+filesystem/apps/%/main.bin: crates/orbutils/src/%/main.rs crates/orbutils/src/%/*.rs $(BUILD)/libstd.rlib $(BUILD)/liborbclient.rlib $(BUILD)/liborbtk.rlib
 	$(RUSTC) $(RUSTCFLAGS) --crate-type bin -o $@ $<
 
 apps: filesystem/apps/calculator/main.bin \
 	  filesystem/apps/editor/main.bin \
 	  filesystem/apps/file_manager/main.bin \
 	  filesystem/apps/orbtk/main.bin \
+	  filesystem/apps/pixelcannon/main.bin \
 	  filesystem/apps/player/main.bin \
 	  filesystem/apps/sodium/main.bin \
 	  filesystem/apps/terminal/main.bin \
@@ -156,7 +157,7 @@ apps: filesystem/apps/calculator/main.bin \
 $(BUILD)/libextra.rlib: crates/extra/src/lib.rs crates/extra/src/*.rs $(BUILD)/libstd.rlib
 	$(RUSTC) $(RUSTCFLAGS) --crate-name extra --crate-type lib -o $@ $<
 
-filesystem/bin/%: crates/coreutils/src/bin/%.rs $(BUILD)/crt0.o $(BUILD)/libextra.rlib
+filesystem/bin/%: crates/coreutils/src/bin/%.rs $(BUILD)/libextra.rlib
 	mkdir -p filesystem/bin
 	$(RUSTC) $(RUSTCFLAGS) --crate-type bin -o $@ $<
 
@@ -193,7 +194,7 @@ coreutils: \
 $(BUILD)/libbinutils.rlib: crates/binutils/src/lib.rs crates/binutils/src/*.rs $(BUILD)/libextra.rlib
 	$(RUSTC) $(RUSTCFLAGS) --crate-name binutils --crate-type lib -o $@ $<
 
-filesystem/bin/%: crates/binutils/src/bin/%.rs $(BUILD)/crt0.o $(BUILD)/libbinutils.rlib
+filesystem/bin/%: crates/binutils/src/bin/%.rs $(BUILD)/libbinutils.rlib
 	mkdir -p filesystem/bin
 	$(RUSTC) $(RUSTCFLAGS) --crate-type bin -o $@ $<
 
@@ -202,7 +203,7 @@ binutils: \
 	filesystem/bin/hexdump \
 	filesystem/bin/strings
 
-filesystem/bin/%: drivers/%/main.rs $(BUILD)/crt0.o $(BUILD)/libstd.rlib $(BUILD)/libio.rlib
+filesystem/bin/%: drivers/%/main.rs $(BUILD)/libstd.rlib $(BUILD)/libio.rlib
 	mkdir -p filesystem/bin
 	$(RUSTC) $(RUSTCFLAGS) --crate-type bin -o $@ $<
 
@@ -212,7 +213,7 @@ drivers: \
 $(BUILD)/libtermion.rlib: crates/termion/src/lib.rs crates/termion/src/*.rs $(BUILD)/libstd.rlib
 	$(RUSTC) $(RUSTCFLAGS) --crate-name termion --crate-type lib -o $@ $< --cfg 'feature="nightly"'
 
-filesystem/bin/%: crates/extrautils/src/bin/%.rs $(BUILD)/crt0.o $(BUILD)/libextra.rlib $(BUILD)/libtermion.rlib
+filesystem/bin/%: crates/extrautils/src/bin/%.rs $(BUILD)/libextra.rlib $(BUILD)/libtermion.rlib
 	mkdir -p filesystem/bin
 	$(RUSTC) $(RUSTCFLAGS) --crate-type bin -o $@ $<
 
@@ -225,18 +226,19 @@ extrautils: \
 	filesystem/bin/mtxt \
 	filesystem/bin/rem
 
-filesystem/bin/%: crates/games/src/%/main.rs crates/games/src/%/*.rs $(BUILD)/crt0.o $(BUILD)/libextra.rlib $(BUILD)/libtermion.rlib
+filesystem/bin/%: crates/games/src/%/main.rs crates/games/src/%/*.rs $(BUILD)/libextra.rlib $(BUILD)/libtermion.rlib
 	mkdir -p filesystem/bin
 	$(RUSTC) $(RUSTCFLAGS) --crate-type bin -o $@ $<
 
 games: \
 	filesystem/bin/ice \
+	filesystem/bin/flappy \
 	filesystem/bin/h4xx3r \
 	filesystem/bin/minesweeper \
 	filesystem/bin/rusthello \
 	filesystem/bin/snake
 
-filesystem/bin/%: crates/%/main.rs crates/%/*.rs $(BUILD)/crt0.o $(BUILD)/libstd.rlib
+filesystem/bin/%: crates/%/main.rs crates/%/*.rs $(BUILD)/libstd.rlib
 	mkdir -p filesystem/bin
 	$(RUSTC) $(RUSTCFLAGS) --crate-type bin -o $@ $<
 
@@ -255,11 +257,11 @@ filesystem/bin/sh: $(BUILD)/ion-shell.bin
 	mkdir -p filesystem/bin
 	cp $< $@
 
-filesystem/bin/launcher: crates/orbutils/src/launcher/main.rs crates/orbutils/src/launcher/*.rs $(BUILD)/crt0.o $(BUILD)/libstd.rlib $(BUILD)/liborbclient.rlib $(BUILD)/liborbtk.rlib
+filesystem/bin/launcher: crates/orbutils/src/launcher/main.rs crates/orbutils/src/launcher/*.rs $(BUILD)/libstd.rlib $(BUILD)/liborbclient.rlib $(BUILD)/liborbtk.rlib
 	mkdir -p filesystem/bin
 	$(RUSTC) $(RUSTCFLAGS) --crate-type bin -o $@ $<
 
-filesystem/bin/zfs: crates/zfs/src/main.rs crates/zfs/src/*.rs $(BUILD)/crt0.o $(BUILD)/libstd.rlib
+filesystem/bin/zfs: crates/zfs/src/main.rs crates/zfs/src/*.rs $(BUILD)/libstd.rlib
 	mkdir -p filesystem/bin
 	$(RUSTC) $(RUSTCFLAGS) --crate-type bin -o $@ $<
 
@@ -289,7 +291,7 @@ bins: \
 	filesystem/bin/tar \
 	#TODO: binutils	filesystem/bin/zfs
 
-initfs/redoxfsd: crates/redoxfs/scheme/main.rs crates/redoxfs/scheme/*.rs $(BUILD)/crt0.o $(BUILD)/libstd.rlib $(BUILD)/libredoxfs.rlib
+initfs/redoxfsd: crates/redoxfs/scheme/main.rs crates/redoxfs/scheme/*.rs $(BUILD)/libstd.rlib $(BUILD)/libredoxfs.rlib
 	mkdir -p initfs/
 	$(RUSTC) $(RUSTCFLAGS) --crate-type bin -o $@ $<
 
@@ -459,14 +461,6 @@ $(BUILD)/kernel.asm: kernel/main.rs $(BUILD)/libcore.rlib $(BUILD)/liballoc.rlib
 
 $(BUILD)/kernel.ir: kernel/main.rs $(BUILD)/libcore.rlib $(BUILD)/liballoc.rlib $(BUILD)/libcollections.rlib
 	$(RUSTC) $(RUSTCFLAGS) -C lto -o $@ --emit llvm-ir $<
-
-$(BUILD)/crt0.o: kernel/program-$(ARCH).asm
-	$(MKDIR) -p $(BUILD)
-ifeq ($(ARCH),x86_64)
-	$(AS) -f elf64 -o $@ $<
-else
-	$(AS) -f elf -o $@ $<
-endif
 
 #Rustc
 $(BUILD)/liblog.rlib: rust/src/liblog/lib.rs $(BUILD)/libstd.rlib

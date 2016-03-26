@@ -748,6 +748,7 @@ impl Context {
     #[cfg(target_arch = "x86")]
     #[cold]
     #[inline(never)]
+    #[naked]
     pub unsafe fn switch_to(&mut self, next: &mut Context) {
         //asm!("xchg bx, bx" : : : "memory" : "intel", "volatile");
 
@@ -782,6 +783,7 @@ impl Context {
     #[cfg(target_arch = "x86_64")]
     #[cold]
     #[inline(never)]
+    #[naked]
     pub unsafe fn switch_to(&mut self, next: &mut Context) {
         //asm!("xchg bx, bx" : : : "memory" : "intel", "volatile");
 
