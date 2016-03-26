@@ -4,7 +4,7 @@ use core::{cmp, intrinsics, mem};
 use core::ops::{Index, IndexMut};
 use core::{ptr, slice};
 
-use super::paging::{Page, PAGE_END};
+use super::paging::PAGE_END;
 
 pub const CLUSTER_ADDRESS: usize = PAGE_END;
 pub const CLUSTER_COUNT: usize = 1024 * 1024; // 4 GiB
@@ -249,19 +249,14 @@ pub unsafe fn alloc_aligned(size: usize, align: usize) -> usize {
 
         for i in 0..CLUSTER_COUNT {
             if cluster(i) == 0 && (count > 0 || cluster_to_address(i) % align == 0) {
-                //HACK FOR PAGING PROBLEMS
-                if Page::new(cluster_to_address(i)).phys_addr() == cluster_to_address(i) {
-                    if count == 0 {
-                        number = i;
-                    }
+                if count == 0 {
+                    number = i;
+                }
 
-                    count += 1;
+                count += 1;
 
-                    if count * CLUSTER_SIZE >= size {
-                        break;
-                    }
-                } else {
-                    count = 0;
+                if count * CLUSTER_SIZE >= size {
+                    break;
                 }
             } else {
                 count = 0;
