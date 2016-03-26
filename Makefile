@@ -401,12 +401,12 @@ doc/zfs: crates/zfs/src/main.rs crates/zfs/src/*.rs filesystem/bin/zfs
 	$(RUSTDOC) $<
 
 doc/sodium: filesystem/apps/sodium/src/main.rs filesystem/apps/sodium/src/*.rs filesystem/apps/sodium/main.bin
-	$(RUSTDOC) $<
+	$(RUSTDOC) --cfg 'feature="orbital"' $<
 
 doc/std: libstd/src/lib.rs libstd/src/*.rs libstd/src/*/*.rs libstd/src/*/*/*.rs $(BUILD)/libstd.rlib doc/rand doc/system
 	$(RUSTDOC) --cfg disable_float --crate-name=std $<
 
-doc: doc/kernel doc/std doc/extra doc/malloc doc/sodium doc/zfs doc/binutils
+doc: doc/kernel doc/std doc/extra doc/malloc doc/sodium doc/binutils
 
 man: filesystem/man
 
