@@ -52,3 +52,6 @@
 [submodule "crates/malloc"]
 	path = crates/malloc
 	url = https://github.com/redox-os/libmalloc.git
+[submodule "crates/sdl3d"]
+	path = crates/sdl3d
+	url = https://github.com/ca1ek/sdl3d.git

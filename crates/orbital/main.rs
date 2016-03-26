@@ -265,7 +265,8 @@ impl OrbitalScheme {
 }
 
 impl Scheme for OrbitalScheme {
-    fn open(&mut self, path: &str, _flags: usize, _mode: usize) -> Result<usize> {
+    fn open(&mut self, url: &str, _flags: usize, _mode: usize) -> Result<usize> {
+        let path = url.split(":").last().unwrap_or("");
         let mut parts = path.split("/");
 
         let flags = parts.next().unwrap_or("");
