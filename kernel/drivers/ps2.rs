@@ -329,25 +329,21 @@ impl Ps2 {
 impl KScheme for Ps2 {
     fn on_irq(&mut self, irq: u8) {
         if irq == 0xC {
-            while self.sts.readf(1) {
-                let data = self.data.read();
-                if let Some(mouse_event) = self.mouse_interrupt(data) {
-                    if ::env().console.lock().draw {
-                        //Ignore mouse event
-                    } else {
-                        ::env().events.send(mouse_event.to_event());
-                    }
+            let data = self.data.read();
+            if let Some(mouse_event) = self.mouse_interrupt(data) {
+                if ::env().console.lock().draw {
+                    //Ignore mouse event
+                } else {
+                    ::env().events.send(mouse_event.to_event());
                 }
             }
-        } else if irq == 0x1 {
-            while self.sts.readf(1) {
-                let data = self.data.read();
-                if let Some(key_event) = self.keyboard_interrupt(data) {
-                    if ::env().console.lock().draw {
-                        ::env().console.lock().event(key_event.to_event());
-                    } else {
-                        ::env().events.send(key_event.to_event());
-                    }
+        } else if irq == 1 {
+            let data = self.data.read();
+            if let Some(key_event) = self.keyboard_interrupt(data) {
+                if ::env().console.lock().draw {
+                    ::env().console.lock().event(key_event.to_event());
+                } else {
+                    ::env().events.send(key_event.to_event());
                 }
             }
         }
