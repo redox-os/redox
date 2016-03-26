@@ -180,6 +180,10 @@ impl Instant {
     pub fn elapsed(&self) -> Duration {
         Instant::now().0 - self.0
     }
+
+    pub fn inner(self) -> Duration {
+        self.0
+    }
 }
 
 #[derive(Copy, Clone)]

@@ -463,7 +463,7 @@ fn main() {
     let status_daemon = status_mutex.clone();
     let daemon_thread = thread::spawn(move || {
         match Socket::create(":orbital").map(|socket| Arc::new(socket)) {
-            Ok(socket) => match Socket::open("display:").map(|display| Arc::new(display)) {
+            Ok(socket) => match Socket::open("display:manager").map(|display| Arc::new(display)) {
                 Ok(display) => {
                     let path = display.path().map(|path| path.into_os_string().into_string().unwrap_or(String::new())).unwrap_or(String::new());
                     let res = path.split(":").nth(1).unwrap_or("");
