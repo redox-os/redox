@@ -32,7 +32,6 @@ OBJDUMP=objdump
 RM=rm
 SED=sed
 SORT=sort
-VB=virtualbox
 VB_AUDIO="pulse"
 VBM=VBoxManage
 VBM_CLEANUP=\
@@ -282,9 +281,10 @@ bins: \
   	filesystem/bin/login \
   	filesystem/bin/minesweeper \
   	filesystem/bin/orbital \
-	filesystem/bin/std-test \
+	filesystem/bin/screenfetch \
   	filesystem/bin/sdl-test \
   	filesystem/bin/sdl-ttf-test \
+	filesystem/bin/std-test \
   	filesystem/bin/sh \
 	filesystem/bin/tar \
 	#TODO: binutils	filesystem/bin/zfs
@@ -556,7 +556,7 @@ virtualbox: $(BUILD)/harddrive.bin
 	$(VBM) storagectl Redox --name ATA --add sata --controller IntelAHCI --bootable on --portcount 1
 	$(VBM) storageattach Redox --storagectl ATA --port 0 --device 0 --type hdd --medium $(BUILD)/harddrive.vdi
 	echo "Run VM"
-	$(VB) --startvm Redox --dbg
+	$(VBM) startvm Redox
 
 bochs: $(BUILD)/harddrive.bin
 	-bochs -f bochs.$(ARCH)

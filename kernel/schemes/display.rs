@@ -1,4 +1,3 @@
-use alloc::arc::Arc;
 use alloc::boxed::Box;
 
 use collections::String;
@@ -8,22 +7,15 @@ use common::event::Event;
 use core::{cmp, ptr};
 use core::mem::size_of;
 
-use graphics::display::Display;
-
 use fs::{KScheme, Resource, ResourceSeek, Url};
 
-use system::error::{Error, Result, ENOENT, EINVAL};
+use system::error::{Error, Result, EACCES, EBADF, ENOENT, EINVAL};
 use system::graphics::fast_copy;
 
-pub struct DisplayScheme;
-
-// Should there only be one display per session?
 /// A display resource
 pub struct DisplayResource {
     /// Path
     path: String,
-    /// The display
-    display: Arc<Box<Display>>,
     /// Seek
     seek: usize,
 }
@@ -32,7 +24,6 @@ impl Resource for DisplayResource {
     fn dup(&self) -> Result<Box<Resource>> {
         Ok(Box::new(DisplayResource {
             path: self.path.clone(),
-            display: self.display.clone(),
             seek: self.seek
         }))
     }
@@ -70,25 +61,35 @@ impl Resource for DisplayResource {
     }
 
     fn write(&mut self, buf: &[u8]) -> Result<usize> {
-        let size = cmp::max(0, cmp::min(self.display.size as isize - self.seek as isize, (buf.len()/4) as isize)) as usize;
+        let console = ::env().console.lock();
+        if let Some(ref display) = console.display {
+            let size = cmp::max(0, cmp::min(display.size as isize - self.seek as isize, (buf.len()/4) as isize)) as usize;
 
-        if size > 0 {
-            unsafe {
-                fast_copy(self.display.onscreen.offset(self.seek as isize), buf.as_ptr() as *const u32, size);
+            if size > 0 {
+                unsafe {
+                    fast_copy(display.onscreen.offset(self.seek as isize), buf.as_ptr() as *const u32, size);
+                }
             }
-        }
 
-        Ok(size)
+            Ok(size)
+        } else {
+            Err(Error::new(EBADF))
+        }
     }
 
     fn seek(&mut self, pos: ResourceSeek) -> Result<usize> {
-        self.seek = match pos {
-            ResourceSeek::Start(offset) => cmp::min(self.display.size, cmp::max(0, offset)),
-            ResourceSeek::Current(offset) => cmp::min(self.display.size, cmp::max(0, self.seek as isize + offset) as usize),
-            ResourceSeek::End(offset) => cmp::min(self.display.size, cmp::max(0, self.display.size as isize + offset) as usize),
-        };
+        let console = ::env().console.lock();
+        if let Some(ref display) = console.display {
+            self.seek = match pos {
+                ResourceSeek::Start(offset) => cmp::min(display.size, cmp::max(0, offset)),
+                ResourceSeek::Current(offset) => cmp::min(display.size, cmp::max(0, self.seek as isize + offset) as usize),
+                ResourceSeek::End(offset) => cmp::min(display.size, cmp::max(0, display.size as isize + offset) as usize),
+            };
 
-        Ok(self.seek)
+            Ok(self.seek)
+        } else {
+            Err(Error::new(EBADF))
+        }
     }
 
     fn sync(&mut self) -> Result<()> {
@@ -96,28 +97,40 @@ impl Resource for DisplayResource {
     }
 }
 
-impl Drop for DisplayScheme {
-    fn drop(&mut self){
-        ::env().console.lock().draw = true;
-    }
-}
+pub struct DisplayScheme;
 
 impl KScheme for DisplayScheme {
     fn scheme(&self) -> &str {
         "display"
     }
 
-    fn open(&mut self, _: Url, _: usize) -> Result<Box<Resource>> {
-        if let Some(display) = Display::root() {
-            ::env().console.lock().draw = false;
+    fn open(&mut self, url: Url, _: usize) -> Result<Box<Resource>> {
+        if url.reference() == "manager" {
+            let mut console = ::env().console.lock();
+            if console.draw {
+                console.draw = false;
 
-            Ok(box DisplayResource {
-                path: format!("display:{}/{}", display.width, display.height),
-                display: Arc::new(display),
-                seek: 0,
-            })
+                if let Some(ref display) = console.display {
+                    Ok(box DisplayResource {
+                        path: format!("display:{}/{}", display.width, display.height),
+                        seek: 0,
+                    })
+                } else {
+                    Err(Error::new(ENOENT))
+                }
+            } else {
+                Err(Error::new(EACCES))
+            }
         } else {
-            Err(Error::new(ENOENT))
+            let console = ::env().console.lock();
+            if let Some(ref display) = console.display {
+                Ok(box DisplayResource {
+                    path: format!("display:{}/{}", display.width, display.height),
+                    seek: 0,
+                })
+            } else {
+                Err(Error::new(ENOENT))
+            }
         }
     }
 }
