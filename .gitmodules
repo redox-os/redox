@@ -49,3 +49,6 @@
 [submodule "crates/pixelcannon"]
 	path = crates/pixelcannon
 	url = https://github.com/pythoneer/pixelcannon.git
+[submodule "crates/malloc"]
+	path = crates/malloc
+	url = https://github.com/redox-os/libmalloc.git
