@@ -158,6 +158,9 @@ apps: filesystem/apps/calculator/main.bin \
 $(BUILD)/libextra.rlib: crates/extra/src/lib.rs crates/extra/src/*.rs $(BUILD)/libstd.rlib
 	$(RUSTC) $(RUSTCFLAGS) --crate-name extra --crate-type lib -o $@ $<
 
+$(BUILD)/libmalloc.rlib: crates/malloc/src/lib.rs crates/malloc/src/*.rs $(BUILD)/libstd.rlib $(BUILD)/libextra.rlib $(BUILD)/libsystem.rlib
+	$(RUSTC) $(RUSTCFLAGS) --crate-name extra --crate-type lib -o $@ $<
+
 filesystem/bin/%: crates/coreutils/src/bin/%.rs $(BUILD)/libextra.rlib
 	mkdir -p filesystem/bin
 	$(RUSTC) $(RUSTCFLAGS) --crate-type bin -o $@ $<
@@ -384,10 +387,25 @@ doc/redoxfs: crates/redoxfs/src/lib.rs crates/redoxfs/src/*.rs doc/system doc/al
 doc/kernel: kernel/main.rs kernel/*.rs kernel/*/*.rs kernel/*/*/*.rs $(BUILD)/kernel.rlib doc/io doc/redoxfs
 	$(RUSTDOC) $<
 
+doc/extra: crates/extra/src/lib.rs crates/extra/src/*.rs $(BUILD)/libextra.rlib
+	$(RUSTDOC) $<
+
+doc/malloc: crates/malloc/src/lib.rs crates/malloc/src/*.rs $(BUILD)/libmalloc.rlib
+	$(RUSTDOC) $<
+
+doc/binutils: crates/binutils/src/lib.rs crates/binutils/src/*.rs $(BUILD)/libbinutils.rlib
+	$(RUSTDOC) $<
+
+doc/zfs: crates/zfs/src/main.rs crates/zfs/src/*.rs filesystem/bin/zfs
+	$(RUSTDOC) $<
+
+doc/sodium: filesystem/apps/sodium/src/main.rs filesystem/apps/sodium/src/*.rs filesystem/apps/sodium/main.bin
+	$(RUSTDOC) $<
+
 doc/std: libstd/src/lib.rs libstd/src/*.rs libstd/src/*/*.rs libstd/src/*/*/*.rs $(BUILD)/libstd.rlib doc/rand doc/system
 	$(RUSTDOC) --cfg disable_float --crate-name=std $<
 
-doc: doc/kernel doc/std
+doc: doc/kernel doc/std doc/extra doc/malloc doc/sodium doc/zfs doc/binutils
 
 man: filesystem/man
 
