@@ -1,4 +1,5 @@
 #![feature(asm)]
+#![feature(const_fn)]
 
 extern crate core;
 extern crate system;
