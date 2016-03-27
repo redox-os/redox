@@ -125,13 +125,8 @@ impl HbaPort {
         None
     }
 
-    pub fn ata_dma(&mut self,
-                   block: u64,
-                   sectors: usize,
-                   buf: usize,
-                   write: bool)
-                   -> Result<usize> {
-        // debugln!("AHCI {:X} DMA BLOCK: {:X} SECTORS: {} BUF: {:X} WRITE: {}", (self as *mut HbaPort) as usize, block, sectors, buf, write);
+    pub fn ata_dma(&mut self, block: u64, sectors: usize, buf: usize, write: bool) -> Result<usize> {
+        debugln!("AHCI {:X} DMA BLOCK: {:X} SECTORS: {} BUF: {:X} WRITE: {}", (self as *mut HbaPort) as usize, block, sectors, buf, write);
 
         // TODO: PRDTL for files larger than 4MB
         let entries = 1;
