@@ -31,7 +31,11 @@ pub fn execute_thread(context_ptr: *mut Context, entry: usize, mut args: Vec<Str
                 arg.push('\0');
             }
 
-            let physical_address = arg.as_ptr() as usize;
+            let mut physical_address = arg.as_ptr() as usize;
+            if physical_address >= 0x80000000 {
+                physical_address -= 0x80000000;
+            }
+
             let virtual_address = context.next_mem();
             let virtual_size = arg.len();
 
