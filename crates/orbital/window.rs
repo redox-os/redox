@@ -8,6 +8,11 @@ use super::{Color, Event, Font, Image, Rect};
 use system::error::{Error, Result, EINVAL};
 use system::graphics::fast_copy;
 
+const BAR_COLOR: Color = Color::rgb(40, 45, 57);
+const BAR_HIGHLIGHT_COLOR: Color = Color::rgb(80, 86, 102);
+const TEXT_COLOR: Color = Color::rgb(204, 210, 224);
+const TEXT_HIGHLIGHT_COLOR: Color = Color::rgb(235, 241, 255);
+
 pub struct Window {
     pub x: i32,
     pub y: i32,
@@ -58,15 +63,15 @@ impl Window {
         let title_intersect = rect.intersection(&title_rect);
         if ! title_intersect.is_empty() {
             if focused {
-                image.roi(&title_intersect).set(Color::rgb(192, 192, 192));
+                image.roi(&title_intersect).set(BAR_HIGHLIGHT_COLOR);
             } else {
-                image.roi(&title_intersect).set(Color::rgb(64, 64, 64));
+                image.roi(&title_intersect).set(BAR_COLOR);
             }
 
             let mut x = self.x + 2;
             for c in self.title.chars() {
                 if x < max(self.x + 2, self.x + self.width() - 10) {
-                    let mut font_image = Font::render(c, Color::rgb(255, 255, 255));
+                    let mut font_image = Font::render(c, if focused { TEXT_HIGHLIGHT_COLOR } else { TEXT_COLOR });
                     let image_rect = Rect::new(x, title_rect.top() + 1, font_image.width(), font_image.height());
                     let image_intersect = rect.intersection(&image_rect);
                     if ! image_intersect.is_empty() {
@@ -80,7 +85,7 @@ impl Window {
 
             x = max(self.x + 2, self.x + self.width() - 10);
             if x + 10 <= self.x + self.width() {
-                let mut font_image = Font::render('X', Color::rgb(255, 255, 255));
+                let mut font_image = Font::render('X', if focused { TEXT_HIGHLIGHT_COLOR } else { TEXT_COLOR });
                 let image_rect = Rect::new(x, title_rect.top() + 1, font_image.width(), font_image.height());
                 let image_intersect = rect.intersection(&image_rect);
                 if ! image_intersect.is_empty() {
