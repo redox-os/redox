@@ -251,7 +251,7 @@ impl Page {
     }
 
     /// Flush the memory page
-    unsafe fn flush(&self) {
+    pub unsafe fn flush(&self) {
         asm!("invlpg [$0]"
             :
             : "{eax}"(self.virtual_address)
@@ -259,9 +259,19 @@ impl Page {
             : "intel", "volatile");
     }
 
+    /// Get the current entry data
+    pub unsafe fn entry_data(&self) -> usize {
+        ptr::read(self.entry_address() as *mut usize)
+    }
+
+    /// Set the current entry data
+    pub unsafe fn set_entry_data(&mut self, data: usize) {
+        ptr::write(self.entry_address() as *mut usize, data)
+    }
+
     /// Get the current physical address
     pub fn phys_addr(&self) -> usize {
-        unsafe { (ptr::read(self.entry_address() as *mut usize) & PF_NONE) as usize }
+        unsafe { self.entry_data() & PF_NONE }
     }
 
     /// Get the current virtual address
@@ -271,35 +281,31 @@ impl Page {
 
     /// Map the memory page to a given physical memory address
     pub unsafe fn map_kernel_read(&mut self, physical_address: usize) {
-        ptr::write(self.entry_address() as *mut usize,
-                   (physical_address & PF_NONE) | PF_PRESENT);
+        self.set_entry_data((physical_address & PF_NONE) | PF_PRESENT);
         self.flush();
     }
 
     /// Map the memory page to a given physical memory address
     pub unsafe fn map_kernel_write(&mut self, physical_address: usize) {
-        ptr::write(self.entry_address() as *mut usize,
-                   (physical_address & PF_NONE) | PF_WRITE | PF_PRESENT);
+        self.set_entry_data((physical_address & PF_NONE) | PF_WRITE | PF_PRESENT);
         self.flush();
     }
 
     /// Map the memory page to a given physical memory address, and allow userspace read access
     pub unsafe fn map_user_read(&mut self, physical_address: usize) {
-        ptr::write(self.entry_address() as *mut usize,
-                   (physical_address & PF_NONE) | PF_USER | PF_PRESENT);
+        self.set_entry_data((physical_address & PF_NONE) | PF_USER | PF_PRESENT);
         self.flush();
     }
 
     /// Map the memory page to a given physical memory address, and allow userspace read/write access
     pub unsafe fn map_user_write(&mut self, physical_address: usize) {
-        ptr::write(self.entry_address() as *mut usize,
-                   (physical_address & PF_NONE) | PF_USER | PF_WRITE | PF_PRESENT);
+        self.set_entry_data((physical_address & PF_NONE) | PF_USER | PF_WRITE | PF_PRESENT);
         self.flush();
     }
 
     /// Unmap the memory page
     pub unsafe fn unmap(&mut self) {
-        ptr::write(self.entry_address() as *mut usize, 0);
+        self.set_entry_data(0);
         self.flush();
     }
 }

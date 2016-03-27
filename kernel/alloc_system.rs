@@ -3,9 +3,6 @@ use arch::memory::*;
 #[allocator]
 #[no_mangle]
 pub extern "C" fn __rust_allocate(size: usize, align: usize) -> *mut u8 {
-    if align > 4 {
-        debugln!("align: {}", align);
-    }
     unsafe { alloc_aligned(size, align) as *mut u8 }
 }
 
