@@ -26,7 +26,7 @@ use system::error::{Error, Result, EBADF, EFAULT, ENOMEM, ESRCH};
 use sync::WaitMap;
 
 pub const CONTEXT_STACK_SIZE: usize = 1024 * 1024;
-pub const CONTEXT_STACK_ADDR: usize = 0xB0000000;
+pub const CONTEXT_STACK_ADDR: usize = 0x80000000;
 
 pub struct ContextManager {
     pub inner: Vec<Box<Context>>,
