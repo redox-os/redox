@@ -22,6 +22,7 @@
 #![feature(core_panic)]
 #![feature(dropck_parametricity)]
 #![feature(filling_drop)]
+#![feature(float_extras)]
 #![feature(heap_api)]
 #![feature(int_error_internals)]
 #![feature(lang_items)]
@@ -33,6 +34,7 @@
 #![feature(raw)]
 #![feature(reflect_marker)]
 #![feature(slice_concat_ext)]
+#![feature(stmt_expr_attributes)]
 #![feature(str_char)]
 #![feature(type_ascription)]
 #![feature(unicode)]
@@ -127,15 +129,14 @@ pub use core::u16;
 pub use core::u32;
 pub use core::u64;
 
-pub use core::num;
-// #[path = "num/f32.rs"]   pub mod f32;
-// #[path = "num/f64.rs"]   pub mod f64;
-
 pub mod ascii;
 
 // Common traits
 
-// pub mod num;
+//pub mod num;
+pub use core::num;
+#[path = "num/f32.rs"]   pub mod f32;
+#[path = "num/f64.rs"]   pub mod f64;
 
 // Runtime and platform support
 
