@@ -359,7 +359,7 @@ clean:
 FORCE:
 
 doc/core: rust/src/libcore/lib.rs $(BUILD)/libcore.rlib
-	$(RUSTDOC) --cfg disable_float $<
+	$(RUSTDOC) $<
 
 doc/alloc_system: liballoc_system/lib.rs $(BUILD)/liballoc_system.rlib doc/core
 	$(RUSTDOC) $<
@@ -374,7 +374,7 @@ doc/collections: rust/src/libcollections/lib.rs $(BUILD)/libcollections.rlib doc
 	$(RUSTDOC) $<
 
 doc/rand: rust/src/librand/lib.rs $(BUILD)/librand.rlib doc/collections
-	$(RUSTDOC) --cfg disable_float $<
+	$(RUSTDOC) $<
 
 doc/io: crates/io/lib.rs crates/io/*.rs $(BUILD)/libio.rlib doc/core
 	$(RUSTDOC) $<
@@ -404,7 +404,7 @@ doc/sodium: filesystem/apps/sodium/src/main.rs filesystem/apps/sodium/src/*.rs f
 	$(RUSTDOC) --cfg 'feature="orbital"' $<
 
 doc/std: libstd/src/lib.rs libstd/src/*.rs libstd/src/*/*.rs libstd/src/*/*/*.rs $(BUILD)/libstd.rlib doc/rand doc/system
-	$(RUSTDOC) --cfg disable_float --crate-name=std $<
+	$(RUSTDOC) --crate-name=std $<
 
 doc: doc/kernel doc/std doc/extra doc/malloc doc/sodium doc/binutils
 
