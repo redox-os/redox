@@ -287,10 +287,10 @@ unsafe fn init(tss_data: usize) {
         let start_ptr = 0;
         let end_ptr = 0x1000;
 
-        if start_ptr as usize <= end_ptr {
-            let size = end_ptr - start_ptr as usize;
+        if start_ptr <= end_ptr {
+            let size = end_ptr - start_ptr;
             for page in 0..(size + 4095)/4096 {
-                Page::new(start_ptr as usize + page * 4096).unmap();
+                Page::new(start_ptr + page * 4096).unmap();
             }
         }
     }
@@ -299,11 +299,11 @@ unsafe fn init(tss_data: usize) {
     {
         let start_ptr = & __text_start as *const u8 as usize;
         let end_ptr = & __text_end as *const u8 as usize;
-        if start_ptr as usize <= end_ptr {
-            let size = end_ptr - start_ptr as usize;
+        if start_ptr <= end_ptr {
+            let size = end_ptr - start_ptr;
             for page in 0..(size + 4095)/4096 {
-                Page::new(start_ptr as usize + page * 4096).
-                    map_kernel_read(start_ptr as usize + page * 4096);
+                Page::new(start_ptr + page * 4096).
+                    map_kernel_read(start_ptr + page * 4096);
             }
         }
     }
@@ -317,6 +317,19 @@ unsafe fn init(tss_data: usize) {
             for page in 0..(size + 4095)/4096 {
                 Page::new(start_ptr + page * 4096).
                     map_kernel_read(start_ptr + page * 4096);
+            }
+        }
+    }
+
+    // Unmap logical/high mem
+    {
+        let start_ptr = 0x80000000;
+        let end_ptr = 0xE0000000;
+
+        if start_ptr <= end_ptr {
+            let size = end_ptr - start_ptr;
+            for page in 0..(size + 4095)/4096 {
+                Page::new(start_ptr + page * 4096).unmap();
             }
         }
     }

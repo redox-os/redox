@@ -1,6 +1,7 @@
 use alloc::arc::Arc;
 
-use arch::context::{CONTEXT_STACK_SIZE, CONTEXT_STACK_ADDR, context_switch, context_userspace, Context, ContextMemory};
+use arch::context::{CONTEXT_IMAGE_ADDR, CONTEXT_IMAGE_SIZE, CONTEXT_STACK_SIZE, CONTEXT_STACK_ADDR,
+                    context_switch, context_userspace, Context, ContextMemory, ContextZone};
 use arch::elf::Elf;
 use arch::memory;
 use arch::regs::Regs;
@@ -31,14 +32,18 @@ pub fn execute_thread(context_ptr: *mut Context, entry: usize, mut args: Vec<Str
                 arg.push('\0');
             }
 
-            let physical_address = arg.as_ptr() as usize;
-            let virtual_address = context.next_mem();
+            let mut physical_address = arg.as_ptr() as usize;
+            if physical_address >= 0x80000000 {
+                physical_address -= 0x80000000;
+            }
+
+            let virtual_address = unsafe { (*context.image.get()).next_mem() };
             let virtual_size = arg.len();
 
             mem::forget(arg);
 
             unsafe {
-                (*context.memory.get()).push(ContextMemory {
+                (*context.image.get()).memory.push(ContextMemory {
                     physical_address: physical_address,
                     virtual_address: virtual_address,
                     virtual_size: virtual_size,
@@ -51,24 +56,6 @@ pub fn execute_thread(context_ptr: *mut Context, entry: usize, mut args: Vec<Str
             argc += 1;
         }
         context_args.push(argc);
-
-        //TODO: No default heap, fix brk
-        {
-            let virtual_address = context.next_mem();
-            let virtual_size = 4096;
-            let physical_address = unsafe { memory::alloc_aligned(virtual_size, 4096) };
-            if physical_address > 0 {
-                unsafe {
-                    (*context.memory.get()).push(ContextMemory {
-                        physical_address: physical_address,
-                        virtual_address: virtual_address,
-                        virtual_size: virtual_size,
-                        writeable: true,
-                        allocated: true
-                    });
-                }
-            }
-        }
 
         context.iopl = 0;
 
@@ -205,7 +192,9 @@ pub fn execute(mut args: Vec<String>) -> Result<usize> {
                     context.cwd = Arc::new(UnsafeCell::new(unsafe { (*context.cwd.get()).clone() }));
 
                     unsafe { context.unmap() };
-                    context.memory = Arc::new(UnsafeCell::new(memory));
+                    let mut image = ContextZone::new(CONTEXT_IMAGE_ADDR, CONTEXT_IMAGE_SIZE);
+                    image.memory = memory;
+                    context.image = Arc::new(UnsafeCell::new(image));
                     unsafe { context.map() };
 
                     execute_thread(context.deref_mut(), entry, args);
