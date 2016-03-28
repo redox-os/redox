@@ -28,13 +28,13 @@ use sync::WaitMap;
 pub const CONTEXT_IMAGE_ADDR: usize = 0x8048000;
 pub const CONTEXT_IMAGE_SIZE: usize = 0x10000000;
 
-pub const CONTEXT_HEAP_ADDR: usize = CONTEXT_IMAGE_ADDR + CONTEXT_IMAGE_SIZE + CLUSTER_SIZE;
+pub const CONTEXT_HEAP_ADDR: usize = CONTEXT_IMAGE_ADDR + CONTEXT_IMAGE_SIZE + memory::CLUSTER_SIZE;
 pub const CONTEXT_HEAP_SIZE: usize = 0x40000000;
 
-pub const CONTEXT_MMAP_ADDR: usize = CONTEXT_HEAP_ADDR + CONTEXT_HEAP_SIZE + CLUSTER_SIZE;
+pub const CONTEXT_MMAP_ADDR: usize = CONTEXT_HEAP_ADDR + CONTEXT_HEAP_SIZE + memory::CLUSTER_SIZE;
 pub const CONTEXT_MMAP_SIZE: usize = 0x20000000;
 
-pub const CONTEXT_STACK_ADDR: usize = CONTEXT_MMAP_ADDR + CONTEXT_MMAP_SIZE + CLUSTER_SIZE;
+pub const CONTEXT_STACK_ADDR: usize = CONTEXT_MMAP_ADDR + CONTEXT_MMAP_SIZE + memory::CLUSTER_SIZE;
 pub const CONTEXT_STACK_SIZE: usize = 0x100000;
 
 pub struct ContextManager {
@@ -257,38 +257,31 @@ pub unsafe fn context_clone(regs: &Regs) -> Result<usize> {
                 },
                 loadable: parent.loadable,
 
+                image: if flags & CLONE_VM == CLONE_VM {
+                    //debugln!("{}: {}: clone memory for {}", parent.pid, parent.name, clone_pid);
+
+                    parent.image.clone()
+                } else {
+                    Arc::new(UnsafeCell::new((*parent.image.get()).dup()))
+                },
+                heap: if flags & CLONE_VM == CLONE_VM {
+                    //debugln!("{}: {}: clone memory for {}", parent.pid, parent.name, clone_pid);
+
+                    parent.heap.clone()
+                } else {
+                    Arc::new(UnsafeCell::new((*parent.heap.get()).dup()))
+                },
+                mmap: if flags & CLONE_VM == CLONE_VM {
+                    //debugln!("{}: {}: clone memory for {}", parent.pid, parent.name, clone_pid);
+
+                    parent.mmap.clone()
+                } else {
+                    Arc::new(UnsafeCell::new((*parent.mmap.get()).dup()))
+                },
                 cwd: if flags & CLONE_FS == CLONE_FS {
                     parent.cwd.clone()
                 } else {
                     Arc::new(UnsafeCell::new((*parent.cwd.get()).clone()))
-                },
-                memory: if flags & CLONE_VM == CLONE_VM {
-                    //debugln!("{}: {}: clone memory for {}", parent.pid, parent.name, clone_pid);
-
-                    parent.memory.clone()
-                } else {
-                    let mut mem: Vec<ContextMemory> = Vec::new();
-                    for entry in (*parent.memory.get()).iter() {
-                        let physical_address = memory::alloc(entry.virtual_size);
-                        if physical_address > 0 {
-                            ::memcpy(physical_address as *mut u8,
-                                     entry.physical_address as *const u8,
-                                     entry.virtual_size);
-
-                            //debugln!("{}: {}: dup memory {:X}:{:X} for {}", parent.pid, parent.name, entry.virtual_address, entry.virtual_address + entry.virtual_size, clone_pid);
-
-                            mem.push(ContextMemory {
-                                physical_address: physical_address,
-                                virtual_address: entry.virtual_address,
-                                virtual_size: entry.virtual_size,
-                                writeable: entry.writeable,
-                                allocated: true,
-                            });
-                        } else {
-                            //debugln!("{}: {}: failed to dup memory {:X}:{:X} for {}", parent.pid, parent.name, entry.virtual_address, entry.virtual_address + entry.virtual_size, clone_pid);
-                        }
-                    }
-                    Arc::new(UnsafeCell::new(mem))
                 },
                 files: if flags & CLONE_FILES == CLONE_FILES {
                     //debugln!("{}: {}: clone resources for {}", parent.pid, parent.name, clone_pid);
@@ -426,21 +419,32 @@ pub struct ContextFile {
     pub resource: Box<Resource>,
 }
 
-pub struct ContextMemoryZone {
-    pub addr: usize,
+pub struct ContextZone {
+    pub address: usize,
     pub size: usize,
     pub memory: Vec<ContextMemory>
 }
 
-impl ContextMemoryZone {
-    pub fn dup(&self) -> ContextMemoryZone {
+impl ContextZone {
+    pub fn new(address: usize, size: usize) -> ContextZone {
+        ContextZone {
+            address: address,
+            size: size,
+            memory: Vec::new()
+        }
+    }
+
+    pub fn dup(&self) -> ContextZone {
         let mut mem: Vec<ContextMemory> = Vec::new();
         for entry in self.memory.iter() {
-            let physical_address = memory::alloc(entry.virtual_size);
+            let physical_address = unsafe { memory::alloc(entry.virtual_size) };
             if physical_address > 0 {
-                ::memcpy(physical_address as *mut u8,
-                         entry.physical_address as *const u8,
-                         entry.virtual_size);
+                //TODO: Remap pages during memcpy
+                unsafe {
+                    ::memcpy(physical_address as *mut u8,
+                             entry.physical_address as *const u8,
+                             entry.virtual_size);
+                }
 
                 //debugln!("{}: {}: dup memory {:X}:{:X} for {}", parent.pid, parent.name, entry.virtual_address, entry.virtual_address + entry.virtual_size, clone_pid);
 
@@ -455,16 +459,27 @@ impl ContextMemoryZone {
                 //debugln!("{}: {}: failed to dup memory {:X}:{:X} for {}", parent.pid, parent.name, entry.virtual_address, entry.virtual_address + entry.virtual_size, clone_pid);
             }
         }
-        ContextMemoryZone {
-            addr: self.addr,
+
+        ContextZone {
+            address: self.address,
             size: self.size,
             memory: mem
         }
     }
 
+    pub fn size(&self) -> usize {
+        let mut size = 0;
+
+        for entry in self.memory.iter() {
+            size += entry.virtual_size;
+        }
+
+        size
+    }
+
     /// Get the next available memory map address
     pub fn next_mem(&self) -> usize {
-        let mut next_mem = 0;
+        let mut next_mem = self.address;
 
         for mem in self.memory.iter() {
             let pages = (mem.virtual_size + 4095) / 4096;
@@ -478,19 +493,19 @@ impl ContextMemoryZone {
     }
 
     /// Translate to physical if a ptr is inside of the mapped memory
-    pub fn translate(&self, ptr: usize, len: usize) -> Result<usize> {
+    pub fn translate(&self, ptr: usize, len: usize) -> Option<usize> {
         for mem in self.memory.iter() {
-            if ptr >= mem.virtual_address && ptr < mem.virtual_address + mem.virtual_size {
-                return Ok(ptr - mem.virtual_address + mem.physical_address);
+            if ptr >= mem.virtual_address && ptr + len < mem.virtual_address + mem.virtual_size {
+                return Some(ptr - mem.virtual_address + mem.physical_address);
             }
         }
 
-        Err(Error::new(EFAULT))
+        None
     }
 
     /// Get a memory map from a pointer
-    pub fn get_mem<'a>(&self, ptr: usize) -> Result<&'a ContextMemory> {
-        for mem in self.memory.iter() } {
+    pub fn get_mem<'a>(&'a self, ptr: usize) -> Result<&'a ContextMemory> {
+        for mem in self.memory.iter() {
             if mem.virtual_address == ptr {
                 return Ok(mem);
             }
@@ -500,7 +515,7 @@ impl ContextMemoryZone {
     }
 
     /// Get a mutable memory map from a pointer
-    pub fn get_mem_mut<'a>(&mut self, ptr: usize) -> Result<&'a mut ContextMemory> {
+    pub fn get_mem_mut<'a>(&'a mut self, ptr: usize) -> Result<&'a mut ContextMemory> {
         for mem in self.memory.iter_mut() {
             if mem.virtual_address == ptr {
                 return Ok(mem);
@@ -567,11 +582,12 @@ pub struct Context {
 
     // These members are cloned for threads, copied or created for processes {
     /// Program memory, cloned for threads, copied or created for processes. Modified by exec
-    pub image: Arc<UnsafeCell<ContextMemoryZone>>,
+    pub image: Arc<UnsafeCell<ContextZone>>,
     /// Heap, cloned for threads, copied or created for processes. Modified by memory allocation
-    pub heap: Arc<UnsafeCell<ContextMemoryZone>>,
+    pub heap: Arc<UnsafeCell<ContextZone>>,
     /// Mmap memory, cloned for threads, copied or created for processes. Modified by mmap
-    pub mmap: Arc<UnsafeCell<ContextMemoryZone>>,
+    pub mmap: Arc<UnsafeCell<ContextZone>>,
+
     /// Program working directory, cloned for threads, copied or created for processes. Modified by chdir
     pub cwd: Arc<UnsafeCell<String>>,
     /// Program files, cloned for threads, copied or created for processes. Modified by file operations
@@ -633,9 +649,9 @@ impl Context {
             stack: None,
             loadable: false,
 
-            image: Arc::new(UnsafeCell::new(Vec::new())),
-            heap: Arc::new(UnsafeCell::new(Vec::new())),
-            mmap: Arc::new(UnsafeCell::new(Vec::new())),
+            image: Arc::new(UnsafeCell::new(ContextZone::new(CONTEXT_IMAGE_ADDR, CONTEXT_IMAGE_SIZE))),
+            heap: Arc::new(UnsafeCell::new(ContextZone::new(CONTEXT_HEAP_ADDR, CONTEXT_HEAP_SIZE))),
+            mmap: Arc::new(UnsafeCell::new(ContextZone::new(CONTEXT_MMAP_ADDR, CONTEXT_MMAP_SIZE))),
 
             cwd: Arc::new(UnsafeCell::new(String::new())),
             files: Arc::new(UnsafeCell::new(Vec::new())),
@@ -670,9 +686,9 @@ impl Context {
             stack: None,
             loadable: false,
 
-            image: Arc::new(UnsafeCell::new(Vec::new())),
-            heap: Arc::new(UnsafeCell::new(Vec::new())),
-            mmap: Arc::new(UnsafeCell::new(Vec::new())),
+            image: Arc::new(UnsafeCell::new(ContextZone::new(CONTEXT_IMAGE_ADDR, CONTEXT_IMAGE_SIZE))),
+            heap: Arc::new(UnsafeCell::new(ContextZone::new(CONTEXT_HEAP_ADDR, CONTEXT_HEAP_SIZE))),
+            mmap: Arc::new(UnsafeCell::new(ContextZone::new(CONTEXT_MMAP_ADDR, CONTEXT_MMAP_SIZE))),
 
             cwd: Arc::new(UnsafeCell::new(String::new())),
             files: Arc::new(UnsafeCell::new(Vec::new())),
@@ -795,10 +811,16 @@ impl Context {
             }
         }
 
-        for mem in unsafe { (*self.memory.get()).iter() } {
-            if ptr >= mem.virtual_address && ptr < mem.virtual_address + mem.virtual_size {
-                return Ok(ptr - mem.virtual_address + mem.physical_address);
-            }
+        if let Some(address) = unsafe { (*self.image.get()).translate(ptr, len) } {
+            return Ok(address);
+        }
+
+        if let Some(address) = unsafe { (*self.heap.get()).translate(ptr, len) } {
+            return Ok(address);
+        }
+
+        if let Some(address) = unsafe { (*self.mmap.get()).translate(ptr, len) } {
+            return Ok(address);
         }
 
         Err(Error::new(EFAULT))
@@ -808,15 +830,15 @@ impl Context {
         if let Some(ref mut stack) = self.stack {
             stack.map();
         }
-        for entry in (*self.memory.get()).iter_mut() {
-            entry.map();
-        }
+        (*self.image.get()).map();
+        (*self.heap.get()).map();
+        (*self.mmap.get()).map();
     }
 
     pub unsafe fn unmap(&mut self) {
-        for entry in (*self.memory.get()).iter_mut() {
-            entry.unmap();
-        }
+        (*self.mmap.get()).unmap();
+        (*self.heap.get()).unmap();
+        (*self.image.get()).unmap();
         if let Some(ref mut stack) = self.stack {
             stack.unmap();
         }
