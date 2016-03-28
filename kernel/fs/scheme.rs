@@ -375,7 +375,10 @@ impl KScheme for Scheme {
     fn open(&mut self, url: Url, flags: usize) -> Result<Box<Resource>> {
         let c_str = url.to_string() + "\0";
 
-        let physical_address = c_str.as_ptr() as usize;
+        let mut physical_address = c_str.as_ptr() as usize;
+        if physical_address >= 0x80000000 {
+            physical_address -= 0x80000000;
+        }
 
         let mut virtual_address = 0;
         if let Some(scheme) = self.inner.upgrade() {
@@ -418,7 +421,10 @@ impl KScheme for Scheme {
     fn mkdir(&mut self, url: Url, flags: usize) -> Result<()> {
         let c_str = url.to_string() + "\0";
 
-        let physical_address = c_str.as_ptr() as usize;
+        let mut physical_address = c_str.as_ptr() as usize;
+        if physical_address >= 0x80000000 {
+            physical_address -= 0x80000000;
+        }
 
         let mut virtual_address = 0;
         if let Some(scheme) = self.inner.upgrade() {
@@ -455,7 +461,10 @@ impl KScheme for Scheme {
     fn rmdir(&mut self, url: Url) -> Result<()> {
         let c_str = url.to_string() + "\0";
 
-        let physical_address = c_str.as_ptr() as usize;
+        let mut physical_address = c_str.as_ptr() as usize;
+        if physical_address >= 0x80000000 {
+            physical_address -= 0x80000000;
+        }
 
         let mut virtual_address = 0;
         if let Some(scheme) = self.inner.upgrade() {
@@ -492,7 +501,10 @@ impl KScheme for Scheme {
     fn unlink(&mut self, url: Url) -> Result<()> {
         let c_str = url.to_string() + "\0";
 
-        let physical_address = c_str.as_ptr() as usize;
+        let mut physical_address = c_str.as_ptr() as usize;
+        if physical_address >= 0x80000000 {
+            physical_address -= 0x80000000;
+        }
 
         let mut virtual_address = 0;
         if let Some(scheme) = self.inner.upgrade() {

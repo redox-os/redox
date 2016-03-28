@@ -420,7 +420,7 @@ impl IdeDisk {
     }
 
     fn ata_pio(&mut self, block: u64, sectors: usize, buf: usize, write: bool) -> Result<usize> {
-        debugln!("IDE PIO BLOCK: {} SECTORS: {} BUF: {:X} WRITE: {}", block, sectors, buf, write);
+        // debugln!("IDE PIO BLOCK: {} SECTORS: {} BUF: {:X} WRITE: {}", block, sectors, buf, write);
 
         if buf > 0 && sectors > 0 {
             let mut sector: usize = 0;
@@ -533,7 +533,7 @@ impl IdeDisk {
     }
 
     fn ata_dma(&mut self, block: u64, sectors: usize, buf: usize, write: bool) -> Result<usize> {
-        debugln!("IDE DMA BLOCK: {} SECTORS: {} BUF: {:X} WRITE: {}", block, sectors, buf, write);
+        // debugln!("IDE DMA BLOCK: {} SECTORS: {} BUF: {:X} WRITE: {}", block, sectors, buf, write);
 
         if buf > 0 && sectors > 0 {
             let mut sector: usize = 0;
