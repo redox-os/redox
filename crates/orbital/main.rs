@@ -463,7 +463,7 @@ fn main() {
     let status_mutex = Arc::new(Mutex::new(Status::Starting));
 
     let status_daemon = status_mutex.clone();
-    let daemon_thread = thread::spawn(move || {
+    thread::spawn(move || {
         match Socket::create(":orbital").map(|socket| Arc::new(socket)) {
             Ok(socket) => match Socket::open("display:manager").map(|display| Arc::new(display)) {
                 Ok(display) => {
@@ -504,7 +504,7 @@ fn main() {
         match *status_mutex.lock().unwrap() {
             Status::Starting => (),
             Status::Running => {
-                Command::new("launcher").spawn().unwrap().wait().unwrap();
+                Command::new("launcher").spawn().unwrap();
                 break 'waiting;
             },
             Status::Stopping => break 'waiting,
@@ -512,6 +512,4 @@ fn main() {
 
         thread::sleep_ms(30);
     }
-
-    daemon_thread.join().unwrap();
 }

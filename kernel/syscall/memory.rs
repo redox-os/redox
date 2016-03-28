@@ -1,3 +1,4 @@
+use arch::context::ContextMemory;
 use arch::memory;
 
 use system::error::Result;
@@ -9,10 +10,10 @@ pub fn do_sys_brk(addr: usize) -> Result<usize> {
 
     let contexts = ::env().contexts.lock();
     if let Ok(current) = contexts.current() {
-        ret = current.next_mem();
+        ret = unsafe { (*current.heap.get()).next_mem() };
 
         // TODO: Make this smarter, currently it attempt to resize the entire data segment
-        if let Some(mut mem) = unsafe { (*current.memory.get()).last_mut() } {
+        if let Some(mut mem) = unsafe { (*current.heap.get()).memory.last_mut() } {
             if mem.writeable && mem.allocated {
                 if addr >= mem.virtual_address {
                     unsafe { mem.unmap() };
@@ -34,8 +35,26 @@ pub fn do_sys_brk(addr: usize) -> Result<usize> {
                 debugln!("{}: {}", current.pid, current.name);
                 debugln!("BRK: End segment not writeable or allocated");
             }
-        } else {
-            debugln!("BRK: No segments");
+        } else if addr >= ret {
+            let size = addr - ret;
+            let physical_address = unsafe { memory::alloc_aligned(size, 4096) };
+            if physical_address > 0 {
+                let mut mem = ContextMemory {
+                    physical_address: physical_address,
+                    virtual_address: ret,
+                    virtual_size: size,
+                    writeable: true,
+                    allocated: true
+                };
+                ret = mem.virtual_address + mem.virtual_size;
+
+                unsafe {
+                    mem.map();
+                    (*current.heap.get()).memory.push(mem);
+                }
+            } else {
+                debugln!("BRK: Alloc failed {}\n", size);
+            }
         }
     } else {
         debugln!("BRK: Context not found");

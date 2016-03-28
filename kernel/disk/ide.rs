@@ -368,7 +368,10 @@ impl IdeDisk {
                           ((destination.read(103) as u64) << 48);
 
         if sectors == 0 {
+            debugln!(" 28-bit LBA");
             sectors = (destination.read(60) as u64) | ((destination.read(61) as u64) << 16);
+        } else {
+            debugln!(" 48-bit LBA");
         }
 
         debug!(" Size: {} MB", (sectors / 2048) as usize);
@@ -376,12 +379,11 @@ impl IdeDisk {
         true
     }
 
-    unsafe fn ata_pio_small(&mut self,
-                            block: u64,
-                            sectors: u16,
-                            buf: usize,
-                            write: bool)
-                            -> Result<usize> {
+    unsafe fn ata_pio_small(&mut self, block: u64, sectors: u16, mut buf: usize, write: bool) -> Result<usize> {
+        if buf >= 0x80000000 {
+            buf -= 0x80000000;
+        }
+
         if buf > 0 {
             self.ata(if write {
                 ATA_CMD_WRITE_PIO //_EXT
@@ -449,12 +451,11 @@ impl IdeDisk {
         }
     }
 
-    unsafe fn ata_dma_small(&mut self,
-                            block: u64,
-                            sectors: u16,
-                            buf: usize,
-                            write: bool)
-                            -> Result<usize> {
+    unsafe fn ata_dma_small(&mut self, block: u64, sectors: u16, mut buf: usize, write: bool) -> Result<usize> {
+        if buf >= 0x80000000 {
+            buf -= 0x80000000;
+        }
+
         if buf > 0 {
             self.buscmd.writef(CMD_ACT, false);
 

@@ -99,8 +99,9 @@ impl Resource for SchemeResource {
             let virtual_size = (buf.len() + offset + 4095)/4096 * 4096;
             if let Some(scheme) = self.inner.upgrade() {
                 unsafe {
-                    virtual_address = (*scheme.context).next_mem();
-                    (*(*scheme.context).memory.get()).push(ContextMemory {
+                    let mmap = &mut *(*scheme.context).mmap.get();
+                    virtual_address = mmap.next_mem();
+                    mmap.memory.push(ContextMemory {
                         physical_address: physical_address - offset,
                         virtual_address: virtual_address,
                         virtual_size: virtual_size,
@@ -117,10 +118,11 @@ impl Resource for SchemeResource {
 
                 if let Some(scheme) = self.inner.upgrade() {
                     unsafe {
-                        if let Ok(mut mem) = (*scheme.context).get_mem_mut(virtual_address) {
+                        let mmap = &mut *(*scheme.context).mmap.get();
+                        if let Ok(mut mem) = mmap.get_mem_mut(virtual_address) {
                             mem.virtual_size = 0;
                         }
-                        (*scheme.context).clean_mem();
+                        mmap.clean_mem();
                     }
                 }
 
@@ -144,8 +146,9 @@ impl Resource for SchemeResource {
             let virtual_size = (buf.len() + offset + 4095)/4096 * 4096;
             if let Some(scheme) = self.inner.upgrade() {
                 unsafe {
-                    virtual_address = (*scheme.context).next_mem();
-                    (*(*scheme.context).memory.get()).push(ContextMemory {
+                    let mmap = &mut *(*scheme.context).mmap.get();
+                    virtual_address = mmap.next_mem();
+                    mmap.memory.push(ContextMemory {
                         physical_address: physical_address - offset,
                         virtual_address: virtual_address,
                         virtual_size: virtual_size,
@@ -162,10 +165,11 @@ impl Resource for SchemeResource {
 
                 if let Some(scheme) = self.inner.upgrade() {
                     unsafe {
-                        if let Ok(mut mem) = (*scheme.context).get_mem_mut(virtual_address) {
+                        let mmap = &mut *(*scheme.context).mmap.get();
+                        if let Ok(mut mem) = mmap.get_mem_mut(virtual_address) {
                             mem.virtual_size = 0;
                         }
-                        (*scheme.context).clean_mem();
+                        mmap.clean_mem();
                     }
                 }
 
@@ -189,12 +193,13 @@ impl Resource for SchemeResource {
             let virtual_size = (buf.len() + offset + 4095)/4096 * 4096;
             if let Some(scheme) = self.inner.upgrade() {
                 unsafe {
-                    virtual_address = (*scheme.context).next_mem();
-                    (*(*scheme.context).memory.get()).push(ContextMemory {
+                    let mmap = &mut *(*scheme.context).mmap.get();
+                    virtual_address = mmap.next_mem();
+                    mmap.memory.push(ContextMemory {
                         physical_address: physical_address - offset,
                         virtual_address: virtual_address,
                         virtual_size: virtual_size,
-                        writeable: true,
+                        writeable: false,
                         allocated: false,
                     });
                 }
@@ -207,10 +212,11 @@ impl Resource for SchemeResource {
 
                 if let Some(scheme) = self.inner.upgrade() {
                     unsafe {
-                        if let Ok(mut mem) = (*scheme.context).get_mem_mut(virtual_address) {
+                        let mmap = &mut *(*scheme.context).mmap.get();
+                        if let Ok(mut mem) = mmap.get_mem_mut(virtual_address) {
                             mem.virtual_size = 0;
                         }
-                        (*scheme.context).clean_mem();
+                        mmap.clean_mem();
                     }
                 }
 
@@ -375,16 +381,21 @@ impl KScheme for Scheme {
     fn open(&mut self, url: Url, flags: usize) -> Result<Box<Resource>> {
         let c_str = url.to_string() + "\0";
 
-        let physical_address = c_str.as_ptr() as usize;
+        let mut physical_address = c_str.as_ptr() as usize;
+        if physical_address >= 0x80000000 {
+            physical_address -= 0x80000000;
+        }
 
         let mut virtual_address = 0;
+        let virtual_size = c_str.len();
         if let Some(scheme) = self.inner.upgrade() {
             unsafe {
-                virtual_address = (*scheme.context).next_mem();
-                (*(*scheme.context).memory.get()).push(ContextMemory {
+                let mmap = &mut *(*scheme.context).mmap.get();
+                virtual_address = mmap.next_mem();
+                mmap.memory.push(ContextMemory {
                     physical_address: physical_address,
                     virtual_address: virtual_address,
-                    virtual_size: c_str.len(),
+                    virtual_size: virtual_size,
                     writeable: false,
                     allocated: false,
                 });
@@ -396,10 +407,11 @@ impl KScheme for Scheme {
 
             if let Some(scheme) = self.inner.upgrade() {
                 unsafe {
-                    if let Ok(mut mem) = (*scheme.context).get_mem_mut(virtual_address) {
+                    let mmap = &mut *(*scheme.context).mmap.get();
+                    if let Ok(mut mem) = mmap.get_mem_mut(virtual_address) {
                         mem.virtual_size = 0;
                     }
-                    (*scheme.context).clean_mem();
+                    mmap.clean_mem();
                 }
             }
 
@@ -418,16 +430,21 @@ impl KScheme for Scheme {
     fn mkdir(&mut self, url: Url, flags: usize) -> Result<()> {
         let c_str = url.to_string() + "\0";
 
-        let physical_address = c_str.as_ptr() as usize;
+        let mut physical_address = c_str.as_ptr() as usize;
+        if physical_address >= 0x80000000 {
+            physical_address -= 0x80000000;
+        }
 
         let mut virtual_address = 0;
+        let virtual_size = c_str.len();
         if let Some(scheme) = self.inner.upgrade() {
             unsafe {
-                virtual_address = (*scheme.context).next_mem();
-                (*(*scheme.context).memory.get()).push(ContextMemory {
+                let mmap = &mut *(*scheme.context).mmap.get();
+                virtual_address = mmap.next_mem();
+                mmap.memory.push(ContextMemory {
                     physical_address: physical_address,
                     virtual_address: virtual_address,
-                    virtual_size: c_str.len(),
+                    virtual_size: virtual_size,
                     writeable: false,
                     allocated: false,
                 });
@@ -439,10 +456,11 @@ impl KScheme for Scheme {
 
             if let Some(scheme) = self.inner.upgrade() {
                 unsafe {
-                    if let Ok(mut mem) = (*scheme.context).get_mem_mut(virtual_address) {
+                    let mmap = &mut *(*scheme.context).mmap.get();
+                    if let Ok(mut mem) = mmap.get_mem_mut(virtual_address) {
                         mem.virtual_size = 0;
                     }
-                    (*scheme.context).clean_mem();
+                    mmap.clean_mem();
                 }
             }
 
@@ -455,16 +473,21 @@ impl KScheme for Scheme {
     fn rmdir(&mut self, url: Url) -> Result<()> {
         let c_str = url.to_string() + "\0";
 
-        let physical_address = c_str.as_ptr() as usize;
+        let mut physical_address = c_str.as_ptr() as usize;
+        if physical_address >= 0x80000000 {
+            physical_address -= 0x80000000;
+        }
 
         let mut virtual_address = 0;
+        let virtual_size = c_str.len();
         if let Some(scheme) = self.inner.upgrade() {
             unsafe {
-                virtual_address = (*scheme.context).next_mem();
-                (*(*scheme.context).memory.get()).push(ContextMemory {
+                let mmap = &mut *(*scheme.context).mmap.get();
+                virtual_address = mmap.next_mem();
+                mmap.memory.push(ContextMemory {
                     physical_address: physical_address,
                     virtual_address: virtual_address,
-                    virtual_size: c_str.len(),
+                    virtual_size: virtual_size,
                     writeable: false,
                     allocated: false,
                 });
@@ -476,10 +499,11 @@ impl KScheme for Scheme {
 
             if let Some(scheme) = self.inner.upgrade() {
                 unsafe {
-                    if let Ok(mut mem) = (*scheme.context).get_mem_mut(virtual_address) {
+                    let mmap = &mut *(*scheme.context).mmap.get();
+                    if let Ok(mut mem) = mmap.get_mem_mut(virtual_address) {
                         mem.virtual_size = 0;
                     }
-                    (*scheme.context).clean_mem();
+                    mmap.clean_mem();
                 }
             }
 
@@ -492,16 +516,21 @@ impl KScheme for Scheme {
     fn unlink(&mut self, url: Url) -> Result<()> {
         let c_str = url.to_string() + "\0";
 
-        let physical_address = c_str.as_ptr() as usize;
+        let mut physical_address = c_str.as_ptr() as usize;
+        if physical_address >= 0x80000000 {
+            physical_address -= 0x80000000;
+        }
 
         let mut virtual_address = 0;
+        let virtual_size = c_str.len();
         if let Some(scheme) = self.inner.upgrade() {
             unsafe {
-                virtual_address = (*scheme.context).next_mem();
-                (*(*scheme.context).memory.get()).push(ContextMemory {
+                let mmap = &mut *(*scheme.context).mmap.get();
+                virtual_address = mmap.next_mem();
+                mmap.memory.push(ContextMemory {
                     physical_address: physical_address,
                     virtual_address: virtual_address,
-                    virtual_size: c_str.len(),
+                    virtual_size: virtual_size,
                     writeable: false,
                     allocated: false,
                 });
@@ -513,10 +542,11 @@ impl KScheme for Scheme {
 
             if let Some(scheme) = self.inner.upgrade() {
                 unsafe {
-                    if let Ok(mut mem) = (*scheme.context).get_mem_mut(virtual_address) {
+                    let mmap = &mut *(*scheme.context).mmap.get();
+                    if let Ok(mut mem) = mmap.get_mem_mut(virtual_address) {
                         mem.virtual_size = 0;
                     }
-                    (*scheme.context).clean_mem();
+                    mmap.clean_mem();
                 }
             }
 

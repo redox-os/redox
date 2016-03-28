@@ -36,11 +36,9 @@ impl KScheme for ContextScheme {
                 if let Some(ref stack) = context.stack {
                     memory += stack.virtual_size;
                 }
-                unsafe {
-                    for context_memory in (*context.memory.get()).iter() {
-                        memory += context_memory.virtual_size;
-                    }
-                }
+                memory += unsafe { (*context.image.get()).size() };
+                memory += unsafe { (*context.heap.get()).size() };
+                memory += unsafe { (*context.mmap.get()).size() };
 
                 let memory_string = if memory >= 1024 * 1024 * 1024 {
                     format!("{} GB", memory / 1024 / 1024 / 1024)
