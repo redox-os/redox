@@ -384,7 +384,7 @@ impl IdeDisk {
             buf -= 0x80000000;
         }
 
-        if buf > 0 {
+        if buf > 0 && sectors > 0 {
             self.ata(if write {
                 ATA_CMD_WRITE_PIO //_EXT
             } else {
@@ -456,7 +456,7 @@ impl IdeDisk {
             buf -= 0x80000000;
         }
 
-        if buf > 0 {
+        if buf > 0 && sectors > 0 {
             self.buscmd.writef(CMD_ACT, false);
 
             self.prdt.reg.write(0);

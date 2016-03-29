@@ -132,11 +132,11 @@ help:
 
 all: $(BUILD)/harddrive.bin
 
-filesystem/apps/sodium/main.bin: filesystem/apps/sodium/src/main.rs filesystem/apps/sodium/src/*.rs $(BUILD)/libstd.rlib $(BUILD)/liborbclient.rlib
-	$(RUSTC) $(RUSTCFLAGS) --crate-type bin -o $@ $< --cfg 'feature="orbital"'
-
 filesystem/apps/pixelcannon/main.bin: crates/pixelcannon/src/main.rs crates/pixelcannon/src/*.rs $(BUILD)/libstd.rlib $(BUILD)/liborbclient.rlib
 	$(RUSTC) $(RUSTCFLAGS) --crate-type bin -o $@ $<
+
+filesystem/apps/sodium/main.bin: filesystem/apps/sodium/src/main.rs filesystem/apps/sodium/src/*.rs $(BUILD)/libstd.rlib $(BUILD)/liborbclient.rlib
+	$(RUSTC) $(RUSTCFLAGS) --crate-type bin -o $@ $< --cfg 'feature="orbital"'
 
 filesystem/apps/%/main.bin: filesystem/apps/%/main.rs filesystem/apps/%/*.rs $(BUILD)/libstd.rlib $(BUILD)/liborbclient.rlib $(BUILD)/liborbtk.rlib
 	$(RUSTC) $(RUSTCFLAGS) --crate-type bin -o $@ $<
@@ -144,7 +144,7 @@ filesystem/apps/%/main.bin: filesystem/apps/%/main.rs filesystem/apps/%/*.rs $(B
 filesystem/apps/%/main.bin: crates/orbutils/src/%/main.rs crates/orbutils/src/%/*.rs $(BUILD)/libstd.rlib $(BUILD)/liborbclient.rlib $(BUILD)/liborbtk.rlib
 	$(RUSTC) $(RUSTCFLAGS) --crate-type bin -o $@ $<
 
-apps: filesystem/apps/calculator/main.bin \
+apps:     filesystem/apps/calculator/main.bin \
 	  filesystem/apps/editor/main.bin \
 	  filesystem/apps/file_manager/main.bin \
 	  filesystem/apps/orbtk/main.bin \
@@ -250,6 +250,13 @@ filesystem/bin/%: libc/bin/%
 	mkdir -p filesystem/bin
 	cp $< $@
 
+$(BUILD)/examples/simple.bin: FORCE $(BUILD)/libstd.rlib
+	$(CARGO) --manifest-path crates/rusttype/Cargo.toml --example simple $(CARGOFLAGS)
+
+filesystem/bin/rusttype: $(BUILD)/examples/simple.bin
+	mkdir -p filesystem/bin
+	cp $< $@
+
 $(BUILD)/ion-shell.bin: FORCE $(BUILD)/libstd.rlib
 	$(CARGO) --manifest-path crates/ion/Cargo.toml --bin ion-shell $(CARGOFLAGS)
 
@@ -287,6 +294,7 @@ bins: \
   	filesystem/bin/login \
   	filesystem/bin/minesweeper \
   	filesystem/bin/orbital \
+	filesystem/bin/rusttype \
 	filesystem/bin/screenfetch \
   	filesystem/bin/sdl-test \
   	filesystem/bin/sdl-ttf-test \
