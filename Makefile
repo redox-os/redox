@@ -250,10 +250,10 @@ filesystem/bin/%: libc/bin/%
 	mkdir -p filesystem/bin
 	cp $< $@
 
-$(BUILD)/examples/simple.bin: FORCE $(BUILD)/libstd.rlib
-	$(CARGO) --manifest-path crates/rusttype/Cargo.toml --example simple $(CARGOFLAGS)
+$(BUILD)/examples/rusttype.bin: FORCE $(BUILD)/libstd.rlib
+	$(CARGO) --manifest-path crates/rusttype/Cargo.toml --example rusttype $(CARGOFLAGS)
 
-filesystem/bin/rusttype: $(BUILD)/examples/simple.bin
+filesystem/bin/rusttype: $(BUILD)/examples/rusttype.bin
 	mkdir -p filesystem/bin
 	cp $< $@
 
@@ -397,24 +397,30 @@ doc/kernel: kernel/main.rs kernel/*.rs kernel/*/*.rs kernel/*/*/*.rs $(BUILD)/ke
 	$(RUSTDOC) $<
 
 doc/extra: crates/extra/src/lib.rs crates/extra/src/*.rs $(BUILD)/libextra.rlib
-	$(RUSTDOC) $<
+	$(RUSTDOC) --crate-name=extra $<
 
 doc/malloc: crates/malloc/src/lib.rs crates/malloc/src/*.rs $(BUILD)/libmalloc.rlib
-	$(RUSTDOC) $<
+	$(RUSTDOC) --crate-name=malloc $<
 
 doc/binutils: crates/binutils/src/lib.rs crates/binutils/src/*.rs $(BUILD)/libbinutils.rlib
-	$(RUSTDOC) $<
+	$(RUSTDOC) --crate-name=binutils $<
 
 doc/zfs: crates/zfs/src/main.rs crates/zfs/src/*.rs filesystem/bin/zfs
+	$(RUSTDOC) --crate-name=zfs $<
+
+doc/orbclient: crates/orbclient/src/lib.rs crates/orbclient/src/*.rs $(BUILD)/liborbclient.rlib doc/std
+	$(RUSTDOC) $<
+
+doc/orbtk: crates/orbtk/src/lib.rs crates/orbtk/src/*.rs $(BUILD)/liborbtk.rlib doc/orbclient
 	$(RUSTDOC) $<
 
 doc/sodium: filesystem/apps/sodium/src/main.rs filesystem/apps/sodium/src/*.rs filesystem/apps/sodium/main.bin
-	$(RUSTDOC) --cfg 'feature="orbital"' $<
+	$(RUSTDOC) --crate-name=sodium --cfg 'feature="orbital"' $<
 
 doc/std: libstd/src/lib.rs libstd/src/*.rs libstd/src/*/*.rs libstd/src/*/*/*.rs $(BUILD)/libstd.rlib doc/rand doc/system
 	$(RUSTDOC) --crate-name=std $<
 
-doc: doc/kernel doc/std doc/extra doc/malloc doc/sodium doc/binutils
+doc: doc/kernel doc/std doc/extra doc/malloc doc/orbclient doc/orbtk doc/sodium doc/binutils
 
 man: filesystem/man
 
