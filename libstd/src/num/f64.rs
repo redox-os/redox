@@ -952,10 +952,11 @@ impl f64 {
     /// ```
         #[inline]
     pub fn asinh(self) -> f64 {
-        match self {
-            NEG_INFINITY => NEG_INFINITY,
-            x => (x + ((x * x) + 1.0).sqrt()).ln(),
+        if self == NEG_INFINITY {
+            return NEG_INFINITY;
         }
+
+        (self + ((self * self) + 1.0).sqrt()).ln()
     }
 
     /// Inverse hyperbolic cosine function.
