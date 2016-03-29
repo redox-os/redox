@@ -55,3 +55,6 @@
 [submodule "crates/sdl3d"]
 	path = crates/sdl3d
 	url = https://github.com/ca1ek/sdl3d.git
+[submodule "crates/rusttype"]
+	path = crates/rusttype
+	url = https://github.com/jackpot51/rusttype.git
