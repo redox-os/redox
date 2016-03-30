@@ -1,6 +1,7 @@
 use alloc::arc::Arc;
 
-use arch::context::{CONTEXT_IMAGE_ADDR, CONTEXT_IMAGE_SIZE, CONTEXT_STACK_SIZE, CONTEXT_STACK_ADDR,
+use arch::context::{CONTEXT_IMAGE_ADDR, CONTEXT_IMAGE_SIZE, CONTEXT_HEAP_ADDR, CONTEXT_HEAP_SIZE,
+                    CONTEXT_MMAP_ADDR, CONTEXT_MMAP_SIZE, CONTEXT_STACK_SIZE, CONTEXT_STACK_ADDR,
                     context_switch, context_userspace, Context, ContextMemory, ContextZone};
 use arch::elf::Elf;
 use arch::memory;
@@ -192,9 +193,14 @@ pub fn execute(mut args: Vec<String>) -> Result<usize> {
                     context.cwd = Arc::new(UnsafeCell::new(unsafe { (*context.cwd.get()).clone() }));
 
                     unsafe { context.unmap() };
+
                     let mut image = ContextZone::new(CONTEXT_IMAGE_ADDR, CONTEXT_IMAGE_SIZE);
                     image.memory = memory;
+
                     context.image = Arc::new(UnsafeCell::new(image));
+                    context.heap = Arc::new(UnsafeCell::new(ContextZone::new(CONTEXT_HEAP_ADDR, CONTEXT_HEAP_SIZE)));
+                    context.mmap = Arc::new(UnsafeCell::new(ContextZone::new(CONTEXT_MMAP_ADDR, CONTEXT_MMAP_SIZE)));
+
                     unsafe { context.map() };
 
                     execute_thread(context.deref_mut(), entry, args);
