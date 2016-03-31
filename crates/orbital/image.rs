@@ -177,7 +177,6 @@ impl Image {
     }
 
     pub fn from_data(width: i32, height: i32, data: Box<[u32]>) -> Image {
-        println!("New image: {}x{}: {}", width, height, data.len());
         Image {
             w: width,
             h: height,
