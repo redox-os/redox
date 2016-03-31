@@ -44,46 +44,15 @@ VBM_CLEANUP=\
 		fi \
 	fi
 
-ifeq ($(OS),Windows_NT)
-	SHELL=windows\sh
-	LD=windows/$(ARCH)-elf-ld
-	CARGOFLAGS += -C ar=windows/$(ARCH)-elf-ar -C linker=windows/$(ARCH)-elf-gcc -C link-args="-v -fno-use-linker-plugin"
-	RUSTCFLAGS += -C ar=windows/$(ARCH)-elf-ar -C linker=windows/$(ARCH)-elf-gcc -C link-args="-v -fno-use-linker-plugin"
-	AS=windows/nasm
-	AWK=windows/awk
-	BASENAME=windows/basename
-	CUT=windows/cut
-	DATE=windows/date
-	FIND=windows/find
-	MAKE=windows/make
-	MKDIR=windows/mkdir
-	OBJDUMP=windows/i386-elf-objdump
-	RM=windows/rm
-	SED=windows/sed
-	SORT=windows/sort
-	VB="C:/Program Files/Oracle/VirtualBox/VirtualBox"
-	VB_AUDIO="dsound"
-	VBM="C:/Program Files/Oracle/VirtualBox/VBoxManage"
-	VBM_CLEANUP=\
-		if [ $$? -ne 0 ]; \
-		then \
-			if [ -d "$$USERPROFILE/VirtualBox VMs/Redox" ]; \
-			then \
-				echo "Redox directory exists, deleting..."; \
-				$(RM) -rf "$$USERPROFILE/VirtualBox VMs/Redox"; \
-			fi \
-		fi
-else
-	UNAME := $(shell uname)
-	ifeq ($(UNAME),Darwin)
-		LD=$(ARCH)-elf-ld
-		OBJDUMP=$(ARCH)-elf-objdump
-		CARGOFLAGS += -C ar=$(ARCH)-elf-ar -C linker=$(ARCH)-elf-gcc
-		RUSTCFLAGS += -C ar=$(ARCH)-elf-ar -C linker=$(ARCH)-elf-gcc
-		VB="/Applications/VirtualBox.app/Contents/MacOS/VirtualBox"
-		VB_AUDIO="coreaudio"
-		VBM="/Applications/VirtualBox.app/Contents/MacOS/VBoxManage"
-	endif
+UNAME := $(shell uname)
+ifeq ($(UNAME),Darwin)
+	LD=$(ARCH)-elf-ld
+	OBJDUMP=$(ARCH)-elf-objdump
+	CARGOFLAGS += -C ar=$(ARCH)-elf-ar -C linker=$(ARCH)-elf-gcc
+	RUSTCFLAGS += -C ar=$(ARCH)-elf-ar -C linker=$(ARCH)-elf-gcc
+	VB="/Applications/VirtualBox.app/Contents/MacOS/VirtualBox"
+	VB_AUDIO="coreaudio"
+	VBM="/Applications/VirtualBox.app/Contents/MacOS/VBoxManage"
 endif
 
 .PHONY: help all doc apps bins clean \
