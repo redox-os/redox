@@ -21,7 +21,7 @@ use fs::Resource;
 
 use syscall::{do_sys_exit, CLONE_FILES, CLONE_FS, CLONE_VM, CLONE_VFORK};
 
-use system::error::{Error, Result, EBADF, EFAULT, ENOMEM, ESRCH};
+use system::error::{Error, Result, EBADF, EFAULT, ENOMEM, ESRCH, ENOENT, EINVAL};
 
 use sync::WaitMap;
 
@@ -836,25 +836,25 @@ impl Context {
     }
 
     /// Gets an environment variable. Returns `None` if the variable is not defined
-    pub fn get_env_var(&self, var_name: &str) -> Option<String> {
+    pub fn get_env_var(&self, var_name: &str) -> Result<String> {
         for variable in unsafe { (*self.env_vars.get()).iter() } {
             if variable.starts_with(&(String::from(var_name) + "=")) {
-                return Some(variable.as_str().chars().skip(var_name.len()+1).collect::<String>());
+                return Ok(variable.as_str().chars().skip(var_name.len()+1).collect::<String>());
             }
         }
-        None
+        Err(Error::new(ENOENT))
     }
 
     /// Sets an environment variable. Returns `None` if the variable name contains the `=`
     /// character
-    pub fn set_env_var(&mut self, name: &str, value: &str) -> Option<()> {
-        if name.contains('=') { return None };
+    pub fn set_env_var(&mut self, name: &str, value: &str) -> Result<()> {
+        if name.contains('=') { return Err(Error::new(EINVAL)) };
 
         let variable_string = String::from(name) + "=" + value;
         unsafe {
             (*self.env_vars.get()).push(variable_string);
         }
-        Some(())
+        Ok(())
     }
 
     pub unsafe fn map(&mut self) {
