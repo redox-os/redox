@@ -238,12 +238,13 @@ impl FileManager {
         self.window.sync();
     }
 
-    // TODO: would this make more sense in the fs module?
     fn get_parent_directory() -> Option<String> {
-        if let Ok(parent_dir) = File::open("../") {
-            if let Ok(path) = parent_dir.path() {
-                return Some(path.into_os_string().into_string().unwrap_or("/".to_string()));
-            }
+        match File::open("../") {
+            Ok(parent_dir) => match parent_dir.path() {
+                Ok(path) => return Some(path.into_os_string().into_string().unwrap_or("/".to_string())),
+                Err(err) => println!("failed to get path: {}", err)
+            },
+            Err(err) => println!("failed to open parent dir: {}", err)
         }
 
         None
@@ -264,79 +265,94 @@ impl FileManager {
     fn set_path(&mut self, path: &str) {
         let mut width = [48; 3];
         let mut height = 0;
-        env::set_current_dir(path);
-        if let Ok(readdir) = fs::read_dir(path) {
-            self.files.clear();
-            self.file_sizes.clear();
-            // check to see if parent directory exists
-            if let Some(parent_dir) = FileManager::get_parent_directory() {
-                self.files.push("../".to_string());
-                self.file_sizes.push(FileManager::get_num_entries(&parent_dir));
-            }
-            for entry_result in readdir {
-                if let Ok(entry) = entry_result {
-                    let directory = match entry.file_type() {
-                        Ok(file_type) => file_type.is_dir(),
-                        Err(err) => {
-                            println!("Failed to read file type: {}", err);
-                            false
-                        }
-                    };
 
-                    let entry_path = match entry.file_name().to_str() {
-                        Some(path_str) => if directory {
-                            path_str.to_string() + "/"
-                        } else {
-                            path_str.to_string()
-                        },
-                        None => {
-                            println!("Failed to read file name");
-                            String::new()
-                        }
-                    };
-
-                    self.files.push(entry_path.clone());
-                    self.file_sizes.push(// When the entry is a folder
-                                         if entry_path.ends_with('/') {
-                        FileManager::get_num_entries(&(path.to_string() + &entry_path))
-                    } else {
-                        match fs::metadata(&entry_path) {
-                            Ok(metadata) => {
-                                let size = metadata.len();
-                                if size >= 1_000_000_000 {
-                                    format!("{:.1} GB", (size as u64) / 1_000_000_000)
-                                } else if size >= 1_000_000 {
-                                    format!("{:.1} MB", (size as u64) / 1_000_000)
-                                } else if size >= 1_000 {
-                                    format!("{:.1} KB", (size as u64) / 1_000)
-                                } else {
-                                    format!("{:.1} bytes", size)
-                                }
-                            }
-                            Err(err) => format!("Failed to open: {}", err),
-                        }
-                    });
-                    // Unwrapping the last file size will not panic since it has
-                    // been at least pushed once in the vector
-                    let description = self.file_types_info.description_for(&entry_path);
-                    width[0] = cmp::max(width[0], 48 + (entry_path.len()) * 8);
-                    width[1] = cmp::max(width[1], 8 + (self.file_sizes.last().unwrap().len()) * 8);
-                    width[2] = cmp::max(width[2], 8 + (description.len()) * 8);
-                }
-            }
-
-            if height < self.files.len() * 32 {
-                height = self.files.len() * 32;
-            }
+        if let Err(err) = env::set_current_dir(path) {
+            println!("failed to set dir {}: {}", path, err);
         }
+
+        match fs::read_dir(path) {
+            Ok(readdir) => {
+                self.files.clear();
+                self.file_sizes.clear();
+
+                // check to see if parent directory exists
+                if let Some(parent_dir) = FileManager::get_parent_directory() {
+                    self.files.push("../".to_string());
+                    self.file_sizes.push(FileManager::get_num_entries(&parent_dir));
+                }
+
+                for entry_result in readdir {
+                    match entry_result {
+                        Ok(entry) => {
+                            let directory = match entry.file_type() {
+                                Ok(file_type) => file_type.is_dir(),
+                                Err(err) => {
+                                    println!("Failed to read file type: {}", err);
+                                    false
+                                }
+                            };
+
+                            let entry_path = match entry.file_name().to_str() {
+                                Some(path_str) => if directory {
+                                    path_str.to_string() + "/"
+                                } else {
+                                    path_str.to_string()
+                                },
+                                None => {
+                                    println!("Failed to read file name");
+                                    String::new()
+                                }
+                            };
+
+                            self.files.push(entry_path.clone());
+                            self.file_sizes.push(if directory {
+                                FileManager::get_num_entries(&(path.to_string() + &entry_path))
+                            } else {
+                                match fs::metadata(&entry_path) {
+                                    Ok(metadata) => {
+                                        let size = metadata.len();
+                                        if size >= 1_000_000_000 {
+                                            format!("{:.1} GB", (size as u64) / 1_000_000_000)
+                                        } else if size >= 1_000_000 {
+                                            format!("{:.1} MB", (size as u64) / 1_000_000)
+                                        } else if size >= 1_000 {
+                                            format!("{:.1} KB", (size as u64) / 1_000)
+                                        } else {
+                                            format!("{:.1} bytes", size)
+                                        }
+                                    }
+                                    Err(err) => format!("Failed to open: {}", err),
+                                }
+                            });
+                            // Unwrapping the last file size will not panic since it has
+                            // been at least pushed once in the vector
+                            let description = self.file_types_info.description_for(&entry_path);
+                            width[0] = cmp::max(width[0], 48 + (entry_path.len()) * 8);
+                            width[1] = cmp::max(width[1], 8 + (self.file_sizes.last().unwrap().len()) * 8);
+                            width[2] = cmp::max(width[2], 8 + (description.len()) * 8);
+                        },
+                        Err(err) => println!("failed to read dir entry: {}", err)
+                    }
+                }
+
+                if height < self.files.len() * 32 {
+                    height = self.files.len() * 32;
+                }
+            },
+            Err(err) => println!("failed to readdir {}: {}", path, err)
+        }
+
         // TODO: HACK ALERT - should use resize whenver that gets added
         self.window.sync_path();
-        self.window = Window::new(self.window.x(),
-                                  self.window.y(),
-                                  width.iter().sum::<usize>() as u32,
-                                  height as u32,
-                                  &path)
-                          .unwrap();
+        
+        let x = self.window.x();
+        let y = self.window.y();
+        let w = width.iter().sum::<usize>() as u32;
+        let h = height as u32;
+
+        println!("new window: {},{} {}x{}", x, y, w, h);
+        self.window = Window::new(x, y, w, h, &path).unwrap();
+
         self.draw_content();
     }
 
@@ -355,14 +371,14 @@ impl FileManager {
                                     self.selected -= 1;
                                     redraw = true;
                                 }
-                            }
+                            },
                             event::K_END => self.selected = self.files.len() as isize - 1,
                             event::K_DOWN => {
                                 if self.selected < self.files.len() as isize - 1 {
                                     self.selected += 1;
                                     redraw = true;
                                 }
-                            }
+                            },
                             _ => {
                                 match key_event.character {
                                     '\0' => (),
@@ -468,6 +484,7 @@ impl FileManager {
                 match event {
                     FileManagerCommand::ChangeDir(dir) => {
                         if dir == "../" {
+                            println!("Change dir up");
                             if let Some(parent_dir) = FileManager::get_parent_directory() {
                                 current_path = parent_dir;
                             }
@@ -487,6 +504,7 @@ impl FileManager {
                 self.draw_content();
             }
         }
+        println!("Exited");
     }
 }
 
