@@ -4,6 +4,8 @@ pub mod context;
 pub mod debug;
 /// Display Scheme
 pub mod display;
+/// Environment variables scheme
+pub mod env;
 /// File scheme
 pub mod file;
 /// Init Filesystem
