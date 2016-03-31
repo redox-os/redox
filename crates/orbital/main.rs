@@ -124,7 +124,9 @@ impl OrbitalScheme {
             *rect = rect.intersection(&screen_rect);
 
             if ! rect.is_empty() {
+                //TODO: only clear area not covered by background
                 self.image.roi(&rect).set(Color::rgb(75, 163, 253));
+                
                 let background_rect = self.background_rect();
                 let background_intersect = rect.intersection(&background_rect);
                 if ! background_intersect.is_empty(){
