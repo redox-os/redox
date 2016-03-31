@@ -1,6 +1,2 @@
-echo
-echo ** Redox has booted - press enter to login **
-echo
-
 # Login process, handles debug console
 login
