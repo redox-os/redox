@@ -98,6 +98,14 @@ impl OrbitalScheme {
         }
     }
 
+    fn background_rect(&self) -> Rect {
+        let w = self.background.width();
+        let h = self.background.height();
+        let x = self.image.width()/2 - w/2;
+        let y = self.image.height()/2 - h/2;
+        Rect::new(x, y, w, h)
+    }
+
     fn cursor_rect(&self) -> Rect {
         Rect::new(self.cursor_x, self.cursor_y, self.cursor.width(), self.cursor.height())
     }
@@ -116,8 +124,12 @@ impl OrbitalScheme {
             *rect = rect.intersection(&screen_rect);
 
             if ! rect.is_empty() {
-                //TODO: Allow background to have different size: self.image.roi(&rect).set(Color::rgb(75, 163, 253));
-                self.image.roi(&rect).blit(&self.background.roi(rect));
+                self.image.roi(&rect).set(Color::rgb(75, 163, 253));
+                let background_rect = self.background_rect();
+                let background_intersect = rect.intersection(&background_rect);
+                if ! background_intersect.is_empty(){
+                    self.image.roi(&background_intersect).blit(&self.background.roi(&background_intersect.offset(-background_rect.left(), -background_rect.top())));
+                }
 
                 let mut i = self.order.len();
                 for id in self.order.iter().rev() {
