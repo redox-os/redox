@@ -278,6 +278,11 @@ pub unsafe fn context_clone(regs: &Regs) -> Result<usize> {
                 } else {
                     Arc::new(UnsafeCell::new((*parent.mmap.get()).dup()))
                 },
+                env_vars: if flags & CLONE_VM == CLONE_VM {  // is CLONE_VM the good flag ?
+                    parent.env_vars.clone()
+                } else {
+                    Arc::new(UnsafeCell::new((*parent.env_vars.get()).clone()))
+                },
                 cwd: if flags & CLONE_FS == CLONE_FS {
                     parent.cwd.clone()
                 } else {
@@ -587,6 +592,8 @@ pub struct Context {
     pub heap: Arc<UnsafeCell<ContextZone>>,
     /// Mmap memory, cloned for threads, copied or created for processes. Modified by mmap
     pub mmap: Arc<UnsafeCell<ContextZone>>,
+    /// Environment variables, cloned for threads, copied or created for processes. Modified by set_env
+    pub env_vars: Arc<UnsafeCell<Vec<String>>>,
 
     /// Program working directory, cloned for threads, copied or created for processes. Modified by chdir
     pub cwd: Arc<UnsafeCell<String>>,
@@ -652,6 +659,7 @@ impl Context {
             image: Arc::new(UnsafeCell::new(ContextZone::new(CONTEXT_IMAGE_ADDR, CONTEXT_IMAGE_SIZE))),
             heap: Arc::new(UnsafeCell::new(ContextZone::new(CONTEXT_HEAP_ADDR, CONTEXT_HEAP_SIZE))),
             mmap: Arc::new(UnsafeCell::new(ContextZone::new(CONTEXT_MMAP_ADDR, CONTEXT_MMAP_SIZE))),
+            env_vars: Arc::new(UnsafeCell::new(Vec::new())),
 
             cwd: Arc::new(UnsafeCell::new(String::new())),
             files: Arc::new(UnsafeCell::new(Vec::new())),
@@ -689,6 +697,7 @@ impl Context {
             image: Arc::new(UnsafeCell::new(ContextZone::new(CONTEXT_IMAGE_ADDR, CONTEXT_IMAGE_SIZE))),
             heap: Arc::new(UnsafeCell::new(ContextZone::new(CONTEXT_HEAP_ADDR, CONTEXT_HEAP_SIZE))),
             mmap: Arc::new(UnsafeCell::new(ContextZone::new(CONTEXT_MMAP_ADDR, CONTEXT_MMAP_SIZE))),
+            env_vars: Arc::new(UnsafeCell::new(Vec::new())),
 
             cwd: Arc::new(UnsafeCell::new(String::new())),
             files: Arc::new(UnsafeCell::new(Vec::new())),
@@ -824,6 +833,28 @@ impl Context {
         }
 
         Err(Error::new(EFAULT))
+    }
+
+    /// Gets an environment variable. Returns `None` if the variable is not defined
+    pub fn get_env_var(&self, var_name: &str) -> Option<String> {
+        for variable in unsafe { (*self.env_vars.get()).iter() } {
+            if variable.starts_with(&(String::from(var_name) + "=")) {
+                return Some(variable.as_str().chars().skip(var_name.len()+1).collect::<String>());
+            }
+        }
+        None
+    }
+
+    /// Sets an environment variable. Returns `None` if the variable name contains the `=`
+    /// character
+    pub fn set_env_var(&mut self, name: &str, value: &str) -> Option<()> {
+        if name.contains('=') { return None };
+
+        let variable_string = String::from(name) + "=" + value;
+        unsafe {
+            (*self.env_vars.get()).push(variable_string);
+        }
+        Some(())
     }
 
     pub unsafe fn map(&mut self) {
