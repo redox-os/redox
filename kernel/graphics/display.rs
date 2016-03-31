@@ -79,6 +79,8 @@ impl Display {
                 height: mode_info.yresolution as usize,
             };
 
+            ret.set(Color::new(0, 0, 0));
+
             Some(ret)
         } else {
             None
