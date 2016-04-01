@@ -877,6 +877,17 @@ impl Context {
         Ok(vars_buf)
     }
 
+    /// Removes the environment variable named `name`. Returns `Err` if the variable doesn't exist
+    pub fn remove_env_var(&self, name: &str) -> Result<()> {
+        for (i, variable) in unsafe { (*self.env_vars.get()).iter().enumerate() } {
+            if &variable.name == name {
+                unsafe { (*self.env_vars.get()).remove(i) };
+                return Ok(());
+            }
+        }
+        Err(Error::new(ENOENT))
+    }
+
     pub unsafe fn map(&mut self) {
         if let Some(ref mut stack) = self.stack {
             stack.map();

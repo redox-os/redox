@@ -5,7 +5,7 @@ use alloc::boxed::Box;
 use core_collections::borrow::ToOwned;
 
 use ffi::{OsString, OsStr};
-use fs::File;
+use fs::{self, File};
 use path::{Path, PathBuf};
 use string::{String, ToString};
 use sys_common::AsInner;
@@ -159,6 +159,13 @@ pub fn set_var<K: AsRef<OsStr>, V: AsRef<OsStr>>(key: K, value: V) {
         if let Ok(mut file) = File::open(&("env:".to_owned() + key_str)) {
             let _ = file.write_all(value_str.as_bytes());
         }
+    }
+}
+
+/// Removes an environment variable from the environment of the current process
+pub fn remove_var<K: AsRef<OsStr>>(key: K) {
+    if let Some(key_str) = key.as_ref().to_str() {
+        let _ = fs::remove_file(&("env:".to_owned() + key_str));
     }
 }
 
