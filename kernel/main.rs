@@ -378,6 +378,13 @@ unsafe fn init(tss_data: usize) {
                     do_sys_open(stdio_c.as_ptr(), 0).unwrap();
                     do_sys_open(stdio_c.as_ptr(), 0).unwrap();
                     do_sys_open(stdio_c.as_ptr(), 0).unwrap();
+
+                    if let Some(ref display) = ::env().console.lock().display {
+                        let mut contexts = ::env().contexts.lock();
+                        let current = contexts.current_mut().unwrap();
+                        current.set_env_var("COLUMNS", &format!("{}", display.width/8)).unwrap();
+                        current.set_env_var("LINES", &format!("{}", display.height/16)).unwrap();
+                    }
                 }
 
                 if let Err(err) = execute(vec!["init".to_string()]) {

@@ -200,6 +200,7 @@ pub fn execute(mut args: Vec<String>) -> Result<usize> {
                     context.image = Arc::new(UnsafeCell::new(image));
                     context.heap = Arc::new(UnsafeCell::new(ContextZone::new(CONTEXT_HEAP_ADDR, CONTEXT_HEAP_SIZE)));
                     context.mmap = Arc::new(UnsafeCell::new(ContextZone::new(CONTEXT_MMAP_ADDR, CONTEXT_MMAP_SIZE)));
+                    context.env_vars = Arc::new(UnsafeCell::new(unsafe { (*context.env_vars.get()).clone() }));
 
                     unsafe { context.map() };
 
