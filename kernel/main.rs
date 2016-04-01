@@ -63,6 +63,7 @@ use graphics::display;
 use schemes::context::*;
 use schemes::debug::*;
 use schemes::display::*;
+use schemes::env::*;
 use schemes::initfs::*;
 use schemes::interrupt::*;
 use schemes::memory::*;
@@ -360,6 +361,7 @@ unsafe fn init(tss_data: usize) {
             env.schemes.lock().push(InitFsScheme::new());
             env.schemes.lock().push(box ContextScheme);
             env.schemes.lock().push(box DisplayScheme);
+            env.schemes.lock().push(box EnvScheme);
             env.schemes.lock().push(box InterruptScheme);
             env.schemes.lock().push(box MemoryScheme);
             env.schemes.lock().push(box TestScheme);
