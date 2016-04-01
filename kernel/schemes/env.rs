@@ -26,6 +26,13 @@ impl KScheme for EnvScheme {
             })
         }
     }
+
+    fn unlink(&mut self, url: Url) -> Result<()> {
+        let name = url.reference();
+        let contexts = ::env().contexts.lock();
+        let current = try!(contexts.current());
+        current.remove_env_var(name)
+    }
 }
 
 pub struct EnvListResource {
