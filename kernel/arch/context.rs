@@ -548,6 +548,12 @@ impl ContextZone {
     }
 }
 
+#[derive(Clone)]
+pub struct EnvironmentVariable {
+    name: String,
+    value: String
+}
+
 pub struct Context {
     // These members are used for control purposes by the scheduler {
     // The PID of the context
@@ -593,7 +599,7 @@ pub struct Context {
     /// Mmap memory, cloned for threads, copied or created for processes. Modified by mmap
     pub mmap: Arc<UnsafeCell<ContextZone>>,
     /// Environment variables, cloned for threads, copied or created for processes. Modified by set_env
-    pub env_vars: Arc<UnsafeCell<Vec<String>>>,
+    pub env_vars: Arc<UnsafeCell<Vec<EnvironmentVariable>>>,
 
     /// Program working directory, cloned for threads, copied or created for processes. Modified by chdir
     pub cwd: Arc<UnsafeCell<String>>,
@@ -838,8 +844,8 @@ impl Context {
     /// Gets an environment variable. Returns `None` if the variable is not defined
     pub fn get_env_var(&self, var_name: &str) -> Result<String> {
         for variable in unsafe { (*self.env_vars.get()).iter() } {
-            if variable.starts_with(&(String::from(var_name) + "=")) {
-                return Ok(variable.as_str().chars().skip(var_name.len()+1).collect::<String>());
+            if &variable.name == var_name {
+                return Ok(variable.value.clone());
             }
         }
         Err(Error::new(ENOENT))
@@ -848,13 +854,26 @@ impl Context {
     /// Sets an environment variable. Returns `None` if the variable name contains the `=`
     /// character
     pub fn set_env_var(&mut self, name: &str, value: &str) -> Result<()> {
-        if name.contains('=') { return Err(Error::new(EINVAL)) };
-
-        let variable_string = String::from(name) + "=" + value;
-        unsafe {
-            (*self.env_vars.get()).push(variable_string);
+        if name.contains('=') {
+            return Err(Error::new(EINVAL));
         }
+
+        for mut variable in unsafe { (*self.env_vars.get()).iter_mut() } {
+            if &variable.name == name {
+                variable.value = String::from(value);
+                return Ok(());
+            }
+        }
+        unsafe { (*self.env_vars.get()).push(EnvironmentVariable { name: String::from(name), value: String::from(value) }) };
         Ok(())
+    }
+
+    pub fn list_env_vars(&self) -> Result<Vec<(String, String)>> {
+        let mut vars_buf = Vec::new();
+        for ref variable in unsafe { (*self.env_vars.get()).iter() } {
+            vars_buf.push((variable.name.clone(), variable.value.clone()));
+        }
+        Ok(vars_buf)
     }
 
     pub unsafe fn map(&mut self) {
