@@ -21,7 +21,7 @@ use fs::Resource;
 
 use syscall::{do_sys_exit, CLONE_FILES, CLONE_FS, CLONE_VM, CLONE_VFORK};
 
-use system::error::{Error, Result, EBADF, EFAULT, ENOMEM, ESRCH};
+use system::error::{Error, Result, EBADF, EFAULT, ENOMEM, ESRCH, ENOENT, EINVAL};
 
 use sync::WaitMap;
 
@@ -277,6 +277,11 @@ pub unsafe fn context_clone(regs: &Regs) -> Result<usize> {
                     parent.mmap.clone()
                 } else {
                     Arc::new(UnsafeCell::new((*parent.mmap.get()).dup()))
+                },
+                env_vars: if flags & CLONE_VM == CLONE_VM {  // is CLONE_VM the good flag ?
+                    parent.env_vars.clone()
+                } else {
+                    Arc::new(UnsafeCell::new((*parent.env_vars.get()).clone()))
                 },
                 cwd: if flags & CLONE_FS == CLONE_FS {
                     parent.cwd.clone()
@@ -543,6 +548,12 @@ impl ContextZone {
     }
 }
 
+#[derive(Clone)]
+pub struct EnvironmentVariable {
+    name: String,
+    value: String
+}
+
 pub struct Context {
     // These members are used for control purposes by the scheduler {
     // The PID of the context
@@ -587,6 +598,8 @@ pub struct Context {
     pub heap: Arc<UnsafeCell<ContextZone>>,
     /// Mmap memory, cloned for threads, copied or created for processes. Modified by mmap
     pub mmap: Arc<UnsafeCell<ContextZone>>,
+    /// Environment variables, cloned for threads, copied or created for processes. Modified by set_env
+    pub env_vars: Arc<UnsafeCell<Vec<EnvironmentVariable>>>,
 
     /// Program working directory, cloned for threads, copied or created for processes. Modified by chdir
     pub cwd: Arc<UnsafeCell<String>>,
@@ -652,6 +665,7 @@ impl Context {
             image: Arc::new(UnsafeCell::new(ContextZone::new(CONTEXT_IMAGE_ADDR, CONTEXT_IMAGE_SIZE))),
             heap: Arc::new(UnsafeCell::new(ContextZone::new(CONTEXT_HEAP_ADDR, CONTEXT_HEAP_SIZE))),
             mmap: Arc::new(UnsafeCell::new(ContextZone::new(CONTEXT_MMAP_ADDR, CONTEXT_MMAP_SIZE))),
+            env_vars: Arc::new(UnsafeCell::new(Vec::new())),
 
             cwd: Arc::new(UnsafeCell::new(String::new())),
             files: Arc::new(UnsafeCell::new(Vec::new())),
@@ -689,6 +703,7 @@ impl Context {
             image: Arc::new(UnsafeCell::new(ContextZone::new(CONTEXT_IMAGE_ADDR, CONTEXT_IMAGE_SIZE))),
             heap: Arc::new(UnsafeCell::new(ContextZone::new(CONTEXT_HEAP_ADDR, CONTEXT_HEAP_SIZE))),
             mmap: Arc::new(UnsafeCell::new(ContextZone::new(CONTEXT_MMAP_ADDR, CONTEXT_MMAP_SIZE))),
+            env_vars: Arc::new(UnsafeCell::new(Vec::new())),
 
             cwd: Arc::new(UnsafeCell::new(String::new())),
             files: Arc::new(UnsafeCell::new(Vec::new())),
@@ -824,6 +839,53 @@ impl Context {
         }
 
         Err(Error::new(EFAULT))
+    }
+
+    /// Gets an environment variable. Returns `Err` if the variable is not defined
+    pub fn get_env_var(&self, var_name: &str) -> Result<String> {
+        for variable in unsafe { (*self.env_vars.get()).iter() } {
+            if &variable.name == var_name {
+                return Ok(variable.value.clone());
+            }
+        }
+        Err(Error::new(ENOENT))
+    }
+
+    /// Sets an environment variable. Returns `Err` if the variable name contains the `=`
+    /// character
+    pub fn set_env_var(&mut self, name: &str, value: &str) -> Result<()> {
+        if name.contains('=') {
+            return Err(Error::new(EINVAL));
+        }
+
+        for mut variable in unsafe { (*self.env_vars.get()).iter_mut() } {
+            if &variable.name == name {
+                variable.value = String::from(value);
+                return Ok(());
+            }
+        }
+        unsafe { (*self.env_vars.get()).push(EnvironmentVariable { name: String::from(name), value: String::from(value) }) };
+        Ok(())
+    }
+
+    /// Returns a list of the environment variables
+    pub fn list_env_vars(&self) -> Result<Vec<(String, String)>> {
+        let mut vars_buf = Vec::new();
+        for ref variable in unsafe { (*self.env_vars.get()).iter() } {
+            vars_buf.push((variable.name.clone(), variable.value.clone()));
+        }
+        Ok(vars_buf)
+    }
+
+    /// Removes the environment variable named `name`. Returns `Err` if the variable doesn't exist
+    pub fn remove_env_var(&self, name: &str) -> Result<()> {
+        for (i, variable) in unsafe { (*self.env_vars.get()).iter().enumerate() } {
+            if &variable.name == name {
+                unsafe { (*self.env_vars.get()).remove(i) };
+                return Ok(());
+            }
+        }
+        Err(Error::new(ENOENT))
     }
 
     pub unsafe fn map(&mut self) {
