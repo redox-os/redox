@@ -4,7 +4,7 @@ use alloc::boxed::Box;
 
 use core_collections::borrow::ToOwned;
 
-use ffi::OsString;
+use ffi::{OsString, OsStr};
 use fs::File;
 use path::{Path, PathBuf};
 use string::{String, ToString};
@@ -14,7 +14,7 @@ use vec::Vec;
 use system::error::ENOENT;
 use system::syscall::sys_chdir;
 
-use io::{Error, Result};
+use io::{Error, Result, Read, Write};
 
 static mut _args: *mut Vec<&'static str> = 0 as *mut Vec<&'static str>;
 
@@ -132,20 +132,62 @@ pub enum VarError {
     NotUnicode(OsString),
 }
 
-// TODO: Fully implement `env::var()`
-pub fn var(_key: &str) -> ::core::result::Result<String, VarError> {
-    Err(VarError::NotPresent)
+pub fn var<K: AsRef<OsStr>>(key: K) -> ::core::result::Result<String, VarError> {
+    if let Some(key_str) = key.as_ref().to_str() {
+        let mut file = try!(File::open(&("env:".to_owned() + key_str)).or(Err(VarError::NotPresent)));
+        let mut string = String::new();
+        try!(file.read_to_string(&mut string).or(Err(VarError::NotPresent)));
+        Ok(string)
+    } else {
+        Err(VarError::NotUnicode(key.as_ref().to_owned()))
+    }
 }
 
-pub struct Vars;
-
-impl Iterator for Vars {
-    type Item = (String, String);
-    fn next(&mut self) -> Option<Self::Item> {
+pub fn var_os<K: AsRef<OsStr>>(key: K) -> Option<OsString> {
+    if let Ok(value) = var(key) {
+        Some((value.as_ref() as &OsStr).to_owned())
+    } else {
         None
     }
 }
 
+pub fn set_var<K: AsRef<OsStr>, V: AsRef<OsStr>>(key: K, value: V) {
+    if let (Some(key_str), Some(value_str)) = (key.as_ref().to_str(), value.as_ref().to_str()) {
+        if let Ok(mut file) = File::open(&("env:".to_owned() + key_str)) {
+            let _ = file.write_all(value_str.as_bytes());
+        }
+    }
+}
+
+pub struct Vars {
+    vars: Vec<(String, String)>,
+    pos: usize
+}
+
+impl Iterator for Vars {
+    type Item = (String, String);
+
+    fn next(&mut self) -> Option<Self::Item> {
+        let variable = self.vars.get(self.pos);
+        self.pos += 1;
+        variable.cloned()
+    }
+}
+
 pub fn vars() -> Vars {
-    Vars
+    let mut variables: Vec<(String, String)> = Vec::new();
+    if let Ok(mut file) = File::open("env:") {
+        let mut string = String::new();
+        if file.read_to_string(&mut string).is_ok() {
+            for line in string.lines() {
+                if let Some(equal_sign) = line.chars().position(|c| c == '=') {
+                    let name = line.chars().take(equal_sign).collect::<String>();
+                    let value = line.chars().skip(equal_sign+1).collect::<String>();
+                    variables.push((name, value));
+                }
+            }
+            return Vars { vars: variables, pos: 0 };
+        }
+    }
+    Vars { vars: Vec::new(), pos: 0 }
 }

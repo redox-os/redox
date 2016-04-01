@@ -197,8 +197,7 @@ extrautils: \
 	filesystem/bin/grep \
 	filesystem/bin/less \
 	filesystem/bin/mtxt \
-	filesystem/bin/rem \
-	filesystem/bin/envtest
+	filesystem/bin/rem
 
 filesystem/bin/%: crates/games/src/%/main.rs crates/games/src/%/*.rs $(BUILD)/libextra.rlib $(BUILD)/libtermion.rlib
 	mkdir -p filesystem/bin
