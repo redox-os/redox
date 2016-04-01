@@ -132,6 +132,8 @@ pub enum VarError {
     NotUnicode(OsString),
 }
 
+/// Returns the environment variable `key` from the current process. If `key` is not valid Unicode
+/// or if the variable is not present then `Err` is returned
 pub fn var<K: AsRef<OsStr>>(key: K) -> ::core::result::Result<String, VarError> {
     if let Some(key_str) = key.as_ref().to_str() {
         let mut file = try!(File::open(&("env:".to_owned() + key_str)).or(Err(VarError::NotPresent)));
@@ -151,6 +153,7 @@ pub fn var_os<K: AsRef<OsStr>>(key: K) -> Option<OsString> {
     }
 }
 
+/// Sets the environment variable `key` to the value `value` for the current process
 pub fn set_var<K: AsRef<OsStr>, V: AsRef<OsStr>>(key: K, value: V) {
     if let (Some(key_str), Some(value_str)) = (key.as_ref().to_str(), value.as_ref().to_str()) {
         if let Ok(mut file) = File::open(&("env:".to_owned() + key_str)) {
@@ -174,6 +177,7 @@ impl Iterator for Vars {
     }
 }
 
+/// Returns an iterator over the environment variables of the current process
 pub fn vars() -> Vars {
     let mut variables: Vec<(String, String)> = Vec::new();
     if let Ok(mut file) = File::open("env:") {

@@ -841,7 +841,7 @@ impl Context {
         Err(Error::new(EFAULT))
     }
 
-    /// Gets an environment variable. Returns `None` if the variable is not defined
+    /// Gets an environment variable. Returns `Err` if the variable is not defined
     pub fn get_env_var(&self, var_name: &str) -> Result<String> {
         for variable in unsafe { (*self.env_vars.get()).iter() } {
             if &variable.name == var_name {
@@ -851,7 +851,7 @@ impl Context {
         Err(Error::new(ENOENT))
     }
 
-    /// Sets an environment variable. Returns `None` if the variable name contains the `=`
+    /// Sets an environment variable. Returns `Err` if the variable name contains the `=`
     /// character
     pub fn set_env_var(&mut self, name: &str, value: &str) -> Result<()> {
         if name.contains('=') {
@@ -868,6 +868,7 @@ impl Context {
         Ok(())
     }
 
+    /// Returns a list of the environment variables
     pub fn list_env_vars(&self) -> Result<Vec<(String, String)>> {
         let mut vars_buf = Vec::new();
         for ref variable in unsafe { (*self.env_vars.get()).iter() } {
