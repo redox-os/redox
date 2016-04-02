@@ -161,16 +161,11 @@ pub fn execute(mut args: Vec<String>) -> Result<usize> {
                         let physical_address = memory::alloc_aligned(virtual_size + offset, 4096);
 
                         if physical_address > 0 {
+                            //TODO: Use paging to fix collisions
                             // Copy progbits
                             ::memcpy((physical_address + offset) as *mut u8,
                                      (executable.data.as_ptr() as usize + segment.off as usize) as *const u8,
                                      segment.file_len as usize);
-                            // Zero bss
-                            if segment.mem_len > segment.file_len {
-                                ::memset((physical_address + offset + segment.file_len as usize) as *mut u8,
-                                        0,
-                                        segment.mem_len as usize - segment.file_len as usize);
-                            }
 
                             memory.push(ContextMemory {
                                 physical_address: physical_address,
