@@ -273,7 +273,7 @@ pub unsafe fn alloc_aligned(size: usize, align: usize) -> usize {
 
                 let mut page = Page::new(cluster_address);
                 let old = page.entry_data();
-                page.map_kernel_write(address);
+                page.map_kernel_write(cluster_address);
 
                 ::memset(cluster_address as *mut u8, 0, CLUSTER_SIZE);
 
