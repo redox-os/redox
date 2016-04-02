@@ -266,7 +266,6 @@ bins: \
 	filesystem/bin/rusttype \
 	filesystem/bin/screenfetch \
   	filesystem/bin/sdl-test \
-  	filesystem/bin/sdl-ttf-test \
 	filesystem/bin/std-test \
   	filesystem/bin/sh \
 	filesystem/bin/tar \
