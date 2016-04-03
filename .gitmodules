@@ -52,9 +52,9 @@
 [submodule "crates/malloc"]
 	path = crates/malloc
 	url = https://github.com/redox-os/libmalloc.git
-[submodule "crates/sdl3d"]
-	path = crates/sdl3d
-	url = https://github.com/ca1ek/sdl3d.git
+[submodule "crates/tetrahedrane"]
+	path = crates/tetrahedrane
+	url = https://github.com/ca1ek/tetrahedrane.git
 [submodule "crates/rusttype"]
 	path = crates/rusttype
 	url = https://github.com/jackpot51/rusttype.git
