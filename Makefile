@@ -608,14 +608,16 @@ endif
 qemu: $(BUILD)/harddrive.bin
 	@if [ "$(net)" = "tap" ]; \
 	then \
-		sudo tunctl -t tap_redox -u "${USER}"; \
-		sudo ifconfig tap_redox 10.85.85.1 up; \
+		sudo ip tuntap add dev tap_redox mode tap user "${USER}"; \
+		sudo ip link set tap_redox up; \
+		sudo ip addr add 10.85.85.1/24 dev tap_redox; \
 	fi
 	-$(QEMU) $(QFLAGS)
 	@if [ "$(net)" = "tap" ]; \
 	then \
-		sudo ifconfig tap_redox down; \
-		sudo tunctl -d tap_redox; \
+		sudo ip link set tap_redox down; \
+		sudo ip addr del 10.85.85.1/24 dev tap_redox; \
+		sudo ip tuntap del dev tap_redox; \
 	fi
 
 arping:
