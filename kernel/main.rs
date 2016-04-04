@@ -61,7 +61,7 @@ use env::Environment;
 
 use graphics::display;
 
-use network::schemes::{ArpScheme, EthernetScheme, IcmpScheme, IpScheme, UdpScheme};
+use network::schemes::{ArpScheme, EthernetScheme, IcmpScheme, IpScheme, TcpScheme, UdpScheme};
 
 use schemes::context::*;
 use schemes::debug::*;
@@ -375,6 +375,7 @@ unsafe fn init(tss_data: usize) {
             env.schemes.lock().push(box IpScheme {
                 arp: Vec::new()
             });
+            env.schemes.lock().push(box TcpScheme);
             env.schemes.lock().push(box UdpScheme);
 
             Context::spawn("karp".to_string(),

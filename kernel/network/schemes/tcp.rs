@@ -1,18 +1,17 @@
-extern crate system;
+use alloc::boxed::Box;
 
-use std::boxed::Box;
-use std::fs::File;
-use std::io::{Result, Read, Write, SeekFrom};
-use std::mem;
-use std::net::*;
-use std::rand;
-use std::slice;
-use std::string::{String, ToString};
-use std::to_num::*;
-use std::vec::Vec;
-use std::url::Url;
+use collections::Vec;
+use collections::string::ToString;
 
-use system::error::{Error, ENOENT, EPIPE, ESPIPE};
+use common::random::rand;
+
+use core::{cmp, mem, slice, str};
+
+use fs::{KScheme, Resource, Url};
+
+use network::common::{n16, n32, Checksum, Ipv4Addr, IP_ADDR, FromBytes, ToBytes};
+
+use system::error::{Error, Result, ENOENT, EPIPE};
 
 #[derive(Copy, Clone)]
 #[repr(packed)]
@@ -63,28 +62,28 @@ impl ToBytes for Tcp {
             let header_ptr: *const TcpHeader = &self.header;
             let mut ret = Vec::from(slice::from_raw_parts(header_ptr as *const u8,
                                                           mem::size_of::<TcpHeader>()));
-            ret.push_all(&self.options);
-            ret.push_all(&self.data);
+            ret.extend_from_slice(&self.options);
+            ret.extend_from_slice(&self.data);
             ret
         }
     }
 }
 
 /// A TCP resource
-pub struct Resource {
-    ip: File,
-    peer_addr: IPv4Addr,
+pub struct TcpResource {
+    ip: Box<Resource>,
+    peer_addr: Ipv4Addr,
     peer_port: u16,
     host_port: u16,
     sequence: u32,
     acknowledge: u32,
 }
 
-impl Resource {
-    pub fn dup(&self) -> Result<Box<Resource>> {
+impl Resource for TcpResource {
+    fn dup(&self) -> Result<Box<Resource>> {
         match self.ip.dup() {
             Ok(ip) => {
-                Ok(box Resource {
+                Ok(box TcpResource {
                     ip: ip,
                     peer_addr: self.peer_addr,
                     peer_port: self.peer_port,
@@ -97,19 +96,23 @@ impl Resource {
         }
     }
 
-    pub fn path(&self) -> Result<String> {
-        Ok(format!("tcp://{}:{}/{}",
-                   self.peer_addr.to_string(),
-                   self.peer_port,
-                   self.host_port as usize))
+    fn path(&self, buf: &mut [u8]) -> Result<usize> {
+        let path_string = format!("udp:{}:{}/{}", self.peer_addr.to_string(), self.peer_port, self.host_port);
+        let path = path_string.as_bytes();
+
+        for (b, p) in buf.iter_mut().zip(path.iter()) {
+            *b = *p;
+        }
+
+        Ok(cmp::min(buf.len(), path.len()))
     }
 
-    pub fn read(&mut self, buf: &mut [u8]) -> Result<usize> {
+    fn read(&mut self, buf: &mut [u8]) -> Result<usize> {
         loop {
-            let mut bytes: Vec<u8> = Vec::new();
-            match self.ip.read_to_end(&mut bytes) {
-                Ok(_) => {
-                    if let Some(segment) = Tcp::from_bytes(bytes) {
+            let mut bytes = [0; 8192];
+            match self.ip.read(&mut bytes) {
+                Ok(count) => {
+                    if let Some(segment) = Tcp::from_bytes(bytes[.. count].to_vec()) {
                         if (segment.header.flags.get() & (TCP_PSH | TCP_SYN | TCP_ACK)) ==
                            (TCP_PSH | TCP_ACK) &&
                            segment.header.dst.get() == self.host_port &&
@@ -139,8 +142,8 @@ impl Resource {
                                 let proto = n16::new(0x06);
                                 let segment_len = n16::new((mem::size_of::<TcpHeader>() + tcp.options.len() + tcp.data.len()) as u16);
                                 tcp.header.checksum.data = Checksum::compile(
-                                            Checksum::sum((&IP_ADDR as *const IPv4Addr) as usize, mem::size_of::<IPv4Addr>()) +
-                                            Checksum::sum((&self.peer_addr as *const IPv4Addr) as usize, mem::size_of::<IPv4Addr>()) +
+                                            Checksum::sum((&IP_ADDR as *const Ipv4Addr) as usize, mem::size_of::<Ipv4Addr>()) +
+                                            Checksum::sum((&self.peer_addr as *const Ipv4Addr) as usize, mem::size_of::<Ipv4Addr>()) +
                                             Checksum::sum((&proto as *const n16) as usize, mem::size_of::<n16>()) +
                                             Checksum::sum((&segment_len as *const n16) as usize, mem::size_of::<n16>()) +
                                             Checksum::sum((&tcp.header as *const TcpHeader) as usize, mem::size_of::<TcpHeader>()) +
@@ -149,7 +152,7 @@ impl Resource {
                                             );
                             }
 
-                            self.ip.write(&tcp.to_bytes());
+                            let _ = self.ip.write(&tcp.to_bytes());
 
                             // TODO: Support broken packets (one packet in two buffers)
                             let mut i = 0;
@@ -166,7 +169,7 @@ impl Resource {
         }
     }
 
-    pub fn write(&mut self, buf: &[u8]) -> Result<usize> {
+    fn write(&mut self, buf: &[u8]) -> Result<usize> {
         let tcp_data = Vec::from(buf);
 
         let mut tcp = Tcp {
@@ -189,10 +192,10 @@ impl Resource {
             let proto = n16::new(0x06);
             let segment_len = n16::new((mem::size_of::<TcpHeader>() + tcp.data.len()) as u16);
             tcp.header.checksum.data =
-                Checksum::compile(Checksum::sum((&IP_ADDR as *const IPv4Addr) as usize,
-                                                mem::size_of::<IPv4Addr>()) +
-                                  Checksum::sum((&self.peer_addr as *const IPv4Addr) as usize,
-                                                mem::size_of::<IPv4Addr>()) +
+                Checksum::compile(Checksum::sum((&IP_ADDR as *const Ipv4Addr) as usize,
+                                                mem::size_of::<Ipv4Addr>()) +
+                                  Checksum::sum((&self.peer_addr as *const Ipv4Addr) as usize,
+                                                mem::size_of::<Ipv4Addr>()) +
                                   Checksum::sum((&proto as *const n16) as usize,
                                                 mem::size_of::<n16>()) +
                                   Checksum::sum((&segment_len as *const n16) as usize,
@@ -207,15 +210,13 @@ impl Resource {
             Ok(size) => {
                 loop {
                     // Wait for ACK
-                    let mut bytes: Vec<u8> = Vec::new();
-                    match self.ip.read_to_end(&mut bytes) {
-                        Ok(_) => {
-                            if let Some(segment) = Tcp::from_bytes(bytes) {
+                    let mut bytes = [0; 8192];
+                    match self.ip.read(&mut bytes) {
+                        Ok(count) => {
+                            if let Some(segment) = Tcp::from_bytes(bytes[.. count].to_vec()) {
                                 if segment.header.dst.get() == self.host_port &&
                                    segment.header.src.get() == self.peer_port {
-                                    return if (segment.header.flags.get() &
-                                               (TCP_PSH | TCP_SYN | TCP_ACK)) ==
-                                              TCP_ACK {
+                                    return if (segment.header.flags.get() & (TCP_PSH | TCP_SYN | TCP_ACK)) == TCP_ACK {
                                         self.sequence = segment.header.ack_num.get();
                                         self.acknowledge = segment.header.sequence.get();
                                         Ok(size)
@@ -233,14 +234,12 @@ impl Resource {
         }
     }
 
-    pub fn seek(&mut self, _: SeekFrom) -> Result<u64> {
-        Err(Error::new(ESPIPE))
+    fn sync(&mut self) -> Result<()> {
+        self.ip.sync()
     }
+}
 
-    pub fn sync(&mut self) -> Result<()> {
-        self.ip.sync_all()
-    }
-
+impl TcpResource {
     /// Etablish client
     pub fn client_establish(&mut self) -> bool {
         // Send SYN
@@ -265,10 +264,10 @@ impl Resource {
                                         tcp.data
                                            .len()) as u16);
             tcp.header.checksum.data =
-                Checksum::compile(Checksum::sum((&IP_ADDR as *const IPv4Addr) as usize,
-                                                mem::size_of::<IPv4Addr>()) +
-                                  Checksum::sum((&self.peer_addr as *const IPv4Addr) as usize,
-                                                mem::size_of::<IPv4Addr>()) +
+                Checksum::compile(Checksum::sum((&IP_ADDR as *const Ipv4Addr) as usize,
+                                                mem::size_of::<Ipv4Addr>()) +
+                                  Checksum::sum((&self.peer_addr as *const Ipv4Addr) as usize,
+                                                mem::size_of::<Ipv4Addr>()) +
                                   Checksum::sum((&proto as *const n16) as usize,
                                                 mem::size_of::<n16>()) +
                                   Checksum::sum((&segment_len as *const n16) as usize,
@@ -283,15 +282,13 @@ impl Resource {
             Ok(_) => {
                 loop {
                     // Wait for SYN-ACK
-                    let mut bytes: Vec<u8> = Vec::new();
-                    match self.ip.read_to_end(&mut bytes) {
-                        Ok(_) => {
-                            if let Some(segment) = Tcp::from_bytes(bytes) {
+                    let mut bytes = [0; 8192];
+                    match self.ip.read(&mut bytes) {
+                        Ok(count) => {
+                            if let Some(segment) = Tcp::from_bytes(bytes[.. count].to_vec()) {
                                 if segment.header.dst.get() == self.host_port &&
                                    segment.header.src.get() == self.peer_port {
-                                    return if (segment.header.flags.get() &
-                                               (TCP_PSH | TCP_SYN | TCP_ACK)) ==
-                                              (TCP_SYN | TCP_ACK) {
+                                    return if (segment.header.flags.get() & (TCP_PSH | TCP_SYN | TCP_ACK)) == (TCP_SYN | TCP_ACK) {
                                         self.sequence = segment.header.ack_num.get();
                                         self.acknowledge = segment.header.sequence.get();
 
@@ -317,8 +314,8 @@ impl Resource {
                                             let proto = n16::new(0x06);
                                             let segment_len = n16::new((mem::size_of::<TcpHeader>() + tcp.options.len() + tcp.data.len()) as u16);
                                             tcp.header.checksum.data = Checksum::compile(
-                                                    Checksum::sum((&IP_ADDR as *const IPv4Addr) as usize, mem::size_of::<IPv4Addr>()) +
-                                                    Checksum::sum((&self.peer_addr as *const IPv4Addr) as usize, mem::size_of::<IPv4Addr>()) +
+                                                    Checksum::sum((&IP_ADDR as *const Ipv4Addr) as usize, mem::size_of::<Ipv4Addr>()) +
+                                                    Checksum::sum((&self.peer_addr as *const Ipv4Addr) as usize, mem::size_of::<Ipv4Addr>()) +
                                                     Checksum::sum((&proto as *const n16) as usize, mem::size_of::<n16>()) +
                                                     Checksum::sum((&segment_len as *const n16) as usize, mem::size_of::<n16>()) +
                                                     Checksum::sum((&tcp.header as *const TcpHeader) as usize, mem::size_of::<TcpHeader>()) +
@@ -327,7 +324,7 @@ impl Resource {
                                                     );
                                         }
 
-                                        self.ip.write(&tcp.to_bytes());
+                                        let _ = self.ip.write(&tcp.to_bytes());
 
                                         true
                                     } else {
@@ -370,10 +367,10 @@ impl Resource {
                                         tcp.data
                                            .len()) as u16);
             tcp.header.checksum.data =
-                Checksum::compile(Checksum::sum((&IP_ADDR as *const IPv4Addr) as usize,
-                                                mem::size_of::<IPv4Addr>()) +
-                                  Checksum::sum((&self.peer_addr as *const IPv4Addr) as usize,
-                                                mem::size_of::<IPv4Addr>()) +
+                Checksum::compile(Checksum::sum((&IP_ADDR as *const Ipv4Addr) as usize,
+                                                mem::size_of::<Ipv4Addr>()) +
+                                  Checksum::sum((&self.peer_addr as *const Ipv4Addr) as usize,
+                                                mem::size_of::<Ipv4Addr>()) +
                                   Checksum::sum((&proto as *const n16) as usize,
                                                 mem::size_of::<n16>()) +
                                   Checksum::sum((&segment_len as *const n16) as usize,
@@ -388,10 +385,10 @@ impl Resource {
             Ok(_) => {
                 loop {
                     // Wait for ACK
-                    let mut bytes: Vec<u8> = Vec::new();
-                    match self.ip.read_to_end(&mut bytes) {
-                        Ok(_) => {
-                            if let Some(segment) = Tcp::from_bytes(bytes) {
+                    let mut bytes = [0; 8192];
+                    match self.ip.read(&mut bytes) {
+                        Ok(count ) => {
+                            if let Some(segment) = Tcp::from_bytes(bytes[.. count].to_vec()) {
                                 if segment.header.dst.get() == self.host_port &&
                                    segment.header.src.get() == self.peer_port {
                                     return if (segment.header.flags.get() &
@@ -415,7 +412,7 @@ impl Resource {
     }
 }
 
-impl Drop for Resource {
+impl Drop for TcpResource {
     fn drop(&mut self) {
         // Send FIN-ACK
         let mut tcp = Tcp {
@@ -440,10 +437,10 @@ impl Drop for Resource {
                                         tcp.data
                                            .len()) as u16);
             tcp.header.checksum.data =
-                Checksum::compile(Checksum::sum((&IP_ADDR as *const IPv4Addr) as usize,
-                                                mem::size_of::<IPv4Addr>()) +
-                                  Checksum::sum((&self.peer_addr as *const IPv4Addr) as usize,
-                                                mem::size_of::<IPv4Addr>()) +
+                Checksum::compile(Checksum::sum((&IP_ADDR as *const Ipv4Addr) as usize,
+                                                mem::size_of::<Ipv4Addr>()) +
+                                  Checksum::sum((&self.peer_addr as *const Ipv4Addr) as usize,
+                                                mem::size_of::<Ipv4Addr>()) +
                                   Checksum::sum((&proto as *const n16) as usize,
                                                 mem::size_of::<n16>()) +
                                   Checksum::sum((&segment_len as *const n16) as usize,
@@ -454,29 +451,35 @@ impl Drop for Resource {
                                   Checksum::sum(tcp.data.as_ptr() as usize, tcp.data.len()));
         }
 
-        self.ip.write(&tcp.to_bytes());
+        let _ = self.ip.write(&tcp.to_bytes());
     }
 }
 
 /// A TCP scheme
-pub struct Scheme;
+pub struct TcpScheme;
 
-impl Scheme {
-    pub fn new() -> Box<Scheme> {
-        box Scheme
+impl KScheme for TcpScheme {
+    fn scheme(&self) -> &str {
+        "tcp"
     }
 
-    pub fn open(&mut self, url_str: &str, _: usize) -> Result<Box<Resource>> {
-        let url = Url::from_str(&url_str);
+    fn open(&mut self, url: Url, _: usize) -> Result<Box<Resource>> {
+        let mut parts = url.reference().split('/');
+        let remote = parts.next().unwrap_or("");
+        let path = parts.next().unwrap_or("");
 
-        if !url.host().is_empty() && !url.port().is_empty() {
-            let peer_addr = IPv4Addr::from_string(&url.host());
-            let peer_port = url.port().to_num() as u16;
+        let mut remote_parts = remote.split(':');
+        let host = remote_parts.next().unwrap_or("");
+        let port = remote_parts.next().unwrap_or("");
+
+        if ! host.is_empty() && ! port.is_empty() {
+            let peer_addr = Ipv4Addr::from_string(&host.to_string());
+            let peer_port = port.parse::<u16>().unwrap_or(0);
             let host_port = (rand() % 32768 + 32768) as u16;
 
-            match File::open(&("ip://".to_string() + &peer_addr.to_string() + "/6")) {
+            match Url::from_str(&format!("ip:{}/6", peer_addr.to_string())).unwrap().open() {
                 Ok(ip) => {
-                    let mut ret = box Resource {
+                    let mut ret = box TcpResource {
                         ip: ip,
                         peer_addr: peer_addr,
                         peer_port: peer_port,
@@ -491,25 +494,24 @@ impl Scheme {
                 }
                 Err(err) => return Err(err),
             }
-        } else if !url.path().is_empty() {
-            let host_port = url.path().to_num() as u16;
+        } else if ! path.is_empty() {
+            let host_port = path.parse::<u16>().unwrap_or(0);
 
-            while let Ok(mut ip) = File::open("ip:///6") {
-                let mut bytes: Vec<u8> = Vec::new();
-                match ip.read_to_end(&mut bytes) {
-                    Ok(_) => {
-                        if let Some(segment) = Tcp::from_bytes(bytes) {
-                            if segment.header.dst.get() == host_port &&
-                               (segment.header.flags.get() & (TCP_PSH | TCP_SYN | TCP_ACK)) ==
-                               TCP_SYN {
-                                if let Ok(path) = ip.path() {
-                                    let url = Url::from_string(path.to_string());
+            while let Ok(mut ip) = Url::from_str("ip:/6").unwrap().open() {
+                let mut bytes = [0; 8192];
+                match ip.read(&mut bytes) {
+                    Ok(count) => {
+                        if let Some(segment) = Tcp::from_bytes(bytes[.. count].to_vec()) {
+                            if segment.header.dst.get() == host_port && (segment.header.flags.get() & (TCP_PSH | TCP_SYN | TCP_ACK)) == TCP_SYN {
+                                let mut path = [0; 256];
+                                if let Ok(path_count) = ip.path(&mut path) {
+                                    let ip_reference = unsafe { str::from_utf8_unchecked(&path[.. path_count]) }.split(':').nth(1).unwrap_or("");
+                                    let ip_remote = ip_reference.split('/').next().unwrap_or("");
+                                    let peer_addr = ip_remote.split(':').next().unwrap_or("");
 
-                                    let peer_addr = IPv4Addr::from_string(&url.host());
-
-                                    let mut ret = box Resource {
+                                    let mut ret = box TcpResource {
                                         ip: ip,
-                                        peer_addr: peer_addr,
+                                        peer_addr: Ipv4Addr::from_string(&peer_addr.to_string()),
                                         peer_port: segment.header.src.get(),
                                         host_port: host_port,
                                         sequence: rand() as u32,
