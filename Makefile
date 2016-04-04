@@ -617,7 +617,7 @@ qemu: $(BUILD)/harddrive.bin
 	then \
 		sudo ip link set tap_redox down; \
 		sudo ip addr del 10.85.85.1/24 dev tap_redox; \
-		sudo ip tuntap del dev tap_redox; \
+		sudo ip tuntap del dev tap_redox mode tap; \
 	fi
 
 arping:
