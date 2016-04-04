@@ -192,8 +192,7 @@ impl KScheme for UdpScheme {
                                 if let Ok(path_count) = ip.path(&mut path) {
                                     let ip_reference = unsafe { str::from_utf8_unchecked(&path[.. path_count]) }.split(':').nth(1).unwrap_or("");
                                     let ip_remote = ip_reference.split('/').next().unwrap_or("");
-                                    let mut ip_remote_parts = ip_remote.split(':');
-                                    let peer_addr = ip_remote_parts.next().unwrap_or("");
+                                    let peer_addr = ip_remote.split(':').next().unwrap_or("");
 
                                     return Ok(Box::new(UdpResource {
                                         ip: ip,
