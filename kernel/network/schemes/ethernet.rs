@@ -3,7 +3,7 @@ use alloc::boxed::Box;
 use collections::string::ToString;
 use collections::vec::Vec;
 
-use core::mem;
+use core::{cmp, mem};
 
 use common::debug;
 use common::to_num::ToNum;
@@ -13,7 +13,7 @@ use network::ethernet::*;
 
 use fs::{KScheme, Resource, Url};
 
-use system::error::{Error, Result, EBADF, ENOENT};
+use system::error::{Error, Result, ENOENT};
 
 /// A ethernet resource
 pub struct EthernetResource {
@@ -41,39 +41,42 @@ impl Resource for EthernetResource {
     }
 
     fn path(&self, buf: &mut [u8]) -> Result<usize> {
-        let path = format!("ethernet:{}/{:X}", self.peer_addr.to_string(), self.ethertype).as_bytes();
-        for (b, p) in buf.iter_mut().zip(path_a.iter()) {
+        let path_string = format!("ethernet:{}/{:X}", self.peer_addr.to_string(), self.ethertype);
+        let path = path_string.as_bytes();
+
+        for (b, p) in buf.iter_mut().zip(path.iter()) {
             *b = *p;
         }
 
         Ok(cmp::min(buf.len(), path.len()))
     }
 
-    fn read(&mut self, _: &mut [u8]) -> Result<usize> {
-        debug::d("TODO: Implement read for ethernet:\n");
-        Err(Error::new(EBADF))
-    }
-
-    fn read_to_end(&mut self, vec: &mut Vec<u8>) -> Result<usize> {
+    fn read(&mut self, buf: &mut [u8]) -> Result<usize> {
         if !self.data.is_empty() {
-            let mut bytes: Vec<u8> = Vec::new();
-            mem::swap(&mut self.data, &mut bytes);
-            vec.push_all(&bytes);
-            return Ok(bytes.len());
+            let mut data: Vec<u8> = Vec::new();
+            mem::swap(&mut self.data, &mut data);
+
+            for (b, d) in buf.iter_mut().zip(data.iter()) {
+                *b = *d;
+            }
+
+            return Ok(cmp::min(buf.len(), data.len()));
         }
 
         loop {
-            let mut bytes: Vec<u8> = Vec::new();
-            match self.network.read_to_end(&mut bytes) {
-                Ok(_) => {
-                    if let Some(frame) = EthernetII::from_bytes(bytes) {
-                        if frame.header.ethertype.get() == self.ethertype &&
-                           (unsafe { frame.header.dst.equals(MAC_ADDR) } ||
-                            frame.header.dst.equals(BROADCAST_MAC_ADDR)) &&
-                           (frame.header.src.equals(self.peer_addr) ||
-                            self.peer_addr.equals(BROADCAST_MAC_ADDR)) {
-                            vec.push_all(&frame.data);
-                            return Ok(frame.data.len());
+            let mut bytes = [0; 8192];
+            match self.network.read(&mut bytes) {
+                Ok(count) => {
+                    if let Some(frame) = EthernetII::from_bytes(bytes[.. count].to_vec()) {
+                        if frame.header.ethertype.get() == self.ethertype && (unsafe { frame.header.dst.equals(MAC_ADDR) }
+                            || frame.header.dst.equals(BROADCAST_MAC_ADDR)) && (frame.header.src.equals(self.peer_addr)
+                            || self.peer_addr.equals(BROADCAST_MAC_ADDR))
+                        {
+                            for (b, d) in buf.iter_mut().zip(frame.data.iter()) {
+                                *b = *d;
+                            }
+
+                            return Ok(cmp::min(buf.len(), frame.data.len()));
                         }
                     }
                 }
@@ -115,7 +118,7 @@ impl KScheme for EthernetScheme {
         let parts: Vec<&str> = url.reference().split("/").collect();
         if let Some(host_string) = parts.get(0) {
             if let Some(ethertype_string) = parts.get(1) {
-                if let Ok(mut network) = Url::from_str("network:").open() {
+                if let Ok(mut network) = Url::from_str("network:").unwrap().open() {
                     let ethertype = ethertype_string.to_num_radix(16) as u16;
 
                     if !host_string.is_empty() {
@@ -127,10 +130,10 @@ impl KScheme for EthernetScheme {
                         });
                     } else {
                         loop {
-                            let mut bytes: Vec<u8> = Vec::new();
-                            match network.read_to_end(&mut bytes) {
-                                Ok(_) => {
-                                    if let Some(frame) = EthernetII::from_bytes(bytes) {
+                            let mut bytes = [0; 8192];
+                            match network.read(&mut bytes) {
+                                Ok(count) => {
+                                    if let Some(frame) = EthernetII::from_bytes(bytes[.. count].to_vec()) {
                                         if frame.header.ethertype.get() == ethertype &&
                                            (unsafe { frame.header.dst.equals(MAC_ADDR) } ||
                                             frame.header.dst.equals(BROADCAST_MAC_ADDR)) {

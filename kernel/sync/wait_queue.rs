@@ -19,6 +19,13 @@ impl<T> WaitQueue<T> {
         }
     }
 
+    pub fn clone(&self) -> WaitQueue<T> where T: Clone {
+        WaitQueue {
+            inner: Intex::new(self.inner.lock().clone()),
+            condition: WaitCondition::new()
+        }
+    }
+
     pub fn receive(&self) -> T {
         loop {
             if let Some(value) = self.inner.lock().pop_front() {

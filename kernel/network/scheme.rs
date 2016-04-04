@@ -1,7 +1,5 @@
 use alloc::boxed::Box;
 
-use arch::context::context_switch;
-
 use collections::vec::Vec;
 use collections::vec_deque::VecDeque;
 
@@ -11,7 +9,7 @@ use fs::Resource;
 
 use system::error::Result;
 
-use sync::Intex;
+use sync::{Intex, WaitQueue};
 
 pub trait NetworkScheme {
     fn add(&mut self, resource: *mut NetworkResource);
@@ -22,7 +20,7 @@ pub trait NetworkScheme {
 pub struct NetworkResource {
     pub nic: *mut NetworkScheme,
     pub ptr: *mut NetworkResource,
-    pub inbound: Intex<VecDeque<Vec<u8>>>,
+    pub inbound: WaitQueue<Vec<u8>>,
     pub outbound: Intex<VecDeque<Vec<u8>>>,
 }
 
@@ -31,7 +29,7 @@ impl NetworkResource {
         let mut ret = box NetworkResource {
             nic: nic,
             ptr: 0 as *mut NetworkResource,
-            inbound: Intex::new(VecDeque::new()),
+            inbound: WaitQueue::new(),
             outbound: Intex::new(VecDeque::new()),
         };
 
@@ -50,7 +48,7 @@ impl Resource for NetworkResource {
         let mut ret = box NetworkResource {
             nic: self.nic,
             ptr: 0 as *mut NetworkResource,
-            inbound: Intex::new(self.inbound.lock().clone()),
+            inbound: self.inbound.clone(),
             outbound: Intex::new(self.outbound.lock().clone()),
         };
 
@@ -76,26 +74,18 @@ impl Resource for NetworkResource {
     }
 
     fn read(&mut self, buf: &mut [u8]) -> Result<usize> {
-        loop {
-            unsafe {
-                {
-                    (*self.nic).sync();
+        let bytes = unsafe {
+            (*self.nic).sync();
+            (*self.ptr).inbound.receive()
+        };
 
-                    let option = (*self.ptr).inbound.lock().pop_front();
-
-                    if let Some(bytes) = option {
-                        let mut i = 0;
-                        while i < bytes.len() && i < buf.len() {
-                            buf[i] = bytes[i];
-                            i += 1;
-                        }
-                        return Ok(bytes.len());
-                    }
-                }
-
-                context_switch();
-            }
+        let mut i = 0;
+        while i < bytes.len() && i < buf.len() {
+            buf[i] = bytes[i];
+            i += 1;
         }
+
+        return Ok(bytes.len());
     }
 
     fn write(&mut self, buf: &[u8]) -> Result<usize> {

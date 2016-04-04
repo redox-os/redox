@@ -181,7 +181,7 @@ impl NetworkScheme for Intel8254x {
 
                 while let Some(bytes) = self.inbound.pop_front() {
                     for resource in resources.iter() {
-                        (**resource).inbound.lock().push_back(bytes.clone());
+                        (**resource).inbound.send(bytes.clone());
                     }
                 }
             }
