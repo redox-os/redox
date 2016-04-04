@@ -1,14 +1,17 @@
-use std::fs::File;
-use std::io::{Result, Read, Write, SeekFrom};
-use std::mem;
-use std::net::*;
-use std::ptr;
-use std::rand;
-use std::slice;
-use std::to_num::*;
-use std::url::Url;
+use alloc::boxed::Box;
 
-use system::error::{Error, ENOENT, ESPIPE};
+use collections::Vec;
+use collections::string::ToString;
+
+use common::random::rand;
+
+use core::{cmp, mem, ptr, slice, str};
+
+use fs::{KScheme, Resource, Url};
+
+use network::common::{n16, Checksum, Ipv4Addr, IP_ADDR, FromBytes, ToBytes};
+
+use system::error::{Error, Result, ENOENT};
 
 #[derive(Copy, Clone)]
 #[repr(packed)]
@@ -45,45 +48,49 @@ impl ToBytes for Udp {
             let header_ptr: *const UdpHeader = &self.header;
             let mut ret = Vec::from(slice::from_raw_parts(header_ptr as *const u8,
                                                           mem::size_of::<UdpHeader>()));
-            ret.push_all(&self.data);
+            ret.extend_from_slice(&self.data);
             ret
         }
     }
 }
 
 /// UDP resource
-pub struct Resource {
-    ip: File,
+pub struct UdpResource {
+    ip: Box<Resource>,
     data: Vec<u8>,
-    peer_addr: IPv4Addr,
+    peer_addr: Ipv4Addr,
     peer_port: u16,
     host_port: u16,
 }
 
-impl Resource {
-    pub fn dup(&self) -> Result<Box<Self>> {
+impl Resource for UdpResource {
+    fn dup(&self) -> Result<Box<Resource>> {
         match self.ip.dup() {
             Ok(ip) => {
-                Ok(box Resource {
+                Ok(Box::new(UdpResource {
                     ip: ip,
                     data: self.data.clone(),
                     peer_addr: self.peer_addr,
                     peer_port: self.peer_port,
                     host_port: self.host_port,
-                })
+                }))
             }
             Err(err) => Err(err),
         }
     }
 
-    pub fn path(&self) -> Result<String> {
-        Ok(format!("udp://{}:{}/{}",
-                   self.peer_addr.to_string(),
-                   self.peer_port,
-                   self.host_port))
+    fn path(&self, buf: &mut [u8]) -> Result<usize> {
+        let path_string = format!("udp:{}:{}/{}", self.peer_addr.to_string(), self.peer_port, self.host_port);
+        let path = path_string.as_bytes();
+
+        for (b, p) in buf.iter_mut().zip(path.iter()) {
+            *b = *p;
+        }
+
+        Ok(cmp::min(buf.len(), path.len()))
     }
 
-    pub fn read(&mut self, buf: &mut [u8]) -> Result<usize> {
+    fn read(&mut self, buf: &mut [u8]) -> Result<usize> {
         if !self.data.is_empty() {
             let mut bytes: Vec<u8> = Vec::new();
             mem::swap(&mut self.data, &mut bytes);
@@ -97,10 +104,10 @@ impl Resource {
         }
 
         loop {
-            let mut bytes: Vec<u8> = Vec::new();
-            match self.ip.read_to_end(&mut bytes) {
-                Ok(_) => {
-                    if let Some(datagram) = Udp::from_bytes(bytes) {
+            let mut bytes = [0; 8192];
+            match self.ip.read(&mut bytes) {
+                Ok(count) => {
+                    if let Some(datagram) = Udp::from_bytes(bytes[.. count].to_vec()) {
                         if datagram.header.dst.get() == self.host_port &&
                            datagram.header.src.get() == self.peer_port {
                             // TODO: Allow splitting
@@ -117,7 +124,7 @@ impl Resource {
         }
     }
 
-    pub fn write(&mut self, buf: &[u8]) -> Result<usize> {
+    fn write(&mut self, buf: &[u8]) -> Result<usize> {
         let udp_data = Vec::from(buf);
 
         let mut udp = Udp {
@@ -134,10 +141,10 @@ impl Resource {
             let proto = n16::new(0x11);
             let datagram_len = n16::new((mem::size_of::<UdpHeader>() + udp.data.len()) as u16);
             udp.header.checksum.data =
-                Checksum::compile(Checksum::sum((&IP_ADDR as *const IPv4Addr) as usize,
-                                                mem::size_of::<IPv4Addr>()) +
-                                  Checksum::sum((&self.peer_addr as *const IPv4Addr) as usize,
-                                                mem::size_of::<IPv4Addr>()) +
+                Checksum::compile(Checksum::sum((&IP_ADDR as *const Ipv4Addr) as usize,
+                                                mem::size_of::<Ipv4Addr>()) +
+                                  Checksum::sum((&self.peer_addr as *const Ipv4Addr) as usize,
+                                                mem::size_of::<Ipv4Addr>()) +
                                   Checksum::sum((&proto as *const n16) as usize,
                                                 mem::size_of::<n16>()) +
                                   Checksum::sum((&datagram_len as *const n16) as usize,
@@ -153,45 +160,48 @@ impl Resource {
         }
     }
 
-    pub fn seek(&mut self, _: SeekFrom) -> Result<u64> {
-        Err(Error::new(ESPIPE))
-    }
-
-    pub fn sync(&mut self) -> Result<()> {
-        self.ip.sync_all()
+    fn sync(&mut self) -> Result<()> {
+        self.ip.sync()
     }
 }
 
-/// UDP scheme
-pub struct Scheme;
+/// UDP UdpScheme
+pub struct UdpScheme;
 
-impl Scheme {
-    pub fn new() -> Box<Self> {
-        box Scheme
+impl KScheme for UdpScheme {
+    fn scheme(&self) -> &str {
+        "udp"
     }
 
-    pub fn open(&mut self, url_str: &str, _: usize) -> Result<Box<Resource>> {
-        let url = Url::from_str(&url_str);
+    fn open(&mut self, url: Url, _: usize) -> Result<Box<Resource>> {
+        let mut parts = url.reference().split('/');
+        let remote = parts.next().unwrap_or("");
+        let path = parts.next().unwrap_or("");
 
         // Check host and port vs path
-        if !url.path().is_empty() {
-            let host_port = url.port().to_num();
+        if ! path.is_empty() {
+            let mut remote_parts = remote.split(':');
+            let host_port = remote_parts.nth(1).unwrap_or("").parse::<usize>().unwrap_or(0);
             if host_port > 0 && host_port < 65536 {
-                if let Ok(mut ip) = File::open("ip:///11") {
-                    let mut bytes: Vec<u8> = Vec::new();
-                    if let Ok(_) = ip.read_to_end(&mut bytes) {
-                        if let Some(datagram) = Udp::from_bytes(bytes) {
-                            if datagram.header.dst.get() as u32 == host_port {
-                                if let Ok(path) = ip.path() {
-                                    let url = Url::from_string(path.to_string());
+                if let Ok(mut ip) = Url::from_str("ip:/11").unwrap().open() {
+                    let mut bytes = [0; 8192];
+                    if let Ok(count) = ip.read(&mut bytes) {
+                        if let Some(datagram) = Udp::from_bytes(bytes[.. count].to_vec()) {
+                            if datagram.header.dst.get() as usize == host_port {
+                                let mut path = [0; 256];
+                                if let Ok(path_count) = ip.path(&mut path) {
+                                    let ip_reference = unsafe { str::from_utf8_unchecked(&path[.. path_count]) }.split(':').nth(1).unwrap_or("");
+                                    let ip_remote = ip_reference.split('/').next().unwrap_or("");
+                                    let mut ip_remote_parts = ip_remote.split(':');
+                                    let peer_addr = ip_remote_parts.next().unwrap_or("");
 
-                                    return Ok(box Resource {
+                                    return Ok(Box::new(UdpResource {
                                         ip: ip,
                                         data: datagram.data,
-                                        peer_addr: IPv4Addr::from_string(&url.host()),
+                                        peer_addr: Ipv4Addr::from_string(&peer_addr.to_string()),
                                         peer_port: datagram.header.src.get(),
                                         host_port: host_port as u16,
-                                    });
+                                    }));
                                 }
                             }
                         }
@@ -199,18 +209,20 @@ impl Scheme {
                 }
             }
         } else {
-            let peer_port = url.port().to_num();
+            let mut remote_parts = remote.split(':');
+            let peer_addr = remote_parts.next().unwrap_or("");
+            let peer_port = remote_parts.next().unwrap_or("").parse::<usize>().unwrap_or(0);
             if peer_port > 0 && peer_port < 65536 {
                 let host_port = (rand() % 32768 + 32768) as u16;
 
-                if let Ok(ip) = File::open(&format!("ip://{}/11", url.host())) {
-                    return Ok(box Resource {
+                if let Ok(ip) = Url::from_str(&format!("ip:{}/11", peer_addr)).unwrap().open() {
+                    return Ok(Box::new(UdpResource {
                         ip: ip,
                         data: Vec::new(),
-                        peer_addr: IPv4Addr::from_string(&url.host()),
+                        peer_addr: Ipv4Addr::from_string(&peer_addr.to_string()),
                         peer_port: peer_port as u16,
                         host_port: host_port,
-                    });
+                    }));
                 }
             }
         }
