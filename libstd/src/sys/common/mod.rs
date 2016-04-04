@@ -1,3 +1,5 @@
+pub mod net;
+
 /// A trait for viewing representations from std types
 pub trait AsInner<Inner: ?Sized> {
     fn as_inner(&self) -> &Inner;
