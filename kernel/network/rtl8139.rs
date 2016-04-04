@@ -193,18 +193,8 @@ impl Rtl8139 {
 
         while capr != cbr {
             let frame_addr = receive_buffer + capr + 4;
-            let frame_status = ptr::read((receive_buffer + capr) as *const u16) as usize;
+            //let frame_status = ptr::read((receive_buffer + capr) as *const u16) as usize;
             let frame_len = ptr::read((receive_buffer + capr + 2) as *const u16) as usize;
-
-            debug::d("Recv ");
-            debug::dh(capr as usize);
-            debug::d(" ");
-            debug::dh(frame_status);
-            debug::d(" ");
-            debug::dh(frame_addr);
-            debug::d(" ");
-            debug::dh(frame_len);
-            debug::dl();
 
             self.inbound.push_back(Vec::from(slice::from_raw_parts(frame_addr as *const u8, frame_len - 4)));
 
@@ -223,16 +213,6 @@ impl Rtl8139 {
             if let Some(ref mut txd) = self.txds.get_mut(self.txd_i) {
                 if bytes.len() < 4096 {
                     while !txd.status_port.readf(RTL8139_TSR_OWN) {}
-
-                    debug::d("Send ");
-                    debug::dh(self.txd_i as usize);
-                    debug::d(" ");
-                    debug::dh(txd.status_port.read() as usize);
-                    debug::d(" ");
-                    debug::dh(txd.buffer);
-                    debug::d(" ");
-                    debug::dh(bytes.len() & 0xFFF);
-                    debug::dl();
 
                     ::memcpy(txd.buffer as *mut u8, bytes.as_ptr(), bytes.len());
 
