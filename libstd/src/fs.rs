@@ -14,6 +14,7 @@ use system::syscall::{sys_open, sys_dup, sys_close, sys_fpath, sys_ftruncate, sy
 use system::syscall::{O_RDWR, O_RDONLY, O_WRONLY, O_APPEND, O_CREAT, O_TRUNC, MODE_DIR, MODE_FILE, SEEK_SET, SEEK_CUR, SEEK_END, Stat};
 
 /// A Unix-style file
+#[derive(Debug)]
 pub struct File {
     /// The id for the file
     fd: usize,
