@@ -1,3 +1,4 @@
+use alloc::arc::Arc;
 use alloc::boxed::Box;
 
 use collections::Vec;
@@ -6,6 +7,7 @@ use collections::string::ToString;
 use common::random::rand;
 
 use core::{cmp, mem, slice, str};
+use core::cell::UnsafeCell;
 
 use fs::{KScheme, Resource, Url};
 
@@ -69,8 +71,7 @@ impl ToBytes for Tcp {
     }
 }
 
-/// A TCP resource
-pub struct TcpResource {
+pub struct TcpStream {
     ip: Box<Resource>,
     peer_addr: Ipv4Addr,
     peer_port: u16,
@@ -79,25 +80,9 @@ pub struct TcpResource {
     acknowledge: u32,
 }
 
-impl Resource for TcpResource {
-    fn dup(&self) -> Result<Box<Resource>> {
-        match self.ip.dup() {
-            Ok(ip) => {
-                Ok(box TcpResource {
-                    ip: ip,
-                    peer_addr: self.peer_addr,
-                    peer_port: self.peer_port,
-                    host_port: self.host_port,
-                    sequence: self.sequence,
-                    acknowledge: self.acknowledge,
-                })
-            }
-            Err(err) => Err(err),
-        }
-    }
-
+impl TcpStream {
     fn path(&self, buf: &mut [u8]) -> Result<usize> {
-        let path_string = format!("udp:{}:{}/{}", self.peer_addr.to_string(), self.peer_port, self.host_port);
+        let path_string = format!("tcp:{}:{}/{}", self.peer_addr.to_string(), self.peer_port, self.host_port);
         let path = path_string.as_bytes();
 
         for (b, p) in buf.iter_mut().zip(path.iter()) {
@@ -237,9 +222,7 @@ impl Resource for TcpResource {
     fn sync(&mut self) -> Result<()> {
         self.ip.sync()
     }
-}
 
-impl TcpResource {
     /// Etablish client
     pub fn client_establish(&mut self) -> bool {
         // Send SYN
@@ -391,9 +374,7 @@ impl TcpResource {
                             if let Some(segment) = Tcp::from_bytes(bytes[.. count].to_vec()) {
                                 if segment.header.dst.get() == self.host_port &&
                                    segment.header.src.get() == self.peer_port {
-                                    return if (segment.header.flags.get() &
-                                               (TCP_PSH | TCP_SYN | TCP_ACK)) ==
-                                              TCP_ACK {
+                                    return if (segment.header.flags.get() & (TCP_PSH | TCP_SYN | TCP_ACK)) == TCP_ACK {
                                         self.sequence = segment.header.ack_num.get();
                                         self.acknowledge = segment.header.sequence.get();
                                         true
@@ -412,8 +393,10 @@ impl TcpResource {
     }
 }
 
-impl Drop for TcpResource {
+impl Drop for TcpStream {
     fn drop(&mut self) {
+        debugln!("drop tcp:{}:{}/{}", self.peer_addr.to_string(), self.peer_port, self.host_port);
+
         // Send FIN-ACK
         let mut tcp = Tcp {
             header: TcpHeader {
@@ -421,8 +404,7 @@ impl Drop for TcpResource {
                 dst: n16::new(self.peer_port),
                 sequence: n32::new(self.sequence),
                 ack_num: n32::new(self.acknowledge),
-                flags: n16::new((((mem::size_of::<TcpHeader>()) << 10) & 0xF000) as u16 | TCP_FIN |
-                                TCP_ACK),
+                flags: n16::new((((mem::size_of::<TcpHeader>()) << 10) & 0xF000) as u16 | TCP_FIN | TCP_ACK),
                 window_size: n16::new(65535),
                 checksum: Checksum { data: 0 },
                 urgent_pointer: n16::new(0),
@@ -455,6 +437,35 @@ impl Drop for TcpResource {
     }
 }
 
+/// A TCP resource
+pub struct TcpResource {
+    stream: Arc<UnsafeCell<TcpStream>>
+}
+
+impl Resource for TcpResource {
+    fn dup(&self) -> Result<Box<Resource>> {
+        Ok(box TcpResource {
+            stream: self.stream.clone()
+        })
+    }
+
+    fn path(&self, buf: &mut [u8]) -> Result<usize> {
+        unsafe { (*self.stream.get()).path(buf) }
+    }
+
+    fn read(&mut self, buf: &mut [u8]) -> Result<usize> {
+        unsafe { (*self.stream.get()).read(buf) }
+    }
+
+    fn write(&mut self, buf: &[u8]) -> Result<usize> {
+        unsafe { (*self.stream.get()).write(buf) }
+    }
+
+    fn sync(&mut self) -> Result<()> {
+        unsafe { (*self.stream.get()).sync() }
+    }
+}
+
 /// A TCP scheme
 pub struct TcpScheme;
 
@@ -479,7 +490,7 @@ impl KScheme for TcpScheme {
 
             match Url::from_str(&format!("ip:{}/6", peer_addr.to_string())).unwrap().open() {
                 Ok(ip) => {
-                    let mut ret = box TcpResource {
+                    let mut stream = TcpStream {
                         ip: ip,
                         peer_addr: peer_addr,
                         peer_port: peer_port,
@@ -488,8 +499,10 @@ impl KScheme for TcpScheme {
                         acknowledge: 0,
                     };
 
-                    if ret.client_establish() {
-                        return Ok(ret);
+                    if stream.client_establish() {
+                        return Ok(box TcpResource {
+                            stream: Arc::new(UnsafeCell::new(stream))
+                        });
                     }
                 }
                 Err(err) => return Err(err),
@@ -509,7 +522,7 @@ impl KScheme for TcpScheme {
                                     let ip_remote = ip_reference.split('/').next().unwrap_or("");
                                     let peer_addr = ip_remote.split(':').next().unwrap_or("");
 
-                                    let mut ret = box TcpResource {
+                                    let mut stream = TcpStream {
                                         ip: ip,
                                         peer_addr: Ipv4Addr::from_string(&peer_addr.to_string()),
                                         peer_port: segment.header.src.get(),
@@ -518,8 +531,10 @@ impl KScheme for TcpScheme {
                                         acknowledge: segment.header.sequence.get(),
                                     };
 
-                                    if ret.server_establish(segment) {
-                                        return Ok(ret);
+                                    if stream.server_establish(segment) {
+                                        return Ok(box TcpResource {
+                                            stream: Arc::new(UnsafeCell::new(stream))
+                                        });
                                     }
                                 }
                             }
