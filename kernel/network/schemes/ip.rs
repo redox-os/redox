@@ -3,7 +3,7 @@ use alloc::boxed::Box;
 use collections::string::ToString;
 use collections::vec::Vec;
 
-use core::mem;
+use core::{cmp, mem};
 
 use network::common::*;
 use network::ipv4::*;
@@ -11,10 +11,10 @@ use network::ipv4::*;
 use common::{debug, random};
 use common::to_num::ToNum;
 
-use schemes::arp::{Arp, ArpHeader};
+use super::arp::{Arp, ArpHeader};
 use fs::{KScheme, Resource, Url};
 
-use system::error::{Error, Result, EBADF, ENOENT};
+use system::error::{Error, Result, ENOENT};
 
 /// A IP (internet protocole) resource
 pub struct IpResource {
@@ -40,36 +40,40 @@ impl Resource for IpResource {
     }
 
     fn path(&self, buf: &mut [u8]) -> Result<usize> {
-        let path = format!("ip:{}/{:X}", self.peer_addr.to_string(), self.proto).as_bytes();
-        for (b, p) in buf.iter_mut().zip(path_a.iter()) {
+        let path_string = format!("ip:{}/{:X}", self.peer_addr.to_string(), self.proto);
+        let path = path_string.as_bytes();
+
+        for (b, p) in buf.iter_mut().zip(path.iter()) {
             *b = *p;
         }
 
         Ok(cmp::min(buf.len(), path.len()))
     }
 
-    fn read(&mut self, _: &mut [u8]) -> Result<usize> {
-        debug::d("TODO: Implement read for ip:\n");
-        Err(Error::new(EBADF))
-    }
-
-    fn read_to_end(&mut self, vec: &mut Vec<u8>) -> Result<usize> {
+    fn read(&mut self, buf: &mut [u8]) -> Result<usize> {
         if !self.data.is_empty() {
-            let mut bytes: Vec<u8> = Vec::new();
-            mem::swap(&mut self.data, &mut bytes);
-            vec.push_all(&bytes);
-            return Ok(bytes.len());
+            let mut data: Vec<u8> = Vec::new();
+            mem::swap(&mut self.data, &mut data);
+
+            for (b, d) in buf.iter_mut().zip(data.iter()) {
+                *b = *d;
+            }
+
+            return Ok(cmp::min(buf.len(), data.len()));
         }
 
         loop {
-            let mut bytes: Vec<u8> = Vec::new();
-            match self.link.read_to_end(&mut bytes) {
-                Ok(_) => {
-                    if let Some(packet) = Ipv4::from_bytes(bytes) {
+            let mut bytes = [0; 8192];
+            match self.link.read(&mut bytes) {
+                Ok(count) => {
+                    if let Some(packet) = Ipv4::from_bytes(bytes[.. count].to_vec()) {
                         if packet.header.proto == self.proto && packet.header.dst.equals(IP_ADDR) &&
                            packet.header.src.equals(self.peer_addr) {
-                            vec.push_all(&packet.data);
-                            return Ok(packet.data.len());
+                            for (b, d) in buf.iter_mut().zip(packet.data.iter()) {
+                                *b = *d;
+                            }
+
+                            return Ok(cmp::min(buf.len(), packet.data.len()));
                         }
                     }
                 }
@@ -151,10 +155,7 @@ impl KScheme for IpScheme {
                     }
 
                     if peer_mac.equals(BROADCAST_MAC_ADDR) {
-                        if let Ok(mut link) = Url::from_string("ethernet:".to_string() +
-                                                                 &peer_mac.to_string() +
-                                                                 "/806")
-                                                    .open() {
+                        if let Ok(mut link) = Url::from_str(&format!("ethernet:{}/806", &peer_mac.to_string())).unwrap().open() {
                             let arp = Arp {
                                 header: ArpHeader {
                                     htype: n16::new(1),
@@ -172,9 +173,9 @@ impl KScheme for IpScheme {
 
                             match link.write(&arp.to_bytes()) {
                                 Ok(_) => loop {
-                                    let mut bytes: Vec<u8> = Vec::new();
-                                    match link.read_to_end(&mut bytes) {
-                                        Ok(_) => if let Some(packet) = Arp::from_bytes(bytes) {
+                                    let mut bytes = [0; 8192];
+                                    match link.read(&mut bytes) {
+                                        Ok(count) => if let Some(packet) = Arp::from_bytes(bytes[.. count].to_vec()) {
                                             if packet.header.oper.get() == 2 &&
                                                packet.header.src_ip.equals(peer_addr) {
                                                 peer_mac = packet.header.src_mac;
@@ -193,10 +194,7 @@ impl KScheme for IpScheme {
                         }
                     }
 
-                    if let Ok(link) = Url::from_string("ethernet:".to_string() +
-                                                         &peer_mac.to_string() +
-                                                         "/800")
-                                            .open() {
+                    if let Ok(link) = Url::from_str(&format!("ethernet:{}/800", &peer_mac.to_string())).unwrap().open(){
                         return Ok(box IpResource {
                             link: link,
                             data: Vec::new(),
@@ -206,11 +204,11 @@ impl KScheme for IpScheme {
                         });
                     }
                 } else {
-                    while let Ok(mut link) = Url::from_str("ethernet:/800").open() {
-                        let mut bytes: Vec<u8> = Vec::new();
-                        match link.read_to_end(&mut bytes) {
-                            Ok(_) => {
-                                if let Some(packet) = Ipv4::from_bytes(bytes) {
+                    while let Ok(mut link) = Url::from_str("ethernet:/800").unwrap().open() {
+                        let mut bytes = [0; 8192];
+                        match link.read(&mut bytes) {
+                            Ok(count) => {
+                                if let Some(packet) = Ipv4::from_bytes(bytes[.. count].to_vec()) {
                                     if packet.header.proto == proto &&
                                        packet.header.dst.equals(IP_ADDR) {
                                         return Ok(box IpResource {

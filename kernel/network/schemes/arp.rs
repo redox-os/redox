@@ -1,11 +1,11 @@
 use common::debug;
-use common::get_slice::GetSlice;
+use common::slice::GetSlice;
 
 use collections::vec::Vec;
 
 use core::{mem, slice};
 
-use scheduler::context::context_switch;
+use arch::context::context_switch;
 
 use network::common::*;
 
@@ -36,7 +36,7 @@ impl FromBytes for Arp {
             unsafe {
                 return Some(Arp {
                     header: *(bytes.as_ptr() as *const ArpHeader),
-                    data: bytes.get_slice(Some(mem::size_of::<ArpHeader>()), None).to_vec(),
+                    data: bytes.get_slice(mem::size_of::<ArpHeader>() ..).to_vec(),
                 });
             }
         }
@@ -50,7 +50,7 @@ impl ToBytes for Arp {
             let header_ptr: *const ArpHeader = &self.header;
             let mut ret = Vec::from(slice::from_raw_parts(header_ptr as *const u8,
                                                           mem::size_of::<ArpHeader>()));
-            ret.push_all(&self.data);
+            ret.extend_from_slice(&self.data);
             ret
         }
     }
@@ -66,11 +66,11 @@ impl KScheme for ArpScheme {
 
 impl ArpScheme {
     pub fn reply_loop() {
-        while let Ok(mut link) = Url::from_str("ethernet:/806").open() {
+        while let Ok(mut link) = Url::from_str("ethernet:/806").unwrap().open() {
             loop {
-                let mut bytes: Vec<u8> = Vec::new();
-                if let Ok(_) = link.read_to_end(&mut bytes) {
-                    if let Some(packet) = Arp::from_bytes(bytes) {
+                let mut bytes = [0; 8192];
+                if let Ok(count) = link.read(&mut bytes) {
+                    if let Some(packet) = Arp::from_bytes(bytes[.. count].to_vec()) {
                         if packet.header.oper.get() == 1 && packet.header.dst_ip.equals(IP_ADDR) {
                             let mut response = Arp {
                                 header: packet.header,
@@ -82,14 +82,14 @@ impl ArpScheme {
                             response.header.src_mac = unsafe { MAC_ADDR };
                             response.header.src_ip = IP_ADDR;
 
-                            link.write(&response.to_bytes());
+                            let _ = link.write(&response.to_bytes());
                         }
                     }
                 } else {
                     break;
                 }
             }
-            unsafe { context_switch(false) };
+            unsafe { context_switch() };
         }
         debug::d("ARP: Failed to open ethernet:\n");
     }

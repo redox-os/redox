@@ -1,10 +1,10 @@
-use common::get_slice::GetSlice;
+use common::slice::GetSlice;
 
 use collections::vec::Vec;
 
 use core::{mem, slice};
 
-use scheduler::context::context_switch;
+use arch::context::context_switch;
 
 use network::common::*;
 
@@ -30,7 +30,7 @@ impl FromBytes for Icmp {
             unsafe {
                 return Some(Icmp {
                     header: *(bytes.as_ptr() as *const IcmpHeader),
-                    data: bytes.get_slice(Some(mem::size_of::<IcmpHeader>()), None).to_vec(),
+                    data: bytes.get_slice(mem::size_of::<IcmpHeader>() ..).to_vec(),
                 });
             }
         }
@@ -44,7 +44,7 @@ impl ToBytes for Icmp {
             let header_ptr: *const IcmpHeader = &self.header;
             let mut ret = Vec::from(slice::from_raw_parts(header_ptr as *const u8,
                                                           mem::size_of::<IcmpHeader>()));
-            ret.push_all(&self.data);
+            ret.extend_from_slice(&self.data);
             ret
         }
     }
@@ -60,11 +60,13 @@ impl KScheme for IcmpScheme {
 
 impl IcmpScheme {
     pub fn reply_loop() {
-        while let Ok(mut ip) = Url::from_str("ip:/1").open() {
+        while let Ok(mut ip) = Url::from_str("ip:/1").unwrap().open() {
+            debugln!("ICMP: Open IP");
             loop {
-                let mut bytes: Vec<u8> = Vec::new();
-                if let Ok(_) = ip.read_to_end(&mut bytes) {
-                    if let Some(message) = Icmp::from_bytes(bytes) {
+                let mut bytes = [0; 8192];
+                if let Ok(count) = ip.read(&mut bytes) {
+                    debugln!("ICMP: Read {}", count);
+                    if let Some(message) = Icmp::from_bytes(bytes[.. count].to_vec()) {
                         if message.header._type == 0x08 {
                             let mut response = Icmp {
                                 header: message.header,
@@ -83,14 +85,14 @@ impl IcmpScheme {
                                 );
                             }
 
-                            ip.write(&response.to_bytes());
+                            let _ = ip.write(&response.to_bytes());
                         }
                     }
                 } else {
                     break;
                 }
             }
-            unsafe { context_switch(false) };
+            unsafe { context_switch() };
         }
     }
 }

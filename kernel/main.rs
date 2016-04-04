@@ -43,6 +43,7 @@ use arch::paging::Page;
 use arch::regs::Regs;
 use arch::tss::Tss;
 
+use collections::Vec;
 use collections::string::ToString;
 
 use core::{ptr, mem, usize};
@@ -59,6 +60,8 @@ use drivers::serial::*;
 use env::Environment;
 
 use graphics::display;
+
+use network::schemes::{ArpScheme, EthernetScheme, IcmpScheme, IpScheme};
 
 use schemes::context::*;
 use schemes::debug::*;
@@ -365,6 +368,23 @@ unsafe fn init(tss_data: usize) {
             env.schemes.lock().push(box InterruptScheme);
             env.schemes.lock().push(box MemoryScheme);
             env.schemes.lock().push(box TestScheme);
+
+            env.schemes.lock().push(box EthernetScheme);
+            //env.schemes.lock().push(box ArpScheme);
+            //env.schemes.lock().push(box IcmpScheme);
+            env.schemes.lock().push(box IpScheme {
+                arp: Vec::new()
+            });
+
+            Context::spawn("karp".to_string(),
+            box move || {
+                ArpScheme::reply_loop();
+            });
+
+            Context::spawn("kicmp".to_string(),
+            box move || {
+                IcmpScheme::reply_loop();
+            });
 
             env.contexts.lock().enabled = true;
 
