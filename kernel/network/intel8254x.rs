@@ -215,19 +215,8 @@ impl Intel8254x {
         for tail in 0..length / 16 {
             let rd = &mut *receive_ring.offset(tail as isize);
             if rd.status & RD_DD == RD_DD {
-                debug::d("Recv ");
-                debug::dh(rd as *mut Rd as usize);
-                debug::d(" ");
-                debug::dh(rd.status as usize);
-                debug::d(" ");
-                debug::dh(rd.buffer as usize);
-                debug::d(" ");
-                debug::dh(rd.length as usize);
-                debug::dl();
-
-                self.inbound.push_back(Vec::from(slice::from_raw_parts(rd.buffer as *const u8,
-                                                                       rd.length as usize)));
-
+                self.inbound.push_back(Vec::from(slice::from_raw_parts(rd.buffer as *const u8, rd.length as usize)));
+                
                 rd.status = 0;
             }
         }
@@ -251,16 +240,6 @@ impl Intel8254x {
                 if tail != head {
                     if bytes.len() < 16384 {
                         let td = &mut *transmit_ring.offset(old_tail as isize);
-
-                        debug::d("Send ");
-                        debug::dh(old_tail as usize);
-                        debug::d(" ");
-                        debug::dh(td.status as usize);
-                        debug::d(" ");
-                        debug::dh(td.buffer as usize);
-                        debug::d(" ");
-                        debug::dh(bytes.len() & 0x3FFF);
-                        debug::dl();
 
                         ::memcpy(td.buffer as *mut u8, bytes.as_ptr(), bytes.len());
                         td.length = (bytes.len() & 0x3FFF) as u16;

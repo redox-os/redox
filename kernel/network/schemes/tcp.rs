@@ -395,8 +395,6 @@ impl TcpStream {
 
 impl Drop for TcpStream {
     fn drop(&mut self) {
-        debugln!("drop tcp:{}:{}/{}", self.peer_addr.to_string(), self.peer_port, self.host_port);
-
         // Send FIN-ACK
         let mut tcp = Tcp {
             header: TcpHeader {
