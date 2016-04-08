@@ -9,7 +9,7 @@ use core_collections::borrow::ToOwned;
 use vec::Vec;
 
 use io::Error;
-use system::syscall::{sys_clone, sys_close, sys_dup, sys_execve, sys_exit, sys_pipe2, sys_read, sys_write, sys_waitpid, CLONE_VM, CLONE_VFORK};
+use system::syscall::{sys_clone, sys_close, sys_dup, sys_execve, sys_exit, sys_pipe2, sys_read, sys_write, sys_waitpid, CLONE_VM, CLONE_VFORK, CLONE_SUPERVISE};
 use system::error::Error as SysError;
 
 pub struct ExitStatus {
@@ -149,6 +149,19 @@ impl Command {
     }
 
     pub fn spawn(&mut self) -> Result<Child> {
+        self.exec(CLONE_VM | CLONE_VFORK)
+    }
+
+    /// Spawn this command as a supervised process.
+    ///
+    /// This means that the system calls will block the process, until being handled by the
+    /// parrent. Handling can be done by calling `.id()`, and then using `sys_supervise` to start
+    /// supervising this process. Refer to the respective documentation for more information.
+    pub fn spawn_supervise(&mut self) -> Result<Child> {
+        self.exec(CLONE_VM | CLONE_SUPERVISE)
+    }
+
+    fn exec(&mut self, flags: usize) -> Result<Child> {
         let mut res = Box::new(0);
 
         let path_c = self.path.to_owned() + "\0";
@@ -226,7 +239,7 @@ impl Command {
             unsafe { sys_execve(path_c.as_ptr(), args_c.as_ptr()) }.map_err(|x| Error::from_sys(x))
         });
 
-        match unsafe { sys_clone(CLONE_VM | CLONE_VFORK) } {
+        match unsafe { sys_clone(flags) } {
             Ok(0) => {
                 let error = child_code();
 
@@ -237,7 +250,7 @@ impl Command {
                 }
             },
             Ok(pid) => {
-                //Must forget child_code to prevent double free
+                // Must forget child_code to prevent double free
                 mem::forget(child_code);
                 if let Err(err) = SysError::demux(*res) {
                     Err(Error::from_sys(err))

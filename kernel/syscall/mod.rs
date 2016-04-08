@@ -8,6 +8,7 @@ pub use self::process::*;
 pub use self::time::*;
 
 use arch::regs::Regs;
+use arch::context::context_switch;
 
 pub mod debug;
 pub mod execute;
@@ -17,10 +18,28 @@ pub mod process;
 pub mod time;
 
 pub fn syscall_handle(regs: &mut Regs) {
+    {
+        let mut contexts = ::env().contexts.lock();
+        if let Ok(cur) = contexts.current_mut() {
+            if cur.supervised {
+                // Block the process.
+                cur.blocked_syscall = true;
+                cur.blocked = true;
+                // Clear the timer.
+                cur.wake = None;
+
+                loop {
+                    unsafe { context_switch() };
+                }
+            }
+        }
+    }
+
     //debugln!("{:X}: {} {:X} {:X} {:X}", regs.ip, regs.ax, regs.bx, regs.cx, regs.dx);
     regs.ax = Error::mux(match regs.ax {
         // Redox
         SYS_DEBUG => do_sys_debug(regs.bx as *const u8, regs.cx),
+        SYS_SUPERVISE => do_sys_supervise(regs.bx),
 
         // Unix
         SYS_BRK => do_sys_brk(regs.bx),

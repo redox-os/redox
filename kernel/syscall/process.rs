@@ -1,4 +1,4 @@
-use arch::context::{context_clone, context_switch};
+use arch::context::{context_clone, context_switch, ContextFile};
 use arch::regs::Regs;
 
 use collections::{BTreeMap, Vec};
@@ -9,9 +9,11 @@ use core::ops::DerefMut;
 
 use system::{c_array_to_slice, c_string_to_str};
 
-use system::error::{Error, Result, ECHILD, EINVAL};
+use system::error::{Error, Result, ECHILD, EINVAL, EACCES};
 
 use super::execute::execute;
+
+use fs::SupervisorResource;
 
 pub fn do_sys_clone(regs: &Regs) -> Result<usize> {
     unsafe { context_clone(regs) }
@@ -28,8 +30,6 @@ pub fn do_sys_execve(path: *const u8, args: *const *const u8) -> Result<usize> {
 }
 
 /// Exit context
-///
-/// Unsafe due to interrupt disabling and raw pointers
 pub fn do_sys_exit(status: usize) -> ! {
     {
         let mut contexts = ::env().contexts.lock();
@@ -133,4 +133,41 @@ pub fn do_sys_yield() -> Result<usize> {
         context_switch();
     }
     Ok(0)
+}
+
+/// Supervise a child process of the current context.
+///
+/// This will make all syscalls the given process makes mark the process as blocked, until it is
+/// handled by the supervisor (parrent process) through the returned handle (for details, see the
+/// docs in the `system` crate).
+///
+/// This routine is done by having a field defining whether the process is blocked by a syscall.
+/// When the syscall is read from the file handle, this field is set to false, but the process is
+/// still stopped (because it is marked as `blocked`), until the new value of the EAX register is
+/// written to the file handle.
+pub fn do_sys_supervise(pid: usize) -> Result<usize> {
+    let mut contexts = ::env().contexts.lock();
+    let cur_pid = contexts.i;
+
+    {
+        let jailed = try!(contexts.get_mut(pid));
+
+        // Make sure that this is actually a child process of the invoker.
+        if jailed.ppid != cur_pid {
+            return Err(Error::new(EACCES));
+        }
+
+        jailed.supervised = true;
+    }
+
+    let current = try!(contexts.current_mut());
+
+    let fd = current.next_fd();
+
+    (unsafe { &mut *current.files.get() }).push(ContextFile {
+        fd: fd,
+        resource: box SupervisorResource::new(pid),
+    });
+
+    Ok(fd)
 }
