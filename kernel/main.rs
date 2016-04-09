@@ -498,7 +498,7 @@ pub extern "cdecl" fn kernel(interrupt: usize, mut regs: &mut Regs) {
         })
     };
 
-    //Do not catch init interrupt
+    // Do not catch init interrupt
     if interrupt < 0xFF {
         env().interrupts.lock()[interrupt as usize] += 1;
     }
