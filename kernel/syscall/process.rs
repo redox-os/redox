@@ -9,7 +9,7 @@ use core::ops::DerefMut;
 
 use system::{c_array_to_slice, c_string_to_str};
 
-use system::error::{Error, Result, ECHILD, EINVAL, EACCES, EPERM};
+use system::error::{Error, Result, ECHILD, EINVAL, EACCES};
 
 use super::execute::execute;
 
@@ -149,13 +149,10 @@ pub fn do_sys_supervise(pid: usize) -> Result<usize> {
     let mut contexts = ::env().contexts.lock();
     let cur_pid = try!(contexts.current_mut()).pid;
 
-    {
-        let jailed = try!(contexts.get_mut(pid));
+    let procc;
 
-        // Make sure that no supervisor exists already.
-        if jailed.supervised {
-            return Err(Error::new(EPERM));
-        }
+    {
+        let jailed = try!(contexts.find_mut(pid));
 
         // Make sure that this is actually a child process of the invoker.
         if jailed.ppid != cur_pid {
@@ -163,16 +160,20 @@ pub fn do_sys_supervise(pid: usize) -> Result<usize> {
         }
 
         jailed.supervised = true;
+
+        procc = &mut **jailed as *mut _;
     }
 
     let current = try!(contexts.current_mut());
 
     let fd = current.next_fd();
 
-    (unsafe { &mut *current.files.get() }).push(ContextFile {
-        fd: fd,
-        resource: box try!(SupervisorResource::new(pid)),
-    });
+    unsafe {
+        (*current.files.get()).push(ContextFile {
+            fd: fd,
+            resource: box try!(SupervisorResource::new(procc)),
+        });
+    }
 
     Ok(fd)
 }

@@ -2,7 +2,7 @@ use core::{cmp, mem};
 use super::Resource;
 use system::error::Result;
 use system::scheme::Packet;
-use arch::context::Context;
+use arch::context::{Context, context_switch};
 
 /// A supervisor resource.
 ///
@@ -17,11 +17,9 @@ pub struct SupervisorResource {
 
 impl SupervisorResource {
     /// Create a new supervisor resource, supervising some PID.
-    pub fn new(pid: usize) -> Result<SupervisorResource> {
-        let mut contexts = ::env().contexts.lock();
-
+    pub unsafe fn new(ctx: *mut Context) -> Result<SupervisorResource> {
         Ok(SupervisorResource {
-            ctx: &mut **try!(contexts.find_mut(pid)) as *mut _,
+            ctx: ctx,
         })
     }
 }
@@ -31,8 +29,8 @@ impl Resource for SupervisorResource {
         let mut _contexts = ::env().contexts.lock();
 
         let ctx = unsafe { &mut *self.ctx };
-        if !ctx.blocked_syscall {
-            return Ok(0);
+        while !ctx.blocked_syscall {
+            unsafe { context_switch() };
         }
 
         let call: Packet = ctx.regs.into();

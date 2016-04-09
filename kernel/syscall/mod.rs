@@ -29,7 +29,11 @@ pub fn syscall_handle(regs: &mut Regs) {
                 cur.wake = None;
 
                 loop {
-                    unsafe { context_switch() };
+                    if cur.blocked {
+                        unsafe { context_switch() };
+                    } else {
+                        return;
+                    }
                 }
             }
         }
