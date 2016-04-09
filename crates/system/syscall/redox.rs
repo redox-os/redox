@@ -18,6 +18,9 @@ pub fn sys_debug(buf: &[u8]) -> Result<usize> {
 /// SUPERVISE takes a PID specifing the process to be supervised. This PID must be a child process
 /// of the invoker. If not, EACCES will be returned.
 ///
+/// A process can only have one supervisor at a time. If SUPERVISE is called on a process, which
+/// already have a supervisor EPERM will be returned.
+///
 /// The process identified by the given PID will be restricted in such a way, that every syscall
 /// made will mark the process as blocked and store the syscall until it is handled by the parrent.
 ///
@@ -34,6 +37,8 @@ pub fn sys_debug(buf: &[u8]) -> Result<usize> {
 /// not wake up after the sleep is finished).
 ///
 /// Passing a non-existent PID results in ESRCH.
+///
+/// A process being supervised is referred to as 'jailed' or 'supervised'.
 /// <!-- @MANEND -->
 pub fn sys_supervise(pid: usize) -> Result<usize> {
     unsafe { syscall1(SYS_SUPERVISE, pid) }

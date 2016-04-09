@@ -72,19 +72,31 @@ impl ContextManager {
     }
 
     pub fn get(&self, i: usize) -> Result<&Box<Context>> {
-        if self.enabled {
-            self.inner.get(i).ok_or(Error::new(ESRCH))
-        } else{
-            Err(Error::new(ESRCH))
-        }
+        self.inner.get(i).ok_or(Error::new(ESRCH))
     }
 
     pub fn get_mut(&mut self, i: usize) -> Result<&mut Box<Context>> {
-        if self.enabled {
-            self.inner.get_mut(i).ok_or(Error::new(ESRCH))
-        } else{
-            Err(Error::new(ESRCH))
+        self.inner.get_mut(i).ok_or(Error::new(ESRCH))
+    }
+
+    /// Find a resource with a given PID.
+    pub fn find(&self, pid: usize) -> Result<&Box<Context>> {
+        for context in self.inner.iter() {
+            if context.pid == pid {
+                return Ok(context);
+            }
         }
+        Err(Error::new(ESRCH))
+    }
+
+    /// Find a resource with a given PID, and yield a mutable reference to it.
+    pub fn find_mut(&mut self, pid: usize) -> Result<&mut Box<Context>> {
+        for mut context in self.inner.iter_mut() {
+            if context.pid == pid {
+                return Ok(context);
+            }
+        }
+        Err(Error::new(ESRCH))
     }
 
     pub fn len(&self) -> usize {
