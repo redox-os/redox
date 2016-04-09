@@ -2,6 +2,7 @@ use core::{cmp, mem};
 use super::Resource;
 use system::error::Result;
 use system::scheme::Packet;
+use arch::context::Context;
 
 /// A supervisor resource.
 ///
@@ -10,22 +11,26 @@ use system::scheme::Packet;
 /// Writing will simply left shift EAX by one byte, and then OR it with the byte from the buffer,
 /// effectively writing the buffer to the EAX register (truncating the additional bytes).
 pub struct SupervisorResource {
-    pid: usize,
+    /// The jailed context.
+    ctx: *mut Context,
 }
 
 impl SupervisorResource {
     /// Create a new supervisor resource, supervising some PID.
-    pub fn new(pid: usize) -> SupervisorResource {
-        SupervisorResource {
-            pid: pid,
-        }
+    pub fn new(pid: usize) -> Result<SupervisorResource> {
+        let mut contexts = ::env().contexts.lock();
+
+        Ok(SupervisorResource {
+            ctx: &mut **try!(contexts.find_mut(pid)) as *mut _,
+        })
     }
 }
 
 impl Resource for SupervisorResource {
     fn read(&mut self, buf: &mut [u8]) -> Result<usize> {
-        let mut contexts = ::env().contexts.lock();
-        let ctx = try!(contexts.get_mut(self.pid));
+        let mut _contexts = ::env().contexts.lock();
+
+        let ctx = unsafe { &mut *self.ctx };
         if !ctx.blocked_syscall {
             return Ok(0);
         }
@@ -42,8 +47,9 @@ impl Resource for SupervisorResource {
     }
 
     fn write(&mut self, buf: &[u8]) -> Result<usize> {
-        let mut contexts = ::env().contexts.lock();
-        let ctx = try!(contexts.get_mut(self.pid));
+        let mut _contexts = ::env().contexts.lock();
+
+        let ctx = unsafe { &mut *self.ctx };
 
         for &i in buf.iter().take(mem::size_of::<usize>()) {
             ctx.regs.ax <<= 8;
