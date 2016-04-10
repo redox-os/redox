@@ -272,47 +272,54 @@ bins: \
 	filesystem/bin/tar \
 	#TODO: binutils	filesystem/bin/zfs
 
-initfs/redoxfsd: crates/redoxfs/scheme/main.rs crates/redoxfs/scheme/*.rs $(BUILD)/libstd.rlib $(BUILD)/libredoxfs.rlib
-	mkdir -p initfs/
+
+initfs/bin/init: crates/init/main.rs crates/init/*.rs $(BUILD)/libstd.rlib
+	mkdir -p initfs/bin/
 	$(RUSTC) $(RUSTCFLAGS) --crate-type bin -o $@ $<
 
-initfs/build-arch:
-	mkdir -p initfs/
+initfs/bin/redoxfsd: crates/redoxfs/scheme/main.rs crates/redoxfs/scheme/*.rs $(BUILD)/libstd.rlib $(BUILD)/libredoxfs.rlib
+	mkdir -p initfs/bin/
+	$(RUSTC) $(RUSTCFLAGS) --crate-type bin -o $@ $<
+
+initfs/build/arch:
+	mkdir -p initfs/build/
 	echo $(ARCH) > $@
 
-initfs/build-branch:
-	mkdir -p initfs/
+initfs/build/branch:
+	mkdir -p initfs/build/
 	git rev-parse --abbrev-ref HEAD > $@
 
-initfs/build-cargo:
-	mkdir -p initfs/
+initfs/build/cargo:
+	mkdir -p initfs/build/
 	cargo -V > $@
 
-initfs/build-date:
-	mkdir -p initfs/
+initfs/build/date:
+	mkdir -p initfs/build/
 	date > $@
 
-initfs/build-host:
-	mkdir -p initfs/
+initfs/build/host:
+	mkdir -p initfs/build/
 	uname -a > $@
 
-initfs/build-rustc:
-	mkdir -p initfs/
+initfs/build/rustc:
+	mkdir -p initfs/build/
 	$(RUSTC) -V > $@
 
-initfs/build-rev:
-	mkdir -p initfs/
+initfs/build/rev:
+	mkdir -p initfs/build/
 	git rev-parse HEAD > $@
 
 build/initfs.gen: \
-		initfs/redoxfsd \
-		initfs/build-arch \
-		initfs/build-branch \
-		initfs/build-cargo \
-		initfs/build-date \
-		initfs/build-host \
-		initfs/build-rustc \
-		initfs/build-rev
+		initfs/bin/init \
+		initfs/bin/redoxfsd \
+		initfs/build/arch \
+		initfs/build/branch \
+		initfs/build/cargo \
+		initfs/build/date \
+		initfs/build/host \
+		initfs/build/rustc \
+		initfs/build/rev \
+		initfs/etc/init.rc
 	echo 'use collections::BTreeMap;' > $@
 	echo 'pub fn gen() -> BTreeMap<&'"'"'static str, &'"'"'static [u8]> {' >> $@
 	echo '    let mut files: BTreeMap<&'"'"'static str, &'"'"'static [u8]> = BTreeMap::new();' >> $@
@@ -331,7 +338,7 @@ test: kernel/main.rs \
 	$(RUSTC) $(RUSTCFLAGS) --test $<
 
 clean:
-	$(RM) -rf build doc filesystem/bin/ initfs/bin/ filesystem/apps/*/*.bin filesystem/apps/*/*.list
+	$(RM) -rf build doc filesystem/bin/ initfs/bin/ initfs/build/ filesystem/apps/*/*.bin filesystem/apps/*/*.list
 
 FORCE:
 

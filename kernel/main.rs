@@ -393,7 +393,7 @@ unsafe fn init(tss_data: usize) {
             Context::spawn("kinit".to_string(),
             box move || {
                 {
-                    let wd_c = "file:/\0";
+                    let wd_c = "initfs:/\0";
                     do_sys_chdir(wd_c.as_ptr()).unwrap();
 
                     let stdio_c = "debug:\0";
@@ -410,7 +410,7 @@ unsafe fn init(tss_data: usize) {
                 }
 
                 if let Err(err) = execute(vec!["init".to_string()]) {
-                    debugln!("INIT: Failed to execute: {}", err);
+                    debugln!("kernel: init: failed to execute: {}", err);
                 }
             });
         },
