@@ -171,6 +171,32 @@ suse()
 	sh redox/setup/binary.sh
 }
 
+gentoo()
+{
+	echo "Detected Gentoo Linux"
+	if [ -z "$(which nasm)" ]; then
+		echo "Installing nasm..."
+		sudo emerge dev-lang/nasm
+	fi
+	if [ -z "$(which git)" ]; then
+		echo "Installing git..."
+		sudo emerge dev-vcs/git
+	fi
+	if [ "$2" == "qemu" ]; then
+		if [ -z "$(which qemu-system-i386)" ]; then
+			echo "Please install QEMU and re-run this script"
+			echo "Step1. Add QEMU_SOFTMMU_TARGETS=\"i386\" to /etc/portage/make.conf"
+			echo "Step2. Execute \"sudo emerge app-emulation/qemu\""
+		else
+			echo "QEMU already installed!"
+		fi
+	fi
+	echo "Cloning redox repo..."
+	git clone -b "$1" --recursive https://github.com/redox-os/redox.git
+	echo "Running rust installer..."
+	sh redox/setup/binary.sh
+}
+
 usage()
 {
 	echo "------------------------"
@@ -250,4 +276,5 @@ else
 	which apt-get && { ubuntu "$branch" "$emulator" "$defpackman"; endMessage; }
 	which yum && { fedora "$branch" "$emulator"; endMessage; }
 	which zypper && { suse "$branch" "$emulator"; endMessage; }
+	which emerge && { gentoo "$branch" "$emulator"; endMessage; }
 fi
