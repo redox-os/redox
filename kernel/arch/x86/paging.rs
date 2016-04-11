@@ -201,7 +201,7 @@ pub const PAGE_TABLE_SIZE: usize = 1024;
 pub const PAGE_ENTRY_SIZE: usize = 4;
 pub const PAGE_SIZE: usize = 4096;
 
-pub const PAGE_DIRECTORY: usize = 0x200000;
+pub const PAGE_DIRECTORY: usize = 0x1000000;
 pub const PAGE_TABLES: usize = PAGE_DIRECTORY + PAGE_TABLE_SIZE * PAGE_ENTRY_SIZE;
 pub const PAGE_END: usize = PAGE_TABLES + PAGE_TABLE_SIZE * PAGE_TABLE_SIZE * PAGE_ENTRY_SIZE;
 

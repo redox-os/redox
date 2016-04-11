@@ -1,0 +1,6 @@
+echo ############################
+echo ##  Redox OS is booting   ##
+echo ############################
+echo
+cd file:/
+init
