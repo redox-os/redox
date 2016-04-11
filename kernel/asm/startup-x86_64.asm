@@ -70,7 +70,7 @@ long_mode:
     ; load long mode IDT
     lidt [idtr]
 
-    mov rsp, 0x200000 - 128
+    mov rsp, 0x100000 - 128
 
     mov rax, gdt.tss
     ltr ax
@@ -170,7 +170,7 @@ long_mode:
 
     tss:
         istruc TSS
-            at TSS.rsp0, dd 0x200000 - 128
+            at TSS.rsp0, dd 0x100000 - 128
             at TSS.iomap_base, dw 0xFFFF
         iend
     .end:

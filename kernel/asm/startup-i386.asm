@@ -24,7 +24,7 @@ protected_mode:
     mov gs, eax
     mov ss, eax
 
-    mov esp, 0x200000 - 128
+    mov esp, 0x100000 - 128
 
     mov eax, gdt.tss
     ltr ax
@@ -130,7 +130,7 @@ endstruc
 
 tss:
     istruc TSS
-        at TSS.esp0, dd 0x200000 - 128
+        at TSS.esp0, dd 0x100000 - 128
         at TSS.ss0, dd gdt.kernel_data
         at TSS.iomap_base, dw 0xFFFF
     iend
