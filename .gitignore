@@ -18,6 +18,7 @@ libc/build/
 setup/rust/
 build
 filesystem/bin/
+filesystem/ref/
 initfs/bin/
 initfs/build/
 target
