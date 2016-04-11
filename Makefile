@@ -196,6 +196,7 @@ extrautils: \
 	filesystem/bin/cur \
 	filesystem/bin/grep \
 	filesystem/bin/less \
+	filesystem/bin/man \
 	filesystem/bin/mtxt \
 	filesystem/bin/rem \
 	filesystem/bin/wget
@@ -272,6 +273,11 @@ bins: \
 	filesystem/bin/tar \
 	#TODO: binutils	filesystem/bin/zfs
 
+refs: FORCE
+	mkdir -p filesystem/ref/
+	cargo run --manifest-path crates/docgen/Cargo.toml -- crates/coreutils/src/bin/ filesystem/ref/
+	cargo run --manifest-path crates/docgen/Cargo.toml -- crates/extrautils/src/bin/ filesystem/ref/
+	cargo run --manifest-path crates/docgen/Cargo.toml -- kernel/ filesystem/ref/
 
 initfs/bin/init: crates/init/main.rs crates/init/*.rs $(BUILD)/libstd.rlib
 	mkdir -p initfs/bin/
@@ -338,7 +344,7 @@ test: kernel/main.rs \
 	$(RUSTC) $(RUSTCFLAGS) --test $<
 
 clean:
-	$(RM) -rf build doc filesystem/bin/ initfs/bin/ initfs/build/ filesystem/apps/*/*.bin filesystem/apps/*/*.list
+	$(RM) -rf build doc filesystem/bin/ filesystem/ref/ initfs/bin/ initfs/build/ filesystem/apps/*/*.bin filesystem/apps/*/*.list
 
 FORCE:
 
