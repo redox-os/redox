@@ -2,6 +2,8 @@
 pub mod context;
 /// Debug scheme
 pub mod debug;
+/// Disk scheme
+pub mod disk;
 /// Display Scheme
 pub mod display;
 /// Environment variables scheme

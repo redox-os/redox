@@ -2,18 +2,18 @@
 
 fs_header:
 .signature:
-    db "REDOXFS",0
+    db "RedoxFS",0
 .version:
-    dq 1
-.free_space:
-    dq (fs_free_space - boot) / 512
-    dq (fs_free_space.end - fs_free_space)
+    dq 0xFFFFFFFFFFFFFFFF
+.uuid:
+    db "0123456789ABCDEF"
+.size:
+    dq fs_free_space - boot
+.root:
+    dq (fs_root_node - boot) /512
+.free:
+    dq (fs_free_node - boot) / 512
 .padding:
-    align 256, db 0
-.extents:
-    dq (fs_root_node_list - boot) / 512
-    dq (fs_root_node_list.end - fs_root_node_list)
-
     align 512, db 0
 .end:
 
@@ -27,8 +27,6 @@ fs_header:
 align 512, db 0
 startup_end:
 
-;times (0xC000-0x1000)-0x7C00-($-$$) db 0
-
 kernel_file:
   incbin "kernel.bin"
   align 512, db 0
@@ -36,18 +34,63 @@ kernel_file:
 .length equ kernel_file.end - kernel_file
 .length_sectors equ .length / 512
 
+fs_root_node:
+.mode:
+    dw 0x4000
+.user:
+    dw 0
+.group:
+    dw 0
+.name:
+    align 256, db 0
+.parent:
+    dq (fs_header - boot) / 512
+.next:
+    dq 0
+.extents:
+    dq (fs_root_node_list - boot) / 512
+    dq (fs_root_node_list.end - fs_root_node_list)
+    align 512, db 0
+.end:
+
+fs_free_node:
+.mode:
+    dw 0x4000
+.user:
+    dw 0
+.group:
+    dw 0
+.name:
+    align 256, db 0
+.parent:
+    dq (fs_header - boot) / 512
+.next:
+    dq 0
+.extents:
+    dq (fs_free_space - boot) / 512
+    dq (fs_free_space.end - fs_free_space)
+    align 512, db 0
+.end:
+
 fs_root_node_list:
 %macro file 2+
     fs_node.%1:
+    .mode:
+        dw 0x8000
+    .user:
+        dw 0
+    .group:
+        dw 0
     .name:
         db %2,0
-
         align 256, db 0
-
+    .parent:
+        dq (fs_root_node - boot) / 512
+    .next:
+        dq 0
     .extents:
         dq (fs_data.%1 - boot) / 512
         dq (fs_data.%1.end - fs_data.%1)
-
         align 512, db 0
     .end:
 %endmacro
