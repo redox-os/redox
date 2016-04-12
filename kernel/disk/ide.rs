@@ -218,6 +218,7 @@ pub struct IdeDisk {
     alt_sts: ReadOnly<u8, Pio<u8>>,
     irq: u8,
     master: bool,
+    size: u64,
 }
 
 impl IdeDisk {
@@ -238,9 +239,11 @@ impl IdeDisk {
             alt_sts: ReadOnly::new(Pio::new(ctrl + 2)),
             irq: irq,
             master: master,
+            size: 0,
         };
 
-        if unsafe { ret.identify() } {
+        if let Some(size) = unsafe { ret.identify() } {
+            ret.size = size;
             Some(ret)
         } else {
             None
@@ -296,11 +299,11 @@ impl IdeDisk {
     }
 
     /// Identify
-    pub unsafe fn identify(&mut self) -> bool {
+    pub unsafe fn identify(&mut self) -> Option<u64> {
         if self.alt_sts.read() == 0xFF {
             debug!(" Floating Bus");
 
-            return false;
+            return None;
         }
 
         self.ata(ATA_CMD_IDENTIFY, 0, 0);
@@ -309,14 +312,14 @@ impl IdeDisk {
         debug!(" Status: {:X}", status);
 
         if status == 0 {
-            return false;
+            return None;
         }
 
         let err = self.ide_poll(true);
         if err > 0 {
             debug!(" Error: {:X}", err);
 
-            return false;
+            return None;
         }
 
         let mut destination = Memory::<u16>::new(256).unwrap();
@@ -363,7 +366,8 @@ impl IdeDisk {
             }
         }
 
-        let mut sectors = (destination.read(100) as u64) | ((destination.read(101) as u64) << 16) |
+        let mut sectors = (destination.read(100) as u64) |
+                          ((destination.read(101) as u64) << 16) |
                           ((destination.read(102) as u64) << 32) |
                           ((destination.read(103) as u64) << 48);
 
@@ -376,7 +380,7 @@ impl IdeDisk {
 
         debug!(" Size: {} MB", (sectors / 2048) as usize);
 
-        true
+        Some(sectors * 512)
     }
 
     unsafe fn ata_pio_small(&mut self, block: u64, sectors: u16, mut buf: usize, write: bool) -> Result<usize> {
@@ -414,7 +418,7 @@ impl IdeDisk {
 
             Ok(sectors as usize * 512)
         } else {
-            debugln!("Invalid request");
+            debugln!("IDE: ata_pio_small: Invalid request {:X} {}", buf, sectors);
             Err(Error::new(EIO))
         }
     }
@@ -446,7 +450,7 @@ impl IdeDisk {
 
             Ok(sectors * 512)
         } else {
-            debugln!("Invalid request");
+            debugln!("IDE: ata_pio: Invalid request {:X} {}", buf, sectors);
             Err(Error::new(EIO))
         }
     }
@@ -527,7 +531,7 @@ impl IdeDisk {
 
             Ok(sectors as usize * 512)
         } else {
-            debugln!("Invalid request");
+            debugln!("IDE: ata_dma_small: Invalid request {:X} {}", buf, sectors);
             Err(Error::new(EIO))
         }
     }
@@ -559,7 +563,7 @@ impl IdeDisk {
 
             Ok(sectors * 512)
         } else {
-            debugln!("Invalid request");
+            debugln!("IDE: ata_dma: Invalid request {:X} {}", buf, sectors);
             Err(Error::new(EIO))
         }
     }
@@ -576,6 +580,10 @@ impl Disk for IdeDisk {
         } else {
             "Slave"
         })
+    }
+
+    fn size(&self) -> u64 {
+        self.size
     }
 
     fn read(&mut self, block: u64, buffer: &mut [u8]) -> Result<usize> {

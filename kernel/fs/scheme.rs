@@ -131,6 +131,7 @@ impl Resource for SchemeResource {
                 Err(Error::new(EBADF))
             }
         } else {
+            debugln!("{}:{} fault {:X} {}", file!(), line!(), buf.as_ptr() as usize, buf.len());
             Err(Error::new(EFAULT))
         }
     }
@@ -178,6 +179,7 @@ impl Resource for SchemeResource {
                 Err(Error::new(EBADF))
             }
         } else {
+            debugln!("{}:{} fault {:X} {}", file!(), line!(), buf.as_ptr() as usize, buf.len());
             Err(Error::new(EFAULT))
         }
     }
@@ -225,6 +227,7 @@ impl Resource for SchemeResource {
                 Err(Error::new(EBADF))
             }
         } else {
+            debugln!("{}:{} fault {:X} {}", file!(), line!(), buf.as_ptr() as usize, buf.len());
             Err(Error::new(EFAULT))
         }
     }

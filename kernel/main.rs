@@ -65,9 +65,10 @@ use network::schemes::{ArpScheme, EthernetScheme, IcmpScheme, IpScheme, TcpSchem
 
 use schemes::context::ContextScheme;
 use schemes::debug::DebugScheme;
+use schemes::disk::DiskScheme;
 use schemes::display::DisplayScheme;
 use schemes::env::EnvScheme;
-use schemes::file::FileScheme;
+//use schemes::file::FileScheme;
 use schemes::initfs::InitFsScheme;
 use schemes::interrupt::InterruptScheme;
 use schemes::memory::MemoryScheme;
@@ -373,9 +374,7 @@ unsafe fn init(tss_data: usize) {
             //TODO: Do not do this! Find a better way
             let mut disks = Vec::new();
             disks.append(&mut env.disks.lock());
-            if let Some(module) = FileScheme::new(disks) {
-                env.schemes.lock().push(module);
-            }
+            env.schemes.lock().push(DiskScheme::new(disks));
 
             env.schemes.lock().push(box EthernetScheme);
             //env.schemes.lock().push(box ArpScheme);
@@ -417,7 +416,7 @@ unsafe fn init(tss_data: usize) {
                     }
                 }
 
-                if let Err(err) = execute(vec!["init".to_string()]) {
+                if let Err(err) = execute(vec!["initfs:/bin/init".to_string()]) {
                     debugln!("kernel: init: failed to execute: {}", err);
                 }
             });
