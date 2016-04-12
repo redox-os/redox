@@ -63,14 +63,15 @@ use graphics::display;
 
 use network::schemes::{ArpScheme, EthernetScheme, IcmpScheme, IpScheme, TcpScheme, UdpScheme};
 
-use schemes::context::*;
-use schemes::debug::*;
-use schemes::display::*;
-use schemes::env::*;
-use schemes::initfs::*;
-use schemes::interrupt::*;
-use schemes::memory::*;
-use schemes::test::*;
+use schemes::context::ContextScheme;
+use schemes::debug::DebugScheme;
+use schemes::display::DisplayScheme;
+use schemes::env::EnvScheme;
+use schemes::file::FileScheme;
+use schemes::initfs::InitFsScheme;
+use schemes::interrupt::InterruptScheme;
+use schemes::memory::MemoryScheme;
+use schemes::test::TestScheme;
 
 use syscall::execute::execute;
 use syscall::{do_sys_chdir, do_sys_exit, do_sys_open, syscall_handle};
@@ -368,6 +369,13 @@ unsafe fn init(tss_data: usize) {
             env.schemes.lock().push(box InterruptScheme);
             env.schemes.lock().push(box MemoryScheme);
             env.schemes.lock().push(box TestScheme);
+
+            //TODO: Do not do this! Find a better way
+            let mut disks = Vec::new();
+            disks.append(&mut env.disks.lock());
+            if let Some(module) = FileScheme::new(disks) {
+                env.schemes.lock().push(module);
+            }
 
             env.schemes.lock().push(box EthernetScheme);
             //env.schemes.lock().push(box ArpScheme);
