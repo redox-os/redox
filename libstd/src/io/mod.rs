@@ -444,7 +444,7 @@ pub trait Read {
     /// # Ok(())
     /// # }
     /// ```
-        fn read(&mut self, buf: &mut [u8]) -> Result<usize>;
+    fn read(&mut self, buf: &mut [u8]) -> Result<usize>;
 
     /// Read all bytes until EOF in this source, placing them into `buf`.
     ///
@@ -485,7 +485,7 @@ pub trait Read {
     /// # Ok(())
     /// # }
     /// ```
-        fn read_to_end(&mut self, buf: &mut Vec<u8>) -> Result<usize> {
+    fn read_to_end(&mut self, buf: &mut Vec<u8>) -> Result<usize> {
         read_to_end(self, buf)
     }
 
@@ -522,7 +522,7 @@ pub trait Read {
     /// # Ok(())
     /// # }
     /// ```
-        fn read_to_string(&mut self, buf: &mut String) -> Result<usize> {
+    fn read_to_string(&mut self, buf: &mut String) -> Result<usize> {
         // Note that we do *not* call `.read_to_end()` here. We are passing
         // `&mut Vec<u8>` (the raw contents of `buf`) into the `read_to_end`
         // method to fill it up. An arbitrary implementation could overwrite the
@@ -582,7 +582,7 @@ pub trait Read {
     /// # Ok(())
     /// # }
     /// ```
-        fn read_exact(&mut self, mut buf: &mut [u8]) -> Result<()> {
+    fn read_exact(&mut self, mut buf: &mut [u8]) -> Result<()> {
         while !buf.is_empty() {
             match self.read(buf) {
                 Ok(0) => break,
@@ -633,7 +633,7 @@ pub trait Read {
     /// # Ok(())
     /// # }
     /// ```
-        fn by_ref(&mut self) -> &mut Self where Self: Sized { self }
+    fn by_ref(&mut self) -> &mut Self where Self: Sized { self }
 
     /// Transforms this `Read` instance to an `Iterator` over its bytes.
     ///
@@ -662,7 +662,7 @@ pub trait Read {
     /// # Ok(())
     /// # }
     /// ```
-        fn bytes(self) -> Bytes<Self> where Self: Sized {
+    fn bytes(self) -> Bytes<Self> where Self: Sized {
         Bytes { inner: self }
     }
 
