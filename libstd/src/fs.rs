@@ -103,8 +103,9 @@ impl Write for File {
         sys_write(self.fd, buf).map_err(|x| Error::from_sys(x))
     }
 
-    // TODO buffered fs
-    fn flush(&mut self) -> Result<()> { Ok(()) }
+    fn flush(&mut self) -> Result<()> {
+        sys_fsync(self.fd).and(Ok(())).map_err(|x| Error::from_sys(x))
+    }
 }
 
 impl Seek for File {
@@ -276,6 +277,9 @@ impl Iterator for ReadDir {
         match self.file.read_line(&mut path) {
             Ok(0) => None,
             Ok(_) => {
+                if path.ends_with('\n') {
+                    path.pop();
+                }
                 let dir = path.ends_with('/');
                 if dir {
                     path.pop();

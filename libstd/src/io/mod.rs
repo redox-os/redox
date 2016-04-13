@@ -875,7 +875,7 @@ pub trait Write {
     /// # Ok(())
     /// # }
     /// ```
-        fn write(&mut self, buf: &[u8]) -> Result<usize>;
+    fn write(&mut self, buf: &[u8]) -> Result<usize>;
 
     /// Flush this output stream, ensuring that all intermediately buffered
     /// contents reach their destination.
@@ -900,7 +900,7 @@ pub trait Write {
     /// # Ok(())
     /// # }
     /// ```
-        fn flush(&mut self) -> Result<()>;
+    fn flush(&mut self) -> Result<()>;
 
     /// Attempts to write an entire buffer into this write.
     ///
@@ -926,7 +926,7 @@ pub trait Write {
     /// # Ok(())
     /// # }
     /// ```
-        fn write_all(&mut self, mut buf: &[u8]) -> Result<()> {
+    fn write_all(&mut self, mut buf: &[u8]) -> Result<()> {
         while !buf.is_empty() {
             match self.write(buf) {
                 Ok(0) => return Err(Error::new(ErrorKind::WriteZero,
@@ -977,7 +977,7 @@ pub trait Write {
     /// # Ok(())
     /// # }
     /// ```
-        fn write_fmt(&mut self, fmt: fmt::Arguments) -> Result<()> {
+    fn write_fmt(&mut self, fmt: fmt::Arguments) -> Result<()> {
         // Create a shim which translates a Write to a fmt::Write and saves
         // off I/O errors. instead of discarding them
         struct Adaptor<'a, T: ?Sized + 'a> {
@@ -1025,7 +1025,7 @@ pub trait Write {
     /// # Ok(())
     /// # }
     /// ```
-        fn by_ref(&mut self) -> &mut Self where Self: Sized { self }
+    fn by_ref(&mut self) -> &mut Self where Self: Sized { self }
 
     /// Creates a new writer which will write all data to both this writer and
     /// another writer.
@@ -1101,28 +1101,28 @@ pub trait Seek {
     /// # Errors
     ///
     /// Seeking to a negative offset is considered an error.
-        fn seek(&mut self, pos: SeekFrom) -> Result<u64>;
+    fn seek(&mut self, pos: SeekFrom) -> Result<u64>;
 }
 
 /// Enumeration of possible methods to seek within an I/O object.
 #[derive(Copy, PartialEq, Eq, Clone, Debug)]
 pub enum SeekFrom {
     /// Set the offset to the provided number of bytes.
-        Start(u64),
+    Start(u64),
 
     /// Set the offset to the size of this object plus the specified number of
     /// bytes.
     ///
     /// It is possible to seek beyond the end of an object, but it's an error to
     /// seek before byte 0.
-        End(i64),
+    End(i64),
 
     /// Set the offset to the current position plus the specified number of
     /// bytes.
     ///
     /// It is possible to seek beyond the end of an object, but it's an error to
     /// seek before byte 0.
-        Current(i64),
+    Current(i64),
 }
 
 fn read_until<R: BufRead + ?Sized>(r: &mut R, delim: u8, buf: &mut Vec<u8>)
@@ -1248,7 +1248,7 @@ pub trait BufRead: Read {
     /// // ensure the bytes we worked with aren't returned again later
     /// stdin.consume(length);
     /// ```
-        fn fill_buf(&mut self) -> Result<&[u8]>;
+    fn fill_buf(&mut self) -> Result<&[u8]>;
 
     /// Tells this buffer that `amt` bytes have been consumed from the buffer,
     /// so they should no longer be returned in calls to `read`.
@@ -1269,7 +1269,7 @@ pub trait BufRead: Read {
     ///
     /// Since `consume()` is meant to be used with [`fill_buf()`][fillbuf],
     /// that method's example includes an example of `consume()`.
-        fn consume(&mut self, amt: usize);
+    fn consume(&mut self, amt: usize);
 
     /// Read all bytes into `buf` until the delimiter `byte` is reached.
     ///
@@ -1309,7 +1309,7 @@ pub trait BufRead: Read {
     /// # Ok(())
     /// # }
     /// ```
-        fn read_until(&mut self, byte: u8, buf: &mut Vec<u8>) -> Result<usize> {
+    fn read_until(&mut self, byte: u8, buf: &mut Vec<u8>) -> Result<usize> {
         read_until(self, byte, buf)
     }
 
@@ -1356,7 +1356,7 @@ pub trait BufRead: Read {
     ///     buffer.clear();
     /// }
     /// ```
-        fn read_line(&mut self, buf: &mut String) -> Result<usize> {
+    fn read_line(&mut self, buf: &mut String) -> Result<usize> {
         // Note that we are not calling the `.read_until` method here, but
         // rather our hardcoded implementation. For more details as to why, see
         // the comments in `read_to_end`.
@@ -1388,7 +1388,7 @@ pub trait BufRead: Read {
     ///     println!("{:?}", content.unwrap());
     /// }
     /// ```
-        fn split(self, byte: u8) -> Split<Self> where Self: Sized {
+    fn split(self, byte: u8) -> Split<Self> where Self: Sized {
         Split { buf: self, delim: byte }
     }
 
@@ -1412,7 +1412,7 @@ pub trait BufRead: Read {
     ///     println!("{}", line.unwrap());
     /// }
     /// ```
-        fn lines(self) -> Lines<Self> where Self: Sized {
+    fn lines(self) -> Lines<Self> where Self: Sized {
         Lines { buf: self }
     }
 }
