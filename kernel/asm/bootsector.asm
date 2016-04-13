@@ -23,9 +23,9 @@ boot: ; dl comes with disk
     call print_num
     call print_line
 
-    mov ax, (fs_header - boot) / 512
-    mov bx, fs_header
-    mov cx, (startup_end - fs_header) / 512
+    mov ax, (startup_start - boot) / 512
+    mov bx, startup_start
+    mov cx, (startup_end - startup_start) / 512
     xor dx, dx
     call load
 
