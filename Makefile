@@ -530,7 +530,8 @@ filesystem/apps/zfs/zfs.img:
 	sudo losetup -d /dev/loop0
 
 $(BUILD)/filesystem.gen: apps bins
-	$(FIND) filesystem -type f -o -type l | $(CUT) -d '/' -f2- | $(SORT) | $(AWK) '{printf("file %d,\"%s\"\n", NR, $$0)}' > $@
+	$(FIND) filesystem -type d | $(CUT) -d '/' -f2- | $(SORT) | $(AWK) '{id = $$0; gsub(/[^0-9A-Za-z]/, "_", id); printf("dir %s,\"%s\"\n", id, $$0)}' > $@
+	$(FIND) filesystem -type f -o -type l | $(CUT) -d '/' -f2- | $(SORT) | $(AWK) '{id = $$0; gsub(/[^0-9A-Za-z]/, "_", id); printf("file %s,\"%s\"\n", id, $$0)}' >> $@
 
 $(BUILD)/harddrive.bin: kernel/harddrive.asm $(BUILD)/kernel.bin $(BUILD)/filesystem.gen
 	$(AS) -f bin -o $@ -l $(BUILD)/harddrive.list -D ARCH_$(ARCH) -D TIME="`$(DATE) "+%F %T"`" -i$(BUILD)/ -ikernel/ -ifilesystem/ $<
@@ -603,12 +604,12 @@ ifneq ($(usb),no)
 	endif
 endif
 
-ifeq ($(storage),ide)
-	QFLAGS += -drive file=$(BUILD)/harddrive.bin,format=raw,index=0,media=disk
+ifeq ($(storage),ahci)
+	QFLAGS += -device ahci,id=ahci -drive id=disk,file=$(BUILD)/harddrive.bin,format=raw,if=none -device ide-hd,drive=disk,bus=ahci.0
 else ifeq ($(storage),usb)
 	QFLAGS += -device usb-ehci,id=flash_bus -drive id=flash_drive,file=$(BUILD)/harddrive.bin,format=raw,if=none -device usb-storage,drive=flash_drive,bus=flash_bus.0
 else
-	QFLAGS += -device ahci,id=ahci -drive id=disk,file=$(BUILD)/harddrive.bin,format=raw,if=none -device ide-hd,drive=disk,bus=ahci.0
+	QFLAGS += -drive file=$(BUILD)/harddrive.bin,format=raw,index=0,media=disk
 endif
 
 ifeq ($(net),no)
