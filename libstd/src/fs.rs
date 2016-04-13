@@ -1,10 +1,9 @@
 use core::ops::Deref;
 use core_collections::borrow::ToOwned;
-use io::{self, Read, Error, Result, Write, Seek, SeekFrom};
+use io::{self, BufRead, BufReader, Read, Error, Result, Write, Seek, SeekFrom};
 use os::unix::io::{AsRawFd, FromRawFd, IntoRawFd, RawFd};
 use mem;
 use path::{PathBuf, Path};
-use str;
 use string::String;
 use sys_common::AsInner;
 use vec::Vec;
@@ -267,39 +266,27 @@ impl DirEntry {
 }
 
 pub struct ReadDir {
-    file: File,
+    file: BufReader<File>,
 }
 
 impl Iterator for ReadDir {
     type Item = Result<DirEntry>;
     fn next(&mut self) -> Option<Result<DirEntry>> {
         let mut path = String::new();
-        let mut buf: [u8; 1] = [0; 1];
-        loop {
-            match self.file.read(&mut buf) {
-                Ok(0) => break,
-                Ok(count) => {
-                    if buf[0] == 10 {
-                        break;
-                    } else {
-                        path.push_str(unsafe { str::from_utf8_unchecked(&buf[..count]) });
-                    }
+        match self.file.read_line(&mut path) {
+            Ok(0) => None,
+            Ok(_) => {
+                let dir = path.ends_with('/');
+                if dir {
+                    path.pop();
                 }
-                Err(_err) => break,
-            }
-        }
-        if path.is_empty() {
-            None
-        } else {
-            let dir = path.ends_with('/');
-            if dir {
-                path.pop();
-            }
-            Some(Ok(DirEntry {
-                path: path,
-                dir: dir,
-                file: !dir,
-            }))
+                Some(Ok(DirEntry {
+                    path: path,
+                    dir: dir,
+                    file: !dir,
+                }))
+            },
+            Err(err) => Some(Err(err))
         }
     }
 }
@@ -356,7 +343,7 @@ pub fn rename<P: AsRef<Path>, Q: AsRef<Path>>(from: P, to: Q) -> Result<()> {
 }
 
 pub fn read_dir<P: AsRef<Path>>(path: P) -> Result<ReadDir> {
-    File::open(path).map(|file| ReadDir { file: file })
+    File::open(path).map(|file| ReadDir { file: BufReader::new(file) })
 }
 
 pub fn remove_dir<P: AsRef<Path>>(path: P) -> Result<()> {
