@@ -1,5 +1,3 @@
-pub mod redoxfs;
-
 pub use self::kscheme::KScheme;
 pub use self::resource::{Resource, ResourceSeek};
 pub use self::scheme::Scheme;
