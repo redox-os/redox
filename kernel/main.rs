@@ -260,7 +260,7 @@ static BSS_TEST_NONZERO: usize = !0;
 /// This will initialize the kernel: the environment, the memory allocator, the memory pager, PCI and so
 /// on.
 ///
-/// Note that this will not start the even loop.
+/// Note that this will not start the event loop.
 unsafe fn init(tss_data: usize) {
 
     // Test
