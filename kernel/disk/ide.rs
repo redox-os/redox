@@ -372,10 +372,10 @@ impl IdeDisk {
                           ((destination.read(103) as u64) << 48);
 
         if sectors == 0 {
-            debugln!(" 28-bit LBA");
+            debug!(" 28-bit LBA");
             sectors = (destination.read(60) as u64) | ((destination.read(61) as u64) << 16);
         } else {
-            debugln!(" 48-bit LBA");
+            debug!(" 48-bit LBA");
         }
 
         debug!(" Size: {} MB", (sectors / 2048) as usize);
