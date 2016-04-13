@@ -529,11 +529,18 @@ filesystem/apps/zfs/zfs.img:
 	-sudo zpool destroy redox_zfs
 	sudo losetup -d /dev/loop0
 
-$(BUILD)/filesystem.gen: apps bins
-	$(FIND) filesystem -type d | $(CUT) -d '/' -f2- | $(SORT) | $(AWK) '{id = $$0; gsub(/[^0-9A-Za-z]/, "_", id); printf("dir %s,\"%s\"\n", id, $$0)}' > $@
-	$(FIND) filesystem -type f -o -type l | $(CUT) -d '/' -f2- | $(SORT) | $(AWK) '{id = $$0; gsub(/[^0-9A-Za-z]/, "_", id); printf("file %s,\"%s\"\n", id, $$0)}' >> $@
+$(BUILD)/filesystem.bin: apps bins
+	rm -rf $@ $(BUILD)/filesystem/
+	echo exit | cargo run --manifest-path crates/redoxfs/Cargo.toml --bin redoxfs-utility $@
+	mkdir -p $(BUILD)/filesystem/
+	cargo run --manifest-path crates/redoxfs/Cargo.toml --bin redoxfs-fuse $@ $(BUILD)/filesystem/ &
+	sleep 5
+	-cp -rL filesystem/* $(BUILD)/filesystem/
+	sync
+	-fusermount -u $(BUILD)/filesystem/
+	rm -rf $(BUILD)/filesystem/
 
-$(BUILD)/harddrive.bin: kernel/harddrive.asm $(BUILD)/kernel.bin $(BUILD)/filesystem.gen
+$(BUILD)/harddrive.bin: kernel/harddrive.asm $(BUILD)/kernel.bin $(BUILD)/filesystem.bin
 	$(AS) -f bin -o $@ -l $(BUILD)/harddrive.list -D ARCH_$(ARCH) -D TIME="`$(DATE) "+%F %T"`" -i$(BUILD)/ -ikernel/ -ifilesystem/ $<
 
 virtualbox: $(BUILD)/harddrive.bin
