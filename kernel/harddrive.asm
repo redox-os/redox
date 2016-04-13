@@ -8,7 +8,7 @@ fs_header:
 .uuid:
     db "0123456789ABCDEF"
 .size:
-    dq fs_free_space - boot
+    dq fs_free_space.end - boot
 .root:
     dq (fs_root_node - boot) /512
 .free:
@@ -73,8 +73,28 @@ fs_free_node:
 .end:
 
 fs_root_node_list:
-%macro file 2+
-    fs_node.%1:
+%macro dir 2
+    fs_dir_node.%1:
+    .mode:
+        dw 0x4000
+    .user:
+        dw 0
+    .group:
+        dw 0
+    .name:
+        db %2,0
+        align 256, db 0
+    .parent:
+        dq (fs_root_node - boot) / 512
+    .next:
+        dq 0
+    .extents:
+        align 512, db 0
+    .end:
+%endmacro
+
+%macro file 2
+    fs_file_node.%1:
     .mode:
         dw 0x8000
     .user:
@@ -97,10 +117,14 @@ fs_root_node_list:
 
 %include "filesystem.gen"
 
-%unmacro file 2+
+%unmacro dir 2
+%unmacro file 2
 fs_root_node_list.end:
 
-%macro file 2+
+%macro dir 2
+%endmacro
+
+%macro file 2
 fs_data.%1:
     incbin %2
 .end:
@@ -109,7 +133,8 @@ fs_data.%1:
 
 %include "filesystem.gen"
 
-%unmacro file 2+
+%unmacro dir 2
+%unmacro file 2
 
     align 512, db 0
 fs_free_space:
