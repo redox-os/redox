@@ -500,7 +500,7 @@ impl ContextZone {
     /// Translate to physical if a ptr is inside of the mapped memory
     pub fn translate(&self, ptr: usize, len: usize) -> Option<usize> {
         for mem in self.memory.iter() {
-            if ptr >= mem.virtual_address && ptr + len < mem.virtual_address + mem.virtual_size {
+            if ptr >= mem.virtual_address && ptr + len <= mem.virtual_address + mem.virtual_size {
                 return Some(ptr - mem.virtual_address + mem.physical_address);
             }
         }
