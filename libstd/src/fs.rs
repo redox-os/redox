@@ -367,3 +367,4 @@ pub fn remove_file<P: AsRef<Path>>(path: P) -> Result<()> {
         sys_unlink(path_c.as_ptr()).and(Ok(()))
     }.map_err(|x| Error::from_sys(x))
 }
+
