@@ -313,7 +313,7 @@ RAW MODE
                 if key_event.pressed {
                     if self.raw_mode {
                         match key_event.scancode {
-                            event::K_BKSP => self.command.push_str("\x08"),
+                            event::K_BKSP => self.command.push_str("\x7F"),
                             event::K_UP => self.command.push_str("\x1B[A"),
                             event::K_DOWN => self.command.push_str("\x1B[B"),
                             event::K_RIGHT => self.command.push_str("\x1B[C"),
