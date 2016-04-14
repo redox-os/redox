@@ -8,7 +8,6 @@
 #![crate_name="std"]
 #![crate_type="rlib"]
 #![feature(alloc)]
-#![feature(allocator)]
 #![feature(allow_internal_unstable)]
 #![feature(asm)]
 #![feature(associated_consts)]
@@ -49,6 +48,8 @@
 // TODO
 //#![deny(missing_docs)]
 #![deny(warnings)]
+
+extern crate alloc_malloc;
 
 // STD COPY {
 // We want to reexport a few macros from core but libcore has already been
@@ -184,8 +185,6 @@ pub use core_rand as rand;
 // } STD COPY
 
 pub use rand_old::*;
-
-pub mod alloc_system;
 
 pub mod panic;
 
