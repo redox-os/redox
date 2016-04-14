@@ -283,7 +283,7 @@ initfs/bin/init: crates/init/main.rs crates/init/*.rs $(BUILD)/libstd.rlib
 	mkdir -p initfs/bin/
 	$(RUSTC) $(RUSTCFLAGS) --crate-type bin -o $@ $<
 
-initfs/bin/redoxfsd: crates/redoxfs/scheme/main.rs crates/redoxfs/scheme/*.rs $(BUILD)/libredoxfs.rlib
+initfs/bin/redoxfsd: crates/redoxfs/scheme/main.rs crates/redoxfs/scheme/*.rs crates/redoxfs/scheme/*/*.rs $(BUILD)/libredoxfs.rlib
 	mkdir -p initfs/bin/
 	$(RUSTC) $(RUSTCFLAGS) --crate-type bin -o $@ $<
 
