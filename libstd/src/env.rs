@@ -10,6 +10,8 @@ use path::{Path, PathBuf};
 use string::{String, ToString};
 use sys_common::AsInner;
 use vec::Vec;
+use error;
+use fmt;
 
 use system::error::ENOENT;
 use system::syscall::sys_chdir;
@@ -18,6 +20,7 @@ use io::{Error, Result, Read, Write};
 
 static mut _args: *mut Vec<&'static str> = 0 as *mut Vec<&'static str>;
 
+/// An iterator over the arguments of a process, yielding a `String` value for each argument.
 pub struct Args {
     i: usize
 }
@@ -127,9 +130,32 @@ pub fn set_current_dir<P: AsRef<Path>>(path: P) -> Result<()> {
     }
 }
 
+/// Possible errors from the `env::var` method.
+#[derive(Debug)]
 pub enum VarError {
+    /// The specified environment variable was not set.
     NotPresent,
+    /// The key or the value of the specified environment variable did not contain valid Unicode
+    /// data.
     NotUnicode(OsString),
+}
+
+impl fmt::Display for VarError {
+    fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
+        match *self {
+            VarError::NotPresent => write!(f, "environment variable not found"),
+            VarError::NotUnicode(ref s) => write!(f, "environment variable was not valid unicode: {:?}", s)
+        }
+    }
+}
+
+impl error::Error for VarError {
+    fn description(&self) -> &str {
+        match *self {
+            VarError::NotPresent => "environment variable not found",
+            VarError::NotUnicode(_) => "environment variable was not valid unicode"
+        }
+    }
 }
 
 /// Returns the environment variable `key` from the current process. If `key` is not valid Unicode
@@ -145,6 +171,8 @@ pub fn var<K: AsRef<OsStr>>(key: K) -> ::core::result::Result<String, VarError> 
     }
 }
 
+/// Fetches the environment variable `key` from the current process, returning `None` if the
+/// variable isn't set.
 pub fn var_os<K: AsRef<OsStr>>(key: K) -> Option<OsString> {
     if let Ok(value) = var(key) {
         Some((value.as_ref() as &OsStr).to_owned())
@@ -169,6 +197,8 @@ pub fn remove_var<K: AsRef<OsStr>>(key: K) {
     }
 }
 
+/// An iterator over the snapshot of the environment variables of this process.
+/// This iterator is created through `std::env::vars() and yields (String, String) pairs.`
 pub struct Vars {
     vars: Vec<(String, String)>,
     pos: usize
