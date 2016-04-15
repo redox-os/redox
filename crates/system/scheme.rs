@@ -39,6 +39,7 @@ pub trait Scheme {
             SYS_OPEN => self.open(c_string_to_str(packet.b as *const u8), packet.c, packet.d),
             SYS_MKDIR => self.mkdir(c_string_to_str(packet.b as *const u8), packet.c),
             SYS_RMDIR => self.rmdir(c_string_to_str(packet.b as *const u8)),
+            SYS_STAT => self.stat(c_string_to_str(packet.b as *const u8), unsafe { &mut *(packet.c as *mut Stat) }),
             SYS_UNLINK => self.unlink(c_string_to_str(packet.b as *const u8)),
 
             SYS_READ => self.read(packet.b, unsafe { slice::from_raw_parts_mut(packet.c as *mut u8, packet.d) }),
@@ -68,6 +69,11 @@ pub trait Scheme {
 
     #[allow(unused_variables)]
     fn rmdir(&mut self, path: &str) -> Result<usize> {
+        Err(Error::new(ENOENT))
+    }
+
+    #[allow(unused_variables)]
+    fn stat(&mut self, path: &str, stat: &mut Stat) -> Result<usize> {
         Err(Error::new(ENOENT))
     }
 
