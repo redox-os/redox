@@ -540,7 +540,7 @@ $(BUILD)/filesystem.bin: apps bins
 	echo exit | cargo run --manifest-path crates/redoxfs/Cargo.toml --bin redoxfs-utility $@
 	mkdir -p $(BUILD)/filesystem/
 	cargo run --manifest-path crates/redoxfs/Cargo.toml --bin redoxfs-fuse $@ $(BUILD)/filesystem/ &
-	sleep 5
+	sleep 2
 	-cp -rL filesystem/* $(BUILD)/filesystem/
 	sync
 	-fusermount -u $(BUILD)/filesystem/
