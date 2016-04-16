@@ -24,6 +24,7 @@ BASENAME=basename
 CUT=cut
 DATE=date
 FIND=find
+FUMOUNT=fusermount -u
 LD=ld
 LDARGS=-m elf_$(ARCH)
 MAKE=make
@@ -46,6 +47,7 @@ VBM_CLEANUP=\
 
 UNAME := $(shell uname)
 ifeq ($(UNAME),Darwin)
+	FUMOUNT=umount
 	LD=$(ARCH)-elf-ld
 	OBJDUMP=$(ARCH)-elf-objdump
 	CARGOFLAGS += -C ar=$(ARCH)-elf-ar -C linker=$(ARCH)-elf-gcc
@@ -543,7 +545,7 @@ $(BUILD)/filesystem.bin: apps bins
 	sleep 2
 	-cp -rL filesystem/* $(BUILD)/filesystem/
 	sync
-	-fusermount -u $(BUILD)/filesystem/
+	-$(FUMOUNT) $(BUILD)/filesystem/
 	rm -rf $(BUILD)/filesystem/
 
 $(BUILD)/harddrive.bin: kernel/harddrive.asm $(BUILD)/kernel.bin $(BUILD)/filesystem.bin
