@@ -348,7 +348,13 @@ unsafe fn init(tss_data: usize) {
 
             env.console.lock().draw = true;
 
-            debugln!("Redox {} bits", mem::size_of::<usize>() * 8);
+            debugln!("\x1B[1mRedox {} bits\x1B[0m", mem::size_of::<usize>() * 8);
+            debugln!("  * text={:X}:{:X} rodata={:X}:{:X}",
+                    & __text_start as *const u8 as usize, & __text_end as *const u8 as usize,
+                    & __rodata_start as *const u8 as usize, & __rodata_end as *const u8 as usize);
+            debugln!("  * data={:X}:{:X} bss={:X}:{:X}",
+                    & __data_start as *const u8 as usize, & __data_end as *const u8 as usize,
+                    & __bss_start as *const u8 as usize, & __bss_end as *const u8 as usize);
 
             if let Some(acpi) = Acpi::new() {
                 env.schemes.lock().push(acpi);
