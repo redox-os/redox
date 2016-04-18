@@ -169,7 +169,7 @@ pub unsafe fn context_switch() {
                         if next.kernel_stack > 0 {
                             tss.sp0 = next.kernel_stack + CONTEXT_STACK_SIZE - 128;
                         } else {
-                            tss.sp0 = 0x100000 - 128;
+                            tss.sp0 = 0x800000 - 128;
                         }
                     }
 
