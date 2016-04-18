@@ -283,7 +283,7 @@ initfs/bin/init: crates/init/main.rs crates/init/*.rs $(BUILD)/libstd.rlib
 	mkdir -p initfs/bin/
 	$(RUSTC) $(RUSTCFLAGS) --crate-type bin -o $@ $<
 
-initfs/bin/redoxfsd: crates/redoxfs/scheme/main.rs crates/redoxfs/scheme/*.rs $(BUILD)/libstd.rlib $(BUILD)/libredoxfs.rlib
+initfs/bin/redoxfsd: crates/redoxfs/scheme/main.rs crates/redoxfs/scheme/*.rs $(BUILD)/libredoxfs.rlib
 	mkdir -p initfs/bin/
 	$(RUSTC) $(RUSTCFLAGS) --crate-type bin -o $@ $<
 
@@ -465,7 +465,7 @@ $(BUILD)/libio.rlib: crates/io/lib.rs crates/io/*.rs $(BUILD)/libcore.rlib
 $(BUILD)/libsystem.rlib: crates/system/lib.rs crates/system/*.rs crates/system/*/*.rs $(BUILD)/libcore.rlib
 	$(RUSTC) $(RUSTCFLAGS) -o $@ $<
 
-$(BUILD)/libredoxfs.rlib: crates/redoxfs/src/lib.rs crates/redoxfs/src/*.rs $(BUILD)/libsystem.rlib $(BUILD)/liballoc.rlib $(BUILD)/libcollections.rlib
+$(BUILD)/libredoxfs.rlib: crates/redoxfs/src/lib.rs crates/redoxfs/src/*.rs $(BUILD)/libstd.rlib
 	$(RUSTC) $(RUSTCFLAGS) -o $@ $<
 
 $(BUILD)/kernel.rlib: kernel/main.rs kernel/*.rs kernel/*/*.rs kernel/*/*/*.rs  $(BUILD)/libio.rlib build/initfs.gen
