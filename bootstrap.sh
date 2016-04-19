@@ -5,6 +5,11 @@ banner() {
 	echo "|------------------------------------------|"
 }
 
+gitClone() {
+	git clone https://github.com/redox-os/redox.git --origin upstream --recursive
+	git submodule update --recursive --init
+}
+
 osx()
 {
 	echo "Detected OSX!"
@@ -41,15 +46,11 @@ osx()
 			exit
 		fi
 	fi
-	echo "Cloning Redox repo"
-	git clone -b "$1" --recursive https://github.com/redox-os/redox.git
 	echo "Running Redox setup script..."
 	brew tap homebrew/versions
 	brew install gcc49
 	brew tap Nashenas88/homebrew-gcc_cross_compilers
-	brew install i386-elf-binutils i386-elf-gcc nasm
-	echo "Running rust install script"
-	sh redox/setup/binary.sh
+	brew install i386-elf-binutils i386-elf-gcc nasm osxfuse
 	endMessage
 }
 
@@ -58,14 +59,17 @@ archLinux()
 	echo "Detected Arch Linux"
 	echo "Updating system..."
 	sudo pacman -Syu
-    if [ -z "$(which nasm)" ]; then
-        echo "Installing nasm..."
-        sudo pacman -S nasm
-    fi
+
+  if [ -z "$(which nasm)" ]; then
+      echo "Installing nasm..."
+      sudo pacman -S nasm
+  fi
+
 	if [ -z "$(which git)" ]; then
 		echo "Installing git..."
 		sudo pacman -S git
 	fi
+
 	if [ "$2" == "qemu" ]; then
 		if [ -z "$(which qemu-system-i386)" ]; then
 			echo "Installing QEMU..."
@@ -74,12 +78,11 @@ archLinux()
 			echo "QEMU already installed!"
 		fi
 	fi
-	echo "Cloning redox repo..."
-	git clone -b "$1" --recursive https://github.com/redox-os/redox.git
+
+	echo "Installing fuse..."
+	sudo pacman -S fuse
 	echo "Running Redox setup scripts..."
 	sh redox/setup/arch.sh
-	echo "Running rust installer..."
-	sh redox/setup/binary.sh
 }
 
 ubuntu()
@@ -88,7 +91,7 @@ ubuntu()
 	echo "Updating system..."
 	sudo "$3" update
 	echo "Installing required packages..."
-	sudo "$3" install build-essential libc6-dev-i386 nasm curl file git
+	sudo "$3" install build-essential libc6-dev-i386 nasm curl file git libfuse-dev
 	if [ "$2" == "qemu" ]; then
 		if [ -z "$(which qemu-system-i386)" ]; then
 			echo "Installing QEMU..."
@@ -105,15 +108,13 @@ ubuntu()
 		fi
 	fi
 	echo "Cloning Redox repo"
-	git clone -b "$1" --recursive https://github.com/redox-os/redox.git
-	echo "Running rust installer..."
-	sh redox/setup/binary.sh
+	gitClone
 }
 
 fedora()
 {
 	echo "Detected Fedora"
-    	if [ -z "$(which git)" ]; then
+  if [ -z "$(which git)" ]; then
 		echo "Installing git..."
 		sudo yum install git-all
 	fi
@@ -133,11 +134,9 @@ fedora()
 		fi
 	fi
 	echo "Cloning Redox repo"
-	git clone -b "$1" --recursive https://github.com/redox-os/redox.git
+	gitClone
 	echo "Installing necessary build tools..."
-	sudo dnf install gcc gcc-c++ glibc-devel.i686 nasm make
-	echo "Running rust installer"
-	sh redox/setup/binary.sh
+	sudo dnf install gcc gcc-c++ glibc-devel.i686 nasm make libfuse-dev
 }
 
 suse()
@@ -164,11 +163,9 @@ suse()
 		fi
 	fi
 	echo "Cloning Redox repo..."
-	git clone -b "$1" --recursive https://github.com/redox-os/redox.git
+	gitClone
 	echo "Installing necessary build tools..."
-	sudo zypper install gcc gcc-c++ glibc-devel-32bit nasm make
-	echo "Running rust installer"
-	sh redox/setup/binary.sh
+	sudo zypper install gcc gcc-c++ glibc-devel-32bit nasm make libfuse
 }
 
 gentoo()
@@ -182,6 +179,8 @@ gentoo()
 		echo "Installing git..."
 		sudo emerge dev-vcs/git
 	fi
+	echo "Installing fuse..."
+	sudo emerge sys-fs/fuse
 	if [ "$2" == "qemu" ]; then
 		if [ -z "$(which qemu-system-i386)" ]; then
 			echo "Please install QEMU and re-run this script"
@@ -191,10 +190,6 @@ gentoo()
 			echo "QEMU already installed!"
 		fi
 	fi
-	echo "Cloning redox repo..."
-	git clone -b "$1" --recursive https://github.com/redox-os/redox.git
-	echo "Running rust installer..."
-	sh redox/setup/binary.sh
 }
 
 usage()
@@ -218,26 +213,70 @@ usage()
 	exit
 }
 
-updater()
-{
-	git pull origin "$1"
-	sh setup/binary.sh
-	exit
+rustInstall() {
+	if [ -z "$(which multirust)" ]; then
+		echo "You do not have multirust installed."
+		echo "We HIGHLY reccomend using multirust."
+		echo "Would you like to install it now?"
+		printf "(y/N): "
+		read mrust
+		if echo "$mrust" | grep -iq "^y" ;then
+			#install multirust
+			echo "Multirust will be installed!"
+			curl -sf https://raw.githubusercontent.com/brson/multirust/master/quick-install.sh | sh
+			multirust override nightly
+		else
+			echo "Multirust will not be installed!"
+		fi
+	fi
+	if [ -z "$(which rustc)" ]; then
+		echo "Rust is not installed"
+		echo "Please either run the script again, accepting multirust install"
+		echo "or install rustc nightly manually (not reccomended) via:"
+		echo "\#curl -sSf https://static.rust-lang.org/rustup.sh | sh -s -- --channel=nightly"
+		exit 1
+	fi
+	if echo "$(rustc --version)" | grep -iq "nightly" ;then
+		echo "It appears that you have rust installed, but it"
+		echo "is not the nightly version, please either install"
+		echo "the nightly manually (not reccomended) or run this"
+		echo "script again, accepting the multirust install"
+	fi
+}
+
+statusCheck() {
+	for i in $(echo "$(curl -sf https://api.travis-ci.org/repositories/redox-os/redox.json)" | tr "," "\n")
+	do
+	  if echo "$i" | grep -iq "last_build_status" ;then
+	    if echo "$i" | grep -iq 0 ;then
+				echo "********************************************"
+	      echo "Travis reports that the last build succeded!"
+	      echo "Looks like you are good to go!"
+				echo "********************************************"
+	    else
+				echo "**************************************************"
+	      echo "Travis reports that the last build *FAILED* :("
+	      echo "Might want to check out the issues before building"
+				echo "**************************************************"
+	    fi
+	  fi
+	done
 }
 
 endMessage()
 {
+	echo "Cloning github repo..."
+	gitClone
+	rustInstall
 	echo "Cleaning up..."
 	rm bootstrap.sh
 	echo "---------------------------------------"
 	echo "Well it looks like you are ready to go!"
 	echo "---------------------------------------"
+	statusCheck
 	echo "		cd redox"
 	echo "		make all"
 	echo "		make virtualbox or qemu"
-	echo
-	echo "If make qemu fails complaining about kvm"
-	echo "run \'make qemu kvm=no\'"
 	echo
 	echo "      Good luck!"
 
@@ -248,20 +287,16 @@ if [ "$1" == "-h" ]; then
 fi
 
 if [ "$1" == "-u" ]; then
-	if [ -n "$2" ]; then
-		updater "$2"
-	else
-		updater "master"
-	fi
+	git pull origin master
+	multirust update nightly
+	exit
 fi
 
-branch="master"
 emulator="qemu"
 defpackman="apt-get"
-while getopts ":b:e:p:" opt
+while getopts ":e:p:" opt
 do
 	case "$opt" in
-		b) branch="$OPTARG";;
 		e) emulator="$OPTARG";;
 		p) defpackman="$OPTARG";;
 		\?) echo "I don't know what to do with that option, try -h for help"; exit;;
@@ -270,11 +305,27 @@ done
 
 banner
 if [ "Darwin" == "$(uname -s)" ]; then
-	osx "$branch" "$emulator"
+	osx "$emulator"
 else
-	which pacman && { archLinux "$branch" "$emulator"; endMessage; }
-	which apt-get && { ubuntu "$branch" "$emulator" "$defpackman"; endMessage; }
-	which yum && { fedora "$branch" "$emulator"; endMessage; }
-	which zypper && { suse "$branch" "$emulator"; endMessage; }
-	which emerge && { gentoo "$branch" "$emulator"; endMessage; }
+	# Arch linux
+	if hash 2>/dev/null pacman; then
+		archLinux "$emulator"
+	fi
+	# Debian or any derivative of it
+	if hash 2>/dev/null apt-get; then
+		ubuntu "$emulator" "$defpackman"
+	fi
+	# Fedora
+	if hash 2>/dev/null yum; then
+		fedora "$emulator"
+	fi
+	# Suse and derivatives
+	if hash 2>/dev/null zypper; then
+		suse "$emulator"
+	fi
+	# Gentoo
+	if hash 2>/dev/null emerge; then
+		gentoo "$emulator"
+ 	fi
 fi
+endMessage
