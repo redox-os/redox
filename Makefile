@@ -128,7 +128,7 @@ apps:     filesystem/apps/calculator/main.bin \
 $(BUILD)/libextra.rlib: crates/extra/src/lib.rs crates/extra/src/*.rs $(BUILD)/libstd.rlib
 	$(RUSTC) $(RUSTCFLAGS) --crate-name extra --crate-type lib -o $@ $<
 
-$(BUILD)/libmalloc.rlib: crates/malloc/src/lib.rs crates/malloc/src/*.rs $(BUILD)/libstd.rlib $(BUILD)/libextra.rlib $(BUILD)/libsystem.rlib
+$(BUILD)/libralloc.rlib: crates/ralloc/src/lib.rs crates/ralloc/src/*.rs $(BUILD)/libstd.rlib $(BUILD)/libextra.rlib $(BUILD)/libsystem.rlib
 	$(RUSTC) $(RUSTCFLAGS) --crate-name extra --crate-type lib -o $@ $<
 
 filesystem/bin/%: crates/coreutils/src/bin/%.rs $(BUILD)/libextra.rlib
@@ -386,8 +386,8 @@ doc/kernel: kernel/main.rs kernel/*.rs kernel/*/*.rs kernel/*/*/*.rs $(BUILD)/ke
 doc/extra: crates/extra/src/lib.rs crates/extra/src/*.rs $(BUILD)/libextra.rlib
 	$(RUSTDOC) --crate-name=extra $<
 
-doc/malloc: crates/malloc/src/lib.rs crates/malloc/src/*.rs $(BUILD)/libmalloc.rlib
-	$(RUSTDOC) --crate-name=malloc $<
+doc/ralloc: crates/ralloc/src/lib.rs crates/ralloc/src/*.rs $(BUILD)/libralloc.rlib
+	$(RUSTDOC) --crate-name=ralloc $<
 
 doc/binutils: crates/binutils/src/lib.rs crates/binutils/src/*.rs $(BUILD)/libbinutils.rlib
 	$(RUSTDOC) --crate-name=binutils $<
@@ -407,7 +407,7 @@ doc/sodium: filesystem/apps/sodium/src/main.rs filesystem/apps/sodium/src/*.rs f
 doc/std: libstd/src/lib.rs libstd/src/*.rs libstd/src/*/*.rs libstd/src/*/*/*.rs $(BUILD)/libstd.rlib doc/rand doc/system doc/alloc_malloc
 	$(RUSTDOC) --crate-name=std $<
 
-doc: doc/kernel doc/std doc/extra doc/malloc doc/orbclient doc/orbtk doc/sodium doc/binutils
+doc: doc/kernel doc/std doc/extra doc/ralloc doc/orbclient doc/orbtk doc/sodium doc/binutils
 
 man: filesystem/man
 
