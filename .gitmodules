@@ -49,12 +49,12 @@
 [submodule "crates/pixelcannon"]
 	path = crates/pixelcannon
 	url = https://github.com/jackpot51/pixelcannon.git
-[submodule "crates/malloc"]
-	path = crates/malloc
-	url = https://github.com/redox-os/libmalloc.git
 [submodule "crates/tetrahedrane"]
 	path = crates/tetrahedrane
 	url = https://github.com/ca1ek/tetrahedrane.git
 [submodule "crates/rusttype"]
 	path = crates/rusttype
 	url = https://github.com/jackpot51/rusttype.git
+[submodule "crates/ralloc"]
+	path = crates/ralloc
+	url = https://github.com/redox-os/ralloc.git

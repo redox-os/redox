@@ -224,7 +224,7 @@ filesystem/bin/%: libc/bin/%
 	cp $< $@
 
 $(BUILD)/examples/rusttype.bin: FORCE $(BUILD)/libstd.rlib
-	$(CARGO) --manifest-path crates/rusttype/Cargo.toml --example rusttype $(CARGOFLAGS) -C lto
+	$(CARGO) --manifest-path crates/rusttype/Cargo.toml --example rusttype $(CARGOFLAGS)
 
 filesystem/bin/rusttype: $(BUILD)/examples/rusttype.bin
 	mkdir -p filesystem/bin
