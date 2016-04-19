@@ -68,6 +68,9 @@ impl KScheme for ContextScheme {
                 if context.wake.is_some() {
                     flags_string.push('S');
                 }
+                if context.supervised {
+                    flags_string.push('T');
+                }
 
                 string.push_str(&format!("{:<6}{:<6}{:<8}{:<8}{:<8}{:<6}{:<6}{:<6}{}\n",
                                    context.pid,
