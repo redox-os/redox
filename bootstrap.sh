@@ -20,7 +20,7 @@ osx()
 			echo "Now installing git..."
 			brew install git
 		fi
-		if [ "$2" == "qemu" ]; then
+		if [ "$1" == "qemu" ]; then
 			if [ -z "$(which qemu-system-i386)" ]; then
 				echo "Installing qemu..."
 				brew install qemu
@@ -71,7 +71,7 @@ archLinux()
 		sudo pacman -S git
 	fi
 
-	if [ "$2" == "qemu" ]; then
+	if [ "$1" == "qemu" ]; then
 		if [ -z "$(which qemu-system-i386)" ]; then
 			echo "Installing QEMU..."
 			sudo pacman -S qemu
@@ -90,20 +90,20 @@ ubuntu()
 {
 	echo "Detected Ubuntu/Debian"
 	echo "Updating system..."
-	sudo "$3" update
+	sudo "$2" update
 	echo "Installing required packages..."
-	sudo "$3" install build-essential libc6-dev-i386 nasm curl file git libfuse-dev
-	if [ "$2" == "qemu" ]; then
+	sudo "$2" install build-essential libc6-dev-i386 nasm curl file git libfuse-dev
+	if [ "$1" == "qemu" ]; then
 		if [ -z "$(which qemu-system-i386)" ]; then
 			echo "Installing QEMU..."
-			sudo "$3" install qemu-system-x86 qemu-kvm
+			sudo "$2" install qemu-system-x86 qemu-kvm
 		else
 			echo "QEMU already installed!"
 		fi
 	else
 		if [ -z "$(which virtualbox)" ]; then
 			echo "Installing Virtualbox..."
-			sudo "$3" install virtualbox
+			sudo "$2" install virtualbox
 		else
 			echo "Virtualbox already installed!"
 		fi
@@ -119,7 +119,7 @@ fedora()
 		echo "Installing git..."
 		sudo yum install git-all
 	fi
-	if [ "$2" == "qemu" ]; then
+	if [ "$1" == "qemu" ]; then
 		if [ -z "$(which qemu-system-i386)" ]; then
 			echo "Installing QEMU..."
 			sudo yum install qemu-system-x86 qemu-kvm
@@ -147,7 +147,7 @@ suse()
 		echo "Installing git..."
 		zypper install git
 	fi
-	if [ "$2" == "qemu" ]; then
+	if [ "$1" == "qemu" ]; then
 		if [ -z "$(which qemu-system-i386)" ]; then
 			echo "Installing QEMU..."
 			sudo zypper install qemu-x86 qemu-kvm
