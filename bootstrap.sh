@@ -237,11 +237,15 @@ rustInstall() {
 		echo "\#curl -sSf https://static.rust-lang.org/rustup.sh | sh -s -- --channel=nightly"
 		exit 1
 	fi
-	if echo "$(rustc --version)" | grep -iq "nightly" ;then
+	if echo "$(rustc --version)" | grep -viq "nightly" ;then
 		echo "It appears that you have rust installed, but it"
 		echo "is not the nightly version, please either install"
 		echo "the nightly manually (not reccomended) or run this"
-		echo "script again, accepting the multirust install\n"
+		echo "script again, accepting the multirust install"
+		echo
+	else
+		echo "Your rust install looks good!"
+		echo
 	fi
 }
 
@@ -249,13 +253,15 @@ statusCheck() {
 	for i in $(echo "$(curl -sf https://api.travis-ci.org/repositories/redox-os/redox.json)" | tr "," "\n")
 	do
 	  if echo "$i" | grep -iq "last_build_status" ;then
-	    if echo "$i" | grep -iq 0 ;then
-				echo "\n\n********************************************"
+	    if echo "$i" | grep -iq "0" ;then
+				echo; echo;
+				echo "********************************************"
 	      echo "Travis reports that the last build succeded!"
 	      echo "Looks like you are good to go!"
 				echo "********************************************"
 	    else
-				echo "\n\n\**************************************************"
+				echo; echo;
+				echo "**************************************************"
 	      echo "Travis reports that the last build *FAILED* :("
 	      echo "Might want to check out the issues before building"
 				echo "**************************************************"
@@ -271,7 +277,8 @@ endMessage()
 	rustInstall
 	echo "Cleaning up..."
 	rm bootstrap.sh
-	echo "\n---------------------------------------"
+	echo
+	echo "---------------------------------------"
 	echo "Well it looks like you are ready to go!"
 	echo "---------------------------------------"
 	statusCheck
