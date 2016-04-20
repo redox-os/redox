@@ -619,12 +619,12 @@ ifneq ($(usb),no)
 	endif
 endif
 
-ifeq ($(storage),ahci)
-	QFLAGS += -device ahci,id=ahci -drive id=disk,file=$(BUILD)/harddrive.bin,format=raw,if=none -device ide-hd,drive=disk,bus=ahci.0
+ifeq ($(storage),ide)
+	QFLAGS += -drive file=$(BUILD)/harddrive.bin,format=raw,index=0,media=disk
 else ifeq ($(storage),usb)
 	QFLAGS += -device usb-ehci,id=flash_bus -drive id=flash_drive,file=$(BUILD)/harddrive.bin,format=raw,if=none -device usb-storage,drive=flash_drive,bus=flash_bus.0
 else
-	QFLAGS += -drive file=$(BUILD)/harddrive.bin,format=raw,index=0,media=disk
+	QFLAGS += -device ahci,id=ahci -drive id=disk,file=$(BUILD)/harddrive.bin,format=raw,if=none -device ide-hd,drive=disk,bus=ahci.0
 endif
 
 ifeq ($(net),no)
