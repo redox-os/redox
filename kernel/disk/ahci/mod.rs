@@ -56,7 +56,7 @@ impl AhciDisk {
         AhciDisk {
             port: &mut unsafe { &mut *(base as *mut HbaMem) }.ports[port_index],
             port_index: port_index,
-            size: 0
+            size: 1024*1024*1024 //TODO: Get actual value
         }
     }
 }
