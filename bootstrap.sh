@@ -82,8 +82,6 @@ archLinux()
 
 	echo "Installing fuse..."
 	sudo pacman -S fuse
-	echo "Running Redox setup scripts..."
-	sh redox/setup/arch.sh
 }
 
 ubuntu()
@@ -108,8 +106,6 @@ ubuntu()
 			echo "Virtualbox already installed!"
 		fi
 	fi
-	echo "Cloning Redox repo"
-	gitClone
 }
 
 fedora()
@@ -134,8 +130,6 @@ fedora()
 			echo "Virtualbox already installed!"
 		fi
 	fi
-	echo "Cloning Redox repo"
-	gitClone
 	echo "Installing necessary build tools..."
 	sudo dnf install gcc gcc-c++ glibc-devel.i686 nasm make libfuse-dev
 }
@@ -163,8 +157,6 @@ suse()
 			echo "Virtualbox already installed!"
 		fi
 	fi
-	echo "Cloning Redox repo..."
-	gitClone
 	echo "Installing necessary build tools..."
 	sudo zypper install gcc gcc-c++ glibc-devel-32bit nasm make libfuse
 }
@@ -202,7 +194,6 @@ usage()
 	echo "OPTIONS:"
 	echo
 	echo "   -h,--help      Show this prompt"
-	echo "   -b [branch]    Specify a branch of redox to clone"
 	echo "   -u [branch]    Update git repo and update rust"
 	echo "                  If blank defaults to master"
 	echo "   -e [emulator]  Install specific emulator, virtualbox or qemu"
@@ -296,6 +287,7 @@ fi
 
 if [ "$1" == "-u" ]; then
 	git pull origin master
+	git submodule update --recursive --init
 	multirust update nightly
 	exit
 fi
