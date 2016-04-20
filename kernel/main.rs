@@ -46,7 +46,7 @@ use arch::tss::Tss;
 use collections::Vec;
 use collections::string::ToString;
 
-use core::{ptr, mem, usize};
+use core::{mem, usize};
 use core::slice::SliceExt;
 
 use common::time::Duration;
@@ -471,14 +471,28 @@ pub extern "cdecl" fn kernel(interrupt: usize, mut regs: &mut Regs) {
             }
             debugln!("    FSW: {:08X}    FCW: {:08X}", fsw, fcw);
 
-            let sp = regs.sp as *const u32;
-            for y in -15..16 {
-                debug!("    {:>3}:", y * 8 * 4);
-                for x in 0..8 {
-                    debug!(" {:08X}", unsafe { ptr::read(sp.offset(-(x + y * 8))) });
+            /* TODO: Stack dump
+            {
+                let contexts = ::env().contexts.lock();
+                if let Ok(context) = contexts.current() {
+                    let sp = regs.sp as *const usize;
+                    for y in -15..16 {
+                        debug!("    {:>3}:", y * 8 * 4);
+                        for x in 0..8 {
+                            let p = unsafe { sp.offset(-(x + y * 8)) };
+                            if let Ok(_) = context.translate(p as usize, 1) {
+                                debug!(" {:08X}", unsafe { ptr::read(p) });
+                            } else if context.kernel_stack > 0 && (p as usize) >= context.kernel_stack && (p as usize) < context.kernel_stack + CONTEXT_STACK_SIZE {
+                                debug!(" {:08X}", unsafe { ptr::read(p) });
+                            } else {
+                                debug!(" ????????");
+                            }
+                        }
+                        debug!("\n");
+                    }
                 }
-                debug!("\n");
             }
+            */
         })
     };
 
