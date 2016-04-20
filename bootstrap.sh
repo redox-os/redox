@@ -7,7 +7,6 @@ banner() {
 
 gitClone() {
 	git clone https://github.com/redox-os/redox.git --origin upstream --recursive
-	git submodule update --recursive --init
 }
 
 osx()
@@ -228,7 +227,7 @@ rustInstall() {
 		echo "\#curl -sSf https://static.rust-lang.org/rustup.sh | sh -s -- --channel=nightly"
 		exit 1
 	fi
-	
+
 	if hash 2>/dev/null multirust; then
 		multirust update nightly
 		multirust override nightly
