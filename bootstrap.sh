@@ -228,6 +228,12 @@ rustInstall() {
 		echo "\#curl -sSf https://static.rust-lang.org/rustup.sh | sh -s -- --channel=nightly"
 		exit 1
 	fi
+	
+	if hash 2>/dev/null multirust; then
+		multirust update nightly
+		multirust override nightly
+	fi
+
 	if echo "$(rustc --version)" | grep -viq "nightly" ;then
 		echo "It appears that you have rust installed, but it"
 		echo "is not the nightly version, please either install"
