@@ -1,7 +1,8 @@
 {
-    "llvm-target": "i686-unknown-redox",
+    "llvm-target": "i386-unknown-redox",
     "target-endian": "little",
     "target-pointer-width": "32",
+    "data-layout": "e-m:e-p:32:32-f64:32:64-f80:32-n8:16:32-S128",
     "arch": "x86",
     "os": "redox",
     "env": "",
