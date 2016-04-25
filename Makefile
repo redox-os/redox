@@ -141,6 +141,7 @@ coreutils: \
 	filesystem/bin/clear \
 	filesystem/bin/cp \
 	filesystem/bin/cut \
+	filesystem/bin/date \
 	filesystem/bin/du \
 	filesystem/bin/echo \
 	filesystem/bin/env \
@@ -160,6 +161,7 @@ coreutils: \
 	filesystem/bin/shutdown \
 	filesystem/bin/sleep \
 	filesystem/bin/tail \
+	filesystem/bin/time \
 	filesystem/bin/touch \
 	filesystem/bin/true \
 	filesystem/bin/wc \
