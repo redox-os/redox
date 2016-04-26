@@ -1,6 +1,8 @@
-use super::mpsc_queue::{Queue};
 use alloc::arc::Arc;
 use super::mpsc_queue::PopResult::*;
+use super::mpsc_queue::{Queue};
+
+use thread;
 
 pub enum TryRecvError {
     Empty,
@@ -23,7 +25,7 @@ impl<T> Receiver<T> {
         loop {
             match self.queue.pop() {
                 Data(t) => return Ok(t),
-                _ => continue,
+                _ => thread::yield_now(),
             }
         }
 
