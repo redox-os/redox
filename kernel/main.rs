@@ -61,6 +61,8 @@ use env::Environment;
 
 use graphics::display;
 
+use logging::{LogLevel, klog};
+
 use network::schemes::{ArpScheme, EthernetScheme, IcmpScheme, IpScheme, TcpScheme, UdpScheme};
 
 use schemes::context::ContextScheme;
@@ -71,6 +73,7 @@ use schemes::env::EnvScheme;
 //use schemes::file::FileScheme;
 use schemes::initfs::InitFsScheme;
 use schemes::interrupt::InterruptScheme;
+use schemes::klog::KlogScheme;
 use schemes::memory::MemoryScheme;
 use schemes::test::TestScheme;
 
@@ -140,6 +143,10 @@ pub mod fs;
 ///
 /// This module contains the initial display manager and various graphics primitives.
 pub mod graphics;
+/// Logging.
+///
+/// This module contains the `klog` function and the different log levels.
+pub mod logging;
 /// Networking.
 ///
 /// This module contains drivers (e.g, intel8254x and rtl8139), primitives, schemes, and data
@@ -374,6 +381,7 @@ unsafe fn init(tss_data: usize) {
             env.schemes.lock().push(box DisplayScheme);
             env.schemes.lock().push(box EnvScheme);
             env.schemes.lock().push(box InterruptScheme);
+            env.schemes.lock().push(box KlogScheme);
             env.schemes.lock().push(box MemoryScheme);
             env.schemes.lock().push(box TestScheme);
 
@@ -422,6 +430,7 @@ unsafe fn init(tss_data: usize) {
                     }
                 }
 
+                klog(LogLevel::Info, "The kernel has finished booting. Running /bin/init");
                 if let Err(err) = execute(vec!["initfs:/bin/init".to_string()]) {
                     debugln!("kernel: init: failed to execute: {}", err);
                 }
