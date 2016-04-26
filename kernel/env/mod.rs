@@ -9,6 +9,7 @@ use common::event::Event;
 use common::time::Duration;
 use disk::Disk;
 use fs::{KScheme, Resource, Scheme, VecResource, Url};
+use logging::LogLevel;
 use sync::WaitQueue;
 
 use system::error::{Error, Result, ENOENT, EEXIST};
@@ -35,6 +36,8 @@ pub struct Environment {
     pub disks: Intex<Vec<Box<Disk>>>,
     /// Pending events
     pub events: WaitQueue<Event>,
+    /// Kernel logs
+    pub logs: Intex<Vec<(LogLevel, String)>>,
     /// Schemes
     pub schemes: Intex<Vec<Box<KScheme>>>,
 
@@ -53,6 +56,7 @@ impl Environment {
             console: Intex::new(Console::new()),
             disks: Intex::new(Vec::new()),
             events: WaitQueue::new(),
+            logs: Intex::new(Vec::new()),
             schemes: Intex::new(Vec::new()),
 
             interrupts: Intex::new([0; 256]),
