@@ -25,7 +25,6 @@ pub fn do_sys_brk(addr: usize) -> Result<usize> {
                         mem.virtual_size = size;
                         ret = mem.virtual_address + mem.virtual_size;
                     } else {
-                        mem.virtual_size = 0;
                         debugln!("BRK: Realloc failed {:X}, {}\n", mem.virtual_address, size);
                     }
 

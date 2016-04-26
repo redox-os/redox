@@ -3,8 +3,6 @@ use disk::ide::Ide;
 
 use env::Environment;
 
-use schemes::file::FileScheme;
-
 use super::config::PciConfig;
 use super::common::class::*;
 use super::common::subclass::*;
@@ -33,16 +31,8 @@ pub unsafe fn pci_device(env: &mut Environment,
                          vendor_code: u16,
                          device_code: u16) {
     match (class_id, subclass_id, interface_id) {
-        (MASS_STORAGE, IDE, _) => {
-            if let Some(module) = FileScheme::new(Ide::disks(pci)) {
-                env.schemes.lock().push(module);
-            }
-        },
-        (MASS_STORAGE, SATA, AHCI) => {
-            if let Some(module) = FileScheme::new(Ahci::disks(pci)) {
-                env.schemes.lock().push(module);
-            }
-        },
+        (MASS_STORAGE, IDE, _) => env.disks.lock().append(&mut Ide::disks(pci)),
+        (MASS_STORAGE, SATA, AHCI) => env.disks.lock().append(&mut Ahci::disks(pci)),
         (SERIAL_BUS, USB, UHCI) => env.schemes.lock().push(Uhci::new(pci)),
         (SERIAL_BUS, USB, OHCI) => env.schemes.lock().push(Ohci::new(pci)),
         (SERIAL_BUS, USB, EHCI) => env.schemes.lock().push(Ehci::new(pci)),

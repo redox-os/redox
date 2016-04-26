@@ -15,13 +15,12 @@ use cmp::{Eq, PartialEq};
 use core::marker::Sized;
 use default::Default;
 use fmt;
-use hash::Hash;
+use hash::{BuildHasher, Hash};
 use iter::{Iterator, IntoIterator, ExactSizeIterator, FromIterator, Map, Chain, Extend};
 use ops::{BitOr, BitAnd, BitXor, Sub};
 use option::Option::{self, Some, None};
 
 use super::hash_map::{self, HashMap, Keys, RandomState, Recover};
-use super::hash_state::HashState;
 
 const INITIAL_CAPACITY: usize = 32;
 
@@ -142,7 +141,7 @@ impl<T: Hash + Eq> HashSet<T, RandomState> {
 
 impl<T, S> HashSet<T, S>
     where T: Eq + Hash,
-          S: HashState
+          S: BuildHasher
 {
     /// Creates a new empty hash set which will use the given hasher to hash
     /// keys.
@@ -158,12 +157,12 @@ impl<T, S> HashSet<T, S>
     /// use std::collections::hash_map::RandomState;
     ///
     /// let s = RandomState::new();
-    /// let mut set = HashSet::with_hash_state(s);
+    /// let mut set = HashSet::with_hasher(s);
     /// set.insert(2);
     /// ```
     #[inline]
-    pub fn with_hash_state(hash_state: S) -> HashSet<T, S> {
-        HashSet::with_capacity_and_hash_state(INITIAL_CAPACITY, hash_state)
+    pub fn with_hasher(hash_state: S) -> HashSet<T, S> {
+        HashSet::with_capacity_and_hasher(INITIAL_CAPACITY, hash_state)
     }
 
     /// Creates an empty HashSet with space for at least `capacity`
@@ -183,12 +182,12 @@ impl<T, S> HashSet<T, S>
     /// use std::collections::hash_map::RandomState;
     ///
     /// let s = RandomState::new();
-    /// let mut set = HashSet::with_capacity_and_hash_state(10, s);
+    /// let mut set = HashSet::with_capacity_and_hasher(10, s);
     /// set.insert(1);
     /// ```
     #[inline]
-    pub fn with_capacity_and_hash_state(capacity: usize, hash_state: S) -> HashSet<T, S> {
-        HashSet { map: HashMap::with_capacity_and_hash_state(capacity, hash_state) }
+    pub fn with_capacity_and_hasher(capacity: usize, hash_state: S) -> HashSet<T, S> {
+        HashSet { map: HashMap::with_capacity_and_hasher(capacity, hash_state) }
     }
 
     /// Returns the number of elements the set can hold without reallocating.
@@ -586,7 +585,7 @@ impl<T, S> HashSet<T, S>
 
 impl<T, S> PartialEq for HashSet<T, S>
     where T: Eq + Hash,
-          S: HashState
+          S: BuildHasher
 {
     fn eq(&self, other: &HashSet<T, S>) -> bool {
         if self.len() != other.len() {
@@ -599,12 +598,12 @@ impl<T, S> PartialEq for HashSet<T, S>
 
 impl<T, S> Eq for HashSet<T, S>
     where T: Eq + Hash,
-          S: HashState
+          S: BuildHasher
 {}
 
 impl<T, S> fmt::Debug for HashSet<T, S>
     where T: Eq + Hash + fmt::Debug,
-          S: HashState
+          S: BuildHasher
 {
     fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
         f.debug_set().entries(self.iter()).finish()
@@ -613,12 +612,12 @@ impl<T, S> fmt::Debug for HashSet<T, S>
 
 impl<T, S> FromIterator<T> for HashSet<T, S>
     where T: Eq + Hash,
-          S: HashState + Default
+          S: BuildHasher + Default
 {
     fn from_iter<I: IntoIterator<Item = T>>(iterable: I) -> HashSet<T, S> {
         let iter = iterable.into_iter();
         let lower = iter.size_hint().0;
-        let mut set = HashSet::with_capacity_and_hash_state(lower, Default::default());
+        let mut set = HashSet::with_capacity_and_hasher(lower, Default::default());
         set.extend(iter);
         set
     }
@@ -626,7 +625,7 @@ impl<T, S> FromIterator<T> for HashSet<T, S>
 
 impl<T, S> Extend<T> for HashSet<T, S>
     where T: Eq + Hash,
-          S: HashState
+          S: BuildHasher
 {
     fn extend<I: IntoIterator<Item = T>>(&mut self, iter: I) {
         for k in iter {
@@ -637,7 +636,7 @@ impl<T, S> Extend<T> for HashSet<T, S>
 
 impl<'a, T, S> Extend<&'a T> for HashSet<T, S>
     where T: 'a + Eq + Hash + Copy,
-          S: HashState
+          S: BuildHasher
 {
     fn extend<I: IntoIterator<Item = &'a T>>(&mut self, iter: I) {
         self.extend(iter.into_iter().cloned());
@@ -646,16 +645,16 @@ impl<'a, T, S> Extend<&'a T> for HashSet<T, S>
 
 impl<T, S> Default for HashSet<T, S>
     where T: Eq + Hash,
-          S: HashState + Default
+          S: BuildHasher + Default
 {
         fn default() -> HashSet<T, S> {
-        HashSet::with_hash_state(Default::default())
+        HashSet::with_hasher(Default::default())
     }
 }
 
 impl<'a, 'b, T, S> BitOr<&'b HashSet<T, S>> for &'a HashSet<T, S>
     where T: Eq + Hash + Clone,
-          S: HashState + Default
+          S: BuildHasher + Default
 {
     type Output = HashSet<T, S>;
 
@@ -686,7 +685,7 @@ impl<'a, 'b, T, S> BitOr<&'b HashSet<T, S>> for &'a HashSet<T, S>
 
 impl<'a, 'b, T, S> BitAnd<&'b HashSet<T, S>> for &'a HashSet<T, S>
     where T: Eq + Hash + Clone,
-          S: HashState + Default
+          S: BuildHasher + Default
 {
     type Output = HashSet<T, S>;
 
@@ -717,7 +716,7 @@ impl<'a, 'b, T, S> BitAnd<&'b HashSet<T, S>> for &'a HashSet<T, S>
 
 impl<'a, 'b, T, S> BitXor<&'b HashSet<T, S>> for &'a HashSet<T, S>
     where T: Eq + Hash + Clone,
-          S: HashState + Default
+          S: BuildHasher + Default
 {
     type Output = HashSet<T, S>;
 
@@ -748,7 +747,7 @@ impl<'a, 'b, T, S> BitXor<&'b HashSet<T, S>> for &'a HashSet<T, S>
 
 impl<'a, 'b, T, S> Sub<&'b HashSet<T, S>> for &'a HashSet<T, S>
     where T: Eq + Hash + Clone,
-          S: HashState + Default
+          S: BuildHasher + Default
 {
     type Output = HashSet<T, S>;
 
@@ -820,7 +819,7 @@ pub struct Union<'a, T: 'a, S: 'a> {
 
 impl<'a, T, S> IntoIterator for &'a HashSet<T, S>
     where T: Eq + Hash,
-          S: HashState
+          S: BuildHasher
 {
     type Item = &'a T;
     type IntoIter = Iter<'a, T>;
@@ -832,7 +831,7 @@ impl<'a, T, S> IntoIterator for &'a HashSet<T, S>
 
 impl<T, S> IntoIterator for HashSet<T, S>
     where T: Eq + Hash,
-          S: HashState
+          S: BuildHasher
 {
     type Item = T;
     type IntoIter = IntoIter<T>;
@@ -928,7 +927,7 @@ impl<'a, T, S> Clone for Intersection<'a, T, S> {
 
 impl<'a, T, S> Iterator for Intersection<'a, T, S>
     where T: Eq + Hash,
-          S: HashState
+          S: BuildHasher
 {
     type Item = &'a T;
 
@@ -959,7 +958,7 @@ impl<'a, T, S> Clone for Difference<'a, T, S> {
 
 impl<'a, T, S> Iterator for Difference<'a, T, S>
     where T: Eq + Hash,
-          S: HashState
+          S: BuildHasher
 {
     type Item = &'a T;
 
@@ -990,7 +989,7 @@ impl<'a, T, S> Clone for SymmetricDifference<'a, T, S> {
 
 impl<'a, T, S> Iterator for SymmetricDifference<'a, T, S>
     where T: Eq + Hash,
-          S: HashState
+          S: BuildHasher
 {
     type Item = &'a T;
 
@@ -1010,7 +1009,7 @@ impl<'a, T, S> Clone for Union<'a, T, S> {
 
 impl<'a, T, S> Iterator for Union<'a, T, S>
     where T: Eq + Hash,
-          S: HashState
+          S: BuildHasher
 {
     type Item = &'a T;
 

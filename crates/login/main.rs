@@ -18,7 +18,13 @@ fn main() {
             }
         }
 
-        env::set_current_dir("/home/").unwrap();
+        match env::home_dir() {
+            Some(home) => match env::set_current_dir(home) {
+                Ok(()) => (),
+                Err(err) => println!("login: could not set home directory: {}", err)
+            },
+            None => println!("login: could not get home directory")
+        }
 
         let mut child = Command::new("/bin/sh").spawn().unwrap();
         child.wait().unwrap();

@@ -2,5 +2,10 @@ echo ############################
 echo ##  Redox OS is booting   ##
 echo ############################
 echo
+
+# Load the filesystem driver
+initfs:/bin/redoxfsd disk:/0
+
+# Start the filesystem init
 cd file:/
 init

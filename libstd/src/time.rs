@@ -1,5 +1,8 @@
 //! A module for time
 
+use error::Error;
+use fmt;
+use string::String;
 use system::syscall::{sys_clock_gettime, CLOCK_REALTIME, CLOCK_MONOTONIC, TimeSpec};
 
 // Copyright 2012-2014 The Rust Project Developers. See the COPYRIGHT
@@ -186,6 +189,21 @@ impl Instant {
     }
 }
 
+#[derive(Clone, Debug)]
+pub struct SystemTimeError(String);
+
+impl fmt::Display for SystemTimeError {
+    fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
+        f.write_str(&self.0)
+    }
+}
+
+impl Error for SystemTimeError {
+    fn description(&self) -> &str {
+        &self.0
+    }
+}
+
 #[derive(Copy, Clone)]
 pub struct SystemTime(Duration);
 
@@ -201,4 +219,15 @@ impl SystemTime {
 
         SystemTime(Duration::new(tp.tv_sec as u64, tp.tv_nsec as u32))
     }
+
+    /// Returns the amount of time between two instants
+    pub fn duration_since(&self, earlier: SystemTime) -> Result<Duration, SystemTimeError> {
+        Ok(self.0 - earlier.0)
+    }
+
 }
+
+pub const UNIX_EPOCH: SystemTime = SystemTime(Duration {
+    secs: 0,
+    nanos: 0
+});
