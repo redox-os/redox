@@ -12,6 +12,8 @@ pub mod env;
 pub mod initfs;
 /// Interrupt scheme
 pub mod interrupt;
+/// Logging scheme
+pub mod klog;
 /// Memory scheme
 pub mod memory;
 /// Pipes
