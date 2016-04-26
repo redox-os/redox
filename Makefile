@@ -24,6 +24,7 @@ BASENAME=basename
 CUT=cut
 DATE=date
 FIND=find
+FUMOUNT=fusermount -u
 LD=ld
 LDARGS=-m elf_$(ARCH)
 MAKE=make
@@ -46,6 +47,7 @@ VBM_CLEANUP=\
 
 UNAME := $(shell uname)
 ifeq ($(UNAME),Darwin)
+	FUMOUNT=umount
 	LD=$(ARCH)-elf-ld
 	OBJDUMP=$(ARCH)-elf-objdump
 	CARGOFLAGS += -C ar=$(ARCH)-elf-ar -C linker=$(ARCH)-elf-gcc
@@ -102,16 +104,16 @@ help:
 all: $(BUILD)/harddrive.bin
 
 filesystem/apps/pixelcannon/main.bin: crates/pixelcannon/src/main.rs crates/pixelcannon/src/*.rs $(BUILD)/libstd.rlib $(BUILD)/liborbclient.rlib
-	$(RUSTC) $(RUSTCFLAGS) --crate-type bin -o $@ $<
+	$(RUSTC) $(RUSTCFLAGS) -C lto --crate-type bin -o $@ $<
 
 filesystem/apps/sodium/main.bin: filesystem/apps/sodium/src/main.rs filesystem/apps/sodium/src/*.rs $(BUILD)/libstd.rlib $(BUILD)/liborbclient.rlib
-	$(RUSTC) $(RUSTCFLAGS) --crate-type bin -o $@ $< --cfg 'feature="orbital"'
+	$(RUSTC) $(RUSTCFLAGS) -C lto --crate-type bin -o $@ $< --cfg 'feature="orbital"'
 
 filesystem/apps/%/main.bin: filesystem/apps/%/main.rs filesystem/apps/%/*.rs $(BUILD)/libstd.rlib $(BUILD)/liborbclient.rlib $(BUILD)/liborbtk.rlib
-	$(RUSTC) $(RUSTCFLAGS) --crate-type bin -o $@ $<
+	$(RUSTC) $(RUSTCFLAGS) -C lto --crate-type bin -o $@ $<
 
 filesystem/apps/%/main.bin: crates/orbutils/src/%/main.rs crates/orbutils/src/%/*.rs $(BUILD)/libstd.rlib $(BUILD)/liborbclient.rlib $(BUILD)/liborbtk.rlib
-	$(RUSTC) $(RUSTCFLAGS) --crate-type bin -o $@ $<
+	$(RUSTC) $(RUSTCFLAGS) -C lto --crate-type bin -o $@ $<
 
 apps:     filesystem/apps/calculator/main.bin \
 	  filesystem/apps/editor/main.bin \
@@ -126,12 +128,12 @@ apps:     filesystem/apps/calculator/main.bin \
 $(BUILD)/libextra.rlib: crates/extra/src/lib.rs crates/extra/src/*.rs $(BUILD)/libstd.rlib
 	$(RUSTC) $(RUSTCFLAGS) --crate-name extra --crate-type lib -o $@ $<
 
-$(BUILD)/libmalloc.rlib: crates/malloc/src/lib.rs crates/malloc/src/*.rs $(BUILD)/libstd.rlib $(BUILD)/libextra.rlib $(BUILD)/libsystem.rlib
-	$(RUSTC) $(RUSTCFLAGS) --crate-name extra --crate-type lib -o $@ $<
+$(BUILD)/libralloc.rlib: crates/ralloc/src/lib.rs crates/ralloc/src/*.rs $(BUILD)/libstd.rlib $(BUILD)/libextra.rlib $(BUILD)/libsystem.rlib
+	$(RUSTC) $(RUSTCFLAGS) --crate-name ralloc --crate-type lib -o $@ $<
 
 filesystem/bin/%: crates/coreutils/src/bin/%.rs $(BUILD)/libextra.rlib
 	mkdir -p filesystem/bin
-	$(RUSTC) $(RUSTCFLAGS) --crate-type bin -o $@ $<
+	$(RUSTC) $(RUSTCFLAGS) -C lto --crate-type bin -o $@ $<
 
 coreutils: \
 	filesystem/bin/basename \
@@ -139,6 +141,7 @@ coreutils: \
 	filesystem/bin/clear \
 	filesystem/bin/cp \
 	filesystem/bin/cut \
+	filesystem/bin/date \
 	filesystem/bin/du \
 	filesystem/bin/echo \
 	filesystem/bin/env \
@@ -158,6 +161,7 @@ coreutils: \
 	filesystem/bin/shutdown \
 	filesystem/bin/sleep \
 	filesystem/bin/tail \
+	filesystem/bin/time \
 	filesystem/bin/touch \
 	filesystem/bin/true \
 	filesystem/bin/wc \
@@ -169,7 +173,7 @@ $(BUILD)/libbinutils.rlib: crates/binutils/src/lib.rs crates/binutils/src/*.rs $
 
 filesystem/bin/%: crates/binutils/src/bin/%.rs $(BUILD)/libbinutils.rlib
 	mkdir -p filesystem/bin
-	$(RUSTC) $(RUSTCFLAGS) --crate-type bin -o $@ $<
+	$(RUSTC) $(RUSTCFLAGS) -C lto --crate-type bin -o $@ $<
 
 binutils: \
 	filesystem/bin/hex \
@@ -178,7 +182,7 @@ binutils: \
 
 filesystem/bin/%: drivers/%/main.rs $(BUILD)/libstd.rlib $(BUILD)/libio.rlib
 	mkdir -p filesystem/bin
-	$(RUSTC) $(RUSTCFLAGS) --crate-type bin -o $@ $<
+	$(RUSTC) $(RUSTCFLAGS) -C lto --crate-type bin -o $@ $<
 
 drivers: \
 	filesystem/bin/seriald
@@ -188,7 +192,7 @@ $(BUILD)/libtermion.rlib: crates/termion/src/lib.rs crates/termion/src/*.rs $(BU
 
 filesystem/bin/%: crates/extrautils/src/bin/%.rs $(BUILD)/libextra.rlib $(BUILD)/libtermion.rlib
 	mkdir -p filesystem/bin
-	$(RUSTC) $(RUSTCFLAGS) --crate-type bin -o $@ $<
+	$(RUSTC) $(RUSTCFLAGS) -C lto --crate-type bin -o $@ $<
 
 extrautils: \
 	filesystem/bin/calc \
@@ -203,7 +207,7 @@ extrautils: \
 
 filesystem/bin/%: crates/games/src/%/main.rs crates/games/src/%/*.rs $(BUILD)/libextra.rlib $(BUILD)/libtermion.rlib
 	mkdir -p filesystem/bin
-	$(RUSTC) $(RUSTCFLAGS) --crate-type bin -o $@ $<
+	$(RUSTC) $(RUSTCFLAGS) -C lto --crate-type bin -o $@ $<
 
 games: \
 	filesystem/bin/ice \
@@ -215,7 +219,7 @@ games: \
 
 filesystem/bin/%: crates/%/main.rs crates/%/*.rs $(BUILD)/libstd.rlib
 	mkdir -p filesystem/bin
-	$(RUSTC) $(RUSTCFLAGS) --crate-type bin -o $@ $<
+	$(RUSTC) $(RUSTCFLAGS) -C lto --crate-type bin -o $@ $<
 
 filesystem/bin/%: libc/bin/%
 	mkdir -p filesystem/bin
@@ -229,7 +233,7 @@ filesystem/bin/rusttype: $(BUILD)/examples/rusttype.bin
 	cp $< $@
 
 $(BUILD)/ion-shell.bin: FORCE $(BUILD)/libstd.rlib
-	$(CARGO) --manifest-path crates/ion/Cargo.toml --bin ion-shell $(CARGOFLAGS)
+	$(CARGO) --manifest-path crates/ion/Cargo.toml --bin ion-shell $(CARGOFLAGS) -C lto
 
 filesystem/bin/ion: $(BUILD)/ion-shell.bin
 	mkdir -p filesystem/bin
@@ -241,11 +245,11 @@ filesystem/bin/sh: $(BUILD)/ion-shell.bin
 
 filesystem/bin/launcher: crates/orbutils/src/launcher/main.rs crates/orbutils/src/launcher/*.rs $(BUILD)/libstd.rlib $(BUILD)/liborbclient.rlib $(BUILD)/liborbtk.rlib
 	mkdir -p filesystem/bin
-	$(RUSTC) $(RUSTCFLAGS) --crate-type bin -o $@ $<
+	$(RUSTC) $(RUSTCFLAGS) -C lto --crate-type bin -o $@ $<
 
 filesystem/bin/zfs: crates/zfs/src/main.rs crates/zfs/src/*.rs $(BUILD)/libstd.rlib
 	mkdir -p filesystem/bin
-	$(RUSTC) $(RUSTCFLAGS) --crate-type bin -o $@ $<
+	$(RUSTC) $(RUSTCFLAGS) -C lto --crate-type bin -o $@ $<
 
 bins: \
 	coreutils \
@@ -281,11 +285,11 @@ refs: FORCE
 
 initfs/bin/init: crates/init/main.rs crates/init/*.rs $(BUILD)/libstd.rlib
 	mkdir -p initfs/bin/
-	$(RUSTC) $(RUSTCFLAGS) --crate-type bin -o $@ $<
+	$(RUSTC) $(RUSTCFLAGS) -C lto --crate-type bin -o $@ $<
 
-initfs/bin/redoxfsd: crates/redoxfs/scheme/main.rs crates/redoxfs/scheme/*.rs $(BUILD)/libstd.rlib $(BUILD)/libredoxfs.rlib
+initfs/bin/redoxfsd: crates/redoxfs/scheme/main.rs crates/redoxfs/scheme/*.rs crates/redoxfs/scheme/*/*.rs $(BUILD)/libredoxfs.rlib
 	mkdir -p initfs/bin/
-	$(RUSTC) $(RUSTCFLAGS) --crate-type bin -o $@ $<
+	$(RUSTC) $(RUSTCFLAGS) -C lto --crate-type bin -o $@ $<
 
 initfs/build/arch:
 	mkdir -p initfs/build/
@@ -351,6 +355,9 @@ FORCE:
 doc/core: rust/src/libcore/lib.rs $(BUILD)/libcore.rlib
 	$(RUSTDOC) $<
 
+doc/alloc_malloc: liballoc_malloc/lib.rs $(BUILD)/liballoc_malloc.rlib doc/core
+	$(RUSTDOC) $<
+
 doc/alloc_system: liballoc_system/lib.rs $(BUILD)/liballoc_system.rlib doc/core
 	$(RUSTDOC) $<
 
@@ -381,8 +388,8 @@ doc/kernel: kernel/main.rs kernel/*.rs kernel/*/*.rs kernel/*/*/*.rs $(BUILD)/ke
 doc/extra: crates/extra/src/lib.rs crates/extra/src/*.rs $(BUILD)/libextra.rlib
 	$(RUSTDOC) --crate-name=extra $<
 
-doc/malloc: crates/malloc/src/lib.rs crates/malloc/src/*.rs $(BUILD)/libmalloc.rlib
-	$(RUSTDOC) --crate-name=malloc $<
+doc/ralloc: crates/ralloc/src/lib.rs crates/ralloc/src/*.rs $(BUILD)/libralloc.rlib
+	$(RUSTDOC) --crate-name=ralloc $<
 
 doc/binutils: crates/binutils/src/lib.rs crates/binutils/src/*.rs $(BUILD)/libbinutils.rlib
 	$(RUSTDOC) --crate-name=binutils $<
@@ -399,10 +406,10 @@ doc/orbtk: crates/orbtk/src/lib.rs crates/orbtk/src/*.rs $(BUILD)/liborbtk.rlib 
 doc/sodium: filesystem/apps/sodium/src/main.rs filesystem/apps/sodium/src/*.rs filesystem/apps/sodium/main.bin
 	$(RUSTDOC) --crate-name=sodium --cfg 'feature="orbital"' $<
 
-doc/std: libstd/src/lib.rs libstd/src/*.rs libstd/src/*/*.rs libstd/src/*/*/*.rs $(BUILD)/libstd.rlib doc/rand doc/system
+doc/std: libstd/src/lib.rs libstd/src/*.rs libstd/src/*/*.rs libstd/src/*/*/*.rs $(BUILD)/libstd.rlib doc/rand doc/system doc/alloc_malloc
 	$(RUSTDOC) --crate-name=std $<
 
-doc: doc/kernel doc/std doc/extra doc/malloc doc/orbclient doc/orbtk doc/sodium doc/binutils
+doc: doc/kernel doc/std doc/extra doc/ralloc doc/orbclient doc/orbtk doc/sodium doc/binutils
 
 man: filesystem/man
 
@@ -418,6 +425,9 @@ filesystem/man:
 $(BUILD)/libcore.rlib: rust/src/libcore/lib.rs
 	$(MKDIR) -p $(BUILD)
 	$(RUSTC) $(RUSTCFLAGS) -o $@ $<
+
+$(BUILD)/liballoc_malloc.rlib: liballoc_malloc/lib.rs $(BUILD)/libcore.rlib
+	$(RUSTC) $(RUSTCFLAGS) -o $@ $< -L native=libc/lib/
 
 $(BUILD)/liballoc_system.rlib: liballoc_system/lib.rs $(BUILD)/libcore.rlib
 	$(RUSTC) $(RUSTCFLAGS) -o $@ $<
@@ -443,7 +453,7 @@ $(BUILD)/liblibc.rlib: rust/src/liblibc/src/lib.rs $(BUILD)/libcore.rlib
 $(BUILD)/librealstd.rlib: rust/src/libstd/lib.rs $(BUILD)/libcore.rlib $(BUILD)/liblibc.rlib $(BUILD)/liballoc.rlib $(BUILD)/librustc_unicode.rlib $(BUILD)/libcollections.rlib $(BUILD)/librand.rlib
 	$(RUSTC) $(RUSTCFLAGS) --cfg unix --crate-type rlib -o $@ $<
 
-$(BUILD)/libstd.rlib: libstd/src/lib.rs libstd/src/*.rs libstd/src/*/*.rs libstd/src/*/*/*.rs $(BUILD)/libcore.rlib $(BUILD)/liballoc.rlib $(BUILD)/libcollections.rlib $(BUILD)/librand.rlib $(BUILD)/libsystem.rlib
+$(BUILD)/libstd.rlib: libstd/src/lib.rs libstd/src/*.rs libstd/src/*/*.rs libstd/src/*/*/*.rs $(BUILD)/libcore.rlib $(BUILD)/liballoc_malloc.rlib $(BUILD)/liballoc.rlib $(BUILD)/libcollections.rlib $(BUILD)/librand.rlib $(BUILD)/libsystem.rlib
 	$(RUSTC) $(RUSTCFLAGS) -o $@ $< -L native=libc/lib/
 
 $(BUILD)/liborbclient.rlib: crates/orbclient/src/lib.rs crates/orbclient/src/*.rs crates/orbclient/src/*/*.rs $(BUILD)/libstd.rlib
@@ -459,7 +469,7 @@ $(BUILD)/libio.rlib: crates/io/lib.rs crates/io/*.rs $(BUILD)/libcore.rlib
 $(BUILD)/libsystem.rlib: crates/system/lib.rs crates/system/*.rs crates/system/*/*.rs $(BUILD)/libcore.rlib
 	$(RUSTC) $(RUSTCFLAGS) -o $@ $<
 
-$(BUILD)/libredoxfs.rlib: crates/redoxfs/src/lib.rs crates/redoxfs/src/*.rs $(BUILD)/libsystem.rlib $(BUILD)/liballoc.rlib $(BUILD)/libcollections.rlib
+$(BUILD)/libredoxfs.rlib: crates/redoxfs/src/lib.rs crates/redoxfs/src/*.rs $(BUILD)/libstd.rlib
 	$(RUSTC) $(RUSTCFLAGS) -o $@ $<
 
 $(BUILD)/kernel.rlib: kernel/main.rs kernel/*.rs kernel/*/*.rs kernel/*/*/*.rs  $(BUILD)/libio.rlib build/initfs.gen
@@ -529,10 +539,18 @@ filesystem/apps/zfs/zfs.img:
 	-sudo zpool destroy redox_zfs
 	sudo losetup -d /dev/loop0
 
-$(BUILD)/filesystem.gen: apps bins
-	$(FIND) filesystem -type f -o -type l | $(CUT) -d '/' -f2- | $(SORT) | $(AWK) '{printf("file %d,\"%s\"\n", NR, $$0)}' > $@
+$(BUILD)/filesystem.bin: apps bins
+	rm -rf $@ $(BUILD)/filesystem/
+	echo exit | cargo run --manifest-path crates/redoxfs/Cargo.toml --bin redoxfs-utility $@
+	mkdir -p $(BUILD)/filesystem/
+	cargo run --manifest-path crates/redoxfs/Cargo.toml --bin redoxfs-fuse $@ $(BUILD)/filesystem/ &
+	sleep 2
+	-cp -rL filesystem/* $(BUILD)/filesystem/
+	sync
+	-$(FUMOUNT) $(BUILD)/filesystem/
+	rm -rf $(BUILD)/filesystem/
 
-$(BUILD)/harddrive.bin: kernel/harddrive.asm $(BUILD)/kernel.bin $(BUILD)/filesystem.gen
+$(BUILD)/harddrive.bin: kernel/harddrive.asm $(BUILD)/kernel.bin $(BUILD)/filesystem.bin
 	$(AS) -f bin -o $@ -l $(BUILD)/harddrive.list -D ARCH_$(ARCH) -D TIME="`$(DATE) "+%F %T"`" -i$(BUILD)/ -ikernel/ -ifilesystem/ $<
 
 virtualbox: $(BUILD)/harddrive.bin

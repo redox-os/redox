@@ -17,7 +17,7 @@ use clone::Clone;
 use cmp::{max, Eq, PartialEq};
 use default::Default;
 use fmt::{self, Debug};
-use hash::{Hash, SipHasher};
+use hash::{BuildHasher, Hash, SipHasher};
 use iter::{self, Iterator, ExactSizeIterator, IntoIterator, FromIterator, Extend, Map};
 use marker::Sized;
 use mem::{self, replace};
@@ -29,13 +29,12 @@ mod raw_table {
     use alloc::heap::{allocate, deallocate, EMPTY};
 
     use cmp;
-    use hash::{Hash, Hasher};
+    use hash::{BuildHasher, Hash, Hasher};
     use marker;
     use mem::{align_of, size_of};
     use mem;
     use ops::{Deref, DerefMut};
     use ptr::{self, Unique};
-    use super::super::hash_state::HashState;
 
     use self::BucketState::*;
 
@@ -161,9 +160,9 @@ mod raw_table {
     /// This function wraps up `hash_keyed` to be the only way outside this
     /// module to generate a SafeHash.
     pub fn make_hash<T: ?Sized, S>(hash_state: &S, t: &T) -> SafeHash
-        where T: Hash, S: HashState
+        where T: Hash, S: BuildHasher
     {
-        let mut state = hash_state.hasher();
+        let mut state = hash_state.build_hasher();
         t.hash(&mut state);
         // We need to avoid 0 in order to prevent collisions with
         // EMPTY_HASH. We can maintain our precious uniform distribution
@@ -1062,7 +1061,6 @@ use self::raw_table::BucketState::{
     Empty,
     Full,
 };
-use super::hash_state::HashState;
 
 const INITIAL_LOG2_CAP: usize = 5;
 const INITIAL_CAPACITY: usize = 1 << INITIAL_LOG2_CAP; // 2^5
@@ -1478,7 +1476,7 @@ impl<K, V, M> SearchResult<K, V, M> {
 }
 
 impl<K, V, S> HashMap<K, V, S>
-    where K: Eq + Hash, S: HashState
+    where K: Eq + Hash, S: BuildHasher
 {
     fn make_hash<X: ?Sized>(&self, x: &X) -> SafeHash where X: Hash {
         raw_table::make_hash(&self.hash_state, x)
@@ -1549,12 +1547,12 @@ impl<K: Hash + Eq, V> HashMap<K, V, RandomState> {
     /// ```
     #[inline]
     pub fn with_capacity(capacity: usize) -> HashMap<K, V, RandomState> {
-        HashMap::with_capacity_and_hash_state(capacity, Default::default())
+        HashMap::with_capacity_and_hasher(capacity, Default::default())
     }
 }
 
 impl<K, V, S> HashMap<K, V, S>
-    where K: Eq + Hash, S: HashState
+    where K: Eq + Hash, S: BuildHasher
 {
     /// Creates an empty hashmap which will use the given hasher to hash keys.
     ///
@@ -1569,11 +1567,11 @@ impl<K, V, S> HashMap<K, V, S>
     /// use std::collections::hash_map::RandomState;
     ///
     /// let s = RandomState::new();
-    /// let mut map = HashMap::with_hash_state(s);
+    /// let mut map = HashMap::with_hasher(s);
     /// map.insert(1, 2);
     /// ```
     #[inline]
-    pub fn with_hash_state(hash_state: S) -> HashMap<K, V, S> {
+    pub fn with_hasher(hash_state: S) -> HashMap<K, V, S> {
         HashMap {
             hash_state:    hash_state,
             resize_policy: DefaultResizePolicy::new(),
@@ -1598,11 +1596,11 @@ impl<K, V, S> HashMap<K, V, S>
     /// use std::collections::hash_map::RandomState;
     ///
     /// let s = RandomState::new();
-    /// let mut map = HashMap::with_capacity_and_hash_state(10, s);
+    /// let mut map = HashMap::with_capacity_and_hasher(10, s);
     /// map.insert(1, 2);
     /// ```
     #[inline]
-    pub fn with_capacity_and_hash_state(capacity: usize, hash_state: S)
+    pub fn with_capacity_and_hasher(capacity: usize, hash_state: S)
     -> HashMap<K, V, S> {
         let resize_policy = DefaultResizePolicy::new();
         let min_cap = max(INITIAL_CAPACITY, resize_policy.min_capacity(capacity));
@@ -2212,7 +2210,7 @@ fn search_entry_hashed<'a, K: Eq, V>(table: &'a mut RawTable<K,V>,
 
 
 impl<K, V, S> PartialEq for HashMap<K, V, S>
-    where K: Eq + Hash, V: PartialEq, S: HashState
+    where K: Eq + Hash, V: PartialEq, S: BuildHasher
 {
     fn eq(&self, other: &HashMap<K, V, S>) -> bool {
         if self.len() != other.len() { return false; }
@@ -2225,12 +2223,12 @@ impl<K, V, S> PartialEq for HashMap<K, V, S>
 
 
 impl<K, V, S> Eq for HashMap<K, V, S>
-    where K: Eq + Hash, V: Eq, S: HashState
+    where K: Eq + Hash, V: Eq, S: BuildHasher
 {}
 
 
 impl<K, V, S> Debug for HashMap<K, V, S>
-    where K: Eq + Hash + Debug, V: Debug, S: HashState
+    where K: Eq + Hash + Debug, V: Debug, S: BuildHasher
 {
     fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
         f.debug_map().entries(self.iter()).finish()
@@ -2240,10 +2238,10 @@ impl<K, V, S> Debug for HashMap<K, V, S>
 
 impl<K, V, S> Default for HashMap<K, V, S>
     where K: Eq + Hash,
-      S: HashState + Default,
+      S: BuildHasher + Default,
 {
     fn default() -> HashMap<K, V, S> {
-        HashMap::with_hash_state(Default::default())
+        HashMap::with_hasher(Default::default())
     }
 }
 
@@ -2251,7 +2249,7 @@ impl<K, V, S> Default for HashMap<K, V, S>
 impl<'a, K, Q: ?Sized, V, S> Index<&'a Q> for HashMap<K, V, S>
     where K: Eq + Hash + Borrow<Q>,
       Q: Eq + Hash,
-      S: HashState,
+      S: BuildHasher,
 {
     type Output = V;
 
@@ -2352,7 +2350,7 @@ enum VacantEntryState<K, V, M> {
 }
 
 impl<'a, K, V, S> IntoIterator for &'a HashMap<K, V, S>
-    where K: Eq + Hash, S: HashState
+    where K: Eq + Hash, S: BuildHasher
 {
     type Item = (&'a K, &'a V);
     type IntoIter = Iter<'a, K, V>;
@@ -2363,7 +2361,7 @@ impl<'a, K, V, S> IntoIterator for &'a HashMap<K, V, S>
 }
 
 impl<'a, K, V, S> IntoIterator for &'a mut HashMap<K, V, S>
-    where K: Eq + Hash, S: HashState
+    where K: Eq + Hash, S: BuildHasher
 {
     type Item = (&'a K, &'a mut V);
     type IntoIter = IterMut<'a, K, V>;
@@ -2374,7 +2372,7 @@ impl<'a, K, V, S> IntoIterator for &'a mut HashMap<K, V, S>
 }
 
 impl<K, V, S> IntoIterator for HashMap<K, V, S>
-    where K: Eq + Hash, S: HashState
+    where K: Eq + Hash, S: BuildHasher
 {
     type Item = (K, V);
     type IntoIter = IntoIter<K, V>;
@@ -2547,12 +2545,12 @@ impl<'a, K: 'a, V: 'a> VacantEntry<'a, K, V> {
 
 
 impl<K, V, S> FromIterator<(K, V)> for HashMap<K, V, S>
-    where K: Eq + Hash, S: HashState + Default
+    where K: Eq + Hash, S: BuildHasher + Default
 {
     fn from_iter<T: IntoIterator<Item=(K, V)>>(iterable: T) -> HashMap<K, V, S> {
         let iter = iterable.into_iter();
         let lower = iter.size_hint().0;
-        let mut map = HashMap::with_capacity_and_hash_state(lower,
+        let mut map = HashMap::with_capacity_and_hasher(lower,
                                                             Default::default());
         map.extend(iter);
         map
@@ -2561,7 +2559,7 @@ impl<K, V, S> FromIterator<(K, V)> for HashMap<K, V, S>
 
 
 impl<K, V, S> Extend<(K, V)> for HashMap<K, V, S>
-    where K: Eq + Hash, S: HashState
+    where K: Eq + Hash, S: BuildHasher
 {
     fn extend<T: IntoIterator<Item=(K, V)>>(&mut self, iter: T) {
         for (k, v) in iter {
@@ -2572,7 +2570,7 @@ impl<K, V, S> Extend<(K, V)> for HashMap<K, V, S>
 
 
 impl<'a, K, V, S> Extend<(&'a K, &'a V)> for HashMap<K, V, S>
-    where K: Eq + Hash + Copy, V: Copy, S: HashState
+    where K: Eq + Hash + Copy, V: Copy, S: BuildHasher
 {
     fn extend<T: IntoIterator<Item=(&'a K, &'a V)>>(&mut self, iter: T) {
         self.extend(iter.into_iter().map(|(&key, &value)| (key, value)));
@@ -2603,11 +2601,10 @@ impl RandomState {
     }
 }
 
-
-impl HashState for RandomState {
+impl BuildHasher for RandomState {
     type Hasher = SipHasher;
     #[inline]
-    fn hasher(&self) -> SipHasher {
+    fn build_hasher(&self) -> SipHasher {
         SipHasher::new_with_keys(self.k0, self.k1)
     }
 }
@@ -2621,7 +2618,7 @@ impl Default for RandomState {
 }
 
 impl<K, S, Q: ?Sized> Recover<Q> for HashMap<K, (), S>
-    where K: Eq + Hash + Borrow<Q>, S: HashState, Q: Eq + Hash
+    where K: Eq + Hash + Borrow<Q>, S: BuildHasher, Q: Eq + Hash
 {
     type Key = K;
 

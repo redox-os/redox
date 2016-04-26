@@ -6,6 +6,7 @@ addons:
   apt:
     packages:
       - nasm
+      - libfuse-dev
 os:
   - linux
 before_install:

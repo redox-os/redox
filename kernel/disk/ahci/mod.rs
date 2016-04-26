@@ -48,13 +48,15 @@ impl Ahci {
 pub struct AhciDisk {
     port: &'static mut HbaPort,
     port_index: usize,
+    size: u64,
 }
 
 impl AhciDisk {
     fn new(base: usize, port_index: usize) -> Self {
         AhciDisk {
             port: &mut unsafe { &mut *(base as *mut HbaMem) }.ports[port_index],
-            port_index: port_index
+            port_index: port_index,
+            size: 1024*1024*1024 //TODO: Get actual value
         }
     }
 }
@@ -62,6 +64,10 @@ impl AhciDisk {
 impl Disk for AhciDisk {
     fn name(&self) -> String {
         format!("AHCI Port {}", self.port_index)
+    }
+
+    fn size(&self) -> u64 {
+        self.size
     }
 
     fn read(&mut self, block: u64, buffer: &mut [u8]) -> Result<usize> {

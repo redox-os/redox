@@ -1,17 +1,14 @@
 use alloc::boxed::Box;
 
-use arch::intex::Intex;
-
 use collections::string::{String, ToString};
 use collections::vec::Vec;
 
+use arch::context::ContextManager;
+use arch::intex::Intex;
 use common::event::Event;
 use common::time::Duration;
-
-use arch::context::ContextManager;
-
+use disk::Disk;
 use fs::{KScheme, Resource, Scheme, VecResource, Url};
-
 use sync::WaitQueue;
 
 use system::error::{Error, Result, ENOENT, EEXIST};
@@ -34,6 +31,8 @@ pub struct Environment {
 
     /// Default console
     pub console: Intex<Console>,
+    /// Disks
+    pub disks: Intex<Vec<Box<Disk>>>,
     /// Pending events
     pub events: WaitQueue<Event>,
     /// Schemes
@@ -52,6 +51,7 @@ impl Environment {
             clock_monotonic: Intex::new(Duration::new(0, 0)),
 
             console: Intex::new(Console::new()),
+            disks: Intex::new(Vec::new()),
             events: WaitQueue::new(),
             schemes: Intex::new(Vec::new()),
 

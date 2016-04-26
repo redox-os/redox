@@ -14,11 +14,11 @@ use common::slice::GetSlice;
 
 use core::cell::UnsafeCell;
 use core::ops::DerefMut;
-use core::{mem, ptr, str};
+use core::{mem, ptr, slice, str};
 
 use fs::Url;
 
-use system::error::{Error, Result, ENOEXEC};
+use system::error::{Error, Result, ENOEXEC, ENOMEM};
 
 pub fn execute_thread(context_ptr: *mut Context, entry: usize, mut args: Vec<String>) -> ! {
     Context::spawn("kexec".to_string(), box move || {
@@ -119,13 +119,42 @@ pub fn execute(mut args: Vec<String>) -> Result<usize> {
             try!(url.as_url().open())
         };
 
-        'reading: loop {
-            let mut bytes = [0; 4096];
-            match resource.read(&mut bytes) {
-                Ok(0) => break 'reading,
-                Ok(count) => vec.extend_from_slice(bytes.get_slice(.. count)),
-                Err(err) => return Err(err)
+        // Hack to allow file scheme to find memory in context's memory space
+        unsafe {
+            let heap = &mut *current.heap.get();
+
+            let virtual_size = 65536;
+            let virtual_address = heap.next_mem();
+
+            let physical_address = memory::alloc_aligned(virtual_size, 4096);
+            if physical_address == 0 {
+                return Err(Error::new(ENOMEM));
             }
+
+            let mut memory = ContextMemory {
+                physical_address: physical_address,
+                virtual_address: virtual_address,
+                virtual_size: virtual_size,
+                writeable: true,
+                allocated: true,
+            };
+
+            memory.map();
+
+            heap.memory.push(memory);
+
+            'reading: loop {
+                let mut bytes = slice::from_raw_parts_mut(virtual_address as *mut u8, virtual_size);
+                match resource.read(&mut bytes) {
+                    Ok(0) => break 'reading,
+                    Ok(count) => vec.extend_from_slice(bytes.get_slice(.. count)),
+                    Err(err) => return Err(err)
+                }
+            }
+
+            let mut memory = heap.memory.pop().unwrap();
+
+            memory.unmap();
         }
     }
 

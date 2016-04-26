@@ -180,7 +180,7 @@ pub unsafe fn context_switch() {
                         if next.kernel_stack > 0 {
                             tss.sp0 = next.kernel_stack + CONTEXT_STACK_SIZE - 128;
                         } else {
-                            tss.sp0 = 0x100000 - 128;
+                            tss.sp0 = 0x800000 - 128;
                         }
                     }
 
@@ -514,7 +514,7 @@ impl ContextZone {
     /// Translate to physical if a ptr is inside of the mapped memory
     pub fn translate(&self, ptr: usize, len: usize) -> Option<usize> {
         for mem in self.memory.iter() {
-            if ptr >= mem.virtual_address && ptr + len < mem.virtual_address + mem.virtual_size {
+            if ptr >= mem.virtual_address && ptr + len <= mem.virtual_address + mem.virtual_size {
                 return Some(ptr - mem.virtual_address + mem.physical_address);
             }
         }

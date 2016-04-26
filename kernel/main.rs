@@ -46,7 +46,7 @@ use arch::tss::Tss;
 use collections::Vec;
 use collections::string::ToString;
 
-use core::{ptr, mem, usize};
+use core::{mem, usize};
 use core::slice::SliceExt;
 
 use common::time::Duration;
@@ -63,14 +63,16 @@ use graphics::display;
 
 use network::schemes::{ArpScheme, EthernetScheme, IcmpScheme, IpScheme, TcpScheme, UdpScheme};
 
-use schemes::context::*;
-use schemes::debug::*;
-use schemes::display::*;
-use schemes::env::*;
-use schemes::initfs::*;
-use schemes::interrupt::*;
-use schemes::memory::*;
-use schemes::test::*;
+use schemes::context::ContextScheme;
+use schemes::debug::DebugScheme;
+use schemes::disk::DiskScheme;
+use schemes::display::DisplayScheme;
+use schemes::env::EnvScheme;
+//use schemes::file::FileScheme;
+use schemes::initfs::InitFsScheme;
+use schemes::interrupt::InterruptScheme;
+use schemes::memory::MemoryScheme;
+use schemes::test::TestScheme;
 
 use syscall::execute::execute;
 use syscall::{do_sys_chdir, do_sys_exit, do_sys_open, syscall_handle};
@@ -259,7 +261,7 @@ static BSS_TEST_NONZERO: usize = !0;
 /// This will initialize the kernel: the environment, the memory allocator, the memory pager, PCI and so
 /// on.
 ///
-/// Note that this will not start the even loop.
+/// Note that this will not start the event loop.
 unsafe fn init(tss_data: usize) {
 
     // Test
@@ -347,7 +349,13 @@ unsafe fn init(tss_data: usize) {
 
             env.console.lock().draw = true;
 
-            debugln!("Redox {} bits", mem::size_of::<usize>() * 8);
+            debugln!("\x1B[1mRedox {} bits\x1B[0m", mem::size_of::<usize>() * 8);
+            debugln!("  * text={:X}:{:X} rodata={:X}:{:X}",
+                    & __text_start as *const u8 as usize, & __text_end as *const u8 as usize,
+                    & __rodata_start as *const u8 as usize, & __rodata_end as *const u8 as usize);
+            debugln!("  * data={:X}:{:X} bss={:X}:{:X}",
+                    & __data_start as *const u8 as usize, & __data_end as *const u8 as usize,
+                    & __bss_start as *const u8 as usize, & __bss_end as *const u8 as usize);
 
             if let Some(acpi) = Acpi::new() {
                 env.schemes.lock().push(acpi);
@@ -368,6 +376,11 @@ unsafe fn init(tss_data: usize) {
             env.schemes.lock().push(box InterruptScheme);
             env.schemes.lock().push(box MemoryScheme);
             env.schemes.lock().push(box TestScheme);
+
+            //TODO: Do not do this! Find a better way
+            let mut disks = Vec::new();
+            disks.append(&mut env.disks.lock());
+            env.schemes.lock().push(DiskScheme::new(disks));
 
             env.schemes.lock().push(box EthernetScheme);
             //env.schemes.lock().push(box ArpScheme);
@@ -409,7 +422,7 @@ unsafe fn init(tss_data: usize) {
                     }
                 }
 
-                if let Err(err) = execute(vec!["init".to_string()]) {
+                if let Err(err) = execute(vec!["initfs:/bin/init".to_string()]) {
                     debugln!("kernel: init: failed to execute: {}", err);
                 }
             });
@@ -458,14 +471,28 @@ pub extern "cdecl" fn kernel(interrupt: usize, mut regs: &mut Regs) {
             }
             debugln!("    FSW: {:08X}    FCW: {:08X}", fsw, fcw);
 
-            let sp = regs.sp as *const u32;
-            for y in -15..16 {
-                debug!("    {:>3}:", y * 8 * 4);
-                for x in 0..8 {
-                    debug!(" {:08X}", unsafe { ptr::read(sp.offset(-(x + y * 8))) });
+            /* TODO: Stack dump
+            {
+                let contexts = ::env().contexts.lock();
+                if let Ok(context) = contexts.current() {
+                    let sp = regs.sp as *const usize;
+                    for y in -15..16 {
+                        debug!("    {:>3}:", y * 8 * 4);
+                        for x in 0..8 {
+                            let p = unsafe { sp.offset(-(x + y * 8)) };
+                            if let Ok(_) = context.translate(p as usize, 1) {
+                                debug!(" {:08X}", unsafe { ptr::read(p) });
+                            } else if context.kernel_stack > 0 && (p as usize) >= context.kernel_stack && (p as usize) < context.kernel_stack + CONTEXT_STACK_SIZE {
+                                debug!(" {:08X}", unsafe { ptr::read(p) });
+                            } else {
+                                debug!(" ????????");
+                            }
+                        }
+                        debug!("\n");
+                    }
                 }
-                debug!("\n");
             }
+            */
         })
     };
 

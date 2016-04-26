@@ -2,12 +2,12 @@
 pub mod context;
 /// Debug scheme
 pub mod debug;
+/// Disk scheme
+pub mod disk;
 /// Display Scheme
 pub mod display;
 /// Environment variables scheme
 pub mod env;
-/// File scheme
-pub mod file;
 /// Init Filesystem
 pub mod initfs;
 /// Interrupt scheme

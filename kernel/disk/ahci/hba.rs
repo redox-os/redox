@@ -208,17 +208,21 @@ impl HbaPort {
     pub fn ata_dma(&mut self, block: u64, sectors: usize, buf: usize, write: bool) -> Result<usize> {
         // debugln!("AHCI {:X} DMA BLOCK: {:X} SECTORS: {} BUF: {:X} WRITE: {}", (self as *mut HbaPort) as usize, block, sectors, buf, write);
 
-        if buf > 0 && sectors > 0 {
+        if sectors > 0 {
+            let contexts = ::env().contexts.lock();
+            let current = try!(contexts.current());
+            let physical_address = try!(current.translate(buf, sectors * 512));
+
             let mut sector: usize = 0;
             while sectors - sector >= 255 {
-                if let Err(err) = self.ata_dma_small(block + sector as u64, 255, buf + sector * 512, write) {
+                if let Err(err) = self.ata_dma_small(block + sector as u64, 255, physical_address + sector * 512, write) {
                     return Err(err);
                 }
 
                 sector += 255;
             }
             if sector < sectors {
-                if let Err(err) = self.ata_dma_small(block + sector as u64, sectors - sector, buf + sector * 512, write) {
+                if let Err(err) = self.ata_dma_small(block + sector as u64, sectors - sector, physical_address + sector * 512, write) {
                     return Err(err);
                 }
             }

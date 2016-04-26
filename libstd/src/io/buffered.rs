@@ -65,7 +65,7 @@ impl<R: Read> BufReader<R> {
     /// # Ok(())
     /// # }
     /// ```
-        pub fn new(inner: R) -> BufReader<R> {
+    pub fn new(inner: R) -> BufReader<R> {
         BufReader::with_capacity(DEFAULT_BUF_SIZE, inner)
     }
 
@@ -85,7 +85,7 @@ impl<R: Read> BufReader<R> {
     /// # Ok(())
     /// # }
     /// ```
-        pub fn with_capacity(cap: usize, inner: R) -> BufReader<R> {
+    pub fn with_capacity(cap: usize, inner: R) -> BufReader<R> {
         BufReader {
             inner: inner,
             buf: vec![0; cap].into_boxed_slice(),
@@ -112,7 +112,7 @@ impl<R: Read> BufReader<R> {
     /// # Ok(())
     /// # }
     /// ```
-        pub fn get_ref(&self) -> &R { &self.inner }
+    pub fn get_ref(&self) -> &R { &self.inner }
 
     /// Gets a mutable reference to the underlying reader.
     ///
@@ -132,7 +132,7 @@ impl<R: Read> BufReader<R> {
     /// # Ok(())
     /// # }
     /// ```
-        pub fn get_mut(&mut self) -> &mut R { &mut self.inner }
+    pub fn get_mut(&mut self) -> &mut R { &mut self.inner }
 
     /// Unwraps this `BufReader`, returning the underlying reader.
     ///
@@ -152,7 +152,7 @@ impl<R: Read> BufReader<R> {
     /// # Ok(())
     /// # }
     /// ```
-        pub fn into_inner(self) -> R { self.inner }
+    pub fn into_inner(self) -> R { self.inner }
 }
 
 impl<R: Read> Read for BufReader<R> {
@@ -633,7 +633,7 @@ impl<W: Write> LineWriter<W> {
     /// # Ok(())
     /// # }
     /// ```
-        pub fn new(inner: W) -> LineWriter<W> {
+    pub fn new(inner: W) -> LineWriter<W> {
         // Lines typically aren't that long, don't use a giant buffer
         LineWriter::with_capacity(1024, inner)
     }
@@ -653,7 +653,7 @@ impl<W: Write> LineWriter<W> {
     /// # Ok(())
     /// # }
     /// ```
-        pub fn with_capacity(cap: usize, inner: W) -> LineWriter<W> {
+    pub fn with_capacity(cap: usize, inner: W) -> LineWriter<W> {
         LineWriter { inner: BufWriter::with_capacity(cap, inner) }
     }
 
@@ -673,7 +673,7 @@ impl<W: Write> LineWriter<W> {
     /// # Ok(())
     /// # }
     /// ```
-        pub fn get_ref(&self) -> &W { self.inner.get_ref() }
+    pub fn get_ref(&self) -> &W { self.inner.get_ref() }
 
     /// Gets a mutable reference to the underlying writer.
     ///
@@ -695,7 +695,7 @@ impl<W: Write> LineWriter<W> {
     /// # Ok(())
     /// # }
     /// ```
-        pub fn get_mut(&mut self) -> &mut W { self.inner.get_mut() }
+    pub fn get_mut(&mut self) -> &mut W { self.inner.get_mut() }
 
     /// Unwraps this `LineWriter`, returning the underlying writer.
     ///
@@ -716,7 +716,7 @@ impl<W: Write> LineWriter<W> {
     /// # Ok(())
     /// # }
     /// ```
-        pub fn into_inner(self) -> Result<W, IntoInnerError<LineWriter<W>>> {
+    pub fn into_inner(self) -> Result<W, IntoInnerError<LineWriter<W>>> {
         self.inner.into_inner().map_err(|IntoInnerError(buf, e)| {
             IntoInnerError(LineWriter { inner: buf }, e)
         })
