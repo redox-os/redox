@@ -6,17 +6,17 @@ use system::error::Result;
 use logging::LogLevel;
 
 /// The kernel log scheme.
-pub struct KlogScheme;
+pub struct SyslogScheme;
 
-impl KScheme for KlogScheme {
-    /// Returns the name of the scheme: "klog"
+impl KScheme for SyslogScheme {
+    /// Returns the name of the scheme
     fn scheme(&self) -> &str {
-        "klog"
+        "syslog"
     }
 
     /// Returns a resource. The `url` and `flags` arguments are currently unused.
     fn open(&mut self, _: Url, _: usize) -> Result<Box<Resource>> {
-        Ok(Box::new(KlogResource {
+        Ok(Box::new(SyslogResource {
             pos: 0,
         }))
     }
@@ -30,11 +30,11 @@ impl KScheme for KlogScheme {
 }
 
 /// The kernel log resource.
-pub struct KlogResource {
+pub struct SyslogResource {
     pos: usize,
 }
 
-impl KlogResource {
+impl SyslogResource {
     fn get_log_str(&self) -> String {
         let ref mut logs = *::env().logs.lock();
         let mut string = String::new();
@@ -54,9 +54,9 @@ impl KlogResource {
     }
 }
 
-impl Resource for KlogResource {
+impl Resource for SyslogResource {
     fn dup(&self) -> Result<Box<Resource>> {
-        Ok(Box::new(KlogResource {
+        Ok(Box::new(SyslogResource {
             pos: self.pos,
         }))
     }
