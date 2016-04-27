@@ -38,7 +38,8 @@ impl SyslogResource {
     fn get_log_str(&self) -> String {
         let ref mut logs = *::env().logs.lock();
         let mut string = String::new();
-        for &mut (ref level, ref message) in logs {
+        for &mut (ref time, ref level, ref message) in logs {
+            string.push_str(&format!("[{}.{:>03}] ", time.secs, time.nanos/1000000));
             let prefix: &str = match *level {
                 LogLevel::Debug    => "DEBUG ",
                 LogLevel::Info     => "INFO  ",
