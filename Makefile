@@ -142,6 +142,7 @@ coreutils: \
 	filesystem/bin/cp \
 	filesystem/bin/cut \
 	filesystem/bin/date \
+	filesystem/bin/dmesg \
 	filesystem/bin/du \
 	filesystem/bin/echo \
 	filesystem/bin/env \

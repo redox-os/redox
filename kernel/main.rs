@@ -61,7 +61,7 @@ use env::Environment;
 
 use graphics::display;
 
-use logging::{LogLevel, klog};
+use logging::LogLevel;
 
 use network::schemes::{ArpScheme, EthernetScheme, IcmpScheme, IpScheme, TcpScheme, UdpScheme};
 
@@ -73,8 +73,8 @@ use schemes::env::EnvScheme;
 //use schemes::file::FileScheme;
 use schemes::initfs::InitFsScheme;
 use schemes::interrupt::InterruptScheme;
-use schemes::klog::KlogScheme;
 use schemes::memory::MemoryScheme;
+use schemes::syslog::SyslogScheme;
 use schemes::test::TestScheme;
 
 use syscall::execute::execute;
@@ -87,6 +87,11 @@ pub use externs::*;
 /// This module implements basic primitives for kernel space. They are not exposed to userspace.
 #[macro_use]
 pub mod common;
+/// Logging.
+///
+/// This module contains the `syslog` function and the different log levels.
+#[macro_use]
+pub mod logging;
 /// Macros used in the kernel.
 #[macro_use]
 pub mod macros;
@@ -143,10 +148,6 @@ pub mod fs;
 ///
 /// This module contains the initial display manager and various graphics primitives.
 pub mod graphics;
-/// Logging.
-///
-/// This module contains the `klog` function and the different log levels.
-pub mod logging;
 /// Networking.
 ///
 /// This module contains drivers (e.g, intel8254x and rtl8139), primitives, schemes, and data
@@ -381,8 +382,8 @@ unsafe fn init(tss_data: usize) {
             env.schemes.lock().push(box DisplayScheme);
             env.schemes.lock().push(box EnvScheme);
             env.schemes.lock().push(box InterruptScheme);
-            env.schemes.lock().push(box KlogScheme);
             env.schemes.lock().push(box MemoryScheme);
+            env.schemes.lock().push(box SyslogScheme);
             env.schemes.lock().push(box TestScheme);
 
             //TODO: Do not do this! Find a better way
@@ -430,7 +431,7 @@ unsafe fn init(tss_data: usize) {
                     }
                 }
 
-                klog(LogLevel::Info, "The kernel has finished booting. Running /bin/init");
+                syslog!(LogLevel::Info, "The kernel has finished booting. Running /bin/init");
                 if let Err(err) = execute(vec!["initfs:/bin/init".to_string()]) {
                     debugln!("kernel: init: failed to execute: {}", err);
                 }
