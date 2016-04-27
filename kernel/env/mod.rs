@@ -2,6 +2,7 @@ use alloc::boxed::Box;
 
 use collections::string::{String, ToString};
 use collections::vec::Vec;
+use collections::vec_deque::VecDeque;
 
 use arch::context::ContextManager;
 use arch::intex::Intex;
@@ -37,7 +38,7 @@ pub struct Environment {
     /// Pending events
     pub events: WaitQueue<Event>,
     /// Kernel logs
-    pub logs: Intex<Vec<(LogLevel, String)>>,
+    pub logs: Intex<VecDeque<(Duration, LogLevel, String)>>,
     /// Schemes
     pub schemes: Intex<Vec<Box<KScheme>>>,
 
@@ -56,7 +57,7 @@ impl Environment {
             console: Intex::new(Console::new()),
             disks: Intex::new(Vec::new()),
             events: WaitQueue::new(),
-            logs: Intex::new(Vec::new()),
+            logs: Intex::new(VecDeque::new()),
             schemes: Intex::new(Vec::new()),
 
             interrupts: Intex::new([0; 256]),

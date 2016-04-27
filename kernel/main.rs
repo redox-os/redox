@@ -61,8 +61,6 @@ use env::Environment;
 
 use graphics::display;
 
-use logging::LogLevel;
-
 use network::schemes::{ArpScheme, EthernetScheme, IcmpScheme, IpScheme, TcpScheme, UdpScheme};
 
 use schemes::context::ContextScheme;
@@ -431,7 +429,7 @@ unsafe fn init(tss_data: usize) {
                     }
                 }
 
-                syslog!(LogLevel::Info, "The kernel has finished booting. Running /bin/init");
+                syslog_info!("The kernel has finished booting. Running /bin/init");
                 if let Err(err) = execute(vec!["initfs:/bin/init".to_string()]) {
                     debugln!("kernel: init: failed to execute: {}", err);
                 }
