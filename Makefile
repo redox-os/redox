@@ -546,7 +546,7 @@ $(BUILD)/filesystem.bin: apps bins
 	mkdir -p $(BUILD)/filesystem/
 	cargo run --manifest-path crates/redoxfs/Cargo.toml --bin redoxfs-fuse $@ $(BUILD)/filesystem/ &
 	sleep 2
-	-cp -rL filesystem/* $(BUILD)/filesystem/
+	-cp -RL filesystem/* $(BUILD)/filesystem/
 	sync
 	-$(FUMOUNT) $(BUILD)/filesystem/
 	rm -rf $(BUILD)/filesystem/
