@@ -1,3 +1,5 @@
+#![deny(warnings)]
+
 use std::fs::File;
 use std::time::Instant;
 
