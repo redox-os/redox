@@ -17,7 +17,6 @@
 #![feature(collections)]
 #![feature(collections_bound)]
 #![feature(const_fn)]
-#![feature(copy_from_slice)]
 #![feature(core_intrinsics)]
 #![feature(core_panic)]
 #![feature(dropck_parametricity)]
