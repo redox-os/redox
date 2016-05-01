@@ -84,7 +84,7 @@ $ git clone git@github.com:redox-os/redox.git --origin upstream --recursive
 $ cd redox/
 
 # Install/update dependencies
-$ sudo <your package manager> install make nasm qemu
+$ sudo <your package manager> install make nasm qemu libfuse-dev
 
 # Install multirust
 $ curl -sf https://raw.githubusercontent.com/brson/multirust/master/quick-install.sh | sh
