@@ -1,3 +1,4 @@
+#![deny(warnings)]
 #![feature(iter_arith)]
 
 extern crate orbclient;
@@ -494,7 +495,7 @@ impl FileManager {
                         self.set_path(&current_path);
                     }
                     FileManagerCommand::Execute(cmd) => {
-                        Command::new("launcher").arg(&(current_path.clone() + &cmd)).spawn();
+                        Command::new("launcher").arg(&(current_path.clone() + &cmd)).spawn().unwrap();
                     },
                     FileManagerCommand::Redraw => redraw = true,
                     FileManagerCommand::Quit => break 'events,
