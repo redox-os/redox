@@ -48,6 +48,18 @@
 //#![deny(missing_docs)]
 #![deny(warnings)]
 
+/*TODO
+extern crate ralloc;
+
+#[link(name = "c", kind = "static")]
+extern {
+    fn memcpy(dest: *mut u8, src: *const u8, n: usize) -> *mut u8;
+    fn memmove(dest: *mut u8, src: *const u8, n: usize) -> *mut u8;
+    fn memset(s: *mut u8, c: i32, n: usize) -> *mut u8;
+    fn memcmp(s1: *const u8, s2: *const u8, n: usize) -> i32;
+}
+*/
+
 extern crate alloc_malloc;
 
 // STD COPY {
@@ -105,7 +117,7 @@ pub use rustc_unicode::char;
 
 // Exported macros
 
-    #[macro_use]
+#[macro_use]
 pub mod macros;
 
 // TODO mod rtdeps;

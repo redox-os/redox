@@ -128,8 +128,8 @@ apps:     filesystem/apps/calculator/main.bin \
 $(BUILD)/libextra.rlib: crates/extra/src/lib.rs crates/extra/src/*.rs $(BUILD)/libstd.rlib
 	$(RUSTC) $(RUSTCFLAGS) --crate-name extra --crate-type lib -o $@ $<
 
-$(BUILD)/libralloc.rlib: crates/ralloc/src/lib.rs crates/ralloc/src/*.rs $(BUILD)/libstd.rlib $(BUILD)/libextra.rlib $(BUILD)/libsystem.rlib
-	$(RUSTC) $(RUSTCFLAGS) --crate-name ralloc --crate-type lib -o $@ $<
+$(BUILD)/libralloc.rlib: crates/ralloc/src/lib.rs crates/ralloc/src/*.rs $(BUILD)/libsystem.rlib
+	$(RUSTC) $(RUSTCFLAGS) --crate-name ralloc --crate-type lib -o $@ $< --cfg 'feature="allocator"'
 
 filesystem/bin/%: crates/coreutils/src/bin/%.rs $(BUILD)/libextra.rlib
 	mkdir -p filesystem/bin
