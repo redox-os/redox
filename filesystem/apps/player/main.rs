@@ -1,3 +1,5 @@
+#![deny(warnings)]
+
 extern crate orbclient;
 
 use std::fs::File;
@@ -18,7 +20,7 @@ fn main() {
 
     let mut vec: Vec<u8> = Vec::new();
     if let Ok(mut file) = File::open(&url) {
-        file.read_to_end(&mut vec);
+        file.read_to_end(&mut vec).unwrap();
     }
 
     let mut window = Window::new(-1, -1, 320, 32, &("Player (".to_string() + &url + ")")).unwrap();
@@ -28,7 +30,7 @@ fn main() {
 
     if !wav.data.is_empty() {
         if let Ok(mut audio) = File::open("audio://") {
-            audio.write(&wav.data);
+            audio.write(&wav.data).unwrap();
         }
     }
 
