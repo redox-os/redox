@@ -128,10 +128,13 @@ apps:     filesystem/apps/calculator/main.bin \
 $(BUILD)/libextra.rlib: crates/extra/src/lib.rs crates/extra/src/*.rs $(BUILD)/libstd.rlib
 	$(RUSTC) $(RUSTCFLAGS) --crate-name extra --crate-type lib -o $@ $<
 
+$(BUILD)/libwalkdir.rlib: crates/walkdir/src/lib.rs crates/walkdir/src/*.rs $(BUILD)/libstd.rlib
+	$(RUSTC) $(RUSTCFLAGS) --crate-name walkdir --crate-type lib -o $@ $<
+
 $(BUILD)/libralloc.rlib: crates/ralloc/src/lib.rs crates/ralloc/src/*.rs $(BUILD)/libsystem.rlib
 	$(RUSTC) $(RUSTCFLAGS) --crate-name ralloc --crate-type lib -o $@ $< --cfg 'feature="allocator"'
 
-filesystem/bin/%: crates/coreutils/src/bin/%.rs $(BUILD)/libextra.rlib
+filesystem/bin/%: crates/coreutils/src/bin/%.rs $(BUILD)/libextra.rlib $(BUILD)/libwalkdir.rlib
 	mkdir -p filesystem/bin
 	$(RUSTC) $(RUSTCFLAGS) -C lto --crate-type bin -o $@ $<
 
@@ -411,17 +414,6 @@ doc/std: libstd/src/lib.rs libstd/src/*.rs libstd/src/*/*.rs libstd/src/*/*/*.rs
 	$(RUSTDOC) --crate-name=std $<
 
 doc: doc/kernel doc/std doc/extra doc/ralloc doc/orbclient doc/orbtk doc/sodium doc/binutils
-
-man: filesystem/man
-
-filesystem/man:
-	mkdir man \
-	rm -rf filesystem/man |& true \
-	cd crates/docgen \
-	cargo build --release \
-	cd ../../ \
-	./crates/docgen/target/release/docgen \
-	mv man filesystem
 
 $(BUILD)/libcore.rlib: rust/src/libcore/lib.rs
 	$(MKDIR) -p $(BUILD)
