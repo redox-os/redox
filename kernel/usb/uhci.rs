@@ -64,109 +64,69 @@ impl Uhci {
     pub unsafe fn init(&mut self) {
         debugln!(" + UHCI on: {:X}, IRQ: {:X}", self.base, self.irq);
 
-        /*
         let base = self.base as u16;
         let mut usbcmd = Pio::<u16>::new(base);
         let usbsts = Pio::<u16>::new(base + 0x2);
         let usbintr = Pio::<u16>::new(base + 0x4);
         let mut frnum = Pio::<u16>::new(base + 0x6);
         let mut flbaseadd = Pio::<u32>::new(base + 0x8);
-        let mut portsc1 = Pio::<u16>::new(base + 0x10);
-        let mut portsc2 = Pio::<u16>::new(base + 0x12);
+        let mut portscs = [Pio::<u16>::new(base + 0x10), Pio::<u16>::new(base + 0x12)];
 
-        debug::d(" CMD ");
-        debug::dh(usbcmd.read() as usize);
+        debug!(" CMD {:X}", usbcmd.read());
         usbcmd.write(1 << 2 | 1 << 1);
-        debug::d(" to ");
-        debug::dh(usbcmd.read() as usize);
-
+        debug!(" to {:X}", usbcmd.read());
         usbcmd.write(0);
-        debug::d(" to ");
-        debug::dh(usbcmd.read() as usize);
+        debug!(" to {:X}", usbcmd.read());
 
-        debug::d(" STS ");
-        debug::dh(usbsts.read() as usize);
+        debug!(" STS {:X}", usbsts.read());
 
-        debug::d(" INTR ");
-        debug::dh(usbintr.read() as usize);
+        debug!(" INTR {:X}", usbintr.read());
 
-        debug::d(" FRNUM ");
-        debug::dh(frnum.read() as usize);
+        debug!(" FRNUM {:X}", frnum.read());
         frnum.write(0);
-        debug::d(" to ");
-        debug::dh(frnum.read() as usize);
+        debug!(" to {:X}", frnum.read());
 
-        debug::d(" FLBASEADD ");
-        debug::dh(flbaseadd.read() as usize);
+        debug!(" FLBASEADD {:X}", flbaseadd.read());
         for i in 0..1024 {
-            self.frame_list.write(i, 1);
+            self.frame_list.store(i, 1);
         }
         flbaseadd.write(self.frame_list.address() as u32);
-        debug::d(" to ");
-        debug::dh(flbaseadd.read() as usize);
+        debug!(" to {:X}", flbaseadd.read());
 
-        debug::d(" CMD ");
-        debug::dh(usbcmd.read() as usize);
+        debug!(" CMD {:X}", usbcmd.read());
         usbcmd.write(1);
-        debug::d(" to ");
-        debug::dh(usbcmd.read() as usize);
+        debug!(" to {:X}", usbcmd.read());
 
-        debug::dl();
+        debugln!("");
 
-        {
-            debug::d(" PORTSC1 ");
-            debug::dh(portsc1.read() as usize);
+        for i in 0..portscs.len() {
+            let portsc = &mut portscs[i];
 
-            portsc1.write(1 << 9);
-            debug::d(" to ");
-            debug::dh(portsc1.read() as usize);
+            debug!(" PORTSC{} {:X}", i + 1, portsc.read());
 
-            portsc1.write(0);
-            debug::d(" to ");
-            debug::dh(portsc1.read() as usize);
+            portsc.write(1 << 9);
+            debug!(" to {:X}", portsc.read());
 
-            debug::dl();
+            portsc.write(0);
+            debugln!(" to {:X}", portsc.read());
 
-            if portsc1.read() & 1 == 1 {
-                debug::d(" Device Found ");
-                debug::dh(portsc1.read() as usize);
+            if portsc.read() & 1 == 1 {
+                debug!(" Device Found {:X}", portsc.read());
 
-                portsc1.write(4);
-                debug::d(" to ");
-                debug::dh(portsc1.read() as usize);
-                debug::dl();
+                portsc.write(4);
+                debugln!(" to {:X}", portsc.read());
 
-                self.device(1);
+                self.device((i + 1) as u8);
             }
         }
+    }
+}
 
-        {
-            debug::d(" PORTSC2 ");
-            debug::dh(portsc2.read() as usize);
-
-            portsc2.write(1 << 9);
-            debug::d(" to ");
-            debug::dh(portsc2.read() as usize);
-
-            portsc2.write(0);
-            debug::d(" to ");
-            debug::dh(portsc2.read() as usize);
-
-            debug::dl();
-
-            if portsc2.read() & 1 == 1 {
-                debug::d(" Device Found ");
-                debug::dh(portsc2.read() as usize);
-
-                portsc2.write(4);
-                debug::d(" to ");
-                debug::dh(portsc2.read() as usize);
-                debug::dl();
-
-                self.device(2);
-            }
-        }
-        */
+fn convert_phys(ptr: u32) -> u32 {
+    if ptr >= 0x80000000 {
+        ptr - 0x80000000
+    } else {
+        ptr
     }
 }
 
@@ -180,7 +140,7 @@ impl Hci for Uhci {
         let mut tds = Vec::new();
         for msg in msgs.iter().rev() {
             let link_ptr = match tds.last() {
-                Some(td) => (td as *const Td) as u32 | 4,
+                Some(td) => convert_phys((td as *const Td) as u32) | 4,
                 None => 1
             };
 
@@ -189,19 +149,19 @@ impl Hci for Uhci {
                     link_ptr: link_ptr,
                     ctrl_sts: ctrl_sts,
                     token: (mem::size_of::<Setup>() as u32 - 1) << 21 | (endpoint as u32) << 15 | (address as u32) << 8 | 0x2D,
-                    buffer: (&*setup as *const Setup) as u32,
+                    buffer: convert_phys((&*setup as *const Setup) as u32),
                 }),
                 Packet::In(ref data) => tds.push(Td {
                     link_ptr: link_ptr,
                     ctrl_sts: ctrl_sts,
                     token: ((data.len() as u32 - 1) & 0x7FF) << 21 | (endpoint as u32) << 15 | (address as u32) << 8 | 0x69,
-                    buffer: data.as_ptr() as u32,
+                    buffer: convert_phys(data.as_ptr() as u32),
                 }),
                 Packet::Out(ref data) => tds.push(Td {
                     link_ptr: link_ptr,
                     ctrl_sts: ctrl_sts,
                     token: ((data.len() as u32 - 1) & 0x7FF) << 21 | (endpoint as u32) << 15 | (address as u32) << 8 | 0xE1,
-                    buffer: data.as_ptr() as u32,
+                    buffer: convert_phys(data.as_ptr() as u32),
                 })
             }
         }
@@ -211,7 +171,7 @@ impl Hci for Uhci {
         if ! tds.is_empty() {
             let queue_head = box Qh {
                  head_ptr: 1,
-                 element_ptr: (tds.last().unwrap() as *const Td) as u32,
+                 element_ptr: convert_phys((tds.last().unwrap() as *const Td) as u32),
             };
 
             let frame_ptr = if tds.len() == 1 {
@@ -222,18 +182,18 @@ impl Hci for Uhci {
 
             let frnum = Pio::<u16>::new(self.base as u16 + 6);
             let frame = (frnum.read() + 1) & 0x3FF;
-            self.frame_list.write(frame as usize, frame_ptr);
+            self.frame_list.store(frame as usize, convert_phys(frame_ptr));
 
             for td in tds.iter().rev() {
                 while unsafe { volatile_load(td as *const Td).ctrl_sts } & 1 << 23 == 1 << 23 {
                     unsafe { context_switch() };
                 }
-                count += (unsafe { volatile_load(td as *const Td).ctrl_sts } & 0x7FF) as usize;
+                count += unsafe { volatile_load(td as *const Td).ctrl_sts } & 0x7FF;
             }
 
-            self.frame_list.write(frame as usize, 1);
+            self.frame_list.store(frame as usize, 1);
         }
 
-        count
+        count as usize
     }
 }

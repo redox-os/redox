@@ -43,7 +43,7 @@ pub trait Hci {
                         0,
                         (&mut *desc_dev as *mut DeviceDescriptor) as usize,
                         mem::size_of_val(&*desc_dev));
-        //debugln!("{:#?}", *desc_dev);
+        debugln!("{:#?}", *desc_dev);
 
         if desc_dev.manufacturer_string > 0 {
             let mut desc_str = box StringDescriptor::default();
@@ -88,7 +88,7 @@ pub trait Hci {
                             desc_cfg_len);
 
             let desc_cfg = ptr::read(desc_cfg_buf as *const ConfigDescriptor);
-            //debugln!("{:#?}", desc_cfg);
+            debugln!("{:#?}", desc_cfg);
 
             if desc_cfg.string > 0 {
                 let mut desc_str = box StringDescriptor::default();
@@ -97,7 +97,7 @@ pub trait Hci {
                                 desc_cfg.string,
                                 (&mut *desc_str as *mut StringDescriptor) as usize,
                                 mem::size_of_val(&*desc_str));
-                //debugln!("Configuration: {}", desc_str.str());
+                debugln!("Configuration: {}", desc_str.str());
             }
 
             let mut hid = false;
@@ -109,7 +109,7 @@ pub trait Hci {
                 match descriptor_type {
                     DESC_INT => {
                         let desc_int = ptr::read(desc_cfg_buf.offset(i) as *const InterfaceDescriptor);
-                        //debugln!("{:#?}", desc_int);
+                        debugln!("{:#?}", desc_int);
 
                         if desc_int.string > 0 {
                             let mut desc_str = box StringDescriptor::default();
@@ -118,12 +118,12 @@ pub trait Hci {
                                             desc_int.string,
                                             (&mut *desc_str as *mut StringDescriptor) as usize,
                                             mem::size_of_val(&*desc_str));
-                            //debugln!("Interface: {}", desc_str.str());
+                            debugln!("Interface: {}", desc_str.str());
                         }
                     }
                     DESC_END => {
                         let desc_end = ptr::read(desc_cfg_buf.offset(i) as *const EndpointDescriptor);
-                        //debugln!("{:#?}", desc_end);
+                        debugln!("{:#?}", desc_end);
 
                         let endpoint = desc_end.address & 0xF;
                         let in_len = desc_end.max_packet_size as usize;
