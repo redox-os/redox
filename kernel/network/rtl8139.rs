@@ -184,16 +184,9 @@ impl Rtl8139 {
         }
 
         self.port.imr.write((ISR_TOK | ISR_ROK).bits);
-        debug!(" IMR: {:X}", self.port.imr.read());
-
         self.port.cr.write((CR_RE | CR_TE).bits);
-        debug!(" CMD: {:X}", self.port.cr.read());
-
         self.port.rcr.write((RCR_WRAP | RCR_AR | RCR_AB | RCR_AM | RCR_APM).bits);
-        debug!(" RCR: {:X}", self.port.rcr.read());
-
         self.port.tcr.writef(TCR_IFG.bits, true);
-        debugln!(" TCR: {:X}", self.port.tcr.read());
     }
 
     unsafe fn receive_inbound(&mut self) {
