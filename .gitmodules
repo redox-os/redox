@@ -61,3 +61,6 @@
 [submodule "crates/walkdir"]
 	path = crates/walkdir
 	url = https://github.com/redox-os/walkdir.git
+[submodule "crates/bitflags"]
+	path = crates/bitflags
+	url = https://github.com/rust-lang-nursery/bitflags.git

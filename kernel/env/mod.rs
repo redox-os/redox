@@ -9,6 +9,7 @@ use arch::intex::Intex;
 use common::event::Event;
 use common::time::Duration;
 use disk::Disk;
+use network::Nic;
 use fs::{KScheme, Resource, Scheme, VecResource, Url};
 use logging::LogLevel;
 use sync::WaitQueue;
@@ -35,6 +36,8 @@ pub struct Environment {
     pub console: Intex<Console>,
     /// Disks
     pub disks: Intex<Vec<Box<Disk>>>,
+    /// Network interfaces
+    pub nics: Intex<Vec<Box<Nic>>>,
     /// Pending events
     pub events: WaitQueue<Event>,
     /// Kernel logs
@@ -56,6 +59,7 @@ impl Environment {
 
             console: Intex::new(Console::new()),
             disks: Intex::new(Vec::new()),
+            nics: Intex::new(Vec::new()),
             events: WaitQueue::new(),
             logs: Intex::new(VecDeque::new()),
             schemes: Intex::new(Vec::new()),
