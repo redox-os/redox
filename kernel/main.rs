@@ -29,6 +29,9 @@
 extern crate alloc;
 
 #[macro_use]
+extern crate bitflags;
+
+#[macro_use]
 extern crate collections;
 
 extern crate system;
@@ -388,6 +391,12 @@ unsafe fn init(tss_data: usize) {
             let mut disks = Vec::new();
             disks.append(&mut env.disks.lock());
             env.schemes.lock().push(DiskScheme::new(disks));
+
+            /*
+            let mut nics = Vec::new();
+            nics.append(&mut env.nics.lock());
+            env.schemes.lock().push(NetworkScheme::new(nics));
+            */
 
             env.schemes.lock().push(box EthernetScheme);
             //env.schemes.lock().push(box ArpScheme);

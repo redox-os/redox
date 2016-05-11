@@ -9,8 +9,6 @@ use collections::vec_deque::VecDeque;
 
 use core::ptr;
 
-use common::debug;
-
 use drivers::pci::config::PciConfig;
 use drivers::io::{Io, Pio};
 
@@ -23,31 +21,51 @@ use system::error::Result;
 
 use sync::Intex;
 
-const RTL8139_TSR_OWN: u32 = 1 << 13;
+bitflags! {
+    flags TsrFlags: u32 {
+        const TSR_OWN = 1 << 13
+    }
+}
 
-const RTL8139_CR_RST: u8 = 1 << 4;
-const RTL8139_CR_RE: u8 = 1 << 3;
-const RTL8139_CR_TE: u8 = 1 << 2;
-const RTL8139_CR_BUFE: u8 = 1 << 0;
+bitflags! {
+    flags CrFlags: u8 {
+        const CR_RST = 1 << 4,
+        const CR_RE = 1 << 3,
+        const CR_TE = 1 << 2,
+        const CR_BUFE = 1 << 0
+    }
+}
 
-const RTL8139_ISR_SERR: u16 = 1 << 15;
-const RTL8139_ISR_TIMEOUT: u16 = 1 << 14;
-const RTL8139_ISR_LENCHG: u16 = 1 << 13;
-const RTL8139_ISR_FOVW: u16 = 1 << 6;
-const RTL8139_ISR_PUN_LINKCHG: u16 = 1 << 5;
-const RTL8139_ISR_RXOVW: u16 = 1 << 4;
-const RTL8139_ISR_TER: u16 = 1 << 3;
-const RTL8139_ISR_TOK: u16 = 1 << 2;
-const RTL8139_ISR_RER: u16 = 1 << 1;
-const RTL8139_ISR_ROK: u16 = 1 << 0;
+bitflags! {
+    flags IsrFlags: u16 {
+        const ISR_SERR = 1 << 15,
+        const ISR_TIMEOUT = 1 << 14,
+        const ISR_LENCHG = 1 << 13,
+        const ISR_FOVW = 1 << 6,
+        const ISR_PUN_LINKCHG = 1 << 5,
+        const ISR_RXOVW = 1 << 4,
+        const ISR_TER = 1 << 3,
+        const ISR_TOK = 1 << 2,
+        const ISR_RER = 1 << 1,
+        const ISR_ROK = 1 << 0
+    }
+}
 
-const RTL8139_TCR_IFG: u32 = 0b11 << 24;
+bitflags! {
+    flags TcrFlags: u32 {
+        const TCR_IFG = 0b11 << 24
+    }
+}
 
-const RTL8139_RCR_WRAP: u32 = 1 << 7;
-const RTL8139_RCR_AR: u32 = 1 << 4;
-const RTL8139_RCR_AB: u32 = 1 << 3;
-const RTL8139_RCR_AM: u32 = 1 << 2;
-const RTL8139_RCR_APM: u32 = 1 << 1;
+bitflags! {
+    flags RcrFlags: u32 {
+        const RCR_WRAP = 1 << 7,
+        const RCR_AR = 1 << 4,
+        const RCR_AB = 1 << 3,
+        const RCR_AM = 1 << 2,
+        const RCR_APM = 1 << 1
+    }
+}
 
 #[repr(packed)]
 struct Txd {
@@ -109,7 +127,7 @@ impl Rtl8139 {
         let pci_id = unsafe { pci.read(0x00) };
         let revision = (unsafe { pci.read(0x08) } & 0xFF) as u8;
         if pci_id == 0x813910EC && revision < 0x20 {
-            debugln!("Not an 8139C+ compatible chip")
+            debugln!("Not an 8139C+ compatible chip");
         }
 
         let base = unsafe { pci.read(0x10) as usize };
@@ -141,10 +159,9 @@ impl Rtl8139 {
         let base = self.base as u16;
 
         self.port.config1.write(0);
-        self.port.cr.write(RTL8139_CR_RST);
-        while self.port.cr.read() & RTL8139_CR_RST != 0 {}
+        self.port.cr.write(CR_RST.bits);
+        while self.port.cr.read() & CR_RST.bits != 0 {}
 
-        debug::d("   - MAC: ");
         MAC_ADDR = MacAddr {
             bytes: [self.port.idr[0].read(),
                     self.port.idr[1].read(),
@@ -153,7 +170,7 @@ impl Rtl8139 {
                     self.port.idr[4].read(),
                     self.port.idr[5].read()],
         };
-        debug::d(&MAC_ADDR.to_string());
+        debugln!("   - MAC: {}", &MAC_ADDR.to_string());
 
         let receive_buffer = memory::alloc(10240);
         self.port.rbstart.write(receive_buffer as u32);
@@ -166,24 +183,17 @@ impl Rtl8139 {
             });
         }
 
-        self.port.imr.write(RTL8139_ISR_TOK | RTL8139_ISR_ROK);
-        debug::d(" IMR: ");
-        debug::dh(self.port.imr.read() as usize);
+        self.port.imr.write((ISR_TOK | ISR_ROK).bits);
+        debug!(" IMR: {:X}", self.port.imr.read());
 
-        self.port.cr.write(RTL8139_CR_RE | RTL8139_CR_TE);
-        debug::d(" CMD: ");
-        debug::dbh(self.port.cr.read());
+        self.port.cr.write((CR_RE | CR_TE).bits);
+        debug!(" CMD: {:X}", self.port.cr.read());
 
-        self.port.rcr.write(RTL8139_RCR_WRAP | RTL8139_RCR_AR | RTL8139_RCR_AB | RTL8139_RCR_AM |
-                            RTL8139_RCR_APM);
-        debug::d(" RCR: ");
-        debug::dh(self.port.rcr.read() as usize);
+        self.port.rcr.write((RCR_WRAP | RCR_AR | RCR_AB | RCR_AM | RCR_APM).bits);
+        debug!(" RCR: {:X}", self.port.rcr.read());
 
-        self.port.tcr.writef(RTL8139_TCR_IFG, true);
-        debug::d(" TCR: ");
-        debug::dh(self.port.tcr.read() as usize);
-
-        debug::dl();
+        self.port.tcr.writef(TCR_IFG.bits, true);
+        debugln!(" TCR: {:X}", self.port.tcr.read());
     }
 
     unsafe fn receive_inbound(&mut self) {
@@ -212,7 +222,7 @@ impl Rtl8139 {
         while let Some(bytes) = self.outbound.pop_front() {
             if let Some(ref mut txd) = self.txds.get_mut(self.txd_i) {
                 if bytes.len() < 4096 {
-                    while !txd.status_port.readf(RTL8139_TSR_OWN) {}
+                    while !txd.status_port.readf(TSR_OWN.bits) {}
 
                     ::memcpy(txd.buffer as *mut u8, bytes.as_ptr(), bytes.len());
 
@@ -221,13 +231,10 @@ impl Rtl8139 {
 
                     self.txd_i = (self.txd_i + 1) % 4;
                 } else {
-                    debug::dl();
-                    debug::d("RTL8139: Frame too long for transmit: ");
-                    debug::dd(bytes.len());
-                    debug::dl();
+                    debugln!("RTL8139: Frame too long for transmit: {}", bytes.len());
                 }
             } else {
-                debug::d("RTL8139: TXD Overflow!\n");
+                debugln!("RTL8139: TXD Overflow!");
                 self.txd_i = 0;
             }
         }

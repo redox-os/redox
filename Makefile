@@ -125,6 +125,9 @@ apps:     filesystem/apps/calculator/main.bin \
 	  filesystem/apps/terminal/main.bin \
 	  filesystem/apps/viewer/main.bin
 
+$(BUILD)/libbitflags.rlib: crates/bitflags/src/lib.rs crates/bitflags/src/*.rs $(BUILD)/libcore.rlib
+	$(RUSTC) $(RUSTCFLAGS) --crate-name bitflags --crate-type lib -o $@ $<
+
 $(BUILD)/libextra.rlib: crates/extra/src/lib.rs crates/extra/src/*.rs $(BUILD)/libstd.rlib
 	$(RUSTC) $(RUSTCFLAGS) --crate-name extra --crate-type lib -o $@ $<
 
@@ -465,7 +468,7 @@ $(BUILD)/libsystem.rlib: crates/system/lib.rs crates/system/*.rs crates/system/*
 $(BUILD)/libredoxfs.rlib: crates/redoxfs/src/lib.rs crates/redoxfs/src/*.rs $(BUILD)/libstd.rlib
 	$(RUSTC) $(RUSTCFLAGS) -o $@ $<
 
-$(BUILD)/kernel.rlib: kernel/main.rs kernel/*.rs kernel/*/*.rs kernel/*/*/*.rs  $(BUILD)/libio.rlib build/initfs.gen
+$(BUILD)/kernel.rlib: kernel/main.rs kernel/*.rs kernel/*/*.rs kernel/*/*/*.rs $(BUILD)/libbitflags.rlib $(BUILD)/libio.rlib build/initfs.gen
 	$(RUSTC) $(RUSTCFLAGS) -C lto -o $@ $<
 
 $(BUILD)/kernel.bin: $(BUILD)/kernel.rlib kernel/kernel.ld
