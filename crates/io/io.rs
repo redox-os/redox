@@ -1,17 +1,18 @@
 use core::cmp::PartialEq;
-use core::marker::PhantomData;
 use core::ops::{BitAnd, BitOr, Not};
 
-pub trait Io<T> {
-    fn read(&self) -> T;
-    fn write(&mut self, value: T);
+pub trait Io {
+    type Value: Copy + PartialEq + BitAnd<Output = Self::Value> + BitOr<Output = Self::Value> + Not<Output = Self::Value>;
 
-    fn readf(&self, flags: T) -> bool where T: BitAnd<Output = T> + PartialEq<T> + Copy {
-        (self.read() & flags) as T == flags
+    fn read(&self) -> Self::Value;
+    fn write(&mut self, value: Self::Value);
+
+    fn readf(&self, flags: Self::Value) -> bool  {
+        (self.read() & flags) as Self::Value == flags
     }
 
-    fn writef(&mut self, flags: T, value: bool) where T: BitAnd<Output = T> + BitOr<Output = T> + Not<Output = T> {
-        let tmp: T = match value {
+    fn writef(&mut self, flags: Self::Value, value: bool) {
+        let tmp: Self::Value = match value {
             true => self.read() | flags,
             false => self.read() & !flags,
         };
@@ -19,46 +20,42 @@ pub trait Io<T> {
     }
 }
 
-pub struct ReadOnly<T, I: Io<T>> {
-    inner: I,
-    value: PhantomData<T>,
+pub struct ReadOnly<I: Io> {
+    inner: I
 }
 
-impl<T, I: Io<T>> ReadOnly<T, I> {
-    pub fn new(inner: I) -> ReadOnly<T, I> {
+impl<I: Io> ReadOnly<I> {
+    pub fn new(inner: I) -> ReadOnly<I> {
         ReadOnly {
-            inner: inner,
-            value: PhantomData,
+            inner: inner
         }
     }
 
-    pub fn read(&self) -> T {
+    pub fn read(&self) -> I::Value {
         self.inner.read()
     }
 
-    pub fn readf(&self, flags: T) -> bool where T: BitAnd<Output = T> + PartialEq<T> + Copy {
+    pub fn readf(&self, flags: I::Value) -> bool {
         self.inner.readf(flags)
     }
 }
 
-pub struct WriteOnly<T, I: Io<T>> {
-    inner: I,
-    value: PhantomData<T>,
+pub struct WriteOnly<I: Io> {
+    inner: I
 }
 
-impl<T, I: Io<T>> WriteOnly<T, I> {
-    pub fn new(inner: I) -> WriteOnly<T, I> {
+impl<I: Io> WriteOnly<I> {
+    pub fn new(inner: I) -> WriteOnly<I> {
         WriteOnly {
-            inner: inner,
-            value: PhantomData,
+            inner: inner
         }
     }
 
-    pub fn write(&mut self, value: T) {
+    pub fn write(&mut self, value: I::Value) {
         self.inner.write(value)
     }
 
-    pub fn writef(&mut self, flags: T, value: bool) where T: BitAnd<Output = T> + BitOr<Output = T> + Not<Output = T> {
+    pub fn writef(&mut self, flags: I::Value, value: bool) {
         self.inner.writef(flags, value)
     }
 }

@@ -16,7 +16,7 @@ use syscall::{do_sys_nanosleep, Result, TimeSpec};
 
 #[repr(packed)]
 struct BD {
-    ptr: PhysAddr<u32, Mmio<u32>>,
+    ptr: PhysAddr<Mmio<u32>>,
     samples: Mmio<u32>,
 }
 

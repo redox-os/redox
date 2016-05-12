@@ -44,9 +44,9 @@ pub struct Ps2 {
     /// The data register
     data: Pio<u8>,
     /// The status register
-    sts: ReadOnly<u8, Pio<u8>>,
+    sts: ReadOnly<Pio<u8>>,
     /// The command register
-    cmd: WriteOnly<u8, Pio<u8>>,
+    cmd: WriteOnly<Pio<u8>>,
     /// Left shift?
     lshift: bool,
     /// Right shift?
