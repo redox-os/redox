@@ -568,8 +568,8 @@ virtualbox: $(BUILD)/harddrive.bin
 	$(VBM) modifyvm Redox --usb off # on
 	$(VBM) modifyvm Redox --keyboard ps2
 	$(VBM) modifyvm Redox --mouse ps2
-	# $(VBM) modifyvm Redox --audio $(VB_AUDIO)
-	# $(VBM) modifyvm Redox --audiocontroller ac97
+	$(VBM) modifyvm Redox --audio $(VB_AUDIO)
+	$(VBM) modifyvm Redox --audiocontroller ac97
 	echo "Create Disk"
 	$(VBM) convertfromraw $< $(BUILD)/harddrive.vdi
 	echo "Attach Disk"
@@ -598,6 +598,10 @@ ifeq ($(vga),no)
 	QFLAGS += -vga none -nographic
 else
 	QFLAGS += -vga std
+endif
+
+ifneq ($(audio),no)
+	QFLAGS += -soundhw ac97
 endif
 
 ifneq ($(usb),no)

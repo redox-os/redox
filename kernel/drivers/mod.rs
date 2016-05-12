@@ -1,5 +1,5 @@
-pub extern crate io;
-
+/// IO primitives
+pub mod io;
 /// PCI
 pub mod pci;
 /// PS2

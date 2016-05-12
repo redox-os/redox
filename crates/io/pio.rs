@@ -9,6 +9,16 @@ pub struct Pio<T> {
     value: PhantomData<T>,
 }
 
+impl<T> Pio<T> {
+    /// Create a PIO from a given port
+    pub fn new(port: u16) -> Self {
+        Pio::<T> {
+            port: port,
+            value: PhantomData,
+        }
+    }
+}
+
 /// Read/Write for byte PIO
 impl Io<u8> for Pio<u8> {
     /// Read
@@ -62,16 +72,6 @@ impl Io<u32> for Pio<u32> {
     fn write(&mut self, value: u32) {
         unsafe {
             asm!("out $1, $0" : : "{eax}"(value), "{dx}"(self.port) : "memory" : "intel", "volatile");
-        }
-    }
-}
-
-impl<T> Pio<T> {
-    /// Create a PIO from a given port
-    pub fn new(port: u16) -> Self {
-        Pio::<T> {
-            port: port,
-            value: PhantomData,
         }
     }
 }
