@@ -20,7 +20,9 @@ impl<T> Pio<T> {
 }
 
 /// Read/Write for byte PIO
-impl Io<u8> for Pio<u8> {
+impl Io for Pio<u8> {
+    type Value = u8;
+
     /// Read
     fn read(&self) -> u8 {
         let value: u8;
@@ -39,7 +41,9 @@ impl Io<u8> for Pio<u8> {
 }
 
 /// Read/Write for word PIO
-impl Io<u16> for Pio<u16> {
+impl Io for Pio<u16> {
+    type Value = u16;
+
     /// Read
     fn read(&self) -> u16 {
         let value: u16;
@@ -58,7 +62,9 @@ impl Io<u16> for Pio<u16> {
 }
 
 /// Read/Write for doubleword PIO
-impl Io<u32> for Pio<u32> {
+impl Io for Pio<u32> {
+    type Value = u32;
+
     /// Read
     fn read(&self) -> u32 {
         let value: u32;

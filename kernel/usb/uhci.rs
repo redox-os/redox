@@ -18,7 +18,7 @@ use super::{Hci, Packet, Pipe, Setup};
 pub struct Uhci {
     pub base: usize,
     pub irq: u8,
-    pub frame_list: Memory<PhysAddr<u32, Mmio<u32>>>,
+    pub frame_list: Memory<PhysAddr<Mmio<u32>>>,
 }
 
 impl KScheme for Uhci {
@@ -60,16 +60,16 @@ bitflags! {
 
 #[repr(packed)]
 struct Td {
-    link_ptr: PhysAddr<u32, Mmio<u32>>,
+    link_ptr: PhysAddr<Mmio<u32>>,
     ctrl_sts: Mmio<u32>,
     token: Mmio<u32>,
-    buffer: PhysAddr<u32, Mmio<u32>>,
+    buffer: PhysAddr<Mmio<u32>>,
 }
 
 #[repr(packed)]
 struct Qh {
-    head_ptr: PhysAddr<u32, Mmio<u32>>,
-    element_ptr: PhysAddr<u32, Mmio<u32>>,
+    head_ptr: PhysAddr<Mmio<u32>>,
+    element_ptr: PhysAddr<Mmio<u32>>,
 }
 
 impl Uhci {
