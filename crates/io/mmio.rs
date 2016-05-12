@@ -1,4 +1,5 @@
 use core::intrinsics::{volatile_load, volatile_store};
+use core::mem::uninitialized;
 
 use super::io::Io;
 
@@ -7,7 +8,16 @@ pub struct Mmio<T> {
     value: T,
 }
 
-impl <T> Io<T> for Mmio<T> {
+impl<T: Default> Mmio<T> {
+    /// Create a new Mmio without initializing
+    pub fn new() -> Self {
+        Mmio {
+            value: unsafe { uninitialized() }
+        }
+    }
+}
+
+impl<T> Io<T> for Mmio<T> {
     fn read(&self) -> T {
         unsafe { volatile_load(&self.value) }
     }

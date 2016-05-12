@@ -1,8 +1,6 @@
 use arch::memory::*;
 use arch::paging::Page;
 
-const LOGICAL_OFFSET: usize = 0x80000000;
-
 #[allocator]
 #[no_mangle]
 pub extern "C" fn __rust_allocate(size: usize, align: usize) -> *mut u8 {
