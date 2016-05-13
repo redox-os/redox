@@ -4,12 +4,22 @@ use env::{args_init, args_destroy};
 use system::syscall::sys_exit;
 use vec::Vec;
 
-pub fn begin_unwind(string: &'static str, file_line: &(&'static str, u32)) -> ! {
+pub fn begin_panic(string: &'static str, file_line: &(&'static str, u32)) -> ! {
     let &(file, line) = file_line;
-    panic_impl(format_args!("{}", string), file, line)
+    panic_impl(&format_args!("{}", string), file, line)
 }
 
-pub fn begin_unwind_fmt(fmt: fmt::Arguments, file_line: &(&'static str, u32)) -> ! {
+pub fn begin_panic_fmt(fmt: &fmt::Arguments, file_line: &(&'static str, u32)) -> ! {
+    let &(file, line) = file_line;
+    panic_impl(fmt, file, line)
+}
+
+pub fn begin_unwind(string: &'static str, file_line: &(&'static str, u32)) -> ! {
+    let &(file, line) = file_line;
+    panic_impl(&format_args!("{}", string), file, line)
+}
+
+pub fn begin_unwind_fmt(fmt: &fmt::Arguments, file_line: &(&'static str, u32)) -> ! {
     let &(file, line) = file_line;
     panic_impl(fmt, file, line)
 }

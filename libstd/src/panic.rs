@@ -15,9 +15,9 @@ impl Write for DebugStream {
 
 #[lang="panic_fmt"]
 #[allow(unused_must_use)]
-pub extern "C" fn panic_impl(args: fmt::Arguments, file: &'static str, line: u32) -> ! {
+pub extern "C" fn panic_impl(args: &fmt::Arguments, file: &'static str, line: u32) -> ! {
     let mut stream = DebugStream;
-    fmt::write(&mut stream, args);
+    fmt::write(&mut stream, *args);
     fmt::write(&mut stream, format_args!(" in {}:{}\n", file, line));
 
     loop {

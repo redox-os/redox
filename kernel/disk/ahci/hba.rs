@@ -3,8 +3,6 @@ use arch::memory;
 use core::mem::size_of;
 use core::u32;
 
-use disk::Disk;
-
 use drivers::io::{Io, Mmio};
 
 use system::error::{Error, Result, EIO};

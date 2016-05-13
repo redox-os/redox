@@ -1,6 +1,5 @@
 use alloc::boxed::Box;
 
-use collections::string::ToString;
 use collections::vec::Vec;
 
 use core::{cmp, mem};

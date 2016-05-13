@@ -3,7 +3,6 @@ use alloc::boxed::Box;
 use arch::memory;
 
 use collections::slice;
-use collections::string::ToString;
 use collections::vec::Vec;
 use collections::vec_deque::VecDeque;
 
