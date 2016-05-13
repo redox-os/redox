@@ -1,5 +1,3 @@
-use core::str::StrExt;
-
 use syscall::do_sys_debug;
 
 /// Debug to console

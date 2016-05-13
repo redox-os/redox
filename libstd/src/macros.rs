@@ -17,9 +17,9 @@
 /// The entry point for panic of Rust threads.
 ///
 /// This macro is used to inject panic into a Rust thread, causing the thread to
-/// unwind and panic entirely. Each thread's panic can be reaped as the
-/// `Box<Any>` type, and the single-argument form of the `panic!` macro will be
-/// the value which is transmitted.
+/// panic entirely. Each thread's panic can be reaped as the `Box<Any>` type,
+/// and the single-argument form of the `panic!` macro will be the value which
+/// is transmitted.
 ///
 /// The multi-argument form of this macro panics with a string and has the
 /// `format!` syntax for building a string.
@@ -40,14 +40,14 @@ macro_rules! panic {
         panic!("explicit panic")
     });
     ($msg:expr) => ({
-        $crate::rt::begin_unwind($msg, {
+        $crate::rt::begin_panic($msg, {
             // static requires less code at runtime, more constant data
             static _FILE_LINE: (&'static str, u32) = (file!(), line!());
             &_FILE_LINE
         })
     });
     ($fmt:expr, $($arg:tt)+) => ({
-        $crate::rt::begin_unwind_fmt(format_args!($fmt, $($arg)+), {
+        $crate::rt::begin_panic_fmt(&format_args!($fmt, $($arg)+), {
             // The leading _'s are to avoid dead code warnings if this is
             // used inside a dead function. Just `#[allow(dead_code)]` is
             // insufficient, since the user may have
@@ -96,7 +96,6 @@ macro_rules! print {
     ($($arg:tt)*) => ($crate::io::_print(format_args!($($arg)*)));
 }
 
-
 /// Macro for printing to the standard output, with a newline.
 ///
 /// Use the `format!` syntax to write data to the standard output.
@@ -116,45 +115,6 @@ macro_rules! print {
 macro_rules! println {
     ($fmt:expr) => (print!(concat!($fmt, "\n")));
     ($fmt:expr, $($arg:tt)*) => (print!(concat!($fmt, "\n"), $($arg)*));
-}
-
-/// Helper macro for unwrapping `Result` values while returning early with an
-/// error if the value of the expression is `Err`. Can only be used in
-/// functions that return `Result` because of the early return of `Err` that
-/// it provides.
-///
-/// # Examples
-///
-/// ```
-/// use std::io;
-/// use std::fs::File;
-/// use std::io::prelude::*;
-///
-/// fn write_to_file_using_try() -> Result<(), io::Error> {
-///     let mut file = try!(File::create("my_best_friends.txt"));
-///     try!(file.write_all(b"This is a list of my best friends."));
-///     println!("I wrote to the file");
-///     Ok(())
-/// }
-/// // This is equivalent to:
-/// fn write_to_file_using_match() -> Result<(), io::Error> {
-///     let mut file = try!(File::create("my_best_friends.txt"));
-///     match file.write_all(b"This is a list of my best friends.") {
-///         Ok(_) => (),
-///         Err(e) => return Err(e),
-///     }
-///     println!("I wrote to the file");
-///     Ok(())
-/// }
-/// ```
-#[macro_export]
-macro_rules! try {
-    ($expr:expr) => (match $expr {
-        $crate::result::Result::Ok(val) => val,
-        $crate::result::Result::Err(err) => {
-            return $crate::result::Result::Err($crate::convert::From::from(err))
-        }
-    })
 }
 
 /// A macro to select an event from a number of receivers.
@@ -207,18 +167,6 @@ macro_rules! select {
         $( if ret == $rx.id() { let $name = $rx.$meth(); $code } else )+
         { unreachable!() }
     })
-}
-
-// When testing the standard library, we link to the liblog crate to get the
-// logging macros. In doing so, the liblog crate was linked against the real
-// version of libstd, and uses a different std::fmt module than the test crate
-// uses. To get around this difference, we redefine the log!() macro here to be
-// just a dumb version of what it should be.
-#[cfg(test)]
-macro_rules! log {
-    ($lvl:expr, $($args:tt)*) => (
-        if log_enabled!($lvl) { println!($($args)*) }
-    )
 }
 
 #[cfg(test)]
@@ -302,9 +250,10 @@ pub mod builtin {
     /// This macro takes any number of comma-separated identifiers, and
     /// concatenates them all into one, yielding an expression which is a new
     /// identifier. Note that hygiene makes it such that this macro cannot
-    /// capture local variables, and macros are only allowed in item,
-    /// statement or expression position, meaning this macro may be difficult to
-    /// use in some situations.
+    /// capture local variables. Also, as a general rule, macros are only
+    /// allowed in item, statement or expression position. That means while
+    /// you may use this macro for referring to existing variables, functions or
+    /// modules etc, you cannot define a new one with it.
     ///
     /// # Examples
     ///
@@ -316,6 +265,8 @@ pub mod builtin {
     ///
     /// let f = concat_idents!(foo, bar);
     /// println!("{}", f());
+    ///
+    /// // fn concat_idents!(new, fun, name) { } // not usable in this way!
     /// # }
     /// ```
     #[macro_export]
@@ -393,6 +344,9 @@ pub mod builtin {
     /// stringification of all the tokens passed to the macro. No restrictions
     /// are placed on the syntax of the macro invocation itself.
     ///
+    /// Note that the expanded results of the input tokens may change in the
+    /// future. You should be careful if you rely on the output.
+    ///
     /// # Examples
     ///
     /// ```
@@ -456,8 +410,8 @@ pub mod builtin {
     /// boolean expression evaluation of configuration flags. This frequently
     /// leads to less duplicated code.
     ///
-    /// The syntax given to this macro is the same syntax as the `cfg`
-    /// attribute.
+    /// The syntax given to this macro is the same syntax as [the `cfg`
+    /// attribute](../reference.html#conditional-compilation).
     ///
     /// # Examples
     ///
@@ -469,7 +423,7 @@ pub mod builtin {
     /// };
     /// ```
     #[macro_export]
-    macro_rules! cfg { ($cfg:tt) => ({ /* compiler built-in */ }) }
+    macro_rules! cfg { ($($cfg:tt)*) => ({ /* compiler built-in */ }) }
 
     /// Parse the current given file as an expression.
     ///
@@ -483,5 +437,5 @@ pub mod builtin {
     /// }
     /// ```
     #[macro_export]
-    macro_rules! include { ($cfg:tt) => ({ /* compiler built-in */ }) }
+    macro_rules! include { ($file:expr) => ({ /* compiler built-in */ }) }
 }

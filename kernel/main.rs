@@ -8,8 +8,6 @@
 #![feature(collections)]
 #![feature(const_fn)]
 #![feature(core_intrinsics)]
-#![feature(core_str_ext)]
-#![feature(core_slice_ext)]
 #![feature(fnbox)]
 #![feature(fundamental)]
 #![feature(lang_items)]
@@ -50,7 +48,6 @@ use collections::Vec;
 use collections::string::ToString;
 
 use core::{mem, usize};
-use core::slice::SliceExt;
 
 use common::time::Duration;
 
