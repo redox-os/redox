@@ -11,10 +11,10 @@ os:
   - linux
 before_install:
     - if [ `uname` = "Darwin" ]; then
-        brew tap altkatz/homebrew-gcc_cross_compilers;
+        brew tap nashenas88/gcc_cross_compilers;
         brew update;
         brew unlink gcc;
-        brew install i386-elf-binutils i386-elf-gcc nasm;
+        brew install nashenas88/gcc_cross_compilers/i386-elf-binutils nashenas88/gcc_cross_compilers/i386-elf-gcc nasm;
       fi
 script:
   - make clean
