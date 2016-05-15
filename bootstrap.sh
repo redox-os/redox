@@ -51,7 +51,6 @@ osx()
 	brew tap nashenas88/gcc_cross_compilers
 	brew install nashenas88/gcc_cross_compilers/i386-elf-binutils nashenas88/gcc_cross_compilers/i386-elf-gcc nasm pkg-config
 	brew install Caskroom/cask/osxfuse
-	endMessage
 }
 
 archLinux()
