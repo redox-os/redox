@@ -109,10 +109,10 @@ filesystem/apps/pixelcannon/main.bin: crates/pixelcannon/src/main.rs crates/pixe
 filesystem/apps/sodium/main.bin: filesystem/apps/sodium/src/main.rs filesystem/apps/sodium/src/*.rs $(BUILD)/libstd.rlib $(BUILD)/liborbclient.rlib
 	$(RUSTC) $(RUSTCFLAGS) -C lto --crate-type bin -o $@ $< --cfg 'feature="orbital"'
 
-filesystem/apps/%/main.bin: filesystem/apps/%/main.rs filesystem/apps/%/*.rs $(BUILD)/libstd.rlib $(BUILD)/liborbclient.rlib $(BUILD)/liborbtk.rlib
+filesystem/apps/%/main.bin: filesystem/apps/%/main.rs filesystem/apps/%/*.rs $(BUILD)/libstd.rlib $(BUILD)/liborbclient.rlib $(BUILD)/liborbimage.rlib $(BUILD)/liborbtk.rlib
 	$(RUSTC) $(RUSTCFLAGS) -C lto --crate-type bin -o $@ $<
 
-filesystem/apps/%/main.bin: crates/orbutils/src/%/main.rs crates/orbutils/src/%/*.rs $(BUILD)/libstd.rlib $(BUILD)/liborbclient.rlib $(BUILD)/liborbtk.rlib $(BUILD)/libpng.rlib
+filesystem/apps/%/main.bin: crates/orbutils/src/%/main.rs crates/orbutils/src/%/*.rs $(BUILD)/libstd.rlib $(BUILD)/liborbclient.rlib $(BUILD)/liborbimage.rlib $(BUILD)/liborbtk.rlib
 	$(RUSTC) $(RUSTCFLAGS) -C lto --crate-type bin -o $@ $<
 
 apps:     filesystem/apps/calculator/main.bin \
@@ -462,6 +462,9 @@ $(BUILD)/libstd.rlib: libstd/src/lib.rs libstd/src/*.rs libstd/src/*/*.rs libstd
 	$(RUSTC) $(RUSTCFLAGS) -o $@ $< -L native=libc/lib/
 
 $(BUILD)/liborbclient.rlib: crates/orbclient/src/lib.rs crates/orbclient/src/*.rs crates/orbclient/src/*/*.rs $(BUILD)/libstd.rlib
+	$(RUSTC) $(RUSTCFLAGS) -o $@ $<
+
+$(BUILD)/liborbimage.rlib: crates/orbimage/src/lib.rs crates/orbimage/src/*.rs $(BUILD)/libstd.rlib $(BUILD)/liborbclient.rlib $(BUILD)/libpng.rlib
 	$(RUSTC) $(RUSTCFLAGS) -o $@ $<
 
 $(BUILD)/liborbtk.rlib: crates/orbtk/src/lib.rs crates/orbtk/src/*.rs $(BUILD)/libstd.rlib $(BUILD)/liborbclient.rlib

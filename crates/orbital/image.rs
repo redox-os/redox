@@ -1,5 +1,7 @@
 use std::{cmp, mem};
+use std::path::Path;
 
+use orbimage;
 use system::graphics::{fast_copy, fast_set};
 
 use super::{Color, Rect};
@@ -173,6 +175,21 @@ impl Image {
             w: width,
             h: height,
             data: data
+        }
+    }
+
+    pub fn from_path<P: AsRef<Path>>(path: P) -> Image {
+        match orbimage::Image::from_path(path) {
+            Ok(orb_image) => {
+                let width = orb_image.width();
+                let height = orb_image.height();
+                let data = orb_image.into_data();
+                Image::from_data(width as i32, height as i32, unsafe { mem::transmute(data) })
+            },
+            Err(err) => {
+                println!("orbital Image::from_path: {}", err);
+                Image::new(0, 0)
+            }
         }
     }
 

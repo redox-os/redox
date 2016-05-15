@@ -2,11 +2,12 @@
 #![feature(const_fn)]
 
 extern crate core;
+extern crate orbimage;
 extern crate system;
 
 use std::collections::BTreeMap;
 use std::collections::VecDeque;
-use std::io::{Read, Write, SeekFrom};
+use std::io::SeekFrom;
 use std::mem;
 use std::process::Command;
 use std::sync::{Arc, Mutex};
@@ -25,11 +26,9 @@ pub use self::rect::Rect;
 pub use self::socket::Socket;
 pub use self::window::Window;
 
-use self::bmp::BmpFile;
 use self::config::Config;
 use self::event::{EVENT_KEY, EVENT_MOUSE, QuitEvent};
 
-pub mod bmp;
 pub mod color;
 pub mod config;
 #[path="../../kernel/common/event.rs"]
@@ -81,8 +80,8 @@ impl OrbitalScheme {
         OrbitalScheme {
             start: Instant::now(),
             image: Image::new(width, height),
-            background: BmpFile::from_path(&config.background),
-            cursor: BmpFile::from_path(&config.cursor),
+            background: Image::from_path(&config.background),
+            cursor: Image::from_path(&config.cursor),
             cursor_x: 0,
             cursor_y: 0,
             dragging: false,
@@ -126,7 +125,7 @@ impl OrbitalScheme {
             if ! rect.is_empty() {
                 //TODO: only clear area not covered by background
                 self.image.roi(&rect).set(Color::rgb(75, 163, 253));
-                
+
                 let background_rect = self.background_rect();
                 let background_intersect = rect.intersection(&background_rect);
                 if ! background_intersect.is_empty(){
