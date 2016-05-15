@@ -64,3 +64,12 @@
 [submodule "crates/bitflags"]
 	path = crates/bitflags
 	url = https://github.com/rust-lang-nursery/bitflags.git
+[submodule "crates/libz-sys"]
+	path = crates/libz-sys
+	url = https://github.com/redox-os/libz-sys.git
+[submodule "crates/liblibc"]
+	path = crates/liblibc
+	url = https://github.com/redox-os/liblibc.git
+[submodule "crates/rust-png"]
+	path = crates/rust-png
+	url = https://github.com/redox-os/rust-png.git

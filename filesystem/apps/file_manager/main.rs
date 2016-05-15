@@ -39,6 +39,7 @@ impl FileTypesInfo {
         file_types.insert("bin",
                           FileType::new("Executable", "application-x-executable"));
         file_types.insert("bmp", FileType::new("Bitmap Image", "image-x-generic"));
+        file_types.insert("png", FileType::new("PNG Image", "image-x-generic"));
         file_types.insert("rs", FileType::new("Rust source code", "text-x-makefile"));
         file_types.insert("crate",
                           FileType::new("Rust crate", "application-x-archive"));
