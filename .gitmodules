@@ -76,3 +76,6 @@
 [submodule "crates/orbimage"]
 	path = crates/orbimage
 	url = https://github.com/redox-os/orbimage.git
+[submodule "crates/orbfont"]
+	path = crates/orbfont
+	url = https://github.com/redox-os/orbfont.git
