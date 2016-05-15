@@ -57,9 +57,9 @@ ifeq ($(UNAME),Darwin)
 	VBM="/Applications/VirtualBox.app/Contents/MacOS/VBoxManage"
 endif
 
-.PHONY: help all doc apps bins clean \
-	bochs FORCE \
-	qemu qemu_bare qemu_tap \
+.PHONY: help all doc apps bins clean FORCE \
+	drivers binutils coreutils extrautils games \
+	qemu qemu_bare qemu_tap bochs \
 	virtualbox virtualbox_tap \
 	arping ping wireshark
 
@@ -242,15 +242,8 @@ filesystem/bin/%: libc/bin/%
 	mkdir -p filesystem/bin
 	cp $< $@
 
-$(BUILD)/examples/rusttype.bin: FORCE $(BUILD)/libstd.rlib
-	$(CARGO) --manifest-path crates/rusttype/Cargo.toml --example rusttype $(CARGOFLAGS)
-
-$(BUILD)/librusttype.rlib: FORCE $(BUILD)/libstd.rlib
+$(BUILD)/librusttype.rlib: crates/rusttype/src/lib.rs crates/rusttype/src/*.rs crates/rusttype/src/*/*.rs $(BUILD)/libstd.rlib
 	$(CARGO) --manifest-path crates/rusttype/Cargo.toml --lib $(CARGOFLAGS)
-
-filesystem/bin/rusttype: $(BUILD)/examples/rusttype.bin
-	mkdir -p filesystem/bin
-	cp $< $@
 
 $(BUILD)/ion-shell.bin: FORCE $(BUILD)/libstd.rlib
 	$(CARGO) --manifest-path crates/ion/Cargo.toml --bin ion-shell $(CARGOFLAGS) -C lto
@@ -297,7 +290,6 @@ bins: \
   	filesystem/bin/login \
   	filesystem/bin/minesweeper \
   	filesystem/bin/orbital \
-	filesystem/bin/rusttype \
 	filesystem/bin/screenfetch \
   	filesystem/bin/sdl-test \
 	filesystem/bin/std-test \
