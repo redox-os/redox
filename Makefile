@@ -58,7 +58,7 @@ ifeq ($(UNAME),Darwin)
 endif
 
 .PHONY: help all doc apps bins clean \
-	bochs \
+	bochs FORCE \
 	qemu qemu_bare qemu_tap \
 	virtualbox virtualbox_tap \
 	arping ping wireshark
