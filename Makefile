@@ -112,7 +112,7 @@ filesystem/apps/sodium/main.bin: filesystem/apps/sodium/src/main.rs filesystem/a
 filesystem/apps/%/main.bin: filesystem/apps/%/main.rs filesystem/apps/%/*.rs $(BUILD)/libstd.rlib $(BUILD)/liborbclient.rlib $(BUILD)/liborbtk.rlib
 	$(RUSTC) $(RUSTCFLAGS) -C lto --crate-type bin -o $@ $<
 
-filesystem/apps/%/main.bin: crates/orbutils/src/%/main.rs crates/orbutils/src/%/*.rs $(BUILD)/libstd.rlib $(BUILD)/liborbclient.rlib $(BUILD)/liborbtk.rlib
+filesystem/apps/%/main.bin: crates/orbutils/src/%/main.rs crates/orbutils/src/%/*.rs $(BUILD)/libstd.rlib $(BUILD)/liborbclient.rlib $(BUILD)/liborbtk.rlib $(BUILD)/libpng.rlib
 	$(RUSTC) $(RUSTCFLAGS) -C lto --crate-type bin -o $@ $<
 
 apps:     filesystem/apps/calculator/main.bin \
@@ -130,6 +130,15 @@ $(BUILD)/libbitflags.rlib: crates/bitflags/src/lib.rs crates/bitflags/src/*.rs $
 
 $(BUILD)/libextra.rlib: crates/extra/src/lib.rs crates/extra/src/*.rs $(BUILD)/libstd.rlib
 	$(RUSTC) $(RUSTCFLAGS) --crate-name extra --crate-type lib -o $@ $<
+
+$(BUILD)/libpng.rlib: crates/rust-png/src/lib.rs crates/rust-png/src/*.rs $(BUILD)/libpng_sys.rlib
+	$(RUSTC) $(RUSTCFLAGS) --crate-name png --crate-type lib -o $@ $< -L native=libc/lib/
+
+$(BUILD)/libpng_sys.rlib: crates/rust-png/png-sys/lib.rs crates/rust-png/png-sys/*.rs $(BUILD)/liblibz_sys.rlib
+	$(RUSTC) $(RUSTCFLAGS) --crate-name png_sys --crate-type lib -o $@ $<
+
+$(BUILD)/liblibz_sys.rlib: crates/libz-sys/src/lib.rs crates/libz-sys/src/*.rs $(BUILD)/libstd.rlib $(BUILD)/liblibc.rlib
+	$(RUSTC) $(RUSTCFLAGS) --crate-name libz_sys --crate-type lib -o $@ $< -L native=libc/lib/
 
 $(BUILD)/libwalkdir.rlib: crates/walkdir/src/lib.rs crates/walkdir/src/*.rs $(BUILD)/libstd.rlib
 	$(RUSTC) $(RUSTCFLAGS) --crate-name walkdir --crate-type lib -o $@ $<
@@ -443,7 +452,7 @@ $(BUILD)/libgetopts.rlib: rust/src/libgetopts/lib.rs $(BUILD)/libserialize.rlib 
 $(BUILD)/librand.rlib: rust/src/librand/lib.rs $(BUILD)/libcore.rlib $(BUILD)/liballoc.rlib $(BUILD)/librustc_unicode.rlib $(BUILD)/libcollections.rlib
 	$(RUSTC) $(RUSTCFLAGS) -o $@ $<
 
-$(BUILD)/liblibc.rlib: rust/src/liblibc/src/lib.rs $(BUILD)/libcore.rlib
+$(BUILD)/liblibc.rlib: crates/liblibc/src/lib.rs $(BUILD)/libcore.rlib
 	$(RUSTC) $(RUSTCFLAGS) -o $@ $<
 
 $(BUILD)/librealstd.rlib: rust/src/libstd/lib.rs $(BUILD)/libcore.rlib $(BUILD)/liblibc.rlib $(BUILD)/liballoc.rlib $(BUILD)/librustc_unicode.rlib $(BUILD)/libcollections.rlib $(BUILD)/librand.rlib
