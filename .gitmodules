@@ -73,3 +73,6 @@
 [submodule "crates/rust-png"]
 	path = crates/rust-png
 	url = https://github.com/redox-os/rust-png.git
+[submodule "crates/orbimage"]
+	path = crates/orbimage
+	url = https://github.com/redox-os/orbimage.git
