@@ -685,3 +685,8 @@ ping:
 
 wireshark:
 	wireshark $(BUILD)/network.pcap
+
+%:
+	@echo "ERROR: Unknown target. Maybe you forgot to get the submodules (git submodule update --init --recursive)"
+	exit 100
+
