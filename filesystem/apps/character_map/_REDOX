@@ -1,0 +1,5 @@
+name=Character Map
+icon=/ui/apps/accessories-character-map.bmp
+accept=*.ttf
+author=Jeremy Soller
+description=Character Map for Redox
