@@ -243,7 +243,7 @@ impl FileManager {
     fn get_parent_directory() -> Option<String> {
         match File::open("../") {
             Ok(parent_dir) => match parent_dir.path() {
-                Ok(path) => return Some(path.into_os_string().into_string().unwrap_or("/".to_string())),
+                Ok(path) => return Some(path.into_os_string().into_string().unwrap_or("/".to_string()).trim_left_matches("file:").to_string()),
                 Err(err) => println!("failed to get path: {}", err)
             },
             Err(err) => println!("failed to open parent dir: {}", err)
