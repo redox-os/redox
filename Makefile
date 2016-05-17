@@ -110,7 +110,7 @@ filesystem/apps/sodium/main.bin: filesystem/apps/sodium/src/main.rs filesystem/a
 	$(RUSTC) $(RUSTCFLAGS) -C lto --crate-type bin -o $@ $< --cfg 'feature="orbital"'
 
 filesystem/apps/%/main.bin: filesystem/apps/%/main.rs filesystem/apps/%/*.rs $(BUILD)/libstd.rlib $(BUILD)/liborbclient.rlib $(BUILD)/liborbfont.rlib $(BUILD)/liborbimage.rlib $(BUILD)/liborbtk.rlib
-	$(RUSTC) $(RUSTCFLAGS) -C lto --crate-type bin -o $@ $<
+	$(RUSTC) $(RUSTCFLAGS) -C lto --crate-type bin -o $@ $< -L $(BUILD)/deps
 
 filesystem/apps/%/main.bin: crates/orbutils/src/%/main.rs crates/orbutils/src/%/*.rs $(BUILD)/libstd.rlib $(BUILD)/liborbclient.rlib $(BUILD)/liborbfont.rlib $(BUILD)/liborbimage.rlib $(BUILD)/liborbtk.rlib
 	$(RUSTC) $(RUSTCFLAGS) -C lto --crate-type bin -o $@ $< -L $(BUILD)/deps
@@ -474,8 +474,8 @@ $(BUILD)/liborbfont.rlib: crates/orbfont/src/lib.rs crates/orbfont/src/*.rs $(BU
 $(BUILD)/liborbimage.rlib: crates/orbimage/src/lib.rs crates/orbimage/src/*.rs $(BUILD)/libstd.rlib $(BUILD)/liborbclient.rlib $(BUILD)/libpng.rlib
 	$(RUSTC) $(RUSTCFLAGS) -o $@ $<
 
-$(BUILD)/liborbtk.rlib: crates/orbtk/src/lib.rs crates/orbtk/src/*.rs $(BUILD)/libstd.rlib $(BUILD)/liborbclient.rlib
-	$(RUSTC) $(RUSTCFLAGS) -o $@ $<
+$(BUILD)/liborbtk.rlib: crates/orbtk/src/lib.rs crates/orbtk/src/*.rs $(BUILD)/libstd.rlib $(BUILD)/liborbclient.rlib $(BUILD)/liborbfont.rlib
+	$(RUSTC) $(RUSTCFLAGS) -o $@ $< -L $(BUILD)/deps
 
 #Kernel stuff
 $(BUILD)/libio.rlib: crates/io/lib.rs crates/io/*.rs $(BUILD)/libcore.rlib
