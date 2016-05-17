@@ -2,6 +2,7 @@
 #![feature(iter_arith)]
 
 extern crate orbclient;
+extern crate orbfont;
 
 use std::{cmp, env};
 use std::collections::BTreeMap;
@@ -11,6 +12,7 @@ use std::string::{String, ToString};
 use std::vec::Vec;
 
 use orbclient::{event, BmpFile, Color, EventOption, MouseEvent, Window};
+use orbfont::Font;
 
 struct FileType {
     description: &'static str,
@@ -108,6 +110,7 @@ pub struct FileManager {
     selected: isize,
     last_mouse_event: MouseEvent,
     window: Box<Window>,
+    font: Font,
 }
 
 fn load_icon(path: &str) -> BmpFile {
@@ -129,6 +132,7 @@ impl FileManager {
                 right_button: false,
             },
             window: Window::new(-1, -1, 0, 0, "").unwrap(),
+            font: Font::from_path("/ui/fonts/UbuntuMono-Regular.ttf").unwrap()
         }
     }
 
@@ -174,64 +178,14 @@ impl FileManager {
                               &icon);
 
             let mut col = 0;
-            for c in file_name.chars() {
-                if c == '\n' {
-                    col = 0;
-                    row += 1;
-                } else if c == '\t' {
-                    col += 8 - col % 8;
-                } else {
-                    if col < self.window.width() / 8 && row < self.window.height() / 32 {
-                        self.window.char(8 * col as i32 + 40, 32 * row as i32 + 8, c, Color::rgb(0, 0, 0));
-                        col += 1;
-                    }
-                }
-                if col >= self.window.width() / 8 {
-                    col = 0;
-                    row += 1;
-                }
-            }
+            self.font.render(file_name, 16.0).draw(&mut self.window, 8 * col as i32 + 40, 32 * row as i32 + 8, Color::rgb(0, 0, 0));
 
             col = column[0] as u32;
-
-            for c in file_size.chars() {
-                if c == '\n' {
-                    col = 0;
-                    row += 1;
-                } else if c == '\t' {
-                    col += 8 - col % 8;
-                } else {
-                    if col < self.window.width() / 8 && row < self.window.height() / 32 {
-                        self.window.char(8 * col as i32 + 40, 32 * row as i32 + 8, c, Color::rgb(0, 0, 0));
-                        col += 1;
-                    }
-                }
-                if col >= self.window.width() / 8 {
-                    col = 0;
-                    row += 1;
-                }
-            }
+            self.font.render(file_size, 16.0).draw(&mut self.window, 8 * col as i32 + 40, 32 * row as i32 + 8, Color::rgb(0, 0, 0));
 
             col = column[1] as u32;
-
             let description = self.file_types_info.description_for(&file_name);
-            for c in description.chars() {
-                if c == '\n' {
-                    col = 0;
-                    row += 1;
-                } else if c == '\t' {
-                    col += 8 - col % 8;
-                } else {
-                    if col < self.window.width() / 8 && row < self.window.height() / 32 {
-                        self.window.char(8 * col as i32 + 40, 32 * row as i32 + 8, c, Color::rgb(0, 0, 0));
-                        col += 1;
-                    }
-                }
-                if col >= self.window.width() / 8 {
-                    col = 0;
-                    row += 1;
-                }
-            }
+            self.font.render(&description, 16.0).draw(&mut self.window, 8 * col as i32 + 40, 32 * row as i32 + 8, Color::rgb(0, 0, 0));
 
             row += 1;
             i += 1;
@@ -346,7 +300,7 @@ impl FileManager {
 
         // TODO: HACK ALERT - should use resize whenver that gets added
         self.window.sync_path();
-        
+
         let x = self.window.x();
         let y = self.window.y();
         let w = width.iter().sum::<usize>() as u32;
