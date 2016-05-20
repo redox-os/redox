@@ -17,6 +17,7 @@ bx_enh_dbg.ini
 libc/build/
 setup/rust/
 build
+filesystem/apps/pixelcannon/assets/
 filesystem/bin/
 filesystem/ref/
 initfs/bin/
