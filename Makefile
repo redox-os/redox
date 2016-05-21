@@ -103,7 +103,7 @@ help:
 
 all: $(BUILD)/harddrive.bin
 
-filesystem/apps/pixelcannon/main.bin: crates/pixelcannon/src/main.rs crates/pixelcannon/src/*.rs crates/pixelcannon/assets/* $(BUILD)/libstd.rlib $(BUILD)/liborbclient.rlib
+filesystem/apps/pixelcannon/main.bin: crates/pixelcannon/src/main.rs crates/pixelcannon/src/*.rs crates/pixelcannon/assets/* $(BUILD)/libstd.rlib $(BUILD)/liborbclient.rlib $(BUILD)/liborbimage.rlib
 	mkdir -p filesystem/apps/pixelcannon/assets/
 	cp crates/pixelcannon/assets/* filesystem/apps/pixelcannon/assets/
 	$(RUSTC) $(RUSTCFLAGS) -C lto --crate-type bin -o $@ $<
