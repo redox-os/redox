@@ -48,7 +48,6 @@
 //#![deny(missing_docs)]
 #![deny(warnings)]
 
-/*TODO
 extern crate ralloc;
 
 #[link(name = "c", kind = "static")]
@@ -58,9 +57,6 @@ extern {
     fn memset(s: *mut u8, c: i32, n: usize) -> *mut u8;
     fn memcmp(s1: *const u8, s2: *const u8, n: usize) -> i32;
 }
-*/
-
-extern crate alloc_malloc;
 
 // STD COPY {
 // We want to reexport a few macros from core but libcore has already been
