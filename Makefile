@@ -8,14 +8,14 @@ QEMU?=qemu-system-$(ARCH)
 
 CARGO=CARGO_TARGET_DIR=build RUSTC="./rustc-$(ARCH).sh" cargo rustc
 CARGOFLAGS=--verbose --target=$(ARCH)-unknown-redox.json -- -L $(BUILD) \
-	-C no-prepopulate-passes -C no-stack-check -C opt-level=2 \
+	-C no-prepopulate-passes -C no-stack-check -C opt-level=3 \
 	-Z no-landing-pads \
 	-A dead_code
 RUSTC=RUST_BACKTRACE=1 rustc
 RUSTDOC=rustdoc --target=$(ARCH)-unknown-redox.json -L $(BUILD) \
 	--no-defaults --passes collapse-docs --passes unindent-comments
 RUSTCFLAGS=--target=$(ARCH)-unknown-redox.json -L $(BUILD) \
-	-C no-prepopulate-passes -C no-stack-check -C opt-level=2 \
+	-C no-prepopulate-passes -C no-stack-check -C opt-level=3 \
 	-Z no-landing-pads \
 	-A dead_code
 AS=nasm
@@ -464,7 +464,7 @@ $(BUILD)/liblibc.rlib: crates/liblibc/src/lib.rs $(BUILD)/libcore.rlib
 $(BUILD)/librealstd.rlib: rust/src/libstd/lib.rs $(BUILD)/libcore.rlib $(BUILD)/liblibc.rlib $(BUILD)/liballoc.rlib $(BUILD)/librustc_unicode.rlib $(BUILD)/libcollections.rlib $(BUILD)/librand.rlib
 	$(RUSTC) $(RUSTCFLAGS) --cfg unix --crate-type rlib -o $@ $<
 
-$(BUILD)/libstd.rlib: libstd/src/lib.rs libstd/src/*.rs libstd/src/*/*.rs libstd/src/*/*/*.rs $(BUILD)/libcore.rlib $(BUILD)/liballoc_malloc.rlib $(BUILD)/liballoc.rlib $(BUILD)/libcollections.rlib $(BUILD)/librand.rlib $(BUILD)/libsystem.rlib
+$(BUILD)/libstd.rlib: libstd/src/lib.rs libstd/src/*.rs libstd/src/*/*.rs libstd/src/*/*/*.rs $(BUILD)/libcore.rlib $(BUILD)/libralloc.rlib $(BUILD)/liballoc.rlib $(BUILD)/libcollections.rlib $(BUILD)/librand.rlib $(BUILD)/libsystem.rlib
 	$(RUSTC) $(RUSTCFLAGS) -o $@ $< -L native=libc/lib/
 
 $(BUILD)/liborbclient.rlib: crates/orbclient/src/lib.rs crates/orbclient/src/*.rs crates/orbclient/src/*/*.rs $(BUILD)/libstd.rlib
