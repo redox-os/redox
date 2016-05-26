@@ -260,7 +260,7 @@ filesystem/bin/sh: $(BUILD)/ion-shell.bin
 
 filesystem/bin/launcher: crates/orbutils/src/launcher/main.rs crates/orbutils/src/launcher/*.rs $(BUILD)/libstd.rlib $(BUILD)/liborbclient.rlib $(BUILD)/liborbtk.rlib
 	mkdir -p filesystem/bin
-	$(RUSTC) $(RUSTCFLAGS) -C lto --crate-type bin -o $@ $<
+	$(RUSTC) $(RUSTCFLAGS) -C lto --crate-type bin -o $@ $< -L $(BUILD)/deps
 
 filesystem/bin/orbital: crates/orbital/main.rs crates/orbital/*.rs $(BUILD)/libstd.rlib $(BUILD)/liborbimage.rlib
 	mkdir -p filesystem/bin
