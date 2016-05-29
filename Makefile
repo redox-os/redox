@@ -422,8 +422,14 @@ doc/zfs: crates/zfs/src/main.rs crates/zfs/src/*.rs filesystem/bin/zfs
 doc/orbclient: crates/orbclient/src/lib.rs crates/orbclient/src/*.rs $(BUILD)/liborbclient.rlib doc/std
 	$(RUSTDOC) $<
 
-doc/orbtk: crates/orbtk/src/lib.rs crates/orbtk/src/*.rs $(BUILD)/liborbtk.rlib doc/orbclient
-	$(RUSTDOC) $<
+doc/orbimage: crates/orbimage/src/lib.rs crates/orbimage/src/*.rs $(BUILD)/liborbimage.rlib doc/orbclient
+	$(RUSTDOC) $< -L $(BUILD)/deps
+
+doc/orbfont: crates/orbfont/src/lib.rs crates/orbfont/src/*.rs $(BUILD)/liborbfont.rlib doc/orbclient
+	$(RUSTDOC) $< -L $(BUILD)/deps
+
+doc/orbtk: crates/orbtk/src/lib.rs crates/orbtk/src/*.rs $(BUILD)/liborbtk.rlib doc/orbclient doc/orbimage doc/orbfont
+	$(RUSTDOC) $< -L $(BUILD)/deps
 
 doc/sodium: filesystem/apps/sodium/src/main.rs filesystem/apps/sodium/src/*.rs filesystem/apps/sodium/main.bin
 	$(RUSTDOC) --crate-name=sodium --cfg 'feature="orbital"' $<
