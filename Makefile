@@ -605,7 +605,7 @@ virtualbox: $(BUILD)/harddrive.bin
 bochs: $(BUILD)/harddrive.bin
 	-bochs -f bochs.$(ARCH)
 
-QFLAGS := -serial mon:stdio -m 1024 -d guest_errors
+QFLAGS := -serial mon:stdio -m 1024 -d guest_errors -s
 
 ifeq ($(machine),q35)
 	QFLAGS += -machine q35
@@ -670,6 +670,9 @@ qemu: $(BUILD)/harddrive.bin
 		sudo ifconfig tap_redox down; \
 		sudo ip tuntap del dev tap_redox mode tap; \
 	fi
+
+gdb: $(BUILD)/kernel.bin
+	gdb $(BUILD)/kernel.bin -ex "target remote :1234"
 
 arping:
 	arping -I tap_redox 10.85.85.2
