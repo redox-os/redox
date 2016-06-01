@@ -62,7 +62,7 @@ pub fn syslog(level: LogLevel, message: &str) {
 pub fn syslog_inner(level: LogLevel, message: String) {
     let time = ::env().clock_monotonic.lock().clone();
     let mut logs = ::env().logs.lock();
-    while logs.len() >= 1024 {
+    while logs.len() >= 4096 {
         logs.pop_front();
     }
     logs.push_back((time, level, message));

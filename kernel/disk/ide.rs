@@ -588,6 +588,12 @@ impl Disk for IdeDisk {
         })
     }
 
+    fn on_irq(&mut self, irq: u8) {
+        if irq == self.irq {
+            debugln!("AHCI IRQ");
+        }
+    }
+
     fn size(&self) -> u64 {
         self.size
     }
