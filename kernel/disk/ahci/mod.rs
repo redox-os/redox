@@ -28,7 +28,7 @@ impl Ahci {
         let ret: Vec<Box<Disk>> = (0..32)
                                       .filter(|&i| pi & 1 << i as i32 == 1 << i as i32)
                                       .filter_map(|i| {
-                                          let mut disk = box AhciDisk::new(base, i);
+                                          let mut disk = box AhciDisk::new(base, i, irq);
                                           let port_type = disk.port.probe();
                                           debugln!("   + Port {}: {:?}", i, port_type);
                                           match port_type {
@@ -48,14 +48,16 @@ impl Ahci {
 pub struct AhciDisk {
     port: &'static mut HbaPort,
     port_index: usize,
+    irq: u8,
     size: u64,
 }
 
 impl AhciDisk {
-    fn new(base: usize, port_index: usize) -> Self {
+    fn new(base: usize, port_index: usize, irq: u8) -> Self {
         AhciDisk {
             port: &mut unsafe { &mut *(base as *mut HbaMem) }.ports[port_index],
             port_index: port_index,
+            irq: irq,
             size: 1024*1024*1024 //TODO: Get actual value
         }
     }
@@ -64,6 +66,12 @@ impl AhciDisk {
 impl Disk for AhciDisk {
     fn name(&self) -> String {
         format!("AHCI Port {}", self.port_index)
+    }
+
+    fn on_irq(&mut self, irq: u8) {
+        if irq == self.irq {
+            debugln!("AHCI IRQ");
+        }
     }
 
     fn size(&self) -> u64 {

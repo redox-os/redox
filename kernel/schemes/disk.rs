@@ -92,12 +92,14 @@ impl DiskScheme {
 }
 
 impl KScheme for DiskScheme {
-    fn on_irq(&mut self, _irq: u8) {
-        //TODO
-    }
-
     fn scheme(&self) -> &str {
         "disk"
+    }
+
+    fn on_irq(&mut self, irq: u8) {
+        for disk in self.disks.iter_mut() {
+            disk.lock().on_irq(irq);
+        }
     }
 
     fn open(&mut self, url: Url, _flags: usize) -> Result<Box<Resource>> {
