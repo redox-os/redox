@@ -140,7 +140,7 @@ impl FileManager {
                 right_button: false,
             },
             window: Window::new(-1, -1, 0, 0, "").unwrap(),
-            font: Font::from_path("/ui/fonts/UbuntuMono-Regular.ttf").unwrap()
+            font: Font::find(None, None, None).unwrap()
         }
     }
 
