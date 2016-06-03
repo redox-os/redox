@@ -1,4 +1,4 @@
-#! ion
+#!/bin/sh
 if a == a
   echo true a == a
 
@@ -7,10 +7,10 @@ if a == a
   else
     echo false b != b
 
-    if 3 > 2
-      echo true 3 > 2
+    if 3 '>' 2
+      echo true 3 '>' 2
     else
-      echo false 3 > 2
+      echo false 3 '>' 2
     end
   end
 else

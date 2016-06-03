@@ -21,6 +21,7 @@ pub fn syscall_handle(regs: &mut Regs) {
     {
         let mut contexts = ::env().contexts.lock();
         if let Ok(cur) = contexts.current_mut() {
+            cur.current_syscall = Some((regs.ip, regs.ax, regs.bx, regs.cx, regs.dx));
             if cur.supervised {
                 // Block the process.
                 cur.blocked_syscall = true;
@@ -39,7 +40,6 @@ pub fn syscall_handle(regs: &mut Regs) {
         }
     }
 
-    //debugln!("{:X}: {} {:X} {:X} {:X}", regs.ip, regs.ax, regs.bx, regs.cx, regs.dx);
     regs.ax = Error::mux(match regs.ax {
         // Redox
         SYS_DEBUG => do_sys_debug(regs.bx as *const u8, regs.cx),
@@ -76,5 +76,12 @@ pub fn syscall_handle(regs: &mut Regs) {
 
         _ => Err(Error::new(ENOSYS)),
     });
-    //debugln!("={:X}", regs.ax);
+
+
+    {
+        let mut contexts = ::env().contexts.lock();
+        if let Ok(cur) = contexts.current_mut() {
+            cur.current_syscall = None;
+        }
+    }
 }

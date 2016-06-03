@@ -20,7 +20,7 @@
 #![no_std]
 
 #![allow(deprecated)]
-#![deny(warnings)]
+//#![deny(warnings)]
 //#![deny(missing_docs)]
 
 #[macro_use]
@@ -427,9 +427,12 @@ unsafe fn init(tss_data: usize) {
                     do_sys_open(stdio_c.as_ptr(), 0).unwrap();
                     do_sys_open(stdio_c.as_ptr(), 0).unwrap();
 
+                    let mut contexts = ::env().contexts.lock();
+                    let current = contexts.current_mut().unwrap();
+
+                    current.set_env_var("PATH", "file:/bin").unwrap();
+
                     if let Some(ref display) = ::env().console.lock().display {
-                        let mut contexts = ::env().contexts.lock();
-                        let current = contexts.current_mut().unwrap();
                         current.set_env_var("COLUMNS", &format!("{}", display.width/8)).unwrap();
                         current.set_env_var("LINES", &format!("{}", display.height/16)).unwrap();
                     }
@@ -456,6 +459,10 @@ pub extern "cdecl" fn kernel(interrupt: usize, mut regs: &mut Regs) {
                 let contexts = ::env().contexts.lock();
                 if let Ok(context) = contexts.current() {
                     debugln!("PID {}: {}", context.pid, context.name);
+
+                    if let Some(current_syscall) = context.current_syscall {
+                        debugln!("  SYS {:X}: {} {:X} {:X} {:X}", current_syscall.0, current_syscall.1, current_syscall.2, current_syscall.3, current_syscall.4);
+                    }
                 }
             }
 
@@ -515,7 +522,8 @@ pub extern "cdecl" fn kernel(interrupt: usize, mut regs: &mut Regs) {
             exception_inner!($name);
 
             loop {
-                do_sys_exit(usize::MAX);
+                unsafe { asm!("cli ; hlt" : : : : "intel", "volatile"); }
+                //do_sys_exit(usize::MAX);
             }
         })
     };
@@ -534,7 +542,8 @@ pub extern "cdecl" fn kernel(interrupt: usize, mut regs: &mut Regs) {
             debugln!("    ERR: {:08X}", error);
 
             loop {
-                do_sys_exit(usize::MAX);
+                unsafe { asm!("cli ; hlt" : : : : "intel", "volatile"); }
+                //do_sys_exit(usize::MAX);
             }
         })
     };
