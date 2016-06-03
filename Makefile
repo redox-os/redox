@@ -250,10 +250,6 @@ $(BUILD)/librusttype.rlib: crates/rusttype/src/lib.rs crates/rusttype/src/*.rs c
 $(BUILD)/ion-shell.bin: FORCE $(BUILD)/libstd.rlib
 	$(CARGO) --manifest-path crates/ion/Cargo.toml --bin ion-shell $(CARGOFLAGS) -C lto
 
-filesystem/bin/ion: $(BUILD)/ion-shell.bin
-	mkdir -p filesystem/bin
-	cp $< $@
-
 filesystem/bin/sh: $(BUILD)/ion-shell.bin
 	mkdir -p filesystem/bin
 	cp $< $@
@@ -281,11 +277,9 @@ bins: \
 	games \
 	filesystem/bin/ansi-test \
 	filesystem/bin/c-test \
-	filesystem/bin/dosbox \
 	filesystem/bin/ed \
 	filesystem/bin/example \
 	filesystem/bin/init \
-  	filesystem/bin/ion \
 	filesystem/bin/launcher \
   	filesystem/bin/lua \
   	filesystem/bin/luac \
@@ -295,8 +289,7 @@ bins: \
 	filesystem/bin/screenfetch \
   	filesystem/bin/sdl-test \
 	filesystem/bin/std-test \
-  	filesystem/bin/sh \
-	filesystem/bin/tar \
+  	filesystem/bin/sh
 	#TODO: binutils	filesystem/bin/zfs
 
 refs: FORCE

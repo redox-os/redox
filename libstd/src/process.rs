@@ -4,7 +4,7 @@ use fmt;
 use io::{Result, Read, Write};
 use os::unix::io::{AsRawFd, FromRawFd, RawFd};
 use ops::DerefMut;
-use string::String;
+use string::{String, ToString};
 use core_collections::borrow::ToOwned;
 use vec::Vec;
 
@@ -164,7 +164,19 @@ impl Command {
     fn exec(&mut self, flags: usize) -> Result<Child> {
         let mut res = Box::new(0);
 
-        let path_c = self.path.to_owned() + "\0";
+        let path_c = if self.path.contains('/') {
+            self.path.to_owned() + "\0"
+        } else {
+            let mut path_env = super::env::var("PATH").unwrap_or(".".to_string());
+
+            if ! path_env.ends_with('/') {
+                path_env.push('/');
+            }
+
+            path_env.push_str(&self.path);
+
+            path_env + "\0"
+        };
 
         let mut args_vec: Vec<String> = Vec::new();
         for arg in self.args.iter() {

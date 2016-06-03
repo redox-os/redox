@@ -246,6 +246,7 @@ pub unsafe fn context_clone(regs: &Regs) -> Result<usize> {
 
                 supervised: flags & CLONE_SUPERVISE == CLONE_SUPERVISE,
                 blocked_syscall: false,
+                current_syscall: None,
 
                 kernel_stack: kernel_stack,
                 regs: kernel_regs,
@@ -601,6 +602,8 @@ pub struct Context {
     ///
     /// This means that the process is waiting for the superviser to handle the syscall.
     pub blocked_syscall: bool,
+    /// The current syscall
+    pub current_syscall: Option<(usize, usize, usize, usize, usize)>,
 
     // These members control the stack and registers and are unique to each context {
     // The kernel stack
@@ -682,6 +685,7 @@ impl Context {
 
             supervised: false,
             blocked_syscall: false,
+            current_syscall: None,
 
             kernel_stack: 0,
             regs: Regs::default(),
@@ -723,6 +727,7 @@ impl Context {
 
             supervised: false,
             blocked_syscall: false,
+            current_syscall: None,
 
             kernel_stack: kernel_stack,
             regs: regs,

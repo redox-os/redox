@@ -109,15 +109,9 @@ pub fn execute(mut args: Vec<String>) -> Result<usize> {
     let mut vec: Vec<u8> = Vec::new();
 
     let path = current.canonicalize(args.get(0).map_or("", |p| &p));
-    let mut url = try!(Url::from_str(&path)).to_cow();
+    let url = try!(Url::from_str(&path));
     {
-        let mut resource = if let Ok(resource) = url.as_url().open() {
-            resource
-        } else {
-            let path = "file:/bin/".to_string() + args.get(0).map_or("", |p| &p);
-            url = try!(Url::from_str(&path)).to_owned().into_cow();
-            try!(url.as_url().open())
-        };
+        let mut resource = try!(url.open());
 
         // Hack to allow file scheme to find memory in context's memory space
         unsafe {
@@ -160,7 +154,7 @@ pub fn execute(mut args: Vec<String>) -> Result<usize> {
 
     if vec.starts_with(b"#!") {
         if let Some(mut arg) = args.get_mut(0) {
-            *arg = url.as_url().to_string();
+            *arg = url.to_string();
         }
 
         let line = unsafe { str::from_utf8_unchecked(&vec[2..]) }.lines().next().unwrap_or("");
@@ -213,7 +207,7 @@ pub fn execute(mut args: Vec<String>) -> Result<usize> {
 
                     //debugln!("{}: {}: execute {}", context.pid, context.name, url.string);
 
-                    context.name = url.as_url().to_string();
+                    context.name = url.to_string();
                     context.cwd = Arc::new(UnsafeCell::new(unsafe { (*context.cwd.get()).clone() }));
 
                     unsafe { context.unmap() };
