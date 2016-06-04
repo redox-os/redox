@@ -285,6 +285,8 @@ bins: \
   	filesystem/bin/luac \
   	filesystem/bin/login \
   	filesystem/bin/minesweeper \
+  	filesystem/bin/nasm \
+  	filesystem/bin/ndisasm \
   	filesystem/bin/orbital \
 	filesystem/bin/screenfetch \
   	filesystem/bin/sdl-test \
