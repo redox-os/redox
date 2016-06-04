@@ -13,7 +13,7 @@ use collections::vec::Vec;
 use common::time::Duration;
 
 use core::cell::UnsafeCell;
-use core::slice::{Iter, IterMut};
+use core::slice::{self, Iter, IterMut};
 use core::{mem, ptr};
 use core::ops::DerefMut;
 
@@ -512,6 +512,19 @@ impl ContextZone {
         return next_mem;
     }
 
+    /// Check permission of segment, if inside of mapped memory
+    pub fn permission(&self, ptr: usize, len: usize, writeable: bool) -> bool {
+        for mem in self.memory.iter() {
+            if ptr >= mem.virtual_address && ptr + len <= mem.virtual_address + mem.virtual_size {
+                if mem.writeable || ! writeable {
+                    return true;
+                }
+            }
+        }
+
+        false
+    }
+
     /// Translate to physical if a ptr is inside of the mapped memory
     pub fn translate(&self, ptr: usize, len: usize) -> Option<usize> {
         for mem in self.memory.iter() {
@@ -851,6 +864,53 @@ impl Context {
     pub unsafe fn push(&mut self, data: usize) {
         self.regs.sp -= mem::size_of::<usize>();
         ptr::write(self.regs.sp as *mut usize, data);
+    }
+
+    /// Access a raw pointer safely
+    pub fn safe_ref<'a, T>(&'a self, ptr: *const T) -> Result<&'a T> {
+        try!(self.permission(ptr as usize, mem::size_of::<T>(), false));
+        Ok(unsafe { & *ptr })
+    }
+
+    /// Access a mutable raw pointer safely
+    pub fn safe_ref_mut<'a, T>(&'a self, ptr: *mut T) -> Result<&'a mut T> {
+        try!(self.permission(ptr as usize, mem::size_of::<T>(), true));
+        Ok(unsafe { & mut *ptr })
+    }
+
+    /// Access a raw pointer safely
+    pub fn safe_slice<'a, T>(&'a self, ptr: *const T, len: usize) -> Result<&'a [T]> {
+        try!(self.permission(ptr as usize, mem::size_of::<T>() * len, false));
+        Ok(unsafe { slice::from_raw_parts(ptr, len) })
+    }
+
+    /// Access a mutable raw pointer safely
+    pub fn safe_slice_mut<'a, T>(&'a self, ptr: *mut T, len: usize) -> Result<&'a mut [T]> {
+        try!(self.permission(ptr as usize, mem::size_of::<T>() * len, true));
+        Ok(unsafe { slice::from_raw_parts_mut(ptr, len) })
+    }
+
+    /// Check permission of segment, if inside of mapped memory
+    pub fn permission(&self, ptr: usize, len: usize, writeable: bool) -> Result<()> {
+        if let Some(ref stack) = self.stack {
+            if ptr >= stack.virtual_address && ptr + len <= stack.virtual_address + stack.virtual_size {
+                return Ok(());
+            }
+        }
+
+        if unsafe { (*self.image.get()).permission(ptr, len, writeable) } {
+            return Ok(());
+        }
+
+        if unsafe { (*self.heap.get()).permission(ptr, len, writeable) } {
+            return Ok(());
+        }
+
+        if unsafe { (*self.mmap.get()).permission(ptr, len, writeable) } {
+            return Ok(());
+        }
+
+        Err(Error::new(EFAULT))
     }
 
     /// Translate to physical if a ptr is inside of the mapped memory

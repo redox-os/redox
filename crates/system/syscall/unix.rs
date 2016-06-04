@@ -64,8 +64,17 @@ pub const SYS_YIELD: usize = 158;
 #[derive(Copy, Clone, Debug, Default)]
 #[repr(packed)]
 pub struct Stat {
+    pub st_dev: u16,
+    pub st_ino: u16,
     pub st_mode: u16,
-    pub st_size: u64
+    pub st_nlink: u16,
+    pub st_uid: u16,
+    pub st_gid: u16,
+    pub st_rdev: u16,
+    pub st_size: u32,
+    pub st_atime: u32,
+    pub st_mtime: u32,
+    pub st_ctime: u32
 }
 
 #[derive(Copy, Clone, Debug, Default)]

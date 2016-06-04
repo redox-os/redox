@@ -4,7 +4,7 @@ use arch::regs::Regs;
 use collections::{BTreeMap, Vec};
 use collections::string::ToString;
 
-use core::{mem, ptr};
+use core::mem;
 use core::ops::DerefMut;
 
 use system::{c_array_to_slice, c_string_to_str};
@@ -116,10 +116,8 @@ pub fn do_sys_waitpid(pid: isize, status_ptr: *mut usize, _options: usize) -> Re
     if pid > 0 {
         let status = current.statuses.receive(&(pid as usize));
 
-        if status_ptr as usize > 0 {
-            unsafe {
-                ptr::write(status_ptr, status);
-            }
+        if let Ok(status_safe) = current.safe_ref_mut(status_ptr) {
+            *status_safe = status;
         }
 
         Ok(pid as usize)

@@ -1,16 +1,14 @@
-use arch::context::Context;
+use arch::context::{context_switch, Context};
 use arch::memory;
 
 use collections::string::ToString;
 
 use common::event::MouseEvent;
-use common::time;
+use common::time::{self, Duration};
 
 use core::{cmp, mem, ptr, slice};
 
 use graphics::display::VBEMODEINFO;
-
-use syscall::{do_sys_nanosleep, TimeSpec};
 
 use super::{Packet, Pipe, Setup};
 use super::desc::*;
@@ -166,15 +164,15 @@ pub trait Hci {
                                             }
                                         }
 
-                                        let req = TimeSpec {
-                                            tv_sec: 0,
-                                            tv_nsec: 10 * time::NANOS_PER_MILLI
-                                        };
-                                        let mut rem = TimeSpec {
-                                            tv_sec: 0,
-                                            tv_nsec: 0,
-                                        };
-                                        do_sys_nanosleep(&req, &mut rem).unwrap();
+                                        {
+                                            let mut contexts = ::env().contexts.lock();
+                                            if let Ok(mut current) = contexts.current_mut() {
+                                                current.blocked = true;
+                                                current.wake = Some(Duration::monotonic() + Duration::new(0, 10 * time::NANOS_PER_MILLI));
+                                            }
+                                        }
+
+                                        context_switch();
                                     }
 
                                     //memory::unalloc(in_ptr as usize);
