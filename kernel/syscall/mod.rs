@@ -22,6 +22,7 @@ pub fn syscall_handle(regs: &mut Regs) {
         let mut contexts = ::env().contexts.lock();
         if let Ok(cur) = contexts.current_mut() {
             cur.current_syscall = Some((regs.ip, regs.ax, regs.bx, regs.cx, regs.dx));
+            //serial_log(&format!("PID {}: {} @ {:X}: {} {:X} {:X} {:X}\n", cur.pid, cur.name, regs.ip, regs.ax, regs.bx, regs.cx, regs.dx).as_bytes());
             if cur.supervised {
                 // Block the process.
                 cur.blocked_syscall = true;

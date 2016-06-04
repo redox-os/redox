@@ -143,13 +143,13 @@ impl KScheme for DiskScheme {
             }
 
             stat.st_mode = MODE_DIR;
-            stat.st_size = list.len() as u64;
+            stat.st_size = list.len() as u32;
             return Ok(());
         } else {
             if let Ok(number) = path.parse::<usize>() {
                 if let Some(disk) = self.disks.get(number) {
                     stat.st_mode = MODE_FILE;
-                    stat.st_size = disk.lock().size();
+                    stat.st_size = disk.lock().size() as u32;
                     return Ok(());
                 }
             }

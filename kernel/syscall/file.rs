@@ -1,7 +1,5 @@
 use arch::context::ContextFile;
 
-use core::slice;
-
 use fs::{ResourceSeek, Url};
 
 use schemes::pipe::{PipeRead, PipeWrite};
@@ -86,8 +84,6 @@ pub fn do_sys_close(fd: usize) -> Result<usize> {
     let contexts = ::env().contexts.lock();
     let current = try!(contexts.current());
 
-    //debugln!("{}: {}: close {}", current.pid, current.name, fd);
-
     for i in 0..unsafe { (*current.files.get()).len() } {
         let mut remove = false;
         if let Some(file) = unsafe { (*current.files.get()).get(i) } {
@@ -136,8 +132,6 @@ pub fn do_sys_dup(fd: usize) -> Result<usize> {
     let new_resource = try!(resource.dup());
     let new_fd = current.next_fd();
 
-    //debugln!("{}: {}: dup {} as {}", current.pid, current.name, fd, new_fd);
-
     unsafe {
         (*current.files.get()).push(ContextFile {
             fd: new_fd,
@@ -151,18 +145,16 @@ pub fn do_sys_fpath(fd: usize, buf: *mut u8, count: usize) -> Result<usize> {
     let contexts = ::env().contexts.lock();
     let current = try!(contexts.current());
     let resource = try!(current.get_file(fd));
-    resource.path(unsafe { slice::from_raw_parts_mut(buf, count) })
+    let buf_safe = try!(current.safe_slice_mut(buf, count));
+    resource.path(buf_safe)
 }
 
 pub fn do_sys_fstat(fd: usize, stat: *mut Stat) -> Result<usize> {
     let contexts = ::env().contexts.lock();
     let current = try!(contexts.current());
     let resource = try!(current.get_file(fd));
-    if stat as usize > 0 {
-        resource.stat(unsafe { &mut *stat })
-    } else {
-        Err(Error::new(EFAULT))
-    }
+    let stat_safe = try!(current.safe_ref_mut(stat));
+    resource.stat(stat_safe)
 }
 
 /** <!-- @MANSTART{sys_fsync} -->
@@ -385,7 +377,6 @@ pub fn do_sys_open(path_c: *const u8, flags: usize) -> Result<usize> {
     let contexts = ::env().contexts.lock();
     let current = try!(contexts.current());
     let path = current.canonicalize(c_string_to_str(path_c));
-    //debugln!("{}: {}: open {}", current.pid, current.name, path);
     let url = try!(Url::from_str(&path));
     let resource = try!(::env().open(url, flags));
     let fd = current.next_fd();
@@ -460,7 +451,8 @@ pub fn do_sys_read(fd: usize, buf: *mut u8, count: usize) -> Result<usize> {
     let mut contexts = ::env().contexts.lock();
     let mut current = try!(contexts.current_mut());
     let mut resource = try!(current.get_file_mut(fd));
-    resource.read(unsafe { slice::from_raw_parts_mut(buf, count) })
+    let buf_safe = try!(current.safe_slice_mut(buf, count));
+    resource.read(buf_safe)
 }
 
 pub fn do_sys_rmdir(path: *const u8) -> Result<usize> {
@@ -473,13 +465,12 @@ pub fn do_sys_rmdir(path: *const u8) -> Result<usize> {
 pub fn do_sys_stat(path: *const u8, stat: *mut Stat) -> Result<usize> {
     let contexts = ::env().contexts.lock();
     let current = try!(contexts.current());
-    let path = current.canonicalize(c_string_to_str(path));
-    let url = try!(Url::from_str(&path));
-    if stat as usize > 0 {
-        ::env().stat(url, unsafe { &mut *stat }).and(Ok(0))
-    } else {
-        Err(Error::new(EFAULT))
-    }
+    let path_string = current.canonicalize(c_string_to_str(path));
+    let url = try!(Url::from_str(&path_string));
+    let stat_safe = try!(current.safe_ref_mut(stat));
+
+    *stat_safe = Stat::default();
+    ::env().stat(url, stat_safe).and(Ok(0))
 }
 
 pub fn do_sys_unlink(path: *const u8) -> Result<usize> {
@@ -530,5 +521,6 @@ pub fn do_sys_write(fd: usize, buf: *const u8, count: usize) -> Result<usize> {
     let mut contexts = ::env().contexts.lock();
     let mut current = try!(contexts.current_mut());
     let mut resource = try!(current.get_file_mut(fd));
-    resource.write(unsafe { slice::from_raw_parts(buf, count) })
+    let buf_safe = try!(current.safe_slice(buf, count));
+    resource.write(buf_safe)
 }

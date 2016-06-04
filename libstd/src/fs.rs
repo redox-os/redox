@@ -243,7 +243,7 @@ impl Metadata {
     }
 
     pub fn len(&self) -> u64 {
-        self.stat.st_size
+        self.stat.st_size as u64
     }
 }
 
@@ -322,10 +322,7 @@ pub fn canonicalize<P: AsRef<Path>>(path: P) -> Result<PathBuf> {
 
 /// Get information about a file
 pub fn metadata<P: AsRef<Path>>(path: P) -> Result<Metadata> {
-    let mut stat = Stat {
-        st_mode: 0,
-        st_size: 0
-    };
+    let mut stat = Stat::default();
     let path_str = path.as_ref().as_os_str().as_inner();
     let mut path_c = path_str.to_owned();
     path_c.push_str("\0");
