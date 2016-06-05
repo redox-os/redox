@@ -1,6 +1,6 @@
 <img alt="Redox" height="90" src="img/logo.png">
 
-**Redox** is an operating system written in pure Rust, designed to be modular and secure. The development blog can be found at http://www.redox-os.org.
+**Redox** is an operating system written in pure Rust, designed to be secure and free. The website can be found at http://www.redox-os.org.
 
 Documentation can be found [here](https://doc.redox-os.org/doc/std/).
 
