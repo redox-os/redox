@@ -57,8 +57,8 @@ ifeq ($(UNAME),Darwin)
 	VBM="/Applications/VirtualBox.app/Contents/MacOS/VBoxManage"
 endif
 
-.PHONY: help all doc apps bins clean FORCE \
-	drivers binutils coreutils extrautils games \
+.PHONY: help all doc apps bins c_bins clean FORCE \
+	drivers c_binutils binutils coreutils extrautils games \
 	qemu qemu_bare qemu_tap bochs \
 	virtualbox virtualbox_tap \
 	arping ping wireshark
@@ -270,26 +270,49 @@ filesystem/bin/%: crates/%/main.rs crates/%/*.rs $(BUILD)/libstd.rlib
 	mkdir -p filesystem/bin
 	$(RUSTC) $(RUSTCFLAGS) -C lto --crate-type bin -o $@ $<
 
+
+
+c_binutils: \
+	filesystem/bin/addr2line \
+	filesystem/bin/ar \
+	filesystem/bin/as \
+	filesystem/bin/c++filt \
+	filesystem/bin/elfedit  \
+	filesystem/bin/gprof \
+	filesystem/bin/ld \
+	filesystem/bin/ld.bfd \
+	filesystem/bin/nm \
+	filesystem/bin/objcopy \
+	filesystem/bin/objdump \
+	filesystem/bin/ranlib \
+	filesystem/bin/readelf \
+	filesystem/bin/size \
+	filesystem/bin/strings \
+	filesystem/bin/strip
+
+c_bins: \
+	filesystem/bin/c-test \
+	filesystem/bin/ed \
+  	filesystem/bin/lua \
+  	filesystem/bin/luac \
+  	filesystem/bin/nasm \
+  	filesystem/bin/ndisasm \
+  	filesystem/bin/sdl-test
+	#TODO: c_binutils
+
 bins: \
+	c_bins \
 	coreutils \
 	extrautils \
 	drivers \
 	games \
 	filesystem/bin/ansi-test \
-	filesystem/bin/c-test \
-	filesystem/bin/ed \
 	filesystem/bin/example \
 	filesystem/bin/init \
 	filesystem/bin/launcher \
-  	filesystem/bin/lua \
-  	filesystem/bin/luac \
   	filesystem/bin/login \
-  	filesystem/bin/minesweeper \
-  	filesystem/bin/nasm \
-  	filesystem/bin/ndisasm \
   	filesystem/bin/orbital \
 	filesystem/bin/screenfetch \
-  	filesystem/bin/sdl-test \
 	filesystem/bin/std-test \
   	filesystem/bin/sh
 	#TODO: binutils	filesystem/bin/zfs
