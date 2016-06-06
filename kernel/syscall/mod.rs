@@ -78,10 +78,10 @@ pub fn syscall_handle(regs: &mut Regs) {
         _ => Err(Error::new(ENOSYS)),
     });
 
-
     {
         let mut contexts = ::env().contexts.lock();
         if let Ok(cur) = contexts.current_mut() {
+            //serial_log(&format!("PID {}: {} @ {:X}: {:X} {:?}\n", cur.pid, cur.name, regs.ip, regs.ax, Error::demux(regs.ax)).as_bytes());
             cur.current_syscall = None;
         }
     }

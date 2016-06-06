@@ -145,8 +145,12 @@ pub fn do_sys_fpath(fd: usize, buf: *mut u8, count: usize) -> Result<usize> {
     let contexts = ::env().contexts.lock();
     let current = try!(contexts.current());
     let resource = try!(current.get_file(fd));
-    let buf_safe = try!(current.safe_slice_mut(buf, count));
-    resource.path(buf_safe)
+    if count > 0 {
+        let buf_safe = try!(current.safe_slice_mut(buf, count));
+        resource.path(buf_safe)
+    } else {
+        Ok(0)
+    }
 }
 
 pub fn do_sys_fstat(fd: usize, stat: *mut Stat) -> Result<usize> {
@@ -451,8 +455,12 @@ pub fn do_sys_read(fd: usize, buf: *mut u8, count: usize) -> Result<usize> {
     let mut contexts = ::env().contexts.lock();
     let mut current = try!(contexts.current_mut());
     let mut resource = try!(current.get_file_mut(fd));
-    let buf_safe = try!(current.safe_slice_mut(buf, count));
-    resource.read(buf_safe)
+    if count > 0 {
+        let buf_safe = try!(current.safe_slice_mut(buf, count));
+        resource.read(buf_safe)
+    } else {
+        Ok(0)
+    }
 }
 
 pub fn do_sys_rmdir(path: *const u8) -> Result<usize> {
@@ -521,6 +529,10 @@ pub fn do_sys_write(fd: usize, buf: *const u8, count: usize) -> Result<usize> {
     let mut contexts = ::env().contexts.lock();
     let mut current = try!(contexts.current_mut());
     let mut resource = try!(current.get_file_mut(fd));
-    let buf_safe = try!(current.safe_slice(buf, count));
-    resource.write(buf_safe)
+    if count > 0 {
+        let buf_safe = try!(current.safe_slice(buf, count));
+        resource.write(buf_safe)
+    } else {
+        Ok(0)
+    }
 }
