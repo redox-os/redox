@@ -76,7 +76,6 @@ use schemes::syslog::SyslogScheme;
 use schemes::test::TestScheme;
 
 use syscall::execute::execute;
-use syscall::{do_sys_chdir, do_sys_exit, do_sys_open, syscall_handle};
 
 pub use externs::*;
 
@@ -420,12 +419,12 @@ unsafe fn init(tss_data: usize) {
             box move || {
                 {
                     let wd_c = "initfs:/\0";
-                    do_sys_chdir(wd_c.as_ptr()).unwrap();
+                    syscall::fs::chdir(wd_c.as_ptr()).unwrap();
 
                     let stdio_c = "debug:\0";
-                    do_sys_open(stdio_c.as_ptr(), 0).unwrap();
-                    do_sys_open(stdio_c.as_ptr(), 0).unwrap();
-                    do_sys_open(stdio_c.as_ptr(), 0).unwrap();
+                    syscall::fs::open(stdio_c.as_ptr(), 0).unwrap();
+                    syscall::fs::open(stdio_c.as_ptr(), 0).unwrap();
+                    syscall::fs::open(stdio_c.as_ptr(), 0).unwrap();
 
                     let mut contexts = ::env().contexts.lock();
                     let current = contexts.current_mut().unwrap();
@@ -523,7 +522,6 @@ pub extern "cdecl" fn kernel(interrupt: usize, mut regs: &mut Regs) {
 
             loop {
                 unsafe { asm!("cli ; hlt" : : : : "intel", "volatile"); }
-                //do_sys_exit(usize::MAX);
             }
         })
     };
@@ -543,7 +541,6 @@ pub extern "cdecl" fn kernel(interrupt: usize, mut regs: &mut Regs) {
 
             loop {
                 unsafe { asm!("cli ; hlt" : : : : "intel", "volatile"); }
-                //do_sys_exit(usize::MAX);
             }
         })
     };
@@ -573,7 +570,7 @@ pub extern "cdecl" fn kernel(interrupt: usize, mut regs: &mut Regs) {
         i @ 0x21 ... 0x2F => {
             env().on_irq(i as u8 - 0x20);
         },
-        0x80 => syscall_handle(regs),
+        0x80 => syscall::handle(regs),
         0xFF => {
             unsafe {
                 init(regs.ax);
