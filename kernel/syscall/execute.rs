@@ -1,3 +1,5 @@
+//! System calls for execution of programs or threads.
+
 use alloc::arc::Arc;
 
 use arch::context::{CONTEXT_IMAGE_ADDR, CONTEXT_IMAGE_SIZE, CONTEXT_HEAP_ADDR, CONTEXT_HEAP_SIZE,

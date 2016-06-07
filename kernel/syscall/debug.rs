@@ -22,7 +22,7 @@ pub fn serial_log(bytes: &[u8]) {
     }
 }
 
-pub fn do_sys_debug(ptr: *const u8, len: usize) -> Result<usize> {
+pub fn debug(ptr: *const u8, len: usize) -> Result<usize> {
     let bytes = unsafe { slice::from_raw_parts(ptr, len) };
 
     if unsafe { ::ENV_PTR.is_some() } {

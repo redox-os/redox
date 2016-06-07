@@ -1,3 +1,5 @@
+//! System calles related to time.
+
 use arch::context::context_switch;
 
 use common::time::Duration;
@@ -6,7 +8,8 @@ use syscall::{CLOCK_MONOTONIC, CLOCK_REALTIME, TimeSpec};
 
 use system::error::{Error, Result, EINVAL};
 
-pub fn do_sys_clock_gettime(clock: usize, tp: *mut TimeSpec) -> Result<usize> {
+/// Get the time of a given clock.
+pub fn clock_gettime(clock: usize, tp: *mut TimeSpec) -> Result<usize> {
     let contexts = ::env().contexts.lock();
     let current = try!(contexts.current());
     let tp_safe = try!(current.safe_ref_mut(tp));
@@ -28,7 +31,8 @@ pub fn do_sys_clock_gettime(clock: usize, tp: *mut TimeSpec) -> Result<usize> {
     }
 }
 
-pub fn do_sys_nanosleep(req: *const TimeSpec, rem: *mut TimeSpec) -> Result<usize> {
+/// Sleep in N nanoseconds.
+pub fn nanosleep(req: *const TimeSpec, rem: *mut TimeSpec) -> Result<usize> {
     {
         let mut contexts = ::env().contexts.lock();
         let mut current = try!(contexts.current_mut());
