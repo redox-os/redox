@@ -103,7 +103,7 @@ It's completely fine to just submit a small pull request without first making an
 
 ### <a name="general"> General </a>
 
-* **Remember to do a `git rebase -i HEAD~40` before you send your patch!**
+* **Remember to do a `git rebase -i upstream/master` before you send your patch!**
 * **Make sure your code is readable, commented, and well-documented.**
 * **Don't hesitate to ask for help!**
 * **Before implementing something, discuss it! Open an issue, or join the chat.**
