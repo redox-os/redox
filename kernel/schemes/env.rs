@@ -2,7 +2,7 @@ use fs::{KScheme, Resource, Url};
 use fs::resource::ResourceSeek;
 use collections::string::String;
 use alloc::boxed::Box;
-use system::error::{Error, Result, EINVAL};
+use system::error::{EINVAL, Error, Result};
 use core::cmp::min;
 
 pub struct EnvScheme;
@@ -14,15 +14,15 @@ impl KScheme for EnvScheme {
 
     fn open(&mut self, url: Url, _: usize) -> Result<Box<Resource>> {
         let name = url.reference();
-        if name.contains('=') { return Err(Error::new(EINVAL)) }
+        if name.contains('=') {
+            return Err(Error::new(EINVAL));
+        }
         if name == "" || name == "/" {
-            Ok(box EnvListResource {
-                pos: 0
-            })
+            Ok(box EnvListResource { pos: 0 })
         } else {
             Ok(box EnvVariableResource {
                 name: String::from(name),
-                pos: 0
+                pos: 0,
             })
         }
     }
@@ -30,20 +30,20 @@ impl KScheme for EnvScheme {
     fn unlink(&mut self, url: Url) -> Result<()> {
         let name = url.reference();
         let contexts = ::env().contexts.lock();
-        let current = try!(contexts.current());
+        let current = contexts.current()?;
         current.remove_env_var(name)
     }
 }
 
 pub struct EnvListResource {
-    pos: usize
+    pos: usize,
 }
 
 impl EnvListResource {
     fn get_list_str(&self) -> Result<String> {
         let contexts = ::env().contexts.lock();
-        let current = try!(contexts.current());
-        let values = try!(current.list_env_vars());
+        let current = contexts.current()?;
+        let values = current.list_env_vars()?;
         let mut string = String::new();
         for &(ref name, ref value) in values.iter() {
             string = string + name + "=" + value + "\n";
@@ -60,11 +60,11 @@ impl Resource for EnvListResource {
 
     fn read(&mut self, buf: &mut [u8]) -> Result<usize> {
         let mut i = 0;
-        let string = try!(self.get_list_str());
+        let string = self.get_list_str()?;
         while i < buf.len() && self.pos < string.bytes().count() {
             match string.bytes().nth(self.pos) {
                 Some(c) => buf[i] = c,
-                None => ()
+                None => (),
             }
             i += 1;
             self.pos += 1;
@@ -77,9 +77,9 @@ impl Resource for EnvListResource {
             ResourceSeek::Start(offset) => self.pos = offset,
             ResourceSeek::Current(offset) => self.pos = (self.pos as isize + offset) as usize,
             ResourceSeek::End(offset) => {
-                let string = try!(self.get_list_str());
+                let string = self.get_list_str()?;
                 self.pos = (string.bytes().count() as isize + offset) as usize;
-            }
+            },
         }
         Ok(self.pos)
     }
@@ -87,23 +87,26 @@ impl Resource for EnvListResource {
 
 pub struct EnvVariableResource {
     name: String,
-    pos: usize
+    pos: usize,
 }
 
 impl Resource for EnvVariableResource {
     fn dup(&self) -> Result<Box<Resource>> {
-        Ok(box EnvVariableResource { name: self.name.clone(), pos: 0 })
+        Ok(box EnvVariableResource {
+            name: self.name.clone(),
+            pos: 0,
+        })
     }
 
     fn read(&mut self, buf: &mut [u8]) -> Result<usize> {
         let contexts = ::env().contexts.lock();
-        let current = try!(contexts.current());
-        let value = try!(current.get_env_var(&self.name));
+        let current = contexts.current()?;
+        let value = current.get_env_var(&self.name)?;
         let mut i = 0;
         while i < buf.len() && self.pos < value.bytes().count() {
             match value.bytes().nth(self.pos) {
                 Some(c) => buf[i] = c,
-                None => ()
+                None => (),
             }
             i += 1;
             self.pos += 1;
@@ -113,12 +116,12 @@ impl Resource for EnvVariableResource {
 
     fn write(&mut self, buf: &[u8]) -> Result<usize> {
         let mut contexts = ::env().contexts.lock();
-        let current = try!(contexts.current_mut());
+        let current = contexts.current_mut()?;
         let value = String::from_utf8_lossy(buf).into_owned();
         if value.contains('�') {
             return Err(Error::new(EINVAL));
         }
-        try!(current.set_env_var(&self.name, &value));
+        current.set_env_var(&self.name, &value)?;
         Ok(min(value.as_bytes().len(), buf.len()))
     }
 
@@ -128,10 +131,10 @@ impl Resource for EnvVariableResource {
             ResourceSeek::Current(offset) => self.pos = (self.pos as isize + offset) as usize,
             ResourceSeek::End(offset) => {
                 let contexts = ::env().contexts.lock();
-                let current = try!(contexts.current());
-                let value = try!(current.get_env_var(&self.name));
+                let current = contexts.current()?;
+                let value = current.get_env_var(&self.name)?;
                 self.pos = (value.bytes().count() as isize + offset) as usize;
-            }
+            },
         }
         Ok(self.pos)
     }

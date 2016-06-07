@@ -14,11 +14,10 @@ impl KScheme for SyslogScheme {
         "syslog"
     }
 
-    /// Returns a resource. The `url` and `flags` arguments are currently unused.
+    /// Returns a resource. The `url` and `flags` arguments are currently
+    /// unused.
     fn open(&mut self, _: Url, _: usize) -> Result<Box<Resource>> {
-        Ok(Box::new(SyslogResource {
-            pos: 0,
-        }))
+        Ok(Box::new(SyslogResource { pos: 0 }))
     }
 
     /// Clears the logs.
@@ -39,12 +38,12 @@ impl SyslogResource {
         let ref mut logs = *::env().logs.lock();
         let mut string = String::new();
         for &mut (ref time, ref level, ref message) in logs {
-            string.push_str(&format!("[{}.{:>03}] ", time.secs, time.nanos/1000000));
+            string.push_str(&format!("[{}.{:>03}] ", time.secs, time.nanos / 1000000));
             let prefix: &str = match *level {
-                LogLevel::Debug    => "DEBUG ",
-                LogLevel::Info     => "INFO  ",
-                LogLevel::Warning  => "WARN  ",
-                LogLevel::Error    => "ERROR ",
+                LogLevel::Debug => "DEBUG ",
+                LogLevel::Info => "INFO  ",
+                LogLevel::Warning => "WARN  ",
+                LogLevel::Error => "ERROR ",
                 LogLevel::Critical => "CRIT  ",
             };
             string.push_str(prefix);
@@ -57,12 +56,11 @@ impl SyslogResource {
 
 impl Resource for SyslogResource {
     fn dup(&self) -> Result<Box<Resource>> {
-        Ok(Box::new(SyslogResource {
-            pos: self.pos,
-        }))
+        Ok(Box::new(SyslogResource { pos: self.pos }))
     }
 
-    /// Fills `buf` with the kernel log. Each message is prefixed by its log level:
+    /// Fills `buf` with the kernel log. Each message is prefixed by its log
+    /// level:
     /// - `CRIT`
     /// - `ERROR`
     /// - `WARN`
@@ -74,7 +72,7 @@ impl Resource for SyslogResource {
         while i < buf.len() && self.pos < logs.bytes().count() {
             match logs.bytes().nth(self.pos) {
                 Some(c) => buf[i] = c,
-                None => ()
+                None => (),
             }
             i += 1;
             self.pos += 1;
@@ -89,7 +87,7 @@ impl Resource for SyslogResource {
             ResourceSeek::End(offset) => {
                 let logs = self.get_log_str();
                 self.pos = (logs.bytes().count() as isize + offset) as usize;
-            }
+            },
         }
         Ok(self.pos)
     }

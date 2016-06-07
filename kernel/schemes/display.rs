@@ -9,7 +9,7 @@ use core::mem::size_of;
 
 use fs::{KScheme, Resource, ResourceSeek, Url};
 
-use system::error::{Error, Result, EACCES, EBADF, ENOENT, EINVAL};
+use system::error::{EACCES, EBADF, EINVAL, ENOENT, Error, Result};
 use system::graphics::fast_copy;
 
 /// A display resource
@@ -24,7 +24,7 @@ impl Resource for DisplayResource {
     fn dup(&self) -> Result<Box<Resource>> {
         Ok(Box::new(DisplayResource {
             path: self.path.clone(),
-            seek: self.seek
+            seek: self.seek,
         }))
     }
 
@@ -63,11 +63,15 @@ impl Resource for DisplayResource {
     fn write(&mut self, buf: &[u8]) -> Result<usize> {
         let console = ::env().console.lock();
         if let Some(ref display) = console.display {
-            let size = cmp::max(0, cmp::min(display.size as isize - self.seek as isize, (buf.len()/4) as isize)) as usize;
+            let size = cmp::max(0,
+                                cmp::min(display.size as isize - self.seek as isize,
+                                         (buf.len() / 4) as isize)) as usize;
 
             if size > 0 {
                 unsafe {
-                    fast_copy(display.onscreen.offset(self.seek as isize), buf.as_ptr() as *const u32, size);
+                    fast_copy(display.onscreen.offset(self.seek as isize),
+                              buf.as_ptr() as *const u32,
+                              size);
                 }
             }
 
@@ -82,8 +86,14 @@ impl Resource for DisplayResource {
         if let Some(ref display) = console.display {
             self.seek = match pos {
                 ResourceSeek::Start(offset) => cmp::min(display.size, cmp::max(0, offset)),
-                ResourceSeek::Current(offset) => cmp::min(display.size, cmp::max(0, self.seek as isize + offset) as usize),
-                ResourceSeek::End(offset) => cmp::min(display.size, cmp::max(0, display.size as isize + offset) as usize),
+                ResourceSeek::Current(offset) => {
+                    cmp::min(display.size,
+                             cmp::max(0, self.seek as isize + offset) as usize)
+                },
+                ResourceSeek::End(offset) => {
+                    cmp::min(display.size,
+                             cmp::max(0, display.size as isize + offset) as usize)
+                },
             };
 
             Ok(self.seek)

@@ -49,7 +49,11 @@ impl Setup {
         }
     }
 
-    pub fn get_descriptor(descriptor_type: u8, descriptor_index: u8, language_id: u16, descriptor_len: u16) -> Setup {
+    pub fn get_descriptor(descriptor_type: u8,
+                          descriptor_index: u8,
+                          language_id: u16,
+                          descriptor_len: u16)
+                          -> Setup {
         Setup {
             request_type: 0b10000000,
             request: 0x06,
@@ -59,7 +63,11 @@ impl Setup {
         }
     }
 
-    pub fn set_descriptor(descriptor_type: u8, descriptor_index: u8, language_id: u16, descriptor_len: u16) -> Setup {
+    pub fn set_descriptor(descriptor_type: u8,
+                          descriptor_index: u8,
+                          language_id: u16,
+                          descriptor_len: u16)
+                          -> Setup {
         Setup {
             request_type: 0b00000000,
             request: 0x07,

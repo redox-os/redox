@@ -1,0 +1,7 @@
+force_explicit_abi = false
+report_todo = "Always"
+report_fixme = "Always"
+reorder_imports = true
+wrap_comments = true
+match_block_trailing_comma = true
+use_try_shorthand = true

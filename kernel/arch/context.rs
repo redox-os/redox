@@ -21,7 +21,7 @@ use fs::Resource;
 
 use syscall;
 
-use system::error::{Error, Result, EBADF, EFAULT, ENOMEM, ESRCH, ENOENT, EINVAL};
+use system::error::{EBADF, EFAULT, EINVAL, ENOENT, ENOMEM, ESRCH, Error, Result};
 
 use sync::WaitMap;
 
@@ -136,7 +136,8 @@ impl ContextManager {
 
 /// Switch context
 ///
-/// Unsafe due to interrupt disabling, raw pointers, and unsafe Context functions
+/// Unsafe due to interrupt disabling, raw pointers, and unsafe Context
+/// functions
 pub unsafe fn context_switch() {
     let mut current_ptr: *mut Context = 0 as *mut Context;
     let mut next_ptr: *mut Context = 0 as *mut Context;
@@ -206,9 +207,10 @@ pub unsafe fn context_clone(regs: &Regs) -> Result<usize> {
         let clone_pid = Context::next_pid();
 
         let context = {
-            let mut parent = try!(contexts.current_mut());
+            let mut parent = contexts.current_mut()?;
 
-            //debugln!("{}: {}: clone to {}: {:X}", parent.pid, parent.name, clone_pid, flags);
+            // debugln!("{}: {}: clone to {}: {:X}", parent.pid, parent.name, clone_pid,
+            // flags);
 
             let regs_size = mem::size_of::<Regs>();
             let extra_size = mem::size_of::<usize>() * 3; /* Return pointer, interrupt code, regs pointer */
@@ -273,27 +275,28 @@ pub unsafe fn context_clone(regs: &Regs) -> Result<usize> {
                 loadable: parent.loadable,
 
                 image: if flags & syscall::CLONE_VM == syscall::CLONE_VM {
-                    //debugln!("{}: {}: clone memory for {}", parent.pid, parent.name, clone_pid);
+                    // debugln!("{}: {}: clone memory for {}", parent.pid, parent.name, clone_pid);
 
                     parent.image.clone()
                 } else {
                     Arc::new(UnsafeCell::new((*parent.image.get()).dup()))
                 },
                 heap: if flags & syscall::CLONE_VM == syscall::CLONE_VM {
-                    //debugln!("{}: {}: clone memory for {}", parent.pid, parent.name, clone_pid);
+                    // debugln!("{}: {}: clone memory for {}", parent.pid, parent.name, clone_pid);
 
                     parent.heap.clone()
                 } else {
                     Arc::new(UnsafeCell::new((*parent.heap.get()).dup()))
                 },
                 mmap: if flags & syscall::CLONE_VM == syscall::CLONE_VM {
-                    //debugln!("{}: {}: clone memory for {}", parent.pid, parent.name, clone_pid);
+                    // debugln!("{}: {}: clone memory for {}", parent.pid, parent.name, clone_pid);
 
                     parent.mmap.clone()
                 } else {
                     Arc::new(UnsafeCell::new((*parent.mmap.get()).dup()))
                 },
-                env_vars: if flags & syscall::CLONE_VM == syscall::CLONE_VM {  // is syscall::CLONE_VM the good flag ?
+                env_vars: if flags & syscall::CLONE_VM == syscall::CLONE_VM {
+                    // is syscall::CLONE_VM the good flag ?
                     parent.env_vars.clone()
                 } else {
                     Arc::new(UnsafeCell::new((*parent.env_vars.get()).clone()))
@@ -304,7 +307,8 @@ pub unsafe fn context_clone(regs: &Regs) -> Result<usize> {
                     Arc::new(UnsafeCell::new((*parent.cwd.get()).clone()))
                 },
                 files: if flags & syscall::CLONE_FILES == syscall::CLONE_FILES {
-                    //debugln!("{}: {}: clone resources for {}", parent.pid, parent.name, clone_pid);
+                    // debugln!("{}: {}: clone resources for {}", parent.pid, parent.name,
+                    // clone_pid);
 
                     parent.files.clone()
                 } else {
@@ -312,14 +316,15 @@ pub unsafe fn context_clone(regs: &Regs) -> Result<usize> {
                     for file in (*parent.files.get()).iter() {
                         match file.resource.dup() {
                             Ok(resource) => {
-                                //debugln!("{}: {}: dup resource {} for {}", parent.pid, parent.name, file.fd, clone_pid);
+                                // debugln!("{}: {}: dup resource {} for {}", parent.pid,
+                                // parent.name, file.fd, clone_pid);
 
                                 files.push(ContextFile {
                                     fd: file.fd,
                                     resource: resource,
                                 });
                             },
-                            Err(_err) => () //debugln!("{}: {}: failed to dup resource {} for {}: {}", parent.pid, parent.name, file.fd, clone_pid, err)
+                            Err(_err) => (), //debugln!("{}: {}: failed to dup resource {} for {}: {}", parent.pid, parent.name, file.fd, clone_pid, err)
                         }
                     }
                     Arc::new(UnsafeCell::new(files))
@@ -360,7 +365,13 @@ pub unsafe extern "cdecl" fn context_userspace(ip: usize,
 // Must have absolutely no pushes or pops
 #[cfg(target_arch = "x86_64")]
 #[allow(unused_variables)]
-pub unsafe extern "cdecl" fn context_userspace(/*Throw away extra params from ABI*/ _rdi: usize, _rsi: usize, _rdx: usize, _rcx: usize, _r8: usize, _r9: usize,
+pub unsafe extern "cdecl" fn context_userspace(// Throw away extra params from ABI
+                                               _rdi: usize,
+                                               _rsi: usize,
+                                               _rdx: usize,
+                                               _rcx: usize,
+                                               _r8: usize,
+                                               _r9: usize,
                                                ip: usize,
                                                cs: usize,
                                                flags: usize,
@@ -389,8 +400,14 @@ unsafe extern "cdecl" fn context_box(box_fn_ptr: usize) {
 /// # Safety
 /// Unsafe due to raw memory handling and FnBox
 #[cfg(target_arch="x86_64")]
-unsafe extern "cdecl" fn context_box(/*Throw away extra params from ABI*/ _rdi: usize, _rsi: usize, _rdx: usize, _rcx: usize, _r8: usize, _r9: usize,
-                                    box_fn_ptr: usize) {
+unsafe extern "cdecl" fn context_box(// Throw away extra params from ABI
+                                     _rdi: usize,
+                                     _rsi: usize,
+                                     _rdx: usize,
+                                     _rcx: usize,
+                                     _r8: usize,
+                                     _r9: usize,
+                                     box_fn_ptr: usize) {
     let box_fn = ptr::read(box_fn_ptr as *mut Box<FnBox()>);
     memory::unalloc(box_fn_ptr);
     box_fn();
@@ -442,7 +459,7 @@ pub struct ContextFile {
 pub struct ContextZone {
     pub address: usize,
     pub size: usize,
-    pub memory: Vec<ContextMemory>
+    pub memory: Vec<ContextMemory>,
 }
 
 impl ContextZone {
@@ -450,7 +467,7 @@ impl ContextZone {
         ContextZone {
             address: address,
             size: size,
-            memory: Vec::new()
+            memory: Vec::new(),
         }
     }
 
@@ -459,14 +476,16 @@ impl ContextZone {
         for entry in self.memory.iter() {
             let physical_address = unsafe { memory::alloc(entry.virtual_size) };
             if physical_address > 0 {
-                //TODO: Remap pages during memcpy
+                // TODO: Remap pages during memcpy
                 unsafe {
                     ::memcpy(physical_address as *mut u8,
                              entry.physical_address as *const u8,
                              entry.virtual_size);
                 }
 
-                //debugln!("{}: {}: dup memory {:X}:{:X} for {}", parent.pid, parent.name, entry.virtual_address, entry.virtual_address + entry.virtual_size, clone_pid);
+                // debugln!("{}: {}: dup memory {:X}:{:X} for {}", parent.pid, parent.name,
+                // entry.virtual_address, entry.virtual_address + entry.virtual_size,
+                // clone_pid);
 
                 mem.push(ContextMemory {
                     physical_address: physical_address,
@@ -476,14 +495,16 @@ impl ContextZone {
                     allocated: true,
                 });
             } else {
-                //debugln!("{}: {}: failed to dup memory {:X}:{:X} for {}", parent.pid, parent.name, entry.virtual_address, entry.virtual_address + entry.virtual_size, clone_pid);
+                // debugln!("{}: {}: failed to dup memory {:X}:{:X} for {}", parent.pid,
+                // parent.name, entry.virtual_address, entry.virtual_address +
+                // entry.virtual_size, clone_pid);
             }
         }
 
         ContextZone {
             address: self.address,
             size: self.size,
-            memory: mem
+            memory: mem,
         }
     }
 
@@ -516,7 +537,7 @@ impl ContextZone {
     pub fn permission(&self, ptr: usize, len: usize, writeable: bool) -> bool {
         for mem in self.memory.iter() {
             if ptr >= mem.virtual_address && ptr + len <= mem.virtual_address + mem.virtual_size {
-                if mem.writeable || ! writeable {
+                if mem.writeable || !writeable {
                     return true;
                 }
             }
@@ -579,7 +600,7 @@ impl ContextZone {
 #[derive(Clone)]
 pub struct EnvironmentVariable {
     name: String,
-    value: String
+    value: String,
 }
 
 pub struct Context {
@@ -605,15 +626,16 @@ pub struct Context {
     /// When to wake up
     pub wake: Option<Duration>,
     // }
-
     /// Is this process supervised?
     ///
-    /// i.e., will the syscalls made by this process block the process until handled by
+    /// i.e., will the syscalls made by this process block the process until
+    /// handled by
     /// a supervisor?
     pub supervised: bool,
     /// Is this process currently blocked by a syscall?
     ///
-    /// This means that the process is waiting for the superviser to handle the syscall.
+    /// This means that the process is waiting for the superviser to handle the
+    /// syscall.
     pub blocked_syscall: bool,
     /// The current syscall
     pub current_syscall: Option<(usize, usize, usize, usize, usize)>,
@@ -630,23 +652,28 @@ pub struct Context {
     /// Indicates that registers can be loaded (they must be saved first)
     pub loadable: bool,
     // }
-
+    //
     // These members are cloned for threads, copied or created for processes {
-    /// Program memory, cloned for threads, copied or created for processes. Modified by exec
+    /// Program memory, cloned for threads, copied or created for processes.
+    /// Modified by exec
     pub image: Arc<UnsafeCell<ContextZone>>,
-    /// Heap, cloned for threads, copied or created for processes. Modified by memory allocation
+    /// Heap, cloned for threads, copied or created for processes. Modified by
+    /// memory allocation
     pub heap: Arc<UnsafeCell<ContextZone>>,
-    /// Mmap memory, cloned for threads, copied or created for processes. Modified by mmap
+    /// Mmap memory, cloned for threads, copied or created for processes.
+    /// Modified by mmap
     pub mmap: Arc<UnsafeCell<ContextZone>>,
-    /// Environment variables, cloned for threads, copied or created for processes. Modified by set_env
+    /// Environment variables, cloned for threads, copied or created for
+    /// processes. Modified by set_env
     pub env_vars: Arc<UnsafeCell<Vec<EnvironmentVariable>>>,
 
-    /// Program working directory, cloned for threads, copied or created for processes. Modified by chdir
+    /// Program working directory, cloned for threads, copied or created for
+    /// processes. Modified by chdir
     pub cwd: Arc<UnsafeCell<String>>,
-    /// Program files, cloned for threads, copied or created for processes. Modified by file operations
+    /// Program files, cloned for threads, copied or created for processes.
+    /// Modified by file operations
     pub files: Arc<UnsafeCell<Vec<ContextFile>>>,
     // }
-
     /// Exit statuses of children
     pub statuses: WaitMap<usize, usize>,
 }
@@ -706,7 +733,8 @@ impl Context {
             stack: None,
             loadable: false,
 
-            image: Arc::new(UnsafeCell::new(ContextZone::new(CONTEXT_IMAGE_ADDR, CONTEXT_IMAGE_SIZE))),
+            image: Arc::new(UnsafeCell::new(ContextZone::new(CONTEXT_IMAGE_ADDR,
+                                                             CONTEXT_IMAGE_SIZE))),
             heap: Arc::new(UnsafeCell::new(ContextZone::new(CONTEXT_HEAP_ADDR, CONTEXT_HEAP_SIZE))),
             mmap: Arc::new(UnsafeCell::new(ContextZone::new(CONTEXT_MMAP_ADDR, CONTEXT_MMAP_SIZE))),
             env_vars: Arc::new(UnsafeCell::new(Vec::new())),
@@ -748,7 +776,8 @@ impl Context {
             stack: None,
             loadable: false,
 
-            image: Arc::new(UnsafeCell::new(ContextZone::new(CONTEXT_IMAGE_ADDR, CONTEXT_IMAGE_SIZE))),
+            image: Arc::new(UnsafeCell::new(ContextZone::new(CONTEXT_IMAGE_ADDR,
+                                                             CONTEXT_IMAGE_SIZE))),
             heap: Arc::new(UnsafeCell::new(ContextZone::new(CONTEXT_HEAP_ADDR, CONTEXT_HEAP_SIZE))),
             mmap: Arc::new(UnsafeCell::new(ContextZone::new(CONTEXT_MMAP_ADDR, CONTEXT_MMAP_SIZE))),
             env_vars: Arc::new(UnsafeCell::new(Vec::new())),
@@ -796,16 +825,16 @@ impl Context {
                 cwd.to_string()
             } else if path == ".." {
                 cwd.get_slice(..cwd.get_slice(..cwd.len() - 1)
-                                   .rfind('/')
-                                   .map_or(cwd.len(), |i| i + 1))
-                   .to_string()
+                        .rfind('/')
+                        .map_or(cwd.len(), |i| i + 1))
+                    .to_string()
             } else if path.starts_with("./") {
                 cwd.to_string() + &path.get_slice(2..)
             } else if path.starts_with("../") {
                 cwd.get_slice(..cwd.get_slice(..cwd.len() - 1)
-                                   .rfind('/')
-                                   .map_or(cwd.len(), |i| i + 1))
-                   .to_string() + &path.get_slice(3..)
+                        .rfind('/')
+                        .map_or(cwd.len(), |i| i + 1))
+                    .to_string() + &path.get_slice(3..)
             } else if path.starts_with('/') {
                 cwd.get_slice(..cwd.find(':').map_or(1, |i| i + 1)).to_string() + &path
             } else {
@@ -843,7 +872,7 @@ impl Context {
             }
         }
 
-        //debugln!("{}: {}: file number {} not found", self.pid, self.name, fd);
+        // debugln!("{}: {}: file number {} not found", self.pid, self.name, fd);
 
         Err(Error::new(EBADF))
     }
@@ -856,7 +885,7 @@ impl Context {
             }
         }
 
-        //debugln!("{}: {}: file number {} not found", self.pid, self.name, fd);
+        // debugln!("{}: {}: file number {} not found", self.pid, self.name, fd);
 
         Err(Error::new(EBADF))
     }
@@ -868,32 +897,33 @@ impl Context {
 
     /// Access a raw pointer safely
     pub fn safe_ref<'a, T>(&'a self, ptr: *const T) -> Result<&'a T> {
-        try!(self.permission(ptr as usize, mem::size_of::<T>(), false));
-        Ok(unsafe { & *ptr })
+        self.permission(ptr as usize, mem::size_of::<T>(), false)?;
+        Ok(unsafe { &*ptr })
     }
 
     /// Access a mutable raw pointer safely
     pub fn safe_ref_mut<'a, T>(&'a self, ptr: *mut T) -> Result<&'a mut T> {
-        try!(self.permission(ptr as usize, mem::size_of::<T>(), true));
-        Ok(unsafe { & mut *ptr })
+        self.permission(ptr as usize, mem::size_of::<T>(), true)?;
+        Ok(unsafe { &mut *ptr })
     }
 
     /// Access a raw pointer safely
     pub fn safe_slice<'a, T>(&'a self, ptr: *const T, len: usize) -> Result<&'a [T]> {
-        try!(self.permission(ptr as usize, mem::size_of::<T>() * len, false));
+        self.permission(ptr as usize, mem::size_of::<T>() * len, false)?;
         Ok(unsafe { slice::from_raw_parts(ptr, len) })
     }
 
     /// Access a mutable raw pointer safely
     pub fn safe_slice_mut<'a, T>(&'a self, ptr: *mut T, len: usize) -> Result<&'a mut [T]> {
-        try!(self.permission(ptr as usize, mem::size_of::<T>() * len, true));
+        self.permission(ptr as usize, mem::size_of::<T>() * len, true)?;
         Ok(unsafe { slice::from_raw_parts_mut(ptr, len) })
     }
 
     /// Check permission of segment, if inside of mapped memory
     pub fn permission(&self, ptr: usize, len: usize, writeable: bool) -> Result<()> {
         if let Some(ref stack) = self.stack {
-            if ptr >= stack.virtual_address && ptr + len <= stack.virtual_address + stack.virtual_size {
+            if ptr >= stack.virtual_address &&
+               ptr + len <= stack.virtual_address + stack.virtual_size {
                 return Ok(());
             }
         }
@@ -916,7 +946,8 @@ impl Context {
     /// Translate to physical if a ptr is inside of the mapped memory
     pub fn translate(&self, ptr: usize, len: usize) -> Result<usize> {
         if let Some(ref stack) = self.stack {
-            if ptr >= stack.virtual_address && ptr + len <= stack.virtual_address + stack.virtual_size {
+            if ptr >= stack.virtual_address &&
+               ptr + len <= stack.virtual_address + stack.virtual_size {
                 return Ok(ptr - stack.virtual_address + stack.physical_address);
             }
         }
@@ -936,7 +967,8 @@ impl Context {
         Err(Error::new(EFAULT))
     }
 
-    /// Gets an environment variable. Returns `Err` if the variable is not defined
+    /// Gets an environment variable. Returns `Err` if the variable is not
+    /// defined
     pub fn get_env_var(&self, var_name: &str) -> Result<String> {
         for variable in unsafe { (*self.env_vars.get()).iter() } {
             if &variable.name == var_name {
@@ -946,7 +978,8 @@ impl Context {
         Err(Error::new(ENOENT))
     }
 
-    /// Sets an environment variable. Returns `Err` if the variable name contains the `=`
+    /// Sets an environment variable. Returns `Err` if the variable name
+    /// contains the `=`
     /// character
     pub fn set_env_var(&mut self, name: &str, value: &str) -> Result<()> {
         if name.contains('=') {
@@ -959,7 +992,12 @@ impl Context {
                 return Ok(());
             }
         }
-        unsafe { (*self.env_vars.get()).push(EnvironmentVariable { name: String::from(name), value: String::from(value) }) };
+        unsafe {
+            (*self.env_vars.get()).push(EnvironmentVariable {
+                name: String::from(name),
+                value: String::from(value),
+            })
+        };
         Ok(())
     }
 
@@ -972,7 +1010,8 @@ impl Context {
         Ok(vars_buf)
     }
 
-    /// Removes the environment variable named `name`. Returns `Err` if the variable doesn't exist
+    /// Removes the environment variable named `name`. Returns `Err` if the
+    /// variable doesn't exist
     pub fn remove_env_var(&self, name: &str) -> Result<()> {
         for (i, variable) in unsafe { (*self.env_vars.get()).iter().enumerate() } {
             if &variable.name == name {
@@ -1007,13 +1046,13 @@ impl Context {
     #[inline(never)]
     #[naked]
     pub unsafe fn switch_to(&mut self, next: &mut Context) {
-        //asm!("xchg bx, bx" : : : "memory" : "intel", "volatile");
+        // asm!("xchg bx, bx" : : : "memory" : "intel", "volatile");
 
         asm!("fxsave [$0]" : : "r"(self.fx) : "memory" : "intel", "volatile");
         self.loadable = true;
         if next.loadable {
             asm!("fxrstor [$0]" : : "r"(next.fx) : "memory" : "intel", "volatile");
-        }else{
+        } else {
             asm!("fninit" : : : "memory" : "intel", "volatile");
         }
 
@@ -1042,13 +1081,13 @@ impl Context {
     #[inline(never)]
     #[naked]
     pub unsafe fn switch_to(&mut self, next: &mut Context) {
-        //asm!("xchg bx, bx" : : : "memory" : "intel", "volatile");
+        // asm!("xchg bx, bx" : : : "memory" : "intel", "volatile");
 
         asm!("fxsave [$0]" : : "r"(self.fx) : "memory" : "intel", "volatile");
         self.loadable = true;
         if next.loadable {
             asm!("fxrstor [$0]" : : "r"(next.fx) : "memory" : "intel", "volatile");
-        }else{
+        } else {
             asm!("fninit" : : : "memory" : "intel", "volatile");
         }
 
@@ -1081,10 +1120,14 @@ impl Context {
 impl Drop for Context {
     fn drop(&mut self) {
         if let Some(vfork) = self.vfork.take() {
-            unsafe { (*vfork).blocked = false; }
+            unsafe {
+                (*vfork).blocked = false;
+            }
         }
         if self.kernel_stack > 0 {
-            unsafe { memory::unalloc(self.kernel_stack); }
+            unsafe {
+                memory::unalloc(self.kernel_stack);
+            }
         }
     }
 }

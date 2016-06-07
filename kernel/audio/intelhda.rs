@@ -2,7 +2,7 @@ use alloc::boxed::Box;
 
 use arch::memory::Memory;
 
-use core::{ptr, mem};
+use core::{mem, ptr};
 
 use drivers::pci::config::PciConfig;
 
@@ -54,7 +54,7 @@ impl Resource for IntelHdaResource {
         Ok(box IntelHdaResource { base: self.base })
     }
 
-    fn path(&self, buf: &mut [u8]) -> syscall::Result <usize> {
+    fn path(&self, buf: &mut [u8]) -> syscall::Result<usize> {
         let path = b"audio:";
 
         let mut i = 0;
@@ -125,25 +125,27 @@ impl Resource for IntelHdaResource {
             debug::d(" Format ");
             debug::dh(stream.format as usize);
 
-            let mut bd_addr = try!(Memory::<u8>::new(buf.len()));
+            let mut bd_addr = Memory::<u8>::new(buf.len())?;
             let bd_size = bd_addr.len();
 
             ::memset(bd_addr.as_mut_ptr(), 0, bd_size);
             ::memcpy(bd_addr.as_mut_ptr(), buf.as_ptr(), buf.len());
 
-            let mut bdl = try!(Memory::<BD>::new(2));
-            bdl.write(0, BD {
-                addr: bd_addr.address() as u32,
-                addru: 0,
-                len: bd_size as u32,
-                ioc: 1,
-            });
-            bdl.write(1, BD {
-                addr: bd_addr.address() as u32,
-                addru: 0,
-                len: bd_size as u32,
-                ioc: 1,
-            });
+            let mut bdl = Memory::<BD>::new(2)?;
+            bdl.write(0,
+                      BD {
+                          addr: bd_addr.address() as u32,
+                          addru: 0,
+                          len: bd_size as u32,
+                          ioc: 1,
+                      });
+            bdl.write(1,
+                      BD {
+                          addr: bd_addr.address() as u32,
+                          addru: 0,
+                          len: bd_size as u32,
+                          ioc: 1,
+                      });
 
             stream.bdlpl = bdl.address() as u32;
 
@@ -181,13 +183,13 @@ impl Resource for IntelHdaResource {
 
                 let req = TimeSpec {
                     tv_sec: 0,
-                    tv_nsec: 10 * time::NANOS_PER_MILLI
+                    tv_nsec: 10 * time::NANOS_PER_MILLI,
                 };
                 let mut rem = TimeSpec {
                     tv_sec: 0,
                     tv_nsec: 0,
                 };
-                try!(syscall::time::nanosleep(&req, &mut rem));
+                syscall::time::nanosleep(&req, &mut rem)?;
             }
 
             debug::d("Finished\n");

@@ -10,7 +10,8 @@ pub mod config {
 
     /// PCI Configuration Space registers (256 bytes window)
     /// In theory 32 bit aligned access only.
-    /// In practice, however, things seem to be working even with unaligned access.
+    /// In practice, however, things seem to be working even with unaligned
+    /// access.
     pub const PCI_CFG_VENDOR_ID: u8 = 0x00;
     pub const PCI_CFG_DEVICE_ID: u8 = 0x02;
     pub const PCI_CFG_COMMAND: u8 = 0x04;

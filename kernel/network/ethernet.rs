@@ -26,7 +26,7 @@ impl FromBytes for EthernetII {
             unsafe {
                 return Some(EthernetII {
                     header: *(bytes.as_ptr() as *const EthernetIIHeader),
-                    data: bytes.get_slice(mem::size_of::<EthernetIIHeader>() ..).to_vec(),
+                    data: bytes.get_slice(mem::size_of::<EthernetIIHeader>()..).to_vec(),
                 });
             }
         }

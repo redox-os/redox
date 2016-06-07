@@ -23,7 +23,7 @@ impl Resource for DebugResource {
         })
     }
 
-    fn path(&self, buf: &mut [u8]) -> Result <usize> {
+    fn path(&self, buf: &mut [u8]) -> Result<usize> {
         let path = self.path.as_bytes();
 
         for (b, p) in buf.iter_mut().zip(path.iter()) {
@@ -39,7 +39,7 @@ impl Resource for DebugResource {
         }
 
         let mut i = 0;
-        while i < buf.len() && ! self.command.is_empty() {
+        while i < buf.len() && !self.command.is_empty() {
             buf[i] = unsafe { self.command.as_mut_vec().remove(0) };
             i += 1;
         }
@@ -77,13 +77,13 @@ impl KScheme for DebugScheme {
         let console = ::env().console.lock();
         if let Some(ref display) = console.display {
             Ok(box DebugResource {
-                path: format!("debug:{}/{}", display.width/8, display.height/16),
-                command: String::new()
+                path: format!("debug:{}/{}", display.width / 8, display.height / 16),
+                command: String::new(),
             })
         } else {
             Ok(box DebugResource {
                 path: "debug:".to_owned(),
-                command: String::new()
+                command: String::new(),
             })
         }
     }

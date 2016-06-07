@@ -4,9 +4,9 @@ use core::{cmp, intrinsics, mem};
 use core::ops::{Index, IndexMut};
 use core::{ptr, slice};
 
-use system::error::{Result, Error, ENOMEM};
+use system::error::{ENOMEM, Error, Result};
 
-use super::paging::{Page, PAGE_END};
+use super::paging::{PAGE_END, Page};
 
 pub const CLUSTER_ADDRESS: usize = PAGE_END;
 pub const CLUSTER_COUNT: usize = 1024 * 1024; // 4 GiB
@@ -63,7 +63,8 @@ impl<T> Memory<T> {
 
     /// Reallocate the memory, aligned
     pub fn renew_aligned(mut self, length: usize, align: usize) -> Result<Self> {
-        let alloc = unsafe { realloc_aligned(self.ptr as usize, length * mem::size_of::<T>(), align) };
+        let alloc =
+            unsafe { realloc_aligned(self.ptr as usize, length * mem::size_of::<T>(), align) };
         self.ptr = 0 as *mut T;
         if alloc > 0 {
             Ok(Memory {
@@ -352,7 +353,7 @@ pub unsafe fn realloc_aligned(ptr: usize, size: usize, align: usize) -> usize {
                     let read_cluster = address_to_cluster(ptr);
                     let write_cluster = address_to_cluster(ret);
 
-                    for i in 0..(copy_size + CLUSTER_SIZE - 1)/CLUSTER_SIZE {
+                    for i in 0..(copy_size + CLUSTER_SIZE - 1) / CLUSTER_SIZE {
                         let read_address = cluster_to_address(read_cluster + i);
                         let write_address = cluster_to_address(write_cluster + i);
 
@@ -364,7 +365,9 @@ pub unsafe fn realloc_aligned(ptr: usize, size: usize, align: usize) -> usize {
                         let write_old = write_page.entry_data();
                         write_page.map_kernel_write(write_address);
 
-                        ::memmove(write_address as *mut u8, read_address as *const u8, CLUSTER_SIZE);
+                        ::memmove(write_address as *mut u8,
+                                  read_address as *const u8,
+                                  CLUSTER_SIZE);
 
                         write_page.set_entry_data(write_old);
                         write_page.flush();

@@ -8,7 +8,7 @@ use core::{cmp, mem};
 use common::time;
 
 use drivers::pci::config::PciConfig;
-use drivers::io::{Io, Mmio, Pio, PhysAddr};
+use drivers::io::{Io, Mmio, PhysAddr, Pio};
 
 use fs::{KScheme, Resource, Url};
 
@@ -32,11 +32,11 @@ impl Resource for Ac97Resource {
         Ok(box Ac97Resource {
             audio: self.audio,
             bus_master: self.bus_master,
-            bdl: self.bdl
+            bdl: self.bdl,
         })
     }
 
-    fn path(&self, buf: &mut [u8]) -> syscall::Result <usize> {
+    fn path(&self, buf: &mut [u8]) -> syscall::Result<usize> {
         let path = b"audio:";
 
         let mut i = 0;
@@ -102,13 +102,13 @@ impl Resource for Ac97Resource {
 
                     let req = TimeSpec {
                         tv_sec: 0,
-                        tv_nsec: 10 * time::NANOS_PER_MILLI
+                        tv_nsec: 10 * time::NANOS_PER_MILLI,
                     };
                     let mut rem = TimeSpec {
                         tv_sec: 0,
                         tv_nsec: 0,
                     };
-                    try!(syscall::time::nanosleep(&req, &mut rem));
+                    syscall::time::nanosleep(&req, &mut rem)?;
                 }
 
                 debug!("{} / {}: {} / {}\n",
@@ -120,7 +120,9 @@ impl Resource for Ac97Resource {
                 let bytes = cmp::min(65534 * 2, (buf.len() - position + 1));
                 let samples = bytes / 2;
 
-                (*self.bdl.offset(lvi as isize)).ptr.write(buf.as_ptr().offset(position as isize) as u32);
+                (*self.bdl.offset(lvi as isize))
+                    .ptr
+                    .write(buf.as_ptr().offset(position as isize) as u32);
                 (*self.bdl.offset(lvi as isize)).samples.write((samples & 0xFFFF) as u32);
 
                 position += bytes;
@@ -153,13 +155,13 @@ impl Resource for Ac97Resource {
 
                 let req = TimeSpec {
                     tv_sec: 0,
-                    tv_nsec: 10 * time::NANOS_PER_MILLI
+                    tv_nsec: 10 * time::NANOS_PER_MILLI,
                 };
                 let mut rem = TimeSpec {
                     tv_sec: 0,
                     tv_nsec: 0,
                 };
-                try!(syscall::time::nanosleep(&req, &mut rem));
+                syscall::time::nanosleep(&req, &mut rem)?;
             }
 
             debug!("Finished {} / {}\n", po_civ.read(), lvi);
@@ -185,7 +187,7 @@ impl KScheme for Ac97 {
         Ok(box Ac97Resource {
             audio: self.audio,
             bus_master: self.bus_master,
-            bdl: self.bdl
+            bdl: self.bdl,
         })
     }
 
@@ -207,7 +209,10 @@ impl Ac97 {
             bdl: memory::alloc(32 * mem::size_of::<Bd>()) as *mut Bd,
         };
 
-        debug!(" + AC97 on: {:X}, {:X}, IRQ: {:X}\n", module.audio, module.bus_master, module.irq);
+        debug!(" + AC97 on: {:X}, {:X}, IRQ: {:X}\n",
+               module.audio,
+               module.bus_master,
+               module.irq);
 
         let mut po_bdbar = PhysAddr::new(Pio::<u32>::new(module.bus_master as u16 + 0x10));
         po_bdbar.write(module.bdl as u32);

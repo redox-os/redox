@@ -20,8 +20,8 @@
 #![no_std]
 
 #![allow(deprecated)]
-//#![deny(warnings)]
-//#![deny(missing_docs)]
+// #![deny(warnings)]
+// #![deny(missing_docs)]
 
 #[macro_use]
 extern crate alloc;
@@ -38,7 +38,7 @@ use acpi::Acpi;
 
 use alloc::boxed::Box;
 
-use arch::context::{context_switch, Context};
+use arch::context::{Context, context_switch};
 use arch::memory;
 use arch::paging::Page;
 use arch::regs::Regs;
@@ -68,7 +68,7 @@ use schemes::debug::DebugScheme;
 use schemes::disk::DiskScheme;
 use schemes::display::DisplayScheme;
 use schemes::env::EnvScheme;
-//use schemes::file::FileScheme;
+// use schemes::file::FileScheme;
 use schemes::initfs::InitFsScheme;
 use schemes::interrupt::InterruptScheme;
 use schemes::memory::MemoryScheme;
@@ -81,7 +81,8 @@ pub use externs::*;
 
 /// Common std-like functionality.
 ///
-/// This module implements basic primitives for kernel space. They are not exposed to userspace.
+/// This module implements basic primitives for kernel space. They are not
+/// exposed to userspace.
 #[macro_use]
 pub mod common;
 /// Logging.
@@ -94,18 +95,22 @@ pub mod logging;
 pub mod macros;
 /// Allocation lang items.
 ///
-/// This module defines __rust_allocate lang item and friends, simply wrapping the allocation
+/// This module defines __rust_allocate lang item and friends, simply wrapping
+/// the allocation
 /// method defined in `arch::memory`.
 pub mod alloc_system;
 /// ACPI implementation.
 ///
-/// ACPI (Advanced Configuration and Power Interface) is the open standard for hardware detection,
-/// power management, and hardware configuration. This module contains support for a subset of the
+/// ACPI (Advanced Configuration and Power Interface) is the open standard for
+/// hardware detection,
+/// power management, and hardware configuration. This module contains support
+/// for a subset of the
 /// ACPI standard.
 pub mod acpi;
 /// Architecture dependent objects.
 ///
-/// This module contains various mechanisms and primitives, such as ELF loading, interrupt locking,
+/// This module contains various mechanisms and primitives, such as ELF
+/// loading, interrupt locking,
 /// memory paging, and so on.
 ///
 /// This module is highly central to the kernel.
@@ -114,76 +119,96 @@ pub mod arch;
 ///
 /// Drivers for controlling, playing, and configuring audio output.
 ///
-/// This module contains `ac97` and `intelhda` audio drivers. These are likely to be moved to
+/// This module contains `ac97` and `intelhda` audio drivers. These are likely
+/// to be moved to
 /// userspace in the future.
 pub mod audio;
 /// Disk drivers.
 ///
-/// Drivers for reading and writing disks. Currently includes drivers for following interfaces:
-/// AHCI (Advanced Host Controller Interface), IDE (Integrated Drive Electronics), and ATA-1 (AT
+/// Drivers for reading and writing disks. Currently includes drivers for
+/// following interfaces:
+/// AHCI (Advanced Host Controller Interface), IDE (Integrated Drive
+/// Electronics), and ATA-1 (AT
 /// Attachment Interface for Disk Drives).
 pub mod disk;
 /// Miscellaneous drivers.
 ///
-/// This module contains miscellaneous drivers, including PCI (Peripheral Component
-/// Interconnect), PS/2 (for keyboards and mice), RTC (real-time clock), SATA (Serial AT
+/// This module contains miscellaneous drivers, including PCI (Peripheral
+/// Component
+/// Interconnect), PS/2 (for keyboards and mice), RTC (real-time clock), SATA
+/// (Serial AT
 /// Attachment), and keyboard layouts.
 pub mod drivers;
 /// The kernel environment.
 ///
-/// This module defines the `Environment` struct, which has the job to track the state of the
-/// kernel. This includes context management, system console, scheme registrar, and so on.
+/// This module defines the `Environment` struct, which has the job to track
+/// the state of the
+/// kernel. This includes context management, system console, scheme registrar,
+/// and so on.
 pub mod env;
 /// Functions required for the Rust runtime, like memcpy and memset
 pub mod externs;
 /// File system.
 ///
-/// This module manages virtual and non-virtual file systems. Furthermore, it defines URL,
+/// This module manages virtual and non-virtual file systems. Furthermore, it
+/// defines URL,
 /// `Scheme`, and `Resource`.
 pub mod fs;
 /// Graphic management.
 ///
-/// This module contains the initial display manager and various graphics primitives.
+/// This module contains the initial display manager and various graphics
+/// primitives.
 pub mod graphics;
 /// Networking.
 ///
-/// This module contains drivers (e.g, intel8254x and rtl8139), primitives, schemes, and data
+/// This module contains drivers (e.g, intel8254x and rtl8139), primitives,
+/// schemes, and data
 /// structures related to networking, providing Redox's networking stack.
 pub mod network;
 /// Kernel panic handling.
 ///
-/// This module defines the kernel panic mechanism, which will halt the kernel (i.e. `sti; hlt;`)
+/// This module defines the kernel panic mechanism, which will halt the kernel
+/// (i.e. `sti; hlt;`)
 /// in case of panics.
 pub mod panic;
 /// Schemes.
 ///
-/// This module contains various schemes, such as `display:`, `debug:`, `memory:` and so on.
+/// This module contains various schemes, such as `display:`, `debug:`,
+/// `memory:` and so on.
 pub mod schemes;
 /// Synchronization primitives.
 ///
-/// This module provides various primitives for performing synchronization to avoid data races,
-/// interrupts, and other unsafe conditions, when performing concurrent computation.
+/// This module provides various primitives for performing synchronization to
+/// avoid data races,
+/// interrupts, and other unsafe conditions, when performing concurrent
+/// computation.
 pub mod sync;
 /// System calls and system call handler.
 ///
 /// This module defines the system call handler and system calls of Redox.
 ///
-/// System calls are the only way an userspace application can communicate with the kernel space.
-/// Redox do, by design, have a very small number of syscalls when compared to Linux.
+/// System calls are the only way an userspace application can communicate with
+/// the kernel space.
+/// Redox do, by design, have a very small number of syscalls when compared to
+/// Linux.
 ///
-/// The system call interface is very similar to POSIX's system calls, making Redox able to run
+/// The system call interface is very similar to POSIX's system calls, making
+/// Redox able to run
 /// many Unix programs.
 pub mod syscall;
 /// Drivers and primitives for USB input/output.
 ///
-/// USB (Universal Serial Bus) is a standardized serial bus interface, used for many peripherals.
+/// USB (Universal Serial Bus) is a standardized serial bus interface, used for
+/// many peripherals.
 /// This modules contains drivers and other tools for USB.
 pub mod usb;
 
 /// The TTS pointer.
 ///
-/// This static contains a mutable pointer to the TSS (task state segment), which is a data
-/// structure used on x86-based architectures for holding information about a specific task. See
+/// This static contains a mutable pointer to the TSS (task state segment),
+/// which is a data
+/// structure used on x86-based architectures for holding information about a
+/// specific task. See
 /// `Tss` for more information.
 pub static mut TSS_PTR: Option<&'static mut Tss> = None;
 /// The environment pointer.
@@ -205,7 +230,8 @@ pub fn env() -> &'static Environment {
 
 /// The PIT (programmable interval timer) duration.
 ///
-/// This duration defines the PIT interval, which is added to the monotonic clock and the real time
+/// This duration defines the PIT interval, which is added to the monotonic
+/// clock and the real time
 /// clock, when interrupt 0x20 is received.
 static PIT_DURATION: Duration = Duration {
     secs: 0,
@@ -217,7 +243,9 @@ static PIT_DURATION: Duration = Duration {
 /// This loop runs while the system is idle.
 fn idle_loop() {
     loop {
-        unsafe { asm!("cli" : : : : "intel", "volatile"); }
+        unsafe {
+            asm!("cli" : : : : "intel", "volatile");
+        }
 
         let mut halt = true;
 
@@ -229,10 +257,16 @@ fn idle_loop() {
         }
 
         if halt {
-            unsafe { asm!("sti ; hlt" : : : : "intel", "volatile"); }
+            unsafe {
+                asm!("sti ; hlt" : : : : "intel", "volatile");
+            }
         } else {
-            unsafe { asm!("sti ; nop" : : : : "intel", "volatile"); }
-            unsafe { context_switch(); }
+            unsafe {
+                asm!("sti ; nop" : : : : "intel", "volatile");
+            }
+            unsafe {
+                context_switch();
+            }
         }
     }
 }
@@ -263,7 +297,8 @@ static BSS_TEST_NONZERO: usize = !0;
 
 /// Initialize the kernel.
 ///
-/// This will initialize the kernel: the environment, the memory allocator, the memory pager, PCI and so
+/// This will initialize the kernel: the environment, the memory allocator, the
+/// memory pager, PCI and so
 /// on.
 ///
 /// Note that this will not start the event loop.
@@ -275,7 +310,7 @@ unsafe fn init(tss_data: usize) {
     // Zero BSS, this initializes statics that are set to 0
     {
         let start_ptr = &mut __bss_start as *mut u8;
-        let end_ptr = & __bss_end as *const u8 as usize;
+        let end_ptr = &__bss_end as *const u8 as usize;
 
         if start_ptr as usize <= end_ptr {
             let size = end_ptr - start_ptr as usize;
@@ -300,7 +335,7 @@ unsafe fn init(tss_data: usize) {
 
         if start_ptr <= end_ptr {
             let size = end_ptr - start_ptr;
-            for page in 0..(size + 4095)/4096 {
+            for page in 0..(size + 4095) / 4096 {
                 Page::new(start_ptr + page * 4096).unmap();
             }
         }
@@ -308,26 +343,24 @@ unsafe fn init(tss_data: usize) {
 
     // Remap text
     {
-        let start_ptr = & __text_start as *const u8 as usize;
-        let end_ptr = & __text_end as *const u8 as usize;
+        let start_ptr = &__text_start as *const u8 as usize;
+        let end_ptr = &__text_end as *const u8 as usize;
         if start_ptr <= end_ptr {
             let size = end_ptr - start_ptr;
-            for page in 0..(size + 4095)/4096 {
-                Page::new(start_ptr + page * 4096).
-                    map_kernel_read(start_ptr + page * 4096);
+            for page in 0..(size + 4095) / 4096 {
+                Page::new(start_ptr + page * 4096).map_kernel_read(start_ptr + page * 4096);
             }
         }
     }
 
     // Remap rodata
     {
-        let start_ptr = & __rodata_start as *const u8 as usize;
-        let end_ptr = & __rodata_end as *const u8 as usize;
+        let start_ptr = &__rodata_start as *const u8 as usize;
+        let end_ptr = &__rodata_end as *const u8 as usize;
         if start_ptr <= end_ptr {
             let size = end_ptr - start_ptr;
-            for page in 0..(size + 4095)/4096 {
-                Page::new(start_ptr + page * 4096).
-                    map_kernel_read(start_ptr + page * 4096);
+            for page in 0..(size + 4095) / 4096 {
+                Page::new(start_ptr + page * 4096).map_kernel_read(start_ptr + page * 4096);
             }
         }
     }
@@ -339,7 +372,7 @@ unsafe fn init(tss_data: usize) {
 
         if start_ptr <= end_ptr {
             let size = end_ptr - start_ptr;
-            for page in 0..(size + 4095)/4096 {
+            for page in 0..(size + 4095) / 4096 {
                 Page::new(start_ptr + page * 4096).unmap();
             }
         }
@@ -383,40 +416,37 @@ unsafe fn init(tss_data: usize) {
             env.schemes.lock().push(box SyslogScheme);
             env.schemes.lock().push(box TestScheme);
 
-            //TODO: Do not do this! Find a better way
+            // TODO: Do not do this! Find a better way
             let mut disks = Vec::new();
             disks.append(&mut env.disks.lock());
             env.schemes.lock().push(DiskScheme::new(disks));
 
-            /*
-            let mut nics = Vec::new();
-            nics.append(&mut env.nics.lock());
-            env.schemes.lock().push(NetworkScheme::new(nics));
-            */
+            // let mut nics = Vec::new();
+            // nics.append(&mut env.nics.lock());
+            // env.schemes.lock().push(NetworkScheme::new(nics));
+            //
 
             env.schemes.lock().push(box EthernetScheme);
-            //env.schemes.lock().push(box ArpScheme);
-            //env.schemes.lock().push(box IcmpScheme);
-            env.schemes.lock().push(box IpScheme {
-                arp: Vec::new()
-            });
+            // env.schemes.lock().push(box ArpScheme);
+            // env.schemes.lock().push(box IcmpScheme);
+            env.schemes.lock().push(box IpScheme { arp: Vec::new() });
             env.schemes.lock().push(box TcpScheme);
             env.schemes.lock().push(box UdpScheme);
 
             Context::spawn("karp".to_string(),
-            box move || {
-                ArpScheme::reply_loop();
-            });
+                           box move || {
+                               ArpScheme::reply_loop();
+                           });
 
             Context::spawn("kicmp".to_string(),
-            box move || {
-                IcmpScheme::reply_loop();
-            });
+                           box move || {
+                               IcmpScheme::reply_loop();
+                           });
 
             env.contexts.lock().enabled = true;
 
             Context::spawn("kinit".to_string(),
-            box move || {
+                           box move || {
                 {
                     let wd_c = "initfs:/\0";
                     syscall::fs::chdir(wd_c.as_ptr()).unwrap();
@@ -491,28 +521,29 @@ pub extern "cdecl" fn kernel(interrupt: usize, mut regs: &mut Regs) {
             }
             debugln!("    FSW: {:08X}    FCW: {:08X}", fsw, fcw);
 
-            /* TODO: Stack dump
-            {
-                let contexts = ::env().contexts.lock();
-                if let Ok(context) = contexts.current() {
-                    let sp = regs.sp as *const usize;
-                    for y in -15..16 {
-                        debug!("    {:>3}:", y * 8 * 4);
-                        for x in 0..8 {
-                            let p = unsafe { sp.offset(-(x + y * 8)) };
-                            if let Ok(_) = context.translate(p as usize, 1) {
-                                debug!(" {:08X}", unsafe { ptr::read(p) });
-                            } else if context.kernel_stack > 0 && (p as usize) >= context.kernel_stack && (p as usize) < context.kernel_stack + CONTEXT_STACK_SIZE {
-                                debug!(" {:08X}", unsafe { ptr::read(p) });
-                            } else {
-                                debug!(" ????????");
-                            }
-                        }
-                        debug!("\n");
-                    }
-                }
-            }
-            */
+    // TODO: Stack dump
+    // {
+    // let contexts = ::env().contexts.lock();
+    // if let Ok(context) = contexts.current() {
+    // let sp = regs.sp as *const usize;
+    // for y in -15..16 {
+    // debug!("    {:>3}:", y * 8 * 4);
+    // for x in 0..8 {
+    // let p = unsafe { sp.offset(-(x + y * 8)) };
+    // if let Ok(_) = context.translate(p as usize, 1) {
+    // debug!(" {:08X}", unsafe { ptr::read(p) });
+    // } else if context.kernel_stack > 0 && (p as usize) >= context.kernel_stack
+    // && (p as usize) < context.kernel_stack + CONTEXT_STACK_SIZE {
+    // debug!(" {:08X}", unsafe { ptr::read(p) });
+    // } else {
+    // debug!(" ????????");
+    // }
+    // }
+    // debug!("\n");
+    // }
+    // }
+    // }
+    //
         })
     };
 
@@ -565,17 +596,17 @@ pub extern "cdecl" fn kernel(interrupt: usize, mut regs: &mut Regs) {
                 current.time += 1;
             }
 
-            unsafe { context_switch(); }
-        }
-        i @ 0x21 ... 0x2F => {
+            unsafe {
+                context_switch();
+            }
+        },
+        i @ 0x21...0x2F => {
             env().on_irq(i as u8 - 0x20);
         },
         0x80 => syscall::handle(regs),
-        0xFF => {
-            unsafe {
-                init(regs.ax);
-                idle_loop();
-            }
+        0xFF => unsafe {
+            init(regs.ax);
+            idle_loop();
         },
         0x0 => exception!("Divide by zero exception"),
         0x1 => exception!("Debug exception"),

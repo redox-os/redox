@@ -2,14 +2,12 @@ use super::{Resource, Url};
 
 use alloc::boxed::Box;
 
-use system::error::{Error, Result, EPERM};
+use system::error::{EPERM, Error, Result};
 use system::syscall::Stat;
 
 #[allow(unused_variables)]
 pub trait KScheme {
-    fn on_irq(&mut self, irq: u8) {
-
-    }
+    fn on_irq(&mut self, irq: u8) {}
 
     fn scheme(&self) -> &str {
         ""

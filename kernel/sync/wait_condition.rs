@@ -1,4 +1,4 @@
-use arch::context::{context_switch, Context};
+use arch::context::{Context, context_switch};
 
 use collections::Vec;
 
@@ -8,14 +8,12 @@ use core::ops::DerefMut;
 use super::Intex;
 
 pub struct WaitCondition {
-    contexts: Intex<Vec<*mut Context>>
+    contexts: Intex<Vec<*mut Context>>,
 }
 
 impl WaitCondition {
     pub fn new() -> WaitCondition {
-        WaitCondition {
-            contexts: Intex::new(Vec::new())
-        }
+        WaitCondition { contexts: Intex::new(Vec::new()) }
     }
 
     pub unsafe fn notify(&self) {
@@ -37,7 +35,9 @@ impl WaitCondition {
 }
 
 impl Drop for WaitCondition {
-    fn drop(&mut self){
-        unsafe { self.notify(); }
+    fn drop(&mut self) {
+        unsafe {
+            self.notify();
+        }
     }
 }

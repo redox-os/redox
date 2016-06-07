@@ -87,7 +87,7 @@ impl MADT {
                             } else {
                                 debugln!("MADT: Unknown LocalApic length: {}", entry_length);
                             }
-                        }
+                        },
                         ENTRY_IO_APIC => {
                             if entry_length == size_of::<IoApic>() {
                                 madt.io_apics.push(unsafe {
@@ -96,7 +96,7 @@ impl MADT {
                             } else {
                                 debugln!("MADT: Unknown IoApic length: {}", entry_length);
                             }
-                        }
+                        },
                         ENTRY_INT_SOURCE_OVERRIDE => {
                             if entry_length == size_of::<IntSourceOverride>() {
                                 madt.int_source_overrides.push(unsafe {
@@ -106,12 +106,12 @@ impl MADT {
                                 debugln!("MADT: Unknown IntSourceOverride length: {}",
                                          entry_length);
                             }
-                        }
+                        },
                         _ => {
                             debugln!("MADT: Unknown entry type: {}, length {}",
                                      entry_type,
                                      entry_length)
-                        }
+                        },
                     }
                 }
                 i += entry_length;

@@ -5,11 +5,11 @@ use alloc::boxed::Box;
 use collections::String;
 use collections::borrow::ToOwned;
 
-use core::result::Result::{Ok, Err};
+use core::result::Result::{Err, Ok};
 
 use common::slice::GetSlice;
 
-use system::error::{Result, Error};
+use system::error::{Error, Result};
 use system::syscall::{O_CREAT, O_RDWR, O_TRUNC};
 
 /// An URL, see wiki
@@ -103,17 +103,16 @@ impl OwnedUrl {
 
     /// Into a cow
     pub fn into_cow<'a>(self) -> CowUrl<'a> {
-        /*
-             ______________
-            < Mooooooooooo >
-             --------------
-                    \   ^__^
-                     \  (oo)\_______
-                        (__)\       )\/\
-                            ||----w |
-                            ||     ||
-
-         */
+        // ______________
+        // < Mooooooooooo >
+        // --------------
+        // \   ^__^
+        // \  (oo)\_______
+        // (__)\       )\/\
+        // ||----w |
+        // ||     ||
+        //
+        //
         CowUrl::Owned(self)
     }
 

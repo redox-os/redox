@@ -8,24 +8,22 @@ use system::error::Result;
 
 pub struct InterruptScheme;
 
-static IRQ_NAME: [&'static str; 16] = [
-    "Programmable Interval Timer",
-    "Keyboard",
-    "Cascade",
-    "Serial 2 and 4",
-    "Serial 1 and 3",
-    "Parallel 2",
-    "Floppy",
-    "Parallel 1",
-    "Realtime Clock",
-    "PCI 1",
-    "PCI 2",
-    "PCI 3",
-    "Mouse",
-    "Coprocessor",
-    "IDE Primary",
-    "IDE Secondary",
-];
+static IRQ_NAME: [&'static str; 16] = ["Programmable Interval Timer",
+                                       "Keyboard",
+                                       "Cascade",
+                                       "Serial 2 and 4",
+                                       "Serial 1 and 3",
+                                       "Parallel 2",
+                                       "Floppy",
+                                       "Parallel 1",
+                                       "Realtime Clock",
+                                       "PCI 1",
+                                       "PCI 2",
+                                       "PCI 3",
+                                       "Mouse",
+                                       "Coprocessor",
+                                       "IDE Primary",
+                                       "IDE Secondary"];
 
 impl KScheme for InterruptScheme {
     fn scheme(&self) -> &str {
@@ -42,7 +40,7 @@ impl KScheme for InterruptScheme {
 
                 if count > 0 {
                     let description = match interrupt {
-                        i @ 0x20 ... 0x30 => IRQ_NAME[i - 0x20],
+                        i @ 0x20...0x30 => IRQ_NAME[i - 0x20],
                         0x80 => "System Call",
                         0x0 => "Divide by zero exception",
                         0x1 => "Debug exception",

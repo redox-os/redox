@@ -34,8 +34,10 @@ pub trait GetSlice {
 }
 
 fn bound<T: AsOption<usize>, U: RangeArgument<T>>(len: usize, a: U) -> Range<usize> {
-    let start = cmp::min(a.start().map(|x| x.as_option()).unwrap_or(Some(0)).unwrap(), len);
-    let end = cmp::min(a.end().map(|x| x.as_option()).unwrap_or(Some(len)).unwrap(), len);
+    let start = cmp::min(a.start().map(|x| x.as_option()).unwrap_or(Some(0)).unwrap(),
+                         len);
+    let end = cmp::min(a.end().map(|x| x.as_option()).unwrap_or(Some(len)).unwrap(),
+                       len);
 
     if start <= end {
         start..end

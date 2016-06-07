@@ -1,7 +1,7 @@
 pub use self::kscheme::KScheme;
 pub use self::resource::{Resource, ResourceSeek};
 pub use self::scheme::Scheme;
-pub use self::url::{Url, OwnedUrl};
+pub use self::url::{OwnedUrl, Url};
 pub use self::vec_resource::VecResource;
 pub use self::supervisor_resource::SupervisorResource;
 

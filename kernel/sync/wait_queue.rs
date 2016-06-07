@@ -15,14 +15,16 @@ impl<T> WaitQueue<T> {
     pub fn new() -> WaitQueue<T> {
         WaitQueue {
             inner: Intex::new(VecDeque::new()),
-            condition: WaitCondition::new()
+            condition: WaitCondition::new(),
         }
     }
 
-    pub fn clone(&self) -> WaitQueue<T> where T: Clone {
+    pub fn clone(&self) -> WaitQueue<T>
+        where T: Clone
+    {
         WaitQueue {
             inner: Intex::new(self.inner.lock().clone()),
-            condition: WaitCondition::new()
+            condition: WaitCondition::new(),
         }
     }
 
@@ -31,7 +33,9 @@ impl<T> WaitQueue<T> {
             if let Some(value) = self.inner.lock().pop_front() {
                 return value;
             }
-            unsafe { self.condition.wait(); }
+            unsafe {
+                self.condition.wait();
+            }
         }
     }
 
@@ -39,18 +43,22 @@ impl<T> WaitQueue<T> {
         loop {
             {
                 let mut inner = self.inner.lock();
-                if ! inner.is_empty() {
+                if !inner.is_empty() {
                     let mut swap_inner = VecDeque::new();
                     mem::swap(inner.deref_mut(), &mut swap_inner);
                     return swap_inner;
                 }
             }
-            unsafe { self.condition.wait(); }
+            unsafe {
+                self.condition.wait();
+            }
         }
     }
 
     pub fn send(&self, value: T) {
         self.inner.lock().push_back(value);
-        unsafe { self.condition.notify(); }
+        unsafe {
+            self.condition.notify();
+        }
     }
 }

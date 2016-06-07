@@ -2,7 +2,7 @@
 
 use collections::{String, Vec};
 
-use core::{mem, ptr, str, slice};
+use core::{mem, ptr, slice, str};
 
 use common::debug;
 use common::slice::GetSlice;
@@ -26,11 +26,17 @@ impl<'a> Elf<'a> {
     /// Create a ELF executable from data
     pub fn from(data: &'a [u8]) -> Result<Elf<'a>, String> {
         if data.len() < mem::size_of::<ElfHeader>() {
-            Err(format!("Elf: Not enough data: {} < {}", data.len(), mem::size_of::<ElfHeader>()))
+            Err(format!("Elf: Not enough data: {} < {}",
+                        data.len(),
+                        mem::size_of::<ElfHeader>()))
         } else if data.get_slice(..4) != b"\x7FELF" {
-            Err(format!("Elf: Invalid magic: {:?} != {:?}", data.get_slice(..4), b"\x7FELF"))
+            Err(format!("Elf: Invalid magic: {:?} != {:?}",
+                        data.get_slice(..4),
+                        b"\x7FELF"))
         } else if data.get(4) != Some(&ELF_CLASS) {
-            Err(format!("Elf: Invalid architecture: {:?} != {:?}", data.get(4), Some(&ELF_CLASS)))
+            Err(format!("Elf: Invalid architecture: {:?} != {:?}",
+                        data.get(4),
+                        Some(&ELF_CLASS)))
         } else {
             Ok(Elf { data: data })
         }
@@ -110,9 +116,11 @@ impl<'a> Elf<'a> {
                 header.sh_str_index as usize *
                 header.sh_ent_len as usize) as *const ElfSection);
 
-        let mut sym_section = &*((self.data.as_ptr() as usize + header.sh_off as usize) as *const ElfSection);
+        let mut sym_section =
+            &*((self.data.as_ptr() as usize + header.sh_off as usize) as *const ElfSection);
 
-        let mut str_section = &*((self.data.as_ptr() as usize + header.sh_off as usize) as *const ElfSection);
+        let mut str_section =
+            &*((self.data.as_ptr() as usize + header.sh_off as usize) as *const ElfSection);
 
         debug::d("Program Headers:");
         debug::dl();
@@ -172,7 +180,8 @@ impl<'a> Elf<'a> {
                     header.sh_ent_len as usize) as *const ElfSection);
 
             let section_name_ptr =
-                (self.data.as_ptr() as usize + sh_str_section.off as usize + section.name as usize) as *const u8;
+                (self.data.as_ptr() as usize + sh_str_section.off as usize +
+                 section.name as usize) as *const u8;
             let mut section_name_len = 0;
             for j in 0..4096 {
                 section_name_len = j;
@@ -254,7 +263,9 @@ impl<'a> Elf<'a> {
                             break;
                         }
                     }
-                    let symbol_name = str::from_utf8_unchecked(slice::from_raw_parts(symbol_name_ptr, symbol_name_len as usize));
+                    let symbol_name =
+                        str::from_utf8_unchecked(slice::from_raw_parts(symbol_name_ptr,
+                                                                       symbol_name_len as usize));
 
                     debug::d("    Symbol ");
                     debug::dd(i as usize);
@@ -318,9 +329,11 @@ impl<'a> Elf<'a> {
                 header.sh_str_index as usize *
                 header.sh_ent_len as usize) as *const ElfSection);
 
-        let mut sym_section = &*((self.data.as_ptr() as usize + header.sh_off as usize) as *const ElfSection);
+        let mut sym_section =
+            &*((self.data.as_ptr() as usize + header.sh_off as usize) as *const ElfSection);
 
-        let mut str_section = &*((self.data.as_ptr() as usize + header.sh_off as usize) as *const ElfSection);
+        let mut str_section =
+            &*((self.data.as_ptr() as usize + header.sh_off as usize) as *const ElfSection);
 
         for i in 0..header.sh_len {
             let section =
@@ -329,7 +342,8 @@ impl<'a> Elf<'a> {
                     header.sh_ent_len as usize) as *const ElfSection);
 
             let section_name_ptr =
-                (self.data.as_ptr() as usize + sh_str_section.off as usize + section.name as usize) as *const u8;
+                (self.data.as_ptr() as usize + sh_str_section.off as usize +
+                 section.name as usize) as *const u8;
             let mut section_name_len = 0;
             for j in 0..4096 {
                 section_name_len = j;
@@ -364,7 +378,9 @@ impl<'a> Elf<'a> {
                             break;
                         }
                     }
-                    let symbol_name = str::from_utf8_unchecked(slice::from_raw_parts(symbol_name_ptr, symbol_name_len as usize));
+                    let symbol_name =
+                        str::from_utf8_unchecked(slice::from_raw_parts(symbol_name_ptr,
+                                                                       symbol_name_len as usize));
 
                     if name == symbol_name {
                         return symbol.value as usize;

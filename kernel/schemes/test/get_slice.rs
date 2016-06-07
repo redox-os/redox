@@ -12,6 +12,6 @@ pub fn test() -> bool {
     test!(array.get_slice(4..2) == &[]);
     test!(array.get_slice(4..1) == &[]);
     test!(array.get_slice(20..) == &[]);
-    //test!(array.get_slice(..) == &array);
+    // test!(array.get_slice(..) == &array);
     succ!();
 }

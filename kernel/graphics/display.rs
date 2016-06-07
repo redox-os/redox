@@ -49,11 +49,11 @@ pub struct VBEModeInfo {
 
 pub static mut VBEMODEINFO: Option<VBEModeInfo> = None;
 
-pub unsafe fn vbe_init(){
+pub unsafe fn vbe_init() {
     let mode_info = *(0x5200 as *const VBEModeInfo);
     if mode_info.physbaseptr > 0 {
         VBEMODEINFO = Some(mode_info);
-    }else{
+    } else {
         VBEMODEINFO = None;
     }
 }
@@ -71,8 +71,10 @@ impl Display {
     pub fn root() -> Option<Box<Self>> {
         if let Some(mode_info) = unsafe { VBEMODEINFO } {
             let ret = box Display {
-                offscreen: unsafe { memory::alloc(mode_info.xresolution as usize *
-                                         mode_info.yresolution as usize * 4) as *mut u32 },
+                offscreen: unsafe {
+                    memory::alloc(mode_info.xresolution as usize * mode_info.yresolution as usize *
+                                  4) as *mut u32
+                },
                 onscreen: mode_info.physbaseptr as usize as *mut u32,
                 size: mode_info.xresolution as usize * mode_info.yresolution as usize,
                 width: mode_info.xresolution as usize,
@@ -99,8 +101,12 @@ impl Display {
         if rows > 0 && rows < self.height {
             let offset = rows * self.width;
             unsafe {
-                fast_copy(self.offscreen, self.offscreen.offset(offset as isize), self.size - offset);
-                fast_set(self.offscreen.offset((self.size - offset) as isize), color.data, offset);
+                fast_copy(self.offscreen,
+                          self.offscreen.offset(offset as isize),
+                          self.size - offset);
+                fast_set(self.offscreen.offset((self.size - offset) as isize),
+                         color.data,
+                         offset);
             }
         }
     }
@@ -124,7 +130,9 @@ impl Display {
 
         for y in start_y..end_y {
             unsafe {
-                fast_set(self.offscreen.offset((y * self.width + start_x) as isize), data, len);
+                fast_set(self.offscreen.offset((y * self.width + start_x) as isize),
+                         data,
+                         len);
             }
         }
     }
@@ -140,7 +148,9 @@ impl Display {
                 let row_data = FONT[font_i + row];
                 for col in 0..8 {
                     if (row_data >> (7 - col)) & 1 == 1 {
-                        unsafe { *dst.offset(col) = data; }
+                        unsafe {
+                            *dst.offset(col) = data;
+                        }
                     }
                 }
                 dst = unsafe { dst.offset(self.width as isize) };

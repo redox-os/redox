@@ -39,7 +39,8 @@ fn get_special_keys_from_layout(layout: &Layout, scancode: u8) -> [char; 3] {
 }
 
 
-/// Function to return the character associated with the scancode, and the layout
+/// Function to return the character associated with the scancode, and the
+/// layout
 pub fn char_for_scancode(scancode: u8, shift: bool, altgr: bool, layout: &Layout) -> char {
     let character;
 
@@ -56,7 +57,7 @@ pub fn char_for_scancode(scancode: u8, shift: bool, altgr: bool, layout: &Layout
     } else {
         character = characters[0];
     }
-    
+
     character
 }
 

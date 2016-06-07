@@ -8,18 +8,16 @@ use arch::memory::LOGICAL_OFFSET;
 /// T is the size the physical address should be stored in
 #[repr(packed)]
 pub struct PhysAddr<I: Io> {
-    inner: I
+    inner: I,
 }
 
 impl<I: Io> PhysAddr<I> {
     pub fn new(inner: I) -> PhysAddr<I> {
-        PhysAddr {
-            inner: inner
-        }
+        PhysAddr { inner: inner }
     }
 }
 
-impl<I: Io<Value=u32>> PhysAddr<I> {
+impl<I: Io<Value = u32>> PhysAddr<I> {
     /// Write a value that may be logical
     pub fn write(&mut self, mut value: u32) {
         if value >= LOGICAL_OFFSET as u32 {

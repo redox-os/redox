@@ -37,14 +37,23 @@ pub unsafe fn pci_device(env: &mut Environment,
         (SERIAL_BUS, USB, OHCI) => env.schemes.lock().push(Ohci::new(pci)),
         (SERIAL_BUS, USB, EHCI) => env.schemes.lock().push(Ehci::new(pci)),
         (SERIAL_BUS, USB, XHCI) => env.schemes.lock().push(Xhci::new(pci)),
-        _ => match (vendor_code, device_code) {
-            (REALTEK, RTL8139) => env.schemes.lock().push(Rtl8139::new(pci)),
-            (INTEL, GBE_82540EM) => env.schemes.lock().push(Intel8254x::new(pci)),
-            (INTEL, AC97_82801AA) => env.schemes.lock().push(Ac97::new(pci)),
-            (INTEL, AC97_ICH4) => env.schemes.lock().push(Ac97::new(pci)),
-            (INTEL, INTELHDA_ICH6) => env.schemes.lock().push(IntelHda::new(pci)),
-            _ => debugln!(" ? CLASS {:02X}.{:02X}.{:02X} ID {:04X}:{:04X}", class_id, subclass_id, interface_id, vendor_code, device_code),
-        }
+        _ => {
+            match (vendor_code, device_code) {
+                (REALTEK, RTL8139) => env.schemes.lock().push(Rtl8139::new(pci)),
+                (INTEL, GBE_82540EM) => env.schemes.lock().push(Intel8254x::new(pci)),
+                (INTEL, AC97_82801AA) => env.schemes.lock().push(Ac97::new(pci)),
+                (INTEL, AC97_ICH4) => env.schemes.lock().push(Ac97::new(pci)),
+                (INTEL, INTELHDA_ICH6) => env.schemes.lock().push(IntelHda::new(pci)),
+                _ => {
+                    debugln!(" ? CLASS {:02X}.{:02X}.{:02X} ID {:04X}:{:04X}",
+                             class_id,
+                             subclass_id,
+                             interface_id,
+                             vendor_code,
+                             device_code)
+                },
+            }
+        },
     }
 }
 

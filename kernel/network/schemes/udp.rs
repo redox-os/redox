@@ -9,9 +9,9 @@ use core::{cmp, mem, ptr, slice, str};
 
 use fs::{KScheme, Resource, Url};
 
-use network::common::{n16, Checksum, Ipv4Addr, IP_ADDR, FromBytes, ToBytes};
+use network::common::{Checksum, FromBytes, IP_ADDR, Ipv4Addr, ToBytes, n16};
 
-use system::error::{Error, Result, ENOENT};
+use system::error::{ENOENT, Error, Result};
 
 #[derive(Copy, Clone)]
 #[repr(packed)]
@@ -74,13 +74,16 @@ impl Resource for UdpResource {
                     peer_port: self.peer_port,
                     host_port: self.host_port,
                 }))
-            }
+            },
             Err(err) => Err(err),
         }
     }
 
     fn path(&self, buf: &mut [u8]) -> Result<usize> {
-        let path_string = format!("udp:{}:{}/{}", self.peer_addr.to_string(), self.peer_port, self.host_port);
+        let path_string = format!("udp:{}:{}/{}",
+                                  self.peer_addr.to_string(),
+                                  self.peer_port,
+                                  self.host_port);
         let path = path_string.as_bytes();
 
         for (b, p) in buf.iter_mut().zip(path.iter()) {
@@ -107,7 +110,7 @@ impl Resource for UdpResource {
             let mut bytes = [0; 8192];
             match self.ip.read(&mut bytes) {
                 Ok(count) => {
-                    if let Some(datagram) = Udp::from_bytes(bytes[.. count].to_vec()) {
+                    if let Some(datagram) = Udp::from_bytes(bytes[..count].to_vec()) {
                         if datagram.header.dst.get() == self.host_port &&
                            datagram.header.src.get() == self.peer_port {
                             // TODO: Allow splitting
@@ -118,7 +121,7 @@ impl Resource for UdpResource {
                             return Ok(i);
                         }
                     }
-                }
+                },
                 Err(err) => return Err(err),
             }
         }
@@ -179,18 +182,22 @@ impl KScheme for UdpScheme {
         let path = parts.next().unwrap_or("");
 
         // Check host and port vs path
-        if ! path.is_empty() {
+        if !path.is_empty() {
             let mut remote_parts = remote.split(':');
             let host_port = remote_parts.nth(1).unwrap_or("").parse::<usize>().unwrap_or(0);
             if host_port > 0 && host_port < 65536 {
                 if let Ok(mut ip) = Url::from_str("ip:/11").unwrap().open() {
                     let mut bytes = [0; 8192];
                     if let Ok(count) = ip.read(&mut bytes) {
-                        if let Some(datagram) = Udp::from_bytes(bytes[.. count].to_vec()) {
+                        if let Some(datagram) = Udp::from_bytes(bytes[..count].to_vec()) {
                             if datagram.header.dst.get() as usize == host_port {
                                 let mut path = [0; 256];
                                 if let Ok(path_count) = ip.path(&mut path) {
-                                    let ip_reference = unsafe { str::from_utf8_unchecked(&path[.. path_count]) }.split(':').nth(1).unwrap_or("");
+                                    let ip_reference =
+                                        unsafe { str::from_utf8_unchecked(&path[..path_count]) }
+                                            .split(':')
+                                            .nth(1)
+                                            .unwrap_or("");
                                     let ip_remote = ip_reference.split('/').next().unwrap_or("");
                                     let peer_addr = ip_remote.split(':').next().unwrap_or("");
 

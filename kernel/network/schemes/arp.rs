@@ -36,7 +36,7 @@ impl FromBytes for Arp {
             unsafe {
                 return Some(Arp {
                     header: *(bytes.as_ptr() as *const ArpHeader),
-                    data: bytes.get_slice(mem::size_of::<ArpHeader>() ..).to_vec(),
+                    data: bytes.get_slice(mem::size_of::<ArpHeader>()..).to_vec(),
                 });
             }
         }
@@ -70,7 +70,7 @@ impl ArpScheme {
             loop {
                 let mut bytes = [0; 8192];
                 if let Ok(count) = link.read(&mut bytes) {
-                    if let Some(packet) = Arp::from_bytes(bytes[.. count].to_vec()) {
+                    if let Some(packet) = Arp::from_bytes(bytes[..count].to_vec()) {
                         if packet.header.oper.get() == 1 && packet.header.dst_ip.equals(IP_ADDR) {
                             let mut response = Arp {
                                 header: packet.header,

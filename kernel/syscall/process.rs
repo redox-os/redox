@@ -1,6 +1,6 @@
 //! System calls related to process managment.
 
-use arch::context::{context_clone, context_switch, ContextFile};
+use arch::context::{ContextFile, context_clone, context_switch};
 use arch::regs::Regs;
 
 use collections::{BTreeMap, Vec};
@@ -11,7 +11,7 @@ use core::ops::DerefMut;
 
 use system::{c_array_to_slice, c_string_to_str};
 
-use system::error::{Error, Result, ECHILD, EINVAL, EACCES};
+use system::error::{EACCES, ECHILD, EINVAL, Error, Result};
 
 use super::execute::execute;
 
@@ -40,7 +40,8 @@ pub fn exit(status: usize) -> ! {
         let (pid, ppid) = {
             if let Ok(mut current) = contexts.current_mut() {
                 current.exited = true;
-                mem::swap(&mut statuses, &mut current.statuses.inner.lock().deref_mut());
+                mem::swap(&mut statuses,
+                          &mut current.statuses.inner.lock().deref_mut());
                 (current.pid, current.ppid)
             } else {
                 (0, 0)
@@ -72,7 +73,7 @@ pub fn exit(status: usize) -> ! {
 
 pub fn getpid() -> Result<usize> {
     let contexts = ::env().contexts.lock();
-    let current = try!(contexts.current());
+    let current = contexts.current()?;
     Ok(current.pid)
 }
 
@@ -81,7 +82,7 @@ pub fn iopl(regs: &mut Regs) -> Result<usize> {
     let level = regs.bx;
     if level <= 3 {
         let mut contexts = ::env().contexts.lock();
-        let mut current = try!(contexts.current_mut());
+        let mut current = contexts.current_mut()?;
         current.iopl = level;
 
         regs.flags &= 0xFFFFFFFF - 0x3000;
@@ -98,7 +99,7 @@ pub fn iopl(regs: &mut Regs) -> Result<usize> {
     let level = regs.bx;
     if level <= 3 {
         let mut contexts = ::env().contexts.lock();
-        let mut current = try!(contexts.current_mut());
+        let mut current = contexts.current_mut()?;
         current.iopl = level;
 
         regs.flags &= 0xFFFFFFFFFFFFFFFF - 0x3000;
@@ -110,10 +111,11 @@ pub fn iopl(regs: &mut Regs) -> Result<usize> {
     }
 }
 
-//TODO: Finish implementation, add more functions to WaitMap so that matching any or using WNOHANG works
+// TODO: Finish implementation, add more functions to WaitMap so that matching
+// any or using WNOHANG works
 pub fn waitpid(pid: isize, status_ptr: *mut usize, _options: usize) -> Result<usize> {
     let mut contexts = ::env().contexts.lock();
-    let current = try!(contexts.current_mut());
+    let current = contexts.current_mut()?;
 
     if pid > 0 {
         let status = current.statuses.receive(&(pid as usize));
@@ -137,22 +139,27 @@ pub fn sched_yield() -> Result<usize> {
 
 /// Supervise a child process of the current context.
 ///
-/// This will make all syscalls the given process makes mark the process as blocked, until it is
-/// handled by the supervisor (parrent process) through the returned handle (for details, see the
+/// This will make all syscalls the given process makes mark the process as
+/// blocked, until it is
+/// handled by the supervisor (parrent process) through the returned handle
+/// (for details, see the
 /// docs in the `system` crate).
 ///
-/// This routine is done by having a field defining whether the process is blocked by a syscall.
-/// When the syscall is read from the file handle, this field is set to false, but the process is
-/// still stopped (because it is marked as `blocked`), until the new value of the EAX register is
+/// This routine is done by having a field defining whether the process is
+/// blocked by a syscall.
+/// When the syscall is read from the file handle, this field is set to false,
+/// but the process is
+/// still stopped (because it is marked as `blocked`), until the new value of
+/// the EAX register is
 /// written to the file handle.
 pub fn supervise(pid: usize) -> Result<usize> {
     let mut contexts = ::env().contexts.lock();
-    let cur_pid = try!(contexts.current_mut()).pid;
+    let cur_pid = contexts.current_mut()?.pid;
 
     let procc;
 
     {
-        let jailed = try!(contexts.find_mut(pid));
+        let jailed = contexts.find_mut(pid)?;
 
         // Make sure that this is actually a child process of the invoker.
         if jailed.ppid != cur_pid {
@@ -164,14 +171,14 @@ pub fn supervise(pid: usize) -> Result<usize> {
         procc = &mut **jailed as *mut _;
     }
 
-    let current = try!(contexts.current_mut());
+    let current = contexts.current_mut()?;
 
     let fd = current.next_fd();
 
     unsafe {
         (*current.files.get()).push(ContextFile {
             fd: fd,
-            resource: box try!(SupervisorResource::new(procc)),
+            resource: box SupervisorResource::new(procc)?,
         });
     }
 

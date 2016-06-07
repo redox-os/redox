@@ -133,39 +133,41 @@ impl Ohci {
     }
 
     pub unsafe fn init(&mut self) {
-        debugln!(" + OHCI on: {:X}, IRQ: {:X}", (self.regs as *mut OhciRegs) as usize, self.irq);
+        debugln!(" + OHCI on: {:X}, IRQ: {:X}",
+                 (self.regs as *mut OhciRegs) as usize,
+                 self.irq);
 
-        /*
-        self.regs.hcca.write((&*self.hcca as *const OhciHcca) as u32);
-
-        debugln!("Enable: {:X}", self.regs.control.read());
-        loop {
-            let ctrl = self.regs.control.read();
-            let desired_ctrl = (ctrl & (0xFFFFFFFF - CTRL_HCFS)) | 0b10 << 6;
-            if ctrl != desired_ctrl {
-                self.regs.control.write(desired_ctrl);
-            } else {
-                break;
-            }
-        }
-
-        debugln!("CTRL: {:X} CMDSTS: {:X} HCCA: {:X}", self.regs.control.read(), self.regs.cmd_sts.read(), self.regs.hcca.read());
-
-        let ndp = self.regs.rh_desc_a.read() & 0xF;
-        for i in 0..ndp as usize {
-            debugln!("Port {}: {:X}", i, self.regs.port_sts[i].read());
-
-            if self.regs.port_sts[i].readf(PORT_STS_CCS) {
-                debugln!("  Device Found");
-
-                while ! self.regs.port_sts[i].readf(PORT_STS_PES) {
-                    self.regs.port_sts[i].writef(PORT_STS_PES, true);
-                }
-
-                self.device(i as u8 + 1);
-            }
-        }
-        */
+        // self.regs.hcca.write((&*self.hcca as *const OhciHcca) as u32);
+        //
+        // debugln!("Enable: {:X}", self.regs.control.read());
+        // loop {
+        // let ctrl = self.regs.control.read();
+        // let desired_ctrl = (ctrl & (0xFFFFFFFF - CTRL_HCFS)) | 0b10 << 6;
+        // if ctrl != desired_ctrl {
+        // self.regs.control.write(desired_ctrl);
+        // } else {
+        // break;
+        // }
+        // }
+        //
+        // debugln!("CTRL: {:X} CMDSTS: {:X} HCCA: {:X}", self.regs.control.read(),
+        // self.regs.cmd_sts.read(), self.regs.hcca.read());
+        //
+        // let ndp = self.regs.rh_desc_a.read() & 0xF;
+        // for i in 0..ndp as usize {
+        // debugln!("Port {}: {:X}", i, self.regs.port_sts[i].read());
+        //
+        // if self.regs.port_sts[i].readf(PORT_STS_CCS) {
+        // debugln!("  Device Found");
+        //
+        // while ! self.regs.port_sts[i].readf(PORT_STS_PES) {
+        // self.regs.port_sts[i].writef(PORT_STS_PES, true);
+        // }
+        //
+        // self.device(i as u8 + 1);
+        // }
+        // }
+        //
     }
 }
 
@@ -175,46 +177,52 @@ impl Hci for Ohci {
         let mut tds = Vec::new();
         for msg in msgs.iter() {
             match *msg {
-                Packet::Setup(setup) => tds.push(Gtd {
-                    flags: 0b1111 << 28 | 0b00 << 19 | 1 << 18,
-                    buffer: (setup as *const Setup) as u32,
-                    next: 0,
-                    end: (setup as *const Setup) as u32 + mem::size_of::<Setup>() as u32 - 1
-                }),
-                Packet::In(ref data) => tds.push(Gtd {
-                    flags: 0b1111 << 28 | 0b10 << 19 | 1 << 18,
-                    buffer: if data.is_empty() {
-                        0
-                    } else {
-                        data.as_ptr() as u32
-                    },
-                    next: 0,
-                    end: if data.is_empty() {
-                        0
-                    } else {
-                        data.as_ptr() as u32 + data.len() as u32 - 1
-                    }
-                }),
-                Packet::Out(ref data) => tds.push(Gtd {
-                    flags: 0b1111 << 28 | 0b01 << 19 | 1 << 18,
-                    buffer: if data.is_empty() {
-                        0
-                    } else {
-                        data.as_ptr() as u32
-                    },
-                    next: 0,
-                    end: if data.is_empty() {
-                        0
-                    } else {
-                        data.as_ptr() as u32 + data.len() as u32 - 1
-                    }
-                })
+                Packet::Setup(setup) => {
+                    tds.push(Gtd {
+                        flags: 0b1111 << 28 | 0b00 << 19 | 1 << 18,
+                        buffer: (setup as *const Setup) as u32,
+                        next: 0,
+                        end: (setup as *const Setup) as u32 + mem::size_of::<Setup>() as u32 - 1,
+                    })
+                },
+                Packet::In(ref data) => {
+                    tds.push(Gtd {
+                        flags: 0b1111 << 28 | 0b10 << 19 | 1 << 18,
+                        buffer: if data.is_empty() {
+                            0
+                        } else {
+                            data.as_ptr() as u32
+                        },
+                        next: 0,
+                        end: if data.is_empty() {
+                            0
+                        } else {
+                            data.as_ptr() as u32 + data.len() as u32 - 1
+                        },
+                    })
+                },
+                Packet::Out(ref data) => {
+                    tds.push(Gtd {
+                        flags: 0b1111 << 28 | 0b01 << 19 | 1 << 18,
+                        buffer: if data.is_empty() {
+                            0
+                        } else {
+                            data.as_ptr() as u32
+                        },
+                        next: 0,
+                        end: if data.is_empty() {
+                            0
+                        } else {
+                            data.as_ptr() as u32 + data.len() as u32 - 1
+                        },
+                    })
+                },
             }
         }
 
         let mut count = 0;
 
-        if ! tds.is_empty() {
+        if !tds.is_empty() {
             for i in 0..tds.len() - 1 {
                 tds[i].next = (&tds[i + 1] as *const Gtd) as u32;
             }
@@ -223,29 +231,34 @@ impl Hci for Ohci {
                 flags: 8 << 16 | (endpoint as u32) << 7 | address as u32,
                 tail: (tds.last().unwrap() as *const Gtd) as u32 + mem::size_of::<Gtd>() as u32,
                 head: (tds.first().unwrap() as *const Gtd) as u32,
-                next: 0
+                next: 0,
             };
 
-            //debugln!("ED: {:X}, FLG: {:X}, TAIL: {:X}, HEAD: {:X}, NEXT: {:X}", (&*ed as *const Ed) as usize, ed.flags, ed.tail, ed.head, ed.next);
+            // debugln!("ED: {:X}, FLG: {:X}, TAIL: {:X}, HEAD: {:X}, NEXT: {:X}", (&*ed as
+            // *const Ed) as usize, ed.flags, ed.tail, ed.head, ed.next);
 
-            while ! self.regs.control.readf(CTRL_CLE) {
+            while !self.regs.control.readf(CTRL_CLE) {
                 self.regs.control.writef(CTRL_CLE, true);
             }
             self.regs.control_head.write((&*ed as *const Ed) as u32);
-            while ! self.regs.cmd_sts.readf(CMD_STS_CLF) {
+            while !self.regs.cmd_sts.readf(CMD_STS_CLF) {
                 self.regs.cmd_sts.writef(CMD_STS_CLF, true);
             }
 
             for td in tds.iter() {
-                //debugln!("  TD: {:X}, FLG: {:X}, BUF: {:X}, NEXT: {:X}, END: {:X}", (td as *const Gtd) as usize, td.flags, td.buffer, td.next, td.end);
+                // debugln!("  TD: {:X}, FLG: {:X}, BUF: {:X}, NEXT: {:X}, END: {:X}", (td as
+                // *const Gtd) as usize, td.flags, td.buffer, td.next, td.end);
 
-                while unsafe { volatile_load(td as *const Gtd).flags } & 0b1111 << 28 == 0b1111 << 28 {
+                while unsafe { volatile_load(td as *const Gtd).flags } & 0b1111 << 28 ==
+                      0b1111 << 28 {
                     unsafe { context_switch() };
                 }
 
-                let condition = (unsafe { volatile_load(td as *const Gtd).flags } & 0b1111 << 28) >> 28;
+                let condition = (unsafe { volatile_load(td as *const Gtd).flags } &
+                                 0b1111 << 28) >> 28;
                 if condition != 0 {
-                    //debugln!("  /TD: {:X}, FLG: {:X}, BUF: {:X}, NEXT: {:X}, END: {:X}", (td as *const Gtd) as usize, td.flags, td.buffer, td.next, td.end);
+                    // debugln!("  /TD: {:X}, FLG: {:X}, BUF: {:X}, NEXT: {:X}, END: {:X}", (td as
+                    // *const Gtd) as usize, td.flags, td.buffer, td.next, td.end);
                     debugln!("Condition: {:X}", condition);
                     break;
                 } else {
@@ -253,17 +266,17 @@ impl Hci for Ohci {
                 }
             }
 
-            /*
-            while self.regs.cmd_sts.readf(CMD_STS_CLF) {
-                self.regs.cmd_sts.writef(CMD_STS_CLF, false);
-            }
-            */
+            // while self.regs.cmd_sts.readf(CMD_STS_CLF) {
+            // self.regs.cmd_sts.writef(CMD_STS_CLF, false);
+            // }
+            //
             while self.regs.control.readf(CTRL_CLE) {
                 self.regs.control.writef(CTRL_CLE, false);
             }
             self.regs.control_head.write(0);
 
-            //debugln!("/ED: {:X}, FLG: {:X}, TAIL: {:X}, HEAD: {:X}, NEXT: {:X}", (&*ed as *const Ed) as usize, ed.flags, ed.tail, ed.head, ed.next);
+            // debugln!("/ED: {:X}, FLG: {:X}, TAIL: {:X}, HEAD: {:X}, NEXT: {:X}", (&*ed
+            // as *const Ed) as usize, ed.flags, ed.tail, ed.head, ed.next);
         }
 
         count

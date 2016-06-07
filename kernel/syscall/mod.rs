@@ -13,7 +13,8 @@ pub mod time;
 
 /// Handle the syscall defined by the given registers.
 ///
-/// AX defines which syscall to use. The arguments are provided in other registers, as specified by
+/// AX defines which syscall to use. The arguments are provided in other
+/// registers, as specified by
 /// the specific sycall.
 ///
 /// The return value is placed in AX, unless otherwise specified.
@@ -22,7 +23,8 @@ pub fn handle(regs: &mut Regs) {
         let mut contexts = ::env().contexts.lock();
         if let Ok(cur) = contexts.current_mut() {
             cur.current_syscall = Some((regs.ip, regs.ax, regs.bx, regs.cx, regs.dx));
-            //serial_log(&format!("PID {}: {} @ {:X}: {} {:X} {:X} {:X}\n", cur.pid, cur.name, regs.ip, regs.ax, regs.bx, regs.cx, regs.dx).as_bytes());
+            // serial_log(&format!("PID {}: {} @ {:X}: {} {:X} {:X} {:X}\n", cur.pid,
+            // cur.name, regs.ip, regs.ax, regs.bx, regs.cx, regs.dx).as_bytes());
             if cur.supervised {
                 // Block the process.
                 cur.blocked_syscall = true;
@@ -42,9 +44,9 @@ pub fn handle(regs: &mut Regs) {
     }
 
     regs.ax = Error::mux(match regs.ax {
-        // These are arranged in such a way that the most frequent syscalls preceeds less frequent
+        // These are arranged in such a way that the most frequent syscalls
+        // preceeds less frequent
         // once, to acheive the best performance.
-
         SYS_YIELD => process::sched_yield(),
         SYS_WRITE => fs::write(regs.bx, regs.cx as *mut u8, regs.dx),
         SYS_READ => fs::read(regs.bx, regs.cx as *mut u8, regs.dx),

@@ -58,7 +58,7 @@ pub fn syslog(level: LogLevel, message: &str) {
     syslog_inner(level, message.to_owned());
 }
 
-//TODO: Limit log message size
+// TODO: Limit log message size
 pub fn syslog_inner(level: LogLevel, message: String) {
     let time = ::env().clock_monotonic.lock().clone();
     let mut logs = ::env().logs.lock();
@@ -66,5 +66,5 @@ pub fn syslog_inner(level: LogLevel, message: String) {
         logs.pop_front();
     }
     logs.push_back((time, level, message));
-    //TODO: Print messages that are above priority
+    // TODO: Print messages that are above priority
 }

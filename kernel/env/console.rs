@@ -32,24 +32,24 @@ fn ansi_color(value: u8) -> Color {
         13 => Color::new(0xff, 0x00, 0xff),
         14 => Color::new(0x00, 0xff, 0xff),
         15 => Color::new(0xff, 0xff, 0xff),
-        16 ... 231 => {
+        16...231 => {
             let convert = |value: u8| -> u8 {
                 match value {
                     0 => 0,
-                    _ => value * 0x28 + 0x28
+                    _ => value * 0x28 + 0x28,
                 }
             };
 
-            let r = convert((value - 16)/36 % 6);
-            let g = convert((value - 16)/6 % 6);
+            let r = convert((value - 16) / 36 % 6);
+            let g = convert((value - 16) / 6 % 6);
             let b = convert((value - 16) % 6);
             Color::new(r, g, b)
         },
-        232 ... 255 => {
+        232...255 => {
             let gray = (value - 232) * 10 + 8;
             Color::new(gray, gray, gray)
         },
-        _ => Color::new(0, 0, 0)
+        _ => Color::new(0, 0, 0),
     }
 }
 
@@ -91,7 +91,7 @@ impl Console {
     pub fn code(&mut self, c: char) {
         if self.escape_sequence {
             match c {
-                '0' ... '9' => {
+                '0'...'9' => {
                     // Add a number to the sequence list
                     if let Some(mut value) = self.sequence.last_mut() {
                         value.push(c);
@@ -111,37 +111,71 @@ impl Console {
                                 self.foreground = ansi_color(7);
                                 self.background = ansi_color(0);
                             },
-                            30 ... 37 => self.foreground = ansi_color(value - 30),
-                            38 => match value_iter.next().map_or("", |s| &s).parse::<usize>().unwrap_or(0) {
-                                2 => {
-                                    //True color
-                                    let r = value_iter.next().map_or("", |s| &s).parse::<u8>().unwrap_or(0);
-                                    let g = value_iter.next().map_or("", |s| &s).parse::<u8>().unwrap_or(0);
-                                    let b = value_iter.next().map_or("", |s| &s).parse::<u8>().unwrap_or(0);
-                                    self.foreground = Color::new(r, g, b);
-                                },
-                                5 => {
-                                    //256 color
-                                    let color_value = value_iter.next().map_or("", |s| &s).parse::<u8>().unwrap_or(0);
-                                    self.foreground = ansi_color(color_value);
-                                },
-                                _ => {}
+                            30...37 => self.foreground = ansi_color(value - 30),
+                            38 => {
+                                match value_iter.next()
+                                    .map_or("", |s| &s)
+                                    .parse::<usize>()
+                                    .unwrap_or(0) {
+                                    2 => {
+                                        // True color
+                                        let r = value_iter.next()
+                                            .map_or("", |s| &s)
+                                            .parse::<u8>()
+                                            .unwrap_or(0);
+                                        let g = value_iter.next()
+                                            .map_or("", |s| &s)
+                                            .parse::<u8>()
+                                            .unwrap_or(0);
+                                        let b = value_iter.next()
+                                            .map_or("", |s| &s)
+                                            .parse::<u8>()
+                                            .unwrap_or(0);
+                                        self.foreground = Color::new(r, g, b);
+                                    },
+                                    5 => {
+                                        // 256 color
+                                        let color_value = value_iter.next()
+                                            .map_or("", |s| &s)
+                                            .parse::<u8>()
+                                            .unwrap_or(0);
+                                        self.foreground = ansi_color(color_value);
+                                    },
+                                    _ => {},
+                                }
                             },
-                            40 ... 47 => self.background = ansi_color(value - 40),
-                            48 => match value_iter.next().map_or("", |s| &s).parse::<usize>().unwrap_or(0) {
-                                2 => {
-                                    //True color
-                                    let r = value_iter.next().map_or("", |s| &s).parse::<u8>().unwrap_or(0);
-                                    let g = value_iter.next().map_or("", |s| &s).parse::<u8>().unwrap_or(0);
-                                    let b = value_iter.next().map_or("", |s| &s).parse::<u8>().unwrap_or(0);
-                                    self.background = Color::new(r, g, b);
-                                },
-                                5 => {
-                                    //256 color
-                                    let color_value = value_iter.next().map_or("", |s| &s).parse::<u8>().unwrap_or(0);
-                                    self.background = ansi_color(color_value);
-                                },
-                                _ => {}
+                            40...47 => self.background = ansi_color(value - 40),
+                            48 => {
+                                match value_iter.next()
+                                    .map_or("", |s| &s)
+                                    .parse::<usize>()
+                                    .unwrap_or(0) {
+                                    2 => {
+                                        // True color
+                                        let r = value_iter.next()
+                                            .map_or("", |s| &s)
+                                            .parse::<u8>()
+                                            .unwrap_or(0);
+                                        let g = value_iter.next()
+                                            .map_or("", |s| &s)
+                                            .parse::<u8>()
+                                            .unwrap_or(0);
+                                        let b = value_iter.next()
+                                            .map_or("", |s| &s)
+                                            .parse::<u8>()
+                                            .unwrap_or(0);
+                                        self.background = Color::new(r, g, b);
+                                    },
+                                    5 => {
+                                        // 256 color
+                                        let color_value = value_iter.next()
+                                            .map_or("", |s| &s)
+                                            .parse::<u8>()
+                                            .unwrap_or(0);
+                                        self.background = ansi_color(color_value);
+                                    },
+                                    _ => {},
+                                }
                             },
                             _ => {},
                         }
@@ -152,10 +186,10 @@ impl Console {
                 'J' => {
                     match self.sequence.get(0).map_or("", |p| &p).parse::<usize>().unwrap_or(0) {
                         0 => {
-                            //TODO: Erase down
+                            // TODO: Erase down
                         },
                         1 => {
-                            //TODO: Erase up
+                            // TODO: Erase up
                         },
                         2 => {
                             // Erase all
@@ -164,11 +198,11 @@ impl Console {
                             if let Some(ref mut display) = self.display {
                                 display.set(self.background);
                             }
-                            if ! self.raw_mode {
+                            if !self.raw_mode {
                                 self.redraw = true;
                             }
                         },
-                        _ => {}
+                        _ => {},
                     }
 
                     self.escape_sequence = false;
@@ -190,23 +224,26 @@ impl Console {
 
                     self.escape_sequence = false;
                 },
-/*
-@MANSTART{terminal-raw-mode}
-INTRODUCTION
-    Since Redox has no ioctl syscall, it uses escape codes for switching to raw mode.
-
-ENTERING AND EXITING RAW MODE
-    Entering raw mode is done using CSI-r (^[r). Unsetting raw mode is done by CSI-R (^[R).
-
-RAW MODE
-    Raw mode means that the stdin must be handled solely by the program itself. It will not automatically be printed nor will it be modified in any way (modulo escape codes).
-
-    This means that:
-        - stdin is not printed.
-        - newlines are interpreted as carriage returns in stdin.
-        - stdin is not buffered, meaning that the stream of bytes goes directly to the program, without the user having to press enter.
-@MANEND
-*/
+                // @MANSTART{terminal-raw-mode}
+                // INTRODUCTION
+                // Since Redox has no ioctl syscall, it uses escape codes for switching to raw mode.
+                //
+                // ENTERING AND EXITING RAW MODE
+                // Entering raw mode is done using CSI-r (^[r). Unsetting raw mode is done by CSI-R
+                // (^[R).
+                //
+                // RAW MODE
+                // Raw mode means that the stdin must be handled solely by the program itself. It will
+                // not automatically be printed nor will it be modified in any way (modulo escape
+                // codes).
+                //
+                // This means that:
+                // - stdin is not printed.
+                // - newlines are interpreted as carriage returns in stdin.
+                // - stdin is not buffered, meaning that the stream of bytes goes directly to the
+                // program, without the user having to press enter.
+                // @MANEND
+                //
                 'r' => {
                     self.raw_mode = true;
                     self.escape_sequence = false;
@@ -243,7 +280,7 @@ RAW MODE
                     self.redraw = true;
 
                     self.escape = false;
-                }
+                },
                 _ => self.escape = false,
             }
         }
@@ -266,7 +303,7 @@ RAW MODE
             '\n' => {
                 self.point_x = 0;
                 self.point_y += 16;
-                if ! self.raw_mode {
+                if !self.raw_mode {
                     self.redraw = true;
                 }
             },
@@ -287,7 +324,7 @@ RAW MODE
                 }
 
                 self.point_x += 8;
-            }
+            },
         }
 
         if self.point_x >= width {
@@ -318,46 +355,52 @@ RAW MODE
                             event::K_DOWN => self.command.push_str("\x1B[B"),
                             event::K_RIGHT => self.command.push_str("\x1B[C"),
                             event::K_LEFT => self.command.push_str("\x1B[D"),
-                            _ => match key_event.character {
-                                '\0' => {},
-                                c => {
-                                    self.command.push(c);
+                            _ => {
+                                match key_event.character {
+                                    '\0' => {},
+                                    c => {
+                                        self.command.push(c);
+                                    },
                                 }
                             },
                         }
 
-                        if ! self.command.is_empty() {
+                        if !self.command.is_empty() {
                             let mut command = String::new();
                             mem::swap(&mut self.command, &mut command);
                             self.commands.send(command);
                         }
                     } else {
                         match key_event.scancode {
-                            event::K_BKSP => if ! self.command.is_empty() {
-                                self.redraw = true;
-
-                                self.write(&[8]);
-                                self.command.pop();
-                            },
-                            _ => match key_event.character {
-                                '\0' => (),
-                                c => {
+                            event::K_BKSP => {
+                                if !self.command.is_empty() {
                                     self.redraw = true;
 
-                                    self.write(&[c as u8]);
-                                    self.command.push(c);
+                                    self.write(&[8]);
+                                    self.command.pop();
+                                }
+                            },
+                            _ => {
+                                match key_event.character {
+                                    '\0' => (),
+                                    c => {
+                                        self.redraw = true;
 
-                                    if c == '\n' {
-                                        let mut command = String::new();
-                                        mem::swap(&mut self.command, &mut command);
-                                        self.commands.send(command);
-                                    }
+                                        self.write(&[c as u8]);
+                                        self.command.push(c);
+
+                                        if c == '\n' {
+                                            let mut command = String::new();
+                                            mem::swap(&mut self.command, &mut command);
+                                            self.commands.send(command);
+                                        }
+                                    },
                                 }
                             },
                         }
                     }
                 }
-            }
+            },
             _ => (),
         }
     }
@@ -372,7 +415,7 @@ RAW MODE
                 self.character(c);
             }
 
-            if self.display.is_none() || ! self.draw {
+            if self.display.is_none() || !self.draw {
                 let serial_status = Pio::<u8>::new(0x3F8 + 5);
                 let mut serial_data = Pio::<u8>::new(0x3F8);
 

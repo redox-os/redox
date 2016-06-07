@@ -5,11 +5,11 @@ use collections::vec::Vec;
 use core::mem;
 
 use arch::context::context_switch;
-//use common::debug;
+// use common::debug;
 use arch::memory::Memory;
 
 use drivers::pci::config::PciConfig;
-use drivers::io::{Io, Mmio, Pio, PhysAddr};
+use drivers::io::{Io, Mmio, PhysAddr, Pio};
 
 use fs::KScheme;
 
@@ -161,27 +161,33 @@ impl Hci for Uhci {
 
             td.link_ptr.write(match tds.last() {
                 Some(last_td) => (last_td as *const Td) as u32 | LINK_DEPTH_SELECT.bits,
-                None => LINK_TERMINATE.bits
+                None => LINK_TERMINATE.bits,
             });
 
             td.ctrl_sts.write(match pipe {
                 Pipe::Isochronous => (CTRL_ISOCHRONOUS | STS_ACTIVE).bits,
-                _ => STS_ACTIVE.bits
+                _ => STS_ACTIVE.bits,
             });
 
             match *msg {
                 Packet::Setup(setup) => {
-                    td.token.write((mem::size_of::<Setup>() as u32 - 1) << 21 | (endpoint as u32) << 15 | (address as u32) << 8 | 0x2D);
+                    td.token.write((mem::size_of::<Setup>() as u32 - 1) << 21 |
+                                   (endpoint as u32) << 15 |
+                                   (address as u32) << 8 | 0x2D);
                     td.buffer.write((&*setup as *const Setup) as u32);
                 },
                 Packet::In(ref data) => {
-                    td.token.write(((data.len() as u32 - 1) & 0x7FF) << 21 | (endpoint as u32) << 15 | (address as u32) << 8 | 0x69);
+                    td.token
+                        .write(((data.len() as u32 - 1) & 0x7FF) << 21 | (endpoint as u32) << 15 |
+                               (address as u32) << 8 | 0x69);
                     td.buffer.write(data.as_ptr() as u32);
                 },
                 Packet::Out(ref data) => {
-                    td.token.write(((data.len() as u32 - 1) & 0x7FF) << 21 | (endpoint as u32) << 15 | (address as u32) << 8 | 0xE1);
+                    td.token
+                        .write(((data.len() as u32 - 1) & 0x7FF) << 21 | (endpoint as u32) << 15 |
+                               (address as u32) << 8 | 0xE1);
                     td.buffer.write(data.as_ptr() as u32);
-                }
+                },
             }
 
             tds.push(td);
@@ -189,10 +195,10 @@ impl Hci for Uhci {
 
         let mut count = 0;
 
-        if ! tds.is_empty() {
+        if !tds.is_empty() {
             let mut queue_head = box Qh {
-                 head_ptr: PhysAddr::new(Mmio::new()),
-                 element_ptr: PhysAddr::new(Mmio::new()),
+                head_ptr: PhysAddr::new(Mmio::new()),
+                element_ptr: PhysAddr::new(Mmio::new()),
             };
 
             queue_head.head_ptr.write(LINK_TERMINATE.bits);
