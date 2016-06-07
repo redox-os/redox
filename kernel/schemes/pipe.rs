@@ -40,7 +40,7 @@ impl Resource for PipeRead {
     }
 
     fn read(&mut self, buf: &mut [u8]) -> Result<usize> {
-        if Arc::weak_count(&self.vec) == 0 && self.vec.inner.lock().is_empty() {
+        if Arc::weak_count(&self.vec) == 0 && unsafe { self.vec.inner() }.is_empty() {
             Ok(0)
         } else {
             if !buf.is_empty() {
@@ -50,7 +50,7 @@ impl Resource for PipeRead {
             let mut i = 1;
 
             while i < buf.len() {
-                match self.vec.inner.lock().pop_front() {
+                match unsafe { self.vec.inner() }.pop_front() {
                     Some(b) => {
                         buf[i] = b;
                         i += 1;

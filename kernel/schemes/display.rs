@@ -46,7 +46,7 @@ impl Resource for DisplayResource {
             let mut i = size_of::<Event>();
 
             while i + size_of::<Event>() <= buf.len() {
-                if let Some(event) = ::env().events.inner.lock().pop_front() {
+                if let Some(event) = unsafe { ::env().events.inner() }.pop_front() {
                     unsafe { ptr::write(buf.as_mut_ptr().offset(i as isize) as *mut Event, event) };
                     i += size_of::<Event>();
                 } else {

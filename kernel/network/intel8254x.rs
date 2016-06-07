@@ -6,6 +6,7 @@ use collections::slice;
 use collections::vec::Vec;
 use collections::vec_deque::VecDeque;
 
+use core::cell::UnsafeCell;
 use core::ptr;
 
 use drivers::pci::config::PciConfig;
@@ -16,8 +17,6 @@ use network::scheme::*;
 use fs::{KScheme, Resource, Url};
 
 use system::error::Result;
-
-use sync::Intex;
 
 const CTRL: u32 = 0x00;
 const CTRL_LRST: u32 = 1 << 3;
@@ -108,7 +107,7 @@ pub struct Intel8254x {
     pub base: usize,
     pub memory_mapped: bool,
     pub irq: u8,
-    pub resources: Intex<Vec<*mut NetworkResource>>,
+    pub resources: UnsafeCell<Vec<*mut NetworkResource>>,
     pub inbound: VecDeque<Vec<u8>>,
     pub outbound: VecDeque<Vec<u8>>,
 }
@@ -133,11 +132,11 @@ impl KScheme for Intel8254x {
 
 impl NetworkScheme for Intel8254x {
     fn add(&mut self, resource: *mut NetworkResource) {
-        self.resources.lock().push(resource);
+        unsafe { &mut *self.resources.get() }.push(resource);
     }
 
     fn remove(&mut self, resource: *mut NetworkResource) {
-        let mut resources = self.resources.lock();
+        let mut resources = unsafe { &mut *self.resources.get() };
 
         let mut i = 0;
         while i < resources.len() {
@@ -159,28 +158,26 @@ impl NetworkScheme for Intel8254x {
     }
 
     fn sync(&mut self) {
-        unsafe {
-            {
-                let resources = self.resources.lock();
+        {
+            let resources = unsafe { &mut *self.resources.get() };
 
-                for resource in resources.iter() {
-                    while let Some(bytes) = (**resource).outbound.lock().pop_front() {
-                        self.outbound.push_back(bytes);
-                    }
+            for resource in resources.iter() {
+                while let Some(bytes) = unsafe { &mut *(**resource).outbound.get() }.pop_front() {
+                    self.outbound.push_back(bytes);
                 }
             }
+        }
 
-            self.send_outbound();
+        unsafe { self.send_outbound(); }
 
-            self.receive_inbound();
+        unsafe { self.receive_inbound(); }
 
-            {
-                let resources = self.resources.lock();
+        {
+            let resources = unsafe { &mut *self.resources.get() };
 
-                while let Some(bytes) = self.inbound.pop_front() {
-                    for resource in resources.iter() {
-                        (**resource).inbound.send(bytes.clone());
-                    }
+            while let Some(bytes) = self.inbound.pop_front() {
+                for resource in resources.iter() {
+                    unsafe { (**resource).inbound.send(bytes.clone()) };
                 }
             }
         }
@@ -196,7 +193,7 @@ impl Intel8254x {
             base: base & 0xFFFFFFF0,
             memory_mapped: base & 1 == 0,
             irq: pci.read(0x3C) as u8 & 0xF,
-            resources: Intex::new(Vec::new()),
+            resources: UnsafeCell::new(Vec::new()),
             inbound: VecDeque::new(),
             outbound: VecDeque::new(),
         };

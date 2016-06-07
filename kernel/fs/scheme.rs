@@ -294,7 +294,7 @@ impl Resource for SchemeServerResource {
             i += size_of::<Packet>();
 
             while i + size_of::<Packet>() <= buf.len() {
-                if let Some(packet) = self.inner.todo.inner.lock().pop_front() {
+                if let Some(packet) = unsafe { self.inner.todo.inner() }.pop_front() {
                     unsafe { ptr::write(buf.as_mut_ptr().offset(i as isize) as *mut Packet, packet); }
                     i += size_of::<Packet>();
                 } else {
