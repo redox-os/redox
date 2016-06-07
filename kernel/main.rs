@@ -5,8 +5,9 @@
            unwind_attributes, zero_one, collections_range, question_mark)]
 #![no_std]
 
-#![allow(deprecated)]
-// #![deny(warnings)]
+// Its me, ur friend. If you ever comment this line, you will end up in hell. Seriously, don't. You
+// lazy bastard.
+#![deny(warnings)]
 // #![deny(missing_docs)]
 
 #[macro_use]
