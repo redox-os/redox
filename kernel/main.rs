@@ -1,27 +1,12 @@
 #![crate_name="kernel"]
 #![crate_type="staticlib"]
-#![feature(alloc)]
-#![feature(allocator)]
-#![feature(arc_counts)]
-#![feature(asm)]
-#![feature(box_syntax)]
-#![feature(collections)]
-#![feature(const_fn)]
-#![feature(core_intrinsics)]
-#![feature(fnbox)]
-#![feature(fundamental)]
-#![feature(lang_items)]
-#![feature(naked_functions)]
-#![feature(unboxed_closures)]
-#![feature(unsafe_no_drop_flag)]
-#![feature(unwind_attributes)]
-#![feature(zero_one)]
-#![feature(collections_range)]
+#![feature(alloc, allocator, arc_counts, asm, box_syntax, collections, const_fn, core_intrinsics,
+           fnbox, fundamental, lang_items, naked_functions, unboxed_closures, unsafe_no_drop_flag,
+           unwind_attributes, zero_one, collections_range, question_mark, type_ascription)]
 #![no_std]
 
-#![allow(deprecated)]
 //#![deny(warnings)]
-//#![deny(missing_docs)]
+// #![deny(missing_docs)]
 
 #[macro_use]
 extern crate alloc;
@@ -76,7 +61,6 @@ use schemes::syslog::SyslogScheme;
 use schemes::test::TestScheme;
 
 use syscall::execute::execute;
-use syscall::{do_sys_chdir, do_sys_exit, do_sys_open, syscall_name, syscall_handle};
 
 pub use externs::*;
 
@@ -404,28 +388,28 @@ unsafe fn init(tss_data: usize) {
             env.schemes.lock().push(box TcpScheme);
             env.schemes.lock().push(box UdpScheme);
 
-            Context::spawn("karp".to_string(),
-            box move || {
-                ArpScheme::reply_loop();
-            });
+            Context::spawn("karp".into(),
+                           box move || {
+                               ArpScheme::reply_loop();
+                           });
 
-            Context::spawn("kicmp".to_string(),
-            box move || {
-                IcmpScheme::reply_loop();
-            });
+            Context::spawn("kicmp".into(),
+                           box move || {
+                               IcmpScheme::reply_loop();
+                           });
 
             env.contexts.lock().enabled = true;
 
-            Context::spawn("kinit".to_string(),
-            box move || {
+            Context::spawn("kinit".into(),
+                           box move || {
                 {
                     let wd_c = "initfs:/\0";
-                    do_sys_chdir(wd_c.as_ptr()).unwrap();
+                    syscall::fs::chdir(wd_c.as_ptr()).unwrap();
 
                     let stdio_c = "debug:\0";
-                    do_sys_open(stdio_c.as_ptr(), 0).unwrap();
-                    do_sys_open(stdio_c.as_ptr(), 0).unwrap();
-                    do_sys_open(stdio_c.as_ptr(), 0).unwrap();
+                    syscall::fs::open(stdio_c.as_ptr(), 0).unwrap();
+                    syscall::fs::open(stdio_c.as_ptr(), 0).unwrap();
+                    syscall::fs::open(stdio_c.as_ptr(), 0).unwrap();
 
                     let mut contexts = ::env().contexts.lock();
                     let current = contexts.current_mut().unwrap();
@@ -461,7 +445,7 @@ pub extern "cdecl" fn kernel(interrupt: usize, mut regs: &mut Regs) {
                     debugln!("PID {}: {}", context.pid, context.name);
 
                     if let Some(current_syscall) = context.current_syscall {
-                        debugln!("  SYS {:X}: {} {} {:X} {:X} {:X}", current_syscall.0, current_syscall.1, syscall_name(current_syscall.1), current_syscall.2, current_syscall.3, current_syscall.4);
+                        debugln!("  SYS {:X}: {} {} {:X} {:X} {:X}", current_syscall.0, current_syscall.1, syscall::name(current_syscall.1), current_syscall.2, current_syscall.3, current_syscall.4);
                     }
                 }
             }
@@ -523,7 +507,6 @@ pub extern "cdecl" fn kernel(interrupt: usize, mut regs: &mut Regs) {
 
             loop {
                 unsafe { asm!("cli ; hlt" : : : : "intel", "volatile"); }
-                //do_sys_exit(usize::MAX);
             }
         })
     };
@@ -543,7 +526,6 @@ pub extern "cdecl" fn kernel(interrupt: usize, mut regs: &mut Regs) {
 
             loop {
                 unsafe { asm!("cli ; hlt" : : : : "intel", "volatile"); }
-                //do_sys_exit(usize::MAX);
             }
         })
     };
@@ -573,7 +555,7 @@ pub extern "cdecl" fn kernel(interrupt: usize, mut regs: &mut Regs) {
         i @ 0x21 ... 0x2F => {
             env().on_irq(i as u8 - 0x20);
         },
-        0x80 => syscall_handle(regs),
+        0x80 => syscall::handle(regs),
         0xFF => {
             unsafe {
                 init(regs.ax);
