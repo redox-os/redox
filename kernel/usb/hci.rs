@@ -1,8 +1,6 @@
 use arch::context::{context_switch, Context};
 use arch::memory;
 
-use collections::string::ToString;
-
 use common::event::MouseEvent;
 use common::time::{self, Duration};
 
@@ -128,7 +126,8 @@ pub trait Hci {
 
                         if hid {
                             let this = self as *mut Hci;
-                            Context::spawn("kuhci_hid".to_string(), box move || {
+                            Context::spawn("kuhci_hid".into(),
+                                           box move || {
                                 if let Some(mode_info) = VBEMODEINFO {
                                     debugln!("Starting HID driver");
 
