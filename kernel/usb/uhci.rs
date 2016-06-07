@@ -5,7 +5,6 @@ use collections::vec::Vec;
 use core::mem;
 
 use arch::context::context_switch;
-//use common::debug;
 use arch::memory::Memory;
 
 use drivers::pci::config::PciConfig;

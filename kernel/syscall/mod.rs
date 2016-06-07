@@ -1,7 +1,6 @@
 pub use system::error::*;
 pub use system::syscall::*;
 
-pub use self::debug::*;
 pub use self::file::*;
 pub use self::memory::*;
 pub use self::process::*;
@@ -10,7 +9,6 @@ pub use self::time::*;
 use arch::regs::Regs;
 use arch::context::context_switch;
 
-pub mod debug;
 pub mod execute;
 pub mod file;
 pub mod memory;
@@ -20,7 +18,6 @@ pub mod time;
 pub fn syscall_name(number: usize) -> &'static str {
     match number {
         // Redox
-        SYS_DEBUG => "debug",
         SYS_SUPERVISE => "supervise",
 
         // Unix
@@ -82,7 +79,6 @@ pub fn syscall_handle(regs: &mut Regs) {
 
     let result = match regs.ax {
         // Redox
-        SYS_DEBUG => do_sys_debug(regs.bx as *const u8, regs.cx),
         SYS_SUPERVISE => do_sys_supervise(regs.bx),
 
         // Unix

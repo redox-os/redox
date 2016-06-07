@@ -4,7 +4,6 @@ use collections::vec::Vec;
 
 use core::{cmp, mem};
 
-use common::debug;
 use common::to_num::ToNum;
 
 use network::common::*;
@@ -150,13 +149,13 @@ impl KScheme for EthernetScheme {
                         }
                     }
                 } else {
-                    debug::d("Ethernet: Failed to open network:\n");
+                    debug!("Ethernet: Failed to open network:\n");
                 }
             } else {
-                debug::d("Ethernet: No ethertype provided\n");
+                debug!("Ethernet: No ethertype provided\n");
             }
         } else {
-            debug::d("Ethernet: No host provided\n");
+            debug!("Ethernet: No host provided\n");
         }
 
         Err(Error::new(ENOENT))

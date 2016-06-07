@@ -1,30 +1,23 @@
-use core::{fmt, result};
+use core::fmt;
 
-use common::debug;
-
-struct DebugStream;
-
-impl fmt::Write for DebugStream {
-    fn write_str(&mut self, s: &str) -> fmt::Result {
-        debug::d(s);
-
-        result::Result::Ok(())
-    }
-}
+use syscall::syscall_name;
 
 #[lang="panic_fmt"]
 pub extern "C" fn panic_fmt(args: fmt::Arguments, file: &'static str, line: u32) -> ! {
-    debug::d(file);
-    debug::d(":");
-    debug::dd(line as usize);
-    debug::d(": ");
-    let _ = fmt::write(&mut DebugStream, args);
-    debug::dl();
+    {
+        let contexts = ::env().contexts.lock();
+        if let Ok(context) = contexts.current() {
+            debugln!("PID {}: {}", context.pid, context.name);
 
-    unsafe {
-        loop {
-            asm!("sti");
-            asm!("hlt");
+            if let Some(current_syscall) = context.current_syscall {
+                debugln!("  SYS {:X}: {} {} {:X} {:X} {:X}", current_syscall.0, current_syscall.1, syscall_name(current_syscall.1), current_syscall.2, current_syscall.3, current_syscall.4);
+            }
         }
+    }
+
+    debugln!("  KP {}: {}: {}", file, line, args);
+
+    loop {
+        unsafe { asm!("cli ; hlt" : : : : "intel", "volatile"); }
     }
 }

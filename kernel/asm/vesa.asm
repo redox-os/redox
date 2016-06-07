@@ -183,8 +183,8 @@ vesa:
 .minx dw 640
 .miny dw 480
 .required:
-.requiredx dw 0 ; 1024    ;USE THESE WITH CAUTION
-.requiredy dw 0 ; 768
+.requiredx dw 1024    ;USE THESE WITH CAUTION
+.requiredy dw 768
 .requiredmode dw 0
 
 .noedidmsg db "EDID not supported.",10,13,0

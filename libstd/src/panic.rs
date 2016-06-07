@@ -1,13 +1,13 @@
 use core::fmt::{self, Write};
 use core::result;
 
-use system::syscall::{sys_debug, sys_exit};
+use system::syscall::{sys_write, sys_exit};
 
 pub struct DebugStream;
 
 impl Write for DebugStream {
     fn write_str(&mut self, s: &str) -> fmt::Result {
-        let _ = sys_debug(s.as_bytes());
+        let _ = sys_write(2, s.as_bytes());
 
         result::Result::Ok(())
     }
