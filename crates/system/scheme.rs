@@ -84,7 +84,7 @@ pub trait Scheme {
 
     /* Resource operations */
     #[allow(unused_variables)]
-    fn dup(&mut self, id: usize) -> Result<usize> {
+    fn dup(&mut self, old_id: usize) -> Result<usize> {
         Err(Error::new(EBADF))
     }
 

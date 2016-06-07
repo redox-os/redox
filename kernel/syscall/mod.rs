@@ -59,7 +59,7 @@ pub fn handle(regs: &mut Regs) {
         let contexts = unsafe { &mut *::env().contexts.get() };
         if let Ok(cur) = contexts.current_mut() {
             cur.current_syscall = Some((regs.ip, regs.ax, regs.bx, regs.cx, regs.dx));
-            //serial_log(format!("PID {}: {} @ {:X}: {} {} {:X} {:X} {:X}\n", cur.pid, cur.name, regs.ip, regs.ax, name(regs.ax), regs.bx, regs.cx, regs.dx).as_bytes());
+            //debugln!("PID {}: {} @ {:X}: {} {} {:X} {:X} {:X}\n", cur.pid, cur.name, regs.ip, regs.ax, name(regs.ax), regs.bx, regs.cx, regs.dx);
             if cur.supervised {
                 // Block the process.
                 cur.blocked_syscall = true;
@@ -116,7 +116,7 @@ pub fn handle(regs: &mut Regs) {
     {
         let contexts = unsafe { &mut *::env().contexts.get() };
         if let Ok(cur) = contexts.current_mut() {
-            //serial_log(format!("PID {}: {} @ {:X}: {} {} {:X} {:X} {:X} = {:?}\n", cur.pid, cur.name, regs.ip, regs.ax, name(regs.ax), regs.bx, regs.cx, regs.dx, result).as_bytes());
+            //debugln!("PID {}: {} @ {:X}: {} {} {:X} {:X} {:X} = {:?}\n", cur.pid, cur.name, regs.ip, regs.ax, name(regs.ax), regs.bx, regs.cx, regs.dx, result);
             cur.current_syscall = None;
         }
     }
