@@ -146,10 +146,12 @@ impl NetworkScheme for Intel8254x {
             let mut remove = false;
 
             match resources.get(i) {
-                Some(ptr) => if *ptr == resource {
-                    remove = true;
-                } else {
-                    i += 1;
+                Some(ptr) => {
+                    if *ptr == resource {
+                        remove = true;
+                    } else {
+                        i += 1;
+                    }
                 },
                 None => break,
             }
@@ -215,8 +217,9 @@ impl Intel8254x {
         for tail in 0..length / 16 {
             let rd = &mut *receive_ring.offset(tail as isize);
             if rd.status & RD_DD == RD_DD {
-                self.inbound.push_back(Vec::from(slice::from_raw_parts(rd.buffer as *const u8, rd.length as usize)));
-                
+                self.inbound.push_back(Vec::from(slice::from_raw_parts(rd.buffer as *const u8,
+                                                                       rd.length as usize)));
+
                 rd.status = 0;
             }
         }
@@ -327,7 +330,6 @@ impl Intel8254x {
         };
         debug::d(&MAC_ADDR.to_string());
 
-        //
         // MTA => 0;
         //
 

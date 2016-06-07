@@ -5,7 +5,7 @@ use core::u32;
 
 use drivers::io::{Io, Mmio};
 
-use system::error::{Error, Result, EIO};
+use system::error::{EIO, Error, Result};
 
 use super::fis::{FIS_TYPE_REG_H2D, FisRegH2D};
 
@@ -123,7 +123,12 @@ impl HbaPort {
         None
     }
 
-    pub fn ata_dma_small(&mut self, block: u64, sectors: usize, mut buf: usize, write: bool) -> Result<usize> {
+    pub fn ata_dma_small(&mut self,
+                         block: u64,
+                         sectors: usize,
+                         mut buf: usize,
+                         write: bool)
+                         -> Result<usize> {
         if buf >= 0x80000000 {
             buf -= 0x80000000;
         }
@@ -203,24 +208,36 @@ impl HbaPort {
         }
     }
 
-    pub fn ata_dma(&mut self, block: u64, sectors: usize, buf: usize, write: bool) -> Result<usize> {
-        // debugln!("AHCI {:X} DMA BLOCK: {:X} SECTORS: {} BUF: {:X} WRITE: {}", (self as *mut HbaPort) as usize, block, sectors, buf, write);
+    pub fn ata_dma(&mut self,
+                   block: u64,
+                   sectors: usize,
+                   buf: usize,
+                   write: bool)
+                   -> Result<usize> {
+        // debugln!("AHCI {:X} DMA BLOCK: {:X} SECTORS: {} BUF: {:X} WRITE: {}", (self
+        // as *mut HbaPort) as usize, block, sectors, buf, write);
 
         if sectors > 0 {
             let contexts = ::env().contexts.lock();
-            let current = try!(contexts.current());
-            let physical_address = try!(current.translate(buf, sectors * 512));
+            let current = contexts.current()?;
+            let physical_address = current.translate(buf, sectors * 512)?;
 
             let mut sector: usize = 0;
             while sectors - sector >= 255 {
-                if let Err(err) = self.ata_dma_small(block + sector as u64, 255, physical_address + sector * 512, write) {
+                if let Err(err) = self.ata_dma_small(block + sector as u64,
+                                                     255,
+                                                     physical_address + sector * 512,
+                                                     write) {
                     return Err(err);
                 }
 
                 sector += 255;
             }
             if sector < sectors {
-                if let Err(err) = self.ata_dma_small(block + sector as u64, sectors - sector, physical_address + sector * 512, write) {
+                if let Err(err) = self.ata_dma_small(block + sector as u64,
+                                                     sectors - sector,
+                                                     physical_address + sector * 512,
+                                                     write) {
                     return Err(err);
                 }
             }
@@ -276,7 +293,8 @@ struct HbaCmdTable {
 #[repr(packed)]
 struct HbaCmdHeader {
     // DW0
-    cfl: Mmio<u8>, /* Command FIS length in DWORDS, 2 ~ 16, atapi: 4, write - host to device: 2, prefetchable: 1 */
+    cfl: Mmio<u8>, /* Command FIS length in DWORDS, 2 ~ 16, atapi: 4, write - host to device: 2,
+                    * prefetchable: 1 */
     pm: Mmio<u8>, // Reset - 0x80, bist: 0x40, clear busy on ok: 0x20, port multiplier
 
     prdtl: Mmio<u16>, // Physical region descriptor table length in entries

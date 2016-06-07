@@ -38,7 +38,7 @@ impl Resource for VecResource {
         })
     }
 
-    fn path(&self, buf: &mut [u8]) -> Result <usize> {
+    fn path(&self, buf: &mut [u8]) -> Result<usize> {
         let path = self.path.as_bytes();
 
         let mut i = 0;
@@ -81,13 +81,15 @@ impl Resource for VecResource {
     fn seek(&mut self, pos: ResourceSeek) -> Result<usize> {
         match pos {
             ResourceSeek::Start(offset) => self.seek = min(self.data.len(), offset),
-            ResourceSeek::Current(offset) =>
-                self.seek = max(0, min(self.seek as isize, self.seek as isize + offset)) as usize,
-            ResourceSeek::End(offset) =>
+            ResourceSeek::Current(offset) => {
+                self.seek = max(0, min(self.seek as isize, self.seek as isize + offset)) as usize
+            },
+            ResourceSeek::End(offset) => {
                 self.seek = max(0,
                                 min(self.seek as isize,
                                     self.data.len() as isize +
-                                    offset)) as usize,
+                                    offset)) as usize
+            },
         }
         return Ok(self.seek);
     }

@@ -34,7 +34,7 @@ impl RSDP {
         if self.signature == SIGNATURE {
             let ptr = (self as *const Self) as *const u8;
             let sum = (0..size_of::<Self>() as isize)
-                          .fold(0, |sum, i| sum + unsafe { *ptr.offset(i) });
+                .fold(0, |sum, i| sum + unsafe { *ptr.offset(i) });
 
             sum == 0
         } else {
@@ -63,7 +63,7 @@ impl RSDT {
                 } else {
                     Err("Did not find RSDT")
                 }
-            }
+            },
             Err(e) => Err(e),
         }
     }

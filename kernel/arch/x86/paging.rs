@@ -9,7 +9,7 @@ use core::ptr;
 // PAGE_END:
 //
 
-//Page flags
+// Page flags
 pub const PF_PRESENT: usize = 1;
 pub const PF_WRITE: usize = 1 << 1;
 pub const PF_USER: usize = 1 << 2;
@@ -19,12 +19,12 @@ pub const PF_ACCESSED: usize = 1 << 5;
 pub const PF_DIRTY: usize = 1 << 6;
 pub const PF_SIZE: usize = 1 << 7;
 pub const PF_GLOBAL: usize = 1 << 8;
-//Extra flags (Redox specific)
+// Extra flags (Redox specific)
 pub const PF_ALLOC: usize = 1 << 9;
 pub const PF_EXEC: usize = 1 << 10;
 pub const PF_STACK: usize = 1 << 11;
 
-pub const PF_ALL: usize =  0xFFF;
+pub const PF_ALL: usize = 0xFFF;
 pub const PF_NONE: usize = 0xFFFFF000;
 
 pub struct Pager {
@@ -51,7 +51,8 @@ impl Pager {
 
     /// Use this Pager for memory operations
     /// # Safety
-    /// - Sets CR3 to the page directory location, ensuring that flags are removed
+    /// - Sets CR3 to the page directory location, ensuring that flags are
+    /// removed
     /// - *Will fail if memory allocation failed in Pager::new()*
     pub unsafe fn enable(&self) {
         asm!("mov cr3, $0"
@@ -101,15 +102,13 @@ impl Drop for Pager {
 
 #[repr(packed)]
 pub struct PageDirectory {
-    entries: [usize; 1024]
+    entries: [usize; 1024],
 }
 
 impl PageDirectory {
     /// Create a new and empty PageDirectory
     fn new() -> PageDirectory {
-        PageDirectory {
-            entries: [0; 1024]
-        }
+        PageDirectory { entries: [0; 1024] }
     }
 
     /// Map a virtual address to a physical address
@@ -133,7 +132,7 @@ impl PageDirectory {
     /// # Safety
     /// - Calls PageTable::unmap() using a raw pointer
     /// - *Will fail if memory allocation failed*
-    unsafe fn unmap(&mut self, virtual_address: usize){
+    unsafe fn unmap(&mut self, virtual_address: usize) {
         let entry = &mut self.entries[(virtual_address >> 22) & 1023];
         if *entry & PF_NONE > 0 {
             let table_ptr = (*entry & PF_NONE) as *mut PageTable;
@@ -159,15 +158,13 @@ impl Drop for PageDirectory {
 
 #[repr(packed)]
 pub struct PageTable {
-    entries: [usize; 1024]
+    entries: [usize; 1024],
 }
 
 impl PageTable {
     /// Create a new and empty PageTable
     fn new() -> PageTable {
-        PageTable {
-            entries: [0; 1024]
-        }
+        PageTable { entries: [0; 1024] }
     }
 
     unsafe fn map(&mut self, virtual_address: usize, physical_address: usize, flags: usize) {
@@ -178,7 +175,7 @@ impl PageTable {
         *entry = physical_address & PF_NONE | flags;
     }
 
-    unsafe fn unmap(&mut self, virtual_address: usize){
+    unsafe fn unmap(&mut self, virtual_address: usize) {
         let entry = &mut self.entries[(virtual_address >> 12) & 1023];
         if *entry & PF_ALLOC == PF_ALLOC {
             memory::unalloc(*entry & PF_NONE);
@@ -217,8 +214,8 @@ impl Page {
         for table_i in 0..PAGE_TABLE_SIZE {
             ptr::write((PAGE_DIRECTORY + table_i * PAGE_ENTRY_SIZE) as *mut usize,
                        // TODO: Use more restrictive flags
-                       (PAGE_TABLES + table_i * PAGE_TABLE_SIZE * PAGE_ENTRY_SIZE) |
-                       PF_USER | PF_WRITE | PF_PRESENT); //Allow userspace, read/write, present
+                       (PAGE_TABLES + table_i * PAGE_TABLE_SIZE * PAGE_ENTRY_SIZE) | PF_USER |
+                       PF_WRITE | PF_PRESENT); //Allow userspace, read/write, present
 
             for entry_i in 0..PAGE_TABLE_SIZE {
                 let addr = (table_i * PAGE_TABLE_SIZE + entry_i) * PAGE_SIZE;
@@ -291,13 +288,15 @@ impl Page {
         self.flush();
     }
 
-    /// Map the memory page to a given physical memory address, and allow userspace read access
+    /// Map the memory page to a given physical memory address, and allow
+    /// userspace read access
     pub unsafe fn map_user_read(&mut self, physical_address: usize) {
         self.set_entry_data((physical_address & PF_NONE) | PF_USER | PF_PRESENT);
         self.flush();
     }
 
-    /// Map the memory page to a given physical memory address, and allow userspace read/write access
+    /// Map the memory page to a given physical memory address, and allow
+    /// userspace read/write access
     pub unsafe fn map_user_write(&mut self, physical_address: usize) {
         self.set_entry_data((physical_address & PF_NONE) | PF_USER | PF_WRITE | PF_PRESENT);
         self.flush();

@@ -13,11 +13,11 @@ use fs::KScheme;
 use drivers::kb_layouts::layouts;
 
 pub struct Ps2Keyboard<'a> {
-    bus: &'a mut Ps2
+    bus: &'a mut Ps2,
 }
 
 impl<'a> Ps2Keyboard<'a> {
-    //TODO: Use result
+    // TODO: Use result
     fn cmd(&mut self, command: u8) -> u8 {
         self.bus.wait_write();
         self.bus.data.write(command);
@@ -27,11 +27,11 @@ impl<'a> Ps2Keyboard<'a> {
 }
 
 pub struct Ps2Mouse<'a> {
-    bus: &'a mut Ps2
+    bus: &'a mut Ps2,
 }
 
 impl<'a> Ps2Mouse<'a> {
-    //TODO: Use result
+    // TODO: Use result
     fn cmd(&mut self, command: u8) -> u8 {
         self.bus.write(0xD4, command);
         self.bus.wait_read();
@@ -95,7 +95,7 @@ impl Ps2 {
     }
 
     fn wait_read(&self) {
-        while ! self.sts.readf(1) {}
+        while !self.sts.readf(1) {}
     }
 
     fn wait_write(&self) {
@@ -120,15 +120,11 @@ impl Ps2 {
     }
 
     fn keyboard<'a>(&'a mut self) -> Ps2Keyboard<'a> {
-        Ps2Keyboard {
-            bus: self
-        }
+        Ps2Keyboard { bus: self }
     }
 
     fn mouse<'a>(&'a mut self) -> Ps2Mouse<'a> {
-        Ps2Mouse {
-            bus: self
-        }
+        Ps2Mouse { bus: self }
     }
 
     fn init(&mut self) {
@@ -211,7 +207,8 @@ impl Ps2 {
             }
         }
 
-        // Key and mouse interrupts, system flag set, clocks enabled, translation enabled
+        // Key and mouse interrupts, system flag set, clocks enabled, translation
+        // enabled
         self.write(0x60, 0b01000111);
 
         while self.sts.readf(1) {
@@ -297,8 +294,10 @@ impl Ps2 {
             }
 
             if let Some(mode_info) = unsafe { VBEMODEINFO } {
-                self.mouse_x = cmp::max(0, cmp::min(mode_info.xresolution as i32, self.mouse_x + x));
-                self.mouse_y = cmp::max(0, cmp::min(mode_info.yresolution as i32, self.mouse_y + y));
+                self.mouse_x = cmp::max(0,
+                                        cmp::min(mode_info.xresolution as i32, self.mouse_x + x));
+                self.mouse_y = cmp::max(0,
+                                        cmp::min(mode_info.yresolution as i32, self.mouse_y + y));
             }
 
             self.mouse_i = 0;
@@ -335,7 +334,7 @@ impl KScheme for Ps2 {
                     let data = self.data.read();
                     if let Some(mouse_event) = self.mouse_interrupt(data) {
                         if ::env().console.lock().draw {
-                            //Ignore mouse event
+                            // Ignore mouse event
                         } else {
                             ::env().events.send(mouse_event.to_event());
                         }

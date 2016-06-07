@@ -1,7 +1,5 @@
-use arch::context::{context_switch, Context};
+use arch::context::{Context, context_switch};
 use arch::memory;
-
-use collections::string::ToString;
 
 use common::event::MouseEvent;
 use common::time::{self, Duration};
@@ -17,23 +15,31 @@ pub trait Hci {
     fn msg(&mut self, address: u8, endpoint: u8, pipe: Pipe, msgs: &[Packet]) -> usize;
 
     fn descriptor(&mut self,
-                         address: u8,
-                         descriptor_type: u8,
-                         descriptor_index: u8,
-                         descriptor_ptr: usize,
-                         descriptor_len: usize) {
-        self.msg(address, 0, Pipe::Control, &[
-            Packet::Setup(&Setup::get_descriptor(descriptor_type, descriptor_index, 0, descriptor_len as u16)),
-            Packet::In(&mut unsafe { slice::from_raw_parts_mut(descriptor_ptr as *mut u8, descriptor_len as usize) }),
-            Packet::Out(&[])
-        ]);
+                  address: u8,
+                  descriptor_type: u8,
+                  descriptor_index: u8,
+                  descriptor_ptr: usize,
+                  descriptor_len: usize) {
+        self.msg(address,
+                 0,
+                 Pipe::Control,
+                 &[Packet::Setup(&Setup::get_descriptor(descriptor_type,
+                                                        descriptor_index,
+                                                        0,
+                                                        descriptor_len as u16)),
+                   Packet::In(&mut unsafe {
+                       slice::from_raw_parts_mut(descriptor_ptr as *mut u8, descriptor_len as usize)
+                   }),
+                   Packet::Out(&[])]);
     }
 
-    unsafe fn device(&mut self, address: u8) where Self: Sized + 'static {
-        self.msg(0, 0, Pipe::Control, &[
-            Packet::Setup(&Setup::set_address(address)),
-            Packet::In(&mut [])
-        ]);
+    unsafe fn device(&mut self, address: u8)
+        where Self: Sized + 'static
+    {
+        self.msg(0,
+                 0,
+                 Pipe::Control,
+                 &[Packet::Setup(&Setup::set_address(address)), Packet::In(&mut [])]);
 
         let mut desc_dev = box DeviceDescriptor::default();
         self.descriptor(address,
@@ -106,7 +112,8 @@ pub trait Hci {
                 let descriptor_type = ptr::read(desc_cfg_buf.offset(i + 1));
                 match descriptor_type {
                     DESC_INT => {
-                        let desc_int = ptr::read(desc_cfg_buf.offset(i) as *const InterfaceDescriptor);
+                        let desc_int =
+                            ptr::read(desc_cfg_buf.offset(i) as *const InterfaceDescriptor);
                         debugln!("{:#?}", desc_int);
 
                         if desc_int.string > 0 {
@@ -118,9 +125,10 @@ pub trait Hci {
                                             mem::size_of_val(&*desc_str));
                             debugln!("Interface: {}", desc_str.str());
                         }
-                    }
+                    },
                     DESC_END => {
-                        let desc_end = ptr::read(desc_cfg_buf.offset(i) as *const EndpointDescriptor);
+                        let desc_end =
+                            ptr::read(desc_cfg_buf.offset(i) as *const EndpointDescriptor);
                         debugln!("{:#?}", desc_end);
 
                         let endpoint = desc_end.address & 0xF;
@@ -128,7 +136,8 @@ pub trait Hci {
 
                         if hid {
                             let this = self as *mut Hci;
-                            Context::spawn("kuhci_hid".to_string(), box move || {
+                            Context::spawn("kuhci_hid".into(),
+                                           box move || {
                                 if let Some(mode_info) = VBEMODEINFO {
                                     debugln!("Starting HID driver");
 
@@ -168,26 +177,31 @@ pub trait Hci {
                                             let mut contexts = ::env().contexts.lock();
                                             if let Ok(mut current) = contexts.current_mut() {
                                                 current.blocked = true;
-                                                current.wake = Some(Duration::monotonic() + Duration::new(0, 10 * time::NANOS_PER_MILLI));
+                                                current.wake =
+                                                    Some(Duration::monotonic() +
+                                                         Duration::new(0,
+                                                                       10 * time::NANOS_PER_MILLI));
                                             }
                                         }
 
                                         context_switch();
                                     }
 
-                                    //memory::unalloc(in_ptr as usize);
+                                    // memory::unalloc(in_ptr as usize);
                                 }
                             });
                         }
-                    }
+                    },
                     DESC_HID => {
-                        //let desc_hid = &*(desc_cfg_buf.offset(i) as *const HIDDescriptor);
-                        //debugln!("{:#?}", desc_hid);
+                        // let desc_hid = &*(desc_cfg_buf.offset(i) as *const HIDDescriptor);
+                        // debugln!("{:#?}", desc_hid);
                         hid = true;
-                    }
+                    },
                     _ => {
-                        debugln!("Unknown Descriptor Length {} Type {:X}", length as usize, descriptor_type);
-                    }
+                        debugln!("Unknown Descriptor Length {} Type {:X}",
+                                 length as usize,
+                                 descriptor_type);
+                    },
                 }
                 i += length as isize;
             }

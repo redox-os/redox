@@ -10,11 +10,11 @@ use common::event::Event;
 use common::time::Duration;
 use disk::Disk;
 use network::Nic;
-use fs::{KScheme, Resource, Scheme, VecResource, Url};
+use fs::{KScheme, Resource, Scheme, Url, VecResource};
 use logging::LogLevel;
 use sync::WaitQueue;
 
-use system::error::{Error, Result, ENOENT, EEXIST};
+use system::error::{EEXIST, ENOENT, Error, Result};
 use system::syscall::{O_CREAT, Stat};
 
 use self::console::Console;
@@ -106,7 +106,7 @@ impl Environment {
                         self.schemes.lock().push(scheme);
                         Ok(server)
                     },
-                    Err(err) => Err(err)
+                    Err(err) => Err(err),
                 }
             } else {
                 Err(Error::new(ENOENT))

@@ -195,10 +195,11 @@ impl Rtl8139 {
 
         while capr != cbr {
             let frame_addr = receive_buffer + capr + 4;
-            //let frame_status = ptr::read((receive_buffer + capr) as *const u16) as usize;
+            // let frame_status = ptr::read((receive_buffer + capr) as *const u16) as usize;
             let frame_len = ptr::read((receive_buffer + capr + 2) as *const u16) as usize;
 
-            self.inbound.push_back(Vec::from(slice::from_raw_parts(frame_addr as *const u8, frame_len - 4)));
+            self.inbound.push_back(Vec::from(slice::from_raw_parts(frame_addr as *const u8,
+                                                                   frame_len - 4)));
 
             capr = capr + frame_len + 4;
             capr = (capr + 3) & (0xFFFFFFFF - 3);
@@ -268,10 +269,12 @@ impl NetworkScheme for Rtl8139 {
             let mut remove = false;
 
             match resources.get(i) {
-                Some(ptr) => if *ptr == resource {
-                    remove = true;
-                } else {
-                    i += 1;
+                Some(ptr) => {
+                    if *ptr == resource {
+                        remove = true;
+                    } else {
+                        i += 1;
+                    }
                 },
                 None => break,
             }

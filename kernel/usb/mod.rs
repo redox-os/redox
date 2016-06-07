@@ -21,5 +21,5 @@ pub enum Pipe {
     Control,
     Interrupt,
     Isochronous,
-    Bulk
+    Bulk,
 }

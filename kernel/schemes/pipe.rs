@@ -7,26 +7,22 @@ use fs::Resource;
 
 use sync::WaitQueue;
 
-use system::error::{Error, Result, EPIPE};
+use system::error::{EPIPE, Error, Result};
 
 /// Read side of a pipe
 pub struct PipeRead {
-    vec: Arc<WaitQueue<u8>>
+    vec: Arc<WaitQueue<u8>>,
 }
 
 impl PipeRead {
     pub fn new() -> Self {
-        PipeRead {
-            vec: Arc::new(WaitQueue::new())
-        }
+        PipeRead { vec: Arc::new(WaitQueue::new()) }
     }
 }
 
 impl Resource for PipeRead {
     fn dup(&self) -> Result<Box<Resource>> {
-        Ok(box PipeRead {
-            vec: self.vec.clone(),
-        })
+        Ok(box PipeRead { vec: self.vec.clone() })
     }
 
     fn path(&self, buf: &mut [u8]) -> Result<usize> {
@@ -55,7 +51,7 @@ impl Resource for PipeRead {
                         buf[i] = b;
                         i += 1;
                     },
-                    None => break
+                    None => break,
                 }
             }
 
@@ -71,17 +67,13 @@ pub struct PipeWrite {
 
 impl PipeWrite {
     pub fn new(read: &PipeRead) -> Self {
-        PipeWrite {
-            vec: Arc::downgrade(&read.vec),
-        }
+        PipeWrite { vec: Arc::downgrade(&read.vec) }
     }
 }
 
 impl Resource for PipeWrite {
     fn dup(&self) -> Result<Box<Resource>> {
-        Ok(box PipeWrite {
-            vec: self.vec.clone(),
-        })
+        Ok(box PipeWrite { vec: self.vec.clone() })
     }
 
     fn path(&self, buf: &mut [u8]) -> Result<usize> {
@@ -103,12 +95,12 @@ impl Resource for PipeWrite {
 
                 Ok(buf.len())
             },
-            None => Err(Error::new(EPIPE))
+            None => Err(Error::new(EPIPE)),
         }
     }
 
     fn sync(&mut self) -> Result<()> {
-        //TODO: Wait until empty
+        // TODO: Wait until empty
         Ok(())
     }
 }

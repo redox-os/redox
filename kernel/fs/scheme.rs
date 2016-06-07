@@ -13,13 +13,13 @@ use arch::context::{Context, ContextMemory};
 
 use sync::{WaitMap, WaitQueue};
 
-use system::error::{Error, Result, EBADF, EFAULT, EINVAL, ENODEV, ESPIPE};
+use system::error::{EBADF, EFAULT, EINVAL, ENODEV, ESPIPE, Error, Result};
 use system::scheme::Packet;
-use system::syscall::{SYS_CLOSE, SYS_DUP, SYS_FPATH, SYS_FSTAT, SYS_FSYNC, SYS_FTRUNCATE,
-                    SYS_OPEN, SYS_LSEEK, SEEK_SET, SEEK_CUR, SEEK_END, SYS_MKDIR,
-                    SYS_READ, SYS_WRITE, SYS_RMDIR, SYS_STAT, SYS_UNLINK, Stat};
+use system::syscall::{SEEK_CUR, SEEK_END, SEEK_SET, SYS_CLOSE, SYS_FPATH, SYS_FSTAT, SYS_FSYNC,
+                      SYS_FTRUNCATE, SYS_LSEEK, SYS_MKDIR, SYS_OPEN, SYS_READ, SYS_RMDIR,
+                      SYS_STAT, SYS_UNLINK, SYS_WRITE, Stat};
 
-use super::{Resource, ResourceSeek, KScheme, Url};
+use super::{KScheme, Resource, ResourceSeek, Url};
 
 struct SchemeInner {
     name: String,
@@ -44,7 +44,7 @@ impl SchemeInner {
         if let Some(scheme) = inner.upgrade() {
             let id = scheme.next_id.get();
 
-            //TODO: What should be done about collisions in self.todo or self.done?
+            // TODO: What should be done about collisions in self.todo or self.done?
             let mut next_id = id + 1;
             if next_id <= 0 {
                 next_id = 1;
@@ -56,7 +56,7 @@ impl SchemeInner {
                 a: a,
                 b: b,
                 c: c,
-                d: d
+                d: d,
             });
             Error::demux(scheme.done.receive(&id).0)
         } else {
@@ -64,7 +64,11 @@ impl SchemeInner {
         }
     }
 
-    fn capture(inner: &Weak<SchemeInner>, mut physical_address: usize, size: usize, writeable: bool) -> Result<usize> {
+    fn capture(inner: &Weak<SchemeInner>,
+               mut physical_address: usize,
+               size: usize,
+               writeable: bool)
+               -> Result<usize> {
         if let Some(scheme) = inner.upgrade() {
             if physical_address >= 0x80000000 {
                 physical_address -= 0x80000000;
@@ -119,7 +123,7 @@ impl SchemeResource {
         SchemeInner::capture(&self.inner, physical_address, size, writeable)
     }
 
-    fn release(&self, virtual_address: usize){
+    fn release(&self, virtual_address: usize) {
         SchemeInner::release(&self.inner, virtual_address);
     }
 }
@@ -128,33 +132,39 @@ impl Resource for SchemeResource {
     /// Duplicate the resource
     fn dup(&self) -> Result<Box<Resource>> {
         Err(Error::new(EBADF))
-        /*
-        let file_id = try!(self.call(SYS_DUP, self.file_id, 0, 0));
-        Ok(Box::new(SchemeResource {
-            inner: self.inner.clone(),
-            file_id: file_id
-        }))
-        */
+        // let file_id = try!(self.call(SYS_DUP, self.file_id, 0, 0));
+        // Ok(Box::new(SchemeResource {
+        // inner: self.inner.clone(),
+        // file_id: file_id
+        // }))
+        //
     }
 
     /// Return the url of this resource
-    fn path(&self, buf: &mut [u8]) -> Result <usize> {
+    fn path(&self, buf: &mut [u8]) -> Result<usize> {
         let contexts = ::env().contexts.lock();
-        let current = try!(contexts.current());
+        let current = contexts.current()?;
         if let Ok(physical_address) = current.translate(buf.as_mut_ptr() as usize, buf.len()) {
             let offset = physical_address % 4096;
 
-            let virtual_address = try!(self.capture(physical_address - offset, buf.len() + offset, true));
+            let virtual_address =
+                self.capture(physical_address - offset, buf.len() + offset, true)?;
 
             let result = self.call(SYS_FPATH, self.file_id, virtual_address + offset, buf.len());
 
-            //debugln!("Read {:X} mapped from {:X} to {:X} offset {} length {} size {} result {:?}", physical_address, buf.as_ptr() as usize, virtual_address + offset, offset, buf.len(), virtual_size, result);
+            // debugln!("Read {:X} mapped from {:X} to {:X} offset {} length {} size {}
+            // result {:?}", physical_address, buf.as_ptr() as usize, virtual_address +
+            // offset, offset, buf.len(), virtual_size, result);
 
             self.release(virtual_address);
 
             result
         } else {
-            debugln!("{}:{} fault {:X} {}", file!(), line!(), buf.as_ptr() as usize, buf.len());
+            debugln!("{}:{} fault {:X} {}",
+                     file!(),
+                     line!(),
+                     buf.as_ptr() as usize,
+                     buf.len());
             Err(Error::new(EFAULT))
         }
     }
@@ -162,21 +172,28 @@ impl Resource for SchemeResource {
     /// Read data to buffer
     fn read(&mut self, buf: &mut [u8]) -> Result<usize> {
         let contexts = ::env().contexts.lock();
-        let current = try!(contexts.current());
+        let current = contexts.current()?;
         if let Ok(physical_address) = current.translate(buf.as_mut_ptr() as usize, buf.len()) {
             let offset = physical_address % 4096;
 
-            let virtual_address = try!(self.capture(physical_address - offset, buf.len() + offset, true));
+            let virtual_address =
+                self.capture(physical_address - offset, buf.len() + offset, true)?;
 
             let result = self.call(SYS_READ, self.file_id, virtual_address + offset, buf.len());
 
-            //debugln!("Read {:X} mapped from {:X} to {:X} offset {} length {} size {} result {:?}", physical_address, buf.as_ptr() as usize, virtual_address + offset, offset, buf.len(), virtual_size, result);
+            // debugln!("Read {:X} mapped from {:X} to {:X} offset {} length {} size {}
+            // result {:?}", physical_address, buf.as_ptr() as usize, virtual_address +
+            // offset, offset, buf.len(), virtual_size, result);
 
             self.release(virtual_address);
 
             result
         } else {
-            debugln!("{}:{} fault {:X} {}", file!(), line!(), buf.as_ptr() as usize, buf.len());
+            debugln!("{}:{} fault {:X} {}",
+                     file!(),
+                     line!(),
+                     buf.as_ptr() as usize,
+                     buf.len());
             Err(Error::new(EFAULT))
         }
     }
@@ -184,21 +201,28 @@ impl Resource for SchemeResource {
     /// Write to resource
     fn write(&mut self, buf: &[u8]) -> Result<usize> {
         let contexts = ::env().contexts.lock();
-        let current = try!(contexts.current());
+        let current = contexts.current()?;
         if let Ok(physical_address) = current.translate(buf.as_ptr() as usize, buf.len()) {
             let offset = physical_address % 4096;
 
-            let virtual_address = try!(self.capture(physical_address - offset, buf.len() + offset, false));
+            let virtual_address =
+                self.capture(physical_address - offset, buf.len() + offset, false)?;
 
             let result = self.call(SYS_WRITE, self.file_id, virtual_address + offset, buf.len());
 
-            //debugln!("Write {:X} mapped from {:X} to {:X} offset {} length {} size {} result {:?}", physical_address, buf.as_ptr() as usize, virtual_address + offset, offset, buf.len(), virtual_size, result);
+            // debugln!("Write {:X} mapped from {:X} to {:X} offset {} length {} size {}
+            // result {:?}", physical_address, buf.as_ptr() as usize, virtual_address +
+            // offset, offset, buf.len(), virtual_size, result);
 
             self.release(virtual_address);
 
             result
         } else {
-            debugln!("{}:{} fault {:X} {}", file!(), line!(), buf.as_ptr() as usize, buf.len());
+            debugln!("{}:{} fault {:X} {}",
+                     file!(),
+                     line!(),
+                     buf.as_ptr() as usize,
+                     buf.len());
             Err(Error::new(EFAULT))
         }
     }
@@ -208,7 +232,7 @@ impl Resource for SchemeResource {
         let (whence, offset) = match pos {
             ResourceSeek::Start(offset) => (SEEK_SET, offset as usize),
             ResourceSeek::Current(offset) => (SEEK_CUR, offset as usize),
-            ResourceSeek::End(offset) => (SEEK_END, offset as usize)
+            ResourceSeek::End(offset) => (SEEK_END, offset as usize),
         };
 
         self.call(SYS_LSEEK, self.file_id, offset, whence)
@@ -216,14 +240,16 @@ impl Resource for SchemeResource {
 
     /// Stat
     fn stat(&self, stat: &mut Stat) -> Result<usize> {
-        let buf = unsafe { slice::from_raw_parts_mut(stat as *mut Stat as *mut u8, size_of::<Stat>()) };
+        let buf =
+            unsafe { slice::from_raw_parts_mut(stat as *mut Stat as *mut u8, size_of::<Stat>()) };
 
         let contexts = ::env().contexts.lock();
-        let current = try!(contexts.current());
+        let current = contexts.current()?;
         if let Ok(physical_address) = current.translate(buf.as_mut_ptr() as usize, buf.len()) {
             let offset = physical_address % 4096;
 
-            let virtual_address = try!(self.capture(physical_address - offset, buf.len() + offset, true));
+            let virtual_address =
+                self.capture(physical_address - offset, buf.len() + offset, true)?;
 
             let result = self.call(SYS_FSTAT, self.file_id, virtual_address + offset, buf.len());
 
@@ -231,7 +257,11 @@ impl Resource for SchemeResource {
 
             result
         } else {
-            debugln!("{}:{} fault {:X} {}", file!(), line!(), buf.as_ptr() as usize, buf.len());
+            debugln!("{}:{} fault {:X} {}",
+                     file!(),
+                     line!(),
+                     buf.as_ptr() as usize,
+                     buf.len());
             Err(Error::new(EFAULT))
         }
     }
@@ -259,9 +289,7 @@ pub struct SchemeServerResource {
 impl Resource for SchemeServerResource {
     /// Duplicate the resource
     fn dup(&self) -> Result<Box<Resource>> {
-        Ok(box SchemeServerResource {
-            inner: self.inner.clone()
-        })
+        Ok(box SchemeServerResource { inner: self.inner.clone() })
     }
 
     /// Return the url of this resource
@@ -290,12 +318,16 @@ impl Resource for SchemeServerResource {
             let mut i = 0;
 
             let packet = self.inner.todo.receive();
-            unsafe { ptr::write(buf.as_mut_ptr().offset(i as isize) as *mut Packet, packet); }
+            unsafe {
+                ptr::write(buf.as_mut_ptr().offset(i as isize) as *mut Packet, packet);
+            }
             i += size_of::<Packet>();
 
             while i + size_of::<Packet>() <= buf.len() {
                 if let Some(packet) = self.inner.todo.inner.lock().pop_front() {
-                    unsafe { ptr::write(buf.as_mut_ptr().offset(i as isize) as *mut Packet, packet); }
+                    unsafe {
+                        ptr::write(buf.as_mut_ptr().offset(i as isize) as *mut Packet, packet);
+                    }
                     i += size_of::<Packet>();
                 } else {
                     break;
@@ -314,7 +346,7 @@ impl Resource for SchemeServerResource {
             let mut i = 0;
 
             while i <= buf.len() - size_of::<Packet>() {
-                let packet = unsafe { & *(buf.as_ptr().offset(i as isize) as *const Packet) };
+                let packet = unsafe { &*(buf.as_ptr().offset(i as isize) as *const Packet) };
                 self.inner.done.send(packet.id, (packet.a, packet.b, packet.c, packet.d));
                 i += size_of::<Packet>();
             }
@@ -343,19 +375,19 @@ impl Resource for SchemeServerResource {
 /// Scheme has to be wrapped
 pub struct Scheme {
     name: String,
-    inner: Weak<SchemeInner>
+    inner: Weak<SchemeInner>,
 }
 
 impl Scheme {
     pub fn new(name: &str) -> Result<(Box<Scheme>, Box<Resource>)> {
         let mut contexts = ::env().contexts.lock();
-        let mut current = try!(contexts.current_mut());
+        let mut current = contexts.current_mut()?;
         let server = box SchemeServerResource {
-            inner: Arc::new(SchemeInner::new(name, current.deref_mut()))
+            inner: Arc::new(SchemeInner::new(name, current.deref_mut())),
         };
         let scheme = box Scheme {
             name: name.to_owned(),
-            inner: Arc::downgrade(&server.inner)
+            inner: Arc::downgrade(&server.inner),
         };
         Ok((scheme, server))
     }
@@ -368,15 +400,13 @@ impl Scheme {
         SchemeInner::capture(&self.inner, physical_address, size, writeable)
     }
 
-    fn release(&self, virtual_address: usize){
+    fn release(&self, virtual_address: usize) {
         SchemeInner::release(&self.inner, virtual_address);
     }
 }
 
 impl KScheme for Scheme {
-    fn on_irq(&mut self, _irq: u8) {
-
-    }
+    fn on_irq(&mut self, _irq: u8) {}
 
     fn scheme(&self) -> &str {
         &self.name
@@ -385,25 +415,27 @@ impl KScheme for Scheme {
     fn open(&mut self, url: Url, flags: usize) -> Result<Box<Resource>> {
         let c_str = url.to_string() + "\0";
 
-        let virtual_address = try!(self.capture(c_str.as_ptr() as usize, c_str.len(), false));
+        let virtual_address = self.capture(c_str.as_ptr() as usize, c_str.len(), false)?;
 
         let result = self.call(SYS_OPEN, virtual_address, flags, 0);
 
         self.release(virtual_address);
 
         match result {
-            Ok(file_id) => Ok(box SchemeResource {
-                inner: self.inner.clone(),
-                file_id: file_id,
-            }),
-            Err(err) => Err(err)
+            Ok(file_id) => {
+                Ok(box SchemeResource {
+                    inner: self.inner.clone(),
+                    file_id: file_id,
+                })
+            },
+            Err(err) => Err(err),
         }
     }
 
     fn mkdir(&mut self, url: Url, flags: usize) -> Result<()> {
         let c_str = url.to_string() + "\0";
 
-        let virtual_address = try!(self.capture(c_str.as_ptr() as usize, c_str.len(), false));
+        let virtual_address = self.capture(c_str.as_ptr() as usize, c_str.len(), false)?;
 
         let result = self.call(SYS_MKDIR, virtual_address, flags, 0);
 
@@ -415,7 +447,7 @@ impl KScheme for Scheme {
     fn rmdir(&mut self, url: Url) -> Result<()> {
         let c_str = url.to_string() + "\0";
 
-        let virtual_address = try!(self.capture(c_str.as_ptr() as usize, c_str.len(), false));
+        let virtual_address = self.capture(c_str.as_ptr() as usize, c_str.len(), false)?;
 
         let result = self.call(SYS_RMDIR, virtual_address, 0, 0);
 
@@ -425,18 +457,20 @@ impl KScheme for Scheme {
     }
 
     fn stat(&mut self, url: Url, stat: &mut Stat) -> Result<()> {
-        let buf = unsafe { slice::from_raw_parts_mut(stat as *mut Stat as *mut u8, size_of::<Stat>()) };
+        let buf =
+            unsafe { slice::from_raw_parts_mut(stat as *mut Stat as *mut u8, size_of::<Stat>()) };
 
         let contexts = ::env().contexts.lock();
-        let current = try!(contexts.current());
+        let current = contexts.current()?;
         if let Ok(physical_address) = current.translate(buf.as_mut_ptr() as usize, buf.len()) {
             let offset = physical_address % 4096;
 
-            let virtual_address = try!(self.capture(physical_address - offset, buf.len() + offset, true));
+            let virtual_address =
+                self.capture(physical_address - offset, buf.len() + offset, true)?;
 
             let c_str = url.to_string() + "\0";
 
-            let c_str_address = try!(self.capture(c_str.as_ptr() as usize, c_str.len(), false));
+            let c_str_address = self.capture(c_str.as_ptr() as usize, c_str.len(), false)?;
 
             let result = self.call(SYS_STAT, c_str_address, virtual_address + offset, buf.len());
 
@@ -444,7 +478,11 @@ impl KScheme for Scheme {
 
             result.and(Ok(()))
         } else {
-            debugln!("{}:{} fault {:X} {}", file!(), line!(), buf.as_ptr() as usize, buf.len());
+            debugln!("{}:{} fault {:X} {}",
+                     file!(),
+                     line!(),
+                     buf.as_ptr() as usize,
+                     buf.len());
             Err(Error::new(EFAULT))
         }
     }
@@ -452,7 +490,7 @@ impl KScheme for Scheme {
     fn unlink(&mut self, url: Url) -> Result<()> {
         let c_str = url.to_string() + "\0";
 
-        let virtual_address = try!(self.capture(c_str.as_ptr() as usize, c_str.len(), false));
+        let virtual_address = self.capture(c_str.as_ptr() as usize, c_str.len(), false)?;
 
         let result = self.call(SYS_UNLINK, virtual_address, 0, 0);
 

@@ -24,25 +24,25 @@ pub fn parse_path(path: &str, cwd: Vec<String>) -> Vec<String> {
                     climb = false;
                     new_part = false;
                     escape = true;
-                }
+                },
                 '.' if new_part => {
                     climb = true;
-                }
+                },
                 '.' if climb => {
                     parts.pop();
-                }
+                },
                 '/' if !new_part => {
                     climb = false;
                     new_part = true;
                     parts.push(head.clone());
                     head.clear();
-                }
-                '/' => {}
+                },
+                '/' => {},
                 c => {
                     climb = false;
                     new_part = false;
                     head.push(c);
-                }
+                },
             }
         }
     }

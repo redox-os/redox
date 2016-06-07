@@ -40,13 +40,15 @@ pub const DESC_STR: u8 = 3;
 pub struct StringDescriptor {
     pub length: u8,
     pub descriptor_type: u8,
-    //TODO: Support longer strings
+    // TODO: Support longer strings
     pub data: [u8; 32],
 }
 
 impl StringDescriptor {
     pub fn str<'a>(&'a self) -> &'a str {
-        unsafe { str::from_utf8_unchecked(&self.data[.. cmp::min(self.length as usize, self.data.len())]) }
+        unsafe {
+            str::from_utf8_unchecked(&self.data[..cmp::min(self.length as usize, self.data.len())])
+        }
     }
 }
 

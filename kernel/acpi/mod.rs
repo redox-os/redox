@@ -1,6 +1,6 @@
 use alloc::boxed::Box;
 use fs::{KScheme, Resource, Url};
-use system::error::{Error, Result, ENOENT};
+use system::error::{ENOENT, Error, Result};
 use system::syscall::O_CREAT;
 pub use self::dsdt::DSDT;
 pub use self::fadt::FADT;
@@ -67,11 +67,11 @@ impl Acpi {
                 }
 
                 Some(acpi)
-            }
+            },
             Err(e) => {
                 debugln!("{}", e);
                 None
-            }
+            },
         }
     }
 }
@@ -89,10 +89,10 @@ impl KScheme for Acpi {
                     unsafe {
                         asm!("out dx, ax" : : "{edx}"(fadt.pm1a_control_block), "{ax}"(0 | 1 << 13) : : "intel", "volatile")
                     };
-                }
+                },
                 None => {
                     debugln!("Unable to power off: No FADT");
-                }
+                },
             }
         }
 

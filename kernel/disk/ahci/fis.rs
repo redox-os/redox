@@ -128,7 +128,9 @@ pub struct FisDmaSetup {
     pub rsv1: [Mmio<u8>; 2], // Reserved
 
     // DWORD 1&2
-    pub dma_buffer_id: Mmio<u64>, /* DMA Buffer Identifier. Used to Identify DMA buffer in host memory. SATA Spec says host specific and not in Spec. Trying AHCI spec might work. */
+    pub dma_buffer_id: Mmio<u64>, /* DMA Buffer Identifier. Used to Identify DMA buffer in host memory.
+                                   * SATA Spec says host specific and not in Spec. Trying AHCI spec
+                                   * might work. */
 
     // DWORD 3
     pub rsv3: Mmio<u32>, // More reserved

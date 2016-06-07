@@ -14,7 +14,7 @@ use common::to_num::ToNum;
 use super::arp::{Arp, ArpHeader};
 use fs::{KScheme, Resource, Url};
 
-use system::error::{Error, Result, ENOENT};
+use system::error::{ENOENT, Error, Result};
 
 /// A IP (internet protocole) resource
 pub struct IpResource {
@@ -28,13 +28,15 @@ pub struct IpResource {
 impl Resource for IpResource {
     fn dup(&self) -> Result<Box<Resource>> {
         match self.link.dup() {
-            Ok(link) => Ok(box IpResource {
-                link: link,
-                data: self.data.clone(),
-                peer_addr: self.peer_addr,
-                proto: self.proto,
-                id: self.id,
-            }),
+            Ok(link) => {
+                Ok(box IpResource {
+                    link: link,
+                    data: self.data.clone(),
+                    peer_addr: self.peer_addr,
+                    proto: self.proto,
+                    id: self.id,
+                })
+            },
             Err(err) => Err(err),
         }
     }
@@ -66,7 +68,7 @@ impl Resource for IpResource {
             let mut bytes = [0; 8192];
             match self.link.read(&mut bytes) {
                 Ok(count) => {
-                    if let Some(packet) = Ipv4::from_bytes(bytes[.. count].to_vec()) {
+                    if let Some(packet) = Ipv4::from_bytes(bytes[..count].to_vec()) {
                         if packet.header.proto == self.proto && packet.header.dst.equals(IP_ADDR) &&
                            packet.header.src.equals(self.peer_addr) {
                             for (b, d) in buf.iter_mut().zip(packet.data.iter()) {
@@ -76,7 +78,7 @@ impl Resource for IpResource {
                             return Ok(cmp::min(buf.len(), packet.data.len()));
                         }
                     }
-                }
+                },
                 Err(err) => return Err(err),
             }
         }
@@ -155,7 +157,10 @@ impl KScheme for IpScheme {
                     }
 
                     if peer_mac.equals(BROADCAST_MAC_ADDR) {
-                        if let Ok(mut link) = Url::from_str(&format!("ethernet:{}/806", &peer_mac.to_string())).unwrap().open() {
+                        if let Ok(mut link) = Url::from_str(&format!("ethernet:{}/806",
+                                                                     &peer_mac.to_string()))
+                            .unwrap()
+                            .open() {
                             let arp = Arp {
                                 header: ArpHeader {
                                     htype: n16::new(1),
@@ -172,21 +177,26 @@ impl KScheme for IpScheme {
                             };
 
                             match link.write(&arp.to_bytes()) {
-                                Ok(_) => loop {
-                                    let mut bytes = [0; 8192];
-                                    match link.read(&mut bytes) {
-                                        Ok(count) => if let Some(packet) = Arp::from_bytes(bytes[.. count].to_vec()) {
-                                            if packet.header.oper.get() == 2 &&
-                                               packet.header.src_ip.equals(peer_addr) {
-                                                peer_mac = packet.header.src_mac;
-                                                self.arp.push(ArpEntry {
-                                                    ip: peer_addr,
-                                                    mac: peer_mac,
-                                                });
-                                                break;
-                                            }
-                                        },
-                                        Err(_) => (),
+                                Ok(_) => {
+                                    loop {
+                                        let mut bytes = [0; 8192];
+                                        match link.read(&mut bytes) {
+                                            Ok(count) => {
+                                                if let Some(packet) =
+                                                       Arp::from_bytes(bytes[..count].to_vec()) {
+                                                    if packet.header.oper.get() == 2 &&
+                                                       packet.header.src_ip.equals(peer_addr) {
+                                                        peer_mac = packet.header.src_mac;
+                                                        self.arp.push(ArpEntry {
+                                                            ip: peer_addr,
+                                                            mac: peer_mac,
+                                                        });
+                                                        break;
+                                                    }
+                                                }
+                                            },
+                                            Err(_) => (),
+                                        }
                                     }
                                 },
                                 Err(err) => debugln!("IP: ARP Write Failed: {}", err),
@@ -194,7 +204,10 @@ impl KScheme for IpScheme {
                         }
                     }
 
-                    if let Ok(link) = Url::from_str(&format!("ethernet:{}/800", &peer_mac.to_string())).unwrap().open(){
+                    if let Ok(link) = Url::from_str(&format!("ethernet:{}/800",
+                                                             &peer_mac.to_string()))
+                        .unwrap()
+                        .open() {
                         return Ok(box IpResource {
                             link: link,
                             data: Vec::new(),
@@ -208,7 +221,7 @@ impl KScheme for IpScheme {
                         let mut bytes = [0; 8192];
                         match link.read(&mut bytes) {
                             Ok(count) => {
-                                if let Some(packet) = Ipv4::from_bytes(bytes[.. count].to_vec()) {
+                                if let Some(packet) = Ipv4::from_bytes(bytes[..count].to_vec()) {
                                     if packet.header.proto == proto &&
                                        packet.header.dst.equals(IP_ADDR) {
                                         return Ok(box IpResource {
@@ -220,7 +233,7 @@ impl KScheme for IpScheme {
                                         });
                                     }
                                 }
-                            }
+                            },
                             Err(_) => break,
                         }
                     }

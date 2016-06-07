@@ -19,7 +19,8 @@ pub struct ElfHeader {
     pub abi: [u8; 2],
     /// Unused
     pub pad: [u8; 7],
-    /// Specify whether the object is relocatable, executable, shared, or core (in order).
+    /// Specify whether the object is relocatable, executable, shared, or core
+    /// (in order).
     pub _type: ElfHalf,
     /// Instruction set archcitecture
     pub machine: ElfHalf,

@@ -28,9 +28,9 @@ impl<T: ?Sized> Intex<T> {
     }
 }
 
-unsafe impl<T: ?Sized + Send> Send for Intex<T> { }
+unsafe impl<T: ?Sized + Send> Send for Intex<T> {}
 
-unsafe impl<T: ?Sized + Send> Sync for Intex<T> { }
+unsafe impl<T: ?Sized + Send> Sync for Intex<T> {}
 
 /// A Intex guard (returned by .lock())
 pub struct IntexGuard<'a, T: ?Sized + 'a> {
@@ -79,7 +79,7 @@ impl Drop for StaticIntexGuard {
         unsafe {
             intex_count -= 1;
             if intex_count == 0 {
-                //asm!("sti");
+                // asm!("sti");
             }
         }
     }

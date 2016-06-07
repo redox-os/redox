@@ -12,7 +12,7 @@ use disk::Disk;
 use drivers::pci::config::PciConfig;
 use drivers::io::{Io, Pio, ReadOnly, WriteOnly};
 
-use system::error::{Error, Result, EIO};
+use system::error::{EIO, Error, Result};
 
 /// An disk extent
 #[derive(Copy, Clone)]
@@ -28,7 +28,8 @@ impl Extent {
     }
 }
 
-/// Direction of DMA, set if moving from disk to memory, not set if moving from memory to disk
+/// Direction of DMA, set if moving from disk to memory, not set if moving from
+/// memory to disk
 const CMD_DIR: u8 = 1 << 3;
 /// DMA should process PRDT
 const CMD_ACT: u8 = 1;
@@ -145,7 +146,13 @@ impl Ide {
         let bar4 = unsafe { pci.read(0x20) } as u16 & 0xFFF0;
         let irq = unsafe { pci.read(0x3C) } as u8 & 0xF;
 
-        debugln!(" + IDE on {:X}, {:X}, {:X}, {:X}, {:X}, IRQ: {:X}", bar0, bar1, bar2, bar3, bar4, irq);
+        debugln!(" + IDE on {:X}, {:X}, {:X}, {:X}, {:X}, IRQ: {:X}",
+                 bar0,
+                 bar1,
+                 bar2,
+                 bar3,
+                 bar4,
+                 irq);
 
         let port_or = |value: u16, or_value: u16| -> u16 {
             if value > 0 {
@@ -161,7 +168,11 @@ impl Ide {
             let control = port_or(bar1, 0x3F4);
             let irq = 0xE;
 
-            debugln!("   + Primary on: {:X}, {:X}, {:X}, IRQ {:X}", busmaster, data, control, irq);
+            debugln!("   + Primary on: {:X}, {:X}, {:X}, IRQ {:X}",
+                     busmaster,
+                     data,
+                     control,
+                     irq);
 
             debug!("     + Master:");
             if let Some(disk) = IdeDisk::new(busmaster, data, control, irq, true) {
@@ -182,7 +193,11 @@ impl Ide {
             let control = port_or(bar3, 0x374);
             let irq = 0xF;
 
-            debugln!("   + Secondary on: {:X}, {:X}, {:X}, IRQ {:X}", busmaster, data, control, irq);
+            debugln!("   + Secondary on: {:X}, {:X}, {:X}, IRQ {:X}",
+                     busmaster,
+                     data,
+                     control,
+                     irq);
 
             debug!("     + Master:");
             if let Some(disk) = IdeDisk::new(busmaster, data, control, irq, true) {
@@ -285,10 +300,10 @@ impl IdeDisk {
 
         while self.alt_sts.readf(ATA_SR_BSY) {}
 
-        /*self.seccount.write((len >> 8) as u8);
-        self.sector0.write((block >> 24) as u8);
-        self.sector1.write((block >> 32) as u8);
-        self.sector2.write((block >> 40) as u8);*/
+        // self.seccount.write((len >> 8) as u8);
+        // self.sector0.write((block >> 24) as u8);
+        // self.sector1.write((block >> 32) as u8);
+        // self.sector2.write((block >> 40) as u8);
 
         self.seccount.write(len as u8);
         self.sector0.write(block as u8);
@@ -366,8 +381,7 @@ impl IdeDisk {
             }
         }
 
-        let mut sectors = (destination.read(100) as u64) |
-                          ((destination.read(101) as u64) << 16) |
+        let mut sectors = (destination.read(100) as u64) | ((destination.read(101) as u64) << 16) |
                           ((destination.read(102) as u64) << 32) |
                           ((destination.read(103) as u64) << 48);
 
@@ -383,17 +397,24 @@ impl IdeDisk {
         Some(sectors * 512)
     }
 
-    unsafe fn ata_pio_small(&mut self, block: u64, sectors: u16, mut buf: usize, write: bool) -> Result<usize> {
+    unsafe fn ata_pio_small(&mut self,
+                            block: u64,
+                            sectors: u16,
+                            mut buf: usize,
+                            write: bool)
+                            -> Result<usize> {
         if buf >= 0x80000000 {
             buf -= 0x80000000;
         }
 
         if buf > 0 && sectors > 0 {
             self.ata(if write {
-                ATA_CMD_WRITE_PIO //_EXT
-            } else {
-                ATA_CMD_READ_PIO //_EXT
-            }, block, sectors);
+                         ATA_CMD_WRITE_PIO //_EXT
+                     } else {
+                         ATA_CMD_READ_PIO //_EXT
+                     },
+                     block,
+                     sectors);
 
             for sector in 0..sectors as usize {
                 let err = self.ide_poll(true);
@@ -411,7 +432,8 @@ impl IdeDisk {
                     self.ide_poll(false);
                 } else {
                     for word in 0..256 {
-                        ptr::write((buf + sector * 512 + word * 2) as *mut u16, self.data.read());
+                        ptr::write((buf + sector * 512 + word * 2) as *mut u16,
+                                   self.data.read());
                     }
                 }
             }
@@ -424,7 +446,8 @@ impl IdeDisk {
     }
 
     fn ata_pio(&mut self, block: u64, sectors: usize, buf: usize, write: bool) -> Result<usize> {
-        // debugln!("IDE PIO BLOCK: {} SECTORS: {} BUF: {:X} WRITE: {}", block, sectors, buf, write);
+        // debugln!("IDE PIO BLOCK: {} SECTORS: {} BUF: {:X} WRITE: {}", block,
+        // sectors, buf, write);
 
         if buf > 0 && sectors > 0 {
             let mut sector: usize = 0;
@@ -455,7 +478,12 @@ impl IdeDisk {
         }
     }
 
-    unsafe fn ata_dma_small(&mut self, block: u64, sectors: u16, mut buf: usize, write: bool) -> Result<usize> {
+    unsafe fn ata_dma_small(&mut self,
+                            block: u64,
+                            sectors: u16,
+                            mut buf: usize,
+                            write: bool)
+                            -> Result<usize> {
         if buf >= 0x80000000 {
             buf -= 0x80000000;
         }
@@ -508,14 +536,17 @@ impl IdeDisk {
 
 
             self.ata(if write {
-                ATA_CMD_WRITE_DMA //_EXT
-            } else {
-                ATA_CMD_READ_DMA //_EXT
-            }, block, sectors);
+                         ATA_CMD_WRITE_DMA //_EXT
+                     } else {
+                         ATA_CMD_READ_DMA //_EXT
+                     },
+                     block,
+                     sectors);
 
             self.buscmd.writef(CMD_ACT, true);
 
-            while self.bussts.readf(STS_ACT) && !self.bussts.readf(STS_INT) && !self.bussts.readf(STS_ERR) {}
+            while self.bussts.readf(STS_ACT) && !self.bussts.readf(STS_INT) &&
+                  !self.bussts.readf(STS_ERR) {}
 
             self.buscmd.writef(CMD_ACT, false);
 
@@ -537,19 +568,23 @@ impl IdeDisk {
     }
 
     fn ata_dma(&mut self, block: u64, sectors: usize, buf: usize, write: bool) -> Result<usize> {
-        // debugln!("IDE DMA BLOCK: {} SECTORS: {} BUF: {:X} WRITE: {}", block, sectors, buf, write);
+        // debugln!("IDE DMA BLOCK: {} SECTORS: {} BUF: {:X} WRITE: {}", block,
+        // sectors, buf, write);
 
         if sectors > 0 {
             let contexts = ::env().contexts.lock();
-            let current = try!(contexts.current());
-            let physical_address = try!(current.translate(buf, sectors * 512));
+            let current = contexts.current()?;
+            let physical_address = current.translate(buf, sectors * 512)?;
 
             // debugln!("IDE DMA TRANSLATED {:X}", physical_address);
 
             let mut sector: usize = 0;
             while sectors - sector >= 255 {
                 if let Err(err) = unsafe {
-                    self.ata_dma_small(block + sector as u64, 255, physical_address + sector * 512, write)
+                    self.ata_dma_small(block + sector as u64,
+                                       255,
+                                       physical_address + sector * 512,
+                                       write)
                 } {
                     return Err(err);
                 }
@@ -577,15 +612,17 @@ impl IdeDisk {
 
 impl Disk for IdeDisk {
     fn name(&self) -> String {
-        format!("IDE {} {}", if self.irq == 0xE {
-            "Primary"
-        } else {
-            "Secondary"
-        }, if self.master {
-            "Master"
-        } else {
-            "Slave"
-        })
+        format!("IDE {} {}",
+                if self.irq == 0xE {
+                    "Primary"
+                } else {
+                    "Secondary"
+                },
+                if self.master {
+                    "Master"
+                } else {
+                    "Slave"
+                })
     }
 
     fn on_irq(&mut self, irq: u8) {

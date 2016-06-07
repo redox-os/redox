@@ -6,10 +6,13 @@ use arch::context::{Context, context_switch};
 
 /// A supervisor resource.
 ///
-/// Reading from it will simply read the relevant registers to the buffer (see `Packet`).
+/// Reading from it will simply read the relevant registers to the buffer (see
+/// `Packet`).
 ///
-/// Writing will simply left shift EAX by one byte, and then OR it with the byte from the buffer,
-/// effectively writing the buffer to the EAX register (truncating the additional bytes).
+/// Writing will simply left shift EAX by one byte, and then OR it with the
+/// byte from the buffer,
+/// effectively writing the buffer to the EAX register (truncating the
+/// additional bytes).
 pub struct SupervisorResource {
     /// The jailed context.
     ctx: *mut Context,
@@ -18,9 +21,7 @@ pub struct SupervisorResource {
 impl SupervisorResource {
     /// Create a new supervisor resource, supervising some PID.
     pub unsafe fn new(ctx: *mut Context) -> Result<SupervisorResource> {
-        Ok(SupervisorResource {
-            ctx: ctx,
-        })
+        Ok(SupervisorResource { ctx: ctx })
     }
 }
 

@@ -1,6 +1,6 @@
 use alloc::boxed::Box;
 
-use system::error::{Error, Result, EPERM, ESPIPE};
+use system::error::{EPERM, ESPIPE, Error, Result};
 use system::syscall::Stat;
 
 /// Resource seek

@@ -30,7 +30,7 @@ impl FromBytes for Icmp {
             unsafe {
                 return Some(Icmp {
                     header: *(bytes.as_ptr() as *const IcmpHeader),
-                    data: bytes.get_slice(mem::size_of::<IcmpHeader>() ..).to_vec(),
+                    data: bytes.get_slice(mem::size_of::<IcmpHeader>()..).to_vec(),
                 });
             }
         }
@@ -64,7 +64,7 @@ impl IcmpScheme {
             loop {
                 let mut bytes = [0; 8192];
                 if let Ok(count) = ip.read(&mut bytes) {
-                    if let Some(message) = Icmp::from_bytes(bytes[.. count].to_vec()) {
+                    if let Some(message) = Icmp::from_bytes(bytes[..count].to_vec()) {
                         if message.header._type == 0x08 {
                             let mut response = Icmp {
                                 header: message.header,

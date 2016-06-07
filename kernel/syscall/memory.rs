@@ -1,25 +1,29 @@
+//! System calls for basic memory management.
+
 use arch::context::ContextMemory;
 use arch::memory;
 
 use system::error::Result;
 
-//TODO: Refactor file to propogate results
+// TODO: Refactor file to propogate results
 
-pub fn do_sys_brk(addr: usize) -> Result<usize> {
+pub fn brk(addr: usize) -> Result<usize> {
     let mut ret = 0;
 
     let contexts = ::env().contexts.lock();
     if let Ok(current) = contexts.current() {
         ret = unsafe { (*current.heap.get()).next_mem() };
 
-        // TODO: Make this smarter, currently it attempt to resize the entire data segment
+        // TODO: Make this smarter, currently it attempt to resize the entire data
+        // segment
         if let Some(mut mem) = unsafe { (*current.heap.get()).memory.last_mut() } {
             if mem.writeable && mem.allocated {
                 if addr >= mem.virtual_address {
                     unsafe { mem.unmap() };
 
                     let size = addr - mem.virtual_address;
-                    let physical_address = unsafe { memory::realloc_aligned(mem.physical_address, size, 4096) };
+                    let physical_address =
+                        unsafe { memory::realloc_aligned(mem.physical_address, size, 4096) };
                     if physical_address > 0 {
                         mem.physical_address = physical_address;
                         mem.virtual_size = size;
@@ -43,7 +47,7 @@ pub fn do_sys_brk(addr: usize) -> Result<usize> {
                     virtual_address: ret,
                     virtual_size: size,
                     writeable: true,
-                    allocated: true
+                    allocated: true,
                 };
                 ret = mem.virtual_address + mem.virtual_size;
 
