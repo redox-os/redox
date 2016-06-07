@@ -216,7 +216,7 @@ fn idle_loop() {
         if halt {
             unsafe { asm!("sti ; hlt" : : : : "intel", "volatile"); }
         } else {
-            unsafe { asm!("sti ; nop" : : : : "intel", "volatile"); }
+            unsafe { asm!("sti ; nop ; cli" : : : : "intel", "volatile"); }
             unsafe { context_switch(); }
         }
     }
