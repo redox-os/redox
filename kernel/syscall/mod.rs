@@ -17,12 +17,51 @@ pub mod memory;
 pub mod process;
 pub mod time;
 
+pub fn syscall_name(number: usize) -> &'static str {
+    match number {
+        // Redox
+        SYS_DEBUG => "debug",
+        SYS_SUPERVISE => "supervise",
+
+        // Unix
+        SYS_BRK => "brk",
+        SYS_CHDIR => "chdir",
+        SYS_CLONE => "clone",
+        SYS_CLOSE => "close",
+        SYS_CLOCK_GETTIME => "clock_gettime",
+        SYS_DUP => "dup",
+        SYS_EXECVE => "execve",
+        SYS_EXIT => "exit",
+        SYS_FPATH => "fpath",
+        SYS_FSTAT => "fstat",
+        SYS_FSYNC => "fsync",
+        SYS_FTRUNCATE => "ftruncate",
+        SYS_GETPID => "getpid",
+        SYS_IOPL => "iopl",
+        // TODO: link
+        SYS_LSEEK => "lseek",
+        SYS_MKDIR => "mkdir",
+        SYS_NANOSLEEP => "nanosleep",
+        SYS_OPEN => "open",
+        SYS_PIPE2 => "pipe2",
+        SYS_READ => "read",
+        SYS_RMDIR => "rmdir",
+        SYS_STAT => "stat",
+        SYS_UNLINK => "unlink",
+        SYS_WAITPID => "waitpid",
+        SYS_WRITE => "write",
+        SYS_YIELD => "yield",
+
+        _ => "unknown",
+    }
+}
+
 pub fn syscall_handle(regs: &mut Regs) {
     {
         let mut contexts = ::env().contexts.lock();
         if let Ok(cur) = contexts.current_mut() {
             cur.current_syscall = Some((regs.ip, regs.ax, regs.bx, regs.cx, regs.dx));
-            //serial_log(&format!("PID {}: {} @ {:X}: {} {:X} {:X} {:X}\n", cur.pid, cur.name, regs.ip, regs.ax, regs.bx, regs.cx, regs.dx).as_bytes());
+            //serial_log(format!("PID {}: {} @ {:X}: {} {} {:X} {:X} {:X}\n", cur.pid, cur.name, regs.ip, regs.ax, syscall_name(regs.ax), regs.bx, regs.cx, regs.dx).as_bytes());
             if cur.supervised {
                 // Block the process.
                 cur.blocked_syscall = true;
@@ -41,7 +80,7 @@ pub fn syscall_handle(regs: &mut Regs) {
         }
     }
 
-    regs.ax = Error::mux(match regs.ax {
+    let result = match regs.ax {
         // Redox
         SYS_DEBUG => do_sys_debug(regs.bx as *const u8, regs.cx),
         SYS_SUPERVISE => do_sys_supervise(regs.bx),
@@ -76,13 +115,15 @@ pub fn syscall_handle(regs: &mut Regs) {
         SYS_YIELD => do_sys_yield(),
 
         _ => Err(Error::new(ENOSYS)),
-    });
+    };
 
     {
         let mut contexts = ::env().contexts.lock();
         if let Ok(cur) = contexts.current_mut() {
-            //serial_log(&format!("PID {}: {} @ {:X}: {:X} {:?}\n", cur.pid, cur.name, regs.ip, regs.ax, Error::demux(regs.ax)).as_bytes());
+            //serial_log(format!("PID {}: {} @ {:X}: {} {} {:X} {:X} {:X} = {:?}\n", cur.pid, cur.name, regs.ip, regs.ax, syscall_name(regs.ax), regs.bx, regs.cx, regs.dx, result).as_bytes());
             cur.current_syscall = None;
         }
     }
+
+    regs.ax = Error::mux(result);
 }

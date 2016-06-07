@@ -76,7 +76,7 @@ use schemes::syslog::SyslogScheme;
 use schemes::test::TestScheme;
 
 use syscall::execute::execute;
-use syscall::{do_sys_chdir, do_sys_exit, do_sys_open, syscall_handle};
+use syscall::{do_sys_chdir, do_sys_exit, do_sys_open, syscall_name, syscall_handle};
 
 pub use externs::*;
 
@@ -461,7 +461,7 @@ pub extern "cdecl" fn kernel(interrupt: usize, mut regs: &mut Regs) {
                     debugln!("PID {}: {}", context.pid, context.name);
 
                     if let Some(current_syscall) = context.current_syscall {
-                        debugln!("  SYS {:X}: {} {:X} {:X} {:X}", current_syscall.0, current_syscall.1, current_syscall.2, current_syscall.3, current_syscall.4);
+                        debugln!("  SYS {:X}: {} {} {:X} {:X} {:X}", current_syscall.0, current_syscall.1, syscall_name(current_syscall.1), current_syscall.2, current_syscall.3, current_syscall.4);
                     }
                 }
             }
