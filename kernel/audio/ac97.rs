@@ -12,10 +12,11 @@ use drivers::io::{Io, Mmio, Pio, PhysAddr};
 
 use fs::{KScheme, Resource, Url};
 
-use syscall::{do_sys_nanosleep, Result, TimeSpec};
+use syscall;
+use syscall::TimeSpec;
 
 #[repr(packed)]
-struct BD {
+struct Bd {
     ptr: PhysAddr<Mmio<u32>>,
     samples: Mmio<u32>,
 }
@@ -23,11 +24,11 @@ struct BD {
 struct Ac97Resource {
     audio: usize,
     bus_master: usize,
-    bdl: *mut BD
+    bdl: *mut Bd,
 }
 
 impl Resource for Ac97Resource {
-    fn dup(&self) -> Result<Box<Resource>> {
+    fn dup(&self) -> syscall::Result<Box<Resource>> {
         Ok(box Ac97Resource {
             audio: self.audio,
             bus_master: self.bus_master,
@@ -35,7 +36,7 @@ impl Resource for Ac97Resource {
         })
     }
 
-    fn path(&self, buf: &mut [u8]) -> Result <usize> {
+    fn path(&self, buf: &mut [u8]) -> syscall::Result <usize> {
         let path = b"audio:";
 
         let mut i = 0;
@@ -47,7 +48,7 @@ impl Resource for Ac97Resource {
         Ok(i)
     }
 
-    fn write(&mut self, buf: &[u8]) -> Result<usize> {
+    fn write(&mut self, buf: &[u8]) -> syscall::Result<usize> {
         unsafe {
             let audio = self.audio as u16;
 
@@ -107,7 +108,7 @@ impl Resource for Ac97Resource {
                         tv_sec: 0,
                         tv_nsec: 0,
                     };
-                    try!(do_sys_nanosleep(&req, &mut rem));
+                    try!(syscall::time::nanosleep(&req, &mut rem));
                 }
 
                 debug!("{} / {}: {} / {}\n",
@@ -158,7 +159,7 @@ impl Resource for Ac97Resource {
                     tv_sec: 0,
                     tv_nsec: 0,
                 };
-                try!(do_sys_nanosleep(&req, &mut rem));
+                try!(syscall::time::nanosleep(&req, &mut rem));
             }
 
             debug!("Finished {} / {}\n", po_civ.read(), lvi);
@@ -172,7 +173,7 @@ pub struct Ac97 {
     audio: usize,
     bus_master: usize,
     irq: u8,
-    bdl: *mut BD,
+    bdl: *mut Bd,
 }
 
 impl KScheme for Ac97 {
@@ -180,7 +181,7 @@ impl KScheme for Ac97 {
         "audio"
     }
 
-    fn open(&mut self, _: Url, _: usize) -> Result<Box<Resource>> {
+    fn open(&mut self, _: Url, _: usize) -> syscall::Result<Box<Resource>> {
         Ok(box Ac97Resource {
             audio: self.audio,
             bus_master: self.bus_master,
@@ -203,7 +204,7 @@ impl Ac97 {
             audio: pci.read(0x10) as usize & 0xFFFFFFF0,
             bus_master: pci.read(0x14) as usize & 0xFFFFFFF0,
             irq: pci.read(0x3C) as u8 & 0xF,
-            bdl: memory::alloc(32 * mem::size_of::<BD>()) as *mut BD,
+            bdl: memory::alloc(32 * mem::size_of::<Bd>()) as *mut Bd,
         };
 
         debug!(" + AC97 on: {:X}, {:X}, IRQ: {:X}\n", module.audio, module.bus_master, module.irq);

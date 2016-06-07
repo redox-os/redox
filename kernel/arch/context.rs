@@ -19,7 +19,7 @@ use core::ops::DerefMut;
 
 use fs::Resource;
 
-use syscall::{do_sys_exit, CLONE_FILES, CLONE_FS, CLONE_VM, CLONE_VFORK, CLONE_SUPERVISE};
+use syscall;
 
 use system::error::{Error, Result, EBADF, EFAULT, ENOMEM, ESRCH, ENOENT, EINVAL};
 
@@ -236,7 +236,7 @@ pub unsafe fn context_clone(regs: &Regs) -> Result<usize> {
                 exited: false,
                 switch: 0,
                 time: 0,
-                vfork: if flags & CLONE_VFORK == CLONE_VFORK {
+                vfork: if flags & syscall::CLONE_VFORK == syscall::CLONE_VFORK {
                     parent.blocked = true;
                     Some(parent.deref_mut())
                 } else {
@@ -244,7 +244,7 @@ pub unsafe fn context_clone(regs: &Regs) -> Result<usize> {
                 },
                 wake: None,
 
-                supervised: flags & CLONE_SUPERVISE == CLONE_SUPERVISE,
+                supervised: flags & syscall::CLONE_SUPERVISE == syscall::CLONE_SUPERVISE,
                 blocked_syscall: false,
                 current_syscall: None,
 
@@ -272,38 +272,38 @@ pub unsafe fn context_clone(regs: &Regs) -> Result<usize> {
                 },
                 loadable: parent.loadable,
 
-                image: if flags & CLONE_VM == CLONE_VM {
+                image: if flags & syscall::CLONE_VM == syscall::CLONE_VM {
                     //debugln!("{}: {}: clone memory for {}", parent.pid, parent.name, clone_pid);
 
                     parent.image.clone()
                 } else {
                     Arc::new(UnsafeCell::new((*parent.image.get()).dup()))
                 },
-                heap: if flags & CLONE_VM == CLONE_VM {
+                heap: if flags & syscall::CLONE_VM == syscall::CLONE_VM {
                     //debugln!("{}: {}: clone memory for {}", parent.pid, parent.name, clone_pid);
 
                     parent.heap.clone()
                 } else {
                     Arc::new(UnsafeCell::new((*parent.heap.get()).dup()))
                 },
-                mmap: if flags & CLONE_VM == CLONE_VM {
+                mmap: if flags & syscall::CLONE_VM == syscall::CLONE_VM {
                     //debugln!("{}: {}: clone memory for {}", parent.pid, parent.name, clone_pid);
 
                     parent.mmap.clone()
                 } else {
                     Arc::new(UnsafeCell::new((*parent.mmap.get()).dup()))
                 },
-                env_vars: if flags & CLONE_VM == CLONE_VM {  // is CLONE_VM the good flag ?
+                env_vars: if flags & syscall::CLONE_VM == syscall::CLONE_VM {  // is syscall::CLONE_VM the good flag ?
                     parent.env_vars.clone()
                 } else {
                     Arc::new(UnsafeCell::new((*parent.env_vars.get()).clone()))
                 },
-                cwd: if flags & CLONE_FS == CLONE_FS {
+                cwd: if flags & syscall::CLONE_FS == syscall::CLONE_FS {
                     parent.cwd.clone()
                 } else {
                     Arc::new(UnsafeCell::new((*parent.cwd.get()).clone()))
                 },
-                files: if flags & CLONE_FILES == CLONE_FILES {
+                files: if flags & syscall::CLONE_FILES == syscall::CLONE_FILES {
                     //debugln!("{}: {}: clone resources for {}", parent.pid, parent.name, clone_pid);
 
                     parent.files.clone()
@@ -331,7 +331,7 @@ pub unsafe fn context_clone(regs: &Regs) -> Result<usize> {
 
         contexts.push(context);
 
-        if flags & CLONE_VFORK == CLONE_VFORK {
+        if flags & syscall::CLONE_VFORK == syscall::CLONE_VFORK {
             context_switch();
         }
 
@@ -382,7 +382,7 @@ unsafe extern "cdecl" fn context_box(box_fn_ptr: usize) {
     let box_fn = ptr::read(box_fn_ptr as *mut Box<FnBox()>);
     memory::unalloc(box_fn_ptr);
     box_fn();
-    do_sys_exit(0);
+    syscall::process::exit(0);
 }
 
 /// Reads a Boxed function and executes it
@@ -394,7 +394,7 @@ unsafe extern "cdecl" fn context_box(/*Throw away extra params from ABI*/ _rdi: 
     let box_fn = ptr::read(box_fn_ptr as *mut Box<FnBox()>);
     memory::unalloc(box_fn_ptr);
     box_fn();
-    do_sys_exit(0);
+    syscall::process::exit(0);
 }
 
 pub struct ContextMemory {
