@@ -26,8 +26,6 @@ impl SupervisorResource {
 
 impl Resource for SupervisorResource {
     fn read(&mut self, buf: &mut [u8]) -> Result<usize> {
-        let mut _contexts = ::env().contexts.lock();
-
         let ctx = unsafe { &mut *self.ctx };
         while !ctx.blocked_syscall {
             unsafe { context_switch() };
@@ -45,8 +43,6 @@ impl Resource for SupervisorResource {
     }
 
     fn write(&mut self, buf: &[u8]) -> Result<usize> {
-        let mut _contexts = ::env().contexts.lock();
-
         let ctx = unsafe { &mut *self.ctx };
 
         for &i in buf.iter().take(mem::size_of::<usize>()) {

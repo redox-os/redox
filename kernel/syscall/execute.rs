@@ -107,7 +107,7 @@ pub fn execute_thread(context_ptr: *mut Context, entry: usize, mut args: Vec<Str
 
 /// Execute an executable
 pub fn execute(mut args: Vec<String>) -> Result<usize> {
-    let contexts = ::env().contexts.lock();
+    let contexts = unsafe { & *::env().contexts.get() };
     let current = try!(contexts.current());
 
     let mut vec: Vec<u8> = Vec::new();
@@ -206,7 +206,7 @@ pub fn execute(mut args: Vec<String>) -> Result<usize> {
                 }
 
                 if entry > 0 && ! memory.is_empty() {
-                    let mut contexts = ::env().contexts.lock();
+                    let contexts = unsafe { &mut *::env().contexts.get() };
                     let mut context = try!(contexts.current_mut());
 
                     //debugln!("{}: {}: execute {}", context.pid, context.name, url.string);

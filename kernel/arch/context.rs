@@ -143,7 +143,7 @@ pub unsafe fn context_switch() {
     let mut next_ptr: *mut Context = 0 as *mut Context;
 
     {
-        let mut contexts = ::env().contexts.lock();
+        let contexts = &mut *::env().contexts.get();
         if contexts.enabled {
             let current_i = contexts.i;
             'searching: loop {
@@ -199,7 +199,7 @@ pub unsafe fn context_switch() {
 }
 
 pub unsafe fn context_clone(regs: &Regs) -> Result<usize> {
-    let mut contexts = ::env().contexts.lock();
+    let contexts = &mut *::env().contexts.get();
     let flags = regs.bx;
 
     let kernel_stack = memory::alloc(CONTEXT_STACK_SIZE + 512);
@@ -662,7 +662,7 @@ pub struct Context {
 
 impl Context {
     pub fn next_pid() -> usize {
-        let mut contexts = ::env().contexts.lock();
+        let contexts = unsafe { &mut *::env().contexts.get() };
 
         let mut next_pid = contexts.next_pid;
 
@@ -792,7 +792,7 @@ impl Context {
 
             ret = context.pid;
 
-            ::env().contexts.lock().push(context);
+            (&mut *::env().contexts.get()).push(context);
         }
 
         ret

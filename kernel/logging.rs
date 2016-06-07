@@ -1,6 +1,8 @@
 use collections::borrow::ToOwned;
 use collections::String;
 
+use common::time::Duration;
+
 #[derive(Copy, Clone)]
 pub enum LogLevel {
     Critical,
@@ -60,8 +62,8 @@ pub fn syslog(level: LogLevel, message: &str) {
 
 //TODO: Limit log message size
 pub fn syslog_inner(level: LogLevel, message: String) {
-    let time = ::env().clock_monotonic.lock().clone();
-    let mut logs = ::env().logs.lock();
+    let time = Duration::monotonic();
+    let logs = unsafe { &mut *::env().logs.get() };
     while logs.len() >= 4096 {
         logs.pop_front();
     }

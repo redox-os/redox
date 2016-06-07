@@ -17,21 +17,17 @@ impl WaitCondition {
         }
     }
 
-    pub unsafe fn contexts<'a>(&'a self) -> &'a mut Vec<*mut Context> {
-        &mut *self.contexts.get()
-    }
-
     pub fn notify(&self) {
         let mut contexts = Vec::new();
-        mem::swap(unsafe { self.contexts() }, &mut contexts);
+        mem::swap(unsafe { &mut *self.contexts.get() }, &mut contexts);
         for &context in contexts.iter() {
             unsafe { (*context).blocked = false; }
         }
     }
 
     pub fn wait(&self) {
-        if let Ok(mut context) = ::env().contexts.lock().current_mut() {
-            let mut contexts = unsafe { self.contexts() };
+        if let Ok(mut context) = unsafe { &mut *::env().contexts.get() }.current_mut() {
+            let mut contexts = unsafe { &mut *self.contexts.get() };
             contexts.push(context.deref_mut() as *mut Context);
             (*context).blocked = true;
         }

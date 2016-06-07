@@ -540,7 +540,7 @@ impl IdeDisk {
         // debugln!("IDE DMA BLOCK: {} SECTORS: {} BUF: {:X} WRITE: {}", block, sectors, buf, write);
 
         if sectors > 0 {
-            let contexts = ::env().contexts.lock();
+            let contexts = unsafe { & *::env().contexts.get() };
             let current = try!(contexts.current());
             let physical_address = try!(current.translate(buf, sectors * 512));
 

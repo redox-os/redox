@@ -34,7 +34,7 @@ pub fn execve(path: *const u8, args: *const *const u8) -> Result<usize> {
 /// Exit context
 pub fn exit(status: usize) -> ! {
     {
-        let mut contexts = ::env().contexts.lock();
+        let contexts = unsafe { &mut *::env().contexts.get() };
 
         let mut statuses = BTreeMap::new();
         let (pid, ppid) = {
@@ -71,7 +71,7 @@ pub fn exit(status: usize) -> ! {
 }
 
 pub fn getpid() -> Result<usize> {
-    let contexts = ::env().contexts.lock();
+    let contexts = unsafe { & *::env().contexts.get() };
     let current = try!(contexts.current());
     Ok(current.pid)
 }
@@ -80,7 +80,7 @@ pub fn getpid() -> Result<usize> {
 pub fn iopl(regs: &mut Regs) -> Result<usize> {
     let level = regs.bx;
     if level <= 3 {
-        let mut contexts = ::env().contexts.lock();
+        let contexts = unsafe { &mut *::env().contexts.get() };
         let mut current = try!(contexts.current_mut());
         current.iopl = level;
 
@@ -97,7 +97,7 @@ pub fn iopl(regs: &mut Regs) -> Result<usize> {
 pub fn iopl(regs: &mut Regs) -> Result<usize> {
     let level = regs.bx;
     if level <= 3 {
-        let mut contexts = ::env().contexts.lock();
+        let contexts = unsafe { &mut *::env().contexts.get() };
         let mut current = try!(contexts.current_mut());
         current.iopl = level;
 
@@ -112,7 +112,7 @@ pub fn iopl(regs: &mut Regs) -> Result<usize> {
 
 //TODO: Finish implementation, add more functions to WaitMap so that matching any or using WNOHANG works
 pub fn waitpid(pid: isize, status_ptr: *mut usize, _options: usize) -> Result<usize> {
-    let mut contexts = ::env().contexts.lock();
+    let contexts = unsafe { &mut *::env().contexts.get() };
     let current = try!(contexts.current_mut());
 
     if pid > 0 {
@@ -146,7 +146,7 @@ pub fn sched_yield() -> Result<usize> {
 /// still stopped (because it is marked as `blocked`), until the new value of the EAX register is
 /// written to the file handle.
 pub fn supervise(pid: usize) -> Result<usize> {
-    let mut contexts = ::env().contexts.lock();
+    let contexts = unsafe { &mut *::env().contexts.get() };
     let cur_pid = try!(contexts.current_mut()).pid;
 
     let procc;

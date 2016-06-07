@@ -5,7 +5,7 @@ use syscall;
 #[lang="panic_fmt"]
 pub extern "C" fn panic_fmt(args: fmt::Arguments, file: &'static str, line: u32) -> ! {
     {
-        let contexts = ::env().contexts.lock();
+        let contexts = unsafe { & *::env().contexts.get() };
         if let Ok(context) = contexts.current() {
             debugln!("PID {}: {}", context.pid, context.name);
 

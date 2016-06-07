@@ -61,7 +61,7 @@ impl Resource for DisplayResource {
     }
 
     fn write(&mut self, buf: &[u8]) -> Result<usize> {
-        let console = ::env().console.lock();
+        let console = unsafe { & *::env().console.get() };
         if let Some(ref display) = console.display {
             let size = cmp::max(0, cmp::min(display.size as isize - self.seek as isize, (buf.len()/4) as isize)) as usize;
 
@@ -78,7 +78,7 @@ impl Resource for DisplayResource {
     }
 
     fn seek(&mut self, pos: ResourceSeek) -> Result<usize> {
-        let console = ::env().console.lock();
+        let console = unsafe { & *::env().console.get() };
         if let Some(ref display) = console.display {
             self.seek = match pos {
                 ResourceSeek::Start(offset) => cmp::min(display.size, cmp::max(0, offset)),
@@ -106,7 +106,7 @@ impl KScheme for DisplayScheme {
 
     fn open(&mut self, url: Url, _: usize) -> Result<Box<Resource>> {
         if url.reference() == "manager" {
-            let mut console = ::env().console.lock();
+            let console = unsafe { &mut *::env().console.get() };
             if console.draw {
                 console.draw = false;
 
@@ -122,7 +122,7 @@ impl KScheme for DisplayScheme {
                 Err(Error::new(EACCES))
             }
         } else {
-            let console = ::env().console.lock();
+            let console = unsafe { & *::env().console.get() };
             if let Some(ref display) = console.display {
                 Ok(box DisplayResource {
                     path: format!("display:{}/{}", display.width, display.height),
