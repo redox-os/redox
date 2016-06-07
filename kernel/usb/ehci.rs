@@ -6,8 +6,6 @@ use core::intrinsics::volatile_load;
 use core::mem::size_of;
 //use core::slice;
 
-//use common::debug;
-
 use drivers::io::{Io, Mmio};
 use drivers::pci::config::PciConfig;
 
@@ -45,28 +43,12 @@ impl KScheme for Ehci {
     #[allow(non_snake_case)]
     fn on_irq(&mut self, irq: u8) {
         if irq == self.irq {
-            // debug::d("EHCI handle");
-
             unsafe {
                 let cap_length = &mut *(self.base as *mut Mmio<u8>);
-
                 let op_base = self.base + cap_length.read() as usize;
-
                 let usb_sts = &mut *((op_base + 4) as *mut Mmio<u32>);
-                // debug::d(" usb_sts ");
-                // debug::dh(*usb_sts as usize);
-
                 usb_sts.writef(0b111111, true);
-
-                // debug::d(" usb_sts ");
-                // debug::dh(*usb_sts as usize);
-
-                // let FRINDEX = (opbase + 0xC) as *mut Mmio<u32>;
-                // debug::d(" FRINDEX ");
-                // debug::dh(*FRINDEX as usize);
             }
-
-            // debug::dl();
         }
     }
 }
@@ -96,34 +78,34 @@ impl Ehci {
         let hcc_params = &mut *((self.base + 8) as *mut Mmio<u32>);
 
         let ports = (hcs_params.read() & 0b1111) as usize;
-        debug::d(" PORTS ");
+        debug!(" PORTS ");
         debug::dd(ports);
 
         let eecp = (hcc_params.read() >> 8) as u8;
-        debug::d(" EECP ");
+        debug!(" EECP ");
         debug::dh(eecp as usize);
 
         debug::dl();
 
         if eecp > 0 {
             if self.pci.read(eecp) & (1 << 24 | 1 << 16) == 1 << 16 {
-                debug::d("Taking Ownership");
-                debug::d(" ");
+                debug!("Taking Ownership");
+                debug!(" ");
                 debug::dh(self.pci.read(eecp) as usize);
 
                 self.pci.flag(eecp, 1 << 24, true);
 
-                debug::d(" ");
+                debug!(" ");
                 debug::dh(self.pci.read(eecp) as usize);
                 debug::dl();
 
-                debug::d("Waiting");
-                debug::d(" ");
+                debug!("Waiting");
+                debug!(" ");
                 debug::dh(self.pci.read(eecp) as usize);
 
                 while self.pci.read(eecp) & (1 << 24 | 1 << 16) != 1 << 24 {}
 
-                debug::d(" ");
+                debug!(" ");
                 debug::dh(self.pci.read(eecp) as usize);
                 debug::dl();
             }
