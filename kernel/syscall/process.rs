@@ -40,7 +40,7 @@ pub fn exit(status: usize) -> ! {
         let (pid, ppid) = {
             if let Ok(mut current) = contexts.current_mut() {
                 current.exited = true;
-                mem::swap(&mut statuses, &mut current.statuses.inner.lock().deref_mut());
+                mem::swap(&mut statuses, &mut unsafe { current.statuses.inner() }.deref_mut());
                 (current.pid, current.ppid)
             } else {
                 (0, 0)

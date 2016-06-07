@@ -1,32 +1,35 @@
 use collections::BTreeMap;
-
-use super::Intex;
+use core::cell::UnsafeCell;
 use super::WaitCondition;
 
 pub struct WaitMap<K, V> {
-    pub inner: Intex<BTreeMap<K, V>>,
-    pub condition: WaitCondition
+    inner: UnsafeCell<BTreeMap<K, V>>,
+    condition: WaitCondition
 }
 
 impl<K, V> WaitMap<K, V> where K: Ord {
     pub fn new() -> WaitMap<K, V> {
         WaitMap {
-            inner: Intex::new(BTreeMap::new()),
+            inner: UnsafeCell::new(BTreeMap::new()),
             condition: WaitCondition::new()
         }
     }
 
+    pub unsafe fn inner<'a>(&'a self) -> &'a mut BTreeMap<K, V> {
+        &mut *self.inner.get()
+    }
+
     pub fn send(&self, key: K, value: V) {
-        self.inner.lock().insert(key, value);
-        unsafe { self.condition.notify(); }
+        unsafe { self.inner() }.insert(key, value);
+        self.condition.notify();
     }
 
     pub fn receive(&self, key: &K) -> V {
         loop {
-            if let Some(value) = self.inner.lock().remove(key) {
+            if let Some(value) = unsafe { self.inner() }.remove(key) {
                 return value;
             }
-            unsafe { self.condition.wait(); }
+            self.condition.wait();
         }
     }
 }
