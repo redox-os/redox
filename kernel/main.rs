@@ -2,10 +2,11 @@
 #![crate_type="staticlib"]
 #![feature(alloc, allocator, arc_counts, asm, box_syntax, collections, const_fn, core_intrinsics,
            fnbox, fundamental, lang_items, naked_functions, unboxed_closures, unsafe_no_drop_flag,
-           unwind_attributes, zero_one, collections_range, question_mark)]
+           unwind_attributes, zero_one, collections_range, question_mark, type_ascription)]
 #![no_std]
 
-// Its me, ur friend. If you ever comment this line, you will end up in hell. Seriously, don't. You
+// Its me, ur friend. If you ever comment this line, you will end up in hell.
+// Seriously, don't. You
 // lazy bastard.
 #![deny(warnings)]
 // #![deny(missing_docs)]
@@ -420,19 +421,19 @@ unsafe fn init(tss_data: usize) {
             env.schemes.lock().push(box TcpScheme);
             env.schemes.lock().push(box UdpScheme);
 
-            Context::spawn("karp".to_string(),
+            Context::spawn("karp".into(),
                            box move || {
                                ArpScheme::reply_loop();
                            });
 
-            Context::spawn("kicmp".to_string(),
+            Context::spawn("kicmp".into(),
                            box move || {
                                IcmpScheme::reply_loop();
                            });
 
             env.contexts.lock().enabled = true;
 
-            Context::spawn("kinit".to_string(),
+            Context::spawn("kinit".into(),
                            box move || {
                 {
                     let wd_c = "initfs:/\0";

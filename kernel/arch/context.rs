@@ -7,6 +7,7 @@ use arch::memory;
 use arch::paging::Page;
 use arch::regs::Regs;
 
+use collections::borrow::Cow;
 use collections::string::{String, ToString};
 use collections::vec::Vec;
 
@@ -296,7 +297,6 @@ pub unsafe fn context_clone(regs: &Regs) -> Result<usize> {
                     Arc::new(UnsafeCell::new((*parent.mmap.get()).dup()))
                 },
                 env_vars: if flags & syscall::CLONE_VM == syscall::CLONE_VM {
-                    // is syscall::CLONE_VM the good flag ?
                     parent.env_vars.clone()
                 } else {
                     Arc::new(UnsafeCell::new((*parent.env_vars.get()).clone()))
@@ -598,9 +598,16 @@ impl ContextZone {
 }
 
 #[derive(Clone)]
-pub struct EnvironmentVariable {
-    name: String,
-    value: String,
+pub struct EnvVar(pub String, pub String);
+
+impl EnvVar {
+    pub fn name(&self) -> &str {
+        &self.0
+    }
+
+    pub fn value(&self) -> &str {
+        &self.1
+    }
 }
 
 pub struct Context {
@@ -610,7 +617,7 @@ pub struct Context {
     /// The PID of the parent
     pub ppid: usize,
     /// The name of the context
-    pub name: String,
+    pub name: Cow<'static, str>,
     /// The I/O privilege level
     pub iopl: usize,
     /// Indicates that the context is blocked, and should not be switched to
@@ -665,7 +672,7 @@ pub struct Context {
     pub mmap: Arc<UnsafeCell<ContextZone>>,
     /// Environment variables, cloned for threads, copied or created for
     /// processes. Modified by set_env
-    pub env_vars: Arc<UnsafeCell<Vec<EnvironmentVariable>>>,
+    pub env_vars: Arc<UnsafeCell<Vec<EnvVar>>>,
 
     /// Program working directory, cloned for threads, copied or created for
     /// processes. Modified by chdir
@@ -714,7 +721,7 @@ impl Context {
         box Context {
             pid: Context::next_pid(),
             ppid: 0,
-            name: "kidle".to_string(),
+            name: "kidle".into(),
             iopl: 3,
             blocked: false,
             exited: false,
@@ -746,7 +753,7 @@ impl Context {
         }
     }
 
-    pub unsafe fn new(name: String, call: usize, args: &Vec<usize>) -> Box<Self> {
+    pub unsafe fn new(name: Cow<'static, str>, call: usize, args: &Vec<usize>) -> Box<Self> {
         let kernel_stack = memory::alloc(CONTEXT_STACK_SIZE + 512);
 
         let mut regs = Regs::default();
@@ -797,7 +804,7 @@ impl Context {
         ret
     }
 
-    pub fn spawn(name: String, box_fn: Box<FnBox()>) -> usize {
+    pub fn spawn(name: Cow<'static, str>, box_fn: Box<FnBox()>) -> usize {
         let ret;
 
         unsafe {
@@ -819,6 +826,7 @@ impl Context {
     }
 
     pub fn canonicalize(&self, path: &str) -> String {
+        // TODO my eyes burn, rewrite this.
         if path.find(':').is_none() {
             let cwd = unsafe { &*self.cwd.get() };
             if path == "." {
@@ -896,25 +904,25 @@ impl Context {
     }
 
     /// Access a raw pointer safely
-    pub fn safe_ref<'a, T>(&'a self, ptr: *const T) -> Result<&'a T> {
+    pub fn get_ref<'a, T>(&'a self, ptr: *const T) -> Result<&'a T> {
         self.permission(ptr as usize, mem::size_of::<T>(), false)?;
         Ok(unsafe { &*ptr })
     }
 
     /// Access a mutable raw pointer safely
-    pub fn safe_ref_mut<'a, T>(&'a self, ptr: *mut T) -> Result<&'a mut T> {
+    pub fn get_ref_mut<'a, T>(&'a self, ptr: *mut T) -> Result<&'a mut T> {
         self.permission(ptr as usize, mem::size_of::<T>(), true)?;
         Ok(unsafe { &mut *ptr })
     }
 
     /// Access a raw pointer safely
-    pub fn safe_slice<'a, T>(&'a self, ptr: *const T, len: usize) -> Result<&'a [T]> {
+    pub fn get_slice<'a, T>(&'a self, ptr: *const T, len: usize) -> Result<&'a [T]> {
         self.permission(ptr as usize, mem::size_of::<T>() * len, false)?;
         Ok(unsafe { slice::from_raw_parts(ptr, len) })
     }
 
     /// Access a mutable raw pointer safely
-    pub fn safe_slice_mut<'a, T>(&'a self, ptr: *mut T, len: usize) -> Result<&'a mut [T]> {
+    pub fn get_slice_mut<'a, T>(&'a self, ptr: *mut T, len: usize) -> Result<&'a mut [T]> {
         self.permission(ptr as usize, mem::size_of::<T>() * len, true)?;
         Ok(unsafe { slice::from_raw_parts_mut(ptr, len) })
     }
@@ -969,10 +977,10 @@ impl Context {
 
     /// Gets an environment variable. Returns `Err` if the variable is not
     /// defined
-    pub fn get_env_var(&self, var_name: &str) -> Result<String> {
+    pub fn get_env_var(&self, var_name: &str) -> Result<&str> {
         for variable in unsafe { (*self.env_vars.get()).iter() } {
-            if &variable.name == var_name {
-                return Ok(variable.value.clone());
+            if variable.name() == var_name {
+                return Ok(variable.value());
             }
         }
         Err(Error::new(ENOENT))
@@ -987,34 +995,25 @@ impl Context {
         }
 
         for mut variable in unsafe { (*self.env_vars.get()).iter_mut() } {
-            if &variable.name == name {
-                variable.value = String::from(value);
+            if variable.name() == name {
+                variable.0 = String::from(value);
                 return Ok(());
             }
         }
-        unsafe {
-            (*self.env_vars.get()).push(EnvironmentVariable {
-                name: String::from(name),
-                value: String::from(value),
-            })
-        };
+        unsafe { (*self.env_vars.get()).push(EnvVar(String::from(name), String::from(value))) };
         Ok(())
     }
 
-    /// Returns a list of the environment variables
-    pub fn list_env_vars(&self) -> Result<Vec<(String, String)>> {
-        let mut vars_buf = Vec::new();
-        for ref variable in unsafe { (*self.env_vars.get()).iter() } {
-            vars_buf.push((variable.name.clone(), variable.value.clone()));
-        }
-        Ok(vars_buf)
+    /// Returns a slice of the environment variables
+    pub fn list_env_vars(&self) -> &[EnvVar] {
+        unsafe { &*self.env_vars.get() }
     }
 
     /// Removes the environment variable named `name`. Returns `Err` if the
     /// variable doesn't exist
     pub fn remove_env_var(&self, name: &str) -> Result<()> {
         for (i, variable) in unsafe { (*self.env_vars.get()).iter().enumerate() } {
-            if &variable.name == name {
+            if variable.name() == name {
                 unsafe { (*self.env_vars.get()).remove(i) };
                 return Ok(());
             }

@@ -147,7 +147,7 @@ pub fn fpath(fd: usize, buf: *mut u8, count: usize) -> Result<usize> {
     let contexts = ::env().contexts.lock();
     let current = contexts.current()?;
     let resource = current.get_file(fd)?;
-    let buf_safe = current.safe_slice_mut(buf, count)?;
+    let buf_safe = current.get_slice_mut(buf, count)?;
     resource.path(buf_safe)
 }
 
@@ -155,7 +155,7 @@ pub fn fstat(fd: usize, stat: *mut Stat) -> Result<usize> {
     let contexts = ::env().contexts.lock();
     let current = contexts.current()?;
     let resource = current.get_file(fd)?;
-    let stat_safe = current.safe_ref_mut(stat)?;
+    let stat_safe = current.get_ref_mut(stat)?;
     resource.stat(stat_safe)
 }
 
@@ -453,7 +453,7 @@ pub fn read(fd: usize, buf: *mut u8, count: usize) -> Result<usize> {
     let mut contexts = ::env().contexts.lock();
     let mut current = contexts.current_mut()?;
     let mut resource = current.get_file_mut(fd)?;
-    let buf_safe = current.safe_slice_mut(buf, count)?;
+    let buf_safe = current.get_slice_mut(buf, count)?;
     resource.read(buf_safe)
 }
 
@@ -469,7 +469,7 @@ pub fn stat(path: *const u8, stat: *mut Stat) -> Result<usize> {
     let current = contexts.current()?;
     let path_string = current.canonicalize(c_string_to_str(path));
     let url = Url::from_str(&path_string)?;
-    let stat_safe = current.safe_ref_mut(stat)?;
+    let stat_safe = current.get_ref_mut(stat)?;
 
     *stat_safe = Stat::default();
     ::env().stat(url, stat_safe).and(Ok(0))
@@ -523,6 +523,6 @@ pub fn write(fd: usize, buf: *const u8, count: usize) -> Result<usize> {
     let mut contexts = ::env().contexts.lock();
     let mut current = contexts.current_mut()?;
     let mut resource = current.get_file_mut(fd)?;
-    let buf_safe = current.safe_slice(buf, count)?;
+    let buf_safe = current.get_slice(buf, count)?;
     resource.write(buf_safe)
 }

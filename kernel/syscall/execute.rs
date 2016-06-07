@@ -9,7 +9,8 @@ use arch::elf::Elf;
 use arch::memory;
 use arch::regs::Regs;
 
-use collections::string::{String, ToString};
+use collections::borrow::ToOwned;
+use collections::string::String;
 use collections::vec::Vec;
 
 use common::slice::GetSlice;
@@ -23,7 +24,7 @@ use fs::Url;
 use system::error::{ENOEXEC, ENOMEM, Error, Result};
 
 pub fn execute_thread(context_ptr: *mut Context, entry: usize, mut args: Vec<String>) -> ! {
-    Context::spawn("kexec".to_string(),
+    Context::spawn("kexec".into(),
                    box move || {
         let context = unsafe { &mut *context_ptr };
 
@@ -166,12 +167,12 @@ pub fn execute(mut args: Vec<String>) -> Result<usize> {
         let mut i = 0;
         for arg in line.trim().split(' ') {
             if !arg.is_empty() {
-                args.insert(i, arg.to_string());
+                args.insert(i, arg.to_owned());
                 i += 1;
             }
         }
         if i == 0 {
-            args.insert(i, "/bin/sh".to_string());
+            args.insert(i, "/bin/sh".to_owned());
         }
         execute(args)
     } else {
@@ -212,7 +213,7 @@ pub fn execute(mut args: Vec<String>) -> Result<usize> {
 
                     // debugln!("{}: {}: execute {}", context.pid, context.name, url.string);
 
-                    context.name = url.to_string();
+                    context.name = url.scheme().to_owned().into();
                     context.cwd =
                         Arc::new(UnsafeCell::new(unsafe { (*context.cwd.get()).clone() }));
 

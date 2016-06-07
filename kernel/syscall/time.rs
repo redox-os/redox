@@ -12,7 +12,7 @@ use system::error::{EINVAL, Error, Result};
 pub fn clock_gettime(clock: usize, tp: *mut TimeSpec) -> Result<usize> {
     let contexts = ::env().contexts.lock();
     let current = contexts.current()?;
-    let tp_safe = current.safe_ref_mut(tp)?;
+    let tp_safe = current.get_ref_mut(tp)?;
 
     match clock {
         CLOCK_REALTIME => {
@@ -38,7 +38,7 @@ pub fn nanosleep(req: *const TimeSpec, rem: *mut TimeSpec) -> Result<usize> {
         let mut current = contexts.current_mut()?;
 
         // Copied with * to avoid borrow issue on current.blocked = true
-        let req_safe = *current.safe_ref(req)?;
+        let req_safe = *current.get_ref(req)?;
 
         current.blocked = true;
         current.wake = Some(Duration::monotonic() +
@@ -53,7 +53,7 @@ pub fn nanosleep(req: *const TimeSpec, rem: *mut TimeSpec) -> Result<usize> {
         let contexts = ::env().contexts.lock();
         let current = contexts.current()?;
 
-        if let Ok(rem_safe) = current.safe_ref_mut(rem) {
+        if let Ok(rem_safe) = current.get_ref_mut(rem) {
             rem_safe.tv_sec = 0;
             rem_safe.tv_nsec = 0;
         }
