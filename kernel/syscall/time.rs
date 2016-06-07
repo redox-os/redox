@@ -10,19 +10,19 @@ use system::error::{Error, Result, EINVAL};
 
 /// Get the time of a given clock.
 pub fn clock_gettime(clock: usize, tp: *mut TimeSpec) -> Result<usize> {
-    let contexts = ::env().contexts.lock();
+    let contexts = unsafe { & *::env().contexts.get() };
     let current = contexts.current()?;
     let tp_safe = current.get_ref_mut(tp)?;
 
     match clock {
         CLOCK_REALTIME => {
-            let clock_realtime = ::env().clock_realtime.lock();
+            let clock_realtime = Duration::realtime();
             tp_safe.tv_sec = clock_realtime.secs;
             tp_safe.tv_nsec = clock_realtime.nanos;
             Ok(0)
         }
         CLOCK_MONOTONIC => {
-            let clock_monotonic = ::env().clock_monotonic.lock();
+            let clock_monotonic = Duration::monotonic();
             tp_safe.tv_sec = clock_monotonic.secs;
             tp_safe.tv_nsec = clock_monotonic.nanos;
             Ok(0)
@@ -34,7 +34,7 @@ pub fn clock_gettime(clock: usize, tp: *mut TimeSpec) -> Result<usize> {
 /// Sleep in N nanoseconds.
 pub fn nanosleep(req: *const TimeSpec, rem: *mut TimeSpec) -> Result<usize> {
     {
-        let mut contexts = ::env().contexts.lock();
+        let contexts = unsafe { &mut *::env().contexts.get() };
         let mut current = try!(contexts.current_mut());
 
         // Copied with * to avoid borrow issue on current.blocked = true
@@ -47,7 +47,7 @@ pub fn nanosleep(req: *const TimeSpec, rem: *mut TimeSpec) -> Result<usize> {
     unsafe { context_switch(); }
 
     {
-        let contexts = ::env().contexts.lock();
+        let contexts = unsafe { & *::env().contexts.get() };
         let current = try!(contexts.current());
 
         if let Ok(rem_safe) = current.get_ref_mut(rem) {

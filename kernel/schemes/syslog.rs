@@ -23,7 +23,7 @@ impl KScheme for SyslogScheme {
 
     /// Clears the logs.
     fn unlink(&mut self, _: Url) -> Result<()> {
-        let mut logs = ::env().logs.lock();
+        let mut logs = unsafe { &mut *::env().logs.get() };
         logs.clear();
         Ok(())
     }
@@ -36,11 +36,11 @@ pub struct SyslogResource {
 
 impl SyslogResource {
     fn get_log_str(&self) -> String {
-        let ref mut logs = *::env().logs.lock();
+        let logs = unsafe { & *::env().logs.get() };
         let mut string = String::new();
-        for &mut (ref time, ref level, ref message) in logs {
+        for &(time, level, ref message) in logs {
             string.push_str(&format!("[{}.{:>03}] ", time.secs, time.nanos/1000000));
-            let prefix: &str = match *level {
+            let prefix: &str = match level {
                 LogLevel::Debug    => "DEBUG ",
                 LogLevel::Info     => "INFO  ",
                 LogLevel::Warning  => "WARN  ",
@@ -48,7 +48,7 @@ impl SyslogResource {
                 LogLevel::Critical => "CRIT  ",
             };
             string.push_str(prefix);
-            string.push_str(message);
+            string.push_str(&message);
             string.push('\n');
         }
         string

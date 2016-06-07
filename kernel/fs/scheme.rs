@@ -101,7 +101,7 @@ impl SchemeInner {
 
 impl Drop for SchemeInner {
     fn drop(&mut self) {
-        ::env().schemes.lock().retain(|scheme| scheme.scheme() != self.name);
+        unsafe { &mut *::env().schemes.get() }.retain(|scheme| scheme.scheme() != self.name);
     }
 }
 
@@ -139,7 +139,7 @@ impl Resource for SchemeResource {
 
     /// Return the url of this resource
     fn path(&self, buf: &mut [u8]) -> Result <usize> {
-        let contexts = ::env().contexts.lock();
+        let contexts = unsafe { & *::env().contexts.get() };
         let current = try!(contexts.current());
         if let Ok(physical_address) = current.translate(buf.as_mut_ptr() as usize, buf.len()) {
             let offset = physical_address % 4096;
@@ -161,7 +161,7 @@ impl Resource for SchemeResource {
 
     /// Read data to buffer
     fn read(&mut self, buf: &mut [u8]) -> Result<usize> {
-        let contexts = ::env().contexts.lock();
+        let contexts = unsafe { & *::env().contexts.get() };
         let current = try!(contexts.current());
         if let Ok(physical_address) = current.translate(buf.as_mut_ptr() as usize, buf.len()) {
             let offset = physical_address % 4096;
@@ -183,7 +183,7 @@ impl Resource for SchemeResource {
 
     /// Write to resource
     fn write(&mut self, buf: &[u8]) -> Result<usize> {
-        let contexts = ::env().contexts.lock();
+        let contexts = unsafe { & *::env().contexts.get() };
         let current = try!(contexts.current());
         if let Ok(physical_address) = current.translate(buf.as_ptr() as usize, buf.len()) {
             let offset = physical_address % 4096;
@@ -218,7 +218,7 @@ impl Resource for SchemeResource {
     fn stat(&self, stat: &mut Stat) -> Result<usize> {
         let buf = unsafe { slice::from_raw_parts_mut(stat as *mut Stat as *mut u8, size_of::<Stat>()) };
 
-        let contexts = ::env().contexts.lock();
+        let contexts = unsafe { & *::env().contexts.get() };
         let current = try!(contexts.current());
         if let Ok(physical_address) = current.translate(buf.as_mut_ptr() as usize, buf.len()) {
             let offset = physical_address % 4096;
@@ -348,7 +348,7 @@ pub struct Scheme {
 
 impl Scheme {
     pub fn new(name: &str) -> Result<(Box<Scheme>, Box<Resource>)> {
-        let mut contexts = ::env().contexts.lock();
+        let contexts = unsafe { &mut *::env().contexts.get() };
         let mut current = try!(contexts.current_mut());
         let server = box SchemeServerResource {
             inner: Arc::new(SchemeInner::new(name, current.deref_mut()))
@@ -427,7 +427,7 @@ impl KScheme for Scheme {
     fn stat(&mut self, url: Url, stat: &mut Stat) -> Result<()> {
         let buf = unsafe { slice::from_raw_parts_mut(stat as *mut Stat as *mut u8, size_of::<Stat>()) };
 
-        let contexts = ::env().contexts.lock();
+        let contexts = unsafe { & *::env().contexts.get() };
         let current = try!(contexts.current());
         if let Ok(physical_address) = current.translate(buf.as_mut_ptr() as usize, buf.len()) {
             let offset = physical_address % 4096;

@@ -10,7 +10,7 @@ use system::error::Result;
 pub fn brk(addr: usize) -> Result<usize> {
     let mut ret = 0;
 
-    let contexts = ::env().contexts.lock();
+    let contexts = unsafe { & *::env().contexts.get() };
     if let Ok(current) = contexts.current() {
         ret = unsafe { (*current.heap.get()).next_mem() };
 

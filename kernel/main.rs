@@ -206,7 +206,7 @@ fn idle_loop() {
 
         let mut halt = true;
 
-        for context in env().contexts.lock().iter().skip(1) {
+        for context in unsafe { & *env().contexts.get() }.iter().skip(1) {
             if !context.blocked {
                 halt = false;
                 break;
@@ -335,9 +335,9 @@ unsafe fn init(tss_data: usize) {
 
     match ENV_PTR {
         Some(ref mut env) => {
-            env.contexts.lock().push(Context::root());
+            (&mut *env.contexts.get()).push(Context::root());
 
-            env.console.lock().draw = true;
+            (&mut *env.console.get()).draw = true;
 
             debugln!("\x1B[1mRedox {} bits\x1B[0m", mem::size_of::<usize>() * 8);
             debugln!("  * text={:X}:{:X} rodata={:X}:{:X}",
@@ -348,45 +348,45 @@ unsafe fn init(tss_data: usize) {
                     & __bss_start as *const u8 as usize, & __bss_end as *const u8 as usize);
 
             if let Some(acpi) = Acpi::new() {
-                env.schemes.lock().push(acpi);
+                (&mut *env.schemes.get()).push(acpi);
             }
 
-            *(env.clock_realtime.lock()) = Rtc::new().time();
+            *env.clock_realtime.get() = Rtc::new().time();
 
-            env.schemes.lock().push(Ps2::new());
-            env.schemes.lock().push(Serial::new(0x3F8, 0x4));
+            (&mut *env.schemes.get()).push(Ps2::new());
+            (&mut *env.schemes.get()).push(Serial::new(0x3F8, 0x4));
 
             pci::pci_init(env);
 
-            env.schemes.lock().push(DebugScheme::new());
-            env.schemes.lock().push(InitFsScheme::new());
-            env.schemes.lock().push(box ContextScheme);
-            env.schemes.lock().push(box DisplayScheme);
-            env.schemes.lock().push(box EnvScheme);
-            env.schemes.lock().push(box InterruptScheme);
-            env.schemes.lock().push(box MemoryScheme);
-            env.schemes.lock().push(box SyslogScheme);
-            env.schemes.lock().push(box TestScheme);
+            (&mut *env.schemes.get()).push(DebugScheme::new());
+            (&mut *env.schemes.get()).push(InitFsScheme::new());
+            (&mut *env.schemes.get()).push(box ContextScheme);
+            (&mut *env.schemes.get()).push(box DisplayScheme);
+            (&mut *env.schemes.get()).push(box EnvScheme);
+            (&mut *env.schemes.get()).push(box InterruptScheme);
+            (&mut *env.schemes.get()).push(box MemoryScheme);
+            (&mut *env.schemes.get()).push(box SyslogScheme);
+            (&mut *env.schemes.get()).push(box TestScheme);
 
             //TODO: Do not do this! Find a better way
             let mut disks = Vec::new();
-            disks.append(&mut env.disks.lock());
-            env.schemes.lock().push(DiskScheme::new(disks));
+            disks.append(&mut *env.disks.get());
+            (&mut *env.schemes.get()).push(DiskScheme::new(disks));
 
             /*
             let mut nics = Vec::new();
             nics.append(&mut env.nics.lock());
-            env.schemes.lock().push(NetworkScheme::new(nics));
+            (&mut *env.schemes.get()).push(NetworkScheme::new(nics));
             */
 
-            env.schemes.lock().push(box EthernetScheme);
-            //env.schemes.lock().push(box ArpScheme);
-            //env.schemes.lock().push(box IcmpScheme);
-            env.schemes.lock().push(box IpScheme {
+            (&mut *env.schemes.get()).push(box EthernetScheme);
+            //(&mut *env.schemes.get()).push(box ArpScheme);
+            //(&mut *env.schemes.get()).push(box IcmpScheme);
+            (&mut *env.schemes.get()).push(box IpScheme {
                 arp: Vec::new()
             });
-            env.schemes.lock().push(box TcpScheme);
-            env.schemes.lock().push(box UdpScheme);
+            (&mut *env.schemes.get()).push(box TcpScheme);
+            (&mut *env.schemes.get()).push(box UdpScheme);
 
             Context::spawn("karp".into(),
                            box move || {
@@ -398,7 +398,7 @@ unsafe fn init(tss_data: usize) {
                                IcmpScheme::reply_loop();
                            });
 
-            env.contexts.lock().enabled = true;
+            (&mut *env.contexts.get()).enabled = true;
 
             Context::spawn("kinit".into(),
                            box move || {
@@ -411,12 +411,12 @@ unsafe fn init(tss_data: usize) {
                     syscall::fs::open(stdio_c.as_ptr(), 0).unwrap();
                     syscall::fs::open(stdio_c.as_ptr(), 0).unwrap();
 
-                    let mut contexts = ::env().contexts.lock();
+                    let mut contexts = &mut *::env().contexts.get();
                     let current = contexts.current_mut().unwrap();
 
                     current.set_env_var("PATH", "file:/bin").unwrap();
 
-                    if let Some(ref display) = ::env().console.lock().display {
+                    if let Some(ref display) = (& *::env().console.get()).display {
                         current.set_env_var("COLUMNS", &format!("{}", display.width/8)).unwrap();
                         current.set_env_var("LINES", &format!("{}", display.height/16)).unwrap();
                     }
@@ -440,7 +440,7 @@ pub extern "cdecl" fn kernel(interrupt: usize, mut regs: &mut Regs) {
     macro_rules! exception_inner {
         ($name:expr) => ({
             {
-                let contexts = ::env().contexts.lock();
+                let contexts = unsafe { &mut *::env().contexts.get() };
                 if let Ok(context) = contexts.current() {
                     debugln!("PID {}: {}", context.pid, context.name);
 
@@ -478,7 +478,7 @@ pub extern "cdecl" fn kernel(interrupt: usize, mut regs: &mut Regs) {
 
             /* TODO: Stack dump
             {
-                let contexts = ::env().contexts.lock();
+                let contexts = unsafe { & *::env().contexts.get() };
                 if let Ok(context) = contexts.current() {
                     let sp = regs.sp as *const usize;
                     for y in -15..16 {
@@ -532,21 +532,21 @@ pub extern "cdecl" fn kernel(interrupt: usize, mut regs: &mut Regs) {
 
     // Do not catch init interrupt
     if interrupt < 0xFF {
-        env().interrupts.lock()[interrupt as usize] += 1;
+        unsafe { (&mut *env().interrupts.get())[interrupt as usize] += 1 };
     }
 
     match interrupt {
         0x20 => {
             {
-                let mut clock_monotonic = env().clock_monotonic.lock();
+                let mut clock_monotonic = unsafe { &mut *env().clock_monotonic.get() };
                 *clock_monotonic = *clock_monotonic + PIT_DURATION;
             }
             {
-                let mut clock_realtime = env().clock_realtime.lock();
+                let mut clock_realtime = unsafe { &mut *env().clock_realtime.get() };
                 *clock_realtime = *clock_realtime + PIT_DURATION;
             }
 
-            if let Ok(mut current) = env().contexts.lock().current_mut() {
+            if let Ok(mut current) = unsafe { &mut *env().contexts.get() }.current_mut() {
                 current.time += 1;
             }
 

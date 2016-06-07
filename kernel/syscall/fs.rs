@@ -50,7 +50,7 @@ ERRORS
         Currently not running in a process context (rare, would only happen during kernel init)
 <!-- @MANEND --> */
 pub fn chdir(path: *const u8) -> Result<usize> {
-    let contexts = ::env().contexts.lock();
+    let contexts = unsafe { & *::env().contexts.get() };
     let current = try!(contexts.current());
     unsafe {
         *current.cwd.get() = current.canonicalize(c_string_to_str(path));
@@ -83,7 +83,7 @@ ERRORS
         Currently not running in a process context (rare, would only happen during kernel init)
 <!-- @MANEND --> */
 pub fn close(fd: usize) -> Result<usize> {
-    let contexts = ::env().contexts.lock();
+    let contexts = unsafe { & *::env().contexts.get() };
     let current = try!(contexts.current());
 
     for i in 0..unsafe { (*current.files.get()).len() } {
@@ -128,7 +128,7 @@ ERRORS
         Currently not running in a process context (rare, would only happen during kernel init)
 <!-- @MANEND --> */
 pub fn dup(fd: usize) -> Result<usize> {
-    let contexts = ::env().contexts.lock();
+    let contexts = unsafe { & *::env().contexts.get() };
     let current = try!(contexts.current());
     let resource = try!(current.get_file(fd));
     let new_resource = try!(resource.dup());
@@ -144,7 +144,7 @@ pub fn dup(fd: usize) -> Result<usize> {
 }
 
 pub fn fpath(fd: usize, buf: *mut u8, count: usize) -> Result<usize> {
-    let contexts = ::env().contexts.lock();
+    let contexts = unsafe { & *::env().contexts.get() };
     let current = contexts.current()?;
     let resource = current.get_file(fd)?;
     if count > 0 {
@@ -156,7 +156,7 @@ pub fn fpath(fd: usize, buf: *mut u8, count: usize) -> Result<usize> {
 }
 
 pub fn fstat(fd: usize, stat: *mut Stat) -> Result<usize> {
-    let contexts = ::env().contexts.lock();
+    let contexts = unsafe { & *::env().contexts.get() };
     let current = contexts.current()?;
     let resource = current.get_file(fd)?;
     let stat_safe = current.get_ref_mut(stat)?;
@@ -192,7 +192,7 @@ ERRORS
         Currently not running in a process context (rare, would only happen during kernel init)
 <!-- @MANEND --> */
 pub fn fsync(fd: usize) -> Result<usize> {
-    let mut contexts = ::env().contexts.lock();
+    let contexts = unsafe { &mut *::env().contexts.get() };
     let mut current = try!(contexts.current_mut());
     let mut resource = try!(current.get_file_mut(fd));
     resource.sync().and(Ok(0))
@@ -227,7 +227,7 @@ ERRORS
         Currently not running in a process context (rare, would only happen during kernel init)
 <!-- @MANEND --> */
 pub fn ftruncate(fd: usize, length: usize) -> Result<usize> {
-    let mut contexts = ::env().contexts.lock();
+    let contexts = unsafe { &mut *::env().contexts.get() };
     let mut current = try!(contexts.current_mut());
     let mut resource = try!(current.get_file_mut(fd));
     resource.truncate(length).and(Ok(0))
@@ -272,7 +272,7 @@ ERRORS
         Currently not running in a process context (rare, would only happen during kernel init)
 <!-- @MANEND --> */
 pub fn lseek(fd: usize, offset: isize, whence: usize) -> Result<usize> {
-    let mut contexts = ::env().contexts.lock();
+    let contexts = unsafe { &mut *::env().contexts.get() };
     let mut current = try!(contexts.current_mut());
     let mut resource = try!(current.get_file_mut(fd));
     match whence {
@@ -321,7 +321,7 @@ ERRORS
         Currently not running in a process context (rare, would only happen during kernel init)
 <!-- @MANEND --> */
 pub fn mkdir(path: *const u8, flags: usize) -> Result<usize> {
-    let contexts = ::env().contexts.lock();
+    let contexts = unsafe { & *::env().contexts.get() };
     let current = try!(contexts.current());
     let path_string = current.canonicalize(c_string_to_str(path));
     ::env().mkdir(try!(Url::from_str(&path_string)), flags).and(Ok(0))
@@ -380,7 +380,7 @@ ERRORS
         Currently not running in a process context (rare, would only happen during kernel init)
 <!-- @MANEND --> */
 pub fn open(path_c: *const u8, flags: usize) -> Result<usize> {
-    let contexts = ::env().contexts.lock();
+    let contexts = unsafe { & *::env().contexts.get() };
     let current = try!(contexts.current());
     let path = current.canonicalize(c_string_to_str(path_c));
     let url = try!(Url::from_str(&path));
@@ -396,7 +396,7 @@ pub fn open(path_c: *const u8, flags: usize) -> Result<usize> {
 }
 
 pub fn pipe2(fds: *mut usize, _flags: usize) -> Result<usize> {
-    let contexts = ::env().contexts.lock();
+    let contexts = unsafe { & *::env().contexts.get() };
     let current = try!(contexts.current());
     if fds as usize > 0 {
         let read = box PipeRead::new();
@@ -454,7 +454,7 @@ ERRORS
         Currently not running in a process context (rare, would only happen during kernel init)
 <!-- @MANEND --> */
 pub fn read(fd: usize, buf: *mut u8, count: usize) -> Result<usize> {
-    let mut contexts = ::env().contexts.lock();
+    let contexts = unsafe { &mut *::env().contexts.get() };
     let mut current = contexts.current_mut()?;
     let mut resource = current.get_file_mut(fd)?;
     if count > 0 {
@@ -466,14 +466,14 @@ pub fn read(fd: usize, buf: *mut u8, count: usize) -> Result<usize> {
 }
 
 pub fn rmdir(path: *const u8) -> Result<usize> {
-    let contexts = ::env().contexts.lock();
+    let contexts = unsafe { & *::env().contexts.get() };
     let current = try!(contexts.current());
     let path_string = current.canonicalize(c_string_to_str(path));
     ::env().rmdir(try!(Url::from_str(&path_string))).and(Ok(0))
 }
 
 pub fn stat(path: *const u8, stat: *mut Stat) -> Result<usize> {
-    let contexts = ::env().contexts.lock();
+    let contexts = unsafe { & *::env().contexts.get() };
     let current = try!(contexts.current());
     let path_string = current.canonicalize(c_string_to_str(path));
     let url = Url::from_str(&path_string)?;
@@ -484,7 +484,7 @@ pub fn stat(path: *const u8, stat: *mut Stat) -> Result<usize> {
 }
 
 pub fn unlink(path: *const u8) -> Result<usize> {
-    let contexts = ::env().contexts.lock();
+    let contexts = unsafe { & *::env().contexts.get() };
     let current = try!(contexts.current());
     let path_string = current.canonicalize(c_string_to_str(path));
     ::env().unlink(try!(Url::from_str(&path_string))).and(Ok(0))
@@ -528,7 +528,7 @@ ERRORS
         Currently not running in a process context (rare, would only happen during kernel init)
 <!-- @MANEND --> */
 pub fn write(fd: usize, buf: *const u8, count: usize) -> Result<usize> {
-    let mut contexts = ::env().contexts.lock();
+    let contexts = unsafe { &mut *::env().contexts.get() };
     let mut current = contexts.current_mut()?;
     let mut resource = current.get_file_mut(fd)?;
     if count > 0 {

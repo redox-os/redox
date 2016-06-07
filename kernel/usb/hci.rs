@@ -156,7 +156,7 @@ pub trait Hci {
                                                 right_button: buttons & 2 == 2,
                                             };
 
-                                            if ::env().console.lock().draw {
+                                            if (& *::env().console.get()).draw {
                                                 //ignore mouse event
                                             } else {
                                                 ::env().events.send(mouse_event.to_event());
@@ -164,7 +164,7 @@ pub trait Hci {
                                         }
 
                                         {
-                                            let mut contexts = ::env().contexts.lock();
+                                            let contexts = &mut *::env().contexts.get();
                                             if let Ok(mut current) = contexts.current_mut() {
                                                 current.blocked = true;
                                                 current.wake = Some(Duration::monotonic() + Duration::new(0, 10 * time::NANOS_PER_MILLI));
