@@ -15,7 +15,7 @@ use sync::{WaitMap, WaitQueue};
 
 use system::error::{Error, Result, EBADF, EFAULT, EINVAL, ENODEV, ESPIPE};
 use system::scheme::Packet;
-use system::syscall::{SYS_CLOSE, SYS_FPATH, SYS_FSTAT, SYS_FSYNC, SYS_FTRUNCATE,
+use system::syscall::{SYS_CLOSE, SYS_DUP, SYS_FPATH, SYS_FSTAT, SYS_FSYNC, SYS_FTRUNCATE,
                     SYS_OPEN, SYS_LSEEK, SEEK_SET, SEEK_CUR, SEEK_END, SYS_MKDIR,
                     SYS_READ, SYS_WRITE, SYS_RMDIR, SYS_STAT, SYS_UNLINK, Stat};
 
@@ -128,6 +128,13 @@ impl Resource for SchemeResource {
     /// Duplicate the resource
     fn dup(&self) -> Result<Box<Resource>> {
         Err(Error::new(EBADF))
+        /*
+        let file_id = try!(self.call(SYS_DUP, self.file_id, 0, 0));
+        Ok(Box::new(SchemeResource {
+            inner: self.inner.clone(),
+            file_id: file_id
+        }))
+        */
     }
 
     /// Return the url of this resource
