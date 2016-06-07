@@ -145,10 +145,10 @@ pub fn dup(fd: usize) -> Result<usize> {
 
 pub fn fpath(fd: usize, buf: *mut u8, count: usize) -> Result<usize> {
     let contexts = ::env().contexts.lock();
-    let current = try!(contexts.current());
-    let resource = try!(current.get_file(fd));
+    let current = contexts.current()?;
+    let resource = current.get_file(fd)?;
     if count > 0 {
-        let buf_safe = try!(current.safe_slice_mut(buf, count));
+        let buf_safe = current.get_slice_mut(buf, count)?;
         resource.path(buf_safe)
     } else {
         Ok(0)
@@ -157,9 +157,9 @@ pub fn fpath(fd: usize, buf: *mut u8, count: usize) -> Result<usize> {
 
 pub fn fstat(fd: usize, stat: *mut Stat) -> Result<usize> {
     let contexts = ::env().contexts.lock();
-    let current = try!(contexts.current());
-    let resource = try!(current.get_file(fd));
-    let stat_safe = try!(current.safe_ref_mut(stat));
+    let current = contexts.current()?;
+    let resource = current.get_file(fd)?;
+    let stat_safe = current.get_ref_mut(stat)?;
     resource.stat(stat_safe)
 }
 
@@ -455,10 +455,10 @@ ERRORS
 <!-- @MANEND --> */
 pub fn read(fd: usize, buf: *mut u8, count: usize) -> Result<usize> {
     let mut contexts = ::env().contexts.lock();
-    let mut current = try!(contexts.current_mut());
-    let mut resource = try!(current.get_file_mut(fd));
+    let mut current = contexts.current_mut()?;
+    let mut resource = current.get_file_mut(fd)?;
     if count > 0 {
-        let buf_safe = try!(current.safe_slice_mut(buf, count));
+        let buf_safe = current.get_slice_mut(buf, count)?;
         resource.read(buf_safe)
     } else {
         Ok(0)
@@ -476,8 +476,8 @@ pub fn stat(path: *const u8, stat: *mut Stat) -> Result<usize> {
     let contexts = ::env().contexts.lock();
     let current = try!(contexts.current());
     let path_string = current.canonicalize(c_string_to_str(path));
-    let url = try!(Url::from_str(&path_string));
-    let stat_safe = try!(current.safe_ref_mut(stat));
+    let url = Url::from_str(&path_string)?;
+    let stat_safe = current.get_ref_mut(stat)?;
 
     *stat_safe = Stat::default();
     ::env().stat(url, stat_safe).and(Ok(0))
@@ -529,10 +529,10 @@ ERRORS
 <!-- @MANEND --> */
 pub fn write(fd: usize, buf: *const u8, count: usize) -> Result<usize> {
     let mut contexts = ::env().contexts.lock();
-    let mut current = try!(contexts.current_mut());
-    let mut resource = try!(current.get_file_mut(fd));
+    let mut current = contexts.current_mut()?;
+    let mut resource = current.get_file_mut(fd)?;
     if count > 0 {
-        let buf_safe = try!(current.safe_slice(buf, count));
+        let buf_safe = current.get_slice(buf, count)?;
         resource.write(buf_safe)
     } else {
         Ok(0)

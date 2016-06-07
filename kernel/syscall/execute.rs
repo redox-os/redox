@@ -9,7 +9,8 @@ use arch::elf::Elf;
 use arch::memory;
 use arch::regs::Regs;
 
-use collections::string::{String, ToString};
+use collections::borrow::ToOwned;
+use collections::string::String;
 use collections::vec::Vec;
 
 use common::slice::GetSlice;
@@ -23,7 +24,8 @@ use fs::Url;
 use system::error::{Error, Result, ENOEXEC, ENOMEM};
 
 pub fn execute_thread(context_ptr: *mut Context, entry: usize, mut args: Vec<String>) -> ! {
-    Context::spawn("kexec".to_string(), box move || {
+    Context::spawn("kexec".into(),
+                   box move || {
         let context = unsafe { &mut *context_ptr };
 
         let mut context_args: Vec<usize> = Vec::new();
@@ -162,13 +164,13 @@ pub fn execute(mut args: Vec<String>) -> Result<usize> {
         let line = unsafe { str::from_utf8_unchecked(&vec[2..]) }.lines().next().unwrap_or("");
         let mut i = 0;
         for arg in line.trim().split(' ') {
-            if ! arg.is_empty() {
-                args.insert(i, arg.to_string());
+            if !arg.is_empty() {
+                args.insert(i, arg.to_owned());
                 i += 1;
             }
         }
         if i == 0 {
-            args.insert(i, "/bin/sh".to_string());
+            args.insert(i, "/bin/sh".to_owned());
         }
         execute(args)
     } else {
@@ -209,8 +211,9 @@ pub fn execute(mut args: Vec<String>) -> Result<usize> {
 
                     //debugln!("{}: {}: execute {}", context.pid, context.name, url.string);
 
-                    context.name = url.to_string();
-                    context.cwd = Arc::new(UnsafeCell::new(unsafe { (*context.cwd.get()).clone() }));
+                    context.name = url.to_string().into();
+                    context.cwd =
+                        Arc::new(UnsafeCell::new(unsafe { (*context.cwd.get()).clone() }));
 
                     unsafe { context.unmap() };
 

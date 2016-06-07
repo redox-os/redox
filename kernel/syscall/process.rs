@@ -118,7 +118,7 @@ pub fn waitpid(pid: isize, status_ptr: *mut usize, _options: usize) -> Result<us
     if pid > 0 {
         let status = current.statuses.receive(&(pid as usize));
 
-        if let Ok(status_safe) = current.safe_ref_mut(status_ptr) {
+        if let Ok(status_safe) = current.get_ref_mut(status_ptr) {
             *status_safe = status;
         }
 
