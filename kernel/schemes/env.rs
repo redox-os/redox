@@ -1,9 +1,10 @@
-use fs::{KScheme, Resource, Url};
-use fs::resource::ResourceSeek;
-use collections::string::String;
 use alloc::boxed::Box;
-use system::error::{Error, Result, EINVAL};
+use arch::context::EnvVar;
+use collections::string::String;
 use core::cmp::min;
+use fs::resource::ResourceSeek;
+use fs::{KScheme, Resource, Url};
+use system::error::{EINVAL, Error, Result};
 
 pub struct EnvScheme;
 
@@ -42,10 +43,10 @@ pub struct EnvListResource {
 impl EnvListResource {
     fn get_list_str(&self) -> Result<String> {
         let contexts = ::env().contexts.lock();
-        let current = try!(contexts.current());
-        let values = try!(current.list_env_vars());
+        let current = contexts.current()?;
+        let values = current.list_env_vars();
         let mut string = String::new();
-        for &(ref name, ref value) in values.iter() {
+        for &EnvVar(ref name, ref value) in values.iter() {
             string = string + name + "=" + value + "\n";
         }
         string.pop();

@@ -10,7 +10,8 @@ use common::time;
 
 use fs::{KScheme, Resource, Url};
 
-use syscall::{do_sys_nanosleep, Result, TimeSpec};
+use syscall;
+use syscall::TimeSpec;
 
 #[repr(packed)]
 struct Stream {
@@ -48,11 +49,11 @@ struct IntelHdaResource {
 }
 
 impl Resource for IntelHdaResource {
-    fn dup(&self) -> Result<Box<Resource>> {
+    fn dup(&self) -> syscall::Result<Box<Resource>> {
         Ok(box IntelHdaResource { base: self.base })
     }
 
-    fn path(&self, buf: &mut [u8]) -> Result <usize> {
+    fn path(&self, buf: &mut [u8]) -> syscall::Result <usize> {
         let path = b"audio:";
 
         let mut i = 0;
@@ -64,7 +65,7 @@ impl Resource for IntelHdaResource {
         Ok(i)
     }
 
-    fn write(&mut self, buf: &[u8]) -> Result<usize> {
+    fn write(&mut self, buf: &[u8]) -> syscall::Result<usize> {
         unsafe {
             debug!("Write HDA");
 
@@ -133,7 +134,7 @@ impl Resource for IntelHdaResource {
                     tv_sec: 0,
                     tv_nsec: 0,
                 };
-                try!(do_sys_nanosleep(&req, &mut rem));
+                try!(syscall::time::nanosleep(&req, &mut rem));
             }
 
             stream.interrupt = 0;
@@ -163,7 +164,7 @@ impl KScheme for IntelHda {
         "hda"
     }
 
-    fn open(&mut self, _: Url, _: usize) -> Result<Box<Resource>> {
+    fn open(&mut self, _: Url, _: usize) -> syscall::Result<Box<Resource>> {
         Ok(box IntelHdaResource { base: self.base })
     }
 
