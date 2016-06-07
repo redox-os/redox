@@ -291,6 +291,7 @@ c_binutils: \
 	filesystem/bin/strip
 
 c_bins: \
+	c_binutils \
 	filesystem/bin/c-test \
 	filesystem/bin/ed \
   	filesystem/bin/lua \
@@ -298,7 +299,6 @@ c_bins: \
   	filesystem/bin/nasm \
   	filesystem/bin/ndisasm \
   	filesystem/bin/sdl-test
-	#TODO: c_binutils
 
 bins: \
 	c_bins \
