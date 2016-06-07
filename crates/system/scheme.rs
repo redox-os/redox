@@ -41,6 +41,7 @@ pub trait Scheme {
             SYS_STAT => self.stat(c_string_to_str(packet.b as *const u8), unsafe { &mut *(packet.c as *mut Stat) }),
             SYS_UNLINK => self.unlink(c_string_to_str(packet.b as *const u8)),
 
+            SYS_DUP => self.dup(packet.b),
             SYS_READ => self.read(packet.b, unsafe { slice::from_raw_parts_mut(packet.c as *mut u8, packet.d) }),
             SYS_WRITE => self.write(packet.b, unsafe { slice::from_raw_parts(packet.c as *const u8, packet.d) }),
             SYS_LSEEK => self.seek(packet.b, packet.c, packet.d),
@@ -82,6 +83,11 @@ pub trait Scheme {
     }
 
     /* Resource operations */
+    #[allow(unused_variables)]
+    fn dup(&mut self, id: usize) -> Result<usize> {
+        Err(Error::new(EBADF))
+    }
+
     #[allow(unused_variables)]
     fn read(&mut self, id: usize, buf: &mut [u8]) -> Result<usize> {
         Err(Error::new(EBADF))

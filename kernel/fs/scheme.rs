@@ -132,6 +132,12 @@ impl Resource for SchemeResource {
     /// Duplicate the resource
     fn dup(&self) -> Result<Box<Resource>> {
         Err(Error::new(EBADF))
+        // let file_id = try!(self.call(SYS_DUP, self.file_id, 0, 0));
+        // Ok(Box::new(SchemeResource {
+        // inner: self.inner.clone(),
+        // file_id: file_id
+        // }))
+        //
     }
 
     /// Return the url of this resource

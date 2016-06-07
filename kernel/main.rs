@@ -478,7 +478,7 @@ pub extern "cdecl" fn kernel(interrupt: usize, mut regs: &mut Regs) {
                     debugln!("PID {}: {}", context.pid, context.name);
 
                     if let Some(current_syscall) = context.current_syscall {
-                        debugln!("  SYS {:X}: {} {:X} {:X} {:X}", current_syscall.0, current_syscall.1, current_syscall.2, current_syscall.3, current_syscall.4);
+                        debugln!("  SYS {:X}: {} {} {:X} {:X} {:X}", current_syscall.0, current_syscall.1, syscall::name(current_syscall.1), current_syscall.2, current_syscall.3, current_syscall.4);
                     }
                 }
             }
