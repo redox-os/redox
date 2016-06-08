@@ -27,7 +27,7 @@ pub fn brk(addr: usize) -> Result<usize> {
                         mem.virtual_size = size;
                         ret = mem.virtual_address + mem.virtual_size;
                     } else {
-                        debugln!("BRK: Realloc failed {:X}, {}\n", mem.virtual_address, size);
+                        debugln!("BRK: Realloc failed {:X}, {}", mem.virtual_address, size);
                     }
 
                     unsafe { mem.map() };
@@ -54,7 +54,7 @@ pub fn brk(addr: usize) -> Result<usize> {
                     (*current.heap.get()).memory.push(mem);
                 }
             } else {
-                debugln!("BRK: Alloc failed {}\n", size);
+                debugln!("BRK: Alloc failed {}", size);
             }
         }
     } else {

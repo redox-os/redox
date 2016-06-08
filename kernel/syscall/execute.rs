@@ -121,7 +121,7 @@ pub fn execute(mut args: Vec<String>) -> Result<usize> {
         unsafe {
             let heap = &mut *current.heap.get();
 
-            let virtual_size = 65536;
+            let virtual_size = 1024*1024;
             let virtual_address = heap.next_mem();
 
             let physical_address = memory::alloc_aligned(virtual_size, 4096);
@@ -190,6 +190,7 @@ pub fn execute(mut args: Vec<String>) -> Result<usize> {
                         if physical_address > 0 {
                             //TODO: Use paging to fix collisions
                             // Copy progbits
+                            debugln!("Copy to {:X}", physical_address);
                             ::memcpy((physical_address + offset) as *mut u8,
                                      (executable.data.as_ptr() as usize + segment.off as usize) as *const u8,
                                      segment.file_len as usize);
