@@ -50,9 +50,9 @@ pub fn exit(status: usize) -> ! {
         for mut context in contexts.iter_mut() {
             // Add exit status to parent
             if context.pid == ppid {
-                context.statuses.send(pid, status);
+                context.statuses.send(pid, status, "exit parent status");
                 for (pid, status) in statuses.iter() {
-                    context.statuses.send(*pid, *status);
+                    context.statuses.send(*pid, *status, "exit child status");
                 }
             }
 
@@ -116,7 +116,7 @@ pub fn waitpid(pid: isize, status_ptr: *mut usize, _options: usize) -> Result<us
     let current = try!(contexts.current_mut());
 
     if pid > 0 {
-        let status = current.statuses.receive(&(pid as usize));
+        let status = current.statuses.receive(&(pid as usize), "waitpid status");
 
         if let Ok(status_safe) = current.get_ref_mut(status_ptr) {
             *status_safe = status;

@@ -17,19 +17,32 @@ impl WaitCondition {
         }
     }
 
-    pub fn notify(&self) {
+    pub fn notify(&self, reason: &str) {
+        {
+            debugln!("  WaitCondition::notify {:X} {}", self as *const _ as usize, reason);
+            if let Ok(context) = unsafe { &mut *::env().contexts.get() }.current_mut() {
+                debugln!("    FROM {}: {}", (*context).pid, (*context).name);
+            } else {
+                debugln!("    NOT FOUND");
+            }
+        }
         let mut contexts = Vec::new();
         mem::swap(unsafe { &mut *self.contexts.get() }, &mut contexts);
         for &context in contexts.iter() {
-            unsafe { (*context).blocked = false; }
+            unsafe { (*context).unblock(reason) }
         }
     }
 
-    pub fn wait(&self) {
-        if let Ok(mut context) = unsafe { &mut *::env().contexts.get() }.current_mut() {
-            let mut contexts = unsafe { &mut *self.contexts.get() };
-            contexts.push(context.deref_mut() as *mut Context);
-            (*context).blocked = true;
+    pub fn wait(&self, reason: &str) {
+        {
+            debugln!("  WaitCondition::wait {:X} {}", self as *const _ as usize, reason);
+            if let Ok(mut context) = unsafe { &mut *::env().contexts.get() }.current_mut() {
+                let mut contexts = unsafe { &mut *self.contexts.get() };
+                contexts.push(context.deref_mut() as *mut Context);
+                (*context).block(reason);
+            } else {
+                debugln!("    NOT FOUND");
+            }
         }
         unsafe { context_switch(); }
     }
@@ -37,6 +50,6 @@ impl WaitCondition {
 
 impl Drop for WaitCondition {
     fn drop(&mut self){
-        self.notify();
+        self.notify("WaitCondition::drop");
     }
 }

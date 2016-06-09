@@ -41,7 +41,7 @@ impl Resource for DisplayResource {
 
     fn read(&mut self, buf: &mut [u8]) -> Result<usize> {
         if buf.len() >= size_of::<Event>() {
-            let event = ::env().events.receive();
+            let event = ::env().events.receive("DisplayResource::read");
             unsafe { ptr::write(buf.as_mut_ptr().offset(0isize) as *mut Event, event) };
             let mut i = size_of::<Event>();
 
