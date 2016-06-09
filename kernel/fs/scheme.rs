@@ -13,7 +13,7 @@ use arch::context::{Context, ContextMemory};
 
 use sync::{WaitMap, WaitQueue};
 
-use system::error::{Error, Result, EBADF, EFAULT, EINVAL, ENODEV, ESPIPE};
+use system::error::{Error, Result, EFAULT, EINVAL, ENODEV, ESPIPE};
 use system::scheme::Packet;
 use system::syscall::{SYS_CLOSE, SYS_DUP, SYS_FPATH, SYS_FSTAT, SYS_FSYNC, SYS_FTRUNCATE,
                     SYS_OPEN, SYS_LSEEK, SEEK_SET, SEEK_CUR, SEEK_END, SYS_MKDIR,
