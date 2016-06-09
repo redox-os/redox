@@ -815,16 +815,22 @@ impl Context {
         ret
     }
 
-    pub fn block(&mut self, reason: &str) {
+    pub fn block(&mut self, _reason: &str) {
         self.blocked += 1;
-        debugln!("    BLOCK {}: {}: {} {}", self.pid, self.name, self.blocked, reason);
+        // debugln!("    BLOCK {}: {}: {} {}", self.pid, self.name, self.blocked, reason);
     }
 
-    pub fn unblock(&mut self, reason: &str) {
-        debugln!("    UNBLOCK {}: {}: {} {}", self.pid, self.name, self.blocked, reason);
+    pub fn unblock(&mut self, _reason: &str) {
+        // debugln!("    UNBLOCK {}: {}: {} {}", self.pid, self.name, self.blocked, reason);
         if self.blocked > 0 {
             self.blocked -= 1;
         }
+    }
+
+    pub fn exit(&mut self) {
+        // debugln!("    EXIT {}: {}", self.pid, self.name);
+        self.files = Arc::new(UnsafeCell::new(Vec::new()));
+        self.exited = true;
     }
 
     pub fn canonicalize(&self, path: &str) -> String {
