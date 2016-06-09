@@ -39,8 +39,8 @@ pub fn exit(status: usize) -> ! {
         let mut statuses = BTreeMap::new();
         let (pid, ppid) = {
             if let Ok(mut current) = contexts.current_mut() {
-                current.exited = true;
                 mem::swap(&mut statuses, &mut unsafe { current.statuses.inner() }.deref_mut());
+                current.exit();
                 (current.pid, current.ppid)
             } else {
                 (0, 0)
@@ -64,9 +64,7 @@ pub fn exit(status: usize) -> ! {
     }
 
     loop {
-        unsafe {
-            context_switch();
-        }
+        unsafe { context_switch() };
     }
 }
 

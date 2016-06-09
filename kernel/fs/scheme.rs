@@ -51,7 +51,7 @@ impl SchemeInner {
             }
             scheme.next_id.set(next_id);
 
-            debugln!("{} {}: {} {} {:X} {:X} {:X}", scheme.name, id, a, ::syscall::name(a), b, c, d);
+            // debugln!("{} {}: {} {} {:X} {:X} {:X}", scheme.name, id, a, ::syscall::name(a), b, c, d);
 
             scheme.todo.send(Packet {
                 id: id,
@@ -59,10 +59,10 @@ impl SchemeInner {
                 b: b,
                 c: c,
                 d: d
-            }, "SchemeInner::call");
+            }, "SchemeInner::call todo");
 
-            let res = Error::demux(scheme.done.receive(&id, "SchemeInner::call").0);
-            debugln!("{} {}: {} {} {:X} {:X} {:X} = {:?}", scheme.name, id, a, ::syscall::name(a), b, c, d, res);
+            let res = Error::demux(scheme.done.receive(&id, "SchemeInner::call done").0);
+            // debugln!("{} {}: {} {} {:X} {:X} {:X} = {:?}", scheme.name, id, a, ::syscall::name(a), b, c, d, res);
             res
         } else {
             Err(Error::new(ENODEV))
@@ -291,7 +291,7 @@ impl Resource for SchemeServerResource {
         if buf.len() >= size_of::<Packet>() {
             let mut i = 0;
 
-            let packet = self.inner.todo.receive("SchemeServerResource::read");
+            let packet = self.inner.todo.receive("SchemeServerResource::read todo");
             unsafe { ptr::write(buf.as_mut_ptr().offset(i as isize) as *mut Packet, packet); }
             i += size_of::<Packet>();
 
@@ -317,7 +317,7 @@ impl Resource for SchemeServerResource {
 
             while i <= buf.len() - size_of::<Packet>() {
                 let packet = unsafe { & *(buf.as_ptr().offset(i as isize) as *const Packet) };
-                self.inner.done.send(packet.id, (packet.a, packet.b, packet.c, packet.d), "SchemeServerResource::write");
+                self.inner.done.send(packet.id, (packet.a, packet.b, packet.c, packet.d), "SchemeServerResource::write done");
                 i += size_of::<Packet>();
             }
 
