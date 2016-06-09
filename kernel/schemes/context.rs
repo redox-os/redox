@@ -56,7 +56,7 @@ impl KScheme for ContextScheme {
                 } else {
                     flags_string.push('K');
                 }
-                if context.blocked {
+                if context.blocked > 0 {
                     flags_string.push('B');
                 }
                 if context.exited {

@@ -19,17 +19,17 @@ impl<K, V> WaitMap<K, V> where K: Ord {
         &mut *self.inner.get()
     }
 
-    pub fn send(&self, key: K, value: V) {
+    pub fn send(&self, key: K, value: V, reason: &str) {
         unsafe { self.inner() }.insert(key, value);
-        self.condition.notify();
+        self.condition.notify(reason);
     }
 
-    pub fn receive(&self, key: &K) -> V {
+    pub fn receive(&self, key: &K, reason: &str) -> V {
         loop {
             if let Some(value) = unsafe { self.inner() }.remove(key) {
                 return value;
             }
-            self.condition.wait();
+            self.condition.wait(reason);
         }
     }
 }

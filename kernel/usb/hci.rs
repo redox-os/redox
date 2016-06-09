@@ -159,15 +159,15 @@ pub trait Hci {
                                             if (& *::env().console.get()).draw {
                                                 //ignore mouse event
                                             } else {
-                                                ::env().events.send(mouse_event.to_event());
+                                                ::env().events.send(mouse_event.to_event(), "HCI events send");
                                             }
                                         }
 
                                         {
                                             let contexts = &mut *::env().contexts.get();
                                             if let Ok(mut current) = contexts.current_mut() {
-                                                current.blocked = true;
                                                 current.wake = Some(Duration::monotonic() + Duration::new(0, 10 * time::NANOS_PER_MILLI));
+                                                current.block("HCI sleep");
                                             }
                                         }
 

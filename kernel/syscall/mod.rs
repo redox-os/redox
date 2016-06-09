@@ -63,12 +63,12 @@ pub fn handle(regs: &mut Regs) {
             if cur.supervised {
                 // Block the process.
                 cur.blocked_syscall = true;
-                cur.blocked = true;
+                cur.block("syscall::handle Supervise");
                 // Clear the timer.
                 cur.wake = None;
 
                 loop {
-                    if cur.blocked {
+                    if cur.blocked > 0 {
                         unsafe { context_switch() };
                     } else {
                         return;

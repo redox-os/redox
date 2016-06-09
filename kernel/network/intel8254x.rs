@@ -177,7 +177,7 @@ impl NetworkScheme for Intel8254x {
 
             while let Some(bytes) = self.inbound.pop_front() {
                 for resource in resources.iter() {
-                    unsafe { (**resource).inbound.send(bytes.clone()) };
+                    unsafe { (**resource).inbound.send(bytes.clone(), "Intel8254x::sync") };
                 }
             }
         }

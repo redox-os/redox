@@ -207,7 +207,7 @@ fn idle_loop() {
         let mut halt = true;
 
         for context in unsafe { & *env().contexts.get() }.iter().skip(1) {
-            if !context.blocked {
+            if context.blocked == 0 {
                 halt = false;
                 break;
             }

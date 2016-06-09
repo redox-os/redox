@@ -50,7 +50,7 @@ impl Resource for SupervisorResource {
             ctx.regs.ax |= i as usize;
         }
 
-        ctx.blocked = false;
+        ctx.block("SupervisorResource::write");
 
         Ok(cmp::min(mem::size_of::<usize>(), buf.len()))
     }
