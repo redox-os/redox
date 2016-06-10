@@ -59,7 +59,7 @@ endif
 
 .PHONY: help all doc apps bins c_bins clean FORCE \
 	drivers c_binutils binutils coreutils extrautils games \
-	qemu qemu_no_build bochs \
+	qemu qemu_no_build bochs mount unmount \
 	virtualbox virtualbox_tap \
 	arping ping wireshark
 
@@ -601,6 +601,17 @@ $(BUILD)/filesystem.bin: apps bins
 $(BUILD)/harddrive.bin: kernel/harddrive.asm $(BUILD)/kernel.bin $(BUILD)/filesystem.bin
 	$(AS) -f bin -o $@ -l $(BUILD)/harddrive.list -D ARCH_$(ARCH) -D TIME="`$(DATE) "+%F %T"`" -i$(BUILD)/ -ikernel/ -ifilesystem/ $<
 
+mount: FORCE
+	mkdir -p $(BUILD)/harddrive/
+	cargo run --manifest-path crates/redoxfs/Cargo.toml --bin redoxfs-fuse $(BUILD)/harddrive.bin $(BUILD)/harddrive/ &
+	sleep 2
+
+unmount: FORCE
+	sync
+	-$(FUMOUNT) $(BUILD)/harddrive/
+	rm -rf $(BUILD)/harddrive/
+
+
 virtualbox: $(BUILD)/harddrive.bin
 	echo "Delete VM"
 	-$(VBM) unregistervm Redox --delete; $(VBM_CLEANUP)
@@ -728,6 +739,6 @@ wireshark:
 	wireshark $(BUILD)/network.pcap
 
 %:
-	@echo "ERROR: Unknown target. Maybe you forgot to get the submodules (git submodule update --init --recursive)"
-	exit 100
+	@echo "ERROR: Unknown target '$@'. Maybe you forgot to get the submodules (git submodule update --init --recursive)"
+	@exit 100
 
