@@ -34,7 +34,12 @@ impl Ahci {
                                           match port_type {
                                               HbaPortType::SATA => {
                                                   disk.port.init();
-                                                  Some(disk as Box<Disk>)
+                                                  if let Some(size) = unsafe { disk.port.identify() } {
+                                                      disk.size = size;
+                                                      Some(disk as Box<Disk>)
+                                                  } else {
+                                                      None
+                                                  }
                                               }
                                               _ => None,
                                           }
@@ -58,7 +63,7 @@ impl AhciDisk {
             port: &mut unsafe { &mut *(base as *mut HbaMem) }.ports[port_index],
             port_index: port_index,
             irq: irq,
-            size: 1024*1024*1024 //TODO: Get actual value
+            size: 0
         }
     }
 }
