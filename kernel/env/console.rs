@@ -328,7 +328,7 @@ RAW MODE
                         if ! self.command.is_empty() {
                             let mut command = String::new();
                             mem::swap(&mut self.command, &mut command);
-                            self.commands.send(command);
+                            self.commands.send(command, "Console::event command (raw)");
                         }
                     } else {
                         match key_event.scancode {
@@ -349,7 +349,7 @@ RAW MODE
                                     if c == '\n' {
                                         let mut command = String::new();
                                         mem::swap(&mut self.command, &mut command);
-                                        self.commands.send(command);
+                                        self.commands.send(command, "Console::event command (not raw)");
                                     }
                                 }
                             },

@@ -40,7 +40,7 @@ pub fn nanosleep(req: *const TimeSpec, rem: *mut TimeSpec) -> Result<usize> {
         // Copied with * to avoid borrow issue on current.blocked = true
         let req_safe = *current.get_ref(req)?;
 
-        current.blocked = true;
+        current.block("nanosleep");
         current.wake = Some(Duration::monotonic() + Duration::new(req_safe.tv_sec, req_safe.tv_nsec));
     }
 

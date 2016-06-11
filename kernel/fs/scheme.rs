@@ -13,7 +13,7 @@ use arch::context::{Context, ContextMemory};
 
 use sync::{WaitMap, WaitQueue};
 
-use system::error::{Error, Result, EBADF, EFAULT, EINVAL, ENODEV, ESPIPE};
+use system::error::{Error, Result, EFAULT, EINVAL, ENODEV, ESPIPE};
 use system::scheme::Packet;
 use system::syscall::{SYS_CLOSE, SYS_DUP, SYS_FPATH, SYS_FSTAT, SYS_FSYNC, SYS_FTRUNCATE,
                     SYS_OPEN, SYS_LSEEK, SEEK_SET, SEEK_CUR, SEEK_END, SYS_MKDIR,
@@ -51,14 +51,19 @@ impl SchemeInner {
             }
             scheme.next_id.set(next_id);
 
+            // debugln!("{} {}: {} {} {:X} {:X} {:X}", scheme.name, id, a, ::syscall::name(a), b, c, d);
+
             scheme.todo.send(Packet {
                 id: id,
                 a: a,
                 b: b,
                 c: c,
                 d: d
-            });
-            Error::demux(scheme.done.receive(&id).0)
+            }, "SchemeInner::call todo");
+
+            let res = Error::demux(scheme.done.receive(&id, "SchemeInner::call done").0);
+            // debugln!("{} {}: {} {} {:X} {:X} {:X} = {:?}", scheme.name, id, a, ::syscall::name(a), b, c, d, res);
+            res
         } else {
             Err(Error::new(ENODEV))
         }
@@ -286,7 +291,7 @@ impl Resource for SchemeServerResource {
         if buf.len() >= size_of::<Packet>() {
             let mut i = 0;
 
-            let packet = self.inner.todo.receive();
+            let packet = self.inner.todo.receive("SchemeServerResource::read todo");
             unsafe { ptr::write(buf.as_mut_ptr().offset(i as isize) as *mut Packet, packet); }
             i += size_of::<Packet>();
 
@@ -312,7 +317,7 @@ impl Resource for SchemeServerResource {
 
             while i <= buf.len() - size_of::<Packet>() {
                 let packet = unsafe { & *(buf.as_ptr().offset(i as isize) as *const Packet) };
-                self.inner.done.send(packet.id, (packet.a, packet.b, packet.c, packet.d));
+                self.inner.done.send(packet.id, (packet.a, packet.b, packet.c, packet.d), "SchemeServerResource::write done");
                 i += size_of::<Packet>();
             }
 

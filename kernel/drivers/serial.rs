@@ -80,7 +80,28 @@ impl KScheme for Serial {
                 c = '\0';
             } else if c == '\x03' {
                 console.write(b"^C\n");
-                console.commands.send(String::new());
+                console.commands.send(String::new(), "Serial Control C");
+
+                c = '\0';
+                sc = 0;
+            } else if c == '\x04' {
+                console.write(b"^D\n");
+
+                {
+                    let contexts = unsafe { &mut *::env().contexts.get() };
+                    debugln!("Magic CTRL-D {}", ::common::time::Duration::monotonic().secs);
+                    for context in contexts.iter() {
+                        debugln!("  PID {}: {}", context.pid, context.name);
+
+                        if context.blocked > 0 {
+                            debugln!("    BLOCKED {}", context.blocked);
+                        }
+
+                        if let Some(current_syscall) = context.current_syscall {
+                            debugln!("    SYS {:X}: {} {} {:X} {:X} {:X}", current_syscall.0, current_syscall.1, ::syscall::name(current_syscall.1), current_syscall.2, current_syscall.3, current_syscall.4);
+                        }
+                    }
+                }
 
                 c = '\0';
                 sc = 0;

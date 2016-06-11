@@ -30,16 +30,16 @@ impl<T> WaitQueue<T> {
         }
     }
 
-    pub fn receive(&self) -> T {
+    pub fn receive(&self, reason: &str) -> T {
         loop {
             if let Some(value) = unsafe { self.inner() }.pop_front() {
                 return value;
             }
-            self.condition.wait();
+            self.condition.wait(reason);
         }
     }
 
-    pub fn receive_all(&self) -> VecDeque<T> {
+    pub fn receive_all(&self, reason: &str) -> VecDeque<T> {
         loop {
             {
                 let mut inner = unsafe { self.inner() };
@@ -49,12 +49,12 @@ impl<T> WaitQueue<T> {
                     return swap_inner;
                 }
             }
-            self.condition.wait();
+            self.condition.wait(reason);
         }
     }
 
-    pub fn send(&self, value: T) {
+    pub fn send(&self, value: T, reason: &str) {
         unsafe { self.inner() }.push_back(value);
-        self.condition.notify();
+        self.condition.notify(reason);
     }
 }

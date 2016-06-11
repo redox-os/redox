@@ -1,8 +1,5 @@
-echo ############################
-echo ##  Redox OS has booted   ##
-echo ##  Press enter to login  ##
-echo ############################
-echo
-
 # Login process, handles debug console
 login
+
+# Comment out login, and uncomment the following to go straight to the GUI
+# orbital

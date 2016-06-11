@@ -301,7 +301,7 @@ impl NetworkScheme for Rtl8139 {
 
             while let Some(bytes) = self.inbound.pop_front() {
                 for resource in resources.iter() {
-                    unsafe { (**resource).inbound.send(bytes.clone()) };
+                    unsafe { (**resource).inbound.send(bytes.clone(), "Rtl8139::sync") };
                 }
             }
         }

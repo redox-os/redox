@@ -1,4 +1,4 @@
-use arch::memory;
+use arch::memory::{self, Memory};
 
 use core::mem::size_of;
 use core::u32;
@@ -11,6 +11,7 @@ use super::fis::{FIS_TYPE_REG_H2D, FisRegH2D};
 
 const ATA_CMD_READ_DMA_EXT: u8 = 0x25;
 const ATA_CMD_WRITE_DMA_EXT: u8 = 0x35;
+const ATA_CMD_IDENTIFY: u8 = 0xEC;
 const ATA_DEV_BUSY: u8 = 0x80;
 const ATA_DEV_DRQ: u8 = 0x08;
 
@@ -92,6 +93,114 @@ impl HbaPort {
         }
 
         self.start();
+    }
+
+    pub unsafe fn identify(&mut self) -> Option<u64> {
+        self.is.write(u32::MAX);
+
+        let mut destination = Memory::<u16>::new(256).unwrap();
+
+        if let Some(slot) = self.slot() {
+            // debugln!("Slot {}", slot);
+
+            let clb = self.clb.read() as usize;
+            let cmdheader = &mut *(clb as *mut HbaCmdHeader).offset(slot as isize);
+
+            cmdheader.cfl.write(((size_of::<FisRegH2D>() / size_of::<u32>()) as u8));
+
+            cmdheader.prdtl.write(1);
+
+            let ctba = cmdheader.ctba.read() as usize;
+            ::memset(ctba as *mut u8, 0, size_of::<HbaCmdTable>());
+            let cmdtbl = &mut *(ctba as *mut HbaCmdTable);
+
+            let prdt_entry = &mut cmdtbl.prdt_entry[0];
+            prdt_entry.dba.write(destination.as_mut_ptr() as u64);
+            prdt_entry.dbc.write(512 | 1);
+
+            let cmdfis = &mut *(cmdtbl.cfis.as_ptr() as *mut FisRegH2D);
+
+            cmdfis.fis_type.write(FIS_TYPE_REG_H2D);
+            cmdfis.pm.write(1 << 7);
+            cmdfis.command.write(ATA_CMD_IDENTIFY);
+            cmdfis.device.write(0);
+            cmdfis.countl.write(1);
+            cmdfis.counth.write(0);
+
+            // debugln!("Busy Wait");
+            while self.tfd.readf((ATA_DEV_BUSY | ATA_DEV_DRQ) as u32) {}
+
+            self.ci.writef(1 << slot, true);
+
+            // debugln!("Completion Wait");
+            while self.ci.readf(1 << slot) {
+                if self.is.readf(HBA_PORT_IS_TFES) {
+                    return None;
+                }
+            }
+
+            if self.is.readf(HBA_PORT_IS_TFES) {
+                return None;
+            }
+
+            debug!("     - Serial: ");
+            for word in 10..20 {
+                let d = destination.read(word);
+                let a = ((d >> 8) as u8) as char;
+                if a != ' ' && a != '\0' {
+                    debug!("{}", a);
+                }
+                let b = (d as u8) as char;
+                if b != ' ' && b != '\0' {
+                    debug!("{}", b);
+                }
+            }
+
+            debug!(" Firmware: ");
+            for word in 23..27 {
+                let d = destination.read(word);
+                let a = ((d >> 8) as u8) as char;
+                if a != ' ' && a != '\0' {
+                    debug!("{}", a);
+                }
+                let b = (d as u8) as char;
+                if b != ' ' && b != '\0' {
+                    debug!("{}", b);
+                }
+            }
+
+            debug!(" Model: ");
+            for word in 27..47 {
+                let d = destination.read(word);
+                let a = ((d >> 8) as u8) as char;
+                if a != ' ' && a != '\0' {
+                    debug!("{}", a);
+                }
+                let b = (d as u8) as char;
+                if b != ' ' && b != '\0' {
+                    debug!("{}", b);
+                }
+            }
+
+            let mut sectors = (destination.read(100) as u64) |
+                              ((destination.read(101) as u64) << 16) |
+                              ((destination.read(102) as u64) << 32) |
+                              ((destination.read(103) as u64) << 48);
+
+            if sectors == 0 {
+                debug!(" 28-bit LBA");
+                sectors = (destination.read(60) as u64) | ((destination.read(61) as u64) << 16);
+            } else {
+                debug!(" 48-bit LBA");
+            }
+
+            debugln!(" Size: {} MB", (sectors / 2048) as usize);
+
+            Some(sectors * 512)
+        } else {
+            debugln!("No Command Slots");
+            None
+        }
     }
 
     pub fn start(&mut self) {
