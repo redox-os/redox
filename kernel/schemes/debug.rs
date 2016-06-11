@@ -35,7 +35,7 @@ impl Resource for DebugResource {
 
     fn read(&mut self, buf: &mut [u8]) -> Result<usize> {
         if self.command.is_empty() {
-            self.command = unsafe { &mut *::env().console.get() }.commands.receive();
+            self.command = unsafe { &mut *::env().console.get() }.commands.receive("DebugResource::read");
         }
 
         let mut i = 0;

@@ -77,7 +77,7 @@ impl Resource for NetworkResource {
     fn read(&mut self, buf: &mut [u8]) -> Result<usize> {
         let bytes = unsafe {
             (*self.nic).sync();
-            (*self.ptr).inbound.receive()
+            (*self.ptr).inbound.receive("NetworkResource::read")
         };
 
         let mut i = 0;

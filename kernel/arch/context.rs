@@ -110,7 +110,7 @@ impl ContextManager {
 
     pub unsafe fn clean(&mut self) {
         loop {
-            if self.i >= self.len() {
+            while self.i >= self.len() {
                 self.i -= self.len();
             }
 
@@ -129,7 +129,7 @@ impl ContextManager {
             }
         }
 
-        if self.i >= self.len() {
+        while self.i >= self.len() {
             self.i -= self.len();
         }
     }
@@ -150,11 +150,11 @@ pub unsafe fn context_switch() {
                 contexts.i += 1;
                 contexts.clean();
                 if let Ok(mut next) = contexts.current_mut() {
-                    if next.blocked {
+                    if next.blocked > 0 {
                         if let Some(wake) = next.wake {
                             if wake <= Duration::monotonic() {
-                                next.blocked = false;
                                 next.wake = None;
+                                next.unblock("context_switch wake");
                                 break 'searching;
                             }
                         }
@@ -228,21 +228,102 @@ pub unsafe fn context_clone(regs: &Regs) -> Result<usize> {
             let fx = kernel_stack + CONTEXT_STACK_SIZE;
             ::memcpy(fx as *mut u8, parent.fx as *const u8, 512);
 
+            let stack = if let Some(ref entry) = parent.stack {
+                let physical_address = memory::alloc(entry.virtual_size);
+                if physical_address > 0 {
+                    ::memcpy(physical_address as *mut u8,
+                             entry.physical_address as *const u8,
+                             entry.virtual_size);
+                    Some(ContextMemory {
+                        physical_address: physical_address,
+                        virtual_address: entry.virtual_address,
+                        virtual_size: entry.virtual_size,
+                        writeable: entry.writeable,
+                        allocated: true,
+                    })
+                } else {
+                    None
+                }
+            } else {
+                None
+            };
+
+            let image = if flags & syscall::CLONE_VM == syscall::CLONE_VM {
+                //debugln!("{}: {}: clone memory for {}", parent.pid, parent.name, clone_pid);
+
+                parent.image.clone()
+            } else {
+                Arc::new(UnsafeCell::new((*parent.image.get()).dup()))
+            };
+
+            let heap = if flags & syscall::CLONE_VM == syscall::CLONE_VM {
+                //debugln!("{}: {}: clone memory for {}", parent.pid, parent.name, clone_pid);
+
+                parent.heap.clone()
+            } else {
+                Arc::new(UnsafeCell::new((*parent.heap.get()).dup()))
+            };
+
+            let mmap = if flags & syscall::CLONE_VM == syscall::CLONE_VM {
+                //debugln!("{}: {}: clone memory for {}", parent.pid, parent.name, clone_pid);
+
+                parent.mmap.clone()
+            } else {
+                Arc::new(UnsafeCell::new((*parent.mmap.get()).dup()))
+            };
+
+            let env_vars = if flags & syscall::CLONE_VM == syscall::CLONE_VM {
+                parent.env_vars.clone()
+            } else {
+                Arc::new(UnsafeCell::new((*parent.env_vars.get()).clone()))
+            };
+
+            let cwd = if flags & syscall::CLONE_FS == syscall::CLONE_FS {
+                parent.cwd.clone()
+            } else {
+                Arc::new(UnsafeCell::new((*parent.cwd.get()).clone()))
+            };
+
+            let files = if flags & syscall::CLONE_FILES == syscall::CLONE_FILES {
+                //debugln!("{}: {}: clone resources for {}", parent.pid, parent.name, clone_pid);
+
+                parent.files.clone()
+            } else {
+                let mut files: Vec<ContextFile> = Vec::new();
+                for file in (*parent.files.get()).iter() {
+                    match file.resource.dup() {
+                        Ok(resource) => {
+                            //debugln!("{}: {}: dup resource {} for {}", parent.pid, parent.name, file.fd, clone_pid);
+
+                            files.push(ContextFile {
+                                fd: file.fd,
+                                resource: resource,
+                            });
+                        },
+                        Err(_err) => () //debugln!("{}: {}: failed to dup resource {} for {}: {}", parent.pid, parent.name, file.fd, clone_pid, err)
+                    }
+                }
+                Arc::new(UnsafeCell::new(files))
+            };
+
+            // Must be last, so blocking does not cause a deadlock
+            let vfork = if flags & syscall::CLONE_VFORK == syscall::CLONE_VFORK {
+                parent.block("context_clone vfork");
+                Some(parent.deref_mut() as *mut Context)
+            } else {
+                None
+            };
+
             box Context {
                 pid: clone_pid,
                 ppid: parent.pid,
                 name: parent.name.clone(),
                 iopl: parent.iopl,
-                blocked: false,
+                blocked: 0,
                 exited: false,
                 switch: 0,
                 time: 0,
-                vfork: if flags & syscall::CLONE_VFORK == syscall::CLONE_VFORK {
-                    parent.blocked = true;
-                    Some(parent.deref_mut())
-                } else {
-                    None
-                },
+                vfork: vfork,
                 wake: None,
 
                 supervised: flags & syscall::CLONE_SUPERVISE == syscall::CLONE_SUPERVISE,
@@ -252,79 +333,15 @@ pub unsafe fn context_clone(regs: &Regs) -> Result<usize> {
                 kernel_stack: kernel_stack,
                 regs: kernel_regs,
                 fx: fx,
-                stack: if let Some(ref entry) = parent.stack {
-                    let physical_address = memory::alloc(entry.virtual_size);
-                    if physical_address > 0 {
-                        ::memcpy(physical_address as *mut u8,
-                                 entry.physical_address as *const u8,
-                                 entry.virtual_size);
-                        Some(ContextMemory {
-                            physical_address: physical_address,
-                            virtual_address: entry.virtual_address,
-                            virtual_size: entry.virtual_size,
-                            writeable: entry.writeable,
-                            allocated: true,
-                        })
-                    } else {
-                        None
-                    }
-                } else {
-                    None
-                },
+                stack: stack,
                 loadable: parent.loadable,
 
-                image: if flags & syscall::CLONE_VM == syscall::CLONE_VM {
-                    //debugln!("{}: {}: clone memory for {}", parent.pid, parent.name, clone_pid);
-
-                    parent.image.clone()
-                } else {
-                    Arc::new(UnsafeCell::new((*parent.image.get()).dup()))
-                },
-                heap: if flags & syscall::CLONE_VM == syscall::CLONE_VM {
-                    //debugln!("{}: {}: clone memory for {}", parent.pid, parent.name, clone_pid);
-
-                    parent.heap.clone()
-                } else {
-                    Arc::new(UnsafeCell::new((*parent.heap.get()).dup()))
-                },
-                mmap: if flags & syscall::CLONE_VM == syscall::CLONE_VM {
-                    //debugln!("{}: {}: clone memory for {}", parent.pid, parent.name, clone_pid);
-
-                    parent.mmap.clone()
-                } else {
-                    Arc::new(UnsafeCell::new((*parent.mmap.get()).dup()))
-                },
-                env_vars: if flags & syscall::CLONE_VM == syscall::CLONE_VM {
-                    parent.env_vars.clone()
-                } else {
-                    Arc::new(UnsafeCell::new((*parent.env_vars.get()).clone()))
-                },
-                cwd: if flags & syscall::CLONE_FS == syscall::CLONE_FS {
-                    parent.cwd.clone()
-                } else {
-                    Arc::new(UnsafeCell::new((*parent.cwd.get()).clone()))
-                },
-                files: if flags & syscall::CLONE_FILES == syscall::CLONE_FILES {
-                    //debugln!("{}: {}: clone resources for {}", parent.pid, parent.name, clone_pid);
-
-                    parent.files.clone()
-                } else {
-                    let mut files: Vec<ContextFile> = Vec::new();
-                    for file in (*parent.files.get()).iter() {
-                        match file.resource.dup() {
-                            Ok(resource) => {
-                                //debugln!("{}: {}: dup resource {} for {}", parent.pid, parent.name, file.fd, clone_pid);
-
-                                files.push(ContextFile {
-                                    fd: file.fd,
-                                    resource: resource,
-                                });
-                            },
-                            Err(_err) => () //debugln!("{}: {}: failed to dup resource {} for {}: {}", parent.pid, parent.name, file.fd, clone_pid, err)
-                        }
-                    }
-                    Arc::new(UnsafeCell::new(files))
-                },
+                image: image,
+                heap: heap,
+                mmap: mmap,
+                env_vars: env_vars,
+                cwd: cwd,
+                files: files,
 
                 statuses: WaitMap::new(),
             }
@@ -601,7 +618,7 @@ pub struct Context {
     /// The I/O privilege level
     pub iopl: usize,
     /// Indicates that the context is blocked, and should not be switched to
-    pub blocked: bool,
+    pub blocked: usize,
     /// Indicates that the context exited
     pub exited: bool,
     /// How many times was the context switched to
@@ -698,7 +715,7 @@ impl Context {
             ppid: 0,
             name: "kidle".into(),
             iopl: 3,
-            blocked: false,
+            blocked: 0,
             exited: false,
             switch: 0,
             time: 0,
@@ -740,7 +757,7 @@ impl Context {
             ppid: 0,
             name: name,
             iopl: 3,
-            blocked: false,
+            blocked: 0,
             exited: false,
             switch: 0,
             time: 0,
@@ -796,6 +813,24 @@ impl Context {
         }
 
         ret
+    }
+
+    pub fn block(&mut self, _reason: &str) {
+        self.blocked += 1;
+        // debugln!("    BLOCK {}: {}: {} {}", self.pid, self.name, self.blocked, reason);
+    }
+
+    pub fn unblock(&mut self, _reason: &str) {
+        // debugln!("    UNBLOCK {}: {}: {} {}", self.pid, self.name, self.blocked, reason);
+        if self.blocked > 0 {
+            self.blocked -= 1;
+        }
+    }
+
+    pub fn exit(&mut self) {
+        // debugln!("    EXIT {}: {}", self.pid, self.name);
+        self.files = Arc::new(UnsafeCell::new(Vec::new()));
+        self.exited = true;
     }
 
     pub fn canonicalize(&self, path: &str) -> String {
@@ -1088,10 +1123,10 @@ impl Context {
 impl Drop for Context {
     fn drop(&mut self) {
         if let Some(vfork) = self.vfork.take() {
-            unsafe { (*vfork).blocked = false; }
+            unsafe { (*vfork).unblock("Context::drop vfork") };
         }
         if self.kernel_stack > 0 {
-            unsafe { memory::unalloc(self.kernel_stack); }
+            unsafe { memory::unalloc(self.kernel_stack) };
         }
     }
 }

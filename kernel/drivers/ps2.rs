@@ -337,7 +337,7 @@ impl KScheme for Ps2 {
                         if unsafe { & *::env().console.get() }.draw {
                             //Ignore mouse event
                         } else {
-                            ::env().events.send(mouse_event.to_event());
+                            ::env().events.send(mouse_event.to_event(), "Ps2::on_irq mouse");
                         }
                     }
                 } else if status & 0x21 == 0x01 {
@@ -346,7 +346,7 @@ impl KScheme for Ps2 {
                         if unsafe { & *::env().console.get() }.draw {
                             unsafe { &mut *::env().console.get() }.event(key_event.to_event());
                         } else {
-                            ::env().events.send(key_event.to_event());
+                            ::env().events.send(key_event.to_event(), "Ps2::on_irq key");
                         }
                     }
                 } else {

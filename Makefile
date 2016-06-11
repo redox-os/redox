@@ -59,7 +59,7 @@ endif
 
 .PHONY: help all doc apps bins c_bins clean FORCE \
 	drivers c_binutils binutils coreutils extrautils games \
-	qemu qemu_bare qemu_tap bochs \
+	qemu qemu_no_build bochs mount unmount \
 	virtualbox virtualbox_tap \
 	arping ping wireshark
 
@@ -240,10 +240,6 @@ filesystem/bin/%: crates/%/main.rs crates/%/*.rs $(BUILD)/libstd.rlib
 	mkdir -p filesystem/bin
 	$(RUSTC) $(RUSTCFLAGS) -C lto --crate-type bin -o $@ $<
 
-filesystem/bin/%: libc/bin/%
-	mkdir -p filesystem/bin
-	cp $< $@
-
 $(BUILD)/librusttype.rlib: crates/rusttype/src/lib.rs crates/rusttype/src/*.rs crates/rusttype/src/*/*.rs $(BUILD)/libstd.rlib
 	$(CARGO) --manifest-path crates/rusttype/Cargo.toml --lib $(CARGOFLAGS)
 
@@ -270,7 +266,13 @@ filesystem/bin/%: crates/%/main.rs crates/%/*.rs $(BUILD)/libstd.rlib
 	mkdir -p filesystem/bin
 	$(RUSTC) $(RUSTCFLAGS) -C lto --crate-type bin -o $@ $<
 
+filesystem/bin/%: libc/bin/%
+	mkdir -p filesystem/bin
+	cp $< $@
 
+filesystem/lib/%: libc/lib/%
+	mkdir -p filesystem/lib
+	cp $< $@
 
 c_binutils: \
 	filesystem/bin/addr2line \
@@ -292,6 +294,8 @@ c_binutils: \
 
 c_bins: \
 	c_binutils \
+	filesystem/lib/libc.a \
+	filesystem/lib/libm.a \
 	filesystem/bin/c-test \
 	filesystem/bin/ed \
   	filesystem/bin/lua \
@@ -322,6 +326,9 @@ refs: FORCE
 	cargo run --manifest-path crates/docgen/Cargo.toml -- crates/coreutils/src/bin/ filesystem/ref/
 	cargo run --manifest-path crates/docgen/Cargo.toml -- crates/extrautils/src/bin/ filesystem/ref/
 	cargo run --manifest-path crates/docgen/Cargo.toml -- kernel/ filesystem/ref/
+
+initfs/%.list: initfs/%
+	$(OBJDUMP) -C -M intel -D $< > $@
 
 initfs/bin/init: crates/init/main.rs crates/init/*.rs $(BUILD)/libstd.rlib
 	mkdir -p initfs/bin/
@@ -594,6 +601,17 @@ $(BUILD)/filesystem.bin: apps bins
 $(BUILD)/harddrive.bin: kernel/harddrive.asm $(BUILD)/kernel.bin $(BUILD)/filesystem.bin
 	$(AS) -f bin -o $@ -l $(BUILD)/harddrive.list -D ARCH_$(ARCH) -D TIME="`$(DATE) "+%F %T"`" -i$(BUILD)/ -ikernel/ -ifilesystem/ $<
 
+mount: FORCE
+	mkdir -p $(BUILD)/harddrive/
+	cargo run --manifest-path crates/redoxfs/Cargo.toml --bin redoxfs-fuse $(BUILD)/harddrive.bin $(BUILD)/harddrive/ &
+	sleep 2
+
+unmount: FORCE
+	sync
+	-$(FUMOUNT) $(BUILD)/harddrive/
+	rm -rf $(BUILD)/harddrive/
+
+
 virtualbox: $(BUILD)/harddrive.bin
 	echo "Delete VM"
 	-$(VBM) unregistervm Redox --delete; $(VBM_CLEANUP)
@@ -695,6 +713,19 @@ qemu: $(BUILD)/harddrive.bin
 		sudo ip tuntap del dev tap_redox mode tap; \
 	fi
 
+qemu_no_build:
+	@if [ "$(net)" = "tap" ]; \
+	then \
+		sudo ip tuntap add dev tap_redox mode tap user "${USER}"; \
+		sudo ifconfig tap_redox 10.85.85.1 up; \
+	fi
+	-$(QEMU) $(QFLAGS)
+	@if [ "$(net)" = "tap" ]; \
+	then \
+		sudo ifconfig tap_redox down; \
+		sudo ip tuntap del dev tap_redox mode tap; \
+	fi
+
 gdb: $(BUILD)/kernel.bin
 	gdb $(BUILD)/kernel.bin -ex "target remote :1234"
 
@@ -708,6 +739,6 @@ wireshark:
 	wireshark $(BUILD)/network.pcap
 
 %:
-	@echo "ERROR: Unknown target. Maybe you forgot to get the submodules (git submodule update --init --recursive)"
-	exit 100
+	@echo "ERROR: Unknown target '$@'. Maybe you forgot to get the submodules (git submodule update --init --recursive)"
+	@exit 100
 

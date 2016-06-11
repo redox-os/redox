@@ -5,7 +5,7 @@
            unwind_attributes, zero_one, collections_range, question_mark, type_ascription)]
 #![no_std]
 
-//#![deny(warnings)]
+#![deny(warnings)]
 // #![deny(missing_docs)]
 
 #[macro_use]
@@ -207,7 +207,7 @@ fn idle_loop() {
         let mut halt = true;
 
         for context in unsafe { & *env().contexts.get() }.iter().skip(1) {
-            if !context.blocked {
+            if context.blocked == 0 {
                 halt = false;
                 break;
             }

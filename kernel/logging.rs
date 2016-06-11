@@ -63,10 +63,19 @@ pub fn syslog(level: LogLevel, message: &str) {
 //TODO: Limit log message size
 pub fn syslog_inner(level: LogLevel, message: String) {
     let time = Duration::monotonic();
+
+    let prefix: &str = match level {
+        LogLevel::Debug    => "DEBUG ",
+        LogLevel::Info     => "INFO  ",
+        LogLevel::Warning  => "WARN  ",
+        LogLevel::Error    => "ERROR ",
+        LogLevel::Critical => "CRIT  ",
+    };
+    debugln!("[{}.{:>03}] {}{}", time.secs, time.nanos/1000000, prefix, message);
+
     let logs = unsafe { &mut *::env().logs.get() };
     while logs.len() >= 4096 {
         logs.pop_front();
     }
     logs.push_back((time, level, message));
-    //TODO: Print messages that are above priority
 }
