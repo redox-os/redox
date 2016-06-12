@@ -248,19 +248,20 @@ usage()
 rustInstall() {
 	# Check to see if multirust is installed, we don't want it messing with rustup
 	# In th future we can probably remove this but I believe it's good to have for now	
-	if hash 2>/dev/null multirust; then
+	if [ -e /usr/local/lib/rustlib/uninstall.sh ] ; then
 		echo "It appears that multirust is installed on your system."
-		echo "This tool has been depreciated by the maintainer, and will cause issues."
+		echo "This tool has been deprecated by the maintainer, and will cause issues."
 		echo "This script can remove multirust from your system if you wish."
-		echo "*WARNING* this involves a 'curl | sh' style command"
 		printf "Uninstall multirust (y/N):"
 		read multirust
 		if echo "$multirust" | grep -iq "^y" ;then
-			curl -sf https://raw.githubusercontent.com/brson/multirust/master/blastoff.sh | sh -s -- --uninstall
+			sudo /usr/local/lib/rustlib/uninstall.sh	
 		else
 			echo "Please manually uninstall multirust and any other versions of rust, then re-run bootstrap."
 			exit
 		fi
+	else
+		echo "Old multirust not installed, you are good to go."
 	fi
 	# If rustup is not installed we should offer to install it for them	
 	if [ -z "$(which rustup)" ]; then
@@ -274,7 +275,9 @@ rustInstall() {
 			#install rustup
 			curl https://sh.rustup.rs -sSf | sh -s -- --default-toolchain nightly
 			# You have to add the rustup variables to the $PATH	
-			echo "export PATH=\"\$HOME/.cargo/bin:\$PATH\"" >> ~/.bashrc	
+			echo "export PATH=\"\$HOME/.cargo/bin:\$PATH\"" >> ~/.bashrc
+			# source the variables so that we can execute rustup commands in the current shell
+			source ~/.cargo/env	
 			rustup default nightly
 		else
 			echo "Rustup will not be installed!"
@@ -345,7 +348,7 @@ statusCheck() {
 boot()
 {
 	echo "Cloning github repo..."
-	git clone https://github.com/redox-os/redox.git --origin upstream --recursive	
+	#git clone https://github.com/redox-os/redox.git --origin upstream --recursive	
 	rustInstall
 	echo "Cleaning up..."
 	rm bootstrap.sh
