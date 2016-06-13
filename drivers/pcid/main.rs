@@ -2,9 +2,7 @@ extern crate system;
 
 use system::syscall::sys_iopl;
 
-use std::thread;
-
-use pci::{Pci, PciClass};
+use pci::{Pci, PciBar, PciClass};
 
 mod pci;
 
@@ -21,6 +19,13 @@ fn enumerate_pci() {
                             header.vendor_id, header.device_id,
                             header.class, header.subclass, header.interface, header.revision,
                             PciClass::from(header.class));
+                    for i in 0..header.bars.len() {
+                        match PciBar::from(header.bars[i]) {
+                            PciBar::None => (),
+                            PciBar::Memory(address) => println!("    BAR {} {:>08X}", i, address),
+                            PciBar::Port(address) => println!("    BAR {} {:>04X}", i, address)
+                        }
+                    }
                 }
             }
         }
@@ -28,11 +33,7 @@ fn enumerate_pci() {
 }
 
 fn main() {
-    thread::spawn(|| {
-        unsafe { sys_iopl(3).unwrap() };
+    unsafe { sys_iopl(3).unwrap() };
 
-        enumerate_pci();
-
-        thread::sleep_ms(10000);
-    });
+    enumerate_pci();
 }

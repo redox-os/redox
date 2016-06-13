@@ -4,12 +4,14 @@ use self::io::{Io, Pio};
 
 use std::cell::RefCell;
 
+pub use self::bar::PciBar;
 pub use self::bus::{PciBus, PciBusIter};
 pub use self::class::PciClass;
 pub use self::dev::{PciDev, PciDevIter};
 pub use self::func::PciFunc;
 pub use self::header::PciHeader;
 
+mod bar;
 mod bus;
 mod class;
 mod dev;
