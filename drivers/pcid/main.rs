@@ -19,12 +19,44 @@ fn enumerate_pci() {
                             header.vendor_id, header.device_id,
                             header.class, header.subclass, header.interface, header.revision,
                             PciClass::from(header.class));
+
                     for i in 0..header.bars.len() {
                         match PciBar::from(header.bars[i]) {
                             PciBar::None => (),
                             PciBar::Memory(address) => println!("    BAR {} {:>08X}", i, address),
                             PciBar::Port(address) => println!("    BAR {} {:>04X}", i, address)
                         }
+                    }
+
+                    match PciClass::from(header.class) {
+                        PciClass::Storage => match header.subclass {
+                            0x01 => {
+                                println!("    + IDE");
+                            },
+                            0x06 => {
+                                println!("    + SATA");
+                            },
+                            _ => ()
+                        },
+                        PciClass::SerialBus => match header.subclass {
+                            0x03 => match header.interface {
+                                0x00 => {
+                                    println!("    + UHCI");
+                                },
+                                0x10 => {
+                                    println!("    + OHCI");
+                                },
+                                0x20 => {
+                                    println!("    + EHCI");
+                                },
+                                0x30 => {
+                                    println!("    + XHCI");
+                                },
+                                _ => ()
+                            },
+                            _ => ()
+                        },
+                        _ => ()
                     }
                 }
             }
