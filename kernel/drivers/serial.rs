@@ -8,12 +8,17 @@ use drivers::io::{Io, Pio};
 
 use fs::KScheme;
 
+#[derive(Copy, Clone, Debug, Default)]
 #[repr(packed)]
-struct SerialInfo {
+pub struct SerialInfo {
     pub ports: [u16; 4],
 }
 
-const SERIALINFO: *const SerialInfo = 0x400 as *const SerialInfo;
+pub static mut SERIALINFO: Option<SerialInfo> = None;
+
+pub unsafe fn bda_init() {
+    SERIALINFO = Some(*(0x400 as *const SerialInfo));
+}
 
 /// Serial
 pub struct Serial {

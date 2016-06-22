@@ -40,7 +40,7 @@ use drivers::pci;
 use drivers::io::{Io, Pio};
 use drivers::ps2::*;
 use drivers::rtc::*;
-use drivers::serial::*;
+use drivers::serial::{self, Serial};
 
 use env::Environment;
 
@@ -274,6 +274,9 @@ unsafe fn init(tss_data: usize) {
     // Setup paging, this allows for memory allocation
     Page::init();
     memory::cluster_init();
+
+    // Get the serial information
+    serial::bda_init();
 
     // Get the VBE information before unmapping the first megabyte
     display::vbe_init();
