@@ -91,7 +91,7 @@ impl Resource for UdpResource {
     }
 
     fn read(&mut self, buf: &mut [u8]) -> Result<usize> {
-        if !self.data.is_empty() {
+        if ! self.data.is_empty() {
             let mut bytes: Vec<u8> = Vec::new();
             mem::swap(&mut self.data, &mut bytes);
 
@@ -178,32 +178,43 @@ impl KScheme for UdpScheme {
         let remote = parts.next().unwrap_or("");
         let path = parts.next().unwrap_or("");
 
+        debugln!("UDP OPEN R {} P {}", remote, path);
+
         // Check host and port vs path
         if ! path.is_empty() {
-            let mut remote_parts = remote.split(':');
-            let host_port = remote_parts.nth(1).unwrap_or("").parse::<usize>().unwrap_or(0);
-            if host_port > 0 && host_port < 65536 {
-                if let Ok(mut ip) = Url::from_str("ip:/11").unwrap().open() {
+            let host_port = path.parse::<u16>().unwrap_or(0);
+            if host_port > 0 {
+                while let Ok(mut ip) = Url::from_str("ip:/11").unwrap().open() {
                     let mut bytes = [0; 8192];
                     if let Ok(count) = ip.read(&mut bytes) {
                         if let Some(datagram) = Udp::from_bytes(bytes[.. count].to_vec()) {
-                            if datagram.header.dst.get() as usize == host_port {
+                            debugln!("UDP {} to {}", datagram.header.src.get(), datagram.header.dst.get());
+                            if datagram.header.dst.get() == host_port {
+                                debugln!("GOT PACKET");
                                 let mut path = [0; 256];
                                 if let Ok(path_count) = ip.path(&mut path) {
                                     let ip_reference = unsafe { str::from_utf8_unchecked(&path[.. path_count]) }.split(':').nth(1).unwrap_or("");
-                                    let ip_remote = ip_reference.split('/').next().unwrap_or("");
-                                    let peer_addr = ip_remote.split(':').next().unwrap_or("");
+                                    let peer_addr = ip_reference.split('/').next().unwrap_or("").split(':').next().unwrap_or("");
 
+                                    debugln!("FROM {} = {}: {} = {:?}", ip_reference, peer_addr, datagram.data.len(), datagram.data);
                                     return Ok(Box::new(UdpResource {
                                         ip: ip,
                                         data: datagram.data,
                                         peer_addr: Ipv4Addr::from_string(&peer_addr.to_string()),
                                         peer_port: datagram.header.src.get(),
-                                        host_port: host_port as u16,
+                                        host_port: host_port,
                                     }));
+                                } else {
+                                    debugln!("FAILED TO GET PATH");
                                 }
+                            } else {
+                                debugln!("WRONG DST {}", datagram.header.dst.get());
                             }
+                        } else {
+                            debugln!("Not UDP {}", count);
                         }
+                    } else {
+                        debugln!("NO DATA");
                     }
                 }
             }

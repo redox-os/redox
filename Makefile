@@ -221,6 +221,7 @@ extrautils: \
 	filesystem/bin/less \
 	filesystem/bin/man \
 	filesystem/bin/mtxt \
+	filesystem/bin/nc \
 	filesystem/bin/rem \
 	filesystem/bin/wget
 
@@ -741,4 +742,3 @@ wireshark:
 %:
 	@echo "ERROR: Unknown target '$@'. Maybe you forgot to get the submodules (git submodule update --init --recursive)"
 	@exit 100
-
