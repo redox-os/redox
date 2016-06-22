@@ -44,14 +44,28 @@ impl Serial {
             cursor_control: false,
         }
     }
+
+    pub fn writeb(&mut self, byte: u8){
+        while !self.status.readf(0x20) {}
+        self.data.write(byte);
+    }
+
+    pub fn write(&mut self, bytes: &[u8]) {
+        for &byte in bytes.iter() {
+            self.writeb(byte);
+        }
+    }
+
+    pub fn readb(&mut self) -> u8 {
+        while self.status.read() & 1 == 0 {}
+        self.data.read()
+    }
 }
 
 impl KScheme for Serial {
     fn on_irq(&mut self, irq: u8) {
         if irq == self.irq {
-            while self.status.read() & 1 == 0 {}
-
-            let mut c = self.data.read() as char;
+            let mut c = self.readb() as char;
             let mut sc = 0;
 
             let console = unsafe { &mut *::env().console.get() };
