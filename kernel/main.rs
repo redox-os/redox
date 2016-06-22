@@ -29,7 +29,7 @@ use arch::paging::Page;
 use arch::regs::Regs;
 use arch::tss::Tss;
 
-use collections::Vec;
+use collections::{String, Vec};
 use collections::string::ToString;
 
 use core::{mem, usize};
@@ -337,6 +337,50 @@ unsafe fn init(tss_data: usize) {
         Some(ref mut env) => {
             (&mut *env.contexts.get()).push(Context::root());
 
+            let mut serial = Serial::new(0x3F8, 0x4);
+
+            let mut term_columns;
+            let mut term_lines;
+            match (& *::env().console.get()).display {
+                Some(ref display) => {
+                    term_columns = format!("{}", display.width/8);
+                    term_lines = format!("{}", display.height/16);
+                },
+                None => {
+                    term_columns = String::new();
+                    term_lines = String::new();
+                    //Magic for getting serial size
+                    serial.write("ANSI Terminal Size:\n\x1B[s\x1B[9999;9999f\x1B[6n\x1B[u".as_bytes());
+                    let mut escaped = 0;
+                    let mut param = 0;
+                    loop {
+                        let c = serial.readb() as char;
+                        match c {
+                            '\0' => break,
+                            '\x1B' if escaped == 0 => escaped = 1,
+                            '[' if escaped == 1 => escaped = 2,
+                            '0' ... '9' if escaped == 2 => if param == 0 {
+                                term_lines.push(c);
+                            } else if param == 1 {
+                                term_columns.push(c);
+                            },
+                            ';' if escaped == 2 => param += 1,
+                            'R' if escaped == 2 => break,
+                            _ => {
+                                escaped = 0;
+                                param = 0;
+                            }
+                        }
+                    }
+                    serial.write(term_columns.as_bytes());
+                    serial.write(", ".as_bytes());
+                    serial.write(term_lines.as_bytes());
+                    serial.write("\n".as_bytes());
+                }
+            }
+
+            (&mut *env.schemes.get()).push(serial);
+
             (&mut *env.console.get()).draw = true;
 
             debugln!("\x1B[1mRedox {} bits\x1B[0m", mem::size_of::<usize>() * 8);
@@ -354,7 +398,6 @@ unsafe fn init(tss_data: usize) {
             *env.clock_realtime.get() = Rtc::new().time();
 
             (&mut *env.schemes.get()).push(Ps2::new());
-            (&mut *env.schemes.get()).push(Serial::new(0x3F8, 0x4));
 
             pci::pci_init(env);
 
@@ -416,10 +459,8 @@ unsafe fn init(tss_data: usize) {
 
                     current.set_env_var("PATH", "file:/bin").unwrap();
 
-                    if let Some(ref display) = (& *::env().console.get()).display {
-                        current.set_env_var("COLUMNS", &format!("{}", display.width/8)).unwrap();
-                        current.set_env_var("LINES", &format!("{}", display.height/16)).unwrap();
-                    }
+                    current.set_env_var("COLUMNS", &term_columns).unwrap();
+                    current.set_env_var("LINES", &term_lines).unwrap();
                 }
 
                 syslog_info!("The kernel has finished booting. Running /bin/init");
