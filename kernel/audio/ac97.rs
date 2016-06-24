@@ -57,7 +57,7 @@ impl Resource for Ac97Resource {
             debugln!("MASTER {:X} PCM {:X}", master_volume.read(), pcm_volume.read());
 
             master_volume.write(0);
-            pcm_volume.write(0);
+            pcm_volume.write(0x808);
 
             debugln!("MASTER {:X} PCM {:X}", master_volume.read(), pcm_volume.read());
 
@@ -123,7 +123,18 @@ impl Resource for Ac97Resource {
                 let bytes = cmp::min(65534 * 2, (buf.len() - position + 1));
                 let samples = bytes / 2;
 
-                (*self.bdl.offset(lvi as isize)).ptr.write(buf.as_ptr().offset(position as isize) as u32);
+                let mut phys_buf = buf.as_ptr() as usize;
+                {
+                    let contexts = &mut *::env().contexts.get();
+                    if let Ok(current) = contexts.current() {
+                        if let Ok(phys) = current.translate(buf.as_ptr().offset(position as isize) as usize, bytes) {
+                            debugln!("logical {:#X} -> physical {:#X}", &(buf.as_ptr() as usize), &phys);
+                            phys_buf = phys;
+                        }
+                    }
+                }
+
+                (*self.bdl.offset(lvi as isize)).ptr.write(phys_buf as u32);
                 (*self.bdl.offset(lvi as isize)).samples.write((samples & 0xFFFF) as u32);
 
                 position += bytes;
