@@ -5,7 +5,7 @@ use arch::memory;
 
 use core::{cmp, mem};
 
-use common::time;
+use common::time::{self, Duration};
 
 use drivers::pci::config::PciConfig;
 use drivers::io::{Io, Mmio, Pio, PhysAddr};
@@ -13,7 +13,6 @@ use drivers::io::{Io, Mmio, Pio, PhysAddr};
 use fs::{KScheme, Resource, Url};
 
 use syscall;
-use syscall::TimeSpec;
 
 #[repr(packed)]
 struct Bd {
@@ -55,8 +54,12 @@ impl Resource for Ac97Resource {
             let mut master_volume = Pio::<u16>::new(audio + 2);
             let mut pcm_volume = Pio::<u16>::new(audio + 0x18);
 
-            master_volume.write(0x808);
-            pcm_volume.write(0x808);
+            debugln!("MASTER {:X} PCM {:X}", master_volume.read(), pcm_volume.read());
+
+            master_volume.write(0);
+            pcm_volume.write(0);
+
+            debugln!("MASTER {:X} PCM {:X}", master_volume.read(), pcm_volume.read());
 
             let bus_master = self.bus_master as u16;
 
@@ -100,18 +103,18 @@ impl Resource for Ac97Resource {
                         break;
                     }
 
-                    let req = TimeSpec {
-                        tv_sec: 0,
-                        tv_nsec: 10 * time::NANOS_PER_MILLI
-                    };
-                    let mut rem = TimeSpec {
-                        tv_sec: 0,
-                        tv_nsec: 0,
-                    };
-                    try!(syscall::time::nanosleep(&req, &mut rem));
+                    {
+                        let contexts = &mut *::env().contexts.get();
+                        if let Ok(mut current) = contexts.current_mut() {
+                            current.wake = Some(Duration::monotonic() + Duration::new(0, 10 * time::NANOS_PER_MILLI));
+                            current.block("AC97 sleep 1");
+                        }
+                    }
+
+                    context_switch();
                 }
 
-                debug!("{} / {}: {} / {}\n",
+                debugln!("AC97 {} / {}: {} / {}",
                        po_civ.read(),
                        lvi as usize,
                        position,
@@ -151,18 +154,18 @@ impl Resource for Ac97Resource {
                     break;
                 }
 
-                let req = TimeSpec {
-                    tv_sec: 0,
-                    tv_nsec: 10 * time::NANOS_PER_MILLI
-                };
-                let mut rem = TimeSpec {
-                    tv_sec: 0,
-                    tv_nsec: 0,
-                };
-                try!(syscall::time::nanosleep(&req, &mut rem));
+                {
+                    let contexts = &mut *::env().contexts.get();
+                    if let Ok(mut current) = contexts.current_mut() {
+                        current.wake = Some(Duration::monotonic() + Duration::new(0, 10 * time::NANOS_PER_MILLI));
+                        current.block("AC97 sleep 2");
+                    }
+                }
+
+                context_switch();
             }
 
-            debug!("Finished {} / {}\n", po_civ.read(), lvi);
+            debug!("AC97 Finished {} / {}\n", po_civ.read(), lvi);
         }
 
         Ok(buf.len())
