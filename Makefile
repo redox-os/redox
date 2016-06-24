@@ -317,6 +317,7 @@ bins: \
 	filesystem/bin/launcher \
   	filesystem/bin/login \
   	filesystem/bin/orbital \
+	filesystem/bin/play \
 	filesystem/bin/screenfetch \
 	filesystem/bin/std-test \
   	filesystem/bin/sh
