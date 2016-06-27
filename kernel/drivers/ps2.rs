@@ -1,5 +1,7 @@
 use alloc::boxed::Box;
 
+use collections::String;
+
 use core::cmp;
 
 use common::event::{KeyEvent, MouseEvent};
@@ -47,14 +49,16 @@ pub struct Ps2 {
     sts: ReadOnly<Pio<u8>>,
     /// The command register
     cmd: WriteOnly<Pio<u8>>,
-    /// Left shift?
+    /// Left shift
     lshift: bool,
-    /// Right shift?
+    /// Right shift
     rshift: bool,
-    /// Caps lock?
+    /// Caps lock
     caps_lock: bool,
     /// Caps lock toggle
     caps_lock_toggle: bool,
+    /// Left control
+    lctrl: bool,
     /// AltGr?
     altgr: bool,
     /// The mouse packet
@@ -81,6 +85,7 @@ impl Ps2 {
             rshift: false,
             caps_lock: false,
             caps_lock_toggle: false,
+            lctrl: false,
             altgr: false,
             mouse_packet: [0; 4],
             mouse_i: 0,
@@ -242,6 +247,10 @@ impl Ps2 {
             if self.caps_lock && !self.caps_lock_toggle {
                 self.caps_lock = false;
             }
+        } else if scancode == 0x1D {
+            self.lctrl = true;
+        } else if scancode == 0x9D {
+            self.lctrl = false;
         } else if scancode == 0xE0 {
             let scancode_byte_2 = self.data.read();
             if scancode_byte_2 == 0x38 {
@@ -253,13 +262,47 @@ impl Ps2 {
             }
         }
 
+        if self.lctrl {
+            if scancode == 0x2E {
+                let console = unsafe { &mut *::env().console.get() };
+
+                console.write(b"^C\n");
+                console.commands.send(String::new(), "Serial Control C");
+
+                return None;
+            } else if scancode == 0x20 {
+                let console = unsafe { &mut *::env().console.get() };
+
+                console.write(b"^D\n");
+
+                {
+                    let contexts = unsafe { &mut *::env().contexts.get() };
+                    console.write(format!("Magic CTRL-D {}\n", ::common::time::Duration::monotonic().secs).as_bytes());
+                    for context in contexts.iter() {
+                        console.write(format!("  PID {}: {}\n", context.pid, context.name).as_bytes());
+
+                        if context.blocked > 0 {
+                            console.write(format!("    BLOCKED {}\n", context.blocked).as_bytes());
+                        }
+
+                        if let Some(current_syscall) = context.current_syscall {
+                            console.write(format!("    SYS {:X}: {} {} {:X} {:X} {:X}\n", current_syscall.0, current_syscall.1, ::syscall::name(current_syscall.1), current_syscall.2, current_syscall.3, current_syscall.4).as_bytes());
+                        }
+                    }
+                }
+
+                return None;
+            }
+        }
+
         let shift = self.caps_lock != (self.lshift || self.rshift);
 
-        return Some(KeyEvent {
+
+        Some(KeyEvent {
             character: layouts::char_for_scancode(scancode & 0x7F, shift, self.altgr, &self.layout),
             scancode: scancode & 0x7F,
             pressed: scancode < 0x80,
-        });
+        })
     }
 
     /// Mouse interrupt
