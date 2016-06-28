@@ -75,7 +75,7 @@ impl Disk for AhciDisk {
 
     fn on_irq(&mut self, irq: u8) {
         if irq == self.irq {
-            debugln!("AHCI IRQ");
+            //debugln!("AHCI IRQ");
         }
     }
 

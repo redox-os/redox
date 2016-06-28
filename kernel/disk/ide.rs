@@ -590,7 +590,7 @@ impl Disk for IdeDisk {
 
     fn on_irq(&mut self, irq: u8) {
         if irq == self.irq {
-            debugln!("AHCI IRQ");
+            //debugln!("IDE IRQ");
         }
     }
 
