@@ -221,7 +221,7 @@ impl Ac97 {
             bdl: memory::alloc(32 * mem::size_of::<Bd>()) as *mut Bd,
         };
 
-        debug!(" + AC97 on: {:X}, {:X}, IRQ: {:X}\n", module.audio, module.bus_master, module.irq);
+        syslog_debug!(" + AC97 on: {:X}, {:X}, IRQ: {:X}", module.audio, module.bus_master, module.irq);
 
         let mut po_bdbar = PhysAddr::new(Pio::<u32>::new(module.bus_master as u16 + 0x10));
         po_bdbar.write(module.bdl as u32);
