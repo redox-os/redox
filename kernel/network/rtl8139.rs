@@ -150,7 +150,7 @@ impl Rtl8139 {
     }
 
     unsafe fn init(&mut self) {
-        debugln!(" + RTL8139 on: {:X}, IRQ: {:X}", self.base, self.irq);
+        syslog_debug!(" + RTL8139 on: {:X}, IRQ: {:X}", self.base, self.irq);
 
         self.pci.flag(4, 4, true); // Bus mastering
 
