@@ -2,7 +2,6 @@ use alloc::boxed::Box;
 
 use collections::string::{String, ToString};
 use collections::vec::Vec;
-use collections::vec_deque::VecDeque;
 
 use core::cell::UnsafeCell;
 
@@ -12,16 +11,19 @@ use common::time::Duration;
 use disk::Disk;
 use network::Nic;
 use fs::{KScheme, Resource, Scheme, VecResource, Url};
-use logging::LogLevel;
 use sync::WaitQueue;
 
 use system::error::{Error, Result, ENOENT, EEXIST};
 use system::syscall::{O_CREAT, Stat};
 
 use self::console::Console;
+use self::log::Log;
 
 /// The Kernel Console
 pub mod console;
+
+/// The Kernel Log
+pub mod log;
 
 /// The kernel environment
 pub struct Environment {
@@ -42,7 +44,7 @@ pub struct Environment {
     /// Pending events
     pub events: WaitQueue<Event>,
     /// Kernel logs
-    pub logs: UnsafeCell<VecDeque<(Duration, LogLevel, String)>>,
+    pub log: UnsafeCell<Log>,
     /// Schemes
     pub schemes: UnsafeCell<Vec<Box<KScheme>>>,
 
@@ -62,7 +64,7 @@ impl Environment {
             disks: UnsafeCell::new(Vec::new()),
             nics: UnsafeCell::new(Vec::new()),
             events: WaitQueue::new(),
-            logs: UnsafeCell::new(VecDeque::new()),
+            log: UnsafeCell::new(Log::new()),
             schemes: UnsafeCell::new(Vec::new()),
 
             interrupts: UnsafeCell::new([0; 256]),

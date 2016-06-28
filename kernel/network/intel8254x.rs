@@ -282,7 +282,7 @@ impl Intel8254x {
     }
 
     pub unsafe fn init(&mut self) {
-        debug!(" + Intel 8254x on: {:X}, IRQ: {:X}", self.base, self.irq);
+        syslog_debug!(" + Intel 8254x on: {:X}, IRQ: {:X}", self.base, self.irq);
 
         self.pci.flag(4, 4, true); // Bus mastering
 

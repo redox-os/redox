@@ -189,7 +189,7 @@ impl IntelHda {
     }
 
     pub unsafe fn init(&mut self) {
-        debugln!(" + Intel HDA on: {:X}, IRQ {:X}", self.base, self.irq);
+        syslog_debug!(" + Intel HDA on: {:X}, IRQ {:X}", self.base, self.irq);
 
         return;
         // let pci = &mut self.pci;
