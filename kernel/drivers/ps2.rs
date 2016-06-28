@@ -277,16 +277,16 @@ impl Ps2 {
 
                 {
                     let contexts = unsafe { &mut *::env().contexts.get() };
-                    console.write(format!("Magic CTRL-D {}\n", ::common::time::Duration::monotonic().secs).as_bytes());
+                    debugln!("Magic CTRL-D {}", ::common::time::Duration::monotonic().secs);
                     for context in contexts.iter() {
-                        console.write(format!("  PID {}: {}\n", context.pid, context.name).as_bytes());
+                        debugln!("  PID {}: {}", context.pid, context.name);
 
                         if context.blocked > 0 {
-                            console.write(format!("    BLOCKED {}\n", context.blocked).as_bytes());
+                            debugln!("    BLOCKED {}", context.blocked);
                         }
 
                         if let Some(current_syscall) = context.current_syscall {
-                            console.write(format!("    SYS {:X}: {} {} {:X} {:X} {:X}\n", current_syscall.0, current_syscall.1, ::syscall::name(current_syscall.1), current_syscall.2, current_syscall.3, current_syscall.4).as_bytes());
+                            debugln!("    SYS {:X}: {} {} {:X} {:X} {:X}", current_syscall.0, current_syscall.1, ::syscall::name(current_syscall.1), current_syscall.2, current_syscall.3, current_syscall.4);
                         }
                     }
                 }

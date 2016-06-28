@@ -34,6 +34,11 @@ impl fmt::Write for SerialConsole {
     fn write_str(&mut self, s: &str) -> Result<(), fmt::Error> {
         self.write(s.as_bytes());
 
+        {
+            let console = unsafe { &mut *::env().console.get() };
+            console.write(s.as_bytes());
+        }
+
         Ok(())
     }
 }
