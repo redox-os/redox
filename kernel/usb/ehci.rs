@@ -68,7 +68,7 @@ impl Ehci {
 
     #[allow(non_snake_case)]
     pub unsafe fn init(&mut self) {
-        debugln!(" + EHCI on: {:X}, IRQ {:X}", self.base, self.irq);
+        syslog_debug!(" + EHCI on: {:X}, IRQ {:X}", self.base, self.irq);
 
         /*
         self.pci.flag(4, 4, true); // Bus master

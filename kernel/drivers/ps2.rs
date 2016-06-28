@@ -141,7 +141,7 @@ impl Ps2 {
             self.data.read();
         }
 
-        debugln!(" + PS/2");
+        syslog_debug!(" + PS/2");
 
         // No interrupts, system flag set, clocks enabled, translation enabled
         self.write(0x60, 0b01000100);
@@ -151,7 +151,7 @@ impl Ps2 {
         }
 
         // Enable First Port
-        debugln!("   + Keyboard");
+        syslog_debug!("   + Keyboard");
         self.cmd(0xAE);
 
         while self.sts.readf(1) {
@@ -184,7 +184,7 @@ impl Ps2 {
         }
 
         // Enable Second Port
-        debugln!("   + PS/2 Mouse");
+        syslog_debug!("   + PS/2 Mouse");
         self.cmd(0xA8);
 
         while self.sts.readf(1) {
@@ -277,16 +277,16 @@ impl Ps2 {
 
                 {
                     let contexts = unsafe { &mut *::env().contexts.get() };
-                    console.write(format!("Magic CTRL-D {}\n", ::common::time::Duration::monotonic().secs).as_bytes());
+                    debugln!("Magic CTRL-D {}", ::common::time::Duration::monotonic().secs);
                     for context in contexts.iter() {
-                        console.write(format!("  PID {}: {}\n", context.pid, context.name).as_bytes());
+                        debugln!("  PID {}: {}", context.pid, context.name);
 
                         if context.blocked > 0 {
-                            console.write(format!("    BLOCKED {}\n", context.blocked).as_bytes());
+                            debugln!("    BLOCKED {}", context.blocked);
                         }
 
                         if let Some(current_syscall) = context.current_syscall {
-                            console.write(format!("    SYS {:X}: {} {} {:X} {:X} {:X}\n", current_syscall.0, current_syscall.1, ::syscall::name(current_syscall.1), current_syscall.2, current_syscall.3, current_syscall.4).as_bytes());
+                            debugln!("    SYS {:X}: {} {} {:X} {:X} {:X}", current_syscall.0, current_syscall.1, ::syscall::name(current_syscall.1), current_syscall.2, current_syscall.3, current_syscall.4);
                         }
                     }
                 }
