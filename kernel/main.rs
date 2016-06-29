@@ -60,6 +60,7 @@ use schemes::memory::MemoryScheme;
 use schemes::syslog::SyslogScheme;
 use schemes::test::TestScheme;
 
+use syscall::process::exit;
 use syscall::execute::execute;
 
 pub use externs::*;
@@ -550,7 +551,7 @@ pub extern "cdecl" fn kernel(interrupt: usize, mut regs: &mut Regs) {
             exception_inner!($name);
 
             loop {
-                unsafe { asm!("cli ; hlt" : : : : "intel", "volatile"); }
+                exit(127);
             }
         })
     };
@@ -569,7 +570,7 @@ pub extern "cdecl" fn kernel(interrupt: usize, mut regs: &mut Regs) {
             syslog_debug!("    ERR: {:08X}", error);
 
             loop {
-                unsafe { asm!("cli ; hlt" : : : : "intel", "volatile"); }
+                exit(127);
             }
         })
     };
