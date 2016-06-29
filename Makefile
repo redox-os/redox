@@ -160,7 +160,6 @@ coreutils: \
 	filesystem/bin/cp \
 	filesystem/bin/cut \
 	filesystem/bin/date \
-	filesystem/bin/dmesg \
 	filesystem/bin/du \
 	filesystem/bin/echo \
 	filesystem/bin/env \
@@ -217,6 +216,7 @@ extrautils: \
 	filesystem/bin/calc \
 	filesystem/bin/cksum \
 	filesystem/bin/cur \
+	filesystem/bin/dmesg \
 	filesystem/bin/grep \
 	filesystem/bin/less \
 	filesystem/bin/man \
