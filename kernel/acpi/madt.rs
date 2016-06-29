@@ -85,7 +85,7 @@ impl MADT {
                                     ptr::read(data.as_ptr().offset(i as isize) as *const LocalApic)
                                 });
                             } else {
-                                debugln!("MADT: Unknown LocalApic length: {}", entry_length);
+                                syslog_debug!("MADT: Unknown LocalApic length: {}", entry_length);
                             }
                         }
                         ENTRY_IO_APIC => {
@@ -94,7 +94,7 @@ impl MADT {
                                     ptr::read(data.as_ptr().offset(i as isize) as *const IoApic)
                                 });
                             } else {
-                                debugln!("MADT: Unknown IoApic length: {}", entry_length);
+                                syslog_debug!("MADT: Unknown IoApic length: {}", entry_length);
                             }
                         }
                         ENTRY_INT_SOURCE_OVERRIDE => {
@@ -103,12 +103,12 @@ impl MADT {
                                 ptr::read(data.as_ptr().offset(i as isize) as *const IntSourceOverride)
                             });
                             } else {
-                                debugln!("MADT: Unknown IntSourceOverride length: {}",
+                                syslog_debug!("MADT: Unknown IntSourceOverride length: {}",
                                          entry_length);
                             }
                         }
                         _ => {
-                            debugln!("MADT: Unknown entry type: {}, length {}",
+                            syslog_debug!("MADT: Unknown entry type: {}, length {}",
                                      entry_type,
                                      entry_length)
                         }

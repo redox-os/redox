@@ -168,7 +168,7 @@ impl Rtl8139 {
                     self.port.idr[4].read(),
                     self.port.idr[5].read()],
         };
-        debugln!("   - MAC: {}", &MAC_ADDR.to_string());
+        syslog_debug!("   - MAC: {}", &MAC_ADDR.to_string());
 
         let receive_buffer = memory::alloc(10240);
         self.port.rbstart.write(receive_buffer as u32);
