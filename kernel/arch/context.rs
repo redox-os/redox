@@ -1001,7 +1001,7 @@ impl Context {
 
         for mut variable in unsafe { (*self.env_vars.get()).iter_mut() } {
             if variable.name() == name {
-                variable.0 = String::from(value);
+                variable.1 = String::from(value);
                 return Ok(());
             }
         }
