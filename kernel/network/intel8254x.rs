@@ -313,7 +313,7 @@ impl Intel8254x {
                     mac_high as u8,
                     (mac_high >> 8) as u8],
         };
-        debugln!(" MAC: {}", &MAC_ADDR.to_string());
+        syslog_debug!("   - MAC: {}", &MAC_ADDR.to_string());
 
         //
         // MTA => 0;
