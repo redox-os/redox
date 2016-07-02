@@ -53,7 +53,6 @@ use schemes::debug::DebugScheme;
 use schemes::disk::DiskScheme;
 use schemes::display::DisplayScheme;
 use schemes::env::EnvScheme;
-//use schemes::file::FileScheme;
 use schemes::initfs::InitFsScheme;
 use schemes::interrupt::InterruptScheme;
 use schemes::memory::MemoryScheme;
