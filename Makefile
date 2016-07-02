@@ -203,7 +203,8 @@ filesystem/bin/%: drivers/%/main.rs drivers/%/*.rs drivers/%/*/*.rs $(BUILD)/lib
 	$(RUSTC) $(RUSTCFLAGS) -C lto --crate-type bin -o $@ $<
 
 drivers: \
-	filesystem/bin/pcid
+	filesystem/bin/pcid \
+	filesystem/bin/reboot
 
 $(BUILD)/libtermion.rlib: crates/termion/src/lib.rs crates/termion/src/*.rs $(BUILD)/libstd.rlib
 	$(RUSTC) $(RUSTCFLAGS) --crate-name termion --crate-type lib -o $@ $< --cfg 'feature="nightly"'
