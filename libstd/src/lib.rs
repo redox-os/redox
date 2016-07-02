@@ -36,7 +36,6 @@
 #![feature(slice_concat_ext)]
 #![feature(slice_patterns)]
 #![feature(stmt_expr_attributes)]
-#![feature(str_char)]
 #![feature(type_ascription)]
 #![feature(unicode)]
 #![feature(unique)]
