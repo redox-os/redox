@@ -112,21 +112,25 @@ impl Console {
                     inner.redraw = false;
                     if let Some(ref mut display) = self.display {
                         display.set(Color {
-                            data: 0
+                            data: inner.background.data
                         });
                         for y in 0..inner.h {
                             for x in 0..inner.w {
-                                let c = inner.display[y * inner.w + x];
-                                if c.0 == '\0' {
-                                    display.rect(x * 8, y * 16, 8, 16, Color {
-                                        data: c.1.data
-                                    });
-                                } else {
-                                    display.char(x * 8, y * 16, c.0, Color {
-                                        data: c.1.data
+                                let block = inner.display[y * inner.w + x];
+                                display.rect(x * 8, y * 16, 8, 16, Color {
+                                    data: block.bg.data
+                                });
+                                if block.c != ' ' {
+                                    display.char(x * 8, y * 16, block.c, Color {
+                                        data: block.fg.data
                                     });
                                 }
                             }
+                        }
+                        if inner.cursor {
+                            display.rect(inner.x * 8, inner.y * 16, 8, 16, Color {
+                                data: inner.foreground.data
+                            });
                         }
                         display.flip();
                     }
