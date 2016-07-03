@@ -137,6 +137,22 @@ impl Console {
 
                     self.escape_sequence = false;
                 },
+                'A' => {
+                    self.y -= cmp::min(self.y, self.sequence.get(0).map_or("", |p| &p).parse::<usize>().unwrap_or(1));
+                    self.escape_sequence = false;
+                },
+                'B' => {
+                    self.y += cmp::min(self.h - 1 - self.y, self.sequence.get(0).map_or("", |p| &p).parse::<usize>().unwrap_or(1));
+                    self.escape_sequence = false;
+                },
+                'C' => {
+                    self.x += cmp::min(self.w - 1 - self.x, self.sequence.get(0).map_or("", |p| &p).parse::<usize>().unwrap_or(1));
+                    self.escape_sequence = false;
+                },
+                'D' => {
+                    self.x -= cmp::min(self.x, self.sequence.get(0).map_or("", |p| &p).parse::<usize>().unwrap_or(1));
+                    self.escape_sequence = false;
+                },
                 'H' | 'f' => {
                     let row = self.sequence.get(0).map_or("", |p| &p).parse::<isize>().unwrap_or(1);
                     self.y = cmp::max(0, row - 1) as usize;
