@@ -133,7 +133,7 @@ impl Ohci {
     }
 
     pub unsafe fn init(&mut self) {
-        syslog_debug!(" + OHCI on: {:X}, IRQ: {:X}", (self.regs as *mut OhciRegs) as usize, self.irq);
+        syslog_info!(" + OHCI on: {:X}, IRQ: {:X}", (self.regs as *mut OhciRegs) as usize, self.irq);
 
         /*
         self.regs.hcca.write((&*self.hcca as *const OhciHcca) as u32);
