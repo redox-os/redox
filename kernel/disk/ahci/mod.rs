@@ -22,7 +22,7 @@ impl Ahci {
         let base = unsafe { (pci.read(0x24) & 0xFFFFFFF0) as usize };
         let irq = unsafe { (pci.read(0x3C) & 0xF) as u8 };
 
-        syslog_debug!(" + AHCI on: {:X} IRQ: {:X}", base as usize, irq);
+        syslog_info!(" + AHCI on: {:X} IRQ: {:X}", base as usize, irq);
 
         let pi = unsafe { &mut *(base as *mut HbaMem) }.pi.read();
         let ret: Vec<Box<Disk>> = (0..32)
@@ -30,7 +30,7 @@ impl Ahci {
                                       .filter_map(|i| {
                                           let mut disk = box AhciDisk::new(base, i, irq);
                                           let port_type = disk.port.probe();
-                                          syslog_debug!("   + Port {}: {:?}", i, port_type);
+                                          syslog_info!("   + Port {}: {:?}", i, port_type);
                                           match port_type {
                                               HbaPortType::SATA => {
                                                   disk.port.init();

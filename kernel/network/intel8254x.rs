@@ -282,7 +282,7 @@ impl Intel8254x {
     }
 
     pub unsafe fn init(&mut self) {
-        syslog_debug!(" + Intel 8254x on: {:X}, IRQ: {:X}", self.base, self.irq);
+        syslog_info!(" + Intel 8254x on: {:X}, IRQ: {:X}", self.base, self.irq);
 
         self.pci.flag(4, 4, true); // Bus mastering
 
@@ -313,7 +313,7 @@ impl Intel8254x {
                     mac_high as u8,
                     (mac_high >> 8) as u8],
         };
-        syslog_debug!("   - MAC: {}", &MAC_ADDR.to_string());
+        syslog_info!("   - MAC: {}", &MAC_ADDR.to_string());
 
         //
         // MTA => 0;
