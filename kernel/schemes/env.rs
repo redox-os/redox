@@ -1,9 +1,10 @@
-use fs::{KScheme, Resource, Url};
-use fs::resource::ResourceSeek;
-use collections::string::String;
 use alloc::boxed::Box;
-use system::error::{Error, Result, EINVAL};
+use arch::context::EnvVar;
+use collections::string::String;
 use core::cmp::min;
+use fs::resource::ResourceSeek;
+use fs::{KScheme, Resource, Url};
+use system::error::{EINVAL, Error, Result};
 
 pub struct EnvScheme;
 
@@ -29,7 +30,7 @@ impl KScheme for EnvScheme {
 
     fn unlink(&mut self, url: Url) -> Result<()> {
         let name = url.reference();
-        let contexts = ::env().contexts.lock();
+        let contexts = unsafe { & *::env().contexts.get() };
         let current = try!(contexts.current());
         current.remove_env_var(name)
     }
@@ -41,11 +42,11 @@ pub struct EnvListResource {
 
 impl EnvListResource {
     fn get_list_str(&self) -> Result<String> {
-        let contexts = ::env().contexts.lock();
-        let current = try!(contexts.current());
-        let values = try!(current.list_env_vars());
+        let contexts = unsafe { & *::env().contexts.get() };
+        let current = contexts.current()?;
+        let values = current.list_env_vars();
         let mut string = String::new();
-        for &(ref name, ref value) in values.iter() {
+        for &EnvVar(ref name, ref value) in values.iter() {
             string = string + name + "=" + value + "\n";
         }
         string.pop();
@@ -96,7 +97,7 @@ impl Resource for EnvVariableResource {
     }
 
     fn read(&mut self, buf: &mut [u8]) -> Result<usize> {
-        let contexts = ::env().contexts.lock();
+        let contexts = unsafe { & *::env().contexts.get() };
         let current = try!(contexts.current());
         let value = try!(current.get_env_var(&self.name));
         let mut i = 0;
@@ -112,7 +113,7 @@ impl Resource for EnvVariableResource {
     }
 
     fn write(&mut self, buf: &[u8]) -> Result<usize> {
-        let mut contexts = ::env().contexts.lock();
+        let contexts = unsafe { &mut *::env().contexts.get() };
         let current = try!(contexts.current_mut());
         let value = String::from_utf8_lossy(buf).into_owned();
         if value.contains('�') {
@@ -127,7 +128,7 @@ impl Resource for EnvVariableResource {
             ResourceSeek::Start(offset) => self.pos = offset,
             ResourceSeek::Current(offset) => self.pos = (self.pos as isize + offset) as usize,
             ResourceSeek::End(offset) => {
-                let contexts = ::env().contexts.lock();
+                let contexts = unsafe { & *::env().contexts.get() };
                 let current = try!(contexts.current());
                 let value = try!(current.get_env_var(&self.name));
                 self.pos = (value.bytes().count() as isize + offset) as usize;

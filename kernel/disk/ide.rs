@@ -145,7 +145,7 @@ impl Ide {
         let bar4 = unsafe { pci.read(0x20) } as u16 & 0xFFF0;
         let irq = unsafe { pci.read(0x3C) } as u8 & 0xF;
 
-        debugln!(" + IDE on {:X}, {:X}, {:X}, {:X}, {:X}, IRQ: {:X}", bar0, bar1, bar2, bar3, bar4, irq);
+        syslog_debug!(" + IDE on {:X}, {:X}, {:X}, {:X}, {:X}, IRQ: {:X}", bar0, bar1, bar2, bar3, bar4, irq);
 
         let port_or = |value: u16, or_value: u16| -> u16 {
             if value > 0 {
@@ -161,7 +161,7 @@ impl Ide {
             let control = port_or(bar1, 0x3F4);
             let irq = 0xE;
 
-            debugln!("   + Primary on: {:X}, {:X}, {:X}, IRQ {:X}", busmaster, data, control, irq);
+            syslog_debug!("   + Primary on: {:X}, {:X}, {:X}, IRQ {:X}", busmaster, data, control, irq);
 
             debug!("     + Master:");
             if let Some(disk) = IdeDisk::new(busmaster, data, control, irq, true) {
@@ -182,7 +182,7 @@ impl Ide {
             let control = port_or(bar3, 0x374);
             let irq = 0xF;
 
-            debugln!("   + Secondary on: {:X}, {:X}, {:X}, IRQ {:X}", busmaster, data, control, irq);
+            syslog_debug!("   + Secondary on: {:X}, {:X}, {:X}, IRQ {:X}", busmaster, data, control, irq);
 
             debug!("     + Master:");
             if let Some(disk) = IdeDisk::new(busmaster, data, control, irq, true) {
@@ -540,7 +540,7 @@ impl IdeDisk {
         // debugln!("IDE DMA BLOCK: {} SECTORS: {} BUF: {:X} WRITE: {}", block, sectors, buf, write);
 
         if sectors > 0 {
-            let contexts = ::env().contexts.lock();
+            let contexts = unsafe { & *::env().contexts.get() };
             let current = try!(contexts.current());
             let physical_address = try!(current.translate(buf, sectors * 512));
 
@@ -586,6 +586,12 @@ impl Disk for IdeDisk {
         } else {
             "Slave"
         })
+    }
+
+    fn on_irq(&mut self, irq: u8) {
+        if irq == self.irq {
+            //debugln!("IDE IRQ");
+        }
     }
 
     fn size(&self) -> u64 {

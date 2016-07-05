@@ -4,10 +4,10 @@ use alloc::boxed::Box;
 use collections::borrow::ToOwned;
 use collections::{String, Vec};
 
+use core::cell::UnsafeCell;
 use core::cmp;
 use disk::Disk;
 use fs::{KScheme, Resource, ResourceSeek, Url, VecResource};
-use sync::Intex;
 
 use syscall::{MODE_DIR, MODE_FILE, Stat};
 
@@ -16,7 +16,7 @@ use system::error::{Error, Result, ENOENT};
 /// A disk resource
 pub struct DiskResource {
     pub path: String,
-    pub disk: Arc<Intex<Box<Disk>>>,
+    pub disk: Arc<UnsafeCell<Box<Disk>>>,
     pub seek: u64,
 }
 
@@ -39,19 +39,19 @@ impl Resource for DiskResource {
     }
 
     fn read(&mut self, buf: &mut [u8]) -> Result<usize> {
-        let count = try!(self.disk.lock().read(self.seek/512, buf));
+        let count = try!(unsafe { &mut *self.disk.get() }.read(self.seek/512, buf));
         self.seek += count as u64;
         Ok(count)
     }
 
     fn write(&mut self, buf: &[u8]) -> Result<usize> {
-        let count = try!(self.disk.lock().write(self.seek/512, buf));
+        let count = try!(unsafe { &mut *self.disk.get() }.write(self.seek/512, buf));
         self.seek += count as u64;
         Ok(count)
     }
 
     fn seek(&mut self, pos: ResourceSeek) -> Result<usize> {
-        let size = self.disk.lock().size();
+        let size = unsafe { & *self.disk.get() }.size();
         match pos {
             ResourceSeek::Start(offset) => self.seek = cmp::min(size, offset as u64),
             ResourceSeek::Current(offset) => self.seek = cmp::min(size, cmp::max(0, self.seek as i64 + offset as i64) as u64),
@@ -73,7 +73,7 @@ impl Drop for DiskResource {
 
 /// A disk scheme
 pub struct DiskScheme {
-    disks: Vec<Arc<Intex<Box<Disk>>>>,
+    disks: Vec<Arc<UnsafeCell<Box<Disk>>>>,
 }
 
 impl DiskScheme {
@@ -84,7 +84,7 @@ impl DiskScheme {
         };
 
         for disk in disks.drain(..) {
-            scheme.disks.push(Arc::new(Intex::new(disk)));
+            scheme.disks.push(Arc::new(UnsafeCell::new(disk)));
         }
 
         scheme
@@ -92,12 +92,14 @@ impl DiskScheme {
 }
 
 impl KScheme for DiskScheme {
-    fn on_irq(&mut self, _irq: u8) {
-        //TODO
-    }
-
     fn scheme(&self) -> &str {
         "disk"
+    }
+
+    fn on_irq(&mut self, irq: u8) {
+        for disk in self.disks.iter_mut() {
+            unsafe { &mut *disk.get() }.on_irq(irq);
+        }
     }
 
     fn open(&mut self, url: Url, _flags: usize) -> Result<Box<Resource>> {
@@ -141,13 +143,13 @@ impl KScheme for DiskScheme {
             }
 
             stat.st_mode = MODE_DIR;
-            stat.st_size = list.len() as u64;
+            stat.st_size = list.len() as u32;
             return Ok(());
         } else {
             if let Ok(number) = path.parse::<usize>() {
                 if let Some(disk) = self.disks.get(number) {
                     stat.st_mode = MODE_FILE;
-                    stat.st_size = disk.lock().size();
+                    stat.st_size = unsafe { & *disk.get() }.size() as u32;
                     return Ok(());
                 }
             }

@@ -1,6 +1,6 @@
-use arch::context::ContextFile;
+//! System calls related to files and resource management.
 
-use core::slice;
+use arch::context::ContextFile;
 
 use fs::{ResourceSeek, Url};
 
@@ -49,8 +49,8 @@ ERRORS
     ESRCH
         Currently not running in a process context (rare, would only happen during kernel init)
 <!-- @MANEND --> */
-pub fn do_sys_chdir(path: *const u8) -> Result<usize> {
-    let contexts = ::env().contexts.lock();
+pub fn chdir(path: *const u8) -> Result<usize> {
+    let contexts = unsafe { & *::env().contexts.get() };
     let current = try!(contexts.current());
     unsafe {
         *current.cwd.get() = current.canonicalize(c_string_to_str(path));
@@ -82,11 +82,9 @@ ERRORS
     ESRCH
         Currently not running in a process context (rare, would only happen during kernel init)
 <!-- @MANEND --> */
-pub fn do_sys_close(fd: usize) -> Result<usize> {
-    let contexts = ::env().contexts.lock();
+pub fn close(fd: usize) -> Result<usize> {
+    let contexts = unsafe { & *::env().contexts.get() };
     let current = try!(contexts.current());
-
-    //debugln!("{}: {}: close {}", current.pid, current.name, fd);
 
     for i in 0..unsafe { (*current.files.get()).len() } {
         let mut remove = false;
@@ -129,14 +127,12 @@ ERRORS
     ESRCH
         Currently not running in a process context (rare, would only happen during kernel init)
 <!-- @MANEND --> */
-pub fn do_sys_dup(fd: usize) -> Result<usize> {
-    let contexts = ::env().contexts.lock();
+pub fn dup(fd: usize) -> Result<usize> {
+    let contexts = unsafe { & *::env().contexts.get() };
     let current = try!(contexts.current());
     let resource = try!(current.get_file(fd));
     let new_resource = try!(resource.dup());
     let new_fd = current.next_fd();
-
-    //debugln!("{}: {}: dup {} as {}", current.pid, current.name, fd, new_fd);
 
     unsafe {
         (*current.files.get()).push(ContextFile {
@@ -147,22 +143,24 @@ pub fn do_sys_dup(fd: usize) -> Result<usize> {
     Ok(new_fd)
 }
 
-pub fn do_sys_fpath(fd: usize, buf: *mut u8, count: usize) -> Result<usize> {
-    let contexts = ::env().contexts.lock();
-    let current = try!(contexts.current());
-    let resource = try!(current.get_file(fd));
-    resource.path(unsafe { slice::from_raw_parts_mut(buf, count) })
+pub fn fpath(fd: usize, buf: *mut u8, count: usize) -> Result<usize> {
+    let contexts = unsafe { & *::env().contexts.get() };
+    let current = contexts.current()?;
+    let resource = current.get_file(fd)?;
+    if count > 0 {
+        let buf_safe = current.get_slice_mut(buf, count)?;
+        resource.path(buf_safe)
+    } else {
+        Ok(0)
+    }
 }
 
-pub fn do_sys_fstat(fd: usize, stat: *mut Stat) -> Result<usize> {
-    let contexts = ::env().contexts.lock();
-    let current = try!(contexts.current());
-    let resource = try!(current.get_file(fd));
-    if stat as usize > 0 {
-        resource.stat(unsafe { &mut *stat })
-    } else {
-        Err(Error::new(EFAULT))
-    }
+pub fn fstat(fd: usize, stat: *mut Stat) -> Result<usize> {
+    let contexts = unsafe { & *::env().contexts.get() };
+    let current = contexts.current()?;
+    let resource = current.get_file(fd)?;
+    let stat_safe = current.get_ref_mut(stat)?;
+    resource.stat(stat_safe)
 }
 
 /** <!-- @MANSTART{sys_fsync} -->
@@ -193,8 +191,8 @@ ERRORS
     ESRCH
         Currently not running in a process context (rare, would only happen during kernel init)
 <!-- @MANEND --> */
-pub fn do_sys_fsync(fd: usize) -> Result<usize> {
-    let mut contexts = ::env().contexts.lock();
+pub fn fsync(fd: usize) -> Result<usize> {
+    let contexts = unsafe { &mut *::env().contexts.get() };
     let mut current = try!(contexts.current_mut());
     let mut resource = try!(current.get_file_mut(fd));
     resource.sync().and(Ok(0))
@@ -228,8 +226,8 @@ ERRORS
     ESRCH
         Currently not running in a process context (rare, would only happen during kernel init)
 <!-- @MANEND --> */
-pub fn do_sys_ftruncate(fd: usize, length: usize) -> Result<usize> {
-    let mut contexts = ::env().contexts.lock();
+pub fn ftruncate(fd: usize, length: usize) -> Result<usize> {
+    let contexts = unsafe { &mut *::env().contexts.get() };
     let mut current = try!(contexts.current_mut());
     let mut resource = try!(current.get_file_mut(fd));
     resource.truncate(length).and(Ok(0))
@@ -273,8 +271,8 @@ ERRORS
     ESRCH
         Currently not running in a process context (rare, would only happen during kernel init)
 <!-- @MANEND --> */
-pub fn do_sys_lseek(fd: usize, offset: isize, whence: usize) -> Result<usize> {
-    let mut contexts = ::env().contexts.lock();
+pub fn lseek(fd: usize, offset: isize, whence: usize) -> Result<usize> {
+    let contexts = unsafe { &mut *::env().contexts.get() };
     let mut current = try!(contexts.current_mut());
     let mut resource = try!(current.get_file_mut(fd));
     match whence {
@@ -322,8 +320,8 @@ ERRORS
     ESRCH
         Currently not running in a process context (rare, would only happen during kernel init)
 <!-- @MANEND --> */
-pub fn do_sys_mkdir(path: *const u8, flags: usize) -> Result<usize> {
-    let contexts = ::env().contexts.lock();
+pub fn mkdir(path: *const u8, flags: usize) -> Result<usize> {
+    let contexts = unsafe { & *::env().contexts.get() };
     let current = try!(contexts.current());
     let path_string = current.canonicalize(c_string_to_str(path));
     ::env().mkdir(try!(Url::from_str(&path_string)), flags).and(Ok(0))
@@ -381,11 +379,10 @@ ERRORS
     ESRCH
         Currently not running in a process context (rare, would only happen during kernel init)
 <!-- @MANEND --> */
-pub fn do_sys_open(path_c: *const u8, flags: usize) -> Result<usize> {
-    let contexts = ::env().contexts.lock();
+pub fn open(path_c: *const u8, flags: usize) -> Result<usize> {
+    let contexts = unsafe { & *::env().contexts.get() };
     let current = try!(contexts.current());
     let path = current.canonicalize(c_string_to_str(path_c));
-    //debugln!("{}: {}: open {}", current.pid, current.name, path);
     let url = try!(Url::from_str(&path));
     let resource = try!(::env().open(url, flags));
     let fd = current.next_fd();
@@ -398,8 +395,8 @@ pub fn do_sys_open(path_c: *const u8, flags: usize) -> Result<usize> {
     Ok(fd)
 }
 
-pub fn do_sys_pipe2(fds: *mut usize, _flags: usize) -> Result<usize> {
-    let contexts = ::env().contexts.lock();
+pub fn pipe2(fds: *mut usize, _flags: usize) -> Result<usize> {
+    let contexts = unsafe { & *::env().contexts.get() };
     let current = try!(contexts.current());
     if fds as usize > 0 {
         let read = box PipeRead::new();
@@ -456,34 +453,38 @@ ERRORS
     ESRCH
         Currently not running in a process context (rare, would only happen during kernel init)
 <!-- @MANEND --> */
-pub fn do_sys_read(fd: usize, buf: *mut u8, count: usize) -> Result<usize> {
-    let mut contexts = ::env().contexts.lock();
-    let mut current = try!(contexts.current_mut());
-    let mut resource = try!(current.get_file_mut(fd));
-    resource.read(unsafe { slice::from_raw_parts_mut(buf, count) })
+pub fn read(fd: usize, buf: *mut u8, count: usize) -> Result<usize> {
+    let contexts = unsafe { &mut *::env().contexts.get() };
+    let mut current = contexts.current_mut()?;
+    let mut resource = current.get_file_mut(fd)?;
+    if count > 0 {
+        let buf_safe = current.get_slice_mut(buf, count)?;
+        resource.read(buf_safe)
+    } else {
+        Ok(0)
+    }
 }
 
-pub fn do_sys_rmdir(path: *const u8) -> Result<usize> {
-    let contexts = ::env().contexts.lock();
+pub fn rmdir(path: *const u8) -> Result<usize> {
+    let contexts = unsafe { & *::env().contexts.get() };
     let current = try!(contexts.current());
     let path_string = current.canonicalize(c_string_to_str(path));
     ::env().rmdir(try!(Url::from_str(&path_string))).and(Ok(0))
 }
 
-pub fn do_sys_stat(path: *const u8, stat: *mut Stat) -> Result<usize> {
-    let contexts = ::env().contexts.lock();
+pub fn stat(path: *const u8, stat: *mut Stat) -> Result<usize> {
+    let contexts = unsafe { & *::env().contexts.get() };
     let current = try!(contexts.current());
-    let path = current.canonicalize(c_string_to_str(path));
-    let url = try!(Url::from_str(&path));
-    if stat as usize > 0 {
-        ::env().stat(url, unsafe { &mut *stat }).and(Ok(0))
-    } else {
-        Err(Error::new(EFAULT))
-    }
+    let path_string = current.canonicalize(c_string_to_str(path));
+    let url = Url::from_str(&path_string)?;
+    let stat_safe = current.get_ref_mut(stat)?;
+
+    *stat_safe = Stat::default();
+    ::env().stat(url, stat_safe).and(Ok(0))
 }
 
-pub fn do_sys_unlink(path: *const u8) -> Result<usize> {
-    let contexts = ::env().contexts.lock();
+pub fn unlink(path: *const u8) -> Result<usize> {
+    let contexts = unsafe { & *::env().contexts.get() };
     let current = try!(contexts.current());
     let path_string = current.canonicalize(c_string_to_str(path));
     ::env().unlink(try!(Url::from_str(&path_string))).and(Ok(0))
@@ -526,9 +527,14 @@ ERRORS
     ESRCH
         Currently not running in a process context (rare, would only happen during kernel init)
 <!-- @MANEND --> */
-pub fn do_sys_write(fd: usize, buf: *const u8, count: usize) -> Result<usize> {
-    let mut contexts = ::env().contexts.lock();
-    let mut current = try!(contexts.current_mut());
-    let mut resource = try!(current.get_file_mut(fd));
-    resource.write(unsafe { slice::from_raw_parts(buf, count) })
+pub fn write(fd: usize, buf: *const u8, count: usize) -> Result<usize> {
+    let contexts = unsafe { &mut *::env().contexts.get() };
+    let mut current = contexts.current_mut()?;
+    let mut resource = current.get_file_mut(fd)?;
+    if count > 0 {
+        let buf_safe = current.get_slice(buf, count)?;
+        resource.write(buf_safe)
+    } else {
+        Ok(0)
+    }
 }

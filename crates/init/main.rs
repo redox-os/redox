@@ -6,10 +6,11 @@ use std::io::Read;
 use std::process::Command;
 
 fn main() {
-    let mut file = File::open("/etc/init.rc").unwrap();
-
     let mut string = String::new();
-    file.read_to_string(&mut string).unwrap();
+    {
+        let mut file = File::open("/etc/init.rc").unwrap();
+        file.read_to_string(&mut string).unwrap();
+    }
 
     for line_untrimmed in string.lines() {
         let line = line_untrimmed.trim();

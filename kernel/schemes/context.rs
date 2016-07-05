@@ -27,7 +27,7 @@ impl KScheme for ContextScheme {
                                  "IOPL",
                                  "NAME");
         {
-            let contexts = ::env().contexts.lock();
+            let contexts = unsafe { & *::env().contexts.get() };
             for context in contexts.iter() {
                 let mut memory = 0;
                 if context.kernel_stack > 0 {
@@ -56,7 +56,7 @@ impl KScheme for ContextScheme {
                 } else {
                     flags_string.push('K');
                 }
-                if context.blocked {
+                if context.blocked > 0 {
                     flags_string.push('B');
                 }
                 if context.exited {

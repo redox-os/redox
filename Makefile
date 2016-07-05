@@ -8,8 +8,8 @@ QEMU?=qemu-system-$(ARCH)
 
 CARGO=CARGO_TARGET_DIR=build RUSTC="./rustc-$(ARCH).sh" cargo rustc
 CARGOFLAGS=--verbose --target=$(ARCH)-unknown-redox.json -- -L $(BUILD) \
-	-C no-prepopulate-passes -C no-stack-check -C opt-level=3 \
-	-Z no-landing-pads \
+	-C no-prepopulate-passes -C no-stack-check -C opt-level=2 \
+	-Z no-landing-pads -Z orbit \
 	-A dead_code
 RUSTC=RUST_BACKTRACE=1 rustc
 RUSTDOC=rustdoc --target=$(ARCH)-unknown-redox.json -L $(BUILD) \
@@ -57,9 +57,9 @@ ifeq ($(UNAME),Darwin)
 	VBM="/Applications/VirtualBox.app/Contents/MacOS/VBoxManage"
 endif
 
-.PHONY: help all doc apps bins clean FORCE \
-	drivers binutils coreutils extrautils games \
-	qemu qemu_bare qemu_tap bochs \
+.PHONY: help all doc apps bins c_bins clean FORCE \
+	drivers c_binutils binutils coreutils extrautils games \
+	qemu qemu_no_build bochs mount unmount \
 	virtualbox virtualbox_tap \
 	arping ping wireshark
 
@@ -160,7 +160,6 @@ coreutils: \
 	filesystem/bin/cp \
 	filesystem/bin/cut \
 	filesystem/bin/date \
-	filesystem/bin/dmesg \
 	filesystem/bin/du \
 	filesystem/bin/echo \
 	filesystem/bin/env \
@@ -199,12 +198,13 @@ binutils: \
 	filesystem/bin/hexdump \
 	filesystem/bin/strings
 
-filesystem/bin/%: drivers/%/main.rs $(BUILD)/libstd.rlib $(BUILD)/libio.rlib
+filesystem/bin/%: drivers/%/main.rs drivers/%/*.rs drivers/%/*/*.rs $(BUILD)/libstd.rlib $(BUILD)/libio.rlib
 	mkdir -p filesystem/bin
 	$(RUSTC) $(RUSTCFLAGS) -C lto --crate-type bin -o $@ $<
 
 drivers: \
-	filesystem/bin/seriald
+	filesystem/bin/pcid \
+	filesystem/bin/reboot
 
 $(BUILD)/libtermion.rlib: crates/termion/src/lib.rs crates/termion/src/*.rs $(BUILD)/libstd.rlib
 	$(RUSTC) $(RUSTCFLAGS) --crate-name termion --crate-type lib -o $@ $< --cfg 'feature="nightly"'
@@ -217,10 +217,12 @@ extrautils: \
 	filesystem/bin/calc \
 	filesystem/bin/cksum \
 	filesystem/bin/cur \
+	filesystem/bin/dmesg \
 	filesystem/bin/grep \
 	filesystem/bin/less \
 	filesystem/bin/man \
 	filesystem/bin/mtxt \
+	filesystem/bin/nc \
 	filesystem/bin/rem \
 	filesystem/bin/wget
 
@@ -240,19 +242,11 @@ filesystem/bin/%: crates/%/main.rs crates/%/*.rs $(BUILD)/libstd.rlib
 	mkdir -p filesystem/bin
 	$(RUSTC) $(RUSTCFLAGS) -C lto --crate-type bin -o $@ $<
 
-filesystem/bin/%: libc/bin/%
-	mkdir -p filesystem/bin
-	cp $< $@
-
 $(BUILD)/librusttype.rlib: crates/rusttype/src/lib.rs crates/rusttype/src/*.rs crates/rusttype/src/*/*.rs $(BUILD)/libstd.rlib
 	$(CARGO) --manifest-path crates/rusttype/Cargo.toml --lib $(CARGOFLAGS)
 
 $(BUILD)/ion-shell.bin: FORCE $(BUILD)/libstd.rlib
 	$(CARGO) --manifest-path crates/ion/Cargo.toml --bin ion-shell $(CARGOFLAGS) -C lto
-
-filesystem/bin/ion: $(BUILD)/ion-shell.bin
-	mkdir -p filesystem/bin
-	cp $< $@
 
 filesystem/bin/sh: $(BUILD)/ion-shell.bin
 	mkdir -p filesystem/bin
@@ -260,7 +254,7 @@ filesystem/bin/sh: $(BUILD)/ion-shell.bin
 
 filesystem/bin/launcher: crates/orbutils/src/launcher/main.rs crates/orbutils/src/launcher/*.rs $(BUILD)/libstd.rlib $(BUILD)/liborbclient.rlib $(BUILD)/liborbtk.rlib
 	mkdir -p filesystem/bin
-	$(RUSTC) $(RUSTCFLAGS) -C lto --crate-type bin -o $@ $<
+	$(RUSTC) $(RUSTCFLAGS) -C lto --crate-type bin -o $@ $< -L $(BUILD)/deps
 
 filesystem/bin/orbital: crates/orbital/main.rs crates/orbital/*.rs $(BUILD)/libstd.rlib $(BUILD)/liborbimage.rlib
 	mkdir -p filesystem/bin
@@ -274,29 +268,60 @@ filesystem/bin/%: crates/%/main.rs crates/%/*.rs $(BUILD)/libstd.rlib
 	mkdir -p filesystem/bin
 	$(RUSTC) $(RUSTCFLAGS) -C lto --crate-type bin -o $@ $<
 
+filesystem/bin/%: libc/bin/%
+	mkdir -p filesystem/bin
+	cp $< $@
+
+filesystem/lib/%: libc/lib/%
+	mkdir -p filesystem/lib
+	cp $< $@
+
+c_binutils: \
+	filesystem/bin/addr2line \
+	filesystem/bin/ar \
+	filesystem/bin/as \
+	filesystem/bin/c++filt \
+	filesystem/bin/elfedit  \
+	filesystem/bin/gprof \
+	filesystem/bin/ld \
+	filesystem/bin/ld.bfd \
+	filesystem/bin/nm \
+	filesystem/bin/objcopy \
+	filesystem/bin/objdump \
+	filesystem/bin/ranlib \
+	filesystem/bin/readelf \
+	filesystem/bin/size \
+	filesystem/bin/strings \
+	filesystem/bin/strip
+
+c_bins: \
+	c_binutils \
+	filesystem/lib/libc.a \
+	filesystem/lib/libm.a \
+	filesystem/bin/c-test \
+	filesystem/bin/ed \
+  	filesystem/bin/lua \
+  	filesystem/bin/luac \
+  	filesystem/bin/nasm \
+  	filesystem/bin/ndisasm \
+  	filesystem/bin/sdl-test
+
 bins: \
+	c_bins \
 	coreutils \
 	extrautils \
 	drivers \
 	games \
 	filesystem/bin/ansi-test \
-	filesystem/bin/c-test \
-	filesystem/bin/dosbox \
-	filesystem/bin/ed \
 	filesystem/bin/example \
 	filesystem/bin/init \
-  	filesystem/bin/ion \
 	filesystem/bin/launcher \
-  	filesystem/bin/lua \
-  	filesystem/bin/luac \
   	filesystem/bin/login \
-  	filesystem/bin/minesweeper \
   	filesystem/bin/orbital \
+	filesystem/bin/play \
 	filesystem/bin/screenfetch \
-  	filesystem/bin/sdl-test \
 	filesystem/bin/std-test \
-  	filesystem/bin/sh \
-	filesystem/bin/tar \
+  	filesystem/bin/sh
 	#TODO: binutils	filesystem/bin/zfs
 
 refs: FORCE
@@ -304,6 +329,9 @@ refs: FORCE
 	cargo run --manifest-path crates/docgen/Cargo.toml -- crates/coreutils/src/bin/ filesystem/ref/
 	cargo run --manifest-path crates/docgen/Cargo.toml -- crates/extrautils/src/bin/ filesystem/ref/
 	cargo run --manifest-path crates/docgen/Cargo.toml -- kernel/ filesystem/ref/
+
+initfs/%.list: initfs/%
+	$(OBJDUMP) -C -M intel -D $< > $@
 
 initfs/bin/init: crates/init/main.rs crates/init/*.rs $(BUILD)/libstd.rlib
 	mkdir -p initfs/bin/
@@ -422,8 +450,14 @@ doc/zfs: crates/zfs/src/main.rs crates/zfs/src/*.rs filesystem/bin/zfs
 doc/orbclient: crates/orbclient/src/lib.rs crates/orbclient/src/*.rs $(BUILD)/liborbclient.rlib doc/std
 	$(RUSTDOC) $<
 
-doc/orbtk: crates/orbtk/src/lib.rs crates/orbtk/src/*.rs $(BUILD)/liborbtk.rlib doc/orbclient
-	$(RUSTDOC) $<
+doc/orbimage: crates/orbimage/src/lib.rs crates/orbimage/src/*.rs $(BUILD)/liborbimage.rlib doc/orbclient
+	$(RUSTDOC) $< -L $(BUILD)/deps
+
+doc/orbfont: crates/orbfont/src/lib.rs crates/orbfont/src/*.rs $(BUILD)/liborbfont.rlib doc/orbclient
+	$(RUSTDOC) $< -L $(BUILD)/deps
+
+doc/orbtk: crates/orbtk/src/lib.rs crates/orbtk/src/*.rs $(BUILD)/liborbtk.rlib doc/orbclient doc/orbimage doc/orbfont
+	$(RUSTDOC) $< -L $(BUILD)/deps
 
 doc/sodium: filesystem/apps/sodium/src/main.rs filesystem/apps/sodium/src/*.rs filesystem/apps/sodium/main.bin
 	$(RUSTDOC) --crate-name=sodium --cfg 'feature="orbital"' $<
@@ -570,6 +604,17 @@ $(BUILD)/filesystem.bin: apps bins
 $(BUILD)/harddrive.bin: kernel/harddrive.asm $(BUILD)/kernel.bin $(BUILD)/filesystem.bin
 	$(AS) -f bin -o $@ -l $(BUILD)/harddrive.list -D ARCH_$(ARCH) -D TIME="`$(DATE) "+%F %T"`" -i$(BUILD)/ -ikernel/ -ifilesystem/ $<
 
+mount: FORCE
+	mkdir -p $(BUILD)/harddrive/
+	cargo run --manifest-path crates/redoxfs/Cargo.toml --bin redoxfs-fuse $(BUILD)/harddrive.bin $(BUILD)/harddrive/ &
+	sleep 2
+
+unmount: FORCE
+	sync
+	-$(FUMOUNT) $(BUILD)/harddrive/
+	rm -rf $(BUILD)/harddrive/
+
+
 virtualbox: $(BUILD)/harddrive.bin
 	echo "Delete VM"
 	-$(VBM) unregistervm Redox --delete; $(VBM_CLEANUP)
@@ -605,7 +650,7 @@ virtualbox: $(BUILD)/harddrive.bin
 bochs: $(BUILD)/harddrive.bin
 	-bochs -f bochs.$(ARCH)
 
-QFLAGS := -serial mon:stdio -m 1024 -d guest_errors
+QFLAGS := -serial mon:stdio -m 1024 -d guest_errors -s
 
 ifeq ($(machine),q35)
 	QFLAGS += -machine q35
@@ -671,6 +716,22 @@ qemu: $(BUILD)/harddrive.bin
 		sudo ip tuntap del dev tap_redox mode tap; \
 	fi
 
+qemu_no_build:
+	@if [ "$(net)" = "tap" ]; \
+	then \
+		sudo ip tuntap add dev tap_redox mode tap user "${USER}"; \
+		sudo ifconfig tap_redox 10.85.85.1 up; \
+	fi
+	-$(QEMU) $(QFLAGS)
+	@if [ "$(net)" = "tap" ]; \
+	then \
+		sudo ifconfig tap_redox down; \
+		sudo ip tuntap del dev tap_redox mode tap; \
+	fi
+
+gdb: $(BUILD)/kernel.bin
+	gdb $(BUILD)/kernel.bin -ex "target remote :1234"
+
 arping:
 	arping -I tap_redox 10.85.85.2
 
@@ -681,6 +742,5 @@ wireshark:
 	wireshark $(BUILD)/network.pcap
 
 %:
-	@echo "ERROR: Unknown target. Maybe you forgot to get the submodules (git submodule update --init --recursive)"
-	exit 100
-
+	@echo "ERROR: Unknown target '$@'. Maybe you forgot to get the submodules (git submodule update --init --recursive)"
+	@exit 100
