@@ -54,7 +54,9 @@ impl Resource for DebugResource {
 
     fn sync(&mut self) -> Result<()> {
         let console = unsafe { &mut *::env().console.get() };
-        console.redraw = true;
+        if let Some(ref mut inner) = console.inner {
+            inner.redraw = true;
+        }
         console.write(&[]);
         Ok(())
     }

@@ -39,7 +39,7 @@ pub trait Hci {
                         0,
                         (&mut *desc_dev as *mut DeviceDescriptor) as usize,
                         mem::size_of_val(&*desc_dev));
-        syslog_debug!("{:?}", *desc_dev);
+        syslog_debug!("{:#?}", *desc_dev);
 
         if desc_dev.manufacturer_string > 0 {
             let mut desc_str = box StringDescriptor::default();
@@ -48,7 +48,7 @@ pub trait Hci {
                             desc_dev.manufacturer_string,
                             (&mut *desc_str as *mut StringDescriptor) as usize,
                             mem::size_of_val(&*desc_str));
-            syslog_debug!("Manufacturer: {}", desc_str.str());
+            syslog_info!("Manufacturer: {}", desc_str.str());
         }
 
         if desc_dev.product_string > 0 {
@@ -58,7 +58,7 @@ pub trait Hci {
                             desc_dev.product_string,
                             (&mut *desc_str as *mut StringDescriptor) as usize,
                             mem::size_of_val(&*desc_str));
-            syslog_debug!("Product: {}", desc_str.str());
+            syslog_info!("Product: {}", desc_str.str());
         }
 
         if desc_dev.serial_string > 0 {
@@ -68,7 +68,7 @@ pub trait Hci {
                             desc_dev.serial_string,
                             (&mut *desc_str as *mut StringDescriptor) as usize,
                             mem::size_of_val(&*desc_str));
-            syslog_debug!("Serial: {}", desc_str.str());
+            syslog_info!("Serial: {}", desc_str.str());
         }
 
         for configuration in 0..(*desc_dev).configurations {
@@ -84,7 +84,7 @@ pub trait Hci {
                             desc_cfg_len);
 
             let desc_cfg = ptr::read(desc_cfg_buf as *const ConfigDescriptor);
-            syslog_debug!("{:?}", desc_cfg);
+            syslog_debug!("{:#?}", desc_cfg);
 
             if desc_cfg.string > 0 {
                 let mut desc_str = box StringDescriptor::default();
@@ -93,7 +93,7 @@ pub trait Hci {
                                 desc_cfg.string,
                                 (&mut *desc_str as *mut StringDescriptor) as usize,
                                 mem::size_of_val(&*desc_str));
-                syslog_debug!("Configuration: {}", desc_str.str());
+                syslog_info!("Configuration: {}", desc_str.str());
             }
 
             let mut hid = false;
@@ -105,7 +105,7 @@ pub trait Hci {
                 match descriptor_type {
                     DESC_INT => {
                         let desc_int = ptr::read(desc_cfg_buf.offset(i) as *const InterfaceDescriptor);
-                        syslog_debug!("{:?}", desc_int);
+                        syslog_debug!("{:#?}", desc_int);
 
                         if desc_int.string > 0 {
                             let mut desc_str = box StringDescriptor::default();
@@ -114,12 +114,12 @@ pub trait Hci {
                                             desc_int.string,
                                             (&mut *desc_str as *mut StringDescriptor) as usize,
                                             mem::size_of_val(&*desc_str));
-                            syslog_debug!("Interface: {}", desc_str.str());
+                            syslog_info!("Interface: {}", desc_str.str());
                         }
                     }
                     DESC_END => {
                         let desc_end = ptr::read(desc_cfg_buf.offset(i) as *const EndpointDescriptor);
-                        syslog_debug!("{:?}", desc_end);
+                        syslog_debug!("{:#?}", desc_end);
 
                         let endpoint = desc_end.address & 0xF;
                         let in_len = desc_end.max_packet_size as usize;
@@ -129,7 +129,7 @@ pub trait Hci {
                             Context::spawn("kuhci_hid".into(),
                                            box move || {
                                 if let Some(mode_info) = VBEMODEINFO {
-                                    syslog_debug!("Starting HID driver");
+                                    syslog_info!("Starting HID driver");
 
                                     let in_ptr = memory::alloc_aligned(in_len, 4096) as *mut u8;
 
@@ -181,7 +181,7 @@ pub trait Hci {
                     }
                     DESC_HID => {
                         let desc_hid = &*(desc_cfg_buf.offset(i) as *const HIDDescriptor);
-                        syslog_debug!("{:?}", desc_hid);
+                        syslog_debug!("{:#?}", desc_hid);
                         hid = true;
                     }
                     _ => {

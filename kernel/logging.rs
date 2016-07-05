@@ -63,14 +63,16 @@ pub fn syslog(level: LogLevel, message: &str) {
 pub fn syslog_inner(level: LogLevel, message: fmt::Arguments) {
     let time = Duration::monotonic();
 
-    let prefix: &str = match level {
-        LogLevel::Debug    => "DEBUG ",
-        LogLevel::Info     => "INFO  ",
-        LogLevel::Warning  => "WARN  ",
-        LogLevel::Error    => "ERROR ",
-        LogLevel::Critical => "CRIT  ",
+    let (prefix, display) = match level {
+        LogLevel::Debug    => ("DEBUG ", false),
+        LogLevel::Info     => ("INFO  ", true),
+        LogLevel::Warning  => ("WARN  ", true),
+        LogLevel::Error    => ("ERROR ", true),
+        LogLevel::Critical => ("CRIT  ", true),
     };
 
     let _ = write!(unsafe { &mut *::env().log.get() }, "[{}.{:>03}] {}{}\n", time.secs, time.nanos/1000000, prefix, message);
-    let _ = write!(::common::debug::SerialConsole::new(), "[{}.{:>03}] {}{}\n", time.secs, time.nanos/1000000, prefix, message);
+    if display {
+        let _ = write!(::common::debug::SerialConsole::new(), "[{}.{:>03}] {}{}\n", time.secs, time.nanos/1000000, prefix, message);
+    }
 }

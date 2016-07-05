@@ -53,7 +53,6 @@ use schemes::debug::DebugScheme;
 use schemes::disk::DiskScheme;
 use schemes::display::DisplayScheme;
 use schemes::env::EnvScheme;
-//use schemes::file::FileScheme;
 use schemes::initfs::InitFsScheme;
 use schemes::interrupt::InterruptScheme;
 use schemes::memory::MemoryScheme;
@@ -387,11 +386,11 @@ unsafe fn init(tss_data: usize) {
 
             (&mut *env.console.get()).draw = true;
 
-            syslog_debug!("\x1B[1mRedox {} bits\x1B[0m", mem::size_of::<usize>() * 8);
-            syslog_debug!("  * text={:X}:{:X} rodata={:X}:{:X}",
+            syslog_info!("\x1B[1mRedox {} bits\x1B[0m", mem::size_of::<usize>() * 8);
+            syslog_info!("  * text={:X}:{:X} rodata={:X}:{:X}",
                     & __text_start as *const u8 as usize, & __text_end as *const u8 as usize,
                     & __rodata_start as *const u8 as usize, & __rodata_end as *const u8 as usize);
-            syslog_debug!("  * data={:X}:{:X} bss={:X}:{:X}",
+            syslog_info!("  * data={:X}:{:X} bss={:X}:{:X}",
                     & __data_start as *const u8 as usize, & __data_end as *const u8 as usize,
                     & __bss_start as *const u8 as usize, & __bss_end as *const u8 as usize);
 
@@ -469,7 +468,7 @@ unsafe fn init(tss_data: usize) {
 
                 syslog_info!("The kernel has finished booting. Running /bin/init");
                 if let Err(err) = execute(vec!["initfs:/bin/init".to_string()]) {
-                    syslog_debug!("kernel: init: failed to execute: {}", err);
+                    syslog_info!("kernel: init: failed to execute: {}", err);
                 }
             });
         },
@@ -487,19 +486,19 @@ pub extern "cdecl" fn kernel(interrupt: usize, mut regs: &mut Regs) {
             {
                 let contexts = unsafe { &mut *::env().contexts.get() };
                 if let Ok(context) = contexts.current() {
-                    syslog_debug!("PID {}: {}", context.pid, context.name);
+                    syslog_info!("PID {}: {}", context.pid, context.name);
 
                     if let Some(current_syscall) = context.current_syscall {
-                        syslog_debug!("  SYS {:X}: {} {} {:X} {:X} {:X}", current_syscall.0, current_syscall.1, syscall::name(current_syscall.1), current_syscall.2, current_syscall.3, current_syscall.4);
+                        syslog_info!("  SYS {:X}: {} {} {:X} {:X} {:X}", current_syscall.0, current_syscall.1, syscall::name(current_syscall.1), current_syscall.2, current_syscall.3, current_syscall.4);
                     }
                 }
             }
 
-            syslog_debug!("  INT {:X}: {}", interrupt, $name);
-            syslog_debug!("    CS:  {:08X}    IP:  {:08X}    FLG: {:08X}", regs.cs, regs.ip, regs.flags);
-            syslog_debug!("    SS:  {:08X}    SP:  {:08X}    BP:  {:08X}", regs.ss, regs.sp, regs.bp);
-            syslog_debug!("    AX:  {:08X}    BX:  {:08X}    CX:  {:08X}    DX:  {:08X}", regs.ax, regs.bx, regs.cx, regs.dx);
-            syslog_debug!("    DI:  {:08X}    SI:  {:08X}", regs.di, regs.di);
+            syslog_info!("  INT {:X}: {}", interrupt, $name);
+            syslog_info!("    CS:  {:08X}    IP:  {:08X}    FLG: {:08X}", regs.cs, regs.ip, regs.flags);
+            syslog_info!("    SS:  {:08X}    SP:  {:08X}    BP:  {:08X}", regs.ss, regs.sp, regs.bp);
+            syslog_info!("    AX:  {:08X}    BX:  {:08X}    CX:  {:08X}    DX:  {:08X}", regs.ax, regs.bx, regs.cx, regs.dx);
+            syslog_info!("    DI:  {:08X}    SI:  {:08X}", regs.di, regs.di);
 
             let cr0: usize;
             let cr2: usize;
@@ -511,7 +510,7 @@ pub extern "cdecl" fn kernel(interrupt: usize, mut regs: &mut Regs) {
                 asm!("mov $0, cr3" : "=r"(cr3) : : : "intel", "volatile");
                 asm!("mov $0, cr4" : "=r"(cr4) : : : "intel", "volatile");
             }
-            syslog_debug!("    CR0: {:08X}    CR2: {:08X}    CR3: {:08X}    CR4: {:08X}", cr0, cr2, cr3, cr4);
+            syslog_info!("    CR0: {:08X}    CR2: {:08X}    CR3: {:08X}    CR4: {:08X}", cr0, cr2, cr3, cr4);
 
             let mut fsw: usize = 0;
             let mut fcw: usize = 0;
@@ -519,7 +518,7 @@ pub extern "cdecl" fn kernel(interrupt: usize, mut regs: &mut Regs) {
                 asm!("fnstsw $0" : "=*m"(&mut fsw) : : : "intel", "volatile");
                 asm!("fnstcw $0" : "=*m"(&mut fcw) : : : "intel", "volatile");
             }
-            syslog_debug!("    FSW: {:08X}    FCW: {:08X}", fsw, fcw);
+            syslog_info!("    FSW: {:08X}    FCW: {:08X}", fsw, fcw);
 
             /* TODO: Stack dump
             {
@@ -567,7 +566,7 @@ pub extern "cdecl" fn kernel(interrupt: usize, mut regs: &mut Regs) {
             //regs.ss = regs.error;
 
             exception_inner!($name);
-            syslog_debug!("    ERR: {:08X}", error);
+            syslog_info!("    ERR: {:08X}", error);
 
             loop {
                 exit(127);

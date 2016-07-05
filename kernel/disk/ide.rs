@@ -145,7 +145,7 @@ impl Ide {
         let bar4 = unsafe { pci.read(0x20) } as u16 & 0xFFF0;
         let irq = unsafe { pci.read(0x3C) } as u8 & 0xF;
 
-        syslog_debug!(" + IDE on {:X}, {:X}, {:X}, {:X}, {:X}, IRQ: {:X}", bar0, bar1, bar2, bar3, bar4, irq);
+        syslog_info!(" + IDE on {:X}, {:X}, {:X}, {:X}, {:X}, IRQ: {:X}", bar0, bar1, bar2, bar3, bar4, irq);
 
         let port_or = |value: u16, or_value: u16| -> u16 {
             if value > 0 {
@@ -161,7 +161,7 @@ impl Ide {
             let control = port_or(bar1, 0x3F4);
             let irq = 0xE;
 
-            syslog_debug!("   + Primary on: {:X}, {:X}, {:X}, IRQ {:X}", busmaster, data, control, irq);
+            syslog_info!("   + Primary on: {:X}, {:X}, {:X}, IRQ {:X}", busmaster, data, control, irq);
 
             debug!("     + Master:");
             if let Some(disk) = IdeDisk::new(busmaster, data, control, irq, true) {
@@ -182,7 +182,7 @@ impl Ide {
             let control = port_or(bar3, 0x374);
             let irq = 0xF;
 
-            syslog_debug!("   + Secondary on: {:X}, {:X}, {:X}, IRQ {:X}", busmaster, data, control, irq);
+            syslog_info!("   + Secondary on: {:X}, {:X}, {:X}, IRQ {:X}", busmaster, data, control, irq);
 
             debug!("     + Master:");
             if let Some(disk) = IdeDisk::new(busmaster, data, control, irq, true) {
