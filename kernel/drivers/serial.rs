@@ -8,12 +8,17 @@ use drivers::io::{Io, Pio};
 
 use fs::KScheme;
 
+#[derive(Copy, Clone, Debug, Default)]
 #[repr(packed)]
-struct SerialInfo {
+pub struct SerialInfo {
     pub ports: [u16; 4],
 }
 
-const SERIALINFO: *const SerialInfo = 0x400 as *const SerialInfo;
+pub static mut SERIALINFO: Option<SerialInfo> = None;
+
+pub unsafe fn bda_init() {
+    SERIALINFO = Some(*(0x400 as *const SerialInfo));
+}
 
 /// Serial
 pub struct Serial {
@@ -44,17 +49,31 @@ impl Serial {
             cursor_control: false,
         }
     }
+
+    pub fn writeb(&mut self, byte: u8){
+        while !self.status.readf(0x20) {}
+        self.data.write(byte);
+    }
+
+    pub fn write(&mut self, bytes: &[u8]) {
+        for &byte in bytes.iter() {
+            self.writeb(byte);
+        }
+    }
+
+    pub fn readb(&mut self) -> u8 {
+        while self.status.read() & 1 == 0 {}
+        self.data.read()
+    }
 }
 
 impl KScheme for Serial {
     fn on_irq(&mut self, irq: u8) {
         if irq == self.irq {
-            while self.status.read() & 1 == 0 {}
-
-            let mut c = self.data.read() as char;
+            let mut c = self.readb() as char;
             let mut sc = 0;
 
-            let mut console = ::env().console.lock();
+            let console = unsafe { &mut *::env().console.get() };
 
             if self.escape {
                 self.escape = false;
@@ -80,7 +99,28 @@ impl KScheme for Serial {
                 c = '\0';
             } else if c == '\x03' {
                 console.write(b"^C\n");
-                console.commands.send(String::new());
+                console.commands.send(String::new(), "Serial Control C");
+
+                c = '\0';
+                sc = 0;
+            } else if c == '\x04' {
+                console.write(b"^D\n");
+
+                {
+                    let contexts = unsafe { &mut *::env().contexts.get() };
+                    debugln!("Magic CTRL-D {}", ::common::time::Duration::monotonic().secs);
+                    for context in contexts.iter() {
+                        debugln!("  PID {}: {}", context.pid, context.name);
+
+                        if context.blocked > 0 {
+                            debugln!("    BLOCKED {}", context.blocked);
+                        }
+
+                        if let Some(current_syscall) = context.current_syscall {
+                            debugln!("    SYS {:X}: {} {} {:X} {:X} {:X}", current_syscall.0, current_syscall.1, ::syscall::name(current_syscall.1), current_syscall.2, current_syscall.3, current_syscall.4);
+                        }
+                    }
+                }
 
                 c = '\0';
                 sc = 0;

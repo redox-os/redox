@@ -6,10 +6,6 @@ use drivers::pci::config::PciConfig;
 
 //use core::mem::size_of;
 
-use common::debug;
-//For old code vvv
-//use common::debug::*;
-
 use fs::KScheme;
 
 #[repr(packed)]
@@ -52,7 +48,7 @@ pub struct Xhci {
 impl KScheme for Xhci {
     fn on_irq(&mut self, irq: u8) {
         if irq == self.irq {
-            debug::d("XHCI handle\n");
+            debug!("XHCI handle\n");
         }
     }
 }
@@ -69,7 +65,7 @@ impl Xhci {
     }
 
     pub unsafe fn init(&mut self) {
-        debugln!(" + XHCI on: {:X}, IRQ: {:X}", self.base, self.irq);
+        syslog_debug!(" + XHCI on: {:X}, IRQ: {:X}", self.base, self.irq);
 
         /*
         self.pci.flag(4, 4, true); // Bus mastering

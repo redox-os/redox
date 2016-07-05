@@ -5,17 +5,17 @@ use arch::memory;
 
 use core::{cmp, mem};
 
-use common::time;
+use common::time::{self, Duration};
 
 use drivers::pci::config::PciConfig;
 use drivers::io::{Io, Mmio, Pio, PhysAddr};
 
 use fs::{KScheme, Resource, Url};
 
-use syscall::{do_sys_nanosleep, Result, TimeSpec};
+use syscall;
 
 #[repr(packed)]
-struct BD {
+struct Bd {
     ptr: PhysAddr<Mmio<u32>>,
     samples: Mmio<u32>,
 }
@@ -23,11 +23,11 @@ struct BD {
 struct Ac97Resource {
     audio: usize,
     bus_master: usize,
-    bdl: *mut BD
+    bdl: *mut Bd,
 }
 
 impl Resource for Ac97Resource {
-    fn dup(&self) -> Result<Box<Resource>> {
+    fn dup(&self) -> syscall::Result<Box<Resource>> {
         Ok(box Ac97Resource {
             audio: self.audio,
             bus_master: self.bus_master,
@@ -35,7 +35,7 @@ impl Resource for Ac97Resource {
         })
     }
 
-    fn path(&self, buf: &mut [u8]) -> Result <usize> {
+    fn path(&self, buf: &mut [u8]) -> syscall::Result <usize> {
         let path = b"audio:";
 
         let mut i = 0;
@@ -47,15 +47,19 @@ impl Resource for Ac97Resource {
         Ok(i)
     }
 
-    fn write(&mut self, buf: &[u8]) -> Result<usize> {
+    fn write(&mut self, buf: &[u8]) -> syscall::Result<usize> {
         unsafe {
             let audio = self.audio as u16;
 
             let mut master_volume = Pio::<u16>::new(audio + 2);
             let mut pcm_volume = Pio::<u16>::new(audio + 0x18);
 
-            master_volume.write(0x808);
+            debugln!("MASTER {:X} PCM {:X}", master_volume.read(), pcm_volume.read());
+
+            master_volume.write(0);
             pcm_volume.write(0x808);
+
+            debugln!("MASTER {:X} PCM {:X}", master_volume.read(), pcm_volume.read());
 
             let bus_master = self.bus_master as u16;
 
@@ -99,18 +103,18 @@ impl Resource for Ac97Resource {
                         break;
                     }
 
-                    let req = TimeSpec {
-                        tv_sec: 0,
-                        tv_nsec: 10 * time::NANOS_PER_MILLI
-                    };
-                    let mut rem = TimeSpec {
-                        tv_sec: 0,
-                        tv_nsec: 0,
-                    };
-                    try!(do_sys_nanosleep(&req, &mut rem));
+                    {
+                        let contexts = &mut *::env().contexts.get();
+                        if let Ok(mut current) = contexts.current_mut() {
+                            current.wake = Some(Duration::monotonic() + Duration::new(0, 10 * time::NANOS_PER_MILLI));
+                            current.block("AC97 sleep 1");
+                        }
+                    }
+
+                    context_switch();
                 }
 
-                debug!("{} / {}: {} / {}\n",
+                debugln!("AC97 {} / {}: {} / {}",
                        po_civ.read(),
                        lvi as usize,
                        position,
@@ -119,7 +123,18 @@ impl Resource for Ac97Resource {
                 let bytes = cmp::min(65534 * 2, (buf.len() - position + 1));
                 let samples = bytes / 2;
 
-                (*self.bdl.offset(lvi as isize)).ptr.write(buf.as_ptr().offset(position as isize) as u32);
+                let mut phys_buf = buf.as_ptr() as usize;
+                {
+                    let contexts = &mut *::env().contexts.get();
+                    if let Ok(current) = contexts.current() {
+                        if let Ok(phys) = current.translate(buf.as_ptr().offset(position as isize) as usize, bytes) {
+                            debugln!("logical {:#X} -> physical {:#X}", &(buf.as_ptr() as usize), &phys);
+                            phys_buf = phys;
+                        }
+                    }
+                }
+
+                (*self.bdl.offset(lvi as isize)).ptr.write(phys_buf as u32);
                 (*self.bdl.offset(lvi as isize)).samples.write((samples & 0xFFFF) as u32);
 
                 position += bytes;
@@ -150,18 +165,18 @@ impl Resource for Ac97Resource {
                     break;
                 }
 
-                let req = TimeSpec {
-                    tv_sec: 0,
-                    tv_nsec: 10 * time::NANOS_PER_MILLI
-                };
-                let mut rem = TimeSpec {
-                    tv_sec: 0,
-                    tv_nsec: 0,
-                };
-                try!(do_sys_nanosleep(&req, &mut rem));
+                {
+                    let contexts = &mut *::env().contexts.get();
+                    if let Ok(mut current) = contexts.current_mut() {
+                        current.wake = Some(Duration::monotonic() + Duration::new(0, 10 * time::NANOS_PER_MILLI));
+                        current.block("AC97 sleep 2");
+                    }
+                }
+
+                context_switch();
             }
 
-            debug!("Finished {} / {}\n", po_civ.read(), lvi);
+            debug!("AC97 Finished {} / {}\n", po_civ.read(), lvi);
         }
 
         Ok(buf.len())
@@ -172,7 +187,7 @@ pub struct Ac97 {
     audio: usize,
     bus_master: usize,
     irq: u8,
-    bdl: *mut BD,
+    bdl: *mut Bd,
 }
 
 impl KScheme for Ac97 {
@@ -180,7 +195,7 @@ impl KScheme for Ac97 {
         "audio"
     }
 
-    fn open(&mut self, _: Url, _: usize) -> Result<Box<Resource>> {
+    fn open(&mut self, _: Url, _: usize) -> syscall::Result<Box<Resource>> {
         Ok(box Ac97Resource {
             audio: self.audio,
             bus_master: self.bus_master,
@@ -203,10 +218,10 @@ impl Ac97 {
             audio: pci.read(0x10) as usize & 0xFFFFFFF0,
             bus_master: pci.read(0x14) as usize & 0xFFFFFFF0,
             irq: pci.read(0x3C) as u8 & 0xF,
-            bdl: memory::alloc(32 * mem::size_of::<BD>()) as *mut BD,
+            bdl: memory::alloc(32 * mem::size_of::<Bd>()) as *mut Bd,
         };
 
-        debug!(" + AC97 on: {:X}, {:X}, IRQ: {:X}\n", module.audio, module.bus_master, module.irq);
+        syslog_debug!(" + AC97 on: {:X}, {:X}, IRQ: {:X}", module.audio, module.bus_master, module.irq);
 
         let mut po_bdbar = PhysAddr::new(Pio::<u32>::new(module.bus_master as u16 + 0x10));
         po_bdbar.write(module.bdl as u32);

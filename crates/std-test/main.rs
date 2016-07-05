@@ -1,13 +1,12 @@
 #![feature(asm)]
 #![feature(rand)]
-#![feature(slice_concat_ext)]
+#![deny(warnings)]
 
 use std::env;
 use std::io::{Write, stdin, stdout};
 use std::rand;
 use std::process;
 use std::ptr;
-use std::slice::SliceConcatExt;
 use std::string::*;
 use std::thread;
 
@@ -59,13 +58,10 @@ fn command(args: Vec<String>){
                 None => println!("Failed to join"),
             }
         } else if command == "leak_test" {
-            thread::spawn(||{
-                let mut stack_it: Vec<u8> = Vec::new();
-                loop {
-                    stack_it.extend_from_slice(&[0; 4096]);
-                    thread::yield_now();
-                }
-            });
+            let mut stack_it: Vec<u8> = Vec::new();
+            loop {
+                stack_it.extend_from_slice(&[0; 65536]);
+            }
         } else if command == "int3" {
             unsafe {
                 asm!("int 3" : : : : "intel", "volatile");
@@ -84,7 +80,7 @@ fn main() {
         println!("Type help for a command list");
         loop {
             print!("# ");
-            stdout().flush();
+            stdout().flush().unwrap();
 
             if let Some(line) = readln!() {
                 let args: Vec<String> = line.trim().split(' ').map(|arg| arg.to_string()).collect();

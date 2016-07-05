@@ -7,13 +7,20 @@ use std::process::Command;
 
 fn main() {
     loop {
+        if let Ok(mut issue) = File::open("/etc/issue") {
+            let mut issue_string = String::new();
+            if let Ok(_) = issue.read_to_string(&mut issue_string) {
+                println!("{}", issue_string);
+            }
+        }
+
         print!("redox login: ");
         stdout().flush().unwrap();
 
         let mut buffer = String::new();
         stdin().read_line(&mut buffer).unwrap();
 
-	if let Ok(mut motd) = File::open("/etc/motd") {
+        if let Ok(mut motd) = File::open("/etc/motd") {
             let mut motd_string = String::new();
             if let Ok(_) = motd.read_to_string(&mut motd_string) {
                 println!("{}", motd_string);

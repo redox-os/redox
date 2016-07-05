@@ -1,4 +1,3 @@
-use common::debug;
 use common::slice::GetSlice;
 
 use collections::vec::Vec;
@@ -91,6 +90,6 @@ impl ArpScheme {
             }
             unsafe { context_switch() };
         }
-        debug::d("ARP: Failed to open ethernet:\n");
+        debug!("ARP: Failed to open ethernet:\n");
     }
 }

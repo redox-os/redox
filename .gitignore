@@ -19,6 +19,7 @@ setup/rust/
 build
 filesystem/apps/pixelcannon/assets/
 filesystem/bin/
+filesystem/lib/
 filesystem/ref/
 initfs/bin/
 initfs/build/

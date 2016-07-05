@@ -1,4 +1,3 @@
-pub use arch::intex::Intex;
 pub use self::wait_condition::WaitCondition;
 pub use self::wait_queue::WaitQueue;
 pub use self::wait_map::WaitMap;

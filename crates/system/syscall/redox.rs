@@ -1,12 +1,7 @@
-use syscall::arch::{syscall2, syscall1};
+use syscall::arch::syscall1;
 use error::Result;
 
-pub const SYS_DEBUG: usize = 0;
 pub const SYS_SUPERVISE: usize = 1638; // loominatzi confirmed
-
-pub fn sys_debug(buf: &[u8]) -> Result<usize> {
-    unsafe { syscall2(SYS_DEBUG, buf.as_ptr() as usize, buf.len()) }
-}
 
 /// <!-- @MANSTART{supervise} -->
 /// Supervise a given child process' system calls.

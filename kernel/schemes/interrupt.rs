@@ -36,7 +36,7 @@ impl KScheme for InterruptScheme {
         let mut string = format!("{:<6}{:<16}{}\n", "INT", "COUNT", "DESCRIPTION");
 
         {
-            let interrupts = ::env().interrupts.lock();
+            let interrupts = unsafe { &mut *::env().interrupts.get() };
             for interrupt in 0..interrupts.len() {
                 let count = interrupts[interrupt];
 

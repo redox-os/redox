@@ -1,4 +1,7 @@
 use alloc::boxed::Box;
+
+use core::str;
+
 use fs::{KScheme, Resource, Url};
 use system::error::{Error, Result, ENOENT};
 use system::syscall::O_CREAT;
@@ -43,26 +46,22 @@ impl Acpi {
                 for addr in acpi.rsdt.addrs.iter() {
                     let header = unsafe { &*(*addr as *const SDTHeader) };
                     if let Some(fadt) = FADT::new(header) {
-                        // Why does this hang? debugln!("{:#?}", fadt);
-                        if let Some(dsdt) = DSDT::new(unsafe {
-                            &*(fadt.dsdt as *const SDTHeader)
-                        }) {
-                            // debugln!("DSDT:");
-                            // aml::parse(dsdt.data);
+                        //Can't do it debugln!("{:#?}", fadt);
+                        if let Some(dsdt) = DSDT::new(unsafe { &*(fadt.dsdt as *const SDTHeader) }) {
+                            syslog_debug!("DSDT:");
+                            aml::parse(dsdt.data);
                             acpi.dsdt = Some(dsdt);
                         }
                         acpi.fadt = Some(fadt);
                     } else if let Some(ssdt) = SSDT::new(header) {
-                        // debugln!("SSDT:");
-                        // aml::parse(ssdt.data);
+                        syslog_debug!("SSDT:");
+                        aml::parse(ssdt.data);
                         acpi.ssdt = Some(ssdt);
                     } else if let Some(madt) = MADT::new(header) {
+                        syslog_debug!("{:#?}", madt);
                         acpi.madt = Some(madt);
                     } else {
-                        for b in header.signature.iter() {
-                            debug!("{}", *b as char);
-                        }
-                        debugln!(": Unknown Table");
+                        syslog_debug!("{}: Unknown Table", unsafe { str::from_utf8_unchecked(&header.signature) });
                     }
                 }
 

@@ -8,7 +8,7 @@ use core::{cmp, mem};
 use network::common::*;
 use network::ipv4::*;
 
-use common::{debug, random};
+use common::random;
 use common::to_num::ToNum;
 
 use super::arp::{Arp, ArpHeader};
@@ -226,10 +226,10 @@ impl KScheme for IpScheme {
                     }
                 }
             } else {
-                debug::d("IP: No protocol provided\n");
+                debug!("IP: No protocol provided\n");
             }
         } else {
-            debug::d("IP: No host provided\n");
+            debug!("IP: No host provided\n");
         }
 
         Err(Error::new(ENOENT))

@@ -35,12 +35,12 @@ impl Duration {
 
     /// Get the current duration
     pub fn monotonic() -> Self {
-        ::env().clock_monotonic.lock().clone()
+        unsafe { *::env().clock_monotonic.get() }
     }
 
     /// Get the realtime
     pub fn realtime() -> Self {
-        ::env().clock_realtime.lock().clone()
+        unsafe { *::env().clock_realtime.get() }
     }
 }
 
