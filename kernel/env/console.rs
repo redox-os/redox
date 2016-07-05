@@ -1,4 +1,4 @@
-extern crate console;
+extern crate ransid;
 
 use alloc::boxed::Box;
 
@@ -16,7 +16,7 @@ use sync::WaitQueue;
 
 pub struct Console {
     pub display: Option<Box<Display>>,
-    pub inner: Option<console::Console>,
+    pub inner: Option<ransid::Console>,
     pub draw: bool,
     pub command: String,
     pub commands: WaitQueue<String>
@@ -26,7 +26,7 @@ impl Console {
     pub fn new() -> Console {
         let display_option = Display::root();
         let inner_option = if let Some(ref display) = display_option {
-            Some(console::Console::new(display.width/8, display.height/16))
+            Some(ransid::Console::new(display.width/8, display.height/16))
         } else {
             None
         };
