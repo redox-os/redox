@@ -141,7 +141,7 @@ impl Ps2 {
             self.data.read();
         }
 
-        syslog_debug!(" + PS/2");
+        syslog_info!(" + PS/2");
 
         // No interrupts, system flag set, clocks enabled, translation enabled
         self.write(0x60, 0b01000100);
@@ -151,7 +151,7 @@ impl Ps2 {
         }
 
         // Enable First Port
-        syslog_debug!("   + Keyboard");
+        syslog_info!("   + Keyboard");
         self.cmd(0xAE);
 
         while self.sts.readf(1) {
@@ -184,7 +184,7 @@ impl Ps2 {
         }
 
         // Enable Second Port
-        syslog_debug!("   + PS/2 Mouse");
+        syslog_info!("   + PS/2 Mouse");
         self.cmd(0xA8);
 
         while self.sts.readf(1) {

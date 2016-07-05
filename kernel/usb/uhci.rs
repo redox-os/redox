@@ -87,7 +87,7 @@ impl Uhci {
     }
 
     pub unsafe fn init(&mut self) {
-        syslog_debug!(" + UHCI on: {:X}, IRQ: {:X}", self.base, self.irq);
+        syslog_info!(" + UHCI on: {:X}, IRQ: {:X}", self.base, self.irq);
 
         let base = self.base as u16;
         let mut usbcmd = Pio::<u16>::new(base);

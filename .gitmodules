@@ -79,3 +79,6 @@
 [submodule "crates/orbfont"]
 	path = crates/orbfont
 	url = https://github.com/redox-os/orbfont.git
+[submodule "crates/ransid"]
+	path = crates/ransid
+	url = https://github.com/jackpot51/ransid.git

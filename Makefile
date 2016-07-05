@@ -246,7 +246,7 @@ $(BUILD)/librusttype.rlib: crates/rusttype/src/lib.rs crates/rusttype/src/*.rs c
 	$(CARGO) --manifest-path crates/rusttype/Cargo.toml --lib $(CARGOFLAGS)
 
 $(BUILD)/ion-shell.bin: FORCE $(BUILD)/libstd.rlib
-	$(CARGO) --manifest-path crates/ion/Cargo.toml --bin ion-shell $(CARGOFLAGS) -C lto
+	$(CARGO) --manifest-path crates/ion/Cargo.toml --bin ion-shell $(CARGOFLAGS)
 
 filesystem/bin/sh: $(BUILD)/ion-shell.bin
 	mkdir -p filesystem/bin
@@ -517,13 +517,16 @@ $(BUILD)/liborbtk.rlib: crates/orbtk/src/lib.rs crates/orbtk/src/*.rs $(BUILD)/l
 $(BUILD)/libio.rlib: crates/io/lib.rs crates/io/*.rs $(BUILD)/libcore.rlib
 	$(RUSTC) $(RUSTCFLAGS) -o $@ $<
 
+$(BUILD)/libransid.rlib: crates/ransid/src/lib.rs crates/ransid/src/*.rs $(BUILD)/libcollections.rlib
+	$(RUSTC) $(RUSTCFLAGS) -o $@ $<
+
 $(BUILD)/libsystem.rlib: crates/system/lib.rs crates/system/*.rs crates/system/*/*.rs $(BUILD)/libcore.rlib
 	$(RUSTC) $(RUSTCFLAGS) -o $@ $<
 
 $(BUILD)/libredoxfs.rlib: crates/redoxfs/src/lib.rs crates/redoxfs/src/*.rs $(BUILD)/libstd.rlib
 	$(RUSTC) $(RUSTCFLAGS) -o $@ $<
 
-$(BUILD)/kernel.rlib: kernel/main.rs kernel/*.rs kernel/*/*.rs kernel/*/*/*.rs $(BUILD)/libbitflags.rlib $(BUILD)/libio.rlib build/initfs.gen
+$(BUILD)/kernel.rlib: kernel/main.rs kernel/*.rs kernel/*/*.rs kernel/*/*/*.rs $(BUILD)/libbitflags.rlib $(BUILD)/libio.rlib $(BUILD)/libransid.rlib $(BUILD)/libsystem.rlib build/initfs.gen
 	$(RUSTC) $(RUSTCFLAGS) -C lto -o $@ $<
 
 $(BUILD)/kernel.bin: $(BUILD)/kernel.rlib kernel/kernel.ld

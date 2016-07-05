@@ -150,7 +150,7 @@ impl Rtl8139 {
     }
 
     unsafe fn init(&mut self) {
-        syslog_debug!(" + RTL8139 on: {:X}, IRQ: {:X}", self.base, self.irq);
+        syslog_info!(" + RTL8139 on: {:X}, IRQ: {:X}", self.base, self.irq);
 
         self.pci.flag(4, 4, true); // Bus mastering
 
@@ -168,7 +168,7 @@ impl Rtl8139 {
                     self.port.idr[4].read(),
                     self.port.idr[5].read()],
         };
-        syslog_debug!("   - MAC: {}", &MAC_ADDR.to_string());
+        syslog_info!("   - MAC: {}", &MAC_ADDR.to_string());
 
         let receive_buffer = memory::alloc(10240);
         self.port.rbstart.write(receive_buffer as u32);
