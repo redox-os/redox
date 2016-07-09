@@ -152,7 +152,7 @@ fedora()
 		fi
 	fi
 	echo "Installing necessary build tools..."
-	sudo dnf install gcc gcc-c++ glibc-devel.i686 nasm make libfuse-dev
+	sudo dnf install gcc gcc-c++ glibc-devel.i686 nasm make fuse-devel
 }
 
 ###############################################################################
