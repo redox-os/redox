@@ -139,7 +139,7 @@ impl Resource for SchemeResource {
         }))
     }
 
-    /// Return the url of this resource
+    /// Return the URL of this resource
     fn path(&self, buf: &mut [u8]) -> Result <usize> {
         let contexts = unsafe { & *::env().contexts.get() };
         let current = try!(contexts.current());
@@ -266,7 +266,7 @@ impl Resource for SchemeServerResource {
         })
     }
 
-    /// Return the url of this resource
+    /// Return the URL of this resource
     fn path(&self, buf: &mut [u8]) -> Result<usize> {
         let mut i = 0;
 
