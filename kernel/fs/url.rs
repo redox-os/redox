@@ -12,7 +12,7 @@ use common::slice::GetSlice;
 use system::error::{Result, Error};
 use system::syscall::{O_CREAT, O_RDWR, O_TRUNC};
 
-/// An URL, see wiki
+/// A URL, see wiki
 #[derive(Copy, Clone, PartialEq, Eq, Debug, Hash)]
 pub struct Url<'a> {
     scheme: &'a str,
@@ -42,7 +42,7 @@ impl<'a> Url<'a> {
         })
     }
 
-    /// Convert the url to string
+    /// Convert the URL to string
     pub fn to_string(self) -> String {
         self.scheme.to_owned() + ":" + self.reference
     }
@@ -62,12 +62,12 @@ impl<'a> Url<'a> {
         ::env().open(self, O_CREAT | O_RDWR | O_TRUNC)
     }
 
-    /// Return the scheme of this url
+    /// Return the scheme of this URL
     pub fn scheme(self) -> &'a str {
         self.scheme
     }
 
-    /// Get the reference (after the ':') of the url
+    /// Get the reference (after the ':') of the URL
     pub fn reference(self) -> &'a str {
         self.reference
     }
