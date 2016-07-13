@@ -5,7 +5,7 @@
            unwind_attributes, zero_one, collections_range, question_mark, type_ascription)]
 #![no_std]
 
-#![deny(warnings)]
+// #![deny(warnings)]
 // #![deny(missing_docs)]
 
 #[macro_use]

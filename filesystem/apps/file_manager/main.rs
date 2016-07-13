@@ -1,5 +1,4 @@
 #![deny(warnings)]
-#![feature(iter_arith)]
 
 extern crate orbclient;
 extern crate orbimage;
