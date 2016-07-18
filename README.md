@@ -87,11 +87,11 @@ $ cd redox/
 # Install/update dependencies
 $ sudo <your package manager> install make nasm qemu libfuse-dev
 
-# Install multirust
-$ curl -sf https://raw.githubusercontent.com/brson/multirust/master/quick-install.sh | sh
+# Install rustup.rs
+$ curl https://sh.rustup.rs -sSf | sh
 
 # Set override toolchain to nightly build
-$ multirust override nightly
+$ rustup override set nightly
 
 # For successive builds start here. If this is your first build, just continue
 
