@@ -224,6 +224,7 @@ extrautils: \
 	filesystem/bin/grep \
 	filesystem/bin/less \
 	filesystem/bin/man \
+	filesystem/bin/mdless \
 	filesystem/bin/mtxt \
 	filesystem/bin/nc \
 	filesystem/bin/rem \

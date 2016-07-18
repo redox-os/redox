@@ -125,6 +125,11 @@ impl Console {
                                         data: block.fg.data
                                     });
                                 }
+                                if block.underlined {
+                                    display.rect(x * 8, y * 16 + 15, 8, 1, Color {
+                                        data: block.fg.data
+                                    });
+                                }
                             }
                         }
                         if inner.cursor {
