@@ -35,7 +35,7 @@ Sometimes things go wrong when compiling. Try the following before opening an is
 
 1. Run `make clean`.
 2. Run `git clean -X -f -d`.
-3. Make sure you have **the latest version of Rust nightly!** ([multirust](https://github.com/brson/multirust) is recommended for managing Rust versions).
+3. Make sure you have **the latest version of Rust nightly!** ([rustup.rs](https://www.rustup.rs) is recommended for managing Rust versions).
 4. Update **GNU Make**, **NASM** and **QEMU/VirtualBox**.
 5. Pull the upstream master branch (`git remote add upstream git@github.com:redox-os/redox.git; git pull upstream master`).
 6. Update submodules (`git submodule update --recursive --init`).
