@@ -1,7 +1,6 @@
 use collections::string::String;
 
 use core::mem::size_of;
-use core::num::Zero;
 use core::ops::{BitOrAssign, ShlAssign};
 
 const ZERO_OP: u8 = 0x00;
@@ -48,10 +47,10 @@ pub fn parse_string(bytes: &[u8], i: &mut usize) -> String {
 }
 
 // This one function required three different unstable features and four trait requirements. Why is generic math so hard?
-pub fn parse_num<T: BitOrAssign + From<u8> + ShlAssign<usize> + Zero>(bytes: &[u8],
+pub fn parse_num<T: BitOrAssign + From<u8> + ShlAssign<usize>>(bytes: &[u8],
                                                                       i: &mut usize)
                                                                       -> T {
-    let mut num: T = T::zero();
+    let mut num: T = T::from(0);
 
     let mut shift = 0;
     while *i < bytes.len() && shift < size_of::<T>() * 8 {
