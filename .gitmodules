@@ -82,3 +82,6 @@
 [submodule "crates/ransid"]
 	path = crates/ransid
 	url = https://github.com/jackpot51/ransid.git
+[submodule "filesystem/info"]
+	path = filesystem/info
+	url = https://github.com/redox-os/handbook.git
