@@ -126,7 +126,7 @@ impl Console {
                                     });
                                 }
                                 if block.underlined {
-                                    display.rect(x * 8, y * 16 + 15, 8, 1, Color {
+                                    display.rect(x * 8, y * 16 + 14, 8, 1, Color {
                                         data: block.fg.data
                                     });
                                 }
