@@ -222,6 +222,7 @@ extrautils: \
 	filesystem/bin/cur \
 	filesystem/bin/dmesg \
 	filesystem/bin/grep \
+	filesystem/bin/info \
 	filesystem/bin/less \
 	filesystem/bin/man \
 	filesystem/bin/mdless \
