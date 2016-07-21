@@ -85,3 +85,6 @@
 [submodule "filesystem/info"]
 	path = filesystem/info
 	url = https://github.com/redox-os/handbook.git
+[submodule "crates/liner"]
+	path = crates/liner
+	url = https://github.com/jackpot51/liner.git
