@@ -234,6 +234,11 @@ impl Metadata {
         }
     }
 
+    // Get inode of the file
+    pub fn inode(&self) -> u16 {
+        self.stat.st_ino
+    }
+
     pub fn is_dir(&self) -> bool {
         self.stat.st_mode & MODE_DIR == MODE_DIR
     }
@@ -245,6 +250,17 @@ impl Metadata {
     pub fn len(&self) -> u64 {
         self.stat.st_size as u64
     }
+
+    // Get permissions
+    pub fn mode(&self) -> u16 {
+        self.stat.st_mode
+    }
+
+    // Get modified time as a u32 type
+    pub fn modified(&self) -> u32 {
+        self.stat.st_mtime
+    }
+
 }
 
 pub struct DirEntry {
