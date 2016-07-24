@@ -1,6 +1,6 @@
 [submodule "rust"]
 	path = rust
-	url = https://github.com/redox-os/rust.git
+	url = https://github.com/rust-lang/rust.git
 [submodule "crates/ion"]
 	path = crates/ion
 	url = https://github.com/redox-os/ion.git
@@ -9,7 +9,7 @@
 	url = https://github.com/redox-os/sodium.git
 [submodule "crates/orbtk"]
 	path = crates/orbtk
-	url = https://github.com/redox-os/orbtk
+	url = https://github.com/redox-os/orbtk.git
 [submodule "crates/coreutils"]
 	path = crates/coreutils
 	url = https://github.com/redox-os/coreutils.git
@@ -18,7 +18,7 @@
 	url = https://github.com/redox-os/libc.git
 [submodule "crates/orbclient"]
 	path = crates/orbclient
-	url = https://github.com/redox-os/orbclient
+	url = https://github.com/redox-os/orbclient.git
 [submodule "crates/orbutils"]
 	path = crates/orbutils
 	url = https://github.com/redox-os/orbutils.git
