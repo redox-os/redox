@@ -241,7 +241,8 @@ games: \
 	filesystem/bin/h4xx3r \
 	filesystem/bin/minesweeper \
 	filesystem/bin/rusthello \
-	filesystem/bin/snake
+	filesystem/bin/snake \
+	filesystem/bin/reblox
 
 filesystem/bin/%: crates/%/main.rs crates/%/*.rs $(BUILD)/libstd.rlib
 	mkdir -p filesystem/bin
