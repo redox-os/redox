@@ -461,9 +461,9 @@ unsafe fn init(tss_data: usize) {
                     let current = contexts.current_mut().unwrap();
 
                     current.set_env_var("PATH", "file:/bin").unwrap();
-
                     current.set_env_var("COLUMNS", &term_columns).unwrap();
                     current.set_env_var("LINES", &term_lines).unwrap();
+                    current.set_env_var("TTY", "debug:").unwrap();
                 }
 
                 syslog_info!("The kernel has finished booting. Running /bin/init");
