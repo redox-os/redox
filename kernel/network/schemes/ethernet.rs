@@ -54,31 +54,38 @@ impl Resource for EthernetResource {
             let mut data: Vec<u8> = Vec::new();
             mem::swap(&mut self.data, &mut data);
 
+            syslog_info!("Link Read: self.data {}", data.len());
+
             for (b, d) in buf.iter_mut().zip(data.iter()) {
                 *b = *d;
             }
+
+            syslog_info!("Link Read: self.data ret {}", cmp::min(buf.len(), data.len()));
 
             return Ok(cmp::min(buf.len(), data.len()));
         }
 
         loop {
+            syslog_info!("Link Read: network reading");
             let mut bytes = [0; 8192];
-            match self.network.read(&mut bytes) {
-                Ok(count) => {
-                    if let Some(frame) = EthernetII::from_bytes(bytes[.. count].to_vec()) {
-                        if frame.header.ethertype.get() == self.ethertype && (unsafe { frame.header.dst.equals(MAC_ADDR) }
-                            || frame.header.dst.equals(BROADCAST_MAC_ADDR)) && (frame.header.src.equals(self.peer_addr)
-                            || self.peer_addr.equals(BROADCAST_MAC_ADDR))
-                        {
-                            for (b, d) in buf.iter_mut().zip(frame.data.iter()) {
-                                *b = *d;
-                            }
+            let count = try!(self.network.read(&mut bytes));
+            syslog_info!("Link Read: network read {}", count);
+            if let Some(frame) = EthernetII::from_bytes(bytes[.. count].to_vec()) {
+                syslog_info!("Link Read: network matched ethernet");
+                if frame.header.ethertype.get() == self.ethertype /* && (unsafe { frame.header.dst.equals(MAC_ADDR) }
+                    || frame.header.dst.equals(BROADCAST_MAC_ADDR)) && (frame.header.src.equals(self.peer_addr)
+                    || self.peer_addr.equals(BROADCAST_MAC_ADDR))*/
+                {
+                    syslog_info!("Link Read: network matched host/peer");
 
-                            return Ok(cmp::min(buf.len(), frame.data.len()));
-                        }
+                    for (b, d) in buf.iter_mut().zip(frame.data.iter()) {
+                        *b = *d;
                     }
+
+                    syslog_info!("Link Read: network ret {}", cmp::min(buf.len(), frame.data.len()));
+
+                    return Ok(cmp::min(buf.len(), frame.data.len()));
                 }
-                Err(err) => return Err(err),
             }
         }
     }

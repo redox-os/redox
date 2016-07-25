@@ -55,29 +55,36 @@ impl Resource for IpResource {
             let mut data: Vec<u8> = Vec::new();
             mem::swap(&mut self.data, &mut data);
 
+            syslog_info!("IP Read: self.data {}", data.len());
+
             for (b, d) in buf.iter_mut().zip(data.iter()) {
                 *b = *d;
             }
+
+            syslog_info!("IP Read: self.data ret {}", cmp::min(buf.len(), data.len()));
 
             return Ok(cmp::min(buf.len(), data.len()));
         }
 
         loop {
+            syslog_info!("IP Read: link reading");
             let mut bytes = [0; 8192];
-            match self.link.read(&mut bytes) {
-                Ok(count) => {
-                    if let Some(packet) = Ipv4::from_bytes(bytes[.. count].to_vec()) {
-                        if packet.header.proto == self.proto && packet.header.dst.equals(IP_ADDR) &&
-                           packet.header.src.equals(self.peer_addr) {
-                            for (b, d) in buf.iter_mut().zip(packet.data.iter()) {
-                                *b = *d;
-                            }
+            let count = try!(self.link.read(&mut bytes));
+            syslog_info!("IP Read: link read {}", count);
+            if let Some(packet) = Ipv4::from_bytes(bytes[.. count].to_vec()) {
+                syslog_info!("IP Read: link matched IPv4");
+                if packet.header.proto == self.proto && packet.header.dst.equals(IP_ADDR) &&
+                   packet.header.src.equals(self.peer_addr) {
+                    syslog_info!("IP Read: link matched host/peer");
 
-                            return Ok(cmp::min(buf.len(), packet.data.len()));
-                        }
+                    for (b, d) in buf.iter_mut().zip(packet.data.iter()) {
+                        *b = *d;
                     }
+
+                    syslog_info!("IP Read: link ret {}", cmp::min(buf.len(), packet.data.len()));
+
+                    return Ok(cmp::min(buf.len(), packet.data.len()));
                 }
-                Err(err) => return Err(err),
             }
         }
     }
