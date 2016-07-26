@@ -1,3 +1,5 @@
+dhcpd
+
 # Login process, handles debug console
 login
 

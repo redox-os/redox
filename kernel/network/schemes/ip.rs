@@ -73,8 +73,9 @@ impl Resource for IpResource {
             syslog_info!("IP Read: link read {}", count);
             if let Some(packet) = Ipv4::from_bytes(bytes[.. count].to_vec()) {
                 syslog_info!("IP Read: link matched IPv4");
-                if packet.header.proto == self.proto && packet.header.dst.equals(IP_ADDR) &&
-                   packet.header.src.equals(self.peer_addr) {
+                if packet.header.proto == self.proto &&
+                   (packet.header.dst.equals(IP_ADDR) || packet.header.dst.equals(BROADCAST_IP_ADDR)) &&
+                   (packet.header.src.equals(self.peer_addr) || self.peer_addr.equals(BROADCAST_IP_ADDR)) {
                     syslog_info!("IP Read: link matched host/peer");
 
                     for (b, d) in buf.iter_mut().zip(packet.data.iter()) {
@@ -161,7 +162,7 @@ impl KScheme for IpScheme {
                         }
                     }
 
-                    if peer_mac.equals(BROADCAST_MAC_ADDR) {
+                    if peer_mac.equals(BROADCAST_MAC_ADDR) && ! peer_addr.equals(BROADCAST_IP_ADDR) {
                         if let Ok(mut link) = Url::from_str(&format!("ethernet:{}/806", &peer_mac.to_string())).unwrap().open() {
                             let arp = Arp {
                                 header: ArpHeader {
@@ -217,7 +218,7 @@ impl KScheme for IpScheme {
                             Ok(count) => {
                                 if let Some(packet) = Ipv4::from_bytes(bytes[.. count].to_vec()) {
                                     if packet.header.proto == proto &&
-                                       packet.header.dst.equals(IP_ADDR) {
+                                       (packet.header.dst.equals(IP_ADDR) || packet.header.dst.equals(BROADCAST_IP_ADDR)) {
                                         return Ok(box IpResource {
                                             link: link,
                                             data: packet.data,

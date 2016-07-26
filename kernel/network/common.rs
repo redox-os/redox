@@ -176,7 +176,7 @@ impl Ipv6Addr {
     }
 }
 
-pub static BROADCAST_IP_ADDR: Ipv4Addr = Ipv4Addr { bytes: [10, 85, 85, 255] };
+pub static BROADCAST_IP_ADDR: Ipv4Addr = Ipv4Addr { bytes: [255, 255, 255, 255] };
 
 pub static IP_ADDR: Ipv4Addr = Ipv4Addr { bytes: [10, 85, 85, 2] };
 
