@@ -8,6 +8,11 @@ use dns::{Dns, DnsQuery};
 mod dns;
 
 fn main(){
+    let mut dns = [0; 4];
+    File::open("netcfg:dns").unwrap().read(&mut dns).unwrap();
+
+    println!("DNS: Server: {:?}", dns);
+
     let tid = (time::SystemTime::now().duration_since(time::UNIX_EPOCH).unwrap().subsec_nanos() >> 16) as u16;
 
     let packet = Dns {
@@ -23,7 +28,7 @@ fn main(){
 
     let packet_data = packet.compile();
 
-    let mut socket = File::open("udp:10.0.2.3:53").unwrap();
+    let mut socket = File::open(&format!("udp:{}.{}.{}.{}:53", dns[0], dns[1], dns[2], dns[3])).unwrap();
     let _sent = socket.write(&packet_data).unwrap();
 
     socket.flush().unwrap();

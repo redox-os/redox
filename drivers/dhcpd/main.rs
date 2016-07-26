@@ -97,6 +97,50 @@ fn main(){
     let ack = unsafe { &* (ack_data.as_ptr() as *const Dhcp) };
     println!("DHCP: Ack IP: {:?}, Server IP: {:?}", ack.yiaddr, ack.siaddr);
 
+    let mut subnet_option = None;
+    let mut gateway_option = None;
+    let mut dns_option = None;
+
+    let mut options = ack.options.iter();
+    while let Some(option) = options.next() {
+        match *option {
+            0 => (),
+            255 => break,
+            _ => if let Some(len) = options.next() {
+                if *len as usize <= options.as_slice().len() {
+                    let data = &options.as_slice()[.. *len as usize];
+                    for _data_i in 0..*len {
+                        options.next();
+                    }
+                    match *option {
+                        1 => {
+                            println!("DHCP: Subnet Mask: {:?}", data);
+                            if data.len() == 4 && subnet_option.is_none() {
+                                subnet_option = Some(Vec::from(data));
+                            }
+                        },
+                        3 => {
+                            println!("DHCP: Router: {:?}", data);
+                            if data.len() == 4  && gateway_option.is_none() {
+                                gateway_option = Some(Vec::from(data));
+                            }
+                        },
+                        6 => {
+                            println!("DHCP: Domain Name Server: {:?}", data);
+                            if data.len() == 4 && dns_option.is_none() {
+                                dns_option = Some(Vec::from(data));
+                            }
+                        },
+                        51 => println!("DHCP: Lease Time: {:?}", data),
+                        53 => println!("DHCP: Message Type: {:?}", data),
+                        54 => println!("DHCP: Server ID: {:?}", data),
+                        _ => println!("DHCP: {}: {:?}", option, data)
+                    }
+                }
+            },
+        }
+    }
+
     {
         File::open("netcfg:ip").unwrap().write(&ack.yiaddr).unwrap();
 
@@ -104,5 +148,14 @@ fn main(){
         File::open("netcfg:ip").unwrap().read(&mut new_ip).unwrap();
 
         println!("DHCP: New IP: {:?}", new_ip);
+    }
+
+    if let Some(dns) = dns_option {
+        File::open("netcfg:dns").unwrap().write(&dns).unwrap();
+
+        let mut new_dns = [0; 4];
+        File::open("netcfg:dns").unwrap().read(&mut new_dns).unwrap();
+
+        println!("DHCP: New DNS: {:?}", new_dns);
     }
 }
