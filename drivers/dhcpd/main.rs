@@ -22,7 +22,7 @@ fn main(){
     let mut socket = File::open("udp:255.255.255.255:67/68").unwrap();
 
     {
-        let discover = Dhcp {
+        let mut discover = Dhcp {
             op: 1,
             htype: 1,
             hlen: 6,
@@ -39,8 +39,12 @@ fn main(){
             sname: [0; 64],
             file: [0; 128],
             magic: 0x63825363u32.to_be(),
-            options: [53, 1, 1, 255, 0, 0, 0, 0, 0, 0]
+            options: [0; 308]
         };
+
+        for (s, mut d) in [53, 1, 1, 255].iter().zip(discover.options.iter_mut()) {
+            *d = *s;
+        }
 
         let discover_data = unsafe { std::slice::from_raw_parts((&discover as *const Dhcp) as *const u8, std::mem::size_of::<Dhcp>()) };
 
@@ -56,7 +60,7 @@ fn main(){
     println!("DHCP: Offer IP: {:?}, Server IP: {:?}", offer.yiaddr, offer.siaddr);
 
     {
-        let request = Dhcp {
+        let mut request = Dhcp {
             op: 1,
             htype: 1,
             hlen: 6,
@@ -73,8 +77,12 @@ fn main(){
             sname: [0; 64],
             file: [0; 128],
             magic: 0x63825363u32.to_be(),
-            options: [53, 1, 3, 50, 4, offer.yiaddr[0], offer.yiaddr[1], offer.yiaddr[2], offer.yiaddr[3], 255]
+            options: [0; 308]
         };
+
+        for (s, mut d) in [53, 1, 3, 50, 4, offer.yiaddr[0], offer.yiaddr[1], offer.yiaddr[2], offer.yiaddr[3], 255].iter().zip(request.options.iter_mut()) {
+            *d = *s;
+        }
 
         let request_data = unsafe { std::slice::from_raw_parts((&request as *const Dhcp) as *const u8, std::mem::size_of::<Dhcp>()) };
 
