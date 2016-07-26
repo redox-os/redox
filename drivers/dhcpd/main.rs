@@ -7,6 +7,13 @@ use dhcp::Dhcp;
 mod dhcp;
 
 fn main(){
+    {
+        let mut current_ip = [0; 4];
+        File::open("netcfg:ip").unwrap().read(&mut current_ip).unwrap();
+
+        println!("DHCP: Current IP: {:?}", current_ip);
+    }
+
     let tid = time::SystemTime::now().duration_since(time::UNIX_EPOCH).unwrap().subsec_nanos();
 
     let packet = Dhcp {
@@ -37,9 +44,20 @@ fn main(){
     socket.flush().unwrap();
 
     let mut buf = [0; 65536];
-    let count = socket.read(&mut buf).unwrap();
+    socket.read(&mut buf).unwrap();
 
     let response = unsafe { &* (buf.as_ptr() as *const Dhcp) };
 
-    println!("DHCP {}: My IP: {:?}, Server IP: {:?}", count, response.yiaddr, response.siaddr);
+    println!("DHCP: Suggested IP: {:?}, Server IP: {:?}", response.yiaddr, response.siaddr);
+
+    {
+        File::open("netcfg:ip").unwrap().write(&response.yiaddr).unwrap();
+    }
+
+    {
+        let mut new_ip = [0; 4];
+        File::open("netcfg:ip").unwrap().read(&mut new_ip).unwrap();
+
+        println!("DHCP: New IP: {:?}", new_ip);
+    }
 }

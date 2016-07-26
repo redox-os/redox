@@ -46,7 +46,7 @@ use env::Environment;
 
 use graphics::display;
 
-use network::schemes::{ArpScheme, EthernetScheme, IcmpScheme, IpScheme, TcpScheme, UdpScheme};
+use network::schemes::{ArpScheme, EthernetScheme, IcmpScheme, IpScheme, NetConfigScheme, TcpScheme, UdpScheme};
 
 use schemes::context::ContextScheme;
 use schemes::debug::DebugScheme;
@@ -425,6 +425,7 @@ unsafe fn init(tss_data: usize) {
             (&mut *env.schemes.get()).push(NetworkScheme::new(nics));
             */
 
+            (&mut *env.schemes.get()).push(box NetConfigScheme);
             (&mut *env.schemes.get()).push(box EthernetScheme);
             //(&mut *env.schemes.get()).push(box ArpScheme);
             //(&mut *env.schemes.get()).push(box IcmpScheme);
