@@ -62,7 +62,7 @@ impl Resource for EthernetResource {
         }
 
         loop {
-            let mut bytes = [0; 8192];
+            let mut bytes = [0; 65536];
             let count = try!(self.network.read(&mut bytes));
 
             if let Some(frame) = EthernetII::from_bytes(bytes[.. count].to_vec()) {
@@ -125,7 +125,7 @@ impl KScheme for EthernetScheme {
                         });
                     } else {
                         loop {
-                            let mut bytes = [0; 8192];
+                            let mut bytes = [0; 65536];
                             match network.read(&mut bytes) {
                                 Ok(count) => {
                                     if let Some(frame) = EthernetII::from_bytes(bytes[.. count].to_vec()) {

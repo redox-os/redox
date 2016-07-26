@@ -62,7 +62,7 @@ impl IcmpScheme {
     pub fn reply_loop() {
         while let Ok(mut ip) = Url::from_str("ip:/1").unwrap().open() {
             loop {
-                let mut bytes = [0; 8192];
+                let mut bytes = [0; 65536];
                 if let Ok(count) = ip.read(&mut bytes) {
                     if let Some(message) = Icmp::from_bytes(bytes[.. count].to_vec()) {
                         if message.header._type == 0x08 {

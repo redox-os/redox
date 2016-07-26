@@ -106,7 +106,7 @@ impl Resource for UdpResource {
         }
 
         loop {
-            let mut bytes = [0; 8192];
+            let mut bytes = [0; 65536];
             let count = try!(self.ip.read(&mut bytes));
 
             if let Some(datagram) = Udp::from_bytes(bytes[.. count].to_vec()) {
@@ -179,7 +179,7 @@ impl KScheme for UdpScheme {
             let host_port = path.parse::<u16>().unwrap_or(0);
             if host_port > 0 {
                 while let Ok(mut ip) = Url::from_str("ip:/11").unwrap().open() {
-                    let mut bytes = [0; 8192];
+                    let mut bytes = [0; 65536];
                     if let Ok(count) = ip.read(&mut bytes) {
                         if let Some(datagram) = Udp::from_bytes(bytes[.. count].to_vec()) {
                             if datagram.header.dst.get() == host_port {
