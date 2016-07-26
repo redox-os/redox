@@ -37,11 +37,11 @@ fn main(){
     let count = socket.read(&mut buf).unwrap();
 
     match Dns::parse(&buf[.. count]) {
-        Ok(response) => {
-            println!("DNS {} {:#?}", count, response);
+        Ok(response) => for answer in response.answers.iter() {
+            println!("DNS {} {:?}", count, answer.data);
         },
         Err(err) => {
-            println!("DNS {} {}", count ,err);
+            println!("DNS {} {}", count, err);
         }
     }
 }
