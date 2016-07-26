@@ -68,7 +68,7 @@ impl Resource for IpResource {
 
             if let Some(packet) = Ipv4::from_bytes(bytes[.. count].to_vec()) {
                 if packet.header.proto == self.proto &&
-                   (packet.header.dst.equals(IP_ADDR) || packet.header.dst.equals(BROADCAST_IP_ADDR)) &&
+                   (packet.header.dst.equals(unsafe { IP_ADDR }) || packet.header.dst.equals(BROADCAST_IP_ADDR)) &&
                    (packet.header.src.equals(self.peer_addr) || self.peer_addr.equals(BROADCAST_IP_ADDR)) {
                     for (b, d) in buf.iter_mut().zip(packet.data.iter()) {
                         *b = *d;
@@ -94,7 +94,7 @@ impl Resource for IpResource {
                 ttl: 128,
                 proto: self.proto,
                 checksum: Checksum { data: 0 },
-                src: IP_ADDR,
+                src: unsafe { IP_ADDR },
                 dst: self.peer_addr,
             },
             options: Vec::new(),
@@ -162,7 +162,7 @@ impl KScheme for IpScheme {
                                     plen: 4,
                                     oper: n16::new(1),
                                     src_mac: unsafe { MAC_ADDR },
-                                    src_ip: IP_ADDR,
+                                    src_ip: unsafe { IP_ADDR },
                                     dst_mac: peer_mac,
                                     dst_ip: peer_addr,
                                 },
@@ -208,7 +208,7 @@ impl KScheme for IpScheme {
                             Ok(count) => {
                                 if let Some(packet) = Ipv4::from_bytes(bytes[.. count].to_vec()) {
                                     if packet.header.proto == proto &&
-                                       (packet.header.dst.equals(IP_ADDR) || packet.header.dst.equals(BROADCAST_IP_ADDR)) {
+                                       (packet.header.dst.equals(unsafe { IP_ADDR }) || packet.header.dst.equals(BROADCAST_IP_ADDR)) {
                                         return Ok(box IpResource {
                                             link: link,
                                             data: packet.data,
