@@ -4,6 +4,8 @@ use core::cell::UnsafeCell;
 use core::mem;
 use core::ops::DerefMut;
 
+use common::time::Duration;
+
 use super::WaitCondition;
 
 pub struct WaitQueue<T> {
@@ -36,6 +38,17 @@ impl<T> WaitQueue<T> {
                 return value;
             }
             self.condition.wait(reason);
+        }
+    }
+
+    pub fn receive_for(&self, reason: &str, time: Duration) -> Option<T> {
+        loop {
+            if let Some(value) = unsafe { self.inner() }.pop_front() {
+                return Some(value);
+            }
+            if ! self.condition.wait_for(reason, time) {
+                return None;
+            }
         }
     }
 
