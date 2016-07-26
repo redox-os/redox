@@ -141,58 +141,78 @@ impl KScheme for IpScheme {
             if let Some(proto_string) = parts.get(1) {
                 let proto = proto_string.to_num_radix(16) as u8;
 
-                if !host_string.is_empty() {
+                if ! host_string.is_empty() {
                     let peer_addr = Ipv4Addr::from_string(&host_string.to_string());
-                    let mut peer_mac = BROADCAST_MAC_ADDR;
+                    let mut route_mac = BROADCAST_MAC_ADDR;
 
-                    for entry in self.arp.iter() {
-                        if entry.ip.equals(peer_addr) {
-                            peer_mac = entry.mac;
-                            break;
+                    if ! peer_addr.equals(BROADCAST_IP_ADDR) {
+                        let mut needs_routing = false;
+
+                        for octet in 0..4 {
+                            let me = unsafe { IP_ADDR.bytes[octet] };
+                            let mask = unsafe { IP_SUBNET.bytes[octet] };
+                            let them = peer_addr.bytes[octet];
+                            if me & mask != them & mask {
+                                needs_routing = true;
+                                break;
+                            }
                         }
-                    }
 
-                    if peer_mac.equals(BROADCAST_MAC_ADDR) && ! peer_addr.equals(BROADCAST_IP_ADDR) {
-                        if let Ok(mut link) = Url::from_str(&format!("ethernet:{}/806", &peer_mac.to_string())).unwrap().open() {
-                            let arp = Arp {
-                                header: ArpHeader {
-                                    htype: n16::new(1),
-                                    ptype: n16::new(0x800),
-                                    hlen: 6,
-                                    plen: 4,
-                                    oper: n16::new(1),
-                                    src_mac: unsafe { MAC_ADDR },
-                                    src_ip: unsafe { IP_ADDR },
-                                    dst_mac: peer_mac,
-                                    dst_ip: peer_addr,
-                                },
-                                data: Vec::new(),
-                            };
+                        let route_addr = if needs_routing {
+                            unsafe { IP_ROUTER_ADDR }
+                        } else {
+                            peer_addr
+                        };
 
-                            match link.write(&arp.to_bytes()) {
-                                Ok(_) => loop {
-                                    let mut bytes = [0; 8192];
-                                    match link.read(&mut bytes) {
-                                        Ok(count) => if let Some(packet) = Arp::from_bytes(bytes[.. count].to_vec()) {
-                                            if packet.header.oper.get() == 2 &&
-                                               packet.header.src_ip.equals(peer_addr) {
-                                                peer_mac = packet.header.src_mac;
-                                                self.arp.push(ArpEntry {
-                                                    ip: peer_addr,
-                                                    mac: peer_mac,
-                                                });
-                                                break;
-                                            }
-                                        },
-                                        Err(_) => (),
-                                    }
-                                },
-                                Err(err) => debugln!("IP: ARP Write Failed: {}", err),
+                        for entry in self.arp.iter() {
+                            if entry.ip.equals(route_addr) {
+                                route_mac = entry.mac;
+                                break;
+                            }
+                        }
+
+                        if route_mac.equals(BROADCAST_MAC_ADDR) {
+                            if let Ok(mut link) = Url::from_str(&format!("ethernet:{}/806", &route_mac.to_string())).unwrap().open() {
+                                let arp = Arp {
+                                    header: ArpHeader {
+                                        htype: n16::new(1),
+                                        ptype: n16::new(0x800),
+                                        hlen: 6,
+                                        plen: 4,
+                                        oper: n16::new(1),
+                                        src_mac: unsafe { MAC_ADDR },
+                                        src_ip: unsafe { IP_ADDR },
+                                        dst_mac: route_mac,
+                                        dst_ip: route_addr,
+                                    },
+                                    data: Vec::new(),
+                                };
+
+                                match link.write(&arp.to_bytes()) {
+                                    Ok(_) => loop {
+                                        let mut bytes = [0; 8192];
+                                        match link.read(&mut bytes) {
+                                            Ok(count) => if let Some(packet) = Arp::from_bytes(bytes[.. count].to_vec()) {
+                                                if packet.header.oper.get() == 2 &&
+                                                   packet.header.src_ip.equals(route_addr) {
+                                                    route_mac = packet.header.src_mac;
+                                                    self.arp.push(ArpEntry {
+                                                        ip: route_addr,
+                                                        mac: route_mac,
+                                                    });
+                                                    break;
+                                                }
+                                            },
+                                            Err(_) => (),
+                                        }
+                                    },
+                                    Err(err) => debugln!("IP: ARP Write Failed: {}", err),
+                                }
                             }
                         }
                     }
 
-                    if let Ok(link) = Url::from_str(&format!("ethernet:{}/800", &peer_mac.to_string())).unwrap().open(){
+                    if let Ok(link) = Url::from_str(&format!("ethernet:{}/800", &route_mac.to_string())).unwrap().open(){
                         return Ok(box IpResource {
                             link: link,
                             data: Vec::new(),
