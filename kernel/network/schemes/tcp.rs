@@ -93,8 +93,9 @@ impl TcpStream {
     }
 
     fn read(&mut self, buf: &mut [u8]) -> Result<usize> {
+        syslog_info!("TCP READ: {:?}:{} to {}", self.peer_addr.bytes, self.peer_port, self.host_port);
         loop {
-            let mut bytes = [0; 8192];
+            let mut bytes = [0; 65536];
             match self.ip.read(&mut bytes) {
                 Ok(count) => {
                     if let Some(segment) = Tcp::from_bytes(bytes[.. count].to_vec()) {
@@ -155,6 +156,8 @@ impl TcpStream {
     }
 
     fn write(&mut self, buf: &[u8]) -> Result<usize> {
+        syslog_info!("TCP WRITE: {} to {:?}:{}", self.host_port, self.peer_addr.bytes, self.peer_port);
+
         let tcp_data = Vec::from(buf);
 
         let mut tcp = Tcp {
@@ -195,7 +198,7 @@ impl TcpStream {
             Ok(size) => {
                 loop {
                     // Wait for ACK
-                    let mut bytes = [0; 8192];
+                    let mut bytes = [0; 65536];
                     match self.ip.read(&mut bytes) {
                         Ok(count) => {
                             if let Some(segment) = Tcp::from_bytes(bytes[.. count].to_vec()) {
@@ -265,7 +268,7 @@ impl TcpStream {
             Ok(_) => {
                 loop {
                     // Wait for SYN-ACK
-                    let mut bytes = [0; 8192];
+                    let mut bytes = [0; 65536];
                     match self.ip.read(&mut bytes) {
                         Ok(count) => {
                             if let Some(segment) = Tcp::from_bytes(bytes[.. count].to_vec()) {
@@ -368,7 +371,7 @@ impl TcpStream {
             Ok(_) => {
                 loop {
                     // Wait for ACK
-                    let mut bytes = [0; 8192];
+                    let mut bytes = [0; 65536];
                     match self.ip.read(&mut bytes) {
                         Ok(count ) => {
                             if let Some(segment) = Tcp::from_bytes(bytes[.. count].to_vec()) {
@@ -509,7 +512,7 @@ impl KScheme for TcpScheme {
             let host_port = path.parse::<u16>().unwrap_or(0);
 
             while let Ok(mut ip) = Url::from_str("ip:/6").unwrap().open() {
-                let mut bytes = [0; 8192];
+                let mut bytes = [0; 65536];
                 match ip.read(&mut bytes) {
                     Ok(count) => {
                         if let Some(segment) = Tcp::from_bytes(bytes[.. count].to_vec()) {

@@ -63,7 +63,7 @@ impl Resource for IpResource {
         }
 
         loop {
-            let mut bytes = [0; 8192];
+            let mut bytes = [0; 65536];
             let count = try!(self.link.read(&mut bytes));
 
             if let Some(packet) = Ipv4::from_bytes(bytes[.. count].to_vec()) {
@@ -190,7 +190,7 @@ impl KScheme for IpScheme {
 
                                 match link.write(&arp.to_bytes()) {
                                     Ok(_) => loop {
-                                        let mut bytes = [0; 8192];
+                                        let mut bytes = [0; 65536];
                                         match link.read(&mut bytes) {
                                             Ok(count) => if let Some(packet) = Arp::from_bytes(bytes[.. count].to_vec()) {
                                                 if packet.header.oper.get() == 2 &&
@@ -223,7 +223,7 @@ impl KScheme for IpScheme {
                     }
                 } else {
                     while let Ok(mut link) = Url::from_str("ethernet:/800").unwrap().open() {
-                        let mut bytes = [0; 8192];
+                        let mut bytes = [0; 65536];
                         match link.read(&mut bytes) {
                             Ok(count) => {
                                 if let Some(packet) = Ipv4::from_bytes(bytes[.. count].to_vec()) {
