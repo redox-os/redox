@@ -206,6 +206,7 @@ filesystem/bin/%: drivers/%/main.rs drivers/%/*.rs drivers/%/*/*.rs $(BUILD)/lib
 	$(RUSTC) $(RUSTCFLAGS) -C lto --crate-type bin -o $@ $<
 
 drivers: \
+	filesystem/bin/dhcpd \
 	filesystem/bin/dnsd \
 	filesystem/bin/pcid \
 	filesystem/bin/reboot

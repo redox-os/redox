@@ -183,7 +183,7 @@ impl KScheme for UdpScheme {
 
         // Check host and port vs path
         syslog_info!("UDP: Path {}", path);
-        if ! path.is_empty() {
+        if remote.is_empty() {
             let host_port = path.parse::<u16>().unwrap_or(0);
             syslog_info!("UDP: Host port {}", host_port);
             if host_port > 0 {
@@ -223,7 +223,7 @@ impl KScheme for UdpScheme {
             let peer_port = remote_parts.next().unwrap_or("").parse::<u16>().unwrap_or(0);
             syslog_info!("UDP: Peer {}:{}", peer_addr, peer_port);
             if peer_port > 0 {
-                let host_port = (rand() % 32768 + 32768) as u16;
+                let host_port = path.parse::<u16>().unwrap_or((rand() % 32768 + 32768) as u16);
 
                 syslog_info!("Opening ip:{}/11 host {}", peer_addr, host_port);
                 if let Ok(ip) = Url::from_str(&format!("ip:{}/11", peer_addr)).unwrap().open() {
