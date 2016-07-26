@@ -15,5 +15,5 @@ pub struct Dhcp {
     pub sname: [u8; 64],
     pub file: [u8; 128],
     pub magic: u32,
-    pub options: [u8; 10]
+    pub options: [u8; 308]
 }
