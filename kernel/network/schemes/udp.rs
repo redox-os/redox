@@ -95,8 +95,6 @@ impl Resource for UdpResource {
             let mut bytes: Vec<u8> = Vec::new();
             mem::swap(&mut self.data, &mut bytes);
 
-            syslog_info!("UDP Read: self.data len {}", bytes.len());
-
             // TODO: Allow splitting
             let mut i = 0;
             while i < buf.len() && i < bytes.len() {
@@ -104,28 +102,23 @@ impl Resource for UdpResource {
                 i += 1;
             }
 
-            syslog_info!("UDP Read: self.data ret {}", i);
-
             return Ok(i);
         }
 
         loop {
-            syslog_info!("UDP Read: IP reading");
             let mut bytes = [0; 8192];
             let count = try!(self.ip.read(&mut bytes));
-            syslog_info!("UDP Read: IP read {}", count);
+
             if let Some(datagram) = Udp::from_bytes(bytes[.. count].to_vec()) {
-                syslog_info!("UDP Read: IP read matched UDP");
                 if datagram.header.dst.get() == self.host_port &&
                    datagram.header.src.get() == self.peer_port {
-                    syslog_info!("UDP Read: IP read matched host/peer");
                     // TODO: Allow splitting
                     let mut i = 0;
                     while i < buf.len() && i < datagram.data.len() {
                         buf[i] = datagram.data[i];
                         i += 1;
                     }
-                    syslog_info!("UDP Read: IP read ret {}", i);
+
                     return Ok(i);
                 }
             }
@@ -182,24 +175,16 @@ impl KScheme for UdpScheme {
         let path = parts.next().unwrap_or("");
 
         // Check host and port vs path
-        syslog_info!("UDP: Path {}", path);
         if remote.is_empty() {
             let host_port = path.parse::<u16>().unwrap_or(0);
-            syslog_info!("UDP: Host port {}", host_port);
             if host_port > 0 {
-                syslog_info!("UDP: Opening ip:/11");
                 while let Ok(mut ip) = Url::from_str("ip:/11").unwrap().open() {
-                    syslog_info!("UDP: Opened ip:/11");
                     let mut bytes = [0; 8192];
                     if let Ok(count) = ip.read(&mut bytes) {
-                        syslog_info!("UDP: Read ip:/11");
                         if let Some(datagram) = Udp::from_bytes(bytes[.. count].to_vec()) {
-                            syslog_info!("UDP: Parsed ip:/11");
                             if datagram.header.dst.get() == host_port {
-                                syslog_info!("UDP: Matched ip:/11");
                                 let mut path = [0; 256];
                                 if let Ok(path_count) = ip.path(&mut path) {
-                                    syslog_info!("UDP: Got path ip:/11");
                                     let ip_reference = unsafe { str::from_utf8_unchecked(&path[.. path_count]) }.split(':').nth(1).unwrap_or("");
                                     let peer_addr = ip_reference.split('/').next().unwrap_or("").split(':').next().unwrap_or("");
 
@@ -214,20 +199,15 @@ impl KScheme for UdpScheme {
                             }
                         }
                     }
-                    syslog_info!("UDP: Closed ip:/11");
                 }
             }
         } else {
             let mut remote_parts = remote.split(':');
             let peer_addr = remote_parts.next().unwrap_or("");
             let peer_port = remote_parts.next().unwrap_or("").parse::<u16>().unwrap_or(0);
-            syslog_info!("UDP: Peer {}:{}", peer_addr, peer_port);
             if peer_port > 0 {
                 let host_port = path.parse::<u16>().unwrap_or((rand() % 32768 + 32768) as u16);
-
-                syslog_info!("Opening ip:{}/11 host {}", peer_addr, host_port);
                 if let Ok(ip) = Url::from_str(&format!("ip:{}/11", peer_addr)).unwrap().open() {
-                    syslog_info!("Opened ip:{}/11", peer_addr);
                     return Ok(Box::new(UdpResource {
                         ip: ip,
                         data: Vec::new(),
