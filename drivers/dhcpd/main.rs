@@ -98,7 +98,7 @@ fn main(){
     println!("DHCP: Ack IP: {:?}, Server IP: {:?}", ack.yiaddr, ack.siaddr);
 
     let mut subnet_option = None;
-    let mut gateway_option = None;
+    let mut router_option = None;
     let mut dns_option = None;
 
     let mut options = ack.options.iter();
@@ -121,8 +121,8 @@ fn main(){
                         },
                         3 => {
                             println!("DHCP: Router: {:?}", data);
-                            if data.len() == 4  && gateway_option.is_none() {
-                                gateway_option = Some(Vec::from(data));
+                            if data.len() == 4  && router_option.is_none() {
+                                router_option = Some(Vec::from(data));
                             }
                         },
                         6 => {
@@ -148,6 +148,24 @@ fn main(){
         File::open("netcfg:ip").unwrap().read(&mut new_ip).unwrap();
 
         println!("DHCP: New IP: {:?}", new_ip);
+    }
+
+    if let Some(subnet) = subnet_option {
+        File::open("netcfg:ip_subnet").unwrap().write(&subnet).unwrap();
+
+        let mut new_subnet = [0; 4];
+        File::open("netcfg:ip_subnet").unwrap().read(&mut new_subnet).unwrap();
+
+        println!("DHCP: New Subnet: {:?}", new_subnet);
+    }
+
+    if let Some(router) = router_option {
+        File::open("netcfg:ip_router").unwrap().write(&router).unwrap();
+
+        let mut new_router = [0; 4];
+        File::open("netcfg:ip_router").unwrap().read(&mut new_router).unwrap();
+
+        println!("DHCP: New Router: {:?}", new_router);
     }
 
     if let Some(dns) = dns_option {
