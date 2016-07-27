@@ -206,8 +206,6 @@ filesystem/bin/%: drivers/%/main.rs drivers/%/*.rs drivers/%/*/*.rs $(BUILD)/lib
 	$(RUSTC) $(RUSTCFLAGS) -C lto --crate-type bin -o $@ $<
 
 drivers: \
-	filesystem/bin/dhcpd \
-	filesystem/bin/dnsd \
 	filesystem/bin/pcid \
 	filesystem/bin/reboot
 
@@ -229,7 +227,6 @@ extrautils: \
 	filesystem/bin/man \
 	filesystem/bin/mdless \
 	filesystem/bin/mtxt \
-	filesystem/bin/nc \
 	filesystem/bin/rem
 
 filesystem/bin/%: netutils/%/main.rs netutils/%/**.rs $(BUILD)/libstd.rlib $(BUILD)/libio.rlib
@@ -239,6 +236,7 @@ filesystem/bin/%: netutils/%/main.rs netutils/%/**.rs $(BUILD)/libstd.rlib $(BUI
 netutils: \
 	filesystem/bin/dhcpd \
 	filesystem/bin/dnsd \
+	filesystem/bin/nc \
 	filesystem/bin/wget
 
 filesystem/bin/%: crates/games/src/%/main.rs crates/games/src/%/*.rs $(BUILD)/libextra.rlib $(BUILD)/libtermion.rlib
