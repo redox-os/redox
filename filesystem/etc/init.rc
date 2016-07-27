@@ -1,6 +1,3 @@
-dhcpd
-sh /home/redox_online.sh
-
 # Login process, handles debug console
 login
 
