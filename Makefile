@@ -229,7 +229,7 @@ extrautils: \
 	filesystem/bin/mtxt \
 	filesystem/bin/rem
 
-filesystem/bin/%: netutils/%/main.rs netutils/%/**.rs $(BUILD)/libstd.rlib $(BUILD)/libio.rlib
+filesystem/bin/%: crates/netutils/src/%/main.rs crates/netutils/src/%/**.rs $(BUILD)/libstd.rlib $(BUILD)/libio.rlib
 	mkdir -p filesystem/bin
 	$(RUSTC) $(RUSTCFLAGS) -C lto --crate-type bin -o $@ $<
 
