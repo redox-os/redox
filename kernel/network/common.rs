@@ -229,7 +229,7 @@ impl Checksum {
         sum
     }
 
-    pub unsafe fn compile(mut sum: usize) -> u16 {
+    pub fn compile(mut sum: usize) -> u16 {
         while (sum >> 16) > 0 {
             sum = (sum & 0xFFFF) + (sum >> 16);
         }
