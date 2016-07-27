@@ -324,6 +324,7 @@ bins: \
 	c_bins \
 	coreutils \
 	extrautils \
+	netutils \
 	drivers \
 	games \
 	filesystem/bin/ansi-test \
