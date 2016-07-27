@@ -65,8 +65,6 @@ impl FromBytes for Tcp {
                 let header = *(bytes.as_ptr() as *const TcpHeader);
                 let header_len = ((header.flags.get() & 0xF000) >> 10) as usize;
 
-                syslog_info!("{} = {}", bytes.len(), header_len);
-
                 return Some(Tcp {
                     header: header,
                     options: bytes[mem::size_of::<TcpHeader>()..header_len].to_vec(),
@@ -124,10 +122,9 @@ impl TcpStream {
 
             if let Some(segment) = Tcp::from_bytes(bytes[.. count].to_vec()) {
                 if segment.header.dst.get() == self.host_port && segment.header.src.get() == self.peer_port {
-                    syslog_info!("TCP: {} {} {:X}: {}", segment.header.sequence.get(), segment.header.ack_num.get(), segment.header.flags.get(), segment.data.len());
+                    //syslog_info!("TCP: {} {} {:X}: {}", segment.header.sequence.get(), segment.header.ack_num.get(), segment.header.flags.get(), segment.data.len());
 
                     if segment.header.flags.get() & TCP_FIN == TCP_FIN {
-                        syslog_info!("FIN");
                         self.finished = true;
                     }
 
@@ -163,7 +160,7 @@ impl TcpStream {
 
                         let _ = self.ip.write(&tcp.to_bytes());
 
-                        syslog_info!("ACK: {} {} {:X}", tcp.header.sequence.get(), tcp.header.ack_num.get(), tcp.header.flags.get());
+                        //syslog_info!("ACK: {} {} {:X}", tcp.header.sequence.get(), tcp.header.ack_num.get(), tcp.header.flags.get());
 
                         // TODO: Support broken packets (one packet in two buffers)
                         let mut i = 0;
