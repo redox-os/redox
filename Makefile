@@ -206,7 +206,6 @@ filesystem/bin/%: drivers/%/main.rs drivers/%/*.rs drivers/%/*/*.rs $(BUILD)/lib
 	$(RUSTC) $(RUSTCFLAGS) -C lto --crate-type bin -o $@ $<
 
 drivers: \
-	filesystem/bin/dnsd \
 	filesystem/bin/pcid \
 	filesystem/bin/reboot
 
@@ -228,8 +227,16 @@ extrautils: \
 	filesystem/bin/man \
 	filesystem/bin/mdless \
 	filesystem/bin/mtxt \
+	filesystem/bin/rem
+
+filesystem/bin/%: netutils/%/main.rs netutils/%/**.rs $(BUILD)/libstd.rlib $(BUILD)/libio.rlib
+	mkdir -p filesystem/bin
+	$(RUSTC) $(RUSTCFLAGS) -C lto --crate-type bin -o $@ $<
+
+netutils: \
+	filesystem/bin/dhcpd \
+	filesystem/bin/dnsd \
 	filesystem/bin/nc \
-	filesystem/bin/rem \
 	filesystem/bin/wget
 
 filesystem/bin/%: crates/games/src/%/main.rs crates/games/src/%/*.rs $(BUILD)/libextra.rlib $(BUILD)/libtermion.rlib
@@ -635,10 +642,10 @@ virtualbox: $(BUILD)/harddrive.bin
 	echo "Set Configuration"
 	$(VBM) modifyvm Redox --memory 1024
 	$(VBM) modifyvm Redox --vram 16
-	# $(VBM) modifyvm Redox --nic1 nat
-	# $(VBM) modifyvm Redox --nictype1 82540EM
-	# $(VBM) modifyvm Redox --nictrace1 on
-	# $(VBM) modifyvm Redox --nictracefile1 $(BUILD)/network.pcap
+	$(VBM) modifyvm Redox --nic1 nat
+	$(VBM) modifyvm Redox --nictype1 82540EM
+	$(VBM) modifyvm Redox --nictrace1 on
+	$(VBM) modifyvm Redox --nictracefile1 $(BUILD)/network.pcap
 	$(VBM) modifyvm Redox --uart1 0x3F8 4
 	$(VBM) modifyvm Redox --uartmode1 file $(BUILD)/serial.log
 	$(VBM) modifyvm Redox --usb off # on
