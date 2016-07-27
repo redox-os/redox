@@ -58,7 +58,7 @@ ifeq ($(UNAME),Darwin)
 endif
 
 .PHONY: help all doc apps bins c_bins clean FORCE \
-	drivers c_binutils binutils coreutils extrautils games \
+	drivers c_binutils binutils coreutils extrautils netutils games \
 	qemu qemu_no_build bochs mount unmount \
 	virtualbox virtualbox_tap \
 	arping ping wireshark
