@@ -101,12 +101,14 @@ impl Resource for UdpResource {
                 buf[i] = bytes[i];
                 i += 1;
             }
+
             return Ok(i);
         }
 
         loop {
-            let mut bytes = [0; 8192];
+            let mut bytes = [0; 65536];
             let count = try!(self.ip.read(&mut bytes));
+
             if let Some(datagram) = Udp::from_bytes(bytes[.. count].to_vec()) {
                 if datagram.header.dst.get() == self.host_port &&
                    datagram.header.src.get() == self.peer_port {
@@ -116,6 +118,7 @@ impl Resource for UdpResource {
                         buf[i] = datagram.data[i];
                         i += 1;
                     }
+
                     return Ok(i);
                 }
             }
@@ -172,11 +175,11 @@ impl KScheme for UdpScheme {
         let path = parts.next().unwrap_or("");
 
         // Check host and port vs path
-        if ! path.is_empty() {
+        if remote.is_empty() {
             let host_port = path.parse::<u16>().unwrap_or(0);
             if host_port > 0 {
                 while let Ok(mut ip) = Url::from_str("ip:/11").unwrap().open() {
-                    let mut bytes = [0; 8192];
+                    let mut bytes = [0; 65536];
                     if let Ok(count) = ip.read(&mut bytes) {
                         if let Some(datagram) = Udp::from_bytes(bytes[.. count].to_vec()) {
                             if datagram.header.dst.get() == host_port {
@@ -201,10 +204,9 @@ impl KScheme for UdpScheme {
         } else {
             let mut remote_parts = remote.split(':');
             let peer_addr = remote_parts.next().unwrap_or("");
-            let peer_port = remote_parts.next().unwrap_or("").parse::<usize>().unwrap_or(0);
-            if peer_port > 0 && peer_port < 65536 {
-                let host_port = (rand() % 32768 + 32768) as u16;
-
+            let peer_port = remote_parts.next().unwrap_or("").parse::<u16>().unwrap_or(0);
+            if peer_port > 0 {
+                let host_port = path.parse::<u16>().unwrap_or((rand() % 32768 + 32768) as u16);
                 if let Ok(ip) = Url::from_str(&format!("ip:{}/11", peer_addr)).unwrap().open() {
                     return Ok(Box::new(UdpResource {
                         ip: ip,

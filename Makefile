@@ -58,7 +58,7 @@ ifeq ($(UNAME),Darwin)
 endif
 
 .PHONY: help all doc apps bins c_bins clean FORCE \
-	drivers c_binutils binutils coreutils extrautils games \
+	drivers c_binutils binutils coreutils extrautils netutils games \
 	qemu qemu_no_build bochs mount unmount \
 	virtualbox virtualbox_tap \
 	arping ping wireshark
@@ -227,8 +227,16 @@ extrautils: \
 	filesystem/bin/man \
 	filesystem/bin/mdless \
 	filesystem/bin/mtxt \
+	filesystem/bin/rem
+
+filesystem/bin/%: crates/netutils/src/%/main.rs crates/netutils/src/%/**.rs $(BUILD)/libstd.rlib $(BUILD)/libio.rlib
+	mkdir -p filesystem/bin
+	$(RUSTC) $(RUSTCFLAGS) -C lto --crate-type bin -o $@ $<
+
+netutils: \
+	filesystem/bin/dhcpd \
+	filesystem/bin/dnsd \
 	filesystem/bin/nc \
-	filesystem/bin/rem \
 	filesystem/bin/wget
 
 filesystem/bin/%: crates/games/src/%/main.rs crates/games/src/%/*.rs $(BUILD)/libextra.rlib $(BUILD)/libtermion.rlib
@@ -241,7 +249,8 @@ games: \
 	filesystem/bin/h4xx3r \
 	filesystem/bin/minesweeper \
 	filesystem/bin/rusthello \
-	filesystem/bin/snake
+	filesystem/bin/snake \
+	filesystem/bin/reblox
 
 filesystem/bin/%: crates/%/main.rs crates/%/*.rs $(BUILD)/libstd.rlib
 	mkdir -p filesystem/bin
@@ -315,6 +324,7 @@ bins: \
 	c_bins \
 	coreutils \
 	extrautils \
+	netutils \
 	drivers \
 	games \
 	filesystem/bin/ansi-test \
@@ -633,10 +643,10 @@ virtualbox: $(BUILD)/harddrive.bin
 	echo "Set Configuration"
 	$(VBM) modifyvm Redox --memory 1024
 	$(VBM) modifyvm Redox --vram 16
-	# $(VBM) modifyvm Redox --nic1 nat
-	# $(VBM) modifyvm Redox --nictype1 82540EM
-	# $(VBM) modifyvm Redox --nictrace1 on
-	# $(VBM) modifyvm Redox --nictracefile1 $(BUILD)/network.pcap
+	$(VBM) modifyvm Redox --nic1 nat
+	$(VBM) modifyvm Redox --nictype1 82540EM
+	$(VBM) modifyvm Redox --nictrace1 on
+	$(VBM) modifyvm Redox --nictracefile1 $(BUILD)/network.pcap
 	$(VBM) modifyvm Redox --uart1 0x3F8 4
 	$(VBM) modifyvm Redox --uartmode1 file $(BUILD)/serial.log
 	$(VBM) modifyvm Redox --usb off # on

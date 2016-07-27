@@ -67,10 +67,10 @@ impl ArpScheme {
     pub fn reply_loop() {
         while let Ok(mut link) = Url::from_str("ethernet:/806").unwrap().open() {
             loop {
-                let mut bytes = [0; 8192];
+                let mut bytes = [0; 65536];
                 if let Ok(count) = link.read(&mut bytes) {
                     if let Some(packet) = Arp::from_bytes(bytes[.. count].to_vec()) {
-                        if packet.header.oper.get() == 1 && packet.header.dst_ip.equals(IP_ADDR) {
+                        if packet.header.oper.get() == 1 && packet.header.dst_ip.equals(unsafe { IP_ADDR }) {
                             let mut response = Arp {
                                 header: packet.header,
                                 data: packet.data.clone(),
@@ -79,7 +79,7 @@ impl ArpScheme {
                             response.header.dst_mac = packet.header.src_mac;
                             response.header.dst_ip = packet.header.src_ip;
                             response.header.src_mac = unsafe { MAC_ADDR };
-                            response.header.src_ip = IP_ADDR;
+                            response.header.src_ip =unsafe { IP_ADDR };
 
                             let _ = link.write(&response.to_bytes());
                         }
