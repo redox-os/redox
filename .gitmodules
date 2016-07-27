@@ -88,3 +88,6 @@
 [submodule "crates/liblibc"]
 	path = crates/liblibc
 	url = https://github.com/redox-os/liblibc.git
+[submodule "crates/netutils"]
+	path = crates/netutils
+	url = https://github.com/redox-os/netutils.git

@@ -25,7 +25,6 @@ pub struct TcpStream(UnsafeCell<File>);
 impl TcpStream {
     pub fn connect(addr: &SocketAddr) -> Result<TcpStream> {
         let path = format!("tcp:{}", addr);
-        println!("Open {}", path);
         Ok(TcpStream(UnsafeCell::new(try!(File::open(path)))))
     }
 
@@ -165,7 +164,6 @@ pub struct UdpSocket(UnsafeCell<File>);
 impl UdpSocket {
     pub fn bind(addr: &SocketAddr) -> Result<UdpSocket> {
         let path = format!("udp:{}", addr);
-        println!("Open {}", path);
         Ok(UdpSocket(UnsafeCell::new(try!(File::open(path)))))
     }
 
