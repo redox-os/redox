@@ -230,7 +230,15 @@ extrautils: \
 	filesystem/bin/mdless \
 	filesystem/bin/mtxt \
 	filesystem/bin/nc \
-	filesystem/bin/rem \
+	filesystem/bin/rem
+
+filesystem/bin/%: netutils/%/main.rs netutils/%/**.rs $(BUILD)/libstd.rlib $(BUILD)/libio.rlib
+	mkdir -p filesystem/bin
+	$(RUSTC) $(RUSTCFLAGS) -C lto --crate-type bin -o $@ $<
+
+netutils: \
+	filesystem/bin/dhcpd \
+	filesystem/bin/dnsd \
 	filesystem/bin/wget
 
 filesystem/bin/%: crates/games/src/%/main.rs crates/games/src/%/*.rs $(BUILD)/libextra.rlib $(BUILD)/libtermion.rlib
