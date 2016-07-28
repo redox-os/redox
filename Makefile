@@ -236,6 +236,7 @@ filesystem/bin/%: crates/netutils/src/%/main.rs crates/netutils/src/%/**.rs $(BU
 netutils: \
 	filesystem/bin/dhcpd \
 	filesystem/bin/dnsd \
+	filesystem/bin/irc \
 	filesystem/bin/nc \
 	filesystem/bin/wget
 
