@@ -101,6 +101,10 @@ impl KScheme for Serial {
                 console.write(b"^C\n");
                 console.commands.send(String::new(), "Serial Control C");
 
+                if let Some(ref mut inner) = console.inner {
+                    inner.redraw = true;
+                }
+
                 c = '\0';
                 sc = 0;
             } else if c == '\x04' {
@@ -120,6 +124,10 @@ impl KScheme for Serial {
                             debugln!("    SYS {:X}: {} {} {:X} {:X} {:X}", current_syscall.0, current_syscall.1, ::syscall::name(current_syscall.1), current_syscall.2, current_syscall.3, current_syscall.4);
                         }
                     }
+                }
+
+                if let Some(ref mut inner) = console.inner {
+                    inner.redraw = true;
                 }
 
                 c = '\0';
