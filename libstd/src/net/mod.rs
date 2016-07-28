@@ -79,8 +79,8 @@ fn each_addr<A: ToSocketAddrs, F, T>(addr: A, mut f: F) -> io::Result<T>
 pub struct LookupHost(net_imp::LookupHost);
 
 impl Iterator for LookupHost {
-    type Item = io::Result<SocketAddr>;
-    fn next(&mut self) -> Option<io::Result<SocketAddr>> { self.0.next() }
+    type Item = SocketAddr;
+    fn next(&mut self) -> Option<SocketAddr> { self.0.next() }
 }
 
 /// Resolve the host specified by `host` as a number of `SocketAddr` instances.
