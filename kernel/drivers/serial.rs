@@ -104,6 +104,7 @@ impl KScheme for Serial {
                 if let Some(ref mut inner) = console.inner {
                     inner.redraw = true;
                 }
+                console.write(b"");
 
                 c = '\0';
                 sc = 0;
@@ -129,6 +130,7 @@ impl KScheme for Serial {
                 if let Some(ref mut inner) = console.inner {
                     inner.redraw = true;
                 }
+                console.write(b"");
 
                 c = '\0';
                 sc = 0;

@@ -272,6 +272,7 @@ impl Ps2 {
                 if let Some(ref mut inner) = console.inner {
                     inner.redraw = true;
                 }
+                console.write(b"");
 
                 return None;
             } else if scancode == 0x20 {
@@ -298,6 +299,7 @@ impl Ps2 {
                 if let Some(ref mut inner) = console.inner {
                     inner.redraw = true;
                 }
+                console.write(b"");
 
                 return None;
             }
