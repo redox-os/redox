@@ -274,6 +274,10 @@ filesystem/bin/orbital: crates/orbital/main.rs crates/orbital/*.rs $(BUILD)/libs
 	mkdir -p filesystem/bin
 	$(RUSTC) $(RUSTCFLAGS) -C lto --crate-type bin -o $@ $<
 
+filesystem/bin/redoxfs-utility: crates/redoxfs/utility/main.rs crates/redoxfs/utility/*.rs $(BUILD)/libredoxfs.rlib
+	mkdir -p initfs/bin/
+	$(RUSTC) $(RUSTCFLAGS) -C lto --crate-type bin -o $@ $<
+
 filesystem/bin/zfs: crates/zfs/src/main.rs crates/zfs/src/*.rs $(BUILD)/libstd.rlib
 	mkdir -p filesystem/bin
 	$(RUSTC) $(RUSTCFLAGS) -C lto --crate-type bin -o $@ $<
@@ -334,6 +338,7 @@ bins: \
   	filesystem/bin/login \
   	filesystem/bin/orbital \
 	filesystem/bin/play \
+	filesystem/bin/redoxfs-utility \
 	filesystem/bin/screenfetch \
 	filesystem/bin/std-test \
   	filesystem/bin/sh
