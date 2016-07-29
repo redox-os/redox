@@ -380,6 +380,19 @@ pub fn remove_dir<P: AsRef<Path>>(path: P) -> Result<()> {
     }.map_err(|x| Error::from_sys(x))
 }
 
+/// Removes a directory at this path, after removing all its contents. Use carefully!
+pub fn remove_dir_all<P: AsRef<Path>>(path: P) -> Result<()> {
+    for child in try!(read_dir(&path)) {
+        let child = try!(child);
+        if try!(child.file_type()).is_dir() {
+            try!(remove_dir_all(&child.path()));
+        } else {
+            try!(remove_file(&child.path()));
+        }
+    }
+    remove_dir(path)
+}
+
 /// Removes a file from the filesystem
 pub fn remove_file<P: AsRef<Path>>(path: P) -> Result<()> {
     let path_str = path.as_ref().as_os_str().as_inner();
