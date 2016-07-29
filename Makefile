@@ -1,6 +1,5 @@
-#Modify for different target support
+#Do not change, even on 64 bit host. 64 bit target does not work yet
 ARCH?=i386
-#ARCH?=x86_64
 
 BUILD=build/$(ARCH)-unknown-redox/debug
 
