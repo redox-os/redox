@@ -122,54 +122,56 @@ impl TcpStream {
 
             if let Some(segment) = Tcp::from_bytes(bytes[.. count].to_vec()) {
                 if segment.header.dst.get() == self.host_port && segment.header.src.get() == self.peer_port {
-                    //syslog_info!("TCP: {} {} {:X}: {}", segment.header.sequence.get(), segment.header.ack_num.get(), segment.header.flags.get(), segment.data.len());
+                    //syslog_info!("TCP: {}=={} {:X}: {}", segment.header.sequence.get(), self.acknowledge, segment.header.flags.get(), segment.data.len());
 
-                    if segment.header.flags.get() & TCP_FIN == TCP_FIN {
-                        self.finished = true;
-                    }
-
-                    if segment.header.flags.get() & (TCP_SYN | TCP_ACK) == TCP_ACK {
-                        let flags = if self.finished {
-                            TCP_ACK | TCP_FIN
-                        } else {
-                            TCP_ACK
-                        };
-
-                        // Send ACK
-                        self.sequence = segment.header.ack_num.get();
-                        self.acknowledge = segment.header.sequence.get() +
-                                           segment.data.len() as u32;
-                        let mut tcp = Tcp {
-                            header: TcpHeader {
-                                src: n16::new(self.host_port),
-                                dst: n16::new(self.peer_port),
-                                sequence: n32::new(self.sequence),
-                                ack_num: n32::new(self.acknowledge),
-                                flags: n16::new(((mem::size_of::<TcpHeader>() << 10) & 0xF000) as u16 | flags),
-                                window_size: n16::new(65535),
-                                checksum: Checksum {
-                                    data: 0
-                                },
-                                urgent_pointer: n16::new(0)
-                            },
-                            options: Vec::new(),
-                            data: Vec::new()
-                        };
-
-                        tcp.checksum(& unsafe { IP_ADDR }, &self.peer_addr);
-
-                        let _ = self.ip.write(&tcp.to_bytes());
-
-                        //syslog_info!("ACK: {} {} {:X}", tcp.header.sequence.get(), tcp.header.ack_num.get(), tcp.header.flags.get());
-
-                        // TODO: Support broken packets (one packet in two buffers)
-                        let mut i = 0;
-                        while i < buf.len() && i < segment.data.len() {
-                            buf[i] = segment.data[i];
-                            i += 1;
+                    if self.acknowledge == segment.header.sequence.get() {
+                        if segment.header.flags.get() & TCP_FIN == TCP_FIN {
+                            self.finished = true;
                         }
-                        return Ok(i);
+
+                        if segment.header.flags.get() & (TCP_SYN | TCP_ACK) == TCP_ACK {
+                            let flags = if self.finished {
+                                TCP_ACK | TCP_FIN
+                            } else {
+                                TCP_ACK
+                            };
+
+                            // Send ACK
+                            self.acknowledge += segment.data.len() as u32;
+                            let mut tcp = Tcp {
+                                header: TcpHeader {
+                                    src: n16::new(self.host_port),
+                                    dst: n16::new(self.peer_port),
+                                    sequence: n32::new(self.sequence),
+                                    ack_num: n32::new(self.acknowledge),
+                                    flags: n16::new(((mem::size_of::<TcpHeader>() << 10) & 0xF000) as u16 | flags),
+                                    window_size: n16::new(65535),
+                                    checksum: Checksum {
+                                        data: 0
+                                    },
+                                    urgent_pointer: n16::new(0)
+                                },
+                                options: Vec::new(),
+                                data: Vec::new()
+                            };
+
+                            tcp.checksum(& unsafe { IP_ADDR }, &self.peer_addr);
+
+                            let _ = self.ip.write(&tcp.to_bytes());
+
+                            //syslog_info!("ACK: {} {} {:X}", tcp.header.sequence.get(), tcp.header.ack_num.get(), tcp.header.flags.get());
+
+                            // TODO: Support broken packets (one packet in two buffers)
+                            let mut i = 0;
+                            while i < buf.len() && i < segment.data.len() {
+                                buf[i] = segment.data[i];
+                                i += 1;
+                            }
+                            return Ok(i);
+                        }
                     }
+                } else {
+                    syslog_info!("TCP: MISMATCH: {}=={}", segment.header.sequence.get(), self.acknowledge);
                 }
             }
         }
