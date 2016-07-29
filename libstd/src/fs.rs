@@ -64,7 +64,7 @@ impl File {
     }
 
     /// Truncates the file
-    pub fn set_len(&mut self, size: u64) -> Result<()> {
+    pub fn set_len(&self, size: u64) -> Result<()> {
         sys_ftruncate(self.fd, size as usize).and(Ok(())).map_err(|x| Error::from_sys(x))
     }
 }
