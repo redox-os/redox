@@ -216,6 +216,41 @@ gentoo()
 	fi
 }
 
+##############################################################################
+# This function takes care of installing all dependencies for builing redox on
+# SolusOS
+# @params:	$1 the emulator to install, virtualbox or qemu
+##############################################################################
+solus()
+{
+	echo "Detected SolusOS"
+	if [ -z "$(which nasm)" ]; then
+		echo "Installing nasm..."
+		sudo eopkg it nasm
+	fi
+	if [ -z "$(which git)" ]; then
+		echo "Installing git..."
+		sudo eopkg it git
+	fi
+	echo "Installing fuse..."
+	sudo eopkg it fuse-devel
+	if [ "$1" == "qemu" ]; then
+		if [ -z "$(which qemu-system-i386)" ]; then
+			sudo eopkg it qemu
+		else
+			echo "QEMU already installed!"
+		fi
+	else
+		if [ -z "$(which virtualbox)" ]; then
+			echo "Please install Virtualbox and re-run this script,"
+			echo "or run with -e qemu"
+			exit
+		else
+			echo "Virtualbox already installed!"
+		fi
+	fi
+}
+
 ######################################################################
 # This function outlines the different options available for bootstrap
 ######################################################################
@@ -415,5 +450,9 @@ else
 	if hash 2>/dev/null emerge; then
 		gentoo "$emulator"
  	fi
+	# SolusOS
+	if hash 2>/dev/null eopkg; then
+		solus "$emulator"
+	fi
 fi
 boot
