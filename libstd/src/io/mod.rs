@@ -1890,9 +1890,33 @@ pub fn stdin() -> Stdin {
 
 impl Stdin {
     pub fn lock(&self) -> StdinLock {
-        StdinLock
+        StdinLock(self)
     }
 
+    pub fn read_line(&self, string: &mut String) -> Result<usize> {
+        self.lock().read_line(string)
+    }
+}
+
+/// Read implementation for standard input
+impl Read for Stdin {
+    fn read(&mut self, buf: &mut [u8]) -> Result<usize> {
+        sys_read(0, buf).map_err(|x| Error::from_sys(x))
+    }
+}
+
+/// Standard Input lock
+//TODO: Implement locking
+pub struct StdinLock<'a>(&'a Stdin);
+
+/// Read implementation for standard input lock
+impl<'a> Read for StdinLock<'a> {
+    fn read(&mut self, buf: &mut [u8]) -> Result<usize> {
+        sys_read(0, buf).map_err(|x| Error::from_sys(x))
+    }
+}
+
+impl<'a> StdinLock<'a> {
     pub fn read_line(&mut self, string: &mut String) -> Result<usize> {
         let mut i = 0;
         loop {
@@ -1912,24 +1936,6 @@ impl Stdin {
     }
 }
 
-/// Read implementation for standard input
-impl Read for Stdin {
-    fn read(&mut self, buf: &mut [u8]) -> Result<usize> {
-        sys_read(0, buf).map_err(|x| Error::from_sys(x))
-    }
-}
-
-/// Standard Input lock
-//TODO: Implement locking
-pub struct StdinLock;
-
-/// Read implementation for standard input lock
-impl Read for StdinLock {
-    fn read(&mut self, buf: &mut [u8]) -> Result<usize> {
-        sys_read(0, buf).map_err(|x| Error::from_sys(x))
-    }
-}
-
 /// Standard Output
 pub struct Stdout;
 
@@ -1940,7 +1946,7 @@ pub fn stdout() -> Stdout {
 
 impl Stdout {
     pub fn lock(&self) -> StdoutLock {
-        StdoutLock
+        StdoutLock(self)
     }
 }
 
@@ -1957,10 +1963,10 @@ impl Write for Stdout {
 
 /// Standard Output lock
 //TODO: Implement locking
-pub struct StdoutLock;
+pub struct StdoutLock<'a>(&'a Stdout);
 
 /// Write implementation for standard output lock
-impl Write for StdoutLock {
+impl<'a> Write for StdoutLock<'a> {
     fn write(&mut self, buf: &[u8]) -> Result<usize> {
         sys_write(1, buf).map_err(|x| Error::from_sys(x))
     }
@@ -1980,7 +1986,7 @@ pub fn stderr() -> Stderr {
 
 impl Stderr {
     pub fn lock(&self) -> StderrLock {
-        StderrLock
+        StderrLock(self)
     }
 }
 
@@ -1997,10 +2003,10 @@ impl Write for Stderr {
 
 /// Standard Error lock
 //TODO: Implement locking
-pub struct StderrLock;
+pub struct StderrLock<'a>(&'a Stderr);
 
 /// Write implementation for standard error lock
-impl Write for StderrLock {
+impl<'a> Write for StderrLock<'a> {
     fn write(&mut self, buf: &[u8]) -> Result<usize> {
         sys_write(2, buf).map_err(|x| Error::from_sys(x))
     }
