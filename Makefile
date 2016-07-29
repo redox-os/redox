@@ -228,7 +228,7 @@ extrautils: \
 	filesystem/bin/mtxt \
 	filesystem/bin/rem
 
-filesystem/bin/%: crates/netutils/src/%/main.rs crates/netutils/src/%/**.rs $(BUILD)/libstd.rlib $(BUILD)/libio.rlib
+filesystem/bin/%: crates/netutils/src/%/main.rs crates/netutils/src/%/**.rs $(BUILD)/libstd.rlib $(BUILD)/libio.rlib $(BUILD)/libtermion.rlib
 	mkdir -p filesystem/bin
 	$(RUSTC) $(RUSTCFLAGS) -C lto --crate-type bin -o $@ $<
 
