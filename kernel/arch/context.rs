@@ -533,10 +533,23 @@ impl ContextZone {
     /// Check permission of segment, if inside of mapped memory
     pub fn permission(&self, ptr: usize, len: usize, writeable: bool) -> bool {
         for mem in self.memory.iter() {
-            if ptr >= mem.virtual_address && ptr + len <= mem.virtual_address + mem.virtual_size {
-                if mem.writeable || ! writeable {
-                    return true;
-                }
+            if ptr < mem.virtual_address {
+                continue;
+            }
+            let end = mem.virtual_address + mem.virtual_size; // Presumably guaranteed not to overflow by construction
+            if ptr < mem.virtual_address {
+                continue;
+            }
+            if ptr >= end {
+                continue;
+            }
+            let max_len = end - ptr; // Guaranteed not to overflow by preceding check
+            if len > max_len {
+                continue;
+            }
+
+            if mem.writeable || ! writeable {
+                return true;
             }
         }
 
