@@ -1,3 +1,6 @@
+# DHCP, run in background
+dhcpd -b
+
 # Login process, handles debug console
 login
 

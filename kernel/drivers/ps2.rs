@@ -269,6 +269,11 @@ impl Ps2 {
                 console.write(b"^C\n");
                 console.commands.send(String::new(), "Serial Control C");
 
+                if let Some(ref mut inner) = console.inner {
+                    inner.redraw = true;
+                }
+                console.write(b"");
+
                 return None;
             } else if scancode == 0x20 {
                 let console = unsafe { &mut *::env().console.get() };
@@ -290,6 +295,11 @@ impl Ps2 {
                         }
                     }
                 }
+
+                if let Some(ref mut inner) = console.inner {
+                    inner.redraw = true;
+                }
+                console.write(b"");
 
                 return None;
             }
