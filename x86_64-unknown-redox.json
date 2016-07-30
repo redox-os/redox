@@ -7,6 +7,7 @@
     "os": "redox",
     "env": "",
     "vendor": "unknown",
+    "target-family": "redox",
     "pre-link-args": ["-m64", "-nostdlib", "-static"],
     "features": "-sse3,-ssse3,-sse4.1,-sse4.2,-3dnow,-3dnowa,-avx,-avx2",
     "dynamic-linking": false,

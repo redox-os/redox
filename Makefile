@@ -6,14 +6,16 @@ BUILD=build/$(ARCH)-unknown-redox/debug
 QEMU?=qemu-system-$(ARCH)
 
 CARGO=CARGO_TARGET_DIR=build RUSTC="./rustc-$(ARCH).sh" cargo rustc
-CARGOFLAGS=--verbose --target=$(ARCH)-unknown-redox.json -- -L $(BUILD) \
+CARGOFLAGS=--verbose --target=$(ARCH)-unknown-redox.json -- --cfg redox \
+	-L $(BUILD) \
 	-C no-prepopulate-passes -C no-stack-check -C opt-level=3 \
 	-Z no-landing-pads -Z orbit \
 	-A dead_code
 RUSTC=RUST_BACKTRACE=1 rustc
 RUSTDOC=rustdoc --target=$(ARCH)-unknown-redox.json -L $(BUILD) \
 	--no-defaults --passes collapse-docs --passes unindent-comments
-RUSTCFLAGS=--target=$(ARCH)-unknown-redox.json -L $(BUILD) \
+RUSTCFLAGS=--target=$(ARCH)-unknown-redox.json --cfg redox \
+	-L $(BUILD) \
 	-C no-prepopulate-passes -C no-stack-check -C opt-level=3 \
 	-Z no-landing-pads \
 	-A dead_code
@@ -133,6 +135,9 @@ $(BUILD)/libbitflags.rlib: crates/bitflags/src/lib.rs crates/bitflags/src/*.rs $
 $(BUILD)/libextra.rlib: crates/extra/src/lib.rs crates/extra/src/*.rs $(BUILD)/libstd.rlib
 	$(RUSTC) $(RUSTCFLAGS) --crate-name extra --crate-type lib -o $@ $<
 
+$(BUILD)/libpager.rlib: crates/pager/src/lib.rs crates/pager/src/*.rs $(BUILD)/libstd.rlib $(BUILD)/libtermion.rlib
+	$(RUSTC) $(RUSTCFLAGS) --crate-name pager --crate-type lib -o $@ $<
+
 $(BUILD)/libpng.rlib: crates/rust-png/src/lib.rs crates/rust-png/src/*.rs $(BUILD)/libpng_sys.rlib
 	$(RUSTC) $(RUSTCFLAGS) --crate-name png --crate-type lib -o $@ $< -L native=libc/lib/
 
@@ -211,7 +216,7 @@ drivers: \
 $(BUILD)/libtermion.rlib: crates/termion/src/lib.rs crates/termion/src/*.rs $(BUILD)/libstd.rlib
 	$(RUSTC) $(RUSTCFLAGS) --crate-name termion --crate-type lib -o $@ $< --cfg 'feature="nightly"'
 
-filesystem/bin/%: crates/extrautils/src/bin/%.rs $(BUILD)/libextra.rlib $(BUILD)/libtermion.rlib
+filesystem/bin/%: crates/extrautils/src/bin/%.rs $(BUILD)/libextra.rlib $(BUILD)/libpager.rlib $(BUILD)/libtermion.rlib
 	mkdir -p filesystem/bin
 	$(RUSTC) $(RUSTCFLAGS) -C lto --crate-type bin -o $@ $<
 

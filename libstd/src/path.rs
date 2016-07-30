@@ -252,6 +252,29 @@ mod platform {
     pub const MAIN_SEP: char = '\\';
 }
 
+#[cfg(redox)]
+mod platform {
+    use super::Prefix;
+    use ffi::OsStr;
+
+    #[inline]
+    pub fn is_sep_byte(b: u8) -> bool {
+        b == b'/'
+    }
+
+    #[inline]
+    pub fn is_verbatim_sep(b: u8) -> bool {
+        b == b'/'
+    }
+
+    pub fn parse_prefix(_: &OsStr) -> Option<Prefix> {
+        None
+    }
+
+    pub const MAIN_SEP_STR: &'static str = "/";
+    pub const MAIN_SEP: char = '/';
+}
+
 ////////////////////////////////////////////////////////////////////////////////
 // Windows Prefixes
 ////////////////////////////////////////////////////////////////////////////////

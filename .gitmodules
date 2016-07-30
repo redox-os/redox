@@ -91,3 +91,6 @@
 [submodule "crates/netutils"]
 	path = crates/netutils
 	url = https://github.com/redox-os/netutils.git
+[submodule "crates/pager"]
+	path = crates/pager
+	url = https://github.com/redox-os/libpager.git
