@@ -537,9 +537,6 @@ impl ContextZone {
                 continue;
             }
             let end = mem.virtual_address + mem.virtual_size; // Presumably guaranteed not to overflow by construction
-            if ptr < mem.virtual_address {
-                continue;
-            }
             if ptr >= end {
                 continue;
             }
