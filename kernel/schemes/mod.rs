@@ -16,6 +16,8 @@ pub mod interrupt;
 pub mod memory;
 /// Pipes
 pub mod pipe;
+/// Psuedoterminals
+pub mod pty;
 /// Logging scheme
 pub mod syslog;
 /// Tests
