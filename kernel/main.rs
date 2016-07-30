@@ -56,6 +56,7 @@ use schemes::env::EnvScheme;
 use schemes::initfs::InitFsScheme;
 use schemes::interrupt::InterruptScheme;
 use schemes::memory::MemoryScheme;
+use schemes::pty::PtyScheme;
 use schemes::syslog::SyslogScheme;
 use schemes::test::TestScheme;
 
@@ -411,6 +412,7 @@ unsafe fn init(tss_data: usize) {
             (&mut *env.schemes.get()).push(box EnvScheme);
             (&mut *env.schemes.get()).push(box InterruptScheme);
             (&mut *env.schemes.get()).push(box MemoryScheme);
+            (&mut *env.schemes.get()).push(PtyScheme::new());
             (&mut *env.schemes.get()).push(box SyslogScheme);
             (&mut *env.schemes.get()).push(box TestScheme);
 
