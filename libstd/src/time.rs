@@ -224,7 +224,6 @@ impl SystemTime {
     pub fn duration_since(&self, earlier: SystemTime) -> Result<Duration, SystemTimeError> {
         Ok(self.0 - earlier.0)
     }
-
 }
 
 pub const UNIX_EPOCH: SystemTime = SystemTime(Duration {

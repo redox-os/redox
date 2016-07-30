@@ -56,6 +56,7 @@ pub const SYS_RMDIR: usize = 84;
 pub const SYS_STAT: usize = 18;
     pub const MODE_DIR: u16 = 0x4000;
     pub const MODE_FILE: u16 = 0x8000;
+    pub const MODE_ALL: u16 = MODE_DIR | MODE_FILE;
 pub const SYS_UNLINK: usize = 10;
 pub const SYS_WAITPID: usize = 7;
 pub const SYS_WRITE: usize = 4;
