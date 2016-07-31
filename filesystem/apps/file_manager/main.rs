@@ -106,8 +106,7 @@ enum FileManagerCommand {
 
 pub struct FileManager {
     file_types_info: FileTypesInfo,
-    files: Vec<String>,
-    file_sizes: Vec<String>,
+    files: Vec<(String, String)>,
     selected: isize,
     last_mouse_event: MouseEvent,
     window: Window,
@@ -129,7 +128,6 @@ impl FileManager {
         FileManager {
             file_types_info: FileTypesInfo::new(),
             files: Vec::new(),
-            file_sizes: Vec::new(),
             selected: -1,
             last_mouse_event: MouseEvent {
                 x: 0,
@@ -150,24 +148,22 @@ impl FileManager {
         let mut row = 0;
         let column = {
             let mut tmp = [0; 2];
-            for string in self.files.iter() {
-                if tmp[0] < string.len() {
-                    tmp[0] = string.len();
+            for file in self.files.iter() {
+                if tmp[0] < file.0.len() {
+                    tmp[0] = file.0.len();
+                }
+                if tmp[1] < file.1.len() {
+                    tmp[1] = file.1.len();
                 }
             }
 
             tmp[0] += 1;
 
-            for file_size in self.file_sizes.iter() {
-                if tmp[1] < file_size.len() {
-                    tmp[1] = file_size.len();
-                }
-            }
-
             tmp[1] += tmp[0] + 1;
+
             tmp
         };
-        for (file_name, file_size) in self.files.iter().zip(self.file_sizes.iter()) {
+        for file in self.files.iter() {
             if i == self.selected {
                 let width = self.window.width();
                 self.window.rect(0,
@@ -177,17 +173,17 @@ impl FileManager {
                                  Color::rgba(224, 224, 224, 255));
             }
 
-            let icon = self.file_types_info.icon_for(&file_name);
+            let icon = self.file_types_info.icon_for(&file.0);
             icon.draw(&mut self.window, 0, 32 * row as i32);
 
             let mut col = 0;
-            self.font.render(file_name, 16.0).draw(&mut self.window, 8 * col as i32 + 40, 32 * row as i32 + 8, Color::rgb(0, 0, 0));
+            self.font.render(&file.0, 16.0).draw(&mut self.window, 8 * col as i32 + 40, 32 * row as i32 + 8, Color::rgb(0, 0, 0));
 
             col = column[0] as u32;
-            self.font.render(file_size, 16.0).draw(&mut self.window, 8 * col as i32 + 40, 32 * row as i32 + 8, Color::rgb(0, 0, 0));
+            self.font.render(&file.1, 16.0).draw(&mut self.window, 8 * col as i32 + 40, 32 * row as i32 + 8, Color::rgb(0, 0, 0));
 
             col = column[1] as u32;
-            let description = self.file_types_info.description_for(&file_name);
+            let description = self.file_types_info.description_for(&file.0);
             self.font.render(&description, 16.0).draw(&mut self.window, 8 * col as i32 + 40, 32 * row as i32 + 8, Color::rgb(0, 0, 0));
 
             row += 1;
@@ -232,12 +228,10 @@ impl FileManager {
         match fs::read_dir(path) {
             Ok(readdir) => {
                 self.files.clear();
-                self.file_sizes.clear();
 
                 // check to see if parent directory exists
                 if let Some(parent_dir) = FileManager::get_parent_directory() {
-                    self.files.push("../".to_string());
-                    self.file_sizes.push(FileManager::get_num_entries(&parent_dir));
+                    self.files.push(("../".to_string(), FileManager::get_num_entries(&parent_dir)));
                 }
 
                 for entry_result in readdir {
@@ -263,8 +257,7 @@ impl FileManager {
                                 }
                             };
 
-                            self.files.push(entry_path.clone());
-                            self.file_sizes.push(if directory {
+                            self.files.push((entry_path.clone(), if directory {
                                 FileManager::get_num_entries(&(path.to_string() + &entry_path))
                             } else {
                                 match fs::metadata(&entry_path) {
@@ -282,17 +275,21 @@ impl FileManager {
                                     }
                                     Err(err) => format!("Failed to open: {}", err),
                                 }
-                            });
+                            }));
                             // Unwrapping the last file size will not panic since it has
                             // been at least pushed once in the vector
                             let description = self.file_types_info.description_for(&entry_path);
                             width[0] = cmp::max(width[0], 48 + (entry_path.len()) * 8);
-                            width[1] = cmp::max(width[1], 8 + (self.file_sizes.last().unwrap().len()) * 8);
+                            width[1] = cmp::max(width[1], 8 + (self.files.last().unwrap().1.len()) * 8);
                             width[2] = cmp::max(width[2], 8 + (description.len()) * 8);
                         },
                         Err(err) => println!("failed to read dir entry: {}", err)
                     }
                 }
+
+                self.files.sort_by(|a, b| {
+                    a.0.cmp(&b.0)
+                });
 
                 if height < self.files.len() * 32 {
                     height = self.files.len() * 32;
@@ -346,10 +343,10 @@ impl FileManager {
                                            self.selected < self.files.len() as isize {
                                             match self.files.get(self.selected as usize) {
                                                 Some(file) => {
-                                                    if file.ends_with('/') {
-                                                        commands.push(FileManagerCommand::ChangeDir(file.clone()));
+                                                    if file.0.ends_with('/') {
+                                                        commands.push(FileManagerCommand::ChangeDir(file.0.clone()));
                                                     } else {
-                                                        commands.push(FileManagerCommand::Execute(file.clone()));
+                                                        commands.push(FileManagerCommand::Execute(file.0.clone()));
                                                     }
                                                 }
                                                 None => (),
@@ -359,7 +356,7 @@ impl FileManager {
                                     _ => {
                                         let mut i = 0;
                                         for file in self.files.iter() {
-                                            if file.starts_with(key_event.character) {
+                                            if file.0.starts_with(key_event.character) {
                                                 self.selected = i;
                                                 break;
                                             }
@@ -380,7 +377,7 @@ impl FileManager {
                     let mut row = 0;
                     for file in self.files.iter() {
                         let mut col = 0;
-                        for c in file.chars() {
+                        for c in file.0.chars() {
                             if mouse_event.y >= 32 * row as i32 &&
                                mouse_event.y < 32 * row as i32 + 32 {
                                 self.selected = i;
@@ -411,10 +408,10 @@ impl FileManager {
                            self.last_mouse_event.y == mouse_event.y {
                             if self.selected >= 0 && self.selected < self.files.len() as isize {
                                 if let Some(file) = self.files.get(self.selected as usize) {
-                                    if file.ends_with('/') {
-                                        commands.push(FileManagerCommand::ChangeDir(file.clone()));
+                                    if file.0.ends_with('/') {
+                                        commands.push(FileManagerCommand::ChangeDir(file.0.clone()));
                                     } else {
-                                        commands.push(FileManagerCommand::Execute(file.clone()));
+                                        commands.push(FileManagerCommand::Execute(file.0.clone()));
                                     }
                                 }
                             }
