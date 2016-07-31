@@ -115,7 +115,7 @@ pub struct FileManager {
 }
 
 fn load_icon(path: &str) -> Image {
-    match Image::from_path(&format!("/ui/mimetypes/{}.bmp", path)) {
+    match Image::from_path(&format!("/ui/mimetypes/{}.png", path)) {
         Ok(icon) => icon,
         Err(err) => {
             println!("Failed to load icon {}: {}", path, err);

@@ -1,5 +1,5 @@
 name=Viewer
-icon=/ui/mimetypes/image-x-generic.bmp
+icon=/ui/mimetypes/image-x-generic.png
 accept=*.bmp
 accept=*.png
 author=Jeremy Soller
