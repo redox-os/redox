@@ -12,7 +12,7 @@ CARGOFLAGS=--verbose --target=$(ARCH)-unknown-redox.json -- --cfg redox \
 	-Z no-landing-pads -Z orbit \
 	-A dead_code
 RUSTC=RUST_BACKTRACE=1 rustc
-RUSTDOC=rustdoc --target=$(ARCH)-unknown-redox.json -L $(BUILD) \
+RUSTDOC=rustdoc --target=$(ARCH)-unknown-redox.json --cfg redox -L $(BUILD) \
 	--no-defaults --passes collapse-docs --passes unindent-comments
 RUSTCFLAGS=--target=$(ARCH)-unknown-redox.json --cfg redox \
 	-L $(BUILD) \
