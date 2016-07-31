@@ -307,7 +307,6 @@ c_binutils: \
 	filesystem/bin/elfedit  \
 	filesystem/bin/gprof \
 	filesystem/bin/ld \
-	filesystem/bin/ld.bfd \
 	filesystem/bin/nm \
 	filesystem/bin/objcopy \
 	filesystem/bin/objdump \
