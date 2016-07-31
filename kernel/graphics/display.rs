@@ -136,14 +136,16 @@ impl Display {
             let mut dst = unsafe { self.offscreen.offset((y * self.width + x) as isize) };
 
             let font_i = 16 * (character as usize);
-            for row in 0..16 {
-                let row_data = FONT[font_i + row];
-                for col in 0..8 {
-                    if (row_data >> (7 - col)) & 1 == 1 {
-                        unsafe { *dst.offset(col) = data; }
+            if font_i + 16 <= FONT.len() {
+                for row in 0..16 {
+                    let row_data = FONT[font_i + row];
+                    for col in 0..8 {
+                        if (row_data >> (7 - col)) & 1 == 1 {
+                            unsafe { *dst.offset(col) = data; }
+                        }
                     }
+                    dst = unsafe { dst.offset(self.width as isize) };
                 }
-                dst = unsafe { dst.offset(self.width as isize) };
             }
         }
     }
