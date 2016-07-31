@@ -404,6 +404,7 @@ build/initfs.gen: \
 		initfs/build/rustc \
 		initfs/build/rev \
 		initfs/etc/init.rc
+	strip initfs/bin/* # Strip symbols from binaries
 	echo 'use collections::BTreeMap;' > $@
 	echo 'pub fn gen() -> BTreeMap<&'"'"'static str, &'"'"'static [u8]> {' >> $@
 	echo '    let mut files: BTreeMap<&'"'"'static str, &'"'"'static [u8]> = BTreeMap::new();' >> $@
@@ -618,6 +619,7 @@ filesystem/apps/zfs/zfs.img:
 	sudo losetup -d /dev/loop0
 
 $(BUILD)/filesystem.bin: apps bins
+	strip filesystem/bin/* # Strip symbols from binaries
 	rm -rf $@ $(BUILD)/filesystem/
 	echo exit | cargo run --manifest-path crates/redoxfs/Cargo.toml --bin redoxfs-utility $@
 	mkdir -p $(BUILD)/filesystem/
