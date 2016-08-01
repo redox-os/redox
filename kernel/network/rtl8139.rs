@@ -193,20 +193,21 @@ impl Rtl8139 {
         let mut capr = (self.port.capr.read() + 16) as usize;
         let cbr = self.port.cbr.read() as usize;
 
-        while capr != cbr {
+        while self.port.cr.read() & CR_BUFE.bits != CR_BUFE.bits {
             let frame_addr = receive_buffer + capr + 4;
             let frame_status = ptr::read((receive_buffer + capr) as *const u16) as usize;
             let frame_len = ptr::read((receive_buffer + capr + 2) as *const u16) as usize;
 
+            //debugln!("RTL8139: CAPR {} CBR {} STATUS {:X} LEN {}", capr, cbr, frame_status, frame_len);
             if frame_len >= 4 {
                 self.inbound.push_back(Vec::from(slice::from_raw_parts(frame_addr as *const u8, frame_len - 4)));
             } else {
-                debugln!("RTL8139: Empty packet: ADDR {:X} STATUS {:X} LEN {}", frame_addr, frame_status, frame_len);
+                panic!("RTL8139: Empty Packet: CAPR {} CBR {} STATUS {:X} LEN {}", capr, cbr, frame_status, frame_len);
             }
 
             capr = capr + frame_len + 4;
             capr = (capr + 3) & (0xFFFFFFFF - 3);
-            if capr >= 8192 {
+            if capr >= 8192 + 16 {
                 capr -= 8192
             }
 
