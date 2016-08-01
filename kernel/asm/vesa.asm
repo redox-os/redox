@@ -189,7 +189,7 @@ vesa:
 
 .noedidmsg db "EDID not supported.",10,13,0
 .edidmsg    db " is supported.",10,13,0
-.modeok db 10,13,"Is this OK?(y/n)",10,13,0
+.modeok db ": Is this OK?(y/n)",10,13,0
 
 .goodmode dw 0
 .currentmode dw 0

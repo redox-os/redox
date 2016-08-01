@@ -67,7 +67,6 @@ load:
 
     mov si, loading
     call print
-    call print_line
 
     mov bx, [DAPACK.addr]
     call print_num
@@ -78,7 +77,8 @@ load:
     mov bx, [DAPACK.count]
     call print_num
 
-    call print_line
+    mov al, ' '
+    call print_char
 
     mov bx, [DAPACK.seg]
     call print_num
@@ -110,9 +110,9 @@ error:
 %include "asm/print16.asm"
 
 name: db "Redox Loader",0
-loading: db "Loading",0
+loading: db "Load ",0
 errored: db "Could not read disk",0
-finished: db "Finished",0
+finished: db "Finished Loading",0
 line: db 13,10,0
 
 disk: db 0
