@@ -122,12 +122,6 @@ pub struct Rtl8139 {
 
 impl Rtl8139 {
     pub fn new(mut pci: PciConfig) -> Box<Self> {
-        let pci_id = unsafe { pci.read(0x00) };
-        let revision = (unsafe { pci.read(0x08) } & 0xFF) as u8;
-        if pci_id == 0x813910EC && revision < 0x20 {
-            debugln!("Not an 8139C+ compatible chip");
-        }
-
         let base = unsafe { pci.read(0x10) as usize };
         let irq = unsafe { pci.read(0x3C) as u8 & 0xF };
 
@@ -151,6 +145,13 @@ impl Rtl8139 {
 
     unsafe fn init(&mut self) {
         syslog_info!(" + RTL8139 on: {:X}, IRQ: {:X}", self.base, self.irq);
+
+        let pci_id = self.pci.read(0x00);
+        let revision = (self.pci.read(0x08) & 0xFF) as u8;
+
+        if pci_id == 0x813910EC && revision < 0x20 {
+            syslog_info!("   - Not an 8139C+ compatible chip");
+        }
 
         self.pci.flag(4, 4, true); // Bus mastering
 
@@ -194,10 +195,14 @@ impl Rtl8139 {
 
         while capr != cbr {
             let frame_addr = receive_buffer + capr + 4;
-            //let frame_status = ptr::read((receive_buffer + capr) as *const u16) as usize;
+            let frame_status = ptr::read((receive_buffer + capr) as *const u16) as usize;
             let frame_len = ptr::read((receive_buffer + capr + 2) as *const u16) as usize;
 
-            self.inbound.push_back(Vec::from(slice::from_raw_parts(frame_addr as *const u8, frame_len - 4)));
+            if frame_len >= 4 {
+                self.inbound.push_back(Vec::from(slice::from_raw_parts(frame_addr as *const u8, frame_len - 4)));
+            } else {
+                debugln!("RTL8139: Empty packet: ADDR {:X} STATUS {:X} LEN {}", frame_addr, frame_status, frame_len);
+            }
 
             capr = capr + frame_len + 4;
             capr = (capr + 3) & (0xFFFFFFFF - 3);
