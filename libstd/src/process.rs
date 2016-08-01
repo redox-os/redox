@@ -1,7 +1,9 @@
 use boxed::Box;
-use core::mem;
+use collections::BTreeMap;
+use env;
 use fmt;
 use io::{Result, Read, Write};
+use mem;
 use os::unix::io::{AsRawFd, FromRawFd, RawFd};
 use ops::DerefMut;
 use string::{String, ToString};
@@ -100,8 +102,9 @@ impl Child {
 }
 
 pub struct Command {
-    pub path: String,
-    pub args: Vec<String>,
+    path: String,
+    args: Vec<String>,
+    env: BTreeMap<String, String>,
     stdin: Stdio,
     stdout: Stdio,
     stderr: Stdio,
@@ -113,6 +116,9 @@ impl fmt::Debug for Command {
         for arg in &self.args {
             try!(write!(f, " {:?}", arg));
         }
+        for (key, val) in &self.env {
+            try!(write!(f, " {:?}={:?}", key, val));
+        }
         Ok(())
     }
 }
@@ -122,6 +128,7 @@ impl Command {
         Command {
             path: path.to_owned(),
             args: Vec::new(),
+            env: BTreeMap::new(),
             stdin: Stdio::inherit(),
             stdout: Stdio::inherit(),
             stderr: Stdio::inherit(),
@@ -130,6 +137,11 @@ impl Command {
 
     pub fn arg(&mut self, arg: &str) -> &mut Command {
         self.args.push(arg.to_owned());
+        self
+    }
+
+    pub fn env(&mut self, key: &str, val: &str) -> &mut Command {
+        self.env.insert(key.to_owned(), val.to_owned());
         self
     }
 
@@ -188,6 +200,8 @@ impl Command {
             args_c.push(arg_vec.as_ptr());
         }
         args_c.push(0 as *const u8);
+
+        let env = self.env.clone();
 
         let child_res = res.deref_mut() as *mut usize;
         let child_stderr = self.stderr.inner;
@@ -260,6 +274,10 @@ impl Command {
             let _ = try!(child_stderr_res);
             let _ = try!(child_stdout_res);
             let _ = try!(child_stdin_res);
+
+            for (key, val) in env.iter() {
+                env::set_var(key, val);
+            }
 
             unsafe { sys_execve(path_c.as_ptr(), args_c.as_ptr()) }.map_err(|x| Error::from_sys(x))
         });
