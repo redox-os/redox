@@ -30,11 +30,10 @@ impl Ahci {
                                       .filter_map(|i| {
                                           let mut disk = box AhciDisk::new(base, i, irq);
                                           let port_type = disk.port.probe();
-                                          syslog_info!("   + Port {}: {:?}", i, port_type);
                                           match port_type {
                                               HbaPortType::SATA => {
                                                   disk.port.init();
-                                                  if let Some(size) = unsafe { disk.port.identify() } {
+                                                  if let Some(size) = unsafe { disk.port.identify(i) } {
                                                       disk.size = size;
                                                       Some(disk as Box<Disk>)
                                                   } else {

@@ -147,11 +147,11 @@ impl Ps2 {
         self.write(0x60, 0b01000100);
 
         while self.sts.readf(1) {
-            syslog_info!("     - Extra {}: {:X}", line!(), self.data.read());
+            syslog_info!("   - Extra {}: {:X}", line!(), self.data.read());
         }
 
         // Enable First Port
-        syslog_info!("   + Keyboard");
+        syslog_info!("   + PS/2 Keyboard");
         self.cmd(0xAE);
 
         while self.sts.readf(1) {

@@ -1,5 +1,7 @@
 use arch::memory::{self, Memory};
 
+use collections::String;
+
 use core::mem::size_of;
 use core::u32;
 
@@ -95,7 +97,7 @@ impl HbaPort {
         self.start();
     }
 
-    pub unsafe fn identify(&mut self) -> Option<u64> {
+    pub unsafe fn identify(&mut self, port: usize) -> Option<u64> {
         self.is.write(u32::MAX);
 
         let mut destination = Memory::<u16>::new(256).unwrap();
@@ -143,42 +145,42 @@ impl HbaPort {
                 return None;
             }
 
-            debug!("     - Serial: ");
+            let mut serial = String::new();
             for word in 10..20 {
                 let d = destination.read(word);
                 let a = ((d >> 8) as u8) as char;
-                if a != ' ' && a != '\0' {
-                    debug!("{}", a);
+                if a != '\0' {
+                    serial.push(a);
                 }
                 let b = (d as u8) as char;
-                if b != ' ' && b != '\0' {
-                    debug!("{}", b);
+                if b != '\0' {
+                    serial.push(b);
                 }
             }
 
-            debug!(" Firmware: ");
+            let mut firmware = String::new();
             for word in 23..27 {
                 let d = destination.read(word);
                 let a = ((d >> 8) as u8) as char;
-                if a != ' ' && a != '\0' {
-                    debug!("{}", a);
+                if a != '\0' {
+                    firmware.push(a);
                 }
                 let b = (d as u8) as char;
-                if b != ' ' && b != '\0' {
-                    debug!("{}", b);
+                if b != '\0' {
+                    firmware.push(b);
                 }
             }
 
-            debug!(" Model: ");
+            let mut model = String::new();
             for word in 27..47 {
                 let d = destination.read(word);
                 let a = ((d >> 8) as u8) as char;
-                if a != ' ' && a != '\0' {
-                    debug!("{}", a);
+                if a != '\0' {
+                    model.push(a);
                 }
                 let b = (d as u8) as char;
-                if b != ' ' && b != '\0' {
-                    debug!("{}", b);
+                if b != '\0' {
+                    model.push(b);
                 }
             }
 
@@ -187,14 +189,15 @@ impl HbaPort {
                               ((destination.read(102) as u64) << 32) |
                               ((destination.read(103) as u64) << 48);
 
-            if sectors == 0 {
-                debug!(" 28-bit LBA");
+            let lba_bits = if sectors == 0 {
                 sectors = (destination.read(60) as u64) | ((destination.read(61) as u64) << 16);
+                28
             } else {
-                debug!(" 48-bit LBA");
-            }
+                48
+            };
 
-            debugln!(" Size: {} MB", (sectors / 2048) as usize);
+            syslog_info!("   + Port {}: Serial: {} Firmware: {} Model: {} {}-bit LBA Size: {} MB",
+                        port, serial.trim(), firmware.trim(), model.trim(), lba_bits, sectors / 2048);
 
             Some(sectors * 512)
         } else {
