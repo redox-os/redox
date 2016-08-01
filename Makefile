@@ -115,7 +115,7 @@ filesystem/apps/sodium/main.bin: filesystem/apps/sodium/src/main.rs filesystem/a
 filesystem/apps/%/main.bin: filesystem/apps/%/main.rs filesystem/apps/%/*.rs $(BUILD)/libstd.rlib $(BUILD)/liborbclient.rlib $(BUILD)/liborbfont.rlib $(BUILD)/liborbimage.rlib $(BUILD)/liborbtk.rlib
 	$(RUSTC) $(RUSTCFLAGS) -C lto --crate-type bin -o $@ $< -L $(BUILD)/deps
 
-filesystem/apps/%/main.bin: crates/orbutils/src/%/main.rs crates/orbutils/src/%/*.rs $(BUILD)/libstd.rlib $(BUILD)/liborbclient.rlib $(BUILD)/liborbfont.rlib $(BUILD)/liborbimage.rlib $(BUILD)/liborbtk.rlib
+filesystem/apps/%/main.bin: crates/orbutils/src/%/main.rs crates/orbutils/src/%/*.rs $(BUILD)/libstd.rlib $(BUILD)/liborbclient.rlib $(BUILD)/liborbfont.rlib $(BUILD)/liborbimage.rlib $(BUILD)/liborbtk.rlib $(BUILD)/libransid.rlib
 	$(RUSTC) $(RUSTCFLAGS) -C lto --crate-type bin -o $@ $< -L $(BUILD)/deps
 
 apps: filesystem/apps/calculator/main.bin \
