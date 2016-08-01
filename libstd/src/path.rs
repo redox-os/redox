@@ -1460,7 +1460,7 @@ impl Path {
 
     #[allow(deprecated)]
     pub fn is_absolute(&self) -> bool {
-        self.has_root() && (cfg!(unix) || self.prefix().is_some())
+        self.has_root() && (cfg!(unix) || cfg!(redox) || self.prefix().is_some())
     }
 
     /// A path is *relative* if it is not absolute.
