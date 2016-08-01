@@ -1,0 +1,10 @@
+name=Sodium
+icon=/apps/sodium/sodium.png
+accept=*_REDOX
+accept=*.md
+accept=*.asm
+accept=*.rs
+accept=*.txt
+accept=*.list
+author=Ticki
+description=An editor inspired by Vim

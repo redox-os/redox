@@ -4,9 +4,6 @@
 [submodule "crates/ion"]
 	path = crates/ion
 	url = https://github.com/redox-os/ion.git
-[submodule "filesystem/apps/sodium"]
-	path = filesystem/apps/sodium
-	url = https://github.com/redox-os/sodium.git
 [submodule "crates/orbtk"]
 	path = crates/orbtk
 	url = https://github.com/redox-os/orbtk.git
@@ -94,3 +91,6 @@
 [submodule "crates/pager"]
 	path = crates/pager
 	url = https://github.com/redox-os/libpager.git
+[submodule "crates/sodium"]
+	path = crates/sodium
+	url = https://github.com/redox-os/sodium.git

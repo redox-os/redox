@@ -109,7 +109,7 @@ filesystem/apps/pixelcannon/main.bin: crates/pixelcannon/src/main.rs crates/pixe
 	cp crates/pixelcannon/assets/* filesystem/apps/pixelcannon/assets/
 	$(RUSTC) $(RUSTCFLAGS) -C lto --crate-type bin -o $@ $<
 
-filesystem/apps/sodium/main.bin: filesystem/apps/sodium/src/main.rs filesystem/apps/sodium/src/*.rs $(BUILD)/libstd.rlib $(BUILD)/liborbclient.rlib
+filesystem/apps/sodium/main.bin: crates/sodium/src/main.rs crates/sodium/src/*.rs $(BUILD)/libstd.rlib $(BUILD)/liborbclient.rlib
 	$(RUSTC) $(RUSTCFLAGS) -C lto --crate-type bin -o $@ $< --cfg 'feature="orbital"'
 
 filesystem/apps/%/main.bin: filesystem/apps/%/main.rs filesystem/apps/%/*.rs $(BUILD)/libstd.rlib $(BUILD)/liborbclient.rlib $(BUILD)/liborbfont.rlib $(BUILD)/liborbimage.rlib $(BUILD)/liborbtk.rlib
