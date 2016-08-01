@@ -1,7 +1,7 @@
 use alloc::arc::{Arc, Weak};
 use alloc::boxed::Box;
 
-use collections::VecDeque;
+use collections::{Vec, VecDeque};
 
 use core::cmp;
 
@@ -14,7 +14,7 @@ use system::error::{Error, ENOENT, Result};
 pub struct Pty {
     id: usize,
     input: WaitQueue<u8>,
-    output: WaitQueue<u8>
+    output: WaitQueue<Vec<u8>>
 }
 
 impl Pty {
@@ -108,20 +108,13 @@ impl Resource for PtyMaster {
     }
 
     fn read(&mut self, buf: &mut [u8]) -> Result<usize> {
-        if ! buf.is_empty() {
-            buf[0] = self.inner.output.receive("PtyMaster::read");
-        }
+        let packet = self.inner.output.receive("PtyMaster::read");
 
-        let mut i = 1;
+        let mut i = 0;
 
-        while i < buf.len() {
-            match unsafe { self.inner.output.inner() }.pop_front() {
-                Some(b) => {
-                    buf[i] = b;
-                    i += 1;
-                },
-                None => break
-            }
+        while i < buf.len() && i < packet.len() {
+            buf[i] = packet[i];
+            i += 1;
         }
 
         Ok(i)
@@ -199,8 +192,10 @@ impl Resource for PtySlave {
     fn write(&mut self, buf: &[u8]) -> Result<usize> {
         match self.inner.upgrade() {
             Some(inner) => {
-                for &b in buf.iter() {
-                    inner.output.send(b, "PtySlave::write");
+                for chunk in buf.chunks(4095) {
+                    let mut vec = vec![0];
+                    vec.extend_from_slice(chunk);
+                    inner.output.send(vec, "PtySlave::write");
                 }
 
                 Ok(buf.len())
@@ -210,7 +205,9 @@ impl Resource for PtySlave {
     }
 
     fn sync(&mut self) -> Result<()> {
-        //TODO: Wait until empty
+        if let Some(inner) = self.inner.upgrade() {
+            inner.output.send(vec![1], "PtySlave::sync");
+        }
         Ok(())
     }
 }
