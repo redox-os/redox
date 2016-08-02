@@ -25,7 +25,7 @@ pub struct Icmp {
 }
 
 impl FromBytes for Icmp {
-    fn from_bytes(bytes: Vec<u8>) -> Option<Self> {
+    fn from_bytes(bytes: &[u8]) -> Option<Self> {
         if bytes.len() >= mem::size_of::<IcmpHeader>() {
             unsafe {
                 return Some(Icmp {
@@ -64,7 +64,7 @@ impl IcmpScheme {
             loop {
                 let mut bytes = [0; 65536];
                 if let Ok(count) = ip.read(&mut bytes) {
-                    if let Some(message) = Icmp::from_bytes(bytes[.. count].to_vec()) {
+                    if let Some(message) = Icmp::from_bytes(&bytes[..count]) {
                         if message.header._type == 0x08 {
                             let mut response = Icmp {
                                 header: message.header,

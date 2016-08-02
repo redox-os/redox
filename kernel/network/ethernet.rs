@@ -21,7 +21,7 @@ pub struct EthernetII {
 }
 
 impl FromBytes for EthernetII {
-    fn from_bytes(bytes: Vec<u8>) -> Option<Self> {
+    fn from_bytes(bytes: &[u8]) -> Option<Self> {
         if bytes.len() >= mem::size_of::<EthernetIIHeader>() {
             unsafe {
                 return Some(EthernetII {

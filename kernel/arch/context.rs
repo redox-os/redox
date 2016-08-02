@@ -114,16 +114,10 @@ impl ContextManager {
                 self.i -= self.len();
             }
 
-            let mut remove = false;
-            if let Ok(next) = self.current() {
-                if next.exited {
-                    remove = true;
-                }
-            }
+            let remove = self.current().map(|next| next.exited).unwrap_or(false);
 
             if remove {
-                let i = self.i;
-                drop(self.inner.remove(i));
+                self.inner.remove(self.i);
             } else {
                 break;
             }
@@ -289,20 +283,19 @@ pub unsafe fn context_clone(regs: &Regs) -> Result<usize> {
 
                 parent.files.clone()
             } else {
-                let mut files: Vec<ContextFile> = Vec::new();
-                for file in (*parent.files.get()).iter() {
-                    match file.resource.dup() {
-                        Ok(resource) => {
-                            //debugln!("{}: {}: dup resource {} for {}", parent.pid, parent.name, file.fd, clone_pid);
-
-                            files.push(ContextFile {
+                let files: Vec<ContextFile> = (*parent.files.get())
+                    .iter()
+                    .filter_map(|file| {
+                        if let Ok(resource) = file.resource.dup() {
+                            Some(ContextFile {
                                 fd: file.fd,
                                 resource: resource,
-                            });
-                        },
-                        Err(_err) => () //debugln!("{}: {}: failed to dup resource {} for {}: {}", parent.pid, parent.name, file.fd, clone_pid, err)
-                    }
-                }
+                            })
+                        } else {
+                            None
+                        }
+                    })
+                    .collect();
                 Arc::new(UnsafeCell::new(files))
             };
 
@@ -506,13 +499,7 @@ impl ContextZone {
     }
 
     pub fn size(&self) -> usize {
-        let mut size = 0;
-
-        for entry in self.memory.iter() {
-            size += entry.virtual_size;
-        }
-
-        size
+        self.memory.iter().fold(0usize, |size, entry| size + entry.virtual_size)
     }
 
     /// Get the next available memory map address
