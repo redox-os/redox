@@ -56,6 +56,11 @@ impl Console {
                             event::K_DOWN => self.command.push_str("\x1B[B"),
                             event::K_RIGHT => self.command.push_str("\x1B[C"),
                             event::K_LEFT => self.command.push_str("\x1B[D"),
+                            event::K_HOME => self.command.push_str("\x1B[H"),
+                            event::K_END => self.command.push_str("\x1B[F"),
+                            event::K_DEL => self.command.push_str("\x1B[3~"),
+                            event::K_PGUP => self.command.push_str("\x1B[5~"),
+                            event::K_PGDN => self.command.push_str("\x1B[6~"),
                             _ => match key_event.character {
                                 '\0' => {},
                                 c => {

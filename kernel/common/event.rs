@@ -111,16 +111,85 @@ impl MouseEvent {
     }
 }
 
-/// Escape key
-pub const K_ESC: u8 = 0x01;
+pub const K_A: u8 = 0x1E;
+pub const K_B: u8 = 0x30;
+pub const K_C: u8 = 0x2E;
+pub const K_D: u8 = 0x20;
+pub const K_E: u8 = 0x12;
+pub const K_F: u8 = 0x21;
+pub const K_G: u8 = 0x22;
+pub const K_H: u8 = 0x23;
+pub const K_I: u8 = 0x17;
+pub const K_J: u8 = 0x24;
+pub const K_K: u8 = 0x25;
+pub const K_L: u8 = 0x26;
+pub const K_M: u8 = 0x32;
+pub const K_N: u8 = 0x31;
+pub const K_O: u8 = 0x18;
+pub const K_P: u8 = 0x19;
+pub const K_Q: u8 = 0x10;
+pub const K_R: u8 = 0x13;
+pub const K_S: u8 = 0x1F;
+pub const K_T: u8 = 0x14;
+pub const K_U: u8 = 0x16;
+pub const K_V: u8 = 0x2F;
+pub const K_W: u8 = 0x11;
+pub const K_X: u8 = 0x2D;
+pub const K_Y: u8 = 0x15;
+pub const K_Z: u8 = 0x2C;
+pub const K_0: u8 = 0x0B;
+pub const K_1: u8 = 0x02;
+pub const K_2: u8 = 0x03;
+pub const K_3: u8 = 0x04;
+pub const K_4: u8 = 0x05;
+pub const K_5: u8 = 0x06;
+pub const K_6: u8 = 0x07;
+pub const K_7: u8 = 0x08;
+pub const K_8: u8 = 0x09;
+pub const K_9: u8 = 0x0A;
+
+/// Tick/tilde key
+pub const K_TICK: u8 = 0x29;
+/// Minus/underline key
+pub const K_MINUS: u8 = 0x0C;
+/// Equals/plus key
+pub const K_EQUALS: u8 = 0x0D;
+/// Backslash/pipe key
+pub const K_BACKSLASH: u8 = 0x2B;
+/// Bracket open key
+pub const K_BRACE_OPEN: u8 = 0x1A;
+/// Bracket close key
+pub const K_BRACE_CLOSE: u8 = 0x1B;
+/// Semicolon key
+pub const K_SEMICOLON: u8 = 0x27;
+/// Quote key
+pub const K_QUOTE: u8 = 0x28;
+/// Comma key
+pub const K_COMMA: u8 = 0x33;
+/// Period key
+pub const K_PERIOD: u8 = 0x34;
+/// Slash key
+pub const K_SLASH: u8 = 0x35;
 /// Backspace key
 pub const K_BKSP: u8 = 0x0E;
+/// Space key
+pub const K_SPACE: u8 = 0x39;
 /// Tab key
 pub const K_TAB: u8 = 0x0F;
+/// Capslock
+pub const K_CAPS: u8 = 0x3A;
+/// Left shift
+pub const K_LEFT_SHIFT: u8 = 0x2A;
+/// Right shift
+pub const K_RIGHT_SHIFT: u8 = 0x36;
 /// Control key
 pub const K_CTRL: u8 = 0x1D;
 /// Alt key
 pub const K_ALT: u8 = 0x38;
+/// Enter key
+pub const K_ENTER: u8 = 0x1C;
+/// Escape key
+pub const K_ESC: u8 = 0x01;
 /// F1 key
 pub const K_F1: u8 = 0x3B;
 /// F2 key
@@ -163,10 +232,6 @@ pub const K_DEL: u8 = 0x53;
 pub const K_F11: u8 = 0x57;
 /// F12 key
 pub const K_F12: u8 = 0x58;
-/// Left shift
-pub const K_LEFT_SHIFT: u8 = 0x2A;
-/// Right shift
-pub const K_RIGHT_SHIFT: u8 = 0x36;
 
 /// A key event (such as a pressed key)
 #[derive(Copy, Clone, Debug)]
