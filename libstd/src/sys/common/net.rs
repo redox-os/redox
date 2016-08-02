@@ -70,7 +70,7 @@ impl TcpStream {
     }
 
     pub fn duplicate(&self) -> Result<TcpStream> {
-        Err(Error::new(ErrorKind::Other, "Not implemented"))
+        unsafe { (*self.0.get()).dup().map(|file| TcpStream(UnsafeCell::new(file))) }
     }
 
     pub fn read(&self, buf: &mut [u8]) -> Result<usize> {

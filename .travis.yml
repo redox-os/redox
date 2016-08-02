@@ -18,7 +18,7 @@ before_install:
       fi
 script:
   - make clean
-  - make all -j
+  - make all -j 3
 notifications:
   email: false
   webhooks: http://37.139.9.28:54863/travis
