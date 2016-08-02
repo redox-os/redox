@@ -285,13 +285,16 @@ pub unsafe fn context_clone(regs: &Regs) -> Result<usize> {
             } else {
                 let files: Vec<ContextFile> = (*parent.files.get())
                     .iter()
-                    .filter(|file| file.resource.dup().is_ok())
-                    .map(|file|
-                        ContextFile {
-                            fd: file.fd,
-                            resource: file.resource.dup().unwrap(),
+                    .filter_map(|file| {
+                        if let Ok(resource) = file.resource.dup() {
+                            Some(ContextFile {
+                                fd: file.fd,
+                                resource: resource,
+                            })
+                        } else {
+                            None
                         }
-                    )
+                    })
                     .collect();
                 Arc::new(UnsafeCell::new(files))
             };
