@@ -535,7 +535,7 @@ $(BUILD)/liborbfont.rlib: crates/orbfont/src/lib.rs crates/orbfont/src/*.rs $(BU
 $(BUILD)/liborbimage.rlib: crates/orbimage/src/lib.rs crates/orbimage/src/*.rs $(BUILD)/libstd.rlib $(BUILD)/liborbclient.rlib $(BUILD)/libpng.rlib
 	$(RUSTC) $(RUSTCFLAGS) -o $@ $<
 
-$(BUILD)/liborbtk.rlib: crates/orbtk/src/lib.rs crates/orbtk/src/*.rs $(BUILD)/libstd.rlib $(BUILD)/liborbclient.rlib $(BUILD)/liborbfont.rlib
+$(BUILD)/liborbtk.rlib: crates/orbtk/src/lib.rs crates/orbtk/src/*.rs $(BUILD)/libstd.rlib $(BUILD)/liborbclient.rlib $(BUILD)/liborbfont.rlib $(BUILD)/liborbimage.rlib
 	$(RUSTC) $(RUSTCFLAGS) -o $@ $< -L $(BUILD)/deps
 
 #Kernel stuff
