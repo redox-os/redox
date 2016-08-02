@@ -12,7 +12,15 @@ pub fn brk(addr: usize) -> Result<usize> {
 
     let contexts = unsafe { & *::env().contexts.get() };
     if let Ok(current) = contexts.current() {
-        ret = unsafe { (*current.heap.get()).next_mem() };
+        ret = unsafe { (*current.heap.get()).address };
+
+        for mem in unsafe { (*current.heap.get()).memory.iter() } {
+            let pages = (mem.virtual_size + 4095) / 4096;
+            let end = mem.virtual_address + pages * 4096;
+            if ret < end {
+                ret = end;
+            }
+        }
 
         // TODO: Make this smarter, currently it attempt to resize the entire data segment
         if let Some(mut mem) = unsafe { (*current.heap.get()).memory.last_mut() } {

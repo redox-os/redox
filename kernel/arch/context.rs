@@ -516,18 +516,49 @@ impl ContextZone {
     }
 
     /// Get the next available memory map address
-    pub fn next_mem(&self) -> usize {
-        let mut next_mem = self.address;
+    pub fn add_mem(&mut self, physical_address: usize, size: usize, writeable: bool, allocated: bool) -> Result<usize> {
+        if size <= self.size {
+            let mut virtual_address = self.address;
 
-        for mem in self.memory.iter() {
-            let pages = (mem.virtual_size + 4095) / 4096;
-            let end = mem.virtual_address + pages * 4096;
-            if next_mem < end {
-                next_mem = end;
+            for i in 0..self.memory.len() {
+                if virtual_address + size <= self.address + self.size {
+                    let start = self.memory[i].virtual_address;
+                    if virtual_address + size < start {
+                        self.memory.insert(i, ContextMemory {
+                            physical_address: physical_address,
+                            virtual_address: virtual_address,
+                            virtual_size: size,
+                            writeable: writeable,
+                            allocated: allocated,
+                        });
+
+                        return Ok(virtual_address);
+                    } else {
+                        let pages = (self.memory[i].virtual_size + 4095) / 4096;
+                        let end = start + pages * 4096;
+                        virtual_address = end;
+                    }
+                } else {
+                    return Err(Error::new(ENOMEM));
+                }
             }
-        }
 
-        return next_mem;
+            if virtual_address + size <= self.address + self.size {
+                self.memory.push(ContextMemory {
+                    physical_address: physical_address,
+                    virtual_address: virtual_address,
+                    virtual_size: size,
+                    writeable: writeable,
+                    allocated: allocated,
+                });
+
+                return Ok(virtual_address);
+            } else {
+                return Err(Error::new(ENOMEM));
+            }
+        } else {
+            return Err(Error::new(ENOMEM));
+        }
     }
 
     /// Check permission of segment, if inside of mapped memory
@@ -537,9 +568,6 @@ impl ContextZone {
                 continue;
             }
             let end = mem.virtual_address + mem.virtual_size; // Presumably guaranteed not to overflow by construction
-            if ptr < mem.virtual_address {
-                continue;
-            }
             if ptr >= end {
                 continue;
             }
@@ -559,9 +587,19 @@ impl ContextZone {
     /// Translate to physical if a ptr is inside of the mapped memory
     pub fn translate(&self, ptr: usize, len: usize) -> Option<usize> {
         for mem in self.memory.iter() {
-            if ptr >= mem.virtual_address && ptr + len <= mem.virtual_address + mem.virtual_size {
-                return Some(ptr - mem.virtual_address + mem.physical_address);
+            if ptr < mem.virtual_address {
+                continue;
             }
+            let end = mem.virtual_address + mem.virtual_size; // Presumably guaranteed not to overflow by construction
+            if ptr >= end {
+                continue;
+            }
+            let max_len = end - ptr; // Guaranteed not to overflow by preceding check
+            if len > max_len {
+                continue;
+            }
+
+            return Some(ptr - mem.virtual_address + mem.physical_address);
         }
 
         None

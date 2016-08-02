@@ -523,6 +523,42 @@ pub extern "cdecl" fn kernel(interrupt: usize, mut regs: &mut Regs) {
             }
             syslog_info!("    FSW: {:08X}    FCW: {:08X}", fsw, fcw);
 
+            if interrupt == 0xE {
+                let contexts = unsafe { &mut *::env().contexts.get() };
+                if let Ok(context) = contexts.current() {
+                    if let Some(ref stack) = context.stack {
+                        if cr2 >= stack.virtual_address && cr2 <= stack.virtual_address + stack.virtual_size {
+                            syslog_info!("    STACK {:08X}", cr2 - stack.virtual_address + stack.physical_address);
+                            syslog_info!("    {:08X}:{:08X} at {:08X}", stack.virtual_address, stack.virtual_address + stack.virtual_size, stack.physical_address);
+                        }
+                    }
+
+                    if let Some(address) = unsafe { (*context.image.get()).translate(cr2, 0) } {
+                        syslog_info!("    IMAGE {:08X}", address);
+
+                        for mem in unsafe { (*context.image.get()).memory.iter() } {
+                            syslog_info!("    {:08X}:{:08X} at {:08X}", mem.virtual_address, mem.virtual_address + mem.virtual_size, mem.physical_address);
+                        }
+                    }
+
+                    if let Some(address) = unsafe { (*context.heap.get()).translate(cr2, 0) } {
+                        syslog_info!("    HEAP {:08X}", address);
+
+                        for mem in unsafe { (*context.heap.get()).memory.iter() } {
+                            syslog_info!("    {:08X}:{:08X} at {:08X}", mem.virtual_address, mem.virtual_address + mem.virtual_size, mem.physical_address);
+                        }
+                    }
+
+                    if let Some(address) = unsafe { (*context.mmap.get()).translate(cr2, 0) } {
+                        syslog_info!("    MMAP {:08X}", address);
+
+                        for mem in unsafe { (*context.mmap.get()).memory.iter() } {
+                            syslog_info!("    {:08X}:{:08X} at {:08X}", mem.virtual_address, mem.virtual_address + mem.virtual_size, mem.physical_address);
+                        }
+                    }
+                }
+            }
+
             /* TODO: Stack dump
             {
                 let contexts = unsafe { & *::env().contexts.get() };

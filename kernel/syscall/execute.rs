@@ -42,20 +42,10 @@ pub fn execute_thread(context_ptr: *mut Context, entry: usize, mut args: Vec<Str
                 physical_address -= 0x80000000;
             }
 
-            let virtual_address = unsafe { (*context.image.get()).next_mem() };
             let virtual_size = arg.len();
+            let virtual_address = unsafe { (*context.image.get()).add_mem(physical_address, virtual_size, false, true) }.unwrap();
 
             mem::forget(arg);
-
-            unsafe {
-                (*context.image.get()).memory.push(ContextMemory {
-                    physical_address: physical_address,
-                    virtual_address: virtual_address,
-                    virtual_size: virtual_size,
-                    writeable: false,
-                    allocated: true,
-                });
-            }
 
             context_args.push(virtual_address as usize);
             argc += 1;
@@ -122,24 +112,20 @@ pub fn execute(mut args: Vec<String>) -> Result<usize> {
             let mmap = &mut *current.mmap.get();
 
             let virtual_size = 1024*1024;
-            let virtual_address = mmap.next_mem();
 
             let physical_address = memory::alloc_aligned(virtual_size, 4096);
             if physical_address == 0 {
                 return Err(Error::new(ENOMEM));
             }
 
-            let mut memory = ContextMemory {
-                physical_address: physical_address,
-                virtual_address: virtual_address,
-                virtual_size: virtual_size,
-                writeable: true,
-                allocated: true,
-            };
+            let virtual_address = try!(mmap.add_mem(physical_address, virtual_size, true, true));
 
-            memory.map();
-
-            mmap.memory.push(memory);
+            for i in 0..mmap.memory.len() {
+                if mmap.memory[i].virtual_address == virtual_address {
+                    mmap.memory[i].map();
+                    break;
+                }
+            }
 
             let mut read_loop = || -> Result<usize> {
                 loop {
@@ -154,9 +140,12 @@ pub fn execute(mut args: Vec<String>) -> Result<usize> {
 
             let res = read_loop();
 
-            let mut memory = mmap.memory.pop().unwrap();
-
-            memory.unmap();
+            for i in 0..mmap.memory.len() {
+                if mmap.memory[i].virtual_address == virtual_address {
+                    mmap.memory.remove(i).unmap();
+                    break;
+                }
+            }
 
             try!(res);
         }

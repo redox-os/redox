@@ -9,7 +9,7 @@ use core::mem::size_of;
 use core::ops::DerefMut;
 use core::{ptr, slice};
 
-use arch::context::{Context, ContextMemory};
+use arch::context::Context;
 
 use sync::{WaitMap, WaitQueue};
 
@@ -76,15 +76,7 @@ impl SchemeInner {
             }
             unsafe {
                 let mmap = &mut *(*scheme.context).mmap.get();
-                let virtual_address = mmap.next_mem();
-                mmap.memory.push(ContextMemory {
-                    physical_address: physical_address,
-                    virtual_address: virtual_address,
-                    virtual_size: size,
-                    writeable: writeable,
-                    allocated: false,
-                });
-                return Ok(virtual_address);
+                return mmap.add_mem(physical_address, size, writeable, false);
             }
         } else {
             return Err(Error::new(ENODEV));
