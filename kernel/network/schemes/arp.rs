@@ -30,7 +30,7 @@ pub struct Arp {
 }
 
 impl FromBytes for Arp {
-    fn from_bytes(bytes: Vec<u8>) -> Option<Self> {
+    fn from_bytes(bytes: &[u8]) -> Option<Self> {
         if bytes.len() >= mem::size_of::<ArpHeader>() {
             unsafe {
                 return Some(Arp {
@@ -69,7 +69,7 @@ impl ArpScheme {
             loop {
                 let mut bytes = [0; 65536];
                 if let Ok(count) = link.read(&mut bytes) {
-                    if let Some(packet) = Arp::from_bytes(bytes[.. count].to_vec()) {
+                    if let Some(packet) = Arp::from_bytes(&bytes[..count]) {
                         if packet.header.oper.get() == 1 && packet.header.dst_ip.equals(unsafe { IP_ADDR }) {
                             let mut response = Arp {
                                 header: packet.header,

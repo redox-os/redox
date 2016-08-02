@@ -1,7 +1,6 @@
 use alloc::boxed::Box;
 
 use collections::Vec;
-use collections::string::ToString;
 
 use common::random::rand;
 
@@ -28,7 +27,7 @@ pub struct Udp {
 }
 
 impl FromBytes for Udp {
-    fn from_bytes(bytes: Vec<u8>) -> Option<Self> {
+    fn from_bytes(bytes: &[u8]) -> Option<Self> {
         if bytes.len() >= mem::size_of::<UdpHeader>() {
             unsafe {
                 Option::Some(Udp {
@@ -109,7 +108,7 @@ impl Resource for UdpResource {
             let mut bytes = [0; 65536];
             let count = try!(self.ip.read(&mut bytes));
 
-            if let Some(datagram) = Udp::from_bytes(bytes[.. count].to_vec()) {
+            if let Some(datagram) = Udp::from_bytes(&bytes[..count]) {
                 if datagram.header.dst.get() == self.host_port &&
                    datagram.header.src.get() == self.peer_port {
                     // TODO: Allow splitting
@@ -181,7 +180,7 @@ impl KScheme for UdpScheme {
                 while let Ok(mut ip) = Url::from_str("ip:/11").unwrap().open() {
                     let mut bytes = [0; 65536];
                     if let Ok(count) = ip.read(&mut bytes) {
-                        if let Some(datagram) = Udp::from_bytes(bytes[.. count].to_vec()) {
+                        if let Some(datagram) = Udp::from_bytes(&bytes[..count]) {
                             if datagram.header.dst.get() == host_port {
                                 let mut path = [0; 256];
                                 if let Ok(path_count) = ip.path(&mut path) {
@@ -191,7 +190,7 @@ impl KScheme for UdpScheme {
                                     return Ok(Box::new(UdpResource {
                                         ip: ip,
                                         data: datagram.data,
-                                        peer_addr: Ipv4Addr::from_string(&peer_addr.to_string()),
+                                        peer_addr: Ipv4Addr::from_str(peer_addr),
                                         peer_port: datagram.header.src.get(),
                                         host_port: host_port,
                                     }));
@@ -211,7 +210,7 @@ impl KScheme for UdpScheme {
                     return Ok(Box::new(UdpResource {
                         ip: ip,
                         data: Vec::new(),
-                        peer_addr: Ipv4Addr::from_string(&peer_addr.to_string()),
+                        peer_addr: Ipv4Addr::from_str(peer_addr),
                         peer_port: peer_port as u16,
                         host_port: host_port,
                     }));

@@ -29,7 +29,7 @@ pub struct Ipv4 {
 }
 
 impl FromBytes for Ipv4 {
-    fn from_bytes(bytes: Vec<u8>) -> Option<Self> {
+    fn from_bytes(bytes: &[u8]) -> Option<Self> {
         if bytes.len() >= mem::size_of::<Ipv4Header>() {
             unsafe {
                 let header = *(bytes.as_ptr() as *const Ipv4Header);

@@ -12,7 +12,7 @@ pub static BROADCAST_MAC_ADDR: MacAddr = MacAddr { bytes: [0xFF, 0xFF, 0xFF, 0xF
 pub static mut MAC_ADDR: MacAddr = MacAddr { bytes: [0x00, 0x00, 0x00, 0x00, 0x00, 0x00] };
 
 pub trait FromBytes {
-    fn from_bytes(bytes: Vec<u8>) -> Option<Self> where Self: Sized;
+    fn from_bytes(bytes: &[u8]) -> Option<Self> where Self: Sized;
 }
 
 pub trait ToBytes {
@@ -127,7 +127,7 @@ impl Ipv4Addr {
         true
     }
 
-    pub fn from_string(string: &String) -> Self {
+    pub fn from_str(string: &str) -> Self {
         let mut addr = Ipv4Addr { bytes: [0, 0, 0, 0] };
 
         let mut i = 0;

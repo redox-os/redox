@@ -65,7 +65,7 @@ impl Resource for EthernetResource {
             let mut bytes = [0; 65536];
             let count = try!(self.network.read(&mut bytes));
 
-            if let Some(frame) = EthernetII::from_bytes(bytes[.. count].to_vec()) {
+            if let Some(frame) = EthernetII::from_bytes(&bytes[..count]) {
                 if frame.header.ethertype.get() == self.ethertype /* && (unsafe { frame.header.dst.equals(MAC_ADDR) }
                     || frame.header.dst.equals(BROADCAST_MAC_ADDR)) && (frame.header.src.equals(self.peer_addr)
                     || self.peer_addr.equals(BROADCAST_MAC_ADDR))*/
@@ -128,7 +128,7 @@ impl KScheme for EthernetScheme {
                             let mut bytes = [0; 65536];
                             match network.read(&mut bytes) {
                                 Ok(count) => {
-                                    if let Some(frame) = EthernetII::from_bytes(bytes[.. count].to_vec()) {
+                                    if let Some(frame) = EthernetII::from_bytes(&bytes[..count]) {
                                         if frame.header.ethertype.get() == ethertype &&
                                            (unsafe { frame.header.dst.equals(MAC_ADDR) } ||
                                             frame.header.dst.equals(BROADCAST_MAC_ADDR)) {

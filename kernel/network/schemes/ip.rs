@@ -1,6 +1,5 @@
 use alloc::boxed::Box;
 
-use collections::string::ToString;
 use collections::vec::Vec;
 
 use core::{cmp, mem};
@@ -66,7 +65,7 @@ impl Resource for IpResource {
             let mut bytes = [0; 65536];
             let count = try!(self.link.read(&mut bytes));
 
-            if let Some(packet) = Ipv4::from_bytes(bytes[.. count].to_vec()) {
+            if let Some(packet) = Ipv4::from_bytes(&bytes[..count]) {
                 if packet.header.proto == self.proto &&
                    (packet.header.dst.equals(unsafe { IP_ADDR }) || packet.header.dst.equals(BROADCAST_IP_ADDR)) &&
                    (packet.header.src.equals(self.peer_addr) || self.peer_addr.equals(BROADCAST_IP_ADDR)) {
@@ -142,7 +141,7 @@ impl KScheme for IpScheme {
                 let proto = proto_string.to_num_radix(16) as u8;
 
                 if ! host_string.is_empty() {
-                    let peer_addr = Ipv4Addr::from_string(&host_string.to_string());
+                    let peer_addr = Ipv4Addr::from_str(host_string);
                     let mut route_mac = BROADCAST_MAC_ADDR;
 
                     if ! peer_addr.equals(BROADCAST_IP_ADDR) {
@@ -192,7 +191,7 @@ impl KScheme for IpScheme {
                                     Ok(_) => loop {
                                         let mut bytes = [0; 65536];
                                         match link.read(&mut bytes) {
-                                            Ok(count) => if let Some(packet) = Arp::from_bytes(bytes[.. count].to_vec()) {
+                                            Ok(count) => if let Some(packet) = Arp::from_bytes(&bytes[..count]) {
                                                 if packet.header.oper.get() == 2 &&
                                                    packet.header.src_ip.equals(route_addr) {
                                                     route_mac = packet.header.src_mac;
@@ -226,7 +225,7 @@ impl KScheme for IpScheme {
                         let mut bytes = [0; 65536];
                         match link.read(&mut bytes) {
                             Ok(count) => {
-                                if let Some(packet) = Ipv4::from_bytes(bytes[.. count].to_vec()) {
+                                if let Some(packet) = Ipv4::from_bytes(&bytes[..count]) {
                                     if packet.header.proto == proto &&
                                        (packet.header.dst.equals(unsafe { IP_ADDR }) || packet.header.dst.equals(BROADCAST_IP_ADDR)) {
                                         return Ok(box IpResource {

@@ -2,7 +2,6 @@ use alloc::arc::Arc;
 use alloc::boxed::Box;
 
 use collections::Vec;
-use collections::string::ToString;
 
 use common::random::rand;
 
@@ -59,7 +58,7 @@ pub const TCP_PSH: u16 = 1 << 3;
 pub const TCP_ACK: u16 = 1 << 4;
 
 impl FromBytes for Tcp {
-    fn from_bytes(bytes: Vec<u8>) -> Option<Self> {
+    fn from_bytes(bytes: &[u8]) -> Option<Self> {
         if bytes.len() >= mem::size_of::<TcpHeader>() {
             unsafe {
                 let header = *(bytes.as_ptr() as *const TcpHeader);
@@ -120,7 +119,7 @@ impl TcpStream {
             let mut bytes = [0; 65536];
             let count = try!(self.ip.read(&mut bytes));
 
-            if let Some(segment) = Tcp::from_bytes(bytes[.. count].to_vec()) {
+            if let Some(segment) = Tcp::from_bytes(&bytes[..count]) {
                 if segment.header.dst.get() == self.host_port && segment.header.src.get() == self.peer_port {
                     //syslog_info!("TCP: {}=={} {:X}: {}", segment.header.sequence.get(), self.acknowledge, segment.header.flags.get(), segment.data.len());
 
@@ -205,7 +204,7 @@ impl TcpStream {
                     let mut bytes = [0; 65536];
                     match self.ip.read(&mut bytes) {
                         Ok(count) => {
-                            if let Some(segment) = Tcp::from_bytes(bytes[.. count].to_vec()) {
+                            if let Some(segment) = Tcp::from_bytes(&bytes[..count]) {
                                 if segment.header.dst.get() == self.host_port &&
                                    segment.header.src.get() == self.peer_port {
                                     return if (segment.header.flags.get() & (TCP_SYN | TCP_ACK)) == TCP_ACK {
@@ -257,7 +256,7 @@ impl TcpStream {
                     let mut bytes = [0; 65536];
                     match self.ip.read(&mut bytes) {
                         Ok(count) => {
-                            if let Some(segment) = Tcp::from_bytes(bytes[.. count].to_vec()) {
+                            if let Some(segment) = Tcp::from_bytes(&bytes[..count]) {
                                 if segment.header.dst.get() == self.host_port &&
                                    segment.header.src.get() == self.peer_port {
                                     return if segment.header.flags.get() & (TCP_SYN | TCP_ACK) == TCP_SYN | TCP_ACK {
@@ -330,7 +329,7 @@ impl TcpStream {
                     let mut bytes = [0; 65536];
                     match self.ip.read(&mut bytes) {
                         Ok(count ) => {
-                            if let Some(segment) = Tcp::from_bytes(bytes[.. count].to_vec()) {
+                            if let Some(segment) = Tcp::from_bytes(&bytes[..count]) {
                                 if segment.header.dst.get() == self.host_port &&
                                    segment.header.src.get() == self.peer_port {
                                     return if segment.header.flags.get() & (TCP_SYN | TCP_ACK) == TCP_ACK {
@@ -423,7 +422,7 @@ impl KScheme for TcpScheme {
         let port = remote_parts.next().unwrap_or("");
 
         if ! host.is_empty() && ! port.is_empty() {
-            let peer_addr = Ipv4Addr::from_string(&host.to_string());
+            let peer_addr = Ipv4Addr::from_str(host);
             let peer_port = port.parse::<u16>().unwrap_or(0);
             let host_port = (rand() % 32768 + 32768) as u16;
 
@@ -454,7 +453,7 @@ impl KScheme for TcpScheme {
                 let mut bytes = [0; 65536];
                 match ip.read(&mut bytes) {
                     Ok(count) => {
-                        if let Some(segment) = Tcp::from_bytes(bytes[.. count].to_vec()) {
+                        if let Some(segment) = Tcp::from_bytes(&bytes[..count]) {
                             if segment.header.dst.get() == host_port && segment.header.flags.get() & (TCP_SYN | TCP_ACK) == TCP_SYN {
                                 let mut path = [0; 256];
                                 if let Ok(path_count) = ip.path(&mut path) {
@@ -464,7 +463,7 @@ impl KScheme for TcpScheme {
 
                                     let mut stream = TcpStream {
                                         ip: ip,
-                                        peer_addr: Ipv4Addr::from_string(&peer_addr.to_string()),
+                                        peer_addr: Ipv4Addr::from_str(peer_addr),
                                         peer_port: segment.header.src.get(),
                                         host_port: host_port,
                                         sequence: rand() as u32,
