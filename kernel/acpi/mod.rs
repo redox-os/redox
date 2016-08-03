@@ -76,7 +76,7 @@ impl Acpi {
 }
 
 impl KScheme for Acpi {
-    fn scheme(&self) -> &str {
+    fn scheme(&self) -> &'static str {
         "acpi"
     }
 

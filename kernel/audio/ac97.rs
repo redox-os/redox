@@ -3,9 +3,9 @@ use alloc::boxed::Box;
 use arch::context::context_switch;
 use arch::memory;
 
-use core::{cmp, mem};
-
 use common::time::{self, Duration};
+
+use core::{cmp, mem};
 
 use drivers::pci::config::PciConfig;
 use drivers::io::{Io, Mmio, Pio, PhysAddr};
@@ -38,13 +38,11 @@ impl Resource for Ac97Resource {
     fn path(&self, buf: &mut [u8]) -> syscall::Result <usize> {
         let path = b"audio:";
 
-        let mut i = 0;
-        while i < buf.len() && i < path.len() {
-            buf[i] = path[i];
-            i += 1;
+        for (b, p) in buf.iter_mut().zip(path.iter()) {
+            *b = *p;
         }
 
-        Ok(i)
+        Ok(cmp::min(buf.len(), path.len()))
     }
 
     fn write(&mut self, buf: &[u8]) -> syscall::Result<usize> {

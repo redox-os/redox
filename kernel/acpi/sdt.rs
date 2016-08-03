@@ -21,7 +21,7 @@ impl SDTHeader {
         if self.signature == signature.as_bytes() {
             let ptr = (self as *const Self) as *const u8;
             let sum: u8 = (0..self.length as isize)
-                              .fold(0, |sum, i| sum + unsafe { ptr::read(ptr.offset(i)) });
+                .fold(0, |sum, i| sum + unsafe { ptr::read(ptr.offset(i)) });
 
             sum == 0
         } else {
