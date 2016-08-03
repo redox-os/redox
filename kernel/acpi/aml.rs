@@ -479,17 +479,13 @@ pub fn parse_scope(bytes: &[u8], i: &mut usize) {
 }
 
 pub fn parse(bytes: &[u8]) {
-    let mut i = 0;
-    while i < bytes.len() {
-        let op = bytes[i];
-        i += 1;
-
-        match op {
+    for (i, op) in bytes.iter().enumerate() {
+        match *op {
             SCOPE_OP => {
-                parse_scope(bytes, &mut i);
+                parse_scope(bytes, &mut (i + 1));
             }
             _ => {
-                syslog_debug!("parse: unknown: {:02X}", op);
+                syslog_debug!("parse: unknown: {:02X}", *op);
                 break;
             }
         }

@@ -391,29 +391,21 @@ pub unsafe fn realloc_inplace(ptr: usize, size: usize) -> usize {
 }
 
 pub fn memory_used() -> usize {
-    let mut ret = 0;
-
-    unsafe {
-        for i in 0..CLUSTER_COUNT {
-            if cluster(i) != 0 && cluster(i) != 0xFFFFFFFF {
-                ret += CLUSTER_SIZE;
-            }
+    (0..CLUSTER_COUNT).fold(0usize, |ret, i| unsafe {
+        if cluster(i) != 0 && cluster(i) != 0xFFFFFFFF {
+            ret + CLUSTER_SIZE
+        } else {
+            ret
         }
-    }
-
-    ret
+    })
 }
 
 pub fn memory_free() -> usize {
-    let mut ret = 0;
-
-    unsafe {
-        for i in 0..CLUSTER_COUNT {
-            if cluster(i) == 0 {
-                ret += CLUSTER_SIZE;
-            }
+    (0..CLUSTER_COUNT).fold(0usize, |ret, i| unsafe {
+        if cluster(i) == 0 {
+            ret + CLUSTER_SIZE
+        } else {
+            ret
         }
-    }
-
-    ret
+    })
 }
