@@ -31,7 +31,7 @@ use self::event::{EVENT_KEY, EVENT_MOUSE, QuitEvent};
 
 pub mod color;
 pub mod config;
-#[path="../../kernel/common/event.rs"]
+#[path="../orbclient/src/event.rs"]
 pub mod event;
 pub mod font;
 pub mod image;
