@@ -271,6 +271,14 @@ filesystem/bin/sh: $(BUILD)/ion-shell.bin
 	mkdir -p filesystem/bin
 	cp $< $@
 
+
+$(BUILD)/tar.bin: crates/tar-rs/src/*.rs $(BUILD)/libstd.rlib
+	$(CARGO) --manifest-path crates/tar-rs/Cargo.toml --bin tar $(CARGOFLAGS)
+
+filesystem/bin/tar: $(BUILD)/tar.bin
+	mkdir -p filesystem/bin
+	cp $< $@
+
 filesystem/bin/launcher: crates/orbutils/src/launcher/main.rs crates/orbutils/src/launcher/*.rs $(BUILD)/libstd.rlib $(BUILD)/liborbclient.rlib $(BUILD)/liborbtk.rlib
 	mkdir -p filesystem/bin
 	$(RUSTC) $(RUSTCFLAGS) -C lto --crate-type bin -o $@ $< -L $(BUILD)/deps
@@ -344,7 +352,8 @@ bins: \
 	filesystem/bin/redoxfs-utility \
 	filesystem/bin/screenfetch \
 	filesystem/bin/std-test \
-  	filesystem/bin/sh
+  	filesystem/bin/sh \
+  	filesystem/bin/tar
 	#TODO: binutils	filesystem/bin/zfs c_bins
 
 refs: FORCE

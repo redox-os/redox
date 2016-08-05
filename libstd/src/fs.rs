@@ -7,7 +7,7 @@ use string::String;
 use sys_common::AsInner;
 use vec::Vec;
 
-use system::syscall::{sys_open, sys_dup, sys_close, sys_fpath, sys_ftruncate, sys_read,
+use system::syscall::{sys_open, sys_dup, sys_close, sys_fpath, sys_fstat, sys_ftruncate, sys_read,
               sys_write, sys_lseek, sys_fsync, sys_mkdir, sys_rmdir, sys_stat, sys_unlink};
 use system::syscall::{O_RDWR, O_RDONLY, O_WRONLY, O_APPEND, O_CREAT, O_TRUNC, MODE_DIR, MODE_FILE, SEEK_SET, SEEK_CUR, SEEK_END, Stat};
 
@@ -42,6 +42,15 @@ impl File {
     /// Duplicate the file
     pub fn dup(&self) -> Result<File> {
         sys_dup(self.fd).map(|fd| unsafe { File::from_raw_fd(fd) }).map_err(|x| Error::from_sys(x))
+    }
+
+    /// Get information about a file
+    pub fn metadata(&self) -> Result<Metadata> {
+        let mut stat = Stat::default();
+        try!(sys_fstat(self.fd, &mut stat).map_err(|x| Error::from_sys(x)));
+        Ok(Metadata {
+            stat: stat
+        })
     }
 
     /// Get the canonical path of the file
@@ -349,6 +358,17 @@ pub fn create_dir<P: AsRef<Path>>(path: P) -> Result<()> {
     unsafe {
         sys_mkdir(path_c.as_ptr(), 755).and(Ok(())).map_err(|x| Error::from_sys(x))
     }
+}
+
+/// Recursively create a directory and all of its parent components if they are missing.
+pub fn create_dir_all<P: AsRef<Path>>(path: P) -> Result<()> {
+    if let Some(parent) = path.as_ref().parent() {
+        try!(create_dir_all(&parent));
+    }
+    if let Err(_err) = metadata(&path) {
+        try!(create_dir(&path));
+    }
+    Ok(())
 }
 
 /// Copy the contents of one file to another
