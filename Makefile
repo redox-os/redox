@@ -422,7 +422,7 @@ test: kernel/main.rs \
 	$(RUSTC) $(RUSTCFLAGS) --test $<
 
 clean:
-	$(RM) -rf build doc filesystem/bin/ filesystem/ref/ initfs/bin/ initfs/build/ filesystem/apps/*/*.bin filesystem/apps/*/*.list
+	$(RM) -rf build doc filesystem/bin/ filesystem/lib/ filesystem/ref/ initfs/bin/ initfs/build/ filesystem/apps/*/*.bin filesystem/apps/*/*.list
 
 FORCE:
 
