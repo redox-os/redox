@@ -21,7 +21,7 @@ pub struct PciBusIter<'pci> {
 }
 
 impl<'pci> PciBusIter<'pci> {
-    pub fn new(bus: &'pci PciBus<'pci>) -> PciBusIter<'pci> {
+    pub fn new(bus: &'pci PciBus<'pci>) -> Self {
         PciBusIter {
             bus: bus,
             num: 0

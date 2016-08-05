@@ -24,7 +24,7 @@ pub struct Pci {
 }
 
 impl Pci {
-    pub fn new() -> Pci {
+    pub fn new() -> Self {
         Pci {
             addr: RefCell::new(Pio::new(0xCF8)),
             data: Pio::new(0xCFC)
@@ -48,7 +48,7 @@ pub struct PciIter<'pci> {
 }
 
 impl<'pci> PciIter<'pci> {
-    pub fn new(pci: &Pci) -> PciIter {
+    pub fn new(pci: &'pci Pci) -> Self {
         PciIter {
             pci: pci,
             num: 0
