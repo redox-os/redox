@@ -17,37 +17,18 @@ pub fn brk(addr: usize) -> Result<usize> {
         for mem in unsafe { (*current.heap.get()).memory.iter() } {
             let pages = (mem.virtual_size + 4095) / 4096;
             let end = mem.virtual_address + pages * 4096;
-            if ret < end {
+            if end > ret {
                 ret = end;
             }
         }
 
-        // TODO: Make this smarter, currently it attempt to resize the entire data segment
-        if let Some(mut mem) = unsafe { (*current.heap.get()).memory.last_mut() } {
-            if mem.writeable && mem.allocated {
-                if addr >= mem.virtual_address {
-                    unsafe { mem.unmap() };
-
-                    let size = addr - mem.virtual_address;
-                    let physical_address = unsafe { memory::realloc_aligned(mem.physical_address, size, 4096) };
-                    if physical_address > 0 {
-                        mem.physical_address = physical_address;
-                        mem.virtual_size = size;
-                        ret = mem.virtual_address + mem.virtual_size;
-                    } else {
-                        debugln!("BRK: Realloc failed {:X}, {}", mem.virtual_address, size);
-                    }
-
-                    unsafe { mem.map() };
-                }
-            } else {
-                debugln!("{}: {}", current.pid, current.name);
-                debugln!("BRK: End segment not writeable or allocated");
-            }
-        } else if addr >= ret {
+        if addr == 0 {
+            //Return current break
+        } else if addr > ret {
             let size = addr - ret;
             let physical_address = unsafe { memory::alloc_aligned(size, 4096) };
             if physical_address > 0 {
+                // debugln!("BRK: Alloc {}", size);
                 let mut mem = ContextMemory {
                     physical_address: physical_address,
                     virtual_address: ret,
@@ -64,6 +45,21 @@ pub fn brk(addr: usize) -> Result<usize> {
             } else {
                 debugln!("BRK: Alloc failed {}", size);
             }
+        } else if addr < ret {
+            //TODO: Realloc
+            let mut clean = false;
+            for mut mem in unsafe { (*current.heap.get()).memory.iter_mut() } {
+                if addr <= mem.virtual_address {
+                    unsafe { mem.unmap() };
+                    mem.virtual_size = 0;
+                    clean = true;
+                }
+            }
+            if clean {
+                unsafe { (*current.heap.get()).clean_mem() };
+            }
+        } else {
+            debugln!("BRK: {:X}=={:X}", addr, ret);
         }
     } else {
         debugln!("BRK: Context not found");
