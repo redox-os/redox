@@ -94,3 +94,9 @@
 [submodule "crates/sodium"]
 	path = crates/sodium
 	url = https://github.com/redox-os/sodium.git
+[submodule "crates/osmium"]
+	path = crates/osmium
+	url = https://github.com/redox-os/osmium.git
+[submodule "crates/tar-rs"]
+	path = crates/tar-rs
+	url = https://github.com/redox-os/tar-rs.git

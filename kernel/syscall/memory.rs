@@ -59,7 +59,7 @@ pub fn brk(addr: usize) -> Result<usize> {
                 unsafe { (*current.heap.get()).clean_mem() };
             }
         } else {
-            debugln!("BRK: {:X}=={:X}", addr, ret);
+            //Already set to desired break
         }
     } else {
         debugln!("BRK: Context not found");
