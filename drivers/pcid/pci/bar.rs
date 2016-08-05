@@ -6,7 +6,7 @@ pub enum PciBar {
 }
 
 impl From<u32> for PciBar {
-    fn from(bar: u32) -> PciBar {
+    fn from(bar: u32) -> Self {
         if bar & 0xFFFFFFFC == 0 {
             PciBar::None
         } else if bar & 1 == 0 {
