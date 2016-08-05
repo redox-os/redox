@@ -656,6 +656,7 @@ virtualbox: $(BUILD)/harddrive.bin
 	$(VBM) modifyvm Redox --vram 16
 	$(VBM) modifyvm Redox --nic1 nat
 	$(VBM) modifyvm Redox --nictype1 82540EM
+	$(VBM) modifyvm Redox --cableconnected1 on
 	$(VBM) modifyvm Redox --nictrace1 on
 	$(VBM) modifyvm Redox --nictracefile1 $(BUILD)/network.pcap
 	$(VBM) modifyvm Redox --uart1 0x3F8 4
