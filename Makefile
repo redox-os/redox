@@ -329,7 +329,6 @@ c_bins: \
   	filesystem/bin/sdl-test
 
 bins: \
-	c_bins \
 	coreutils \
 	extrautils \
 	netutils \
@@ -346,7 +345,7 @@ bins: \
 	filesystem/bin/screenfetch \
 	filesystem/bin/std-test \
   	filesystem/bin/sh
-	#TODO: binutils	filesystem/bin/zfs
+	#TODO: binutils	filesystem/bin/zfs c_bins
 
 refs: FORCE
 	mkdir -p filesystem/ref/
