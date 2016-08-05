@@ -1,5 +1,5 @@
 #Options are minimal simple complete
-DISTRO=complete
+DISTRO?=complete
 
 #Do not change, even on 64 bit host. 64 bit target does not work yet
 ARCH?=i386
