@@ -21,7 +21,7 @@ pub struct PciDevIter<'pci> {
 }
 
 impl<'pci> PciDevIter<'pci> {
-    pub fn new(dev: &'pci PciDev<'pci>) -> PciDevIter<'pci> {
+    pub fn new(dev: &'pci PciDev<'pci>) -> Self {
         PciDevIter {
             dev: dev,
             num: 0

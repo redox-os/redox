@@ -13,11 +13,10 @@ impl<'pci> PciFunc<'pci> {
             let mut header = PciHeader::default();
             {
                 let dwords = header.deref_mut();
-                let mut offset = 0;
-                for dword in dwords.iter_mut() {
+                dwords.iter_mut().fold(0usize, |offset, dword| {
                     *dword = unsafe { self.read(offset as u8) };
-                    offset += 4;
-                }
+                    offset + 4
+                });
             }
             Some(header)
         } else {
