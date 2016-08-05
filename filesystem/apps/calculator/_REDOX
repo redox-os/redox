@@ -1,4 +1,4 @@
 name=Calculator
-icon=/ui/apps/accessories-calculator.png
+icon=/ui/icons/apps/accessories-calculator.png
 author=Jeremy Soller
 description=Calculator for Redox

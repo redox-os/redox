@@ -1,3 +1,6 @@
+#Options are minimal simple complete
+DISTRO=complete
+
 #Do not change, even on 64 bit host. 64 bit target does not work yet
 ARCH?=i386
 
@@ -58,9 +61,10 @@ ifeq ($(UNAME),Darwin)
 	VBM="/Applications/VirtualBox.app/Contents/MacOS/VBoxManage"
 endif
 
-.PHONY: help all doc apps bins c_bins clean FORCE \
-	drivers c_binutils binutils coreutils extrautils netutils games \
-	qemu qemu_no_build bochs mount unmount \
+.PHONY: help apps bins c_bins c_binutils clean minimal simple complete \
+	drivers binutils coreutils extrautils extrautils_minimal netutils \
+	games icons \
+	all doc qemu qemu_no_build bochs mount unmount FORCE \
 	virtualbox virtualbox_tap \
 	arping ping wireshark
 
@@ -129,33 +133,6 @@ apps: filesystem/apps/calculator/main.bin \
 	  filesystem/apps/terminal/main.bin \
 	  filesystem/apps/viewer/main.bin
 
-$(BUILD)/libbitflags.rlib: crates/bitflags/src/lib.rs crates/bitflags/src/*.rs $(BUILD)/libcore.rlib
-	$(RUSTC) $(RUSTCFLAGS) --crate-name bitflags --crate-type lib -o $@ $<
-
-$(BUILD)/libextra.rlib: crates/extra/src/lib.rs crates/extra/src/*.rs $(BUILD)/libstd.rlib
-	$(RUSTC) $(RUSTCFLAGS) --crate-name extra --crate-type lib -o $@ $<
-
-$(BUILD)/libpager.rlib: crates/pager/src/lib.rs crates/pager/src/*.rs $(BUILD)/libstd.rlib $(BUILD)/libtermion.rlib
-	$(RUSTC) $(RUSTCFLAGS) --crate-name pager --crate-type lib -o $@ $<
-
-$(BUILD)/libpng.rlib: crates/rust-png/src/lib.rs crates/rust-png/src/*.rs $(BUILD)/libpng_sys.rlib
-	$(RUSTC) $(RUSTCFLAGS) --crate-name png --crate-type lib -o $@ $< -L native=libc/lib/
-
-$(BUILD)/libpng_sys.rlib: crates/rust-png/png-sys/lib.rs crates/rust-png/png-sys/*.rs $(BUILD)/liblibz_sys.rlib
-	$(RUSTC) $(RUSTCFLAGS) --crate-name png_sys --crate-type lib -o $@ $<
-
-$(BUILD)/liblibz_sys.rlib: crates/libz-sys/src/lib.rs crates/libz-sys/src/*.rs $(BUILD)/libstd.rlib $(BUILD)/liblibc.rlib
-	$(RUSTC) $(RUSTCFLAGS) --crate-name libz_sys --crate-type lib -o $@ $< -L native=libc/lib/
-
-$(BUILD)/libwalkdir.rlib: crates/walkdir/src/lib.rs crates/walkdir/src/*.rs $(BUILD)/libstd.rlib
-	$(RUSTC) $(RUSTCFLAGS) --crate-name walkdir --crate-type lib -o $@ $<
-
-$(BUILD)/libralloc.rlib: crates/ralloc/src/lib.rs crates/ralloc/src/*.rs $(BUILD)/libralloc_shim.rlib
-	$(RUSTC) $(RUSTCFLAGS) --crate-name ralloc --crate-type lib -o $@ $< --cfg 'feature="allocator"'
-
-$(BUILD)/libralloc_shim.rlib: crates/ralloc_shim/lib.rs $(BUILD)/libsystem.rlib
-	$(RUSTC) $(RUSTCFLAGS) --crate-name ralloc_shim --crate-type lib -o $@ $<
-
 filesystem/bin/%: crates/coreutils/src/bin/%.rs $(BUILD)/libextra.rlib $(BUILD)/libwalkdir.rlib
 	mkdir -p filesystem/bin
 	$(RUSTC) $(RUSTCFLAGS) -C lto --crate-type bin -o $@ $<
@@ -220,14 +197,17 @@ filesystem/bin/%: crates/extrautils/src/bin/%.rs $(BUILD)/libextra.rlib $(BUILD)
 	mkdir -p filesystem/bin
 	$(RUSTC) $(RUSTCFLAGS) -C lto --crate-type bin -o $@ $<
 
-extrautils: \
+extrautils_minimal: \
 	filesystem/bin/calc \
 	filesystem/bin/cksum \
-	filesystem/bin/cur \
 	filesystem/bin/dmesg \
 	filesystem/bin/grep \
+	filesystem/bin/less
+
+extrautils: \
+	extrautils_minimal \
+	filesystem/bin/cur \
 	filesystem/bin/info \
-	filesystem/bin/less \
 	filesystem/bin/man \
 	filesystem/bin/mdless \
 	filesystem/bin/mtxt \
@@ -271,7 +251,6 @@ filesystem/bin/sh: $(BUILD)/ion-shell.bin
 	mkdir -p filesystem/bin
 	cp $< $@
 
-
 $(BUILD)/tar.bin: crates/tar-rs/src/*.rs $(BUILD)/libstd.rlib
 	$(CARGO) --manifest-path crates/tar-rs/Cargo.toml --bin tar $(CARGOFLAGS)
 
@@ -286,6 +265,12 @@ filesystem/bin/launcher: crates/orbutils/src/launcher/main.rs crates/orbutils/sr
 filesystem/bin/orbital: crates/orbital/main.rs crates/orbital/*.rs $(BUILD)/libstd.rlib $(BUILD)/liborbimage.rlib
 	mkdir -p filesystem/bin
 	$(RUSTC) $(RUSTCFLAGS) -C lto --crate-type bin -o $@ $<
+
+filesystem/ui/fonts: crates/fonts/ crates/fonts/* crates/fonts/*/* crates/fonts/*/*/*
+	cp -R $< $@
+
+filesystem/ui/icons: crates/icons/ crates/icons/* crates/icons/*/*
+	cp -R $< $@
 
 filesystem/bin/redoxfs-utility: crates/redoxfs/utility/main.rs crates/redoxfs/utility/*.rs $(BUILD)/libredoxfs.rlib
 	mkdir -p initfs/bin/
@@ -336,25 +321,40 @@ c_bins: \
   	filesystem/bin/ndisasm \
   	filesystem/bin/sdl-test
 
-bins: \
-	coreutils \
-	extrautils \
-	netutils \
-	drivers \
-	games \
-	filesystem/bin/ansi-test \
-	filesystem/bin/example \
+filesystem/info: crates/handbook crates/handbook/**
+	cp -R $< $@
+
+#Bare minimum for booting to useable shell
+minimal: \
 	filesystem/bin/init \
-	filesystem/bin/launcher \
   	filesystem/bin/login \
-  	filesystem/bin/orbital \
+  	filesystem/bin/sh \
+  	filesystem/bin/tar \
+	coreutils \
+	extrautils_minimal \
+	netutils \
+	drivers
+
+#minimal with extras, games, documentation, and examples
+simple: \
+	minimal \
+	extrautils \
+	games \
+	filesystem/bin/example \
 	filesystem/bin/play \
 	filesystem/bin/redoxfs-utility \
 	filesystem/bin/screenfetch \
-	filesystem/bin/std-test \
-  	filesystem/bin/sh \
-  	filesystem/bin/tar
+	filesystem/info
 	#TODO: binutils	filesystem/bin/zfs c_bins
+
+#simple with GUI
+complete: \
+	simple \
+	apps \
+	filesystem/bin/launcher \
+  	filesystem/bin/orbital \
+	filesystem/ui/fonts \
+	filesystem/ui/icons
 
 refs: FORCE
 	mkdir -p filesystem/ref/
@@ -431,7 +431,7 @@ test: kernel/main.rs \
 	$(RUSTC) $(RUSTCFLAGS) --test $<
 
 clean:
-	$(RM) -rf build doc filesystem/bin/ filesystem/lib/ filesystem/ref/ initfs/bin/ initfs/build/ filesystem/apps/*/*.bin filesystem/apps/*/*.list
+	$(RM) -rf build doc filesystem/bin/ filesystem/lib/ filesystem/info/ filesystem/ref/ filesystem/ui/fonts/ filesystem/ui/icons/ initfs/bin/ initfs/build/ filesystem/apps/*/*.bin filesystem/apps/*/*.list
 
 FORCE:
 
@@ -559,6 +559,33 @@ $(BUILD)/libsystem.rlib: crates/system/lib.rs crates/system/*.rs crates/system/*
 $(BUILD)/libredoxfs.rlib: crates/redoxfs/src/lib.rs crates/redoxfs/src/*.rs $(BUILD)/libstd.rlib
 	$(RUSTC) $(RUSTCFLAGS) -o $@ $<
 
+$(BUILD)/libbitflags.rlib: crates/bitflags/src/lib.rs crates/bitflags/src/*.rs $(BUILD)/libcore.rlib
+	$(RUSTC) $(RUSTCFLAGS) --crate-name bitflags --crate-type lib -o $@ $<
+
+$(BUILD)/libextra.rlib: crates/extra/src/lib.rs crates/extra/src/*.rs $(BUILD)/libstd.rlib
+	$(RUSTC) $(RUSTCFLAGS) --crate-name extra --crate-type lib -o $@ $<
+
+$(BUILD)/libpager.rlib: crates/pager/src/lib.rs crates/pager/src/*.rs $(BUILD)/libstd.rlib $(BUILD)/libtermion.rlib
+	$(RUSTC) $(RUSTCFLAGS) --crate-name pager --crate-type lib -o $@ $<
+
+$(BUILD)/libpng.rlib: crates/rust-png/src/lib.rs crates/rust-png/src/*.rs $(BUILD)/libpng_sys.rlib
+	$(RUSTC) $(RUSTCFLAGS) --crate-name png --crate-type lib -o $@ $< -L native=libc/lib/
+
+$(BUILD)/libpng_sys.rlib: crates/rust-png/png-sys/lib.rs crates/rust-png/png-sys/*.rs $(BUILD)/liblibz_sys.rlib
+	$(RUSTC) $(RUSTCFLAGS) --crate-name png_sys --crate-type lib -o $@ $<
+
+$(BUILD)/liblibz_sys.rlib: crates/libz-sys/src/lib.rs crates/libz-sys/src/*.rs $(BUILD)/libstd.rlib $(BUILD)/liblibc.rlib
+	$(RUSTC) $(RUSTCFLAGS) --crate-name libz_sys --crate-type lib -o $@ $< -L native=libc/lib/
+
+$(BUILD)/libwalkdir.rlib: crates/walkdir/src/lib.rs crates/walkdir/src/*.rs $(BUILD)/libstd.rlib
+	$(RUSTC) $(RUSTCFLAGS) --crate-name walkdir --crate-type lib -o $@ $<
+
+$(BUILD)/libralloc.rlib: crates/ralloc/src/lib.rs crates/ralloc/src/*.rs $(BUILD)/libralloc_shim.rlib
+	$(RUSTC) $(RUSTCFLAGS) --crate-name ralloc --crate-type lib -o $@ $< --cfg 'feature="allocator"'
+
+$(BUILD)/libralloc_shim.rlib: crates/ralloc_shim/lib.rs $(BUILD)/libsystem.rlib
+	$(RUSTC) $(RUSTCFLAGS) --crate-name ralloc_shim --crate-type lib -o $@ $<
+
 $(BUILD)/kernel.rlib: kernel/main.rs kernel/*.rs kernel/*/*.rs kernel/*/*/*.rs $(BUILD)/libbitflags.rlib $(BUILD)/libio.rlib $(BUILD)/libransid.rlib $(BUILD)/libsystem.rlib build/initfs.gen
 	$(RUSTC) $(RUSTCFLAGS) -C lto -o $@ $<
 
@@ -626,7 +653,7 @@ filesystem/apps/zfs/zfs.img:
 	-sudo zpool destroy redox_zfs
 	sudo losetup -d /dev/loop0
 
-$(BUILD)/filesystem.bin: apps bins
+$(BUILD)/filesystem.bin: $(DISTRO)
 	strip filesystem/bin/* # Strip symbols from binaries
 	rm -rf $@ $(BUILD)/filesystem/
 	echo exit | cargo run --manifest-path crates/redoxfs/Cargo.toml --bin redoxfs-utility $@
