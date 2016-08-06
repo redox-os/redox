@@ -27,7 +27,7 @@ pub use self::socket::Socket;
 pub use self::window::Window;
 
 use self::config::Config;
-use self::event::{EVENT_KEY, EVENT_MOUSE, QuitEvent};
+use self::event::{EVENT_KEY, EVENT_MOUSE, FocusEvent, QuitEvent};
 
 pub mod color;
 pub mod config;
@@ -259,16 +259,22 @@ impl OrbitalScheme {
                 if focus > 0 {
                     //Redraw old focused window
                     if let Some(id) = self.order.front() {
-                        if let Some(window) = self.windows.get(&id){
+                        if let Some(mut window) = self.windows.get_mut(&id){
                             schedule(&mut self.redraws, window.title_rect());
                             schedule(&mut self.redraws, window.rect());
+                            window.event(FocusEvent {
+                                focused: false
+                            }.to_event());
                         }
                     }
                     //Redraw new focused window
                     if let Some(id) = self.order.remove(focus) {
-                        if let Some(window) = self.windows.get(&id){
+                        if let Some(mut window) = self.windows.get_mut(&id){
                             schedule(&mut self.redraws, window.title_rect());
                             schedule(&mut self.redraws, window.rect());
+                            window.event(FocusEvent {
+                                focused: true
+                            }.to_event());
                         }
                         self.order.push_front(id);
                     }
