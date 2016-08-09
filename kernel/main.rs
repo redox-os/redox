@@ -23,7 +23,7 @@ use acpi::Acpi;
 
 use alloc::boxed::Box;
 
-use arch::context::{context_switch, Context};
+use arch::context::{context_switch, Context, ContextFile};
 use arch::memory;
 use arch::paging::Page;
 use arch::regs::Regs;
@@ -452,16 +452,23 @@ unsafe fn init(tss_data: usize) {
             Context::spawn("kinit".into(),
                            box move || {
                 {
-                    let wd = "initfs:/";
-                    syscall::fs::chdir(wd.as_ptr(), wd.len()).unwrap();
-
-                    let stdio = "debug:";
-                    syscall::fs::open(stdio.as_ptr(), stdio.len(), 0).unwrap();
-                    syscall::fs::open(stdio.as_ptr(), stdio.len(), 0).unwrap();
-                    syscall::fs::open(stdio.as_ptr(), stdio.len(), 0).unwrap();
-
                     let mut contexts = &mut *::env().contexts.get();
                     let current = contexts.current_mut().unwrap();
+
+                    *current.cwd.get() = "initfs:/".to_string();
+
+                    (*current.files.get()).push(ContextFile {
+                        fd: 0,
+                        resource: ::env().open("debug:", 0).unwrap(),
+                    });
+                    (*current.files.get()).push(ContextFile {
+                        fd: 1,
+                        resource: ::env().open("debug:", 0).unwrap(),
+                    });
+                    (*current.files.get()).push(ContextFile {
+                        fd: 2,
+                        resource: ::env().open("debug:", 0).unwrap(),
+                    });
 
                     current.set_env_var("PATH", "file:/bin").unwrap();
                     current.set_env_var("COLUMNS", &term_columns).unwrap();
