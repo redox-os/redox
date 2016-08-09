@@ -78,7 +78,9 @@ long_mode:
     ;rust init
     mov eax, [kernel_base + 0x18]
     mov [interrupts.handler], rax
-    mov rax, tss
+    mov rax, gdtr
+    mov rbx, idtr
+    mov rcx, tss
     int 0xFF
 .lp:
     sti

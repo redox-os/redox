@@ -24,6 +24,8 @@ use acpi::Acpi;
 use alloc::boxed::Box;
 
 use arch::context::{context_switch, Context, ContextFile};
+use arch::gdt::{GdtDescriptor, GdtEntry};
+use arch::idt::{IdtDescriptor, IdtEntry};
 use arch::memory;
 use arch::paging::Page;
 use arch::regs::Regs;
@@ -32,7 +34,7 @@ use arch::tss::Tss;
 use collections::{String, Vec};
 use collections::string::ToString;
 
-use core::{mem, usize};
+use core::{mem, slice, usize};
 
 use common::time::Duration;
 
@@ -166,12 +168,23 @@ pub mod syscall;
 /// This modules contains drivers and other tools for USB.
 pub mod usb;
 
-/// The TTS pointer.
+/// The GDT pointer.
+///
+/// This static contains a mutable pointer to the GDT (global descriptor table)
+pub static mut GDT_PTR: Option<&'static mut [GdtEntry]> = None;
+
+/// The IDT pointer.
+///
+/// This static contains a mutable pointer to the IDT (interrupt descriptor table)
+pub static mut IDT_PTR: Option<&'static mut [IdtEntry]> = None;
+
+/// The TSS pointer.
 ///
 /// This static contains a mutable pointer to the TSS (task state segment), which is a data
 /// structure used on x86-based architectures for holding information about a specific task. See
 /// `Tss` for more information.
 pub static mut TSS_PTR: Option<&'static mut Tss> = None;
+
 /// The environment pointer.
 ///
 /// The pointer to the kernel environment, holding the state of the kernel.
@@ -253,7 +266,7 @@ static BSS_TEST_NONZERO: usize = !0;
 /// on.
 ///
 /// Note that this will not start the event loop.
-unsafe fn init(tss_data: usize) {
+unsafe fn init(gdt_ptr: *mut GdtDescriptor, idt_ptr: *mut IdtDescriptor, tss_ptr: *mut Tss) {
 
     // Test
     assume!(true);
@@ -334,7 +347,9 @@ unsafe fn init(tss_data: usize) {
         }
     }
 
-    TSS_PTR = Some(&mut *(tss_data as *mut Tss));
+    GDT_PTR = Some(slice::from_raw_parts_mut((&*gdt_ptr).ptr as *mut GdtEntry, ((&*gdt_ptr).size as usize) + 1));
+    IDT_PTR = Some(slice::from_raw_parts_mut((&*idt_ptr).ptr as *mut IdtEntry, ((&*idt_ptr).size as usize) + 1));
+    TSS_PTR = Some(&mut *tss_ptr);
     ENV_PTR = Some(&mut *Box::into_raw(Environment::new()));
 
     match ENV_PTR {
@@ -648,7 +663,7 @@ pub extern "cdecl" fn kernel(interrupt: usize, mut regs: &mut Regs) {
         0x80 => syscall::handle(regs),
         0xFF => {
             unsafe {
-                init(regs.ax);
+                init(regs.ax as *mut GdtDescriptor, regs.bx as *mut IdtDescriptor, regs.cx as *mut Tss);
                 idle_loop();
             }
         },

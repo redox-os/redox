@@ -170,7 +170,8 @@ pub fn execute(mut args: Vec<String>) -> Result<usize> {
         match Elf::from(&vec) {
             Ok(executable) => {
                 let entry = unsafe { executable.entry() };
-                let segments = unsafe { executable.load_segment() };
+                let segments = unsafe { executable.load_segments() };
+                let tss_segments = unsafe { executable.tss_segments() };
 
                 if entry > 0 && ! segments.is_empty() {
                     unsafe { current.unmap() };
@@ -220,6 +221,10 @@ pub fn execute(mut args: Vec<String>) -> Result<usize> {
                             memory.writeable = segment.flags & 2 == 2;
 
                             image.memory.push(memory);
+                        }
+
+                        for segment in tss_segments.iter() {
+                            syslog_info!("MAKE TSS: {:?}", segment);
                         }
                     }
 
