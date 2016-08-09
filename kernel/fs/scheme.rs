@@ -17,7 +17,7 @@ use system::error::{Error, Result, EFAULT, EINVAL, ENODEV, ESPIPE};
 use system::scheme::Packet;
 use system::syscall::{SYS_CLOSE, SYS_DUP, SYS_FPATH, SYS_FSTAT, SYS_FSYNC, SYS_FTRUNCATE,
                     SYS_OPEN, SYS_LSEEK, SEEK_SET, SEEK_CUR, SEEK_END, SYS_MKDIR,
-                    SYS_READ, SYS_WRITE, SYS_RMDIR, SYS_STAT, SYS_UNLINK, Stat};
+                    SYS_READ, SYS_WRITE, SYS_RMDIR, SYS_UNLINK, Stat};
 
 use super::{Resource, ResourceSeek, KScheme};
 
@@ -208,8 +208,8 @@ impl Resource for SchemeResource {
         self.call(SYS_LSEEK, self.file_id, offset, whence)
     }
 
-    /// Stat
-    fn stat(&self, stat: &mut Stat) -> Result<usize> {
+    /// Stat the resource
+    fn stat(&self, stat: &mut Stat) -> Result<()> {
         let buf = unsafe { slice::from_raw_parts_mut(stat as *mut Stat as *mut u8, size_of::<Stat>()) };
 
         let contexts = unsafe { & *::env().contexts.get() };
@@ -219,11 +219,11 @@ impl Resource for SchemeResource {
 
             let virtual_address = try!(self.capture(physical_address - offset, buf.len() + offset, true));
 
-            let result = self.call(SYS_FSTAT, self.file_id, virtual_address + offset, buf.len());
+            let result = self.call(SYS_FSTAT, self.file_id, virtual_address + offset, 0);
 
             self.release(virtual_address);
 
-            result
+            result.and(Ok(()))
         } else {
             debugln!("{}:{} fault {:X} {}", file!(), line!(), buf.as_ptr() as usize, buf.len());
             Err(Error::new(EFAULT))
@@ -235,6 +235,7 @@ impl Resource for SchemeResource {
         self.call(SYS_FSYNC, self.file_id, 0, 0).and(Ok(()))
     }
 
+    /// Truncate the resource
     fn truncate(&mut self, len: usize) -> Result<()> {
         self.call(SYS_FTRUNCATE, self.file_id, len, 0).and(Ok(()))
     }
@@ -410,31 +411,6 @@ impl KScheme for Scheme {
         self.release(virtual_address);
 
         result.and(Ok(()))
-    }
-
-    fn stat(&mut self, path: &str, stat: &mut Stat) -> Result<()> {
-        let buf = unsafe { slice::from_raw_parts_mut(stat as *mut Stat as *mut u8, size_of::<Stat>()) };
-
-        let contexts = unsafe { & *::env().contexts.get() };
-        let current = try!(contexts.current());
-        if let Ok(physical_address) = current.translate(buf.as_mut_ptr() as usize, buf.len()) {
-            let offset = physical_address % 4096;
-
-            let stat_address = try!(self.capture(physical_address - offset, buf.len() + offset, true));
-
-            let path_address = try!(self.capture(path.as_ptr() as usize, path.len(), false));
-
-            let result = self.call(SYS_STAT, path_address, path.len(), stat_address + offset);
-
-            self.release(path_address);
-
-            self.release(stat_address);
-
-            result.and(Ok(()))
-        } else {
-            debugln!("{}:{} fault {:X} {}", file!(), line!(), buf.as_ptr() as usize, buf.len());
-            Err(Error::new(EFAULT))
-        }
     }
 
     fn unlink(&mut self, path: &str) -> Result<()> {

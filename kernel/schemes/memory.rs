@@ -7,6 +7,7 @@ use collections::string::ToString;
 use fs::{KScheme, Resource, VecResource};
 
 use system::error::Result;
+use system::syscall::MODE_FILE;
 
 /// A memory scheme
 pub struct MemoryScheme;
@@ -20,6 +21,6 @@ impl KScheme for MemoryScheme {
         let string = format!("Memory Used: {} KB\nMemory Free: {} KB\n",
                              memory::memory_used() / 1024,
                              memory::memory_free() / 1024);
-        Ok(box VecResource::new("memory:".to_string(), string.into_bytes()))
+        Ok(box VecResource::new("memory:".to_string(), string.into_bytes(), MODE_FILE))
     }
 }

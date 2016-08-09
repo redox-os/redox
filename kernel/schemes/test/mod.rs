@@ -5,6 +5,7 @@ use collections::string::{String, ToString};
 use fs::{KScheme, Resource, VecResource};
 
 use system::error::Result;
+use system::syscall::MODE_FILE;
 
 #[macro_export]
 macro_rules! test {
@@ -91,6 +92,6 @@ impl KScheme for TestScheme {
         reg_test!(!meta::meta_test_woah_fail, "Testing the fail testing (wut)");
         reg_test!(get_slice::test, "GetSlice");
 
-        Ok(box VecResource::new("test:".to_string(), string.into_bytes()))
+        Ok(box VecResource::new("test:".to_string(), string.into_bytes(), MODE_FILE))
     }
 }

@@ -7,6 +7,7 @@ use arch::context;
 use fs::{KScheme, Resource, VecResource};
 
 use system::error::Result;
+use system::syscall::MODE_FILE;
 
 pub struct ContextScheme;
 
@@ -85,6 +86,6 @@ impl KScheme for ContextScheme {
             }
         }
 
-        Ok(box VecResource::new("context:".to_string(), string.into_bytes()))
+        Ok(box VecResource::new("context:".to_string(), string.into_bytes(), MODE_FILE))
     }
 }

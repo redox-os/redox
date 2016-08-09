@@ -14,7 +14,7 @@ use fs::{KScheme, Resource, Scheme, VecResource};
 use sync::WaitQueue;
 
 use system::error::{Error, Result, ENOENT, EEXIST};
-use system::syscall::{O_CREAT, Stat};
+use system::syscall::{MODE_DIR, O_CREAT};
 
 use self::console::Console;
 use self::log::Log;
@@ -97,7 +97,7 @@ impl Environment {
                     }
                 }
 
-                Ok(box VecResource::new(":".to_string(), list.into_bytes()))
+                Ok(box VecResource::new(":".to_string(), list.into_bytes(), MODE_DIR))
             } else if flags & O_CREAT == O_CREAT {
                 for scheme in unsafe { &mut *self.schemes.get() }.iter_mut() {
                     if scheme.scheme() == url_path {
@@ -143,18 +143,6 @@ impl Environment {
             for mut scheme in unsafe { &mut *self.schemes.get() }.iter_mut() {
                 if scheme.scheme() == url_scheme {
                     return scheme.rmdir(url);
-                }
-            }
-        }
-        Err(Error::new(ENOENT))
-    }
-
-    /// Stat a path
-    pub fn stat(&self, url: &str, stat: &mut Stat) -> Result<()> {
-        if let Some(url_scheme) = url.splitn(2, ":").next() {
-            for mut scheme in unsafe { &mut *self.schemes.get() }.iter_mut() {
-                if scheme.scheme() == url_scheme {
-                    return scheme.stat(url, stat);
                 }
             }
         }

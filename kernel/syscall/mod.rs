@@ -38,7 +38,6 @@ pub fn name(number: usize) -> &'static str {
         SYS_PIPE2 => "pipe2",
         SYS_READ => "read",
         SYS_RMDIR => "rmdir",
-        SYS_STAT => "stat",
         SYS_UNLINK => "unlink",
         SYS_WAITPID => "waitpid",
         SYS_WRITE => "write",
@@ -104,7 +103,6 @@ pub fn handle(regs: &mut Regs) {
         // TODO: link
         SYS_PIPE2 => fs::pipe2(regs.bx as *mut usize, regs.cx),
         SYS_RMDIR => fs::rmdir(regs.bx as *const u8, regs.cx),
-        SYS_STAT => fs::stat(regs.bx as *const u8, regs.cx, regs.dx as *mut Stat),
         SYS_UNLINK => fs::unlink(regs.bx as *const u8, regs.cx),
         SYS_WAITPID => process::waitpid(regs.bx as isize, regs.cx as *mut usize, regs.dx),
         SYS_BRK => memory::brk(regs.bx),

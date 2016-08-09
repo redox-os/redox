@@ -37,7 +37,6 @@ pub trait Scheme {
             SYS_OPEN => self.open(unsafe { str::from_utf8_unchecked(slice::from_raw_parts(packet.b as *const u8, packet.c)) }, packet.d),
             SYS_MKDIR => self.mkdir(unsafe { str::from_utf8_unchecked(slice::from_raw_parts(packet.b as *const u8, packet.c)) }, packet.d),
             SYS_RMDIR => self.rmdir(unsafe { str::from_utf8_unchecked(slice::from_raw_parts(packet.b as *const u8, packet.c)) }),
-            SYS_STAT => self.stat(unsafe { str::from_utf8_unchecked(slice::from_raw_parts(packet.b as *const u8, packet.c)) }, unsafe { &mut *(packet.d as *mut Stat) }),
             SYS_UNLINK => self.unlink(unsafe { str::from_utf8_unchecked(slice::from_raw_parts(packet.b as *const u8, packet.c)) }),
 
             SYS_DUP => self.dup(packet.b),

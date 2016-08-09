@@ -3,7 +3,6 @@ use super::Resource;
 use alloc::boxed::Box;
 
 use system::error::{Error, Result, EPERM};
-use system::syscall::Stat;
 
 #[allow(unused_variables)]
 pub trait KScheme {
@@ -24,10 +23,6 @@ pub trait KScheme {
     }
 
     fn rmdir(&mut self, path: &str) -> Result<()> {
-        Err(Error::new(EPERM))
-    }
-
-    fn stat(&mut self, path: &str, stat: &mut Stat) -> Result<()> {
         Err(Error::new(EPERM))
     }
 

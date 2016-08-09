@@ -161,7 +161,7 @@ pub fn fstat(fd: usize, stat: *mut Stat) -> Result<usize> {
     let current = contexts.current()?;
     let resource = current.get_file(fd)?;
     let stat_safe = current.get_ref_mut(stat)?;
-    resource.stat(stat_safe)
+    resource.stat(stat_safe).and(Ok(0))
 }
 
 /** <!-- @MANSTART{sys_fsync} -->
@@ -473,17 +473,6 @@ pub fn rmdir(path_ptr: *const u8, path_len: usize) -> Result<usize> {
     let path_safe = current.get_slice(path_ptr, path_len)?;
     let path_string = current.canonicalize(unsafe { str::from_utf8_unchecked(path_safe) });
     ::env().rmdir(&path_string).and(Ok(0))
-}
-
-pub fn stat(path_ptr: *const u8, path_len: usize, stat: *mut Stat) -> Result<usize> {
-    let contexts = unsafe { & *::env().contexts.get() };
-    let current = try!(contexts.current());
-    let path_safe = current.get_slice(path_ptr, path_len)?;
-    let path_string = current.canonicalize(unsafe { str::from_utf8_unchecked(path_safe) });
-    let stat_safe = current.get_ref_mut(stat)?;
-
-    *stat_safe = Stat::default();
-    ::env().stat(&path_string, stat_safe).and(Ok(0))
 }
 
 pub fn unlink(path_ptr: *const u8, path_len: usize) -> Result<usize> {

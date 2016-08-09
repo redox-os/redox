@@ -5,6 +5,7 @@ use collections::string::ToString;
 use fs::{KScheme, Resource, VecResource};
 
 use system::error::Result;
+use system::syscall::MODE_FILE;
 
 pub struct InterruptScheme;
 
@@ -72,6 +73,6 @@ impl KScheme for InterruptScheme {
             }
         }
 
-        Ok(box VecResource::new("interrupt:".to_string(), string.into_bytes()))
+        Ok(box VecResource::new("interrupt:".to_string(), string.into_bytes(), MODE_FILE))
     }
 }

@@ -26,6 +26,9 @@ pub const SYS_EXECVE: usize = 11;
 pub const SYS_EXIT: usize = 1;
 pub const SYS_FPATH: usize = 928;
 pub const SYS_FSTAT: usize = 28;
+    pub const MODE_DIR: u16 = 0x4000;
+    pub const MODE_FILE: u16 = 0x8000;
+    pub const MODE_ALL: u16 = MODE_DIR | MODE_FILE;
 pub const SYS_FSYNC: usize = 118;
 pub const SYS_FTRUNCATE: usize = 93;
 pub const SYS_GETPID: usize = 20;
@@ -53,10 +56,6 @@ pub const SYS_OPEN: usize = 5;
 pub const SYS_PIPE2: usize = 331;
 pub const SYS_READ: usize = 3;
 pub const SYS_RMDIR: usize = 84;
-pub const SYS_STAT: usize = 18;
-    pub const MODE_DIR: u16 = 0x4000;
-    pub const MODE_FILE: u16 = 0x8000;
-    pub const MODE_ALL: u16 = MODE_DIR | MODE_FILE;
 pub const SYS_UNLINK: usize = 10;
 pub const SYS_WAITPID: usize = 7;
 pub const SYS_WRITE: usize = 4;
@@ -171,10 +170,6 @@ pub fn sys_read(fd: usize, buf: &mut [u8]) -> Result<usize> {
 
 pub fn sys_rmdir(path: &str) -> Result<usize> {
     unsafe { syscall2(SYS_RMDIR, path.as_ptr() as usize, path.len()) }
-}
-
-pub fn sys_stat(path: &str, stat: &mut Stat) -> Result<usize> {
-    unsafe { syscall3(SYS_STAT, path.as_ptr() as usize, path.len(), stat as *mut Stat as usize) }
 }
 
 pub fn sys_unlink(path: &str) -> Result<usize> {

@@ -1,3 +1,5 @@
+#![feature(thread_local)]
+
 use std::cmp::{min, max};
 use std::collections::BTreeMap;
 use std::fs::File;
@@ -8,6 +10,9 @@ use std::thread;
 use system::error::{Error, Result, ENOENT, EBADF, EINVAL};
 use system::scheme::{Packet, Scheme};
 use system::syscall::{Stat, SEEK_SET, SEEK_CUR, SEEK_END};
+
+#[thread_local]
+static mut test: usize = 0;
 
 extern crate system;
 

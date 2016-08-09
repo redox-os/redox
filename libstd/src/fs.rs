@@ -8,7 +8,7 @@ use sys_common::AsInner;
 use vec::Vec;
 
 use system::syscall::{sys_open, sys_dup, sys_close, sys_fpath, sys_fstat, sys_ftruncate, sys_read,
-              sys_write, sys_lseek, sys_fsync, sys_mkdir, sys_rmdir, sys_stat, sys_unlink};
+              sys_write, sys_lseek, sys_fsync, sys_mkdir, sys_rmdir, sys_unlink};
 use system::syscall::{O_RDWR, O_RDONLY, O_WRONLY, O_APPEND, O_CREAT, O_TRUNC, MODE_DIR, MODE_FILE, SEEK_SET, SEEK_CUR, SEEK_END, Stat};
 
 /// A Unix-style file
@@ -319,12 +319,7 @@ pub fn canonicalize<P: AsRef<Path>>(path: P) -> Result<PathBuf> {
 
 /// Get information about a file
 pub fn metadata<P: AsRef<Path>>(path: P) -> Result<Metadata> {
-    let mut stat = Stat::default();
-    let path_str = path.as_ref().as_os_str().as_inner();
-    try!(sys_stat(path_str, &mut stat).map_err(|x| Error::from_sys(x)));
-    Ok(Metadata {
-        stat: stat
-    })
+    try!(File::open(path)).metadata()
 }
 
 /// Get information about a file without following symlinks

@@ -60,6 +60,12 @@ impl Resource for DiskResource {
         Ok(self.seek as usize)
     }
 
+    fn stat(&self, stat: &mut Stat) -> Result<()> {
+        stat.st_size = unsafe { & *self.disk.get() }.size() as u32;
+        stat.st_mode = MODE_FILE;
+        Ok(())
+    }
+
     fn sync(&mut self) -> Result<()> {
         Ok(())
     }
@@ -114,7 +120,7 @@ impl KScheme for DiskScheme {
                 list.push_str(&format!("{}", i));
             }
 
-            return Ok(box VecResource::new("disk:/".to_owned(), list.into_bytes()));
+            return Ok(box VecResource::new("disk:/".to_owned(), list.into_bytes(), MODE_DIR));
         } else {
             if let Ok(number) = path.parse::<usize>() {
                 if let Some(disk) = self.disks.get(number) {
@@ -123,34 +129,6 @@ impl KScheme for DiskScheme {
                         disk: disk.clone(),
                         seek: 0
                     });
-                }
-            }
-        }
-
-        Err(Error::new(ENOENT))
-    }
-
-    fn stat(&mut self, url: &str, stat: &mut Stat) -> Result<()> {
-        let path = url.splitn(2, ":").nth(1).unwrap_or("");
-
-        if path.is_empty() {
-            let mut list = String::new();
-            for i in 0..self.disks.len() {
-                if ! list.is_empty() {
-                    list.push('\n');
-                }
-                list.push_str(&format!("{}", i));
-            }
-
-            stat.st_mode = MODE_DIR;
-            stat.st_size = list.len() as u32;
-            return Ok(());
-        } else {
-            if let Ok(number) = path.parse::<usize>() {
-                if let Some(disk) = self.disks.get(number) {
-                    stat.st_mode = MODE_FILE;
-                    stat.st_size = unsafe { & *disk.get() }.size() as u32;
-                    return Ok(());
                 }
             }
         }

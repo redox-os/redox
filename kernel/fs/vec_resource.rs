@@ -7,19 +7,22 @@ use collections::{String, Vec};
 use core::cmp::{max, min};
 
 use system::error::Result;
+use system::syscall::Stat;
 
 /// A vector resource
 pub struct VecResource {
     path: String,
     data: Vec<u8>,
+    mode: u16,
     seek: usize,
 }
 
 impl VecResource {
-    pub fn new(path: String, data: Vec<u8>) -> Self {
+    pub fn new(path: String, data: Vec<u8>, mode: u16) -> Self {
         VecResource {
             path: path,
             data: data,
+            mode: mode,
             seek: 0,
         }
     }
@@ -34,6 +37,7 @@ impl Resource for VecResource {
         Ok(box VecResource {
             path: self.path.clone(),
             data: self.data.clone(),
+            mode: self.mode,
             seek: self.seek,
         })
     }
@@ -90,6 +94,12 @@ impl Resource for VecResource {
                                     offset)) as usize,
         }
         return Ok(self.seek);
+    }
+
+    fn stat(&self, stat: &mut Stat) -> Result<()> {
+        stat.st_size = self.data.len() as u32;
+        stat.st_mode = self.mode;
+        Ok(())
     }
 
     fn sync(&mut self) -> Result<()> {
