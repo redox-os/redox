@@ -105,7 +105,7 @@ impl KScheme for DisplayScheme {
     }
 
     fn open(&mut self, url: &str, _: usize) -> Result<Box<Resource>> {
-        if url.splitn(1, ":").nth(1).unwrap_or("") == "manager" {
+        if url.splitn(2, ":").nth(1).unwrap_or("") == "manager" {
             let console = unsafe { &mut *::env().console.get() };
             if console.draw {
                 console.draw = false;

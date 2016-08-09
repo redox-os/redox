@@ -48,7 +48,7 @@ impl KScheme for PtyScheme {
     }
 
     fn open(&mut self, url: &str, _: usize) -> Result<Box<Resource>> {
-        let req_id = url.splitn(1, ":").nth(1).unwrap_or("").parse::<usize>().unwrap_or(0);
+        let req_id = url.splitn(2, ":").nth(1).unwrap_or("").parse::<usize>().unwrap_or(0);
 
         self.ptys.retain(|pty| {
             pty.upgrade().is_some()

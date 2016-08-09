@@ -136,7 +136,7 @@ impl KScheme for IpScheme {
     }
 
     fn open(&mut self, url: &str, _: usize) -> Result<Box<Resource>> {
-        let parts: Vec<&str> = url.splitn(1, ":").nth(1).unwrap_or("").split('/').collect();
+        let parts: Vec<&str> = url.splitn(2, ":").nth(1).unwrap_or("").split('/').collect();
         if let Some(host_string) = parts.get(0) {
             if let Some(proto_string) = parts.get(1) {
                 let proto = proto_string.to_num_radix(16) as u8;

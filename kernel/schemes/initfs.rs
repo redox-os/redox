@@ -29,7 +29,7 @@ impl KScheme for InitFsScheme {
     }
 
     fn open(&mut self, url: &str, _: usize) -> Result<Box<Resource>> {
-        let reference = url.splitn(1, ":").nth(1).unwrap_or("").trim_matches('/');
+        let reference = url.splitn(2, ":").nth(1).unwrap_or("").trim_matches('/');
         if reference.is_empty() {
             let mut list = String::new();
 

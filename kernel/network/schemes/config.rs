@@ -12,7 +12,7 @@ impl KScheme for NetConfigScheme {
     }
 
     fn open(&mut self, url: &str, _: usize) -> Result<Box<Resource>> {
-        match url.splitn(1, ":").nth(1).unwrap_or("") {
+        match url.splitn(2, ":").nth(1).unwrap_or("") {
             "dns" => Ok(Box::new(SliceMutResource::new("netcfg:dns", unsafe { &mut DNS_ADDR.bytes }))),
             "ip" => Ok(Box::new(SliceMutResource::new("netcfg:ip", unsafe { &mut IP_ADDR.bytes }))),
             "ip_router" => Ok(Box::new(SliceMutResource::new("netcfg:ip_router", unsafe { &mut IP_ROUTER_ADDR.bytes }))),

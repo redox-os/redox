@@ -103,7 +103,7 @@ impl KScheme for DiskScheme {
     }
 
     fn open(&mut self, url: &str, _flags: usize) -> Result<Box<Resource>> {
-        let path = url.splitn(1, ":").nth(1).unwrap_or("");
+        let path = url.splitn(2, ":").nth(1).unwrap_or("");
 
         if path.is_empty() {
             let mut list = String::new();
@@ -131,7 +131,7 @@ impl KScheme for DiskScheme {
     }
 
     fn stat(&mut self, url: &str, stat: &mut Stat) -> Result<()> {
-        let path = url.splitn(1, ":").nth(1).unwrap_or("");
+        let path = url.splitn(2, ":").nth(1).unwrap_or("");
 
         if path.is_empty() {
             let mut list = String::new();

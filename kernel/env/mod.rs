@@ -79,7 +79,7 @@ impl Environment {
 
     /// Open a new resource
     pub fn open(&self, url: &str, flags: usize) -> Result<Box<Resource>> {
-        let mut url_split = url.splitn(1, ":");
+        let mut url_split = url.splitn(2, ":");
         let url_scheme = url_split.next().unwrap_or("");
         if url_scheme.is_empty() {
             let url_path = url_split.next().unwrap_or("").trim_matches('/');
@@ -127,7 +127,7 @@ impl Environment {
 
     /// Makes a directory
     pub fn mkdir(&self, url: &str, flags: usize) -> Result<()> {
-        if let Some(url_scheme) = url.splitn(1, ":").next() {
+        if let Some(url_scheme) = url.splitn(2, ":").next() {
             for mut scheme in unsafe { &mut *self.schemes.get() }.iter_mut() {
                 if scheme.scheme() == url_scheme {
                     return scheme.mkdir(url, flags);
@@ -139,7 +139,7 @@ impl Environment {
 
     /// Remove a directory
     pub fn rmdir(&self, url: &str) -> Result<()> {
-        if let Some(url_scheme) = url.splitn(1, ":").next() {
+        if let Some(url_scheme) = url.splitn(2, ":").next() {
             for mut scheme in unsafe { &mut *self.schemes.get() }.iter_mut() {
                 if scheme.scheme() == url_scheme {
                     return scheme.rmdir(url);
@@ -151,7 +151,7 @@ impl Environment {
 
     /// Stat a path
     pub fn stat(&self, url: &str, stat: &mut Stat) -> Result<()> {
-        if let Some(url_scheme) = url.splitn(1, ":").next() {
+        if let Some(url_scheme) = url.splitn(2, ":").next() {
             for mut scheme in unsafe { &mut *self.schemes.get() }.iter_mut() {
                 if scheme.scheme() == url_scheme {
                     return scheme.stat(url, stat);
@@ -163,7 +163,7 @@ impl Environment {
 
     /// Unlink a resource
     pub fn unlink(&self, url: &str) -> Result<()> {
-        if let Some(url_scheme) = url.splitn(1, ":").next() {
+        if let Some(url_scheme) = url.splitn(2, ":").next() {
             for mut scheme in unsafe { &mut *self.schemes.get() }.iter_mut() {
                 if scheme.scheme() == url_scheme {
                     return scheme.unlink(url);

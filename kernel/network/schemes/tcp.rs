@@ -414,7 +414,7 @@ impl KScheme for TcpScheme {
     }
 
     fn open(&mut self, url: &str, _: usize) -> Result<Box<Resource>> {
-        let mut parts = url.splitn(1, ":").nth(1).unwrap_or("").split('/');
+        let mut parts = url.splitn(2, ":").nth(1).unwrap_or("").split('/');
         let remote = parts.next().unwrap_or("");
         let path = parts.next().unwrap_or("");
 

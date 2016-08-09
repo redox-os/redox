@@ -111,7 +111,7 @@ impl KScheme for EthernetScheme {
     }
 
     fn open(&mut self, url: &str, _: usize) -> Result<Box<Resource>> {
-        let parts: Vec<&str> = url.splitn(1, ":").nth(1).unwrap_or("").split("/").collect();
+        let parts: Vec<&str> = url.splitn(2, ":").nth(1).unwrap_or("").split("/").collect();
         if let Some(host_string) = parts.get(0) {
             if let Some(ethertype_string) = parts.get(1) {
                 if let Ok(mut network) = ::env().open("network:", O_RDWR) {
