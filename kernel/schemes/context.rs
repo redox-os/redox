@@ -4,7 +4,7 @@ use collections::string::{String, ToString};
 
 use arch::context;
 
-use fs::{KScheme, Resource, Url, VecResource};
+use fs::{KScheme, Resource, VecResource};
 
 use system::error::Result;
 
@@ -15,7 +15,7 @@ impl KScheme for ContextScheme {
         "context"
     }
 
-    fn open(&mut self, _: Url, _: usize) -> Result<Box<Resource>> {
+    fn open(&mut self, _: &str, _: usize) -> Result<Box<Resource>> {
         let mut string = format!("{:<6}{:<6}{:<8}{:<8}{:<8}{:<6}{:<6}{:<6}{}\n",
                                  "PID",
                                  "PPID",

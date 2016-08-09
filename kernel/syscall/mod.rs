@@ -59,7 +59,7 @@ pub fn handle(regs: &mut Regs) {
         let contexts = unsafe { &mut *::env().contexts.get() };
         if let Ok(cur) = contexts.current_mut() {
             cur.current_syscall = Some((regs.ip, regs.ax, regs.bx, regs.cx, regs.dx));
-            // debugln!("PID {}: {} @ {:X}: {} {} {:X} {:X} {:X}", cur.pid, cur.name, regs.ip, regs.ax, name(regs.ax), regs.bx, regs.cx, regs.dx);
+            debugln!("PID {}: {} @ {:X}: {} {} {:X} {:X} {:X}", cur.pid, cur.name, regs.ip, regs.ax, name(regs.ax), regs.bx, regs.cx, regs.dx);
             if cur.supervised {
                 // Block the process.
                 cur.blocked_syscall = true;
@@ -86,10 +86,10 @@ pub fn handle(regs: &mut Regs) {
         SYS_WRITE => fs::write(regs.bx, regs.cx as *mut u8, regs.dx),
         SYS_READ => fs::read(regs.bx, regs.cx as *mut u8, regs.dx),
         SYS_LSEEK => fs::lseek(regs.bx, regs.cx as isize, regs.dx),
-        SYS_OPEN => fs::open(regs.bx as *const u8, regs.cx),
+        SYS_OPEN => fs::open(regs.bx as *const u8, regs.cx, regs.dx),
         SYS_CLOSE => fs::close(regs.bx),
         SYS_CLONE => process::clone(regs),
-        SYS_MKDIR => fs::mkdir(regs.bx as *const u8, regs.cx),
+        SYS_MKDIR => fs::mkdir(regs.bx as *const u8, regs.cx, regs.dx),
         SYS_NANOSLEEP => time::nanosleep(regs.bx as *const TimeSpec, regs.cx as *mut TimeSpec),
         SYS_FPATH => fs::fpath(regs.bx, regs.cx as *mut u8, regs.dx),
         SYS_FSTAT => fs::fstat(regs.bx, regs.cx as *mut Stat),
@@ -103,12 +103,12 @@ pub fn handle(regs: &mut Regs) {
         SYS_GETPID => process::getpid(),
         // TODO: link
         SYS_PIPE2 => fs::pipe2(regs.bx as *mut usize, regs.cx),
-        SYS_RMDIR => fs::rmdir(regs.bx as *const u8),
-        SYS_STAT => fs::stat(regs.bx as *const u8, regs.cx as *mut Stat),
-        SYS_UNLINK => fs::unlink(regs.bx as *const u8),
+        SYS_RMDIR => fs::rmdir(regs.bx as *const u8, regs.cx),
+        SYS_STAT => fs::stat(regs.bx as *const u8, regs.cx, regs.dx as *mut Stat),
+        SYS_UNLINK => fs::unlink(regs.bx as *const u8, regs.cx),
         SYS_WAITPID => process::waitpid(regs.bx as isize, regs.cx as *mut usize, regs.dx),
         SYS_BRK => memory::brk(regs.bx),
-        SYS_CHDIR => fs::chdir(regs.bx as *const u8),
+        SYS_CHDIR => fs::chdir(regs.bx as *const u8, regs.cx),
         SYS_SUPERVISE => process::supervise(regs.bx),
         _ => Err(Error::new(ENOSYS)),
     };

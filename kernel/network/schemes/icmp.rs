@@ -8,7 +8,9 @@ use arch::context::context_switch;
 
 use network::common::*;
 
-use fs::{KScheme, Url};
+use fs::KScheme;
+
+use system::syscall::O_RDWR;
 
 #[derive(Copy, Clone)]
 #[repr(packed)]
@@ -60,7 +62,7 @@ impl KScheme for IcmpScheme {
 
 impl IcmpScheme {
     pub fn reply_loop() {
-        while let Ok(mut ip) = Url::from_str("ip:/1").unwrap().open() {
+        while let Ok(mut ip) = ::env().open("ip:/1", O_RDWR) {
             loop {
                 let mut bytes = [0; 65536];
                 if let Ok(count) = ip.read(&mut bytes) {

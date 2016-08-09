@@ -6,11 +6,12 @@ use common::random::rand;
 
 use core::{cmp, mem, ptr, slice, str};
 
-use fs::{KScheme, Resource, Url};
+use fs::{KScheme, Resource};
 
 use network::common::{n16, Checksum, Ipv4Addr, IP_ADDR, FromBytes, ToBytes};
 
 use system::error::{Error, Result, ENOENT};
+use system::syscall::O_RDWR;
 
 #[derive(Copy, Clone)]
 #[repr(packed)]
@@ -168,8 +169,8 @@ impl KScheme for UdpScheme {
         "udp"
     }
 
-    fn open(&mut self, url: Url, _: usize) -> Result<Box<Resource>> {
-        let mut parts = url.reference().split('/');
+    fn open(&mut self, url: &str, _: usize) -> Result<Box<Resource>> {
+        let mut parts = url.splitn(1, ":").nth(1).unwrap_or("").split('/');
         let remote = parts.next().unwrap_or("");
         let path = parts.next().unwrap_or("");
 
@@ -177,7 +178,7 @@ impl KScheme for UdpScheme {
         if remote.is_empty() {
             let host_port = path.parse::<u16>().unwrap_or(0);
             if host_port > 0 {
-                while let Ok(mut ip) = Url::from_str("ip:/11").unwrap().open() {
+                while let Ok(mut ip) = ::env().open("ip:/11", O_RDWR) {
                     let mut bytes = [0; 65536];
                     if let Ok(count) = ip.read(&mut bytes) {
                         if let Some(datagram) = Udp::from_bytes(&bytes[..count]) {
@@ -206,7 +207,7 @@ impl KScheme for UdpScheme {
             let peer_port = remote_parts.next().unwrap_or("").parse::<u16>().unwrap_or(0);
             if peer_port > 0 {
                 let host_port = path.parse::<u16>().unwrap_or((rand() % 32768 + 32768) as u16);
-                if let Ok(ip) = Url::from_str(&format!("ip:{}/11", peer_addr)).unwrap().open() {
+                if let Ok(ip) = ::env().open(&format!("ip:{}/11", peer_addr), O_RDWR) {
                     return Ok(Box::new(UdpResource {
                         ip: ip,
                         data: Vec::new(),

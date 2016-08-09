@@ -1,4 +1,4 @@
-use fs::{KScheme, Resource, Url};
+use fs::{KScheme, Resource};
 use alloc::boxed::Box;
 use system::error::Result;
 
@@ -12,7 +12,7 @@ impl KScheme for SyslogScheme {
     }
 
     /// Returns a resource. The `url` and `flags` arguments are currently unused.
-    fn open(&mut self, _: Url, _: usize) -> Result<Box<Resource>> {
+    fn open(&mut self, _: &str, _: usize) -> Result<Box<Resource>> {
         Ok(Box::new(SyslogResource {
             pos: 0
         }))

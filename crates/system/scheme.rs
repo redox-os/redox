@@ -1,9 +1,8 @@
 use core::ops::{Deref, DerefMut};
-use core::{mem, slice};
+use core::{mem, slice, str};
 
 use super::error::*;
 use super::syscall::*;
-use super::c_string_to_str;
 
 #[derive(Copy, Clone, Debug, Default)]
 #[repr(packed)]
@@ -35,11 +34,11 @@ impl DerefMut for Packet {
 pub trait Scheme {
     fn handle(&mut self, packet: &mut Packet) {
         packet.a = Error::mux(match packet.a {
-            SYS_OPEN => self.open(c_string_to_str(packet.b as *const u8), packet.c, packet.d),
-            SYS_MKDIR => self.mkdir(c_string_to_str(packet.b as *const u8), packet.c),
-            SYS_RMDIR => self.rmdir(c_string_to_str(packet.b as *const u8)),
-            SYS_STAT => self.stat(c_string_to_str(packet.b as *const u8), unsafe { &mut *(packet.c as *mut Stat) }),
-            SYS_UNLINK => self.unlink(c_string_to_str(packet.b as *const u8)),
+            SYS_OPEN => self.open(unsafe { str::from_utf8_unchecked(slice::from_raw_parts(packet.b as *const u8, packet.c)) }, packet.d),
+            SYS_MKDIR => self.mkdir(unsafe { str::from_utf8_unchecked(slice::from_raw_parts(packet.b as *const u8, packet.c)) }, packet.d),
+            SYS_RMDIR => self.rmdir(unsafe { str::from_utf8_unchecked(slice::from_raw_parts(packet.b as *const u8, packet.c)) }),
+            SYS_STAT => self.stat(unsafe { str::from_utf8_unchecked(slice::from_raw_parts(packet.b as *const u8, packet.c)) }, unsafe { &mut *(packet.d as *mut Stat) }),
+            SYS_UNLINK => self.unlink(unsafe { str::from_utf8_unchecked(slice::from_raw_parts(packet.b as *const u8, packet.c)) }),
 
             SYS_DUP => self.dup(packet.b),
             SYS_READ => self.read(packet.b, unsafe { slice::from_raw_parts_mut(packet.c as *mut u8, packet.d) }),
@@ -58,7 +57,7 @@ pub trait Scheme {
     /* Scheme operations */
 
     #[allow(unused_variables)]
-    fn open(&mut self, path: &str, flags: usize, mode: usize) -> Result<usize> {
+    fn open(&mut self, path: &str, flags: usize) -> Result<usize> {
         Err(Error::new(ENOENT))
     }
 

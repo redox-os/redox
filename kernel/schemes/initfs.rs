@@ -1,8 +1,9 @@
 use alloc::boxed::Box;
 
 use collections::{BTreeMap, String};
+use collections::string::ToString;
 
-use fs::{KScheme, Resource, Url, VecResource};
+use fs::{KScheme, Resource, VecResource};
 
 use system::error::{Error, Result, ENOENT};
 
@@ -27,8 +28,8 @@ impl KScheme for InitFsScheme {
         "initfs"
     }
 
-    fn open(&mut self, url: Url, _: usize) -> Result<Box<Resource>> {
-        let reference = url.reference().trim_matches('/');
+    fn open(&mut self, url: &str, _: usize) -> Result<Box<Resource>> {
+        let reference = url.splitn(1, ":").nth(1).unwrap_or("").trim_matches('/');
         if reference.is_empty() {
             let mut list = String::new();
 

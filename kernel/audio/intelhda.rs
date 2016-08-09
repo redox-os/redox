@@ -10,7 +10,7 @@ use common::time;
 
 use core::cmp;
 
-use fs::{KScheme, Resource, Url};
+use fs::{KScheme, Resource};
 
 use syscall;
 use syscall::TimeSpec;
@@ -164,7 +164,7 @@ impl KScheme for IntelHda {
         "hda"
     }
 
-    fn open(&mut self, _: Url, _: usize) -> syscall::Result<Box<Resource>> {
+    fn open(&mut self, _: &str, _: usize) -> syscall::Result<Box<Resource>> {
         Ok(box IntelHdaResource { base: self.base })
     }
 

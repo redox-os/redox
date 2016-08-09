@@ -1,5 +1,5 @@
 use alloc::boxed::Box;
-use fs::{KScheme, Resource, SliceResource, SliceMutResource, Url};
+use fs::{KScheme, Resource, SliceResource, SliceMutResource};
 use network::common::{DNS_ADDR, IP_ADDR, IP_ROUTER_ADDR, IP_SUBNET, MAC_ADDR};
 use system::error::{Error, ENOENT, Result};
 
@@ -11,8 +11,8 @@ impl KScheme for NetConfigScheme {
         "netcfg"
     }
 
-    fn open(&mut self, url: Url, _: usize) -> Result<Box<Resource>> {
-        match url.reference() {
+    fn open(&mut self, url: &str, _: usize) -> Result<Box<Resource>> {
+        match url.splitn(1, ":").nth(1).unwrap_or("") {
             "dns" => Ok(Box::new(SliceMutResource::new("netcfg:dns", unsafe { &mut DNS_ADDR.bytes }))),
             "ip" => Ok(Box::new(SliceMutResource::new("netcfg:ip", unsafe { &mut IP_ADDR.bytes }))),
             "ip_router" => Ok(Box::new(SliceMutResource::new("netcfg:ip_router", unsafe { &mut IP_ROUTER_ADDR.bytes }))),

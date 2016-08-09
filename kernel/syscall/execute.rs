@@ -10,7 +10,7 @@ use arch::memory;
 use arch::regs::Regs;
 
 use collections::borrow::ToOwned;
-use collections::string::String;
+use collections::string::{String, ToString};
 use collections::vec::Vec;
 
 use common::slice::GetSlice;
@@ -19,9 +19,8 @@ use core::cell::UnsafeCell;
 use core::ops::DerefMut;
 use core::{mem, ptr, slice, str};
 
-use fs::Url;
-
 use system::error::{Error, Result, ENOEXEC, ENOMEM};
+use system::syscall::O_RDONLY;
 
 pub fn execute_thread(context_ptr: *mut Context, entry: usize, mut args: Vec<String>) -> ! {
     Context::spawn("kexec".into(),
@@ -103,9 +102,8 @@ pub fn execute(mut args: Vec<String>) -> Result<usize> {
     let mut vec: Vec<u8> = Vec::new();
 
     let path = current.canonicalize(args.get(0).map_or("", |p| &p));
-    let url = try!(Url::from_str(&path));
     {
-        let mut resource = try!(url.open());
+        let mut resource = try!(::env().open(&path, O_RDONLY));
 
         // Hack to allow file scheme to find memory in context's memory space
         unsafe {
@@ -153,7 +151,7 @@ pub fn execute(mut args: Vec<String>) -> Result<usize> {
 
     if vec.starts_with(b"#!") {
         if let Some(mut arg) = args.get_mut(0) {
-            *arg = url.to_string();
+            *arg = path.to_string();
         }
 
         let line = unsafe { str::from_utf8_unchecked(&vec[2..]) }.lines().next().unwrap_or("");
@@ -177,7 +175,7 @@ pub fn execute(mut args: Vec<String>) -> Result<usize> {
                 if entry > 0 && ! segments.is_empty() {
                     unsafe { current.unmap() };
 
-                    current.name = url.to_string().into();
+                    current.name = path.to_string().into();
                     current.cwd = Arc::new(UnsafeCell::new(unsafe { (*current.cwd.get()).clone() }));
 
                     current.image = Arc::new(UnsafeCell::new(ContextZone::new(CONTEXT_IMAGE_ADDR, CONTEXT_IMAGE_SIZE)));
@@ -235,7 +233,7 @@ pub fn execute(mut args: Vec<String>) -> Result<usize> {
                 }
             },
             Err(msg) => {
-                debugln!("execute: failed to exec '{:?}': {}", url, msg);
+                debugln!("execute: failed to exec '{:?}': {}", path, msg);
                 Err(Error::new(ENOEXEC))
             }
         }

@@ -452,13 +452,13 @@ unsafe fn init(tss_data: usize) {
             Context::spawn("kinit".into(),
                            box move || {
                 {
-                    let wd_c = "initfs:/\0";
-                    syscall::fs::chdir(wd_c.as_ptr()).unwrap();
+                    let wd = "initfs:/";
+                    syscall::fs::chdir(wd.as_ptr(), wd.len()).unwrap();
 
-                    let stdio_c = "debug:\0";
-                    syscall::fs::open(stdio_c.as_ptr(), 0).unwrap();
-                    syscall::fs::open(stdio_c.as_ptr(), 0).unwrap();
-                    syscall::fs::open(stdio_c.as_ptr(), 0).unwrap();
+                    let stdio = "debug:";
+                    syscall::fs::open(stdio.as_ptr(), stdio.len(), 0).unwrap();
+                    syscall::fs::open(stdio.as_ptr(), stdio.len(), 0).unwrap();
+                    syscall::fs::open(stdio.as_ptr(), stdio.len(), 0).unwrap();
 
                     let mut contexts = &mut *::env().contexts.get();
                     let current = contexts.current_mut().unwrap();

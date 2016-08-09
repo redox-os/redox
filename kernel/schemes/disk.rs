@@ -7,7 +7,7 @@ use collections::{String, Vec};
 use core::cell::UnsafeCell;
 use core::cmp;
 use disk::Disk;
-use fs::{KScheme, Resource, ResourceSeek, Url, VecResource};
+use fs::{KScheme, Resource, ResourceSeek, VecResource};
 
 use syscall::{MODE_DIR, MODE_FILE, Stat};
 
@@ -102,8 +102,8 @@ impl KScheme for DiskScheme {
         }
     }
 
-    fn open(&mut self, url: Url, _flags: usize) -> Result<Box<Resource>> {
-        let path = url.reference().trim_matches('/');
+    fn open(&mut self, url: &str, _flags: usize) -> Result<Box<Resource>> {
+        let path = url.splitn(1, ":").nth(1).unwrap_or("");
 
         if path.is_empty() {
             let mut list = String::new();
@@ -130,8 +130,8 @@ impl KScheme for DiskScheme {
         Err(Error::new(ENOENT))
     }
 
-    fn stat(&mut self, url: Url, stat: &mut Stat) -> Result<()> {
-        let path = url.reference().trim_matches('/');
+    fn stat(&mut self, url: &str, stat: &mut Stat) -> Result<()> {
+        let path = url.splitn(1, ":").nth(1).unwrap_or("");
 
         if path.is_empty() {
             let mut list = String::new();

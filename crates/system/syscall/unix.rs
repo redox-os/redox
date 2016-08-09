@@ -89,8 +89,8 @@ pub unsafe fn sys_brk(addr: usize) -> Result<usize> {
     syscall1(SYS_BRK, addr)
 }
 
-pub unsafe fn sys_chdir(path: *const u8) -> Result<usize> {
-    syscall1(SYS_CHDIR, path as usize)
+pub fn sys_chdir(path: &str) -> Result<usize> {
+    unsafe { syscall2(SYS_CHDIR, path.as_ptr() as usize, path.len()) }
 }
 
 pub unsafe fn sys_clone(flags: usize) -> Result<usize> {
@@ -149,36 +149,36 @@ pub fn sys_lseek(fd: usize, offset: isize, whence: usize) -> Result<usize> {
     unsafe { syscall3(SYS_LSEEK, fd, offset as usize, whence) }
 }
 
-pub unsafe fn sys_mkdir(path: *const u8, mode: usize) -> Result<usize> {
-    syscall2(SYS_MKDIR, path as usize, mode)
+pub fn sys_mkdir(path: &str, mode: usize) -> Result<usize> {
+    unsafe { syscall3(SYS_MKDIR, path.as_ptr() as usize, path.len(), mode) }
 }
 
 pub fn sys_nanosleep(req: &TimeSpec, rem: &mut TimeSpec) -> Result<usize> {
     unsafe { syscall2(SYS_NANOSLEEP, req as *const TimeSpec as usize, rem as *mut TimeSpec as usize) }
 }
 
-pub unsafe fn sys_open(path: *const u8, flags: usize, mode: usize) -> Result<usize> {
-    syscall3(SYS_OPEN, path as usize, flags, mode)
+pub fn sys_open(path: &str, flags: usize) -> Result<usize> {
+    unsafe { syscall3(SYS_OPEN, path.as_ptr() as usize, path.len(), flags) }
 }
 
-pub unsafe fn sys_pipe2(fds: *mut usize, flags: usize) -> Result<usize> {
-    syscall2(SYS_PIPE2, fds as usize, flags)
+pub fn sys_pipe2(fds: &mut [usize; 2], flags: usize) -> Result<usize> {
+    unsafe { syscall2(SYS_PIPE2, fds.as_ptr() as usize, flags) }
 }
 
 pub fn sys_read(fd: usize, buf: &mut [u8]) -> Result<usize> {
     unsafe { syscall3(SYS_READ, fd, buf.as_mut_ptr() as usize, buf.len()) }
 }
 
-pub unsafe fn sys_rmdir(path: *const u8) -> Result<usize> {
-    syscall1(SYS_RMDIR, path as usize)
+pub fn sys_rmdir(path: &str) -> Result<usize> {
+    unsafe { syscall2(SYS_RMDIR, path.as_ptr() as usize, path.len()) }
 }
 
-pub unsafe fn sys_stat(path: *const u8, stat: &mut Stat) -> Result<usize> {
-    syscall2(SYS_STAT, path as usize, stat as *mut Stat as usize)
+pub fn sys_stat(path: &str, stat: &mut Stat) -> Result<usize> {
+    unsafe { syscall3(SYS_STAT, path.as_ptr() as usize, path.len(), stat as *mut Stat as usize) }
 }
 
-pub unsafe fn sys_unlink(path: *const u8) -> Result<usize> {
-    syscall1(SYS_UNLINK, path as usize)
+pub fn sys_unlink(path: &str) -> Result<usize> {
+    unsafe { syscall2(SYS_UNLINK, path.as_ptr() as usize, path.len()) }
 }
 
 pub fn sys_waitpid(pid: usize, status: &mut usize, options: usize) -> Result<usize> {

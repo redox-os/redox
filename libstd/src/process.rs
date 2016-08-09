@@ -395,7 +395,7 @@ pub struct Stdio {
 impl Stdio {
     pub fn piped() -> Stdio {
         let mut fds = [0; 2];
-        if unsafe { sys_pipe2(fds.as_mut_ptr(), 0).is_ok() } {
+        if sys_pipe2(&mut fds, 0).is_ok() {
             Stdio {
                 inner: StdioType::Piped(fds[0], fds[1])
             }

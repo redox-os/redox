@@ -2,7 +2,7 @@ use alloc::boxed::Box;
 
 use collections::string::ToString;
 
-use fs::{KScheme, Resource, Url, VecResource};
+use fs::{KScheme, Resource, VecResource};
 
 use system::error::Result;
 
@@ -32,7 +32,7 @@ impl KScheme for InterruptScheme {
         "interrupt"
     }
 
-    fn open(&mut self, _: Url, _: usize) -> Result<Box<Resource>> {
+    fn open(&mut self, _: &str, _: usize) -> Result<Box<Resource>> {
         let mut string = format!("{:<6}{:<16}{}\n", "INT", "COUNT", "DESCRIPTION");
 
         {

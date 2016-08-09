@@ -2,7 +2,7 @@ use alloc::boxed::Box;
 
 use collections::string::{String, ToString};
 
-use fs::{KScheme, Resource, Url, VecResource};
+use fs::{KScheme, Resource, VecResource};
 
 use system::error::Result;
 
@@ -40,7 +40,7 @@ impl KScheme for TestScheme {
         "test"
     }
 
-    fn open(&mut self, _: Url, _: usize) -> Result<Box<Resource>> {
+    fn open(&mut self, _: &str, _: usize) -> Result<Box<Resource>> {
         let mut string = String::new();
 
         macro_rules! reg_test {

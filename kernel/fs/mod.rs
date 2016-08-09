@@ -2,7 +2,6 @@ pub use self::kscheme::KScheme;
 pub use self::resource::{Resource, ResourceSeek};
 pub use self::scheme::Scheme;
 pub use self::slice_resource::{SliceResource, SliceMutResource};
-pub use self::url::{Url, OwnedUrl};
 pub use self::vec_resource::VecResource;
 pub use self::supervisor_resource::SupervisorResource;
 
@@ -12,8 +11,6 @@ pub mod kscheme;
 pub mod resource;
 /// Userspace scheme
 pub mod scheme;
-/// URL
-pub mod url;
 /// Static slice resource
 pub mod slice_resource;
 /// Vec resource
