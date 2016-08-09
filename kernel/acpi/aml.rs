@@ -29,27 +29,21 @@ const DEVICE_OP: u8 = 0x82;
 const PROCESSOR_OP: u8 = 0x83;
 
 pub fn parse_string(bytes: &[u8], i: &mut usize) -> String {
-    let mut string = String::new();
-
-    while *i < bytes.len() {
-        let c = bytes[*i];
+    bytes.iter().skip(*i).scan((), |_, &c| {
         if (c >= 0x30 && c <= 0x39) || (c >= 0x41 && c <= 0x5A) || c == 0x5F ||
-           c == ROOT_PREFIX || c == PARENT_PREFIX {
-            string.push(c as char);
+            c == ROOT_PREFIX || c == PARENT_PREFIX {
+            *i += 1;
+            Some(c as char)
         } else {
-            break;
+            None
         }
-
-        *i += 1;
-    }
-
-    string
+    }).collect()
 }
 
 // This one function required three different unstable features and four trait requirements. Why is generic math so hard?
 pub fn parse_num<T: BitOrAssign + From<u8> + ShlAssign<usize>>(bytes: &[u8],
-                                                                      i: &mut usize)
-                                                                      -> T {
+                                                               i: &mut usize)
+                                                               -> T {
     let mut num: T = T::from(0);
 
     let mut shift = 0;
