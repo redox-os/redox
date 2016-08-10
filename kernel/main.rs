@@ -50,17 +50,13 @@ use graphics::display;
 
 use network::schemes::{ArpScheme, EthernetScheme, IcmpScheme, IpScheme, NetConfigScheme, TcpScheme, UdpScheme};
 
-use schemes::context::ContextScheme;
 use schemes::debug::DebugScheme;
 use schemes::disk::DiskScheme;
 use schemes::display::DisplayScheme;
 use schemes::env::EnvScheme;
 use schemes::initfs::InitFsScheme;
-use schemes::interrupt::InterruptScheme;
-use schemes::memory::MemoryScheme;
 use schemes::pty::PtyScheme;
-use schemes::syslog::SyslogScheme;
-use schemes::test::TestScheme;
+use schemes::sys::SysScheme;
 
 use syscall::process::exit;
 use syscall::execute::execute;
@@ -421,20 +417,21 @@ unsafe fn init(gdt_ptr: *mut GdtDescriptor, idt_ptr: *mut IdtDescriptor, tss_ptr
             pci::pci_init(env);
 
             (&mut *env.schemes.get()).push(DebugScheme::new());
-            (&mut *env.schemes.get()).push(InitFsScheme::new());
-            (&mut *env.schemes.get()).push(box ContextScheme);
-            (&mut *env.schemes.get()).push(box DisplayScheme);
-            (&mut *env.schemes.get()).push(box EnvScheme);
-            (&mut *env.schemes.get()).push(box InterruptScheme);
-            (&mut *env.schemes.get()).push(box MemoryScheme);
-            (&mut *env.schemes.get()).push(PtyScheme::new());
-            (&mut *env.schemes.get()).push(box SyslogScheme);
-            (&mut *env.schemes.get()).push(box TestScheme);
 
             //TODO: Do not do this! Find a better way
             let mut disks = Vec::new();
             disks.append(&mut *env.disks.get());
             (&mut *env.schemes.get()).push(DiskScheme::new(disks));
+
+            (&mut *env.schemes.get()).push(box DisplayScheme);
+
+            (&mut *env.schemes.get()).push(InitFsScheme::new());
+
+            (&mut *env.schemes.get()).push(box EnvScheme);
+
+            (&mut *env.schemes.get()).push(PtyScheme::new());
+
+            (&mut *env.schemes.get()).push(SysScheme::new());
 
             /*
             let mut nics = Vec::new();
