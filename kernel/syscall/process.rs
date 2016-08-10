@@ -1,7 +1,5 @@
 //! System calls related to process managment.
-use alloc::arc::Arc;
-
-use arch::context::{context_clone, context_switch, ContextFile};
+use arch::context::{context_clone, context_switch, Context, ContextFile};
 use arch::regs::Regs;
 
 use collections::{BTreeMap, Vec};
@@ -10,11 +8,9 @@ use collections::string::ToString;
 use core::{intrinsics, mem};
 use core::ops::DerefMut;
 
-use sync::WaitCondition;
-
 use system::{c_array_to_slice, c_string_to_str};
 use system::error::{Error, Result, EAGAIN, EACCES, ECHILD, EINVAL};
-use system::syscall::{FUTEX_WAKE, FUTEX_WAIT};
+use system::syscall::{FUTEX_WAKE, FUTEX_WAIT, FUTEX_REQUEUE};
 
 use super::execute::execute;
 
@@ -71,31 +67,74 @@ pub fn exit(status: usize) -> ! {
     }
 }
 
-pub fn futex(addr: *mut i32, op: usize, val: i32) -> Result<usize> {
-    let contexts = unsafe { & *::env().contexts.get() };
-    let current = contexts.current()?;
+pub fn futex(addr: *mut i32, op: usize, val: i32, val2: usize, addr2: *mut i32) -> Result<usize> {
+    let contexts = unsafe { &mut *::env().contexts.get() };
+    let mut current = contexts.current_mut()?;
+    let current_ptr = current.deref_mut() as *mut Context;
     let addr_safe = current.get_ref_mut(addr)?;
+
     match op {
         FUTEX_WAIT => if unsafe { intrinsics::atomic_load(addr_safe) == val } {
-            let futex = {
+            {
                 let futexes = unsafe { &mut *::env().futexes.get() };
-                let futex = futexes.entry(addr_safe).or_insert(Arc::new(WaitCondition::new()));
-                futex.clone()
-            };
-            futex.wait("futex wait");
+                futexes.push_back((addr_safe, current_ptr));
+            }
+
+            unsafe { (*current_ptr).block("futex wait") };
+
             Ok(0)
         } else {
             Err(Error::new(EAGAIN))
         },
         FUTEX_WAKE => {
-            if let Some(futex) = {
+            let mut woken = 0;
+
+            {
                 let futexes = unsafe { &mut *::env().futexes.get() };
-                futexes.remove(&(addr_safe as *mut i32))
-            } {
-                Ok(futex.notify("futex notify"))
-            } else {
-                Ok(0)
+                let mut i = 0;
+                while i < futexes.len() && (woken as i32) < val {
+                    if futexes[i].0 == addr_safe {
+                        if let Some(futex) = futexes.swap_remove_back(i) {
+                            unsafe { (*futex.1).unblock("futex wake") };
+                            woken += 1;
+                        }
+                    } else {
+                        i += 1;
+                    }
+                }
             }
+
+            Ok(woken)
+        },
+        FUTEX_REQUEUE => {
+            let addr2_safe = current.get_ref_mut(addr2)?;
+
+            let mut woken = 0;
+            let mut requeued = 0;
+
+            {
+                let futexes = unsafe { &mut *::env().futexes.get() };
+                let mut i = 0;
+                while i < futexes.len() && (woken as i32) < val {
+                    if futexes[i].0 == addr_safe {
+                        if let Some(futex) = futexes.swap_remove_back(i) {
+                            unsafe { (*futex.1).unblock("futex wake") };
+                            woken += 1;
+                        }
+                    } else {
+                        i += 1;
+                    }
+                }
+                while i < futexes.len() && requeued < val2 {
+                    if futexes[i].0 == addr_safe {
+                        futexes[i].0 = addr2_safe;
+                        requeued += 1;
+                    }
+                    i += 1;
+                }
+            }
+
+            Ok(woken)
         },
         _ => Err(Error::new(EINVAL))
     }

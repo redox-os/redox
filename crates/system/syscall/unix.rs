@@ -1,4 +1,4 @@
-use syscall::arch::{syscall0, syscall1, syscall2, syscall3};
+use syscall::arch::{syscall0, syscall1, syscall2, syscall3, syscall5};
 use error::Result;
 
 pub const SYS_BRK: usize = 45;
@@ -34,6 +34,7 @@ pub const SYS_FTRUNCATE: usize = 93;
 pub const SYS_FUTEX: usize = 240;
     pub const FUTEX_WAIT: usize = 0;
     pub const FUTEX_WAKE: usize = 1;
+    pub const FUTEX_REQUEUE: usize = 2;
 pub const SYS_GETPID: usize = 20;
 pub const SYS_IOPL: usize = 110;
 pub const SYS_LINK: usize = 9;
@@ -135,8 +136,8 @@ pub fn sys_ftruncate(fd: usize, len: usize) -> Result<usize> {
     unsafe { syscall2(SYS_FTRUNCATE, fd, len) }
 }
 
-pub fn sys_futex(addr: &mut i32, op: usize, val: i32) -> Result<usize> {
-    unsafe { syscall3(SYS_FUTEX, addr as *mut i32 as usize, op, (val as isize) as usize) }
+pub unsafe fn sys_futex(addr: *mut i32, op: usize, val: i32, val2: usize, addr2: *mut i32) -> Result<usize> {
+    syscall5(SYS_FUTEX, addr as usize, op, (val as isize) as usize, val2, addr2 as usize)
 }
 
 pub fn sys_getpid() -> Result<usize> {

@@ -1,18 +1,17 @@
-use alloc::arc::Arc;
 use alloc::boxed::Box;
 
-use collections::{BTreeMap, String, Vec};
+use collections::{String, Vec, VecDeque};
 use collections::string::ToString;
 
 use core::cell::UnsafeCell;
 
-use arch::context::ContextManager;
+use arch::context::{Context, ContextManager};
 use common::event::Event;
 use common::time::Duration;
 use disk::Disk;
 use network::Nic;
 use fs::{KScheme, Resource, Scheme, VecResource};
-use sync::{WaitCondition, WaitQueue};
+use sync::WaitQueue;
 
 use system::error::{Error, Result, ENOENT, EEXIST};
 use system::syscall::{MODE_DIR, O_CREAT};
@@ -45,7 +44,7 @@ pub struct Environment {
     /// Pending events
     pub events: WaitQueue<Event>,
     /// Futexes
-    pub futexes: UnsafeCell<BTreeMap<*mut i32, Arc<WaitCondition>>>,
+    pub futexes: UnsafeCell<VecDeque<(*mut i32, *mut Context)>>,
     /// Kernel logs
     pub log: UnsafeCell<Log>,
     /// Schemes
@@ -67,7 +66,7 @@ impl Environment {
             disks: UnsafeCell::new(Vec::new()),
             nics: UnsafeCell::new(Vec::new()),
             events: WaitQueue::new(),
-            futexes: UnsafeCell::new(BTreeMap::new()),
+            futexes: UnsafeCell::new(VecDeque::new()),
             log: UnsafeCell::new(Log::new()),
             schemes: UnsafeCell::new(Vec::new()),
 

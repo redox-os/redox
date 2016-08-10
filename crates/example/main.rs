@@ -7,12 +7,30 @@ use std::io::{Read, Write};
 use std::mem::size_of;
 use std::thread;
 
+#[thread_local]
+static mut tss_bss: usize = 0;
+#[thread_local]
+static mut tss_data: usize = 1;
+
+fn main() {
+    thread::spawn(|| {
+        unsafe {
+            tss_bss += 1;
+            tss_data += 1;
+            println!("child {} {}", tss_bss, tss_data)
+        }
+    });
+    unsafe {
+        tss_bss += 1;
+        tss_data += 1;
+        println!("parent {} {}", tss_bss, tss_data)
+    }
+}
+
+/*
 use system::error::{Error, Result, ENOENT, EBADF, EINVAL};
 use system::scheme::{Packet, Scheme};
 use system::syscall::{Stat, SEEK_SET, SEEK_CUR, SEEK_END};
-
-#[thread_local]
-static mut test: usize = 0;
 
 extern crate system;
 
@@ -217,3 +235,4 @@ fn main() {
        }
    });
 }
+*/

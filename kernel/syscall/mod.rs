@@ -83,7 +83,7 @@ pub fn handle(regs: &mut Regs) {
         // once, to acheive the best performance.
 
         SYS_YIELD => process::sched_yield(),
-        SYS_FUTEX => process::futex(regs.bx as *mut i32, regs.cx, (regs.dx as isize) as i32),
+        SYS_FUTEX => process::futex(regs.bx as *mut i32, regs.cx, (regs.dx as isize) as i32, regs.si, regs.di as *mut i32),
         SYS_WRITE => fs::write(regs.bx, regs.cx as *mut u8, regs.dx),
         SYS_READ => fs::read(regs.bx, regs.cx as *mut u8, regs.dx),
         SYS_LSEEK => fs::lseek(regs.bx, regs.cx as isize, regs.dx),
