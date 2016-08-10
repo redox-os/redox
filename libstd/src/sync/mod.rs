@@ -5,6 +5,7 @@ pub use self::rwlock::{RwLock, RwLockReadGuard, RwLockWriteGuard};
 pub use self::once::Once;
 
 pub mod mpsc;
+mod futex;
 mod mutex;
 mod once;
 mod rwlock;

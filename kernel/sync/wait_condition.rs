@@ -19,7 +19,7 @@ impl WaitCondition {
         }
     }
 
-    pub fn notify(&self, reason: &str) {
+    pub fn notify(&self, reason: &str) -> usize {
         /*{
             debugln!("  WaitCondition::notify {:X} {}", self as *const _ as usize, reason);
             if let Ok(context) = unsafe { &mut *::env().contexts.get() }.current_mut() {
@@ -33,6 +33,7 @@ impl WaitCondition {
         for &context in contexts.iter() {
             unsafe { (*context).unblock(reason) }
         }
+        contexts.len()
     }
 
     pub fn wait(&self, reason: &str) {

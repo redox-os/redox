@@ -31,6 +31,9 @@ pub const SYS_FSTAT: usize = 28;
     pub const MODE_ALL: u16 = MODE_DIR | MODE_FILE;
 pub const SYS_FSYNC: usize = 118;
 pub const SYS_FTRUNCATE: usize = 93;
+pub const SYS_FUTEX: usize = 240;
+    pub const FUTEX_WAIT: usize = 0;
+    pub const FUTEX_WAKE: usize = 1;
 pub const SYS_GETPID: usize = 20;
 pub const SYS_IOPL: usize = 110;
 pub const SYS_LINK: usize = 9;
@@ -130,6 +133,10 @@ pub fn sys_fsync(fd: usize) -> Result<usize> {
 
 pub fn sys_ftruncate(fd: usize, len: usize) -> Result<usize> {
     unsafe { syscall2(SYS_FTRUNCATE, fd, len) }
+}
+
+pub fn sys_futex(addr: &mut i32, op: usize, val: i32) -> Result<usize> {
+    unsafe { syscall3(SYS_FUTEX, addr as *mut i32 as usize, op, (val as isize) as usize) }
 }
 
 pub fn sys_getpid() -> Result<usize> {

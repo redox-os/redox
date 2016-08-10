@@ -28,6 +28,7 @@ pub fn name(number: usize) -> &'static str {
         SYS_FSTAT => "fstat",
         SYS_FSYNC => "fsync",
         SYS_FTRUNCATE => "ftruncate",
+        SYS_FUTEX => "futex",
         SYS_GETPID => "getpid",
         SYS_IOPL => "iopl",
         // TODO: link
@@ -82,6 +83,7 @@ pub fn handle(regs: &mut Regs) {
         // once, to acheive the best performance.
 
         SYS_YIELD => process::sched_yield(),
+        SYS_FUTEX => process::futex(regs.bx as *mut i32, regs.cx, (regs.dx as isize) as i32),
         SYS_WRITE => fs::write(regs.bx, regs.cx as *mut u8, regs.dx),
         SYS_READ => fs::read(regs.bx, regs.cx as *mut u8, regs.dx),
         SYS_LSEEK => fs::lseek(regs.bx, regs.cx as isize, regs.dx),

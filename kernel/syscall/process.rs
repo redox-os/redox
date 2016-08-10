@@ -1,4 +1,5 @@
 //! System calls related to process managment.
+use alloc::arc::Arc;
 
 use arch::context::{context_clone, context_switch, ContextFile};
 use arch::regs::Regs;
@@ -6,12 +7,14 @@ use arch::regs::Regs;
 use collections::{BTreeMap, Vec};
 use collections::string::ToString;
 
-use core::mem;
+use core::{intrinsics, mem};
 use core::ops::DerefMut;
 
-use system::{c_array_to_slice, c_string_to_str};
+use sync::WaitCondition;
 
-use system::error::{Error, Result, ECHILD, EINVAL, EACCES};
+use system::{c_array_to_slice, c_string_to_str};
+use system::error::{Error, Result, EAGAIN, EACCES, ECHILD, EINVAL};
+use system::syscall::{FUTEX_WAKE, FUTEX_WAIT};
 
 use super::execute::execute;
 
@@ -65,6 +68,36 @@ pub fn exit(status: usize) -> ! {
 
     loop {
         unsafe { context_switch() };
+    }
+}
+
+pub fn futex(addr: *mut i32, op: usize, val: i32) -> Result<usize> {
+    let contexts = unsafe { & *::env().contexts.get() };
+    let current = contexts.current()?;
+    let addr_safe = current.get_ref_mut(addr)?;
+    match op {
+        FUTEX_WAIT => if unsafe { intrinsics::atomic_load(addr_safe) == val } {
+            let futex = {
+                let futexes = unsafe { &mut *::env().futexes.get() };
+                let futex = futexes.entry(addr_safe).or_insert(Arc::new(WaitCondition::new()));
+                futex.clone()
+            };
+            futex.wait("futex wait");
+            Ok(0)
+        } else {
+            Err(Error::new(EAGAIN))
+        },
+        FUTEX_WAKE => {
+            if let Some(futex) = {
+                let futexes = unsafe { &mut *::env().futexes.get() };
+                futexes.remove(&(addr_safe as *mut i32))
+            } {
+                Ok(futex.notify("futex notify"))
+            } else {
+                Ok(0)
+            }
+        },
+        _ => Err(Error::new(EINVAL))
     }
 }
 
