@@ -4,6 +4,7 @@ pub struct GdtDescriptor {
     pub ptr: u32
 }
 
+#[derive(Debug)]
 #[repr(packed)]
 pub struct GdtEntry {
     pub limitl: u16,

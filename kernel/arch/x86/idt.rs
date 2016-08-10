@@ -6,10 +6,9 @@ pub struct IdtDescriptor {
 
 #[repr(packed)]
 pub struct IdtEntry {
-    pub limitl: u16,
-    pub basel: u16,
-    pub basem: u8,
+    pub offsetl: u16,
+    pub selector: u16,
+    pub zero: u8,
     pub attribute: u8,
-    pub flags_limith: u8,
-    pub baseh: u8
+    pub offseth: u16
 }
