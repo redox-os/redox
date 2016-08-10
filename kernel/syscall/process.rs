@@ -68,28 +68,35 @@ pub fn exit(status: usize) -> ! {
 }
 
 pub fn futex(addr: *mut i32, op: usize, val: i32, val2: usize, addr2: *mut i32) -> Result<usize> {
-    let contexts = unsafe { &mut *::env().contexts.get() };
-    let mut current = contexts.current_mut()?;
-    let current_ptr = current.deref_mut() as *mut Context;
-    let addr_safe = current.get_ref_mut(addr)?;
-
     match op {
-        FUTEX_WAIT => if unsafe { intrinsics::atomic_load(addr_safe) == val } {
+        FUTEX_WAIT => {
             {
+                let contexts = unsafe { &mut *::env().contexts.get() };
+                let mut current = contexts.current_mut()?;
+                let current_ptr = current.deref_mut() as *mut Context;
+                let addr_safe = current.get_ref_mut(addr)?;
+
+                if unsafe { intrinsics::atomic_load(addr_safe) != val } {
+                    return Err(Error::new(EAGAIN));
+                }
+
                 let futexes = unsafe { &mut *::env().futexes.get() };
                 futexes.push_back((addr_safe, current_ptr));
+                unsafe { (*current_ptr).block("futex wait") };
             }
 
-            unsafe { (*current_ptr).block("futex wait") };
+            unsafe { context_switch(); }
 
             Ok(0)
-        } else {
-            Err(Error::new(EAGAIN))
         },
         FUTEX_WAKE => {
             let mut woken = 0;
 
             {
+                let contexts = unsafe { & *::env().contexts.get() };
+                let current = contexts.current()?;
+                let addr_safe = current.get_ref_mut(addr)?;
+
                 let futexes = unsafe { &mut *::env().futexes.get() };
                 let mut i = 0;
                 while i < futexes.len() && (woken as i32) < val {
@@ -107,12 +114,15 @@ pub fn futex(addr: *mut i32, op: usize, val: i32, val2: usize, addr2: *mut i32) 
             Ok(woken)
         },
         FUTEX_REQUEUE => {
-            let addr2_safe = current.get_ref_mut(addr2)?;
-
             let mut woken = 0;
             let mut requeued = 0;
 
             {
+                let contexts = unsafe { & *::env().contexts.get() };
+                let current = contexts.current()?;
+                let addr_safe = current.get_ref_mut(addr)?;
+                let addr2_safe = current.get_ref_mut(addr2)?;
+
                 let futexes = unsafe { &mut *::env().futexes.get() };
                 let mut i = 0;
                 while i < futexes.len() && (woken as i32) < val {
