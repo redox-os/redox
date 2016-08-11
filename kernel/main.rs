@@ -23,7 +23,9 @@ use acpi::Acpi;
 
 use alloc::boxed::Box;
 
-use arch::context::{context_switch, Context};
+use arch::context::{context_switch, Context, ContextFile};
+use arch::gdt::{GdtDescriptor, GdtEntry};
+use arch::idt::{IdtDescriptor, IdtEntry};
 use arch::memory;
 use arch::paging::Page;
 use arch::regs::Regs;
@@ -32,7 +34,7 @@ use arch::tss::Tss;
 use collections::{String, Vec};
 use collections::string::ToString;
 
-use core::{mem, usize};
+use core::{mem, slice, usize};
 
 use common::time::Duration;
 
@@ -48,17 +50,13 @@ use graphics::display;
 
 use network::schemes::{ArpScheme, EthernetScheme, IcmpScheme, IpScheme, NetConfigScheme, TcpScheme, UdpScheme};
 
-use schemes::context::ContextScheme;
 use schemes::debug::DebugScheme;
 use schemes::disk::DiskScheme;
 use schemes::display::DisplayScheme;
 use schemes::env::EnvScheme;
 use schemes::initfs::InitFsScheme;
-use schemes::interrupt::InterruptScheme;
-use schemes::memory::MemoryScheme;
 use schemes::pty::PtyScheme;
-use schemes::syslog::SyslogScheme;
-use schemes::test::TestScheme;
+use schemes::sys::SysScheme;
 
 use syscall::process::exit;
 use syscall::execute::execute;
@@ -166,12 +164,23 @@ pub mod syscall;
 /// This modules contains drivers and other tools for USB.
 pub mod usb;
 
-/// The TTS pointer.
+/// The GDT pointer.
+///
+/// This static contains a mutable pointer to the GDT (global descriptor table)
+pub static mut GDT_PTR: Option<&'static mut [GdtEntry]> = None;
+
+/// The IDT pointer.
+///
+/// This static contains a mutable pointer to the IDT (interrupt descriptor table)
+pub static mut IDT_PTR: Option<&'static mut [IdtEntry]> = None;
+
+/// The TSS pointer.
 ///
 /// This static contains a mutable pointer to the TSS (task state segment), which is a data
 /// structure used on x86-based architectures for holding information about a specific task. See
 /// `Tss` for more information.
 pub static mut TSS_PTR: Option<&'static mut Tss> = None;
+
 /// The environment pointer.
 ///
 /// The pointer to the kernel environment, holding the state of the kernel.
@@ -253,7 +262,7 @@ static BSS_TEST_NONZERO: usize = !0;
 /// on.
 ///
 /// Note that this will not start the event loop.
-unsafe fn init(tss_data: usize) {
+unsafe fn init(gdt_ptr: *mut GdtDescriptor, idt_ptr: *mut IdtDescriptor, tss_ptr: *mut Tss) {
 
     // Test
     assume!(true);
@@ -334,7 +343,9 @@ unsafe fn init(tss_data: usize) {
         }
     }
 
-    TSS_PTR = Some(&mut *(tss_data as *mut Tss));
+    GDT_PTR = Some(slice::from_raw_parts_mut((&*gdt_ptr).ptr as *mut GdtEntry, ((&*gdt_ptr).size as usize) + 1));
+    IDT_PTR = Some(slice::from_raw_parts_mut((&*idt_ptr).ptr as *mut IdtEntry, ((&*idt_ptr).size as usize) + 1));
+    TSS_PTR = Some(&mut *tss_ptr);
     ENV_PTR = Some(&mut *Box::into_raw(Environment::new()));
 
     match ENV_PTR {
@@ -406,20 +417,21 @@ unsafe fn init(tss_data: usize) {
             pci::pci_init(env);
 
             (&mut *env.schemes.get()).push(DebugScheme::new());
-            (&mut *env.schemes.get()).push(InitFsScheme::new());
-            (&mut *env.schemes.get()).push(box ContextScheme);
-            (&mut *env.schemes.get()).push(box DisplayScheme);
-            (&mut *env.schemes.get()).push(box EnvScheme);
-            (&mut *env.schemes.get()).push(box InterruptScheme);
-            (&mut *env.schemes.get()).push(box MemoryScheme);
-            (&mut *env.schemes.get()).push(PtyScheme::new());
-            (&mut *env.schemes.get()).push(box SyslogScheme);
-            (&mut *env.schemes.get()).push(box TestScheme);
 
             //TODO: Do not do this! Find a better way
             let mut disks = Vec::new();
             disks.append(&mut *env.disks.get());
             (&mut *env.schemes.get()).push(DiskScheme::new(disks));
+
+            (&mut *env.schemes.get()).push(box DisplayScheme);
+
+            (&mut *env.schemes.get()).push(InitFsScheme::new());
+
+            (&mut *env.schemes.get()).push(box EnvScheme);
+
+            (&mut *env.schemes.get()).push(PtyScheme::new());
+
+            (&mut *env.schemes.get()).push(SysScheme::new());
 
             /*
             let mut nics = Vec::new();
@@ -452,16 +464,23 @@ unsafe fn init(tss_data: usize) {
             Context::spawn("kinit".into(),
                            box move || {
                 {
-                    let wd_c = "initfs:/\0";
-                    syscall::fs::chdir(wd_c.as_ptr()).unwrap();
-
-                    let stdio_c = "debug:\0";
-                    syscall::fs::open(stdio_c.as_ptr(), 0).unwrap();
-                    syscall::fs::open(stdio_c.as_ptr(), 0).unwrap();
-                    syscall::fs::open(stdio_c.as_ptr(), 0).unwrap();
-
                     let mut contexts = &mut *::env().contexts.get();
                     let current = contexts.current_mut().unwrap();
+
+                    *current.cwd.get() = "initfs:/".to_string();
+
+                    (*current.files.get()).push(ContextFile {
+                        fd: 0,
+                        resource: ::env().open("debug:", 0).unwrap(),
+                    });
+                    (*current.files.get()).push(ContextFile {
+                        fd: 1,
+                        resource: ::env().open("debug:", 0).unwrap(),
+                    });
+                    (*current.files.get()).push(ContextFile {
+                        fd: 2,
+                        resource: ::env().open("debug:", 0).unwrap(),
+                    });
 
                     current.set_env_var("PATH", "file:/bin").unwrap();
                     current.set_env_var("COLUMNS", &term_columns).unwrap();
@@ -641,7 +660,7 @@ pub extern "cdecl" fn kernel(interrupt: usize, mut regs: &mut Regs) {
         0x80 => syscall::handle(regs),
         0xFF => {
             unsafe {
-                init(regs.ax);
+                init(regs.ax as *mut GdtDescriptor, regs.bx as *mut IdtDescriptor, regs.cx as *mut Tss);
                 idle_loop();
             }
         },

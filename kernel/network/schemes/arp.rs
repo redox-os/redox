@@ -8,7 +8,9 @@ use arch::context::context_switch;
 
 use network::common::*;
 
-use fs::{KScheme, Url};
+use fs::KScheme;
+
+use system::syscall::O_RDWR;
 
 #[derive(Copy, Clone)]
 #[repr(packed)]
@@ -65,7 +67,7 @@ impl KScheme for ArpScheme {
 
 impl ArpScheme {
     pub fn reply_loop() {
-        while let Ok(mut link) = Url::from_str("ethernet:/806").unwrap().open() {
+        while let Ok(mut link) = ::env().open("ethernet:/806", O_RDWR) {
             loop {
                 let mut bytes = [0; 65536];
                 if let Ok(count) = link.read(&mut bytes) {

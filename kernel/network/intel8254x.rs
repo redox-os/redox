@@ -14,7 +14,7 @@ use drivers::pci::config::PciConfig;
 use network::common::*;
 use network::scheme::*;
 
-use fs::{KScheme, Resource, Url};
+use fs::{KScheme, Resource};
 
 use system::error::Result;
 
@@ -117,7 +117,7 @@ impl KScheme for Intel8254x {
         "network"
     }
 
-    fn open(&mut self, _: Url, _: usize) -> Result<Box<Resource>> {
+    fn open(&mut self, _: &str, _: usize) -> Result<Box<Resource>> {
         Ok(NetworkResource::new(self))
     }
 

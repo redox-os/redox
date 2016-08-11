@@ -8,7 +8,7 @@ use sys_common::AsInner;
 use vec::Vec;
 
 use system::syscall::{sys_open, sys_dup, sys_close, sys_fpath, sys_fstat, sys_ftruncate, sys_read,
-              sys_write, sys_lseek, sys_fsync, sys_mkdir, sys_rmdir, sys_stat, sys_unlink};
+              sys_write, sys_lseek, sys_fsync, sys_mkdir, sys_rmdir, sys_unlink};
 use system::syscall::{O_RDWR, O_RDONLY, O_WRONLY, O_APPEND, O_CREAT, O_TRUNC, MODE_DIR, MODE_FILE, SEEK_SET, SEEK_CUR, SEEK_END, Stat};
 
 /// A Unix-style file
@@ -22,21 +22,13 @@ impl File {
     /// Open a new file using a path
     pub fn open<P: AsRef<Path>>(path: P) -> Result<File> {
         let path_str = path.as_ref().as_os_str().as_inner();
-        let mut path_c = path_str.to_owned();
-        path_c.push_str("\0");
-        unsafe {
-            sys_open(path_c.as_ptr(), O_RDONLY, 0).map(|fd| File::from_raw_fd(fd) )
-        }.map_err(|x| Error::from_sys(x))
+        sys_open(path_str, O_RDONLY).map(|fd| unsafe { File::from_raw_fd(fd) }).map_err(|x| Error::from_sys(x))
     }
 
     /// Create a new file using a path
     pub fn create<P: AsRef<Path>>(path: P) -> Result<File> {
         let path_str = path.as_ref().as_os_str().as_inner();
-        let mut path_c = path_str.to_owned();
-        path_c.push_str("\0");
-        unsafe {
-            sys_open(path_c.as_ptr(), O_CREAT | O_RDWR | O_TRUNC, 0).map(|fd| File::from_raw_fd(fd) )
-        }.map_err(|x| Error::from_sys(x))
+        sys_open(path_str, O_CREAT | O_RDWR | O_TRUNC).map(|fd| unsafe { File::from_raw_fd(fd) }).map_err(|x| Error::from_sys(x))
     }
 
     /// Duplicate the file
@@ -223,11 +215,7 @@ impl OpenOptions {
         }
 
         let path_str = path.as_ref().as_os_str().as_inner();
-        let mut path_c = path_str.to_owned();
-        path_c.push_str("\0");
-        unsafe {
-            sys_open(path_c.as_ptr(), flags, 0).map(|fd| File::from_raw_fd(fd))
-        }.map_err(|x| Error::from_sys(x))
+        sys_open(path_str, flags).map(|fd| unsafe { File::from_raw_fd(fd) }).map_err(|x| Error::from_sys(x))
     }
 }
 
@@ -331,16 +319,7 @@ pub fn canonicalize<P: AsRef<Path>>(path: P) -> Result<PathBuf> {
 
 /// Get information about a file
 pub fn metadata<P: AsRef<Path>>(path: P) -> Result<Metadata> {
-    let mut stat = Stat::default();
-    let path_str = path.as_ref().as_os_str().as_inner();
-    let mut path_c = path_str.to_owned();
-    path_c.push_str("\0");
-    unsafe {
-        try!(sys_stat(path_c.as_ptr(), &mut stat).map_err(|x| Error::from_sys(x)));
-    }
-    Ok(Metadata {
-        stat: stat
-    })
+    try!(File::open(path)).metadata()
 }
 
 /// Get information about a file without following symlinks
@@ -353,11 +332,7 @@ pub fn symlink_metadata<P: AsRef<Path>>(path: P) -> Result<Metadata> {
 /// The default mode of the directory is 744
 pub fn create_dir<P: AsRef<Path>>(path: P) -> Result<()> {
     let path_str = path.as_ref().as_os_str().as_inner();
-    let mut path_c = path_str.to_owned();
-    path_c.push_str("\0");
-    unsafe {
-        sys_mkdir(path_c.as_ptr(), 755).and(Ok(())).map_err(|x| Error::from_sys(x))
-    }
+    sys_mkdir(path_str, 755).and(Ok(())).map_err(|x| Error::from_sys(x))
 }
 
 /// Recursively create a directory and all of its parent components if they are missing.
@@ -393,11 +368,7 @@ pub fn read_dir<P: AsRef<Path>>(path: P) -> Result<ReadDir> {
 /// Removes an existing, empty directory
 pub fn remove_dir<P: AsRef<Path>>(path: P) -> Result<()> {
     let path_str = path.as_ref().as_os_str().as_inner();
-    let mut path_c = path_str.to_owned();
-    path_c.push_str("\0");
-    unsafe {
-        sys_rmdir(path_c.as_ptr()).and(Ok(()))
-    }.map_err(|x| Error::from_sys(x))
+    sys_rmdir(path_str).and(Ok(())).map_err(|x| Error::from_sys(x))
 }
 
 /// Removes a directory at this path, after removing all its contents. Use carefully!
@@ -416,9 +387,5 @@ pub fn remove_dir_all<P: AsRef<Path>>(path: P) -> Result<()> {
 /// Removes a file from the filesystem
 pub fn remove_file<P: AsRef<Path>>(path: P) -> Result<()> {
     let path_str = path.as_ref().as_os_str().as_inner();
-    let mut path_c = path_str.to_owned();
-    path_c.push_str("\0");
-    unsafe {
-        sys_unlink(path_c.as_ptr()).and(Ok(()))
-    }.map_err(|x| Error::from_sys(x))
+    sys_unlink(path_str).and(Ok(())).map_err(|x| Error::from_sys(x))
 }

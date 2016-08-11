@@ -10,7 +10,7 @@ use core::{cmp, mem};
 use drivers::pci::config::PciConfig;
 use drivers::io::{Io, Mmio, Pio, PhysAddr};
 
-use fs::{KScheme, Resource, Url};
+use fs::{KScheme, Resource};
 
 use syscall;
 
@@ -193,7 +193,7 @@ impl KScheme for Ac97 {
         "audio"
     }
 
-    fn open(&mut self, _: Url, _: usize) -> syscall::Result<Box<Resource>> {
+    fn open(&mut self, _: &str, _: usize) -> syscall::Result<Box<Resource>> {
         Ok(box Ac97Resource {
             audio: self.audio,
             bus_master: self.bus_master,

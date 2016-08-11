@@ -1,4 +1,4 @@
-use syscall::arch::{syscall0, syscall1, syscall2, syscall3};
+use syscall::arch::{syscall0, syscall1, syscall2, syscall3, syscall5};
 use error::Result;
 
 pub const SYS_BRK: usize = 45;
@@ -26,8 +26,15 @@ pub const SYS_EXECVE: usize = 11;
 pub const SYS_EXIT: usize = 1;
 pub const SYS_FPATH: usize = 928;
 pub const SYS_FSTAT: usize = 28;
+    pub const MODE_DIR: u16 = 0x4000;
+    pub const MODE_FILE: u16 = 0x8000;
+    pub const MODE_ALL: u16 = MODE_DIR | MODE_FILE;
 pub const SYS_FSYNC: usize = 118;
 pub const SYS_FTRUNCATE: usize = 93;
+pub const SYS_FUTEX: usize = 240;
+    pub const FUTEX_WAIT: usize = 0;
+    pub const FUTEX_WAKE: usize = 1;
+    pub const FUTEX_REQUEUE: usize = 2;
 pub const SYS_GETPID: usize = 20;
 pub const SYS_IOPL: usize = 110;
 pub const SYS_LINK: usize = 9;
@@ -53,10 +60,6 @@ pub const SYS_OPEN: usize = 5;
 pub const SYS_PIPE2: usize = 331;
 pub const SYS_READ: usize = 3;
 pub const SYS_RMDIR: usize = 84;
-pub const SYS_STAT: usize = 18;
-    pub const MODE_DIR: u16 = 0x4000;
-    pub const MODE_FILE: u16 = 0x8000;
-    pub const MODE_ALL: u16 = MODE_DIR | MODE_FILE;
 pub const SYS_UNLINK: usize = 10;
 pub const SYS_WAITPID: usize = 7;
 pub const SYS_WRITE: usize = 4;
@@ -89,8 +92,8 @@ pub unsafe fn sys_brk(addr: usize) -> Result<usize> {
     syscall1(SYS_BRK, addr)
 }
 
-pub unsafe fn sys_chdir(path: *const u8) -> Result<usize> {
-    syscall1(SYS_CHDIR, path as usize)
+pub fn sys_chdir(path: &str) -> Result<usize> {
+    unsafe { syscall2(SYS_CHDIR, path.as_ptr() as usize, path.len()) }
 }
 
 pub unsafe fn sys_clone(flags: usize) -> Result<usize> {
@@ -133,6 +136,10 @@ pub fn sys_ftruncate(fd: usize, len: usize) -> Result<usize> {
     unsafe { syscall2(SYS_FTRUNCATE, fd, len) }
 }
 
+pub unsafe fn sys_futex(addr: *mut i32, op: usize, val: i32, val2: usize, addr2: *mut i32) -> Result<usize> {
+    syscall5(SYS_FUTEX, addr as usize, op, (val as isize) as usize, val2, addr2 as usize)
+}
+
 pub fn sys_getpid() -> Result<usize> {
     unsafe { syscall0(SYS_GETPID) }
 }
@@ -149,36 +156,32 @@ pub fn sys_lseek(fd: usize, offset: isize, whence: usize) -> Result<usize> {
     unsafe { syscall3(SYS_LSEEK, fd, offset as usize, whence) }
 }
 
-pub unsafe fn sys_mkdir(path: *const u8, mode: usize) -> Result<usize> {
-    syscall2(SYS_MKDIR, path as usize, mode)
+pub fn sys_mkdir(path: &str, mode: usize) -> Result<usize> {
+    unsafe { syscall3(SYS_MKDIR, path.as_ptr() as usize, path.len(), mode) }
 }
 
 pub fn sys_nanosleep(req: &TimeSpec, rem: &mut TimeSpec) -> Result<usize> {
     unsafe { syscall2(SYS_NANOSLEEP, req as *const TimeSpec as usize, rem as *mut TimeSpec as usize) }
 }
 
-pub unsafe fn sys_open(path: *const u8, flags: usize, mode: usize) -> Result<usize> {
-    syscall3(SYS_OPEN, path as usize, flags, mode)
+pub fn sys_open(path: &str, flags: usize) -> Result<usize> {
+    unsafe { syscall3(SYS_OPEN, path.as_ptr() as usize, path.len(), flags) }
 }
 
-pub unsafe fn sys_pipe2(fds: *mut usize, flags: usize) -> Result<usize> {
-    syscall2(SYS_PIPE2, fds as usize, flags)
+pub fn sys_pipe2(fds: &mut [usize; 2], flags: usize) -> Result<usize> {
+    unsafe { syscall2(SYS_PIPE2, fds.as_ptr() as usize, flags) }
 }
 
 pub fn sys_read(fd: usize, buf: &mut [u8]) -> Result<usize> {
     unsafe { syscall3(SYS_READ, fd, buf.as_mut_ptr() as usize, buf.len()) }
 }
 
-pub unsafe fn sys_rmdir(path: *const u8) -> Result<usize> {
-    syscall1(SYS_RMDIR, path as usize)
+pub fn sys_rmdir(path: &str) -> Result<usize> {
+    unsafe { syscall2(SYS_RMDIR, path.as_ptr() as usize, path.len()) }
 }
 
-pub unsafe fn sys_stat(path: *const u8, stat: &mut Stat) -> Result<usize> {
-    syscall2(SYS_STAT, path as usize, stat as *mut Stat as usize)
-}
-
-pub unsafe fn sys_unlink(path: *const u8) -> Result<usize> {
-    syscall1(SYS_UNLINK, path as usize)
+pub fn sys_unlink(path: &str) -> Result<usize> {
+    unsafe { syscall2(SYS_UNLINK, path.as_ptr() as usize, path.len()) }
 }
 
 pub fn sys_waitpid(pid: usize, status: &mut usize, options: usize) -> Result<usize> {

@@ -3,7 +3,7 @@ use arch::context::EnvVar;
 use collections::string::String;
 use core::cmp::min;
 use fs::resource::ResourceSeek;
-use fs::{KScheme, Resource, Url};
+use fs::{KScheme, Resource};
 use system::error::{EINVAL, Error, Result};
 
 pub struct EnvScheme;
@@ -13,10 +13,10 @@ impl KScheme for EnvScheme {
         "env"
     }
 
-    fn open(&mut self, url: Url, _: usize) -> Result<Box<Resource>> {
-        let name = url.reference();
+    fn open(&mut self, url: &str, _: usize) -> Result<Box<Resource>> {
+        let name = url.splitn(2, ":").nth(1).unwrap_or("");
         if name.contains('=') { return Err(Error::new(EINVAL)) }
-        if name == "" || name == "/" {
+        if name.is_empty() {
             Ok(box EnvListResource {
                 pos: 0
             })
@@ -28,8 +28,8 @@ impl KScheme for EnvScheme {
         }
     }
 
-    fn unlink(&mut self, url: Url) -> Result<()> {
-        let name = url.reference();
+    fn unlink(&mut self, url: &str) -> Result<()> {
+        let name = url.splitn(2, ":").nth(1).unwrap_or("");
         let contexts = unsafe { & *::env().contexts.get() };
         let current = try!(contexts.current());
         current.remove_env_var(name)

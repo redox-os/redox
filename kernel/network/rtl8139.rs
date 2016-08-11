@@ -15,7 +15,7 @@ use drivers::io::{Io, Pio};
 use network::common::*;
 use network::scheme::*;
 
-use fs::{KScheme, Resource, Url};
+use fs::{KScheme, Resource};
 
 use system::error::Result;
 
@@ -243,7 +243,7 @@ impl KScheme for Rtl8139 {
         "network"
     }
 
-    fn open(&mut self, _: Url, _: usize) -> Result<Box<Resource>> {
+    fn open(&mut self, _: &str, _: usize) -> Result<Box<Resource>> {
         Ok(NetworkResource::new(self))
     }
 

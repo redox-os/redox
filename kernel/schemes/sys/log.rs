@@ -1,22 +1,11 @@
-use fs::{KScheme, Resource, Url};
+use fs::Resource;
 use alloc::boxed::Box;
 use system::error::Result;
 
-/// The kernel log scheme.
-pub struct SyslogScheme;
-
-impl KScheme for SyslogScheme {
-    /// Returns the name of the scheme
-    fn scheme(&self) -> &str {
-        "syslog"
-    }
-
-    /// Returns a resource. The `url` and `flags` arguments are currently unused.
-    fn open(&mut self, _: Url, _: usize) -> Result<Box<Resource>> {
-        Ok(Box::new(SyslogResource {
-            pos: 0
-        }))
-    }
+pub fn resource() -> Result<Box<Resource>> {
+    Ok(Box::new(SyslogResource {
+        pos: 0
+    }))
 }
 
 /// The kernel log resource.

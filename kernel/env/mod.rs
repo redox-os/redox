@@ -1,20 +1,20 @@
 use alloc::boxed::Box;
 
-use collections::string::{String, ToString};
-use collections::vec::Vec;
+use collections::{String, Vec, VecDeque};
+use collections::string::ToString;
 
 use core::cell::UnsafeCell;
 
-use arch::context::ContextManager;
+use arch::context::{Context, ContextManager};
 use common::event::Event;
 use common::time::Duration;
 use disk::Disk;
 use network::Nic;
-use fs::{KScheme, Resource, Scheme, VecResource, Url};
+use fs::{KScheme, Resource, Scheme, VecResource};
 use sync::WaitQueue;
 
 use system::error::{Error, Result, ENOENT, EEXIST};
-use system::syscall::{O_CREAT, Stat};
+use system::syscall::{MODE_DIR, O_CREAT};
 
 use self::console::Console;
 use self::log::Log;
@@ -43,6 +43,8 @@ pub struct Environment {
     pub nics: UnsafeCell<Vec<Box<Nic>>>,
     /// Pending events
     pub events: WaitQueue<Event>,
+    /// Futexes
+    pub futexes: UnsafeCell<VecDeque<(*mut i32, *mut Context)>>,
     /// Kernel logs
     pub log: UnsafeCell<Log>,
     /// Schemes
@@ -64,6 +66,7 @@ impl Environment {
             disks: UnsafeCell::new(Vec::new()),
             nics: UnsafeCell::new(Vec::new()),
             events: WaitQueue::new(),
+            futexes: UnsafeCell::new(VecDeque::new()),
             log: UnsafeCell::new(Log::new()),
             schemes: UnsafeCell::new(Vec::new()),
 
@@ -78,11 +81,12 @@ impl Environment {
     }
 
     /// Open a new resource
-    pub fn open(&self, url: Url, flags: usize) -> Result<Box<Resource>> {
-        let url_scheme = url.scheme();
+    pub fn open(&self, url: &str, flags: usize) -> Result<Box<Resource>> {
+        let mut url_split = url.splitn(2, ":");
+        let url_scheme = url_split.next().unwrap_or("");
         if url_scheme.is_empty() {
-            let url_path = url.reference();
-            if url_path.trim_matches('/').is_empty() {
+            let url_path = url_split.next().unwrap_or("").trim_matches('/');
+            if url_path.is_empty() {
                 let mut list = String::new();
 
                 for scheme in unsafe { &mut *self.schemes.get() }.iter() {
@@ -96,7 +100,7 @@ impl Environment {
                     }
                 }
 
-                Ok(box VecResource::new(":".to_string(), list.into_bytes()))
+                Ok(box VecResource::new(":".to_string(), list.into_bytes(), MODE_DIR))
             } else if flags & O_CREAT == O_CREAT {
                 for scheme in unsafe { &mut *self.schemes.get() }.iter_mut() {
                     if scheme.scheme() == url_path {
@@ -125,9 +129,8 @@ impl Environment {
     }
 
     /// Makes a directory
-    pub fn mkdir(&self, url: Url, flags: usize) -> Result<()> {
-        let url_scheme = url.scheme();
-        if !url_scheme.is_empty() {
+    pub fn mkdir(&self, url: &str, flags: usize) -> Result<()> {
+        if let Some(url_scheme) = url.splitn(2, ":").next() {
             for mut scheme in unsafe { &mut *self.schemes.get() }.iter_mut() {
                 if scheme.scheme() == url_scheme {
                     return scheme.mkdir(url, flags);
@@ -138,9 +141,8 @@ impl Environment {
     }
 
     /// Remove a directory
-    pub fn rmdir(&self, url: Url) -> Result<()> {
-        let url_scheme = url.scheme();
-        if !url_scheme.is_empty() {
+    pub fn rmdir(&self, url: &str) -> Result<()> {
+        if let Some(url_scheme) = url.splitn(2, ":").next() {
             for mut scheme in unsafe { &mut *self.schemes.get() }.iter_mut() {
                 if scheme.scheme() == url_scheme {
                     return scheme.rmdir(url);
@@ -150,23 +152,9 @@ impl Environment {
         Err(Error::new(ENOENT))
     }
 
-    /// Stat a path
-    pub fn stat(&self, url: Url, stat: &mut Stat) -> Result<()> {
-        let url_scheme = url.scheme();
-        if !url_scheme.is_empty() {
-            for mut scheme in unsafe { &mut *self.schemes.get() }.iter_mut() {
-                if scheme.scheme() == url_scheme {
-                    return scheme.stat(url, stat);
-                }
-            }
-        }
-        Err(Error::new(ENOENT))
-    }
-
     /// Unlink a resource
-    pub fn unlink(&self, url: Url) -> Result<()> {
-        let url_scheme = url.scheme();
-        if !url_scheme.is_empty() {
+    pub fn unlink(&self, url: &str) -> Result<()> {
+        if let Some(url_scheme) = url.splitn(2, ":").next() {
             for mut scheme in unsafe { &mut *self.schemes.get() }.iter_mut() {
                 if scheme.scheme() == url_scheme {
                     return scheme.unlink(url);

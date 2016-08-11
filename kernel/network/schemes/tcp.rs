@@ -8,11 +8,12 @@ use common::random::rand;
 use core::{cmp, mem, slice, str};
 use core::cell::UnsafeCell;
 
-use fs::{KScheme, Resource, Url};
+use fs::{KScheme, Resource};
 
 use network::common::{n16, n32, Checksum, Ipv4Addr, IP_ADDR, FromBytes, ToBytes};
 
 use system::error::{Error, Result, ENOENT, EPIPE};
+use system::syscall::O_RDWR;
 
 #[derive(Copy, Clone)]
 #[repr(packed)]
@@ -412,8 +413,8 @@ impl KScheme for TcpScheme {
         "tcp"
     }
 
-    fn open(&mut self, url: Url, _: usize) -> Result<Box<Resource>> {
-        let mut parts = url.reference().split('/');
+    fn open(&mut self, url: &str, _: usize) -> Result<Box<Resource>> {
+        let mut parts = url.splitn(2, ":").nth(1).unwrap_or("").split('/');
         let remote = parts.next().unwrap_or("");
         let path = parts.next().unwrap_or("");
 
@@ -426,7 +427,7 @@ impl KScheme for TcpScheme {
             let peer_port = port.parse::<u16>().unwrap_or(0);
             let host_port = (rand() % 32768 + 32768) as u16;
 
-            match Url::from_str(&format!("ip:{}/6", peer_addr.to_string())).unwrap().open() {
+            match ::env().open(&format!("ip:{}/6", peer_addr.to_string()), O_RDWR) {
                 Ok(ip) => {
                     let mut stream = TcpStream {
                         ip: ip,
@@ -449,7 +450,7 @@ impl KScheme for TcpScheme {
         } else if ! path.is_empty() {
             let host_port = path.parse::<u16>().unwrap_or(0);
 
-            while let Ok(mut ip) = Url::from_str("ip:/6").unwrap().open() {
+            while let Ok(mut ip) = ::env().open("ip:/6", O_RDWR) {
                 let mut bytes = [0; 65536];
                 match ip.read(&mut bytes) {
                     Ok(count) => {

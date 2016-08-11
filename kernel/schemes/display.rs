@@ -7,7 +7,7 @@ use common::event::Event;
 use core::{cmp, ptr};
 use core::mem::size_of;
 
-use fs::{KScheme, Resource, ResourceSeek, Url};
+use fs::{KScheme, Resource, ResourceSeek};
 
 use system::error::{Error, Result, EACCES, EBADF, ENOENT, EINVAL};
 use system::graphics::fast_copy;
@@ -104,8 +104,8 @@ impl KScheme for DisplayScheme {
         "display"
     }
 
-    fn open(&mut self, url: Url, _: usize) -> Result<Box<Resource>> {
-        if url.reference() == "manager" {
+    fn open(&mut self, url: &str, _: usize) -> Result<Box<Resource>> {
+        if url.splitn(2, ":").nth(1).unwrap_or("") == "manager" {
             let console = unsafe { &mut *::env().console.get() };
             if console.draw {
                 console.draw = false;

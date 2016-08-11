@@ -5,7 +5,7 @@ use collections::{Vec, VecDeque};
 
 use core::cmp;
 
-use fs::{KScheme, Resource, Url};
+use fs::{KScheme, Resource};
 
 use sync::WaitQueue;
 
@@ -47,8 +47,8 @@ impl KScheme for PtyScheme {
         "pty"
     }
 
-    fn open(&mut self, url: Url, _: usize) -> Result<Box<Resource>> {
-        let req_id = url.reference().parse::<usize>().unwrap_or(0);
+    fn open(&mut self, url: &str, _: usize) -> Result<Box<Resource>> {
+        let req_id = url.splitn(2, ":").nth(1).unwrap_or("").parse::<usize>().unwrap_or(0);
 
         self.ptys.retain(|pty| {
             pty.upgrade().is_some()

@@ -11,9 +11,10 @@ use common::random;
 use common::to_num::ToNum;
 
 use super::arp::{Arp, ArpHeader};
-use fs::{KScheme, Resource, Url};
+use fs::{KScheme, Resource};
 
 use system::error::{Error, Result, ENOENT};
+use system::syscall::O_RDWR;
 
 /// A IP (internet protocole) resource
 pub struct IpResource {
@@ -134,8 +135,8 @@ impl KScheme for IpScheme {
         "ip"
     }
 
-    fn open(&mut self, url: Url, _: usize) -> Result<Box<Resource>> {
-        let parts: Vec<&str> = url.reference().split('/').collect();
+    fn open(&mut self, url: &str, _: usize) -> Result<Box<Resource>> {
+        let parts: Vec<&str> = url.splitn(2, ":").nth(1).unwrap_or("").split('/').collect();
         if let Some(host_string) = parts.get(0) {
             if let Some(proto_string) = parts.get(1) {
                 let proto = proto_string.to_num_radix(16) as u8;
@@ -171,7 +172,7 @@ impl KScheme for IpScheme {
                         }
 
                         if route_mac.equals(BROADCAST_MAC_ADDR) {
-                            if let Ok(mut link) = Url::from_str(&format!("ethernet:{}/806", &route_mac.to_string())).unwrap().open() {
+                            if let Ok(mut link) = ::env().open(&format!("ethernet:{}/806", &route_mac.to_string()), O_RDWR) {
                                 let arp = Arp {
                                     header: ArpHeader {
                                         htype: n16::new(1),
@@ -211,7 +212,7 @@ impl KScheme for IpScheme {
                         }
                     }
 
-                    if let Ok(link) = Url::from_str(&format!("ethernet:{}/800", &route_mac.to_string())).unwrap().open(){
+                    if let Ok(link) = ::env().open(&format!("ethernet:{}/800", &route_mac.to_string()), O_RDWR) {
                         return Ok(box IpResource {
                             link: link,
                             data: Vec::new(),
@@ -221,7 +222,7 @@ impl KScheme for IpScheme {
                         });
                     }
                 } else {
-                    while let Ok(mut link) = Url::from_str("ethernet:/800").unwrap().open() {
+                    while let Ok(mut link) = ::env().open("ethernet:/800", O_RDWR) {
                         let mut bytes = [0; 65536];
                         match link.read(&mut bytes) {
                             Ok(count) => {

@@ -96,8 +96,8 @@ impl ExampleScheme {
 }
 
 impl Scheme for ExampleScheme {
-    fn open(&mut self, path: &str, flags: usize, mode: usize) -> Result<usize> {
-        println!("open {:X} = {}, {:X}, {:X}", path.as_ptr() as usize, path, flags, mode);
+    fn open(&mut self, path: &str, flags: usize) -> Result<usize> {
+        println!("open {:X} = {}, {:X}", path.as_ptr() as usize, path, flags);
         let id = self.next_id as usize;
         self.next_id += 1;
         if self.next_id < 0 {

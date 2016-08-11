@@ -5,7 +5,7 @@ use collections::string::String;
 
 use core::cmp;
 
-use fs::{KScheme, Resource, Url};
+use fs::{KScheme, Resource};
 
 use system::error::Result;
 
@@ -75,7 +75,7 @@ impl KScheme for DebugScheme {
         "debug"
     }
 
-    fn open(&mut self, _: Url, _: usize) -> Result<Box<Resource>> {
+    fn open(&mut self, _: &str, _: usize) -> Result<Box<Resource>> {
         let console = unsafe { & *::env().console.get() };
         if let Some(ref display) = console.display {
             Ok(box DebugResource {

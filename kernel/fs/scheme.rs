@@ -17,9 +17,9 @@ use system::error::{Error, Result, EFAULT, EINVAL, ENODEV, ESPIPE};
 use system::scheme::Packet;
 use system::syscall::{SYS_CLOSE, SYS_DUP, SYS_FPATH, SYS_FSTAT, SYS_FSYNC, SYS_FTRUNCATE,
                     SYS_OPEN, SYS_LSEEK, SEEK_SET, SEEK_CUR, SEEK_END, SYS_MKDIR,
-                    SYS_READ, SYS_WRITE, SYS_RMDIR, SYS_STAT, SYS_UNLINK, Stat};
+                    SYS_READ, SYS_WRITE, SYS_RMDIR, SYS_UNLINK, Stat};
 
-use super::{Resource, ResourceSeek, KScheme, Url};
+use super::{Resource, ResourceSeek, KScheme};
 
 struct SchemeInner {
     name: String,
@@ -208,8 +208,8 @@ impl Resource for SchemeResource {
         self.call(SYS_LSEEK, self.file_id, offset, whence)
     }
 
-    /// Stat
-    fn stat(&self, stat: &mut Stat) -> Result<usize> {
+    /// Stat the resource
+    fn stat(&self, stat: &mut Stat) -> Result<()> {
         let buf = unsafe { slice::from_raw_parts_mut(stat as *mut Stat as *mut u8, size_of::<Stat>()) };
 
         let contexts = unsafe { & *::env().contexts.get() };
@@ -219,11 +219,11 @@ impl Resource for SchemeResource {
 
             let virtual_address = try!(self.capture(physical_address - offset, buf.len() + offset, true));
 
-            let result = self.call(SYS_FSTAT, self.file_id, virtual_address + offset, buf.len());
+            let result = self.call(SYS_FSTAT, self.file_id, virtual_address + offset, 0);
 
             self.release(virtual_address);
 
-            result
+            result.and(Ok(()))
         } else {
             debugln!("{}:{} fault {:X} {}", file!(), line!(), buf.as_ptr() as usize, buf.len());
             Err(Error::new(EFAULT))
@@ -235,6 +235,7 @@ impl Resource for SchemeResource {
         self.call(SYS_FSYNC, self.file_id, 0, 0).and(Ok(()))
     }
 
+    /// Truncate the resource
     fn truncate(&mut self, len: usize) -> Result<()> {
         self.call(SYS_FTRUNCATE, self.file_id, len, 0).and(Ok(()))
     }
@@ -376,12 +377,10 @@ impl KScheme for Scheme {
         &self.name
     }
 
-    fn open(&mut self, url: Url, flags: usize) -> Result<Box<Resource>> {
-        let c_str = url.to_string() + "\0";
+    fn open(&mut self, path: &str, flags: usize) -> Result<Box<Resource>> {
+        let virtual_address = try!(self.capture(path.as_ptr() as usize, path.len(), false));
 
-        let virtual_address = try!(self.capture(c_str.as_ptr() as usize, c_str.len(), false));
-
-        let result = self.call(SYS_OPEN, virtual_address, flags, 0);
+        let result = self.call(SYS_OPEN, virtual_address, path.len(), flags);
 
         self.release(virtual_address);
 
@@ -394,61 +393,30 @@ impl KScheme for Scheme {
         }
     }
 
-    fn mkdir(&mut self, url: Url, flags: usize) -> Result<()> {
-        let c_str = url.to_string() + "\0";
+    fn mkdir(&mut self, path: &str, flags: usize) -> Result<()> {
+        let virtual_address = try!(self.capture(path.as_ptr() as usize, path.len(), false));
 
-        let virtual_address = try!(self.capture(c_str.as_ptr() as usize, c_str.len(), false));
-
-        let result = self.call(SYS_MKDIR, virtual_address, flags, 0);
+        let result = self.call(SYS_MKDIR, virtual_address, path.len(), flags);
 
         self.release(virtual_address);
 
         result.and(Ok(()))
     }
 
-    fn rmdir(&mut self, url: Url) -> Result<()> {
-        let c_str = url.to_string() + "\0";
+    fn rmdir(&mut self, path: &str) -> Result<()> {
+        let virtual_address = try!(self.capture(path.as_ptr() as usize, path.len(), false));
 
-        let virtual_address = try!(self.capture(c_str.as_ptr() as usize, c_str.len(), false));
-
-        let result = self.call(SYS_RMDIR, virtual_address, 0, 0);
+        let result = self.call(SYS_RMDIR, virtual_address, path.len(), 0);
 
         self.release(virtual_address);
 
         result.and(Ok(()))
     }
 
-    fn stat(&mut self, url: Url, stat: &mut Stat) -> Result<()> {
-        let buf = unsafe { slice::from_raw_parts_mut(stat as *mut Stat as *mut u8, size_of::<Stat>()) };
+    fn unlink(&mut self, path: &str) -> Result<()> {
+        let virtual_address = try!(self.capture(path.as_ptr() as usize, path.len(), false));
 
-        let contexts = unsafe { & *::env().contexts.get() };
-        let current = try!(contexts.current());
-        if let Ok(physical_address) = current.translate(buf.as_mut_ptr() as usize, buf.len()) {
-            let offset = physical_address % 4096;
-
-            let virtual_address = try!(self.capture(physical_address - offset, buf.len() + offset, true));
-
-            let c_str = url.to_string() + "\0";
-
-            let c_str_address = try!(self.capture(c_str.as_ptr() as usize, c_str.len(), false));
-
-            let result = self.call(SYS_STAT, c_str_address, virtual_address + offset, buf.len());
-
-            self.release(c_str_address);
-
-            result.and(Ok(()))
-        } else {
-            debugln!("{}:{} fault {:X} {}", file!(), line!(), buf.as_ptr() as usize, buf.len());
-            Err(Error::new(EFAULT))
-        }
-    }
-
-    fn unlink(&mut self, url: Url) -> Result<()> {
-        let c_str = url.to_string() + "\0";
-
-        let virtual_address = try!(self.capture(c_str.as_ptr() as usize, c_str.len(), false));
-
-        let result = self.call(SYS_UNLINK, virtual_address, 0, 0);
+        let result = self.call(SYS_UNLINK, virtual_address, path.len(), 0);
 
         self.release(virtual_address);
 

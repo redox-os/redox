@@ -225,9 +225,27 @@ pub unsafe fn context_clone(regs: &Regs) -> Result<usize> {
             let stack = if let Some(ref entry) = parent.stack {
                 let physical_address = memory::alloc(entry.virtual_size);
                 if physical_address > 0 {
-                    ::memcpy(physical_address as *mut u8,
-                             entry.physical_address as *const u8,
-                             entry.virtual_size);
+                    for i in 0..(entry.virtual_size + memory::CLUSTER_SIZE - 1)/memory::CLUSTER_SIZE {
+                        let read_address = entry.physical_address + i * memory::CLUSTER_SIZE;
+                        let write_address = physical_address + i * memory::CLUSTER_SIZE;
+
+                        let mut read_page = Page::new(read_address);
+                        let read_old = read_page.entry_data();
+                        read_page.map_kernel_read(read_address);
+
+                        let mut write_page = Page::new(write_address);
+                        let write_old = write_page.entry_data();
+                        write_page.map_kernel_write(write_address);
+
+                        ::memmove(write_address as *mut u8, read_address as *const u8, memory::CLUSTER_SIZE);
+
+                        write_page.set_entry_data(write_old);
+                        write_page.flush();
+
+                        read_page.set_entry_data(read_old);
+                        read_page.flush();
+                    }
+                    
                     Some(ContextMemory {
                         physical_address: physical_address,
                         virtual_address: entry.virtual_address,
@@ -470,11 +488,27 @@ impl ContextZone {
         for entry in self.memory.iter() {
             let physical_address = unsafe { memory::alloc(entry.virtual_size) };
             if physical_address > 0 {
-                //TODO: Remap pages during memcpy
                 unsafe {
-                    ::memcpy(physical_address as *mut u8,
-                             entry.physical_address as *const u8,
-                             entry.virtual_size);
+                    for i in 0..(entry.virtual_size + memory::CLUSTER_SIZE - 1)/memory::CLUSTER_SIZE {
+                        let read_address = entry.physical_address + i * memory::CLUSTER_SIZE;
+                        let write_address = physical_address + i * memory::CLUSTER_SIZE;
+
+                        let mut read_page = Page::new(read_address);
+                        let read_old = read_page.entry_data();
+                        read_page.map_kernel_read(read_address);
+
+                        let mut write_page = Page::new(write_address);
+                        let write_old = write_page.entry_data();
+                        write_page.map_kernel_write(write_address);
+
+                        ::memmove(write_address as *mut u8, read_address as *const u8, memory::CLUSTER_SIZE);
+
+                        write_page.set_entry_data(write_old);
+                        write_page.flush();
+
+                        read_page.set_entry_data(read_old);
+                        read_page.flush();
+                    }
                 }
 
                 //debugln!("{}: {}: dup memory {:X}:{:X} for {}", parent.pid, parent.name, entry.virtual_address, entry.virtual_address + entry.virtual_size, clone_pid);

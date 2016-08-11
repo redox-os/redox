@@ -1,3 +1,4 @@
+#[derive(Debug)]
 #[repr(packed)]
 pub struct Tss {
     pub prev_tss: u32,

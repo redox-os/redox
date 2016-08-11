@@ -49,7 +49,7 @@ pub trait Resource {
 
     /// Get informations about the resource, such as mode and size
     /// Returns `EPERM` if the operation is not supported.
-    fn stat(&self, stat: &mut Stat) -> Result<usize> {
+    fn stat(&self, stat: &mut Stat) -> Result<()> {
         Err(Error::new(EPERM))
     }
 

@@ -2,7 +2,7 @@ use alloc::boxed::Box;
 
 use core::str;
 
-use fs::{KScheme, Resource, Url};
+use fs::{KScheme, Resource};
 use system::error::{Error, Result, ENOENT};
 use system::syscall::O_CREAT;
 pub use self::dsdt::DSDT;
@@ -80,8 +80,8 @@ impl KScheme for Acpi {
         "acpi"
     }
 
-    fn open(&mut self, url: Url, flags: usize) -> Result<Box<Resource>> {
-        if url.reference() == "off" && flags & O_CREAT == O_CREAT {
+    fn open(&mut self, url: &str, flags: usize) -> Result<Box<Resource>> {
+        if url.splitn(2, ":").nth(1).unwrap_or("") == "off" && flags & O_CREAT == O_CREAT {
             match self.fadt {
                 Some(fadt) => {
                     debugln!("Powering Off");

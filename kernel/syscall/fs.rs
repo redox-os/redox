@@ -2,11 +2,11 @@
 
 use arch::context::ContextFile;
 
-use fs::{ResourceSeek, Url};
+use core::str;
+
+use fs::ResourceSeek;
 
 use schemes::pipe::{PipeRead, PipeWrite};
-
-use system::c_string_to_str;
 
 use syscall::{Stat, SEEK_CUR, SEEK_END, SEEK_SET};
 
@@ -49,11 +49,12 @@ ERRORS
     ESRCH
         Currently not running in a process context (rare, would only happen during kernel init)
 <!-- @MANEND --> */
-pub fn chdir(path: *const u8) -> Result<usize> {
+pub fn chdir(path_ptr: *const u8, path_len: usize) -> Result<usize> {
     let contexts = unsafe { & *::env().contexts.get() };
     let current = try!(contexts.current());
+    let path_safe = current.get_slice(path_ptr, path_len)?;
     unsafe {
-        *current.cwd.get() = current.canonicalize(c_string_to_str(path));
+        *current.cwd.get() = current.canonicalize(str::from_utf8_unchecked(path_safe));
     }
     Ok(0)
 }
@@ -160,7 +161,7 @@ pub fn fstat(fd: usize, stat: *mut Stat) -> Result<usize> {
     let current = contexts.current()?;
     let resource = current.get_file(fd)?;
     let stat_safe = current.get_ref_mut(stat)?;
-    resource.stat(stat_safe)
+    resource.stat(stat_safe).and(Ok(0))
 }
 
 /** <!-- @MANSTART{sys_fsync} -->
@@ -320,11 +321,12 @@ ERRORS
     ESRCH
         Currently not running in a process context (rare, would only happen during kernel init)
 <!-- @MANEND --> */
-pub fn mkdir(path: *const u8, flags: usize) -> Result<usize> {
+pub fn mkdir(path_ptr: *const u8, path_len: usize, flags: usize) -> Result<usize> {
     let contexts = unsafe { & *::env().contexts.get() };
     let current = try!(contexts.current());
-    let path_string = current.canonicalize(c_string_to_str(path));
-    ::env().mkdir(try!(Url::from_str(&path_string)), flags).and(Ok(0))
+    let path_safe = current.get_slice(path_ptr, path_len)?;
+    let path_string = current.canonicalize(unsafe { str::from_utf8_unchecked(path_safe) });
+    ::env().mkdir(&path_string, flags).and(Ok(0))
 }
 
 /** <!-- @MANSTART{sys_open} -->
@@ -379,12 +381,12 @@ ERRORS
     ESRCH
         Currently not running in a process context (rare, would only happen during kernel init)
 <!-- @MANEND --> */
-pub fn open(path_c: *const u8, flags: usize) -> Result<usize> {
+pub fn open(path_ptr: *const u8, path_len: usize, flags: usize) -> Result<usize> {
     let contexts = unsafe { & *::env().contexts.get() };
     let current = try!(contexts.current());
-    let path = current.canonicalize(c_string_to_str(path_c));
-    let url = try!(Url::from_str(&path));
-    let resource = try!(::env().open(url, flags));
+    let path_safe = current.get_slice(path_ptr, path_len)?;
+    let path = current.canonicalize(unsafe { str::from_utf8_unchecked(path_safe) });
+    let resource = try!(::env().open(&path, flags));
     let fd = current.next_fd();
     unsafe {
         (*current.files.get()).push(ContextFile {
@@ -465,29 +467,20 @@ pub fn read(fd: usize, buf: *mut u8, count: usize) -> Result<usize> {
     }
 }
 
-pub fn rmdir(path: *const u8) -> Result<usize> {
+pub fn rmdir(path_ptr: *const u8, path_len: usize) -> Result<usize> {
     let contexts = unsafe { & *::env().contexts.get() };
     let current = try!(contexts.current());
-    let path_string = current.canonicalize(c_string_to_str(path));
-    ::env().rmdir(try!(Url::from_str(&path_string))).and(Ok(0))
+    let path_safe = current.get_slice(path_ptr, path_len)?;
+    let path_string = current.canonicalize(unsafe { str::from_utf8_unchecked(path_safe) });
+    ::env().rmdir(&path_string).and(Ok(0))
 }
 
-pub fn stat(path: *const u8, stat: *mut Stat) -> Result<usize> {
+pub fn unlink(path_ptr: *const u8, path_len: usize) -> Result<usize> {
     let contexts = unsafe { & *::env().contexts.get() };
     let current = try!(contexts.current());
-    let path_string = current.canonicalize(c_string_to_str(path));
-    let url = Url::from_str(&path_string)?;
-    let stat_safe = current.get_ref_mut(stat)?;
-
-    *stat_safe = Stat::default();
-    ::env().stat(url, stat_safe).and(Ok(0))
-}
-
-pub fn unlink(path: *const u8) -> Result<usize> {
-    let contexts = unsafe { & *::env().contexts.get() };
-    let current = try!(contexts.current());
-    let path_string = current.canonicalize(c_string_to_str(path));
-    ::env().unlink(try!(Url::from_str(&path_string))).and(Ok(0))
+    let path_safe = current.get_slice(path_ptr, path_len)?;
+    let path_string = current.canonicalize(unsafe { str::from_utf8_unchecked(path_safe) });
+    ::env().unlink(&path_string).and(Ok(0))
 }
 
 /** <!-- @MANSTART{sys_write} -->

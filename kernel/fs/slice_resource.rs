@@ -6,19 +6,22 @@ use core::cmp::{max, min};
 use core::slice;
 
 use system::error::Result;
+use system::syscall::Stat;
 
 /// A slice resource
 pub struct SliceResource {
     path: &'static str,
     data: &'static [u8],
+    mode: u16,
     seek: usize,
 }
 
 impl SliceResource {
-    pub fn new(path: &'static str, data: &'static [u8]) -> Self {
+    pub fn new(path: &'static str, data: &'static [u8], mode: u16) -> Self {
         SliceResource {
             path: path,
             data: data,
+            mode: mode,
             seek: 0,
         }
     }
@@ -29,6 +32,7 @@ impl Resource for SliceResource {
         Ok(box SliceResource {
             path: self.path,
             data: self.data,
+            mode: self.mode,
             seek: self.seek,
         })
     }
@@ -72,6 +76,12 @@ impl Resource for SliceResource {
         return Ok(self.seek);
     }
 
+    fn stat(&self, stat: &mut Stat) -> Result<()> {
+        stat.st_size = self.data.len() as u32;
+        stat.st_mode = self.mode;
+        Ok(())
+    }
+
     fn sync(&mut self) -> Result<()> {
         Ok(())
     }
@@ -81,14 +91,16 @@ impl Resource for SliceResource {
 pub struct SliceMutResource {
     path: &'static str,
     data: &'static mut [u8],
+    mode: u16,
     seek: usize,
 }
 
 impl SliceMutResource {
-    pub fn new(path: &'static str, data: &'static mut [u8]) -> Self {
+    pub fn new(path: &'static str, data: &'static mut [u8], mode: u16) -> Self {
         SliceMutResource {
             path: path,
             data: data,
+            mode: mode,
             seek: 0,
         }
     }
@@ -99,6 +111,7 @@ impl Resource for SliceMutResource {
         Ok(box SliceMutResource {
             path: self.path,
             data: unsafe { slice::from_raw_parts_mut(self.data.as_ptr() as *mut u8, self.data.len()) },
+            mode: self.mode,
             seek: self.seek,
         })
     }
@@ -150,6 +163,12 @@ impl Resource for SliceMutResource {
                                     offset)) as usize,
         }
         return Ok(self.seek);
+    }
+
+    fn stat(&self, stat: &mut Stat) -> Result<()> {
+        stat.st_size = self.data.len() as u32;
+        stat.st_mode = self.mode;
+        Ok(())
     }
 
     fn sync(&mut self) -> Result<()> {
