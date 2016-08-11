@@ -418,10 +418,7 @@ unsafe fn init(gdt_ptr: *mut GdtDescriptor, idt_ptr: *mut IdtDescriptor, tss_ptr
 
             (&mut *env.schemes.get()).push(DebugScheme::new());
 
-            //TODO: Do not do this! Find a better way
-            let mut disks = Vec::new();
-            disks.append(&mut *env.disks.get());
-            (&mut *env.schemes.get()).push(DiskScheme::new(disks));
+            (&mut *env.schemes.get()).push(box DiskScheme);
 
             (&mut *env.schemes.get()).push(box DisplayScheme);
 

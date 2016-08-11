@@ -1,3 +1,6 @@
+use alloc::arc::Arc;
+use core::cell::UnsafeCell;
+
 use disk::ahci::Ahci;
 use disk::ide::Ide;
 
@@ -31,8 +34,12 @@ pub unsafe fn pci_device(env: &mut Environment,
                          vendor_code: u16,
                          device_code: u16) {
     match (class_id, subclass_id, interface_id) {
-        (MASS_STORAGE, IDE, _) => (&mut *env.disks.get()).append(&mut Ide::disks(pci)),
-        (MASS_STORAGE, SATA, AHCI) => (&mut *env.disks.get()).append(&mut Ahci::disks(pci)),
+        (MASS_STORAGE, IDE, _) => for disk in Ide::disks(pci) {
+            (&mut *env.disks.get()).push(Arc::new(UnsafeCell::new(disk)));
+        },
+        (MASS_STORAGE, SATA, AHCI) => for disk in Ahci::disks(pci) {
+            (&mut *env.disks.get()).push(Arc::new(UnsafeCell::new(disk)));
+        },
         (SERIAL_BUS, USB, UHCI) => (&mut *env.schemes.get()).push(Uhci::new(pci)),
         (SERIAL_BUS, USB, OHCI) => (&mut *env.schemes.get()).push(Ohci::new(pci)),
         (SERIAL_BUS, USB, EHCI) => (&mut *env.schemes.get()).push(Ehci::new(pci)),

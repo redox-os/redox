@@ -2,7 +2,7 @@ use alloc::arc::Arc;
 use alloc::boxed::Box;
 
 use collections::borrow::ToOwned;
-use collections::{String, Vec};
+use collections::String;
 
 use core::cell::UnsafeCell;
 use core::cmp;
@@ -78,24 +78,7 @@ impl Drop for DiskResource {
 }
 
 /// A disk scheme
-pub struct DiskScheme {
-    disks: Vec<Arc<UnsafeCell<Box<Disk>>>>,
-}
-
-impl DiskScheme {
-    /// Create a new disk scheme from an array of Disks
-    pub fn new(mut disks: Vec<Box<Disk>>) -> Box<Self> {
-        let mut scheme = box DiskScheme {
-            disks: Vec::new()
-        };
-
-        for disk in disks.drain(..) {
-            scheme.disks.push(Arc::new(UnsafeCell::new(disk)));
-        }
-
-        scheme
-    }
-}
+pub struct DiskScheme;
 
 impl KScheme for DiskScheme {
     fn scheme(&self) -> &str {
@@ -103,7 +86,7 @@ impl KScheme for DiskScheme {
     }
 
     fn on_irq(&mut self, irq: u8) {
-        for disk in self.disks.iter_mut() {
+        for disk in unsafe { &mut *::env().disks.get() }.iter_mut() {
             unsafe { &mut *disk.get() }.on_irq(irq);
         }
     }
@@ -113,7 +96,7 @@ impl KScheme for DiskScheme {
 
         if path.is_empty() {
             let mut list = String::new();
-            for i in 0..self.disks.len() {
+            for i in 0..unsafe { & *::env().disks.get() }.len() {
                 if ! list.is_empty() {
                     list.push('\n');
                 }
@@ -123,7 +106,7 @@ impl KScheme for DiskScheme {
             return Ok(box VecResource::new("disk:/".to_owned(), list.into_bytes(), MODE_DIR));
         } else {
             if let Ok(number) = path.parse::<usize>() {
-                if let Some(disk) = self.disks.get(number) {
+                if let Some(disk) = unsafe { & *::env().disks.get() }.get(number) {
                     return Ok(box DiskResource {
                         path: format!("disk:/{}", number),
                         disk: disk.clone(),

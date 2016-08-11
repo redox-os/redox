@@ -8,6 +8,7 @@ use system::error::{Error, ENOENT, Result};
 use system::syscall::MODE_DIR;
 
 mod context;
+mod disk;
 mod interrupt;
 mod log;
 mod memory;
@@ -23,6 +24,7 @@ impl SysScheme {
         let mut files: BTreeMap<&'static str, Box<Fn() -> Result<Box<Resource>>>> = BTreeMap::new();
 
         files.insert("context", box move || context::resource());
+        files.insert("disk", box move || disk::resource());
         files.insert("interrupt", box move || interrupt::resource());
         files.insert("log", box move || log::resource());
         files.insert("memory", box move || memory::resource());

@@ -293,7 +293,7 @@ impl IdeDisk {
     /// Identify
     pub unsafe fn identify(&mut self) -> Option<u64> {
         let name = if self.master { "Master" } else { "Slave" };
-        
+
         if self.alt_sts.read() == 0xFF {
             return None;
         }

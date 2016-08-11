@@ -1,3 +1,4 @@
+use alloc::arc::Arc;
 use alloc::boxed::Box;
 
 use collections::{String, Vec, VecDeque};
@@ -38,7 +39,7 @@ pub struct Environment {
     /// Default console
     pub console: UnsafeCell<Console>,
     /// Disks
-    pub disks: UnsafeCell<Vec<Box<Disk>>>,
+    pub disks: UnsafeCell<Vec<Arc<UnsafeCell<Box<Disk>>>>>,
     /// Network interfaces
     pub nics: UnsafeCell<Vec<Box<Nic>>>,
     /// Pending events
