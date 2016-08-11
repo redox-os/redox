@@ -5,7 +5,7 @@
 
 extern crate system;
 
-use system::syscall::unix::{sys_brk, sys_yield};
+use system::syscall::unix::{sys_brk, sys_write, sys_yield};
 
 /// Cooperatively gives up a timeslice to the OS scheduler.
 pub extern "C" fn sched_yield() -> isize {
@@ -50,4 +50,27 @@ pub extern "C" fn sbrk(n: isize) -> *mut u8 {
     } else {
         orig_seg_end as *mut u8
     }
+}
+
+/// Write to the log.
+///
+/// This points to stderr, but could be changed arbitrarily.
+pub fn log(s: &str) -> isize {
+    sys_write(2, s.as_bytes()).map(|count| count as isize).unwrap_or(-1)
+}
+
+pub mod thread_destructor {
+    /// Does this platform support thread destructors?
+    ///
+    /// This will always return false.
+    #[inline]
+    pub fn is_supported() -> bool { false }
+
+    /// Register a thread destructor.
+    ///
+    /// # Safety
+    ///
+    /// This is unsafe due to accepting (and dereferencing) raw pointers, as well as running an
+    /// arbitrary unsafe function.
+    pub unsafe fn register(_t: *mut u8, _dtor: unsafe extern fn(*mut u8)) {}
 }

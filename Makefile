@@ -580,7 +580,10 @@ $(BUILD)/liblibz_sys.rlib: crates/libz-sys/src/lib.rs crates/libz-sys/src/*.rs $
 $(BUILD)/libwalkdir.rlib: crates/walkdir/src/lib.rs crates/walkdir/src/*.rs $(BUILD)/libstd.rlib
 	$(RUSTC) $(RUSTCFLAGS) --crate-name walkdir --crate-type lib -o $@ $<
 
-$(BUILD)/libralloc.rlib: crates/ralloc/src/lib.rs crates/ralloc/src/*.rs $(BUILD)/libralloc_shim.rlib
+$(BUILD)/libunborrow.rlib: crates/unborrow/src/lib.rs crates/unborrow/src/*.rs $(BUILD)/libcore.rlib
+	$(RUSTC) $(RUSTCFLAGS) --crate-name unborrow --crate-type lib -o $@ $<
+
+$(BUILD)/libralloc.rlib: crates/ralloc/src/lib.rs crates/ralloc/src/*.rs $(BUILD)/libralloc_shim.rlib $(BUILD)/libunborrow.rlib
 	$(RUSTC) $(RUSTCFLAGS) --crate-name ralloc --crate-type lib -o $@ $< --cfg 'feature="allocator"'
 
 $(BUILD)/libralloc_shim.rlib: crates/ralloc_shim/lib.rs $(BUILD)/libsystem.rlib

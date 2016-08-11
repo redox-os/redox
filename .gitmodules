@@ -100,3 +100,6 @@
 [submodule "crates/handbook"]
 	path = crates/handbook
 	url = https://github.com/redox-os/handbook.git
+[submodule "crates/unborrow"]
+	path = crates/unborrow
+	url = https://github.com/durka/unborrow.git

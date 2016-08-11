@@ -14,6 +14,32 @@ pub const CLUSTER_SIZE: usize = 4096; // Of 4 K chunks
 
 pub const LOGICAL_OFFSET: usize = 0x80000000;
 
+pub unsafe fn copy_pages(dst: *mut u8, src: *const u8, size: usize) {
+    let read_cluster = address_to_cluster(src as usize);
+    let write_cluster = address_to_cluster(dst as usize);
+
+    for i in 0..(size + CLUSTER_SIZE - 1)/CLUSTER_SIZE {
+        let read_address = cluster_to_address(read_cluster + i);
+        let write_address = cluster_to_address(write_cluster + i);
+
+        let mut read_page = Page::new(read_address);
+        let read_old = read_page.entry_data();
+        read_page.map_kernel_read(read_address);
+
+        let mut write_page = Page::new(write_address);
+        let write_old = write_page.entry_data();
+        write_page.map_kernel_write(write_address);
+
+        ::memmove(write_address as *mut u8, read_address as *const u8, CLUSTER_SIZE);
+
+        write_page.set_entry_data(write_old);
+        write_page.flush();
+
+        read_page.set_entry_data(read_old);
+        read_page.flush();
+    }
+}
+
 /// A wrapper around raw pointers
 pub struct Memory<T> {
     ptr: *mut T,
@@ -347,31 +373,7 @@ pub unsafe fn realloc_aligned(ptr: usize, size: usize, align: usize) -> usize {
             ret = alloc_aligned(size, align);
             if ptr > 0 {
                 if ret > 0 {
-                    let copy_size = cmp::min(old_size, size);
-
-                    let read_cluster = address_to_cluster(ptr);
-                    let write_cluster = address_to_cluster(ret);
-
-                    for i in 0..(copy_size + CLUSTER_SIZE - 1)/CLUSTER_SIZE {
-                        let read_address = cluster_to_address(read_cluster + i);
-                        let write_address = cluster_to_address(write_cluster + i);
-
-                        let mut read_page = Page::new(read_address);
-                        let read_old = read_page.entry_data();
-                        read_page.map_kernel_read(read_address);
-
-                        let mut write_page = Page::new(write_address);
-                        let write_old = write_page.entry_data();
-                        write_page.map_kernel_write(write_address);
-
-                        ::memmove(write_address as *mut u8, read_address as *const u8, CLUSTER_SIZE);
-
-                        write_page.set_entry_data(write_old);
-                        write_page.flush();
-
-                        read_page.set_entry_data(read_old);
-                        read_page.flush();
-                    }
+                    copy_pages(ret as *mut u8, ptr as *const u8, cmp::min(old_size, size));
                 }
                 unalloc(ptr);
             }
