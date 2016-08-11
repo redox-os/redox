@@ -155,8 +155,7 @@ impl Console {
                         }
 
                         if min <= max {
-                            //display.flip_rows(min * 16, (max + 1 - min) * 16);
-                            display.flip();
+                            display.flip_rows(min * 16, (max + 1 - min) * 16);
                         }
                     }
                 }
