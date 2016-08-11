@@ -10,14 +10,14 @@ use system::error::Result;
 use system::syscall::MODE_FILE;
 
 pub fn resource() -> Result<Box<Resource>> {
-    let mut string = format!("{:<6}{:<6}{:<8}{:<8}{:<8}{:<6}{:<6}{:<6}{}\n",
+    let mut string = format!("{:<6}{:<6}{:<10}{:<10}{:<8}{:<6}{:<6}{:<6}{}\n",
                              "PID",
                              "PPID",
                              "SWITCH",
                              "TIME",
                              "MEM",
                              "FDS",
-                             "FLG",
+                             "FLAG",
                              "IOPL",
                              "NAME");
     {
@@ -66,7 +66,7 @@ pub fn resource() -> Result<Box<Resource>> {
                 flags_string.push('T');
             }
 
-            string.push_str(&format!("{:<6}{:<6}{:<8}{:<8}{:<8}{:<6}{:<6}{:<6}{}\n",
+            string.push_str(&format!("{:<6}{:<6}{:<10}{:<10}{:<8}{:<6}{:<6}{:<6}{}\n",
                                context.pid,
                                context.ppid,
                                context.switch,
