@@ -112,6 +112,14 @@ impl Display {
         }
     }
 
+    pub fn flip_rows(&self, row: usize, count: usize){
+        unsafe {
+            let offset = row * self.width;
+            let size = count * self.width;
+            fast_copy(self.onscreen.offset(offset as isize), self.offscreen.offset(offset as isize), size);
+        }
+    }
+
     /// Draw a rectangle
     pub fn rect(&self, x: usize, y: usize, w: usize, h: usize, color: Color) {
         let data = color.data;

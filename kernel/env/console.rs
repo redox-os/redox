@@ -116,33 +116,51 @@ impl Console {
                 if inner.redraw {
                     inner.redraw = false;
                     if let Some(ref mut display) = self.display {
-                        display.set(Color {
-                            data: inner.background.data
-                        });
+                        let mut min = inner.h;
+                        let mut max = 0;
+
                         for y in 0..inner.h {
-                            for x in 0..inner.w {
-                                let block = inner.display[y * inner.w + x];
-                                display.rect(x * 8, y * 16, 8, 16, Color {
-                                    data: block.bg.data
-                                });
-                                if block.c != ' ' {
-                                    display.char(x * 8, y * 16, block.c, Color {
-                                        data: block.fg.data
-                                    });
+                            if inner.changed[y] {
+                                inner.changed[y] = false;
+
+                                if y < min {
+                                    min = y;
                                 }
-                                if block.underlined {
-                                    display.rect(x * 8, y * 16 + 14, 8, 1, Color {
-                                        data: block.fg.data
+                                if y > max {
+                                    max = y;
+                                }
+
+                                display.rect(0, y * 16, inner.w * 8, 16, Color {
+                                    data: inner.background.data
+                                });
+
+                                for x in 0..inner.w {
+                                    let block = inner.display[y * inner.w + x];
+                                    let (bg, fg) = if inner.cursor && inner.y == y && inner.x == x {
+                                        (block.fg.data, block.bg.data)
+                                    }else{
+                                        (block.bg.data, block.fg.data)
+                                    };
+                                    display.rect(x * 8, y * 16, 8, 16, Color {
+                                        data: bg
                                     });
+                                    if block.c != ' ' {
+                                        display.char(x * 8, y * 16, block.c, Color {
+                                            data: fg
+                                        });
+                                    }
+                                    if block.underlined {
+                                        display.rect(x * 8, y * 16 + 14, 8, 1, Color {
+                                            data: fg
+                                        });
+                                    }
                                 }
                             }
                         }
-                        if inner.cursor {
-                            display.rect(inner.x * 8, inner.y * 16, 8, 16, Color {
-                                data: inner.foreground.data
-                            });
+
+                        if min <= max {
+                            display.flip_rows(min * 16, (max + 1 - min) * 16);
                         }
-                        display.flip();
                     }
                 }
             }
