@@ -130,10 +130,6 @@ impl Console {
                                     max = y;
                                 }
 
-                                display.rect(0, y * 16, inner.w * 8, 16, Color {
-                                    data: inner.background.data
-                                });
-
                                 for x in 0..inner.w {
                                     let block = inner.display[y * inner.w + x];
                                     let (bg, fg) = if inner.cursor && inner.y == y && inner.x == x {
@@ -159,7 +155,8 @@ impl Console {
                         }
 
                         if min <= max {
-                            display.flip_rows(min * 16, (max + 1 - min) * 16);
+                            //display.flip_rows(min * 16, (max + 1 - min) * 16);
+                            display.flip();
                         }
                     }
                 }

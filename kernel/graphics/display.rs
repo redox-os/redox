@@ -125,10 +125,10 @@ impl Display {
         let data = color.data;
 
         let start_y = cmp::min(self.height - 1, y);
-        let end_y = cmp::min(self.height - 1, y + h);
+        let end_y = cmp::min(self.height, y + h);
 
         let start_x = cmp::min(self.width - 1, x);
-        let len = cmp::min(self.width - 1, x + w) - start_x;
+        let len = cmp::min(self.width, x + w) - start_x;
 
         for y in start_y..end_y {
             unsafe {
