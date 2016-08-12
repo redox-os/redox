@@ -25,6 +25,7 @@
 #![feature(heap_api)]
 #![feature(int_error_internals)]
 #![feature(lang_items)]
+#![feature(linkage)]
 #![feature(macro_reexport)]
 #![feature(naked_functions)]
 #![feature(oom)]
