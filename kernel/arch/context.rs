@@ -26,6 +26,8 @@ use system::error::{Error, Result, EBADF, EFAULT, ENOMEM, ESRCH, ENOENT, EINVAL}
 
 use sync::WaitMap;
 
+pub const CONTEXT_FX_SIZE: usize = memory::CLUSTER_SIZE;
+
 pub const CONTEXT_IMAGE_ADDR: usize = 0x8048000;
 pub const CONTEXT_IMAGE_SIZE: usize = 0x10000000;
 
@@ -196,8 +198,9 @@ pub unsafe fn context_clone(regs: &Regs) -> Result<usize> {
     let contexts = &mut *::env().contexts.get();
     let flags = regs.bx;
 
-    let kernel_stack = memory::alloc(CONTEXT_STACK_SIZE + 512);
-    if kernel_stack > 0 {
+    let kernel_stack = memory::alloc(CONTEXT_STACK_SIZE);
+    let fx = memory::alloc(CONTEXT_FX_SIZE);
+    if kernel_stack > 0 && fx > 0 {
         let clone_pid = Context::next_pid();
 
         let context = {
@@ -219,8 +222,7 @@ pub unsafe fn context_clone(regs: &Regs) -> Result<usize> {
             let mut kernel_regs = parent.regs;
             kernel_regs.sp = child_regs_addr - extra_size;
 
-            let fx = kernel_stack + CONTEXT_STACK_SIZE;
-            ::memcpy(fx as *mut u8, parent.fx as *const u8, 512);
+            memory::copy_pages(fx as *mut u8, parent.fx as *const u8, CONTEXT_FX_SIZE);
 
             let stack = if let Some(ref entry) = parent.stack {
                 let physical_address = memory::alloc(entry.virtual_size);
@@ -740,7 +742,7 @@ impl Context {
     }
 
     pub unsafe fn root() -> Box<Self> {
-        let fx = memory::alloc(512);
+        let fx = memory::alloc(CONTEXT_FX_SIZE);
 
         box Context {
             pid: Context::next_pid(),
@@ -777,12 +779,11 @@ impl Context {
     }
 
     pub unsafe fn new(name: Cow<'static, str>, call: usize, args: &Vec<usize>) -> Box<Self> {
-        let kernel_stack = memory::alloc(CONTEXT_STACK_SIZE + 512);
+        let kernel_stack = memory::alloc(CONTEXT_STACK_SIZE);
+        let fx = memory::alloc(CONTEXT_FX_SIZE);
 
         let mut regs = Regs::default();
         regs.sp = kernel_stack + CONTEXT_STACK_SIZE - 128;
-
-        let fx = kernel_stack + CONTEXT_STACK_SIZE;
 
         let mut ret = box Context {
             pid: Context::next_pid(),
