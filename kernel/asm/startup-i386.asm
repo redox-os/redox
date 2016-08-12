@@ -88,6 +88,16 @@ gdt:
         at GDTEntry.baseh, db 0
     iend
 
+.user_tls equ $ - gdt
+    istruc GDTEntry
+        at GDTEntry.limitl, dw 0xFFFF
+        at GDTEntry.basel, dw 0
+        at GDTEntry.basem, db 0
+        at GDTEntry.attribute, db attrib.present | attrib.ring3 | attrib.user | attrib.writable
+        at GDTEntry.flags__limith, db 0xFF | flags.granularity | flags.default_operand_size
+        at GDTEntry.baseh, db 0
+    iend
+
 .tss equ $ - gdt
     istruc GDTEntry
         at GDTEntry.limitl, dw (tss.end - tss) & 0xFFFF

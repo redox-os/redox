@@ -1,8 +1,10 @@
+tls
+
 # DHCP, run in background
-dhcpd -b
+#dhcpd -b
 
 # Login process, handles debug console
-login
+#login
 
 # Comment out login, and uncomment the following to go straight to the GUI
 # orbital

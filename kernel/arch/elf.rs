@@ -43,23 +43,7 @@ impl<'a> Elf<'a> {
         for i in 0..header.ph_len {
             let segment = ptr::read((self.data.as_ptr() as usize + header.ph_off as usize + i as usize * header.ph_ent_len as usize) as *const ElfSegment);
 
-            if segment._type == 1 {
-                segments.push(segment);
-            }
-        }
-
-        segments
-    }
-
-    pub unsafe fn tss_segments(&self) -> Vec<ElfSegment> {
-        let mut segments = Vec::new();
-
-        let header = &*(self.data.as_ptr() as usize as *const ElfHeader);
-
-        for i in 0..header.ph_len {
-            let segment = ptr::read((self.data.as_ptr() as usize + header.ph_off as usize + i as usize * header.ph_ent_len as usize) as *const ElfSegment);
-
-            if segment._type == 7 {
+            if segment._type == 1 || segment._type == 7 {
                 segments.push(segment);
             }
         }

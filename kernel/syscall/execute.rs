@@ -4,7 +4,9 @@ use alloc::arc::Arc;
 
 use arch::context::{CONTEXT_IMAGE_ADDR, CONTEXT_IMAGE_SIZE, CONTEXT_HEAP_ADDR, CONTEXT_HEAP_SIZE,
                     CONTEXT_MMAP_ADDR, CONTEXT_MMAP_SIZE, CONTEXT_STACK_SIZE, CONTEXT_STACK_ADDR,
+                    CONTEXT_TLS_ADDR,
                     context_switch, context_userspace, Context, ContextMemory, ContextZone};
+use arch::gdt::{GDT_USER_CODE, GDT_USER_DATA, GDT_USER_TLS, GdtEntry};
 use arch::elf::Elf;
 use arch::memory;
 use arch::regs::Regs;
@@ -64,6 +66,32 @@ pub fn execute_thread(context_ptr: *mut Context, entry: usize, mut args: Vec<Str
             allocated: true,
         });
 
+        unsafe {
+            if let Some(ref mut tls_master) = *context.tls_master.get() {
+                let mut tls = ContextMemory {
+                    physical_address: memory::alloc_aligned(tls_master.virtual_size + 4096, 4096),
+                    virtual_address: CONTEXT_TLS_ADDR,
+                    virtual_size: tls_master.virtual_size + 4096,
+                    writeable: true,
+                    allocated: true
+                };
+
+                tls_master.map();
+                tls.map();
+
+                *(tls.virtual_address as *mut usize) = tls.virtual_address + tls.virtual_size;
+
+                ::memcpy((tls.virtual_address + tls.virtual_size - tls_master.virtual_size) as *mut u8,
+                        tls_master.virtual_address as *const u8,
+                        tls_master.virtual_size);
+
+                tls.unmap();
+                tls_master.unmap();
+
+                context.tls = Some(tls);
+            }
+        }
+
         let user_sp = if let Some(ref stack) = context.stack {
             let mut sp = stack.physical_address + stack.virtual_size - 128;
             for arg in context_args.iter() {
@@ -75,17 +103,19 @@ pub fn execute_thread(context_ptr: *mut Context, entry: usize, mut args: Vec<Str
             0
         };
 
-        unsafe {
-            context.push(0x20 | 3);
-            context.push(user_sp);
-            context.push(1 << 9);
-            context.push(0x18 | 3);
-            context.push(entry);
-            context.push(context_userspace as usize);
-        }
-
         if let Some(vfork) = context.vfork.take() {
             unsafe { (*vfork).unblock("execute_thread vfork") }
+        }
+
+        unsafe {
+            context.push((GDT_USER_TLS * mem::size_of::<GdtEntry>()) | 3);
+            context.push((GDT_USER_DATA * mem::size_of::<GdtEntry>()) | 3);
+            context.push(user_sp);
+            context.push(1 << 9);
+            context.push((GDT_USER_CODE * mem::size_of::<GdtEntry>()) | 3);
+            context.push(entry);
+            context.push(0);
+            context.push(context_userspace as usize);
         }
     });
 
@@ -171,7 +201,6 @@ pub fn execute(mut args: Vec<String>) -> Result<usize> {
             Ok(executable) => {
                 let entry = unsafe { executable.entry() };
                 let segments = unsafe { executable.load_segments() };
-                let tss_segments = unsafe { executable.tss_segments() };
 
                 if entry > 0 && ! segments.is_empty() {
                     unsafe { current.unmap() };
@@ -220,11 +249,11 @@ pub fn execute(mut args: Vec<String>) -> Result<usize> {
 
                             memory.writeable = segment.flags & 2 == 2;
 
-                            image.memory.push(memory);
-                        }
-
-                        for segment in tss_segments.iter() {
-                            syslog_info!("MAKE TSS: {:?}", segment);
+                            if segment._type == 1 {
+                                image.memory.push(memory);
+                            } else if segment._type == 7 {
+                                unsafe { *current.tls_master.get() = Some(memory) };
+                            }
                         }
                     }
 

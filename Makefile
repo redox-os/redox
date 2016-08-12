@@ -344,6 +344,7 @@ simple: \
 	filesystem/bin/play \
 	filesystem/bin/redoxfs-utility \
 	filesystem/bin/screenfetch \
+	filesystem/bin/tls \
 	filesystem/info
 	#TODO: binutils	filesystem/bin/zfs c_bins
 
