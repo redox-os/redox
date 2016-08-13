@@ -62,9 +62,9 @@ pub fn log(s: &str) -> isize {
 pub mod thread_destructor {
     /// Does this platform support thread destructors?
     ///
-    /// This will always return false.
+    /// This will always return true.
     #[inline]
-    pub fn is_supported() -> bool { false }
+    pub fn is_supported() -> bool { true }
 
     /// Register a thread destructor.
     ///

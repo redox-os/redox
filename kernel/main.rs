@@ -549,6 +549,13 @@ pub extern "cdecl" fn kernel(interrupt: usize, mut regs: &mut Regs) {
                         }
                     }
 
+                    if let Some(ref tls) = context.tls {
+                        if cr2 >= tls.virtual_address && cr2 <= tls.virtual_address + tls.virtual_size {
+                            syslog_info!("    TLS {:08X}", cr2 - tls.virtual_address + tls.physical_address);
+                            syslog_info!("    {:08X}:{:08X} at {:08X}", tls.virtual_address, tls.virtual_address + tls.virtual_size, tls.physical_address);
+                        }
+                    }
+
                     if let Some(address) = unsafe { (*context.image.get()).translate(cr2, 0) } {
                         syslog_info!("    IMAGE {:08X}", address);
 

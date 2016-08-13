@@ -51,11 +51,12 @@ interrupts:
 
 		call qword [.handler]
 
-	mov rax, gdt.user_data | 3 ;[esp + 44] ;Use new SS as DS
+	mov rax, gdt.user_data | 3
     mov ds, rax
     mov es, rax
-    mov fs, rax
     mov gs, rax
+	mov rax, gdt.user_tls | 3
+    mov fs, rax
 
 	add rsp, 16 ; Skip interrupt code and reg pointer
 

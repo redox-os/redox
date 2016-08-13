@@ -344,6 +344,7 @@ simple: \
 	filesystem/bin/play \
 	filesystem/bin/redoxfs-utility \
 	filesystem/bin/screenfetch \
+	filesystem/bin/tls \
 	filesystem/info
 	#TODO: binutils	filesystem/bin/zfs c_bins
 
@@ -584,7 +585,7 @@ $(BUILD)/libunborrow.rlib: crates/unborrow/src/lib.rs crates/unborrow/src/*.rs $
 	$(RUSTC) $(RUSTCFLAGS) --crate-name unborrow --crate-type lib -o $@ $<
 
 $(BUILD)/libralloc.rlib: crates/ralloc/src/lib.rs crates/ralloc/src/*.rs $(BUILD)/libralloc_shim.rlib $(BUILD)/libunborrow.rlib
-	$(RUSTC) $(RUSTCFLAGS) --crate-name ralloc --crate-type lib -o $@ $< --cfg 'feature="allocator"'
+	$(RUSTC) $(RUSTCFLAGS) --crate-name ralloc --crate-type lib -o $@ $< --cfg 'feature="allocator"' --cfg 'feature="tls"'
 
 $(BUILD)/libralloc_shim.rlib: crates/ralloc_shim/lib.rs $(BUILD)/libsystem.rlib
 	$(RUSTC) $(RUSTCFLAGS) --crate-name ralloc_shim --crate-type lib -o $@ $<

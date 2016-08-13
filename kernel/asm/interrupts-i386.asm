@@ -40,10 +40,11 @@ interrupts:
 
     	call dword [.handler]
 
-    mov eax, gdt.user_data | 3 ;[esp + 44] ;Use new SS as DS
+    mov eax, gdt.user_data | 3
     mov ds, eax
     mov es, eax
     mov fs, eax
+    mov eax, gdt.user_tls | 3
     mov gs, eax
 
     add esp, 8 ; Skip interrupt code and reg pointer
