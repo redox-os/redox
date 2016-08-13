@@ -103,3 +103,6 @@
 [submodule "crates/unborrow"]
 	path = crates/unborrow
 	url = https://github.com/durka/unborrow.git
+[submodule "crates/acid"]
+	path = crates/acid
+	url = https://github.com/redox-os/acid.git

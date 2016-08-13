@@ -258,6 +258,10 @@ filesystem/bin/tar: $(BUILD)/tar.bin
 	mkdir -p filesystem/bin
 	cp $< $@
 
+filesystem/bin/acid: crates/acid/src/main.rs crates/acid/src/*.rs $(BUILD)/libstd.rlib
+	mkdir -p filesystem/bin
+	$(RUSTC) $(RUSTCFLAGS) -C lto --crate-type bin -o $@ $<
+
 filesystem/bin/launcher: crates/orbutils/src/launcher/main.rs crates/orbutils/src/launcher/*.rs $(BUILD)/libstd.rlib $(BUILD)/liborbclient.rlib $(BUILD)/liborbtk.rlib
 	mkdir -p filesystem/bin
 	$(RUSTC) $(RUSTCFLAGS) -C lto --crate-type bin -o $@ $< -L $(BUILD)/deps
@@ -340,6 +344,7 @@ simple: \
 	minimal \
 	extrautils \
 	games \
+	filesystem/bin/acid \
 	filesystem/bin/example \
 	filesystem/bin/play \
 	filesystem/bin/redoxfs-utility \
