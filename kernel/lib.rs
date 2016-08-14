@@ -76,6 +76,7 @@ use arch::interrupt::{set_interrupts, halt};
 #[macro_use]
 extern crate arch;
 
+/// Intrinsics for panic handling
 pub mod panic;
 
 #[no_mangle]
