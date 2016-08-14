@@ -24,6 +24,8 @@ pub enum Call {
     Open,
     /// Close syscall
     Close,
+    /// Execute syscall
+    Exec,
     /// Unknown syscall
     Unknown
 }
@@ -38,6 +40,7 @@ impl From<usize> for Call {
             4 => Call::Write,
             5 => Call::Open,
             6 => Call::Close,
+            11 => Call::Exec,
             _ => Call::Unknown
         }
     }
@@ -73,23 +76,24 @@ pub type Result<T> = ::core::result::Result<T, Error>;
 
 /// Convert a pointer and length to slice, if valid
 /// TODO: Check validity
-pub fn convert_slice(ptr: usize, len: usize) -> Result<&'static [u8]> {
-    Ok(unsafe { slice::from_raw_parts(ptr as *const u8, len) })
+pub fn convert_slice<T>(ptr: *const T, len: usize) -> Result<&'static [T]> {
+    Ok(unsafe { slice::from_raw_parts(ptr, len) })
 }
 
 /// Convert a pointer and length to slice, if valid
 /// TODO: Check validity
-pub fn convert_slice_mut(ptr: usize, len: usize) -> Result<&'static mut [u8]> {
-    Ok(unsafe { slice::from_raw_parts_mut(ptr as *mut u8, len) })
+pub fn convert_slice_mut<T>(ptr: *mut T, len: usize) -> Result<&'static mut [T]> {
+    Ok(unsafe { slice::from_raw_parts_mut(ptr, len) })
 }
 
-pub fn handle(a: usize, b: usize, c: usize, d: usize) -> ::core::result::Result<usize, usize> {
+pub fn handle(a: usize, b: usize, c: usize, d: usize, e: usize, f: usize) -> ::core::result::Result<usize, usize> {
     match Call::from(a) {
         Call::Exit => exit(b),
-        Call::Read => read(b, convert_slice_mut(c, d)?),
-        Call::Write => write(b, convert_slice(c, d)?),
-        Call::Open => open(convert_slice(b, c)?, d),
+        Call::Read => read(b, convert_slice_mut(c as *mut u8, d)?),
+        Call::Write => write(b, convert_slice(c as *const u8, d)?),
+        Call::Open => open(convert_slice(b as *const u8, c)?, d),
         Call::Close => close(b),
+        Call::Exec => exec(convert_slice(b as *const u8, c)?, convert_slice(d as *const [usize; 2], e)?),
         Call::Unknown => Err(Error::NoCall)
     }.map_err(|err| err.into())
 }
