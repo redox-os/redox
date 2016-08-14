@@ -65,6 +65,7 @@
 //! In this case, it is recommended to add one page, 4096 bytes, to the buffer and retry.
 
 #![feature(asm)]
+#![feature(const_fn)]
 #![feature(lang_items)]
 #![feature(naked_functions)]
 #![no_std]

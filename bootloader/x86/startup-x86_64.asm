@@ -67,21 +67,13 @@ long_mode:
     mov gs, rax
     mov ss, rax
 
-    ; load long mode IDT
-    lidt [idtr]
-
     mov rsp, 0x800000 - 128
 
-    mov rax, gdt.tss
-    ltr ax
-
     ;rust init
+    xor rax, rax
     mov eax, [kernel_base + 0x18]
-    mov [interrupts.handler], rax
-    mov rax, gdtr
-    mov rbx, idtr
-    mov rcx, tss
-    int 0xFF
+    mov rbx, gdtr
+    jmp rax
 .lp:
     sti
     hlt
