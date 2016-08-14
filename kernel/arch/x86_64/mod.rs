@@ -23,3 +23,5 @@ pub mod serial;
 
 /// Task state segment.
 pub mod tss;
+
+pub mod physical;
