@@ -3,7 +3,11 @@ name = "kernel"
 version = "0.1.0"
 
 [lib]
+path = "kernel/lib.rs"
 crate-type = ["staticlib"]
+
+[target.'cfg(target_arch = "x86_64")'.dependencies]
+arch = { path = "arch/x86_64" }
 
 [dependencies]
 bitflags = "*"
