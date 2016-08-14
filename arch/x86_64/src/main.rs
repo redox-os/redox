@@ -71,8 +71,6 @@ pub unsafe extern fn kstart() -> ! {
     kmain();
 }
 
-#[naked]
-pub unsafe extern fn blank() {
-    asm!("xchg bx, bx" : : : : "intel", "volatile");
-    asm!("iretq" : : : : "intel", "volatile");
-}
+interrupt!(blank, {
+    println!("INTERRUPT");
+});
