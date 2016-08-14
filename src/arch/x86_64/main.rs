@@ -7,13 +7,13 @@ use super::idt::{IDTR, IDT};
 
 #[naked]
 #[no_mangle]
-pub unsafe extern fn kmain() {
+pub unsafe extern "C" fn kmain() {
     asm!("xchg bx, bx" : : : : "intel", "volatile");
 
     for entry in IDT.iter_mut() {
         entry.attribute = 1 << 7 | 0xE;
         entry.selector = 8;
-        entry.set_offset(&blank as *const _ as usize);
+        entry.set_offset(blank as usize);
         entry.zero = 0;
         entry.zero2 = 0;
     }
@@ -30,7 +30,7 @@ pub unsafe extern fn kmain() {
 }
 
 #[naked]
-pub unsafe extern fn blank() {
+pub unsafe extern "C" fn blank() {
     asm!("xchg bx, bx" : : : : "intel", "volatile");
     asm!("iretq" : : : : "intel", "volatile");
 }
