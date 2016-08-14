@@ -1,20 +1,22 @@
-#[repr(packed)]
+/// The Task State Segment.
+#[repr(C, packed)]
+#[derive(Debug, Default, Clone)]
 pub struct Tss {
-    pub reserved1: u32,
-    pub sp0: u64,
-    pub sp1: u64,
-    pub sp2: u64,
-    pub reserved2: u32,
-    pub reserved3: u32,
-    pub ist1: u64,
-    pub ist2: u64,
-    pub ist3: u64,
-    pub ist4: u64,
-    pub ist5: u64,
-    pub ist6: u64,
-    pub ist7: u64,
-    pub reserved4: u32,
-    pub reserved5: u32,
+    /// Reserved.
+    pub _reserved1: u32,
+    /// The stack-pointers (reg RSP) for the IO privilege level 0 through 2.
+    pub rsp: [u64; 3],
+    /// Reserved.
+    pub _reserved2: u32,
+    /// Reserved.
+    pub _reserved3: u32,
+    pub ist: [u64; 7],
+    /// Reserved.
+    pub _reserved4: u32,
+    /// Reserved.
+    pub _reserved5: u32,
+    // Reserved.
     pub reserved6: u16,
+    /// The offset to the IOPB.
     pub iomap_base: u16,
 }

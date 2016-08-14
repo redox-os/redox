@@ -1,23 +1,25 @@
-/// Global descriptor table
+//! X86_64 architecture primitives.
+
+/// Global descriptor table.
 pub mod gdt;
 
-/// Interrupt descriptor table
+/// Interrupt descriptor table.
 pub mod idt;
 
-/// IO Handling
+/// IO handling.
 pub mod io;
 
-/// IRQ Handling
+/// IRQ handling.
 pub mod irq;
 
-/// Initialization and main function
+/// Initialization and main function.
 pub mod main;
 
-/// Memcpy, memmove, etc.
+/// Core memory routines.
 pub mod mem;
 
-/// Serial driver and print! support
+/// Serial driver and `print!` support.
 pub mod serial;
 
-/// Task state segment
+/// Task state segment.
 pub mod tss;

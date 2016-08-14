@@ -45,3 +45,7 @@ If the condition is (or should be) unreachable, but if not upheld, leading to UB
 ### Be gentle
 
 Don't just write as much code as you can as quick as possible. Take your time and be careful.
+
+### Commits
+
+Use descriptive commits. One way to force yourself to do that is to not pass the `-m` flag, which will make your editor pop up, so that you can conviniently write long commit messages.
