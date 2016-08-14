@@ -65,6 +65,7 @@
 //! In this case, it is recommended to add one page, 4096 bytes, to the buffer and retry.
 
 #![feature(lang_items)]
+#![feature(question_mark)]
 #![no_std]
 
 #[macro_use]
@@ -85,6 +86,9 @@ extern crate arch_x86_64 as arch;
 /// Intrinsics for panic handling
 pub mod panic;
 
+/// Syscall handlers
+pub mod syscall;
+
 /// Tests
 #[cfg(test)]
 pub mod tests;
@@ -92,6 +96,8 @@ pub mod tests;
 #[no_mangle]
 pub extern fn kmain() {
     println!("TEST");
+
+    println!("{:?}", syscall::open(b"file:/test/file", 0));
 
     unsafe { set_interrupts() };
     loop {
