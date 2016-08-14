@@ -3,14 +3,18 @@ name = "kernel"
 version = "0.1.0"
 
 [lib]
+name = "kernel"
 path = "kernel/lib.rs"
 crate-type = ["staticlib"]
 
-[target.'cfg(target_arch = "x86_64")'.dependencies]
-arch = { path = "arch/x86_64" }
-
 [dependencies]
 bitflags = "*"
+
+[dev-dependencies]
+arch_test = { path = "arch/test" }
+
+[target.'cfg(target_arch = "x86_64")'.dependencies]
+arch_x86_64 = { path = "arch/x86_64" }
 
 [profile.dev]
 panic = "abort"

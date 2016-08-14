@@ -1,5 +1,5 @@
 [package]
-name = "arch"
+name = "arch_x86_64"
 version = "0.1.0"
 
 [dependencies]

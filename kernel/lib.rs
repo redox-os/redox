@@ -72,12 +72,22 @@ extern crate bitflags;
 
 use arch::interrupt::{set_interrupts, halt};
 
-/// Architecture specific items
+/// Architecture specific items (test)
+#[cfg(test)]
 #[macro_use]
-extern crate arch;
+extern crate arch_test as arch;
+
+/// Architecture specific items (x86_64)
+#[cfg(all(not(test), target_arch = "x86_64"))]
+#[macro_use]
+extern crate arch_x86_64 as arch;
 
 /// Intrinsics for panic handling
 pub mod panic;
+
+/// Tests
+#[cfg(test)]
+pub mod tests;
 
 #[no_mangle]
 pub extern fn kmain() {

@@ -15,7 +15,7 @@ qemu: build/harddrive.bin
 FORCE:
 
 build/libkernel.a: FORCE
-	cargo rustc -- -C lto -o $@
+	cargo rustc -- --crate-type staticlib -o $@
 	#--target $(ARCH)-unknown-none.json
 
 build/kernel.bin: build/libkernel.a
