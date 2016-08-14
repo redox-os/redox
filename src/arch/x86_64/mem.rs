@@ -1,4 +1,4 @@
-/// Memcpy
+/// Copy memory.
 ///
 /// Copy N bytes of memory from one location to another.
 #[no_mangle]
@@ -12,7 +12,7 @@ pub unsafe extern fn memcpy(dest: *mut u8, src: *const u8, n: usize) -> *mut u8 
     dest
 }
 
-/// Memmove
+/// Copy (possibly overlapping) memory.
 ///
 /// Copy N bytes of memory from src to dest. The memory areas may overlap.
 #[no_mangle]
@@ -35,7 +35,7 @@ pub unsafe extern fn memmove(dest: *mut u8, src: *const u8,
     dest
 }
 
-/// Memset
+/// Set memory.
 ///
 /// Fill a block of memory with a specified value.
 #[no_mangle]
@@ -49,7 +49,7 @@ pub unsafe extern fn memset(s: *mut u8, c: i32, n: usize) -> *mut u8 {
     s
 }
 
-/// Memcmp
+/// Compare memory.
 ///
 /// Compare two blocks of memory.
 #[no_mangle]
