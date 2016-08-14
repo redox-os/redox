@@ -146,5 +146,3 @@ tss:
         at TSS.iomap_base, dw 0xFFFF
     iend
 .end:
-
-%include "interrupts-i386.asm"

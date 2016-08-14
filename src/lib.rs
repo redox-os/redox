@@ -66,9 +66,27 @@
 
 #![feature(asm)]
 #![feature(const_fn)]
+#![feature(core_intrinsics)]
 #![feature(lang_items)]
 #![feature(naked_functions)]
 #![no_std]
+
+#[macro_use]
+extern crate bitflags;
+
+/// Print to console
+macro_rules! print {
+    ($($arg:tt)*) => ({
+        use $crate::core::fmt::Write;
+        let _ = write!($crate::arch::serial::SerialConsole::new(), $($arg)*);
+    });
+}
+
+/// Print with new line to console
+macro_rules! println {
+    ($fmt:expr) => (print!(concat!($fmt, "\n")));
+    ($fmt:expr, $($arg:tt)*) => (print!(concat!($fmt, "\n"), $($arg)*));
+}
 
 /// Architecture specific items
 pub mod arch;
@@ -81,3 +99,10 @@ extern "C" fn eh_personality() {}
 /// Required to handle panics
 #[lang = "panic_fmt"]
 extern "C" fn panic_fmt() -> ! {loop{}}
+
+#[allow(non_snake_case)]
+#[no_mangle]
+/// Required to handle panics
+pub extern "C" fn _Unwind_Resume() -> ! {
+    loop {}
+}

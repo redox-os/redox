@@ -73,11 +73,8 @@ long_mode:
     xor rax, rax
     mov eax, [kernel_base + 0x18]
     mov rbx, gdtr
+    xchg bx, bx
     jmp rax
-.lp:
-    sti
-    hlt
-    jmp .lp
 
     gdtr:
         dw gdt.end + 1  ; size
@@ -179,5 +176,3 @@ long_mode:
             at TSS.iomap_base, dw 0xFFFF
         iend
     .end:
-
-    %include "interrupts-x86_64.asm"
