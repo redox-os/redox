@@ -1,0 +1,14 @@
+ata0-master: type=disk, path="build/harddrive.bin", mode=flat
+boot: disk
+com1: enabled=1, mode=file, dev=build/serial.log
+megs: 1024
+
+magic_break: enabled=1
+display_library: x, options="gui_debug"
+
+log: -
+debug: action=ignore
+info: action=report
+error: action=report
+panic: action=ask
+debugger_log: -
