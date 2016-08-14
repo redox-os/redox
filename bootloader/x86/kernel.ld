@@ -1,4 +1,4 @@
-ENTRY(kmain)
+ENTRY(kstart)
 
 SECTIONS {
     kernel_base = 0x101000;

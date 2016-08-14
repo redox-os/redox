@@ -30,8 +30,12 @@ static BSS_TEST_ZERO: usize = 0;
 /// Test of non-zero values in BSS.
 static BSS_TEST_NONZERO: usize = 0xFFFFFFFFFFFFFFFF;
 
+extern {
+    fn kmain() -> !;
+}
+
 #[no_mangle]
-pub unsafe extern "C" fn kmain() {
+pub unsafe extern fn kstart() -> ! {
     asm!("xchg bx, bx" : : : : "intel", "volatile");
 
     // Zero BSS, this initializes statics that are set to 0
@@ -44,8 +48,8 @@ pub unsafe extern "C" fn kmain() {
             memset(start_ptr, 0, size);
         }
 
-        //debug_assert_eq!(BSS_TEST_ZERO, 0);
-        //debug_assert_eq!(BSS_TEST_NONZERO, 0xFFFFFFFFFFFFFFFF);
+        debug_assert_eq!(BSS_TEST_ZERO, 0);
+        debug_assert_eq!(BSS_TEST_NONZERO, 0xFFFFFFFFFFFFFFFF);
     }
 
     asm!("xchg bx, bx" : : : : "intel", "volatile");
@@ -64,15 +68,9 @@ pub unsafe extern "C" fn kmain() {
 
     asm!("xchg bx, bx" : : : : "intel", "volatile");
 
-    print!("TEST\n");
-
-    loop{
-        asm!("hlt" : : : : "intel", "volatile");
-    }
+    kmain();
 }
 
-#[naked]
-pub unsafe extern "C" fn blank() {
-    asm!("xchg bx, bx" : : : : "intel", "volatile");
-    asm!("iretq" : : : : "intel", "volatile");
-}
+interrupt!(blank, {
+    println!("INTERRUPT");
+});

@@ -1,0 +1,20 @@
+#[repr(packed)]
+pub struct Tss {
+    pub reserved1: u32,
+    pub sp0: u64,
+    pub sp1: u64,
+    pub sp2: u64,
+    pub reserved2: u32,
+    pub reserved3: u32,
+    pub ist1: u64,
+    pub ist2: u64,
+    pub ist3: u64,
+    pub ist4: u64,
+    pub ist5: u64,
+    pub ist6: u64,
+    pub ist7: u64,
+    pub reserved4: u32,
+    pub reserved5: u32,
+    pub reserved6: u16,
+    pub iomap_base: u16,
+}
