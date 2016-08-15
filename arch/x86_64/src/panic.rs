@@ -18,7 +18,7 @@ extern "C" fn panic_fmt(fmt: ::core::fmt::Arguments, file: &str, line: u32) -> !
     println!("LINE: {}", line);
 
     println!("TRACE: {:>016X}", rbp);
-    for i in 0..10 {
+    for _frame in 0..16 { //Maximum 16 frames
         unsafe {
             let rip = *(rbp as *const usize).offset(1);
             println!("  {:>016X}: {:>016X}", rbp, rip);

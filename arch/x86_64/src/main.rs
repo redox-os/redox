@@ -3,11 +3,12 @@
 /// It must create the IDT with the correct entries, those entries are
 /// defined in other files inside of the `arch` module
 
+use bump_allocator::{HEAP_START, HEAP_SIZE};
 use externs::memset;
 use gdt;
 use idt;
-use memory::{self, Frame};
-use paging::{self, entry, Page, PhysicalAddress};
+use memory;
+use paging::{self, Page, VirtualAddress};
 
 /// Test of zero values in BSS.
 static BSS_TEST_ZERO: usize = 0;
@@ -53,6 +54,14 @@ pub unsafe extern fn kstart() -> ! {
 
     // Initialize paging
     let mut active_table = paging::init(&mut allocator);
+
+    // Initialize heap
+    let heap_start_page = Page::containing_address(VirtualAddress::new(HEAP_START));
+    let heap_end_page = Page::containing_address(VirtualAddress::new(HEAP_START + HEAP_SIZE-1));
+
+    for page in Page::range_inclusive(heap_start_page, heap_end_page) {
+        active_table.map(page, paging::entry::WRITABLE, &mut allocator);
+    }
 
     asm!("xchg bx, bx" : : : : "intel", "volatile");
     kmain();

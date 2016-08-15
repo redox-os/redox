@@ -5,9 +5,8 @@ use core::ops::{Deref, DerefMut};
 
 use memory::{Frame, FrameAllocator};
 
-use self::entry::{PRESENT, WRITABLE, EntryFlags};
+use self::entry::{PRESENT, WRITABLE};
 use self::mapper::Mapper;
-use self::table::{Table, Level4};
 use self::temporary_page::TemporaryPage;
 
 pub mod entry;
@@ -44,7 +43,7 @@ pub unsafe fn init<A>(allocator: &mut A) -> ActivePageTable where A: FrameAlloca
 
     let mut active_table = ActivePageTable::new();
 
-    let mut temporary_page = TemporaryPage::new(Page { number: 0xcafebabe },
+    let mut temporary_page = TemporaryPage::new(Page { number: 0x80000000 },
         allocator);
 
     let mut new_table = {
@@ -54,6 +53,11 @@ pub unsafe fn init<A>(allocator: &mut A) -> ActivePageTable where A: FrameAlloca
 
     active_table.with(&mut new_table, &mut temporary_page, |mapper| {
         let mut remap = |start: usize, end: usize, flags: entry::EntryFlags| {
+            /* TODO
+            let start_frame = Frame::containing_address(PhysicalAddress::new(start));
+            let end_frame = Frame::containing_address(PhysicalAddress::new(end));
+            for frame in Frame::range_inclusive(start_frame, end_frame) {}
+            */
             for i in 0..(end - start + PAGE_SIZE - 1)/PAGE_SIZE {
                 let frame = Frame::containing_address(PhysicalAddress::new(start + i * PAGE_SIZE));
                 mapper.identity_map(frame, flags, allocator);
@@ -197,7 +201,7 @@ impl VirtualAddress {
 }
 
 /// Page
-#[derive(Debug, Clone, Copy)]
+#[derive(Debug, Clone, Copy, PartialEq, Eq, PartialOrd, Ord)]
 pub struct Page {
     number: usize
 }
@@ -227,5 +231,31 @@ impl Page {
         assert!(address.get() < 0x0000_8000_0000_0000 || address.get() >= 0xffff_8000_0000_0000,
             "invalid address: 0x{:x}", address.get());
         Page { number: address.get() / PAGE_SIZE }
+    }
+
+    pub fn range_inclusive(start: Page, end: Page) -> PageIter {
+        PageIter {
+            start: start,
+            end: end,
+        }
+    }
+}
+
+pub struct PageIter {
+    start: Page,
+    end: Page,
+}
+
+impl Iterator for PageIter {
+    type Item = Page;
+
+    fn next(&mut self) -> Option<Page> {
+        if self.start <= self.end {
+            let page = self.start;
+            self.start.number += 1;
+            Some(page)
+        } else {
+            None
+        }
     }
 }

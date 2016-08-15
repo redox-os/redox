@@ -11,6 +11,7 @@
 
 #[macro_use]
 extern crate bitflags;
+extern crate bump_allocator;
 extern crate x86;
 
 /// Print to console

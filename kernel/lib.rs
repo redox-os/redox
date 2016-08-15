@@ -85,10 +85,6 @@ extern crate arch_test as arch;
 #[macro_use]
 extern crate arch_x86_64 as arch;
 
-/// Bump allocator
-#[cfg(all(not(test), target_arch = "x86_64"))]
-extern crate bump_allocator;
-
 extern crate alloc;
 #[macro_use]
 extern crate collections;
