@@ -48,12 +48,12 @@ startup_arch:
 
     mov ecx, 0xC0000080               ; Read from the EFER MSR.
     rdmsr
-    or eax, 0x00000100                ; Set the Long-Mode-Enable bit.
+    or eax, 1 << 11 | 1 << 8          ; Set the Long-Mode-Enable and NXE bit.
     wrmsr
 
     ;enabling paging and protection simultaneously
     mov ebx, cr0
-    or ebx, 0x80000001                ;Bit 31: Paging, Bit 0: Protected Mode
+    or ebx, 1 << 31 | 1 << 16 | 1                ;Bit 31: Paging, Bit 16: write protect kernel, Bit 0: Protected Mode
     mov cr0, ebx
 
     ; far jump to enable Long Mode and load CS with 64 bit segment
@@ -69,13 +69,12 @@ long_mode:
     mov gs, rax
     mov ss, rax
 
-    mov rsp, 0x800000 - 128
+    mov rsp, 0x0009F000
 
     ;rust init
     xor rax, rax
     mov eax, [kernel_base + 0x18]
     mov rbx, gdtr
-    xchg bx, bx
     jmp rax
 
     gdtr:

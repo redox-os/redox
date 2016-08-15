@@ -4,3 +4,7 @@ version = "0.1.0"
 
 [dependencies]
 bitflags = "*"
+
+[dependencies.x86]
+default-features = false
+version = "0.7.1"

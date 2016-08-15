@@ -67,7 +67,6 @@
 #![feature(alloc)]
 #![feature(collections)]
 #![feature(const_fn)]
-#![feature(lang_items)]
 #![feature(question_mark)]
 #![no_std]
 
@@ -96,9 +95,6 @@ extern crate collections;
 
 /// Context management
 pub mod context;
-
-/// Intrinsics for panic handling
-pub mod panic;
 
 /// Schemes, filesystem handlers
 pub mod scheme;

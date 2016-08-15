@@ -96,7 +96,8 @@ impl Frame {
         PhysicalAddress::new(self.number * PAGE_SIZE)
     }
 
-    fn clone(&self) -> Frame {
+    //TODO: Set private
+    pub fn clone(&self) -> Frame {
         Frame {
             number: self.number
         }

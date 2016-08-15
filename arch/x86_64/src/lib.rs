@@ -4,12 +4,14 @@
 #![feature(concat_idents)]
 #![feature(const_fn)]
 #![feature(core_intrinsics)]
+#![feature(lang_items)]
 #![feature(naked_functions)]
 #![feature(unique)]
 #![no_std]
 
 #[macro_use]
 extern crate bitflags;
+extern crate x86;
 
 /// Print to console
 #[macro_export]
@@ -36,6 +38,8 @@ macro_rules! interrupt {
             unsafe fn inner() {
                 $func
             }
+
+            asm!("xchg bx, bx" : : : : "intel", "volatile");
 
             // Push scratch registers
             asm!("push rax
@@ -91,6 +95,9 @@ pub mod memory;
 
 /// Paging
 pub mod paging;
+
+/// Panic
+pub mod panic;
 
 /// Serial driver and print! support
 pub mod serial;

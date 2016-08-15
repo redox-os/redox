@@ -15,7 +15,7 @@
     "relocation-model": "static",
     "code-model": "kernel",
     "disable-redzone": true,
-    "eliminate-frame-pointer": true,
+    "eliminate-frame-pointer": false,
     "exe-suffix": ".bin",
     "has-rpath": false,
     "no-compiler-rt": true,

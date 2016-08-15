@@ -18,7 +18,7 @@ arch_x86_64 = { path = "arch/x86_64" }
 bump_allocator = { path = "alloc/bump_allocator"}
 
 [profile.dev]
-panic = "abort"
+panic = "unwind"
 
 [profile.release]
 panic = "abort"
