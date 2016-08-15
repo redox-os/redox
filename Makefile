@@ -10,7 +10,7 @@ bochs: build/harddrive.bin
 	bochs -f bochs.$(ARCH)
 
 qemu: build/harddrive.bin
-	qemu-system-$(ARCH) -serial mon:stdio -drive file=$<,format=raw,index=0,media=disk
+	qemu-system-$(ARCH) -serial mon:stdio -drive file=$<,format=raw,index=0,media=disk -nographic
 
 FORCE:
 

@@ -1,5 +1,7 @@
 //! Filesystem syscalls
 
+use scheme::Scheme;
+
 use super::{Error, Result};
 
 /// Read syscall
@@ -27,9 +29,10 @@ pub fn write(fd: usize, buf: &[u8]) -> Result<usize> {
 /// Open syscall
 pub fn open(path: &[u8], flags: usize) -> Result<usize> {
     println!("Open {:?}: {:X}", ::core::str::from_utf8(path), flags);
+    let file = unsafe { &mut ::scheme::SCHEME }.open(path, flags)?;
     if let Some(fd) = unsafe { &mut ::context::CONTEXT }.add_file(::context::file::File {
         scheme: 0,
-        number: 0
+        number: file
     }) {
         Ok(fd)
     } else {

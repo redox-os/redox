@@ -90,6 +90,9 @@ pub mod context;
 /// Intrinsics for panic handling
 pub mod panic;
 
+/// Schemes, filesystem handlers
+pub mod scheme;
+
 /// Syscall handlers
 pub mod syscall;
 
@@ -101,9 +104,9 @@ pub mod tests;
 pub extern fn kmain() {
     println!("TEST");
 
-    println!("{:?}", syscall::open(b"stdin", 0));
-    println!("{:?}", syscall::open(b"stdout", 0));
-    println!("{:?}", syscall::open(b"stderr", 0));
+    println!("{:?}", syscall::open(b"debug:", 0));
+    println!("{:?}", syscall::open(b"debug:", 0));
+    println!("{:?}", syscall::open(b"debug:", 0));
 
     loop {
         unsafe {
