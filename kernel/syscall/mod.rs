@@ -12,7 +12,7 @@ pub mod fs;
 pub mod process;
 
 /// System call list
-#[derive(Copy, Clone, Debug)]
+#[derive(Copy, Clone, Debug, Eq, PartialEq)]
 pub enum Call {
     /// Exit syscall
     Exit,
@@ -47,7 +47,7 @@ impl From<usize> for Call {
 }
 
 /// The error number for an invalid value
-#[derive(Copy, Clone, Debug)]
+#[derive(Copy, Clone, Debug, Eq, PartialEq)]
 pub enum Error {
     /// Operation not permitted
     NotPermitted,
