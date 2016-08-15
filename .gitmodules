@@ -106,3 +106,6 @@
 [submodule "crates/acid"]
 	path = crates/acid
 	url = https://github.com/redox-os/acid.git
+[submodule "crates/orbital"]
+	path = crates/orbital
+	url = https://github.com/redox-os/orbital.git
