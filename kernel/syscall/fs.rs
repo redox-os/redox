@@ -5,7 +5,12 @@ use super::{Error, Result};
 /// Read syscall
 pub fn read(fd: usize, buf: &mut [u8]) -> Result<usize> {
     println!("Read {}: {}", fd, buf.len());
-    Ok(0)
+    if let Some(file) = unsafe { &mut ::context::CONTEXT }.files.get(fd) {
+        println!("{:?}", file);
+        Ok(0)
+    } else {
+        Err(Error::BadFile)
+    }
 }
 
 /// Write syscall
