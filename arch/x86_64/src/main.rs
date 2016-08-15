@@ -3,7 +3,7 @@
 /// It must create the IDT with the correct entries, those entries are
 /// defined in other files inside of the `arch` module
 
-use bump_allocator::{HEAP_START, HEAP_SIZE};
+use allocator::{HEAP_START, HEAP_SIZE};
 use externs::memset;
 use gdt;
 use idt;

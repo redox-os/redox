@@ -12,16 +12,16 @@ pub mod area_frame_alloc;
 static mut MEMORY_MAP: [MemoryArea; 512] = [MemoryArea { base_addr: 0, length: 0, _type: 0, acpi: 0 }; 512];
 
 /// Memory does not exist
-const MEMORY_AREA_NULL: u32 = 0;
+pub const MEMORY_AREA_NULL: u32 = 0;
 
 /// Memory is free to use
-const MEMORY_AREA_FREE: u32 = 1;
+pub const MEMORY_AREA_FREE: u32 = 1;
 
 /// Memory is reserved
-const MEMORY_AREA_RESERVED: u32 = 2;
+pub const MEMORY_AREA_RESERVED: u32 = 2;
 
 /// Memory is used by ACPI, and can be reclaimed
-const MEMORY_AREA_ACPI: u32 = 3;
+pub const MEMORY_AREA_ACPI: u32 = 3;
 
 #[derive(Clone)]
 pub struct MemoryAreaIter {

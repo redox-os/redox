@@ -9,9 +9,10 @@
 #![feature(unique)]
 #![no_std]
 
+extern crate hole_list_allocator as allocator;
+
 #[macro_use]
 extern crate bitflags;
-extern crate bump_allocator;
 extern crate x86;
 
 /// Print to console

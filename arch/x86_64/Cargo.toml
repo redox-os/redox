@@ -4,7 +4,7 @@ version = "0.1.0"
 
 [dependencies]
 bitflags = "*"
-bump_allocator = { path = "../../alloc/bump_allocator"}
+hole_list_allocator = { path = "../../alloc/hole_list_allocator"}
 
 [dependencies.x86]
 default-features = false
