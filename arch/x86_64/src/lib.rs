@@ -89,9 +89,6 @@ pub mod io;
 /// Interrupt instructions
 pub mod interrupt;
 
-/// Initialization and main function
-pub mod main;
-
 /// Memory management
 pub mod memory;
 
@@ -103,6 +100,9 @@ pub mod panic;
 
 /// Serial driver and print! support
 pub mod serial;
+
+/// Initialization and start function
+pub mod start;
 
 /// Task state segment
 pub mod tss;
