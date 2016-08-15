@@ -1,0 +1,3 @@
+[package]
+name = "bump_allocator"
+version = "0.1.0"

@@ -64,6 +64,8 @@
 //! An error will be returned, `ENOBUFS`, if the buffer is not long enough for the name.
 //! In this case, it is recommended to add one page, 4096 bytes, to the buffer and retry.
 
+#![feature(alloc)]
+#![feature(collections)]
 #![feature(const_fn)]
 #![feature(lang_items)]
 #![feature(question_mark)]
@@ -83,6 +85,14 @@ extern crate arch_test as arch;
 #[cfg(all(not(test), target_arch = "x86_64"))]
 #[macro_use]
 extern crate arch_x86_64 as arch;
+
+/// Bump allocator
+#[cfg(all(not(test), target_arch = "x86_64"))]
+extern crate bump_allocator;
+
+extern crate alloc;
+#[macro_use]
+extern crate collections;
 
 /// Context management
 pub mod context;
