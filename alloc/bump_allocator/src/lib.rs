@@ -10,8 +10,8 @@ use spin::Mutex;
 
 extern crate spin;
 
-pub const HEAP_START: usize = 0o_000_001_000_000_0000;
-pub const HEAP_SIZE: usize = 100 * 1024; // 100 KiB
+pub const HEAP_START: usize = 0x1_0000_0000; // Put at end of 4GB
+pub const HEAP_SIZE: usize = 16 * 1024 * 1024; // 16 MB
 
 static BUMP_ALLOCATOR: Mutex<BumpAllocator> = Mutex::new(BumpAllocator::new(HEAP_START, HEAP_SIZE));
 
