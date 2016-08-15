@@ -64,6 +64,7 @@
 //! An error will be returned, `ENOBUFS`, if the buffer is not long enough for the name.
 //! In this case, it is recommended to add one page, 4096 bytes, to the buffer and retry.
 
+#![feature(const_fn)]
 #![feature(lang_items)]
 #![feature(question_mark)]
 #![no_std]
@@ -71,7 +72,7 @@
 #[macro_use]
 extern crate bitflags;
 
-use arch::interrupt::{set_interrupts, halt};
+use arch::interrupt::{enable_interrupts, halt};
 
 /// Architecture specific items (test)
 #[cfg(test)]
@@ -82,6 +83,9 @@ extern crate arch_test as arch;
 #[cfg(all(not(test), target_arch = "x86_64"))]
 #[macro_use]
 extern crate arch_x86_64 as arch;
+
+/// Context management
+pub mod context;
 
 /// Intrinsics for panic handling
 pub mod panic;
@@ -97,10 +101,15 @@ pub mod tests;
 pub extern fn kmain() {
     println!("TEST");
 
-    println!("{:?}", syscall::open(b"file:/test/file", 0));
+    println!("{:?}", syscall::open(b"stdin", 0));
+    println!("{:?}", syscall::open(b"stdout", 0));
+    println!("{:?}", syscall::open(b"stderr", 0));
 
-    unsafe { set_interrupts() };
     loop {
-        unsafe { halt() };
+        unsafe {
+            enable_interrupts();
+            halt();
+        }
+        println!("{:?}", syscall::write(1, b"HALT\n"));
     }
 }

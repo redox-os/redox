@@ -53,8 +53,12 @@ pub enum Error {
     NotPermitted,
     /// No such file or directory
     NoEntry,
+    /// Bad file number
+    BadFile,
     /// Invalid argument
     InvalidValue,
+    /// Too many open files
+    TooManyFiles,
     /// Syscall not implemented
     NoCall
 }
@@ -66,7 +70,9 @@ impl From<Error> for usize {
         match err {
             Error::NotPermitted => 1,
             Error::NoEntry => 2,
+            Error::BadFile => 9,
             Error::InvalidValue => 22,
+            Error::TooManyFiles => 24,
             Error::NoCall => 38
         }
     }

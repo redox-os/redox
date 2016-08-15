@@ -14,7 +14,10 @@ qemu: build/harddrive.bin
 
 FORCE:
 
-build/libkernel.a: FORCE
+build:
+	mkdir build
+
+build/libkernel.a: build FORCE
 	cargo rustc -- --crate-type staticlib -o $@
 	#--target $(ARCH)-unknown-none.json
 

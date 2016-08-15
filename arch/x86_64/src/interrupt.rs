@@ -2,13 +2,13 @@
 
 /// Clear interrupts
 #[inline(always)]
-pub unsafe fn clear_interrupts() {
+pub unsafe fn disable_interrupts() {
     asm!("cli" : : : : "intel", "volatile");
 }
 
 /// Set interrupts
 #[inline(always)]
-pub unsafe fn set_interrupts() {
+pub unsafe fn enable_interrupts() {
     asm!("sti" : : : : "intel", "volatile");
 }
 
