@@ -10,10 +10,12 @@
 #![no_std]
 
 extern crate hole_list_allocator as allocator;
-
 #[macro_use]
 extern crate bitflags;
+extern crate spin;
 extern crate x86;
+
+use spin::Mutex;
 
 /// Print to console
 #[macro_export]
@@ -106,3 +108,6 @@ pub mod start;
 
 /// Task state segment
 pub mod tss;
+
+pub static ALLOCATOR: Mutex<Option<memory::AreaFrameAllocator>> = Mutex::new(None);
+pub static PAGE_TABLE: Mutex<Option<paging::ActivePageTable>> = Mutex::new(None);

@@ -22,45 +22,53 @@ extern {
 
 #[no_mangle]
 pub unsafe extern fn kstart() -> ! {
-    extern {
-        /// The starting byte of the _.bss_ (uninitialized data) segment.
-        static mut __bss_start: u8;
-        /// The ending byte of the _.bss_ (uninitialized data) segment.
-        static mut __bss_end: u8;
-    }
-
-    // Zero BSS, this initializes statics that are set to 0
     {
-        let start_ptr = &mut __bss_start as *mut u8;
-        let end_ptr = & __bss_end as *const u8 as usize;
-
-        if start_ptr as usize <= end_ptr {
-            let size = end_ptr - start_ptr as usize;
-            memset(start_ptr, 0, size);
+        extern {
+            /// The starting byte of the _.bss_ (uninitialized data) segment.
+            static mut __bss_start: u8;
+            /// The ending byte of the _.bss_ (uninitialized data) segment.
+            static mut __bss_end: u8;
         }
 
-        debug_assert_eq!(BSS_TEST_ZERO, 0);
-        debug_assert_eq!(BSS_TEST_NONZERO, 0xFFFFFFFFFFFFFFFF);
-    }
+        // Zero BSS, this initializes statics that are set to 0
+        {
+            let start_ptr = &mut __bss_start as *mut u8;
+            let end_ptr = & __bss_end as *const u8 as usize;
 
-    // Set up GDT
-    gdt::init();
+            if start_ptr as usize <= end_ptr {
+                let size = end_ptr - start_ptr as usize;
+                memset(start_ptr, 0, size);
+            }
 
-    // Set up IDT
-    idt::init(blank);
+            debug_assert_eq!(BSS_TEST_ZERO, 0);
+            debug_assert_eq!(BSS_TEST_NONZERO, 0xFFFFFFFFFFFFFFFF);
+        }
 
-    // Initialize memory management
-    let mut allocator = memory::init(0, &__bss_end as *const u8 as usize);
+        // Set up GDT
+        gdt::init();
 
-    // Initialize paging
-    let mut active_table = paging::init(&mut allocator);
+        // Set up IDT
+        idt::init(blank);
 
-    // Initialize heap
-    let heap_start_page = Page::containing_address(VirtualAddress::new(HEAP_START));
-    let heap_end_page = Page::containing_address(VirtualAddress::new(HEAP_START + HEAP_SIZE-1));
+        // Initialize memory management
+        let mut allocator = memory::init(0, &__bss_end as *const u8 as usize);
 
-    for page in Page::range_inclusive(heap_start_page, heap_end_page) {
-        active_table.map(page, paging::entry::WRITABLE, &mut allocator);
+        // Initialize paging
+        let mut active_table = paging::init(&mut allocator);
+
+        // Initialize heap
+        let heap_start_page = Page::containing_address(VirtualAddress::new(HEAP_START));
+        let heap_end_page = Page::containing_address(VirtualAddress::new(HEAP_START + HEAP_SIZE-1));
+
+        for page in Page::range_inclusive(heap_start_page, heap_end_page) {
+            active_table.map(page, paging::entry::WRITABLE, &mut allocator);
+        }
+
+        // Set global allocator
+        *::ALLOCATOR.lock() = Some(allocator);
+
+        // Set global page table
+        *::PAGE_TABLE.lock() = Some(active_table);
     }
 
     asm!("xchg bx, bx" : : : : "intel", "volatile");

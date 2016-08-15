@@ -5,6 +5,7 @@ version = "0.1.0"
 [dependencies]
 bitflags = "*"
 hole_list_allocator = { path = "../../alloc/hole_list_allocator"}
+spin = "*"
 
 [dependencies.x86]
 default-features = false

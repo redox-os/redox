@@ -3,7 +3,7 @@
 
 pub use paging::{PAGE_SIZE, PhysicalAddress};
 
-use self::area_frame_alloc::AreaFrameAllocator;
+pub use self::area_frame_alloc::AreaFrameAllocator;
 
 pub mod area_frame_alloc;
 
