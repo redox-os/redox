@@ -5,6 +5,7 @@
 #![feature(const_fn)]
 #![feature(core_intrinsics)]
 #![feature(naked_functions)]
+#![feature(unique)]
 #![no_std]
 
 #[macro_use]
@@ -67,6 +68,9 @@ macro_rules! interrupt {
     };
 }
 
+/// Memcpy, memmove, etc.
+pub mod externs;
+
 /// Global descriptor table
 pub mod gdt;
 
@@ -82,13 +86,14 @@ pub mod interrupt;
 /// Initialization and main function
 pub mod main;
 
-/// Memcpy, memmove, etc.
-pub mod mem;
+/// Memory management
+pub mod memory;
+
+/// Paging
+pub mod paging;
 
 /// Serial driver and print! support
 pub mod serial;
 
 /// Task state segment
 pub mod tss;
-
-pub mod physical;

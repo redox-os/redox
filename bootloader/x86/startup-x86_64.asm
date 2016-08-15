@@ -17,6 +17,8 @@ startup_arch:
     ;Link first PML4 to PDP
     mov DWORD [es:edi], 0x71000 | 1 << 1 | 1
     add edi, 0x1000
+    ;Link last PML4 to PML4
+    mov DWORD [es:edi - 8], 0x70000 | 1 << 1 | 1
     ;Link first PDP to PD
     mov DWORD [es:edi], 0x72000 | 1 << 1 | 1
     add edi, 0x1000

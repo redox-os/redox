@@ -7,6 +7,15 @@ pub static mut IDTR: IdtDescriptor = IdtDescriptor {
 
 pub static mut IDT: [IdtEntry; 256] = [IdtEntry::new(); 256];
 
+pub unsafe fn init(func: unsafe extern fn()) {
+    for entry in IDT.iter_mut() {
+        entry.set_flags(IDT_PRESENT | IDT_RING_0 | IDT_INTERRUPT);
+        entry.set_offset(8, func as usize);
+    }
+    IDTR.set_slice(&IDT);
+    IDTR.load();
+}
+
 bitflags! {
     pub flags IdtFlags: u8 {
         const IDT_PRESENT = 1 << 7,
