@@ -3,6 +3,7 @@
 /// It must create the IDT with the correct entries, those entries are
 /// defined in other files inside of the `arch` module
 
+use acpi;
 use allocator::{HEAP_START, HEAP_SIZE};
 use externs::memset;
 use gdt;
@@ -48,7 +49,7 @@ pub unsafe extern fn kstart() -> ! {
         gdt::init();
 
         // Set up IDT
-        idt::init(blank);
+        idt::init();
 
         // Initialize memory management
         let mut allocator = memory::init(0, &__bss_end as *const u8 as usize);
@@ -64,6 +65,9 @@ pub unsafe extern fn kstart() -> ! {
             active_table.map(page, paging::entry::WRITABLE, &mut allocator);
         }
 
+        // Read ACPI tables
+        acpi::init(&mut allocator, &mut active_table);
+
         // Set global allocator
         *::ALLOCATOR.lock() = Some(allocator);
 
@@ -74,8 +78,3 @@ pub unsafe extern fn kstart() -> ! {
     asm!("xchg bx, bx" : : : : "intel", "volatile");
     kmain();
 }
-
-interrupt!(blank, {
-    asm!("xchg bx, bx" : : : : "intel", "volatile");
-    println!("INTERRUPT");
-});

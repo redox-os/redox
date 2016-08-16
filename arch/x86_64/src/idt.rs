@@ -7,14 +7,27 @@ pub static mut IDTR: IdtDescriptor = IdtDescriptor {
 
 pub static mut IDT: [IdtEntry; 256] = [IdtEntry::new(); 256];
 
-pub unsafe fn init(func: unsafe extern fn()) {
-    for entry in IDT.iter_mut() {
+pub unsafe fn init() {
+    for entry in IDT[0..32].iter_mut() {
         entry.set_flags(IDT_PRESENT | IDT_RING_0 | IDT_INTERRUPT);
-        entry.set_offset(8, func as usize);
+        entry.set_offset(8, exception as usize);
+    }
+    for entry in IDT[32..].iter_mut() {
+        entry.set_flags(IDT_PRESENT | IDT_RING_0 | IDT_INTERRUPT);
+        entry.set_offset(8, blank as usize);
     }
     IDTR.set_slice(&IDT);
     IDTR.load();
 }
+
+interrupt!(blank, {
+    asm!("xchg bx, bx" : : : : "intel", "volatile");
+    println!("INTERRUPT");
+});
+
+interrupt!(exception, {
+    panic!("EXCEPTION");
+});
 
 bitflags! {
     pub flags IdtFlags: u8 {

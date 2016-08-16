@@ -76,6 +76,9 @@ macro_rules! interrupt {
     };
 }
 
+/// ACPI table parsing
+pub mod acpi;
+
 /// Memcpy, memmove, etc.
 pub mod externs;
 

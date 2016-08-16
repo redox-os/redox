@@ -5,14 +5,14 @@ use core::ops::{Deref, DerefMut};
 
 use memory::{Frame, FrameAllocator};
 
-use self::entry::{PRESENT, WRITABLE};
+use self::entry::{EntryFlags, PRESENT, WRITABLE, NO_EXECUTE};
 use self::mapper::Mapper;
 use self::temporary_page::TemporaryPage;
 
 pub mod entry;
-mod mapper;
+pub mod mapper;
 pub mod table;
-mod temporary_page;
+pub mod temporary_page;
 
 /// Number of entries per page table
 pub const ENTRY_COUNT: usize = 512;
@@ -43,8 +43,7 @@ pub unsafe fn init<A>(allocator: &mut A) -> ActivePageTable where A: FrameAlloca
 
     let mut active_table = ActivePageTable::new();
 
-    let mut temporary_page = TemporaryPage::new(Page { number: 0x80000000 },
-        allocator);
+    let mut temporary_page = TemporaryPage::new(Page { number: 0x80000000 }, allocator);
 
     let mut new_table = {
         let frame = allocator.allocate_frame().expect("no more frames");
@@ -52,7 +51,7 @@ pub unsafe fn init<A>(allocator: &mut A) -> ActivePageTable where A: FrameAlloca
     };
 
     active_table.with(&mut new_table, &mut temporary_page, |mapper| {
-        let mut remap = |start: usize, end: usize, flags: entry::EntryFlags| {
+        let mut remap = |start: usize, end: usize, flags: EntryFlags| {
             /* TODO
             let start_frame = Frame::containing_address(PhysicalAddress::new(start));
             let end_frame = Frame::containing_address(PhysicalAddress::new(end));
@@ -65,20 +64,20 @@ pub unsafe fn init<A>(allocator: &mut A) -> ActivePageTable where A: FrameAlloca
         };
 
         // Remap stack writable, no execute
-        remap(0x00080000, 0x0009F000, entry::PRESENT | entry::NO_EXECUTE | entry::WRITABLE);
+        remap(0x00080000, 0x0009F000, PRESENT | WRITABLE | NO_EXECUTE);
 
         // Remap a section with `flags`
-        let mut remap_section = |start: &u8, end: &u8, flags: entry::EntryFlags| {
+        let mut remap_section = |start: &u8, end: &u8, flags: EntryFlags| {
             remap(start as *const _ as usize, end as *const _ as usize, flags);
         };
         // Remap text read-only
-        remap_section(& __text_start, & __text_end, entry::PRESENT);
+        remap_section(& __text_start, & __text_end, PRESENT);
         // Remap rodata read-only, no execute
-        remap_section(& __rodata_start, & __rodata_end, entry::PRESENT | entry::NO_EXECUTE);
+        remap_section(& __rodata_start, & __rodata_end, PRESENT | NO_EXECUTE);
         // Remap data writable, no execute
-        remap_section(& __data_start, & __data_end, entry::PRESENT | entry::NO_EXECUTE | entry::WRITABLE);
+        remap_section(& __data_start, & __data_end, PRESENT | NO_EXECUTE | WRITABLE);
         // Remap bss writable, no execute
-        remap_section(& __bss_start, & __bss_end, entry::PRESENT | entry::NO_EXECUTE | entry::WRITABLE);
+        remap_section(& __bss_start, & __bss_end, PRESENT | NO_EXECUTE | WRITABLE);
     });
 
     active_table.switch(new_table);
@@ -135,17 +134,17 @@ impl ActivePageTable {
             let backup = Frame::containing_address(PhysicalAddress::new(unsafe { controlregs::cr3() } as usize));
 
             // map temporary_page to current p4 table
-            let p4_table = temporary_page.map_table_frame(backup.clone(), self);
+            let p4_table = temporary_page.map_table_frame(backup.clone(), PRESENT | WRITABLE | NO_EXECUTE, self);
 
             // overwrite recursive mapping
-            self.p4_mut()[511].set(table.p4_frame.clone(), PRESENT | WRITABLE);
+            self.p4_mut()[511].set(table.p4_frame.clone(), PRESENT | WRITABLE | NO_EXECUTE);
             flush_tlb();
 
             // execute f in the new context
             f(self);
 
             // restore recursive mapping to original p4 table
-            p4_table[511].set(backup, PRESENT | WRITABLE);
+            p4_table[511].set(backup, PRESENT | WRITABLE | NO_EXECUTE);
             flush_tlb();
         }
 
@@ -160,11 +159,11 @@ pub struct InactivePageTable {
 impl InactivePageTable {
     pub fn new(frame: Frame, active_table: &mut ActivePageTable, temporary_page: &mut TemporaryPage) -> InactivePageTable {
         {
-            let table = temporary_page.map_table_frame(frame.clone(), active_table);
+            let table = temporary_page.map_table_frame(frame.clone(), PRESENT | WRITABLE | NO_EXECUTE, active_table);
             // now we are able to zero the table
             table.zero();
             // set up recursive mapping for the table
-            table[511].set(frame.clone(), PRESENT | WRITABLE);
+            table[511].set(frame.clone(), PRESENT | WRITABLE | NO_EXECUTE);
         }
         temporary_page.unmap(active_table);
 
@@ -207,7 +206,7 @@ pub struct Page {
 }
 
 impl Page {
-    fn start_address(&self) -> VirtualAddress {
+    pub fn start_address(&self) -> VirtualAddress {
         VirtualAddress::new(self.number * PAGE_SIZE)
     }
 
