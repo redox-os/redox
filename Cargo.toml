@@ -9,6 +9,8 @@ crate-type = ["staticlib"]
 
 [dependencies]
 bitflags = "*"
+lazy_static = "*"
+spin = "*"
 
 [dev-dependencies]
 arch_test = { path = "arch/test" }

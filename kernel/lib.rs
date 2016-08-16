@@ -70,9 +70,6 @@
 #![feature(question_mark)]
 #![no_std]
 
-#[macro_use]
-extern crate bitflags;
-
 use arch::interrupt::{enable_interrupts, halt};
 
 /// Architecture specific items (test)
@@ -88,6 +85,12 @@ extern crate arch_x86_64 as arch;
 extern crate alloc;
 #[macro_use]
 extern crate collections;
+
+#[macro_use]
+extern crate bitflags;
+#[macro_use]
+extern crate lazy_static;
+extern crate spin;
 
 /// Context management
 pub mod context;

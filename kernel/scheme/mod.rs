@@ -6,6 +6,13 @@
 //! The kernel validates paths and file descriptors before they are passed to schemes,
 //! also stripping the scheme identifier of paths if necessary.
 
+use alloc::arc::Arc;
+use alloc::boxed::Box;
+
+use collections::BTreeMap;
+
+use spin::{Mutex, RwLock};
+
 use syscall::Result;
 
 use self::debug::DebugScheme;
@@ -14,7 +21,13 @@ use self::debug::DebugScheme;
 pub mod debug;
 
 /// Schemes list
-pub static mut SCHEME: DebugScheme = DebugScheme;
+lazy_static! {
+    pub static ref SCHEMES: RwLock<BTreeMap<Box<[u8]>, Arc<Mutex<Box<Scheme + Send>>>>> = {
+        let mut map: BTreeMap<Box<[u8]>, Arc<Mutex<Box<Scheme + Send>>>> = BTreeMap::new();
+        map.insert(Box::new(*b"debug"), Arc::new(Mutex::new(Box::new(DebugScheme))));
+        RwLock::new(map)
+    };
+}
 
 /// A scheme trait, implemented by a scheme handler
 pub trait Scheme {
