@@ -266,7 +266,7 @@ filesystem/bin/launcher: crates/orbutils/src/launcher/main.rs crates/orbutils/sr
 	mkdir -p filesystem/bin
 	$(RUSTC) $(RUSTCFLAGS) -C lto --crate-type bin -o $@ $< -L $(BUILD)/deps
 
-filesystem/bin/orbital: crates/orbital/main.rs crates/orbital/*.rs $(BUILD)/libstd.rlib $(BUILD)/liborbimage.rlib
+filesystem/bin/orbital: crates/orbital/src/main.rs crates/orbital/src/*.rs $(BUILD)/libstd.rlib $(BUILD)/liborbimage.rlib
 	mkdir -p filesystem/bin
 	$(RUSTC) $(RUSTCFLAGS) -C lto --crate-type bin -o $@ $<
 
