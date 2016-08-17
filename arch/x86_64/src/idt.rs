@@ -1,5 +1,7 @@
 use core::mem;
 
+use interrupt::halt;
+
 pub static mut IDTR: IdtDescriptor = IdtDescriptor {
     size: 0,
     offset: 0
@@ -12,6 +14,8 @@ pub unsafe fn init() {
         entry.set_flags(IDT_PRESENT | IDT_RING_0 | IDT_INTERRUPT);
         entry.set_offset(8, exception as usize);
     }
+    IDT[13].set_offset(8, protection_fault as usize);
+    IDT[14].set_offset(8, page_fault as usize);
     for entry in IDT[32..].iter_mut() {
         entry.set_flags(IDT_PRESENT | IDT_RING_0 | IDT_INTERRUPT);
         entry.set_offset(8, blank as usize);
@@ -26,7 +30,24 @@ interrupt!(blank, {
 });
 
 interrupt!(exception, {
-    panic!("EXCEPTION");
+    println!("EXCEPTION");
+    loop {
+        halt();
+    }
+});
+
+interrupt_error!(protection_fault, {
+    println!("PROTECTION FAULT");
+    loop {
+        halt();
+    }
+});
+
+interrupt_error!(page_fault, {
+    println!("PAGE FAULT");
+    loop {
+        halt();
+    }
 });
 
 bitflags! {

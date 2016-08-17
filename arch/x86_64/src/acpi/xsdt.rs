@@ -1,33 +1,33 @@
 use core::mem;
 
-use super::sdt::SDT;
+use super::sdt::Sdt;
 
 #[derive(Debug)]
-pub struct XSDT(&'static SDT);
+pub struct Xsdt(&'static Sdt);
 
-impl XSDT {
-    pub fn new(sdt: &'static SDT) -> Option<XSDT> {
+impl Xsdt {
+    pub fn new(sdt: &'static Sdt) -> Option<Xsdt> {
         if &sdt.signature == b"XSDT" {
-            Some(XSDT(sdt))
+            Some(Xsdt(sdt))
         } else {
             None
         }
     }
 
-    pub fn iter(&self) -> XSDTIter {
-        XSDTIter {
+    pub fn iter(&self) -> XsdtIter {
+        XsdtIter {
             sdt: self.0,
             i: 0
         }
     }
 }
 
-pub struct XSDTIter {
-    sdt: &'static SDT,
+pub struct XsdtIter {
+    sdt: &'static Sdt,
     i: usize
 }
 
-impl Iterator for XSDTIter {
+impl Iterator for XsdtIter {
     type Item = usize;
     fn next(&mut self) -> Option<Self::Item> {
         if self.i < self.sdt.data_len()/mem::size_of::<u64>() {

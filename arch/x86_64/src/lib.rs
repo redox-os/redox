@@ -39,6 +39,7 @@ macro_rules! interrupt {
     ($name:ident, $func:block) => {
         #[naked]
         pub unsafe extern fn $name () {
+            #[inline(never)]
             unsafe fn inner() {
                 $func
             }
@@ -70,6 +71,51 @@ macro_rules! interrupt {
                 pop rdx
                 pop rcx
                 pop rax
+                iretq"
+                : : : : "intel", "volatile");
+        }
+    };
+}
+
+#[macro_export]
+macro_rules! interrupt_error {
+    ($name:ident, $func:block) => {
+        #[naked]
+        pub unsafe extern fn $name () {
+            #[inline(never)]
+            unsafe fn inner() {
+                $func
+            }
+
+            asm!("xchg bx, bx" : : : : "intel", "volatile");
+
+            // Push scratch registers, grab stack pointer
+            asm!("push rax
+                push rcx
+                push rdx
+                push rdi
+                push rsi
+                push r8
+                push r9
+                push r10
+                push r11"
+                : : : : "intel", "volatile");
+
+
+            // Call inner rust function
+            inner();
+
+            // Pop scratch registers, error code, and return
+            asm!("pop r11
+                pop r10
+                pop r9
+                pop r8
+                pop rsi
+                pop rdi
+                pop rdx
+                pop rcx
+                pop rax
+                add rsp, 8
                 iretq"
                 : : : : "intel", "volatile");
         }

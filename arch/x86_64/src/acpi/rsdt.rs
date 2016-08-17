@@ -1,33 +1,33 @@
 use core::mem;
 
-use super::sdt::SDT;
+use super::sdt::Sdt;
 
 #[derive(Debug)]
-pub struct RSDT(&'static SDT);
+pub struct Rsdt(&'static Sdt);
 
-impl RSDT {
-    pub fn new(sdt: &'static SDT) -> Option<RSDT> {
+impl Rsdt {
+    pub fn new(sdt: &'static Sdt) -> Option<Rsdt> {
         if &sdt.signature == b"RSDT" {
-            Some(RSDT(sdt))
+            Some(Rsdt(sdt))
         } else {
             None
         }
     }
 
-    pub fn iter(&self) -> RSDTIter {
-        RSDTIter {
+    pub fn iter(&self) -> RsdtIter {
+        RsdtIter {
             sdt: self.0,
             i: 0
         }
     }
 }
 
-pub struct RSDTIter {
-    sdt: &'static SDT,
+pub struct RsdtIter {
+    sdt: &'static Sdt,
     i: usize
 }
 
-impl Iterator for RSDTIter {
+impl Iterator for RsdtIter {
     type Item = usize;
     fn next(&mut self) -> Option<Self::Item> {
         if self.i < self.sdt.data_len()/mem::size_of::<u32>() {
