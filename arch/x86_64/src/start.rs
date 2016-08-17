@@ -82,11 +82,6 @@ pub unsafe extern fn kstart() -> ! {
         BSP_READY.store(true, Ordering::SeqCst);
     }
 
-
-    for _i in 0..10 {
-        print!("BSP\n");
-    }
-
     kmain();
 }
 
@@ -113,10 +108,6 @@ pub unsafe extern fn kstart_ap(stack_start: usize, stack_end: usize) -> ! {
 
     while ! BSP_READY.load(Ordering::SeqCst) {
         asm!("pause" : : : : "intel", "volatile");
-    }
-
-    for _i in 0..10 {
-        print!("AP\n");
     }
 
     loop {
