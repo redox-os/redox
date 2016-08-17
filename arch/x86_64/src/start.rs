@@ -9,7 +9,7 @@ use externs::memset;
 use gdt;
 use idt;
 use memory;
-use paging::{self, Page, VirtualAddress};
+use paging::{self, entry, Page, VirtualAddress};
 
 /// Test of zero values in BSS.
 static BSS_TEST_ZERO: usize = 0;
@@ -21,6 +21,7 @@ extern {
     fn kmain() -> !;
 }
 
+/// The entry to Rust, all things must be initialized
 #[no_mangle]
 pub unsafe extern fn kstart() -> ! {
     {
@@ -62,7 +63,7 @@ pub unsafe extern fn kstart() -> ! {
         let heap_end_page = Page::containing_address(VirtualAddress::new(HEAP_START + HEAP_SIZE-1));
 
         for page in Page::range_inclusive(heap_start_page, heap_end_page) {
-            active_table.map(page, paging::entry::WRITABLE, &mut allocator);
+            active_table.map(page, entry::WRITABLE | entry::NO_EXECUTE, &mut allocator);
         }
 
         // Read ACPI tables
@@ -77,4 +78,11 @@ pub unsafe extern fn kstart() -> ! {
 
     asm!("xchg bx, bx" : : : : "intel", "volatile");
     kmain();
+}
+
+/// Entry to rust for an AP
+pub unsafe extern fn kstart_ap() -> ! {
+    loop {
+        asm!("hlt");
+    }
 }

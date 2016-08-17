@@ -1,6 +1,8 @@
 trampoline:
     .ready: dq 0
+    .page_table: dq 0
     .stack: dq 0
+    .code: dq 0
 
     times 512 - ($ - trampoline) db 0
 
@@ -126,10 +128,14 @@ long_mode_ap:
     mov gs, rax
     mov ss, rax
 
+    mov rax, [trampoline.page_table]
+    mov cr3, rax
+
+    mov rsp, [trampoline.stack]
+
     mov qword [trampoline.ready], 1
-.lp:
-    hlt
-    jmp .lp
+    mov rax, [trampoline.code]
+    jmp rax
 
 gdtr:
     dw gdt.end + 1  ; size

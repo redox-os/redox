@@ -12,7 +12,7 @@ bochs: build/harddrive.bin
 qemu: build/harddrive.bin
 	qemu-system-$(ARCH) -enable-kvm -cpu host -smp 4 -machine q35 \
 				-serial mon:stdio -drive file=$<,format=raw,index=0,media=disk \
-				-nographic -d guest_errors
+				-nographic -d guest_errors,int,pcall
 				#-device intel-iommu
 
 FORCE:
