@@ -83,7 +83,7 @@ macro_rules! interrupt_error {
                 $func
             }
 
-            // Push scratch registers, grab stack pointer
+            // Push scratch registers
             asm!("push rax
                 push rcx
                 push rdx

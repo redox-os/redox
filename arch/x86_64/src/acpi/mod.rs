@@ -3,7 +3,7 @@
 
 use core::intrinsics::{atomic_load, atomic_store};
 
-use memory::Frame;
+use memory::{allocate_frame, Frame};
 use paging::{entry, ActivePageTable, Page, PhysicalAddress, VirtualAddress};
 use start::kstart_ap;
 
@@ -50,19 +50,9 @@ pub fn init_sdt(sdt: &'static Sdt, active_table: &mut ActivePageTable) {
                             }
                         }
 
-                        // Map a stack
-                        /*
-                        let stack_start = HEAP_START + HEAP_SIZE + 4096 + (asp_local_apic.id as usize * (1024 * 1024 + 4096));
-                        let stack_end = stack_start + 1024 * 1024;
-                        {
-                            let start_page = Page::containing_address(VirtualAddress::new(stack_start));
-                            let end_page = Page::containing_address(VirtualAddress::new(stack_end - 1));
-
-                            for page in Page::range_inclusive(start_page, end_page) {
-                                active_table.map(page, entry::WRITABLE | entry::NO_EXECUTE);
-                            }
-                        }
-                        */
+                        // Allocate a stack
+                        let stack_start = allocate_frame().expect("no more frames").start_address().get();
+                        let stack_end = stack_start + 4096;
 
                         let ap_ready = TRAMPOLINE as *mut u64;
                         let ap_stack_start = unsafe { ap_ready.offset(1) };
@@ -71,8 +61,8 @@ pub fn init_sdt(sdt: &'static Sdt, active_table: &mut ActivePageTable) {
 
                         // Set the ap_ready to 0, volatile
                         unsafe { atomic_store(ap_ready, 0) };
-                        unsafe { atomic_store(ap_stack_start, 0x1000) };
-                        unsafe { atomic_store(ap_stack_end, 0x7000) };
+                        unsafe { atomic_store(ap_stack_start, stack_start as u64) };
+                        unsafe { atomic_store(ap_stack_end, stack_end as u64) };
                         unsafe { atomic_store(ap_code, kstart_ap as u64) };
 
                         // Send INIT IPI

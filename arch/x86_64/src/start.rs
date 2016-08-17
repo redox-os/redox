@@ -3,6 +3,8 @@
 /// It must create the IDT with the correct entries, those entries are
 /// defined in other files inside of the `arch` module
 
+use core::sync::atomic::{AtomicBool, ATOMIC_BOOL_INIT, Ordering};
+
 use acpi;
 use allocator::{HEAP_START, HEAP_SIZE};
 use externs::memset;
@@ -15,6 +17,8 @@ use paging::{self, entry, Page, VirtualAddress};
 static BSS_TEST_ZERO: usize = 0;
 /// Test of non-zero values in BSS.
 static BSS_TEST_NONZERO: usize = 0xFFFFFFFFFFFFFFFF;
+
+static BSP_READY: AtomicBool = ATOMIC_BOOL_INIT;
 
 extern {
     /// Kernel main function
@@ -46,6 +50,8 @@ pub unsafe extern fn kstart() -> ! {
             debug_assert_eq!(BSS_TEST_NONZERO, 0xFFFFFFFFFFFFFFFF);
         }
 
+        BSP_READY.store(false, Ordering::SeqCst);
+
         // Set up GDT
         gdt::init();
 
@@ -72,6 +78,13 @@ pub unsafe extern fn kstart() -> ! {
         for page in Page::range_inclusive(heap_start_page, heap_end_page) {
             active_table.map(page, entry::WRITABLE | entry::NO_EXECUTE);
         }
+
+        BSP_READY.store(true, Ordering::SeqCst);
+    }
+
+
+    for _i in 0..10 {
+        print!("BSP\n");
     }
 
     kmain();
@@ -96,6 +109,14 @@ pub unsafe extern fn kstart_ap(stack_start: usize, stack_end: usize) -> ! {
         for page in Page::range_inclusive(heap_start_page, heap_end_page) {
             active_table.map(page, entry::WRITABLE | entry::NO_EXECUTE);
         }
+    }
+
+    while ! BSP_READY.load(Ordering::SeqCst) {
+        asm!("pause" : : : : "intel", "volatile");
+    }
+
+    for _i in 0..10 {
+        print!("AP\n");
     }
 
     loop {
