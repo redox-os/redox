@@ -69,14 +69,14 @@ pub fn init_sdt<A>(sdt: &'static Sdt, allocator: &mut A, active_table: &mut Acti
                         */
 
                         let ap_ready = TRAMPOLINE as *mut u64;
-                        let ap_page_table = unsafe { ap_ready.offset(1) };
-                        let ap_stack = unsafe { ap_page_table.offset(1) };
-                        let ap_code = unsafe { ap_stack.offset(1) };
+                        let ap_stack_start = unsafe { ap_ready.offset(1) };
+                        let ap_stack_end = unsafe { ap_ready.offset(2) };
+                        let ap_code = unsafe { ap_ready.offset(3) };
 
                         // Set the ap_ready to 0, volatile
                         unsafe { atomic_store(ap_ready, 0) };
-                        unsafe { atomic_store(ap_page_table, 0x70000) };
-                        unsafe { atomic_store(ap_stack, 0x7C00) };
+                        unsafe { atomic_store(ap_stack_start, 0x1000) };
+                        unsafe { atomic_store(ap_stack_end, 0x7000) };
                         unsafe { atomic_store(ap_code, kstart_ap as u64) };
 
                         // Send INIT IPI

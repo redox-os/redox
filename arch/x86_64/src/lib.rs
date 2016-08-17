@@ -44,8 +44,6 @@ macro_rules! interrupt {
                 $func
             }
 
-            asm!("xchg bx, bx" : : : : "intel", "volatile");
-
             // Push scratch registers
             asm!("push rax
                 push rcx
@@ -86,8 +84,6 @@ macro_rules! interrupt_error {
             unsafe fn inner() {
                 $func
             }
-
-            asm!("xchg bx, bx" : : : : "intel", "volatile");
 
             // Push scratch registers, grab stack pointer
             asm!("push rax
@@ -159,4 +155,3 @@ pub mod start;
 pub mod tss;
 
 pub static ALLOCATOR: Mutex<Option<memory::AreaFrameAllocator>> = Mutex::new(None);
-pub static PAGE_TABLE: Mutex<Option<paging::ActivePageTable>> = Mutex::new(None);

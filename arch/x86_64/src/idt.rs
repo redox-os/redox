@@ -21,12 +21,16 @@ pub unsafe fn init() {
         entry.set_offset(8, blank as usize);
     }
     IDTR.set_slice(&IDT);
+
+    init_ap();
+}
+
+pub unsafe fn init_ap() {
     IDTR.load();
 }
 
 interrupt!(blank, {
-    asm!("xchg bx, bx" : : : : "intel", "volatile");
-    println!("INTERRUPT");
+    
 });
 
 interrupt!(exception, {

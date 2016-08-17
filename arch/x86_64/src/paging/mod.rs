@@ -21,7 +21,7 @@ pub const ENTRY_COUNT: usize = 512;
 pub const PAGE_SIZE: usize = 4096;
 
 /// Initialize paging
-pub unsafe fn init<A>(allocator: &mut A) -> ActivePageTable where A: FrameAllocator {
+pub unsafe fn init<A>(stack_start: usize, stack_end: usize, allocator: &mut A) -> ActivePageTable where A: FrameAllocator {
     extern {
         /// The starting byte of the text (code) data segment.
         static mut __text_start: u8;
@@ -43,7 +43,7 @@ pub unsafe fn init<A>(allocator: &mut A) -> ActivePageTable where A: FrameAlloca
 
     let mut active_table = ActivePageTable::new();
 
-    let mut temporary_page = TemporaryPage::new(Page { number: 0x80000000 }, allocator);
+    let mut temporary_page = TemporaryPage::new(Page::containing_address(VirtualAddress::new(0x80000000)), allocator);
 
     let mut new_table = {
         let frame = allocator.allocate_frame().expect("no more frames");
@@ -52,19 +52,15 @@ pub unsafe fn init<A>(allocator: &mut A) -> ActivePageTable where A: FrameAlloca
 
     active_table.with(&mut new_table, &mut temporary_page, |mapper| {
         let mut remap = |start: usize, end: usize, flags: EntryFlags| {
-            /* TODO
             let start_frame = Frame::containing_address(PhysicalAddress::new(start));
-            let end_frame = Frame::containing_address(PhysicalAddress::new(end));
-            for frame in Frame::range_inclusive(start_frame, end_frame) {}
-            */
-            for i in 0..(end - start + PAGE_SIZE - 1)/PAGE_SIZE {
-                let frame = Frame::containing_address(PhysicalAddress::new(start + i * PAGE_SIZE));
+            let end_frame = Frame::containing_address(PhysicalAddress::new(end - 1));
+            for frame in Frame::range_inclusive(start_frame, end_frame) {
                 mapper.identity_map(frame, flags, allocator);
             }
         };
 
         // Remap stack writable, no execute
-        remap(0x00080000, 0x0009F000, PRESENT | WRITABLE | NO_EXECUTE);
+        remap(stack_start, stack_end, PRESENT | WRITABLE | NO_EXECUTE);
 
         // Remap a section with `flags`
         let mut remap_section = |start: &u8, end: &u8, flags: EntryFlags| {

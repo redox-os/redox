@@ -23,6 +23,7 @@ impl TemporaryPage {
     /// Maps the temporary page to the given frame in the active table.
     /// Returns the start address of the temporary page.
     pub fn map(&mut self, frame: Frame, flags: EntryFlags, active_table: &mut ActivePageTable) -> VirtualAddress {
+        println!("map {:?}", frame);
         assert!(active_table.translate_page(self.page).is_none(),
                 "temporary page is already mapped");
         active_table.map_to(self.page, frame, flags, &mut self.allocator);
@@ -37,6 +38,7 @@ impl TemporaryPage {
 
     /// Unmaps the temporary page in the active table.
     pub fn unmap(&mut self, active_table: &mut ActivePageTable) {
+        println!("unmap {:?}", self.page);
         active_table.unmap(self.page, &mut self.allocator)
     }
 }
@@ -55,6 +57,7 @@ impl FrameAllocator for TinyAllocator {
     fn allocate_frame(&mut self) -> Option<Frame> {
         for frame_option in &mut self.0 {
             if frame_option.is_some() {
+                println!("Allocate {:?}", frame_option);
                 return frame_option.take();
             }
         }
@@ -64,10 +67,15 @@ impl FrameAllocator for TinyAllocator {
     fn deallocate_frame(&mut self, frame: Frame) {
         for frame_option in &mut self.0 {
             if frame_option.is_none() {
+                println!("Deallocate {:?}", frame);
                 *frame_option = Some(frame);
                 return;
             }
         }
-        panic!("Tiny allocator can hold only 3 frames.");
+        println!("Cannot dealloc {:?}", frame);
+        for frame_option in &self.0 {
+            println!("Already dealloc {:?}", frame_option)
+        }
+        //panic!("Tiny allocator can hold only 3 frames. {:?}", frame);
     }
 }

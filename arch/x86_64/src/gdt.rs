@@ -31,6 +31,11 @@ pub unsafe fn init() {
     GDT[GDT_USER_DATA].set_flags(GDT_LONG_MODE);
 
     GDTR.set_slice(&GDT);
+
+    init_ap();
+}
+
+pub unsafe fn init_ap() {
     GDTR.load();
 }
 

@@ -8,7 +8,7 @@ use allocator::{HEAP_START, HEAP_SIZE};
 use externs::memset;
 use gdt;
 use idt;
-use memory;
+use memory::{self, FrameAllocator};
 use paging::{self, entry, Page, VirtualAddress};
 
 /// Test of zero values in BSS.
@@ -53,35 +53,65 @@ pub unsafe extern fn kstart() -> ! {
         idt::init();
 
         // Initialize memory management
-        let mut allocator = memory::init(0, &__bss_end as *const u8 as usize);
+        *::ALLOCATOR.lock() = Some(memory::init(0, &__bss_end as *const u8 as usize));
 
-        // Initialize paging
-        let mut active_table = paging::init(&mut allocator);
+        if let Some(ref mut allocator) = *::ALLOCATOR.lock() {
+            // TODO: allocate a stack
+            let stack_start = 0x00080000;
+            let stack_end = 0x0009F000;
 
-        // Initialize heap
-        let heap_start_page = Page::containing_address(VirtualAddress::new(HEAP_START));
-        let heap_end_page = Page::containing_address(VirtualAddress::new(HEAP_START + HEAP_SIZE-1));
+            // Initialize paging
+            let mut active_table = paging::init(stack_start, stack_end, allocator);
 
-        for page in Page::range_inclusive(heap_start_page, heap_end_page) {
-            active_table.map(page, entry::WRITABLE | entry::NO_EXECUTE, &mut allocator);
+            // Read ACPI tables
+            acpi::init(allocator, &mut active_table);
+
+            // Map heap
+            let heap_start_page = Page::containing_address(VirtualAddress::new(HEAP_START));
+            let heap_end_page = Page::containing_address(VirtualAddress::new(HEAP_START + HEAP_SIZE-1));
+
+            for page in Page::range_inclusive(heap_start_page, heap_end_page) {
+                active_table.map(page, entry::WRITABLE | entry::NO_EXECUTE, allocator);
+            }
         }
-
-        // Read ACPI tables
-        acpi::init(&mut allocator, &mut active_table);
-
-        // Set global allocator
-        *::ALLOCATOR.lock() = Some(allocator);
-
-        // Set global page table
-        *::PAGE_TABLE.lock() = Some(active_table);
     }
 
-    asm!("xchg bx, bx" : : : : "intel", "volatile");
+    for i in 0..10 {
+        if let Some(ref mut allocator) = *::ALLOCATOR.lock() {
+            println!("BP: {:?}", allocator.allocate_frame());
+        }
+    }
+
     kmain();
 }
 
 /// Entry to rust for an AP
-pub unsafe extern fn kstart_ap() -> ! {
+pub unsafe extern fn kstart_ap(stack_start: usize, stack_end: usize) -> ! {
+    // Set up GDT for AP
+    gdt::init_ap();
+
+    // Set up IDT for aP
+    idt::init_ap();
+
+    if let Some(ref mut allocator) = *::ALLOCATOR.lock() {
+        // Initialize paging
+        let mut active_table = paging::init(stack_start, stack_end, allocator);
+
+        // Map heap
+        let heap_start_page = Page::containing_address(VirtualAddress::new(HEAP_START));
+        let heap_end_page = Page::containing_address(VirtualAddress::new(HEAP_START + HEAP_SIZE-1));
+
+        for page in Page::range_inclusive(heap_start_page, heap_end_page) {
+            active_table.map(page, entry::WRITABLE | entry::NO_EXECUTE, allocator);
+        }
+    }
+
+    for i in 0..10 {
+        if let Some(ref mut allocator) = *::ALLOCATOR.lock() {
+            println!("AP: {:?}", allocator.allocate_frame());
+        }
+    }
+
     loop {
         asm!("hlt");
     }
