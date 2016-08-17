@@ -95,15 +95,10 @@ pub unsafe extern fn kstart_ap(stack_start: usize, stack_end: usize) -> ! {
         idt::init_ap();
 
         // Initialize paging
-        let mut active_table = paging::init(stack_start, stack_end);
+        //let mut active_table =
+        paging::init(stack_start, stack_end);
 
-        // Map heap
-        let heap_start_page = Page::containing_address(VirtualAddress::new(HEAP_START));
-        let heap_end_page = Page::containing_address(VirtualAddress::new(HEAP_START + HEAP_SIZE-1));
-
-        for page in Page::range_inclusive(heap_start_page, heap_end_page) {
-            active_table.map(page, entry::WRITABLE | entry::NO_EXECUTE);
-        }
+        // TODO: Use heap from master, ensuring consistency
     }
 
     while ! BSP_READY.load(Ordering::SeqCst) {
