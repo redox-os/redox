@@ -1,6 +1,8 @@
 //! # ACPI
 //! Code to parse the ACPI tables
 
+use core::intrinsics::{atomic_load, atomic_store};
+
 use memory::{Frame, FrameAllocator};
 use paging::{entry, ActivePageTable, Page, PhysicalAddress, VirtualAddress};
 
@@ -15,6 +17,9 @@ pub mod madt;
 pub mod rsdt;
 pub mod sdt;
 pub mod xsdt;
+
+const TRAMPOLINE: usize = 0x7E00;
+const AP_STARTUP: usize = 0x8000;
 
 pub fn init_sdt(sdt: &'static Sdt) {
     print!("  ");
@@ -37,16 +42,33 @@ pub fn init_sdt(sdt: &'static Sdt) {
                     println!("        This is my local APIC");
                 } else {
                     if asp_local_apic.flags & 1 == 1 {
+                        let ap_ready = TRAMPOLINE as *mut u64;
+                        let ap_stack = unsafe { ap_ready.offset(1) };
+
+                        // Set the ap_ready to 0, volatile
+                        unsafe { atomic_store(ap_ready, 0) };
+
+                        // Send INIT IPI
                         {
                             let icr = 0x00004500 | (asp_local_apic.id as u64) << 32;
                             println!("        Sending IPI to {}: {:>016X} {:?}", asp_local_apic.id, icr, LocalApicIcr::from_bits(icr));
                             local_apic.set_icr(icr);
                         }
+
+                        // Send START IPI
                         {
-                            let icr = 0x00004600 | (asp_local_apic.id as u64) << 32;
+                            let ap_segment = (AP_STARTUP >> 12) & 0xFF;
+                            let icr = 0x00004600 | ((asp_local_apic.id as u64) << 32) | ap_segment as u64; //Start at 0x0800:0000 => 0x8000. Hopefully the bootloader code is still there
                             println!("        Sending SIPI to {}: {:>016X} {:?}", asp_local_apic.id, icr, LocalApicIcr::from_bits(icr));
                             local_apic.set_icr(icr);
                         }
+
+                        // Wait for trampoline ready
+                        println!("        Waiting for AP {}", asp_local_apic.id);
+                        while unsafe { atomic_load(ap_ready) } == 0 {
+                            unsafe { asm!("pause" : : : : "intel", "volatile") };
+                        }
+                        println!("        AP {} is ready!", asp_local_apic.id);
                     } else {
                         println!("        CPU Disabled");
                     }
@@ -63,15 +85,6 @@ pub fn init_sdt(sdt: &'static Sdt) {
 pub unsafe fn init<A>(allocator: &mut A, active_table: &mut ActivePageTable) -> Option<Acpi>
     where A: FrameAllocator
 {
-    // Stupidity of enormous proportion. Write the halt opcode to the 0'th physical address
-    // so that START IPI's can halt the processor
-    {
-        if active_table.translate_page(Page::containing_address(VirtualAddress::new(0))).is_none() {
-            active_table.identity_map(Frame::containing_address(PhysicalAddress::new(0)), entry::PRESENT | entry::WRITABLE, allocator);
-        }
-        unsafe { *(0 as *mut u8) = 0xF4 };
-    }
-
     let start_addr = 0xE0000;
     let end_addr = 0xFFFFF;
 
@@ -83,6 +96,13 @@ pub unsafe fn init<A>(allocator: &mut A, active_table: &mut ActivePageTable) -> 
             if active_table.translate_page(Page::containing_address(VirtualAddress::new(frame.start_address().get()))).is_none() {
                 active_table.identity_map(frame, entry::PRESENT | entry::NO_EXECUTE, allocator);
             }
+        }
+    }
+
+    // Map trampoline
+    {
+        if active_table.translate_page(Page::containing_address(VirtualAddress::new(TRAMPOLINE))).is_none() {
+            active_table.identity_map(Frame::containing_address(PhysicalAddress::new(TRAMPOLINE)), entry::PRESENT | entry::WRITABLE, allocator);
         }
     }
 

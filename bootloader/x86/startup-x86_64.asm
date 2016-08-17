@@ -1,3 +1,45 @@
+trampoline:
+    .ready: dq 0
+    .stack: dq 0
+
+    times 512 - ($ - trampoline) db 0
+
+startup_ap:
+    cli
+
+    xor ax, ax
+    mov ds, ax
+    mov es, ax
+    mov ss, ax
+
+    ; initialize stack
+    mov sp, 0x7C00
+
+    ;cr3 holds pointer to PML4
+    mov edi, 0x70000
+    mov cr3, edi
+
+    ;enable Page Address Extension and Page Size Extension
+    mov eax, cr4
+    or eax, 1 << 5 | 1 << 4
+    mov cr4, eax
+
+    ; load protected mode GDT
+    lgdt [gdtr]
+
+    mov ecx, 0xC0000080               ; Read from the EFER MSR.
+    rdmsr
+    or eax, 1 << 11 | 1 << 8          ; Set the Long-Mode-Enable and NXE bit.
+    wrmsr
+
+    ;enabling paging and protection simultaneously
+    mov ebx, cr0
+    or ebx, 1 << 31 | 1 << 16 | 1                ;Bit 31: Paging, Bit 16: write protect kernel, Bit 0: Protected Mode
+    mov cr0, ebx
+
+    ; far jump to enable Long Mode and load CS with 64 bit segment
+    jmp gdt.kernel_code:long_mode_ap
+
 %include "startup-common.asm"
 
 startup_arch:
@@ -74,106 +116,118 @@ long_mode:
     ;rust init
     xor rax, rax
     mov eax, [kernel_base + 0x18]
-    mov rbx, gdtr
     jmp rax
 
-    gdtr:
-        dw gdt.end + 1  ; size
-        dq gdt          ; offset
+long_mode_ap:
+    mov rax, gdt.kernel_data
+    mov ds, rax
+    mov es, rax
+    mov fs, rax
+    mov gs, rax
+    mov ss, rax
 
-    gdt:
-    .null equ $ - gdt
-        dq 0
+    mov qword [trampoline.ready], 1
+.lp:
+    hlt
+    jmp .lp
 
-    .kernel_code equ $ - gdt
-    istruc GDTEntry
-        at GDTEntry.limitl, dw 0
-        at GDTEntry.basel, dw 0
-        at GDTEntry.basem, db 0
-        at GDTEntry.attribute, db attrib.present | attrib.user | attrib.code
-        at GDTEntry.flags__limith, db flags.long_mode
-        at GDTEntry.baseh, db 0
+gdtr:
+    dw gdt.end + 1  ; size
+    dq gdt          ; offset
+
+gdt:
+.null equ $ - gdt
+    dq 0
+
+.kernel_code equ $ - gdt
+istruc GDTEntry
+    at GDTEntry.limitl, dw 0
+    at GDTEntry.basel, dw 0
+    at GDTEntry.basem, db 0
+    at GDTEntry.attribute, db attrib.present | attrib.user | attrib.code
+    at GDTEntry.flags__limith, db flags.long_mode
+    at GDTEntry.baseh, db 0
+iend
+
+.kernel_data equ $ - gdt
+istruc GDTEntry
+    at GDTEntry.limitl, dw 0
+    at GDTEntry.basel, dw 0
+    at GDTEntry.basem, db 0
+; AMD System Programming Manual states that the writeable bit is ignored in long mode, but ss can not be set to this descriptor without it
+    at GDTEntry.attribute, db attrib.present | attrib.user | attrib.writable
+    at GDTEntry.flags__limith, db 0
+    at GDTEntry.baseh, db 0
+iend
+
+.user_code equ $ - gdt
+istruc GDTEntry
+    at GDTEntry.limitl, dw 0
+    at GDTEntry.basel, dw 0
+    at GDTEntry.basem, db 0
+    at GDTEntry.attribute, db attrib.present | attrib.ring3 | attrib.user | attrib.code
+    at GDTEntry.flags__limith, db flags.long_mode
+    at GDTEntry.baseh, db 0
+iend
+
+.user_data equ $ - gdt
+istruc GDTEntry
+    at GDTEntry.limitl, dw 0
+    at GDTEntry.basel, dw 0
+    at GDTEntry.basem, db 0
+; AMD System Programming Manual states that the writeable bit is ignored in long mode, but ss can not be set to this descriptor without it
+    at GDTEntry.attribute, db attrib.present | attrib.ring3 | attrib.user | attrib.writable
+    at GDTEntry.flags__limith, db 0
+    at GDTEntry.baseh, db 0
+iend
+
+.user_tls equ $ - gdt
+istruc GDTEntry
+    at GDTEntry.limitl, dw 0
+    at GDTEntry.basel, dw 0
+    at GDTEntry.basem, db 0
+; AMD System Programming Manual states that the writeable bit is ignored in long mode, but ss can not be set to this descriptor without it
+    at GDTEntry.attribute, db attrib.present | attrib.ring3 | attrib.user | attrib.writable
+    at GDTEntry.flags__limith, db 0
+    at GDTEntry.baseh, db 0
+iend
+
+.tss equ $ - gdt
+istruc GDTEntry
+    at GDTEntry.limitl, dw (tss.end - tss) & 0xFFFF
+    at GDTEntry.basel, dw (tss-$$+0x7C00) & 0xFFFF
+    at GDTEntry.basem, db ((tss-$$+0x7C00) >> 16) & 0xFF
+    at GDTEntry.attribute, db attrib.present | attrib.ring3 | attrib.tssAvailabe64
+    at GDTEntry.flags__limith, db ((tss.end - tss) >> 16) & 0xF
+    at GDTEntry.baseh, db ((tss-$$+0x7C00) >> 24) & 0xFF
+iend
+dq 0 ;tss descriptors are extended to 16 Bytes
+
+.end equ $ - gdt
+
+struc TSS
+    .reserved1 resd 1    ;The previous TSS - if we used hardware task switching this would form a linked list.
+    .rsp0 resq 1        ;The stack pointer to load when we change to kernel mode.
+    .rsp1 resq 1        ;everything below here is unused now..
+    .rsp2 resq 1
+    .reserved2 resd 1
+    .reserved3 resd 1
+    .ist1 resq 1
+    .ist2 resq 1
+    .ist3 resq 1
+    .ist4 resq 1
+    .ist5 resq 1
+    .ist6 resq 1
+    .ist7 resq 1
+    .reserved4 resd 1
+    .reserved5 resd 1
+    .reserved6 resw 1
+    .iomap_base resw 1
+endstruc
+
+tss:
+    istruc TSS
+        at TSS.rsp0, dd 0x800000 - 128
+        at TSS.iomap_base, dw 0xFFFF
     iend
-
-    .kernel_data equ $ - gdt
-    istruc GDTEntry
-        at GDTEntry.limitl, dw 0
-        at GDTEntry.basel, dw 0
-        at GDTEntry.basem, db 0
-    ; AMD System Programming Manual states that the writeable bit is ignored in long mode, but ss can not be set to this descriptor without it
-        at GDTEntry.attribute, db attrib.present | attrib.user | attrib.writable
-        at GDTEntry.flags__limith, db 0
-        at GDTEntry.baseh, db 0
-    iend
-
-    .user_code equ $ - gdt
-    istruc GDTEntry
-        at GDTEntry.limitl, dw 0
-        at GDTEntry.basel, dw 0
-        at GDTEntry.basem, db 0
-        at GDTEntry.attribute, db attrib.present | attrib.ring3 | attrib.user | attrib.code
-        at GDTEntry.flags__limith, db flags.long_mode
-        at GDTEntry.baseh, db 0
-    iend
-
-    .user_data equ $ - gdt
-    istruc GDTEntry
-        at GDTEntry.limitl, dw 0
-        at GDTEntry.basel, dw 0
-        at GDTEntry.basem, db 0
-    ; AMD System Programming Manual states that the writeable bit is ignored in long mode, but ss can not be set to this descriptor without it
-        at GDTEntry.attribute, db attrib.present | attrib.ring3 | attrib.user | attrib.writable
-        at GDTEntry.flags__limith, db 0
-        at GDTEntry.baseh, db 0
-    iend
-
-    .user_tls equ $ - gdt
-    istruc GDTEntry
-        at GDTEntry.limitl, dw 0
-        at GDTEntry.basel, dw 0
-        at GDTEntry.basem, db 0
-    ; AMD System Programming Manual states that the writeable bit is ignored in long mode, but ss can not be set to this descriptor without it
-        at GDTEntry.attribute, db attrib.present | attrib.ring3 | attrib.user | attrib.writable
-        at GDTEntry.flags__limith, db 0
-        at GDTEntry.baseh, db 0
-    iend
-
-    .tss equ $ - gdt
-    istruc GDTEntry
-        at GDTEntry.limitl, dw (tss.end - tss) & 0xFFFF
-        at GDTEntry.basel, dw (tss-$$+0x7C00) & 0xFFFF
-        at GDTEntry.basem, db ((tss-$$+0x7C00) >> 16) & 0xFF
-        at GDTEntry.attribute, db attrib.present | attrib.ring3 | attrib.tssAvailabe64
-        at GDTEntry.flags__limith, db ((tss.end - tss) >> 16) & 0xF
-        at GDTEntry.baseh, db ((tss-$$+0x7C00) >> 24) & 0xFF
-    iend
-    dq 0 ;tss descriptors are extended to 16 Bytes
-
-    .end equ $ - gdt
-
-    struc TSS
-        .reserved1 resd 1    ;The previous TSS - if we used hardware task switching this would form a linked list.
-        .rsp0 resq 1        ;The stack pointer to load when we change to kernel mode.
-        .rsp1 resq 1        ;everything below here is unused now..
-        .rsp2 resq 1
-        .reserved2 resd 1
-        .reserved3 resd 1
-        .ist1 resq 1
-        .ist2 resq 1
-        .ist3 resq 1
-        .ist4 resq 1
-        .ist5 resq 1
-        .ist6 resq 1
-        .ist7 resq 1
-        .reserved4 resd 1
-        .reserved5 resd 1
-        .reserved6 resw 1
-        .iomap_base resw 1
-    endstruc
-
-    tss:
-        istruc TSS
-            at TSS.rsp0, dd 0x800000 - 128
-            at TSS.iomap_base, dw 0xFFFF
-        iend
-    .end:
+.end:
