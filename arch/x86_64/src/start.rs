@@ -8,7 +8,7 @@ use allocator::{HEAP_START, HEAP_SIZE};
 use externs::memset;
 use gdt;
 use idt;
-use memory::{self, FrameAllocator};
+use memory;
 use paging::{self, entry, Page, VirtualAddress};
 
 /// Test of zero values in BSS.

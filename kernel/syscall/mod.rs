@@ -92,7 +92,7 @@ pub fn convert_slice_mut<T>(ptr: *mut T, len: usize) -> Result<&'static mut [T]>
     Ok(unsafe { slice::from_raw_parts_mut(ptr, len) })
 }
 
-pub fn handle(a: usize, b: usize, c: usize, d: usize, e: usize, f: usize) -> ::core::result::Result<usize, usize> {
+pub fn handle(a: usize, b: usize, c: usize, d: usize, e: usize, _f: usize) -> ::core::result::Result<usize, usize> {
     match Call::from(a) {
         Call::Exit => exit(b),
         Call::Read => read(b, convert_slice_mut(c as *mut u8, d)?),

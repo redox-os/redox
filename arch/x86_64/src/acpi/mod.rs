@@ -2,9 +2,7 @@
 //! Code to parse the ACPI tables
 
 use core::intrinsics::{atomic_load, atomic_store};
-use x86::controlregs;
 
-use allocator::{HEAP_START, HEAP_SIZE};
 use memory::Frame;
 use paging::{entry, ActivePageTable, Page, PhysicalAddress, VirtualAddress};
 use start::kstart_ap;

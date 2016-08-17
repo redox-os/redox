@@ -4,7 +4,7 @@
 use core::marker::PhantomData;
 use core::ops::{Index, IndexMut};
 
-use memory::{allocate_frame, deallocate_frame};
+use memory::allocate_frame;
 
 use super::entry::*;
 use super::ENTRY_COUNT;
