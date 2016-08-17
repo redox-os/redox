@@ -11,7 +11,7 @@ pub struct Pio<T> {
 
 impl<T> Pio<T> {
     /// Create a PIO from a given port
-    pub fn new(port: u16) -> Self {
+    pub const fn new(port: u16) -> Self {
         Pio::<T> {
             port: port,
             value: PhantomData,

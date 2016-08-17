@@ -5,7 +5,7 @@ use core::intrinsics::{atomic_load, atomic_store};
 use x86::controlregs;
 
 use allocator::{HEAP_START, HEAP_SIZE};
-use memory::{Frame, FrameAllocator};
+use memory::Frame;
 use paging::{entry, ActivePageTable, Page, PhysicalAddress, VirtualAddress};
 use start::kstart_ap;
 
@@ -24,9 +24,7 @@ pub mod xsdt;
 const TRAMPOLINE: usize = 0x7E00;
 const AP_STARTUP: usize = 0x8000;
 
-pub fn init_sdt<A>(sdt: &'static Sdt, allocator: &mut A, active_table: &mut ActivePageTable)
-    where A: FrameAllocator
-{
+pub fn init_sdt(sdt: &'static Sdt, active_table: &mut ActivePageTable) {
     print!("  ");
     for &c in sdt.signature.iter() {
         print!("{}", c as char);
@@ -50,7 +48,7 @@ pub fn init_sdt<A>(sdt: &'static Sdt, allocator: &mut A, active_table: &mut Acti
                         // Map trampoline
                         {
                             if active_table.translate_page(Page::containing_address(VirtualAddress::new(TRAMPOLINE))).is_none() {
-                                active_table.identity_map(Frame::containing_address(PhysicalAddress::new(TRAMPOLINE)), entry::PRESENT | entry::WRITABLE, allocator);
+                                active_table.identity_map(Frame::containing_address(PhysicalAddress::new(TRAMPOLINE)), entry::PRESENT | entry::WRITABLE);
                             }
                         }
 
@@ -63,7 +61,7 @@ pub fn init_sdt<A>(sdt: &'static Sdt, allocator: &mut A, active_table: &mut Acti
                             let end_page = Page::containing_address(VirtualAddress::new(stack_end - 1));
 
                             for page in Page::range_inclusive(start_page, end_page) {
-                                active_table.map(page, entry::WRITABLE | entry::NO_EXECUTE, allocator);
+                                active_table.map(page, entry::WRITABLE | entry::NO_EXECUTE);
                             }
                         }
                         */
@@ -113,9 +111,7 @@ pub fn init_sdt<A>(sdt: &'static Sdt, allocator: &mut A, active_table: &mut Acti
 }
 
 /// Parse the ACPI tables to gather CPU, interrupt, and timer information
-pub unsafe fn init<A>(allocator: &mut A, active_table: &mut ActivePageTable) -> Option<Acpi>
-    where A: FrameAllocator
-{
+pub unsafe fn init(active_table: &mut ActivePageTable) -> Option<Acpi> {
     let start_addr = 0xE0000;
     let end_addr = 0xFFFFF;
 
@@ -125,7 +121,7 @@ pub unsafe fn init<A>(allocator: &mut A, active_table: &mut ActivePageTable) -> 
         let end_frame = Frame::containing_address(PhysicalAddress::new(end_addr));
         for frame in Frame::range_inclusive(start_frame, end_frame) {
             if active_table.translate_page(Page::containing_address(VirtualAddress::new(frame.start_address().get()))).is_none() {
-                active_table.identity_map(frame, entry::PRESENT | entry::NO_EXECUTE, allocator);
+                active_table.identity_map(frame, entry::PRESENT | entry::NO_EXECUTE);
             }
         }
     }
@@ -134,15 +130,15 @@ pub unsafe fn init<A>(allocator: &mut A, active_table: &mut ActivePageTable) -> 
     if let Some(rsdp) = RSDP::search(start_addr, end_addr) {
         println!("{:?}", rsdp);
 
-        let get_sdt = |sdt_address: usize, allocator: &mut A, active_table: &mut ActivePageTable| -> &'static Sdt {
+        let get_sdt = |sdt_address: usize, active_table: &mut ActivePageTable| -> &'static Sdt {
             if active_table.translate_page(Page::containing_address(VirtualAddress::new(sdt_address))).is_none() {
                 let sdt_frame = Frame::containing_address(PhysicalAddress::new(sdt_address));
-                active_table.identity_map(sdt_frame, entry::PRESENT | entry::NO_EXECUTE, allocator);
+                active_table.identity_map(sdt_frame, entry::PRESENT | entry::NO_EXECUTE);
             }
             &*(sdt_address as *const Sdt)
         };
 
-        let rxsdt = get_sdt(rsdp.sdt_address(), allocator, active_table);
+        let rxsdt = get_sdt(rsdp.sdt_address(), active_table);
 
         for &c in rxsdt.signature.iter() {
             print!("{}", c as char);
@@ -150,13 +146,13 @@ pub unsafe fn init<A>(allocator: &mut A, active_table: &mut ActivePageTable) -> 
         println!(":");
         if let Some(rsdt) = Rsdt::new(rxsdt) {
             for sdt_address in rsdt.iter() {
-                let sdt = get_sdt(sdt_address, allocator, active_table);
-                init_sdt(sdt, allocator, active_table);
+                let sdt = get_sdt(sdt_address, active_table);
+                init_sdt(sdt, active_table);
             }
         } else if let Some(xsdt) = Xsdt::new(rxsdt) {
             for sdt_address in xsdt.iter() {
-                let sdt = get_sdt(sdt_address, allocator, active_table);
-                init_sdt(sdt, allocator, active_table);
+                let sdt = get_sdt(sdt_address, active_table);
+                init_sdt(sdt, active_table);
             }
         } else {
             println!("UNKNOWN RSDT OR XSDT SIGNATURE");

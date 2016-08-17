@@ -3,7 +3,9 @@
 
 pub use paging::{PAGE_SIZE, PhysicalAddress};
 
-pub use self::area_frame_alloc::AreaFrameAllocator;
+use self::area_frame_alloc::AreaFrameAllocator;
+
+use spin::Mutex;
 
 pub mod area_frame_alloc;
 
@@ -52,9 +54,11 @@ impl Iterator for MemoryAreaIter {
     }
 }
 
+static ALLOCATOR: Mutex<Option<AreaFrameAllocator>> = Mutex::new(None);
+
 /// Init memory module
 /// Must be called once, and only once,
-pub unsafe fn init(kernel_start: usize, kernel_end: usize) -> AreaFrameAllocator {
+pub unsafe fn init(kernel_start: usize, kernel_end: usize) {
     // Copy memory map from bootloader location
     for (i, mut entry) in MEMORY_MAP.iter_mut().enumerate() {
         *entry = *(0x500 as *const MemoryArea).offset(i as isize);
@@ -63,7 +67,25 @@ pub unsafe fn init(kernel_start: usize, kernel_end: usize) -> AreaFrameAllocator
         }
     }
 
-    AreaFrameAllocator::new(kernel_start, kernel_end, MemoryAreaIter::new(MEMORY_AREA_FREE))
+    *ALLOCATOR.lock() = Some(AreaFrameAllocator::new(kernel_start, kernel_end, MemoryAreaIter::new(MEMORY_AREA_FREE)));
+}
+
+/// Allocate a frame
+pub fn allocate_frame() -> Option<Frame> {
+    if let Some(ref mut allocator) = *ALLOCATOR.lock() {
+        allocator.allocate_frame()
+    } else {
+        panic!("frame allocator not initialized");
+    }
+}
+
+/// Deallocate a frame
+pub fn deallocate_frame(frame: Frame) {
+    if let Some(ref mut allocator) = *ALLOCATOR.lock() {
+        allocator.deallocate_frame(frame)
+    } else {
+        panic!("frame allocator not initialized");
+    }
 }
 
 /// A memory map area
@@ -129,7 +151,7 @@ impl Iterator for FrameIter {
             None
         }
     }
- }
+}
 
 pub trait FrameAllocator {
     fn allocate_frame(&mut self) -> Option<Frame>;

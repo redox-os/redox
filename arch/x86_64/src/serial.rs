@@ -1,5 +1,9 @@
 use core::fmt;
+use spin::Mutex;
+
 use super::io::{Io, Pio};
+
+pub static SERIAL_CONSOLE: Mutex<SerialConsole> = Mutex::new(SerialConsole::new());
 
 pub struct SerialConsole {
     status: Pio<u8>,
@@ -7,7 +11,7 @@ pub struct SerialConsole {
 }
 
 impl SerialConsole {
-    pub fn new() -> SerialConsole {
+    pub const fn new() -> SerialConsole {
         SerialConsole {
             status: Pio::new(0x3F8 + 5),
             data: Pio::new(0x3F8)

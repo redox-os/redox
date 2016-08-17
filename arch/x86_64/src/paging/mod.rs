@@ -3,7 +3,7 @@
 
 use core::ops::{Deref, DerefMut};
 
-use memory::{Frame, FrameAllocator};
+use memory::{allocate_frame, Frame};
 
 use self::entry::{EntryFlags, PRESENT, WRITABLE, NO_EXECUTE};
 use self::mapper::Mapper;
@@ -21,7 +21,7 @@ pub const ENTRY_COUNT: usize = 512;
 pub const PAGE_SIZE: usize = 4096;
 
 /// Initialize paging
-pub unsafe fn init<A>(stack_start: usize, stack_end: usize, allocator: &mut A) -> ActivePageTable where A: FrameAllocator {
+pub unsafe fn init(stack_start: usize, stack_end: usize) -> ActivePageTable {
     extern {
         /// The starting byte of the text (code) data segment.
         static mut __text_start: u8;
@@ -43,10 +43,10 @@ pub unsafe fn init<A>(stack_start: usize, stack_end: usize, allocator: &mut A) -
 
     let mut active_table = ActivePageTable::new();
 
-    let mut temporary_page = TemporaryPage::new(Page::containing_address(VirtualAddress::new(0x80000000)), allocator);
+    let mut temporary_page = TemporaryPage::new(Page::containing_address(VirtualAddress::new(0x80000000)));
 
     let mut new_table = {
-        let frame = allocator.allocate_frame().expect("no more frames");
+        let frame = allocate_frame().expect("no more frames");
         InactivePageTable::new(frame, &mut active_table, &mut temporary_page)
     };
 
@@ -55,7 +55,7 @@ pub unsafe fn init<A>(stack_start: usize, stack_end: usize, allocator: &mut A) -
             let start_frame = Frame::containing_address(PhysicalAddress::new(start));
             let end_frame = Frame::containing_address(PhysicalAddress::new(end - 1));
             for frame in Frame::range_inclusive(start_frame, end_frame) {
-                mapper.identity_map(frame, flags, allocator);
+                mapper.identity_map(frame, flags);
             }
         };
 

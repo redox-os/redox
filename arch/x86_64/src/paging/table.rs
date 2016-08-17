@@ -4,7 +4,7 @@
 use core::marker::PhantomData;
 use core::ops::{Index, IndexMut};
 
-use memory::FrameAllocator;
+use memory::{allocate_frame, deallocate_frame};
 
 use super::entry::*;
 use super::ENTRY_COUNT;
@@ -61,13 +61,11 @@ impl<L> Table<L> where L: HierarchicalLevel {
         self.next_table_address(index).map(|address| unsafe { &mut *(address as *mut _) })
     }
 
-    pub fn next_table_create<A>(&mut self, index: usize, allocator: &mut A) -> &mut Table<L::NextLevel>
-        where A: FrameAllocator
-    {
+    pub fn next_table_create(&mut self, index: usize) -> &mut Table<L::NextLevel> {
         if self.next_table(index).is_none() {
             assert!(!self.entries[index].flags().contains(HUGE_PAGE),
                     "mapping code does not support huge pages");
-            let frame = allocator.allocate_frame().expect("no frames available");
+            let frame = allocate_frame().expect("no frames available");
             self.entries[index].set(frame, PRESENT | WRITABLE);
             self.next_table_mut(index).unwrap().zero();
         }
