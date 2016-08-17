@@ -19,13 +19,8 @@ extern crate x86;
 #[macro_export]
 macro_rules! print {
     ($($arg:tt)*) => ({
-        {
-            use core::fmt::Write;
-            //TODO: let mut serial_console = $crate::serial::SERIAL_CONSOLE.lock();
-            let mut serial_console = $crate::serial::SerialConsole::new();
-            let _ = write!(serial_console, $($arg)*);
-            drop(serial_console);
-        }
+        use core::fmt::Write;
+        let _ = write!($crate::serial::SerialConsole, $($arg)*);
     });
 }
 

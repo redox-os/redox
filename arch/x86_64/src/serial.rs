@@ -3,16 +3,16 @@ use spin::Mutex;
 
 use super::io::{Io, Pio};
 
-pub static SERIAL_CONSOLE: Mutex<SerialConsole> = Mutex::new(SerialConsole::new());
+static SERIAL_PORT: Mutex<SerialPort> = Mutex::new(SerialPort::new());
 
-pub struct SerialConsole {
+struct SerialPort {
     status: Pio<u8>,
     data: Pio<u8>
 }
 
-impl SerialConsole {
-    pub const fn new() -> SerialConsole {
-        SerialConsole {
+impl SerialPort {
+    pub const fn new() -> SerialPort {
+        SerialPort {
             status: Pio::new(0x3F8 + 5),
             data: Pio::new(0x3F8)
         }
@@ -34,9 +34,11 @@ impl SerialConsole {
     }
 }
 
+pub struct SerialConsole;
+
 impl fmt::Write for SerialConsole {
     fn write_str(&mut self, s: &str) -> Result<(), fmt::Error> {
-        self.write(s.as_bytes());
+        SERIAL_PORT.lock().write(s.as_bytes());
 
         Ok(())
     }
