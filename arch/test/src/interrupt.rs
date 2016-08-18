@@ -4,14 +4,14 @@ static mut INTERRUPTS_ENABLED: bool = false;
 
 /// Clear interrupts
 #[inline(always)]
-pub unsafe fn disable_interrupts() {
+pub unsafe fn disable() {
     println!("CLEAR INTERRUPTS");
     INTERRUPTS_ENABLED = false;
 }
 
 /// Set interrupts
 #[inline(always)]
-pub unsafe fn enable_interrupts() {
+pub unsafe fn enable() {
     println!("SET INTERRUPTS");
     INTERRUPTS_ENABLED = true;
 }
@@ -21,4 +21,11 @@ pub unsafe fn enable_interrupts() {
 pub unsafe fn halt() {
     assert!(INTERRUPTS_ENABLED);
     ::std::thread::yield_now();
+}
+
+/// Set interrupts and halt
+#[inline(always)]
+pub unsafe fn enable_and_halt() {
+    enable();
+    halt();
 }

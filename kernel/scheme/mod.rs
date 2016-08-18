@@ -20,21 +20,25 @@ use self::debug::DebugScheme;
 /// Debug scheme
 pub mod debug;
 
+/// Scheme list type
 pub type SchemeList = BTreeMap<Box<[u8]>, Arc<Mutex<Box<Scheme + Send>>>>;
 
 /// Schemes list
 static SCHEMES: Once<RwLock<SchemeList>> = Once::new();
 
+/// Initialize schemes, called if needed
 fn init_schemes() -> RwLock<SchemeList> {
     let mut map: SchemeList = BTreeMap::new();
     map.insert(Box::new(*b"debug"), Arc::new(Mutex::new(Box::new(DebugScheme))));
     RwLock::new(map)
 }
 
+/// Get the global schemes list, const
 pub fn schemes() -> RwLockReadGuard<'static, SchemeList> {
     SCHEMES.call_once(init_schemes).read()
 }
 
+/// Get the global schemes list, mutable
 pub fn schemes_mut() -> RwLockWriteGuard<'static, SchemeList> {
     SCHEMES.call_once(init_schemes).write()
 }

@@ -1,15 +1,4 @@
-use arch::interrupt::{enable_interrupts, halt};
-
 use syscall::{self, Error};
-
-/// Test halting
-#[test]
-fn halt_with_interrupts() {
-    unsafe {
-        //enable_interrupts();
-        //halt();
-    }
-}
 
 /// Test stdio
 #[test]
