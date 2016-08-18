@@ -37,7 +37,7 @@ pub fn contexts_mut() -> RwLockWriteGuard<'static, ContextList> {
 }
 
 /// A context, which identifies either a process or a thread
-#[derive(Clone, Debug)]
+#[derive(Debug)]
 pub struct Context {
     /// The open files in the scheme
     pub files: Vec<Option<file::File>>
