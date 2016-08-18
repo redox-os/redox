@@ -36,14 +36,12 @@ pub unsafe fn stack_trace() {
     println!("TRACE: {:>016X}", rbp);
     //Maximum 64 frames
     for _frame in 0..64 {
-        unsafe {
-            let rip = *(rbp as *const usize).offset(1);
-            println!("  {:>016X}: {:>016X}", rbp, rip);
-            if rip == 0 {
-                break;
-            }
-            rbp = *(rbp as *const usize);
+        let rip = *(rbp as *const usize).offset(1);
+        println!("  {:>016X}: {:>016X}", rbp, rip);
+        if rip == 0 {
+            break;
         }
+        rbp = *(rbp as *const usize);
     }
 }
 

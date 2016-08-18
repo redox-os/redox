@@ -53,7 +53,7 @@ pub fn init_sdt(sdt: &'static Sdt, active_table: &mut ActivePageTable) {
                         // Allocate a stack
                         // TODO: Allocate contiguous
                         let stack_start = allocate_frame().expect("no more frames").start_address().get();
-                        for i in 0..62 {
+                        for _i in 0..62 {
                             allocate_frame().expect("no more frames");
                         }
                         let stack_end = allocate_frame().expect("no more frames").start_address().get() + 4096;

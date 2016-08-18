@@ -11,7 +11,6 @@ use allocator::{HEAP_START, HEAP_SIZE};
 use externs::memset;
 use gdt;
 use idt;
-use interrupt;
 use memory;
 use paging::{self, entry, Page, VirtualAddress};
 
@@ -27,6 +26,8 @@ static BSP_PAGE_TABLE: AtomicUsize = ATOMIC_USIZE_INIT;
 extern {
     /// Kernel main function
     fn kmain() -> !;
+    /// Kernel main for APs
+    fn kmain_ap() -> !;
 }
 
 /// The entry to Rust, all things must be initialized
@@ -71,7 +72,7 @@ pub unsafe extern fn kstart() -> ! {
         let mut active_table = paging::init(stack_start, stack_end);
 
         // Reset AP variables
-        AP_COUNT.store(1, Ordering::SeqCst);
+        AP_COUNT.store(0, Ordering::SeqCst);
         BSP_READY.store(false, Ordering::SeqCst);
         BSP_PAGE_TABLE.store(controlregs::cr3() as usize, Ordering::SeqCst);
 
@@ -116,7 +117,5 @@ pub unsafe extern fn kstart_ap(stack_start: usize, stack_end: usize) -> ! {
 
     print!("{}", ::core::str::from_utf8_unchecked(&[b'A', b'P', b' ', ap_number as u8 + b'0', b'\n']));
 
-    loop {
-        interrupt::enable_and_halt();
-    }
+    kmain_ap();
 }

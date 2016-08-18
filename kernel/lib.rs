@@ -109,6 +109,14 @@ pub mod tests;
 pub extern fn kmain() {
     loop {
         unsafe { interrupt::enable_and_halt(); }
-        print!("HALT\n");
+        print!("INT BSP\n");
+    }
+}
+
+#[no_mangle]
+pub extern fn kmain_ap() {
+    loop {
+        unsafe { interrupt::enable_and_halt() }
+        print!("INT AP\n");
     }
 }
