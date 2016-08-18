@@ -70,7 +70,7 @@
 #![feature(question_mark)]
 #![no_std]
 
-use arch::interrupt::{enable_interrupts, halt};
+use arch::interrupt;
 
 /// Architecture specific items (test)
 #[cfg(test)]
@@ -107,17 +107,8 @@ pub mod tests;
 
 #[no_mangle]
 pub extern fn kmain() {
-    println!("TEST");
-
-    println!("{:?}", syscall::open(b"debug:", 0));
-    println!("{:?}", syscall::open(b"debug:", 0));
-    println!("{:?}", syscall::open(b"debug:", 0));
-
     loop {
-        unsafe {
-            enable_interrupts();
-            halt();
-        }
-        println!("{:?}", syscall::write(1, b"HALT\n"));
+        unsafe { interrupt::enable_and_halt(); }
+        print!("HALT\n");
     }
 }

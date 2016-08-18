@@ -30,7 +30,7 @@ pub unsafe fn init_ap() {
 }
 
 interrupt!(blank, {
-    
+
 });
 
 interrupt!(exception, {

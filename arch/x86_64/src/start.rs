@@ -11,6 +11,7 @@ use allocator::{HEAP_START, HEAP_SIZE};
 use externs::memset;
 use gdt;
 use idt;
+use interrupt;
 use memory;
 use paging::{self, entry, Page, VirtualAddress};
 
@@ -19,6 +20,7 @@ static BSS_TEST_ZERO: usize = 0;
 /// Test of non-zero values in BSS.
 static BSS_TEST_NONZERO: usize = 0xFFFFFFFFFFFFFFFF;
 
+static AP_COUNT: AtomicUsize = ATOMIC_USIZE_INIT;
 static BSP_READY: AtomicBool = ATOMIC_BOOL_INIT;
 static BSP_PAGE_TABLE: AtomicUsize = ATOMIC_USIZE_INIT;
 
@@ -52,8 +54,6 @@ pub unsafe extern fn kstart() -> ! {
             debug_assert_eq!(BSS_TEST_NONZERO, 0xFFFFFFFFFFFFFFFF);
         }
 
-        BSP_READY.store(false, Ordering::SeqCst);
-
         // Set up GDT
         gdt::init();
 
@@ -70,6 +70,9 @@ pub unsafe extern fn kstart() -> ! {
         // Initialize paging
         let mut active_table = paging::init(stack_start, stack_end);
 
+        // Reset AP variables
+        AP_COUNT.store(1, Ordering::SeqCst);
+        BSP_READY.store(false, Ordering::SeqCst);
         BSP_PAGE_TABLE.store(controlregs::cr3() as usize, Ordering::SeqCst);
 
         // Read ACPI tables, starts APs
@@ -84,6 +87,8 @@ pub unsafe extern fn kstart() -> ! {
         }
 
         BSP_READY.store(true, Ordering::SeqCst);
+
+        print!("BSP\n");
     }
 
     kmain();
@@ -99,15 +104,19 @@ pub unsafe extern fn kstart_ap(stack_start: usize, stack_end: usize) -> ! {
         idt::init_ap();
 
         // Initialize paging
-        //let mut active_table = 
+        //let mut active_table =
         paging::init_ap(stack_start, stack_end, BSP_PAGE_TABLE.load(Ordering::SeqCst));
     }
+
+    let ap_number = AP_COUNT.fetch_add(1, Ordering::SeqCst);
 
     while ! BSP_READY.load(Ordering::SeqCst) {
         asm!("pause" : : : : "intel", "volatile");
     }
 
+    print!("{}", ::core::str::from_utf8_unchecked(&[b'A', b'P', b' ', ap_number as u8 + b'0', b'\n']));
+
     loop {
-        asm!("hlt");
+        interrupt::enable_and_halt();
     }
 }
