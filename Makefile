@@ -38,7 +38,7 @@ build/libkernel.a: build/libcore.rlib build/liballoc.rlib build/libcollections.r
 	RUSTC="./rustc.sh" cargo rustc --target $(ARCH)-unknown-none.json -- -C soft-float -o $@
 
 build/kernel.bin: build/libkernel.a
-	ld -m elf_$(ARCH) --gc-sections -z max-page-size=0x1000 -T bootloader/x86/kernel.ld -o $@ $<
+	ld --gc-sections -z max-page-size=0x1000 -T bootloader/x86/kernel.ld -o $@ $<
 
 build/kernel.list: build/kernel.bin
 	objdump -C -M intel -D $< > $@

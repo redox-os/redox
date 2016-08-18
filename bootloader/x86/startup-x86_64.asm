@@ -53,7 +53,7 @@ startup_arch:
 
     xor edi, edi
     xor eax, eax
-    mov ecx, 3 * 4096 / 4 ;PML4, PDP, PD / moves 4 Bytes at once
+    mov ecx, 6 * 4096 / 4 ;PML4, PDP, 4 PD / moves 4 Bytes at once
     cld
     rep stosd
 
@@ -63,12 +63,15 @@ startup_arch:
     add edi, 0x1000
     ;Link last PML4 to PML4
     mov DWORD [es:edi - 8], 0x70000 | 1 << 1 | 1
-    ;Link first PDP to PD
+    ;Link first four PDP to PD
     mov DWORD [es:edi], 0x72000 | 1 << 1 | 1
+    mov DWORD [es:edi + 8], 0x73000 | 1 << 1 | 1
+    mov DWORD [es:edi + 16], 0x74000 | 1 << 1 | 1
+    mov DWORD [es:edi + 24], 0x75000 | 1 << 1 | 1
     add edi, 0x1000
     ;Link all PD's (512 per PDP, 2MB each)y
     mov ebx, 1 << 7 | 1 << 1 | 1
-    mov ecx, 512
+    mov ecx, 4*512
 .setpd:
     mov [es:edi], ebx
     add ebx, 0x200000
@@ -99,6 +102,8 @@ startup_arch:
     mov ebx, cr0
     or ebx, 1 << 31 | 1 << 16 | 1                ;Bit 31: Paging, Bit 16: write protect kernel, Bit 0: Protected Mode
     mov cr0, ebx
+
+    xchg bx, bx
 
     ; far jump to enable Long Mode and load CS with 64 bit segment
     jmp gdt.kernel_code:long_mode

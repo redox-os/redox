@@ -1,31 +1,38 @@
 ENTRY(kstart)
+OUTPUT_FORMAT(elf64-x86-64)
+
+KERNEL_OFFSET = 0;
 
 SECTIONS {
-    kernel_base = 0x101000;
-	. = kernel_base;
+    . = 0x100000;
 
-    .text : AT(ADDR(.text) - kernel_base) {
+    . += SIZEOF_HEADERS;
+    . = ALIGN(4096);
+
+	. += KERNEL_OFFSET;
+
+    .text : AT(ADDR(.text) - KERNEL_OFFSET) {
         __text_start = .;
         *(.text*)
 		. = ALIGN(4096);
         __text_end = .;
     }
 
-	.rodata : AT(ADDR(.rodata) - kernel_base) {
+	.rodata : AT(ADDR(.rodata) - KERNEL_OFFSET) {
         __rodata_start = .;
         *(.rodata*)
 		. = ALIGN(4096);
         __rodata_end = .;
     }
 
-    .data : AT(ADDR(.data) - kernel_base) {
+    .data : AT(ADDR(.data) - KERNEL_OFFSET) {
         __data_start = .;
         *(.data*)
 		. = ALIGN(4096);
         __data_end = .;
     }
 
-    .bss : AT(ADDR(.bss) - kernel_base) {
+    .bss : AT(ADDR(.bss) - KERNEL_OFFSET) {
         __bss_start = .;
         *(.bss*)
         . = ALIGN(4096);
@@ -33,8 +40,9 @@ SECTIONS {
     }
 
     /DISCARD/ : {
-        *(.comment)
-        *(.eh_frame)
-        *(.rel.eh_frame)
+        *(.comment*)
+        *(.eh_frame*)
+        *(.note*)
+        *(.rel.eh_frame*)
     }
 }

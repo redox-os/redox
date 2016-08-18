@@ -43,7 +43,7 @@ pub unsafe fn init(stack_start: usize, stack_end: usize) -> ActivePageTable {
 
     let mut active_table = ActivePageTable::new();
 
-    let mut temporary_page = TemporaryPage::new(Page::containing_address(VirtualAddress::new(0x80000000)));
+    let mut temporary_page = TemporaryPage::new(Page::containing_address(VirtualAddress::new(0x8_0000_0000)));
 
     let mut new_table = {
         let frame = allocate_frame().expect("no more frames");
@@ -85,7 +85,7 @@ pub unsafe fn init(stack_start: usize, stack_end: usize) -> ActivePageTable {
 pub unsafe fn init_ap(stack_start: usize, stack_end: usize, bsp_page_table: usize) -> ActivePageTable {
     let mut active_table = ActivePageTable::new();
 
-    let mut temporary_page = TemporaryPage::new(Page::containing_address(VirtualAddress::new(0x80000000)));
+    let mut temporary_page = TemporaryPage::new(Page::containing_address(VirtualAddress::new(0x8_0000_0000)));
 
     let mut new_table = {
         let frame = Frame::containing_address(PhysicalAddress::new(bsp_page_table));
