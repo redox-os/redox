@@ -9,7 +9,6 @@ crate-type = ["staticlib"]
 
 [dependencies]
 bitflags = "*"
-lazy_static = "*"
 spin = "*"
 
 [dev-dependencies]

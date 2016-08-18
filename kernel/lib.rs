@@ -67,6 +67,7 @@
 #![feature(alloc)]
 #![feature(collections)]
 #![feature(const_fn)]
+#![feature(drop_types_in_const)]
 #![feature(question_mark)]
 #![no_std]
 
@@ -88,8 +89,6 @@ extern crate collections;
 
 #[macro_use]
 extern crate bitflags;
-#[macro_use]
-extern crate lazy_static;
 extern crate spin;
 
 /// Context management

@@ -1,5 +1,7 @@
 //! Filesystem syscalls
 
+use scheme;
+
 use super::{Error, Result};
 
 /// Read syscall
@@ -33,7 +35,7 @@ pub fn open(path: &[u8], flags: usize) -> Result<usize> {
 
     let file = {
         if let Some(namespace) = namespace_opt {
-            let schemes = ::scheme::SCHEMES.read();
+            let schemes = scheme::schemes();
             if let Some(scheme_mutex) = schemes.get(namespace) {
                 scheme_mutex.lock().open(reference_opt.unwrap_or(b""), flags)
             } else {

@@ -11,7 +11,7 @@ use alloc::boxed::Box;
 
 use collections::BTreeMap;
 
-use spin::{Mutex, RwLock};
+use spin::{Once, Mutex, RwLock, RwLockReadGuard, RwLockWriteGuard};
 
 use syscall::Result;
 
@@ -20,13 +20,23 @@ use self::debug::DebugScheme;
 /// Debug scheme
 pub mod debug;
 
+pub type SchemeList = BTreeMap<Box<[u8]>, Arc<Mutex<Box<Scheme + Send>>>>;
+
 /// Schemes list
-lazy_static! {
-    pub static ref SCHEMES: RwLock<BTreeMap<Box<[u8]>, Arc<Mutex<Box<Scheme + Send>>>>> = {
-        let mut map: BTreeMap<Box<[u8]>, Arc<Mutex<Box<Scheme + Send>>>> = BTreeMap::new();
-        map.insert(Box::new(*b"debug"), Arc::new(Mutex::new(Box::new(DebugScheme))));
-        RwLock::new(map)
-    };
+static SCHEMES: Once<RwLock<SchemeList>> = Once::new();
+
+fn init_schemes() -> RwLock<SchemeList> {
+    let mut map: SchemeList = BTreeMap::new();
+    map.insert(Box::new(*b"debug"), Arc::new(Mutex::new(Box::new(DebugScheme))));
+    RwLock::new(map)
+}
+
+pub fn schemes() -> RwLockReadGuard<'static, SchemeList> {
+    SCHEMES.call_once(init_schemes).read()
+}
+
+pub fn schemes_mut() -> RwLockWriteGuard<'static, SchemeList> {
+    SCHEMES.call_once(init_schemes).write()
 }
 
 /// A scheme trait, implemented by a scheme handler
