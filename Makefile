@@ -550,7 +550,10 @@ $(BUILD)/libsystem.rlib: crates/system/lib.rs crates/system/*.rs crates/system/*
 $(BUILD)/libredoxfs.rlib: crates/redoxfs/src/lib.rs crates/redoxfs/src/*.rs $(BUILD)/libstd.rlib
 	$(RUSTC) $(RUSTCFLAGS) -o $@ $<
 
-$(BUILD)/kernel.rlib: kernel/main.rs kernel/*.rs kernel/*/*.rs kernel/*/*/*.rs $(BUILD)/libbitflags.rlib $(BUILD)/libio.rlib $(BUILD)/libransid.rlib $(BUILD)/libsystem.rlib build/initfs.gen
+$(BUILD)/libgoblin.rlib: crates/goblin/src/lib.rs crates/goblin/src/elf/*/*.rs
+	$(RUSTC) $(RUSTCFLAGS) --cfg feature=\"no_mach\" --cfg feature=\"no_mach32\" --cfg feature=\"no_pe\" --cfg feature=\"no_pe32\" --cfg feature=\"no_endian_fd\" --cfg feature=\"pure\" --crate-name goblin --crate-type lib -o $@ $<
+
+$(BUILD)/kernel.rlib: kernel/main.rs kernel/*.rs kernel/*/*.rs kernel/*/*/*.rs $(BUILD)/libbitflags.rlib $(BUILD)/libio.rlib $(BUILD)/libransid.rlib $(BUILD)/libsystem.rlib $(BUILD)/libgoblin.rlib build/initfs.gen
 	$(RUSTC) $(RUSTCFLAGS) -C lto -o $@ $<
 
 $(BUILD)/kernel.bin: $(BUILD)/kernel.rlib kernel/kernel.ld
