@@ -3,7 +3,8 @@
 /// It must create the IDT with the correct entries, those entries are
 /// defined in other files inside of the `arch` module
 
-use core::sync::atomic::{AtomicBool, ATOMIC_BOOL_INIT, Ordering};
+use core::sync::atomic::{AtomicBool, ATOMIC_BOOL_INIT, AtomicUsize, ATOMIC_USIZE_INIT, Ordering};
+use x86::controlregs;
 
 use acpi;
 use allocator::{HEAP_START, HEAP_SIZE};
@@ -19,6 +20,7 @@ static BSS_TEST_ZERO: usize = 0;
 static BSS_TEST_NONZERO: usize = 0xFFFFFFFFFFFFFFFF;
 
 static BSP_READY: AtomicBool = ATOMIC_BOOL_INIT;
+static BSP_PAGE_TABLE: AtomicUsize = ATOMIC_USIZE_INIT;
 
 extern {
     /// Kernel main function
@@ -68,7 +70,9 @@ pub unsafe extern fn kstart() -> ! {
         // Initialize paging
         let mut active_table = paging::init(stack_start, stack_end);
 
-        // Read ACPI tables
+        BSP_PAGE_TABLE.store(controlregs::cr3() as usize, Ordering::SeqCst);
+
+        // Read ACPI tables, starts APs
         acpi::init(&mut active_table);
 
         // Map heap
@@ -95,10 +99,8 @@ pub unsafe extern fn kstart_ap(stack_start: usize, stack_end: usize) -> ! {
         idt::init_ap();
 
         // Initialize paging
-        //let mut active_table =
-        paging::init(stack_start, stack_end);
-
-        // TODO: Use heap from master, ensuring consistency
+        //let mut active_table = 
+        paging::init_ap(stack_start, stack_end, BSP_PAGE_TABLE.load(Ordering::SeqCst));
     }
 
     while ! BSP_READY.load(Ordering::SeqCst) {

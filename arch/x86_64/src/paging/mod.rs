@@ -81,6 +81,37 @@ pub unsafe fn init(stack_start: usize, stack_end: usize) -> ActivePageTable {
     active_table
 }
 
+/// Initialize paging for AP
+pub unsafe fn init_ap(stack_start: usize, stack_end: usize, bsp_page_table: usize) -> ActivePageTable {
+    let mut active_table = ActivePageTable::new();
+
+    let mut temporary_page = TemporaryPage::new(Page::containing_address(VirtualAddress::new(0x80000000)));
+
+    let mut new_table = {
+        let frame = Frame::containing_address(PhysicalAddress::new(bsp_page_table));
+        InactivePageTable {
+            p4_frame: frame
+        }
+    };
+
+    active_table.with(&mut new_table, &mut temporary_page, |mapper| {
+        let mut remap = |start: usize, end: usize, flags: EntryFlags| {
+            let start_frame = Frame::containing_address(PhysicalAddress::new(start));
+            let end_frame = Frame::containing_address(PhysicalAddress::new(end - 1));
+            for frame in Frame::range_inclusive(start_frame, end_frame) {
+                mapper.identity_map(frame, flags);
+            }
+        };
+
+        // Remap stack writable, no execute
+        remap(stack_start, stack_end, PRESENT | WRITABLE | NO_EXECUTE);
+    });
+
+    active_table.switch(new_table);
+
+    active_table
+}
+
 pub struct ActivePageTable {
     mapper: Mapper,
 }
