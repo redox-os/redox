@@ -95,7 +95,6 @@ macro_rules! interrupt_error {
                 push r11"
                 : : : : "intel", "volatile");
 
-
             // Call inner rust function
             inner();
 
@@ -148,6 +147,3 @@ pub mod serial;
 
 /// Initialization and start function
 pub mod start;
-
-/// Task state segment
-pub mod tss;
