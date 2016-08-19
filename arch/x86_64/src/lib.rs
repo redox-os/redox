@@ -119,6 +119,9 @@ macro_rules! interrupt_error {
 /// ACPI table parsing
 pub mod acpi;
 
+/// ELF file handling
+pub mod elf;
+
 /// Memcpy, memmove, etc.
 pub mod externs;
 

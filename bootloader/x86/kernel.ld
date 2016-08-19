@@ -1,15 +1,13 @@
 ENTRY(kstart)
 OUTPUT_FORMAT(elf64-x86-64)
 
-KERNEL_OFFSET = 0;
+KERNEL_OFFSET = 0x100000;
 
 SECTIONS {
-    . = 0x100000;
+    . = KERNEL_OFFSET;
 
     . += SIZEOF_HEADERS;
     . = ALIGN(4096);
-
-	. += KERNEL_OFFSET;
 
     .text : AT(ADDR(.text) - KERNEL_OFFSET) {
         __text_start = .;

@@ -16,7 +16,7 @@
     "code-model": "kernel",
     "disable-redzone": true,
     "eliminate-frame-pointer": false,
-    "exe-suffix": ".bin",
+    "exe-suffix": "",
     "has-rpath": false,
     "no-compiler-rt": true,
     "no-default-libraries": true,

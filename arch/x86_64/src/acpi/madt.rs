@@ -85,7 +85,7 @@ pub enum MadtEntry {
     InvalidIoApic(usize),
     IntSrcOverride(&'static MadtIntSrcOverride),
     InvalidIntSrcOverride(usize),
-    Unknown
+    Unknown(u8)
 }
 
 pub struct MadtIter {
@@ -117,7 +117,7 @@ impl Iterator for MadtIter {
                     } else {
                         MadtEntry::InvalidIntSrcOverride(entry_len)
                     },
-                    _ => MadtEntry::Unknown
+                    _ => MadtEntry::Unknown(entry_type)
                 };
 
                 self.i += entry_len;

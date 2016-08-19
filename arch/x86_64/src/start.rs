@@ -27,7 +27,7 @@ extern {
     /// Kernel main function
     fn kmain() -> !;
     /// Kernel main for APs
-    fn kmain_ap() -> !;
+    fn kmain_ap(id: usize) -> !;
 }
 
 /// The entry to Rust, all things must be initialized
@@ -88,8 +88,6 @@ pub unsafe extern fn kstart() -> ! {
         }
 
         BSP_READY.store(true, Ordering::SeqCst);
-
-        print!("BSP\n");
     }
 
     kmain();
@@ -115,7 +113,5 @@ pub unsafe extern fn kstart_ap(stack_start: usize, stack_end: usize) -> ! {
         asm!("pause" : : : : "intel", "volatile");
     }
 
-    print!("{}", ::core::str::from_utf8_unchecked(&[b'A', b'P', b' ', ap_number as u8 + b'0', b'\n']));
-
-    kmain_ap();
+    kmain_ap(ap_number);
 }

@@ -106,3 +106,11 @@ pub fn handle(a: usize, b: usize, c: usize, d: usize, e: usize, _f: usize) -> ::
         Call::Unknown => Err(Error::NoCall)
     }.map_err(|err| err.into())
 }
+
+#[no_mangle]
+pub extern fn syscall(a: usize, b: usize, c: usize, d: usize, e: usize, f: usize) -> usize {
+    match handle(a, b, c, d, e, f) {
+        Ok(value) => value,
+        Err(value) => !value
+    }
+}

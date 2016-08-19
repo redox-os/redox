@@ -65,6 +65,7 @@
 //! In this case, it is recommended to add one page, 4096 bytes, to the buffer and retry.
 
 #![feature(alloc)]
+#![feature(asm)]
 #![feature(collections)]
 #![feature(const_fn)]
 #![feature(drop_types_in_const)]
@@ -94,6 +95,9 @@ extern crate spin;
 /// Context management
 pub mod context;
 
+/// ELF file parsing
+pub mod elf;
+
 /// Schemes, filesystem handlers
 pub mod scheme;
 
@@ -106,16 +110,18 @@ pub mod tests;
 
 #[no_mangle]
 pub extern fn kmain() {
+    print!("{}", format!("BSP\n"));
+
     loop {
         unsafe { interrupt::enable_and_halt(); }
-        print!("INT BSP\n");
     }
 }
 
 #[no_mangle]
-pub extern fn kmain_ap() {
+pub extern fn kmain_ap(id: usize) {
+    print!("{}", format!("ASP {}\n", id));
+
     loop {
         unsafe { interrupt::enable_and_halt() }
-        print!("INT AP\n");
     }
 }

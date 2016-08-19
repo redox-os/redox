@@ -20,6 +20,7 @@ pub unsafe fn init() {
         entry.set_flags(IDT_PRESENT | IDT_RING_0 | IDT_INTERRUPT);
         entry.set_offset(8, blank as usize);
     }
+    IDT[0x80].set_offset(8, syscall as usize);
     IDTR.set_slice(&IDT);
 
     init_ap();
@@ -53,6 +54,29 @@ interrupt_error!(page_fault, {
         halt();
     }
 });
+
+#[naked]
+pub unsafe extern fn syscall() {
+    extern {
+        fn syscall(a: usize, b: usize, c: usize, d: usize, e: usize, f: usize) -> usize;
+    }
+
+    let a;
+    let b;
+    let c;
+    let d;
+    let e;
+    let f;
+    asm!("" : "={rax}"(a), "={rbx}"(b), "={rcx}"(c), "={rdx}"(d), "={rsi}"(e), "={rdi}"(f)
+        : : : "intel", "volatile");
+
+    let a = syscall(a, b, c, d, e, f);
+
+    asm!("" : : "{rax}"(a) : : "intel", "volatile");
+
+    // Pop scratch registers, error code, and return
+    asm!("iretq" : : : : "intel", "volatile");
+}
 
 bitflags! {
     pub flags IdtFlags: u8 {
