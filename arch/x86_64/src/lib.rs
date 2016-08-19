@@ -6,6 +6,7 @@
 #![feature(core_intrinsics)]
 #![feature(lang_items)]
 #![feature(naked_functions)]
+#![feature(thread_local)]
 #![feature(unique)]
 #![no_std]
 

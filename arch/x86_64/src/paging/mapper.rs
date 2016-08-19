@@ -32,7 +32,10 @@ impl Mapper {
         let mut p2 = p3.next_table_create(page.p3_index());
         let mut p1 = p2.next_table_create(page.p2_index());
 
-        assert!(p1[page.p1_index()].is_unused());
+        assert!(p1[page.p1_index()].is_unused(),
+            "Set to {:X}: {:?}, requesting {:X}: {:?}",
+            p1[page.p1_index()].address().get(), p1[page.p1_index()].flags(),
+            frame.start_address().get(), flags);
         p1[page.p1_index()].set(frame, flags | entry::PRESENT);
     }
 

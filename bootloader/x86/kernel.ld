@@ -28,6 +28,10 @@ SECTIONS {
         *(.data*)
 		. = ALIGN(4096);
         __data_end = .;
+        __tdata_start = .;
+        *(.tdata*)
+		. = ALIGN(4096);
+        __tdata_end = .;
     }
 
     .bss : AT(ADDR(.bss) - KERNEL_OFFSET) {
@@ -35,6 +39,10 @@ SECTIONS {
         *(.bss*)
         . = ALIGN(4096);
         __bss_end = .;
+        __tbss_start = .;
+        *(.tbss*)
+        . = ALIGN(4096);
+        __tbss_end = .;
     }
 
     /DISCARD/ : {

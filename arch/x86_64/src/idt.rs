@@ -1,15 +1,19 @@
 use core::mem;
+use x86::dtables::{self, DescriptorTablePointer};
 
 use interrupt::halt;
 
-pub static mut IDTR: IdtDescriptor = IdtDescriptor {
-    size: 0,
-    offset: 0
+pub static mut IDTR: DescriptorTablePointer = DescriptorTablePointer {
+    limit: 0,
+    base: 0
 };
 
 pub static mut IDT: [IdtEntry; 256] = [IdtEntry::new(); 256];
 
 pub unsafe fn init() {
+    IDTR.limit = (IDT.len() * mem::size_of::<IdtEntry>() - 1) as u16;
+    IDTR.base = IDT.as_ptr() as u64;
+
     for entry in IDT[0..32].iter_mut() {
         entry.set_flags(IDT_PRESENT | IDT_RING_0 | IDT_INTERRUPT);
         entry.set_offset(8, exception as usize);
@@ -21,13 +25,8 @@ pub unsafe fn init() {
         entry.set_offset(8, blank as usize);
     }
     IDT[0x80].set_offset(8, syscall as usize);
-    IDTR.set_slice(&IDT);
 
-    init_ap();
-}
-
-pub unsafe fn init_ap() {
-    IDTR.load();
+    dtables::lidt(&IDTR);
 }
 
 interrupt!(blank, {

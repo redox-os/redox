@@ -63,10 +63,10 @@ impl<L> Table<L> where L: HierarchicalLevel {
 
     pub fn next_table_create(&mut self, index: usize) -> &mut Table<L::NextLevel> {
         if self.next_table(index).is_none() {
-            assert!(!self.entries[index].flags().contains(HUGE_PAGE),
+            assert!(!self[index].flags().contains(HUGE_PAGE),
                     "mapping code does not support huge pages");
             let frame = allocate_frame().expect("no frames available");
-            self.entries[index].set(frame, PRESENT | WRITABLE);
+            self[index].set(frame, PRESENT | WRITABLE);
             self.next_table_mut(index).unwrap().zero();
         }
         self.next_table_mut(index).unwrap()

@@ -35,6 +35,14 @@ pub unsafe fn init(stack_start: usize, stack_end: usize) -> ActivePageTable {
         static mut __data_start: u8;
         /// The ending byte of the _.data_ segment.
         static mut __data_end: u8;
+        /// The starting byte of the thread data segment
+        static mut __tdata_start: u8;
+        /// The ending byte of the thread data segment
+        static mut __tdata_end: u8;
+        /// The starting byte of the thread BSS segment
+        static mut __tbss_start: u8;
+        /// The ending byte of the thread BSS segment
+        static mut __tbss_end: u8;
         /// The starting byte of the _.bss_ (uninitialized data) segment.
         static mut __bss_start: u8;
         /// The ending byte of the _.bss_ (uninitialized data) segment.
@@ -51,63 +59,72 @@ pub unsafe fn init(stack_start: usize, stack_end: usize) -> ActivePageTable {
     };
 
     active_table.with(&mut new_table, &mut temporary_page, |mapper| {
-        let mut remap = |start: usize, end: usize, flags: EntryFlags| {
-            let start_frame = Frame::containing_address(PhysicalAddress::new(start));
-            let end_frame = Frame::containing_address(PhysicalAddress::new(end - 1));
-            for frame in Frame::range_inclusive(start_frame, end_frame) {
-                mapper.identity_map(frame, flags);
-            }
-        };
+        {
+            let mut remap = |start: usize, end: usize, flags: EntryFlags| {
+                let start_frame = Frame::containing_address(PhysicalAddress::new(start));
+                let end_frame = Frame::containing_address(PhysicalAddress::new(end - 1));
+                for frame in Frame::range_inclusive(start_frame, end_frame) {
+                    mapper.identity_map(frame, flags);
+                }
+            };
 
-        // Remap stack writable, no execute
-        remap(stack_start, stack_end, PRESENT | WRITABLE | NO_EXECUTE);
+            // Remap stack writable, no execute
+            remap(stack_start, stack_end, PRESENT | NO_EXECUTE | WRITABLE);
 
-        // Remap a section with `flags`
-        let mut remap_section = |start: &u8, end: &u8, flags: EntryFlags| {
-            remap(start as *const _ as usize, end as *const _ as usize, flags);
-        };
-        // Remap text read-only
-        remap_section(& __text_start, & __text_end, PRESENT);
-        // Remap rodata read-only, no execute
-        remap_section(& __rodata_start, & __rodata_end, PRESENT | NO_EXECUTE);
-        // Remap data writable, no execute
-        remap_section(& __data_start, & __data_end, PRESENT | NO_EXECUTE | WRITABLE);
-        // Remap bss writable, no execute
-        remap_section(& __bss_start, & __bss_end, PRESENT | NO_EXECUTE | WRITABLE);
-    });
-
-    active_table.switch(new_table);
-
-    active_table
-}
-
-/// Initialize paging for AP
-pub unsafe fn init_ap(stack_start: usize, stack_end: usize, bsp_page_table: usize) -> ActivePageTable {
-    let mut active_table = ActivePageTable::new();
-
-    let mut temporary_page = TemporaryPage::new(Page::containing_address(VirtualAddress::new(0x8_0000_0000)));
-
-    let mut new_table = {
-        let frame = Frame::containing_address(PhysicalAddress::new(bsp_page_table));
-        InactivePageTable {
-            p4_frame: frame
+            // Remap a section with `flags`
+            let mut remap_section = |start: &u8, end: &u8, flags: EntryFlags| {
+                remap(start as *const _ as usize, end as *const _ as usize, flags);
+            };
+            // Remap text read-only
+            remap_section(& __text_start, & __text_end, PRESENT);
+            // Remap rodata read-only, no execute
+            remap_section(& __rodata_start, & __rodata_end, PRESENT | NO_EXECUTE);
+            // Remap data writable, no execute
+            remap_section(& __data_start, & __data_end, PRESENT | NO_EXECUTE | WRITABLE);
+            // Remap bss writable, no execute
+            remap_section(& __bss_start, & __bss_end, PRESENT | NO_EXECUTE | WRITABLE);
         }
-    };
-
-    active_table.with(&mut new_table, &mut temporary_page, |mapper| {
-        let mut remap = |start: usize, end: usize, flags: EntryFlags| {
-            let start_frame = Frame::containing_address(PhysicalAddress::new(start));
-            let end_frame = Frame::containing_address(PhysicalAddress::new(end - 1));
-            for frame in Frame::range_inclusive(start_frame, end_frame) {
-                mapper.identity_map(frame, flags);
-            }
-        };
-
-        // Remap stack writable, no execute
-        remap(stack_start, stack_end, PRESENT | WRITABLE | NO_EXECUTE);
     });
 
     active_table.switch(new_table);
+
+    // Map and copy TDATA
+    {
+        temporary_page.map(allocate_frame().expect("no more frames"), PRESENT | NO_EXECUTE | WRITABLE, &mut active_table);
+
+        let start = & __tbss_start as *const _ as usize;
+        let end = & __tbss_end as *const _ as usize;
+        let start_page = Page::containing_address(VirtualAddress::new(start));
+        let end_page = Page::containing_address(VirtualAddress::new(end - 1));
+        for page in Page::range_inclusive(start_page, end_page) {
+            // Copy master to temporary page
+            {
+                let frame = Frame::containing_address(PhysicalAddress::new(page.start_address().get()));
+                active_table.identity_map(frame, PRESENT | NO_EXECUTE);
+                ::externs::memcpy(temporary_page.start_address().get() as *mut u8, page.start_address().get() as *const u8, 4096);
+                active_table.unmap(page);
+            }
+            // Copy temporary page to CPU copy
+            {
+                active_table.map(page, PRESENT | NO_EXECUTE | WRITABLE);
+                ::externs::memcpy(page.start_address().get() as *mut u8, temporary_page.start_address().get() as *const u8, 4096);
+            }
+        }
+
+        temporary_page.unmap(&mut active_table);
+    }
+
+    // Map and clear TBSS
+    {
+        let start = & __tbss_start as *const _ as usize;
+        let end = & __tbss_end as *const _ as usize;
+        let start_page = Page::containing_address(VirtualAddress::new(start));
+        let end_page = Page::containing_address(VirtualAddress::new(end - 1));
+        for page in Page::range_inclusive(start_page, end_page) {
+            active_table.map(page, PRESENT | NO_EXECUTE | WRITABLE);
+            ::externs::memset(page.start_address().get() as *mut u8, 0, 4096);
+        }
+    }
 
     active_table
 }
@@ -237,19 +254,19 @@ impl Page {
         VirtualAddress::new(self.number * PAGE_SIZE)
     }
 
-    fn p4_index(&self) -> usize {
+    pub fn p4_index(&self) -> usize {
         (self.number >> 27) & 0o777
     }
 
-    fn p3_index(&self) -> usize {
+    pub fn p3_index(&self) -> usize {
         (self.number >> 18) & 0o777
     }
 
-    fn p2_index(&self) -> usize {
+    pub fn p2_index(&self) -> usize {
         (self.number >> 9) & 0o777
     }
 
-    fn p1_index(&self) -> usize {
+    pub fn p1_index(&self) -> usize {
         (self.number >> 0) & 0o777
     }
 

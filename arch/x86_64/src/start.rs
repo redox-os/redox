@@ -4,15 +4,14 @@
 /// defined in other files inside of the `arch` module
 
 use core::sync::atomic::{AtomicBool, ATOMIC_BOOL_INIT, AtomicUsize, ATOMIC_USIZE_INIT, Ordering};
-use x86::controlregs;
 
 use acpi;
 use allocator::{HEAP_START, HEAP_SIZE};
 use externs::memset;
 use gdt;
 use idt;
-use memory;
-use paging::{self, entry, Page, VirtualAddress};
+use memory::{self, Frame};
+use paging::{self, entry, Page, PhysicalAddress, VirtualAddress};
 
 /// Test of zero values in BSS.
 static BSS_TEST_ZERO: usize = 0;
@@ -21,7 +20,7 @@ static BSS_TEST_NONZERO: usize = 0xFFFFFFFFFFFFFFFF;
 
 static AP_COUNT: AtomicUsize = ATOMIC_USIZE_INIT;
 static BSP_READY: AtomicBool = ATOMIC_BOOL_INIT;
-static BSP_PAGE_TABLE: AtomicUsize = ATOMIC_USIZE_INIT;
+static HEAP_FRAME: AtomicUsize = ATOMIC_USIZE_INIT;
 
 extern {
     /// Kernel main function
@@ -55,12 +54,6 @@ pub unsafe extern fn kstart() -> ! {
             debug_assert_eq!(BSS_TEST_NONZERO, 0xFFFFFFFFFFFFFFFF);
         }
 
-        // Set up GDT
-        gdt::init();
-
-        // Set up IDT
-        idt::init();
-
         // Initialize memory management
         memory::init(0, &__bss_end as *const u8 as usize);
 
@@ -71,20 +64,45 @@ pub unsafe extern fn kstart() -> ! {
         // Initialize paging
         let mut active_table = paging::init(stack_start, stack_end);
 
+        // Set up GDT
+        gdt::init();
+
+        // Set up IDT
+        idt::init();
+
         // Reset AP variables
         AP_COUNT.store(0, Ordering::SeqCst);
         BSP_READY.store(false, Ordering::SeqCst);
-        BSP_PAGE_TABLE.store(controlregs::cr3() as usize, Ordering::SeqCst);
+        HEAP_FRAME.store(0, Ordering::SeqCst);
 
         // Read ACPI tables, starts APs
         acpi::init(&mut active_table);
 
         // Map heap
-        let heap_start_page = Page::containing_address(VirtualAddress::new(HEAP_START));
-        let heap_end_page = Page::containing_address(VirtualAddress::new(HEAP_START + HEAP_SIZE-1));
+        {
+            let heap_start_page = Page::containing_address(VirtualAddress::new(HEAP_START));
+            let heap_end_page = Page::containing_address(VirtualAddress::new(HEAP_START + HEAP_SIZE-1));
 
-        for page in Page::range_inclusive(heap_start_page, heap_end_page) {
-            active_table.map(page, entry::WRITABLE | entry::NO_EXECUTE);
+            {
+                let index = heap_start_page.p4_index();
+                println!("HEAP: {} {} {} {}", index, heap_start_page.p3_index(), heap_start_page.p2_index(), heap_start_page.p1_index());
+                assert_eq!(index, heap_end_page.p4_index());
+
+                let frame = memory::allocate_frame().expect("no frames available");
+                HEAP_FRAME.store(frame.start_address().get(), Ordering::SeqCst);
+
+                let p4 = active_table.p4_mut();
+                {
+                    let entry = &mut p4[index];
+                    assert!(entry.is_unused());
+                    entry.set(frame, entry::PRESENT | entry::WRITABLE);
+                }
+                p4.next_table_mut(index).unwrap().zero();
+            }
+
+            for page in Page::range_inclusive(heap_start_page, heap_end_page) {
+                active_table.map(page, entry::WRITABLE | entry::NO_EXECUTE);
+            }
         }
 
         BSP_READY.store(true, Ordering::SeqCst);
@@ -96,15 +114,34 @@ pub unsafe extern fn kstart() -> ! {
 /// Entry to rust for an AP
 pub unsafe extern fn kstart_ap(stack_start: usize, stack_end: usize) -> ! {
     {
-        // Set up GDT for AP
-        gdt::init_ap();
-
-        // Set up IDT for aP
-        idt::init_ap();
-
         // Initialize paging
-        //let mut active_table =
-        paging::init_ap(stack_start, stack_end, BSP_PAGE_TABLE.load(Ordering::SeqCst));
+        let mut active_table = paging::init(stack_start, stack_end);
+
+        // Set up GDT for AP
+        gdt::init();
+
+        // Set up IDT for AP
+        idt::init();
+
+        // Map heap
+        {
+            let heap_start_page = Page::containing_address(VirtualAddress::new(HEAP_START));
+            let heap_end_page = Page::containing_address(VirtualAddress::new(HEAP_START + HEAP_SIZE-1));
+
+            {
+                assert_eq!(heap_start_page.p4_index(), heap_end_page.p4_index());
+
+                while HEAP_FRAME.load(Ordering::SeqCst) == 0 {
+                    asm!("pause" : : : : "intel", "volatile");
+                }
+                let frame = Frame::containing_address(PhysicalAddress::new(HEAP_FRAME.load(Ordering::SeqCst)));
+
+                let p4 = active_table.p4_mut();
+                let entry = &mut p4[heap_start_page.p4_index()];
+                assert!(entry.is_unused());
+                entry.set(frame, entry::PRESENT | entry::WRITABLE);
+            }
+        }
     }
 
     let ap_number = AP_COUNT.fetch_add(1, Ordering::SeqCst);

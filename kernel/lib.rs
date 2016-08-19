@@ -120,7 +120,7 @@ pub extern fn kmain() {
 
 #[no_mangle]
 pub extern fn kmain_ap(id: usize) {
-    print!("{}", format!("ASP {}\n", id));
+    print!("{}", format!("AP {}\n", id));
 
     loop {
         unsafe { interrupt::enable_and_halt() }

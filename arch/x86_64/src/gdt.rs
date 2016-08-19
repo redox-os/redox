@@ -72,10 +72,6 @@ pub unsafe fn init() {
 
     GDT[GDT_TSS] = GdtEntry::new(&TSS as *const _ as u32, mem::size_of::<TaskStateSegment>() as u32, GDT_A_PRESENT | GDT_A_RING_3 | GDT_A_TSS_AVAIL, 0);
 
-    init_ap();
-}
-
-pub unsafe fn init_ap() {
     dtables::lgdt(&GDTR);
 
     segmentation::load_cs(SegmentSelector::new(GDT_KERNEL_CODE as u16));

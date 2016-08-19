@@ -18,6 +18,10 @@ impl TemporaryPage {
         }
     }
 
+    pub fn start_address (&self) -> VirtualAddress {
+        self.page.start_address()
+    }
+
     /// Maps the temporary page to the given frame in the active table.
     /// Returns the start address of the temporary page.
     pub fn map(&mut self, frame: Frame, flags: EntryFlags, active_table: &mut ActivePageTable) -> VirtualAddress {
