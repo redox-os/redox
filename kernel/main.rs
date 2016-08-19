@@ -19,6 +19,8 @@ extern crate collections;
 
 extern crate system;
 
+extern crate goblin;
+
 use acpi::Acpi;
 
 use alloc::boxed::Box;

@@ -217,8 +217,8 @@ pub fn execute(mut args: Vec<String>) -> Result<usize> {
                         let image = unsafe { &mut *current.image.get() };
 
                         for segment in segments.iter() {
-                            let virtual_address = segment.vaddr as usize;
-                            let virtual_size = segment.mem_len as usize;
+                            let virtual_address = segment.p_vaddr as usize;
+                            let virtual_size = segment.p_memsz as usize;
 
                             let offset = virtual_address % 4096;
 
@@ -241,17 +241,17 @@ pub fn execute(mut args: Vec<String>) -> Result<usize> {
                             // Copy progbits
                             unsafe {
                                 ::memcpy(virtual_address as *mut u8,
-                                        executable.data.as_ptr().offset(segment.off as isize),
-                                        segment.file_len as usize)
+                                        executable.data.as_ptr().offset(segment.p_offset as isize),
+                                        segment.p_filesz as usize)
                             };
 
                             unsafe { memory.unmap() };
 
-                            memory.writeable = segment.flags & 2 == 2;
+                            memory.writeable = segment.p_flags & 2 == 2;
 
-                            if segment._type == 1 {
+                            if segment.p_type == 1 {
                                 image.memory.push(memory);
-                            } else if segment._type == 7 {
+                            } else if segment.p_type == 7 {
                                 unsafe { *current.tls_master.get() = Some(memory) };
                             }
                         }

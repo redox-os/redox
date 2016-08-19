@@ -109,3 +109,6 @@
 [submodule "crates/orbital"]
 	path = crates/orbital
 	url = https://github.com/redox-os/orbital.git
+[submodule "crates/goblin"]
+	path = crates/goblin
+	url = http://github.com/m4b/goblin
