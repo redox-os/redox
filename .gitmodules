@@ -94,3 +94,6 @@
 [submodule "crates/sodium"]
 	path = crates/sodium
 	url = https://github.com/redox-os/sodium.git
+[submodule "crates/goblin"]
+	path = crates/goblin
+	url = http://github.com/m4b/goblin
