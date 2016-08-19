@@ -2,8 +2,10 @@
 //! Some code was borrowed from [Phil Opp's Blog](http://os.phil-opp.com/modifying-page-tables.html)
 
 use core::ops::{Deref, DerefMut};
+use x86::tlb;
 
 use memory::{allocate_frame, Frame};
+use tcb::ThreadControlBlock;
 
 use self::entry::{EntryFlags, PRESENT, WRITABLE, NO_EXECUTE};
 use self::mapper::Mapper;
@@ -43,6 +45,8 @@ pub unsafe fn init(stack_start: usize, stack_end: usize) -> ActivePageTable {
         static mut __tbss_start: u8;
         /// The ending byte of the thread BSS segment
         static mut __tbss_end: u8;
+        /// The start of the thread control block
+        static mut __tcb: ThreadControlBlock;
         /// The starting byte of the _.bss_ (uninitialized data) segment.
         static mut __bss_start: u8;
         /// The ending byte of the _.bss_ (uninitialized data) segment.
@@ -61,10 +65,12 @@ pub unsafe fn init(stack_start: usize, stack_end: usize) -> ActivePageTable {
     active_table.with(&mut new_table, &mut temporary_page, |mapper| {
         {
             let mut remap = |start: usize, end: usize, flags: EntryFlags| {
-                let start_frame = Frame::containing_address(PhysicalAddress::new(start));
-                let end_frame = Frame::containing_address(PhysicalAddress::new(end - 1));
-                for frame in Frame::range_inclusive(start_frame, end_frame) {
-                    mapper.identity_map(frame, flags);
+                if end > start {
+                    let start_frame = Frame::containing_address(PhysicalAddress::new(start));
+                    let end_frame = Frame::containing_address(PhysicalAddress::new(end - 1));
+                    for frame in Frame::range_inclusive(start_frame, end_frame) {
+                        mapper.identity_map(frame, flags);
+                    }
                 }
             };
 
@@ -90,40 +96,58 @@ pub unsafe fn init(stack_start: usize, stack_end: usize) -> ActivePageTable {
 
     // Map and copy TDATA
     {
-        temporary_page.map(allocate_frame().expect("no more frames"), PRESENT | NO_EXECUTE | WRITABLE, &mut active_table);
+        let start = & __tdata_start as *const _ as usize;
+        let end = & __tdata_end as *const _ as usize;
+        if end > start {
+            temporary_page.map(allocate_frame().expect("no more frames"), PRESENT | NO_EXECUTE | WRITABLE, &mut active_table);
 
-        let start = & __tbss_start as *const _ as usize;
-        let end = & __tbss_end as *const _ as usize;
-        let start_page = Page::containing_address(VirtualAddress::new(start));
-        let end_page = Page::containing_address(VirtualAddress::new(end - 1));
-        for page in Page::range_inclusive(start_page, end_page) {
-            // Copy master to temporary page
-            {
-                let frame = Frame::containing_address(PhysicalAddress::new(page.start_address().get()));
-                active_table.identity_map(frame, PRESENT | NO_EXECUTE);
-                ::externs::memcpy(temporary_page.start_address().get() as *mut u8, page.start_address().get() as *const u8, 4096);
-                active_table.unmap(page);
+            let start_page = Page::containing_address(VirtualAddress::new(start));
+            let end_page = Page::containing_address(VirtualAddress::new(end - 1));
+            for page in Page::range_inclusive(start_page, end_page) {
+                // Copy parent to temporary page
+                {
+                    let frame = Frame::containing_address(PhysicalAddress::new(page.start_address().get()));
+                    active_table.identity_map(frame, PRESENT | NO_EXECUTE);
+                    tlb::flush_all();
+                    ::externs::memcpy(temporary_page.start_address().get() as *mut u8, page.start_address().get() as *const u8, 4096);
+                    active_table.unmap(page);
+                }
+                // Copy temporary page to child
+                {
+                    active_table.map(page, PRESENT | NO_EXECUTE | WRITABLE);
+                    tlb::flush_all();
+                    ::externs::memcpy(page.start_address().get() as *mut u8, temporary_page.start_address().get() as *const u8, 4096);
+                }
             }
-            // Copy temporary page to CPU copy
-            {
-                active_table.map(page, PRESENT | NO_EXECUTE | WRITABLE);
-                ::externs::memcpy(page.start_address().get() as *mut u8, temporary_page.start_address().get() as *const u8, 4096);
-            }
+
+            temporary_page.unmap(&mut active_table);
         }
-
-        temporary_page.unmap(&mut active_table);
     }
 
     // Map and clear TBSS
     {
         let start = & __tbss_start as *const _ as usize;
         let end = & __tbss_end as *const _ as usize;
-        let start_page = Page::containing_address(VirtualAddress::new(start));
-        let end_page = Page::containing_address(VirtualAddress::new(end - 1));
-        for page in Page::range_inclusive(start_page, end_page) {
-            active_table.map(page, PRESENT | NO_EXECUTE | WRITABLE);
-            ::externs::memset(page.start_address().get() as *mut u8, 0, 4096);
+        if end > start {
+            let start_page = Page::containing_address(VirtualAddress::new(start));
+            let end_page = Page::containing_address(VirtualAddress::new(end - 1));
+            for page in Page::range_inclusive(start_page, end_page) {
+                active_table.map(page, PRESENT | NO_EXECUTE | WRITABLE);
+                tlb::flush_all();
+                ::externs::memset(page.start_address().get() as *mut u8, 0, 4096);
+            }
         }
+    }
+
+    // Map and set TCB
+    {
+        let start = & __tcb as *const _ as usize;
+        println!("TCB: {:X}", start);
+        let page = Page::containing_address(VirtualAddress::new(start));
+        active_table.map(page, PRESENT | NO_EXECUTE | WRITABLE);
+        tlb::flush_all();
+        ::externs::memset(page.start_address().get() as *mut u8, 0, 4096);
+        __tcb.offset = start;
     }
 
     active_table

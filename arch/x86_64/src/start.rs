@@ -12,11 +12,18 @@ use gdt;
 use idt;
 use memory::{self, Frame};
 use paging::{self, entry, Page, PhysicalAddress, VirtualAddress};
+use tcb::ThreadControlBlock;
 
 /// Test of zero values in BSS.
 static BSS_TEST_ZERO: usize = 0;
-/// Test of non-zero values in BSS.
-static BSS_TEST_NONZERO: usize = 0xFFFFFFFFFFFFFFFF;
+/// Test of non-zero values in data.
+static DATA_TEST_NONZERO: usize = 0xFFFFFFFFFFFFFFFF;
+/// Test of zero values in thread BSS
+#[thread_local]
+static mut TBSS_TEST_ZERO: usize = 0;
+/// Test of non-zero values in thread data.
+#[thread_local]
+static mut TDATA_TEST_NONZERO: usize = 0xFFFFFFFFFFFFFFFF;
 
 static AP_COUNT: AtomicUsize = ATOMIC_USIZE_INIT;
 static BSP_READY: AtomicBool = ATOMIC_BOOL_INIT;
@@ -38,6 +45,10 @@ pub unsafe extern fn kstart() -> ! {
             static mut __bss_start: u8;
             /// The ending byte of the _.bss_ (uninitialized data) segment.
             static mut __bss_end: u8;
+            /// The thread descriptor.
+            static mut __tcb: ThreadControlBlock;
+            /// The end of the kernel
+            static mut __end: u8;
         }
 
         // Zero BSS, this initializes statics that are set to 0
@@ -50,12 +61,12 @@ pub unsafe extern fn kstart() -> ! {
                 memset(start_ptr, 0, size);
             }
 
-            debug_assert_eq!(BSS_TEST_ZERO, 0);
-            debug_assert_eq!(BSS_TEST_NONZERO, 0xFFFFFFFFFFFFFFFF);
+            assert_eq!(BSS_TEST_ZERO, 0);
+            assert_eq!(DATA_TEST_NONZERO, 0xFFFFFFFFFFFFFFFF);
         }
 
         // Initialize memory management
-        memory::init(0, &__bss_end as *const u8 as usize);
+        memory::init(0, &__end as *const u8 as usize);
 
         // TODO: allocate a stack
         let stack_start = 0x00080000;
@@ -65,10 +76,20 @@ pub unsafe extern fn kstart() -> ! {
         let mut active_table = paging::init(stack_start, stack_end);
 
         // Set up GDT
-        gdt::init();
+        gdt::init(__tcb.offset);
 
         // Set up IDT
         idt::init();
+
+        // Test tdata and tbss
+        {
+            assert_eq!(TBSS_TEST_ZERO, 0);
+            TBSS_TEST_ZERO += 1;
+            assert_eq!(TBSS_TEST_ZERO, 1);
+            assert_eq!(TDATA_TEST_NONZERO, 0xFFFFFFFFFFFFFFFF);
+            TDATA_TEST_NONZERO -= 1;
+            assert_eq!(TDATA_TEST_NONZERO, 0xFFFFFFFFFFFFFFFE);
+        }
 
         // Reset AP variables
         AP_COUNT.store(0, Ordering::SeqCst);
@@ -114,14 +135,27 @@ pub unsafe extern fn kstart() -> ! {
 /// Entry to rust for an AP
 pub unsafe extern fn kstart_ap(stack_start: usize, stack_end: usize) -> ! {
     {
+        assert_eq!(BSS_TEST_ZERO, 0);
+        assert_eq!(DATA_TEST_NONZERO, 0xFFFFFFFFFFFFFFFF);
+
         // Initialize paging
         let mut active_table = paging::init(stack_start, stack_end);
 
         // Set up GDT for AP
-        gdt::init();
+        gdt::init_ap();
 
         // Set up IDT for AP
         idt::init();
+
+        // Test tdata and tbss
+        {
+            assert_eq!(TBSS_TEST_ZERO, 0);
+            TBSS_TEST_ZERO += 1;
+            assert_eq!(TBSS_TEST_ZERO, 1);
+            assert_eq!(TDATA_TEST_NONZERO, 0xFFFFFFFFFFFFFFFF);
+            TDATA_TEST_NONZERO -= 1;
+            assert_eq!(TDATA_TEST_NONZERO, 0xFFFFFFFFFFFFFFFE);
+        }
 
         // Map heap
         {

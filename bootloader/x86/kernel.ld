@@ -28,10 +28,26 @@ SECTIONS {
         *(.data*)
 		. = ALIGN(4096);
         __data_end = .;
+    }
+
+    .tdata : AT(ADDR(.tdata) - KERNEL_OFFSET) {
         __tdata_start = .;
         *(.tdata*)
-		. = ALIGN(4096);
+        . = ALIGN(4096);
         __tdata_end = .;
+    }
+
+    .tbss : AT(ADDR(.tbss) - KERNEL_OFFSET) {
+        __tbss_start = .;
+        *(.tbss*)
+        . = ALIGN(4096);
+        __tbss_end = .;
+    }
+
+    .tcb : AT(ADDR(.tcb) - KERNEL_OFFSET) {
+        __tcb = .;
+        . += 8;
+        . = ALIGN(4096);
     }
 
     .bss : AT(ADDR(.bss) - KERNEL_OFFSET) {
@@ -39,15 +55,15 @@ SECTIONS {
         *(.bss*)
         . = ALIGN(4096);
         __bss_end = .;
-        __tbss_start = .;
-        *(.tbss*)
-        . = ALIGN(4096);
-        __tbss_end = .;
     }
+
+    __end = .;
 
     /DISCARD/ : {
         *(.comment*)
+        *(.debug*)
         *(.eh_frame*)
+        *(.gcc_except_table*)
         *(.note*)
         *(.rel.eh_frame*)
     }

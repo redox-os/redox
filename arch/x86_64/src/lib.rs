@@ -44,7 +44,8 @@ macro_rules! interrupt {
             }
 
             // Push scratch registers
-            asm!("push rax
+            asm!("xchg bx, bx
+                push rax
                 push rcx
                 push rdx
                 push rdi
@@ -85,7 +86,8 @@ macro_rules! interrupt_error {
             }
 
             // Push scratch registers
-            asm!("push rax
+            asm!("xchg bx, bx
+                push rax
                 push rcx
                 push rdx
                 push rdi
@@ -148,3 +150,6 @@ pub mod serial;
 
 /// Initialization and start function
 pub mod start;
+
+/// Thread control block
+pub mod tcb;
