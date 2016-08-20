@@ -112,7 +112,9 @@ pub mod tests;
 
 #[no_mangle]
 pub extern fn kmain() {
-    print!("{}", format!("BSP\n"));
+    context::init();
+
+    print!("{}", format!("BSP: {:?}\n", syscall::getpid()));
 
     loop {
         unsafe { interrupt::enable_and_halt(); }
@@ -121,7 +123,9 @@ pub extern fn kmain() {
 
 #[no_mangle]
 pub extern fn kmain_ap(id: usize) {
-    print!("{}", format!("AP {}\n", id));
+    context::init();
+
+    print!("{}", format!("AP {}: {:?}\n", id, syscall::getpid()));
 
     loop {
         unsafe { interrupt::enable_and_halt() }

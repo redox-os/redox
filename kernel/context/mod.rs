@@ -37,7 +37,7 @@ impl ContextList {
         self.map.get(&CONTEXT_ID.load(Ordering::SeqCst))
     }
 
-    pub fn new_context(&mut self) -> Result<(usize, &RwLock<Context>)> {
+    pub fn new_context(&mut self) -> Result<&RwLock<Context>> {
         if self.next_id >= CONTEXT_MAX_CONTEXTS {
             self.next_id = 1;
         }
@@ -52,8 +52,8 @@ impl ContextList {
 
         let id = self.next_id;
         self.next_id += 1;
-        assert!(self.map.insert(id, RwLock::new(Context::new())).is_none());
-        Ok((id, self.map.get(&id).expect("failed to insert new context")))
+        assert!(self.map.insert(id, RwLock::new(Context::new(id))).is_none());
+        Ok(self.map.get(&id).expect("failed to insert new context"))
     }
 }
 
@@ -62,6 +62,13 @@ static CONTEXTS: Once<RwLock<ContextList>> = Once::new();
 
 #[thread_local]
 static CONTEXT_ID: AtomicUsize = ATOMIC_USIZE_INIT;
+
+pub fn init() {
+    let mut contexts = contexts_mut();
+    let context_lock = contexts.new_context().expect("could not initialize first context");
+    let context = context_lock.read();
+    CONTEXT_ID.store(context.id, Ordering::SeqCst);
+}
 
 /// Initialize contexts, called if needed
 fn init_contexts() -> RwLock<ContextList> {
@@ -81,13 +88,16 @@ pub fn contexts_mut() -> RwLockWriteGuard<'static, ContextList> {
 /// A context, which identifies either a process or a thread
 #[derive(Debug)]
 pub struct Context {
+    /// The ID of this context
+    pub id: usize,
     /// The open files in the scheme
     pub files: Vec<Option<file::File>>
 }
 
 impl Context {
-    pub fn new() -> Context {
+    pub fn new(id: usize) -> Context {
         Context {
+            id: id,
             files: Vec::new()
         }
     }

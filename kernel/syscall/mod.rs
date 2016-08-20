@@ -28,6 +28,8 @@ pub enum Call {
     Close = 6,
     /// Execute syscall
     Exec = 11,
+    /// Get process ID
+    GetPid = 20,
 }
 
 /// Convert numbers to calls
@@ -41,6 +43,7 @@ impl Call {
             5 => Ok(Call::Open),
             6 => Ok(Call::Close),
             11 => Ok(Call::Exec),
+            20 => Ok(Call::GetPid),
             _ => Err(Error::NoCall)
         }
     }
@@ -90,7 +93,8 @@ pub fn handle(a: usize, b: usize, c: usize, d: usize, e: usize, _f: usize) -> Re
         Call::Write => write(b, convert_slice(c as *const u8, d)?),
         Call::Open => open(convert_slice(b as *const u8, c)?, d),
         Call::Close => close(b),
-        Call::Exec => exec(convert_slice(b as *const u8, c)?, convert_slice(d as *const [usize; 2], e)?)
+        Call::Exec => exec(convert_slice(b as *const u8, c)?, convert_slice(d as *const [usize; 2], e)?),
+        Call::GetPid => getpid(),
     }
 }
 

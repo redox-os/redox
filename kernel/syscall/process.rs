@@ -2,7 +2,9 @@
 
 use arch::interrupt::halt;
 
-use super::{convert_slice, Result};
+use context;
+
+use super::{convert_slice, Error, Result};
 
 pub fn exit(status: usize) -> ! {
     println!("Exit {}", status);
@@ -18,4 +20,13 @@ pub fn exec(path: &[u8], args: &[[usize; 2]]) -> Result<usize> {
     }
     println!("");
     Ok(0)
+}
+
+pub fn getpid() -> Result<usize> {
+    if let Some(context_lock) = context::contexts().current() {
+        let context = context_lock.read();
+        Ok(context.id)
+    } else {
+        Err(Error::NoProcess)
+    }
 }
