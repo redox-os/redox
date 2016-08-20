@@ -8,7 +8,7 @@ use super::{Error, Result};
 /// Read syscall
 pub fn read(fd: usize, buf: &mut [u8]) -> Result<usize> {
     println!("Read {}: {}", fd, buf.len());
-    if let Some(context_lock) = context::contexts().get(&0) {
+    if let Some(context_lock) = context::contexts().current() {
         let context = context_lock.read();
         if let Some(file) = context.files.get(fd) {
             println!("{:?}", file);
@@ -24,7 +24,7 @@ pub fn read(fd: usize, buf: &mut [u8]) -> Result<usize> {
 /// Write syscall
 pub fn write(fd: usize, buf: &[u8]) -> Result<usize> {
     println!("Write {}: {}", fd, buf.len());
-    if let Some(context_lock) = context::contexts().get(&0) {
+    if let Some(context_lock) = context::contexts().current() {
         let context = context_lock.read();
         if let Some(file) = context.files.get(fd) {
             println!("{:?}: {:?}", file, ::core::str::from_utf8(buf));
@@ -57,7 +57,7 @@ pub fn open(path: &[u8], flags: usize) -> Result<usize> {
         }
     }?;
 
-    if let Some(context_lock) = context::contexts().get(&0) {
+    if let Some(context_lock) = context::contexts().current() {
         let mut context = context_lock.write();
         if let Some(fd) = context.add_file(::context::file::File {
             scheme: 0,

@@ -1,29 +1,71 @@
 //! Context management
 
-use alloc::arc::Arc;
 use collections::{BTreeMap, Vec};
+use core::sync::atomic::{AtomicUsize, ATOMIC_USIZE_INIT, Ordering};
 use spin::{Once, RwLock, RwLockReadGuard, RwLockWriteGuard};
+
+use syscall::{Error, Result};
 
 /// File operations
 pub mod file;
 
+/// Limit on number of contexts
+pub const CONTEXT_MAX_CONTEXTS: usize = 65536;
+
 /// Maximum context files
 pub const CONTEXT_MAX_FILES: usize = 65536;
 
-/// Context ID
-pub type ContextId = u16;
-
 /// Context list type
-pub type ContextList = BTreeMap<ContextId, Arc<RwLock<Context>>>;
+pub struct ContextList {
+    map: BTreeMap<usize, RwLock<Context>>,
+    next_id: usize
+}
+
+impl ContextList {
+    pub fn new() -> Self {
+        ContextList {
+            map: BTreeMap::new(),
+            next_id: 1
+        }
+    }
+
+    pub fn get(&self, id: usize) -> Option<&RwLock<Context>> {
+        self.map.get(&id)
+    }
+
+    pub fn current(&self) -> Option<&RwLock<Context>> {
+        self.map.get(&CONTEXT_ID.load(Ordering::SeqCst))
+    }
+
+    pub fn new_context(&mut self) -> Result<(usize, &RwLock<Context>)> {
+        if self.next_id >= CONTEXT_MAX_CONTEXTS {
+            self.next_id = 1;
+        }
+
+        while self.map.contains_key(&self.next_id) {
+            self.next_id += 1;
+        }
+
+        if self.next_id >= CONTEXT_MAX_CONTEXTS {
+            return Err(Error::TryAgain);
+        }
+
+        let id = self.next_id;
+        self.next_id += 1;
+        assert!(self.map.insert(id, RwLock::new(Context::new())).is_none());
+        Ok((id, self.map.get(&id).expect("failed to insert new context")))
+    }
+}
 
 /// Contexts list
 static CONTEXTS: Once<RwLock<ContextList>> = Once::new();
 
+#[thread_local]
+static CONTEXT_ID: AtomicUsize = ATOMIC_USIZE_INIT;
+
 /// Initialize contexts, called if needed
 fn init_contexts() -> RwLock<ContextList> {
-    let mut map: ContextList = BTreeMap::new();
-    map.insert(0, Arc::new(RwLock::new(Context::new())));
-    RwLock::new(map)
+    RwLock::new(ContextList::new())
 }
 
 /// Get the global schemes list, const

@@ -13,7 +13,6 @@ spin = "*"
 
 [dependencies.goblin]
 git = "https://github.com/m4b/goblin.git"
-crate-type = ["lib"]
 default-features = false
 features = ["no_mach", "no_mach32", "no_pe", "no_pe32", "no_endian_fd", "pure"]
 

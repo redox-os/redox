@@ -70,6 +70,7 @@
 #![feature(const_fn)]
 #![feature(drop_types_in_const)]
 #![feature(question_mark)]
+#![feature(thread_local)]
 #![no_std]
 
 use arch::interrupt;
