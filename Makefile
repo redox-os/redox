@@ -1,5 +1,22 @@
 ARCH?=x86_64
 
+LD=ld
+QEMU=qemu-system-$(ARCH)
+QEMUFLAGS=-enable-kvm -cpu host
+
+UNAME := $(shell uname)
+ifeq ($(UNAME),Darwin)
+	LD=$(ARCH)-elf-ld
+	QEMUFLAGS=
+endif
+
+QEMUFLAGS+=-smp 4 -machine q35
+QEMUFLAGS+=-serial mon:stdio -nographic
+QEMUFLAGS+=-d guest_errors
+#,int,pcall
+#-device intel-iommu
+
+
 all: build/harddrive.bin
 
 list: build/kernel.list
@@ -10,10 +27,7 @@ bochs: build/harddrive.bin
 	bochs -f bochs.$(ARCH)
 
 qemu: build/harddrive.bin
-	qemu-system-$(ARCH) -enable-kvm -cpu host -smp 4 -machine q35 \
-				-serial mon:stdio -drive file=$<,format=raw,index=0,media=disk \
-				-nographic -d guest_errors,int,pcall
-				#-device intel-iommu
+	$(QEMU) $(QEMUFLAGS) -drive file=$<,format=raw,index=0,media=disk
 
 FORCE:
 
@@ -38,7 +52,7 @@ build/libkernel.a: build/libcore.rlib build/liballoc.rlib build/libcollections.r
 	RUSTC="./rustc.sh" cargo rustc --target $(ARCH)-unknown-none.json -- -C soft-float -o $@
 
 build/kernel.bin: build/libkernel.a
-	ld --gc-sections -z max-page-size=0x1000 -T bootloader/x86/kernel.ld -o $@ $<
+	$(LD) --gc-sections -z max-page-size=0x1000 -T bootloader/x86/kernel.ld -o $@ $<
 
 build/kernel.list: build/kernel.bin
 	objdump -C -M intel -D $< > $@
