@@ -5,7 +5,6 @@ use core::ops::{Deref, DerefMut};
 use x86::tlb;
 
 use memory::{allocate_frame, Frame};
-use tcb::ThreadControlBlock;
 
 use self::entry::{EntryFlags, PRESENT, WRITABLE, NO_EXECUTE};
 use self::mapper::Mapper;
@@ -45,8 +44,6 @@ pub unsafe fn init(stack_start: usize, stack_end: usize) -> ActivePageTable {
         static mut __tbss_start: u8;
         /// The ending byte of the thread BSS segment
         static mut __tbss_end: u8;
-        /// The start of the thread control block
-        static mut __tcb: ThreadControlBlock;
         /// The starting byte of the _.bss_ (uninitialized data) segment.
         static mut __bss_start: u8;
         /// The ending byte of the _.bss_ (uninitialized data) segment.
@@ -136,18 +133,9 @@ pub unsafe fn init(stack_start: usize, stack_end: usize) -> ActivePageTable {
                 tlb::flush_all();
                 ::externs::memset(page.start_address().get() as *mut u8, 0, 4096);
             }
-        }
-    }
 
-    // Map and set TCB
-    {
-        let start = & __tcb as *const _ as usize;
-        println!("TCB: {:X}", start);
-        let page = Page::containing_address(VirtualAddress::new(start));
-        active_table.map(page, PRESENT | NO_EXECUTE | WRITABLE);
-        tlb::flush_all();
-        ::externs::memset(page.start_address().get() as *mut u8, 0, 4096);
-        __tcb.offset = start;
+            *(end as *mut usize).offset(-1) = end;
+        }
     }
 
     active_table

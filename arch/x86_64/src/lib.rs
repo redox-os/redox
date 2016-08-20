@@ -150,6 +150,3 @@ pub mod serial;
 
 /// Initialization and start function
 pub mod start;
-
-/// Thread control block
-pub mod tcb;

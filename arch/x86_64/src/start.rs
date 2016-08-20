@@ -12,7 +12,6 @@ use gdt;
 use idt;
 use memory::{self, Frame};
 use paging::{self, entry, Page, PhysicalAddress, VirtualAddress};
-use tcb::ThreadControlBlock;
 
 /// Test of zero values in BSS.
 static BSS_TEST_ZERO: usize = 0;
@@ -45,8 +44,8 @@ pub unsafe extern fn kstart() -> ! {
             static mut __bss_start: u8;
             /// The ending byte of the _.bss_ (uninitialized data) segment.
             static mut __bss_end: u8;
-            /// The thread descriptor.
-            static mut __tcb: ThreadControlBlock;
+            /// The end of the tbss.
+            static mut __tbss_end: u8;
             /// The end of the kernel
             static mut __end: u8;
         }
@@ -76,7 +75,7 @@ pub unsafe extern fn kstart() -> ! {
         let mut active_table = paging::init(stack_start, stack_end);
 
         // Set up GDT
-        gdt::init(__tcb.offset);
+        gdt::init((&__tbss_end as *const u8 as *const usize).offset(-1) as usize);
 
         // Set up IDT
         idt::init();
