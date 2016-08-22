@@ -75,7 +75,7 @@ pub unsafe extern fn kstart() -> ! {
         let mut active_table = paging::init(stack_start, stack_end);
 
         // Set up GDT
-        gdt::init((&__tbss_end as *const u8 as *const usize).offset(-1) as usize);
+        gdt::init((&__tbss_end as *const u8 as *const usize).offset(-1) as usize, stack_end);
 
         // Set up IDT
         idt::init();
@@ -146,7 +146,7 @@ pub unsafe extern fn kstart_ap(stack_start: usize, stack_end: usize) -> ! {
         let mut active_table = paging::init(stack_start, stack_end);
 
         // Set up GDT for AP
-        gdt::init_ap((&__tbss_end as *const u8 as *const usize).offset(-1) as usize);
+        gdt::init_ap((&__tbss_end as *const u8 as *const usize).offset(-1) as usize, stack_end);
 
         // Set up IDT for AP
         idt::init();

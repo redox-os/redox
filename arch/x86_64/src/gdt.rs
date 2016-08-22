@@ -89,7 +89,7 @@ pub static mut TSS: TaskStateSegment = TaskStateSegment {
 };
 
 /// Initialize GDT on the BSP
-pub unsafe fn init(tcb_offset: usize) {
+pub unsafe fn init(tcb_offset: usize, stack_offset: usize) {
     // Setup the initial GDT with TLS, so we can setup the TLS GDT (a little confusing)
     // This means that each CPU will have its own GDT, but we only need to define it once as a thread local
     INIT_GDTR.limit = (INIT_GDT.len() * mem::size_of::<GdtEntry>() - 1) as u16;
@@ -99,11 +99,11 @@ pub unsafe fn init(tcb_offset: usize) {
     INIT_GDT[GDT_KERNEL_TLS].set_offset(tcb_offset as u32);
 
     // Run the AP GDT initialization, which does the rest
-    init_ap(tcb_offset);
+    init_ap(tcb_offset, stack_offset);
 }
 
 /// Initialize GDT for an AP
-pub unsafe fn init_ap(tcb_offset: usize) {
+pub unsafe fn init_ap(tcb_offset: usize, stack_offset: usize) {
     // Load the initial GDT, before we have access to thread locals
     dtables::lgdt(&INIT_GDTR);
 
@@ -118,11 +118,15 @@ pub unsafe fn init_ap(tcb_offset: usize) {
     GDTR.limit = (GDT.len() * mem::size_of::<GdtEntry>() - 1) as u16;
     GDTR.base = GDT.as_ptr() as u64;
 
+    // Set the TLS segment to the offset of the Thread Control Block
     GDT[GDT_KERNEL_TLS].set_offset(tcb_offset as u32);
 
     // We can now access our TSS, which is a thread local
     GDT[GDT_TSS].set_offset(&TSS as *const _ as u32);
     GDT[GDT_TSS].set_limit(mem::size_of::<TaskStateSegment>() as u32);
+
+    // Set the stack pointer when coming back from userspace
+    TSS.rsp[0] = stack_offset as u64;
 
     // Load the new GDT, which is correctly located in thread local storage
     dtables::lgdt(&GDTR);
