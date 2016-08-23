@@ -121,6 +121,9 @@ macro_rules! interrupt_error {
 /// ACPI table parsing
 pub mod acpi;
 
+/// Context switching
+pub mod context;
+
 /// Memcpy, memmove, etc.
 pub mod externs;
 

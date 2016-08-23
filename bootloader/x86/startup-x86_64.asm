@@ -103,8 +103,6 @@ startup_arch:
     or ebx, 1 << 31 | 1 << 16 | 1                ;Bit 31: Paging, Bit 16: write protect kernel, Bit 0: Protected Mode
     mov cr0, ebx
 
-    xchg bx, bx
-
     ; far jump to enable Long Mode and load CS with 64 bit segment
     jmp gdt.kernel_code:long_mode
 

@@ -105,7 +105,6 @@ pub unsafe extern fn kstart() -> ! {
 
             {
                 let index = heap_start_page.p4_index();
-                println!("HEAP: {} {} {} {}", index, heap_start_page.p3_index(), heap_start_page.p2_index(), heap_start_page.p1_index());
                 assert_eq!(index, heap_end_page.p4_index());
 
                 let frame = memory::allocate_frame().expect("no frames available");

@@ -107,6 +107,7 @@ pub unsafe fn init_ap(tcb_offset: usize, stack_offset: usize) {
     // Load the initial GDT, before we have access to thread locals
     dtables::lgdt(&INIT_GDTR);
 
+    // Load the segment descriptors
     segmentation::load_cs(SegmentSelector::new(GDT_KERNEL_CODE as u16));
     segmentation::load_ds(SegmentSelector::new(GDT_KERNEL_DATA as u16));
     segmentation::load_es(SegmentSelector::new(GDT_KERNEL_DATA as u16));
@@ -130,6 +131,14 @@ pub unsafe fn init_ap(tcb_offset: usize, stack_offset: usize) {
 
     // Load the new GDT, which is correctly located in thread local storage
     dtables::lgdt(&GDTR);
+
+    // Reload the segment descriptors
+    segmentation::load_cs(SegmentSelector::new(GDT_KERNEL_CODE as u16));
+    segmentation::load_ds(SegmentSelector::new(GDT_KERNEL_DATA as u16));
+    segmentation::load_es(SegmentSelector::new(GDT_KERNEL_DATA as u16));
+    segmentation::load_fs(SegmentSelector::new(GDT_KERNEL_TLS as u16));
+    segmentation::load_gs(SegmentSelector::new(GDT_KERNEL_DATA as u16));
+    segmentation::load_ss(SegmentSelector::new(GDT_KERNEL_DATA as u16));
 
     // Load the task register
     task::load_ltr(SegmentSelector::new(GDT_TSS as u16));
