@@ -4,6 +4,7 @@ use collections::{BTreeMap, Vec};
 use core::sync::atomic::{AtomicUsize, ATOMIC_USIZE_INIT, Ordering};
 use spin::{Once, RwLock, RwLockReadGuard, RwLockWriteGuard};
 
+use arch::context::Context as ArchContext;
 use syscall::{Error, Result};
 
 /// File operations
@@ -55,6 +56,15 @@ impl ContextList {
         assert!(self.map.insert(id, RwLock::new(Context::new(id))).is_none());
         Ok(self.map.get(&id).expect("failed to insert new context"))
     }
+
+    pub fn spawn(&mut self, func: extern fn()) -> Result<&RwLock<Context>> {
+        let context_lock = self.new_context()?;
+        {
+            let mut context = context_lock.write();
+            print!("{}", format!("{}: {:X}\n", context.id, func as usize));
+        }
+        Ok(context_lock)
+    }
 }
 
 /// Contexts list
@@ -85,19 +95,31 @@ pub fn contexts_mut() -> RwLockWriteGuard<'static, ContextList> {
     CONTEXTS.call_once(init_contexts).write()
 }
 
+/// Switch to the next context
+/// Do not call this while holding locks!
+pub unsafe fn context_switch() {
+
+
+    current.arch.switch_to(&mut next.arch);
+}
+
 /// A context, which identifies either a process or a thread
 #[derive(Debug)]
 pub struct Context {
     /// The ID of this context
     pub id: usize,
+    /// The architecture specific context
+    pub arch: ArchContext,
     /// The open files in the scheme
     pub files: Vec<Option<file::File>>
 }
 
 impl Context {
+    /// Create a new context
     pub fn new(id: usize) -> Context {
         Context {
             id: id,
+            arch: ArchContext::new(),
             files: Vec::new()
         }
     }

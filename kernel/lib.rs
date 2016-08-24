@@ -110,11 +110,23 @@ pub mod syscall;
 #[cfg(test)]
 pub mod tests;
 
+pub extern fn context_test() {
+    print!("TEST\n");
+
+    loop {
+        unsafe { interrupt::enable_and_halt(); }
+    }
+}
+
 #[no_mangle]
 pub extern fn kmain() {
     context::init();
 
     print!("{}", format!("BSP: {:?}\n", syscall::getpid()));
+
+    if let Ok(context) = context::contexts_mut().spawn(context_test) {
+
+    }
 
     loop {
         unsafe { interrupt::enable_and_halt(); }
