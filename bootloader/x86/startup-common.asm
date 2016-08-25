@@ -14,7 +14,7 @@ startup:
 ; buffersize in multiple of sectors (512 Bytes)
 ; min 1
 ; max (0x70000 - startup_end) / 512
-buffer_size_sectors equ 1
+buffer_size_sectors equ 512
 ; buffer size in Bytes
 buffer_size_bytes equ buffer_size_sectors * 512
 
@@ -32,7 +32,7 @@ kernel_base equ 0x100000
 
         ; populating buffer
         mov cx, buffer_size_sectors
-        mov bx, startup_end
+        mov bx, kernel_file
         mov dx, 0x0
 
         push ax
@@ -42,7 +42,7 @@ kernel_base equ 0x100000
         call unreal
         pop ax
 
-        mov esi, startup_end
+        mov esi, kernel_file
         mov ecx, buffer_size_bytes / 4
         a32 rep movsd
 
@@ -57,14 +57,14 @@ kernel_base equ 0x100000
     test cx, cx
     jz finished_loading ; if cx = 0 => skip
 
-    mov bx, startup_end
+    mov bx, kernel_file
     mov dx, 0x0
     call load
 
     ; moving remnants of kernel
     call unreal
 
-    mov esi, startup_end
+    mov esi, kernel_file
     mov ecx, (kernel_file.length_sectors % buffer_size_bytes) / 4
     a32 rep movsd
 finished_loading:

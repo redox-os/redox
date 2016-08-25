@@ -65,31 +65,31 @@ load:
     mov [DAPACK.count], cx
     mov [DAPACK.seg], dx
 
-    ; mov si, loading
-    ; call print
+    mov si, loading
+    call print
 
-    ; mov bx, [DAPACK.addr]
-    ; call print_num
+    mov bx, [DAPACK.addr]
+    call print_num
 
-    ; mov al, '#'
-    ; call print_char
-    ;
-    ; mov bx, [DAPACK.count]
-    ; call print_num
-    ;
-    ; mov al, ' '
-    ; call print_char
-    ;
-    ; mov bx, [DAPACK.seg]
-    ; call print_num
-    ;
-    ; mov al, ':'
-    ; call print_char
-    ;
-    ; mov bx, [DAPACK.buf]
-    ; call print_num
-    ;
-    ; call print_line
+    mov al, '#'
+    call print_char
+
+    mov bx, [DAPACK.count]
+    call print_num
+
+    mov al, ' '
+    call print_char
+
+    mov bx, [DAPACK.seg]
+    call print_num
+
+    mov al, ':'
+    call print_char
+
+    mov bx, [DAPACK.buf]
+    call print_num
+
+    call print_line
 
     mov dl, [disk]
     mov si, DAPACK
