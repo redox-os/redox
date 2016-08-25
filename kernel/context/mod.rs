@@ -98,9 +98,7 @@ pub fn contexts_mut() -> RwLockWriteGuard<'static, ContextList> {
 /// Switch to the next context
 /// Do not call this while holding locks!
 pub unsafe fn context_switch() {
-
-
-    current.arch.switch_to(&mut next.arch);
+//    current.arch.switch_to(&mut next.arch);
 }
 
 /// A context, which identifies either a process or a thread
