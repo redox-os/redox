@@ -124,6 +124,9 @@ pub mod acpi;
 /// Context switching
 pub mod context;
 
+/// Display handling
+pub mod display;
+
 /// Memcpy, memmove, etc.
 pub mod externs;
 

@@ -11,9 +11,10 @@ ifeq ($(UNAME),Darwin)
 endif
 
 QEMUFLAGS+=-smp 4 -machine q35
-QEMUFLAGS+=-serial mon:stdio -nographic
+QEMUFLAGS+=-serial mon:stdio
 QEMUFLAGS+=-d guest_errors
 #,int,pcall
+#-nographic
 #-device intel-iommu
 
 
