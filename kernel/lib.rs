@@ -80,6 +80,11 @@ use arch::interrupt;
 #[macro_use]
 extern crate arch_test as arch;
 
+/// Architecture specific items (ARM)
+#[cfg(all(not(test), target_arch = "arm"))]
+#[macro_use]
+extern crate arch_arm as arch;
+
 /// Architecture specific items (x86_64)
 #[cfg(all(not(test), target_arch = "x86_64"))]
 #[macro_use]
@@ -92,12 +97,17 @@ extern crate collections;
 #[macro_use]
 extern crate bitflags;
 extern crate goblin;
+extern crate ransid;
 extern crate spin;
+
+/// Console
+pub mod console;
 
 /// Context management
 pub mod context;
 
 /// ELF file parsing
+#[cfg(all(not(test), target_arch = "x86_64"))]
 pub mod elf;
 
 /// Schemes, filesystem handlers

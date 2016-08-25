@@ -9,6 +9,7 @@ crate-type = ["staticlib"]
 
 [dependencies]
 bitflags = "*"
+ransid = "*"
 spin = "*"
 
 [dependencies.goblin]
@@ -18,6 +19,9 @@ features = ["no_mach", "no_mach32", "no_pe", "no_pe32", "no_endian_fd", "pure"]
 
 [dev-dependencies]
 arch_test = { path = "arch/test" }
+
+[target.'cfg(target_arch = "arm")'.dependencies]
+arch_arm = { path = "arch/arm" }
 
 [target.'cfg(target_arch = "x86_64")'.dependencies]
 arch_x86_64 = { path = "arch/x86_64" }
