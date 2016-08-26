@@ -134,7 +134,7 @@ impl Resource for IntelHdaResource {
                     tv_sec: 0,
                     tv_nsec: 0,
                 };
-                try!(syscall::time::nanosleep(&req, &mut rem));
+                try!(syscall::time::nanosleep(&req, Some(&mut rem)));
             }
 
             stream.interrupt = 0;

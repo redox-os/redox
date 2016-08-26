@@ -1020,13 +1020,17 @@ impl Context {
 
     /// Access a raw pointer safely
     pub fn get_slice<'a, T>(&'a self, ptr: *const T, len: usize) -> Result<&'a [T]> {
-        self.permission(ptr as usize, mem::size_of::<T>() * len, false)?;
+        if len > 0 {
+            self.permission(ptr as usize, mem::size_of::<T>() * len, false)?;
+        }
         Ok(unsafe { slice::from_raw_parts(ptr, len) })
     }
 
     /// Access a mutable raw pointer safely
     pub fn get_slice_mut<'a, T>(&'a self, ptr: *mut T, len: usize) -> Result<&'a mut [T]> {
-        self.permission(ptr as usize, mem::size_of::<T>() * len, true)?;
+        if len > 0 {
+            self.permission(ptr as usize, mem::size_of::<T>() * len, true)?;
+        }
         Ok(unsafe { slice::from_raw_parts_mut(ptr, len) })
     }
 
