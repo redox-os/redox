@@ -4,7 +4,7 @@ A collaborative effort to rewrite the kernel with focus on correctness and code 
 
 ## Why?
 
-The kernel code was getting increasingly messy to the point were only the original writer would be able to find and fix bugs. Fortunately, the kernel of Redox is relatively small and such a project is estimated to take only a few months.
+The kernel code was getting increasingly messy to the point where only the original writer would be able to find and fix bugs. Fortunately, the kernel of Redox is relatively small and such a project is estimated to take only a few months.
 
 ## What?
 
@@ -38,7 +38,7 @@ Abusing debug assertions is a wonderful way to catch bugs, and it is very much e
 
 Rust provides a lot of type-system features which can be used to create wonderful safe abstractions, and you should use them whenever you get the chance.
 
-Unsafety should be avoided, and if it is triggered only under some addition **insert an assertion**. Despite this being a kernel, we prefer kernel panics over security vulnarbilities.
+Unsafety should be avoided, and if it is triggered only under some addition **insert an assertion**. Despite this being a kernel, we prefer kernel panics over security vulnerabilities.
 
 If the condition is (or should be) unreachable, but if not upheld, leading to UB, put an assertion in the start of the function.
 
