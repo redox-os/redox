@@ -1,6 +1,8 @@
 //! Context management
 
+use alloc::boxed::Box;
 use collections::{BTreeMap, Vec};
+use core::mem;
 use core::sync::atomic::{AtomicUsize, ATOMIC_USIZE_INIT, Ordering};
 use spin::{Once, RwLock, RwLockReadGuard, RwLockWriteGuard};
 
@@ -61,6 +63,15 @@ impl ContextList {
         let context_lock = self.new_context()?;
         {
             let mut context = context_lock.write();
+            let mut stack = Box::new([0; 4096]);
+            let offset = stack.len() - mem::size_of::<usize>();
+            unsafe {
+                let offset = stack.len() - mem::size_of::<usize>();
+                let func_ptr = stack.as_mut_ptr().offset(offset as isize);
+                *(func_ptr as *mut usize) = func as usize;
+            }
+            context.arch.set_stack(stack.as_ptr() as usize + offset);
+            context.kstack = Some(stack);
             print!("{}", format!("{}: {:X}\n", context.id, func as usize));
         }
         Ok(context_lock)
@@ -108,6 +119,8 @@ pub struct Context {
     pub id: usize,
     /// The architecture specific context
     pub arch: ArchContext,
+    /// Kernel stack
+    pub kstack: Option<Box<[u8]>>,
     /// The open files in the scheme
     pub files: Vec<Option<file::File>>
 }
@@ -118,6 +131,7 @@ impl Context {
         Context {
             id: id,
             arch: ArchContext::new(),
+            kstack: None,
             files: Vec::new()
         }
     }

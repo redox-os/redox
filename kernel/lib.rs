@@ -134,8 +134,24 @@ pub extern fn kmain() {
 
     print!("{}", format!("BSP: {:?}\n", syscall::getpid()));
 
-    if let Ok(context) = context::contexts_mut().spawn(context_test) {
+    let to_ptr = if let Ok(context_lock) = context::contexts_mut().spawn(context_test) {
+        print!("Spawned context\n");
+        let mut context = context_lock.write();
+        &mut context.arch as *mut arch::context::Context
+    } else {
+        0 as *mut arch::context::Context
+    };
 
+    let from_ptr = if let Some(context_lock) = context::contexts().current() {
+        let mut context = context_lock.write();
+        &mut context.arch as *mut arch::context::Context
+    } else {
+        0 as *mut arch::context::Context
+    };
+
+    if to_ptr as usize != 0 && from_ptr as usize != 0 {
+        print!("Switching\n");
+        unsafe { (&mut *from_ptr).switch_to(&mut *to_ptr); }
     }
 
     loop {

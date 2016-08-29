@@ -1,4 +1,4 @@
-ARCH?=arm
+ARCH?=x86_64
 
 QEMU=qemu-system-$(ARCH)
 QEMUFLAGS=-serial mon:stdio -d guest_errors

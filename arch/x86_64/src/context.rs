@@ -1,3 +1,12 @@
+use core::mem;
+use core::sync::atomic::{AtomicBool, ATOMIC_BOOL_INIT, Ordering};
+
+/// This must be used by the kernel to ensure that context switches are done atomically
+/// Compare and exchange this to true when beginning a context switch on any CPU
+/// The Context::switch_to function will set it back to false, allowing other CPU's to switch
+/// This must be done, as no locks can be held on the stack during switch
+pub static CONTEXT_SWITCH_LOCK: AtomicBool = ATOMIC_BOOL_INIT;
+
 #[derive(Debug)]
 pub struct Context {
     /// RFLAGS register
@@ -35,6 +44,11 @@ impl Context {
         }
     }
 
+    pub fn set_stack(&mut self, address: usize) {
+        self.rsp = address;
+    }
+
+    /// Switch to the next context by restoring its stack and registers
     #[inline(never)]
     #[naked]
     pub unsafe fn switch_to(&mut self, next: &mut Context) {
@@ -68,15 +82,17 @@ impl Context {
         asm!("mov $0, r15" : "=r"(self.r15) : : "memory" : "intel", "volatile");
         asm!("mov r15, $0" : : "r"(next.r15) : "memory" : "intel", "volatile");
 
-        asm!("mov $0, rbp" : "=r"(self.rbp) : : "memory" : "intel", "volatile");
-        asm!("mov rbp, $0" : : "r"(next.rbp) : "memory" : "intel", "volatile");
-
         asm!("mov $0, rsp" : "=r"(self.rsp) : : "memory" : "intel", "volatile");
         asm!("mov rsp, $0" : : "r"(next.rsp) : "memory" : "intel", "volatile");
+
+        asm!("mov $0, rbp" : "=r"(self.rbp) : : "memory" : "intel", "volatile");
+        asm!("mov rbp, $0" : : "r"(next.rbp) : "memory" : "intel", "volatile");
 
         /* TODO
         asm!("mov $0, cr3" : "=r"(self.cr3) : : "memory" : "intel", "volatile");
         asm!("mov cr3, $0" : : "r"(self.cr3) : "memory" : "intel", "volatile");
         */
+
+        //CONTEXT_SWITCH_LOCK.store(false, Ordering::SeqCst);
     }
 }

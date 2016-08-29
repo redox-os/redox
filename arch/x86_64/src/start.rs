@@ -92,7 +92,7 @@ pub unsafe extern fn kstart() -> ! {
         }
 
         // Initialize display
-        display::init(&mut active_table);
+        //display::init(&mut active_table);
 
         // Reset AP variables
         AP_COUNT.store(0, Ordering::SeqCst);
@@ -100,7 +100,7 @@ pub unsafe extern fn kstart() -> ! {
         HEAP_FRAME.store(0, Ordering::SeqCst);
 
         // Read ACPI tables, starts APs
-        acpi::init(&mut active_table);
+        //acpi::init(&mut active_table);
 
         // Map heap
         {
