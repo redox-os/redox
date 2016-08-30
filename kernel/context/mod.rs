@@ -26,6 +26,7 @@ pub struct ContextList {
 }
 
 impl ContextList {
+    /// Create a new context list.
     pub fn new() -> Self {
         ContextList {
             map: BTreeMap::new(),
@@ -33,14 +34,17 @@ impl ContextList {
         }
     }
 
+    /// Get the nth context.
     pub fn get(&self, id: usize) -> Option<&RwLock<Context>> {
         self.map.get(&id)
     }
 
+    /// Get the current context.
     pub fn current(&self) -> Option<&RwLock<Context>> {
         self.map.get(&CONTEXT_ID.load(Ordering::SeqCst))
     }
 
+    /// Create a new context.
     pub fn new_context(&mut self) -> Result<&RwLock<Context>> {
         if self.next_id >= CONTEXT_MAX_CONTEXTS {
             self.next_id = 1;
@@ -56,10 +60,13 @@ impl ContextList {
 
         let id = self.next_id;
         self.next_id += 1;
+
         assert!(self.map.insert(id, RwLock::new(Context::new(id))).is_none());
-        Ok(self.map.get(&id).expect("failed to insert new context"))
+
+        Ok(self.map.get(&id).expect("Failed to insert new context. ID is out of bounds."))
     }
 
+    /// Spawn a context from a function.
     pub fn spawn(&mut self, func: extern fn()) -> Result<&RwLock<Context>> {
         let context_lock = self.new_context()?;
         {
@@ -109,6 +116,9 @@ pub fn contexts_mut() -> RwLockWriteGuard<'static, ContextList> {
 }
 
 /// Switch to the next context
+///
+/// # Safety
+///
 /// Do not call this while holding locks!
 pub unsafe fn switch() {
     use core::ops::DerefMut;

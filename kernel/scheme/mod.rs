@@ -17,8 +17,11 @@ use syscall::Result;
 
 use self::debug::DebugScheme;
 
+pub use self::fd::Fd;
+
 /// Debug scheme
 pub mod debug;
+mod fd;
 
 /// Scheme list type
 pub type SchemeList = BTreeMap<Box<[u8]>, Arc<Mutex<Box<Scheme + Send>>>>;
@@ -50,16 +53,16 @@ pub trait Scheme {
     /// Returns a file descriptor or an error
     fn open(&mut self, path: &[u8], flags: usize) -> Result<usize>;
 
-    /// Read the file `number` into the `buffer`
+    /// Read from some file descriptor into the `buffer`
     ///
     /// Returns the number of bytes read
-    fn read(&mut self, file: usize, buffer: &mut [u8]) -> Result<usize>;
+    fn read(&mut self, fd: Fd, buffer: &mut [u8]) -> Result<usize>;
 
-    /// Write the `buffer` to the `file`
+    /// Write the `buffer` to the file descriptor
     ///
     /// Returns the number of bytes written
-    fn write(&mut self, file: usize, buffer: &[u8]) -> Result<usize>;
+    fn write(&mut self, fd: Fd, buffer: &[u8]) -> Result<usize>;
 
-    /// Close the file `number`
-    fn close(&mut self, file: usize) -> Result<()>;
+    /// Close the file descriptor
+    fn close(&mut self, fd: Fd) -> Result<()>;
 }
