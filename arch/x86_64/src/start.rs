@@ -11,6 +11,7 @@ use display;
 use externs::memset;
 use gdt;
 use idt;
+use interrupt;
 use memory::{self, Frame};
 use paging::{self, entry, Page, PhysicalAddress, VirtualAddress};
 
@@ -92,7 +93,7 @@ pub unsafe extern fn kstart() -> ! {
         }
 
         // Initialize display
-        //display::init(&mut active_table);
+        display::init(&mut active_table);
 
         // Reset AP variables
         AP_COUNT.store(0, Ordering::SeqCst);
@@ -100,7 +101,7 @@ pub unsafe extern fn kstart() -> ! {
         HEAP_FRAME.store(0, Ordering::SeqCst);
 
         // Read ACPI tables, starts APs
-        //acpi::init(&mut active_table);
+        acpi::init(&mut active_table);
 
         // Map heap
         {
@@ -173,7 +174,7 @@ pub unsafe extern fn kstart_ap(stack_start: usize, stack_end: usize) -> ! {
                 assert_eq!(heap_start_page.p4_index(), heap_end_page.p4_index());
 
                 while HEAP_FRAME.load(Ordering::SeqCst) == 0 {
-                    asm!("pause" : : : : "intel", "volatile");
+                    interrupt::pause();
                 }
                 let frame = Frame::containing_address(PhysicalAddress::new(HEAP_FRAME.load(Ordering::SeqCst)));
 
@@ -188,7 +189,7 @@ pub unsafe extern fn kstart_ap(stack_start: usize, stack_end: usize) -> ! {
     let ap_number = AP_COUNT.fetch_add(1, Ordering::SeqCst);
 
     while ! BSP_READY.load(Ordering::SeqCst) {
-        asm!("pause" : : : : "intel", "volatile");
+        interrupt::pause();
     }
 
     kmain_ap(ap_number);

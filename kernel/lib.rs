@@ -121,8 +121,10 @@ pub mod syscall;
 pub mod tests;
 
 pub extern fn context_test() {
-    print!("TEST\n");
+    print!("Test\n");
+    unsafe { context::switch(); }
 
+    print!("Test halt\n");
     loop {
         unsafe { interrupt::enable_and_halt(); }
     }
@@ -134,26 +136,14 @@ pub extern fn kmain() {
 
     print!("{}", format!("BSP: {:?}\n", syscall::getpid()));
 
-    let to_ptr = if let Ok(context_lock) = context::contexts_mut().spawn(context_test) {
+    if let Ok(context_lock) = context::contexts_mut().spawn(context_test) {
         print!("Spawned context\n");
-        let mut context = context_lock.write();
-        &mut context.arch as *mut arch::context::Context
-    } else {
-        0 as *mut arch::context::Context
-    };
-
-    let from_ptr = if let Some(context_lock) = context::contexts().current() {
-        let mut context = context_lock.write();
-        &mut context.arch as *mut arch::context::Context
-    } else {
-        0 as *mut arch::context::Context
-    };
-
-    if to_ptr as usize != 0 && from_ptr as usize != 0 {
-        print!("Switching\n");
-        unsafe { (&mut *from_ptr).switch_to(&mut *to_ptr); }
     }
 
+    print!("Main\n");
+    unsafe { context::switch(); }
+
+    print!("Main halt\n");
     loop {
         unsafe { interrupt::enable_and_halt(); }
     }

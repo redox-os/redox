@@ -6,6 +6,7 @@ use core::mem;
 use core::sync::atomic::{AtomicUsize, ATOMIC_USIZE_INIT, Ordering};
 use spin::{Once, RwLock, RwLockReadGuard, RwLockWriteGuard};
 
+use arch;
 use arch::context::Context as ArchContext;
 use syscall::{Error, Result};
 
@@ -87,7 +88,8 @@ static CONTEXT_ID: AtomicUsize = ATOMIC_USIZE_INIT;
 pub fn init() {
     let mut contexts = contexts_mut();
     let context_lock = contexts.new_context().expect("could not initialize first context");
-    let context = context_lock.read();
+    let mut context = context_lock.write();
+    context.running = true;
     CONTEXT_ID.store(context.id, Ordering::SeqCst);
 }
 
@@ -108,8 +110,44 @@ pub fn contexts_mut() -> RwLockWriteGuard<'static, ContextList> {
 
 /// Switch to the next context
 /// Do not call this while holding locks!
-pub unsafe fn context_switch() {
-//    current.arch.switch_to(&mut next.arch);
+pub unsafe fn switch() {
+    use core::ops::DerefMut;
+
+    // Set the global lock to avoid the unsafe operations below from causing issues
+    while arch::context::CONTEXT_SWITCH_LOCK.compare_and_swap(false, true, Ordering::SeqCst) {
+        arch::interrupt::pause();
+    }
+
+    let from_ptr = if let Some(context_lock) = contexts().current() {
+        let mut context = context_lock.write();
+        context.deref_mut() as *mut Context
+    } else {
+        print!("NO FROM_PTR\n");
+        return;
+    };
+
+    let mut to_ptr = 0 as *mut Context;
+
+    for (_pid, context_lock) in contexts().map.iter() {
+        let mut context = context_lock.write();
+        if ! context.running {
+            to_ptr = context.deref_mut() as *mut Context;
+            break;
+        }
+    }
+
+    if to_ptr as usize == 0 {
+        print!("NO TO_PTR\n");
+        return;
+    }
+
+    unsafe {
+        (&mut *from_ptr).running = false;
+        (&mut *to_ptr).running = true;
+        CONTEXT_ID.store((&mut *to_ptr).id, Ordering::SeqCst);
+        
+        (&mut *from_ptr).arch.switch_to(&mut (&mut *to_ptr).arch);
+    }
 }
 
 /// A context, which identifies either a process or a thread
@@ -117,6 +155,8 @@ pub unsafe fn context_switch() {
 pub struct Context {
     /// The ID of this context
     pub id: usize,
+    /// Running or not
+    pub running: bool,
     /// The architecture specific context
     pub arch: ArchContext,
     /// Kernel stack
@@ -130,6 +170,7 @@ impl Context {
     pub fn new(id: usize) -> Context {
         Context {
             id: id,
+            running: false,
             arch: ArchContext::new(),
             kstack: None,
             files: Vec::new()

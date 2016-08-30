@@ -26,6 +26,13 @@ pub unsafe fn halt() {
     asm!("hlt" : : : : "intel", "volatile");
 }
 
+/// Pause instruction
+/// Safe because it is similar to a NOP, and has no memory effects
+#[inline(always)]
+pub fn pause() {
+    unsafe { asm!("pause" : : : : "intel", "volatile"); }
+}
+
 /// Get a stack trace
 //TODO: Check for stack being mapped before dereferencing
 #[inline(never)]
