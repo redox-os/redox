@@ -93,6 +93,7 @@ impl Context {
         asm!("mov cr3, $0" : : "r"(self.cr3) : "memory" : "intel", "volatile");
         */
 
-        //CONTEXT_SWITCH_LOCK.store(false, Ordering::SeqCst);
+        // Unset global lock, set inside of kernel
+        CONTEXT_SWITCH_LOCK.store(false, Ordering::SeqCst);
     }
 }

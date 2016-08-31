@@ -3,6 +3,7 @@
 
 use core::intrinsics::{atomic_load, atomic_store};
 
+use interrupt;
 use memory::{allocate_frame, Frame};
 use paging::{entry, ActivePageTable, Page, PhysicalAddress, VirtualAddress};
 use start::kstart_ap;
@@ -87,7 +88,7 @@ pub fn init_sdt(sdt: &'static Sdt, active_table: &mut ActivePageTable) {
                         // Wait for trampoline ready
                         println!("        Waiting for AP {}", asp_local_apic.id);
                         while unsafe { atomic_load(ap_ready) } == 0 {
-                            unsafe { asm!("pause" : : : : "intel", "volatile") };
+                            interrupt::pause();
                         }
                         println!("        AP {} is ready!", asp_local_apic.id);
                     } else {
