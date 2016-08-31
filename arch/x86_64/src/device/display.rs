@@ -1,7 +1,6 @@
 use core::slice;
 use spin::Mutex;
 
-use externs::memset;
 use memory::Frame;
 use paging::{ActivePageTable, PhysicalAddress, entry};
 

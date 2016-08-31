@@ -1,4 +1,3 @@
-use core::mem;
 use core::sync::atomic::{AtomicBool, ATOMIC_BOOL_INIT, Ordering};
 
 /// This must be used by the kernel to ensure that context switches are done atomically

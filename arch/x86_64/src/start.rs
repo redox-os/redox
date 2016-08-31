@@ -7,7 +7,7 @@ use core::sync::atomic::{AtomicBool, ATOMIC_BOOL_INIT, AtomicUsize, ATOMIC_USIZE
 
 use acpi;
 use allocator::{HEAP_START, HEAP_SIZE};
-use display;
+use device;
 use externs::memset;
 use gdt;
 use idt;
@@ -92,8 +92,8 @@ pub unsafe extern fn kstart() -> ! {
             assert_eq!(TDATA_TEST_NONZERO, 0xFFFFFFFFFFFFFFFE);
         }
 
-        // Initialize display
-        display::init(&mut active_table);
+        // Initialize devices
+        device::init(&mut active_table);
 
         // Reset AP variables
         AP_COUNT.store(0, Ordering::SeqCst);

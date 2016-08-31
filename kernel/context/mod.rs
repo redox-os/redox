@@ -151,13 +151,11 @@ pub unsafe fn switch() {
         return;
     }
 
-    unsafe {
-        (&mut *from_ptr).running = false;
-        (&mut *to_ptr).running = true;
-        CONTEXT_ID.store((&mut *to_ptr).id, Ordering::SeqCst);
-        
-        (&mut *from_ptr).arch.switch_to(&mut (&mut *to_ptr).arch);
-    }
+    (&mut *from_ptr).running = false;
+    (&mut *to_ptr).running = true;
+    CONTEXT_ID.store((&mut *to_ptr).id, Ordering::SeqCst);
+
+    (&mut *from_ptr).arch.switch_to(&mut (&mut *to_ptr).arch);
 }
 
 /// A context, which identifies either a process or a thread

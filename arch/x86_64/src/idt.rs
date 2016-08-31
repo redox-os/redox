@@ -1,7 +1,7 @@
 use core::mem;
 use x86::dtables::{self, DescriptorTablePointer};
 
-use interrupt::halt;
+use interrupt::*;
 
 pub static mut IDTR: DescriptorTablePointer = DescriptorTablePointer {
     limit: 0,
@@ -14,67 +14,54 @@ pub unsafe fn init() {
     IDTR.limit = (IDT.len() * mem::size_of::<IdtEntry>() - 1) as u16;
     IDTR.base = IDT.as_ptr() as u64;
 
-    for entry in IDT[0..32].iter_mut() {
-        entry.set_flags(IDT_PRESENT | IDT_RING_0 | IDT_INTERRUPT);
-        entry.set_offset(8, exception as usize);
-    }
-    IDT[13].set_offset(8, protection_fault as usize);
-    IDT[14].set_offset(8, page_fault as usize);
-    for entry in IDT[32..].iter_mut() {
-        entry.set_flags(IDT_PRESENT | IDT_RING_0 | IDT_INTERRUPT);
-        entry.set_offset(8, blank as usize);
-    }
-    IDT[0x80].set_offset(8, syscall as usize);
+    // Set up exceptions
+    IDT[0].set_func(exception::divide_by_zero);
+    IDT[1].set_func(exception::debug);
+    IDT[2].set_func(exception::non_maskable);
+    IDT[3].set_func(exception::breakpoint);
+    IDT[4].set_func(exception::overflow);
+    IDT[5].set_func(exception::bound_range);
+    IDT[6].set_func(exception::invalid_opcode);
+    IDT[7].set_func(exception::device_not_available);
+    IDT[8].set_func(exception::double_fault);
+    // 9 no longer available
+    IDT[10].set_func(exception::invalid_tss);
+    IDT[11].set_func(exception::segment_not_present);
+    IDT[12].set_func(exception::stack_segment);
+    IDT[13].set_func(exception::protection);
+    IDT[14].set_func(exception::page);
+    // 15 reserved
+    IDT[16].set_func(exception::fpu);
+    IDT[17].set_func(exception::alignment_check);
+    IDT[18].set_func(exception::machine_check);
+    IDT[19].set_func(exception::simd);
+    IDT[20].set_func(exception::virtualization);
+    // 21 through 29 reserved
+    IDT[30].set_func(exception::security);
+    // 31 reserved
+
+    // Set up IRQs
+    IDT[32].set_func(irq::pit);
+    IDT[33].set_func(irq::keyboard);
+    IDT[34].set_func(irq::cascade);
+    IDT[35].set_func(irq::com2);
+    IDT[36].set_func(irq::com1);
+    IDT[37].set_func(irq::lpt2);
+    IDT[38].set_func(irq::floppy);
+    IDT[39].set_func(irq::lpt1);
+    IDT[40].set_func(irq::rtc);
+    IDT[41].set_func(irq::pci1);
+    IDT[42].set_func(irq::pci2);
+    IDT[43].set_func(irq::pci3);
+    IDT[44].set_func(irq::mouse);
+    IDT[45].set_func(irq::fpu);
+    IDT[46].set_func(irq::ata1);
+    IDT[47].set_func(irq::ata2);
+
+    // Set syscall function
+    IDT[0x80].set_func(syscall::syscall);
 
     dtables::lidt(&IDTR);
-}
-
-interrupt!(blank, {
-
-});
-
-interrupt!(exception, {
-    println!("EXCEPTION");
-    loop {
-        halt();
-    }
-});
-
-interrupt_error!(protection_fault, {
-    println!("PROTECTION FAULT");
-    loop {
-        halt();
-    }
-});
-
-interrupt_error!(page_fault, {
-    println!("PAGE FAULT");
-    loop {
-        halt();
-    }
-});
-
-#[naked]
-pub unsafe extern fn syscall() {
-    extern {
-        fn syscall(a: usize, b: usize, c: usize, d: usize, e: usize, f: usize) -> usize;
-    }
-
-    let a;
-    let b;
-    let c;
-    let d;
-    let e;
-    let f;
-    asm!("" : "={rax}"(a), "={rbx}"(b), "={rcx}"(c), "={rdx}"(d), "={rsi}"(e), "={rdi}"(f)
-        : : : "intel", "volatile");
-
-    let a = syscall(a, b, c, d, e, f);
-
-    asm!("" : : "{rax}"(a) : : "intel", "volatile");
-
-    // Pop scratch registers, error code, and return
-    asm!("iretq" : : : : "intel", "volatile");
 }
 
 bitflags! {
@@ -141,5 +128,11 @@ impl IdtEntry {
         self.offsetl = base as u16;
         self.offsetm = (base >> 16) as u16;
         self.offseth = (base >> 32) as u32;
+    }
+
+    // A function to set the offset more easily
+    pub fn set_func(&mut self, func: unsafe extern fn()) {
+        self.set_flags(IDT_PRESENT | IDT_RING_0 | IDT_INTERRUPT);
+        self.set_offset(8, func as usize);
     }
 }
