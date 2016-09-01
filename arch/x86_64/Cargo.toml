@@ -5,6 +5,7 @@ version = "0.1.0"
 [dependencies]
 bitflags = "*"
 hole_list_allocator = { path = "../../alloc/hole_list_allocator"}
+ransid = "*"
 spin = "*"
 
 [dependencies.x86]

@@ -92,16 +92,10 @@ pub unsafe extern fn kstart() -> ! {
             assert_eq!(TDATA_TEST_NONZERO, 0xFFFFFFFFFFFFFFFE);
         }
 
-        // Initialize devices
-        device::init(&mut active_table);
-
         // Reset AP variables
         AP_COUNT.store(0, Ordering::SeqCst);
         BSP_READY.store(false, Ordering::SeqCst);
         HEAP_FRAME.store(0, Ordering::SeqCst);
-
-        // Read ACPI tables, starts APs
-        acpi::init(&mut active_table);
 
         // Map heap
         {
@@ -128,6 +122,12 @@ pub unsafe extern fn kstart() -> ! {
                 active_table.map(page, entry::WRITABLE | entry::NO_EXECUTE);
             }
         }
+
+        // Initialize devices
+        device::init(&mut active_table);
+
+        // Read ACPI tables, starts APs
+        acpi::init(&mut active_table);
 
         BSP_READY.store(true, Ordering::SeqCst);
     }
@@ -165,9 +165,6 @@ pub unsafe extern fn kstart_ap(stack_start: usize, stack_end: usize) -> ! {
             assert_eq!(TDATA_TEST_NONZERO, 0xFFFFFFFFFFFFFFFE);
         }
 
-        // Init devices for AP
-        device::init_ap(&mut active_table);
-
         // Map heap
         {
             let heap_start_page = Page::containing_address(VirtualAddress::new(HEAP_START));
@@ -187,16 +184,15 @@ pub unsafe extern fn kstart_ap(stack_start: usize, stack_end: usize) -> ! {
                 entry.set(frame, entry::PRESENT | entry::WRITABLE);
             }
         }
+
+        // Init devices for AP
+        device::init_ap(&mut active_table);
     }
 
     let ap_number = AP_COUNT.fetch_add(1, Ordering::SeqCst);
 
     while ! BSP_READY.load(Ordering::SeqCst) {
         interrupt::pause();
-    }
-
-    if let Some(ref mut display) = *device::display::DISPLAY.lock() {
-        display.char(0, ap_number * 16, (ap_number as u8 + b'0') as char, 0xFF00);
     }
 
     kmain_ap(ap_number);

@@ -9,7 +9,6 @@ crate-type = ["staticlib"]
 
 [dependencies]
 bitflags = "*"
-ransid = "*"
 spin = "*"
 
 [dependencies.goblin]

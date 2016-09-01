@@ -4,6 +4,7 @@
 #![feature(concat_idents)]
 #![feature(const_fn)]
 #![feature(core_intrinsics)]
+#![feature(drop_types_in_const)]
 #![feature(lang_items)]
 #![feature(naked_functions)]
 #![feature(thread_local)]
@@ -13,6 +14,7 @@
 extern crate hole_list_allocator as allocator;
 #[macro_use]
 extern crate bitflags;
+extern crate ransid;
 extern crate spin;
 extern crate x86;
 
@@ -21,7 +23,7 @@ extern crate x86;
 macro_rules! print {
     ($($arg:tt)*) => ({
         use core::fmt::Write;
-        let _ = write!($crate::device::serial::SerialConsole, $($arg)*);
+        let _ = write!($crate::console::CONSOLE.lock(), $($arg)*);
     });
 }
 
@@ -118,6 +120,9 @@ macro_rules! interrupt_error {
 
 /// ACPI table parsing
 pub mod acpi;
+
+/// Console handling
+pub mod console;
 
 /// Context switching
 pub mod context;

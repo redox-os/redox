@@ -80,7 +80,7 @@ impl ContextList {
             }
             context.arch.set_stack(stack.as_ptr() as usize + offset);
             context.kstack = Some(stack);
-            print!("{}", format!("{}: {:X}\n", context.id, func as usize));
+            println!("{}: {:X}", context.id, func as usize);
         }
         Ok(context_lock)
     }

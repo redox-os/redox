@@ -104,11 +104,3 @@ impl Write for SerialPort {
         Ok(())
     }
 }
-
-pub struct SerialConsole;
-
-impl Write for SerialConsole {
-    fn write_str(&mut self, s: &str) -> Result<(), fmt::Error> {
-        COM1.lock().write_str(s)
-    }
-}

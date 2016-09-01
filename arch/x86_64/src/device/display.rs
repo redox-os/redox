@@ -1,6 +1,8 @@
 use core::{cmp, slice};
+use ransid::Console;
 use spin::Mutex;
 
+use externs::memset;
 use memory::Frame;
 use paging::{ActivePageTable, PhysicalAddress, entry};
 
@@ -63,11 +65,7 @@ pub unsafe fn init(active_table: &mut ActivePageTable) {
             }
         }
 
-        for i in 0..size {
-            let c = ((i * 256)/size) as u32 & 0xFF;
-            *(start as *mut u32).offset(i as isize) = (c << 16) | (c << 8) | c;
-        }
-        //memset(start as *mut u8, 0, size * 4);
+        memset(start as *mut u8, 0, size * 4);
 
         *DISPLAY.lock() = Some(Display::new(width, height, slice::from_raw_parts_mut(start as *mut u32, size)));
     }
@@ -98,6 +96,7 @@ pub struct Display {
     pub width: usize,
     pub height: usize,
     pub data: &'static mut [u32],
+    console: Console,
 }
 
 impl Display {
@@ -106,11 +105,12 @@ impl Display {
             width: width,
             height: height,
             data: data,
+            console: Console::new(width/8, height/16)
         }
     }
 
     /// Draw a rectangle
-    pub fn rect(&mut self, x: usize, y: usize, w: usize, h: usize, color: u32) {
+    fn rect(&mut self, x: usize, y: usize, w: usize, h: usize, color: u32) {
         let start_y = cmp::min(self.height - 1, y);
         let end_y = cmp::min(self.height, y + h);
 
@@ -127,7 +127,7 @@ impl Display {
     }
 
     /// Draw a character
-    pub fn char(&mut self, x: usize, y: usize, character: char, color: u32) {
+    fn char(&mut self, x: usize, y: usize, character: char, color: u32) {
         if x + 8 <= self.width && y + 16 <= self.height {
             let mut offset = y * self.width + x;
 
@@ -142,6 +142,39 @@ impl Display {
                     }
 
                     offset += self.width;
+                }
+            }
+        }
+    }
+
+    pub fn write(&mut self, bytes: &[u8]) {
+        self.console.write(bytes);
+        if self.console.redraw {
+            self.console.redraw = false;
+
+            for y in 0..self.console.h {
+                if self.console.changed[y] {
+                    self.console.changed[y] = false;
+
+                    for x in 0..self.console.w {
+                        let block = self.console.display[y * self.console.w + x];
+
+                        let (bg, fg) = if self.console.cursor && self.console.y == y && self.console.x == x {
+                            (block.fg.data, block.bg.data)
+                        }else{
+                            (block.bg.data, block.fg.data)
+                        };
+
+                        self.rect(x * 8, y * 16, 8, 16, bg);
+
+                        if block.c != ' ' {
+                            self.char(x * 8, y * 16, block.c, fg);
+                        }
+
+                        if block.underlined {
+                            self.rect(x * 8, y * 16 + 14, 8, 1, fg);
+                        }
+                    }
                 }
             }
         }
