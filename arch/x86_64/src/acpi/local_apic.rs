@@ -29,7 +29,7 @@ pub struct LocalApic;
 
 impl LocalApic {
     pub fn new() -> Self {
-        unsafe { wrmsr(IA32_APIC_BASE, rdmsr(IA32_APIC_BASE) | 1 << 10) }
+        unsafe { wrmsr(IA32_APIC_BASE, rdmsr(IA32_APIC_BASE) | 1 << 11 | 1 << 10) }
         LocalApic
     }
 
