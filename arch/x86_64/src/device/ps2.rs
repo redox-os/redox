@@ -40,6 +40,7 @@ bitflags! {
 }
 
 #[repr(u8)]
+#[allow(dead_code)]
 enum Command {
     ReadConfig = 0x20,
     WriteConfig = 0x60,
@@ -55,6 +56,7 @@ enum Command {
 }
 
 #[repr(u8)]
+#[allow(dead_code)]
 enum KeyboardCommand {
     EnableReporting = 0xF4,
     SetDefaults = 0xF6,
@@ -62,6 +64,7 @@ enum KeyboardCommand {
 }
 
 #[repr(u8)]
+#[allow(dead_code)]
 enum MouseCommand {
     GetDeviceId = 0xF2,
     EnableReporting = 0xF4,
@@ -282,7 +285,7 @@ impl Ps2 {
                 dy -= 0x100;
             }
 
-            let extra = if self.mouse_extra {
+            let _extra = if self.mouse_extra {
                 self.mouse[3]
             } else {
                 0

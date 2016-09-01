@@ -19,7 +19,7 @@ interrupt!(pit, {
     let low = io::inb(0x40);
     let high = io::inb(0x40);
     let count = (high as u16) << 8 | (low as u16);
-    let missed = 5370 - count;
+    let _missed = 5370 - count;
     master_ack();
 });
 

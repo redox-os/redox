@@ -32,6 +32,7 @@ bitflags! {
     }
 }
 
+#[allow(dead_code)]
 pub struct SerialPort {
     /// Data register, read to receive, write to send
     data: Pio<u8>,
@@ -62,10 +63,6 @@ impl SerialPort {
         }
     }
 
-    fn int_en(&self) -> IntEnFlags {
-        IntEnFlags::from_bits_truncate(self.int_en.read())
-    }
-
     fn line_sts(&self) -> LineStsFlags {
         LineStsFlags::from_bits_truncate(self.line_sts.read())
     }
@@ -76,6 +73,7 @@ impl SerialPort {
     }
 
     fn init(&mut self) {
+        //TODO: Cleanup
         self.int_en.write(0x00);
         self.line_ctrl.write(0x80);
         self.data.write(0x03);
@@ -88,7 +86,7 @@ impl SerialPort {
 
     pub fn on_receive(&mut self) {
         let data = self.data.read();
-        write!(self, "SERIAL {:X}\n", data);
+        let _ = write!(self, "SERIAL {:X}\n", data);
     }
 }
 
@@ -111,8 +109,6 @@ pub struct SerialConsole;
 
 impl Write for SerialConsole {
     fn write_str(&mut self, s: &str) -> Result<(), fmt::Error> {
-        COM1.lock().write_str(s);
-
-        Ok(())
+        COM1.lock().write_str(s)
     }
 }

@@ -196,7 +196,6 @@ pub unsafe extern fn kstart_ap(stack_start: usize, stack_end: usize) -> ! {
     }
 
     if let Some(ref mut display) = *device::display::DISPLAY.lock() {
-        let width = display.width;
         display.char(0, ap_number * 16, (ap_number as u8 + b'0') as char, 0xFF00);
     }
 

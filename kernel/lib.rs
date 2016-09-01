@@ -136,7 +136,7 @@ pub extern fn kmain() {
 
     print!("{}", format!("BSP: {:?}\n", syscall::getpid()));
 
-    if let Ok(context_lock) = context::contexts_mut().spawn(context_test) {
+    if let Ok(_context_lock) = context::contexts_mut().spawn(context_test) {
         print!("Spawned context\n");
     }
 
