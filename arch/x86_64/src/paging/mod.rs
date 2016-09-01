@@ -2,7 +2,7 @@
 //! Some code was borrowed from [Phil Opp's Blog](http://os.phil-opp.com/modifying-page-tables.html)
 
 use core::ops::{Deref, DerefMut};
-use x86::tlb;
+use x86::{msr, tlb};
 
 use memory::{allocate_frame, Frame};
 
@@ -88,6 +88,26 @@ pub unsafe fn init(stack_start: usize, stack_end: usize) -> ActivePageTable {
             remap_section(& __bss_start, & __bss_end, PRESENT | NO_EXECUTE | WRITABLE);
         }
     });
+
+    let uncacheable = 0;
+    let write_combining = 1;
+    let write_through = 4;
+    let write_protected = 5;
+    let write_back = 6;
+    let uncached = 7;
+
+    let pat0 = write_back;
+    let pat1 = write_through;
+    let pat2 = uncached;
+    let pat3 = uncacheable;
+
+    let pat4 = write_combining;
+    let pat5 = pat1;
+    let pat6 = pat2;
+    let pat7 = pat3;
+
+    msr::wrmsr(msr::IA32_PAT, pat7 << 56 | pat6 << 48 | pat5 << 40 | pat4 << 32
+                            | pat3 << 24 | pat2 << 16 | pat1 << 8 | pat0);
 
     active_table.switch(new_table);
 
