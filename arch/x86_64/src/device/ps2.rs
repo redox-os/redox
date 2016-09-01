@@ -56,9 +56,15 @@ enum KeyboardCommand {
 
 #[repr(u8)]
 enum MouseCommand {
+    GetDeviceId = 0xF2,
     EnableReporting = 0xF4,
     SetDefaults = 0xF6,
     Reset = 0xFF
+}
+
+#[repr(u8)]
+enum MouseCommandData {
+    SetSampleRate = 0xF3,
 }
 
 bitflags! {
@@ -78,8 +84,9 @@ pub struct Ps2 {
     data: Pio<u8>,
     status: ReadOnly<Pio<u8>>,
     command: WriteOnly<Pio<u8>>,
-    mouse: [u8; 3],
-    mouse_i: usize
+    mouse: [u8; 4],
+    mouse_i: usize,
+    mouse_extra: bool
 }
 
 impl Ps2 {
@@ -88,8 +95,9 @@ impl Ps2 {
             data: Pio::new(0x60),
             status: ReadOnly::new(Pio::new(0x64)),
             command: WriteOnly::new(Pio::new(0x64)),
-            mouse: [0; 3],
-            mouse_i: 0
+            mouse: [0; 4],
+            mouse_i: 0,
+            mouse_extra: false
         }
     }
 
@@ -107,7 +115,7 @@ impl Ps2 {
 
     fn flush_read(&mut self) {
         while self.status().contains(OUTPUT_FULL) {
-            self.data.read();
+            print!("FLUSH: {:X}\n", self.data.read());
         }
     }
 
@@ -147,6 +155,15 @@ impl Ps2 {
         self.read()
     }
 
+    fn mouse_command_data(&mut self, command: MouseCommandData, data: u8) -> u8 {
+        self.command(Command::WriteSecond);
+        self.write(command as u8);
+        self.read();
+        self.command(Command::WriteSecond);
+        self.write(data as u8);
+        self.read()
+    }
+
     fn init(&mut self) {
         // Disable devices
         self.command(Command::DisableFirst);
@@ -175,6 +192,51 @@ impl Ps2 {
             return;
         }
 
+        // Enable devices
+        self.command(Command::EnableFirst);
+        self.command(Command::EnableSecond);
+
+        // Reset and enable scanning on keyboard
+        // TODO: Check for ack
+        print!("KEYBOARD RESET {:X}\n", self.keyboard_command(KeyboardCommand::Reset));
+        print!("KEYBOARD RESET RESULT {:X} == 0xAA\n", self.read());
+        self.flush_read();
+
+        // Reset and enable scanning on mouse
+        // TODO: Check for ack
+        print!("MOUSE RESET {:X}\n", self.mouse_command(MouseCommand::Reset));
+        print!("MOUSE RESET RESULT {:X} == 0xAA\n", self.read());
+        print!("MOUSE RESET ID {:X} == 0x00\n", self.read());
+        self.flush_read();
+
+        // Enable extra packet on mouse
+        print!("SAMPLE 200 {:X}\n", self.mouse_command_data(MouseCommandData::SetSampleRate, 200));
+        print!("SAMPLE 100 {:X}\n", self.mouse_command_data(MouseCommandData::SetSampleRate, 100));
+        print!("SAMPLE 80 {:X}\n", self.mouse_command_data(MouseCommandData::SetSampleRate, 80));
+        print!("GET ID {:X}\n", self.mouse_command(MouseCommand::GetDeviceId));
+        let mouse_id = self.read();
+        print!("MOUSE ID: {:X} == 0x03\n", mouse_id);
+        self.mouse_extra = mouse_id == 3;
+
+        // Enable extra buttons, TODO
+        /*
+        if self.mouse_extra {
+            print!("SAMPLE 200 {:X}\n", self.mouse_command_data(MouseCommandData::SetSampleRate, 200));
+            print!("SAMPLE 200 {:X}\n", self.mouse_command_data(MouseCommandData::SetSampleRate, 200));
+            print!("SAMPLE 80 {:X}\n", self.mouse_command_data(MouseCommandData::SetSampleRate, 80));
+            print!("GET ID {:X}\n", self.mouse_command(MouseCommand::GetDeviceId));
+            let mouse_id = self.read();
+            print!("MOUSE ID: {:X} == 0x04\n", mouse_id);
+        }
+        */
+
+        // Set sample rate to maximum
+        print!("SAMPLE 200 {:X}\n", self.mouse_command_data(MouseCommandData::SetSampleRate, 200));
+
+        // Enable data reporting
+        print!("KEYBOARD ENABLE {:X}\n", self.keyboard_command(KeyboardCommand::EnableReporting));
+        print!("MOUSE ENABLE {:X}\n", self.mouse_command(MouseCommand::EnableReporting));
+
         // Enable clocks and interrupts
         {
             let mut config = self.config();
@@ -184,21 +246,6 @@ impl Ps2 {
             config.insert(SECOND_INTERRUPT);
             self.set_config(config);
         }
-
-        // Enable devices
-        self.command(Command::EnableFirst);
-        self.command(Command::EnableSecond);
-
-        // Reset and enable scanning on keyboard
-        // TODO: Check for ack
-        self.keyboard_command(KeyboardCommand::Reset);
-        self.keyboard_command(KeyboardCommand::EnableReporting);
-
-        // Reset and enable scanning on mouse
-        // TODO: Check for ack
-        self.mouse_command(MouseCommand::Reset);
-        self.mouse_command(MouseCommand::EnableReporting);
-
     }
 
     pub fn on_keyboard(&mut self) {
@@ -209,7 +256,7 @@ impl Ps2 {
     pub fn on_mouse(&mut self) {
         self.mouse[self.mouse_i] = self.data.read();
         self.mouse_i += 1;
-        if self.mouse_i >= self.mouse.len() {
+        if self.mouse_i >= self.mouse.len() || (!self.mouse_extra && self.mouse_i >= 3) {
             self.mouse_i = 0;
 
             let flags = MousePacketFlags::from_bits_truncate(self.mouse[0]);
@@ -224,7 +271,13 @@ impl Ps2 {
                 y -= 0x100;
             }
 
-            print!("MOUSE {}, {}, {:?}\n", x, y, flags);
+            let extra = if self.mouse_extra {
+                self.mouse[3]
+            } else {
+                0
+            };
+
+            print!("MOUSE {:?}, {}, {}, {}\n", flags, x, y, extra);
         }
     }
 }
