@@ -15,11 +15,6 @@ unsafe fn slave_ack() {
 }
 
 interrupt!(pit, {
-    io::outb(0x43, 0);
-    let low = io::inb(0x40);
-    let high = io::inb(0x40);
-    let count = (high as u16) << 8 | (low as u16);
-    let _missed = 5370 - count;
     master_ack();
 });
 
