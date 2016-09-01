@@ -1,10 +1,45 @@
 use core::{cmp, slice};
-use ransid::Console;
+use ransid::{Console, Event};
 use spin::Mutex;
 
-use externs::memset;
 use memory::Frame;
 use paging::{ActivePageTable, PhysicalAddress, entry};
+
+#[cfg(target_arch = "x86_64")]
+#[allow(unused_assignments)]
+#[inline(always)]
+unsafe fn fast_copy64(dst: *mut u64, src: *const u64, len: usize) {
+    asm!("cld
+        rep movsq"
+        :
+        : "{rdi}"(dst as usize), "{rsi}"(src as usize), "{rcx}"(len)
+        : "cc", "memory"
+        : "intel", "volatile");
+}
+
+#[cfg(target_arch = "x86_64")]
+#[allow(unused_assignments)]
+#[inline(always)]
+unsafe fn fast_set(dst: *mut u32, src: u32, len: usize) {
+    asm!("cld
+        rep stosd"
+        :
+        : "{rdi}"(dst as usize), "{eax}"(src), "{rcx}"(len)
+        : "cc", "memory"
+        : "intel", "volatile");
+}
+
+#[cfg(target_arch = "x86_64")]
+#[allow(unused_assignments)]
+#[inline(always)]
+unsafe fn fast_set64(dst: *mut u64, src: u64, len: usize) {
+    asm!("cld
+        rep stosq"
+        :
+        : "{rdi}"(dst as usize), "{rax}"(src), "{rcx}"(len)
+        : "cc", "memory"
+        : "intel", "volatile");
+}
 
 /// The info of the VBE mode
 #[derive(Copy, Clone, Default, Debug)]
@@ -44,7 +79,10 @@ pub struct VBEModeInfo {
     offscreenmemsize: u16,
 }
 
-pub static DISPLAY: Mutex<Option<Display>> = Mutex::new(None);
+pub static CONSOLE: Mutex<Option<Console>> = Mutex::new(None);
+
+pub static DISPLAY: Mutex<Option<Display<'static>>> = Mutex::new(None);
+
 static FONT: &'static [u8] = include_bytes!("../../../../res/unifont.font");
 
 pub unsafe fn init(active_table: &mut ActivePageTable) {
@@ -54,20 +92,21 @@ pub unsafe fn init(active_table: &mut ActivePageTable) {
     if mode_info.physbaseptr > 0 {
         let width = mode_info.xresolution as usize;
         let height = mode_info.yresolution as usize;
-        let start = mode_info.physbaseptr as usize;
+        let onscreen = mode_info.physbaseptr as usize;
         let size = width * height;
 
         {
-            let start_frame = Frame::containing_address(PhysicalAddress::new(start));
-            let end_frame = Frame::containing_address(PhysicalAddress::new(start + size * 4 - 1));
+            let start_frame = Frame::containing_address(PhysicalAddress::new(onscreen));
+            let end_frame = Frame::containing_address(PhysicalAddress::new(onscreen + size * 4 - 1));
             for frame in Frame::range_inclusive(start_frame, end_frame) {
                 active_table.identity_map(frame, entry::PRESENT | entry::WRITABLE | entry::NO_EXECUTE);
             }
         }
 
-        memset(start as *mut u8, 0, size * 4);
+        fast_set64(onscreen as *mut u64, 0, size/2);
 
-        *DISPLAY.lock() = Some(Display::new(width, height, slice::from_raw_parts_mut(start as *mut u32, size)));
+        *CONSOLE.lock() = Some(Console::new(width/8, height/16));
+        *DISPLAY.lock() = Some(Display::new(width, height, slice::from_raw_parts_mut(onscreen as *mut u32, size)));
     }
 }
 
@@ -92,20 +131,18 @@ pub unsafe fn init_ap(active_table: &mut ActivePageTable) {
 }
 
 /// A display
-pub struct Display {
+pub struct Display<'a> {
     pub width: usize,
     pub height: usize,
-    pub data: &'static mut [u32],
-    console: Console,
+    pub data: &'a mut [u32],
 }
 
-impl Display {
-    fn new(width: usize, height: usize, data: &'static mut [u32]) -> Self {
+impl<'a> Display<'a> {
+    fn new<'data>(width: usize, height: usize, data: &'data mut [u32]) -> Display<'data> {
         Display {
             width: width,
             height: height,
             data: data,
-            console: Console::new(width/8, height/16)
         }
     }
 
@@ -114,14 +151,15 @@ impl Display {
         let start_y = cmp::min(self.height - 1, y);
         let end_y = cmp::min(self.height, y + h);
 
-        let start_x = cmp::min(self.width - 1, x);
-        let len = cmp::min(self.width, x + w) - start_x;
+        let mut start_x = cmp::min(self.width - 1, x);
+        let mut len = cmp::min(self.width, x + w) - start_x;
 
+        let width = self.width;
+        let data_ptr = self.data.as_mut_ptr();
         for y in start_y..end_y {
             let offset = y * self.width + start_x;
-            let row = &mut self.data[offset..offset + len];
-            for pixel in row.iter_mut() {
-                *pixel = color;
+            unsafe {
+                fast_set(data_ptr.offset(offset as isize), color, len);
             }
         }
     }
@@ -147,35 +185,34 @@ impl Display {
         }
     }
 
-    pub fn write(&mut self, bytes: &[u8]) {
-        self.console.write(bytes);
-        if self.console.redraw {
-            self.console.redraw = false;
+    /// Scroll display
+    pub fn scroll(&mut self, rows: usize, color: u32) {
+        let data = (color as u64) << 32 | color as u64;
 
-            for y in 0..self.console.h {
-                if self.console.changed[y] {
-                    self.console.changed[y] = false;
+        let width = self.width/2;
+        let height = self.height;
+        if rows > 0 && rows < height {
+            let off1 = rows * width;
+            let off2 = height * width - off1;
+            unsafe {
+                let data_ptr = self.data.as_mut_ptr() as *mut u64;
+                fast_copy64(data_ptr, data_ptr.offset(off1 as isize), off2);
+                fast_set64(data_ptr.offset(off2 as isize), data, off1);
+            }
+        }
+    }
 
-                    for x in 0..self.console.w {
-                        let block = self.console.display[y * self.console.w + x];
-
-                        let (bg, fg) = if self.console.cursor && self.console.y == y && self.console.x == x {
-                            (block.fg.data, block.bg.data)
-                        }else{
-                            (block.bg.data, block.fg.data)
-                        };
-
-                        self.rect(x * 8, y * 16, 8, 16, bg);
-
-                        if block.c != ' ' {
-                            self.char(x * 8, y * 16, block.c, fg);
-                        }
-
-                        if block.underlined {
-                            self.rect(x * 8, y * 16 + 14, 8, 1, fg);
-                        }
-                    }
-                }
+    /// Handle ransid event
+    pub fn event(&mut self, event: Event) {
+        match event {
+            Event::Char { x, y, c, color, .. } => {
+                self.char(x * 8, y * 16, c, color.data);
+            },
+            Event::Rect { x, y, w, h, color } => {
+                self.rect(x * 8, y * 16, w * 8, h * 16, color.data);
+            },
+            Event::Scroll { rows, color } => {
+                self.scroll(rows * 16, color.data);
             }
         }
     }

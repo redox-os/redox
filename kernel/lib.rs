@@ -133,6 +133,7 @@ pub extern fn kmain() {
     let pid = syscall::getpid();
     println!("BSP: {:?}", pid);
 
+    /*
     if let Ok(_context_lock) = context::contexts_mut().spawn(context_test) {
         print!("Spawned context\n");
     }
@@ -141,6 +142,8 @@ pub extern fn kmain() {
     unsafe { context::switch(); }
 
     print!("Main halt\n");
+    */
+    
     loop {
         unsafe { interrupt::enable_and_halt(); }
     }

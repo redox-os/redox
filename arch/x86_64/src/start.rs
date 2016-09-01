@@ -127,7 +127,7 @@ pub unsafe extern fn kstart() -> ! {
         device::init(&mut active_table);
 
         // Read ACPI tables, starts APs
-        acpi::init(&mut active_table);
+        // acpi::init(&mut active_table);
 
         BSP_READY.store(true, Ordering::SeqCst);
     }

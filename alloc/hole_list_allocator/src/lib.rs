@@ -13,7 +13,7 @@ extern crate linked_list_allocator;
 extern crate lazy_static;
 
 pub const HEAP_START: usize = 0xffff_ff00_0000_0000; // Put at end of memory, below the recursive page mapping
-pub const HEAP_SIZE: usize = 16 * 1024 * 1024; // 16 MB
+pub const HEAP_SIZE: usize = 64 * 1024 * 1024; // 128 MB
 
 lazy_static! {
     static ref HEAP: Mutex<Heap> = Mutex::new(unsafe {
