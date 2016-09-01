@@ -1,5 +1,7 @@
 use x86::io;
 
+use device::ps2::PS2;
+
 #[inline(always)]
 unsafe fn master_ack() {
     io::outb(0x20, 0x20);
@@ -21,8 +23,7 @@ interrupt!(pit, {
 });
 
 interrupt!(keyboard, {
-    let data = io::inb(0x60);
-    print!("KEYBOARD {:X}\n", data);
+    PS2.lock().on_keyboard();
     master_ack();
 });
 
@@ -77,8 +78,7 @@ interrupt!(pci3, {
 });
 
 interrupt!(mouse, {
-    let data = io::inb(0x60);
-    print!("MOUSE {:X}\n", data);
+    PS2.lock().on_mouse();
     slave_ack();
 });
 
