@@ -7,7 +7,7 @@ use core::sync::atomic::{AtomicBool, ATOMIC_BOOL_INIT, AtomicUsize, ATOMIC_USIZE
 
 use acpi;
 use allocator::{HEAP_START, HEAP_SIZE};
-use display;
+use device;
 use externs::memset;
 use gdt;
 use idt;
@@ -92,16 +92,10 @@ pub unsafe extern fn kstart() -> ! {
             assert_eq!(TDATA_TEST_NONZERO, 0xFFFFFFFFFFFFFFFE);
         }
 
-        // Initialize display
-        display::init(&mut active_table);
-
         // Reset AP variables
         AP_COUNT.store(0, Ordering::SeqCst);
         BSP_READY.store(false, Ordering::SeqCst);
         HEAP_FRAME.store(0, Ordering::SeqCst);
-
-        // Read ACPI tables, starts APs
-        acpi::init(&mut active_table);
 
         // Map heap
         {
@@ -128,6 +122,12 @@ pub unsafe extern fn kstart() -> ! {
                 active_table.map(page, entry::WRITABLE | entry::NO_EXECUTE);
             }
         }
+
+        // Initialize devices
+        device::init(&mut active_table);
+
+        // Read ACPI tables, starts APs
+        acpi::init(&mut active_table);
 
         BSP_READY.store(true, Ordering::SeqCst);
     }
@@ -184,6 +184,9 @@ pub unsafe extern fn kstart_ap(stack_start: usize, stack_end: usize) -> ! {
                 entry.set(frame, entry::PRESENT | entry::WRITABLE);
             }
         }
+
+        // Init devices for AP
+        device::init_ap(&mut active_table);
     }
 
     let ap_number = AP_COUNT.fetch_add(1, Ordering::SeqCst);

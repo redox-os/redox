@@ -7,10 +7,12 @@ pub trait Io {
     fn read(&self) -> Self::Value;
     fn write(&mut self, value: Self::Value);
 
+    #[inline(always)]
     fn readf(&self, flags: Self::Value) -> bool  {
         (self.read() & flags) as Self::Value == flags
     }
 
+    #[inline(always)]
     fn writef(&mut self, flags: Self::Value, value: bool) {
         let tmp: Self::Value = match value {
             true => self.read() | flags,
@@ -25,16 +27,18 @@ pub struct ReadOnly<I: Io> {
 }
 
 impl<I: Io> ReadOnly<I> {
-    pub fn new(inner: I) -> ReadOnly<I> {
+    pub const fn new(inner: I) -> ReadOnly<I> {
         ReadOnly {
             inner: inner
         }
     }
 
+    #[inline(always)]
     pub fn read(&self) -> I::Value {
         self.inner.read()
     }
 
+    #[inline(always)]
     pub fn readf(&self, flags: I::Value) -> bool {
         self.inner.readf(flags)
     }
@@ -45,16 +49,18 @@ pub struct WriteOnly<I: Io> {
 }
 
 impl<I: Io> WriteOnly<I> {
-    pub fn new(inner: I) -> WriteOnly<I> {
+    pub const fn new(inner: I) -> WriteOnly<I> {
         WriteOnly {
             inner: inner
         }
     }
 
+    #[inline(always)]
     pub fn write(&mut self, value: I::Value) {
         self.inner.write(value)
     }
 
+    #[inline(always)]
     pub fn writef(&mut self, flags: I::Value, value: bool) {
         self.inner.writef(flags, value)
     }

@@ -4,6 +4,7 @@
 #![feature(concat_idents)]
 #![feature(const_fn)]
 #![feature(core_intrinsics)]
+#![feature(drop_types_in_const)]
 #![feature(lang_items)]
 #![feature(naked_functions)]
 #![feature(thread_local)]
@@ -13,6 +14,7 @@
 extern crate hole_list_allocator as allocator;
 #[macro_use]
 extern crate bitflags;
+extern crate ransid;
 extern crate spin;
 extern crate x86;
 
@@ -21,7 +23,7 @@ extern crate x86;
 macro_rules! print {
     ($($arg:tt)*) => ({
         use core::fmt::Write;
-        let _ = write!($crate::serial::SerialConsole, $($arg)*);
+        let _ = write!($crate::console::CONSOLE.lock(), $($arg)*);
     });
 }
 
@@ -44,8 +46,7 @@ macro_rules! interrupt {
             }
 
             // Push scratch registers
-            asm!("xchg bx, bx
-                push rax
+            asm!("push rax
                 push rcx
                 push rdx
                 push rdi
@@ -86,8 +87,7 @@ macro_rules! interrupt_error {
             }
 
             // Push scratch registers
-            asm!("xchg bx, bx
-                push rax
+            asm!("push rax
                 push rcx
                 push rdx
                 push rdi
@@ -121,11 +121,14 @@ macro_rules! interrupt_error {
 /// ACPI table parsing
 pub mod acpi;
 
+/// Console handling
+pub mod console;
+
 /// Context switching
 pub mod context;
 
-/// Display handling
-pub mod display;
+/// Devices
+pub mod device;
 
 /// Memcpy, memmove, etc.
 pub mod externs;
@@ -150,9 +153,6 @@ pub mod paging;
 
 /// Panic
 pub mod panic;
-
-/// Serial driver and print! support
-pub mod serial;
 
 /// Initialization and start function
 pub mod start;

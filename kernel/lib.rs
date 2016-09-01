@@ -97,11 +97,7 @@ extern crate collections;
 #[macro_use]
 extern crate bitflags;
 extern crate goblin;
-extern crate ransid;
 extern crate spin;
-
-/// Console
-pub mod console;
 
 /// Context management
 pub mod context;
@@ -134,9 +130,10 @@ pub extern fn context_test() {
 pub extern fn kmain() {
     context::init();
 
-    print!("{}", format!("BSP: {:?}\n", syscall::getpid()));
+    let pid = syscall::getpid();
+    println!("BSP: {:?}", pid);
 
-    if let Ok(context_lock) = context::contexts_mut().spawn(context_test) {
+    if let Ok(_context_lock) = context::contexts_mut().spawn(context_test) {
         print!("Spawned context\n");
     }
 
@@ -153,7 +150,8 @@ pub extern fn kmain() {
 pub extern fn kmain_ap(id: usize) {
     context::init();
 
-    print!("{}", format!("AP {}: {:?}\n", id, syscall::getpid()));
+    let pid = syscall::getpid();
+    println!("AP {}: {:?}", id, pid);
 
     loop {
         unsafe { interrupt::enable_and_halt() }
