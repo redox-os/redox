@@ -43,6 +43,7 @@ pub struct VBEModeInfo {
 }
 
 pub static DISPLAY: Mutex<Option<Display>> = Mutex::new(None);
+static FONT: &'static [u8] = include_bytes!("../../../../res/unifont.font");
 
 pub unsafe fn init(active_table: &mut ActivePageTable) {
     active_table.identity_map(Frame::containing_address(PhysicalAddress::new(0x5200)), entry::PRESENT | entry::NO_EXECUTE);
@@ -108,6 +109,7 @@ impl Display {
         }
     }
 
+    /// Draw a rectangle
     pub fn rect(&mut self, x: usize, y: usize, w: usize, h: usize, color: u32) {
         let start_y = cmp::min(self.height - 1, y);
         let end_y = cmp::min(self.height, y + h);
@@ -120,6 +122,27 @@ impl Display {
             let row = &mut self.data[offset..offset + len];
             for pixel in row.iter_mut() {
                 *pixel = color;
+            }
+        }
+    }
+
+    /// Draw a character
+    pub fn char(&mut self, x: usize, y: usize, character: char, color: u32) {
+        if x + 8 <= self.width && y + 16 <= self.height {
+            let mut offset = y * self.width + x;
+
+            let font_i = 16 * (character as usize);
+            if font_i + 16 <= FONT.len() {
+                for row in 0..16 {
+                    let row_data = FONT[font_i + row];
+                    for col in 0..8 {
+                        if (row_data >> (7 - col)) & 1 == 1 {
+                            self.data[offset + col] = color;
+                        }
+                    }
+
+                    offset += self.width;
+                }
             }
         }
     }

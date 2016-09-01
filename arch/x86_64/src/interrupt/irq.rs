@@ -1,6 +1,7 @@
 use x86::io;
 
 use device::ps2::PS2;
+use device::serial::{COM1, COM2};
 
 #[inline(always)]
 unsafe fn master_ack() {
@@ -33,12 +34,12 @@ interrupt!(cascade, {
 });
 
 interrupt!(com2, {
-    print!("COM2\n");
+    COM2.lock().on_receive();
     master_ack();
 });
 
 interrupt!(com1, {
-    print!("COM1\n");
+    COM1.lock().on_receive();
     master_ack();
 });
 

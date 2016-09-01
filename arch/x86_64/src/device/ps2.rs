@@ -15,6 +15,10 @@ bitflags! {
         const INPUT_FULL = 1 << 1,
         const SYSTEM = 1 << 2,
         const COMMAND = 1 << 3,
+        // Chipset specific
+        const KEYBOARD_LOCK = 1 << 4,
+        // Chipset specific
+        const SECOND_OUTPUT_FULL = 1 << 5,
         const TIME_OUT = 1 << 6,
         const PARITY = 1 << 7
     }
@@ -26,10 +30,12 @@ bitflags! {
         const SECOND_INTERRUPT = 1 << 1,
         const POST_PASSED = 1 << 2,
         // 1 << 3 should be zero
+        const CONFIG_RESERVED_3 = 1 << 3,
         const FIRST_DISABLED = 1 << 4,
         const SECOND_DISABLED = 1 << 5,
         const FIRST_TRANSLATE = 1 << 6,
         // 1 << 7 should be zero
+        const CONFIG_RESERVED_7 = 1 << 7,
     }
 }
 

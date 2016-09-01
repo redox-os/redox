@@ -21,7 +21,7 @@ extern crate x86;
 macro_rules! print {
     ($($arg:tt)*) => ({
         use core::fmt::Write;
-        let _ = write!($crate::serial::SerialConsole, $($arg)*);
+        let _ = write!($crate::device::serial::SerialConsole, $($arg)*);
     });
 }
 
@@ -148,9 +148,6 @@ pub mod paging;
 
 /// Panic
 pub mod panic;
-
-/// Serial driver and print! support
-pub mod serial;
 
 /// Initialization and start function
 pub mod start;
