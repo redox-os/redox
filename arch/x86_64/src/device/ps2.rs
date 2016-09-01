@@ -297,7 +297,7 @@ impl Ps2 {
                 self.mouse_x = cmp::max(0, cmp::min(display.width as isize - 1, self.mouse_x as isize + dx)) as usize;
                 self.mouse_y = cmp::max(0, cmp::min(display.height as isize - 1, self.mouse_y as isize - dy)) as usize;
                 let offset = self.mouse_y * display.width + self.mouse_x;
-                display.data[offset as usize] = 0xFF0000;
+                display.onscreen[offset as usize] = 0xFF0000;
             }
         }
     }

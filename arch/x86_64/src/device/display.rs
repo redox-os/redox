@@ -8,6 +8,7 @@ use paging::{ActivePageTable, PhysicalAddress, entry};
 #[cfg(target_arch = "x86_64")]
 #[allow(unused_assignments)]
 #[inline(always)]
+#[cold]
 unsafe fn fast_copy64(dst: *mut u64, src: *const u64, len: usize) {
     asm!("cld
         rep movsq"
@@ -20,6 +21,7 @@ unsafe fn fast_copy64(dst: *mut u64, src: *const u64, len: usize) {
 #[cfg(target_arch = "x86_64")]
 #[allow(unused_assignments)]
 #[inline(always)]
+#[cold]
 unsafe fn fast_set(dst: *mut u32, src: u32, len: usize) {
     asm!("cld
         rep stosd"
@@ -32,6 +34,7 @@ unsafe fn fast_set(dst: *mut u32, src: u32, len: usize) {
 #[cfg(target_arch = "x86_64")]
 #[allow(unused_assignments)]
 #[inline(always)]
+#[cold]
 unsafe fn fast_set64(dst: *mut u64, src: u64, len: usize) {
     asm!("cld
         rep stosq"
@@ -81,7 +84,7 @@ pub struct VBEModeInfo {
 
 pub static CONSOLE: Mutex<Option<Console>> = Mutex::new(None);
 
-pub static DISPLAY: Mutex<Option<Display<'static>>> = Mutex::new(None);
+pub static DISPLAY: Mutex<Option<Display>> = Mutex::new(None);
 
 static FONT: &'static [u8] = include_bytes!("../../../../res/unifont.font");
 
@@ -105,8 +108,14 @@ pub unsafe fn init(active_table: &mut ActivePageTable) {
 
         fast_set64(onscreen as *mut u64, 0, size/2);
 
+        let offscreen = ::allocator::__rust_allocate(size * 4, 8);
+        fast_set64(offscreen as *mut u64, 0, size/2);
+
         *CONSOLE.lock() = Some(Console::new(width/8, height/16));
-        *DISPLAY.lock() = Some(Display::new(width, height, slice::from_raw_parts_mut(onscreen as *mut u32, size)));
+        *DISPLAY.lock() = Some(Display::new(width, height,
+            slice::from_raw_parts_mut(onscreen as *mut u32, size),
+            slice::from_raw_parts_mut(offscreen as *mut u32, size)
+        ));
     }
 }
 
@@ -131,18 +140,20 @@ pub unsafe fn init_ap(active_table: &mut ActivePageTable) {
 }
 
 /// A display
-pub struct Display<'a> {
+pub struct Display {
     pub width: usize,
     pub height: usize,
-    pub data: &'a mut [u32],
+    pub onscreen: &'static mut [u32],
+    pub offscreen: &'static mut [u32],
 }
 
-impl<'a> Display<'a> {
-    fn new<'data>(width: usize, height: usize, data: &'data mut [u32]) -> Display<'data> {
+impl Display {
+    fn new(width: usize, height: usize, onscreen: &'static mut [u32], offscreen: &'static mut [u32]) -> Display {
         Display {
             width: width,
             height: height,
-            data: data,
+            onscreen: onscreen,
+            offscreen: offscreen,
         }
     }
 
@@ -151,35 +162,65 @@ impl<'a> Display<'a> {
         let start_y = cmp::min(self.height - 1, y);
         let end_y = cmp::min(self.height, y + h);
 
-        let mut start_x = cmp::min(self.width - 1, x);
-        let mut len = cmp::min(self.width, x + w) - start_x;
+        let start_x = cmp::min(self.width - 1, x);
+        let len = cmp::min(self.width, x + w) - start_x;
 
-        let width = self.width;
-        let data_ptr = self.data.as_mut_ptr();
-        for y in start_y..end_y {
-            let offset = y * self.width + start_x;
+        let mut offscreen_ptr = self.offscreen.as_mut_ptr() as usize;
+        let mut onscreen_ptr = self.onscreen.as_mut_ptr() as usize;
+
+        let stride = self.width * 4;
+
+        let offset = y * stride + start_x * 4;
+        offscreen_ptr += offset;
+        onscreen_ptr += offset;
+
+        let mut rows = end_y - start_y;
+        while rows > 0 {
             unsafe {
-                fast_set(data_ptr.offset(offset as isize), color, len);
+                fast_set(offscreen_ptr as *mut u32, color, len);
+                fast_set(onscreen_ptr as *mut u32, color, len);
             }
+            offscreen_ptr += stride;
+            onscreen_ptr += stride;
+            rows -= 1;
         }
     }
 
     /// Draw a character
     fn char(&mut self, x: usize, y: usize, character: char, color: u32) {
         if x + 8 <= self.width && y + 16 <= self.height {
-            let mut offset = y * self.width + x;
+            let mut font_i = 16 * (character as usize);
+            let font_end = font_i + 16;
+            if font_end <= FONT.len() {
+                let mut offscreen_ptr = self.offscreen.as_mut_ptr() as usize;
+                let mut onscreen_ptr = self.onscreen.as_mut_ptr() as usize;
 
-            let font_i = 16 * (character as usize);
-            if font_i + 16 <= FONT.len() {
-                for row in 0..16 {
-                    let row_data = FONT[font_i + row];
-                    for col in 0..8 {
-                        if (row_data >> (7 - col)) & 1 == 1 {
-                            self.data[offset + col] = color;
+                let stride = self.width * 4;
+
+                let offset = y * stride + x * 4;
+                offscreen_ptr += offset;
+                onscreen_ptr += offset;
+
+                while font_i < font_end {
+                    let mut row_data = FONT[font_i];
+                    let mut col = 8;
+                    while col > 0 {
+                        col -= 1;
+                        if row_data & 1 == 1 {
+                            unsafe {
+                                *((offscreen_ptr + col * 4) as *mut u32) = color;
+                            }
                         }
+                        row_data = row_data >> 1;
                     }
 
-                    offset += self.width;
+                    unsafe {
+                        fast_copy64(onscreen_ptr as *mut u64, offscreen_ptr as *const u64, 4);
+                    }
+
+                    offscreen_ptr += stride;
+                    onscreen_ptr += stride;
+                    font_i += 1;
                 }
             }
         }
@@ -195,9 +236,11 @@ impl<'a> Display<'a> {
             let off1 = rows * width;
             let off2 = height * width - off1;
             unsafe {
-                let data_ptr = self.data.as_mut_ptr() as *mut u64;
+                let data_ptr = self.offscreen.as_mut_ptr() as *mut u64;
                 fast_copy64(data_ptr, data_ptr.offset(off1 as isize), off2);
                 fast_set64(data_ptr.offset(off2 as isize), data, off1);
+
+                fast_copy64(self.onscreen.as_mut_ptr() as *mut u64, data_ptr, off1 + off2);
             }
         }
     }

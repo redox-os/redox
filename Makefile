@@ -3,6 +3,9 @@ ARCH?=x86_64
 QEMU=qemu-system-$(ARCH)
 QEMUFLAGS=-serial mon:stdio -d guest_errors
 
+RUSTCFLAGS=--target $(ARCH)-unknown-none.json -O -C soft-float
+CARGOFLAGS=--target $(ARCH)-unknown-none.json -- -O -C soft-float
+
 ifeq ($(ARCH),arm)
 	LD=$(ARCH)-none-eabi-ld
 	QEMUFLAGS+=-cpu arm1176 -machine integratorcp
@@ -34,23 +37,23 @@ FORCE:
 
 build/libcore.rlib: rust/src/libcore/lib.rs
 	mkdir -p build
-	./rustc.sh --target $(ARCH)-unknown-none.json -C soft-float -o $@ $<
+	./rustc.sh $(RUSTCFLAGS) -o $@ $<
 
 build/liballoc.rlib: rust/src/liballoc/lib.rs build/libcore.rlib
 	mkdir -p build
-	./rustc.sh --target $(ARCH)-unknown-none.json -C soft-float -o $@ $<
+	./rustc.sh $(RUSTCFLAGS) -o $@ $<
 
 build/librustc_unicode.rlib: rust/src/librustc_unicode/lib.rs build/libcore.rlib
 	mkdir -p build
-	./rustc.sh --target $(ARCH)-unknown-none.json -C soft-float -o $@ $<
+	./rustc.sh $(RUSTCFLAGS) -o $@ $<
 
 build/libcollections.rlib: rust/src/libcollections/lib.rs build/libcore.rlib build/liballoc.rlib build/librustc_unicode.rlib
 	mkdir -p build
-	./rustc.sh --target $(ARCH)-unknown-none.json -C soft-float -o $@ $<
+	./rustc.sh $(RUSTCFLAGS) -o $@ $<
 
 build/libkernel.a: build/libcore.rlib build/liballoc.rlib build/libcollections.rlib FORCE
 	mkdir -p build
-	RUSTC="./rustc.sh" cargo rustc --target $(ARCH)-unknown-none.json -- -C soft-float -o $@
+	RUSTC="./rustc.sh" cargo rustc $(CARGOFLAGS) -o $@
 
 build/kernel.bin: build/libkernel.a
 	$(LD) --gc-sections -z max-page-size=0x1000 -T arch/$(ARCH)/src/linker.ld -o $@ $<
