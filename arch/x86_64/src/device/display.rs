@@ -108,14 +108,14 @@ pub unsafe fn init(active_table: &mut ActivePageTable) {
 
         fast_set64(onscreen as *mut u64, 0, size/2);
 
-        let offscreen = ::allocator::__rust_allocate(size * 4, 8);
+        let offscreen = ::allocator::__rust_allocate(size * 4, 4096);
         fast_set64(offscreen as *mut u64, 0, size/2);
 
-        *CONSOLE.lock() = Some(Console::new(width/8, height/16));
         *DISPLAY.lock() = Some(Display::new(width, height,
             slice::from_raw_parts_mut(onscreen as *mut u32, size),
             slice::from_raw_parts_mut(offscreen as *mut u32, size)
         ));
+        *CONSOLE.lock() = Some(Console::new(width/8, height/16));
     }
 }
 
@@ -133,7 +133,7 @@ pub unsafe fn init_ap(active_table: &mut ActivePageTable) {
             let start_frame = Frame::containing_address(PhysicalAddress::new(start));
             let end_frame = Frame::containing_address(PhysicalAddress::new(start + size * 4 - 1));
             for frame in Frame::range_inclusive(start_frame, end_frame) {
-                active_table.identity_map(frame, entry::PRESENT | entry::WRITABLE | entry::NO_EXECUTE);
+                active_table.identity_map(frame, /*actually sets PAT for write combining*/ entry::HUGE_PAGE | entry::PRESENT | entry::WRITABLE | entry::NO_EXECUTE);
             }
         }
     }
