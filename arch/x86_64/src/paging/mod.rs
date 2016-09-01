@@ -92,7 +92,7 @@ pub unsafe fn init(stack_start: usize, stack_end: usize) -> ActivePageTable {
     let uncacheable = 0;
     let write_combining = 1;
     let write_through = 4;
-    let write_protected = 5;
+    //let write_protected = 5;
     let write_back = 6;
     let uncached = 7;
 

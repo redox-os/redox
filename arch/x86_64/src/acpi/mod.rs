@@ -2,11 +2,12 @@
 //! Code to parse the ACPI tables
 
 use core::intrinsics::{atomic_load, atomic_store};
+use core::sync::atomic::Ordering;
 
 use interrupt;
 use memory::{allocate_frame, Frame};
 use paging::{entry, ActivePageTable, Page, PhysicalAddress, VirtualAddress};
-use start::kstart_ap;
+use start::{kstart_ap, AP_READY};
 
 use self::local_apic::{LocalApic, LocalApicIcr};
 use self::madt::{Madt, MadtEntry};
@@ -40,10 +41,10 @@ pub fn init_sdt(sdt: &'static Sdt, active_table: &mut ActivePageTable) {
         for madt_entry in madt.iter() {
             println!("      {:?}", madt_entry);
             match madt_entry {
-                MadtEntry::LocalApic(asp_local_apic) => if asp_local_apic.id == me {
+                MadtEntry::LocalApic(ap_local_apic) => if ap_local_apic.id == me {
                     println!("        This is my local APIC");
                 } else {
-                    if asp_local_apic.flags & 1 == 1 {
+                    if ap_local_apic.flags & 1 == 1 {
                         // Map trampoline
                         {
                             if active_table.translate_page(Page::containing_address(VirtualAddress::new(TRAMPOLINE))).is_none() {
@@ -69,28 +70,33 @@ pub fn init_sdt(sdt: &'static Sdt, active_table: &mut ActivePageTable) {
                         unsafe { atomic_store(ap_stack_start, stack_start as u64) };
                         unsafe { atomic_store(ap_stack_end, stack_end as u64) };
                         unsafe { atomic_store(ap_code, kstart_ap as u64) };
+                        AP_READY.store(false, Ordering::SeqCst);
 
                         // Send INIT IPI
                         {
-                            let icr = 0x00004500 | (asp_local_apic.id as u64) << 32;
-                            println!("        Sending IPI to {}: {:>016X} {:?}", asp_local_apic.id, icr, LocalApicIcr::from_bits(icr));
+                            let icr = 0x00004500 | (ap_local_apic.id as u64) << 32;
+                            println!("        Sending IPI to {}: {:>016X} {:?}", ap_local_apic.id, icr, LocalApicIcr::from_bits(icr));
                             local_apic.set_icr(icr);
                         }
 
                         // Send START IPI
                         {
                             let ap_segment = (AP_STARTUP >> 12) & 0xFF;
-                            let icr = 0x00004600 | ((asp_local_apic.id as u64) << 32) | ap_segment as u64; //Start at 0x0800:0000 => 0x8000. Hopefully the bootloader code is still there
-                            println!("        Sending SIPI to {}: {:>016X} {:?}", asp_local_apic.id, icr, LocalApicIcr::from_bits(icr));
+                            let icr = 0x00004600 | ((ap_local_apic.id as u64) << 32) | ap_segment as u64; //Start at 0x0800:0000 => 0x8000. Hopefully the bootloader code is still there
+                            println!("        Sending SIPI to {}: {:>016X} {:?}", ap_local_apic.id, icr, LocalApicIcr::from_bits(icr));
                             local_apic.set_icr(icr);
                         }
 
                         // Wait for trampoline ready
-                        println!("        Waiting for AP {}", asp_local_apic.id);
+                        println!("        Waiting for AP {}", ap_local_apic.id);
                         while unsafe { atomic_load(ap_ready) } == 0 {
                             interrupt::pause();
                         }
-                        println!("        AP {} is ready!", asp_local_apic.id);
+                        println!("        AP {} is trampolined!", ap_local_apic.id);
+                        while ! AP_READY.load(Ordering::SeqCst) {
+                            interrupt::pause();
+                        }
+                        println!("        AP {} is ready!", ap_local_apic.id);
                     } else {
                         println!("        CPU Disabled");
                     }

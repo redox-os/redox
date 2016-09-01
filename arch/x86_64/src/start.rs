@@ -27,6 +27,7 @@ static mut TBSS_TEST_ZERO: usize = 0;
 static mut TDATA_TEST_NONZERO: usize = 0xFFFFFFFFFFFFFFFF;
 
 static AP_COUNT: AtomicUsize = ATOMIC_USIZE_INIT;
+pub static AP_READY: AtomicBool = ATOMIC_BOOL_INIT;
 static BSP_READY: AtomicBool = ATOMIC_BOOL_INIT;
 static HEAP_FRAME: AtomicUsize = ATOMIC_USIZE_INIT;
 
@@ -94,6 +95,7 @@ pub unsafe extern fn kstart() -> ! {
 
         // Reset AP variables
         AP_COUNT.store(0, Ordering::SeqCst);
+        AP_READY.store(false, Ordering::SeqCst);
         BSP_READY.store(false, Ordering::SeqCst);
         HEAP_FRAME.store(0, Ordering::SeqCst);
 
@@ -127,7 +129,7 @@ pub unsafe extern fn kstart() -> ! {
         device::init(&mut active_table);
 
         // Read ACPI tables, starts APs
-        // acpi::init(&mut active_table);
+        acpi::init(&mut active_table);
 
         BSP_READY.store(true, Ordering::SeqCst);
     }
@@ -187,6 +189,8 @@ pub unsafe extern fn kstart_ap(stack_start: usize, stack_end: usize) -> ! {
 
         // Init devices for AP
         device::init_ap(&mut active_table);
+
+        AP_READY.store(true, Ordering::SeqCst);
     }
 
     let ap_number = AP_COUNT.fetch_add(1, Ordering::SeqCst);

@@ -24,7 +24,8 @@ extern crate x86;
 macro_rules! print {
     ($($arg:tt)*) => ({
         use core::fmt::Write;
-        let _ = write!($crate::console::CONSOLE.lock(), $($arg)*);
+        let mut console = $crate::console::CONSOLE.lock();
+        let _ = write!(console, $($arg)*);
     });
 }
 
