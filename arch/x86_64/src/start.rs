@@ -165,6 +165,9 @@ pub unsafe extern fn kstart_ap(stack_start: usize, stack_end: usize) -> ! {
             assert_eq!(TDATA_TEST_NONZERO, 0xFFFFFFFFFFFFFFFE);
         }
 
+        // Init devices for AP
+        device::init_ap(&mut active_table);
+
         // Map heap
         {
             let heap_start_page = Page::containing_address(VirtualAddress::new(HEAP_START));
@@ -190,6 +193,11 @@ pub unsafe extern fn kstart_ap(stack_start: usize, stack_end: usize) -> ! {
 
     while ! BSP_READY.load(Ordering::SeqCst) {
         interrupt::pause();
+    }
+
+    if let Some(ref mut display) = *device::display::DISPLAY.lock() {
+        let width = display.width;
+        display.rect(0, ap_number * 32, width, 16, 0xFF00);
     }
 
     kmain_ap(ap_number);

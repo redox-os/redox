@@ -285,8 +285,8 @@ impl Ps2 {
             //print!("MOUSE {:?}, {}, {}, {}\n", flags, dx, dy, extra);
 
             if let Some(ref mut display) = *super::display::DISPLAY.lock() {
-                self.mouse_x = cmp::min(display.width, cmp::max(0, self.mouse_x as isize + dx) as usize);
-                self.mouse_y = cmp::min(display.height, cmp::max(0, self.mouse_y as isize - dy) as usize);
+                self.mouse_x = cmp::max(0, cmp::min(display.width as isize - 1, self.mouse_x as isize + dx)) as usize;
+                self.mouse_y = cmp::max(0, cmp::min(display.height as isize - 1, self.mouse_y as isize - dy)) as usize;
                 let offset = self.mouse_y * display.width + self.mouse_x;
                 display.data[offset as usize] = 0xFF0000;
             }

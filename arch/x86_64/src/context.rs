@@ -51,8 +51,6 @@ impl Context {
     #[inline(never)]
     #[naked]
     pub unsafe fn switch_to(&mut self, next: &mut Context) {
-        asm!("xchg bx, bx" : : : "memory" : "intel", "volatile");
-
 /*
         asm!("fxsave [$0]" : : "r"(self.fx) : "memory" : "intel", "volatile");
         self.loadable = true;

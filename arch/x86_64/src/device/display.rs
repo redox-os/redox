@@ -1,4 +1,4 @@
-use core::slice;
+use core::{cmp, slice};
 use spin::Mutex;
 
 use memory::Frame;
@@ -72,6 +72,26 @@ pub unsafe fn init(active_table: &mut ActivePageTable) {
     }
 }
 
+pub unsafe fn init_ap(active_table: &mut ActivePageTable) {
+    active_table.identity_map(Frame::containing_address(PhysicalAddress::new(0x5200)), entry::PRESENT | entry::NO_EXECUTE);
+
+    let mode_info = &*(0x5200 as *const VBEModeInfo);
+    if mode_info.physbaseptr > 0 {
+        let width = mode_info.xresolution as usize;
+        let height = mode_info.yresolution as usize;
+        let start = mode_info.physbaseptr as usize;
+        let size = width * height;
+
+        {
+            let start_frame = Frame::containing_address(PhysicalAddress::new(start));
+            let end_frame = Frame::containing_address(PhysicalAddress::new(start + size * 4 - 1));
+            for frame in Frame::range_inclusive(start_frame, end_frame) {
+                active_table.identity_map(frame, entry::PRESENT | entry::WRITABLE | entry::NO_EXECUTE);
+            }
+        }
+    }
+}
+
 /// A display
 pub struct Display {
     pub width: usize,
@@ -85,6 +105,22 @@ impl Display {
             width: width,
             height: height,
             data: data,
+        }
+    }
+
+    pub fn rect(&mut self, x: usize, y: usize, w: usize, h: usize, color: u32) {
+        let start_y = cmp::min(self.height - 1, y);
+        let end_y = cmp::min(self.height, y + h);
+
+        let start_x = cmp::min(self.width - 1, x);
+        let len = cmp::min(self.width, x + w) - start_x;
+
+        for y in start_y..end_y {
+            let offset = y * self.width + start_x;
+            let row = &mut self.data[offset..offset + len];
+            for pixel in row.iter_mut() {
+                *pixel = color;
+            }
         }
     }
 }
