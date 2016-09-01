@@ -1,3 +1,4 @@
+use core::cmp;
 use spin::Mutex;
 
 use io::{Io, Pio, ReadOnly, WriteOnly};
@@ -86,7 +87,9 @@ pub struct Ps2 {
     command: WriteOnly<Pio<u8>>,
     mouse: [u8; 4],
     mouse_i: usize,
-    mouse_extra: bool
+    mouse_extra: bool,
+    mouse_x: usize,
+    mouse_y: usize
 }
 
 impl Ps2 {
@@ -97,7 +100,9 @@ impl Ps2 {
             command: WriteOnly::new(Pio::new(0x64)),
             mouse: [0; 4],
             mouse_i: 0,
-            mouse_extra: false
+            mouse_extra: false,
+            mouse_x: 0,
+            mouse_y: 0
         }
     }
 
@@ -261,14 +266,14 @@ impl Ps2 {
 
             let flags = MousePacketFlags::from_bits_truncate(self.mouse[0]);
 
-            let mut x = self.mouse[1] as isize;
+            let mut dx = self.mouse[1] as isize;
             if flags.contains(X_SIGN) {
-                x -= 0x100;
+                dx -= 0x100;
             }
 
-            let mut y = self.mouse[2] as isize;
+            let mut dy = self.mouse[2] as isize;
             if flags.contains(Y_SIGN) {
-                y -= 0x100;
+                dy -= 0x100;
             }
 
             let extra = if self.mouse_extra {
@@ -277,7 +282,14 @@ impl Ps2 {
                 0
             };
 
-            print!("MOUSE {:?}, {}, {}, {}\n", flags, x, y, extra);
+            //print!("MOUSE {:?}, {}, {}, {}\n", flags, dx, dy, extra);
+
+            if let Some(ref mut display) = *super::display::DISPLAY.lock() {
+                self.mouse_x = cmp::min(display.width, cmp::max(0, self.mouse_x as isize + dx) as usize);
+                self.mouse_y = cmp::min(display.height, cmp::max(0, self.mouse_y as isize - dy) as usize);
+                let offset = self.mouse_y * display.width + self.mouse_x;
+                display.data[offset as usize] = 0xFF0000;
+            }
         }
     }
 }
