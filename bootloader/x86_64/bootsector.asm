@@ -20,8 +20,6 @@ boot: ; dl comes with disk
 
     mov bh, 0
     mov bl, [disk]
-    call print_num
-    call print_line
 
     mov ax, (startup_start - boot) / 512
     mov bx, startup_start
@@ -65,31 +63,28 @@ load:
     mov [DAPACK.count], cx
     mov [DAPACK.seg], dx
 
-    mov si, loading
-    call print
-
-    mov bx, [DAPACK.addr]
-    call print_num
-
-    mov al, '#'
-    call print_char
-
-    mov bx, [DAPACK.count]
-    call print_num
-
-    mov al, ' '
-    call print_char
-
-    mov bx, [DAPACK.seg]
-    call print_num
-
-    mov al, ':'
-    call print_char
-
-    mov bx, [DAPACK.buf]
-    call print_num
-
-    call print_line
+    ; mov bx, [DAPACK.addr]
+    ; call print_num
+    ;
+    ; mov al, '#'
+    ; call print_char
+    ;
+    ; mov bx, [DAPACK.count]
+    ; call print_num
+    ;
+    ; mov al, ' '
+    ; call print_char
+    ;
+    ; mov bx, [DAPACK.seg]
+    ; call print_num
+    ;
+    ; mov al, ':'
+    ; call print_char
+    ;
+    ; mov bx, [DAPACK.buf]
+    ; call print_num
+    ;
+    ; call print_line
 
     mov dl, [disk]
     mov si, DAPACK
@@ -109,10 +104,9 @@ error:
 
 %include "print16.asm"
 
-name: db "Redox Loader",0
-loading: db "Load ",0
+name: db "Redox Loader - Stage One",0
 errored: db "Could not read disk",0
-finished: db "Finished Loading",0
+finished: db "Redox Loader - Stage Two",0
 line: db 13,10,0
 
 disk: db 0
