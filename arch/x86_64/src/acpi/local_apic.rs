@@ -5,33 +5,9 @@ use x86::msr::*;
 use memory::Frame;
 use paging::{entry, ActivePageTable, PhysicalAddress};
 
-bitflags! {
-    pub flags LocalApicIcr: u64 {
-        const ICR_VECTOR = 0xFF,
-
-        const ICR_FIXED = 0b000 << 8,
-        const ICR_SMI = 0b010 << 8,
-        const ICR_NMI = 0b100 << 8,
-        const ICR_INIT = 0b101 << 8,
-        const ICR_START = 0b110 << 8,
-
-        const ICR_PHYSICAL = 0 << 11,
-        const ICR_LOGICAL = 1 << 11,
-
-        const ICR_DEASSERT = 0 << 14,
-        const ICR_ASSERT = 1 << 14,
-
-        const ICR_EDGE = 0 << 15,
-        const ICR_LEVEL = 1 << 15,
-
-        const ICR_DESTINATION = 0b1111 << 56,
-    }
-}
-
 /// Local APIC
-#[repr(packed)]
 pub struct LocalApic {
-    address: u32,
+    pub address: u32,
     pub x2: bool
 }
 
@@ -42,8 +18,6 @@ impl LocalApic {
             x2: false
         };
 
-        println!("APIC BASE: {:>08X}", apic.address);
-
         unsafe { wrmsr(IA32_APIC_BASE, rdmsr(IA32_APIC_BASE) & !(1 << 11 | 1 << 10)) };
 
         unsafe { wrmsr(IA32_APIC_BASE, rdmsr(IA32_APIC_BASE) | 1 << 11) };
@@ -51,11 +25,8 @@ impl LocalApic {
         if CpuId::new().get_feature_info().unwrap().has_x2apic() {
             unsafe { wrmsr(IA32_APIC_BASE, rdmsr(IA32_APIC_BASE) | 1 << 10) };
             apic.x2 = true;
-            println!("X2APIC {:X}", unsafe { rdmsr(IA32_APIC_BASE) });
         } else {
             active_table.identity_map(Frame::containing_address(PhysicalAddress::new(apic.address as usize)), entry::PRESENT | entry::WRITABLE | entry::NO_EXECUTE);
-
-            println!("XAPIC {:X}", unsafe { rdmsr(IA32_APIC_BASE) });
         }
 
         apic

@@ -9,7 +9,7 @@ use memory::{allocate_frame, Frame};
 use paging::{entry, ActivePageTable, Page, PhysicalAddress, VirtualAddress};
 use start::{kstart_ap, AP_READY};
 
-use self::local_apic::{LocalApic, LocalApicIcr};
+use self::local_apic::LocalApic;
 use self::madt::{Madt, MadtEntry};
 use self::rsdt::Rsdt;
 use self::sdt::Sdt;
@@ -29,14 +29,19 @@ pub fn init_sdt(sdt: &'static Sdt, active_table: &mut ActivePageTable) {
     for &c in sdt.signature.iter() {
         print!("{}", c as char);
     }
-    println!(":");
 
     if let Some(madt) = Madt::new(sdt) {
-        println!("    {:>016X}: {}", madt.local_address, madt.flags);
+        println!(": {:>08X}: {}", madt.local_address, madt.flags);
 
         let mut local_apic = LocalApic::new(active_table);
 
         let me = local_apic.id() as u8;
+
+        if local_apic.x2 {
+            println!("    X2APIC {}", me);
+        } else {
+            println!("    XAPIC {}: {:>08X}", me, local_apic.address);
+        }
 
         for madt_entry in madt.iter() {
             println!("      {:?}", madt_entry);
@@ -72,6 +77,8 @@ pub fn init_sdt(sdt: &'static Sdt, active_table: &mut ActivePageTable) {
                         unsafe { atomic_store(ap_code, kstart_ap as u64) };
                         AP_READY.store(false, Ordering::SeqCst);
 
+                        print!("        AP {}:", ap_local_apic.id);
+
                         // Send INIT IPI
                         {
                             let mut icr = 0x4500;
@@ -80,7 +87,7 @@ pub fn init_sdt(sdt: &'static Sdt, active_table: &mut ActivePageTable) {
                             } else {
                                 icr |= (ap_local_apic.id as u64) << 56;
                             }
-                            println!("        Sending IPI to {}: {:>016X} {:?}", ap_local_apic.id, icr, LocalApicIcr::from_bits(icr));
+                            print!(" IPI...");
                             local_apic.set_icr(icr);
                         }
 
@@ -95,21 +102,21 @@ pub fn init_sdt(sdt: &'static Sdt, active_table: &mut ActivePageTable) {
                             } else {
                                 icr |= (ap_local_apic.id as u64) << 56;
                             }
-                            
-                            println!("        Sending SIPI to {}: {:>016X} {:?}", ap_local_apic.id, icr, LocalApicIcr::from_bits(icr));
+
+                            print!(" SIPI...");
                             local_apic.set_icr(icr);
                         }
 
                         // Wait for trampoline ready
-                        println!("        Waiting for AP {}", ap_local_apic.id);
+                        print!(" Wait...");
                         while unsafe { atomic_load(ap_ready) } == 0 {
                             interrupt::pause();
                         }
-                        println!("        AP {} is trampolined!", ap_local_apic.id);
+                        print!(" Trampoline...");
                         while ! AP_READY.load(Ordering::SeqCst) {
                             interrupt::pause();
                         }
-                        println!("        AP {} is ready!", ap_local_apic.id);
+                        println!(" Ready");
                     } else {
                         println!("        CPU Disabled");
                     }
@@ -117,8 +124,8 @@ pub fn init_sdt(sdt: &'static Sdt, active_table: &mut ActivePageTable) {
                 _ => ()
             }
         }
-    }else {
-        println!("    {:?}", sdt);
+    } else {
+        println!(": Unknown");
     }
 }
 
@@ -140,8 +147,6 @@ pub unsafe fn init(active_table: &mut ActivePageTable) -> Option<Acpi> {
 
     // Search for RSDP
     if let Some(rsdp) = RSDP::search(start_addr, end_addr) {
-        println!("{:?}", rsdp);
-
         let get_sdt = |sdt_address: usize, active_table: &mut ActivePageTable| -> &'static Sdt {
             if active_table.translate_page(Page::containing_address(VirtualAddress::new(sdt_address))).is_none() {
                 let sdt_frame = Frame::containing_address(PhysicalAddress::new(sdt_address));
