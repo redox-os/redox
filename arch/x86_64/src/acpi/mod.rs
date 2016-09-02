@@ -34,7 +34,7 @@ pub fn init_sdt(sdt: &'static Sdt, active_table: &mut ActivePageTable) {
     if let Some(madt) = Madt::new(sdt) {
         println!("    {:>016X}: {}", madt.local_address, madt.flags);
 
-        let mut local_apic = LocalApic::new();
+        let mut local_apic = LocalApic::new(active_table);
 
         let me = local_apic.id() as u8;
 
@@ -74,15 +74,28 @@ pub fn init_sdt(sdt: &'static Sdt, active_table: &mut ActivePageTable) {
 
                         // Send INIT IPI
                         {
-                            let icr = 0x00004500 | (ap_local_apic.id as u64) << 32;
+                            let mut icr = 0x4500;
+                            if local_apic.x2 {
+                                icr |= (ap_local_apic.id as u64) << 32;
+                            } else {
+                                icr |= (ap_local_apic.id as u64) << 56;
+                            }
                             println!("        Sending IPI to {}: {:>016X} {:?}", ap_local_apic.id, icr, LocalApicIcr::from_bits(icr));
                             local_apic.set_icr(icr);
                         }
 
                         // Send START IPI
                         {
+                            //Start at 0x0800:0000 => 0x8000. Hopefully the bootloader code is still there
                             let ap_segment = (AP_STARTUP >> 12) & 0xFF;
-                            let icr = 0x00004600 | ((ap_local_apic.id as u64) << 32) | ap_segment as u64; //Start at 0x0800:0000 => 0x8000. Hopefully the bootloader code is still there
+                            let mut icr = 0x4600 | ap_segment as u64;
+
+                            if local_apic.x2 {
+                                icr |= (ap_local_apic.id as u64) << 32;
+                            } else {
+                                icr |= (ap_local_apic.id as u64) << 56;
+                            }
+                            
                             println!("        Sending SIPI to {}: {:>016X} {:?}", ap_local_apic.id, icr, LocalApicIcr::from_bits(icr));
                             local_apic.set_icr(icr);
                         }
