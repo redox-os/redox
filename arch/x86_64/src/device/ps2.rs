@@ -64,6 +64,11 @@ enum KeyboardCommand {
 }
 
 #[repr(u8)]
+enum KeyboardCommandData {
+    ScancodeSet = 0xF0
+}
+
+#[repr(u8)]
 #[allow(dead_code)]
 enum MouseCommand {
     GetDeviceId = 0xF2,
@@ -94,6 +99,8 @@ pub struct Ps2 {
     data: Pio<u8>,
     status: ReadOnly<Pio<u8>>,
     command: WriteOnly<Pio<u8>>,
+    key: [u8; 3],
+    key_i: usize,
     mouse: [u8; 4],
     mouse_i: usize,
     mouse_extra: bool,
@@ -107,6 +114,8 @@ impl Ps2 {
             data: Pio::new(0x60),
             status: ReadOnly::new(Pio::new(0x64)),
             command: WriteOnly::new(Pio::new(0x64)),
+            key: [0; 3],
+            key_i: 0,
             mouse: [0; 4],
             mouse_i: 0,
             mouse_extra: false,
@@ -163,6 +172,13 @@ impl Ps2 {
         self.read()
     }
 
+    fn keyboard_command_data(&mut self, command: KeyboardCommandData, data: u8) -> u8 {
+        self.write(command as u8);
+        assert_eq!(self.read(), 0xFA);
+        self.write(data as u8);
+        self.read()
+    }
+
     fn mouse_command(&mut self, command: MouseCommand) -> u8 {
         self.command(Command::WriteSecond);
         self.write(command as u8);
@@ -172,7 +188,7 @@ impl Ps2 {
     fn mouse_command_data(&mut self, command: MouseCommandData, data: u8) -> u8 {
         self.command(Command::WriteSecond);
         self.write(command as u8);
-        self.read();
+        assert_eq!(self.read(), 0xFA);
         self.command(Command::WriteSecond);
         self.write(data as u8);
         self.read()
@@ -205,12 +221,15 @@ impl Ps2 {
         self.command(Command::EnableFirst);
         self.command(Command::EnableSecond);
 
-        // Reset and enable scanning on keyboard
+        // Reset keyboard
         assert_eq!(self.keyboard_command(KeyboardCommand::Reset), 0xFA);
         assert_eq!(self.read(), 0xAA);
         self.flush_read();
 
-        // Reset and enable scanning on mouse
+        // Set scancode set to 2
+        assert_eq!(self.keyboard_command_data(KeyboardCommandData::ScancodeSet, 2), 0xFA);
+
+        // Reset mouse and set up scroll
         // TODO: Check for ack
         assert_eq!(self.mouse_command(MouseCommand::Reset), 0xFA);
         assert_eq!(self.read(), 0xAA);
@@ -256,16 +275,21 @@ impl Ps2 {
     }
 
     pub fn on_keyboard(&mut self) {
-        let data = self.data.read();
-        print!("KEY {:X}\n", data);
+        let scancode = self.data.read();
+        self.key[self.key_i] = scancode;
+        self.key_i += 1;
+        if self.key_i >= self.key.len() || scancode < 0xE0 {
+            println!("KEY: {:X} {:X} {:X}", self.key[0], self.key[1], self.key[2]);
+
+            self.key = [0; 3];
+            self.key_i = 0;
+        }
     }
 
     pub fn on_mouse(&mut self) {
         self.mouse[self.mouse_i] = self.data.read();
         self.mouse_i += 1;
         if self.mouse_i >= self.mouse.len() || (!self.mouse_extra && self.mouse_i >= 3) {
-            self.mouse_i = 0;
-
             let flags = MousePacketFlags::from_bits_truncate(self.mouse[0]);
 
             assert!(flags.contains(ALWAYS_ON));
@@ -296,6 +320,9 @@ impl Ps2 {
                     display.onscreen[offset as usize] = 0xFF0000;
                 }
             }
+
+            self.mouse = [0; 4];
+            self.mouse_i = 0;
         }
     }
 }

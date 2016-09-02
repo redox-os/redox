@@ -48,8 +48,7 @@ macro_rules! interrupt {
             }
 
             // Push scratch registers
-            asm!("xchg bx, bx
-                push rax
+            asm!("push rax
                 push rcx
                 push rdx
                 push rdi
@@ -64,8 +63,7 @@ macro_rules! interrupt {
             inner();
 
             // Pop scratch registers and return
-            asm!("xchg bx,bx
-                pop r11
+            asm!("pop r11
                 pop r10
                 pop r9
                 pop r8
@@ -91,8 +89,7 @@ macro_rules! interrupt_error {
             }
 
             // Push scratch registers
-            asm!("xchg bx, bx
-                push rax
+            asm!("push rax
                 push rcx
                 push rdx
                 push rdi
@@ -107,8 +104,7 @@ macro_rules! interrupt_error {
             inner();
 
             // Pop scratch registers, error code, and return
-            asm!("xchg bx, bx
-                pop r11
+            asm!("pop r11
                 pop r10
                 pop r9
                 pop r8

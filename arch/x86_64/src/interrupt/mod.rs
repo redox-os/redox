@@ -46,7 +46,7 @@ pub fn pause() {
 #[inline(never)]
 pub unsafe fn stack_trace() {
     let mut rbp: usize;
-    asm!("xchg bx, bx" : "={rbp}"(rbp) : : : "intel", "volatile");
+    asm!("" : "={rbp}"(rbp) : : : "intel", "volatile");
 
     println!("TRACE: {:>016X}", rbp);
     //Maximum 64 frames
