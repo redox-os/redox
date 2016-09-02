@@ -18,10 +18,6 @@ impl LocalApic {
             x2: false
         };
 
-        unsafe { wrmsr(IA32_APIC_BASE, rdmsr(IA32_APIC_BASE) & !(1 << 11 | 1 << 10)) };
-
-        unsafe { wrmsr(IA32_APIC_BASE, rdmsr(IA32_APIC_BASE) | 1 << 11) };
-
         if CpuId::new().get_feature_info().unwrap().has_x2apic() {
             unsafe { wrmsr(IA32_APIC_BASE, rdmsr(IA32_APIC_BASE) | 1 << 10) };
             apic.x2 = true;
