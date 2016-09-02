@@ -7,12 +7,9 @@ vesa:
     mov di, VBECardInfo
     int 0x10
     cmp ax, 0x4F
-    je .edid
+    je .findmode
     mov eax, 1
     ret
-.edid:
-    cmp dword [.required], 0    ;if both required x and required y are set, forget this
-    jne near .findmode
  .resetlist:
     ;if needed, reset mins/maxes/stuff
     xor cx, cx
@@ -22,7 +19,7 @@ vesa:
     mov [.requiredy], cx
     mov [.requiredmode], cx
 .findmode:
-    mov    si, [VBECardInfo.videomodeptr]
+    mov si, [VBECardInfo.videomodeptr]
     mov ax, [VBECardInfo.videomodeptr+2]
     mov fs, ax
     sub si, 2
@@ -78,9 +75,9 @@ vesa:
     mov cx, [.currentmode]
     mov [.goodmode], cx
     push esi
-    call decshowrm
-    mov al, ':'
-    call charrm
+    ; call decshowrm
+    ; mov al, ':'
+    ; call charrm
     mov cx, [VBEModeInfo.xresolution]
     call decshowrm
     mov al, 'x'
@@ -122,8 +119,6 @@ vesa:
 .requiredy dw 0 ;768
 .requiredmode dw 0
 
-.noedidmsg db "EDID not supported.",10,13,0
-.edidmsg    db " is supported.",10,13,0
 .modeok db ": Is this OK?(y/n)",10,13,0
 
 .goodmode dw 0
@@ -209,31 +204,3 @@ charrm:             ;char must be in al
     mov ah, 0xE
     int 10h
     ret
-
-; .bestmode:    ;preference is width > height > color
-    ; mov bx, [VBEModeInfo.xresolution]
-    ; cmp bx, [.width]
-    ; ja .switchmode
-    ; jb .searchmodes
-    ; mov bx, [VBEModeInfo.yresolution]
-    ; cmp bx, [.height]
-    ; ja .switchmode
-    ; jb .searchmodes
-    ; mov bl, [VBEModeInfo.bitsperpixel]
-    ; cmp bl, [.color]
-    ; jb .searchmodes
-; .switchmode:
-    ; mov cx, [.currentmode]
-    ; mov [.mode], cx
-    ; mov bx, [VBEModeInfo.xresolution]
-    ; mov [.width], bx
-    ; mov bx, [VBEModeInfo.yresolution]
-    ; mov [.height], bx
-    ; mov bl, [VBEModeInfo.bitsperpixel]
-    ; mov [.color], bl
-    ; jmp .searchmodes
-
-; .mode dw 0
-; .color db 0
-; .height dw 0
-; .width dw 0
