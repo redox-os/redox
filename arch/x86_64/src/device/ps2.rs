@@ -199,37 +199,30 @@ impl Ps2 {
 
         // Perform the self test
         self.command(Command::TestController);
-        let self_test = self.read();
-        if self_test != 0x55 {
-            // TODO: Do reset on failure
-            print!("PS/2 Self Test Failure: {:X}\n", self_test);
-            return;
-        }
+        assert_eq!(self.read(), 0x55);
 
         // Enable devices
         self.command(Command::EnableFirst);
         self.command(Command::EnableSecond);
 
         // Reset and enable scanning on keyboard
-        // TODO: Check for ack
-        print!("KEYBOARD RESET {:X}\n", self.keyboard_command(KeyboardCommand::Reset));
-        print!("KEYBOARD RESET RESULT {:X} == 0xAA\n", self.read());
+        assert_eq!(self.keyboard_command(KeyboardCommand::Reset), 0xFA);
+        assert_eq!(self.read(), 0xAA);
         self.flush_read();
 
         // Reset and enable scanning on mouse
         // TODO: Check for ack
-        print!("MOUSE RESET {:X}\n", self.mouse_command(MouseCommand::Reset));
-        print!("MOUSE RESET RESULT {:X} == 0xAA\n", self.read());
-        print!("MOUSE RESET ID {:X} == 0x00\n", self.read());
+        assert_eq!(self.mouse_command(MouseCommand::Reset), 0xFA);
+        assert_eq!(self.read(), 0xAA);
+        assert_eq!(self.read(), 0x00);
         self.flush_read();
 
         // Enable extra packet on mouse
-        print!("SAMPLE 200 {:X}\n", self.mouse_command_data(MouseCommandData::SetSampleRate, 200));
-        print!("SAMPLE 100 {:X}\n", self.mouse_command_data(MouseCommandData::SetSampleRate, 100));
-        print!("SAMPLE 80 {:X}\n", self.mouse_command_data(MouseCommandData::SetSampleRate, 80));
-        print!("GET ID {:X}\n", self.mouse_command(MouseCommand::GetDeviceId));
+        assert_eq!(self.mouse_command_data(MouseCommandData::SetSampleRate, 200), 0xFA);
+        assert_eq!(self.mouse_command_data(MouseCommandData::SetSampleRate, 100), 0xFA);
+        assert_eq!(self.mouse_command_data(MouseCommandData::SetSampleRate, 80), 0xFA);
+        assert_eq!(self.mouse_command(MouseCommand::GetDeviceId), 0xFA);
         let mouse_id = self.read();
-        print!("MOUSE ID: {:X} == 0x03\n", mouse_id);
         self.mouse_extra = mouse_id == 3;
 
         // Enable extra buttons, TODO
@@ -245,11 +238,11 @@ impl Ps2 {
         */
 
         // Set sample rate to maximum
-        print!("SAMPLE 200 {:X}\n", self.mouse_command_data(MouseCommandData::SetSampleRate, 200));
+        assert_eq!(self.mouse_command_data(MouseCommandData::SetSampleRate, 200), 0xFA);
 
         // Enable data reporting
-        print!("KEYBOARD ENABLE {:X}\n", self.keyboard_command(KeyboardCommand::EnableReporting));
-        print!("MOUSE ENABLE {:X}\n", self.mouse_command(MouseCommand::EnableReporting));
+        assert_eq!(self.keyboard_command(KeyboardCommand::EnableReporting), 0xFA);
+        assert_eq!(self.mouse_command(MouseCommand::EnableReporting), 0xFA);
 
         // Enable clocks and interrupts
         {
@@ -275,29 +268,33 @@ impl Ps2 {
 
             let flags = MousePacketFlags::from_bits_truncate(self.mouse[0]);
 
-            let mut dx = self.mouse[1] as isize;
-            if flags.contains(X_SIGN) {
-                dx -= 0x100;
-            }
+            assert!(flags.contains(ALWAYS_ON));
 
-            let mut dy = self.mouse[2] as isize;
-            if flags.contains(Y_SIGN) {
-                dy -= 0x100;
-            }
+            if ! flags.contains(X_OVERFLOW) && ! flags.contains(Y_OVERFLOW) {
+                let mut dx = self.mouse[1] as isize;
+                if flags.contains(X_SIGN) {
+                    dx -= 0x100;
+                }
 
-            let _extra = if self.mouse_extra {
-                self.mouse[3]
-            } else {
-                0
-            };
+                let mut dy = self.mouse[2] as isize;
+                if flags.contains(Y_SIGN) {
+                    dy -= 0x100;
+                }
 
-            //print!("MOUSE {:?}, {}, {}, {}\n", flags, dx, dy, extra);
+                let _extra = if self.mouse_extra {
+                    self.mouse[3]
+                } else {
+                    0
+                };
 
-            if let Some(ref mut display) = *super::display::DISPLAY.lock() {
-                self.mouse_x = cmp::max(0, cmp::min(display.width as isize - 1, self.mouse_x as isize + dx)) as usize;
-                self.mouse_y = cmp::max(0, cmp::min(display.height as isize - 1, self.mouse_y as isize - dy)) as usize;
-                let offset = self.mouse_y * display.width + self.mouse_x;
-                display.onscreen[offset as usize] = 0xFF0000;
+                //print!("MOUSE {:?}, {}, {}, {}\n", flags, dx, dy, extra);
+
+                if let Some(ref mut display) = *super::display::DISPLAY.lock() {
+                    self.mouse_x = cmp::max(0, cmp::min(display.width as isize - 1, self.mouse_x as isize + dx)) as usize;
+                    self.mouse_y = cmp::max(0, cmp::min(display.height as isize - 1, self.mouse_y as isize - dy)) as usize;
+                    let offset = self.mouse_y * display.width + self.mouse_x;
+                    display.onscreen[offset as usize] = 0xFF0000;
+                }
             }
         }
     }
