@@ -180,7 +180,7 @@ impl DerefMut for ActivePageTable {
 }
 
 impl ActivePageTable {
-    unsafe fn new() -> ActivePageTable {
+    pub unsafe fn new() -> ActivePageTable {
         ActivePageTable {
             mapper: Mapper::new(),
         }
