@@ -48,7 +48,7 @@ If you're interested in this project, and you'd like to help us out, [here](CONT
 
 ## <a name="cloning-building-running"> Cloning, Building, and Running </a>
 
-Redox is big (even compressed)! So cloning Redox takes a lot bandwidth, and (depending on your data plan) can be costly, so clone at your own risk!
+Redox is big (even compressed)! So cloning Redox takes a lot of bandwidth, and (depending on your data plan) can be costly, so clone at your own risk!
 
 ### <a name="quick-setup" /> Quick Setup </a>
 
