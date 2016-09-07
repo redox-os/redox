@@ -20,7 +20,6 @@
 #![feature(core_intrinsics)]
 #![feature(core_panic)]
 #![feature(dropck_parametricity)]
-#![feature(filling_drop)]
 #![feature(float_extras)]
 #![feature(heap_api)]
 #![feature(int_error_internals)]
@@ -40,7 +39,6 @@
 #![feature(type_ascription)]
 #![feature(unicode)]
 #![feature(unique)]
-#![feature(unsafe_no_drop_flag)]
 #![no_std]
 
 #![allow(deprecated)]

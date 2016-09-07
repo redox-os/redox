@@ -12,7 +12,7 @@ CARGO=CARGO_TARGET_DIR=build RUSTC="./rustc-$(ARCH).sh" cargo rustc
 CARGOFLAGS=--verbose --target=$(ARCH)-unknown-redox.json -- --cfg redox \
 	-L $(BUILD) \
 	-C no-prepopulate-passes -C no-stack-check -C opt-level=3 \
-	-Z no-landing-pads -Z orbit \
+	-Z no-landing-pads \
 	-A dead_code
 RUSTC=RUST_BACKTRACE=1 rustc
 RUSTDOC=rustdoc --target=$(ARCH)-unknown-redox.json --cfg redox -L $(BUILD) \
