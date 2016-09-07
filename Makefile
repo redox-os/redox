@@ -124,7 +124,6 @@ filesystem/apps/%/main.bin: crates/orbutils/src/%/main.rs crates/orbutils/src/%/
 
 apps: filesystem/apps/calculator/main.bin \
 	  filesystem/apps/character_map/main.bin \
-	  filesystem/apps/editor/main.bin \
 	  filesystem/apps/file_manager/main.bin \
 	  filesystem/apps/orbtk/main.bin \
 	  filesystem/apps/pixelcannon/main.bin \
@@ -132,6 +131,7 @@ apps: filesystem/apps/calculator/main.bin \
 	  filesystem/apps/sodium/main.bin \
 	  filesystem/apps/terminal/main.bin \
 	  filesystem/apps/viewer/main.bin
+#	  filesystem/apps/editor/main.bin
 
 filesystem/bin/%: crates/coreutils/src/bin/%.rs $(BUILD)/libextra.rlib $(BUILD)/libwalkdir.rlib
 	mkdir -p filesystem/bin
