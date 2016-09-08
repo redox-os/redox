@@ -204,8 +204,7 @@ pub unsafe extern fn kstart_ap(stack_start: usize, stack_end: usize) -> ! {
 
 pub unsafe fn usermode(ip: usize, sp: usize) {
     // Test usermode
-    asm!("xchg bx, bx
-        mov rax, 0x2B
+    asm!("mov rax, 0x2B
         mov ds, ax
         mov es, ax
         mov fs, ax

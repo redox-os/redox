@@ -13,17 +13,16 @@ pub unsafe extern fn syscall() {
             let d;
             let e;
             let f;
-            asm!("xchg bx, bx" : "={rax}"(a), "={rbx}"(b), "={rcx}"(c), "={rdx}"(d), "={rsi}"(e), "={rdi}"(f)
+            asm!("" : "={rax}"(a), "={rbx}"(b), "={rcx}"(c), "={rdx}"(d), "={rsi}"(e), "={rdi}"(f)
                 : : : "intel", "volatile");
 
             a = syscall(a, b, c, d, e, f);
         }
 
-        asm!("xchg bx, bx" : : "{rax}"(a) : : "intel", "volatile");
+        asm!("" : : "{rax}"(a) : : "intel", "volatile");
     }
 
-    asm!("xchg bx, bx
-        push fs
+    asm!("push fs
         push rax
         mov rax, 0x18
         mov fs, ax
@@ -33,8 +32,7 @@ pub unsafe extern fn syscall() {
     inner();
 
     // Interrupt return
-    asm!("xchg bx, bx
-        pop fs
+    asm!("pop fs
         iretq"
         : : : : "intel", "volatile");
 }
