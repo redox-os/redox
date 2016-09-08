@@ -279,7 +279,7 @@ impl Ps2 {
         self.key[self.key_i] = scancode;
         self.key_i += 1;
         if self.key_i >= self.key.len() || scancode < 0xE0 {
-            println!("KEY: {:X} {:X} {:X}", self.key[0], self.key[1], self.key[2]);
+            //println!("KEY: {:X} {:X} {:X}", self.key[0], self.key[1], self.key[2]);
 
             self.key = [0; 3];
             self.key_i = 0;
@@ -292,9 +292,7 @@ impl Ps2 {
         if self.mouse_i >= self.mouse.len() || (!self.mouse_extra && self.mouse_i >= 3) {
             let flags = MousePacketFlags::from_bits_truncate(self.mouse[0]);
 
-            assert!(flags.contains(ALWAYS_ON));
-
-            if ! flags.contains(X_OVERFLOW) && ! flags.contains(Y_OVERFLOW) {
+            if flags.contains(ALWAYS_ON) && ! flags.contains(X_OVERFLOW) && ! flags.contains(Y_OVERFLOW) {
                 let mut dx = self.mouse[1] as isize;
                 if flags.contains(X_SIGN) {
                     dx -= 0x100;
@@ -319,6 +317,8 @@ impl Ps2 {
                     let offset = self.mouse_y * display.width + self.mouse_x;
                     display.onscreen[offset as usize] = 0xFF0000;
                 }
+            } else {
+                println!("BAD MOUSE {:?}", self.mouse);
             }
 
             self.mouse = [0; 4];
