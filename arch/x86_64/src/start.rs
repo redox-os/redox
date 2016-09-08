@@ -137,28 +137,6 @@ pub unsafe extern fn kstart() -> ! {
     kmain();
 }
 
-unsafe fn usermode(ip: usize, sp: usize) {
-    // Test usermode
-    asm!("xchg bx, bx
-        mov rax, 0x2B
-        mov ds, ax
-        mov es, ax
-        mov fs, ax
-        mov gs, ax
-
-        push rax
-        push rbx
-        pushfq
-        mov rax, 0x23
-        push rax
-        push rcx
-        iretq"
-        :
-        : "{rbx}"(sp), "{rcx}"(ip)
-        : "rax", "rbx", "rcx", "sp"
-        : "intel", "volatile");
-}
-
 /// Entry to rust for an AP
 pub unsafe extern fn kstart_ap(stack_start: usize, stack_end: usize) -> ! {
     {
@@ -222,4 +200,26 @@ pub unsafe extern fn kstart_ap(stack_start: usize, stack_end: usize) -> ! {
     }
 
     kmain_ap(ap_number);
+}
+
+pub unsafe fn usermode(ip: usize, sp: usize) {
+    // Test usermode
+    asm!("xchg bx, bx
+        mov rax, 0x2B
+        mov ds, ax
+        mov es, ax
+        mov fs, ax
+        mov gs, ax
+
+        push rax
+        push rbx
+        pushfq
+        mov rax, 0x23
+        push rax
+        push rcx
+        iretq"
+        :
+        : "{rbx}"(sp), "{rcx}"(ip)
+        : "rax", "rbx", "rcx", "sp"
+        : "intel", "volatile");
 }

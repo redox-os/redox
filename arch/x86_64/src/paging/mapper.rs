@@ -46,6 +46,15 @@ impl Mapper {
         self.map_to(page, frame, flags)
     }
 
+    /// Update flags for a page
+    pub fn remap(&mut self, page: Page, flags: EntryFlags) {
+        let mut p3 = self.p4_mut().next_table_mut(page.p4_index()).expect("failed to remap: no p3");
+        let mut p2 = p3.next_table_mut(page.p3_index()).expect("failed to remap: no p2");
+        let mut p1 = p2.next_table_mut(page.p2_index()).expect("failed to remap: no p1");
+        let frame = p1[page.p1_index()].pointed_frame().expect("failed to remap: not mapped");
+        p1[page.p1_index()].set(frame, flags | entry::PRESENT);
+    }
+
     /// Identity map a frame
     pub fn identity_map(&mut self, frame: Frame, flags: EntryFlags) {
         let page = Page::containing_address(VirtualAddress::new(frame.start_address().get()));

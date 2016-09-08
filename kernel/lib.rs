@@ -133,6 +133,9 @@ pub extern fn kmain() {
     let pid = syscall::getpid();
     println!("BSP: {:?}", pid);
 
+    let elf = elf::Elf::from(include_bytes!("../init/main")).expect("could not load elf");
+    elf.run();
+
     /*
     if let Ok(_context_lock) = context::contexts_mut().spawn(context_test) {
         print!("Spawned context\n");
@@ -143,7 +146,7 @@ pub extern fn kmain() {
 
     print!("Main halt\n");
     */
-    
+
     loop {
         unsafe { interrupt::enable_and_halt(); }
     }

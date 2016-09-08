@@ -17,7 +17,7 @@ extern crate hole_list_allocator as allocator;
 extern crate bitflags;
 extern crate ransid;
 extern crate spin;
-extern crate x86;
+pub extern crate x86;
 
 /// Print to console
 #[macro_export]

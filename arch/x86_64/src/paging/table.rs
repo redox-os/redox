@@ -66,7 +66,7 @@ impl<L> Table<L> where L: HierarchicalLevel {
             assert!(!self[index].flags().contains(HUGE_PAGE),
                     "mapping code does not support huge pages");
             let frame = allocate_frame().expect("no frames available");
-            self[index].set(frame, PRESENT | WRITABLE);
+            self[index].set(frame, PRESENT | WRITABLE | USER_ACCESSIBLE /* Allow users to go down the page table, implement permissions at the page level */);
             self.next_table_mut(index).unwrap().zero();
         }
         self.next_table_mut(index).unwrap()
