@@ -7,7 +7,7 @@ use super::{Error, Result};
 
 /// Read syscall
 pub fn read(fd: usize, buf: &mut [u8]) -> Result<usize> {
-    println!("Read {}: {}", fd, buf.len());
+    println!("Read {}: {:X} {}", fd, buf.as_ptr() as usize, buf.len());
     if let Some(context_lock) = context::contexts().current() {
         let context = context_lock.read();
         if let Some(file) = context.files.get(fd) {
@@ -23,7 +23,7 @@ pub fn read(fd: usize, buf: &mut [u8]) -> Result<usize> {
 
 /// Write syscall
 pub fn write(fd: usize, buf: &[u8]) -> Result<usize> {
-    println!("Write {}: {}", fd, buf.len());
+    println!("Write {}: {:X} {}", fd, buf.as_ptr() as usize, buf.len());
     if let Some(context_lock) = context::contexts().current() {
         let context = context_lock.read();
         if let Some(file) = context.files.get(fd) {

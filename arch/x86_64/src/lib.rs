@@ -89,7 +89,8 @@ macro_rules! interrupt_error {
             }
 
             // Push scratch registers
-            asm!("push rax
+            asm!("xchg bx, bx
+                push rax
                 push rcx
                 push rdx
                 push rdi

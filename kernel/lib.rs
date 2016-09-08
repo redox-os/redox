@@ -133,6 +133,15 @@ pub extern fn kmain() {
     let pid = syscall::getpid();
     println!("BSP: {:?}", pid);
 
+    let stdin = syscall::open("debug:".as_bytes(), 0);
+    println!("STDIN: {:?}", stdin);
+    
+    let stdout = syscall::open("debug:".as_bytes(), 0);
+    println!("STDOUT: {:?}", stdout);
+
+    let stderr = syscall::open("debug:".as_bytes(), 0);
+    println!("STDERR: {:?}", stderr);
+
     let elf = elf::Elf::from(include_bytes!("../init/main")).expect("could not load elf");
     elf.run();
 
