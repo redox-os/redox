@@ -22,8 +22,19 @@ pub unsafe extern fn syscall() {
         asm!("xchg bx, bx" : : "{rax}"(a) : : "intel", "volatile");
     }
 
+    asm!("xchg bx, bx
+        push fs
+        push rax
+        mov rax, 0x18
+        mov fs, ax
+        pop rax"
+        : : : : "intel", "volatile");
+
     inner();
 
     // Interrupt return
-    asm!("iretq" : : : : "intel", "volatile");
+    asm!("xchg bx, bx
+        pop fs
+        iretq"
+        : : : : "intel", "volatile");
 }

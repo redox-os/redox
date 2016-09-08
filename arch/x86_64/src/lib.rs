@@ -48,7 +48,8 @@ macro_rules! interrupt {
             }
 
             // Push scratch registers
-            asm!("push rax
+            asm!("xchg bx, bx
+                push rax
                 push rcx
                 push rdx
                 push rdi
@@ -56,14 +57,19 @@ macro_rules! interrupt {
                 push r8
                 push r9
                 push r10
-                push r11"
+                push r11
+                push fs
+                mov rax, 0x18
+                mov fs, ax"
                 : : : : "intel", "volatile");
 
             // Call inner rust function
             inner();
 
             // Pop scratch registers and return
-            asm!("pop r11
+            asm!("xchg bx, bx
+                pop fs
+                pop r11
                 pop r10
                 pop r9
                 pop r8
@@ -98,14 +104,19 @@ macro_rules! interrupt_error {
                 push r8
                 push r9
                 push r10
-                push r11"
+                push r11
+                push fs
+                mov rax, 0x18
+                mov fs, ax"
                 : : : : "intel", "volatile");
 
             // Call inner rust function
             inner();
 
             // Pop scratch registers, error code, and return
-            asm!("pop r11
+            asm!("xchg bx, bx
+                pop fs
+                pop r11
                 pop r10
                 pop r9
                 pop r8

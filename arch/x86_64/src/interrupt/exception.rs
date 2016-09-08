@@ -71,7 +71,9 @@ interrupt_error!(protection, {
 });
 
 interrupt_error!(page, {
-    print!("Page fault\n");
+    let cr2: usize;
+    asm!("mov rax, cr2" : "={rax}"(cr2) : : : "intel", "volatile");
+    println!("Page fault: {:>016X}", cr2);
     stack_trace();
     loop { halt(); }
 });

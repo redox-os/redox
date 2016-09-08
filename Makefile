@@ -13,8 +13,8 @@ ifeq ($(ARCH),arm)
 else
 	LD=ld
 	QEMUFLAGS+=-enable-kvm -cpu host -machine q35 -smp 4
+	QEMUFLAGS+=-nographic -vga none
 	#,int,pcall
-	#-nographic
 	#-device intel-iommu
 
 	UNAME := $(shell uname)
