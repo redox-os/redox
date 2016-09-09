@@ -13,8 +13,8 @@ ifeq ($(ARCH),arm)
 else
 	LD=ld
 	QEMUFLAGS+=-enable-kvm -cpu host -machine q35 -smp 4
+	QEMUFLAGS+=-nographic -vga none
 	#,int,pcall
-	#-nographic
 	#-device intel-iommu
 
 	UNAME := $(shell uname)
@@ -51,7 +51,13 @@ build/libcollections.rlib: rust/src/libcollections/lib.rs build/libcore.rlib bui
 	mkdir -p build
 	./rustc.sh $(RUSTCFLAGS) -o $@ $<
 
-build/libkernel.a: build/libcore.rlib build/liballoc.rlib build/libcollections.rlib FORCE
+build/libinit.a: init/Cargo.toml init/src/*.rs
+	RUSTC="./rustc.sh" cargo rustc --manifest-path $< $(CARGOFLAGS) -o $@
+
+build/init: build/libinit.a
+	$(LD) -e _start --gc-sections -o $@ $<
+
+build/libkernel.a: build/libcore.rlib build/liballoc.rlib build/libcollections.rlib build/init FORCE
 	mkdir -p build
 	RUSTC="./rustc.sh" cargo rustc $(CARGOFLAGS) -o $@
 

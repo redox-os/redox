@@ -303,8 +303,8 @@ impl Page {
     }
 
     pub fn containing_address(address: VirtualAddress) -> Page {
-        assert!(address.get() < 0x0000_8000_0000_0000 || address.get() >= 0xffff_8000_0000_0000,
-            "invalid address: 0x{:x}", address.get());
+        //TODO assert!(address.get() < 0x0000_8000_0000_0000 || address.get() >= 0xffff_8000_0000_0000,
+        //    "invalid address: 0x{:x}", address.get());
         Page { number: address.get() / PAGE_SIZE }
     }
 

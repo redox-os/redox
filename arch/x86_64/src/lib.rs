@@ -17,7 +17,7 @@ extern crate hole_list_allocator as allocator;
 extern crate bitflags;
 extern crate ransid;
 extern crate spin;
-extern crate x86;
+pub extern crate x86;
 
 /// Print to console
 #[macro_export]
@@ -56,14 +56,18 @@ macro_rules! interrupt {
                 push r8
                 push r9
                 push r10
-                push r11"
+                push r11
+                push fs
+                mov rax, 0x18
+                mov fs, ax"
                 : : : : "intel", "volatile");
 
             // Call inner rust function
             inner();
 
             // Pop scratch registers and return
-            asm!("pop r11
+            asm!("pop fs
+                pop r11
                 pop r10
                 pop r9
                 pop r8
@@ -97,14 +101,18 @@ macro_rules! interrupt_error {
                 push r8
                 push r9
                 push r10
-                push r11"
+                push r11
+                push fs
+                mov rax, 0x18
+                mov fs, ax"
                 : : : : "intel", "volatile");
 
             // Call inner rust function
             inner();
 
             // Pop scratch registers, error code, and return
-            asm!("pop r11
+            asm!("pop fs
+                pop r11
                 pop r10
                 pop r9
                 pop r8

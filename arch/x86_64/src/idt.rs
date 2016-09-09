@@ -60,6 +60,7 @@ pub unsafe fn init() {
 
     // Set syscall function
     IDT[0x80].set_func(syscall::syscall);
+    IDT[0x80].set_flags(IDT_PRESENT | IDT_RING_3 | IDT_INTERRUPT);
 
     dtables::lidt(&IDTR);
 }

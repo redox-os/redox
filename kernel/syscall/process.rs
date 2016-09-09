@@ -23,10 +23,8 @@ pub fn exec(path: &[u8], args: &[[usize; 2]]) -> Result<usize> {
 }
 
 pub fn getpid() -> Result<usize> {
-    if let Some(context_lock) = context::contexts().current() {
-        let context = context_lock.read();
-        Ok(context.id)
-    } else {
-        Err(Error::NoProcess)
-    }
+    let contexts = context::contexts();
+    let context_lock = contexts.current().ok_or(Error::NoProcess)?;
+    let context = context_lock.read();
+    Ok(context.id)
 }

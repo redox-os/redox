@@ -133,6 +133,18 @@ pub extern fn kmain() {
     let pid = syscall::getpid();
     println!("BSP: {:?}", pid);
 
+    let stdin = syscall::open("debug:".as_bytes(), 0);
+    println!("STDIN: {:?}", stdin);
+
+    let stdout = syscall::open("debug:".as_bytes(), 0);
+    println!("STDOUT: {:?}", stdout);
+
+    let stderr = syscall::open("debug:".as_bytes(), 0);
+    println!("STDERR: {:?}", stderr);
+
+    let elf = elf::Elf::from(include_bytes!("../build/init")).expect("could not load elf");
+    elf.run();
+
     /*
     if let Ok(_context_lock) = context::contexts_mut().spawn(context_test) {
         print!("Spawned context\n");
@@ -143,7 +155,7 @@ pub extern fn kmain() {
 
     print!("Main halt\n");
     */
-    
+
     loop {
         unsafe { interrupt::enable_and_halt(); }
     }
