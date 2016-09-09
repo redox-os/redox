@@ -13,27 +13,82 @@ use collections::BTreeMap;
 
 use spin::{Once, Mutex, RwLock, RwLockReadGuard, RwLockWriteGuard};
 
-use syscall::Result;
+use syscall::{Error, Result};
 
 use self::debug::DebugScheme;
 
-pub use self::fd::Fd;
-
 /// Debug scheme
 pub mod debug;
-mod fd;
+
+/// Limit on number of schemes
+pub const SCHEME_MAX_SCHEMES: usize = 65536;
 
 /// Scheme list type
-pub type SchemeList = BTreeMap<Box<[u8]>, Arc<Mutex<Box<Scheme + Send>>>>;
+pub struct SchemeList {
+    map: BTreeMap<usize, Arc<Mutex<Box<Scheme + Send>>>>,
+    names: BTreeMap<Box<[u8]>, usize>,
+    next_id: usize
+}
+
+impl SchemeList {
+    /// Create a new scheme list.
+    pub fn new() -> Self {
+        SchemeList {
+            map: BTreeMap::new(),
+            names: BTreeMap::new(),
+            next_id: 1
+        }
+    }
+
+    /// Get the nth scheme.
+    pub fn get(&self, id: usize) -> Option<&Arc<Mutex<Box<Scheme + Send>>>> {
+        self.map.get(&id)
+    }
+
+    pub fn get_name(&self, name: &[u8]) -> Option<(usize, &Arc<Mutex<Box<Scheme + Send>>>)> {
+        if let Some(&id) = self.names.get(name) {
+            self.get(id).map(|scheme| (id, scheme))
+        } else {
+            None
+        }
+    }
+
+    /// Create a new context.
+    pub fn insert(&mut self, name: Box<[u8]>, scheme: Arc<Mutex<Box<Scheme + Send>>>) -> Result<&Arc<Mutex<Box<Scheme + Send>>>> {
+        if self.names.contains_key(&name) {
+            return Err(Error::FileExists);
+        }
+
+        if self.next_id >= SCHEME_MAX_SCHEMES {
+            self.next_id = 1;
+        }
+
+        while self.map.contains_key(&self.next_id) {
+            self.next_id += 1;
+        }
+
+        if self.next_id >= SCHEME_MAX_SCHEMES {
+            return Err(Error::TryAgain);
+        }
+
+        let id = self.next_id;
+        self.next_id += 1;
+
+        assert!(self.map.insert(id, scheme).is_none());
+        assert!(self.names.insert(name, id).is_none());
+
+        Ok(self.map.get(&id).expect("Failed to insert new scheme. ID is out of bounds."))
+    }
+}
 
 /// Schemes list
 static SCHEMES: Once<RwLock<SchemeList>> = Once::new();
 
 /// Initialize schemes, called if needed
 fn init_schemes() -> RwLock<SchemeList> {
-    let mut map: SchemeList = BTreeMap::new();
-    map.insert(Box::new(*b"debug"), Arc::new(Mutex::new(Box::new(DebugScheme))));
-    RwLock::new(map)
+    let mut list: SchemeList = SchemeList::new();
+    list.insert(Box::new(*b"debug"), Arc::new(Mutex::new(Box::new(DebugScheme)))).expect("failed to insert debug: scheme");
+    RwLock::new(list)
 }
 
 /// Get the global schemes list, const
@@ -56,13 +111,13 @@ pub trait Scheme {
     /// Read from some file descriptor into the `buffer`
     ///
     /// Returns the number of bytes read
-    fn read(&mut self, fd: Fd, buffer: &mut [u8]) -> Result<usize>;
+    fn read(&mut self, fd: usize, buffer: &mut [u8]) -> Result<usize>;
 
     /// Write the `buffer` to the file descriptor
     ///
     /// Returns the number of bytes written
-    fn write(&mut self, fd: Fd, buffer: &[u8]) -> Result<usize>;
+    fn write(&mut self, fd: usize, buffer: &[u8]) -> Result<usize>;
 
     /// Close the file descriptor
-    fn close(&mut self, fd: Fd) -> Result<()>;
+    fn close(&mut self, fd: usize) -> Result<()>;
 }

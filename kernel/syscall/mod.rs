@@ -64,6 +64,8 @@ pub enum Error {
     BadFile = 9,
     /// Try again
     TryAgain = 11,
+    /// File exists
+    FileExists = 17,
     /// Invalid argument
     InvalidValue = 22,
     /// Too many open files
