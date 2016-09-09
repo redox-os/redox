@@ -112,3 +112,6 @@
 [submodule "crates/goblin"]
 	path = crates/goblin
 	url = http://github.com/m4b/goblin
+[submodule "libstd"]
+	path = libstd
+	url = https://github.com/redox-os/libstd.git
