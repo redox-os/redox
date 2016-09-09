@@ -202,23 +202,26 @@ pub unsafe extern fn kstart_ap(stack_start: usize, stack_end: usize) -> ! {
     kmain_ap(ap_number);
 }
 
-pub unsafe fn usermode(ip: usize, sp: usize) {
-    // Test usermode
-    asm!("mov rax, 0x2B
+pub unsafe fn usermode(ip: usize, sp: usize) -> ! {
+    // Go to usermode
+    asm!("mov rax, 0x2B # Set segment pointers
         mov ds, ax
         mov es, ax
         mov fs, ax
         mov gs, ax
 
-        push rax
-        push rbx
-        pushfq
+        push rax # Push stack segment
+        push rbx # Push stack pointer
+        mov rax, 3 << 12 | 1 << 9 # Set IOPL and interrupt enable flag
+        push rax # Push rflags
         mov rax, 0x23
-        push rax
-        push rcx
+        push rax # Push code segment
+        push rcx # Push rip
+        xchg bx, bx
         iretq"
         :
         : "{rbx}"(sp), "{rcx}"(ip)
-        : "rax", "rbx", "rcx", "sp"
+        : "rax", "sp"
         : "intel", "volatile");
+    unreachable!();
 }

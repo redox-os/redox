@@ -82,4 +82,5 @@ qemu: build/harddrive.bin
 endif
 
 clean:
-	rm -rf build/* target/*
+	cargo clean
+	rm -rf build/*

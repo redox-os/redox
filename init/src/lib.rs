@@ -11,7 +11,7 @@ use syscall::{exit, write};
 pub unsafe extern fn _start() {
     let string = b"Hello, World!\n";
     write(1, string);
-    exit(1);
+    exit(0);
 }
 
 #[cfg(not(test))]
@@ -22,6 +22,8 @@ extern "C" fn eh_personality() {}
 /// Required to handle panics
 #[lang = "panic_fmt"]
 extern "C" fn panic_fmt(_fmt: ::core::fmt::Arguments, _file: &str, _line: u32) -> ! {
+    write(2, b"panic\n");
+    exit(127);
     loop {}
 }
 
