@@ -212,7 +212,7 @@ pub unsafe fn usermode(ip: usize, sp: usize) -> ! {
 
         push rax # Push stack segment
         push rbx # Push stack pointer
-        mov rax, 3 << 12 | 1 << 9 # Set IOPL and interrupt enable flag
+        mov rax, 0 # 3 << 12 | 1 << 9 # Set IOPL and interrupt enable flag
         push rax # Push rflags
         mov rax, 0x23
         push rax # Push code segment
