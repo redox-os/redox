@@ -67,21 +67,20 @@ pub fn exit(status: usize) -> ! {
     }
 }
 
-pub fn futex(addr: *mut i32, op: usize, val: i32, val2: usize, addr2: *mut i32) -> Result<usize> {
+pub fn futex(addr: &mut i32, op: usize, val: i32, val2: usize, addr2: *mut i32) -> Result<usize> {
     match op {
         FUTEX_WAIT => {
             {
                 let contexts = unsafe { &mut *::env().contexts.get() };
                 let mut current = contexts.current_mut()?;
                 let current_ptr = current.deref_mut() as *mut Context;
-                let addr_safe = current.get_ref_mut(addr)?;
 
-                if unsafe { intrinsics::atomic_load(addr_safe) != val } {
+                if unsafe { intrinsics::atomic_load(addr) != val } {
                     return Err(Error::new(EAGAIN));
                 }
 
                 let futexes = unsafe { &mut *::env().futexes.get() };
-                futexes.push_back((addr_safe, current_ptr));
+                futexes.push_back((addr, current_ptr));
                 unsafe { (*current_ptr).block("futex wait") };
             }
 
@@ -93,14 +92,10 @@ pub fn futex(addr: *mut i32, op: usize, val: i32, val2: usize, addr2: *mut i32) 
             let mut woken = 0;
 
             {
-                let contexts = unsafe { & *::env().contexts.get() };
-                let current = contexts.current()?;
-                let addr_safe = current.get_ref_mut(addr)?;
-
                 let futexes = unsafe { &mut *::env().futexes.get() };
                 let mut i = 0;
                 while i < futexes.len() && (woken as i32) < val {
-                    if futexes[i].0 == addr_safe {
+                    if futexes[i].0 == addr {
                         if let Some(futex) = futexes.swap_remove_back(i) {
                             unsafe { (*futex.1).unblock("futex wake") };
                             woken += 1;
@@ -120,13 +115,12 @@ pub fn futex(addr: *mut i32, op: usize, val: i32, val2: usize, addr2: *mut i32) 
             {
                 let contexts = unsafe { & *::env().contexts.get() };
                 let current = contexts.current()?;
-                let addr_safe = current.get_ref_mut(addr)?;
                 let addr2_safe = current.get_ref_mut(addr2)?;
 
                 let futexes = unsafe { &mut *::env().futexes.get() };
                 let mut i = 0;
                 while i < futexes.len() && (woken as i32) < val {
-                    if futexes[i].0 == addr_safe {
+                    if futexes[i].0 == addr {
                         if let Some(futex) = futexes.swap_remove_back(i) {
                             unsafe { (*futex.1).unblock("futex wake") };
                             woken += 1;
@@ -136,7 +130,7 @@ pub fn futex(addr: *mut i32, op: usize, val: i32, val2: usize, addr2: *mut i32) 
                     }
                 }
                 while i < futexes.len() && requeued < val2 {
-                    if futexes[i].0 == addr_safe {
+                    if futexes[i].0 == addr {
                         futexes[i].0 = addr2_safe;
                         requeued += 1;
                     }
@@ -191,14 +185,14 @@ pub fn iopl(regs: &mut Regs) -> Result<usize> {
 }
 
 //TODO: Finish implementation, add more functions to WaitMap so that matching any or using WNOHANG works
-pub fn waitpid(pid: isize, status_ptr: *mut usize, _options: usize) -> Result<usize> {
+pub fn waitpid(pid: isize, status_ref: Option<&mut usize>, _options: usize) -> Result<usize> {
     let contexts = unsafe { &mut *::env().contexts.get() };
     let current = try!(contexts.current_mut());
 
     if pid > 0 {
         let status = current.statuses.receive(&(pid as usize), "waitpid status");
 
-        if let Ok(status_safe) = current.get_ref_mut(status_ptr) {
+        if let Some(status_safe) = status_ref {
             *status_safe = status;
         }
 

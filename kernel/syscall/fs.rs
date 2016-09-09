@@ -10,7 +10,7 @@ use schemes::pipe::{PipeRead, PipeWrite};
 
 use syscall::{Stat, SEEK_CUR, SEEK_END, SEEK_SET};
 
-use system::error::{Error, Result, EBADF, EFAULT, EINVAL};
+use system::error::{Error, Result, EBADF, EINVAL};
 
 /** <!-- @MANSTART{sys_chdir} -->
 NAME
@@ -49,12 +49,11 @@ ERRORS
     ESRCH
         Currently not running in a process context (rare, would only happen during kernel init)
 <!-- @MANEND --> */
-pub fn chdir(path_ptr: *const u8, path_len: usize) -> Result<usize> {
+pub fn chdir(path: &[u8]) -> Result<usize> {
     let contexts = unsafe { & *::env().contexts.get() };
     let current = try!(contexts.current());
-    let path_safe = current.get_slice(path_ptr, path_len)?;
     unsafe {
-        *current.cwd.get() = current.canonicalize(str::from_utf8_unchecked(path_safe));
+        *current.cwd.get() = current.canonicalize(str::from_utf8_unchecked(path));
     }
     Ok(0)
 }
@@ -144,24 +143,22 @@ pub fn dup(fd: usize) -> Result<usize> {
     Ok(new_fd)
 }
 
-pub fn fpath(fd: usize, buf: *mut u8, count: usize) -> Result<usize> {
-    let contexts = unsafe { & *::env().contexts.get() };
-    let current = contexts.current()?;
-    let resource = current.get_file(fd)?;
-    if count > 0 {
-        let buf_safe = current.get_slice_mut(buf, count)?;
-        resource.path(buf_safe)
+pub fn fpath(fd: usize, buf: &mut [u8]) -> Result<usize> {
+    if buf.len() > 0 {
+        let contexts = unsafe { & *::env().contexts.get() };
+        let current = contexts.current()?;
+        let resource = current.get_file(fd)?;
+        resource.path(buf)
     } else {
         Ok(0)
     }
 }
 
-pub fn fstat(fd: usize, stat: *mut Stat) -> Result<usize> {
+pub fn fstat(fd: usize, stat: &mut Stat) -> Result<usize> {
     let contexts = unsafe { & *::env().contexts.get() };
     let current = contexts.current()?;
     let resource = current.get_file(fd)?;
-    let stat_safe = current.get_ref_mut(stat)?;
-    resource.stat(stat_safe).and(Ok(0))
+    resource.stat(stat).and(Ok(0))
 }
 
 /** <!-- @MANSTART{sys_fsync} -->
@@ -321,11 +318,10 @@ ERRORS
     ESRCH
         Currently not running in a process context (rare, would only happen during kernel init)
 <!-- @MANEND --> */
-pub fn mkdir(path_ptr: *const u8, path_len: usize, flags: usize) -> Result<usize> {
+pub fn mkdir(path: &[u8], flags: usize) -> Result<usize> {
     let contexts = unsafe { & *::env().contexts.get() };
     let current = try!(contexts.current());
-    let path_safe = current.get_slice(path_ptr, path_len)?;
-    let path_string = current.canonicalize(unsafe { str::from_utf8_unchecked(path_safe) });
+    let path_string = current.canonicalize(unsafe { str::from_utf8_unchecked(path) });
     ::env().mkdir(&path_string, flags).and(Ok(0))
 }
 
@@ -381,12 +377,11 @@ ERRORS
     ESRCH
         Currently not running in a process context (rare, would only happen during kernel init)
 <!-- @MANEND --> */
-pub fn open(path_ptr: *const u8, path_len: usize, flags: usize) -> Result<usize> {
+pub fn open(path: &[u8], flags: usize) -> Result<usize> {
     let contexts = unsafe { & *::env().contexts.get() };
     let current = try!(contexts.current());
-    let path_safe = current.get_slice(path_ptr, path_len)?;
-    let path = current.canonicalize(unsafe { str::from_utf8_unchecked(path_safe) });
-    let resource = try!(::env().open(&path, flags));
+    let path_canon = current.canonicalize(unsafe { str::from_utf8_unchecked(path) });
+    let resource = try!(::env().open(&path_canon, flags));
     let fd = current.next_fd();
     unsafe {
         (*current.files.get()).push(ContextFile {
@@ -397,31 +392,27 @@ pub fn open(path_ptr: *const u8, path_len: usize, flags: usize) -> Result<usize>
     Ok(fd)
 }
 
-pub fn pipe2(fds: *mut usize, _flags: usize) -> Result<usize> {
+pub fn pipe2(fds: &mut [usize; 2], _flags: usize) -> Result<usize> {
     let contexts = unsafe { & *::env().contexts.get() };
     let current = try!(contexts.current());
-    if fds as usize > 0 {
-        let read = box PipeRead::new();
-        let write = box PipeWrite::new(&read);
+    let read = box PipeRead::new();
+    let write = box PipeWrite::new(&read);
 
-        unsafe {
-            *fds.offset(0) = current.next_fd();
-            (*current.files.get()).push(ContextFile {
-                fd: *fds.offset(0),
-                resource: read,
-            });
+    unsafe {
+        fds[0] = current.next_fd();
+        (*current.files.get()).push(ContextFile {
+            fd: fds[0],
+            resource: read,
+        });
 
-            *fds.offset(1) = current.next_fd();
-            (*current.files.get()).push(ContextFile {
-                fd: *fds.offset(1),
-                resource: write,
-            });
-        }
-
-        Ok(0)
-    } else {
-        Err(Error::new(EFAULT))
+        fds[1] = current.next_fd();
+        (*current.files.get()).push(ContextFile {
+            fd: fds[1],
+            resource: write,
+        });
     }
+
+    Ok(0)
 }
 
 /** <!-- @MANSTART{sys_read} -->
@@ -455,31 +446,28 @@ ERRORS
     ESRCH
         Currently not running in a process context (rare, would only happen during kernel init)
 <!-- @MANEND --> */
-pub fn read(fd: usize, buf: *mut u8, count: usize) -> Result<usize> {
+pub fn read(fd: usize, buf: &mut [u8]) -> Result<usize> {
     let contexts = unsafe { &mut *::env().contexts.get() };
     let mut current = contexts.current_mut()?;
     let mut resource = current.get_file_mut(fd)?;
-    if count > 0 {
-        let buf_safe = current.get_slice_mut(buf, count)?;
-        resource.read(buf_safe)
+    if buf.len() > 0 {
+        resource.read(buf)
     } else {
         Ok(0)
     }
 }
 
-pub fn rmdir(path_ptr: *const u8, path_len: usize) -> Result<usize> {
+pub fn rmdir(path: &[u8]) -> Result<usize> {
     let contexts = unsafe { & *::env().contexts.get() };
     let current = try!(contexts.current());
-    let path_safe = current.get_slice(path_ptr, path_len)?;
-    let path_string = current.canonicalize(unsafe { str::from_utf8_unchecked(path_safe) });
+    let path_string = current.canonicalize(unsafe { str::from_utf8_unchecked(path) });
     ::env().rmdir(&path_string).and(Ok(0))
 }
 
-pub fn unlink(path_ptr: *const u8, path_len: usize) -> Result<usize> {
+pub fn unlink(path: &[u8]) -> Result<usize> {
     let contexts = unsafe { & *::env().contexts.get() };
     let current = try!(contexts.current());
-    let path_safe = current.get_slice(path_ptr, path_len)?;
-    let path_string = current.canonicalize(unsafe { str::from_utf8_unchecked(path_safe) });
+    let path_string = current.canonicalize(unsafe { str::from_utf8_unchecked(path) });
     ::env().unlink(&path_string).and(Ok(0))
 }
 
@@ -520,13 +508,12 @@ ERRORS
     ESRCH
         Currently not running in a process context (rare, would only happen during kernel init)
 <!-- @MANEND --> */
-pub fn write(fd: usize, buf: *const u8, count: usize) -> Result<usize> {
+pub fn write(fd: usize, buf: &[u8]) -> Result<usize> {
     let contexts = unsafe { &mut *::env().contexts.get() };
     let mut current = contexts.current_mut()?;
     let mut resource = current.get_file_mut(fd)?;
-    if count > 0 {
-        let buf_safe = current.get_slice(buf, count)?;
-        resource.write(buf_safe)
+    if buf.len() > 0 {
+        resource.write(buf)
     } else {
         Ok(0)
     }
