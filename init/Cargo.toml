@@ -2,9 +2,5 @@
 name = "init"
 version = "0.1.0"
 
-[lib]
+[[bin]]
 name = "init"
-crate-type = ["staticlib"]
-
-[dependencies]
-syscall = { path = "../syscall/" }

@@ -1,2 +1,2 @@
 #!/bin/bash
-RUST_BACKTRACE=1 rustc -L build $*
+RUST_BACKTRACE=1 rustc -L build --cfg redox $*

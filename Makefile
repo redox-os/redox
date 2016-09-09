@@ -3,8 +3,8 @@ ARCH?=x86_64
 QEMU=qemu-system-$(ARCH)
 QEMUFLAGS=-serial mon:stdio -d guest_errors
 
-RUSTCFLAGS=--target $(ARCH)-unknown-none.json -O -C soft-float
-CARGOFLAGS=--target $(ARCH)-unknown-none.json -- -O -C soft-float
+RUSTCFLAGS=--target $(ARCH)-unknown-redox.json -O -C soft-float --cfg redox
+CARGOFLAGS=--target $(ARCH)-unknown-redox.json -- -O -C soft-float --cfg redox
 
 ifeq ($(ARCH),arm)
 	LD=$(ARCH)-none-eabi-ld
@@ -39,23 +39,24 @@ build/libcore.rlib: rust/src/libcore/lib.rs
 	mkdir -p build
 	./rustc.sh $(RUSTCFLAGS) -o $@ $<
 
+build/librand.rlib: rust/src/librand/lib.rs build/libcore.rlib
+	./rustc.sh $(RUSTCFLAGS) -o $@ $<
+
 build/liballoc.rlib: rust/src/liballoc/lib.rs build/libcore.rlib
-	mkdir -p build
 	./rustc.sh $(RUSTCFLAGS) -o $@ $<
 
 build/librustc_unicode.rlib: rust/src/librustc_unicode/lib.rs build/libcore.rlib
-	mkdir -p build
 	./rustc.sh $(RUSTCFLAGS) -o $@ $<
 
 build/libcollections.rlib: rust/src/libcollections/lib.rs build/libcore.rlib build/liballoc.rlib build/librustc_unicode.rlib
-	mkdir -p build
 	./rustc.sh $(RUSTCFLAGS) -o $@ $<
 
-build/libinit.a: init/Cargo.toml init/src/*.rs
+build/libstd.rlib: libstd/Cargo.toml libstd/src/** build/libcore.rlib build/liballoc.rlib build/librustc_unicode.rlib build/libcollections.rlib build/librand.rlib
 	RUSTC="./rustc.sh" cargo rustc --manifest-path $< $(CARGOFLAGS) -o $@
+	cp libstd/target/$(ARCH)-unknown-redox/debug/deps/*.rlib build
 
-build/init: build/libinit.a
-	$(LD) -e _start --gc-sections -o $@ $<
+build/init: init/Cargo.toml init/src/*.rs build/libstd.rlib
+	RUSTC="./rustc.sh" cargo rustc --manifest-path $< $(CARGOFLAGS) -o $@
 
 build/libkernel.a: build/libcore.rlib build/liballoc.rlib build/libcollections.rlib build/init FORCE
 	mkdir -p build
@@ -83,4 +84,6 @@ endif
 
 clean:
 	cargo clean
+	cargo clean --manifest-path libstd/Cargo.toml
+	cargo clean --manifest-path init/Cargo.toml
 	rm -rf build/*
