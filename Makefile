@@ -37,6 +37,7 @@ OBJDUMP=objdump
 RM=rm
 SED=sed
 SORT=sort
+STRIP=strip
 VB_AUDIO="pulse"
 VBM=VBoxManage
 VBM_CLEANUP=\
@@ -54,6 +55,7 @@ ifeq ($(UNAME),Darwin)
 	FUMOUNT=umount
 	LD=$(ARCH)-elf-ld
 	OBJDUMP=$(ARCH)-elf-objdump
+	STRIP=$(ARCH)-elf-strip
 	CARGOFLAGS += -C ar=$(ARCH)-elf-ar -C linker=$(ARCH)-elf-gcc
 	RUSTCFLAGS += -C ar=$(ARCH)-elf-ar -C linker=$(ARCH)-elf-gcc
 	VB="/Applications/VirtualBox.app/Contents/MacOS/VirtualBox"
@@ -418,7 +420,7 @@ build/initfs.gen: \
 		initfs/build/rustc \
 		initfs/build/rev \
 		initfs/etc/init.rc
-	strip initfs/bin/* # Strip symbols from binaries
+	$(STRIP) initfs/bin/* # Strip symbols from binaries
 	echo 'use collections::BTreeMap;' > $@
 	echo 'pub fn gen() -> BTreeMap<&'"'"'static str, &'"'"'static [u8]> {' >> $@
 	echo '    let mut files: BTreeMap<&'"'"'static str, &'"'"'static [u8]> = BTreeMap::new();' >> $@
@@ -666,7 +668,7 @@ filesystem/apps/zfs/zfs.img:
 	sudo losetup -d /dev/loop0
 
 $(BUILD)/filesystem.bin: $(DISTRO)
-	strip filesystem/bin/* # Strip symbols from binaries
+	$(STRIP) filesystem/bin/* # Strip symbols from binaries
 	rm -rf $@ $(BUILD)/filesystem/
 	echo exit | cargo run --manifest-path crates/redoxfs/Cargo.toml --bin redoxfs-utility $@
 	mkdir -p $(BUILD)/filesystem/
