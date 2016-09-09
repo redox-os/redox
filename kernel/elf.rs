@@ -97,7 +97,6 @@ impl<'a> Elf<'a> {
                 }
 
                 for page in Page::range_inclusive(start_page, end_page) {
-                    println!("{:X}: {:?}", page.start_address().get(), flags);
                     active_table.remap(page, flags);
                 }
 
