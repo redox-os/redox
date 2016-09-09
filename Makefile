@@ -51,7 +51,13 @@ build/libcollections.rlib: rust/src/libcollections/lib.rs build/libcore.rlib bui
 	mkdir -p build
 	./rustc.sh $(RUSTCFLAGS) -o $@ $<
 
-build/libkernel.a: build/libcore.rlib build/liballoc.rlib build/libcollections.rlib FORCE
+build/libinit.a: init/src/*.rs
+	RUSTC="./rustc.sh" cargo rustc --manifest-path init/Cargo.toml $(CARGOFLAGS) -o $@
+
+build/init: build/libinit.a
+	$(LD) -e _start --gc-sections -o $@ $<
+
+build/libkernel.a: build/libcore.rlib build/liballoc.rlib build/libcollections.rlib build/init FORCE
 	mkdir -p build
 	RUSTC="./rustc.sh" cargo rustc $(CARGOFLAGS) -o $@
 
