@@ -57,9 +57,9 @@ build/libstd.rlib: libstd/Cargo.toml libstd/src/** build/libcore.rlib build/liba
 
 build/init: init/Cargo.toml init/src/*.rs build/libstd.rlib
 	RUSTC="./rustc.sh" cargo rustc --manifest-path $< $(CARGOFLAGS) -o $@
+	strip $@
 
-build/libkernel.a: build/libcore.rlib build/liballoc.rlib build/libcollections.rlib build/init FORCE
-	mkdir -p build
+build/libkernel.a: build/libcore.rlib build/liballoc.rlib build/libcollections.rlib build/init kernel/**
 	RUSTC="./rustc.sh" cargo rustc $(CARGOFLAGS) -o $@
 
 build/kernel.bin: build/libkernel.a
