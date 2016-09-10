@@ -58,7 +58,7 @@ pub unsafe fn init(stack_start: usize, stack_end: usize) -> ActivePageTable {
     let mut temporary_page = TemporaryPage::new(Page::containing_address(VirtualAddress::new(0x8_0000_0000)));
 
     let mut new_table = {
-        let frame = allocate_frame().expect("no more frames");
+        let frame = allocate_frame().expect("no more frames in paging::init new_table");
         InactivePageTable::new(frame, &mut active_table, &mut temporary_page)
     };
 
@@ -122,7 +122,7 @@ pub unsafe fn init(stack_start: usize, stack_end: usize) -> ActivePageTable {
         let start = & __tdata_start as *const _ as usize;
         let end = & __tdata_end as *const _ as usize;
         if end > start {
-            temporary_page.map(allocate_frame().expect("no more frames"), PRESENT | NO_EXECUTE | WRITABLE, &mut active_table);
+            temporary_page.map(allocate_frame().expect("no more frames in paging::init TDATA"), PRESENT | NO_EXECUTE | WRITABLE, &mut active_table);
 
             let start_page = Page::containing_address(VirtualAddress::new(start));
             let end_page = Page::containing_address(VirtualAddress::new(end - 1));
