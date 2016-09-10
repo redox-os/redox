@@ -142,7 +142,7 @@ pub extern fn kmain() {
     let stderr = syscall::open("debug:".as_bytes(), 0);
     println!("STDERR: {:?}", stderr);
 
-    let elf = elf::Elf::from(include_bytes!("../build/init")).expect("could not load elf");
+    let elf = elf::Elf::from(include_bytes!("../build/userspace/init")).expect("could not load elf");
     elf.run();
 
     /*

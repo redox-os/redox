@@ -13,7 +13,7 @@
     "dynamic-linking": false,
     "executables": true,
     "relocation-model": "static",
-    "code-model": "kernel",
+    "code-model": "default",
     "disable-redzone": true,
     "eliminate-frame-pointer": false,
     "exe-suffix": "",
