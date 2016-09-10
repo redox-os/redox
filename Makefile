@@ -59,11 +59,12 @@ build/init: init/Cargo.toml init/src/*.rs build/libstd.rlib
 	RUSTC="./rustc.sh" cargo rustc --manifest-path $< $(CARGOFLAGS) -o $@
 	strip $@
 
-build/libkernel.a: build/libcore.rlib build/liballoc.rlib build/libcollections.rlib build/init kernel/**
+build/libkernel.a: build/libcore.rlib build/liballoc.rlib build/libcollections.rlib build/init kernel/** FORCE
 	RUSTC="./rustc.sh" cargo rustc $(CARGOFLAGS) -o $@
 
 build/kernel.bin: build/libkernel.a
 	$(LD) --gc-sections -z max-page-size=0x1000 -T arch/$(ARCH)/src/linker.ld -o $@ $<
+	strip $@
 
 ifeq ($(ARCH),arm)
 build/kernel.list: build/kernel.bin
@@ -75,7 +76,7 @@ else
 build/kernel.list: build/kernel.bin
 	objdump -C -M intel -D $< > $@
 
-build/harddrive.bin: build/kernel.bin
+build/harddrive.bin: build/kernel.bin bootloader/$(ARCH)/**
 	nasm -f bin -o $@ -D ARCH_$(ARCH) -ibootloader/$(ARCH)/ -ibuild/ bootloader/$(ARCH)/harddrive.asm
 
 qemu: build/harddrive.bin
