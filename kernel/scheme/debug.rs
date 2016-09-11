@@ -7,7 +7,6 @@ pub struct DebugScheme;
 
 impl Scheme for DebugScheme {
     fn open(&mut self, path: &[u8], _flags: usize) -> Result<usize> {
-        println!("DebugScheme::open: {}", unsafe { str::from_utf8_unchecked(path) });
         Ok(0)
     }
 

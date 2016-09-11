@@ -62,9 +62,6 @@ pub unsafe fn init(kernel_start: usize, kernel_end: usize) {
     // Copy memory map from bootloader location
     for (i, mut entry) in MEMORY_MAP.iter_mut().enumerate() {
         *entry = *(0x500 as *const MemoryArea).offset(i as isize);
-        if entry.length > 0 {
-            println!("{:?}", entry);
-        }
     }
 
     *ALLOCATOR.lock() = Some(AreaFrameAllocator::new(kernel_start, kernel_end, MemoryAreaIter::new(MEMORY_AREA_FREE)));

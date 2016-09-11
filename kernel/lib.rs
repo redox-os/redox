@@ -133,14 +133,9 @@ pub extern fn kmain() {
     let pid = syscall::getpid();
     println!("BSP: {:?}", pid);
 
-    let stdin = syscall::open("debug:".as_bytes(), 0);
-    println!("STDIN: {:?}", stdin);
-
-    let stdout = syscall::open("debug:".as_bytes(), 0);
-    println!("STDOUT: {:?}", stdout);
-
-    let stderr = syscall::open("debug:".as_bytes(), 0);
-    println!("STDERR: {:?}", stderr);
+    assert_eq!(syscall::open("debug:".as_bytes(), 0), Ok(0));
+    assert_eq!(syscall::open("debug:".as_bytes(), 0), Ok(1));
+    assert_eq!(syscall::open("debug:".as_bytes(), 0), Ok(2));
 
     let elf = elf::Elf::from(include_bytes!("../build/userspace/init")).expect("could not load elf");
     elf.run();
@@ -167,6 +162,13 @@ pub extern fn kmain_ap(id: usize) {
 
     let pid = syscall::getpid();
     println!("AP {}: {:?}", id, pid);
+
+    assert_eq!(syscall::open("debug:".as_bytes(), 0), Ok(0));
+    assert_eq!(syscall::open("debug:".as_bytes(), 0), Ok(1));
+    assert_eq!(syscall::open("debug:".as_bytes(), 0), Ok(2));
+
+    let elf = elf::Elf::from(include_bytes!("../build/userspace/init")).expect("could not load elf");
+    elf.run();
 
     loop {
         unsafe { interrupt::enable_and_halt() }

@@ -56,11 +56,6 @@ impl<'a> Elf<'a> {
         let mut active_table = unsafe { ActivePageTable::new() };
 
         for segment in self.segments() {
-            println!("Segment {:X} flags {:X} off {:X} virt {:X} phys {:X} file {} mem {} align {}",
-                        segment.p_type, segment.p_flags, segment.p_offset,
-                        segment.p_vaddr, segment.p_paddr, segment.p_filesz,
-                        segment.p_memsz, segment.p_align);
-
             if segment.p_type == program_header::PT_LOAD {
                 let start_page = Page::containing_address(VirtualAddress::new(segment.p_vaddr as usize));
                 let end_page = Page::containing_address(VirtualAddress::new((segment.p_vaddr + segment.p_memsz) as usize));

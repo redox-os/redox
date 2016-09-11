@@ -212,7 +212,6 @@ pub unsafe fn usermode(ip: usize, sp: usize) -> ! {
         mov rax, 0x23
         push rax # Push code segment
         push rcx # Push rip
-        xchg bx, bx
         iretq"
         :
         : "{rbx}"(sp), "{rcx}"(ip)
