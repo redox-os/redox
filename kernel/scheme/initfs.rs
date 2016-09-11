@@ -18,7 +18,8 @@ impl InitFsScheme {
     pub fn new() -> InitFsScheme {
         let mut files: BTreeMap<&'static [u8], &'static [u8]> = BTreeMap::new();
 
-        files.insert(b"init", include_bytes!("../../build/userspace/init"));
+        files.insert(b"bin/init", include_bytes!("../../build/userspace/init"));
+        files.insert(b"etc/init.rc", b"echo testing\n");
 
         InitFsScheme {
             next_id: 0,

@@ -71,7 +71,7 @@ impl ContextList {
         let context_lock = self.new_context()?;
         {
             let mut context = context_lock.write();
-            let mut stack = Box::new([0; 4096]);
+            let mut stack = Box::new([0; 65536]);
             let offset = stack.len() - mem::size_of::<usize>();
             unsafe {
                 let offset = stack.len() - mem::size_of::<usize>();

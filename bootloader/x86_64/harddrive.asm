@@ -12,7 +12,7 @@ align 512, db 0
 startup_end:
 
 kernel_file:
-  incbin "kernel.bin"
+  incbin "build/kernel/kernel"
   align 512, db 0
 .end:
 .length equ kernel_file.end - kernel_file

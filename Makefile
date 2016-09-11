@@ -37,10 +37,10 @@ ifeq ($(ARCH),arm)
 	QEMUFLAGS+=-cpu arm1176 -machine integratorcp
 	QEMUFLAGS+=-nographic
 
-$(KBUILD)/kernel.list: $(KBUILD)/kernel.bin
+build/%.list: build/%
 	$(ARCH)-none-eabi-objdump -C -D $< > $@
 
-$(KBUILD)/harddrive.bin: $(KBUILD)/kernel.bin
+$(KBUILD)/harddrive.bin: $(KBUILD)/kernel
 	cp $< $@
 
 qemu: $(KBUILD)/harddrive.bin
@@ -60,11 +60,11 @@ endif
 		QEMUFLAGS=
 	endif
 
-$(KBUILD)/kernel.list: $(KBUILD)/kernel.bin
+build/%.list: build/%
 	objdump -C -M intel -D $< > $@
 
-$(KBUILD)/harddrive.bin: $(KBUILD)/kernel.bin bootloader/$(ARCH)/**
-	nasm -f bin -o $@ -D ARCH_$(ARCH) -ibootloader/$(ARCH)/ -i$(KBUILD)/ bootloader/$(ARCH)/harddrive.asm
+$(KBUILD)/harddrive.bin: $(KBUILD)/kernel bootloader/$(ARCH)/**
+	nasm -f bin -o $@ -D ARCH_$(ARCH) -ibootloader/$(ARCH)/ bootloader/$(ARCH)/harddrive.asm
 
 qemu: $(KBUILD)/harddrive.bin
 	$(QEMU) $(QEMUFLAGS) -drive file=$<,format=raw,index=0,media=disk
@@ -93,7 +93,7 @@ $(KBUILD)/libcollections.rlib: rust/src/libcollections/lib.rs $(KBUILD)/libcore.
 $(KBUILD)/libkernel.a: $(KBUILD)/libcore.rlib $(KBUILD)/liballoc.rlib $(KBUILD)/libcollections.rlib $(BUILD)/init kernel/** FORCE
 	$(KCARGO) rustc $(KCARGOFLAGS) -o $@
 
-$(KBUILD)/kernel.bin: $(KBUILD)/libkernel.a
+$(KBUILD)/kernel: $(KBUILD)/libkernel.a
 	$(LD) --gc-sections -z max-page-size=0x1000 -T arch/$(ARCH)/src/linker.ld -o $@ $<
 
 # Userspace recipes

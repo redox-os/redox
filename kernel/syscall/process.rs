@@ -1,10 +1,63 @@
 ///! Process syscalls
 
+use core::str;
+
+use arch;
 use arch::interrupt::halt;
-
+use arch::paging::{ActivePageTable, Page, VirtualAddress, entry};
 use context;
+use elf;
+use syscall::{self, Error, Result};
 
-use super::{convert_slice, Error, Result};
+pub fn brk(address: usize) -> Result<usize> {
+    //TODO: Make this more efficient
+    let mut active_table = unsafe { ActivePageTable::new() };
+    let mut current = arch::USER_HEAP_OFFSET;
+    {
+        let min_page = Page::containing_address(VirtualAddress::new(arch::USER_HEAP_OFFSET));
+        let max_page = Page::containing_address(VirtualAddress::new(arch::USER_HEAP_OFFSET + arch::USER_HEAP_SIZE - 1));
+        for page in Page::range_inclusive(min_page, max_page) {
+            if active_table.translate_page(page).is_none() {
+                break;
+            }
+            current = page.start_address().get() + 4096;
+        }
+    }
+    if address == 0 {
+        //println!("Brk query {:X}", current);
+        Ok(current)
+    } else if address > current {
+        let start_page = Page::containing_address(VirtualAddress::new(current));
+        let end_page = Page::containing_address(VirtualAddress::new(address - 1));
+        for page in Page::range_inclusive(start_page, end_page) {
+            //println!("Map {:X}", page.start_address().get());
+            if active_table.translate_page(page).is_none() {
+                //println!("Not found - mapping");
+                active_table.map(page, entry::PRESENT | entry::WRITABLE | entry::NO_EXECUTE | entry::USER_ACCESSIBLE);
+            } else {
+                //println!("Found - skipping");
+            }
+        }
+        //let new = end_page.start_address().get() + 4096;
+        //println!("Brk increase {:X}: from {:X} to {:X}", address, current, new);
+        Ok(address)
+    } else {
+        let start_page = Page::containing_address(VirtualAddress::new(address));
+        let end_page = Page::containing_address(VirtualAddress::new(current - 1));
+        for page in Page::range_inclusive(start_page, end_page) {
+            //println!("Unmap {:X}", page.start_address().get());
+            if active_table.translate_page(page).is_some() {
+                //println!("Found - unmapping");
+                active_table.unmap(page);
+            } else {
+                //println!("Not found - skipping");
+            }
+        }
+        //let new = start_page.start_address().get();
+        //println!("Brk decrease {:X}: from {:X} to {:X}", address, current, new);
+        Ok(address)
+    }
+}
 
 pub fn exit(status: usize) -> ! {
     println!("Exit {}", status);
@@ -13,13 +66,34 @@ pub fn exit(status: usize) -> ! {
     }
 }
 
-pub fn exec(path: &[u8], args: &[[usize; 2]]) -> Result<usize> {
-    print!("Exec {:?}", ::core::str::from_utf8(path));
-    for arg in args {
-        print!(" {:?}", ::core::str::from_utf8(convert_slice(arg[0] as *const u8, arg[1])?));
+pub fn exec(path: &[u8], _args: &[[usize; 2]]) -> Result<usize> {
+    //TODO: Use args
+    //TODO: Unmap previous mappings
+    //TODO: Drop init_data
+
+    let init_file = syscall::open(path, 0)?;
+    let mut init_data = vec![];
+    loop {
+        let mut buf = [0; 4096];
+        let count = syscall::read(init_file, &mut buf)?;
+        if count > 0 {
+            init_data.extend_from_slice(&buf[..count]);
+        } else {
+            break;
+        }
     }
-    println!("");
-    Ok(0)
+    let _ = syscall::close(init_file);
+
+    match elf::Elf::from(&init_data) {
+        Ok(elf) => {
+            elf.run();
+            Ok(0)
+        },
+        Err(err) => {
+            println!("failed to execute {}: {}", unsafe { str::from_utf8_unchecked(path) }, err);
+            Err(Error::NoExec)
+        }
+    }
 }
 
 pub fn getpid() -> Result<usize> {

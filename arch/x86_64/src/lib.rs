@@ -29,7 +29,11 @@ pub const BITMAP_OFFSET: usize = 0xffff_fe80_0000_0000;
 /// Offset to kernel heap
 pub const HEAP_OFFSET: usize = 0xffff_fe00_0000_0000;
 /// Size of heap
-pub const HEAP_SIZE: usize = 64 * 1024 * 1024; // 128 MB
+pub const HEAP_SIZE: usize = 64 * 1024 * 1024; // 64 MB
+/// Offset to user heap
+pub const USER_HEAP_OFFSET: usize = 0x0000_0080_0000_0000;
+/// Size of user heap
+pub const USER_HEAP_SIZE: usize = 64 * 1024 * 1024; // 64 MB
 
 /// Print to console
 #[macro_export]

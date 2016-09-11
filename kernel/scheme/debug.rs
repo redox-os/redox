@@ -6,7 +6,7 @@ use super::Scheme;
 pub struct DebugScheme;
 
 impl Scheme for DebugScheme {
-    fn open(&mut self, path: &[u8], _flags: usize) -> Result<usize> {
+    fn open(&mut self, _path: &[u8], _flags: usize) -> Result<usize> {
         Ok(0)
     }
 
