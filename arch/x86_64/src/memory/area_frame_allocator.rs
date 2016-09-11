@@ -76,6 +76,6 @@ impl FrameAllocator for AreaFrameAllocator {
     }
 
     fn deallocate_frame(&mut self, frame: Frame) {
-        //println!("Leak frame: {:?}", frame);
+        //panic!("AreaFrameAllocator::deallocate_frame: not supported: {:?}", frame);
     }
 }

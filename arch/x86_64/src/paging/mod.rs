@@ -21,9 +21,6 @@ pub const ENTRY_COUNT: usize = 512;
 /// Size of pages
 pub const PAGE_SIZE: usize = 4096;
 
-/// Offset of kernel from physical
-pub const KERNEL_OFFSET: usize = 0xfffffe8000000000;
-
 /// Initialize paging
 pub unsafe fn init(stack_start: usize, stack_end: usize) -> ActivePageTable {
     extern {
@@ -71,8 +68,8 @@ pub unsafe fn init(stack_start: usize, stack_end: usize) -> ActivePageTable {
                     for frame in Frame::range_inclusive(start_frame, end_frame) {
                         mapper.identity_map(frame.clone(), flags);
 
-                        let page = Page::containing_address(VirtualAddress::new(frame.start_address().get() + KERNEL_OFFSET));
-                        mapper.map_to(page, frame, flags);
+                        //let page = Page::containing_address(VirtualAddress::new(frame.start_address().get() + ::KERNEL_OFFSET));
+                        //mapper.map_to(page, frame, flags);
                     }
                 }
             };

@@ -9,26 +9,29 @@ use linked_list_allocator::Heap;
 
 extern crate spin;
 extern crate linked_list_allocator;
-#[macro_use]
-extern crate lazy_static;
 
-pub const HEAP_START: usize = 0xffff_ff00_0000_0000; // Put at end of memory, below the recursive page mapping
-pub const HEAP_SIZE: usize = 64 * 1024 * 1024; // 128 MB
+static HEAP: Mutex<Option<Heap>> = Mutex::new(None);
 
-lazy_static! {
-    static ref HEAP: Mutex<Heap> = Mutex::new(unsafe {
-        Heap::new(HEAP_START, HEAP_SIZE)
-    });
+pub unsafe fn init(offset: usize, size: usize) {
+    *HEAP.lock() = Some(Heap::new(offset, size));
 }
 
 #[no_mangle]
 pub extern fn __rust_allocate(size: usize, align: usize) -> *mut u8 {
-    HEAP.lock().allocate_first_fit(size, align).expect("out of memory")
+    if let Some(ref mut heap) = *HEAP.lock() {
+        heap.allocate_first_fit(size, align).expect("out of memory")
+    } else {
+        panic!("__rust_allocate: heap not initialized");
+    }
 }
 
 #[no_mangle]
 pub extern fn __rust_deallocate(ptr: *mut u8, size: usize, align: usize) {
-    unsafe { HEAP.lock().deallocate(ptr, size, align) };
+    if let Some(ref mut heap) = *HEAP.lock() {
+        unsafe { heap.deallocate(ptr, size, align) };
+    } else {
+        panic!("__rust_deallocate: heap not initialized");
+    }
 }
 
 #[no_mangle]

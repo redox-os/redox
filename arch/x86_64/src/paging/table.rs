@@ -9,7 +9,7 @@ use memory::allocate_frame;
 use super::entry::*;
 use super::ENTRY_COUNT;
 
-pub const P4: *mut Table<Level4> = 0xffffffff_fffff000 as *mut _;
+pub const P4: *mut Table<Level4> = 0xffff_ffff_ffff_f000 as *mut _;
 
 pub trait TableLevel {}
 

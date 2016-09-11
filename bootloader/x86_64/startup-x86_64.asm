@@ -58,9 +58,9 @@ startup_arch:
     rep stosd
 
     xor edi, edi
-    ;Link first PML4 and third to last PML4 to PDP
+    ;Link first PML4 and second to last PML4 to PDP
     mov DWORD [es:edi], 0x71000 | 1 << 1 | 1
-    mov DWORD [es:edi + 509*8], 0x71000 | 1 << 1 | 1
+    mov DWORD [es:edi + 510*8], 0x71000 | 1 << 1 | 1
     add edi, 0x1000
     ;Link last PML4 to PML4
     mov DWORD [es:edi - 8], 0x70000 | 1 << 1 | 1
@@ -120,8 +120,7 @@ long_mode:
     mov rsp, 0x0009F000
 
     ;rust init
-    xor rax, rax
-    mov eax, [kernel_base + 0x18]
+    mov rax, [kernel_base + 0x18]
     jmp rax
 
 long_mode_ap:

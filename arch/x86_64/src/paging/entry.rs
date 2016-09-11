@@ -23,7 +23,7 @@ bitflags! {
     }
 }
 
-pub const ADDRESS_MASK: usize = 0x000fffff_fffff000;
+pub const ADDRESS_MASK: usize = 0x000f_ffff_ffff_f000;
 
 impl Entry {
     /// Is the entry unused?

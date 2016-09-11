@@ -3,11 +3,11 @@
 
 pub use paging::{PAGE_SIZE, PhysicalAddress};
 
-use self::area_frame_alloc::AreaFrameAllocator;
+use self::area_frame_allocator::AreaFrameAllocator;
 
 use spin::Mutex;
 
-pub mod area_frame_alloc;
+pub mod area_frame_allocator;
 
 /// The current memory map. It's size is maxed out to 512 entries, due to it being
 /// from 0x500 to 0x5000 (800 is the absolute total)

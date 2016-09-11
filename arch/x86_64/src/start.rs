@@ -6,7 +6,7 @@
 use core::sync::atomic::{AtomicBool, ATOMIC_BOOL_INIT, AtomicUsize, ATOMIC_USIZE_INIT, Ordering};
 
 use acpi;
-use allocator::{HEAP_START, HEAP_SIZE};
+use allocator;
 use device;
 use externs::memset;
 use gdt;
@@ -29,7 +29,7 @@ static mut TDATA_TEST_NONZERO: usize = 0xFFFFFFFFFFFFFFFF;
 static AP_COUNT: AtomicUsize = ATOMIC_USIZE_INIT;
 pub static AP_READY: AtomicBool = ATOMIC_BOOL_INIT;
 static BSP_READY: AtomicBool = ATOMIC_BOOL_INIT;
-static HEAP_FRAME: AtomicUsize = ATOMIC_USIZE_INIT;
+static HEAP_TABLE: AtomicUsize = ATOMIC_USIZE_INIT;
 
 extern {
     /// Kernel main function
@@ -97,31 +97,31 @@ pub unsafe extern fn kstart() -> ! {
         AP_COUNT.store(0, Ordering::SeqCst);
         AP_READY.store(false, Ordering::SeqCst);
         BSP_READY.store(false, Ordering::SeqCst);
-        HEAP_FRAME.store(0, Ordering::SeqCst);
+        HEAP_TABLE.store(0, Ordering::SeqCst);
 
         // Map heap
         {
-            let heap_start_page = Page::containing_address(VirtualAddress::new(HEAP_START));
-            let heap_end_page = Page::containing_address(VirtualAddress::new(HEAP_START + HEAP_SIZE-1));
-
-            {
-                let index = heap_start_page.p4_index();
-                assert_eq!(index, heap_end_page.p4_index());
-
-                let frame = memory::allocate_frame().expect("no frames available");
-                HEAP_FRAME.store(frame.start_address().get(), Ordering::SeqCst);
-
-                let p4 = active_table.p4_mut();
-                {
-                    let entry = &mut p4[index];
-                    assert!(entry.is_unused());
-                    entry.set(frame, entry::PRESENT | entry::WRITABLE);
-                }
-                p4.next_table_mut(index).unwrap().zero();
-            }
-
+            // Map heap pages
+            let heap_start_page = Page::containing_address(VirtualAddress::new(::HEAP_OFFSET));
+            let heap_end_page = Page::containing_address(VirtualAddress::new(::HEAP_OFFSET + ::HEAP_SIZE-1));
             for page in Page::range_inclusive(heap_start_page, heap_end_page) {
                 active_table.map(page, entry::WRITABLE | entry::NO_EXECUTE);
+            }
+
+            // Init the allocator
+            allocator::init(::HEAP_OFFSET, ::HEAP_SIZE);
+
+            // Send heap page table to APs
+            let index = heap_start_page.p4_index();
+
+            let p4 = active_table.p4();
+            {
+                let entry = &p4[index];
+                if let Some(frame) = entry.pointed_frame() {
+                    HEAP_TABLE.store(frame.start_address().get(), Ordering::SeqCst);
+                } else {
+                    panic!("heap does not have PML4 entry");
+                }
             }
         }
 
@@ -167,24 +167,19 @@ pub unsafe extern fn kstart_ap(stack_start: usize, stack_end: usize) -> ! {
             assert_eq!(TDATA_TEST_NONZERO, 0xFFFFFFFFFFFFFFFE);
         }
 
-        // Map heap
+        // Copy heap PML4
         {
-            let heap_start_page = Page::containing_address(VirtualAddress::new(HEAP_START));
-            let heap_end_page = Page::containing_address(VirtualAddress::new(HEAP_START + HEAP_SIZE-1));
+            let page = Page::containing_address(VirtualAddress::new(::HEAP_OFFSET));
 
-            {
-                assert_eq!(heap_start_page.p4_index(), heap_end_page.p4_index());
-
-                while HEAP_FRAME.load(Ordering::SeqCst) == 0 {
-                    interrupt::pause();
-                }
-                let frame = Frame::containing_address(PhysicalAddress::new(HEAP_FRAME.load(Ordering::SeqCst)));
-
-                let p4 = active_table.p4_mut();
-                let entry = &mut p4[heap_start_page.p4_index()];
-                assert!(entry.is_unused());
-                entry.set(frame, entry::PRESENT | entry::WRITABLE);
+            while HEAP_TABLE.load(Ordering::SeqCst) == 0 {
+                interrupt::pause();
             }
+            let frame = Frame::containing_address(PhysicalAddress::new(HEAP_TABLE.load(Ordering::SeqCst)));
+
+            let p4 = active_table.p4_mut();
+            let entry = &mut p4[page.p4_index()];
+            assert!(entry.is_unused());
+            entry.set(frame, entry::PRESENT | entry::WRITABLE);
         }
 
         // Init devices for AP

@@ -19,6 +19,18 @@ extern crate ransid;
 extern crate spin;
 pub extern crate x86;
 
+// Because the memory map is so important to not be aliased, it is defined here, in one place
+/// Offset of recursive paging
+pub const RECURSIVE_PAGE_OFFSET: usize = 0xffff_ff80_0000_0000;
+/// Offset of kernel
+pub const KERNEL_OFFSET: usize = 0xffff_ff00_0000_0000;
+/// Offset to memory allocation bitmap
+pub const BITMAP_OFFSET: usize = 0xffff_fe80_0000_0000;
+/// Offset to kernel heap
+pub const HEAP_OFFSET: usize = 0xffff_fe00_0000_0000;
+/// Size of heap
+pub const HEAP_SIZE: usize = 64 * 1024 * 1024; // 128 MB
+
 /// Print to console
 #[macro_export]
 macro_rules! print {
