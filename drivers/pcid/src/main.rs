@@ -16,43 +16,36 @@ fn enumerate_pci() {
         for dev in bus.devs() {
             for func in dev.funcs() {
                 if let Some(header) = func.header() {
-                    println!("PCI {:>02X}/{:>02X}/{:>02X} {:>04X}:{:>04X} {:>02X}.{:>02X}.{:>02X}.{:>02X} {:?}",
+                    print!("PCI {:>02X}/{:>02X}/{:>02X} {:>04X}:{:>04X} {:>02X}.{:>02X}.{:>02X}.{:>02X}",
                             bus.num, dev.num, func.num,
                             header.vendor_id, header.device_id,
-                            header.class, header.subclass, header.interface, header.revision,
-                            PciClass::from(header.class));
+                            header.class, header.subclass, header.interface, header.revision);
 
-                    for i in 0..header.bars.len() {
-                        match PciBar::from(header.bars[i]) {
-                            PciBar::None => (),
-                            PciBar::Memory(address) => println!("    BAR {} {:>08X}", i, address),
-                            PciBar::Port(address) => println!("    BAR {} {:>04X}", i, address)
-                        }
-                    }
-
-                    match PciClass::from(header.class) {
+                    let pci_class = PciClass::from(header.class);
+                    print!(" {:?}", pci_class);
+                    match pci_class {
                         PciClass::Storage => match header.subclass {
                             0x01 => {
-                                println!("    + IDE");
+                                print!(" IDE");
                             },
                             0x06 => {
-                                println!("    + SATA");
+                                print!(" SATA");
                             },
                             _ => ()
                         },
                         PciClass::SerialBus => match header.subclass {
                             0x03 => match header.interface {
                                 0x00 => {
-                                    println!("    + UHCI");
+                                    print!(" UHCI");
                                 },
                                 0x10 => {
-                                    println!("    + OHCI");
+                                    print!(" OHCI");
                                 },
                                 0x20 => {
-                                    println!("    + EHCI");
+                                    print!(" EHCI");
                                 },
                                 0x30 => {
-                                    println!("    + XHCI");
+                                    print!(" XHCI");
                                 },
                                 _ => ()
                             },
@@ -60,6 +53,16 @@ fn enumerate_pci() {
                         },
                         _ => ()
                     }
+
+                    for i in 0..header.bars.len() {
+                        match PciBar::from(header.bars[i]) {
+                            PciBar::None => (),
+                            PciBar::Memory(address) => print!(" {}={:>08X}", i, address),
+                            PciBar::Port(address) => print!(" {}={:>04X}", i, address)
+                        }
+                    }
+
+                    print!("\n");
                 }
             }
         }
