@@ -113,16 +113,21 @@ pub trait Scheme {
     /// Returns a file descriptor or an error
     fn open(&mut self, path: &[u8], flags: usize) -> Result<usize>;
 
+    /// Duplicate an open file descriptor
+    ///
+    /// Returns a file descriptor or an error
+    fn dup(&mut self, file: usize) -> Result<usize>;
+
     /// Read from some file descriptor into the `buffer`
     ///
     /// Returns the number of bytes read
-    fn read(&mut self, fd: usize, buffer: &mut [u8]) -> Result<usize>;
+    fn read(&mut self, file: usize, buffer: &mut [u8]) -> Result<usize>;
 
     /// Write the `buffer` to the file descriptor
     ///
     /// Returns the number of bytes written
-    fn write(&mut self, fd: usize, buffer: &[u8]) -> Result<usize>;
+    fn write(&mut self, file: usize, buffer: &[u8]) -> Result<usize>;
 
     /// Close the file descriptor
-    fn close(&mut self, fd: usize) -> Result<()>;
+    fn close(&mut self, file: usize) -> Result<()>;
 }

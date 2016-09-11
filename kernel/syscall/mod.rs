@@ -30,6 +30,8 @@ pub enum Call {
     Exec = 11,
     /// Get process ID
     GetPid = 20,
+    /// Duplicate file descriptor
+    Dup = 41,
     /// Set process break
     Brk = 45,
     /// Set process I/O privilege level
@@ -52,6 +54,7 @@ impl Call {
             6 => Ok(Call::Close),
             11 => Ok(Call::Exec),
             20 => Ok(Call::GetPid),
+            41 => Ok(Call::Dup),
             45 => Ok(Call::Brk),
             110 => Ok(Call::Iopl),
             120 => Ok(Call::Clone),
@@ -112,6 +115,7 @@ pub fn handle(a: usize, b: usize, c: usize, d: usize, e: usize, _f: usize) -> Re
             Call::Close => close(b),
             Call::Exec => exec(convert_slice(b as *const u8, c)?, convert_slice(d as *const [usize; 2], e)?),
             Call::GetPid => getpid(),
+            Call::Dup => dup(b),
             Call::Brk => brk(b),
             Call::Iopl => iopl(b),
             Call::Clone => clone(b),

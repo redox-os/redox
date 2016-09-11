@@ -10,6 +10,10 @@ impl Scheme for DebugScheme {
         Ok(0)
     }
 
+    fn dup(&mut self, _file: usize) -> Result<usize> {
+        Ok(0)
+    }
+
     /// Read the file `number` into the `buffer`
     ///
     /// Returns the number of bytes read

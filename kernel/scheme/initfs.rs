@@ -33,18 +33,33 @@ impl InitFsScheme {
 impl Scheme for InitFsScheme {
     fn open(&mut self, path: &[u8], _flags: usize) -> Result<usize> {
         let data = self.files.get(path).ok_or(Error::NoEntry)?;
+
         let id = self.next_id;
         self.next_id += 1;
         self.handles.insert(id, Handle {
             data: data,
             seek: 0
         });
+
         Ok(id)
     }
 
-    /// Read the file `number` into the `buffer`
-    ///
-    /// Returns the number of bytes read
+    fn dup(&mut self, file: usize) -> Result<usize> {
+        let (data, seek) = {
+            let handle = self.handles.get(&file).ok_or(Error::BadFile)?;
+            (handle.data, handle.seek)
+        };
+
+        let id = self.next_id;
+        self.next_id += 1;
+        self.handles.insert(id, Handle {
+            data: data,
+            seek: seek
+        });
+
+        Ok(id)
+    }
+
     fn read(&mut self, file: usize, buffer: &mut [u8]) -> Result<usize> {
         let mut handle = self.handles.get_mut(&file).ok_or(Error::BadFile)?;
 
@@ -58,14 +73,10 @@ impl Scheme for InitFsScheme {
         Ok(i)
     }
 
-    /// Write the `buffer` to the `file`
-    ///
-    /// Returns the number of bytes written
     fn write(&mut self, _file: usize, _buffer: &[u8]) -> Result<usize> {
         Err(Error::NotPermitted)
     }
 
-    /// Close the file `number`
     fn close(&mut self, file: usize) -> Result<()> {
         self.handles.remove(&file).ok_or(Error::BadFile).and(Ok(()))
     }

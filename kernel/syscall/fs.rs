@@ -11,7 +11,7 @@ pub fn read(fd: usize, buf: &mut [u8]) -> Result<usize> {
         let contexts = context::contexts();
         let context_lock = contexts.current().ok_or(Error::NoProcess)?;
         let context = context_lock.read();
-        let file = context.files.get(fd).ok_or(Error::BadFile)?.ok_or(Error::BadFile)?;
+        let file = context.get_file(fd).ok_or(Error::BadFile)?;
         file
     };
 
@@ -27,7 +27,7 @@ pub fn write(fd: usize, buf: &[u8]) -> Result<usize> {
         let contexts = context::contexts();
         let context_lock = contexts.current().ok_or(Error::NoProcess)?;
         let context = context_lock.read();
-        let file = context.files.get(fd).ok_or(Error::BadFile)?.ok_or(Error::BadFile)?;
+        let file = context.get_file(fd).ok_or(Error::BadFile)?;
         file
     };
 
@@ -65,13 +65,29 @@ pub fn close(fd: usize) -> Result<usize> {
     let file = {
         let contexts = context::contexts();
         let context_lock = contexts.current().ok_or(Error::NoProcess)?;
-        let context = context_lock.read();
-        let file = context.files.get(fd).ok_or(Error::BadFile)?.ok_or(Error::BadFile)?;
+        let mut context = context_lock.write();
+        let file = context.remove_file(fd).ok_or(Error::BadFile)?;
         file
     };
 
     let schemes = scheme::schemes();
     let scheme_mutex = schemes.get(file.scheme).ok_or(Error::BadFile)?;
     let result = scheme_mutex.lock().close(file.number).and(Ok(0));
+    result
+}
+
+/// Duplicate file descriptor
+pub fn dup(fd: usize) -> Result<usize> {
+    let file = {
+        let contexts = context::contexts();
+        let context_lock = contexts.current().ok_or(Error::NoProcess)?;
+        let context = context_lock.read();
+        let file = context.get_file(fd).ok_or(Error::BadFile)?;
+        file
+    };
+
+    let schemes = scheme::schemes();
+    let scheme_mutex = schemes.get(file.scheme).ok_or(Error::BadFile)?;
+    let result = scheme_mutex.lock().dup(file.number);
     result
 }

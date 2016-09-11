@@ -202,4 +202,23 @@ impl Context {
             None
         }
     }
+
+    /// Get a file
+    pub fn get_file(&self, i: usize) -> Option<file::File> {
+        if i < self.files.len() {
+            self.files[i]
+        } else {
+            None
+        }
+    }
+
+    /// Remove a file
+    // TODO: adjust files vector to smaller size if possible
+    pub fn remove_file(&mut self, i: usize) -> Option<file::File> {
+        if i < self.files.len() {
+            self.files[i].take()
+        } else {
+            None
+        }
+    }
 }
