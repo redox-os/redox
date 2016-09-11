@@ -19,80 +19,80 @@ interrupt!(pit, {
 });
 
 interrupt!(keyboard, {
-    master_ack();
     if let Some(ref mut keyboard) = *PS2_KEYBOARD.lock(){
         keyboard.on_irq();
     }
+    master_ack();
 });
 
 interrupt!(cascade, {
-    master_ack();
     print!("CASCADE\n");
+    master_ack();
 });
 
 interrupt!(com2, {
-    master_ack();
     COM2.lock().on_receive();
+    master_ack();
 });
 
 interrupt!(com1, {
-    master_ack();
     COM1.lock().on_receive();
+    master_ack();
 });
 
 interrupt!(lpt2, {
-    master_ack();
     print!("LPT2\n");
+    master_ack();
 });
 
 interrupt!(floppy, {
-    master_ack();
     print!("FLOPPY\n");
+    master_ack();
 });
 
 interrupt!(lpt1, {
-    master_ack();
     print!("LPT1\n");
+    master_ack();
 });
 
 interrupt!(rtc, {
-    slave_ack();
     print!("RTC\n");
+    slave_ack();
 });
 
 interrupt!(pci1, {
-    slave_ack();
     print!("PCI1\n");
+    slave_ack();
 });
 
 interrupt!(pci2, {
-    slave_ack();
     print!("PCI2\n");
+    slave_ack();
 });
 
 interrupt!(pci3, {
-    slave_ack();
     print!("PCI3\n");
+    slave_ack();
 });
 
 interrupt!(mouse, {
-    slave_ack();
     if let Some(ref mut mouse) = *PS2_MOUSE.lock() {
         mouse.on_irq();
     }
+    slave_ack();
 });
 
 interrupt!(fpu, {
-    slave_ack();
     print!("FPU\n");
+    slave_ack();
 });
 
 interrupt!(ata1, {
-    slave_ack();
     print!("ATA1\n");
+    slave_ack();
 });
 
 interrupt!(ata2, {
-    slave_ack();
     print!("ATA2\n");
+    slave_ack();
 });

@@ -48,19 +48,18 @@ qemu: $(KBUILD)/harddrive.bin
 else
 	LD=ld
 	QEMUFLAGS+=-machine q35 -smp 4
-ifneq ($(kvm),no)
-	QEMUFLAGS+=-enable-kvm -cpu host
-endif
-ifeq ($(vga),no)
-	QEMUFLAGS+=-nographic -vga none
-endif
+	ifeq ($(kvm),yes)
+		QEMUFLAGS+=-enable-kvm -cpu host
+	endif
+	ifeq ($(vga),no)
+		QEMUFLAGS+=-nographic -vga none
+	endif
 	#,int,pcall
 	#-device intel-iommu
 
 	UNAME := $(shell uname)
 	ifeq ($(UNAME),Darwin)
 		LD=$(ARCH)-elf-ld
-		QEMUFLAGS=
 	endif
 
 build/%.list: build/%
