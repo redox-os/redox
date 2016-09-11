@@ -1,6 +1,6 @@
 use x86::io;
 
-use device::ps2::PS2;
+use device::ps2::{PS2_KEYBOARD, PS2_MOUSE};
 use device::serial::{COM1, COM2};
 
 #[inline(always)]
@@ -19,76 +19,80 @@ interrupt!(pit, {
 });
 
 interrupt!(keyboard, {
-    PS2.lock().on_keyboard();
     master_ack();
+    if let Some(ref mut keyboard) = *PS2_KEYBOARD.lock(){
+        keyboard.on_irq();
+    }
 });
 
 interrupt!(cascade, {
-    print!("CASCADE\n");
     master_ack();
+    print!("CASCADE\n");
 });
 
 interrupt!(com2, {
-    COM2.lock().on_receive();
     master_ack();
+    COM2.lock().on_receive();
 });
 
 interrupt!(com1, {
-    COM1.lock().on_receive();
     master_ack();
+    COM1.lock().on_receive();
 });
 
 interrupt!(lpt2, {
-    print!("LPT2\n");
     master_ack();
+    print!("LPT2\n");
 });
 
 interrupt!(floppy, {
-    print!("FLOPPY\n");
     master_ack();
+    print!("FLOPPY\n");
 });
 
 interrupt!(lpt1, {
-    print!("LPT1\n");
     master_ack();
+    print!("LPT1\n");
 });
 
 interrupt!(rtc, {
-    print!("RTC\n");
     slave_ack();
+    print!("RTC\n");
 });
 
 interrupt!(pci1, {
-    print!("PCI1\n");
     slave_ack();
+    print!("PCI1\n");
 });
 
 interrupt!(pci2, {
-    print!("PCI2\n");
     slave_ack();
+    print!("PCI2\n");
 });
 
 interrupt!(pci3, {
-    print!("PCI3\n");
     slave_ack();
+    print!("PCI3\n");
 });
 
 interrupt!(mouse, {
-    PS2.lock().on_mouse();
     slave_ack();
+    if let Some(ref mut mouse) = *PS2_MOUSE.lock() {
+        mouse.on_irq();
+    }
 });
 
 interrupt!(fpu, {
-    print!("FPU\n");
     slave_ack();
+    print!("FPU\n");
 });
 
 interrupt!(ata1, {
-    print!("ATA1\n");
     slave_ack();
+    print!("ATA1\n");
 });
 
 interrupt!(ata2, {
-    print!("ATA2\n");
     slave_ack();
+    print!("ATA2\n");
 });

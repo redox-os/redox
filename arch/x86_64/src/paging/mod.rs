@@ -128,14 +128,14 @@ pub unsafe fn init(stack_start: usize, stack_end: usize) -> ActivePageTable {
                 {
                     let frame = Frame::containing_address(PhysicalAddress::new(page.start_address().get()));
                     active_table.identity_map(frame, PRESENT | NO_EXECUTE);
-                    tlb::flush_all();
+                    active_table.flush(page);
                     ::externs::memcpy(temporary_page.start_address().get() as *mut u8, page.start_address().get() as *const u8, 4096);
                     active_table.unmap(page);
                 }
                 // Copy temporary page to child
                 {
                     active_table.map(page, PRESENT | NO_EXECUTE | WRITABLE);
-                    tlb::flush_all();
+                    active_table.flush(page);
                     ::externs::memcpy(page.start_address().get() as *mut u8, temporary_page.start_address().get() as *const u8, 4096);
                 }
             }
@@ -153,13 +153,15 @@ pub unsafe fn init(stack_start: usize, stack_end: usize) -> ActivePageTable {
             let end_page = Page::containing_address(VirtualAddress::new(end - 1));
             for page in Page::range_inclusive(start_page, end_page) {
                 active_table.map(page, PRESENT | NO_EXECUTE | WRITABLE);
-                tlb::flush_all();
+                active_table.flush(page);
                 ::externs::memset(page.start_address().get() as *mut u8, 0, 4096);
             }
 
             *(end as *mut usize).offset(-1) = end;
         }
     }
+
+    active_table.flush_all();
 
     active_table
 }
@@ -203,12 +205,19 @@ impl ActivePageTable {
         old_table
     }
 
+    pub fn flush(&mut self, page: Page) {
+        unsafe { tlb::flush(page.start_address().get()); }
+    }
+
+    pub fn flush_all(&mut self) {
+        unsafe { tlb::flush_all(); }
+    }
+
     pub fn with<F>(&mut self, table: &mut InactivePageTable, temporary_page: &mut temporary_page::TemporaryPage, f: F)
         where F: FnOnce(&mut Mapper)
     {
-        use x86::{controlregs, tlb};
-        let flush_tlb = || unsafe { tlb::flush_all() };
-
+        use x86::controlregs;
+        
         {
             let backup = Frame::containing_address(PhysicalAddress::new(unsafe { controlregs::cr3() } as usize));
 
@@ -217,14 +226,14 @@ impl ActivePageTable {
 
             // overwrite recursive mapping
             self.p4_mut()[511].set(table.p4_frame.clone(), PRESENT | WRITABLE | NO_EXECUTE);
-            flush_tlb();
+            self.flush_all();
 
             // execute f in the new context
             f(self);
 
             // restore recursive mapping to original p4 table
             p4_table[511].set(backup, PRESENT | WRITABLE | NO_EXECUTE);
-            flush_tlb();
+            self.flush_all();
         }
 
         temporary_page.unmap(self);

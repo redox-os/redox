@@ -13,7 +13,6 @@ use goblin::elf64::{header, program_header};
 use arch::externs::{memcpy, memset};
 use arch::paging::{entry, ActivePageTable, Page, VirtualAddress};
 use arch::start::usermode;
-use arch::x86::tlb;
 
 /// An ELF executable
 pub struct Elf<'a> {
@@ -63,11 +62,9 @@ impl<'a> Elf<'a> {
                 for page in Page::range_inclusive(start_page, end_page) {
                     active_table.map(page, entry::NO_EXECUTE | entry::WRITABLE);
                 }
+                active_table.flush_all();
 
                 unsafe {
-                    // Update the page table
-                    tlb::flush_all();
-
                     // Copy file data
                     memcpy(segment.p_vaddr as *mut u8,
                             (self.data.as_ptr() as usize + segment.p_offset as usize) as *const u8,
@@ -94,26 +91,20 @@ impl<'a> Elf<'a> {
                 for page in Page::range_inclusive(start_page, end_page) {
                     active_table.remap(page, flags);
                 }
-
-                unsafe {
-                    // Update the page table
-                    tlb::flush_all();
-                }
+                active_table.flush_all();
             }
         }
 
+        // Map stack
+        let start_page = Page::containing_address(VirtualAddress::new(0x80000000));
+        let end_page = Page::containing_address(VirtualAddress::new(0x80000000 + 64*1024 - 1));
+
+        for page in Page::range_inclusive(start_page, end_page) {
+            active_table.map(page, entry::NO_EXECUTE | entry::WRITABLE | entry::USER_ACCESSIBLE);
+        }
+        active_table.flush_all();
+
         unsafe {
-            // Map stack
-            let start_page = Page::containing_address(VirtualAddress::new(0x80000000));
-            let end_page = Page::containing_address(VirtualAddress::new(0x80000000 + 64*1024 - 1));
-
-            for page in Page::range_inclusive(start_page, end_page) {
-                active_table.map(page, entry::NO_EXECUTE | entry::WRITABLE | entry::USER_ACCESSIBLE);
-            }
-
-            // Update the page table
-            tlb::flush_all();
-
             // Clear stack
             memset(0x80000000 as *mut u8, 0, 64 * 1024);
 

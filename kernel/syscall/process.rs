@@ -34,6 +34,7 @@ pub fn brk(address: usize) -> Result<usize> {
             if active_table.translate_page(page).is_none() {
                 //println!("Not found - mapping");
                 active_table.map(page, entry::PRESENT | entry::WRITABLE | entry::NO_EXECUTE | entry::USER_ACCESSIBLE);
+                active_table.flush(page);
             } else {
                 //println!("Found - skipping");
             }
@@ -49,6 +50,7 @@ pub fn brk(address: usize) -> Result<usize> {
             if active_table.translate_page(page).is_some() {
                 //println!("Found - unmapping");
                 active_table.unmap(page);
+                active_table.flush(page);
             } else {
                 //println!("Not found - skipping");
             }
