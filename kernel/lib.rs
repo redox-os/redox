@@ -121,7 +121,7 @@ pub extern fn userspace_init() {
     assert_eq!(syscall::open(b"debug:", 0), Ok(1));
     assert_eq!(syscall::open(b"debug:", 0), Ok(2));
 
-    syscall::exec(b"initfs:bin/pcid", &[]).expect("failed to execute initfs:init");
+    syscall::exec(b"initfs:bin/init", &[]).expect("failed to execute initfs:init");
 
     panic!("initfs:init returned")
 }

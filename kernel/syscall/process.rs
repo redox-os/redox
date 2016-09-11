@@ -61,6 +61,11 @@ pub fn brk(address: usize) -> Result<usize> {
     }
 }
 
+pub fn clone(flags: usize) -> Result<usize> {
+    println!("Clone {:X}", flags);
+    Err(Error::NoCall)
+}
+
 pub fn exit(status: usize) -> ! {
     println!("Exit {}", status);
     loop {

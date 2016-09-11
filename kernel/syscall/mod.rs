@@ -34,6 +34,8 @@ pub enum Call {
     Brk = 45,
     /// Set process I/O privilege level
     Iopl = 110,
+    /// Clone process
+    Clone = 120,
     /// Yield to scheduler
     SchedYield = 158
 }
@@ -52,6 +54,7 @@ impl Call {
             20 => Ok(Call::GetPid),
             45 => Ok(Call::Brk),
             110 => Ok(Call::Iopl),
+            120 => Ok(Call::Clone),
             158 => Ok(Call::SchedYield),
             _ => Err(Error::NoCall)
         }
@@ -100,17 +103,24 @@ pub fn convert_slice_mut<T>(ptr: *mut T, len: usize) -> Result<&'static mut [T]>
 }
 
 pub fn handle(a: usize, b: usize, c: usize, d: usize, e: usize, _f: usize) -> Result<usize> {
-    match Call::from(a)? {
-        Call::Exit => exit(b),
-        Call::Read => read(b, convert_slice_mut(c as *mut u8, d)?),
-        Call::Write => write(b, convert_slice(c as *const u8, d)?),
-        Call::Open => open(convert_slice(b as *const u8, c)?, d),
-        Call::Close => close(b),
-        Call::Exec => exec(convert_slice(b as *const u8, c)?, convert_slice(d as *const [usize; 2], e)?),
-        Call::GetPid => getpid(),
-        Call::Brk => brk(b),
-        Call::Iopl => iopl(b),
-        Call::SchedYield => sched_yield()
+    match Call::from(a) {
+        Ok(call) => match call {
+            Call::Exit => exit(b),
+            Call::Read => read(b, convert_slice_mut(c as *mut u8, d)?),
+            Call::Write => write(b, convert_slice(c as *const u8, d)?),
+            Call::Open => open(convert_slice(b as *const u8, c)?, d),
+            Call::Close => close(b),
+            Call::Exec => exec(convert_slice(b as *const u8, c)?, convert_slice(d as *const [usize; 2], e)?),
+            Call::GetPid => getpid(),
+            Call::Brk => brk(b),
+            Call::Iopl => iopl(b),
+            Call::Clone => clone(b),
+            Call::SchedYield => sched_yield()
+        },
+        Err(err) => {
+            println!("Unknown syscall {}", a);
+            Err(err)
+        }
     }
 }
 
@@ -118,6 +128,6 @@ pub fn handle(a: usize, b: usize, c: usize, d: usize, e: usize, _f: usize) -> Re
 pub extern fn syscall(a: usize, b: usize, c: usize, d: usize, e: usize, f: usize) -> usize {
     match handle(a, b, c, d, e, f) {
         Ok(value) => value,
-        Err(value) => !(value as usize)
+        Err(value) => (-(value as isize)) as usize
     }
 }

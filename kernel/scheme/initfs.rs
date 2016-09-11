@@ -20,7 +20,7 @@ impl InitFsScheme {
 
         files.insert(b"bin/init", include_bytes!("../../build/userspace/init"));
         files.insert(b"bin/pcid", include_bytes!("../../build/userspace/pcid"));
-        files.insert(b"etc/init.rc", b"echo testing\n");
+        files.insert(b"etc/init.rc", b"echo testing\ninitfs:bin/pcid\n");
 
         InitFsScheme {
             next_id: 0,
