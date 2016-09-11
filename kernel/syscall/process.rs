@@ -105,6 +105,11 @@ pub fn getpid() -> Result<usize> {
     Ok(context.id)
 }
 
+pub fn iopl(_level: usize) -> Result<usize> {
+    //TODO
+    Ok(0)
+}
+
 pub fn sched_yield() -> Result<usize> {
     unsafe { context::switch(); }
     Ok(0)

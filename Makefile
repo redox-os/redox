@@ -25,6 +25,7 @@ clean:
 	cargo clean
 	cargo clean --manifest-path libstd/Cargo.toml
 	cargo clean --manifest-path init/Cargo.toml
+	cargo clean --manifest-path drivers/pcid/Cargo.toml
 	rm -rf build
 
 FORCE:
@@ -92,11 +93,12 @@ $(KBUILD)/librustc_unicode.rlib: rust/src/librustc_unicode/lib.rs $(KBUILD)/libc
 $(KBUILD)/libcollections.rlib: rust/src/libcollections/lib.rs $(KBUILD)/libcore.rlib $(KBUILD)/liballoc.rlib $(KBUILD)/librustc_unicode.rlib
 	$(KRUSTC) $(KRUSTCFLAGS) -o $@ $<
 
-$(KBUILD)/libkernel.a: $(KBUILD)/libcore.rlib $(KBUILD)/liballoc.rlib $(KBUILD)/libcollections.rlib $(BUILD)/init kernel/** FORCE
+$(KBUILD)/libkernel.a: kernel/** $(KBUILD)/libcore.rlib $(KBUILD)/liballoc.rlib $(KBUILD)/libcollections.rlib $(BUILD)/init $(BUILD)/pcid FORCE
 	$(KCARGO) rustc $(KCARGOFLAGS) -o $@
 
 $(KBUILD)/kernel: $(KBUILD)/libkernel.a
 	$(LD) --gc-sections -z max-page-size=0x1000 -T arch/$(ARCH)/src/linker.ld -o $@ $<
+	strip $@
 
 # Userspace recipes
 $(BUILD)/libcore.rlib: rust/src/libcore/lib.rs
@@ -121,3 +123,8 @@ $(BUILD)/libstd.rlib: libstd/Cargo.toml libstd/src/** $(BUILD)/libcore.rlib $(BU
 
 $(BUILD)/init: init/Cargo.toml init/src/*.rs $(BUILD)/libstd.rlib
 	$(CARGO) rustc --manifest-path $< $(CARGOFLAGS) -o $@
+	strip $@
+
+$(BUILD)/pcid: drivers/pcid/Cargo.toml drivers/pcid/src/** $(BUILD)/libstd.rlib
+	$(CARGO) rustc --manifest-path $< $(CARGOFLAGS) -o $@
+	strip $@
