@@ -127,12 +127,11 @@ pub unsafe fn switch() {
         arch::interrupt::pause();
     }
 
-    let from_ptr = if let Some(context_lock) = contexts().current() {
+    let from_ptr = {
+        let contexts = contexts();
+        let context_lock = contexts.current().expect("context::switch: Not inside of context");
         let mut context = context_lock.write();
         context.deref_mut() as *mut Context
-    } else {
-        print!("NO FROM_PTR\n");
-        return;
     };
 
     let mut to_ptr = 0 as *mut Context;
@@ -146,7 +145,9 @@ pub unsafe fn switch() {
     }
 
     if to_ptr as usize == 0 {
-        print!("NO TO_PTR\n");
+        // TODO: Sleep, wait for interrupt
+        // Unset global lock if no context found
+        arch::context::CONTEXT_SWITCH_LOCK.store(false, Ordering::SeqCst);
         return;
     }
 

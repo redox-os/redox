@@ -28,3 +28,8 @@ pub fn getpid() -> Result<usize> {
     let context = context_lock.read();
     Ok(context.id)
 }
+
+pub fn sched_yield() -> Result<usize> {
+    unsafe { context::switch(); }
+    Ok(0)
+}
