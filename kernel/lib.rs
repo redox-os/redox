@@ -133,11 +133,23 @@ pub extern fn kmain() {
     let pid = syscall::getpid();
     println!("BSP: {:?}", pid);
 
-    assert_eq!(syscall::open("debug:".as_bytes(), 0), Ok(0));
-    assert_eq!(syscall::open("debug:".as_bytes(), 0), Ok(1));
-    assert_eq!(syscall::open("debug:".as_bytes(), 0), Ok(2));
+    assert_eq!(syscall::open(b"debug:", 0), Ok(0));
+    assert_eq!(syscall::open(b"debug:", 0), Ok(1));
+    assert_eq!(syscall::open(b"debug:", 0), Ok(2));
 
-    let elf = elf::Elf::from(include_bytes!("../build/userspace/init")).expect("could not load elf");
+    let init_file = syscall::open(b"initfs:init", 0).expect("failed to open initfs:init");
+    let mut init_data = collections::Vec::new();
+    loop {
+        let mut buf = [0; 65536];
+        let count = syscall::read(init_file, &mut buf).expect("failed to read initfs:init");
+        if count > 0 {
+            init_data.extend_from_slice(&buf[..count]);
+        } else {
+            break;
+        }
+    }
+
+    let elf = elf::Elf::from(&init_data).expect("could not load elf");
     elf.run();
 
     /*
@@ -163,12 +175,9 @@ pub extern fn kmain_ap(id: usize) {
     let pid = syscall::getpid();
     println!("AP {}: {:?}", id, pid);
 
-    assert_eq!(syscall::open("debug:".as_bytes(), 0), Ok(0));
-    assert_eq!(syscall::open("debug:".as_bytes(), 0), Ok(1));
-    assert_eq!(syscall::open("debug:".as_bytes(), 0), Ok(2));
-
-    let elf = elf::Elf::from(include_bytes!("../build/userspace/init")).expect("could not load elf");
-    elf.run();
+    assert_eq!(syscall::open(b"debug:", 0), Ok(0));
+    assert_eq!(syscall::open(b"debug:", 0), Ok(1));
+    assert_eq!(syscall::open(b"debug:", 0), Ok(2));
 
     loop {
         unsafe { interrupt::enable_and_halt() }

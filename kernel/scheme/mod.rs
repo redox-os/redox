@@ -16,9 +16,13 @@ use spin::{Once, Mutex, RwLock, RwLockReadGuard, RwLockWriteGuard};
 use syscall::{Error, Result};
 
 use self::debug::DebugScheme;
+use self::initfs::InitFsScheme;
 
 /// Debug scheme
 pub mod debug;
+
+/// InitFS scheme
+pub mod initfs;
 
 /// Limit on number of schemes
 pub const SCHEME_MAX_SCHEMES: usize = 65536;
@@ -88,6 +92,7 @@ static SCHEMES: Once<RwLock<SchemeList>> = Once::new();
 fn init_schemes() -> RwLock<SchemeList> {
     let mut list: SchemeList = SchemeList::new();
     list.insert(Box::new(*b"debug"), Arc::new(Mutex::new(Box::new(DebugScheme)))).expect("failed to insert debug: scheme");
+    list.insert(Box::new(*b"initfs"), Arc::new(Mutex::new(Box::new(InitFsScheme::new())))).expect("failed to insert initfs: scheme");
     RwLock::new(list)
 }
 
