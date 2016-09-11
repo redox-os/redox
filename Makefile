@@ -98,7 +98,6 @@ $(KBUILD)/libkernel.a: kernel/** $(KBUILD)/libcore.rlib $(KBUILD)/liballoc.rlib 
 
 $(KBUILD)/kernel: $(KBUILD)/libkernel.a
 	$(LD) --gc-sections -z max-page-size=0x1000 -T arch/$(ARCH)/src/linker.ld -o $@ $<
-	strip $@
 
 # Userspace recipes
 $(BUILD)/libcore.rlib: rust/src/libcore/lib.rs
