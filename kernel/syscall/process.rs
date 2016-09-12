@@ -24,14 +24,16 @@ pub fn brk(address: usize) -> Result<usize> {
     } else if address >= arch::USER_HEAP_OFFSET {
         //TODO: out of memory errors
         if let Some(ref mut heap) = context.heap {
-            heap.resize(address - arch::USER_HEAP_OFFSET, true);
+            heap.resize(address - arch::USER_HEAP_OFFSET, true, true);
             return Ok(address);
         }
 
         context.heap = Some(context::memory::Memory::new(
             VirtualAddress::new(arch::USER_HEAP_OFFSET),
             address - arch::USER_HEAP_OFFSET,
-            entry::WRITABLE | entry::NO_EXECUTE | entry::USER_ACCESSIBLE
+            entry::WRITABLE | entry::NO_EXECUTE | entry::USER_ACCESSIBLE,
+            true,
+            true
         ));
 
         Ok(address)

@@ -10,7 +10,7 @@ use goblin::elf32::{header, program_header};
 #[cfg(target_arch = "x86_64")]
 use goblin::elf64::{header, program_header};
 
-use arch::externs::{memcpy, memset};
+use arch::externs::memcpy;
 use arch::paging::{entry, VirtualAddress};
 use arch::start::usermode;
 use context;
@@ -70,7 +70,9 @@ impl<'a> Elf<'a> {
                     let mut memory = context::memory::Memory::new(
                         VirtualAddress::new(segment.p_vaddr as usize),
                         segment.p_memsz as usize,
-                        entry::NO_EXECUTE | entry::WRITABLE
+                        entry::NO_EXECUTE | entry::WRITABLE,
+                        true,
+                        true
                     );
 
                     unsafe {
@@ -78,10 +80,6 @@ impl<'a> Elf<'a> {
                         memcpy(segment.p_vaddr as *mut u8,
                                 (self.data.as_ptr() as usize + segment.p_offset as usize) as *const u8,
                                 segment.p_filesz as usize);
-                        // Set BSS
-                        memset((segment.p_vaddr + segment.p_filesz) as *mut u8,
-                                0,
-                                (segment.p_memsz - segment.p_filesz) as usize);
                     }
 
                     let mut flags = entry::NO_EXECUTE | entry::USER_ACCESSIBLE;
@@ -107,11 +105,10 @@ impl<'a> Elf<'a> {
             context.stack = Some(context::memory::Memory::new(
                 VirtualAddress::new(stack_addr),
                 stack_size,
-                entry::NO_EXECUTE | entry::WRITABLE | entry::USER_ACCESSIBLE
+                entry::NO_EXECUTE | entry::WRITABLE | entry::USER_ACCESSIBLE,
+                true,
+                true
             ));
-
-            // Clear stack
-            unsafe { memset(stack_addr as *mut u8, 0, stack_size); }
         }
 
         // Go to usermode

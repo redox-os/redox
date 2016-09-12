@@ -1,3 +1,4 @@
+use arch::externs::memset;
 use arch::paging::{ActivePageTable, Page, PageIter, VirtualAddress};
 use arch::paging::entry::EntryFlags;
 
@@ -9,14 +10,14 @@ pub struct Memory {
 }
 
 impl Memory {
-    pub fn new(start: VirtualAddress, size: usize, flags: EntryFlags) -> Self {
+    pub fn new(start: VirtualAddress, size: usize, flags: EntryFlags, flush: bool, clear: bool) -> Self {
         let mut memory = Memory {
             start: start,
             size: size,
             flags: flags
         };
 
-        memory.map(true);
+        memory.map(flush, clear);
 
         memory
     }
@@ -35,7 +36,7 @@ impl Memory {
         Page::range_inclusive(start_page, end_page)
     }
 
-    pub fn map(&mut self, flush: bool) {
+    pub fn map(&mut self, flush: bool, clear: bool) {
         let mut active_table = unsafe { ActivePageTable::new() };
 
         //TODO: Clear pages?
@@ -44,6 +45,11 @@ impl Memory {
             if flush {
                 active_table.flush(page);
             }
+        }
+
+        if clear {
+            assert!(flush);
+            unsafe { memset(self.start_address().get() as *mut u8, 0, self.size); }
         }
     }
 
@@ -71,39 +77,35 @@ impl Memory {
         self.flags = new_flags;
     }
 
-    pub fn resize(&mut self, new_size: usize, flush: bool) {
+    pub fn resize(&mut self, new_size: usize, flush: bool, clear: bool) {
         let mut active_table = unsafe { ActivePageTable::new() };
 
-        //TODO: Clear pages?
         //TODO: Calculate page changes to minimize operations
         if new_size > self.size {
             let start_page = Page::containing_address(VirtualAddress::new(self.start.get() + self.size));
             let end_page = Page::containing_address(VirtualAddress::new(self.start.get() + new_size - 1));
             for page in Page::range_inclusive(start_page, end_page) {
-                //println!("Map {:X}", page.start_address().get());
                 if active_table.translate_page(page).is_none() {
-                    //println!("Not found - mapping");
                     active_table.map(page, self.flags);
                     if flush {
                         active_table.flush(page);
                     }
-                } else {
-                    //println!("Found - skipping {:X}", page.start_address().get());
                 }
+            }
+
+            if clear {
+                assert!(flush);
+                unsafe { memset((self.start.get() + self.size) as *mut u8, 0, new_size - self.size); }
             }
         } else if new_size < self.size {
             let start_page = Page::containing_address(VirtualAddress::new(self.start.get() + new_size));
             let end_page = Page::containing_address(VirtualAddress::new(self.start.get() + self.size - 1));
             for page in Page::range_inclusive(start_page, end_page) {
-                //println!("Unmap {:X}", page.start_address().get());
                 if active_table.translate_page(page).is_some() {
-                    //println!("Found - unmapping");
                     active_table.unmap(page);
                     if flush {
                         active_table.flush(page);
                     }
-                } else {
-                    //println!("Not found - skipping {:X}", page.start_address().get());
                 }
             }
         }
