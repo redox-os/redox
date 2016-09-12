@@ -64,6 +64,20 @@ pub unsafe fn init(cpu_id: usize, stack_start: usize, stack_end: usize) -> (Acti
 
     active_table.with(&mut new_table, &mut temporary_page, |mapper| {
         {
+            // Map tdata and tbss
+            {
+                let size = & __tbss_end as *const _ as usize - & __tdata_start as *const _ as usize;
+
+                let start = ::KERNEL_PERCPU_OFFSET + ::KERNEL_PERCPU_SIZE * cpu_id;
+                let end = start + size;
+
+                let start_page = Page::containing_address(VirtualAddress::new(start));
+                let end_page = Page::containing_address(VirtualAddress::new(end - 1));
+                for page in Page::range_inclusive(start_page, end_page) {
+                    mapper.map(page, PRESENT | NO_EXECUTE | WRITABLE);
+                }
+            }
+
             let mut remap = |start: usize, end: usize, flags: EntryFlags| {
                 if end > start {
                     let start_frame = Frame::containing_address(PhysicalAddress::new(start));
@@ -90,6 +104,8 @@ pub unsafe fn init(cpu_id: usize, stack_start: usize, stack_end: usize) -> (Acti
             remap_section(& __rodata_start, & __rodata_end, PRESENT | NO_EXECUTE);
             // Remap data writable, no execute
             remap_section(& __data_start, & __data_end, PRESENT | NO_EXECUTE | WRITABLE);
+            // Remap tdata master writable, no execute
+            remap_section(& __tdata_start, & __tdata_end, PRESENT | NO_EXECUTE);
             // Remap bss writable, no execute
             remap_section(& __bss_start, & __bss_end, PRESENT | NO_EXECUTE | WRITABLE);
         }
@@ -117,56 +133,21 @@ pub unsafe fn init(cpu_id: usize, stack_start: usize, stack_end: usize) -> (Acti
 
     active_table.switch(new_table);
 
-    // Map and copy TDATA
-    {
-        let start = & __tdata_start as *const _ as usize;
-        let end = & __tdata_end as *const _ as usize;
-        if end > start {
-            temporary_page.map(allocate_frame().expect("no more frames in paging::init TDATA"), PRESENT | NO_EXECUTE | WRITABLE, &mut active_table);
-
-            let start_page = Page::containing_address(VirtualAddress::new(start));
-            let end_page = Page::containing_address(VirtualAddress::new(end - 1));
-            for page in Page::range_inclusive(start_page, end_page) {
-                // Copy parent to temporary page
-                {
-                    let frame = Frame::containing_address(PhysicalAddress::new(page.start_address().get()));
-                    active_table.identity_map(frame, PRESENT | NO_EXECUTE);
-                    active_table.flush(page);
-                    ::externs::memcpy(temporary_page.start_address().get() as *mut u8, page.start_address().get() as *const u8, 4096);
-                    active_table.unmap(page);
-                }
-                // Copy temporary page to child
-                {
-                    active_table.map(page, PRESENT | NO_EXECUTE | WRITABLE);
-                    active_table.flush(page);
-                    ::externs::memcpy(page.start_address().get() as *mut u8, temporary_page.start_address().get() as *const u8, 4096);
-                }
-            }
-
-            temporary_page.unmap(&mut active_table);
-        }
-    }
-
-    // Map and clear TBSS
+    // Copy tdata, clear tbss, set TCB self pointer
     let tcb_offset;
     {
-        let start = & __tbss_start as *const _ as usize;
-        let end = & __tbss_end as *const _ as usize;
+        let size = & __tbss_end as *const _ as usize - & __tdata_start as *const _ as usize;
+        let tbss_offset = & __tbss_start as *const _ as usize - & __tdata_start as *const _ as usize;
+
+        let start = ::KERNEL_PERCPU_OFFSET + ::KERNEL_PERCPU_SIZE * cpu_id;
+        let end = start + size;
         tcb_offset = end - mem::size_of::<usize>();
-        if end > start {
-            let start_page = Page::containing_address(VirtualAddress::new(start));
-            let end_page = Page::containing_address(VirtualAddress::new(end - 1));
-            for page in Page::range_inclusive(start_page, end_page) {
-                active_table.map(page, PRESENT | NO_EXECUTE | WRITABLE);
-                active_table.flush(page);
-                ::externs::memset(page.start_address().get() as *mut u8, 0, 4096);
-            }
 
-            *(tcb_offset as *mut usize) = end;
-        }
+        ::externs::memcpy(start as *mut u8, & __tdata_start as *const u8, tbss_offset);
+        ::externs::memset((start + tbss_offset) as *mut u8, 0, size - tbss_offset);
+
+        *(tcb_offset as *mut usize) = end;
     }
-
-    active_table.flush_all();
 
     (active_table, tcb_offset)
 }

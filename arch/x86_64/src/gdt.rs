@@ -88,7 +88,7 @@ pub static mut TSS: TaskStateSegment = TaskStateSegment {
     iomap_base: 0xFFFF
 };
 
-/// Initialize GDT on the BSP
+/// Initialize GDT
 pub unsafe fn init(tcb_offset: usize, stack_offset: usize) {
     // Setup the initial GDT with TLS, so we can setup the TLS GDT (a little confusing)
     // This means that each CPU will have its own GDT, but we only need to define it once as a thread local
@@ -98,12 +98,6 @@ pub unsafe fn init(tcb_offset: usize, stack_offset: usize) {
     // Set the TLS segment to the offset of the Thread Control Block
     INIT_GDT[GDT_KERNEL_TLS].set_offset(tcb_offset as u32);
 
-    // Run the AP GDT initialization, which does the rest
-    init_ap(tcb_offset, stack_offset);
-}
-
-/// Initialize GDT for an AP
-pub unsafe fn init_ap(tcb_offset: usize, stack_offset: usize) {
     // Load the initial GDT, before we have access to thread locals
     dtables::lgdt(&INIT_GDTR);
 

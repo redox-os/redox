@@ -10,6 +10,7 @@ use goblin::elf32::{header, program_header};
 #[cfg(target_arch = "x86_64")]
 use goblin::elf64::{header, program_header};
 
+use arch;
 use arch::externs::memcpy;
 use arch::paging::{entry, VirtualAddress};
 use arch::start::usermode;
@@ -54,8 +55,8 @@ impl<'a> Elf<'a> {
 
     /// Test function to run. Remove and replace with proper syscall
     pub fn run(self) -> SysResult<!> {
-        let stack_addr = 0x80000000;
-        let stack_size = 64 * 1024;
+        let stack_addr = arch::USER_STACK_OFFSET;
+        let stack_size = arch::USER_STACK_SIZE;
         {
             let contexts = context::contexts();
             let context_lock = contexts.current().ok_or(Error::NoProcess)?;

@@ -143,7 +143,7 @@ pub unsafe extern fn kstart_ap(cpu_id: usize, stack_start: usize, stack_end: usi
         let (mut active_table, tcb_offset) = paging::init(cpu_id, stack_start, stack_end);
 
         // Set up GDT for AP
-        gdt::init_ap(tcb_offset, stack_end);
+        gdt::init(tcb_offset, stack_end);
 
         // Set up IDT for AP
         idt::init();
