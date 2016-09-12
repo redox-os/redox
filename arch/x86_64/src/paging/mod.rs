@@ -224,7 +224,7 @@ impl ActivePageTable {
         use x86::controlregs;
 
         {
-            let backup = Frame::containing_address(PhysicalAddress::new(unsafe { controlregs::cr3() } as usize));
+            let backup = Frame::containing_address(PhysicalAddress::new(unsafe { controlregs::cr3() as usize }));
 
             // map temporary_page to current p4 table
             let p4_table = temporary_page.map_table_frame(backup.clone(), PRESENT | WRITABLE | NO_EXECUTE, self);
@@ -242,6 +242,11 @@ impl ActivePageTable {
         }
 
         temporary_page.unmap(self);
+    }
+
+    pub unsafe fn address(&self) -> usize {
+        use x86::controlregs;
+        controlregs::cr3() as usize
     }
 }
 
@@ -261,6 +266,10 @@ impl InactivePageTable {
         temporary_page.unmap(active_table);
 
         InactivePageTable { p4_frame: frame }
+    }
+
+    pub unsafe fn address(&self) -> usize {
+        self.p4_frame.start_address().get()
     }
 }
 

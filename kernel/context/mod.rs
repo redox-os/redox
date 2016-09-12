@@ -81,6 +81,7 @@ impl ContextList {
                 let func_ptr = stack.as_mut_ptr().offset(offset as isize);
                 *(func_ptr as *mut usize) = func as usize;
             }
+            context.arch.set_page_table(unsafe { arch::paging::ActivePageTable::new().address() });
             context.arch.set_stack(stack.as_ptr() as usize + offset);
             context.kstack = Some(stack);
         }
