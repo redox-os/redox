@@ -1,6 +1,7 @@
 //! # Paging
 //! Some code was borrowed from [Phil Opp's Blog](http://os.phil-opp.com/modifying-page-tables.html)
 
+use core::mem;
 use core::ops::{Deref, DerefMut};
 use x86::{msr, tlb};
 
@@ -22,7 +23,9 @@ pub const ENTRY_COUNT: usize = 512;
 pub const PAGE_SIZE: usize = 4096;
 
 /// Initialize paging
-pub unsafe fn init(stack_start: usize, stack_end: usize) -> ActivePageTable {
+///
+/// Returns page table and thread control block offset
+pub unsafe fn init(stack_start: usize, stack_end: usize) -> (ActivePageTable, usize) {
     extern {
         /// The starting byte of the text (code) data segment.
         static mut __text_start: u8;
@@ -145,9 +148,11 @@ pub unsafe fn init(stack_start: usize, stack_end: usize) -> ActivePageTable {
     }
 
     // Map and clear TBSS
+    let tcb_offset;
     {
         let start = & __tbss_start as *const _ as usize;
         let end = & __tbss_end as *const _ as usize;
+        tcb_offset = end - mem::size_of::<usize>();
         if end > start {
             let start_page = Page::containing_address(VirtualAddress::new(start));
             let end_page = Page::containing_address(VirtualAddress::new(end - 1));
@@ -157,13 +162,13 @@ pub unsafe fn init(stack_start: usize, stack_end: usize) -> ActivePageTable {
                 ::externs::memset(page.start_address().get() as *mut u8, 0, 4096);
             }
 
-            *(end as *mut usize).offset(-1) = end;
+            *(tcb_offset as *mut usize) = end;
         }
     }
 
     active_table.flush_all();
 
-    active_table
+    (active_table, tcb_offset)
 }
 
 pub struct ActivePageTable {
@@ -217,7 +222,7 @@ impl ActivePageTable {
         where F: FnOnce(&mut Mapper)
     {
         use x86::controlregs;
-        
+
         {
             let backup = Frame::containing_address(PhysicalAddress::new(unsafe { controlregs::cr3() } as usize));
 

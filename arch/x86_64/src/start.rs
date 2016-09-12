@@ -47,8 +47,6 @@ pub unsafe extern fn kstart() -> ! {
             static mut __bss_start: u8;
             /// The ending byte of the _.bss_ (uninitialized data) segment.
             static mut __bss_end: u8;
-            /// The end of the tbss.
-            static mut __tbss_end: u8;
             /// The end of the kernel
             static mut __end: u8;
         }
@@ -75,10 +73,10 @@ pub unsafe extern fn kstart() -> ! {
         let stack_end = 0x0009F000;
 
         // Initialize paging
-        let mut active_table = paging::init(stack_start, stack_end);
+        let (mut active_table, tcb_offset) = paging::init(stack_start, stack_end);
 
         // Set up GDT
-        gdt::init((&__tbss_end as *const u8 as *const usize).offset(-1) as usize, stack_end);
+        gdt::init(tcb_offset, stack_end);
 
         // Set up IDT
         idt::init();
@@ -140,19 +138,14 @@ pub unsafe extern fn kstart() -> ! {
 /// Entry to rust for an AP
 pub unsafe extern fn kstart_ap(stack_start: usize, stack_end: usize) -> ! {
     {
-        extern {
-            /// The end of the tbss.
-            static mut __tbss_end: u8;
-        }
-
         assert_eq!(BSS_TEST_ZERO, 0);
         assert_eq!(DATA_TEST_NONZERO, 0xFFFFFFFFFFFFFFFF);
 
         // Initialize paging
-        let mut active_table = paging::init(stack_start, stack_end);
+        let (mut active_table, tcb_offset) = paging::init(stack_start, stack_end);
 
         // Set up GDT for AP
-        gdt::init_ap((&__tbss_end as *const u8 as *const usize).offset(-1) as usize, stack_end);
+        gdt::init_ap(tcb_offset, stack_end);
 
         // Set up IDT for AP
         idt::init();
