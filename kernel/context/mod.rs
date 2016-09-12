@@ -138,7 +138,7 @@ pub unsafe fn switch() {
 
     for (_pid, context_lock) in contexts().map.iter() {
         let mut context = context_lock.write();
-        if ! context.running {
+        if ! context.running && ! context.blocked {
             to_ptr = context.deref_mut() as *mut Context;
             break;
         }
@@ -165,6 +165,8 @@ pub struct Context {
     pub id: usize,
     /// Running or not
     pub running: bool,
+    /// Blocked or not
+    pub blocked: bool,
     /// The architecture specific context
     pub arch: ArchContext,
     /// Kernel stack
@@ -179,6 +181,7 @@ impl Context {
         Context {
             id: id,
             running: false,
+            blocked: true,
             arch: ArchContext::new(),
             kstack: None,
             files: Vec::new()

@@ -63,7 +63,7 @@ pub fn brk(address: usize) -> Result<usize> {
 
 pub fn clone(flags: usize) -> Result<usize> {
     println!("Clone {:X}", flags);
-    Err(Error::NoCall)
+    Ok(0)
 }
 
 pub fn exit(status: usize) -> ! {
@@ -76,22 +76,23 @@ pub fn exit(status: usize) -> ! {
 pub fn exec(path: &[u8], _args: &[[usize; 2]]) -> Result<usize> {
     //TODO: Use args
     //TODO: Unmap previous mappings
-    //TODO: Drop init_data
+    //TODO: Drop data vec
+    println!("Exec {}", unsafe { str::from_utf8_unchecked(path) });
 
-    let init_file = syscall::open(path, 0)?;
-    let mut init_data = vec![];
+    let file = syscall::open(path, 0)?;
+    let mut data = vec![];
     loop {
         let mut buf = [0; 4096];
-        let count = syscall::read(init_file, &mut buf)?;
+        let count = syscall::read(file, &mut buf)?;
         if count > 0 {
-            init_data.extend_from_slice(&buf[..count]);
+            data.extend_from_slice(&buf[..count]);
         } else {
             break;
         }
     }
-    let _ = syscall::close(init_file);
+    let _ = syscall::close(file);
 
-    match elf::Elf::from(&init_data) {
+    match elf::Elf::from(&data) {
         Ok(elf) => {
             elf.run();
             Ok(0)

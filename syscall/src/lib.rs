@@ -125,8 +125,8 @@ pub fn dup(fd: usize) -> Result<usize> {
     unsafe { syscall1(SYS_DUP, fd) }
 }
 
-pub unsafe fn execve(path: *const u8, args: *const *const u8) -> Result<usize> {
-    syscall2(SYS_EXECVE, path as usize, args as usize)
+pub fn execve(path: &str) -> Result<usize> {
+    unsafe { syscall2(SYS_EXECVE, path.as_ptr() as usize, path.len()) }
 }
 
 pub fn exit(status: usize) -> Result<usize> {

@@ -133,7 +133,15 @@ pub extern fn kmain() {
     let pid = syscall::getpid();
     println!("BSP: {:?}", pid);
 
-    context::contexts_mut().spawn(userspace_init).expect("failed to spawn userspace_init");
+    match context::contexts_mut().spawn(userspace_init) {
+        Ok(context_lock) => {
+            let mut context = context_lock.write();
+            context.blocked = false;
+        },
+        Err(err) => {
+            panic!("failed to spawn userspace_init: {:?}", err);
+        }
+    }
 
     unsafe { context::switch(); }
 

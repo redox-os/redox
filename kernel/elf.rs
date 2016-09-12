@@ -60,6 +60,10 @@ impl<'a> Elf<'a> {
                 let end_page = Page::containing_address(VirtualAddress::new((segment.p_vaddr + segment.p_memsz) as usize));
 
                 for page in Page::range_inclusive(start_page, end_page) {
+                    if active_table.translate_page(page).is_some() {
+                        //TODO panic!("Elf::run: still mapped: {:?}", page);
+                        active_table.unmap(page);
+                    }
                     active_table.map(page, entry::NO_EXECUTE | entry::WRITABLE);
                 }
                 active_table.flush_all();
@@ -100,6 +104,10 @@ impl<'a> Elf<'a> {
         let end_page = Page::containing_address(VirtualAddress::new(0x80000000 + 64*1024 - 1));
 
         for page in Page::range_inclusive(start_page, end_page) {
+            if active_table.translate_page(page).is_some() {
+                //TODO panic!("Elf::run: still mapped: {:?}", page);
+                active_table.unmap(page);
+            }
             active_table.map(page, entry::NO_EXECUTE | entry::WRITABLE | entry::USER_ACCESSIBLE);
         }
         active_table.flush_all();
