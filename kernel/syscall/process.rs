@@ -93,10 +93,7 @@ pub fn exec(path: &[u8], _args: &[[usize; 2]]) -> Result<usize> {
     let _ = syscall::close(file);
 
     match elf::Elf::from(&data) {
-        Ok(elf) => {
-            elf.run();
-            Ok(0)
-        },
+        Ok(elf) => elf.run().and(Ok(0)),
         Err(err) => {
             println!("failed to execute {}: {}", unsafe { str::from_utf8_unchecked(path) }, err);
             Err(Error::NoExec)

@@ -11,8 +11,10 @@ use goblin::elf32::{header, program_header};
 use goblin::elf64::{header, program_header};
 
 use arch::externs::{memcpy, memset};
-use arch::paging::{entry, ActivePageTable, Page, VirtualAddress};
+use arch::paging::{entry, VirtualAddress};
 use arch::start::usermode;
+use context;
+use syscall::{Error, Result as SysResult};
 
 /// An ELF executable
 pub struct Elf<'a> {
@@ -51,74 +53,67 @@ impl<'a> Elf<'a> {
     }
 
     /// Test function to run. Remove and replace with proper syscall
-    pub fn run(self) {
-        let mut active_table = unsafe { ActivePageTable::new() };
+    pub fn run(self) -> SysResult<!> {
+        let stack_addr = 0x80000000;
+        let stack_size = 64 * 1024;
+        {
+            let contexts = context::contexts();
+            let context_lock = contexts.current().ok_or(Error::NoProcess)?;
+            let mut context = context_lock.write();
 
-        for segment in self.segments() {
-            if segment.p_type == program_header::PT_LOAD {
-                let start_page = Page::containing_address(VirtualAddress::new(segment.p_vaddr as usize));
-                let end_page = Page::containing_address(VirtualAddress::new((segment.p_vaddr + segment.p_memsz) as usize));
+            // Unmap previous image and stack
+            context.image.clear();
+            context.stack.take();
 
-                for page in Page::range_inclusive(start_page, end_page) {
-                    if active_table.translate_page(page).is_some() {
-                        //TODO panic!("Elf::run: still mapped: {:?}", page);
-                        active_table.unmap(page);
+            for segment in self.segments() {
+                if segment.p_type == program_header::PT_LOAD {
+                    let mut memory = context::memory::Memory::new(
+                        VirtualAddress::new(segment.p_vaddr as usize),
+                        segment.p_memsz as usize,
+                        entry::NO_EXECUTE | entry::WRITABLE);
+
+                    unsafe {
+                        // Copy file data
+                        memcpy(segment.p_vaddr as *mut u8,
+                                (self.data.as_ptr() as usize + segment.p_offset as usize) as *const u8,
+                                segment.p_filesz as usize);
+                        // Set BSS
+                        memset((segment.p_vaddr + segment.p_filesz) as *mut u8,
+                                0,
+                                (segment.p_memsz - segment.p_filesz) as usize);
                     }
-                    active_table.map(page, entry::NO_EXECUTE | entry::WRITABLE);
-                }
-                active_table.flush_all();
 
-                unsafe {
-                    // Copy file data
-                    memcpy(segment.p_vaddr as *mut u8,
-                            (self.data.as_ptr() as usize + segment.p_offset as usize) as *const u8,
-                            segment.p_filesz as usize);
-                    // Set BSS
-                    memset((segment.p_vaddr + segment.p_filesz) as *mut u8,
-                            0,
-                            (segment.p_memsz - segment.p_filesz) as usize);
-                }
+                    let mut flags = entry::NO_EXECUTE | entry::USER_ACCESSIBLE;
 
-                let mut flags = entry::NO_EXECUTE | entry::USER_ACCESSIBLE;
+                    if segment.p_flags & program_header::PF_R == program_header::PF_R {
+                        flags.insert(entry::PRESENT);
+                    }
 
-                if segment.p_flags & program_header::PF_R == program_header::PF_R {
-                    flags.insert(entry::PRESENT);
-                }
+                    // W ^ X. If it is executable, do not allow it to be writable, even if requested
+                    if segment.p_flags & program_header::PF_X == program_header::PF_X {
+                        flags.remove(entry::NO_EXECUTE);
+                    } else if segment.p_flags & program_header::PF_W == program_header::PF_W {
+                        flags.insert(entry::WRITABLE);
+                    }
 
-                // W ^ X. If it is executable, do not allow it to be writable, even if requested
-                if segment.p_flags & program_header::PF_X == program_header::PF_X {
-                    flags.remove(entry::NO_EXECUTE);
-                } else if segment.p_flags & program_header::PF_W == program_header::PF_W {
-                    flags.insert(entry::WRITABLE);
-                }
+                    memory.remap(flags, true);
 
-                for page in Page::range_inclusive(start_page, end_page) {
-                    active_table.remap(page, flags);
+                    context.image.push(memory);
                 }
-                active_table.flush_all();
             }
-        }
 
-        // Map stack
-        let start_page = Page::containing_address(VirtualAddress::new(0x80000000));
-        let end_page = Page::containing_address(VirtualAddress::new(0x80000000 + 64*1024 - 1));
+            // Map stack
+            context.stack = Some(context::memory::Memory::new(
+                VirtualAddress::new(stack_addr),
+                stack_size,
+                entry::NO_EXECUTE | entry::WRITABLE | entry::USER_ACCESSIBLE));
 
-        for page in Page::range_inclusive(start_page, end_page) {
-            if active_table.translate_page(page).is_some() {
-                //TODO panic!("Elf::run: still mapped: {:?}", page);
-                active_table.unmap(page);
-            }
-            active_table.map(page, entry::NO_EXECUTE | entry::WRITABLE | entry::USER_ACCESSIBLE);
-        }
-        active_table.flush_all();
-
-        unsafe {
             // Clear stack
-            memset(0x80000000 as *mut u8, 0, 64 * 1024);
-
-            // Go to usermode
-            usermode(self.entry(), 0x80000000 + 64*1024 - 256);
+            unsafe { memset(stack_addr as *mut u8, 0, stack_size); }
         }
+
+        // Go to usermode
+        unsafe { usermode(self.entry(), stack_addr + stack_size - 256); }
     }
 }
 

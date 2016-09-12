@@ -13,6 +13,9 @@ use syscall::{Error, Result};
 /// File operations
 pub mod file;
 
+/// Memory operations
+pub mod memory;
+
 /// Limit on number of contexts
 pub const CONTEXT_MAX_CONTEXTS: usize = 65536;
 
@@ -171,6 +174,10 @@ pub struct Context {
     pub arch: ArchContext,
     /// Kernel stack
     pub kstack: Option<Box<[u8]>>,
+    /// Executable image
+    pub image: Vec<memory::Memory>,
+    /// User stack
+    pub stack: Option<memory::Memory>,
     /// The open files in the scheme
     pub files: Vec<Option<file::File>>
 }
@@ -184,6 +191,8 @@ impl Context {
             blocked: true,
             arch: ArchContext::new(),
             kstack: None,
+            image: Vec::new(),
+            stack: None,
             files: Vec::new()
         }
     }
