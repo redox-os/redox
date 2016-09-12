@@ -1,5 +1,6 @@
 trampoline:
     .ready: dq 0
+    .cpu_id: dq 0
     .stack_start: dq 0
     .stack_end: dq 0
     .code: dq 0
@@ -131,11 +132,11 @@ long_mode_ap:
     mov gs, rax
     mov ss, rax
 
+    mov rdi, [trampoline.cpu_id]
+    mov rsi, [trampoline.stack_start]
+    mov rdx, [trampoline.stack_end]
 
-    mov rdi, [trampoline.stack_start]
-    mov rsi, [trampoline.stack_end]
-
-    lea rsp, [rsi - 16]
+    lea rsp, [rdx - 256]
 
     mov qword [trampoline.ready], 1
     mov rax, [trampoline.code]

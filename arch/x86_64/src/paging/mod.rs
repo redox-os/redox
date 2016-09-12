@@ -25,7 +25,7 @@ pub const PAGE_SIZE: usize = 4096;
 /// Initialize paging
 ///
 /// Returns page table and thread control block offset
-pub unsafe fn init(stack_start: usize, stack_end: usize) -> (ActivePageTable, usize) {
+pub unsafe fn init(cpu_id: usize, stack_start: usize, stack_end: usize) -> (ActivePageTable, usize) {
     extern {
         /// The starting byte of the text (code) data segment.
         static mut __text_start: u8;

@@ -20,20 +20,29 @@ extern crate spin;
 pub extern crate x86;
 
 // Because the memory map is so important to not be aliased, it is defined here, in one place
-/// Offset of recursive paging
-pub const RECURSIVE_PAGE_OFFSET: usize = 0xffff_ff80_0000_0000;
-/// Offset of kernel
-pub const KERNEL_OFFSET: usize = 0xffff_ff00_0000_0000;
-/// Offset to memory allocation bitmap
-pub const BITMAP_OFFSET: usize = 0xffff_fe80_0000_0000;
-/// Offset to kernel heap
-pub const HEAP_OFFSET: usize = 0xffff_fe00_0000_0000;
-/// Size of heap
-pub const HEAP_SIZE: usize = 64 * 1024 * 1024; // 64 MB
-/// Offset to user heap
-pub const USER_HEAP_OFFSET: usize = 0x0000_0080_0000_0000;
-/// Size of user heap
-pub const USER_HEAP_SIZE: usize = 64 * 1024 * 1024; // 64 MB
+// The lower 256 PML4 entries are reserved for userspace
+// Each PML4 entry references up to 512 GB of memory
+// The upper 256 are reserved for the kernel
+    /// The size of a single PML4
+    pub const PML4_SIZE: usize = 0x0000_0080_0000_0000;
+
+    /// Offset of recursive paging
+    pub const RECURSIVE_PAGE_OFFSET: usize = (-(PML4_SIZE as isize)) as usize;
+
+    /// Offset of kernel
+    pub const KERNEL_OFFSET: usize = RECURSIVE_PAGE_OFFSET - PML4_SIZE;
+
+    /// Offset to kernel heap
+    pub const KERNEL_HEAP_OFFSET: usize = KERNEL_OFFSET - PML4_SIZE;
+    /// Size of kernel heap
+    pub const KERNEL_HEAP_SIZE: usize = 64 * 1024 * 1024; // 64 MB
+
+    /// Offset to kernel percpu variables
+    pub const KERNEL_PERCPU_OFFSET: usize = KERNEL_HEAP_OFFSET - PML4_SIZE;
+
+    /// Offset to user heap
+    pub const USER_HEAP_OFFSET: usize = PML4_SIZE;
+
 
 /// Print to console
 #[macro_export]

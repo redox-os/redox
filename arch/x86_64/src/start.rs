@@ -26,7 +26,6 @@ static mut TBSS_TEST_ZERO: usize = 0;
 #[thread_local]
 static mut TDATA_TEST_NONZERO: usize = 0xFFFFFFFFFFFFFFFF;
 
-static AP_COUNT: AtomicUsize = ATOMIC_USIZE_INIT;
 pub static AP_READY: AtomicBool = ATOMIC_BOOL_INIT;
 static BSP_READY: AtomicBool = ATOMIC_BOOL_INIT;
 static HEAP_TABLE: AtomicUsize = ATOMIC_USIZE_INIT;
@@ -73,7 +72,7 @@ pub unsafe extern fn kstart() -> ! {
         let stack_end = 0x0009F000;
 
         // Initialize paging
-        let (mut active_table, tcb_offset) = paging::init(stack_start, stack_end);
+        let (mut active_table, tcb_offset) = paging::init(0, stack_start, stack_end);
 
         // Set up GDT
         gdt::init(tcb_offset, stack_end);
@@ -92,7 +91,6 @@ pub unsafe extern fn kstart() -> ! {
         }
 
         // Reset AP variables
-        AP_COUNT.store(0, Ordering::SeqCst);
         AP_READY.store(false, Ordering::SeqCst);
         BSP_READY.store(false, Ordering::SeqCst);
         HEAP_TABLE.store(0, Ordering::SeqCst);
@@ -100,14 +98,14 @@ pub unsafe extern fn kstart() -> ! {
         // Map heap
         {
             // Map heap pages
-            let heap_start_page = Page::containing_address(VirtualAddress::new(::HEAP_OFFSET));
-            let heap_end_page = Page::containing_address(VirtualAddress::new(::HEAP_OFFSET + ::HEAP_SIZE-1));
+            let heap_start_page = Page::containing_address(VirtualAddress::new(::KERNEL_HEAP_OFFSET));
+            let heap_end_page = Page::containing_address(VirtualAddress::new(::KERNEL_HEAP_OFFSET + ::KERNEL_HEAP_SIZE-1));
             for page in Page::range_inclusive(heap_start_page, heap_end_page) {
                 active_table.map(page, entry::WRITABLE | entry::NO_EXECUTE);
             }
 
             // Init the allocator
-            allocator::init(::HEAP_OFFSET, ::HEAP_SIZE);
+            allocator::init(::KERNEL_HEAP_OFFSET, ::KERNEL_HEAP_SIZE);
 
             // Send heap page table to APs
             let index = heap_start_page.p4_index();
@@ -136,13 +134,13 @@ pub unsafe extern fn kstart() -> ! {
 }
 
 /// Entry to rust for an AP
-pub unsafe extern fn kstart_ap(stack_start: usize, stack_end: usize) -> ! {
+pub unsafe extern fn kstart_ap(cpu_id: usize, stack_start: usize, stack_end: usize) -> ! {
     {
         assert_eq!(BSS_TEST_ZERO, 0);
         assert_eq!(DATA_TEST_NONZERO, 0xFFFFFFFFFFFFFFFF);
 
         // Initialize paging
-        let (mut active_table, tcb_offset) = paging::init(stack_start, stack_end);
+        let (mut active_table, tcb_offset) = paging::init(cpu_id, stack_start, stack_end);
 
         // Set up GDT for AP
         gdt::init_ap(tcb_offset, stack_end);
@@ -162,13 +160,12 @@ pub unsafe extern fn kstart_ap(stack_start: usize, stack_end: usize) -> ! {
 
         // Copy heap PML4
         {
-            let page = Page::containing_address(VirtualAddress::new(::HEAP_OFFSET));
-
             while HEAP_TABLE.load(Ordering::SeqCst) == 0 {
                 interrupt::pause();
             }
             let frame = Frame::containing_address(PhysicalAddress::new(HEAP_TABLE.load(Ordering::SeqCst)));
 
+            let page = Page::containing_address(VirtualAddress::new(::KERNEL_HEAP_OFFSET));
             let p4 = active_table.p4_mut();
             let entry = &mut p4[page.p4_index()];
             assert!(entry.is_unused());
@@ -181,13 +178,11 @@ pub unsafe extern fn kstart_ap(stack_start: usize, stack_end: usize) -> ! {
         AP_READY.store(true, Ordering::SeqCst);
     }
 
-    let ap_number = AP_COUNT.fetch_add(1, Ordering::SeqCst);
-
     while ! BSP_READY.load(Ordering::SeqCst) {
         interrupt::pause();
     }
 
-    kmain_ap(ap_number);
+    kmain_ap(cpu_id);
 }
 
 pub unsafe fn usermode(ip: usize, sp: usize) -> ! {
