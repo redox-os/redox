@@ -187,23 +187,24 @@ pub unsafe extern fn kstart_ap(cpu_id: usize, page_table: usize, stack_start: us
 
 pub unsafe fn usermode(ip: usize, sp: usize) -> ! {
     // Go to usermode
-    asm!("mov rax, 0x2B # Set segment pointers
+    asm!("xchg bx, bx
         mov ds, ax
         mov es, ax
         mov fs, ax
         mov gs, ax
-
-        push rax # Push stack segment
-        push rbx # Push stack pointer
-        mov rax, 3 << 12 | 1 << 9 # Set IOPL and interrupt enable flag
-        push rax # Push rflags
-        mov rax, 0x23
-        push rax # Push code segment
-        push rcx # Push rip
+        push rax
+        push rbx
+        push rcx
+        push rdx
+        push rsi
         iretq"
-        :
-        : "{rbx}"(sp), "{rcx}"(ip)
-        : "rax", "sp"
+        : // No output because it never returns
+        :   "{rax}"(gdt::GDT_USER_DATA << 3 | 3), // Stack segment
+            "{rbx}"(sp), // Stack pointer
+            "{rcx}"(3 << 12 | 1 << 9), // Flags - Set IOPL and interrupt enable flag
+            "{rdx}"(gdt::GDT_USER_CODE << 3 | 3), // Code segment
+            "{rsi}"(ip) // IP
+        : // No clobers because it never returns
         : "intel", "volatile");
     unreachable!();
 }
