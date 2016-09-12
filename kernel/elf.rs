@@ -63,7 +63,8 @@ impl<'a> Elf<'a> {
 
             // Unmap previous image and stack
             context.image.clear();
-            context.stack.take();
+            drop(context.heap.take());
+            drop(context.stack.take());
 
             for segment in self.segments() {
                 if segment.p_type == program_header::PT_LOAD {

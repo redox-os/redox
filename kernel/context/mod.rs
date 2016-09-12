@@ -99,6 +99,7 @@ pub fn init() {
     let context_lock = contexts.new_context().expect("could not initialize first context");
     let mut context = context_lock.write();
     context.running = true;
+    context.blocked = false;
     CONTEXT_ID.store(context.id, Ordering::SeqCst);
 }
 
@@ -141,7 +142,7 @@ pub unsafe fn switch() {
 
     for (_pid, context_lock) in contexts().map.iter() {
         let mut context = context_lock.write();
-        if ! context.running && ! context.blocked {
+        if ! context.running && ! context.blocked && ! context.exited {
             to_ptr = context.deref_mut() as *mut Context;
             break;
         }
@@ -151,6 +152,7 @@ pub unsafe fn switch() {
         // TODO: Sleep, wait for interrupt
         // Unset global lock if no context found
         arch::context::CONTEXT_SWITCH_LOCK.store(false, Ordering::SeqCst);
+        println!("No to_ptr");
         return;
     }
 
@@ -166,20 +168,23 @@ pub unsafe fn switch() {
 pub struct Context {
     /// The ID of this context
     pub id: usize,
+    //TODO: Status enum
     /// Running or not
     pub running: bool,
     /// Blocked or not
     pub blocked: bool,
+    /// Exited or not`
+    pub exited: bool,
     /// The architecture specific context
     pub arch: ArchContext,
     /// Kernel stack
     pub kstack: Option<Box<[u8]>>,
     /// Executable image
     pub image: Vec<memory::Memory>,
-    /// User stack
-    pub stack: Option<memory::Memory>,
     /// User heap
     pub heap: Option<memory::Memory>,
+    /// User stack
+    pub stack: Option<memory::Memory>,
     /// The open files in the scheme
     pub files: Vec<Option<file::File>>
 }
@@ -191,11 +196,12 @@ impl Context {
             id: id,
             running: false,
             blocked: true,
+            exited: false,
             arch: ArchContext::new(),
             kstack: None,
             image: Vec::new(),
-            stack: None,
             heap: None,
+            stack: None,
             files: Vec::new()
         }
     }

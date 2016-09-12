@@ -3,7 +3,6 @@
 use core::str;
 
 use arch;
-use arch::interrupt::halt;
 use arch::paging::{VirtualAddress, entry};
 use context;
 use elf;
@@ -50,9 +49,20 @@ pub fn clone(flags: usize) -> Result<usize> {
 
 pub fn exit(status: usize) -> ! {
     println!("Exit {}", status);
-    loop {
-        unsafe { halt() };
+    
+    {
+        let contexts = context::contexts();
+        let context_lock = contexts.current().expect("tried to exit without context");
+        let mut context = context_lock.write();
+        context.image.clear();
+        drop(context.heap.take());
+        drop(context.stack.take());
+        context.exited = true;
     }
+
+    unsafe { context::switch(); }
+
+    unreachable!();
 }
 
 pub fn exec(path: &[u8], _args: &[[usize; 2]]) -> Result<usize> {
