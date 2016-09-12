@@ -4,60 +4,40 @@ use core::str;
 
 use arch;
 use arch::interrupt::halt;
-use arch::paging::{ActivePageTable, Page, VirtualAddress, entry};
+use arch::paging::{VirtualAddress, entry};
 use context;
 use elf;
 use syscall::{self, Error, Result};
 
 pub fn brk(address: usize) -> Result<usize> {
-    //TODO: Make this more efficient
-    let mut active_table = unsafe { ActivePageTable::new() };
+    let contexts = context::contexts();
+    let context_lock = contexts.current().ok_or(Error::NoProcess)?;
+    let mut context = context_lock.write();
+
     let mut current = arch::USER_HEAP_OFFSET;
-    {
-        let min_page = Page::containing_address(VirtualAddress::new(arch::USER_HEAP_OFFSET));
-        let max_page = Page::containing_address(VirtualAddress::new(arch::USER_HEAP_OFFSET + arch::USER_HEAP_SIZE - 1));
-        for page in Page::range_inclusive(min_page, max_page) {
-            if active_table.translate_page(page).is_none() {
-                break;
-            }
-            current = page.start_address().get() + 4096;
-        }
+    if let Some(ref heap) = context.heap {
+        current = heap.start_address().get() + heap.size();
     }
     if address == 0 {
         //println!("Brk query {:X}", current);
         Ok(current)
-    } else if address > current {
-        let start_page = Page::containing_address(VirtualAddress::new(current));
-        let end_page = Page::containing_address(VirtualAddress::new(address - 1));
-        for page in Page::range_inclusive(start_page, end_page) {
-            //println!("Map {:X}", page.start_address().get());
-            if active_table.translate_page(page).is_none() {
-                //println!("Not found - mapping");
-                active_table.map(page, entry::PRESENT | entry::WRITABLE | entry::NO_EXECUTE | entry::USER_ACCESSIBLE);
-                active_table.flush(page);
-            } else {
-                //println!("Found - skipping");
-            }
+    } else if address >= arch::USER_HEAP_OFFSET {
+        //TODO: out of memory errors
+        if let Some(ref mut heap) = context.heap {
+            heap.resize(address - arch::USER_HEAP_OFFSET, true);
+            return Ok(address);
         }
-        //let new = end_page.start_address().get() + 4096;
-        //println!("Brk increase {:X}: from {:X} to {:X}", address, current, new);
+
+        context.heap = Some(context::memory::Memory::new(
+            VirtualAddress::new(arch::USER_HEAP_OFFSET),
+            address - arch::USER_HEAP_OFFSET,
+            entry::WRITABLE | entry::NO_EXECUTE | entry::USER_ACCESSIBLE
+        ));
+
         Ok(address)
     } else {
-        let start_page = Page::containing_address(VirtualAddress::new(address));
-        let end_page = Page::containing_address(VirtualAddress::new(current - 1));
-        for page in Page::range_inclusive(start_page, end_page) {
-            //println!("Unmap {:X}", page.start_address().get());
-            if active_table.translate_page(page).is_some() {
-                //println!("Found - unmapping");
-                active_table.unmap(page);
-                active_table.flush(page);
-            } else {
-                //println!("Not found - skipping");
-            }
-        }
-        //let new = start_page.start_address().get();
-        //println!("Brk decrease {:X}: from {:X} to {:X}", address, current, new);
-        Ok(address)
+        //TODO: Return correct error
+        Err(Error::NotPermitted)
     }
 }
 

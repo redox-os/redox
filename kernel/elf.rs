@@ -70,7 +70,8 @@ impl<'a> Elf<'a> {
                     let mut memory = context::memory::Memory::new(
                         VirtualAddress::new(segment.p_vaddr as usize),
                         segment.p_memsz as usize,
-                        entry::NO_EXECUTE | entry::WRITABLE);
+                        entry::NO_EXECUTE | entry::WRITABLE
+                    );
 
                     unsafe {
                         // Copy file data
@@ -106,7 +107,8 @@ impl<'a> Elf<'a> {
             context.stack = Some(context::memory::Memory::new(
                 VirtualAddress::new(stack_addr),
                 stack_size,
-                entry::NO_EXECUTE | entry::WRITABLE | entry::USER_ACCESSIBLE));
+                entry::NO_EXECUTE | entry::WRITABLE | entry::USER_ACCESSIBLE
+            ));
 
             // Clear stack
             unsafe { memset(stack_addr as *mut u8, 0, stack_size); }

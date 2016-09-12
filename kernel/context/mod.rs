@@ -178,6 +178,8 @@ pub struct Context {
     pub image: Vec<memory::Memory>,
     /// User stack
     pub stack: Option<memory::Memory>,
+    /// User heap
+    pub heap: Option<memory::Memory>,
     /// The open files in the scheme
     pub files: Vec<Option<file::File>>
 }
@@ -193,6 +195,7 @@ impl Context {
             kstack: None,
             image: Vec::new(),
             stack: None,
+            heap: None,
             files: Vec::new()
         }
     }
