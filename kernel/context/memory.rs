@@ -38,6 +38,7 @@ impl Memory {
     pub fn map(&mut self, flush: bool) {
         let mut active_table = unsafe { ActivePageTable::new() };
 
+        //TODO: Clear pages?
         for page in self.pages() {
             active_table.map(page, self.flags);
             if flush {
@@ -73,6 +74,8 @@ impl Memory {
     pub fn resize(&mut self, new_size: usize, flush: bool) {
         let mut active_table = unsafe { ActivePageTable::new() };
 
+        //TODO: Clear pages?
+        //TODO: Calculate page changes to minimize operations
         if new_size > self.size {
             let start_page = Page::containing_address(VirtualAddress::new(self.start.get() + self.size));
             let end_page = Page::containing_address(VirtualAddress::new(self.start.get() + new_size - 1));
@@ -85,7 +88,7 @@ impl Memory {
                         active_table.flush(page);
                     }
                 } else {
-                    //println!("Found - skipping");
+                    //println!("Found - skipping {:X}", page.start_address().get());
                 }
             }
         } else if new_size < self.size {
@@ -100,7 +103,7 @@ impl Memory {
                         active_table.flush(page);
                     }
                 } else {
-                    //println!("Not found - skipping");
+                    //println!("Not found - skipping {:X}", page.start_address().get());
                 }
             }
         }
