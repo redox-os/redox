@@ -11,9 +11,8 @@ pub const GDT_KERNEL_DATA: usize = 2;
 pub const GDT_KERNEL_TLS: usize = 3;
 pub const GDT_USER_CODE: usize = 4;
 pub const GDT_USER_DATA: usize = 5;
-pub const GDT_USER_TLS: usize = 6;
-pub const GDT_TSS: usize = 7;
-pub const GDT_TSS_HIGH: usize = 8;
+pub const GDT_TSS: usize = 6;
+pub const GDT_TSS_HIGH: usize = 7;
 
 pub const GDT_A_PRESENT: u8 = 1 << 7;
 pub const GDT_A_RING_0: u8 = 0 << 5;
@@ -56,7 +55,7 @@ pub static mut GDTR: DescriptorTablePointer = DescriptorTablePointer {
 };
 
 #[thread_local]
-pub static mut GDT: [GdtEntry; 9] = [
+pub static mut GDT: [GdtEntry; 8] = [
     // Null
     GdtEntry::new(0, 0, 0, 0),
     // Kernel code
@@ -64,12 +63,10 @@ pub static mut GDT: [GdtEntry; 9] = [
     // Kernel data
     GdtEntry::new(0, 0, GDT_A_PRESENT | GDT_A_RING_0 | GDT_A_SYSTEM | GDT_A_PRIVILEGE, GDT_F_LONG_MODE),
     // Kernel TLS
-    GdtEntry::new(0, 0, GDT_A_PRESENT | GDT_A_RING_3 | GDT_A_SYSTEM | GDT_A_PRIVILEGE, GDT_F_LONG_MODE),
+    GdtEntry::new(0, 0, GDT_A_PRESENT | GDT_A_RING_0 | GDT_A_SYSTEM | GDT_A_PRIVILEGE, GDT_F_LONG_MODE),
     // User code
     GdtEntry::new(0, 0, GDT_A_PRESENT | GDT_A_RING_3 | GDT_A_SYSTEM | GDT_A_EXECUTABLE | GDT_A_PRIVILEGE, GDT_F_LONG_MODE),
     // User data
-    GdtEntry::new(0, 0, GDT_A_PRESENT | GDT_A_RING_3 | GDT_A_SYSTEM | GDT_A_PRIVILEGE, GDT_F_LONG_MODE),
-    //TODO: User TLS
     GdtEntry::new(0, 0, GDT_A_PRESENT | GDT_A_RING_3 | GDT_A_SYSTEM | GDT_A_PRIVILEGE, GDT_F_LONG_MODE),
     // TSS
     GdtEntry::new(0, 0, GDT_A_PRESENT | GDT_A_RING_3 | GDT_A_TSS_AVAIL, 0),
