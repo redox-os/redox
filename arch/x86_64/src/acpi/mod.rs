@@ -67,13 +67,15 @@ pub fn init_sdt(sdt: &'static Sdt, active_table: &mut ActivePageTable) {
 
                         let ap_ready = TRAMPOLINE as *mut u64;
                         let ap_cpu_id = unsafe { ap_ready.offset(1) };
-                        let ap_stack_start = unsafe { ap_ready.offset(2) };
-                        let ap_stack_end = unsafe { ap_ready.offset(3) };
-                        let ap_code = unsafe { ap_ready.offset(4) };
+                        let ap_page_table = unsafe { ap_ready.offset(2) };
+                        let ap_stack_start = unsafe { ap_ready.offset(3) };
+                        let ap_stack_end = unsafe { ap_ready.offset(4) };
+                        let ap_code = unsafe { ap_ready.offset(5) };
 
                         // Set the ap_ready to 0, volatile
                         unsafe { atomic_store(ap_ready, 0) };
                         unsafe { atomic_store(ap_cpu_id, ap_local_apic.id as u64) };
+                        unsafe { atomic_store(ap_page_table, active_table.address() as u64) };
                         unsafe { atomic_store(ap_stack_start, stack_start as u64) };
                         unsafe { atomic_store(ap_stack_end, stack_end as u64) };
                         unsafe { atomic_store(ap_code, kstart_ap as u64) };
