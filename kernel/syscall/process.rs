@@ -49,7 +49,7 @@ pub fn clone(flags: usize) -> Result<usize> {
 
 pub fn exit(status: usize) -> ! {
     println!("Exit {}", status);
-    
+
     {
         let contexts = context::contexts();
         let context_lock = contexts.current().expect("tried to exit without context");

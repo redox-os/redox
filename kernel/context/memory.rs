@@ -39,12 +39,20 @@ impl Memory {
     pub fn map(&mut self, flush: bool, clear: bool) {
         let mut active_table = unsafe { ActivePageTable::new() };
 
+        let mut flush_all = false;
+
         //TODO: Clear pages?
         for page in self.pages() {
             active_table.map(page, self.flags);
+
             if flush {
-                active_table.flush(page);
+                //active_table.flush(page);
+                flush_all = true;
             }
+        }
+
+        if flush_all {
+            active_table.flush_all();
         }
 
         if clear {
@@ -56,22 +64,38 @@ impl Memory {
     pub fn unmap(&mut self, flush: bool) {
         let mut active_table = unsafe { ActivePageTable::new() };
 
+        let mut flush_all = false;
+
         for page in self.pages() {
             active_table.unmap(page);
+
             if flush {
-                active_table.flush(page);
+                //active_table.flush(page);
+                flush_all = true;
             }
+        }
+
+        if flush_all {
+            active_table.flush_all();
         }
     }
 
     pub fn remap(&mut self, new_flags: EntryFlags, flush: bool) {
         let mut active_table = unsafe { ActivePageTable::new() };
 
+        let mut flush_all = false;
+
         for page in self.pages() {
             active_table.remap(page, new_flags);
+
             if flush {
-                active_table.flush(page);
+                //active_table.flush(page);
+                flush_all = true;
             }
+        }
+
+        if flush_all {
+            active_table.flush_all();
         }
 
         self.flags = new_flags;
@@ -82,15 +106,23 @@ impl Memory {
 
         //TODO: Calculate page changes to minimize operations
         if new_size > self.size {
+            let mut flush_all = false;
+
             let start_page = Page::containing_address(VirtualAddress::new(self.start.get() + self.size));
             let end_page = Page::containing_address(VirtualAddress::new(self.start.get() + new_size - 1));
             for page in Page::range_inclusive(start_page, end_page) {
                 if active_table.translate_page(page).is_none() {
                     active_table.map(page, self.flags);
+
                     if flush {
-                        active_table.flush(page);
+                        //active_table.flush(page);
+                        flush_all = true;
                     }
                 }
+            }
+
+            if flush_all {
+                active_table.flush_all();
             }
 
             if clear {
@@ -98,15 +130,23 @@ impl Memory {
                 unsafe { memset((self.start.get() + self.size) as *mut u8, 0, new_size - self.size); }
             }
         } else if new_size < self.size {
+            let mut flush_all = false;
+
             let start_page = Page::containing_address(VirtualAddress::new(self.start.get() + new_size));
             let end_page = Page::containing_address(VirtualAddress::new(self.start.get() + self.size - 1));
             for page in Page::range_inclusive(start_page, end_page) {
                 if active_table.translate_page(page).is_some() {
                     active_table.unmap(page);
+
                     if flush {
-                        active_table.flush(page);
+                        //active_table.flush(page);
+                        flush_all = true;
                     }
                 }
+            }
+
+            if flush_all {
+                active_table.flush_all();
             }
         }
 
