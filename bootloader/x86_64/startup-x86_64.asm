@@ -19,6 +19,9 @@ startup_ap:
     ; initialize stack
     mov sp, 0x7C00
 
+    call initialize.fpu
+    call initialize.sse
+
     ;cr3 holds pointer to PML4
     mov edi, 0x70000
     mov cr3, edi
