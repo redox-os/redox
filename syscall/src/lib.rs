@@ -110,7 +110,7 @@ pub fn chdir(path: &str) -> Result<usize> {
 }
 
 pub unsafe fn clone(flags: usize) -> Result<usize> {
-    syscall1(SYS_CLONE, flags)
+    syscall1_clobber(SYS_CLONE, flags)
 }
 
 pub fn close(fd: usize) -> Result<usize> {

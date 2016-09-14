@@ -126,7 +126,16 @@ macro_rules! interrupt_error {
             }
 
             // Push scratch registers
-            asm!("push rax
+            asm!("xchg bx, bx
+                pop rax # Error
+                pop rbx # RIP
+                pop rcx # CS
+                pop rdx # RFLAGS
+                pop rsi # RSP
+                pop rdi # SS
+                cli
+                hlt
+                push rax
                 push rcx
                 push rdx
                 push rdi

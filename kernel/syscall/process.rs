@@ -82,10 +82,6 @@ pub fn clone(flags: usize, stack_base: usize) -> Result<usize> {
         pid = context.id;
     }
 
-    println!("Clone {}", pid);
-
-    unsafe { asm!("xchg bx, bx" : : : : "intel", "volatile"); }
-
     unsafe { context::switch(); }
 
     Ok(pid)
