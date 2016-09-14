@@ -101,6 +101,36 @@ impl Memory {
         self.flags = new_flags;
     }
 
+    pub fn replace(&mut self, new_start: VirtualAddress, flush: bool) {
+        let mut active_table = unsafe { ActivePageTable::new() };
+
+        let mut flush_all = false;
+
+        for page in self.pages() {
+            active_table.unmap(page);
+
+            if flush {
+                //active_table.flush(page);
+                flush_all = true;
+            }
+        }
+
+        self.start = new_start;
+
+        for page in self.pages() {
+            active_table.map(page, self.flags);
+
+            if flush {
+                //active_table.flush(page);
+                flush_all = true;
+            }
+        }
+
+        if flush_all {
+            active_table.flush_all();
+        }
+    }
+
     pub fn resize(&mut self, new_size: usize, flush: bool, clear: bool) {
         let mut active_table = unsafe { ActivePageTable::new() };
 

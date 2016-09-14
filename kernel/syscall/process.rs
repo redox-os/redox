@@ -47,8 +47,9 @@ pub fn clone(flags: usize, stack_base: usize) -> Result<usize> {
     println!("Clone {:X}: {:X}", flags, stack_base);
 
     let arch;
-    let mut stack_option = None;
+    let mut kstack_option = None;
     let mut offset = 0;
+    let mut stack_option = None;
 
     // Copy from old process
     {
@@ -63,6 +64,21 @@ pub fn clone(flags: usize, stack_base: usize) -> Result<usize> {
                 let func_ptr = new_stack.as_mut_ptr().offset(offset as isize);
                 *(func_ptr as *mut usize) = arch::interrupt::syscall::clone_ret as usize;
             }
+            kstack_option = Some(new_stack);
+        }
+        if let Some(ref stack) = context.stack {
+            let mut new_stack = context::memory::Memory::new(
+                VirtualAddress::new(arch::USER_TMP_STACK_OFFSET),
+                stack.size(),
+                entry::NO_EXECUTE | entry::WRITABLE | entry::USER_ACCESSIBLE,
+                true,
+                true //TODO: Don't clear stack?
+            );
+            unsafe {
+                arch::externs::memcpy(new_stack.start_address().get() as *mut u8,
+                                      stack.start_address().get() as *const u8,
+                                      stack.size());
+            }
             stack_option = Some(new_stack);
         }
     }
@@ -74,15 +90,19 @@ pub fn clone(flags: usize, stack_base: usize) -> Result<usize> {
         let context_lock = contexts.new_context()?;
         let mut context = context_lock.write();
         context.arch = arch;
-        if let Some(stack) = stack_option.take() {
+        if let Some(stack) = kstack_option.take() {
             context.arch.set_stack(stack.as_ptr() as usize + offset);
             context.kstack = Some(stack);
+        }
+        if let Some(mut stack) = stack_option.take() {
+            //stack.replace(VirtualAddress::new(arch::USER_STACK_OFFSET), true);
+            context.stack = Some(stack);
         }
         context.blocked = false;
         pid = context.id;
     }
 
-    unsafe { context::switch(); }
+    //unsafe { context::switch(); }
 
     Ok(pid)
 }

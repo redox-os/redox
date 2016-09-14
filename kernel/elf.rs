@@ -55,8 +55,6 @@ impl<'a> Elf<'a> {
 
     /// Test function to run. Remove and replace with proper syscall
     pub fn run(self) -> SysResult<!> {
-        let stack_addr = arch::USER_STACK_OFFSET;
-        let stack_size = arch::USER_STACK_SIZE;
         {
             let contexts = context::contexts();
             let context_lock = contexts.current().ok_or(Error::NoProcess)?;
@@ -105,8 +103,8 @@ impl<'a> Elf<'a> {
 
             // Map stack
             context.stack = Some(context::memory::Memory::new(
-                VirtualAddress::new(stack_addr),
-                stack_size,
+                VirtualAddress::new(arch::USER_STACK_OFFSET),
+                arch::USER_STACK_SIZE,
                 entry::NO_EXECUTE | entry::WRITABLE | entry::USER_ACCESSIBLE,
                 true,
                 true
@@ -114,7 +112,7 @@ impl<'a> Elf<'a> {
         }
 
         // Go to usermode
-        unsafe { usermode(self.entry(), stack_addr + stack_size - 256); }
+        unsafe { usermode(self.entry(), arch::USER_STACK_OFFSET + arch::USER_STACK_SIZE - 256); }
     }
 }
 

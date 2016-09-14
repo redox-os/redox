@@ -51,6 +51,9 @@ pub extern crate x86;
     /// Size of user stack
     pub const USER_STACK_SIZE: usize = 1024 * 1024; // 1 MB
 
+    /// Offset to user temporary stack (used when cloning)
+    pub const USER_TMP_STACK_OFFSET: usize = USER_STACK_OFFSET + PML4_SIZE;
+
 
 /// Print to console
 #[macro_export]
@@ -126,7 +129,14 @@ macro_rules! interrupt_error {
             }
 
             // Push scratch registers
-            asm!("push rax
+            asm!("pop rax
+                pop rbx
+                pop rcx
+                pop rdx
+                pop rsi
+                pop rdi
+                hlt
+                push rax
                 push rcx
                 push rdx
                 push rdi
