@@ -1,5 +1,6 @@
 ///! Process syscalls
 
+use core::mem;
 use core::str;
 
 use arch;
@@ -42,9 +43,52 @@ pub fn brk(address: usize) -> Result<usize> {
     }
 }
 
-pub fn clone(flags: usize) -> Result<usize> {
-    println!("Clone {:X}", flags);
-    Ok(0)
+pub fn clone(flags: usize, stack_base: usize) -> Result<usize> {
+    println!("Clone {:X}: {:X}", flags, stack_base);
+
+    let arch;
+    let mut stack_option = None;
+    let mut offset = 0;
+
+    // Copy from old process
+    {
+        let contexts = context::contexts();
+        let context_lock = contexts.current().ok_or(Error::NoProcess)?;
+        let context = context_lock.read();
+        arch = context.arch.clone();
+        if let Some(ref stack) = context.kstack {
+            offset = stack_base - stack.as_ptr() as usize - mem::size_of::<usize>(); // Add clone ret
+            let mut new_stack = stack.clone();
+            unsafe {
+                let func_ptr = new_stack.as_mut_ptr().offset(offset as isize);
+                *(func_ptr as *mut usize) = arch::interrupt::syscall::clone_ret as usize;
+            }
+            stack_option = Some(new_stack);
+        }
+    }
+
+    // Set up new process
+    let pid;
+    {
+        let mut contexts = context::contexts_mut();
+        let context_lock = contexts.new_context()?;
+        let mut context = context_lock.write();
+        context.arch = arch;
+        if let Some(stack) = stack_option.take() {
+            context.arch.set_stack(stack.as_ptr() as usize + offset);
+            context.kstack = Some(stack);
+        }
+        context.blocked = false;
+        pid = context.id;
+    }
+
+    println!("Clone {}", pid);
+
+    unsafe { asm!("xchg bx, bx" : : : : "intel", "volatile"); }
+
+    unsafe { context::switch(); }
+
+    Ok(pid)
 }
 
 pub fn exit(status: usize) -> ! {

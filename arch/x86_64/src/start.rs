@@ -187,8 +187,7 @@ pub unsafe extern fn kstart_ap(cpu_id: usize, page_table: usize, stack_start: us
 
 pub unsafe fn usermode(ip: usize, sp: usize) -> ! {
     // Go to usermode
-    asm!("xchg bx, bx
-        mov ds, ax
+    asm!("mov ds, ax
         mov es, ax
         mov fs, ax
         mov gs, ax
@@ -201,7 +200,7 @@ pub unsafe fn usermode(ip: usize, sp: usize) -> ! {
         : // No output because it never returns
         :   "{rax}"(gdt::GDT_USER_DATA << 3 | 3), // Stack segment
             "{rbx}"(sp), // Stack pointer
-            "{rcx}"(3 << 12 | 1 << 9), // Flags - Set IOPL and interrupt enable flag
+            "{rcx}"(3 << 12/* | 1 << 9*/), // Flags - Set IOPL and interrupt enable flag
             "{rdx}"(gdt::GDT_USER_CODE << 3 | 3), // Code segment
             "{rsi}"(ip) // IP
         : // No clobers because it never returns
