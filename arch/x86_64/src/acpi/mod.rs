@@ -43,6 +43,13 @@ pub fn init_sdt(sdt: &'static Sdt, active_table: &mut ActivePageTable) {
             println!("    XAPIC {}: {:>08X}", me, local_apic.address);
         }
 
+        let trampoline_frame = Frame::containing_address(PhysicalAddress::new(TRAMPOLINE));
+        let trampoline_page = Page::containing_address(VirtualAddress::new(TRAMPOLINE));
+
+        // Map trampoline
+        active_table.map_to(trampoline_page, trampoline_frame, entry::PRESENT | entry::WRITABLE);
+        active_table.flush(trampoline_page);
+
         for madt_entry in madt.iter() {
             println!("      {:?}", madt_entry);
             match madt_entry {
@@ -50,13 +57,6 @@ pub fn init_sdt(sdt: &'static Sdt, active_table: &mut ActivePageTable) {
                     println!("        This is my local APIC");
                 } else {
                     if ap_local_apic.flags & 1 == 1 {
-                        // Map trampoline
-                        {
-                            if active_table.translate_page(Page::containing_address(VirtualAddress::new(TRAMPOLINE))).is_none() {
-                                active_table.identity_map(Frame::containing_address(PhysicalAddress::new(TRAMPOLINE)), entry::PRESENT | entry::WRITABLE);
-                            }
-                        }
-
                         // Allocate a stack
                         // TODO: Allocate contiguous
                         let stack_start = allocate_frame().expect("no more frames in acpi stack_start").start_address().get();
@@ -128,6 +128,10 @@ pub fn init_sdt(sdt: &'static Sdt, active_table: &mut ActivePageTable) {
                 _ => ()
             }
         }
+
+        // Unmap trampoline
+        active_table.unmap(trampoline_page);
+        active_table.flush(trampoline_page);
     } else {
         println!(": Unknown");
     }
@@ -138,28 +142,43 @@ pub unsafe fn init(active_table: &mut ActivePageTable) -> Option<Acpi> {
     let start_addr = 0xE0000;
     let end_addr = 0xFFFFF;
 
-    // Map all of the ACPI table space
+    // Map all of the ACPI RSDT space
     {
         let start_frame = Frame::containing_address(PhysicalAddress::new(start_addr));
         let end_frame = Frame::containing_address(PhysicalAddress::new(end_addr));
         for frame in Frame::range_inclusive(start_frame, end_frame) {
-            if active_table.translate_page(Page::containing_address(VirtualAddress::new(frame.start_address().get()))).is_none() {
-                active_table.identity_map(frame, entry::PRESENT | entry::NO_EXECUTE);
-            }
+            let page = Page::containing_address(VirtualAddress::new(frame.start_address().get()));
+            active_table.map_to(page, frame, entry::PRESENT | entry::NO_EXECUTE);
+            active_table.flush(page);
         }
     }
 
     // Search for RSDP
     if let Some(rsdp) = RSDP::search(start_addr, end_addr) {
-        let get_sdt = |sdt_address: usize, active_table: &mut ActivePageTable| -> &'static Sdt {
-            if active_table.translate_page(Page::containing_address(VirtualAddress::new(sdt_address))).is_none() {
+        let get_sdt = |sdt_address: usize, active_table: &mut ActivePageTable| -> (&'static Sdt, bool) {
+            let mapped = if active_table.translate_page(Page::containing_address(VirtualAddress::new(sdt_address))).is_none() {
                 let sdt_frame = Frame::containing_address(PhysicalAddress::new(sdt_address));
-                active_table.identity_map(sdt_frame, entry::PRESENT | entry::NO_EXECUTE);
-            }
-            &*(sdt_address as *const Sdt)
+                let sdt_page = Page::containing_address(VirtualAddress::new(sdt_address));
+                active_table.map_to(sdt_page, sdt_frame, entry::PRESENT | entry::NO_EXECUTE);
+                active_table.flush(sdt_page);
+                true
+            } else {
+                false
+            };
+            (&*(sdt_address as *const Sdt), mapped)
         };
 
-        let rxsdt = get_sdt(rsdp.sdt_address(), active_table);
+        let drop_sdt = |sdt: &'static Sdt, mapped: bool, active_table: &mut ActivePageTable| {
+            let sdt_address = sdt as *const Sdt as usize;
+            drop(sdt);
+            if mapped {
+                let sdt_page = Page::containing_address(VirtualAddress::new(sdt_address));
+                active_table.unmap(sdt_page);
+                active_table.flush(sdt_page);
+            }
+        };
+
+        let (rxsdt, rxmapped) = get_sdt(rsdp.sdt_address(), active_table);
 
         for &c in rxsdt.signature.iter() {
             print!("{}", c as char);
@@ -167,19 +186,34 @@ pub unsafe fn init(active_table: &mut ActivePageTable) -> Option<Acpi> {
         println!(":");
         if let Some(rsdt) = Rsdt::new(rxsdt) {
             for sdt_address in rsdt.iter() {
-                let sdt = get_sdt(sdt_address, active_table);
+                let (sdt, mapped) = get_sdt(sdt_address, active_table);
                 init_sdt(sdt, active_table);
+                drop_sdt(sdt, mapped, active_table);
             }
         } else if let Some(xsdt) = Xsdt::new(rxsdt) {
             for sdt_address in xsdt.iter() {
-                let sdt = get_sdt(sdt_address, active_table);
+                let (sdt, mapped) = get_sdt(sdt_address, active_table);
                 init_sdt(sdt, active_table);
+                drop_sdt(sdt, mapped, active_table);
             }
         } else {
             println!("UNKNOWN RSDT OR XSDT SIGNATURE");
         }
+
+        drop_sdt(rxsdt, rxmapped, active_table);
     } else {
         println!("NO RSDP FOUND");
+    }
+
+    // Unmap all of the ACPI RSDT space
+    {
+        let start_frame = Frame::containing_address(PhysicalAddress::new(start_addr));
+        let end_frame = Frame::containing_address(PhysicalAddress::new(end_addr));
+        for frame in Frame::range_inclusive(start_frame, end_frame) {
+            let page = Page::containing_address(VirtualAddress::new(frame.start_address().get()));
+            active_table.unmap(page);
+            active_table.flush(page);
+        }
     }
 
     None

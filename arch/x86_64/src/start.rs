@@ -65,7 +65,7 @@ pub unsafe extern fn kstart() -> ! {
         }
 
         // Initialize memory management
-        memory::init(0, &__end as *const u8 as usize);
+        memory::init(0, &__end as *const u8 as usize - ::KERNEL_OFFSET);
 
         // TODO: allocate a stack
         let stack_start = 0x00080000;

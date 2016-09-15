@@ -3,7 +3,7 @@ use ransid::{Console, Event};
 use spin::Mutex;
 
 use memory::Frame;
-use paging::{ActivePageTable, PhysicalAddress, entry};
+use paging::{ActivePageTable, Page, PhysicalAddress, VirtualAddress, entry};
 
 #[cfg(target_arch = "x86_64")]
 #[allow(unused_assignments)]
@@ -117,6 +117,8 @@ pub unsafe fn init(active_table: &mut ActivePageTable) {
         ));
         *CONSOLE.lock() = Some(Console::new(width/8, height/16));
     }
+
+    active_table.unmap(Page::containing_address(VirtualAddress::new(0x5200)));
 }
 
 pub unsafe fn init_ap(active_table: &mut ActivePageTable) {
@@ -137,6 +139,8 @@ pub unsafe fn init_ap(active_table: &mut ActivePageTable) {
             }
         }
     }
+
+    active_table.unmap(Page::containing_address(VirtualAddress::new(0x5200)));
 }
 
 /// A display

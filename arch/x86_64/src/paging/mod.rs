@@ -78,25 +78,23 @@ pub unsafe fn init(cpu_id: usize, stack_start: usize, stack_end: usize) -> (Acti
                 }
             }
 
-            let mut remap = |start: usize, end: usize, flags: EntryFlags| {
+            let mut remap = |start: usize, end: usize, flags: EntryFlags, offset: usize| {
                 if end > start {
                     let start_frame = Frame::containing_address(PhysicalAddress::new(start));
                     let end_frame = Frame::containing_address(PhysicalAddress::new(end - 1));
                     for frame in Frame::range_inclusive(start_frame, end_frame) {
-                        mapper.identity_map(frame.clone(), flags);
-
-                        //let page = Page::containing_address(VirtualAddress::new(frame.start_address().get() + ::KERNEL_OFFSET));
-                        //mapper.map_to(page, frame, flags);
+                        let page = Page::containing_address(VirtualAddress::new(frame.start_address().get() + offset));
+                        mapper.map_to(page, frame, flags);
                     }
                 }
             };
 
             // Remap stack writable, no execute
-            remap(stack_start, stack_end, PRESENT | NO_EXECUTE | WRITABLE);
+            remap(stack_start, stack_end, PRESENT | NO_EXECUTE | WRITABLE, 0);
 
             // Remap a section with `flags`
             let mut remap_section = |start: &u8, end: &u8, flags: EntryFlags| {
-                remap(start as *const _ as usize, end as *const _ as usize, flags);
+                remap(start as *const _ as usize - ::KERNEL_OFFSET, end as *const _ as usize - ::KERNEL_OFFSET, flags, ::KERNEL_OFFSET);
             };
             // Remap text read-only
             remap_section(& __text_start, & __text_end, PRESENT);

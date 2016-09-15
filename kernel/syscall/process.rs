@@ -79,6 +79,7 @@ pub fn clone(flags: usize, stack_base: usize) -> Result<usize> {
                                       stack.start_address().get() as *const u8,
                                       stack.size());
             }
+            new_stack.unmap(true);
             stack_option = Some(new_stack);
         }
     }
