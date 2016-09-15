@@ -96,7 +96,5 @@ impl Context {
 
         // Unset global lock, set inside of kernel
         CONTEXT_SWITCH_LOCK.store(false, Ordering::SeqCst);
-
-        asm!("xchg bx, bx" : : : : "intel", "volatile");
     }
 }

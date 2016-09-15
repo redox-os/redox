@@ -61,11 +61,8 @@ impl<'a> Elf<'a> {
             let mut context = context_lock.write();
 
             // Unmap previous image and stack
-            println!("Clear image");
             context.image.clear();
-            println!("Drop heap");
             drop(context.heap.take());
-            println!("Drop stack");
             drop(context.stack.take());
 
             for segment in self.segments() {
@@ -115,7 +112,6 @@ impl<'a> Elf<'a> {
         }
 
         // Go to usermode
-        println!("Execute {:X}", self.entry());
         unsafe { usermode(self.entry(), arch::USER_STACK_OFFSET + arch::USER_STACK_SIZE - 256); }
     }
 }

@@ -68,7 +68,6 @@ pub fn clone(flags: usize, stack_base: usize) -> Result<usize> {
             let context = context_lock.read();
             arch = context.arch.clone();
 
-            println!("Clone kstack");
             if let Some(ref stack) = context.kstack {
                 offset = stack_base - stack.as_ptr() as usize - mem::size_of::<usize>(); // Add clone ret
                 let mut new_stack = stack.clone();
@@ -79,7 +78,6 @@ pub fn clone(flags: usize, stack_base: usize) -> Result<usize> {
                 kstack_option = Some(new_stack);
             }
 
-            println!("Clone image");
             for memory in context.image.iter() {
                 let mut new_memory = context::memory::Memory::new(
                     VirtualAddress::new(memory.start_address().get() + arch::USER_TMP_OFFSET),
@@ -97,7 +95,6 @@ pub fn clone(flags: usize, stack_base: usize) -> Result<usize> {
                 image.push(new_memory);
             }
 
-            println!("Clone heap");
             if let Some(ref heap) = context.heap {
                 let mut new_heap = context::memory::Memory::new(
                     VirtualAddress::new(arch::USER_TMP_HEAP_OFFSET),
@@ -115,7 +112,6 @@ pub fn clone(flags: usize, stack_base: usize) -> Result<usize> {
                 heap_option = Some(new_heap);
             }
 
-            println!("Clone stack");
             if let Some(ref stack) = context.stack {
                 let mut new_stack = context::memory::Memory::new(
                     VirtualAddress::new(arch::USER_TMP_STACK_OFFSET),
@@ -133,7 +129,6 @@ pub fn clone(flags: usize, stack_base: usize) -> Result<usize> {
                 stack_option = Some(new_stack);
             }
 
-            println!("Clone files");
             for (fd, file_option) in context.files.iter().enumerate() {
                 if let Some(file) = *file_option {
                     let result = {
@@ -176,7 +171,6 @@ pub fn clone(flags: usize, stack_base: usize) -> Result<usize> {
             };
 
             // Copy kernel mapping
-            println!("Set kernel mapping");
             {
                 let kernel_frame = active_table.p4()[510].pointed_frame().expect("kernel table not mapped");
                 active_table.with(&mut new_table, &mut temporary_page, |mapper| {
@@ -185,7 +179,6 @@ pub fn clone(flags: usize, stack_base: usize) -> Result<usize> {
             }
 
             // Copy percpu mapping
-            println!("Set kernel percpu");
             {
                 extern {
                     /// The starting byte of the thread data segment
@@ -210,32 +203,27 @@ pub fn clone(flags: usize, stack_base: usize) -> Result<usize> {
             }
 
 
-            println!("Set kstack");
             if let Some(stack) = kstack_option.take() {
                 context.arch.set_stack(stack.as_ptr() as usize + offset);
                 context.kstack = Some(stack);
             }
 
-            println!("Set image");
             for memory in image.iter_mut() {
                 let start = VirtualAddress::new(memory.start_address().get() - arch::USER_TMP_OFFSET + arch::USER_OFFSET);
                 memory.move_to(start, &mut new_table, &mut temporary_page, true);
             }
             context.image = image;
 
-            println!("Set heap");
             if let Some(mut heap) = heap_option.take() {
                 heap.move_to(VirtualAddress::new(arch::USER_HEAP_OFFSET), &mut new_table, &mut temporary_page, true);
                 context.heap = Some(heap);
             }
 
-            println!("Set stack");
             if let Some(mut stack) = stack_option.take() {
                 stack.move_to(VirtualAddress::new(arch::USER_STACK_OFFSET), &mut new_table, &mut temporary_page, true);
                 context.stack = Some(stack);
             }
 
-            println!("Set files");
             context.files = files;
 
             context.arch.set_page_table(unsafe { new_table.address() });
@@ -273,10 +261,8 @@ pub fn exec(path: &[u8], _args: &[[usize; 2]]) -> Result<usize> {
     //TODO: Drop data vec
     println!("Exec {}", unsafe { str::from_utf8_unchecked(path) });
 
-    println!("Open");
     let file = syscall::open(path, 0)?;
     let mut data = vec![];
-    println!("Reading");
     loop {
         let mut buf = [0; 4096];
         let count = syscall::read(file, &mut buf)?;
@@ -286,13 +272,10 @@ pub fn exec(path: &[u8], _args: &[[usize; 2]]) -> Result<usize> {
             break;
         }
     }
-    println!("Close");
     let _ = syscall::close(file);
 
-    println!("Parse");
     match elf::Elf::from(&data) {
         Ok(elf) => {
-            println!("Run");
             elf.run().and(Ok(0))
         },
         Err(err) => {
