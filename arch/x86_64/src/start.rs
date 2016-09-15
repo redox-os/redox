@@ -181,7 +181,8 @@ pub unsafe extern fn kstart_ap(cpu_id: usize, page_table: usize, stack_start: us
 
 pub unsafe fn usermode(ip: usize, sp: usize) -> ! {
     // Go to usermode
-    asm!("mov ds, ax
+    asm!("xchg bx, bx
+        mov ds, ax
         mov es, ax
         mov fs, ax
         mov gs, ax

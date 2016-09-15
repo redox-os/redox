@@ -1,4 +1,4 @@
-use std::{env, thread};
+use std::env;
 use std::fs::File;
 use std::io::{BufRead, BufReader};
 use std::process::Command;
@@ -46,9 +46,5 @@ pub fn main() {
                 }
             }
         }
-    }
-
-    loop {
-        thread::yield_now();
     }
 }

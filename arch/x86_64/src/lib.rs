@@ -44,16 +44,25 @@ pub extern crate x86;
     /// Size of kernel percpu variables
     pub const KERNEL_PERCPU_SIZE: usize = 64 * 1024; // 64 KB
 
+    /// Offset to user image
+    pub const USER_OFFSET: usize = 0;
+
     /// Offset to user heap
-    pub const USER_HEAP_OFFSET: usize = PML4_SIZE;
+    pub const USER_HEAP_OFFSET: usize = USER_OFFSET + PML4_SIZE;
 
     /// Offset to user stack
     pub const USER_STACK_OFFSET: usize = USER_HEAP_OFFSET + PML4_SIZE;
     /// Size of user stack
     pub const USER_STACK_SIZE: usize = 1024 * 1024; // 1 MB
 
+    /// Offset to user temporary image (used when cloning)
+    pub const USER_TMP_OFFSET: usize = USER_STACK_OFFSET + PML4_SIZE;
+
+    /// Offset to user temporary heap (used when cloning)
+    pub const USER_TMP_HEAP_OFFSET: usize = USER_TMP_OFFSET + PML4_SIZE;
+
     /// Offset to user temporary stack (used when cloning)
-    pub const USER_TMP_STACK_OFFSET: usize = USER_STACK_OFFSET + PML4_SIZE;
+    pub const USER_TMP_STACK_OFFSET: usize = USER_TMP_HEAP_OFFSET + PML4_SIZE;
 
 
 /// Print to console

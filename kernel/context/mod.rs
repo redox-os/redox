@@ -167,7 +167,6 @@ pub unsafe fn switch() {
         // TODO: Sleep, wait for interrupt
         // Unset global lock if no context found
         arch::context::CONTEXT_SWITCH_LOCK.store(false, Ordering::SeqCst);
-        println!("No to_ptr");
         return;
     }
 

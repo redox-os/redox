@@ -1,6 +1,6 @@
 use arch::externs::memset;
 use arch::paging::{ActivePageTable, InactivePageTable, Page, PageIter, VirtualAddress};
-use arch::paging::entry::EntryFlags;
+use arch::paging::entry::{self, EntryFlags};
 use arch::paging::temporary_page::TemporaryPage;
 
 #[derive(Debug)]
@@ -31,6 +31,10 @@ impl Memory {
         self.size
     }
 
+    pub fn flags(&self) -> EntryFlags {
+        self.flags
+    }
+
     pub fn pages(&self) -> PageIter {
         let start_page = Page::containing_address(self.start);
         let end_page = Page::containing_address(VirtualAddress::new(self.start.get() + self.size - 1));
@@ -57,7 +61,7 @@ impl Memory {
         }
 
         if clear {
-            assert!(flush);
+            assert!(flush && self.flags.contains(entry::WRITABLE));
             unsafe { memset(self.start_address().get() as *mut u8, 0, self.size); }
         }
     }
