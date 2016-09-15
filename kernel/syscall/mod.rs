@@ -105,32 +105,33 @@ pub fn convert_slice_mut<T>(ptr: *mut T, len: usize) -> Result<&'static mut [T]>
     Ok(unsafe { slice::from_raw_parts_mut(ptr, len) })
 }
 
-pub fn handle(a: usize, b: usize, c: usize, d: usize, e: usize, _f: usize) -> Result<usize> {
-    match Call::from(a) {
-        Ok(call) => match call {
-            Call::Exit => exit(b),
-            Call::Read => read(b, convert_slice_mut(c as *mut u8, d)?),
-            Call::Write => write(b, convert_slice(c as *const u8, d)?),
-            Call::Open => open(convert_slice(b as *const u8, c)?, d),
-            Call::Close => close(b),
-            Call::Exec => exec(convert_slice(b as *const u8, c)?, convert_slice(d as *const [usize; 2], e)?),
-            Call::GetPid => getpid(),
-            Call::Dup => dup(b),
-            Call::Brk => brk(b),
-            Call::Iopl => iopl(b),
-            Call::Clone => clone(b),
-            Call::SchedYield => sched_yield()
-        },
-        Err(err) => {
-            println!("Unknown syscall {}", a);
-            Err(err)
+#[no_mangle]
+pub extern fn syscall(a: usize, b: usize, c: usize, d: usize, e: usize, f: usize, stack: usize) -> usize {
+    #[inline(always)]
+    fn inner(a: usize, b: usize, c: usize, d: usize, e: usize, _f: usize, stack: usize) -> Result<usize> {
+        match Call::from(a) {
+            Ok(call) => match call {
+                Call::Exit => exit(b),
+                Call::Read => read(b, convert_slice_mut(c as *mut u8, d)?),
+                Call::Write => write(b, convert_slice(c as *const u8, d)?),
+                Call::Open => open(convert_slice(b as *const u8, c)?, d),
+                Call::Close => close(b),
+                Call::Exec => exec(convert_slice(b as *const u8, c)?, convert_slice(d as *const [usize; 2], e)?),
+                Call::GetPid => getpid(),
+                Call::Dup => dup(b),
+                Call::Brk => brk(b),
+                Call::Iopl => iopl(b),
+                Call::Clone => clone(b, stack),
+                Call::SchedYield => sched_yield()
+            },
+            Err(err) => {
+                println!("Unknown syscall {}", a);
+                Err(err)
+            }
         }
     }
-}
 
-#[no_mangle]
-pub extern fn syscall(a: usize, b: usize, c: usize, d: usize, e: usize, f: usize) -> usize {
-    match handle(a, b, c, d, e, f) {
+    match inner(a, b, c, d, e, f, stack) {
         Ok(value) => value,
         Err(value) => (-(value as isize)) as usize
     }

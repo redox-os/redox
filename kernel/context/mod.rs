@@ -141,11 +141,25 @@ pub unsafe fn switch() {
 
     let mut to_ptr = 0 as *mut Context;
 
-    for (_pid, context_lock) in contexts().map.iter() {
-        let mut context = context_lock.write();
-        if ! context.running && ! context.blocked && ! context.exited {
-            to_ptr = context.deref_mut() as *mut Context;
-            break;
+    for (pid, context_lock) in contexts().map.iter() {
+        if *pid > (*from_ptr).id {
+            let mut context = context_lock.write();
+            if ! context.running && ! context.blocked && ! context.exited {
+                to_ptr = context.deref_mut() as *mut Context;
+                break;
+            }
+        }
+    }
+
+    if to_ptr as usize == 0 {
+        for (pid, context_lock) in contexts().map.iter() {
+            if *pid < (*from_ptr).id {
+                let mut context = context_lock.write();
+                if ! context.running && ! context.blocked && ! context.exited {
+                    to_ptr = context.deref_mut() as *mut Context;
+                    break;
+                }
+            }
         }
     }
 
@@ -153,12 +167,14 @@ pub unsafe fn switch() {
         // TODO: Sleep, wait for interrupt
         // Unset global lock if no context found
         arch::context::CONTEXT_SWITCH_LOCK.store(false, Ordering::SeqCst);
-        println!("No to_ptr");
         return;
     }
 
     (&mut *from_ptr).running = false;
     (&mut *to_ptr).running = true;
+    if let Some(ref stack) = (*to_ptr).kstack {
+        arch::gdt::TSS.rsp[0] = (stack.as_ptr() as usize + stack.len() - 256) as u64;
+    }
     CONTEXT_ID.store((&mut *to_ptr).id, Ordering::SeqCst);
 
     (&mut *from_ptr).arch.switch_to(&mut (&mut *to_ptr).arch);

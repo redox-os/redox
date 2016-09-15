@@ -28,7 +28,7 @@ static mut TDATA_TEST_NONZERO: usize = 0xFFFFFFFFFFFFFFFF;
 
 pub static AP_READY: AtomicBool = ATOMIC_BOOL_INIT;
 static BSP_READY: AtomicBool = ATOMIC_BOOL_INIT;
-static HEAP_TABLE: AtomicUsize = ATOMIC_USIZE_INIT;
+static KERNEL_TABLE: AtomicUsize = ATOMIC_USIZE_INIT;
 
 extern {
     /// Kernel main function
@@ -65,7 +65,7 @@ pub unsafe extern fn kstart() -> ! {
         }
 
         // Initialize memory management
-        memory::init(0, &__end as *const u8 as usize);
+        memory::init(0, &__end as *const u8 as usize - ::KERNEL_OFFSET);
 
         // TODO: allocate a stack
         let stack_start = 0x00080000;
@@ -93,9 +93,9 @@ pub unsafe extern fn kstart() -> ! {
         // Reset AP variables
         AP_READY.store(false, Ordering::SeqCst);
         BSP_READY.store(false, Ordering::SeqCst);
-        HEAP_TABLE.store(0, Ordering::SeqCst);
+        KERNEL_TABLE.store(0, Ordering::SeqCst);
 
-        // Map heap
+        // Setup kernel heap
         {
             // Map heap pages
             let heap_start_page = Page::containing_address(VirtualAddress::new(::KERNEL_HEAP_OFFSET));
@@ -106,23 +106,25 @@ pub unsafe extern fn kstart() -> ! {
 
             // Init the allocator
             allocator::init(::KERNEL_HEAP_OFFSET, ::KERNEL_HEAP_SIZE);
+        }
 
-            // Send heap page table to APs
-            let index = heap_start_page.p4_index();
+        // Initialize devices
+        device::init(&mut active_table);
+
+        // Send kernel page table to APs
+        {
+            let index = Page::containing_address(VirtualAddress::new(::KERNEL_OFFSET)).p4_index();
 
             let p4 = active_table.p4();
             {
                 let entry = &p4[index];
                 if let Some(frame) = entry.pointed_frame() {
-                    HEAP_TABLE.store(frame.start_address().get(), Ordering::SeqCst);
+                    KERNEL_TABLE.store(frame.start_address().get(), Ordering::SeqCst);
                 } else {
-                    panic!("heap does not have PML4 entry");
+                    panic!("kernel does not have PML4 entry");
                 }
             }
         }
-
-        // Initialize devices
-        device::init(&mut active_table);
 
         // Read ACPI tables, starts APs
         acpi::init(&mut active_table);
@@ -139,8 +141,14 @@ pub unsafe extern fn kstart_ap(cpu_id: usize, page_table: usize, stack_start: us
         assert_eq!(BSS_TEST_ZERO, 0);
         assert_eq!(DATA_TEST_NONZERO, 0xFFFFFFFFFFFFFFFF);
 
+        // Retrieve kernel table entry
+        while KERNEL_TABLE.load(Ordering::SeqCst) == 0 {
+            interrupt::pause();
+        }
+        let kernel_table = KERNEL_TABLE.load(Ordering::SeqCst);
+
         // Initialize paging
-        let (mut active_table, tcb_offset) = paging::init(cpu_id, stack_start, stack_end);
+        let (mut active_table, tcb_offset) = paging::init_ap(cpu_id, stack_start, stack_end, kernel_table);
 
         // Set up GDT for AP
         gdt::init(tcb_offset, stack_end);
@@ -157,23 +165,6 @@ pub unsafe extern fn kstart_ap(cpu_id: usize, page_table: usize, stack_start: us
             TDATA_TEST_NONZERO -= 1;
             assert_eq!(TDATA_TEST_NONZERO, 0xFFFFFFFFFFFFFFFE);
         }
-
-        // Copy heap PML4
-        {
-            while HEAP_TABLE.load(Ordering::SeqCst) == 0 {
-                interrupt::pause();
-            }
-            let frame = Frame::containing_address(PhysicalAddress::new(HEAP_TABLE.load(Ordering::SeqCst)));
-
-            let page = Page::containing_address(VirtualAddress::new(::KERNEL_HEAP_OFFSET));
-            let p4 = active_table.p4_mut();
-            let entry = &mut p4[page.p4_index()];
-            assert!(entry.is_unused());
-            entry.set(frame, entry::PRESENT | entry::WRITABLE);
-        }
-
-        // Init devices for AP
-        device::init_ap(&mut active_table);
 
         AP_READY.store(true, Ordering::SeqCst);
     }
@@ -201,7 +192,7 @@ pub unsafe fn usermode(ip: usize, sp: usize) -> ! {
         : // No output because it never returns
         :   "{rax}"(gdt::GDT_USER_DATA << 3 | 3), // Stack segment
             "{rbx}"(sp), // Stack pointer
-            "{rcx}"(3 << 12 | 1 << 9), // Flags - Set IOPL and interrupt enable flag
+            "{rcx}"(3 << 12/* | 1 << 9*/), // Flags - Set IOPL and interrupt enable flag
             "{rdx}"(gdt::GDT_USER_CODE << 3 | 3), // Code segment
             "{rsi}"(ip) // IP
         : // No clobers because it never returns

@@ -1,6 +1,7 @@
 use arch::externs::memset;
-use arch::paging::{ActivePageTable, Page, PageIter, VirtualAddress};
-use arch::paging::entry::EntryFlags;
+use arch::paging::{ActivePageTable, InactivePageTable, Page, PageIter, VirtualAddress};
+use arch::paging::entry::{self, EntryFlags};
+use arch::paging::temporary_page::TemporaryPage;
 
 #[derive(Debug)]
 pub struct Memory {
@@ -30,13 +31,17 @@ impl Memory {
         self.size
     }
 
+    pub fn flags(&self) -> EntryFlags {
+        self.flags
+    }
+
     pub fn pages(&self) -> PageIter {
         let start_page = Page::containing_address(self.start);
         let end_page = Page::containing_address(VirtualAddress::new(self.start.get() + self.size - 1));
         Page::range_inclusive(start_page, end_page)
     }
 
-    pub fn map(&mut self, flush: bool, clear: bool) {
+    fn map(&mut self, flush: bool, clear: bool) {
         let mut active_table = unsafe { ActivePageTable::new() };
 
         let mut flush_all = false;
@@ -56,12 +61,12 @@ impl Memory {
         }
 
         if clear {
-            assert!(flush);
+            assert!(flush && self.flags.contains(entry::WRITABLE));
             unsafe { memset(self.start_address().get() as *mut u8, 0, self.size); }
         }
     }
 
-    pub fn unmap(&mut self, flush: bool) {
+    fn unmap(&mut self, flush: bool) {
         let mut active_table = unsafe { ActivePageTable::new() };
 
         let mut flush_all = false;
@@ -78,6 +83,34 @@ impl Memory {
         if flush_all {
             active_table.flush_all();
         }
+    }
+
+    /// A complicated operation to move a piece of memory to a new page table
+    /// It also allows for changing the address at the same time
+    pub fn move_to(&mut self, new_start: VirtualAddress, new_table: &mut InactivePageTable, temporary_page: &mut TemporaryPage, flush: bool) {
+        let mut active_table = unsafe { ActivePageTable::new() };
+
+        let mut flush_all = false;
+
+        for page in self.pages() {
+            let frame = active_table.unmap_return(page);
+
+            active_table.with(new_table, temporary_page, |mapper| {
+                let new_page = Page::containing_address(VirtualAddress::new(page.start_address().get() - self.start.get() + new_start.get()));
+                mapper.map_to(new_page, frame, self.flags);
+            });
+
+            if flush {
+                //active_table.flush(page);
+                flush_all = true;
+            }
+        }
+
+        if flush_all {
+            active_table.flush_all();
+        }
+
+        self.start = new_start;
     }
 
     pub fn remap(&mut self, new_flags: EntryFlags, flush: bool) {

@@ -20,6 +20,17 @@ pub unsafe fn syscall1(mut a: usize, b: usize) -> Result<usize> {
     Error::demux(a)
 }
 
+// Clobbers all registers - special for clone
+pub unsafe fn syscall1_clobber(mut a: usize, b: usize) -> Result<usize> {
+    asm!("int 0x80"
+        : "={rax}"(a)
+        : "{rax}"(a), "{rbx}"(b)
+        : "memory", "rbx", "rcx", "rdx", "rsi", "rdi", "r8", "r9", "r10", "r11", "r12", "r13", "r14", "r15"
+        : "intel", "volatile");
+
+    Error::demux(a)
+}
+
 pub unsafe fn syscall2(mut a: usize, b: usize, c: usize) -> Result<usize> {
     asm!("int 0x80"
         : "={rax}"(a)

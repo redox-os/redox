@@ -6,7 +6,7 @@ use core::sync::atomic::{AtomicBool, ATOMIC_BOOL_INIT, Ordering};
 /// This must be done, as no locks can be held on the stack during switch
 pub static CONTEXT_SWITCH_LOCK: AtomicBool = ATOMIC_BOOL_INIT;
 
-#[derive(Debug)]
+#[derive(Clone, Debug)]
 pub struct Context {
     /// Page table pointer
     cr3: usize,

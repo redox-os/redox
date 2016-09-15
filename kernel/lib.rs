@@ -100,6 +100,8 @@ extern crate bitflags;
 extern crate goblin;
 extern crate spin;
 
+use core::sync::atomic::{AtomicUsize, ATOMIC_USIZE_INIT, Ordering};
+
 /// Context management
 pub mod context;
 
@@ -117,6 +119,14 @@ pub mod syscall;
 #[cfg(test)]
 pub mod tests;
 
+#[thread_local]
+static CPU_ID: AtomicUsize = ATOMIC_USIZE_INIT;
+
+#[inline(always)]
+pub fn cpu_id() -> usize {
+    CPU_ID.load(Ordering::Relaxed)
+}
+
 pub extern fn userspace_init() {
     assert_eq!(syscall::open(b"debug:", 0), Ok(0));
     assert_eq!(syscall::open(b"debug:", 0), Ok(1));
@@ -129,6 +139,8 @@ pub extern fn userspace_init() {
 
 #[no_mangle]
 pub extern fn kmain() {
+    CPU_ID.store(0, Ordering::SeqCst);
+
     context::init();
 
     let pid = syscall::getpid();
@@ -144,15 +156,19 @@ pub extern fn kmain() {
         }
     }
 
-    unsafe { context::switch(); }
-
     loop {
-        unsafe { interrupt::enable_and_halt(); }
+        unsafe {
+            interrupt::disable();
+            context::switch();
+            interrupt::enable_and_halt();
+        }
     }
 }
 
 #[no_mangle]
 pub extern fn kmain_ap(id: usize) {
+    CPU_ID.store(id, Ordering::SeqCst);
+
     context::init();
 
     let pid = syscall::getpid();

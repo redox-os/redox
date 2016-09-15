@@ -63,8 +63,6 @@ impl Mapper {
 
     /// Unmap a page
     pub fn unmap(&mut self, page: Page) {
-        assert!(self.translate(page.start_address()).is_some());
-
         let p1 = self.p4_mut()
                      .next_table_mut(page.p4_index())
                      .and_then(|p3| p3.next_table_mut(page.p3_index()))
@@ -74,6 +72,18 @@ impl Mapper {
         p1[page.p1_index()].set_unused();
         // TODO free p(1,2,3) table if empty
         deallocate_frame(frame);
+    }
+
+    /// Unmap a page, return frame without free
+    pub fn unmap_return(&mut self, page: Page) -> Frame {
+        let p1 = self.p4_mut()
+                     .next_table_mut(page.p4_index())
+                     .and_then(|p3| p3.next_table_mut(page.p3_index()))
+                     .and_then(|p2| p2.next_table_mut(page.p2_index()))
+                     .expect("mapping code does not support huge pages");
+        let frame = p1[page.p1_index()].pointed_frame().unwrap();
+        p1[page.p1_index()].set_unused();
+        frame
     }
 
     pub fn translate_page(&self, page: Page) -> Option<Frame> {
