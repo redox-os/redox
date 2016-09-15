@@ -158,6 +158,7 @@ pub extern fn kmain() {
 
     loop {
         unsafe {
+            interrupt::disable();
             context::switch();
             interrupt::enable_and_halt();
         }
