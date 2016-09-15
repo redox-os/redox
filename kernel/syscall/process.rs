@@ -4,7 +4,9 @@ use core::mem;
 use core::str;
 
 use arch;
-use arch::paging::{VirtualAddress, entry};
+use arch::memory::allocate_frame;
+use arch::paging::{ActivePageTable, InactivePageTable, Page, VirtualAddress, entry};
+use arch::paging::temporary_page::TemporaryPage;
 use context;
 use elf;
 use syscall::{self, Error, Result};
@@ -67,7 +69,7 @@ pub fn clone(flags: usize, stack_base: usize) -> Result<usize> {
             kstack_option = Some(new_stack);
         }
         if let Some(ref stack) = context.stack {
-            let mut new_stack = context::memory::Memory::new(
+            let new_stack = context::memory::Memory::new(
                 VirtualAddress::new(arch::USER_TMP_STACK_OFFSET),
                 stack.size(),
                 entry::NO_EXECUTE | entry::WRITABLE | entry::USER_ACCESSIBLE,
@@ -79,7 +81,6 @@ pub fn clone(flags: usize, stack_base: usize) -> Result<usize> {
                                       stack.start_address().get() as *const u8,
                                       stack.size());
             }
-            new_stack.unmap(true);
             stack_option = Some(new_stack);
         }
     }
@@ -91,19 +92,39 @@ pub fn clone(flags: usize, stack_base: usize) -> Result<usize> {
         let context_lock = contexts.new_context()?;
         let mut context = context_lock.write();
         context.arch = arch;
+
+        let mut active_table = unsafe { ActivePageTable::new() };
+
+        let mut temporary_page = TemporaryPage::new(Page::containing_address(VirtualAddress::new(0x8_0000_0000)));
+
+        let mut new_table = {
+            let frame = allocate_frame().expect("no more frames in syscall::clone new_table");
+            InactivePageTable::new(frame, &mut active_table, &mut temporary_page)
+        };
+
+        // Copy kernel mapping
+        let kernel_frame = active_table.p4()[510].pointed_frame().expect("kernel table not mapped");
+        active_table.with(&mut new_table, &mut temporary_page, |mapper| {
+            mapper.p4_mut()[510].set(kernel_frame, entry::PRESENT | entry::WRITABLE);
+        });
+
         if let Some(stack) = kstack_option.take() {
             context.arch.set_stack(stack.as_ptr() as usize + offset);
             context.kstack = Some(stack);
         }
+
         if let Some(mut stack) = stack_option.take() {
-            //stack.replace(VirtualAddress::new(arch::USER_STACK_OFFSET), true);
+            stack.move_to(VirtualAddress::new(arch::USER_STACK_OFFSET), &mut new_table, &mut temporary_page, true);
             context.stack = Some(stack);
         }
+
+        context.arch.set_page_table(unsafe { new_table.address() });
+
         context.blocked = false;
         pid = context.id;
     }
 
-    //unsafe { context::switch(); }
+    unsafe { context::switch(); }
 
     Ok(pid)
 }
