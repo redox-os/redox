@@ -95,14 +95,15 @@ pub unsafe fn init(active_table: &mut ActivePageTable) {
     if mode_info.physbaseptr > 0 {
         let width = mode_info.xresolution as usize;
         let height = mode_info.yresolution as usize;
-        let onscreen = mode_info.physbaseptr as usize;
+        let onscreen = mode_info.physbaseptr as usize + ::KERNEL_OFFSET;
         let size = width * height;
 
         {
-            let start_frame = Frame::containing_address(PhysicalAddress::new(onscreen));
-            let end_frame = Frame::containing_address(PhysicalAddress::new(onscreen + size * 4 - 1));
-            for frame in Frame::range_inclusive(start_frame, end_frame) {
-                active_table.identity_map(frame, /*actually sets PAT for write combining*/ entry::HUGE_PAGE | entry::PRESENT | entry::WRITABLE | entry::NO_EXECUTE);
+            let start_page = Page::containing_address(VirtualAddress::new(onscreen));
+            let end_page = Page::containing_address(VirtualAddress::new(onscreen + size * 4 - 1));
+            for page in Page::range_inclusive(start_page, end_page) {
+                let frame = Frame::containing_address(PhysicalAddress::new(page.start_address().get() - ::KERNEL_OFFSET));
+                active_table.map_to(page, frame, /*actually sets PAT for write combining*/ entry::HUGE_PAGE | entry::PRESENT | entry::WRITABLE | entry::NO_EXECUTE);
             }
         }
 
@@ -116,28 +117,6 @@ pub unsafe fn init(active_table: &mut ActivePageTable) {
             slice::from_raw_parts_mut(offscreen as *mut u32, size)
         ));
         *CONSOLE.lock() = Some(Console::new(width/8, height/16));
-    }
-
-    active_table.unmap(Page::containing_address(VirtualAddress::new(0x5200)));
-}
-
-pub unsafe fn init_ap(active_table: &mut ActivePageTable) {
-    active_table.identity_map(Frame::containing_address(PhysicalAddress::new(0x5200)), entry::PRESENT | entry::NO_EXECUTE);
-
-    let mode_info = &*(0x5200 as *const VBEModeInfo);
-    if mode_info.physbaseptr > 0 {
-        let width = mode_info.xresolution as usize;
-        let height = mode_info.yresolution as usize;
-        let start = mode_info.physbaseptr as usize;
-        let size = width * height;
-
-        {
-            let start_frame = Frame::containing_address(PhysicalAddress::new(start));
-            let end_frame = Frame::containing_address(PhysicalAddress::new(start + size * 4 - 1));
-            for frame in Frame::range_inclusive(start_frame, end_frame) {
-                active_table.identity_map(frame, /*actually sets PAT for write combining*/ entry::HUGE_PAGE | entry::PRESENT | entry::WRITABLE | entry::NO_EXECUTE);
-            }
-        }
     }
 
     active_table.unmap(Page::containing_address(VirtualAddress::new(0x5200)));

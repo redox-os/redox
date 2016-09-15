@@ -166,9 +166,6 @@ pub unsafe extern fn kstart_ap(cpu_id: usize, page_table: usize, stack_start: us
             assert_eq!(TDATA_TEST_NONZERO, 0xFFFFFFFFFFFFFFFE);
         }
 
-        // Init devices for AP
-        device::init_ap(&mut active_table);
-
         AP_READY.store(true, Ordering::SeqCst);
     }
 
