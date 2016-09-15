@@ -22,7 +22,8 @@ pub extern crate x86;
 // Because the memory map is so important to not be aliased, it is defined here, in one place
 // The lower 256 PML4 entries are reserved for userspace
 // Each PML4 entry references up to 512 GB of memory
-// The upper 256 are reserved for the kernel
+// The top (511) PML4 is reserved for recursive mapping
+// The second from the top (510) PML4 is reserved for the kernel
     /// The size of a single PML4
     pub const PML4_SIZE: usize = 0x0000_0080_0000_0000;
 
@@ -33,7 +34,7 @@ pub extern crate x86;
     pub const KERNEL_OFFSET: usize = RECURSIVE_PAGE_OFFSET - PML4_SIZE;
 
     /// Offset to kernel heap
-    pub const KERNEL_HEAP_OFFSET: usize = KERNEL_OFFSET - PML4_SIZE;
+    pub const KERNEL_HEAP_OFFSET: usize = KERNEL_OFFSET + PML4_SIZE/2;
     /// Size of kernel heap
     pub const KERNEL_HEAP_SIZE: usize = 64 * 1024 * 1024; // 64 MB
 

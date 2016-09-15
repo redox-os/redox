@@ -142,7 +142,7 @@ pub unsafe fn init(active_table: &mut ActivePageTable) -> Option<Acpi> {
     let start_addr = 0xE0000;
     let end_addr = 0xFFFFF;
 
-    // Map all of the ACPI RSDT space
+    // Map all of the ACPI RSDP space
     {
         let start_frame = Frame::containing_address(PhysicalAddress::new(start_addr));
         let end_frame = Frame::containing_address(PhysicalAddress::new(end_addr));
@@ -205,7 +205,7 @@ pub unsafe fn init(active_table: &mut ActivePageTable) -> Option<Acpi> {
         println!("NO RSDP FOUND");
     }
 
-    // Unmap all of the ACPI RSDT space
+    // Unmap all of the ACPI RSDP space
     {
         let start_frame = Frame::containing_address(PhysicalAddress::new(start_addr));
         let end_frame = Frame::containing_address(PhysicalAddress::new(end_addr));

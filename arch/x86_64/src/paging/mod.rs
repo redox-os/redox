@@ -22,6 +22,59 @@ pub const ENTRY_COUNT: usize = 512;
 /// Size of pages
 pub const PAGE_SIZE: usize = 4096;
 
+/// Setup page attribute table
+unsafe fn init_pat() {
+    let uncacheable = 0;
+    let write_combining = 1;
+    let write_through = 4;
+    //let write_protected = 5;
+    let write_back = 6;
+    let uncached = 7;
+
+    let pat0 = write_back;
+    let pat1 = write_through;
+    let pat2 = uncached;
+    let pat3 = uncacheable;
+
+    let pat4 = write_combining;
+    let pat5 = pat1;
+    let pat6 = pat2;
+    let pat7 = pat3;
+
+    msr::wrmsr(msr::IA32_PAT, pat7 << 56 | pat6 << 48 | pat5 << 40 | pat4 << 32
+                            | pat3 << 24 | pat2 << 16 | pat1 << 8 | pat0);
+}
+
+/// Copy tdata, clear tbss, set TCB self pointer
+unsafe fn init_tcb(cpu_id: usize) -> usize {
+    extern {
+        /// The starting byte of the thread data segment
+        static mut __tdata_start: u8;
+        /// The ending byte of the thread data segment
+        static mut __tdata_end: u8;
+        /// The starting byte of the thread BSS segment
+        static mut __tbss_start: u8;
+        /// The ending byte of the thread BSS segment
+        static mut __tbss_end: u8;
+    }
+
+    let tcb_offset;
+    {
+        let size = & __tbss_end as *const _ as usize - & __tdata_start as *const _ as usize;
+        let tbss_offset = & __tbss_start as *const _ as usize - & __tdata_start as *const _ as usize;
+
+        let start = ::KERNEL_PERCPU_OFFSET + ::KERNEL_PERCPU_SIZE * cpu_id;
+        let end = start + size;
+        tcb_offset = end - mem::size_of::<usize>();
+
+        ::externs::memcpy(start as *mut u8, & __tdata_start as *const u8, tbss_offset);
+        ::externs::memset((start + tbss_offset) as *mut u8, 0, size - tbss_offset);
+
+        *(tcb_offset as *mut usize) = end;
+    }
+    tcb_offset
+}
+
 /// Initialize paging
 ///
 /// Returns page table and thread control block offset
@@ -52,6 +105,8 @@ pub unsafe fn init(cpu_id: usize, stack_start: usize, stack_end: usize) -> (Acti
         /// The ending byte of the _.bss_ (uninitialized data) segment.
         static mut __bss_end: u8;
     }
+
+    init_pat();
 
     let mut active_table = ActivePageTable::new();
 
@@ -109,45 +164,71 @@ pub unsafe fn init(cpu_id: usize, stack_start: usize, stack_end: usize) -> (Acti
         }
     });
 
-    let uncacheable = 0;
-    let write_combining = 1;
-    let write_through = 4;
-    //let write_protected = 5;
-    let write_back = 6;
-    let uncached = 7;
+    active_table.switch(new_table);
 
-    let pat0 = write_back;
-    let pat1 = write_through;
-    let pat2 = uncached;
-    let pat3 = uncacheable;
+    (active_table, init_tcb(cpu_id))
+}
 
-    let pat4 = write_combining;
-    let pat5 = pat1;
-    let pat6 = pat2;
-    let pat7 = pat3;
+pub unsafe fn init_ap(cpu_id: usize, stack_start: usize, stack_end: usize, kernel_table: usize) -> (ActivePageTable, usize) {
+    extern {
+        /// The starting byte of the thread data segment
+        static mut __tdata_start: u8;
+        /// The ending byte of the thread data segment
+        static mut __tdata_end: u8;
+        /// The starting byte of the thread BSS segment
+        static mut __tbss_start: u8;
+        /// The ending byte of the thread BSS segment
+        static mut __tbss_end: u8;
+    }
 
-    msr::wrmsr(msr::IA32_PAT, pat7 << 56 | pat6 << 48 | pat5 << 40 | pat4 << 32
-                            | pat3 << 24 | pat2 << 16 | pat1 << 8 | pat0);
+    init_pat();
+
+    let mut active_table = ActivePageTable::new();
+
+    let mut temporary_page = TemporaryPage::new(Page::containing_address(VirtualAddress::new(0x8_0000_0000)));
+
+    let mut new_table = {
+        let frame = allocate_frame().expect("no more frames in paging::init new_table");
+        InactivePageTable::new(frame, &mut active_table, &mut temporary_page)
+    };
+
+    active_table.with(&mut new_table, &mut temporary_page, |mapper| {
+        // Copy kernel mapping
+        let kernel_frame = Frame::containing_address(PhysicalAddress::new(kernel_table));
+        mapper.p4_mut()[510].set(kernel_frame, entry::PRESENT | entry::WRITABLE);
+
+        // Map tdata and tbss
+        {
+            let size = & __tbss_end as *const _ as usize - & __tdata_start as *const _ as usize;
+
+            let start = ::KERNEL_PERCPU_OFFSET + ::KERNEL_PERCPU_SIZE * cpu_id;
+            let end = start + size;
+
+            let start_page = Page::containing_address(VirtualAddress::new(start));
+            let end_page = Page::containing_address(VirtualAddress::new(end - 1));
+            for page in Page::range_inclusive(start_page, end_page) {
+                mapper.map(page, PRESENT | NO_EXECUTE | WRITABLE);
+            }
+        }
+
+        let mut remap = |start: usize, end: usize, flags: EntryFlags, offset: usize| {
+            if end > start {
+                let start_frame = Frame::containing_address(PhysicalAddress::new(start));
+                let end_frame = Frame::containing_address(PhysicalAddress::new(end - 1));
+                for frame in Frame::range_inclusive(start_frame, end_frame) {
+                    let page = Page::containing_address(VirtualAddress::new(frame.start_address().get() + offset));
+                    mapper.map_to(page, frame, flags);
+                }
+            }
+        };
+
+        // Remap stack writable, no execute
+        remap(stack_start, stack_end, PRESENT | NO_EXECUTE | WRITABLE, 0);
+    });
 
     active_table.switch(new_table);
 
-    // Copy tdata, clear tbss, set TCB self pointer
-    let tcb_offset;
-    {
-        let size = & __tbss_end as *const _ as usize - & __tdata_start as *const _ as usize;
-        let tbss_offset = & __tbss_start as *const _ as usize - & __tdata_start as *const _ as usize;
-
-        let start = ::KERNEL_PERCPU_OFFSET + ::KERNEL_PERCPU_SIZE * cpu_id;
-        let end = start + size;
-        tcb_offset = end - mem::size_of::<usize>();
-
-        ::externs::memcpy(start as *mut u8, & __tdata_start as *const u8, tbss_offset);
-        ::externs::memset((start + tbss_offset) as *mut u8, 0, size - tbss_offset);
-
-        *(tcb_offset as *mut usize) = end;
-    }
-
-    (active_table, tcb_offset)
+    (active_table, init_tcb(cpu_id))
 }
 
 pub struct ActivePageTable {
