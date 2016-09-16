@@ -228,7 +228,7 @@ pub fn clone(flags: usize, stack_base: usize) -> Result<usize> {
 
             context.arch.set_page_table(unsafe { new_table.address() });
 
-            context.blocked = false;
+            context.status = context::Status::Runnable;
         }
     }
 
@@ -247,7 +247,7 @@ pub fn exit(status: usize) -> ! {
         context.image.clear();
         drop(context.heap.take());
         drop(context.stack.take());
-        context.exited = true;
+        context.status = context::Status::Exited;
     }
 
     unsafe { context::switch(); }

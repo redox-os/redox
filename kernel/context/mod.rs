@@ -3,7 +3,7 @@
 use core::sync::atomic::{AtomicUsize, ATOMIC_USIZE_INIT, Ordering};
 use spin::{Once, RwLock, RwLockReadGuard, RwLockWriteGuard};
 
-pub use self::context::Context;
+pub use self::context::{Context, Status};
 pub use self::list::ContextList;
 pub use self::switch::switch;
 
@@ -38,8 +38,8 @@ pub fn init() {
     let mut contexts = contexts_mut();
     let context_lock = contexts.new_context().expect("could not initialize first context");
     let mut context = context_lock.write();
+    context.status = Status::Runnable;
     context.running = true;
-    context.blocked = false;
     CONTEXT_ID.store(context.id, Ordering::SeqCst);
 }
 

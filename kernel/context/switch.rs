@@ -1,7 +1,7 @@
 use core::sync::atomic::Ordering;
 
 use arch;
-use super::{contexts, Context, CONTEXT_ID};
+use super::{contexts, Context, Status, CONTEXT_ID};
 
 /// Switch to the next context
 ///
@@ -28,7 +28,7 @@ pub unsafe fn switch() {
     for (pid, context_lock) in contexts().iter() {
         if *pid > (*from_ptr).id {
             let mut context = context_lock.write();
-            if ! context.running && ! context.blocked && ! context.exited {
+            if context.status == Status::Runnable && ! context.running {
                 to_ptr = context.deref_mut() as *mut Context;
                 break;
             }
@@ -39,7 +39,7 @@ pub unsafe fn switch() {
         for (pid, context_lock) in contexts().iter() {
             if *pid < (*from_ptr).id {
                 let mut context = context_lock.write();
-                if ! context.running && ! context.blocked && ! context.exited {
+                if context.status == Status::Runnable && ! context.running {
                     to_ptr = context.deref_mut() as *mut Context;
                     break;
                 }

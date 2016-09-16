@@ -149,7 +149,7 @@ pub extern fn kmain() {
     match context::contexts_mut().spawn(userspace_init) {
         Ok(context_lock) => {
             let mut context = context_lock.write();
-            context.blocked = false;
+            context.status = context::Status::Runnable;
         },
         Err(err) => {
             panic!("failed to spawn userspace_init: {:?}", err);

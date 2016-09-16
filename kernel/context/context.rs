@@ -5,18 +5,22 @@ use arch;
 use super::file::File;
 use super::memory::Memory;
 
+#[derive(Copy, Clone, Debug, Eq, PartialEq)]
+pub enum Status {
+    Runnable,
+    Blocked,
+    Exited
+}
+
 /// A context, which identifies either a process or a thread
 #[derive(Debug)]
 pub struct Context {
     /// The ID of this context
     pub id: usize,
-    //TODO: Status enum
-    /// Running or not
+    /// Status of context
+    pub status: Status,
+    /// Context running or not
     pub running: bool,
-    /// Blocked or not
-    pub blocked: bool,
-    /// Exited or not`
-    pub exited: bool,
     /// The architecture specific context
     pub arch: arch::context::Context,
     /// Kernel stack
@@ -36,9 +40,8 @@ impl Context {
     pub fn new(id: usize) -> Context {
         Context {
             id: id,
+            status: Status::Blocked,
             running: false,
-            blocked: true,
-            exited: false,
             arch: arch::context::Context::new(),
             kstack: None,
             image: Vec::new(),
