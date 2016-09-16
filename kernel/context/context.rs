@@ -3,7 +3,7 @@ use collections::Vec;
 
 use arch;
 use super::file::File;
-use super::memory::Memory;
+use super::memory::{Memory, SharedMemory};
 
 #[derive(Copy, Clone, Debug, Eq, PartialEq)]
 pub enum Status {
@@ -26,9 +26,9 @@ pub struct Context {
     /// Kernel stack
     pub kstack: Option<Box<[u8]>>,
     /// Executable image
-    pub image: Vec<Memory>,
+    pub image: Vec<SharedMemory>,
     /// User heap
-    pub heap: Option<Memory>,
+    pub heap: Option<SharedMemory>,
     /// User stack
     pub stack: Option<Memory>,
     /// The open files in the scheme

@@ -1,3 +1,6 @@
+use alloc::arc::{Arc, Weak};
+use spin::Mutex;
+
 use arch::externs::memset;
 use arch::paging::{ActivePageTable, InactivePageTable, Page, PageIter, VirtualAddress};
 use arch::paging::entry::{self, EntryFlags};
@@ -8,6 +11,35 @@ pub struct Memory {
     start: VirtualAddress,
     size: usize,
     flags: EntryFlags
+}
+
+#[derive(Debug)]
+pub enum SharedMemory {
+    Owned(Arc<Mutex<Memory>>),
+    Borrowed(Weak<Mutex<Memory>>)
+}
+
+impl SharedMemory {
+    pub fn with<F, T>(&self, f: F) -> T where F: FnOnce(&mut Memory) -> T {
+        match *self {
+            SharedMemory::Owned(ref memory_lock) => {
+                let mut memory = memory_lock.lock();
+                f(&mut *memory)
+            },
+            SharedMemory::Borrowed(ref memory_weak) => {
+                let memory_lock = memory_weak.upgrade().expect("SharedMemory::Borrowed no longer valid");
+                let mut memory = memory_lock.lock();
+                f(&mut *memory)
+            }
+        }
+    }
+
+    pub fn borrow(&self) -> SharedMemory {
+        match *self {
+            SharedMemory::Owned(ref memory_lock) => SharedMemory::Borrowed(Arc::downgrade(memory_lock)),
+            SharedMemory::Borrowed(ref memory_lock) => SharedMemory::Borrowed(memory_lock.clone())
+        }
+    }
 }
 
 impl Memory {
@@ -21,6 +53,10 @@ impl Memory {
         memory.map(flush, clear);
 
         memory
+    }
+
+    pub fn to_shared(self) -> SharedMemory {
+        SharedMemory::Owned(Arc::new(Mutex::new(self)))
     }
 
     pub fn start_address(&self) -> VirtualAddress {

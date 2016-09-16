@@ -15,29 +15,28 @@ use syscall::{self, Error, Result};
 pub fn brk(address: usize) -> Result<usize> {
     let contexts = context::contexts();
     let context_lock = contexts.current().ok_or(Error::NoProcess)?;
-    let mut context = context_lock.write();
+    let context = context_lock.read();
 
-    let mut current = arch::USER_HEAP_OFFSET;
-    if let Some(ref heap) = context.heap {
-        current = heap.start_address().get() + heap.size();
-    }
+    let current = if let Some(ref heap_shared) = context.heap {
+        heap_shared.with(|heap| {
+            heap.start_address().get() + heap.size()
+        })
+    } else {
+        panic!("user heap not initialized");
+    };
+
     if address == 0 {
         //println!("Brk query {:X}", current);
         Ok(current)
     } else if address >= arch::USER_HEAP_OFFSET {
         //TODO: out of memory errors
-        if let Some(ref mut heap) = context.heap {
-            heap.resize(address - arch::USER_HEAP_OFFSET, true, true);
-            return Ok(address);
+        if let Some(ref heap_shared) = context.heap {
+            heap_shared.with(|heap| {
+                heap.resize(address - arch::USER_HEAP_OFFSET, true, true);
+            });
+        } else {
+            panic!("user heap not initialized");
         }
-
-        context.heap = Some(context::memory::Memory::new(
-            VirtualAddress::new(arch::USER_HEAP_OFFSET),
-            address - arch::USER_HEAP_OFFSET,
-            entry::WRITABLE | entry::NO_EXECUTE | entry::USER_ACCESSIBLE,
-            true,
-            true
-        ));
 
         Ok(address)
     } else {
@@ -85,38 +84,46 @@ pub fn clone(flags: usize, stack_base: usize) -> Result<usize> {
             if flags & CLONE_VM == CLONE_VM {
                 panic!("unimplemented: CLONE_VM");
             } else {
-                for memory in context.image.iter() {
-                    let mut new_memory = context::memory::Memory::new(
-                        VirtualAddress::new(memory.start_address().get() + arch::USER_TMP_OFFSET),
-                        memory.size(),
-                        entry::PRESENT | entry::NO_EXECUTE | entry::WRITABLE,
-                        true,
-                        false
-                    );
-                    unsafe {
-                        arch::externs::memcpy(new_memory.start_address().get() as *mut u8,
-                                              memory.start_address().get() as *const u8,
-                                              memory.size());
-                    }
-                    new_memory.remap(memory.flags(), true);
-                    image.push(new_memory);
+                for memory_shared in context.image.iter() {
+                    memory_shared.with(|memory| {
+                        let mut new_memory = context::memory::Memory::new(
+                            VirtualAddress::new(memory.start_address().get() + arch::USER_TMP_OFFSET),
+                            memory.size(),
+                            entry::PRESENT | entry::NO_EXECUTE | entry::WRITABLE,
+                            true,
+                            false
+                        );
+
+                        unsafe {
+                            arch::externs::memcpy(new_memory.start_address().get() as *mut u8,
+                                                  memory.start_address().get() as *const u8,
+                                                  memory.size());
+                        }
+
+                        new_memory.remap(memory.flags(), true);
+                        image.push(new_memory.to_shared());
+                    });
                 }
 
-                if let Some(ref heap) = context.heap {
-                    let mut new_heap = context::memory::Memory::new(
-                        VirtualAddress::new(arch::USER_TMP_HEAP_OFFSET),
-                        heap.size(),
-                        entry::PRESENT | entry::NO_EXECUTE | entry::WRITABLE,
-                        true,
-                        false
-                    );
-                    unsafe {
-                        arch::externs::memcpy(new_heap.start_address().get() as *mut u8,
-                                              heap.start_address().get() as *const u8,
-                                              heap.size());
-                    }
-                    new_heap.remap(heap.flags(), true);
-                    heap_option = Some(new_heap);
+                if let Some(ref heap_shared) = context.heap {
+                    heap_shared.with(|heap| {
+                        let mut new_heap = context::memory::Memory::new(
+                            VirtualAddress::new(arch::USER_TMP_HEAP_OFFSET),
+                            heap.size(),
+                            entry::PRESENT | entry::NO_EXECUTE | entry::WRITABLE,
+                            true,
+                            false
+                        );
+
+                        unsafe {
+                            arch::externs::memcpy(new_heap.start_address().get() as *mut u8,
+                                                  heap.start_address().get() as *const u8,
+                                                  heap.size());
+                        }
+
+                        new_heap.remap(heap.flags(), true);
+                        heap_option = Some(new_heap.to_shared());
+                    });
                 }
             }
 
@@ -220,15 +227,19 @@ pub fn clone(flags: usize, stack_base: usize) -> Result<usize> {
                 context.kstack = Some(stack);
             }
 
-            for memory in image.iter_mut() {
-                let start = VirtualAddress::new(memory.start_address().get() - arch::USER_TMP_OFFSET + arch::USER_OFFSET);
-                memory.move_to(start, &mut new_table, &mut temporary_page, true);
+            for memory_shared in image.iter_mut() {
+                memory_shared.with(|memory| {
+                    let start = VirtualAddress::new(memory.start_address().get() - arch::USER_TMP_OFFSET + arch::USER_OFFSET);
+                    memory.move_to(start, &mut new_table, &mut temporary_page, true);
+                });
             }
             context.image = image;
 
-            if let Some(mut heap) = heap_option.take() {
-                heap.move_to(VirtualAddress::new(arch::USER_HEAP_OFFSET), &mut new_table, &mut temporary_page, true);
-                context.heap = Some(heap);
+            if let Some(heap_shared) = heap_option.take() {
+                heap_shared.with(|heap| {
+                    heap.move_to(VirtualAddress::new(arch::USER_HEAP_OFFSET), &mut new_table, &mut temporary_page, true);
+                });
+                context.heap = Some(heap_shared);
             }
 
             if let Some(mut stack) = stack_option.take() {

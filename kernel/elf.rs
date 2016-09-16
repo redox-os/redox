@@ -97,9 +97,17 @@ impl<'a> Elf<'a> {
 
                     memory.remap(flags, true);
 
-                    context.image.push(memory);
+                    context.image.push(memory.to_shared());
                 }
             }
+
+            context.heap = Some(context::memory::Memory::new(
+                VirtualAddress::new(arch::USER_HEAP_OFFSET),
+                0,
+                entry::NO_EXECUTE | entry::WRITABLE | entry::USER_ACCESSIBLE,
+                true,
+                true
+            ).to_shared());
 
             // Map stack
             context.stack = Some(context::memory::Memory::new(
