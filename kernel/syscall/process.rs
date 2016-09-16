@@ -46,6 +46,10 @@ pub fn brk(address: usize) -> Result<usize> {
     }
 }
 
+pub const CLONE_VM: usize = 0x100;
+pub const CLONE_FS: usize = 0x200;
+pub const CLONE_FILES: usize = 0x400;
+pub const CLONE_VFORK: usize = 0x4000;
 pub fn clone(flags: usize, stack_base: usize) -> Result<usize> {
     //TODO: Implement flags
     //TODO: Copy on write?
@@ -78,38 +82,42 @@ pub fn clone(flags: usize, stack_base: usize) -> Result<usize> {
                 kstack_option = Some(new_stack);
             }
 
-            for memory in context.image.iter() {
-                let mut new_memory = context::memory::Memory::new(
-                    VirtualAddress::new(memory.start_address().get() + arch::USER_TMP_OFFSET),
-                    memory.size(),
-                    entry::PRESENT | entry::NO_EXECUTE | entry::WRITABLE,
-                    true,
-                    false
-                );
-                unsafe {
-                    arch::externs::memcpy(new_memory.start_address().get() as *mut u8,
-                                          memory.start_address().get() as *const u8,
-                                          memory.size());
+            if flags & CLONE_VM == CLONE_VM {
+                panic!("unimplemented: CLONE_VM");
+            } else {
+                for memory in context.image.iter() {
+                    let mut new_memory = context::memory::Memory::new(
+                        VirtualAddress::new(memory.start_address().get() + arch::USER_TMP_OFFSET),
+                        memory.size(),
+                        entry::PRESENT | entry::NO_EXECUTE | entry::WRITABLE,
+                        true,
+                        false
+                    );
+                    unsafe {
+                        arch::externs::memcpy(new_memory.start_address().get() as *mut u8,
+                                              memory.start_address().get() as *const u8,
+                                              memory.size());
+                    }
+                    new_memory.remap(memory.flags(), true);
+                    image.push(new_memory);
                 }
-                new_memory.remap(memory.flags(), true);
-                image.push(new_memory);
-            }
 
-            if let Some(ref heap) = context.heap {
-                let mut new_heap = context::memory::Memory::new(
-                    VirtualAddress::new(arch::USER_TMP_HEAP_OFFSET),
-                    heap.size(),
-                    entry::PRESENT | entry::NO_EXECUTE | entry::WRITABLE,
-                    true,
-                    false
-                );
-                unsafe {
-                    arch::externs::memcpy(new_heap.start_address().get() as *mut u8,
-                                          heap.start_address().get() as *const u8,
-                                          heap.size());
+                if let Some(ref heap) = context.heap {
+                    let mut new_heap = context::memory::Memory::new(
+                        VirtualAddress::new(arch::USER_TMP_HEAP_OFFSET),
+                        heap.size(),
+                        entry::PRESENT | entry::NO_EXECUTE | entry::WRITABLE,
+                        true,
+                        false
+                    );
+                    unsafe {
+                        arch::externs::memcpy(new_heap.start_address().get() as *mut u8,
+                                              heap.start_address().get() as *const u8,
+                                              heap.size());
+                    }
+                    new_heap.remap(heap.flags(), true);
+                    heap_option = Some(new_heap);
                 }
-                new_heap.remap(heap.flags(), true);
-                heap_option = Some(new_heap);
             }
 
             if let Some(ref stack) = context.stack {
@@ -129,24 +137,28 @@ pub fn clone(flags: usize, stack_base: usize) -> Result<usize> {
                 stack_option = Some(new_stack);
             }
 
-            for (fd, file_option) in context.files.iter().enumerate() {
-                if let Some(file) = *file_option {
-                    let result = {
-                        let schemes = scheme::schemes();
-                        let scheme_mutex = schemes.get(file.scheme).ok_or(Error::BadFile)?;
-                        let result = scheme_mutex.lock().dup(file.number);
-                        result
-                    };
-                    match result {
-                        Ok(new_number) => {
-                            files.push(Some(context::file::File { scheme: file.scheme, number: new_number }));
-                        },
-                        Err(err) => {
-                            println!("clone: failed to dup {}: {:?}", fd, err);
+            if flags & CLONE_FILES == CLONE_FILES {
+                panic!("unimplemented: CLONE_FILES");
+            } else {
+                for (fd, file_option) in context.files.iter().enumerate() {
+                    if let Some(file) = *file_option {
+                        let result = {
+                            let schemes = scheme::schemes();
+                            let scheme_mutex = schemes.get(file.scheme).ok_or(Error::BadFile)?;
+                            let result = scheme_mutex.lock().dup(file.number);
+                            result
+                        };
+                        match result {
+                            Ok(new_number) => {
+                                files.push(Some(context::file::File { scheme: file.scheme, number: new_number }));
+                            },
+                            Err(err) => {
+                                println!("clone: failed to dup {}: {:?}", fd, err);
+                            }
                         }
+                    } else {
+                        files.push(None);
                     }
-                } else {
-                    files.push(None);
                 }
             }
         }
