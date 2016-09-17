@@ -2,6 +2,7 @@
 
 extern crate syscall;
 
+use std::thread;
 use syscall::iopl;
 
 use pci::{Pci, PciBar, PciClass};
@@ -70,7 +71,9 @@ fn enumerate_pci() {
 }
 
 fn main() {
-    unsafe { iopl(3).unwrap() };
+    thread::spawn(||{
+        unsafe { iopl(3).unwrap() };
 
-    enumerate_pci();
+        enumerate_pci();
+    });
 }
