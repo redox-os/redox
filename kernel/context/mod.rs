@@ -57,3 +57,7 @@ pub fn contexts() -> RwLockReadGuard<'static, ContextList> {
 pub fn contexts_mut() -> RwLockWriteGuard<'static, ContextList> {
     CONTEXTS.call_once(init_contexts).write()
 }
+
+pub fn context_id() -> usize {
+    CONTEXT_ID.load(Ordering::SeqCst)
+}

@@ -52,10 +52,10 @@ pub const CLONE_FS: usize = 0x200;
 pub const CLONE_FILES: usize = 0x400;
 pub const CLONE_VFORK: usize = 0x4000;
 pub fn clone(flags: usize, stack_base: usize) -> Result<usize> {
-    //TODO: Implement flags
     //TODO: Copy on write?
     println!("Clone {:X}: {:X}", flags, stack_base);
 
+    let ppid;
     let pid;
     {
         let arch;
@@ -71,6 +71,9 @@ pub fn clone(flags: usize, stack_base: usize) -> Result<usize> {
             let contexts = context::contexts();
             let context_lock = contexts.current().ok_or(Error::NoProcess)?;
             let context = context_lock.read();
+
+            ppid = context.id;
+
             arch = context.arch.clone();
 
             if let Some(ref stack) = context.kstack {
@@ -300,8 +303,6 @@ pub fn clone(flags: usize, stack_base: usize) -> Result<usize> {
 }
 
 pub fn exit(status: usize) -> ! {
-    println!("Exit {}", status);
-
     {
         let contexts = context::contexts();
         let context_lock = contexts.current().expect("tried to exit without context");
@@ -309,7 +310,7 @@ pub fn exit(status: usize) -> ! {
         context.image.clear();
         drop(context.heap.take());
         drop(context.stack.take());
-        context.status = context::Status::Exited;
+        context.status = context::Status::Exited(status);
     }
 
     unsafe { context::switch(); }
@@ -365,6 +366,7 @@ pub fn sched_yield() -> Result<usize> {
 }
 
 pub fn waitpid(pid: usize, _status_ptr: usize, _options: usize) -> Result<usize> {
+    //TODO: Implement status_ptr and options
     loop {
         {
             let mut exited = false;
@@ -373,7 +375,8 @@ pub fn waitpid(pid: usize, _status_ptr: usize, _options: usize) -> Result<usize>
                 let contexts = context::contexts();
                 let context_lock = contexts.get(pid).ok_or(Error::NoProcess)?;
                 let context = context_lock.read();
-                if context.status == context::Status::Exited {
+                if let context::Status::Exited(status) = context.status {
+                    //TODO: set status_ptr
                     exited = true;
                 }
             }

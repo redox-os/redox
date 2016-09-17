@@ -11,7 +11,7 @@ use super::memory::{Memory, SharedMemory};
 pub enum Status {
     Runnable,
     Blocked,
-    Exited
+    Exited(usize)
 }
 
 /// A context, which identifies either a process or a thread
