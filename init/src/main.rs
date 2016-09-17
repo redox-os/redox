@@ -36,9 +36,12 @@ pub fn main() {
                             command.arg(arg);
                         }
 
+                        println!("init: spawning {}", line);
                         match command.spawn() {
                             Ok(mut child) => if let Err(err) = child.wait() {
                                 println!("init: failed to wait for '{}': {}", line, err);
+                            } else {
+                                println!("init: waited for {}", line);
                             },
                             Err(err) => println!("init: failed to execute '{}': {}", line, err)
                         }
