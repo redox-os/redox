@@ -1,4 +1,3 @@
-use alloc::boxed::Box;
 use collections::BTreeMap;
 use core::mem;
 use core::sync::atomic::Ordering;
@@ -64,7 +63,7 @@ impl ContextList {
         let context_lock = self.new_context()?;
         {
             let mut context = context_lock.write();
-            let mut stack = Box::new([0; 65536]);
+            let mut stack = vec![0; 65536].into_boxed_slice();
             let offset = stack.len() - mem::size_of::<usize>();
             unsafe {
                 let offset = stack.len() - mem::size_of::<usize>();
