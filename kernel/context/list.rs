@@ -77,4 +77,8 @@ impl ContextList {
         }
         Ok(context_lock)
     }
+
+    pub fn remove(&mut self, id: usize) -> Option<RwLock<Context>> {
+        self.map.remove(&id)
+    }
 }

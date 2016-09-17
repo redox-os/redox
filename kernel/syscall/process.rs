@@ -363,3 +363,27 @@ pub fn sched_yield() -> Result<usize> {
     unsafe { context::switch(); }
     Ok(0)
 }
+
+pub fn waitpid(pid: usize, _status_ptr: usize, _options: usize) -> Result<usize> {
+    loop {
+        {
+            let mut exited = false;
+
+            {
+                let contexts = context::contexts();
+                let context_lock = contexts.get(pid).ok_or(Error::NoProcess)?;
+                let context = context_lock.read();
+                if context.status == context::Status::Exited {
+                    exited = true;
+                }
+            }
+
+            if exited {
+                let mut contexts = context::contexts_mut();
+                return contexts.remove(pid).ok_or(Error::NoProcess).and(Ok(pid));
+            }
+        }
+
+        unsafe { context::switch(); }
+    }
+}
