@@ -139,14 +139,7 @@ macro_rules! interrupt_error {
             }
 
             // Push scratch registers
-            asm!("pop rax
-                pop rbx
-                pop rcx
-                pop rdx
-                pop rsi
-                pop rdi
-                hlt
-                push rax
+            asm!("push rax
                 push rcx
                 push rdx
                 push rdi
