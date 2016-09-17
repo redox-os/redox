@@ -1,7 +1,9 @@
 ///! Process syscalls
 
+use alloc::arc::Arc;
 use core::mem;
 use core::str;
+use spin::Mutex;
 
 use arch;
 use arch::memory::allocate_frame;
@@ -62,7 +64,7 @@ pub fn clone(flags: usize, stack_base: usize) -> Result<usize> {
         let mut image = vec![];
         let mut heap_option = None;
         let mut stack_option = None;
-        let mut files = vec![];
+        let mut files = Arc::new(Mutex::new(vec![]));
 
         // Copy from old process
         {
@@ -74,15 +76,23 @@ pub fn clone(flags: usize, stack_base: usize) -> Result<usize> {
             if let Some(ref stack) = context.kstack {
                 offset = stack_base - stack.as_ptr() as usize - mem::size_of::<usize>(); // Add clone ret
                 let mut new_stack = stack.clone();
+
                 unsafe {
                     let func_ptr = new_stack.as_mut_ptr().offset(offset as isize);
                     *(func_ptr as *mut usize) = arch::interrupt::syscall::clone_ret as usize;
                 }
+
                 kstack_option = Some(new_stack);
             }
 
             if flags & CLONE_VM == CLONE_VM {
-                panic!("unimplemented: CLONE_VM");
+                for memory_shared in context.image.iter() {
+                    image.push(memory_shared.borrow());
+                }
+
+                if let Some(ref heap_shared) = context.heap {
+                    heap_option = Some(heap_shared.borrow());
+                }
             } else {
                 for memory_shared in context.image.iter() {
                     memory_shared.with(|memory| {
@@ -135,19 +145,21 @@ pub fn clone(flags: usize, stack_base: usize) -> Result<usize> {
                     true,
                     false
                 );
+
                 unsafe {
                     arch::externs::memcpy(new_stack.start_address().get() as *mut u8,
                                           stack.start_address().get() as *const u8,
                                           stack.size());
                 }
+
                 new_stack.remap(stack.flags(), true);
                 stack_option = Some(new_stack);
             }
 
             if flags & CLONE_FILES == CLONE_FILES {
-                panic!("unimplemented: CLONE_FILES");
+                files = context.files.clone();
             } else {
-                for (fd, file_option) in context.files.iter().enumerate() {
+                for (fd, file_option) in context.files.lock().iter().enumerate() {
                     if let Some(file) = *file_option {
                         let result = {
                             let schemes = scheme::schemes();
@@ -157,14 +169,14 @@ pub fn clone(flags: usize, stack_base: usize) -> Result<usize> {
                         };
                         match result {
                             Ok(new_number) => {
-                                files.push(Some(context::file::File { scheme: file.scheme, number: new_number }));
+                                files.lock().push(Some(context::file::File { scheme: file.scheme, number: new_number }));
                             },
                             Err(err) => {
                                 println!("clone: failed to dup {}: {:?}", fd, err);
                             }
                         }
                     } else {
-                        files.push(None);
+                        files.lock().push(None);
                     }
                 }
             }
@@ -191,58 +203,85 @@ pub fn clone(flags: usize, stack_base: usize) -> Result<usize> {
 
             // Copy kernel mapping
             {
-                let kernel_frame = active_table.p4()[510].pointed_frame().expect("kernel table not mapped");
+                let frame = active_table.p4()[510].pointed_frame().expect("kernel table not mapped");
+                let flags = active_table.p4()[510].flags();
                 active_table.with(&mut new_table, &mut temporary_page, |mapper| {
-                    mapper.p4_mut()[510].set(kernel_frame, entry::PRESENT | entry::WRITABLE);
+                    mapper.p4_mut()[510].set(frame, flags);
                 });
             }
 
-            // Copy percpu mapping
-            {
-                extern {
-                    /// The starting byte of the thread data segment
-                    static mut __tdata_start: u8;
-                    /// The ending byte of the thread BSS segment
-                    static mut __tbss_end: u8;
-                }
-
-                let size = unsafe { & __tbss_end as *const _ as usize - & __tdata_start as *const _ as usize };
-
-                let start = arch::KERNEL_PERCPU_OFFSET + arch::KERNEL_PERCPU_SIZE * ::cpu_id();
-                let end = start + size;
-
-                let start_page = Page::containing_address(VirtualAddress::new(start));
-                let end_page = Page::containing_address(VirtualAddress::new(end - 1));
-                for page in Page::range_inclusive(start_page, end_page) {
-                    let frame = active_table.translate_page(page).expect("kernel percpu not mapped");
-                    active_table.with(&mut new_table, &mut temporary_page, |mapper| {
-                        mapper.map_to(page, frame, entry::PRESENT | entry::NO_EXECUTE | entry::WRITABLE);
-                    });
-                }
-            }
-
-
+            // Set kernel stack
             if let Some(stack) = kstack_option.take() {
                 context.arch.set_stack(stack.as_ptr() as usize + offset);
                 context.kstack = Some(stack);
             }
 
-            for memory_shared in image.iter_mut() {
-                memory_shared.with(|memory| {
-                    let start = VirtualAddress::new(memory.start_address().get() - arch::USER_TMP_OFFSET + arch::USER_OFFSET);
-                    memory.move_to(start, &mut new_table, &mut temporary_page, true);
-                });
-            }
-            context.image = image;
+            // Setup heap
+            if flags & CLONE_VM == CLONE_VM {
+                // Copy user image mapping, if found
+                if ! image.is_empty() {
+                    let frame = active_table.p4()[0].pointed_frame().expect("user image not mapped");
+                    let flags = active_table.p4()[0].flags();
+                    active_table.with(&mut new_table, &mut temporary_page, |mapper| {
+                        mapper.p4_mut()[0].set(frame, flags);
+                    });
+                }
+                context.image = image;
 
-            if let Some(heap_shared) = heap_option.take() {
-                heap_shared.with(|heap| {
-                    heap.move_to(VirtualAddress::new(arch::USER_HEAP_OFFSET), &mut new_table, &mut temporary_page, true);
-                });
-                context.heap = Some(heap_shared);
+                // Copy user heap mapping, if found
+                if let Some(heap_shared) = heap_option {
+                    let frame = active_table.p4()[1].pointed_frame().expect("user heap not mapped");
+                    let flags = active_table.p4()[0].flags();
+                    active_table.with(&mut new_table, &mut temporary_page, |mapper| {
+                        mapper.p4_mut()[1].set(frame, flags);
+                    });
+                    context.heap = Some(heap_shared);
+                }
+            } else {
+                // Copy percpu mapping
+                {
+                    extern {
+                        /// The starting byte of the thread data segment
+                        static mut __tdata_start: u8;
+                        /// The ending byte of the thread BSS segment
+                        static mut __tbss_end: u8;
+                    }
+
+                    let size = unsafe { & __tbss_end as *const _ as usize - & __tdata_start as *const _ as usize };
+
+                    let start = arch::KERNEL_PERCPU_OFFSET + arch::KERNEL_PERCPU_SIZE * ::cpu_id();
+                    let end = start + size;
+
+                    let start_page = Page::containing_address(VirtualAddress::new(start));
+                    let end_page = Page::containing_address(VirtualAddress::new(end - 1));
+                    for page in Page::range_inclusive(start_page, end_page) {
+                        let frame = active_table.translate_page(page).expect("kernel percpu not mapped");
+                        active_table.with(&mut new_table, &mut temporary_page, |mapper| {
+                            mapper.map_to(page, frame, entry::PRESENT | entry::NO_EXECUTE | entry::WRITABLE);
+                        });
+                    }
+                }
+
+                // Move copy of image
+                for memory_shared in image.iter_mut() {
+                    memory_shared.with(|memory| {
+                        let start = VirtualAddress::new(memory.start_address().get() - arch::USER_TMP_OFFSET + arch::USER_OFFSET);
+                        memory.move_to(start, &mut new_table, &mut temporary_page, true);
+                    });
+                }
+                context.image = image;
+
+                // Move copy of heap
+                if let Some(heap_shared) = heap_option {
+                    heap_shared.with(|heap| {
+                        heap.move_to(VirtualAddress::new(arch::USER_HEAP_OFFSET), &mut new_table, &mut temporary_page, true);
+                    });
+                    context.heap = Some(heap_shared);
+                }
             }
 
-            if let Some(mut stack) = stack_option.take() {
+            // Setup user stack
+            if let Some(mut stack) = stack_option {
                 stack.move_to(VirtualAddress::new(arch::USER_STACK_OFFSET), &mut new_table, &mut temporary_page, true);
                 context.stack = Some(stack);
             }

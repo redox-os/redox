@@ -1,5 +1,7 @@
+use alloc::arc::Arc;
 use alloc::boxed::Box;
 use collections::Vec;
+use spin::Mutex;
 
 use arch;
 use super::file::File;
@@ -32,7 +34,7 @@ pub struct Context {
     /// User stack
     pub stack: Option<Memory>,
     /// The open files in the scheme
-    pub files: Vec<Option<File>>
+    pub files: Arc<Mutex<Vec<Option<File>>>>
 }
 
 impl Context {
@@ -47,22 +49,23 @@ impl Context {
             image: Vec::new(),
             heap: None,
             stack: None,
-            files: Vec::new()
+            files: Arc::new(Mutex::new(Vec::new()))
         }
     }
 
     /// Add a file to the lowest available slot.
     /// Return the file descriptor number or None if no slot was found
     pub fn add_file(&mut self, file: File) -> Option<usize> {
-        for (i, mut file_option) in self.files.iter_mut().enumerate() {
+        let mut files = self.files.lock();
+        for (i, mut file_option) in files.iter_mut().enumerate() {
             if file_option.is_none() {
                 *file_option = Some(file);
                 return Some(i);
             }
         }
-        let len = self.files.len();
+        let len = files.len();
         if len < super::CONTEXT_MAX_FILES {
-            self.files.push(Some(file));
+            files.push(Some(file));
             Some(len)
         } else {
             None
@@ -71,8 +74,9 @@ impl Context {
 
     /// Get a file
     pub fn get_file(&self, i: usize) -> Option<File> {
-        if i < self.files.len() {
-            self.files[i]
+        let files = self.files.lock();
+        if i < files.len() {
+            files[i]
         } else {
             None
         }
@@ -81,8 +85,9 @@ impl Context {
     /// Remove a file
     // TODO: adjust files vector to smaller size if possible
     pub fn remove_file(&mut self, i: usize) -> Option<File> {
-        if i < self.files.len() {
-            self.files[i].take()
+        let mut files = self.files.lock();
+        if i < files.len() {
+            files[i].take()
         } else {
             None
         }
