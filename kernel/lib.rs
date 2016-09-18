@@ -128,6 +128,8 @@ pub fn cpu_id() -> usize {
 }
 
 pub extern fn userspace_init() {
+    assert_eq!(syscall::chdir(b"initfs:"), Ok(0));
+
     assert_eq!(syscall::open(b"debug:", 0), Ok(0));
     assert_eq!(syscall::open(b"debug:", 0), Ok(1));
     assert_eq!(syscall::open(b"debug:", 0), Ok(2));

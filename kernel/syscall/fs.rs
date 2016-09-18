@@ -5,6 +5,28 @@ use scheme;
 
 use super::{Error, Result};
 
+pub fn chdir(path: &[u8]) -> Result<usize> {
+    let contexts = context::contexts();
+    let context_lock = contexts.current().ok_or(Error::NoProcess)?;
+    let context = context_lock.read();
+    let canonical = context.canonicalize(path);
+    *context.cwd.lock() = canonical;
+    Ok(0)
+}
+
+pub fn getcwd(buf: &mut [u8]) -> Result<usize> {
+    let contexts = context::contexts();
+    let context_lock = contexts.current().ok_or(Error::NoProcess)?;
+    let context = context_lock.read();
+    let cwd = context.cwd.lock();
+    let mut i = 0;
+    while i < buf.len() && i < cwd.len() {
+        buf[i] = cwd[i];
+        i += 1;
+    }
+    Ok(i)
+}
+
 /// Read syscall
 pub fn read(fd: usize, buf: &mut [u8]) -> Result<usize> {
     let file = {

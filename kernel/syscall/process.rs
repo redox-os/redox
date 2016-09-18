@@ -1,6 +1,7 @@
 ///! Process syscalls
 
 use alloc::arc::Arc;
+use collections::Vec;
 use core::mem;
 use core::str;
 use spin::Mutex;
@@ -53,7 +54,9 @@ pub const CLONE_FILES: usize = 0x400;
 pub const CLONE_VFORK: usize = 0x4000;
 pub fn clone(flags: usize, stack_base: usize) -> Result<usize> {
     //TODO: Copy on write?
-    println!("Clone {:X}: {:X}", flags, stack_base);
+
+    // vfork not supported
+    assert!(flags & CLONE_VFORK == 0);
 
     let ppid;
     let pid;
@@ -64,7 +67,8 @@ pub fn clone(flags: usize, stack_base: usize) -> Result<usize> {
         let mut image = vec![];
         let mut heap_option = None;
         let mut stack_option = None;
-        let mut files = Arc::new(Mutex::new(vec![]));
+        let cwd;
+        let files;
 
         // Copy from old process
         {
@@ -159,9 +163,16 @@ pub fn clone(flags: usize, stack_base: usize) -> Result<usize> {
                 stack_option = Some(new_stack);
             }
 
+            if flags & CLONE_FS == CLONE_FS {
+                cwd = context.cwd.clone();
+            } else {
+                cwd = Arc::new(Mutex::new(context.cwd.lock().clone()));
+            }
+
             if flags & CLONE_FILES == CLONE_FILES {
                 files = context.files.clone();
             } else {
+                let mut files_vec = Vec::new();
                 for (fd, file_option) in context.files.lock().iter().enumerate() {
                     if let Some(file) = *file_option {
                         let result = {
@@ -172,16 +183,17 @@ pub fn clone(flags: usize, stack_base: usize) -> Result<usize> {
                         };
                         match result {
                             Ok(new_number) => {
-                                files.lock().push(Some(context::file::File { scheme: file.scheme, number: new_number }));
+                                files_vec.push(Some(context::file::File { scheme: file.scheme, number: new_number }));
                             },
                             Err(err) => {
                                 println!("clone: failed to dup {}: {:?}", fd, err);
                             }
                         }
                     } else {
-                        files.lock().push(None);
+                        files_vec.push(None);
                     }
                 }
+                files = Arc::new(Mutex::new(files_vec));
             }
         }
 
@@ -289,6 +301,8 @@ pub fn clone(flags: usize, stack_base: usize) -> Result<usize> {
                 context.stack = Some(stack);
             }
 
+            context.cwd = cwd;
+
             context.files = files;
 
             context.arch.set_page_table(unsafe { new_table.address() });
@@ -322,7 +336,6 @@ pub fn exec(path: &[u8], _args: &[[usize; 2]]) -> Result<usize> {
     //TODO: Use args
     //TODO: Unmap previous mappings
     //TODO: Drop data vec
-    println!("Exec {}", unsafe { str::from_utf8_unchecked(path) });
 
     let file = syscall::open(path, 0)?;
     let mut data = vec![];

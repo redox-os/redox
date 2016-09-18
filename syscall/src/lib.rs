@@ -48,6 +48,7 @@ pub const SYS_FUTEX: usize = 240;
     pub const FUTEX_WAIT: usize = 0;
     pub const FUTEX_WAKE: usize = 1;
     pub const FUTEX_REQUEUE: usize = 2;
+pub const SYS_GETCWD: usize = 183;
 pub const SYS_GETPID: usize = 20;
 pub const SYS_IOPL: usize = 110;
 pub const SYS_LINK: usize = 9;
@@ -151,6 +152,10 @@ pub fn ftruncate(fd: usize, len: usize) -> Result<usize> {
 
 pub unsafe fn futex(addr: *mut i32, op: usize, val: i32, val2: usize, addr2: *mut i32) -> Result<usize> {
     syscall5(SYS_FUTEX, addr as usize, op, (val as isize) as usize, val2, addr2 as usize)
+}
+
+pub fn getcwd(buf: &mut [u8]) -> Result<usize> {
+    unsafe { syscall2(SYS_GETCWD, buf.as_mut_ptr() as usize, buf.len()) }
 }
 
 pub fn getpid() -> Result<usize> {

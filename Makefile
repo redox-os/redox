@@ -12,9 +12,9 @@ KCARGOFLAGS=--target $(KTARGET).json -- -C soft-float
 TARGET=$(ARCH)-unknown-redox
 BUILD=build/userspace
 RUSTC=./rustc.sh
-RUSTCFLAGS=--target $(TARGET).json -O -C soft-float --cfg redox
+RUSTCFLAGS=--target $(TARGET).json -C soft-float --cfg redox
 CARGO=RUSTC="$(RUSTC)" cargo
-CARGOFLAGS=--target $(TARGET).json -- -O -C soft-float --cfg redox
+CARGOFLAGS=--target $(TARGET).json -- -C soft-float --cfg redox
 
 # Default targets
 .PHONY: all clean qemu bochs FORCE
@@ -25,6 +25,7 @@ clean:
 	cargo clean
 	cargo clean --manifest-path libstd/Cargo.toml
 	cargo clean --manifest-path init/Cargo.toml
+	cargo clean --manifest-path ion/Cargo.toml
 	cargo clean --manifest-path drivers/pcid/Cargo.toml
 	rm -rf build
 
@@ -93,7 +94,7 @@ $(KBUILD)/librustc_unicode.rlib: rust/src/librustc_unicode/lib.rs $(KBUILD)/libc
 $(KBUILD)/libcollections.rlib: rust/src/libcollections/lib.rs $(KBUILD)/libcore.rlib $(KBUILD)/liballoc.rlib $(KBUILD)/librustc_unicode.rlib
 	$(KRUSTC) $(KRUSTCFLAGS) -o $@ $<
 
-$(KBUILD)/libkernel.a: kernel/** $(KBUILD)/libcore.rlib $(KBUILD)/liballoc.rlib $(KBUILD)/libcollections.rlib $(BUILD)/init $(BUILD)/pcid FORCE
+$(KBUILD)/libkernel.a: kernel/** $(KBUILD)/libcore.rlib $(KBUILD)/liballoc.rlib $(KBUILD)/libcollections.rlib $(BUILD)/initfs.rs FORCE
 	$(KCARGO) rustc $(KCARGOFLAGS) -o $@
 
 $(KBUILD)/kernel: $(KBUILD)/libkernel.a
@@ -124,6 +125,12 @@ $(BUILD)/init: init/Cargo.toml init/src/*.rs $(BUILD)/libstd.rlib
 	$(CARGO) rustc --manifest-path $< $(CARGOFLAGS) -o $@
 	strip $@
 
+$(BUILD)/ion: ion/Cargo.toml ion/src/*.rs $(BUILD)/libstd.rlib
+	$(CARGO) rustc --manifest-path $< $(CARGOFLAGS) -o $@
+	strip $@
+
 $(BUILD)/pcid: drivers/pcid/Cargo.toml drivers/pcid/src/** $(BUILD)/libstd.rlib
 	$(CARGO) rustc --manifest-path $< $(CARGOFLAGS) -o $@
 	strip $@
+
+$(BUILD)/initfs.rs: $(BUILD)/init $(BUILD)/ion $(BUILD)/pcid

@@ -33,6 +33,8 @@ pub struct Context {
     pub heap: Option<SharedMemory>,
     /// User stack
     pub stack: Option<Memory>,
+    /// The current working directory
+    pub cwd: Arc<Mutex<Vec<u8>>>,
     /// The open files in the scheme
     pub files: Arc<Mutex<Vec<Option<File>>>>
 }
@@ -49,7 +51,43 @@ impl Context {
             image: Vec::new(),
             heap: None,
             stack: None,
+            cwd: Arc::new(Mutex::new(Vec::new())),
             files: Arc::new(Mutex::new(Vec::new()))
+        }
+    }
+
+    pub fn canonicalize(&self, path: &[u8]) -> Vec<u8> {
+        if path.iter().position(|&b| b == b':').is_none() {
+            let cwd = self.cwd.lock();
+            if path == b"." {
+                cwd.clone()
+            } else if path == b".." {
+                cwd[..cwd[..cwd.len() - 1]
+                                   .iter().rposition(|&b| b == b'/')
+                                   .map_or(cwd.len(), |i| i + 1)]
+                   .to_vec()
+            } else if path.starts_with(b"./") {
+                let mut canon = cwd.clone();
+                canon.extend_from_slice(&path[2..]);
+                canon
+            } else if path.starts_with(b"../") {
+                let mut canon = cwd[..cwd[..cwd.len() - 1]
+                                   .iter().rposition(|&b| b == b'/')
+                                   .map_or(cwd.len(), |i| i + 1)]
+                   .to_vec();
+                canon.extend_from_slice(&path[3..]);
+                canon
+            } else if path.starts_with(b"/") {
+                let mut canon = cwd[..cwd.iter().position(|&b| b == b':').map_or(1, |i| i + 1)].to_vec();
+                canon.extend_from_slice(&path);
+                canon
+            } else {
+                let mut canon = cwd.clone();
+                canon.extend_from_slice(&path);
+                canon
+            }
+        } else {
+            path.to_vec()
         }
     }
 

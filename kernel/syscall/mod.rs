@@ -34,12 +34,14 @@ pub extern fn syscall(a: usize, b: usize, c: usize, d: usize, e: usize, f: usize
                 Call::Close => close(b),
                 Call::WaitPid => waitpid(b, c, d),
                 Call::Exec => exec(validate_slice(b as *const u8, c)?, validate_slice(d as *const [usize; 2], e)?),
+                Call::ChDir => chdir(validate_slice(b as *const u8, c)?),
                 Call::GetPid => getpid(),
                 Call::Dup => dup(b),
                 Call::Brk => brk(b),
                 Call::Iopl => iopl(b),
                 Call::Clone => clone(b, stack),
-                Call::SchedYield => sched_yield()
+                Call::SchedYield => sched_yield(),
+                Call::GetCwd => getcwd(validate_slice_mut(b as *mut u8, c)?)
             },
             Err(err) => {
                 println!("Unknown syscall {}", a);

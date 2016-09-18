@@ -19,8 +19,9 @@ impl InitFsScheme {
         let mut files: BTreeMap<&'static [u8], &'static [u8]> = BTreeMap::new();
 
         files.insert(b"bin/init", include_bytes!("../../build/userspace/init"));
+        files.insert(b"bin/ion", include_bytes!("../../build/userspace/ion"));
         files.insert(b"bin/pcid", include_bytes!("../../build/userspace/pcid"));
-        files.insert(b"etc/init.rc", b"echo testing\ninitfs:bin/pcid\n");
+        files.insert(b"etc/init.rc", b"echo testing\ninitfs:bin/pcid\ninitfs:bin/ion");
 
         InitFsScheme {
             next_id: 0,
