@@ -7,13 +7,15 @@ use core::str;
 use spin::Mutex;
 
 use arch;
+use arch::externs::memcpy;
 use arch::memory::allocate_frame;
 use arch::paging::{ActivePageTable, InactivePageTable, Page, VirtualAddress, entry};
 use arch::paging::temporary_page::TemporaryPage;
+use arch::start::usermode;
 use context;
-use elf;
+use elf::{self, program_header};
 use scheme;
-use syscall::{self, Error, Result};
+use syscall::{self, Error, Result, validate_slice, validate_slice_mut};
 
 pub fn brk(address: usize) -> Result<usize> {
     let contexts = context::contexts();
@@ -332,33 +334,147 @@ pub fn exit(status: usize) -> ! {
     unreachable!();
 }
 
-pub fn exec(path: &[u8], _args: &[[usize; 2]]) -> Result<usize> {
-    //TODO: Use args
-    //TODO: Unmap previous mappings
-    //TODO: Drop data vec
+pub fn exec(path: &[u8], arg_ptrs: &[[usize; 2]]) -> Result<usize> {
+    let entry;
+    let mut sp = arch::USER_STACK_OFFSET + arch::USER_STACK_SIZE - 256;
 
-    let file = syscall::open(path, 0)?;
-    let mut data = vec![];
-    loop {
-        let mut buf = [0; 4096];
-        let count = syscall::read(file, &mut buf)?;
-        if count > 0 {
-            data.extend_from_slice(&buf[..count]);
-        } else {
-            break;
+    {
+        let mut args = Vec::new();
+        for arg_ptr in arg_ptrs {
+            let arg = validate_slice(arg_ptr[0] as *const u8, arg_ptr[1])?;
+            args.push(arg.to_vec()); // Must be moved into kernel space before exec unmaps all memory
+        }
+
+        let file = syscall::open(path, 0)?;
+        //TODO: Only read elf header, not entire file. Then read required segments
+        let mut data = vec![];
+        loop {
+            let mut buf = [0; 4096];
+            let count = syscall::read(file, &mut buf)?;
+            if count > 0 {
+                data.extend_from_slice(&buf[..count]);
+            } else {
+                break;
+            }
+        }
+        let _ = syscall::close(file);
+
+        match elf::Elf::from(&data) {
+            Ok(elf) => {
+                entry = elf.entry();
+
+                drop(path); // Drop so that usage is not allowed after unmapping context
+                drop(arg_ptrs); // Drop so that usage is not allowed after unmapping context
+
+                let contexts = context::contexts();
+                let context_lock = contexts.current().ok_or(Error::NoProcess)?;
+                let mut context = context_lock.write();
+
+                // Unmap previous image and stack
+                context.image.clear();
+                drop(context.heap.take());
+                drop(context.stack.take());
+
+                for segment in elf.segments() {
+                    if segment.p_type == program_header::PT_LOAD {
+                        let mut memory = context::memory::Memory::new(
+                            VirtualAddress::new(segment.p_vaddr as usize),
+                            segment.p_memsz as usize,
+                            entry::NO_EXECUTE | entry::WRITABLE,
+                            true,
+                            true
+                        );
+
+                        unsafe {
+                            // Copy file data
+                            memcpy(segment.p_vaddr as *mut u8,
+                                    (elf.data.as_ptr() as usize + segment.p_offset as usize) as *const u8,
+                                    segment.p_filesz as usize);
+                        }
+
+                        let mut flags = entry::NO_EXECUTE | entry::USER_ACCESSIBLE;
+
+                        if segment.p_flags & program_header::PF_R == program_header::PF_R {
+                            flags.insert(entry::PRESENT);
+                        }
+
+                        // W ^ X. If it is executable, do not allow it to be writable, even if requested
+                        if segment.p_flags & program_header::PF_X == program_header::PF_X {
+                            flags.remove(entry::NO_EXECUTE);
+                        } else if segment.p_flags & program_header::PF_W == program_header::PF_W {
+                            flags.insert(entry::WRITABLE);
+                        }
+
+                        memory.remap(flags, true);
+
+                        context.image.push(memory.to_shared());
+                    }
+                }
+
+                context.heap = Some(context::memory::Memory::new(
+                    VirtualAddress::new(arch::USER_HEAP_OFFSET),
+                    0,
+                    entry::NO_EXECUTE | entry::WRITABLE | entry::USER_ACCESSIBLE,
+                    true,
+                    true
+                ).to_shared());
+
+                // Map stack
+                context.stack = Some(context::memory::Memory::new(
+                    VirtualAddress::new(arch::USER_STACK_OFFSET),
+                    arch::USER_STACK_SIZE,
+                    entry::NO_EXECUTE | entry::WRITABLE | entry::USER_ACCESSIBLE,
+                    true,
+                    true
+                ));
+
+                let mut arg_size = 0;
+                for arg in args.iter() {
+                    sp -= mem::size_of::<usize>();
+                    unsafe { *(sp as *mut usize) = arch::USER_ARG_OFFSET + arg_size; }
+                    sp -= mem::size_of::<usize>();
+                    unsafe { *(sp as *mut usize) = arg.len(); }
+
+                    arg_size += arg.len();
+                }
+
+                sp -= mem::size_of::<usize>();
+                unsafe { *(sp as *mut usize) = args.len(); }
+
+                if arg_size > 0 {
+                    let mut memory = context::memory::Memory::new(
+                        VirtualAddress::new(arch::USER_ARG_OFFSET),
+                        arg_size,
+                        entry::NO_EXECUTE | entry::WRITABLE,
+                        true,
+                        true
+                    );
+
+                    let mut arg_offset = 0;
+                    for arg in args.iter() {
+                        unsafe {
+                            memcpy((arch::USER_ARG_OFFSET + arg_offset) as *mut u8,
+                                   arg.as_ptr(),
+                                   arg.len());
+                        }
+
+                        arg_offset += arg.len();
+                    }
+
+                    memory.remap(entry::NO_EXECUTE | entry::USER_ACCESSIBLE, true);
+
+                    context.image.push(memory.to_shared());
+                }
+            },
+            Err(err) => {
+                println!("failed to execute {}: {}", unsafe { str::from_utf8_unchecked(path) }, err);
+                return Err(Error::NoExec);
+            }
         }
     }
-    let _ = syscall::close(file);
 
-    match elf::Elf::from(&data) {
-        Ok(elf) => {
-            elf.run().and(Ok(0))
-        },
-        Err(err) => {
-            println!("failed to execute {}: {}", unsafe { str::from_utf8_unchecked(path) }, err);
-            Err(Error::NoExec)
-        }
-    }
+    // Go to usermode
+    unsafe { usermode(entry, sp); }
 }
 
 pub fn getpid() -> Result<usize> {
@@ -378,7 +494,7 @@ pub fn sched_yield() -> Result<usize> {
     Ok(0)
 }
 
-pub fn waitpid(pid: usize, _status_ptr: usize, _options: usize) -> Result<usize> {
+pub fn waitpid(pid: usize, status_ptr: usize, _options: usize) -> Result<usize> {
     //TODO: Implement status_ptr and options
     loop {
         {
@@ -389,7 +505,10 @@ pub fn waitpid(pid: usize, _status_ptr: usize, _options: usize) -> Result<usize>
                 let context_lock = contexts.get(pid).ok_or(Error::NoProcess)?;
                 let context = context_lock.read();
                 if let context::Status::Exited(status) = context.status {
-                    //TODO: set status_ptr
+                    if status_ptr != 0 {
+                        let status_slice = validate_slice_mut(status_ptr as *mut usize, 1)?;
+                        status_slice[0] = status;
+                    }
                     exited = true;
                 }
             }

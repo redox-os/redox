@@ -126,8 +126,8 @@ pub fn dup(fd: usize) -> Result<usize> {
     unsafe { syscall1(SYS_DUP, fd) }
 }
 
-pub fn execve(path: &str) -> Result<usize> {
-    unsafe { syscall2(SYS_EXECVE, path.as_ptr() as usize, path.len()) }
+pub fn execve(path: &str, args: &[[usize; 2]]) -> Result<usize> {
+    unsafe { syscall4(SYS_EXECVE, path.as_ptr() as usize, path.len(), args.as_ptr() as usize, args.len()) }
 }
 
 pub fn exit(status: usize) -> Result<usize> {

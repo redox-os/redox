@@ -5,17 +5,10 @@ use collections::String;
 use core::str;
 
 #[cfg(target_arch = "x86")]
-use goblin::elf32::{header, program_header};
+pub use goblin::elf32::{header, program_header};
 
 #[cfg(target_arch = "x86_64")]
-use goblin::elf64::{header, program_header};
-
-use arch;
-use arch::externs::memcpy;
-use arch::paging::{entry, VirtualAddress};
-use arch::start::usermode;
-use context;
-use syscall::{Error, Result as SysResult};
+pub use goblin::elf64::{header, program_header};
 
 /// An ELF executable
 pub struct Elf<'a> {
@@ -51,76 +44,6 @@ impl<'a> Elf<'a> {
     /// Get the entry field of the header
     pub fn entry(&self) -> usize {
         self.header.e_entry as usize
-    }
-
-    /// Test function to run. Remove and replace with proper syscall
-    pub fn run(self) -> SysResult<!> {
-        {
-            let contexts = context::contexts();
-            let context_lock = contexts.current().ok_or(Error::NoProcess)?;
-            let mut context = context_lock.write();
-
-            // Unmap previous image and stack
-            context.image.clear();
-            drop(context.heap.take());
-            drop(context.stack.take());
-
-            for segment in self.segments() {
-                if segment.p_type == program_header::PT_LOAD {
-                    let mut memory = context::memory::Memory::new(
-                        VirtualAddress::new(segment.p_vaddr as usize),
-                        segment.p_memsz as usize,
-                        entry::NO_EXECUTE | entry::WRITABLE,
-                        true,
-                        true
-                    );
-
-                    unsafe {
-                        // Copy file data
-                        memcpy(segment.p_vaddr as *mut u8,
-                                (self.data.as_ptr() as usize + segment.p_offset as usize) as *const u8,
-                                segment.p_filesz as usize);
-                    }
-
-                    let mut flags = entry::NO_EXECUTE | entry::USER_ACCESSIBLE;
-
-                    if segment.p_flags & program_header::PF_R == program_header::PF_R {
-                        flags.insert(entry::PRESENT);
-                    }
-
-                    // W ^ X. If it is executable, do not allow it to be writable, even if requested
-                    if segment.p_flags & program_header::PF_X == program_header::PF_X {
-                        flags.remove(entry::NO_EXECUTE);
-                    } else if segment.p_flags & program_header::PF_W == program_header::PF_W {
-                        flags.insert(entry::WRITABLE);
-                    }
-
-                    memory.remap(flags, true);
-
-                    context.image.push(memory.to_shared());
-                }
-            }
-
-            context.heap = Some(context::memory::Memory::new(
-                VirtualAddress::new(arch::USER_HEAP_OFFSET),
-                0,
-                entry::NO_EXECUTE | entry::WRITABLE | entry::USER_ACCESSIBLE,
-                true,
-                true
-            ).to_shared());
-
-            // Map stack
-            context.stack = Some(context::memory::Memory::new(
-                VirtualAddress::new(arch::USER_STACK_OFFSET),
-                arch::USER_STACK_SIZE,
-                entry::NO_EXECUTE | entry::WRITABLE | entry::USER_ACCESSIBLE,
-                true,
-                true
-            ));
-        }
-
-        // Go to usermode
-        unsafe { usermode(self.entry(), arch::USER_STACK_OFFSET + arch::USER_STACK_SIZE - 256); }
     }
 }
 

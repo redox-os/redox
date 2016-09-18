@@ -47,6 +47,9 @@ pub extern crate x86;
     /// Offset to user image
     pub const USER_OFFSET: usize = 0;
 
+    /// Offset to user arguments
+    pub const USER_ARG_OFFSET: usize = USER_OFFSET + PML4_SIZE/2;
+
     /// Offset to user heap
     pub const USER_HEAP_OFFSET: usize = USER_OFFSET + PML4_SIZE;
 
@@ -139,7 +142,8 @@ macro_rules! interrupt_error {
             }
 
             // Push scratch registers
-            asm!("push rax
+            asm!("xchg bx, bx
+                push rax
                 push rcx
                 push rdx
                 push rdi
