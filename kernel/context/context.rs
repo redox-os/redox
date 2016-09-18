@@ -93,7 +93,7 @@ impl Context {
 
     /// Add a file to the lowest available slot.
     /// Return the file descriptor number or None if no slot was found
-    pub fn add_file(&mut self, file: File) -> Option<usize> {
+    pub fn add_file(&self, file: File) -> Option<usize> {
         let mut files = self.files.lock();
         for (i, mut file_option) in files.iter_mut().enumerate() {
             if file_option.is_none() {
@@ -122,7 +122,7 @@ impl Context {
 
     /// Remove a file
     // TODO: adjust files vector to smaller size if possible
-    pub fn remove_file(&mut self, i: usize) -> Option<File> {
+    pub fn remove_file(&self, i: usize) -> Option<File> {
         let mut files = self.files.lock();
         if i < files.len() {
             files[i].take()

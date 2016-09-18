@@ -61,7 +61,14 @@ pub fn write(fd: usize, buf: &[u8]) -> Result<usize> {
 
 /// Open syscall
 pub fn open(path: &[u8], flags: usize) -> Result<usize> {
-    let mut parts = path.splitn(2, |&b| b == b':');
+    let path_canon = {
+        let contexts = context::contexts();
+        let context_lock = contexts.current().ok_or(Error::NoProcess)?;
+        let context = context_lock.read();
+        context.canonicalize(path)
+    };
+
+    let mut parts = path_canon.splitn(2, |&b| b == b':');
     let namespace_opt = parts.next();
     let reference_opt = parts.next();
 
@@ -75,7 +82,7 @@ pub fn open(path: &[u8], flags: usize) -> Result<usize> {
 
     let contexts = context::contexts();
     let context_lock = contexts.current().ok_or(Error::NoProcess)?;
-    let mut context = context_lock.write();
+    let context = context_lock.read();
     context.add_file(::context::file::File {
         scheme: scheme_id,
         number: file_id
@@ -87,7 +94,7 @@ pub fn close(fd: usize) -> Result<usize> {
     let file = {
         let contexts = context::contexts();
         let context_lock = contexts.current().ok_or(Error::NoProcess)?;
-        let mut context = context_lock.write();
+        let context = context_lock.read();
         let file = context.remove_file(fd).ok_or(Error::BadFile)?;
         file
     };
