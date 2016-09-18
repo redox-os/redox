@@ -16,10 +16,14 @@ use spin::{Once, Mutex, RwLock, RwLockReadGuard, RwLockWriteGuard};
 use syscall::{Error, Result};
 
 use self::debug::DebugScheme;
+use self::env::EnvScheme;
 use self::initfs::InitFsScheme;
 
 /// Debug scheme
 pub mod debug;
+
+/// Environmental variables
+pub mod env;
 
 /// InitFS scheme
 pub mod initfs;
@@ -57,7 +61,7 @@ impl SchemeList {
         }
     }
 
-    /// Create a new context.
+    /// Create a new scheme.
     pub fn insert(&mut self, name: Box<[u8]>, scheme: Arc<Mutex<Box<Scheme + Send>>>) -> Result<&Arc<Mutex<Box<Scheme + Send>>>> {
         if self.names.contains_key(&name) {
             return Err(Error::FileExists);
@@ -92,6 +96,7 @@ static SCHEMES: Once<RwLock<SchemeList>> = Once::new();
 fn init_schemes() -> RwLock<SchemeList> {
     let mut list: SchemeList = SchemeList::new();
     list.insert(Box::new(*b"debug"), Arc::new(Mutex::new(Box::new(DebugScheme)))).expect("failed to insert debug: scheme");
+    list.insert(Box::new(*b"env"), Arc::new(Mutex::new(Box::new(EnvScheme::new())))).expect("failed to insert env: scheme");
     list.insert(Box::new(*b"initfs"), Arc::new(Mutex::new(Box::new(InitFsScheme::new())))).expect("failed to insert initfs: scheme");
     RwLock::new(list)
 }
@@ -127,6 +132,9 @@ pub trait Scheme {
     ///
     /// Returns the number of bytes written
     fn write(&mut self, file: usize, buffer: &[u8]) -> Result<usize>;
+
+    /// Sync the file descriptor
+    fn fsync(&mut self, file: usize) -> Result<()>;
 
     /// Close the file descriptor
     fn close(&mut self, file: usize) -> Result<()>;

@@ -102,7 +102,12 @@ impl SerialPort {
 
     pub fn on_receive(&mut self) {
         let data = self.data.read();
-        self.write_translate(data);
+
+        extern {
+            fn debug_input(byte: u8);
+        }
+
+        unsafe { debug_input(data) };
     }
 }
 

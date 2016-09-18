@@ -29,6 +29,8 @@ pub enum Call {
     Brk = 45,
     /// Set process I/O privilege level
     Iopl = 110,
+    /// Sync file descriptor
+    FSync = 118,
     /// Clone process
     Clone = 120,
     /// Yield to scheduler
@@ -55,6 +57,7 @@ impl Call {
             41 => Ok(Call::Dup),
             45 => Ok(Call::Brk),
             110 => Ok(Call::Iopl),
+            118 => Ok(Call::FSync),
             120 => Ok(Call::Clone),
             158 => Ok(Call::SchedYield),
             183 => Ok(Call::GetCwd),

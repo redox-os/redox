@@ -39,6 +39,7 @@ pub extern fn syscall(a: usize, b: usize, c: usize, d: usize, e: usize, f: usize
                 Call::Dup => dup(b),
                 Call::Brk => brk(b),
                 Call::Iopl => iopl(b),
+                Call::FSync => fsync(b),
                 Call::Clone => clone(b, stack),
                 Call::SchedYield => sched_yield(),
                 Call::GetCwd => getcwd(validate_slice_mut(b as *mut u8, c)?)

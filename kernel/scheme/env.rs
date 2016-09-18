@@ -8,22 +8,22 @@ struct Handle {
     seek: usize
 }
 
-pub struct InitFsScheme {
+pub struct EnvScheme {
     next_id: usize,
     files: BTreeMap<&'static [u8], &'static [u8]>,
     handles: BTreeMap<usize, Handle>
 }
 
-impl InitFsScheme {
-    pub fn new() -> InitFsScheme {
+impl EnvScheme {
+    pub fn new() -> EnvScheme {
         let mut files: BTreeMap<&'static [u8], &'static [u8]> = BTreeMap::new();
 
-        files.insert(b"bin/init", include_bytes!("../../build/userspace/init"));
-        files.insert(b"bin/ion", include_bytes!("../../build/userspace/ion"));
-        files.insert(b"bin/pcid", include_bytes!("../../build/userspace/pcid"));
-        files.insert(b"etc/init.rc", b"echo testing\ninitfs:bin/pcid\ninitfs:bin/ion");
+        files.insert(b"HOME", b"initfs:");
+        files.insert(b"PWD", b"initfs:");
+        files.insert(b"COLUMNS", b"80");
+        files.insert(b"LINES", b"30");
 
-        InitFsScheme {
+        EnvScheme {
             next_id: 0,
             files: files,
             handles: BTreeMap::new()
@@ -31,7 +31,7 @@ impl InitFsScheme {
     }
 }
 
-impl Scheme for InitFsScheme {
+impl Scheme for EnvScheme {
     fn open(&mut self, path: &[u8], _flags: usize) -> Result<usize> {
         let data = self.files.get(path).ok_or(Error::NoEntry)?;
 

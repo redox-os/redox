@@ -120,3 +120,18 @@ pub fn dup(fd: usize) -> Result<usize> {
     let result = scheme_mutex.lock().dup(file.number);
     result
 }
+
+pub fn fsync(fd: usize) -> Result<usize> {
+    let file = {
+        let contexts = context::contexts();
+        let context_lock = contexts.current().ok_or(Error::NoProcess)?;
+        let context = context_lock.read();
+        let file = context.get_file(fd).ok_or(Error::BadFile)?;
+        file
+    };
+
+    let schemes = scheme::schemes();
+    let scheme_mutex = schemes.get(file.scheme).ok_or(Error::BadFile)?;
+    let result = scheme_mutex.lock().fsync(file.number).and(Ok(0));
+    result
+}
