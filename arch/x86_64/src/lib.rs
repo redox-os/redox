@@ -73,8 +73,7 @@ pub extern crate x86;
 macro_rules! print {
     ($($arg:tt)*) => ({
         use core::fmt::Write;
-        let mut console = $crate::console::CONSOLE.lock();
-        let _ = write!(console, $($arg)*);
+        let _ = write!($crate::console::CONSOLE.lock(), $($arg)*);
     });
 }
 

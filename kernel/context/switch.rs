@@ -54,6 +54,8 @@ pub unsafe fn switch() {
         return;
     }
 
+    //println!("Switch {} to {}", (&*from_ptr).id, (&*to_ptr).id);
+
     (&mut *from_ptr).running = false;
     (&mut *to_ptr).running = true;
     if let Some(ref stack) = (*to_ptr).kstack {

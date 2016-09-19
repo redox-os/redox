@@ -22,7 +22,7 @@ impl InitFsScheme {
         files.insert(b"bin/ion", include_bytes!("../../build/userspace/ion"));
         files.insert(b"bin/pcid", include_bytes!("../../build/userspace/pcid"));
         files.insert(b"bin/ps2d", include_bytes!("../../build/userspace/ps2d"));
-        files.insert(b"etc/init.rc", b"echo testing\n#initfs:bin/pcid\ninitfs:bin/ps2d\n#initfs:bin/ion");
+        files.insert(b"etc/init.rc", b"#initfs:bin/pcid\ninitfs:bin/ps2d\n#initfs:bin/ion");
 
         InitFsScheme {
             next_id: 0,

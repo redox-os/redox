@@ -4,6 +4,7 @@ use x86::io;
 use device::ps2::{PS2_KEYBOARD, PS2_MOUSE};
 use device::serial::{COM1, COM2};
 
+pub static ACKS: Mutex<[usize; 16]> = Mutex::new([0; 16]);
 pub static COUNTS: Mutex<[usize; 16]> = Mutex::new([0; 16]);
 
 #[inline(always)]
@@ -88,10 +89,6 @@ interrupt!(pci3, {
 
 interrupt!(mouse, {
     COUNTS.lock()[12] += 1;
-    if let Some(ref mut mouse) = *PS2_MOUSE.lock() {
-        mouse.on_irq();
-    }
-    slave_ack();
 });
 
 interrupt!(fpu, {

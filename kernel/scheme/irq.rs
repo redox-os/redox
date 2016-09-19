@@ -1,6 +1,6 @@
 use core::{mem, str};
 
-use arch::interrupt::irq::{COUNTS, acknowledge};
+use arch::interrupt::irq::{ACKS, COUNTS, acknowledge};
 use context;
 use syscall::{Error, Result};
 use super::Scheme;
@@ -27,20 +27,15 @@ impl Scheme for IrqScheme {
     fn read(&mut self, file: usize, buffer: &mut [u8]) -> Result<usize> {
         // Ensures that the length of the buffer is larger than the size of a usize
         if buffer.len() >= mem::size_of::<usize>() {
-            let prev = { COUNTS.lock()[file] };
-            loop {
-                {
-                    let current = COUNTS.lock()[file];
-                    if prev != current {
-                        // Safe if the length of the buffer is larger than the size of a usize
-                        assert!(buffer.len() >= mem::size_of::<usize>());
-                        unsafe { *(buffer.as_mut_ptr() as *mut usize) = current; }
-                        return Ok(mem::size_of::<usize>());
-                    }
-                }
-
-                // Safe if all locks have been dropped
-                unsafe { context::switch(); }
+            let ack = ACKS.lock()[file];
+            let current = COUNTS.lock()[file];
+            if ack != current {
+                // Safe if the length of the buffer is larger than the size of a usize
+                assert!(buffer.len() >= mem::size_of::<usize>());
+                unsafe { *(buffer.as_mut_ptr() as *mut usize) = current; }
+                return Ok(mem::size_of::<usize>());
+            } else {
+                return Ok(0);
             }
         } else {
             Err(Error::InvalidValue)
@@ -50,9 +45,10 @@ impl Scheme for IrqScheme {
     fn write(&mut self, file: usize, buffer: &[u8]) -> Result<usize> {
         if buffer.len() >= mem::size_of::<usize>() {
             assert!(buffer.len() >= mem::size_of::<usize>());
-            let prev = unsafe { *(buffer.as_ptr() as *const usize) };
+            let ack = unsafe { *(buffer.as_ptr() as *const usize) };
             let current = COUNTS.lock()[file];
-            if prev == current {
+            if ack == current {
+                ACKS.lock()[file] = ack;
                 unsafe { acknowledge(file); }
                 return Ok(mem::size_of::<usize>());
             } else {

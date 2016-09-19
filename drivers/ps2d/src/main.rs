@@ -4,12 +4,15 @@ extern crate syscall;
 
 use std::fs::File;
 use std::io::{Read, Write};
+use std::mem;
 use std::thread;
 
 use syscall::iopl;
 
 fn main() {
-    if true {
+    println!("PS/2 driver launching");
+
+    thread::spawn(|| {
         unsafe {
             iopl(3).expect("pskbd: failed to get I/O permission");
             asm!("cli" :::: "intel", "volatile");
@@ -21,18 +24,22 @@ fn main() {
 
         loop {
             let mut irqs = [0; 8];
-            file.read(&mut irqs).expect("pskbd: failed to read irq:1");
+            if file.read(&mut irqs).expect("pskbd: failed to read irq:1") >= mem::size_of::<usize>() {
+                let data: u8;
+                unsafe {
+                    asm!("in al, dx" : "={al}"(data) : "{dx}"(0x60) : : "intel", "volatile");
+                }
 
-            let data: u8;
-            unsafe {
-                asm!("in al, dx" : "={al}"(data) : "{dx}"(0x60) : : "intel", "volatile");
+                println!("pskbd: IRQ {}: {:X}", unsafe { *(irqs.as_ptr() as *const usize) }, data);
+
+                file.write(&irqs).expect("pskbd: failed to write irq:1");
+            } else {
+                thread::yield_now();
             }
-
-            println!("pskbd: IRQ {}: {:X}", unsafe { *(irqs.as_ptr() as *const usize) }, data);
-
-            file.write(&irqs).expect("pskbd: failed to write irq:1");
         }
-    } else {
+    });
+
+    thread::spawn(|| {
         unsafe {
             iopl(3).expect("psmsd: failed to get I/O permission");
             asm!("cli" :::: "intel", "volatile");
@@ -43,17 +50,21 @@ fn main() {
         println!("psmsd: Reading mouse IRQs");
 
         loop {
-            let mut count = [0; 8];
-            file.read(&mut count).expect("psmsd: failed to read irq:12");
+            let mut irqs = [0; 8];
+            if file.read(&mut irqs).expect("psmsd: failed to read irq:12") >= mem::size_of::<usize>() {
+                let data: u8;
+                unsafe {
+                    asm!("in al, dx" : "={al}"(data) : "{dx}"(0x60) : : "intel", "volatile");
+                }
 
-            let data: u8;
-            unsafe {
-                asm!("in al, dx" : "={al}"(data) : "{dx}"(0x60) : : "intel", "volatile");
+                println!("psmsd: IRQ {}: {:X}", unsafe { *(irqs.as_ptr() as *const usize) }, data);
+
+                file.write(&irqs).expect("psmsd: failed to write irq:12");
+            } else {
+                thread::yield_now();
             }
-
-            println!("psmsd: IRQ: {:X}", data);
-
-            file.write(&count).expect("psmsd: failed to write irq:12");
         }
-    }
+    });
+
+    println!("PS/2 driver running in background");
 }
