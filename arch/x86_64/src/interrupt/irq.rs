@@ -17,6 +17,14 @@ unsafe fn slave_ack() {
     master_ack();
 }
 
+pub unsafe fn acknowledge(irq: usize) {
+    if irq >= 8 {
+        slave_ack();
+    } else {
+        master_ack();
+    }
+}
+
 interrupt!(pit, {
     COUNTS.lock()[0] += 1;
     master_ack();
@@ -24,10 +32,6 @@ interrupt!(pit, {
 
 interrupt!(keyboard, {
     COUNTS.lock()[1] += 1;
-    if let Some(ref mut keyboard) = *PS2_KEYBOARD.lock(){
-        keyboard.on_irq();
-    }
-    master_ack();
 });
 
 interrupt!(cascade, {

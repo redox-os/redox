@@ -96,11 +96,11 @@ pub fn clone(flags: usize, stack_base: usize) -> Result<usize> {
 
             if flags & CLONE_VM == CLONE_VM {
                 for memory_shared in context.image.iter() {
-                    image.push(memory_shared.borrow());
+                    image.push(memory_shared.clone());
                 }
 
                 if let Some(ref heap_shared) = context.heap {
-                    heap_option = Some(heap_shared.borrow());
+                    heap_option = Some(heap_shared.clone());
                 }
             } else {
                 for memory_shared in context.image.iter() {

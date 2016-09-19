@@ -13,7 +13,7 @@ pub struct Memory {
     flags: EntryFlags
 }
 
-#[derive(Debug)]
+#[derive(Clone, Debug)]
 pub enum SharedMemory {
     Owned(Arc<Mutex<Memory>>),
     Borrowed(Weak<Mutex<Memory>>)
