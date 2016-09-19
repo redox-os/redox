@@ -79,7 +79,7 @@ impl Scheme for InitFsScheme {
         Err(Error::NotPermitted)
     }
 
-    fn fsync(&mut self, file: usize) -> Result<()> {
+    fn fsync(&mut self, _file: usize) -> Result<()> {
         Ok(())
     }
 

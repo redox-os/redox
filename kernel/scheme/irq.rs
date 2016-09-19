@@ -20,7 +20,7 @@ impl Scheme for IrqScheme {
     }
 
     fn dup(&mut self, file: usize) -> Result<usize> {
-        Err(Error::NotPermitted)
+        Ok(file)
     }
 
     fn read(&mut self, file: usize, buffer: &mut [u8]) -> Result<usize> {
@@ -32,9 +32,9 @@ impl Scheme for IrqScheme {
                 // Safe if the length of the buffer is larger than the size of a usize
                 assert!(buffer.len() >= mem::size_of::<usize>());
                 unsafe { *(buffer.as_mut_ptr() as *mut usize) = current; }
-                return Ok(mem::size_of::<usize>());
+                Ok(mem::size_of::<usize>())
             } else {
-                return Ok(0);
+                Ok(0)
             }
         } else {
             Err(Error::InvalidValue)
@@ -49,9 +49,9 @@ impl Scheme for IrqScheme {
             if ack == current {
                 ACKS.lock()[file] = ack;
                 unsafe { acknowledge(file); }
-                return Ok(mem::size_of::<usize>());
+                Ok(mem::size_of::<usize>())
             } else {
-                return Ok(0);
+                Ok(0)
             }
         } else {
             Err(Error::InvalidValue)
@@ -62,7 +62,7 @@ impl Scheme for IrqScheme {
         Ok(())
     }
 
-    fn close(&mut self, file: usize) -> Result<()> {
+    fn close(&mut self, _file: usize) -> Result<()> {
         Ok(())
     }
 }

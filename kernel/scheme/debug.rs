@@ -62,7 +62,7 @@ impl Scheme for DebugScheme {
         Ok(buffer.len())
     }
 
-    fn fsync(&mut self, file: usize) -> Result<()> {
+    fn fsync(&mut self, _file: usize) -> Result<()> {
         Ok(())
     }
 
