@@ -1,7 +1,6 @@
 use core::{mem, str};
 
 use arch::interrupt::irq::{ACKS, COUNTS, acknowledge};
-use context;
 use syscall::{Error, Result};
 use super::Scheme;
 

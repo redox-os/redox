@@ -1,7 +1,6 @@
 use spin::Mutex;
 use x86::io;
 
-use device::ps2::{PS2_KEYBOARD, PS2_MOUSE};
 use device::serial::{COM1, COM2};
 
 pub static ACKS: Mutex<[usize; 16]> = Mutex::new([0; 16]);

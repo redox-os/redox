@@ -1,15 +1,9 @@
 use core::cmp;
-use spin::Mutex;
 
 use io::{Io, Pio, ReadOnly, WriteOnly};
 
-pub static PS2_KEYBOARD: Mutex<Option<Ps2Keyboard>> = Mutex::new(None);
-pub static PS2_MOUSE: Mutex<Option<Ps2Mouse>> = Mutex::new(None);
-
 pub unsafe fn init() {
-    let (keyboard, mouse) = Ps2::new().init();
-    *PS2_KEYBOARD.lock() = keyboard;
-    *PS2_MOUSE.lock() = mouse;
+    Ps2::new().init();
 }
 
 bitflags! {
@@ -95,34 +89,6 @@ bitflags! {
         const Y_SIGN = 1 << 5,
         const X_OVERFLOW = 1 << 6,
         const Y_OVERFLOW = 1 << 7
-    }
-}
-
-pub struct Ps2Keyboard {
-    data: ReadOnly<Pio<u8>>,
-    key: [u8; 3],
-    key_i: usize,
-}
-
-impl Ps2Keyboard {
-    fn new() -> Self {
-        Ps2Keyboard {
-            data: ReadOnly::new(Pio::new(0x60)),
-            key: [0; 3],
-            key_i: 0
-        }
-    }
-
-    pub fn on_irq(&mut self) {
-        let scancode = self.data.read();
-        self.key[self.key_i] = scancode;
-        self.key_i += 1;
-        if self.key_i >= self.key.len() || scancode < 0xE0 {
-            println!("KEY: {:X} {:X} {:X}", self.key[0], self.key[1], self.key[2]);
-
-            self.key = [0; 3];
-            self.key_i = 0;
-        }
     }
 }
 
@@ -278,7 +244,7 @@ impl Ps2 {
         self.read()
     }
 
-    fn init(&mut self) -> (Option<Ps2Keyboard>, Option<Ps2Mouse>) {
+    fn init(&mut self) {
         // Disable devices
         self.command(Command::DisableFirst);
         self.command(Command::DisableSecond);
@@ -352,13 +318,12 @@ impl Ps2 {
             let mut config = self.config();
             config.remove(FIRST_DISABLED);
             config.remove(SECOND_DISABLED);
+            config.insert(FIRST_TRANSLATE);
             config.insert(FIRST_INTERRUPT);
             config.insert(SECOND_INTERRUPT);
             self.set_config(config);
         }
 
         self.flush_read();
-
-        (Some(Ps2Keyboard::new()), Some(Ps2Mouse::new(mouse_extra)))
     }
 }
