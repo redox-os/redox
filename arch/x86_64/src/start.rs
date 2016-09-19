@@ -68,8 +68,8 @@ pub unsafe extern fn kstart() -> ! {
         memory::init(0, &__end as *const u8 as usize - ::KERNEL_OFFSET);
 
         // TODO: allocate a stack
-        let stack_start = 0x00080000;
-        let stack_end = 0x0009F000;
+        let stack_start = 0x00080000 + ::KERNEL_OFFSET;
+        let stack_end = 0x0009F000 + ::KERNEL_OFFSET;
 
         // Initialize paging
         let (mut active_table, tcb_offset) = paging::init(0, stack_start, stack_end);
@@ -148,7 +148,7 @@ pub unsafe extern fn kstart_ap(cpu_id: usize, page_table: usize, stack_start: us
         let kernel_table = KERNEL_TABLE.load(Ordering::SeqCst);
 
         // Initialize paging
-        let (mut active_table, tcb_offset) = paging::init_ap(cpu_id, stack_start, stack_end, kernel_table);
+        let (active_table, tcb_offset) = paging::init_ap(cpu_id, stack_start, stack_end, kernel_table);
 
         // Set up GDT for AP
         gdt::init(tcb_offset, stack_end);

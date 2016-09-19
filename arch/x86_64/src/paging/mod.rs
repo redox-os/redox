@@ -133,23 +133,23 @@ pub unsafe fn init(cpu_id: usize, stack_start: usize, stack_end: usize) -> (Acti
                 }
             }
 
-            let mut remap = |start: usize, end: usize, flags: EntryFlags, offset: usize| {
+            let mut remap = |start: usize, end: usize, flags: EntryFlags| {
                 if end > start {
                     let start_frame = Frame::containing_address(PhysicalAddress::new(start));
                     let end_frame = Frame::containing_address(PhysicalAddress::new(end - 1));
                     for frame in Frame::range_inclusive(start_frame, end_frame) {
-                        let page = Page::containing_address(VirtualAddress::new(frame.start_address().get() + offset));
+                        let page = Page::containing_address(VirtualAddress::new(frame.start_address().get() + ::KERNEL_OFFSET));
                         mapper.map_to(page, frame, flags);
                     }
                 }
             };
 
             // Remap stack writable, no execute
-            remap(stack_start, stack_end, PRESENT | NO_EXECUTE | WRITABLE, 0);
+            remap(stack_start - ::KERNEL_OFFSET, stack_end - ::KERNEL_OFFSET, PRESENT | NO_EXECUTE | WRITABLE);
 
             // Remap a section with `flags`
             let mut remap_section = |start: &u8, end: &u8, flags: EntryFlags| {
-                remap(start as *const _ as usize - ::KERNEL_OFFSET, end as *const _ as usize - ::KERNEL_OFFSET, flags, ::KERNEL_OFFSET);
+                remap(start as *const _ as usize - ::KERNEL_OFFSET, end as *const _ as usize - ::KERNEL_OFFSET, flags);
             };
             // Remap text read-only
             remap_section(& __text_start, & __text_end, PRESENT);
@@ -211,19 +211,19 @@ pub unsafe fn init_ap(cpu_id: usize, stack_start: usize, stack_end: usize, kerne
             }
         }
 
-        let mut remap = |start: usize, end: usize, flags: EntryFlags, offset: usize| {
+        let mut remap = |start: usize, end: usize, flags: EntryFlags| {
             if end > start {
                 let start_frame = Frame::containing_address(PhysicalAddress::new(start));
                 let end_frame = Frame::containing_address(PhysicalAddress::new(end - 1));
                 for frame in Frame::range_inclusive(start_frame, end_frame) {
-                    let page = Page::containing_address(VirtualAddress::new(frame.start_address().get() + offset));
+                    let page = Page::containing_address(VirtualAddress::new(frame.start_address().get() + ::KERNEL_OFFSET));
                     mapper.map_to(page, frame, flags);
                 }
             }
         };
 
         // Remap stack writable, no execute
-        remap(stack_start, stack_end, PRESENT | NO_EXECUTE | WRITABLE, 0);
+        remap(stack_start - ::KERNEL_OFFSET, stack_end - ::KERNEL_OFFSET, PRESENT | NO_EXECUTE | WRITABLE);
     });
 
     active_table.switch(new_table);

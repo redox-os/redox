@@ -122,10 +122,11 @@ long_mode:
     mov gs, rax
     mov ss, rax
 
-    mov rsp, 0x0009F000
+    mov rsp, 0xFFFFFF000009F000
 
     ;rust init
     mov rax, [kernel_base + 0x18]
+    xchg bx, bx
     jmp rax
 
 long_mode_ap:
