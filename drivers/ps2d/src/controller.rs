@@ -1,5 +1,3 @@
-use core::cmp;
-
 use io::{Io, Pio, ReadOnly, WriteOnly};
 
 pub unsafe fn init() {
@@ -79,86 +77,6 @@ enum MouseCommandData {
     SetSampleRate = 0xF3,
 }
 
-bitflags! {
-    flags MousePacketFlags: u8 {
-        const LEFT_BUTTON = 1,
-        const RIGHT_BUTTON = 1 << 1,
-        const MIDDLE_BUTTON = 1 << 2,
-        const ALWAYS_ON = 1 << 3,
-        const X_SIGN = 1 << 4,
-        const Y_SIGN = 1 << 5,
-        const X_OVERFLOW = 1 << 6,
-        const Y_OVERFLOW = 1 << 7
-    }
-}
-
-pub struct Ps2Mouse {
-    data: ReadOnly<Pio<u8>>,
-    mouse: [u8; 4],
-    mouse_i: usize,
-    mouse_extra: bool,
-    mouse_x: usize,
-    mouse_y: usize
-}
-
-impl Ps2Mouse {
-    fn new(mouse_extra: bool) -> Self {
-        Ps2Mouse {
-            data: ReadOnly::new(Pio::new(0x60)),
-            mouse: [0; 4],
-            mouse_i: 0,
-            mouse_extra: mouse_extra,
-            mouse_x: 0,
-            mouse_y: 0
-        }
-    }
-
-    pub fn on_irq(&mut self) {
-        self.mouse[self.mouse_i] = self.data.read();
-        self.mouse_i += 1;
-
-        let flags = MousePacketFlags::from_bits_truncate(self.mouse[0]);
-        if ! flags.contains(ALWAYS_ON) {
-            println!("MOUSE MISALIGN {:X}", self.mouse[0]);
-
-            self.mouse = [0; 4];
-            self.mouse_i = 0;
-        } else if self.mouse_i >= self.mouse.len() || (!self.mouse_extra && self.mouse_i >= 3) {
-            if ! flags.contains(X_OVERFLOW) && ! flags.contains(Y_OVERFLOW) {
-                let mut dx = self.mouse[1] as isize;
-                if flags.contains(X_SIGN) {
-                    dx -= 0x100;
-                }
-
-                let mut dy = self.mouse[2] as isize;
-                if flags.contains(Y_SIGN) {
-                    dy -= 0x100;
-                }
-
-                let _extra = if self.mouse_extra {
-                    self.mouse[3]
-                } else {
-                    0
-                };
-
-                //print!("MOUSE {:?}, {}, {}, {}\n", flags, dx, dy, extra);
-
-                if let Some(ref mut display) = *super::display::DISPLAY.lock() {
-                    self.mouse_x = cmp::max(0, cmp::min(display.width as isize - 1, self.mouse_x as isize + dx)) as usize;
-                    self.mouse_y = cmp::max(0, cmp::min(display.height as isize - 1, self.mouse_y as isize - dy)) as usize;
-                    let offset = self.mouse_y * display.width + self.mouse_x;
-                    display.onscreen[offset as usize] = 0xFF0000;
-                }
-            } else {
-                println!("MOUSE OVERFLOW {:X} {:X} {:X} {:X}", self.mouse[0], self.mouse[1], self.mouse[2], self.mouse[3]);
-            }
-
-            self.mouse = [0; 4];
-            self.mouse_i = 0;
-        }
-    }
-}
-
 pub struct Ps2 {
     data: Pio<u8>,
     status: ReadOnly<Pio<u8>>,
@@ -166,7 +84,7 @@ pub struct Ps2 {
 }
 
 impl Ps2 {
-    const fn new() -> Self {
+    pub fn new() -> Self {
         Ps2 {
             data: Pio::new(0x60),
             status: ReadOnly::new(Pio::new(0x64)),
@@ -244,7 +162,7 @@ impl Ps2 {
         self.read()
     }
 
-    fn init(&mut self) {
+    pub fn init(&mut self) -> bool {
         // Disable devices
         self.command(Command::DisableFirst);
         self.command(Command::DisableSecond);
@@ -294,18 +212,6 @@ impl Ps2 {
         let mouse_id = self.read();
         let mouse_extra = mouse_id == 3;
 
-        // Enable extra buttons, TODO
-        /*
-        if self.mouse_extra {
-            print!("SAMPLE 200 {:X}\n", self.mouse_command_data(MouseCommandData::SetSampleRate, 200));
-            print!("SAMPLE 200 {:X}\n", self.mouse_command_data(MouseCommandData::SetSampleRate, 200));
-            print!("SAMPLE 80 {:X}\n", self.mouse_command_data(MouseCommandData::SetSampleRate, 80));
-            print!("GET ID {:X}\n", self.mouse_command(MouseCommand::GetDeviceId));
-            let mouse_id = self.read();
-            print!("MOUSE ID: {:X} == 0x04\n", mouse_id);
-        }
-        */
-
         // Set sample rate to maximum
         assert_eq!(self.mouse_command_data(MouseCommandData::SetSampleRate, 200), 0xFA);
 
@@ -325,5 +231,7 @@ impl Ps2 {
         }
 
         self.flush_read();
+
+        mouse_extra
     }
 }
