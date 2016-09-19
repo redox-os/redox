@@ -1,7 +1,10 @@
+use spin::Mutex;
 use x86::io;
 
 use device::ps2::{PS2_KEYBOARD, PS2_MOUSE};
 use device::serial::{COM1, COM2};
+
+pub static COUNTS: Mutex<[usize; 16]> = Mutex::new([0; 16]);
 
 #[inline(always)]
 unsafe fn master_ack() {
@@ -15,10 +18,12 @@ unsafe fn slave_ack() {
 }
 
 interrupt!(pit, {
+    COUNTS.lock()[0] += 1;
     master_ack();
 });
 
 interrupt!(keyboard, {
+    COUNTS.lock()[1] += 1;
     if let Some(ref mut keyboard) = *PS2_KEYBOARD.lock(){
         keyboard.on_irq();
     }
@@ -26,56 +31,59 @@ interrupt!(keyboard, {
 });
 
 interrupt!(cascade, {
-    print!("CASCADE\n");
+    COUNTS.lock()[2] += 1;
     master_ack();
 });
 
 interrupt!(com2, {
+    COUNTS.lock()[3] += 1;
     COM2.lock().on_receive();
     master_ack();
 });
 
 interrupt!(com1, {
+    COUNTS.lock()[4] += 1;
     COM1.lock().on_receive();
     master_ack();
 });
 
 interrupt!(lpt2, {
-    print!("LPT2\n");
+    COUNTS.lock()[5] += 1;
     master_ack();
 });
 
 interrupt!(floppy, {
-    print!("FLOPPY\n");
+    COUNTS.lock()[6] += 1;
     master_ack();
 });
 
 interrupt!(lpt1, {
-    print!("LPT1\n");
+    COUNTS.lock()[7] += 1;
     master_ack();
 });
 
 interrupt!(rtc, {
-    print!("RTC\n");
+    COUNTS.lock()[8] += 1;
     slave_ack();
 });
 
 interrupt!(pci1, {
-    print!("PCI1\n");
+    COUNTS.lock()[9] += 1;
     slave_ack();
 });
 
 interrupt!(pci2, {
-    print!("PCI2\n");
+    COUNTS.lock()[10] += 1;
     slave_ack();
 });
 
 interrupt!(pci3, {
-    print!("PCI3\n");
+    COUNTS.lock()[11] += 1;
     slave_ack();
 });
 
 interrupt!(mouse, {
+    COUNTS.lock()[12] += 1;
     if let Some(ref mut mouse) = *PS2_MOUSE.lock() {
         mouse.on_irq();
     }
@@ -83,16 +91,16 @@ interrupt!(mouse, {
 });
 
 interrupt!(fpu, {
-    print!("FPU\n");
+    COUNTS.lock()[13] += 1;
     slave_ack();
 });
 
 interrupt!(ata1, {
-    print!("ATA1\n");
+    COUNTS.lock()[14] += 1;
     slave_ack();
 });
 
 interrupt!(ata2, {
-    print!("ATA2\n");
+    COUNTS.lock()[15] += 1;
     slave_ack();
 });

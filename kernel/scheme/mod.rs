@@ -18,6 +18,7 @@ use syscall::{Error, Result};
 use self::debug::DebugScheme;
 use self::env::EnvScheme;
 use self::initfs::InitFsScheme;
+use self::irq::IrqScheme;
 
 /// Debug scheme
 pub mod debug;
@@ -27,6 +28,9 @@ pub mod env;
 
 /// InitFS scheme
 pub mod initfs;
+
+/// IRQ handling
+pub mod irq;
 
 /// Limit on number of schemes
 pub const SCHEME_MAX_SCHEMES: usize = 65536;
@@ -98,6 +102,7 @@ fn init_schemes() -> RwLock<SchemeList> {
     list.insert(Box::new(*b"debug"), Arc::new(Mutex::new(Box::new(DebugScheme)))).expect("failed to insert debug: scheme");
     list.insert(Box::new(*b"env"), Arc::new(Mutex::new(Box::new(EnvScheme::new())))).expect("failed to insert env: scheme");
     list.insert(Box::new(*b"initfs"), Arc::new(Mutex::new(Box::new(InitFsScheme::new())))).expect("failed to insert initfs: scheme");
+    list.insert(Box::new(*b"irq"), Arc::new(Mutex::new(Box::new(IrqScheme)))).expect("failed to insert irq: scheme");
     RwLock::new(list)
 }
 

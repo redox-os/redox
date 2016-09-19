@@ -1,6 +1,6 @@
 use collections::VecDeque;
 use core::str;
-use spin::{Mutex, MutexGuard, Once};
+use spin::{Mutex, Once};
 
 use context;
 use syscall::Result;
