@@ -25,6 +25,8 @@ mod validate;
 pub extern fn syscall(a: usize, b: usize, c: usize, d: usize, e: usize, f: usize, stack: usize) -> usize {
     #[inline(always)]
     fn inner(a: usize, b: usize, c: usize, d: usize, e: usize, _f: usize, stack: usize) -> Result<usize> {
+        //println!("{}: {:?}: {} {} {} {}", ::context::context_id(), Call::from(a), a, b, c, d);
+
         match Call::from(a) {
             Some(call) => match call {
                 Call::Exit => exit(b),

@@ -48,8 +48,11 @@ impl UserInner {
         self.todo.lock().push_back(packet);
 
         loop {
-            if let Some(a) = self.done.lock().remove(&id) {
-                return convert_to_result(a);
+            {
+                let mut done = self.done.lock();
+                if let Some(a) = done.remove(&id) {
+                    return convert_to_result(a);
+                }
             }
 
             unsafe { context::switch(); }
@@ -89,7 +92,6 @@ impl UserInner {
         while i < len {
             let packet = unsafe { *(buf.as_ptr() as *const Packet).offset(i as isize) };
             self.done.lock().insert(packet.id, packet.a);
-
             i += 1;
         }
 

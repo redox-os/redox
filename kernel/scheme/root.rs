@@ -2,7 +2,6 @@ use alloc::arc::Arc;
 use alloc::boxed::Box;
 use collections::BTreeMap;
 use core::sync::atomic::{AtomicUsize, Ordering};
-use core::str;
 use spin::RwLock;
 
 use syscall::{Error, Result};
@@ -24,7 +23,7 @@ impl RootScheme {
 }
 
 impl Scheme for RootScheme {
-    fn open(&self, path: &[u8], flags: usize) -> Result<usize> {
+    fn open(&self, path: &[u8], _flags: usize) -> Result<usize> {
         let inner = {
             let mut schemes = scheme::schemes_mut();
             if schemes.get_name(path).is_some() {
@@ -42,14 +41,14 @@ impl Scheme for RootScheme {
     }
 
     fn dup(&self, file: usize) -> Result<usize> {
+        let mut handles = self.handles.write();
         let inner = {
-            let handles = self.handles.read();
             let inner = handles.get(&file).ok_or(Error::BadFile)?;
             inner.clone()
         };
 
         let id = self.next_id.fetch_add(1, Ordering::SeqCst);
-        self.handles.write().insert(id, inner);
+        handles.insert(id, inner);
 
         Ok(id)
     }

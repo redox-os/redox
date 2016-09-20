@@ -174,31 +174,36 @@ pub fn clone(flags: usize, stack_base: usize) -> Result<usize> {
             if flags & CLONE_FILES == CLONE_FILES {
                 files = context.files.clone();
             } else {
-                let mut files_vec = Vec::new();
-                for (fd, file_option) in context.files.lock().iter().enumerate() {
-                    if let Some(file) = *file_option {
-                        let result = {
-                            let scheme = {
-                                let schemes = scheme::schemes();
-                                let scheme = schemes.get(file.scheme).ok_or(Error::BadFile)?;
-                                scheme.clone()
-                            };
-                            let result = scheme.dup(file.number);
-                            result
+                files = Arc::new(Mutex::new(context.files.lock().clone()));
+            }
+        }
+
+        if flags & CLONE_FILES == 0 {
+            for (fd, mut file_option) in files.lock().iter_mut().enumerate() {
+                let new_file_option = if let Some(file) = *file_option {
+                    let result = {
+                        let scheme = {
+                            let schemes = scheme::schemes();
+                            let scheme = schemes.get(file.scheme).ok_or(Error::BadFile)?;
+                            scheme.clone()
                         };
-                        match result {
-                            Ok(new_number) => {
-                                files_vec.push(Some(context::file::File { scheme: file.scheme, number: new_number }));
-                            },
-                            Err(err) => {
-                                println!("clone: failed to dup {}: {:?}", fd, err);
-                            }
+                        let result = scheme.dup(file.number);
+                        result
+                    };
+                    match result {
+                        Ok(new_number) => {
+                            Some(context::file::File { scheme: file.scheme, number: new_number })
+                        },
+                        Err(err) => {
+                            println!("clone: failed to dup {}: {:?}", fd, err);
+                            None
                         }
-                    } else {
-                        files_vec.push(None);
                     }
-                }
-                files = Arc::new(Mutex::new(files_vec));
+                } else {
+                    None
+                };
+
+                *file_option = new_file_option;
             }
         }
 
