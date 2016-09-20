@@ -15,12 +15,18 @@ pub enum Error {
     BadFile = 9,
     /// Try again
     TryAgain = 11,
+    /// Bad address
+    Fault = 14,
     /// File exists
     FileExists = 17,
+    /// No such device
+    NoDevice = 19,
     /// Invalid argument
     InvalidValue = 22,
     /// Too many open files
     TooManyFiles = 24,
+    /// Illegal seek
+    IllegalSeek = 29,
     /// Syscall not implemented
     NoCall = 38
 }

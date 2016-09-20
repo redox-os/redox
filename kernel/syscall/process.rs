@@ -178,9 +178,12 @@ pub fn clone(flags: usize, stack_base: usize) -> Result<usize> {
                 for (fd, file_option) in context.files.lock().iter().enumerate() {
                     if let Some(file) = *file_option {
                         let result = {
-                            let schemes = scheme::schemes();
-                            let scheme_mutex = schemes.get(file.scheme).ok_or(Error::BadFile)?;
-                            let result = scheme_mutex.lock().dup(file.number);
+                            let scheme = {
+                                let schemes = scheme::schemes();
+                                let scheme = schemes.get(file.scheme).ok_or(Error::BadFile)?;
+                                scheme.clone()
+                            };
+                            let result = scheme.dup(file.number);
                             result
                         };
                         match result {

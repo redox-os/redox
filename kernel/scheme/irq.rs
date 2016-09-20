@@ -7,7 +7,7 @@ use super::Scheme;
 pub struct IrqScheme;
 
 impl Scheme for IrqScheme {
-    fn open(&mut self, path: &[u8], _flags: usize) -> Result<usize> {
+    fn open(&self, path: &[u8], _flags: usize) -> Result<usize> {
         let path_str = str::from_utf8(path).or(Err(Error::NoEntry))?;
 
         let id = path_str.parse::<usize>().or(Err(Error::NoEntry))?;
@@ -19,11 +19,11 @@ impl Scheme for IrqScheme {
         }
     }
 
-    fn dup(&mut self, file: usize) -> Result<usize> {
+    fn dup(&self, file: usize) -> Result<usize> {
         Ok(file)
     }
 
-    fn read(&mut self, file: usize, buffer: &mut [u8]) -> Result<usize> {
+    fn read(&self, file: usize, buffer: &mut [u8]) -> Result<usize> {
         // Ensures that the length of the buffer is larger than the size of a usize
         if buffer.len() >= mem::size_of::<usize>() {
             let ack = ACKS.lock()[file];
@@ -41,7 +41,7 @@ impl Scheme for IrqScheme {
         }
     }
 
-    fn write(&mut self, file: usize, buffer: &[u8]) -> Result<usize> {
+    fn write(&self, file: usize, buffer: &[u8]) -> Result<usize> {
         if buffer.len() >= mem::size_of::<usize>() {
             assert!(buffer.len() >= mem::size_of::<usize>());
             let ack = unsafe { *(buffer.as_ptr() as *const usize) };
@@ -58,11 +58,11 @@ impl Scheme for IrqScheme {
         }
     }
 
-    fn fsync(&mut self, _file: usize) -> Result<()> {
+    fn fsync(&self, _file: usize) -> Result<()> {
         Ok(())
     }
 
-    fn close(&mut self, _file: usize) -> Result<()> {
+    fn close(&self, _file: usize) -> Result<()> {
         Ok(())
     }
 }
