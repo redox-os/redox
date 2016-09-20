@@ -1,8 +1,10 @@
 use collections::BTreeMap;
+use core::cmp;
 use core::sync::atomic::{AtomicUsize, Ordering};
 use spin::RwLock;
 
 use syscall::error::*;
+use syscall::flag::{SEEK_SET, SEEK_CUR, SEEK_END};
 use syscall::scheme::Scheme;
 
 struct Handle {
@@ -48,29 +50,29 @@ impl Scheme for InitFsScheme {
         Ok(id)
     }
 
-    fn dup(&self, file: usize) -> Result<usize> {
+    fn dup(&self, id: usize) -> Result<usize> {
         let (data, seek) = {
             let handles = self.handles.read();
-            let handle = handles.get(&file).ok_or(Error::new(EBADF))?;
+            let handle = handles.get(&id).ok_or(Error::new(EBADF))?;
             (handle.data, handle.seek)
         };
 
-        let id = self.next_id.fetch_add(1, Ordering::SeqCst);
-        self.handles.write().insert(id, Handle {
+        let new_id = self.next_id.fetch_add(1, Ordering::SeqCst);
+        self.handles.write().insert(new_id, Handle {
             data: data,
             seek: seek
         });
 
-        Ok(id)
+        Ok(new_id)
     }
 
-    fn read(&self, file: usize, buffer: &mut [u8]) -> Result<usize> {
+    fn read(&self, id: usize, buf: &mut [u8]) -> Result<usize> {
         let mut handles = self.handles.write();
-        let mut handle = handles.get_mut(&file).ok_or(Error::new(EBADF))?;
+        let mut handle = handles.get_mut(&id).ok_or(Error::new(EBADF))?;
 
         let mut i = 0;
-        while i < buffer.len() && handle.seek < handle.data.len() {
-            buffer[i] = handle.data[handle.seek];
+        while i < buf.len() && handle.seek < handle.data.len() {
+            buf[i] = handle.data[handle.seek];
             i += 1;
             handle.seek += 1;
         }
@@ -78,11 +80,25 @@ impl Scheme for InitFsScheme {
         Ok(i)
     }
 
-    fn fsync(&self, _file: usize) -> Result<usize> {
+    fn seek(&self, id: usize, pos: usize, whence: usize) -> Result<usize> {
+        let mut handles = self.handles.write();
+        let mut handle = handles.get_mut(&id).ok_or(Error::new(EBADF))?;
+
+        handle.seek = match whence {
+            SEEK_SET => cmp::min(handle.data.len(), pos),
+            SEEK_CUR => cmp::max(0, cmp::min(handle.data.len() as isize, handle.seek as isize + pos as isize)) as usize,
+            SEEK_END => cmp::max(0, cmp::min(handle.data.len() as isize, handle.data.len() as isize + pos as isize)) as usize,
+            _ => return Err(Error::new(EINVAL))
+        };
+
+        Ok(handle.seek)
+    }
+
+    fn fsync(&self, _id: usize) -> Result<usize> {
         Ok(0)
     }
 
-    fn close(&self, file: usize) -> Result<usize> {
-        self.handles.write().remove(&file).ok_or(Error::new(EBADF)).and(Ok(0))
+    fn close(&self, id: usize) -> Result<usize> {
+        self.handles.write().remove(&id).ok_or(Error::new(EBADF)).and(Ok(0))
     }
 }

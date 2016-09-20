@@ -1,8 +1,10 @@
 use collections::BTreeMap;
+use core::cmp;
 use core::sync::atomic::{AtomicUsize, Ordering};
 use spin::RwLock;
 
 use syscall::error::*;
+use syscall::flag::{SEEK_SET, SEEK_CUR, SEEK_END};
 use syscall::scheme::Scheme;
 
 struct Handle {
@@ -74,6 +76,20 @@ impl Scheme for EnvScheme {
         }
 
         Ok(i)
+    }
+
+    fn seek(&self, id: usize, pos: usize, whence: usize) -> Result<usize> {
+        let mut handles = self.handles.write();
+        let mut handle = handles.get_mut(&id).ok_or(Error::new(EBADF))?;
+
+        handle.seek = match whence {
+            SEEK_SET => cmp::min(handle.data.len(), pos),
+            SEEK_CUR => cmp::max(0, cmp::min(handle.data.len() as isize, handle.seek as isize + pos as isize)) as usize,
+            SEEK_END => cmp::max(0, cmp::min(handle.data.len() as isize, handle.data.len() as isize + pos as isize)) as usize,
+            _ => return Err(Error::new(EINVAL))
+        };
+
+        Ok(handle.seek)
     }
 
     fn fsync(&self, _file: usize) -> Result<usize> {

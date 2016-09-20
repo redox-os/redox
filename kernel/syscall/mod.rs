@@ -2,13 +2,15 @@
 
 extern crate syscall;
 
-pub use self::syscall::{error, number, scheme};
+pub use self::syscall::{data, error, flag, number, scheme};
 
-use self::error::{Error, Result, ENOSYS};
-use self::number::*;
 pub use self::fs::*;
 pub use self::process::*;
 pub use self::validate::*;
+
+use self::data::Stat;
+use self::error::{Error, Result, ENOSYS};
+use self::number::*;
 
 /// Filesystem syscalls
 pub mod fs;
@@ -32,7 +34,9 @@ pub extern fn syscall(a: usize, b: usize, c: usize, d: usize, e: usize, f: usize
             SYS_WAITPID => waitpid(b, c, d),
             SYS_EXECVE => exec(validate_slice(b as *const u8, c)?, validate_slice(d as *const [usize; 2], e)?),
             SYS_CHDIR => chdir(validate_slice(b as *const u8, c)?),
+            SYS_LSEEK => lseek(b, c, d),
             SYS_GETPID => getpid(),
+            SYS_FSTAT => fstat(b, &mut validate_slice_mut(b as *mut Stat, 1)?[0]),
             SYS_DUP => dup(b),
             SYS_BRK => brk(b),
             SYS_IOPL => iopl(b),

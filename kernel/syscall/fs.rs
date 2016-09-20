@@ -2,6 +2,7 @@
 
 use context;
 use scheme;
+use syscall::data::Stat;
 use syscall::error::*;
 
 /// Change the current working directory
@@ -97,6 +98,24 @@ pub fn dup(fd: usize) -> Result<usize> {
     scheme.dup(file.number)
 }
 
+/// Get information about the file
+pub fn fstat(fd: usize, stat: &mut Stat) -> Result<usize> {
+    let file = {
+        let contexts = context::contexts();
+        let context_lock = contexts.current().ok_or(Error::new(ESRCH))?;
+        let context = context_lock.read();
+        let file = context.get_file(fd).ok_or(Error::new(EBADF))?;
+        file
+    };
+
+    let scheme = {
+        let schemes = scheme::schemes();
+        let scheme = schemes.get(file.scheme).ok_or(Error::new(EBADF))?;
+        scheme.clone()
+    };
+    scheme.fstat(file.number, stat)
+}
+
 /// Sync the file descriptor
 pub fn fsync(fd: usize) -> Result<usize> {
     let file = {
@@ -113,6 +132,24 @@ pub fn fsync(fd: usize) -> Result<usize> {
         scheme.clone()
     };
     scheme.fsync(file.number)
+}
+
+/// Seek to an offset
+pub fn lseek(fd: usize, pos: usize, whence: usize) -> Result<usize> {
+    let file = {
+        let contexts = context::contexts();
+        let context_lock = contexts.current().ok_or(Error::new(ESRCH))?;
+        let context = context_lock.read();
+        let file = context.get_file(fd).ok_or(Error::new(EBADF))?;
+        file
+    };
+
+    let scheme = {
+        let schemes = scheme::schemes();
+        let scheme = schemes.get(file.scheme).ok_or(Error::new(EBADF))?;
+        scheme.clone()
+    };
+    scheme.seek(file.number, pos, whence)
 }
 
 /// Read syscall

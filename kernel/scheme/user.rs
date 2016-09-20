@@ -9,19 +9,10 @@ use arch::paging::{InactivePageTable, Page, VirtualAddress, entry};
 use arch::paging::temporary_page::TemporaryPage;
 use context::{self, Context};
 use context::memory::Grant;
+use syscall::data::{Packet, Stat};
 use syscall::error::*;
 use syscall::number::*;
 use syscall::scheme::Scheme;
-
-#[derive(Copy, Clone, Debug, Default)]
-#[repr(packed)]
-pub struct Packet {
-    pub id: usize,
-    pub a: usize,
-    pub b: usize,
-    pub c: usize,
-    pub d: usize
-}
 
 pub struct UserInner {
     next_id: AtomicUsize,
@@ -224,7 +215,20 @@ impl Scheme for UserScheme {
     fn write(&self, file: usize, buf: &[u8]) -> Result<usize> {
         let inner = self.inner.upgrade().ok_or(Error::new(ENODEV))?;
         let address = inner.capture(buf)?;
-        let result = inner.call(SYS_WRITE, file, buf.as_ptr() as usize, buf.len());
+        let result = inner.call(SYS_WRITE, file, address, buf.len());
+        let _ = inner.release(address);
+        result
+    }
+
+    fn seek(&self, file: usize, position: usize, whence: usize) -> Result<usize> {
+        let inner = self.inner.upgrade().ok_or(Error::new(ENODEV))?;
+        inner.call(SYS_FSYNC, file, position, whence)
+    }
+
+    fn fstat(&self, file: usize, stat: &mut Stat) -> Result<usize> {
+        let inner = self.inner.upgrade().ok_or(Error::new(ENODEV))?;
+        let address = inner.capture_mut(stat)?;
+        let result = inner.call(SYS_FSTAT, file, address, 0);
         let _ = inner.release(address);
         result
     }
@@ -232,6 +236,11 @@ impl Scheme for UserScheme {
     fn fsync(&self, file: usize) -> Result<usize> {
         let inner = self.inner.upgrade().ok_or(Error::new(ENODEV))?;
         inner.call(SYS_FSYNC, file, 0, 0)
+    }
+
+    fn ftruncate(&self, file: usize, len: usize) -> Result<usize> {
+        let inner = self.inner.upgrade().ok_or(Error::new(ENODEV))?;
+        inner.call(SYS_FTRUNCATE, file, len, 0)
     }
 
     fn close(&self, file: usize) -> Result<usize> {
