@@ -26,7 +26,7 @@ pub extern fn syscall(a: usize, b: usize, c: usize, d: usize, e: usize, f: usize
     #[inline(always)]
     fn inner(a: usize, b: usize, c: usize, d: usize, e: usize, _f: usize, stack: usize) -> Result<usize> {
         match Call::from(a) {
-            Ok(call) => match call {
+            Some(call) => match call {
                 Call::Exit => exit(b),
                 Call::Read => read(b, validate_slice_mut(c as *mut u8, d)?),
                 Call::Write => write(b, validate_slice(c as *const u8, d)?),
@@ -44,9 +44,9 @@ pub extern fn syscall(a: usize, b: usize, c: usize, d: usize, e: usize, f: usize
                 Call::SchedYield => sched_yield(),
                 Call::GetCwd => getcwd(validate_slice_mut(b as *mut u8, c)?)
             },
-            Err(err) => {
+            None => {
                 println!("Unknown syscall {}", a);
-                Err(err)
+                Err(Error::NoCall)
             }
         }
     }

@@ -1,5 +1,3 @@
-use super::{Error, Result};
-
 /// System call list
 /// See http://syscalls.kernelgrok.com/ for numbers
 #[derive(Copy, Clone, Debug, Eq, PartialEq)]
@@ -42,26 +40,25 @@ pub enum Call {
 /// Convert numbers to calls
 /// See http://syscalls.kernelgrok.com/
 impl Call {
-    //TODO: Return Option<Call>
-    pub fn from(number: usize) -> Result<Call> {
+    pub fn from(number: usize) -> Option<Call> {
         match number {
-            1 => Ok(Call::Exit),
-            3 => Ok(Call::Read),
-            4 => Ok(Call::Write),
-            5 => Ok(Call::Open),
-            6 => Ok(Call::Close),
-            7 => Ok(Call::WaitPid),
-            11 => Ok(Call::Exec),
-            12 => Ok(Call::ChDir),
-            20 => Ok(Call::GetPid),
-            41 => Ok(Call::Dup),
-            45 => Ok(Call::Brk),
-            110 => Ok(Call::Iopl),
-            118 => Ok(Call::FSync),
-            120 => Ok(Call::Clone),
-            158 => Ok(Call::SchedYield),
-            183 => Ok(Call::GetCwd),
-            _ => Err(Error::NoCall)
+            1 => Some(Call::Exit),
+            3 => Some(Call::Read),
+            4 => Some(Call::Write),
+            5 => Some(Call::Open),
+            6 => Some(Call::Close),
+            7 => Some(Call::WaitPid),
+            11 => Some(Call::Exec),
+            12 => Some(Call::ChDir),
+            20 => Some(Call::GetPid),
+            41 => Some(Call::Dup),
+            45 => Some(Call::Brk),
+            110 => Some(Call::Iopl),
+            118 => Some(Call::FSync),
+            120 => Some(Call::Clone),
+            158 => Some(Call::SchedYield),
+            183 => Some(Call::GetCwd),
+            _ => None
         }
     }
 }

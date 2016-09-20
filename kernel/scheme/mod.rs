@@ -33,7 +33,7 @@ pub mod initfs;
 pub mod irq;
 
 /// Userspace schemes
-//pub mod user;
+pub mod user;
 
 /// Limit on number of schemes
 pub const SCHEME_MAX_SCHEMES: usize = 65536;

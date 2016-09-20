@@ -31,4 +31,33 @@ pub enum Error {
     NoCall = 38
 }
 
+impl Error {
+    pub fn from(number: usize) -> Option<Error> {
+        match number {
+            1 => Some(Error::NotPermitted),
+            2 => Some(Error::NoEntry),
+            3 => Some(Error::NoProcess),
+            8 => Some(Error::NoExec),
+            9 => Some(Error::BadFile),
+            11 => Some(Error::TryAgain),
+            14 => Some(Error::Fault),
+            17 => Some(Error::FileExists),
+            19 => Some(Error::NoDevice),
+            22 => Some(Error::InvalidValue),
+            24 => Some(Error::TooManyFiles),
+            29 => Some(Error::IllegalSeek),
+            38 => Some(Error::NoCall),
+            _ => None
+        }
+    }
+}
+
 pub type Result<T> = ::core::result::Result<T, Error>;
+
+pub fn convert_to_result(number: usize) -> Result<usize> {
+    if let Some(err) = Error::from((-(number as isize)) as usize) {
+        Err(err)
+    } else {
+        Ok(number)
+    }
+}
