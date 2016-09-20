@@ -5,7 +5,7 @@ use std::thread;
 
 use keymap;
 
-pub fn keyboard() {
+pub fn keyboard() {    
     let mut file = File::open("irq:1").expect("ps2d: failed to open irq:1");
 
     loop {

@@ -19,6 +19,7 @@ use self::debug::DebugScheme;
 use self::env::EnvScheme;
 use self::initfs::InitFsScheme;
 use self::irq::IrqScheme;
+use self::root::RootScheme;
 
 /// Debug scheme
 pub mod debug;
@@ -31,6 +32,9 @@ pub mod initfs;
 
 /// IRQ handling
 pub mod irq;
+
+/// Root scheme
+pub mod root;
 
 /// Userspace schemes
 pub mod user;
@@ -102,10 +106,11 @@ static SCHEMES: Once<RwLock<SchemeList>> = Once::new();
 /// Initialize schemes, called if needed
 fn init_schemes() -> RwLock<SchemeList> {
     let mut list: SchemeList = SchemeList::new();
-    list.insert(Box::new(*b"debug"), Arc::new(Box::new(DebugScheme))).expect("failed to insert debug: scheme");
-    list.insert(Box::new(*b"env"), Arc::new(Box::new(EnvScheme::new()))).expect("failed to insert env: scheme");
-    list.insert(Box::new(*b"initfs"), Arc::new(Box::new(InitFsScheme::new()))).expect("failed to insert initfs: scheme");
-    list.insert(Box::new(*b"irq"), Arc::new(Box::new(IrqScheme))).expect("failed to insert irq: scheme");
+    list.insert(Box::new(*b""), Arc::new(Box::new(RootScheme::new()))).expect("failed to insert root scheme");
+    list.insert(Box::new(*b"debug"), Arc::new(Box::new(DebugScheme))).expect("failed to insert debug scheme");
+    list.insert(Box::new(*b"env"), Arc::new(Box::new(EnvScheme::new()))).expect("failed to insert env scheme");
+    list.insert(Box::new(*b"initfs"), Arc::new(Box::new(InitFsScheme::new()))).expect("failed to insert initfs scheme");
+    list.insert(Box::new(*b"irq"), Arc::new(Box::new(IrqScheme))).expect("failed to insert irq scheme");
     RwLock::new(list)
 }
 

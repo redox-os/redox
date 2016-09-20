@@ -3,16 +3,19 @@
 
 pub use self::arch::*;
 pub use self::error::*;
+pub use self::scheme::*;
 
 #[cfg(target_arch = "x86")]
 #[path="x86.rs"]
-pub mod arch;
+mod arch;
 
 #[cfg(target_arch = "x86_64")]
 #[path="x86_64.rs"]
-pub mod arch;
+mod arch;
 
-pub mod error;
+mod error;
+
+mod scheme;
 
 pub const SYS_BRK: usize = 45;
 pub const SYS_CHDIR: usize = 12;

@@ -26,7 +26,7 @@ clean:
 	cargo clean --manifest-path libstd/Cargo.toml
 	cargo clean --manifest-path init/Cargo.toml
 	cargo clean --manifest-path ion/Cargo.toml
-	cargo clean --manifest-path drivers/atkbd/Cargo.toml
+	cargo clean --manifest-path drivers/ps2d/Cargo.toml
 	cargo clean --manifest-path drivers/pcid/Cargo.toml
 	rm -rf build
 
