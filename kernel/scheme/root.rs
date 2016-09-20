@@ -4,6 +4,7 @@ use collections::BTreeMap;
 use core::sync::atomic::{AtomicUsize, Ordering};
 use spin::RwLock;
 
+use context;
 use syscall::{Error, Result};
 use scheme::{self, Scheme};
 use scheme::user::{UserInner, UserScheme};
@@ -24,12 +25,18 @@ impl RootScheme {
 
 impl Scheme for RootScheme {
     fn open(&self, path: &[u8], _flags: usize) -> Result<usize> {
+        let context = {
+            let contexts = context::contexts();
+            let context = contexts.current().ok_or(Error::NoProcess)?;
+            Arc::downgrade(&context)
+        };
+
         let inner = {
             let mut schemes = scheme::schemes_mut();
             if schemes.get_name(path).is_some() {
                 return Err(Error::FileExists);
             }
-            let inner = Arc::new(UserInner::new());
+            let inner = Arc::new(UserInner::new(context));
             schemes.insert(path.to_vec().into_boxed_slice(), Arc::new(Box::new(UserScheme::new(Arc::downgrade(&inner))))).expect("failed to insert user scheme");
             inner
         };

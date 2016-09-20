@@ -2,9 +2,13 @@ use alloc::arc::Weak;
 use collections::{BTreeMap, VecDeque};
 use core::sync::atomic::{AtomicUsize, Ordering};
 use core::{mem, usize};
-use spin::Mutex;
+use spin::{Mutex, RwLock};
 
-use context;
+use arch;
+use arch::paging::{InactivePageTable, Page, VirtualAddress, entry};
+use arch::paging::temporary_page::TemporaryPage;
+use context::{self, Context};
+use context::memory::Grant;
 use syscall::{convert_to_result, Call, Error, Result};
 
 use super::Scheme;
@@ -21,14 +25,16 @@ pub struct Packet {
 
 pub struct UserInner {
     next_id: AtomicUsize,
+    context: Weak<RwLock<Context>>,
     todo: Mutex<VecDeque<Packet>>,
     done: Mutex<BTreeMap<usize, usize>>
 }
 
 impl UserInner {
-    pub fn new() -> UserInner {
+    pub fn new(context: Weak<RwLock<Context>>) -> UserInner {
         UserInner {
             next_id: AtomicUsize::new(0),
+            context: context,
             todo: Mutex::new(VecDeque::new()),
             done: Mutex::new(BTreeMap::new())
         }
@@ -57,6 +63,87 @@ impl UserInner {
 
             unsafe { context::switch(); }
         }
+    }
+
+    pub fn capture(&self, buf: &[u8]) -> Result<usize> {
+        self.capture_inner(buf.as_ptr() as usize, buf.len(), false)
+    }
+
+    pub fn capture_mut(&self, buf: &mut [u8]) -> Result<usize> {
+        self.capture_inner(buf.as_mut_ptr() as usize, buf.len(), true)
+    }
+
+    fn capture_inner(&self, address: usize, size: usize, writable: bool) -> Result<usize> {
+        let context_lock = self.context.upgrade().ok_or(Error::NoProcess)?;
+        let context = context_lock.read();
+
+        let mut grants = context.grants.lock();
+
+        let mut new_table = unsafe { InactivePageTable::from_address(context.arch.get_page_table()) };
+        let mut temporary_page = TemporaryPage::new(Page::containing_address(VirtualAddress::new(arch::USER_TMP_GRANT_OFFSET)));
+
+        let from_address = (address/4096) * 4096;
+        let offset = address - from_address;
+        let full_size = ((offset + size + 4095)/4096) * 4096;
+        let mut to_address = arch::USER_GRANT_OFFSET;
+
+        let mut flags = entry::PRESENT | entry::NO_EXECUTE;
+        if writable {
+            flags |= entry::WRITABLE;
+        }
+
+        for i in 0 .. grants.len() {
+            let start = grants[i].start_address().get();
+            if to_address + full_size < start {
+                grants.insert(i, Grant::new(
+                    VirtualAddress::new(from_address),
+                    VirtualAddress::new(to_address),
+                    full_size,
+                    flags,
+                    &mut new_table,
+                    &mut temporary_page
+                ));
+
+                return Ok(to_address + offset);
+            } else {
+                let pages = (grants[i].size() + 4095) / 4096;
+                let end = start + pages * 4096;
+                to_address = end;
+            }
+        }
+
+        grants.push(Grant::new(
+            VirtualAddress::new(from_address),
+            VirtualAddress::new(to_address),
+            full_size,
+            flags,
+            &mut new_table,
+            &mut temporary_page
+        ));
+
+        return Ok(to_address + offset);
+    }
+
+    pub fn release(&self, address: usize) -> Result<()> {
+        let context_lock = self.context.upgrade().ok_or(Error::NoProcess)?;
+        let context = context_lock.read();
+
+        let mut grants = context.grants.lock();
+
+        let mut new_table = unsafe { InactivePageTable::from_address(context.arch.get_page_table()) };
+        let mut temporary_page = TemporaryPage::new(Page::containing_address(VirtualAddress::new(arch::USER_TMP_GRANT_OFFSET)));
+
+        for i in 0 .. grants.len() {
+            let start = grants[i].start_address().get();
+            let end = start + grants[i].size();
+            if address >= start && address < end {
+                grants.remove(i).destroy(&mut new_table, &mut temporary_page);
+
+                return Ok(());
+            }
+        }
+
+        Err(Error::Fault)
     }
 
     pub fn read(&self, buf: &mut [u8]) -> Result<usize> {
@@ -115,7 +202,10 @@ impl UserScheme {
 impl Scheme for UserScheme {
     fn open(&self, path: &[u8], flags: usize) -> Result<usize> {
         let inner = self.inner.upgrade().ok_or(Error::NoDevice)?;
-        inner.call(Call::Open, path.as_ptr() as usize, path.len(), flags)
+        let address = inner.capture(path)?;
+        let result = inner.call(Call::Open, address, path.len(), flags);
+        let _ = inner.release(address);
+        result
     }
 
     fn dup(&self, file: usize) -> Result<usize> {
@@ -125,12 +215,18 @@ impl Scheme for UserScheme {
 
     fn read(&self, file: usize, buf: &mut [u8]) -> Result<usize> {
         let inner = self.inner.upgrade().ok_or(Error::NoDevice)?;
-        inner.call(Call::Read, file, buf.as_mut_ptr() as usize, buf.len())
+        let address = inner.capture_mut(buf)?;
+        let result = inner.call(Call::Read, file, address, buf.len());
+        let _ = inner.release(address);
+        result
     }
 
     fn write(&self, file: usize, buf: &[u8]) -> Result<usize> {
         let inner = self.inner.upgrade().ok_or(Error::NoDevice)?;
-        inner.call(Call::Write, file, buf.as_ptr() as usize, buf.len())
+        let address = inner.capture(buf)?;
+        let result = inner.call(Call::Write, file, buf.as_ptr() as usize, buf.len());
+        let _ = inner.release(address);
+        result
     }
 
     fn fsync(&self, file: usize) -> Result<()> {

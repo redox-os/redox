@@ -12,8 +12,8 @@ use externs::memset;
 use gdt;
 use idt;
 use interrupt;
-use memory::{self, Frame};
-use paging::{self, entry, Page, PhysicalAddress, VirtualAddress};
+use memory;
+use paging::{self, entry, Page, VirtualAddress};
 
 /// Test of zero values in BSS.
 static BSS_TEST_ZERO: usize = 0;

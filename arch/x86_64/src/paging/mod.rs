@@ -328,6 +328,10 @@ impl InactivePageTable {
         InactivePageTable { p4_frame: frame }
     }
 
+    pub unsafe fn from_address(cr3: usize) -> InactivePageTable {
+        InactivePageTable { p4_frame: Frame::containing_address(PhysicalAddress::new(cr3)) }
+    }
+
     pub unsafe fn address(&self) -> usize {
         self.p4_frame.start_address().get()
     }

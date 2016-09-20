@@ -1,3 +1,4 @@
+use alloc::arc::Arc;
 use collections::BTreeMap;
 use core::mem;
 use core::sync::atomic::Ordering;
@@ -9,7 +10,7 @@ use super::context::Context;
 
 /// Context list type
 pub struct ContextList {
-    map: BTreeMap<usize, RwLock<Context>>,
+    map: BTreeMap<usize, Arc<RwLock<Context>>>,
     next_id: usize
 }
 
@@ -23,21 +24,21 @@ impl ContextList {
     }
 
     /// Get the nth context.
-    pub fn get(&self, id: usize) -> Option<&RwLock<Context>> {
+    pub fn get(&self, id: usize) -> Option<&Arc<RwLock<Context>>> {
         self.map.get(&id)
     }
 
     /// Get the current context.
-    pub fn current(&self) -> Option<&RwLock<Context>> {
+    pub fn current(&self) -> Option<&Arc<RwLock<Context>>> {
         self.map.get(&super::CONTEXT_ID.load(Ordering::SeqCst))
     }
 
-    pub fn iter(&self) -> ::collections::btree_map::Iter<usize, RwLock<Context>> {
+    pub fn iter(&self) -> ::collections::btree_map::Iter<usize, Arc<RwLock<Context>>> {
         self.map.iter()
     }
 
     /// Create a new context.
-    pub fn new_context(&mut self) -> Result<&RwLock<Context>> {
+    pub fn new_context(&mut self) -> Result<&Arc<RwLock<Context>>> {
         if self.next_id >= super::CONTEXT_MAX_CONTEXTS {
             self.next_id = 1;
         }
@@ -53,13 +54,13 @@ impl ContextList {
         let id = self.next_id;
         self.next_id += 1;
 
-        assert!(self.map.insert(id, RwLock::new(Context::new(id))).is_none());
+        assert!(self.map.insert(id, Arc::new(RwLock::new(Context::new(id)))).is_none());
 
         Ok(self.map.get(&id).expect("Failed to insert new context. ID is out of bounds."))
     }
 
     /// Spawn a context from a function.
-    pub fn spawn(&mut self, func: extern fn()) -> Result<&RwLock<Context>> {
+    pub fn spawn(&mut self, func: extern fn()) -> Result<&Arc<RwLock<Context>>> {
         let context_lock = self.new_context()?;
         {
             let mut context = context_lock.write();
@@ -77,7 +78,7 @@ impl ContextList {
         Ok(context_lock)
     }
 
-    pub fn remove(&mut self, id: usize) -> Option<RwLock<Context>> {
+    pub fn remove(&mut self, id: usize) -> Option<Arc<RwLock<Context>>> {
         self.map.remove(&id)
     }
 }

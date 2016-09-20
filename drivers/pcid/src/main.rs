@@ -84,6 +84,9 @@ fn main() {
             scheme.read(&mut packet).expect("pcid: failed to read events from pci scheme");
 
             println!("{:?}", packet);
+            if packet.a == 5 {
+                println!("{}", unsafe { ::std::str::from_utf8_unchecked(::std::slice::from_raw_parts(packet.b as *const u8, packet.c)) });
+            }
 
             packet.a = 0;
 
