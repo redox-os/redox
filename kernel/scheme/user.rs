@@ -9,7 +9,7 @@ use syscall::{convert_to_result, Call, Error, Result};
 
 use super::Scheme;
 
-#[derive(Copy, Clone, Debug)]
+#[derive(Copy, Clone, Debug, Default)]
 #[repr(packed)]
 pub struct Packet {
     pub id: usize,

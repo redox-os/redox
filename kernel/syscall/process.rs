@@ -178,6 +178,8 @@ pub fn clone(flags: usize, stack_base: usize) -> Result<usize> {
             }
         }
 
+        // If not cloning files, dup to get a new number from scheme
+        // This has to be done outside the context lock to prevent deadlocks
         if flags & CLONE_FILES == 0 {
             for (fd, mut file_option) in files.lock().iter_mut().enumerate() {
                 let new_file_option = if let Some(file) = *file_option {
@@ -357,7 +359,7 @@ pub fn exec(path: &[u8], arg_ptrs: &[[usize; 2]]) -> Result<usize> {
         //TODO: Only read elf header, not entire file. Then read required segments
         let mut data = vec![];
         loop {
-            let mut buf = [0; 4096];
+            let mut buf = [0; 16384];
             let count = syscall::read(file, &mut buf)?;
             if count > 0 {
                 data.extend_from_slice(&buf[..count]);
