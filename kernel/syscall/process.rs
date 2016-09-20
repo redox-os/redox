@@ -15,11 +15,13 @@ use arch::start::usermode;
 use context;
 use elf::{self, program_header};
 use scheme;
-use syscall::{self, Error, Result, validate_slice, validate_slice_mut};
+use syscall;
+use syscall::error::*;
+use syscall::validate::{validate_slice, validate_slice_mut};
 
 pub fn brk(address: usize) -> Result<usize> {
     let contexts = context::contexts();
-    let context_lock = contexts.current().ok_or(Error::NoProcess)?;
+    let context_lock = contexts.current().ok_or(Error::new(ESRCH))?;
     let context = context_lock.read();
 
     let current = if let Some(ref heap_shared) = context.heap {
@@ -45,8 +47,7 @@ pub fn brk(address: usize) -> Result<usize> {
 
         Ok(address)
     } else {
-        //TODO: Return correct error
-        Err(Error::NotPermitted)
+        Err(Error::new(ENOMEM))
     }
 }
 
@@ -75,7 +76,7 @@ pub fn clone(flags: usize, stack_base: usize) -> Result<usize> {
         // Copy from old process
         {
             let contexts = context::contexts();
-            let context_lock = contexts.current().ok_or(Error::NoProcess)?;
+            let context_lock = contexts.current().ok_or(Error::new(ESRCH))?;
             let context = context_lock.read();
 
             ppid = context.id;
@@ -186,7 +187,7 @@ pub fn clone(flags: usize, stack_base: usize) -> Result<usize> {
                     let result = {
                         let scheme = {
                             let schemes = scheme::schemes();
-                            let scheme = schemes.get(file.scheme).ok_or(Error::BadFile)?;
+                            let scheme = schemes.get(file.scheme).ok_or(Error::new(EBADF))?;
                             scheme.clone()
                         };
                         let result = scheme.dup(file.number);
@@ -377,7 +378,7 @@ pub fn exec(path: &[u8], arg_ptrs: &[[usize; 2]]) -> Result<usize> {
                 drop(arg_ptrs); // Drop so that usage is not allowed after unmapping context
 
                 let contexts = context::contexts();
-                let context_lock = contexts.current().ok_or(Error::NoProcess)?;
+                let context_lock = contexts.current().ok_or(Error::new(ESRCH))?;
                 let mut context = context_lock.write();
 
                 // Unmap previous image and stack
@@ -478,7 +479,7 @@ pub fn exec(path: &[u8], arg_ptrs: &[[usize; 2]]) -> Result<usize> {
             },
             Err(err) => {
                 println!("failed to execute {}: {}", unsafe { str::from_utf8_unchecked(path) }, err);
-                return Err(Error::NoExec);
+                return Err(Error::new(ENOEXEC));
             }
         }
     }
@@ -489,7 +490,7 @@ pub fn exec(path: &[u8], arg_ptrs: &[[usize; 2]]) -> Result<usize> {
 
 pub fn getpid() -> Result<usize> {
     let contexts = context::contexts();
-    let context_lock = contexts.current().ok_or(Error::NoProcess)?;
+    let context_lock = contexts.current().ok_or(Error::new(ESRCH))?;
     let context = context_lock.read();
     Ok(context.id)
 }
@@ -512,7 +513,7 @@ pub fn waitpid(pid: usize, status_ptr: usize, _options: usize) -> Result<usize> 
 
             {
                 let contexts = context::contexts();
-                let context_lock = contexts.get(pid).ok_or(Error::NoProcess)?;
+                let context_lock = contexts.get(pid).ok_or(Error::new(ESRCH))?;
                 let context = context_lock.read();
                 if let context::Status::Exited(status) = context.status {
                     if status_ptr != 0 {
@@ -525,7 +526,7 @@ pub fn waitpid(pid: usize, status_ptr: usize, _options: usize) -> Result<usize> 
 
             if exited {
                 let mut contexts = context::contexts_mut();
-                return contexts.remove(pid).ok_or(Error::NoProcess).and(Ok(pid));
+                return contexts.remove(pid).ok_or(Error::new(ESRCH)).and(Ok(pid));
             }
         }
 

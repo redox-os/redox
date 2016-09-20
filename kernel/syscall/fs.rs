@@ -2,13 +2,12 @@
 
 use context;
 use scheme;
-
-use super::{Error, Result};
+use syscall::error::*;
 
 /// Change the current working directory
 pub fn chdir(path: &[u8]) -> Result<usize> {
     let contexts = context::contexts();
-    let context_lock = contexts.current().ok_or(Error::NoProcess)?;
+    let context_lock = contexts.current().ok_or(Error::new(ESRCH))?;
     let context = context_lock.read();
     let canonical = context.canonicalize(path);
     *context.cwd.lock() = canonical;
@@ -18,7 +17,7 @@ pub fn chdir(path: &[u8]) -> Result<usize> {
 /// Get the current working directory
 pub fn getcwd(buf: &mut [u8]) -> Result<usize> {
     let contexts = context::contexts();
-    let context_lock = contexts.current().ok_or(Error::NoProcess)?;
+    let context_lock = contexts.current().ok_or(Error::new(ESRCH))?;
     let context = context_lock.read();
     let cwd = context.cwd.lock();
     let mut i = 0;
@@ -33,7 +32,7 @@ pub fn getcwd(buf: &mut [u8]) -> Result<usize> {
 pub fn open(path: &[u8], flags: usize) -> Result<usize> {
     let path_canon = {
         let contexts = context::contexts();
-        let context_lock = contexts.current().ok_or(Error::NoProcess)?;
+        let context_lock = contexts.current().ok_or(Error::new(ESRCH))?;
         let context = context_lock.read();
         context.canonicalize(path)
     };
@@ -43,10 +42,10 @@ pub fn open(path: &[u8], flags: usize) -> Result<usize> {
     let reference_opt = parts.next();
 
     let (scheme_id, file_id) = {
-        let namespace = namespace_opt.ok_or(Error::NoEntry)?;
+        let namespace = namespace_opt.ok_or(Error::new(ENOENT))?;
         let (scheme_id, scheme) = {
             let schemes = scheme::schemes();
-            let (scheme_id, scheme) = schemes.get_name(namespace).ok_or(Error::NoEntry)?;
+            let (scheme_id, scheme) = schemes.get_name(namespace).ok_or(Error::new(ENOENT))?;
             (scheme_id, scheme.clone())
         };
         let file_id = scheme.open(reference_opt.unwrap_or(b""), flags)?;
@@ -54,105 +53,100 @@ pub fn open(path: &[u8], flags: usize) -> Result<usize> {
     };
 
     let contexts = context::contexts();
-    let context_lock = contexts.current().ok_or(Error::NoProcess)?;
+    let context_lock = contexts.current().ok_or(Error::new(ESRCH))?;
     let context = context_lock.read();
     context.add_file(::context::file::File {
         scheme: scheme_id,
         number: file_id
-    }).ok_or(Error::TooManyFiles)
+    }).ok_or(Error::new(EMFILE))
 }
 
 /// Close syscall
 pub fn close(fd: usize) -> Result<usize> {
     let file = {
         let contexts = context::contexts();
-        let context_lock = contexts.current().ok_or(Error::NoProcess)?;
+        let context_lock = contexts.current().ok_or(Error::new(ESRCH))?;
         let context = context_lock.read();
-        let file = context.remove_file(fd).ok_or(Error::BadFile)?;
+        let file = context.remove_file(fd).ok_or(Error::new(EBADF))?;
         file
     };
 
     let scheme = {
         let schemes = scheme::schemes();
-        let scheme = schemes.get(file.scheme).ok_or(Error::BadFile)?;
+        let scheme = schemes.get(file.scheme).ok_or(Error::new(EBADF))?;
         scheme.clone()
     };
-    let result = scheme.close(file.number).and(Ok(0));
-    result
+    scheme.close(file.number)
 }
 
 /// Duplicate file descriptor
 pub fn dup(fd: usize) -> Result<usize> {
     let file = {
         let contexts = context::contexts();
-        let context_lock = contexts.current().ok_or(Error::NoProcess)?;
+        let context_lock = contexts.current().ok_or(Error::new(ESRCH))?;
         let context = context_lock.read();
-        let file = context.get_file(fd).ok_or(Error::BadFile)?;
+        let file = context.get_file(fd).ok_or(Error::new(EBADF))?;
         file
     };
 
     let scheme = {
         let schemes = scheme::schemes();
-        let scheme = schemes.get(file.scheme).ok_or(Error::BadFile)?;
+        let scheme = schemes.get(file.scheme).ok_or(Error::new(EBADF))?;
         scheme.clone()
     };
-    let result = scheme.dup(file.number);
-    result
+    scheme.dup(file.number)
 }
 
 /// Sync the file descriptor
 pub fn fsync(fd: usize) -> Result<usize> {
     let file = {
         let contexts = context::contexts();
-        let context_lock = contexts.current().ok_or(Error::NoProcess)?;
+        let context_lock = contexts.current().ok_or(Error::new(ESRCH))?;
         let context = context_lock.read();
-        let file = context.get_file(fd).ok_or(Error::BadFile)?;
+        let file = context.get_file(fd).ok_or(Error::new(EBADF))?;
         file
     };
 
     let scheme = {
         let schemes = scheme::schemes();
-        let scheme = schemes.get(file.scheme).ok_or(Error::BadFile)?;
+        let scheme = schemes.get(file.scheme).ok_or(Error::new(EBADF))?;
         scheme.clone()
     };
-    let result = scheme.fsync(file.number).and(Ok(0));
-    result
+    scheme.fsync(file.number)
 }
 
 /// Read syscall
 pub fn read(fd: usize, buf: &mut [u8]) -> Result<usize> {
     let file = {
         let contexts = context::contexts();
-        let context_lock = contexts.current().ok_or(Error::NoProcess)?;
+        let context_lock = contexts.current().ok_or(Error::new(ESRCH))?;
         let context = context_lock.read();
-        let file = context.get_file(fd).ok_or(Error::BadFile)?;
+        let file = context.get_file(fd).ok_or(Error::new(EBADF))?;
         file
     };
 
     let scheme = {
         let schemes = scheme::schemes();
-        let scheme = schemes.get(file.scheme).ok_or(Error::BadFile)?;
+        let scheme = schemes.get(file.scheme).ok_or(Error::new(EBADF))?;
         scheme.clone()
     };
-    let result = scheme.read(file.number, buf);
-    result
+    scheme.read(file.number, buf)
 }
 
 /// Write syscall
 pub fn write(fd: usize, buf: &[u8]) -> Result<usize> {
     let file = {
         let contexts = context::contexts();
-        let context_lock = contexts.current().ok_or(Error::NoProcess)?;
+        let context_lock = contexts.current().ok_or(Error::new(ESRCH))?;
         let context = context_lock.read();
-        let file = context.get_file(fd).ok_or(Error::BadFile)?;
+        let file = context.get_file(fd).ok_or(Error::new(EBADF))?;
         file
     };
 
     let scheme = {
         let schemes = scheme::schemes();
-        let scheme = schemes.get(file.scheme).ok_or(Error::BadFile)?;
+        let scheme = schemes.get(file.scheme).ok_or(Error::new(EBADF))?;
         scheme.clone()
     };
-    let result = scheme.write(file.number, buf);
-    result
+    scheme.write(file.number, buf)
 }

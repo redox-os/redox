@@ -5,7 +5,7 @@ use core::sync::atomic::Ordering;
 use spin::RwLock;
 
 use arch;
-use syscall::{Result, Error};
+use syscall::error::{Result, Error, EAGAIN};
 use super::context::Context;
 
 /// Context list type
@@ -48,7 +48,7 @@ impl ContextList {
         }
 
         if self.next_id >= super::CONTEXT_MAX_CONTEXTS {
-            return Err(Error::TryAgain);
+            return Err(Error::new(EAGAIN));
         }
 
         let id = self.next_id;

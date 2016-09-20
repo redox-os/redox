@@ -1,21 +1,21 @@
 use core::{mem, str};
 
 use arch::interrupt::irq::{ACKS, COUNTS, acknowledge};
-use syscall::{Error, Result};
-use super::Scheme;
+use syscall::error::*;
+use syscall::scheme::Scheme;
 
 pub struct IrqScheme;
 
 impl Scheme for IrqScheme {
     fn open(&self, path: &[u8], _flags: usize) -> Result<usize> {
-        let path_str = str::from_utf8(path).or(Err(Error::NoEntry))?;
+        let path_str = str::from_utf8(path).or(Err(Error::new(ENOENT)))?;
 
-        let id = path_str.parse::<usize>().or(Err(Error::NoEntry))?;
+        let id = path_str.parse::<usize>().or(Err(Error::new(ENOENT)))?;
 
         if id < COUNTS.lock().len() {
             Ok(id)
         } else {
-            Err(Error::NoEntry)
+            Err(Error::new(ENOENT))
         }
     }
 
@@ -37,7 +37,7 @@ impl Scheme for IrqScheme {
                 Ok(0)
             }
         } else {
-            Err(Error::InvalidValue)
+            Err(Error::new(EINVAL))
         }
     }
 
@@ -54,15 +54,15 @@ impl Scheme for IrqScheme {
                 Ok(0)
             }
         } else {
-            Err(Error::InvalidValue)
+            Err(Error::new(EINVAL))
         }
     }
 
-    fn fsync(&self, _file: usize) -> Result<()> {
-        Ok(())
+    fn fsync(&self, _file: usize) -> Result<usize> {
+        Ok(0)
     }
 
-    fn close(&self, _file: usize) -> Result<()> {
-        Ok(())
+    fn close(&self, _file: usize) -> Result<usize> {
+        Ok(0)
     }
 }

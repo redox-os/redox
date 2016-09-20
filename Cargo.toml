@@ -10,6 +10,7 @@ crate-type = ["staticlib"]
 [dependencies]
 bitflags = "*"
 spin = "*"
+syscall = { path = "syscall/" }
 
 [dependencies.goblin]
 git = "https://github.com/m4b/goblin.git"

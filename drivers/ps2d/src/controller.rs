@@ -1,9 +1,5 @@
 use io::{Io, Pio, ReadOnly, WriteOnly};
 
-pub unsafe fn init() {
-    Ps2::new().init();
-}
-
 bitflags! {
     flags StatusFlags: u8 {
         const OUTPUT_FULL = 1,

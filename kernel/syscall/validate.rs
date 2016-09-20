@@ -1,6 +1,6 @@
 use core::slice;
 
-use super::Result;
+use syscall::error::*;
 
 /// Convert a pointer and length to slice, if valid
 /// TODO: Check validity

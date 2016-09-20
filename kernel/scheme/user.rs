@@ -9,9 +9,9 @@ use arch::paging::{InactivePageTable, Page, VirtualAddress, entry};
 use arch::paging::temporary_page::TemporaryPage;
 use context::{self, Context};
 use context::memory::Grant;
-use syscall::{convert_to_result, Call, Error, Result};
-
-use super::Scheme;
+use syscall::error::*;
+use syscall::number::*;
+use syscall::scheme::Scheme;
 
 #[derive(Copy, Clone, Debug, Default)]
 #[repr(packed)]
@@ -40,12 +40,12 @@ impl UserInner {
         }
     }
 
-    pub fn call(&self, a: Call, b: usize, c: usize, d: usize) -> Result<usize> {
+    pub fn call(&self, a: usize, b: usize, c: usize, d: usize) -> Result<usize> {
         let id = self.next_id.fetch_add(1, Ordering::SeqCst);
 
         let packet = Packet {
             id: id,
-            a: a as usize,
+            a: a,
             b: b,
             c: c,
             d: d
@@ -57,7 +57,7 @@ impl UserInner {
             {
                 let mut done = self.done.lock();
                 if let Some(a) = done.remove(&id) {
-                    return convert_to_result(a);
+                    return Error::demux(a);
                 }
             }
 
@@ -74,7 +74,7 @@ impl UserInner {
     }
 
     fn capture_inner(&self, address: usize, size: usize, writable: bool) -> Result<usize> {
-        let context_lock = self.context.upgrade().ok_or(Error::NoProcess)?;
+        let context_lock = self.context.upgrade().ok_or(Error::new(ESRCH))?;
         let context = context_lock.read();
 
         let mut grants = context.grants.lock();
@@ -125,7 +125,7 @@ impl UserInner {
     }
 
     pub fn release(&self, address: usize) -> Result<()> {
-        let context_lock = self.context.upgrade().ok_or(Error::NoProcess)?;
+        let context_lock = self.context.upgrade().ok_or(Error::new(ESRCH))?;
         let context = context_lock.read();
 
         let mut grants = context.grants.lock();
@@ -143,7 +143,7 @@ impl UserInner {
             }
         }
 
-        Err(Error::Fault)
+        Err(Error::new(EFAULT))
     }
 
     pub fn read(&self, buf: &mut [u8]) -> Result<usize> {
@@ -201,41 +201,41 @@ impl UserScheme {
 
 impl Scheme for UserScheme {
     fn open(&self, path: &[u8], flags: usize) -> Result<usize> {
-        let inner = self.inner.upgrade().ok_or(Error::NoDevice)?;
+        let inner = self.inner.upgrade().ok_or(Error::new(ENODEV))?;
         let address = inner.capture(path)?;
-        let result = inner.call(Call::Open, address, path.len(), flags);
+        let result = inner.call(SYS_OPEN, address, path.len(), flags);
         let _ = inner.release(address);
         result
     }
 
     fn dup(&self, file: usize) -> Result<usize> {
-        let inner = self.inner.upgrade().ok_or(Error::NoDevice)?;
-        inner.call(Call::Dup, file, 0, 0)
+        let inner = self.inner.upgrade().ok_or(Error::new(ENODEV))?;
+        inner.call(SYS_DUP, file, 0, 0)
     }
 
     fn read(&self, file: usize, buf: &mut [u8]) -> Result<usize> {
-        let inner = self.inner.upgrade().ok_or(Error::NoDevice)?;
+        let inner = self.inner.upgrade().ok_or(Error::new(ENODEV))?;
         let address = inner.capture_mut(buf)?;
-        let result = inner.call(Call::Read, file, address, buf.len());
+        let result = inner.call(SYS_READ, file, address, buf.len());
         let _ = inner.release(address);
         result
     }
 
     fn write(&self, file: usize, buf: &[u8]) -> Result<usize> {
-        let inner = self.inner.upgrade().ok_or(Error::NoDevice)?;
+        let inner = self.inner.upgrade().ok_or(Error::new(ENODEV))?;
         let address = inner.capture(buf)?;
-        let result = inner.call(Call::Write, file, buf.as_ptr() as usize, buf.len());
+        let result = inner.call(SYS_WRITE, file, buf.as_ptr() as usize, buf.len());
         let _ = inner.release(address);
         result
     }
 
-    fn fsync(&self, file: usize) -> Result<()> {
-        let inner = self.inner.upgrade().ok_or(Error::NoDevice)?;
-        inner.call(Call::FSync, file, 0, 0).and(Ok(()))
+    fn fsync(&self, file: usize) -> Result<usize> {
+        let inner = self.inner.upgrade().ok_or(Error::new(ENODEV))?;
+        inner.call(SYS_FSYNC, file, 0, 0)
     }
 
-    fn close(&self, file: usize) -> Result<()> {
-        let inner = self.inner.upgrade().ok_or(Error::NoDevice)?;
-        inner.call(Call::Close, file, 0, 0).and(Ok(()))
+    fn close(&self, file: usize) -> Result<usize> {
+        let inner = self.inner.upgrade().ok_or(Error::new(ENODEV))?;
+        inner.call(SYS_CLOSE, file, 0, 0)
     }
 }

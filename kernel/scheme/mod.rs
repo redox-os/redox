@@ -13,7 +13,8 @@ use collections::BTreeMap;
 
 use spin::{Once, RwLock, RwLockReadGuard, RwLockWriteGuard};
 
-use syscall::{Error, Result};
+use syscall::error::*;
+use syscall::scheme::Scheme;
 
 use self::debug::DebugScheme;
 use self::env::EnvScheme;
@@ -75,7 +76,7 @@ impl SchemeList {
     /// Create a new scheme.
     pub fn insert(&mut self, name: Box<[u8]>, scheme: Arc<Box<Scheme + Send + Sync>>) -> Result<&Arc<Box<Scheme + Send + Sync>>> {
         if self.names.contains_key(&name) {
-            return Err(Error::FileExists);
+            return Err(Error::new(EEXIST));
         }
 
         if self.next_id >= SCHEME_MAX_SCHEMES {
@@ -87,7 +88,7 @@ impl SchemeList {
         }
 
         if self.next_id >= SCHEME_MAX_SCHEMES {
-            return Err(Error::TryAgain);
+            return Err(Error::new(EAGAIN));
         }
 
         let id = self.next_id;
@@ -122,33 +123,4 @@ pub fn schemes() -> RwLockReadGuard<'static, SchemeList> {
 /// Get the global schemes list, mutable
 pub fn schemes_mut() -> RwLockWriteGuard<'static, SchemeList> {
     SCHEMES.call_once(init_schemes).write()
-}
-
-/// A scheme trait, implemented by a scheme handler
-pub trait Scheme {
-    /// Open the file at `path` with `flags`.
-    ///
-    /// Returns a file descriptor or an error
-    fn open(&self, path: &[u8], flags: usize) -> Result<usize>;
-
-    /// Duplicate an open file descriptor
-    ///
-    /// Returns a file descriptor or an error
-    fn dup(&self, file: usize) -> Result<usize>;
-
-    /// Read from some file descriptor into the `buffer`
-    ///
-    /// Returns the number of bytes read
-    fn read(&self, file: usize, buffer: &mut [u8]) -> Result<usize>;
-
-    /// Write the `buffer` to the file descriptor
-    ///
-    /// Returns the number of bytes written
-    fn write(&self, file: usize, buffer: &[u8]) -> Result<usize>;
-
-    /// Sync the file descriptor
-    fn fsync(&self, file: usize) -> Result<()>;
-
-    /// Close the file descriptor
-    fn close(&self, file: usize) -> Result<()>;
 }

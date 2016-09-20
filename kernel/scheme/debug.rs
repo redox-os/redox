@@ -3,8 +3,8 @@ use core::str;
 use spin::{Mutex, Once};
 
 use context;
-use syscall::Result;
-use super::Scheme;
+use syscall::error::*;
+use syscall::scheme::Scheme;
 
 /// Input
 static INPUT: Once<Mutex<VecDeque<u8>>> = Once::new();
@@ -62,12 +62,12 @@ impl Scheme for DebugScheme {
         Ok(buffer.len())
     }
 
-    fn fsync(&self, _file: usize) -> Result<()> {
-        Ok(())
+    fn fsync(&self, _file: usize) -> Result<usize> {
+        Ok(0)
     }
 
     /// Close the file `number`
-    fn close(&self, _file: usize) -> Result<()> {
-        Ok(())
+    fn close(&self, _file: usize) -> Result<usize> {
+        Ok(0)
     }
 }

@@ -24,6 +24,6 @@ fn stdio() {
 /// Test that invalid reads/writes cause errors
 #[test]
 fn invalid_path() {
-    assert_eq!(syscall::read(999, &mut []), Err(Error::BadFile));
-    assert_eq!(syscall::write(999, &[]), Err(Error::BadFile));
+    assert_eq!(syscall::read(999, &mut []), Err(Error::new(EBADF)));
+    assert_eq!(syscall::write(999, &[]), Err(Error::new(EBADF)));
 }

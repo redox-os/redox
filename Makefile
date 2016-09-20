@@ -28,6 +28,7 @@ clean:
 	cargo clean --manifest-path ion/Cargo.toml
 	cargo clean --manifest-path drivers/ps2d/Cargo.toml
 	cargo clean --manifest-path drivers/pcid/Cargo.toml
+	cargo clean --manifest-path schemes/example/Cargo.toml
 	rm -rf build
 
 FORCE:
@@ -138,4 +139,8 @@ $(BUILD)/ps2d: drivers/ps2d/Cargo.toml drivers/ps2d/src/** $(BUILD)/libstd.rlib
 	$(CARGO) rustc --manifest-path $< $(CARGOFLAGS) -o $@
 	strip $@
 
-$(BUILD)/initfs.rs: $(BUILD)/init $(BUILD)/ion $(BUILD)/pcid $(BUILD)/ps2d
+$(BUILD)/example: schemes/example/Cargo.toml schemes/example/src/** $(BUILD)/libstd.rlib
+	$(CARGO) rustc --manifest-path $< $(CARGOFLAGS) -o $@
+	strip $@
+
+$(BUILD)/initfs.rs: $(BUILD)/init $(BUILD)/ion $(BUILD)/pcid $(BUILD)/ps2d $(BUILD)/example

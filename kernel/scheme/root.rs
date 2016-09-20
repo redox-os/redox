@@ -5,8 +5,9 @@ use core::sync::atomic::{AtomicUsize, Ordering};
 use spin::RwLock;
 
 use context;
-use syscall::{Error, Result};
-use scheme::{self, Scheme};
+use syscall::error::*;
+use syscall::scheme::Scheme;
+use scheme;
 use scheme::user::{UserInner, UserScheme};
 
 pub struct RootScheme {
@@ -27,14 +28,14 @@ impl Scheme for RootScheme {
     fn open(&self, path: &[u8], _flags: usize) -> Result<usize> {
         let context = {
             let contexts = context::contexts();
-            let context = contexts.current().ok_or(Error::NoProcess)?;
+            let context = contexts.current().ok_or(Error::new(ESRCH))?;
             Arc::downgrade(&context)
         };
 
         let inner = {
             let mut schemes = scheme::schemes_mut();
             if schemes.get_name(path).is_some() {
-                return Err(Error::FileExists);
+                return Err(Error::new(EEXIST));
             }
             let inner = Arc::new(UserInner::new(context));
             schemes.insert(path.to_vec().into_boxed_slice(), Arc::new(Box::new(UserScheme::new(Arc::downgrade(&inner))))).expect("failed to insert user scheme");
@@ -50,7 +51,7 @@ impl Scheme for RootScheme {
     fn dup(&self, file: usize) -> Result<usize> {
         let mut handles = self.handles.write();
         let inner = {
-            let inner = handles.get(&file).ok_or(Error::BadFile)?;
+            let inner = handles.get(&file).ok_or(Error::new(EBADF))?;
             inner.clone()
         };
 
@@ -63,7 +64,7 @@ impl Scheme for RootScheme {
     fn read(&self, file: usize, buf: &mut [u8]) -> Result<usize> {
         let inner = {
             let handles = self.handles.read();
-            let inner = handles.get(&file).ok_or(Error::BadFile)?;
+            let inner = handles.get(&file).ok_or(Error::new(EBADF))?;
             inner.clone()
         };
 
@@ -73,18 +74,18 @@ impl Scheme for RootScheme {
     fn write(&self, file: usize, buf: &[u8]) -> Result<usize> {
         let inner = {
             let handles = self.handles.read();
-            let inner = handles.get(&file).ok_or(Error::BadFile)?;
+            let inner = handles.get(&file).ok_or(Error::new(EBADF))?;
             inner.clone()
         };
 
         inner.write(buf)
     }
 
-    fn fsync(&self, _file: usize) -> Result<()> {
-        Ok(())
+    fn fsync(&self, _file: usize) -> Result<usize> {
+        Ok(0)
     }
 
-    fn close(&self, file: usize) -> Result<()> {
-        self.handles.write().remove(&file).ok_or(Error::BadFile).and(Ok(()))
+    fn close(&self, file: usize) -> Result<usize> {
+        self.handles.write().remove(&file).ok_or(Error::new(EBADF)).and(Ok(0))
     }
 }

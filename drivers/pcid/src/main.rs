@@ -2,10 +2,8 @@
 
 extern crate syscall;
 
-use std::fs::File;
-use std::io::{Read, Write};
 use std::thread;
-use syscall::{iopl, Packet};
+use syscall::iopl;
 
 use pci::{Pci, PciBar, PciClass};
 
@@ -77,20 +75,5 @@ fn main() {
         unsafe { iopl(3).unwrap() };
 
         enumerate_pci();
-
-        let mut scheme = File::create(":pci").expect("pcid: failed to create pci scheme");
-        loop {
-            let mut packet = Packet::default();
-            scheme.read(&mut packet).expect("pcid: failed to read events from pci scheme");
-
-            println!("{:?}", packet);
-            if packet.a == 5 {
-                println!("{}", unsafe { ::std::str::from_utf8_unchecked(::std::slice::from_raw_parts(packet.b as *const u8, packet.c)) });
-            }
-
-            packet.a = 0;
-
-            scheme.write(&packet).expect("pcid: failed to write responses to pci scheme");
-        }
     });
 }
