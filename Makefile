@@ -12,9 +12,9 @@ KCARGOFLAGS=--target $(KTARGET).json -- -C soft-float
 TARGET=$(ARCH)-unknown-redox
 BUILD=build/userspace
 RUSTC=./rustc.sh
-RUSTCFLAGS=--target $(TARGET).json -C soft-float --cfg redox
+RUSTCFLAGS=--target $(TARGET).json -C opt-level=2 -C soft-float --cfg redox
 CARGO=RUSTC="$(RUSTC)" cargo
-CARGOFLAGS=--target $(TARGET).json -- -C soft-float --cfg redox
+CARGOFLAGS=--target $(TARGET).json -- -C opt-level=2 -C soft-float --cfg redox
 
 # Default targets
 .PHONY: all clean qemu bochs FORCE
@@ -43,7 +43,7 @@ ifeq ($(ARCH),arm)
 	QEMUFLAGS+=-cpu arm1176 -machine integratorcp
 	QEMUFLAGS+=-nographic
 
-build/%.list: build/%
+%.list: %
 	$(ARCH)-none-eabi-objdump -C -D $< > $@
 
 $(KBUILD)/harddrive.bin: $(KBUILD)/kernel
@@ -68,7 +68,7 @@ else
 		LD=$(ARCH)-elf-ld
 	endif
 
-build/%.list: build/%
+%.list: %
 	objdump -C -M intel -D $< > $@
 
 $(KBUILD)/harddrive.bin: $(KBUILD)/kernel bootloader/$(ARCH)/**
