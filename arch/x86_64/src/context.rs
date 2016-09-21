@@ -105,6 +105,6 @@ impl Context {
 
 /// Unset global lock, set inside of kernel
 #[no_mangle]
-extern fn context_switch_unlock(){
+pub extern fn context_switch_unlock(){
     CONTEXT_SWITCH_LOCK.store(false, Ordering::SeqCst);
 }
