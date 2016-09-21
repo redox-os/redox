@@ -110,6 +110,14 @@ pub fn open(path: &str, flags: usize) -> Result<usize> {
     unsafe { syscall3(SYS_OPEN, path.as_ptr() as usize, path.len(), flags) }
 }
 
+pub unsafe fn physmap(physical_address: usize, size: usize, flags: usize) -> Result<usize> {
+    syscall3(SYS_PHYSMAP, physical_address, size, flags)
+}
+
+pub unsafe fn physunmap(virtual_address: usize) -> Result<usize> {
+    syscall1(SYS_PHYSUNMAP, virtual_address)
+}
+
 pub fn pipe2(fds: &mut [usize; 2], flags: usize) -> Result<usize> {
     unsafe { syscall2(SYS_PIPE2, fds.as_ptr() as usize, flags) }
 }

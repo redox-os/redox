@@ -28,7 +28,9 @@ clean:
 	cargo clean --manifest-path ion/Cargo.toml
 	cargo clean --manifest-path drivers/ps2d/Cargo.toml
 	cargo clean --manifest-path drivers/pcid/Cargo.toml
+	cargo clean --manifest-path drivers/vesad/Cargo.toml
 	cargo clean --manifest-path schemes/example/Cargo.toml
+	rm -rf initfs/bin
 	rm -rf build
 
 FORCE:
@@ -123,24 +125,40 @@ $(BUILD)/libstd.rlib: libstd/Cargo.toml libstd/src/** $(BUILD)/libcore.rlib $(BU
 	$(CARGO) rustc --verbose --manifest-path $< $(CARGOFLAGS) -o $@
 	cp libstd/target/$(TARGET)/debug/deps/*.rlib $(BUILD)
 
-$(BUILD)/init: init/Cargo.toml init/src/*.rs $(BUILD)/libstd.rlib
-	$(CARGO) rustc --manifest-path $< $(CARGOFLAGS) -o $@
-	strip $@
-
 $(BUILD)/ion: ion/Cargo.toml ion/src/*.rs $(BUILD)/libstd.rlib
 	$(CARGO) rustc --manifest-path $< $(CARGOFLAGS) -o $@
 	strip $@
 
-$(BUILD)/pcid: drivers/pcid/Cargo.toml drivers/pcid/src/** $(BUILD)/libstd.rlib
+initfs/bin/init: init/Cargo.toml init/src/*.rs $(BUILD)/libstd.rlib
+	mkdir -p initfs/bin
 	$(CARGO) rustc --manifest-path $< $(CARGOFLAGS) -o $@
 	strip $@
+	rm $@.d
 
-$(BUILD)/ps2d: drivers/ps2d/Cargo.toml drivers/ps2d/src/** $(BUILD)/libstd.rlib
+initfs/bin/%: drivers/%/Cargo.toml drivers/%/src/** $(BUILD)/libstd.rlib
+	mkdir -p initfs/bin
 	$(CARGO) rustc --manifest-path $< $(CARGOFLAGS) -o $@
 	strip $@
+	rm $@.d
 
-$(BUILD)/example: schemes/example/Cargo.toml schemes/example/src/** $(BUILD)/libstd.rlib
+initfs/bin/%: schemes/%/Cargo.toml schemes/%/src/** $(BUILD)/libstd.rlib
+	mkdir -p initfs/bin
 	$(CARGO) rustc --manifest-path $< $(CARGOFLAGS) -o $@
 	strip $@
+	rm $@.d
 
-$(BUILD)/initfs.rs: $(BUILD)/init $(BUILD)/ion $(BUILD)/pcid $(BUILD)/ps2d $(BUILD)/example
+
+$(BUILD)/initfs.rs: \
+		initfs/bin/init \
+		initfs/bin/pcid \
+		initfs/bin/ps2d \
+		initfs/bin/vesad \
+		initfs/bin/example
+		echo 'use collections::BTreeMap;' > $@
+		echo 'pub fn gen() -> BTreeMap<&'"'"'static [u8], &'"'"'static [u8]> {' >> $@
+		echo '    let mut files: BTreeMap<&'"'"'static [u8], &'"'"'static [u8]> = BTreeMap::new();' >> $@
+		find initfs -type f -o -type l | cut -d '/' -f2- | sort \
+		| awk '{printf("    files.insert(b\"%s\", include_bytes!(\"../../initfs/%s\"));\n", $$0, $$0)}' \
+		>> $@
+		echo '    files' >> $@
+		echo '}' >> $@

@@ -3,7 +3,8 @@ use collections::VecDeque;
 use spin::Mutex;
 
 use arch::externs::memset;
-use arch::paging::{ActivePageTable, InactivePageTable, Page, PageIter, VirtualAddress};
+use arch::memory::Frame;
+use arch::paging::{ActivePageTable, InactivePageTable, Page, PageIter, PhysicalAddress, VirtualAddress};
 use arch::paging::entry::{self, EntryFlags};
 use arch::paging::temporary_page::TemporaryPage;
 
@@ -53,6 +54,47 @@ impl Grant {
                 mapper.unmap_return(page);
             }
         });
+    }
+
+    pub fn physmap(from: PhysicalAddress, to: VirtualAddress, size: usize, flags: EntryFlags) -> Grant {
+        let mut active_table = unsafe { ActivePageTable::new() };
+
+        let mut flush_all = false;
+
+        let start_page = Page::containing_address(to);
+        let end_page = Page::containing_address(VirtualAddress::new(to.get() + size - 1));
+        for page in Page::range_inclusive(start_page, end_page) {
+            let frame = Frame::containing_address(PhysicalAddress::new(page.start_address().get() - to.get() + from.get()));
+            active_table.map_to(page, frame, flags);
+            flush_all = true;
+        }
+
+        if flush_all {
+            active_table.flush_all();
+        }
+
+        Grant {
+            start: to,
+            size: size,
+            flags: flags
+        }
+    }
+
+    pub fn physunmap(self) {
+        let mut active_table = unsafe { ActivePageTable::new() };
+
+        let mut flush_all = false;
+
+        let start_page = Page::containing_address(self.start);
+        let end_page = Page::containing_address(VirtualAddress::new(self.start.get() + self.size - 1));
+        for page in Page::range_inclusive(start_page, end_page) {
+            active_table.unmap_return(page);
+            flush_all = true;
+        }
+
+        if flush_all {
+            active_table.flush_all();
+        }
     }
 
     pub fn start_address(&self) -> VirtualAddress {

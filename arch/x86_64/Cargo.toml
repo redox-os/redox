@@ -6,7 +6,6 @@ version = "0.1.0"
 bitflags = "*"
 hole_list_allocator = { path = "../../alloc/hole_list_allocator" }
 io = { path = "../../drivers/io" }
-ransid = { git = "https://github.com/redox-os/ransid.git", branch = "new_api" }
 spin = "*"
 
 [dependencies.x86]

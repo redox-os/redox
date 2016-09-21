@@ -1,0 +1,5 @@
+initfs:bin/vesad
+initfs:bin/ps2d
+initfs:bin/pcid
+initfs:bin/example
+initfs:bin/ion

@@ -14,13 +14,16 @@ pub const CLONE_SUPERVISE: usize = 0x400000;
 pub const CLOCK_REALTIME: usize = 1;
 pub const CLOCK_MONOTONIC: usize = 4;
 
-pub const MODE_DIR: u16 = 0x4000;
-pub const MODE_FILE: u16 = 0x8000;
-pub const MODE_ALL: u16 = MODE_DIR | MODE_FILE;
-
 pub const FUTEX_WAIT: usize = 0;
 pub const FUTEX_WAKE: usize = 1;
 pub const FUTEX_REQUEUE: usize = 2;
+
+pub const MAP_WRITE: usize = 1;
+pub const MAP_WRITE_COMBINE: usize = 2;
+
+pub const MODE_DIR: u16 = 0x4000;
+pub const MODE_FILE: u16 = 0x8000;
+pub const MODE_ALL: u16 = MODE_DIR | MODE_FILE;
 
 pub const SEEK_SET: usize = 0;
 pub const SEEK_CUR: usize = 1;

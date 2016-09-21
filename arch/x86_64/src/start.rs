@@ -109,7 +109,7 @@ pub unsafe extern fn kstart() -> ! {
         }
 
         // Initialize devices
-        device::init(&mut active_table);
+        device::init();
 
         // Send kernel page table to APs
         {
@@ -136,7 +136,7 @@ pub unsafe extern fn kstart() -> ! {
 }
 
 /// Entry to rust for an AP
-pub unsafe extern fn kstart_ap(cpu_id: usize, page_table: usize, stack_start: usize, stack_end: usize) -> ! {
+pub unsafe extern fn kstart_ap(cpu_id: usize, _page_table: usize, stack_start: usize, stack_end: usize) -> ! {
     {
         assert_eq!(BSS_TEST_ZERO, 0);
         assert_eq!(DATA_TEST_NONZERO, 0xFFFFFFFFFFFFFFFF);

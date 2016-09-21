@@ -7,6 +7,9 @@ use syscall::error::*;
 use syscall::flag::{SEEK_SET, SEEK_CUR, SEEK_END};
 use syscall::scheme::Scheme;
 
+#[path="../../build/userspace/initfs.rs"]
+mod gen;
+
 struct Handle {
     data: &'static [u8],
     seek: usize
@@ -20,18 +23,9 @@ pub struct InitFsScheme {
 
 impl InitFsScheme {
     pub fn new() -> InitFsScheme {
-        let mut files: BTreeMap<&'static [u8], &'static [u8]> = BTreeMap::new();
-
-        files.insert(b"bin/init", include_bytes!("../../build/userspace/init"));
-        files.insert(b"bin/ion", include_bytes!("../../build/userspace/ion"));
-        files.insert(b"bin/pcid", include_bytes!("../../build/userspace/pcid"));
-        files.insert(b"bin/ps2d", include_bytes!("../../build/userspace/ps2d"));
-        files.insert(b"bin/example", include_bytes!("../../build/userspace/example"));
-        files.insert(b"etc/init.rc", b"initfs:bin/pcid\ninitfs:bin/ps2d\ninitfs:bin/example\ninitfs:bin/ion");
-
         InitFsScheme {
             next_id: AtomicUsize::new(0),
-            files: files,
+            files: gen::gen(),
             handles: RwLock::new(BTreeMap::new())
         }
     }

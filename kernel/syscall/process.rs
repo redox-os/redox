@@ -9,14 +9,16 @@ use spin::Mutex;
 use arch;
 use arch::externs::memcpy;
 use arch::memory::allocate_frame;
-use arch::paging::{ActivePageTable, InactivePageTable, Page, VirtualAddress, entry};
+use arch::paging::{ActivePageTable, InactivePageTable, Page, PhysicalAddress, VirtualAddress, entry};
 use arch::paging::temporary_page::TemporaryPage;
 use arch::start::usermode;
 use context;
+use context::memory::Grant;
 use elf::{self, program_header};
 use scheme;
 use syscall;
 use syscall::error::*;
+use syscall::flag::{CLONE_VM, CLONE_FS, CLONE_FILES, MAP_WRITE, MAP_WRITE_COMBINE};
 use syscall::validate::{validate_slice, validate_slice_mut};
 
 pub fn brk(address: usize) -> Result<usize> {
@@ -51,16 +53,7 @@ pub fn brk(address: usize) -> Result<usize> {
     }
 }
 
-pub const CLONE_VM: usize = 0x100;
-pub const CLONE_FS: usize = 0x200;
-pub const CLONE_FILES: usize = 0x400;
-pub const CLONE_VFORK: usize = 0x4000;
 pub fn clone(flags: usize, stack_base: usize) -> Result<usize> {
-    //TODO: Copy on write?
-
-    // vfork not supported
-    assert!(flags & CLONE_VFORK == 0);
-
     let ppid;
     let pid;
     {
@@ -498,6 +491,83 @@ pub fn getpid() -> Result<usize> {
 pub fn iopl(_level: usize) -> Result<usize> {
     //TODO
     Ok(0)
+}
+
+//TODO: verify exlusive access to physical memory
+pub fn physmap(physical_address: usize, size: usize, flags: usize) -> Result<usize> {
+    if size == 0 {
+        Ok(0)
+    } else {
+        let contexts = context::contexts();
+        let context_lock = contexts.current().ok_or(Error::new(ESRCH))?;
+        let context = context_lock.read();
+
+        let mut grants = context.grants.lock();
+
+        let from_address = (physical_address/4096) * 4096;
+        let offset = physical_address - from_address;
+        let full_size = ((offset + size + 4095)/4096) * 4096;
+        let mut to_address = arch::USER_GRANT_OFFSET;
+
+        let mut entry_flags = entry::PRESENT | entry::NO_EXECUTE | entry::USER_ACCESSIBLE;
+        if flags & MAP_WRITE == MAP_WRITE {
+            entry_flags |= entry::WRITABLE;
+        }
+        if flags & MAP_WRITE_COMBINE == MAP_WRITE_COMBINE {
+            entry_flags |= entry::HUGE_PAGE;
+        }
+
+        for i in 0 .. grants.len() {
+            let start = grants[i].start_address().get();
+            if to_address + full_size < start {
+                grants.insert(i, Grant::physmap(
+                    PhysicalAddress::new(from_address),
+                    VirtualAddress::new(to_address),
+                    full_size,
+                    entry_flags
+                ));
+
+                return Ok(to_address + offset);
+            } else {
+                let pages = (grants[i].size() + 4095) / 4096;
+                let end = start + pages * 4096;
+                to_address = end;
+            }
+        }
+
+        grants.push(Grant::physmap(
+            PhysicalAddress::new(from_address),
+            VirtualAddress::new(to_address),
+            full_size,
+            entry_flags
+        ));
+
+        Ok(to_address + offset)
+    }
+}
+
+pub fn physunmap(virtual_address: usize) -> Result<usize> {
+    if virtual_address == 0 {
+        Ok(0)
+    } else {
+        let contexts = context::contexts();
+        let context_lock = contexts.current().ok_or(Error::new(ESRCH))?;
+        let context = context_lock.read();
+
+        let mut grants = context.grants.lock();
+
+        for i in 0 .. grants.len() {
+            let start = grants[i].start_address().get();
+            let end = start + grants[i].size();
+            if virtual_address >= start && virtual_address < end {
+                grants.remove(i).physunmap();
+
+                return Ok(0);
+            }
+        }
+
+        Err(Error::new(EFAULT))
+    }
 }
 
 pub fn sched_yield() -> Result<usize> {
