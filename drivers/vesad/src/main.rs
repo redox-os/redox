@@ -33,8 +33,9 @@ fn main() {
     }
 
     if physbaseptr > 0 {
-        let mut socket = File::create(":display").expect("vesad: failed to create display scheme");
         thread::spawn(move || {
+            let mut socket = File::create(":display").expect("vesad: failed to create display scheme");
+            
             let size = width * height;
 
             let onscreen = unsafe { physmap(physbaseptr as usize, size * 4, MAP_WRITE | MAP_WRITE_COMBINE).expect("vesad: failed to map VBE LFB") };

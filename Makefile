@@ -125,10 +125,6 @@ $(BUILD)/libstd.rlib: libstd/Cargo.toml libstd/src/** $(BUILD)/libcore.rlib $(BU
 	$(CARGO) rustc --verbose --manifest-path $< $(CARGOFLAGS) -o $@
 	cp libstd/target/$(TARGET)/debug/deps/*.rlib $(BUILD)
 
-$(BUILD)/ion: ion/Cargo.toml ion/src/*.rs $(BUILD)/libstd.rlib
-	$(CARGO) rustc --manifest-path $< $(CARGOFLAGS) -o $@
-	strip $@
-
 initfs/bin/init: init/Cargo.toml init/src/*.rs $(BUILD)/libstd.rlib
 	mkdir -p initfs/bin
 	$(CARGO) rustc --manifest-path $< $(CARGOFLAGS) -o $@
@@ -147,13 +143,19 @@ initfs/bin/%: schemes/%/Cargo.toml schemes/%/src/** $(BUILD)/libstd.rlib
 	strip $@
 	rm $@.d
 
+initfs/bin/ion: ion/Cargo.toml ion/src/*.rs $(BUILD)/libstd.rlib
+	mkdir -p initfs/bin
+	$(CARGO) rustc --manifest-path $< $(CARGOFLAGS) -o $@
+	strip $@
+	rm $@.d
 
 $(BUILD)/initfs.rs: \
 		initfs/bin/init \
 		initfs/bin/pcid \
 		initfs/bin/ps2d \
 		initfs/bin/vesad \
-		initfs/bin/example
+		initfs/bin/example \
+		initfs/bin/ion
 		echo 'use collections::BTreeMap;' > $@
 		echo 'pub fn gen() -> BTreeMap<&'"'"'static [u8], &'"'"'static [u8]> {' >> $@
 		echo '    let mut files: BTreeMap<&'"'"'static [u8], &'"'"'static [u8]> = BTreeMap::new();' >> $@
