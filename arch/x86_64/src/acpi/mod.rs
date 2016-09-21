@@ -59,11 +59,11 @@ pub fn init_sdt(sdt: &'static Sdt, active_table: &mut ActivePageTable) {
                     if ap_local_apic.flags & 1 == 1 {
                         // Allocate a stack
                         // TODO: Allocate contiguous
-                        let stack_start = allocate_frame().expect("no more frames in acpi stack_start").start_address().get();
+                        let stack_start = allocate_frame().expect("no more frames in acpi stack_start").start_address().get() + ::KERNEL_OFFSET;
                         for _i in 0..62 {
                             allocate_frame().expect("no more frames in acpi stack");
                         }
-                        let stack_end = allocate_frame().expect("no more frames in acpi stack_end").start_address().get() + 4096;
+                        let stack_end = allocate_frame().expect("no more frames in acpi stack_end").start_address().get() + 4096 + ::KERNEL_OFFSET;
 
                         let ap_ready = TRAMPOLINE as *mut u64;
                         let ap_cpu_id = unsafe { ap_ready.offset(1) };

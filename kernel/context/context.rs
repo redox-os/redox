@@ -5,7 +5,7 @@ use spin::Mutex;
 
 use arch;
 use super::file::File;
-use super::memory::{Memory, SharedMemory};
+use super::memory::{Grant, Memory, SharedMemory};
 
 #[derive(Copy, Clone, Debug, Eq, PartialEq)]
 pub enum Status {
@@ -33,6 +33,8 @@ pub struct Context {
     pub heap: Option<SharedMemory>,
     /// User stack
     pub stack: Option<Memory>,
+    /// User grants
+    pub grants: Arc<Mutex<Vec<Grant>>>,
     /// The current working directory
     pub cwd: Arc<Mutex<Vec<u8>>>,
     /// The open files in the scheme
@@ -51,6 +53,7 @@ impl Context {
             image: Vec::new(),
             heap: None,
             stack: None,
+            grants: Arc::new(Mutex::new(Vec::new())),
             cwd: Arc::new(Mutex::new(Vec::new())),
             files: Arc::new(Mutex::new(Vec::new()))
         }

@@ -3,8 +3,8 @@ use core::str;
 use spin::{Mutex, Once};
 
 use context;
-use syscall::Result;
-use super::Scheme;
+use syscall::error::*;
+use syscall::scheme::Scheme;
 
 /// Input
 static INPUT: Once<Mutex<VecDeque<u8>>> = Once::new();
@@ -23,18 +23,18 @@ pub extern fn debug_input(b: u8) {
 pub struct DebugScheme;
 
 impl Scheme for DebugScheme {
-    fn open(&mut self, _path: &[u8], _flags: usize) -> Result<usize> {
+    fn open(&self, _path: &[u8], _flags: usize) -> Result<usize> {
         Ok(0)
     }
 
-    fn dup(&mut self, _file: usize) -> Result<usize> {
+    fn dup(&self, _file: usize) -> Result<usize> {
         Ok(0)
     }
 
     /// Read the file `number` into the `buffer`
     ///
     /// Returns the number of bytes read
-    fn read(&mut self, _file: usize, buf: &mut [u8]) -> Result<usize> {
+    fn read(&self, _file: usize, buf: &mut [u8]) -> Result<usize> {
         loop {
             let mut i = 0;
             {
@@ -56,18 +56,18 @@ impl Scheme for DebugScheme {
     /// Write the `buffer` to the `file`
     ///
     /// Returns the number of bytes written
-    fn write(&mut self, _file: usize, buffer: &[u8]) -> Result<usize> {
+    fn write(&self, _file: usize, buffer: &[u8]) -> Result<usize> {
         //TODO: Write bytes, do not convert to str
         print!("{}", unsafe { str::from_utf8_unchecked(buffer) });
         Ok(buffer.len())
     }
 
-    fn fsync(&mut self, file: usize) -> Result<()> {
-        Ok(())
+    fn fsync(&self, _file: usize) -> Result<usize> {
+        Ok(0)
     }
 
     /// Close the file `number`
-    fn close(&mut self, _file: usize) -> Result<()> {
-        Ok(())
+    fn close(&self, _file: usize) -> Result<usize> {
+        Ok(0)
     }
 }

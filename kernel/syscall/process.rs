@@ -15,11 +15,13 @@ use arch::start::usermode;
 use context;
 use elf::{self, program_header};
 use scheme;
-use syscall::{self, Error, Result, validate_slice, validate_slice_mut};
+use syscall;
+use syscall::error::*;
+use syscall::validate::{validate_slice, validate_slice_mut};
 
 pub fn brk(address: usize) -> Result<usize> {
     let contexts = context::contexts();
-    let context_lock = contexts.current().ok_or(Error::NoProcess)?;
+    let context_lock = contexts.current().ok_or(Error::new(ESRCH))?;
     let context = context_lock.read();
 
     let current = if let Some(ref heap_shared) = context.heap {
@@ -45,8 +47,7 @@ pub fn brk(address: usize) -> Result<usize> {
 
         Ok(address)
     } else {
-        //TODO: Return correct error
-        Err(Error::NotPermitted)
+        Err(Error::new(ENOMEM))
     }
 }
 
@@ -75,7 +76,7 @@ pub fn clone(flags: usize, stack_base: usize) -> Result<usize> {
         // Copy from old process
         {
             let contexts = context::contexts();
-            let context_lock = contexts.current().ok_or(Error::NoProcess)?;
+            let context_lock = contexts.current().ok_or(Error::new(ESRCH))?;
             let context = context_lock.read();
 
             ppid = context.id;
@@ -96,11 +97,11 @@ pub fn clone(flags: usize, stack_base: usize) -> Result<usize> {
 
             if flags & CLONE_VM == CLONE_VM {
                 for memory_shared in context.image.iter() {
-                    image.push(memory_shared.borrow());
+                    image.push(memory_shared.clone());
                 }
 
                 if let Some(ref heap_shared) = context.heap {
-                    heap_option = Some(heap_shared.borrow());
+                    heap_option = Some(heap_shared.clone());
                 }
             } else {
                 for memory_shared in context.image.iter() {
@@ -174,28 +175,38 @@ pub fn clone(flags: usize, stack_base: usize) -> Result<usize> {
             if flags & CLONE_FILES == CLONE_FILES {
                 files = context.files.clone();
             } else {
-                let mut files_vec = Vec::new();
-                for (fd, file_option) in context.files.lock().iter().enumerate() {
-                    if let Some(file) = *file_option {
-                        let result = {
+                files = Arc::new(Mutex::new(context.files.lock().clone()));
+            }
+        }
+
+        // If not cloning files, dup to get a new number from scheme
+        // This has to be done outside the context lock to prevent deadlocks
+        if flags & CLONE_FILES == 0 {
+            for (fd, mut file_option) in files.lock().iter_mut().enumerate() {
+                let new_file_option = if let Some(file) = *file_option {
+                    let result = {
+                        let scheme = {
                             let schemes = scheme::schemes();
-                            let scheme_mutex = schemes.get(file.scheme).ok_or(Error::BadFile)?;
-                            let result = scheme_mutex.lock().dup(file.number);
-                            result
+                            let scheme = schemes.get(file.scheme).ok_or(Error::new(EBADF))?;
+                            scheme.clone()
                         };
-                        match result {
-                            Ok(new_number) => {
-                                files_vec.push(Some(context::file::File { scheme: file.scheme, number: new_number }));
-                            },
-                            Err(err) => {
-                                println!("clone: failed to dup {}: {:?}", fd, err);
-                            }
+                        let result = scheme.dup(file.number);
+                        result
+                    };
+                    match result {
+                        Ok(new_number) => {
+                            Some(context::file::File { scheme: file.scheme, number: new_number })
+                        },
+                        Err(err) => {
+                            println!("clone: failed to dup {}: {:?}", fd, err);
+                            None
                         }
-                    } else {
-                        files_vec.push(None);
                     }
-                }
-                files = Arc::new(Mutex::new(files_vec));
+                } else {
+                    None
+                };
+
+                *file_option = new_file_option;
             }
         }
 
@@ -349,7 +360,7 @@ pub fn exec(path: &[u8], arg_ptrs: &[[usize; 2]]) -> Result<usize> {
         //TODO: Only read elf header, not entire file. Then read required segments
         let mut data = vec![];
         loop {
-            let mut buf = [0; 4096];
+            let mut buf = [0; 16384];
             let count = syscall::read(file, &mut buf)?;
             if count > 0 {
                 data.extend_from_slice(&buf[..count]);
@@ -367,7 +378,7 @@ pub fn exec(path: &[u8], arg_ptrs: &[[usize; 2]]) -> Result<usize> {
                 drop(arg_ptrs); // Drop so that usage is not allowed after unmapping context
 
                 let contexts = context::contexts();
-                let context_lock = contexts.current().ok_or(Error::NoProcess)?;
+                let context_lock = contexts.current().ok_or(Error::new(ESRCH))?;
                 let mut context = context_lock.write();
 
                 // Unmap previous image and stack
@@ -468,7 +479,7 @@ pub fn exec(path: &[u8], arg_ptrs: &[[usize; 2]]) -> Result<usize> {
             },
             Err(err) => {
                 println!("failed to execute {}: {}", unsafe { str::from_utf8_unchecked(path) }, err);
-                return Err(Error::NoExec);
+                return Err(Error::new(ENOEXEC));
             }
         }
     }
@@ -479,7 +490,7 @@ pub fn exec(path: &[u8], arg_ptrs: &[[usize; 2]]) -> Result<usize> {
 
 pub fn getpid() -> Result<usize> {
     let contexts = context::contexts();
-    let context_lock = contexts.current().ok_or(Error::NoProcess)?;
+    let context_lock = contexts.current().ok_or(Error::new(ESRCH))?;
     let context = context_lock.read();
     Ok(context.id)
 }
@@ -502,7 +513,7 @@ pub fn waitpid(pid: usize, status_ptr: usize, _options: usize) -> Result<usize> 
 
             {
                 let contexts = context::contexts();
-                let context_lock = contexts.get(pid).ok_or(Error::NoProcess)?;
+                let context_lock = contexts.get(pid).ok_or(Error::new(ESRCH))?;
                 let context = context_lock.read();
                 if let context::Status::Exited(status) = context.status {
                     if status_ptr != 0 {
@@ -515,7 +526,7 @@ pub fn waitpid(pid: usize, status_ptr: usize, _options: usize) -> Result<usize> 
 
             if exited {
                 let mut contexts = context::contexts_mut();
-                return contexts.remove(pid).ok_or(Error::NoProcess).and(Ok(pid));
+                return contexts.remove(pid).ok_or(Error::new(ESRCH)).and(Ok(pid));
             }
         }
 

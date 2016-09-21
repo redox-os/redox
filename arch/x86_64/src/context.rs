@@ -43,6 +43,10 @@ impl Context {
         }
     }
 
+    pub fn get_page_table(&self) -> usize {
+        self.cr3
+    }
+
     pub fn set_page_table(&mut self, address: usize) {
         self.cr3 = address;
     }
@@ -52,6 +56,7 @@ impl Context {
     }
 
     /// Switch to the next context by restoring its stack and registers
+    #[cold]
     #[inline(never)]
     #[naked]
     pub unsafe fn switch_to(&mut self, next: &mut Context) {
@@ -94,7 +99,12 @@ impl Context {
         asm!("mov $0, rbp" : "=r"(self.rbp) : : "memory" : "intel", "volatile");
         asm!("mov rbp, $0" : : "r"(next.rbp) : "memory" : "intel", "volatile");
 
-        // Unset global lock, set inside of kernel
-        CONTEXT_SWITCH_LOCK.store(false, Ordering::SeqCst);
+        asm!("call context_switch_unlock" : : : "memory" : "intel", "volatile");
     }
+}
+
+/// Unset global lock, set inside of kernel
+#[no_mangle]
+extern fn context_switch_unlock(){
+    CONTEXT_SWITCH_LOCK.store(false, Ordering::SeqCst);
 }

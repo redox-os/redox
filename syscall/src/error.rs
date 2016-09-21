@@ -1,5 +1,6 @@
 use core::{fmt, result};
 
+#[derive(Eq, PartialEq)]
 pub struct Error {
     pub errno: isize,
 }

@@ -1,0 +1,9 @@
+[package]
+name = "ps2d"
+version = "0.1.0"
+
+[dependencies]
+bitflags = "*"
+io = { path = "../io/" }
+spin = "*"
+syscall = { path = "../../syscall/" }

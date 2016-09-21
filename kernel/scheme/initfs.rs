@@ -1,7 +1,11 @@
 use collections::BTreeMap;
+use core::cmp;
+use core::sync::atomic::{AtomicUsize, Ordering};
+use spin::RwLock;
 
-use syscall::{Error, Result};
-use super::Scheme;
+use syscall::error::*;
+use syscall::flag::{SEEK_SET, SEEK_CUR, SEEK_END};
+use syscall::scheme::Scheme;
 
 struct Handle {
     data: &'static [u8],
@@ -9,9 +13,9 @@ struct Handle {
 }
 
 pub struct InitFsScheme {
-    next_id: usize,
+    next_id: AtomicUsize,
     files: BTreeMap<&'static [u8], &'static [u8]>,
-    handles: BTreeMap<usize, Handle>
+    handles: RwLock<BTreeMap<usize, Handle>>
 }
 
 impl InitFsScheme {
@@ -21,23 +25,24 @@ impl InitFsScheme {
         files.insert(b"bin/init", include_bytes!("../../build/userspace/init"));
         files.insert(b"bin/ion", include_bytes!("../../build/userspace/ion"));
         files.insert(b"bin/pcid", include_bytes!("../../build/userspace/pcid"));
-        files.insert(b"etc/init.rc", b"echo testing\ninitfs:bin/pcid\ninitfs:bin/ion");
+        files.insert(b"bin/ps2d", include_bytes!("../../build/userspace/ps2d"));
+        files.insert(b"bin/example", include_bytes!("../../build/userspace/example"));
+        files.insert(b"etc/init.rc", b"initfs:bin/pcid\ninitfs:bin/ps2d\ninitfs:bin/example\ninitfs:bin/ion");
 
         InitFsScheme {
-            next_id: 0,
+            next_id: AtomicUsize::new(0),
             files: files,
-            handles: BTreeMap::new()
+            handles: RwLock::new(BTreeMap::new())
         }
     }
 }
 
 impl Scheme for InitFsScheme {
-    fn open(&mut self, path: &[u8], _flags: usize) -> Result<usize> {
-        let data = self.files.get(path).ok_or(Error::NoEntry)?;
+    fn open(&self, path: &[u8], _flags: usize) -> Result<usize> {
+        let data = self.files.get(path).ok_or(Error::new(ENOENT))?;
 
-        let id = self.next_id;
-        self.next_id += 1;
-        self.handles.insert(id, Handle {
+        let id = self.next_id.fetch_add(1, Ordering::SeqCst);
+        self.handles.write().insert(id, Handle {
             data: data,
             seek: 0
         });
@@ -45,28 +50,29 @@ impl Scheme for InitFsScheme {
         Ok(id)
     }
 
-    fn dup(&mut self, file: usize) -> Result<usize> {
+    fn dup(&self, id: usize) -> Result<usize> {
         let (data, seek) = {
-            let handle = self.handles.get(&file).ok_or(Error::BadFile)?;
+            let handles = self.handles.read();
+            let handle = handles.get(&id).ok_or(Error::new(EBADF))?;
             (handle.data, handle.seek)
         };
 
-        let id = self.next_id;
-        self.next_id += 1;
-        self.handles.insert(id, Handle {
+        let new_id = self.next_id.fetch_add(1, Ordering::SeqCst);
+        self.handles.write().insert(new_id, Handle {
             data: data,
             seek: seek
         });
 
-        Ok(id)
+        Ok(new_id)
     }
 
-    fn read(&mut self, file: usize, buffer: &mut [u8]) -> Result<usize> {
-        let mut handle = self.handles.get_mut(&file).ok_or(Error::BadFile)?;
+    fn read(&self, id: usize, buf: &mut [u8]) -> Result<usize> {
+        let mut handles = self.handles.write();
+        let mut handle = handles.get_mut(&id).ok_or(Error::new(EBADF))?;
 
         let mut i = 0;
-        while i < buffer.len() && handle.seek < handle.data.len() {
-            buffer[i] = handle.data[handle.seek];
+        while i < buf.len() && handle.seek < handle.data.len() {
+            buf[i] = handle.data[handle.seek];
             i += 1;
             handle.seek += 1;
         }
@@ -74,15 +80,25 @@ impl Scheme for InitFsScheme {
         Ok(i)
     }
 
-    fn write(&mut self, _file: usize, _buffer: &[u8]) -> Result<usize> {
-        Err(Error::NotPermitted)
+    fn seek(&self, id: usize, pos: usize, whence: usize) -> Result<usize> {
+        let mut handles = self.handles.write();
+        let mut handle = handles.get_mut(&id).ok_or(Error::new(EBADF))?;
+
+        handle.seek = match whence {
+            SEEK_SET => cmp::min(handle.data.len(), pos),
+            SEEK_CUR => cmp::max(0, cmp::min(handle.data.len() as isize, handle.seek as isize + pos as isize)) as usize,
+            SEEK_END => cmp::max(0, cmp::min(handle.data.len() as isize, handle.data.len() as isize + pos as isize)) as usize,
+            _ => return Err(Error::new(EINVAL))
+        };
+
+        Ok(handle.seek)
     }
 
-    fn fsync(&mut self, file: usize) -> Result<()> {
-        Ok(())
+    fn fsync(&self, _id: usize) -> Result<usize> {
+        Ok(0)
     }
 
-    fn close(&mut self, file: usize) -> Result<()> {
-        self.handles.remove(&file).ok_or(Error::BadFile).and(Ok(()))
+    fn close(&self, id: usize) -> Result<usize> {
+        self.handles.write().remove(&id).ok_or(Error::new(EBADF)).and(Ok(0))
     }
 }

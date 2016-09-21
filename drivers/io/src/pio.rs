@@ -1,5 +1,4 @@
 use core::marker::PhantomData;
-use x86::io;
 
 use super::io::Io;
 
@@ -27,13 +26,19 @@ impl Io for Pio<u8> {
     /// Read
     #[inline(always)]
     fn read(&self) -> u8 {
-        unsafe { io::inb(self.port) }
+        let value: u8;
+        unsafe {
+            asm!("in $0, $1" : "={al}"(value) : "{dx}"(self.port) : "memory" : "intel", "volatile");
+        }
+        value
     }
 
     /// Write
     #[inline(always)]
     fn write(&mut self, value: u8) {
-        unsafe { io::outb(self.port, value) }
+        unsafe {
+            asm!("out $1, $0" : : "{al}"(value), "{dx}"(self.port) : "memory" : "intel", "volatile");
+        }
     }
 }
 
@@ -44,13 +49,19 @@ impl Io for Pio<u16> {
     /// Read
     #[inline(always)]
     fn read(&self) -> u16 {
-        unsafe { io::inw(self.port) }
+        let value: u16;
+        unsafe {
+            asm!("in $0, $1" : "={ax}"(value) : "{dx}"(self.port) : "memory" : "intel", "volatile");
+        }
+        value
     }
 
     /// Write
     #[inline(always)]
     fn write(&mut self, value: u16) {
-        unsafe { io::outw(self.port, value) }
+        unsafe {
+            asm!("out $1, $0" : : "{ax}"(value), "{dx}"(self.port) : "memory" : "intel", "volatile");
+        }
     }
 }
 
@@ -61,12 +72,18 @@ impl Io for Pio<u32> {
     /// Read
     #[inline(always)]
     fn read(&self) -> u32 {
-        unsafe { io::inl(self.port) }
+        let value: u32;
+        unsafe {
+            asm!("in $0, $1" : "={eax}"(value) : "{dx}"(self.port) : "memory" : "intel", "volatile");
+        }
+        value
     }
 
     /// Write
     #[inline(always)]
     fn write(&mut self, value: u32) {
-        unsafe { io::outl(self.port, value) }
+        unsafe {
+            asm!("out $1, $0" : : "{eax}"(value), "{dx}"(self.port) : "memory" : "intel", "volatile");
+        }
     }
 }

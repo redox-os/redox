@@ -15,6 +15,7 @@ extern crate hole_list_allocator as allocator;
 
 #[macro_use]
 extern crate bitflags;
+extern crate io;
 extern crate ransid;
 extern crate spin;
 pub extern crate x86;
@@ -58,6 +59,9 @@ pub extern crate x86;
     /// Size of user stack
     pub const USER_STACK_SIZE: usize = 1024 * 1024; // 1 MB
 
+    /// Offset to user grants
+    pub const USER_GRANT_OFFSET: usize = USER_STACK_OFFSET + PML4_SIZE;
+
     /// Offset to user temporary image (used when cloning)
     pub const USER_TMP_OFFSET: usize = USER_STACK_OFFSET + PML4_SIZE;
 
@@ -67,14 +71,16 @@ pub extern crate x86;
     /// Offset to user temporary stack (used when cloning)
     pub const USER_TMP_STACK_OFFSET: usize = USER_TMP_HEAP_OFFSET + PML4_SIZE;
 
+    /// Offset to user temporary page for grants
+    pub const USER_TMP_GRANT_OFFSET: usize = USER_TMP_STACK_OFFSET + PML4_SIZE;
+
 
 /// Print to console
 #[macro_export]
 macro_rules! print {
     ($($arg:tt)*) => ({
         use core::fmt::Write;
-        let mut console = $crate::console::CONSOLE.lock();
-        let _ = write!(console, $($arg)*);
+        let _ = write!($crate::console::CONSOLE.lock(), $($arg)*);
     });
 }
 
@@ -198,9 +204,6 @@ pub mod gdt;
 
 /// Interrupt descriptor table
 pub mod idt;
-
-/// IO Handling
-pub mod io;
 
 /// Interrupt instructions
 pub mod interrupt;

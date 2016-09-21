@@ -93,6 +93,13 @@ impl Mapper {
             .and_then(|p1| p1[page.p1_index()].pointed_frame())
     }
 
+    pub fn translate_page_flags(&self, page: Page) -> Option<EntryFlags> {
+        self.p4().next_table(page.p4_index())
+            .and_then(|p3| p3.next_table(page.p3_index()))
+            .and_then(|p2| p2.next_table(page.p2_index()))
+            .and_then(|p1| Some(p1[page.p1_index()].flags()))
+    }
+
     /// Translate a virtual address to a physical one
     pub fn translate(&self, virtual_address: VirtualAddress) -> Option<PhysicalAddress> {
         let offset = virtual_address.get() % PAGE_SIZE;

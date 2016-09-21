@@ -2,105 +2,29 @@
 #![no_std]
 
 pub use self::arch::*;
+pub use self::data::*;
 pub use self::error::*;
+pub use self::flag::*;
+pub use self::number::*;
+pub use self::scheme::*;
 
 #[cfg(target_arch = "x86")]
 #[path="x86.rs"]
-pub mod arch;
+mod arch;
 
 #[cfg(target_arch = "x86_64")]
 #[path="x86_64.rs"]
-pub mod arch;
+mod arch;
+
+pub mod data;
 
 pub mod error;
 
-pub const SYS_BRK: usize = 45;
-pub const SYS_CHDIR: usize = 12;
-pub const SYS_CLONE: usize = 120;
-    pub const CLONE_VM: usize = 0x100;
-    pub const CLONE_FS: usize = 0x200;
-    pub const CLONE_FILES: usize = 0x400;
-    pub const CLONE_VFORK: usize = 0x4000;
-    /// Mark this clone as supervised.
-    ///
-    /// This means that the process can run in supervised mode, even not being connected to
-    /// a supervisor yet. In other words, the parent can later on supervise the process and handle
-    /// the potential blocking syscall.
-    ///
-    /// This is an important security measure, since otherwise the process would be able to fork it
-    /// self right after starting, making supervising it impossible.
-    pub const CLONE_SUPERVISE: usize = 0x400000;
-pub const SYS_CLOSE: usize = 6;
-pub const SYS_CLOCK_GETTIME: usize = 265;
-    pub const CLOCK_REALTIME: usize = 1;
-    pub const CLOCK_MONOTONIC: usize = 4;
-pub const SYS_DUP: usize = 41;
-pub const SYS_EXECVE: usize = 11;
-pub const SYS_EXIT: usize = 1;
-pub const SYS_FPATH: usize = 928;
-pub const SYS_FSTAT: usize = 28;
-    pub const MODE_DIR: u16 = 0x4000;
-    pub const MODE_FILE: u16 = 0x8000;
-    pub const MODE_ALL: u16 = MODE_DIR | MODE_FILE;
-pub const SYS_FSYNC: usize = 118;
-pub const SYS_FTRUNCATE: usize = 93;
-pub const SYS_FUTEX: usize = 240;
-    pub const FUTEX_WAIT: usize = 0;
-    pub const FUTEX_WAKE: usize = 1;
-    pub const FUTEX_REQUEUE: usize = 2;
-pub const SYS_GETCWD: usize = 183;
-pub const SYS_GETPID: usize = 20;
-pub const SYS_IOPL: usize = 110;
-pub const SYS_LINK: usize = 9;
-pub const SYS_LSEEK: usize = 19;
-    pub const SEEK_SET: usize = 0;
-    pub const SEEK_CUR: usize = 1;
-    pub const SEEK_END: usize = 2;
-pub const SYS_MKDIR: usize = 39;
-pub const SYS_NANOSLEEP: usize = 162;
-pub const SYS_OPEN: usize = 5;
-    pub const O_RDONLY: usize = 0;
-    pub const O_WRONLY: usize = 1;
-    pub const O_RDWR: usize = 2;
-    pub const O_NONBLOCK: usize = 4;
-    pub const O_APPEND: usize = 8;
-    pub const O_SHLOCK: usize = 0x10;
-    pub const O_EXLOCK: usize = 0x20;
-    pub const O_ASYNC: usize = 0x40;
-    pub const O_FSYNC: usize = 0x80;
-    pub const O_CREAT: usize = 0x200;
-    pub const O_TRUNC: usize = 0x400;
-    pub const O_EXCL: usize = 0x800;
-pub const SYS_PIPE2: usize = 331;
-pub const SYS_READ: usize = 3;
-pub const SYS_RMDIR: usize = 84;
-pub const SYS_UNLINK: usize = 10;
-pub const SYS_WAITPID: usize = 7;
-pub const SYS_WRITE: usize = 4;
-pub const SYS_YIELD: usize = 158;
+pub mod flag;
 
-#[derive(Copy, Clone, Debug, Default)]
-#[repr(packed)]
-pub struct Stat {
-    pub st_dev: u16,
-    pub st_ino: u16,
-    pub st_mode: u16,
-    pub st_nlink: u16,
-    pub st_uid: u16,
-    pub st_gid: u16,
-    pub st_rdev: u16,
-    pub st_size: u32,
-    pub st_atime: u32,
-    pub st_mtime: u32,
-    pub st_ctime: u32
-}
+pub mod number;
 
-#[derive(Copy, Clone, Debug, Default)]
-#[repr(packed)]
-pub struct TimeSpec {
-    pub tv_sec: i64,
-    pub tv_nsec: i32,
-}
+pub mod scheme;
 
 pub unsafe fn brk(addr: usize) -> Result<usize> {
     syscall1(SYS_BRK, addr)

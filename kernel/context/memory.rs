@@ -1,4 +1,5 @@
 use alloc::arc::{Arc, Weak};
+use collections::VecDeque;
 use spin::Mutex;
 
 use arch::externs::memset;
@@ -7,13 +8,67 @@ use arch::paging::entry::{self, EntryFlags};
 use arch::paging::temporary_page::TemporaryPage;
 
 #[derive(Debug)]
-pub struct Memory {
+pub struct Grant {
     start: VirtualAddress,
     size: usize,
     flags: EntryFlags
 }
 
-#[derive(Debug)]
+impl Grant {
+    pub fn new(from: VirtualAddress, to: VirtualAddress, size: usize, flags: EntryFlags, new_table: &mut InactivePageTable, temporary_page: &mut TemporaryPage) -> Grant {
+        let mut active_table = unsafe { ActivePageTable::new() };
+
+        let mut frames = VecDeque::new();
+
+        let start_page = Page::containing_address(from);
+        let end_page = Page::containing_address(VirtualAddress::new(from.get() + size - 1));
+        for page in Page::range_inclusive(start_page, end_page) {
+            let frame = active_table.translate_page(page).expect("grant references unmapped memory");
+            frames.push_back(frame);
+        }
+
+        active_table.with(new_table, temporary_page, |mapper| {
+            let start_page = Page::containing_address(to);
+            let end_page = Page::containing_address(VirtualAddress::new(to.get() + size - 1));
+            for page in Page::range_inclusive(start_page, end_page) {
+                let frame = frames.pop_front().expect("grant did not find enough frames");
+                mapper.map_to(page, frame, flags);
+            }
+        });
+
+        Grant {
+            start: to,
+            size: size,
+            flags: flags
+        }
+    }
+
+    pub fn destroy(self, new_table: &mut InactivePageTable, temporary_page: &mut TemporaryPage) {
+        let mut active_table = unsafe { ActivePageTable::new() };
+
+        active_table.with(new_table, temporary_page, |mapper| {
+            let start_page = Page::containing_address(self.start);
+            let end_page = Page::containing_address(VirtualAddress::new(self.start.get() + self.size - 1));
+            for page in Page::range_inclusive(start_page, end_page) {
+                mapper.unmap_return(page);
+            }
+        });
+    }
+
+    pub fn start_address(&self) -> VirtualAddress {
+        self.start
+    }
+
+    pub fn size(&self) -> usize {
+        self.size
+    }
+
+    pub fn flags(&self) -> EntryFlags {
+        self.flags
+    }
+}
+
+#[derive(Clone, Debug)]
 pub enum SharedMemory {
     Owned(Arc<Mutex<Memory>>),
     Borrowed(Weak<Mutex<Memory>>)
@@ -40,6 +95,13 @@ impl SharedMemory {
             SharedMemory::Borrowed(ref memory_lock) => SharedMemory::Borrowed(memory_lock.clone())
         }
     }
+}
+
+#[derive(Debug)]
+pub struct Memory {
+    start: VirtualAddress,
+    size: usize,
+    flags: EntryFlags
 }
 
 impl Memory {

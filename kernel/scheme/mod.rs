@@ -11,14 +11,16 @@ use alloc::boxed::Box;
 
 use collections::BTreeMap;
 
-use spin::{Once, Mutex, RwLock, RwLockReadGuard, RwLockWriteGuard};
+use spin::{Once, RwLock, RwLockReadGuard, RwLockWriteGuard};
 
-use syscall::{Error, Result};
+use syscall::error::*;
+use syscall::scheme::Scheme;
 
 use self::debug::DebugScheme;
 use self::env::EnvScheme;
 use self::initfs::InitFsScheme;
 use self::irq::IrqScheme;
+use self::root::RootScheme;
 
 /// Debug scheme
 pub mod debug;
@@ -32,12 +34,18 @@ pub mod initfs;
 /// IRQ handling
 pub mod irq;
 
+/// Root scheme
+pub mod root;
+
+/// Userspace schemes
+pub mod user;
+
 /// Limit on number of schemes
 pub const SCHEME_MAX_SCHEMES: usize = 65536;
 
 /// Scheme list type
 pub struct SchemeList {
-    map: BTreeMap<usize, Arc<Mutex<Box<Scheme + Send>>>>,
+    map: BTreeMap<usize, Arc<Box<Scheme + Send + Sync>>>,
     names: BTreeMap<Box<[u8]>, usize>,
     next_id: usize
 }
@@ -53,11 +61,11 @@ impl SchemeList {
     }
 
     /// Get the nth scheme.
-    pub fn get(&self, id: usize) -> Option<&Arc<Mutex<Box<Scheme + Send>>>> {
+    pub fn get(&self, id: usize) -> Option<&Arc<Box<Scheme + Send + Sync>>> {
         self.map.get(&id)
     }
 
-    pub fn get_name(&self, name: &[u8]) -> Option<(usize, &Arc<Mutex<Box<Scheme + Send>>>)> {
+    pub fn get_name(&self, name: &[u8]) -> Option<(usize, &Arc<Box<Scheme + Send + Sync>>)> {
         if let Some(&id) = self.names.get(name) {
             self.get(id).map(|scheme| (id, scheme))
         } else {
@@ -66,9 +74,9 @@ impl SchemeList {
     }
 
     /// Create a new scheme.
-    pub fn insert(&mut self, name: Box<[u8]>, scheme: Arc<Mutex<Box<Scheme + Send>>>) -> Result<&Arc<Mutex<Box<Scheme + Send>>>> {
+    pub fn insert(&mut self, name: Box<[u8]>, scheme: Arc<Box<Scheme + Send + Sync>>) -> Result<&Arc<Box<Scheme + Send + Sync>>> {
         if self.names.contains_key(&name) {
-            return Err(Error::FileExists);
+            return Err(Error::new(EEXIST));
         }
 
         if self.next_id >= SCHEME_MAX_SCHEMES {
@@ -80,7 +88,7 @@ impl SchemeList {
         }
 
         if self.next_id >= SCHEME_MAX_SCHEMES {
-            return Err(Error::TryAgain);
+            return Err(Error::new(EAGAIN));
         }
 
         let id = self.next_id;
@@ -99,10 +107,11 @@ static SCHEMES: Once<RwLock<SchemeList>> = Once::new();
 /// Initialize schemes, called if needed
 fn init_schemes() -> RwLock<SchemeList> {
     let mut list: SchemeList = SchemeList::new();
-    list.insert(Box::new(*b"debug"), Arc::new(Mutex::new(Box::new(DebugScheme)))).expect("failed to insert debug: scheme");
-    list.insert(Box::new(*b"env"), Arc::new(Mutex::new(Box::new(EnvScheme::new())))).expect("failed to insert env: scheme");
-    list.insert(Box::new(*b"initfs"), Arc::new(Mutex::new(Box::new(InitFsScheme::new())))).expect("failed to insert initfs: scheme");
-    list.insert(Box::new(*b"irq"), Arc::new(Mutex::new(Box::new(IrqScheme)))).expect("failed to insert irq: scheme");
+    list.insert(Box::new(*b""), Arc::new(Box::new(RootScheme::new()))).expect("failed to insert root scheme");
+    list.insert(Box::new(*b"debug"), Arc::new(Box::new(DebugScheme))).expect("failed to insert debug scheme");
+    list.insert(Box::new(*b"env"), Arc::new(Box::new(EnvScheme::new()))).expect("failed to insert env scheme");
+    list.insert(Box::new(*b"initfs"), Arc::new(Box::new(InitFsScheme::new()))).expect("failed to insert initfs scheme");
+    list.insert(Box::new(*b"irq"), Arc::new(Box::new(IrqScheme))).expect("failed to insert irq scheme");
     RwLock::new(list)
 }
 
@@ -114,33 +123,4 @@ pub fn schemes() -> RwLockReadGuard<'static, SchemeList> {
 /// Get the global schemes list, mutable
 pub fn schemes_mut() -> RwLockWriteGuard<'static, SchemeList> {
     SCHEMES.call_once(init_schemes).write()
-}
-
-/// A scheme trait, implemented by a scheme handler
-pub trait Scheme {
-    /// Open the file at `path` with `flags`.
-    ///
-    /// Returns a file descriptor or an error
-    fn open(&mut self, path: &[u8], flags: usize) -> Result<usize>;
-
-    /// Duplicate an open file descriptor
-    ///
-    /// Returns a file descriptor or an error
-    fn dup(&mut self, file: usize) -> Result<usize>;
-
-    /// Read from some file descriptor into the `buffer`
-    ///
-    /// Returns the number of bytes read
-    fn read(&mut self, file: usize, buffer: &mut [u8]) -> Result<usize>;
-
-    /// Write the `buffer` to the file descriptor
-    ///
-    /// Returns the number of bytes written
-    fn write(&mut self, file: usize, buffer: &[u8]) -> Result<usize>;
-
-    /// Sync the file descriptor
-    fn fsync(&mut self, file: usize) -> Result<()>;
-
-    /// Close the file descriptor
-    fn close(&mut self, file: usize) -> Result<()>;
 }

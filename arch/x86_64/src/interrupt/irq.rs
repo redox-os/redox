@@ -1,9 +1,9 @@
 use spin::Mutex;
 use x86::io;
 
-use device::ps2::{PS2_KEYBOARD, PS2_MOUSE};
 use device::serial::{COM1, COM2};
 
+pub static ACKS: Mutex<[usize; 16]> = Mutex::new([0; 16]);
 pub static COUNTS: Mutex<[usize; 16]> = Mutex::new([0; 16]);
 
 #[inline(always)]
@@ -17,6 +17,14 @@ unsafe fn slave_ack() {
     master_ack();
 }
 
+pub unsafe fn acknowledge(irq: usize) {
+    if irq >= 8 {
+        slave_ack();
+    } else {
+        master_ack();
+    }
+}
+
 interrupt!(pit, {
     COUNTS.lock()[0] += 1;
     master_ack();
@@ -24,10 +32,6 @@ interrupt!(pit, {
 
 interrupt!(keyboard, {
     COUNTS.lock()[1] += 1;
-    if let Some(ref mut keyboard) = *PS2_KEYBOARD.lock(){
-        keyboard.on_irq();
-    }
-    master_ack();
 });
 
 interrupt!(cascade, {
@@ -84,10 +88,6 @@ interrupt!(pci3, {
 
 interrupt!(mouse, {
     COUNTS.lock()[12] += 1;
-    if let Some(ref mut mouse) = *PS2_MOUSE.lock() {
-        mouse.on_irq();
-    }
-    slave_ack();
 });
 
 interrupt!(fpu, {
