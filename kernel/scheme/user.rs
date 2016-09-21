@@ -89,7 +89,7 @@ impl UserInner {
             for i in 0 .. grants.len() {
                 let start = grants[i].start_address().get();
                 if to_address + full_size < start {
-                    grants.insert(i, Grant::new(
+                    grants.insert(i, Grant::map_inactive(
                         VirtualAddress::new(from_address),
                         VirtualAddress::new(to_address),
                         full_size,
@@ -106,7 +106,7 @@ impl UserInner {
                 }
             }
 
-            grants.push(Grant::new(
+            grants.push(Grant::map_inactive(
                 VirtualAddress::new(from_address),
                 VirtualAddress::new(to_address),
                 full_size,
@@ -135,7 +135,7 @@ impl UserInner {
                 let start = grants[i].start_address().get();
                 let end = start + grants[i].size();
                 if address >= start && address < end {
-                    grants.remove(i).destroy(&mut new_table, &mut temporary_page);
+                    grants.remove(i).unmap_inactive(&mut new_table, &mut temporary_page);
 
                     return Ok(());
                 }

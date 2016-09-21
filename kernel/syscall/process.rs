@@ -63,6 +63,7 @@ pub fn clone(flags: usize, stack_base: usize) -> Result<usize> {
         let mut image = vec![];
         let mut heap_option = None;
         let mut stack_option = None;
+        let grants;
         let cwd;
         let files;
 
@@ -159,6 +160,12 @@ pub fn clone(flags: usize, stack_base: usize) -> Result<usize> {
                 stack_option = Some(new_stack);
             }
 
+            if flags & CLONE_VM == CLONE_VM {
+                grants = context.grants.clone();
+            } else {
+                grants = Arc::new(Mutex::new(Vec::new()));
+            }
+
             if flags & CLONE_FS == CLONE_FS {
                 cwd = context.cwd.clone();
             } else {
@@ -252,12 +259,21 @@ pub fn clone(flags: usize, stack_base: usize) -> Result<usize> {
                 // Copy user heap mapping, if found
                 if let Some(heap_shared) = heap_option {
                     let frame = active_table.p4()[1].pointed_frame().expect("user heap not mapped");
-                    let flags = active_table.p4()[0].flags();
+                    let flags = active_table.p4()[1].flags();
                     active_table.with(&mut new_table, &mut temporary_page, |mapper| {
                         mapper.p4_mut()[1].set(frame, flags);
                     });
                     context.heap = Some(heap_shared);
                 }
+
+                if ! grants.lock().is_empty() {
+                    let frame = active_table.p4()[2].pointed_frame().expect("user heap not mapped");
+                    let flags = active_table.p4()[2].flags();
+                    active_table.with(&mut new_table, &mut temporary_page, |mapper| {
+                        mapper.p4_mut()[1].set(frame, flags);
+                    });
+                }
+                context.grants = grants;
             } else {
                 // Copy percpu mapping
                 {
@@ -330,6 +346,8 @@ pub fn exit(status: usize) -> ! {
         context.image.clear();
         drop(context.heap.take());
         drop(context.stack.take());
+        context.grants = Arc::new(Mutex::new(Vec::new()));
+        context.files = Arc::new(Mutex::new(Vec::new()));
         context.status = context::Status::Exited(status);
     }
 
@@ -378,6 +396,7 @@ pub fn exec(path: &[u8], arg_ptrs: &[[usize; 2]]) -> Result<usize> {
                 context.image.clear();
                 drop(context.heap.take());
                 drop(context.stack.take());
+                context.grants = Arc::new(Mutex::new(Vec::new()));
 
                 for segment in elf.segments() {
                     if segment.p_type == program_header::PT_LOAD {
@@ -560,7 +579,7 @@ pub fn physunmap(virtual_address: usize) -> Result<usize> {
             let start = grants[i].start_address().get();
             let end = start + grants[i].size();
             if virtual_address >= start && virtual_address < end {
-                grants.remove(i).physunmap();
+                grants.remove(i).unmap();
 
                 return Ok(0);
             }

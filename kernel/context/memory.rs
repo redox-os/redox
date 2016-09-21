@@ -16,7 +16,31 @@ pub struct Grant {
 }
 
 impl Grant {
-    pub fn new(from: VirtualAddress, to: VirtualAddress, size: usize, flags: EntryFlags, new_table: &mut InactivePageTable, temporary_page: &mut TemporaryPage) -> Grant {
+    pub fn physmap(from: PhysicalAddress, to: VirtualAddress, size: usize, flags: EntryFlags) -> Grant {
+        let mut active_table = unsafe { ActivePageTable::new() };
+
+        let mut flush_all = false;
+
+        let start_page = Page::containing_address(to);
+        let end_page = Page::containing_address(VirtualAddress::new(to.get() + size - 1));
+        for page in Page::range_inclusive(start_page, end_page) {
+            let frame = Frame::containing_address(PhysicalAddress::new(page.start_address().get() - to.get() + from.get()));
+            active_table.map_to(page, frame, flags);
+            flush_all = true;
+        }
+
+        if flush_all {
+            active_table.flush_all();
+        }
+
+        Grant {
+            start: to,
+            size: size,
+            flags: flags
+        }
+    }
+
+    pub fn map_inactive(from: VirtualAddress, to: VirtualAddress, size: usize, flags: EntryFlags, new_table: &mut InactivePageTable, temporary_page: &mut TemporaryPage) -> Grant {
         let mut active_table = unsafe { ActivePageTable::new() };
 
         let mut frames = VecDeque::new();
@@ -44,43 +68,19 @@ impl Grant {
         }
     }
 
-    pub fn destroy(self, new_table: &mut InactivePageTable, temporary_page: &mut TemporaryPage) {
-        let mut active_table = unsafe { ActivePageTable::new() };
-
-        active_table.with(new_table, temporary_page, |mapper| {
-            let start_page = Page::containing_address(self.start);
-            let end_page = Page::containing_address(VirtualAddress::new(self.start.get() + self.size - 1));
-            for page in Page::range_inclusive(start_page, end_page) {
-                mapper.unmap_return(page);
-            }
-        });
+    pub fn start_address(&self) -> VirtualAddress {
+        self.start
     }
 
-    pub fn physmap(from: PhysicalAddress, to: VirtualAddress, size: usize, flags: EntryFlags) -> Grant {
-        let mut active_table = unsafe { ActivePageTable::new() };
-
-        let mut flush_all = false;
-
-        let start_page = Page::containing_address(to);
-        let end_page = Page::containing_address(VirtualAddress::new(to.get() + size - 1));
-        for page in Page::range_inclusive(start_page, end_page) {
-            let frame = Frame::containing_address(PhysicalAddress::new(page.start_address().get() - to.get() + from.get()));
-            active_table.map_to(page, frame, flags);
-            flush_all = true;
-        }
-
-        if flush_all {
-            active_table.flush_all();
-        }
-
-        Grant {
-            start: to,
-            size: size,
-            flags: flags
-        }
+    pub fn size(&self) -> usize {
+        self.size
     }
 
-    pub fn physunmap(self) {
+    pub fn flags(&self) -> EntryFlags {
+        self.flags
+    }
+
+    pub fn unmap(self) {
         let mut active_table = unsafe { ActivePageTable::new() };
 
         let mut flush_all = false;
@@ -97,16 +97,16 @@ impl Grant {
         }
     }
 
-    pub fn start_address(&self) -> VirtualAddress {
-        self.start
-    }
+    pub fn unmap_inactive(self, new_table: &mut InactivePageTable, temporary_page: &mut TemporaryPage) {
+        let mut active_table = unsafe { ActivePageTable::new() };
 
-    pub fn size(&self) -> usize {
-        self.size
-    }
-
-    pub fn flags(&self) -> EntryFlags {
-        self.flags
+        active_table.with(new_table, temporary_page, |mapper| {
+            let start_page = Page::containing_address(self.start);
+            let end_page = Page::containing_address(VirtualAddress::new(self.start.get() + self.size - 1));
+            for page in Page::range_inclusive(start_page, end_page) {
+                mapper.unmap_return(page);
+            }
+        });
     }
 }
 
