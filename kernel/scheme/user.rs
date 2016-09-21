@@ -65,76 +65,84 @@ impl UserInner {
     }
 
     fn capture_inner(&self, address: usize, size: usize, writable: bool) -> Result<usize> {
-        let context_lock = self.context.upgrade().ok_or(Error::new(ESRCH))?;
-        let context = context_lock.read();
+        if size == 0 {
+            Ok(0)
+        } else {
+            let context_lock = self.context.upgrade().ok_or(Error::new(ESRCH))?;
+            let context = context_lock.read();
 
-        let mut grants = context.grants.lock();
+            let mut grants = context.grants.lock();
 
-        let mut new_table = unsafe { InactivePageTable::from_address(context.arch.get_page_table()) };
-        let mut temporary_page = TemporaryPage::new(Page::containing_address(VirtualAddress::new(arch::USER_TMP_GRANT_OFFSET)));
+            let mut new_table = unsafe { InactivePageTable::from_address(context.arch.get_page_table()) };
+            let mut temporary_page = TemporaryPage::new(Page::containing_address(VirtualAddress::new(arch::USER_TMP_GRANT_OFFSET)));
 
-        let from_address = (address/4096) * 4096;
-        let offset = address - from_address;
-        let full_size = ((offset + size + 4095)/4096) * 4096;
-        let mut to_address = arch::USER_GRANT_OFFSET;
+            let from_address = (address/4096) * 4096;
+            let offset = address - from_address;
+            let full_size = ((offset + size + 4095)/4096) * 4096;
+            let mut to_address = arch::USER_GRANT_OFFSET;
 
-        let mut flags = entry::PRESENT | entry::NO_EXECUTE;
-        if writable {
-            flags |= entry::WRITABLE;
-        }
-
-        for i in 0 .. grants.len() {
-            let start = grants[i].start_address().get();
-            if to_address + full_size < start {
-                grants.insert(i, Grant::new(
-                    VirtualAddress::new(from_address),
-                    VirtualAddress::new(to_address),
-                    full_size,
-                    flags,
-                    &mut new_table,
-                    &mut temporary_page
-                ));
-
-                return Ok(to_address + offset);
-            } else {
-                let pages = (grants[i].size() + 4095) / 4096;
-                let end = start + pages * 4096;
-                to_address = end;
+            let mut flags = entry::PRESENT | entry::NO_EXECUTE;
+            if writable {
+                flags |= entry::WRITABLE;
             }
+
+            for i in 0 .. grants.len() {
+                let start = grants[i].start_address().get();
+                if to_address + full_size < start {
+                    grants.insert(i, Grant::new(
+                        VirtualAddress::new(from_address),
+                        VirtualAddress::new(to_address),
+                        full_size,
+                        flags,
+                        &mut new_table,
+                        &mut temporary_page
+                    ));
+
+                    return Ok(to_address + offset);
+                } else {
+                    let pages = (grants[i].size() + 4095) / 4096;
+                    let end = start + pages * 4096;
+                    to_address = end;
+                }
+            }
+
+            grants.push(Grant::new(
+                VirtualAddress::new(from_address),
+                VirtualAddress::new(to_address),
+                full_size,
+                flags,
+                &mut new_table,
+                &mut temporary_page
+            ));
+
+            Ok(to_address + offset)
         }
-
-        grants.push(Grant::new(
-            VirtualAddress::new(from_address),
-            VirtualAddress::new(to_address),
-            full_size,
-            flags,
-            &mut new_table,
-            &mut temporary_page
-        ));
-
-        return Ok(to_address + offset);
     }
 
     pub fn release(&self, address: usize) -> Result<()> {
-        let context_lock = self.context.upgrade().ok_or(Error::new(ESRCH))?;
-        let context = context_lock.read();
+        if address == 0 {
+            Ok(())
+        } else {
+            let context_lock = self.context.upgrade().ok_or(Error::new(ESRCH))?;
+            let context = context_lock.read();
 
-        let mut grants = context.grants.lock();
+            let mut grants = context.grants.lock();
 
-        let mut new_table = unsafe { InactivePageTable::from_address(context.arch.get_page_table()) };
-        let mut temporary_page = TemporaryPage::new(Page::containing_address(VirtualAddress::new(arch::USER_TMP_GRANT_OFFSET)));
+            let mut new_table = unsafe { InactivePageTable::from_address(context.arch.get_page_table()) };
+            let mut temporary_page = TemporaryPage::new(Page::containing_address(VirtualAddress::new(arch::USER_TMP_GRANT_OFFSET)));
 
-        for i in 0 .. grants.len() {
-            let start = grants[i].start_address().get();
-            let end = start + grants[i].size();
-            if address >= start && address < end {
-                grants.remove(i).destroy(&mut new_table, &mut temporary_page);
+            for i in 0 .. grants.len() {
+                let start = grants[i].start_address().get();
+                let end = start + grants[i].size();
+                if address >= start && address < end {
+                    grants.remove(i).destroy(&mut new_table, &mut temporary_page);
 
-                return Ok(());
+                    return Ok(());
+                }
             }
-        }
 
-        Err(Error::new(EFAULT))
+            Err(Error::new(EFAULT))
+        }
     }
 
     pub fn read(&self, buf: &mut [u8]) -> Result<usize> {

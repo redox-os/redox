@@ -31,6 +31,7 @@ fn main(){
         loop {
             let mut packet = Packet::default();
             socket.read(&mut packet).expect("example: failed to read events from example scheme");
+            println!("{:?}", packet);
             scheme.handle(&mut packet);
             socket.write(&packet).expect("example: failed to write responses to example scheme");
         }
