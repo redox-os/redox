@@ -1,6 +1,6 @@
 use std::cmp;
 
-use primitive::{fast_set, fast_set64, fast_copy64};
+use primitive::{fast_set32, fast_set64, fast_copy64};
 
 static FONT: &'static [u8] = include_bytes!("../../../res/unifont.font");
 
@@ -42,8 +42,8 @@ impl Display {
         let mut rows = end_y - start_y;
         while rows > 0 {
             unsafe {
-                fast_set(offscreen_ptr as *mut u32, color, len);
-                fast_set(onscreen_ptr as *mut u32, color, len);
+                fast_set32(offscreen_ptr as *mut u32, color, len);
+                fast_set32(onscreen_ptr as *mut u32, color, len);
             }
             offscreen_ptr += stride;
             onscreen_ptr += stride;
@@ -52,7 +52,7 @@ impl Display {
     }
 
     /// Draw a character
-    fn char(&mut self, x: usize, y: usize, character: char, color: u32) {
+    pub fn char(&mut self, x: usize, y: usize, character: char, color: u32) {
         if x + 8 <= self.width && y + 16 <= self.height {
             let mut font_i = 16 * (character as usize);
             let font_end = font_i + 16;

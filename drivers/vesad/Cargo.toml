@@ -3,4 +3,5 @@ name = "vesad"
 version = "0.1.0"
 
 [dependencies]
+ransid = { git = "https://github.com/redox-os/ransid.git", branch = "new_api" }
 syscall = { path = "../../syscall/" }

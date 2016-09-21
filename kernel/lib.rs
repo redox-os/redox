@@ -162,7 +162,7 @@ pub extern fn kmain() {
         unsafe {
             interrupt::disable();
             context::switch();
-            interrupt::enable_and_halt();
+            interrupt::enable_and_nop();
         }
     }
 }

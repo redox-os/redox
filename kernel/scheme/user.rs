@@ -81,7 +81,7 @@ impl UserInner {
             let full_size = ((offset + size + 4095)/4096) * 4096;
             let mut to_address = arch::USER_GRANT_OFFSET;
 
-            let mut flags = entry::PRESENT | entry::NO_EXECUTE;
+            let mut flags = entry::PRESENT | entry::NO_EXECUTE | entry::USER_ACCESSIBLE;
             if writable {
                 flags |= entry::WRITABLE;
             }
