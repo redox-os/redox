@@ -4,4 +4,5 @@ version = "0.1.0"
 
 [dependencies]
 ransid = { git = "https://github.com/redox-os/ransid.git", branch = "new_api" }
+rusttype = { git = "https://github.com/dylanede/rusttype.git" }
 syscall = { path = "../../syscall/" }

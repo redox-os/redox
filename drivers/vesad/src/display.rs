@@ -1,8 +1,15 @@
+extern crate rusttype;
+
 use std::cmp;
 
 use primitive::{fast_set32, fast_set64, fast_copy64};
 
-static FONT: &'static [u8] = include_bytes!("../../../res/unifont.font");
+use self::rusttype::{Font, FontCollection, Scale, point};
+
+static FONT: &'static [u8] = include_bytes!("../../../res/fonts/DejaVuSansMono.ttf");
+static FONT_BOLD: &'static [u8] = include_bytes!("../../../res/fonts/DejaVuSansMono-Bold.ttf");
+static FONT_BOLD_ITALIC: &'static [u8] = include_bytes!("../../../res/fonts/DejaVuSansMono-BoldOblique.ttf");
+static FONT_ITALIC: &'static [u8] = include_bytes!("../../../res/fonts/DejaVuSansMono-Oblique.ttf");
 
 /// A display
 pub struct Display {
@@ -10,6 +17,10 @@ pub struct Display {
     pub height: usize,
     pub onscreen: &'static mut [u32],
     pub offscreen: &'static mut [u32],
+    pub font: Font<'static>,
+    pub font_bold: Font<'static>,
+    pub font_bold_italic: Font<'static>,
+    pub font_italic: Font<'static>
 }
 
 impl Display {
@@ -19,6 +30,10 @@ impl Display {
             height: height,
             onscreen: onscreen,
             offscreen: offscreen,
+            font: FontCollection::from_bytes(FONT).into_font().unwrap(),
+            font_bold: FontCollection::from_bytes(FONT_BOLD).into_font().unwrap(),
+            font_bold_italic: FontCollection::from_bytes(FONT_BOLD_ITALIC).into_font().unwrap(),
+            font_italic: FontCollection::from_bytes(FONT_ITALIC).into_font().unwrap()
         }
     }
 
@@ -52,42 +67,42 @@ impl Display {
     }
 
     /// Draw a character
-    pub fn char(&mut self, x: usize, y: usize, character: char, color: u32) {
-        if x + 8 <= self.width && y + 16 <= self.height {
-            let mut font_i = 16 * (character as usize);
-            let font_end = font_i + 16;
-            if font_end <= FONT.len() {
-                let mut offscreen_ptr = self.offscreen.as_mut_ptr() as usize;
-                let mut onscreen_ptr = self.onscreen.as_mut_ptr() as usize;
+    pub fn char(&mut self, x: usize, y: usize, character: char, color: u32, bold: bool, italic: bool) {
+        let width = self.width;
+        let height = self.height;
+        let offscreen = self.offscreen.as_mut_ptr();
+        let onscreen = self.onscreen.as_mut_ptr();
 
-                let stride = self.width * 4;
+        let font = if bold && italic {
+            &self.font_bold_italic
+        } else if bold {
+            &self.font_bold
+        } else if italic {
+            &self.font_italic
+        } else {
+            &self.font
+        };
 
-                let offset = y * stride + x * 4;
-                offscreen_ptr += offset;
-                onscreen_ptr += offset;
+        if let Some(glyph) = font.glyph(character){
+            let scale = Scale::uniform(16.0);
+            let v_metrics = font.v_metrics(scale);
+            let point = point(0.0, v_metrics.ascent);
+            glyph.scaled(scale).positioned(point).draw(|off_x, off_y, v| {
+                let off_x = x + off_x as usize;
+                let off_y = y + off_y as usize;
+                // There's still a possibility that the glyph clips the boundaries of the bitmap
+                if off_x < width && off_y < height {
+                    let v_u = (v * 255.0) as u32;
+                    let r = ((color >> 16) & 0xFF * v_u)/255;
+                    let g = ((color >> 8) & 0xFF * v_u)/255;
+                    let b = (color & 0xFF * v_u)/255;
+                    let c = (r << 16) | (g << 8) | b;
 
-                while font_i < font_end {
-                    let mut row_data = FONT[font_i];
-                    let mut col = 8;
-                    while col > 0 {
-                        col -= 1;
-                        if row_data & 1 == 1 {
-                            unsafe {
-                                *((offscreen_ptr + col * 4) as *mut u32) = color;
-                            }
-                        }
-                        row_data = row_data >> 1;
-                    }
-
-                    unsafe {
-                        fast_copy64(onscreen_ptr as *mut u64, offscreen_ptr as *const u64, 4);
-                    }
-
-                    offscreen_ptr += stride;
-                    onscreen_ptr += stride;
-                    font_i += 1;
+                    let index = (off_y * width + off_x) as isize;
+                    unsafe { *offscreen.offset(index) = c; }
+                    unsafe { *onscreen.offset(index) = c; }
                 }
-            }
+            });
         }
     }
 

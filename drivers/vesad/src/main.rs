@@ -67,7 +67,7 @@ impl Scheme for DisplayScheme {
             let mut display = self.display.borrow_mut();
             self.console.borrow_mut().write(buf, |event| {
                 match event {
-                    Event::Char { x, y, c, color, .. } => display.char(x * 8, y * 16, c, color.data),
+                    Event::Char { x, y, c, color, bold, .. } => display.char(x * 8, y * 16, c, color.data, bold, false),
                     Event::Rect { x, y, w, h, color } => display.rect(x * 8, y * 16, w * 8, h * 16, color.data),
                     Event::Scroll { rows, color } => display.scroll(rows * 16, color.data)
                 }
