@@ -34,7 +34,6 @@ pub fn keyboard() {
             } else if pressed {
                 let c = keymap::get_char(scancode, lshift || rshift);
                 if c != '\0' {
-                    print!("{}", c);
                     input.write(&[c as u8]).expect("ps2d: failed to write input");
                 }
             }
