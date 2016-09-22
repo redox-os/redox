@@ -41,3 +41,5 @@ pub const O_FSYNC: usize = 0x80;
 pub const O_CREAT: usize = 0x200;
 pub const O_TRUNC: usize = 0x400;
 pub const O_EXCL: usize = 0x800;
+
+pub const WNOHANG: usize = 1;

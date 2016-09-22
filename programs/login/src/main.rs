@@ -11,13 +11,13 @@ pub fn main() {
     let sh = args.next().expect("login: no sh provided");
     let sh_args: Vec<String> = args.collect();
 
-    syscall::close(2);
-    syscall::close(1);
-    syscall::close(0);
+    let _ = syscall::close(2);
+    let _ = syscall::close(1);
+    let _ = syscall::close(0);
 
-    syscall::open(&tty, syscall::flag::O_RDWR);
-    syscall::open(&tty, syscall::flag::O_RDWR);
-    syscall::open(&tty, syscall::flag::O_RDWR);
+    let _ = syscall::open(&tty, syscall::flag::O_RDWR);
+    let _ = syscall::open(&tty, syscall::flag::O_RDWR);
+    let _ = syscall::open(&tty, syscall::flag::O_RDWR);
 
     thread::spawn(move || {
         loop {

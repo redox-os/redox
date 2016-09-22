@@ -42,7 +42,7 @@ impl Mapper {
 
     /// Map a page to the next free frame
     pub fn map(&mut self, page: Page, flags: EntryFlags) {
-        let frame = allocate_frame().expect("out of memory");
+        let frame = allocate_frame().expect("out of frames");
         self.map_to(page, frame, flags)
     }
 

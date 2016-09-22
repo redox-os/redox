@@ -18,7 +18,7 @@ use elf::{self, program_header};
 use scheme;
 use syscall;
 use syscall::error::*;
-use syscall::flag::{CLONE_VM, CLONE_FS, CLONE_FILES, MAP_WRITE, MAP_WRITE_COMBINE};
+use syscall::flag::{CLONE_VM, CLONE_FS, CLONE_FILES, MAP_WRITE, MAP_WRITE_COMBINE, WNOHANG};
 use syscall::validate::{validate_slice, validate_slice_mut};
 
 pub fn brk(address: usize) -> Result<usize> {
@@ -594,7 +594,7 @@ pub fn sched_yield() -> Result<usize> {
     Ok(0)
 }
 
-pub fn waitpid(pid: usize, status_ptr: usize, _options: usize) -> Result<usize> {
+pub fn waitpid(pid: usize, status_ptr: usize, flags: usize) -> Result<usize> {
     //TODO: Implement status_ptr and options
     loop {
         {
@@ -616,6 +616,8 @@ pub fn waitpid(pid: usize, status_ptr: usize, _options: usize) -> Result<usize> 
             if exited {
                 let mut contexts = context::contexts_mut();
                 return contexts.remove(pid).ok_or(Error::new(ESRCH)).and(Ok(pid));
+            } else if flags & WNOHANG == WNOHANG {
+                return Ok(0);
             }
         }
 

@@ -24,12 +24,12 @@ all: $(KBUILD)/harddrive.bin
 clean:
 	cargo clean
 	cargo clean --manifest-path libstd/Cargo.toml
-	cargo clean --manifest-path init/Cargo.toml
-	cargo clean --manifest-path ion/Cargo.toml
-	cargo clean --manifest-path login/Cargo.toml
 	cargo clean --manifest-path drivers/ps2d/Cargo.toml
 	cargo clean --manifest-path drivers/pcid/Cargo.toml
 	cargo clean --manifest-path drivers/vesad/Cargo.toml
+	cargo clean --manifest-path programs/init/Cargo.toml
+	cargo clean --manifest-path programs/ion/Cargo.toml
+	cargo clean --manifest-path programs/login/Cargo.toml
 	cargo clean --manifest-path schemes/example/Cargo.toml
 	rm -rf initfs/bin
 	rm -rf build
