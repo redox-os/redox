@@ -87,22 +87,27 @@ impl Display {
             let scale = Scale::uniform(16.0);
             let v_metrics = font.v_metrics(scale);
             let point = point(0.0, v_metrics.ascent);
-            glyph.scaled(scale).positioned(point).draw(|off_x, off_y, v| {
-                let off_x = x + off_x as usize;
-                let off_y = y + off_y as usize;
-                // There's still a possibility that the glyph clips the boundaries of the bitmap
-                if off_x < width && off_y < height {
-                    let v_u = (v * 255.0) as u32;
-                    let r = ((color >> 16) & 0xFF * v_u)/255;
-                    let g = ((color >> 8) & 0xFF * v_u)/255;
-                    let b = (color & 0xFF * v_u)/255;
-                    let c = (r << 16) | (g << 8) | b;
+            let glyph = glyph.scaled(scale).positioned(point);
+            if let Some(bb) = glyph.pixel_bounding_box() {
+                glyph.draw(|off_x, off_y, v| {
+                    let off_x = x + (off_x as i32 + bb.min.x) as usize;
+                    let off_y = y + (off_y as i32 + bb.min.y) as usize;
+                    // There's still a possibility that the glyph clips the boundaries of the bitmap
+                    if off_x < width && off_y < height {
+                        let v_u = (v * 255.0) as u32;
+                        if v_u > 0 {
+                            let r = (((color >> 16) & 0xFF) * v_u)/255;
+                            let g = (((color >> 8) & 0xFF) * v_u)/255;
+                            let b = ((color & 0xFF) * v_u)/255;
+                            let c = (r << 16) | (g << 8) | b;
 
-                    let index = (off_y * width + off_x) as isize;
-                    unsafe { *offscreen.offset(index) = c; }
-                    unsafe { *onscreen.offset(index) = c; }
-                }
-            });
+                            let index = (off_y * width + off_x) as isize;
+                            unsafe { *offscreen.offset(index) = c; }
+                            unsafe { *onscreen.offset(index) = c; }
+                        }
+                    }
+                });
+            }
         }
     }
 

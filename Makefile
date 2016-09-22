@@ -123,7 +123,7 @@ $(BUILD)/libcollections.rlib: rust/src/libcollections/lib.rs $(BUILD)/libcore.rl
 	$(RUSTC) $(RUSTCFLAGS) -o $@ $<
 
 openlibm/libopenlibm.a:
-	make -C openlibm
+	CFLAGS=-fno-stack-protector make -C openlibm
 
 $(BUILD)/libopenlibm.a: openlibm/libopenlibm.a
 	mkdir -p $(BUILD)
