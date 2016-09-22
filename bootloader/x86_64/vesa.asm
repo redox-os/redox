@@ -115,8 +115,8 @@ vesa:
 .minx dw 640
 .miny dw 480
 .required:
-.requiredx dw 1024    ;USE THESE WITH CAUTION
-.requiredy dw 768
+.requiredx dw 0 ; 1024    ;USE THESE WITH CAUTION
+.requiredy dw 0 ; 768
 .requiredmode dw 0
 
 .modeok db ": Is this OK?(y/n)",10,13,0
