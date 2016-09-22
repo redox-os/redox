@@ -126,7 +126,6 @@ long_mode:
 
     ;rust init
     mov rax, [kernel_base + 0x18]
-    xchg bx, bx
     jmp rax
 
 long_mode_ap:
