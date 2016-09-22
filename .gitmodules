@@ -8,5 +8,5 @@
 	path = ralloc
 	url = https://github.com/redox-os/ralloc
 [submodule "ion"]
-	path = ion
+	path = programs/ion
 	url = https://github.com/redox-os/ion.git

@@ -26,6 +26,7 @@ clean:
 	cargo clean --manifest-path libstd/Cargo.toml
 	cargo clean --manifest-path init/Cargo.toml
 	cargo clean --manifest-path ion/Cargo.toml
+	cargo clean --manifest-path login/Cargo.toml
 	cargo clean --manifest-path drivers/ps2d/Cargo.toml
 	cargo clean --manifest-path drivers/pcid/Cargo.toml
 	cargo clean --manifest-path drivers/vesad/Cargo.toml
@@ -125,13 +126,13 @@ $(BUILD)/libstd.rlib: libstd/Cargo.toml libstd/src/** $(BUILD)/libcore.rlib $(BU
 	$(CARGO) rustc --verbose --manifest-path $< $(CARGOFLAGS) -o $@
 	cp libstd/target/$(TARGET)/debug/deps/*.rlib $(BUILD)
 
-initfs/bin/init: init/Cargo.toml init/src/*.rs $(BUILD)/libstd.rlib
+initfs/bin/%: drivers/%/Cargo.toml drivers/%/src/** $(BUILD)/libstd.rlib
 	mkdir -p initfs/bin
 	$(CARGO) rustc --manifest-path $< $(CARGOFLAGS) -o $@
 	strip $@
 	rm $@.d
 
-initfs/bin/%: drivers/%/Cargo.toml drivers/%/src/** $(BUILD)/libstd.rlib
+initfs/bin/%: programs/%/Cargo.toml programs/%/src/** $(BUILD)/libstd.rlib
 	mkdir -p initfs/bin
 	$(CARGO) rustc --manifest-path $< $(CARGOFLAGS) -o $@
 	strip $@
@@ -143,19 +144,14 @@ initfs/bin/%: schemes/%/Cargo.toml schemes/%/src/** $(BUILD)/libstd.rlib
 	strip $@
 	rm $@.d
 
-initfs/bin/ion: ion/Cargo.toml ion/src/*.rs $(BUILD)/libstd.rlib
-	mkdir -p initfs/bin
-	$(CARGO) rustc --manifest-path $< $(CARGOFLAGS) -o $@
-	strip $@
-	rm $@.d
-
 $(BUILD)/initfs.rs: \
-		initfs/bin/init \
 		initfs/bin/pcid \
 		initfs/bin/ps2d \
 		initfs/bin/vesad \
-		initfs/bin/example \
-		initfs/bin/ion
+		initfs/bin/init \
+		initfs/bin/ion \
+		initfs/bin/login \
+		initfs/bin/example
 		echo 'use collections::BTreeMap;' > $@
 		echo 'pub fn gen() -> BTreeMap<&'"'"'static [u8], &'"'"'static [u8]> {' >> $@
 		echo '    let mut files: BTreeMap<&'"'"'static [u8], &'"'"'static [u8]> = BTreeMap::new();' >> $@

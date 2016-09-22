@@ -25,24 +25,6 @@ impl Scheme for ExampleScheme {
 }
 
 fn main(){
-    {
-        let fd = syscall::open("display:", 0).expect("example: failed to open display");
-        let mut buf = *b"          \n";
-        let mut i: usize = 0;
-        while i < 10000000000 {
-            i += 1;
-            let mut n = i;
-            let mut e = 10;
-            while e > 0 && n > 0 {
-                e -= 1;
-                buf[e] = (n % 10) as u8 + b'0';
-                n = n / 10;
-            }
-            syscall::write(fd, &buf[e..]);
-        }
-        syscall::close(fd);
-    }
-
     thread::spawn(move || {
         let mut socket = File::create(":example").expect("example: failed to create example scheme");
         let scheme = ExampleScheme;

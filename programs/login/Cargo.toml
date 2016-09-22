@@ -1,0 +1,6 @@
+[package]
+name = "login"
+version = "0.1.0"
+
+[dependencies]
+syscall = { path = "../../syscall/" }

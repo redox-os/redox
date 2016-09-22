@@ -452,7 +452,7 @@ pub fn exec(path: &[u8], arg_ptrs: &[[usize; 2]]) -> Result<usize> {
                 ));
 
                 let mut arg_size = 0;
-                for arg in args.iter() {
+                for arg in args.iter().rev() {
                     sp -= mem::size_of::<usize>();
                     unsafe { *(sp as *mut usize) = arch::USER_ARG_OFFSET + arg_size; }
                     sp -= mem::size_of::<usize>();
@@ -474,7 +474,7 @@ pub fn exec(path: &[u8], arg_ptrs: &[[usize; 2]]) -> Result<usize> {
                     );
 
                     let mut arg_offset = 0;
-                    for arg in args.iter() {
+                    for arg in args.iter().rev() {
                         unsafe {
                             memcpy((arch::USER_ARG_OFFSET + arg_offset) as *mut u8,
                                    arg.as_ptr(),

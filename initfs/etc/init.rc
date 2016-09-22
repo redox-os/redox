@@ -1,5 +1,5 @@
 initfs:bin/vesad
-#initfs:bin/ps2d
+initfs:bin/ps2d
 #initfs:bin/pcid
-initfs:bin/example
-#initfs:bin/ion
+#initfs:bin/example
+initfs:bin/login display: initfs:bin/ion

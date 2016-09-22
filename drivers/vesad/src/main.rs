@@ -8,17 +8,15 @@ extern crate ransid;
 extern crate syscall;
 
 use std::cell::RefCell;
-use std::collections::BTreeMap;
 use std::fs::File;
 use std::io::{Read, Write};
-use std::sync::atomic::{AtomicUsize, Ordering};
-use std::{cmp, slice, thread};
+use std::{slice, thread};
 use ransid::{Console, Event};
-use syscall::{physmap, physunmap, Error, EINVAL, EBADF, Packet, Result, Scheme, SEEK_SET, SEEK_CUR, SEEK_END, MAP_WRITE, MAP_WRITE_COMBINE};
+use syscall::{physmap, physunmap, Packet, Result, Scheme, MAP_WRITE, MAP_WRITE_COMBINE};
 
 use display::Display;
 use mode_info::VBEModeInfo;
-use primitive::{fast_copy, fast_set64};
+use primitive::fast_set64;
 
 pub mod display;
 pub mod mode_info;
@@ -26,9 +24,7 @@ pub mod primitive;
 
 struct DisplayScheme {
     console: RefCell<Console>,
-    display: RefCell<Display>,
-    next_id: AtomicUsize,
-    handles: RefCell<BTreeMap<usize, usize>>
+    display: RefCell<Display>
 }
 
 impl Scheme for DisplayScheme {
@@ -37,6 +33,10 @@ impl Scheme for DisplayScheme {
     }
 
     fn dup(&self, _id: usize) -> Result<usize> {
+        Ok(0)
+    }
+
+    fn fsync(&self, _id: usize) -> Result<usize> {
         Ok(0)
     }
 
@@ -52,56 +52,10 @@ impl Scheme for DisplayScheme {
         Ok(buf.len())
     }
 
-    fn close(&self, id: usize) -> Result<usize> {
+    fn close(&self, _id: usize) -> Result<usize> {
         Ok(0)
     }
 }
-
-/*
-struct DisplayScheme {
-    display: RefCell<Display>,
-    next_id: AtomicUsize,
-    handles: RefCell<BTreeMap<usize, usize>>
-}
-
-impl Scheme for DisplayScheme {
-    fn open(&self, _path: &[u8], _flags: usize) -> Result<usize> {
-        let id = self.next_id.fetch_add(1, Ordering::SeqCst);
-        self.handles.borrow_mut().insert(id, 0);
-        Ok(id)
-    }
-
-    fn write(&self, id: usize, buf: &[u8]) -> Result<usize> {
-        let mut handles = self.handles.borrow_mut();
-        let mut seek = handles.get_mut(&id).ok_or(Error::new(EBADF))?;
-        let mut display = self.display.borrow_mut();
-        let len = cmp::min(buf.len(), display.offscreen.len() * 4 - *seek);
-        unsafe {
-            fast_copy((display.offscreen.as_mut_ptr() as usize + *seek) as *mut u8, buf.as_ptr(), len);
-            fast_copy((display.onscreen.as_mut_ptr() as usize + *seek) as *mut u8, buf.as_ptr(), len);
-        }
-        *seek += len;
-        Ok(len)
-    }
-
-    fn seek(&self, id: usize, pos: usize, whence: usize) -> Result<usize> {
-        let mut handles = self.handles.borrow_mut();
-        let mut seek = handles.get_mut(&id).ok_or(Error::new(EBADF))?;
-        let len = self.display.borrow().offscreen.len() * 4;
-        *seek = match whence {
-            SEEK_SET => cmp::min(len, pos),
-            SEEK_CUR => cmp::max(0, cmp::min(len as isize, *seek as isize + pos as isize)) as usize,
-            SEEK_END => cmp::max(0, cmp::min(len as isize, len as isize + pos as isize)) as usize,
-            _ => return Err(Error::new(EINVAL))
-        };
-        Ok(*seek)
-    }
-
-    fn close(&self, id: usize) -> Result<usize> {
-        self.handles.borrow_mut().remove(&id).ok_or(Error::new(EBADF)).and(Ok(0))
-    }
-}
-*/
 
 fn main() {
     let width;
@@ -135,17 +89,15 @@ fn main() {
                 display: RefCell::new(Display::new(width, height,
                     unsafe { slice::from_raw_parts_mut(onscreen as *mut u32, size) },
                     unsafe { slice::from_raw_parts_mut(offscreen as *mut u32, size) }
-                )),
-                next_id: AtomicUsize::new(0),
-                handles: RefCell::new(BTreeMap::new())
+                ))
             };
 
             loop {
                 let mut packet = Packet::default();
-                socket.read(&mut packet);
+                socket.read(&mut packet).expect("vesad: failed to read display scheme");
                 //println!("vesad: {:?}", packet);
                 scheme.handle(&mut packet);
-                socket.write(&packet);
+                socket.write(&packet).expect("vesad: failed to write display scheme");
             }
         });
     }
