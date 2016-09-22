@@ -8,6 +8,10 @@ pub static CONTEXT_SWITCH_LOCK: AtomicBool = ATOMIC_BOOL_INIT;
 
 #[derive(Clone, Debug)]
 pub struct Context {
+    /// FX valid?
+    loadable: bool,
+    /// FX location
+    fx: usize,
     /// Page table pointer
     cr3: usize,
     /// RFLAGS register
@@ -31,6 +35,8 @@ pub struct Context {
 impl Context {
     pub fn new() -> Context {
         Context {
+            loadable: false,
+            fx: 0,
             cr3: 0,
             rflags: 0,
             rbx: 0,
@@ -47,6 +53,10 @@ impl Context {
         self.cr3
     }
 
+    pub fn set_fx(&mut self, address: usize) {
+        self.fx = address;
+    }
+
     pub fn set_page_table(&mut self, address: usize) {
         self.cr3 = address;
     }
@@ -60,7 +70,6 @@ impl Context {
     #[inline(never)]
     #[naked]
     pub unsafe fn switch_to(&mut self, next: &mut Context) {
-/*
         asm!("fxsave [$0]" : : "r"(self.fx) : "memory" : "intel", "volatile");
         self.loadable = true;
         if next.loadable {
@@ -68,7 +77,6 @@ impl Context {
         }else{
             asm!("fninit" : : : "memory" : "intel", "volatile");
         }
-*/
 
         asm!("mov $0, cr3" : "=r"(self.cr3) : : "memory" : "intel", "volatile");
         if next.cr3 != self.cr3 {

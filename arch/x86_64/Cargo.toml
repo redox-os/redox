@@ -9,5 +9,5 @@ io = { path = "../../drivers/io" }
 spin = "*"
 
 [dependencies.x86]
-version = "0.7.1"
+version = "*"
 default-features = false
