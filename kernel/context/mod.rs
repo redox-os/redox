@@ -1,5 +1,5 @@
 //! Context management
-
+use alloc::boxed::Box;
 use core::sync::atomic::{AtomicUsize, ATOMIC_USIZE_INIT, Ordering};
 use spin::{Once, RwLock, RwLockReadGuard, RwLockWriteGuard};
 
@@ -38,6 +38,13 @@ pub fn init() {
     let mut contexts = contexts_mut();
     let context_lock = contexts.new_context().expect("could not initialize first context");
     let mut context = context_lock.write();
+    let mut fx = unsafe { Box::from_raw(::alloc::heap::allocate(512, 16) as *mut [u8; 512]) };
+    for b in fx.iter_mut() {
+        *b = 0;
+    }
+
+    context.arch.set_fx(fx.as_ptr() as usize);
+    context.kfx = Some(fx);
     context.status = Status::Runnable;
     context.running = true;
     CONTEXT_ID.store(context.id, Ordering::SeqCst);

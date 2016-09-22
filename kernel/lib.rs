@@ -69,6 +69,7 @@
 #![feature(collections)]
 #![feature(const_fn)]
 #![feature(drop_types_in_const)]
+#![feature(heap_api)]
 #![feature(question_mark)]
 #![feature(never_type)]
 #![feature(thread_local)]

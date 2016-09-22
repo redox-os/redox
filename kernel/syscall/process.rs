@@ -1,6 +1,6 @@
 ///! Process syscalls
-
 use alloc::arc::Arc;
+use alloc::boxed::Box;
 use collections::Vec;
 use core::mem;
 use core::str;
@@ -58,6 +58,7 @@ pub fn clone(flags: usize, stack_base: usize) -> Result<usize> {
     let pid;
     {
         let arch;
+        let mut kfx_option = None;
         let mut kstack_option = None;
         let mut offset = 0;
         let mut image = vec![];
@@ -76,6 +77,14 @@ pub fn clone(flags: usize, stack_base: usize) -> Result<usize> {
             ppid = context.id;
 
             arch = context.arch.clone();
+
+            if let Some(ref fx) = context.kfx {
+                let mut new_fx = unsafe { Box::from_raw(::alloc::heap::allocate(512, 16) as *mut [u8; 512]) };
+                for (new_b, b) in new_fx.iter_mut().zip(fx.iter()) {
+                    *new_b = *b;
+                }
+                kfx_option = Some(new_fx);
+            }
 
             if let Some(ref stack) = context.kstack {
                 offset = stack_base - stack.as_ptr() as usize - mem::size_of::<usize>(); // Add clone ret
@@ -236,6 +245,11 @@ pub fn clone(flags: usize, stack_base: usize) -> Result<usize> {
                 active_table.with(&mut new_table, &mut temporary_page, |mapper| {
                     mapper.p4_mut()[510].set(frame, flags);
                 });
+            }
+
+            if let Some(fx) = kfx_option.take() {
+                context.arch.set_fx(fx.as_ptr() as usize);
+                context.kfx = Some(fx);
             }
 
             // Set kernel stack

@@ -25,6 +25,8 @@ pub struct Context {
     pub running: bool,
     /// The architecture specific context
     pub arch: arch::context::Context,
+    /// Kernel FX
+    pub kfx: Option<Box<[u8]>>,
     /// Kernel stack
     pub kstack: Option<Box<[u8]>>,
     /// Executable image
@@ -49,6 +51,7 @@ impl Context {
             status: Status::Blocked,
             running: false,
             arch: arch::context::Context::new(),
+            kfx: None,
             kstack: None,
             image: Vec::new(),
             heap: None,

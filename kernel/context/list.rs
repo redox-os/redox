@@ -1,4 +1,5 @@
 use alloc::arc::Arc;
+use alloc::boxed::Box;
 use collections::BTreeMap;
 use core::mem;
 use core::sync::atomic::Ordering;
@@ -64,6 +65,10 @@ impl ContextList {
         let context_lock = self.new_context()?;
         {
             let mut context = context_lock.write();
+            let mut fx = unsafe { Box::from_raw(::alloc::heap::allocate(512, 16) as *mut [u8; 512]) };
+            for b in fx.iter_mut() {
+                *b = 0;
+            }
             let mut stack = vec![0; 65536].into_boxed_slice();
             let offset = stack.len() - mem::size_of::<usize>();
             unsafe {
@@ -72,7 +77,9 @@ impl ContextList {
                 *(func_ptr as *mut usize) = func as usize;
             }
             context.arch.set_page_table(unsafe { arch::paging::ActivePageTable::new().address() });
+            context.arch.set_fx(fx.as_ptr() as usize);
             context.arch.set_stack(stack.as_ptr() as usize + offset);
+            context.kfx = Some(fx);
             context.kstack = Some(stack);
         }
         Ok(context_lock)
