@@ -12,9 +12,9 @@ KCARGOFLAGS=--target $(KTARGET).json -- -C soft-float
 TARGET=$(ARCH)-unknown-redox
 BUILD=build/userspace
 RUSTC=./rustc.sh
-RUSTCFLAGS=--target $(TARGET).json -C opt-level=2 -C soft-float --cfg redox
+RUSTCFLAGS=--target $(TARGET).json -C opt-level=2 --cfg redox
 CARGO=RUSTC="$(RUSTC)" cargo
-CARGOFLAGS=--target $(TARGET).json -- -C opt-level=2 -C soft-float --cfg redox
+CARGOFLAGS=--target $(TARGET).json -- -C opt-level=2 --cfg redox
 
 # Default targets
 .PHONY: all clean qemu bochs FORCE
@@ -122,7 +122,14 @@ $(BUILD)/librustc_unicode.rlib: rust/src/librustc_unicode/lib.rs $(BUILD)/libcor
 $(BUILD)/libcollections.rlib: rust/src/libcollections/lib.rs $(BUILD)/libcore.rlib $(BUILD)/liballoc.rlib $(BUILD)/librustc_unicode.rlib
 	$(RUSTC) $(RUSTCFLAGS) -o $@ $<
 
-$(BUILD)/libstd.rlib: libstd/Cargo.toml libstd/src/** $(BUILD)/libcore.rlib $(BUILD)/liballoc.rlib $(BUILD)/librustc_unicode.rlib $(BUILD)/libcollections.rlib $(BUILD)/librand.rlib
+openlibm/libopenlibm.a:
+	make -C openlibm
+
+$(BUILD)/libopenlibm.a: openlibm/libopenlibm.a
+	mkdir -p $(BUILD)
+	cp $< $@
+
+$(BUILD)/libstd.rlib: libstd/Cargo.toml libstd/src/** $(BUILD)/libcore.rlib $(BUILD)/liballoc.rlib $(BUILD)/librustc_unicode.rlib $(BUILD)/libcollections.rlib $(BUILD)/librand.rlib $(BUILD)/libopenlibm.a
 	$(CARGO) rustc --verbose --manifest-path $< $(CARGOFLAGS) -o $@
 	cp libstd/target/$(TARGET)/debug/deps/*.rlib $(BUILD)
 
