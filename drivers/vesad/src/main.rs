@@ -65,13 +65,20 @@ impl Scheme for DisplayScheme {
             Ok(buf.len())
         } else {
             let mut display = self.display.borrow_mut();
-            self.console.borrow_mut().write(buf, |event| {
+            let mut console = self.console.borrow_mut();
+            if console.x < console.w && console.y < console.h {
+                display.rect(console.x * 8, console.y * 16, 8, 16, 0);
+            }
+            console.write(buf, |event| {
                 match event {
                     Event::Char { x, y, c, color, bold, .. } => display.char(x * 8, y * 16, c, color.data, bold, false),
                     Event::Rect { x, y, w, h, color } => display.rect(x * 8, y * 16, w * 8, h * 16, color.data),
                     Event::Scroll { rows, color } => display.scroll(rows * 16, color.data)
                 }
             });
+            if console.x < console.w && console.y < console.h {
+                display.rect(console.x * 8, console.y * 16, 8, 16, 0xFFFFFF);
+            }
             Ok(buf.len())
         }
     }
