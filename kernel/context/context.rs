@@ -1,9 +1,10 @@
 use alloc::arc::Arc;
 use alloc::boxed::Box;
-use collections::{BTreeMap, Vec};
+use collections::{BTreeMap, Vec, VecDeque};
 use spin::Mutex;
 
 use arch;
+use syscall::data::Event;
 use super::file::File;
 use super::memory::{Grant, Memory, SharedMemory};
 
@@ -39,6 +40,8 @@ pub struct Context {
     pub grants: Arc<Mutex<Vec<Grant>>>,
     /// The current working directory
     pub cwd: Arc<Mutex<Vec<u8>>>,
+    /// Kernel events
+    pub events: Arc<Mutex<VecDeque<Event>>>,
     /// The process environment
     pub env: Arc<Mutex<BTreeMap<Box<[u8]>, Arc<Mutex<Vec<u8>>>>>>,
     /// The open files in the scheme
@@ -60,6 +63,7 @@ impl Context {
             stack: None,
             grants: Arc::new(Mutex::new(Vec::new())),
             cwd: Arc::new(Mutex::new(Vec::new())),
+            events: Arc::new(Mutex::new(VecDeque::new())),
             env: Arc::new(Mutex::new(BTreeMap::new())),
             files: Arc::new(Mutex::new(Vec::new()))
         }

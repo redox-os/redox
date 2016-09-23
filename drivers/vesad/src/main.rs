@@ -13,7 +13,7 @@ use std::fs::File;
 use std::io::{Read, Write};
 use std::{slice, thread};
 use ransid::{Console, Event};
-use syscall::{physmap, physunmap, Packet, Result, Scheme, MAP_WRITE, MAP_WRITE_COMBINE};
+use syscall::{physmap, physunmap, Packet, Result, Scheme, EVENT_READ, MAP_WRITE, MAP_WRITE_COMBINE};
 
 use display::Display;
 use mode_info::VBEModeInfo;
@@ -26,7 +26,8 @@ pub mod primitive;
 struct DisplayScheme {
     console: RefCell<Console>,
     display: RefCell<Display>,
-    input: RefCell<VecDeque<u8>>
+    input: RefCell<VecDeque<u8>>,
+    requested: RefCell<usize>
 }
 
 impl Scheme for DisplayScheme {
@@ -43,6 +44,7 @@ impl Scheme for DisplayScheme {
     }
 
     fn fevent(&self, _id: usize, flags: usize) -> Result<usize> {
+        *self.requested.borrow_mut() = flags;
         println!("fevent {:X}", flags);
         Ok(0)
     }
@@ -126,7 +128,8 @@ fn main() {
                     unsafe { slice::from_raw_parts_mut(onscreen as *mut u32, size) },
                     unsafe { slice::from_raw_parts_mut(offscreen as *mut u32, size) }
                 )),
-                input: RefCell::new(VecDeque::new())
+                input: RefCell::new(VecDeque::new()),
+                requested: RefCell::new(0)
             };
 
             let mut blocked = VecDeque::new();
@@ -134,17 +137,35 @@ fn main() {
                 let mut packet = Packet::default();
                 socket.read(&mut packet).expect("vesad: failed to read display scheme");
                 //println!("vesad: {:?}", packet);
+
+                // If it is a read packet, and there is no data, block it. Otherwise, handle packet
                 if packet.a == syscall::number::SYS_READ && packet.d > 0 && scheme.input.borrow().is_empty() {
                     blocked.push_back(packet);
                 } else {
                     scheme.handle(&mut packet);
                     socket.write(&packet).expect("vesad: failed to write display scheme");
                 }
+
+                // If there are blocked readers, and data is available, handle them
                 while ! scheme.input.borrow().is_empty() {
                     if let Some(mut packet) = blocked.pop_front() {
                         scheme.handle(&mut packet);
                         socket.write(&packet).expect("vesad: failed to write display scheme");
+                    } else {
+                        break;
                     }
+                }
+
+                // If there are requested events, and data is available, send a notification
+                if ! scheme.input.borrow().is_empty() && *scheme.requested.borrow() & EVENT_READ == EVENT_READ {
+                    let event_packet = Packet {
+                        id: 0,
+                        a: syscall::number::SYS_FEVENT,
+                        b: 0,
+                        c: EVENT_READ,
+                        d: scheme.input.borrow().len()
+                    };
+                    socket.write(&event_packet).expect("vesad: failed to write display scheme");
                 }
             }
         });

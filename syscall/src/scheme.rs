@@ -14,6 +14,7 @@ pub trait Scheme {
             SYS_READ => self.read(packet.b, unsafe { slice::from_raw_parts_mut(packet.c as *mut u8, packet.d) }),
             SYS_WRITE => self.write(packet.b, unsafe { slice::from_raw_parts(packet.c as *const u8, packet.d) }),
             SYS_LSEEK => self.seek(packet.b, packet.c, packet.d),
+            SYS_FEVENT => self.fevent(packet.b, packet.c),
             SYS_FPATH => self.fpath(packet.b, unsafe { slice::from_raw_parts_mut(packet.c as *mut u8, packet.d) }),
             SYS_FSTAT => self.fstat(packet.b, unsafe { &mut *(packet.c as *mut Stat) }),
             SYS_FSYNC => self.fsync(packet.b),

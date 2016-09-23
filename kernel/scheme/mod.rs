@@ -8,15 +8,15 @@
 
 use alloc::arc::Arc;
 use alloc::boxed::Box;
-
 use collections::BTreeMap;
-
+use core::sync::atomic::Ordering;
 use spin::{Once, RwLock, RwLockReadGuard, RwLockWriteGuard};
 
 use syscall::error::*;
 use syscall::scheme::Scheme;
 
-use self::debug::DebugScheme;
+use self::debug::{DEBUG_SCHEME_ID, DebugScheme};
+use self::event::EventScheme;
 use self::env::EnvScheme;
 use self::initfs::InitFsScheme;
 use self::irq::IrqScheme;
@@ -24,6 +24,9 @@ use self::root::RootScheme;
 
 /// Debug scheme
 pub mod debug;
+
+/// Kernel events
+pub mod event;
 
 /// Environmental variables
 pub mod env;
@@ -74,7 +77,7 @@ impl SchemeList {
     }
 
     /// Create a new scheme.
-    pub fn insert(&mut self, name: Box<[u8]>, scheme: Arc<Box<Scheme + Send + Sync>>) -> Result<&Arc<Box<Scheme + Send + Sync>>> {
+    pub fn insert(&mut self, name: Box<[u8]>, scheme: Arc<Box<Scheme + Send + Sync>>) -> Result<usize> {
         if self.names.contains_key(&name) {
             return Err(Error::new(EEXIST));
         }
@@ -97,7 +100,7 @@ impl SchemeList {
         assert!(self.map.insert(id, scheme).is_none());
         assert!(self.names.insert(name, id).is_none());
 
-        Ok(self.map.get(&id).expect("Failed to insert new scheme. ID is out of bounds."))
+        Ok(id)
     }
 }
 
@@ -108,7 +111,8 @@ static SCHEMES: Once<RwLock<SchemeList>> = Once::new();
 fn init_schemes() -> RwLock<SchemeList> {
     let mut list: SchemeList = SchemeList::new();
     list.insert(Box::new(*b""), Arc::new(Box::new(RootScheme::new()))).expect("failed to insert root scheme");
-    list.insert(Box::new(*b"debug"), Arc::new(Box::new(DebugScheme))).expect("failed to insert debug scheme");
+    DEBUG_SCHEME_ID.store(list.insert(Box::new(*b"debug"), Arc::new(Box::new(DebugScheme))).expect("failed to insert debug scheme"), Ordering::SeqCst);
+    list.insert(Box::new(*b"event"), Arc::new(Box::new(EventScheme::new()))).expect("failed to insert event scheme");
     list.insert(Box::new(*b"env"), Arc::new(Box::new(EnvScheme::new()))).expect("failed to insert env scheme");
     list.insert(Box::new(*b"initfs"), Arc::new(Box::new(InitFsScheme::new()))).expect("failed to insert initfs scheme");
     list.insert(Box::new(*b"irq"), Arc::new(Box::new(IrqScheme))).expect("failed to insert irq scheme");

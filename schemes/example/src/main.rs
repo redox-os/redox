@@ -30,11 +30,17 @@ fn main(){
 
         let a = syscall::open("display:", 0).unwrap();
         syscall::fevent(a, syscall::EVENT_READ).unwrap();
+        let b = syscall::open("debug:", 0).unwrap();
+        syscall::fevent(b, syscall::EVENT_READ).unwrap();
 
         loop {
             let mut event = syscall::Event::default();
             syscall::read(events, &mut event).unwrap();
             println!("{:?}", event);
+
+            let mut buf = vec![0; event.data];
+            syscall::read(event.id, &mut buf).unwrap();
+            println!("{}", unsafe { ::std::str::from_utf8_unchecked(&buf) });
         }
 
         let _ = syscall::close(events);

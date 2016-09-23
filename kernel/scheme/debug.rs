@@ -1,10 +1,14 @@
 use collections::VecDeque;
 use core::str;
+use core::sync::atomic::{AtomicUsize, Ordering, ATOMIC_USIZE_INIT};
 use spin::{Mutex, Once};
 
 use context;
 use syscall::error::*;
+use syscall::flag::EVENT_READ;
 use syscall::scheme::Scheme;
+
+pub static DEBUG_SCHEME_ID: AtomicUsize = ATOMIC_USIZE_INIT;
 
 /// Input
 static INPUT: Once<Mutex<VecDeque<u8>>> = Once::new();
@@ -17,7 +21,13 @@ fn init_input() -> Mutex<VecDeque<u8>> {
 /// Get the global schemes list, const
 #[no_mangle]
 pub extern fn debug_input(b: u8) {
-    INPUT.call_once(init_input).lock().push_back(b)
+    let len = {
+        let mut input = INPUT.call_once(init_input).lock();
+        input.push_back(b);
+        input.len()
+    };
+
+    context::event::trigger(DEBUG_SCHEME_ID.load(Ordering::SeqCst), 0, EVENT_READ, len);
 }
 
 pub struct DebugScheme;
@@ -60,6 +70,10 @@ impl Scheme for DebugScheme {
         //TODO: Write bytes, do not convert to str
         print!("{}", unsafe { str::from_utf8_unchecked(buffer) });
         Ok(buffer.len())
+    }
+
+    fn fevent(&self, _file: usize, flags: usize) -> Result<usize> {
+        Ok(0)
     }
 
     fn fsync(&self, _file: usize) -> Result<usize> {

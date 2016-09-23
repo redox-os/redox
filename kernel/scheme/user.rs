@@ -15,6 +15,7 @@ use syscall::number::*;
 use syscall::scheme::Scheme;
 
 pub struct UserInner {
+    pub scheme_id: AtomicUsize,
     next_id: AtomicUsize,
     context: Weak<RwLock<Context>>,
     todo: Mutex<VecDeque<Packet>>,
@@ -24,7 +25,8 @@ pub struct UserInner {
 impl UserInner {
     pub fn new(context: Weak<RwLock<Context>>) -> UserInner {
         UserInner {
-            next_id: AtomicUsize::new(0),
+            scheme_id: AtomicUsize::new(0),
+            next_id: AtomicUsize::new(1),
             context: context,
             todo: Mutex::new(VecDeque::new()),
             done: Mutex::new(BTreeMap::new())
@@ -177,7 +179,14 @@ impl UserInner {
         let mut i = 0;
         while i < len {
             let packet = unsafe { *(buf.as_ptr() as *const Packet).offset(i as isize) };
-            self.done.lock().insert(packet.id, packet.a);
+            if packet.id == 0 {
+                match packet.a {
+                    SYS_FEVENT => context::event::trigger(self.scheme_id.load(Ordering::SeqCst), packet.b, packet.c, packet.d),
+                    _ => println!("Unknown scheme -> kernel message {}", packet.a)
+                }
+            } else {
+                self.done.lock().insert(packet.id, packet.a);
+            }
             i += 1;
         }
 

@@ -72,6 +72,8 @@ pub fn close(fd: usize) -> Result<usize> {
         file
     };
 
+    context::event::unregister(fd, file.scheme, file.number);
+
     let scheme = {
         let schemes = scheme::schemes();
         let scheme = schemes.get(file.scheme).ok_or(Error::new(EBADF))?;
@@ -113,7 +115,9 @@ pub fn fevent(fd: usize, flags: usize) -> Result<usize> {
         let scheme = schemes.get(file.scheme).ok_or(Error::new(EBADF))?;
         scheme.clone()
     };
-    scheme.fevent(file.number, flags)
+    scheme.fevent(file.number, flags)?;
+    context::event::register(fd, file.scheme, file.number);
+    Ok(0)
 }
 
 /// Get the canonical path of the file
