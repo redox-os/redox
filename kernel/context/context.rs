@@ -69,7 +69,7 @@ impl Context {
                 cwd.clone()
             } else if path == b".." {
                 cwd[..cwd[..cwd.len() - 1]
-                                   .iter().rposition(|&b| b == b'/')
+                                   .iter().rposition(|&b| b == b'/' || b == b':')
                                    .map_or(cwd.len(), |i| i + 1)]
                    .to_vec()
             } else if path.starts_with(b"./") {
@@ -78,7 +78,7 @@ impl Context {
                 canon
             } else if path.starts_with(b"../") {
                 let mut canon = cwd[..cwd[..cwd.len() - 1]
-                                   .iter().rposition(|&b| b == b'/')
+                                   .iter().rposition(|&b| b == b'/' || b == b':')
                                    .map_or(cwd.len(), |i| i + 1)]
                    .to_vec();
                 canon.extend_from_slice(&path[3..]);
