@@ -66,6 +66,7 @@ pub fn clone(flags: usize, stack_base: usize) -> Result<usize> {
         let mut stack_option = None;
         let grants;
         let cwd;
+        let env;
         let files;
 
         // Copy from old process
@@ -179,6 +180,12 @@ pub fn clone(flags: usize, stack_base: usize) -> Result<usize> {
                 cwd = context.cwd.clone();
             } else {
                 cwd = Arc::new(Mutex::new(context.cwd.lock().clone()));
+            }
+
+            if flags & CLONE_VM == CLONE_VM {
+                env = context.env.clone();
+            } else {
+                env = Arc::new(Mutex::new(context.env.lock().clone()));
             }
 
             if flags & CLONE_FILES == CLONE_FILES {
@@ -338,6 +345,8 @@ pub fn clone(flags: usize, stack_base: usize) -> Result<usize> {
             }
 
             context.cwd = cwd;
+
+            context.env = env;
 
             context.files = files;
 

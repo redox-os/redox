@@ -1,6 +1,6 @@
 use alloc::arc::Arc;
 use alloc::boxed::Box;
-use collections::Vec;
+use collections::{BTreeMap, Vec};
 use spin::Mutex;
 
 use arch;
@@ -39,6 +39,8 @@ pub struct Context {
     pub grants: Arc<Mutex<Vec<Grant>>>,
     /// The current working directory
     pub cwd: Arc<Mutex<Vec<u8>>>,
+    /// The process environment
+    pub env: Arc<Mutex<BTreeMap<Box<[u8]>, Arc<Mutex<Vec<u8>>>>>>,
     /// The open files in the scheme
     pub files: Arc<Mutex<Vec<Option<File>>>>
 }
@@ -58,6 +60,7 @@ impl Context {
             stack: None,
             grants: Arc::new(Mutex::new(Vec::new())),
             cwd: Arc::new(Mutex::new(Vec::new())),
+            env: Arc::new(Mutex::new(BTreeMap::new())),
             files: Arc::new(Mutex::new(Vec::new()))
         }
     }

@@ -1,39 +1,31 @@
-use collections::BTreeMap;
+use alloc::arc::Arc;
+use collections::{BTreeMap, Vec};
 use core::{cmp, str};
 use core::sync::atomic::{AtomicUsize, Ordering};
-use spin::RwLock;
+use spin::{Mutex, RwLock};
 
+use context;
 use syscall::data::Stat;
 use syscall::error::*;
-use syscall::flag::{MODE_DIR, MODE_FILE, SEEK_SET, SEEK_CUR, SEEK_END};
+use syscall::flag::{MODE_FILE, SEEK_SET, SEEK_CUR, SEEK_END};
 use syscall::scheme::Scheme;
 
+#[derive(Clone)]
 struct Handle {
-    data: &'static [u8],
+    data: Arc<Mutex<Vec<u8>>>,
     mode: u16,
     seek: usize
 }
 
 pub struct EnvScheme {
     next_id: AtomicUsize,
-    files: BTreeMap<&'static [u8], &'static [u8]>,
     handles: RwLock<BTreeMap<usize, Handle>>
 }
 
 impl EnvScheme {
     pub fn new() -> EnvScheme {
-        let mut files: BTreeMap<&'static [u8], &'static [u8]> = BTreeMap::new();
-
-        files.insert(b"", b"COLUMNS\nHOME\nLINES\nPATH\nPWD");
-        files.insert(b"COLUMNS", b"80");
-        files.insert(b"LINES", b"30");
-        files.insert(b"HOME", b"initfs:bin/");
-        files.insert(b"PATH", b"initfs:bin/");
-        files.insert(b"PWD", b"initfs:bin/");
-
         EnvScheme {
             next_id: AtomicUsize::new(0),
-            files: files,
             handles: RwLock::new(BTreeMap::new())
         }
     }
@@ -42,31 +34,69 @@ impl EnvScheme {
 impl Scheme for EnvScheme {
     fn open(&self, path: &[u8], _flags: usize) -> Result<usize> {
         let path = str::from_utf8(path).map_err(|_err| Error::new(ENOENT))?.trim_matches('/');
-        let data = self.files.get(path.as_bytes()).ok_or(Error::new(ENOENT))?;
 
-        let id = self.next_id.fetch_add(1, Ordering::SeqCst);
-        self.handles.write().insert(id, Handle {
-            data: data,
-            mode: if path.is_empty() { MODE_DIR } else { MODE_FILE },
-            seek: 0
-        });
+        let env_lock = {
+            let contexts = context::contexts();
+            let context_lock = contexts.current().ok_or(Error::new(ESRCH))?;
+            let context = context_lock.read();
+            context.env.clone()
+        };
 
-        Ok(id)
+        if path.is_empty() {
+            let mut list = Vec::new();
+            {
+                let env = env_lock.lock();
+                for entry in env.iter() {
+                    if ! list.is_empty() {
+                        list.push(b'\n');
+                    }
+                    list.extend_from_slice(&entry.0);
+                    list.push(b'=');
+                    list.extend_from_slice(&entry.1.lock());
+                }
+            }
+
+            let id = self.next_id.fetch_add(1, Ordering::SeqCst);
+            self.handles.write().insert(id, Handle {
+                data: Arc::new(Mutex::new(list)),
+                mode: MODE_FILE,
+                seek: 0
+            });
+
+            Ok(id)
+        } else {
+            let data = {
+                let mut env = env_lock.lock();
+                if env.contains_key(path.as_bytes()) {
+                    env[path.as_bytes()].clone()
+                } else /*if flags & O_CREAT == O_CREAT*/ {
+                    let name = path.as_bytes().to_vec().into_boxed_slice();
+                    let data = Arc::new(Mutex::new(Vec::new()));
+                    env.insert(name, data.clone());
+                    data
+                }
+            };
+
+            let id = self.next_id.fetch_add(1, Ordering::SeqCst);
+            self.handles.write().insert(id, Handle {
+                data: data,
+                mode: MODE_FILE,
+                seek: 0
+            });
+
+            Ok(id)
+        }
     }
 
     fn dup(&self, id: usize) -> Result<usize> {
-        let (data, mode, seek) = {
+        let new_handle = {
             let handles = self.handles.read();
             let handle = handles.get(&id).ok_or(Error::new(EBADF))?;
-            (handle.data, handle.mode, handle.seek)
+            handle.clone()
         };
 
         let id = self.next_id.fetch_add(1, Ordering::SeqCst);
-        self.handles.write().insert(id, Handle {
-            data: data,
-            mode: mode,
-            seek: seek
-        });
+        self.handles.write().insert(id, new_handle);
 
         Ok(id)
     }
@@ -75,9 +105,33 @@ impl Scheme for EnvScheme {
         let mut handles = self.handles.write();
         let mut handle = handles.get_mut(&id).ok_or(Error::new(EBADF))?;
 
+        let data = handle.data.lock();
+
         let mut i = 0;
-        while i < buffer.len() && handle.seek < handle.data.len() {
-            buffer[i] = handle.data[handle.seek];
+        while i < buffer.len() && handle.seek < data.len() {
+            buffer[i] = data[handle.seek];
+            i += 1;
+            handle.seek += 1;
+        }
+
+        Ok(i)
+    }
+
+    fn write(&self, id: usize, buffer: &[u8]) -> Result<usize> {
+        let mut handles = self.handles.write();
+        let mut handle = handles.get_mut(&id).ok_or(Error::new(EBADF))?;
+
+        let mut data = handle.data.lock();
+
+        let mut i = 0;
+        while i < buffer.len() && handle.seek < data.len() {
+            data[handle.seek] = buffer[i];
+            i += 1;
+            handle.seek += 1;
+        }
+
+        while i < buffer.len() {
+            data.push(buffer[i]);
             i += 1;
             handle.seek += 1;
         }
@@ -89,10 +143,11 @@ impl Scheme for EnvScheme {
         let mut handles = self.handles.write();
         let mut handle = handles.get_mut(&id).ok_or(Error::new(EBADF))?;
 
+        let len = handle.data.lock().len();
         handle.seek = match whence {
-            SEEK_SET => cmp::min(handle.data.len(), pos),
-            SEEK_CUR => cmp::max(0, cmp::min(handle.data.len() as isize, handle.seek as isize + pos as isize)) as usize,
-            SEEK_END => cmp::max(0, cmp::min(handle.data.len() as isize, handle.data.len() as isize + pos as isize)) as usize,
+            SEEK_SET => cmp::min(len, pos),
+            SEEK_CUR => cmp::max(0, cmp::min(len as isize, handle.seek as isize + pos as isize)) as usize,
+            SEEK_END => cmp::max(0, cmp::min(len as isize, len as isize + pos as isize)) as usize,
             _ => return Err(Error::new(EINVAL))
         };
 
@@ -104,12 +159,31 @@ impl Scheme for EnvScheme {
         let handle = handles.get(&id).ok_or(Error::new(EBADF))?;
 
         stat.st_mode = handle.mode;
-        stat.st_size = handle.data.len() as u32; //TODO: st_size 64-bit
+        stat.st_size = handle.data.lock().len() as u32; //TODO: st_size 64-bit
 
         Ok(0)
     }
 
-    fn fsync(&self, _id: usize) -> Result<usize> {
+    fn fsync(&self, id: usize) -> Result<usize> {
+        let handles = self.handles.read();
+        let _handle = handles.get(&id).ok_or(Error::new(EBADF))?;
+
+        Ok(0)
+    }
+
+    fn ftruncate(&self, id: usize, len: usize) -> Result<usize> {
+        let handles = self.handles.read();
+        let handle = handles.get(&id).ok_or(Error::new(EBADF))?;
+
+        let mut data = handle.data.lock();
+        if len < data.len() {
+            data.truncate(len)
+        } else {
+            while len > data.len() {
+                data.push(0);
+            }
+        }
+
         Ok(0)
     }
 

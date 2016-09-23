@@ -39,6 +39,7 @@ pub extern fn syscall(a: usize, b: usize, c: usize, d: usize, e: usize, f: usize
             SYS_FSTAT => fstat(b, &mut validate_slice_mut(c as *mut Stat, 1)?[0]),
             SYS_DUP => dup(b),
             SYS_BRK => brk(b),
+            SYS_FTRUNCATE => ftruncate(b, c),
             SYS_IOPL => iopl(b),
             SYS_FSYNC => fsync(b),
             SYS_CLONE => clone(b, stack),

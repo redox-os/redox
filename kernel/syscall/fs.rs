@@ -152,6 +152,24 @@ pub fn fsync(fd: usize) -> Result<usize> {
     scheme.fsync(file.number)
 }
 
+/// Truncate the file descriptor
+pub fn ftruncate(fd: usize, len: usize) -> Result<usize> {
+    let file = {
+        let contexts = context::contexts();
+        let context_lock = contexts.current().ok_or(Error::new(ESRCH))?;
+        let context = context_lock.read();
+        let file = context.get_file(fd).ok_or(Error::new(EBADF))?;
+        file
+    };
+
+    let scheme = {
+        let schemes = scheme::schemes();
+        let scheme = schemes.get(file.scheme).ok_or(Error::new(EBADF))?;
+        scheme.clone()
+    };
+    scheme.ftruncate(file.number, len)
+}
+
 /// Seek to an offset
 pub fn lseek(fd: usize, pos: usize, whence: usize) -> Result<usize> {
     let file = {
