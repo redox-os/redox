@@ -145,11 +145,25 @@ initfs/bin/%: programs/%/Cargo.toml programs/%/src/** $(BUILD)/libstd.rlib
 	strip $@
 	rm $@.d
 
+initfs/bin/%: programs/coreutils/Cargo.toml programs/coreutils/src/bin/%.rs $(BUILD)/libstd.rlib
+	mkdir -p initfs/bin
+	$(CARGO) rustc --manifest-path $< --bin $* $(CARGOFLAGS) -o $@
+	strip $@
+	rm $@.d
+
 initfs/bin/%: schemes/%/Cargo.toml schemes/%/src/** $(BUILD)/libstd.rlib
 	mkdir -p initfs/bin
 	$(CARGO) rustc --manifest-path $< $(CARGOFLAGS) -o $@
 	strip $@
 	rm $@.d
+
+coreutils: \
+	initfs/bin/cat \
+	initfs/bin/echo \
+	initfs/bin/env \
+	initfs/bin/ls \
+	initfs/bin/printenv \
+	initfs/bin/pwd
 
 $(BUILD)/initfs.rs: \
 		initfs/bin/pcid \
@@ -158,6 +172,7 @@ $(BUILD)/initfs.rs: \
 		initfs/bin/init \
 		initfs/bin/ion \
 		initfs/bin/login \
+		coreutils \
 		initfs/bin/example
 		echo 'use collections::BTreeMap;' > $@
 		echo 'pub fn gen() -> BTreeMap<&'"'"'static [u8], &'"'"'static [u8]> {' >> $@

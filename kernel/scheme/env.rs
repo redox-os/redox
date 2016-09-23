@@ -22,8 +22,9 @@ impl EnvScheme {
     pub fn new() -> EnvScheme {
         let mut files: BTreeMap<&'static [u8], &'static [u8]> = BTreeMap::new();
 
-        files.insert(b"HOME", b"initfs:");
-        files.insert(b"PWD", b"initfs:");
+        files.insert(b"HOME", b"initfs:bin/");
+        files.insert(b"PWD", b"initfs:bin/");
+        files.insert(b"PATH", b"initfs:bin/");
         files.insert(b"COLUMNS", b"80");
         files.insert(b"LINES", b"30");
 
