@@ -36,7 +36,6 @@ impl InitFsScheme {
 impl Scheme for InitFsScheme {
     fn open(&self, path: &[u8], _flags: usize) -> Result<usize> {
         let path = str::from_utf8(path).map_err(|_err| Error::new(ENOENT))?.trim_matches('/');
-        println!("{}", path);
         let file = self.files.get(path.as_bytes()).ok_or(Error::new(ENOENT))?;
 
         let id = self.next_id.fetch_add(1, Ordering::SeqCst);

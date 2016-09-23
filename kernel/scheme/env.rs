@@ -1,5 +1,5 @@
 use collections::BTreeMap;
-use core::cmp;
+use core::{cmp, str};
 use core::sync::atomic::{AtomicUsize, Ordering};
 use spin::RwLock;
 
@@ -41,7 +41,8 @@ impl EnvScheme {
 
 impl Scheme for EnvScheme {
     fn open(&self, path: &[u8], _flags: usize) -> Result<usize> {
-        let data = self.files.get(path).ok_or(Error::new(ENOENT))?;
+        let path = str::from_utf8(path).map_err(|_err| Error::new(ENOENT))?.trim_matches('/');
+        let data = self.files.get(path.as_bytes()).ok_or(Error::new(ENOENT))?;
 
         let id = self.next_id.fetch_add(1, Ordering::SeqCst);
         self.handles.write().insert(id, Handle {
