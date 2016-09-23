@@ -1,10 +1,11 @@
 use collections::BTreeMap;
-use core::cmp;
+use core::{cmp, str};
 use core::sync::atomic::{AtomicUsize, Ordering};
 use spin::RwLock;
 
+use syscall::data::Stat;
 use syscall::error::*;
-use syscall::flag::{SEEK_SET, SEEK_CUR, SEEK_END};
+use syscall::flag::{MODE_DIR, MODE_FILE, SEEK_SET, SEEK_CUR, SEEK_END};
 use syscall::scheme::Scheme;
 
 #[path="../../build/userspace/initfs.rs"]
@@ -12,12 +13,13 @@ mod gen;
 
 struct Handle {
     data: &'static [u8],
+    mode: u16,
     seek: usize
 }
 
 pub struct InitFsScheme {
     next_id: AtomicUsize,
-    files: BTreeMap<&'static [u8], &'static [u8]>,
+    files: BTreeMap<&'static [u8], (&'static [u8], bool)>,
     handles: RwLock<BTreeMap<usize, Handle>>
 }
 
@@ -33,11 +35,14 @@ impl InitFsScheme {
 
 impl Scheme for InitFsScheme {
     fn open(&self, path: &[u8], _flags: usize) -> Result<usize> {
-        let data = self.files.get(path).ok_or(Error::new(ENOENT))?;
+        let path = str::from_utf8(path).map_err(|_err| Error::new(ENOENT))?.trim_matches('/');
+        println!("{}", path);
+        let file = self.files.get(path.as_bytes()).ok_or(Error::new(ENOENT))?;
 
         let id = self.next_id.fetch_add(1, Ordering::SeqCst);
         self.handles.write().insert(id, Handle {
-            data: data,
+            data: file.0,
+            mode: if file.1 { MODE_DIR } else { MODE_FILE },
             seek: 0
         });
 
@@ -45,28 +50,29 @@ impl Scheme for InitFsScheme {
     }
 
     fn dup(&self, id: usize) -> Result<usize> {
-        let (data, seek) = {
+        let (data, mode, seek) = {
             let handles = self.handles.read();
             let handle = handles.get(&id).ok_or(Error::new(EBADF))?;
-            (handle.data, handle.seek)
+            (handle.data, handle.mode, handle.seek)
         };
 
-        let new_id = self.next_id.fetch_add(1, Ordering::SeqCst);
-        self.handles.write().insert(new_id, Handle {
+        let id = self.next_id.fetch_add(1, Ordering::SeqCst);
+        self.handles.write().insert(id, Handle {
             data: data,
+            mode: mode,
             seek: seek
         });
 
-        Ok(new_id)
+        Ok(id)
     }
 
-    fn read(&self, id: usize, buf: &mut [u8]) -> Result<usize> {
+    fn read(&self, id: usize, buffer: &mut [u8]) -> Result<usize> {
         let mut handles = self.handles.write();
         let mut handle = handles.get_mut(&id).ok_or(Error::new(EBADF))?;
 
         let mut i = 0;
-        while i < buf.len() && handle.seek < handle.data.len() {
-            buf[i] = handle.data[handle.seek];
+        while i < buffer.len() && handle.seek < handle.data.len() {
+            buffer[i] = handle.data[handle.seek];
             i += 1;
             handle.seek += 1;
         }
@@ -86,6 +92,16 @@ impl Scheme for InitFsScheme {
         };
 
         Ok(handle.seek)
+    }
+
+    fn fstat(&self, id: usize, stat: &mut Stat) -> Result<usize> {
+        let handles = self.handles.read();
+        let handle = handles.get(&id).ok_or(Error::new(EBADF))?;
+
+        stat.st_mode = handle.mode;
+        stat.st_size = handle.data.len() as u32; //TODO: st_size 64-bit
+
+        Ok(0)
     }
 
     fn fsync(&self, _id: usize) -> Result<usize> {

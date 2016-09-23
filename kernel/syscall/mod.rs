@@ -36,7 +36,7 @@ pub extern fn syscall(a: usize, b: usize, c: usize, d: usize, e: usize, f: usize
             SYS_CHDIR => chdir(validate_slice(b as *const u8, c)?),
             SYS_LSEEK => lseek(b, c, d),
             SYS_GETPID => getpid(),
-            SYS_FSTAT => fstat(b, &mut validate_slice_mut(b as *mut Stat, 1)?[0]),
+            SYS_FSTAT => fstat(b, &mut validate_slice_mut(c as *mut Stat, 1)?[0]),
             SYS_DUP => dup(b),
             SYS_BRK => brk(b),
             SYS_IOPL => iopl(b),
