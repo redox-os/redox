@@ -42,6 +42,11 @@ impl Scheme for DisplayScheme {
         Ok(id)
     }
 
+    fn fevent(&self, _id: usize, flags: usize) -> Result<usize> {
+        println!("fevent {:X}", flags);
+        Ok(0)
+    }
+
     fn fsync(&self, _id: usize) -> Result<usize> {
         Ok(0)
     }

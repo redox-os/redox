@@ -98,6 +98,24 @@ pub fn dup(fd: usize) -> Result<usize> {
     scheme.dup(file.number)
 }
 
+/// Register events for file
+pub fn fevent(fd: usize, flags: usize) -> Result<usize> {
+    let file = {
+        let contexts = context::contexts();
+        let context_lock = contexts.current().ok_or(Error::new(ESRCH))?;
+        let context = context_lock.read();
+        let file = context.get_file(fd).ok_or(Error::new(EBADF))?;
+        file
+    };
+
+    let scheme = {
+        let schemes = scheme::schemes();
+        let scheme = schemes.get(file.scheme).ok_or(Error::new(EBADF))?;
+        scheme.clone()
+    };
+    scheme.fevent(file.number, flags)
+}
+
 /// Get the canonical path of the file
 pub fn fpath(fd: usize, buf: &mut [u8]) -> Result<usize> {
     let file = {

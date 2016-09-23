@@ -618,7 +618,6 @@ pub fn sched_yield() -> Result<usize> {
 }
 
 pub fn waitpid(pid: usize, status_ptr: usize, flags: usize) -> Result<usize> {
-    //TODO: Implement status_ptr and options
     loop {
         {
             let mut exited = false;
@@ -644,6 +643,6 @@ pub fn waitpid(pid: usize, status_ptr: usize, flags: usize) -> Result<usize> {
             }
         }
 
-        unsafe { context::switch(); }
+        unsafe { context::switch(); } //TODO: Block
     }
 }

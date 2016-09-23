@@ -48,7 +48,7 @@ impl Scheme for DebugScheme {
             if i > 0 {
                 return Ok(i);
             } else {
-                unsafe { context::switch(); }
+                unsafe { context::switch(); } //TODO: Block
             }
         }
     }

@@ -8,7 +8,7 @@ use super::{contexts, Context, Status, CONTEXT_ID};
 /// # Safety
 ///
 /// Do not call this while holding locks!
-pub unsafe fn switch() {
+pub unsafe fn switch() -> bool {
     use core::ops::DerefMut;
 
     // Set the global lock to avoid the unsafe operations below from causing issues
@@ -48,10 +48,9 @@ pub unsafe fn switch() {
     }
 
     if to_ptr as usize == 0 {
-        // TODO: Sleep, wait for interrupt
         // Unset global lock if no context found
         arch::context::CONTEXT_SWITCH_LOCK.store(false, Ordering::SeqCst);
-        return;
+        return false;
     }
 
     //println!("Switch {} to {}", (&*from_ptr).id, (&*to_ptr).id);
@@ -64,4 +63,6 @@ pub unsafe fn switch() {
     CONTEXT_ID.store((&mut *to_ptr).id, Ordering::SeqCst);
 
     (&mut *from_ptr).arch.switch_to(&mut (&mut *to_ptr).arch);
+
+    true
 }

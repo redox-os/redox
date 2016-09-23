@@ -58,6 +58,10 @@ pub fn exit(status: usize) -> Result<usize> {
     unsafe { syscall1(SYS_EXIT, status) }
 }
 
+pub fn fevent(fd: usize, flags: usize) -> Result<usize> {
+    unsafe { syscall2(SYS_FEVENT, fd, flags) }
+}
+
 pub fn fpath(fd: usize, buf: &mut [u8]) -> Result<usize> {
     unsafe { syscall3(SYS_FPATH, fd, buf.as_mut_ptr() as usize, buf.len()) }
 }

@@ -68,6 +68,11 @@ pub trait Scheme {
     }
 
     #[allow(unused_variables)]
+    fn fevent(&self, id: usize, flags: usize) -> Result<usize> {
+        Err(Error::new(EBADF))
+    }
+
+    #[allow(unused_variables)]
     fn fpath(&self, id: usize, buf: &mut [u8]) -> Result<usize> {
         Err(Error::new(EBADF))
     }
