@@ -30,6 +30,7 @@ clean:
 	cargo clean --manifest-path programs/init/Cargo.toml
 	cargo clean --manifest-path programs/ion/Cargo.toml
 	cargo clean --manifest-path programs/login/Cargo.toml
+	cargo clean --manifest-path programs/coreutils/Cargo.toml
 	cargo clean --manifest-path schemes/example/Cargo.toml
 	rm -rf initfs/bin
 	rm -rf build
@@ -163,7 +164,8 @@ coreutils: \
 	initfs/bin/env \
 	initfs/bin/ls \
 	initfs/bin/printenv \
-	initfs/bin/pwd
+	initfs/bin/pwd \
+	initfs/bin/realpath
 
 $(BUILD)/initfs.rs: \
 		initfs/bin/pcid \

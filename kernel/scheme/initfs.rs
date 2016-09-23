@@ -12,6 +12,7 @@ use syscall::scheme::Scheme;
 mod gen;
 
 struct Handle {
+    path: &'static [u8],
     data: &'static [u8],
     mode: u16,
     seek: usize
@@ -35,28 +36,37 @@ impl InitFsScheme {
 
 impl Scheme for InitFsScheme {
     fn open(&self, path: &[u8], _flags: usize) -> Result<usize> {
-        let path = str::from_utf8(path).map_err(|_err| Error::new(ENOENT))?.trim_matches('/');
-        let file = self.files.get(path.as_bytes()).ok_or(Error::new(ENOENT))?;
+        let path_utf8 = str::from_utf8(path).map_err(|_err| Error::new(ENOENT))?;
+        let path_trimmed = path_utf8.trim_matches('/');
 
-        let id = self.next_id.fetch_add(1, Ordering::SeqCst);
-        self.handles.write().insert(id, Handle {
-            data: file.0,
-            mode: if file.1 { MODE_DIR } else { MODE_FILE },
-            seek: 0
-        });
+        //Have to iterate to get the path without allocation
+        for entry in self.files.iter() {
+            if entry.0 == &path_trimmed.as_bytes() {
+                let id = self.next_id.fetch_add(1, Ordering::SeqCst);
+                self.handles.write().insert(id, Handle {
+                    path: entry.0,
+                    data: (entry.1).0,
+                    mode: if (entry.1).1 { MODE_DIR } else { MODE_FILE },
+                    seek: 0
+                });
 
-        Ok(id)
+                return Ok(id)
+            }
+        }
+
+        Err(Error::new(ENOENT))
     }
 
     fn dup(&self, id: usize) -> Result<usize> {
-        let (data, mode, seek) = {
+        let (path, data, mode, seek) = {
             let handles = self.handles.read();
             let handle = handles.get(&id).ok_or(Error::new(EBADF))?;
-            (handle.data, handle.mode, handle.seek)
+            (handle.path, handle.data, handle.mode, handle.seek)
         };
 
         let id = self.next_id.fetch_add(1, Ordering::SeqCst);
         self.handles.write().insert(id, Handle {
+            path: path,
             data: data,
             mode: mode,
             seek: seek
@@ -91,6 +101,28 @@ impl Scheme for InitFsScheme {
         };
 
         Ok(handle.seek)
+    }
+
+    fn fpath(&self, id: usize, buf: &mut [u8]) -> Result<usize> {
+        let handles = self.handles.read();
+        let handle = handles.get(&id).ok_or(Error::new(EBADF))?;
+
+        //TODO: Copy scheme part in kernel
+        let mut i = 0;
+        let scheme_path = b"initfs:";
+        while i < buf.len() && i < scheme_path.len() {
+            buf[i] = scheme_path[i];
+            i += 1;
+        }
+
+        let mut j = 0;
+        while i < buf.len() && j < handle.path.len() {
+            buf[i] = handle.path[j];
+            i += 1;
+            j += 1;
+        }
+
+        Ok(i)
     }
 
     fn fstat(&self, id: usize, stat: &mut Stat) -> Result<usize> {
