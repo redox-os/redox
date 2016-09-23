@@ -177,7 +177,7 @@ $(BUILD)/initfs.rs: \
 	echo 'use collections::BTreeMap;' > $@
 	echo 'pub fn gen() -> BTreeMap<&'"'"'static [u8], (&'"'"'static [u8], bool)> {' >> $@
 	echo '    let mut files: BTreeMap<&'"'"'static [u8], (&'"'"'static [u8], bool)> = BTreeMap::new();' >> $@
-	for folder in `find initfs -type d`; do \
+	for folder in `find initfs -type d | sort`; do \
 		name=$$(echo $$folder | sed 's/initfs//' | cut -d '/' -f2-) ; \
 		echo -n '    files.insert(b"'$$name'", (b"' >> $@ ; \
 		ls -1 $$folder | sort | awk 'NR > 1 {printf("\\n")} {printf("%s", $$0)}' >> $@ ; \
