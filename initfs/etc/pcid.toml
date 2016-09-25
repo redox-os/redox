@@ -1,0 +1,5 @@
+[[drivers]]
+name = "AHCI storage"
+class = 1
+subclass = 6
+command = ["ahcid", "$5"]

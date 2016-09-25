@@ -2,5 +2,12 @@
 name = "pcid"
 version = "0.1.0"
 
+[dependencies]
+rustc-serialize = { git = "https://github.com/redox-os/rustc-serialize.git" }
+toml = "*"
+
 [dependencies.syscall]
 path = "../../syscall/"
+
+[replace]
+"rustc-serialize:0.3.19" = { git = "https://github.com/redox-os/rustc-serialize.git" }
