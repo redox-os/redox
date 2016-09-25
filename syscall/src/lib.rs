@@ -8,6 +8,8 @@ pub use self::flag::*;
 pub use self::number::*;
 pub use self::scheme::*;
 
+use core::mem;
+
 #[cfg(target_arch = "x86")]
 #[path="x86.rs"]
 mod arch;
@@ -67,7 +69,7 @@ pub fn fpath(fd: usize, buf: &mut [u8]) -> Result<usize> {
 }
 
 pub fn fstat(fd: usize, stat: &mut Stat) -> Result<usize> {
-    unsafe { syscall2(SYS_FSTAT, fd, stat as *mut Stat as usize) }
+    unsafe { syscall3(SYS_FSTAT, fd, stat as *mut Stat as usize, mem::size_of::<Stat>()) }
 }
 
 pub fn fsync(fd: usize) -> Result<usize> {

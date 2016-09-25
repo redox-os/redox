@@ -8,7 +8,6 @@ pub use self::fs::*;
 pub use self::process::*;
 pub use self::validate::*;
 
-use self::data::Stat;
 use self::error::{Error, Result, ENOSYS};
 use self::number::*;
 
@@ -25,33 +24,35 @@ pub mod validate;
 pub extern fn syscall(a: usize, b: usize, c: usize, d: usize, e: usize, f: usize, stack: usize) -> usize {
     #[inline(always)]
     fn inner(a: usize, b: usize, c: usize, d: usize, e: usize, _f: usize, stack: usize) -> Result<usize> {
-        match a {
-            SYS_EXIT => exit(b),
-            SYS_READ => read(b, validate_slice_mut(c as *mut u8, d)?),
-            SYS_WRITE => write(b, validate_slice(c as *const u8, d)?),
-            SYS_OPEN => open(validate_slice(b as *const u8, c)?, d),
-            SYS_CLOSE => close(b),
-            SYS_WAITPID => waitpid(b, c, d),
-            SYS_EXECVE => exec(validate_slice(b as *const u8, c)?, validate_slice(d as *const [usize; 2], e)?),
-            SYS_CHDIR => chdir(validate_slice(b as *const u8, c)?),
-            SYS_LSEEK => lseek(b, c, d),
-            SYS_GETPID => getpid(),
-            SYS_FSTAT => fstat(b, &mut validate_slice_mut(c as *mut Stat, 1)?[0]),
-            SYS_DUP => dup(b),
-            SYS_BRK => brk(b),
-            SYS_FTRUNCATE => ftruncate(b, c),
-            SYS_IOPL => iopl(b),
-            SYS_FSYNC => fsync(b),
-            SYS_CLONE => clone(b, stack),
-            SYS_YIELD => sched_yield(),
-            SYS_GETCWD => getcwd(validate_slice_mut(b as *mut u8, c)?),
-            SYS_FEVENT => fevent(b, c),
-            SYS_FPATH => fpath(b, validate_slice_mut(c as *mut u8, d)?),
-            SYS_PHYSMAP => physmap(b, c, d),
-            SYS_PHYSUNMAP => physunmap(b),
-            _ => {
-                println!("Unknown syscall {}", a);
-                Err(Error::new(ENOSYS))
+        match a & SYS_CLASS {
+            SYS_CLASS_FILE => match a & SYS_ARG {
+                SYS_ARG_SLICE => file_op_slice(a, b, validate_slice(c as *const u8, d)?),
+                SYS_ARG_MSLICE => file_op_mut_slice(a, b, validate_slice_mut(c as *mut u8, d)?),
+                _ => match a {
+                    SYS_CLOSE => close(b),
+                    SYS_DUP => dup(b),
+                    SYS_FEVENT => fevent(b, c),
+                    _ => file_op(a, b, c, d)
+                }
+            },
+            SYS_CLASS_PATH => match a {
+                SYS_OPEN => open(validate_slice(b as *const u8, c)?, d),
+                _ => unreachable!()
+            },
+            _ => match a {
+                SYS_EXIT => exit(b),
+                SYS_WAITPID => waitpid(b, c, d),
+                SYS_EXECVE => exec(validate_slice(b as *const u8, c)?, validate_slice(d as *const [usize; 2], e)?),
+                SYS_CHDIR => chdir(validate_slice(b as *const u8, c)?),
+                SYS_GETPID => getpid(),
+                SYS_BRK => brk(b),
+                SYS_IOPL => iopl(b),
+                SYS_CLONE => clone(b, stack),
+                SYS_YIELD => sched_yield(),
+                SYS_GETCWD => getcwd(validate_slice_mut(b as *mut u8, c)?),
+                SYS_PHYSMAP => physmap(b, c, d),
+                SYS_PHYSUNMAP => physunmap(b),
+                _ => Err(Error::new(ENOSYS))
             }
         }
     }

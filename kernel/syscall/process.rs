@@ -395,7 +395,7 @@ pub fn exec(path: &[u8], arg_ptrs: &[[usize; 2]]) -> Result<usize> {
         let mut data = vec![];
         loop {
             let mut buf = [0; 16384];
-            let count = syscall::read(file, &mut buf)?;
+            let count = syscall::file_op_mut_slice(syscall::number::SYS_READ, file, &mut buf)?;
             if count > 0 {
                 data.extend_from_slice(&buf[..count]);
             } else {
