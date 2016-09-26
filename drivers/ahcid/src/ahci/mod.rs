@@ -11,7 +11,7 @@ pub struct Ahci;
 
 impl Ahci {
     pub fn disks(base: usize, irq: u8) -> Vec<AhciDisk> {
-        println!(" + AHCI on: {:X} IRQ: {:X}", base as usize, irq);
+        println!(" + AHCI on: {:X} IRQ: {}", base as usize, irq);
 
         let pi = unsafe { &mut *(base as *mut HbaMem) }.pi.read();
         let ret: Vec<AhciDisk> = (0..32)

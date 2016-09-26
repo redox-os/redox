@@ -25,10 +25,10 @@ pub fn main() {
             for arg in sh_args.iter() {
                 command.arg(arg);
             }
-            
+
             command.env("HOME", "initfs:");
-            command.env("PWD", "initfs:bin/");
-            command.env("PATH", "initfs:bin/");
+            command.env("PWD", "initfs:bin");
+            command.env("PATH", "initfs:bin");
             command.env("COLUMNS", "80");
             command.env("LINES", "30");
             command.env("TTY", &tty);
