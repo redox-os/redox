@@ -22,7 +22,6 @@ impl Ahci {
                   println!("{}: {:?}", i, port_type);
                   match port_type {
                       HbaPortType::SATA => {
-                          /*
                           disk.port.init();
                           if let Some(size) = unsafe { disk.port.identify(i) } {
                               disk.size = size;
@@ -30,8 +29,6 @@ impl Ahci {
                           } else {
                               None
                           }
-                          */
-                          None
                       }
                       _ => None,
                   }
