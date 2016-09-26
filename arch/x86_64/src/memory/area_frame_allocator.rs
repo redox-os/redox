@@ -43,11 +43,12 @@ impl AreaFrameAllocator {
 }
 
 impl FrameAllocator for AreaFrameAllocator {
-    fn allocate_frame(&mut self) -> Option<Frame> {
+    fn allocate_frames(&mut self, count: usize) -> Option<Frame> {
         if let Some(area) = self.current_area {
             // "Clone" the frame to return it if it's free. Frame doesn't
             // implement Clone, but we can construct an identical frame.
-            let frame = Frame{ number: self.next_free_frame.number };
+            let start_frame = Frame{ number: self.next_free_frame.number };
+            let end_frame = Frame { number: self.next_free_frame.number + count };
 
             // the last frame of the current area
             let current_area_last_frame = {
@@ -55,27 +56,28 @@ impl FrameAllocator for AreaFrameAllocator {
                 Frame::containing_address(PhysicalAddress::new(address as usize))
             };
 
-            if frame > current_area_last_frame {
+            if end_frame > current_area_last_frame {
                 // all frames of current area are used, switch to next area
                 self.choose_next_area();
-            } else if frame >= self.kernel_start && frame <= self.kernel_end {
+            } else if (start_frame >= self.kernel_start && start_frame <= self.kernel_end)
+                    || (end_frame >= self.kernel_start && end_frame <= self.kernel_end) {
                 // `frame` is used by the kernel
                 self.next_free_frame = Frame {
                     number: self.kernel_end.number + 1
                 };
             } else {
                 // frame is unused, increment `next_free_frame` and return it
-                self.next_free_frame.number += 1;
-                return Some(frame);
+                self.next_free_frame.number += count;
+                return Some(start_frame);
             }
             // `frame` was not valid, try it again with the updated `next_free_frame`
-            self.allocate_frame()
+            self.allocate_frames(count)
         } else {
             None // no free frames left
         }
     }
 
-    fn deallocate_frame(&mut self, frame: Frame) {
+    fn deallocate_frames(&mut self, frame: Frame, count: usize) {
         //panic!("AreaFrameAllocator::deallocate_frame: not supported: {:?}", frame);
     }
 }

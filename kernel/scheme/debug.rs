@@ -72,7 +72,7 @@ impl Scheme for DebugScheme {
         Ok(buffer.len())
     }
 
-    fn fevent(&self, _file: usize, flags: usize) -> Result<usize> {
+    fn fevent(&self, _file: usize, _flags: usize) -> Result<usize> {
         Ok(0)
     }
 

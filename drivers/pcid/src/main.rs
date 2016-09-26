@@ -120,17 +120,25 @@ fn main() {
                                             }
                                         };
                                         let arg = match arg.as_str() {
-                                            "$0" => bar_arg(0),
-                                            "$1" => bar_arg(1),
-                                            "$2" => bar_arg(2),
-                                            "$3" => bar_arg(3),
-                                            "$4" => bar_arg(4),
-                                            "$5" => bar_arg(5),
+                                            "$BAR0" => bar_arg(0),
+                                            "$BAR1" => bar_arg(1),
+                                            "$BAR2" => bar_arg(2),
+                                            "$BAR3" => bar_arg(3),
+                                            "$BAR4" => bar_arg(4),
+                                            "$BAR5" => bar_arg(5),
+                                            "$IRQ" => format!("{}", header.interrupt_line),
                                             _ => arg.clone()
                                         };
                                         command.arg(&arg);
                                     }
-                                    println!("{:?}", command);
+
+                                    match command.spawn() {
+                                        Ok(mut child) => match child.wait() {
+                                            Ok(_status) => (), //println!("pcid: waited for {}: {:?}", line, status.code()),
+                                            Err(err) => println!("pcid: failed to wait for {:?}: {}", command, err)
+                                        },
+                                        Err(err) => println!("pcid: failed to execute {:?}: {}", command, err)
+                                    }
                                 }
                             }
 

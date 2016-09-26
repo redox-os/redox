@@ -69,17 +69,27 @@ pub unsafe fn init(kernel_start: usize, kernel_end: usize) {
 
 /// Allocate a frame
 pub fn allocate_frame() -> Option<Frame> {
+    allocate_frames(1)
+}
+
+/// Deallocate a frame
+pub fn deallocate_frame(frame: Frame) {
+    deallocate_frames(frame, 1)
+}
+
+/// Allocate a range of frames
+pub fn allocate_frames(count: usize) -> Option<Frame> {
     if let Some(ref mut allocator) = *ALLOCATOR.lock() {
-        allocator.allocate_frame()
+        allocator.allocate_frames(count)
     } else {
         panic!("frame allocator not initialized");
     }
 }
 
-/// Deallocate a frame
-pub fn deallocate_frame(frame: Frame) {
+/// Deallocate a range of frames frame
+pub fn deallocate_frames(frame: Frame, count: usize) {
     if let Some(ref mut allocator) = *ALLOCATOR.lock() {
-        allocator.deallocate_frame(frame)
+        allocator.deallocate_frames(frame, count)
     } else {
         panic!("frame allocator not initialized");
     }
@@ -151,6 +161,6 @@ impl Iterator for FrameIter {
 }
 
 pub trait FrameAllocator {
-    fn allocate_frame(&mut self) -> Option<Frame>;
-    fn deallocate_frame(&mut self, frame: Frame);
+    fn allocate_frames(&mut self, size: usize) -> Option<Frame>;
+    fn deallocate_frames(&mut self, frame: Frame, size: usize);
 }
