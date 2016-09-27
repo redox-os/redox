@@ -40,7 +40,7 @@ FORCE:
 
 # Emulation
 QEMU=qemu-system-$(ARCH)
-QEMUFLAGS=-serial mon:stdio -d guest_errors
+QEMUFLAGS=-serial mon:stdio -d cpu_reset -d guest_errors
 ifeq ($(ARCH),arm)
 	LD=$(ARCH)-none-eabi-ld
 	QEMUFLAGS+=-cpu arm1176 -machine integratorcp

@@ -1,4 +1,5 @@
 #![feature(asm)]
+#![feature(question_mark)]
 
 #[macro_use]
 extern crate bitflags;
@@ -27,9 +28,9 @@ fn main() {
         }
 
         let address = unsafe { physmap(bar, 4096, MAP_WRITE).expect("ahcid: failed to map address") };
-        {
-            ahci::Ahci::disks(address, irq);
+        ahci::Ahci::disks(address, irq);
+        loop {
+            let _ = syscall::sched_yield();
         }
-        unsafe { physunmap(address).expect("ahcid: failed to unmap address") };
     });
 }

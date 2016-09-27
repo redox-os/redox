@@ -1,11 +1,13 @@
 use io::{Io, Mmio};
 
 use std::mem::size_of;
+use std::ops::DerefMut;
 use std::{ptr, u32};
 
-use syscall::{physalloc, physmap, physunmap, virttophys, MAP_WRITE};
+use syscall::{virttophys, MAP_WRITE};
 use syscall::error::{Error, Result, EIO};
 
+use super::dma::Dma;
 use super::fis::{FisType, FisRegH2D};
 
 const ATA_CMD_READ_DMA_EXT: u8 = 0x25;
@@ -72,49 +74,42 @@ impl HbaPort {
         }
     }
 
-    pub fn init(&mut self) {
+    pub fn init(&mut self, clb: &mut Dma<[HbaCmdHeader; 32]>, ctbas: &mut [Dma<HbaCmdTable>; 32], fb: &mut Dma<[u8; 256]>) {
         self.stop();
 
-        let clb_phys = unsafe { physalloc(size_of::<HbaCmdHeader>()).unwrap() };
-        self.clb.write(clb_phys as u64);
+        self.clb.write(clb.physical() as u64);
+        self.fb.write(fb.physical() as u64);
 
-        let fb = unsafe { physalloc(256).unwrap() };
-        self.fb.write(fb as u64);
-
-        let clb = unsafe { physmap(clb_phys, size_of::<HbaCmdHeader>(), MAP_WRITE).unwrap() } as *mut HbaCmdHeader;
         for i in 0..32 {
-            let cmdheader = unsafe { &mut *clb.offset(i) };
-            let ctba = unsafe { physalloc(size_of::<HbaCmdTable>()).unwrap() };
-            cmdheader.ctba.write(ctba as u64);
+            let cmdheader = &mut clb[i];
+            cmdheader.ctba.write(ctbas[i].physical() as u64);
             cmdheader.prdtl.write(0);
         }
-        unsafe { physunmap(clb as usize).unwrap(); }
 
         self.start();
     }
 
-    pub unsafe fn identify(&mut self, port: usize) -> Option<u64> {
+    pub unsafe fn identify(&mut self, clb: &mut Dma<[HbaCmdHeader; 32]>, ctbas: &mut [Dma<HbaCmdTable>; 32]) -> Option<u64> {
         self.is.write(u32::MAX);
 
-        let dest_phys = physalloc(256).unwrap();
-        let dest = physmap(dest_phys, 256, MAP_WRITE).unwrap() as *mut u16;
+        let dest: Dma<[u16; 256]> = Dma::new([0; 256]).unwrap();
 
         if let Some(slot) = self.slot() {
-            {
-                let clb = unsafe { physmap(self.clb.read() as usize, size_of::<HbaCmdHeader>(), MAP_WRITE).unwrap() } as *mut HbaCmdHeader;
-                let cmdheader = &mut *clb.offset(slot as isize);
-                cmdheader.cfl.write(((size_of::<FisRegH2D>() / size_of::<u32>()) as u8));
-                cmdheader.prdtl.write(1);
+            let cmdheader = &mut clb[slot as usize];
+            cmdheader.cfl.write(((size_of::<FisRegH2D>() / size_of::<u32>()) as u8));
+            cmdheader.prdtl.write(1);
 
-                let ctba = unsafe { physmap(cmdheader.ctba.read() as usize, size_of::<HbaCmdTable>(), MAP_WRITE).unwrap() } as *mut HbaCmdTable;
-                ptr::write_bytes(ctba as *mut u8, 0, size_of::<HbaCmdTable>());
-                let cmdtbl = &mut *(ctba);
+            {
+                let cmdtbl = &mut ctbas[slot as usize];
+                ptr::write_bytes(cmdtbl.deref_mut() as *mut HbaCmdTable as *mut u8, 0, size_of::<HbaCmdTable>());
 
                 let prdt_entry = &mut cmdtbl.prdt_entry[0];
-                prdt_entry.dba.write(dest_phys as u64);
+                prdt_entry.dba.write(dest.physical() as u64);
                 prdt_entry.dbc.write(512 | 1);
+            }
 
-                let cmdfis = &mut *(cmdtbl.cfis.as_ptr() as *mut FisRegH2D);
+            {
+                let cmdfis = &mut *(ctbas[slot as usize].cfis.as_mut_ptr() as *mut FisRegH2D);
 
                 cmdfis.fis_type.write(FisType::RegH2D as u8);
                 cmdfis.pm.write(1 << 7);
@@ -122,9 +117,6 @@ impl HbaPort {
                 cmdfis.device.write(0);
                 cmdfis.countl.write(1);
                 cmdfis.counth.write(0);
-
-                unsafe { physunmap(ctba as usize).unwrap(); }
-                unsafe { physunmap(clb as usize).unwrap(); }
             }
 
             while self.tfd.readf((ATA_DEV_BUSY | ATA_DEV_DRQ) as u32) {}
@@ -143,7 +135,7 @@ impl HbaPort {
 
             let mut serial = String::new();
             for word in 10..20 {
-                let d = *dest.offset(word);
+                let d = dest[word];
                 let a = ((d >> 8) as u8) as char;
                 if a != '\0' {
                     serial.push(a);
@@ -156,7 +148,7 @@ impl HbaPort {
 
             let mut firmware = String::new();
             for word in 23..27 {
-                let d = *dest.offset(word);
+                let d = dest[word];
                 let a = ((d >> 8) as u8) as char;
                 if a != '\0' {
                     firmware.push(a);
@@ -169,7 +161,7 @@ impl HbaPort {
 
             let mut model = String::new();
             for word in 27..47 {
-                let d = *dest.offset(word);
+                let d = dest[word];
                 let a = ((d >> 8) as u8) as char;
                 if a != '\0' {
                     model.push(a);
@@ -180,20 +172,20 @@ impl HbaPort {
                 }
             }
 
-            let mut sectors = (*dest.offset(100) as u64) |
-                              ((*dest.offset(101) as u64) << 16) |
-                              ((*dest.offset(102) as u64) << 32) |
-                              ((*dest.offset(103) as u64) << 48);
+            let mut sectors = (dest[100] as u64) |
+                              ((dest[101] as u64) << 16) |
+                              ((dest[102] as u64) << 32) |
+                              ((dest[103] as u64) << 48);
 
             let lba_bits = if sectors == 0 {
-                sectors = (*dest.offset(60) as u64) | ((*dest.offset(61) as u64) << 16);
+                sectors = (dest[60] as u64) | ((dest[61] as u64) << 16);
                 28
             } else {
                 48
             };
 
-            println!("   + Port {}: Serial: {} Firmware: {} Model: {} {}-bit LBA Size: {} MB",
-                        port, serial.trim(), firmware.trim(), model.trim(), lba_bits, sectors / 2048);
+            println!("   + Serial: {} Firmware: {} Model: {} {}-bit LBA Size: {} MB",
+                        serial.trim(), firmware.trim(), model.trim(), lba_bits, sectors / 2048);
 
             Some(sectors * 512)
         } else {
@@ -353,14 +345,14 @@ pub struct HbaMem {
 }
 
 #[repr(packed)]
-struct HbaPrdtEntry {
+pub struct HbaPrdtEntry {
     dba: Mmio<u64>, // Data base address
     rsv0: Mmio<u32>, // Reserved
     dbc: Mmio<u32>, // Byte count, 4M max, interrupt = 1
 }
 
 #[repr(packed)]
-struct HbaCmdTable {
+pub struct HbaCmdTable {
     // 0x00
     cfis: [Mmio<u8>; 64], // Command FIS
 
@@ -375,7 +367,7 @@ struct HbaCmdTable {
 }
 
 #[repr(packed)]
-struct HbaCmdHeader {
+pub struct HbaCmdHeader {
     // DW0
     cfl: Mmio<u8>, /* Command FIS length in DWORDS, 2 ~ 16, atapi: 4, write - host to device: 2, prefetchable: 1 */
     pm: Mmio<u8>, // Reset - 0x80, bist: 0x40, clear busy on ok: 0x20, port multiplier

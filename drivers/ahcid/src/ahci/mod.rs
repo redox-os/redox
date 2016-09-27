@@ -2,8 +2,10 @@ use io::Io;
 
 use syscall::error::Result;
 
-use self::hba::{HbaMem, HbaPort, HbaPortType};
+use self::dma::Dma;
+use self::hba::{HbaMem, HbaCmdTable, HbaCmdHeader, HbaPort, HbaPortType};
 
+pub mod dma;
 pub mod fis;
 pub mod hba;
 
@@ -17,17 +19,17 @@ impl Ahci {
         let ret: Vec<AhciDisk> = (0..32)
               .filter(|&i| pi & 1 << i as i32 == 1 << i as i32)
               .filter_map(|i| {
-                  let mut disk = AhciDisk::new(base, i, irq);
-                  let port_type = disk.port.probe();
+                  let port = &mut unsafe { &mut *(base as *mut HbaMem) }.ports[i];
+                  let port_type = port.probe();
                   println!("{}: {:?}", i, port_type);
                   match port_type {
                       HbaPortType::SATA => {
-                          disk.port.init();
-                          if let Some(size) = unsafe { disk.port.identify(i) } {
-                              disk.size = size;
-                              Some(disk)
-                          } else {
-                              None
+                          match AhciDisk::new(port) {
+                              Ok(disk) => Some(disk),
+                              Err(err) => {
+                                  println!("{}: {}", i, err);
+                                  None
+                              }
                           }
                       }
                       _ => None,
@@ -41,29 +43,38 @@ impl Ahci {
 
 pub struct AhciDisk {
     port: &'static mut HbaPort,
-    port_index: usize,
-    irq: u8,
     size: u64,
+    clb: Dma<[HbaCmdHeader; 32]>,
+    ctbas: [Dma<HbaCmdTable>; 32],
+    fb: Dma<[u8; 256]>
 }
 
 impl AhciDisk {
-    fn new(base: usize, port_index: usize, irq: u8) -> Self {
-        AhciDisk {
-            port: &mut unsafe { &mut *(base as *mut HbaMem) }.ports[port_index],
-            port_index: port_index,
-            irq: irq,
-            size: 0
-        }
-    }
+    fn new(port: &'static mut HbaPort) -> Result<Self> {
+        let mut clb = Dma::zeroed()?;
+        let mut ctbas = [
+            Dma::zeroed()?, Dma::zeroed()?, Dma::zeroed()?, Dma::zeroed()?,
+            Dma::zeroed()?, Dma::zeroed()?, Dma::zeroed()?, Dma::zeroed()?,
+            Dma::zeroed()?, Dma::zeroed()?, Dma::zeroed()?, Dma::zeroed()?,
+            Dma::zeroed()?, Dma::zeroed()?, Dma::zeroed()?, Dma::zeroed()?,
+            Dma::zeroed()?, Dma::zeroed()?, Dma::zeroed()?, Dma::zeroed()?,
+            Dma::zeroed()?, Dma::zeroed()?, Dma::zeroed()?, Dma::zeroed()?,
+            Dma::zeroed()?, Dma::zeroed()?, Dma::zeroed()?, Dma::zeroed()?,
+            Dma::zeroed()?, Dma::zeroed()?, Dma::zeroed()?, Dma::zeroed()?,
+        ];
+        let mut fb = Dma::zeroed()?;
 
-    fn name(&self) -> String {
-        format!("AHCI Port {}", self.port_index)
-    }
+        port.init(&mut clb, &mut ctbas, &mut fb);
 
-    fn on_irq(&mut self, irq: u8) {
-        if irq == self.irq {
-            //debugln!("AHCI IRQ");
-        }
+        let size = unsafe { port.identify(&mut clb, &mut ctbas).unwrap_or(0) };
+
+        Ok(AhciDisk {
+            port: port,
+            size: size,
+            clb: clb,
+            ctbas: ctbas,
+            fb: fb
+        })
     }
 
     fn size(&self) -> u64 {
