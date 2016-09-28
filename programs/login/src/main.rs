@@ -1,20 +1,55 @@
+#![feature(question_mark)]
+
 extern crate octavo;
 extern crate syscall;
 extern crate termion;
 
 use octavo::octavo_digest::Digest;
 use octavo::octavo_digest::sha3::Sha512;
+use std::fs::File;
 use std::io::{Read, Write};
 use std::process::Command;
 use std::{env, io, thread};
 use termion::input::TermRead;
 
+pub struct Passwd<'a> {
+    user: &'a str,
+    hash: &'a str,
+    uid: usize,
+    gid: usize,
+    name: &'a str,
+    home: &'a str,
+    shell: &'a str
+}
+
+impl<'a> Passwd<'a> {
+    pub fn parse(line: &'a str) -> Result<Passwd<'a>, ()> {
+        let mut parts = line.split(';');
+
+        let user = parts.next().ok_or(())?;
+        let hash = parts.next().ok_or(())?;
+        let uid = parts.next().ok_or(())?.parse::<usize>().or(Err(()))?;
+        let gid = parts.next().ok_or(())?.parse::<usize>().or(Err(()))?;
+        let name = parts.next().ok_or(())?;
+        let home = parts.next().ok_or(())?;
+        let shell = parts.next().ok_or(())?;
+
+        Ok(Passwd {
+            user: user,
+            hash: hash,
+            uid: uid,
+            gid: gid,
+            name: name,
+            home: home,
+            shell: shell
+        })
+    }
+}
+
 pub fn main() {
     let mut args = env::args().skip(1);
 
     let tty = args.next().expect("login: no tty provided");
-    let sh = args.next().expect("login: no sh provided");
-    let sh_args: Vec<String> = args.collect();
 
     let _ = syscall::close(2);
     let _ = syscall::close(1);
@@ -23,6 +58,8 @@ pub fn main() {
     let _ = syscall::open(&tty, syscall::flag::O_RDWR);
     let _ = syscall::open(&tty, syscall::flag::O_RDWR);
     let _ = syscall::open(&tty, syscall::flag::O_RDWR);
+
+    env::set_current_dir("file:").unwrap();
 
     env::set_var("COLUMNS", "80");
     env::set_var("LINES", "30");
@@ -35,51 +72,76 @@ pub fn main() {
         let mut stdout = stdout.lock();
 
         loop {
-            stdout.write_all(b"\x1B[1mredox login:\x1B[0m ").expect("login: failed to write user prompt");
+            stdout.write_all(b"\x1B[1mredox login:\x1B[0m ").unwrap();
             let _ = stdout.flush();
 
-            let user = (&mut stdin as &mut Read).read_line().expect("login: failed to read user").unwrap_or(String::new());
+            let user = (&mut stdin as &mut Read).read_line().unwrap().unwrap_or(String::new());
             if ! user.is_empty() {
-                stdout.write_all(b"\x1B[1mpassword:\x1B[0m ").expect("login: failed to write password prompt");
+                stdout.write_all(b"\x1B[1mpassword:\x1B[0m ").unwrap();
                 let _ = stdout.flush();
 
-                if let Some(password) = stdin.read_passwd(&mut stdout).expect("login: failed to read password") {
-                    let mut output = vec![0; Sha512::output_bytes()];
-                    let mut hash = Sha512::default();
-                    hash.update(&password.as_bytes());
-                    hash.result(&mut output);
+                if let Some(password) = stdin.read_passwd(&mut stdout).unwrap() {
+                    let password_hash = {
+                        let mut output = vec![0; Sha512::output_bytes()];
+                        let mut hash = Sha512::default();
+                        hash.update(&password.as_bytes());
+                        hash.result(&mut output);
+                        let mut encoded = String::new();
+                        for b in output.iter() {
+                            encoded.push_str(&format!("{:X}", b));
+                        }
+                        encoded
+                    };
 
-                    println!("");
-
-                    print!("hash: {}: '{}' ", user, password);
-                    for b in output.iter() {
-                        print!("{:X} ", b);
-                    }
-                    println!("");
-
-                    let home = "file:home";
-
-                    env::set_current_dir(home).expect("login: failed to cd to home");
-
-                    let mut command = Command::new(&sh);
-                    for arg in sh_args.iter() {
-                        command.arg(arg);
+                    {
+                        let mut debug = File::open("debug:").unwrap();
+                        write!(debug, "hash: {}: '{}': {}\n", user, password, password_hash);
                     }
 
-                    command.env("USER", &user);
-                    command.env("HOME", home);
-                    command.env("PATH", "file:bin");
-
-                    match command.spawn() {
-                        Ok(mut child) => match child.wait() {
-                            Ok(_status) => (), //println!("login: waited for {}: {:?}", sh, status.code()),
-                            Err(err) => panic!("login: failed to wait for '{}': {}", sh, err)
-                        },
-                        Err(err) => panic!("login: failed to execute '{}': {}", sh, err)
+                    let mut passwd_string = String::new();
+                    {
+                        let mut passwd_file = File::open("file:etc/passwd").unwrap();
+                        passwd_file.read_to_string(&mut passwd_string).unwrap();
                     }
 
-                    stdout.write(b"\x1Bc").expect("login: failed to reset screen");
-                    let _ = stdout.flush();
+                    let mut passwd_option = None;
+                    for line in passwd_string.lines() {
+                        if let Ok(passwd) = Passwd::parse(line) {
+                            if password_hash == passwd.hash {
+                                passwd_option = Some(passwd);
+                                break;
+                            }
+                        }
+                    }
+
+                    if let Some(passwd) = passwd_option  {
+                        stdout.write(b"\n").unwrap();
+                        let _ = stdout.flush();
+
+                        let mut command = Command::new(passwd.shell);
+
+                        env::set_current_dir(passwd.home).unwrap();
+
+                        command.env("USER", &user);
+                        command.env("HOME", passwd.home);
+                        command.env("PATH", "file:bin");
+
+                        match command.spawn() {
+                            Ok(mut child) => match child.wait() {
+                                Ok(_status) => (), //println!("login: waited for {}: {:?}", sh, status.code()),
+                                Err(err) => panic!("login: failed to wait for '{}': {}", passwd.shell, err)
+                            },
+                            Err(err) => panic!("login: failed to execute '{}': {}", passwd.shell, err)
+                        }
+
+                        env::set_current_dir("file:").unwrap();
+
+                        stdout.write(b"\x1Bc").unwrap();
+                        let _ = stdout.flush();
+                    } else {
+                        stdout.write(b"\nLogin failed\n").unwrap();
+                        let _ = stdout.flush();
+                    }
                 }
             }
         }

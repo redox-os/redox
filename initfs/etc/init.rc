@@ -2,4 +2,4 @@ initfs:bin/pcid initfs:etc/pcid.toml
 initfs:bin/redoxfs disk:0
 file:bin/vesad
 file:bin/ps2d
-file:bin/login display: file:bin/ion
+file:bin/login display:
