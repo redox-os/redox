@@ -34,6 +34,7 @@ clean:
 	cargo clean --manifest-path programs/coreutils/Cargo.toml
 	cargo clean --manifest-path schemes/example/Cargo.toml
 	rm -rf initfs/bin
+	rm -rf filesystem/bin
 	rm -rf build
 
 FORCE:
@@ -74,7 +75,7 @@ else
 %.list: %
 	objdump -C -M intel -D $< > $@
 
-$(KBUILD)/harddrive.bin: $(KBUILD)/kernel bootloader/$(ARCH)/**
+$(KBUILD)/harddrive.bin: $(KBUILD)/kernel $(BUILD)/filesystem.bin bootloader/$(ARCH)/**
 	nasm -f bin -o $@ -D ARCH_$(ARCH) -ibootloader/$(ARCH)/ bootloader/$(ARCH)/harddrive.asm
 
 qemu: $(KBUILD)/harddrive.bin
@@ -147,44 +148,47 @@ initfs/bin/%: programs/%/Cargo.toml programs/%/src/** $(BUILD)/libstd.rlib
 	strip $@
 	rm $@.d
 
-initfs/bin/%: programs/coreutils/Cargo.toml programs/coreutils/src/bin/%.rs $(BUILD)/libstd.rlib
-	mkdir -p initfs/bin
-	$(CARGO) rustc --manifest-path $< --bin $* $(CARGOFLAGS) -o $@
-	strip $@
-	rm $@.d
-
 initfs/bin/%: schemes/%/Cargo.toml schemes/%/src/** $(BUILD)/libstd.rlib
 	mkdir -p initfs/bin
 	$(CARGO) rustc --manifest-path $< --bin $* $(CARGOFLAGS) -o $@
 	strip $@
 	rm $@.d
 
-drivers: \
+initfs_drivers: \
 	initfs/bin/ahcid \
 	initfs/bin/pcid \
 	initfs/bin/ps2d \
 	initfs/bin/vesad
 
-coreutils: \
-	initfs/bin/cat \
-	initfs/bin/echo \
-	initfs/bin/env \
-	initfs/bin/ls \
-	initfs/bin/printenv \
-	initfs/bin/pwd \
-	initfs/bin/realpath
-
-schemes: \
+initfs_schemes: \
 	initfs/bin/example \
 	initfs/bin/redoxfs
 
+filesystem/bin/%: programs/%/Cargo.toml programs/%/src/** $(BUILD)/libstd.rlib
+	mkdir -p filesystem/bin
+	$(CARGO) rustc --manifest-path $< $(CARGOFLAGS) -o $@
+	strip $@
+	rm $@.d
+
+filesystem/bin/%: programs/coreutils/Cargo.toml programs/coreutils/src/bin/%.rs $(BUILD)/libstd.rlib
+	mkdir -p filesystem/bin
+	$(CARGO) rustc --manifest-path $< --bin $* $(CARGOFLAGS) -o $@
+	strip $@
+	rm $@.d
+
+coreutils: \
+	filesystem/bin/cat \
+	filesystem/bin/echo \
+	filesystem/bin/env \
+	filesystem/bin/ls \
+	filesystem/bin/printenv \
+	filesystem/bin/pwd \
+	filesystem/bin/realpath
+
 $(BUILD)/initfs.rs: \
 		initfs/bin/init \
-		initfs/bin/ion \
-		initfs/bin/login \
-		drivers \
-		coreutils \
-		schemes
+		initfs_drivers \
+		initfs_schemes
 	echo 'use collections::BTreeMap;' > $@
 	echo 'pub fn gen() -> BTreeMap<&'"'"'static [u8], (&'"'"'static [u8], bool)> {' >> $@
 	echo '    let mut files: BTreeMap<&'"'"'static [u8], (&'"'"'static [u8], bool)> = BTreeMap::new();' >> $@
@@ -197,3 +201,17 @@ $(BUILD)/initfs.rs: \
 	find initfs -type f -o -type l | cut -d '/' -f2- | sort | awk '{printf("    files.insert(b\"%s\", (include_bytes!(\"../../initfs/%s\"), false));\n", $$0, $$0)}' >> $@
 	echo '    files' >> $@
 	echo '}' >> $@
+
+$(BUILD)/filesystem.bin: \
+		coreutils \
+		filesystem/bin/ion \
+		filesystem/bin/login
+	rm -rf $@ $(BUILD)/filesystem/
+	echo exit | cargo run --manifest-path schemes/redoxfs/Cargo.toml --bin redoxfs-utility $@
+	mkdir -p $(BUILD)/filesystem/
+	cargo run --manifest-path schemes/redoxfs/Cargo.toml --bin redoxfs-fuse $@ $(BUILD)/filesystem/ &
+	sleep 2
+	-cp -RL initfs/* $(BUILD)/filesystem/
+	sync
+	-fusermount -u $(BUILD)/filesystem/
+	rm -rf $(BUILD)/filesystem/
