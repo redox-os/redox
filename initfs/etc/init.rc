@@ -1,5 +1,4 @@
 initfs:bin/vesad
 initfs:bin/ps2d
 initfs:bin/pcid initfs:etc/pcid.toml
-#initfs:bin/example
 initfs:bin/login display: initfs:bin/ion
