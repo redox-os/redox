@@ -114,12 +114,22 @@ pub fn dup(fd: usize) -> Result<usize> {
         file
     };
 
-    let scheme = {
-        let schemes = scheme::schemes();
-        let scheme = schemes.get(file.scheme).ok_or(Error::new(EBADF))?;
-        scheme.clone()
+    let new_id = {
+        let scheme = {
+            let schemes = scheme::schemes();
+            let scheme = schemes.get(file.scheme).ok_or(Error::new(EBADF))?;
+            scheme.clone()
+        };
+        scheme.dup(file.number)?
     };
-    scheme.dup(file.number)
+
+    let contexts = context::contexts();
+    let context_lock = contexts.current().ok_or(Error::new(ESRCH))?;
+    let context = context_lock.read();
+    context.add_file(::context::file::File {
+        scheme: file.scheme,
+        number: new_id
+    }).ok_or(Error::new(EMFILE))
 }
 
 /// Register events for file
