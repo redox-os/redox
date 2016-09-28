@@ -17,3 +17,5 @@ kernel_file:
 .end:
 .length equ kernel_file.end - kernel_file
 .length_sectors equ .length / 512
+
+incbin "build/userspace/filesystem.bin"

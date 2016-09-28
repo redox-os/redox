@@ -218,15 +218,13 @@ impl HbaPort {
     }
 
     pub fn ata_dma(&mut self, block: u64, sectors: usize, write: bool, clb: &mut Dma<[HbaCmdHeader; 32]>, ctbas: &mut [Dma<HbaCmdTable>; 32], buf: &mut Dma<[u8; 256 * 512]>) -> Result<usize> {
-        println!("AHCI {:X} DMA BLOCK: {:X} SECTORS: {} WRITE: {}", (self as *mut HbaPort) as usize, block, sectors, write);
+        //println!("AHCI {:X} DMA BLOCK: {:X} SECTORS: {} WRITE: {}", (self as *mut HbaPort) as usize, block, sectors, write);
 
         assert!(sectors > 0 && sectors < 256);
 
         self.is.write(u32::MAX);
 
         if let Some(slot) = self.slot() {
-            println!("Slot {}", slot);
-
             let cmdheader = &mut clb[slot as usize];
 
             cmdheader.cfl.write(((size_of::<FisRegH2D>() / size_of::<u32>()) as u8));
@@ -268,12 +266,10 @@ impl HbaPort {
                 cmdfis.counth.write((sectors >> 8) as u8);
             }
 
-            println!("Busy Wait");
             while self.tfd.readf((ATA_DEV_BUSY | ATA_DEV_DRQ) as u32) {}
 
             self.ci.writef(1 << slot, true);
 
-            println!("Completion Wait");
             while self.ci.readf(1 << slot) {
                 if self.is.readf(HBA_PORT_IS_TFES) {
                     return Err(Error::new(EIO));

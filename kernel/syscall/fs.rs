@@ -62,6 +62,72 @@ pub fn open(path: &[u8], flags: usize) -> Result<usize> {
     }).ok_or(Error::new(EMFILE))
 }
 
+/// mkdir syscall
+pub fn mkdir(path: &[u8], mode: usize) -> Result<usize> {
+    let path_canon = {
+        let contexts = context::contexts();
+        let context_lock = contexts.current().ok_or(Error::new(ESRCH))?;
+        let context = context_lock.read();
+        context.canonicalize(path)
+    };
+
+    let mut parts = path_canon.splitn(2, |&b| b == b':');
+    let namespace_opt = parts.next();
+    let reference_opt = parts.next();
+
+    let namespace = namespace_opt.ok_or(Error::new(ENOENT))?;
+    let scheme = {
+        let schemes = scheme::schemes();
+        let (_scheme_id, scheme) = schemes.get_name(namespace).ok_or(Error::new(ENOENT))?;
+        scheme.clone()
+    };
+    scheme.mkdir(reference_opt.unwrap_or(b""), mode)
+}
+
+/// rmdir syscall
+pub fn rmdir(path: &[u8]) -> Result<usize> {
+    let path_canon = {
+        let contexts = context::contexts();
+        let context_lock = contexts.current().ok_or(Error::new(ESRCH))?;
+        let context = context_lock.read();
+        context.canonicalize(path)
+    };
+
+    let mut parts = path_canon.splitn(2, |&b| b == b':');
+    let namespace_opt = parts.next();
+    let reference_opt = parts.next();
+
+    let namespace = namespace_opt.ok_or(Error::new(ENOENT))?;
+    let scheme = {
+        let schemes = scheme::schemes();
+        let (_scheme_id, scheme) = schemes.get_name(namespace).ok_or(Error::new(ENOENT))?;
+        scheme.clone()
+    };
+    scheme.rmdir(reference_opt.unwrap_or(b""))
+}
+
+/// Unlink syscall
+pub fn unlink(path: &[u8]) -> Result<usize> {
+    let path_canon = {
+        let contexts = context::contexts();
+        let context_lock = contexts.current().ok_or(Error::new(ESRCH))?;
+        let context = context_lock.read();
+        context.canonicalize(path)
+    };
+
+    let mut parts = path_canon.splitn(2, |&b| b == b':');
+    let namespace_opt = parts.next();
+    let reference_opt = parts.next();
+
+    let namespace = namespace_opt.ok_or(Error::new(ENOENT))?;
+    let scheme = {
+        let schemes = scheme::schemes();
+        let (_scheme_id, scheme) = schemes.get_name(namespace).ok_or(Error::new(ENOENT))?;
+        scheme.clone()
+    };
+    scheme.unlink(reference_opt.unwrap_or(b""))
+}
+
 /// Close syscall
 pub fn close(fd: usize) -> Result<usize> {
     let file = {
@@ -92,12 +158,22 @@ pub fn dup(fd: usize) -> Result<usize> {
         file
     };
 
-    let scheme = {
-        let schemes = scheme::schemes();
-        let scheme = schemes.get(file.scheme).ok_or(Error::new(EBADF))?;
-        scheme.clone()
+    let new_id = {
+        let scheme = {
+            let schemes = scheme::schemes();
+            let scheme = schemes.get(file.scheme).ok_or(Error::new(EBADF))?;
+            scheme.clone()
+        };
+        scheme.dup(file.number)?
     };
-    scheme.dup(file.number)
+
+    let contexts = context::contexts();
+    let context_lock = contexts.current().ok_or(Error::new(ESRCH))?;
+    let context = context_lock.read();
+    context.add_file(::context::file::File {
+        scheme: file.scheme,
+        number: new_id
+    }).ok_or(Error::new(EMFILE))
 }
 
 /// Register events for file

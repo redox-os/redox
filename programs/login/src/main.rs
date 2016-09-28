@@ -11,6 +11,8 @@ pub fn main() {
     let sh = args.next().expect("login: no sh provided");
     let sh_args: Vec<String> = args.collect();
 
+    env::set_current_dir("file:").expect("login: failed to cd to file:");
+
     let _ = syscall::close(2);
     let _ = syscall::close(1);
     let _ = syscall::close(0);
@@ -26,9 +28,8 @@ pub fn main() {
                 command.arg(arg);
             }
 
-            command.env("HOME", "initfs:");
-            command.env("PWD", "initfs:bin");
-            command.env("PATH", "initfs:bin");
+            command.env("HOME", "file:home");
+            command.env("PATH", "file:bin");
             command.env("COLUMNS", "80");
             command.env("LINES", "30");
             command.env("TTY", &tty);
