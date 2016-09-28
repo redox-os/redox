@@ -1,12 +1,13 @@
-extern crate liner;
 extern crate octavo;
 extern crate syscall;
+extern crate termion;
 
-use liner::Context;
 use octavo::octavo_digest::Digest;
 use octavo::octavo_digest::sha3::Sha512;
+use std::io::{Read, Write};
 use std::process::Command;
-use std::{env, thread};
+use std::{env, io, thread};
+use termion::input::TermRead;
 
 pub fn main() {
     let mut args = env::args().skip(1);
@@ -28,44 +29,57 @@ pub fn main() {
     env::set_var("TTY", &tty);
 
     thread::spawn(move || {
-        let mut con = Context::new();
+        let stdin = io::stdin();
+        let mut stdin = stdin.lock();
+        let stdout = io::stdout();
+        let mut stdout = stdout.lock();
 
         loop {
-            let user = con.read_line("\x1B[1mredox login:\x1B[0m ", &mut |_| {}).expect("login: failed to read user");
+            stdout.write_all(b"\x1B[1mredox login:\x1B[0m ").expect("login: failed to write user prompt");
+            let _ = stdout.flush();
 
+            let user = (&mut stdin as &mut Read).read_line().expect("login: failed to read user").unwrap_or(String::new());
             if ! user.is_empty() {
-                let password = con.read_line("\x1B[1mpassword:\x1B[0m ", &mut |_| {}).expect("login: failed to read user");
+                stdout.write_all(b"\x1B[1mpassword:\x1B[0m ").expect("login: failed to write password prompt");
+                let _ = stdout.flush();
 
-                let mut output = vec![0; Sha512::output_bytes()];
-                let mut hash = Sha512::default();
-                hash.update(&password.as_bytes());
-                hash.result(&mut output);
+                if let Some(password) = stdin.read_passwd(&mut stdout).expect("login: failed to read password") {
+                    let mut output = vec![0; Sha512::output_bytes()];
+                    let mut hash = Sha512::default();
+                    hash.update(&password.as_bytes());
+                    hash.result(&mut output);
 
-                print!("hash: ");
-                for b in output.iter() {
-                    print!("{:X} ", b);
-                }
-                println!("");
+                    println!("");
 
-                let home = "file:home";
+                    print!("hash: '{}' ", password);
+                    for b in output.iter() {
+                        print!("{:X} ", b);
+                    }
+                    println!("");
 
-                env::set_current_dir(home).expect("login: failed to cd to home");
+                    let home = "file:home";
 
-                let mut command = Command::new(&sh);
-                for arg in sh_args.iter() {
-                    command.arg(arg);
-                }
+                    env::set_current_dir(home).expect("login: failed to cd to home");
 
-                command.env("USER", &user);
-                command.env("HOME", home);
-                command.env("PATH", "file:bin");
+                    let mut command = Command::new(&sh);
+                    for arg in sh_args.iter() {
+                        command.arg(arg);
+                    }
 
-                match command.spawn() {
-                    Ok(mut child) => match child.wait() {
-                        Ok(_status) => (), //println!("login: waited for {}: {:?}", sh, status.code()),
-                        Err(err) => panic!("login: failed to wait for '{}': {}", sh, err)
-                    },
-                    Err(err) => panic!("login: failed to execute '{}': {}", sh, err)
+                    command.env("USER", &user);
+                    command.env("HOME", home);
+                    command.env("PATH", "file:bin");
+
+                    match command.spawn() {
+                        Ok(mut child) => match child.wait() {
+                            Ok(_status) => (), //println!("login: waited for {}: {:?}", sh, status.code()),
+                            Err(err) => panic!("login: failed to wait for '{}': {}", sh, err)
+                        },
+                        Err(err) => panic!("login: failed to execute '{}': {}", sh, err)
+                    }
+
+                    stdout.write(b"\x1Bc").expect("login: failed to reset screen");
+                    let _ = stdout.flush();
                 }
             }
         }

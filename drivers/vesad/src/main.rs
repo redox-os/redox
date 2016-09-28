@@ -65,9 +65,15 @@ impl Scheme for DisplayScheme {
 
     fn write(&self, id: usize, buf: &[u8]) -> Result<usize> {
         if id == 1 {
-            let mut input = self.input.borrow_mut();
             for &b in buf.iter() {
-                input.push_back(b);
+                self.input.borrow_mut().push_back(b);
+                if ! self.console.borrow().raw_mode {
+                    if b == 0x7F {
+                        self.write(0, b"\x08")?;
+                    } else {
+                        self.write(0, &[b])?;
+                    }
+                }
             }
             Ok(buf.len())
         } else {

@@ -3,8 +3,8 @@ name = "login"
 version = "0.1.0"
 
 [dependencies]
-liner = "*"
 syscall = { path = "../../syscall/" }
+termion = "*"
 
 [dependencies.octavo]
 git = "https://github.com/libOctavo/octavo"
