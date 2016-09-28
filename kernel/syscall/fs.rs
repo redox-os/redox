@@ -62,6 +62,28 @@ pub fn open(path: &[u8], flags: usize) -> Result<usize> {
     }).ok_or(Error::new(EMFILE))
 }
 
+/// Unlink syscall
+pub fn unlink(path: &[u8]) -> Result<usize> {
+    let path_canon = {
+        let contexts = context::contexts();
+        let context_lock = contexts.current().ok_or(Error::new(ESRCH))?;
+        let context = context_lock.read();
+        context.canonicalize(path)
+    };
+
+    let mut parts = path_canon.splitn(2, |&b| b == b':');
+    let namespace_opt = parts.next();
+    let reference_opt = parts.next();
+
+    let namespace = namespace_opt.ok_or(Error::new(ENOENT))?;
+    let scheme = {
+        let schemes = scheme::schemes();
+        let (_scheme_id, scheme) = schemes.get_name(namespace).ok_or(Error::new(ENOENT))?;
+        scheme.clone()
+    };
+    scheme.unlink(reference_opt.unwrap_or(b""))
+}
+
 /// Close syscall
 pub fn close(fd: usize) -> Result<usize> {
     let file = {

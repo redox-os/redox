@@ -216,6 +216,30 @@ impl Scheme for UserScheme {
         result
     }
 
+    fn mkdir(&self, path: &[u8], mode: usize) -> Result<usize> {
+        let inner = self.inner.upgrade().ok_or(Error::new(ENODEV))?;
+        let address = inner.capture(path)?;
+        let result = inner.call(SYS_MKDIR, address, path.len(), mode);
+        let _ = inner.release(address);
+        result
+    }
+
+    fn rmdir(&self, path: &[u8]) -> Result<usize> {
+        let inner = self.inner.upgrade().ok_or(Error::new(ENODEV))?;
+        let address = inner.capture(path)?;
+        let result = inner.call(SYS_RMDIR, address, path.len(), 0);
+        let _ = inner.release(address);
+        result
+    }
+
+    fn unlink(&self, path: &[u8]) -> Result<usize> {
+        let inner = self.inner.upgrade().ok_or(Error::new(ENODEV))?;
+        let address = inner.capture(path)?;
+        let result = inner.call(SYS_UNLINK, address, path.len(), 0);
+        let _ = inner.release(address);
+        result
+    }
+
     fn dup(&self, file: usize) -> Result<usize> {
         let inner = self.inner.upgrade().ok_or(Error::new(ENODEV))?;
         inner.call(SYS_DUP, file, 0, 0)

@@ -32,6 +32,7 @@ pub extern fn syscall(a: usize, b: usize, c: usize, d: usize, e: usize, f: usize
             SYS_OPEN => open(validate_slice(b as *const u8, c)?, d),
             SYS_CLOSE => close(b),
             SYS_WAITPID => waitpid(b, c, d),
+            SYS_UNLINK => unlink(validate_slice(b as *const u8, c)?),
             SYS_EXECVE => exec(validate_slice(b as *const u8, c)?, validate_slice(d as *const [usize; 2], e)?),
             SYS_CHDIR => chdir(validate_slice(b as *const u8, c)?),
             SYS_LSEEK => lseek(b, c, d),
@@ -59,5 +60,11 @@ pub extern fn syscall(a: usize, b: usize, c: usize, d: usize, e: usize, f: usize
         }
     }
 
-    Error::mux(inner(a, b, c, d, e, f, stack))
+    let result = inner(a, b, c, d, e, f, stack);
+
+    if let Err(ref err) = result {
+        println!("{}, {}, {}, {}: {}", a, b, c, d, err);
+    }
+
+    Error::mux(result)
 }
