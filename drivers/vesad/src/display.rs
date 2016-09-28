@@ -94,14 +94,23 @@ impl Display {
                     let off_y = y + (off_y as i32 + bb.min.y) as usize;
                     // There's still a possibility that the glyph clips the boundaries of the bitmap
                     if off_x < width && off_y < height {
-                        let v_u = (v * 255.0) as u32;
-                        if v_u > 0 {
-                            let r = (((color >> 16) & 0xFF) * v_u)/255;
-                            let g = (((color >> 8) & 0xFF) * v_u)/255;
-                            let b = ((color & 0xFF) * v_u)/255;
-                            let c = (r << 16) | (g << 8) | b;
+                        if v > 0.0 {
+                            let f_a = (v * 255.0) as u32;
+                            let f_r = (((color >> 16) & 0xFF) * f_a)/255;
+                            let f_g = (((color >> 8) & 0xFF) * f_a)/255;
+                            let f_b = ((color & 0xFF) * f_a)/255;
 
                             let index = (off_y * width + off_x) as isize;
+
+                            let bg = unsafe { *offscreen.offset(index) };
+
+                            let b_a = 255 - f_a;
+                            let b_r = (((bg >> 16) & 0xFF) * b_a)/255;
+                            let b_g = (((bg >> 8) & 0xFF) * b_a)/255;
+                            let b_b = ((bg & 0xFF) * b_a)/255;
+
+                            let c = ((f_r + b_r) << 16) | ((f_g + b_g) << 8) | (f_b + b_b);
+
                             unsafe { *offscreen.offset(index) = c; }
                             unsafe { *onscreen.offset(index) = c; }
                         }

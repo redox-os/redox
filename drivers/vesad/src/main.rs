@@ -73,7 +73,7 @@ impl Scheme for DisplayScheme {
         } else {
             let mut display = self.display.borrow_mut();
             let mut console = self.console.borrow_mut();
-            if console.x < console.w && console.y < console.h {
+            if console.cursor && console.x < console.w && console.y < console.h {
                 display.rect(console.x * 8, console.y * 16, 8, 16, 0);
             }
             console.write(buf, |event| {
@@ -83,7 +83,7 @@ impl Scheme for DisplayScheme {
                     Event::Scroll { rows, color } => display.scroll(rows * 16, color.data)
                 }
             });
-            if console.x < console.w && console.y < console.h {
+            if console.cursor && console.x < console.w && console.y < console.h {
                 display.rect(console.x * 8, console.y * 16, 8, 16, 0xFFFFFF);
             }
             Ok(buf.len())
