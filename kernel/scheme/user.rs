@@ -247,6 +247,14 @@ impl Scheme for UserScheme {
         inner.call(SYS_FEVENT, file, flags, 0)
     }
 
+    fn fpath(&self, file: usize, buf: &mut [u8]) -> Result<usize> {
+        let inner = self.inner.upgrade().ok_or(Error::new(ENODEV))?;
+        let address = inner.capture_mut(buf)?;
+        let result = inner.call(SYS_FPATH, file, address, buf.len());
+        let _ = inner.release(address);
+        result
+    }
+
     fn fstat(&self, file: usize, stat: &mut Stat) -> Result<usize> {
         let inner = self.inner.upgrade().ok_or(Error::new(ENODEV))?;
         let address = inner.capture_mut(stat)?;
