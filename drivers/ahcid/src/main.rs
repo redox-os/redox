@@ -4,13 +4,18 @@
 #[macro_use]
 extern crate bitflags;
 extern crate io;
+extern crate spin;
 extern crate syscall;
 
+use std::fs::File;
+use std::io::{Read, Write};
 use std::{env, thread, usize};
+use syscall::{iopl, physmap, physunmap, MAP_WRITE, Packet, Scheme};
 
-use syscall::{iopl, physmap, physunmap, MAP_WRITE};
+use scheme::DiskScheme;
 
 pub mod ahci;
+pub mod scheme;
 
 fn main() {
     let mut args = env::args().skip(1);
@@ -29,25 +34,13 @@ fn main() {
 
         let address = unsafe { physmap(bar, 4096, MAP_WRITE).expect("ahcid: failed to map address") };
         {
-            let mut disks = ahci::disks(address, irq);
-            for mut disk in disks.iter_mut() {
-                let mut sector = [0; 512];
-                println!("Read disk {} size {} MB", disk.id(), disk.size()/1024/1024);
-                match disk.read(0, &mut sector) {
-                    Ok(count) => {
-                        println!("{}", count);
-                        for i in 0..512 {
-                            print!("{:X} ", sector[i]);
-                        }
-                        println!("");
-                    },
-                    Err(err) => {
-                        println!("{}", err);
-                    }
-                }
-            }
+            let mut socket = File::create(":disk").expect("ahcid: failed to create disk scheme");
+            let scheme = DiskScheme::new(ahci::disks(address, irq));
             loop {
-                let _ = syscall::sched_yield();
+                let mut packet = Packet::default();
+                socket.read(&mut packet).expect("ahcid: failed to read disk scheme");
+                scheme.handle(&mut packet);
+                socket.write(&mut packet).expect("ahcid: failed to read disk scheme");
             }
         }
         unsafe { let _ = physunmap(address); }
