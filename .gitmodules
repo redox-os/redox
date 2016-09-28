@@ -16,3 +16,6 @@
 [submodule "programs/coreutils"]
 	path = programs/coreutils
 	url = https://github.com/redox-os/coreutils.git
+[submodule "schemes/redoxfs"]
+	path = schemes/redoxfs
+	url = https://github.com/redox-os/redoxfs

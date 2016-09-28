@@ -155,9 +155,15 @@ initfs/bin/%: programs/coreutils/Cargo.toml programs/coreutils/src/bin/%.rs $(BU
 
 initfs/bin/%: schemes/%/Cargo.toml schemes/%/src/** $(BUILD)/libstd.rlib
 	mkdir -p initfs/bin
-	$(CARGO) rustc --manifest-path $< $(CARGOFLAGS) -o $@
+	$(CARGO) rustc --manifest-path $< --bin $* $(CARGOFLAGS) -o $@
 	strip $@
 	rm $@.d
+
+drivers: \
+	initfs/bin/ahcid \
+	initfs/bin/pcid \
+	initfs/bin/ps2d \
+	initfs/bin/vesad
 
 coreutils: \
 	initfs/bin/cat \
@@ -168,16 +174,17 @@ coreutils: \
 	initfs/bin/pwd \
 	initfs/bin/realpath
 
+schemes: \
+	initfs/bin/example \
+	initfs/bin/redoxfs
+
 $(BUILD)/initfs.rs: \
-		initfs/bin/ahcid \
-		initfs/bin/pcid \
-		initfs/bin/ps2d \
-		initfs/bin/vesad \
 		initfs/bin/init \
 		initfs/bin/ion \
 		initfs/bin/login \
+		drivers \
 		coreutils \
-		initfs/bin/example
+		schemes
 	echo 'use collections::BTreeMap;' > $@
 	echo 'pub fn gen() -> BTreeMap<&'"'"'static [u8], (&'"'"'static [u8], bool)> {' >> $@
 	echo '    let mut files: BTreeMap<&'"'"'static [u8], (&'"'"'static [u8], bool)> = BTreeMap::new();' >> $@
