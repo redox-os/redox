@@ -33,6 +33,7 @@ clean:
 	cargo clean --manifest-path programs/login/Cargo.toml
 	cargo clean --manifest-path programs/coreutils/Cargo.toml
 	cargo clean --manifest-path schemes/example/Cargo.toml
+	cargo clean --manifest-path schemes/redoxfs/Cargo.toml
 	rm -rf initfs/bin
 	rm -rf filesystem/bin
 	rm -rf build
@@ -203,8 +204,8 @@ filesystem/bin/%: schemes/%/Cargo.toml schemes/%/src/** $(BUILD)/libstd.rlib
 	rm $@.d
 
 drivers: \
-	initfs/bin/ps2d \
-	initfs/bin/vesad
+	filesystem/bin/ps2d \
+	filesystem/bin/vesad
 
 coreutils: \
 	filesystem/bin/cat \
