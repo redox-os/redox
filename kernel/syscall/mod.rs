@@ -38,6 +38,8 @@ pub extern fn syscall(a: usize, b: usize, c: usize, d: usize, e: usize, f: usize
             SYS_LSEEK => lseek(b, c, d),
             SYS_GETPID => getpid(),
             SYS_FSTAT => fstat(b, &mut validate_slice_mut(c as *mut Stat, 1)?[0]),
+            SYS_MKDIR => mkdir(validate_slice(b as *const u8, c)?, d),
+            SYS_RMDIR => rmdir(validate_slice(b as *const u8, c)?),
             SYS_DUP => dup(b),
             SYS_BRK => brk(b),
             SYS_FTRUNCATE => ftruncate(b, c),
