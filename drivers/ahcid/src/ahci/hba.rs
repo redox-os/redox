@@ -4,7 +4,6 @@ use std::mem::size_of;
 use std::ops::DerefMut;
 use std::{ptr, u32};
 
-use syscall::{virttophys, MAP_WRITE};
 use syscall::error::{Error, Result, EIO};
 
 use super::dma::Dma;
@@ -218,37 +217,34 @@ impl HbaPort {
         None
     }
 
-    pub fn ata_dma_small(&mut self, block: u64, sectors: usize, mut buf: usize, write: bool) -> Result<usize> {
-        if buf >= 0x80000000 {
-            buf -= 0x80000000;
-        }
+    pub fn ata_dma(&mut self, block: u64, sectors: usize, write: bool, clb: &mut Dma<[HbaCmdHeader; 32]>, ctbas: &mut [Dma<HbaCmdTable>; 32], buf: &mut Dma<[u8; 256 * 512]>) -> Result<usize> {
+        println!("AHCI {:X} DMA BLOCK: {:X} SECTORS: {} WRITE: {}", (self as *mut HbaPort) as usize, block, sectors, write);
 
-        // TODO: PRDTL for files larger than 4MB
-        let entries = 1;
+        assert!(sectors > 0 && sectors < 256);
 
-        if buf > 0 && sectors > 0 {
-            self.is.write(u32::MAX);
+        self.is.write(u32::MAX);
 
-            if let Some(slot) = self.slot() {
-                println!("Slot {}", slot);
+        if let Some(slot) = self.slot() {
+            println!("Slot {}", slot);
 
-                let clb = self.clb.read() as usize;
-                let cmdheader = unsafe { &mut *(clb as *mut HbaCmdHeader).offset(slot as isize) };
+            let cmdheader = &mut clb[slot as usize];
 
-                cmdheader.cfl.write(((size_of::<FisRegH2D>() / size_of::<u32>()) as u8));
-                cmdheader.cfl.writef(1 << 6, write);
+            cmdheader.cfl.write(((size_of::<FisRegH2D>() / size_of::<u32>()) as u8));
+            cmdheader.cfl.writef(1 << 6, write);
 
-                cmdheader.prdtl.write(entries);
+            cmdheader.prdtl.write(1);
 
-                let ctba = cmdheader.ctba.read() as usize;
-                unsafe { ptr::write_bytes(ctba as *mut u8, 0, size_of::<HbaCmdTable>()) };
-                let cmdtbl = unsafe { &mut *(ctba as *mut HbaCmdTable) };
+            {
+                let cmdtbl = &mut ctbas[slot as usize];
+                unsafe { ptr::write_bytes(cmdtbl.deref_mut() as *mut HbaCmdTable as *mut u8, 0, size_of::<HbaCmdTable>()) };
 
                 let prdt_entry = &mut cmdtbl.prdt_entry[0];
-                prdt_entry.dba.write(buf as u64);
+                prdt_entry.dba.write(buf.physical() as u64);
                 prdt_entry.dbc.write(((sectors * 512) as u32) | 1);
+            }
 
-                let cmdfis = unsafe { &mut *(cmdtbl.cfis.as_ptr() as *mut FisRegH2D) };
+            {
+                let cmdfis = unsafe { &mut *(ctbas[slot as usize].cfis.as_mut_ptr() as *mut FisRegH2D) };
 
                 cmdfis.fis_type.write(FisType::RegH2D as u8);
                 cmdfis.pm.write(1 << 7);
@@ -270,57 +266,27 @@ impl HbaPort {
 
                 cmdfis.countl.write(sectors as u8);
                 cmdfis.counth.write((sectors >> 8) as u8);
+            }
 
-                println!("Busy Wait");
-                while self.tfd.readf((ATA_DEV_BUSY | ATA_DEV_DRQ) as u32) {}
+            println!("Busy Wait");
+            while self.tfd.readf((ATA_DEV_BUSY | ATA_DEV_DRQ) as u32) {}
 
-                self.ci.writef(1 << slot, true);
+            self.ci.writef(1 << slot, true);
 
-                println!("Completion Wait");
-                while self.ci.readf(1 << slot) {
-                    if self.is.readf(HBA_PORT_IS_TFES) {
-                        return Err(Error::new(EIO));
-                    }
-                }
-
+            println!("Completion Wait");
+            while self.ci.readf(1 << slot) {
                 if self.is.readf(HBA_PORT_IS_TFES) {
                     return Err(Error::new(EIO));
                 }
-
-                Ok(sectors * 512)
-            } else {
-                println!("No Command Slots");
-                Err(Error::new(EIO))
             }
-        } else {
-            println!("Invalid request");
-            Err(Error::new(EIO))
-        }
-    }
 
-    pub fn ata_dma(&mut self, block: u64, sectors: usize, buf: usize, write: bool) -> Result<usize> {
-        println!("AHCI {:X} DMA BLOCK: {:X} SECTORS: {} BUF: {:X} WRITE: {}", (self as *mut HbaPort) as usize, block, sectors, buf, write);
-
-        if sectors > 0 {
-            let physical_address = try!(unsafe { virttophys(buf) });
-
-            let mut sector: usize = 0;
-            while sectors - sector >= 255 {
-                if let Err(err) = self.ata_dma_small(block + sector as u64, 255, physical_address + sector * 512, write) {
-                    return Err(err);
-                }
-
-                sector += 255;
-            }
-            if sector < sectors {
-                if let Err(err) = self.ata_dma_small(block + sector as u64, sectors - sector, physical_address + sector * 512, write) {
-                    return Err(err);
-                }
+            if self.is.readf(HBA_PORT_IS_TFES) {
+                return Err(Error::new(EIO));
             }
 
             Ok(sectors * 512)
         } else {
-            println!("Invalid request");
+            println!("No Command Slots");
             Err(Error::new(EIO))
         }
     }
