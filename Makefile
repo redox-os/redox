@@ -156,34 +156,10 @@ initfs/bin/%: schemes/%/Cargo.toml schemes/%/src/** $(BUILD)/libstd.rlib
 
 initfs_drivers: \
 	initfs/bin/ahcid \
-	initfs/bin/pcid \
-	initfs/bin/ps2d \
-	initfs/bin/vesad
+	initfs/bin/pcid
 
 initfs_schemes: \
-	initfs/bin/example \
 	initfs/bin/redoxfs
-
-filesystem/bin/%: programs/%/Cargo.toml programs/%/src/** $(BUILD)/libstd.rlib
-	mkdir -p filesystem/bin
-	$(CARGO) rustc --manifest-path $< $(CARGOFLAGS) -o $@
-	strip $@
-	rm $@.d
-
-filesystem/bin/%: programs/coreutils/Cargo.toml programs/coreutils/src/bin/%.rs $(BUILD)/libstd.rlib
-	mkdir -p filesystem/bin
-	$(CARGO) rustc --manifest-path $< --bin $* $(CARGOFLAGS) -o $@
-	strip $@
-	rm $@.d
-
-coreutils: \
-	filesystem/bin/cat \
-	filesystem/bin/echo \
-	filesystem/bin/env \
-	filesystem/bin/ls \
-	filesystem/bin/printenv \
-	filesystem/bin/pwd \
-	filesystem/bin/realpath
 
 $(BUILD)/initfs.rs: \
 		initfs/bin/init \
@@ -202,8 +178,50 @@ $(BUILD)/initfs.rs: \
 	echo '    files' >> $@
 	echo '}' >> $@
 
+filesystem/bin/%: drivers/%/Cargo.toml drivers/%/src/** $(BUILD)/libstd.rlib
+	mkdir -p filesystem/bin
+	$(CARGO) rustc --manifest-path $< $(CARGOFLAGS) -o $@
+	strip $@
+	rm $@.d
+
+filesystem/bin/%: programs/%/Cargo.toml programs/%/src/** $(BUILD)/libstd.rlib
+	mkdir -p filesystem/bin
+	$(CARGO) rustc --manifest-path $< $(CARGOFLAGS) -o $@
+	strip $@
+	rm $@.d
+
+filesystem/bin/%: programs/coreutils/Cargo.toml programs/coreutils/src/bin/%.rs $(BUILD)/libstd.rlib
+	mkdir -p filesystem/bin
+	$(CARGO) rustc --manifest-path $< --bin $* $(CARGOFLAGS) -o $@
+	strip $@
+	rm $@.d
+
+filesystem/bin/%: schemes/%/Cargo.toml schemes/%/src/** $(BUILD)/libstd.rlib
+	mkdir -p filesystem/bin
+	$(CARGO) rustc --manifest-path $< --bin $* $(CARGOFLAGS) -o $@
+	strip $@
+	rm $@.d
+
+drivers: \
+	initfs/bin/ps2d \
+	initfs/bin/vesad
+
+coreutils: \
+	filesystem/bin/cat \
+	filesystem/bin/echo \
+	filesystem/bin/env \
+	filesystem/bin/ls \
+	filesystem/bin/printenv \
+	filesystem/bin/pwd \
+	filesystem/bin/realpath
+
+schemes: \
+	filesystem/bin/example
+
 $(BUILD)/filesystem.bin: \
+		drivers \
 		coreutils \
+		schemes \
 		filesystem/bin/ion \
 		filesystem/bin/login
 	rm -rf $@ $(BUILD)/filesystem/
@@ -211,7 +229,18 @@ $(BUILD)/filesystem.bin: \
 	mkdir -p $(BUILD)/filesystem/
 	cargo run --manifest-path schemes/redoxfs/Cargo.toml --bin redoxfs-fuse $@ $(BUILD)/filesystem/ &
 	sleep 2
-	-cp -RL initfs/* $(BUILD)/filesystem/
+	-cp -RL filesystem/* $(BUILD)/filesystem/
 	sync
 	-fusermount -u $(BUILD)/filesystem/
 	rm -rf $(BUILD)/filesystem/
+
+mount: FORCE
+	mkdir -p $(KBUILD)/harddrive/
+	cargo run --manifest-path schemes/redoxfs/Cargo.toml --bin redoxfs-fuse $(KBUILD)/harddrive.bin $(KBUILD)/harddrive/ &
+	sleep 2
+
+unmount: FORCE
+	sync
+	-fusermount -u $(KBUILD)/harddrive/
+	rm -rf $(KBUILD)/harddrive/
+
