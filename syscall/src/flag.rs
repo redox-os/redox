@@ -14,6 +14,10 @@ pub const CLONE_SUPERVISE: usize = 0x400000;
 pub const CLOCK_REALTIME: usize = 1;
 pub const CLOCK_MONOTONIC: usize = 4;
 
+pub const EVENT_NONE: usize = 0;
+pub const EVENT_READ: usize = 1;
+pub const EVENT_WRITE: usize = 2;
+
 pub const FUTEX_WAIT: usize = 0;
 pub const FUTEX_WAKE: usize = 1;
 pub const FUTEX_REQUEUE: usize = 2;

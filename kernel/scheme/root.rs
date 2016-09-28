@@ -38,7 +38,8 @@ impl Scheme for RootScheme {
                 return Err(Error::new(EEXIST));
             }
             let inner = Arc::new(UserInner::new(context));
-            schemes.insert(path.to_vec().into_boxed_slice(), Arc::new(Box::new(UserScheme::new(Arc::downgrade(&inner))))).expect("failed to insert user scheme");
+            let id = schemes.insert(path.to_vec().into_boxed_slice(), Arc::new(Box::new(UserScheme::new(Arc::downgrade(&inner))))).expect("failed to insert user scheme");
+            inner.scheme_id.store(id, Ordering::SeqCst);
             inner
         };
 

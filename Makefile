@@ -24,6 +24,7 @@ all: $(KBUILD)/harddrive.bin
 clean:
 	cargo clean
 	cargo clean --manifest-path libstd/Cargo.toml
+	cargo clean --manifest-path drivers/ahcid/Cargo.toml
 	cargo clean --manifest-path drivers/ps2d/Cargo.toml
 	cargo clean --manifest-path drivers/pcid/Cargo.toml
 	cargo clean --manifest-path drivers/vesad/Cargo.toml
@@ -39,7 +40,7 @@ FORCE:
 
 # Emulation
 QEMU=qemu-system-$(ARCH)
-QEMUFLAGS=-serial mon:stdio -d guest_errors
+QEMUFLAGS=-serial mon:stdio -d cpu_reset -d guest_errors
 ifeq ($(ARCH),arm)
 	LD=$(ARCH)-none-eabi-ld
 	QEMUFLAGS+=-cpu arm1176 -machine integratorcp
@@ -55,7 +56,7 @@ qemu: $(KBUILD)/harddrive.bin
 	$(QEMU) $(QEMUFLAGS) -kernel $<
 else
 	LD=ld
-	QEMUFLAGS+=-machine q35 -smp 4
+	QEMUFLAGS+=-machine q35 -smp 4 -m 256
 	ifeq ($(kvm),yes)
 		QEMUFLAGS+=-enable-kvm -cpu host
 	endif
@@ -168,6 +169,7 @@ coreutils: \
 	initfs/bin/realpath
 
 $(BUILD)/initfs.rs: \
+		initfs/bin/ahcid \
 		initfs/bin/pcid \
 		initfs/bin/ps2d \
 		initfs/bin/vesad \

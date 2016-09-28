@@ -129,7 +129,7 @@ pub fn cpu_id() -> usize {
 }
 
 pub extern fn userspace_init() {
-    assert_eq!(syscall::chdir(b"initfs:bin/"), Ok(0));
+    assert_eq!(syscall::chdir(b"initfs:bin"), Ok(0));
 
     assert_eq!(syscall::open(b"debug:", 0), Ok(0));
     assert_eq!(syscall::open(b"debug:", 0), Ok(1));
@@ -162,8 +162,11 @@ pub extern fn kmain() {
     loop {
         unsafe {
             interrupt::disable();
-            context::switch();
-            interrupt::enable_and_nop();
+            if context::switch() {
+                interrupt::enable_and_nop();
+            } else {
+                interrupt::enable_and_halt();
+            }
         }
     }
 }

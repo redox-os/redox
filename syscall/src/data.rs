@@ -2,6 +2,30 @@ use core::ops::{Deref, DerefMut};
 use core::{mem, slice};
 
 #[derive(Copy, Clone, Debug, Default)]
+pub struct Event {
+    pub id: usize,
+    pub flags: usize,
+    pub data: usize
+}
+
+impl Deref for Event {
+    type Target = [u8];
+    fn deref(&self) -> &[u8] {
+        unsafe {
+            slice::from_raw_parts(self as *const Event as *const u8, mem::size_of::<Event>()) as &[u8]
+        }
+    }
+}
+
+impl DerefMut for Event {
+    fn deref_mut(&mut self) -> &mut [u8] {
+        unsafe {
+            slice::from_raw_parts_mut(self as *mut Event as *mut u8, mem::size_of::<Event>()) as &mut [u8]
+        }
+    }
+}
+
+#[derive(Copy, Clone, Debug, Default)]
 #[repr(packed)]
 pub struct Packet {
     pub id: usize,

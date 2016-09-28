@@ -45,9 +45,13 @@ pub extern fn syscall(a: usize, b: usize, c: usize, d: usize, e: usize, f: usize
             SYS_CLONE => clone(b, stack),
             SYS_YIELD => sched_yield(),
             SYS_GETCWD => getcwd(validate_slice_mut(b as *mut u8, c)?),
+            SYS_FEVENT => fevent(b, c),
             SYS_FPATH => fpath(b, validate_slice_mut(c as *mut u8, d)?),
+            SYS_PHYSALLOC => physalloc(b),
+            SYS_PHYSFREE => physfree(b, c),
             SYS_PHYSMAP => physmap(b, c, d),
             SYS_PHYSUNMAP => physunmap(b),
+            SYS_VIRTTOPHYS => virttophys(b),
             _ => {
                 println!("Unknown syscall {}", a);
                 Err(Error::new(ENOSYS))

@@ -8,7 +8,7 @@ use spin::Mutex;
 
 use arch;
 use arch::externs::memcpy;
-use arch::memory::allocate_frame;
+use arch::memory::{allocate_frame, allocate_frames, deallocate_frames, Frame};
 use arch::paging::{ActivePageTable, InactivePageTable, Page, PhysicalAddress, VirtualAddress, entry};
 use arch::paging::temporary_page::TemporaryPage;
 use arch::start::usermode;
@@ -535,6 +535,16 @@ pub fn iopl(_level: usize) -> Result<usize> {
     Ok(0)
 }
 
+pub fn physalloc(size: usize) -> Result<usize> {
+    allocate_frames((size + 4095)/4096).ok_or(Error::new(ENOMEM)).map(|frame| frame.start_address().get())
+}
+
+pub fn physfree(physical_address: usize, size: usize) -> Result<usize> {
+    deallocate_frames(Frame::containing_address(PhysicalAddress::new(physical_address)), (size + 4095)/4096);
+    //TODO: Check that no double free occured
+    Ok(0)
+}
+
 //TODO: verify exlusive access to physical memory
 pub fn physmap(physical_address: usize, size: usize, flags: usize) -> Result<usize> {
     if size == 0 {
@@ -617,8 +627,15 @@ pub fn sched_yield() -> Result<usize> {
     Ok(0)
 }
 
+pub fn virttophys(virtual_address: usize) -> Result<usize> {
+    let active_table = unsafe { ActivePageTable::new() };
+    match active_table.translate(VirtualAddress::new(virtual_address)) {
+        Some(physical_address) => Ok(physical_address.get()),
+        None => Err(Error::new(EFAULT))
+    }
+}
+
 pub fn waitpid(pid: usize, status_ptr: usize, flags: usize) -> Result<usize> {
-    //TODO: Implement status_ptr and options
     loop {
         {
             let mut exited = false;
@@ -644,6 +661,6 @@ pub fn waitpid(pid: usize, status_ptr: usize, flags: usize) -> Result<usize> {
             }
         }
 
-        unsafe { context::switch(); }
+        unsafe { context::switch(); } //TODO: Block
     }
 }

@@ -58,6 +58,10 @@ pub fn exit(status: usize) -> Result<usize> {
     unsafe { syscall1(SYS_EXIT, status) }
 }
 
+pub fn fevent(fd: usize, flags: usize) -> Result<usize> {
+    unsafe { syscall2(SYS_FEVENT, fd, flags) }
+}
+
 pub fn fpath(fd: usize, buf: &mut [u8]) -> Result<usize> {
     unsafe { syscall3(SYS_FPATH, fd, buf.as_mut_ptr() as usize, buf.len()) }
 }
@@ -110,6 +114,14 @@ pub fn open(path: &str, flags: usize) -> Result<usize> {
     unsafe { syscall3(SYS_OPEN, path.as_ptr() as usize, path.len(), flags) }
 }
 
+pub unsafe fn physalloc(size: usize) -> Result<usize> {
+    syscall1(SYS_PHYSALLOC, size)
+}
+
+pub unsafe fn physfree(physical_address: usize, size: usize) -> Result<usize> {
+    syscall2(SYS_PHYSFREE, physical_address, size)
+}
+
 pub unsafe fn physmap(physical_address: usize, size: usize, flags: usize) -> Result<usize> {
     syscall3(SYS_PHYSMAP, physical_address, size, flags)
 }
@@ -132,6 +144,10 @@ pub fn rmdir(path: &str) -> Result<usize> {
 
 pub fn unlink(path: &str) -> Result<usize> {
     unsafe { syscall2(SYS_UNLINK, path.as_ptr() as usize, path.len()) }
+}
+
+pub unsafe fn virttophys(virtual_address: usize) -> Result<usize> {
+    syscall1(SYS_VIRTTOPHYS, virtual_address)
 }
 
 pub fn waitpid(pid: usize, status: &mut usize, options: usize) -> Result<usize> {

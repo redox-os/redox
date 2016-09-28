@@ -1,0 +1,5 @@
+[[drivers]]
+name = "AHCI storage"
+class = 1
+subclass = 6
+command = ["initfs:bin/ahcid", "$BAR5", "$IRQ"]
