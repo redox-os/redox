@@ -22,3 +22,6 @@
 [submodule "programs/extrautils"]
 	path = programs/extrautils
 	url = https://github.com/redox-os/extrautils.git
+[submodule "programs/smith"]
+	path = programs/smith
+	url = https://github.com/redox-os/Smith.git

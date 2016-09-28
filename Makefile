@@ -266,7 +266,8 @@ $(BUILD)/filesystem.bin: \
 		extrautils \
 		schemes \
 		filesystem/bin/ion \
-		filesystem/bin/login
+		filesystem/bin/login \
+		filesystem/bin/smith
 	rm -rf $@ $(BUILD)/filesystem/
 	echo exit | cargo run --manifest-path schemes/redoxfs/Cargo.toml --bin redoxfs-utility $@
 	mkdir -p $(BUILD)/filesystem/

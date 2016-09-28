@@ -3,4 +3,14 @@ name = "login"
 version = "0.1.0"
 
 [dependencies]
+liner = "*"
 syscall = { path = "../../syscall/" }
+
+[dependencies.octavo]
+git = "https://github.com/libOctavo/octavo"
+default-features = false
+features = ["digest"]
+
+[replace]
+"libc:0.2.16" = { git = "https://github.com/redox-os/liblibc.git", branch = "new_kernel" }
+"rustc-serialize:0.3.19" = { git = "https://github.com/redox-os/rustc-serialize.git" }
