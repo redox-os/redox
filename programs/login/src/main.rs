@@ -95,19 +95,16 @@ pub fn main() {
 
                     {
                         let mut debug = File::open("debug:").unwrap();
-                        write!(debug, "hash: {}: '{}': {}\n", user, password, password_hash);
+                        write!(debug, "{};{}\n", user, password_hash).unwrap();
                     }
 
                     let mut passwd_string = String::new();
-                    {
-                        let mut passwd_file = File::open("file:etc/passwd").unwrap();
-                        passwd_file.read_to_string(&mut passwd_string).unwrap();
-                    }
+                    File::open("file:etc/passwd").unwrap().read_to_string(&mut passwd_string).unwrap();
 
                     let mut passwd_option = None;
                     for line in passwd_string.lines() {
                         if let Ok(passwd) = Passwd::parse(line) {
-                            if password_hash == passwd.hash {
+                            if user == passwd.user && password_hash == passwd.hash {
                                 passwd_option = Some(passwd);
                                 break;
                             }
