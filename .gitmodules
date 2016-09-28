@@ -19,3 +19,6 @@
 [submodule "schemes/redoxfs"]
 	path = schemes/redoxfs
 	url = https://github.com/redox-os/redoxfs
+[submodule "programs/extrautils"]
+	path = programs/extrautils
+	url = https://github.com/redox-os/extrautils.git

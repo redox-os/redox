@@ -32,6 +32,7 @@ clean:
 	cargo clean --manifest-path programs/ion/Cargo.toml
 	cargo clean --manifest-path programs/login/Cargo.toml
 	cargo clean --manifest-path programs/coreutils/Cargo.toml
+	cargo clean --manifest-path programs/extrautils/Cargo.toml
 	cargo clean --manifest-path schemes/example/Cargo.toml
 	cargo clean --manifest-path schemes/redoxfs/Cargo.toml
 	rm -rf initfs/bin
@@ -197,6 +198,12 @@ filesystem/bin/%: programs/coreutils/Cargo.toml programs/coreutils/src/bin/%.rs 
 	strip $@
 	rm $@.d
 
+filesystem/bin/%: programs/extrautils/Cargo.toml programs/extrautils/src/bin/%.rs $(BUILD)/libstd.rlib
+	mkdir -p filesystem/bin
+	$(CARGO) rustc --manifest-path $< --bin $* $(CARGOFLAGS) -o $@
+	strip $@
+	rm $@.d
+
 filesystem/bin/%: schemes/%/Cargo.toml schemes/%/src/** $(BUILD)/libstd.rlib
 	mkdir -p filesystem/bin
 	$(CARGO) rustc --manifest-path $< --bin $* $(CARGOFLAGS) -o $@
@@ -208,13 +215,47 @@ drivers: \
 	filesystem/bin/vesad
 
 coreutils: \
+	filesystem/bin/basename \
 	filesystem/bin/cat \
+	filesystem/bin/clear \
+	filesystem/bin/cp \
+	filesystem/bin/cut \
+	filesystem/bin/date \
+	filesystem/bin/du \
 	filesystem/bin/echo \
 	filesystem/bin/env \
+	filesystem/bin/false \
+	filesystem/bin/head \
 	filesystem/bin/ls \
+	filesystem/bin/mkdir \
+	filesystem/bin/mv \
 	filesystem/bin/printenv \
 	filesystem/bin/pwd \
-	filesystem/bin/realpath
+	filesystem/bin/realpath \
+	filesystem/bin/reset \
+	filesystem/bin/rmdir \
+	filesystem/bin/rm \
+	filesystem/bin/seq \
+	filesystem/bin/sleep \
+	filesystem/bin/tail \
+	filesystem/bin/time \
+	filesystem/bin/touch \
+	filesystem/bin/true \
+	filesystem/bin/wc \
+	filesystem/bin/yes
+	#filesystem/bin/free filesystem/bin/ps filesystem/bin/shutdown filesystem/bin/test
+
+extrautils: \
+	filesystem/bin/calc \
+	filesystem/bin/cksum \
+	filesystem/bin/cur \
+	filesystem/bin/grep \
+	filesystem/bin/less \
+	filesystem/bin/mdless \
+	filesystem/bin/mtxt \
+	filesystem/bin/rem \
+	#filesystem/bin/dmesg filesystem/bin/info filesystem/bin/man filesystem/bin/watch
+
 
 schemes: \
 	filesystem/bin/example
@@ -244,4 +285,3 @@ unmount: FORCE
 	sync
 	-fusermount -u $(KBUILD)/harddrive/
 	rm -rf $(KBUILD)/harddrive/
-
