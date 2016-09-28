@@ -263,6 +263,7 @@ schemes: \
 $(BUILD)/filesystem.bin: \
 		drivers \
 		coreutils \
+		extrautils \
 		schemes \
 		filesystem/bin/ion \
 		filesystem/bin/login
