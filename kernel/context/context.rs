@@ -96,6 +96,9 @@ impl Context {
                 canon
             } else {
                 let mut canon = cwd.clone();
+                if ! canon.ends_with(b"/") {
+                    canon.push(b'/');
+                }
                 canon.extend_from_slice(&path);
                 canon
             }
