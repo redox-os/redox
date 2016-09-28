@@ -27,6 +27,7 @@ struct DisplayScheme {
     console: RefCell<Console>,
     display: RefCell<Display>,
     input: RefCell<VecDeque<u8>>,
+    cooked: RefCell<VecDeque<u8>>,
     requested: RefCell<usize>
 }
 
@@ -65,13 +66,29 @@ impl Scheme for DisplayScheme {
 
     fn write(&self, id: usize, buf: &[u8]) -> Result<usize> {
         if id == 1 {
-            for &b in buf.iter() {
-                self.input.borrow_mut().push_back(b);
-                if ! self.console.borrow().raw_mode {
-                    if b == 0x7F {
-                        self.write(0, b"\x08")?;
-                    } else {
-                        self.write(0, &[b])?;
+            if self.console.borrow().raw_mode {
+                for &b in buf.iter() {
+                    self.input.borrow_mut().push_back(b);
+                }
+            } else {
+                for &b in buf.iter() {
+                    match b {
+                        b'\x08' | b'\x7F' => {
+                            if let Some(c) = self.cooked.borrow_mut().pop_back() {
+                                self.write(0, b"\x08")?;
+                            }
+                        },
+                        b'\n' | b'\r' => {
+                            self.cooked.borrow_mut().push_back(b);
+                            while let Some(c) = self.cooked.borrow_mut().pop_front() {
+                                self.input.borrow_mut().push_back(c);
+                            }
+                            self.write(0, b"\n")?;
+                        },
+                        _ => {
+                            self.cooked.borrow_mut().push_back(b);
+                            self.write(0, &[b])?;
+                        }
                     }
                 }
             }
@@ -135,6 +152,7 @@ fn main() {
                     unsafe { slice::from_raw_parts_mut(offscreen as *mut u32, size) }
                 )),
                 input: RefCell::new(VecDeque::new()),
+                cooked: RefCell::new(VecDeque::new()),
                 requested: RefCell::new(0)
             };
 

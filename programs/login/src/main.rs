@@ -51,7 +51,7 @@ pub fn main() {
 
                     println!("");
 
-                    print!("hash: '{}' ", password);
+                    print!("hash: {}: '{}' ", user, password);
                     for b in output.iter() {
                         print!("{:X} ", b);
                     }
