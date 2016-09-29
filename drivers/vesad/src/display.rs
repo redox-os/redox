@@ -91,7 +91,7 @@ impl Display {
     #[cfg(not(feature="rusttype"))]
     pub fn char(&mut self, x: usize, y: usize, character: char, color: u32, _bold: bool, _italic: bool) {
         if x + 8 <= self.width && y + 16 <= self.height {
-            let mut dst = unsafe { self.offscreen.as_mut_ptr().offset((y * self.width + x) as isize) };
+            let mut dst = self.offscreen.as_mut_ptr() as usize + (y * self.width + x) * 4;
 
             let font_i = 16 * (character as usize);
             if font_i + 16 <= FONT.len() {
@@ -99,10 +99,10 @@ impl Display {
                     let row_data = FONT[font_i + row];
                     for col in 0..8 {
                         if (row_data >> (7 - col)) & 1 == 1 {
-                            unsafe { *dst.offset(col) = color; }
+                            unsafe { *((dst + col * 4) as *mut u32)  = color; }
                         }
                     }
-                    dst = unsafe { dst.offset(self.width as isize) };
+                    dst += self.width * 4;
                 }
             }
         }
