@@ -64,6 +64,11 @@ else
 	ifneq ($(kvm),no)
 		QEMUFLAGS+=-enable-kvm -cpu host
 	endif
+	ifeq ($(storage),usb)
+		QEMUFLAGS+=-device usb-ehci,id=flash_bus -drive id=flash_drive,file=$(KBUILD)/harddrive.bin,format=raw,if=none -device usb-storage,drive=flash_drive,bus=flash_bus.0
+	else
+		QEMUFLAGS+=-device ahci,id=ahci -drive id=disk,file=$(KBUILD)/harddrive.bin,format=raw,if=none -device ide-hd,drive=disk,bus=ahci.0
+	endif
 	ifeq ($(vga),no)
 		QEMUFLAGS+=-nographic -vga none
 	endif
@@ -82,10 +87,10 @@ $(KBUILD)/harddrive.bin: $(KBUILD)/kernel $(BUILD)/filesystem.bin bootloader/$(A
 	nasm -f bin -o $@ -D ARCH_$(ARCH) -ibootloader/$(ARCH)/ bootloader/$(ARCH)/harddrive.asm
 
 qemu: $(KBUILD)/harddrive.bin
-	$(QEMU) $(QEMUFLAGS) -drive file=$<,format=raw,index=0,media=disk
+	$(QEMU) $(QEMUFLAGS)
 
 qemu_no_build:
-	$(QEMU) $(QEMUFLAGS) -drive file=$(KBUILD)/harddrive.bin,format=raw,index=0,media=disk
+	$(QEMU) $(QEMUFLAGS)
 endif
 
 bochs: $(KBUILD)/harddrive.bin

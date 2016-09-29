@@ -9,7 +9,7 @@ use octavo::octavo_digest::sha3::Sha512;
 use std::fs::File;
 use std::io::{Read, Write};
 use std::process::Command;
-use std::{env, io, thread};
+use std::{env, io, str, thread};
 use termion::input::TermRead;
 
 pub struct Passwd<'a> {
@@ -61,9 +61,17 @@ pub fn main() {
 
     env::set_current_dir("file:").unwrap();
 
-    env::set_var("COLUMNS", "80");
-    env::set_var("LINES", "30");
     env::set_var("TTY", &tty);
+    {
+        let mut path = [0; 4096];
+        if let Ok(count) = syscall::fpath(0, &mut path) {
+            let path_str = str::from_utf8(&path[..count]).unwrap_or("");
+            let reference = path_str.split(':').nth(1).unwrap_or("");
+            let mut parts = reference.split('/');
+            env::set_var("COLUMNS", parts.next().unwrap_or("80"));
+            env::set_var("LINES", parts.next().unwrap_or("30"));
+        }
+    }
 
     thread::spawn(move || {
         let stdin = io::stdin();

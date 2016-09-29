@@ -113,6 +113,25 @@ impl Scheme for DisplayScheme {
         }
     }
 
+    fn fpath(&self, id: usize, buf: &mut [u8]) -> Result<usize> {
+        let path_str = if id == 1 {
+            format!("display:input")
+        } else {
+            let console = self.console.borrow();
+            format!("display:{}/{}", console.w, console.h)
+        };
+
+        let path = path_str.as_bytes();
+
+        let mut i = 0;
+        while i < buf.len() && i < path.len() {
+            buf[i] = path[i];
+            i += 1;
+        }
+
+        Ok(i)
+    }
+
     fn close(&self, _id: usize) -> Result<usize> {
         Ok(0)
     }
