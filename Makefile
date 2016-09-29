@@ -4,17 +4,17 @@ ARCH?=x86_64
 KTARGET=$(ARCH)-unknown-none
 KBUILD=build/kernel
 KRUSTC=./krustc.sh
-KRUSTCFLAGS=--target $(KTARGET).json -C soft-float
+KRUSTCFLAGS=--target $(KTARGET).json -C opt-level=s -C soft-float
 KCARGO=RUSTC="$(KRUSTC)" cargo
-KCARGOFLAGS=--target $(KTARGET).json -- -C soft-float
+KCARGOFLAGS=--target $(KTARGET).json -- -C opt-level=s -C soft-float
 
 # Userspace variables
 TARGET=$(ARCH)-unknown-redox
 BUILD=build/userspace
 RUSTC=./rustc.sh
-RUSTCFLAGS=--target $(TARGET).json -C opt-level=2 --cfg redox
+RUSTCFLAGS=--target $(TARGET).json -C opt-level=s --cfg redox
 CARGO=RUSTC="$(RUSTC)" cargo
-CARGOFLAGS=--target $(TARGET).json -- -C opt-level=2 --cfg redox
+CARGOFLAGS=--target $(TARGET).json -- -C opt-level=s --cfg redox
 
 # Default targets
 .PHONY: all clean qemu bochs FORCE
@@ -105,7 +105,7 @@ $(KBUILD)/libcollections.rlib: rust/src/libcollections/lib.rs $(KBUILD)/libcore.
 	$(KRUSTC) $(KRUSTCFLAGS) -o $@ $<
 
 $(KBUILD)/libkernel.a: kernel/** $(KBUILD)/libcore.rlib $(KBUILD)/liballoc.rlib $(KBUILD)/libcollections.rlib $(BUILD)/initfs.rs FORCE
-	$(KCARGO) rustc $(KCARGOFLAGS) -o $@
+	$(KCARGO) rustc $(KCARGOFLAGS) -C opt-level=s -C lto -o $@
 
 $(KBUILD)/kernel: $(KBUILD)/libkernel.a
 	$(LD) --gc-sections -z max-page-size=0x1000 -T arch/$(ARCH)/src/linker.ld -o $@ $<
