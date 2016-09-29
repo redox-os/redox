@@ -68,7 +68,7 @@ else
 	ifeq ($(storage),usb)
 		QEMUFLAGS+=-device usb-ehci,id=flash_bus -drive id=flash_drive,file=$(KBUILD)/harddrive.bin,format=raw,if=none -device usb-storage,drive=flash_drive,bus=flash_bus.0
 	else
-		QEMUFLAGS+=-device ahci,id=ahci -drive id=disk,file=$(KBUILD)/harddrive.bin,format=raw,if=none -device ide-hd,drive=disk,bus=ahci.0
+		QEMUFLAGS+=-drive file=$(KBUILD)/harddrive.bin,format=raw
 	endif
 	ifeq ($(vga),no)
 		QEMUFLAGS+=-nographic -vga none
