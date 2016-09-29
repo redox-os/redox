@@ -43,6 +43,15 @@ impl Scheme for DiskScheme {
         }
     }
 
+    fn dup(&self, id: usize) -> Result<usize> {
+        let mut handles = self.handles.lock();
+        let mut handle = handles.get_mut(&id).ok_or(Error::new(EBADF))?;
+
+        let new_id = self.next_id.fetch_add(1, Ordering::SeqCst);
+        self.handles.lock().insert(new_id, handle.clone());
+        Ok(new_id)
+    }
+
     fn read(&self, id: usize, buf: &mut [u8]) -> Result<usize> {
         let mut handles = self.handles.lock();
         let mut handle = handles.get_mut(&id).ok_or(Error::new(EBADF))?;
