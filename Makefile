@@ -28,6 +28,7 @@ clean:
 	cargo clean --manifest-path drivers/ps2d/Cargo.toml
 	cargo clean --manifest-path drivers/pcid/Cargo.toml
 	cargo clean --manifest-path drivers/vesad/Cargo.toml
+	cargo clean --manifest-path programs/getty/Cargo.toml
 	cargo clean --manifest-path programs/init/Cargo.toml
 	cargo clean --manifest-path programs/ion/Cargo.toml
 	cargo clean --manifest-path programs/login/Cargo.toml
@@ -274,6 +275,7 @@ $(BUILD)/filesystem.bin: \
 		coreutils \
 		extrautils \
 		schemes \
+		filesystem/bin/getty \
 		filesystem/bin/ion \
 		filesystem/bin/login \
 		filesystem/bin/smith
