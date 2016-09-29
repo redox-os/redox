@@ -159,7 +159,7 @@ impl Scheme for EnvScheme {
         let handle = handles.get(&id).ok_or(Error::new(EBADF))?;
 
         stat.st_mode = handle.mode;
-        stat.st_size = handle.data.lock().len() as u32; //TODO: st_size 64-bit
+        stat.st_size = handle.data.lock().len() as u64;
 
         Ok(0)
     }

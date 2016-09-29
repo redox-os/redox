@@ -17,6 +17,7 @@ use context::memory::Grant;
 use elf::{self, program_header};
 use scheme;
 use syscall;
+use syscall::data::Stat;
 use syscall::error::*;
 use syscall::flag::{CLONE_VM, CLONE_FS, CLONE_FILES, MAP_WRITE, MAP_WRITE_COMBINE, WNOHANG};
 use syscall::validate::{validate_slice, validate_slice_mut};
@@ -391,17 +392,11 @@ pub fn exec(path: &[u8], arg_ptrs: &[[usize; 2]]) -> Result<usize> {
         }
 
         let file = syscall::open(path, 0)?;
+        let mut stat = Stat::default();
+        syscall::fstat(file, &mut stat)?;
         //TODO: Only read elf header, not entire file. Then read required segments
-        let mut data = vec![];
-        loop {
-            let mut buf = [0; 16384];
-            let count = syscall::read(file, &mut buf)?;
-            if count > 0 {
-                data.extend_from_slice(&buf[..count]);
-            } else {
-                break;
-            }
-        }
+        let mut data = vec![0; stat.st_size as usize];
+        syscall::read(file, &mut data)?;
         let _ = syscall::close(file);
 
         match elf::Elf::from(&data) {
