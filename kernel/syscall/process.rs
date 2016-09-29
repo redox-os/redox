@@ -19,7 +19,7 @@ use scheme;
 use syscall;
 use syscall::data::Stat;
 use syscall::error::*;
-use syscall::flag::{CLONE_VM, CLONE_FS, CLONE_FILES, MAP_WRITE, MAP_WRITE_COMBINE, WNOHANG};
+use syscall::flag::{CLONE_VFORK, CLONE_VM, CLONE_FS, CLONE_FILES, MAP_WRITE, MAP_WRITE_COMBINE, WNOHANG};
 use syscall::validate::{validate_slice, validate_slice_mut};
 
 pub fn brk(address: usize) -> Result<usize> {
@@ -59,6 +59,7 @@ pub fn clone(flags: usize, stack_base: usize) -> Result<usize> {
     let pid;
     {
         let arch;
+        let vfork;
         let mut kfx_option = None;
         let mut kstack_option = None;
         let mut offset = 0;
@@ -227,6 +228,18 @@ pub fn clone(flags: usize, stack_base: usize) -> Result<usize> {
             }
         }
 
+        // If vfork, block the current process
+        // This has to be done after the operations that may require context switches
+        if flags & CLONE_VFORK == CLONE_VFORK {
+            let contexts = context::contexts();
+            let context_lock = contexts.current().ok_or(Error::new(ESRCH))?;
+            let mut context = context_lock.write();
+            context.status = context::Status::Blocked;
+            vfork = true;
+        } else {
+            vfork = false;
+        }
+
         // Set up new process
         {
             let mut contexts = context::contexts_mut();
@@ -234,6 +247,12 @@ pub fn clone(flags: usize, stack_base: usize) -> Result<usize> {
             let mut context = context_lock.write();
 
             pid = context.id;
+
+            context.ppid = ppid;
+
+            context.status = context::Status::Runnable;
+
+            context.vfork = vfork;
 
             context.arch = arch;
 
@@ -245,6 +264,8 @@ pub fn clone(flags: usize, stack_base: usize) -> Result<usize> {
                 let frame = allocate_frame().expect("no more frames in syscall::clone new_table");
                 InactivePageTable::new(frame, &mut active_table, &mut temporary_page)
             };
+
+            context.arch.set_page_table(unsafe { new_table.address() });
 
             // Copy kernel mapping
             {
@@ -350,10 +371,6 @@ pub fn clone(flags: usize, stack_base: usize) -> Result<usize> {
             context.env = env;
 
             context.files = files;
-
-            context.arch.set_page_table(unsafe { new_table.address() });
-
-            context.status = context::Status::Runnable;
         }
     }
 
@@ -365,14 +382,32 @@ pub fn clone(flags: usize, stack_base: usize) -> Result<usize> {
 pub fn exit(status: usize) -> ! {
     {
         let contexts = context::contexts();
-        let context_lock = contexts.current().expect("tried to exit without context");
-        let mut context = context_lock.write();
-        context.image.clear();
-        drop(context.heap.take());
-        drop(context.stack.take());
-        context.grants = Arc::new(Mutex::new(Vec::new()));
-        context.files = Arc::new(Mutex::new(Vec::new()));
-        context.status = context::Status::Exited(status);
+        let (vfork, ppid) = {
+            let context_lock = contexts.current().expect("tried to exit without context");
+            let mut context = context_lock.write();
+            context.image.clear();
+            drop(context.heap.take());
+            drop(context.stack.take());
+            context.grants = Arc::new(Mutex::new(Vec::new()));
+            context.files = Arc::new(Mutex::new(Vec::new()));
+            context.status = context::Status::Exited(status);
+
+            let vfork = context.vfork;
+            context.vfork = false;
+            (vfork, context.ppid)
+        };
+        if vfork {
+            if let Some(context_lock) = contexts.get(ppid) {
+                let mut context = context_lock.write();
+                if context.status == context::Status::Blocked {
+                    context.status = context::Status::Runnable;
+                } else {
+                    println!("{} not blocked for exit vfork unblock", ppid);
+                }
+            } else {
+                println!("{} not found for exit vfork unblock", ppid);
+            }
+        }
     }
 
     unsafe { context::switch(); }
@@ -407,104 +442,123 @@ pub fn exec(path: &[u8], arg_ptrs: &[[usize; 2]]) -> Result<usize> {
                 drop(arg_ptrs); // Drop so that usage is not allowed after unmapping context
 
                 let contexts = context::contexts();
-                let context_lock = contexts.current().ok_or(Error::new(ESRCH))?;
-                let mut context = context_lock.write();
+                let (vfork, ppid) = {
+                    let context_lock = contexts.current().ok_or(Error::new(ESRCH))?;
+                    let mut context = context_lock.write();
 
-                // Unmap previous image and stack
-                context.image.clear();
-                drop(context.heap.take());
-                drop(context.stack.take());
-                context.grants = Arc::new(Mutex::new(Vec::new()));
+                    // Unmap previous image and stack
+                    context.image.clear();
+                    drop(context.heap.take());
+                    drop(context.stack.take());
+                    context.grants = Arc::new(Mutex::new(Vec::new()));
 
-                for segment in elf.segments() {
-                    if segment.p_type == program_header::PT_LOAD {
+                    for segment in elf.segments() {
+                        if segment.p_type == program_header::PT_LOAD {
+                            let mut memory = context::memory::Memory::new(
+                                VirtualAddress::new(segment.p_vaddr as usize),
+                                segment.p_memsz as usize,
+                                entry::NO_EXECUTE | entry::WRITABLE,
+                                true,
+                                true
+                            );
+
+                            unsafe {
+                                // Copy file data
+                                memcpy(segment.p_vaddr as *mut u8,
+                                        (elf.data.as_ptr() as usize + segment.p_offset as usize) as *const u8,
+                                        segment.p_filesz as usize);
+                            }
+
+                            let mut flags = entry::NO_EXECUTE | entry::USER_ACCESSIBLE;
+
+                            if segment.p_flags & program_header::PF_R == program_header::PF_R {
+                                flags.insert(entry::PRESENT);
+                            }
+
+                            // W ^ X. If it is executable, do not allow it to be writable, even if requested
+                            if segment.p_flags & program_header::PF_X == program_header::PF_X {
+                                flags.remove(entry::NO_EXECUTE);
+                            } else if segment.p_flags & program_header::PF_W == program_header::PF_W {
+                                flags.insert(entry::WRITABLE);
+                            }
+
+                            memory.remap(flags, true);
+
+                            context.image.push(memory.to_shared());
+                        }
+                    }
+
+                    context.heap = Some(context::memory::Memory::new(
+                        VirtualAddress::new(arch::USER_HEAP_OFFSET),
+                        0,
+                        entry::NO_EXECUTE | entry::WRITABLE | entry::USER_ACCESSIBLE,
+                        true,
+                        true
+                    ).to_shared());
+
+                    // Map stack
+                    context.stack = Some(context::memory::Memory::new(
+                        VirtualAddress::new(arch::USER_STACK_OFFSET),
+                        arch::USER_STACK_SIZE,
+                        entry::NO_EXECUTE | entry::WRITABLE | entry::USER_ACCESSIBLE,
+                        true,
+                        true
+                    ));
+
+                    let mut arg_size = 0;
+                    for arg in args.iter().rev() {
+                        sp -= mem::size_of::<usize>();
+                        unsafe { *(sp as *mut usize) = arch::USER_ARG_OFFSET + arg_size; }
+                        sp -= mem::size_of::<usize>();
+                        unsafe { *(sp as *mut usize) = arg.len(); }
+
+                        arg_size += arg.len();
+                    }
+
+                    sp -= mem::size_of::<usize>();
+                    unsafe { *(sp as *mut usize) = args.len(); }
+
+                    if arg_size > 0 {
                         let mut memory = context::memory::Memory::new(
-                            VirtualAddress::new(segment.p_vaddr as usize),
-                            segment.p_memsz as usize,
+                            VirtualAddress::new(arch::USER_ARG_OFFSET),
+                            arg_size,
                             entry::NO_EXECUTE | entry::WRITABLE,
                             true,
                             true
                         );
 
-                        unsafe {
-                            // Copy file data
-                            memcpy(segment.p_vaddr as *mut u8,
-                                    (elf.data.as_ptr() as usize + segment.p_offset as usize) as *const u8,
-                                    segment.p_filesz as usize);
+                        let mut arg_offset = 0;
+                        for arg in args.iter().rev() {
+                            unsafe {
+                                memcpy((arch::USER_ARG_OFFSET + arg_offset) as *mut u8,
+                                       arg.as_ptr(),
+                                       arg.len());
+                            }
+
+                            arg_offset += arg.len();
                         }
 
-                        let mut flags = entry::NO_EXECUTE | entry::USER_ACCESSIBLE;
-
-                        if segment.p_flags & program_header::PF_R == program_header::PF_R {
-                            flags.insert(entry::PRESENT);
-                        }
-
-                        // W ^ X. If it is executable, do not allow it to be writable, even if requested
-                        if segment.p_flags & program_header::PF_X == program_header::PF_X {
-                            flags.remove(entry::NO_EXECUTE);
-                        } else if segment.p_flags & program_header::PF_W == program_header::PF_W {
-                            flags.insert(entry::WRITABLE);
-                        }
-
-                        memory.remap(flags, true);
+                        memory.remap(entry::NO_EXECUTE | entry::USER_ACCESSIBLE, true);
 
                         context.image.push(memory.to_shared());
                     }
-                }
 
-                context.heap = Some(context::memory::Memory::new(
-                    VirtualAddress::new(arch::USER_HEAP_OFFSET),
-                    0,
-                    entry::NO_EXECUTE | entry::WRITABLE | entry::USER_ACCESSIBLE,
-                    true,
-                    true
-                ).to_shared());
+                    let vfork = context.vfork;
+                    context.vfork = false;
+                    (vfork, context.ppid)
+                };
 
-                // Map stack
-                context.stack = Some(context::memory::Memory::new(
-                    VirtualAddress::new(arch::USER_STACK_OFFSET),
-                    arch::USER_STACK_SIZE,
-                    entry::NO_EXECUTE | entry::WRITABLE | entry::USER_ACCESSIBLE,
-                    true,
-                    true
-                ));
-
-                let mut arg_size = 0;
-                for arg in args.iter().rev() {
-                    sp -= mem::size_of::<usize>();
-                    unsafe { *(sp as *mut usize) = arch::USER_ARG_OFFSET + arg_size; }
-                    sp -= mem::size_of::<usize>();
-                    unsafe { *(sp as *mut usize) = arg.len(); }
-
-                    arg_size += arg.len();
-                }
-
-                sp -= mem::size_of::<usize>();
-                unsafe { *(sp as *mut usize) = args.len(); }
-
-                if arg_size > 0 {
-                    let mut memory = context::memory::Memory::new(
-                        VirtualAddress::new(arch::USER_ARG_OFFSET),
-                        arg_size,
-                        entry::NO_EXECUTE | entry::WRITABLE,
-                        true,
-                        true
-                    );
-
-                    let mut arg_offset = 0;
-                    for arg in args.iter().rev() {
-                        unsafe {
-                            memcpy((arch::USER_ARG_OFFSET + arg_offset) as *mut u8,
-                                   arg.as_ptr(),
-                                   arg.len());
+                if vfork {
+                    if let Some(context_lock) = contexts.get(ppid) {
+                        let mut context = context_lock.write();
+                        if context.status == context::Status::Blocked {
+                            context.status = context::Status::Runnable;
+                        } else {
+                            println!("{} not blocked for exec vfork unblock", ppid);
                         }
-
-                        arg_offset += arg.len();
+                    } else {
+                        println!("{} not found for exec vfork unblock", ppid);
                     }
-
-                    memory.remap(entry::NO_EXECUTE | entry::USER_ACCESSIBLE, true);
-
-                    context.image.push(memory.to_shared());
                 }
             },
             Err(err) => {

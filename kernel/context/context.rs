@@ -20,10 +20,14 @@ pub enum Status {
 pub struct Context {
     /// The ID of this context
     pub id: usize,
+    /// The ID of the parent context
+    pub ppid: usize,
     /// Status of context
     pub status: Status,
     /// Context running or not
     pub running: bool,
+    /// Context is halting parent
+    pub vfork: bool,
     /// The architecture specific context
     pub arch: arch::context::Context,
     /// Kernel FX
@@ -53,8 +57,10 @@ impl Context {
     pub fn new(id: usize) -> Context {
         Context {
             id: id,
+            ppid: 0,
             status: Status::Blocked,
             running: false,
+            vfork: false,
             arch: arch::context::Context::new(),
             kfx: None,
             kstack: None,
