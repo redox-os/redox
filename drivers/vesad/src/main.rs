@@ -8,7 +8,7 @@ extern crate ransid;
 extern crate syscall;
 
 use std::cell::RefCell;
-use std::collections::VecDeque;
+use std::collections::{BTreeSet, VecDeque};
 use std::fs::File;
 use std::io::{Read, Write};
 use std::{slice, thread};
@@ -26,9 +26,47 @@ pub mod primitive;
 struct DisplayScheme {
     console: RefCell<Console>,
     display: RefCell<Display>,
+    changed: RefCell<BTreeSet<usize>>,
     input: RefCell<VecDeque<u8>>,
     cooked: RefCell<VecDeque<u8>>,
     requested: RefCell<usize>
+}
+
+impl DisplayScheme {
+    fn event(&self, event: Event) {
+        let mut display = self.display.borrow_mut();
+        let mut changed = self.changed.borrow_mut();
+
+        match event {
+            Event::Char { x, y, c, color, bold, .. } => {
+                display.char(x * 8, y * 16, c, color.data, bold, false);
+                changed.insert(y);
+            },
+            Event::Rect { x, y, w, h, color } => {
+                display.rect(x * 8, y * 16, w * 8, h * 16, color.data);
+                for y2 in y..y + h {
+                    changed.insert(y2);
+                }
+            },
+            Event::Scroll { rows, color } => {
+                display.scroll(rows * 16, color.data);
+                for y in 0..display.height/16 {
+                    changed.insert(y);
+                }
+            }
+        }
+    }
+
+    fn sync(&self) {
+        let mut display = self.display.borrow_mut();
+        let mut changed = self.changed.borrow_mut();
+
+        let width = display.width;
+        for change in changed.iter() {
+            display.sync(0, change * 16, width, 16);
+        }
+        changed.clear();
+    }
 }
 
 impl Scheme for DisplayScheme {
@@ -50,7 +88,32 @@ impl Scheme for DisplayScheme {
         Ok(0)
     }
 
-    fn fsync(&self, _id: usize) -> Result<usize> {
+    fn fpath(&self, id: usize, buf: &mut [u8]) -> Result<usize> {
+        let path_str = if id == 1 {
+            format!("display:input")
+        } else {
+            let console = self.console.borrow();
+            format!("display:{}/{}", console.w, console.h)
+        };
+
+        let path = path_str.as_bytes();
+
+        let mut i = 0;
+        while i < buf.len() && i < path.len() {
+            buf[i] = path[i];
+            i += 1;
+        }
+
+        Ok(i)
+    }
+
+    fn fsync(&self, id: usize) -> Result<usize> {
+        if id == 1 {
+
+        } else {
+            self.sync();
+        }
+
         Ok(0)
     }
 
@@ -74,7 +137,7 @@ impl Scheme for DisplayScheme {
                 for &b in buf.iter() {
                     match b {
                         b'\x08' | b'\x7F' => {
-                            if let Some(c) = self.cooked.borrow_mut().pop_back() {
+                            if let Some(_c) = self.cooked.borrow_mut().pop_back() {
                                 self.write(0, b"\x08")?;
                             }
                         },
@@ -94,42 +157,33 @@ impl Scheme for DisplayScheme {
             }
             Ok(buf.len())
         } else {
-            let mut display = self.display.borrow_mut();
             let mut console = self.console.borrow_mut();
             if console.cursor && console.x < console.w && console.y < console.h {
-                display.rect(console.x * 8, console.y * 16, 8, 16, 0);
+                self.event(Event::Rect {
+                    x: console.x,
+                    y: console.y,
+                    w: 1,
+                    h: 1,
+                    color: console.background
+                });
             }
             console.write(buf, |event| {
-                match event {
-                    Event::Char { x, y, c, color, bold, .. } => display.char(x * 8, y * 16, c, color.data, bold, false),
-                    Event::Rect { x, y, w, h, color } => display.rect(x * 8, y * 16, w * 8, h * 16, color.data),
-                    Event::Scroll { rows, color } => display.scroll(rows * 16, color.data)
-                }
+                self.event(event);
             });
             if console.cursor && console.x < console.w && console.y < console.h {
-                display.rect(console.x * 8, console.y * 16, 8, 16, 0xFFFFFF);
+                self.event(Event::Rect {
+                    x: console.x,
+                    y: console.y,
+                    w: 1,
+                    h: 1,
+                    color: console.foreground
+                });
+            }
+            if ! console.raw_mode {
+                self.sync();
             }
             Ok(buf.len())
         }
-    }
-
-    fn fpath(&self, id: usize, buf: &mut [u8]) -> Result<usize> {
-        let path_str = if id == 1 {
-            format!("display:input")
-        } else {
-            let console = self.console.borrow();
-            format!("display:{}/{}", console.w, console.h)
-        };
-
-        let path = path_str.as_bytes();
-
-        let mut i = 0;
-        while i < buf.len() && i < path.len() {
-            buf[i] = path[i];
-            i += 1;
-        }
-
-        Ok(i)
     }
 
     fn close(&self, _id: usize) -> Result<usize> {
@@ -170,6 +224,7 @@ fn main() {
                     unsafe { slice::from_raw_parts_mut(onscreen as *mut u32, size) },
                     unsafe { slice::from_raw_parts_mut(offscreen as *mut u32, size) }
                 )),
+                changed: RefCell::new(BTreeSet::new()),
                 input: RefCell::new(VecDeque::new()),
                 cooked: RefCell::new(VecDeque::new()),
                 requested: RefCell::new(0)

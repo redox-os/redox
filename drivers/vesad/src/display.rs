@@ -1,39 +1,64 @@
+#[cfg(feature="rusttype")]
 extern crate rusttype;
 
 use std::cmp;
 
-use primitive::{fast_set32, fast_set64, fast_copy64};
+use primitive::{fast_set32, fast_set64, fast_copy, fast_copy64};
 
+#[cfg(feature="rusttype")]
 use self::rusttype::{Font, FontCollection, Scale, point};
 
-static FONT: &'static [u8] = include_bytes!("../../../res/fonts/DejaVuSansMono.ttf");
-static FONT_BOLD: &'static [u8] = include_bytes!("../../../res/fonts/DejaVuSansMono-Bold.ttf");
-static FONT_BOLD_ITALIC: &'static [u8] = include_bytes!("../../../res/fonts/DejaVuSansMono-BoldOblique.ttf");
-static FONT_ITALIC: &'static [u8] = include_bytes!("../../../res/fonts/DejaVuSansMono-Oblique.ttf");
+#[cfg(not(feature="rusttype"))]
+static FONT: &'static [u8] = include_bytes!("../../../res/fonts/unifont.font");
 
 /// A display
+#[cfg(not(feature="rusttype"))]
+pub struct Display {
+    pub width: usize,
+    pub height: usize,
+    pub onscreen: &'static mut [u32],
+    pub offscreen: &'static mut [u32]
+}
+
+/// A display
+#[cfg(feature="rusttype")]
 pub struct Display {
     pub width: usize,
     pub height: usize,
     pub onscreen: &'static mut [u32],
     pub offscreen: &'static mut [u32],
+    #[cfg(feature="rusttype")]
     pub font: Font<'static>,
+    #[cfg(feature="rusttype")]
     pub font_bold: Font<'static>,
+    #[cfg(feature="rusttype")]
     pub font_bold_italic: Font<'static>,
+    #[cfg(feature="rusttype")]
     pub font_italic: Font<'static>
 }
 
 impl Display {
+    #[cfg(not(feature="rusttype"))]
+    pub fn new(width: usize, height: usize, onscreen: &'static mut [u32], offscreen: &'static mut [u32]) -> Display {
+        Display {
+            width: width,
+            height: height,
+            onscreen: onscreen,
+            offscreen: offscreen
+        }
+    }
+
+    #[cfg(feature="rusttype")]
     pub fn new(width: usize, height: usize, onscreen: &'static mut [u32], offscreen: &'static mut [u32]) -> Display {
         Display {
             width: width,
             height: height,
             onscreen: onscreen,
             offscreen: offscreen,
-            font: FontCollection::from_bytes(FONT).into_font().unwrap(),
-            font_bold: FontCollection::from_bytes(FONT_BOLD).into_font().unwrap(),
-            font_bold_italic: FontCollection::from_bytes(FONT_BOLD_ITALIC).into_font().unwrap(),
-            font_italic: FontCollection::from_bytes(FONT_ITALIC).into_font().unwrap()
+            font: FontCollection::from_bytes(include_bytes!("../../../res/fonts/DejaVuSansMono.ttf")).into_font().unwrap(),
+            font_bold: FontCollection::from_bytes(include_bytes!("../../../res/fonts/DejaVuSansMono-Bold.ttf")).into_font().unwrap(),
+            font_bold_italic: FontCollection::from_bytes(include_bytes!("../../../res/fonts/DejaVuSansMono-BoldOblique.ttf")).into_font().unwrap(),
+            font_italic: FontCollection::from_bytes(include_bytes!("../../../res/fonts/DejaVuSansMono-Oblique.ttf")).into_font().unwrap()
         }
     }
 
@@ -46,32 +71,49 @@ impl Display {
         let len = cmp::min(self.width, x + w) - start_x;
 
         let mut offscreen_ptr = self.offscreen.as_mut_ptr() as usize;
-        let mut onscreen_ptr = self.onscreen.as_mut_ptr() as usize;
 
         let stride = self.width * 4;
 
         let offset = y * stride + start_x * 4;
         offscreen_ptr += offset;
-        onscreen_ptr += offset;
 
         let mut rows = end_y - start_y;
         while rows > 0 {
             unsafe {
                 fast_set32(offscreen_ptr as *mut u32, color, len);
-                fast_set32(onscreen_ptr as *mut u32, color, len);
             }
             offscreen_ptr += stride;
-            onscreen_ptr += stride;
             rows -= 1;
         }
     }
 
     /// Draw a character
+    #[cfg(not(feature="rusttype"))]
+    pub fn char(&mut self, x: usize, y: usize, character: char, color: u32, _bold: bool, _italic: bool) {
+        if x + 8 <= self.width && y + 16 <= self.height {
+            let mut dst = unsafe { self.offscreen.as_mut_ptr().offset((y * self.width + x) as isize) };
+
+            let font_i = 16 * (character as usize);
+            if font_i + 16 <= FONT.len() {
+                for row in 0..16 {
+                    let row_data = FONT[font_i + row];
+                    for col in 0..8 {
+                        if (row_data >> (7 - col)) & 1 == 1 {
+                            unsafe { *dst.offset(col) = color; }
+                        }
+                    }
+                    dst = unsafe { dst.offset(self.width as isize) };
+                }
+            }
+        }
+    }
+
+    /// Draw a character
+    #[cfg(feature="rusttype")]
     pub fn char(&mut self, x: usize, y: usize, character: char, color: u32, bold: bool, italic: bool) {
         let width = self.width;
         let height = self.height;
-        let offscreen = self.offscreen.as_mut_ptr();
-        let onscreen = self.onscreen.as_mut_ptr();
+        let offscreen = self.offscreen.as_mut_ptr() as usize;
 
         let font = if bold && italic {
             &self.font_bold_italic
@@ -100,9 +142,9 @@ impl Display {
                             let f_g = (((color >> 8) & 0xFF) * f_a)/255;
                             let f_b = ((color & 0xFF) * f_a)/255;
 
-                            let index = (off_y * width + off_x) as isize;
+                            let offscreen_ptr = (offscreen + (off_y * width + off_x) * 4) as *mut u32;
 
-                            let bg = unsafe { *offscreen.offset(index) };
+                            let bg = unsafe { *offscreen_ptr };
 
                             let b_a = 255 - f_a;
                             let b_r = (((bg >> 16) & 0xFF) * b_a)/255;
@@ -111,8 +153,7 @@ impl Display {
 
                             let c = ((f_r + b_r) << 16) | ((f_g + b_g) << 8) | (f_b + b_b);
 
-                            unsafe { *offscreen.offset(index) = c; }
-                            unsafe { *onscreen.offset(index) = c; }
+                            unsafe { *offscreen_ptr = c; }
                         }
                     }
                 });
@@ -133,9 +174,35 @@ impl Display {
                 let data_ptr = self.offscreen.as_mut_ptr() as *mut u64;
                 fast_copy64(data_ptr, data_ptr.offset(off1 as isize), off2);
                 fast_set64(data_ptr.offset(off2 as isize), data, off1);
-
-                fast_copy64(self.onscreen.as_mut_ptr() as *mut u64, data_ptr, off1 + off2);
             }
+        }
+    }
+
+    /// Copy from offscreen to onscreen
+    pub fn sync(&mut self, x: usize, y: usize, w: usize, h: usize) {
+        let start_y = cmp::min(self.height - 1, y);
+        let end_y = cmp::min(self.height, y + h);
+
+        let start_x = cmp::min(self.width - 1, x);
+        let len = (cmp::min(self.width, x + w) - start_x) * 4;
+
+        let mut offscreen_ptr = self.offscreen.as_mut_ptr() as usize;
+        let mut onscreen_ptr = self.onscreen.as_mut_ptr() as usize;
+
+        let stride = self.width * 4;
+
+        let offset = y * stride + start_x * 4;
+        offscreen_ptr += offset;
+        onscreen_ptr += offset;
+
+        let mut rows = end_y - start_y;
+        while rows > 0 {
+            unsafe {
+                fast_copy(onscreen_ptr as *mut u8, offscreen_ptr as *const u8, len);
+            }
+            offscreen_ptr += stride;
+            onscreen_ptr += stride;
+            rows -= 1;
         }
     }
 }
