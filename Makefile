@@ -33,6 +33,7 @@ clean:
 	cargo clean --manifest-path programs/login/Cargo.toml
 	cargo clean --manifest-path programs/coreutils/Cargo.toml
 	cargo clean --manifest-path programs/extrautils/Cargo.toml
+	cargo clean --manifest-path programs/smith/Cargo.toml
 	cargo clean --manifest-path schemes/example/Cargo.toml
 	cargo clean --manifest-path schemes/redoxfs/Cargo.toml
 	rm -rf initfs/bin
@@ -82,6 +83,9 @@ $(KBUILD)/harddrive.bin: $(KBUILD)/kernel $(BUILD)/filesystem.bin bootloader/$(A
 
 qemu: $(KBUILD)/harddrive.bin
 	$(QEMU) $(QEMUFLAGS) -drive file=$<,format=raw,index=0,media=disk
+
+qemu_no_build:
+	$(QEMU) $(QEMUFLAGS) -drive file=$(KBUILD)/harddrive.bin,format=raw,index=0,media=disk
 endif
 
 bochs: $(KBUILD)/harddrive.bin
