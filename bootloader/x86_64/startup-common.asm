@@ -23,7 +23,7 @@ kernel_base equ 0x100000
     ; how often do we need to call load and move memory
     mov ecx, kernel_file.length_sectors / buffer_size_sectors
 
-    mov ax, (kernel_file - boot) / 512
+    mov eax, (kernel_file - boot) / 512
     mov edi, kernel_base
     cld
 .lp:
@@ -35,19 +35,21 @@ kernel_base equ 0x100000
         mov bx, kernel_file
         mov dx, 0x0
 
-        push ax
+        push edi
+        push eax
         call load
 
         ; moving buffer
         call unreal
-        pop ax
+        pop eax
+        pop edi
 
         mov esi, kernel_file
         mov ecx, buffer_size_bytes / 4
         a32 rep movsd
 
         ; preparing next iteration
-        add ax, buffer_size_sectors
+        add eax, buffer_size_sectors
 
     pop cx
     loop .lp

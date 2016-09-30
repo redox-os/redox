@@ -21,7 +21,7 @@ boot: ; dl comes with disk
     mov bh, 0
     mov bl, [disk]
 
-    mov ax, (startup_start - boot) / 512
+    mov eax, (startup_start - boot) / 512
     mov bx, startup_start
     mov cx, (startup_end - startup_start) / 512
     xor dx, dx
@@ -58,11 +58,14 @@ load:
 
     jmp load
 .good_size:
-    mov [DAPACK.addr], ax
+    mov [DAPACK.addr], eax
     mov [DAPACK.buf], bx
     mov [DAPACK.count], cx
     mov [DAPACK.seg], dx
 
+    ; mov bx, [DAPACK.addr + 2]
+    ; call print_num
+    ;
     ; mov bx, [DAPACK.addr]
     ; call print_num
     ;
