@@ -78,6 +78,8 @@ impl HbaPort {
 
         self.clb.write(clb.physical() as u64);
         self.fb.write(fb.physical() as u64);
+        let is = self.is.read();
+        self.is.write(is);
 
         for i in 0..32 {
             let cmdheader = &mut clb[i];
@@ -272,11 +274,13 @@ impl HbaPort {
 
             while self.ci.readf(1 << slot) {
                 if self.is.readf(HBA_PORT_IS_TFES) {
+                    println!("IS_TFES set in CI loop TFS {:X} SERR {:X}", self.tfd.read(), self.serr.read());
                     return Err(Error::new(EIO));
                 }
             }
 
             if self.is.readf(HBA_PORT_IS_TFES) {
+                println!("IS_TFES set after CI loop TFS {:X} SERR {:X}", self.tfd.read(), self.serr.read());
                 return Err(Error::new(EIO));
             }
 
@@ -304,6 +308,13 @@ pub struct HbaMem {
     pub rsv: [Mmio<u8>; 116], // 0x2C - 0x9F, Reserved
     pub vendor: [Mmio<u8>; 96], // 0xA0 - 0xFF, Vendor specific registers
     pub ports: [HbaPort; 32], // 0x100 - 0x10FF, Port control registers
+}
+
+impl HbaMem {
+    pub fn reset(&mut self) {
+        self.ghc.writef(1, true);
+        while self.ghc.readf(1) {}
+    }
 }
 
 #[repr(packed)]
