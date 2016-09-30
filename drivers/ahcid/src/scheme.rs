@@ -3,7 +3,7 @@ use std::{cmp, str};
 use std::sync::Arc;
 use std::sync::atomic::{AtomicUsize, Ordering};
 use spin::Mutex;
-use syscall::{Error, EBADF, EINVAL, ENOENT, Result, Scheme, SEEK_CUR, SEEK_END, SEEK_SET};
+use syscall::{Error, EBADF, EINVAL, ENOENT, Result, Scheme, Stat, MODE_FILE, SEEK_CUR, SEEK_END, SEEK_SET};
 
 use ahci::disk::Disk;
 
@@ -45,11 +45,23 @@ impl Scheme for DiskScheme {
 
     fn dup(&self, id: usize) -> Result<usize> {
         let mut handles = self.handles.lock();
-        let mut handle = handles.get_mut(&id).ok_or(Error::new(EBADF))?;
+        let new_handle = {
+            let handle = handles.get(&id).ok_or(Error::new(EBADF))?;
+            handle.clone()
+        };
 
         let new_id = self.next_id.fetch_add(1, Ordering::SeqCst);
-        self.handles.lock().insert(new_id, handle.clone());
+        handles.insert(new_id, new_handle);
         Ok(new_id)
+    }
+
+    fn fstat(&self, id: usize, stat: &mut Stat) -> Result<usize> {
+        let handles = self.handles.lock();
+        let handle = handles.get(&id).ok_or(Error::new(EBADF))?;
+
+        stat.st_mode = MODE_FILE;
+        stat.st_size = handle.0.lock().size();
+        Ok(0)
     }
 
     fn read(&self, id: usize, buf: &mut [u8]) -> Result<usize> {
