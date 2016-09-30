@@ -1,6 +1,6 @@
 use std::ptr;
 
-use syscall::error::{Error, EIO, Result};
+use syscall::error::Result;
 
 use super::dma::Dma;
 use super::hba::{HbaPort, HbaCmdTable, HbaCmdHeader};
@@ -56,61 +56,53 @@ impl Disk {
 
     pub fn read(&mut self, block: u64, buffer: &mut [u8]) -> Result<usize> {
         let sectors = buffer.len()/512;
-        if sectors > 0 {
-            let mut sector: usize = 0;
-            while sectors - sector >= 255 {
-                if let Err(err) = self.port.ata_dma(block + sector as u64, 255, false, &mut self.clb, &mut self.ctbas, &mut self.buf) {
-                    return Err(err);
-                }
 
-                unsafe { ptr::copy(self.buf.as_ptr(), buffer.as_mut_ptr().offset(sector as isize * 512), 255 * 512); }
-
-                sector += 255;
-            }
-            if sector < sectors {
-                if let Err(err) = self.port.ata_dma(block + sector as u64, sectors - sector, false, &mut self.clb, &mut self.ctbas, &mut self.buf) {
-                    return Err(err);
-                }
-
-                unsafe { ptr::copy(self.buf.as_ptr(), buffer.as_mut_ptr().offset(sector as isize * 512), (sectors - sector) * 512); }
-
-                sector += sectors - sector;
+        let mut sector: usize = 0;
+        while sectors - sector >= 255 {
+            if let Err(err) = self.port.ata_dma(block + sector as u64, 255, false, &mut self.clb, &mut self.ctbas, &mut self.buf) {
+                return Err(err);
             }
 
-            Ok(sector * 512)
-        } else {
-            println!("Invalid request");
-            Err(Error::new(EIO))
+            unsafe { ptr::copy(self.buf.as_ptr(), buffer.as_mut_ptr().offset(sector as isize * 512), 255 * 512); }
+
+            sector += 255;
         }
+        if sector < sectors {
+            if let Err(err) = self.port.ata_dma(block + sector as u64, sectors - sector, false, &mut self.clb, &mut self.ctbas, &mut self.buf) {
+                return Err(err);
+            }
+
+            unsafe { ptr::copy(self.buf.as_ptr(), buffer.as_mut_ptr().offset(sector as isize * 512), (sectors - sector) * 512); }
+
+            sector += sectors - sector;
+        }
+
+        Ok(sector * 512)
     }
 
     pub fn write(&mut self, block: u64, buffer: &[u8]) -> Result<usize> {
-        let sectors = (buffer.len() + 511)/512;
-        if sectors > 0 {
-            let mut sector: usize = 0;
-            while sectors - sector >= 255 {
-                unsafe { ptr::copy(buffer.as_ptr().offset(sector as isize * 512), self.buf.as_mut_ptr(), 255 * 512); }
+        let sectors = buffer.len()/512;
 
-                if let Err(err) = self.port.ata_dma(block + sector as u64, 255, true, &mut self.clb, &mut self.ctbas, &mut self.buf) {
-                    return Err(err);
-                }
+        let mut sector: usize = 0;
+        while sectors - sector >= 255 {
+            unsafe { ptr::copy(buffer.as_ptr().offset(sector as isize * 512), self.buf.as_mut_ptr(), 255 * 512); }
 
-                sector += 255;
-            }
-            if sector < sectors {
-                unsafe { ptr::copy(buffer.as_ptr().offset(sector as isize * 512), self.buf.as_mut_ptr(), (sectors - sector) * 512); }
-
-                if let Err(err) = self.port.ata_dma(block + sector as u64, sectors - sector, true, &mut self.clb, &mut self.ctbas, &mut self.buf) {
-                    return Err(err);
-                }
-
-                sector += sectors - sector;
+            if let Err(err) = self.port.ata_dma(block + sector as u64, 255, true, &mut self.clb, &mut self.ctbas, &mut self.buf) {
+                return Err(err);
             }
 
-            Ok(sector * 512)
-        } else {
-            println!("Invalid request");
-            Err(Error::new(EIO))
+            sector += 255;
         }
+        if sector < sectors {
+            unsafe { ptr::copy(buffer.as_ptr().offset(sector as isize * 512), self.buf.as_mut_ptr(), (sectors - sector) * 512); }
+
+            if let Err(err) = self.port.ata_dma(block + sector as u64, sectors - sector, true, &mut self.clb, &mut self.ctbas, &mut self.buf) {
+                return Err(err);
+            }
+
+            sector += sectors - sector;
+        }
+
+        Ok(sector * 512)
     }
 }
