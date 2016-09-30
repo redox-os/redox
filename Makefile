@@ -61,7 +61,7 @@ qemu: $(KBUILD)/harddrive.bin
 	$(QEMU) $(QEMUFLAGS) -kernel $<
 else
 	LD=ld
-	QEMUFLAGS+=-machine q35 -smp 4 -m 256
+	QEMUFLAGS+=-machine q35 -smp 4 -m 1024
 	ifneq ($(kvm),no)
 		QEMUFLAGS+=-enable-kvm -cpu host
 	endif
