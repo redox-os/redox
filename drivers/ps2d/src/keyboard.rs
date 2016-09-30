@@ -60,6 +60,12 @@ pub fn keyboard() {
                     0x51 => { // Page down
                         input.write(b"\x1B[6~").unwrap();
                     },
+                    0x52 => { // Insert
+                        input.write(b"\x1B[2~").unwrap();
+                    },
+                    0x53 => { // Delete
+                        input.write(b"\x1B[3~").unwrap();
+                    },
                     _ => {
                         let c = if ctrl {
                             match keymap::get_char(scancode, false) {
