@@ -45,16 +45,16 @@ boot: ; dl comes with disk
 ; TODO rewrite to (eventually) move larger parts at once
 ; if that is done increase buffer_size_sectors in startup-common to that (max 0x80000 - startup_end)
 load:
-    cmp cx, 64
+    cmp cx, 128
     jbe .good_size
 
     pusha
-    mov cx, 64
+    mov cx, 128
     call load
     popa
-    add ax, 64
-    add dx, 64 * 512 / 16
-    sub cx, 64
+    add ax, 128
+    add dx, 128 * 512 / 16
+    sub cx, 128
 
     jmp load
 .good_size:
@@ -63,31 +63,31 @@ load:
     mov [DAPACK.count], cx
     mov [DAPACK.seg], dx
 
-    ; mov bx, [DAPACK.addr + 2]
-    ; call print_num
-    ;
-    ; mov bx, [DAPACK.addr]
-    ; call print_num
-    ;
-    ; mov al, '#'
-    ; call print_char
-    ;
-    ; mov bx, [DAPACK.count]
-    ; call print_num
-    ;
-    ; mov al, ' '
-    ; call print_char
-    ;
-    ; mov bx, [DAPACK.seg]
-    ; call print_num
-    ;
-    ; mov al, ':'
-    ; call print_char
-    ;
-    ; mov bx, [DAPACK.buf]
-    ; call print_num
-    ;
-    ; call print_line
+        mov bx, [DAPACK.addr + 2]
+        call print_num
+
+        mov bx, [DAPACK.addr]
+        call print_num
+
+        mov al, '#'
+        call print_char
+
+        mov bx, [DAPACK.count]
+        call print_num
+
+        mov al, ' '
+        call print_char
+
+        mov bx, [DAPACK.seg]
+        call print_num
+
+        mov al, ':'
+        call print_char
+
+        mov bx, [DAPACK.buf]
+        call print_num
+
+        call print_line
 
     mov dl, [disk]
     mov si, DAPACK
