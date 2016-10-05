@@ -1,0 +1,5 @@
+max_width = 200
+ideal_width = 100
+fn_call_width = 80
+wrap_match_arms = false
+write_mode = "Overwrite"
