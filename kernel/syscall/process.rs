@@ -434,10 +434,10 @@ pub fn exec(path: &[u8], arg_ptrs: &[[usize; 2]]) -> Result<usize> {
 
         let file = syscall::open(path, 0)?;
         let mut stat = Stat::default();
-        syscall::fstat(file, &mut stat)?;
+        syscall::file_op_mut_slice(syscall::number::SYS_FSTAT, file, &mut stat)?;
         //TODO: Only read elf header, not entire file. Then read required segments
         let mut data = vec![0; stat.st_size as usize];
-        syscall::read(file, &mut data)?;
+        syscall::file_op_mut_slice(syscall::number::SYS_READ, file, &mut data)?;
         let _ = syscall::close(file);
 
         match elf::Elf::from(&data) {

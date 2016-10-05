@@ -2,8 +2,47 @@
 
 use context;
 use scheme;
-use syscall::data::Stat;
+use syscall::data::{Packet, Stat};
 use syscall::error::*;
+
+pub fn file_op(a: usize, fd: usize, c: usize, d: usize) -> Result<usize> {
+    let (file, pid, uid, gid) = {
+        let contexts = context::contexts();
+        let context_lock = contexts.current().ok_or(Error::new(ESRCH))?;
+        let context = context_lock.read();
+        let file = context.get_file(fd).ok_or(Error::new(EBADF))?;
+        (file, context.id, context.uid, context.gid)
+    };
+
+    let scheme = {
+        let schemes = scheme::schemes();
+        let scheme = schemes.get(file.scheme).ok_or(Error::new(EBADF))?;
+        scheme.clone()
+    };
+
+    let mut packet = Packet {
+        id: 0,
+        pid: pid,
+        uid: uid,
+        gid: gid,
+        a: a,
+        b: file.number,
+        c: c,
+        d: d
+    };
+
+    scheme.handle(&mut packet);
+
+    Error::demux(packet.a)
+}
+
+pub fn file_op_slice(a: usize, fd: usize, slice: &[u8]) -> Result<usize> {
+    file_op(a, fd, slice.as_ptr() as usize, slice.len())
+}
+
+pub fn file_op_mut_slice(a: usize, fd: usize, slice: &mut [u8]) -> Result<usize> {
+    file_op(a, fd, slice.as_mut_ptr() as usize, slice.len())
+}
 
 /// Change the current working directory
 pub fn chdir(path: &[u8]) -> Result<usize> {
@@ -194,130 +233,4 @@ pub fn fevent(fd: usize, flags: usize) -> Result<usize> {
     scheme.fevent(file.number, flags)?;
     context::event::register(fd, file.scheme, file.number);
     Ok(0)
-}
-
-/// Get the canonical path of the file
-pub fn fpath(fd: usize, buf: &mut [u8]) -> Result<usize> {
-    let file = {
-        let contexts = context::contexts();
-        let context_lock = contexts.current().ok_or(Error::new(ESRCH))?;
-        let context = context_lock.read();
-        let file = context.get_file(fd).ok_or(Error::new(EBADF))?;
-        file
-    };
-
-    let scheme = {
-        let schemes = scheme::schemes();
-        let scheme = schemes.get(file.scheme).ok_or(Error::new(EBADF))?;
-        scheme.clone()
-    };
-    scheme.fpath(file.number, buf)
-}
-
-/// Get information about the file
-pub fn fstat(fd: usize, stat: &mut Stat) -> Result<usize> {
-    let file = {
-        let contexts = context::contexts();
-        let context_lock = contexts.current().ok_or(Error::new(ESRCH))?;
-        let context = context_lock.read();
-        let file = context.get_file(fd).ok_or(Error::new(EBADF))?;
-        file
-    };
-
-    let scheme = {
-        let schemes = scheme::schemes();
-        let scheme = schemes.get(file.scheme).ok_or(Error::new(EBADF))?;
-        scheme.clone()
-    };
-    scheme.fstat(file.number, stat)
-}
-
-/// Sync the file descriptor
-pub fn fsync(fd: usize) -> Result<usize> {
-    let file = {
-        let contexts = context::contexts();
-        let context_lock = contexts.current().ok_or(Error::new(ESRCH))?;
-        let context = context_lock.read();
-        let file = context.get_file(fd).ok_or(Error::new(EBADF))?;
-        file
-    };
-
-    let scheme = {
-        let schemes = scheme::schemes();
-        let scheme = schemes.get(file.scheme).ok_or(Error::new(EBADF))?;
-        scheme.clone()
-    };
-    scheme.fsync(file.number)
-}
-
-/// Truncate the file descriptor
-pub fn ftruncate(fd: usize, len: usize) -> Result<usize> {
-    let file = {
-        let contexts = context::contexts();
-        let context_lock = contexts.current().ok_or(Error::new(ESRCH))?;
-        let context = context_lock.read();
-        let file = context.get_file(fd).ok_or(Error::new(EBADF))?;
-        file
-    };
-
-    let scheme = {
-        let schemes = scheme::schemes();
-        let scheme = schemes.get(file.scheme).ok_or(Error::new(EBADF))?;
-        scheme.clone()
-    };
-    scheme.ftruncate(file.number, len)
-}
-
-/// Seek to an offset
-pub fn lseek(fd: usize, pos: usize, whence: usize) -> Result<usize> {
-    let file = {
-        let contexts = context::contexts();
-        let context_lock = contexts.current().ok_or(Error::new(ESRCH))?;
-        let context = context_lock.read();
-        let file = context.get_file(fd).ok_or(Error::new(EBADF))?;
-        file
-    };
-
-    let scheme = {
-        let schemes = scheme::schemes();
-        let scheme = schemes.get(file.scheme).ok_or(Error::new(EBADF))?;
-        scheme.clone()
-    };
-    scheme.seek(file.number, pos, whence)
-}
-
-/// Read syscall
-pub fn read(fd: usize, buf: &mut [u8]) -> Result<usize> {
-    let file = {
-        let contexts = context::contexts();
-        let context_lock = contexts.current().ok_or(Error::new(ESRCH))?;
-        let context = context_lock.read();
-        let file = context.get_file(fd).ok_or(Error::new(EBADF))?;
-        file
-    };
-
-    let scheme = {
-        let schemes = scheme::schemes();
-        let scheme = schemes.get(file.scheme).ok_or(Error::new(EBADF))?;
-        scheme.clone()
-    };
-    scheme.read(file.number, buf)
-}
-
-/// Write syscall
-pub fn write(fd: usize, buf: &[u8]) -> Result<usize> {
-    let file = {
-        let contexts = context::contexts();
-        let context_lock = contexts.current().ok_or(Error::new(ESRCH))?;
-        let context = context_lock.read();
-        let file = context.get_file(fd).ok_or(Error::new(EBADF))?;
-        file
-    };
-
-    let scheme = {
-        let schemes = scheme::schemes();
-        let scheme = schemes.get(file.scheme).ok_or(Error::new(EBADF))?;
-        scheme.clone()
-    };
-    scheme.write(file.number, buf)
 }
