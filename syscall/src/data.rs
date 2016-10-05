@@ -28,7 +28,10 @@ impl DerefMut for Event {
 #[derive(Copy, Clone, Debug, Default)]
 #[repr(packed)]
 pub struct Packet {
-    pub id: usize,
+    pub id: u64,
+    pub pid: usize,
+    pub uid: u32,
+    pub gid: u32,
     pub a: usize,
     pub b: usize,
     pub c: usize,

@@ -258,6 +258,9 @@ fn main() {
                 if ! scheme.input.borrow().is_empty() && *scheme.requested.borrow() & EVENT_READ == EVENT_READ {
                     let event_packet = Packet {
                         id: 0,
+                        pid: 0,
+                        uid: 0,
+                        gid: 0,
                         a: syscall::number::SYS_FEVENT,
                         b: 0,
                         c: EVENT_READ,

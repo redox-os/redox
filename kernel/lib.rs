@@ -70,6 +70,7 @@
 #![feature(const_fn)]
 #![feature(drop_types_in_const)]
 #![feature(heap_api)]
+#![feature(integer_atomics)]
 #![feature(question_mark)]
 #![feature(never_type)]
 #![feature(thread_local)]

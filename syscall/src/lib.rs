@@ -86,8 +86,16 @@ pub fn getcwd(buf: &mut [u8]) -> Result<usize> {
     unsafe { syscall2(SYS_GETCWD, buf.as_mut_ptr() as usize, buf.len()) }
 }
 
+pub fn getgid() -> Result<usize> {
+    unsafe { syscall0(SYS_GETGID) }
+}
+
 pub fn getpid() -> Result<usize> {
     unsafe { syscall0(SYS_GETPID) }
+}
+
+pub fn getuid() -> Result<usize> {
+    unsafe { syscall0(SYS_GETUID) }
 }
 
 pub unsafe fn iopl(level: usize) -> Result<usize> {
@@ -140,6 +148,14 @@ pub fn read(fd: usize, buf: &mut [u8]) -> Result<usize> {
 
 pub fn rmdir(path: &str) -> Result<usize> {
     unsafe { syscall2(SYS_RMDIR, path.as_ptr() as usize, path.len()) }
+}
+
+pub fn setgid(gid: usize) -> Result<usize> {
+    unsafe { syscall1(SYS_SETGID, gid) }
+}
+
+pub fn setuid(uid: usize) -> Result<usize> {
+    unsafe { syscall1(SYS_SETUID, uid) }
 }
 
 pub fn unlink(path: &str) -> Result<usize> {

@@ -58,6 +58,8 @@ pub fn clone(flags: usize, stack_base: usize) -> Result<usize> {
     let ppid;
     let pid;
     {
+        let uid;
+        let gid;
         let arch;
         let vfork;
         let mut kfx_option = None;
@@ -78,6 +80,8 @@ pub fn clone(flags: usize, stack_base: usize) -> Result<usize> {
             let context = context_lock.read();
 
             ppid = context.id;
+            uid = context.uid;
+            gid = context.gid;
 
             arch = context.arch.clone();
 
@@ -249,6 +253,8 @@ pub fn clone(flags: usize, stack_base: usize) -> Result<usize> {
             pid = context.id;
 
             context.ppid = ppid;
+            context.uid = uid;
+            context.gid = gid;
 
             context.status = context::Status::Runnable;
 
@@ -452,6 +458,7 @@ pub fn exec(path: &[u8], arg_ptrs: &[[usize; 2]]) -> Result<usize> {
                     drop(context.stack.take());
                     context.grants = Arc::new(Mutex::new(Vec::new()));
 
+                    // Map and copy new segments
                     for segment in elf.segments() {
                         if segment.p_type == program_header::PT_LOAD {
                             let mut memory = context::memory::Memory::new(
@@ -488,6 +495,7 @@ pub fn exec(path: &[u8], arg_ptrs: &[[usize; 2]]) -> Result<usize> {
                         }
                     }
 
+                    // Map heap
                     context.heap = Some(context::memory::Memory::new(
                         VirtualAddress::new(arch::USER_HEAP_OFFSET),
                         0,
@@ -572,11 +580,25 @@ pub fn exec(path: &[u8], arg_ptrs: &[[usize; 2]]) -> Result<usize> {
     unsafe { usermode(entry, sp); }
 }
 
+pub fn getgid() -> Result<usize> {
+    let contexts = context::contexts();
+    let context_lock = contexts.current().ok_or(Error::new(ESRCH))?;
+    let context = context_lock.read();
+    Ok(context.gid as usize)
+}
+
 pub fn getpid() -> Result<usize> {
     let contexts = context::contexts();
     let context_lock = contexts.current().ok_or(Error::new(ESRCH))?;
     let context = context_lock.read();
     Ok(context.id)
+}
+
+pub fn getuid() -> Result<usize> {
+    let contexts = context::contexts();
+    let context_lock = contexts.current().ok_or(Error::new(ESRCH))?;
+    let context = context_lock.read();
+    Ok(context.uid as usize)
 }
 
 pub fn iopl(_level: usize) -> Result<usize> {
@@ -674,6 +696,34 @@ pub fn physunmap(virtual_address: usize) -> Result<usize> {
 pub fn sched_yield() -> Result<usize> {
     unsafe { context::switch(); }
     Ok(0)
+}
+
+pub fn setgid(gid: u32) -> Result<usize> {
+    let contexts = context::contexts();
+    let context_lock = contexts.current().ok_or(Error::new(ESRCH))?;
+    let mut context = context_lock.write();
+    if context.gid == 0 {
+        context.gid = gid;
+        Ok(0)
+    } else if context.gid == gid {
+        Ok(0)
+    } else {
+        Err(Error::new(EPERM))
+    }
+}
+
+pub fn setuid(uid: u32) -> Result<usize> {
+    let contexts = context::contexts();
+    let context_lock = contexts.current().ok_or(Error::new(ESRCH))?;
+    let mut context = context_lock.write();
+    if context.uid == 0 {
+        context.uid = uid;
+        Ok(0)
+    } else if context.uid == uid {
+        Ok(0)
+    } else {
+        Err(Error::new(EPERM))
+    }
 }
 
 pub fn virttophys(virtual_address: usize) -> Result<usize> {
