@@ -1,6 +1,6 @@
 use alloc::arc::Weak;
 use collections::{BTreeMap, VecDeque};
-use core::sync::atomic::{AtomicUsize, Ordering};
+use core::sync::atomic::{AtomicUsize, AtomicU64, Ordering};
 use core::{mem, usize};
 use spin::{Mutex, RwLock};
 
@@ -16,17 +16,17 @@ use syscall::scheme::Scheme;
 
 pub struct UserInner {
     pub scheme_id: AtomicUsize,
-    next_id: AtomicUsize,
+    next_id: AtomicU64,
     context: Weak<RwLock<Context>>,
     todo: Mutex<VecDeque<Packet>>,
-    done: Mutex<BTreeMap<usize, usize>>
+    done: Mutex<BTreeMap<u64, usize>>
 }
 
 impl UserInner {
     pub fn new(context: Weak<RwLock<Context>>) -> UserInner {
         UserInner {
             scheme_id: AtomicUsize::new(0),
-            next_id: AtomicUsize::new(1),
+            next_id: AtomicU64::new(1),
             context: context,
             todo: Mutex::new(VecDeque::new()),
             done: Mutex::new(BTreeMap::new())
@@ -34,10 +34,20 @@ impl UserInner {
     }
 
     pub fn call(&self, a: usize, b: usize, c: usize, d: usize) -> Result<usize> {
+        let (pid, uid, gid) = {
+            let contexts = context::contexts();
+            let context_lock = contexts.current().ok_or(Error::new(ESRCH))?;
+            let context = context_lock.read();
+            (context.id, context.uid, context.gid)
+        };
+
         let id = self.next_id.fetch_add(1, Ordering::SeqCst);
 
         let packet = Packet {
             id: id,
+            pid: pid,
+            uid: uid,
+            gid: gid,
             a: a,
             b: b,
             c: c,

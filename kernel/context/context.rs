@@ -22,6 +22,10 @@ pub struct Context {
     pub id: usize,
     /// The ID of the parent context
     pub ppid: usize,
+    /// The user id
+    pub uid: u32,
+    /// The group id
+    pub gid: u32,
     /// Status of context
     pub status: Status,
     /// Context running or not
@@ -58,6 +62,8 @@ impl Context {
         Context {
             id: id,
             ppid: 0,
+            uid: 0,
+            gid: 0,
             status: Status::Blocked,
             running: false,
             vfork: false,
@@ -87,6 +93,9 @@ impl Context {
                    .to_vec()
             } else if path.starts_with(b"./") {
                 let mut canon = cwd.clone();
+                if ! canon.ends_with(b"/") {
+                    canon.push(b'/');
+                }
                 canon.extend_from_slice(&path[2..]);
                 canon
             } else if path.starts_with(b"../") {

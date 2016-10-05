@@ -276,15 +276,18 @@ $(BUILD)/filesystem.bin: \
 		extrautils \
 		schemes \
 		filesystem/bin/getty \
+		filesystem/bin/id \
 		filesystem/bin/ion \
 		filesystem/bin/login \
 		filesystem/bin/smith
 	rm -rf $@ $(BUILD)/filesystem/
-	echo exit | cargo run --manifest-path schemes/redoxfs/Cargo.toml --bin redoxfs-utility $@
+	echo exit | cargo run --manifest-path schemes/redoxfs/Cargo.toml --bin redoxfs-utility $@ 8
 	mkdir -p $(BUILD)/filesystem/
 	cargo run --manifest-path schemes/redoxfs/Cargo.toml --bin redoxfs-fuse $@ $(BUILD)/filesystem/ &
 	sleep 2
 	-cp -RL filesystem/* $(BUILD)/filesystem/
+	-chown -R 0:0 $(BUILD)/filesystem/
+	-chown -R 1000:1000 $(BUILD)/filesystem/home/user/
 	sync
 	-fusermount -u $(BUILD)/filesystem/
 	rm -rf $(BUILD)/filesystem/

@@ -7,15 +7,15 @@ use octavo::octavo_digest::Digest;
 use octavo::octavo_digest::sha3::Sha512;
 use std::fs::File;
 use std::io::{Read, Write};
-use std::process::Command;
-use std::{env, io, str, thread};
+use std::process::{Command, CommandExt};
+use std::{io, str};
 use termion::input::TermRead;
 
 pub struct Passwd<'a> {
     user: &'a str,
     hash: &'a str,
-    uid: usize,
-    gid: usize,
+    uid: u32,
+    gid: u32,
     name: &'a str,
     home: &'a str,
     shell: &'a str
@@ -27,8 +27,8 @@ impl<'a> Passwd<'a> {
 
         let user = parts.next().ok_or(())?;
         let hash = parts.next().ok_or(())?;
-        let uid = parts.next().ok_or(())?.parse::<usize>().or(Err(()))?;
-        let gid = parts.next().ok_or(())?.parse::<usize>().or(Err(()))?;
+        let uid = parts.next().ok_or(())?.parse::<u32>().or(Err(()))?;
+        let gid = parts.next().ok_or(())?.parse::<u32>().or(Err(()))?;
         let name = parts.next().ok_or(())?;
         let home = parts.next().ok_or(())?;
         let shell = parts.next().ok_or(())?;
@@ -118,7 +118,10 @@ pub fn main() {
 
                 let mut command = Command::new(passwd.shell);
 
-                env::set_current_dir(passwd.home).unwrap();
+                command.uid(passwd.uid);
+                command.gid(passwd.gid);
+
+                command.current_dir(passwd.home);
 
                 command.env("USER", &user);
                 command.env("HOME", passwd.home);
