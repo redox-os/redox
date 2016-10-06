@@ -24,7 +24,7 @@ impl EventScheme {
 }
 
 impl Scheme for EventScheme {
-    fn open(&self, _path: &[u8], _flags: usize) -> Result<usize> {
+    fn open(&self, _path: &[u8], _flags: usize, _uid: u32, _gid: u32) -> Result<usize> {
         let handle = {
             let contexts = context::contexts();
             let context_lock = contexts.current().ok_or(Error::new(ESRCH))?;

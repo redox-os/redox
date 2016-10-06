@@ -35,7 +35,7 @@ impl InitFsScheme {
 }
 
 impl Scheme for InitFsScheme {
-    fn open(&self, path: &[u8], _flags: usize) -> Result<usize> {
+    fn open(&self, path: &[u8], _flags: usize, _uid: u32, _gid: u32) -> Result<usize> {
         let path_utf8 = str::from_utf8(path).map_err(|_err| Error::new(ENOENT))?;
         let path_trimmed = path_utf8.trim_matches('/');
 
@@ -46,7 +46,7 @@ impl Scheme for InitFsScheme {
                 self.handles.write().insert(id, Handle {
                     path: entry.0,
                     data: (entry.1).0,
-                    mode: if (entry.1).1 { MODE_DIR } else { MODE_FILE },
+                    mode: if (entry.1).1 { MODE_DIR |  0o755 } else { MODE_FILE | 0o744 },
                     seek: 0
                 });
 
@@ -130,6 +130,8 @@ impl Scheme for InitFsScheme {
         let handle = handles.get(&id).ok_or(Error::new(EBADF))?;
 
         stat.st_mode = handle.mode;
+        stat.st_uid = 0;
+        stat.st_gid = 0;
         stat.st_size = handle.data.len() as u64;
 
         Ok(0)

@@ -25,7 +25,7 @@ impl RootScheme {
 }
 
 impl Scheme for RootScheme {
-    fn open(&self, path: &[u8], _flags: usize) -> Result<usize> {
+    fn open(&self, path: &[u8], _flags: usize, _uid: u32, _gid: u32) -> Result<usize> {
         let context = {
             let contexts = context::contexts();
             let context = contexts.current().ok_or(Error::new(ESRCH))?;

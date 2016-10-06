@@ -7,7 +7,7 @@ use syscall::scheme::Scheme;
 pub struct IrqScheme;
 
 impl Scheme for IrqScheme {
-    fn open(&self, path: &[u8], _flags: usize) -> Result<usize> {
+    fn open(&self, path: &[u8], _flags: usize, _uid: u32, _gid: u32) -> Result<usize> {
         let path_str = str::from_utf8(path).or(Err(Error::new(ENOENT)))?;
 
         let id = path_str.parse::<usize>().or(Err(Error::new(ENOENT)))?;

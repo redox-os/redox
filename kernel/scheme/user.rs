@@ -218,7 +218,7 @@ impl UserScheme {
 }
 
 impl Scheme for UserScheme {
-    fn open(&self, path: &[u8], flags: usize) -> Result<usize> {
+    fn open(&self, path: &[u8], flags: usize, _uid: u32, _gid: u32) -> Result<usize> {
         let inner = self.inner.upgrade().ok_or(Error::new(ENODEV))?;
         let address = inner.capture(path)?;
         let result = inner.call(SYS_OPEN, address, path.len(), flags);
@@ -226,15 +226,15 @@ impl Scheme for UserScheme {
         result
     }
 
-    fn mkdir(&self, path: &[u8], mode: usize) -> Result<usize> {
+    fn mkdir(&self, path: &[u8], mode: u16, _uid: u32, _gid: u32) -> Result<usize> {
         let inner = self.inner.upgrade().ok_or(Error::new(ENODEV))?;
         let address = inner.capture(path)?;
-        let result = inner.call(SYS_MKDIR, address, path.len(), mode);
+        let result = inner.call(SYS_MKDIR, address, path.len(), mode as usize);
         let _ = inner.release(address);
         result
     }
 
-    fn rmdir(&self, path: &[u8]) -> Result<usize> {
+    fn rmdir(&self, path: &[u8], _uid: u32, _gid: u32) -> Result<usize> {
         let inner = self.inner.upgrade().ok_or(Error::new(ENODEV))?;
         let address = inner.capture(path)?;
         let result = inner.call(SYS_RMDIR, address, path.len(), 0);
@@ -242,7 +242,7 @@ impl Scheme for UserScheme {
         result
     }
 
-    fn unlink(&self, path: &[u8]) -> Result<usize> {
+    fn unlink(&self, path: &[u8], _uid: u32, _gid: u32) -> Result<usize> {
         let inner = self.inner.upgrade().ok_or(Error::new(ENODEV))?;
         let address = inner.capture(path)?;
         let result = inner.call(SYS_UNLINK, address, path.len(), 0);

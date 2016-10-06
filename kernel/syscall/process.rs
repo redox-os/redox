@@ -432,9 +432,33 @@ pub fn exec(path: &[u8], arg_ptrs: &[[usize; 2]]) -> Result<usize> {
             args.push(arg.to_vec()); // Must be moved into kernel space before exec unmaps all memory
         }
 
+        let (uid, gid) = {
+            let contexts = context::contexts();
+            let context_lock = contexts.current().ok_or(Error::new(ESRCH))?;
+            let context = context_lock.read();
+            (context.uid, context.gid)
+        };
+
         let file = syscall::open(path, 0)?;
         let mut stat = Stat::default();
         syscall::file_op_mut_slice(syscall::number::SYS_FSTAT, file, &mut stat)?;
+
+        let mut perm = stat.st_mode & 0o7;
+        if stat.st_uid == uid {
+            perm |= (stat.st_mode >> 6) & 0o7;
+        }
+        if stat.st_gid == gid {
+            perm |= (stat.st_mode >> 3) & 0o7;
+        }
+        if uid == 0 {
+            perm |= 0o7;
+        }
+
+        if perm & 0o1 != 0o1 {
+            let _ = syscall::close(file);
+            return Err(Error::new(EACCES));
+        }
+
         //TODO: Only read elf header, not entire file. Then read required segments
         let mut data = vec![0; stat.st_size as usize];
         syscall::file_op_mut_slice(syscall::number::SYS_READ, file, &mut data)?;
@@ -457,6 +481,14 @@ pub fn exec(path: &[u8], arg_ptrs: &[[usize; 2]]) -> Result<usize> {
                     drop(context.heap.take());
                     drop(context.stack.take());
                     context.grants = Arc::new(Mutex::new(Vec::new()));
+
+                    if stat.st_mode & syscall::flag::MODE_SETUID == syscall::flag::MODE_SETUID {
+                        context.uid = stat.st_uid;
+                    }
+
+                    if stat.st_mode & syscall::flag::MODE_SETGID == syscall::flag::MODE_SETGID {
+                        context.gid = stat.st_gid;
+                    }
 
                     // Map and copy new segments
                     for segment in elf.segments() {

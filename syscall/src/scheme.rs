@@ -5,10 +5,10 @@ use super::*;
 pub trait Scheme {
     fn handle(&self, packet: &mut Packet) {
         packet.a = Error::mux(match packet.a {
-            SYS_OPEN => self.open(unsafe { slice::from_raw_parts(packet.b as *const u8, packet.c) }, packet.d),
-            SYS_MKDIR => self.mkdir(unsafe { slice::from_raw_parts(packet.b as *const u8, packet.c) }, packet.d),
-            SYS_RMDIR => self.rmdir(unsafe { slice::from_raw_parts(packet.b as *const u8, packet.c) }),
-            SYS_UNLINK => self.unlink(unsafe { slice::from_raw_parts(packet.b as *const u8, packet.c) }),
+            SYS_OPEN => self.open(unsafe { slice::from_raw_parts(packet.b as *const u8, packet.c) }, packet.d, packet.uid, packet.gid),
+            SYS_MKDIR => self.mkdir(unsafe { slice::from_raw_parts(packet.b as *const u8, packet.c) }, packet.d as u16, packet.uid, packet.gid),
+            SYS_RMDIR => self.rmdir(unsafe { slice::from_raw_parts(packet.b as *const u8, packet.c) }, packet.uid, packet.gid),
+            SYS_UNLINK => self.unlink(unsafe { slice::from_raw_parts(packet.b as *const u8, packet.c) }, packet.uid, packet.gid),
 
             SYS_DUP => self.dup(packet.b),
             SYS_READ => self.read(packet.b, unsafe { slice::from_raw_parts_mut(packet.c as *mut u8, packet.d) }),
@@ -28,22 +28,22 @@ pub trait Scheme {
     /* Scheme operations */
 
     #[allow(unused_variables)]
-    fn open(&self, path: &[u8], flags: usize) -> Result<usize> {
+    fn open(&self, path: &[u8], flags: usize, uid: u32, gid: u32) -> Result<usize> {
         Err(Error::new(ENOENT))
     }
 
     #[allow(unused_variables)]
-    fn mkdir(&self, path: &[u8], mode: usize) -> Result<usize> {
+    fn mkdir(&self, path: &[u8], mode: u16, uid: u32, gid: u32) -> Result<usize> {
         Err(Error::new(ENOENT))
     }
 
     #[allow(unused_variables)]
-    fn rmdir(&self, path: &[u8]) -> Result<usize> {
+    fn rmdir(&self, path: &[u8], uid: u32, gid: u32) -> Result<usize> {
         Err(Error::new(ENOENT))
     }
 
     #[allow(unused_variables)]
-    fn unlink(&self, path: &[u8]) -> Result<usize> {
+    fn unlink(&self, path: &[u8], uid: u32, gid: u32) -> Result<usize> {
         Err(Error::new(ENOENT))
     }
 

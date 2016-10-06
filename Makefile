@@ -288,6 +288,8 @@ $(BUILD)/filesystem.bin: \
 	-cp -RL filesystem/* $(BUILD)/filesystem/
 	-chown -R 0:0 $(BUILD)/filesystem/
 	-chown -R 1000:1000 $(BUILD)/filesystem/home/user/
+	-chmod 700 $(BUILD)/filesystem/root/
+	-chmod 700 $(BUILD)/filesystem/home/user/
 	sync
 	-fusermount -u $(BUILD)/filesystem/
 	rm -rf $(BUILD)/filesystem/

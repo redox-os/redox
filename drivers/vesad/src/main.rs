@@ -70,7 +70,7 @@ impl DisplayScheme {
 }
 
 impl Scheme for DisplayScheme {
-    fn open(&self, path: &[u8], _flags: usize) -> Result<usize> {
+    fn open(&self, path: &[u8], _flags: usize, _uid: u32, _gid: u32) -> Result<usize> {
         if path == b"input" {
             Ok(1)
         } else {

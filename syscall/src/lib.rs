@@ -112,8 +112,8 @@ pub fn lseek(fd: usize, offset: isize, whence: usize) -> Result<usize> {
     unsafe { syscall3(SYS_LSEEK, fd, offset as usize, whence) }
 }
 
-pub fn mkdir(path: &str, mode: usize) -> Result<usize> {
-    unsafe { syscall3(SYS_MKDIR, path.as_ptr() as usize, path.len(), mode) }
+pub fn mkdir(path: &str, mode: u16) -> Result<usize> {
+    unsafe { syscall3(SYS_MKDIR, path.as_ptr() as usize, path.len(), mode as usize) }
 }
 
 pub fn nanosleep(req: &TimeSpec, rem: &mut TimeSpec) -> Result<usize> {

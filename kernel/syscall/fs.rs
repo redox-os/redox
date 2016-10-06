@@ -2,7 +2,7 @@
 
 use context;
 use scheme;
-use syscall::data::{Packet, Stat};
+use syscall::data::Packet;
 use syscall::error::*;
 
 pub fn file_op(a: usize, fd: usize, c: usize, d: usize) -> Result<usize> {
@@ -70,11 +70,11 @@ pub fn getcwd(buf: &mut [u8]) -> Result<usize> {
 
 /// Open syscall
 pub fn open(path: &[u8], flags: usize) -> Result<usize> {
-    let path_canon = {
+    let (path_canon, uid, gid) = {
         let contexts = context::contexts();
         let context_lock = contexts.current().ok_or(Error::new(ESRCH))?;
         let context = context_lock.read();
-        context.canonicalize(path)
+        (context.canonicalize(path), context.uid, context.gid)
     };
 
     let mut parts = path_canon.splitn(2, |&b| b == b':');
@@ -88,7 +88,7 @@ pub fn open(path: &[u8], flags: usize) -> Result<usize> {
             let (scheme_id, scheme) = schemes.get_name(namespace).ok_or(Error::new(ENOENT))?;
             (scheme_id, scheme.clone())
         };
-        let file_id = scheme.open(reference_opt.unwrap_or(b""), flags)?;
+        let file_id = scheme.open(reference_opt.unwrap_or(b""), flags, uid, gid)?;
         (scheme_id, file_id)
     };
 
@@ -102,12 +102,12 @@ pub fn open(path: &[u8], flags: usize) -> Result<usize> {
 }
 
 /// mkdir syscall
-pub fn mkdir(path: &[u8], mode: usize) -> Result<usize> {
-    let path_canon = {
+pub fn mkdir(path: &[u8], mode: u16) -> Result<usize> {
+    let (path_canon, uid, gid) = {
         let contexts = context::contexts();
         let context_lock = contexts.current().ok_or(Error::new(ESRCH))?;
         let context = context_lock.read();
-        context.canonicalize(path)
+        (context.canonicalize(path), context.uid, context.gid)
     };
 
     let mut parts = path_canon.splitn(2, |&b| b == b':');
@@ -120,16 +120,16 @@ pub fn mkdir(path: &[u8], mode: usize) -> Result<usize> {
         let (_scheme_id, scheme) = schemes.get_name(namespace).ok_or(Error::new(ENOENT))?;
         scheme.clone()
     };
-    scheme.mkdir(reference_opt.unwrap_or(b""), mode)
+    scheme.mkdir(reference_opt.unwrap_or(b""), mode, uid, gid)
 }
 
 /// rmdir syscall
 pub fn rmdir(path: &[u8]) -> Result<usize> {
-    let path_canon = {
+    let (path_canon, uid, gid) = {
         let contexts = context::contexts();
         let context_lock = contexts.current().ok_or(Error::new(ESRCH))?;
         let context = context_lock.read();
-        context.canonicalize(path)
+        (context.canonicalize(path), context.uid, context.gid)
     };
 
     let mut parts = path_canon.splitn(2, |&b| b == b':');
@@ -142,16 +142,16 @@ pub fn rmdir(path: &[u8]) -> Result<usize> {
         let (_scheme_id, scheme) = schemes.get_name(namespace).ok_or(Error::new(ENOENT))?;
         scheme.clone()
     };
-    scheme.rmdir(reference_opt.unwrap_or(b""))
+    scheme.rmdir(reference_opt.unwrap_or(b""), uid, gid)
 }
 
 /// Unlink syscall
 pub fn unlink(path: &[u8]) -> Result<usize> {
-    let path_canon = {
+    let (path_canon, uid, gid) = {
         let contexts = context::contexts();
         let context_lock = contexts.current().ok_or(Error::new(ESRCH))?;
         let context = context_lock.read();
-        context.canonicalize(path)
+        (context.canonicalize(path), context.uid, context.gid)
     };
 
     let mut parts = path_canon.splitn(2, |&b| b == b':');
@@ -164,7 +164,7 @@ pub fn unlink(path: &[u8]) -> Result<usize> {
         let (_scheme_id, scheme) = schemes.get_name(namespace).ok_or(Error::new(ENOENT))?;
         scheme.clone()
     };
-    scheme.unlink(reference_opt.unwrap_or(b""))
+    scheme.unlink(reference_opt.unwrap_or(b""), uid, gid)
 }
 
 /// Close syscall

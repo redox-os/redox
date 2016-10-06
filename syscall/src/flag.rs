@@ -25,25 +25,30 @@ pub const FUTEX_REQUEUE: usize = 2;
 pub const MAP_WRITE: usize = 1;
 pub const MAP_WRITE_COMBINE: usize = 2;
 
+pub const MODE_TYPE: u16 = 0xF000;
 pub const MODE_DIR: u16 = 0x4000;
 pub const MODE_FILE: u16 = 0x8000;
-pub const MODE_ALL: u16 = MODE_DIR | MODE_FILE;
+
+pub const MODE_PERM: u16 = 0x0FFF;
+pub const MODE_SETUID: u16 = 0o4000;
+pub const MODE_SETGID: u16 = 0o2000;
 
 pub const SEEK_SET: usize = 0;
 pub const SEEK_CUR: usize = 1;
 pub const SEEK_END: usize = 2;
 
-pub const O_RDONLY: usize = 0;
-pub const O_WRONLY: usize = 1;
-pub const O_RDWR: usize = 2;
-pub const O_NONBLOCK: usize = 4;
-pub const O_APPEND: usize = 8;
-pub const O_SHLOCK: usize = 0x10;
-pub const O_EXLOCK: usize = 0x20;
-pub const O_ASYNC: usize = 0x40;
-pub const O_FSYNC: usize = 0x80;
-pub const O_CREAT: usize = 0x200;
-pub const O_TRUNC: usize = 0x400;
-pub const O_EXCL: usize = 0x800;
+pub const O_RDONLY: usize =     0x0000_0000;
+pub const O_WRONLY: usize =     0x0001_0000;
+pub const O_RDWR: usize =       0x0002_0000;
+pub const O_NONBLOCK: usize =   0x0004_0000;
+pub const O_APPEND: usize =     0x0008_0000;
+pub const O_SHLOCK: usize =     0x0010_0000;
+pub const O_EXLOCK: usize =     0x0020_0000;
+pub const O_ASYNC: usize =      0x0040_0000;
+pub const O_FSYNC: usize =      0x0080_0000;
+pub const O_CLOEXEC: usize =    0x0100_0000;
+pub const O_CREAT: usize =      0x0200_0000;
+pub const O_TRUNC: usize =      0x0400_0000;
+pub const O_EXCL: usize =       0x0800_0000;
 
 pub const WNOHANG: usize = 1;
