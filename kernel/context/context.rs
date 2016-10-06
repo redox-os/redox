@@ -22,10 +22,14 @@ pub struct Context {
     pub id: usize,
     /// The ID of the parent context
     pub ppid: usize,
-    /// The user id
-    pub uid: u32,
-    /// The group id
-    pub gid: u32,
+    /// The real user id
+    pub ruid: u32,
+    /// The real group id
+    pub rgid: u32,
+    /// The effective user id
+    pub euid: u32,
+    /// The effective group id
+    pub egid: u32,
     /// Status of context
     pub status: Status,
     /// Context running or not
@@ -62,8 +66,10 @@ impl Context {
         Context {
             id: id,
             ppid: 0,
-            uid: 0,
-            gid: 0,
+            ruid: 0,
+            rgid: 0,
+            euid: 0,
+            egid: 0,
             status: Status::Blocked,
             running: false,
             vfork: false,

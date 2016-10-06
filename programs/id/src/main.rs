@@ -1,5 +1,3 @@
-#![feature(question_mark)]
-
 extern crate syscall;
 
 use std::env;

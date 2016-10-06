@@ -1,7 +1,7 @@
 ///! Process syscalls
 use alloc::arc::Arc;
 use alloc::boxed::Box;
-use collections::Vec;
+use collections::{BTreeMap, Vec};
 use core::mem;
 use core::str;
 use spin::Mutex;
@@ -58,8 +58,10 @@ pub fn clone(flags: usize, stack_base: usize) -> Result<usize> {
     let ppid;
     let pid;
     {
-        let uid;
-        let gid;
+        let ruid;
+        let rgid;
+        let euid;
+        let egid;
         let arch;
         let vfork;
         let mut kfx_option = None;
@@ -80,8 +82,10 @@ pub fn clone(flags: usize, stack_base: usize) -> Result<usize> {
             let context = context_lock.read();
 
             ppid = context.id;
-            uid = context.uid;
-            gid = context.gid;
+            ruid = context.ruid;
+            rgid = context.rgid;
+            euid = context.euid;
+            egid = context.egid;
 
             arch = context.arch.clone();
 
@@ -191,7 +195,11 @@ pub fn clone(flags: usize, stack_base: usize) -> Result<usize> {
             if flags & CLONE_VM == CLONE_VM {
                 env = context.env.clone();
             } else {
-                env = Arc::new(Mutex::new(context.env.lock().clone()));
+                let mut new_env = BTreeMap::new();
+                for item in context.env.lock().iter() {
+                    new_env.insert(item.0.clone(), Arc::new(Mutex::new(item.1.lock().clone())));
+                }
+                env = Arc::new(Mutex::new(new_env));
             }
 
             if flags & CLONE_FILES == CLONE_FILES {
@@ -253,8 +261,10 @@ pub fn clone(flags: usize, stack_base: usize) -> Result<usize> {
             pid = context.id;
 
             context.ppid = ppid;
-            context.uid = uid;
-            context.gid = gid;
+            context.ruid = ruid;
+            context.rgid = rgid;
+            context.euid = euid;
+            context.egid = egid;
 
             context.status = context::Status::Runnable;
 
@@ -436,7 +446,7 @@ pub fn exec(path: &[u8], arg_ptrs: &[[usize; 2]]) -> Result<usize> {
             let contexts = context::contexts();
             let context_lock = contexts.current().ok_or(Error::new(ESRCH))?;
             let context = context_lock.read();
-            (context.uid, context.gid)
+            (context.euid, context.egid)
         };
 
         let file = syscall::open(path, 0)?;
@@ -483,11 +493,11 @@ pub fn exec(path: &[u8], arg_ptrs: &[[usize; 2]]) -> Result<usize> {
                     context.grants = Arc::new(Mutex::new(Vec::new()));
 
                     if stat.st_mode & syscall::flag::MODE_SETUID == syscall::flag::MODE_SETUID {
-                        context.uid = stat.st_uid;
+                        context.euid = stat.st_uid;
                     }
 
                     if stat.st_mode & syscall::flag::MODE_SETGID == syscall::flag::MODE_SETGID {
-                        context.gid = stat.st_gid;
+                        context.egid = stat.st_gid;
                     }
 
                     // Map and copy new segments
@@ -612,11 +622,25 @@ pub fn exec(path: &[u8], arg_ptrs: &[[usize; 2]]) -> Result<usize> {
     unsafe { usermode(entry, sp); }
 }
 
+pub fn getegid() -> Result<usize> {
+    let contexts = context::contexts();
+    let context_lock = contexts.current().ok_or(Error::new(ESRCH))?;
+    let context = context_lock.read();
+    Ok(context.egid as usize)
+}
+
+pub fn geteuid() -> Result<usize> {
+    let contexts = context::contexts();
+    let context_lock = contexts.current().ok_or(Error::new(ESRCH))?;
+    let context = context_lock.read();
+    Ok(context.euid as usize)
+}
+
 pub fn getgid() -> Result<usize> {
     let contexts = context::contexts();
     let context_lock = contexts.current().ok_or(Error::new(ESRCH))?;
     let context = context_lock.read();
-    Ok(context.gid as usize)
+    Ok(context.rgid as usize)
 }
 
 pub fn getpid() -> Result<usize> {
@@ -630,7 +654,7 @@ pub fn getuid() -> Result<usize> {
     let contexts = context::contexts();
     let context_lock = contexts.current().ok_or(Error::new(ESRCH))?;
     let context = context_lock.read();
-    Ok(context.uid as usize)
+    Ok(context.ruid as usize)
 }
 
 pub fn iopl(_level: usize) -> Result<usize> {
@@ -734,10 +758,9 @@ pub fn setgid(gid: u32) -> Result<usize> {
     let contexts = context::contexts();
     let context_lock = contexts.current().ok_or(Error::new(ESRCH))?;
     let mut context = context_lock.write();
-    if context.gid == 0 {
-        context.gid = gid;
-        Ok(0)
-    } else if context.gid == gid {
+    if context.egid == 0 {
+        context.rgid = gid;
+        context.egid = gid;
         Ok(0)
     } else {
         Err(Error::new(EPERM))
@@ -748,10 +771,9 @@ pub fn setuid(uid: u32) -> Result<usize> {
     let contexts = context::contexts();
     let context_lock = contexts.current().ok_or(Error::new(ESRCH))?;
     let mut context = context_lock.write();
-    if context.uid == 0 {
-        context.uid = uid;
-        Ok(0)
-    } else if context.uid == uid {
+    if context.euid == 0 {
+        context.ruid = uid;
+        context.euid = uid;
         Ok(0)
     } else {
         Err(Error::new(EPERM))

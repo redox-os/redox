@@ -29,9 +29,12 @@ clean:
 	cargo clean --manifest-path drivers/pcid/Cargo.toml
 	cargo clean --manifest-path drivers/vesad/Cargo.toml
 	cargo clean --manifest-path programs/getty/Cargo.toml
+	cargo clean --manifest-path programs/id/Cargo.toml
 	cargo clean --manifest-path programs/init/Cargo.toml
+	cargo clean --manifest-path programs/sudo/Cargo.toml
 	cargo clean --manifest-path programs/ion/Cargo.toml
 	cargo clean --manifest-path programs/login/Cargo.toml
+	cargo clean --manifest-path programs/sudo/Cargo.toml
 	cargo clean --manifest-path programs/coreutils/Cargo.toml
 	cargo clean --manifest-path programs/extrautils/Cargo.toml
 	cargo clean --manifest-path programs/smith/Cargo.toml
@@ -279,7 +282,8 @@ $(BUILD)/filesystem.bin: \
 		filesystem/bin/id \
 		filesystem/bin/ion \
 		filesystem/bin/login \
-		filesystem/bin/smith
+		filesystem/bin/smith \
+		filesystem/bin/sudo
 	rm -rf $@ $(BUILD)/filesystem/
 	echo exit | cargo run --manifest-path schemes/redoxfs/Cargo.toml --bin redoxfs-utility $@ 8
 	mkdir -p $(BUILD)/filesystem/
@@ -290,6 +294,7 @@ $(BUILD)/filesystem.bin: \
 	-chown -R 1000:1000 $(BUILD)/filesystem/home/user/
 	-chmod 700 $(BUILD)/filesystem/root/
 	-chmod 700 $(BUILD)/filesystem/home/user/
+	-chmod +s $(BUILD)/filesystem/bin/sudo
 	sync
 	-fusermount -u $(BUILD)/filesystem/
 	rm -rf $(BUILD)/filesystem/

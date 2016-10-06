@@ -88,6 +88,14 @@ pub fn getcwd(buf: &mut [u8]) -> Result<usize> {
     unsafe { syscall2(SYS_GETCWD, buf.as_mut_ptr() as usize, buf.len()) }
 }
 
+pub fn getegid() -> Result<usize> {
+    unsafe { syscall0(SYS_GETEGID) }
+}
+
+pub fn geteuid() -> Result<usize> {
+    unsafe { syscall0(SYS_GETEUID) }
+}
+
 pub fn getgid() -> Result<usize> {
     unsafe { syscall0(SYS_GETGID) }
 }

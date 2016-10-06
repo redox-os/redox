@@ -6,9 +6,10 @@ extern crate termion;
 use octavo::octavo_digest::Digest;
 use octavo::octavo_digest::sha3::Sha512;
 use std::fs::File;
-use std::io::{Read, Write};
-use std::process::{Command, CommandExt};
-use std::{io, str};
+use std::io::{self, Read, Write};
+use std::os::unix::process::CommandExt;
+use std::process::Command;
+use std::str;
 use termion::input::TermRead;
 
 pub struct Passwd<'a> {

@@ -55,6 +55,8 @@ pub extern fn syscall(a: usize, b: usize, c: usize, d: usize, e: usize, f: usize
                 SYS_GETCWD => getcwd(validate_slice_mut(b as *mut u8, c)?),
                 SYS_GETUID => getuid(),
                 SYS_GETGID => getgid(),
+                SYS_GETEUID => geteuid(),
+                SYS_GETEGID => getegid(),
                 SYS_SETUID => setuid(b as u32),
                 SYS_SETGID => setgid(b as u32),
                 SYS_PHYSALLOC => physalloc(b),

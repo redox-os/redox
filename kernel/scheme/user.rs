@@ -38,7 +38,7 @@ impl UserInner {
             let contexts = context::contexts();
             let context_lock = contexts.current().ok_or(Error::new(ESRCH))?;
             let context = context_lock.read();
-            (context.id, context.uid, context.gid)
+            (context.id, context.euid, context.egid)
         };
 
         let id = self.next_id.fetch_add(1, Ordering::SeqCst);

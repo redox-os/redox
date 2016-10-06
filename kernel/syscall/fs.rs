@@ -11,7 +11,7 @@ pub fn file_op(a: usize, fd: usize, c: usize, d: usize) -> Result<usize> {
         let context_lock = contexts.current().ok_or(Error::new(ESRCH))?;
         let context = context_lock.read();
         let file = context.get_file(fd).ok_or(Error::new(EBADF))?;
-        (file, context.id, context.uid, context.gid)
+        (file, context.id, context.euid, context.egid)
     };
 
     let scheme = {
@@ -74,7 +74,7 @@ pub fn open(path: &[u8], flags: usize) -> Result<usize> {
         let contexts = context::contexts();
         let context_lock = contexts.current().ok_or(Error::new(ESRCH))?;
         let context = context_lock.read();
-        (context.canonicalize(path), context.uid, context.gid)
+        (context.canonicalize(path), context.euid, context.egid)
     };
 
     let mut parts = path_canon.splitn(2, |&b| b == b':');
@@ -107,7 +107,7 @@ pub fn mkdir(path: &[u8], mode: u16) -> Result<usize> {
         let contexts = context::contexts();
         let context_lock = contexts.current().ok_or(Error::new(ESRCH))?;
         let context = context_lock.read();
-        (context.canonicalize(path), context.uid, context.gid)
+        (context.canonicalize(path), context.euid, context.egid)
     };
 
     let mut parts = path_canon.splitn(2, |&b| b == b':');
@@ -129,7 +129,7 @@ pub fn rmdir(path: &[u8]) -> Result<usize> {
         let contexts = context::contexts();
         let context_lock = contexts.current().ok_or(Error::new(ESRCH))?;
         let context = context_lock.read();
-        (context.canonicalize(path), context.uid, context.gid)
+        (context.canonicalize(path), context.euid, context.egid)
     };
 
     let mut parts = path_canon.splitn(2, |&b| b == b':');
@@ -151,7 +151,7 @@ pub fn unlink(path: &[u8]) -> Result<usize> {
         let contexts = context::contexts();
         let context_lock = contexts.current().ok_or(Error::new(ESRCH))?;
         let context = context_lock.read();
-        (context.canonicalize(path), context.uid, context.gid)
+        (context.canonicalize(path), context.euid, context.egid)
     };
 
     let mut parts = path_canon.splitn(2, |&b| b == b':');
