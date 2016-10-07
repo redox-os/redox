@@ -191,7 +191,7 @@ pub unsafe fn usermode(ip: usize, sp: usize) -> ! {
         : // No output because it never returns
         :   "{rax}"(gdt::GDT_USER_DATA << 3 | 3), // Stack segment
             "{rbx}"(sp), // Stack pointer
-            "{rcx}"(3 << 12/* | 1 << 9*/), // Flags - Set IOPL and interrupt enable flag
+            "{rcx}"(3 << 12 | 1 << 9), // Flags - Set IOPL and interrupt enable flag
             "{rdx}"(gdt::GDT_USER_CODE << 3 | 3), // Code segment
             "{rsi}"(ip) // IP
         : // No clobers because it never returns
