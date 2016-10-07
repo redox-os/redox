@@ -11,6 +11,7 @@ pub const CLONE_VFORK: usize = 0x4000;
 /// This is an important security measure, since otherwise the process would be able to fork it
 /// self right after starting, making supervising it impossible.
 pub const CLONE_SUPERVISE: usize = 0x400000;
+
 pub const CLOCK_REALTIME: usize = 1;
 pub const CLOCK_MONOTONIC: usize = 4;
 

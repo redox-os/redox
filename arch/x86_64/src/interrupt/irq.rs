@@ -2,6 +2,7 @@ use spin::Mutex;
 use x86::io;
 
 use device::serial::{COM1, COM2};
+use time;
 
 pub static ACKS: Mutex<[usize; 16]> = Mutex::new([0; 16]);
 pub static COUNTS: Mutex<[usize; 16]> = Mutex::new([0; 16]);
@@ -27,6 +28,16 @@ pub unsafe fn acknowledge(irq: usize) {
 
 interrupt!(pit, {
     COUNTS.lock()[0] += 1;
+
+    {
+        const PIT_RATE: u64 = 46500044;
+        
+        let mut offset = time::OFFSET.lock();
+        let sum = offset.1 + PIT_RATE;
+        offset.1 = sum % 1000000000;
+        offset.0 += sum / 1000000000;
+    }
+
     master_ack();
 });
 

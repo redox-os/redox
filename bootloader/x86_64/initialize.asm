@@ -38,7 +38,7 @@ initialize:
 
 .pit:
     ;initialize the PIT
-    mov ax, 65535 ;5370 ;this is the divider for the PIT
+    mov ax, 55483 ;5370 ;this is the divider for the PIT
     out 0x40, al
     rol ax, 8
     out 0x40, al

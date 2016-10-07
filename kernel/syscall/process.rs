@@ -770,11 +770,6 @@ pub fn physunmap(virtual_address: usize) -> Result<usize> {
     }
 }
 
-pub fn sched_yield() -> Result<usize> {
-    unsafe { context::switch(); }
-    Ok(0)
-}
-
 pub fn setgid(gid: u32) -> Result<usize> {
     let contexts = context::contexts();
     let context_lock = contexts.current().ok_or(Error::new(ESRCH))?;

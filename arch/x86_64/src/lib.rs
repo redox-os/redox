@@ -218,3 +218,6 @@ pub mod panic;
 
 /// Initialization and start function
 pub mod start;
+
+/// Time
+pub mod time;

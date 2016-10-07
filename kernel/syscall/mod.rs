@@ -6,8 +6,10 @@ pub use self::syscall::{data, error, flag, number, scheme};
 
 pub use self::fs::*;
 pub use self::process::*;
+pub use self::time::*;
 pub use self::validate::*;
 
+use self::data::TimeSpec;
 use self::error::{Error, Result, ENOSYS};
 use self::number::*;
 
@@ -16,6 +18,9 @@ pub mod fs;
 
 /// Process syscalls
 pub mod process;
+
+/// Time syscalls
+pub mod time;
 
 /// Validate input
 pub mod validate;
@@ -52,6 +57,7 @@ pub extern fn syscall(a: usize, b: usize, c: usize, d: usize, e: usize, f: usize
                 SYS_IOPL => iopl(b),
                 SYS_CLONE => clone(b, stack),
                 SYS_YIELD => sched_yield(),
+                SYS_NANOSLEEP => nanosleep(validate_slice(b as *const TimeSpec, 1).map(|req| &req[0])?, validate_slice_mut(c as *mut TimeSpec, 1).ok().map(|rem| &mut rem[0])),
                 SYS_GETCWD => getcwd(validate_slice_mut(b as *mut u8, c)?),
                 SYS_GETUID => getuid(),
                 SYS_GETGID => getgid(),
@@ -59,6 +65,7 @@ pub extern fn syscall(a: usize, b: usize, c: usize, d: usize, e: usize, f: usize
                 SYS_GETEGID => getegid(),
                 SYS_SETUID => setuid(b as u32),
                 SYS_SETGID => setgid(b as u32),
+                SYS_CLOCK_GETTIME => clock_gettime(b, validate_slice_mut(c as *mut TimeSpec, 1).map(|time| &mut time[0])?),
                 SYS_PIPE2 => pipe2(validate_slice_mut(b as *mut usize, 2)?, c),
                 SYS_PHYSALLOC => physalloc(b),
                 SYS_PHYSFREE => physfree(b, c),

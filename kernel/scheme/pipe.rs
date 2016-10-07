@@ -3,7 +3,6 @@ use collections::{BTreeMap, VecDeque};
 use core::sync::atomic::{AtomicUsize, ATOMIC_USIZE_INIT, Ordering};
 use spin::{Mutex, Once, RwLock, RwLockReadGuard, RwLockWriteGuard};
 
-use context;
 use syscall::error::{Error, Result, EBADF, EPIPE};
 use syscall::scheme::Scheme;
 
