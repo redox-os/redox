@@ -28,6 +28,7 @@ struct DisplayScheme {
     display: RefCell<Display>,
     changed: RefCell<BTreeSet<usize>>,
     input: RefCell<VecDeque<u8>>,
+    end_of_input: RefCell<bool>,
     cooked: RefCell<VecDeque<u8>>,
     requested: RefCell<usize>
 }
@@ -124,6 +125,9 @@ impl Scheme for DisplayScheme {
             buf[i] = input.pop_front().unwrap();
             i += 1;
         }
+        if i == 0 {
+            *self.end_of_input.borrow_mut() = false;
+        }
         Ok(i)
     }
 
@@ -136,6 +140,10 @@ impl Scheme for DisplayScheme {
             } else {
                 for &b in buf.iter() {
                     match b {
+                        b'\x03' => {
+                            *self.end_of_input.borrow_mut() = true;
+                            self.write(0, b"^C\n")?;
+                        },
                         b'\x08' | b'\x7F' => {
                             if let Some(_c) = self.cooked.borrow_mut().pop_back() {
                                 self.write(0, b"\x08")?;
@@ -226,6 +234,7 @@ fn main() {
                 )),
                 changed: RefCell::new(BTreeSet::new()),
                 input: RefCell::new(VecDeque::new()),
+                end_of_input: RefCell::new(false),
                 cooked: RefCell::new(VecDeque::new()),
                 requested: RefCell::new(0)
             };
@@ -237,7 +246,14 @@ fn main() {
                 //println!("vesad: {:?}", packet);
 
                 // If it is a read packet, and there is no data, block it. Otherwise, handle packet
+                let mut block = false;
                 if packet.a == syscall::number::SYS_READ && packet.d > 0 && scheme.input.borrow().is_empty() {
+                    if ! *scheme.end_of_input.borrow() {
+                        block = true;
+                    }
+                }
+
+                if block {
                     blocked.push_back(packet);
                 } else {
                     scheme.handle(&mut packet);
@@ -245,7 +261,7 @@ fn main() {
                 }
 
                 // If there are blocked readers, and data is available, handle them
-                while ! scheme.input.borrow().is_empty() {
+                while ! scheme.input.borrow().is_empty() || *scheme.end_of_input.borrow() {
                     if let Some(mut packet) = blocked.pop_front() {
                         scheme.handle(&mut packet);
                         socket.write(&packet).expect("vesad: failed to write display scheme");
@@ -255,7 +271,7 @@ fn main() {
                 }
 
                 // If there are requested events, and data is available, send a notification
-                if ! scheme.input.borrow().is_empty() && *scheme.requested.borrow() & EVENT_READ == EVENT_READ {
+                if (! scheme.input.borrow().is_empty() || *scheme.end_of_input.borrow()) && *scheme.requested.borrow() & EVENT_READ == EVENT_READ {
                     let event_packet = Packet {
                         id: 0,
                         pid: 0,
