@@ -28,15 +28,11 @@ clean:
 	cargo clean --manifest-path drivers/ps2d/Cargo.toml
 	cargo clean --manifest-path drivers/pcid/Cargo.toml
 	cargo clean --manifest-path drivers/vesad/Cargo.toml
-	cargo clean --manifest-path programs/getty/Cargo.toml
-	cargo clean --manifest-path programs/id/Cargo.toml
 	cargo clean --manifest-path programs/init/Cargo.toml
-	cargo clean --manifest-path programs/sudo/Cargo.toml
 	cargo clean --manifest-path programs/ion/Cargo.toml
-	cargo clean --manifest-path programs/login/Cargo.toml
-	cargo clean --manifest-path programs/sudo/Cargo.toml
 	cargo clean --manifest-path programs/coreutils/Cargo.toml
 	cargo clean --manifest-path programs/extrautils/Cargo.toml
+	cargo clean --manifest-path programs/userutils/Cargo.toml
 	cargo clean --manifest-path programs/smith/Cargo.toml
 	cargo clean --manifest-path schemes/example/Cargo.toml
 	cargo clean --manifest-path schemes/redoxfs/Cargo.toml
@@ -217,6 +213,12 @@ filesystem/bin/%: programs/extrautils/Cargo.toml programs/extrautils/src/bin/%.r
 	strip $@
 	rm $@.d
 
+filesystem/bin/%: programs/userutils/Cargo.toml programs/userutils/src/bin/%.rs $(BUILD)/libstd.rlib
+	mkdir -p filesystem/bin
+	$(CARGO) rustc --manifest-path $< --bin $* $(CARGOFLAGS) -o $@
+	strip $@
+	rm $@.d
+
 filesystem/bin/%: schemes/%/Cargo.toml schemes/%/src/** $(BUILD)/libstd.rlib
 	mkdir -p filesystem/bin
 	$(CARGO) rustc --manifest-path $< --bin $* $(CARGOFLAGS) -o $@
@@ -269,6 +271,12 @@ extrautils: \
 	filesystem/bin/rem \
 	#filesystem/bin/dmesg filesystem/bin/info filesystem/bin/man filesystem/bin/watch
 
+userutils: \
+	filesystem/bin/getty \
+	filesystem/bin/id \
+	filesystem/bin/login \
+	filesystem/bin/su \
+	filesystem/bin/sudo
 
 schemes: \
 	filesystem/bin/example
@@ -277,13 +285,10 @@ $(BUILD)/filesystem.bin: \
 		drivers \
 		coreutils \
 		extrautils \
+		userutils \
 		schemes \
-		filesystem/bin/getty \
-		filesystem/bin/id \
 		filesystem/bin/ion \
-		filesystem/bin/login \
-		filesystem/bin/smith \
-		filesystem/bin/sudo
+		filesystem/bin/smith
 	rm -rf $@ $(BUILD)/filesystem/
 	echo exit | cargo run --manifest-path schemes/redoxfs/Cargo.toml --bin redoxfs-utility $@ 8
 	mkdir -p $(BUILD)/filesystem/
@@ -294,6 +299,7 @@ $(BUILD)/filesystem.bin: \
 	-chown -R 1000:1000 $(BUILD)/filesystem/home/user/
 	-chmod 700 $(BUILD)/filesystem/root/
 	-chmod 700 $(BUILD)/filesystem/home/user/
+	-chmod +s $(BUILD)/filesystem/bin/su
 	-chmod +s $(BUILD)/filesystem/bin/sudo
 	sync
 	-fusermount -u $(BUILD)/filesystem/

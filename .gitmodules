@@ -25,3 +25,6 @@
 [submodule "programs/smith"]
 	path = programs/smith
 	url = https://github.com/IGI-111/Smith.git
+[submodule "programs/userutils"]
+	path = programs/userutils
+	url = https://github.com/redox-os/userutils.git
