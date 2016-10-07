@@ -59,6 +59,7 @@ pub extern fn syscall(a: usize, b: usize, c: usize, d: usize, e: usize, f: usize
                 SYS_GETEGID => getegid(),
                 SYS_SETUID => setuid(b as u32),
                 SYS_SETGID => setgid(b as u32),
+                SYS_PIPE2 => pipe2(validate_slice_mut(b as *mut usize, 2)?, c),
                 SYS_PHYSALLOC => physalloc(b),
                 SYS_PHYSFREE => physfree(b, c),
                 SYS_PHYSMAP => physmap(b, c, d),
@@ -72,7 +73,7 @@ pub extern fn syscall(a: usize, b: usize, c: usize, d: usize, e: usize, f: usize
     let result = inner(a, b, c, d, e, f, stack);
 
     if let Err(ref err) = result {
-        println!("{}, {}, {}, {}: {}", a, b, c, d, err);
+        println!("{}, {}, {}, {}: {}", a & 0xFFFF, b, c, d, err);
     }
 
     Error::mux(result)

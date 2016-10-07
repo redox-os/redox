@@ -20,6 +20,7 @@ use self::event::EventScheme;
 use self::env::EnvScheme;
 use self::initfs::InitFsScheme;
 use self::irq::IrqScheme;
+use self::pipe::{PIPE_SCHEME_ID, PipeScheme};
 use self::root::RootScheme;
 
 /// Debug scheme
@@ -36,6 +37,9 @@ pub mod initfs;
 
 /// IRQ handling
 pub mod irq;
+
+/// Anonymouse pipe
+pub mod pipe;
 
 /// Root scheme
 pub mod root;
@@ -116,6 +120,7 @@ fn init_schemes() -> RwLock<SchemeList> {
     list.insert(Box::new(*b"env"), Arc::new(Box::new(EnvScheme::new()))).expect("failed to insert env scheme");
     list.insert(Box::new(*b"initfs"), Arc::new(Box::new(InitFsScheme::new()))).expect("failed to insert initfs scheme");
     list.insert(Box::new(*b"irq"), Arc::new(Box::new(IrqScheme))).expect("failed to insert irq scheme");
+    PIPE_SCHEME_ID.store(list.insert(Box::new(*b"pipe"), Arc::new(Box::new(PipeScheme))).expect("failed to insert pipe scheme"), Ordering::SeqCst);
     RwLock::new(list)
 }
 

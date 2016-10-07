@@ -3,6 +3,7 @@ use alloc::arc::Arc;
 use alloc::boxed::Box;
 use collections::{BTreeMap, Vec};
 use core::mem;
+use core::ops::DerefMut;
 use core::str;
 use spin::Mutex;
 
@@ -397,31 +398,51 @@ pub fn clone(flags: usize, stack_base: usize) -> Result<usize> {
 
 pub fn exit(status: usize) -> ! {
     {
-        let contexts = context::contexts();
-        let (vfork, ppid) = {
-            let context_lock = contexts.current().expect("tried to exit without context");
-            let mut context = context_lock.write();
-            context.image.clear();
-            drop(context.heap.take());
-            drop(context.stack.take());
-            context.grants = Arc::new(Mutex::new(Vec::new()));
-            context.files = Arc::new(Mutex::new(Vec::new()));
-            context.status = context::Status::Exited(status);
-
-            let vfork = context.vfork;
-            context.vfork = false;
-            (vfork, context.ppid)
-        };
-        if vfork {
-            if let Some(context_lock) = contexts.get(ppid) {
+        let mut close_files = Vec::new();
+        {
+            let contexts = context::contexts();
+            let (vfork, ppid) = {
+                let context_lock = contexts.current().expect("tried to exit without context");
                 let mut context = context_lock.write();
-                if context.status == context::Status::Blocked {
-                    context.status = context::Status::Runnable;
-                } else {
-                    println!("{} not blocked for exit vfork unblock", ppid);
+                context.image.clear();
+                drop(context.heap.take());
+                drop(context.stack.take());
+                context.grants = Arc::new(Mutex::new(Vec::new()));
+                if Arc::strong_count(&context.files) == 1 {
+                    mem::swap(context.files.lock().deref_mut(), &mut close_files);
                 }
-            } else {
-                println!("{} not found for exit vfork unblock", ppid);
+                context.files = Arc::new(Mutex::new(Vec::new()));
+                context.status = context::Status::Exited(status);
+
+                let vfork = context.vfork;
+                context.vfork = false;
+                (vfork, context.ppid)
+            };
+            if vfork {
+                if let Some(context_lock) = contexts.get(ppid) {
+                    let mut context = context_lock.write();
+                    if context.status == context::Status::Blocked {
+                        context.status = context::Status::Runnable;
+                    } else {
+                        println!("{} not blocked for exit vfork unblock", ppid);
+                    }
+                } else {
+                    println!("{} not found for exit vfork unblock", ppid);
+                }
+            }
+        }
+
+        for (fd, file_option) in close_files.drain(..).enumerate() {
+            if let Some(file) = file_option {
+                context::event::unregister(fd, file.scheme, file.number);
+
+                let scheme_option = {
+                    let schemes = scheme::schemes();
+                    schemes.get(file.scheme).map(|scheme| scheme.clone())
+                };
+                if let Some(scheme) = scheme_option {
+                    let _ = scheme.close(file.number);
+                }
             }
         }
     }

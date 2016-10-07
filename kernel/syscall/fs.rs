@@ -1,4 +1,5 @@
 //! Filesystem syscalls
+use core::sync::atomic::Ordering;
 
 use context;
 use scheme;
@@ -99,6 +100,34 @@ pub fn open(path: &[u8], flags: usize) -> Result<usize> {
         scheme: scheme_id,
         number: file_id
     }).ok_or(Error::new(EMFILE))
+}
+
+pub fn pipe2(fds: &mut [usize], flags: usize) -> Result<usize> {
+    if fds.len() >= 2 {
+        let scheme_id = ::scheme::pipe::PIPE_SCHEME_ID.load(Ordering::SeqCst);
+        let (read_id, write_id) = ::scheme::pipe::pipe(flags);
+
+        let contexts = context::contexts();
+        let context_lock = contexts.current().ok_or(Error::new(ESRCH))?;
+        let context = context_lock.read();
+
+        let read_fd = context.add_file(::context::file::File {
+            scheme: scheme_id,
+            number: read_id
+        }).ok_or(Error::new(EMFILE))?;
+
+        let write_fd = context.add_file(::context::file::File {
+            scheme: scheme_id,
+            number: write_id
+        }).ok_or(Error::new(EMFILE))?;
+
+        fds[0] = read_fd;
+        fds[1] = write_fd;
+
+        Ok(0)
+    } else {
+        Err(Error::new(EFAULT))
+    }
 }
 
 /// mkdir syscall

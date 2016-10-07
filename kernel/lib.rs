@@ -65,6 +65,7 @@
 //! In this case, it is recommended to add one page, 4096 bytes, to the buffer and retry.
 
 #![feature(alloc)]
+#![feature(arc_counts)]
 #![feature(asm)]
 #![feature(collections)]
 #![feature(const_fn)]
