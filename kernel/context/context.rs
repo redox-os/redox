@@ -2,6 +2,7 @@ use alloc::arc::Arc;
 use alloc::boxed::Box;
 use collections::{BTreeMap, Vec};
 use spin::Mutex;
+use capability::CapabilitySet;
 
 use arch;
 use context::file::File;
@@ -67,6 +68,21 @@ pub struct Context {
     pub events: Arc<WaitQueue<Event>>,
     /// The process environment
     pub env: Arc<Mutex<BTreeMap<Box<[u8]>, Arc<Mutex<Vec<u8>>>>>>,
+    /// The context's capabilities.
+    ///
+    /// Each scheme can have a set of associated capabilities owned by the context. Capabilities
+    /// represents some abstract, untyped sequence of bytes. The actual semantics and meaning of it
+    /// is left to the scheme itself, which is the only entity that can modify the capability.
+    ///
+    /// The usual usage is permissions, for example a program might have some number of
+    /// capabilities to the `file:` scheme, defining what files can be read and written (e.g.
+    /// `x/some/binary`, `r/home/ticki/plans_for_traitor_commie_mutant_domination`, or
+    /// `w/whatever/config`).
+    ///
+    /// The capability might be clonable or sendable (i.e. possible to transfer it to another
+    /// context). However, you cannot control the actual data. Only the scheme provider can modify
+    /// the capability itself.
+    pub capabilities: Arc<Mutex<BTreeMap<Box<[u8]>, CapabilitySet>>>,
     /// The open files in the scheme
     pub files: Arc<Mutex<Vec<Option<File>>>>
 }
@@ -99,7 +115,8 @@ impl Context {
             cwd: Arc::new(Mutex::new(Vec::new())),
             events: Arc::new(WaitQueue::new()),
             env: Arc::new(Mutex::new(BTreeMap::new())),
-            files: Arc::new(Mutex::new(Vec::new()))
+            files: Arc::new(Mutex::new(Vec::new())),
+            capabilities: Arc::new(Mutex::new(BTreeMap::new())),
         }
     }
 

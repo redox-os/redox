@@ -1,9 +1,12 @@
 use core::sync::atomic::{AtomicBool, ATOMIC_BOOL_INIT};
 
-/// This must be used by the kernel to ensure that context switches are done atomically
-/// Compare and exchange this to true when beginning a context switch on any CPU
-/// The Context::switch_to function will set it back to false, allowing other CPU's to switch
-/// This must be done, as no locks can be held on the stack during switch
+/// This must be used by the kernel to ensure that context switches are done atomically.
+///
+/// Compare and exchange this to true when beginning a context switch on any CPU.
+///
+/// The Context::switch_to function will set it back to false, allowing other CPU's to switch.
+///
+/// This must be done, as no locks can be held on the stack during switch.
 pub static CONTEXT_SWITCH_LOCK: AtomicBool = ATOMIC_BOOL_INIT;
 
 #[derive(Clone, Debug)]
