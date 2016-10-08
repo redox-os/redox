@@ -1,5 +1,5 @@
 [package]
-name = "ahcid"
+name = "rtl8139d"
 version = "0.1.0"
 
 [dependencies]

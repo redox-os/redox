@@ -1,7 +1,11 @@
+#![feature(question_mark)]
+
+extern crate syscall;
+
 use std::{mem, ptr};
 use std::ops::{Deref, DerefMut};
 
-use syscall::{self, Result};
+use syscall::Result;
 
 struct PhysBox {
     address: usize,

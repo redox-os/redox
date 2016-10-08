@@ -1,7 +1,8 @@
 #[cfg(feature="rusttype")]
 extern crate rusttype;
 
-use std::cmp;
+use alloc::heap;
+use std::{cmp, slice};
 
 use primitive::{fast_set32, fast_set64, fast_copy, fast_copy64};
 
@@ -10,6 +11,15 @@ use self::rusttype::{Font, FontCollection, Scale, point};
 
 #[cfg(not(feature="rusttype"))]
 static FONT: &'static [u8] = include_bytes!("../../../res/fonts/unifont.font");
+
+#[cfg(feature="rusttype")]
+static FONT: &'static [u8] = include_bytes!("../../../res/fonts/DejaVuSansMono.ttf");
+#[cfg(feature="rusttype")]
+static FONT_BOLD: &'static [u8] = include_bytes!("../../../res/fonts/DejaVuSansMono-Bold.ttf");
+#[cfg(feature="rusttype")]
+static FONT_BOLD_ITALIC: &'static [u8] = include_bytes!("../../../res/fonts/DejaVuSansMono-BoldOblique.ttf");
+#[cfg(feature="rusttype")]
+static FONT_ITALIC: &'static [u8] = include_bytes!("../../../res/fonts/DejaVuSansMono-Oblique.ttf");
 
 /// A display
 #[cfg(not(feature="rusttype"))]
@@ -39,26 +49,32 @@ pub struct Display {
 
 impl Display {
     #[cfg(not(feature="rusttype"))]
-    pub fn new(width: usize, height: usize, onscreen: &'static mut [u32], offscreen: &'static mut [u32]) -> Display {
+    pub fn new(width: usize, height: usize, onscreen: usize) -> Display {
+        let size = width * height;
+        let offscreen = unsafe { heap::allocate(size * 4, 4096) };
+        unsafe { fast_set64(offscreen as *mut u64, 0, size/2) };
         Display {
             width: width,
             height: height,
-            onscreen: onscreen,
-            offscreen: offscreen
+            onscreen: unsafe { slice::from_raw_parts_mut(onscreen as *mut u32, size) },
+            offscreen: unsafe { slice::from_raw_parts_mut(offscreen as *mut u32, size) }
         }
     }
 
     #[cfg(feature="rusttype")]
-    pub fn new(width: usize, height: usize, onscreen: &'static mut [u32], offscreen: &'static mut [u32]) -> Display {
+    pub fn new(width: usize, height: usize, onscreen: usize) -> Display {
+        let size = width * height;
+        let offscreen = unsafe { heap::allocate(size * 4, 4096) };
+        unsafe { fast_set64(offscreen as *mut u64, 0, size/2) };
         Display {
             width: width,
             height: height,
-            onscreen: onscreen,
-            offscreen: offscreen,
-            font: FontCollection::from_bytes(include_bytes!("../../../res/fonts/DejaVuSansMono.ttf")).into_font().unwrap(),
-            font_bold: FontCollection::from_bytes(include_bytes!("../../../res/fonts/DejaVuSansMono-Bold.ttf")).into_font().unwrap(),
-            font_bold_italic: FontCollection::from_bytes(include_bytes!("../../../res/fonts/DejaVuSansMono-BoldOblique.ttf")).into_font().unwrap(),
-            font_italic: FontCollection::from_bytes(include_bytes!("../../../res/fonts/DejaVuSansMono-Oblique.ttf")).into_font().unwrap()
+            onscreen: unsafe { slice::from_raw_parts_mut(onscreen as *mut u32, size) },
+            offscreen: unsafe { slice::from_raw_parts_mut(offscreen as *mut u32, size) },
+            font: FontCollection::from_bytes(FONT).into_font().unwrap(),
+            font_bold: FontCollection::from_bytes(FONT_BOLD).into_font().unwrap(),
+            font_bold_italic: FontCollection::from_bytes(FONT_BOLD_ITALIC).into_font().unwrap(),
+            font_italic: FontCollection::from_bytes(FONT_ITALIC).into_font().unwrap()
         }
     }
 

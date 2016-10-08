@@ -1,8 +1,8 @@
 use std::ptr;
 
+use dma::Dma;
 use syscall::error::Result;
 
-use super::dma::Dma;
 use super::hba::{HbaPort, HbaCmdTable, HbaCmdHeader};
 
 pub struct Disk {

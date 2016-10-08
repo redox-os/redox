@@ -64,6 +64,11 @@ else
 	ifneq ($(kvm),no)
 		QEMUFLAGS+=-enable-kvm -cpu host
 	endif
+	ifeq ($(net),no)
+		QEMUFLAGS+=-net none
+	else
+		QEMUFLAGS+=-net nic,model=e1000 -net user -net dump,file=$(KBUILD)/network.pcap
+	endif
 	ifeq ($(storage),usb)
 		QEMUFLAGS+=-device usb-ehci,id=flash_bus -drive id=flash_drive,file=$(KBUILD)/harddrive.bin,format=raw,if=none -device usb-storage,drive=flash_drive,bus=flash_bus.0
 	else
@@ -226,6 +231,7 @@ filesystem/bin/%: schemes/%/Cargo.toml schemes/%/src/** $(BUILD)/libstd.rlib
 	rm $@.d
 
 drivers: \
+	filesystem/bin/e1000d \
 	filesystem/bin/ps2d \
 	filesystem/bin/vesad
 

@@ -1,12 +1,11 @@
-use io::{Io, Mmio};
-
 use std::mem::size_of;
 use std::ops::DerefMut;
 use std::{ptr, u32};
 
+use dma::Dma;
+use io::{Io, Mmio};
 use syscall::error::{Error, Result, EIO};
 
-use super::dma::Dma;
 use super::fis::{FisType, FisRegH2D};
 
 const ATA_CMD_READ_DMA_EXT: u8 = 0x25;

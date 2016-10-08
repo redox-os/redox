@@ -1,0 +1,6 @@
+[[drivers]]
+name = "E1000 NIC"
+class = 2
+vendor = 32902
+device = 4110
+command = ["file:bin/e1000d", "$BAR0", "$IRQ"]

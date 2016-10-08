@@ -3,6 +3,7 @@
 
 #[macro_use]
 extern crate bitflags;
+extern crate dma;
 extern crate io;
 extern crate spin;
 extern crate syscall;

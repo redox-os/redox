@@ -36,6 +36,15 @@ pub fn keyboard() {
                 rshift = pressed;
             } else if pressed {
                 match scancode {
+                    f @ 0x3B ... 0x44 => { // F1 through F10
+                        input.write(&[(f - 0x3B) + 0xF4]).unwrap();
+                    },
+                    0x57 => { // F11
+                        input.write(&[0xFE]).unwrap();
+                    },
+                    0x58 => { // F12
+                        input.write(&[0xFF]).unwrap();
+                    },
                     0x47 => { // Home
                         input.write(b"\x1B[H").unwrap();
                     },
@@ -69,7 +78,7 @@ pub fn keyboard() {
                     _ => {
                         let c = if ctrl {
                             match keymap::get_char(scancode, false) {
-                                c @ 'a' ... 'z' => (c as u8 - b'a' + b'\x01') as char,
+                                c @ 'a' ... 'z' => ((c as u8 - b'a') + b'\x01') as char,
                                 c => c
                             }
                         } else {

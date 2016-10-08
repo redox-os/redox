@@ -4,7 +4,6 @@ use self::disk::Disk;
 use self::hba::{HbaMem, HbaPortType};
 
 pub mod disk;
-pub mod dma;
 pub mod fis;
 pub mod hba;
 
