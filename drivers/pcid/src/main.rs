@@ -108,6 +108,12 @@ fn main() {
                             }
 
                             if let Some(ref args) = driver.command {
+                                // Enable bus mastering
+                                unsafe {
+                                    let cmd = pci.read(bus.num, dev.num, func.num, 0x04);
+                                    pci.write(bus.num, dev.num, func.num, 0x04, cmd | 4);
+                                }
+
                                 let mut args = args.iter();
                                 if let Some(program) = args.next() {
                                     let mut command = Command::new(program);

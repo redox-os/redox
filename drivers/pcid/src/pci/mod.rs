@@ -34,6 +34,17 @@ impl Pci {
             : "={eax}"(value) : "{eax}"(address) : "dx" : "intel", "volatile");
         value
     }
+
+    #[cfg(any(target_arch = "x86", target_arch = "x86_64"))]
+    pub unsafe fn write(&self, bus: u8, dev: u8, func: u8, offset: u8, value: u32) {
+        let address = 0x80000000 | ((bus as u32) << 16) | ((dev as u32) << 11) | ((func as u32) << 8) | ((offset as u32) & 0xFC);
+        asm!("mov dx, 0xCF8
+            out dx, eax"
+            : : "{eax}"(address) : "dx" : "intel", "volatile");
+        asm!("mov dx, 0xCFC
+            out dx, eax"
+            : : "{eax}"(value) : "dx" : "intel", "volatile");
+    }
 }
 
 pub struct PciIter<'pci> {
