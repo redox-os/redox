@@ -1,4 +1,5 @@
 #![feature(asm)]
+#![feature(question_mark)]
 
 extern crate dma;
 extern crate syscall;
@@ -7,7 +8,9 @@ use std::{env, thread};
 use std::fs::File;
 use std::io::{Read, Write};
 
-use syscall::{iopl, physmap, physunmap, Packet, MAP_WRITE};
+use syscall::{iopl, physmap, physunmap, Packet, Scheme, MAP_WRITE};
+
+pub mod device;
 
 fn main() {
     let mut args = env::args().skip(1);
@@ -24,15 +27,14 @@ fn main() {
             asm!("cli" :::: "intel", "volatile");
         }
 
-        let address = unsafe { physmap(bar, 4096, MAP_WRITE).expect("e1000d: failed to map address") };
+        let address = unsafe { physmap(bar, 128*1024, MAP_WRITE).expect("e1000d: failed to map address") };
         {
-            println!("e1000d {:X}", bar);
+            let mut device = unsafe { device::Intel8254x::new(address, irq).expect("e1000d: failed to allocate device") };
             let mut socket = File::create(":network").expect("e1000d: failed to create network scheme");
-            //let scheme = DiskScheme::new(ahci::disks(address, irq));
             loop {
                 let mut packet = Packet::default();
                 socket.read(&mut packet).expect("e1000d: failed to read network scheme");
-                //scheme.handle(&mut packet);
+                device.handle(&mut packet);
                 socket.write(&mut packet).expect("e1000d: failed to read network scheme");
             }
         }
