@@ -1277,9 +1277,7 @@ check_file_and_sig() {
 
 # Verifies that the terminal can be opened or exits
 check_tty() {
-    # FIXME: This isn't sufficient since it just checks that tty
-    # exists, not that it can be read
-    if [ ! -e /dev/tty ]; then
+    if [ ! -r /dev/tty ]; then
        err "running in interactive mode (without -y), but cannot open /dev/tty"
     fi
 }
