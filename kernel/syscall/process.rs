@@ -2,9 +2,8 @@
 use alloc::arc::Arc;
 use alloc::boxed::Box;
 use collections::{BTreeMap, Vec};
-use core::mem;
+use core::{mem, str};
 use core::ops::DerefMut;
-use core::str;
 use spin::Mutex;
 
 use arch;
@@ -247,7 +246,7 @@ pub fn clone(flags: usize, stack_base: usize) -> Result<usize> {
             let contexts = context::contexts();
             let context_lock = contexts.current().ok_or(Error::new(ESRCH))?;
             let mut context = context_lock.write();
-            context.status = context::Status::Blocked;
+            context.block();
             vfork = true;
         } else {
             vfork = false;
@@ -416,14 +415,13 @@ pub fn exit(status: usize) -> ! {
 
                 let vfork = context.vfork;
                 context.vfork = false;
+                context.waitpid.notify();
                 (vfork, context.ppid)
             };
             if vfork {
                 if let Some(context_lock) = contexts.get(ppid) {
                     let mut context = context_lock.write();
-                    if context.status == context::Status::Blocked {
-                        context.status = context::Status::Runnable;
-                    } else {
+                    if ! context.unblock() {
                         println!("{} not blocked for exit vfork unblock", ppid);
                     }
                 } else {
@@ -622,9 +620,7 @@ pub fn exec(path: &[u8], arg_ptrs: &[[usize; 2]]) -> Result<usize> {
                 if vfork {
                     if let Some(context_lock) = contexts.get(ppid) {
                         let mut context = context_lock.write();
-                        if context.status == context::Status::Blocked {
-                            context.status = context::Status::Runnable;
-                        } else {
+                        if ! context.unblock() {
                             println!("{} not blocked for exec vfork unblock", ppid);
                         }
                     } else {
@@ -808,7 +804,7 @@ pub fn waitpid(pid: usize, status_ptr: usize, flags: usize) -> Result<usize> {
     loop {
         {
             let mut exited = false;
-
+            let waitpid;
             {
                 let contexts = context::contexts();
                 let context_lock = contexts.get(pid).ok_or(Error::new(ESRCH))?;
@@ -820,6 +816,7 @@ pub fn waitpid(pid: usize, status_ptr: usize, flags: usize) -> Result<usize> {
                     }
                     exited = true;
                 }
+                waitpid = context.waitpid.clone();
             }
 
             if exited {
@@ -827,6 +824,8 @@ pub fn waitpid(pid: usize, status_ptr: usize, flags: usize) -> Result<usize> {
                 return contexts.remove(pid).ok_or(Error::new(ESRCH)).and(Ok(pid));
             } else if flags & WNOHANG == WNOHANG {
                 return Ok(0);
+            } else {
+                waitpid.wait();
             }
         }
 

@@ -19,9 +19,9 @@ use self::debug::{DEBUG_SCHEME_ID, DebugScheme};
 use self::event::EventScheme;
 use self::env::EnvScheme;
 use self::initfs::InitFsScheme;
-use self::irq::IrqScheme;
+use self::irq::{IRQ_SCHEME_ID, IrqScheme};
 use self::pipe::{PIPE_SCHEME_ID, PipeScheme};
-use self::root::RootScheme;
+use self::root::{ROOT_SCHEME_ID, RootScheme};
 
 /// Debug scheme
 pub mod debug;
@@ -114,12 +114,12 @@ static SCHEMES: Once<RwLock<SchemeList>> = Once::new();
 /// Initialize schemes, called if needed
 fn init_schemes() -> RwLock<SchemeList> {
     let mut list: SchemeList = SchemeList::new();
-    list.insert(Box::new(*b""), Arc::new(Box::new(RootScheme::new()))).expect("failed to insert root scheme");
+    ROOT_SCHEME_ID.store(list.insert(Box::new(*b""), Arc::new(Box::new(RootScheme::new()))).expect("failed to insert root scheme"), Ordering::SeqCst);
     DEBUG_SCHEME_ID.store(list.insert(Box::new(*b"debug"), Arc::new(Box::new(DebugScheme))).expect("failed to insert debug scheme"), Ordering::SeqCst);
     list.insert(Box::new(*b"event"), Arc::new(Box::new(EventScheme::new()))).expect("failed to insert event scheme");
     list.insert(Box::new(*b"env"), Arc::new(Box::new(EnvScheme::new()))).expect("failed to insert env scheme");
     list.insert(Box::new(*b"initfs"), Arc::new(Box::new(InitFsScheme::new()))).expect("failed to insert initfs scheme");
-    list.insert(Box::new(*b"irq"), Arc::new(Box::new(IrqScheme))).expect("failed to insert irq scheme");
+    IRQ_SCHEME_ID.store(list.insert(Box::new(*b"irq"), Arc::new(Box::new(IrqScheme))).expect("failed to insert irq scheme"), Ordering::SeqCst);
     PIPE_SCHEME_ID.store(list.insert(Box::new(*b"pipe"), Arc::new(Box::new(PipeScheme))).expect("failed to insert pipe scheme"), Ordering::SeqCst);
     RwLock::new(list)
 }

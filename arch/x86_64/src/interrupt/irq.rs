@@ -1,11 +1,11 @@
-use spin::Mutex;
 use x86::io;
 
 use device::serial::{COM1, COM2};
 use time;
 
-pub static ACKS: Mutex<[usize; 16]> = Mutex::new([0; 16]);
-pub static COUNTS: Mutex<[usize; 16]> = Mutex::new([0; 16]);
+extern {
+    fn irq_trigger(irq: u8);
+}
 
 #[inline(always)]
 unsafe fn master_ack() {
@@ -27,11 +27,11 @@ pub unsafe fn acknowledge(irq: usize) {
 }
 
 interrupt!(pit, {
-    COUNTS.lock()[0] += 1;
+    irq_trigger(0);
 
     {
         const PIT_RATE: u64 = 46500044;
-        
+
         let mut offset = time::OFFSET.lock();
         let sum = offset.1 + PIT_RATE;
         offset.1 = sum % 1000000000;
@@ -42,76 +42,74 @@ interrupt!(pit, {
 });
 
 interrupt!(keyboard, {
-    COUNTS.lock()[1] += 1;
+    irq_trigger(1);
 });
 
 interrupt!(cascade, {
-    COUNTS.lock()[2] += 1;
+    irq_trigger(2);
     master_ack();
 });
 
 interrupt!(com2, {
-    COUNTS.lock()[3] += 1;
+    irq_trigger(3);
     COM2.lock().on_receive();
     master_ack();
 });
 
 interrupt!(com1, {
-    COUNTS.lock()[4] += 1;
+    irq_trigger(4);
     COM1.lock().on_receive();
     master_ack();
 });
 
 interrupt!(lpt2, {
-    COUNTS.lock()[5] += 1;
+    irq_trigger(5);
     master_ack();
 });
 
 interrupt!(floppy, {
-    COUNTS.lock()[6] += 1;
+    irq_trigger(6);
     master_ack();
 });
 
 interrupt!(lpt1, {
-    COUNTS.lock()[7] += 1;
+    irq_trigger(7);
     master_ack();
 });
 
 interrupt!(rtc, {
-    COUNTS.lock()[8] += 1;
+    irq_trigger(8);
     slave_ack();
 });
 
 interrupt!(pci1, {
-    COUNTS.lock()[9] += 1;
+    irq_trigger(9);
     slave_ack();
 });
 
 interrupt!(pci2, {
-    COUNTS.lock()[10] += 1;
-    slave_ack();
+    irq_trigger(10);
 });
 
 interrupt!(pci3, {
-    COUNTS.lock()[11] += 1;
-    slave_ack();
+    irq_trigger(11);
 });
 
 interrupt!(mouse, {
-    COUNTS.lock()[12] += 1;
+    irq_trigger(12);
 });
 
 interrupt!(fpu, {
-    COUNTS.lock()[13] += 1;
+    irq_trigger(13);
     slave_ack();
 });
 
 interrupt!(ata1, {
-    COUNTS.lock()[14] += 1;
+    irq_trigger(14);
     slave_ack();
 });
 
 interrupt!(ata2, {
-    COUNTS.lock()[15] += 1;
+    irq_trigger(15);
     slave_ack();
 });

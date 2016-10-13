@@ -69,6 +69,7 @@
 #![feature(asm)]
 #![feature(collections)]
 #![feature(const_fn)]
+#![feature(core_intrinsics)]
 #![feature(drop_types_in_const)]
 #![feature(heap_api)]
 #![feature(integer_atomics)]
@@ -114,6 +115,9 @@ pub mod elf;
 
 /// Schemes, filesystem handlers
 pub mod scheme;
+
+/// Synchronization primitives
+pub mod sync;
 
 /// Syscall handlers
 pub mod syscall;

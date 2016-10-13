@@ -16,36 +16,55 @@ pub unsafe fn switch() -> bool {
         arch::interrupt::pause();
     }
 
-    let from_ptr = {
-        let contexts = contexts();
-        let context_lock = contexts.current().expect("context::switch: Not inside of context");
-        let mut context = context_lock.write();
-        context.deref_mut() as *mut Context
-    };
-
+    let from_ptr;
     let mut to_ptr = 0 as *mut Context;
-
-    for (pid, context_lock) in contexts().iter() {
-        if *pid > (*from_ptr).id {
+    {
+        let contexts = contexts();
+        {
+            let context_lock = contexts.current().expect("context::switch: Not inside of context");
             let mut context = context_lock.write();
-            if context.status == Status::Runnable && ! context.running {
-                to_ptr = context.deref_mut() as *mut Context;
-                break;
-            }
+            from_ptr = context.deref_mut() as *mut Context;
         }
-    }
 
-    if to_ptr as usize == 0 {
-        for (pid, context_lock) in contexts().iter() {
-            if *pid < (*from_ptr).id {
+        let check_context = |context: &mut Context| -> bool {
+            if context.status == Status::Blocked && context.wake.is_some() {
+                let wake = context.wake.expect("context::switch: wake not set");
+
+                let current = arch::time::monotonic();
+                if current.0 > wake.0 || (current.0 == wake.0 && current.1 >= wake.1) {
+                    context.unblock();
+                }
+            }
+
+            if context.status == Status::Runnable && ! context.running {
+                true
+            } else {
+                false
+            }
+        };
+
+        for (pid, context_lock) in contexts.iter() {
+            if *pid > (*from_ptr).id {
                 let mut context = context_lock.write();
-                if context.status == Status::Runnable && ! context.running {
+                if check_context(&mut context) {
                     to_ptr = context.deref_mut() as *mut Context;
                     break;
                 }
             }
         }
-    }
+
+        if to_ptr as usize == 0 {
+            for (pid, context_lock) in contexts.iter() {
+                if *pid < (*from_ptr).id {
+                    let mut context = context_lock.write();
+                    if check_context(&mut context) {
+                        to_ptr = context.deref_mut() as *mut Context;
+                        break;
+                    }
+                }
+            }
+        }
+    };
 
     if to_ptr as usize == 0 {
         // Unset global lock if no context found

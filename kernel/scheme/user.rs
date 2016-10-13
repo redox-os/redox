@@ -1,35 +1,39 @@
 use alloc::arc::Weak;
-use collections::{BTreeMap, VecDeque};
 use core::sync::atomic::{AtomicUsize, AtomicU64, Ordering};
-use core::{mem, usize};
-use spin::{Mutex, RwLock};
+use core::{mem, slice, usize};
+use spin::RwLock;
 
 use arch;
 use arch::paging::{InactivePageTable, Page, VirtualAddress, entry};
 use arch::paging::temporary_page::TemporaryPage;
 use context::{self, Context};
 use context::memory::Grant;
+use scheme::root::ROOT_SCHEME_ID;
+use sync::{WaitQueue, WaitMap};
 use syscall::data::{Packet, Stat};
 use syscall::error::*;
+use syscall::flag::EVENT_READ;
 use syscall::number::*;
 use syscall::scheme::Scheme;
 
 pub struct UserInner {
+    handle_id: usize,
     pub scheme_id: AtomicUsize,
     next_id: AtomicU64,
     context: Weak<RwLock<Context>>,
-    todo: Mutex<VecDeque<Packet>>,
-    done: Mutex<BTreeMap<u64, usize>>
+    todo: WaitQueue<Packet>,
+    done: WaitMap<u64, usize>
 }
 
 impl UserInner {
-    pub fn new(context: Weak<RwLock<Context>>) -> UserInner {
+    pub fn new(handle_id: usize, context: Weak<RwLock<Context>>) -> UserInner {
         UserInner {
+            handle_id: handle_id,
             scheme_id: AtomicUsize::new(0),
             next_id: AtomicU64::new(1),
             context: context,
-            todo: Mutex::new(VecDeque::new()),
-            done: Mutex::new(BTreeMap::new())
+            todo: WaitQueue::new(),
+            done: WaitMap::new()
         }
     }
 
@@ -54,18 +58,10 @@ impl UserInner {
             d: d
         };
 
-        self.todo.lock().push_back(packet);
+        let len = self.todo.send(packet);
+        context::event::trigger(ROOT_SCHEME_ID.load(Ordering::SeqCst), self.handle_id, EVENT_READ, len * mem::size_of::<Packet>());
 
-        loop {
-            {
-                let mut done = self.done.lock();
-                if let Some(a) = done.remove(&id) {
-                    return Error::demux(a);
-                }
-            }
-
-            unsafe { context::switch(); } //TODO: Block
-        }
+        Error::demux(self.done.receive(&id))
     }
 
     pub fn capture(&self, buf: &[u8]) -> Result<usize> {
@@ -158,29 +154,8 @@ impl UserInner {
     }
 
     pub fn read(&self, buf: &mut [u8]) -> Result<usize> {
-        let packet_size = mem::size_of::<Packet>();
-        let len = buf.len()/packet_size;
-        if len > 0 {
-            loop {
-                let mut i = 0;
-                {
-                    let mut todo = self.todo.lock();
-                    while ! todo.is_empty() && i < len {
-                        let packet = todo.pop_front().unwrap();
-                        unsafe { *(buf.as_mut_ptr() as *mut Packet).offset(i as isize) = packet; }
-                        i += 1;
-                    }
-                }
-
-                if i > 0 {
-                    return Ok(i * packet_size);
-                } else {
-                    unsafe { context::switch(); } //TODO: Block
-                }
-            }
-        } else {
-            Ok(0)
-        }
+        let packet_buf = unsafe { slice::from_raw_parts_mut(buf.as_mut_ptr() as *mut Packet, buf.len()/mem::size_of::<Packet>()) };
+        Ok(self.todo.receive_into(packet_buf) * mem::size_of::<Packet>())
     }
 
     pub fn write(&self, buf: &[u8]) -> Result<usize> {
@@ -195,7 +170,7 @@ impl UserInner {
                     _ => println!("Unknown scheme -> kernel message {}", packet.a)
                 }
             } else {
-                self.done.lock().insert(packet.id, packet.a);
+                self.done.send(packet.id, packet.a);
             }
             i += 1;
         }

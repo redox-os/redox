@@ -1,8 +1,9 @@
 use alloc::arc::{Arc, Weak};
-use collections::{BTreeMap, VecDeque};
+use collections::BTreeMap;
 use core::sync::atomic::{AtomicUsize, ATOMIC_USIZE_INIT, Ordering};
-use spin::{Mutex, Once, RwLock, RwLockReadGuard, RwLockWriteGuard};
+use spin::{Once, RwLock, RwLockReadGuard, RwLockWriteGuard};
 
+use sync::WaitQueue;
 use syscall::error::{Error, Result, EBADF, EPIPE};
 use syscall::scheme::Scheme;
 
@@ -103,43 +104,21 @@ impl Scheme for PipeScheme {
 /// Read side of a pipe
 #[derive(Clone)]
 pub struct PipeRead {
-    vec: Arc<Mutex<VecDeque<u8>>>
+    vec: Arc<WaitQueue<u8>>
 }
 
 impl PipeRead {
     pub fn new() -> Self {
         PipeRead {
-            vec: Arc::new(Mutex::new(VecDeque::new()))
+            vec: Arc::new(WaitQueue::new())
         }
     }
 
     fn read(&self, buf: &mut [u8]) -> Result<usize> {
-        if buf.is_empty() || (Arc::weak_count(&self.vec) == 0 && self.vec.lock().is_empty()) {
+        if buf.is_empty() || (Arc::weak_count(&self.vec) == 0 && self.vec.is_empty()) {
             Ok(0)
         } else {
-            /*loop {
-                {
-                    if let Some(byte) = self.vec.lock().pop_front() {
-                        buf[0] = byte;
-                        break;
-                    }
-                }
-                unsafe { context::switch(); }
-            }*/
-
-            let mut i = 0;
-
-            while i < buf.len() {
-                match self.vec.lock().pop_front() {
-                    Some(b) => {
-                        buf[i] = b;
-                        i += 1;
-                    },
-                    None => break
-                }
-            }
-
-            Ok(i)
+            Ok(self.vec.receive_into(buf))
         }
     }
 }
@@ -147,7 +126,7 @@ impl PipeRead {
 /// Read side of a pipe
 #[derive(Clone)]
 pub struct PipeWrite {
-    vec: Weak<Mutex<VecDeque<u8>>>,
+    vec: Weak<WaitQueue<u8>>,
 }
 
 impl PipeWrite {
@@ -160,9 +139,7 @@ impl PipeWrite {
     fn write(&self, buf: &[u8]) -> Result<usize> {
         match self.vec.upgrade() {
             Some(vec) => {
-                for &b in buf.iter() {
-                    vec.lock().push_back(b);
-                }
+                vec.send_from(buf);
 
                 Ok(buf.len())
             },

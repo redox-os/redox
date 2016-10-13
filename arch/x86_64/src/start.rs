@@ -148,7 +148,7 @@ pub unsafe extern fn kstart_ap(cpu_id: usize, _page_table: usize, stack_start: u
         let kernel_table = KERNEL_TABLE.load(Ordering::SeqCst);
 
         // Initialize paging
-        let (active_table, tcb_offset) = paging::init_ap(cpu_id, stack_start, stack_end, kernel_table);
+        let (_active_table, tcb_offset) = paging::init_ap(cpu_id, stack_start, stack_end, kernel_table);
 
         // Set up GDT for AP
         gdt::init(tcb_offset, stack_end);

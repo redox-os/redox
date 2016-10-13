@@ -1,31 +1,27 @@
-use collections::VecDeque;
 use core::str;
 use core::sync::atomic::{AtomicUsize, Ordering, ATOMIC_USIZE_INIT};
-use spin::{Mutex, Once};
+use spin::Once;
 
 use context;
+use sync::WaitQueue;
 use syscall::error::*;
 use syscall::flag::EVENT_READ;
 use syscall::scheme::Scheme;
 
 pub static DEBUG_SCHEME_ID: AtomicUsize = ATOMIC_USIZE_INIT;
 
-/// Input
-static INPUT: Once<Mutex<VecDeque<u8>>> = Once::new();
+/// Input queue
+static INPUT: Once<WaitQueue<u8>> = Once::new();
 
-/// Initialize contexts, called if needed
-fn init_input() -> Mutex<VecDeque<u8>> {
-    Mutex::new(VecDeque::new())
+/// Initialize input queue, called if needed
+fn init_input() -> WaitQueue<u8> {
+    WaitQueue::new()
 }
 
-/// Get the global schemes list, const
+/// Add to the input queue
 #[no_mangle]
 pub extern fn debug_input(b: u8) {
-    let len = {
-        let mut input = INPUT.call_once(init_input).lock();
-        input.push_back(b);
-        input.len()
-    };
+    let len = INPUT.call_once(init_input).send(b);
 
     context::event::trigger(DEBUG_SCHEME_ID.load(Ordering::SeqCst), 0, EVENT_READ, len);
 }
@@ -45,22 +41,7 @@ impl Scheme for DebugScheme {
     ///
     /// Returns the number of bytes read
     fn read(&self, _file: usize, buf: &mut [u8]) -> Result<usize> {
-        loop {
-            let mut i = 0;
-            {
-                let mut input = INPUT.call_once(init_input).lock();
-                while i < buf.len() && ! input.is_empty() {
-                    buf[i] = input.pop_front().expect("debug_input lost byte");
-                    i += 1;
-                }
-            }
-
-            if i > 0 {
-                return Ok(i);
-            } else {
-                unsafe { context::switch(); } //TODO: Block
-            }
-        }
+        Ok(INPUT.call_once(init_input).receive_into(buf))
     }
 
     /// Write the `buffer` to the `file`

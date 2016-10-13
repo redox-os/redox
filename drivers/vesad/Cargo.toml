@@ -3,6 +3,7 @@ name = "vesad"
 version = "0.1.0"
 
 [dependencies]
+orbclient = "0.1"
 ransid = { git = "https://github.com/redox-os/ransid.git", branch = "new_api" }
 rusttype = { git = "https://github.com/dylanede/rusttype.git", optional = true }
 syscall = { path = "../../syscall/" }

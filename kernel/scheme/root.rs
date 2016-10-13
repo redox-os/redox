@@ -1,7 +1,7 @@
 use alloc::arc::Arc;
 use alloc::boxed::Box;
 use collections::BTreeMap;
-use core::sync::atomic::{AtomicUsize, Ordering};
+use core::sync::atomic::{AtomicUsize, ATOMIC_USIZE_INIT, Ordering};
 use spin::RwLock;
 
 use context;
@@ -9,6 +9,8 @@ use syscall::error::*;
 use syscall::scheme::Scheme;
 use scheme;
 use scheme::user::{UserInner, UserScheme};
+
+pub static ROOT_SCHEME_ID: AtomicUsize = ATOMIC_USIZE_INIT;
 
 pub struct RootScheme {
     next_id: AtomicUsize,
@@ -25,28 +27,33 @@ impl RootScheme {
 }
 
 impl Scheme for RootScheme {
-    fn open(&self, path: &[u8], _flags: usize, _uid: u32, _gid: u32) -> Result<usize> {
-        let context = {
-            let contexts = context::contexts();
-            let context = contexts.current().ok_or(Error::new(ESRCH))?;
-            Arc::downgrade(&context)
-        };
+    fn open(&self, path: &[u8], _flags: usize, uid: u32, _gid: u32) -> Result<usize> {
+        if uid == 0 {
+            let context = {
+                let contexts = context::contexts();
+                let context = contexts.current().ok_or(Error::new(ESRCH))?;
+                Arc::downgrade(&context)
+            };
 
-        let inner = {
-            let mut schemes = scheme::schemes_mut();
-            if schemes.get_name(path).is_some() {
-                return Err(Error::new(EEXIST));
-            }
-            let inner = Arc::new(UserInner::new(context));
-            let id = schemes.insert(path.to_vec().into_boxed_slice(), Arc::new(Box::new(UserScheme::new(Arc::downgrade(&inner))))).expect("failed to insert user scheme");
-            inner.scheme_id.store(id, Ordering::SeqCst);
-            inner
-        };
+            let id = self.next_id.fetch_add(1, Ordering::SeqCst);
 
-        let id = self.next_id.fetch_add(1, Ordering::SeqCst);
-        self.handles.write().insert(id, inner);
+            let inner = {
+                let mut schemes = scheme::schemes_mut();
+                if schemes.get_name(path).is_some() {
+                    return Err(Error::new(EEXIST));
+                }
+                let inner = Arc::new(UserInner::new(id, context));
+                let scheme_id = schemes.insert(path.to_vec().into_boxed_slice(), Arc::new(Box::new(UserScheme::new(Arc::downgrade(&inner))))).expect("failed to insert user scheme");
+                inner.scheme_id.store(scheme_id, Ordering::SeqCst);
+                inner
+            };
 
-        Ok(id)
+            self.handles.write().insert(id, inner);
+
+            Ok(id)
+        } else {
+            Err(Error::new(EACCES))
+        }
     }
 
     fn dup(&self, file: usize) -> Result<usize> {
@@ -80,6 +87,10 @@ impl Scheme for RootScheme {
         };
 
         inner.write(buf)
+    }
+
+    fn fevent(&self, _file: usize, _flags: usize) -> Result<usize> {
+        Ok(0)
     }
 
     fn fsync(&self, _file: usize) -> Result<usize> {

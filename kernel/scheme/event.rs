@@ -1,17 +1,18 @@
 use alloc::arc::{Arc, Weak};
-use collections::{BTreeMap, VecDeque};
-use core::mem;
+use collections::BTreeMap;
+use core::{mem, slice};
 use core::sync::atomic::{AtomicUsize, Ordering};
-use spin::{Mutex, RwLock};
+use spin::RwLock;
 
 use context;
+use sync::WaitQueue;
 use syscall::data::Event;
 use syscall::error::*;
 use syscall::scheme::Scheme;
 
 pub struct EventScheme {
     next_id: AtomicUsize,
-    handles: RwLock<BTreeMap<usize, Weak<Mutex<VecDeque<Event>>>>>
+    handles: RwLock<BTreeMap<usize, Weak<WaitQueue<Event>>>>
 }
 
 impl EventScheme {
@@ -57,29 +58,8 @@ impl Scheme for EventScheme {
             handle_weak.upgrade().ok_or(Error::new(EBADF))?
         };
 
-        let event_size = mem::size_of::<Event>();
-        let len = buf.len()/event_size;
-        if len > 0 {
-            loop {
-                let mut i = 0;
-                {
-                    let mut events = handle.lock();
-                    while ! events.is_empty() && i < len {
-                        let event = events.pop_front().unwrap();
-                        unsafe { *(buf.as_mut_ptr() as *mut Event).offset(i as isize) = event; }
-                        i += 1;
-                    }
-                }
-
-                if i > 0 {
-                    return Ok(i * event_size);
-                } else {
-                    unsafe { context::switch(); } //TODO: Block
-                }
-            }
-        } else {
-            Ok(0)
-        }
+        let event_buf = unsafe { slice::from_raw_parts_mut(buf.as_mut_ptr() as *mut Event, buf.len()/mem::size_of::<Event>()) };
+        Ok(handle.receive_into(event_buf) * mem::size_of::<Event>())
     }
 
     fn fsync(&self, id: usize) -> Result<usize> {

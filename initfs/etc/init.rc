@@ -3,9 +3,9 @@ initfs:bin/redoxfs disk:0
 initfs:bin/pcid file:etc/pcid.toml
 file:bin/vesad
 file:bin/ps2d
+file:bin/ethernetd
+file:bin/ipd
+file:bin/tcpd
+file:bin/udpd
 file:bin/getty display:1
-file:bin/getty display:2
-file:bin/getty display:3
-file:bin/getty display:4
-file:bin/getty display:5
-file:bin/getty display:6
+file:bin/orbital display:2

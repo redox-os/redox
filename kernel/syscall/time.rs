@@ -26,17 +26,20 @@ pub fn nanosleep(req: &TimeSpec, rem_opt: Option<&mut TimeSpec>) -> Result<usize
     let start = arch::time::monotonic();
     let sum = start.1 + req.tv_nsec as u64;
     let end = (start.0 + req.tv_sec as u64 + sum / 1000000000, sum % 1000000000);
-    
-    loop {
-        unsafe { context::switch(); }
 
-        let current = arch::time::monotonic();
-        if current.0 > end.0 || (current.0 == end.0 && current.1 >= end.1) {
-            break;
-        }
+    {
+        let contexts = context::contexts();
+        let context_lock = contexts.current().ok_or(Error::new(ESRCH))?;
+        let mut context = context_lock.write();
+
+        context.wake = Some(end);
+        context.block();
     }
 
+    unsafe { context::switch(); }
+
     if let Some(mut rem) = rem_opt {
+        //TODO let current = arch::time::monotonic();
         rem.tv_sec = 0;
         rem.tv_nsec = 0;
     }

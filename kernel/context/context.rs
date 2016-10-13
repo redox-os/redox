@@ -1,12 +1,13 @@
 use alloc::arc::Arc;
 use alloc::boxed::Box;
-use collections::{BTreeMap, Vec, VecDeque};
+use collections::{BTreeMap, Vec};
 use spin::Mutex;
 
 use arch;
+use context::file::File;
+use context::memory::{Grant, Memory, SharedMemory};
 use syscall::data::Event;
-use super::file::File;
-use super::memory::{Grant, Memory, SharedMemory};
+use sync::{WaitCondition, WaitQueue};
 
 #[derive(Copy, Clone, Debug, Eq, PartialEq)]
 pub enum Status {
@@ -36,6 +37,10 @@ pub struct Context {
     pub running: bool,
     /// Context is halting parent
     pub vfork: bool,
+    /// Context is being waited on
+    pub waitpid: Arc<WaitCondition>,
+    /// Context should wake up at specified time
+    pub wake: Option<(u64, u64)>,
     /// The architecture specific context
     pub arch: arch::context::Context,
     /// Kernel FX
@@ -53,7 +58,7 @@ pub struct Context {
     /// The current working directory
     pub cwd: Arc<Mutex<Vec<u8>>>,
     /// Kernel events
-    pub events: Arc<Mutex<VecDeque<Event>>>,
+    pub events: Arc<WaitQueue<Event>>,
     /// The process environment
     pub env: Arc<Mutex<BTreeMap<Box<[u8]>, Arc<Mutex<Vec<u8>>>>>>,
     /// The open files in the scheme
@@ -73,6 +78,8 @@ impl Context {
             status: Status::Blocked,
             running: false,
             vfork: false,
+            waitpid: Arc::new(WaitCondition::new()),
+            wake: None,
             arch: arch::context::Context::new(),
             kfx: None,
             kstack: None,
@@ -81,7 +88,7 @@ impl Context {
             stack: None,
             grants: Arc::new(Mutex::new(Vec::new())),
             cwd: Arc::new(Mutex::new(Vec::new())),
-            events: Arc::new(Mutex::new(VecDeque::new())),
+            events: Arc::new(WaitQueue::new()),
             env: Arc::new(Mutex::new(BTreeMap::new())),
             files: Arc::new(Mutex::new(Vec::new()))
         }
@@ -125,6 +132,24 @@ impl Context {
             }
         } else {
             path.to_vec()
+        }
+    }
+
+    pub fn block(&mut self) -> bool {
+        if self.status == Status::Runnable {
+            self.status = Status::Blocked;
+            true
+        } else {
+            false
+        }
+    }
+
+    pub fn unblock(&mut self) -> bool {
+        if self.status == Status::Blocked {
+            self.status = Status::Runnable;
+            true
+        } else {
+            false
         }
     }
 

@@ -4,7 +4,7 @@ version = "0.1.0"
 
 [dependencies]
 bitflags = "*"
-dma = { path = "../dma/" }
-io = { path = "../io/" }
+dma = { path = "../../crates/dma/" }
+io = { path = "../../crates/io/" }
 spin = "*"
 syscall = { path = "../../syscall/" }

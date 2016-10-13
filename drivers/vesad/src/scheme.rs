@@ -1,26 +1,26 @@
 use std::cell::{Cell, RefCell};
 use std::collections::BTreeMap;
-use std::str;
+use std::{mem, slice, str};
 
-use syscall::{Result, Error, EBADF, ENOENT, Scheme};
+use orbclient::{Event, EventOption};
+use syscall::{Result, Error, EACCES, EBADF, ENOENT, Scheme};
 
 use display::Display;
-use screen::TextScreen;
+use screen::{Screen, GraphicScreen, TextScreen};
 
 pub struct DisplayScheme {
     width: usize,
     height: usize,
     onscreen: usize,
     active: Cell<usize>,
-    screens: RefCell<BTreeMap<usize, TextScreen>>
+    screens: RefCell<BTreeMap<usize, Box<Screen>>>
 }
 
 impl DisplayScheme {
     pub fn new(width: usize, height: usize, onscreen: usize) -> DisplayScheme {
-        let mut screens = BTreeMap::new();
-        for i in 1..7 {
-            screens.insert(i, TextScreen::new(Display::new(width, height, onscreen)));
-        }
+        let mut screens: BTreeMap<usize, Box<Screen>> = BTreeMap::new();
+        screens.insert(1, Box::new(TextScreen::new(Display::new(width, height, onscreen))));
+        screens.insert(2, Box::new(GraphicScreen::new(Display::new(width, height, onscreen))));
 
         DisplayScheme {
             width: width,
@@ -42,9 +42,13 @@ impl DisplayScheme {
 }
 
 impl Scheme for DisplayScheme {
-    fn open(&self, path: &[u8], _flags: usize, _uid: u32, _gid: u32) -> Result<usize> {
+    fn open(&self, path: &[u8], _flags: usize, uid: u32, _gid: u32) -> Result<usize> {
         if path == b"input" {
-            Ok(0)
+            if uid == 0 {
+                Ok(0)
+            } else {
+                Err(Error::new(EACCES))
+            }
         } else {
             let path_str = str::from_utf8(path).unwrap_or("");
             let id = path_str.parse::<usize>().unwrap_or(0);
@@ -63,9 +67,7 @@ impl Scheme for DisplayScheme {
     fn fevent(&self, id: usize, flags: usize) -> Result<usize> {
         let mut screens = self.screens.borrow_mut();
         if let Some(mut screen) = screens.get_mut(&id) {
-            println!("fevent {:X}", flags);
-            screen.requested = flags;
-            Ok(0)
+            screen.event(flags)
         } else {
             Err(Error::new(EBADF))
         }
@@ -76,7 +78,7 @@ impl Scheme for DisplayScheme {
         let path_str = if id == 0 {
             format!("display:input")
         } else if let Some(screen) = screens.get(&id) {
-            format!("display:{}/{}/{}", id, screen.console.w, screen.console.h)
+            format!("display:{}/{}/{}", id, screen.width(), screen.height())
         } else {
             return Err(Error::new(EBADF));
         };
@@ -124,14 +126,51 @@ impl Scheme for DisplayScheme {
                 }
                 Ok(1)
             } else {
-                if let Some(mut screen) = screens.get_mut(&self.active.get()) {
-                    screen.input(buf)
-                } else {
-                    Err(Error::new(EBADF))
+                let events = unsafe { slice::from_raw_parts(buf.as_ptr() as *const Event, buf.len()/mem::size_of::<Event>()) };
+
+                for event in events.iter() {
+                    let new_active_opt = if let EventOption::Key(key_event) = event.to_option() {
+                        match key_event.scancode {
+                            f @ 0x3B ... 0x44 => { // F1 through F10
+                                Some((f - 0x3A) as usize)
+                            },
+                            0x57 => { // F11
+                                Some(11)
+                            },
+                            0x58 => { // F12
+                                Some(12)
+                            },
+                            _ => None
+                        }
+                    } else {
+                        None
+                    };
+
+                    if let Some(new_active) = new_active_opt {
+                        if let Some(mut screen) = screens.get_mut(&new_active) {
+                            self.active.set(new_active);
+                            screen.redraw();
+                        }
+                    } else {
+                        if let Some(mut screen) = screens.get_mut(&self.active.get()) {
+                            screen.input(event);
+                        }
+                    }
                 }
+
+                Ok(events.len() * mem::size_of::<Event>())
             }
         } else if let Some(mut screen) = screens.get_mut(&id) {
             screen.write(buf, id == self.active.get())
+        } else {
+            Err(Error::new(EBADF))
+        }
+    }
+
+    fn seek(&self, id: usize, pos: usize, whence: usize) -> Result<usize> {
+        let mut screens = self.screens.borrow_mut();
+        if let Some(mut screen) = screens.get_mut(&id) {
+            screen.seek(pos, whence)
         } else {
             Err(Error::new(EBADF))
         }

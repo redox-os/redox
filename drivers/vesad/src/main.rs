@@ -4,6 +4,7 @@
 #![feature(question_mark)]
 
 extern crate alloc;
+extern crate orbclient;
 extern crate syscall;
 
 use std::fs::File;

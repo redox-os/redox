@@ -1,0 +1,7 @@
+[package]
+name = "tcpd"
+version = "0.1.0"
+
+[dependencies]
+resource_scheme = { path = "../../crates/resource_scheme/" }
+syscall = { path = "../../syscall/" }

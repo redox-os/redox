@@ -1,7 +1,7 @@
 use std::{cmp, mem, ptr, slice};
 
 use dma::Dma;
-use syscall::error::Result;
+use syscall::error::{Error, EACCES, EWOULDBLOCK, Result};
 use syscall::scheme::Scheme;
 
 const CTRL: u32 = 0x00;
@@ -96,12 +96,16 @@ pub struct Intel8254x {
     receive_buffer: [Dma<[u8; 16384]>; 16],
     receive_ring: Dma<[Rd; 16]>,
     transmit_buffer: [Dma<[u8; 16384]>; 16],
-    transmit_ring: Dma<[Td; 16]>,
+    transmit_ring: Dma<[Td; 16]>
 }
 
 impl Scheme for Intel8254x {
-    fn open(&self, _path: &[u8], _flags: usize, _uid: u32, _gid: u32) -> Result<usize> {
-        Ok(0)
+    fn open(&self, _path: &[u8], _flags: usize, uid: u32, _gid: u32) -> Result<usize> {
+        if uid == 0 {
+            Ok(0)
+        } else {
+            Err(Error::new(EACCES))
+        }
     }
 
     fn dup(&self, id: usize) -> Result<usize> {
@@ -109,7 +113,15 @@ impl Scheme for Intel8254x {
     }
 
     fn read(&self, _id: usize, buf: &mut [u8]) -> Result<usize> {
-        for tail in 0..self.receive_ring.len() {
+        let head = unsafe { self.read(RDH) };
+        let mut tail = unsafe { self.read(RDT) };
+
+        tail += 1;
+        if tail >= self.receive_ring.len() as u32 {
+            tail = 0;
+        }
+
+        if tail != head {
             let rd = unsafe { &mut * (self.receive_ring.as_ptr().offset(tail as isize) as *mut Rd) };
             if rd.status & RD_DD == RD_DD {
                 rd.status = 0;
@@ -121,11 +133,14 @@ impl Scheme for Intel8254x {
                     buf[i] = data[i];
                     i += 1;
                 }
+
+                unsafe { self.write(RDT, tail) };
+
                 return Ok(i);
             }
         }
 
-        Ok(0)
+        Err(Error::new(EWOULDBLOCK))
     }
 
     fn write(&self, _id: usize, buf: &[u8]) -> Result<usize> {
@@ -166,8 +181,12 @@ impl Scheme for Intel8254x {
 
                 return Ok(i);
             }
-        }
 
+            unsafe { asm!("pause" : : : "memory" : "intel", "volatile"); }
+        }
+    }
+
+    fn fsync(&self, _id: usize) -> Result<usize> {
         Ok(0)
     }
 
@@ -196,6 +215,11 @@ impl Intel8254x {
         module.init();
 
         Ok(module)
+    }
+
+    pub unsafe fn irq(&self) -> bool {
+        let icr = self.read(ICR);
+        icr != 0
     }
 
     pub unsafe fn read(&self, register: u32) -> u32 {
@@ -271,8 +295,7 @@ impl Intel8254x {
         self.write(TDH, 0);
         self.write(TDT, 0);
 
-        //self.write(IMS, IMS_RXT | IMS_RX | IMS_RXDMT | IMS_RXSEQ | IMS_LSC | IMS_TXQE | IMS_TXDW);
-        self.write(IMS, 0);
+        self.write(IMS, IMS_RXT | IMS_RX | IMS_RXDMT | IMS_RXSEQ); // | IMS_LSC | IMS_TXQE | IMS_TXDW
 
         self.flag(RCTL, RCTL_EN, true);
         self.flag(RCTL, RCTL_UPE, true);

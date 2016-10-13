@@ -1,11 +1,12 @@
 use alloc::arc::{Arc, Weak};
-use collections::{BTreeMap, VecDeque};
-use spin::{Mutex, Once, RwLock, RwLockReadGuard, RwLockWriteGuard};
+use collections::BTreeMap;
+use spin::{Once, RwLock, RwLockReadGuard, RwLockWriteGuard};
 
 use context;
+use sync::WaitQueue;
 use syscall::data::Event;
 
-type EventList = Weak<Mutex<VecDeque<Event>>>;
+type EventList = Weak<WaitQueue<Event>>;
 
 type Registry = BTreeMap<(usize, usize), BTreeMap<(usize, usize), EventList>>;
 
@@ -67,9 +68,8 @@ pub fn trigger(scheme_id: usize, id: usize, flags: usize, data: usize) {
     let registry = registry();
     if let Some(event_lists) = registry.get(&(scheme_id, id)) {
         for entry in event_lists.iter() {
-            if let Some(event_list_lock) = entry.1.upgrade() {
-                let mut event_list = event_list_lock.lock();
-                event_list.push_back(Event {
+            if let Some(event_list) = entry.1.upgrade() {
+                event_list.send(Event {
                     id: (entry.0).1,
                     flags: flags,
                     data: data

@@ -3,7 +3,7 @@ use std::{cmp, str};
 use std::sync::Arc;
 use std::sync::atomic::{AtomicUsize, Ordering};
 use spin::Mutex;
-use syscall::{Error, EBADF, EINVAL, ENOENT, Result, Scheme, Stat, MODE_FILE, SEEK_CUR, SEEK_END, SEEK_SET};
+use syscall::{Error, EACCES, EBADF, EINVAL, ENOENT, Result, Scheme, Stat, MODE_FILE, SEEK_CUR, SEEK_END, SEEK_SET};
 
 use ahci::disk::Disk;
 
@@ -29,17 +29,21 @@ impl DiskScheme {
 }
 
 impl Scheme for DiskScheme {
-    fn open(&self, path: &[u8], _flags: usize, _uid: u32, _gid: u32) -> Result<usize> {
-        let path_str = str::from_utf8(path).or(Err(Error::new(ENOENT)))?;
+    fn open(&self, path: &[u8], _flags: usize, uid: u32, _gid: u32) -> Result<usize> {
+        if uid == 0 {
+            let path_str = str::from_utf8(path).or(Err(Error::new(ENOENT)))?;
 
-        let i = path_str.parse::<usize>().or(Err(Error::new(ENOENT)))?;
+            let i = path_str.parse::<usize>().or(Err(Error::new(ENOENT)))?;
 
-        if let Some(disk) = self.disks.get(i) {
-            let id = self.next_id.fetch_add(1, Ordering::SeqCst);
-            self.handles.lock().insert(id, (disk.clone(), 0));
-            Ok(id)
+            if let Some(disk) = self.disks.get(i) {
+                let id = self.next_id.fetch_add(1, Ordering::SeqCst);
+                self.handles.lock().insert(id, (disk.clone(), 0));
+                Ok(id)
+            } else {
+                Err(Error::new(ENOENT))
+            }
         } else {
-            Err(Error::new(ENOENT))
+            Err(Error::new(EACCES))
         }
     }
 

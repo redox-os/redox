@@ -25,6 +25,10 @@ const HBA_SIG_ATAPI: u32 = 0xEB140101;
 const HBA_SIG_PM: u32 = 0x96690101;
 const HBA_SIG_SEMB: u32 = 0xC33C0101;
 
+fn pause() {
+    unsafe { asm!("pause" : : : "memory" : "intel", "volatile"); }
+}
+
 #[derive(Debug)]
 pub enum HbaPortType {
     None,
@@ -119,7 +123,9 @@ impl HbaPort {
                 cmdfis.counth.write(0);
             }
 
-            while self.tfd.readf((ATA_DEV_BUSY | ATA_DEV_DRQ) as u32) {}
+            while self.tfd.readf((ATA_DEV_BUSY | ATA_DEV_DRQ) as u32) {
+                pause();
+            }
 
             self.ci.writef(1 << slot, true);
 
@@ -127,6 +133,7 @@ impl HbaPort {
                 if self.is.readf(HBA_PORT_IS_TFES) {
                     return None;
                 }
+                pause();
             }
 
             if self.is.readf(HBA_PORT_IS_TFES) {
@@ -194,7 +201,9 @@ impl HbaPort {
     }
 
     pub fn start(&mut self) {
-        while self.cmd.readf(HBA_PORT_CMD_CR) {}
+        while self.cmd.readf(HBA_PORT_CMD_CR) {
+            pause();
+        }
 
         self.cmd.writef(HBA_PORT_CMD_FRE, true);
         self.cmd.writef(HBA_PORT_CMD_ST, true);
@@ -203,7 +212,9 @@ impl HbaPort {
     pub fn stop(&mut self) {
         self.cmd.writef(HBA_PORT_CMD_ST, false);
 
-        while self.cmd.readf(HBA_PORT_CMD_FR | HBA_PORT_CMD_CR) {}
+        while self.cmd.readf(HBA_PORT_CMD_FR | HBA_PORT_CMD_CR) {
+            pause();
+        }
 
         self.cmd.writef(HBA_PORT_CMD_FRE, false);
     }
@@ -267,7 +278,9 @@ impl HbaPort {
                 cmdfis.counth.write((sectors >> 8) as u8);
             }
 
-            while self.tfd.readf((ATA_DEV_BUSY | ATA_DEV_DRQ) as u32) {}
+            while self.tfd.readf((ATA_DEV_BUSY | ATA_DEV_DRQ) as u32) {
+                pause();
+            }
 
             self.ci.writef(1 << slot, true);
 
@@ -276,6 +289,7 @@ impl HbaPort {
                     println!("IS_TFES set in CI loop TFS {:X} SERR {:X}", self.tfd.read(), self.serr.read());
                     return Err(Error::new(EIO));
                 }
+                pause();
             }
 
             if self.is.readf(HBA_PORT_IS_TFES) {
@@ -312,7 +326,9 @@ pub struct HbaMem {
 impl HbaMem {
     pub fn reset(&mut self) {
         self.ghc.writef(1, true);
-        while self.ghc.readf(1) {}
+        while self.ghc.readf(1) {
+            pause();
+        }
     }
 }
 

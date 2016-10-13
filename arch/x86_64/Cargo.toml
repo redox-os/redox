@@ -4,10 +4,10 @@ version = "0.1.0"
 
 [dependencies]
 bitflags = "*"
-hole_list_allocator = { path = "../../alloc/hole_list_allocator" }
-io = { path = "../../drivers/io" }
+hole_list_allocator = { path = "../../crates/hole_list_allocator/" }
+io = { path = "../../crates/io/" }
 spin = "*"
 
 [dependencies.x86]
-version = "*"
+version = "0.7"
 default-features = false

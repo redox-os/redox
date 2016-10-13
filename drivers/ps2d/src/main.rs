@@ -3,6 +3,7 @@
 #[macro_use]
 extern crate bitflags;
 extern crate io;
+extern crate orbclient;
 extern crate syscall;
 
 use std::thread;

@@ -8,10 +8,11 @@ extern crate io;
 extern crate spin;
 extern crate syscall;
 
+use std::{env, thread, usize};
 use std::fs::File;
 use std::io::{Read, Write};
-use std::{env, thread, usize};
-use syscall::{iopl, physmap, physunmap, MAP_WRITE, Packet, Scheme};
+use std::os::unix::io::AsRawFd;
+use syscall::{EVENT_READ, MAP_WRITE, Event, Packet, Scheme};
 
 use scheme::DiskScheme;
 
@@ -29,21 +30,42 @@ fn main() {
 
     thread::spawn(move || {
         unsafe {
-            iopl(3).expect("ahcid: failed to get I/O permission");
+            syscall::iopl(3).expect("ahcid: failed to get I/O permission");
             asm!("cli" :::: "intel", "volatile");
         }
 
-        let address = unsafe { physmap(bar, 4096, MAP_WRITE).expect("ahcid: failed to map address") };
+        let address = unsafe { syscall::physmap(bar, 4096, MAP_WRITE).expect("ahcid: failed to map address") };
         {
             let mut socket = File::create(":disk").expect("ahcid: failed to create disk scheme");
+            let socket_fd = socket.as_raw_fd();
+            syscall::fevent(socket_fd, EVENT_READ).expect("ahcid: failed to fevent disk scheme");
+
+            let mut irq_file = File::open(&format!("irq:{}", irq)).expect("ahcid: failed to open irq file");
+            let irq_fd = irq_file.as_raw_fd();
+            syscall::fevent(irq_fd, EVENT_READ).expect("ahcid: failed to fevent irq file");
+
+            let mut event_file = File::open("event:").expect("ahcid: failed to open event file");
+
             let scheme = DiskScheme::new(ahci::disks(address, irq));
             loop {
-                let mut packet = Packet::default();
-                socket.read(&mut packet).expect("ahcid: failed to read disk scheme");
-                scheme.handle(&mut packet);
-                socket.write(&mut packet).expect("ahcid: failed to read disk scheme");
+                let mut event = Event::default();
+                event_file.read(&mut event).expect("ahcid: failed to read event file");
+                if event.id == socket_fd {
+                    let mut packet = Packet::default();
+                    socket.read(&mut packet).expect("ahcid: failed to read disk scheme");
+                    scheme.handle(&mut packet);
+                    socket.write(&mut packet).expect("ahcid: failed to write disk scheme");
+                } else if event.id == irq_fd {
+                    let mut irq = [0; 8];
+                    if irq_file.read(&mut irq).expect("ahcid: failed to read irq file") >= irq.len() {
+                        println!("IRQ");
+                        irq_file.write(&irq).expect("ahcid: failed to write irq file");
+                    }
+                } else {
+                    println!("Unknown event {}", event.id);
+                }
             }
         }
-        unsafe { let _ = physunmap(address); }
+        unsafe { let _ = syscall::physunmap(address); }
     });
 }

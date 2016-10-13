@@ -5,6 +5,7 @@ extern crate syscall;
 pub use self::syscall::{data, error, flag, number, scheme};
 
 pub use self::fs::*;
+pub use self::futex::futex;
 pub use self::process::*;
 pub use self::time::*;
 pub use self::validate::*;
@@ -15,6 +16,9 @@ use self::number::*;
 
 /// Filesystem syscalls
 pub mod fs;
+
+/// Fast userspace mutex
+pub mod futex;
 
 /// Process syscalls
 pub mod process;
@@ -28,7 +32,7 @@ pub mod validate;
 #[no_mangle]
 pub extern fn syscall(a: usize, b: usize, c: usize, d: usize, e: usize, f: usize, stack: usize) -> usize {
     #[inline(always)]
-    fn inner(a: usize, b: usize, c: usize, d: usize, e: usize, _f: usize, stack: usize) -> Result<usize> {
+    fn inner(a: usize, b: usize, c: usize, d: usize, e: usize, f: usize, stack: usize) -> Result<usize> {
         match a & SYS_CLASS {
             SYS_CLASS_FILE => match a & SYS_ARG {
                 SYS_ARG_SLICE => file_op_slice(a, b, validate_slice(c as *const u8, d)?),
@@ -66,6 +70,7 @@ pub extern fn syscall(a: usize, b: usize, c: usize, d: usize, e: usize, f: usize
                 SYS_SETUID => setuid(b as u32),
                 SYS_SETGID => setgid(b as u32),
                 SYS_CLOCK_GETTIME => clock_gettime(b, validate_slice_mut(c as *mut TimeSpec, 1).map(|time| &mut time[0])?),
+                SYS_FUTEX => futex(validate_slice_mut(b as *mut i32, 1).map(|uaddr| &mut uaddr[0])?, c, d as i32, e, f as *mut i32),
                 SYS_PIPE2 => pipe2(validate_slice_mut(b as *mut usize, 2)?, c),
                 SYS_PHYSALLOC => physalloc(b),
                 SYS_PHYSFREE => physfree(b, c),
@@ -78,10 +83,10 @@ pub extern fn syscall(a: usize, b: usize, c: usize, d: usize, e: usize, f: usize
     }
 
     let result = inner(a, b, c, d, e, f, stack);
-
+/*
     if let Err(ref err) = result {
-        println!("{}, {}, {}, {}: {}", a & 0xFFFF, b, c, d, err);
+        println!("{}, {}, {}, {}: {}", a, b, c, d, err);
     }
-
+*/
     Error::mux(result)
 }

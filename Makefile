@@ -17,7 +17,7 @@ CARGO=RUSTC="$(RUSTC)" cargo
 CARGOFLAGS=--target $(TARGET).json -- -C opt-level=s --cfg redox
 
 # Default targets
-.PHONY: all clean qemu bochs FORCE
+.PHONY: all clean qemu bochs drivers schemes coreutils extrautils netutils userutils wireshark FORCE
 
 all: $(KBUILD)/harddrive.bin
 
@@ -25,6 +25,7 @@ clean:
 	cargo clean
 	cargo clean --manifest-path libstd/Cargo.toml
 	cargo clean --manifest-path drivers/ahcid/Cargo.toml
+	cargo clean --manifest-path drivers/e1000d/Cargo.toml
 	cargo clean --manifest-path drivers/ps2d/Cargo.toml
 	cargo clean --manifest-path drivers/pcid/Cargo.toml
 	cargo clean --manifest-path drivers/vesad/Cargo.toml
@@ -32,10 +33,17 @@ clean:
 	cargo clean --manifest-path programs/ion/Cargo.toml
 	cargo clean --manifest-path programs/coreutils/Cargo.toml
 	cargo clean --manifest-path programs/extrautils/Cargo.toml
+	cargo clean --manifest-path programs/netutils/Cargo.toml
+	cargo clean --manifest-path programs/orbutils/Cargo.toml
 	cargo clean --manifest-path programs/userutils/Cargo.toml
 	cargo clean --manifest-path programs/smith/Cargo.toml
+	cargo clean --manifest-path schemes/ethernetd/Cargo.toml
 	cargo clean --manifest-path schemes/example/Cargo.toml
+	cargo clean --manifest-path schemes/ipd/Cargo.toml
+	cargo clean --manifest-path schemes/orbital/Cargo.toml
 	cargo clean --manifest-path schemes/redoxfs/Cargo.toml
+	cargo clean --manifest-path schemes/tcpd/Cargo.toml
+	cargo clean --manifest-path schemes/udpd/Cargo.toml
 	rm -rf initfs/bin
 	rm -rf filesystem/bin
 	rm -rf build
@@ -118,7 +126,7 @@ $(KBUILD)/librustc_unicode.rlib: rust/src/librustc_unicode/lib.rs $(KBUILD)/libc
 $(KBUILD)/libcollections.rlib: rust/src/libcollections/lib.rs $(KBUILD)/libcore.rlib $(KBUILD)/liballoc.rlib $(KBUILD)/librustc_unicode.rlib
 	$(KRUSTC) $(KRUSTCFLAGS) -o $@ $<
 
-$(KBUILD)/libkernel.a: kernel/** $(KBUILD)/libcore.rlib $(KBUILD)/liballoc.rlib $(KBUILD)/libcollections.rlib $(BUILD)/initfs.rs FORCE
+$(KBUILD)/libkernel.a: kernel/** $(KBUILD)/libcore.rlib $(KBUILD)/liballoc.rlib $(KBUILD)/libcollections.rlib $(BUILD)/initfs.rs
 	$(KCARGO) rustc $(KCARGOFLAGS) -C opt-level=s -C lto -o $@
 
 $(KBUILD)/kernel: $(KBUILD)/libkernel.a
@@ -170,17 +178,12 @@ initfs/bin/%: schemes/%/Cargo.toml schemes/%/src/** $(BUILD)/libstd.rlib
 	strip $@
 	rm $@.d
 
-initfs_drivers: \
-	initfs/bin/ahcid \
-	initfs/bin/pcid
-
-initfs_schemes: \
-	initfs/bin/redoxfs
-
 $(BUILD)/initfs.rs: \
 		initfs/bin/init \
-		initfs_drivers \
-		initfs_schemes
+		initfs/bin/ahcid \
+		initfs/bin/pcid \
+		initfs/bin/redoxfs \
+		initfs/etc/**
 	echo 'use collections::BTreeMap;' > $@
 	echo 'pub fn gen() -> BTreeMap<&'"'"'static [u8], (&'"'"'static [u8], bool)> {' >> $@
 	echo '    let mut files: BTreeMap<&'"'"'static [u8], (&'"'"'static [u8], bool)> = BTreeMap::new();' >> $@
@@ -213,6 +216,18 @@ filesystem/bin/%: programs/coreutils/Cargo.toml programs/coreutils/src/bin/%.rs 
 	rm $@.d
 
 filesystem/bin/%: programs/extrautils/Cargo.toml programs/extrautils/src/bin/%.rs $(BUILD)/libstd.rlib
+	mkdir -p filesystem/bin
+	$(CARGO) rustc --manifest-path $< --bin $* $(CARGOFLAGS) -o $@
+	strip $@
+	rm $@.d
+
+filesystem/bin/%: programs/netutils/Cargo.toml programs/netutils/src/%/**.rs $(BUILD)/libstd.rlib
+	mkdir -p filesystem/bin
+	$(CARGO) rustc --manifest-path $< --bin $* $(CARGOFLAGS) -o $@
+	strip $@
+	rm $@.d
+
+filesystem/bin/%: programs/orbutils/Cargo.toml programs/orbutils/src/%/**.rs $(BUILD)/libstd.rlib
 	mkdir -p filesystem/bin
 	$(CARGO) rustc --manifest-path $< --bin $* $(CARGOFLAGS) -o $@
 	strip $@
@@ -278,6 +293,23 @@ extrautils: \
 	filesystem/bin/rem \
 	#filesystem/bin/dmesg filesystem/bin/info filesystem/bin/man filesystem/bin/watch
 
+netutils: \
+	filesystem/bin/dhcpd \
+	filesystem/bin/dnsd \
+	filesystem/bin/irc \
+	filesystem/bin/nc \
+	filesystem/bin/wget
+
+orbutils: \
+	filesystem/bin/calculator \
+	filesystem/bin/character_map \
+	filesystem/bin/editor \
+	filesystem/bin/file_manager \
+	filesystem/bin/launcher \
+	filesystem/bin/orblogin \
+	filesystem/bin/terminal \
+	filesystem/bin/viewer
+
 userutils: \
 	filesystem/bin/getty \
 	filesystem/bin/id \
@@ -286,28 +318,35 @@ userutils: \
 	filesystem/bin/sudo
 
 schemes: \
-	filesystem/bin/example
+	filesystem/bin/ethernetd \
+	filesystem/bin/example \
+	filesystem/bin/ipd \
+	filesystem/bin/orbital \
+	filesystem/bin/tcpd \
+	filesystem/bin/udpd
 
 $(BUILD)/filesystem.bin: \
 		drivers \
 		coreutils \
 		extrautils \
+		netutils \
+		orbutils \
 		userutils \
 		schemes \
 		filesystem/bin/ion \
 		filesystem/bin/smith
 	rm -rf $@ $(BUILD)/filesystem/
-	echo exit | cargo run --manifest-path schemes/redoxfs/Cargo.toml --bin redoxfs-utility $@ 8
+	echo exit | cargo run --manifest-path schemes/redoxfs/Cargo.toml --bin redoxfs-utility $@ 64
 	mkdir -p $(BUILD)/filesystem/
 	cargo run --manifest-path schemes/redoxfs/Cargo.toml --bin redoxfs-fuse $@ $(BUILD)/filesystem/ &
 	sleep 2
-	-cp -RL filesystem/* $(BUILD)/filesystem/
-	-chown -R 0:0 $(BUILD)/filesystem/
-	-chown -R 1000:1000 $(BUILD)/filesystem/home/user/
-	-chmod 700 $(BUILD)/filesystem/root/
-	-chmod 700 $(BUILD)/filesystem/home/user/
-	-chmod +s $(BUILD)/filesystem/bin/su
-	-chmod +s $(BUILD)/filesystem/bin/sudo
+	cp -RL filesystem/* $(BUILD)/filesystem/
+	chown -R 0:0 $(BUILD)/filesystem/
+	chown -R 1000:1000 $(BUILD)/filesystem/home/user/
+	chmod 700 $(BUILD)/filesystem/root/
+	chmod 700 $(BUILD)/filesystem/home/user/
+	chmod +s $(BUILD)/filesystem/bin/su
+	chmod +s $(BUILD)/filesystem/bin/sudo
 	sync
 	-fusermount -u $(BUILD)/filesystem/
 	rm -rf $(BUILD)/filesystem/
@@ -321,3 +360,6 @@ unmount: FORCE
 	sync
 	-fusermount -u $(KBUILD)/harddrive/
 	rm -rf $(KBUILD)/harddrive/
+
+wireshark: FORCE
+	wireshark $(KBUILD)/network.pcap
