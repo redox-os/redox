@@ -31,6 +31,8 @@ pub fn mouse(extra_packet: bool) {
                 asm!("in al, dx" : "={al}"(data) : "{dx}"(0x60) : : "intel", "volatile");
             }
 
+            file.write(&irqs).expect("ps2d: failed to write irq:12");
+
             packets[packet_i] = data;
             packet_i += 1;
 
@@ -72,8 +74,6 @@ pub fn mouse(extra_packet: bool) {
                 packets = [0; 4];
                 packet_i = 0;
             }
-
-            file.write(&irqs).expect("ps2d: failed to write irq:12");
         }
     }
 }
