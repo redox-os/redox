@@ -8,10 +8,8 @@ pub fn resource() -> Result<Vec<u8>> {
 
     let schemes = scheme::schemes();
     for (name, _scheme_lock) in schemes.iter_name() {
-        if ! data.is_empty() {
-            data.push(b'\n');
-        }
         data.extend_from_slice(name);
+        data.push(b'\n');
     }
 
     Ok(data)

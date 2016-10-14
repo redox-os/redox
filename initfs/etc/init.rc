@@ -8,4 +8,4 @@ file:bin/ipd
 file:bin/tcpd
 file:bin/udpd
 file:bin/getty display:1
-file:bin/orbital display:2
+#file:bin/orbital display:2
