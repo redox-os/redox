@@ -4,6 +4,7 @@ version = "0.1.0"
 
 [dependencies]
 bitflags = "*"
+event = { path = "../../crates/event/" }
 io = { path = "../../crates/io/" }
 orbclient = "0.1"
 syscall = { path = "../../syscall/" }
