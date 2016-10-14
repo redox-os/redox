@@ -267,6 +267,7 @@ coreutils: \
 	filesystem/bin/mkdir \
 	filesystem/bin/mv \
 	filesystem/bin/printenv \
+	filesystem/bin/ps \
 	filesystem/bin/pwd \
 	filesystem/bin/realpath \
 	filesystem/bin/reset \
@@ -280,7 +281,7 @@ coreutils: \
 	filesystem/bin/true \
 	filesystem/bin/wc \
 	filesystem/bin/yes
-	#filesystem/bin/free filesystem/bin/ps filesystem/bin/shutdown filesystem/bin/test
+	#filesystem/bin/free  filesystem/bin/shutdown filesystem/bin/test
 
 extrautils: \
 	filesystem/bin/calc \

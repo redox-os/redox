@@ -22,6 +22,7 @@ use self::initfs::InitFsScheme;
 use self::irq::{IRQ_SCHEME_ID, IrqScheme};
 use self::pipe::{PIPE_SCHEME_ID, PipeScheme};
 use self::root::{ROOT_SCHEME_ID, RootScheme};
+use self::sys::SysScheme;
 
 /// Debug scheme
 pub mod debug;
@@ -43,6 +44,9 @@ pub mod pipe;
 
 /// Root scheme
 pub mod root;
+
+/// System information
+pub mod sys;
 
 /// Userspace schemes
 pub mod user;
@@ -121,6 +125,7 @@ fn init_schemes() -> RwLock<SchemeList> {
     list.insert(Box::new(*b"initfs"), Arc::new(Box::new(InitFsScheme::new()))).expect("failed to insert initfs scheme");
     IRQ_SCHEME_ID.store(list.insert(Box::new(*b"irq"), Arc::new(Box::new(IrqScheme))).expect("failed to insert irq scheme"), Ordering::SeqCst);
     PIPE_SCHEME_ID.store(list.insert(Box::new(*b"pipe"), Arc::new(Box::new(PipeScheme))).expect("failed to insert pipe scheme"), Ordering::SeqCst);
+    list.insert(Box::new(*b"sys"), Arc::new(Box::new(SysScheme::new()))).expect("failed to insert sys scheme");
     RwLock::new(list)
 }
 

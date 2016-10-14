@@ -4,7 +4,7 @@ use alloc::boxed::Box;
 use collections::{BTreeMap, Vec};
 use core::{mem, str};
 use core::ops::DerefMut;
-use spin::Mutex;
+use spin::{Mutex, RwLock};
 
 use arch;
 use arch::externs::memcpy;
@@ -71,6 +71,7 @@ pub fn clone(flags: usize, stack_base: usize) -> Result<usize> {
         let mut heap_option = None;
         let mut stack_option = None;
         let grants;
+        let name;
         let cwd;
         let env;
         let files;
@@ -184,6 +185,12 @@ pub fn clone(flags: usize, stack_base: usize) -> Result<usize> {
                 grants = context.grants.clone();
             } else {
                 grants = Arc::new(Mutex::new(Vec::new()));
+            }
+
+            if flags & CLONE_VM == CLONE_VM {
+                name = context.name.clone();
+            } else {
+                name = Arc::new(Mutex::new(context.name.lock().clone()));
             }
 
             if flags & CLONE_FS == CLONE_FS {
@@ -382,6 +389,8 @@ pub fn clone(flags: usize, stack_base: usize) -> Result<usize> {
                 context.stack = Some(stack);
             }
 
+            context.name = name;
+
             context.cwd = cwd;
 
             context.env = env;
@@ -395,61 +404,6 @@ pub fn clone(flags: usize, stack_base: usize) -> Result<usize> {
     Ok(pid)
 }
 
-pub fn exit(status: usize) -> ! {
-    {
-        let mut close_files = Vec::new();
-        {
-            let contexts = context::contexts();
-            let (vfork, ppid) = {
-                let context_lock = contexts.current().expect("tried to exit without context");
-                let mut context = context_lock.write();
-                context.image.clear();
-                drop(context.heap.take());
-                drop(context.stack.take());
-                context.grants = Arc::new(Mutex::new(Vec::new()));
-                if Arc::strong_count(&context.files) == 1 {
-                    mem::swap(context.files.lock().deref_mut(), &mut close_files);
-                }
-                context.files = Arc::new(Mutex::new(Vec::new()));
-                context.status = context::Status::Exited(status);
-
-                let vfork = context.vfork;
-                context.vfork = false;
-                context.waitpid.notify();
-                (vfork, context.ppid)
-            };
-            if vfork {
-                if let Some(context_lock) = contexts.get(ppid) {
-                    let mut context = context_lock.write();
-                    if ! context.unblock() {
-                        println!("{} not blocked for exit vfork unblock", ppid);
-                    }
-                } else {
-                    println!("{} not found for exit vfork unblock", ppid);
-                }
-            }
-        }
-
-        for (fd, file_option) in close_files.drain(..).enumerate() {
-            if let Some(file) = file_option {
-                context::event::unregister(fd, file.scheme, file.number);
-
-                let scheme_option = {
-                    let schemes = scheme::schemes();
-                    schemes.get(file.scheme).map(|scheme| scheme.clone())
-                };
-                if let Some(scheme) = scheme_option {
-                    let _ = scheme.close(file.number);
-                }
-            }
-        }
-    }
-
-    unsafe { context::switch(); }
-
-    unreachable!();
-}
-
 pub fn exec(path: &[u8], arg_ptrs: &[[usize; 2]]) -> Result<usize> {
     let entry;
     let mut sp = arch::USER_STACK_OFFSET + arch::USER_STACK_SIZE - 256;
@@ -461,14 +415,14 @@ pub fn exec(path: &[u8], arg_ptrs: &[[usize; 2]]) -> Result<usize> {
             args.push(arg.to_vec()); // Must be moved into kernel space before exec unmaps all memory
         }
 
-        let (uid, gid) = {
+        let (uid, gid, canonical) = {
             let contexts = context::contexts();
             let context_lock = contexts.current().ok_or(Error::new(ESRCH))?;
             let context = context_lock.read();
-            (context.euid, context.egid)
+            (context.euid, context.egid, context.canonicalize(path))
         };
 
-        let file = syscall::open(path, 0)?;
+        let file = syscall::open(&canonical, 0)?;
         let mut stat = Stat::default();
         syscall::file_op_mut_slice(syscall::number::SYS_FSTAT, file, &mut stat)?;
 
@@ -504,6 +458,9 @@ pub fn exec(path: &[u8], arg_ptrs: &[[usize; 2]]) -> Result<usize> {
                 let (vfork, ppid) = {
                     let context_lock = contexts.current().ok_or(Error::new(ESRCH))?;
                     let mut context = context_lock.write();
+
+                    // Set name
+                    context.name = Arc::new(Mutex::new(canonical));
 
                     // Unmap previous image and stack
                     context.image.clear();
@@ -639,6 +596,69 @@ pub fn exec(path: &[u8], arg_ptrs: &[[usize; 2]]) -> Result<usize> {
     unsafe { usermode(entry, sp); }
 }
 
+fn terminate(context_lock: Arc<RwLock<context::Context>>, status: usize) {
+    let mut close_files = Vec::new();
+    {
+        let (vfork, ppid) = {
+            let mut context = context_lock.write();
+            context.image.clear();
+            drop(context.heap.take());
+            drop(context.stack.take());
+            context.grants = Arc::new(Mutex::new(Vec::new()));
+            if Arc::strong_count(&context.files) == 1 {
+                mem::swap(context.files.lock().deref_mut(), &mut close_files);
+            }
+            context.files = Arc::new(Mutex::new(Vec::new()));
+            context.status = context::Status::Exited(status);
+
+            let vfork = context.vfork;
+            context.vfork = false;
+            context.waitpid.notify();
+            (vfork, context.ppid)
+        };
+        if vfork {
+            let contexts = context::contexts();
+            if let Some(parent_lock) = contexts.get(ppid) {
+                let mut parent = parent_lock.write();
+                if ! parent.unblock() {
+                    println!("{} not blocked for exit vfork unblock", ppid);
+                }
+            } else {
+                println!("{} not found for exit vfork unblock", ppid);
+            }
+        }
+    }
+
+    for (fd, file_option) in close_files.drain(..).enumerate() {
+        if let Some(file) = file_option {
+            context::event::unregister(fd, file.scheme, file.number);
+
+            let scheme_option = {
+                let schemes = scheme::schemes();
+                schemes.get(file.scheme).map(|scheme| scheme.clone())
+            };
+            if let Some(scheme) = scheme_option {
+                let _ = scheme.close(file.number);
+            }
+        }
+    }
+}
+
+pub fn exit(status: usize) -> ! {
+    {
+        let context_lock = {
+            let contexts = context::contexts();
+            let context_lock = contexts.current().ok_or(Error::new(ESRCH)).expect("exit failed to find context");
+            context_lock.clone()
+        };
+        terminate(context_lock, status);
+    }
+
+    unsafe { context::switch(); }
+
+    unreachable!();
+}
+
 pub fn getegid() -> Result<usize> {
     let contexts = context::contexts();
     let context_lock = contexts.current().ok_or(Error::new(ESRCH))?;
@@ -676,6 +696,69 @@ pub fn getuid() -> Result<usize> {
 
 pub fn iopl(_level: usize) -> Result<usize> {
     //TODO
+    Ok(0)
+}
+
+pub fn kill(pid: usize, sig: usize) -> Result<usize> {
+    use syscall::flag::*;
+
+    let context_lock = {
+        let contexts = context::contexts();
+        let context_lock = contexts.get(pid).ok_or(Error::new(ESRCH))?;
+        context_lock.clone()
+    };
+
+    let term = |context_lock| {
+        terminate(context_lock, !sig);
+    };
+
+    let core = |context_lock| {
+        terminate(context_lock, !sig);
+    };
+
+    let stop = || {
+
+    };
+
+    let cont = || {
+
+    };
+
+    match sig {
+        0 => (),
+        SIGHUP => term(context_lock),
+        SIGINT => term(context_lock),
+        SIGQUIT => core(context_lock),
+        SIGILL => core(context_lock),
+        SIGTRAP => core(context_lock),
+        SIGABRT => core(context_lock),
+        SIGBUS => core(context_lock),
+        SIGFPE => core(context_lock),
+        SIGKILL => term(context_lock),
+        SIGUSR1 => term(context_lock),
+        SIGSEGV => core(context_lock),
+        SIGPIPE => term(context_lock),
+        SIGALRM => term(context_lock),
+        SIGTERM => term(context_lock),
+        SIGSTKFLT => term(context_lock),
+        SIGCHLD => (),
+        SIGCONT => cont(),
+        SIGSTOP => stop(),
+        SIGTSTP => stop(),
+        SIGTTIN => stop(),
+        SIGTTOU => stop(),
+        SIGURG => (),
+        SIGXCPU => core(context_lock),
+        SIGXFSZ => core(context_lock),
+        SIGVTALRM => term(context_lock),
+        SIGPROF => term(context_lock),
+        SIGWINCH => (),
+        SIGIO => term(context_lock),
+        SIGPWR => term(context_lock),
+        SIGSYS => core(context_lock),
+        _ => return Err(Error::new(EINVAL))
+    }
+
     Ok(0)
 }
 

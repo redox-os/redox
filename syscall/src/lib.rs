@@ -112,6 +112,10 @@ pub unsafe fn iopl(level: usize) -> Result<usize> {
     syscall1(SYS_IOPL, level)
 }
 
+pub fn kill(pid: usize, sig: usize) -> Result<usize> {
+    unsafe { syscall2(SYS_KILL, pid, sig) }
+}
+
 pub unsafe fn link(old: *const u8, new: *const u8) -> Result<usize> {
     syscall2(SYS_LINK, old as usize, new as usize)
 }
