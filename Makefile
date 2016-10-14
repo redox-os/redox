@@ -17,7 +17,7 @@ CARGO=RUSTC="$(RUSTC)" cargo
 CARGOFLAGS=--target $(TARGET).json -- -C opt-level=s --cfg redox
 
 # Default targets
-.PHONY: all clean qemu bochs drivers schemes coreutils extrautils netutils userutils wireshark FORCE
+.PHONY: all clean update qemu bochs drivers schemes coreutils extrautils netutils userutils wireshark FORCE
 
 all: $(KBUILD)/harddrive.bin
 
@@ -47,6 +47,30 @@ clean:
 	rm -rf initfs/bin
 	rm -rf filesystem/bin
 	rm -rf build
+
+update:
+	cargo update
+	cargo update --manifest-path libstd/Cargo.toml
+	cargo update --manifest-path drivers/ahcid/Cargo.toml
+	cargo update --manifest-path drivers/e1000d/Cargo.toml
+	cargo update --manifest-path drivers/ps2d/Cargo.toml
+	cargo update --manifest-path drivers/pcid/Cargo.toml
+	cargo update --manifest-path drivers/vesad/Cargo.toml
+	cargo update --manifest-path programs/init/Cargo.toml
+	cargo update --manifest-path programs/ion/Cargo.toml
+	cargo update --manifest-path programs/coreutils/Cargo.toml
+	cargo update --manifest-path programs/extrautils/Cargo.toml
+	cargo update --manifest-path programs/netutils/Cargo.toml
+	cargo update --manifest-path programs/orbutils/Cargo.toml
+	cargo update --manifest-path programs/userutils/Cargo.toml
+	cargo update --manifest-path programs/smith/Cargo.toml
+	cargo update --manifest-path schemes/ethernetd/Cargo.toml
+	cargo update --manifest-path schemes/example/Cargo.toml
+	cargo update --manifest-path schemes/ipd/Cargo.toml
+	cargo update --manifest-path schemes/orbital/Cargo.toml
+	cargo update --manifest-path schemes/redoxfs/Cargo.toml
+	cargo update --manifest-path schemes/tcpd/Cargo.toml
+	cargo update --manifest-path schemes/udpd/Cargo.toml
 
 FORCE:
 
