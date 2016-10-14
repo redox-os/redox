@@ -6,10 +6,11 @@ use spin::RwLock;
 
 use syscall::data::Stat;
 use syscall::error::{Error, EBADF, EINVAL, ENOENT, Result};
-use syscall::flag::{MODE_FILE, SEEK_CUR, SEEK_END, SEEK_SET};
+use syscall::flag::{MODE_DIR, MODE_FILE, SEEK_CUR, SEEK_END, SEEK_SET};
 use syscall::scheme::Scheme;
 
 mod context;
+mod scheme;
 //mod interrupt;
 //mod log;
 //mod memory;
@@ -36,6 +37,7 @@ impl SysScheme {
         let mut files: BTreeMap<&'static [u8], Box<SysFn>> = BTreeMap::new();
 
         files.insert(b"context", Box::new(move || context::resource()));
+        files.insert(b"scheme", Box::new(move || scheme::resource()));
         //files.insert(b"interrupt", Box::new(move || interrupt::resource()));
         //files.insert(b"log", Box::new(move || log::resource()));
         //files.insert(b"memory", Box::new(move || memory::resource()));
@@ -54,18 +56,36 @@ impl Scheme for SysScheme {
         let path_utf8 = str::from_utf8(path).map_err(|_err| Error::new(ENOENT))?;
         let path_trimmed = path_utf8.trim_matches('/');
 
-        //Have to iterate to get the path without allocation
-        for entry in self.files.iter() {
-            if entry.0 == &path_trimmed.as_bytes() {
-                let id = self.next_id.fetch_add(1, Ordering::SeqCst);
-                self.handles.write().insert(id, Handle {
-                    path: entry.0,
-                    data: entry.1()?,
-                    mode: MODE_FILE | 0o444,
-                    seek: 0
-                });
+        if path_trimmed.is_empty() {
+            let mut data = Vec::new();
+            for entry in self.files.iter() {
+                if ! data.is_empty() {
+                    data.push(b'\n');
+                }
+                data.extend_from_slice(entry.0);
+            }
 
-                return Ok(id)
+            let id = self.next_id.fetch_add(1, Ordering::SeqCst);
+            self.handles.write().insert(id, Handle {
+                path: b"",
+                data: data,
+                mode: MODE_DIR | 0o444,
+                seek: 0
+            });
+            return Ok(id)
+        } else {
+            //Have to iterate to get the path without allocation
+            for entry in self.files.iter() {
+                if entry.0 == &path_trimmed.as_bytes() {
+                    let id = self.next_id.fetch_add(1, Ordering::SeqCst);
+                    self.handles.write().insert(id, Handle {
+                        path: entry.0,
+                        data: entry.1()?,
+                        mode: MODE_FILE | 0o444,
+                        seek: 0
+                    });
+                    return Ok(id)
+                }
             }
         }
 
@@ -122,9 +142,8 @@ impl Scheme for SysScheme {
         let handles = self.handles.read();
         let handle = handles.get(&id).ok_or(Error::new(EBADF))?;
 
-        //TODO: Copy scheme part in kernel
         let mut i = 0;
-        let scheme_path = b"initfs:";
+        let scheme_path = b"sys:";
         while i < buf.len() && i < scheme_path.len() {
             buf[i] = scheme_path[i];
             i += 1;

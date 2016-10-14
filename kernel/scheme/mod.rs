@@ -71,6 +71,14 @@ impl SchemeList {
         }
     }
 
+    pub fn iter(&self) -> ::collections::btree_map::Iter<usize, Arc<Box<Scheme + Send + Sync>>> {
+        self.map.iter()
+    }
+
+    pub fn iter_name(&self) -> ::collections::btree_map::Iter<Box<[u8]>, usize> {
+        self.names.iter()
+    }
+
     /// Get the nth scheme.
     pub fn get(&self, id: usize) -> Option<&Arc<Box<Scheme + Send + Sync>>> {
         self.map.get(&id)
