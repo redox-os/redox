@@ -4,7 +4,7 @@ use alloc::boxed::Box;
 use collections::{BTreeMap, Vec};
 use core::{mem, str};
 use core::ops::DerefMut;
-use spin::{Mutex, RwLock};
+use spin::Mutex;
 
 use arch;
 use arch::externs::memcpy;
@@ -596,26 +596,56 @@ pub fn exec(path: &[u8], arg_ptrs: &[[usize; 2]]) -> Result<usize> {
     unsafe { usermode(entry, sp); }
 }
 
-fn terminate(context_lock: Arc<RwLock<context::Context>>, status: usize) {
-    let mut close_files = Vec::new();
+pub fn exit(status: usize) -> ! {
     {
-        let (vfork, ppid) = {
+        let context_lock = {
+            let contexts = context::contexts();
+            let context_lock = contexts.current().ok_or(Error::new(ESRCH)).expect("exit failed to find context");
+            context_lock.clone()
+        };
+
+        let mut close_files = Vec::new();
+        {
             let mut context = context_lock.write();
-            context.image.clear();
-            drop(context.heap.take());
-            drop(context.stack.take());
-            context.grants = Arc::new(Mutex::new(Vec::new()));
             if Arc::strong_count(&context.files) == 1 {
                 mem::swap(context.files.lock().deref_mut(), &mut close_files);
             }
             context.files = Arc::new(Mutex::new(Vec::new()));
-            context.status = context::Status::Exited(status);
+        }
+
+        /// Files must be closed while context is valid so that messages can be passed
+        for (fd, file_option) in close_files.drain(..).enumerate() {
+            if let Some(file) = file_option {
+                context::event::unregister(fd, file.scheme, file.number);
+
+                let scheme_option = {
+                    let schemes = scheme::schemes();
+                    schemes.get(file.scheme).map(|scheme| scheme.clone())
+                };
+                if let Some(scheme) = scheme_option {
+                    let _ = scheme.close(file.number);
+                }
+            }
+        }
+
+        let (vfork, ppid) = {
+            let mut context = context_lock.write();
+
+            context.image.clear();
+            drop(context.heap.take());
+            drop(context.stack.take());
+            context.grants = Arc::new(Mutex::new(Vec::new()));
 
             let vfork = context.vfork;
             context.vfork = false;
+
+            context.status = context::Status::Exited(status);
+
             context.waitpid.notify();
+
             (vfork, context.ppid)
         };
+
         if vfork {
             let contexts = context::contexts();
             if let Some(parent_lock) = contexts.get(ppid) {
@@ -627,31 +657,6 @@ fn terminate(context_lock: Arc<RwLock<context::Context>>, status: usize) {
                 println!("{} not found for exit vfork unblock", ppid);
             }
         }
-    }
-
-    for (fd, file_option) in close_files.drain(..).enumerate() {
-        if let Some(file) = file_option {
-            context::event::unregister(fd, file.scheme, file.number);
-
-            let scheme_option = {
-                let schemes = scheme::schemes();
-                schemes.get(file.scheme).map(|scheme| scheme.clone())
-            };
-            if let Some(scheme) = scheme_option {
-                let _ = scheme.close(file.number);
-            }
-        }
-    }
-}
-
-pub fn exit(status: usize) -> ! {
-    {
-        let context_lock = {
-            let contexts = context::contexts();
-            let context_lock = contexts.current().ok_or(Error::new(ESRCH)).expect("exit failed to find context");
-            context_lock.clone()
-        };
-        terminate(context_lock, status);
     }
 
     unsafe { context::switch(); }
@@ -702,45 +707,45 @@ pub fn iopl(_level: usize) -> Result<usize> {
 pub fn kill(pid: usize, sig: usize) -> Result<usize> {
     use syscall::flag::*;
 
-    let context_lock = {
+    let _context_lock = {
         let contexts = context::contexts();
         let context_lock = contexts.get(pid).ok_or(Error::new(ESRCH))?;
         context_lock.clone()
     };
 
-    let term = |context_lock| {
-        terminate(context_lock, !sig);
+    let term = || {
+        println!("Terminate {}", pid);
     };
 
-    let core = |context_lock| {
-        terminate(context_lock, !sig);
+    let core = || {
+        println!("Core {}", pid);
     };
 
     let stop = || {
-
+        println!("Stop {}", pid);
     };
 
     let cont = || {
-
+        println!("Continue {}", pid);
     };
 
     match sig {
         0 => (),
-        SIGHUP => term(context_lock),
-        SIGINT => term(context_lock),
-        SIGQUIT => core(context_lock),
-        SIGILL => core(context_lock),
-        SIGTRAP => core(context_lock),
-        SIGABRT => core(context_lock),
-        SIGBUS => core(context_lock),
-        SIGFPE => core(context_lock),
-        SIGKILL => term(context_lock),
-        SIGUSR1 => term(context_lock),
-        SIGSEGV => core(context_lock),
-        SIGPIPE => term(context_lock),
-        SIGALRM => term(context_lock),
-        SIGTERM => term(context_lock),
-        SIGSTKFLT => term(context_lock),
+        SIGHUP => term(),
+        SIGINT => term(),
+        SIGQUIT => core(),
+        SIGILL => core(),
+        SIGTRAP => core(),
+        SIGABRT => core(),
+        SIGBUS => core(),
+        SIGFPE => core(),
+        SIGKILL => term(),
+        SIGUSR1 => term(),
+        SIGSEGV => core(),
+        SIGPIPE => term(),
+        SIGALRM => term(),
+        SIGTERM => term(),
+        SIGSTKFLT => term(),
         SIGCHLD => (),
         SIGCONT => cont(),
         SIGSTOP => stop(),
@@ -748,14 +753,14 @@ pub fn kill(pid: usize, sig: usize) -> Result<usize> {
         SIGTTIN => stop(),
         SIGTTOU => stop(),
         SIGURG => (),
-        SIGXCPU => core(context_lock),
-        SIGXFSZ => core(context_lock),
-        SIGVTALRM => term(context_lock),
-        SIGPROF => term(context_lock),
+        SIGXCPU => core(),
+        SIGXFSZ => core(),
+        SIGVTALRM => term(),
+        SIGPROF => term(),
         SIGWINCH => (),
-        SIGIO => term(context_lock),
-        SIGPWR => term(context_lock),
-        SIGSYS => core(context_lock),
+        SIGIO => term(),
+        SIGPWR => term(),
+        SIGSYS => core(),
         _ => return Err(Error::new(EINVAL))
     }
 

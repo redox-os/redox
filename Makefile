@@ -343,6 +343,7 @@ userutils: \
 	filesystem/bin/sudo
 
 schemes: \
+	filesystem/bin/arpd \
 	filesystem/bin/ethernetd \
 	filesystem/bin/example \
 	filesystem/bin/ipd \

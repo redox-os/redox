@@ -1,11 +1,13 @@
 initfs:bin/pcid initfs:etc/pcid.toml
 initfs:bin/redoxfs disk:0
 initfs:bin/pcid file:etc/pcid.toml
-file:bin/vesad
+file:bin/vesad T T G
 file:bin/ps2d
 file:bin/ethernetd
+file:bin/arpd
 file:bin/ipd
 file:bin/tcpd
 file:bin/udpd
 file:bin/getty display:1
-#file:bin/orbital display:2
+file:bin/getty display:2
+#file:bin/orbital display:3

@@ -1,0 +1,6 @@
+[package]
+name = "arpd"
+version = "0.1.0"
+
+[dependencies]
+syscall = { path = "../../syscall/" }

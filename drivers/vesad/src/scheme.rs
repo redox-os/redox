@@ -13,20 +13,30 @@ pub struct DisplayScheme {
     height: usize,
     onscreen: usize,
     active: Cell<usize>,
+    next_screen: Cell<usize>,
     screens: RefCell<BTreeMap<usize, Box<Screen>>>
 }
 
 impl DisplayScheme {
-    pub fn new(width: usize, height: usize, onscreen: usize) -> DisplayScheme {
+    pub fn new(width: usize, height: usize, onscreen: usize, spec: &[bool]) -> DisplayScheme {
         let mut screens: BTreeMap<usize, Box<Screen>> = BTreeMap::new();
-        screens.insert(1, Box::new(TextScreen::new(Display::new(width, height, onscreen))));
-        screens.insert(2, Box::new(GraphicScreen::new(Display::new(width, height, onscreen))));
+
+        let mut screen_i = 1;
+        for &screen_type in spec.iter() {
+            if screen_type {
+                screens.insert(screen_i, Box::new(GraphicScreen::new(Display::new(width, height, onscreen))));
+            } else {
+                screens.insert(screen_i, Box::new(TextScreen::new(Display::new(width, height, onscreen))));
+            }
+            screen_i += 1;
+        }
 
         DisplayScheme {
             width: width,
             height: height,
             onscreen: onscreen,
             active: Cell::new(1),
+            next_screen: Cell::new(screen_i),
             screens: RefCell::new(screens)
         }
     }

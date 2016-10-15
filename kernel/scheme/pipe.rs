@@ -1,9 +1,9 @@
 use alloc::arc::{Arc, Weak};
-use collections::BTreeMap;
+use collections::{BTreeMap, VecDeque};
 use core::sync::atomic::{AtomicUsize, ATOMIC_USIZE_INIT, Ordering};
-use spin::{Once, RwLock, RwLockReadGuard, RwLockWriteGuard};
+use spin::{Mutex, Once, RwLock, RwLockReadGuard, RwLockWriteGuard};
 
-use sync::WaitQueue;
+use sync::WaitCondition;
 use syscall::error::{Error, Result, EBADF, EPIPE};
 use syscall::scheme::Scheme;
 
@@ -30,8 +30,8 @@ fn pipes_mut() -> RwLockWriteGuard<'static, (BTreeMap<usize, PipeRead>, BTreeMap
 pub fn pipe(_flags: usize) -> (usize, usize) {
     let mut pipes = pipes_mut();
     let read_id = PIPE_NEXT_ID.fetch_add(1, Ordering::SeqCst);
-    let read = PipeRead::new();
     let write_id = PIPE_NEXT_ID.fetch_add(1, Ordering::SeqCst);
+    let read = PipeRead::new();
     let write = PipeWrite::new(&read);
     pipes.0.insert(read_id, read);
     pipes.1.insert(write_id, write);
@@ -104,21 +104,43 @@ impl Scheme for PipeScheme {
 /// Read side of a pipe
 #[derive(Clone)]
 pub struct PipeRead {
-    vec: Arc<WaitQueue<u8>>
+    condition: Arc<WaitCondition>,
+    vec: Arc<Mutex<VecDeque<u8>>>
 }
 
 impl PipeRead {
     pub fn new() -> Self {
         PipeRead {
-            vec: Arc::new(WaitQueue::new())
+            condition: Arc::new(WaitCondition::new()),
+            vec: Arc::new(Mutex::new(VecDeque::new())),
         }
     }
 
     fn read(&self, buf: &mut [u8]) -> Result<usize> {
-        if buf.is_empty() || (Arc::weak_count(&self.vec) == 0 && self.vec.is_empty()) {
-            Ok(0)
-        } else {
-            Ok(self.vec.receive_into(buf))
+        loop {
+            {
+                let mut vec = self.vec.lock();
+
+                let mut i = 0;
+                while i < buf.len() {
+                    if let Some(b) = vec.pop_front() {
+                        buf[i] = b;
+                        i += 1;
+                    } else {
+                        break;
+                    }
+                }
+
+                if i > 0 {
+                    return Ok(i);
+                }
+            }
+
+            if Arc::weak_count(&self.vec) == 0 {
+                return Ok(0);
+            } else {
+                self.condition.wait();
+            }
         }
     }
 }
@@ -126,24 +148,37 @@ impl PipeRead {
 /// Read side of a pipe
 #[derive(Clone)]
 pub struct PipeWrite {
-    vec: Weak<WaitQueue<u8>>,
+    condition: Arc<WaitCondition>,
+    vec: Weak<Mutex<VecDeque<u8>>>
 }
 
 impl PipeWrite {
     pub fn new(read: &PipeRead) -> Self {
         PipeWrite {
+            condition: read.condition.clone(),
             vec: Arc::downgrade(&read.vec),
         }
     }
 
     fn write(&self, buf: &[u8]) -> Result<usize> {
-        match self.vec.upgrade() {
-            Some(vec) => {
-                vec.send_from(buf);
+        if let Some(vec_lock) = self.vec.upgrade() {
+            let mut vec = vec_lock.lock();
 
-                Ok(buf.len())
-            },
-            None => Err(Error::new(EPIPE))
+            for &b in buf.iter() {
+                vec.push_back(b);
+            }
+
+            self.condition.notify();
+
+            Ok(buf.len())
+        } else {
+            Err(Error::new(EPIPE))
         }
+    }
+}
+
+impl Drop for PipeWrite {
+    fn drop(&mut self) {
+        self.condition.notify();
     }
 }

@@ -1,15 +1,14 @@
 #![feature(alloc)]
 #![feature(asm)]
 #![feature(heap_api)]
-#![feature(question_mark)]
 
 extern crate alloc;
 extern crate orbclient;
 extern crate syscall;
 
+use std::{env, thread};
 use std::fs::File;
 use std::io::{Read, Write};
-use std::thread;
 use syscall::{physmap, physunmap, Packet, Scheme, MAP_WRITE, MAP_WRITE_COMBINE};
 
 use mode_info::VBEModeInfo;
@@ -23,6 +22,18 @@ pub mod scheme;
 pub mod screen;
 
 fn main() {
+    let mut spec = Vec::new();
+
+    for arg in env::args().skip(1) {
+        if arg == "T" {
+            spec.push(false);
+        } else if arg == "G" {
+            spec.push(true);
+        } else {
+            println!("vesad: unknown screen type: {}", arg);
+        }
+    }
+
     let width;
     let height;
     let physbaseptr;
@@ -46,7 +57,7 @@ fn main() {
             let onscreen = unsafe { physmap(physbaseptr, size * 4, MAP_WRITE | MAP_WRITE_COMBINE).expect("vesad: failed to map VBE LFB") };
             unsafe { fast_set64(onscreen as *mut u64, 0, size/2) };
 
-            let scheme = DisplayScheme::new(width, height, onscreen);
+            let scheme = DisplayScheme::new(width, height, onscreen, &spec);
 
             let mut blocked = Vec::new();
             loop {
