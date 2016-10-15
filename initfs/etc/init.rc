@@ -2,4 +2,4 @@ initfs:bin/pcid initfs:etc/pcid.toml
 initfs:bin/redoxfs disk:0
 cd file:
 export PATH file:bin
-run /etc/init.rc
+run file:etc/init.rc
