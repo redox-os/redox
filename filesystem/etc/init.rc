@@ -1,0 +1,11 @@
+initfs:bin/pcid /etc/pcid.toml
+vesad T T G
+ps2d
+ethernetd
+arpd
+ipd
+tcpd
+udpd
+getty display:1
+getty display:2
+orbital display:3
