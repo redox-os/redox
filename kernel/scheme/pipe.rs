@@ -5,6 +5,7 @@ use spin::{Mutex, Once, RwLock, RwLockReadGuard, RwLockWriteGuard};
 
 use sync::WaitCondition;
 use syscall::error::{Error, Result, EBADF, EPIPE};
+use syscall::flag::O_NONBLOCK;
 use syscall::scheme::Scheme;
 
 /// Pipes list
@@ -27,11 +28,11 @@ fn pipes_mut() -> RwLockWriteGuard<'static, (BTreeMap<usize, PipeRead>, BTreeMap
     PIPES.call_once(init_pipes).write()
 }
 
-pub fn pipe(_flags: usize) -> (usize, usize) {
+pub fn pipe(flags: usize) -> (usize, usize) {
     let mut pipes = pipes_mut();
     let read_id = PIPE_NEXT_ID.fetch_add(1, Ordering::SeqCst);
     let write_id = PIPE_NEXT_ID.fetch_add(1, Ordering::SeqCst);
-    let read = PipeRead::new();
+    let read = PipeRead::new(flags);
     let write = PipeWrite::new(&read);
     pipes.0.insert(read_id, read);
     pipes.1.insert(write_id, write);
@@ -104,13 +105,15 @@ impl Scheme for PipeScheme {
 /// Read side of a pipe
 #[derive(Clone)]
 pub struct PipeRead {
+    flags: usize,
     condition: Arc<WaitCondition>,
     vec: Arc<Mutex<VecDeque<u8>>>
 }
 
 impl PipeRead {
-    pub fn new() -> Self {
+    pub fn new(flags: usize) -> Self {
         PipeRead {
+            flags: flags,
             condition: Arc::new(WaitCondition::new()),
             vec: Arc::new(Mutex::new(VecDeque::new())),
         }
@@ -136,7 +139,7 @@ impl PipeRead {
                 }
             }
 
-            if Arc::weak_count(&self.vec) == 0 {
+            if self.flags & O_NONBLOCK == O_NONBLOCK || Arc::weak_count(&self.vec) == 0 {
                 return Ok(0);
             } else {
                 self.condition.wait();
