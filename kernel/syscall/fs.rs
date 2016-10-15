@@ -98,7 +98,8 @@ pub fn open(path: &[u8], flags: usize) -> Result<usize> {
     let context = context_lock.read();
     context.add_file(::context::file::File {
         scheme: scheme_id,
-        number: file_id
+        number: file_id,
+        event: None,
     }).ok_or(Error::new(EMFILE))
 }
 
@@ -113,12 +114,14 @@ pub fn pipe2(fds: &mut [usize], flags: usize) -> Result<usize> {
 
         let read_fd = context.add_file(::context::file::File {
             scheme: scheme_id,
-            number: read_id
+            number: read_id,
+            event: None,
         }).ok_or(Error::new(EMFILE))?;
 
         let write_fd = context.add_file(::context::file::File {
             scheme: scheme_id,
-            number: write_id
+            number: write_id,
+            event: None,
         }).ok_or(Error::new(EMFILE))?;
 
         fds[0] = read_fd;
@@ -206,7 +209,9 @@ pub fn close(fd: usize) -> Result<usize> {
         file
     };
 
-    context::event::unregister(fd, file.scheme, file.number);
+    if let Some(event_id) = file.event {
+        context::event::unregister(fd, file.scheme, event_id);
+    }
 
     let scheme = {
         let schemes = scheme::schemes();
@@ -240,7 +245,8 @@ pub fn dup(fd: usize) -> Result<usize> {
     let context = context_lock.read();
     context.add_file(::context::file::File {
         scheme: file.scheme,
-        number: new_id
+        number: new_id,
+        event: None,
     }).ok_or(Error::new(EMFILE))
 }
 
@@ -250,8 +256,13 @@ pub fn fevent(fd: usize, flags: usize) -> Result<usize> {
         let contexts = context::contexts();
         let context_lock = contexts.current().ok_or(Error::new(ESRCH))?;
         let context = context_lock.read();
-        let file = context.get_file(fd).ok_or(Error::new(EBADF))?;
-        file
+        let mut files = context.files.lock();
+        let mut file = files.get_mut(fd).ok_or(Error::new(EBADF))?.ok_or(Error::new(EBADF))?;
+        if let Some(event_id) = file.event.take() {
+            println!("{}: {}:{}: events already registered: {}", fd, file.scheme, file.number, event_id);
+            context::event::unregister(fd, file.scheme, event_id);
+        }
+        file.clone()
     };
 
     let scheme = {
@@ -259,7 +270,15 @@ pub fn fevent(fd: usize, flags: usize) -> Result<usize> {
         let scheme = schemes.get(file.scheme).ok_or(Error::new(EBADF))?;
         scheme.clone()
     };
-    scheme.fevent(file.number, flags)?;
-    context::event::register(fd, file.scheme, file.number);
+    let event_id = scheme.fevent(file.number, flags)?;
+    {
+        let contexts = context::contexts();
+        let context_lock = contexts.current().ok_or(Error::new(ESRCH))?;
+        let context = context_lock.read();
+        let mut files = context.files.lock();
+        let mut file = files.get_mut(fd).ok_or(Error::new(EBADF))?.ok_or(Error::new(EBADF))?;
+        file.event = Some(event_id);
+    }
+    context::event::register(fd, file.scheme, event_id);
     Ok(0)
 }

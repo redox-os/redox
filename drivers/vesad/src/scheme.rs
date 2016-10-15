@@ -14,7 +14,7 @@ pub struct DisplayScheme {
     onscreen: usize,
     active: Cell<usize>,
     next_screen: Cell<usize>,
-    screens: RefCell<BTreeMap<usize, Box<Screen>>>
+    pub screens: RefCell<BTreeMap<usize, Box<Screen>>>
 }
 
 impl DisplayScheme {
@@ -77,7 +77,7 @@ impl Scheme for DisplayScheme {
     fn fevent(&self, id: usize, flags: usize) -> Result<usize> {
         let mut screens = self.screens.borrow_mut();
         if let Some(mut screen) = screens.get_mut(&id) {
-            screen.event(flags)
+            screen.event(flags).and(Ok(id))
         } else {
             Err(Error::new(EBADF))
         }

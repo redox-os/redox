@@ -232,7 +232,11 @@ pub fn clone(flags: usize, stack_base: usize) -> Result<usize> {
                     };
                     match result {
                         Ok(new_number) => {
-                            Some(context::file::File { scheme: file.scheme, number: new_number })
+                            Some(context::file::File {
+                                scheme: file.scheme,
+                                number: new_number,
+                                event: None,
+                            })
                         },
                         Err(err) => {
                             println!("clone: failed to dup {}: {:?}", fd, err);
@@ -616,7 +620,9 @@ pub fn exit(status: usize) -> ! {
         /// Files must be closed while context is valid so that messages can be passed
         for (fd, file_option) in close_files.drain(..).enumerate() {
             if let Some(file) = file_option {
-                context::event::unregister(fd, file.scheme, file.number);
+                if let Some(event_id) = file.event {
+                    context::event::unregister(fd, file.scheme, event_id);
+                }
 
                 let scheme_option = {
                     let schemes = scheme::schemes();

@@ -93,8 +93,8 @@ impl Scheme for IrqScheme {
         }
     }
 
-    fn fevent(&self, _file: usize, _flags: usize) -> Result<usize> {
-        Ok(0)
+    fn fevent(&self, file: usize, _flags: usize) -> Result<usize> {
+        Ok(file)
     }
 
     fn fsync(&self, _file: usize) -> Result<usize> {

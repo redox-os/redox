@@ -8,4 +8,6 @@ pub struct File {
     pub scheme: usize,
     /// The number the scheme uses to refer to this file
     pub number: usize,
+    /// If events are on, this is the event ID
+    pub event: Option<usize>,
 }

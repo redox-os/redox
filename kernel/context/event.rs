@@ -27,7 +27,7 @@ pub fn registry_mut() -> RwLockWriteGuard<'static, Registry> {
     REGISTRY.call_once(init_registry).write()
 }
 
-pub fn register(fd: usize, scheme_id: usize, id: usize) -> bool {
+pub fn register(fd: usize, scheme_id: usize, event_id: usize) -> bool {
     let (context_id, events) = {
         let contexts = context::contexts();
         let context_lock = contexts.current().expect("event::register: No context");
@@ -36,7 +36,7 @@ pub fn register(fd: usize, scheme_id: usize, id: usize) -> bool {
     };
 
     let mut registry = registry_mut();
-    let entry = registry.entry((scheme_id, id)).or_insert_with(|| {
+    let entry = registry.entry((scheme_id, event_id)).or_insert_with(|| {
         BTreeMap::new()
     });
     if entry.contains_key(&(context_id, fd)) {
@@ -47,11 +47,11 @@ pub fn register(fd: usize, scheme_id: usize, id: usize) -> bool {
     }
 }
 
-pub fn unregister(fd: usize, scheme_id: usize, id: usize) {
+pub fn unregister(fd: usize, scheme_id: usize, event_id: usize) {
     let mut registry = registry_mut();
 
     let mut remove = false;
-    if let Some(entry) = registry.get_mut(&(scheme_id, id)) {
+    if let Some(entry) = registry.get_mut(&(scheme_id, event_id)) {
         entry.remove(&(context::context_id(), fd));
 
         if entry.is_empty() {
@@ -60,13 +60,13 @@ pub fn unregister(fd: usize, scheme_id: usize, id: usize) {
     }
 
     if remove {
-        registry.remove(&(scheme_id, id));
+        registry.remove(&(scheme_id, event_id));
     }
 }
 
-pub fn trigger(scheme_id: usize, id: usize, flags: usize, data: usize) {
+pub fn trigger(scheme_id: usize, event_id: usize, flags: usize, data: usize) {
     let registry = registry();
-    if let Some(event_lists) = registry.get(&(scheme_id, id)) {
+    if let Some(event_lists) = registry.get(&(scheme_id, event_id)) {
         for entry in event_lists.iter() {
             if let Some(event_list) = entry.1.upgrade() {
                 event_list.send(Event {
