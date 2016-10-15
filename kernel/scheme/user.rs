@@ -59,7 +59,10 @@ impl UserInner {
         };
 
         let len = self.todo.send(packet);
-        context::event::trigger(ROOT_SCHEME_ID.load(Ordering::SeqCst), self.handle_id, EVENT_READ, len * mem::size_of::<Packet>());
+        //TODO: Use O_NONBLOCK and send one notification
+        for _i in 0 .. len {
+            context::event::trigger(ROOT_SCHEME_ID.load(Ordering::SeqCst), self.handle_id, EVENT_READ, mem::size_of::<Packet>());
+        }
 
         Error::demux(self.done.receive(&id))
     }
