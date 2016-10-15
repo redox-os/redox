@@ -97,7 +97,7 @@ fn main() {
                             a: syscall::number::SYS_FEVENT,
                             b: *screen_id,
                             c: EVENT_READ,
-                            d: mem::size_of::<Packet>()
+                            d: mem::size_of::<orbclient::Event>()
                         };
 
                         socket.write(&event_packet).expect("vesad: failed to write display event");
