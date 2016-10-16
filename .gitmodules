@@ -12,7 +12,7 @@
 	url = https://github.com/redox-os/ion.git
 [submodule "openlibm"]
 	path = openlibm
-	url = https://github.com/JuliaLang/openlibm.git
+	url = https://github.com/redox-os/openlibm.git
 [submodule "programs/coreutils"]
 	path = programs/coreutils
 	url = https://github.com/redox-os/coreutils.git
