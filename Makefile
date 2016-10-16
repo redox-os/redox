@@ -5,7 +5,8 @@ KTARGET=$(ARCH)-unknown-none
 KBUILD=build/kernel
 KRUSTC=./krustc.sh
 KRUSTCFLAGS=--target $(KTARGET).json -C opt-level=s -C soft-float
-KCARGO=RUSTC="$(KRUSTC)" cargo
+KRUSTDOC=./krustdoc.sh
+KCARGO=RUSTC="$(KRUSTC)" RUSTDOC="$(KRUSTDOC)" cargo
 KCARGOFLAGS=--target $(KTARGET).json -- -C opt-level=s -C soft-float
 
 # Userspace variables
@@ -13,11 +14,12 @@ TARGET=$(ARCH)-unknown-redox
 BUILD=build/userspace
 RUSTC=./rustc.sh
 RUSTCFLAGS=--target $(TARGET).json -C opt-level=s --cfg redox
-CARGO=RUSTC="$(RUSTC)" cargo
+RUSTDOC=./rustdoc.sh
+CARGO=RUSTC="$(RUSTC)" RUSTDOC="$(RUSTDOC)" cargo
 CARGOFLAGS=--target $(TARGET).json -- -C opt-level=s --cfg redox
 
 # Default targets
-.PHONY: all clean update qemu bochs drivers schemes coreutils extrautils netutils userutils wireshark FORCE
+.PHONY: all clean doc update qemu bochs drivers schemes coreutils extrautils netutils userutils wireshark FORCE
 
 all: $(KBUILD)/harddrive.bin
 
@@ -47,6 +49,9 @@ clean:
 	rm -rf initfs/bin
 	rm -rf filesystem/bin
 	rm -rf build
+
+doc: $(KBUILD)/libkernel.a
+	$(KCARGO) doc --target $(KTARGET).json
 
 update:
 	cargo update
