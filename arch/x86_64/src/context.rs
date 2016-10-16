@@ -70,6 +70,7 @@ impl Context {
     #[inline(never)]
     #[naked]
     pub unsafe fn switch_to(&mut self, next: &mut Context) {
+        /*
         asm!("fxsave [$0]" : : "r"(self.fx) : "memory" : "intel", "volatile");
         self.loadable = true;
         if next.loadable {
@@ -77,6 +78,7 @@ impl Context {
         }else{
             asm!("fninit" : : : "memory" : "intel", "volatile");
         }
+        */
 
         asm!("mov $0, cr3" : "=r"(self.cr3) : : "memory" : "intel", "volatile");
         if next.cr3 != self.cr3 {
