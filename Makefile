@@ -598,7 +598,7 @@ $(BUILD)/libralloc_shim.rlib: crates/ralloc_shim/lib.rs $(BUILD)/libsystem.rlib
 	$(RUSTC) $(RUSTCFLAGS) --crate-name ralloc_shim --crate-type lib -o $@ $<
 
 $(BUILD)/libgoblin.rlib: crates/goblin/src/lib.rs crates/goblin/src/elf/*/*.rs $(BUILD)/libcore.rlib
-	$(RUSTC) $(RUSTCFLAGS) --cfg feature=\"no_mach\" --cfg feature=\"no_mach32\" --cfg feature=\"no_pe\" --cfg feature=\"no_pe32\" --cfg feature=\"no_endian_fd\" --cfg feature=\"pure\" --crate-name goblin --crate-type lib -o $@ $<
+	$(RUSTC) $(RUSTCFLAGS) --cfg feature=\"elf32\" --cfg feature=\"elf64\" --crate-name goblin --crate-type lib -o $@ $<
 
 $(BUILD)/kernel.rlib: kernel/main.rs kernel/*.rs kernel/*/*.rs kernel/*/*/*.rs $(BUILD)/libbitflags.rlib $(BUILD)/libio.rlib $(BUILD)/libransid.rlib $(BUILD)/libsystem.rlib $(BUILD)/libgoblin.rlib build/initfs.gen
 	$(RUSTC) $(RUSTCFLAGS) -C lto -o $@ $<

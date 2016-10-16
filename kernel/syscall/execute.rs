@@ -8,6 +8,7 @@ use arch::context::{CONTEXT_IMAGE_ADDR, CONTEXT_IMAGE_SIZE, CONTEXT_HEAP_ADDR, C
                     context_switch, context_userspace, Context, ContextMemory, ContextZone};
 use arch::gdt::{GDT_USER_CODE, GDT_USER_DATA, GDT_USER_TLS, GdtEntry};
 use arch::elf::Elf;
+use goblin::elf::program_header;
 use arch::memory;
 use arch::regs::Regs;
 
@@ -247,11 +248,11 @@ pub fn execute(mut args: Vec<String>) -> Result<usize> {
 
                             unsafe { memory.unmap() };
 
-                            memory.writeable = segment.p_flags & 2 == 2;
+                            memory.writeable = segment.p_flags & program_header::PF_W == program_header::PF_W;
 
-                            if segment.p_type == 1 {
+                            if segment.p_type == program_header::PT_LOAD {
                                 image.memory.push(memory);
-                            } else if segment.p_type == 7 {
+                            } else if segment.p_type == program_header::PT_TLS {
                                 unsafe { *current.tls_master.get() = Some(memory) };
                             }
                         }

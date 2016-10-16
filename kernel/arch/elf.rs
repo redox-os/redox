@@ -20,10 +20,13 @@ pub struct Elf<'a> {
 impl<'a> Elf<'a> {
     /// Create a ELF executable from data
     pub fn from(data: &'a [u8]) -> Result<Elf<'a>, String> {
+        // this verification code is a use case for `goblin::elf::header::peek`
+        // but you 1. might want error codes in your control
+        // 2. might not want binary pre-check validation controlled by an upstream crate
         if data.len() < header::SIZEOF_EHDR {
             Err(format!("Elf: Not enough data: {} < {}", data.len(), header::SIZEOF_EHDR))
         } else if data.get_slice(..header::SELFMAG) != header::ELFMAG {
-            Err(format!("Elf: Invalid magic: {:?} != {:?}", data.get_slice(..4), header::ELFMAG))
+            Err(format!("Elf: Invalid magic: {:?} != {:?}", data.get_slice(..header::SELFMAG), header::ELFMAG))
         } else if data.get(header::EI_CLASS) != Some(&header::ELFCLASS) {
             Err(format!("Elf: Invalid architecture: {:?} != {:?}", data.get(header::EI_CLASS), header::ELFCLASS))
         } else {
