@@ -1,5 +1,4 @@
 #![feature(asm)]
-#![feature(question_mark)]
 
 extern crate dma;
 extern crate event;
