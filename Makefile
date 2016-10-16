@@ -113,7 +113,7 @@ else
 		CC=$(ARCH)-elf-gcc
 		CXX=$(ARCH)-elf-g++
 		ECHO=/bin/echo
-		FUMOUNT=fusermount -u
+		FUMOUNT=sudo umount
 		LD=$(ARCH)-elf-ld
 		LDFLAGS=--gc-sections
 		KRUSTCFLAGS+=-C linker=$(CC)
@@ -124,7 +124,7 @@ else
 		CC=gcc
 		CXX=g++
 		ECHO=echo
-		FUMOUNT=sudo umount
+		FUMOUNT=fusermount -u
 		LD=ld
 		LDFLAGS=--gc-sections
 		ifneq ($(kvm),no)
