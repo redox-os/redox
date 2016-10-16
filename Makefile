@@ -113,6 +113,7 @@ else
 		CC=$(ARCH)-elf-gcc
 		CXX=$(ARCH)-elf-g++
 		ECHO=/bin/echo
+		FUMOUNT=fusermount -u
 		LD=$(ARCH)-elf-ld
 		LDFLAGS=--gc-sections
 		KRUSTCFLAGS+=-C linker=$(CC)
@@ -123,6 +124,7 @@ else
 		CC=gcc
 		CXX=g++
 		ECHO=echo
+		FUMOUNT=sudo umount
 		LD=ld
 		LDFLAGS=--gc-sections
 		ifneq ($(kvm),no)
@@ -387,7 +389,7 @@ $(BUILD)/filesystem.bin: \
 	chmod +s $(BUILD)/filesystem/bin/su
 	chmod +s $(BUILD)/filesystem/bin/sudo
 	sync
-	-fusermount -u $(BUILD)/filesystem/
+	-$(FUMOUNT) $(BUILD)/filesystem/
 	rm -rf $(BUILD)/filesystem/
 
 mount: FORCE
@@ -397,7 +399,7 @@ mount: FORCE
 
 unmount: FORCE
 	sync
-	-fusermount -u $(KBUILD)/harddrive/
+	-$(FUMOUNT) $(KBUILD)/harddrive/
 	rm -rf $(KBUILD)/harddrive/
 
 wireshark: FORCE
