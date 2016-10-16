@@ -187,7 +187,7 @@ $(BUILD)/libcollections.rlib: rust/src/libcollections/lib.rs $(BUILD)/libcore.rl
 	$(RUSTC) $(RUSTCFLAGS) -o $@ $<
 
 openlibm/libopenlibm.a:
-	CC=$(CC) CFLAGS=-fno-stack-protector make -C openlibm
+	CROSSCC=$(CC) CFLAGS=-fno-stack-protector make -C openlibm libopenlibm.a
 
 $(BUILD)/libopenlibm.a: openlibm/libopenlibm.a
 	mkdir -p $(BUILD)
