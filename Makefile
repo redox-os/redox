@@ -91,11 +91,7 @@ $(KBUILD)/harddrive.bin: $(KBUILD)/kernel
 qemu: $(KBUILD)/harddrive.bin
 	$(QEMU) $(QEMUFLAGS) -kernel $<
 else
-	LD=ld
 	QEMUFLAGS+=-machine q35 -smp 4 -m 1024
-	ifneq ($(kvm),no)
-		QEMUFLAGS+=-enable-kvm -cpu host
-	endif
 	ifeq ($(net),no)
 		QEMUFLAGS+=-net none
 	else
@@ -114,7 +110,24 @@ else
 
 	UNAME := $(shell uname)
 	ifeq ($(UNAME),Darwin)
+		CC=$(ARCH)-elf-gcc
+		CXX=$(ARCH)-elf-g++
+		ECHO=/bin/echo
 		LD=$(ARCH)-elf-ld
+		LDFLAGS=--gc-sections
+		KRUSTCFLAGS+=-C linker=$(CC)
+		KCARGOFLAGS+=-C linker=$(CC)
+		RUSTCFLAGS+=-C linker=$(CC)
+		CARGOFLAGS+=-C linker=$(CC)
+	else
+		CC=gcc
+		CXX=g++
+		ECHO=echo
+		LD=ld
+		LDFLAGS=--gc-sections
+		ifneq ($(kvm),no)
+			QEMUFLAGS+=-enable-kvm -cpu host
+		endif
 	endif
 
 %.list: %
@@ -151,10 +164,10 @@ $(KBUILD)/libcollections.rlib: rust/src/libcollections/lib.rs $(KBUILD)/libcore.
 	$(KRUSTC) $(KRUSTCFLAGS) -o $@ $<
 
 $(KBUILD)/libkernel.a: kernel/** $(KBUILD)/libcore.rlib $(KBUILD)/liballoc.rlib $(KBUILD)/libcollections.rlib $(BUILD)/initfs.rs
-	$(KCARGO) rustc $(KCARGOFLAGS) -C opt-level=s -C lto -o $@
+	$(KCARGO) rustc $(KCARGOFLAGS) -C lto -o $@
 
 $(KBUILD)/kernel: $(KBUILD)/libkernel.a
-	$(LD) --gc-sections -z max-page-size=0x1000 -T arch/$(ARCH)/src/linker.ld -o $@ $<
+	$(LD) $(LDFLAGS) -z max-page-size=0x1000 -T arch/$(ARCH)/src/linker.ld -o $@ $<
 
 # Userspace recipes
 $(BUILD)/libcore.rlib: rust/src/libcore/lib.rs
@@ -174,7 +187,7 @@ $(BUILD)/libcollections.rlib: rust/src/libcollections/lib.rs $(BUILD)/libcore.rl
 	$(RUSTC) $(RUSTCFLAGS) -o $@ $<
 
 openlibm/libopenlibm.a:
-	CFLAGS=-fno-stack-protector make -C openlibm
+	CC=$(CC) CFLAGS=-fno-stack-protector make -C openlibm
 
 $(BUILD)/libopenlibm.a: openlibm/libopenlibm.a
 	mkdir -p $(BUILD)
@@ -213,7 +226,7 @@ $(BUILD)/initfs.rs: \
 	echo '    let mut files: BTreeMap<&'"'"'static [u8], (&'"'"'static [u8], bool)> = BTreeMap::new();' >> $@
 	for folder in `find initfs -type d | sort`; do \
 		name=$$(echo $$folder | sed 's/initfs//' | cut -d '/' -f2-) ; \
-		echo -n '    files.insert(b"'$$name'", (b"' >> $@ ; \
+		$(ECHO) -n '    files.insert(b"'$$name'", (b"' >> $@ ; \
 		ls -1 $$folder | sort | awk 'NR > 1 {printf("\\n")} {printf("%s", $$0)}' >> $@ ; \
 		echo '", true));' >> $@ ; \
 	done
