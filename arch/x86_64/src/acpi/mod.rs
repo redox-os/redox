@@ -22,7 +22,7 @@ pub mod sdt;
 pub mod xsdt;
 
 const TRAMPOLINE: usize = 0x7E00;
-const AP_STARTUP: usize = 0x8000;
+const AP_STARTUP: usize = TRAMPOLINE + 512;
 
 pub fn init_sdt(sdt: &'static Sdt, active_table: &mut ActivePageTable) {
     print!("  ");

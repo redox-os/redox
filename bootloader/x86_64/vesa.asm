@@ -15,17 +15,13 @@ vesa:
     xor cx, cx
     mov [.minx], cx
     mov [.miny], cx
-    mov [.requiredx], cx
-    mov [.requiredy], cx
-    mov [.requiredmode], cx
+    mov [config.xres], cx
+    mov [config.yres], cx
 .findmode:
     mov si, [VBECardInfo.videomodeptr]
     mov ax, [VBECardInfo.videomodeptr+2]
     mov fs, ax
     sub si, 2
-    mov cx, [.requiredmode]
-    test cx, cx
-    jnz .getmodeinfo
 .searchmodes:
     add si, 2
     mov cx, [fs:si]
@@ -51,9 +47,9 @@ vesa:
     jb .searchmodes
 .testx:
     mov cx, [VBEModeInfo.xresolution]
-    cmp word [.requiredx], 0
+    cmp word [config.xres], 0
     je .notrequiredx
-    cmp cx, [.requiredx]
+    cmp cx, [config.xres]
     je .testy
     jmp .searchmodes
 .notrequiredx:
@@ -61,11 +57,11 @@ vesa:
     jb .searchmodes
 .testy:
     mov cx, [VBEModeInfo.yresolution]
-    cmp word [.requiredy], 0
+    cmp word [config.yres], 0
     je .notrequiredy
-    cmp cx, [.requiredy]
+    cmp cx, [config.yres]
     jne .searchmodes    ;as if there weren't enough warnings, USE WITH CAUTION
-    cmp word [.requiredx], 0
+    cmp word [config.xres], 0
     jnz .setmode
     jmp .testgood
 .notrequiredy:
@@ -95,7 +91,16 @@ vesa:
     int 0x16
     pop esi
     cmp al, 'y'
-    jne .searchmodes
+    je .setmode
+    cmp al, 's'
+    je .savemode
+    jmp .searchmodes
+.savemode:
+    mov cx, [VBEModeInfo.xresolution]
+    mov [config.xres], cx
+    mov cx, [VBEModeInfo.yresolution]
+    mov [config.yres], cx
+    call save_config
 .setmode:
     mov bx, [.currentmode]
     cmp bx, 0
@@ -114,12 +119,8 @@ vesa:
 
 .minx dw 640
 .miny dw 480
-.required:
-.requiredx dw 1024    ;USE THESE WITH CAUTION
-.requiredy dw 768
-.requiredmode dw 0
 
-.modeok db ": Is this OK?(y/n)",10,13,0
+.modeok db ": Is this OK? (s)ave/(y)es/(n)o",10,13,0
 
 .goodmode dw 0
 .currentmode dw 0
