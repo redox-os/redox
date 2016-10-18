@@ -233,6 +233,9 @@ filesystem/bin/%: programs/%/Cargo.toml programs/%/src/** $(BUILD)/libstd.rlib
 	strip $@
 	rm $@.d
 
+filesystem/bin/sh: filesystem/bin/ion
+	cp $< $@
+
 filesystem/bin/%: programs/coreutils/Cargo.toml programs/coreutils/src/bin/%.rs $(BUILD)/libstd.rlib
 	mkdir -p filesystem/bin
 	$(CARGO) rustc --manifest-path $< --bin $* $(CARGOFLAGS) -o $@
@@ -359,7 +362,9 @@ $(BUILD)/filesystem.bin: \
 		orbutils \
 		userutils \
 		schemes \
+		filesystem/bin/acid \
 		filesystem/bin/ion \
+		filesystem/bin/sh \
 		filesystem/bin/smith
 	rm -rf $@ $(BUILD)/filesystem/
 	echo exit | cargo run --manifest-path schemes/redoxfs/Cargo.toml --bin redoxfs-utility $@ 64

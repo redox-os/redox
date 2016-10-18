@@ -40,3 +40,6 @@
 [submodule "filesystem/ui"]
 	path = filesystem/ui
 	url = https://github.com/redox-os/orbdata.git
+[submodule "programs/acid"]
+	path = programs/acid
+	url = https://github.com/redox-os/acid.git
