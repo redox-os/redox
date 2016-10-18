@@ -26,7 +26,7 @@ There are many ways to help us out and we appreciate all of them.
 ## <a name="extern-links"> Other External Links </a>
 
 * [redox-os.org](http://redox-os.org)
-* [rust-os-comparison](https://github.com/jackpot51/rust-os-comparison)
+* [rust-os-comparison](https://github.com/flosse/rust-os-comparison)
 * [rust-lang.org](http://rust-lang.org)
 
 ## <a name="communication"> Communication </a>
@@ -47,7 +47,7 @@ You can find Redox on Reddit in [/r/rust/](https://www.reddit.com/r/rust) and [/
 
  * Writing documentation
  * Using/testing Redox, filing issues for bugs and needed features
- * Web development ([Redox website, separate repo](https://github.com/redox-os/redox-os.github.io))
+ * Web development ([Redox website, separate repo](https://github.com/redox-os/website))
  * Writing unit tests (may require minimal knowledge of rust)
 
 * If you are fluent in Rust, but not OS Development:
