@@ -49,9 +49,25 @@ clean:
 	rm -rf initfs/bin
 	rm -rf filesystem/bin
 	rm -rf build
+#skipping doc-ion, doc-coreutils, and doc-redoxfs because they fail
+doc: doc-kernel doc-std doc-ahcid doc-e1000d doc-ps2d doc-pcid doc-vesad doc-init doc-extrautils doc-netutils doc-orbutils doc-extrautils doc-userutils doc-smith doc-ethernetd doc-example doc-ipd doc-orbital doc-tcpd doc-udpd
 
-doc: $(KBUILD)/libkernel.a
+#FORCE to let cargo decide if docs need updating
+#all to make sure all dependencies are built
+doc-kernel: $(KBUILD)/libkernel.a all FORCE
 	$(KCARGO) doc --target $(KTARGET).json
+
+doc-std: $(BUILD)/libstd.rlib all FORCE
+	$(CARGO) doc --target $(TARGET).json --manifest-path libstd/Cargo.toml
+
+doc-%: drivers/%/Cargo.toml all FORCE
+	$(CARGO) doc --target $(TARGET).json --manifest-path $<
+
+doc-%: programs/%/Cargo.toml all FORCE
+	$(CARGO) doc --target $(TARGET).json --manifest-path $<
+
+doc-%: schemes/%/Cargo.toml all FORCE
+	$(CARGO) doc --target $(TARGET).json --manifest-path $<
 
 update:
 	cargo update
