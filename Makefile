@@ -5,7 +5,8 @@ KTARGET=$(ARCH)-unknown-none
 KBUILD=build/kernel
 KRUSTC=./krustc.sh
 KRUSTCFLAGS=--target $(KTARGET).json -C opt-level=s -C soft-float
-KCARGO=RUSTC="$(KRUSTC)" cargo
+KRUSTDOC=./krustdoc.sh
+KCARGO=RUSTC="$(KRUSTC)" RUSTDOC="$(KRUSTDOC)" cargo
 KCARGOFLAGS=--target $(KTARGET).json -- -C opt-level=s -C soft-float
 
 # Userspace variables
@@ -13,11 +14,12 @@ TARGET=$(ARCH)-unknown-redox
 BUILD=build/userspace
 RUSTC=./rustc.sh
 RUSTCFLAGS=--target $(TARGET).json -C opt-level=s --cfg redox
-CARGO=RUSTC="$(RUSTC)" cargo
+RUSTDOC=./rustdoc.sh
+CARGO=RUSTC="$(RUSTC)" RUSTDOC="$(RUSTDOC)" cargo
 CARGOFLAGS=--target $(TARGET).json -- -C opt-level=s --cfg redox
 
 # Default targets
-.PHONY: all clean update qemu bochs drivers schemes coreutils extrautils netutils userutils wireshark FORCE
+.PHONY: all clean doc update qemu bochs drivers schemes coreutils extrautils netutils userutils wireshark FORCE
 
 all: $(KBUILD)/harddrive.bin
 
@@ -47,6 +49,9 @@ clean:
 	rm -rf initfs/bin
 	rm -rf filesystem/bin
 	rm -rf build
+
+doc: $(KBUILD)/libkernel.a
+	$(KCARGO) doc --target $(KTARGET).json
 
 update:
 	cargo update
@@ -91,11 +96,7 @@ $(KBUILD)/harddrive.bin: $(KBUILD)/kernel
 qemu: $(KBUILD)/harddrive.bin
 	$(QEMU) $(QEMUFLAGS) -kernel $<
 else
-	LD=ld
 	QEMUFLAGS+=-machine q35 -smp 4 -m 1024
-	ifneq ($(kvm),no)
-		QEMUFLAGS+=-enable-kvm -cpu host
-	endif
 	ifeq ($(net),no)
 		QEMUFLAGS+=-net none
 	else
@@ -114,7 +115,26 @@ else
 
 	UNAME := $(shell uname)
 	ifeq ($(UNAME),Darwin)
+		CC=$(ARCH)-elf-gcc
+		CXX=$(ARCH)-elf-g++
+		ECHO=/bin/echo
+		FUMOUNT=sudo umount
 		LD=$(ARCH)-elf-ld
+		LDFLAGS=--gc-sections
+		KRUSTCFLAGS+=-C linker=$(CC)
+		KCARGOFLAGS+=-C linker=$(CC)
+		RUSTCFLAGS+=-C linker=$(CC)
+		CARGOFLAGS+=-C linker=$(CC)
+	else
+		CC=gcc
+		CXX=g++
+		ECHO=echo
+		FUMOUNT=fusermount -u
+		LD=ld
+		LDFLAGS=--gc-sections
+		ifneq ($(kvm),no)
+			QEMUFLAGS+=-enable-kvm -cpu host
+		endif
 	endif
 
 %.list: %
@@ -151,10 +171,10 @@ $(KBUILD)/libcollections.rlib: rust/src/libcollections/lib.rs $(KBUILD)/libcore.
 	$(KRUSTC) $(KRUSTCFLAGS) -o $@ $<
 
 $(KBUILD)/libkernel.a: kernel/** $(KBUILD)/libcore.rlib $(KBUILD)/liballoc.rlib $(KBUILD)/libcollections.rlib $(BUILD)/initfs.rs
-	$(KCARGO) rustc $(KCARGOFLAGS) -C opt-level=s -C lto -o $@
+	$(KCARGO) rustc $(KCARGOFLAGS) -C lto -o $@
 
 $(KBUILD)/kernel: $(KBUILD)/libkernel.a
-	$(LD) --gc-sections -z max-page-size=0x1000 -T arch/$(ARCH)/src/linker.ld -o $@ $<
+	$(LD) $(LDFLAGS) -z max-page-size=0x1000 -T arch/$(ARCH)/src/linker.ld -o $@ $<
 
 # Userspace recipes
 $(BUILD)/libcore.rlib: rust/src/libcore/lib.rs
@@ -174,7 +194,7 @@ $(BUILD)/libcollections.rlib: rust/src/libcollections/lib.rs $(BUILD)/libcore.rl
 	$(RUSTC) $(RUSTCFLAGS) -o $@ $<
 
 openlibm/libopenlibm.a:
-	CFLAGS=-fno-stack-protector make -C openlibm
+	CROSSCC=$(CC) CFLAGS=-fno-stack-protector make -C openlibm libopenlibm.a
 
 $(BUILD)/libopenlibm.a: openlibm/libopenlibm.a
 	mkdir -p $(BUILD)
@@ -213,7 +233,7 @@ $(BUILD)/initfs.rs: \
 	echo '    let mut files: BTreeMap<&'"'"'static [u8], (&'"'"'static [u8], bool)> = BTreeMap::new();' >> $@
 	for folder in `find initfs -type d | sort`; do \
 		name=$$(echo $$folder | sed 's/initfs//' | cut -d '/' -f2-) ; \
-		echo -n '    files.insert(b"'$$name'", (b"' >> $@ ; \
+		$(ECHO) -n '    files.insert(b"'$$name'", (b"' >> $@ ; \
 		ls -1 $$folder | sort | awk 'NR > 1 {printf("\\n")} {printf("%s", $$0)}' >> $@ ; \
 		echo '", true));' >> $@ ; \
 	done
@@ -379,7 +399,7 @@ $(BUILD)/filesystem.bin: \
 	chmod +s $(BUILD)/filesystem/bin/su
 	chmod +s $(BUILD)/filesystem/bin/sudo
 	sync
-	-fusermount -u $(BUILD)/filesystem/
+	-$(FUMOUNT) $(BUILD)/filesystem/
 	rm -rf $(BUILD)/filesystem/
 
 mount: FORCE
@@ -389,7 +409,7 @@ mount: FORCE
 
 unmount: FORCE
 	sync
-	-fusermount -u $(KBUILD)/harddrive/
+	-$(FUMOUNT) $(KBUILD)/harddrive/
 	rm -rf $(KBUILD)/harddrive/
 
 wireshark: FORCE

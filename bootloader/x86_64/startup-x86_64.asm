@@ -26,9 +26,9 @@ startup_ap:
     mov edi, 0x70000
     mov cr3, edi
 
-    ;enable Page Address Extension and Page Size Extension
+    ;enable Page Global, Page Address Extension, and Page Size Extension
     mov eax, cr4
-    or eax, 1 << 5 | 1 << 4
+    or eax, 1 << 7 | 1 << 5 | 1 << 4
     mov cr4, eax
 
     ; load protected mode GDT
@@ -91,9 +91,9 @@ startup_arch:
     mov edi, 0x70000
     mov cr3, edi
 
-    ;enable Page Address Extension and Page Size Extension
+    ;enable Page Global, Page Address Extension, and Page Size Extension
     mov eax, cr4
-    or eax, 1 << 5 | 1 << 4
+    or eax, 1 << 7 | 1 << 5 | 1 << 4
     mov cr4, eax
 
     ; load protected mode GDT

@@ -101,7 +101,7 @@ pub unsafe extern fn kstart() -> ! {
             let heap_start_page = Page::containing_address(VirtualAddress::new(::KERNEL_HEAP_OFFSET));
             let heap_end_page = Page::containing_address(VirtualAddress::new(::KERNEL_HEAP_OFFSET + ::KERNEL_HEAP_SIZE-1));
             for page in Page::range_inclusive(heap_start_page, heap_end_page) {
-                active_table.map(page, entry::WRITABLE | entry::NO_EXECUTE);
+                active_table.map(page, entry::PRESENT | entry::GLOBAL | entry::WRITABLE | entry::NO_EXECUTE);
             }
 
             // Init the allocator

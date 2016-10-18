@@ -1,3 +1,5 @@
+extern crate syscall;
+
 use std::env;
 use std::fs::File;
 use std::io::{BufRead, BufReader, Result};
@@ -49,6 +51,17 @@ pub fn run(file: &str) -> Result<()> {
                         }
                     } else {
                         println!("init: failed to run: no argument");
+                    },
+                    "stdio" => if let Some(stdio) = args.next() {
+                        let _ = syscall::close(2);
+                        let _ = syscall::close(1);
+                        let _ = syscall::close(0);
+
+                        let _ = syscall::open(&stdio, syscall::flag::O_RDWR);
+                        let _ = syscall::open(&stdio, syscall::flag::O_RDWR);
+                        let _ = syscall::open(&stdio, syscall::flag::O_RDWR);
+                    } else {
+                        println!("init: failed to set stdio: no argument");
                     },
                     _ => {
                         let mut command = Command::new(cmd);

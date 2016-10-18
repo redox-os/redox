@@ -7,7 +7,7 @@ use x86::{msr, tlb};
 
 use memory::{allocate_frame, Frame};
 
-use self::entry::{EntryFlags, PRESENT, WRITABLE, NO_EXECUTE};
+use self::entry::{EntryFlags, PRESENT, GLOBAL, WRITABLE, NO_EXECUTE};
 use self::mapper::Mapper;
 use self::temporary_page::TemporaryPage;
 
@@ -129,7 +129,7 @@ pub unsafe fn init(cpu_id: usize, stack_start: usize, stack_end: usize) -> (Acti
                 let start_page = Page::containing_address(VirtualAddress::new(start));
                 let end_page = Page::containing_address(VirtualAddress::new(end - 1));
                 for page in Page::range_inclusive(start_page, end_page) {
-                    mapper.map(page, PRESENT | NO_EXECUTE | WRITABLE);
+                    mapper.map(page, PRESENT | GLOBAL | NO_EXECUTE | WRITABLE);
                 }
             }
 
@@ -145,22 +145,22 @@ pub unsafe fn init(cpu_id: usize, stack_start: usize, stack_end: usize) -> (Acti
             };
 
             // Remap stack writable, no execute
-            remap(stack_start - ::KERNEL_OFFSET, stack_end - ::KERNEL_OFFSET, PRESENT | NO_EXECUTE | WRITABLE);
+            remap(stack_start - ::KERNEL_OFFSET, stack_end - ::KERNEL_OFFSET, PRESENT | GLOBAL | NO_EXECUTE | WRITABLE);
 
             // Remap a section with `flags`
             let mut remap_section = |start: &u8, end: &u8, flags: EntryFlags| {
                 remap(start as *const _ as usize - ::KERNEL_OFFSET, end as *const _ as usize - ::KERNEL_OFFSET, flags);
             };
             // Remap text read-only
-            remap_section(& __text_start, & __text_end, PRESENT);
+            remap_section(& __text_start, & __text_end, PRESENT | GLOBAL);
             // Remap rodata read-only, no execute
-            remap_section(& __rodata_start, & __rodata_end, PRESENT | NO_EXECUTE);
+            remap_section(& __rodata_start, & __rodata_end, PRESENT | GLOBAL | NO_EXECUTE);
             // Remap data writable, no execute
-            remap_section(& __data_start, & __data_end, PRESENT | NO_EXECUTE | WRITABLE);
+            remap_section(& __data_start, & __data_end, PRESENT | GLOBAL | NO_EXECUTE | WRITABLE);
             // Remap tdata master writable, no execute
-            remap_section(& __tdata_start, & __tdata_end, PRESENT | NO_EXECUTE);
+            remap_section(& __tdata_start, & __tdata_end, PRESENT | GLOBAL | NO_EXECUTE);
             // Remap bss writable, no execute
-            remap_section(& __bss_start, & __bss_end, PRESENT | NO_EXECUTE | WRITABLE);
+            remap_section(& __bss_start, & __bss_end, PRESENT | GLOBAL | NO_EXECUTE | WRITABLE);
         }
     });
 
@@ -207,7 +207,7 @@ pub unsafe fn init_ap(cpu_id: usize, stack_start: usize, stack_end: usize, kerne
             let start_page = Page::containing_address(VirtualAddress::new(start));
             let end_page = Page::containing_address(VirtualAddress::new(end - 1));
             for page in Page::range_inclusive(start_page, end_page) {
-                mapper.map(page, PRESENT | NO_EXECUTE | WRITABLE);
+                mapper.map(page, PRESENT | GLOBAL | NO_EXECUTE | WRITABLE);
             }
         }
 
@@ -223,7 +223,7 @@ pub unsafe fn init_ap(cpu_id: usize, stack_start: usize, stack_end: usize, kerne
         };
 
         // Remap stack writable, no execute
-        remap(stack_start - ::KERNEL_OFFSET, stack_end - ::KERNEL_OFFSET, PRESENT | NO_EXECUTE | WRITABLE);
+        remap(stack_start - ::KERNEL_OFFSET, stack_end - ::KERNEL_OFFSET, PRESENT | GLOBAL | NO_EXECUTE | WRITABLE);
     });
 
     active_table.switch(new_table);
