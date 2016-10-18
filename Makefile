@@ -39,6 +39,7 @@ clean:
 	cargo clean --manifest-path programs/orbutils/Cargo.toml
 	cargo clean --manifest-path programs/userutils/Cargo.toml
 	cargo clean --manifest-path programs/smith/Cargo.toml
+	cargo clean --manifest-path programs/tar/Cargo.toml
 	cargo clean --manifest-path schemes/ethernetd/Cargo.toml
 	cargo clean --manifest-path schemes/example/Cargo.toml
 	cargo clean --manifest-path schemes/ipd/Cargo.toml
@@ -85,6 +86,7 @@ update:
 	cargo update --manifest-path programs/orbutils/Cargo.toml
 	cargo update --manifest-path programs/userutils/Cargo.toml
 	cargo update --manifest-path programs/smith/Cargo.toml
+	cargo update --manifest-path programs/tar/Cargo.toml
 	cargo update --manifest-path schemes/ethernetd/Cargo.toml
 	cargo update --manifest-path schemes/example/Cargo.toml
 	cargo update --manifest-path schemes/ipd/Cargo.toml
@@ -265,7 +267,7 @@ filesystem/bin/%: drivers/%/Cargo.toml drivers/%/src/** $(BUILD)/libstd.rlib
 
 filesystem/bin/%: programs/%/Cargo.toml programs/%/src/** $(BUILD)/libstd.rlib
 	mkdir -p filesystem/bin
-	$(CARGO) rustc --manifest-path $< $(CARGOFLAGS) -o $@
+	$(CARGO) rustc --manifest-path $< --bin $* $(CARGOFLAGS) -o $@
 	strip $@
 	rm $@.d
 
@@ -295,6 +297,13 @@ filesystem/bin/%: programs/orbutils/Cargo.toml programs/orbutils/src/%/**.rs $(B
 	$(CARGO) rustc --manifest-path $< --bin $* $(CARGOFLAGS) -o $@
 	strip $@
 	rm $@.d
+
+filesystem/bin/%: programs/pkgutils/Cargo.toml programs/pkgutils/src/%/**.rs $(BUILD)/libstd.rlib
+	mkdir -p filesystem/bin
+	$(CARGO) rustc --manifest-path $< --bin $* $(CARGOFLAGS) -o $@
+	strip $@
+	rm $@.d
+
 
 filesystem/bin/%: programs/userutils/Cargo.toml programs/userutils/src/bin/%.rs $(BUILD)/libstd.rlib
 	mkdir -p filesystem/bin
@@ -374,6 +383,9 @@ orbutils: \
 	filesystem/bin/terminal \
 	filesystem/bin/viewer
 
+pkgutils: \
+	filesystem/bin/pkg
+
 userutils: \
 	filesystem/bin/getty \
 	filesystem/bin/id \
@@ -396,12 +408,14 @@ $(BUILD)/filesystem.bin: \
 		extrautils \
 		netutils \
 		orbutils \
+		pkgutils \
 		userutils \
 		schemes \
 		filesystem/bin/acid \
 		filesystem/bin/ion \
 		filesystem/bin/sh \
-		filesystem/bin/smith
+		filesystem/bin/smith \
+		filesystem/bin/tar
 	rm -rf $@ $(BUILD)/filesystem/
 	echo exit | cargo run --manifest-path schemes/redoxfs/Cargo.toml --bin redoxfs-utility $@ 64
 	mkdir -p $(BUILD)/filesystem/
