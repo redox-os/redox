@@ -4,7 +4,7 @@ USE16
 
 
 ; a newline
-newline: db 0xD, 0xA, 0
+newline: db 13,10,0
 
 ; print a string and a newline
 ; IN
@@ -13,8 +13,7 @@ newline: db 0xD, 0xA, 0
 ;   ax
 print_line:
     mov si, newline
-    call print
-    ret
+    jmp print
 
 ; print a string
 ; IN
@@ -22,11 +21,13 @@ print_line:
 ; CLOBBER
 ;   ax
 print:
+    cld
+.loop:
     lodsb
     test al, al
     jz .done
     call print_char
-    jmp print
+    jmp .loop
 .done:
     ret
 
