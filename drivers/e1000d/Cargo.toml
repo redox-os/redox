@@ -1,5 +1,5 @@
 [package]
-name = "rtl8139d"
+name = "e1000d"
 version = "0.1.0"
 
 [dependencies]

@@ -31,8 +31,6 @@ fn main() {
             }
         }
 
-        println!("{:?}", config);
-
         unsafe { iopl(3).unwrap() };
 
         println!("PCI BS/DV/FN VEND:DEVI CL.SC.IN.RV");
@@ -147,8 +145,6 @@ fn main() {
                                     }
                                 }
                             }
-
-                            println!("Driver: {:?}", driver);
                         }
                     }
                 }
