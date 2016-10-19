@@ -428,6 +428,8 @@ $(BUILD)/filesystem.bin: \
 	chmod 700 $(BUILD)/filesystem/home/user/
 	chmod +s $(BUILD)/filesystem/bin/su
 	chmod +s $(BUILD)/filesystem/bin/sudo
+	mkdir $(BUILD)/filesystem/tmp
+	chmod 1777 $(BUILD)/filesystem/tmp
 	sync
 	-$(FUMOUNT) $(BUILD)/filesystem/
 	rm -rf $(BUILD)/filesystem/
