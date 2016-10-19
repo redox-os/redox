@@ -1,6 +1,7 @@
-initfs:bin/pcid /etc/pcid.toml
-vesad T T G
+vesad T T G T
 ps2d
+stdio display:4
+initfs:bin/pcid /etc/pcid.toml
 ethernetd
 #arpd
 ipd
