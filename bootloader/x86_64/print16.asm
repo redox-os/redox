@@ -2,18 +2,16 @@ SECTION .text
 USE16
 ; provide function for printing in x86 real mode
 
-
-; a newline
-newline: db 13,10,0
-
 ; print a string and a newline
 ; IN
 ;   si: points at zero-terminated String
 ; CLOBBER
 ;   ax
 print_line:
-    mov si, newline
-    jmp print
+    mov al, 13
+    call print_char
+    mov al, 10
+    jmp print_char
 
 ; print a string
 ; IN

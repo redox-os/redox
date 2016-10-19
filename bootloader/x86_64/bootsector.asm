@@ -26,8 +26,13 @@ boot: ; dl comes with disk
     call print
     call print_line
 
-    mov bh, 0
-    mov bl, [disk]
+    mov bx, (startup_start - boot) / 512
+    call print_num
+    call print_line
+
+    mov bx, startup_start
+    call print_num
+    call print_line
 
     mov eax, (startup_start - boot) / 512
     mov bx, startup_start
