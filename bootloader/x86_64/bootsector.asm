@@ -160,6 +160,13 @@ load:
       ret
 
 error:
+    mov bh, 0
+    mov bl, ah
+    call print_num
+
+    mov al, ' '
+    call print_char
+
     mov si, errored
     call print
     call print_line
@@ -183,8 +190,7 @@ DAPACK:
 .count: dw 0 ; int 13 resets this to # of blocks actually read/written
 .buf:   dw 0 ; memory buffer destination address (0:7c00)
 .seg:   dw 0 ; in memory page zero
-.addr:  dd 0 ; put the lba to read in this spot
-        dd 0 ; more storage bytes only for big lba's ( > 4 bytes )
+.addr:  dq 0 ; put the lba to read in this spot
 
 times 510-($-$$) db 0
 db 0x55
