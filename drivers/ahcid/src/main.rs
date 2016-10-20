@@ -57,8 +57,8 @@ fn main() {
                 } else if event.id == irq_fd {
                     let mut irq = [0; 8];
                     if irq_file.read(&mut irq).expect("ahcid: failed to read irq file") >= irq.len() {
-                        println!("IRQ");
-                        irq_file.write(&irq).expect("ahcid: failed to write irq file");
+                        //TODO : Test for IRQ
+                        //irq_file.write(&irq).expect("ahcid: failed to write irq file");
                     }
                 } else {
                     println!("Unknown event {}", event.id);
