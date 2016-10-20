@@ -1,3 +1,4 @@
+extern crate netutils;
 extern crate resource_scheme;
 extern crate syscall;
 
@@ -10,9 +11,8 @@ use syscall::Packet;
 
 use scheme::EthernetScheme;
 
-pub mod common;
-pub mod resource;
-pub mod scheme;
+mod resource;
+mod scheme;
 
 fn main() {
     thread::spawn(move || {

@@ -1,15 +1,15 @@
 use std::{cmp, mem};
 
+use netutils::{n16, Ipv4Addr, Checksum, Udp, UdpHeader};
 use resource_scheme::Resource;
 use syscall;
 use syscall::error::*;
-
-use common::{n16, Ipv4Addr, Checksum, IP_ADDR, Udp, UdpHeader};
 
 /// UDP resource
 pub struct UdpResource {
     pub ip: usize,
     pub data: Vec<u8>,
+    pub host_addr: Ipv4Addr,
     pub peer_addr: Ipv4Addr,
     pub peer_port: u16,
     pub host_port: u16,
@@ -22,6 +22,7 @@ impl Resource for UdpResource {
                 Ok(Box::new(UdpResource {
                     ip: ip,
                     data: self.data.clone(),
+                    host_addr: self.host_addr,
                     peer_addr: self.peer_addr,
                     peer_port: self.peer_port,
                     host_port: self.host_port,
@@ -92,7 +93,7 @@ impl Resource for UdpResource {
             let proto = n16::new(0x11);
             let datagram_len = n16::new((mem::size_of::<UdpHeader>() + udp.data.len()) as u16);
             udp.header.checksum.data =
-                Checksum::compile(Checksum::sum((&IP_ADDR as *const Ipv4Addr) as usize,
+                Checksum::compile(Checksum::sum((&self.host_addr as *const Ipv4Addr) as usize,
                                                 mem::size_of::<Ipv4Addr>()) +
                                   Checksum::sum((&self.peer_addr as *const Ipv4Addr) as usize,
                                                 mem::size_of::<Ipv4Addr>()) +

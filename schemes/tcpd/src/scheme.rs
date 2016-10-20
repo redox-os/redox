@@ -3,12 +3,12 @@ use std::rand;
 use std::sync::Arc;
 use std::{str, u16};
 
+use netutils::{getcfg, Ipv4Addr, Tcp, TCP_SYN, TCP_ACK};
 use resource_scheme::ResourceScheme;
 use syscall;
 use syscall::error::{Error, Result, ENOENT, EINVAL};
 use syscall::flag::O_RDWR;
 
-use common::{Ipv4Addr, Tcp, TCP_SYN, TCP_ACK};
 use resource::{TcpResource, TcpStream};
 
 /// A TCP scheme
@@ -16,6 +16,8 @@ pub struct TcpScheme;
 
 impl ResourceScheme<TcpResource> for TcpScheme {
     fn open_resource(&self, url: &[u8], _flags: usize, _uid: u32, _gid: u32) -> Result<Box<TcpResource>> {
+        let ip_addr = Ipv4Addr::from_str(&getcfg("ip").map_err(|err| err.into_sys())?);
+
         let path = try!(str::from_utf8(url).or(Err(Error::new(EINVAL))));
         let mut parts = path.split('/');
         let remote = parts.next().unwrap_or("");
@@ -34,6 +36,7 @@ impl ResourceScheme<TcpResource> for TcpScheme {
                 Ok(ip) => {
                     let mut stream = TcpStream {
                         ip: ip,
+                        host_addr: ip_addr,
                         peer_addr: peer_addr,
                         peer_port: peer_port,
                         host_port: host_port,
@@ -67,6 +70,7 @@ impl ResourceScheme<TcpResource> for TcpScheme {
 
                                     let mut stream = TcpStream {
                                         ip: ip,
+                                        host_addr: ip_addr,
                                         peer_addr: Ipv4Addr::from_str(peer_addr),
                                         peer_port: segment.header.src.get(),
                                         host_port: host_port,

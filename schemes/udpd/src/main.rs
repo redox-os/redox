@@ -1,5 +1,6 @@
 #![feature(rand)]
 
+extern crate netutils;
 extern crate resource_scheme;
 extern crate syscall;
 
@@ -12,9 +13,8 @@ use syscall::Packet;
 
 use scheme::UdpScheme;
 
-pub mod common;
-pub mod resource;
-pub mod scheme;
+mod resource;
+mod scheme;
 
 fn main() {
     thread::spawn(move || {

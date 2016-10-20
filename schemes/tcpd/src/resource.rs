@@ -2,14 +2,14 @@ use std::{cmp, mem};
 use std::cell::UnsafeCell;
 use std::sync::Arc;
 
+use netutils::{n16, n32, Ipv4Addr, Checksum, Tcp, TcpHeader, TCP_SYN, TCP_PSH, TCP_FIN, TCP_ACK};
 use resource_scheme::Resource;
 use syscall;
 use syscall::error::*;
 
-use common::{n16, n32, Ipv4Addr, Checksum, IP_ADDR, Tcp, TcpHeader, TCP_SYN, TCP_PSH, TCP_FIN, TCP_ACK};
-
 pub struct TcpStream {
     pub ip: usize,
+    pub host_addr: Ipv4Addr,
     pub peer_addr: Ipv4Addr,
     pub peer_port: u16,
     pub host_port: u16,
@@ -74,7 +74,7 @@ impl TcpStream {
                                 data: Vec::new()
                             };
 
-                            tcp.checksum(& unsafe { IP_ADDR }, &self.peer_addr);
+                            tcp.checksum(&self.host_addr, &self.peer_addr);
 
                             //println!("Sending read ack: {} {} {:X}", tcp.header.sequence.get(), tcp.header.ack_num.get(), tcp.header.flags.get());
 
@@ -117,7 +117,7 @@ impl TcpStream {
             data: tcp_data,
         };
 
-        tcp.checksum(& unsafe { IP_ADDR }, &self.peer_addr);
+        tcp.checksum(&self.host_addr, &self.peer_addr);
 
         match syscall::write(self.ip, &tcp.to_bytes()) {
             Ok(size) => {
@@ -169,7 +169,7 @@ impl TcpStream {
             data: Vec::new(),
         };
 
-        tcp.checksum(& unsafe { IP_ADDR }, &self.peer_addr);
+        tcp.checksum(&self.host_addr, &self.peer_addr);
 
         match syscall::write(self.ip, &tcp.to_bytes()) {
             Ok(_) => {
@@ -203,7 +203,7 @@ impl TcpStream {
                                             data: Vec::new()
                                         };
 
-                                        tcp.checksum(& unsafe { IP_ADDR }, &self.peer_addr);
+                                        tcp.checksum(&self.host_addr, &self.peer_addr);
 
                                         let _ = syscall::write(self.ip, &tcp.to_bytes());
 
@@ -242,7 +242,7 @@ impl TcpStream {
             data: Vec::new(),
         };
 
-        tcp.checksum(& unsafe { IP_ADDR }, &self.peer_addr);
+        tcp.checksum(&self.host_addr, &self.peer_addr);
 
         match syscall::write(self.ip, &tcp.to_bytes()) {
             Ok(_) => {
@@ -291,7 +291,7 @@ impl Drop for TcpStream {
             data: Vec::new(),
         };
 
-        tcp.checksum(& unsafe { IP_ADDR }, &self.peer_addr);
+        tcp.checksum(&self.host_addr, &self.peer_addr);
 
         let _ = syscall::write(self.ip, &tcp.to_bytes());
         let _ = syscall::close(self.ip);

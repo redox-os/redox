@@ -1,11 +1,11 @@
 use std::{str, u16};
 
+use netutils::{MacAddr, EthernetII};
 use resource_scheme::ResourceScheme;
 use syscall;
 use syscall::error::{Error, Result, EACCES, ENOENT, EINVAL};
 use syscall::flag::O_RDWR;
 
-use common::{MacAddr, EthernetII};
 use resource::EthernetResource;
 
 pub struct EthernetScheme;

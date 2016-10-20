@@ -1,10 +1,9 @@
 use std::{cmp, mem};
 
+use netutils::{n16, MacAddr, EthernetIIHeader, EthernetII};
 use resource_scheme::Resource;
 use syscall;
 use syscall::error::*;
-
-use common::{n16, MacAddr, EthernetIIHeader, EthernetII};
 
 /// A ethernet resource
 pub struct EthernetResource {

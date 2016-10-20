@@ -1,15 +1,15 @@
 use std::{cmp, mem};
 
+use netutils::{n16, Ipv4Addr, Checksum, Ipv4Header, Ipv4};
 use resource_scheme::Resource;
 use syscall;
 use syscall::error::*;
-
-use common::{n16, Ipv4Addr, Checksum, Ipv4Header, Ipv4, IP_ADDR, BROADCAST_IP_ADDR};
 
 /// A IP (internet protocole) resource
 pub struct IpResource {
     pub link: usize,
     pub data: Vec<u8>,
+    pub host_addr: Ipv4Addr,
     pub peer_addr: Ipv4Addr,
     pub proto: u8,
     pub id: u16,
@@ -21,6 +21,7 @@ impl Resource for IpResource {
         Ok(Box::new(IpResource {
             link: link,
             data: self.data.clone(),
+            host_addr: self.host_addr,
             peer_addr: self.peer_addr,
             proto: self.proto,
             id: self.id,
@@ -55,8 +56,8 @@ impl Resource for IpResource {
 
         if let Some(packet) = Ipv4::from_bytes(&bytes[..count]) {
             if packet.header.proto == self.proto &&
-               (packet.header.dst.equals(unsafe { IP_ADDR }) || packet.header.dst.equals(BROADCAST_IP_ADDR)) &&
-               (packet.header.src.equals(self.peer_addr) || self.peer_addr.equals(BROADCAST_IP_ADDR)) {
+               (packet.header.dst.equals(self.host_addr) || packet.header.dst.equals(Ipv4Addr::BROADCAST)) &&
+               (packet.header.src.equals(self.peer_addr) || self.peer_addr.equals(Ipv4Addr::BROADCAST)) {
                 for (b, d) in buf.iter_mut().zip(packet.data.iter()) {
                     *b = *d;
                 }
@@ -82,7 +83,7 @@ impl Resource for IpResource {
                 ttl: 128,
                 proto: self.proto,
                 checksum: Checksum { data: 0 },
-                src: unsafe { IP_ADDR },
+                src: self.host_addr,
                 dst: self.peer_addr,
             },
             options: Vec::new(),

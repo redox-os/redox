@@ -2,12 +2,12 @@ use std::cell::RefCell;
 use std::rand;
 use std::{str, u16};
 
+use netutils::{getcfg, n16, MacAddr, Ipv4Addr, ArpHeader, Arp, Ipv4};
 use resource_scheme::ResourceScheme;
 use syscall;
 use syscall::error::{Error, Result, EACCES, ENOENT, EINVAL};
 use syscall::flag::O_RDWR;
 
-use common::{n16, MacAddr, Ipv4Addr, ArpHeader, Arp, Ipv4, MAC_ADDR, BROADCAST_MAC_ADDR, BROADCAST_IP_ADDR, IP_ADDR, IP_ROUTER_ADDR, IP_SUBNET};
 use resource::IpResource;
 
 /// A ARP entry (MAC + IP)
@@ -32,6 +32,11 @@ impl IpScheme {
 impl ResourceScheme<IpResource> for IpScheme {
     fn open_resource(&self, url: &[u8], _flags: usize, uid: u32, _gid: u32) -> Result<Box<IpResource>> {
         if uid == 0 {
+            let mac_addr = MacAddr::from_str(&getcfg("mac").map_err(|err| err.into_sys())?);
+            let ip_addr = Ipv4Addr::from_str(&getcfg("ip").map_err(|err| err.into_sys())?);
+            let ip_subnet = Ipv4Addr::from_str(&getcfg("ip_subnet").map_err(|err| err.into_sys())?);
+            let ip_router = Ipv4Addr::from_str(&getcfg("ip_router").map_err(|err| err.into_sys())?);
+
             let path = try!(str::from_utf8(url).or(Err(Error::new(EINVAL))));
             let mut parts = path.split('/');
             if let Some(host_string) = parts.next() {
@@ -40,14 +45,14 @@ impl ResourceScheme<IpResource> for IpScheme {
 
                     if ! host_string.is_empty() {
                         let peer_addr = Ipv4Addr::from_str(host_string);
-                        let mut route_mac = BROADCAST_MAC_ADDR;
+                        let mut route_mac = MacAddr::BROADCAST;
 
-                        if ! peer_addr.equals(BROADCAST_IP_ADDR) {
+                        if ! peer_addr.equals(Ipv4Addr::BROADCAST) {
                             let mut needs_routing = false;
 
                             for octet in 0..4 {
-                                let me = unsafe { IP_ADDR.bytes[octet] };
-                                let mask = unsafe { IP_SUBNET.bytes[octet] };
+                                let me = ip_addr.bytes[octet];
+                                let mask = ip_subnet.bytes[octet];
                                 let them = peer_addr.bytes[octet];
                                 if me & mask != them & mask {
                                     needs_routing = true;
@@ -56,7 +61,7 @@ impl ResourceScheme<IpResource> for IpScheme {
                             }
 
                             let route_addr = if needs_routing {
-                                unsafe { IP_ROUTER_ADDR }
+                                ip_router
                             } else {
                                 peer_addr
                             };
@@ -68,7 +73,7 @@ impl ResourceScheme<IpResource> for IpScheme {
                                 }
                             }
 
-                            if route_mac.equals(BROADCAST_MAC_ADDR) {
+                            if route_mac.equals(MacAddr::BROADCAST) {
                                 if let Ok(link) = syscall::open(&format!("ethernet:{}/806", &route_mac.to_string()), O_RDWR) {
                                     let arp = Arp {
                                         header: ArpHeader {
@@ -77,8 +82,8 @@ impl ResourceScheme<IpResource> for IpScheme {
                                             hlen: 6,
                                             plen: 4,
                                             oper: n16::new(1),
-                                            src_mac: unsafe { MAC_ADDR },
-                                            src_ip: unsafe { IP_ADDR },
+                                            src_mac: mac_addr,
+                                            src_ip: ip_addr,
                                             dst_mac: route_mac,
                                             dst_ip: route_addr,
                                         },
@@ -113,6 +118,7 @@ impl ResourceScheme<IpResource> for IpScheme {
                             return Ok(Box::new(IpResource {
                                 link: link,
                                 data: Vec::new(),
+                                host_addr: ip_addr,
                                 peer_addr: peer_addr,
                                 proto: proto,
                                 id: (rand() % 65536) as u16,
@@ -125,10 +131,11 @@ impl ResourceScheme<IpResource> for IpScheme {
                                 Ok(count) => {
                                     if let Some(packet) = Ipv4::from_bytes(&bytes[..count]) {
                                         if packet.header.proto == proto &&
-                                           (packet.header.dst.equals(unsafe { IP_ADDR }) || packet.header.dst.equals(BROADCAST_IP_ADDR)) {
+                                           (packet.header.dst.equals(ip_addr) || packet.header.dst.equals(Ipv4Addr::BROADCAST)) {
                                             return Ok(Box::new(IpResource {
                                                 link: link,
                                                 data: packet.data,
+                                                host_addr: ip_addr,
                                                 peer_addr: packet.header.src,
                                                 proto: proto,
                                                 id: (rand() % 65536) as u16,

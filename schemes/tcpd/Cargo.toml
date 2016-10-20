@@ -3,5 +3,6 @@ name = "tcpd"
 version = "0.1.0"
 
 [dependencies]
+netutils = { path = "../../programs/netutils/" }
 resource_scheme = { path = "../../crates/resource_scheme/" }
 syscall = { path = "../../syscall/" }

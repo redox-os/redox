@@ -1,12 +1,12 @@
 use std::rand;
 use std::{str, u16};
 
+use netutils::{getcfg, Ipv4Addr, Udp};
 use resource_scheme::ResourceScheme;
 use syscall;
 use syscall::error::{Error, Result, ENOENT, EINVAL};
 use syscall::flag::O_RDWR;
 
-use common::{Ipv4Addr, Udp};
 use resource::UdpResource;
 
 /// UDP UdpScheme
@@ -14,6 +14,8 @@ pub struct UdpScheme;
 
 impl ResourceScheme<UdpResource> for UdpScheme {
     fn open_resource(&self, url: &[u8], _flags: usize, _uid: u32, _gid: u32) -> Result<Box<UdpResource>> {
+        let ip_addr = Ipv4Addr::from_str(&getcfg("ip").map_err(|err| err.into_sys())?);
+
         let path = try!(str::from_utf8(url).or(Err(Error::new(EINVAL))));
         let mut parts = path.split('/');
         let remote = parts.next().unwrap_or("");
@@ -36,6 +38,7 @@ impl ResourceScheme<UdpResource> for UdpScheme {
                                     return Ok(Box::new(UdpResource {
                                         ip: ip,
                                         data: datagram.data,
+                                        host_addr: ip_addr,
                                         peer_addr: Ipv4Addr::from_str(peer_addr),
                                         peer_port: datagram.header.src.get(),
                                         host_port: host_port,
@@ -56,6 +59,7 @@ impl ResourceScheme<UdpResource> for UdpScheme {
                     return Ok(Box::new(UdpResource {
                         ip: ip,
                         data: Vec::new(),
+                        host_addr: ip_addr,
                         peer_addr: Ipv4Addr::from_str(peer_addr),
                         peer_port: peer_port as u16,
                         host_port: host_port,
