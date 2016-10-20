@@ -1,6 +1,4 @@
 use collections::vec_deque::VecDeque;
-use core::mem;
-use core::ops::DerefMut;
 use spin::Mutex;
 
 use sync::WaitCondition;
@@ -39,38 +37,27 @@ impl<T> WaitQueue<T> {
         }
     }
 
-    pub fn receive_into(&self, buf: &mut [T]) -> usize {
+    pub fn receive_into(&self, buf: &mut [T], block: bool) -> usize {
         let mut i = 0;
 
-        if i < buf.len() {
+        if i < buf.len() && block {
             buf[i] = self.receive();
             i += 1;
         }
 
-        while i < buf.len() {
-            if let Some(value) = self.inner.lock().pop_front() {
-                buf[i] = value;
-                i += 1;
-            } else {
-                break;
+        {
+            let mut inner = self.inner.lock();
+            while i < buf.len() {
+                if let Some(value) = inner.pop_front() {
+                    buf[i] = value;
+                    i += 1;
+                } else {
+                    break;
+                }
             }
         }
 
         i
-    }
-
-    pub fn receive_all(&self) -> VecDeque<T> {
-        loop {
-            {
-                let mut inner = self.inner.lock();
-                if ! inner.is_empty() {
-                    let mut swap_inner = VecDeque::new();
-                    mem::swap(inner.deref_mut(), &mut swap_inner);
-                    return swap_inner;
-                }
-            }
-            self.condition.wait();
-        }
     }
 
     pub fn send(&self, value: T) -> usize {

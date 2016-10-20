@@ -12,12 +12,13 @@ use scheme::root::ROOT_SCHEME_ID;
 use sync::{WaitQueue, WaitMap};
 use syscall::data::{Packet, Stat};
 use syscall::error::*;
-use syscall::flag::EVENT_READ;
+use syscall::flag::{EVENT_READ, O_NONBLOCK};
 use syscall::number::*;
 use syscall::scheme::Scheme;
 
 pub struct UserInner {
     handle_id: usize,
+    flags: usize,
     pub scheme_id: AtomicUsize,
     next_id: AtomicU64,
     context: Weak<RwLock<Context>>,
@@ -26,9 +27,10 @@ pub struct UserInner {
 }
 
 impl UserInner {
-    pub fn new(handle_id: usize, context: Weak<RwLock<Context>>) -> UserInner {
+    pub fn new(handle_id: usize, flags: usize, context: Weak<RwLock<Context>>) -> UserInner {
         UserInner {
             handle_id: handle_id,
+            flags: flags,
             scheme_id: AtomicUsize::new(0),
             next_id: AtomicU64::new(1),
             context: context,
@@ -158,7 +160,7 @@ impl UserInner {
 
     pub fn read(&self, buf: &mut [u8]) -> Result<usize> {
         let packet_buf = unsafe { slice::from_raw_parts_mut(buf.as_mut_ptr() as *mut Packet, buf.len()/mem::size_of::<Packet>()) };
-        Ok(self.todo.receive_into(packet_buf) * mem::size_of::<Packet>())
+        Ok(self.todo.receive_into(packet_buf, self.flags & O_NONBLOCK != O_NONBLOCK) * mem::size_of::<Packet>())
     }
 
     pub fn write(&self, buf: &[u8]) -> Result<usize> {

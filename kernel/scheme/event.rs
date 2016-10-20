@@ -59,7 +59,7 @@ impl Scheme for EventScheme {
         };
 
         let event_buf = unsafe { slice::from_raw_parts_mut(buf.as_mut_ptr() as *mut Event, buf.len()/mem::size_of::<Event>()) };
-        Ok(handle.receive_into(event_buf) * mem::size_of::<Event>())
+        Ok(handle.receive_into(event_buf, true) * mem::size_of::<Event>())
     }
 
     fn fsync(&self, id: usize) -> Result<usize> {

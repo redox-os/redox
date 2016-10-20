@@ -27,7 +27,7 @@ impl RootScheme {
 }
 
 impl Scheme for RootScheme {
-    fn open(&self, path: &[u8], _flags: usize, uid: u32, _gid: u32) -> Result<usize> {
+    fn open(&self, path: &[u8], flags: usize, uid: u32, _gid: u32) -> Result<usize> {
         if uid == 0 {
             let context = {
                 let contexts = context::contexts();
@@ -42,7 +42,7 @@ impl Scheme for RootScheme {
                 if schemes.get_name(path).is_some() {
                     return Err(Error::new(EEXIST));
                 }
-                let inner = Arc::new(UserInner::new(id, context));
+                let inner = Arc::new(UserInner::new(id, flags, context));
                 let scheme_id = schemes.insert(path.to_vec().into_boxed_slice(), Arc::new(Box::new(UserScheme::new(Arc::downgrade(&inner))))).expect("failed to insert user scheme");
                 inner.scheme_id.store(scheme_id, Ordering::SeqCst);
                 inner

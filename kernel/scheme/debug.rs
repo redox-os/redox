@@ -41,7 +41,7 @@ impl Scheme for DebugScheme {
     ///
     /// Returns the number of bytes read
     fn read(&self, _file: usize, buf: &mut [u8]) -> Result<usize> {
-        Ok(INPUT.call_once(init_input).receive_into(buf))
+        Ok(INPUT.call_once(init_input).receive_into(buf, true))
     }
 
     /// Write the `buffer` to the `file`
