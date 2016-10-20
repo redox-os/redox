@@ -1,0 +1,11 @@
+[package]
+name = "rtl8168d"
+version = "0.1.0"
+
+[dependencies]
+bitflags = "*"
+dma = { path = "../../crates/dma/" }
+event = { path = "../../crates/event/" }
+io = { path = "../../crates/io/" }
+spin = "*"
+syscall = { path = "../../syscall/" }

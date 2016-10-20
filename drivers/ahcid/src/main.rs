@@ -10,7 +10,7 @@ extern crate syscall;
 use std::{env, thread, usize};
 use std::fs::File;
 use std::io::{Read, Write};
-use std::os::unix::io::AsRawFd;
+use std::os::unix::io::{AsRawFd, FromRawFd};
 use syscall::{EVENT_READ, MAP_WRITE, Event, Packet, Scheme};
 
 use scheme::DiskScheme;
@@ -35,8 +35,8 @@ fn main() {
 
         let address = unsafe { syscall::physmap(bar, 4096, MAP_WRITE).expect("ahcid: failed to map address") };
         {
-            let mut socket = File::create(":disk").expect("ahcid: failed to create disk scheme");
-            let socket_fd = socket.as_raw_fd();
+            let socket_fd = syscall::open(":disk", syscall::O_RDWR | syscall::O_CREAT | syscall::O_NONBLOCK).expect("ahcid: failed to create disk scheme");
+            let mut socket = unsafe { File::from_raw_fd(socket_fd) };
             syscall::fevent(socket_fd, EVENT_READ).expect("ahcid: failed to fevent disk scheme");
 
             let mut irq_file = File::open(&format!("irq:{}", irq)).expect("ahcid: failed to open irq file");
