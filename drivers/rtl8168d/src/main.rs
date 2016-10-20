@@ -56,8 +56,6 @@ fn main() {
                 if isr != 0 {
                     irq_file.write(&mut irq)?;
 
-                    println!("RTL8168 Interrupt {:X}", isr);
-
                     let mut todo = todo_irq.borrow_mut();
                     let mut i = 0;
                     while i < todo.len() {

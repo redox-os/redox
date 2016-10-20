@@ -1,65 +1,65 @@
-use std::{cmp, mem, slice};
+use std::mem;
 
 use dma::Dma;
-use io::{Mmio, Io, ReadOnly, WriteOnly};
+use io::{Mmio, Io, ReadOnly};
 use syscall::error::{Error, EACCES, EWOULDBLOCK, Result};
 use syscall::scheme::SchemeMut;
 
 #[repr(packed)]
 struct Regs {
     mac: [Mmio<u32>; 2],
-    mar: Mmio<u64>,
-    dtccr: Mmio<u64>,
-    _rsv0: Mmio<u64>,
-    tnpds: Mmio<u64>,
-    thpds: Mmio<u64>,
+    _mar: [Mmio<u32>; 2],
+    _dtccr: [Mmio<u32>; 2],
+    _rsv0: [Mmio<u32>; 2],
+    tnpds: [Mmio<u32>; 2],
+    thpds: [Mmio<u32>; 2],
     _rsv1: [Mmio<u8>; 7],
     cmd: Mmio<u8>,
-    tppoll: WriteOnly<Mmio<u8>>,
+    tppoll: Mmio<u8>,
     _rsv2: [Mmio<u8>; 3],
     imr: Mmio<u16>,
     isr: Mmio<u16>,
     tcr: Mmio<u32>,
     rcr: Mmio<u32>,
-    tctr: Mmio<u32>,
+    _tctr: Mmio<u32>,
     _rsv3: Mmio<u32>,
     cmd_9346: Mmio<u8>,
-    config: [Mmio<u8>; 6],
+    _config: [Mmio<u8>; 6],
     _rsv4: Mmio<u8>,
-    timer_int: Mmio<u32>,
+    _timer_int: Mmio<u32>,
     _rsv5: Mmio<u32>,
-    phys_ar: Mmio<u32>,
-    _rsv6: Mmio<u64>,
+    _phys_ar: Mmio<u32>,
+    _rsv6: [Mmio<u32>; 2],
     phys_sts: ReadOnly<Mmio<u8>>,
     _rsv7: [Mmio<u8>; 23],
-    wakeup: [Mmio<u64>; 8],
-    crc: [Mmio<u16>; 5],
+    _wakeup: [Mmio<u32>; 16],
+    _crc: [Mmio<u16>; 5],
     _rsv8: [Mmio<u8>; 12],
     rms: Mmio<u16>,
     _rsv9: Mmio<u32>,
-    c_plus_cr: Mmio<u16>,
+    _c_plus_cr: Mmio<u16>,
     _rsv10: Mmio<u16>,
-    rdsar: Mmio<u64>,
+    rdsar: [Mmio<u32>; 2],
     mtps: Mmio<u8>,
     _rsv11: [Mmio<u8>; 19],
 }
 
-const OWN: u16 = 1 << 15;
-const EOR: u16 = 1 << 14;
+const OWN: u32 = 1 << 31;
+const EOR: u32 = 1 << 30;
+const FS: u32 = 1 << 29;
+const LS: u32 = 1 << 28;
 
 #[repr(packed)]
 struct Rd {
-    length: Mmio<u16>,
-    flags: Mmio<u16>,
-    vlan: Mmio<u32>,
+    ctrl: Mmio<u32>,
+    _vlan: Mmio<u32>,
     buffer: Mmio<u64>
 }
 
 #[repr(packed)]
 struct Td {
-    length: Mmio<u16>,
-    flags: Mmio<u16>,
-    vlan: Mmio<u32>,
+    ctrl: Mmio<u32>,
+    _vlan: Mmio<u32>,
     buffer: Mmio<u64>
 }
 
@@ -90,18 +90,21 @@ impl SchemeMut for Rtl8168 {
     fn read(&mut self, _id: usize, buf: &mut [u8]) -> Result<usize> {
         println!("Try Receive {}", buf.len());
         for (rd_i, rd) in self.receive_ring.iter_mut().enumerate() {
-            if ! rd.flags.readf(OWN) {
-                println!("Receive {}: {}", rd_i, rd.length.read());
+            if ! rd.ctrl.readf(OWN) {
+                let rd_len = rd.ctrl.read() & 0x3FFF;
 
-                let data = &self.receive_buffer[rd_i as usize][.. rd.length.read() as usize];
+                println!("Receive {}: {}", rd_i, rd_len);
+
+                let data = &self.receive_buffer[rd_i as usize];
 
                 let mut i = 0;
-                while i < buf.len() && i < data.len() {
+                while i < buf.len() && i < rd_len as usize {
                     buf[i] = data[i];
                     i += 1;
                 }
 
-                rd.flags.writef(OWN, true);
+                let eor = rd.ctrl.read() & EOR;
+                rd.ctrl.write(OWN | eor | data.len() as u32);
 
                 return Ok(i);
             }
@@ -114,7 +117,7 @@ impl SchemeMut for Rtl8168 {
         println!("Try Transmit {}", buf.len());
         loop {
             for (td_i, td) in self.transmit_ring.iter_mut().enumerate() {
-                if ! td.flags.readf(OWN) {
+                if ! td.ctrl.readf(OWN) {
                     println!("Transmit {}: Setup {}", td_i, buf.len());
 
                     let mut data = &mut self.transmit_buffer[td_i as usize];
@@ -125,11 +128,19 @@ impl SchemeMut for Rtl8168 {
                         i += 1;
                     }
 
-                    td.length.write(cmp::min(buf.len(), i) as u16);
+                    println!("Transmit {}: Before: Control {:X}: TPPoll: {:X}", td_i, td.ctrl.read(), self.regs.tppoll.read());
 
-                    td.flags.writef(OWN | 1 << 13 | 1 << 12, true);
+                    let eor = td.ctrl.read() & EOR;
+                    td.ctrl.write(OWN | eor | FS | LS | i as u32);
 
                     self.regs.tppoll.writef(1 << 6, true); //Notify of normal priority packet
+
+                    for s in 0..10 {
+                        println!("Transmit {}: {}: Control {:X}: TPPoll: {:X}", td_i, s, td.ctrl.read(), self.regs.tppoll.read());
+                        ::std::thread::sleep_ms(1000);
+                    }
+
+                    println!("Transmit {}: After: Control {:X}: TPPoll: {:X}", td_i, td.ctrl.read(), self.regs.tppoll.read());
 
                     return Ok(i);
                 }
@@ -189,7 +200,16 @@ impl Rtl8168 {
         // Read and then clear the ISR
         let isr = self.regs.isr.read();
         self.regs.isr.write(isr);
-        isr
+        let imr = self.regs.imr.read();
+
+        if isr & imr != 0 {
+            println!("RTL8168 ISR {:X} IMR {:X} ISR & IMR {:X}", isr, imr, isr & imr);
+            for (rd_i, rd) in self.receive_ring.iter_mut().enumerate() {
+                println!("RD {}: {:X}", rd_i, rd.ctrl.read());
+            }
+        }
+
+        isr & imr
     }
 
     pub unsafe fn init(&mut self) {
@@ -211,12 +231,13 @@ impl Rtl8168 {
 
         // Set up rx buffers
         for i in 0..self.receive_ring.len() {
-            self.receive_ring[i].flags.writef(OWN, true);
-            self.receive_ring[i].length.write(self.receive_buffer[i].len() as u16);
-            self.receive_ring[i].buffer.write(self.receive_buffer[i].physical() as u64);
+            let rd = &mut self.receive_ring[i];
+            let data = &mut self.receive_buffer[i];
+            rd.ctrl.write(OWN | data.len() as u32);
+            rd.buffer.write(data.physical() as u64);
         }
         if let Some(mut rd) = self.receive_ring.last_mut() {
-            rd.flags.writef(OWN | EOR, true);
+            rd.ctrl.writef(EOR, true);
         }
 
         // Set up normal priority tx buffers
@@ -224,7 +245,7 @@ impl Rtl8168 {
             self.transmit_ring[i].buffer.write(self.transmit_buffer[i].physical() as u64);
         }
         if let Some(mut td) = self.transmit_ring.last_mut() {
-            td.flags.writef(EOR, true);
+            td.ctrl.writef(EOR, true);
         }
 
         // Set up high priority tx buffers
@@ -232,20 +253,14 @@ impl Rtl8168 {
             self.transmit_ring_h[i].buffer.write(self.transmit_buffer_h[i].physical() as u64);
         }
         if let Some(mut td) = self.transmit_ring_h.last_mut() {
-            td.flags.writef(EOR, true);
+            td.ctrl.writef(EOR, true);
         }
 
         // Unlock config
         self.regs.cmd_9346.write(1 << 7 | 1 << 6);
 
-        // Accept broadcast (bit 3), multicast (bit 2), and unicast (bit 1)
-        self.regs.rcr.writef(0xE70F /*TODO: Not permiscuious*/, true);
-
-        // Enable tx (bit 2)
-        self.regs.cmd.writef(1 << 2, true);
-
-        // Set TX config
-        self.regs.tcr.write(0x03010700);
+        // Enable rx (bit 3) and tx (bit 2)
+        self.regs.cmd.writef(1 << 3 | 1 << 2, true);
 
         // Max RX packet size
         self.regs.rms.write(0x1FF8);
@@ -254,23 +269,29 @@ impl Rtl8168 {
         self.regs.mtps.write(0x3B);
 
         // Set tx low priority buffer address
-        self.regs.tnpds.write(self.transmit_ring.physical() as u64);
+        self.regs.tnpds[0].write(self.transmit_ring.physical() as u32);
+        self.regs.tnpds[1].write((self.transmit_ring.physical() >> 32) as u32);
 
         // Set tx high priority buffer address
-        self.regs.thpds.write(self.transmit_ring_h.physical() as u64);
+        self.regs.thpds[0].write(self.transmit_ring_h.physical() as u32);
+        self.regs.thpds[1].write((self.transmit_ring_h.physical() >> 32) as u32);
 
         // Set rx buffer address
-        self.regs.rdsar.write(self.receive_ring.physical() as u64);
-
-        // Enable rx (bit 3) and tx (bit 2)
-        self.regs.cmd.writef(1 << 3 | 1 << 2, true);
+        self.regs.rdsar[0].write(self.receive_ring.physical() as u32);
+        self.regs.rdsar[1].write((self.receive_ring.physical() >> 32) as u32);
 
         // Interrupt on tx error (bit 3), tx ok (bit 2), rx error(bit 1), and rx ok (bit 0)
         self.regs.imr.write(1 << 15 | 1 << 14 | 1 << 7 | 1 << 6 | 1 << 4 | 1 << 3 | 1 << 2 | 1 << 1 | 1);
 
+        // Set RX config - Accept broadcast (bit 3), multicast (bit 2), and unicast (bit 1)
+        self.regs.rcr.writef(0xE70E, true);
+
+        // Set TX config
+        self.regs.tcr.write(0x03010700);
+
         // Lock config
         self.regs.cmd_9346.write(0);
 
-        println!("   - Ready {:X}", self.regs.phys_sts.read());
+        println!("   - Ready PHYS {:X} RDSAR {:X}", self.regs.phys_sts.read(), self.regs.rdsar[0].read());
     }
 }
