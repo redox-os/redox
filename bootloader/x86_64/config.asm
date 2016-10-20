@@ -4,8 +4,8 @@ USE16
 align 512, db 0
 
 config:
-  .xres: dw 0
-  .yres: dw 0
+  .xres: dw 1024
+  .yres: dw 768
 
 times 512 - ($ - config) db 0
 

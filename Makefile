@@ -30,6 +30,7 @@ clean:
 	cargo clean --manifest-path drivers/e1000d/Cargo.toml
 	cargo clean --manifest-path drivers/ps2d/Cargo.toml
 	cargo clean --manifest-path drivers/pcid/Cargo.toml
+	cargo clean --manifest-path drivers/rtl8168d/Cargo.toml
 	cargo clean --manifest-path drivers/vesad/Cargo.toml
 	cargo clean --manifest-path programs/init/Cargo.toml
 	cargo clean --manifest-path programs/ion/Cargo.toml
@@ -77,6 +78,7 @@ update:
 	cargo update --manifest-path drivers/e1000d/Cargo.toml
 	cargo update --manifest-path drivers/ps2d/Cargo.toml
 	cargo update --manifest-path drivers/pcid/Cargo.toml
+	cargo update --manifest-path drivers/rtl8168d/Cargo.toml
 	cargo update --manifest-path drivers/vesad/Cargo.toml
 	cargo update --manifest-path programs/init/Cargo.toml
 	cargo update --manifest-path programs/ion/Cargo.toml
@@ -320,6 +322,7 @@ filesystem/bin/%: schemes/%/Cargo.toml schemes/%/src/** $(BUILD)/libstd.rlib
 drivers: \
 	filesystem/bin/e1000d \
 	filesystem/bin/ps2d \
+	filesystem/bin/rtl8168d \
 	filesystem/bin/vesad
 
 coreutils: \

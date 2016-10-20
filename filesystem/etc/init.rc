@@ -1,12 +1,12 @@
-vesad T T G T
+vesad T T T G
+stdio display:1
 ps2d
-stdio display:4
 initfs:bin/pcid /etc/pcid.toml
 ethernetd
 #arpd
 ipd
 tcpd
 udpd
-getty display:1
 getty display:2
-#orbital display:3
+getty display:3
+#orbital display:4
