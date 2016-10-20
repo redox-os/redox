@@ -68,9 +68,9 @@ pub struct Rtl8168 {
     irq: u8,
     receive_buffer: [Dma<[u8; 0x1FF8]>; 16],
     receive_ring: Dma<[Rd; 16]>,
-    transmit_buffer: [Dma<[u8; 0x1FF8]>; 16],
+    transmit_buffer: [Dma<[u8; 7552]>; 16],
     transmit_ring: Dma<[Td; 16]>,
-    transmit_buffer_h: [Dma<[u8; 0x1FF8]>; 1],
+    transmit_buffer_h: [Dma<[u8; 7552]>; 1],
     transmit_ring_h: Dma<[Td; 1]>
 }
 
@@ -128,19 +128,20 @@ impl SchemeMut for Rtl8168 {
                         i += 1;
                     }
 
-                    println!("Transmit {}: Before: Control {:X}: Buffer {:X} TPPoll: {:X}", td_i, td.ctrl.read(), td.buffer.read(), self.regs.tppoll.read());
+                    println!("Transmit {}: Before: Control {:X}: Buffer {:X} TPPoll: {:X} ISR: {:X}", td_i, td.ctrl.read(), td.buffer.read(), self.regs.tppoll.read(), self.regs.isr.read());
 
                     let eor = td.ctrl.read() & EOR;
                     td.ctrl.write(OWN | eor | FS | LS | i as u32);
 
                     self.regs.tppoll.writef(1 << 6, true); //Notify of normal priority packet
 
-                    for s in 0..10 {
-                        println!("Transmit {}: {}: Control {:X}: Buffer {:X} TPPoll: {:X}", td_i, s, td.ctrl.read(), td.buffer.read(), self.regs.tppoll.read());
-                        ::std::thread::sleep_ms(1000);
+                    println!("Transmit {}: During: Control {:X}: Buffer {:X} TPPoll: {:X} ISR: {:X}", td_i, td.ctrl.read(), td.buffer.read(), self.regs.tppoll.read(), self.regs.isr.read());
+
+                    while self.regs.tppoll.readf(1 << 6) {
+                        unsafe { asm!("pause" : : : "memory" : "intel", "volatile"); }
                     }
 
-                    println!("Transmit {}: After: Control {:X}: Buffer {:X} TPPoll: {:X}", td_i, td.ctrl.read(), td.buffer.read(), self.regs.tppoll.read());
+                    println!("Transmit {}: After: Control {:X}: Buffer {:X} TPPoll: {:X} ISR: {:X}", td_i, td.ctrl.read(), td.buffer.read(), self.regs.tppoll.read(), self.regs.isr.read());
 
                     return Ok(i);
                 }
@@ -201,24 +202,6 @@ impl Rtl8168 {
         let isr = self.regs.isr.read();
         self.regs.isr.write(isr);
         let imr = self.regs.imr.read();
-
-        if isr & imr != 0 {
-            println!("RTL8168 ISR {:X} IMR {:X} ISR & IMR {:X}", isr, imr, isr & imr);
-            println!("CMD {:X} PHYS {:X} RMS {:X} MTPS {:X} RCR {:X} TCR {:X} RDSAR {:X} TNPDS {:X} THPDS {:X}",
-                self.regs.cmd.read(),
-                self.regs.phys_sts.read(),
-                self.regs.rms.read(),
-                self.regs.mtps.read(),
-                self.regs.rcr.read(),
-                self.regs.tcr.read(),
-                self.regs.rdsar[0].read(),
-                self.regs.tnpds[0].read(),
-                self.regs.thpds[0].read());
-            for (rd_i, rd) in self.receive_ring.iter_mut().enumerate() {
-                println!("RD {}: {:X}", rd_i, rd.ctrl.read());
-            }
-        }
-
         isr & imr
     }
 
@@ -290,14 +273,18 @@ impl Rtl8168 {
         self.regs.rdsar[0].write(self.receive_ring.physical() as u32);
         self.regs.rdsar[1].write((self.receive_ring.physical() >> 32) as u32);
 
+        //Clear ISR
+        let isr = self.regs.isr.read();
+        self.regs.isr.write(isr);
+
         // Interrupt on tx error (bit 3), tx ok (bit 2), rx error(bit 1), and rx ok (bit 0)
         self.regs.imr.write(1 << 15 | 1 << 14 | 1 << 7 | 1 << 6 | 1 << 5 | 1 << 4 | 1 << 3 | 1 << 2 | 1 << 1 | 1);
 
+        // Set TX config
+        self.regs.tcr.write(0b11 << 24 | 0b111 << 8);
+
         // Set RX config - Accept broadcast (bit 3), multicast (bit 2), and unicast (bit 1)
         self.regs.rcr.write(0xE70E);
-
-        // Set TX config
-        self.regs.tcr.write(0x03010700);
 
         // Lock config
         self.regs.cmd_9346.write(0);

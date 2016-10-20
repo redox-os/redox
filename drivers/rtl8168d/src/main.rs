@@ -55,6 +55,8 @@ fn main() {
 
                 let isr = unsafe { device_irq.borrow_mut().irq() };
                 if isr != 0 {
+                    println!("RTL8168 ISR {:X}", isr);
+
                     irq_file.write(&mut irq)?;
 
                     let mut todo = todo_irq.borrow_mut();
