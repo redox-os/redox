@@ -1,6 +1,5 @@
 use alloc::arc::Arc;
 use collections::Vec;
-use core::mem;
 use spin::{Mutex, RwLock};
 
 use context::{self, Context};
@@ -13,17 +12,17 @@ pub struct WaitCondition {
 impl WaitCondition {
     pub fn new() -> WaitCondition {
         WaitCondition {
-            contexts: Mutex::new(Vec::new())
+            contexts: Mutex::new(Vec::with_capacity(16))
         }
     }
 
     pub fn notify(&self) -> usize {
-        let mut contexts = Vec::new();
-        mem::swap(&mut *self.contexts.lock(), &mut contexts);
-        for context_lock in contexts.iter() {
+        let mut contexts = self.contexts.lock();
+        let len = contexts.len();
+        while let Some(context_lock) = contexts.pop() {
             context_lock.write().unblock();
         }
-        contexts.len()
+        len
     }
 
     pub fn wait(&self) {
