@@ -896,33 +896,29 @@ pub fn virttophys(virtual_address: usize) -> Result<usize> {
 
 pub fn waitpid(pid: usize, status_ptr: usize, flags: usize) -> Result<usize> {
     loop {
+        let mut exited = false;
+        let waitpid;
         {
-            let mut exited = false;
-            let waitpid;
-            {
-                let contexts = context::contexts();
-                let context_lock = contexts.get(pid).ok_or(Error::new(ESRCH))?;
-                let context = context_lock.read();
-                if let context::Status::Exited(status) = context.status {
-                    if status_ptr != 0 {
-                        let status_slice = validate_slice_mut(status_ptr as *mut usize, 1)?;
-                        status_slice[0] = status;
-                    }
-                    exited = true;
+            let contexts = context::contexts();
+            let context_lock = contexts.get(pid).ok_or(Error::new(ESRCH))?;
+            let context = context_lock.read();
+            if let context::Status::Exited(status) = context.status {
+                if status_ptr != 0 {
+                    let status_slice = validate_slice_mut(status_ptr as *mut usize, 1)?;
+                    status_slice[0] = status;
                 }
-                waitpid = context.waitpid.clone();
+                exited = true;
             }
-
-            if exited {
-                let mut contexts = context::contexts_mut();
-                return contexts.remove(pid).ok_or(Error::new(ESRCH)).and(Ok(pid));
-            } else if flags & WNOHANG == WNOHANG {
-                return Ok(0);
-            } else {
-                waitpid.wait();
-            }
+            waitpid = context.waitpid.clone();
         }
 
-        unsafe { context::switch(); } //TODO: Block
+        if exited {
+            let mut contexts = context::contexts_mut();
+            return contexts.remove(pid).ok_or(Error::new(ESRCH)).and(Ok(pid));
+        } else if flags & WNOHANG == WNOHANG {
+            return Ok(0);
+        } else {
+            waitpid.wait();
+        }
     }
 }
