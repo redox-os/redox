@@ -1,10 +1,12 @@
 /// Public keyboard layouts
 /// The layout can be:
 /// *   English
+/// *   Colemak
 /// *   French
 /// *   German
 pub enum Layout {
     English,
+    Colemak,
     French,
     German,
 }
@@ -21,6 +23,7 @@ pub enum Layout {
 pub fn get_scancode_from_layout(layout: &Layout, scancode: u8) -> [char; 3] {
     match *layout {
         Layout::English => SCANCODES_EN[scancode as usize],
+        Layout::Colemak => SCANCODES_CO[scancode as usize],
         Layout::French => SCANCODES_FR[scancode as usize],
         Layout::German => SCANCODES_DE[scancode as usize],
     }
@@ -29,6 +32,7 @@ pub fn get_scancode_from_layout(layout: &Layout, scancode: u8) -> [char; 3] {
 fn get_special_keys_from_layout(layout: &Layout, scancode: u8) -> [char; 3] {
     let keys: &[(u8, [char; 3])] = match *layout {
         Layout::English => SCANCODES_EXTRA_EN,
+        Layout::Colemak => SCANCODES_EXTRA_CO,
         Layout::French => SCANCODES_EXTRA_FR,
         Layout::German => SCANCODES_EXTRA_DE,
     };
@@ -124,6 +128,69 @@ static SCANCODES_EN: [[char; 3]; 58] = [['\0', '\0', '\0'],
 
 /// Special keys, not present on every keyboard
 static SCANCODES_EXTRA_EN: &'static [(u8, [char; 3])] = &[];
+
+/// Scancodes for Colemak keyboards
+static SCANCODES_CO: [[char; 3]; 58] = [['\0', '\0', '\0'],
+                                        ['\x1B', '\x1B', '\x1B'],
+                                        ['1', '!', '1'],
+                                        ['2', '@', '2'],
+                                        ['3', '#', '3'],
+                                        ['4', '$', '4'],
+                                        ['5', '%', '5'],
+                                        ['6', '^', '6'],
+                                        ['7', '&', '7'],
+                                        ['8', '*', '8'],
+                                        ['9', '(', '9'],
+                                        ['0', ')', '0'],
+                                        ['-', '_', '-'],
+                                        ['=', '+', '='],
+                                        ['\0', '\0', '\0'],
+                                        ['\t', '\t', '\t'],
+                                        ['q', 'Q', 'q'],
+                                        ['w', 'W', 'w'],
+                                        ['f', 'F', 'f'],
+                                        ['p', 'P', 'p'],
+                                        ['g', 'G', 'g'],
+                                        ['j', 'J', 'j'],
+                                        ['l', 'L', 'l'],
+                                        ['u', 'U', 'u'],
+                                        ['y', 'Y', 'y'],
+                                        [';', ':', ';'],
+                                        ['[', '{', '['],
+                                        [']', '}', ']'],
+                                        ['\n', '\n', '\n'],
+                                        ['\0', '\0', '\0'],
+                                        ['a', 'A', 'a'],
+                                        ['r', 'R', 'r'],
+                                        ['s', 'S', 's'],
+                                        ['t', 'T', 't'],
+                                        ['d', 'D', 'd'],
+                                        ['h', 'H', 'h'],
+                                        ['n', 'N', 'n'],
+                                        ['e', 'E', 'e'],
+                                        ['i', 'I', 'i'],
+                                        ['o', 'O', 'o'],
+                                        ['\'', '"', '\''],
+                                        ['`', '~', '`'],
+                                        ['\0', '\0', '\0'],
+                                        ['\\', '|', '\\'],
+                                        ['z', 'Z', 'z'],
+                                        ['x', 'X', 'x'],
+                                        ['c', 'C', 'c'],
+                                        ['v', 'V', 'v'],
+                                        ['b', 'B', 'b'],
+                                        ['k', 'K', 'k'],
+                                        ['m', 'M', 'm'],
+                                        [',', '<', ','],
+                                        ['.', '>', '.'],
+                                        ['/', '?', '/'],
+                                        ['\0', '\0', '\0'],
+                                        ['\0', '\0', '\0'],
+                                        ['\0', '\0', '\0'],
+                                        [' ', ' ', ' ']];
+
+/// Special keys, not present on every keyboard
+static SCANCODES_EXTRA_CO: &'static [(u8, [char; 3])] = &[];
 
 /// Scancodes for French keyboards
 static SCANCODES_FR: [[char; 3]; 58] = [['\0', '\0', '\0'],

@@ -372,8 +372,9 @@ impl Ps2 {
     pub fn change_layout(&mut self, layout: usize) {
         self.layout = match layout {
             0 => layouts::Layout::English,
-            1 => layouts::Layout::French,
-            2 => layouts::Layout::German,
+            1 => layouts::Layout::Colemak,
+            2 => layouts::Layout::French,
+            3 => layouts::Layout::German,
             _ => layouts::Layout::English,
         }
     }

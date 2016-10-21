@@ -26,7 +26,7 @@ There are many ways to help us out and we appreciate all of them.
 ## <a name="extern-links"> Other External Links </a>
 
 * [redox-os.org](http://redox-os.org)
-* [rust-os-comparison](https://github.com/jackpot51/rust-os-comparison)
+* [rust-os-comparison](https://github.com/flosse/rust-os-comparison)
 * [rust-lang.org](http://rust-lang.org)
 
 ## <a name="communication"> Communication </a>
@@ -47,7 +47,7 @@ You can find Redox on Reddit in [/r/rust/](https://www.reddit.com/r/rust) and [/
 
  * Writing documentation
  * Using/testing Redox, filing issues for bugs and needed features
- * Web development ([Redox website, separate repo](https://github.com/redox-os/redox-os.github.io))
+ * Web development ([Redox website, separate repo](https://github.com/redox-os/website))
  * Writing unit tests (may require minimal knowledge of rust)
 
 * If you are fluent in Rust, but not OS Development:
@@ -69,7 +69,7 @@ A bit more formal way of communication with fellow Redox devs, but a little less
 
 ### <a name="prs"> Pull Requests </a>
 
-It's completely fine to just submit a small pull request without first making an issue or something, but if it's a big change that will require a lot of planning and reviewing, it's best you start with writing an issue first. Also see [git guidelines](#git-style-guidelines)
+It's completely okay to just submit a small pull request without first making an issue or something, but if it's a significant change that will require a lot of planning and reviewing, it's best you start with writing an issue first. Also see [git guidelines](#git-style-guidelines)
 
 ### <a name="creating-a-pr"> Creating a Pull Request </a>
 
@@ -78,7 +78,7 @@ It's completely fine to just submit a small pull request without first making an
  * HTTPS:`git clone https://github.com/redox-os/redox.git --origin upstream --recursive`
  * SSH:`git clone git@github.com:redox-os/redox.git --origin upstream --recursive`
  * Then rebase: `git rebase upstream master`  
- Use HTTPS if you don't know which one to use. (Recommended: learn about SSH if you don't want to have to login every time you push/pull!)
+ Use HTTPS if you don't know which one to use. (Recommended: learn about SSH if you don't want to have to log in every time you push/pull!)
 3. Add your fork with
  * HTTPS:`git remote add origin https://github.com/your-username/redox.git`
  * SSH:`git remote add origin git@github.com:your-username/redox.git`
@@ -150,7 +150,7 @@ Since Rust is a relatively small and new language compared to others like C, the
 
 ### <a name="git-style-guidelines"> Git </a>
 
-* Commit messages should describe their changes in present-tense, e.g. "`Add stuff to file.ext`" instead of "`added stuff to file.ext`".
+* Commit messages should describe their changes in present tense, e.g. "`Add stuff to file.ext`" instead of "`added stuff to file.ext`".
 * Try to remove useless duplicate/merge commits from PRs as these clutter up history, and may make it hard to read.
 * Usually, when syncing your local copy with the master branch, you will want to rebase instead of merge. This is because it will create duplicate commits that don't actually do anything when merged into the master branch.
 * When you start to make changes, you will want to create a separate branch, and keep the `master` branch of your fork identical to the main repository, so that you can compare your changes with the main branch and test out a more stable build if you need to.
