@@ -1,5 +1,4 @@
 #![deny(warnings)]
-#![feature(question_mark)]
 
 use std::env;
 use std::fs::File;

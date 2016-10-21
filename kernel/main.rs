@@ -2,7 +2,7 @@
 #![crate_type="staticlib"]
 #![feature(alloc, allocator, arc_counts, asm, box_syntax, collections, const_fn, core_intrinsics,
            fnbox, fundamental, lang_items, naked_functions, unboxed_closures,
-           unwind_attributes, collections_range, question_mark, type_ascription)]
+           unwind_attributes, collections_range, type_ascription)]
 #![no_std]
 
 #![deny(warnings)]
