@@ -39,7 +39,7 @@ fn main() {
         {
             let device = Arc::new(unsafe { device::Intel8254x::new(address, irq).expect("e1000d: failed to allocate device") });
 
-            let mut event_queue = EventQueue::<()>::new().expect("e1000d: failed to create event queue");
+            let mut event_queue = EventQueue::<usize>::new().expect("e1000d: failed to create event queue");
 
             let todo = Arc::new(RefCell::new(Vec::<Packet>::new()));
 
@@ -47,7 +47,7 @@ fn main() {
             let socket_irq = socket.clone();
             let todo_irq = todo.clone();
             let mut irq_file = File::open(format!("irq:{}", irq)).expect("e1000d: failed to open IRQ file");
-            event_queue.add(irq_file.as_raw_fd(), move |_count: usize| -> Result<Option<()>> {
+            event_queue.add(irq_file.as_raw_fd(), move |_count: usize| -> Result<Option<usize>> {
                 let mut irq = [0; 8];
                 irq_file.read(&mut irq)?;
                 if unsafe { device_irq.irq() } {
@@ -70,9 +70,10 @@ fn main() {
                 Ok(None)
             }).expect("e1000d: failed to catch events on IRQ file");
 
-            event_queue.add(socket_fd, move |_count: usize| -> Result<Option<()>> {
+            let socket_packet = socket.clone();
+            event_queue.add(socket_fd, move |_count: usize| -> Result<Option<usize>> {
                 let mut packet = Packet::default();
-                socket.borrow_mut().read(&mut packet)?;
+                socket_packet.borrow_mut().read(&mut packet)?;
 
                 let a = packet.a;
                 device.handle(&mut packet);
@@ -80,13 +81,28 @@ fn main() {
                     packet.a = a;
                     todo.borrow_mut().push(packet);
                 } else {
-                    socket.borrow_mut().write(&mut packet)?;
+                    socket_packet.borrow_mut().write(&mut packet)?;
                 }
 
                 Ok(None)
             }).expect("e1000d: failed to catch events on IRQ file");
 
-            event_queue.run().expect("e1000d: failed to handle events");
+            loop {
+                let event_count = event_queue.run().expect("e1000d: failed to handle events");
+
+                let event_packet = Packet {
+                    id: 0,
+                    pid: 0,
+                    uid: 0,
+                    gid: 0,
+                    a: syscall::number::SYS_FEVENT,
+                    b: 0,
+                    c: syscall::flag::EVENT_READ,
+                    d: event_count
+                };
+
+                socket.borrow_mut().write(&event_packet).expect("vesad: failed to write display event");
+            }
         }
         unsafe { let _ = syscall::physunmap(address); }
     });

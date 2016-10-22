@@ -151,6 +151,10 @@ impl SchemeMut for Rtl8168 {
         }
     }
 
+    fn fevent(&mut self, _id: usize, _flags: usize) -> Result<usize> {
+        Ok(0)
+    }
+
     fn fsync(&mut self, _id: usize) -> Result<usize> {
         Ok(0)
     }

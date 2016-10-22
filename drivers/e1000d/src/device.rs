@@ -186,6 +186,10 @@ impl Scheme for Intel8254x {
         }
     }
 
+    fn fevent(&self, _id: usize, _flags: usize) -> Result<usize> {
+        Ok(0)
+    }
+
     fn fsync(&self, _id: usize) -> Result<usize> {
         Ok(0)
     }
