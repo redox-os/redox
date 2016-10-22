@@ -1,3 +1,4 @@
+#[allow(non_upper_case_globals)]
 static mut seed: u64 = 19940046431; //259261034506304368955239; //1706322144714608529217229883707268827757977089;
 
 /// Generate pseudo random number
