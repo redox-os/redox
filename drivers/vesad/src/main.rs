@@ -9,7 +9,7 @@ extern crate syscall;
 use std::{env, mem, thread};
 use std::fs::File;
 use std::io::{Read, Write};
-use syscall::{physmap, physunmap, Packet, Scheme, EVENT_READ, MAP_WRITE, MAP_WRITE_COMBINE};
+use syscall::{physmap, physunmap, Packet, SchemeMut, EVENT_READ, MAP_WRITE, MAP_WRITE_COMBINE};
 
 use mode_info::VBEModeInfo;
 use primitive::fast_set64;
@@ -57,7 +57,7 @@ fn main() {
             let onscreen = unsafe { physmap(physbaseptr, size * 4, MAP_WRITE | MAP_WRITE_COMBINE).expect("vesad: failed to map VBE LFB") };
             unsafe { fast_set64(onscreen as *mut u64, 0, size/2) };
 
-            let scheme = DisplayScheme::new(width, height, onscreen, &spec);
+            let mut scheme = DisplayScheme::new(width, height, onscreen, &spec);
 
             let mut blocked = Vec::new();
             loop {
@@ -87,7 +87,7 @@ fn main() {
                     }
                 }
 
-                for (screen_id, screen) in scheme.screens.borrow().iter() {
+                for (screen_id, screen) in scheme.screens.iter() {
                     if ! screen.will_block() {
                         let event_packet = Packet {
                             id: 0,
