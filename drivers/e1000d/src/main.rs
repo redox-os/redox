@@ -92,6 +92,11 @@ fn main() {
                     socket_packet.borrow_mut().write(&mut packet)?;
                 }
 
+                let next_read = device.next_read();
+                if next_read > 0 {
+                    return Ok(Some(next_read));
+                }
+
                 Ok(None)
             }).expect("e1000d: failed to catch events on IRQ file");
 

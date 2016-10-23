@@ -3,6 +3,7 @@ use std::{cmp, mem, ptr, slice};
 use dma::Dma;
 use netutils::setcfg;
 use syscall::error::{Error, EACCES, EWOULDBLOCK, Result};
+use syscall::flag::O_NONBLOCK;
 use syscall::scheme::Scheme;
 
 const CTRL: u32 = 0x00;
@@ -100,9 +101,9 @@ pub struct Intel8254x {
 }
 
 impl Scheme for Intel8254x {
-    fn open(&self, _path: &[u8], _flags: usize, uid: u32, _gid: u32) -> Result<usize> {
+    fn open(&self, _path: &[u8], flags: usize, uid: u32, _gid: u32) -> Result<usize> {
         if uid == 0 {
-            Ok(0)
+            Ok(flags)
         } else {
             Err(Error::new(EACCES))
         }
@@ -112,7 +113,7 @@ impl Scheme for Intel8254x {
         Ok(id)
     }
 
-    fn read(&self, _id: usize, buf: &mut [u8]) -> Result<usize> {
+    fn read(&self, id: usize, buf: &mut [u8]) -> Result<usize> {
         let head = unsafe { self.read(RDH) };
         let mut tail = unsafe { self.read(RDT) };
 
@@ -140,8 +141,11 @@ impl Scheme for Intel8254x {
             }
         }
 
-        //Err(Error::new(EWOULDBLOCK))
-        Ok(0)
+        if id & O_NONBLOCK == O_NONBLOCK {
+            Ok(0)
+        } else {
+            Err(Error::new(EWOULDBLOCK))
+        }
     }
 
     fn write(&self, _id: usize, buf: &[u8]) -> Result<usize> {

@@ -73,6 +73,11 @@ fn main() {
                             todo.remove(i);
                         }
                     }
+
+                    let next_read = device_irq.borrow().next_read();
+                    if next_read > 0 {
+                        return Ok(Some(next_read));
+                    }
                 }
                 Ok(None)
             }).expect("rtl8168d: failed to catch events on IRQ file");
@@ -90,6 +95,11 @@ fn main() {
                     todo.borrow_mut().push(packet);
                 } else {
                     socket_packet.borrow_mut().write(&mut packet)?;
+                }
+
+                let next_read = device.borrow().next_read();
+                if next_read > 0 {
+                    return Ok(Some(next_read));
                 }
 
                 Ok(None)
