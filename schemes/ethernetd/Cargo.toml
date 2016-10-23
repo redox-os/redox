@@ -3,6 +3,6 @@ name = "ethernetd"
 version = "0.1.0"
 
 [dependencies]
+event = { path = "../../crates/event/" }
 netutils = { path = "../../programs/netutils/" }
-resource_scheme = { path = "../../crates/resource_scheme/" }
 syscall = { path = "../../syscall/" }

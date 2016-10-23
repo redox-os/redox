@@ -140,7 +140,8 @@ impl Scheme for Intel8254x {
             }
         }
 
-        Err(Error::new(EWOULDBLOCK))
+        //Err(Error::new(EWOULDBLOCK))
+        Ok(0)
     }
 
     fn write(&self, _id: usize, buf: &[u8]) -> Result<usize> {
@@ -223,6 +224,25 @@ impl Intel8254x {
     pub unsafe fn irq(&self) -> bool {
         let icr = self.read(ICR);
         icr != 0
+    }
+
+    pub fn next_read(&self) -> usize {
+        let head = unsafe { self.read(RDH) };
+        let mut tail = unsafe { self.read(RDT) };
+
+        tail += 1;
+        if tail >= self.receive_ring.len() as u32 {
+            tail = 0;
+        }
+
+        if tail != head {
+            let rd = unsafe { &* (self.receive_ring.as_ptr().offset(tail as isize) as *const Rd) };
+            if rd.status & RD_DD == RD_DD {
+                return rd.length as usize;
+            }
+        }
+
+        0
     }
 
     pub unsafe fn read(&self, register: u32) -> u32 {
