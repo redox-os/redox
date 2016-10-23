@@ -7,6 +7,7 @@ ethernetd
 ipd
 tcpd
 udpd
+dhcpd -b
 getty display:2
 getty display:3
 #orbital display:4
