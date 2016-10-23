@@ -346,7 +346,7 @@ pub fn clone(flags: usize, stack_base: usize) -> Result<usize> {
                 context.grants = grants;
             } else {
                 // Copy percpu mapping
-                {
+                for cpu_id in 0..::cpu_count() {
                     extern {
                         /// The starting byte of the thread data segment
                         static mut __tdata_start: u8;
@@ -356,7 +356,7 @@ pub fn clone(flags: usize, stack_base: usize) -> Result<usize> {
 
                     let size = unsafe { & __tbss_end as *const _ as usize - & __tdata_start as *const _ as usize };
 
-                    let start = arch::KERNEL_PERCPU_OFFSET + arch::KERNEL_PERCPU_SIZE * ::cpu_id();
+                    let start = arch::KERNEL_PERCPU_OFFSET + arch::KERNEL_PERCPU_SIZE * cpu_id;
                     let end = start + size;
 
                     let start_page = Page::containing_address(VirtualAddress::new(start));

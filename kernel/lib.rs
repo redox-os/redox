@@ -133,6 +133,13 @@ pub fn cpu_id() -> usize {
     CPU_ID.load(Ordering::Relaxed)
 }
 
+static CPU_COUNT : AtomicUsize = ATOMIC_USIZE_INIT;
+
+#[inline(always)]
+pub fn cpu_count() -> usize {
+    CPU_COUNT.load(Ordering::Relaxed)
+}
+
 pub extern fn userspace_init() {
     assert_eq!(syscall::chdir(b"initfs:bin"), Ok(0));
 
@@ -146,13 +153,14 @@ pub extern fn userspace_init() {
 }
 
 #[no_mangle]
-pub extern fn kmain() {
+pub extern fn kmain(cpus: usize) {
     CPU_ID.store(0, Ordering::SeqCst);
+    CPU_COUNT.store(cpus, Ordering::SeqCst);
 
     context::init();
 
     let pid = syscall::getpid();
-    println!("BSP: {:?}", pid);
+    println!("BSP: {:?} {}", pid, cpus);
 
     match context::contexts_mut().spawn(userspace_init) {
         Ok(context_lock) => {

@@ -26,13 +26,13 @@ static mut TBSS_TEST_ZERO: usize = 0;
 #[thread_local]
 static mut TDATA_TEST_NONZERO: usize = 0xFFFFFFFFFFFFFFFF;
 
+pub static CPU_COUNT: AtomicUsize = ATOMIC_USIZE_INIT;
 pub static AP_READY: AtomicBool = ATOMIC_BOOL_INIT;
 static BSP_READY: AtomicBool = ATOMIC_BOOL_INIT;
-static KERNEL_TABLE: AtomicUsize = ATOMIC_USIZE_INIT;
 
 extern {
     /// Kernel main function
-    fn kmain() -> !;
+    fn kmain(cpus: usize) -> !;
     /// Kernel main for APs
     fn kmain_ap(id: usize) -> !;
 }
@@ -91,9 +91,9 @@ pub unsafe extern fn kstart() -> ! {
         }
 
         // Reset AP variables
+        CPU_COUNT.store(1, Ordering::SeqCst);
         AP_READY.store(false, Ordering::SeqCst);
         BSP_READY.store(false, Ordering::SeqCst);
-        KERNEL_TABLE.store(0, Ordering::SeqCst);
 
         // Setup kernel heap
         {
@@ -111,44 +111,23 @@ pub unsafe extern fn kstart() -> ! {
         // Initialize devices
         device::init();
 
-        // Send kernel page table to APs
-        {
-            let index = Page::containing_address(VirtualAddress::new(::KERNEL_OFFSET)).p4_index();
-
-            let p4 = active_table.p4();
-            {
-                let entry = &p4[index];
-                if let Some(frame) = entry.pointed_frame() {
-                    KERNEL_TABLE.store(frame.start_address().get(), Ordering::SeqCst);
-                } else {
-                    panic!("kernel does not have PML4 entry");
-                }
-            }
-        }
-
         // Read ACPI tables, starts APs
         acpi::init(&mut active_table);
 
         BSP_READY.store(true, Ordering::SeqCst);
     }
 
-    kmain();
+    kmain(CPU_COUNT.load(Ordering::SeqCst));
 }
 
 /// Entry to rust for an AP
-pub unsafe extern fn kstart_ap(cpu_id: usize, _page_table: usize, stack_start: usize, stack_end: usize) -> ! {
+pub unsafe extern fn kstart_ap(cpu_id: usize, bsp_table: usize, stack_start: usize, stack_end: usize) -> ! {
     {
         assert_eq!(BSS_TEST_ZERO, 0);
         assert_eq!(DATA_TEST_NONZERO, 0xFFFFFFFFFFFFFFFF);
 
-        // Retrieve kernel table entry
-        while KERNEL_TABLE.load(Ordering::SeqCst) == 0 {
-            interrupt::pause();
-        }
-        let kernel_table = KERNEL_TABLE.load(Ordering::SeqCst);
-
         // Initialize paging
-        let (_active_table, tcb_offset) = paging::init_ap(cpu_id, stack_start, stack_end, kernel_table);
+        let tcb_offset = paging::init_ap(cpu_id, bsp_table, stack_start, stack_end);
 
         // Set up GDT for AP
         gdt::init(tcb_offset, stack_end);

@@ -7,7 +7,7 @@ use core::sync::atomic::Ordering;
 use interrupt;
 use memory::{allocate_frames, Frame};
 use paging::{entry, ActivePageTable, Page, PhysicalAddress, VirtualAddress};
-use start::{kstart_ap, AP_READY};
+use start::{kstart_ap, CPU_COUNT, AP_READY};
 
 use self::local_apic::LocalApic;
 use self::madt::{Madt, MadtEntry};
@@ -57,8 +57,10 @@ pub fn init_sdt(sdt: &'static Sdt, active_table: &mut ActivePageTable) {
                     println!("        This is my local APIC");
                 } else {
                     if ap_local_apic.flags & 1 == 1 {
+                        // Increase CPU ID
+                        let cpu_id = CPU_COUNT.fetch_add(1, Ordering::SeqCst);
+
                         // Allocate a stack
-                        // TODO: Allocate contiguous
                         let stack_start = allocate_frames(64).expect("no more frames in acpi stack_start").start_address().get() + ::KERNEL_OFFSET;
                         let stack_end = stack_start + 64 * 4096;
 
@@ -71,7 +73,7 @@ pub fn init_sdt(sdt: &'static Sdt, active_table: &mut ActivePageTable) {
 
                         // Set the ap_ready to 0, volatile
                         unsafe { atomic_store(ap_ready, 0) };
-                        unsafe { atomic_store(ap_cpu_id, ap_local_apic.id as u64) };
+                        unsafe { atomic_store(ap_cpu_id, cpu_id as u64) };
                         unsafe { atomic_store(ap_page_table, active_table.address() as u64) };
                         unsafe { atomic_store(ap_stack_start, stack_start as u64) };
                         unsafe { atomic_store(ap_stack_end, stack_end as u64) };
@@ -118,6 +120,8 @@ pub fn init_sdt(sdt: &'static Sdt, active_table: &mut ActivePageTable) {
                             interrupt::pause();
                         }
                         println!(" Ready");
+
+                        active_table.flush_all();
                     } else {
                         println!("        CPU Disabled");
                     }

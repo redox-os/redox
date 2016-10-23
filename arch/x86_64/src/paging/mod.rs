@@ -169,7 +169,7 @@ pub unsafe fn init(cpu_id: usize, stack_start: usize, stack_end: usize) -> (Acti
     (active_table, init_tcb(cpu_id))
 }
 
-pub unsafe fn init_ap(cpu_id: usize, stack_start: usize, stack_end: usize, kernel_table: usize) -> (ActivePageTable, usize) {
+pub unsafe fn init_ap(cpu_id: usize, bsp_table: usize, stack_start: usize, stack_end: usize) -> usize {
     extern {
         /// The starting byte of the thread data segment
         static mut __tdata_start: u8;
@@ -185,18 +185,11 @@ pub unsafe fn init_ap(cpu_id: usize, stack_start: usize, stack_end: usize, kerne
 
     let mut active_table = ActivePageTable::new();
 
+    let mut new_table = InactivePageTable::from_address(bsp_table);
+
     let mut temporary_page = TemporaryPage::new(Page::containing_address(VirtualAddress::new(0x8_0000_0000)));
 
-    let mut new_table = {
-        let frame = allocate_frame().expect("no more frames in paging::init new_table");
-        InactivePageTable::new(frame, &mut active_table, &mut temporary_page)
-    };
-
     active_table.with(&mut new_table, &mut temporary_page, |mapper| {
-        // Copy kernel mapping
-        let kernel_frame = Frame::containing_address(PhysicalAddress::new(kernel_table));
-        mapper.p4_mut()[510].set(kernel_frame, entry::PRESENT | entry::WRITABLE);
-
         // Map tdata and tbss
         {
             let size = & __tbss_end as *const _ as usize - & __tdata_start as *const _ as usize;
@@ -228,7 +221,7 @@ pub unsafe fn init_ap(cpu_id: usize, stack_start: usize, stack_end: usize, kerne
 
     active_table.switch(new_table);
 
-    (active_table, init_tcb(cpu_id))
+    init_tcb(cpu_id)
 }
 
 pub struct ActivePageTable {
