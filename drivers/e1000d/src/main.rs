@@ -2,6 +2,7 @@
 
 extern crate dma;
 extern crate event;
+extern crate netutils;
 extern crate syscall;
 
 use std::cell::RefCell;

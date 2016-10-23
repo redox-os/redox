@@ -1,6 +1,7 @@
 use std::{cmp, mem, ptr, slice};
 
 use dma::Dma;
+use netutils::setcfg;
 use syscall::error::{Error, EACCES, EWOULDBLOCK, Result};
 use syscall::scheme::Scheme;
 
@@ -272,6 +273,7 @@ impl Intel8254x {
                     mac_high as u8,
                     (mac_high >> 8) as u8];
         println!("   - MAC: {:>02X}:{:>02X}:{:>02X}:{:>02X}:{:>02X}:{:>02X}", mac[0], mac[1], mac[2], mac[3], mac[4], mac[5]);
+        let _ = setcfg("mac", &format!("{:>02X}.{:>02X}.{:>02X}.{:>02X}.{:>02X}.{:>02X}", mac[0], mac[1], mac[2], mac[3], mac[4], mac[5]));
 
         //
         // MTA => 0;

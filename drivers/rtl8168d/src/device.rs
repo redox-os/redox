@@ -2,6 +2,7 @@ use std::mem;
 
 use dma::Dma;
 use io::{Mmio, Io, ReadOnly};
+use netutils::setcfg;
 use syscall::error::{Error, EACCES, EWOULDBLOCK, Result};
 use syscall::scheme::SchemeMut;
 
@@ -221,6 +222,7 @@ impl Rtl8168 {
                     mac_high as u8,
                     (mac_high >> 8) as u8];
         println!("   - MAC: {:>02X}:{:>02X}:{:>02X}:{:>02X}:{:>02X}:{:>02X}", mac[0], mac[1], mac[2], mac[3], mac[4], mac[5]);
+        let _ = setcfg("mac", &format!("{:>02X}.{:>02X}.{:>02X}.{:>02X}.{:>02X}.{:>02X}", mac[0], mac[1], mac[2], mac[3], mac[4], mac[5]));
 
         // Reset - this will disable tx and rx, reinitialize FIFOs, and set the system buffer pointer to the initial value
         self.regs.cmd.writef(1 << 4, true);
