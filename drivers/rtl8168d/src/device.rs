@@ -2,6 +2,7 @@ use std::mem;
 
 use dma::Dma;
 use io::{Mmio, Io, ReadOnly};
+use netutils::setcfg;
 use syscall::error::{Error, EACCES, EWOULDBLOCK, Result};
 use syscall::scheme::SchemeMut;
 
@@ -65,7 +66,6 @@ struct Td {
 
 pub struct Rtl8168 {
     regs: &'static mut Regs,
-    irq: u8,
     receive_buffer: [Dma<[u8; 0x1FF8]>; 16],
     receive_ring: Dma<[Rd; 16]>,
     transmit_buffer: [Dma<[u8; 7552]>; 16],
@@ -88,12 +88,9 @@ impl SchemeMut for Rtl8168 {
     }
 
     fn read(&mut self, _id: usize, buf: &mut [u8]) -> Result<usize> {
-        println!("Try Receive {}", buf.len());
         for (rd_i, rd) in self.receive_ring.iter_mut().enumerate() {
             if ! rd.ctrl.readf(OWN) {
                 let rd_len = rd.ctrl.read() & 0x3FFF;
-
-                println!("Receive {}: {}", rd_i, rd_len);
 
                 let data = &self.receive_buffer[rd_i as usize];
 
@@ -114,11 +111,9 @@ impl SchemeMut for Rtl8168 {
     }
 
     fn write(&mut self, _id: usize, buf: &[u8]) -> Result<usize> {
-        println!("Try Transmit {}", buf.len());
         loop {
             for (td_i, td) in self.transmit_ring.iter_mut().enumerate() {
                 if ! td.ctrl.readf(OWN) {
-                    println!("Transmit {}: Setup {}", td_i, buf.len());
 
                     let mut data = &mut self.transmit_buffer[td_i as usize];
 
@@ -128,20 +123,14 @@ impl SchemeMut for Rtl8168 {
                         i += 1;
                     }
 
-                    println!("Transmit {}: Before: Control {:X}: Buffer {:X} TPPoll: {:X} ISR: {:X}", td_i, td.ctrl.read(), td.buffer.read(), self.regs.tppoll.read(), self.regs.isr.read());
-
                     let eor = td.ctrl.read() & EOR;
                     td.ctrl.write(OWN | eor | FS | LS | i as u32);
 
                     self.regs.tppoll.writef(1 << 6, true); //Notify of normal priority packet
 
-                    println!("Transmit {}: During: Control {:X}: Buffer {:X} TPPoll: {:X} ISR: {:X}", td_i, td.ctrl.read(), td.buffer.read(), self.regs.tppoll.read(), self.regs.isr.read());
-
                     while self.regs.tppoll.readf(1 << 6) {
                         unsafe { asm!("pause" : : : "memory" : "intel", "volatile"); }
                     }
-
-                    println!("Transmit {}: After: Control {:X}: Buffer {:X} TPPoll: {:X} ISR: {:X}", td_i, td.ctrl.read(), td.buffer.read(), self.regs.tppoll.read(), self.regs.isr.read());
 
                     return Ok(i);
                 }
@@ -165,7 +154,7 @@ impl SchemeMut for Rtl8168 {
 }
 
 impl Rtl8168 {
-    pub unsafe fn new(base: usize, irq: u8) -> Result<Self> {
+    pub unsafe fn new(base: usize) -> Result<Self> {
         assert_eq!(mem::size_of::<Regs>(), 256);
 
         let regs = &mut *(base as *mut Regs);
@@ -181,7 +170,6 @@ impl Rtl8168 {
 
         let mut module = Rtl8168 {
             regs: regs,
-            irq: irq,
             receive_buffer: [Dma::zeroed()?, Dma::zeroed()?, Dma::zeroed()?, Dma::zeroed()?,
                             Dma::zeroed()?, Dma::zeroed()?, Dma::zeroed()?, Dma::zeroed()?,
                             Dma::zeroed()?, Dma::zeroed()?, Dma::zeroed()?, Dma::zeroed()?,
@@ -210,8 +198,6 @@ impl Rtl8168 {
     }
 
     pub unsafe fn init(&mut self) {
-        println!(" + RTL8168 on: {:X}, IRQ: {}", self.regs as *mut Regs as usize, self.irq);
-
         let mac_low = self.regs.mac[0].read();
         let mac_high = self.regs.mac[1].read();
         let mac = [mac_low as u8,
@@ -220,7 +206,8 @@ impl Rtl8168 {
                     (mac_low >> 24) as u8,
                     mac_high as u8,
                     (mac_high >> 8) as u8];
-        println!("   - MAC: {:>02X}:{:>02X}:{:>02X}:{:>02X}:{:>02X}:{:>02X}", mac[0], mac[1], mac[2], mac[3], mac[4], mac[5]);
+        print!("{}", format!("   - MAC: {:>02X}:{:>02X}:{:>02X}:{:>02X}:{:>02X}:{:>02X}\n", mac[0], mac[1], mac[2], mac[3], mac[4], mac[5]));
+        let _ = setcfg("mac", &format!("{:>02X}.{:>02X}.{:>02X}.{:>02X}.{:>02X}.{:>02X}", mac[0], mac[1], mac[2], mac[3], mac[4], mac[5]));
 
         // Reset - this will disable tx and rx, reinitialize FIFOs, and set the system buffer pointer to the initial value
         self.regs.cmd.writef(1 << 4, true);
@@ -292,18 +279,5 @@ impl Rtl8168 {
 
         // Lock config
         self.regs.cmd_9346.write(0);
-
-        println!("   - Ready CMD {:X} ISR {:X} IMR {:X} PHYS {:X} RMS {:X} MTPS {:X} RCR {:X} TCR {:X} RDSAR {:X} TNPDS {:X} THPDS {:X}",
-            self.regs.cmd.read(),
-            self.regs.isr.read(),
-            self.regs.imr.read(),
-            self.regs.phys_sts.read(),
-            self.regs.rms.read(),
-            self.regs.mtps.read(),
-            self.regs.rcr.read(),
-            self.regs.tcr.read(),
-            self.regs.rdsar[0].read(),
-            self.regs.tnpds[0].read(),
-            self.regs.thpds[0].read());
     }
 }

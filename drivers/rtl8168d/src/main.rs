@@ -3,6 +3,7 @@
 extern crate dma;
 extern crate event;
 extern crate io;
+extern crate netutils;
 extern crate syscall;
 
 use std::cell::RefCell;
@@ -27,6 +28,8 @@ fn main() {
     let irq_str = args.next().expect("rtl8168d: no irq provided");
     let irq = irq_str.parse::<u8>().expect("rtl8168d: failed to parse irq");
 
+    print!("{}", format!(" + RTL8168 on: {:X}, IRQ: {}\n", bar, irq));
+
     thread::spawn(move || {
         unsafe {
             syscall::iopl(3).expect("rtl8168d: failed to get I/O permission");
@@ -40,7 +43,7 @@ fn main() {
 
         let address = unsafe { syscall::physmap(bar, 256, MAP_WRITE).expect("rtl8168d: failed to map address") };
         {
-            let device = Arc::new(RefCell::new(unsafe { device::Rtl8168::new(address, irq).expect("rtl8168d: failed to allocate device") }));
+            let device = Arc::new(RefCell::new(unsafe { device::Rtl8168::new(address).expect("rtl8168d: failed to allocate device") }));
 
             let mut event_queue = EventQueue::<usize>::new().expect("rtl8168d: failed to create event queue");
 
@@ -55,8 +58,6 @@ fn main() {
 
                 let isr = unsafe { device_irq.borrow_mut().irq() };
                 if isr != 0 {
-                    println!("RTL8168 ISR {:X}", isr);
-
                     irq_file.write(&mut irq)?;
 
                     let mut todo = todo_irq.borrow_mut();

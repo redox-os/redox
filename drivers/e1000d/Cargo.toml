@@ -7,5 +7,5 @@ bitflags = "*"
 dma = { path = "../../crates/dma/" }
 event = { path = "../../crates/event/" }
 io = { path = "../../crates/io/" }
-spin = "*"
+netutils = { path = "../../programs/netutils/" }
 syscall = { path = "../../syscall/" }

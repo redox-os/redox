@@ -27,6 +27,8 @@ fn main() {
     let irq_str = args.next().expect("ahcid: no irq provided");
     let irq = irq_str.parse::<u8>().expect("ahcid: failed to parse irq");
 
+    print!("{}", format!(" + AHCI on: {:X} IRQ: {}\n", bar, irq));
+
     thread::spawn(move || {
         unsafe {
             syscall::iopl(3).expect("ahcid: failed to get I/O permission");
@@ -45,7 +47,7 @@ fn main() {
 
             let mut event_file = File::open("event:").expect("ahcid: failed to open event file");
 
-            let scheme = DiskScheme::new(ahci::disks(address, irq));
+            let scheme = DiskScheme::new(ahci::disks(address));
             loop {
                 let mut event = Event::default();
                 event_file.read(&mut event).expect("ahcid: failed to read event file");
