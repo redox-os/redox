@@ -27,20 +27,22 @@ pub unsafe fn switch() -> bool {
         }
 
         let check_context = |context: &mut Context| -> bool {
-            if context.status == Status::Blocked && context.wake.is_some() {
-                let wake = context.wake.expect("context::switch: wake not set");
+            if context.cpuid == None || context.cpuid == Some(::cpu_id()) {
+                if context.status == Status::Blocked && context.wake.is_some() {
+                    let wake = context.wake.expect("context::switch: wake not set");
 
-                let current = arch::time::monotonic();
-                if current.0 > wake.0 || (current.0 == wake.0 && current.1 >= wake.1) {
-                    context.unblock();
+                    let current = arch::time::monotonic();
+                    if current.0 > wake.0 || (current.0 == wake.0 && current.1 >= wake.1) {
+                        context.unblock();
+                    }
+                }
+
+                if context.status == Status::Runnable && ! context.running {
+                    return true;
                 }
             }
 
-            if context.status == Status::Runnable && ! context.running {
-                true
-            } else {
-                false
-            }
+            false
         };
 
         for (pid, context_lock) in contexts.iter() {
@@ -72,7 +74,7 @@ pub unsafe fn switch() -> bool {
         return false;
     }
 
-    //println!("Switch {} to {}", (&*from_ptr).id, (&*to_ptr).id);
+    // println!("{}: Switch {} to {}", ::cpu_id(), (&*from_ptr).id, (&*to_ptr).id);
 
     (&mut *from_ptr).running = false;
     (&mut *to_ptr).running = true;

@@ -35,6 +35,8 @@ pub struct Context {
     pub status: Status,
     /// Context running or not
     pub running: bool,
+    /// CPU ID, if locked
+    pub cpuid: Option<usize>,
     /// Context is halting parent
     pub vfork: bool,
     /// Context is being waited on
@@ -79,6 +81,7 @@ impl Context {
             egid: 0,
             status: Status::Blocked,
             running: false,
+            cpuid: None,
             vfork: false,
             waitpid: Arc::new(WaitCondition::new()),
             wake: None,
