@@ -7,7 +7,8 @@ pub mod disk;
 pub mod fis;
 pub mod hba;
 
-pub fn disks(base: usize, irq: u8) -> Vec<Disk> {
+pub fn disks(base: usize) -> Vec<Disk> {
+    unsafe { &mut *(base as *mut HbaMem) }.init();
     let pi = unsafe { &mut *(base as *mut HbaMem) }.pi.read();
     let ret: Vec<Disk> = (0..32)
           .filter(|&i| pi & 1 << i as i32 == 1 << i as i32)

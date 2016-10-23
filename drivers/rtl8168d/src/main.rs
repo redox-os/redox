@@ -28,7 +28,7 @@ fn main() {
     let irq_str = args.next().expect("rtl8168d: no irq provided");
     let irq = irq_str.parse::<u8>().expect("rtl8168d: failed to parse irq");
 
-    print!("{}", format!(" + RTL8168 on: {:X}, IRQ: {}", bar, irq));
+    print!("{}", format!(" + RTL8168 on: {:X}, IRQ: {}\n", bar, irq));
 
     thread::spawn(move || {
         unsafe {

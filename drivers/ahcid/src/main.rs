@@ -47,7 +47,7 @@ fn main() {
 
             let mut event_file = File::open("event:").expect("ahcid: failed to open event file");
 
-            let scheme = DiskScheme::new(ahci::disks(address, irq));
+            let scheme = DiskScheme::new(ahci::disks(address));
             loop {
                 let mut event = Event::default();
                 event_file.read(&mut event).expect("ahcid: failed to read event file");
