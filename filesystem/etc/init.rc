@@ -1,6 +1,6 @@
 initfs:bin/pcid /etc/pcid.toml
 ethernetd
-#arpd
+arpd
 ipd
 tcpd
 udpd

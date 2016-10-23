@@ -3,4 +3,5 @@ name = "arpd"
 version = "0.1.0"
 
 [dependencies]
+netutils = { path = "../../programs/netutils/" }
 syscall = { path = "../../syscall/" }

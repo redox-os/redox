@@ -371,7 +371,7 @@ extrautils: \
 
 netutils: \
 	filesystem/bin/dhcpd \
-	filesystem/bin/dnsd \
+	filesystem/bin/dns \
 	filesystem/bin/irc \
 	filesystem/bin/nc \
 	filesystem/bin/wget
