@@ -1,6 +1,3 @@
-vesad T T T G
-stdio display:1
-ps2d
 initfs:bin/pcid /etc/pcid.toml
 ethernetd
 #arpd

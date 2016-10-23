@@ -27,6 +27,8 @@ fn main() {
     let irq_str = args.next().expect("e1000d: no irq provided");
     let irq = irq_str.parse::<u8>().expect("e1000d: failed to parse irq");
 
+    print!("{}", format!(" + E1000 on: {:X}, IRQ: {}\n", bar, irq));
+
     thread::spawn(move || {
         unsafe {
             syscall::iopl(3).expect("e1000d: failed to get I/O permission");
@@ -38,7 +40,7 @@ fn main() {
 
         let address = unsafe { syscall::physmap(bar, 128*1024, MAP_WRITE).expect("e1000d: failed to map address") };
         {
-            let device = Arc::new(unsafe { device::Intel8254x::new(address, irq).expect("e1000d: failed to allocate device") });
+            let device = Arc::new(unsafe { device::Intel8254x::new(address).expect("e1000d: failed to allocate device") });
 
             let mut event_queue = EventQueue::<usize>::new().expect("e1000d: failed to create event queue");
 

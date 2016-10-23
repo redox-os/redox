@@ -27,6 +27,8 @@ fn main() {
     let irq_str = args.next().expect("ahcid: no irq provided");
     let irq = irq_str.parse::<u8>().expect("ahcid: failed to parse irq");
 
+    print!("{}", format!(" + AHCI on: {:X} IRQ: {}\n", bar, irq));
+
     thread::spawn(move || {
         unsafe {
             syscall::iopl(3).expect("ahcid: failed to get I/O permission");

@@ -191,8 +191,8 @@ impl HbaPort {
                 48
             };
 
-            println!("   + Serial: {} Firmware: {} Model: {} {}-bit LBA Size: {} MB",
-                        serial.trim(), firmware.trim(), model.trim(), lba_bits, sectors / 2048);
+            print!("{}", format!("   + Serial: {} Firmware: {} Model: {} {}-bit LBA Size: {} MB\n",
+                        serial.trim(), firmware.trim(), model.trim(), lba_bits, sectors / 2048));
 
             Some(sectors * 512)
         } else {
@@ -230,7 +230,7 @@ impl HbaPort {
     }
 
     pub fn ata_dma(&mut self, block: u64, sectors: usize, write: bool, clb: &mut Dma<[HbaCmdHeader; 32]>, ctbas: &mut [Dma<HbaCmdTable>; 32], buf: &mut Dma<[u8; 256 * 512]>) -> Result<usize> {
-        //println!("AHCI {:X} DMA BLOCK: {:X} SECTORS: {} WRITE: {}", (self as *mut HbaPort) as usize, block, sectors, write);
+        //print!("{}", format!("AHCI {:X} DMA BLOCK: {:X} SECTORS: {} WRITE: {}\n", (self as *mut HbaPort) as usize, block, sectors, write));
 
         assert!(sectors > 0 && sectors < 256);
 
@@ -286,20 +286,20 @@ impl HbaPort {
 
             while self.ci.readf(1 << slot) {
                 if self.is.readf(HBA_PORT_IS_TFES) {
-                    println!("IS_TFES set in CI loop TFS {:X} SERR {:X}", self.tfd.read(), self.serr.read());
+                    print!("{}", format!("IS_TFES set in CI loop TFS {:X} SERR {:X}\n", self.tfd.read(), self.serr.read()));
                     return Err(Error::new(EIO));
                 }
                 pause();
             }
 
             if self.is.readf(HBA_PORT_IS_TFES) {
-                println!("IS_TFES set after CI loop TFS {:X} SERR {:X}", self.tfd.read(), self.serr.read());
+                print!("{}", format!("IS_TFES set after CI loop TFS {:X} SERR {:X}\n", self.tfd.read(), self.serr.read()));
                 return Err(Error::new(EIO));
             }
 
             Ok(sectors * 512)
         } else {
-            println!("No Command Slots");
+            print!("No Command Slots\n");
             Err(Error::new(EIO))
         }
     }

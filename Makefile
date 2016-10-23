@@ -246,7 +246,9 @@ $(BUILD)/initfs.rs: \
 		initfs/bin/init \
 		initfs/bin/ahcid \
 		initfs/bin/pcid \
+		initfs/bin/ps2d \
 		initfs/bin/redoxfs \
+		initfs/bin/vesad \
 		initfs/etc/**
 	echo 'use collections::BTreeMap;' > $@
 	echo 'pub fn gen() -> BTreeMap<&'"'"'static [u8], (&'"'"'static [u8], bool)> {' >> $@
@@ -321,9 +323,7 @@ filesystem/bin/%: schemes/%/Cargo.toml schemes/%/src/** $(BUILD)/libstd.rlib
 
 drivers: \
 	filesystem/bin/e1000d \
-	filesystem/bin/ps2d \
-	filesystem/bin/rtl8168d \
-	filesystem/bin/vesad
+	filesystem/bin/rtl8168d
 
 coreutils: \
 	filesystem/bin/basename \

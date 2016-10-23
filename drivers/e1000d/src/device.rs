@@ -93,7 +93,6 @@ const TD_DD: u8 = 1;
 
 pub struct Intel8254x {
     base: usize,
-    irq: u8,
     receive_buffer: [Dma<[u8; 16384]>; 16],
     receive_ring: Dma<[Rd; 16]>,
     transmit_buffer: [Dma<[u8; 16384]>; 16],
@@ -201,10 +200,9 @@ impl Scheme for Intel8254x {
 }
 
 impl Intel8254x {
-    pub unsafe fn new(base: usize, irq: u8) -> Result<Self> {
+    pub unsafe fn new(base: usize) -> Result<Self> {
         let mut module = Intel8254x {
             base: base,
-            irq: irq,
             receive_buffer: [Dma::zeroed()?, Dma::zeroed()?, Dma::zeroed()?, Dma::zeroed()?,
                             Dma::zeroed()?, Dma::zeroed()?, Dma::zeroed()?, Dma::zeroed()?,
                             Dma::zeroed()?, Dma::zeroed()?, Dma::zeroed()?, Dma::zeroed()?,
@@ -245,8 +243,6 @@ impl Intel8254x {
     }
 
     pub unsafe fn init(&mut self) {
-        println!(" + Intel 8254x on: {:X}, IRQ: {}", self.base, self.irq);
-
         // Enable auto negotiate, link, clear reset, do not Invert Loss-Of Signal
         self.flag(CTRL, CTRL_ASDE | CTRL_SLU, true);
         self.flag(CTRL, CTRL_LRST, false);
@@ -272,7 +268,7 @@ impl Intel8254x {
                     (mac_low >> 24) as u8,
                     mac_high as u8,
                     (mac_high >> 8) as u8];
-        println!("   - MAC: {:>02X}:{:>02X}:{:>02X}:{:>02X}:{:>02X}:{:>02X}", mac[0], mac[1], mac[2], mac[3], mac[4], mac[5]);
+        print!("{}", format!("   - MAC: {:>02X}:{:>02X}:{:>02X}:{:>02X}:{:>02X}:{:>02X}\n", mac[0], mac[1], mac[2], mac[3], mac[4], mac[5]));
         let _ = setcfg("mac", &format!("{:>02X}.{:>02X}.{:>02X}.{:>02X}.{:>02X}.{:>02X}", mac[0], mac[1], mac[2], mac[3], mac[4], mac[5]));
 
         //
