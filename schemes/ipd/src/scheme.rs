@@ -1,4 +1,5 @@
 use std::cell::RefCell;
+use std::collections::VecDeque;
 use std::rand;
 use std::{str, u16};
 
@@ -8,7 +9,10 @@ use syscall;
 use syscall::error::{Error, Result, EACCES, ENOENT, EINVAL};
 use syscall::flag::O_RDWR;
 
-use resource::IpResource;
+use resource::*;
+
+/// The IP address of the localhost.
+const LOCALHOST: Ipv4Addr = Ipv4Addr { bytes: [127, 0, 0, 1] };
 
 /// A ARP entry (MAC + IP)
 pub struct ArpEntry {
@@ -48,6 +52,18 @@ impl ResourceScheme<IpResource> for IpScheme {
                         let mut route_mac = MacAddr::BROADCAST;
 
                         if ! peer_addr.equals(Ipv4Addr::BROADCAST) {
+                            if peer_addr.equals(LOCALHOST) {
+                                return Ok(Box::new(IpResource {
+                                    connection: Connection::Loopback {
+                                        packets: VecDeque::new()
+                                    },
+                                    host_addr: ip_addr,
+                                    peer_addr: peer_addr,
+                                    proto: proto,
+                                    id: (rand() % 65536) as u16,
+                                }));
+                            }
+
                             let mut needs_routing = false;
 
                             for octet in 0..4 {
@@ -116,8 +132,10 @@ impl ResourceScheme<IpResource> for IpScheme {
 
                         if let Ok(link) = syscall::open(&format!("ethernet:{}/800", &route_mac.to_string()), O_RDWR) {
                             return Ok(Box::new(IpResource {
-                                link: link,
-                                init_data: Vec::new(),
+                                connection: Connection::Device {
+                                    link: link,
+                                    init_data: Vec::new(),
+                                },
                                 host_addr: ip_addr,
                                 peer_addr: peer_addr,
                                 proto: proto,
@@ -134,8 +152,10 @@ impl ResourceScheme<IpResource> for IpScheme {
                                         if packet.header.proto == proto &&
                                            (packet.header.dst.equals(ip_addr) || packet.header.dst.equals(Ipv4Addr::BROADCAST)) {
                                             return Ok(Box::new(IpResource {
-                                                link: link,
-                                                init_data: packet.data,
+                                                connection: Connection::Device {
+                                                    link: link,
+                                                    init_data: packet.data,
+                                                },
                                                 host_addr: ip_addr,
                                                 peer_addr: packet.header.src,
                                                 proto: proto,
