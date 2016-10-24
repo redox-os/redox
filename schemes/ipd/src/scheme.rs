@@ -117,7 +117,7 @@ impl ResourceScheme<IpResource> for IpScheme {
                         if let Ok(link) = syscall::open(&format!("ethernet:{}/800", &route_mac.to_string()), O_RDWR) {
                             return Ok(Box::new(IpResource {
                                 link: link,
-                                data: Vec::new(),
+                                init_data: Vec::new(),
                                 host_addr: ip_addr,
                                 peer_addr: peer_addr,
                                 proto: proto,
@@ -127,6 +127,7 @@ impl ResourceScheme<IpResource> for IpScheme {
                     } else {
                         while let Ok(link) = syscall::open("ethernet:/800", O_RDWR) {
                             let mut bytes = [0; 65536];
+                            // FIXME: Blocking call?
                             match syscall::read(link, &mut bytes) {
                                 Ok(count) => {
                                     if let Some(packet) = Ipv4::from_bytes(&bytes[..count]) {
@@ -134,7 +135,7 @@ impl ResourceScheme<IpResource> for IpScheme {
                                            (packet.header.dst.equals(ip_addr) || packet.header.dst.equals(Ipv4Addr::BROADCAST)) {
                                             return Ok(Box::new(IpResource {
                                                 link: link,
-                                                data: packet.data,
+                                                init_data: packet.data,
                                                 host_addr: ip_addr,
                                                 peer_addr: packet.header.src,
                                                 proto: proto,
