@@ -237,7 +237,7 @@ impl HbaPort {
 
     pub fn ata_dma(&mut self, block: u64, sectors: usize, write: bool, clb: &mut Dma<[HbaCmdHeader; 32]>, ctbas: &mut [Dma<HbaCmdTable>; 32], buf: &mut Dma<[u8; 256 * 512]>) -> Result<usize> {
         if write {
-            print!("{}", format!("AHCI {:X} DMA BLOCK: {:X} SECTORS: {} WRITE: {}\n", (self as *mut HbaPort) as usize, block, sectors, write));
+            //print!("{}", format!("AHCI {:X} DMA BLOCK: {:X} SECTORS: {} WRITE: {}\n", (self as *mut HbaPort) as usize, block, sectors, write));
         }
 
         assert!(sectors > 0 && sectors < 256);
@@ -246,7 +246,7 @@ impl HbaPort {
 
         if let Some(slot) = self.slot() {
             if write {
-                print!("{}", format!("SLOT {}\n", slot));
+                //print!("{}", format!("SLOT {}\n", slot));
             }
 
             let cmdheader = &mut clb[slot as usize];
@@ -291,26 +291,26 @@ impl HbaPort {
             }
 
             if write {
-                print!("WAIT ATA_DEV_BUSY | ATA_DEV_DRQ\n");
+                //print!("WAIT ATA_DEV_BUSY | ATA_DEV_DRQ\n");
             }
             while self.tfd.readf((ATA_DEV_BUSY | ATA_DEV_DRQ) as u32) {
                 pause();
             }
 
             if write {
-                print!("{}", format!("WRITE CI {:X} in {:X}\n", 1 << slot, self.ci.read()));
+                //print!("{}", format!("WRITE CI {:X} in {:X}\n", 1 << slot, self.ci.read()));
             }
             self.ci.writef(1 << slot, true);
 
             self.start();
 
             if write {
-                print!("{}", format!("WAIT CI {:X} in {:X}\n", 1 << slot, self.ci.read()));
+                //print!("{}", format!("WAIT CI {:X} in {:X}\n", 1 << slot, self.ci.read()));
             }
             while (self.ci.readf(1 << slot) || self.tfd.readf(0x80)) && self.is.read() & HBA_PORT_IS_ERR == 0 {
                 pause();
                 if write {
-                    print!("{}", format!("WAIT CI {:X} TFD {:X} IS {:X} CMD {:X} SERR {:X}\n", self.ci.read(), self.tfd.read(), self.is.read(), self.cmd.read(), self.serr.read()));
+                    //print!("{}", format!("WAIT CI {:X} TFD {:X} IS {:X} CMD {:X} SERR {:X}\n", self.ci.read(), self.tfd.read(), self.is.read(), self.cmd.read(), self.serr.read()));
                 }
             }
 
@@ -322,7 +322,7 @@ impl HbaPort {
             }
 
             if write {
-                print!("{}", format!("SUCCESS {}\n", sectors));
+                //print!("{}", format!("SUCCESS {}\n", sectors));
             }
             Ok(sectors * 512)
         } else {
