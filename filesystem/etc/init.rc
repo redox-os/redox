@@ -4,7 +4,8 @@ arpd
 ipd
 tcpd
 udpd
-dhcpd -b
+dhcpd
+httpd
 getty display:2
 getty display:3
 #orbital display:4

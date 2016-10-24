@@ -38,9 +38,11 @@ clean:
 	cargo clean --manifest-path programs/extrautils/Cargo.toml
 	cargo clean --manifest-path programs/netutils/Cargo.toml
 	cargo clean --manifest-path programs/orbutils/Cargo.toml
+	cargo clean --manifest-path programs/pkgutils/Cargo.toml
 	cargo clean --manifest-path programs/userutils/Cargo.toml
 	cargo clean --manifest-path programs/smith/Cargo.toml
 	cargo clean --manifest-path programs/tar/Cargo.toml
+	cargo clean --manifest-path schemes/arpd/Cargo.toml
 	cargo clean --manifest-path schemes/ethernetd/Cargo.toml
 	cargo clean --manifest-path schemes/example/Cargo.toml
 	cargo clean --manifest-path schemes/ipd/Cargo.toml
@@ -86,9 +88,11 @@ update:
 	cargo update --manifest-path programs/extrautils/Cargo.toml
 	cargo update --manifest-path programs/netutils/Cargo.toml
 	cargo update --manifest-path programs/orbutils/Cargo.toml
+	cargo update --manifest-path programs/pkgutils/Cargo.toml
 	cargo update --manifest-path programs/userutils/Cargo.toml
 	cargo update --manifest-path programs/smith/Cargo.toml
 	cargo update --manifest-path programs/tar/Cargo.toml
+	cargo update --manifest-path schemes/arpd/Cargo.toml
 	cargo update --manifest-path schemes/ethernetd/Cargo.toml
 	cargo update --manifest-path schemes/example/Cargo.toml
 	cargo update --manifest-path schemes/ipd/Cargo.toml
@@ -121,6 +125,9 @@ else
 		QEMUFLAGS+=-net none
 	else
 		QEMUFLAGS+=-net nic,model=e1000 -net user -net dump,file=$(KBUILD)/network.pcap
+		ifeq ($(net),redir)
+			QEMUFLAGS+=-redir tcp:8080::8080
+		endif
 	endif
 	ifeq ($(storage),usb)
 		QEMUFLAGS+=-device usb-ehci,id=flash_bus -drive id=flash_drive,file=$(KBUILD)/harddrive.bin,format=raw,if=none -device usb-storage,drive=flash_drive,bus=flash_bus.0
@@ -372,6 +379,7 @@ extrautils: \
 netutils: \
 	filesystem/bin/dhcpd \
 	filesystem/bin/dns \
+	filesystem/bin/httpd \
 	filesystem/bin/irc \
 	filesystem/bin/nc \
 	filesystem/bin/wget
