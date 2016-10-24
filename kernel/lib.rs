@@ -178,6 +178,7 @@ pub extern fn kmain(cpus: usize) {
             if context::switch() {
                 interrupt::enable_and_nop();
             } else {
+                // Enable interrupts, then halt CPU (to save power) until the next interrupt is actually fired.
                 interrupt::enable_and_halt();
             }
         }
