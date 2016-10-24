@@ -401,6 +401,7 @@ userutils: \
 	filesystem/bin/getty \
 	filesystem/bin/id \
 	filesystem/bin/login \
+	filesystem/bin/passwd \
 	filesystem/bin/su \
 	filesystem/bin/sudo
 
@@ -410,6 +411,7 @@ schemes: \
 	filesystem/bin/example \
 	filesystem/bin/ipd \
 	filesystem/bin/orbital \
+	filesystem/bin/randd \
 	filesystem/bin/tcpd \
 	filesystem/bin/udpd
 

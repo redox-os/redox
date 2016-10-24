@@ -1,3 +1,4 @@
+randd
 initfs:bin/pcid /etc/pcid.toml
 ethernetd
 arpd
