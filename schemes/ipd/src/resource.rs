@@ -1,5 +1,8 @@
+use std::cell::RefCell;
 use std::{cmp, mem};
 use std::collections::VecDeque;
+use std::rc::Rc;
+use std::sync::Mutex;
 
 use netutils::{n16, Ipv4Addr, Checksum, Ipv4Header, Ipv4};
 use resource_scheme::Resource;
@@ -43,11 +46,13 @@ pub enum Connection {
         init_data: Vec<u8>,
     },
     Loopback {
-        /// FIFO queue of packets written to the connection and waiting to be read.
+        /// FIFO queue of packets written to the loopback and waiting to be read.
         ///
         /// The data stored contains the exact data that has been added by the client
         /// calling `write()`, without adding any headers.
-        packets: VecDeque<Vec<u8>>
+        ///
+        /// This buffer is shared between all loopback connections.
+        packets: Rc<RefCell<VecDeque<Vec<u8>>>>
     }
 }
 
@@ -63,9 +68,7 @@ impl Resource for IpResource {
     fn dup(&self) -> Result<Box<Self>> {
         use self::Connection::*;
         let connection = match self.connection {
-            Loopback { ref packets } => Loopback {
-                packets: packets.clone()
-            },
+            Loopback { ref packets }=> Loopback { packets: packets.clone() },
             Device { link, ref init_data } => {
                 let link = try!(syscall::dup(link));
                 let init_data = init_data.clone();
@@ -122,8 +125,8 @@ impl Resource for IpResource {
     fn read(&mut self, buf: &mut [u8]) -> Result<usize> {
         use self::Connection::*;
         match self.connection {
-            Loopback { ref mut packets } => {
-                match packets.pop_front() {
+            Loopback { ref packets }=> {
+                match packets.borrow_mut().pop_front() {
                     None => Ok(0),
                     Some(data) => {
                         for (b, d) in buf.iter_mut().zip(data.iter()) {
@@ -176,7 +179,7 @@ impl Resource for IpResource {
 
         let ip_data = Vec::from(buf);
         match self.connection {
-            Loopback { ref mut packets } => {
+            Loopback { ref packets } => {
                 // Make sure that we're not going to store data that can't be read.
                 let buf =
                     if buf.len() > MAX_PACKET_LENGTH {
@@ -184,7 +187,7 @@ impl Resource for IpResource {
                     } else {
                         buf
                     };
-                packets.push_back(buf.to_vec());
+                packets.borrow_mut().push_back(buf.to_vec());
                 return Ok(buf.len())
             }
             Device { link, .. } => {

@@ -1,6 +1,7 @@
 use std::cell::RefCell;
 use std::collections::VecDeque;
 use std::rand;
+use std::rc::Rc;
 use std::{str, u16};
 
 use netutils::{getcfg, n16, MacAddr, Ipv4Addr, ArpHeader, Arp, Ipv4};
@@ -23,12 +24,21 @@ pub struct ArpEntry {
 /// A IP scheme
 pub struct IpScheme {
     pub arp: RefCell<Vec<ArpEntry>>,
+
+    /// FIFO queue of packets written to the loopback and waiting to be read.
+    ///
+    /// The data stored contains the exact data that has been added by the client
+    /// calling `write()`, without adding any headers.
+    ///
+    /// This buffer is shared between all loopback connections.
+    pub loopback_fifo: Rc<RefCell<VecDeque<Vec<u8>>>>,
 }
 
 impl IpScheme {
     pub fn new() -> IpScheme {
         IpScheme {
-            arp: RefCell::new(Vec::new())
+            arp: RefCell::new(Vec::new()),
+            loopback_fifo: Rc::new(RefCell::new(VecDeque::new())),
         }
     }
 }
@@ -55,7 +65,7 @@ impl ResourceScheme<IpResource> for IpScheme {
                             if peer_addr.equals(LOCALHOST) {
                                 return Ok(Box::new(IpResource {
                                     connection: Connection::Loopback {
-                                        packets: VecDeque::new()
+                                        packets: self.loopback_fifo.clone()
                                     },
                                     host_addr: ip_addr,
                                     peer_addr: peer_addr,

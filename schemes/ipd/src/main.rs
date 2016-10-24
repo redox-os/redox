@@ -58,8 +58,7 @@ fn test() {
     println!("* Test that we can read a simple packet from the same connection.");
     let bytes = "TEST".as_bytes();
     let mut scheme = IpScheme::new();
-    let a = scheme.open("ip:127.0.0.1/11").unwrap();
-    let b = scheme.open("ip:127.0.0.1/11").unwrap();
+    let a = scheme.open(&"ip:127.0.0.1/11".as_bytes(), 0, 0, 0).unwrap();
     let num_bytes_written = scheme.write(a, bytes).unwrap();
     assert_eq!(num_bytes_written, bytes.len());
 
@@ -70,12 +69,41 @@ fn test() {
     let bytes_read = &buf[0..num_bytes_read];
     assert_eq!(bytes, bytes_read);
 
-    println!("* Test that we cannot read the same packet from a different connection.");
+
+
+    println!("* Test that the loopback is now empty.");
+    let num_bytes_read = scheme.read(a, &mut buf).unwrap();
+    assert_eq!(num_bytes_read, 0);
+
+
+
+    println!("* Test that we can read the same packet from a different connection.");
+    let num_bytes_written = scheme.write(a, bytes).unwrap();
+    assert_eq!(num_bytes_written, bytes.len());
+
+    let b = scheme.open("ip:127.0.0.1/11".as_bytes(), 0, 0, 0).unwrap();
+
+    let num_bytes_read = scheme.read(b, &mut buf).unwrap();
+    assert_eq!(num_bytes_read, num_bytes_written);
+
+    let bytes_read = &buf[0..num_bytes_read];
+    assert_eq!(bytes, bytes_read);
+
+
+
+    println!("* Test that the loopback is now empty for both connections.");
+
+    let num_bytes_read = scheme.read(a, &mut buf).unwrap();
+    assert_eq!(num_bytes_read, 0);
+
     let num_bytes_read = scheme.read(b, &mut buf).unwrap();
     assert_eq!(num_bytes_read, 0);
 
+
+
+
     println!("* Push a number of packets, check that we get them in the right order.");
-    let mut payloads : Vec<String> = 0..100.map(|i| format!("TEST {}", i)).collect();
+    let mut payloads : Vec<String> = (0..100).map(|i| format!("TEST {}", i)).collect();
     for payload in &payloads {
         let bytes = payload.into_bytes();
         let num_bytes_written = scheme.write(a, &bytes).unwrap();
