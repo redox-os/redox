@@ -600,7 +600,6 @@ impl SchemeMut for Tcpd {
     }
 
     fn close(&mut self, file: usize) -> Result<usize> {
-
         let closed = {
             let mut handle = self.handles.get_mut(&file).ok_or(Error::new(EBADF))?;
 

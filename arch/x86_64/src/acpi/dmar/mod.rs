@@ -1,6 +1,11 @@
 use core::mem;
 
 use super::sdt::Sdt;
+use self::drhd::Drhd;
+use memory::Frame;
+use paging::{entry, ActivePageTable, PhysicalAddress};
+
+pub mod drhd;
 
 /// The DMA Remapping Table
 #[derive(Debug)]
@@ -50,6 +55,13 @@ pub struct DmarDrhd {
     _rsv: u8,
     segment: u16,
     base: u64,
+}
+
+impl DmarDrhd {
+    pub fn get(&self, active_table: &mut ActivePageTable) -> &'static mut Drhd {
+        active_table.identity_map(Frame::containing_address(PhysicalAddress::new(self.base as usize)), entry::PRESENT | entry::WRITABLE | entry::NO_EXECUTE);
+        unsafe { &mut *(self.base as *mut Drhd) }
+    }
 }
 
 /// DMAR Reserved Memory Region Reporting

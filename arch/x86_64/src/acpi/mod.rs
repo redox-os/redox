@@ -9,7 +9,7 @@ use memory::{allocate_frames, Frame};
 use paging::{entry, ActivePageTable, Page, PhysicalAddress, VirtualAddress};
 use start::{kstart_ap, CPU_COUNT, AP_READY};
 
-use self::dmar::Dmar;
+use self::dmar::{Dmar, DmarEntry};
 use self::local_apic::LocalApic;
 use self::madt::{Madt, MadtEntry};
 use self::rsdt::Rsdt;
@@ -140,6 +140,19 @@ pub fn init_sdt(sdt: &'static Sdt, active_table: &mut ActivePageTable) {
 
         for dmar_entry in dmar.iter() {
             println!("      {:?}", dmar_entry);
+            match dmar_entry {
+                DmarEntry::Drhd(dmar_drhd) => {
+                    let drhd = dmar_drhd.get(active_table);
+
+                    println!("VER: {:X}", drhd.version);
+                    println!("CAP: {:X}", drhd.cap);
+                    println!("EXT_CAP: {:X}", drhd.ext_cap);
+                    println!("GCMD: {:X}", drhd.gl_cmd);
+                    println!("GSTS: {:X}", drhd.gl_sts);
+                    println!("RT: {:X}", drhd.root_table);
+                },
+                _ => ()
+            }
         }
     } else {
         println!(": Unknown");
