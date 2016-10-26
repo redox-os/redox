@@ -604,6 +604,8 @@ impl SchemeMut for Tcpd {
         let closed = {
             let mut handle = self.handles.get_mut(&file).ok_or(Error::new(EBADF))?;
 
+            handle.data.clear();
+
             match handle.state {
                 State::SynReceived | State::Established => {
                     handle.state = State::FinWait1;
