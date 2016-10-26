@@ -1,0 +1,27 @@
+sudo: false
+language: rust
+rust:
+  - nightly
+addons:
+  apt:
+    packages:
+      - nasm
+      - libfuse-dev
+os:
+  - linux
+before_install:
+    - if [ `uname` = "Darwin" ]; then
+        brew tap nashenas88/gcc_cross_compilers;
+        brew update;
+        brew unlink gcc;
+        brew install nashenas88/gcc_cross_compilers/i386-elf-binutils nashenas88/gcc_cross_compilers/i386-elf-gcc nasm;
+      fi
+script:
+  - make clean
+  - make all -j 3
+notifications:
+  email: false
+  webhooks: http://37.139.9.28:54863/travis
+#branches:
+#  only:
+#    - auto
