@@ -16,7 +16,7 @@ pub trait ResourceScheme<T: Resource> {
             SYS_RMDIR => self.rmdir(unsafe { slice::from_raw_parts(packet.b as *const u8, packet.c) }, packet.uid, packet.gid),
             SYS_UNLINK => self.unlink(unsafe { slice::from_raw_parts(packet.b as *const u8, packet.c) }, packet.uid, packet.gid),
 
-            SYS_DUP => self.dup(packet.b),
+            SYS_DUP => self.dup(packet.b, unsafe { slice::from_raw_parts(packet.c as *const u8, packet.d) }),
             SYS_READ => self.read(packet.b, unsafe { slice::from_raw_parts_mut(packet.c as *mut u8, packet.d) }),
             SYS_WRITE => self.write(packet.b, unsafe { slice::from_raw_parts(packet.c as *const u8, packet.d) }),
             SYS_LSEEK => self.seek(packet.b, packet.c, packet.d),
@@ -54,9 +54,9 @@ pub trait ResourceScheme<T: Resource> {
     }
 
     /* Resource operations */
-    fn dup(&self, old_id: usize) -> Result<usize> {
+    fn dup(&self, old_id: usize, buf: &[u8]) -> Result<usize> {
         let old = unsafe { &*(old_id as *const T) };
-        let resource = old.dup()?;
+        let resource = old.dup(buf)?;
         let resource_ptr = Box::into_raw(resource);
         Ok(resource_ptr as usize)
     }

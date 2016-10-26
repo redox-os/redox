@@ -56,7 +56,7 @@ impl Scheme for RootScheme {
         }
     }
 
-    fn dup(&self, file: usize) -> Result<usize> {
+    fn dup(&self, file: usize, _buf: &[u8]) -> Result<usize> {
         let mut handles = self.handles.write();
         let inner = {
             let inner = handles.get(&file).ok_or(Error::new(EBADF))?;
@@ -89,12 +89,24 @@ impl Scheme for RootScheme {
         inner.write(buf)
     }
 
-    fn fevent(&self, file: usize, _flags: usize) -> Result<usize> {
-        Ok(file)
+    fn fevent(&self, file: usize, flags: usize) -> Result<usize> {
+        let inner = {
+            let handles = self.handles.read();
+            let inner = handles.get(&file).ok_or(Error::new(EBADF))?;
+            inner.clone()
+        };
+
+        inner.fevent(flags)
     }
 
-    fn fsync(&self, _file: usize) -> Result<usize> {
-        Ok(0)
+    fn fsync(&self, file: usize) -> Result<usize> {
+        let inner = {
+            let handles = self.handles.read();
+            let inner = handles.get(&file).ok_or(Error::new(EBADF))?;
+            inner.clone()
+        };
+
+        inner.fsync()
     }
 
     fn close(&self, file: usize) -> Result<usize> {

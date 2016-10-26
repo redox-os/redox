@@ -60,7 +60,7 @@ impl SchemeMut for DisplayScheme {
         }
     }
 
-    fn dup(&mut self, id: usize) -> Result<usize> {
+    fn dup(&mut self, id: usize, _buf: &[u8]) -> Result<usize> {
         Ok(id)
     }
 

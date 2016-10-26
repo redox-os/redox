@@ -42,7 +42,7 @@ pub fn pipe(flags: usize) -> (usize, usize) {
 pub struct PipeScheme;
 
 impl Scheme for PipeScheme {
-    fn dup(&self, id: usize) -> Result<usize> {
+    fn dup(&self, id: usize, _buf: &[u8]) -> Result<usize> {
         let mut pipes = pipes_mut();
 
         let read_option = pipes.0.get(&id).map(|pipe| pipe.clone());

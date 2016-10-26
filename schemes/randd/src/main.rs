@@ -16,7 +16,7 @@ impl Scheme for RandScheme {
         Ok(0)
     }
 
-    fn dup(&self, file: usize) -> Result<usize> {
+    fn dup(&self, file: usize, _buf: &[u8]) -> Result<usize> {
         Ok(file)
     }
 

@@ -85,16 +85,20 @@ fn main() {
             let socket_fd = socket.borrow().as_raw_fd();
             let socket_packet = socket.clone();
             event_queue.add(socket_fd, move |_count: usize| -> Result<Option<usize>> {
-                let mut packet = Packet::default();
-                socket_packet.borrow_mut().read(&mut packet)?;
+                loop {
+                    let mut packet = Packet::default();
+                    if socket_packet.borrow_mut().read(&mut packet)? == 0 {
+                        break;
+                    }
 
-                let a = packet.a;
-                device.borrow_mut().handle(&mut packet);
-                if packet.a == (-EWOULDBLOCK) as usize {
-                    packet.a = a;
-                    todo.borrow_mut().push(packet);
-                } else {
-                    socket_packet.borrow_mut().write(&mut packet)?;
+                    let a = packet.a;
+                    device.borrow_mut().handle(&mut packet);
+                    if packet.a == (-EWOULDBLOCK) as usize {
+                        packet.a = a;
+                        todo.borrow_mut().push(packet);
+                    } else {
+                        socket_packet.borrow_mut().write(&mut packet)?;
+                    }
                 }
 
                 let next_read = device.borrow().next_read();
@@ -105,10 +109,8 @@ fn main() {
                 Ok(None)
             }).expect("rtl8168d: failed to catch events on IRQ file");
 
-            loop {
-                let event_count = event_queue.run().expect("rtl8168d: failed to handle events");
-
-                let event_packet = Packet {
+            for event_count in event_queue.trigger_all(0).expect("rtl8168d: failed to trigger events") {
+                socket.borrow_mut().write(&Packet {
                     id: 0,
                     pid: 0,
                     uid: 0,
@@ -117,9 +119,22 @@ fn main() {
                     b: 0,
                     c: syscall::flag::EVENT_READ,
                     d: event_count
-                };
+                }).expect("rtl8168d: failed to write event");
+            }
 
-                socket.borrow_mut().write(&event_packet).expect("vesad: failed to write display event");
+            loop {
+                let event_count = event_queue.run().expect("rtl8168d: failed to handle events");
+
+                socket.borrow_mut().write(&Packet {
+                    id: 0,
+                    pid: 0,
+                    uid: 0,
+                    gid: 0,
+                    a: syscall::number::SYS_FEVENT,
+                    b: 0,
+                    c: syscall::flag::EVENT_READ,
+                    d: event_count
+                }).expect("rtl8168d: failed to write event");
             }
         }
         unsafe { let _ = syscall::physunmap(address); }

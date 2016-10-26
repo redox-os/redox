@@ -61,10 +61,7 @@ impl UserInner {
         };
 
         let len = self.todo.send(packet);
-        //TODO: Use O_NONBLOCK and send one notification
-        for _i in 0 .. len {
-            context::event::trigger(ROOT_SCHEME_ID.load(Ordering::SeqCst), self.handle_id, EVENT_READ, mem::size_of::<Packet>());
-        }
+        context::event::trigger(ROOT_SCHEME_ID.load(Ordering::SeqCst), self.handle_id, EVENT_READ, mem::size_of::<Packet>() * len);
 
         Error::demux(self.done.receive(&id))
     }
@@ -182,6 +179,14 @@ impl UserInner {
 
         Ok(i * packet_size)
     }
+
+    pub fn fevent(&self, _flags: usize) -> Result<usize> {
+        Ok(self.handle_id)
+    }
+
+    pub fn fsync(&self) -> Result<usize> {
+        Ok(0)
+    }
 }
 
 /// UserInner has to be wrapped
@@ -230,9 +235,12 @@ impl Scheme for UserScheme {
         result
     }
 
-    fn dup(&self, file: usize) -> Result<usize> {
+    fn dup(&self, file: usize, buf: &[u8]) -> Result<usize> {
         let inner = self.inner.upgrade().ok_or(Error::new(ENODEV))?;
-        inner.call(SYS_DUP, file, 0, 0)
+        let address = inner.capture(buf)?;
+        let result = inner.call(SYS_DUP, file, address, buf.len());
+        let _ = inner.release(address);
+        result
     }
 
     fn read(&self, file: usize, buf: &mut [u8]) -> Result<usize> {

@@ -68,20 +68,26 @@ fn main() {
         }).expect("ethernetd: failed to listen for network events");
 
         event_queue.add(socket_fd, move |_count: usize| -> Result<Option<()>> {
-            let mut packet = Packet::default();
-            socket.borrow_mut().read(&mut packet)?;
+            loop {
+                let mut packet = Packet::default();
+                if socket.borrow_mut().read(&mut packet)? == 0 {
+                    break;
+                }
 
-            let a = packet.a;
-            scheme.borrow_mut().handle(&mut packet);
-            if packet.a == (-EWOULDBLOCK) as usize {
-                packet.a = a;
-                todo.borrow_mut().push(packet);
-            } else {
-                socket.borrow_mut().write(&mut packet)?;
+                let a = packet.a;
+                scheme.borrow_mut().handle(&mut packet);
+                if packet.a == (-EWOULDBLOCK) as usize {
+                    packet.a = a;
+                    todo.borrow_mut().push(packet);
+                } else {
+                    socket.borrow_mut().write(&mut packet)?;
+                }
             }
 
             Ok(None)
         }).expect("ethernetd: failed to listen for scheme events");
+
+        event_queue.trigger_all(0).expect("ethernetd: failed to trigger events");
 
         event_queue.run().expect("ethernetd: failed to run event loop");
     });

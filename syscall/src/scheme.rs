@@ -10,7 +10,7 @@ pub trait Scheme {
             SYS_RMDIR => self.rmdir(unsafe { slice::from_raw_parts(packet.b as *const u8, packet.c) }, packet.uid, packet.gid),
             SYS_UNLINK => self.unlink(unsafe { slice::from_raw_parts(packet.b as *const u8, packet.c) }, packet.uid, packet.gid),
 
-            SYS_DUP => self.dup(packet.b),
+            SYS_DUP => self.dup(packet.b, unsafe { slice::from_raw_parts(packet.c as *const u8, packet.d) }),
             SYS_READ => self.read(packet.b, unsafe { slice::from_raw_parts_mut(packet.c as *mut u8, packet.d) }),
             SYS_WRITE => self.write(packet.b, unsafe { slice::from_raw_parts(packet.c as *const u8, packet.d) }),
             SYS_LSEEK => self.seek(packet.b, packet.c, packet.d),
@@ -49,7 +49,7 @@ pub trait Scheme {
 
     /* Resource operations */
     #[allow(unused_variables)]
-    fn dup(&self, old_id: usize) -> Result<usize> {
+    fn dup(&self, old_id: usize, buf: &[u8]) -> Result<usize> {
         Err(Error::new(EBADF))
     }
 
@@ -107,7 +107,7 @@ pub trait SchemeMut {
             SYS_RMDIR => self.rmdir(unsafe { slice::from_raw_parts(packet.b as *const u8, packet.c) }, packet.uid, packet.gid),
             SYS_UNLINK => self.unlink(unsafe { slice::from_raw_parts(packet.b as *const u8, packet.c) }, packet.uid, packet.gid),
 
-            SYS_DUP => self.dup(packet.b),
+            SYS_DUP => self.dup(packet.b, unsafe { slice::from_raw_parts_mut(packet.c as *mut u8, packet.d) }),
             SYS_READ => self.read(packet.b, unsafe { slice::from_raw_parts_mut(packet.c as *mut u8, packet.d) }),
             SYS_WRITE => self.write(packet.b, unsafe { slice::from_raw_parts(packet.c as *const u8, packet.d) }),
             SYS_LSEEK => self.seek(packet.b, packet.c, packet.d),
@@ -145,7 +145,7 @@ pub trait SchemeMut {
 
     /* Resource operations */
     #[allow(unused_variables)]
-    fn dup(&mut self, old_id: usize) -> Result<usize> {
+    fn dup(&mut self, old_id: usize, buf: &[u8]) -> Result<usize> {
         Err(Error::new(EBADF))
     }
 

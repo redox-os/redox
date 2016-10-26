@@ -52,10 +52,14 @@ fn main() {
                 let mut event = Event::default();
                 event_file.read(&mut event).expect("ahcid: failed to read event file");
                 if event.id == socket_fd {
-                    let mut packet = Packet::default();
-                    socket.read(&mut packet).expect("ahcid: failed to read disk scheme");
-                    scheme.handle(&mut packet);
-                    socket.write(&mut packet).expect("ahcid: failed to write disk scheme");
+                    loop {
+                        let mut packet = Packet::default();
+                        if socket.read(&mut packet).expect("ahcid: failed to read disk scheme") == 0 {
+                            break;
+                        }                        
+                        scheme.handle(&mut packet);
+                        socket.write(&mut packet).expect("ahcid: failed to write disk scheme");
+                    }
                 } else if event.id == irq_fd {
                     let mut irq = [0; 8];
                     if irq_file.read(&mut irq).expect("ahcid: failed to read irq file") >= irq.len() {

@@ -33,7 +33,7 @@ impl Scheme for DebugScheme {
         Ok(0)
     }
 
-    fn dup(&self, _file: usize) -> Result<usize> {
+    fn dup(&self, _file: usize, _buf: &[u8]) -> Result<usize> {
         Ok(0)
     }
 

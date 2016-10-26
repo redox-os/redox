@@ -4,7 +4,7 @@ use syscall::error::*;
 pub trait Resource {
     /// Duplicate the resource
     /// Returns `EPERM` if the operation is not supported.
-    fn dup(&self) -> Result<Box<Self>> {
+    fn dup(&self, _buf: &[u8]) -> Result<Box<Self>> {
         Err(Error::new(EPERM))
     }
 

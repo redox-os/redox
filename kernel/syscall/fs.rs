@@ -83,10 +83,10 @@ pub fn open(path: &[u8], flags: usize) -> Result<usize> {
     let reference_opt = parts.next();
 
     let (scheme_id, file_id) = {
-        let namespace = namespace_opt.ok_or(Error::new(ENOENT))?;
+        let namespace = namespace_opt.ok_or(Error::new(ENODEV))?;
         let (scheme_id, scheme) = {
             let schemes = scheme::schemes();
-            let (scheme_id, scheme) = schemes.get_name(namespace).ok_or(Error::new(ENOENT))?;
+            let (scheme_id, scheme) = schemes.get_name(namespace).ok_or(Error::new(ENODEV))?;
             (scheme_id, scheme.clone())
         };
         let file_id = scheme.open(reference_opt.unwrap_or(b""), flags, uid, gid)?;
@@ -146,10 +146,10 @@ pub fn mkdir(path: &[u8], mode: u16) -> Result<usize> {
     let namespace_opt = parts.next();
     let reference_opt = parts.next();
 
-    let namespace = namespace_opt.ok_or(Error::new(ENOENT))?;
+    let namespace = namespace_opt.ok_or(Error::new(ENODEV))?;
     let scheme = {
         let schemes = scheme::schemes();
-        let (_scheme_id, scheme) = schemes.get_name(namespace).ok_or(Error::new(ENOENT))?;
+        let (_scheme_id, scheme) = schemes.get_name(namespace).ok_or(Error::new(ENODEV))?;
         scheme.clone()
     };
     scheme.mkdir(reference_opt.unwrap_or(b""), mode, uid, gid)
@@ -168,10 +168,10 @@ pub fn rmdir(path: &[u8]) -> Result<usize> {
     let namespace_opt = parts.next();
     let reference_opt = parts.next();
 
-    let namespace = namespace_opt.ok_or(Error::new(ENOENT))?;
+    let namespace = namespace_opt.ok_or(Error::new(ENODEV))?;
     let scheme = {
         let schemes = scheme::schemes();
-        let (_scheme_id, scheme) = schemes.get_name(namespace).ok_or(Error::new(ENOENT))?;
+        let (_scheme_id, scheme) = schemes.get_name(namespace).ok_or(Error::new(ENODEV))?;
         scheme.clone()
     };
     scheme.rmdir(reference_opt.unwrap_or(b""), uid, gid)
@@ -190,10 +190,10 @@ pub fn unlink(path: &[u8]) -> Result<usize> {
     let namespace_opt = parts.next();
     let reference_opt = parts.next();
 
-    let namespace = namespace_opt.ok_or(Error::new(ENOENT))?;
+    let namespace = namespace_opt.ok_or(Error::new(ENODEV))?;
     let scheme = {
         let schemes = scheme::schemes();
-        let (_scheme_id, scheme) = schemes.get_name(namespace).ok_or(Error::new(ENOENT))?;
+        let (_scheme_id, scheme) = schemes.get_name(namespace).ok_or(Error::new(ENODEV))?;
         scheme.clone()
     };
     scheme.unlink(reference_opt.unwrap_or(b""), uid, gid)
@@ -222,7 +222,7 @@ pub fn close(fd: usize) -> Result<usize> {
 }
 
 /// Duplicate file descriptor
-pub fn dup(fd: usize) -> Result<usize> {
+pub fn dup(fd: usize, buf: &[u8]) -> Result<usize> {
     let file = {
         let contexts = context::contexts();
         let context_lock = contexts.current().ok_or(Error::new(ESRCH))?;
@@ -237,7 +237,7 @@ pub fn dup(fd: usize) -> Result<usize> {
             let scheme = schemes.get(file.scheme).ok_or(Error::new(EBADF))?;
             scheme.clone()
         };
-        scheme.dup(file.number)?
+        scheme.dup(file.number, buf)?
     };
 
     let contexts = context::contexts();

@@ -47,7 +47,7 @@ impl Scheme for DiskScheme {
         }
     }
 
-    fn dup(&self, id: usize) -> Result<usize> {
+    fn dup(&self, id: usize, _buf: &[u8]) -> Result<usize> {
         let mut handles = self.handles.lock();
         let new_handle = {
             let handle = handles.get(&id).ok_or(Error::new(EBADF))?;

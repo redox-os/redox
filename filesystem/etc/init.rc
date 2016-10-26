@@ -1,7 +1,6 @@
 randd
 initfs:bin/pcid /etc/pcid.toml
 ethernetd
-arpd
 ipd
 tcpd
 udpd

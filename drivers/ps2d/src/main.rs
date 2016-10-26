@@ -32,6 +32,92 @@ bitflags! {
     }
 }
 
+struct Ps2d {
+    input: File,
+    lshift: bool,
+    rshift: bool,
+    packets: [u8; 4],
+    packet_i: usize,
+    extra_packet: bool
+}
+
+impl Ps2d {
+    fn new(input: File, extra_packet: bool) -> Self {
+        Ps2d {
+            input: input,
+            lshift: false,
+            rshift: false,
+            packets: [0; 4],
+            packet_i: 0,
+            extra_packet: extra_packet
+        }
+    }
+
+    fn handle(&mut self, keyboard: bool, data: u8) {
+        if keyboard {
+            let (scancode, pressed) = if data >= 0x80 {
+                (data - 0x80, false)
+            } else {
+                (data, true)
+            };
+
+            if scancode == 0x2A {
+                self.lshift = pressed;
+            } else if scancode == 0x36 {
+                self.rshift = pressed;
+            }
+
+            self.input.write(&KeyEvent {
+                character: keymap::get_char(scancode, self.lshift || self.rshift),
+                scancode: scancode,
+                pressed: pressed
+            }.to_event()).expect("ps2d: failed to write key event");
+        } else {
+            self.packets[self.packet_i] = data;
+            self.packet_i += 1;
+
+            let flags = MousePacketFlags::from_bits_truncate(self.packets[0]);
+            if ! flags.contains(ALWAYS_ON) {
+                println!("MOUSE MISALIGN {:X}", self.packets[0]);
+
+                self.packets = [0; 4];
+                self.packet_i = 0;
+            } else if self.packet_i >= self.packets.len() || (!self.extra_packet && self.packet_i >= 3) {
+                if ! flags.contains(X_OVERFLOW) && ! flags.contains(Y_OVERFLOW) {
+                    let mut dx = self.packets[1] as i32;
+                    if flags.contains(X_SIGN) {
+                        dx -= 0x100;
+                    }
+
+                    let mut dy = -(self.packets[2] as i32);
+                    if flags.contains(Y_SIGN) {
+                        dy += 0x100;
+                    }
+
+                    let _extra = if self.extra_packet {
+                        self.packets[3]
+                    } else {
+                        0
+                    };
+
+                    self.input.write(&MouseEvent {
+                        x: dx,
+                        y: dy,
+                        left_button: flags.contains(LEFT_BUTTON),
+                        middle_button: flags.contains(MIDDLE_BUTTON),
+                        right_button: flags.contains(RIGHT_BUTTON)
+                    }.to_event()).expect("ps2d: failed to write mouse event");
+                } else {
+                    println!("ps2d: overflow {:X} {:X} {:X} {:X}", self.packets[0], self.packets[1], self.packets[2], self.packets[3]);
+                }
+
+                self.packets = [0; 4];
+                self.packet_i = 0;
+            }
+        }
+    }
+}
+
 fn main() {
     thread::spawn(|| {
         unsafe {
@@ -39,9 +125,11 @@ fn main() {
             asm!("cli" :::: "intel", "volatile");
         }
 
+        let input = File::open("display:input").expect("ps2d: failed to open display:input");
+
         let extra_packet = controller::Ps2::new().init();
 
-        let mut input = File::open("display:input").expect("ps2d: failed to open display:input");
+        let mut ps2d = Ps2d::new(input, extra_packet);
 
         let mut event_queue = EventQueue::<(bool, u8)>::new().expect("ps2d: failed to create event queue");
 
@@ -81,75 +169,13 @@ fn main() {
             }
         }).expect("ps2d: failed to poll irq:12");
 
-        let mut lshift = false;
-        let mut rshift = false;
-        let mut packets = [0; 4];
-        let mut packet_i = 0;
+        for (keyboard, data) in event_queue.trigger_all(0).expect("ps2d: failed to trigger events") {
+            ps2d.handle(keyboard, data);
+        }
 
         loop {
             let (keyboard, data) = event_queue.run().expect("ps2d: failed to handle events");
-
-            if keyboard {
-                let (scancode, pressed) = if data >= 0x80 {
-                    (data - 0x80, false)
-                } else {
-                    (data, true)
-                };
-
-                if scancode == 0x2A {
-                    lshift = pressed;
-                } else if scancode == 0x36 {
-                    rshift = pressed;
-                }
-
-                input.write(&KeyEvent {
-                    character: keymap::get_char(scancode, lshift || rshift),
-                    scancode: scancode,
-                    pressed: pressed
-                }.to_event()).expect("ps2d: failed to write key event");
-            } else {
-                packets[packet_i] = data;
-                packet_i += 1;
-
-                let flags = MousePacketFlags::from_bits_truncate(packets[0]);
-                if ! flags.contains(ALWAYS_ON) {
-                    println!("MOUSE MISALIGN {:X}", packets[0]);
-
-                    packets = [0; 4];
-                    packet_i = 0;
-                } else if packet_i >= packets.len() || (!extra_packet && packet_i >= 3) {
-                    if ! flags.contains(X_OVERFLOW) && ! flags.contains(Y_OVERFLOW) {
-                        let mut dx = packets[1] as i32;
-                        if flags.contains(X_SIGN) {
-                            dx -= 0x100;
-                        }
-
-                        let mut dy = -(packets[2] as i32);
-                        if flags.contains(Y_SIGN) {
-                            dy += 0x100;
-                        }
-
-                        let _extra = if extra_packet {
-                            packets[3]
-                        } else {
-                            0
-                        };
-
-                        input.write(&MouseEvent {
-                            x: dx,
-                            y: dy,
-                            left_button: flags.contains(LEFT_BUTTON),
-                            middle_button: flags.contains(MIDDLE_BUTTON),
-                            right_button: flags.contains(RIGHT_BUTTON)
-                        }.to_event()).expect("ps2d: failed to write mouse event");
-                    } else {
-                        println!("ps2d: overflow {:X} {:X} {:X} {:X}", packets[0], packets[1], packets[2], packets[3]);
-                    }
-
-                    packets = [0; 4];
-                    packet_i = 0;
-                }
-            }
+            ps2d.handle(keyboard, data);
         }
     });
 }

@@ -3,6 +3,7 @@ name = "tcpd"
 version = "0.1.0"
 
 [dependencies]
+event = { path = "../../crates/event/" }
 netutils = { path = "../../programs/netutils/" }
-resource_scheme = { path = "../../crates/resource_scheme/" }
+rand = { git = "https://github.com/redox-os/rand.git" }
 syscall = { path = "../../syscall/" }

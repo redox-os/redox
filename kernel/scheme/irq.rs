@@ -40,7 +40,7 @@ impl Scheme for IrqScheme {
         }
     }
 
-    fn dup(&self, file: usize) -> Result<usize> {
+    fn dup(&self, file: usize, _buf: &[u8]) -> Result<usize> {
         Ok(file)
     }
 

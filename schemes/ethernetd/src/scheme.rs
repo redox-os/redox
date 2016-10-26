@@ -1,20 +1,21 @@
 use std::collections::{BTreeMap, VecDeque};
 use std::fs::File;
-use std::io::{self, Read};
+use std::io::{self, Read, Write};
 use std::os::unix::io::AsRawFd;
 use std::{cmp, str, u16};
 
-use netutils::{getcfg, n16, MacAddr, EthernetII, EthernetIIHeader};
+use netutils::{getcfg, MacAddr, EthernetII};
 use syscall;
-use syscall::error::{Error, Result, EACCES, EBADF, ENOENT, EINVAL, EWOULDBLOCK};
+use syscall::error::{Error, Result, EACCES, EBADF, EINVAL, EWOULDBLOCK};
+use syscall::flag::O_NONBLOCK;
 use syscall::scheme::SchemeMut;
 
 #[derive(Clone)]
 pub struct Handle {
+    /// The flags this handle was opened with
+    flags: usize,
     /// The Host's MAC address
     pub host_addr: MacAddr,
-    /// The Peer's MAC address
-    pub peer_addr: Option<MacAddr>,
     /// The ethernet type
     pub ethertype: u16,
     /// The data
@@ -39,65 +40,51 @@ impl EthernetScheme {
     //TODO: Minimize allocation
     //TODO: Reduce iteration cost (use BTreeMap of ethertype to handle?)
     pub fn input(&mut self) -> io::Result<usize> {
-        let mut bytes = [0; 65536];
-        let count = self.network.read(&mut bytes)?;
-        if let Some(frame) = EthernetII::from_bytes(&bytes[.. count]) {
-            for (_id, handle) in self.handles.iter_mut() {
-                if frame.header.ethertype.get() == handle.ethertype {
-                    if handle.peer_addr.is_none() {
-                        handle.peer_addr = Some(frame.header.src);
-                    }
-                    handle.frames.push_back(frame.clone());
-                }
+        let mut total = 0;
+        loop {
+            let mut bytes = [0; 65536];
+            let count = self.network.read(&mut bytes)?;
+            if count == 0 {
+                break;
             }
-            Ok(count)
-        } else {
-            Ok(0)
+            if let Some(frame) = EthernetII::from_bytes(&bytes[.. count]) {
+                for (_id, handle) in self.handles.iter_mut() {
+                    if frame.header.ethertype.get() == handle.ethertype {
+                        handle.frames.push_back(frame.clone());
+                    }
+                }
+                total += count;
+            }
         }
+        Ok(total)
     }
 }
 
 impl SchemeMut for EthernetScheme {
-    fn open(&mut self, url: &[u8], _flags: usize, uid: u32, _gid: u32) -> Result<usize> {
+    fn open(&mut self, url: &[u8], flags: usize, uid: u32, _gid: u32) -> Result<usize> {
         if uid == 0 {
             let mac_addr = MacAddr::from_str(&getcfg("mac").map_err(|err| err.into_sys())?);
             let path = try!(str::from_utf8(url).or(Err(Error::new(EINVAL))));
-            let mut parts = path.split("/");
-            if let Some(host_string) = parts.next() {
-                if let Some(ethertype_string) = parts.next() {
-                    let ethertype = u16::from_str_radix(ethertype_string, 16).unwrap_or(0);
 
-                    let peer_addr = if ! host_string.is_empty() {
-                        Some(MacAddr::from_str(host_string))
-                    } else {
-                        None
-                    };
+            let ethertype = u16::from_str_radix(path, 16).unwrap_or(0);
 
-                    let next_id = self.next_id;
-                    self.next_id += 1;
+            let next_id = self.next_id;
+            self.next_id += 1;
 
-                    self.handles.insert(next_id, Handle {
-                        host_addr: mac_addr,
-                        peer_addr: peer_addr,
-                        ethertype: ethertype,
-                        frames: VecDeque::new()
-                    });
+            self.handles.insert(next_id, Handle {
+                flags: flags,
+                host_addr: mac_addr,
+                ethertype: ethertype,
+                frames: VecDeque::new()
+            });
 
-                    return Ok(next_id);
-                } else {
-                    println!("Ethernet: No ethertype provided");
-                }
-            } else {
-                println!("Ethernet: No host provided");
-            }
-
-            Err(Error::new(ENOENT))
+            Ok(next_id)
         } else {
             Err(Error::new(EACCES))
         }
     }
 
-    fn dup(&mut self, id: usize) -> Result<usize> {
+    fn dup(&mut self, id: usize, _buf: &[u8]) -> Result<usize> {
         let next_id = self.next_id;
         self.next_id += 1;
 
@@ -115,11 +102,14 @@ impl SchemeMut for EthernetScheme {
         let handle = self.handles.get_mut(&id).ok_or(Error::new(EBADF))?;
 
         if let Some(frame) = handle.frames.pop_front() {
-            for (b, d) in buf.iter_mut().zip(frame.data.iter()) {
+            let data = frame.to_bytes();
+            for (b, d) in buf.iter_mut().zip(data.iter()) {
                 *b = *d;
             }
 
-            Ok(cmp::min(buf.len(), frame.data.len()))
+            Ok(cmp::min(buf.len(), data.len()))
+        } else if handle.flags & O_NONBLOCK == O_NONBLOCK {
+            Ok(0)
         } else {
             Err(Error::new(EWOULDBLOCK))
         }
@@ -128,17 +118,12 @@ impl SchemeMut for EthernetScheme {
     fn write(&mut self, id: usize, buf: &[u8]) -> Result<usize> {
         let handle = self.handles.get(&id).ok_or(Error::new(EBADF))?;
 
-        match syscall::write(self.network.as_raw_fd(), &EthernetII {
-                                      header: EthernetIIHeader {
-                                          src: handle.host_addr,
-                                          dst: handle.peer_addr.unwrap_or(MacAddr::BROADCAST),
-                                          ethertype: n16::new(handle.ethertype),
-                                      },
-                                      data: Vec::from(buf),
-                                  }
-                                  .to_bytes()) {
-            Ok(_) => Ok(buf.len()),
-            Err(err) => Err(err),
+        if let Some(mut frame) = EthernetII::from_bytes(buf) {
+            frame.header.src = handle.host_addr;
+            frame.header.ethertype.set(handle.ethertype);
+            self.network.write(&frame.to_bytes()).map_err(|err| err.into_sys())
+        } else {
+            Err(Error::new(EINVAL))
         }
     }
 
@@ -151,14 +136,16 @@ impl SchemeMut for EthernetScheme {
     fn fpath(&mut self, id: usize, buf: &mut [u8]) -> Result<usize> {
         let handle = self.handles.get(&id).ok_or(Error::new(EBADF))?;
 
-        let path_string = format!("ethernet:{}/{:X}", handle.peer_addr.map_or(String::new(), |mac| mac.to_string()), handle.ethertype);
+        let path_string = format!("ethernet:{:X}", handle.ethertype);
         let path = path_string.as_bytes();
 
-        for (b, p) in buf.iter_mut().zip(path.iter()) {
-            *b = *p;
+        let mut i = 0;
+        while i < buf.len() && i < path.len() {
+            buf[i] = path[i];
+            i += 1;
         }
 
-        Ok(cmp::min(buf.len(), path.len()))
+        Ok(i)
     }
 
     fn fsync(&mut self, id: usize) -> Result<usize> {
@@ -169,7 +156,9 @@ impl SchemeMut for EthernetScheme {
 
     fn close(&mut self, id: usize) -> Result<usize> {
         let handle = self.handles.remove(&id).ok_or(Error::new(EBADF))?;
+
         drop(handle);
+
         Ok(0)
     }
 }

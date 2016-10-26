@@ -9,12 +9,14 @@ use memory::{allocate_frames, Frame};
 use paging::{entry, ActivePageTable, Page, PhysicalAddress, VirtualAddress};
 use start::{kstart_ap, CPU_COUNT, AP_READY};
 
+use self::dmar::Dmar;
 use self::local_apic::LocalApic;
 use self::madt::{Madt, MadtEntry};
 use self::rsdt::Rsdt;
 use self::sdt::Sdt;
 use self::xsdt::Xsdt;
 
+pub mod dmar;
 pub mod local_apic;
 pub mod madt;
 pub mod rsdt;
@@ -133,6 +135,12 @@ pub fn init_sdt(sdt: &'static Sdt, active_table: &mut ActivePageTable) {
         // Unmap trampoline
         active_table.unmap(trampoline_page);
         active_table.flush(trampoline_page);
+    } else if let Some(dmar) = Dmar::new(sdt) {
+        println!(": {}: {}", dmar.addr_width, dmar.flags);
+
+        for dmar_entry in dmar.iter() {
+            println!("      {:?}", dmar_entry);
+        }
     } else {
         println!(": Unknown");
     }

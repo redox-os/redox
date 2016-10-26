@@ -39,7 +39,7 @@ pub extern fn syscall(a: usize, b: usize, c: usize, d: usize, e: usize, f: usize
                 SYS_ARG_MSLICE => file_op_mut_slice(a, b, validate_slice_mut(c as *mut u8, d)?),
                 _ => match a {
                     SYS_CLOSE => close(b),
-                    SYS_DUP => dup(b),
+                    SYS_DUP => dup(b, validate_slice(c as *const u8, d)?),
                     SYS_FEVENT => fevent(b, c),
                     _ => file_op(a, b, c, d)
                 }

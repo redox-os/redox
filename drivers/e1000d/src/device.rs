@@ -109,7 +109,7 @@ impl Scheme for Intel8254x {
         }
     }
 
-    fn dup(&self, id: usize) -> Result<usize> {
+    fn dup(&self, id: usize, _buf: &[u8]) -> Result<usize> {
         Ok(id)
     }
 

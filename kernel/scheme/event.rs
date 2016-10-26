@@ -39,7 +39,7 @@ impl Scheme for EventScheme {
         Ok(id)
     }
 
-    fn dup(&self, id: usize) -> Result<usize> {
+    fn dup(&self, id: usize, _buf: &[u8]) -> Result<usize> {
         let handle = {
             let handles = self.handles.read();
             let handle_weak = handles.get(&id).ok_or(Error::new(EBADF))?;

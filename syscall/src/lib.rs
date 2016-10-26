@@ -48,8 +48,8 @@ pub fn clock_gettime(clock: usize, tp: &mut TimeSpec) -> Result<usize> {
     unsafe { syscall2(SYS_CLOCK_GETTIME, clock, tp as *mut TimeSpec as usize) }
 }
 
-pub fn dup(fd: usize) -> Result<usize> {
-    unsafe { syscall1(SYS_DUP, fd) }
+pub fn dup(fd: usize, buf: &[u8]) -> Result<usize> {
+    unsafe { syscall3(SYS_DUP, fd, buf.as_ptr() as usize, buf.len()) }
 }
 
 pub fn execve(path: &str, args: &[[usize; 2]]) -> Result<usize> {

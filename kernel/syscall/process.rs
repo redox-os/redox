@@ -227,7 +227,7 @@ pub fn clone(flags: usize, stack_base: usize) -> Result<usize> {
                             let scheme = schemes.get(file.scheme).ok_or(Error::new(EBADF))?;
                             scheme.clone()
                         };
-                        let result = scheme.dup(file.number);
+                        let result = scheme.dup(file.number, &[]);
                         result
                     };
                     match result {

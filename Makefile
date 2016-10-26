@@ -42,7 +42,6 @@ clean:
 	cargo clean --manifest-path programs/userutils/Cargo.toml
 	cargo clean --manifest-path programs/smith/Cargo.toml
 	cargo clean --manifest-path programs/tar/Cargo.toml
-	cargo clean --manifest-path schemes/arpd/Cargo.toml
 	cargo clean --manifest-path schemes/ethernetd/Cargo.toml
 	cargo clean --manifest-path schemes/example/Cargo.toml
 	cargo clean --manifest-path schemes/ipd/Cargo.toml
@@ -92,7 +91,6 @@ update:
 	cargo update --manifest-path programs/userutils/Cargo.toml
 	cargo update --manifest-path programs/smith/Cargo.toml
 	cargo update --manifest-path programs/tar/Cargo.toml
-	cargo update --manifest-path schemes/arpd/Cargo.toml
 	cargo update --manifest-path schemes/ethernetd/Cargo.toml
 	cargo update --manifest-path schemes/example/Cargo.toml
 	cargo update --manifest-path schemes/ipd/Cargo.toml
@@ -120,7 +118,12 @@ $(KBUILD)/harddrive.bin: $(KBUILD)/kernel
 qemu: $(KBUILD)/harddrive.bin
 	$(QEMU) $(QEMUFLAGS) -kernel $<
 else
-	QEMUFLAGS+=-machine q35 -smp 4 -m 1024
+	QEMUFLAGS+=-smp 4 -m 1024
+	ifeq ($(iommu),no)
+		QEMUFLAGS+=-machine q35
+	else
+		QEMUFLAGS+=-machine q35,iommu=on
+	endif
 	ifeq ($(net),no)
 		QEMUFLAGS+=-net none
 	else
@@ -406,7 +409,6 @@ userutils: \
 	filesystem/bin/sudo
 
 schemes: \
-	filesystem/bin/arpd \
 	filesystem/bin/ethernetd \
 	filesystem/bin/example \
 	filesystem/bin/ipd \
