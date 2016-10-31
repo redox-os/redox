@@ -2,7 +2,7 @@
 
 set -e
 
-echo "Defaulting to nightly"
+echo "Defaulting to rust nightly"
 rustup default nightly
 echo "Downloading rust source"
 rustup component add rust-src
