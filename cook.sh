@@ -13,32 +13,35 @@ then
     then
         pushd "recipes/$1"
         source recipe.sh
-        case "$2" in
-            build)
-                pushd build
-                xargo build --target "$TARGET" $CARGOFLAGS
-                popd
-                ;;
-            clean)
-                pushd build
-                xargo clean
-                popd
-                ;;
-            fetch)
-                git clone --recursive "$GIT" build
-                ;;
-            unfetch)
-                rm -rf build
-                ;;
-            update)
-                pushd build
-                xargo update
-                popd
-                ;;
-            *)
-                echo "$0 {package} {build|clean|fetch|update}"
-                ;;
-        esac
+        for arg in "${@:2}"
+        do
+            case "$arg" in
+                build)
+                    pushd build
+                    xargo build --target "$TARGET" $CARGOFLAGS
+                    popd
+                    ;;
+                clean)
+                    pushd build
+                    xargo clean
+                    popd
+                    ;;
+                fetch)
+                    git clone --recursive "$GIT" build
+                    ;;
+                unfetch)
+                    rm -rf build
+                    ;;
+                update)
+                    pushd build
+                    xargo update
+                    popd
+                    ;;
+                *)
+                    echo "$0 {package} {build|clean|fetch|update}"
+                    ;;
+            esac
+        done
         popd
     else
         echo "$0: recipe '$1' not found"
