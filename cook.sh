@@ -27,6 +27,9 @@ then
                 fetch)
                     git clone --recursive "$GIT" build
                     ;;
+                unfetch)
+                    rm -rf build
+                    ;;
                 stage)
                     mkdir -p stage/bin
                     cd build
@@ -36,8 +39,12 @@ then
                 unstage)
                     rm -rf stage
                     ;;
-                unfetch)
-                    rm -rf build
+                tar)
+                    cd stage
+                    tar cf ../stage.tar .
+                    ;;
+                untar)
+                    rm -rf stage.tar
                     ;;
                 update)
                     cd build
