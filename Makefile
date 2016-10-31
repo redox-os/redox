@@ -227,10 +227,10 @@ $(BUILD)/librand.rlib: rust/src/librand/lib.rs $(BUILD)/libcore.rlib
 $(BUILD)/librustc_unicode.rlib: rust/src/librustc_unicode/lib.rs $(BUILD)/libcore.rlib
 	$(RUSTC) $(RUSTCFLAGS) -o $@ $<
 
-openlibm/libopenlibm.a:
-	CROSSCC=$(CC) CFLAGS=-fno-stack-protector make -C openlibm libopenlibm.a
+libstd/openlibm/libopenlibm.a:
+	CROSSCC=$(CC) CFLAGS=-fno-stack-protector make -C libstd/openlibm libopenlibm.a
 
-$(BUILD)/libopenlibm.a: openlibm/libopenlibm.a
+$(BUILD)/libopenlibm.a: libstd/openlibm/libopenlibm.a
 	mkdir -p $(BUILD)
 	cp $< $@
 
