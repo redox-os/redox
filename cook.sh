@@ -4,6 +4,7 @@ export RUST_TARGET_PATH="$PWD/targets"
 export RUSTFLAGS="--cfg redox"
 export CARGOFLAGS=
 TARGET=x86_64-unknown-redox
+REPO="$PWD/repo/$TARGET"
 
 set -e
 
@@ -23,7 +24,7 @@ function op {
             popd > /dev/null
             ;;
         unfetch)
-            rm -rf build
+            rm -rfv build
             ;;
         update)
             pushd build > /dev/null
@@ -48,18 +49,25 @@ function op {
             popd > /dev/null
             ;;
         unstage)
-            rm -rf stage
+            rm -rfv stage
             ;;
         tar)
             pushd stage > /dev/null
-            tar cf ../stage.tar .
+            tar cfv ../stage.tar .
             popd > /dev/null
             ;;
         untar)
-            rm -rf stage.tar
+            rm -rfv stage.tar
+            ;;
+        publish)
+            mkdir -p "$REPO"
+            cp -v stage.tar "$REPO/$1.tar"
+            ;;
+        unpublish)
+            rm -rfv "$REPO/$1.tar"
             ;;
         *)
-            echo "$0 {package} {build|clean|fetch|update}"
+            echo "cook.sh $1 {build|clean|fetch|unfetch|publish|unpublish|stage|unstage|tar|untar|update}"
             ;;
     esac
 }
@@ -75,8 +83,8 @@ then
             op "$1" "$arg"
         done
     else
-        echo "$0: recipe '$1' not found"
+        echo "cook.sh: recipe '$1' not found"
     fi
 else
-    echo "$0 {package} {build|clean|fetch|unfetch|stage|unstage|tar|untar|update}"
+    echo "cook.sh {package} {build|clean|fetch|unfetch|publish|unpublish|stage|unstage|tar|untar|update}"
 fi
