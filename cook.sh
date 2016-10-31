@@ -1,6 +1,6 @@
 #!/bin/bash
 
-export RUST_TARGET_PATH=`realpath targets`
+export RUST_TARGET_PATH="$PWD/targets"
 export RUSTFLAGS="--cfg redox"
 export CARGOFLAGS=
 TARGET=x86_64-unknown-redox
@@ -16,6 +16,17 @@ then
         for arg in "${@:2}"
         do
             case "$arg" in
+                fetch)
+                    git clone --recursive "$GIT" build
+                    ;;
+                unfetch)
+                    rm -rf build
+                    ;;
+                update)
+                    pushd build > /dev/null
+                    xargo update
+                    popd > /dev/null
+                    ;;
                 build)
                     pushd build > /dev/null
                     xargo build --target "$TARGET" $CARGOFLAGS
@@ -25,12 +36,6 @@ then
                     pushd build > /dev/null
                     xargo clean
                     popd > /dev/null
-                    ;;
-                fetch)
-                    git clone --recursive "$GIT" build
-                    ;;
-                unfetch)
-                    rm -rf build
                     ;;
                 stage)
                     mkdir -p stage/bin
@@ -49,11 +54,6 @@ then
                     ;;
                 untar)
                     rm -rf stage.tar
-                    ;;
-                update)
-                    pushd build > /dev/null
-                    xargo update
-                    popd > /dev/null
                     ;;
                 *)
                     echo "$0 {package} {build|clean|fetch|update}"
