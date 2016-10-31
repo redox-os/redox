@@ -4,7 +4,7 @@ ethernetd
 ipd
 tcpd
 udpd
-dhcpd
+dhcpd -b
 httpd
 getty display:2
 getty display:3
