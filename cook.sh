@@ -1,3 +1,5 @@
+#!/bin/bash
+
 export RUST_TARGET_PATH=`realpath targets`
 export RUSTFLAGS="--cfg redox"
 TARGET=x86_64-unknown-redox
