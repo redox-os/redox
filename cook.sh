@@ -15,12 +15,20 @@ then
         source recipe.sh
         for arg in "${@:2}"
         do
+            echo "$1" "$arg"
             case "$arg" in
                 fetch)
                     git clone --recursive "$GIT" build
                     ;;
                 unfetch)
                     rm -rf build
+                    ;;
+                pull)
+                    pushd build > /dev/null
+                    git pull
+                    git submodule sync
+                    git submodule update --init --recursive
+                    popd > /dev/null
                     ;;
                 update)
                     pushd build > /dev/null
