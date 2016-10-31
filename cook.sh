@@ -2,6 +2,7 @@
 
 export RUST_TARGET_PATH=`realpath targets`
 export RUSTFLAGS="--cfg redox"
+export CARGOFLAGS=
 TARGET=x86_64-unknown-redox
 
 set -e
@@ -15,7 +16,7 @@ then
         case "$2" in
             build)
                 pushd build
-                xargo build --target "$TARGET"
+                xargo build --target "$TARGET" $CARGOFLAGS
                 popd
                 ;;
             clean)
