@@ -1,0 +1,18 @@
+[package]
+name = "redox_std"
+version = "0.1.0"
+authors = ["Jeremy Soller <jackpot51@gmail.com>"]
+
+[lib]
+name = "std"
+path = "../rust/src/libstd/lib.rs"
+
+[dependencies]
+alloc_system = { path = "alloc_system" }
+compiler_builtins = { path = "compiler_builtins" }
+panic_unwind = { path = "panic_unwind" }
+libc = { path = "libc" }
+unwind = { path = "unwind" }
+
+[replace]
+"libc:0.2.17" = { git = "https://github.com/redox-os/liblibc.git", branch = "new_kernel" }

@@ -30,11 +30,6 @@ fn main() {
     print!("{}", format!(" + E1000 on: {:X}, IRQ: {}\n", bar, irq));
 
     thread::spawn(move || {
-        unsafe {
-            syscall::iopl(3).expect("e1000d: failed to get I/O permission");
-            asm!("cli" :::: "intel", "volatile");
-        }
-
         let socket_fd = syscall::open(":network", syscall::O_RDWR | syscall::O_CREAT | syscall::O_NONBLOCK).expect("e1000d: failed to create network scheme");
         let socket = Arc::new(RefCell::new(unsafe { File::from_raw_fd(socket_fd) }));
 

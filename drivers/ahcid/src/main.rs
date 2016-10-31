@@ -30,11 +30,6 @@ fn main() {
     print!("{}", format!(" + AHCI on: {:X} IRQ: {}\n", bar, irq));
 
     thread::spawn(move || {
-        unsafe {
-            syscall::iopl(3).expect("ahcid: failed to get I/O permission");
-            asm!("cli" :::: "intel", "volatile");
-        }
-
         let address = unsafe { syscall::physmap(bar, 4096, MAP_WRITE).expect("ahcid: failed to map address") };
         {
             let socket_fd = syscall::open(":disk", syscall::O_RDWR | syscall::O_CREAT | syscall::O_NONBLOCK).expect("ahcid: failed to create disk scheme");
@@ -56,7 +51,7 @@ fn main() {
                         let mut packet = Packet::default();
                         if socket.read(&mut packet).expect("ahcid: failed to read disk scheme") == 0 {
                             break;
-                        }                        
+                        }
                         scheme.handle(&mut packet);
                         socket.write(&mut packet).expect("ahcid: failed to write disk scheme");
                     }

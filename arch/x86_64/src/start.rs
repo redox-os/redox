@@ -109,7 +109,7 @@ pub unsafe extern fn kstart() -> ! {
         }
 
         // Initialize devices
-        device::init();
+        device::init(&mut active_table);
 
         // Read ACPI tables, starts APs
         acpi::init(&mut active_table);
@@ -145,6 +145,9 @@ pub unsafe extern fn kstart_ap(cpu_id: usize, bsp_table: usize, stack_start: usi
             assert_eq!(TDATA_TEST_NONZERO, 0xFFFFFFFFFFFFFFFE);
         }
 
+        // Initialize devices (for AP)
+        device::init_ap();
+
         AP_READY.store(true, Ordering::SeqCst);
     }
 
@@ -155,24 +158,27 @@ pub unsafe extern fn kstart_ap(cpu_id: usize, bsp_table: usize, stack_start: usi
     kmain_ap(cpu_id);
 }
 
-pub unsafe fn usermode(ip: usize, sp: usize) -> ! {
+pub unsafe fn usermode(ip: usize, sp: usize, fs: usize) -> ! {
     // Go to usermode
-    asm!("mov ds, ax
+    asm!("xchg bx, bx
+        mov ds, ax
         mov es, ax
         mov fs, ax
         mov gs, ax
+        wrfsbase rbx
         push rax
-        push rbx
         push rcx
         push rdx
         push rsi
+        push rdi
         iretq"
         : // No output because it never returns
-        :   "{rax}"(gdt::GDT_USER_DATA << 3 | 3), // Stack segment
-            "{rbx}"(sp), // Stack pointer
-            "{rcx}"(3 << 12 | 1 << 9), // Flags - Set IOPL and interrupt enable flag
-            "{rdx}"(gdt::GDT_USER_CODE << 3 | 3), // Code segment
-            "{rsi}"(ip) // IP
+        :   "{rax}"(gdt::GDT_USER_DATA << 3 | 3), // Data segment
+            "{rbx}"(fs), // TLS segment
+            "{rcx}"(sp), // Stack pointer
+            "{rdx}"(3 << 12 | 1 << 9), // Flags - Set IOPL and interrupt enable flag
+            "{rsi}"(gdt::GDT_USER_CODE << 3 | 3), // Code segment
+            "{rdi}"(ip) // IP
         : // No clobers because it never returns
         : "intel", "volatile");
     unreachable!();

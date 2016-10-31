@@ -5,7 +5,7 @@ use spin::Mutex;
 
 use arch;
 use context::file::File;
-use context::memory::{Grant, Memory, SharedMemory};
+use context::memory::{Grant, Memory, SharedMemory, Tls};
 use syscall::data::Event;
 use sync::{WaitCondition, WaitQueue};
 
@@ -36,7 +36,7 @@ pub struct Context {
     /// Context running or not
     pub running: bool,
     /// CPU ID, if locked
-    pub cpuid: Option<usize>,
+    pub cpu_id: Option<usize>,
     /// Context is halting parent
     pub vfork: bool,
     /// Context is being waited on
@@ -55,6 +55,8 @@ pub struct Context {
     pub heap: Option<SharedMemory>,
     /// User stack
     pub stack: Option<Memory>,
+    /// User Tls
+    pub tls: Option<Tls>,
     /// User grants
     pub grants: Arc<Mutex<Vec<Grant>>>,
     /// The name of the context
@@ -81,7 +83,7 @@ impl Context {
             egid: 0,
             status: Status::Blocked,
             running: false,
-            cpuid: None,
+            cpu_id: None,
             vfork: false,
             waitpid: Arc::new(WaitCondition::new()),
             wake: None,
@@ -91,6 +93,7 @@ impl Context {
             image: Vec::new(),
             heap: None,
             stack: None,
+            tls: None,
             grants: Arc::new(Mutex::new(Vec::new())),
             name: Arc::new(Mutex::new(Vec::new())),
             cwd: Arc::new(Mutex::new(Vec::new())),
@@ -153,6 +156,13 @@ impl Context {
     pub fn unblock(&mut self) -> bool {
         if self.status == Status::Blocked {
             self.status = Status::Runnable;
+            if let Some(cpu_id) = self.cpu_id {
+                if cpu_id != ::cpu_id() {
+                    // Send IPI if not on current CPU
+                    // TODO: Make this more architecture independent
+                    unsafe { arch::device::local_apic::LOCAL_APIC.ipi(cpu_id) };
+                }
+            }
             true
         } else {
             false

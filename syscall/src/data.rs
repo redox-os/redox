@@ -61,7 +61,13 @@ pub struct Stat {
     pub st_mode: u16,
     pub st_uid: u32,
     pub st_gid: u32,
-    pub st_size: u64
+    pub st_size: u64,
+    pub st_mtime: u64,
+    pub st_mtime_nsec: u32,
+    pub st_atime: u64,
+    pub st_atime_nsec: u32,
+    pub st_ctime: u64,
+    pub st_ctime_nsec: u32,
 }
 
 impl Deref for Stat {

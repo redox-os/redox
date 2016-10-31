@@ -12,7 +12,7 @@ use std::os::unix::io::FromRawFd;
 use std::rc::Rc;
 use std::{slice, str, thread};
 use syscall::data::Packet;
-use syscall::error::{Error, Result, EACCES, EADDRNOTAVAIL, EBADF, EINVAL, ENOENT, EWOULDBLOCK};
+use syscall::error::{Error, Result, EACCES, EADDRNOTAVAIL, EBADF, EIO, EINVAL, ENOENT, EWOULDBLOCK};
 use syscall::flag::{EVENT_READ, O_NONBLOCK};
 use syscall::scheme::SchemeMut;
 
@@ -275,7 +275,7 @@ impl SchemeMut for Ipd {
                         data: ip.to_bytes()
                     };
 
-                    interface.ip_file.write(&frame.to_bytes()).map_err(|err| err.into_sys())?;
+                    interface.ip_file.write(&frame.to_bytes()).map_err(|err| Error::new(err.raw_os_error().unwrap_or(EIO)))?;
 
                     return Ok(buf.len());
                 }

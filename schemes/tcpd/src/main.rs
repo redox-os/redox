@@ -15,7 +15,7 @@ use std::rc::Rc;
 use event::EventQueue;
 use netutils::{n16, n32, Ipv4, Ipv4Addr, Ipv4Header, Tcp, TcpHeader, Checksum, TCP_FIN, TCP_SYN, TCP_RST, TCP_PSH, TCP_ACK};
 use syscall::data::Packet;
-use syscall::error::{Error, Result, EACCES, EADDRINUSE, EBADF, EINVAL, EISCONN, EMSGSIZE, ENOTCONN, EWOULDBLOCK};
+use syscall::error::{Error, Result, EACCES, EADDRINUSE, EBADF, EIO, EINVAL, EISCONN, EMSGSIZE, ENOTCONN, EWOULDBLOCK};
 use syscall::flag::{EVENT_READ, O_CREAT, O_RDWR, O_NONBLOCK};
 use syscall::scheme::SchemeMut;
 
@@ -274,7 +274,7 @@ impl Tcpd {
 
                                 let tcp = handle.create_tcp(TCP_ACK | TCP_PSH, buf.to_vec());
                                 let ip = handle.create_ip(self.rng.gen(), tcp.to_bytes());
-                                let result = self.tcp_file.write(&ip.to_bytes()).map_err(|err| err.into_sys());
+                                let result = self.tcp_file.write(&ip.to_bytes()).map_err(|err| Error::new(err.raw_os_error().unwrap_or(EIO)));
                                 if result.is_ok() {
                                     handle.seq += buf.len() as u32;
                                 }
@@ -422,7 +422,7 @@ impl SchemeMut for Tcpd {
 
             let tcp = handle.create_tcp(TCP_SYN, Vec::new());
             let ip = handle.create_ip(self.rng.gen(), tcp.to_bytes());
-            self.tcp_file.write(&ip.to_bytes()).map_err(|err| err.into_sys())?;
+            self.tcp_file.write(&ip.to_bytes()).map_err(|err| Error::new(err.raw_os_error().unwrap_or(EIO)))?;
 
             handle.seq += 1;
         }
@@ -469,7 +469,7 @@ impl SchemeMut for Tcpd {
 
                     let tcp = new_handle.create_tcp(TCP_SYN | TCP_ACK, Vec::new());
                     let ip = new_handle.create_ip(self.rng.gen(), tcp.to_bytes());
-                    self.tcp_file.write(&ip.to_bytes()).map_err(|err| err.into_sys()).and(Ok(buf.len()))?;
+                    self.tcp_file.write(&ip.to_bytes()).map_err(|err| Error::new(err.raw_os_error().unwrap_or(EIO))).and(Ok(buf.len()))?;
 
                     new_handle.seq += 1;
                 } else {
@@ -506,7 +506,7 @@ impl SchemeMut for Tcpd {
 
                     let tcp = new_handle.create_tcp(TCP_SYN, Vec::new());
                     let ip = new_handle.create_ip(self.rng.gen(), tcp.to_bytes());
-                    self.tcp_file.write(&ip.to_bytes()).map_err(|err| err.into_sys()).and(Ok(buf.len()))?;
+                    self.tcp_file.write(&ip.to_bytes()).map_err(|err| Error::new(err.raw_os_error().unwrap_or(EIO))).and(Ok(buf.len()))?;
                 } else {
                     return Err(Error::new(EINVAL));
                 }
@@ -559,7 +559,7 @@ impl SchemeMut for Tcpd {
                 State::Established => {
                     let tcp = handle.create_tcp(TCP_ACK | TCP_PSH, buf.to_vec());
                     let ip = handle.create_ip(self.rng.gen(), tcp.to_bytes());
-                    self.tcp_file.write(&ip.to_bytes()).map_err(|err| err.into_sys())?;
+                    self.tcp_file.write(&ip.to_bytes()).map_err(|err| Error::new(err.raw_os_error().unwrap_or(EIO)))?;
                     handle.seq += buf.len() as u32;
                     Ok(buf.len())
                 },
@@ -611,7 +611,7 @@ impl SchemeMut for Tcpd {
 
                     let tcp = handle.create_tcp(TCP_FIN | TCP_ACK, Vec::new());
                     let ip = handle.create_ip(self.rng.gen(), tcp.to_bytes());
-                    self.tcp_file.write(&ip.to_bytes()).map_err(|err| err.into_sys())?;
+                    self.tcp_file.write(&ip.to_bytes()).map_err(|err| Error::new(err.raw_os_error().unwrap_or(EIO)))?;
 
                     handle.seq += 1;
 
@@ -622,7 +622,7 @@ impl SchemeMut for Tcpd {
 
                     let tcp = handle.create_tcp(TCP_FIN | TCP_ACK, Vec::new());
                     let ip = handle.create_ip(self.rng.gen(), tcp.to_bytes());
-                    self.tcp_file.write(&ip.to_bytes()).map_err(|err| err.into_sys())?;
+                    self.tcp_file.write(&ip.to_bytes()).map_err(|err| Error::new(err.raw_os_error().unwrap_or(EIO)))?;
 
                     handle.seq += 1;
 

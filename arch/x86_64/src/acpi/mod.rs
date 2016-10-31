@@ -4,20 +4,19 @@
 use core::intrinsics::{atomic_load, atomic_store};
 use core::sync::atomic::Ordering;
 
+use device::local_apic::LOCAL_APIC;
 use interrupt;
 use memory::{allocate_frames, Frame};
 use paging::{entry, ActivePageTable, Page, PhysicalAddress, VirtualAddress};
 use start::{kstart_ap, CPU_COUNT, AP_READY};
 
 use self::dmar::{Dmar, DmarEntry};
-use self::local_apic::LocalApic;
 use self::madt::{Madt, MadtEntry};
 use self::rsdt::Rsdt;
 use self::sdt::Sdt;
 use self::xsdt::Xsdt;
 
 pub mod dmar;
-pub mod local_apic;
 pub mod madt;
 pub mod rsdt;
 pub mod sdt;
@@ -35,7 +34,7 @@ pub fn init_sdt(sdt: &'static Sdt, active_table: &mut ActivePageTable) {
     if let Some(madt) = Madt::new(sdt) {
         println!(": {:>08X}: {}", madt.local_address, madt.flags);
 
-        let mut local_apic = LocalApic::new(active_table);
+        let mut local_apic = unsafe { &mut LOCAL_APIC };
 
         let me = local_apic.id() as u8;
 
@@ -60,7 +59,7 @@ pub fn init_sdt(sdt: &'static Sdt, active_table: &mut ActivePageTable) {
                 } else {
                     if ap_local_apic.flags & 1 == 1 {
                         // Increase CPU ID
-                        let cpu_id = CPU_COUNT.fetch_add(1, Ordering::SeqCst);
+                        CPU_COUNT.fetch_add(1, Ordering::SeqCst);
 
                         // Allocate a stack
                         let stack_start = allocate_frames(64).expect("no more frames in acpi stack_start").start_address().get() + ::KERNEL_OFFSET;
@@ -75,7 +74,7 @@ pub fn init_sdt(sdt: &'static Sdt, active_table: &mut ActivePageTable) {
 
                         // Set the ap_ready to 0, volatile
                         unsafe { atomic_store(ap_ready, 0) };
-                        unsafe { atomic_store(ap_cpu_id, cpu_id as u64) };
+                        unsafe { atomic_store(ap_cpu_id, ap_local_apic.id as u64) };
                         unsafe { atomic_store(ap_page_table, active_table.address() as u64) };
                         unsafe { atomic_store(ap_stack_start, stack_start as u64) };
                         unsafe { atomic_store(ap_stack_end, stack_end as u64) };

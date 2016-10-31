@@ -152,6 +152,19 @@ pub extern fn userspace_init() {
     panic!("initfs:init returned")
 }
 
+/// Allow exception handlers to send signal to arch-independant kernel
+#[no_mangle]
+pub extern fn ksignal(signal: usize) {
+    println!("SIGNAL {}, CPU {}, PID {}", signal, cpu_id(), context::context_id());
+    {
+        let contexts = context::contexts();
+        if let Some(context_lock) = contexts.current() {
+            let context = context_lock.read();
+            println!("NAME {}", unsafe { ::core::str::from_utf8_unchecked(&context.name.lock()) });
+        }
+    }
+}
+
 #[no_mangle]
 pub extern fn kmain(cpus: usize) {
     CPU_ID.store(0, Ordering::SeqCst);
@@ -195,6 +208,14 @@ pub extern fn kmain_ap(id: usize) {
     println!("AP {}: {:?}", id, pid);
 
     loop {
-        unsafe { interrupt::enable_and_halt() }
+        unsafe {
+            interrupt::disable();
+            if context::switch() {
+                interrupt::enable_and_nop();
+            } else {
+                // Enable interrupts, then halt CPU (to save power) until the next interrupt is actually fired.
+                interrupt::enable_and_halt();
+            }
+        }
     }
 }

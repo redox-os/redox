@@ -5,6 +5,7 @@ use core::mem;
 use paging::{ActivePageTable, VirtualAddress};
 
 pub mod exception;
+pub mod ipi;
 pub mod irq;
 pub mod syscall;
 

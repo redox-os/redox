@@ -15,7 +15,7 @@ use std::rc::Rc;
 use event::EventQueue;
 use netutils::{n16, Ipv4, Ipv4Addr, Ipv4Header, Udp, UdpHeader, Checksum};
 use syscall::data::Packet;
-use syscall::error::{Error, Result, EACCES, EADDRINUSE, EBADF, EINVAL, EMSGSIZE, ENOTCONN, EWOULDBLOCK};
+use syscall::error::{Error, Result, EACCES, EADDRINUSE, EBADF, EIO, EINVAL, EMSGSIZE, ENOTCONN, EWOULDBLOCK};
 use syscall::flag::{EVENT_READ, O_CREAT, O_RDWR, O_NONBLOCK};
 use syscall::scheme::SchemeMut;
 
@@ -265,7 +265,7 @@ impl SchemeMut for Udpd {
                 data: ip_data
             };
 
-            self.udp_file.write(&ip.to_bytes()).map_err(|err| err.into_sys()).and(Ok(buf.len()))
+            self.udp_file.write(&ip.to_bytes()).map_err(|err| Error::new(err.raw_os_error().unwrap_or(EIO))).and(Ok(buf.len()))
         }
     }
 

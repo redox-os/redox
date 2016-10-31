@@ -62,6 +62,7 @@ pub fn clone(flags: usize, stack_base: usize) -> Result<usize> {
         let rgid;
         let euid;
         let egid;
+        let mut cpu_id = None;
         let arch;
         let vfork;
         let mut kfx_option = None;
@@ -70,6 +71,7 @@ pub fn clone(flags: usize, stack_base: usize) -> Result<usize> {
         let mut image = vec![];
         let mut heap_option = None;
         let mut stack_option = None;
+        let mut tls_option = None;
         let grants;
         let name;
         let cwd;
@@ -87,6 +89,10 @@ pub fn clone(flags: usize, stack_base: usize) -> Result<usize> {
             rgid = context.rgid;
             euid = context.euid;
             egid = context.egid;
+
+            if flags & CLONE_VM == CLONE_VM {
+                cpu_id = context.cpu_id;
+            }
 
             arch = context.arch.clone();
 
@@ -179,6 +185,29 @@ pub fn clone(flags: usize, stack_base: usize) -> Result<usize> {
 
                 new_stack.remap(stack.flags(), true);
                 stack_option = Some(new_stack);
+            }
+
+            if let Some(ref tls) = context.tls {
+                let mut new_tls = context::memory::Tls {
+                    master: tls.master,
+                    file_size: tls.file_size,
+                    mem: context::memory::Memory::new(
+                        VirtualAddress::new(arch::USER_TMP_TLS_OFFSET),
+                        tls.mem.size(),
+                        entry::PRESENT | entry::NO_EXECUTE | entry::WRITABLE,
+                        true,
+                        false
+                    )
+                };
+
+                unsafe {
+                    arch::externs::memcpy(new_tls.mem.start_address().get() as *mut u8,
+                                          tls.master.get() as *const u8,
+                                          tls.file_size);
+                }
+
+                new_tls.mem.remap(tls.mem.flags(), true);
+                tls_option = Some(new_tls);
             }
 
             if flags & CLONE_VM == CLONE_VM {
@@ -276,6 +305,8 @@ pub fn clone(flags: usize, stack_base: usize) -> Result<usize> {
             context.rgid = rgid;
             context.euid = euid;
             context.egid = egid;
+
+            context.cpu_id = cpu_id;
 
             context.status = context::Status::Runnable;
 
@@ -393,6 +424,12 @@ pub fn clone(flags: usize, stack_base: usize) -> Result<usize> {
                 context.stack = Some(stack);
             }
 
+            // Setup user TLS
+            if let Some(mut tls) = tls_option {
+                tls.mem.move_to(VirtualAddress::new(arch::USER_TLS_OFFSET), &mut new_table, &mut temporary_page, true);
+                context.tls = Some(tls);
+            }
+
             context.name = name;
 
             context.cwd = cwd;
@@ -411,6 +448,7 @@ pub fn clone(flags: usize, stack_base: usize) -> Result<usize> {
 pub fn exec(path: &[u8], arg_ptrs: &[[usize; 2]]) -> Result<usize> {
     let entry;
     let mut sp = arch::USER_STACK_OFFSET + arch::USER_STACK_SIZE - 256;
+    let fs = arch::USER_STACK_OFFSET;
 
     {
         let mut args = Vec::new();
@@ -466,11 +504,12 @@ pub fn exec(path: &[u8], arg_ptrs: &[[usize; 2]]) -> Result<usize> {
                     // Set name
                     context.name = Arc::new(Mutex::new(canonical));
 
-                    // Unmap previous image and stack
+                    // Unmap previous image, heap, grants, stack, and tls
                     context.image.clear();
                     drop(context.heap.take());
-                    drop(context.stack.take());
                     context.grants = Arc::new(Mutex::new(Vec::new()));
+                    drop(context.stack.take());
+                    drop(context.tls.take());
 
                     if stat.st_mode & syscall::flag::MODE_SETUID == syscall::flag::MODE_SETUID {
                         context.euid = stat.st_uid;
@@ -481,6 +520,7 @@ pub fn exec(path: &[u8], arg_ptrs: &[[usize; 2]]) -> Result<usize> {
                     }
 
                     // Map and copy new segments
+                    let mut tls_option = None;
                     for segment in elf.segments() {
                         if segment.p_type == program_header::PT_LOAD {
                             let mut memory = context::memory::Memory::new(
@@ -514,6 +554,12 @@ pub fn exec(path: &[u8], arg_ptrs: &[[usize; 2]]) -> Result<usize> {
                             memory.remap(flags, true);
 
                             context.image.push(memory.to_shared());
+                        } else if segment.p_type == program_header::PT_TLS {
+                            tls_option = Some((
+                                VirtualAddress::new(segment.p_vaddr as usize),
+                                segment.p_filesz as usize,
+                                segment.p_memsz as usize
+                            ));
                         }
                     }
 
@@ -535,6 +581,35 @@ pub fn exec(path: &[u8], arg_ptrs: &[[usize; 2]]) -> Result<usize> {
                         true
                     ));
 
+                    // Map TLS
+                    if let Some((master, file_size, size)) = tls_option {
+                        let tls = context::memory::Tls {
+                            master: master,
+                            file_size: file_size,
+                            mem: context::memory::Memory::new(
+                                VirtualAddress::new(arch::USER_TLS_OFFSET),
+                                size,
+                                entry::NO_EXECUTE | entry::WRITABLE | entry::USER_ACCESSIBLE,
+                                true,
+                                true
+                            )
+                        };
+
+                        unsafe {
+                            // Copy file data
+                            memcpy(tls.mem.start_address().get() as *mut u8,
+                                    master.get() as *const u8,
+                                    file_size);
+                        }
+
+                        // Set TLS pointer
+                        //TODO: Do not use stack to store TLS pointer, use a TCB structure instead
+                        unsafe { *(arch::USER_STACK_OFFSET as *mut usize) = tls.mem.start_address().get() + size; }
+
+                        context.tls = Some(tls);
+                    }
+
+                    // Push arguments
                     let mut arg_size = 0;
                     for arg in args.iter().rev() {
                         sp -= mem::size_of::<usize>();
@@ -597,7 +672,7 @@ pub fn exec(path: &[u8], arg_ptrs: &[[usize; 2]]) -> Result<usize> {
     }
 
     // Go to usermode
-    unsafe { usermode(entry, sp); }
+    unsafe { usermode(entry, sp, fs); }
 }
 
 pub fn exit(status: usize) -> ! {
@@ -897,6 +972,7 @@ pub fn virttophys(virtual_address: usize) -> Result<usize> {
 pub fn waitpid(pid: usize, status_ptr: usize, flags: usize) -> Result<usize> {
     loop {
         let mut exited = false;
+        let mut running;
         let waitpid;
         {
             let contexts = context::contexts();
@@ -909,10 +985,23 @@ pub fn waitpid(pid: usize, status_ptr: usize, flags: usize) -> Result<usize> {
                 }
                 exited = true;
             }
+            running = context.running;
             waitpid = context.waitpid.clone();
         }
 
         if exited {
+            // Spin until not running
+            while running {
+                {
+                    let contexts = context::contexts();
+                    let context_lock = contexts.get(pid).ok_or(Error::new(ESRCH))?;
+                    let context = context_lock.read();
+                    running = context.running;
+                }
+
+                arch::interrupt::pause();
+            }
+
             let mut contexts = context::contexts_mut();
             return contexts.remove(pid).ok_or(Error::new(ESRCH)).and(Ok(pid));
         } else if flags & WNOHANG == WNOHANG {

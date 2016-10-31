@@ -332,3 +332,10 @@ impl Drop for Memory {
         self.unmap(true);
     }
 }
+
+#[derive(Debug)]
+pub struct Tls {
+    pub master: VirtualAddress,
+    pub file_size: usize,
+    pub mem: Memory
+}

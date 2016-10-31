@@ -26,12 +26,14 @@ all: $(KBUILD)/harddrive.bin
 clean:
 	cargo clean
 	cargo clean --manifest-path libstd/Cargo.toml
+	cargo clean --manifest-path libstd_real/Cargo.toml
 	cargo clean --manifest-path drivers/ahcid/Cargo.toml
 	cargo clean --manifest-path drivers/e1000d/Cargo.toml
 	cargo clean --manifest-path drivers/ps2d/Cargo.toml
 	cargo clean --manifest-path drivers/pcid/Cargo.toml
 	cargo clean --manifest-path drivers/rtl8168d/Cargo.toml
 	cargo clean --manifest-path drivers/vesad/Cargo.toml
+	cargo clean --manifest-path programs/acid/Cargo.toml
 	cargo clean --manifest-path programs/init/Cargo.toml
 	cargo clean --manifest-path programs/ion/Cargo.toml
 	cargo clean --manifest-path programs/coreutils/Cargo.toml
@@ -75,12 +77,14 @@ doc-%: schemes/%/Cargo.toml all FORCE
 update:
 	cargo update
 	cargo update --manifest-path libstd/Cargo.toml
+	cargo update --manifest-path libstd_real/Cargo.toml
 	cargo update --manifest-path drivers/ahcid/Cargo.toml
 	cargo update --manifest-path drivers/e1000d/Cargo.toml
 	cargo update --manifest-path drivers/ps2d/Cargo.toml
 	cargo update --manifest-path drivers/pcid/Cargo.toml
 	cargo update --manifest-path drivers/rtl8168d/Cargo.toml
 	cargo update --manifest-path drivers/vesad/Cargo.toml
+	cargo update --manifest-path programs/acid/Cargo.toml
 	cargo update --manifest-path programs/init/Cargo.toml
 	cargo update --manifest-path programs/ion/Cargo.toml
 	cargo update --manifest-path programs/coreutils/Cargo.toml
@@ -211,16 +215,16 @@ $(BUILD)/libcore.rlib: rust/src/libcore/lib.rs
 	mkdir -p $(BUILD)
 	$(RUSTC) $(RUSTCFLAGS) -o $@ $<
 
-$(BUILD)/librand.rlib: rust/src/librand/lib.rs $(BUILD)/libcore.rlib
-	$(RUSTC) $(RUSTCFLAGS) -o $@ $<
-
 $(BUILD)/liballoc.rlib: rust/src/liballoc/lib.rs $(BUILD)/libcore.rlib
 	$(RUSTC) $(RUSTCFLAGS) -o $@ $<
 
-$(BUILD)/librustc_unicode.rlib: rust/src/librustc_unicode/lib.rs $(BUILD)/libcore.rlib
+$(BUILD)/libcollections.rlib: rust/src/libcollections/lib.rs $(BUILD)/libcore.rlib $(BUILD)/liballoc.rlib $(BUILD)/librustc_unicode.rlib
 	$(RUSTC) $(RUSTCFLAGS) -o $@ $<
 
-$(BUILD)/libcollections.rlib: rust/src/libcollections/lib.rs $(BUILD)/libcore.rlib $(BUILD)/liballoc.rlib $(BUILD)/librustc_unicode.rlib
+$(BUILD)/librand.rlib: rust/src/librand/lib.rs $(BUILD)/libcore.rlib
+	$(RUSTC) $(RUSTCFLAGS) -o $@ $<
+
+$(BUILD)/librustc_unicode.rlib: rust/src/librustc_unicode/lib.rs $(BUILD)/libcore.rlib
 	$(RUSTC) $(RUSTCFLAGS) -o $@ $<
 
 openlibm/libopenlibm.a:
@@ -432,7 +436,7 @@ $(BUILD)/filesystem.bin: \
 		filesystem/bin/smith \
 		filesystem/bin/tar
 	rm -rf $@ $(BUILD)/filesystem/
-	echo exit | cargo run --manifest-path schemes/redoxfs/Cargo.toml --bin redoxfs-utility $@ 64
+	echo exit | cargo run --manifest-path schemes/redoxfs/Cargo.toml --bin redoxfs-utility $@ 128
 	mkdir -p $(BUILD)/filesystem/
 	cargo run --manifest-path schemes/redoxfs/Cargo.toml --bin redoxfs-fuse $@ $(BUILD)/filesystem/ &
 	sleep 2

@@ -17,6 +17,7 @@ extern crate hole_list_allocator as allocator;
 extern crate bitflags;
 extern crate io;
 extern crate spin;
+extern crate syscall;
 pub extern crate x86;
 
 // Because the memory map is so important to not be aliased, it is defined here, in one place
@@ -40,7 +41,7 @@ pub extern crate x86;
 
     /// Offset to kernel percpu variables
     //TODO: Use 64-bit fs offset to enable this pub const KERNEL_PERCPU_OFFSET: usize = KERNEL_HEAP_OFFSET - PML4_SIZE;
-    pub const KERNEL_PERCPU_OFFSET: usize = 0xC0000000;
+    pub const KERNEL_PERCPU_OFFSET: usize = 0xC000_0000;
     /// Size of kernel percpu variables
     pub const KERNEL_PERCPU_SIZE: usize = 64 * 1024; // 64 KB
 
@@ -61,8 +62,11 @@ pub extern crate x86;
     /// Size of user stack
     pub const USER_STACK_SIZE: usize = 1024 * 1024; // 1 MB
 
+    /// Offset to user TLS
+    pub const USER_TLS_OFFSET: usize = USER_STACK_OFFSET + PML4_SIZE;
+
     /// Offset to user temporary image (used when cloning)
-    pub const USER_TMP_OFFSET: usize = USER_STACK_OFFSET + PML4_SIZE;
+    pub const USER_TMP_OFFSET: usize = USER_TLS_OFFSET + PML4_SIZE;
 
     /// Offset to user temporary heap (used when cloning)
     pub const USER_TMP_HEAP_OFFSET: usize = USER_TMP_OFFSET + PML4_SIZE;
@@ -72,6 +76,9 @@ pub extern crate x86;
 
     /// Offset to user temporary stack (used when cloning)
     pub const USER_TMP_STACK_OFFSET: usize = USER_TMP_GRANT_OFFSET + PML4_SIZE;
+
+    /// Offset to user temporary tls (used when cloning)
+    pub const USER_TMP_TLS_OFFSET: usize = USER_TMP_STACK_OFFSET + PML4_SIZE;
 
 
 /// Print to console
@@ -111,6 +118,8 @@ macro_rules! interrupt {
                 push r9
                 push r10
                 push r11
+                rdfsbase rax
+                push rax
                 push fs
                 mov rax, 0x18
                 mov fs, ax"
@@ -121,6 +130,8 @@ macro_rules! interrupt {
 
             // Pop scratch registers and return
             asm!("pop fs
+                pop rax
+                wrfsbase rax
                 pop r11
                 pop r10
                 pop r9
@@ -136,13 +147,101 @@ macro_rules! interrupt {
     };
 }
 
+#[repr(packed)]
+pub struct InterruptStack {
+    fs: usize,
+    r11: usize,
+    r10: usize,
+    r9: usize,
+    r8: usize,
+    rsi: usize,
+    rdi: usize,
+    rdx: usize,
+    rcx: usize,
+    rax: usize,
+    rip: usize,
+    cs: usize,
+    rflags: usize,
+}
+
 #[macro_export]
-macro_rules! interrupt_error {
-    ($name:ident, $func:block) => {
+macro_rules! interrupt_stack {
+    ($name:ident, $stack: ident, $func:block) => {
         #[naked]
         pub unsafe extern fn $name () {
             #[inline(never)]
-            unsafe fn inner() {
+            unsafe fn inner($stack: &$crate::InterruptStack) {
+                $func
+            }
+
+            // Push scratch registers
+            asm!("push rax
+                push rcx
+                push rdx
+                push rdi
+                push rsi
+                push r8
+                push r9
+                push r10
+                push r11
+                rdfsbase rax
+                push rax
+                push fs
+                mov rax, 0x18
+                mov fs, ax"
+                : : : : "intel", "volatile");
+
+            // Get reference to stack variables
+            let rsp: usize;
+            asm!("" : "={rsp}"(rsp) : : : "intel", "volatile");
+
+            // Call inner rust function
+            inner(&*(rsp as *const $crate::InterruptStack));
+
+            // Pop scratch registers and return
+            asm!("pop fs
+                pop rax
+                wrfsbase rax
+                pop r11
+                pop r10
+                pop r9
+                pop r8
+                pop rsi
+                pop rdi
+                pop rdx
+                pop rcx
+                pop rax
+                iretq"
+                : : : : "intel", "volatile");
+        }
+    };
+}
+
+#[repr(packed)]
+pub struct InterruptErrorStack {
+    fs: usize,
+    r11: usize,
+    r10: usize,
+    r9: usize,
+    r8: usize,
+    rsi: usize,
+    rdi: usize,
+    rdx: usize,
+    rcx: usize,
+    rax: usize,
+    code: usize,
+    rip: usize,
+    cs: usize,
+    rflags: usize,
+}
+
+#[macro_export]
+macro_rules! interrupt_error {
+    ($name:ident, $stack:ident, $func:block) => {
+        #[naked]
+        pub unsafe extern fn $name () {
+            #[inline(never)]
+            unsafe fn inner($stack: &$crate::InterruptErrorStack) {
                 $func
             }
 
@@ -162,8 +261,12 @@ macro_rules! interrupt_error {
                 mov fs, ax"
                 : : : : "intel", "volatile");
 
+            // Get reference to stack variables
+            let rsp: usize;
+            asm!("" : "={rsp}"(rsp) : : : "intel", "volatile");
+
             // Call inner rust function
-            inner();
+            inner(&*(rsp as *const $crate::InterruptErrorStack));
 
             // Pop scratch registers, error code, and return
             asm!("pop fs

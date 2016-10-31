@@ -1,0 +1,12 @@
+[package]
+name = "alloc_system"
+version = "0.0.0"
+authors = ["Jeremy Soller <jackpot51@gmail.com>"]
+
+[dependencies.ralloc]
+path = "../../ralloc/"
+default-features = false
+features = ["allocator"]
+
+[replace]
+"libc:0.2.17" = { git = "https://github.com/redox-os/liblibc.git", branch = "new_kernel" }

@@ -16,27 +16,34 @@ pub unsafe fn switch() -> bool {
         arch::interrupt::pause();
     }
 
+    let cpu_id = ::cpu_id();
+
     let from_ptr;
     let mut to_ptr = 0 as *mut Context;
     {
         let contexts = contexts();
         {
-            let context_lock = contexts.current().expect("context::switch: Not inside of context");
+            let context_lock = contexts.current().expect("context::switch: not inside of context");
             let mut context = context_lock.write();
             from_ptr = context.deref_mut() as *mut Context;
         }
 
         let check_context = |context: &mut Context| -> bool {
-            if context.cpuid == None || context.cpuid == Some(::cpu_id()) {
-                if context.status == Status::Blocked && context.wake.is_some() {
-                    let wake = context.wake.expect("context::switch: wake not set");
+            if context.cpu_id == None && cpu_id == 0 {
+                context.cpu_id = Some(cpu_id);
+                println!("{}: take {} {}", cpu_id, context.id, ::core::str::from_utf8_unchecked(&context.name.lock()));
+            }
 
-                    let current = arch::time::monotonic();
-                    if current.0 > wake.0 || (current.0 == wake.0 && current.1 >= wake.1) {
-                        context.unblock();
-                    }
+            if context.status == Status::Blocked && context.wake.is_some() {
+                let wake = context.wake.expect("context::switch: wake not set");
+
+                let current = arch::time::monotonic();
+                if current.0 > wake.0 || (current.0 == wake.0 && current.1 >= wake.1) {
+                    context.unblock();
                 }
+            }
 
+            if context.cpu_id == Some(cpu_id) {
                 if context.status == Status::Runnable && ! context.running {
                     return true;
                 }
@@ -74,14 +81,15 @@ pub unsafe fn switch() -> bool {
         return false;
     }
 
-    // println!("{}: Switch {} to {}", ::cpu_id(), (&*from_ptr).id, (&*to_ptr).id);
-
     (&mut *from_ptr).running = false;
     (&mut *to_ptr).running = true;
     if let Some(ref stack) = (*to_ptr).kstack {
         arch::gdt::TSS.rsp[0] = (stack.as_ptr() as usize + stack.len() - 256) as u64;
     }
     CONTEXT_ID.store((&mut *to_ptr).id, Ordering::SeqCst);
+
+    // Unset global lock before switch, as arch is only usable by the current CPU at this time
+    arch::context::CONTEXT_SWITCH_LOCK.store(false, Ordering::SeqCst);
 
     (&mut *from_ptr).arch.switch_to(&mut (&mut *to_ptr).arch);
 

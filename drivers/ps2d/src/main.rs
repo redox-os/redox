@@ -122,7 +122,7 @@ fn main() {
     thread::spawn(|| {
         unsafe {
             iopl(3).expect("ps2d: failed to get I/O permission");
-            asm!("cli" :::: "intel", "volatile");
+            asm!("cli" : : : : "intel", "volatile");
         }
 
         let input = File::open("display:input").expect("ps2d: failed to open display:input");

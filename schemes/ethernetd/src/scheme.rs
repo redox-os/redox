@@ -6,7 +6,7 @@ use std::{cmp, str, u16};
 
 use netutils::{getcfg, MacAddr, EthernetII};
 use syscall;
-use syscall::error::{Error, Result, EACCES, EBADF, EINVAL, EWOULDBLOCK};
+use syscall::error::{Error, Result, EACCES, EBADF, EINVAL, EIO, EWOULDBLOCK};
 use syscall::flag::O_NONBLOCK;
 use syscall::scheme::SchemeMut;
 
@@ -63,7 +63,7 @@ impl EthernetScheme {
 impl SchemeMut for EthernetScheme {
     fn open(&mut self, url: &[u8], flags: usize, uid: u32, _gid: u32) -> Result<usize> {
         if uid == 0 {
-            let mac_addr = MacAddr::from_str(&getcfg("mac").map_err(|err| err.into_sys())?);
+            let mac_addr = MacAddr::from_str(&getcfg("mac").map_err(|err| Error::new(err.raw_os_error().unwrap_or(EIO)))?);
             let path = try!(str::from_utf8(url).or(Err(Error::new(EINVAL))));
 
             let ethertype = u16::from_str_radix(path, 16).unwrap_or(0);
@@ -121,7 +121,7 @@ impl SchemeMut for EthernetScheme {
         if let Some(mut frame) = EthernetII::from_bytes(buf) {
             frame.header.src = handle.host_addr;
             frame.header.ethertype.set(handle.ethertype);
-            self.network.write(&frame.to_bytes()).map_err(|err| err.into_sys())
+            self.network.write(&frame.to_bytes()).map_err(|err| Error::new(err.raw_os_error().unwrap_or(EIO)))
         } else {
             Err(Error::new(EINVAL))
         }

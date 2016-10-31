@@ -23,17 +23,21 @@ pub unsafe extern fn syscall() {
         asm!("" : : "{rax}"(a) : : "intel", "volatile");
     }
 
-    asm!("push fs
-        push rax
-        mov rax, 0x18
-        mov fs, ax
-        pop rax"
+    asm!("push r15
+        rdfsbase r15
+        push r15
+        push fs
+        mov r15, 0x18
+        mov fs, r15"
         : : : : "intel", "volatile");
 
     inner();
 
     // Interrupt return
     asm!("pop fs
+        pop r15
+        wrfsbase r15
+        pop r15
         iretq"
         : : : : "intel", "volatile");
 }
