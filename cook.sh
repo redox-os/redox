@@ -17,12 +17,14 @@ then
         do
             case "$arg" in
                 build)
-                    cd build
+                    pushd build > /dev/null
                     xargo build --target "$TARGET" $CARGOFLAGS
+                    popd > /dev/null
                     ;;
                 clean)
-                    cd build
+                    pushd build > /dev/null
                     xargo clean
+                    popd > /dev/null
                     ;;
                 fetch)
                     git clone --recursive "$GIT" build
@@ -32,23 +34,26 @@ then
                     ;;
                 stage)
                     mkdir -p stage/bin
-                    cd build
+                    pushd build > /dev/null
                     #TODO xargo install --root "../stage" $CARGOFLAGS
                     cp -v $(find target/x86_64-unknown-redox/debug/ -maxdepth 1 -type f ! -name "*.*") ../stage/bin
+                    popd > /dev/null
                     ;;
                 unstage)
                     rm -rf stage
                     ;;
                 tar)
-                    cd stage
+                    pushd stage > /dev/null
                     tar cf ../stage.tar .
+                    popd > /dev/null
                     ;;
                 untar)
                     rm -rf stage.tar
                     ;;
                 update)
-                    cd build
+                    pushd build > /dev/null
                     xargo update
+                    popd > /dev/null
                     ;;
                 *)
                     echo "$0 {package} {build|clean|fetch|update}"
