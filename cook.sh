@@ -26,6 +26,13 @@ then
                     xargo clean
                     popd
                     ;;
+                install)
+                    mkdir -p root/bin
+                    pushd build
+                    #TODO xargo install --root "../root" $CARGOFLAGS
+                    cp -v $(find target/x86_64-unknown-redox/debug/ -maxdepth 1 -type f ! -name "*.*") ../root/bin
+                    popd
+                    ;;
                 fetch)
                     git clone --recursive "$GIT" build
                     ;;
