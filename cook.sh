@@ -46,6 +46,7 @@ function op {
             pushd build > /dev/null
             #TODO xargo install --root "../stage" $CARGOFLAGS
             cp -v $(find target/x86_64-unknown-redox/debug/ -maxdepth 1 -type f ! -name "*.*") ../stage/bin
+            strip -v stage/bin/*
             popd > /dev/null
             ;;
         unstage)
