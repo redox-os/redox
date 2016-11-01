@@ -7,7 +7,7 @@ use arch;
 use context::file::File;
 use context::memory::{Grant, Memory, SharedMemory, Tls};
 use syscall::data::Event;
-use sync::{WaitCondition, WaitQueue};
+use sync::{WaitMap, WaitQueue};
 
 #[derive(Copy, Clone, Debug, Eq, PartialEq)]
 pub enum Status {
@@ -40,7 +40,7 @@ pub struct Context {
     /// Context is halting parent
     pub vfork: bool,
     /// Context is being waited on
-    pub waitpid: Arc<WaitCondition>,
+    pub waitpid: Arc<WaitMap<usize, usize>>,
     /// Context should wake up at specified time
     pub wake: Option<(u64, u64)>,
     /// The architecture specific context
@@ -85,7 +85,7 @@ impl Context {
             running: false,
             cpu_id: None,
             vfork: false,
-            waitpid: Arc::new(WaitCondition::new()),
+            waitpid: Arc::new(WaitMap::new()),
             wake: None,
             arch: arch::context::Context::new(),
             kfx: None,

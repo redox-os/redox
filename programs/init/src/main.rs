@@ -89,4 +89,9 @@ pub fn main() {
     if let Err(err) = run("initfs:etc/init.rc") {
         println!("init: failed to run initfs:etc/init.rc: {}", err);
     }
+
+    loop {
+        let mut status = 0;
+        syscall::waitpid(0, &mut status, 0).unwrap();
+    }
 }
