@@ -106,7 +106,7 @@ update:
 FORCE:
 
 # Emulation
-QEMU=qemu-system-$(ARCH)
+QEMU=SDL_VIDEO_X11_DGAMOUSE=0 qemu-system-$(ARCH)
 QEMUFLAGS=-serial mon:stdio -d cpu_reset -d guest_errors
 ifeq ($(ARCH),arm)
 	LD=$(ARCH)-none-eabi-ld
