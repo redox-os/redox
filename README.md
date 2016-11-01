@@ -1,69 +1,108 @@
-# kernel
+<img alt="Redox" height="90" src="https://github.com/redox-os/assets/raw/master/logo.png">
 
-A collaborative effort to rewrite the kernel with focus on correctness and code
-quality.
+**Redox** is an operating system written in pure Rust, designed to be secure and free. The website can be found at https://www.redox-os.org.
 
-## Why?
+Documentation can be found [here](https://doc.redox-os.org/doc/std/).
 
-The kernel code was getting increasingly messy to the point where only the
-original writer would be able to find and fix bugs. Fortunately, the kernel of
-Redox is relatively small and such a project is estimated to take only a few
-months.
+Please make sure you use the **latest nightly** of `rustc` before building (for more troubleshooting, see ["Help! Redox won't compile!"](#compile-help)).
 
-## What?
+[![Travis Build Status](https://travis-ci.org/redox-os/redox.svg?branch=master)](https://travis-ci.org/redox-os/redox)
+[![MIT licensed](https://img.shields.io/badge/license-MIT-blue.svg)](./LICENSE.md)
 
-The aims of the new kernel should be clear in their order:
+## Contents
 
-1. **Correctness**: Above anything else, the kernel should be correct. No hacks,
-despite how the tiny cool shortcuts might seem, it gives severe backslash later
-on. Keep it correct and well-written.
+* [What it looks like](#what-it-looks-like)
+* [Help! Redox won't compile](#compile-help)
+* [Contributing to Redox](#contributing)
+* [Cloning, Building and running](#cloning-building-running)
+ * [Quick Setup](#quick-setup)
+ * [Manual Setup](#manual-setup)
 
-2. **Readability and documentation**: The code quality should be high, with that
-follows a detailed documentation, including both API docs (on every item!) and
-careful comments for anything non-trivial.
 
-3. **Performance**: If you can, go for it.
+## <a name="what-it-looks-like"> What it looks like </a>
 
-## Guidelines
+<img alt="Redox" height="150" src="https://github.com/redox-os/assets/raw/master/screenshots/Desktop.png">
+<img alt="Redox" height="150" src="https://github.com/redox-os/assets/raw/master/screenshots/Fancy_opacity.png">
+<img alt="Redox" height="150" src="https://github.com/redox-os/assets/raw/master/screenshots/File_manager.png">
 
-### A rotten house is built on a rotten fundament.
+<img alt="Redox" height="150" src="https://github.com/redox-os/assets/raw/master/screenshots/Sodium_v1.png">
+<img alt="Redox" height="150" src="https://github.com/redox-os/assets/raw/master/screenshots/Boot.png">
+<img alt="Redox" height="150" src="https://github.com/redox-os/assets/raw/master/screenshots/start.png">
 
-Don't fool yourself. You are likely not getting back to the ugly code. Write it
-the right way **first time**, and make sure you only move on when it's
-**done right**.
+## <a name="compile-help"> Help! Redox won't compile! </a>
 
-### Comments
+Sometimes things go wrong when compiling. Try the following before opening an issue:
 
-Do not hesitate to put comments all over the place.
+1. Run `make clean`.
+2. Run `git clean -X -f -d`.
+3. Make sure you have **the latest version of Rust nightly!** ([rustup.rs](https://www.rustup.rs) is recommended for managing Rust versions).
+4. Update **GNU Make**, **NASM** and **QEMU/VirtualBox**.
+5. Pull the upstream master branch (`git remote add upstream git@github.com:redox-os/redox.git; git pull upstream master`).
+6. Update submodules (`git submodule update --recursive --init`).
 
-### Documentation
+and then rebuild!
 
-Every public item should contain API documentation.
+## <a name="contributing"> Contributing to Redox </a>
 
-### Debug assertions
+If you're interested in this project, and you'd like to help us out, [here](CONTRIBUTING.md) is a list of ways you can do just that.
 
-Abusing debug assertions is a wonderful way to catch bugs, and it is very much
-encouraged.
+## <a name="cloning-building-running"> Cloning, Building, and Running </a>
 
-### Statical checking
+Redox is big (even compressed)! So cloning Redox takes a lot of bandwidth, and (depending on your data plan) can be costly, so clone at your own risk!
 
-Rust provides a lot of type-system features which can be used to create
-wonderful safe abstractions, and you should use them whenever you get the chance.
+### <a name="quick-setup" /> Quick Setup </a>
 
-Unsafety should be avoided, and if it is triggered only under some addition
-**insert an assertion**. Despite this being a kernel, we prefer kernel panics
-over security vulnerabilities.
+```bash
+$ cd path/to/your/projects/folder/
 
-If the condition is (or should be) unreachable, but if not upheld, leading to
-UB, put an assertion in the start of the function.
+# Run bootstrap setup
+$ curl -sf https://raw.githubusercontent.com/redox-os/redox/master/bootstrap.sh -o bootstrap.sh && bash -e bootstrap.sh
 
-### Be gentle
+# Build Redox
+$ make all
 
-Don't just write as much code as you can as quick as possible. Take your time
-and be careful.
+# Launch using QEMU
+$ make qemu
+# Launch using QEMU without using KVM (Kernel Virtual Machine). Try if QEMU gives an error.
+$ make qemu kvm=no
+```
 
-### Commits
+#### QEMU with KVM
 
-Use descriptive commits. One way to force yourself to do that is to not pass the
-`-m` flag, which will make your editor pop up, so that you can conviniently
-write long commit messages.
+To use QEMU with KVM (kernel-based virtual Machine), which is faster than without KVM, you need a CPU with Intel® Virtualization Technology (Intel® VT) or AMD Virtualization™ (AMD-V™) support. Most systems have this disabled in the BIOS by default, so you may need to reboot and enable the feature in the BIOS.
+
+### <a name="manual-setup"> Manual Setup </a>
+
+To manually clone, build and run Redox using a Linux host, run the following commands (with exceptions, be sure to read the comments):
+```bash
+$ cd path/to/your/projects/folder/
+
+# HTTPS
+$ git clone https://github.com/redox-os/redox.git --origin upstream --recursive
+# SSH
+$ git clone git@github.com:redox-os/redox.git --origin upstream --recursive
+
+$ cd redox/
+
+# Install/update dependencies
+$ sudo <your package manager> install make nasm qemu libfuse-dev
+
+# Install rustup.rs
+$ curl https://sh.rustup.rs -sSf | sh
+
+# Set override toolchain to nightly build
+$ rustup override set nightly
+
+# For successive builds start here. If this is your first build, just continue
+
+# Update git submodules
+$ git submodule update --recursive --init
+
+# Build Redox
+$ make all
+
+# Launch using QEMU
+$ make qemu
+# Launch using QEMU without using KVM (Kernel Virtual Machine). Try if QEMU gives an error.
+$ make qemu kvm=no
+```
