@@ -48,6 +48,8 @@ clean:
 	cargo clean --manifest-path schemes/example/Cargo.toml
 	cargo clean --manifest-path schemes/ipd/Cargo.toml
 	cargo clean --manifest-path schemes/orbital/Cargo.toml
+	cargo clean --manifest-path schemes/ptyd/Cargo.toml
+	cargo clean --manifest-path schemes/randd/Cargo.toml
 	cargo clean --manifest-path schemes/redoxfs/Cargo.toml
 	cargo clean --manifest-path schemes/tcpd/Cargo.toml
 	cargo clean --manifest-path schemes/udpd/Cargo.toml
@@ -99,6 +101,8 @@ update:
 	cargo update --manifest-path schemes/example/Cargo.toml
 	cargo update --manifest-path schemes/ipd/Cargo.toml
 	cargo update --manifest-path schemes/orbital/Cargo.toml
+	cargo update --manifest-path schemes/ptyd/Cargo.toml
+	cargo update --manifest-path schemes/randd/Cargo.toml
 	cargo update --manifest-path schemes/redoxfs/Cargo.toml
 	cargo update --manifest-path schemes/tcpd/Cargo.toml
 	cargo update --manifest-path schemes/udpd/Cargo.toml
@@ -417,6 +421,7 @@ schemes: \
 	filesystem/bin/example \
 	filesystem/bin/ipd \
 	filesystem/bin/orbital \
+	filesystem/bin/ptyd \
 	filesystem/bin/randd \
 	filesystem/bin/tcpd \
 	filesystem/bin/udpd

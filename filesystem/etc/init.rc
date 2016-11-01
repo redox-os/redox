@@ -1,4 +1,5 @@
 initfs:bin/pcid /etc/pcid.toml
+ptyd
 randd
 ethernetd
 ipd
