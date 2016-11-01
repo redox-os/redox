@@ -31,7 +31,7 @@ pub unsafe fn switch() -> bool {
         let check_context = |context: &mut Context| -> bool {
             if context.cpu_id == None && cpu_id == 0 {
                 context.cpu_id = Some(cpu_id);
-                println!("{}: take {} {}", cpu_id, context.id, ::core::str::from_utf8_unchecked(&context.name.lock()));
+                // println!("{}: take {} {}", cpu_id, context.id, ::core::str::from_utf8_unchecked(&context.name.lock()));
             }
 
             if context.status == Status::Blocked && context.wake.is_some() {
