@@ -1,3 +1,4 @@
+acid tls
 randd
 initfs:bin/pcid /etc/pcid.toml
 ethernetd

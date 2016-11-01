@@ -196,7 +196,7 @@ pub fn clone(flags: usize, stack_base: usize) -> Result<usize> {
                         tls.mem.size(),
                         entry::PRESENT | entry::NO_EXECUTE | entry::WRITABLE,
                         true,
-                        false
+                        true
                     )
                 };
 
@@ -205,6 +205,8 @@ pub fn clone(flags: usize, stack_base: usize) -> Result<usize> {
                                           tls.master.get() as *const u8,
                                           tls.file_size);
                 }
+
+                println!("TLS clone {:X} {} {}", new_tls.mem.start_address().get(), new_tls.file_size, new_tls.mem.size());
 
                 new_tls.mem.remap(tls.mem.flags(), true);
                 tls_option = Some(new_tls);
@@ -427,6 +429,7 @@ pub fn clone(flags: usize, stack_base: usize) -> Result<usize> {
             // Setup user TLS
             if let Some(mut tls) = tls_option {
                 tls.mem.move_to(VirtualAddress::new(arch::USER_TLS_OFFSET), &mut new_table, &mut temporary_page, true);
+                println!("TLS clone move {:X}, {}, {}", tls.mem.start_address().get(), tls.file_size, tls.mem.size());
                 context.tls = Some(tls);
             }
 
@@ -599,7 +602,7 @@ pub fn exec(path: &[u8], arg_ptrs: &[[usize; 2]]) -> Result<usize> {
                             file_size: file_size,
                             mem: context::memory::Memory::new(
                                 VirtualAddress::new(arch::USER_TLS_OFFSET),
-                                size,
+                                (size + 4095)/4096 * 4096,
                                 entry::NO_EXECUTE | entry::WRITABLE | entry::USER_ACCESSIBLE,
                                 true,
                                 true
@@ -612,6 +615,8 @@ pub fn exec(path: &[u8], arg_ptrs: &[[usize; 2]]) -> Result<usize> {
                                     master.get() as *const u8,
                                     file_size);
                         }
+
+                        println!("Map TLS {:X} {} {} to {:X} {}", master.get(), file_size, size, tls.mem.start_address().get(), tls.mem.size());
 
                         context.tls = Some(tls);
                     }
@@ -722,6 +727,7 @@ pub fn exit(status: usize) -> ! {
             context.image.clear();
             drop(context.heap.take());
             drop(context.stack.take());
+            drop(context.tls.take());
             context.grants = Arc::new(Mutex::new(Vec::new()));
 
             let vfork = context.vfork;
