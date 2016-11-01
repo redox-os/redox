@@ -441,19 +441,19 @@ $(BUILD)/filesystem.bin: \
 		filesystem/bin/smith \
 		filesystem/bin/tar
 	rm -rf $@ $(BUILD)/filesystem/
-	echo exit | cargo run --manifest-path schemes/redoxfs/Cargo.toml --bin redoxfs-utility $@ 128
+	echo exit | cargo run --manifest-path schemes/redoxfs/Cargo.toml --bin redoxfs-utility $@ 512
 	mkdir -p $(BUILD)/filesystem/
 	cargo run --manifest-path schemes/redoxfs/Cargo.toml --bin redoxfs-fuse $@ $(BUILD)/filesystem/ &
 	sleep 2
-	cp -RL filesystem/* $(BUILD)/filesystem/
-	chown -R 0:0 $(BUILD)/filesystem/
-	chown -R 1000:1000 $(BUILD)/filesystem/home/user/
-	chmod 700 $(BUILD)/filesystem/root/
-	chmod 700 $(BUILD)/filesystem/home/user/
-	chmod +s $(BUILD)/filesystem/bin/su
-	chmod +s $(BUILD)/filesystem/bin/sudo
-	mkdir $(BUILD)/filesystem/tmp
-	chmod 1777 $(BUILD)/filesystem/tmp
+	sudo cp -RL filesystem/* $(BUILD)/filesystem/
+	sudo chown -v -R 0:0 $(BUILD)/filesystem/
+	sudo chown -R 1000:1000 $(BUILD)/filesystem/home/user/
+	sudo chmod 700 $(BUILD)/filesystem/root/
+	sudo chmod 700 $(BUILD)/filesystem/home/user/
+	sudo chmod +s $(BUILD)/filesystem/bin/su
+	sudo chmod +s $(BUILD)/filesystem/bin/sudo
+	sudo mkdir $(BUILD)/filesystem/tmp
+	sudo chmod 1777 $(BUILD)/filesystem/tmp
 	sync
 	-$(FUMOUNT) $(BUILD)/filesystem/
 	rm -rf $(BUILD)/filesystem/
