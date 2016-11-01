@@ -42,11 +42,23 @@ function op {
             popd > /dev/null
             ;;
         stage)
-            mkdir -p stage/bin
+            mkdir -p stage
             pushd build > /dev/null
+            if [ "$(type -t recipe_stage)" = "function" ]
+            then
+                recipe_stage ../stage
+            fi
             #TODO xargo install --root "../stage" $CARGOFLAGS
-            cp -v $(find target/x86_64-unknown-redox/debug/ -maxdepth 1 -type f ! -name "*.*") ../stage/bin
-            strip -v ../stage/bin/*
+            bins="$(find target/x86_64-unknown-redox/debug/ -maxdepth 1 -type f ! -name '*.*')"
+            if [ -n "$bins" ]
+            then
+                mkdir -p ../stage/bin
+                for bin in $bins
+                do
+                    cp -v "$bin" "../stage/bin/$(basename $bin)"
+                    strip -v "../stage/bin/$(basename $bin)"
+                done
+            fi
             popd > /dev/null
             ;;
         unstage)
