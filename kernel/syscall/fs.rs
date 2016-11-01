@@ -3,8 +3,10 @@ use core::sync::atomic::Ordering;
 
 use context;
 use scheme;
-use syscall::data::Packet;
+use syscall;
+use syscall::data::{Packet, Stat};
 use syscall::error::*;
+use syscall::flag::{MODE_DIR, MODE_FILE};
 
 pub fn file_op(a: usize, fd: usize, c: usize, d: usize) -> Result<usize> {
     let (file, pid, uid, gid) = {
@@ -47,12 +49,21 @@ pub fn file_op_mut_slice(a: usize, fd: usize, slice: &mut [u8]) -> Result<usize>
 
 /// Change the current working directory
 pub fn chdir(path: &[u8]) -> Result<usize> {
-    let contexts = context::contexts();
-    let context_lock = contexts.current().ok_or(Error::new(ESRCH))?;
-    let context = context_lock.read();
-    let canonical = context.canonicalize(path);
-    *context.cwd.lock() = canonical;
-    Ok(0)
+    let fd = open(path, 0)?;
+    let mut stat = Stat::default();
+    let stat_res = file_op_mut_slice(syscall::number::SYS_FSTAT, fd, &mut stat);
+    let _ = close(fd);
+    stat_res?;
+    if stat.st_mode & (MODE_FILE | MODE_DIR) == MODE_DIR {
+        let contexts = context::contexts();
+        let context_lock = contexts.current().ok_or(Error::new(ESRCH))?;
+        let context = context_lock.read();
+        let canonical = context.canonicalize(path);
+        *context.cwd.lock() = canonical;
+        Ok(0)
+    } else {
+        Err(Error::new(ENOTDIR))
+    }
 }
 
 /// Get the current working directory
