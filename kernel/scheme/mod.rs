@@ -20,9 +20,11 @@ use self::event::EventScheme;
 use self::env::EnvScheme;
 use self::initfs::InitFsScheme;
 use self::irq::{IRQ_SCHEME_ID, IrqScheme};
+use self::null::NullScheme;
 use self::pipe::{PIPE_SCHEME_ID, PipeScheme};
 use self::root::{ROOT_SCHEME_ID, RootScheme};
 use self::sys::SysScheme;
+use self::zero::ZeroScheme;
 
 /// Debug scheme
 pub mod debug;
@@ -39,6 +41,9 @@ pub mod initfs;
 /// IRQ handling
 pub mod irq;
 
+/// Null scheme
+pub mod null;
+
 /// Anonymouse pipe
 pub mod pipe;
 
@@ -50,6 +55,9 @@ pub mod sys;
 
 /// Userspace schemes
 pub mod user;
+
+/// Zero scheme
+pub mod zero;
 
 /// Limit on number of schemes
 pub const SCHEME_MAX_SCHEMES: usize = 65536;
@@ -132,8 +140,10 @@ fn init_schemes() -> RwLock<SchemeList> {
     list.insert(Box::new(*b"env"), Arc::new(Box::new(EnvScheme::new()))).expect("failed to insert env scheme");
     list.insert(Box::new(*b"initfs"), Arc::new(Box::new(InitFsScheme::new()))).expect("failed to insert initfs scheme");
     IRQ_SCHEME_ID.store(list.insert(Box::new(*b"irq"), Arc::new(Box::new(IrqScheme))).expect("failed to insert irq scheme"), Ordering::SeqCst);
+    list.insert(Box::new(*b"null"), Arc::new(Box::new(NullScheme))).expect("failed to insert null scheme");
     PIPE_SCHEME_ID.store(list.insert(Box::new(*b"pipe"), Arc::new(Box::new(PipeScheme))).expect("failed to insert pipe scheme"), Ordering::SeqCst);
     list.insert(Box::new(*b"sys"), Arc::new(Box::new(SysScheme::new()))).expect("failed to insert sys scheme");
+    list.insert(Box::new(*b"zero"), Arc::new(Box::new(ZeroScheme))).expect("failed to insert zero scheme");
     RwLock::new(list)
 }
 
