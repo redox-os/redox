@@ -448,7 +448,6 @@ pub fn clone(flags: usize, stack_base: usize) -> Result<usize> {
 pub fn exec(path: &[u8], arg_ptrs: &[[usize; 2]]) -> Result<usize> {
     let entry;
     let mut sp = arch::USER_STACK_OFFSET + arch::USER_STACK_SIZE - 256;
-    let fs = arch::USER_STACK_OFFSET;
 
     {
         let mut args = Vec::new();
@@ -555,6 +554,18 @@ pub fn exec(path: &[u8], arg_ptrs: &[[usize; 2]]) -> Result<usize> {
 
                             context.image.push(memory.to_shared());
                         } else if segment.p_type == program_header::PT_TLS {
+                            let memory = context::memory::Memory::new(
+                                VirtualAddress::new(arch::USER_TCB_OFFSET),
+                                4096,
+                                entry::NO_EXECUTE | entry::WRITABLE | entry::USER_ACCESSIBLE,
+                                true,
+                                true
+                            );
+
+                            unsafe { *(arch::USER_TCB_OFFSET as *mut usize) = arch::USER_TLS_OFFSET + segment.p_memsz as usize; }
+
+                            context.image.push(memory.to_shared());
+
                             tls_option = Some((
                                 VirtualAddress::new(segment.p_vaddr as usize),
                                 segment.p_filesz as usize,
@@ -601,10 +612,6 @@ pub fn exec(path: &[u8], arg_ptrs: &[[usize; 2]]) -> Result<usize> {
                                     master.get() as *const u8,
                                     file_size);
                         }
-
-                        // Set TLS pointer
-                        //TODO: Do not use stack to store TLS pointer, use a TCB structure instead
-                        unsafe { *(arch::USER_STACK_OFFSET as *mut usize) = tls.mem.start_address().get() + size; }
 
                         context.tls = Some(tls);
                     }
@@ -672,7 +679,7 @@ pub fn exec(path: &[u8], arg_ptrs: &[[usize; 2]]) -> Result<usize> {
     }
 
     // Go to usermode
-    unsafe { usermode(entry, sp, fs); }
+    unsafe { usermode(entry, sp); }
 }
 
 pub fn exit(status: usize) -> ! {

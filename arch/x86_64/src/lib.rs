@@ -48,6 +48,9 @@ pub extern crate x86;
     /// Offset to user image
     pub const USER_OFFSET: usize = 0;
 
+    /// Offset to user TCB
+    pub const USER_TCB_OFFSET: usize = 0xB000_0000;
+
     /// Offset to user arguments
     pub const USER_ARG_OFFSET: usize = USER_OFFSET + PML4_SIZE/2;
 
@@ -118,8 +121,6 @@ macro_rules! interrupt {
                 push r9
                 push r10
                 push r11
-                rdfsbase rax
-                push rax
                 push fs
                 mov rax, 0x18
                 mov fs, ax"
@@ -130,8 +131,6 @@ macro_rules! interrupt {
 
             // Pop scratch registers and return
             asm!("pop fs
-                pop rax
-                wrfsbase rax
                 pop r11
                 pop r10
                 pop r9
@@ -184,8 +183,6 @@ macro_rules! interrupt_stack {
                 push r9
                 push r10
                 push r11
-                rdfsbase rax
-                push rax
                 push fs
                 mov rax, 0x18
                 mov fs, ax"
@@ -200,8 +197,6 @@ macro_rules! interrupt_stack {
 
             // Pop scratch registers and return
             asm!("pop fs
-                pop rax
-                wrfsbase rax
                 pop r11
                 pop r10
                 pop r9

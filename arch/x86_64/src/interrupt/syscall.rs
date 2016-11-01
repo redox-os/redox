@@ -24,8 +24,6 @@ pub unsafe extern fn syscall() {
     }
 
     asm!("push r15
-        rdfsbase r15
-        push r15
         push fs
         mov r15, 0x18
         mov fs, r15"
@@ -35,8 +33,6 @@ pub unsafe extern fn syscall() {
 
     // Interrupt return
     asm!("pop fs
-        pop r15
-        wrfsbase r15
         pop r15
         iretq"
         : : : : "intel", "volatile");
