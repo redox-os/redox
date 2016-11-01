@@ -441,7 +441,7 @@ $(BUILD)/filesystem.bin: \
 		filesystem/bin/smith \
 		filesystem/bin/tar
 	rm -rf $@ $(BUILD)/filesystem/
-	echo exit | cargo run --manifest-path schemes/redoxfs/Cargo.toml --bin redoxfs-utility $@ 128
+	echo exit | cargo run --manifest-path schemes/redoxfs/Cargo.toml --bin redoxfs-utility $@ 256
 	mkdir -p $(BUILD)/filesystem/
 	cargo run --manifest-path schemes/redoxfs/Cargo.toml --bin redoxfs-fuse $@ $(BUILD)/filesystem/ &
 	sleep 2
