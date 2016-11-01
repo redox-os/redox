@@ -25,6 +25,16 @@ pub const MEMORY_AREA_RESERVED: u32 = 2;
 /// Memory is used by ACPI, and can be reclaimed
 pub const MEMORY_AREA_ACPI: u32 = 3;
 
+/// A memory map area
+#[derive(Copy, Clone, Debug, Default)]
+#[repr(packed)]
+pub struct MemoryArea {
+    pub base_addr: u64,
+    pub length: u64,
+    pub _type: u32,
+    pub acpi: u32
+}
+
 #[derive(Clone)]
 pub struct MemoryAreaIter {
     _type: u32,
@@ -62,6 +72,9 @@ pub unsafe fn init(kernel_start: usize, kernel_end: usize) {
     // Copy memory map from bootloader location
     for (i, mut entry) in MEMORY_MAP.iter_mut().enumerate() {
         *entry = *(0x500 as *const MemoryArea).offset(i as isize);
+        if entry._type != MEMORY_AREA_NULL {
+            println!("{:?}", entry);
+        }
     }
 
     *ALLOCATOR.lock() = Some(AreaFrameAllocator::new(kernel_start, kernel_end, MemoryAreaIter::new(MEMORY_AREA_FREE)));
@@ -93,16 +106,6 @@ pub fn deallocate_frames(frame: Frame, count: usize) {
     } else {
         panic!("frame allocator not initialized");
     }
-}
-
-/// A memory map area
-#[derive(Copy, Clone, Debug, Default)]
-#[repr(packed)]
-pub struct MemoryArea {
-    pub base_addr: u64,
-    pub length: u64,
-    pub _type: u32,
-    pub acpi: u32
 }
 
 /// A frame, allocated by the frame allocator.
