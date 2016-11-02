@@ -1,12 +1,13 @@
-#![feature(arc_counts)]
+#![feature(rc_counts)]
 
 extern crate syscall;
 
+use std::cell::RefCell;
 use std::collections::{BTreeMap, VecDeque};
 use std::fs::File;
 use std::io::{Read, Write};
+use std::rc::{Rc, Weak};
 use std::{str, thread};
-use std::sync::{Arc, Weak, Mutex};
 
 use syscall::data::Packet;
 use syscall::error::{Error, Result, EBADF, EINVAL, ENOENT, EPIPE, EWOULDBLOCK};
@@ -99,6 +100,14 @@ impl SchemeMut for PtyScheme {
         Err(Error::new(EBADF))
     }
 
+    fn fevent(&mut self, id: usize, _flags: usize) -> Result<usize> {
+        if self.ptys.0.contains_key(&id) || self.ptys.1.contains_key(&id) {
+            Ok(id)
+        } else {
+            Err(Error::new(EBADF))
+        }
+    }
+
     fn fpath(&mut self, id: usize, buf: &mut [u8]) -> Result<usize> {
         let master_opt = self.ptys.0.get(&id).map(|pipe| pipe.clone());
         if let Some(pipe) = master_opt {
@@ -135,8 +144,8 @@ impl SchemeMut for PtyScheme {
 pub struct PtyMaster {
     id: usize,
     flags: usize,
-    read: Arc<Mutex<VecDeque<Vec<u8>>>>,
-    write: Arc<Mutex<VecDeque<u8>>>,
+    read: Rc<RefCell<VecDeque<Vec<u8>>>>,
+    write: Rc<RefCell<VecDeque<u8>>>,
 }
 
 impl PtyMaster {
@@ -144,8 +153,8 @@ impl PtyMaster {
         PtyMaster {
             id: id,
             flags: flags,
-            read: Arc::new(Mutex::new(VecDeque::new())),
-            write: Arc::new(Mutex::new(VecDeque::new())),
+            read: Rc::new(RefCell::new(VecDeque::new())),
+            write: Rc::new(RefCell::new(VecDeque::new())),
         }
     }
 
@@ -163,7 +172,7 @@ impl PtyMaster {
     }
 
     fn read(&self, buf: &mut [u8]) -> Result<usize> {
-        let mut read = self.read.lock().unwrap();
+        let mut read = self.read.borrow_mut();
 
         if let Some(packet) = read.pop_front() {
             let mut i = 0;
@@ -174,7 +183,7 @@ impl PtyMaster {
             }
 
             Ok(i)
-        } else if self.flags & O_NONBLOCK == O_NONBLOCK || Arc::weak_count(&self.read) == 0 {
+        } else if self.flags & O_NONBLOCK == O_NONBLOCK || Rc::weak_count(&self.read) == 0 {
             Ok(0)
         } else {
             Err(Error::new(EWOULDBLOCK))
@@ -182,7 +191,7 @@ impl PtyMaster {
     }
 
     fn write(&self, buf: &[u8]) -> Result<usize> {
-        let mut write = self.write.lock().unwrap();
+        let mut write = self.write.borrow_mut();
 
         let mut i = 0;
         while i < buf.len() {
@@ -199,8 +208,8 @@ impl PtyMaster {
 pub struct PtySlave {
     master_id: usize,
     flags: usize,
-    read: Weak<Mutex<VecDeque<u8>>>,
-    write: Weak<Mutex<VecDeque<Vec<u8>>>>,
+    read: Weak<RefCell<VecDeque<u8>>>,
+    write: Weak<RefCell<VecDeque<Vec<u8>>>>,
 }
 
 impl PtySlave {
@@ -208,8 +217,8 @@ impl PtySlave {
         PtySlave {
             master_id: master.id,
             flags: flags,
-            read: Arc::downgrade(&master.write),
-            write: Arc::downgrade(&master.read),
+            read: Rc::downgrade(&master.write),
+            write: Rc::downgrade(&master.read),
         }
     }
 
@@ -228,7 +237,7 @@ impl PtySlave {
 
     fn read(&self, buf: &mut [u8]) -> Result<usize> {
         if let Some(read_lock) = self.read.upgrade() {
-            let mut read = read_lock.lock().unwrap();
+            let mut read = read_lock.borrow_mut();
 
             let mut i = 0;
 
@@ -253,7 +262,7 @@ impl PtySlave {
             vec.push(0);
             vec.extend_from_slice(buf);
 
-            let mut write = write_lock.lock().unwrap();
+            let mut write = write_lock.borrow_mut();
             write.push_back(vec);
 
             Ok(buf.len())
@@ -267,7 +276,7 @@ impl PtySlave {
             let mut vec = Vec::new();
             vec.push(1);
 
-            let mut write = write_lock.lock().unwrap();
+            let mut write = write_lock.borrow_mut();
             write.push_back(vec);
 
             Ok(0)
@@ -305,6 +314,51 @@ fn main(){
                 } else {
                     let packet = todo.remove(i);
                     socket.write(&packet).expect("pty: failed to write responses to pty scheme");
+                }
+            }
+
+            for (id, master) in scheme.ptys.0.iter() {
+                let read = master.read.borrow();
+                if let Some(data) = read.front() {
+                    socket.write(&Packet {
+                        id: 0,
+                        pid: 0,
+                        uid: 0,
+                        gid: 0,
+                        a: syscall::number::SYS_FEVENT,
+                        b: *id,
+                        c: syscall::flag::EVENT_READ,
+                        d: data.len()
+                    }).expect("pty: failed to write event");
+                }
+            }
+
+            for (id, slave) in scheme.ptys.1.iter() {
+                if let Some(read_lock) = slave.read.upgrade() {
+                    let read = read_lock.borrow();
+                    if ! read.is_empty() {
+                        socket.write(&Packet {
+                            id: 0,
+                            pid: 0,
+                            uid: 0,
+                            gid: 0,
+                            a: syscall::number::SYS_FEVENT,
+                            b: *id,
+                            c: syscall::flag::EVENT_READ,
+                            d: read.len()
+                        }).expect("pty: failed to write event");
+                    }
+                } else {
+                    socket.write(&Packet {
+                        id: 0,
+                        pid: 0,
+                        uid: 0,
+                        gid: 0,
+                        a: syscall::number::SYS_FEVENT,
+                        b: *id,
+                        c: syscall::flag::EVENT_READ,
+                        d: 0
+                    }).expect("pty: failed to write event");
                 }
             }
         }
