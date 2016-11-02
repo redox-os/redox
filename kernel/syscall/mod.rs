@@ -29,6 +29,12 @@ pub mod time;
 /// Validate input
 pub mod validate;
 
+/// Execute a syscall.
+///
+/// In `syscall(sys_id, b, c, d, e, f, stack)`,
+///
+/// - `sys_id` identifies the system call (see `syscall::number::SYS_*`);
+/// - `b`, `c`, `d`, `d`, `f` are the *untyped* arguments of the syscall
 #[no_mangle]
 pub extern fn syscall(a: usize, b: usize, c: usize, d: usize, e: usize, f: usize, stack: usize) -> usize {
     #[inline(always)]
@@ -77,6 +83,10 @@ pub extern fn syscall(a: usize, b: usize, c: usize, d: usize, e: usize, f: usize
                 SYS_PHYSMAP => physmap(b, c, d),
                 SYS_PHYSUNMAP => physunmap(b),
                 SYS_VIRTTOPHYS => virttophys(b),
+                SYS_CAP_OPEN => cap_open(b as *const u8, c, d as *const u8, e),
+                SYS_CAP_DROP => cap_drop(b, c),
+                SYS_CAP_SEND => cap_send(b, c),
+                SYS_CAP_CHECK => cap_check(b, c as *mut *mut usize, d as *mut usize),
                 _ => Err(Error::new(ENOSYS))
             }
         }

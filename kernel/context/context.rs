@@ -82,7 +82,7 @@ pub struct Context {
     /// The capability might be clonable or sendable (i.e. possible to transfer it to another
     /// context). However, you cannot control the actual data. Only the scheme provider can modify
     /// the capability itself.
-    pub capabilities: Arc<Mutex<BTreeMap<Box<[u8]>, CapabilitySet>>>,
+    pub capabilities: Arc<Mutex<BTreeMap</*scheme*/Box<[u8]>, CapabilitySet>>>,
     /// The open files in the scheme
     pub files: Arc<Mutex<Vec<Option<File>>>>
 }

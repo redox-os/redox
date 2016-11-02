@@ -1061,3 +1061,94 @@ pub fn waitpid(pid: usize, status_ptr: usize, flags: usize) -> Result<usize> {
         }
     }
 }
+
+/// Syscall: open a capability associated to a scheme.
+///
+/// To succeed, this can be called either by the scheme itself (in which case the
+/// capability is created if it doesn't exist yet) or by a process that has
+/// previously received the capability (in which case a handle is given to this
+/// capability).
+///
+/// In case of success, returns a handle to the capability. Idempotent.
+pub fn cap_open(scheme: *const u8, scheme_len: usize, cap: *const u8, cap_len: usize) -> Result<usize> {
+    // FIXME: Is this the right way to send a [u8]? Should we somehow check that the pointer
+    // points to memory owned by the process.
+
+    if unimplemented!() { // FIXME: Access the table of capabilities of `context`.
+        // The current process already has a capability `scheme`, `cap`.
+        // FIXME: Return the existing handle.
+        unimplemented!()
+    } else if unimplemented!() { // FIXME: Determine if `context` implements `scheme`.
+        // The current process implements `scheme`.
+        // FIXME: Allocate a new handle, with a local refcount of 1 and a root refcount of 1.
+        // FIXME: Return this handle.
+        unimplemented!()
+    } else {
+        Err(Error::new(EACCES))
+    }
+}
+
+/// Syscall: drop a capability previously opened, in a process `P`
+/// and all the processes to which this capability was granted by `P`,
+/// recursively.
+///
+/// This can be called only on the current process OR a process to which
+/// the current process has granted the capability.
+///
+/// Note that each capability has a local refcount, which can be >1 if
+/// more than one process have issued the same capability to `P`. Calling
+/// `cap_drop` decreases the refcount by 1. If the refcount remains >= 1,
+/// the process keeps the ability to make use of the capability and other
+/// processes are not affected.
+///
+/// FIXME: Should there be a capability that gives a process the ability
+/// to remove capabilities from processes to which it has not issued the
+/// capability itself? If so, this might nicely generalize SYS_KILL.
+pub fn cap_drop(pid: usize, handle: usize) -> Result<usize> {
+    if unimplemented!() { // FIXME: Check that `pid` is either 0 or the pid of a process to which we have sent `handle`.
+        return Err(Error::new(EACCES))
+    }
+    // FIXME: Maintain a list (as a VecDeque?) `drop_list` of (pid, handle) to drop.
+        // FIXME: Initialize `drop_list` properly.
+    // FIXME: While `(pid, handle)` is non-empty.
+        // FIXME: Pop the first (pid, handle)
+        // FIXME: Decrease local refcount of `handle` in `pid`
+        // FIXME: If local capability refcount is 0
+            // FIXME: Remove capability from local table of capabilities
+            // FIXME: Take local list of processes to which capability was sent, add `(other_pid, other_handle)` to `drop_list`.
+            // FIXME: Decrease root capability refcount by 1.
+    if pid == 0 /*current process*/ {
+        return Ok(unimplemented!() /* local refcount */)
+    } else {
+        return Ok(0 /* opaque information */)
+    }
+}
+
+/// Syscall: send a capability to another process.
+pub fn cap_send(pid: usize, handle: usize) -> Result<usize> {
+    // FIXME: Check if `handle` is valid.
+    unimplemented!()
+    if pid == 0 /*current process*/ {
+        return Ok(0)
+    }
+    // FIXME: Find scheme, data, kind for `handle`.
+    let handle_2;
+    if unimplemented!() { // FIXME: Find out if `pid` already has capability `scheme`, `data`
+        unimplemented!()
+        // FIXME: If so, let's call it `handle_2`.
+        // FIXME: Increment `pid`'s local refcount for `handle_2`.
+        return Ok(0)
+    } else {
+        unimplemented!()
+        // FIXME: Otherwise, allocate a new handle `handle_2` for `scheme`, `data` in `pid`, with
+        // a local refcount of 1.
+        // FIXME: Increment root refcount of capability.
+    }
+    // FIXME: Store `(pid, handle, handle_2)` in list of processes to which capability was sent.
+    return Ok(0)
+}
+
+/// Syscall: get the capabilities shared with another process.
+pub fn cap_check(pid: usize, handles: *mut *mut usize, handles_len: *mut usize) -> Result<usize> {
+    unimplemented!()
+}
