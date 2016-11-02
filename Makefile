@@ -23,6 +23,8 @@ CARGOFLAGS=--target $(TARGET).json -- -C opt-level=s --cfg redox
 
 all: $(KBUILD)/harddrive.bin
 
+FORCE:
+
 clean:
 	cargo clean
 	cargo clean --manifest-path libstd/Cargo.toml
@@ -56,65 +58,17 @@ clean:
 	rm -rf initfs/bin
 	rm -rf filesystem/bin
 	rm -rf build
-#skipping doc-ion, doc-coreutils, and doc-redoxfs because they fail
+
 doc: \
 	doc-kernel \
-	doc-std \
-	doc-ahcid \
-	doc-e1000d \
-	doc-ps2d \
-	doc-pcid \
-	doc-rtl8168d \
-	doc-vesad \
-	doc-acid \
-	doc-init \
-	doc-coreutils \
-	doc-extrautils \
-	doc-netutils \
-	doc-orbutils \
-	doc-pkgutils \
-	doc-userutils \
-	doc-smith \
-	doc-ethernetd \
-	doc-example \
-	doc-ipd \
-	doc-orbital \
-	doc-ptyd \
-	doc-randd \
-	doc-tcpd \
-	doc-udpd
+	doc-std
 
 #FORCE to let cargo decide if docs need updating
-#all to make sure all dependencies are built
-doc-kernel: $(KBUILD)/libkernel.a all FORCE
+doc-kernel: $(KBUILD)/libkernel.a FORCE
 	$(KCARGO) doc --target $(KTARGET).json
-	mkdir -p build/doc
-	rm -rf build/doc/kernel
-	mv target/$(KTARGET)/doc build/doc/kernel
 
-doc-std: $(BUILD)/libstd.rlib all FORCE
+doc-std: $(BUILD)/libstd.rlib FORCE
 	$(CARGO) doc --target $(TARGET).json --manifest-path libstd/Cargo.toml
-	mkdir -p build/doc
-	rm -rf build/doc/std
-	mv libstd/target/$(TARGET)/doc build/doc/std
-
-doc-%: drivers/%/Cargo.toml all FORCE
-	$(CARGO) doc --target $(TARGET).json --manifest-path $<
-	mkdir -p build/doc
-	rm -rf build/doc/$*
-	mv drivers/$*/target/$(TARGET)/doc build/doc/$*
-
-doc-%: programs/%/Cargo.toml all FORCE
-	$(CARGO) doc --target $(TARGET).json --manifest-path $<
-	mkdir -p build/doc
-	rm -rf build/doc/$*
-	mv programs/$*/target/$(TARGET)/doc build/doc/$*
-
-doc-%: schemes/%/Cargo.toml all FORCE
-	$(CARGO) doc --target $(TARGET).json --manifest-path $<
-	mkdir -p build/doc
-	rm -rf build/doc/$*
-	mv schemes/$*/target/$(TARGET)/doc build/doc/$*
 
 update:
 	cargo update
@@ -146,8 +100,6 @@ update:
 	cargo update --manifest-path schemes/redoxfs/Cargo.toml
 	cargo update --manifest-path schemes/tcpd/Cargo.toml
 	cargo update --manifest-path schemes/udpd/Cargo.toml
-
-FORCE:
 
 # Emulation
 QEMU=SDL_VIDEO_X11_DGAMOUSE=0 qemu-system-$(ARCH)
