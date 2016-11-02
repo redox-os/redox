@@ -1,36 +1,39 @@
 #![feature(asm)]
+#![feature(rand)]
 
 extern crate syscall;
+extern crate raw_cpuid;
+extern crate rand;
 
 use std::fs::File;
 use std::io::{Read, Write};
 use std::thread;
 
-use syscall::{Packet, Result, Scheme};
+use rand::chacha::ChaChaRng;
+use rand::Rng;
+
+use raw_cpuid::CpuId;
+
+use syscall::{Packet, Result, SchemeMut};
 
 //TODO: Use a CSPRNG, allow write of entropy
-struct RandScheme;
+struct RandScheme {
+   prng: ChaChaRng
+}
 
-impl Scheme for RandScheme {
-    fn open(&self, _path: &[u8], _flags: usize, _uid: u32, _gid: u32) -> Result<usize> {
+impl SchemeMut for RandScheme {
+    fn open(&mut self, _path: &[u8], _flags: usize, _uid: u32, _gid: u32) -> Result<usize> {
         Ok(0)
     }
 
-    fn dup(&self, file: usize, _buf: &[u8]) -> Result<usize> {
+    fn dup(&mut self, file: usize, _buf: &[u8]) -> Result<usize> {
         Ok(file)
     }
 
-    fn read(&self, _file: usize, buf: &mut [u8]) -> Result<usize> {
+    fn read(&mut self, _file: usize, buf: &mut [u8]) -> Result<usize> {
         let mut i = 0;
         for chunk in buf.chunks_mut(8) {
-            let mut rand: u64;
-            unsafe {
-                asm!("rdrand rax"
-                    : "={rax}"(rand)
-                    :
-                    :
-                    : "intel", "volatile");
-            }
+            let mut rand = self.prng.next_u64();
             for b in chunk.iter_mut() {
                 *b = rand as u8;
                 rand = rand >> 8;
@@ -40,15 +43,28 @@ impl Scheme for RandScheme {
         Ok(i)
     }
 
-    fn close(&self, _file: usize) -> Result<usize> {
+    fn close(&mut self, _file: usize) -> Result<usize> {
         Ok(0)
     }
 }
 
 fn main(){
+    let mut has_rdrand = CpuId::new().get_feature_info().unwrap().has_rdrand();
     thread::spawn(move || {
         let mut socket = File::create(":rand").expect("rand: failed to create rand scheme");
-        let scheme = RandScheme;
+        let mut rng = ChaChaRng::new_unseeded();
+        if has_rdrand {
+            let mut rand: u64;
+            unsafe {
+                asm!("rdrand rax"
+                    : "={rax}"(rand)
+                    :
+                    :
+                    : "intel", "volatile");
+            }
+            rng.set_counter(0, rand);
+        }
+        let mut scheme = RandScheme{prng: rng};
         loop {
             let mut packet = Packet::default();
             socket.read(&mut packet).expect("rand: failed to read events from rand scheme");
