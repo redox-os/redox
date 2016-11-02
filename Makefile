@@ -443,8 +443,10 @@ $(BUILD)/filesystem.bin: \
 	rm -rf $@ $(BUILD)/filesystem/
 	echo exit | cargo run --manifest-path schemes/redoxfs/Cargo.toml --bin redoxfs-utility $@ 256
 	mkdir -p $(BUILD)/filesystem/
-	cargo run --manifest-path schemes/redoxfs/Cargo.toml --bin redoxfs-fuse $@ $(BUILD)/filesystem/ &
+	cargo build --manifest-path schemes/redoxfs/Cargo.toml --bin redoxfs-fuse
+	schemes/redoxfs/target/debug/redoxfs-fuse $@ $(BUILD)/filesystem/ &
 	sleep 2
+	pgrep redoxfs-fuse
 	cp -RL filesystem/* $(BUILD)/filesystem/
 	chown -R 0:0 $(BUILD)/filesystem/
 	chown -R 1000:1000 $(BUILD)/filesystem/home/user/
@@ -458,15 +460,17 @@ $(BUILD)/filesystem.bin: \
 	-$(FUMOUNT) $(BUILD)/filesystem/
 	rm -rf $(BUILD)/filesystem/
 
-mount: FORCE
-	mkdir -p $(KBUILD)/harddrive/
-	cargo run --manifest-path schemes/redoxfs/Cargo.toml --bin redoxfs-fuse $(KBUILD)/harddrive.bin $(KBUILD)/harddrive/ &
+mount: $(BUILD)/filesystem.bin FORCE
+	mkdir -p $(BUILD)/filesystem/
+	cargo build --manifest-path schemes/redoxfs/Cargo.toml --bin redoxfs-fuse
+	schemes/redoxfs/target/debug/redoxfs-fuse $< $(BUILD)/filesystem/ &
 	sleep 2
+	pgrep redoxfs-fuse
 
 unmount: FORCE
 	sync
-	-$(FUMOUNT) $(KBUILD)/harddrive/
-	rm -rf $(KBUILD)/harddrive/
+	-$(FUMOUNT) $(BUILD)/filesystem/
+	rm -rf $(BUILD)/filesystem/
 
 wireshark: FORCE
 	wireshark $(KBUILD)/network.pcap
