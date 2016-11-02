@@ -1,1 +1,1 @@
-GIT=https://github.com/redox-os/games-for-redox.git
+GIT=https://github.com/redox-os/games.git
