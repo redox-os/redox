@@ -8,7 +8,19 @@ use syscall::data::Event;
 
 type EventList = Weak<WaitQueue<Event>>;
 
-type Registry = BTreeMap<(usize, usize), BTreeMap<(usize, usize), EventList>>;
+#[derive(PartialEq, Eq, PartialOrd, Ord)]
+pub struct RegKey {
+    scheme_id: usize,
+    event_id: usize,
+}
+
+#[derive(PartialEq, Eq, PartialOrd, Ord)]
+pub struct ProcessKey {
+    context_id: usize,
+    fd: usize,
+}
+
+type Registry = BTreeMap<RegKey, BTreeMap<ProcessKey, EventList>>;
 
 static REGISTRY: Once<RwLock<Registry>> = Once::new();
 
@@ -36,13 +48,20 @@ pub fn register(fd: usize, scheme_id: usize, event_id: usize) -> bool {
     };
 
     let mut registry = registry_mut();
-    let entry = registry.entry((scheme_id, event_id)).or_insert_with(|| {
+    let entry = registry.entry(RegKey {
+        scheme_id: scheme_id,
+        event_id: event_id
+    }).or_insert_with(|| {
         BTreeMap::new()
     });
-    if entry.contains_key(&(context_id, fd)) {
+    let process_key = ProcessKey {
+        context_id: context_id,
+        fd: fd
+    };
+    if entry.contains_key(&process_key) {
         false
     } else {
-        entry.insert((context_id, fd), events);
+        entry.insert(process_key, events);
         true
     }
 }
@@ -51,8 +70,16 @@ pub fn unregister(fd: usize, scheme_id: usize, event_id: usize) {
     let mut registry = registry_mut();
 
     let mut remove = false;
-    if let Some(entry) = registry.get_mut(&(scheme_id, event_id)) {
-        entry.remove(&(context::context_id(), fd));
+    let key = RegKey {
+        scheme_id: scheme_id,
+        event_id: event_id
+    };
+    if let Some(entry) = registry.get_mut(&key) {
+        let process_key = ProcessKey {
+            context_id: context::context_id(),
+            fd: fd,
+        };
+        entry.remove(&process_key);
 
         if entry.is_empty() {
             remove = true;
@@ -60,17 +87,21 @@ pub fn unregister(fd: usize, scheme_id: usize, event_id: usize) {
     }
 
     if remove {
-        registry.remove(&(scheme_id, event_id));
+        registry.remove(&key);
     }
 }
 
 pub fn trigger(scheme_id: usize, event_id: usize, flags: usize, data: usize) {
     let registry = registry();
-    if let Some(event_lists) = registry.get(&(scheme_id, event_id)) {
+    let key = RegKey {
+        scheme_id: scheme_id,
+        event_id: event_id
+    };
+    if let Some(event_lists) = registry.get(&key) {
         for entry in event_lists.iter() {
             if let Some(event_list) = entry.1.upgrade() {
                 event_list.send(Event {
-                    id: (entry.0).1,
+                    id: (entry.0).context_id,
                     flags: flags,
                     data: data
                 });
