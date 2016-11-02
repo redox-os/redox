@@ -9,4 +9,5 @@ dhcpd -b
 httpd
 getty display:2
 getty display:3
+stdio debug:
 orbital display:4
