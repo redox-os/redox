@@ -53,6 +53,7 @@ impl SchemeMut for PtyScheme {
     }
 
     fn dup(&mut self, id: usize, _buf: &[u8]) -> Result<usize> {
+        /* TODO CLOEXEC - Master cannot be cloned
         let master_opt = self.ptys.0.get(&id).map(|pipe| pipe.clone());
         if let Some(pipe) = master_opt {
             let pipe_id = self.next_id;
@@ -60,6 +61,7 @@ impl SchemeMut for PtyScheme {
             self.ptys.0.insert(pipe_id, pipe);
             return Ok(pipe_id);
         }
+        */
 
         let slave_opt = self.ptys.1.get(&id).map(|pipe| pipe.clone());
         if let Some(pipe) = slave_opt {
@@ -329,6 +331,17 @@ fn main(){
                         b: *id,
                         c: syscall::flag::EVENT_READ,
                         d: data.len()
+                    }).expect("pty: failed to write event");
+                } else if Rc::weak_count(&master.read) == 0 {
+                    socket.write(&Packet {
+                        id: 0,
+                        pid: 0,
+                        uid: 0,
+                        gid: 0,
+                        a: syscall::number::SYS_FEVENT,
+                        b: *id,
+                        c: syscall::flag::EVENT_READ,
+                        d: 0
                     }).expect("pty: failed to write event");
                 }
             }
