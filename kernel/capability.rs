@@ -1,7 +1,12 @@
 //! Implementation of capabilities.
 //!
-//! Capabilities are the primitive Redox uses for privilege control. A capability is nothing but a
-//! piece of data, which can only be modified by certain processes.
+//! Capabilities are the primitive Redox uses for privilege control.
+//!
+//! A process that _has_ a capability, can make use of some features. A
+//! process that doesn't have a capability cannot. Note that features can
+//! be implemented by the kernel, but can just as well be implemented by
+//! any userspace process. Indeed, any process can dynamically define new
+//! capabilities and decide to grant them to other processes.
 
 use alloc::boxed::Box;
 use collections::BTreeMap;
@@ -15,13 +20,23 @@ use collections::BTreeMap;
 ///
 /// Every capability is said to have a "kind", which defines how it can be passed between processes
 /// or contexts. If the kind of capability X "implies" (i.e. is stronger or equal to) the kind of
-/// capability Y, then Y is said to be a subcapability of Y.
+/// capability Y, then Y is said to be a subcapability of X.
 pub struct Capability {
     /// The inner data.
-    data: Box<[u8]>,
-    /// The capability kind.
     ///
-    /// This defines its copy/send semantics.
+    /// Interpretation of this data is left to the scheme that defined it.
+    ///
+    /// For instance, a scheme `fs` could distribute a capability `+rwx/some/file`,
+    /// a capability `+rw/some/other/file`, etc. to selectively allow processes to
+    /// access individual files or directory.
+    ///
+    /// When a process `P` decides to perform an operation on `fs:some/path`, the
+    /// implementation of `fs` can ask the kernel for the list of `fs` capabilities
+    /// owned by `P`. Based on this list, the implementation of `fs` will decide whether
+    /// to let `P` perform this operation.
+    data: Box<[u8]>,
+
+    /// Definition of the dynamic copy/send semantics of this capability.
     kind: Kind,
 }
 
@@ -44,6 +59,7 @@ impl Capability {
     pub fn set_data(&mut self, data: Box<[u8]>) {
         self.data = data;
     }
+    // FIXME: Why would we need to modify the capability data at all?
 }
 
 /// A capability kind.
@@ -60,7 +76,8 @@ enum Kind {
     /// An inheritable capability.
     ///
     /// This means that I can pass it to child processes, but not arbitrary proceses. Kind of like
-    /// how I can sell heroin in Somalia to my own children, but not other people's children.
+    /// how Roman Law allows fathers to kill or maim their own children but not other people's
+    /// children.
     Inherit = 1,
     /// A sendable capability.
     ///
@@ -95,7 +112,7 @@ impl CapabilitySet {
     pub fn subset_of(&self, other: &CapabilitySet) -> bool {
         // Iterate over the map of data to kinds and searching .
         for (data, kind) in &other.capabilities {
-            if self.contains_imp(data, *kind) {
+            if !self.contains_imp(data, *kind) {
                 // The lhs didn't contain the element, hence it cannot be a subset.
                 return false;
             }
