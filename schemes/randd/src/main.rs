@@ -49,12 +49,16 @@ impl SchemeMut for RandScheme {
 }
 
 fn main(){
-    let mut has_rdrand = CpuId::new().get_feature_info().unwrap().has_rdrand();
+    let has_rdrand = CpuId::new().get_feature_info().unwrap().has_rdrand();
+
     thread::spawn(move || {
         let mut socket = File::create(":rand").expect("rand: failed to create rand scheme");
+
         let mut rng = ChaChaRng::new_unseeded();
+
         if has_rdrand {
-            let mut rand: u64;
+            println!("rand: seeding with rdrand");
+            let rand: u64;
             unsafe {
                 asm!("rdrand rax"
                     : "={rax}"(rand)
@@ -63,7 +67,10 @@ fn main(){
                     : "intel", "volatile");
             }
             rng.set_counter(0, rand);
+        } else {
+            println!("rand: unseeded");
         }
+
         let mut scheme = RandScheme{prng: rng};
         loop {
             let mut packet = Packet::default();
