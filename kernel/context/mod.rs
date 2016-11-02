@@ -26,7 +26,7 @@ pub mod file;
 pub mod memory;
 
 /// Limit on number of contexts
-pub const CONTEXT_MAX_CONTEXTS: usize = 65536;
+pub const CONTEXT_MAX_CONTEXTS: usize = usize::max_value() - 1;
 
 /// Maximum context files
 pub const CONTEXT_MAX_FILES: usize = 65536;
