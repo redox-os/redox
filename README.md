@@ -37,39 +37,39 @@ Please make sure you use the **latest nightly** of `rustc` before building (for 
 
 The ecosystem and software Redox OS provides is listed below.
 
-| Name (lexiographic order)                                 | Maintainer
-|-----------------------------------------------------------|---------------------------
-| [Ion (shell)](/redox-os/ion)                              | [**@skylerberg**](/skylerberg) & [**@jackpot51**](/jackpot51)
-| [RANSID](/redox-os/ransid)                                | [**@jackpot51**](/jackpot51)
-| [Sodium (editor)](/redox-os/sodium)                       | [**@ticki**](/ticki)
-| [Standard library](/redox-os/libstd)                      | [**@jackpot51**](/jackpot51)
-| [TFS (filesystem)](/ticki/tfs)                            | [**@ticki**](/ticki)
-| [The Redox book](/redox-os/book)                          | [**@ticki**](/ticki)
-| [The old kernel](/redox-os/old)                           | abandoned
-| [ZFS](/redox-os/zfs)                                      | abandoned, superseded by TFS
-| [acid tests](/redox-os/acid)                              | [**@jackpot51**](/jackpot51) (co.: [**@ticki**](/ticki), [**@nilset](/nilset))
-| [binutils](/redox-os/binutils)                            | [**@ticki**](/ticki)
-| [bots (other internal bots)](/redox-os/bots)              | [**@ticki**](/ticki)
-| [cookbook](/redox-os/cookbook)                            | [**@jackpot51**](/jackpot51)
-| [coreutils](/redox-os/coreutils)                          | [**@ticki**](/ticki) (co.: [**@stratact**](/stratact))
-| [extrautils](/redox-os/extrautils)                        | [**@ticki**](/ticki)
-| [games](/redox-os/games)                                  | [**@ticki**](/ticki)
-| [kernel](/redox-os/kernel)                                | [**@jackpot51**](/jackpot51)
-| [libextra](/redox-os/libextra)                            | [**@ticki**](/ticki)
-| [libpager](/redox-os/libpager)                            | [**@ticki**](/ticki)
-| [magnet (future package manager)](/redox-os/magnet)       | [**@ticki**](/ticki)
-| [netutils](/redox-os/netutils)                            | [**@jackpot51**](/jackpot51)
-| [orbclient](/redox-os/orbclient)                          | [**@jackpot51**](/jackpot51)
-| [orbdata](/redox-os/orbdata)                              | [**@jackpot51**](/jackpot51)
-| [orbital](/redox-os/orbital)                              | [**@jackpot51**](/jackpot51)
-| [orbtk](/redox-os/orbtk)                                  | [**@stratact**](/stratact)
-| [orbutils](/redox-os/orbutils)                            | [**@jackpot51**](/jackpot51)
-| [pkgutils (current package manager)](/redox-os/pkgutils)  | [**@jackpot51**](/jackpot51)
-| [playbot (internal REPL bot)](/redox-os/platbot)          | [**@ticki**](/ticki)
-| [ralloc](/redox-os/ralloc)                                | [**@ticki**](/ticki)
-| [redoxfs (old filesystem)](/redox-os/redoxfs)             | [**@jackpot51**](/jackpot51)
-| [syscall](/redox-os/syscall)                              | [**@jackpot51**](/jackpot51)
-| [userutils](/redox-os/userutils)                          | [**@jackpot51**](/jackpot51)
+| Name (lexiographic order)                                                   | Maintainer
+|-----------------------------------------------------------------------------|---------------------------
+| [Ion (shell)](https://github.com/redox-os/ion)                              | [**@skylerberg**](https://github.com/skylerberg) & [**@jackpot51**](https://github.com/jackpot51)
+| [RANSID](https://github.com/redox-os/ransid)                                | [**@jackpot51**](https://github.com/jackpot51)
+| [Sodium (editor)](https://github.com/redox-os/sodium)                       | [**@ticki**](https://github.com/ticki)
+| [Standard library](https://github.com/redox-os/libstd)                      | [**@jackpot51**](https://github.com/jackpot51)
+| [TFS (filesystem)](https://github.com/ticki/tfs)                            | [**@ticki**](https://github.com/ticki)
+| [The Redox book](https://github.com/redox-os/book)                          | [**@ticki**](https://github.com/ticki)
+| [The old kernel](https://github.com/redox-os/old)                           | abandoned
+| [ZFS](https://github.com/redox-os/zfs)                                      | abandoned, superseded by TFS
+| [acid tests](https://github.com/redox-os/acid)                              | [**@jackpot51**](https://github.com/jackpot51) (co.: [**@ticki**](https://github.com/ticki), [**@nilset](https://github.com/nilset))
+| [binutils](https://github.com/redox-os/binutils)                            | [**@ticki**](https://github.com/ticki)
+| [bots (other internal bots)](https://github.com/redox-os/bots)              | [**@ticki**](https://github.com/ticki)
+| [cookbook](https://github.com/redox-os/cookbook)                            | [**@jackpot51**](https://github.com/jackpot51)
+| [coreutils](https://github.com/redox-os/coreutils)                          | [**@ticki**](https://github.com/ticki) (co.: [**@stratact**](https://github.com/stratact))
+| [extrautils](https://github.com/redox-os/extrautils)                        | [**@ticki**](https://github.com/ticki)
+| [games](https://github.com/redox-os/games)                                  | [**@ticki**](https://github.com/ticki)
+| [kernel](https://github.com/redox-os/kernel)                                | [**@jackpot51**](https://github.com/jackpot51)
+| [libextra](https://github.com/redox-os/libextra)                            | [**@ticki**](https://github.com/ticki)
+| [libpager](https://github.com/redox-os/libpager)                            | [**@ticki**](https://github.com/ticki)
+| [magnet (future package manager)](https://github.com/redox-os/magnet)       | [**@ticki**](https://github.com/ticki)
+| [netutils](https://github.com/redox-os/netutils)                            | [**@jackpot51**](https://github.com/jackpot51)
+| [orbclient](https://github.com/redox-os/orbclient)                          | [**@jackpot51**](https://github.com/jackpot51)
+| [orbdata](https://github.com/redox-os/orbdata)                              | [**@jackpot51**](https://github.com/jackpot51)
+| [orbital](https://github.com/redox-os/orbital)                              | [**@jackpot51**](https://github.com/jackpot51)
+| [orbtk](https://github.com/redox-os/orbtk)                                  | [**@stratact**](https://github.com/stratact)
+| [orbutils](https://github.com/redox-os/orbutils)                            | [**@jackpot51**](https://github.com/jackpot51)
+| [pkgutils (current package manager)](https://github.com/redox-os/pkgutils)  | [**@jackpot51**](https://github.com/jackpot51)
+| [playbot (internal REPL bot)](https://github.com/redox-os/platbot)          | [**@ticki**](https://github.com/ticki)
+| [ralloc](https://github.com/redox-os/ralloc)                                | [**@ticki**](https://github.com/ticki)
+| [redoxfs (old filesystem)](https://github.com/redox-os/redoxfs)             | [**@jackpot51**](https://github.com/jackpot51)
+| [syscall](https://github.com/redox-os/syscall)                              | [**@jackpot51**](https://github.com/jackpot51)
+| [userutils](https://github.com/redox-os/userutils)                          | [**@jackpot51**](https://github.com/jackpot51)
 
 ## <a name="compile-help"> Help! Redox won't compile! </a>
 
