@@ -454,7 +454,7 @@ $(BUILD)/filesystem.bin: \
 	-$(FUMOUNT) $(BUILD)/filesystem/
 	rm -rf $(BUILD)/filesystem/
 
-mount: $(BUILD)/filesystem.bin FORCE
+mount: FORCE
 	mkdir -p $(BUILD)/filesystem/
 	cargo build --manifest-path schemes/redoxfs/Cargo.toml --bin redoxfs-fuse --release
 	schemes/redoxfs/target/release/redoxfs-fuse $< $(BUILD)/filesystem/ &
