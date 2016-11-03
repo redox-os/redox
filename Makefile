@@ -4,10 +4,10 @@ ARCH?=x86_64
 KTARGET=$(ARCH)-unknown-none
 KBUILD=build/kernel
 KRUSTC=./krustc.sh
-KRUSTCFLAGS=--target $(KTARGET).json -C opt-level=s -C soft-float
+KRUSTCFLAGS=--target $(KTARGET).json -C opt-level=2 -C debuginfo=0 -C soft-float
 KRUSTDOC=./krustdoc.sh
 KCARGO=RUSTC="$(KRUSTC)" RUSTDOC="$(KRUSTDOC)" cargo
-KCARGOFLAGS=--target $(KTARGET).json -- -C opt-level=s -C soft-float
+KCARGOFLAGS=--target $(KTARGET).json --release -- -C soft-float
 
 # Userspace variables
 TARGET=$(ARCH)-unknown-redox
