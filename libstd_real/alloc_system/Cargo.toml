@@ -9,4 +9,4 @@ default-features = false
 features = ["allocator"]
 
 [replace]
-"libc:0.2.17" = { git = "https://github.com/redox-os/liblibc.git", branch = "new_kernel" }
+"libc:0.2.17" = { git = "https://github.com/redox-os/liblibc.git", branch = "redox" }
