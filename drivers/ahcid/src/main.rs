@@ -45,7 +45,9 @@ fn main() {
             let scheme = DiskScheme::new(ahci::disks(address));
             loop {
                 let mut event = Event::default();
-                event_file.read(&mut event).expect("ahcid: failed to read event file");
+                if event_file.read(&mut event).expect("ahcid: failed to read event file") == 0 {
+                    break;
+                }
                 if event.id == socket_fd {
                     loop {
                         let mut packet = Packet::default();

@@ -101,7 +101,7 @@ pub fn trigger(scheme_id: usize, event_id: usize, flags: usize, data: usize) {
         for entry in event_lists.iter() {
             if let Some(event_list) = entry.1.upgrade() {
                 event_list.send(Event {
-                    id: (entry.0).context_id,
+                    id: (entry.0).fd,
                     flags: flags,
                     data: data
                 });
