@@ -360,6 +360,7 @@ coreutils: \
 	filesystem/bin/rm \
 	filesystem/bin/seq \
 	filesystem/bin/sleep \
+	filesystem/bin/sort \
 	filesystem/bin/tail \
 	filesystem/bin/time \
 	filesystem/bin/touch \
