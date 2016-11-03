@@ -457,7 +457,7 @@ $(BUILD)/filesystem.bin: \
 mount: FORCE
 	mkdir -p $(BUILD)/filesystem/
 	cargo build --manifest-path schemes/redoxfs/Cargo.toml --bin redoxfs-fuse --release
-	schemes/redoxfs/target/release/redoxfs-fuse $< $(BUILD)/filesystem/ &
+	schemes/redoxfs/target/release/redoxfs-fuse $(KBUILD)/harddrive.bin $(BUILD)/filesystem/ &
 	sleep 2
 	pgrep redoxfs-fuse
 
