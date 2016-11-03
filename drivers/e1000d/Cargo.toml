@@ -8,4 +8,4 @@ dma = { path = "../../crates/dma/" }
 event = { path = "../../crates/event/" }
 io = { path = "../../crates/io/" }
 netutils = { path = "../../programs/netutils/" }
-syscall = { path = "../../syscall/" }
+redox_syscall = { path = "../../syscall/" }

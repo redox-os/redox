@@ -1,7 +1,8 @@
-use alloc::arc::Weak;
+use alloc::arc::{Arc, Weak};
+use collections::BTreeMap;
 use core::sync::atomic::{AtomicUsize, AtomicU64, Ordering};
 use core::{mem, slice, usize};
-use spin::RwLock;
+use spin::{Mutex, RwLock};
 
 use arch;
 use arch::paging::{InactivePageTable, Page, VirtualAddress, entry};
@@ -23,6 +24,7 @@ pub struct UserInner {
     next_id: AtomicU64,
     context: Weak<RwLock<Context>>,
     todo: WaitQueue<Packet>,
+    fmap: Mutex<BTreeMap<u64, (Weak<RwLock<Context>>, usize)>>,
     done: WaitMap<u64, usize>
 }
 
@@ -35,6 +37,7 @@ impl UserInner {
             next_id: AtomicU64::new(1),
             context: context,
             todo: WaitQueue::new(),
+            fmap: Mutex::new(BTreeMap::new()),
             done: WaitMap::new()
         }
     }
@@ -47,10 +50,8 @@ impl UserInner {
             (context.id, context.euid, context.egid)
         };
 
-        let id = self.next_id.fetch_add(1, Ordering::SeqCst);
-
-        let packet = Packet {
-            id: id,
+        self.call_inner(Packet {
+            id: self.next_id.fetch_add(1, Ordering::SeqCst),
             pid: pid,
             uid: uid,
             gid: gid,
@@ -58,7 +59,11 @@ impl UserInner {
             b: b,
             c: c,
             d: d
-        };
+        })
+    }
+
+    fn call_inner(&self, packet: Packet) -> Result<usize> {
+        let id = packet.id;
 
         let len = self.todo.send(packet);
         context::event::trigger(ROOT_SCHEME_ID.load(Ordering::SeqCst), self.handle_id, EVENT_READ, mem::size_of::<Packet>() * len);
@@ -67,18 +72,18 @@ impl UserInner {
     }
 
     pub fn capture(&self, buf: &[u8]) -> Result<usize> {
-        self.capture_inner(buf.as_ptr() as usize, buf.len(), false)
+        UserInner::capture_inner(&self.context, buf.as_ptr() as usize, buf.len(), false)
     }
 
     pub fn capture_mut(&self, buf: &mut [u8]) -> Result<usize> {
-        self.capture_inner(buf.as_mut_ptr() as usize, buf.len(), true)
+        UserInner::capture_inner(&self.context, buf.as_mut_ptr() as usize, buf.len(), true)
     }
 
-    fn capture_inner(&self, address: usize, size: usize, writable: bool) -> Result<usize> {
+    fn capture_inner(context_weak: &Weak<RwLock<Context>>, address: usize, size: usize, writable: bool) -> Result<usize> {
         if size == 0 {
             Ok(0)
         } else {
-            let context_lock = self.context.upgrade().ok_or(Error::new(ESRCH))?;
+            let context_lock = context_weak.upgrade().ok_or(Error::new(ESRCH))?;
             let context = context_lock.read();
 
             let mut grants = context.grants.lock();
@@ -165,13 +170,19 @@ impl UserInner {
         let len = buf.len()/packet_size;
         let mut i = 0;
         while i < len {
-            let packet = unsafe { *(buf.as_ptr() as *const Packet).offset(i as isize) };
+            let mut packet = unsafe { *(buf.as_ptr() as *const Packet).offset(i as isize) };
             if packet.id == 0 {
                 match packet.a {
                     SYS_FEVENT => context::event::trigger(self.scheme_id.load(Ordering::SeqCst), packet.b, packet.c, packet.d),
                     _ => println!("Unknown scheme -> kernel message {}", packet.a)
                 }
             } else {
+                if let Some((context_weak, size)) = self.fmap.lock().remove(&packet.id) {
+                    if let Ok(address) = Error::demux(packet.a) {
+                        packet.a = Error::mux(UserInner::capture_inner(&context_weak, address, size, true));
+                    }
+                }
+
                 self.done.send(packet.id, packet.a);
             }
             i += 1;
@@ -267,6 +278,32 @@ impl Scheme for UserScheme {
     fn fevent(&self, file: usize, flags: usize) -> Result<usize> {
         let inner = self.inner.upgrade().ok_or(Error::new(ENODEV))?;
         inner.call(SYS_FEVENT, file, flags, 0)
+    }
+
+    fn fmap(&self, file: usize, offset: usize, size: usize) -> Result<usize> {
+        let inner = self.inner.upgrade().ok_or(Error::new(ENODEV))?;
+
+        let (pid, uid, gid, context_lock) = {
+            let contexts = context::contexts();
+            let context_lock = contexts.current().ok_or(Error::new(ESRCH))?;
+            let context = context_lock.read();
+            (context.id, context.euid, context.egid, Arc::downgrade(&context_lock))
+        };
+
+        let id = inner.next_id.fetch_add(1, Ordering::SeqCst);
+
+        inner.fmap.lock().insert(id, (context_lock, size));
+
+        inner.call_inner(Packet {
+            id: id,
+            pid: pid,
+            uid: uid,
+            gid: gid,
+            a: SYS_FMAP,
+            b: file,
+            c: offset,
+            d: size
+        })
     }
 
     fn fpath(&self, file: usize, buf: &mut [u8]) -> Result<usize> {

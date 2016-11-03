@@ -41,6 +41,7 @@ pub extern fn syscall(a: usize, b: usize, c: usize, d: usize, e: usize, f: usize
                     SYS_CLOSE => close(b),
                     SYS_DUP => dup(b, validate_slice(c as *const u8, d)?),
                     SYS_FEVENT => fevent(b, c),
+                    SYS_FUNMAP => funmap(b),
                     _ => file_op(a, b, c, d)
                 }
             },

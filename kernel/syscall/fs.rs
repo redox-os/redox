@@ -293,3 +293,27 @@ pub fn fevent(fd: usize, flags: usize) -> Result<usize> {
     context::event::register(fd, file.scheme, event_id);
     Ok(0)
 }
+
+pub fn funmap(virtual_address: usize) -> Result<usize> {
+    if virtual_address == 0 {
+        Ok(0)
+    } else {
+        let contexts = context::contexts();
+        let context_lock = contexts.current().ok_or(Error::new(ESRCH))?;
+        let context = context_lock.read();
+
+        let mut grants = context.grants.lock();
+
+        for i in 0 .. grants.len() {
+            let start = grants[i].start_address().get();
+            let end = start + grants[i].size();
+            if virtual_address >= start && virtual_address < end {
+                grants.remove(i).unmap();
+
+                return Ok(0);
+            }
+        }
+
+        Err(Error::new(EFAULT))
+    }
+}

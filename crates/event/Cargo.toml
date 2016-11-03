@@ -2,5 +2,5 @@
 name = "event"
 version = "0.1.0"
 
-[dependencies.syscall]
-path = "../../syscall/"
+[dependencies]
+redox_syscall = { path = "../../syscall/" }

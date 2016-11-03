@@ -4,4 +4,4 @@ version = "0.0.0"
 authors = ["Jeremy Soller <jackpot51@gmail.com>"]
 
 [dependencies]
-syscall = { path = "../../syscall/" }
+redox_syscall = { path = "../../syscall/" }

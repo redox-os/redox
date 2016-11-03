@@ -367,11 +367,12 @@ pub fn clone(flags: usize, stack_base: usize) -> Result<usize> {
                     context.heap = Some(heap_shared);
                 }
 
+                // Copy grant mapping
                 if ! grants.lock().is_empty() {
-                    let frame = active_table.p4()[2].pointed_frame().expect("user heap not mapped");
+                    let frame = active_table.p4()[2].pointed_frame().expect("user grants not mapped");
                     let flags = active_table.p4()[2].flags();
                     active_table.with(&mut new_table, &mut temporary_page, |mapper| {
-                        mapper.p4_mut()[1].set(frame, flags);
+                        mapper.p4_mut()[2].set(frame, flags);
                     });
                 }
                 context.grants = grants;

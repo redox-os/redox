@@ -45,6 +45,14 @@ impl Screen for GraphicScreen {
         Ok(0)
     }
 
+    fn map(&self, offset: usize, size: usize) -> Result<usize> {
+        if offset + size <= self.display.offscreen.len() * 4 {
+            Ok(self.display.offscreen.as_ptr() as usize + offset)
+        } else {
+            Err(Error::new(EINVAL))
+        }
+    }
+
     fn input(&mut self, event: &Event) {
         if let EventOption::Mouse(mut mouse_event) = event.to_option() {
             let x = cmp::max(0, cmp::min(self.display.width as i32, self.mouse_x + mouse_event.x));

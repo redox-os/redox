@@ -14,6 +14,8 @@ pub trait Screen {
 
     fn event(&mut self, flags: usize) -> Result<usize>;
 
+    fn map(&self, offset: usize, size: usize) -> Result<usize>;
+
     fn input(&mut self, event: &Event);
 
     fn read(&mut self, buf: &mut [u8]) -> Result<usize>;

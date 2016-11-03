@@ -3,7 +3,7 @@ extern crate ransid;
 use std::collections::{BTreeSet, VecDeque};
 
 use orbclient::{Event, EventOption};
-use syscall::Result;
+use syscall::error::*;
 
 use display::Display;
 use screen::Screen;
@@ -46,6 +46,10 @@ impl Screen for TextScreen {
     fn event(&mut self, flags: usize) -> Result<usize> {
         self.requested = flags;
         Ok(0)
+    }
+
+    fn map(&self, offset: usize, size: usize) -> Result<usize> {
+        Err(Error::new(EBADF))
     }
 
     fn input(&mut self, event: &Event) {

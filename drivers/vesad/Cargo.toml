@@ -4,9 +4,9 @@ version = "0.1.0"
 
 [dependencies]
 orbclient = "0.1"
-ransid = { git = "https://github.com/redox-os/ransid.git" }
+ransid = "0.2"
 rusttype = { git = "https://github.com/dylanede/rusttype.git", optional = true }
-syscall = { path = "../../syscall/" }
+redox_syscall = "0.1"
 
 [features]
 default = []

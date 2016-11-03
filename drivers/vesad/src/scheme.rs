@@ -72,6 +72,14 @@ impl SchemeMut for DisplayScheme {
         }
     }
 
+    fn fmap(&mut self, id: usize, offset: usize, size: usize) -> Result<usize> {
+        if let Some(screen) = self.screens.get(&id) {
+            screen.map(offset, size)
+        } else {
+            Err(Error::new(EBADF))
+        }
+    }
+
     fn fpath(&mut self, id: usize, buf: &mut [u8]) -> Result<usize> {
         let path_str = if id == 0 {
             format!("display:input")

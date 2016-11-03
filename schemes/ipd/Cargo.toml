@@ -5,4 +5,4 @@ version = "0.1.0"
 [dependencies]
 event = { path = "../../crates/event/" }
 netutils = { path = "../../programs/netutils/" }
-syscall = { path = "../../syscall/" }
+redox_syscall = { path = "../../syscall/" }

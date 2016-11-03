@@ -3,4 +3,4 @@ name = "dma"
 version = "0.1.0"
 
 [dependencies]
-syscall = { path = "../../syscall/" }
+redox_syscall = { path = "../../syscall/" }
