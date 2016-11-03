@@ -1,8 +1,12 @@
-<img alt="Redox" height="90" src="https://github.com/redox-os/assets/raw/master/logo.png">
+<p align="center">
+<img alt="Redox" height="120" src="https://github.com/redox-os/assets/raw/master/logo.png">
+</p>
 
-**Redox** is an operating system written in pure Rust, designed to be secure and free. The website can be found at https://www.redox-os.org.
+**Redox** is an operating system written in Rust, a language with focus on safety and high performance. Redox, following the microkernel design, aims to be secure, usable, and free. Redox is inspired by previous kernels and operating systems, such as SeL4, Minix, Plan 9, and BSD.
 
-Documentation can be found [here](https://doc.redox-os.org/doc/std/).
+Redox _is not_ just a kernel, it's a full-featured Operating System, providing packages (memory allocator, file system, display manager, core utilities, etc.) that together makes up a functional and convenient operating system. You can loosly think of it as the GNU or BSD ecosystem, but in a memory safe language and with modern technology. See [this list](#ecosystem) for overview of the ecosystem.
+
+The website can be found at https://www.redox-os.org.
 
 Please make sure you use the **latest nightly** of `rustc` before building (for more troubleshooting, see ["Help! Redox won't compile!"](#compile-help)).
 
@@ -12,12 +16,12 @@ Please make sure you use the **latest nightly** of `rustc` before building (for 
 ## Contents
 
 * [What it looks like](#what-it-looks-like)
+* [Ecosystem](#ecosystem)
 * [Help! Redox won't compile](#compile-help)
 * [Contributing to Redox](#contributing)
 * [Cloning, Building and running](#cloning-building-running)
  * [Quick Setup](#quick-setup)
  * [Manual Setup](#manual-setup)
-
 
 ## <a name="what-it-looks-like"> What it looks like </a>
 
@@ -28,6 +32,44 @@ Please make sure you use the **latest nightly** of `rustc` before building (for 
 <img alt="Redox" height="150" src="https://github.com/redox-os/assets/raw/master/screenshots/Sodium_v1.png">
 <img alt="Redox" height="150" src="https://github.com/redox-os/assets/raw/master/screenshots/Boot.png">
 <img alt="Redox" height="150" src="https://github.com/redox-os/assets/raw/master/screenshots/start.png">
+
+## <a name="ecosystem"> Ecosystem </a>
+
+The ecosystem and software Redox OS provides is listed below.
+
+| Name (lexiographic order)                                 | Maintainer
+|-----------------------------------------------------------|---------------------------
+| [Ion (shell)](/redox-os/ion)                              | [**@skylerberg**](/skylerberg) & [**@jackpot51**](/jackpot51)
+| [RANSID](/redox-os/ransid)                                | [**@jackpot51**](/jackpot51)
+| [Sodium (editor)](/redox-os/sodium)                       | [**@ticki**](/ticki)
+| [Standard library](/redox-os/libstd)                      | [**@jackpot51**](/jackpot51)
+| [TFS (filesystem)](/ticki/tfs)                            | [**@ticki**](/ticki)
+| [The Redox book](/redox-os/book)                          | [**@ticki**](/ticki)
+| [The old kernel](/redox-os/old)                           | abandoned
+| [ZFS](/redox-os/zfs)                                      | abandoned, superseded by TFS
+| [acid tests](/redox-os/acid)                              | [**@jackpot51**](/jackpot51) (co.: [**@ticki**](/ticki), [**@nilset](/nilset))
+| [binutils](/redox-os/binutils)                            | [**@ticki**](/ticki)
+| [bots (other internal bots)](/redox-os/bots)              | [**@ticki**](/ticki)
+| [cookbook](/redox-os/cookbook)                            | [**@jackpot51**](/jackpot51)
+| [coreutils](/redox-os/coreutils)                          | [**@ticki**](/ticki) (co.: [**@stratact**](/stratact))
+| [extrautils](/redox-os/extrautils)                        | [**@ticki**](/ticki)
+| [games](/redox-os/games)                                  | [**@ticki**](/ticki)
+| [kernel](/redox-os/kernel)                                | [**@jackpot51**](/jackpot51)
+| [libextra](/redox-os/libextra)                            | [**@ticki**](/ticki)
+| [libpager](/redox-os/libpager)                            | [**@ticki**](/ticki)
+| [magnet (future package manager)](/redox-os/magnet)       | [**@ticki**](/ticki)
+| [netutils](/redox-os/netutils)                            | [**@jackpot51**](/jackpot51)
+| [orbclient](/redox-os/orbclient)                          | [**@jackpot51**](/jackpot51)
+| [orbdata](/redox-os/orbdata)                              | [**@jackpot51**](/jackpot51)
+| [orbital](/redox-os/orbital)                              | [**@jackpot51**](/jackpot51)
+| [orbtk](/redox-os/orbtk)                                  | [**@stratact**](/stratact)
+| [orbutils](/redox-os/orbutils)                            | [**@jackpot51**](/jackpot51)
+| [pkgutils (current package manager)](/redox-os/pkgutils)  | [**@jackpot51**](/jackpot51)
+| [playbot (internal REPL bot)](/redox-os/platbot)          | [**@ticki**](/ticki)
+| [ralloc](/redox-os/ralloc)                                | [**@ticki**](/ticki)
+| [redoxfs (old filesystem)](/redox-os/redoxfs)             | [**@jackpot51**](/jackpot51)
+| [syscall](/redox-os/syscall)                              | [**@jackpot51**](/jackpot51)
+| [userutils](/redox-os/userutils)                          | [**@jackpot51**](/jackpot51)
 
 ## <a name="compile-help"> Help! Redox won't compile! </a>
 
