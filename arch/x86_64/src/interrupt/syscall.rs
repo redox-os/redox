@@ -23,17 +23,32 @@ pub unsafe extern fn syscall() {
         asm!("" : : "{rax}"(a) : : "intel", "volatile");
     }
 
-    asm!("push r15
+    // Push scratch registers, minus rax for the return value
+    asm!("push rcx
+        push rdx
+        push rdi
+        push rsi
+        push r8
+        push r9
+        push r10
+        push r11
         push fs
-        mov r15, 0x18
-        mov fs, r15"
+        mov r11, 0x18
+        mov fs, r11"
         : : : : "intel", "volatile");
 
     inner();
 
     // Interrupt return
     asm!("pop fs
-        pop r15
+        pop r11
+        pop r10
+        pop r9
+        pop r8
+        pop rsi
+        pop rdi
+        pop rdx
+        pop rcx
         iretq"
         : : : : "intel", "volatile");
 }
