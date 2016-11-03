@@ -362,6 +362,7 @@ coreutils: \
 	filesystem/bin/sleep \
 	filesystem/bin/sort \
 	filesystem/bin/tail \
+	filesystem/bin/tee \
 	filesystem/bin/time \
 	filesystem/bin/touch \
 	filesystem/bin/true \
