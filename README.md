@@ -47,7 +47,7 @@ The ecosystem and software Redox OS provides is listed below.
 | [The Redox book](/redox-os/book)                          | [**@ticki**](/ticki)
 | [The old kernel](/redox-os/old)                           | abandoned
 | [ZFS](/redox-os/zfs)                                      | abandoned, superseded by TFS
-| [acid tests](/redox-os/acid)                              | [**@jackpot51**](/jackpot51) (co.: [**@ticki**](/ticki), @nilset)
+| [acid tests](/redox-os/acid)                              | [**@jackpot51**](/jackpot51) (co.: [**@ticki**](/ticki), [**@nilset](/nilset))
 | [binutils](/redox-os/binutils)                            | [**@ticki**](/ticki)
 | [bots (other internal bots)](/redox-os/bots)              | [**@ticki**](/ticki)
 | [cookbook](/redox-os/cookbook)                            | [**@jackpot51**](/jackpot51)
