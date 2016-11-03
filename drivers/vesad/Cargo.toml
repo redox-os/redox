@@ -6,7 +6,7 @@ version = "0.1.0"
 orbclient = "0.1"
 ransid = "0.2"
 rusttype = { git = "https://github.com/dylanede/rusttype.git", optional = true }
-redox_syscall = "0.1"
+redox_syscall = { path = "../../syscall" }
 
 [features]
 default = []
