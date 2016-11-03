@@ -13,10 +13,10 @@ KCARGOFLAGS=--target $(KTARGET).json -- -C opt-level=s -C soft-float
 TARGET=$(ARCH)-unknown-redox
 BUILD=build/userspace
 RUSTC=./rustc.sh
-RUSTCFLAGS=--target $(TARGET).json -C opt-level=s --cfg redox
+RUSTCFLAGS=--target $(TARGET).json -C opt-level=2 -C debuginfo=0 --cfg redox
 RUSTDOC=./rustdoc.sh
 CARGO=RUSTC="$(RUSTC)" RUSTDOC="$(RUSTDOC)" cargo
-CARGOFLAGS=--target $(TARGET).json -- -C opt-level=s --cfg redox
+CARGOFLAGS=--target $(TARGET).json --release -- --cfg redox
 
 # Default targets
 .PHONY: all clean doc update qemu bochs drivers schemes coreutils extrautils netutils userutils wireshark FORCE
@@ -232,7 +232,7 @@ $(BUILD)/libopenlibm.a: libstd/openlibm/libopenlibm.a
 
 $(BUILD)/libstd.rlib: libstd/Cargo.toml libstd/src/** $(BUILD)/libcore.rlib $(BUILD)/liballoc.rlib $(BUILD)/librustc_unicode.rlib $(BUILD)/libcollections.rlib $(BUILD)/librand.rlib $(BUILD)/libopenlibm.a
 	$(CARGO) rustc --verbose --manifest-path $< $(CARGOFLAGS) -o $@
-	cp libstd/target/$(TARGET)/debug/deps/*.rlib $(BUILD)
+	cp libstd/target/$(TARGET)/release/deps/*.rlib $(BUILD)
 
 initfs/bin/%: drivers/%/Cargo.toml drivers/%/src/** $(BUILD)/libstd.rlib
 	mkdir -p initfs/bin
@@ -435,8 +435,8 @@ $(BUILD)/filesystem.bin: \
 	rm -rf $@ $(BUILD)/filesystem/
 	echo exit | cargo run --manifest-path schemes/redoxfs/Cargo.toml --bin redoxfs-utility $@ 256
 	mkdir -p $(BUILD)/filesystem/
-	cargo build --manifest-path schemes/redoxfs/Cargo.toml --bin redoxfs-fuse
-	schemes/redoxfs/target/debug/redoxfs-fuse $@ $(BUILD)/filesystem/ &
+	cargo build --manifest-path schemes/redoxfs/Cargo.toml --bin redoxfs-fuse --release
+	schemes/redoxfs/target/release/redoxfs-fuse $@ $(BUILD)/filesystem/ &
 	sleep 2
 	pgrep redoxfs-fuse
 	cp -RL filesystem/* $(BUILD)/filesystem/
@@ -454,8 +454,8 @@ $(BUILD)/filesystem.bin: \
 
 mount: $(BUILD)/filesystem.bin FORCE
 	mkdir -p $(BUILD)/filesystem/
-	cargo build --manifest-path schemes/redoxfs/Cargo.toml --bin redoxfs-fuse
-	schemes/redoxfs/target/debug/redoxfs-fuse $< $(BUILD)/filesystem/ &
+	cargo build --manifest-path schemes/redoxfs/Cargo.toml --bin redoxfs-fuse --release
+	schemes/redoxfs/target/release/redoxfs-fuse $< $(BUILD)/filesystem/ &
 	sleep 2
 	pgrep redoxfs-fuse
 
