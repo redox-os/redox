@@ -33,7 +33,7 @@ function op {
             ;;
         build)
             pushd build > /dev/null
-            xargo build --target "$TARGET" $CARGOFLAGS
+            xargo build --target "$TARGET" --release $CARGOFLAGS
             popd > /dev/null
             ;;
         clean)
@@ -49,7 +49,7 @@ function op {
                 recipe_stage ../stage
             fi
             #TODO xargo install --root "../stage" $CARGOFLAGS
-            bins="$(find target/x86_64-unknown-redox/debug/ -maxdepth 1 -type f ! -name '*.*')"
+            bins="$(find target/x86_64-unknown-redox/release/ -maxdepth 1 -type f ! -name '*.*')"
             if [ -n "$bins" ]
             then
                 mkdir -p ../stage/bin
