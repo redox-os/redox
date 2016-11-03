@@ -9,7 +9,7 @@
     "vendor": "unknown",
     "target-family": "redox",
     "pre-link-args": ["-m64", "-nostdlib", "-static"],
-    "post-link-args": ["build/userspace/libopenlibm.a"],
+    "post-link-args": [],
     "features": "",
     "dynamic-linking": false,
     "executables": true,
