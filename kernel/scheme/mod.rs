@@ -26,37 +26,37 @@ use self::root::{ROOT_SCHEME_ID, RootScheme};
 use self::sys::SysScheme;
 use self::zero::ZeroScheme;
 
-/// Debug scheme
+/// `debug:` - provides access to serial console
 pub mod debug;
 
-/// Kernel events
+/// `event:` - allows reading of `Event`s which are registered using `fevent`
 pub mod event;
 
-/// Environmental variables
+/// `env:` - access and modify environmental variables
 pub mod env;
 
-/// InitFS scheme
+/// `initfs:` - a readonly filesystem used for initializing the system
 pub mod initfs;
 
-/// IRQ handling
+/// `irq:` - allows userspace handling of IRQs
 pub mod irq;
 
-/// Null scheme
+/// `null:` - a scheme that will discard all writes, and read no bytes
 pub mod null;
 
-/// Anonymouse pipe
+/// `pipe:` - used internally by the kernel to implement `pipe`
 pub mod pipe;
 
-/// Root scheme
+/// `:` - allows the creation of userspace schemes, tightly dependent on `user`
 pub mod root;
 
-/// System information
+/// `sys:` - system information, such as the context list and scheme list
 pub mod sys;
 
-/// Userspace schemes
+/// A wrapper around userspace schemes, tightly dependent on `root`
 pub mod user;
 
-/// Zero scheme
+/// `zero:` - a scheme that will discard all writes, and always fill read buffers with zero
 pub mod zero;
 
 /// Limit on number of schemes
