@@ -9,7 +9,10 @@
 use alloc::arc::Arc;
 use alloc::boxed::Box;
 use collections::BTreeMap;
-use core::sync::atomic::Ordering;
+use context;
+use core::fmt::{self, Display, Formatter};
+use core::result;
+use core::sync::atomic::{AtomicUsize, Ordering};
 use spin::{Once, RwLock, RwLockReadGuard, RwLockWriteGuard};
 
 use syscall::error::*;
@@ -62,10 +65,62 @@ pub mod zero;
 /// Limit on number of schemes
 pub const SCHEME_MAX_SCHEMES: usize = 65536;
 
+/// Unique identifier for a scheme.
+#[derive(PartialEq, Eq, PartialOrd, Ord, Debug, Clone, Copy)]
+pub struct SchemeId(usize);
+impl SchemeId {
+    const fn into(self) -> usize {
+        self.0
+    }
+}
+impl Display for SchemeId {
+    fn fmt(&self, formatter: &mut Formatter) -> result::Result<(), fmt::Error> {
+        self.0.fmt(formatter)
+    }
+}
+
+/// A mutable holder for SchemeId that can safely be shared among threads.
+pub struct AtomicSchemeId {
+    container: AtomicUsize
+}
+impl AtomicSchemeId {
+    pub const fn new(x: SchemeId) -> Self {
+        AtomicSchemeId {
+            container: AtomicUsize::new(x.into())
+        }
+    }
+    pub fn load(&self, order: Ordering) -> SchemeId {
+        SchemeId(self.container.load(order))
+    }
+    pub fn store(&self, val: SchemeId, order: Ordering) {
+        self.container.store(val.into(), order)
+    }
+    pub fn swap(&self, val: SchemeId, order: Ordering) -> SchemeId {
+        SchemeId(self.container.swap(val.into(), order))
+    }
+    pub fn compare_and_swap(&self, current: SchemeId, new: SchemeId, order: Ordering) -> SchemeId {
+        SchemeId(self.container.compare_and_swap(current.into(), new.into(), order))
+    }
+    pub fn compare_exchange(&self, current: SchemeId, new: SchemeId, success: Ordering, failure: Ordering) -> result::Result<SchemeId, SchemeId> {
+        match self.container.compare_exchange(current.into(), new.into(), success, failure) {
+            Ok(result) => Ok(SchemeId(result)),
+            Err(result) => Err(SchemeId(result))
+        }
+    }
+    pub fn compare_exchange_weak(&self, current: SchemeId, new: SchemeId, success: Ordering, failure: Ordering) -> result::Result<SchemeId, SchemeId> {
+        match self.container.compare_exchange_weak(current.into(), new.into(), success, failure) {
+            Ok(result) => Ok(SchemeId(result)),
+            Err(result) => Err(SchemeId(result))
+        }
+    }
+}
+
+pub const ATOMIC_SCHEMEID_INIT: AtomicSchemeId = AtomicSchemeId::new(SchemeId(0));
+
 /// Scheme list type
 pub struct SchemeList {
-    map: BTreeMap<usize, Arc<Box<Scheme + Send + Sync>>>,
-    names: BTreeMap<Box<[u8]>, usize>,
+    map: BTreeMap<SchemeId, Arc<Box<Scheme + Send + Sync>>>,
+    names: BTreeMap<Box<[u8]>, SchemeId>,
     next_id: usize
 }
 
@@ -79,20 +134,20 @@ impl SchemeList {
         }
     }
 
-    pub fn iter(&self) -> ::collections::btree_map::Iter<usize, Arc<Box<Scheme + Send + Sync>>> {
+    pub fn iter(&self) -> ::collections::btree_map::Iter<SchemeId, Arc<Box<Scheme + Send + Sync>>> {
         self.map.iter()
     }
 
-    pub fn iter_name(&self) -> ::collections::btree_map::Iter<Box<[u8]>, usize> {
+    pub fn iter_name(&self) -> ::collections::btree_map::Iter<Box<[u8]>, SchemeId> {
         self.names.iter()
     }
 
     /// Get the nth scheme.
-    pub fn get(&self, id: usize) -> Option<&Arc<Box<Scheme + Send + Sync>>> {
+    pub fn get(&self, id: SchemeId) -> Option<&Arc<Box<Scheme + Send + Sync>>> {
         self.map.get(&id)
     }
 
-    pub fn get_name(&self, name: &[u8]) -> Option<(usize, &Arc<Box<Scheme + Send + Sync>>)> {
+    pub fn get_name(&self, name: &[u8]) -> Option<(SchemeId, &Arc<Box<Scheme + Send + Sync>>)> {
         if let Some(&id) = self.names.get(name) {
             self.get(id).map(|scheme| (id, scheme))
         } else {
@@ -101,7 +156,7 @@ impl SchemeList {
     }
 
     /// Create a new scheme.
-    pub fn insert(&mut self, name: Box<[u8]>, scheme: Arc<Box<Scheme + Send + Sync>>) -> Result<usize> {
+    pub fn insert(&mut self, name: Box<[u8]>, scheme: Arc<Box<Scheme + Send + Sync>>) -> Result<SchemeId> {
         if self.names.contains_key(&name) {
             return Err(Error::new(EEXIST));
         }
@@ -110,7 +165,7 @@ impl SchemeList {
             self.next_id = 1;
         }
 
-        while self.map.contains_key(&self.next_id) {
+        while self.map.contains_key(&SchemeId(self.next_id)) {
             self.next_id += 1;
         }
 
@@ -118,12 +173,11 @@ impl SchemeList {
             return Err(Error::new(EAGAIN));
         }
 
-        let id = self.next_id;
+        let id = SchemeId(self.next_id);
         self.next_id += 1;
 
         assert!(self.map.insert(id, scheme).is_none());
         assert!(self.names.insert(name, id).is_none());
-
         Ok(id)
     }
 }
