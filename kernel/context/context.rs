@@ -9,6 +9,8 @@ use context::memory::{Grant, Memory, SharedMemory, Tls};
 use syscall::data::Event;
 use sync::{WaitMap, WaitQueue};
 
+/// The status of a context - used for scheduling
+/// See syscall::process::waitpid and the sync module for examples of usage
 #[derive(Copy, Clone, Debug, Eq, PartialEq)]
 pub enum Status {
     Runnable,
@@ -45,7 +47,7 @@ pub struct Context {
     pub wake: Option<(u64, u64)>,
     /// The architecture specific context
     pub arch: arch::context::Context,
-    /// Kernel FX
+    /// Kernel FX - used to store SIMD and FPU registers on context switch
     pub kfx: Option<Box<[u8]>>,
     /// Kernel stack
     pub kstack: Option<Box<[u8]>>,
@@ -55,7 +57,7 @@ pub struct Context {
     pub heap: Option<SharedMemory>,
     /// User stack
     pub stack: Option<Memory>,
-    /// User Tls
+    /// User Thread local storage
     pub tls: Option<Tls>,
     /// User grants
     pub grants: Arc<Mutex<Vec<Grant>>>,
@@ -103,6 +105,11 @@ impl Context {
         }
     }
 
+    /// Make a relative path absolute
+    /// Given a cwd of "scheme:/path"
+    /// This function will turn "foo" into "scheme:/path/foo"
+    /// "/foo" will turn into "scheme:/foo"
+    /// "bar:/foo" will be used directly, as it is already absolute
     pub fn canonicalize(&self, path: &[u8]) -> Vec<u8> {
         if path.iter().position(|&b| b == b':').is_none() {
             let cwd = self.cwd.lock();
@@ -144,6 +151,7 @@ impl Context {
         }
     }
 
+    /// Block the context, and return true if it was runnable before being blocked
     pub fn block(&mut self) -> bool {
         if self.status == Status::Runnable {
             self.status = Status::Blocked;
@@ -153,6 +161,7 @@ impl Context {
         }
     }
 
+    /// Unblock context, and return true if it was blocked before being marked runnable
     pub fn unblock(&mut self) -> bool {
         if self.status == Status::Blocked {
             self.status = Status::Runnable;

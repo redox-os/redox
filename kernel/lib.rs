@@ -125,21 +125,27 @@ pub mod syscall;
 #[cfg(test)]
 pub mod tests;
 
+/// A unique number that identifies the current CPU - used for scheduling
 #[thread_local]
 static CPU_ID: AtomicUsize = ATOMIC_USIZE_INIT;
 
+/// Get the current CPU's scheduling ID
 #[inline(always)]
 pub fn cpu_id() -> usize {
     CPU_ID.load(Ordering::Relaxed)
 }
 
+/// The count of all CPUs that can have work scheduled
 static CPU_COUNT : AtomicUsize = ATOMIC_USIZE_INIT;
 
+/// Get the number of CPUs currently active
 #[inline(always)]
 pub fn cpu_count() -> usize {
     CPU_COUNT.load(Ordering::Relaxed)
 }
 
+/// Initialize userspace by running the initfs:bin/init process
+/// This function will also set the CWD to initfs:bin and open debug: as stdio
 pub extern fn userspace_init() {
     assert_eq!(syscall::chdir(b"initfs:bin"), Ok(0));
 
@@ -165,6 +171,7 @@ pub extern fn ksignal(signal: usize) {
     }
 }
 
+/// This is the kernel entry point for the primary CPU. The arch crate is responsible for calling this
 #[no_mangle]
 pub extern fn kmain(cpus: usize) {
     CPU_ID.store(0, Ordering::SeqCst);
@@ -198,6 +205,7 @@ pub extern fn kmain(cpus: usize) {
     }
 }
 
+/// This is the main kernel entry point for secondary CPUs
 #[no_mangle]
 pub extern fn kmain_ap(id: usize) {
     CPU_ID.store(id, Ordering::SeqCst);
