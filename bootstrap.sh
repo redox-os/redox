@@ -282,7 +282,7 @@ usage()
 ####################################################################################
 rustInstall() {
 	# Check to see if multirust is installed, we don't want it messing with rustup
-	# In th future we can probably remove this but I believe it's good to have for now	
+	# In the future we can probably remove this but I believe it's good to have for now
 	if [ -e /usr/local/lib/rustlib/uninstall.sh ] ; then
 		echo "It appears that multirust is installed on your system."
 		echo "This tool has been deprecated by the maintainer, and will cause issues."
@@ -405,7 +405,7 @@ boot()
 if [ "$1" == "-h" ]; then
 	usage
 elif [ "$1" == "-u" ]; then
-	git pull origin master
+	git pull upstream master
 	git submodule update --recursive --init
 	rustup update nightly
 	exit
