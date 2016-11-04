@@ -1,16 +1,16 @@
 use alloc::arc::Arc;
 use alloc::boxed::Box;
 use collections::BTreeMap;
-use core::sync::atomic::{AtomicUsize, ATOMIC_USIZE_INIT, Ordering};
+use core::sync::atomic::{AtomicUsize, Ordering};
 use spin::RwLock;
 
 use context;
 use syscall::error::*;
 use syscall::scheme::Scheme;
-use scheme;
+use scheme::{self, AtomicSchemeId, ATOMIC_SCHEMEID_INIT};
 use scheme::user::{UserInner, UserScheme};
 
-pub static ROOT_SCHEME_ID: AtomicUsize = ATOMIC_USIZE_INIT;
+pub static ROOT_SCHEME_ID: AtomicSchemeId = ATOMIC_SCHEMEID_INIT;
 
 pub struct RootScheme {
     next_id: AtomicUsize,

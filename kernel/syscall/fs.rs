@@ -270,7 +270,7 @@ pub fn fevent(fd: usize, flags: usize) -> Result<usize> {
         let mut files = context.files.lock();
         let mut file = files.get_mut(fd).ok_or(Error::new(EBADF))?.ok_or(Error::new(EBADF))?;
         if let Some(event_id) = file.event.take() {
-            println!("{}: {}:{}: events already registered: {}", fd, file.scheme, file.number, event_id);
+            println!("{}: {:?}:{}: events already registered: {}", fd, file.scheme, file.number, event_id);
             context::event::unregister(fd, file.scheme, event_id);
         }
         file.clone()

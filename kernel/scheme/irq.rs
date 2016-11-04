@@ -1,14 +1,15 @@
 use core::{mem, str};
-use core::sync::atomic::{AtomicUsize, ATOMIC_USIZE_INIT, Ordering};
+use core::sync::atomic::Ordering;
 use spin::Mutex;
 
 use arch::interrupt::irq::acknowledge;
 use context;
+use scheme::{AtomicSchemeId, ATOMIC_SCHEMEID_INIT};
 use syscall::error::*;
 use syscall::flag::EVENT_READ;
 use syscall::scheme::Scheme;
 
-pub static IRQ_SCHEME_ID: AtomicUsize = ATOMIC_USIZE_INIT;
+pub static IRQ_SCHEME_ID: AtomicSchemeId = ATOMIC_SCHEMEID_INIT;
 
 /// IRQ queues
 static ACKS: Mutex<[usize; 16]> = Mutex::new([0; 16]);
