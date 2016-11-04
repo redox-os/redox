@@ -12,6 +12,7 @@ use arch::memory::{allocate_frame, allocate_frames, deallocate_frames, Frame};
 use arch::paging::{ActivePageTable, InactivePageTable, Page, PhysicalAddress, VirtualAddress, entry};
 use arch::paging::temporary_page::TemporaryPage;
 use arch::start::usermode;
+use capability::{self, Capability, CapabilitySet, Data, Kind};
 use context;
 use context::memory::Grant;
 use elf::{self, program_header};
@@ -1070,19 +1071,46 @@ pub fn waitpid(pid: usize, status_ptr: usize, flags: usize) -> Result<usize> {
 /// capability).
 ///
 /// In case of success, returns a handle to the capability. Idempotent.
-pub fn cap_open(scheme: *const u8, scheme_len: usize, cap: *const u8, cap_len: usize) -> Result<usize> {
-    // FIXME: Is this the right way to send a [u8]? Should we somehow check that the pointer
-    // points to memory owned by the process.
+pub fn cap_open(scheme: Result<&[u8]>, data: Result<&[u8]>, kind: usize) -> Result<usize> {
+    let scheme = scheme?;
+    let data = data?;
+    let kind = match Kind::from_usize(kind) {
+        None => return Err(Error::new(EINVAL)),
+        Some(kind) => kind
+    };
 
-    if unimplemented!() { // FIXME: Access the table of capabilities of `context`.
+    let contexts = context::contexts();
+    let context_lock = contexts.current().expect("SYS_CAP_OPEN: No context.");
+    let context = context_lock.read();
+
+    let mut capabilities = context.capabilities.lock();
+    if let Some((handle, capability)) = capabilities.get(scheme, data) {
         // The current process already has a capability `scheme`, `cap`.
-        // FIXME: Return the existing handle.
-        unimplemented!()
-    } else if unimplemented!() { // FIXME: Determine if `context` implements `scheme`.
+        if capability.kind >= kind {
+            return Ok(handle)
+        }
+    }
+    if unimplemented!() { // FIXME: Determine if `context` implements `scheme`.
         // The current process implements `scheme`.
-        // FIXME: Allocate a new handle, with a local refcount of 1 and a root refcount of 1.
-        // FIXME: Return this handle.
-        unimplemented!()
+        // Allocate a new capability owned by this process.
+        let (handle, slot) = capabilities.alloc();
+        let mut scheme2 = Vec::with_capacity(scheme.len());
+        scheme2.extend_from_slice(scheme);
+        let mut data2 = Vec::with_capacity(data.len());
+        data2.extend_from_slice(data);
+        *slot = Some(capability::Instance {
+            // Single user so far.
+            local_rc: 1,
+            kind: kind,
+            root: Arc::new(Capability {
+                owner: context.id,
+                scheme: scheme2.into_boxed_slice(),
+                data: capability::Data::new(data2.into_boxed_slice()),
+                owner_index: handle,
+                kind: kind
+            }),
+        });
+        Ok(handle)
     } else {
         Err(Error::new(EACCES))
     }
@@ -1125,16 +1153,16 @@ pub fn cap_drop(pid: usize, handle: usize) -> Result<usize> {
 }
 
 /// Syscall: send a capability to another process.
-pub fn cap_send(pid: usize, handle: usize) -> Result<usize> {
+pub fn cap_send(pid: usize, handle: usize, kind: usize) -> Result<usize> {
     // FIXME: Check if `handle` is valid.
-    unimplemented!()
+    unimplemented!();
     if pid == 0 /*current process*/ {
         return Ok(0)
     }
     // FIXME: Find scheme, data, kind for `handle`.
-    let handle_2;
+    //let handle_2;
     if unimplemented!() { // FIXME: Find out if `pid` already has capability `scheme`, `data`
-        unimplemented!()
+        unimplemented!();
         // FIXME: If so, let's call it `handle_2`.
         // FIXME: Increment `pid`'s local refcount for `handle_2`.
         return Ok(0)

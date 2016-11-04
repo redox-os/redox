@@ -68,6 +68,7 @@ pub struct Context {
     pub events: Arc<WaitQueue<Event>>,
     /// The process environment
     pub env: Arc<Mutex<BTreeMap<Box<[u8]>, Arc<Mutex<Vec<u8>>>>>>,
+
     /// The context's capabilities.
     ///
     /// Each scheme can have a set of associated capabilities owned by the context. Capabilities
@@ -80,9 +81,9 @@ pub struct Context {
     /// `w/whatever/config`).
     ///
     /// The capability might be clonable or sendable (i.e. possible to transfer it to another
-    /// context). However, you cannot control the actual data. Only the scheme provider can modify
-    /// the capability itself.
-    pub capabilities: Arc<Mutex<BTreeMap</*scheme*/Box<[u8]>, CapabilitySet>>>,
+    /// context). However, you cannot control the actual data.
+    pub capabilities: Arc<Mutex<CapabilitySet>>,
+
     /// The open files in the scheme
     pub files: Arc<Mutex<Vec<Option<File>>>>
 }
@@ -116,7 +117,7 @@ impl Context {
             events: Arc::new(WaitQueue::new()),
             env: Arc::new(Mutex::new(BTreeMap::new())),
             files: Arc::new(Mutex::new(Vec::new())),
-            capabilities: Arc::new(Mutex::new(BTreeMap::new())),
+            capabilities: Arc::new(Mutex::new(CapabilitySet::new())),
         }
     }
 

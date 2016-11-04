@@ -83,9 +83,9 @@ pub extern fn syscall(a: usize, b: usize, c: usize, d: usize, e: usize, f: usize
                 SYS_PHYSMAP => physmap(b, c, d),
                 SYS_PHYSUNMAP => physunmap(b),
                 SYS_VIRTTOPHYS => virttophys(b),
-                SYS_CAP_OPEN => cap_open(b as *const u8, c, d as *const u8, e),
+                SYS_CAP_OPEN => cap_open(validate_slice(b as *const u8, c), validate_slice(d as *const u8, e), f),
                 SYS_CAP_DROP => cap_drop(b, c),
-                SYS_CAP_SEND => cap_send(b, c),
+                SYS_CAP_SEND => cap_send(b, c, d),
                 SYS_CAP_CHECK => cap_check(b, c as *mut *mut usize, d as *mut usize),
                 _ => Err(Error::new(ENOSYS))
             }

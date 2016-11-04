@@ -8,36 +8,23 @@
 //! any userspace process. Indeed, any process can dynamically define new
 //! capabilities and decide to grant them to other processes.
 
+use alloc::arc::Arc;
 use alloc::boxed::Box;
-use collections::BTreeMap;
+use collections::{ BTreeMap, Vec };
+use core::ops::Deref;
 
-/// A capability.
-///
-/// In Redox, capabilities are a scheme-controlled byte sequence, and the actual semantics and
-/// meaning is left to the scheme server.
-///
-/// # Subcapabilities
-///
-/// Every capability is said to have a "kind", which defines how it can be passed between processes
-/// or contexts. If the kind of capability X "implies" (i.e. is stronger or equal to) the kind of
-/// capability Y, then Y is said to be a subcapability of X.
-pub struct Capability {
-    /// The inner data.
-    ///
-    /// Interpretation of this data is left to the scheme that defined it.
-    ///
-    /// For instance, a scheme `fs` could distribute a capability `+rwx/some/file`,
-    /// a capability `+rw/some/other/file`, etc. to selectively allow processes to
-    /// access individual files or directory.
-    ///
-    /// When a process `P` decides to perform an operation on `fs:some/path`, the
-    /// implementation of `fs` can ask the kernel for the list of `fs` capabilities
-    /// owned by `P`. Based on this list, the implementation of `fs` will decide whether
-    /// to let `P` perform this operation.
-    data: Box<[u8]>,
-
-    /// Definition of the dynamic copy/send semantics of this capability.
-    kind: Kind,
+#[derive(PartialEq, Eq, Debug)]
+pub struct Data(Box<[u8]>);
+impl Data {
+    pub fn new(data: Box<[u8]>) -> Self {
+        Data(data)
+    }
+}
+impl Deref for Data {
+    type Target = [u8];
+    fn deref(&self) -> &Self::Target {
+        &*self.0
+    }
 }
 
 impl Capability {
@@ -50,16 +37,6 @@ impl Capability {
     pub fn is_sendable(&self) -> bool{
         self.kind >= Kind::Send
     }
-
-    /// Set the capability data (byte sequence).
-    ///
-    /// You ought to be extremely careful with this. The user shouldn't be able to arbitrarily
-    /// control the capability data as this means the user is able to give themself arbitrary
-    /// powers.
-    pub fn set_data(&mut self, data: Box<[u8]>) {
-        self.data = data;
-    }
-    // FIXME: Why would we need to modify the capability data at all?
 }
 
 /// A capability kind.
@@ -67,7 +44,7 @@ impl Capability {
 /// This defines the semantics of passing, copying, transfering, and sending capabilities across
 /// contexts or processes.
 #[derive(PartialEq, Eq, Ord, PartialOrd, Clone, Copy, Debug)]
-enum Kind {
+pub enum Kind {
     /// A static capability.
     ///
     /// This means that you cannot pass it on to other processes. It will always stay in the
@@ -87,56 +64,128 @@ enum Kind {
     /// security.
     Send = 2,
 }
-
-/// A set of capabilities.
-#[derive(Debug)]
-pub struct CapabilitySet {
-    /// The capability sequence to kind map.
-    capabilities: BTreeMap<Box<[u8]>, Kind>,
+impl Kind {
+    pub fn from_usize(val: usize) -> Option<Kind> {
+        match val {
+            0 => Some(Kind::Static),
+            1 => Some(Kind::Inherit),
+            2 => Some(Kind::Send),
+            _ => None
+        }
+    }
 }
 
-impl CapabilitySet {
-    /// Insert a capability into the set.
-    pub fn insert(&mut self, capability: Capability) -> &mut CapabilitySet {
-        self.capabilities.insert(capability.data, capability.kind);
 
-        self
+/// Representation of a capability.
+///
+/// In Redox, capabilities are a scheme-controlled byte sequence, and the actual semantics and
+/// meaning is left to the scheme server.
+///
+/// A capability can be uniquely identified either by either of:
+/// - its properties `owner`, `owner_index`
+/// - its definition `scheme`, `data`
+///
+/// # Subcapabilities
+///
+/// Every capability is said to have a "kind", which defines how it can be passed between processes
+/// or contexts. If the kind of capability X "implies" (i.e. is stronger or equal to) the kind of
+/// capability Y, then Y is said to be a subcapability of X.
+
+#[derive(Debug)]
+pub struct Capability {
+    /// Identification of the process that first issued this capability.
+    ///
+    /// When `owner` dies, all its `Capability` are revoked, recursively.
+    pub owner: usize,
+
+    /// The index of the capability among the owner's capabilities.
+    pub owner_index: usize,
+
+    /// Identification of the scheme to which this capability is dedicated.
+    ///
+    /// This guarantees that `owner` implements `scheme`.
+    pub scheme: Box<[u8]>,
+
+    /// The inner data.
+    ///
+    /// Interpretation of this data is left to the scheme that defined it.
+    ///
+    /// For instance, a scheme `fs` could distribute a capability `+rwx/some/file`,
+    /// a capability `+rw/some/other/file`, etc. to selectively allow processes to
+    /// access individual files or directory.
+    ///
+    /// When a process `P` decides to perform an operation on `fs:some/path`, the
+    /// implementation of `fs` can ask the kernel for the list of `fs` capabilities
+    /// owned by `P`. Based on this list, the implementation of `fs` will decide whether
+    /// to let `P` perform this operation.
+    pub data: Data,
+
+    /// Bounds on the dynamic copy/send semantics of this capability.
+    pub kind: Kind,
+}
+
+#[derive(Debug)]
+pub struct CapabilitySet {
+    /// Mapping from local handle to capability.
+    by_local_handle: Vec<Option<Instance>>,
+    // FIXME: We probably need other tables to speed up operations.
+    // FIXME: Instead of a Vec<Option<Cap>>, this should be a free-list.
+}
+impl CapabilitySet {
+    pub fn new() -> Self {
+        CapabilitySet {
+            by_local_handle: vec![] // FIXME: Default size?
+        }
     }
 
-    /// Check if `self` is subset (or equal to) `other`.
-    ///
-    /// This is useful for determining if you can downgrade `other` to `self` and pass it on.
-    ///
-    /// If `other` contains every capability or subcapability of elements in `self`, `self` is said
-    /// to be a subset of `other`.
-    pub fn subset_of(&self, other: &CapabilitySet) -> bool {
-        // Iterate over the map of data to kinds and searching .
-        for (data, kind) in &other.capabilities {
-            if !self.contains_imp(data, *kind) {
-                // The lhs didn't contain the element, hence it cannot be a subset.
-                return false;
+    /// If a capability is already part of this `CapabilitySet`, get its index.
+    pub fn get(&self, scheme: &[u8], data: &[u8]) -> Option<(usize, &Instance)> {
+        for (i, cap) in self.by_local_handle.iter().enumerate() {
+            if let &Some(ref cap) = cap {
+                debug_assert!(cap.local_rc > 0);
+                debug_assert!(Arc::strong_count(&cap.root) > 0);
+                if &*cap.root.scheme == scheme && *cap.root.data.0 == *data {
+                    return Some((i, cap))
+                }
             }
         }
-
-        // Everything matched. It's a subset!
-        true
+        None
     }
-
-    /// Does this set contains this cability or a subcapability of it?
-    pub fn contains(&self, elem: &Capability) -> bool {
-        self.contains_imp(&elem.data, elem.kind)
-    }
-
-    /// Internal `contains` method.
-    fn contains_imp(&self, data: &[u8], kind: Kind) -> bool {
-        if let Some(lhs_kind) = self.capabilities.get(data) {
-            // The kind of the capability must be implied.
-            *lhs_kind <= kind
-        } else {
-            // The lhs did not contains the capability data in question.
-            false
+    pub fn alloc(&mut self) -> (usize, &mut Option<Instance>) {
+        let mut slot = None;
+        for (i, cap) in self.by_local_handle.iter().enumerate() {
+            if cap.is_none() {
+                slot = Some(i);
+                break;
+            }
         }
+        let index = match slot {
+            Some(index) => index,
+            None => {
+                self.by_local_handle.push(None);
+                self.by_local_handle.len() - 1
+            }
+        };
+        (index, &mut self.by_local_handle[index])
     }
+}
+
+#[derive(Debug)]
+pub struct Instance {
+    /// The number of times this capability has been granted to this process by distinct
+    /// processes.
+    /// Once this number decreases to 0, we remove the capability from `by_local_handle`.
+    pub local_rc: usize,
+
+    /// Bounds on the dynamic copy/send semantics of this instance of the capability.
+    /// Invariant: self.kind <= self.root.kind
+    pub kind: Kind,
+
+//    sent_to: HashSet<usize /* pid */>, // FIXME: Implement.
+
+    /// A globally unique representation of this capability.
+    /// Once the refcount is down to 1, we need to remove the capability from its owner.
+    pub root: Arc<Capability>,
 }
 
 #[cfg(test)]
