@@ -134,19 +134,19 @@ fedora()
 	echo "Detected Fedora"
 	if [ -z "$(which git)" ]; then
 		echo "Installing git..."
-		sudo dnf install git-all
+		sudo yum install git-all
 	fi
 	if [ "$1" == "qemu" ]; then
 		if [ -z "$(which qemu-system-i386)" ]; then
 			echo "Installing QEMU..."
-			sudo dnf install qemu-system-x86 qemu-kvm
+			sudo yum install qemu-system-x86 qemu-kvm
 		else
 			echo "QEMU already installed!"
 		fi
 	else
 		if [ -z "$(which virtualbox)" ]; then
 			echo "Installing virtualbox..."
-			sudo dnf install virtualbox
+			sudo yum install virtualbox
 		else
 			echo "Virtualbox already installed!"
 		fi
@@ -282,7 +282,7 @@ usage()
 ####################################################################################
 rustInstall() {
 	# Check to see if multirust is installed, we don't want it messing with rustup
-	# In th future we can probably remove this but I believe it's good to have for now	
+	# In the future we can probably remove this but I believe it's good to have for now
 	if [ -e /usr/local/lib/rustlib/uninstall.sh ] ; then
 		echo "It appears that multirust is installed on your system."
 		echo "This tool has been deprecated by the maintainer, and will cause issues."
@@ -439,7 +439,7 @@ else
 		ubuntu "$emulator" "$defpackman"
 	fi
 	# Fedora
-	if hash 2>/dev/null dnf; then
+	if hash 2>/dev/null yum; then
 		fedora "$emulator"
 	fi
 	# Suse and derivatives
