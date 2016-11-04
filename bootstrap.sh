@@ -405,7 +405,7 @@ boot()
 if [ "$1" == "-h" ]; then
 	usage
 elif [ "$1" == "-u" ]; then
-	git pull origin master
+	git pull upstream master
 	git submodule update --recursive --init
 	rustup update nightly
 	exit
