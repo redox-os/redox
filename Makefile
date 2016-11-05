@@ -119,10 +119,10 @@ qemu: $(KBUILD)/harddrive.bin
 	$(QEMU) $(QEMUFLAGS) -kernel $<
 else
 	QEMUFLAGS+=-smp 4 -m 1024
-	ifeq ($(iommu),no)
-		QEMUFLAGS+=-machine q35
-	else
+	ifeq ($(iommu),yes)
 		QEMUFLAGS+=-machine q35,iommu=on
+	else
+		QEMUFLAGS+=-machine q35
 	endif
 	ifeq ($(net),no)
 		QEMUFLAGS+=-net none
