@@ -8,7 +8,7 @@ os:
 dist: trusty
 before_install:
     - if [ `uname` = "Darwin" ]; then
-        brew tap sevki/homebrew-gcc_cross_compilers
+        brew tap sevki/homebrew-gcc_cross_compilers;
         brew update;
         brew install sevki/gcc_cross_compilers/x86_64-elf-binutils sevki/gcc_cross_compilers/x86_64-elf-gcc nasm;
       fi
