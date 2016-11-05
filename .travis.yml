@@ -8,10 +8,9 @@ os:
 dist: trusty
 before_install:
     - if [ `uname` = "Darwin" ]; then
-        brew tap nashenas88/gcc_cross_compilers;
+        brew tap sevki/homebrew-gcc_cross_compilers
         brew update;
-        brew unlink gcc;
-        brew install nashenas88/gcc_cross_compilers/x86_64-elf-binutils nashenas88/gcc_cross_compilers/x86_64-elf-gcc nasm;
+        brew install sevki/gcc_cross_compilers/x86_64-elf-binutils sevki/gcc_cross_compilers/x86_64-elf-gcc nasm;
       fi
     - if [ `uname` = "Linux" ]; then
         sudo apt-get install -qq nasm pkg-config fuse;
