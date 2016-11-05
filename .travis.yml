@@ -5,6 +5,7 @@ rust:
 os:
   - linux
   - osx
+dist: trusty
 before_install:
     - if [ `uname` = "Darwin" ]; then
         brew tap nashenas88/gcc_cross_compilers;
