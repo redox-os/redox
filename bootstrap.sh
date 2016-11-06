@@ -134,19 +134,19 @@ fedora()
 	echo "Detected Fedora"
 	if [ -z "$(which git)" ]; then
 		echo "Installing git..."
-		sudo yum install git-all
+		sudo dnf install git-all
 	fi
 	if [ "$1" == "qemu" ]; then
 		if [ -z "$(which qemu-system-i386)" ]; then
 			echo "Installing QEMU..."
-			sudo yum install qemu-system-x86 qemu-kvm
+			sudo dnf install qemu-system-x86 qemu-kvm
 		else
 			echo "QEMU already installed!"
 		fi
 	else
 		if [ -z "$(which virtualbox)" ]; then
 			echo "Installing virtualbox..."
-			sudo yum install virtualbox
+			sudo dnf install virtualbox
 		else
 			echo "Virtualbox already installed!"
 		fi
@@ -439,7 +439,7 @@ else
 		ubuntu "$emulator" "$defpackman"
 	fi
 	# Fedora
-	if hash 2>/dev/null yum; then
+	if hash 2>/dev/null dnf; then
 		fedora "$emulator"
 	fi
 	# Suse and derivatives
