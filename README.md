@@ -127,15 +127,14 @@ $ git clone git@github.com:redox-os/redox.git --origin upstream --recursive
 $ cd redox/
 
 # Install/update dependencies
-$ sudo <your package manager> install make nasm qemu
-
-# Additional dependencies for Linux Users
-$ sudo <your package manager> install libfuse-dev
-
-# Additional dependencies for MacOS Users
-# Download and Install OSFuse: https://github.com/osxfuse/osxfuse/releases
-$ sudo <your package manager> install pkg-config x86_64-elf-gcc
-# Note: `x86_64-elf-gcc` does not seem to be available via homebrew
+# Linux Users:
+$ sudo <your package manager> install make nasm qemu libfuse-dev
+# MacOS Users using MacPorts:
+$ sudo port install make nasm qemu gcc49 pkg-config osxfuse x86_64-elf-gcc
+# MacOS Users using Hombrew:
+$ brew install make nasm qemu gcc49 pkg-config Caskroom/cask/osxfuse
+$ brew tap glendc/gcc_cross_compilers
+$ brew install glendc/gcc_cross_compilers/x64-elf-binutils glendc/gcc_cross_compilers/x64-elf-gcc
 
 # Install rustup.rs
 $ curl https://sh.rustup.rs -sSf | sh
