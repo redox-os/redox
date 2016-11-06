@@ -8,10 +8,10 @@ os:
 dist: trusty
 before_install:
     - if [ `uname` = "Darwin" ]; then
-        brew tap sevki/homebrew-gcc_cross_compilers;
         brew update;
-        brew unlink gcc;
-        brew install sevki/gcc_cross_compilers/x86_64-elf-binutils sevki/gcc_cross_compilers/x86_64-elf-gcc nasm;
+        brew install make nasm qemu gcc49 pkg-config Caskroom/cask/osxfuse;
+        brew tap glendc/gcc_cross_compilers;
+        brew install glendc/gcc_cross_compilers/x64-elf-binutils glendc/gcc_cross_compilers/x64-elf-gcc;
       fi
     - if [ `uname` = "Linux" ]; then
         sudo apt-get install -qq nasm pkg-config fuse libfuse-dev;
