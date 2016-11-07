@@ -486,9 +486,12 @@ $(BUILD)/filesystem.bin: \
 	sleep 2
 	pgrep redoxfs-fuse
 	cp -RL filesystem/* $(BUILD)/filesystem/
+	chown -R 0:0 $(BUILD)/filesystem
+	chown -R 1000:1000 $(BUILD)/filesystem/home/user
 	chmod -R uog+rX $(BUILD)/filesystem
-	chmod -R uog-w $(BUILD)/filesystem
-	chmod -R 555 $(BUILD)/filesystem/bin/
+	chmod -R u+w $(BUILD)/filesystem
+	chmod -R og-w $(BUILD)/filesystem
+	chmod -R 755 $(BUILD)/filesystem/bin
 	chmod -R u+rwX $(BUILD)/filesystem/root
 	chmod -R og-rwx $(BUILD)/filesystem/root
 	chmod -R u+rwX $(BUILD)/filesystem/home/user
@@ -497,8 +500,6 @@ $(BUILD)/filesystem.bin: \
 	chmod +s $(BUILD)/filesystem/bin/sudo
 	mkdir $(BUILD)/filesystem/tmp
 	chmod 1777 $(BUILD)/filesystem/tmp
-	chown -R 0:0 $(BUILD)/filesystem
-	chown -R 1000:1000 $(BUILD)/filesystem/home/user
 	sync
 	-$(FUMOUNT) $(BUILD)/filesystem/
 	rm -rf $(BUILD)/filesystem/
