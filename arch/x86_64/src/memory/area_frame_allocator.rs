@@ -43,6 +43,48 @@ impl AreaFrameAllocator {
 }
 
 impl FrameAllocator for AreaFrameAllocator {
+    fn free_frames(&self) -> usize {
+        let mut count = 0;
+
+        for area in self.areas.clone() {
+            let start_frame = Frame::containing_address(PhysicalAddress::new(area.base_addr as usize));
+            let end_frame = Frame::containing_address(PhysicalAddress::new((area.base_addr + area.length - 1) as usize));
+            for frame in Frame::range_inclusive(start_frame, end_frame) {
+                if frame >= self.kernel_start && frame <= self.kernel_end {
+                    // Inside of kernel range
+                } else if frame >= self.next_free_frame {
+                    // Frame is in free range
+                    count += 1;
+                } else {
+                    // Inside of used range
+                }
+            }
+        }
+
+        count
+    }
+
+    fn used_frames(&self) -> usize {
+        let mut count = 0;
+
+        for area in self.areas.clone() {
+            let start_frame = Frame::containing_address(PhysicalAddress::new(area.base_addr as usize));
+            let end_frame = Frame::containing_address(PhysicalAddress::new((area.base_addr + area.length - 1) as usize));
+            for frame in Frame::range_inclusive(start_frame, end_frame) {
+                if frame >= self.kernel_start && frame <= self.kernel_end {
+                    // Inside of kernel range
+                    count += 1
+                } else if frame >= self.next_free_frame {
+                    // Frame is in free range
+                } else {
+                    count += 1;
+                }
+            }
+        }
+
+        count
+    }
+
     fn allocate_frames(&mut self, count: usize) -> Option<Frame> {
         if count == 0 {
             None

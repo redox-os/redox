@@ -390,6 +390,7 @@ coreutils: \
 	filesystem/bin/echo \
 	filesystem/bin/env \
 	filesystem/bin/false \
+	filesystem/bin/free \
 	filesystem/bin/head \
 	filesystem/bin/ls \
 	filesystem/bin/mkdir \
@@ -411,7 +412,7 @@ coreutils: \
 	filesystem/bin/true \
 	filesystem/bin/wc \
 	filesystem/bin/yes
-	#filesystem/bin/free  filesystem/bin/shutdown filesystem/bin/test
+	#filesystem/bin/shutdown filesystem/bin/test
 
 extrautils: \
 	filesystem/bin/calc \

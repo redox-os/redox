@@ -90,6 +90,24 @@ pub fn deallocate_frame(frame: Frame) {
     deallocate_frames(frame, 1)
 }
 
+/// Get the number of frames available
+pub fn free_frames() -> usize {
+    if let Some(ref allocator) = *ALLOCATOR.lock() {
+        allocator.free_frames()
+    } else {
+        panic!("frame allocator not initialized");
+    }
+}
+
+/// Get the number of frames used
+pub fn used_frames() -> usize {
+    if let Some(ref allocator) = *ALLOCATOR.lock() {
+        allocator.used_frames()
+    } else {
+        panic!("frame allocator not initialized");
+    }
+}
+
 /// Allocate a range of frames
 pub fn allocate_frames(count: usize) -> Option<Frame> {
     if let Some(ref mut allocator) = *ALLOCATOR.lock() {
@@ -164,6 +182,8 @@ impl Iterator for FrameIter {
 }
 
 pub trait FrameAllocator {
+    fn free_frames(&self) -> usize;
+    fn used_frames(&self) -> usize;
     fn allocate_frames(&mut self, size: usize) -> Option<Frame>;
     fn deallocate_frames(&mut self, frame: Frame, size: usize);
 }
