@@ -1,0 +1,9 @@
+language: rust
+rust:
+  - nightly
+sudo: required
+install:
+  - ./setup.sh
+script: ./jenkins.sh
+notifications:
+  email: false
