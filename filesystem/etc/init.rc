@@ -10,5 +10,4 @@ httpd
 getty display:2
 getty display:3
 stdio debug:
-cat sys:cpu
 orbital display:4
