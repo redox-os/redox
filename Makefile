@@ -55,6 +55,7 @@ clean:
 	cargo clean --manifest-path schemes/redoxfs/Cargo.toml
 	cargo clean --manifest-path schemes/tcpd/Cargo.toml
 	cargo clean --manifest-path schemes/udpd/Cargo.toml
+	-$(FUMOUNT) $(BUILD)/filesystem/
 	rm -rf initfs/bin
 	rm -rf filesystem/bin
 	rm -rf build
@@ -476,6 +477,7 @@ $(BUILD)/filesystem.bin: \
 		filesystem/bin/sh \
 		filesystem/bin/smith \
 		filesystem/bin/tar
+	-$(FUMOUNT) $(BUILD)/filesystem/
 	rm -rf $@ $(BUILD)/filesystem/
 	echo exit | cargo run --manifest-path schemes/redoxfs/Cargo.toml --bin redoxfs-utility $@ 256
 	mkdir -p $(BUILD)/filesystem/
@@ -484,14 +486,19 @@ $(BUILD)/filesystem.bin: \
 	sleep 2
 	pgrep redoxfs-fuse
 	cp -RL filesystem/* $(BUILD)/filesystem/
-	chown -R 0:0 $(BUILD)/filesystem/
-	chown -R 1000:1000 $(BUILD)/filesystem/home/user/
-	chmod 700 $(BUILD)/filesystem/root/
-	chmod 700 $(BUILD)/filesystem/home/user/
+	chmod -R uog+rX $(BUILD)/filesystem
+	chmod -R uog-w $(BUILD)/filesystem
+	chmod -R 555 $(BUILD)/filesystem/bin/
+	chmod -R u+rwX $(BUILD)/filesystem/root
+	chmod -R og-rwx $(BUILD)/filesystem/root
+	chmod -R u+rwX $(BUILD)/filesystem/home/user
+	chmod -R og-rwx $(BUILD)/filesystem/home/user
 	chmod +s $(BUILD)/filesystem/bin/su
 	chmod +s $(BUILD)/filesystem/bin/sudo
 	mkdir $(BUILD)/filesystem/tmp
 	chmod 1777 $(BUILD)/filesystem/tmp
+	chown -R 0:0 $(BUILD)/filesystem
+	chown -R 1000:1000 $(BUILD)/filesystem/home/user
 	sync
 	-$(FUMOUNT) $(BUILD)/filesystem/
 	rm -rf $(BUILD)/filesystem/
