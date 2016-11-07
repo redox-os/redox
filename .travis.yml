@@ -2,7 +2,7 @@ language: generic
 sudo: required
 install:
   - curl https://sh.rustup.rs -sSf > rustup; chmod +x rustup; ./rustup --default-toolchain nightly -y
-  - ./setup.sh
-script: ./jenkins.sh
+  - export PATH="$HOME/.cargo/bin:$PATH"; ./setup.sh
+script: export PATH="$HOME/.cargo/bin:$PATH"; ./jenkins.sh
 notifications:
   email: false
