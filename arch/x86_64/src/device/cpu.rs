@@ -13,8 +13,14 @@ pub fn cpu_info<W: Write>(w: &mut W) -> Result {
 
     if let Some(info) = cpuid.get_extended_function_info() {
         if let Some(brand) = info.processor_brand_string() {
-            write!(w, "Brand: {}\n", brand)?;
+            write!(w, "Model: {}\n", brand)?;
         }
+    }
+
+    if let Some(info) = cpuid.get_processor_frequency_info() {
+        write!(w, "CPU Base MHz: {}\n", info.processor_base_frequency())?;
+        write!(w, "CPU Max MHz: {}\n", info.processor_max_frequency())?;
+        write!(w, "Bus MHz: {}\n", info.bus_frequency())?;
     }
 
     write!(w, "Features:")?;
@@ -80,7 +86,7 @@ pub fn cpu_info<W: Write>(w: &mut W) -> Result {
         if info.has_aesni() { write!(w, " aes")? };
         if info.has_xsave() { write!(w, " xsave")? };
 
-        if info.has_oxsave() { write!(w, " oxsave")? };
+        if info.has_oxsave() { write!(w, " xsaveopt")? };
         if info.has_avx() { write!(w, " avx")? };
         if info.has_f16c() { write!(w, " f16c")? };
         if info.has_rdrand() { write!(w, " rdrand")? };
