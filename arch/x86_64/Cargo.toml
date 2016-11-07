@@ -6,6 +6,7 @@ version = "0.1.0"
 bitflags = "*"
 hole_list_allocator = { path = "../../crates/hole_list_allocator/" }
 io = { path = "../../crates/io/" }
+raw-cpuid = "*"
 spin = "*"
 redox_syscall = { path = "../../syscall/" }
 

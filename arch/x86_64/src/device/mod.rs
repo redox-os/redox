@@ -1,5 +1,6 @@
 use paging::ActivePageTable;
 
+pub mod cpu;
 pub mod local_apic;
 pub mod rtc;
 pub mod serial;

@@ -10,6 +10,7 @@ use syscall::flag::{MODE_DIR, MODE_FILE, SEEK_CUR, SEEK_END, SEEK_SET};
 use syscall::scheme::Scheme;
 
 mod context;
+mod cpu;
 mod memory;
 mod scheme;
 //mod interrupt;
@@ -37,6 +38,7 @@ impl SysScheme {
         let mut files: BTreeMap<&'static [u8], Box<SysFn>> = BTreeMap::new();
 
         files.insert(b"context", Box::new(move || context::resource()));
+        files.insert(b"cpu", Box::new(move || cpu::resource()));
         files.insert(b"memory", Box::new(move || memory::resource()));
         files.insert(b"scheme", Box::new(move || scheme::resource()));
         //files.insert(b"interrupt", Box::new(move || interrupt::resource()));
