@@ -155,6 +155,8 @@ else
 		KCARGOFLAGS+=-C linker=$(CC)
 		RUSTCFLAGS+=-C linker=$(CC)
 		CARGOFLAGS+=-C linker=$(CC)
+		VB_AUDIO=coreaudio
+		VBM="/Applications/VirtualBox.app/Contents/MacOS/VBoxManage"
 	else
 		CC=gcc
 		CXX=g++
@@ -165,6 +167,8 @@ else
 		ifneq ($(kvm),no)
 			QEMUFLAGS+=-enable-kvm -cpu host
 		endif
+		VB_AUDIO="pulse"
+		VBM=VBoxManage
 	endif
 
 %.list: %
@@ -182,6 +186,44 @@ endif
 
 bochs: $(KBUILD)/harddrive.bin
 	bochs -f bochs.$(ARCH)
+
+virtualbox: $(KBUILD)/harddrive.bin
+	echo "Delete VM"
+	-$(VBM) unregistervm Redox --delete; \
+	if [ $$? -ne 0 ]; \
+	then \
+		if [ -d "$$HOME/VirtualBox VMs/Redox" ]; \
+		then \
+			echo "Redox directory exists, deleting..."; \
+			$(RM) -rf "$$HOME/VirtualBox VMs/Redox"; \
+		fi \
+	fi
+	echo "Delete Disk"
+	-$(RM) harddrive.vdi
+	echo "Create VM"
+	$(VBM) createvm --name Redox --register
+	echo "Set Configuration"
+	$(VBM) modifyvm Redox --memory 1024
+	$(VBM) modifyvm Redox --vram 16
+	$(VBM) modifyvm Redox --nic1 nat
+	$(VBM) modifyvm Redox --nictype1 82540EM
+	$(VBM) modifyvm Redox --cableconnected1 on
+	$(VBM) modifyvm Redox --nictrace1 on
+	$(VBM) modifyvm Redox --nictracefile1 $(KBUILD)/network.pcap
+	$(VBM) modifyvm Redox --uart1 0x3F8 4
+	$(VBM) modifyvm Redox --uartmode1 file $(KBUILD)/serial.log
+	$(VBM) modifyvm Redox --usb off # on
+	$(VBM) modifyvm Redox --keyboard ps2
+	$(VBM) modifyvm Redox --mouse ps2
+	$(VBM) modifyvm Redox --audio $(VB_AUDIO)
+	$(VBM) modifyvm Redox --audiocontroller ac97
+	echo "Create Disk"
+	$(VBM) convertfromraw $< $(KBUILD)/harddrive.vdi
+	echo "Attach Disk"
+	$(VBM) storagectl Redox --name ATA --add sata --controller IntelAHCI --bootable on --portcount 1
+	$(VBM) storageattach Redox --storagectl ATA --port 0 --device 0 --type hdd --medium $(KBUILD)/harddrive.vdi
+	echo "Run VM"
+	$(VBM) startvm Redox
 
 # Kernel recipes
 $(KBUILD)/libcore.rlib: rust/src/libcore/lib.rs
