@@ -19,7 +19,7 @@ CARGO=RUSTC="$(RUSTC)" RUSTDOC="$(RUSTDOC)" cargo
 CARGOFLAGS=--target $(TARGET).json --release -- --cfg redox
 
 # Default targets
-.PHONY: all clean doc update qemu bochs drivers schemes coreutils extrautils netutils userutils wireshark FORCE
+.PHONY: all clean doc ref update qemu bochs drivers schemes coreutils extrautils netutils userutils wireshark FORCE
 
 all: $(KBUILD)/harddrive.bin
 
@@ -70,6 +70,12 @@ doc-kernel: $(KBUILD)/libkernel.a FORCE
 
 doc-std: $(BUILD)/libstd.rlib FORCE
 	$(CARGO) doc --target $(TARGET).json --manifest-path libstd/Cargo.toml
+
+ref: FORCE
+	rm -rf filesystem/ref/
+	mkdir -p filesystem/ref/
+	cargo run --manifest-path crates/docgen/Cargo.toml -- programs/coreutils/src/bin/ filesystem/ref/
+	cargo run --manifest-path crates/docgen/Cargo.toml -- programs/extrautils/src/bin/ filesystem/ref/
 
 update:
 	cargo update
@@ -420,10 +426,11 @@ extrautils: \
 	filesystem/bin/cur \
 	filesystem/bin/grep \
 	filesystem/bin/less \
+	filesystem/bin/man \
 	filesystem/bin/mdless \
 	filesystem/bin/mtxt \
 	filesystem/bin/rem \
-	#filesystem/bin/dmesg filesystem/bin/info filesystem/bin/man filesystem/bin/watch
+	#filesystem/bin/dmesg filesystem/bin/info  filesystem/bin/watch
 
 netutils: \
 	filesystem/bin/dhcpd \
