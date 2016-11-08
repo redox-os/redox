@@ -123,6 +123,13 @@ impl HbaPort {
         let serr = self.serr.read();
         self.serr.write(serr);
 
+        // Disable power management
+        let sctl = self.sctl.read() ;
+        self.sctl.write(sctl | 7 << 8);
+
+        // Power on and spin up device
+        self.cmd.writef(1 << 2 | 1 << 1, true);
+
         print!("{}", format!("   - AHCI init {:X}\n", self.cmd.read()));
     }
 
@@ -251,8 +258,7 @@ impl HbaPort {
 
             let cmdheader = &mut clb[slot as usize];
 
-            cmdheader.cfl.write(((size_of::<FisRegH2D>() / size_of::<u32>()) as u8));
-            cmdheader.cfl.writef(1 << 6, write);
+            cmdheader.cfl.write(((size_of::<FisRegH2D>() / size_of::<u32>()) as u8) | if write { 1 << 7 | 1 << 6 } else { 0 });
 
             cmdheader.prdtl.write(1);
 
@@ -317,7 +323,11 @@ impl HbaPort {
             self.stop();
 
             if self.is.read() & HBA_PORT_IS_ERR != 0 {
-                print!("{}", format!("ERROR IS {:X} TFD {:X} SERR {:X}\n", self.is.read(), self.tfd.read(), self.serr.read()));
+                print!("{}", format!("ERROR IS {:X} IE {:X} CMD {:X} TFD {:X}\nSSTS {:X} SCTL {:X} SERR {:X} SACT {:X}\nCI {:X} SNTF {:X} FBS {:X}\n",
+                        self.is.read(), self.ie.read(), self.cmd.read(), self.tfd.read(),
+                        self.ssts.read(), self.sctl.read(), self.serr.read(), self.sact.read(),
+                        self.ci.read(), self.sntf.read(), self.fbs.read()));
+                self.is.write(u32::MAX);
                 return Err(Error::new(EIO));
             }
 
