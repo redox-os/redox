@@ -76,7 +76,7 @@ ref: FORCE
 	mkdir -p filesystem/ref/
 	cargo run --manifest-path crates/docgen/Cargo.toml -- programs/coreutils/src/bin/ filesystem/ref/
 	cargo run --manifest-path crates/docgen/Cargo.toml -- programs/extrautils/src/bin/ filesystem/ref/
-	cargo run --manifest-path crates/docgen/Cargo.toml -- programs/netutils/src/bin/ filesystem/ref/
+	cargo run --manifest-path crates/docgen/Cargo.toml -- programs/netutils/src/ filesystem/ref/
 
 update:
 	cargo update
