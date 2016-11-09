@@ -442,6 +442,7 @@ netutils: \
 	filesystem/bin/wget
 
 orbutils: \
+	filesystem/bin/browser \
 	filesystem/bin/calculator \
 	filesystem/bin/character_map \
 	filesystem/bin/editor \
@@ -505,6 +506,7 @@ $(BUILD)/filesystem.bin: \
 	chmod -R og-rwx $(BUILD)/filesystem/root
 	chmod -R u+rwX $(BUILD)/filesystem/home/user
 	chmod -R og-rwx $(BUILD)/filesystem/home/user
+	chmod +s $(BUILD)/filesystem/bin/passwd
 	chmod +s $(BUILD)/filesystem/bin/su
 	chmod +s $(BUILD)/filesystem/bin/sudo
 	mkdir $(BUILD)/filesystem/tmp
