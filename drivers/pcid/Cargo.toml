@@ -4,8 +4,5 @@ version = "0.1.0"
 
 [dependencies]
 redox_syscall = { path = "../../syscall/" }
-rustc-serialize = { git ="https://github.com/rust-lang-nursery/rustc-serialize.git" }
+rustc-serialize = "0.3"
 toml = "*"
-
-[replace]
-"rustc-serialize:0.3.19" = { git = "https://github.com/rust-lang-nursery/rustc-serialize.git" }

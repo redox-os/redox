@@ -5,8 +5,8 @@ version = "0.1.0"
 [dependencies]
 event = { path = "../../crates/event/" }
 netutils = { path = "../../programs/netutils/" }
-rand = { git = "https://github.com/redox-os/rand.git", branch = "redox" }
+rand = { git = "https://github.com/rust-lang-nursery/rand.git" }
 redox_syscall = { path = "../../syscall/" }
 
 [replace]
-"libc:0.2.17" = { git = "https://github.com/redox-os/liblibc.git", branch = "redox" }
+"libc:0.2.17" = { git = "https://github.com/rust-lang/libc.git" }
