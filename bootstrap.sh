@@ -10,54 +10,127 @@ banner()
 	echo "|------------------------------------------|"
 }
 
+###################################################################################
+# This function takes care of installing a dependency via package manager of choice
+# for building redox on MacOS.
+# @params:    $1 package manager
+#            $2 package name
+#            $3 binary name (optional)
+###################################################################################
+install_macos_pkg()
+{
+    PKG_MANAGER=$1
+    PKG_NAME=$2
+    BIN_NAME=$3
+    if [ -z "$BIN_NAME" ]; then
+        BIN_NAME=$PKG_NAME
+    fi
+
+    BIN_LOCATION=$(which $BIN_NAME)
+    if [ -z "$BIN_LOCATION" ]; then
+        echo "$PKG_MANAGER install $PKG_NAME"
+        $PKG_MANAGER install "$PKG_NAME"
+    else
+        echo "$BIN_NAME already exists at $BIN_LOCATION, no need to install $PKG_NAME..."
+    fi
+}
+
+install_macports_pkg()
+{
+    install_macos_pkg "sudo port" "$1" "$2"
+}
+
+install_brew_pkg()
+{
+    install_macos_pkg "brew" $@
+}
+
+install_brew_cask_pkg()
+{
+    install_macos_pkg "brew cask" $@
+}
+
 ###############################################################################
-# This function takes care of installing all dependencies for building redox on
-# Mac OSX
-# @params:	$1 the emulator to install, virtualbox or qemu
+# This function checks which of the supported package managers
+# is available on the OSX Host.
+# If a support package manager is found, it delegates the installing work to
+# the relevant function.
+# Otherwise this function will exit this script with an error.
 ###############################################################################
 osx()
 {
-	echo "Detected OSX!"
-	if [ ! -z "$(which brew)" ]; then
-		echo "Homebrew detected! Now updating..."
-		brew update
-		if [ -z "$(which git)" ]; then
-			echo "Now installing git..."
-			brew install git
-		fi
-		if [ "$1" == "qemu" ]; then
-			if [ -z "$(which qemu-system-i386)" ]; then
-				echo "Installing qemu..."
-				brew install qemu
-			else
-				echo "QEMU already installed!"
-			fi
-		else
-			if [ -z "$(which virtualbox)" ]; then
-				echo "Now installing virtualbox..."
-				brew cask install virtualbox
-			else
-				echo "Virtualbox already installed!"
-			fi
-		fi
-	else
-		echo "Homebrew does not appear to be installed! Would you like me to install it?"
-		echo "*WARNING* this install involves a curl | sh style command"
-		printf "(Y/n): "
-		read -r installit
-		if [ "$installit" == "Y" ]; then
-			ruby -e "$(curl -fsSL https://raw.githubusercontent.com/Homebrew/install/master/install)"
-		else
-			echo "Will not install, now exiting..."
-			exit
-		fi
-	fi
-	echo "Running Redox setup script..."
-	brew tap homebrew/versions
-	brew install gcc49
-	brew tap nashenas88/gcc_cross_compilers
-	brew install nashenas88/gcc_cross_compilers/i386-elf-binutils nashenas88/gcc_cross_compilers/i386-elf-gcc nasm pkg-config
-	brew install Caskroom/cask/osxfuse
+    echo "Detected OSX!"
+
+    if [ ! -z "$(which brew)" ]; then
+        osx_homebrew $@
+    elif [ ! -z "$(which port)" ]; then
+        osx_macports $@
+    else
+        echo "Please install either Hombrew or MacPorts, if you wish to use this script"
+        echo "Re-run this script once you installed one of those package managers"
+        echo "Will not install, now exiting..."
+        exit 1
+    fi
+}
+
+###############################################################################
+# This function takes care of installing all dependencies using MacPorts
+# for building redox on Mac OSX
+# @params:    $1 the emulator to install, virtualbox or qemu
+###############################################################################
+osx_macports()
+{
+    echo "Macports detected! Now updating..."
+    sudo port -v selfupdate
+
+    echo "Installing missing packages..."
+
+    install_macports_pkg "git"
+
+    if [ "$1" == "qemu" ]; then
+        install_macports_pkg "qemu" "qemu-system-x86_64"
+    else
+        install_macports_pkg "virtualbox"
+    fi
+
+    install_macports_pkg "gcc49" "gcc-4.9"
+    install_macports_pkg "nasm"
+    install_macports_pkg "pkg-config"
+    install_macports_pkg "osxfuse"
+    install_macports_pkg "x86_64-elf-gcc"
+}
+
+###############################################################################
+# This function takes care of installing all dependencies using Hombrew
+# for building redox on Mac OSX
+# @params:    $1 the emulator to install, virtualbox or qemu
+###############################################################################
+osx_homebrew()
+{
+    echo "Homebrew detected! Now updating..."
+    brew update
+
+    echo "Tapping required taps..."
+    brew tap homebrew/versions
+    brew tap glendc/gcc_cross_compilers
+
+    echo "Installing missing packages..."
+
+    install_brew_pkg "git"
+
+    if [ "$1" == "qemu" ]; then
+        install_brew_pkg "qemu" "qemu-system-x86_64"
+    else
+        install_brew_pkg "virtualbox"
+    fi
+
+    install_brew_pkg "gcc49" "gcc-4.9"
+    install_brew_pkg "nasm"
+    install_brew_pkg "pkg-config"
+    install_brew_cask_pkg "osxfuse"
+
+    install_brew_pkg "glendc/gcc_cross_compilers/x64-elf-binutils" "x86_64-elf-gcc"
+    install_brew_pkg "glendc/gcc_cross_compilers/x64-elf-gcc" "x86_64-elf-gcc"
 }
 
 ###############################################################################
@@ -269,6 +342,7 @@ usage()
 	echo "   -e [emulator]  Install specific emulator, virtualbox or qemu"
 	echo "   -p [package    Choose an Ubuntu package manager, apt-fast or"
 	echo "       manager]   aptitude"
+	echo "   -d             Only install the dependencies, skip boot step" 
 	echo "EXAMPLES:"
 	echo
 	echo "./bootstrap.sh -b buddy -e qemu"
@@ -416,11 +490,13 @@ fi
 
 emulator="qemu"
 defpackman="apt-get"
-while getopts ":e:p:" opt
+dependenciesonly=false
+while getopts ":e:p:d" opt
 do
 	case "$opt" in
 		e) emulator="$OPTARG";;
 		p) defpackman="$OPTARG";;
+		d) dependenciesonly=true;;
 		\?) echo "I don't know what to do with that option, try -h for help"; exit;;
 	esac
 done
@@ -455,4 +531,7 @@ else
 		solus "$emulator"
 	fi
 fi
-boot
+
+if [ "$dependenciesonly" = false ]; then
+	boot
+fi
