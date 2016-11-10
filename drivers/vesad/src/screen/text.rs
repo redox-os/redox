@@ -163,8 +163,7 @@ impl Screen for TextScreen {
         if self.console.cursor && self.console.x < self.console.w && self.console.y < self.console.h {
             let x = self.console.x;
             let y = self.console.y;
-            let color = self.console.background;
-            self.display.rect(x * 8, y * 16, 8, 16, color.data);
+            self.display.invert(x * 8, y * 16, 8, 16);
             self.changed.insert(y);
         }
 
@@ -196,8 +195,7 @@ impl Screen for TextScreen {
         if self.console.cursor && self.console.x < self.console.w && self.console.y < self.console.h {
             let x = self.console.x;
             let y = self.console.y;
-            let color = self.console.foreground;
-            self.display.rect(x * 8, y * 16, 8, 16, color.data);
+            self.display.invert(x * 8, y * 16, 8, 16);
             self.changed.insert(y);
         }
 

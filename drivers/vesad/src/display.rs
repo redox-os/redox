@@ -103,6 +103,38 @@ impl Display {
         }
     }
 
+    /// Invert a rectangle
+    pub fn invert(&mut self, x: usize, y: usize, w: usize, h: usize) {
+        let start_y = cmp::min(self.height - 1, y);
+        let end_y = cmp::min(self.height, y + h);
+
+        let start_x = cmp::min(self.width - 1, x);
+        let len = cmp::min(self.width, x + w) - start_x;
+
+        let mut offscreen_ptr = self.offscreen.as_mut_ptr() as usize;
+
+        let stride = self.width * 4;
+
+        let offset = y * stride + start_x * 4;
+        offscreen_ptr += offset;
+
+        let mut rows = end_y - start_y;
+        while rows > 0 {
+            let mut row_ptr = offscreen_ptr;
+            let mut cols = len;
+            while cols > 0 {
+                unsafe {
+                    let color = *(row_ptr as *mut u32);
+                    *(row_ptr as *mut u32) = !color;
+                }
+                row_ptr += 4;
+                cols -= 1;
+            }
+            offscreen_ptr += stride;
+            rows -= 1;
+        }
+    }
+
     /// Draw a character
     #[cfg(not(feature="rusttype"))]
     pub fn char(&mut self, x: usize, y: usize, character: char, color: u32, _bold: bool, _italic: bool) {
