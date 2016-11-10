@@ -7,6 +7,7 @@ extern crate io;
 extern crate orbclient;
 extern crate syscall;
 
+use std::env;
 use std::fs::File;
 use std::io::{Read, Write, Result};
 use std::os::unix::io::AsRawFd;
@@ -32,24 +33,27 @@ bitflags! {
     }
 }
 
-struct Ps2d {
+struct Ps2d<'a> {
     input: File,
     lshift: bool,
     rshift: bool,
     packets: [u8; 4],
     packet_i: usize,
-    extra_packet: bool
+    extra_packet: bool,
+    //Keymap function
+    get_char: &'a Fn(u8,bool) -> char
 }
 
-impl Ps2d {
-    fn new(input: File, extra_packet: bool) -> Self {
+impl<'a> Ps2d<'a> {
+    fn new(input: File, extra_packet: bool, keymap: &'a Fn(u8,bool) -> char) -> Self {
         Ps2d {
             input: input,
             lshift: false,
             rshift: false,
             packets: [0; 4],
             packet_i: 0,
-            extra_packet: extra_packet
+            extra_packet: extra_packet,
+            get_char: keymap
         }
     }
 
@@ -68,7 +72,7 @@ impl Ps2d {
             }
 
             self.input.write(&KeyEvent {
-                character: keymap::get_char(scancode, self.lshift || self.rshift),
+                character: (self.get_char)(scancode, self.lshift || self.rshift),
                 scancode: scancode,
                 pressed: pressed
             }.to_event()).expect("ps2d: failed to write key event");
@@ -128,8 +132,15 @@ fn main() {
         let input = File::open("display:input").expect("ps2d: failed to open display:input");
 
         let extra_packet = controller::Ps2::new().init();
-
-        let mut ps2d = Ps2d::new(input, extra_packet);
+        let keymap = match env::args().skip(1).next() {
+            Some(k) => match k.to_lowercase().as_ref() {
+                "dvorak" => (keymap::dvorak::get_char),
+                "english" => (keymap::english::get_char),
+                &_ => (keymap::english::get_char)
+            },
+            None => (keymap::english::get_char)
+        };
+        let mut ps2d = Ps2d::new(input, extra_packet,&keymap);
 
         let mut event_queue = EventQueue::<(bool, u8)>::new().expect("ps2d: failed to create event queue");
 
