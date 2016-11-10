@@ -1,2 +1,2 @@
 #!/bin/bash
-RUST_BACKTRACE=1 rustc -L build/kernel --cfg redox $*
+RUST_BACKTRACE=1 rustc -L build/kernel $*

@@ -284,6 +284,10 @@ $(BUILD)/libstd.rlib: libstd/Cargo.toml libstd/src/** $(BUILD)/libcore.rlib $(BU
 	$(CARGO) rustc --verbose --manifest-path $< $(CARGOFLAGS) -o $@
 	cp libstd/target/$(TARGET)/release/deps/*.rlib $(BUILD)
 
+#$(BUILD)/libstd.rlib: libstd_real/Cargo.toml rust/src/libstd/** $(BUILD)/libcore.rlib $(BUILD)/liballoc.rlib $(BUILD)/librustc_unicode.rlib $(BUILD)/libcollections.rlib $(BUILD)/librand.rlib $(BUILD)/libopenlibm.a
+#	$(CARGO) rustc --verbose --manifest-path $< $(CARGOFLAGS) -o $@
+#	cp libstd_real/target/$(TARGET)/release/deps/*.rlib $(BUILD)
+
 initfs/bin/%: drivers/%/Cargo.toml drivers/%/src/** $(BUILD)/libstd.rlib
 	mkdir -p initfs/bin
 	$(CARGO) rustc --manifest-path $< $(CARGOFLAGS) -o $@
