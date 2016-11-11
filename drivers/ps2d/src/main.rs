@@ -11,7 +11,7 @@ use std::env;
 use std::fs::File;
 use std::io::{Read, Write, Result};
 use std::os::unix::io::AsRawFd;
-use std::{mem, thread};
+use std::mem;
 
 use event::EventQueue;
 use orbclient::{KeyEvent, MouseEvent};
@@ -123,7 +123,8 @@ impl<'a> Ps2d<'a> {
 }
 
 fn main() {
-    thread::spawn(|| {
+    // Daemonize
+    if unsafe { syscall::clone(0).unwrap() } == 0 {
         unsafe {
             iopl(3).expect("ps2d: failed to get I/O permission");
             asm!("cli" : : : : "intel", "volatile");
@@ -188,5 +189,5 @@ fn main() {
             let (keyboard, data) = event_queue.run().expect("ps2d: failed to handle events");
             ps2d.handle(keyboard, data);
         }
-    });
+    }
 }

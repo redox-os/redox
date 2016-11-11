@@ -7,7 +7,6 @@ extern crate rand;
 
 use std::fs::File;
 use std::io::{Read, Write};
-use std::thread;
 
 use rand::chacha::ChaChaRng;
 use rand::Rng;
@@ -51,7 +50,8 @@ impl SchemeMut for RandScheme {
 fn main(){
     let has_rdrand = CpuId::new().get_feature_info().unwrap().has_rdrand();
 
-    thread::spawn(move || {
+    // Daemonize
+    if unsafe { syscall::clone(0).unwrap() } == 0 {
         let mut socket = File::create(":rand").expect("rand: failed to create rand scheme");
 
         let mut rng = ChaChaRng::new_unseeded();
@@ -78,5 +78,5 @@ fn main(){
             scheme.handle(&mut packet);
             socket.write(&packet).expect("rand: failed to write responses to rand scheme");
         }
-    });
+    }
 }

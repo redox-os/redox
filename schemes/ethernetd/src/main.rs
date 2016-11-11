@@ -8,7 +8,6 @@ use std::fs::File;
 use std::io::{Result, Read, Write};
 use std::os::unix::io::FromRawFd;
 use std::rc::Rc;
-use std::thread;
 
 use syscall::{Packet, SchemeMut, EWOULDBLOCK};
 
@@ -17,7 +16,8 @@ use scheme::EthernetScheme;
 mod scheme;
 
 fn main() {
-    thread::spawn(move || {
+    // Daemonize
+    if unsafe { syscall::clone(0).unwrap() } == 0 {
         let network_fd = syscall::open("network:", syscall::O_RDWR | syscall::O_NONBLOCK).expect("ethernetd: failed to open network");
         let network = unsafe { File::from_raw_fd(network_fd) };
 
@@ -90,5 +90,5 @@ fn main() {
         event_queue.trigger_all(0).expect("ethernetd: failed to trigger events");
 
         event_queue.run().expect("ethernetd: failed to run event loop");
-    });
+    }
 }

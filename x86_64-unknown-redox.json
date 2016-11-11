@@ -22,5 +22,6 @@
     "no-compiler-rt": true,
     "no-default-libraries": true,
     "position-independent-executables": false,
-    "has-elf-tls": true
+    "has-elf-tls": true,
+    "panic-strategy": "abort"
 }
