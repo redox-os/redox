@@ -2,3 +2,9 @@
 name = "unwind"
 version = "0.0.0"
 authors = ["Jeremy Soller <jackpot51@gmail.com>"]
+
+[lib]
+path = "../../rust/src/libunwind/lib.rs"
+
+[dependencies]
+libc = { path = "../libc/" }

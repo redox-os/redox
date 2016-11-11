@@ -3,5 +3,10 @@ name = "panic_unwind"
 version = "0.0.0"
 authors = ["Jeremy Soller <jackpot51@gmail.com>"]
 
+[lib]
+path = "../../rust/src/libpanic_unwind/lib.rs"
+
 [dependencies]
+libc = { path = "../libc/" }
 redox_syscall = { path = "../../syscall/" }
+unwind = { path = "../unwind/" }

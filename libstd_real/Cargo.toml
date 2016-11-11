@@ -10,7 +10,8 @@ path = "../rust/src/libstd/lib.rs"
 [dependencies]
 alloc_system = { path = "alloc_system" }
 compiler_builtins = { path = "compiler_builtins" }
-panic_unwind = { path = "panic_unwind" }
+panic_abort = { path = "panic_abort" }
+#panic_unwind = { path = "panic_unwind" }
 libc = { path = "libc" }
 unwind = { path = "unwind" }
 

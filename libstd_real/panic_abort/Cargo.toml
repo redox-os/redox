@@ -1,8 +1,10 @@
 [package]
-name = "libc"
-version = "0.1.0"
+name = "panic_abort"
+version = "0.0.0"
 authors = ["Jeremy Soller <jackpot51@gmail.com>"]
-build = "build.rs"
+
+[lib]
+path = "../../rust/src/libpanic_abort/lib.rs"
 
 [dependencies]
 redox_syscall = { path = "../../syscall/" }
