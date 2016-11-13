@@ -47,6 +47,11 @@ use core::sync::atomic::{AtomicUsize, ATOMIC_USIZE_INIT, Ordering};
 /// Context management
 pub mod context;
 
+#[macro_use]
+/// Shared data structures
+pub mod common;
+
+
 /// ELF file parsing
 #[cfg(all(not(test), target_arch = "x86_64"))]
 pub mod elf;
