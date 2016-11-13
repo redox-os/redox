@@ -1,11 +1,12 @@
 //! Context management
 use alloc::boxed::Box;
-use core::sync::atomic::{AtomicUsize, ATOMIC_USIZE_INIT, Ordering};
+use core::sync::atomic::Ordering;
 use spin::{Once, RwLock, RwLockReadGuard, RwLockWriteGuard};
 
 pub use self::context::{Context, Status};
 pub use self::list::ContextList;
 pub use self::switch::switch;
+pub use context::context::ContextId;
 
 /// Context struct
 mod context;
@@ -35,7 +36,7 @@ pub const CONTEXT_MAX_FILES: usize = 65536;
 static CONTEXTS: Once<RwLock<ContextList>> = Once::new();
 
 #[thread_local]
-static CONTEXT_ID: AtomicUsize = ATOMIC_USIZE_INIT;
+static CONTEXT_ID: context::AtomicContextId = context::AtomicContextId::default();
 
 pub fn init() {
     let mut contexts = contexts_mut();
@@ -69,6 +70,6 @@ pub fn contexts_mut() -> RwLockWriteGuard<'static, ContextList> {
     CONTEXTS.call_once(init_contexts).write()
 }
 
-pub fn context_id() -> usize {
+pub fn context_id() -> context::ContextId {
     CONTEXT_ID.load(Ordering::SeqCst)
 }

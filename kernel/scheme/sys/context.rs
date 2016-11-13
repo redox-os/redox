@@ -83,8 +83,8 @@ pub fn resource() -> Result<Vec<u8>> {
             let name = str::from_utf8(&name_bytes).unwrap_or("");
 
             string.push_str(&format!("{:<6}{:<6}{:<6}{:<6}{:<6}{:<6}{:<8}{}\n",
-                               context.id,
-                               context.ppid,
+                               context.id.into(),
+                               context.ppid.into(),
                                context.euid,
                                context.egid,
                                stat_string,

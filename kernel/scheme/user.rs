@@ -53,7 +53,7 @@ impl UserInner {
 
         self.call_inner(Packet {
             id: self.next_id.fetch_add(1, Ordering::SeqCst),
-            pid: pid,
+            pid: pid.into(),
             uid: uid,
             gid: gid,
             a: a,
@@ -297,7 +297,7 @@ impl Scheme for UserScheme {
 
         inner.call_inner(Packet {
             id: id,
-            pid: pid,
+            pid: pid.into(),
             uid: uid,
             gid: gid,
             a: SYS_FMAP,

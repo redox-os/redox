@@ -17,7 +17,7 @@ pub struct RegKey {
 
 #[derive(PartialEq, Eq, PartialOrd, Ord)]
 pub struct ProcessKey {
-    context_id: usize,
+    context_id: context::context::ContextId,
     fd: usize,
 }
 

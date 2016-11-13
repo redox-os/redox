@@ -25,7 +25,7 @@ pub fn file_op(a: usize, fd: usize, c: usize, d: usize) -> Result<usize> {
 
     let mut packet = Packet {
         id: 0,
-        pid: pid,
+        pid: pid.into(),
         uid: uid,
         gid: gid,
         a: a,

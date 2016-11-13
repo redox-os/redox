@@ -9,6 +9,10 @@ use context::memory::{Grant, Memory, SharedMemory, Tls};
 use syscall::data::Event;
 use sync::{WaitMap, WaitQueue};
 
+/// Unique identifier for a context (i.e. `pid`).
+use ::core::sync::atomic::AtomicUsize;
+int_like!(ContextId, AtomicContextId, usize, AtomicUsize);
+
 /// The status of a context - used for scheduling
 /// See syscall::process::waitpid and the sync module for examples of usage
 #[derive(Copy, Clone, Debug, Eq, PartialEq)]
@@ -22,9 +26,9 @@ pub enum Status {
 #[derive(Debug)]
 pub struct Context {
     /// The ID of this context
-    pub id: usize,
+    pub id: ContextId,
     /// The ID of the parent context
-    pub ppid: usize,
+    pub ppid: ContextId,
     /// The real user id
     pub ruid: u32,
     /// The real group id
@@ -42,7 +46,7 @@ pub struct Context {
     /// Context is halting parent
     pub vfork: bool,
     /// Context is being waited on
-    pub waitpid: Arc<WaitMap<usize, usize>>,
+    pub waitpid: Arc<WaitMap<ContextId, usize>>,
     /// Context should wake up at specified time
     pub wake: Option<(u64, u64)>,
     /// The architecture specific context
@@ -75,10 +79,10 @@ pub struct Context {
 
 impl Context {
     /// Create a new context
-    pub fn new(id: usize) -> Context {
+    pub fn new(id: ContextId) -> Context {
         Context {
             id: id,
-            ppid: 0,
+            ppid: ContextId::from(0),
             ruid: 0,
             rgid: 0,
             euid: 0,

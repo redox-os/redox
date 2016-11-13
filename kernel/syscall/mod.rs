@@ -14,6 +14,8 @@ use self::data::TimeSpec;
 use self::error::{Error, Result, ENOSYS};
 use self::number::*;
 
+use context::ContextId;
+
 /// Filesystem syscalls
 pub mod fs;
 
@@ -54,13 +56,13 @@ pub extern fn syscall(a: usize, b: usize, c: usize, d: usize, e: usize, f: usize
             },
             _ => match a {
                 SYS_EXIT => exit(b),
-                SYS_WAITPID => waitpid(b, c, d),
+                SYS_WAITPID => waitpid(ContextId::from(b), c, d).map(ContextId::into),
                 SYS_EXECVE => exec(validate_slice(b as *const u8, c)?, validate_slice(d as *const [usize; 2], e)?),
                 SYS_CHDIR => chdir(validate_slice(b as *const u8, c)?),
-                SYS_GETPID => getpid(),
+                SYS_GETPID => getpid().map(ContextId::into),
                 SYS_BRK => brk(b),
                 SYS_IOPL => iopl(b),
-                SYS_CLONE => clone(b, stack),
+                SYS_CLONE => clone(b, stack).map(ContextId::into),
                 SYS_YIELD => sched_yield(),
                 SYS_NANOSLEEP => nanosleep(validate_slice(b as *const TimeSpec, 1).map(|req| &req[0])?, validate_slice_mut(c as *mut TimeSpec, 1).ok().map(|rem| &mut rem[0])),
                 SYS_GETCWD => getcwd(validate_slice_mut(b as *mut u8, c)?),

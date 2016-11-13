@@ -44,13 +44,13 @@ extern crate spin;
 
 use core::sync::atomic::{AtomicUsize, ATOMIC_USIZE_INIT, Ordering};
 
-/// Context management
-pub mod context;
-
 #[macro_use]
+#[macro_export]
 /// Shared data structures
 pub mod common;
 
+/// Context management
+pub mod context;
 
 /// ELF file parsing
 #[cfg(all(not(test), target_arch = "x86_64"))]
@@ -105,7 +105,7 @@ pub extern fn userspace_init() {
 /// Allow exception handlers to send signal to arch-independant kernel
 #[no_mangle]
 pub extern fn ksignal(signal: usize) {
-    println!("SIGNAL {}, CPU {}, PID {}", signal, cpu_id(), context::context_id());
+    println!("SIGNAL {}, CPU {}, PID {:?}", signal, cpu_id(), context::context_id());
     {
         let contexts = context::contexts();
         if let Some(context_lock) = contexts.current() {
