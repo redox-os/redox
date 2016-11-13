@@ -15,6 +15,7 @@ use self::error::{Error, Result, ENOSYS};
 use self::number::*;
 
 use context::ContextId;
+use scheme::FileHandle;
 
 /// Filesystem syscalls
 pub mod fs;
@@ -36,19 +37,22 @@ pub extern fn syscall(a: usize, b: usize, c: usize, d: usize, e: usize, f: usize
     #[inline(always)]
     fn inner(a: usize, b: usize, c: usize, d: usize, e: usize, f: usize, stack: usize) -> Result<usize> {
         match a & SYS_CLASS {
-            SYS_CLASS_FILE => match a & SYS_ARG {
-                SYS_ARG_SLICE => file_op_slice(a, b, validate_slice(c as *const u8, d)?),
-                SYS_ARG_MSLICE => file_op_mut_slice(a, b, validate_slice_mut(c as *mut u8, d)?),
-                _ => match a {
-                    SYS_CLOSE => close(b),
-                    SYS_DUP => dup(b, validate_slice(c as *const u8, d)?),
-                    SYS_FEVENT => fevent(b, c),
-                    SYS_FUNMAP => funmap(b),
-                    _ => file_op(a, b, c, d)
+            SYS_CLASS_FILE => {
+                let fd = FileHandle::from(b);
+                match a & SYS_ARG {
+                    SYS_ARG_SLICE => file_op_slice(a, fd, validate_slice(c as *const u8, d)?),
+                    SYS_ARG_MSLICE => file_op_mut_slice(a, fd, validate_slice_mut(c as *mut u8, d)?),
+                    _ => match a {
+                        SYS_CLOSE => close(fd),
+                        SYS_DUP => dup(fd, validate_slice(c as *const u8, d)?).map(FileHandle::into),
+                        SYS_FEVENT => fevent(fd, c),
+                        SYS_FUNMAP => funmap(b),
+                        _ => file_op(a, fd, c, d)
+                    }
                 }
             },
             SYS_CLASS_PATH => match a {
-                SYS_OPEN => open(validate_slice(b as *const u8, c)?, d),
+                SYS_OPEN => open(validate_slice(b as *const u8, c)?, d).map(FileHandle::into),
                 SYS_MKDIR => mkdir(validate_slice(b as *const u8, c)?, d as u16),
                 SYS_RMDIR => rmdir(validate_slice(b as *const u8, c)?),
                 SYS_UNLINK => unlink(validate_slice(b as *const u8, c)?),

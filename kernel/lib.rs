@@ -43,6 +43,7 @@ extern crate goblin;
 extern crate spin;
 
 use core::sync::atomic::{AtomicUsize, ATOMIC_USIZE_INIT, Ordering};
+use scheme::FileHandle;
 
 #[macro_use]
 #[macro_export]
@@ -93,9 +94,9 @@ pub fn cpu_count() -> usize {
 pub extern fn userspace_init() {
     assert_eq!(syscall::chdir(b"initfs:bin"), Ok(0));
 
-    assert_eq!(syscall::open(b"debug:", 0), Ok(0));
-    assert_eq!(syscall::open(b"debug:", 0), Ok(1));
-    assert_eq!(syscall::open(b"debug:", 0), Ok(2));
+    assert_eq!(syscall::open(b"debug:", 0).map(FileHandle::into), Ok(0));
+    assert_eq!(syscall::open(b"debug:", 0).map(FileHandle::into), Ok(1));
+    assert_eq!(syscall::open(b"debug:", 0).map(FileHandle::into), Ok(2));
 
     syscall::exec(b"initfs:bin/init", &[]).expect("failed to execute initfs:init");
 

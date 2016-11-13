@@ -16,7 +16,7 @@ use context;
 use context::ContextId;
 use context::memory::Grant;
 use elf::{self, program_header};
-use scheme;
+use scheme::{self, FileHandle};
 use syscall;
 use syscall::data::Stat;
 use syscall::error::*;
@@ -695,7 +695,7 @@ pub fn exit(status: usize) -> ! {
         let mut close_files = Vec::new();
         let (pid, ppid) = {
             let mut context = context_lock.write();
-            if Arc::strong_count(&context.files) == 1 {
+            if Arc::strong_count(&context.files) == 1 { // FIXME: Looks like a race condition.
                 mem::swap(context.files.lock().deref_mut(), &mut close_files);
             }
             context.files = Arc::new(Mutex::new(Vec::new()));
@@ -706,7 +706,7 @@ pub fn exit(status: usize) -> ! {
         for (fd, file_option) in close_files.drain(..).enumerate() {
             if let Some(file) = file_option {
                 if let Some(event_id) = file.event {
-                    context::event::unregister(fd, file.scheme, event_id);
+                    context::event::unregister(FileHandle::from(fd), file.scheme, event_id);
                 }
 
                 let scheme_option = {

@@ -67,6 +67,10 @@ int_like!(SchemeId, AtomicSchemeId, usize, AtomicUsize);
 
 pub const ATOMIC_SCHEMEID_INIT: AtomicSchemeId = AtomicSchemeId::default();
 
+/// Unique identifier for a file descriptor.
+int_like!(FileHandle, AtomicFileHandle, usize, AtomicUsize);
+
+
 /// Scheme list type
 pub struct SchemeList {
     map: BTreeMap<SchemeId, Arc<Box<Scheme + Send + Sync>>>,

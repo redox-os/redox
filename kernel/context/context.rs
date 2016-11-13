@@ -6,6 +6,7 @@ use spin::Mutex;
 use arch;
 use context::file::File;
 use context::memory::{Grant, Memory, SharedMemory, Tls};
+use scheme::FileHandle;
 use syscall::data::Event;
 use sync::{WaitMap, WaitQueue};
 
@@ -184,28 +185,28 @@ impl Context {
 
     /// Add a file to the lowest available slot.
     /// Return the file descriptor number or None if no slot was found
-    pub fn add_file(&self, file: File) -> Option<usize> {
+    pub fn add_file(&self, file: File) -> Option<FileHandle> {
         let mut files = self.files.lock();
         for (i, mut file_option) in files.iter_mut().enumerate() {
             if file_option.is_none() {
                 *file_option = Some(file);
-                return Some(i);
+                return Some(FileHandle::from(i));
             }
         }
         let len = files.len();
         if len < super::CONTEXT_MAX_FILES {
             files.push(Some(file));
-            Some(len)
+            Some(FileHandle::from(len))
         } else {
             None
         }
     }
 
     /// Get a file
-    pub fn get_file(&self, i: usize) -> Option<File> {
+    pub fn get_file(&self, i: FileHandle) -> Option<File> {
         let files = self.files.lock();
-        if i < files.len() {
-            files[i]
+        if i.into() < files.len() {
+            files[i.into()]
         } else {
             None
         }
@@ -213,10 +214,10 @@ impl Context {
 
     /// Remove a file
     // TODO: adjust files vector to smaller size if possible
-    pub fn remove_file(&self, i: usize) -> Option<File> {
+    pub fn remove_file(&self, i: FileHandle) -> Option<File> {
         let mut files = self.files.lock();
-        if i < files.len() {
-            files[i].take()
+        if i.into() < files.len() {
+            files[i.into()].take()
         } else {
             None
         }
