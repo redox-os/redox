@@ -10,7 +10,7 @@ pub use self::syscall::flag::*;
 pub use self::syscall::{
     clock_gettime, clone, execve as exec, exit, futex, getpid, kill, nanosleep, setgid, setuid, waitpid,
     chdir, getcwd, open, mkdir, rmdir, unlink, dup, pipe2,
-    read, write, fpath, fstat, fsync, ftruncate, lseek, close
+    read, write, fcntl, fpath, fstat, fsync, ftruncate, lseek, close
 };
 
 //TODO: Thread local
@@ -81,7 +81,3 @@ pub extern "C" fn sbrk(n: isize) -> *mut u8 {
     }
 }
 // } ralloc shims
-
-pub unsafe fn fcntl(_fd: usize, _cmd: c_int, _arg: c_int) -> c_int {
-    cvt(Err(Error::new(ENOSYS)))
-}

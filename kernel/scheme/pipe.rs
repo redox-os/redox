@@ -4,8 +4,8 @@ use core::sync::atomic::{AtomicUsize, ATOMIC_USIZE_INIT, Ordering};
 use spin::{Mutex, Once, RwLock, RwLockReadGuard, RwLockWriteGuard};
 
 use sync::WaitCondition;
-use syscall::error::{Error, Result, EBADF, EPIPE};
-use syscall::flag::O_NONBLOCK;
+use syscall::error::{Error, Result, EBADF, EINVAL, EPIPE};
+use syscall::flag::{F_GETFL, F_SETFL, O_NONBLOCK};
 use syscall::scheme::Scheme;
 
 /// Pipes list
@@ -33,7 +33,7 @@ pub fn pipe(flags: usize) -> (usize, usize) {
     let read_id = PIPE_NEXT_ID.fetch_add(1, Ordering::SeqCst);
     let write_id = PIPE_NEXT_ID.fetch_add(1, Ordering::SeqCst);
     let read = PipeRead::new(flags);
-    let write = PipeWrite::new(&read);
+    let write = PipeWrite::new(flags, &read);
     pipes.0.insert(read_id, read);
     pipes.1.insert(write_id, write);
     (read_id, write_id)
@@ -42,17 +42,25 @@ pub fn pipe(flags: usize) -> (usize, usize) {
 pub struct PipeScheme;
 
 impl Scheme for PipeScheme {
-    fn dup(&self, id: usize, _buf: &[u8]) -> Result<usize> {
+    fn dup(&self, id: usize, buf: &[u8]) -> Result<usize> {
         let mut pipes = pipes_mut();
 
-        let read_option = pipes.0.get(&id).map(|pipe| pipe.clone());
+        let read_option = if let Some(pipe) = pipes.0.get(&id) {
+            Some(pipe.dup(buf)?)
+        } else {
+            None
+        };
         if let Some(pipe) = read_option {
             let pipe_id = PIPE_NEXT_ID.fetch_add(1, Ordering::SeqCst);
             pipes.0.insert(pipe_id, pipe);
             return Ok(pipe_id);
         }
 
-        let write_option = pipes.1.get(&id).map(|pipe| pipe.clone());
+        let write_option = if let Some(pipe) = pipes.1.get(&id) {
+            Some(pipe.dup(buf)?)
+        } else {
+            None
+        };
         if let Some(pipe) = write_option {
             let pipe_id = PIPE_NEXT_ID.fetch_add(1, Ordering::SeqCst);
             pipes.1.insert(pipe_id, pipe);
@@ -63,12 +71,9 @@ impl Scheme for PipeScheme {
     }
 
     fn read(&self, id: usize, buf: &mut [u8]) -> Result<usize> {
-        let pipe_option = {
-            let pipes = pipes();
-            pipes.0.get(&id).map(|pipe| pipe.clone())
-        };
+        let pipes = pipes();
 
-        if let Some(pipe) = pipe_option {
+        if let Some(pipe) = pipes.0.get(&id) {
             pipe.read(buf)
         } else {
             Err(Error::new(EBADF))
@@ -76,16 +81,27 @@ impl Scheme for PipeScheme {
     }
 
     fn write(&self, id: usize, buf: &[u8]) -> Result<usize> {
-        let pipe_option = {
-            let pipes = pipes();
-            pipes.1.get(&id).map(|pipe| pipe.clone())
-        };
+        let pipes = pipes();
 
-        if let Some(pipe) = pipe_option {
+        if let Some(pipe) = pipes.1.get(&id) {
             pipe.write(buf)
         } else {
             Err(Error::new(EBADF))
         }
+    }
+
+    fn fcntl(&self, id: usize, cmd: usize, arg: usize) -> Result<usize> {
+        let pipes = pipes();
+
+        if let Some(pipe) = pipes.0.get(&id) {
+            return pipe.fcntl(cmd, arg);
+        }
+
+        if let Some(pipe) = pipes.1.get(&id) {
+            return pipe.fcntl(cmd, arg);
+        }
+
+        Err(Error::new(EBADF))
     }
 
     fn fsync(&self, _id: usize) -> Result<usize> {
@@ -103,9 +119,8 @@ impl Scheme for PipeScheme {
 }
 
 /// Read side of a pipe
-#[derive(Clone)]
 pub struct PipeRead {
-    flags: usize,
+    flags: AtomicUsize,
     condition: Arc<WaitCondition>,
     vec: Arc<Mutex<VecDeque<u8>>>
 }
@@ -113,9 +128,28 @@ pub struct PipeRead {
 impl PipeRead {
     pub fn new(flags: usize) -> Self {
         PipeRead {
-            flags: flags,
+            flags: AtomicUsize::new(flags),
             condition: Arc::new(WaitCondition::new()),
             vec: Arc::new(Mutex::new(VecDeque::new())),
+        }
+    }
+
+    fn dup(&self, _buf: &[u8]) -> Result<Self> {
+        Ok(PipeRead {
+            flags: AtomicUsize::new(self.flags.load(Ordering::SeqCst)),
+            condition: self.condition.clone(),
+            vec: self.vec.clone()
+        })
+    }
+
+    fn fcntl(&self, cmd: usize, arg: usize) -> Result<usize> {
+        match cmd {
+            F_GETFL => Ok(self.flags.load(Ordering::SeqCst)),
+            F_SETFL => {
+                self.flags.store(arg, Ordering::SeqCst);
+                Ok(0)
+            },
+            _ => Err(Error::new(EINVAL))
         }
     }
 
@@ -139,7 +173,7 @@ impl PipeRead {
                 }
             }
 
-            if self.flags & O_NONBLOCK == O_NONBLOCK || Arc::weak_count(&self.vec) == 0 {
+            if self.flags.load(Ordering::SeqCst) & O_NONBLOCK == O_NONBLOCK || Arc::weak_count(&self.vec) == 0 {
                 return Ok(0);
             } else {
                 self.condition.wait();
@@ -149,17 +183,37 @@ impl PipeRead {
 }
 
 /// Read side of a pipe
-#[derive(Clone)]
 pub struct PipeWrite {
+    flags: AtomicUsize,
     condition: Arc<WaitCondition>,
     vec: Weak<Mutex<VecDeque<u8>>>
 }
 
 impl PipeWrite {
-    pub fn new(read: &PipeRead) -> Self {
+    pub fn new(flags: usize, read: &PipeRead) -> Self {
         PipeWrite {
+            flags: AtomicUsize::new(flags),
             condition: read.condition.clone(),
             vec: Arc::downgrade(&read.vec),
+        }
+    }
+
+    fn dup(&self, _buf: &[u8]) -> Result<Self> {
+        Ok(PipeWrite {
+            flags: AtomicUsize::new(self.flags.load(Ordering::SeqCst)),
+            condition: self.condition.clone(),
+            vec: self.vec.clone()
+        })
+    }
+
+    fn fcntl(&self, cmd: usize, arg: usize) -> Result<usize> {
+        match cmd {
+            F_GETFL => Ok(self.flags.load(Ordering::SeqCst)),
+            F_SETFL => {
+                self.flags.store(arg, Ordering::SeqCst);
+                Ok(0)
+            },
+            _ => Err(Error::new(EINVAL))
         }
     }
 
