@@ -12,11 +12,6 @@ bitflags = "*"
 spin = "*"
 redox_syscall = { path = "syscall/" }
 
-[dependencies.goblin]
-git = "https://github.com/m4b/goblin.git"
-default-features = false
-features = ["elf32", "elf64"]
-
 [dev-dependencies]
 arch_test = { path = "arch/test" }
 
@@ -25,6 +20,11 @@ arch_arm = { path = "arch/arm" }
 
 [target.'cfg(target_arch = "x86_64")'.dependencies]
 arch_x86_64 = { path = "arch/x86_64" }
+
+[target.'cfg(not(test))'.dependencies.goblin]
+git = "https://github.com/redox-os/goblin.git"
+default-features = false
+features = ["elf32", "elf64"]
 
 [profile.dev]
 panic = "unwind"
