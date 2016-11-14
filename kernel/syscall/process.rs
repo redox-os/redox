@@ -2,12 +2,11 @@
 use alloc::arc::Arc;
 use alloc::boxed::Box;
 use collections::{BTreeMap, Vec};
-use core::{mem, str};
+use core::{intrinsics, mem, str};
 use core::ops::DerefMut;
 use spin::Mutex;
 
 use arch;
-use arch::externs::memcpy;
 use arch::memory::{allocate_frame, allocate_frames, deallocate_frames, Frame};
 use arch::paging::{ActivePageTable, InactivePageTable, Page, PhysicalAddress, VirtualAddress, entry};
 use arch::paging::temporary_page::TemporaryPage;
@@ -136,9 +135,9 @@ pub fn clone(flags: usize, stack_base: usize) -> Result<usize> {
                         );
 
                         unsafe {
-                            arch::externs::memcpy(new_memory.start_address().get() as *mut u8,
-                                                  memory.start_address().get() as *const u8,
-                                                  memory.size());
+                            intrinsics::copy(memory.start_address().get() as *const u8,
+                                            new_memory.start_address().get() as *mut u8,
+                                            memory.size());
                         }
 
                         new_memory.remap(memory.flags(), true);
@@ -157,9 +156,9 @@ pub fn clone(flags: usize, stack_base: usize) -> Result<usize> {
                         );
 
                         unsafe {
-                            arch::externs::memcpy(new_heap.start_address().get() as *mut u8,
-                                                  heap.start_address().get() as *const u8,
-                                                  heap.size());
+                            intrinsics::copy(heap.start_address().get() as *const u8,
+                                            new_heap.start_address().get() as *mut u8,
+                                            heap.size());
                         }
 
                         new_heap.remap(heap.flags(), true);
@@ -178,9 +177,9 @@ pub fn clone(flags: usize, stack_base: usize) -> Result<usize> {
                 );
 
                 unsafe {
-                    arch::externs::memcpy(new_stack.start_address().get() as *mut u8,
-                                          stack.start_address().get() as *const u8,
-                                          stack.size());
+                    intrinsics::copy(stack.start_address().get() as *const u8,
+                                    new_stack.start_address().get() as *mut u8,
+                                    stack.size());
                 }
 
                 new_stack.remap(stack.flags(), true);
@@ -201,9 +200,9 @@ pub fn clone(flags: usize, stack_base: usize) -> Result<usize> {
                 };
 
                 unsafe {
-                    arch::externs::memcpy(new_tls.mem.start_address().get() as *mut u8,
-                                          tls.master.get() as *const u8,
-                                          tls.file_size);
+                    intrinsics::copy(tls.master.get() as *const u8,
+                                    new_tls.mem.start_address().get() as *mut u8,
+                                    tls.file_size);
                 }
 
                 new_tls.mem.remap(tls.mem.flags(), true);
@@ -533,9 +532,9 @@ pub fn exec(path: &[u8], arg_ptrs: &[[usize; 2]]) -> Result<usize> {
 
                             unsafe {
                                 // Copy file data
-                                memcpy(segment.p_vaddr as *mut u8,
-                                        (elf.data.as_ptr() as usize + segment.p_offset as usize) as *const u8,
-                                        segment.p_filesz as usize);
+                                intrinsics::copy((elf.data.as_ptr() as usize + segment.p_offset as usize) as *const u8,
+                                                segment.p_vaddr as *mut u8,
+                                                segment.p_filesz as usize);
                             }
 
                             let mut flags = entry::NO_EXECUTE | entry::USER_ACCESSIBLE;
@@ -609,8 +608,8 @@ pub fn exec(path: &[u8], arg_ptrs: &[[usize; 2]]) -> Result<usize> {
 
                         unsafe {
                             // Copy file data
-                            memcpy(tls.mem.start_address().get() as *mut u8,
-                                    master.get() as *const u8,
+                            intrinsics::copy(master.get() as *const u8,
+                                    tls.mem.start_address().get() as *mut u8,
                                     file_size);
                         }
 
@@ -643,8 +642,8 @@ pub fn exec(path: &[u8], arg_ptrs: &[[usize; 2]]) -> Result<usize> {
                         let mut arg_offset = 0;
                         for arg in args.iter().rev() {
                             unsafe {
-                                memcpy((arch::USER_ARG_OFFSET + arg_offset) as *mut u8,
-                                       arg.as_ptr(),
+                                intrinsics::copy(arg.as_ptr(),
+                                       (arch::USER_ARG_OFFSET + arg_offset) as *mut u8,
                                        arg.len());
                             }
 

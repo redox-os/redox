@@ -8,6 +8,13 @@ use syscall::error::*;
 use syscall::flag::{MODE_DIR, MODE_FILE, SEEK_SET, SEEK_CUR, SEEK_END};
 use syscall::scheme::Scheme;
 
+#[cfg(test)]
+mod gen {
+    use collections::BTreeMap;
+    pub fn gen() -> BTreeMap<&'static [u8], (&'static [u8], bool)> { BTreeMap::new() }
+}
+
+#[cfg(not(test))]
 #[path="../../build/userspace/initfs.rs"]
 mod gen;
 

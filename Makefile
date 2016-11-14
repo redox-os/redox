@@ -19,7 +19,7 @@ CARGO=RUSTC="$(RUSTC)" RUSTDOC="$(RUSTDOC)" cargo
 CARGOFLAGS=--target $(TARGET).json --release -- --cfg redox
 
 # Default targets
-.PHONY: all clean doc ref update qemu bochs drivers schemes coreutils extrautils netutils userutils wireshark FORCE
+.PHONY: all clean doc ref test update qemu bochs drivers schemes coreutils extrautils netutils userutils wireshark FORCE
 
 all: $(KBUILD)/harddrive.bin
 
@@ -77,6 +77,37 @@ ref: FORCE
 	cargo run --manifest-path crates/docgen/Cargo.toml -- programs/coreutils/src/bin/ filesystem/ref/
 	cargo run --manifest-path crates/docgen/Cargo.toml -- programs/extrautils/src/bin/ filesystem/ref/
 	cargo run --manifest-path crates/docgen/Cargo.toml -- programs/netutils/src/ filesystem/ref/
+
+test:
+	cargo test
+	cargo test --manifest-path libstd/Cargo.toml
+	cargo test --manifest-path libstd_real/Cargo.toml
+	cargo test --manifest-path drivers/ahcid/Cargo.toml
+	cargo test --manifest-path drivers/e1000d/Cargo.toml
+	cargo test --manifest-path drivers/ps2d/Cargo.toml
+	cargo test --manifest-path drivers/pcid/Cargo.toml
+	cargo test --manifest-path drivers/rtl8168d/Cargo.toml
+	cargo test --manifest-path drivers/vesad/Cargo.toml
+	cargo test --manifest-path programs/acid/Cargo.toml
+	cargo test --manifest-path programs/init/Cargo.toml
+	cargo test --manifest-path programs/ion/Cargo.toml
+	cargo test --manifest-path programs/coreutils/Cargo.toml
+	cargo test --manifest-path programs/extrautils/Cargo.toml
+	cargo test --manifest-path programs/netutils/Cargo.toml
+	cargo test --manifest-path programs/orbutils/Cargo.toml
+	cargo test --manifest-path programs/pkgutils/Cargo.toml
+	cargo test --manifest-path programs/userutils/Cargo.toml
+	cargo test --manifest-path programs/smith/Cargo.toml
+	cargo test --manifest-path programs/tar/Cargo.toml
+	cargo test --manifest-path schemes/ethernetd/Cargo.toml
+	cargo test --manifest-path schemes/example/Cargo.toml
+	cargo test --manifest-path schemes/ipd/Cargo.toml
+	cargo test --manifest-path schemes/orbital/Cargo.toml
+	cargo test --manifest-path schemes/ptyd/Cargo.toml
+	cargo test --manifest-path schemes/randd/Cargo.toml
+	cargo test --manifest-path schemes/redoxfs/Cargo.toml
+	cargo test --manifest-path schemes/tcpd/Cargo.toml
+	cargo test --manifest-path schemes/udpd/Cargo.toml
 
 update:
 	cargo update

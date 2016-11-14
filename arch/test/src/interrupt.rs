@@ -23,6 +23,12 @@ pub unsafe fn halt() {
     ::std::thread::yield_now();
 }
 
+/// Pause instruction
+#[inline(always)]
+pub unsafe fn pause() {
+
+}
+
 /// Set interrupts and nop
 #[inline(always)]
 pub unsafe fn enable_and_nop() {

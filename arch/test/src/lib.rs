@@ -38,3 +38,6 @@ pub mod interrupt;
 
 /// Initialization and main function
 pub mod main;
+
+/// Time functions
+pub mod time;

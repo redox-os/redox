@@ -48,7 +48,6 @@ use core::sync::atomic::{AtomicUsize, ATOMIC_USIZE_INIT, Ordering};
 pub mod context;
 
 /// ELF file parsing
-#[cfg(all(not(test), target_arch = "x86_64"))]
 pub mod elf;
 
 /// Schemes, filesystem handlers
