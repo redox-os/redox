@@ -7,7 +7,7 @@ use std::collections::{BTreeMap, VecDeque};
 use std::fs::File;
 use std::io::{Read, Write};
 use std::rc::{Rc, Weak};
-use std::{str, thread};
+use std::str;
 
 use syscall::data::Packet;
 use syscall::error::{Error, Result, EBADF, EINVAL, ENOENT, EPIPE, EWOULDBLOCK};
@@ -289,7 +289,8 @@ impl PtySlave {
 }
 
 fn main(){
-    thread::spawn(move || {
+    // Daemonize
+    if unsafe { syscall::clone(0).unwrap() } == 0 {
         let mut socket = File::create(":pty").expect("pty: failed to create pty scheme");
         let mut scheme = PtyScheme::new();
         let mut todo = Vec::new();
@@ -375,5 +376,5 @@ fn main(){
                 }
             }
         }
-    });
+    }
 }

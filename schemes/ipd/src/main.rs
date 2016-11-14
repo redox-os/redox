@@ -10,7 +10,7 @@ use std::fs::File;
 use std::io::{self, Read, Write};
 use std::os::unix::io::FromRawFd;
 use std::rc::Rc;
-use std::{slice, str, thread};
+use std::{slice, str};
 use syscall::data::Packet;
 use syscall::error::{Error, Result, EACCES, EADDRNOTAVAIL, EBADF, EIO, EINVAL, ENOENT, EWOULDBLOCK};
 use syscall::flag::{EVENT_READ, O_NONBLOCK};
@@ -326,7 +326,8 @@ impl SchemeMut for Ipd {
 }
 
 fn main() {
-    thread::spawn(move || {
+    // Daemonize
+    if unsafe { syscall::clone(0).unwrap() } == 0 {
         let scheme_fd = syscall::open(":ip", syscall::O_RDWR | syscall::O_CREAT | syscall::O_NONBLOCK).expect("ipd: failed to create :ip");
         let scheme_file = unsafe { File::from_raw_fd(scheme_fd) };
 
@@ -367,5 +368,5 @@ fn main() {
         event_queue.trigger_all(0).expect("ipd: failed to trigger event queue");
 
         event_queue.run().expect("ipd: failed to run event queue");
-    });
+    }
 }

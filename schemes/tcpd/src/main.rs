@@ -8,7 +8,7 @@ use std::collections::{BTreeMap, VecDeque};
 use std::cell::RefCell;
 use std::fs::File;
 use std::io::{self, Read, Write};
-use std::{mem, slice, str, thread};
+use std::{mem, slice, str};
 use std::os::unix::io::FromRawFd;
 use std::rc::Rc;
 
@@ -652,7 +652,8 @@ impl SchemeMut for Tcpd {
 }
 
 fn main() {
-    thread::spawn(move || {
+    // Daemonize
+    if unsafe { syscall::clone(0).unwrap() } == 0 {
         let scheme_fd = syscall::open(":tcp", O_RDWR | O_CREAT | O_NONBLOCK).expect("tcpd: failed to create :tcp");
         let scheme_file = unsafe { File::from_raw_fd(scheme_fd) };
 
@@ -677,5 +678,5 @@ fn main() {
         event_queue.trigger_all(0).expect("tcpd: failed to trigger event queue");
 
         event_queue.run().expect("tcpd: failed to run event queue");
-    });
+    }
 }

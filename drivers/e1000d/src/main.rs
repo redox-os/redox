@@ -6,7 +6,7 @@ extern crate netutils;
 extern crate syscall;
 
 use std::cell::RefCell;
-use std::{env, thread};
+use std::env;
 use std::fs::File;
 use std::io::{Read, Write, Result};
 use std::os::unix::io::{AsRawFd, FromRawFd};
@@ -29,7 +29,8 @@ fn main() {
 
     print!("{}", format!(" + E1000 on: {:X}, IRQ: {}\n", bar, irq));
 
-    thread::spawn(move || {
+    // Daemonize
+    if unsafe { syscall::clone(0).unwrap() } == 0 {
         let socket_fd = syscall::open(":network", syscall::O_RDWR | syscall::O_CREAT | syscall::O_NONBLOCK).expect("e1000d: failed to create network scheme");
         let socket = Arc::new(RefCell::new(unsafe { File::from_raw_fd(socket_fd) }));
 
@@ -128,5 +129,5 @@ fn main() {
             }
         }
         unsafe { let _ = syscall::physunmap(address); }
-    });
+    }
 }

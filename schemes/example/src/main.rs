@@ -3,7 +3,6 @@ extern crate syscall;
 use std::fs::File;
 use std::io::{Read, Write};
 use std::str;
-use std::thread;
 
 use syscall::{Packet, Result, Scheme};
 
@@ -25,7 +24,8 @@ impl Scheme for ExampleScheme {
 }
 
 fn main(){
-    thread::spawn(move || {
+    // Daemonize
+    if unsafe { syscall::clone(0).unwrap() } == 0 {
         let mut socket = File::create(":example").expect("example: failed to create example scheme");
         let scheme = ExampleScheme;
         loop {
@@ -35,5 +35,5 @@ fn main(){
             scheme.handle(&mut packet);
             socket.write(&packet).expect("example: failed to write responses to example scheme");
         }
-    });
+    }
 }

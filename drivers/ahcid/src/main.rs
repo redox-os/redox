@@ -7,7 +7,7 @@ extern crate io;
 extern crate spin;
 extern crate syscall;
 
-use std::{env, thread, usize};
+use std::{env, usize};
 use std::fs::File;
 use std::io::{Read, Write};
 use std::os::unix::io::{AsRawFd, FromRawFd};
@@ -29,7 +29,8 @@ fn main() {
 
     print!("{}", format!(" + AHCI on: {:X} IRQ: {}\n", bar, irq));
 
-    thread::spawn(move || {
+    // Daemonize
+    if unsafe { syscall::clone(0).unwrap() } == 0 {
         let address = unsafe { syscall::physmap(bar, 4096, MAP_WRITE).expect("ahcid: failed to map address") };
         {
             let socket_fd = syscall::open(":disk", syscall::O_RDWR | syscall::O_CREAT | syscall::O_NONBLOCK).expect("ahcid: failed to create disk scheme");
@@ -69,5 +70,5 @@ fn main() {
             }
         }
         unsafe { let _ = syscall::physunmap(address); }
-    });
+    }
 }

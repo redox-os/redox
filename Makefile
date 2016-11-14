@@ -13,10 +13,10 @@ KCARGOFLAGS=--target $(KTARGET).json --release -- -C soft-float
 TARGET=$(ARCH)-unknown-redox
 BUILD=build/userspace
 RUSTC=./rustc.sh
-RUSTCFLAGS=--target $(TARGET).json -C opt-level=2 -C debuginfo=0 --cfg redox
+RUSTCFLAGS=--target $(TARGET).json -C opt-level=2 -C debuginfo=0
 RUSTDOC=./rustdoc.sh
 CARGO=RUSTC="$(RUSTC)" RUSTDOC="$(RUSTDOC)" cargo
-CARGOFLAGS=--target $(TARGET).json --release -- --cfg redox
+CARGOFLAGS=--target $(TARGET).json --release --
 
 # Default targets
 .PHONY: all clean doc ref test update qemu bochs drivers schemes coreutils extrautils netutils userutils wireshark FORCE
@@ -213,7 +213,7 @@ else
 %.list: %
 	objdump -C -M intel -D $< > $@
 
-$(KBUILD)/harddrive.bin: $(KBUILD)/kernel $(BUILD)/filesystem.bin bootloader/$(ARCH)/**
+$(KBUILD)/harddrive.bin: $(KBUILD)/kernel bootloader/$(ARCH)/** $(BUILD)/filesystem.bin
 	nasm -f bin -o $@ -D ARCH_$(ARCH) -ibootloader/$(ARCH)/ bootloader/$(ARCH)/harddrive.asm
 
 qemu: $(KBUILD)/harddrive.bin
@@ -311,13 +311,13 @@ $(BUILD)/libopenlibm.a: libstd/openlibm/libopenlibm.a
 	mkdir -p $(BUILD)
 	cp $< $@
 
-$(BUILD)/libstd.rlib: libstd/Cargo.toml libstd/src/** $(BUILD)/libcore.rlib $(BUILD)/liballoc.rlib $(BUILD)/librustc_unicode.rlib $(BUILD)/libcollections.rlib $(BUILD)/librand.rlib $(BUILD)/libopenlibm.a
-	$(CARGO) rustc --verbose --manifest-path $< $(CARGOFLAGS) -o $@
-	cp libstd/target/$(TARGET)/release/deps/*.rlib $(BUILD)
-
-#$(BUILD)/libstd.rlib: libstd_real/Cargo.toml rust/src/libstd/** $(BUILD)/libcore.rlib $(BUILD)/liballoc.rlib $(BUILD)/librustc_unicode.rlib $(BUILD)/libcollections.rlib $(BUILD)/librand.rlib $(BUILD)/libopenlibm.a
+#$(BUILD)/libstd.rlib: libstd/Cargo.toml libstd/src/** $(BUILD)/libcore.rlib $(BUILD)/liballoc.rlib $(BUILD)/librustc_unicode.rlib $(BUILD)/libcollections.rlib $(BUILD)/librand.rlib $(BUILD)/libopenlibm.a
 #	$(CARGO) rustc --verbose --manifest-path $< $(CARGOFLAGS) -o $@
-#	cp libstd_real/target/$(TARGET)/release/deps/*.rlib $(BUILD)
+#	cp libstd/target/$(TARGET)/release/deps/*.rlib $(BUILD)
+
+$(BUILD)/libstd.rlib: libstd_real/Cargo.toml rust/src/libstd/** $(BUILD)/libcore.rlib $(BUILD)/liballoc.rlib $(BUILD)/librustc_unicode.rlib $(BUILD)/libcollections.rlib $(BUILD)/librand.rlib $(BUILD)/libopenlibm.a
+	$(CARGO) rustc --verbose --manifest-path $< $(CARGOFLAGS) -o $@
+	cp libstd_real/target/$(TARGET)/release/deps/*.rlib $(BUILD)
 
 initfs/bin/%: drivers/%/Cargo.toml drivers/%/src/** $(BUILD)/libstd.rlib
 	mkdir -p initfs/bin

@@ -6,7 +6,7 @@ extern crate alloc;
 extern crate orbclient;
 extern crate syscall;
 
-use std::{env, mem, thread};
+use std::{env, mem};
 use std::fs::File;
 use std::io::{Read, Write};
 use syscall::{physmap, physunmap, Packet, SchemeMut, EVENT_READ, MAP_WRITE, MAP_WRITE_COMBINE};
@@ -49,7 +49,8 @@ fn main() {
     }
 
     if physbaseptr > 0 {
-        thread::spawn(move || {
+        // Daemonize
+        if unsafe { syscall::clone(0).unwrap() } == 0 {
             let mut socket = File::create(":display").expect("vesad: failed to create display scheme");
 
             let size = width * height;
@@ -103,6 +104,6 @@ fn main() {
                     }
                 }
             }
-        });
+        }
     }
 }
