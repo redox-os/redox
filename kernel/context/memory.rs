@@ -1,8 +1,8 @@
 use alloc::arc::{Arc, Weak};
 use collections::VecDeque;
+use core::intrinsics;
 use spin::Mutex;
 
-use arch::externs::memset;
 use arch::memory::Frame;
 use arch::paging::{ActivePageTable, InactivePageTable, Page, PageIter, PhysicalAddress, VirtualAddress};
 use arch::paging::entry::{self, EntryFlags};
@@ -202,7 +202,9 @@ impl Memory {
 
         if clear {
             assert!(flush && self.flags.contains(entry::WRITABLE));
-            unsafe { memset(self.start_address().get() as *mut u8, 0, self.size); }
+            unsafe {
+                intrinsics::write_bytes(self.start_address().get() as *mut u8, 0, self.size);
+            }
         }
     }
 
@@ -300,7 +302,9 @@ impl Memory {
 
             if clear {
                 assert!(flush);
-                unsafe { memset((self.start.get() + self.size) as *mut u8, 0, new_size - self.size); }
+                unsafe {
+                    intrinsics::write_bytes((self.start.get() + self.size) as *mut u8, 0, new_size - self.size);
+                }
             }
         } else if new_size < self.size {
             let mut flush_all = false;
