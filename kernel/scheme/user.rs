@@ -1,6 +1,6 @@
 use alloc::arc::{Arc, Weak};
 use collections::BTreeMap;
-use core::sync::atomic::{AtomicUsize, AtomicU64, Ordering};
+use core::sync::atomic::{AtomicU64, Ordering};
 use core::{mem, slice, usize};
 use spin::{Mutex, RwLock};
 
@@ -10,6 +10,7 @@ use arch::paging::temporary_page::TemporaryPage;
 use context::{self, Context};
 use context::memory::Grant;
 use scheme::root::ROOT_SCHEME_ID;
+use scheme::{AtomicSchemeId, ATOMIC_SCHEMEID_INIT};
 use sync::{WaitQueue, WaitMap};
 use syscall::data::{Packet, Stat};
 use syscall::error::*;
@@ -20,7 +21,7 @@ use syscall::scheme::Scheme;
 pub struct UserInner {
     handle_id: usize,
     flags: usize,
-    pub scheme_id: AtomicUsize,
+    pub scheme_id: AtomicSchemeId,
     next_id: AtomicU64,
     context: Weak<RwLock<Context>>,
     todo: WaitQueue<Packet>,
@@ -33,7 +34,7 @@ impl UserInner {
         UserInner {
             handle_id: handle_id,
             flags: flags,
-            scheme_id: AtomicUsize::new(0),
+            scheme_id: ATOMIC_SCHEMEID_INIT,
             next_id: AtomicU64::new(1),
             context: context,
             todo: WaitQueue::new(),
@@ -52,7 +53,7 @@ impl UserInner {
 
         self.call_inner(Packet {
             id: self.next_id.fetch_add(1, Ordering::SeqCst),
-            pid: pid,
+            pid: pid.into(),
             uid: uid,
             gid: gid,
             a: a,
@@ -296,7 +297,7 @@ impl Scheme for UserScheme {
 
         inner.call_inner(Packet {
             id: id,
-            pid: pid,
+            pid: pid.into(),
             uid: uid,
             gid: gid,
             a: SYS_FMAP,

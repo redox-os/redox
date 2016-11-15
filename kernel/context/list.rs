@@ -7,11 +7,11 @@ use spin::RwLock;
 
 use arch;
 use syscall::error::{Result, Error, EAGAIN};
-use super::context::Context;
+use super::context::{Context, ContextId};
 
 /// Context list type
 pub struct ContextList {
-    map: BTreeMap<usize, Arc<RwLock<Context>>>,
+    map: BTreeMap<ContextId, Arc<RwLock<Context>>>,
     next_id: usize
 }
 
@@ -25,7 +25,7 @@ impl ContextList {
     }
 
     /// Get the nth context.
-    pub fn get(&self, id: usize) -> Option<&Arc<RwLock<Context>>> {
+    pub fn get(&self, id: ContextId) -> Option<&Arc<RwLock<Context>>> {
         self.map.get(&id)
     }
 
@@ -34,7 +34,7 @@ impl ContextList {
         self.map.get(&super::CONTEXT_ID.load(Ordering::SeqCst))
     }
 
-    pub fn iter(&self) -> ::collections::btree_map::Iter<usize, Arc<RwLock<Context>>> {
+    pub fn iter(&self) -> ::collections::btree_map::Iter<ContextId, Arc<RwLock<Context>>> {
         self.map.iter()
     }
 
@@ -44,7 +44,7 @@ impl ContextList {
             self.next_id = 1;
         }
 
-        while self.map.contains_key(&self.next_id) {
+        while self.map.contains_key(&ContextId::from(self.next_id)) {
             self.next_id += 1;
         }
 
@@ -52,7 +52,7 @@ impl ContextList {
             return Err(Error::new(EAGAIN));
         }
 
-        let id = self.next_id;
+        let id = ContextId::from(self.next_id);
         self.next_id += 1;
 
         assert!(self.map.insert(id, Arc::new(RwLock::new(Context::new(id)))).is_none());
@@ -85,7 +85,7 @@ impl ContextList {
         Ok(context_lock)
     }
 
-    pub fn remove(&mut self, id: usize) -> Option<Arc<RwLock<Context>>> {
+    pub fn remove(&mut self, id: ContextId) -> Option<Arc<RwLock<Context>>> {
         self.map.remove(&id)
     }
 }

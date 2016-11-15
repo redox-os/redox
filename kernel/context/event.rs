@@ -3,6 +3,7 @@ use collections::BTreeMap;
 use spin::{Once, RwLock, RwLockReadGuard, RwLockWriteGuard};
 
 use context;
+use scheme::{FileHandle, SchemeId};
 use sync::WaitQueue;
 use syscall::data::Event;
 
@@ -10,14 +11,14 @@ type EventList = Weak<WaitQueue<Event>>;
 
 #[derive(PartialEq, Eq, PartialOrd, Ord)]
 pub struct RegKey {
-    scheme_id: usize,
+    scheme_id: SchemeId,
     event_id: usize,
 }
 
 #[derive(PartialEq, Eq, PartialOrd, Ord)]
 pub struct ProcessKey {
-    context_id: usize,
-    fd: usize,
+    context_id: context::context::ContextId,
+    fd: FileHandle,
 }
 
 type Registry = BTreeMap<RegKey, BTreeMap<ProcessKey, EventList>>;
@@ -39,7 +40,7 @@ pub fn registry_mut() -> RwLockWriteGuard<'static, Registry> {
     REGISTRY.call_once(init_registry).write()
 }
 
-pub fn register(fd: usize, scheme_id: usize, event_id: usize) -> bool {
+pub fn register(fd: FileHandle, scheme_id: SchemeId, event_id: usize) -> bool {
     let (context_id, events) = {
         let contexts = context::contexts();
         let context_lock = contexts.current().expect("event::register: No context");
@@ -66,7 +67,7 @@ pub fn register(fd: usize, scheme_id: usize, event_id: usize) -> bool {
     }
 }
 
-pub fn unregister(fd: usize, scheme_id: usize, event_id: usize) {
+pub fn unregister(fd: FileHandle, scheme_id: SchemeId, event_id: usize) {
     let mut registry = registry_mut();
 
     let mut remove = false;
@@ -91,7 +92,7 @@ pub fn unregister(fd: usize, scheme_id: usize, event_id: usize) {
     }
 }
 
-pub fn trigger(scheme_id: usize, event_id: usize, flags: usize, data: usize) {
+pub fn trigger(scheme_id: SchemeId, event_id: usize, flags: usize, data: usize) {
     let registry = registry();
     let key = RegKey {
         scheme_id: scheme_id,
@@ -101,7 +102,7 @@ pub fn trigger(scheme_id: usize, event_id: usize, flags: usize, data: usize) {
         for entry in event_lists.iter() {
             if let Some(event_list) = entry.1.upgrade() {
                 event_list.send(Event {
-                    id: (entry.0).fd,
+                    id: (entry.0).fd.into(),
                     flags: flags,
                     data: data
                 });

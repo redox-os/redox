@@ -2,6 +2,7 @@ use alloc::arc::{Arc, Weak};
 use collections::{BTreeMap, VecDeque};
 use core::sync::atomic::{AtomicUsize, ATOMIC_USIZE_INIT, Ordering};
 use spin::{Mutex, Once, RwLock, RwLockReadGuard, RwLockWriteGuard};
+use scheme::{AtomicSchemeId, ATOMIC_SCHEMEID_INIT};
 
 use sync::WaitCondition;
 use syscall::error::{Error, Result, EAGAIN, EBADF, EINVAL, EPIPE};
@@ -9,7 +10,7 @@ use syscall::flag::{F_GETFL, F_SETFL, O_CLOEXEC, O_NONBLOCK};
 use syscall::scheme::Scheme;
 
 /// Pipes list
-pub static PIPE_SCHEME_ID: AtomicUsize = ATOMIC_USIZE_INIT;
+pub static PIPE_SCHEME_ID: AtomicSchemeId = ATOMIC_SCHEMEID_INIT;
 static PIPE_NEXT_ID: AtomicUsize = ATOMIC_USIZE_INIT;
 static PIPES: Once<RwLock<(BTreeMap<usize, Arc<PipeRead>>, BTreeMap<usize, Arc<PipeWrite>>)>> = Once::new();
 

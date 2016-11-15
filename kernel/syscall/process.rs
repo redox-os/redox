@@ -12,9 +12,10 @@ use arch::paging::{ActivePageTable, InactivePageTable, Page, PhysicalAddress, Vi
 use arch::paging::temporary_page::TemporaryPage;
 use arch::start::usermode;
 use context;
+use context::ContextId;
 use context::memory::Grant;
 use elf::{self, program_header};
-use scheme;
+use scheme::{self, FileHandle};
 use syscall;
 use syscall::data::Stat;
 use syscall::error::*;
@@ -53,7 +54,7 @@ pub fn brk(address: usize) -> Result<usize> {
     }
 }
 
-pub fn clone(flags: usize, stack_base: usize) -> Result<usize> {
+pub fn clone(flags: usize, stack_base: usize) -> Result<ContextId> {
     let ppid;
     let pid;
     {
@@ -720,10 +721,10 @@ pub fn exec(path: &[u8], arg_ptrs: &[[usize; 2]]) -> Result<usize> {
                     if let Some(context_lock) = contexts.get(ppid) {
                         let mut context = context_lock.write();
                         if ! context.unblock() {
-                            println!("{} not blocked for exec vfork unblock", ppid);
+                            println!("{:?} not blocked for exec vfork unblock", ppid);
                         }
                     } else {
-                        println!("{} not found for exec vfork unblock", ppid);
+                        println!("{:?} not found for exec vfork unblock", ppid);
                     }
                 }
             },
@@ -749,7 +750,7 @@ pub fn exit(status: usize) -> ! {
         let mut close_files = Vec::new();
         let (pid, ppid) = {
             let mut context = context_lock.write();
-            if Arc::strong_count(&context.files) == 1 {
+            if Arc::strong_count(&context.files) == 1 { // FIXME: Looks like a race condition.
                 mem::swap(context.files.lock().deref_mut(), &mut close_files);
             }
             context.files = Arc::new(Mutex::new(Vec::new()));
@@ -760,7 +761,7 @@ pub fn exit(status: usize) -> ! {
         for (fd, file_option) in close_files.drain(..).enumerate() {
             if let Some(file) = file_option {
                 if let Some(event_id) = file.event {
-                    context::event::unregister(fd, file.scheme, event_id);
+                    context::event::unregister(FileHandle::from(fd), file.scheme, event_id);
                 }
 
                 let scheme_option = {
@@ -811,7 +812,7 @@ pub fn exit(status: usize) -> ! {
                     let mut parent = parent_lock.write();
                     if vfork {
                         if ! parent.unblock() {
-                            println!("{} not blocked for exit vfork unblock", ppid);
+                            println!("{:?} not blocked for exit vfork unblock", ppid);
                         }
                     }
                     parent.waitpid.clone()
@@ -822,7 +823,7 @@ pub fn exit(status: usize) -> ! {
                 }
                 waitpid.send(pid, status);
             } else {
-                println!("{} not found for exit vfork unblock", ppid);
+                println!("{:?} not found for exit vfork unblock", ppid);
             }
         }
     }
@@ -853,7 +854,7 @@ pub fn getgid() -> Result<usize> {
     Ok(context.rgid as usize)
 }
 
-pub fn getpid() -> Result<usize> {
+pub fn getpid() -> Result<ContextId> {
     let contexts = context::contexts();
     let context_lock = contexts.current().ok_or(Error::new(ESRCH))?;
     let context = context_lock.read();
@@ -872,7 +873,7 @@ pub fn iopl(_level: usize) -> Result<usize> {
     Ok(0)
 }
 
-pub fn kill(pid: usize, sig: usize) -> Result<usize> {
+pub fn kill(pid: ContextId, sig: usize) -> Result<usize> {
     use syscall::flag::*;
 
     let _context_lock = {
@@ -882,19 +883,19 @@ pub fn kill(pid: usize, sig: usize) -> Result<usize> {
     };
 
     let term = || {
-        println!("Terminate {}", pid);
+        println!("Terminate {:?}", pid);
     };
 
     let core = || {
-        println!("Core {}", pid);
+        println!("Core {:?}", pid);
     };
 
     let stop = || {
-        println!("Stop {}", pid);
+        println!("Stop {:?}", pid);
     };
 
     let cont = || {
-        println!("Continue {}", pid);
+        println!("Continue {:?}", pid);
     };
 
     match sig {
@@ -1056,7 +1057,7 @@ pub fn virttophys(virtual_address: usize) -> Result<usize> {
     }
 }
 
-fn reap(pid: usize) -> Result<usize> {
+fn reap(pid: ContextId) -> Result<ContextId> {
     // Spin until not running
     let mut running = false;
     while running {
@@ -1074,7 +1075,7 @@ fn reap(pid: usize) -> Result<usize> {
     contexts.remove(pid).ok_or(Error::new(ESRCH)).and(Ok(pid))
 }
 
-pub fn waitpid(pid: usize, status_ptr: usize, flags: usize) -> Result<usize> {
+pub fn waitpid(pid: ContextId, status_ptr: usize, flags: usize) -> Result<ContextId> {
     let waitpid = {
         let contexts = context::contexts();
         let context_lock = contexts.current().ok_or(Error::new(ESRCH))?;
@@ -1089,13 +1090,13 @@ pub fn waitpid(pid: usize, status_ptr: usize, flags: usize) -> Result<usize> {
         &mut tmp
     };
 
-    if pid == 0 {
+    if pid.into() == 0 {
         if flags & WNOHANG == WNOHANG {
             if let Some((w_pid, status)) = waitpid.receive_any_nonblock() {
                 status_slice[0] = status;
                 reap(w_pid)
             } else {
-                Ok(0)
+                Ok(ContextId::from(0))
             }
         } else {
             let (w_pid, status) = waitpid.receive_any();
@@ -1108,7 +1109,7 @@ pub fn waitpid(pid: usize, status_ptr: usize, flags: usize) -> Result<usize> {
                 status_slice[0] = status;
                 reap(pid)
             } else {
-                Ok(0)
+                Ok(ContextId::from(0))
             }
         } else {
             let status = waitpid.receive(&pid);
@@ -1117,3 +1118,4 @@ pub fn waitpid(pid: usize, status_ptr: usize, flags: usize) -> Result<usize> {
         }
     }
 }
+

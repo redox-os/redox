@@ -1,14 +1,15 @@
 use core::str;
-use core::sync::atomic::{AtomicUsize, Ordering, ATOMIC_USIZE_INIT};
+use core::sync::atomic::Ordering;
 use spin::Once;
 
 use context;
+use scheme::*;
 use sync::WaitQueue;
 use syscall::error::*;
 use syscall::flag::EVENT_READ;
 use syscall::scheme::Scheme;
 
-pub static DEBUG_SCHEME_ID: AtomicUsize = ATOMIC_USIZE_INIT;
+pub static DEBUG_SCHEME_ID: AtomicSchemeId = ATOMIC_SCHEMEID_INIT;
 
 /// Input queue
 static INPUT: Once<WaitQueue<u8>> = Once::new();

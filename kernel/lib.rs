@@ -43,6 +43,12 @@ extern crate goblin;
 extern crate spin;
 
 use core::sync::atomic::{AtomicUsize, ATOMIC_USIZE_INIT, Ordering};
+use scheme::FileHandle;
+
+#[macro_use]
+#[macro_export]
+/// Shared data structures
+pub mod common;
 
 /// Context management
 pub mod context;
@@ -87,9 +93,9 @@ pub fn cpu_count() -> usize {
 pub extern fn userspace_init() {
     assert_eq!(syscall::chdir(b"initfs:bin"), Ok(0));
 
-    assert_eq!(syscall::open(b"debug:", 0), Ok(0));
-    assert_eq!(syscall::open(b"debug:", 0), Ok(1));
-    assert_eq!(syscall::open(b"debug:", 0), Ok(2));
+    assert_eq!(syscall::open(b"debug:", 0).map(FileHandle::into), Ok(0));
+    assert_eq!(syscall::open(b"debug:", 0).map(FileHandle::into), Ok(1));
+    assert_eq!(syscall::open(b"debug:", 0).map(FileHandle::into), Ok(2));
 
     syscall::exec(b"initfs:bin/init", &[]).expect("failed to execute initfs:init");
 
@@ -99,7 +105,7 @@ pub extern fn userspace_init() {
 /// Allow exception handlers to send signal to arch-independant kernel
 #[no_mangle]
 pub extern fn ksignal(signal: usize) {
-    println!("SIGNAL {}, CPU {}, PID {}", signal, cpu_id(), context::context_id());
+    println!("SIGNAL {}, CPU {}, PID {:?}", signal, cpu_id(), context::context_id());
     {
         let contexts = context::contexts();
         if let Some(context_lock) = contexts.current() {

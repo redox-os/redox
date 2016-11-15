@@ -9,7 +9,7 @@
 use alloc::arc::Arc;
 use alloc::boxed::Box;
 use collections::BTreeMap;
-use core::sync::atomic::Ordering;
+use core::sync::atomic::{AtomicUsize, Ordering};
 use spin::{Once, RwLock, RwLockReadGuard, RwLockWriteGuard};
 
 use syscall::error::*;
@@ -62,10 +62,19 @@ pub mod zero;
 /// Limit on number of schemes
 pub const SCHEME_MAX_SCHEMES: usize = 65536;
 
+/// Unique identifier for a scheme.
+int_like!(SchemeId, AtomicSchemeId, usize, AtomicUsize);
+
+pub const ATOMIC_SCHEMEID_INIT: AtomicSchemeId = AtomicSchemeId::default();
+
+/// Unique identifier for a file descriptor.
+int_like!(FileHandle, AtomicFileHandle, usize, AtomicUsize);
+
+
 /// Scheme list type
 pub struct SchemeList {
-    map: BTreeMap<usize, Arc<Box<Scheme + Send + Sync>>>,
-    names: BTreeMap<Box<[u8]>, usize>,
+    map: BTreeMap<SchemeId, Arc<Box<Scheme + Send + Sync>>>,
+    names: BTreeMap<Box<[u8]>, SchemeId>,
     next_id: usize
 }
 
@@ -79,20 +88,20 @@ impl SchemeList {
         }
     }
 
-    pub fn iter(&self) -> ::collections::btree_map::Iter<usize, Arc<Box<Scheme + Send + Sync>>> {
+    pub fn iter(&self) -> ::collections::btree_map::Iter<SchemeId, Arc<Box<Scheme + Send + Sync>>> {
         self.map.iter()
     }
 
-    pub fn iter_name(&self) -> ::collections::btree_map::Iter<Box<[u8]>, usize> {
+    pub fn iter_name(&self) -> ::collections::btree_map::Iter<Box<[u8]>, SchemeId> {
         self.names.iter()
     }
 
     /// Get the nth scheme.
-    pub fn get(&self, id: usize) -> Option<&Arc<Box<Scheme + Send + Sync>>> {
+    pub fn get(&self, id: SchemeId) -> Option<&Arc<Box<Scheme + Send + Sync>>> {
         self.map.get(&id)
     }
 
-    pub fn get_name(&self, name: &[u8]) -> Option<(usize, &Arc<Box<Scheme + Send + Sync>>)> {
+    pub fn get_name(&self, name: &[u8]) -> Option<(SchemeId, &Arc<Box<Scheme + Send + Sync>>)> {
         if let Some(&id) = self.names.get(name) {
             self.get(id).map(|scheme| (id, scheme))
         } else {
@@ -101,7 +110,7 @@ impl SchemeList {
     }
 
     /// Create a new scheme.
-    pub fn insert(&mut self, name: Box<[u8]>, scheme: Arc<Box<Scheme + Send + Sync>>) -> Result<usize> {
+    pub fn insert(&mut self, name: Box<[u8]>, scheme: Arc<Box<Scheme + Send + Sync>>) -> Result<SchemeId> {
         if self.names.contains_key(&name) {
             return Err(Error::new(EEXIST));
         }
@@ -110,7 +119,7 @@ impl SchemeList {
             self.next_id = 1;
         }
 
-        while self.map.contains_key(&self.next_id) {
+        while self.map.contains_key(&SchemeId(self.next_id)) {
             self.next_id += 1;
         }
 
@@ -118,12 +127,11 @@ impl SchemeList {
             return Err(Error::new(EAGAIN));
         }
 
-        let id = self.next_id;
+        let id = SchemeId(self.next_id);
         self.next_id += 1;
 
         assert!(self.map.insert(id, scheme).is_none());
         assert!(self.names.insert(name, id).is_none());
-
         Ok(id)
     }
 }

@@ -2,13 +2,13 @@
 use core::sync::atomic::Ordering;
 
 use context;
-use scheme;
+use scheme::{self, FileHandle};
 use syscall;
 use syscall::data::{Packet, Stat};
 use syscall::error::*;
 use syscall::flag::{MODE_DIR, MODE_FILE};
 
-pub fn file_op(a: usize, fd: usize, c: usize, d: usize) -> Result<usize> {
+pub fn file_op(a: usize, fd: FileHandle, c: usize, d: usize) -> Result<usize> {
     let (file, pid, uid, gid) = {
         let contexts = context::contexts();
         let context_lock = contexts.current().ok_or(Error::new(ESRCH))?;
@@ -25,7 +25,7 @@ pub fn file_op(a: usize, fd: usize, c: usize, d: usize) -> Result<usize> {
 
     let mut packet = Packet {
         id: 0,
-        pid: pid,
+        pid: pid.into(),
         uid: uid,
         gid: gid,
         a: a,
@@ -39,11 +39,11 @@ pub fn file_op(a: usize, fd: usize, c: usize, d: usize) -> Result<usize> {
     Error::demux(packet.a)
 }
 
-pub fn file_op_slice(a: usize, fd: usize, slice: &[u8]) -> Result<usize> {
+pub fn file_op_slice(a: usize, fd: FileHandle, slice: &[u8]) -> Result<usize> {
     file_op(a, fd, slice.as_ptr() as usize, slice.len())
 }
 
-pub fn file_op_mut_slice(a: usize, fd: usize, slice: &mut [u8]) -> Result<usize> {
+pub fn file_op_mut_slice(a: usize, fd: FileHandle, slice: &mut [u8]) -> Result<usize> {
     file_op(a, fd, slice.as_mut_ptr() as usize, slice.len())
 }
 
@@ -81,7 +81,7 @@ pub fn getcwd(buf: &mut [u8]) -> Result<usize> {
 }
 
 /// Open syscall
-pub fn open(path: &[u8], flags: usize) -> Result<usize> {
+pub fn open(path: &[u8], flags: usize) -> Result<FileHandle> {
     let (path_canon, uid, gid) = {
         let contexts = context::contexts();
         let context_lock = contexts.current().ok_or(Error::new(ESRCH))?;
@@ -135,8 +135,8 @@ pub fn pipe2(fds: &mut [usize], flags: usize) -> Result<usize> {
             event: None,
         }).ok_or(Error::new(EMFILE))?;
 
-        fds[0] = read_fd;
-        fds[1] = write_fd;
+        fds[0] = read_fd.into();
+        fds[1] = write_fd.into();
 
         Ok(0)
     } else {
@@ -211,7 +211,7 @@ pub fn unlink(path: &[u8]) -> Result<usize> {
 }
 
 /// Close syscall
-pub fn close(fd: usize) -> Result<usize> {
+pub fn close(fd: FileHandle) -> Result<usize> {
     let file = {
         let contexts = context::contexts();
         let context_lock = contexts.current().ok_or(Error::new(ESRCH))?;
@@ -233,7 +233,7 @@ pub fn close(fd: usize) -> Result<usize> {
 }
 
 /// Duplicate file descriptor
-pub fn dup(fd: usize, buf: &[u8]) -> Result<usize> {
+pub fn dup(fd: FileHandle, buf: &[u8]) -> Result<FileHandle> {
     let file = {
         let contexts = context::contexts();
         let context_lock = contexts.current().ok_or(Error::new(ESRCH))?;
@@ -262,15 +262,15 @@ pub fn dup(fd: usize, buf: &[u8]) -> Result<usize> {
 }
 
 /// Register events for file
-pub fn fevent(fd: usize, flags: usize) -> Result<usize> {
+pub fn fevent(fd: FileHandle, flags: usize) -> Result<usize> {
     let file = {
         let contexts = context::contexts();
         let context_lock = contexts.current().ok_or(Error::new(ESRCH))?;
         let context = context_lock.read();
         let mut files = context.files.lock();
-        let mut file = files.get_mut(fd).ok_or(Error::new(EBADF))?.ok_or(Error::new(EBADF))?;
+        let mut file = files.get_mut(fd.into()).ok_or(Error::new(EBADF))?.ok_or(Error::new(EBADF))?;
         if let Some(event_id) = file.event.take() {
-            println!("{}: {}:{}: events already registered: {}", fd, file.scheme, file.number, event_id);
+            println!("{:?}: {:?}:{}: events already registered: {}", fd, file.scheme, file.number, event_id);
             context::event::unregister(fd, file.scheme, event_id);
         }
         file.clone()
@@ -287,7 +287,7 @@ pub fn fevent(fd: usize, flags: usize) -> Result<usize> {
         let context_lock = contexts.current().ok_or(Error::new(ESRCH))?;
         let context = context_lock.read();
         let mut files = context.files.lock();
-        let mut file = files.get_mut(fd).ok_or(Error::new(EBADF))?.ok_or(Error::new(EBADF))?;
+        let mut file = files.get_mut(fd.into()).ok_or(Error::new(EBADF))?.ok_or(Error::new(EBADF))?;
         file.event = Some(event_id);
     }
     context::event::register(fd, file.scheme, event_id);
