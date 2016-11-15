@@ -684,7 +684,7 @@ pub fn exec(path: &[u8], arg_ptrs: &[[usize; 2]]) -> Result<usize> {
                         // Close
                         {
                             if let Some(event_id) = file.event {
-                                context::event::unregister(fd, file.scheme, event_id);
+                                context::event::unregister(FileHandle::from(fd), file.scheme, event_id);
                             }
 
                             let scheme_option = {
@@ -1118,4 +1118,3 @@ pub fn waitpid(pid: ContextId, status_ptr: usize, flags: usize) -> Result<Contex
         }
     }
 }
-
