@@ -255,7 +255,7 @@ pub fn clone(flags: usize, stack_base: usize) -> Result<usize> {
                             let scheme = schemes.get(file.scheme).ok_or(Error::new(EBADF))?;
                             scheme.clone()
                         };
-                        let result = scheme.dup(file.number, &[]);
+                        let result = scheme.dup(file.number, b"clone");
                         result
                     };
                     match result {
@@ -496,7 +496,7 @@ pub fn exec(path: &[u8], arg_ptrs: &[[usize; 2]]) -> Result<usize> {
                 drop(arg_ptrs); // Drop so that usage is not allowed after unmapping context
 
                 let contexts = context::contexts();
-                let (vfork, ppid) = {
+                let (vfork, ppid, files) = {
                     let context_lock = contexts.current().ok_or(Error::new(ESRCH))?;
                     let mut context = context_lock.write();
 
@@ -655,10 +655,66 @@ pub fn exec(path: &[u8], arg_ptrs: &[[usize; 2]]) -> Result<usize> {
                         context.image.push(memory.to_shared());
                     }
 
+                    let files = Arc::new(Mutex::new(context.files.lock().clone()));
+                    context.files = files.clone();
+
                     let vfork = context.vfork;
                     context.vfork = false;
-                    (vfork, context.ppid)
+                    (vfork, context.ppid, files)
                 };
+
+                // Duplicate current files using b"exec", close previous
+                for (fd, mut file_option) in files.lock().iter_mut().enumerate() {
+                    let new_file_option = if let Some(file) = *file_option {
+                        // Duplicate
+                        let result = {
+                            let scheme_option = {
+                                let schemes = scheme::schemes();
+                                schemes.get(file.scheme).map(|scheme| scheme.clone())
+                            };
+                            if let Some(scheme) = scheme_option {
+                                let result = scheme.dup(file.number, b"exec");
+                                result
+                            } else {
+                                Err(Error::new(EBADF))
+                            }
+                        };
+
+                        // Close
+                        {
+                            if let Some(event_id) = file.event {
+                                context::event::unregister(fd, file.scheme, event_id);
+                            }
+
+                            let scheme_option = {
+                                let schemes = scheme::schemes();
+                                schemes.get(file.scheme).map(|scheme| scheme.clone())
+                            };
+                            if let Some(scheme) = scheme_option {
+                                let _ = scheme.close(file.number);
+                            }
+                        }
+
+                        // Return new descriptor
+                        match result {
+                            Ok(new_number) => {
+                                Some(context::file::File {
+                                    scheme: file.scheme,
+                                    number: new_number,
+                                    event: None,
+                                })
+                            },
+                            Err(err) => {
+                                println!("exec: failed to dup {}: {:?}", fd, err);
+                                None
+                            }
+                        }
+                    } else {
+                        None
+                    };
+
+                    *file_option = new_file_option;
+                }
 
                 if vfork {
                     if let Some(context_lock) = contexts.get(ppid) {
