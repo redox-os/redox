@@ -6,3 +6,4 @@ build = "build.rs"
 
 [dependencies]
 redox_syscall = { path = "../../syscall/" }
+spin = "*"

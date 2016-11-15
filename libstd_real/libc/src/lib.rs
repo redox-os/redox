@@ -1,7 +1,9 @@
 #![no_std]
 #![allow(non_camel_case_types)]
 #![feature(asm)]
+#![feature(const_fn)]
 #![feature(naked_functions)]
+#![feature(thread_local)]
 
 #![cfg_attr(stdbuild, feature(no_std, core, core_slice_ext, staged_api, custom_attribute, cfg_target_vendor))]
 #![cfg_attr(stdbuild, no_std)]
