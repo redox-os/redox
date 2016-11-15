@@ -6,7 +6,7 @@ use scheme::{AtomicSchemeId, ATOMIC_SCHEMEID_INIT};
 
 use sync::WaitCondition;
 use syscall::error::{Error, Result, EAGAIN, EBADF, EINVAL, EPIPE};
-use syscall::flag::{F_GETFL, F_SETFL, O_CLOEXEC, O_NONBLOCK};
+use syscall::flag::{F_GETFL, F_SETFL, O_ACCMODE, O_CLOEXEC, O_NONBLOCK};
 use syscall::scheme::Scheme;
 
 /// Pipes list
@@ -155,7 +155,7 @@ impl PipeRead {
         match cmd {
             F_GETFL => Ok(self.flags.load(Ordering::SeqCst)),
             F_SETFL => {
-                self.flags.store(arg, Ordering::SeqCst);
+                self.flags.store(arg & ! O_ACCMODE, Ordering::SeqCst);
                 Ok(0)
             },
             _ => Err(Error::new(EINVAL))
@@ -229,7 +229,7 @@ impl PipeWrite {
         match cmd {
             F_GETFL => Ok(self.flags.load(Ordering::SeqCst)),
             F_SETFL => {
-                self.flags.store(arg, Ordering::SeqCst);
+                self.flags.store(arg & ! O_ACCMODE, Ordering::SeqCst);
                 Ok(0)
             },
             _ => Err(Error::new(EINVAL))
