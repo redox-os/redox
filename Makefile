@@ -475,6 +475,7 @@ netutils: \
 	filesystem/bin/httpd \
 	filesystem/bin/irc \
 	filesystem/bin/nc \
+	filesystem/bin/ntp \
 	filesystem/bin/wget
 
 orbutils: \
