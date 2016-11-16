@@ -284,6 +284,11 @@ impl Scheme for UserScheme {
         inner.call(SYS_LSEEK, file, position, whence)
     }
 
+    fn fcntl(&self, file: usize, cmd: usize, arg: usize) -> Result<usize> {
+        let inner = self.inner.upgrade().ok_or(Error::new(ENODEV))?;
+        inner.call(SYS_FCNTL, file, cmd, arg)
+    }
+
     fn fevent(&self, file: usize, flags: usize) -> Result<usize> {
         let inner = self.inner.upgrade().ok_or(Error::new(ENODEV))?;
         inner.call(SYS_FEVENT, file, flags, 0)
