@@ -9,7 +9,7 @@ pub use self::syscall::error::*;
 pub use self::syscall::flag::*;
 pub use self::syscall::{
     clock_gettime, clone, execve as exec, exit, futex, getpid, kill, nanosleep, setgid, setuid, waitpid,
-    chdir, getcwd, open, mkdir, rmdir, unlink, dup, pipe2,
+    chdir, chmod, getcwd, open, mkdir, rmdir, unlink, dup, pipe2,
     read, write, fcntl, fpath, fstat, fsync, ftruncate, lseek, close
 };
 

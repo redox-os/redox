@@ -423,6 +423,7 @@ drivers: \
 coreutils: \
 	filesystem/bin/basename \
 	filesystem/bin/cat \
+	filesystem/bin/chmod \
 	filesystem/bin/clear \
 	filesystem/bin/cp \
 	filesystem/bin/cut \

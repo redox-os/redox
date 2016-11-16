@@ -54,6 +54,7 @@ pub extern fn syscall(a: usize, b: usize, c: usize, d: usize, e: usize, f: usize
             SYS_CLASS_PATH => match a {
                 SYS_OPEN => open(validate_slice(b as *const u8, c)?, d).map(FileHandle::into),
                 SYS_MKDIR => mkdir(validate_slice(b as *const u8, c)?, d as u16),
+                SYS_CHMOD => chmod(validate_slice(b as *const u8, c)?, d as u16),
                 SYS_RMDIR => rmdir(validate_slice(b as *const u8, c)?),
                 SYS_UNLINK => unlink(validate_slice(b as *const u8, c)?),
                 _ => unreachable!()

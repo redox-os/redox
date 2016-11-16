@@ -166,6 +166,28 @@ pub fn mkdir(path: &[u8], mode: u16) -> Result<usize> {
     scheme.mkdir(reference_opt.unwrap_or(b""), mode, uid, gid)
 }
 
+/// chmod syscall
+pub fn chmod(path: &[u8], mode: u16) -> Result<usize> {
+    let (path_canon, uid, gid) = {
+        let contexts = context::contexts();
+        let context_lock = contexts.current().ok_or(Error::new(ESRCH))?;
+        let context = context_lock.read();
+        (context.canonicalize(path), context.euid, context.egid)
+    };
+
+    let mut parts = path_canon.splitn(2, |&b| b == b':');
+    let namespace_opt = parts.next();
+    let reference_opt = parts.next();
+
+    let namespace = namespace_opt.ok_or(Error::new(ENODEV))?;
+    let scheme = {
+        let schemes = scheme::schemes();
+        let (_scheme_id, scheme) = schemes.get_name(namespace).ok_or(Error::new(ENODEV))?;
+        scheme.clone()
+    };
+    scheme.chmod(reference_opt.unwrap_or(b""), mode, uid, gid)
+}
+
 /// rmdir syscall
 pub fn rmdir(path: &[u8]) -> Result<usize> {
     let (path_canon, uid, gid) = {
