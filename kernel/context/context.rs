@@ -1,6 +1,6 @@
 use alloc::arc::Arc;
 use alloc::boxed::Box;
-use collections::{BTreeMap, Vec};
+use collections::{BTreeMap, Vec, VecDeque};
 use spin::Mutex;
 
 use arch;
@@ -48,6 +48,8 @@ pub struct Context {
     pub vfork: bool,
     /// Context is being waited on
     pub waitpid: Arc<WaitMap<ContextId, usize>>,
+    /// Context should handle pending signals
+    pub pending: VecDeque<u8>,
     /// Context should wake up at specified time
     pub wake: Option<(u64, u64)>,
     /// The architecture specific context
@@ -94,6 +96,7 @@ impl Context {
             cpu_id: None,
             vfork: false,
             waitpid: Arc::new(WaitMap::new()),
+            pending: VecDeque::new(),
             wake: None,
             arch: arch::context::Context::new(),
             kfx: None,

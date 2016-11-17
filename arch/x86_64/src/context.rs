@@ -1,3 +1,4 @@
+use core::mem;
 use core::sync::atomic::{AtomicBool, ATOMIC_BOOL_INIT};
 
 /// This must be used by the kernel to ensure that context switches are done atomically
@@ -65,6 +66,23 @@ impl Context {
         self.rsp = address;
     }
 
+    pub unsafe fn signal_stack(&mut self, handler: extern fn(usize), sig: u8) {
+        self.push_stack(sig as usize);
+        self.push_stack(handler as usize);
+        self.push_stack(signal_handler_wrapper as usize);
+    }
+
+    pub unsafe fn push_stack(&mut self, value: usize) {
+        self.rsp -= mem::size_of::<usize>();
+        *(self.rsp as *mut usize) = value;
+    }
+
+    pub unsafe fn pop_stack(&mut self) -> usize {
+        let value = *(self.rsp as *const usize);
+        self.rsp += mem::size_of::<usize>();
+        value
+    }
+
     /// Switch to the next context by restoring its stack and registers
     #[cold]
     #[inline(never)]
@@ -107,4 +125,62 @@ impl Context {
         asm!("mov $0, rbp" : "=r"(self.rbp) : : "memory" : "intel", "volatile");
         asm!("mov rbp, $0" : : "r"(next.rbp) : "memory" : "intel", "volatile");
     }
+}
+
+#[repr(packed)]
+pub struct SignalHandlerStack {
+    r11: usize,
+    r10: usize,
+    r9: usize,
+    r8: usize,
+    rsi: usize,
+    rdi: usize,
+    rdx: usize,
+    rcx: usize,
+    rax: usize,
+    handler: extern fn(usize),
+    sig: usize,
+    rip: usize,
+}
+
+#[naked]
+unsafe extern fn signal_handler_wrapper() {
+    #[inline(never)]
+    unsafe fn inner(stack: &SignalHandlerStack) {
+        (stack.handler)(stack.sig);
+    }
+
+    // Push scratch registers
+    asm!("xchg bx, bx
+        push rax
+        push rcx
+        push rdx
+        push rdi
+        push rsi
+        push r8
+        push r9
+        push r10
+        push r11"
+        : : : : "intel", "volatile");
+
+    // Get reference to stack variables
+    let rsp: usize;
+    asm!("" : "={rsp}"(rsp) : : : "intel", "volatile");
+
+    // Call inner rust function
+    inner(&*(rsp as *const SignalHandlerStack));
+
+    // Pop scratch registers, error code, and return
+    asm!("xchg bx, bx
+        pop r11
+        pop r10
+        pop r9
+        pop r8
+        pop rsi
+        pop rdi
+        pop rdx
+        pop rcx
+        pop rax
+        add rsp, 16"
+        : : : : "intel", "volatile");
 }

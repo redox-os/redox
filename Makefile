@@ -28,7 +28,6 @@ FORCE:
 clean:
 	cargo clean
 	cargo clean --manifest-path libstd/Cargo.toml
-	cargo clean --manifest-path libstd_real/Cargo.toml
 	cargo clean --manifest-path drivers/ahcid/Cargo.toml
 	cargo clean --manifest-path drivers/e1000d/Cargo.toml
 	cargo clean --manifest-path drivers/ps2d/Cargo.toml
@@ -82,7 +81,6 @@ ref: FORCE
 test:
 	cargo test
 	cargo test --manifest-path libstd/Cargo.toml
-	cargo test --manifest-path libstd_real/Cargo.toml
 	cargo test --manifest-path drivers/ahcid/Cargo.toml
 	cargo test --manifest-path drivers/e1000d/Cargo.toml
 	cargo test --manifest-path drivers/ps2d/Cargo.toml
@@ -114,7 +112,6 @@ test:
 update:
 	cargo update
 	cargo update --manifest-path libstd/Cargo.toml
-	cargo update --manifest-path libstd_real/Cargo.toml
 	cargo update --manifest-path drivers/ahcid/Cargo.toml
 	cargo update --manifest-path drivers/e1000d/Cargo.toml
 	cargo update --manifest-path drivers/ps2d/Cargo.toml
@@ -314,13 +311,9 @@ $(BUILD)/libopenlibm.a: libstd/openlibm/libopenlibm.a
 	mkdir -p $(BUILD)
 	cp $< $@
 
-#$(BUILD)/libstd.rlib: libstd/Cargo.toml libstd/src/** $(BUILD)/libcore.rlib $(BUILD)/liballoc.rlib $(BUILD)/librustc_unicode.rlib $(BUILD)/libcollections.rlib $(BUILD)/librand.rlib $(BUILD)/libopenlibm.a
-#	$(CARGO) rustc --verbose --manifest-path $< $(CARGOFLAGS) -o $@
-#	cp libstd/target/$(TARGET)/release/deps/*.rlib $(BUILD)
-
-$(BUILD)/libstd.rlib: libstd_real/Cargo.toml rust/src/libstd/** $(BUILD)/libcore.rlib $(BUILD)/liballoc.rlib $(BUILD)/librustc_unicode.rlib $(BUILD)/libcollections.rlib $(BUILD)/librand.rlib $(BUILD)/libopenlibm.a
+$(BUILD)/libstd.rlib: libstd/Cargo.toml rust/src/libstd/** $(BUILD)/libcore.rlib $(BUILD)/liballoc.rlib $(BUILD)/librustc_unicode.rlib $(BUILD)/libcollections.rlib $(BUILD)/librand.rlib $(BUILD)/libopenlibm.a
 	$(CARGO) rustc --verbose --manifest-path $< $(CARGOFLAGS) -o $@
-	cp libstd_real/target/$(TARGET)/release/deps/*.rlib $(BUILD)
+	cp libstd/target/$(TARGET)/release/deps/*.rlib $(BUILD)
 
 initfs/bin/%: drivers/%/Cargo.toml drivers/%/src/** $(BUILD)/libstd.rlib
 	mkdir -p initfs/bin
@@ -438,6 +431,7 @@ coreutils: \
 	filesystem/bin/false \
 	filesystem/bin/free \
 	filesystem/bin/head \
+	filesystem/bin/kill \
 	filesystem/bin/ls \
 	filesystem/bin/mkdir \
 	filesystem/bin/mv \

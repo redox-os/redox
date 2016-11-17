@@ -1,36 +1,36 @@
 extern crate syscall;
 
-use std::fs::File;
-use std::io::{BufRead, BufReader, Read};
+use std::os::unix::process::CommandExt;
+use std::process::Command;
 
 pub fn main() {
+    let names = [
+        "file",
+        "rand",
+        "tcp",
+        "udp"
+    ];
+
+    let command = "sh";
+
     let pid = unsafe { syscall::clone(0).unwrap() };
     if pid == 0 {
-        let rand = b"rand";
-        syscall::setns(&[[rand.as_ptr() as usize, rand.len()]]).unwrap();
-
-        println!("Child Namespace:");
-        let file = BufReader::new(File::open("sys:scheme").unwrap());
-        for line in file.lines() {
-            let line = line.unwrap();
-            println!("{}", line);
+        let mut name_ptrs = Vec::new();
+        for name in names.iter() {
+            name_ptrs.push([name.as_ptr() as usize, name.len()]);
         }
 
-        let mut rand = File::open("rand:").unwrap();
+        syscall::setns(&name_ptrs).unwrap();
 
-        let mut byte = [0];
-        rand.read(&mut byte).unwrap();
+        println!("Entering container: {}", command);
 
-        println!("Rand: {}", byte[0]);
+        let err = Command::new(command).exec();
+
+        panic!("contain: failed to launch {}: {}", command, err);
     } else {
         let mut status = 0;
         syscall::waitpid(pid, &mut status, 0).unwrap();
 
-        println!("Parent Namespace:");
-        let file = BufReader::new(File::open("sys:scheme").unwrap());
-        for line in file.lines() {
-            let line = line.unwrap();
-            println!("{}", line);
-        }
+        println!("Exiting container: {:X}", status);
     }
 }

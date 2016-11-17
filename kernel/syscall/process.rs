@@ -7,19 +7,18 @@ use core::ops::DerefMut;
 use spin::Mutex;
 
 use arch;
-use arch::memory::{allocate_frame, allocate_frames, deallocate_frames, Frame};
-use arch::paging::{ActivePageTable, InactivePageTable, Page, PhysicalAddress, VirtualAddress, entry};
+use arch::memory::allocate_frame;
+use arch::paging::{ActivePageTable, InactivePageTable, Page, VirtualAddress, entry};
 use arch::paging::temporary_page::TemporaryPage;
 use arch::start::usermode;
 use context;
 use context::ContextId;
-use context::memory::Grant;
 use elf::{self, program_header};
 use scheme::{self, FileHandle};
 use syscall;
 use syscall::data::Stat;
 use syscall::error::*;
-use syscall::flag::{CLONE_VFORK, CLONE_VM, CLONE_FS, CLONE_FILES, MAP_WRITE, MAP_WRITE_COMBINE, WNOHANG};
+use syscall::flag::{CLONE_VFORK, CLONE_VM, CLONE_FS, CLONE_FILES, WNOHANG};
 use syscall::validate::{validate_slice, validate_slice_mut};
 
 pub fn brk(address: usize) -> Result<usize> {
@@ -838,27 +837,6 @@ pub fn exit(status: usize) -> ! {
     unreachable!();
 }
 
-pub fn getegid() -> Result<usize> {
-    let contexts = context::contexts();
-    let context_lock = contexts.current().ok_or(Error::new(ESRCH))?;
-    let context = context_lock.read();
-    Ok(context.egid as usize)
-}
-
-pub fn geteuid() -> Result<usize> {
-    let contexts = context::contexts();
-    let context_lock = contexts.current().ok_or(Error::new(ESRCH))?;
-    let context = context_lock.read();
-    Ok(context.euid as usize)
-}
-
-pub fn getgid() -> Result<usize> {
-    let contexts = context::contexts();
-    let context_lock = contexts.current().ok_or(Error::new(ESRCH))?;
-    let context = context_lock.read();
-    Ok(context.rgid as usize)
-}
-
 pub fn getpid() -> Result<ContextId> {
     let contexts = context::contexts();
     let context_lock = contexts.current().ok_or(Error::new(ESRCH))?;
@@ -866,224 +844,29 @@ pub fn getpid() -> Result<ContextId> {
     Ok(context.id)
 }
 
-pub fn getuid() -> Result<usize> {
-    let contexts = context::contexts();
-    let context_lock = contexts.current().ok_or(Error::new(ESRCH))?;
-    let context = context_lock.read();
-    Ok(context.ruid as usize)
-}
-
-pub fn iopl(_level: usize) -> Result<usize> {
-    //TODO
-    Ok(0)
-}
-
 pub fn kill(pid: ContextId, sig: usize) -> Result<usize> {
-    use syscall::flag::*;
+    let (ruid, euid) = {
+        let contexts = context::contexts();
+        let context_lock = contexts.current().ok_or(Error::new(ESRCH))?;
+        let context = context_lock.read();
+        (context.ruid, context.euid)
+    };
 
-    let _context_lock = {
+    if sig > 0 && sig <= 0x7F {
         let contexts = context::contexts();
         let context_lock = contexts.get(pid).ok_or(Error::new(ESRCH))?;
-        context_lock.clone()
-    };
-
-    let term = || {
-        println!("Terminate {:?}", pid);
-    };
-
-    let core = || {
-        println!("Core {:?}", pid);
-    };
-
-    let stop = || {
-        println!("Stop {:?}", pid);
-    };
-
-    let cont = || {
-        println!("Continue {:?}", pid);
-    };
-
-    match sig {
-        0 => (),
-        SIGHUP => term(),
-        SIGINT => term(),
-        SIGQUIT => core(),
-        SIGILL => core(),
-        SIGTRAP => core(),
-        SIGABRT => core(),
-        SIGBUS => core(),
-        SIGFPE => core(),
-        SIGKILL => term(),
-        SIGUSR1 => term(),
-        SIGSEGV => core(),
-        SIGPIPE => term(),
-        SIGALRM => term(),
-        SIGTERM => term(),
-        SIGSTKFLT => term(),
-        SIGCHLD => (),
-        SIGCONT => cont(),
-        SIGSTOP => stop(),
-        SIGTSTP => stop(),
-        SIGTTIN => stop(),
-        SIGTTOU => stop(),
-        SIGURG => (),
-        SIGXCPU => core(),
-        SIGXFSZ => core(),
-        SIGVTALRM => term(),
-        SIGPROF => term(),
-        SIGWINCH => (),
-        SIGIO => term(),
-        SIGPWR => term(),
-        SIGSYS => core(),
-        _ => return Err(Error::new(EINVAL))
-    }
-
-    Ok(0)
-}
-
-pub fn physalloc(size: usize) -> Result<usize> {
-    allocate_frames((size + 4095)/4096).ok_or(Error::new(ENOMEM)).map(|frame| frame.start_address().get())
-}
-
-pub fn physfree(physical_address: usize, size: usize) -> Result<usize> {
-    deallocate_frames(Frame::containing_address(PhysicalAddress::new(physical_address)), (size + 4095)/4096);
-    //TODO: Check that no double free occured
-    Ok(0)
-}
-
-//TODO: verify exlusive access to physical memory
-pub fn physmap(physical_address: usize, size: usize, flags: usize) -> Result<usize> {
-    if size == 0 {
-        Ok(0)
-    } else {
-        let contexts = context::contexts();
-        let context_lock = contexts.current().ok_or(Error::new(ESRCH))?;
-        let context = context_lock.read();
-
-        let mut grants = context.grants.lock();
-
-        let from_address = (physical_address/4096) * 4096;
-        let offset = physical_address - from_address;
-        let full_size = ((offset + size + 4095)/4096) * 4096;
-        let mut to_address = arch::USER_GRANT_OFFSET;
-
-        let mut entry_flags = entry::PRESENT | entry::NO_EXECUTE | entry::USER_ACCESSIBLE;
-        if flags & MAP_WRITE == MAP_WRITE {
-            entry_flags |= entry::WRITABLE;
-        }
-        if flags & MAP_WRITE_COMBINE == MAP_WRITE_COMBINE {
-            entry_flags |= entry::HUGE_PAGE;
-        }
-
-        for i in 0 .. grants.len() {
-            let start = grants[i].start_address().get();
-            if to_address + full_size < start {
-                grants.insert(i, Grant::physmap(
-                    PhysicalAddress::new(from_address),
-                    VirtualAddress::new(to_address),
-                    full_size,
-                    entry_flags
-                ));
-
-                return Ok(to_address + offset);
-            } else {
-                let pages = (grants[i].size() + 4095) / 4096;
-                let end = start + pages * 4096;
-                to_address = end;
-            }
-        }
-
-        grants.push(Grant::physmap(
-            PhysicalAddress::new(from_address),
-            VirtualAddress::new(to_address),
-            full_size,
-            entry_flags
-        ));
-
-        Ok(to_address + offset)
-    }
-}
-
-pub fn physunmap(virtual_address: usize) -> Result<usize> {
-    if virtual_address == 0 {
-        Ok(0)
-    } else {
-        let contexts = context::contexts();
-        let context_lock = contexts.current().ok_or(Error::new(ESRCH))?;
-        let context = context_lock.read();
-
-        let mut grants = context.grants.lock();
-
-        for i in 0 .. grants.len() {
-            let start = grants[i].start_address().get();
-            let end = start + grants[i].size();
-            if virtual_address >= start && virtual_address < end {
-                grants.remove(i).unmap();
-
-                return Ok(0);
-            }
-        }
-
-        Err(Error::new(EFAULT))
-    }
-}
-
-pub fn setgid(gid: u32) -> Result<usize> {
-    let contexts = context::contexts();
-    let context_lock = contexts.current().ok_or(Error::new(ESRCH))?;
-    let mut context = context_lock.write();
-    if context.egid == 0 {
-        context.rgid = gid;
-        context.egid = gid;
-        Ok(0)
-    } else {
-        Err(Error::new(EPERM))
-    }
-}
-
-pub fn setuid(uid: u32) -> Result<usize> {
-    let contexts = context::contexts();
-    let context_lock = contexts.current().ok_or(Error::new(ESRCH))?;
-    let mut context = context_lock.write();
-    if context.euid == 0 {
-        context.ruid = uid;
-        context.euid = uid;
-        Ok(0)
-    } else {
-        Err(Error::new(EPERM))
-    }
-}
-
-pub fn setns(name_ptrs: &[[usize; 2]]) -> Result<usize> {
-    let mut names = Vec::new();
-    for name_ptr in name_ptrs {
-        names.push(validate_slice(name_ptr[0] as *const u8, name_ptr[1])?);
-    }
-
-    let from = {
-        let contexts = context::contexts();
-        let context_lock = contexts.current().ok_or(Error::new(ESRCH))?;
-        let context = context_lock.read();
-        context.scheme_ns
-    };
-
-    let to = scheme::schemes_mut().setns(from, &names)?;
-
-    {
-        let contexts = context::contexts();
-        let context_lock = contexts.current().ok_or(Error::new(ESRCH))?;
         let mut context = context_lock.write();
-        context.scheme_ns = to;
-    }
-
-    Ok(0)
-}
-
-pub fn virttophys(virtual_address: usize) -> Result<usize> {
-    let active_table = unsafe { ActivePageTable::new() };
-    match active_table.translate(VirtualAddress::new(virtual_address)) {
-        Some(physical_address) => Ok(physical_address.get()),
-        None => Err(Error::new(EFAULT))
+        if euid == 0
+        || euid == context.ruid
+        || ruid == context.ruid
+        {
+            context.pending.push_back(sig as u8);
+            Ok(0)
+        } else {
+            Err(Error::new(EPERM))
+        }
+    } else {
+        Err(Error::new(EINVAL))
     }
 }
 

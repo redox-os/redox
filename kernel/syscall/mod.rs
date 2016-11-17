@@ -4,8 +4,10 @@ extern crate syscall;
 
 pub use self::syscall::{data, error, flag, number, scheme};
 
+pub use self::driver::*;
 pub use self::fs::*;
 pub use self::futex::futex;
+pub use self::privilege::*;
 pub use self::process::*;
 pub use self::time::*;
 pub use self::validate::*;
@@ -17,11 +19,17 @@ use self::number::*;
 use context::ContextId;
 use scheme::FileHandle;
 
+/// Driver syscalls
+pub mod driver;
+
 /// Filesystem syscalls
 pub mod fs;
 
 /// Fast userspace mutex
 pub mod futex;
+
+/// Privilege syscalls
+pub mod privilege;
 
 /// Process syscalls
 pub mod process;
@@ -65,13 +73,14 @@ pub extern fn syscall(a: usize, b: usize, c: usize, d: usize, e: usize, f: usize
                 SYS_CLOCK_GETTIME => clock_gettime(b, validate_slice_mut(c as *mut TimeSpec, 1).map(|time| &mut time[0])?),
                 SYS_FUTEX => futex(validate_slice_mut(b as *mut i32, 1).map(|uaddr| &mut uaddr[0])?, c, d as i32, e, f as *mut i32),
                 SYS_BRK => brk(b),
-                SYS_EXIT => exit(b),
-                SYS_WAITPID => waitpid(ContextId::from(b), c, d).map(ContextId::into),
-                SYS_EXECVE => exec(validate_slice(b as *const u8, c)?, validate_slice(d as *const [usize; 2], e)?),
-                SYS_CHDIR => chdir(validate_slice(b as *const u8, c)?),
                 SYS_GETPID => getpid().map(ContextId::into),
-                SYS_IOPL => iopl(b),
                 SYS_CLONE => clone(b, stack).map(ContextId::into),
+                SYS_EXIT => exit((b & 0xFF) << 8),
+                SYS_KILL => kill(ContextId::from(b), c),
+                SYS_WAITPID => waitpid(ContextId::from(b), c, d).map(ContextId::into),
+                SYS_CHDIR => chdir(validate_slice(b as *const u8, c)?),
+                SYS_EXECVE => exec(validate_slice(b as *const u8, c)?, validate_slice(d as *const [usize; 2], e)?),
+                SYS_IOPL => iopl(b, stack),
                 SYS_GETCWD => getcwd(validate_slice_mut(b as *mut u8, c)?),
                 SYS_GETUID => getuid(),
                 SYS_GETGID => getgid(),

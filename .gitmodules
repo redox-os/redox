@@ -1,9 +1,6 @@
 [submodule "rust"]
 	path = rust
 	url = https://github.com/redox-os/rust.git
-[submodule "libstd"]
-	path = libstd
-	url = https://github.com/redox-os/libstd.git
 [submodule "ion"]
 	path = programs/ion
 	url = https://github.com/redox-os/ion.git
@@ -52,3 +49,6 @@
 [submodule "crates/docgen"]
 	path = crates/docgen
 	url = https://github.com/redox-os/docgen.git
+[submodule "libstd_real/openlibm"]
+	path = libstd/openlibm
+	url = https://github.com/redox-os/openlibm.git

@@ -113,6 +113,7 @@ pub extern fn ksignal(signal: usize) {
             println!("NAME {}", unsafe { ::core::str::from_utf8_unchecked(&context.name.lock()) });
         }
     }
+    syscall::exit(signal & 0x7F);
 }
 
 /// This is the kernel entry point for the primary CPU. The arch crate is responsible for calling this
