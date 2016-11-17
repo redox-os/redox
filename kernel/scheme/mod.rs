@@ -84,27 +84,18 @@ pub struct SchemeList {
 impl SchemeList {
     /// Create a new scheme list.
     pub fn new() -> Self {
-        SchemeList {
+        let mut list = SchemeList {
             map: BTreeMap::new(),
             names: BTreeMap::new(),
             next_ns: 0,
             next_id: 1
-        }
-    }
-
-    /// Initialize the root namespace
-    fn init(&mut self) {
-        // Do common namespace initialization
-        let ns = self.new_ns();
-        // Debug, Initfs and IRQ are only available in the root namespace. Pipe is special
-        self.insert(ns, Box::new(*b"debug"), |scheme_id| Arc::new(Box::new(DebugScheme::new(scheme_id)))).unwrap();
-        self.insert(ns, Box::new(*b"initfs"), |_| Arc::new(Box::new(InitFsScheme::new()))).unwrap();
-        self.insert(ns, Box::new(*b"irq"), |scheme_id| Arc::new(Box::new(IrqScheme::new(scheme_id)))).unwrap();
-        self.insert(ns, Box::new(*b"pipe"), |scheme_id| Arc::new(Box::new(PipeScheme::new(scheme_id)))).unwrap();
+        };
+        list.new_root();
+        list
     }
 
     /// Initialize a new namespace
-    pub fn new_ns(&mut self) -> SchemeNamespace {
+    fn new_ns(&mut self) -> SchemeNamespace {
         let ns = SchemeNamespace(self.next_ns);
         self.next_ns += 1;
         self.names.insert(ns, BTreeMap::new());
@@ -117,6 +108,40 @@ impl SchemeList {
         self.insert(ns, Box::new(*b"zero"), |_| Arc::new(Box::new(ZeroScheme))).unwrap();
 
         ns
+    }
+
+    /// Initialize the root namespace
+    fn new_root(&mut self) {
+        // Do common namespace initialization
+        let ns = self.new_ns();
+
+        // Debug, Initfs and IRQ are only available in the root namespace. Pipe is special
+        self.insert(ns, Box::new(*b"debug"), |scheme_id| Arc::new(Box::new(DebugScheme::new(scheme_id)))).unwrap();
+        self.insert(ns, Box::new(*b"initfs"), |_| Arc::new(Box::new(InitFsScheme::new()))).unwrap();
+        self.insert(ns, Box::new(*b"irq"), |scheme_id| Arc::new(Box::new(IrqScheme::new(scheme_id)))).unwrap();
+        self.insert(ns, Box::new(*b"pipe"), |scheme_id| Arc::new(Box::new(PipeScheme::new(scheme_id)))).unwrap();
+    }
+
+    pub fn setns(&mut self, from: SchemeNamespace, names: &[&[u8]]) -> Result<SchemeNamespace> {
+        // Create an empty namespace
+        let to = self.new_ns();
+
+        // Copy requested scheme IDs
+        for name in names.iter() {
+            let id = if let Some((id, _scheme)) = self.get_name(from, name) {
+                id
+            } else {
+                return Err(Error::new(ENODEV));
+            };
+
+            if let Some(ref mut names) = self.names.get_mut(&to) {
+                assert!(names.insert(name.to_vec().into_boxed_slice(), id).is_none());
+            } else {
+                panic!("scheme namespace not found");
+            }
+        }
+
+        Ok(to)
     }
 
     pub fn iter(&self) -> ::collections::btree_map::Iter<SchemeId, Arc<Box<Scheme + Send + Sync>>> {
@@ -182,9 +207,7 @@ static SCHEMES: Once<RwLock<SchemeList>> = Once::new();
 
 /// Initialize schemes, called if needed
 fn init_schemes() -> RwLock<SchemeList> {
-    let mut list: SchemeList = SchemeList::new();
-    list.init();
-    RwLock::new(list)
+    RwLock::new(SchemeList::new())
 }
 
 /// Get the global schemes list, const

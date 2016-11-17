@@ -19,7 +19,7 @@ use scheme::{self, FileHandle};
 use syscall;
 use syscall::data::Stat;
 use syscall::error::*;
-use syscall::flag::{CLONE_VFORK, CLONE_VM, CLONE_FS, CLONE_FILES, CLONE_NEWNS, MAP_WRITE, MAP_WRITE_COMBINE, WNOHANG};
+use syscall::flag::{CLONE_VFORK, CLONE_VM, CLONE_FS, CLONE_FILES, MAP_WRITE, MAP_WRITE_COMBINE, WNOHANG};
 use syscall::validate::{validate_slice, validate_slice_mut};
 
 pub fn brk(address: usize) -> Result<usize> {
@@ -223,11 +223,7 @@ pub fn clone(flags: usize, stack_base: usize) -> Result<ContextId> {
                 name = Arc::new(Mutex::new(context.name.lock().clone()));
             }
 
-            if flags & CLONE_NEWNS == CLONE_NEWNS {
-                scheme_ns = scheme::schemes_mut().new_ns();
-            } else {
-                scheme_ns = context.scheme_ns;
-            }
+            scheme_ns = context.scheme_ns;
 
             if flags & CLONE_FS == CLONE_FS {
                 cwd = context.cwd.clone();
@@ -1056,6 +1052,31 @@ pub fn setuid(uid: u32) -> Result<usize> {
     } else {
         Err(Error::new(EPERM))
     }
+}
+
+pub fn setns(name_ptrs: &[[usize; 2]]) -> Result<usize> {
+    let mut names = Vec::new();
+    for name_ptr in name_ptrs {
+        names.push(validate_slice(name_ptr[0] as *const u8, name_ptr[1])?);
+    }
+
+    let from = {
+        let contexts = context::contexts();
+        let context_lock = contexts.current().ok_or(Error::new(ESRCH))?;
+        let context = context_lock.read();
+        context.scheme_ns
+    };
+
+    let to = scheme::schemes_mut().setns(from, &names)?;
+
+    {
+        let contexts = context::contexts();
+        let context_lock = contexts.current().ok_or(Error::new(ESRCH))?;
+        let mut context = context_lock.write();
+        context.scheme_ns = to;
+    }
+
+    Ok(0)
 }
 
 pub fn virttophys(virtual_address: usize) -> Result<usize> {
