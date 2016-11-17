@@ -36,6 +36,7 @@ clean:
 	cargo clean --manifest-path drivers/rtl8168d/Cargo.toml
 	cargo clean --manifest-path drivers/vesad/Cargo.toml
 	cargo clean --manifest-path programs/acid/Cargo.toml
+	cargo clean --manifest-path programs/contain/Cargo.toml
 	cargo clean --manifest-path programs/init/Cargo.toml
 	cargo clean --manifest-path programs/ion/Cargo.toml
 	cargo clean --manifest-path programs/coreutils/Cargo.toml
@@ -89,6 +90,7 @@ test:
 	cargo test --manifest-path drivers/rtl8168d/Cargo.toml
 	cargo test --manifest-path drivers/vesad/Cargo.toml
 	cargo test --manifest-path programs/acid/Cargo.toml
+	cargo test --manifest-path programs/contain/Cargo.toml
 	cargo test --manifest-path programs/init/Cargo.toml
 	cargo test --manifest-path programs/ion/Cargo.toml
 	cargo test --manifest-path programs/coreutils/Cargo.toml
@@ -120,6 +122,7 @@ update:
 	cargo update --manifest-path drivers/rtl8168d/Cargo.toml
 	cargo update --manifest-path drivers/vesad/Cargo.toml
 	cargo update --manifest-path programs/acid/Cargo.toml
+	cargo update --manifest-path programs/contain/Cargo.toml
 	cargo update --manifest-path programs/init/Cargo.toml
 	cargo update --manifest-path programs/ion/Cargo.toml
 	cargo update --manifest-path programs/coreutils/Cargo.toml
@@ -520,6 +523,7 @@ $(BUILD)/filesystem.bin: \
 		userutils \
 		schemes \
 		filesystem/bin/acid \
+		filesystem/bin/contain \
 		filesystem/bin/ion \
 		filesystem/bin/sh \
 		filesystem/bin/smith \

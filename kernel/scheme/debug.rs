@@ -29,6 +29,13 @@ pub extern fn debug_input(b: u8) {
 
 pub struct DebugScheme;
 
+impl DebugScheme {
+    pub fn new(scheme_id: SchemeId) -> DebugScheme {
+        DEBUG_SCHEME_ID.store(scheme_id, Ordering::SeqCst);
+        DebugScheme
+    }
+}
+
 impl Scheme for DebugScheme {
     fn open(&self, _path: &[u8], _flags: usize, _uid: u32, _gid: u32) -> Result<usize> {
         Ok(0)

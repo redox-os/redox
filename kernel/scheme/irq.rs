@@ -4,7 +4,7 @@ use spin::Mutex;
 
 use arch::interrupt::irq::acknowledge;
 use context;
-use scheme::{AtomicSchemeId, ATOMIC_SCHEMEID_INIT};
+use scheme::{AtomicSchemeId, ATOMIC_SCHEMEID_INIT, SchemeId};
 use syscall::error::*;
 use syscall::flag::EVENT_READ;
 use syscall::scheme::Scheme;
@@ -23,6 +23,13 @@ pub extern fn irq_trigger(irq: u8) {
 }
 
 pub struct IrqScheme;
+
+impl IrqScheme {
+    pub fn new(scheme_id: SchemeId) -> IrqScheme {
+        IRQ_SCHEME_ID.store(scheme_id, Ordering::SeqCst);
+        IrqScheme
+    }
+}
 
 impl Scheme for IrqScheme {
     fn open(&self, path: &[u8], _flags: usize, uid: u32, _gid: u32) -> Result<usize> {

@@ -9,20 +9,20 @@
 use alloc::arc::Arc;
 use alloc::boxed::Box;
 use collections::BTreeMap;
-use core::sync::atomic::{AtomicUsize, Ordering};
+use core::sync::atomic::AtomicUsize;
 use spin::{Once, RwLock, RwLockReadGuard, RwLockWriteGuard};
 
 use syscall::error::*;
 use syscall::scheme::Scheme;
 
-use self::debug::{DEBUG_SCHEME_ID, DebugScheme};
+use self::debug::DebugScheme;
 use self::event::EventScheme;
 use self::env::EnvScheme;
 use self::initfs::InitFsScheme;
-use self::irq::{IRQ_SCHEME_ID, IrqScheme};
+use self::irq::IrqScheme;
 use self::null::NullScheme;
-use self::pipe::{PIPE_SCHEME_ID, PipeScheme};
-use self::root::{ROOT_SCHEME_ID, RootScheme};
+use self::pipe::PipeScheme;
+use self::root::RootScheme;
 use self::sys::SysScheme;
 use self::zero::ZeroScheme;
 
@@ -62,6 +62,9 @@ pub mod zero;
 /// Limit on number of schemes
 pub const SCHEME_MAX_SCHEMES: usize = 65536;
 
+/// Unique identifier for a scheme namespace.
+int_like!(SchemeNamespace, AtomicSchemeNamespace, usize, AtomicUsize);
+
 /// Unique identifier for a scheme.
 int_like!(SchemeId, AtomicSchemeId, usize, AtomicUsize);
 
@@ -70,11 +73,11 @@ pub const ATOMIC_SCHEMEID_INIT: AtomicSchemeId = AtomicSchemeId::default();
 /// Unique identifier for a file descriptor.
 int_like!(FileHandle, AtomicFileHandle, usize, AtomicUsize);
 
-
 /// Scheme list type
 pub struct SchemeList {
     map: BTreeMap<SchemeId, Arc<Box<Scheme + Send + Sync>>>,
-    names: BTreeMap<Box<[u8]>, SchemeId>,
+    names: BTreeMap<SchemeNamespace, BTreeMap<Box<[u8]>, SchemeId>>,
+    next_ns: usize,
     next_id: usize
 }
 
@@ -84,16 +87,44 @@ impl SchemeList {
         SchemeList {
             map: BTreeMap::new(),
             names: BTreeMap::new(),
+            next_ns: 0,
             next_id: 1
         }
+    }
+
+    /// Initialize the root namespace
+    fn init(&mut self) {
+        // Do common namespace initialization
+        let ns = self.new_ns();
+        // Debug, Initfs and IRQ are only available in the root namespace. Pipe is special
+        self.insert(ns, Box::new(*b"debug"), |scheme_id| Arc::new(Box::new(DebugScheme::new(scheme_id)))).unwrap();
+        self.insert(ns, Box::new(*b"initfs"), |_| Arc::new(Box::new(InitFsScheme::new()))).unwrap();
+        self.insert(ns, Box::new(*b"irq"), |scheme_id| Arc::new(Box::new(IrqScheme::new(scheme_id)))).unwrap();
+        self.insert(ns, Box::new(*b"pipe"), |scheme_id| Arc::new(Box::new(PipeScheme::new(scheme_id)))).unwrap();
+    }
+
+    /// Initialize a new namespace
+    pub fn new_ns(&mut self) -> SchemeNamespace {
+        let ns = SchemeNamespace(self.next_ns);
+        self.next_ns += 1;
+        self.names.insert(ns, BTreeMap::new());
+
+        self.insert(ns, Box::new(*b""), |scheme_id| Arc::new(Box::new(RootScheme::new(ns, scheme_id)))).unwrap();
+        self.insert(ns, Box::new(*b"event"), |_| Arc::new(Box::new(EventScheme::new()))).unwrap();
+        self.insert(ns, Box::new(*b"env"), |_| Arc::new(Box::new(EnvScheme::new()))).unwrap();
+        self.insert(ns, Box::new(*b"null"), |_| Arc::new(Box::new(NullScheme))).unwrap();
+        self.insert(ns, Box::new(*b"sys"), |_| Arc::new(Box::new(SysScheme::new()))).unwrap();
+        self.insert(ns, Box::new(*b"zero"), |_| Arc::new(Box::new(ZeroScheme))).unwrap();
+
+        ns
     }
 
     pub fn iter(&self) -> ::collections::btree_map::Iter<SchemeId, Arc<Box<Scheme + Send + Sync>>> {
         self.map.iter()
     }
 
-    pub fn iter_name(&self) -> ::collections::btree_map::Iter<Box<[u8]>, SchemeId> {
-        self.names.iter()
+    pub fn iter_name(&self, ns: SchemeNamespace) -> ::collections::btree_map::Iter<Box<[u8]>, SchemeId> {
+        self.names[&ns].iter()
     }
 
     /// Get the nth scheme.
@@ -101,8 +132,8 @@ impl SchemeList {
         self.map.get(&id)
     }
 
-    pub fn get_name(&self, name: &[u8]) -> Option<(SchemeId, &Arc<Box<Scheme + Send + Sync>>)> {
-        if let Some(&id) = self.names.get(name) {
+    pub fn get_name(&self, ns: SchemeNamespace, name: &[u8]) -> Option<(SchemeId, &Arc<Box<Scheme + Send + Sync>>)> {
+        if let Some(&id) = self.names[&ns].get(name) {
             self.get(id).map(|scheme| (id, scheme))
         } else {
             None
@@ -110,8 +141,10 @@ impl SchemeList {
     }
 
     /// Create a new scheme.
-    pub fn insert(&mut self, name: Box<[u8]>, scheme: Arc<Box<Scheme + Send + Sync>>) -> Result<SchemeId> {
-        if self.names.contains_key(&name) {
+    pub fn insert<F>(&mut self, ns: SchemeNamespace, name: Box<[u8]>, scheme_fn: F) -> Result<SchemeId>
+        where F: Fn(SchemeId) -> Arc<Box<Scheme + Send + Sync>>
+    {
+        if self.names[&ns].contains_key(&name) {
             return Err(Error::new(EEXIST));
         }
 
@@ -123,15 +156,23 @@ impl SchemeList {
             self.next_id += 1;
         }
 
+        /* Allow scheme list to grow if required
         if self.next_id >= SCHEME_MAX_SCHEMES {
             return Err(Error::new(EAGAIN));
         }
+        */
 
         let id = SchemeId(self.next_id);
         self.next_id += 1;
 
+        let scheme = scheme_fn(id);
+
         assert!(self.map.insert(id, scheme).is_none());
-        assert!(self.names.insert(name, id).is_none());
+        if let Some(ref mut names) = self.names.get_mut(&ns) {
+            assert!(names.insert(name, id).is_none());
+        } else {
+            panic!("scheme namespace not found");
+        }
         Ok(id)
     }
 }
@@ -142,16 +183,7 @@ static SCHEMES: Once<RwLock<SchemeList>> = Once::new();
 /// Initialize schemes, called if needed
 fn init_schemes() -> RwLock<SchemeList> {
     let mut list: SchemeList = SchemeList::new();
-    ROOT_SCHEME_ID.store(list.insert(Box::new(*b""), Arc::new(Box::new(RootScheme::new()))).expect("failed to insert root scheme"), Ordering::SeqCst);
-    DEBUG_SCHEME_ID.store(list.insert(Box::new(*b"debug"), Arc::new(Box::new(DebugScheme))).expect("failed to insert debug scheme"), Ordering::SeqCst);
-    list.insert(Box::new(*b"event"), Arc::new(Box::new(EventScheme::new()))).expect("failed to insert event scheme");
-    list.insert(Box::new(*b"env"), Arc::new(Box::new(EnvScheme::new()))).expect("failed to insert env scheme");
-    list.insert(Box::new(*b"initfs"), Arc::new(Box::new(InitFsScheme::new()))).expect("failed to insert initfs scheme");
-    IRQ_SCHEME_ID.store(list.insert(Box::new(*b"irq"), Arc::new(Box::new(IrqScheme))).expect("failed to insert irq scheme"), Ordering::SeqCst);
-    list.insert(Box::new(*b"null"), Arc::new(Box::new(NullScheme))).expect("failed to insert null scheme");
-    PIPE_SCHEME_ID.store(list.insert(Box::new(*b"pipe"), Arc::new(Box::new(PipeScheme))).expect("failed to insert pipe scheme"), Ordering::SeqCst);
-    list.insert(Box::new(*b"sys"), Arc::new(Box::new(SysScheme::new()))).expect("failed to insert sys scheme");
-    list.insert(Box::new(*b"zero"), Arc::new(Box::new(ZeroScheme))).expect("failed to insert zero scheme");
+    list.init();
     RwLock::new(list)
 }
 

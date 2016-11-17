@@ -9,8 +9,7 @@ use arch::paging::{InactivePageTable, Page, VirtualAddress, entry};
 use arch::paging::temporary_page::TemporaryPage;
 use context::{self, Context};
 use context::memory::Grant;
-use scheme::root::ROOT_SCHEME_ID;
-use scheme::{AtomicSchemeId, ATOMIC_SCHEMEID_INIT};
+use scheme::{AtomicSchemeId, ATOMIC_SCHEMEID_INIT, SchemeId};
 use sync::{WaitQueue, WaitMap};
 use syscall::data::{Packet, Stat};
 use syscall::error::*;
@@ -19,6 +18,7 @@ use syscall::number::*;
 use syscall::scheme::Scheme;
 
 pub struct UserInner {
+    root_id: SchemeId,
     handle_id: usize,
     flags: usize,
     pub scheme_id: AtomicSchemeId,
@@ -30,8 +30,9 @@ pub struct UserInner {
 }
 
 impl UserInner {
-    pub fn new(handle_id: usize, flags: usize, context: Weak<RwLock<Context>>) -> UserInner {
+    pub fn new(root_id: SchemeId, handle_id: usize, flags: usize, context: Weak<RwLock<Context>>) -> UserInner {
         UserInner {
+            root_id: root_id,
             handle_id: handle_id,
             flags: flags,
             scheme_id: ATOMIC_SCHEMEID_INIT,
@@ -67,7 +68,7 @@ impl UserInner {
         let id = packet.id;
 
         let len = self.todo.send(packet);
-        context::event::trigger(ROOT_SCHEME_ID.load(Ordering::SeqCst), self.handle_id, EVENT_READ, mem::size_of::<Packet>() * len);
+        context::event::trigger(self.root_id, self.handle_id, EVENT_READ, mem::size_of::<Packet>() * len);
 
         Error::demux(self.done.receive(&id))
     }

@@ -6,7 +6,7 @@ use spin::Mutex;
 use arch;
 use context::file::File;
 use context::memory::{Grant, Memory, SharedMemory, Tls};
-use scheme::FileHandle;
+use scheme::{SchemeNamespace, FileHandle};
 use syscall::data::Event;
 use sync::{WaitMap, WaitQueue};
 
@@ -68,6 +68,8 @@ pub struct Context {
     pub grants: Arc<Mutex<Vec<Grant>>>,
     /// The name of the context
     pub name: Arc<Mutex<Vec<u8>>>,
+    /// The scheme namespace of this context
+    pub scheme_ns: SchemeNamespace,
     /// The current working directory
     pub cwd: Arc<Mutex<Vec<u8>>>,
     /// Kernel events
@@ -79,7 +81,6 @@ pub struct Context {
 }
 
 impl Context {
-    /// Create a new context
     pub fn new(id: ContextId) -> Context {
         Context {
             id: id,
@@ -103,6 +104,7 @@ impl Context {
             tls: None,
             grants: Arc::new(Mutex::new(Vec::new())),
             name: Arc::new(Mutex::new(Vec::new())),
+            scheme_ns: SchemeNamespace::from(0),
             cwd: Arc::new(Mutex::new(Vec::new())),
             events: Arc::new(WaitQueue::new()),
             env: Arc::new(Mutex::new(BTreeMap::new())),

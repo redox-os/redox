@@ -19,7 +19,7 @@ use scheme::{self, FileHandle};
 use syscall;
 use syscall::data::Stat;
 use syscall::error::*;
-use syscall::flag::{CLONE_VFORK, CLONE_VM, CLONE_FS, CLONE_FILES, MAP_WRITE, MAP_WRITE_COMBINE, WNOHANG};
+use syscall::flag::{CLONE_VFORK, CLONE_VM, CLONE_FS, CLONE_FILES, CLONE_NEWNS, MAP_WRITE, MAP_WRITE_COMBINE, WNOHANG};
 use syscall::validate::{validate_slice, validate_slice_mut};
 
 pub fn brk(address: usize) -> Result<usize> {
@@ -74,6 +74,7 @@ pub fn clone(flags: usize, stack_base: usize) -> Result<ContextId> {
         let mut tls_option = None;
         let grants;
         let name;
+        let scheme_ns;
         let cwd;
         let env;
         let files;
@@ -220,6 +221,12 @@ pub fn clone(flags: usize, stack_base: usize) -> Result<ContextId> {
                 name = context.name.clone();
             } else {
                 name = Arc::new(Mutex::new(context.name.lock().clone()));
+            }
+
+            if flags & CLONE_NEWNS == CLONE_NEWNS {
+                scheme_ns = scheme::schemes_mut().new_ns();
+            } else {
+                scheme_ns = context.scheme_ns;
             }
 
             if flags & CLONE_FS == CLONE_FS {
@@ -432,6 +439,8 @@ pub fn clone(flags: usize, stack_base: usize) -> Result<ContextId> {
             }
 
             context.name = name;
+
+            context.scheme_ns = scheme_ns;
 
             context.cwd = cwd;
 

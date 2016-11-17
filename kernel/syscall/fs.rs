@@ -82,22 +82,22 @@ pub fn getcwd(buf: &mut [u8]) -> Result<usize> {
 
 /// Open syscall
 pub fn open(path: &[u8], flags: usize) -> Result<FileHandle> {
-    let (path_canon, uid, gid) = {
+    let (path_canon, uid, gid, scheme_ns) = {
         let contexts = context::contexts();
         let context_lock = contexts.current().ok_or(Error::new(ESRCH))?;
         let context = context_lock.read();
-        (context.canonicalize(path), context.euid, context.egid)
+        (context.canonicalize(path), context.euid, context.egid, context.scheme_ns)
     };
 
     let mut parts = path_canon.splitn(2, |&b| b == b':');
-    let namespace_opt = parts.next();
+    let scheme_name_opt = parts.next();
     let reference_opt = parts.next();
 
     let (scheme_id, file_id) = {
-        let namespace = namespace_opt.ok_or(Error::new(ENODEV))?;
+        let scheme_name = scheme_name_opt.ok_or(Error::new(ENODEV))?;
         let (scheme_id, scheme) = {
             let schemes = scheme::schemes();
-            let (scheme_id, scheme) = schemes.get_name(namespace).ok_or(Error::new(ENODEV))?;
+            let (scheme_id, scheme) = schemes.get_name(scheme_ns, scheme_name).ok_or(Error::new(ENODEV))?;
             (scheme_id, scheme.clone())
         };
         let file_id = scheme.open(reference_opt.unwrap_or(b""), flags, uid, gid)?;
@@ -146,21 +146,21 @@ pub fn pipe2(fds: &mut [usize], flags: usize) -> Result<usize> {
 
 /// mkdir syscall
 pub fn mkdir(path: &[u8], mode: u16) -> Result<usize> {
-    let (path_canon, uid, gid) = {
+    let (path_canon, uid, gid, scheme_ns) = {
         let contexts = context::contexts();
         let context_lock = contexts.current().ok_or(Error::new(ESRCH))?;
         let context = context_lock.read();
-        (context.canonicalize(path), context.euid, context.egid)
+        (context.canonicalize(path), context.euid, context.egid, context.scheme_ns)
     };
 
     let mut parts = path_canon.splitn(2, |&b| b == b':');
-    let namespace_opt = parts.next();
+    let scheme_name_opt = parts.next();
     let reference_opt = parts.next();
 
-    let namespace = namespace_opt.ok_or(Error::new(ENODEV))?;
+    let scheme_name = scheme_name_opt.ok_or(Error::new(ENODEV))?;
     let scheme = {
         let schemes = scheme::schemes();
-        let (_scheme_id, scheme) = schemes.get_name(namespace).ok_or(Error::new(ENODEV))?;
+        let (_scheme_id, scheme) = schemes.get_name(scheme_ns, scheme_name).ok_or(Error::new(ENODEV))?;
         scheme.clone()
     };
     scheme.mkdir(reference_opt.unwrap_or(b""), mode, uid, gid)
@@ -168,21 +168,21 @@ pub fn mkdir(path: &[u8], mode: u16) -> Result<usize> {
 
 /// chmod syscall
 pub fn chmod(path: &[u8], mode: u16) -> Result<usize> {
-    let (path_canon, uid, gid) = {
+    let (path_canon, uid, gid, scheme_ns) = {
         let contexts = context::contexts();
         let context_lock = contexts.current().ok_or(Error::new(ESRCH))?;
         let context = context_lock.read();
-        (context.canonicalize(path), context.euid, context.egid)
+        (context.canonicalize(path), context.euid, context.egid, context.scheme_ns)
     };
 
     let mut parts = path_canon.splitn(2, |&b| b == b':');
-    let namespace_opt = parts.next();
+    let scheme_name_opt = parts.next();
     let reference_opt = parts.next();
 
-    let namespace = namespace_opt.ok_or(Error::new(ENODEV))?;
+    let scheme_name = scheme_name_opt.ok_or(Error::new(ENODEV))?;
     let scheme = {
         let schemes = scheme::schemes();
-        let (_scheme_id, scheme) = schemes.get_name(namespace).ok_or(Error::new(ENODEV))?;
+        let (_scheme_id, scheme) = schemes.get_name(scheme_ns, scheme_name).ok_or(Error::new(ENODEV))?;
         scheme.clone()
     };
     scheme.chmod(reference_opt.unwrap_or(b""), mode, uid, gid)
@@ -190,21 +190,21 @@ pub fn chmod(path: &[u8], mode: u16) -> Result<usize> {
 
 /// rmdir syscall
 pub fn rmdir(path: &[u8]) -> Result<usize> {
-    let (path_canon, uid, gid) = {
+    let (path_canon, uid, gid, scheme_ns) = {
         let contexts = context::contexts();
         let context_lock = contexts.current().ok_or(Error::new(ESRCH))?;
         let context = context_lock.read();
-        (context.canonicalize(path), context.euid, context.egid)
+        (context.canonicalize(path), context.euid, context.egid, context.scheme_ns)
     };
 
     let mut parts = path_canon.splitn(2, |&b| b == b':');
-    let namespace_opt = parts.next();
+    let scheme_name_opt = parts.next();
     let reference_opt = parts.next();
 
-    let namespace = namespace_opt.ok_or(Error::new(ENODEV))?;
+    let scheme_name = scheme_name_opt.ok_or(Error::new(ENODEV))?;
     let scheme = {
         let schemes = scheme::schemes();
-        let (_scheme_id, scheme) = schemes.get_name(namespace).ok_or(Error::new(ENODEV))?;
+        let (_scheme_id, scheme) = schemes.get_name(scheme_ns, scheme_name).ok_or(Error::new(ENODEV))?;
         scheme.clone()
     };
     scheme.rmdir(reference_opt.unwrap_or(b""), uid, gid)
@@ -212,21 +212,21 @@ pub fn rmdir(path: &[u8]) -> Result<usize> {
 
 /// Unlink syscall
 pub fn unlink(path: &[u8]) -> Result<usize> {
-    let (path_canon, uid, gid) = {
+    let (path_canon, uid, gid, scheme_ns) = {
         let contexts = context::contexts();
         let context_lock = contexts.current().ok_or(Error::new(ESRCH))?;
         let context = context_lock.read();
-        (context.canonicalize(path), context.euid, context.egid)
+        (context.canonicalize(path), context.euid, context.egid, context.scheme_ns)
     };
 
     let mut parts = path_canon.splitn(2, |&b| b == b':');
-    let namespace_opt = parts.next();
+    let scheme_name_opt = parts.next();
     let reference_opt = parts.next();
 
-    let namespace = namespace_opt.ok_or(Error::new(ENODEV))?;
+    let scheme_name = scheme_name_opt.ok_or(Error::new(ENODEV))?;
     let scheme = {
         let schemes = scheme::schemes();
-        let (_scheme_id, scheme) = schemes.get_name(namespace).ok_or(Error::new(ENODEV))?;
+        let (_scheme_id, scheme) = schemes.get_name(scheme_ns, scheme_name).ok_or(Error::new(ENODEV))?;
         scheme.clone()
     };
     scheme.unlink(reference_opt.unwrap_or(b""), uid, gid)

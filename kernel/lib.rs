@@ -163,7 +163,7 @@ pub extern fn kmain_ap(id: usize) {
     loop {
         unsafe { interrupt::enable_and_halt(); }
     }
-
+/*
     loop {
         unsafe {
             interrupt::disable();
@@ -175,4 +175,5 @@ pub extern fn kmain_ap(id: usize) {
             }
         }
     }
+*/
 }

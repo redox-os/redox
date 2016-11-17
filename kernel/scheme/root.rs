@@ -7,19 +7,21 @@ use spin::RwLock;
 use context;
 use syscall::error::*;
 use syscall::scheme::Scheme;
-use scheme::{self, AtomicSchemeId, ATOMIC_SCHEMEID_INIT};
+use scheme::{self, SchemeNamespace, SchemeId};
 use scheme::user::{UserInner, UserScheme};
 
-pub static ROOT_SCHEME_ID: AtomicSchemeId = ATOMIC_SCHEMEID_INIT;
-
 pub struct RootScheme {
+    scheme_ns: SchemeNamespace,
+    scheme_id: SchemeId,
     next_id: AtomicUsize,
     handles: RwLock<BTreeMap<usize, Arc<UserInner>>>
 }
 
 impl RootScheme {
-    pub fn new() -> RootScheme {
+    pub fn new(scheme_ns: SchemeNamespace, scheme_id: SchemeId) -> RootScheme {
         RootScheme {
+            scheme_ns: scheme_ns,
+            scheme_id: scheme_id,
             next_id: AtomicUsize::new(0),
             handles: RwLock::new(BTreeMap::new())
         }
@@ -39,12 +41,11 @@ impl Scheme for RootScheme {
 
             let inner = {
                 let mut schemes = scheme::schemes_mut();
-                if schemes.get_name(path).is_some() {
-                    return Err(Error::new(EEXIST));
-                }
-                let inner = Arc::new(UserInner::new(id, flags, context));
-                let scheme_id = schemes.insert(path.to_vec().into_boxed_slice(), Arc::new(Box::new(UserScheme::new(Arc::downgrade(&inner))))).expect("failed to insert user scheme");
-                inner.scheme_id.store(scheme_id, Ordering::SeqCst);
+                let inner = Arc::new(UserInner::new(self.scheme_id, id, flags, context));
+                schemes.insert(self.scheme_ns, path.to_vec().into_boxed_slice(), |scheme_id| {
+                    inner.scheme_id.store(scheme_id, Ordering::SeqCst);
+                    Arc::new(Box::new(UserScheme::new(Arc::downgrade(&inner))))
+                })?;
                 inner
             };
 

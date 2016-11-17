@@ -2,7 +2,7 @@ use alloc::arc::{Arc, Weak};
 use collections::{BTreeMap, VecDeque};
 use core::sync::atomic::{AtomicUsize, ATOMIC_USIZE_INIT, Ordering};
 use spin::{Mutex, Once, RwLock, RwLockReadGuard, RwLockWriteGuard};
-use scheme::{AtomicSchemeId, ATOMIC_SCHEMEID_INIT};
+use scheme::{AtomicSchemeId, ATOMIC_SCHEMEID_INIT, SchemeId};
 
 use sync::WaitCondition;
 use syscall::error::{Error, Result, EAGAIN, EBADF, EINVAL, EPIPE};
@@ -41,6 +41,13 @@ pub fn pipe(flags: usize) -> (usize, usize) {
 }
 
 pub struct PipeScheme;
+
+impl PipeScheme {
+    pub fn new(scheme_id: SchemeId) -> PipeScheme {
+        PIPE_SCHEME_ID.store(scheme_id, Ordering::SeqCst);
+        PipeScheme
+    }
+}
 
 impl Scheme for PipeScheme {
     fn dup(&self, id: usize, buf: &[u8]) -> Result<usize> {
