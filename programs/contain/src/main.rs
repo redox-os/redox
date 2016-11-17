@@ -22,7 +22,7 @@ pub fn main() {
 
         syscall::setns(&name_ptrs).unwrap();
 
-        println!("Entering container: {}", command);
+        println!("Container enter: {}", command);
 
         let err = Command::new(command).exec();
 
@@ -31,6 +31,16 @@ pub fn main() {
         let mut status = 0;
         syscall::waitpid(pid, &mut status, 0).unwrap();
 
-        println!("Exiting container: {:X}", status);
+        loop {
+            let mut c_status = 0;
+            let c_pid = syscall::waitpid(0, &mut c_status, syscall::WNOHANG).unwrap();
+            if c_pid == 0 {
+                break;
+            } else {
+                println!("Container zombie {}: {:X}", c_pid, c_status);
+            }
+        }
+
+        println!("Container exited: {:X}", status);
     }
 }
