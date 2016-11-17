@@ -250,7 +250,7 @@ pub fn clone(flags: usize, stack_base: usize) -> Result<ContextId> {
         // If not cloning files, dup to get a new number from scheme
         // This has to be done outside the context lock to prevent deadlocks
         if flags & CLONE_FILES == 0 {
-            for (fd, mut file_option) in files.lock().iter_mut().enumerate() {
+            for (_fd, mut file_option) in files.lock().iter_mut().enumerate() {
                 let new_file_option = if let Some(file) = *file_option {
                     let result = {
                         let scheme = {
@@ -269,8 +269,7 @@ pub fn clone(flags: usize, stack_base: usize) -> Result<ContextId> {
                                 event: None,
                             })
                         },
-                        Err(err) => {
-                            println!("clone: failed to dup {}: {:?}", fd, err);
+                        Err(_err) => {
                             None
                         }
                     }
@@ -709,8 +708,7 @@ pub fn exec(path: &[u8], arg_ptrs: &[[usize; 2]]) -> Result<usize> {
                                     event: None,
                                 })
                             },
-                            Err(err) => {
-                                println!("exec: failed to dup {}: {:?}", fd, err);
+                            Err(_err) => {
                                 None
                             }
                         }
