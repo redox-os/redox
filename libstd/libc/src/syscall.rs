@@ -8,7 +8,7 @@ use self::syscall::data::{Stat, TimeSpec};
 pub use self::syscall::error::*;
 pub use self::syscall::flag::*;
 pub use self::syscall::{
-    clock_gettime, clone, execve as exec, exit, futex, getpid, kill, nanosleep, setgid, setuid, waitpid,
+    clock_gettime, clone, execve as exec, exit, futex, getpid, kill, nanosleep, setregid, setreuid, waitpid,
     chdir, chmod, getcwd, open, mkdir, rmdir, unlink, dup, pipe2,
     read, write, fcntl, fpath, fstat, fsync, ftruncate, lseek, close
 };

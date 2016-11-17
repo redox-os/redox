@@ -5,11 +5,13 @@ use context;
 use syscall::error::Result;
 
 pub fn resource() -> Result<Vec<u8>> {
-    let mut string = format!("{:<6}{:<6}{:<6}{:<6}{:<6}{:<6}{:<8}{:<6}{}\n",
+    let mut string = format!("{:<6}{:<6}{:<6}{:<6}{:<6}{:<6}{:<6}{:<6}{:<8}{:<6}{}\n",
                              "PID",
                              "PPID",
-                             "UID",
-                             "GID",
+                             "RUID",
+                             "RGID",
+                             "EUID",
+                             "EGID",
                              "STAT",
                              "CPU",
                              "MEM",
@@ -83,9 +85,11 @@ pub fn resource() -> Result<Vec<u8>> {
             let name_bytes = context.name.lock();
             let name = str::from_utf8(&name_bytes).unwrap_or("");
 
-            string.push_str(&format!("{:<6}{:<6}{:<6}{:<6}{:<6}{:<6}{:<8}{:<6}{}\n",
+            string.push_str(&format!("{:<6}{:<6}{:<6}{:<6}{:<6}{:<6}{:<6}{:<6}{:<8}{:<6}{}\n",
                                context.id.into(),
                                context.ppid.into(),
+                               context.ruid,
+                               context.rgid,
                                context.euid,
                                context.egid,
                                stat_string,
