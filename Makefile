@@ -19,7 +19,7 @@ CARGO=RUSTC="$(RUSTC)" RUSTDOC="$(RUSTDOC)" cargo
 CARGOFLAGS=--target $(TARGET).json --release --
 
 # Default targets
-.PHONY: all clean doc ref test update qemu bochs drivers schemes coreutils extrautils netutils userutils wireshark FORCE
+.PHONY: all clean doc ref test update qemu bochs drivers schemes binutils coreutils extrautils netutils userutils wireshark FORCE
 
 all: $(KBUILD)/harddrive.bin
 
@@ -38,6 +38,7 @@ clean:
 	cargo clean --manifest-path programs/contain/Cargo.toml
 	cargo clean --manifest-path programs/init/Cargo.toml
 	cargo clean --manifest-path programs/ion/Cargo.toml
+	cargo clean --manifest-path programs/binutils/Cargo.toml
 	cargo clean --manifest-path programs/coreutils/Cargo.toml
 	cargo clean --manifest-path programs/extrautils/Cargo.toml
 	cargo clean --manifest-path programs/netutils/Cargo.toml
@@ -74,6 +75,7 @@ doc-std: $(BUILD)/libstd.rlib FORCE
 ref: FORCE
 	rm -rf filesystem/ref/
 	mkdir -p filesystem/ref/
+	cargo run --manifest-path crates/docgen/Cargo.toml -- programs/binutils/src/bin/ filesystem/ref/
 	cargo run --manifest-path crates/docgen/Cargo.toml -- programs/coreutils/src/bin/ filesystem/ref/
 	cargo run --manifest-path crates/docgen/Cargo.toml -- programs/extrautils/src/bin/ filesystem/ref/
 	cargo run --manifest-path crates/docgen/Cargo.toml -- programs/netutils/src/ filesystem/ref/
@@ -91,6 +93,7 @@ test:
 	cargo test --manifest-path programs/contain/Cargo.toml
 	cargo test --manifest-path programs/init/Cargo.toml
 	cargo test --manifest-path programs/ion/Cargo.toml
+	cargo test --manifest-path programs/binutils/Cargo.toml
 	cargo test --manifest-path programs/coreutils/Cargo.toml
 	cargo test --manifest-path programs/extrautils/Cargo.toml
 	cargo test --manifest-path programs/netutils/Cargo.toml
@@ -122,6 +125,7 @@ update:
 	cargo update --manifest-path programs/contain/Cargo.toml
 	cargo update --manifest-path programs/init/Cargo.toml
 	cargo update --manifest-path programs/ion/Cargo.toml
+	cargo update --manifest-path programs/binutils/Cargo.toml
 	cargo update --manifest-path programs/coreutils/Cargo.toml
 	cargo update --manifest-path programs/extrautils/Cargo.toml
 	cargo update --manifest-path programs/netutils/Cargo.toml
@@ -373,6 +377,12 @@ filesystem/bin/%: programs/%/Cargo.toml programs/%/src/** $(BUILD)/libstd.rlib
 filesystem/bin/sh: filesystem/bin/ion
 	cp $< $@
 
+filesystem/bin/%: programs/binutils/Cargo.toml programs/binutils/src/bin/%.rs $(BUILD)/libstd.rlib
+	mkdir -p filesystem/bin
+	$(CARGO) rustc --manifest-path $< --bin $* $(CARGOFLAGS) -o $@
+	strip $@
+	rm $@.d
+
 filesystem/bin/%: programs/coreutils/Cargo.toml programs/coreutils/src/bin/%.rs $(BUILD)/libstd.rlib
 	mkdir -p filesystem/bin
 	$(CARGO) rustc --manifest-path $< --bin $* $(CARGOFLAGS) -o $@
@@ -420,6 +430,11 @@ drivers: \
 	filesystem/bin/e1000d \
 	filesystem/bin/rtl8168d
 
+binutils: \
+	filesystem/bin/hex \
+	filesystem/bin/hexdump \
+	filesystem/bin/strings
+
 coreutils: \
 	filesystem/bin/basename \
 	filesystem/bin/cat \
@@ -464,7 +479,6 @@ extrautils: \
 	filesystem/bin/cksum \
 	filesystem/bin/cur \
 	filesystem/bin/grep \
-	filesystem/bin/hexdump \
 	filesystem/bin/less \
 	filesystem/bin/man \
 	filesystem/bin/mdless \

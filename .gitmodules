@@ -52,3 +52,6 @@
 [submodule "libstd_real/openlibm"]
 	path = libstd/openlibm
 	url = https://github.com/redox-os/openlibm.git
+[submodule "programs/binutils"]
+	path = programs/binutils
+	url = https://github.com/redox-os/binutils.git
