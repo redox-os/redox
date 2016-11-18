@@ -2,5 +2,6 @@ Cargo.lock
 build
 target
 initfs/bin
+initfs/filesystem.bin
 filesystem/bin
 filesystem/ref
