@@ -333,7 +333,11 @@ initfs/bin/%: schemes/%/Cargo.toml schemes/%/src/** $(BUILD)/libstd.rlib
 	strip $@
 	rm $@.d
 
+initfs/filesystem.bin: $(BUILD)/filesystem.bin
+	cp $< $@
+
 $(BUILD)/initfs.rs: \
+		initfs/filesystem.bin \
 		initfs/bin/init \
 		initfs/bin/ahcid \
 		initfs/bin/pcid \
@@ -460,6 +464,7 @@ extrautils: \
 	filesystem/bin/cksum \
 	filesystem/bin/cur \
 	filesystem/bin/grep \
+	filesystem/bin/hexdump \
 	filesystem/bin/less \
 	filesystem/bin/man \
 	filesystem/bin/mdless \
@@ -525,7 +530,7 @@ $(BUILD)/filesystem.bin: \
 		filesystem/bin/tar
 	-$(FUMOUNT) $(BUILD)/filesystem/
 	rm -rf $@ $(BUILD)/filesystem/
-	echo exit | cargo run --manifest-path schemes/redoxfs/Cargo.toml --bin redoxfs-utility $@ 256
+	echo exit | cargo run --manifest-path schemes/redoxfs/Cargo.toml --bin redoxfs-utility $@ 64
 	mkdir -p $(BUILD)/filesystem/
 	cargo build --manifest-path schemes/redoxfs/Cargo.toml --bin redoxfs-fuse --release
 	schemes/redoxfs/target/release/redoxfs-fuse $@ $(BUILD)/filesystem/ &
