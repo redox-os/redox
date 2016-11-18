@@ -425,6 +425,7 @@ coreutils: \
 	filesystem/bin/cut \
 	filesystem/bin/date \
 	filesystem/bin/dd \
+	filesystem/bin/df \
 	filesystem/bin/du \
 	filesystem/bin/echo \
 	filesystem/bin/env \

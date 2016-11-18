@@ -11,7 +11,7 @@ use context::{self, Context};
 use context::memory::Grant;
 use scheme::{AtomicSchemeId, ATOMIC_SCHEMEID_INIT, SchemeId};
 use sync::{WaitQueue, WaitMap};
-use syscall::data::{Packet, Stat};
+use syscall::data::{Packet, Stat, StatVfs};
 use syscall::error::*;
 use syscall::flag::{EVENT_READ, O_NONBLOCK};
 use syscall::number::*;
@@ -332,7 +332,15 @@ impl Scheme for UserScheme {
     fn fstat(&self, file: usize, stat: &mut Stat) -> Result<usize> {
         let inner = self.inner.upgrade().ok_or(Error::new(ENODEV))?;
         let address = inner.capture_mut(stat)?;
-        let result = inner.call(SYS_FSTAT, file, address, 0);
+        let result = inner.call(SYS_FSTAT, file, address, mem::size_of::<Stat>());
+        let _ = inner.release(address);
+        result
+    }
+
+    fn fstatvfs(&self, file: usize, stat: &mut StatVfs) -> Result<usize> {
+        let inner = self.inner.upgrade().ok_or(Error::new(ENODEV))?;
+        let address = inner.capture_mut(stat)?;
+        let result = inner.call(SYS_FSTATVFS, file, address, mem::size_of::<StatVfs>());
         let _ = inner.release(address);
         result
     }
