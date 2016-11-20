@@ -2,7 +2,7 @@ initfs:bin/vesad T T T G
 stdio display:1
 initfs:bin/ps2d
 initfs:bin/pcid initfs:etc/pcid.toml
-initfs:bin/redoxfs initfs:filesystem.bin
+initfs:bin/redoxfs disk:0
 cd file:
 export PATH file:bin
 run file:etc/init.rc

@@ -41,6 +41,10 @@ pub mod initfs;
 /// `irq:` - allows userspace handling of IRQs
 pub mod irq;
 
+/// When compiled with "live" feature - `disk:` - embedded filesystem for live disk
+#[cfg(feature="live")]
+pub mod live;
+
 /// `null:` - a scheme that will discard all writes, and read no bytes
 pub mod null;
 
@@ -111,12 +115,27 @@ impl SchemeList {
     }
 
     /// Initialize the root namespace
+    #[cfg(not(feature="live"))]
     fn new_root(&mut self) {
         // Do common namespace initialization
         let ns = self.new_ns();
 
         // Debug, Initfs and IRQ are only available in the root namespace. Pipe is special
         self.insert(ns, Box::new(*b"debug"), |scheme_id| Arc::new(Box::new(DebugScheme::new(scheme_id)))).unwrap();
+        self.insert(ns, Box::new(*b"initfs"), |_| Arc::new(Box::new(InitFsScheme::new()))).unwrap();
+        self.insert(ns, Box::new(*b"irq"), |scheme_id| Arc::new(Box::new(IrqScheme::new(scheme_id)))).unwrap();
+        self.insert(ns, Box::new(*b"pipe"), |scheme_id| Arc::new(Box::new(PipeScheme::new(scheme_id)))).unwrap();
+    }
+
+    /// Initialize the root namespace - with live disk
+    #[cfg(feature="live")]
+    fn new_root(&mut self) {
+        // Do common namespace initialization
+        let ns = self.new_ns();
+
+        // Debug, Disk, Initfs and IRQ are only available in the root namespace. Pipe is special
+        self.insert(ns, Box::new(*b"debug"), |scheme_id| Arc::new(Box::new(DebugScheme::new(scheme_id)))).unwrap();
+        self.insert(ns, Box::new(*b"disk"), |scheme_id| Arc::new(Box::new(self::live::DiskScheme::new()))).unwrap();
         self.insert(ns, Box::new(*b"initfs"), |_| Arc::new(Box::new(InitFsScheme::new()))).unwrap();
         self.insert(ns, Box::new(*b"irq"), |scheme_id| Arc::new(Box::new(IrqScheme::new(scheme_id)))).unwrap();
         self.insert(ns, Box::new(*b"pipe"), |scheme_id| Arc::new(Box::new(PipeScheme::new(scheme_id)))).unwrap();

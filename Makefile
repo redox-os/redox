@@ -19,9 +19,11 @@ CARGO=RUSTC="$(RUSTC)" RUSTDOC="$(RUSTDOC)" cargo
 CARGOFLAGS=--target $(TARGET).json --release --
 
 # Default targets
-.PHONY: all clean doc ref test update qemu bochs drivers schemes binutils coreutils extrautils netutils userutils wireshark FORCE
+.PHONY: all live clean doc ref test update qemu bochs drivers schemes binutils coreutils extrautils netutils userutils wireshark FORCE
 
-all: $(KBUILD)/harddrive.bin
+all: build/harddrive.bin
+
+live: build/livedisk.bin
 
 FORCE:
 
@@ -56,7 +58,7 @@ clean:
 	cargo clean --manifest-path schemes/redoxfs/Cargo.toml
 	cargo clean --manifest-path schemes/tcpd/Cargo.toml
 	cargo clean --manifest-path schemes/udpd/Cargo.toml
-	-$(FUMOUNT) $(BUILD)/filesystem/
+	-$(FUMOUNT) build/filesystem/
 	rm -rf initfs/bin
 	rm -rf filesystem/bin
 	rm -rf build
@@ -155,10 +157,10 @@ ifeq ($(ARCH),arm)
 %.list: %
 	$(ARCH)-none-eabi-objdump -C -D $< > $@
 
-$(KBUILD)/harddrive.bin: $(KBUILD)/kernel
+build/harddrive.bin: $(KBUILD)/kernel
 	cp $< $@
 
-qemu: $(KBUILD)/harddrive.bin
+qemu: build/harddrive.bin
 	$(QEMU) $(QEMUFLAGS) -kernel $<
 else
 	QEMUFLAGS+=-smp 4 -m 1024
@@ -170,15 +172,10 @@ else
 	ifeq ($(net),no)
 		QEMUFLAGS+=-net none
 	else
-		QEMUFLAGS+=-net nic,model=e1000 -net user -net dump,file=$(KBUILD)/network.pcap
+		QEMUFLAGS+=-net nic,model=e1000 -net user -net dump,file=build/network.pcap
 		ifeq ($(net),redir)
 			QEMUFLAGS+=-redir tcp:8080::8080
 		endif
-	endif
-	ifeq ($(storage),usb)
-		QEMUFLAGS+=-device usb-ehci,id=flash_bus -drive id=flash_drive,file=$(KBUILD)/harddrive.bin,format=raw,if=none -device usb-storage,drive=flash_drive,bus=flash_bus.0
-	else
-		QEMUFLAGS+=-drive file=$(KBUILD)/harddrive.bin,format=raw
 	endif
 	ifeq ($(vga),no)
 		QEMUFLAGS+=-nographic -vga none
@@ -217,20 +214,30 @@ else
 %.list: %
 	objdump -C -M intel -D $< > $@
 
-$(KBUILD)/harddrive.bin: $(KBUILD)/kernel bootloader/$(ARCH)/** $(BUILD)/filesystem.bin
+build/harddrive.bin: $(KBUILD)/kernel bootloader/$(ARCH)/** build/filesystem.bin
 	nasm -f bin -o $@ -D ARCH_$(ARCH) -ibootloader/$(ARCH)/ bootloader/$(ARCH)/harddrive.asm
 
-qemu: $(KBUILD)/harddrive.bin
-	$(QEMU) $(QEMUFLAGS)
+build/livedisk.bin: $(KBUILD)/kernel_live bootloader/$(ARCH)/**
+	nasm -f bin -o $@ -D ARCH_$(ARCH) -ibootloader/$(ARCH)/ bootloader/$(ARCH)/livedisk.asm
+
+qemu: build/harddrive.bin
+	$(QEMU) $(QEMUFLAGS) -drive file=$<,format=raw
 
 qemu_no_build:
-	$(QEMU) $(QEMUFLAGS)
+	$(QEMU) $(QEMUFLAGS) -drive file=build/harddrive.bin,format=raw
+
+qemu_live: build/livedisk.bin
+	$(QEMU) $(QEMUFLAGS) -device usb-ehci,id=flash_bus -drive id=flash_drive,file=$<,format=raw,if=none -device usb-storage,drive=flash_drive,bus=flash_bus.0
+
+qemu_live_no_build:
+	$(QEMU) $(QEMUFLAGS) -device usb-ehci,id=flash_bus -drive id=flash_drive,file=build/livedisk.bin,format=raw,if=none -device usb-storage,drive=flash_drive,bus=flash_bus.0
+
 endif
 
-bochs: $(KBUILD)/harddrive.bin
+bochs: build/harddrive.bin
 	bochs -f bochs.$(ARCH)
 
-virtualbox: $(KBUILD)/harddrive.bin
+virtualbox: build/harddrive.bin
 	echo "Delete VM"
 	-$(VBM) unregistervm Redox --delete; \
 	if [ $$? -ne 0 ]; \
@@ -252,19 +259,19 @@ virtualbox: $(KBUILD)/harddrive.bin
 	$(VBM) modifyvm Redox --nictype1 82540EM
 	$(VBM) modifyvm Redox --cableconnected1 on
 	$(VBM) modifyvm Redox --nictrace1 on
-	$(VBM) modifyvm Redox --nictracefile1 $(KBUILD)/network.pcap
+	$(VBM) modifyvm Redox --nictracefile1 build/network.pcap
 	$(VBM) modifyvm Redox --uart1 0x3F8 4
-	$(VBM) modifyvm Redox --uartmode1 file $(KBUILD)/serial.log
+	$(VBM) modifyvm Redox --uartmode1 file build/serial.log
 	$(VBM) modifyvm Redox --usb off # on
 	$(VBM) modifyvm Redox --keyboard ps2
 	$(VBM) modifyvm Redox --mouse ps2
 	$(VBM) modifyvm Redox --audio $(VB_AUDIO)
 	$(VBM) modifyvm Redox --audiocontroller ac97
 	echo "Create Disk"
-	$(VBM) convertfromraw $< $(KBUILD)/harddrive.vdi
+	$(VBM) convertfromraw $< build/harddrive.vdi
 	echo "Attach Disk"
 	$(VBM) storagectl Redox --name ATA --add sata --controller IntelAHCI --bootable on --portcount 1
-	$(VBM) storageattach Redox --storagectl ATA --port 0 --device 0 --type hdd --medium $(KBUILD)/harddrive.vdi
+	$(VBM) storageattach Redox --storagectl ATA --port 0 --device 0 --type hdd --medium build/harddrive.vdi
 	echo "Run VM"
 	$(VBM) startvm Redox
 
@@ -288,7 +295,13 @@ $(KBUILD)/libcollections.rlib: rust/src/libcollections/lib.rs $(KBUILD)/libcore.
 $(KBUILD)/libkernel.a: kernel/** $(KBUILD)/libcore.rlib $(KBUILD)/liballoc.rlib $(KBUILD)/libcollections.rlib $(BUILD)/initfs.rs
 	$(KCARGO) rustc $(KCARGOFLAGS) -C lto -o $@
 
+$(KBUILD)/libkernel_live.a: kernel/** $(KBUILD)/libcore.rlib $(KBUILD)/liballoc.rlib $(KBUILD)/libcollections.rlib $(BUILD)/initfs.rs build/filesystem.bin
+	$(KCARGO) rustc --lib $(KCARGOFLAGS) --cfg 'feature="live"' -C lto --emit obj=$@
+
 $(KBUILD)/kernel: $(KBUILD)/libkernel.a
+	$(LD) $(LDFLAGS) -z max-page-size=0x1000 -T arch/$(ARCH)/src/linker.ld -o $@ $<
+
+$(KBUILD)/kernel_live: $(KBUILD)/libkernel_live.a
 	$(LD) $(LDFLAGS) -z max-page-size=0x1000 -T arch/$(ARCH)/src/linker.ld -o $@ $<
 
 # Userspace recipes
@@ -337,11 +350,7 @@ initfs/bin/%: schemes/%/Cargo.toml schemes/%/src/** $(BUILD)/libstd.rlib
 	strip $@
 	rm $@.d
 
-initfs/filesystem.bin: $(BUILD)/filesystem.bin
-	cp $< $@
-
 $(BUILD)/initfs.rs: \
-		initfs/filesystem.bin \
 		initfs/bin/init \
 		initfs/bin/ahcid \
 		initfs/bin/pcid \
@@ -412,7 +421,6 @@ filesystem/bin/%: programs/pkgutils/Cargo.toml programs/pkgutils/src/%/**.rs $(B
 	$(CARGO) rustc --manifest-path $< --bin $* $(CARGOFLAGS) -o $@
 	strip $@
 	rm $@.d
-
 
 filesystem/bin/%: programs/userutils/Cargo.toml programs/userutils/src/bin/%.rs $(BUILD)/libstd.rlib
 	mkdir -p filesystem/bin
@@ -527,7 +535,7 @@ schemes: \
 	filesystem/bin/tcpd \
 	filesystem/bin/udpd
 
-$(BUILD)/filesystem.bin: \
+build/filesystem.bin: \
 		drivers \
 		coreutils \
 		extrautils \
@@ -542,45 +550,45 @@ $(BUILD)/filesystem.bin: \
 		filesystem/bin/sh \
 		filesystem/bin/smith \
 		filesystem/bin/tar
-	-$(FUMOUNT) $(BUILD)/filesystem/
-	rm -rf $@ $(BUILD)/filesystem/
+	-$(FUMOUNT) build/filesystem/
+	rm -rf $@ build/filesystem/
 	echo exit | cargo run --manifest-path schemes/redoxfs/Cargo.toml --bin redoxfs-utility $@ 64
-	mkdir -p $(BUILD)/filesystem/
+	mkdir -p build/filesystem/
 	cargo build --manifest-path schemes/redoxfs/Cargo.toml --bin redoxfs-fuse --release
-	schemes/redoxfs/target/release/redoxfs-fuse $@ $(BUILD)/filesystem/ &
+	schemes/redoxfs/target/release/redoxfs-fuse $@ build/filesystem/ &
 	sleep 2
 	pgrep redoxfs-fuse
-	cp -RL filesystem/* $(BUILD)/filesystem/
-	chown -R 0:0 $(BUILD)/filesystem
-	chown -R 1000:1000 $(BUILD)/filesystem/home/user
-	chmod -R uog+rX $(BUILD)/filesystem
-	chmod -R u+w $(BUILD)/filesystem
-	chmod -R og-w $(BUILD)/filesystem
-	chmod -R 755 $(BUILD)/filesystem/bin
-	chmod -R u+rwX $(BUILD)/filesystem/root
-	chmod -R og-rwx $(BUILD)/filesystem/root
-	chmod -R u+rwX $(BUILD)/filesystem/home/user
-	chmod -R og-rwx $(BUILD)/filesystem/home/user
-	chmod +s $(BUILD)/filesystem/bin/passwd
-	chmod +s $(BUILD)/filesystem/bin/su
-	chmod +s $(BUILD)/filesystem/bin/sudo
-	mkdir $(BUILD)/filesystem/tmp
-	chmod 1777 $(BUILD)/filesystem/tmp
+	cp -RL filesystem/* build/filesystem/
+	chown -R 0:0 build/filesystem
+	chown -R 1000:1000 build/filesystem/home/user
+	chmod -R uog+rX build/filesystem
+	chmod -R u+w build/filesystem
+	chmod -R og-w build/filesystem
+	chmod -R 755 build/filesystem/bin
+	chmod -R u+rwX build/filesystem/root
+	chmod -R og-rwx build/filesystem/root
+	chmod -R u+rwX build/filesystem/home/user
+	chmod -R og-rwx build/filesystem/home/user
+	chmod +s build/filesystem/bin/passwd
+	chmod +s build/filesystem/bin/su
+	chmod +s build/filesystem/bin/sudo
+	mkdir build/filesystem/tmp
+	chmod 1777 build/filesystem/tmp
 	sync
-	-$(FUMOUNT) $(BUILD)/filesystem/
-	rm -rf $(BUILD)/filesystem/
+	-$(FUMOUNT) build/filesystem/
+	rm -rf build/filesystem/
 
 mount: FORCE
-	mkdir -p $(BUILD)/filesystem/
+	mkdir -p build/filesystem/
 	cargo build --manifest-path schemes/redoxfs/Cargo.toml --bin redoxfs-fuse --release
-	schemes/redoxfs/target/release/redoxfs-fuse $(KBUILD)/harddrive.bin $(BUILD)/filesystem/ &
+	schemes/redoxfs/target/release/redoxfs-fuse build/harddrive.bin build/filesystem/ &
 	sleep 2
 	pgrep redoxfs-fuse
 
 unmount: FORCE
 	sync
-	-$(FUMOUNT) $(BUILD)/filesystem/
-	rm -rf $(BUILD)/filesystem/
+	-$(FUMOUNT) build/filesystem/
+	rm -rf build/filesystem/
 
 wireshark: FORCE
-	wireshark $(KBUILD)/network.pcap
+	wireshark build/network.pcap

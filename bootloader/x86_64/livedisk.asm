@@ -12,10 +12,8 @@ align 512, db 0
 startup_end:
 
 kernel_file:
-  incbin "build/kernel/kernel"
+  incbin "build/kernel/kernel_live"
   align 512, db 0
 .end:
 .length equ kernel_file.end - kernel_file
 .length_sectors equ .length / 512
-
-incbin "build/filesystem.bin"
