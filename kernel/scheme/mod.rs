@@ -135,7 +135,7 @@ impl SchemeList {
 
         // Debug, Disk, Initfs and IRQ are only available in the root namespace. Pipe is special
         self.insert(ns, Box::new(*b"debug"), |scheme_id| Arc::new(Box::new(DebugScheme::new(scheme_id)))).unwrap();
-        self.insert(ns, Box::new(*b"disk"), |scheme_id| Arc::new(Box::new(self::live::DiskScheme::new()))).unwrap();
+        self.insert(ns, Box::new(*b"disk"), |_| Arc::new(Box::new(self::live::DiskScheme::new()))).unwrap();
         self.insert(ns, Box::new(*b"initfs"), |_| Arc::new(Box::new(InitFsScheme::new()))).unwrap();
         self.insert(ns, Box::new(*b"irq"), |scheme_id| Arc::new(Box::new(IrqScheme::new(scheme_id)))).unwrap();
         self.insert(ns, Box::new(*b"pipe"), |scheme_id| Arc::new(Box::new(PipeScheme::new(scheme_id)))).unwrap();

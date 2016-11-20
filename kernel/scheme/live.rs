@@ -2,13 +2,13 @@
 
 use alloc::arc::Arc;
 use collections::{BTreeMap, Vec};
-use core::{cmp, str};
+use core::cmp;
 use core::sync::atomic::{AtomicUsize, Ordering};
 use spin::RwLock;
 
 use syscall::data::Stat;
 use syscall::error::*;
-use syscall::flag::{MODE_DIR, MODE_FILE, SEEK_SET, SEEK_CUR, SEEK_END};
+use syscall::flag::{MODE_FILE, SEEK_SET, SEEK_CUR, SEEK_END};
 use syscall::scheme::Scheme;
 
 static FILESYSTEM: &'static [u8] = include_bytes!("../../build/filesystem.bin");

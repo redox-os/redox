@@ -552,7 +552,7 @@ build/filesystem.bin: \
 		filesystem/bin/tar
 	-$(FUMOUNT) build/filesystem/
 	rm -rf $@ build/filesystem/
-	echo exit | cargo run --manifest-path schemes/redoxfs/Cargo.toml --bin redoxfs-utility $@ 64
+	echo exit | cargo run --manifest-path schemes/redoxfs/Cargo.toml --bin redoxfs-utility $@ 128
 	mkdir -p build/filesystem/
 	cargo build --manifest-path schemes/redoxfs/Cargo.toml --bin redoxfs-fuse --release
 	schemes/redoxfs/target/release/redoxfs-fuse $@ build/filesystem/ &
