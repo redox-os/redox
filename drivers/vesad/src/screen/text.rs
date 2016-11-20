@@ -124,6 +124,9 @@ impl Screen for TextScreen {
                             let _ = self.write(b"\x08", true);
                         }
                     },
+                    b'\x1B' => {
+                        let _ = self.write(b"^[", true);
+                    },
                     b'\n' | b'\r' => {
                         self.cooked.push_back(b);
                         while let Some(c) = self.cooked.pop_front() {
