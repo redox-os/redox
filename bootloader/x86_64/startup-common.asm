@@ -70,16 +70,28 @@ kernel_base equ 0x100000
     mov ecx, (kernel_file.length_sectors % buffer_size_bytes) / 4
     a32 rep movsd
 finished_loading:
-
-
     call memory_map
 
     call vesa
 
+    mov si, init_fpu_msg
+    call printrm
     call initialize.fpu
+
+    mov si, init_sse_msg
+    call printrm
     call initialize.sse
+
+    mov si, init_pit_msg
+    call printrm
     call initialize.pit
+
+    mov si, init_pic_msg
+    call printrm
     call initialize.pic
+
+    mov si, startup_arch_msg
+    call printrm
 
     jmp startup_arch
 
@@ -90,3 +102,9 @@ finished_loading:
 %include "memory_map.asm"
 %include "vesa.asm"
 %include "initialize.asm"
+
+init_fpu_msg: db "Init FPU",13,10,0
+init_sse_msg: db "Init SSE",13,10,0
+init_pit_msg: db "Init PIT",13,10,0
+init_pic_msg: db "Init PIC",13,10,0
+startup_arch_msg: db "Startup Arch",13,10,0

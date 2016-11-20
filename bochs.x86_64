@@ -1,6 +1,6 @@
-ata0-master: type=disk, path="build/kernel/harddrive.bin", mode=flat
+ata0-master: type=disk, path="build/harddrive.bin", mode=flat
 boot: disk
-com1: enabled=1, mode=file, dev=build/kernel/serial.log
+com1: enabled=1, mode=file, dev=build/serial.log
 megs: 1024
 
 magic_break: enabled=1

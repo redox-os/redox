@@ -26,6 +26,10 @@ arch_arm = { path = "arch/arm" }
 [target.'cfg(target_arch = "x86_64")'.dependencies]
 arch_x86_64 = { path = "arch/x86_64" }
 
+[features]
+default = []
+live = []
+
 [profile.dev]
 panic = "unwind"
 
