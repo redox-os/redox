@@ -22,13 +22,16 @@ pub mod device;
 fn main() {
     let mut args = env::args().skip(1);
 
+    let mut name = args.next().expect("rtl8168d: no name provided");
+    name.push_str("_rtl8168");
+
     let bar_str = args.next().expect("rtl8168d: no address provided");
     let bar = usize::from_str_radix(&bar_str, 16).expect("rtl8168d: failed to parse address");
 
     let irq_str = args.next().expect("rtl8168d: no irq provided");
     let irq = irq_str.parse::<u8>().expect("rtl8168d: failed to parse irq");
 
-    print!("{}", format!(" + RTL8168 on: {:X}, IRQ: {}\n", bar, irq));
+    print!("{}", format!(" + RTL8168 {} on: {:X}, IRQ: {}\n", name, bar, irq));
 
     // Daemonize
     if unsafe { syscall::clone(0).unwrap() } == 0 {

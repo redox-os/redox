@@ -125,6 +125,10 @@ fn main() {
                                         }
                                     };
                                     let arg = match arg.as_str() {
+                                        "$BUS" => format!("{:>02X}", bus.num),
+                                        "$DEV" => format!("{:>02X}", dev.num),
+                                        "$FUNC" => format!("{:>02X}", func.num),
+                                        "$NAME" => format!("pci-{:>02X}.{:>02X}.{:>02X}", bus.num, dev.num, func.num),
                                         "$BAR0" => bar_arg(0),
                                         "$BAR1" => bar_arg(1),
                                         "$BAR2" => bar_arg(2),
@@ -136,6 +140,8 @@ fn main() {
                                     };
                                     command.arg(&arg);
                                 }
+
+                                println!("PCID SPAWN {:?}", command);
 
                                 match command.spawn() {
                                     Ok(mut child) => match child.wait() {

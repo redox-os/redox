@@ -21,13 +21,16 @@ pub mod scheme;
 fn main() {
     let mut args = env::args().skip(1);
 
+    let mut name = args.next().expect("ahcid: no name provided");
+    name.push_str("_ahci");
+
     let bar_str = args.next().expect("ahcid: no address provided");
     let bar = usize::from_str_radix(&bar_str, 16).expect("ahcid: failed to parse address");
 
     let irq_str = args.next().expect("ahcid: no irq provided");
     let irq = irq_str.parse::<u8>().expect("ahcid: failed to parse irq");
 
-    print!("{}", format!(" + AHCI on: {:X} IRQ: {}\n", bar, irq));
+    print!("{}", format!(" + AHCI {} on: {:X} IRQ: {}\n", name, bar, irq));
 
     // Daemonize
     if unsafe { syscall::clone(0).unwrap() } == 0 {
@@ -43,7 +46,7 @@ fn main() {
 
             let mut event_file = File::open("event:").expect("ahcid: failed to open event file");
 
-            let scheme = DiskScheme::new(ahci::disks(address));
+            let scheme = DiskScheme::new(ahci::disks(address, &name));
             loop {
                 let mut event = Event::default();
                 if event_file.read(&mut event).expect("ahcid: failed to read event file") == 0 {
