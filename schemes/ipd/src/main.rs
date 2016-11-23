@@ -3,7 +3,7 @@ extern crate netutils;
 extern crate syscall;
 
 use event::EventQueue;
-use netutils::{getcfg, n16, Ipv4Addr, MacAddr, Ipv4, EthernetII, EthernetIIHeader, Arp, Tcp};
+use netutils::{Ipv4Addr, Ipv4, Tcp};
 use std::cell::RefCell;
 use std::collections::{BTreeMap, VecDeque};
 use std::fs::File;
@@ -16,31 +16,9 @@ use syscall::error::{Error, Result, EACCES, EADDRNOTAVAIL, EBADF, EIO, EINVAL, E
 use syscall::flag::{EVENT_READ, O_NONBLOCK};
 use syscall::scheme::SchemeMut;
 
-struct Interface {
-    mac: MacAddr,
-    ip: Ipv4Addr,
-    router: Ipv4Addr,
-    subnet: Ipv4Addr,
-    arp_file: File,
-    ip_file: File,
-    arp: BTreeMap<Ipv4Addr, MacAddr>,
-    rarp: BTreeMap<MacAddr, Ipv4Addr>,
-}
+use interface::{Interface, EthernetInterface, LoopbackInterface};
 
-impl Interface {
-    fn new(arp_fd: usize, ip_fd: usize) -> Self {
-        Interface {
-            mac: MacAddr::from_str(&getcfg("mac").unwrap()),
-            ip: Ipv4Addr::from_str(&getcfg("ip").unwrap()),
-            router: Ipv4Addr::from_str(&getcfg("ip_router").unwrap()),
-            subnet: Ipv4Addr::from_str(&getcfg("ip_subnet").unwrap()),
-            arp_file: unsafe { File::from_raw_fd(arp_fd) },
-            ip_file: unsafe { File::from_raw_fd(ip_fd) },
-            arp: BTreeMap::new(),
-            rarp: BTreeMap::new(),
-        }
-    }
-}
+mod interface;
 
 struct Handle {
     proto: u8,
@@ -52,7 +30,7 @@ struct Handle {
 
 struct Ipd {
     scheme_file: File,
-    interfaces: Vec<Interface>,
+    interfaces: Vec<Box<Interface>>,
     next_id: usize,
     handles: BTreeMap<usize, Handle>,
 }
@@ -89,103 +67,40 @@ impl Ipd {
         Ok(())
     }
 
-    fn arp_event(&mut self, if_id: usize) -> io::Result<()> {
-        if let Some(mut interface) = self.interfaces.get_mut(if_id) {
-            loop {
-                let mut bytes = [0; 65536];
-                let count = interface.arp_file.read(&mut bytes)?;
-                if count == 0 {
-                    break;
-                }
-                if let Some(frame) = EthernetII::from_bytes(&bytes[.. count]) {
-                    if let Some(packet) = Arp::from_bytes(&frame.data) {
-                        if packet.header.oper.get() == 1 {
-                            if packet.header.dst_ip == interface.ip {
-                                if packet.header.src_ip != Ipv4Addr::BROADCAST && frame.header.src != MacAddr::BROADCAST {
-                                    interface.arp.insert(packet.header.src_ip, frame.header.src);
-                                    interface.rarp.insert(frame.header.src, packet.header.src_ip);
-                                }
-
-                                let mut response = Arp {
-                                    header: packet.header,
-                                    data: packet.data.clone(),
-                                };
-                                response.header.oper.set(2);
-                                response.header.dst_mac = packet.header.src_mac;
-                                response.header.dst_ip = packet.header.src_ip;
-                                response.header.src_mac = interface.mac;
-                                response.header.src_ip = interface.ip;
-
-                                let mut response_frame = EthernetII {
-                                    header: frame.header,
-                                    data: response.to_bytes()
-                                };
-
-                                response_frame.header.dst = response_frame.header.src;
-                                response_frame.header.src = interface.mac;
-
-                                interface.arp_file.write(&response_frame.to_bytes())?;
-                            }
-                        }
-                    }
-                }
-            }
-        }
-
-        Ok(())
-    }
-
     fn ip_event(&mut self, if_id: usize) -> io::Result<()> {
         if let Some(mut interface) = self.interfaces.get_mut(if_id) {
-            loop {
-                let mut bytes = [0; 65536];
-                let count = interface.ip_file.read(&mut bytes)?;
-                if count == 0 {
-                    break;
-                }
-                if let Some(frame) = EthernetII::from_bytes(&bytes[.. count]) {
-                    if let Some(ip) = Ipv4::from_bytes(&frame.data) {
-                        if ip.header.dst == interface.ip || ip.header.dst == Ipv4Addr::BROADCAST {
-                            if ip.header.src != Ipv4Addr::BROADCAST && frame.header.src != MacAddr::BROADCAST {
-                                interface.arp.insert(ip.header.src, frame.header.src);
-                                interface.rarp.insert(frame.header.src, ip.header.src);
+            for ip in interface.recv()? {
+                for (id, handle) in self.handles.iter_mut() {
+                    if ip.header.proto == handle.proto {
+                        handle.data.push_back(ip.to_bytes());
+
+                        while ! handle.todo.is_empty() && ! handle.data.is_empty() {
+                            let mut packet = handle.todo.pop_front().unwrap();
+                            let buf = unsafe { slice::from_raw_parts_mut(packet.c as *mut u8, packet.d) };
+                            let data = handle.data.pop_front().unwrap();
+
+                            let mut i = 0;
+                            while i < buf.len() && i < data.len() {
+                                buf[i] = data[i];
+                                i += 1;
                             }
+                            packet.a = i;
 
-                            //TODO: Handle ping here
-                            for (id, handle) in self.handles.iter_mut() {
-                                if ip.header.proto == handle.proto {
-                                    handle.data.push_back(frame.data.clone());
+                            self.scheme_file.write(&packet)?;
+                        }
 
-                                    while ! handle.todo.is_empty() && ! handle.data.is_empty() {
-                                        let mut packet = handle.todo.pop_front().unwrap();
-                                        let buf = unsafe { slice::from_raw_parts_mut(packet.c as *mut u8, packet.d) };
-                                        let data = handle.data.pop_front().unwrap();
-
-                                        let mut i = 0;
-                                        while i < buf.len() && i < data.len() {
-                                            buf[i] = data[i];
-                                            i += 1;
-                                        }
-                                        packet.a = i;
-
-                                        self.scheme_file.write(&packet)?;
-                                    }
-
-                                    if handle.events & EVENT_READ == EVENT_READ {
-                                        if let Some(data) = handle.data.get(0) {
-                                            self.scheme_file.write(&Packet {
-                                                id: 0,
-                                                pid: 0,
-                                                uid: 0,
-                                                gid: 0,
-                                                a: syscall::number::SYS_FEVENT,
-                                                b: *id,
-                                                c: EVENT_READ,
-                                                d: data.len()
-                                            })?;
-                                        }
-                                    }
-                                }
+                        if handle.events & EVENT_READ == EVENT_READ {
+                            if let Some(data) = handle.data.get(0) {
+                                self.scheme_file.write(&Packet {
+                                    id: 0,
+                                    pid: 0,
+                                    uid: 0,
+                                    gid: 0,
+                                    a: syscall::number::SYS_FEVENT,
+                                    b: *id,
+                                    c: EVENT_READ,
+                                    d: data.len()
+                                })?;
                             }
                         }
                     }
@@ -264,8 +179,9 @@ impl SchemeMut for Ipd {
 
         if let Some(mut ip) = Ipv4::from_bytes(buf) {
             for mut interface in self.interfaces.iter_mut() {
-                if ip.header.src == interface.ip || ip.header.src == Ipv4Addr::NULL {
-                    ip.header.src = interface.ip;
+                let if_ip = interface.ip();
+                if ip.header.src == if_ip || ip.header.src == Ipv4Addr::NULL {
+                    ip.header.src = if_ip;
                     ip.header.proto = handle.proto;
 
                     if let Some(mut tcp) = Tcp::from_bytes(&ip.data) {
@@ -275,43 +191,7 @@ impl SchemeMut for Ipd {
 
                     ip.checksum();
 
-                    let mut dst = MacAddr::BROADCAST;
-                    if ip.header.dst != Ipv4Addr::BROADCAST {
-                        let mut needs_routing = false;
-
-                        for octet in 0..4 {
-                            let me = interface.ip.bytes[octet];
-                            let mask = interface.subnet.bytes[octet];
-                            let them = ip.header.dst.bytes[octet];
-                            if me & mask != them & mask {
-                                needs_routing = true;
-                                break;
-                            }
-                        }
-
-                        let route_addr = if needs_routing {
-                            interface.router
-                        } else {
-                            ip.header.dst
-                        };
-
-                        if let Some(mac) = interface.arp.get(&route_addr) {
-                            dst = *mac;
-                        } else {
-                            println!("ipd: need to arp {}", route_addr.to_string());
-                        }
-                    }
-
-                    let frame = EthernetII {
-                        header: EthernetIIHeader {
-                            dst: dst,
-                            src: interface.mac,
-                            ethertype: n16::new(0x800),
-                        },
-                        data: ip.to_bytes()
-                    };
-
-                    interface.ip_file.write(&frame.to_bytes()).map_err(|err| Error::new(err.raw_os_error().unwrap_or(EIO)))?;
+                    interface.send(ip).map_err(|err| Error::new(err.raw_os_error().unwrap_or(EIO)))?;
 
                     return Ok(buf.len());
                 }
@@ -371,6 +251,13 @@ fn main() {
 
         let mut event_queue = EventQueue::<()>::new().expect("ipd: failed to create event queue");
 
+        let loopback_id = {
+            let mut ipd = ipd.borrow_mut();
+            let if_id = ipd.interfaces.len();
+            ipd.interfaces.push(Box::new(LoopbackInterface::new()));
+            if_id
+        };
+
         //TODO: Multiple interfaces
         {
             let arp_fd = syscall::open("ethernet:806", syscall::O_RDWR | syscall::O_NONBLOCK).expect("ipd: failed to open ethernet:806");
@@ -378,25 +265,31 @@ fn main() {
             let if_id = {
                 let mut ipd = ipd.borrow_mut();
                 let if_id = ipd.interfaces.len();
-                ipd.interfaces.push(Interface::new(arp_fd, ip_fd));
+                ipd.interfaces.push(Box::new(EthernetInterface::new(arp_fd, ip_fd)));
                 if_id
             };
 
             let arp_ipd = ipd.clone();
             event_queue.add(arp_fd, move |_count: usize| -> io::Result<Option<()>> {
-                arp_ipd.borrow_mut().arp_event(if_id)?;
+                if let Some(mut interface) = arp_ipd.borrow_mut().interfaces.get_mut(if_id) {
+                    interface.arp_event()?;
+                }
+
                 Ok(None)
             }).expect("ipd: failed to listen to events on ethernet:806");
 
             let ip_ipd = ipd.clone();
             event_queue.add(ip_fd, move |_count: usize| -> io::Result<Option<()>> {
                 ip_ipd.borrow_mut().ip_event(if_id)?;
+
                 Ok(None)
             }).expect("ipd: failed to listen to events on ethernet:800");
         }
 
         event_queue.add(scheme_fd, move |_count: usize| -> io::Result<Option<()>> {
+            ipd.borrow_mut().ip_event(loopback_id)?;
             ipd.borrow_mut().scheme_event()?;
+            ipd.borrow_mut().ip_event(loopback_id)?;
             Ok(None)
         }).expect("ipd: failed to listen to events on :ip");
 
