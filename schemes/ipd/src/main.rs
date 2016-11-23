@@ -101,6 +101,11 @@ impl Ipd {
                     if let Some(packet) = Arp::from_bytes(&frame.data) {
                         if packet.header.oper.get() == 1 {
                             if packet.header.dst_ip == interface.ip {
+                                if packet.header.src_ip != Ipv4Addr::BROADCAST && frame.header.src != MacAddr::BROADCAST {
+                                    interface.arp.insert(packet.header.src_ip, frame.header.src);
+                                    interface.rarp.insert(frame.header.src, packet.header.src_ip);
+                                }
+
                                 let mut response = Arp {
                                     header: packet.header,
                                     data: packet.data.clone(),
@@ -141,6 +146,11 @@ impl Ipd {
                 if let Some(frame) = EthernetII::from_bytes(&bytes[.. count]) {
                     if let Some(ip) = Ipv4::from_bytes(&frame.data) {
                         if ip.header.dst == interface.ip || ip.header.dst == Ipv4Addr::BROADCAST {
+                            if ip.header.src != Ipv4Addr::BROADCAST && frame.header.src != MacAddr::BROADCAST {
+                                interface.arp.insert(ip.header.src, frame.header.src);
+                                interface.rarp.insert(frame.header.src, ip.header.src);
+                            }
+
                             //TODO: Handle ping here
                             for (id, handle) in self.handles.iter_mut() {
                                 if ip.header.proto == handle.proto {
@@ -265,10 +275,36 @@ impl SchemeMut for Ipd {
 
                     ip.checksum();
 
+                    let mut dst = MacAddr::BROADCAST;
+                    if ip.header.dst != Ipv4Addr::BROADCAST {
+                        let mut needs_routing = false;
+
+                        for octet in 0..4 {
+                            let me = interface.ip.bytes[octet];
+                            let mask = interface.subnet.bytes[octet];
+                            let them = ip.header.dst.bytes[octet];
+                            if me & mask != them & mask {
+                                needs_routing = true;
+                                break;
+                            }
+                        }
+
+                        let route_addr = if needs_routing {
+                            interface.router
+                        } else {
+                            ip.header.dst
+                        };
+
+                        if let Some(mac) = interface.arp.get(&route_addr) {
+                            dst = *mac;
+                        } else {
+                            println!("ipd: need to arp {}", route_addr.to_string());
+                        }
+                    }
+
                     let frame = EthernetII {
                         header: EthernetIIHeader {
-                            //TODO: Get real dst
-                            dst: MacAddr::BROADCAST,
+                            dst: dst,
                             src: interface.mac,
                             ethertype: n16::new(0x800),
                         },
