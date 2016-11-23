@@ -6,7 +6,7 @@ ipd
 tcpd
 udpd
 dhcpd -b
-httpd
+httpd -b /ref
 getty display:2
 getty display:3
 stdio debug:
