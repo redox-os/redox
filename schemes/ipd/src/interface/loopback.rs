@@ -22,10 +22,6 @@ impl Interface for LoopbackInterface {
         self.ip
     }
 
-    fn arp_event(&mut self) -> Result<()> {
-        Ok(())
-    }
-
     fn recv(&mut self) -> Result<Vec<Ipv4>> {
         let mut ips = Vec::new();
 
@@ -40,5 +36,13 @@ impl Interface for LoopbackInterface {
         self.packets.push(ip);
 
         Ok(0)
+    }
+
+    fn arp_event(&mut self) -> Result<()> {
+        Ok(())
+    }
+
+    fn has_loopback_data(&self) -> bool {
+        ! self.packets.is_empty()
     }
 }

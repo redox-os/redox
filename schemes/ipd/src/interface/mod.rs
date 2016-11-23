@@ -9,7 +9,10 @@ mod loopback;
 
 pub trait Interface {
     fn ip(&self) -> Ipv4Addr;
-    fn arp_event(&mut self) -> Result<()>;
     fn recv(&mut self) -> Result<Vec<Ipv4>>;
     fn send(&mut self, ip: Ipv4) -> Result<usize>;
+
+    fn arp_event(&mut self) -> Result<()>;
+
+    fn has_loopback_data(&self) -> bool { false }
 }

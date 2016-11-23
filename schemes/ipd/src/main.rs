@@ -110,6 +110,20 @@ impl Ipd {
 
         Ok(())
     }
+
+    fn loopback_event(&mut self, loopback_id: usize) -> io::Result<()> {
+        let handle_loopback = if let Some(interface) = self.interfaces.get(loopback_id) {
+            interface.has_loopback_data()
+        } else {
+            false
+        };
+
+        if handle_loopback {
+            self.ip_event(loopback_id)?;
+        }
+
+        Ok(())
+    }
 }
 
 impl SchemeMut for Ipd {
@@ -251,13 +265,6 @@ fn main() {
 
         let mut event_queue = EventQueue::<()>::new().expect("ipd: failed to create event queue");
 
-        let loopback_id = {
-            let mut ipd = ipd.borrow_mut();
-            let if_id = ipd.interfaces.len();
-            ipd.interfaces.push(Box::new(LoopbackInterface::new()));
-            if_id
-        };
-
         //TODO: Multiple interfaces
         {
             let arp_fd = syscall::open("ethernet:806", syscall::O_RDWR | syscall::O_NONBLOCK).expect("ipd: failed to open ethernet:806");
@@ -286,10 +293,20 @@ fn main() {
             }).expect("ipd: failed to listen to events on ethernet:800");
         }
 
+        let loopback_id = {
+            let mut ipd = ipd.borrow_mut();
+            let if_id = ipd.interfaces.len();
+            ipd.interfaces.push(Box::new(LoopbackInterface::new()));
+            if_id
+        };
+
         event_queue.add(scheme_fd, move |_count: usize| -> io::Result<Option<()>> {
-            ipd.borrow_mut().ip_event(loopback_id)?;
-            ipd.borrow_mut().scheme_event()?;
-            ipd.borrow_mut().ip_event(loopback_id)?;
+            let mut ipd = ipd.borrow_mut();
+
+            ipd.loopback_event(loopback_id)?;
+            ipd.scheme_event()?;
+            ipd.loopback_event(loopback_id)?;
+
             Ok(None)
         }).expect("ipd: failed to listen to events on :ip");
 
