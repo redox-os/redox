@@ -28,7 +28,7 @@ struct Regs {
     cmd_9346: Mmio<u8>,
     _config: [Mmio<u8>; 6],
     _rsv4: Mmio<u8>,
-    _timer_int: Mmio<u32>,
+    timer_int: Mmio<u32>,
     _rsv5: Mmio<u32>,
     _phys_ar: Mmio<u32>,
     _rsv6: [Mmio<u32>; 2],
@@ -67,11 +67,11 @@ struct Td {
 
 pub struct Rtl8168 {
     regs: &'static mut Regs,
-    receive_buffer: [Dma<[u8; 0x1FF8]>; 16],
+    receive_buffer: [Dma<[Mmio<u8>; 0x1FF8]>; 16],
     receive_ring: Dma<[Rd; 16]>,
-    transmit_buffer: [Dma<[u8; 7552]>; 16],
+    transmit_buffer: [Dma<[Mmio<u8>; 7552]>; 16],
     transmit_ring: Dma<[Td; 16]>,
-    transmit_buffer_h: [Dma<[u8; 7552]>; 1],
+    transmit_buffer_h: [Dma<[Mmio<u8>; 7552]>; 1],
     transmit_ring_h: Dma<[Td; 1]>
 }
 
@@ -97,7 +97,7 @@ impl SchemeMut for Rtl8168 {
 
                 let mut i = 0;
                 while i < buf.len() && i < rd_len as usize {
-                    buf[i] = data[i];
+                    buf[i] = data[i].read();
                     i += 1;
                 }
 
@@ -124,7 +124,7 @@ impl SchemeMut for Rtl8168 {
 
                     let mut i = 0;
                     while i < buf.len() && i < data.len() {
-                        data[i] = buf[i];
+                        data[i].write(buf[i]);
                         i += 1;
                     }
 
@@ -231,8 +231,8 @@ impl Rtl8168 {
         for i in 0..self.receive_ring.len() {
             let rd = &mut self.receive_ring[i];
             let data = &mut self.receive_buffer[i];
-            rd.ctrl.write(OWN | data.len() as u32);
             rd.buffer.write(data.physical() as u64);
+            rd.ctrl.write(OWN | data.len() as u32);
         }
         if let Some(mut rd) = self.receive_ring.last_mut() {
             rd.ctrl.writef(EOR, true);
@@ -277,6 +277,9 @@ impl Rtl8168 {
         // Set rx buffer address
         self.regs.rdsar[0].write(self.receive_ring.physical() as u32);
         self.regs.rdsar[1].write((self.receive_ring.physical() >> 32) as u32);
+
+        // Disable timer interrupt
+        self.regs.timer_int.write(0);
 
         //Clear ISR
         let isr = self.regs.isr.read();
