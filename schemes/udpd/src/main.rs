@@ -16,7 +16,7 @@ use event::EventQueue;
 use netutils::{n16, Ipv4, Ipv4Addr, Ipv4Header, Udp, UdpHeader, Checksum};
 use syscall::data::Packet;
 use syscall::error::{Error, Result, EACCES, EADDRINUSE, EBADF, EIO, EINVAL, EMSGSIZE, ENOTCONN, EWOULDBLOCK};
-use syscall::flag::{EVENT_READ, O_CREAT, O_RDWR, O_NONBLOCK};
+use syscall::flag::{EVENT_READ, F_GETFL, F_SETFL, O_ACCMODE, O_CREAT, O_RDWR, O_NONBLOCK};
 use syscall::scheme::SchemeMut;
 
 fn parse_socket(socket: &str) -> (Ipv4Addr, u16) {
@@ -266,6 +266,19 @@ impl SchemeMut for Udpd {
             };
 
             self.udp_file.write(&ip.to_bytes()).map_err(|err| Error::new(err.raw_os_error().unwrap_or(EIO))).and(Ok(buf.len()))
+        }
+    }
+
+    fn fcntl(&mut self, file: usize, cmd: usize, arg: usize) -> Result<usize> {
+        let mut handle = self.handles.get_mut(&file).ok_or(Error::new(EBADF))?;
+
+        match cmd {
+            F_GETFL => Ok(handle.flags),
+            F_SETFL => {
+                handle.flags = arg & ! O_ACCMODE;
+                Ok(0)
+            },
+            _ => Err(Error::new(EINVAL))
         }
     }
 
