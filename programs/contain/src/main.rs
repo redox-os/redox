@@ -1,17 +1,25 @@
 extern crate syscall;
 
+use std::env;
 use std::os::unix::process::CommandExt;
 use std::process::Command;
 
 pub fn main() {
-    let names = [
-        "file",
+    let mut args = env::args().skip(1);
+
+    let root = args.next();
+
+    let cmd = args.next().unwrap_or("sh".to_string());
+
+    let mut names = vec![
         "rand",
         "tcp",
         "udp"
     ];
-
-    let command = "sh";
+    
+    if root.is_none() {
+        names.push("file");
+    }
 
     let mut name_ptrs = Vec::new();
     for name in names.iter() {
@@ -24,11 +32,16 @@ pub fn main() {
     if pid == 0 {
         syscall::setrens(new_ns, new_ns).unwrap();
 
-        println!("Container {}: enter: {}", new_ns, command);
+        println!("Container {}: enter: {}", new_ns, cmd);
 
-        let err = Command::new(command).exec();
+        let mut command = Command::new(&cmd);
+        for arg in args {
+            command.arg(&arg);
+        }
 
-        panic!("contain: failed to launch {}: {}", command, err);
+        let err = command.exec();
+
+        panic!("contain: failed to launch {}: {}", cmd, err);
     } else {
         let mut status = 0;
         syscall::waitpid(pid, &mut status, 0).unwrap();
