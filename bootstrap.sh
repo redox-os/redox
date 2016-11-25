@@ -95,7 +95,7 @@ osx_macports()
 
     install_macports_pkg "gcc49" "gcc-4.9"
     install_macports_pkg "nasm"
-    install_macports_pkg "pkg-config"
+    install_macports_pkg "pkgconfig"
     install_macports_pkg "osxfuse"
     install_macports_pkg "x86_64-elf-gcc"
 }
