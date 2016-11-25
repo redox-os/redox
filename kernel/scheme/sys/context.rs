@@ -5,17 +5,18 @@ use context;
 use syscall::error::Result;
 
 pub fn resource() -> Result<Vec<u8>> {
-    let mut string = format!("{:<6}{:<6}{:<6}{:<6}{:<6}{:<6}{:<6}{:<6}{:<8}{:<6}{}\n",
+    let mut string = format!("{:<6}{:<6}{:<6}{:<6}{:<6}{:<6}{:<6}{:<6}{:<6}{:<6}{:<8}{}\n",
                              "PID",
                              "PPID",
                              "RUID",
                              "RGID",
+                             "RNS",
                              "EUID",
                              "EGID",
+                             "ENS",
                              "STAT",
                              "CPU",
                              "MEM",
-                             "SNS",
                              "NAME");
     {
         let contexts = context::contexts();
@@ -85,17 +86,18 @@ pub fn resource() -> Result<Vec<u8>> {
             let name_bytes = context.name.lock();
             let name = str::from_utf8(&name_bytes).unwrap_or("");
 
-            string.push_str(&format!("{:<6}{:<6}{:<6}{:<6}{:<6}{:<6}{:<6}{:<6}{:<8}{:<6}{}\n",
+            string.push_str(&format!("{:<6}{:<6}{:<6}{:<6}{:<6}{:<6}{:<6}{:<6}{:<6}{:<6}{:<8}{}\n",
                                context.id.into(),
                                context.ppid.into(),
                                context.ruid,
                                context.rgid,
+                               context.rns.into(),
                                context.euid,
                                context.egid,
+                               context.ens.into(),
                                stat_string,
                                cpu_string,
                                memory_string,
-                               context.scheme_ns.into(),
                                name));
         }
     }

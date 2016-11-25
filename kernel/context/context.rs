@@ -34,10 +34,14 @@ pub struct Context {
     pub ruid: u32,
     /// The real group id
     pub rgid: u32,
+    /// The real namespace id
+    pub rns: SchemeNamespace,
     /// The effective user id
     pub euid: u32,
     /// The effective group id
     pub egid: u32,
+    /// The effective namespace id
+    pub ens: SchemeNamespace,
     /// Status of context
     pub status: Status,
     /// Context running or not
@@ -70,8 +74,6 @@ pub struct Context {
     pub grants: Arc<Mutex<Vec<Grant>>>,
     /// The name of the context
     pub name: Arc<Mutex<Vec<u8>>>,
-    /// The scheme namespace of this context
-    pub scheme_ns: SchemeNamespace,
     /// The current working directory
     pub cwd: Arc<Mutex<Vec<u8>>>,
     /// Kernel events
@@ -89,8 +91,10 @@ impl Context {
             ppid: ContextId::from(0),
             ruid: 0,
             rgid: 0,
+            rns: SchemeNamespace::from(0),
             euid: 0,
             egid: 0,
+            ens: SchemeNamespace::from(0),
             status: Status::Blocked,
             running: false,
             cpu_id: None,
@@ -107,7 +111,6 @@ impl Context {
             tls: None,
             grants: Arc::new(Mutex::new(Vec::new())),
             name: Arc::new(Mutex::new(Vec::new())),
-            scheme_ns: SchemeNamespace::from(0),
             cwd: Arc::new(Mutex::new(Vec::new())),
             events: Arc::new(WaitQueue::new()),
             env: Arc::new(Mutex::new(BTreeMap::new())),

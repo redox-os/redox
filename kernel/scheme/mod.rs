@@ -141,7 +141,7 @@ impl SchemeList {
         self.insert(ns, Box::new(*b"pipe"), |scheme_id| Arc::new(Box::new(PipeScheme::new(scheme_id)))).unwrap();
     }
 
-    pub fn setns(&mut self, from: SchemeNamespace, names: &[&[u8]]) -> Result<SchemeNamespace> {
+    pub fn make_ns(&mut self, from: SchemeNamespace, names: &[&[u8]]) -> Result<SchemeNamespace> {
         // Create an empty namespace
         let to = self.new_ns();
 

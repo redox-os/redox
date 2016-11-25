@@ -59,8 +59,10 @@ pub fn clone(flags: usize, stack_base: usize) -> Result<ContextId> {
     {
         let ruid;
         let rgid;
+        let rns;
         let euid;
         let egid;
+        let ens;
         let mut cpu_id = None;
         let arch;
         let vfork;
@@ -73,7 +75,6 @@ pub fn clone(flags: usize, stack_base: usize) -> Result<ContextId> {
         let mut tls_option = None;
         let grants;
         let name;
-        let scheme_ns;
         let cwd;
         let env;
         let files;
@@ -87,8 +88,10 @@ pub fn clone(flags: usize, stack_base: usize) -> Result<ContextId> {
             ppid = context.id;
             ruid = context.ruid;
             rgid = context.rgid;
+            rns = context.rns;
             euid = context.euid;
             egid = context.egid;
+            ens = context.ens;
 
             if flags & CLONE_VM == CLONE_VM {
                 cpu_id = context.cpu_id;
@@ -222,8 +225,6 @@ pub fn clone(flags: usize, stack_base: usize) -> Result<ContextId> {
                 name = Arc::new(Mutex::new(context.name.lock().clone()));
             }
 
-            scheme_ns = context.scheme_ns;
-
             if flags & CLONE_FS == CLONE_FS {
                 cwd = context.cwd.clone();
             } else {
@@ -304,8 +305,10 @@ pub fn clone(flags: usize, stack_base: usize) -> Result<ContextId> {
             context.ppid = ppid;
             context.ruid = ruid;
             context.rgid = rgid;
+            context.rns = rns;
             context.euid = euid;
             context.egid = egid;
+            context.ens = ens;
 
             context.cpu_id = cpu_id;
 
@@ -433,8 +436,6 @@ pub fn clone(flags: usize, stack_base: usize) -> Result<ContextId> {
             }
 
             context.name = name;
-
-            context.scheme_ns = scheme_ns;
 
             context.cwd = cwd;
 

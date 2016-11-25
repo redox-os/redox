@@ -13,16 +13,18 @@ pub fn main() {
 
     let command = "sh";
 
+    let mut name_ptrs = Vec::new();
+    for name in names.iter() {
+        name_ptrs.push([name.as_ptr() as usize, name.len()]);
+    }
+
+    let new_ns = syscall::mkns(&name_ptrs).unwrap();
+
     let pid = unsafe { syscall::clone(0).unwrap() };
     if pid == 0 {
-        let mut name_ptrs = Vec::new();
-        for name in names.iter() {
-            name_ptrs.push([name.as_ptr() as usize, name.len()]);
-        }
+        syscall::setrens(new_ns, new_ns).unwrap();
 
-        syscall::setns(&name_ptrs).unwrap();
-
-        println!("Container enter: {}", command);
+        println!("Container {}: enter: {}", new_ns, command);
 
         let err = Command::new(command).exec();
 
@@ -41,6 +43,6 @@ pub fn main() {
             }
         }
 
-        println!("Container exited: {:X}", status);
+        println!("Container {}: exit: {:X}", new_ns, status);
     }
 }

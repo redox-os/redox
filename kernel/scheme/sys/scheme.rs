@@ -9,7 +9,7 @@ pub fn resource() -> Result<Vec<u8>> {
         let contexts = context::contexts();
         let context_lock = contexts.current().ok_or(Error::new(ESRCH))?;
         let context = context_lock.read();
-        context.scheme_ns
+        context.ens
     };
 
     let mut data = Vec::new();

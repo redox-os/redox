@@ -1,7 +1,7 @@
 use collections::Vec;
 
 use context;
-use scheme;
+use scheme::{self, SchemeNamespace};
 use syscall::error::*;
 use syscall::validate::validate_slice;
 
@@ -10,6 +10,13 @@ pub fn getegid() -> Result<usize> {
     let context_lock = contexts.current().ok_or(Error::new(ESRCH))?;
     let context = context_lock.read();
     Ok(context.egid as usize)
+}
+
+pub fn getens() -> Result<usize> {
+    let contexts = context::contexts();
+    let context_lock = contexts.current().ok_or(Error::new(ESRCH))?;
+    let context = context_lock.read();
+    Ok(context.ens.into())
 }
 
 pub fn geteuid() -> Result<usize> {
@@ -26,11 +33,39 @@ pub fn getgid() -> Result<usize> {
     Ok(context.rgid as usize)
 }
 
+pub fn getns() -> Result<usize> {
+    let contexts = context::contexts();
+    let context_lock = contexts.current().ok_or(Error::new(ESRCH))?;
+    let context = context_lock.read();
+    Ok(context.rns.into())
+}
+
 pub fn getuid() -> Result<usize> {
     let contexts = context::contexts();
     let context_lock = contexts.current().ok_or(Error::new(ESRCH))?;
     let context = context_lock.read();
     Ok(context.ruid as usize)
+}
+
+pub fn mkns(name_ptrs: &[[usize; 2]]) -> Result<usize> {
+    let mut names = Vec::new();
+    for name_ptr in name_ptrs {
+        names.push(validate_slice(name_ptr[0] as *const u8, name_ptr[1])?);
+    }
+
+    let (uid, from) = {
+        let contexts = context::contexts();
+        let context_lock = contexts.current().ok_or(Error::new(ESRCH))?;
+        let context = context_lock.read();
+        (context.euid, context.ens)
+    };
+
+    if uid == 0 {
+        let to = scheme::schemes_mut().make_ns(from, &names)?;
+        Ok(to.into())
+    } else {
+        Err(Error::new(EACCES))
+    }
 }
 
 pub fn setregid(rgid: u32, egid: u32) -> Result<usize> {
@@ -52,6 +87,32 @@ pub fn setregid(rgid: u32, egid: u32) -> Result<usize> {
         }
         if egid as i32 != -1 {
             context.egid = egid;
+        }
+        Ok(0)
+    } else {
+        Err(Error::new(EPERM))
+    }
+}
+
+pub fn setrens(rns: SchemeNamespace, ens: SchemeNamespace) -> Result<usize> {
+    let contexts = context::contexts();
+    let context_lock = contexts.current().ok_or(Error::new(ESRCH))?;
+    let mut context = context_lock.write();
+
+    if (context.euid == 0
+    || rns.into() as isize == -1
+    || rns == context.ens
+    || rns == context.rns)
+    && (context.euid == 0
+    || ens.into() as isize == -1
+    || ens == context.ens
+    || ens == context.rns)
+    {
+        if rns.into() as isize != -1 {
+            context.rns = rns;
+        }
+        if ens.into() as isize != -1 {
+            context.ens = ens;
         }
         Ok(0)
     } else {
@@ -83,29 +144,4 @@ pub fn setreuid(ruid: u32, euid: u32) -> Result<usize> {
     } else {
         Err(Error::new(EPERM))
     }
-}
-
-pub fn setns(name_ptrs: &[[usize; 2]]) -> Result<usize> {
-    let mut names = Vec::new();
-    for name_ptr in name_ptrs {
-        names.push(validate_slice(name_ptr[0] as *const u8, name_ptr[1])?);
-    }
-
-    let from = {
-        let contexts = context::contexts();
-        let context_lock = contexts.current().ok_or(Error::new(ESRCH))?;
-        let context = context_lock.read();
-        context.scheme_ns
-    };
-
-    let to = scheme::schemes_mut().setns(from, &names)?;
-
-    {
-        let contexts = context::contexts();
-        let context_lock = contexts.current().ok_or(Error::new(ESRCH))?;
-        let mut context = context_lock.write();
-        context.scheme_ns = to;
-    }
-
-    Ok(0)
 }

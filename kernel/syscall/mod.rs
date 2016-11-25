@@ -17,7 +17,7 @@ use self::error::{Error, Result, ENOSYS};
 use self::number::*;
 
 use context::ContextId;
-use scheme::FileHandle;
+use scheme::{FileHandle, SchemeNamespace};
 
 /// Driver syscalls
 pub mod driver;
@@ -82,13 +82,16 @@ pub extern fn syscall(a: usize, b: usize, c: usize, d: usize, e: usize, f: usize
                 SYS_EXECVE => exec(validate_slice(b as *const u8, c)?, validate_slice(d as *const [usize; 2], e)?),
                 SYS_IOPL => iopl(b, stack),
                 SYS_GETCWD => getcwd(validate_slice_mut(b as *mut u8, c)?),
-                SYS_GETUID => getuid(),
-                SYS_GETGID => getgid(),
-                SYS_GETEUID => geteuid(),
                 SYS_GETEGID => getegid(),
+                SYS_GETENS => getens(),
+                SYS_GETEUID => geteuid(),
+                SYS_GETGID => getgid(),
+                SYS_GETNS => getns(),
+                SYS_GETUID => getuid(),
+                SYS_MKNS => mkns(validate_slice(b as *const [usize; 2], c)?),
                 SYS_SETREUID => setreuid(b as u32, c as u32),
+                SYS_SETRENS => setrens(SchemeNamespace::from(b), SchemeNamespace::from(c)),
                 SYS_SETREGID => setregid(b as u32, c as u32),
-                SYS_SETNS => setns(validate_slice(b as *const [usize; 2], c)?),
                 SYS_PIPE2 => pipe2(validate_slice_mut(b as *mut usize, 2)?, c),
                 SYS_PHYSALLOC => physalloc(b),
                 SYS_PHYSFREE => physfree(b, c),
