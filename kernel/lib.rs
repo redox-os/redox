@@ -93,9 +93,9 @@ pub fn cpu_count() -> usize {
 pub extern fn userspace_init() {
     assert_eq!(syscall::chdir(b"initfs:bin"), Ok(0));
 
-    assert_eq!(syscall::open(b"debug:", 0).map(FileHandle::into), Ok(0));
-    assert_eq!(syscall::open(b"debug:", 0).map(FileHandle::into), Ok(1));
-    assert_eq!(syscall::open(b"debug:", 0).map(FileHandle::into), Ok(2));
+    assert_eq!(syscall::open(b"debug:", syscall::flag::O_RDONLY).map(FileHandle::into), Ok(0));
+    assert_eq!(syscall::open(b"debug:", syscall::flag::O_WRONLY).map(FileHandle::into), Ok(1));
+    assert_eq!(syscall::open(b"debug:", syscall::flag::O_WRONLY).map(FileHandle::into), Ok(2));
 
     syscall::exec(b"initfs:bin/init", &[]).expect("failed to execute initfs:init");
 

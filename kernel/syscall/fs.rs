@@ -49,7 +49,7 @@ pub fn file_op_mut_slice(a: usize, fd: FileHandle, slice: &mut [u8]) -> Result<u
 
 /// Change the current working directory
 pub fn chdir(path: &[u8]) -> Result<usize> {
-    let fd = open(path, 0)?;
+    let fd = open(path, syscall::flag::O_RDONLY | syscall::flag::O_DIRECTORY)?;
     let mut stat = Stat::default();
     let stat_res = file_op_mut_slice(syscall::number::SYS_FSTAT, fd, &mut stat);
     let _ = close(fd);
@@ -142,28 +142,6 @@ pub fn pipe2(fds: &mut [usize], flags: usize) -> Result<usize> {
     } else {
         Err(Error::new(EFAULT))
     }
-}
-
-/// mkdir syscall
-pub fn mkdir(path: &[u8], mode: u16) -> Result<usize> {
-    let (path_canon, uid, gid, scheme_ns) = {
-        let contexts = context::contexts();
-        let context_lock = contexts.current().ok_or(Error::new(ESRCH))?;
-        let context = context_lock.read();
-        (context.canonicalize(path), context.euid, context.egid, context.ens)
-    };
-
-    let mut parts = path_canon.splitn(2, |&b| b == b':');
-    let scheme_name_opt = parts.next();
-    let reference_opt = parts.next();
-
-    let scheme_name = scheme_name_opt.ok_or(Error::new(ENODEV))?;
-    let scheme = {
-        let schemes = scheme::schemes();
-        let (_scheme_id, scheme) = schemes.get_name(scheme_ns, scheme_name).ok_or(Error::new(ENODEV))?;
-        scheme.clone()
-    };
-    scheme.mkdir(reference_opt.unwrap_or(b""), mode, uid, gid)
 }
 
 /// chmod syscall

@@ -1,17 +1,31 @@
 extern crate syscall;
 
+use syscall::scheme::Scheme;
+
+use std::{env, fs, thread};
 use std::os::unix::process::CommandExt;
 use std::process::Command;
 
+use self::chroot::ChrootScheme;
+
+mod chroot;
+
 pub fn main() {
-    let names = [
-        "file",
+    let mut args = env::args().skip(1);
+
+    let root_opt = args.next();
+
+    let cmd = args.next().unwrap_or("sh".to_string());
+
+    let mut names = vec![
         "rand",
         "tcp",
         "udp"
     ];
 
-    let command = "sh";
+    if root_opt.is_none() {
+        names.push("file");
+    }
 
     let mut name_ptrs = Vec::new();
     for name in names.iter() {
@@ -20,15 +34,43 @@ pub fn main() {
 
     let new_ns = syscall::mkns(&name_ptrs).unwrap();
 
+    let root_thread = if let Some(root) = root_opt {
+        Some(thread::spawn(move || {
+            syscall::setrens(-1isize as usize, new_ns).unwrap();
+            let scheme_fd = syscall::open(":file", syscall::O_CREAT | syscall::O_RDWR | syscall::O_CLOEXEC).unwrap();
+            syscall::setrens(-1isize as usize, syscall::getns().unwrap()).unwrap();
+
+            let chroot_scheme = ChrootScheme::new(fs::canonicalize(root).unwrap());
+            loop {
+                let mut packet = syscall::Packet::default();
+                if syscall::read(scheme_fd, &mut packet).unwrap() == 0 {
+                    break;
+                }
+                chroot_scheme.handle(&mut packet);
+                syscall::write(scheme_fd, &packet).unwrap();
+            }
+
+            let _ = syscall::close(scheme_fd);
+        }))
+    } else {
+        None
+    };
+
     let pid = unsafe { syscall::clone(0).unwrap() };
     if pid == 0 {
         syscall::setrens(new_ns, new_ns).unwrap();
 
-        println!("Container {}: enter: {}", new_ns, command);
+        println!("Container {}: enter: {}", new_ns, cmd);
 
-        let err = Command::new(command).exec();
+        let mut command = Command::new(&cmd);
+        for arg in args {
+            command.arg(&arg);
+        }
+        command.current_dir("/");
 
-        panic!("contain: failed to launch {}: {}", command, err);
+        let err = command.exec();
+
+        panic!("contain: failed to launch {}: {}", cmd, err);
     } else {
         let mut status = 0;
         syscall::waitpid(pid, &mut status, 0).unwrap();
