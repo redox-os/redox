@@ -1,8 +1,14 @@
 extern crate syscall;
 
-use std::{env, thread};
+use syscall::scheme::Scheme;
+
+use std::{env, fs, thread};
 use std::os::unix::process::CommandExt;
 use std::process::Command;
+
+use self::chroot::ChrootScheme;
+
+mod chroot;
 
 pub fn main() {
     let mut args = env::args().skip(1);
@@ -34,12 +40,14 @@ pub fn main() {
             let scheme_fd = syscall::open(":file", syscall::O_CREAT | syscall::O_RDWR | syscall::O_CLOEXEC).unwrap();
             syscall::setrens(-1isize as usize, syscall::getns().unwrap()).unwrap();
 
+            let chroot_scheme = ChrootScheme::new(fs::canonicalize(root).unwrap());
             loop {
                 let mut packet = syscall::Packet::default();
                 if syscall::read(scheme_fd, &mut packet).unwrap() == 0 {
                     break;
                 }
-                println!("{:?}", packet);
+                chroot_scheme.handle(&mut packet);
+                syscall::write(scheme_fd, &packet).unwrap();
             }
 
             let _ = syscall::close(scheme_fd);
@@ -58,6 +66,7 @@ pub fn main() {
         for arg in args {
             command.arg(&arg);
         }
+        command.current_dir("/");
 
         let err = command.exec();
 
