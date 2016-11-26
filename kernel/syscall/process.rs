@@ -468,7 +468,7 @@ pub fn exec(path: &[u8], arg_ptrs: &[[usize; 2]]) -> Result<usize> {
             (context.euid, context.egid, context.canonicalize(path))
         };
 
-        let file = syscall::open(&canonical, 0)?;
+        let file = syscall::open(&canonical, syscall::flag::O_RDONLY)?;
         let mut stat = Stat::default();
         syscall::file_op_mut_slice(syscall::number::SYS_FSTAT, file, &mut stat)?;
 

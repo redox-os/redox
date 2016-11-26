@@ -1,13 +1,13 @@
 extern crate syscall;
 
-use std::env;
+use std::{env, thread};
 use std::os::unix::process::CommandExt;
 use std::process::Command;
 
 pub fn main() {
     let mut args = env::args().skip(1);
 
-    let root = args.next();
+    let root_opt = args.next();
 
     let cmd = args.next().unwrap_or("sh".to_string());
 
@@ -16,8 +16,8 @@ pub fn main() {
         "tcp",
         "udp"
     ];
-    
-    if root.is_none() {
+
+    if root_opt.is_none() {
         names.push("file");
     }
 
@@ -27,6 +27,26 @@ pub fn main() {
     }
 
     let new_ns = syscall::mkns(&name_ptrs).unwrap();
+
+    let root_thread = if let Some(root) = root_opt {
+        Some(thread::spawn(move || {
+            syscall::setrens(-1isize as usize, new_ns).unwrap();
+            let scheme_fd = syscall::open(":file", syscall::O_CREAT | syscall::O_RDWR | syscall::O_CLOEXEC).unwrap();
+            syscall::setrens(-1isize as usize, syscall::getns().unwrap()).unwrap();
+
+            loop {
+                let mut packet = syscall::Packet::default();
+                if syscall::read(scheme_fd, &mut packet).unwrap() == 0 {
+                    break;
+                }
+                println!("{:?}", packet);
+            }
+
+            let _ = syscall::close(scheme_fd);
+        }))
+    } else {
+        None
+    };
 
     let pid = unsafe { syscall::clone(0).unwrap() };
     if pid == 0 {
