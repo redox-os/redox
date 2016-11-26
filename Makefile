@@ -60,7 +60,7 @@ clean:
 	cargo clean --manifest-path schemes/udpd/Cargo.toml
 	-$(FUMOUNT) build/filesystem/
 	rm -rf initfs/bin
-	rm -rf filesystem/bin
+	rm -rf filesystem/bin filesystem/sbin filesystem/ui/bin
 	rm -rf build
 
 doc: \
@@ -371,8 +371,8 @@ $(BUILD)/initfs.rs: \
 	echo '    files' >> $@
 	echo '}' >> $@
 
-filesystem/bin/%: drivers/%/Cargo.toml drivers/%/src/** $(BUILD)/libstd.rlib
-	mkdir -p filesystem/bin
+filesystem/sbin/%: drivers/%/Cargo.toml drivers/%/src/** $(BUILD)/libstd.rlib
+	mkdir -p filesystem/sbin
 	$(CARGO) rustc --manifest-path $< $(CARGOFLAGS) -o $@
 	strip $@
 	rm $@.d
@@ -410,8 +410,8 @@ filesystem/bin/%: programs/netutils/Cargo.toml programs/netutils/src/%/**.rs $(B
 	strip $@
 	rm $@.d
 
-filesystem/bin/%: programs/orbutils/Cargo.toml programs/orbutils/src/%/**.rs $(BUILD)/libstd.rlib
-	mkdir -p filesystem/bin
+filesystem/ui/bin/%: programs/orbutils/Cargo.toml programs/orbutils/src/%/**.rs $(BUILD)/libstd.rlib
+	mkdir -p filesystem/ui/bin
 	$(CARGO) rustc --manifest-path $< --bin $* $(CARGOFLAGS) -o $@
 	strip $@
 	rm $@.d
@@ -428,15 +428,16 @@ filesystem/bin/%: programs/userutils/Cargo.toml programs/userutils/src/bin/%.rs 
 	strip $@
 	rm $@.d
 
-filesystem/bin/%: schemes/%/Cargo.toml schemes/%/src/** $(BUILD)/libstd.rlib
-	mkdir -p filesystem/bin
+filesystem/sbin/%: schemes/%/Cargo.toml schemes/%/src/** $(BUILD)/libstd.rlib
+	mkdir -p filesystem/sbin
 	$(CARGO) rustc --manifest-path $< --bin $* $(CARGOFLAGS) -o $@
 	strip $@
 	rm $@.d
 
 drivers: \
-	filesystem/bin/e1000d \
-	filesystem/bin/rtl8168d
+	filesystem/sbin/pcid \
+	filesystem/sbin/e1000d \
+	filesystem/sbin/rtl8168d
 
 binutils: \
 	filesystem/bin/hex \
@@ -504,15 +505,15 @@ netutils: \
 	filesystem/bin/wget
 
 orbutils: \
-	filesystem/bin/browser \
-	filesystem/bin/calculator \
-	filesystem/bin/character_map \
-	filesystem/bin/editor \
-	filesystem/bin/file_manager \
-	filesystem/bin/launcher \
-	filesystem/bin/orblogin \
-	filesystem/bin/terminal \
-	filesystem/bin/viewer
+	filesystem/ui/bin/browser \
+	filesystem/ui/bin/calculator \
+	filesystem/ui/bin/character_map \
+	filesystem/ui/bin/editor \
+	filesystem/ui/bin/file_manager \
+	filesystem/ui/bin/launcher \
+	filesystem/ui/bin/orblogin \
+	filesystem/ui/bin/terminal \
+	filesystem/ui/bin/viewer
 
 pkgutils: \
 	filesystem/bin/pkg
@@ -526,14 +527,13 @@ userutils: \
 	filesystem/bin/sudo
 
 schemes: \
-	filesystem/bin/ethernetd \
-	filesystem/bin/example \
-	filesystem/bin/ipd \
-	filesystem/bin/orbital \
-	filesystem/bin/ptyd \
-	filesystem/bin/randd \
-	filesystem/bin/tcpd \
-	filesystem/bin/udpd
+	filesystem/sbin/ethernetd \
+	filesystem/sbin/ipd \
+	filesystem/sbin/orbital \
+	filesystem/sbin/ptyd \
+	filesystem/sbin/randd \
+	filesystem/sbin/tcpd \
+	filesystem/sbin/udpd
 
 build/filesystem.bin: \
 		drivers \

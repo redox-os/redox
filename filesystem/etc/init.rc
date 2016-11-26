@@ -1,13 +1,13 @@
-randd
-ptyd
-initfs:bin/pcid /etc/pcid.toml
-ethernetd
-ipd
-tcpd
-udpd
+/sbin/randd
+/sbin/ptyd
+/sbin/pcid /etc/pcid.toml
+/sbin/ethernetd
+/sbin/ipd
+/sbin/tcpd
+/sbin/udpd
 dhcpd -b
 httpd -b /ref
 getty display:2
 getty display:3
 stdio debug:
-orbital display:4
+/sbin/orbital display:4 /ui/bin/orblogin /ui/bin/launcher

@@ -3,11 +3,11 @@ name = "E1000 NIC"
 class = 2
 vendor = 32902
 device = 4110
-command = ["e1000d", "$NAME", "$BAR0", "$IRQ"]
+command = ["/sbin/e1000d", "$NAME", "$BAR0", "$IRQ"]
 
 [[drivers]]
 name = "RTL8168 NIC"
 class = 2
 vendor = 4332
 device = 33128
-command = ["rtl8168d", "$NAME", "$BAR2", "$IRQ"]
+command = ["/sbin/rtl8168d", "$NAME", "$BAR2", "$IRQ"]
