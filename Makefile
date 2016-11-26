@@ -336,19 +336,16 @@ initfs/bin/%: drivers/%/Cargo.toml drivers/%/src/** $(BUILD)/libstd.rlib
 	mkdir -p initfs/bin
 	$(CARGO) rustc --manifest-path $< $(CARGOFLAGS) -o $@
 	strip $@
-	rm $@.d
 
 initfs/bin/%: programs/%/Cargo.toml programs/%/src/** $(BUILD)/libstd.rlib
 	mkdir -p initfs/bin
 	$(CARGO) rustc --manifest-path $< $(CARGOFLAGS) -o $@
 	strip $@
-	rm $@.d
 
 initfs/bin/%: schemes/%/Cargo.toml schemes/%/src/** $(BUILD)/libstd.rlib
 	mkdir -p initfs/bin
 	$(CARGO) rustc --manifest-path $< --bin $* $(CARGOFLAGS) -o $@
 	strip $@
-	rm $@.d
 
 $(BUILD)/initfs.rs: \
 		initfs/bin/init \
@@ -375,13 +372,11 @@ filesystem/sbin/%: drivers/%/Cargo.toml drivers/%/src/** $(BUILD)/libstd.rlib
 	mkdir -p filesystem/sbin
 	$(CARGO) rustc --manifest-path $< $(CARGOFLAGS) -o $@
 	strip $@
-	rm $@.d
 
 filesystem/bin/%: programs/%/Cargo.toml programs/%/src/** $(BUILD)/libstd.rlib
 	mkdir -p filesystem/bin
 	$(CARGO) rustc --manifest-path $< --bin $* $(CARGOFLAGS) -o $@
 	strip $@
-	rm $@.d
 
 filesystem/bin/sh: filesystem/bin/ion
 	cp $< $@
@@ -390,49 +385,41 @@ filesystem/bin/%: programs/binutils/Cargo.toml programs/binutils/src/bin/%.rs $(
 	mkdir -p filesystem/bin
 	$(CARGO) rustc --manifest-path $< --bin $* $(CARGOFLAGS) -o $@
 	strip $@
-	rm $@.d
 
 filesystem/bin/%: programs/coreutils/Cargo.toml programs/coreutils/src/bin/%.rs $(BUILD)/libstd.rlib
 	mkdir -p filesystem/bin
 	$(CARGO) rustc --manifest-path $< --bin $* $(CARGOFLAGS) -o $@
 	strip $@
-	rm $@.d
 
 filesystem/bin/%: programs/extrautils/Cargo.toml programs/extrautils/src/bin/%.rs $(BUILD)/libstd.rlib
 	mkdir -p filesystem/bin
 	$(CARGO) rustc --manifest-path $< --bin $* $(CARGOFLAGS) -o $@
 	strip $@
-	rm $@.d
 
 filesystem/bin/%: programs/netutils/Cargo.toml programs/netutils/src/%/**.rs $(BUILD)/libstd.rlib
 	mkdir -p filesystem/bin
 	$(CARGO) rustc --manifest-path $< --bin $* $(CARGOFLAGS) -o $@
 	strip $@
-	rm $@.d
 
 filesystem/ui/bin/%: programs/orbutils/Cargo.toml programs/orbutils/src/%/**.rs $(BUILD)/libstd.rlib
 	mkdir -p filesystem/ui/bin
 	$(CARGO) rustc --manifest-path $< --bin $* $(CARGOFLAGS) -o $@
 	strip $@
-	rm $@.d
 
 filesystem/bin/%: programs/pkgutils/Cargo.toml programs/pkgutils/src/%/**.rs $(BUILD)/libstd.rlib
 	mkdir -p filesystem/bin
 	$(CARGO) rustc --manifest-path $< --bin $* $(CARGOFLAGS) -o $@
 	strip $@
-	rm $@.d
 
 filesystem/bin/%: programs/userutils/Cargo.toml programs/userutils/src/bin/%.rs $(BUILD)/libstd.rlib
 	mkdir -p filesystem/bin
 	$(CARGO) rustc --manifest-path $< --bin $* $(CARGOFLAGS) -o $@
 	strip $@
-	rm $@.d
 
 filesystem/sbin/%: schemes/%/Cargo.toml schemes/%/src/** $(BUILD)/libstd.rlib
 	mkdir -p filesystem/sbin
 	$(CARGO) rustc --manifest-path $< --bin $* $(CARGOFLAGS) -o $@
 	strip $@
-	rm $@.d
 
 drivers: \
 	filesystem/sbin/pcid \
