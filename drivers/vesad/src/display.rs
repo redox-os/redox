@@ -22,16 +22,6 @@ static FONT_BOLD_ITALIC: &'static [u8] = include_bytes!("../../../res/fonts/Deja
 static FONT_ITALIC: &'static [u8] = include_bytes!("../../../res/fonts/DejaVuSansMono-Oblique.ttf");
 
 /// A display
-#[cfg(not(feature="rusttype"))]
-pub struct Display {
-    pub width: usize,
-    pub height: usize,
-    pub onscreen: &'static mut [u32],
-    pub offscreen: &'static mut [u32]
-}
-
-/// A display
-#[cfg(feature="rusttype")]
 pub struct Display {
     pub width: usize,
     pub height: usize,
