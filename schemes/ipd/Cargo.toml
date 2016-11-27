@@ -9,4 +9,3 @@ redox_syscall = { path = "../../syscall/" }
 
 [replace]
 "libc:0.2.17" = { git = "https://github.com/rust-lang/libc.git" }
-"rand:0.3.14" = { git = "https://github.com/rust-lang-nursery/rand.git" }
