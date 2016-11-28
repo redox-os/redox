@@ -37,6 +37,10 @@ impl Interface for EthernetInterface {
         self.ip
     }
 
+    fn routable(&self, dst: Ipv4Addr) -> bool {
+        dst != Ipv4Addr::LOOPBACK
+    }
+
     fn arp_event(&mut self) -> Result<()> {
         loop {
             let mut bytes = [0; 65536];

@@ -9,6 +9,7 @@ mod loopback;
 
 pub trait Interface {
     fn ip(&self) -> Ipv4Addr;
+    fn routable(&self, dst: Ipv4Addr) -> bool;
     fn recv(&mut self) -> Result<Vec<Ipv4>>;
     fn send(&mut self, ip: Ipv4) -> Result<usize>;
 

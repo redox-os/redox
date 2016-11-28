@@ -194,7 +194,7 @@ impl SchemeMut for Ipd {
         if let Some(mut ip) = Ipv4::from_bytes(buf) {
             for mut interface in self.interfaces.iter_mut() {
                 let if_ip = interface.ip();
-                if ip.header.src == if_ip || ip.header.src == Ipv4Addr::NULL {
+                if ip.header.src == if_ip || (ip.header.src == Ipv4Addr::NULL && interface.routable(ip.header.dst)) {
                     ip.header.src = if_ip;
                     ip.header.proto = handle.proto;
 

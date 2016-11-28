@@ -4,14 +4,12 @@ use std::io::Result;
 use interface::Interface;
 
 pub struct LoopbackInterface {
-    ip: Ipv4Addr,
     packets: Vec<Ipv4>
 }
 
 impl LoopbackInterface {
     pub fn new() -> Self {
         LoopbackInterface {
-            ip: Ipv4Addr::LOOPBACK,
             packets: Vec::new()
         }
     }
@@ -19,7 +17,11 @@ impl LoopbackInterface {
 
 impl Interface for LoopbackInterface {
     fn ip(&self) -> Ipv4Addr {
-        self.ip
+        Ipv4Addr::LOOPBACK
+    }
+
+    fn routable(&self, dst: Ipv4Addr) -> bool {
+        dst == Ipv4Addr::LOOPBACK
     }
 
     fn recv(&mut self) -> Result<Vec<Ipv4>> {
