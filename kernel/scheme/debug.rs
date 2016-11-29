@@ -5,7 +5,6 @@ use spin::Once;
 use context;
 use scheme::*;
 use sync::WaitQueue;
-use syscall::error::*;
 use syscall::flag::EVENT_READ;
 use syscall::scheme::Scheme;
 
