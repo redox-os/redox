@@ -6,7 +6,6 @@
 /sbin/tcpd
 /sbin/udpd
 dhcpd -b
-httpd -b /ref
 getty display:2
 getty display:3
 stdio debug:
