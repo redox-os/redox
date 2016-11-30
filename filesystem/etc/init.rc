@@ -9,4 +9,4 @@ dhcpd -b
 getty display:2
 getty display:3
 stdio debug:
-/sbin/orbital display:4 /ui/bin/orblogin /ui/bin/launcher
+/sbin/orbital display:4/activate /ui/bin/orblogin /ui/bin/launcher

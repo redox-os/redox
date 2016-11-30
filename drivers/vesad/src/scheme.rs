@@ -50,9 +50,15 @@ impl SchemeMut for DisplayScheme {
                 Err(Error::new(EACCES))
             }
         } else {
-            let path_str = str::from_utf8(path).unwrap_or("");
-            let id = path_str.parse::<usize>().unwrap_or(0);
+            let path_str = str::from_utf8(path).unwrap_or("").trim_matches('/');
+            let mut parts = path_str.split('/');
+            let id = parts.next().unwrap_or("").parse::<usize>().unwrap_or(0);
             if self.screens.contains_key(&id) {
+                for cmd in parts {
+                    if cmd == "activate" {
+                        self.active = id;
+                    }
+                }
                 Ok(id)
             } else {
                 Err(Error::new(ENOENT))
