@@ -97,9 +97,9 @@ pub extern fn userspace_init() {
     assert_eq!(syscall::open(b"debug:", syscall::flag::O_WRONLY).map(FileHandle::into), Ok(1));
     assert_eq!(syscall::open(b"debug:", syscall::flag::O_WRONLY).map(FileHandle::into), Ok(2));
 
-    syscall::exec(b"initfs:/bin/init", &[]).expect("failed to execute initfs:init");
+    syscall::exec(b"/bin/init", &[]).expect("failed to execute init");
 
-    panic!("initfs:init returned")
+    panic!("init returned")
 }
 
 /// Allow exception handlers to send signal to arch-independant kernel
