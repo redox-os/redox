@@ -37,7 +37,7 @@ Please make sure you use the **latest nightly** of `rustc` before building (for 
 
 The ecosystem and software Redox OS provides is listed below.
 
-| Name (lexiographic order)                                                   | Maintainer
+| Name (lexicographic order)                                                  | Maintainer
 |-----------------------------------------------------------------------------|---------------------------
 | [Ion (shell)](https://github.com/redox-os/ion)                              | [**@skylerberg**](https://github.com/skylerberg) & [**@jackpot51**](https://github.com/jackpot51)
 | [RANSID](https://github.com/redox-os/ransid)                                | [**@jackpot51**](https://github.com/jackpot51)
@@ -65,7 +65,7 @@ The ecosystem and software Redox OS provides is listed below.
 | [orbtk](https://github.com/redox-os/orbtk)                                  | [**@stratact**](https://github.com/stratact)
 | [orbutils](https://github.com/redox-os/orbutils)                            | [**@jackpot51**](https://github.com/jackpot51)
 | [pkgutils (current package manager)](https://github.com/redox-os/pkgutils)  | [**@jackpot51**](https://github.com/jackpot51)
-| [playbot (internal REPL bot)](https://github.com/redox-os/platbot)          | [**@ticki**](https://github.com/ticki)
+| [playbot (internal REPL bot)](https://github.com/redox-os/playbot)          | [**@ticki**](https://github.com/ticki)
 | [ralloc](https://github.com/redox-os/ralloc)                                | [**@ticki**](https://github.com/ticki)
 | [redoxfs (old filesystem)](https://github.com/redox-os/redoxfs)             | [**@jackpot51**](https://github.com/jackpot51)
 | [syscall](https://github.com/redox-os/syscall)                              | [**@jackpot51**](https://github.com/jackpot51)
