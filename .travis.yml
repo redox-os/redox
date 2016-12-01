@@ -2,6 +2,7 @@ sudo: required
 language: rust
 rust:
 - nightly
+cache: cargo
 os:
 - linux
 dist: trusty
