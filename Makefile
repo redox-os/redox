@@ -26,7 +26,7 @@ all: build/harddrive.bin
 live: build/livedisk.bin
 
 build/%.bin.gz: build/%.bin
-	gzip -k $<
+	gzip -k -f $<
 
 FORCE:
 
