@@ -37,7 +37,7 @@ Please make sure you use the **latest nightly** of `rustc` before building (for 
 
 The ecosystem and software Redox OS provides is listed below.
 
-| Name (lexiographic order)                                                   | Maintainer
+| Name (lexicographic order)                                                  | Maintainer
 |-----------------------------------------------------------------------------|---------------------------
 | [Ion (shell)](https://github.com/redox-os/ion)                              | [**@skylerberg**](https://github.com/skylerberg) & [**@jackpot51**](https://github.com/jackpot51)
 | [RANSID](https://github.com/redox-os/ransid)                                | [**@jackpot51**](https://github.com/jackpot51)
