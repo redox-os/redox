@@ -13,6 +13,7 @@ before_install:
   Caskroom/cask/osxfuse; brew tap glendc/gcc_cross_compilers; brew install glendc/gcc_cross_compilers/x64-elf-binutils
   glendc/gcc_cross_compilers/x64-elf-gcc; fi
 script:
+- export SSL_CERT_FILE=/etc/ssl/certs/ca-certificates.crt
 - make clean
 - make update
 - make build/harddrive.bin.gz build/livedisk.bin.gz -j 2
