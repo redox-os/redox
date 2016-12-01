@@ -19,14 +19,13 @@ CARGO=RUSTC="$(RUSTC)" RUSTDOC="$(RUSTDOC)" cargo
 CARGOFLAGS=--target $(TARGET).json --release --
 
 # Default targets
-.PHONY: all live clean doc ref test update qemu bochs drivers schemes binutils coreutils extrautils netutils userutils wireshark FORCE
+.PHONY: all live iso clean doc ref test update qemu bochs drivers schemes binutils coreutils extrautils netutils userutils wireshark FORCE
 
 all: build/harddrive.bin
 
 live: build/livedisk.bin
 
-build/%.bin.gz: build/%.bin
-	gzip -k -f $<
+iso: build/livedisk.iso
 
 FORCE:
 
@@ -223,6 +222,18 @@ build/harddrive.bin: $(KBUILD)/kernel bootloader/$(ARCH)/** build/filesystem.bin
 build/livedisk.bin: $(KBUILD)/kernel_live bootloader/$(ARCH)/**
 	nasm -f bin -o $@ -D ARCH_$(ARCH) -ibootloader/$(ARCH)/ bootloader/$(ARCH)/livedisk.asm
 
+build/%.bin.gz: build/%.bin
+	gzip -k -f $<
+
+build/livedisk.iso: build/livedisk.bin.gz
+	rm -rf build/iso/
+	mkdir -p build/iso/
+	cp -RL isolinux build/iso/
+	cp $< build/iso/livedisk.gz
+	mkisofs -o $@ -b isolinux/isolinux.bin -c isolinux/boot.cat \
+					-no-emul-boot -boot-load-size 4 -boot-info-table \
+					build/iso/
+
 qemu: build/harddrive.bin
 	$(QEMU) $(QEMUFLAGS) -drive file=$<,format=raw
 
@@ -234,6 +245,12 @@ qemu_live: build/livedisk.bin
 
 qemu_live_no_build:
 	$(QEMU) $(QEMUFLAGS) -device usb-ehci,id=flash_bus -drive id=flash_drive,file=build/livedisk.bin,format=raw,if=none -device usb-storage,drive=flash_drive,bus=flash_bus.0
+
+qemu_iso: build/livedisk.iso
+	$(QEMU) $(QEMUFLAGS) -boot d -cdrom $<
+
+qemu_iso_no_build:
+		$(QEMU) $(QEMUFLAGS) -boot d -cdrom build/livedisk.iso
 
 endif
 

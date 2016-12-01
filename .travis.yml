@@ -15,7 +15,7 @@ before_install:
   glendc/gcc_cross_compilers/x64-elf-gcc; fi
 script:
 - export SSL_CERT_FILE=/etc/ssl/certs/ca-certificates.crt
-- make clean && make update && make build/harddrive.bin.gz build/livedisk.bin.gz -j 2
+- make clean && make update && make build/harddrive.bin.gz build/livedisk.bin.gz build/livedisk.iso -j 2
 notifications:
   email: false
   webhooks: http://37.139.9.28:54863/travis
@@ -26,6 +26,7 @@ deploy:
   file:
   - build/harddrive.bin.gz
   - build/livedisk.bin.gz
+  - build/livedisk.iso
   on:
     repo: redox-os/redox
     tags: true
