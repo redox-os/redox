@@ -7,7 +7,7 @@ os:
 - linux
 dist: trusty
 before_install:
-- if [ `uname` = "Linux" ]; then sudo apt-get install -qq nasm pkg-config fuse libfuse-dev syslinux-utils;
+- if [ `uname` = "Linux" ]; then sudo apt-get install -qq nasm pkg-config fuse libfuse-dev genisoimage syslinux-utils;
   sudo modprobe fuse; sudo chmod 666 /dev/fuse; sudo chown root:$USER /etc/fuse.conf;
   fi
 - if [ `uname` = "Darwin" ]; then brew update; brew install nasm gcc49 pkg-config
