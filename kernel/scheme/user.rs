@@ -106,6 +106,10 @@ impl UserInner {
             for i in 0 .. grants.len() {
                 let start = grants[i].start_address().get();
                 if to_address + full_size < start {
+                    {
+                        let name = context.name.lock();
+                        println!("{}: {}: Can grant {:X} to {:X} size {}", context.id.into(), ::core::str::from_utf8(&name).unwrap_or(""), from_address, to_address, full_size);
+                    }
                     grants.insert(i, Grant::map_inactive(
                         VirtualAddress::new(from_address),
                         VirtualAddress::new(to_address),
@@ -123,6 +127,10 @@ impl UserInner {
                 }
             }
 
+            {
+                let name = context.name.lock();
+                println!("{}: {}: Can grant {:X} to {:X} size {}", context.id.into(), ::core::str::from_utf8(&name).unwrap_or(""), from_address, to_address, full_size);
+            }
             grants.push(Grant::map_inactive(
                 VirtualAddress::new(from_address),
                 VirtualAddress::new(to_address),

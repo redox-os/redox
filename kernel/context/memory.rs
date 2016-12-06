@@ -12,7 +12,8 @@ use arch::paging::temporary_page::TemporaryPage;
 pub struct Grant {
     start: VirtualAddress,
     size: usize,
-    flags: EntryFlags
+    flags: EntryFlags,
+    mapped: bool
 }
 
 impl Grant {
@@ -36,7 +37,8 @@ impl Grant {
         Grant {
             start: to,
             size: size,
-            flags: flags
+            flags: flags,
+            mapped: true
         }
     }
 
@@ -64,7 +66,8 @@ impl Grant {
         Grant {
             start: to,
             size: size,
-            flags: flags
+            flags: flags,
+            mapped: true
         }
     }
 
@@ -80,7 +83,9 @@ impl Grant {
         self.flags
     }
 
-    pub fn unmap(self) {
+    pub fn unmap(mut self) {
+        assert!(self.mapped);
+
         let mut active_table = unsafe { ActivePageTable::new() };
 
         let mut flush_all = false;
@@ -95,9 +100,13 @@ impl Grant {
         if flush_all {
             active_table.flush_all();
         }
+
+        self.mapped = false;
     }
 
-    pub fn unmap_inactive(self, new_table: &mut InactivePageTable, temporary_page: &mut TemporaryPage) {
+    pub fn unmap_inactive(mut self, new_table: &mut InactivePageTable, temporary_page: &mut TemporaryPage) {
+        assert!(self.mapped);
+
         let mut active_table = unsafe { ActivePageTable::new() };
 
         active_table.with(new_table, temporary_page, |mapper| {
@@ -107,6 +116,14 @@ impl Grant {
                 mapper.unmap_return(page);
             }
         });
+
+        self.mapped = false;
+    }
+}
+
+impl Drop for Grant {
+    fn drop(&mut self) {
+        assert!(!self.mapped);
     }
 }
 

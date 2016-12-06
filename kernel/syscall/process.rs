@@ -511,9 +511,21 @@ pub fn exec(path: &[u8], arg_ptrs: &[[usize; 2]]) -> Result<usize> {
                     // Unmap previous image, heap, grants, stack, and tls
                     context.image.clear();
                     drop(context.heap.take());
-                    context.grants = Arc::new(Mutex::new(Vec::new()));
                     drop(context.stack.take());
                     drop(context.tls.take());
+
+                    let mut unmap_grants = Vec::new();
+                    // FIXME: Looks like a race condition.
+                    // Is it possible for Arc::strong_count to return 1 to two contexts that exit at the
+                    // same time, or return 2 to both, thus either double freeing or leaking the grants?
+                    if Arc::strong_count(&context.grants) == 1 {
+                        mem::swap(context.grants.lock().deref_mut(), &mut unmap_grants);
+                    }
+                    context.grants = Arc::new(Mutex::new(Vec::new()));
+
+                    for grant in unmap_grants {
+                        grant.unmap();
+                    }
 
                     if stat.st_mode & syscall::flag::MODE_SETUID == syscall::flag::MODE_SETUID {
                         context.euid = stat.st_uid;
@@ -753,7 +765,10 @@ pub fn exit(status: usize) -> ! {
         let mut close_files = Vec::new();
         let (pid, ppid) = {
             let mut context = context_lock.write();
-            if Arc::strong_count(&context.files) == 1 { // FIXME: Looks like a race condition.
+            // FIXME: Looks like a race condition.
+            // Is it possible for Arc::strong_count to return 1 to two contexts that exit at the
+            // same time, or return 2 to both, thus either double closing or leaking the files?
+            if Arc::strong_count(&context.files) == 1 {
                 mem::swap(context.files.lock().deref_mut(), &mut close_files);
             }
             context.files = Arc::new(Mutex::new(Vec::new()));
@@ -796,7 +811,19 @@ pub fn exit(status: usize) -> ! {
             drop(context.heap.take());
             drop(context.stack.take());
             drop(context.tls.take());
+
+            let mut unmap_grants = Vec::new();
+            // FIXME: Looks like a race condition.
+            // Is it possible for Arc::strong_count to return 1 to two contexts that exit at the
+            // same time, or return 2 to both, thus either double freeing or leaking the grants?
+            if Arc::strong_count(&context.grants) == 1 {
+                mem::swap(context.grants.lock().deref_mut(), &mut unmap_grants);
+            }
             context.grants = Arc::new(Mutex::new(Vec::new()));
+
+            for grant in unmap_grants {
+                grant.unmap();
+            }
 
             let vfork = context.vfork;
             context.vfork = false;
