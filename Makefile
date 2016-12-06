@@ -276,11 +276,14 @@ virtualbox: build/harddrive.bin
 	echo "Set Configuration"
 	$(VBM) modifyvm Redox --memory 1024
 	$(VBM) modifyvm Redox --vram 16
-	$(VBM) modifyvm Redox --nic1 nat
-	$(VBM) modifyvm Redox --nictype1 82540EM
-	$(VBM) modifyvm Redox --cableconnected1 on
-	$(VBM) modifyvm Redox --nictrace1 on
-	$(VBM) modifyvm Redox --nictracefile1 build/network.pcap
+	if [ "$(net)" != "no" ]; \
+	then \
+		$(VBM) modifyvm Redox --nic1 nat; \
+		$(VBM) modifyvm Redox --nictype1 82540EM; \
+		$(VBM) modifyvm Redox --cableconnected1 on; \
+		$(VBM) modifyvm Redox --nictrace1 on; \
+		$(VBM) modifyvm Redox --nictracefile1 build/network.pcap; \
+	fi
 	$(VBM) modifyvm Redox --uart1 0x3F8 4
 	$(VBM) modifyvm Redox --uartmode1 file build/serial.log
 	$(VBM) modifyvm Redox --usb off # on
