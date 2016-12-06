@@ -7,14 +7,21 @@ os:
 - linux
 dist: trusty
 before_install:
-- if [ `uname` = "Linux" ]; then sudo apt-get install -qq nasm pkg-config fuse libfuse-dev genisoimage syslinux-utils;
-  sudo modprobe fuse; sudo chmod 666 /dev/fuse; sudo chown root:$USER /etc/fuse.conf;
+- if [ `uname` = "Linux" ]; then
+  sudo apt-get install -qq nasm pkg-config fuse libfuse-dev genisoimage syslinux &&
+  sudo modprobe fuse &&
+  sudo chmod 666 /dev/fuse &&
+  sudo chown root:$USER /etc/fuse.conf;
   fi
-- if [ `uname` = "Darwin" ]; then brew update; brew install nasm gcc49 pkg-config
-  Caskroom/cask/osxfuse; brew tap glendc/gcc_cross_compilers; brew install glendc/gcc_cross_compilers/x64-elf-binutils
-  glendc/gcc_cross_compilers/x64-elf-gcc; fi
+- if [ `uname` = "Darwin" ]; then brew update &&
+  brew install nasm gcc49 pkg-config Caskroom/cask/osxfuse &&
+  brew tap glendc/gcc_cross_compilers &&
+  brew install glendc/gcc_cross_compilers/x64-elf-binutils glendc/gcc_cross_compilers/x64-elf-gcc;
+  fi
 script:
-- make clean && make update && make build/harddrive.bin.gz build/livedisk.bin.gz build/livedisk.iso -j 2
+- make clean &&
+  make update &&
+  make build/harddrive.bin.gz build/livedisk.bin.gz build/livedisk.iso -j 2
 notifications:
   email: false
   webhooks: http://37.139.9.28:54863/travis
