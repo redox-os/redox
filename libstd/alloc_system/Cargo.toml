@@ -8,6 +8,3 @@ git = "https://github.com/redox-os/ralloc.git"
 branch = "new_kernel"
 default-features = false
 features = ["allocator"]
-
-[replace]
-"libc:0.2.17" = { git = "https://github.com/rust-lang/libc.git" }
