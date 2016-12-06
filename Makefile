@@ -233,6 +233,7 @@ build/livedisk.iso: build/livedisk.bin.gz
 	mkisofs -o $@ -b isolinux/isolinux.bin -c isolinux/boot.cat \
 					-no-emul-boot -boot-load-size 4 -boot-info-table \
 					build/iso/
+	isohybrid $@
 
 qemu: build/harddrive.bin
 	$(QEMU) $(QEMUFLAGS) -drive file=$<,format=raw
