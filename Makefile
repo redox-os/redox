@@ -230,7 +230,7 @@ build/livedisk.iso: build/livedisk.bin.gz
 	mkdir -p build/iso/
 	cp -RL isolinux build/iso/
 	cp $< build/iso/livedisk.gz
-	mkisofs -o $@ -b isolinux/isolinux.bin -c isolinux/boot.cat \
+	genisoimage -o $@ -b isolinux/isolinux.bin -c isolinux/boot.cat \
 					-no-emul-boot -boot-load-size 4 -boot-info-table \
 					build/iso/
 	isohybrid $@
