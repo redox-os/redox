@@ -13,7 +13,8 @@ use std::os::unix::io::FromRawFd;
 use std::rc::Rc;
 
 use event::EventQueue;
-use netutils::{n16, Ipv4, Ipv4Addr, Ipv4Header, Udp, UdpHeader, Checksum};
+use netutils::{n16, Ipv4, Ipv4Addr, Ipv4Header, Checksum};
+use netutils::udp::{Udp, UdpHeader};
 use syscall::data::Packet;
 use syscall::error::{Error, Result, EACCES, EADDRINUSE, EBADF, EIO, EINVAL, EMSGSIZE, ENOTCONN, EWOULDBLOCK};
 use syscall::flag::{EVENT_READ, F_GETFL, F_SETFL, O_ACCMODE, O_CREAT, O_RDWR, O_NONBLOCK};
