@@ -36,3 +36,4 @@ deploy:
   on:
     repo: redox-os/redox
     tags: true
+  skip_cleanup: true
