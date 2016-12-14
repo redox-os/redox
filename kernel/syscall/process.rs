@@ -450,6 +450,41 @@ pub fn clone(flags: usize, stack_base: usize) -> Result<ContextId> {
     Ok(pid)
 }
 
+fn empty(context: &mut context::Context, reaping: bool) {
+    if reaping {
+        // Memory should already be unmapped
+        assert!(context.image.is_empty());
+        assert!(context.heap.is_none());
+        assert!(context.stack.is_none());
+        assert!(context.tls.is_none());
+    } else {
+        // Unmap previous image, heap, grants, stack, and tls
+        context.image.clear();
+        drop(context.heap.take());
+        drop(context.stack.take());
+        drop(context.tls.take());
+    }
+
+    // FIXME: Looks like a race condition.
+    // Is it possible for Arc::strong_count to return 1 to two contexts that exit at the
+    // same time, or return 2 to both, thus either double freeing or leaking the grants?
+    if Arc::strong_count(&context.grants) == 1 {
+        let mut grants = context.grants.lock();
+        for grant in grants.drain(..) {
+            if reaping {
+                println!("{}: {}: Grant should not exist: {:?}", context.id.into(), unsafe { ::core::str::from_utf8_unchecked(&context.name.lock()) }, grant);
+
+                let mut new_table = unsafe { InactivePageTable::from_address(context.arch.get_page_table()) };
+                let mut temporary_page = TemporaryPage::new(Page::containing_address(VirtualAddress::new(arch::USER_TMP_GRANT_OFFSET)));
+
+                grant.unmap_inactive(&mut new_table, &mut temporary_page);
+            } else {
+                grant.unmap();
+            }
+        }
+    }
+}
+
 pub fn exec(path: &[u8], arg_ptrs: &[[usize; 2]]) -> Result<usize> {
     let entry;
     let mut sp = arch::USER_STACK_OFFSET + arch::USER_STACK_SIZE - 256;
@@ -508,24 +543,7 @@ pub fn exec(path: &[u8], arg_ptrs: &[[usize; 2]]) -> Result<usize> {
                     // Set name
                     context.name = Arc::new(Mutex::new(canonical));
 
-                    // Unmap previous image, heap, grants, stack, and tls
-                    context.image.clear();
-                    drop(context.heap.take());
-                    drop(context.stack.take());
-                    drop(context.tls.take());
-
-                    let mut unmap_grants = Vec::new();
-                    // FIXME: Looks like a race condition.
-                    // Is it possible for Arc::strong_count to return 1 to two contexts that exit at the
-                    // same time, or return 2 to both, thus either double freeing or leaking the grants?
-                    if Arc::strong_count(&context.grants) == 1 {
-                        mem::swap(context.grants.lock().deref_mut(), &mut unmap_grants);
-                    }
-                    context.grants = Arc::new(Mutex::new(Vec::new()));
-
-                    for grant in unmap_grants {
-                        grant.unmap();
-                    }
+                    empty(&mut context, false);
 
                     if stat.st_mode & syscall::flag::MODE_SETUID == syscall::flag::MODE_SETUID {
                         context.euid = stat.st_uid;
@@ -807,23 +825,7 @@ pub fn exit(status: usize) -> ! {
         let (vfork, children) = {
             let mut context = context_lock.write();
 
-            context.image.clear();
-            drop(context.heap.take());
-            drop(context.stack.take());
-            drop(context.tls.take());
-
-            let mut unmap_grants = Vec::new();
-            // FIXME: Looks like a race condition.
-            // Is it possible for Arc::strong_count to return 1 to two contexts that exit at the
-            // same time, or return 2 to both, thus either double freeing or leaking the grants?
-            if Arc::strong_count(&context.grants) == 1 {
-                mem::swap(context.grants.lock().deref_mut(), &mut unmap_grants);
-            }
-            context.grants = Arc::new(Mutex::new(Vec::new()));
-
-            for grant in unmap_grants {
-                grant.unmap();
-            }
+            empty(&mut context, false);
 
             let vfork = context.vfork;
             context.vfork = false;
@@ -911,7 +913,14 @@ fn reap(pid: ContextId) -> Result<ContextId> {
     }
 
     let mut contexts = context::contexts_mut();
-    contexts.remove(pid).ok_or(Error::new(ESRCH)).and(Ok(pid))
+    let context_lock = contexts.remove(pid).ok_or(Error::new(ESRCH))?;
+    {
+        let mut context = context_lock.write();
+        empty(&mut context, true);
+    }
+    drop(context_lock);
+
+    Ok(pid)
 }
 
 pub fn waitpid(pid: ContextId, status_ptr: usize, flags: usize) -> Result<ContextId> {

@@ -3,6 +3,7 @@
 //! The Redox OS Kernel is a hybrid kernel that supports X86_64 systems and
 //! provides Unix-like syscalls for primarily Rust applications
 
+#![deny(warnings)]
 #![feature(alloc)]
 #![feature(arc_counts)]
 #![feature(asm)]
@@ -46,7 +47,6 @@ use core::sync::atomic::{AtomicUsize, ATOMIC_USIZE_INIT, Ordering};
 use scheme::FileHandle;
 
 #[macro_use]
-#[macro_export]
 /// Shared data structures
 pub mod common;
 
