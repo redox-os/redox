@@ -13,10 +13,10 @@ KCARGOFLAGS=--target $(KTARGET).json --release -- -C soft-float
 TARGET=$(ARCH)-unknown-redox
 BUILD=build/userspace
 RUSTC=./rustc.sh
-RUSTCFLAGS=--target $(TARGET).json -C opt-level=2 -C debuginfo=0
+RUSTCFLAGS=--target $(TARGET) -C opt-level=2 -C debuginfo=0
 RUSTDOC=./rustdoc.sh
 CARGO=RUSTC="$(RUSTC)" RUSTDOC="$(RUSTDOC)" cargo
-CARGOFLAGS=--target $(TARGET).json --release --
+CARGOFLAGS=--target $(TARGET) --release --
 
 # Default targets
 .PHONY: all live iso clean doc ref test update qemu bochs drivers schemes binutils coreutils extrautils netutils userutils wireshark FORCE
@@ -310,10 +310,10 @@ $(KBUILD)/librand.rlib: rust/src/librand/lib.rs $(KBUILD)/libcore.rlib
 $(KBUILD)/liballoc.rlib: rust/src/liballoc/lib.rs $(KBUILD)/libcore.rlib
 	$(KRUSTC) $(KRUSTCFLAGS) -o $@ $<
 
-$(KBUILD)/librustc_unicode.rlib: rust/src/librustc_unicode/lib.rs $(KBUILD)/libcore.rlib
+$(KBUILD)/libstd_unicode.rlib: rust/src/libstd_unicode/lib.rs $(KBUILD)/libcore.rlib
 	$(KRUSTC) $(KRUSTCFLAGS) -o $@ $<
 
-$(KBUILD)/libcollections.rlib: rust/src/libcollections/lib.rs $(KBUILD)/libcore.rlib $(KBUILD)/liballoc.rlib $(KBUILD)/librustc_unicode.rlib
+$(KBUILD)/libcollections.rlib: rust/src/libcollections/lib.rs $(KBUILD)/libcore.rlib $(KBUILD)/liballoc.rlib $(KBUILD)/libstd_unicode.rlib
 	$(KRUSTC) $(KRUSTCFLAGS) -o $@ $<
 
 $(KBUILD)/libkernel.a: kernel/** $(KBUILD)/libcore.rlib $(KBUILD)/liballoc.rlib $(KBUILD)/libcollections.rlib $(BUILD)/initfs.rs
@@ -336,13 +336,13 @@ $(BUILD)/libcore.rlib: rust/src/libcore/lib.rs
 $(BUILD)/liballoc.rlib: rust/src/liballoc/lib.rs $(BUILD)/libcore.rlib
 	$(RUSTC) $(RUSTCFLAGS) -o $@ $<
 
-$(BUILD)/libcollections.rlib: rust/src/libcollections/lib.rs $(BUILD)/libcore.rlib $(BUILD)/liballoc.rlib $(BUILD)/librustc_unicode.rlib
+$(BUILD)/libcollections.rlib: rust/src/libcollections/lib.rs $(BUILD)/libcore.rlib $(BUILD)/liballoc.rlib $(BUILD)/libstd_unicode.rlib
 	$(RUSTC) $(RUSTCFLAGS) -o $@ $<
 
 $(BUILD)/librand.rlib: rust/src/librand/lib.rs $(BUILD)/libcore.rlib
 	$(RUSTC) $(RUSTCFLAGS) -o $@ $<
 
-$(BUILD)/librustc_unicode.rlib: rust/src/librustc_unicode/lib.rs $(BUILD)/libcore.rlib
+$(BUILD)/libstd_unicode.rlib: rust/src/libstd_unicode/lib.rs $(BUILD)/libcore.rlib
 	$(RUSTC) $(RUSTCFLAGS) -o $@ $<
 
 libstd/openlibm/libopenlibm.a:
@@ -352,7 +352,7 @@ $(BUILD)/libopenlibm.a: libstd/openlibm/libopenlibm.a
 	mkdir -p $(BUILD)
 	cp $< $@
 
-$(BUILD)/libstd.rlib: libstd/Cargo.toml rust/src/libstd/** $(BUILD)/libcore.rlib $(BUILD)/liballoc.rlib $(BUILD)/librustc_unicode.rlib $(BUILD)/libcollections.rlib $(BUILD)/librand.rlib $(BUILD)/libopenlibm.a
+$(BUILD)/libstd.rlib: libstd/Cargo.toml rust/src/libstd/** $(BUILD)/libcore.rlib $(BUILD)/liballoc.rlib $(BUILD)/libstd_unicode.rlib $(BUILD)/libcollections.rlib $(BUILD)/librand.rlib $(BUILD)/libopenlibm.a
 	$(CARGO) rustc --verbose --manifest-path $< $(CARGOFLAGS) -o $@
 	cp libstd/target/$(TARGET)/release/deps/*.rlib $(BUILD)
 
@@ -563,12 +563,13 @@ build/filesystem.bin: \
 		filesystem/bin/tar
 	-$(FUMOUNT) build/filesystem/
 	rm -rf $@ build/filesystem/
-	echo exit | cargo run --manifest-path schemes/redoxfs/Cargo.toml --bin redoxfs-utility $@ 128
+	dd if=/dev/zero of=$@ bs=1M count=128
+	cargo run --manifest-path schemes/redoxfs/Cargo.toml --release --bin redoxfs-mkfs $@
 	mkdir -p build/filesystem/
-	cargo build --manifest-path schemes/redoxfs/Cargo.toml --bin redoxfs-fuse --release
-	schemes/redoxfs/target/release/redoxfs-fuse $@ build/filesystem/ &
+	cargo build --manifest-path schemes/redoxfs/Cargo.toml --release --bin redoxfs
+	schemes/redoxfs/target/release/redoxfs $@ build/filesystem/
 	sleep 2
-	pgrep redoxfs-fuse
+	pgrep redoxfs
 	cp -RL filesystem/* build/filesystem/
 	chown -R 0:0 build/filesystem
 	chown -R 1000:1000 build/filesystem/home/user
@@ -591,10 +592,10 @@ build/filesystem.bin: \
 
 mount: FORCE
 	mkdir -p build/filesystem/
-	cargo build --manifest-path schemes/redoxfs/Cargo.toml --bin redoxfs-fuse --release
-	schemes/redoxfs/target/release/redoxfs-fuse build/harddrive.bin build/filesystem/ &
+	cargo build --manifest-path schemes/redoxfs/Cargo.toml --release --bin redoxfs
+	schemes/redoxfs/target/release/redoxfs build/harddrive.bin build/filesystem/
 	sleep 2
-	pgrep redoxfs-fuse
+	pgrep redoxfs
 
 unmount: FORCE
 	sync

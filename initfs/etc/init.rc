@@ -3,7 +3,7 @@ vesad T T T G
 stdio display:1
 ps2d
 pcid /etc/pcid.toml
-redoxfs disk:0
+redoxfs disk:0 file
 cd file:
 export PATH file:/bin
 run /etc/init.rc
