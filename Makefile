@@ -19,7 +19,7 @@ CARGO=RUSTC="$(RUSTC)" RUSTDOC="$(RUSTDOC)" cargo
 CARGOFLAGS=--target $(TARGET) --release --
 
 # Default targets
-.PHONY: all live iso clean doc ref test update qemu bochs drivers schemes binutils coreutils extrautils netutils userutils wireshark FORCE
+.PHONY: all live iso clean doc ref test update pull qemu bochs drivers schemes binutils coreutils extrautils netutils userutils wireshark FORCE
 
 all: build/harddrive.bin
 
@@ -147,6 +147,13 @@ update:
 	cargo update --manifest-path schemes/redoxfs/Cargo.toml
 	cargo update --manifest-path schemes/tcpd/Cargo.toml
 	cargo update --manifest-path schemes/udpd/Cargo.toml
+
+pull:
+	git pull --rebase --recurse-submodules
+	git clean -X -f -d
+	git submodule update --recursive --init
+	make clean
+	make update
 
 # Emulation
 QEMU=SDL_VIDEO_X11_DGAMOUSE=0 qemu-system-$(ARCH)
