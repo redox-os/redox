@@ -151,6 +151,7 @@ update:
 pull:
 	git pull --rebase --recurse-submodules
 	git clean -X -f -d
+	git submodule sync
 	git submodule update --recursive --init
 	make clean
 	make update
