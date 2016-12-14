@@ -13,7 +13,7 @@ spin = "*"
 redox_syscall = { path = "syscall/" }
 
 [dependencies.goblin]
-git = "https://github.com/redox-os/goblin.git"
+git = "https://github.com/m4b/goblin.git"
 default-features = false
 features = ["elf32", "elf64"]
 
