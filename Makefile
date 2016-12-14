@@ -358,7 +358,7 @@ $(BUILD)/libstd_unicode.rlib: rust/src/libstd_unicode/lib.rs $(BUILD)/libcore.rl
 	$(RUSTC) $(RUSTCFLAGS) -o $@ $<
 
 libstd/openlibm/libopenlibm.a:
-	CROSSCC=$(CC) CFLAGS=-fno-stack-protector make -C libstd/openlibm libopenlibm.a
+	CFLAGS=-fno-stack-protector make -C libstd/openlibm libopenlibm.a
 
 $(BUILD)/libopenlibm.a: libstd/openlibm/libopenlibm.a
 	mkdir -p $(BUILD)
