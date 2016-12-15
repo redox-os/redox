@@ -2,3 +2,6 @@
 name = "compiler_builtins"
 version = "0.1.0"
 authors = ["Jeremy Soller <jackpot51@gmail.com>"]
+
+[lib]
+path = "../../rust/src/libcompiler_builtins/lib.rs"
