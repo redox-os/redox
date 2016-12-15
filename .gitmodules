@@ -49,9 +49,9 @@
 [submodule "crates/docgen"]
 	path = crates/docgen
 	url = https://github.com/redox-os/docgen.git
-[submodule "libstd_real/openlibm"]
+[submodule "libstd/openlibm"]
 	path = libstd/openlibm
-	url = https://github.com/redox-os/openlibm.git
+	url = https://github.com/JuliaLang/openlibm.git
 [submodule "programs/binutils"]
 	path = programs/binutils
 	url = https://github.com/redox-os/binutils.git
