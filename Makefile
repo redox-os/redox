@@ -19,7 +19,7 @@ CARGO=RUSTC="$(RUSTC)" RUSTDOC="$(RUSTDOC)" cargo
 CARGOFLAGS=--target $(TARGET) --release --
 
 # Default targets
-.PHONY: all live iso clean doc ref test update qemu bochs drivers schemes binutils coreutils extrautils netutils userutils wireshark FORCE
+.PHONY: all live iso clean doc ref test update pull qemu bochs drivers schemes binutils coreutils extrautils netutils userutils wireshark FORCE
 
 all: build/harddrive.bin
 
@@ -148,6 +148,14 @@ update:
 	cargo update --manifest-path schemes/tcpd/Cargo.toml
 	cargo update --manifest-path schemes/udpd/Cargo.toml
 
+pull:
+	git pull --rebase --recurse-submodules
+	git clean -X -f -d
+	git submodule sync
+	git submodule update --recursive --init
+	make clean
+	make update
+
 # Emulation
 QEMU=SDL_VIDEO_X11_DGAMOUSE=0 qemu-system-$(ARCH)
 QEMUFLAGS=-serial mon:stdio -d cpu_reset -d guest_errors
@@ -238,6 +246,10 @@ build/livedisk.iso: build/livedisk.bin.gz
 qemu: build/harddrive.bin
 	$(QEMU) $(QEMUFLAGS) -drive file=$<,format=raw
 
+qemu_extra: build/harddrive.bin
+	dd if=/dev/zero of=build/extra.bin bs=1G count=8
+	$(QEMU) $(QEMUFLAGS) -drive file=$<,format=raw -drive file=build/extra.bin,format=raw
+
 qemu_no_build:
 	$(QEMU) $(QEMUFLAGS) -drive file=build/harddrive.bin,format=raw
 
@@ -291,6 +303,7 @@ virtualbox: build/harddrive.bin
 	$(VBM) modifyvm Redox --mouse ps2
 	$(VBM) modifyvm Redox --audio $(VB_AUDIO)
 	$(VBM) modifyvm Redox --audiocontroller ac97
+	$(VBM) modifyvm Redox --nestedpaging off
 	echo "Create Disk"
 	$(VBM) convertfromraw $< build/harddrive.vdi
 	echo "Attach Disk"
@@ -346,7 +359,7 @@ $(BUILD)/libstd_unicode.rlib: rust/src/libstd_unicode/lib.rs $(BUILD)/libcore.rl
 	$(RUSTC) $(RUSTCFLAGS) -o $@ $<
 
 libstd/openlibm/libopenlibm.a:
-	CROSSCC=$(CC) CFLAGS=-fno-stack-protector make -C libstd/openlibm libopenlibm.a
+	CFLAGS=-fno-stack-protector make -C libstd/openlibm libopenlibm.a
 
 $(BUILD)/libopenlibm.a: libstd/openlibm/libopenlibm.a
 	mkdir -p $(BUILD)
@@ -374,6 +387,7 @@ initfs/bin/%: schemes/%/Cargo.toml schemes/%/src/** $(BUILD)/libstd.rlib
 $(BUILD)/initfs.rs: \
 		initfs/bin/init \
 		initfs/bin/ahcid \
+		initfs/bin/bgad \
 		initfs/bin/pcid \
 		initfs/bin/ps2d \
 		initfs/bin/redoxfs \
@@ -443,6 +457,11 @@ filesystem/bin/%: programs/userutils/Cargo.toml programs/userutils/src/bin/%.rs 
 filesystem/sbin/%: schemes/%/Cargo.toml schemes/%/src/** $(BUILD)/libstd.rlib
 	mkdir -p filesystem/sbin
 	$(CARGO) rustc --manifest-path $< --bin $* $(CARGOFLAGS) -o $@
+	strip $@
+
+filesystem/sbin/redoxfs-mkfs: schemes/redoxfs/Cargo.toml schemes/redoxfs/src/** $(BUILD)/libstd.rlib
+	mkdir -p filesystem/bin
+	$(CARGO) rustc --manifest-path $< --bin redoxfs-mkfs $(CARGOFLAGS) -o $@
 	strip $@
 
 drivers: \
@@ -543,6 +562,8 @@ schemes: \
 	filesystem/sbin/orbital \
 	filesystem/sbin/ptyd \
 	filesystem/sbin/randd \
+	filesystem/sbin/redoxfs \
+	filesystem/sbin/redoxfs-mkfs \
 	filesystem/sbin/tcpd \
 	filesystem/sbin/udpd
 

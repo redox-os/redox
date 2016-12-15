@@ -2,4 +2,18 @@
 name = "AHCI storage"
 class = 1
 subclass = 6
-command = ["initfs:bin/ahcid", "$NAME", "$BAR5", "$IRQ"]
+command = ["ahcid", "$NAME", "$BAR5", "$IRQ"]
+
+[[drivers]]
+name = "Bochs Graphics Array"
+class = 3
+vendor = 4660
+device = 4369
+command = ["bgad", "$NAME", "$BAR0"]
+
+[[drivers]]
+name = "Bochs Graphics Array"
+class = 3
+vendor = 33006
+device = 48879
+command = ["bgad", "$NAME", "$BAR0"]
