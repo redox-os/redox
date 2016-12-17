@@ -61,6 +61,9 @@ impl Screen for TextScreen {
                     self.ctrl = key_event.pressed;
                 } else if key_event.pressed {
                     match key_event.scancode {
+                        0x0E => { // Backspace
+                            buf.extend_from_slice(b"\x7F");
+                        },
                         0x47 => { // Home
                             buf.extend_from_slice(b"\x1B[H");
                         },
