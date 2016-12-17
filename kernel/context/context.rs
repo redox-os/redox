@@ -230,6 +230,7 @@ impl Context {
                     if files[j].is_some() {
                         if j + 1 < files.len() {
                             files.truncate(j + 1);
+                            files.shrink_to_fit();
                         }
                         break;
                     }
