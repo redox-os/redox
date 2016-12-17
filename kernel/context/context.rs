@@ -221,11 +221,21 @@ impl Context {
     }
 
     /// Remove a file
-    // TODO: adjust files vector to smaller size if possible
     pub fn remove_file(&self, i: FileHandle) -> Option<File> {
         let mut files = self.files.lock();
         if i.into() < files.len() {
-            files[i.into()].take()
+            let file = files[i.into()].take();
+            if file.is_some() {
+                for j in (0..files.len()).rev() {
+                    if files[j].is_some() {
+                        if j + 1 < files.len() {
+                            files.truncate(j + 1);
+                        }
+                        break;
+                    }
+                }
+            }
+            file
         } else {
             None
         }
