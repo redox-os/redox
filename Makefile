@@ -247,7 +247,7 @@ qemu: build/harddrive.bin
 	$(QEMU) $(QEMUFLAGS) -drive file=$<,format=raw
 
 qemu_extra: build/harddrive.bin
-	dd if=/dev/zero of=build/extra.bin bs=1G count=8
+	if [ ! -e build/extra.bin ]; then dd if=/dev/zero of=build/extra.bin bs=1M count=1024; fi
 	$(QEMU) $(QEMUFLAGS) -drive file=$<,format=raw -drive file=build/extra.bin,format=raw
 
 qemu_no_build:
