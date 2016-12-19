@@ -13,10 +13,10 @@ KCARGOFLAGS=--target $(KTARGET).json --release -- -C soft-float
 TARGET=$(ARCH)-unknown-redox
 BUILD=build/userspace
 RUSTC=./rustc.sh
-RUSTCFLAGS=--target $(TARGET) -C opt-level=2 -C debuginfo=0
+RUSTCFLAGS=--target $(TARGET).json -C opt-level=2 -C debuginfo=0
 RUSTDOC=./rustdoc.sh
 CARGO=RUSTC="$(RUSTC)" RUSTDOC="$(RUSTDOC)" cargo
-CARGOFLAGS=--target $(TARGET) --release --
+CARGOFLAGS=--target $(TARGET).json --release --
 
 # Default targets
 .PHONY: all live iso clean doc ref test update pull qemu bochs drivers schemes binutils coreutils extrautils netutils userutils wireshark FORCE
