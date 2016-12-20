@@ -8,7 +8,7 @@
     "env": "",
     "vendor": "unknown",
     "target-family": "redox",
-    "pre-link-args": ["-m32", "-nostdlib", "-static"],
+    "pre-link-args": ["-nostdlib", "-static"],
     "features": "+soft-float",
     "dynamic-linking": false,
     "executables": true,
