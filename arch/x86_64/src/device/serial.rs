@@ -72,19 +72,6 @@ impl SerialPort {
         self.data.write(data)
     }
 
-    fn write_translate(&mut self, data: u8) {
-        match data {
-            8 | 0x7F => {
-                self.write(8);
-                self.write(b' ');
-                self.write(8);
-            },
-            _ => {
-                self.write(data);
-            }
-        }
-    }
-
     fn init(&mut self) {
         //TODO: Cleanup
         self.int_en.write(0x00);
@@ -111,7 +98,16 @@ impl SerialPort {
 impl Write for SerialPort {
     fn write_str(&mut self, s: &str) -> Result<(), fmt::Error> {
         for byte in s.bytes() {
-            self.write_translate(byte);
+            match byte {
+                8 | 0x7F => {
+                    self.write(8);
+                    self.write(b' ');
+                    self.write(8);
+                },
+                _ => {
+                    self.write(byte);
+                }
+            }
         }
 
         Ok(())
