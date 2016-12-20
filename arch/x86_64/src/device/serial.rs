@@ -79,9 +79,6 @@ impl SerialPort {
                 self.write(b' ');
                 self.write(8);
             },
-            b'\r' => {
-                self.write(b'\n');
-            },
             _ => {
                 self.write(data);
             }
