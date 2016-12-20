@@ -9,7 +9,3 @@ name = "libc"
 path = "../../rust/src/liblibc/src/lib.rs"
 test = false
 bench = false
-
-[dependencies]
-redox_syscall = { path = "../../syscall/" }
-spin = "*"

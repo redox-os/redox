@@ -8,5 +8,4 @@ path = "../../rust/src/libpanic_unwind/lib.rs"
 
 [dependencies]
 libc = { path = "../libc/" }
-redox_syscall = { path = "../../syscall/" }
 unwind = { path = "../unwind/" }
