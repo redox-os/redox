@@ -14,6 +14,3 @@ panic_abort = { path = "panic_abort" }
 #panic_unwind = { path = "panic_unwind" }
 libc = { path = "libc" }
 unwind = { path = "unwind" }
-
-[target.'cfg(target_os = "redox")'.dependencies]
-redox_syscall = { git = "https://github.com/redox-os/syscall.git" }
