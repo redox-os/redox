@@ -160,9 +160,17 @@ pull:
 QEMU=SDL_VIDEO_X11_DGAMOUSE=0 qemu-system-$(ARCH)
 QEMUFLAGS=-serial mon:stdio -d cpu_reset -d guest_errors
 ifeq ($(ARCH),arm)
-	LD=$(ARCH)-none-eabi-ld
 	QEMUFLAGS+=-cpu arm1176 -machine integratorcp
 	QEMUFLAGS+=-nographic
+
+	CC=$(ARCH)-none-eabi-gcc
+	CXX=$(ARCH)-none-eabi-g++
+	LD=$(ARCH)-none-eabi-ld
+
+	KRUSTCFLAGS+=-C linker=$(CC)
+	KCARGOFLAGS+=-C linker=$(CC)
+	RUSTCFLAGS+=-C linker=$(CC)
+	CARGOFLAGS+=-C linker=$(CC)
 
 %.list: %
 	$(ARCH)-none-eabi-objdump -C -D $< > $@
@@ -201,10 +209,6 @@ else
 		FUMOUNT=sudo umount
 		LD=$(ARCH)-elf-ld
 		LDFLAGS=--gc-sections
-		KRUSTCFLAGS+=-C linker=$(CC)
-		KCARGOFLAGS+=-C linker=$(CC)
-		RUSTCFLAGS+=-C linker=$(CC)
-		CARGOFLAGS+=-C linker=$(CC)
 		VB_AUDIO=coreaudio
 		VBM="/Applications/VirtualBox.app/Contents/MacOS/VBoxManage"
 	else
@@ -220,6 +224,11 @@ else
 		VB_AUDIO="pulse"
 		VBM=VBoxManage
 	endif
+
+	KRUSTCFLAGS+=-C linker=$(CC)
+	KCARGOFLAGS+=-C linker=$(CC)
+	RUSTCFLAGS+=-C linker=$(CC)
+	CARGOFLAGS+=-C linker=$(CC)
 
 %.list: %
 	objdump -C -M intel -D $< > $@
