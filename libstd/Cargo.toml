@@ -2,6 +2,7 @@
 name = "redox_std"
 version = "0.1.0"
 authors = ["Jeremy Soller <jackpot51@gmail.com>"]
+build = "../rust/src/libstd/build.rs"
 
 [lib]
 name = "std"
@@ -14,3 +15,7 @@ panic_abort = { path = "panic_abort" }
 #panic_unwind = { path = "panic_unwind" }
 libc = { path = "libc" }
 unwind = { path = "unwind" }
+
+[build-dependencies]
+build_helper = { path = "../rust/src/build_helper" }
+gcc = "0.3.27"
