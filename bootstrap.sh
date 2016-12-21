@@ -224,8 +224,14 @@ fedora()
 			echo "Virtualbox already installed!"
 		fi
 	fi
-	echo "Installing necessary build tools..."
-	sudo dnf install gcc gcc-c++ glibc-devel.i686 nasm make fuse-devel
+	# Use rpm -q <package> to check if it's already installed
+	PKGS=$(for pkg in gcc gcc-c++ glibc-devel.i686 nasm make fuse-devel; do rpm -q $pkg > /dev/null; [ $? -ne 0 ] && echo $pkg; done)
+	# If the list of packages is not empty, install missing
+	COUNT=$(echo $PKGS | wc -w)
+	if [ $COUNT -ne 0 ]; then
+					echo "Installing necessary build tools..."
+					sudo dnf install $PKGS
+	fi
 }
 
 ###############################################################################
