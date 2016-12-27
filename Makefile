@@ -17,6 +17,7 @@ RUSTCFLAGS=--target $(TARGET).json -C opt-level=2 -C debuginfo=0
 RUSTDOC=./rustdoc.sh
 CARGO=RUSTC="$(RUSTC)" RUSTDOC="$(RUSTDOC)" cargo
 CARGOFLAGS=--target $(TARGET).json --release --
+export CFLAGS=-fno-stack-protector
 
 # Default targets
 .PHONY: all live iso clean doc ref test update pull qemu bochs drivers schemes binutils coreutils extrautils netutils userutils wireshark FORCE
@@ -31,7 +32,7 @@ FORCE:
 
 clean:
 	cargo clean
-	cargo clean --manifest-path libstd/Cargo.toml
+	cargo clean --manifest-path rust/src/libstd/Cargo.toml
 	cargo clean --manifest-path drivers/ahcid/Cargo.toml
 	cargo clean --manifest-path drivers/e1000d/Cargo.toml
 	cargo clean --manifest-path drivers/ps2d/Cargo.toml
@@ -74,7 +75,7 @@ doc-kernel: $(KBUILD)/libkernel.a FORCE
 	$(KCARGO) doc --target $(KTARGET).json
 
 doc-std: $(BUILD)/libstd.rlib FORCE
-	$(CARGO) doc --target $(TARGET).json --manifest-path libstd/Cargo.toml
+	$(CARGO) doc --target $(TARGET).json --manifest-path rust/src/libstd/Cargo.toml
 
 ref: FORCE
 	rm -rf filesystem/ref/
@@ -86,7 +87,7 @@ ref: FORCE
 
 test:
 	cargo test
-	cargo test --manifest-path libstd/Cargo.toml
+	cargo test --manifest-path rust/src/libstd/Cargo.toml
 	cargo test --manifest-path drivers/ahcid/Cargo.toml
 	cargo test --manifest-path drivers/e1000d/Cargo.toml
 	cargo test --manifest-path drivers/ps2d/Cargo.toml
@@ -118,7 +119,7 @@ test:
 
 update:
 	cargo update
-	cargo update --manifest-path libstd/Cargo.toml
+	cargo update --manifest-path rust/src/libstd/Cargo.toml
 	cargo update --manifest-path drivers/ahcid/Cargo.toml
 	cargo update --manifest-path drivers/e1000d/Cargo.toml
 	cargo update --manifest-path drivers/ps2d/Cargo.toml
@@ -351,32 +352,10 @@ $(KBUILD)/kernel_live: $(KBUILD)/libkernel_live.a
 	$(LD) $(LDFLAGS) -z max-page-size=0x1000 -T arch/$(ARCH)/src/linker.ld -o $@ $<
 
 # Userspace recipes
-$(BUILD)/libcore.rlib: rust/src/libcore/lib.rs
+$(BUILD)/libstd.rlib: rust/src/libstd/Cargo.toml rust/src/libstd/**
 	mkdir -p $(BUILD)
-	$(RUSTC) $(RUSTCFLAGS) -o $@ $<
-
-$(BUILD)/liballoc.rlib: rust/src/liballoc/lib.rs $(BUILD)/libcore.rlib
-	$(RUSTC) $(RUSTCFLAGS) -o $@ $<
-
-$(BUILD)/libcollections.rlib: rust/src/libcollections/lib.rs $(BUILD)/libcore.rlib $(BUILD)/liballoc.rlib $(BUILD)/libstd_unicode.rlib
-	$(RUSTC) $(RUSTCFLAGS) -o $@ $<
-
-$(BUILD)/librand.rlib: rust/src/librand/lib.rs $(BUILD)/libcore.rlib
-	$(RUSTC) $(RUSTCFLAGS) -o $@ $<
-
-$(BUILD)/libstd_unicode.rlib: rust/src/libstd_unicode/lib.rs $(BUILD)/libcore.rlib
-	$(RUSTC) $(RUSTCFLAGS) -o $@ $<
-
-libstd/openlibm/libopenlibm.a:
-	CFLAGS=-fno-stack-protector make -C libstd/openlibm libopenlibm.a
-
-$(BUILD)/libopenlibm.a: libstd/openlibm/libopenlibm.a
-	mkdir -p $(BUILD)
-	cp $< $@
-
-$(BUILD)/libstd.rlib: libstd/Cargo.toml rust/src/libstd/** $(BUILD)/libcore.rlib $(BUILD)/liballoc.rlib $(BUILD)/libstd_unicode.rlib $(BUILD)/libcollections.rlib $(BUILD)/librand.rlib $(BUILD)/libopenlibm.a
-	$(CARGO) rustc --verbose --manifest-path $< $(CARGOFLAGS) -o $@
-	cp libstd/target/$(TARGET)/release/deps/*.rlib $(BUILD)
+	$(CARGO) rustc --verbose --manifest-path $< $(CARGOFLAGS) -L native=libc-artifacts/lib -o $@
+	cp rust/src/target/$(TARGET)/release/deps/*.rlib $(BUILD)
 
 initfs/bin/%: drivers/%/Cargo.toml drivers/%/src/** $(BUILD)/libstd.rlib
 	mkdir -p initfs/bin
@@ -386,7 +365,7 @@ initfs/bin/%: drivers/%/Cargo.toml drivers/%/src/** $(BUILD)/libstd.rlib
 initfs/bin/%: programs/%/Cargo.toml programs/%/src/** $(BUILD)/libstd.rlib
 	mkdir -p initfs/bin
 	$(CARGO) rustc --manifest-path $< $(CARGOFLAGS) -o $@
-	strip $@
+	#strip $@
 
 initfs/bin/%: schemes/%/Cargo.toml schemes/%/src/** $(BUILD)/libstd.rlib
 	mkdir -p initfs/bin
@@ -540,8 +519,8 @@ netutils: \
 	filesystem/bin/httpd \
 	filesystem/bin/irc \
 	filesystem/bin/nc \
-	filesystem/bin/ntp \
-	filesystem/bin/wget
+	filesystem/bin/ntp
+	#TODO filesystem/bin/wget
 
 orbutils: \
 	filesystem/ui/bin/browser \

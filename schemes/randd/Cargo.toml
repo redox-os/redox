@@ -4,3 +4,4 @@ version = "0.1.0"
 
 [dependencies]
 raw-cpuid = "2.*"
+redox_syscall = { path = "../../syscall/" }
