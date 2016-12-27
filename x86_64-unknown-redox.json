@@ -8,7 +8,8 @@
     "env": "",
     "vendor": "unknown",
     "target-family": "redox",
-    "pre-link-args": ["-m64", "-nostdlib", "-static"],
+    "pre-link-args": ["-m64", "-Wl,--as-needed", "-Wl,-z,noexecstack", "-nostartfiles", "-nostdlib", "-static"],
+    "late-link-args": ["libc-artifacts/lib/crt0.o", "libc-artifacts/lib/libm.a", "libc-artifacts/lib/libc.a", "libc-artifacts/lib/libgcc.a"],
     "features": "",
     "dynamic-linking": false,
     "executables": true,
@@ -21,6 +22,8 @@
     "no-compiler-rt": true,
     "no-default-libraries": true,
     "position-independent-executables": false,
+    "lib-allocation-crate": "alloc_system",
+    "exe-allocation-crate": "alloc_system",
     "has-elf-tls": true,
     "panic-strategy": "abort"
 }

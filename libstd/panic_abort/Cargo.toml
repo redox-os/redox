@@ -1,7 +1,0 @@
-[package]
-name = "panic_abort"
-version = "0.0.0"
-authors = ["Jeremy Soller <jackpot51@gmail.com>"]
-
-[lib]
-path = "../../rust/src/libpanic_abort/lib.rs"

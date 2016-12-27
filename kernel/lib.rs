@@ -5,7 +5,6 @@
 
 #![deny(warnings)]
 #![feature(alloc)]
-#![feature(arc_counts)]
 #![feature(asm)]
 #![feature(collections)]
 #![feature(const_fn)]
