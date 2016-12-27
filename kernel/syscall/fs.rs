@@ -89,6 +89,8 @@ pub fn open(path: &[u8], flags: usize) -> Result<FileHandle> {
         (context.canonicalize(path), context.euid, context.egid, context.ens)
     };
 
+    //println!("open {}", unsafe { ::core::str::from_utf8_unchecked(&path_canon) });
+
     let mut parts = path_canon.splitn(2, |&b| b == b':');
     let scheme_name_opt = parts.next();
     let reference_opt = parts.next();
@@ -259,6 +261,41 @@ pub fn dup(fd: FileHandle, buf: &[u8]) -> Result<FileHandle> {
         number: new_id,
         event: None,
     }).ok_or(Error::new(EMFILE))
+}
+
+/// Duplicate file descriptor, replacing another
+pub fn dup2(fd: FileHandle, new_fd: FileHandle, buf: &[u8]) -> Result<FileHandle> {
+    if fd == new_fd {
+        Ok(new_fd)
+    } else {
+        let _ = close(new_fd)?;
+
+        let file = {
+            let contexts = context::contexts();
+            let context_lock = contexts.current().ok_or(Error::new(ESRCH))?;
+            let context = context_lock.read();
+            let file = context.get_file(fd).ok_or(Error::new(EBADF))?;
+            file
+        };
+
+        let new_id = {
+            let scheme = {
+                let schemes = scheme::schemes();
+                let scheme = schemes.get(file.scheme).ok_or(Error::new(EBADF))?;
+                scheme.clone()
+            };
+            scheme.dup(file.number, buf)?
+        };
+
+        let contexts = context::contexts();
+        let context_lock = contexts.current().ok_or(Error::new(ESRCH))?;
+        let context = context_lock.read();
+        context.insert_file(new_fd, ::context::file::File {
+            scheme: file.scheme,
+            number: new_id,
+            event: None,
+        }).ok_or(Error::new(EBADF))
+    }
 }
 
 /// Register events for file

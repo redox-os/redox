@@ -9,8 +9,13 @@ fn validate(address: usize, size: usize, flags: entry::EntryFlags) -> Result<()>
     let start_page = Page::containing_address(VirtualAddress::new(address));
     let end_page = Page::containing_address(VirtualAddress::new(address + size - 1));
     for page in Page::range_inclusive(start_page, end_page) {
-        let page_flags = active_table.translate_page_flags(page).ok_or(Error::new(EFAULT))?;
-        if ! page_flags.contains(flags) {
+        if let Some(page_flags) = active_table.translate_page_flags(page) {
+            if ! page_flags.contains(flags) {
+                //println!("{:X}: Not {:?}", page.start_address().get(), flags);
+                return Err(Error::new(EFAULT));
+            }
+        } else {
+            //println!("{:X}: Not found", page.start_address().get());
             return Err(Error::new(EFAULT));
         }
     }

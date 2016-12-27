@@ -220,6 +220,25 @@ impl Context {
         }
     }
 
+    /// Insert a file with a specific handle number. This is used by dup2
+    /// Return the file descriptor number or None if the slot was not empty, or i was invalid
+    pub fn insert_file(&self, i: FileHandle, file: File) -> Option<FileHandle> {
+        let mut files = self.files.lock();
+        if i.into() < super::CONTEXT_MAX_FILES {
+            while i.into() >= files.len() {
+                files.push(None);
+            }
+            if files[i.into()].is_none() {
+                files[i.into()] = Some(file);
+                Some(i)
+            } else {
+                None
+            }
+        } else {
+            None
+        }
+    }
+
     /// Remove a file
     // TODO: adjust files vector to smaller size if possible
     pub fn remove_file(&self, i: FileHandle) -> Option<File> {
