@@ -17,7 +17,9 @@ RUSTCFLAGS=--target $(TARGET).json -C opt-level=2 -C debuginfo=0
 RUSTDOC=./rustdoc.sh
 CARGO=RUSTC="$(RUSTC)" RUSTDOC="$(RUSTDOC)" cargo
 CARGOFLAGS=--target $(TARGET).json --release --
-export CFLAGS=-fno-stack-protector
+
+#TODO: Use libssp
+export CFLAGS=-fno-stack-protector -U_FORTIFY_SOURCE
 
 # Default targets
 .PHONY: all live iso clean doc ref test update pull qemu bochs drivers schemes binutils coreutils extrautils netutils userutils wireshark FORCE
@@ -519,8 +521,8 @@ netutils: \
 	filesystem/bin/httpd \
 	filesystem/bin/irc \
 	filesystem/bin/nc \
-	filesystem/bin/ntp
-	#TODO filesystem/bin/wget
+	filesystem/bin/ntp \
+	filesystem/bin/wget
 
 orbutils: \
 	filesystem/ui/bin/browser \
