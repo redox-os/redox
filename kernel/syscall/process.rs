@@ -26,6 +26,9 @@ pub fn brk(address: usize) -> Result<usize> {
     let context_lock = contexts.current().ok_or(Error::new(ESRCH))?;
     let context = context_lock.read();
 
+    //println!("{}: {}: BRK {:X}", unsafe { ::core::str::from_utf8_unchecked(&context.name.lock()) },
+    //                             context.id.into(), address);
+
     let current = if let Some(ref heap_shared) = context.heap {
         heap_shared.with(|heap| {
             heap.start_address().get() + heap.size()
@@ -47,8 +50,10 @@ pub fn brk(address: usize) -> Result<usize> {
             panic!("user heap not initialized");
         }
 
+        //println!("Brk resize {:X}", address);
         Ok(address)
     } else {
+        //println!("Brk no mem");
         Err(Error::new(ENOMEM))
     }
 }

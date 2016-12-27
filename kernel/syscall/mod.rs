@@ -53,6 +53,7 @@ pub extern fn syscall(a: usize, b: usize, c: usize, d: usize, e: usize, f: usize
                     _ => match a {
                         SYS_CLOSE => close(fd),
                         SYS_DUP => dup(fd, validate_slice(c as *const u8, d)?).map(FileHandle::into),
+                        SYS_DUP2 => dup2(fd, FileHandle::from(c), validate_slice(d as *const u8, e)?).map(FileHandle::into),
                         SYS_FEVENT => fevent(fd, c),
                         SYS_FUNMAP => funmap(b),
                         _ => file_op(a, fd, c, d)
@@ -103,10 +104,18 @@ pub extern fn syscall(a: usize, b: usize, c: usize, d: usize, e: usize, f: usize
     }
 
     let result = inner(a, b, c, d, e, f, stack);
-/*
+
+    /*
     if let Err(ref err) = result {
-        println!("{}, {}, {}, {}: {}", a, b, c, d, err);
+        let contexts = ::context::contexts();
+        if let Some(context_lock) = contexts.current() {
+            let context = context_lock.read();
+            print!("{}: {}: ", unsafe { ::core::str::from_utf8_unchecked(&context.name.lock()) }, context.id.into());
+        }
+
+        println!("{:X}, {:X}, {:X}, {:X}: {}", a, b, c, d, err);
     }
-*/
+    */
+
     Error::mux(result)
 }
