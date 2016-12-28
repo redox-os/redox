@@ -143,6 +143,7 @@ impl SchemeList {
         self.insert(ns, Box::new(*b"disk"), |_| Arc::new(Box::new(self::live::DiskScheme::new()))).unwrap();
         self.insert(ns, Box::new(*b"initfs"), |_| Arc::new(Box::new(InitFsScheme::new()))).unwrap();
         self.insert(ns, Box::new(*b"irq"), |scheme_id| Arc::new(Box::new(IrqScheme::new(scheme_id)))).unwrap();
+        self.insert(ns, Box::new(*b"memory"), |_| Arc::new(Box::new(MemoryScheme))).unwrap();
         self.insert(ns, Box::new(*b"pipe"), |scheme_id| Arc::new(Box::new(PipeScheme::new(scheme_id)))).unwrap();
     }
 
