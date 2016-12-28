@@ -20,6 +20,7 @@ use self::event::EventScheme;
 use self::env::EnvScheme;
 use self::initfs::InitFsScheme;
 use self::irq::IrqScheme;
+use self::memory::MemoryScheme;
 use self::null::NullScheme;
 use self::pipe::PipeScheme;
 use self::root::RootScheme;
@@ -44,6 +45,9 @@ pub mod irq;
 /// When compiled with "live" feature - `disk:` - embedded filesystem for live disk
 #[cfg(feature="live")]
 pub mod live;
+
+/// `memory:` - a scheme for accessing physical memory
+pub mod memory;
 
 /// `null:` - a scheme that will discard all writes, and read no bytes
 pub mod null;
@@ -124,6 +128,7 @@ impl SchemeList {
         self.insert(ns, Box::new(*b"debug"), |scheme_id| Arc::new(Box::new(DebugScheme::new(scheme_id)))).unwrap();
         self.insert(ns, Box::new(*b"initfs"), |_| Arc::new(Box::new(InitFsScheme::new()))).unwrap();
         self.insert(ns, Box::new(*b"irq"), |scheme_id| Arc::new(Box::new(IrqScheme::new(scheme_id)))).unwrap();
+        self.insert(ns, Box::new(*b"memory"), |_| Arc::new(Box::new(MemoryScheme))).unwrap();
         self.insert(ns, Box::new(*b"pipe"), |scheme_id| Arc::new(Box::new(PipeScheme::new(scheme_id)))).unwrap();
     }
 
