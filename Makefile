@@ -48,6 +48,7 @@ clean:
 	cargo clean --manifest-path programs/binutils/Cargo.toml
 	cargo clean --manifest-path programs/coreutils/Cargo.toml
 	cargo clean --manifest-path programs/extrautils/Cargo.toml
+	cargo clean --manifest-path programs/games/Cargo.toml
 	cargo clean --manifest-path programs/netutils/Cargo.toml
 	cargo clean --manifest-path programs/orbutils/Cargo.toml
 	cargo clean --manifest-path programs/pkgutils/Cargo.toml
@@ -103,6 +104,7 @@ test:
 	cargo test --manifest-path programs/binutils/Cargo.toml
 	cargo test --manifest-path programs/coreutils/Cargo.toml
 	cargo test --manifest-path programs/extrautils/Cargo.toml
+	cargo test --manifest-path programs/games/Cargo.toml
 	cargo test --manifest-path programs/netutils/Cargo.toml
 	cargo test --manifest-path programs/orbutils/Cargo.toml
 	cargo test --manifest-path programs/pkgutils/Cargo.toml
@@ -135,6 +137,7 @@ update:
 	cargo update --manifest-path programs/binutils/Cargo.toml
 	cargo update --manifest-path programs/coreutils/Cargo.toml
 	cargo update --manifest-path programs/extrautils/Cargo.toml
+	cargo update --manifest-path programs/games/Cargo.toml
 	cargo update --manifest-path programs/netutils/Cargo.toml
 	cargo update --manifest-path programs/orbutils/Cargo.toml
 	cargo update --manifest-path programs/pkgutils/Cargo.toml
@@ -424,6 +427,11 @@ filesystem/bin/%: programs/extrautils/Cargo.toml programs/extrautils/src/bin/%.r
 	$(CARGO) rustc --manifest-path $< --bin $* $(CARGOFLAGS) -o $@
 	strip $@
 
+filesystem/bin/%: programs/games/Cargo.toml programs/games/src/%/**.rs $(BUILD)/libstd.rlib
+	mkdir -p filesystem/bin
+	$(CARGO) rustc --manifest-path $< --bin $* $(CARGOFLAGS) -o $@
+	strip $@
+
 filesystem/bin/%: programs/netutils/Cargo.toml programs/netutils/src/%/**.rs $(BUILD)/libstd.rlib
 	mkdir -p filesystem/bin
 	$(CARGO) rustc --manifest-path $< --bin $* $(CARGOFLAGS) -o $@
@@ -515,6 +523,13 @@ extrautils: \
 	filesystem/bin/rem \
 	#filesystem/bin/dmesg filesystem/bin/info  filesystem/bin/watch
 
+games: \
+	filesystem/bin/ice \
+	filesystem/bin/minesweeper \
+	filesystem/bin/reblox \
+	filesystem/bin/rusthello \
+	filesystem/bin/snake
+
 netutils: \
 	filesystem/bin/dhcpd \
 	filesystem/bin/dns \
@@ -561,6 +576,7 @@ build/filesystem.bin: \
 		drivers \
 		coreutils \
 		extrautils \
+		games \
 		netutils \
 		orbutils \
 		pkgutils \
