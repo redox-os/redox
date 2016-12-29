@@ -98,7 +98,7 @@ pub extern fn userspace_init() {
 
     syscall::exec(b"/bin/init", &[]).expect("failed to execute init");
 
-    panic!("init returned")
+    panic!("init returned");
 }
 
 /// Allow exception handlers to send signal to arch-independant kernel
@@ -151,7 +151,13 @@ pub extern fn kmain(cpus: usize) {
 
 /// This is the main kernel entry point for secondary CPUs
 #[no_mangle]
-pub extern fn kmain_ap(id: usize) {
+pub extern fn kmain_ap(_id: usize) {
+    // Disable APs for now
+    loop {
+        unsafe { interrupt::enable_and_halt(); }
+    }
+
+    /*
     CPU_ID.store(id, Ordering::SeqCst);
 
     context::init();
@@ -159,11 +165,6 @@ pub extern fn kmain_ap(id: usize) {
     let pid = syscall::getpid();
     println!("AP {}: {:?}", id, pid);
 
-    // Disable APs for now
-    loop {
-        unsafe { interrupt::enable_and_halt(); }
-    }
-/*
     loop {
         unsafe {
             interrupt::disable();
