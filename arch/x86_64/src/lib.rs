@@ -316,5 +316,8 @@ pub mod panic;
 /// Initialization and start function
 pub mod start;
 
+/// Shutdown function
+pub mod stop;
+
 /// Time
 pub mod time;
