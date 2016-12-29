@@ -11,12 +11,14 @@ use paging::{entry, ActivePageTable, Page, PhysicalAddress, VirtualAddress};
 use start::{kstart_ap, CPU_COUNT, AP_READY};
 
 use self::dmar::{Dmar, DmarEntry};
+use self::fadt::Fadt;
 use self::madt::{Madt, MadtEntry};
 use self::rsdt::Rsdt;
 use self::sdt::Sdt;
 use self::xsdt::Xsdt;
 
 pub mod dmar;
+pub mod fadt;
 pub mod madt;
 pub mod rsdt;
 pub mod sdt;
@@ -31,7 +33,9 @@ pub fn init_sdt(sdt: &'static Sdt, active_table: &mut ActivePageTable) {
         print!("{}", c as char);
     }
 
-    if let Some(madt) = Madt::new(sdt) {
+    if let Some(fadt) = Fadt::new(sdt) {
+        println!(": {:#?}", fadt);
+    } else if let Some(madt) = Madt::new(sdt) {
         println!(": {:>08X}: {}", madt.local_address, madt.flags);
 
         let mut local_apic = unsafe { &mut LOCAL_APIC };
