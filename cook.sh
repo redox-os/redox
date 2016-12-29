@@ -50,6 +50,12 @@ function op {
             xargo build --target "$TARGET" --release $CARGOFLAGS
             popd > /dev/null
             ;;
+        test)
+            pushd build > /dev/null
+            cp -r "$ROOT/Xargo.toml" "$ROOT/libc-artifacts" .
+            xargo test --no-run --target "$TARGET" --release $CARGOFLAGS
+            popd > /dev/null
+            ;;
         clean)
             pushd build > /dev/null
             xargo clean
