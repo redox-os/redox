@@ -12,7 +12,6 @@ use syscall::scheme::Scheme;
 mod context;
 mod cpu;
 mod exe;
-mod memory;
 mod scheme;
 //mod interrupt;
 //mod log;
@@ -41,7 +40,6 @@ impl SysScheme {
         files.insert(b"context", Box::new(move || context::resource()));
         files.insert(b"cpu", Box::new(move || cpu::resource()));
         files.insert(b"exe", Box::new(move || exe::resource()));
-        files.insert(b"memory", Box::new(move || memory::resource()));
         files.insert(b"scheme", Box::new(move || scheme::resource()));
         //files.insert(b"interrupt", Box::new(move || interrupt::resource()));
         //files.insert(b"log", Box::new(move || log::resource()));
