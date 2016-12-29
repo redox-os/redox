@@ -1,1 +1,1 @@
-./all.sh untar unstage unfetch fetch build stage tar publish
+./all.sh distclean dist publish

@@ -1,17 +1,29 @@
 #!/bin/bash
 
-export RUST_TARGET_PATH="$PWD/targets"
+ROOT="$PWD"
+export RUST_TARGET_PATH="$ROOT/targets"
 export CARGOFLAGS=
 export CFLAGS="-fno-stack-protector -U_FORTIFY_SOURCE"
 TARGET=x86_64-unknown-redox
-ROOT="$PWD"
-REPO="$PWD/repo/$TARGET"
+REPO="$ROOT/repo/$TARGET"
 
 set -e
 
 function op {
-    echo "$1" "$2"
+    echo -e "\033[01;38;5;215mcook - $1 $2\033[0m"
     case "$2" in
+        dist)
+            op $1 fetch
+            op $1 update
+            op $1 build
+            op $1 stage
+            op $1 tar
+            ;;
+        distclean)
+            op $1 untar
+            op $1 unstage
+            op $1 unfetch
+            ;;
         fetch)
             if [ ! -d build ]
             then
@@ -82,7 +94,7 @@ function op {
             rm -rfv "$REPO/$1.tar"
             ;;
         *)
-            echo "cook.sh $1 {build|clean|fetch|unfetch|publish|unpublish|stage|unstage|tar|untar|update}"
+            echo "cook.sh $1 {dist|distclean|build|clean|fetch|unfetch|publish|unpublish|stage|unstage|tar|untar|update}"
             ;;
     esac
 }
@@ -101,5 +113,5 @@ then
         echo "cook.sh: recipe '$1' not found"
     fi
 else
-    echo "cook.sh {package} {build|clean|fetch|unfetch|publish|unpublish|stage|unstage|tar|untar|update}"
+    echo "cook.sh {package} {dist|distclean|build|clean|fetch|unfetch|publish|unpublish|stage|unstage|tar|untar|update}"
 fi
