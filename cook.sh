@@ -61,17 +61,18 @@ function op {
             if [ "$(type -t recipe_stage)" = "function" ]
             then
                 recipe_stage ../stage
-            fi
-            #TODO xargo install --root "../stage" $CARGOFLAGS
-            bins="$(find target/x86_64-unknown-redox/release/ -maxdepth 1 -type f ! -name '*.*')"
-            if [ -n "$bins" ]
-            then
-                mkdir -p ../stage/bin
-                for bin in $bins
-                do
-                    cp -v "$bin" "../stage/bin/$(basename $bin)"
-                    strip -v "../stage/bin/$(basename $bin)"
-                done
+            else
+                #TODO xargo install --root "../stage" $CARGOFLAGS
+                bins="$(find target/$TARGET/release/ -maxdepth 1 -type f ! -name '*.*')"
+                if [ -n "$bins" ]
+                then
+                    mkdir -p ../stage/bin
+                    for bin in $bins
+                    do
+                        cp -v "$bin" "../stage/bin/$(basename $bin)"
+                        strip -v "../stage/bin/$(basename $bin)"
+                    done
+                fi
             fi
             popd > /dev/null
             ;;
