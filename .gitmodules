@@ -1,0 +1,3 @@
+[submodule "libc-artifacts"]
+	path = libc-artifacts
+	url = https://github.com/redox-os/libc-artifacts.git

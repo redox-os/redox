@@ -1,9 +1,10 @@
 #!/bin/bash
 
 export RUST_TARGET_PATH="$PWD/targets"
-export RUSTFLAGS="--cfg redox"
 export CARGOFLAGS=
+export CFLAGS="-fno-stack-protector -U_FORTIFY_SOURCE"
 TARGET=x86_64-unknown-redox
+ROOT="$PWD"
 REPO="$PWD/repo/$TARGET"
 
 set -e
@@ -33,6 +34,7 @@ function op {
             ;;
         build)
             pushd build > /dev/null
+            cp -r "$ROOT/Xargo.toml" "$ROOT/libc-artifacts" .
             xargo build --target "$TARGET" --release $CARGOFLAGS
             popd > /dev/null
             ;;
