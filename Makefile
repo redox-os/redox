@@ -1,25 +1,28 @@
 ARCH?=x86_64
 
+ROOT=$(PWD)
+export RUST_TARGET_PATH=$(ROOT)/targets
+
+#TODO: Use libssp
+export CFLAGS=-fno-stack-protector -U_FORTIFY_SOURCE
+
 # Kernel variables
 KTARGET=$(ARCH)-unknown-none
 KBUILD=build/kernel
 KRUSTC=./krustc.sh
-KRUSTCFLAGS=--target $(KTARGET).json -C opt-level=2 -C debuginfo=0 -C soft-float
+KRUSTCFLAGS=--target $(KTARGET) -C opt-level=2 -C debuginfo=0 -C soft-float
 KRUSTDOC=./krustdoc.sh
 KCARGO=RUSTC="$(KRUSTC)" RUSTDOC="$(KRUSTDOC)" cargo
-KCARGOFLAGS=--target $(KTARGET).json --release -- -C soft-float
+KCARGOFLAGS=--target $(KTARGET) --release -- -C soft-float
 
 # Userspace variables
 TARGET=$(ARCH)-unknown-redox
 BUILD=build/userspace
 RUSTC=./rustc.sh
-RUSTCFLAGS=--target $(TARGET).json -C opt-level=2 -C debuginfo=0
+RUSTCFLAGS=--target $(TARGET) -C opt-level=2 -C debuginfo=0
 RUSTDOC=./rustdoc.sh
 CARGO=RUSTC="$(RUSTC)" RUSTDOC="$(RUSTDOC)" cargo
-CARGOFLAGS=--target $(TARGET).json --release --
-
-#TODO: Use libssp
-export CFLAGS=-fno-stack-protector -U_FORTIFY_SOURCE
+CARGOFLAGS=--target $(TARGET) --release --
 
 # Default targets
 .PHONY: all live iso clean doc ref test update pull qemu bochs drivers schemes binutils coreutils extrautils netutils userutils wireshark FORCE
@@ -169,9 +172,9 @@ ifeq ($(ARCH),arm)
 	QEMUFLAGS+=-cpu arm1176 -machine integratorcp
 	QEMUFLAGS+=-nographic
 
-	CC=$(ARCH)-none-eabi-gcc
-	CXX=$(ARCH)-none-eabi-g++
-	LD=$(ARCH)-none-eabi-ld
+	export CC=$(ARCH)-none-eabi-gcc
+	export CXX=$(ARCH)-none-eabi-g++
+	export LD=$(ARCH)-none-eabi-ld
 
 	KRUSTCFLAGS+=-C linker=$(CC)
 	KCARGOFLAGS+=-C linker=$(CC)
@@ -209,21 +212,21 @@ else
 
 	UNAME := $(shell uname)
 	ifeq ($(UNAME),Darwin)
-		CC=$(ARCH)-elf-gcc
-		CXX=$(ARCH)-elf-g++
+		export CC=$(ARCH)-elf-gcc
+		export CXX=$(ARCH)-elf-g++
 		ECHO=/bin/echo
 		FUMOUNT=sudo umount
-		LD=$(ARCH)-elf-ld
-		LDFLAGS=--gc-sections
+		export LD=$(ARCH)-elf-ld
+		export LDFLAGS=--gc-sections
 		VB_AUDIO=coreaudio
 		VBM="/Applications/VirtualBox.app/Contents/MacOS/VBoxManage"
 	else
-		CC=gcc
-		CXX=g++
+		export CC=gcc
+		export CXX=g++
 		ECHO=echo
 		FUMOUNT=fusermount -u
-		LD=ld
-		LDFLAGS=--gc-sections
+		export LD=ld
+		export LDFLAGS=--gc-sections
 		ifneq ($(kvm),no)
 			QEMUFLAGS+=-enable-kvm -cpu host
 		endif
