@@ -42,8 +42,9 @@ struct UdpHandle {
 
 #[derive(Copy, Clone)]
 enum SettingKind {
-    Read,
-    Write
+    Ttl,
+    ReadTimeout,
+    WriteTimeout
 }
 
 enum Handle {
@@ -215,10 +216,12 @@ impl SchemeMut for Udpd {
 
                 let path = str::from_utf8(buf).or(Err(Error::new(EINVAL)))?;
 
-                if path == "read_timeout" {
-                    Handle::Setting(file, SettingKind::Read)
+                if path == "ttl" {
+                    Handle::Setting(file, SettingKind::Ttl)
+                } else if path == "read_timeout" {
+                    Handle::Setting(file, SettingKind::ReadTimeout)
                 } else if path == "write_timeout" {
-                    Handle::Setting(file, SettingKind::Write)
+                    Handle::Setting(file, SettingKind::WriteTimeout)
                 } else {
                     if handle.remote.0 == Ipv4Addr::NULL || handle.remote.1 == 0 {
                         handle.remote = parse_socket(path);
@@ -269,18 +272,30 @@ impl SchemeMut for Udpd {
         };
 
         if let Handle::Udp(ref mut handle) = *self.handles.get_mut(&file).ok_or(Error::new(EBADF))? {
-            let timeout = match kind {
-                SettingKind::Read => handle.read_timeout,
-                SettingKind::Write => handle.write_timeout
+            let read_timeout = |timeout: &Option<TimeSpec>, buf: &mut [u8]| -> Result<usize> {
+                if let Some(ref timespec) = *timeout {
+                    timespec.deref().read(buf).map_err(|err| Error::new(err.raw_os_error().unwrap_or(EIO)))
+                } else {
+                    Ok(0)
+                }
             };
 
-            let count = if let Some(timespec) = timeout {
-                timespec.deref().read(buf).map_err(|err| Error::new(err.raw_os_error().unwrap_or(EIO)))?
-            } else {
-                0
-            };
-
-            Ok(count)
+            match kind {
+                SettingKind::Ttl => {
+                    if let Some(mut ttl) = buf.get_mut(0) {
+                        *ttl = handle.ttl;
+                        Ok(1)
+                    } else {
+                        Ok(0)
+                    }
+                },
+                SettingKind::ReadTimeout => {
+                    read_timeout(&handle.read_timeout, buf)
+                },
+                SettingKind::WriteTimeout => {
+                    read_timeout(&handle.write_timeout, buf)
+                }
+            }
         } else {
             Err(Error::new(EBADF))
         }
@@ -334,20 +349,34 @@ impl SchemeMut for Udpd {
         };
 
         if let Handle::Udp(ref mut handle) = *self.handles.get_mut(&file).ok_or(Error::new(EBADF))? {
-            let (count, timeout) = if buf.len() >= mem::size_of::<TimeSpec>() {
-                let mut timespec = TimeSpec::default();
-                let count = timespec.deref_mut().write(buf).map_err(|err| Error::new(err.raw_os_error().unwrap_or(EIO)))?;
-                (count, Some(timespec))
-            } else {
-                (0, None)
+            let write_timeout = |timeout: &mut Option<TimeSpec>, buf: &[u8]| -> Result<usize> {
+                if buf.len() >= mem::size_of::<TimeSpec>() {
+                    let mut timespec = TimeSpec::default();
+                    let count = timespec.deref_mut().write(buf).map_err(|err| Error::new(err.raw_os_error().unwrap_or(EIO)))?;
+                    *timeout = Some(timespec);
+                    Ok(count)
+                } else {
+                    *timeout = None;
+                    Ok(0)
+                }
             };
 
             match kind {
-                SettingKind::Read => handle.read_timeout = timeout,
-                SettingKind::Write => handle.write_timeout = timeout
+                SettingKind::Ttl => {
+                    if let Some(ttl) = buf.get(0) {
+                        handle.ttl = *ttl;
+                        Ok(1)
+                    } else {
+                        Ok(0)
+                    }
+                },
+                SettingKind::ReadTimeout => {
+                    write_timeout(&mut handle.read_timeout, buf)
+                },
+                SettingKind::WriteTimeout => {
+                    write_timeout(&mut handle.write_timeout, buf)
+                }
             }
-
-            Ok(count)
         } else {
             Err(Error::new(EBADF))
         }
