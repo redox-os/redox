@@ -3,6 +3,6 @@ sudo: required
 install:
   - curl https://sh.rustup.rs -sSf > rustup; chmod +x rustup; ./rustup --default-toolchain nightly -y
   - export PATH="$HOME/.cargo/bin:$PATH"; ./setup.sh
-script: export PATH="$HOME/.cargo/bin:$PATH"; ./jenkins.sh
+script: export PATH="$HOME/.cargo/bin:$PATH"; ./ci.sh
 notifications:
   email: false
