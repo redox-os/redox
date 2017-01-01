@@ -593,7 +593,7 @@ build/filesystem.bin: \
 		filesystem/bin/tar
 	-$(FUMOUNT) build/filesystem/
 	rm -rf $@ build/filesystem/
-	dd if=/dev/zero of=$@ bs=1M count=128
+	dd if=/dev/zero of=$@ bs=1M count=64
 	cargo run --manifest-path schemes/redoxfs/Cargo.toml --release --bin redoxfs-mkfs $@
 	mkdir -p build/filesystem/
 	cargo build --manifest-path schemes/redoxfs/Cargo.toml --release --bin redoxfs
