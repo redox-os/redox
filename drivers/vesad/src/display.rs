@@ -136,7 +136,7 @@ impl Display {
                 for row in 0..16 {
                     let row_data = FONT[font_i + row];
                     for col in 0..8 {
-                        if (row_data >> (8 - col)) & 1 == 1 {
+                        if (row_data >> (7 - col)) & 1 == 1 {
                             unsafe { *((dst + col * 4) as *mut u32)  = color; }
                         }
                     }
