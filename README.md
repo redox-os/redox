@@ -46,8 +46,6 @@ The ecosystem and software Redox OS provides is listed below.
 | [Standard library](https://github.com/redox-os/libstd)                      | [**@jackpot51**](https://github.com/jackpot51)
 | [TFS (filesystem)](https://github.com/ticki/tfs)                            | [**@ticki**](https://github.com/ticki)
 | [The Redox book](https://github.com/redox-os/book)                          | [**@ticki**](https://github.com/ticki)
-| [The old kernel](https://github.com/redox-os/old)                           | abandoned
-| [ZFS](https://github.com/redox-os/zfs)                                      | abandoned, superseded by TFS
 | [acid tests](https://github.com/redox-os/acid)                              | [**@jackpot51**](https://github.com/jackpot51) (co.: [**@ticki**](https://github.com/ticki), [**@nilset](https://github.com/nilset))
 | [binutils](https://github.com/redox-os/binutils)                            | [**@ticki**](https://github.com/ticki)
 | [bots (other internal bots)](https://github.com/redox-os/bots)              | [**@ticki**](https://github.com/ticki)
@@ -71,6 +69,8 @@ The ecosystem and software Redox OS provides is listed below.
 | [redoxfs (old filesystem)](https://github.com/redox-os/redoxfs)             | [**@jackpot51**](https://github.com/jackpot51)
 | [syscall](https://github.com/redox-os/syscall)                              | [**@jackpot51**](https://github.com/jackpot51)
 | [userutils](https://github.com/redox-os/userutils)                          | [**@jackpot51**](https://github.com/jackpot51)
+| [The old kernel](https://github.com/redox-os/old)                           | **abandoned**
+| [ZFS](https://github.com/redox-os/zfs)                                      | **abandoned, superseded by TFS**
 
 ## <a name="compile-help"> Help! Redox won't compile! </a>
 
