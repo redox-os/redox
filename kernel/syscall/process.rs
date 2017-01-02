@@ -325,7 +325,7 @@ pub fn clone(flags: usize, stack_base: usize) -> Result<ContextId> {
 
             let mut active_table = unsafe { ActivePageTable::new() };
 
-            let mut temporary_page = TemporaryPage::new(Page::containing_address(VirtualAddress::new(0x8_0000_0000)));
+            let mut temporary_page = TemporaryPage::new(Page::containing_address(VirtualAddress::new(arch::USER_TMP_MISC_OFFSET)));
 
             let mut new_table = {
                 let frame = allocate_frame().expect("no more frames in syscall::clone new_table");
