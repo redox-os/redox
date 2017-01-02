@@ -5,12 +5,15 @@ export RUST_TARGET_PATH=$(ROOT)/targets
 
 #TODO: Use libssp
 export CFLAGS=-nostartfiles -nostdlib -nodefaultlibs \
-			-undef -imacros $(ROOT)/libc-artifacts/define.h \
-			-isystem $(ROOT)/libc-artifacts/usr/include \
-			-fno-stack-protector -U_FORTIFY_SOURCE
-export CXXFLAGS=$(CFLAGS) -nostdinc++ \
+	-undef -imacros $(ROOT)/libc-artifacts/define.h \
+	-isystem $(ROOT)/libc-artifacts/usr/lib/gcc/x86_64-elf-redox/7.0.0/include \
+	-isystem $(ROOT)/libc-artifacts/usr/lib/gcc/x86_64-elf-redox/7.0.0/include-fixed \
+	-isystem $(ROOT)/libc-artifacts/usr/include \
+	-fno-stack-protector -U_FORTIFY_SOURCE
+export CXXFLAGS=$(CFLAGS) \
 	-isystem $(ROOT)/libc-artifacts/usr/include/c++/7.0.0 \
-	-isystem $(ROOT)/libc-artifacts/usr/include/c++/7.0.0/x86_64-elf-redox
+ 	-isystem $(ROOT)/libc-artifacts/usr/include/c++/7.0.0/x86_64-elf-redox \
+ 	-isystem $(ROOT)/libc-artifacts/usr/include/c++/7.0.0/backward
 
 # Kernel variables
 KTARGET=$(ARCH)-unknown-none
