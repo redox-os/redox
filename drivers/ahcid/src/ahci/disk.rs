@@ -11,7 +11,7 @@ pub struct Disk {
     size: u64,
     clb: Dma<[HbaCmdHeader; 32]>,
     ctbas: [Dma<HbaCmdTable>; 32],
-    fb: Dma<[u8; 256]>,
+    _fb: Dma<[u8; 256]>,
     buf: Dma<[u8; 256 * 512]>
 }
 
@@ -41,7 +41,7 @@ impl Disk {
             size: size,
             clb: clb,
             ctbas: ctbas,
-            fb: fb,
+            _fb: fb,
             buf: buf
         })
     }
