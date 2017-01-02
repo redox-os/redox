@@ -4,7 +4,10 @@ ROOT=$(PWD)
 export RUST_TARGET_PATH=$(ROOT)/targets
 
 #TODO: Use libssp
-export CFLAGS=-fno-stack-protector -U_FORTIFY_SOURCE -I $(ROOT)/libc-artifacts/usr/include
+export CFLAGS=-ffreestanding -nostartfiles -nostdlib -nodefaultlibs \
+			-undef -imacros $(ROOT)/libc-artifacts/define.h \
+			-isystem $(ROOT)/libc-artifacts/usr/include \
+			-fno-stack-protector -U_FORTIFY_SOURCE
 
 # Kernel variables
 KTARGET=$(ARCH)-unknown-none
