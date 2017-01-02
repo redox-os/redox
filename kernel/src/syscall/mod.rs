@@ -56,6 +56,7 @@ pub extern fn syscall(a: usize, b: usize, c: usize, d: usize, e: usize, f: usize
                         SYS_DUP2 => dup2(fd, FileHandle::from(c), validate_slice(d as *const u8, e)?).map(FileHandle::into),
                         SYS_FEVENT => fevent(fd, c),
                         SYS_FUNMAP => funmap(b),
+                        SYS_DUP_EXPORT => dup_export(fd, ContextId::from(c), validate_slice(d as *const u8, e)?),
                         _ => file_op(a, fd, c, d)
                     }
                 }
@@ -68,6 +69,7 @@ pub extern fn syscall(a: usize, b: usize, c: usize, d: usize, e: usize, f: usize
                 _ => unreachable!()
             },
             _ => match a {
+                SYS_DUP_FROM => dup_import(ContextId::from(b), validate_slice(c as *const u8, d)?).map(FileHandle::into),
                 SYS_YIELD => sched_yield(),
                 SYS_NANOSLEEP => nanosleep(validate_slice(b as *const TimeSpec, 1).map(|req| &req[0])?, validate_slice_mut(c as *mut TimeSpec, 1).ok().map(|rem| &mut rem[0])),
                 SYS_CLOCK_GETTIME => clock_gettime(b, validate_slice_mut(c as *mut TimeSpec, 1).map(|time| &mut time[0])?),

@@ -44,7 +44,7 @@ impl UserInner {
         }
     }
 
-    pub fn call(&self, a: usize, b: usize, c: usize, d: usize) -> Result<usize> {
+    pub fn call(&self, a: usize, b: usize, c: usize, d: usize, e: usize) -> Result<usize> {
         let (pid, uid, gid) = {
             let contexts = context::contexts();
             let context_lock = contexts.current().ok_or(Error::new(ESRCH))?;
@@ -60,7 +60,8 @@ impl UserInner {
             a: a,
             b: b,
             c: c,
-            d: d
+            d: d,
+            e: e
         })
     }
 
@@ -219,7 +220,7 @@ impl Scheme for UserScheme {
     fn open(&self, path: &[u8], flags: usize, _uid: u32, _gid: u32) -> Result<usize> {
         let inner = self.inner.upgrade().ok_or(Error::new(ENODEV))?;
         let address = inner.capture(path)?;
-        let result = inner.call(SYS_OPEN, address, path.len(), flags);
+        let result = inner.call(SYS_OPEN, address, path.len(), flags, 0);
         let _ = inner.release(address);
         result
     }
@@ -227,7 +228,7 @@ impl Scheme for UserScheme {
     fn chmod(&self, path: &[u8], mode: u16, _uid: u32, _gid: u32) -> Result<usize> {
         let inner = self.inner.upgrade().ok_or(Error::new(ENODEV))?;
         let address = inner.capture(path)?;
-        let result = inner.call(SYS_CHMOD, address, path.len(), mode as usize);
+        let result = inner.call(SYS_CHMOD, address, path.len(), mode as usize, 0);
         let _ = inner.release(address);
         result
     }
@@ -235,7 +236,7 @@ impl Scheme for UserScheme {
     fn rmdir(&self, path: &[u8], _uid: u32, _gid: u32) -> Result<usize> {
         let inner = self.inner.upgrade().ok_or(Error::new(ENODEV))?;
         let address = inner.capture(path)?;
-        let result = inner.call(SYS_RMDIR, address, path.len(), 0);
+        let result = inner.call(SYS_RMDIR, address, path.len(), 0, 0);
         let _ = inner.release(address);
         result
     }
@@ -243,7 +244,7 @@ impl Scheme for UserScheme {
     fn unlink(&self, path: &[u8], _uid: u32, _gid: u32) -> Result<usize> {
         let inner = self.inner.upgrade().ok_or(Error::new(ENODEV))?;
         let address = inner.capture(path)?;
-        let result = inner.call(SYS_UNLINK, address, path.len(), 0);
+        let result = inner.call(SYS_UNLINK, address, path.len(), 0, 0);
         let _ = inner.release(address);
         result
     }
@@ -251,7 +252,7 @@ impl Scheme for UserScheme {
     fn dup(&self, file: usize, buf: &[u8]) -> Result<usize> {
         let inner = self.inner.upgrade().ok_or(Error::new(ENODEV))?;
         let address = inner.capture(buf)?;
-        let result = inner.call(SYS_DUP, file, address, buf.len());
+        let result = inner.call(SYS_DUP, file, address, buf.len(), 0);
         let _ = inner.release(address);
         result
     }
@@ -259,7 +260,7 @@ impl Scheme for UserScheme {
     fn read(&self, file: usize, buf: &mut [u8]) -> Result<usize> {
         let inner = self.inner.upgrade().ok_or(Error::new(ENODEV))?;
         let address = inner.capture_mut(buf)?;
-        let result = inner.call(SYS_READ, file, address, buf.len());
+        let result = inner.call(SYS_READ, file, address, buf.len(), 0);
         let _ = inner.release(address);
         result
     }
@@ -267,24 +268,24 @@ impl Scheme for UserScheme {
     fn write(&self, file: usize, buf: &[u8]) -> Result<usize> {
         let inner = self.inner.upgrade().ok_or(Error::new(ENODEV))?;
         let address = inner.capture(buf)?;
-        let result = inner.call(SYS_WRITE, file, address, buf.len());
+        let result = inner.call(SYS_WRITE, file, address, buf.len(), 0);
         let _ = inner.release(address);
         result
     }
 
     fn seek(&self, file: usize, position: usize, whence: usize) -> Result<usize> {
         let inner = self.inner.upgrade().ok_or(Error::new(ENODEV))?;
-        inner.call(SYS_LSEEK, file, position, whence)
+        inner.call(SYS_LSEEK, file, position, whence, 0)
     }
 
     fn fcntl(&self, file: usize, cmd: usize, arg: usize) -> Result<usize> {
         let inner = self.inner.upgrade().ok_or(Error::new(ENODEV))?;
-        inner.call(SYS_FCNTL, file, cmd, arg)
+        inner.call(SYS_FCNTL, file, cmd, arg, 0)
     }
 
     fn fevent(&self, file: usize, flags: usize) -> Result<usize> {
         let inner = self.inner.upgrade().ok_or(Error::new(ENODEV))?;
-        inner.call(SYS_FEVENT, file, flags, 0)
+        inner.call(SYS_FEVENT, file, flags, 0, 0)
     }
 
     fn fmap(&self, file: usize, offset: usize, size: usize) -> Result<usize> {
@@ -309,14 +310,15 @@ impl Scheme for UserScheme {
             a: SYS_FMAP,
             b: file,
             c: offset,
-            d: size
+            d: size,
+            e: 0
         })
     }
 
     fn fpath(&self, file: usize, buf: &mut [u8]) -> Result<usize> {
         let inner = self.inner.upgrade().ok_or(Error::new(ENODEV))?;
         let address = inner.capture_mut(buf)?;
-        let result = inner.call(SYS_FPATH, file, address, buf.len());
+        let result = inner.call(SYS_FPATH, file, address, buf.len(), 0);
         let _ = inner.release(address);
         result
     }
@@ -324,7 +326,7 @@ impl Scheme for UserScheme {
     fn fstat(&self, file: usize, stat: &mut Stat) -> Result<usize> {
         let inner = self.inner.upgrade().ok_or(Error::new(ENODEV))?;
         let address = inner.capture_mut(stat)?;
-        let result = inner.call(SYS_FSTAT, file, address, mem::size_of::<Stat>());
+        let result = inner.call(SYS_FSTAT, file, address, mem::size_of::<Stat>(), 0);
         let _ = inner.release(address);
         result
     }
@@ -332,23 +334,23 @@ impl Scheme for UserScheme {
     fn fstatvfs(&self, file: usize, stat: &mut StatVfs) -> Result<usize> {
         let inner = self.inner.upgrade().ok_or(Error::new(ENODEV))?;
         let address = inner.capture_mut(stat)?;
-        let result = inner.call(SYS_FSTATVFS, file, address, mem::size_of::<StatVfs>());
+        let result = inner.call(SYS_FSTATVFS, file, address, mem::size_of::<StatVfs>(), 0);
         let _ = inner.release(address);
         result
     }
 
     fn fsync(&self, file: usize) -> Result<usize> {
         let inner = self.inner.upgrade().ok_or(Error::new(ENODEV))?;
-        inner.call(SYS_FSYNC, file, 0, 0)
+        inner.call(SYS_FSYNC, file, 0, 0, 0)
     }
 
     fn ftruncate(&self, file: usize, len: usize) -> Result<usize> {
         let inner = self.inner.upgrade().ok_or(Error::new(ENODEV))?;
-        inner.call(SYS_FTRUNCATE, file, len, 0)
+        inner.call(SYS_FTRUNCATE, file, len, 0, 0)
     }
 
     fn close(&self, file: usize) -> Result<usize> {
         let inner = self.inner.upgrade().ok_or(Error::new(ENODEV))?;
-        inner.call(SYS_CLOSE, file, 0, 0)
+        inner.call(SYS_CLOSE, file, 0, 0, 0)
     }
 }

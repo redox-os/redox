@@ -81,8 +81,17 @@ pub struct Context {
     /// The process environment
     pub env: Arc<Mutex<BTreeMap<Box<[u8]>, Arc<Mutex<Vec<u8>>>>>>,
     /// The open files in the scheme
-    pub files: Arc<Mutex<Vec<Option<File>>>>
+    pub files: Arc<Mutex<Vec<Option<File>>>>,
+    /// Files exported through `dup_export`.
+    pub exported_files: Mutex<FileExportMap>,
 }
+
+#[derive(PartialOrd, Ord, PartialEq, Eq, Debug)]
+pub struct FileExport {
+    pub target: ContextId,
+    key: Box<[u8]>,
+}
+type FileExportMap = BTreeMap<FileExport, (FileHandle, File)>;
 
 impl Context {
     pub fn new(id: ContextId) -> Context {
@@ -114,7 +123,8 @@ impl Context {
             cwd: Arc::new(Mutex::new(Vec::new())),
             events: Arc::new(WaitQueue::new()),
             env: Arc::new(Mutex::new(BTreeMap::new())),
-            files: Arc::new(Mutex::new(Vec::new()))
+            files: Arc::new(Mutex::new(Vec::new())),
+            exported_files: Mutex::new(BTreeMap::new()),
         }
     }
 
@@ -248,5 +258,31 @@ impl Context {
         } else {
             None
         }
+    }
+
+    pub fn export_file(&self, target: ContextId, key: &[u8], new_id_for_scheme: FileHandle, file: File) -> Option<(FileHandle, File)> {
+        use collections::btree_map::Entry::*;
+        let mut lock = self.exported_files.lock();
+        let entry = lock.entry(FileExport {
+            key: key.to_vec().into_boxed_slice(),
+            target: target,
+        });
+        match entry {
+            Vacant(vacant) => {
+                vacant.insert((new_id_for_scheme, file));
+                None
+            }
+            Occupied(mut occupied) => {
+                Some(occupied.insert((new_id_for_scheme, file)))
+            }
+        }
+    }
+
+    pub fn pop_exported_file(&self, target: ContextId, key: &[u8]) -> Option<(FileHandle, File)> {
+        let mut lock = self.exported_files.lock();
+        lock.remove(&FileExport {
+            key: key.to_vec().into_boxed_slice(),
+            target: target,
+        })
     }
 }

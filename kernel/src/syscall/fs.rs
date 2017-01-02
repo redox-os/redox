@@ -1,7 +1,7 @@
 //! Filesystem syscalls
 use core::sync::atomic::Ordering;
 
-use context;
+use context::{self, ContextId};
 use scheme::{self, FileHandle};
 use syscall;
 use syscall::data::{Packet, Stat};
@@ -31,7 +31,8 @@ pub fn file_op(a: usize, fd: FileHandle, c: usize, d: usize) -> Result<usize> {
         a: a,
         b: file.number,
         c: c,
-        d: d
+        d: d,
+        e: 0
     };
 
     scheme.handle(&mut packet);
@@ -261,6 +262,60 @@ pub fn dup(fd: FileHandle, buf: &[u8]) -> Result<FileHandle> {
         number: new_id,
         event: None,
     }).ok_or(Error::new(EMFILE))
+}
+
+/// Duplicate a file to another context.
+/// If another file has been duplicated to `pid` with key `key`, the previous
+/// file descriptor is overwritten and closed.
+pub fn dup_export(fd: FileHandle, pid: ContextId, key: &[u8]) -> Result<usize> {
+    // Duplicate the file.
+    let file = {
+        let contexts = context::contexts();
+        let context_lock = contexts.current().ok_or(Error::new(ESRCH))?;
+        let context = context_lock.read();
+        let file = context.get_file(fd).ok_or(Error::new(EBADF))?;
+        file
+    };
+
+    let schemes = scheme::schemes();
+    let scheme = schemes.get(file.scheme).ok_or(Error::new(EBADF))?;
+    let new_id_for_scheme = scheme.dup(file.number, syscall::HINT_DUP_EXPORT).map(FileHandle::from)?;
+
+    // Expose the new descriptor.
+    // Note that we store the descriptor in the current context to avoid saturating the
+    // destination context in case the caller of `dup_export` is malicious.
+    let previous = {
+        let contexts = context::contexts();
+        let context_lock = contexts.current().ok_or(Error::new(ESRCH))?;
+        let context = context_lock.write();
+        context.export_file(pid, key, new_id_for_scheme, file) // FIXME: Close the file when `pid` dies, remove it from `context.export_file`.
+    };
+    if let Some((old_fd, _)) = previous {
+        close(old_fd)?;
+    }
+    Ok(0)
+}
+
+pub fn dup_import(pid: ContextId, key: &[u8]) -> Result<FileHandle> {
+    // Find the exposed descriptor.
+    let (new_id_for_scheme, file) = {
+        let contexts = context::contexts();
+        let context_lock = contexts.get(pid).ok_or(Error::new(ESRCH))?;
+        let context = context_lock.read();
+        context.pop_exported_file(pid, key).ok_or(Error::new(EBADF))?
+    };
+
+    // Finish duplicating it.
+    let contexts = context::contexts();
+    let context_lock = contexts.current().ok_or(Error::new(ESRCH))?;
+    let context = context_lock.read();
+    context.insert_file(new_id_for_scheme, ::context::file::File {
+        scheme: file.scheme,
+        number: file.number,
+        event: None,
+    }).ok_or(Error::new(EBADF))
+
+    // At this stage, `context` is in charge of closing the file.
 }
 
 /// Duplicate file descriptor, replacing another

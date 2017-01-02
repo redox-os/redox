@@ -486,6 +486,16 @@ fn empty(context: &mut context::Context, reaping: bool) {
             }
         }
     }
+
+    // Close the file handles we have been keeping open on behalf of other contexts.
+    for (handle, _) in context.exported_files.values() {
+        close(handle)
+    }
+
+    // FIXME: We should consider closing the file handles that have been opened by other
+    // contexts on behalf of `context`. For the moment, we don't do this because
+    // 1/ there may be a better way to handle this in userland, through the stdlib;
+    // 2/ operating non-atomically on several contexts is prone to race conditions.
 }
 
 pub fn exec(path: &[u8], arg_ptrs: &[[usize; 2]]) -> Result<usize> {
