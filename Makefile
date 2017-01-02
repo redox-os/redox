@@ -4,7 +4,7 @@ ROOT=$(PWD)
 export RUST_TARGET_PATH=$(ROOT)/targets
 
 #TODO: Use libssp
-export CFLAGS=-fno-stack-protector -U_FORTIFY_SOURCE
+export CFLAGS=-fno-stack-protector -U_FORTIFY_SOURCE -I $(ROOT)/libc-artifacts/usr/include
 
 # Kernel variables
 KTARGET=$(ARCH)-unknown-none
@@ -234,10 +234,10 @@ else
 		VBM=VBoxManage
 	endif
 
-	KRUSTCFLAGS+=-C linker=$(CC)
-	KCARGOFLAGS+=-C linker=$(CC)
-	RUSTCFLAGS+=-C linker=$(CC)
-	CARGOFLAGS+=-C linker=$(CC)
+	KRUSTCFLAGS+=-C linker=$(CC) -C link-args="$(CFLAGS)"
+	KCARGOFLAGS+=-C linker=$(CC) -C link-args="$(CFLAGS)"
+	RUSTCFLAGS+=-C linker=$(CC) -C link-args="$(CFLAGS)"
+	CARGOFLAGS+=-C linker=$(CC) -C link-args="$(CFLAGS)"
 
 %.list: %
 	objdump -C -M intel -D $< > $@
@@ -362,7 +362,7 @@ $(KBUILD)/kernel_live: $(KBUILD)/libkernel_live.a
 # Userspace recipes
 $(BUILD)/libstd.rlib: rust/src/libstd/Cargo.toml rust/src/libstd/**
 	mkdir -p $(BUILD)
-	$(CARGO) rustc --verbose --manifest-path $< $(CARGOFLAGS) -L native=libc-artifacts/lib -o $@
+	$(CARGO) rustc --verbose --manifest-path $< $(CARGOFLAGS) -L native=libc-artifacts/usr/lib -o $@
 	cp rust/src/target/$(TARGET)/release/deps/*.rlib $(BUILD)
 
 initfs/bin/%: drivers/%/Cargo.toml drivers/%/src/** $(BUILD)/libstd.rlib
@@ -373,7 +373,7 @@ initfs/bin/%: drivers/%/Cargo.toml drivers/%/src/** $(BUILD)/libstd.rlib
 initfs/bin/%: programs/%/Cargo.toml programs/%/src/** $(BUILD)/libstd.rlib
 	mkdir -p initfs/bin
 	$(CARGO) rustc --manifest-path $< $(CARGOFLAGS) -o $@
-	#strip $@
+	strip $@
 
 initfs/bin/%: schemes/%/Cargo.toml schemes/%/src/** $(BUILD)/libstd.rlib
 	mkdir -p initfs/bin

@@ -9,7 +9,7 @@
     "vendor": "unknown",
     "target-family": "redox",
     "pre-link-args": ["-m64", "-Wl,--as-needed", "-Wl,-z,noexecstack", "-nostartfiles", "-nostdlib", "-static"],
-    "late-link-args": ["libc-artifacts/lib/crt0.o", "libc-artifacts/lib/libm.a", "libc-artifacts/lib/libc.a", "libc-artifacts/lib/libgcc.a"],
+    "late-link-args": ["libc-artifacts/usr/lib/crt0.o", "libc-artifacts/usr/lib/libm.a", "libc-artifacts/usr/lib/libc.a", "libc-artifacts/usr/lib/libgcc.a"],
     "features": "",
     "dynamic-linking": false,
     "executables": true,
