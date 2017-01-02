@@ -56,6 +56,7 @@ pub extern fn syscall(a: usize, b: usize, c: usize, d: usize, e: usize, f: usize
                         SYS_DUP2 => dup2(fd, FileHandle::from(c), validate_slice(d as *const u8, e)?).map(FileHandle::into),
                         SYS_FEVENT => fevent(fd, c),
                         SYS_FUNMAP => funmap(b),
+                        SYS_DUP_EXPORT => dup_export(fd, ContextId::from(c)),
                         _ => file_op(a, fd, c, d)
                     }
                 }
@@ -65,6 +66,7 @@ pub extern fn syscall(a: usize, b: usize, c: usize, d: usize, e: usize, f: usize
                 SYS_CHMOD => chmod(validate_slice(b as *const u8, c)?, d as u16),
                 SYS_RMDIR => rmdir(validate_slice(b as *const u8, c)?),
                 SYS_UNLINK => unlink(validate_slice(b as *const u8, c)?),
+                SYS_DUP_FROM => dup_from(validate_slice(b as *const u8, c)?, ContextId::from(d)),
                 _ => unreachable!()
             },
             _ => match a {

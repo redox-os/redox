@@ -1,7 +1,7 @@
 //! Filesystem syscalls
 use core::sync::atomic::Ordering;
 
-use context;
+use context::{self, ContextId};
 use scheme::{self, FileHandle};
 use syscall;
 use syscall::data::{Packet, Stat};
@@ -261,6 +261,42 @@ pub fn dup(fd: FileHandle, buf: &[u8]) -> Result<FileHandle> {
         number: new_id,
         event: None,
     }).ok_or(Error::new(EMFILE))
+}
+
+pub fn dup_from(path: &[u8], pid: ContextId) -> Result<usize> {
+    let (path_canon, scheme_ns) = {
+        let contexts = context::contexts();
+        let context_lock = contexts.current().ok_or(Error::new(ESRCH))?;
+        let context = context_lock.read();
+        (context.canonicalize(path), context.ens)
+    };
+
+    let mut parts = path_canon.splitn(2, |&b| b == b':');
+    let scheme_name_opt = parts.next();
+    let reference_opt = parts.next();
+
+    let scheme_name = scheme_name_opt.ok_or(Error::new(ENODEV))?;
+    let scheme = {
+        let schemes = scheme::schemes();
+        let (_scheme_id, scheme) = schemes.get_name(scheme_ns, scheme_name).ok_or(Error::new(ENODEV))?;
+        scheme.clone()
+    };
+    scheme.dup_from(reference_opt.unwrap_or(b""), pid.into())
+}
+
+pub fn dup_export(fd: FileHandle, pid: ContextId) -> Result<usize> {
+    let file = {
+        let contexts = context::contexts();
+        let context_lock = contexts.current().ok_or(Error::new(ESRCH))?;
+        let context = context_lock.read();
+        let file = context.get_file(fd).ok_or(Error::new(EBADF))?;
+        file
+    };
+
+
+    let schemes = scheme::schemes();
+    let scheme = schemes.get(file.scheme).ok_or(Error::new(EBADF))?;
+    scheme.dup_export(file.number, pid.into())
 }
 
 /// Duplicate file descriptor, replacing another

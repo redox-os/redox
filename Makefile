@@ -67,7 +67,7 @@ clean:
 	cargo clean --manifest-path schemes/redoxfs/Cargo.toml
 	cargo clean --manifest-path schemes/tcpd/Cargo.toml
 	cargo clean --manifest-path schemes/udpd/Cargo.toml
-	-$(FUMOUNT) build/filesystem/
+	-$(FUMOUNT) build/filesystem/ || true
 	rm -rf initfs/bin
 	rm -rf filesystem/bin filesystem/sbin filesystem/ui/bin
 	rm -rf build
@@ -591,7 +591,7 @@ build/filesystem.bin: \
 		filesystem/bin/sh \
 		filesystem/bin/smith \
 		filesystem/bin/tar
-	-$(FUMOUNT) build/filesystem/
+	-$(FUMOUNT) build/filesystem/ || true
 	rm -rf $@ build/filesystem/
 	dd if=/dev/zero of=$@ bs=1M count=64
 	cargo run --manifest-path schemes/redoxfs/Cargo.toml --release --bin redoxfs-mkfs $@
@@ -617,7 +617,7 @@ build/filesystem.bin: \
 	mkdir build/filesystem/tmp
 	chmod 1777 build/filesystem/tmp
 	sync
-	-$(FUMOUNT) build/filesystem/
+	-$(FUMOUNT) build/filesystem/ || true
 	rm -rf build/filesystem/
 
 mount: FORCE
@@ -629,7 +629,7 @@ mount: FORCE
 
 unmount: FORCE
 	sync
-	-$(FUMOUNT) build/filesystem/
+	-$(FUMOUNT) build/filesystem/ || true
 	rm -rf build/filesystem/
 
 wireshark: FORCE
