@@ -80,7 +80,7 @@ impl Mapper {
                      .next_table_mut(page.p4_index())
                      .and_then(|p3| p3.next_table_mut(page.p3_index()))
                      .and_then(|p2| p2.next_table_mut(page.p2_index()))
-                     .expect("unmap_return code does not support huge pages");
+                     .expect("unmap_return does not support huge pages");
         let frame = p1[page.p1_index()].pointed_frame().unwrap();
         p1[page.p1_index()].set_unused();
         frame
