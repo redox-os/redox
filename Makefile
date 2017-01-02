@@ -19,7 +19,7 @@ KCARGO=RUSTC="$(KRUSTC)" RUSTDOC="$(KRUSTDOC)" cargo
 KCARGOFLAGS=--target $(KTARGET) --release -- -C soft-float
 
 # Userspace variables
-TARGET=$(ARCH)-unknown-redox
+export TARGET=$(ARCH)-unknown-redox
 BUILD=build/userspace
 RUSTC=./rustc.sh
 RUSTCFLAGS=--target $(TARGET).json -C opt-level=2 -C debuginfo=0
