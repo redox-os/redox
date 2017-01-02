@@ -83,6 +83,9 @@ pub extern crate x86;
     /// Offset to user temporary tls (used when cloning)
     pub const USER_TMP_TLS_OFFSET: usize = USER_TMP_STACK_OFFSET + PML4_SIZE;
 
+    /// Offset for usage in other temporary pages
+    pub const USER_TMP_MISC_OFFSET: usize = USER_TMP_TLS_OFFSET + PML4_SIZE;
+
 
 /// Print to console
 #[macro_export]

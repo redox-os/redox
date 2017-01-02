@@ -110,7 +110,7 @@ pub unsafe fn init(cpu_id: usize, stack_start: usize, stack_end: usize) -> (Acti
 
     let mut active_table = ActivePageTable::new();
 
-    let mut temporary_page = TemporaryPage::new(Page::containing_address(VirtualAddress::new(0x8_0000_0000)));
+    let mut temporary_page = TemporaryPage::new(Page::containing_address(VirtualAddress::new(::USER_TMP_MISC_OFFSET)));
 
     let mut new_table = {
         let frame = allocate_frame().expect("no more frames in paging::init new_table");
@@ -187,7 +187,7 @@ pub unsafe fn init_ap(cpu_id: usize, bsp_table: usize, stack_start: usize, stack
 
     let mut new_table = InactivePageTable::from_address(bsp_table);
 
-    let mut temporary_page = TemporaryPage::new(Page::containing_address(VirtualAddress::new(0x8_0000_0000)));
+    let mut temporary_page = TemporaryPage::new(Page::containing_address(VirtualAddress::new(::USER_TMP_MISC_OFFSET)));
 
     active_table.with(&mut new_table, &mut temporary_page, |mapper| {
         // Map tdata and tbss
