@@ -64,7 +64,7 @@ impl<L> Table<L> where L: HierarchicalLevel {
     pub fn next_table_create(&mut self, index: usize) -> &mut Table<L::NextLevel> {
         if self.next_table(index).is_none() {
             assert!(!self[index].flags().contains(HUGE_PAGE),
-                    "mapping code does not support huge pages");
+                    "next_table_create does not support huge pages");
             let frame = allocate_frame().expect("no frames available");
             self[index].set(frame, PRESENT | WRITABLE | USER_ACCESSIBLE /* Allow users to go down the page table, implement permissions at the page level */);
             self.next_table_mut(index).unwrap().zero();
