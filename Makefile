@@ -219,6 +219,7 @@ else
 		FUMOUNT=sudo umount
 		export LD=$(ARCH)-elf-ld
 		export LDFLAGS=--gc-sections
+		export STRIP=$(ARCH)-elf-strip
 		VB_AUDIO=coreaudio
 		VBM="/Applications/VirtualBox.app/Contents/MacOS/VBoxManage"
 	else
@@ -227,6 +228,7 @@ else
 		FUMOUNT=fusermount -u
 		export LD=ld
 		export LDFLAGS=--gc-sections
+		export STRIP=strip
 		ifneq ($(kvm),no)
 			QEMUFLAGS+=-enable-kvm -cpu host
 		endif
@@ -368,17 +370,17 @@ $(BUILD)/libstd.rlib: rust/src/libstd/Cargo.toml rust/src/libstd/**
 initfs/bin/%: drivers/%/Cargo.toml drivers/%/src/** $(BUILD)/libstd.rlib
 	mkdir -p initfs/bin
 	$(CARGO) rustc --manifest-path $< $(CARGOFLAGS) -o $@
-	strip $@
+	$(STRIP) $@
 
 initfs/bin/%: programs/%/Cargo.toml programs/%/src/** $(BUILD)/libstd.rlib
 	mkdir -p initfs/bin
 	$(CARGO) rustc --manifest-path $< $(CARGOFLAGS) -o $@
-	strip $@
+	$(STRIP) $@
 
 initfs/bin/%: schemes/%/Cargo.toml schemes/%/src/** $(BUILD)/libstd.rlib
 	mkdir -p initfs/bin
 	$(CARGO) rustc --manifest-path $< --bin $* $(CARGOFLAGS) -o $@
-	strip $@
+	$(STRIP) $@
 
 $(BUILD)/initfs.rs: \
 		initfs/bin/init \
@@ -405,12 +407,12 @@ $(BUILD)/initfs.rs: \
 filesystem/sbin/%: drivers/%/Cargo.toml drivers/%/src/** $(BUILD)/libstd.rlib
 	mkdir -p filesystem/sbin
 	$(CARGO) rustc --manifest-path $< $(CARGOFLAGS) -o $@
-	strip $@
+	$(STRIP) $@
 
 filesystem/bin/%: programs/%/Cargo.toml programs/%/src/** $(BUILD)/libstd.rlib
 	mkdir -p filesystem/bin
 	$(CARGO) rustc --manifest-path $< --bin $* $(CARGOFLAGS) -o $@
-	strip $@
+	$(STRIP) $@
 
 filesystem/bin/sh: filesystem/bin/ion
 	cp $< $@
@@ -418,52 +420,52 @@ filesystem/bin/sh: filesystem/bin/ion
 filesystem/bin/%: programs/binutils/Cargo.toml programs/binutils/src/bin/%.rs $(BUILD)/libstd.rlib
 	mkdir -p filesystem/bin
 	$(CARGO) rustc --manifest-path $< --bin $* $(CARGOFLAGS) -o $@
-	strip $@
+	$(STRIP) $@
 
 filesystem/bin/%: programs/coreutils/Cargo.toml programs/coreutils/src/bin/%.rs $(BUILD)/libstd.rlib
 	mkdir -p filesystem/bin
 	$(CARGO) rustc --manifest-path $< --bin $* $(CARGOFLAGS) -o $@
-	strip $@
+	$(STRIP) $@
 
 filesystem/bin/%: programs/extrautils/Cargo.toml programs/extrautils/src/bin/%.rs $(BUILD)/libstd.rlib
 	mkdir -p filesystem/bin
 	$(CARGO) rustc --manifest-path $< --bin $* $(CARGOFLAGS) -o $@
-	strip $@
+	$(STRIP) $@
 
 filesystem/bin/%: programs/games/Cargo.toml programs/games/src/%/**.rs $(BUILD)/libstd.rlib
 	mkdir -p filesystem/bin
 	$(CARGO) rustc --manifest-path $< --bin $* $(CARGOFLAGS) -o $@
-	strip $@
+	$(STRIP) $@
 
 filesystem/bin/%: programs/netutils/Cargo.toml programs/netutils/src/%/**.rs $(BUILD)/libstd.rlib
 	mkdir -p filesystem/bin
 	$(CARGO) rustc --manifest-path $< --bin $* $(CARGOFLAGS) -o $@
-	strip $@
+	$(STRIP) $@
 
 filesystem/ui/bin/%: programs/orbutils/Cargo.toml programs/orbutils/src/%/**.rs $(BUILD)/libstd.rlib
 	mkdir -p filesystem/ui/bin
 	$(CARGO) rustc --manifest-path $< --bin $* $(CARGOFLAGS) -o $@
-	strip $@
+	$(STRIP) $@
 
 filesystem/bin/%: programs/pkgutils/Cargo.toml programs/pkgutils/src/%/**.rs $(BUILD)/libstd.rlib
 	mkdir -p filesystem/bin
 	$(CARGO) rustc --manifest-path $< --bin $* $(CARGOFLAGS) -o $@
-	strip $@
+	$(STRIP) $@
 
 filesystem/bin/%: programs/userutils/Cargo.toml programs/userutils/src/bin/%.rs $(BUILD)/libstd.rlib
 	mkdir -p filesystem/bin
 	$(CARGO) rustc --manifest-path $< --bin $* $(CARGOFLAGS) -o $@
-	strip $@
+	$(STRIP) $@
 
 filesystem/sbin/%: schemes/%/Cargo.toml schemes/%/src/** $(BUILD)/libstd.rlib
 	mkdir -p filesystem/sbin
 	$(CARGO) rustc --manifest-path $< --bin $* $(CARGOFLAGS) -o $@
-	strip $@
+	$(STRIP) $@
 
 filesystem/sbin/redoxfs-mkfs: schemes/redoxfs/Cargo.toml schemes/redoxfs/src/** $(BUILD)/libstd.rlib
 	mkdir -p filesystem/bin
 	$(CARGO) rustc --manifest-path $< --bin redoxfs-mkfs $(CARGOFLAGS) -o $@
-	strip $@
+	$(STRIP) $@
 
 drivers: \
 	filesystem/sbin/pcid \
