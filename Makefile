@@ -10,10 +10,6 @@ export CFLAGS=-nostartfiles -nostdlib -nodefaultlibs \
 	-isystem $(ROOT)/libc-artifacts/usr/lib/gcc/x86_64-elf-redox/7.0.0/include-fixed \
 	-isystem $(ROOT)/libc-artifacts/usr/include \
 	-fno-stack-protector -U_FORTIFY_SOURCE
-export CXXFLAGS=$(CFLAGS) \
-	-isystem $(ROOT)/libc-artifacts/usr/include/c++/7.0.0 \
- 	-isystem $(ROOT)/libc-artifacts/usr/include/c++/7.0.0/x86_64-elf-redox \
- 	-isystem $(ROOT)/libc-artifacts/usr/include/c++/7.0.0/backward
 
 # Kernel variables
 KTARGET=$(ARCH)-unknown-none
@@ -182,7 +178,6 @@ ifeq ($(ARCH),arm)
 	QEMUFLAGS+=-nographic
 
 	export CC=$(ARCH)-none-eabi-gcc
-	export CXX=$(ARCH)-none-eabi-g++
 	export LD=$(ARCH)-none-eabi-ld
 
 	KRUSTCFLAGS+=-C linker=$(CC)
@@ -222,7 +217,6 @@ else
 	UNAME := $(shell uname)
 	ifeq ($(UNAME),Darwin)
 		export CC=$(ARCH)-elf-gcc
-		export CXX=$(ARCH)-elf-g++
 		ECHO=/bin/echo
 		FUMOUNT=sudo umount
 		export LD=$(ARCH)-elf-ld
@@ -231,7 +225,6 @@ else
 		VBM="/Applications/VirtualBox.app/Contents/MacOS/VBoxManage"
 	else
 		export CC=gcc
-		export CXX=g++
 		ECHO=echo
 		FUMOUNT=fusermount -u
 		export LD=ld
