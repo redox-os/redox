@@ -1,5 +1,6 @@
 //! Architecture support for x86_64
 
+#![deny(unused_must_use)]
 #![feature(asm)]
 #![feature(concat_idents)]
 #![feature(const_fn)]

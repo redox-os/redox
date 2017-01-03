@@ -14,6 +14,7 @@ use idt;
 use interrupt;
 use memory;
 use paging::{self, entry, Page, VirtualAddress};
+use paging::mapper::MapperFlushAll;
 
 /// Test of zero values in BSS.
 static BSS_TEST_ZERO: usize = 0;
@@ -97,12 +98,17 @@ pub unsafe extern fn kstart() -> ! {
 
         // Setup kernel heap
         {
+            let mut flush_all = MapperFlushAll::new();
+
             // Map heap pages
             let heap_start_page = Page::containing_address(VirtualAddress::new(::KERNEL_HEAP_OFFSET));
             let heap_end_page = Page::containing_address(VirtualAddress::new(::KERNEL_HEAP_OFFSET + ::KERNEL_HEAP_SIZE-1));
             for page in Page::range_inclusive(heap_start_page, heap_end_page) {
-                active_table.map(page, entry::PRESENT | entry::GLOBAL | entry::WRITABLE | entry::NO_EXECUTE);
+                let result = active_table.map(page, entry::PRESENT | entry::GLOBAL | entry::WRITABLE | entry::NO_EXECUTE);
+                flush_all.consume(result);
             }
+
+            flush_all.flush(&mut active_table);
 
             // Init the allocator
             allocator::init(::KERNEL_HEAP_OFFSET, ::KERNEL_HEAP_SIZE);
