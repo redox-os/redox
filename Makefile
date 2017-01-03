@@ -3,11 +3,11 @@ ARCH?=x86_64
 ROOT=$(PWD)
 export RUST_TARGET_PATH=$(ROOT)/targets
 
-#TODO: Use libssp
-export CFLAGS=-nostartfiles -nostdlib -nodefaultlibs \
+export CFLAGS=-static -nostartfiles -nostdlib -nodefaultlibs \
 	-undef -imacros $(ROOT)/libc-artifacts/define.h \
 	-isystem $(ROOT)/libc-artifacts/usr/include \
 	-L $(ROOT)/libc-artifacts/usr/lib \
+	$(ROOT)/libc-artifacts/usr/lib/crt0.o -lm -lc -lgcc \
 	-fno-stack-protector -U_FORTIFY_SOURCE
 
 # Kernel variables
@@ -23,10 +23,10 @@ KCARGOFLAGS=--target $(KTARGET) --release -- -C soft-float
 export TARGET=$(ARCH)-unknown-redox
 BUILD=build/userspace
 RUSTC=./rustc.sh
-RUSTCFLAGS=--target $(TARGET).json -C opt-level=2 -C debuginfo=0
+RUSTCFLAGS=--target $(TARGET) -C opt-level=2 -C debuginfo=0
 RUSTDOC=./rustdoc.sh
 CARGO=RUSTC="$(RUSTC)" RUSTDOC="$(RUSTDOC)" cargo
-CARGOFLAGS=--target $(TARGET).json --release --
+CARGOFLAGS=--target $(TARGET) --release --
 
 # Default targets
 .PHONY: all live iso clean doc ref test update pull qemu bochs drivers schemes binutils coreutils extrautils netutils userutils wireshark FORCE
@@ -40,8 +40,8 @@ iso: build/livedisk.iso
 FORCE:
 
 clean:
-	cargo clean
 	cargo clean --manifest-path rust/src/libstd/Cargo.toml
+	cargo clean --manifest-path kernel/Cargo.toml
 	cargo clean --manifest-path drivers/ahcid/Cargo.toml
 	cargo clean --manifest-path drivers/e1000d/Cargo.toml
 	cargo clean --manifest-path drivers/ps2d/Cargo.toml
@@ -82,7 +82,7 @@ doc: \
 
 #FORCE to let cargo decide if docs need updating
 doc-kernel: $(KBUILD)/libkernel.a FORCE
-	$(KCARGO) doc --target $(KTARGET).json
+	$(KCARGO) doc --target $(KTARGET).json --manifest-path kernel/Cargo.toml
 
 doc-std: $(BUILD)/libstd.rlib FORCE
 	$(CARGO) doc --target $(TARGET).json --manifest-path rust/src/libstd/Cargo.toml
@@ -96,8 +96,8 @@ ref: FORCE
 	cargo run --manifest-path crates/docgen/Cargo.toml -- programs/netutils/src/ filesystem/ref/
 
 test:
-	cargo test
 	cargo test --manifest-path rust/src/libstd/Cargo.toml
+	cargo test --manifest-path kernel/Cargo.toml
 	cargo test --manifest-path drivers/ahcid/Cargo.toml
 	cargo test --manifest-path drivers/e1000d/Cargo.toml
 	cargo test --manifest-path drivers/ps2d/Cargo.toml
@@ -129,8 +129,8 @@ test:
 	cargo test --manifest-path schemes/udpd/Cargo.toml
 
 update:
-	cargo update
-	cargo update --manifest-path rust/src/libstd/Cargo.toml
+	#cargo update --manifest-path rust/src/libstd/Cargo.toml
+	cargo update --manifest-path kernel/Cargo.toml
 	cargo update --manifest-path drivers/ahcid/Cargo.toml
 	cargo update --manifest-path drivers/e1000d/Cargo.toml
 	cargo update --manifest-path drivers/ps2d/Cargo.toml
@@ -350,17 +350,17 @@ $(KBUILD)/libstd_unicode.rlib: rust/src/libstd_unicode/lib.rs $(KBUILD)/libcore.
 $(KBUILD)/libcollections.rlib: rust/src/libcollections/lib.rs $(KBUILD)/libcore.rlib $(KBUILD)/liballoc.rlib $(KBUILD)/libstd_unicode.rlib
 	$(KRUSTC) $(KRUSTCFLAGS) -o $@ $<
 
-$(KBUILD)/libkernel.a: kernel/** $(KBUILD)/libcore.rlib $(KBUILD)/liballoc.rlib $(KBUILD)/libcollections.rlib $(BUILD)/initfs.rs
-	$(KCARGO) rustc $(KCARGOFLAGS) -C lto -o $@
+$(KBUILD)/libkernel.a: kernel/Cargo.toml kernel/arch/** kernel/src/** $(KBUILD)/libcore.rlib $(KBUILD)/liballoc.rlib $(KBUILD)/libcollections.rlib $(BUILD)/initfs.rs
+	$(KCARGO) rustc --manifest-path $< --lib $(KCARGOFLAGS) -C lto --emit obj=$@
 
-$(KBUILD)/libkernel_live.a: kernel/** $(KBUILD)/libcore.rlib $(KBUILD)/liballoc.rlib $(KBUILD)/libcollections.rlib $(BUILD)/initfs.rs build/filesystem.bin
-	$(KCARGO) rustc --lib $(KCARGOFLAGS) --cfg 'feature="live"' -C lto --emit obj=$@
+$(KBUILD)/libkernel_live.a: kernel/Cargo.toml kernel/arch/** kernel/src/** $(KBUILD)/libcore.rlib $(KBUILD)/liballoc.rlib $(KBUILD)/libcollections.rlib $(BUILD)/initfs.rs build/filesystem.bin
+	$(KCARGO) rustc --manifest-path $< --lib $(KCARGOFLAGS) --cfg 'feature="live"' -C lto --emit obj=$@
 
 $(KBUILD)/kernel: $(KBUILD)/libkernel.a
-	$(LD) $(LDFLAGS) -z max-page-size=0x1000 -T arch/$(ARCH)/src/linker.ld -o $@ $<
+	$(LD) $(LDFLAGS) -z max-page-size=0x1000 -T kernel/arch/$(ARCH)/src/linker.ld -o $@ $<
 
 $(KBUILD)/kernel_live: $(KBUILD)/libkernel_live.a
-	$(LD) $(LDFLAGS) -z max-page-size=0x1000 -T arch/$(ARCH)/src/linker.ld -o $@ $<
+	$(LD) $(LDFLAGS) -z max-page-size=0x1000 -T kernel/arch/$(ARCH)/src/linker.ld -o $@ $<
 
 # Userspace recipes
 $(BUILD)/libstd.rlib: rust/src/libstd/Cargo.toml rust/src/libstd/**

@@ -11,7 +11,7 @@ use syscall::error::*;
 use syscall::flag::{MODE_FILE, SEEK_SET, SEEK_CUR, SEEK_END};
 use syscall::scheme::Scheme;
 
-static FILESYSTEM: &'static [u8] = include_bytes!("../../build/filesystem.bin");
+static FILESYSTEM: &'static [u8] = include_bytes!("../../../build/filesystem.bin");
 
 struct Handle {
     path: &'static [u8],
