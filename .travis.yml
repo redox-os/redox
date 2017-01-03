@@ -6,15 +6,20 @@ cache: cargo
 os:
 - linux
 - osx
+matrix:
+  allow_failures:
+  - os: osx
 dist: trusty
 before_install:
-- if [ `uname` = "Linux" ]; then
+- if [ "$TRAVIS_OS_NAME" == "linux" ]; then
+  sudo apt-get update -qq
   sudo apt-get install -qq nasm pkg-config fuse libfuse-dev genisoimage syslinux &&
   sudo modprobe fuse &&
   sudo chmod 666 /dev/fuse &&
   sudo chown root:$USER /etc/fuse.conf;
   fi
-- if [ `uname` = "Darwin" ]; then brew update &&
+- if [ "$TRAVIS_OS_NAME" == "osx" ]; then
+  brew update &&
   brew install nasm gcc49 pkg-config Caskroom/cask/osxfuse &&
   brew tap glendc/gcc_cross_compilers &&
   brew install glendc/gcc_cross_compilers/x64-elf-binutils glendc/gcc_cross_compilers/x64-elf-gcc;
@@ -37,4 +42,5 @@ deploy:
   on:
     repo: redox-os/redox
     tags: true
+    condition: $TRAVIS_OS_NAME = linux
   skip_cleanup: true
