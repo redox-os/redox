@@ -44,7 +44,7 @@ pub fn brk(address: usize) -> Result<usize> {
         //TODO: out of memory errors
         if let Some(ref heap_shared) = context.heap {
             heap_shared.with(|heap| {
-                heap.resize(address - arch::USER_HEAP_OFFSET, true, true);
+                heap.resize(address - arch::USER_HEAP_OFFSET, true);
             });
         } else {
             panic!("user heap not initialized");
@@ -139,7 +139,6 @@ pub fn clone(flags: usize, stack_base: usize) -> Result<ContextId> {
                             VirtualAddress::new(memory.start_address().get() + arch::USER_TMP_OFFSET),
                             memory.size(),
                             entry::PRESENT | entry::NO_EXECUTE | entry::WRITABLE,
-                            true,
                             false
                         );
 
@@ -149,7 +148,7 @@ pub fn clone(flags: usize, stack_base: usize) -> Result<ContextId> {
                                             memory.size());
                         }
 
-                        new_memory.remap(memory.flags(), true);
+                        new_memory.remap(memory.flags());
                         image.push(new_memory.to_shared());
                     });
                 }
@@ -160,7 +159,6 @@ pub fn clone(flags: usize, stack_base: usize) -> Result<ContextId> {
                             VirtualAddress::new(arch::USER_TMP_HEAP_OFFSET),
                             heap.size(),
                             entry::PRESENT | entry::NO_EXECUTE | entry::WRITABLE,
-                            true,
                             false
                         );
 
@@ -170,7 +168,7 @@ pub fn clone(flags: usize, stack_base: usize) -> Result<ContextId> {
                                             heap.size());
                         }
 
-                        new_heap.remap(heap.flags(), true);
+                        new_heap.remap(heap.flags());
                         heap_option = Some(new_heap.to_shared());
                     });
                 }
@@ -181,7 +179,6 @@ pub fn clone(flags: usize, stack_base: usize) -> Result<ContextId> {
                     VirtualAddress::new(arch::USER_TMP_STACK_OFFSET),
                     stack.size(),
                     entry::PRESENT | entry::NO_EXECUTE | entry::WRITABLE,
-                    true,
                     false
                 );
 
@@ -191,7 +188,7 @@ pub fn clone(flags: usize, stack_base: usize) -> Result<ContextId> {
                                     stack.size());
                 }
 
-                new_stack.remap(stack.flags(), true);
+                new_stack.remap(stack.flags());
                 stack_option = Some(new_stack);
             }
 
@@ -203,7 +200,6 @@ pub fn clone(flags: usize, stack_base: usize) -> Result<ContextId> {
                         VirtualAddress::new(arch::USER_TMP_TLS_OFFSET),
                         tls.mem.size(),
                         entry::PRESENT | entry::NO_EXECUTE | entry::WRITABLE,
-                        true,
                         true
                     )
                 };
@@ -214,7 +210,7 @@ pub fn clone(flags: usize, stack_base: usize) -> Result<ContextId> {
                                     tls.file_size);
                 }
 
-                new_tls.mem.remap(tls.mem.flags(), true);
+                new_tls.mem.remap(tls.mem.flags());
                 tls_option = Some(new_tls);
             }
 
@@ -405,7 +401,9 @@ pub fn clone(flags: usize, stack_base: usize) -> Result<ContextId> {
                     for page in Page::range_inclusive(start_page, end_page) {
                         let frame = active_table.translate_page(page).expect("kernel percpu not mapped");
                         active_table.with(&mut new_table, &mut temporary_page, |mapper| {
-                            mapper.map_to(page, frame, entry::PRESENT | entry::NO_EXECUTE | entry::WRITABLE);
+                            let result = mapper.map_to(page, frame, entry::PRESENT | entry::NO_EXECUTE | entry::WRITABLE);
+                            // Ignore result due to operating on inactive table
+                            unsafe { result.ignore(); }
                         });
                     }
                 }
@@ -414,7 +412,7 @@ pub fn clone(flags: usize, stack_base: usize) -> Result<ContextId> {
                 for memory_shared in image.iter_mut() {
                     memory_shared.with(|memory| {
                         let start = VirtualAddress::new(memory.start_address().get() - arch::USER_TMP_OFFSET + arch::USER_OFFSET);
-                        memory.move_to(start, &mut new_table, &mut temporary_page, true);
+                        memory.move_to(start, &mut new_table, &mut temporary_page);
                     });
                 }
                 context.image = image;
@@ -422,7 +420,7 @@ pub fn clone(flags: usize, stack_base: usize) -> Result<ContextId> {
                 // Move copy of heap
                 if let Some(heap_shared) = heap_option {
                     heap_shared.with(|heap| {
-                        heap.move_to(VirtualAddress::new(arch::USER_HEAP_OFFSET), &mut new_table, &mut temporary_page, true);
+                        heap.move_to(VirtualAddress::new(arch::USER_HEAP_OFFSET), &mut new_table, &mut temporary_page);
                     });
                     context.heap = Some(heap_shared);
                 }
@@ -430,13 +428,13 @@ pub fn clone(flags: usize, stack_base: usize) -> Result<ContextId> {
 
             // Setup user stack
             if let Some(mut stack) = stack_option {
-                stack.move_to(VirtualAddress::new(arch::USER_STACK_OFFSET), &mut new_table, &mut temporary_page, true);
+                stack.move_to(VirtualAddress::new(arch::USER_STACK_OFFSET), &mut new_table, &mut temporary_page);
                 context.stack = Some(stack);
             }
 
             // Setup user TLS
             if let Some(mut tls) = tls_option {
-                tls.mem.move_to(VirtualAddress::new(arch::USER_TLS_OFFSET), &mut new_table, &mut temporary_page, true);
+                tls.mem.move_to(VirtualAddress::new(arch::USER_TLS_OFFSET), &mut new_table, &mut temporary_page);
                 context.tls = Some(tls);
             }
 
@@ -566,7 +564,6 @@ pub fn exec(path: &[u8], arg_ptrs: &[[usize; 2]]) -> Result<usize> {
                                 VirtualAddress::new(segment.p_vaddr as usize),
                                 segment.p_memsz as usize,
                                 entry::NO_EXECUTE | entry::WRITABLE,
-                                true,
                                 true
                             );
 
@@ -590,7 +587,7 @@ pub fn exec(path: &[u8], arg_ptrs: &[[usize; 2]]) -> Result<usize> {
                                 flags.insert(entry::WRITABLE);
                             }
 
-                            memory.remap(flags, true);
+                            memory.remap(flags);
 
                             context.image.push(memory.to_shared());
                         } else if segment.p_type == program_header::PT_TLS {
@@ -598,7 +595,6 @@ pub fn exec(path: &[u8], arg_ptrs: &[[usize; 2]]) -> Result<usize> {
                                 VirtualAddress::new(arch::USER_TCB_OFFSET),
                                 4096,
                                 entry::NO_EXECUTE | entry::WRITABLE | entry::USER_ACCESSIBLE,
-                                true,
                                 true
                             );
 
@@ -619,7 +615,6 @@ pub fn exec(path: &[u8], arg_ptrs: &[[usize; 2]]) -> Result<usize> {
                         VirtualAddress::new(arch::USER_HEAP_OFFSET),
                         0,
                         entry::NO_EXECUTE | entry::WRITABLE | entry::USER_ACCESSIBLE,
-                        true,
                         true
                     ).to_shared());
 
@@ -628,7 +623,6 @@ pub fn exec(path: &[u8], arg_ptrs: &[[usize; 2]]) -> Result<usize> {
                         VirtualAddress::new(arch::USER_STACK_OFFSET),
                         arch::USER_STACK_SIZE,
                         entry::NO_EXECUTE | entry::WRITABLE | entry::USER_ACCESSIBLE,
-                        true,
                         true
                     ));
 
@@ -641,7 +635,6 @@ pub fn exec(path: &[u8], arg_ptrs: &[[usize; 2]]) -> Result<usize> {
                                 VirtualAddress::new(arch::USER_TLS_OFFSET),
                                 size,
                                 entry::NO_EXECUTE | entry::WRITABLE | entry::USER_ACCESSIBLE,
-                                true,
                                 true
                             )
                         };
@@ -675,7 +668,6 @@ pub fn exec(path: &[u8], arg_ptrs: &[[usize; 2]]) -> Result<usize> {
                             VirtualAddress::new(arch::USER_ARG_OFFSET),
                             arg_size,
                             entry::NO_EXECUTE | entry::WRITABLE,
-                            true,
                             true
                         );
 
@@ -690,7 +682,7 @@ pub fn exec(path: &[u8], arg_ptrs: &[[usize; 2]]) -> Result<usize> {
                             arg_offset += arg.len();
                         }
 
-                        memory.remap(entry::NO_EXECUTE | entry::USER_ACCESSIBLE, true);
+                        memory.remap(entry::NO_EXECUTE | entry::USER_ACCESSIBLE);
 
                         context.image.push(memory.to_shared());
                     }

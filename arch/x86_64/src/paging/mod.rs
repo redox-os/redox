@@ -118,52 +118,56 @@ pub unsafe fn init(cpu_id: usize, stack_start: usize, stack_end: usize) -> (Acti
     };
 
     active_table.with(&mut new_table, &mut temporary_page, |mapper| {
+        // Map tdata and tbss
         {
-            // Map tdata and tbss
-            {
-                let size = & __tbss_end as *const _ as usize - & __tdata_start as *const _ as usize;
+            let size = & __tbss_end as *const _ as usize - & __tdata_start as *const _ as usize;
 
-                let start = ::KERNEL_PERCPU_OFFSET + ::KERNEL_PERCPU_SIZE * cpu_id;
-                let end = start + size;
+            let start = ::KERNEL_PERCPU_OFFSET + ::KERNEL_PERCPU_SIZE * cpu_id;
+            let end = start + size;
 
-                let start_page = Page::containing_address(VirtualAddress::new(start));
-                let end_page = Page::containing_address(VirtualAddress::new(end - 1));
-                for page in Page::range_inclusive(start_page, end_page) {
-                    mapper.map(page, PRESENT | GLOBAL | NO_EXECUTE | WRITABLE);
+            let start_page = Page::containing_address(VirtualAddress::new(start));
+            let end_page = Page::containing_address(VirtualAddress::new(end - 1));
+            for page in Page::range_inclusive(start_page, end_page) {
+                let result = mapper.map(page, PRESENT | GLOBAL | NO_EXECUTE | WRITABLE);
+                // The flush can be ignored as this is not the active table. See later active_table.switch
+                unsafe { result.ignore(); }
+            }
+        }
+
+        let mut remap = |start: usize, end: usize, flags: EntryFlags| {
+            if end > start {
+                let start_frame = Frame::containing_address(PhysicalAddress::new(start));
+                let end_frame = Frame::containing_address(PhysicalAddress::new(end - 1));
+                for frame in Frame::range_inclusive(start_frame, end_frame) {
+                    let page = Page::containing_address(VirtualAddress::new(frame.start_address().get() + ::KERNEL_OFFSET));
+                    let result = mapper.map_to(page, frame, flags);
+                    // The flush can be ignored as this is not the active table. See later active_table.switch
+                    unsafe { result.ignore(); }
                 }
             }
+        };
 
-            let mut remap = |start: usize, end: usize, flags: EntryFlags| {
-                if end > start {
-                    let start_frame = Frame::containing_address(PhysicalAddress::new(start));
-                    let end_frame = Frame::containing_address(PhysicalAddress::new(end - 1));
-                    for frame in Frame::range_inclusive(start_frame, end_frame) {
-                        let page = Page::containing_address(VirtualAddress::new(frame.start_address().get() + ::KERNEL_OFFSET));
-                        mapper.map_to(page, frame, flags);
-                    }
-                }
-            };
+        // Remap stack writable, no execute
+        remap(stack_start - ::KERNEL_OFFSET, stack_end - ::KERNEL_OFFSET, PRESENT | GLOBAL | NO_EXECUTE | WRITABLE);
 
-            // Remap stack writable, no execute
-            remap(stack_start - ::KERNEL_OFFSET, stack_end - ::KERNEL_OFFSET, PRESENT | GLOBAL | NO_EXECUTE | WRITABLE);
-
-            // Remap a section with `flags`
-            let mut remap_section = |start: &u8, end: &u8, flags: EntryFlags| {
-                remap(start as *const _ as usize - ::KERNEL_OFFSET, end as *const _ as usize - ::KERNEL_OFFSET, flags);
-            };
-            // Remap text read-only
-            remap_section(& __text_start, & __text_end, PRESENT | GLOBAL);
-            // Remap rodata read-only, no execute
-            remap_section(& __rodata_start, & __rodata_end, PRESENT | GLOBAL | NO_EXECUTE);
-            // Remap data writable, no execute
-            remap_section(& __data_start, & __data_end, PRESENT | GLOBAL | NO_EXECUTE | WRITABLE);
-            // Remap tdata master writable, no execute
-            remap_section(& __tdata_start, & __tdata_end, PRESENT | GLOBAL | NO_EXECUTE);
-            // Remap bss writable, no execute
-            remap_section(& __bss_start, & __bss_end, PRESENT | GLOBAL | NO_EXECUTE | WRITABLE);
-        }
+        // Remap a section with `flags`
+        let mut remap_section = |start: &u8, end: &u8, flags: EntryFlags| {
+            remap(start as *const _ as usize - ::KERNEL_OFFSET, end as *const _ as usize - ::KERNEL_OFFSET, flags);
+        };
+        // Remap text read-only
+        remap_section(& __text_start, & __text_end, PRESENT | GLOBAL);
+        // Remap rodata read-only, no execute
+        remap_section(& __rodata_start, & __rodata_end, PRESENT | GLOBAL | NO_EXECUTE);
+        // Remap data writable, no execute
+        remap_section(& __data_start, & __data_end, PRESENT | GLOBAL | NO_EXECUTE | WRITABLE);
+        // Remap tdata master writable, no execute
+        remap_section(& __tdata_start, & __tdata_end, PRESENT | GLOBAL | NO_EXECUTE);
+        // Remap bss writable, no execute
+        remap_section(& __bss_start, & __bss_end, PRESENT | GLOBAL | NO_EXECUTE | WRITABLE);
     });
 
+    // This switches the active table, which is setup by the bootloader, to a correct table
+    // setup by the lambda above. This will also flush the TLB
     active_table.switch(new_table);
 
     (active_table, init_tcb(cpu_id))
@@ -200,7 +204,9 @@ pub unsafe fn init_ap(cpu_id: usize, bsp_table: usize, stack_start: usize, stack
             let start_page = Page::containing_address(VirtualAddress::new(start));
             let end_page = Page::containing_address(VirtualAddress::new(end - 1));
             for page in Page::range_inclusive(start_page, end_page) {
-                mapper.map(page, PRESENT | GLOBAL | NO_EXECUTE | WRITABLE);
+                let result = mapper.map(page, PRESENT | GLOBAL | NO_EXECUTE | WRITABLE);
+                // The flush can be ignored as this is not the active table. See later active_table.switch
+                unsafe { result.ignore(); }
             }
         }
 
@@ -210,7 +216,9 @@ pub unsafe fn init_ap(cpu_id: usize, bsp_table: usize, stack_start: usize, stack
                 let end_frame = Frame::containing_address(PhysicalAddress::new(end - 1));
                 for frame in Frame::range_inclusive(start_frame, end_frame) {
                     let page = Page::containing_address(VirtualAddress::new(frame.start_address().get() + ::KERNEL_OFFSET));
-                    mapper.map_to(page, frame, flags);
+                    let result = mapper.map_to(page, frame, flags);
+                    // The flush can be ignored as this is not the active table. See later active_table.switch
+                    unsafe { result.ignore(); }
                 }
             }
         };
@@ -219,6 +227,8 @@ pub unsafe fn init_ap(cpu_id: usize, bsp_table: usize, stack_start: usize, stack
         remap(stack_start - ::KERNEL_OFFSET, stack_end - ::KERNEL_OFFSET, PRESENT | GLOBAL | NO_EXECUTE | WRITABLE);
     });
 
+    // This switches the active table, which is setup by the bootloader, to a correct table
+    // setup by the lambda above. This will also flush the TLB
     active_table.switch(new_table);
 
     init_tcb(cpu_id)
