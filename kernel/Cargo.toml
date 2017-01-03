@@ -4,13 +4,13 @@ version = "0.1.0"
 
 [lib]
 name = "kernel"
-path = "kernel/lib.rs"
+path = "src/lib.rs"
 crate-type = ["staticlib"]
 
 [dependencies]
 bitflags = "*"
 spin = "*"
-redox_syscall = { path = "syscall/" }
+redox_syscall = { path = "../syscall/" }
 
 [dependencies.goblin]
 git = "https://github.com/m4b/goblin.git"
