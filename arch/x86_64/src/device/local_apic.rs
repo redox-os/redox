@@ -32,7 +32,8 @@ impl LocalApic {
         if ! self.x2 {
             let page = Page::containing_address(VirtualAddress::new(self.address));
             let frame = Frame::containing_address(PhysicalAddress::new(self.address - ::KERNEL_OFFSET));
-            active_table.map_to(page, frame, entry::PRESENT | entry::WRITABLE | entry::NO_EXECUTE);
+            let result = active_table.map_to(page, frame, entry::PRESENT | entry::WRITABLE | entry::NO_EXECUTE);
+            result.flush(active_table);
         }
 
         self.init_ap();
