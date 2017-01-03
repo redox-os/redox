@@ -1,7 +1,6 @@
 #!/bin/bash
 
 ROOT="$PWD"
-export RUST_TARGET_PATH="$ROOT/targets"
 export CARGOFLAGS=--verbose
 export CFLAGS="-static -nostartfiles -nostdlib -nodefaultlibs \
     -undef -imacros $ROOT/libc-artifacts/define.h \
