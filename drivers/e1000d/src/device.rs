@@ -338,7 +338,7 @@ impl Intel8254x {
 
         self.flag(TCTL, TCTL_EN, true);
         self.flag(TCTL, TCTL_PSP, true);
-        // TCTL.CT = Collition threshold
+        // TCTL.CT = Collision threshold
         // TCTL.COLD = Collision distance
         // TIPG Packet Gap
         // TODO ...
