@@ -53,7 +53,7 @@ install_brew_cask_pkg()
 ###############################################################################
 # This function checks which of the supported package managers
 # is available on the OSX Host.
-# If a support package manager is found, it delegates the installing work to
+# If a supported package manager is found, it delegates the installing work to
 # the relevant function.
 # Otherwise this function will exit this script with an error.
 ###############################################################################
@@ -66,7 +66,7 @@ osx()
     elif [ ! -z "$(which port)" ]; then
         osx_macports $@
     else
-        echo "Please install either Hombrew or MacPorts, if you wish to use this script"
+        echo "Please install either Homebrew or MacPorts, if you wish to use this script"
         echo "Re-run this script once you installed one of those package managers"
         echo "Will not install, now exiting..."
         exit 1
@@ -101,7 +101,7 @@ osx_macports()
 }
 
 ###############################################################################
-# This function takes care of installing all dependencies using Hombrew
+# This function takes care of installing all dependencies using Homebrew
 # for building redox on Mac OSX
 # @params:    $1 the emulator to install, virtualbox or qemu
 ###############################################################################
@@ -240,7 +240,7 @@ fedora()
 ###############################################################################
 suse()
 {
-	echo "Detected a suse"
+	echo "Detected SUSE Linux"
 	if [ -z "$(which git)" ]; then
 		echo "Installing git..."
 		zypper install git
@@ -380,7 +380,7 @@ rustInstall() {
 	# If rustup is not installed we should offer to install it for them
 	if [ -z "$(which rustup)" ]; then
 		echo "You do not have rustup installed."
-		echo "We HIGHLY reccomend using rustup."
+		echo "We HIGHLY recommend using rustup."
 		echo "Would you like to install it now?"
 		echo "*WARNING* this involves a 'curl | sh' style command"
 		printf "(y/N): "
@@ -401,7 +401,7 @@ rustInstall() {
 	if [ -z "$(which rustc)" ]; then
 		echo "Rust is not installed"
 		echo "Please either run the script again, accepting rustup install"
-		echo "or install rustc nightly manually (not reccomended) via:"
+		echo "or install rustc nightly manually (not recommended) via:"
 		echo "\#curl -sSf https://static.rust-lang.org/rustup.sh | sh -s -- --channel=nightly"
 		exit
 	fi
@@ -414,8 +414,8 @@ rustInstall() {
 	if echo "$(rustc --version)" | grep -viq "nightly" ;then
 		echo "It appears that you have rust installed, but it"
 		echo "is not the nightly version, please either install"
-		echo "the nightly manually (not reccomended) or run this"
-		echo "script again, accepting the multirust install"
+		echo "the nightly manually (not recommended) or run this"
+		echo "script again, accepting the rustup install"
 		echo
 	else
 		echo "Your rust install looks good!"
@@ -434,14 +434,14 @@ statusCheck() {
 			if echo "$i" | grep -iq "0" ;then
 				echo
 				echo "********************************************"
-				echo "Travis reports that the last build succeded!"
+				echo "Travis reports that the last build succeeded!"
 				echo "Looks like you are good to go!"
 				echo "********************************************"
 			elif echo "$i" | grep -iq "null" ;then
 				echo
 				echo "******************************************************************"
 				echo "The Travis build did not finish, this is an error with its config."
-				echo "I cannot reliably determine whether the build is succeding or not."
+				echo "I cannot reliably determine whether the build is succeeding or not."
 				echo "Consider checking for and maybe opening an issue on github"
 				echo "******************************************************************"
 			else
