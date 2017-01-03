@@ -268,7 +268,7 @@ qemu: build/harddrive.bin
 	$(QEMU) $(QEMUFLAGS) -drive file=$<,format=raw
 
 qemu_extra: build/harddrive.bin
-	if [ ! -e build/extra.bin ]; then dd if=/dev/zero of=build/extra.bin bs=1M count=1024; fi
+	if [ ! -e build/extra.bin ]; then dd if=/dev/zero of=build/extra.bin bs=1048576 count=1024; fi
 	$(QEMU) $(QEMUFLAGS) -drive file=$<,format=raw -drive file=build/extra.bin,format=raw
 
 qemu_no_build:
@@ -596,7 +596,7 @@ build/filesystem.bin: \
 		filesystem/bin/tar
 	-$(FUMOUNT) build/filesystem/
 	rm -rf $@ build/filesystem/
-	dd if=/dev/zero of=$@ bs=1M count=64
+	dd if=/dev/zero of=$@ bs=1048576 count=64
 	cargo run --manifest-path schemes/redoxfs/Cargo.toml --release --bin redoxfs-mkfs $@
 	mkdir -p build/filesystem/
 	cargo build --manifest-path schemes/redoxfs/Cargo.toml --release --bin redoxfs
