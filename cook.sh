@@ -2,9 +2,15 @@
 
 ROOT="$PWD"
 export RUST_TARGET_PATH="$ROOT/targets"
-export CARGOFLAGS=
-export CFLAGS="-fno-stack-protector -U_FORTIFY_SOURCE"
-TARGET=x86_64-unknown-redox
+export CARGOFLAGS=--verbose
+export CFLAGS="-static -nostartfiles -nostdlib -nodefaultlibs \
+    -undef -imacros $ROOT/libc-artifacts/define.h \
+    -isystem $ROOT/libc-artifacts/usr/include \
+    -L $ROOT/libc-artifacts/usr/lib \
+    $ROOT/libc-artifacts/usr/lib/crt0.o -lm -lc -lgcc \
+    -fno-stack-protector -U_FORTIFY_SOURCE"
+export CARGO_BUILD_RUSTFLAGS="--verbose -Z print-link-args -C linker=gcc -C link-args=\"\$CFLAGS\""
+export TARGET=x86_64-unknown-redox
 REPO="$ROOT/repo/$TARGET"
 
 set -e
