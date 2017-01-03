@@ -7,6 +7,7 @@ export RUST_TARGET_PATH=$(ROOT)/targets
 export CFLAGS=-nostartfiles -nostdlib -nodefaultlibs \
 	-undef -imacros $(ROOT)/libc-artifacts/define.h \
 	-isystem $(ROOT)/libc-artifacts/usr/include \
+	-L $(ROOT)/libc-artifacts/usr/lib \
 	-fno-stack-protector -U_FORTIFY_SOURCE
 
 # Kernel variables
