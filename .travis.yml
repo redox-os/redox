@@ -15,7 +15,9 @@ before_install:
   sudo chown root:$USER /etc/fuse.conf;
   fi
 - if [ `uname` = "Darwin" ]; then brew update &&
-  brew install nasm gcc49 pkg-config Caskroom/cask/osxfuse djphoenix/gcc_cross_compilers/x86_64-elf-gcc;
+  brew install nasm gcc49 pkg-config Caskroom/cask/osxfuse &&
+  brew tap glendc/gcc_cross_compilers &&
+  brew install glendc/gcc_cross_compilers/x64-elf-binutils glendc/gcc_cross_compilers/x64-elf-gcc;
   fi
 script:
 - make clean &&
