@@ -52,8 +52,8 @@ pub fn init_sdt(sdt: &'static Sdt, active_table: &mut ActivePageTable) {
         let trampoline_page = Page::containing_address(VirtualAddress::new(TRAMPOLINE));
 
         // Map trampoline
-        active_table.map_to(trampoline_page, trampoline_frame, entry::PRESENT | entry::WRITABLE);
-        active_table.flush(trampoline_page);
+        let result = active_table.map_to(trampoline_page, trampoline_frame, entry::PRESENT | entry::WRITABLE);
+        result.flush(active_table);
 
         for madt_entry in madt.iter() {
             println!("      {:?}", madt_entry);
@@ -136,8 +136,8 @@ pub fn init_sdt(sdt: &'static Sdt, active_table: &mut ActivePageTable) {
         }
 
         // Unmap trampoline
-        active_table.unmap(trampoline_page);
-        active_table.flush(trampoline_page);
+        let result = active_table.unmap(trampoline_page);
+        result.flush(active_table);
     } else if let Some(dmar) = Dmar::new(sdt) {
         println!(": {}: {}", dmar.addr_width, dmar.flags);
 
@@ -173,8 +173,8 @@ pub unsafe fn init(active_table: &mut ActivePageTable) -> Option<Acpi> {
         let end_frame = Frame::containing_address(PhysicalAddress::new(end_addr));
         for frame in Frame::range_inclusive(start_frame, end_frame) {
             let page = Page::containing_address(VirtualAddress::new(frame.start_address().get()));
-            active_table.map_to(page, frame, entry::PRESENT | entry::NO_EXECUTE);
-            active_table.flush(page);
+            let result = active_table.map_to(page, frame, entry::PRESENT | entry::NO_EXECUTE);
+            result.flush(active_table);
         }
     }
 
@@ -184,8 +184,8 @@ pub unsafe fn init(active_table: &mut ActivePageTable) -> Option<Acpi> {
             let mapped = if active_table.translate_page(Page::containing_address(VirtualAddress::new(sdt_address))).is_none() {
                 let sdt_frame = Frame::containing_address(PhysicalAddress::new(sdt_address));
                 let sdt_page = Page::containing_address(VirtualAddress::new(sdt_address));
-                active_table.map_to(sdt_page, sdt_frame, entry::PRESENT | entry::NO_EXECUTE);
-                active_table.flush(sdt_page);
+                let result = active_table.map_to(sdt_page, sdt_frame, entry::PRESENT | entry::NO_EXECUTE);
+                result.flush(active_table);
                 true
             } else {
                 false
@@ -198,8 +198,8 @@ pub unsafe fn init(active_table: &mut ActivePageTable) -> Option<Acpi> {
             drop(sdt);
             if mapped {
                 let sdt_page = Page::containing_address(VirtualAddress::new(sdt_address));
-                active_table.unmap(sdt_page);
-                active_table.flush(sdt_page);
+                let result = active_table.unmap(sdt_page);
+                result.flush(active_table);
             }
         };
 
@@ -236,8 +236,8 @@ pub unsafe fn init(active_table: &mut ActivePageTable) -> Option<Acpi> {
         let end_frame = Frame::containing_address(PhysicalAddress::new(end_addr));
         for frame in Frame::range_inclusive(start_frame, end_frame) {
             let page = Page::containing_address(VirtualAddress::new(frame.start_address().get()));
-            active_table.unmap(page);
-            active_table.flush(page);
+            let result = active_table.unmap(page);
+            result.flush(active_table);
         }
     }
 
