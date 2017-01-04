@@ -207,7 +207,6 @@ else
 
 	UNAME := $(shell uname)
 	ifeq ($(UNAME),Darwin)
-		export CC=$(ARCH)-elf-gcc
 		ECHO=/bin/echo
 		FUMOUNT=sudo umount
 		export LD=$(ARCH)-elf-ld
@@ -216,7 +215,6 @@ else
 		VB_AUDIO=coreaudio
 		VBM="/Applications/VirtualBox.app/Contents/MacOS/VBoxManage"
 	else
-		export CC=gcc
 		ECHO=echo
 		FUMOUNT=fusermount -u
 		export LD=ld
