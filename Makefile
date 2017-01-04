@@ -1,17 +1,11 @@
+# Configuration
 ARCH?=x86_64
 
+# Automatic variables
 ROOT=$(PWD)
 export RUST_TARGET_PATH=$(ROOT)/targets
-
-export CFLAGS=-static -nostartfiles -nostdlib -nodefaultlibs \
-	-undef -imacros $(ROOT)/libc-artifacts/define.h \
-	-isystem $(ROOT)/libc-artifacts/usr/include \
-	-L $(ROOT)/libc-artifacts/usr/lib \
-	$(ROOT)/libc-artifacts/usr/lib/crt0.o \
-	$(ROOT)/libc-artifacts/usr/lib/libm.a \
-	$(ROOT)/libc-artifacts/usr/lib/libc.a \
-	$(ROOT)/libc-artifacts/usr/lib/libgcc.a \
-	-fno-stack-protector -U_FORTIFY_SOURCE
+export CC=$(ROOT)/libc-artifacts/gcc.sh
+export CFLAGS=-fno-stack-protector -U_FORTIFY_SOURCE
 
 # Kernel variables
 KTARGET=$(ARCH)-unknown-none
@@ -182,11 +176,6 @@ ifeq ($(ARCH),arm)
 	export CC=$(ARCH)-none-eabi-gcc
 	export LD=$(ARCH)-none-eabi-ld
 
-	KRUSTCFLAGS+=-C linker=$(CC)
-	KCARGOFLAGS+=-C linker=$(CC)
-	RUSTCFLAGS+=-C linker=$(CC)
-	CARGOFLAGS+=-C linker=$(CC)
-
 %.list: %
 	$(ARCH)-none-eabi-objdump -C -D $< > $@
 
@@ -239,11 +228,6 @@ else
 		VB_AUDIO="pulse"
 		VBM=VBoxManage
 	endif
-
-	KRUSTCFLAGS+=-C linker=$(CC) -C link-args="$(CFLAGS)"
-	KCARGOFLAGS+=-C linker=$(CC) -C link-args="$(CFLAGS)"
-	RUSTCFLAGS+=-C linker=$(CC) -C link-args="$(CFLAGS)"
-	CARGOFLAGS+=-C linker=$(CC) -C link-args="$(CFLAGS)"
 
 %.list: %
 	objdump -C -M intel -D $< > $@
@@ -357,7 +341,7 @@ $(KBUILD)/libkernel.a: kernel/Cargo.toml kernel/arch/** kernel/src/** $(KBUILD)/
 	$(KCARGO) rustc --manifest-path $< --lib $(KCARGOFLAGS) -C lto --emit obj=$@
 
 $(KBUILD)/libkernel_live.a: kernel/Cargo.toml kernel/arch/** kernel/src/** $(KBUILD)/libcore.rlib $(KBUILD)/liballoc.rlib $(KBUILD)/libcollections.rlib $(BUILD)/initfs.rs build/filesystem.bin
-	$(KCARGO) rustc --manifest-path $< --lib $(KCARGOFLAGS) --cfg 'feature="live"' -C lto --emit obj=$@
+	$(KCARGO) rustc --manifest-path $< --lib --features live $(KCARGOFLAGS) -C lto --emit obj=$@
 
 $(KBUILD)/kernel: $(KBUILD)/libkernel.a
 	$(LD) $(LDFLAGS) -z max-page-size=0x1000 -T kernel/arch/$(ARCH)/src/linker.ld -o $@ $<
@@ -367,6 +351,11 @@ $(KBUILD)/kernel_live: $(KBUILD)/libkernel_live.a
 
 # Userspace recipes
 $(BUILD)/libstd.rlib: rust/src/libstd/Cargo.toml rust/src/libstd/**
+	mkdir -p $(BUILD)
+	$(CARGO) rustc --verbose --manifest-path $< --features "panic-unwind" $(CARGOFLAGS) -L native=libc-artifacts/usr/lib -o $@
+	cp rust/src/target/$(TARGET)/release/deps/*.rlib $(BUILD)
+
+$(BUILD)/libtest.rlib: rust/src/libtest/Cargo.toml rust/src/libtest/** $(BUILD)/libstd.rlib
 	mkdir -p $(BUILD)
 	$(CARGO) rustc --verbose --manifest-path $< $(CARGOFLAGS) -L native=libc-artifacts/usr/lib -o $@
 	cp rust/src/target/$(TARGET)/release/deps/*.rlib $(BUILD)
@@ -417,6 +406,12 @@ filesystem/bin/%: programs/%/Cargo.toml programs/%/src/** $(BUILD)/libstd.rlib
 	mkdir -p filesystem/bin
 	$(CARGO) rustc --manifest-path $< --bin $* $(CARGOFLAGS) -o $@
 	$(STRIP) $@
+
+# Example of compiling tests - still TODO
+filesystem/test/%: programs/%/Cargo.toml programs/%/src/** $(BUILD)/libstd.rlib $(BUILD)/libtest.rlib
+	mkdir -p filesystem/test
+	$(CARGO) test --no-run --manifest-path $< $(CARGOFLAGS)
+	cp programs/$*/target/$(TARGET)/release/deps/$*-* $@
 
 filesystem/bin/sh: filesystem/bin/ion
 	cp $< $@
