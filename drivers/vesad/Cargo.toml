@@ -3,9 +3,9 @@ name = "vesad"
 version = "0.1.0"
 
 [dependencies]
-orbclient = "0.1"
+orbclient = "0.2"
 ransid = "0.2"
-rusttype = { git = "https://github.com/dylanede/rusttype.git", optional = true }
+rusttype = { version = "0.2", optional = true }
 redox_syscall = { path = "../../syscall" }
 
 [features]
