@@ -1,16 +1,15 @@
 #!/bin/bash
 
-ROOT="$PWD"
-export CARGOFLAGS=--verbose
-export CFLAGS="-static -nostartfiles -nostdlib -nodefaultlibs \
-    -undef -imacros $ROOT/libc-artifacts/define.h \
-    -isystem $ROOT/libc-artifacts/usr/include \
-    -L $ROOT/libc-artifacts/usr/lib \
-    $ROOT/libc-artifacts/usr/lib/crt0.o -lm -lc -lgcc \
-    -fno-stack-protector -U_FORTIFY_SOURCE"
-export CARGO_BUILD_RUSTFLAGS="--verbose -Z print-link-args -C linker=gcc -C link-args=\"\$CFLAGS\""
+# Configuration
 export TARGET=x86_64-unknown-redox
+
+# Automatic variables
+ROOT="$PWD"
 REPO="$ROOT/repo/$TARGET"
+export CC="$ROOT/libc-artifacts/gcc.sh"
+
+# Variables to be overriden by recipes
+export CARGOFLAGS=--verbose
 
 set -e
 
@@ -51,13 +50,13 @@ function op {
             ;;
         build)
             pushd build > /dev/null
-            cp -r "$ROOT/Xargo.toml" "$ROOT/libc-artifacts" .
+            cp -r "$ROOT/Xargo.toml" "$ROOT/.cargo" "$ROOT/libc-artifacts" .
             xargo build --target "$TARGET" --release $CARGOFLAGS
             popd > /dev/null
             ;;
         test)
             pushd build > /dev/null
-            cp -r "$ROOT/Xargo.toml" "$ROOT/libc-artifacts" .
+            cp -r "$ROOT/Xargo.toml" "$ROOT/.cargo" "$ROOT/libc-artifacts" .
             xargo test --no-run --target "$TARGET" --release $CARGOFLAGS
             popd > /dev/null
             ;;
@@ -81,7 +80,7 @@ function op {
                     for bin in $bins
                     do
                         cp -v "$bin" "../stage/bin/$(basename $bin)"
-                        strip -v "../stage/bin/$(basename $bin)"
+                        #strip -v "../stage/bin/$(basename $bin)"
                     done
                 fi
             fi
