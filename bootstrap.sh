@@ -129,7 +129,7 @@ osx_homebrew()
     install_brew_pkg "pkg-config"
     install_brew_cask_pkg "osxfuse"
 
-    install_brew_pkg "djphoenix/gcc_cross_compilers/x86_64-elf-gcc"
+    install_brew_pkg "redox-os/gcc_cross_compilers/x86_64-elf-gcc"
 }
 
 ###############################################################################
