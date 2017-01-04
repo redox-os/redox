@@ -7,7 +7,10 @@ export CFLAGS=-static -nostartfiles -nostdlib -nodefaultlibs \
 	-undef -imacros $(ROOT)/libc-artifacts/define.h \
 	-isystem $(ROOT)/libc-artifacts/usr/include \
 	-L $(ROOT)/libc-artifacts/usr/lib \
-	$(ROOT)/libc-artifacts/usr/lib/crt0.o -lm -lc -lgcc \
+	$(ROOT)/libc-artifacts/usr/lib/crt0.o \
+	$(ROOT)/libc-artifacts/usr/lib/libm.a \
+	$(ROOT)/libc-artifacts/usr/lib/libc.a \
+	$(ROOT)/libc-artifacts/usr/lib/libgcc.a \
 	-fno-stack-protector -U_FORTIFY_SOURCE
 
 # Kernel variables
