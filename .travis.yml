@@ -21,9 +21,7 @@ before_install:
 - if [ "$TRAVIS_OS_NAME" == "osx" ]; then
   brew update &&
   brew install nasm pkg-config Caskroom/cask/osxfuse &&
-  brew tap glendc/gcc_cross_compilers &&
-  brew install glendc/gcc_cross_compilers/x64-elf-binutils &&
-  travis_wait brew install glendc/gcc_cross_compilers/x64-elf-gcc;
+  travis_wait 30 brew install redox-os/gcc_cross_compilers/x86_64-elf-gcc;
   fi
 script:
 - make clean &&
