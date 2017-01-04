@@ -6,5 +6,5 @@ version = "0.1.0"
 bitflags = "*"
 event = { path = "../../crates/event/" }
 io = { path = "../../crates/io/" }
-orbclient = "0.1"
+orbclient = "0.2"
 redox_syscall = { path = "../../syscall/" }
