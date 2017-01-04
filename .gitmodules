@@ -58,3 +58,6 @@
 [submodule "programs/games"]
 	path = programs/games
 	url = https://github.com/redox-os/games.git
+[submodule "kernel"]
+	path = kernel
+	url = https://github.com/redox-os/kernel.git
