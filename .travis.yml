@@ -20,7 +20,7 @@ before_install:
   fi
 - if [ "$TRAVIS_OS_NAME" == "osx" ]; then
   brew update &&
-  brew install nasm gcc49 pkg-config Caskroom/cask/osxfuse &&
+  brew install nasm pkg-config Caskroom/cask/osxfuse &&
   brew tap glendc/gcc_cross_compilers &&
   brew install glendc/gcc_cross_compilers/x64-elf-binutils glendc/gcc_cross_compilers/x64-elf-gcc;
   fi
