@@ -196,7 +196,7 @@ else
 	else
 		QEMUFLAGS+=-net nic,model=e1000 -net user -net dump,file=build/network.pcap
 		ifeq ($(net),redir)
-			QEMUFLAGS+=-redir tcp:8080::8080
+			QEMUFLAGS+=-redir tcp:8023::8023 -redir tcp:8080::8080
 		endif
 	endif
 	ifeq ($(vga),no)
@@ -539,6 +539,7 @@ netutils: \
 	filesystem/bin/irc \
 	filesystem/bin/nc \
 	filesystem/bin/ntp \
+	filesystem/bin/telnetd \
 	filesystem/bin/wget
 
 orbutils: \
