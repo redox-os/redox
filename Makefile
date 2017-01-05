@@ -11,7 +11,6 @@ export CFLAGS=-fno-stack-protector -U_FORTIFY_SOURCE
 KTARGET=$(ARCH)-unknown-none
 KBUILD=build/kernel
 KRUSTC=./krustc.sh
-KRUSTCFLAGS=--target $(KTARGET) -C opt-level=2 -C debuginfo=0 -C soft-float
 KRUSTDOC=./krustdoc.sh
 KCARGO=RUSTC="$(KRUSTC)" RUSTDOC="$(KRUSTDOC)" cargo
 KCARGOFLAGS=--target $(KTARGET) --release -- -C soft-float
@@ -20,10 +19,9 @@ KCARGOFLAGS=--target $(KTARGET) --release -- -C soft-float
 export TARGET=$(ARCH)-unknown-redox
 BUILD=build/userspace
 RUSTC=./rustc.sh
-RUSTCFLAGS=--target $(TARGET) -C opt-level=2 -C debuginfo=0
 RUSTDOC=./rustdoc.sh
 CARGO=RUSTC="$(RUSTC)" RUSTDOC="$(RUSTDOC)" cargo
-CARGOFLAGS=--target $(TARGET) --release --
+CARGOFLAGS=--target $(TARGET) --release -- -C codegen-units=`nproc`
 
 # Default targets
 .PHONY: all live iso clean doc ref test update pull qemu bochs drivers schemes binutils coreutils extrautils netutils userutils wireshark FORCE
@@ -38,6 +36,7 @@ FORCE:
 
 clean:
 	cargo clean
+	cargo clean --manifest-path rust/src/libcollections/Cargo.toml
 	cargo clean --manifest-path rust/src/libstd/Cargo.toml
 	-$(FUMOUNT) build/filesystem/ || true
 	rm -rf initfs/bin
@@ -227,26 +226,15 @@ virtualbox: build/harddrive.bin
 	$(VBM) startvm Redox
 
 # Kernel recipes
-$(KBUILD)/libcore.rlib: rust/src/libcore/lib.rs
+$(KBUILD)/libcollections.rlib: rust/src/libcollections/Cargo.toml rust/src/libcollections/**
 	mkdir -p $(KBUILD)
-	$(KRUSTC) $(KRUSTCFLAGS) -o $@ $<
+	$(KCARGO) rustc --verbose --manifest-path $< $(KCARGOFLAGS) -o $@
+	cp rust/src/target/$(KTARGET)/release/deps/*.rlib $(KBUILD)
 
-$(KBUILD)/librand.rlib: rust/src/librand/lib.rs $(KBUILD)/libcore.rlib
-	$(KRUSTC) $(KRUSTCFLAGS) -o $@ $<
-
-$(KBUILD)/liballoc.rlib: rust/src/liballoc/lib.rs $(KBUILD)/libcore.rlib
-	$(KRUSTC) $(KRUSTCFLAGS) -o $@ $<
-
-$(KBUILD)/libstd_unicode.rlib: rust/src/libstd_unicode/lib.rs $(KBUILD)/libcore.rlib
-	$(KRUSTC) $(KRUSTCFLAGS) -o $@ $<
-
-$(KBUILD)/libcollections.rlib: rust/src/libcollections/lib.rs $(KBUILD)/libcore.rlib $(KBUILD)/liballoc.rlib $(KBUILD)/libstd_unicode.rlib
-	$(KRUSTC) $(KRUSTCFLAGS) -o $@ $<
-
-$(KBUILD)/libkernel.a: kernel/Cargo.toml kernel/arch/** kernel/src/** $(KBUILD)/libcore.rlib $(KBUILD)/liballoc.rlib $(KBUILD)/libcollections.rlib $(BUILD)/initfs.rs
+$(KBUILD)/libkernel.a: kernel/Cargo.toml kernel/arch/** kernel/src/** $(KBUILD)/libcollections.rlib $(BUILD)/initfs.rs
 	$(KCARGO) rustc --manifest-path $< --lib $(KCARGOFLAGS) -C lto --emit obj=$@
 
-$(KBUILD)/libkernel_live.a: kernel/Cargo.toml kernel/arch/** kernel/src/** $(KBUILD)/libcore.rlib $(KBUILD)/liballoc.rlib $(KBUILD)/libcollections.rlib $(BUILD)/initfs.rs build/filesystem.bin
+$(KBUILD)/libkernel_live.a: kernel/Cargo.toml kernel/arch/** kernel/src/** $(KBUILD)/libcollections.rlib $(BUILD)/initfs.rs build/filesystem.bin
 	$(KCARGO) rustc --manifest-path $< --lib --features live $(KCARGOFLAGS) -C lto --emit obj=$@
 
 $(KBUILD)/kernel: $(KBUILD)/libkernel.a
