@@ -1,11 +1,12 @@
 extern crate syscall;
 
 use std::env;
-use std::fs::File;
+use std::fs::{File, read_dir};
 use std::io::{BufRead, BufReader, Result};
+use std::path::Path;
 use std::process::Command;
 
-pub fn run(file: &str) -> Result<()> {
+pub fn run(file: &Path) -> Result<()> {
     let file = File::open(file)?;
     let reader = BufReader::new(file);
 
@@ -46,11 +47,41 @@ pub fn run(file: &str) -> Result<()> {
                         println!("init: failed to export: no argument");
                     },
                     "run" => if let Some(new_file) = args.next() {
-                        if let Err(err) = run(&new_file) {
+                        if let Err(err) = run(&Path::new(new_file)) {
                             println!("init: failed to run '{}': {}", new_file, err);
                         }
                     } else {
                         println!("init: failed to run: no argument");
+                    },
+                    "run.d" => if let Some(new_dir) = args.next() {
+                        match read_dir(new_dir) {
+                            Ok(list) => {
+                                let mut entries = vec![];
+                                for entry_res in list {
+                                    match entry_res {
+                                        Ok(entry) => {
+                                            entries.push(entry.path());
+                                        },
+                                        Err(err) => {
+                                            println!("init: failed to run.d: '{}': {}", new_dir, err);
+                                        }
+                                    }
+                                }
+
+                                entries.sort();
+
+                                for entry in entries {
+                                    if let Err(err) = run(&entry) {
+                                        println!("init: failed to run '{}': {}", entry.display(), err);
+                                    }
+                                }
+                            },
+                            Err(err) => {
+                                println!("init: failed to run.d: '{}': {}", new_dir, err);
+                            }
+                        }
+                    } else {
+                        println!("init: failed to run.d: no argument");
                     },
                     "stdio" => if let Some(stdio) = args.next() {
                         let _ = syscall::close(2);
@@ -86,7 +117,7 @@ pub fn run(file: &str) -> Result<()> {
 }
 
 pub fn main() {
-    if let Err(err) = run("initfs:etc/init.rc") {
+    if let Err(err) = run(&Path::new("initfs:etc/init.rc")) {
         println!("init: failed to run initfs:etc/init.rc: {}", err);
     }
 
