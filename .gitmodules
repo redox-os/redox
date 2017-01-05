@@ -64,3 +64,6 @@
 [submodule "drivers"]
 	path = drivers
 	url = https://github.com/redox-os/drivers.git
+[submodule "bootloader"]
+	path = bootloader
+	url = https://github.com/redox-os/bootloader.git
