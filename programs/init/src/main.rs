@@ -2,8 +2,11 @@ extern crate syscall;
 
 use std::env;
 use std::fs::File;
-use std::io::{BufRead, BufReader, Result};
+use std::fs;
+use std::io::{BufRead, BufReader, Result, stderr};
 use std::process::Command;
+use std::os::unix::fs::PermissionsExt;
+use std::u32;
 
 pub fn run(file: &str) -> Result<()> {
     let file = File::open(file)?;
@@ -12,70 +15,81 @@ pub fn run(file: &str) -> Result<()> {
     for line_result in reader.lines() {
         let line = line_result?;
         let line = line.trim();
-        if ! line.is_empty() && ! line.starts_with('#') {
-            let mut args = line.split(' ');
-            if let Some(cmd) = args.next() {
-                match cmd {
-                    "cd" => if let Some(dir) = args.next() {
-                        if let Err(err) = env::set_current_dir(dir) {
-                            println!("init: failed to cd to '{}': {}", dir, err);
-                        }
-                    } else {
-                        println!("init: failed to cd: no argument");
-                    },
-                    "echo" => {
-                        if let Some(arg) = args.next() {
-                            print!("{}", arg);
-                        }
-                        for arg in args {
-                            print!(" {}", arg);
-                        }
-                        print!("\n");
-                    },
-                    "export" => if let Some(var) = args.next() {
-                        let mut value = String::new();
-                        if let Some(arg) = args.next() {
-                            value.push_str(&arg);
-                        }
-                        for arg in args {
-                            value.push(' ');
-                            value.push_str(&arg);
-                        }
-                        env::set_var(var, value);
-                    } else {
-                        println!("init: failed to export: no argument");
-                    },
-                    "run" => if let Some(new_file) = args.next() {
-                        if let Err(err) = run(&new_file) {
-                            println!("init: failed to run '{}': {}", new_file, err);
-                        }
-                    } else {
-                        println!("init: failed to run: no argument");
-                    },
-                    "stdio" => if let Some(stdio) = args.next() {
-                        let _ = syscall::close(2);
-                        let _ = syscall::close(1);
-                        let _ = syscall::close(0);
+        if line.is_empty() || line.starts_with('#') {
+            continue;
+        }
+        let mut args = line.split(' ');
+        if let Some(cmd) = args.next() {
+            match cmd {
+                "cd" => if let Some(dir) = args.next() {
+                    if let Err(err) = env::set_current_dir(dir) {
+                        println!("init: failed to cd to '{}': {}", dir, err);
+                    }
+                } else {
+                    println!("init: failed to cd: no argument");
+                },
+                "echo" => {
+                    if let Some(arg) = args.next() {
+                        print!("{}", arg);
+                    }
+                    for arg in args {
+                        print!(" {}", arg);
+                    }
+                    print!("\n");
+                },
+                "chmod" => {
+                    if let Some(arg) = args.next() {
+                        let mode = u32::from_str_radix(arg, 8).ok().expect("chmod error");
 
-                        let _ = syscall::open(&stdio, syscall::flag::O_RDWR);
-                        let _ = syscall::open(&stdio, syscall::flag::O_RDWR);
-                        let _ = syscall::open(&stdio, syscall::flag::O_RDWR);
-                    } else {
-                        println!("init: failed to set stdio: no argument");
-                    },
-                    _ => {
-                        let mut command = Command::new(cmd);
                         for arg in args {
-                            command.arg(arg);
+                            print!("chmod {} {}\n",arg, mode);
+                            fs::set_permissions(arg, fs::Permissions::from_mode(mode));
                         }
+                    }
+                },
+                "export" => if let Some(var) = args.next() {
+                    let mut value = String::new();
+                    if let Some(arg) = args.next() {
+                        value.push_str(&arg);
+                    }
+                    for arg in args {
+                        value.push(' ');
+                        value.push_str(&arg);
+                    }
+                    env::set_var(var, value);
+                } else {
+                    println!("init: failed to export: no argument");
+                },
+                "run" => if let Some(new_file) = args.next() {
+                    if let Err(err) = run(&new_file) {
+                        println!("init: failed to run '{}': {}", new_file, err);
+                    }
+                } else {
+                    println!("init: failed to run: no argument");
+                },
+                "stdio" => if let Some(stdio) = args.next() {
+                    let _ = syscall::close(2);
+                    let _ = syscall::close(1);
+                    let _ = syscall::close(0);
 
-                        match command.spawn() {
-                            Ok(mut child) => match child.wait() {
-                                Ok(_status) => (), //println!("init: waited for {}: {:?}", line, status.code()),
-                                Err(err) => println!("init: failed to wait for '{}': {}", line, err)
-                            },
-                            Err(err) => println!("init: failed to execute '{}': {}", line, err)
-                        }
+                    let _ = syscall::open(&stdio, syscall::flag::O_RDWR);
+                    let _ = syscall::open(&stdio, syscall::flag::O_RDWR);
+                    let _ = syscall::open(&stdio, syscall::flag::O_RDWR);
+                } else {
+                    println!("init: failed to set stdio: no argument");
+                },
+                _ => {
+                    let mut command = Command::new(cmd);
+                    for arg in args {
+                        command.arg(arg);
+                    }
+
+                    match command.spawn() {
+                        Ok(mut child) => match child.wait() {
+                            Ok(_status) => (), //println!("init: waited for {}: {:?}", line, status.code()),
+                            Err(err) => println!("init: failed to wait for '{}': {}", line, err)
+                        },
+                        Err(err) => println!("init: failed to execute '{}': {}", line, err)
                     }
                 }
             }
