@@ -6,4 +6,4 @@ pcid /etc/pcid.toml
 redoxfs disk:0 file
 cd file:
 export PATH file:/bin
-run /etc/init.rc
+run.d /etc/init.d

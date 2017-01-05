@@ -1,0 +1,3 @@
+/sbin/randd
+/sbin/ptyd
+/sbin/pcid /etc/pcid.toml
