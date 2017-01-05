@@ -37,38 +37,9 @@ iso: build/livedisk.iso
 FORCE:
 
 clean:
+	cargo clean
 	cargo clean --manifest-path rust/src/libstd/Cargo.toml
-	cargo clean --manifest-path kernel/Cargo.toml
-	cargo clean --manifest-path drivers/ahcid/Cargo.toml
-	cargo clean --manifest-path drivers/e1000d/Cargo.toml
-	cargo clean --manifest-path drivers/ps2d/Cargo.toml
-	cargo clean --manifest-path drivers/pcid/Cargo.toml
-	cargo clean --manifest-path drivers/rtl8168d/Cargo.toml
-	cargo clean --manifest-path drivers/vesad/Cargo.toml
-	cargo clean --manifest-path programs/acid/Cargo.toml
-	cargo clean --manifest-path programs/contain/Cargo.toml
-	cargo clean --manifest-path programs/init/Cargo.toml
-	cargo clean --manifest-path programs/ion/Cargo.toml
-	cargo clean --manifest-path programs/binutils/Cargo.toml
-	cargo clean --manifest-path programs/coreutils/Cargo.toml
-	cargo clean --manifest-path programs/extrautils/Cargo.toml
-	cargo clean --manifest-path programs/games/Cargo.toml
-	cargo clean --manifest-path programs/netutils/Cargo.toml
-	cargo clean --manifest-path programs/orbutils/Cargo.toml
-	cargo clean --manifest-path programs/pkgutils/Cargo.toml
-	cargo clean --manifest-path programs/userutils/Cargo.toml
-	cargo clean --manifest-path programs/smith/Cargo.toml
-	cargo clean --manifest-path programs/tar/Cargo.toml
-	cargo clean --manifest-path schemes/ethernetd/Cargo.toml
-	cargo clean --manifest-path schemes/example/Cargo.toml
-	cargo clean --manifest-path schemes/ipd/Cargo.toml
-	cargo clean --manifest-path schemes/orbital/Cargo.toml
-	cargo clean --manifest-path schemes/ptyd/Cargo.toml
-	cargo clean --manifest-path schemes/randd/Cargo.toml
-	cargo clean --manifest-path schemes/redoxfs/Cargo.toml
-	cargo clean --manifest-path schemes/tcpd/Cargo.toml
-	cargo clean --manifest-path schemes/udpd/Cargo.toml
-	-$(FUMOUNT) build/filesystem/
+	-$(FUMOUNT) build/filesystem/ || true
 	rm -rf initfs/bin
 	rm -rf filesystem/bin filesystem/sbin filesystem/ui/bin
 	rm -rf build
@@ -92,71 +63,8 @@ ref: FORCE
 	cargo run --manifest-path crates/docgen/Cargo.toml -- programs/extrautils/src/bin/ filesystem/ref/
 	cargo run --manifest-path crates/docgen/Cargo.toml -- programs/netutils/src/ filesystem/ref/
 
-test:
-	cargo test --manifest-path rust/src/libstd/Cargo.toml
-	cargo test --manifest-path kernel/Cargo.toml
-	cargo test --manifest-path drivers/ahcid/Cargo.toml
-	cargo test --manifest-path drivers/e1000d/Cargo.toml
-	cargo test --manifest-path drivers/ps2d/Cargo.toml
-	cargo test --manifest-path drivers/pcid/Cargo.toml
-	cargo test --manifest-path drivers/rtl8168d/Cargo.toml
-	cargo test --manifest-path drivers/vesad/Cargo.toml
-	cargo test --manifest-path programs/acid/Cargo.toml
-	cargo test --manifest-path programs/contain/Cargo.toml
-	cargo test --manifest-path programs/init/Cargo.toml
-	cargo test --manifest-path programs/ion/Cargo.toml
-	cargo test --manifest-path programs/binutils/Cargo.toml
-	cargo test --manifest-path programs/coreutils/Cargo.toml
-	cargo test --manifest-path programs/extrautils/Cargo.toml
-	cargo test --manifest-path programs/games/Cargo.toml
-	cargo test --manifest-path programs/netutils/Cargo.toml
-	cargo test --manifest-path programs/orbutils/Cargo.toml
-	cargo test --manifest-path programs/pkgutils/Cargo.toml
-	cargo test --manifest-path programs/userutils/Cargo.toml
-	cargo test --manifest-path programs/smith/Cargo.toml
-	cargo test --manifest-path programs/tar/Cargo.toml
-	cargo test --manifest-path schemes/ethernetd/Cargo.toml
-	cargo test --manifest-path schemes/example/Cargo.toml
-	cargo test --manifest-path schemes/ipd/Cargo.toml
-	cargo test --manifest-path schemes/orbital/Cargo.toml
-	cargo test --manifest-path schemes/ptyd/Cargo.toml
-	cargo test --manifest-path schemes/randd/Cargo.toml
-	cargo test --manifest-path schemes/redoxfs/Cargo.toml
-	cargo test --manifest-path schemes/tcpd/Cargo.toml
-	cargo test --manifest-path schemes/udpd/Cargo.toml
-
 update:
-	#cargo update --manifest-path rust/src/libstd/Cargo.toml
-	cargo update --manifest-path kernel/Cargo.toml
-	cargo update --manifest-path drivers/ahcid/Cargo.toml
-	cargo update --manifest-path drivers/e1000d/Cargo.toml
-	cargo update --manifest-path drivers/ps2d/Cargo.toml
-	cargo update --manifest-path drivers/pcid/Cargo.toml
-	cargo update --manifest-path drivers/rtl8168d/Cargo.toml
-	cargo update --manifest-path drivers/vesad/Cargo.toml
-	cargo update --manifest-path programs/acid/Cargo.toml
-	cargo update --manifest-path programs/contain/Cargo.toml
-	cargo update --manifest-path programs/init/Cargo.toml
-	cargo update --manifest-path programs/ion/Cargo.toml
-	cargo update --manifest-path programs/binutils/Cargo.toml
-	cargo update --manifest-path programs/coreutils/Cargo.toml
-	cargo update --manifest-path programs/extrautils/Cargo.toml
-	cargo update --manifest-path programs/games/Cargo.toml
-	cargo update --manifest-path programs/netutils/Cargo.toml
-	cargo update --manifest-path programs/orbutils/Cargo.toml
-	cargo update --manifest-path programs/pkgutils/Cargo.toml
-	cargo update --manifest-path programs/userutils/Cargo.toml
-	cargo update --manifest-path programs/smith/Cargo.toml
-	cargo update --manifest-path programs/tar/Cargo.toml
-	cargo update --manifest-path schemes/ethernetd/Cargo.toml
-	cargo update --manifest-path schemes/example/Cargo.toml
-	cargo update --manifest-path schemes/ipd/Cargo.toml
-	cargo update --manifest-path schemes/orbital/Cargo.toml
-	cargo update --manifest-path schemes/ptyd/Cargo.toml
-	cargo update --manifest-path schemes/randd/Cargo.toml
-	cargo update --manifest-path schemes/redoxfs/Cargo.toml
-	cargo update --manifest-path schemes/tcpd/Cargo.toml
-	cargo update --manifest-path schemes/udpd/Cargo.toml
+	cargo update
 
 pull:
 	git pull --rebase --recurse-submodules
@@ -591,13 +499,13 @@ build/filesystem.bin: \
 		filesystem/bin/sh \
 		filesystem/bin/smith \
 		filesystem/bin/tar
-	-$(FUMOUNT) build/filesystem/
+	-$(FUMOUNT) build/filesystem/ || true
 	rm -rf $@ build/filesystem/
 	dd if=/dev/zero of=$@ bs=1048576 count=64
 	cargo run --manifest-path schemes/redoxfs/Cargo.toml --release --bin redoxfs-mkfs $@
 	mkdir -p build/filesystem/
 	cargo build --manifest-path schemes/redoxfs/Cargo.toml --release --bin redoxfs
-	schemes/redoxfs/target/release/redoxfs $@ build/filesystem/
+	cargo run --manifest-path schemes/redoxfs/Cargo.toml --release --bin redoxfs -- $@ build/filesystem/
 	sleep 2
 	pgrep redoxfs
 	cp -RL filesystem/* build/filesystem/
@@ -617,19 +525,19 @@ build/filesystem.bin: \
 	mkdir build/filesystem/tmp
 	chmod 1777 build/filesystem/tmp
 	sync
-	-$(FUMOUNT) build/filesystem/
+	-$(FUMOUNT) build/filesystem/ || true
 	rm -rf build/filesystem/
 
 mount: FORCE
 	mkdir -p build/filesystem/
 	cargo build --manifest-path schemes/redoxfs/Cargo.toml --release --bin redoxfs
-	schemes/redoxfs/target/release/redoxfs build/harddrive.bin build/filesystem/
+	cargo run --manifest-path schemes/redoxfs/Cargo.toml --release --bin redoxfs -- build/harddrive.bin build/filesystem/
 	sleep 2
 	pgrep redoxfs
 
 unmount: FORCE
 	sync
-	-$(FUMOUNT) build/filesystem/
+	-$(FUMOUNT) build/filesystem/ || true
 	rm -rf build/filesystem/
 
 wireshark: FORCE
