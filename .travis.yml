@@ -5,10 +5,10 @@ rust:
 cache: cargo
 os:
 - linux
-- osx
-matrix:
-  allow_failures:
-  - os: osx
+#- osx
+#matrix:
+#  allow_failures:
+#  - os: osx
 dist: trusty
 before_install:
 - if [ "$TRAVIS_OS_NAME" == "linux" ]; then
@@ -26,7 +26,7 @@ before_install:
 script:
 - make clean &&
   make update &&
-  make build/harddrive.bin.gz build/livedisk.bin.gz build/livedisk.iso -j 2
+  make build/harddrive.bin.gz build/livedisk.bin.gz build/livedisk.iso
 notifications:
   email: false
   webhooks: http://37.139.9.28:54863/travis
