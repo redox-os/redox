@@ -61,3 +61,6 @@
 [submodule "kernel"]
 	path = kernel
 	url = https://github.com/redox-os/kernel.git
+[submodule "drivers"]
+	path = drivers
+	url = https://github.com/redox-os/drivers.git
