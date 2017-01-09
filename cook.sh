@@ -9,7 +9,8 @@ REPO="$ROOT/repo/$TARGET"
 export CC="$ROOT/libc-artifacts/gcc.sh"
 
 # Variables to be overriden by recipes
-export CARGOFLAGS=--verbose
+export BINDIR=bin
+export CARGOFLAGS=
 
 set -e
 
@@ -68,19 +69,23 @@ function op {
         stage)
             mkdir -p stage
             pushd build > /dev/null
+            skip_bins="0"
             if [ "$(type -t recipe_stage)" = "function" ]
             then
                 recipe_stage ../stage
-            else
+                skip_bins="$?"
+            fi
+            if [ "$skip_bins" -eq "0" ]
+            then
                 #TODO xargo install --root "../stage" $CARGOFLAGS
                 bins="$(find target/$TARGET/release/ -maxdepth 1 -type f ! -name '*.*')"
                 if [ -n "$bins" ]
                 then
-                    mkdir -p ../stage/bin
+                    mkdir -p "../stage/$BINDIR"
                     for bin in $bins
                     do
-                        cp -v "$bin" "../stage/bin/$(basename $bin)"
-                        #strip -v "../stage/bin/$(basename $bin)"
+                        cp -v "$bin" "../stage/$BINDIR/$(basename $bin)"
+                        #strip -v "../stage/$BINDIR/$(basename $bin)"
                     done
                 fi
             fi
