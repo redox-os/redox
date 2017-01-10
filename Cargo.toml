@@ -34,15 +34,3 @@ members = [
     "schemes/udpd",
     "syscall"
 ]
-
-[profile.dev]
-debug = true
-debug-assertions = true
-lto = false
-opt-level = 0
-
-[profile.release]
-debug = false
-debug-assertions = false
-lto = true
-opt-level = 3

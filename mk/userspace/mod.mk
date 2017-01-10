@@ -28,12 +28,12 @@ include mk/userspace/userutils.mk
 
 $(BUILD)/libstd.rlib: rust/src/libstd/Cargo.toml rust/src/libstd/**
 	mkdir -p $(BUILD)
-	$(CARGO) rustc --manifest-path $< --features "panic-unwind" $(CARGOFLAGS) -L native=libc-artifacts/usr/lib -o $@
+	$(CARGO) rustc --verbose --manifest-path $< --features "panic-unwind" $(CARGOFLAGS) -L native=libc-artifacts/usr/lib -o $@
 	cp rust/src/target/$(TARGET)/release/deps/*.rlib $(BUILD)
 
 $(BUILD)/libtest.rlib: rust/src/libtest/Cargo.toml rust/src/libtest/** $(BUILD)/libstd.rlib
 	mkdir -p $(BUILD)
-	$(CARGO) rustc --manifest-path $< $(CARGOFLAGS) -L native=libc-artifacts/usr/lib -o $@
+	$(CARGO) rustc --verbose --manifest-path $< $(CARGOFLAGS) -L native=libc-artifacts/usr/lib -o $@
 	cp rust/src/target/$(TARGET)/release/deps/*.rlib $(BUILD)
 
 filesystem/bin/%: programs/%/Cargo.toml programs/%/src/** $(BUILD)/libstd.rlib
