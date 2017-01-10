@@ -13,46 +13,8 @@ use self::chroot::ChrootScheme;
 mod chroot;
 
 fn usage() -> ! {
-    write!(stderr(), "contain [create|enter] root cmd args..\n").unwrap();
+    write!(stderr(), "contain root cmd args..\n").unwrap();
     process::exit(1);
-}
-
-fn create(root: &Path) {
-    let root = Path::new(root);
-
-    println!("{}", root.display());
-    fs::create_dir(root).unwrap();
-
-    let mut bin = root.to_path_buf();
-    bin.push("bin");
-    println!("{}", bin.display());
-    fs::create_dir(&bin).unwrap();
-
-    for entry in fs::read_dir("/bin").unwrap() {
-        let entry = entry.unwrap();
-        let mut dest = bin.clone();
-        dest.push(entry.file_name());
-        println!("{} -> {}", entry.path().display(), dest.display());
-        fs::copy(entry.path(), dest).unwrap();
-    }
-
-    let mut etc = root.to_path_buf();
-    etc.push("etc");
-    println!("{}", etc.display());
-    fs::create_dir(&etc).unwrap();
-
-    let mut net = etc.clone();
-    net.push("net");
-    println!("{}", net.display());
-    fs::create_dir(&net).unwrap();
-
-    for entry in fs::read_dir("/etc/net").unwrap() {
-        let entry = entry.unwrap();
-        let mut dest = net.clone();
-        dest.push(entry.file_name());
-        println!("{} -> {}", entry.path().display(), dest.display());
-        fs::copy(entry.path(), dest).unwrap();
-    }
 }
 
 fn enter(root: &Path, cmd: &str, args: &[String]) {
@@ -124,22 +86,10 @@ fn enter(root: &Path, cmd: &str, args: &[String]) {
 pub fn main() {
     let mut args = env::args().skip(1);
 
-    if let Some(op) = args.next() {
-        match op.as_str() {
-            "create" => if let Some(root) = args.next() {
-                create(Path::new(&root));
-            } else {
-                usage();
-            },
-            "enter" => if let Some(root) = args.next() {
-                let cmd = args.next().unwrap_or(env::var("SHELL").unwrap_or("sh".to_string()));
-                let args: Vec<String> = args.collect();
-                enter(Path::new(&root), &cmd, &args);
-            } else {
-                usage();
-            },
-            _ => usage()
-        }
+    if let Some(root) = args.next() {
+        let cmd = args.next().unwrap_or(env::var("SHELL").unwrap_or("sh".to_string()));
+        let args: Vec<String> = args.collect();
+        enter(Path::new(&root), &cmd, &args);
     } else {
         usage();
     }
