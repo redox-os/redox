@@ -1,14 +1,12 @@
-initfs: \
-	initfs/bin/init \
-	initfs/bin/ahcid \
-	initfs/bin/bgad \
-	initfs/bin/pcid \
-	initfs/bin/ps2d \
-	initfs/bin/redoxfs \
-	initfs/bin/vesad \
-	initfs/etc/**
-
-$(BUILD)/initfs.rs: initfs
+$(BUILD)/initfs.rs: \
+		initfs/bin/init \
+		initfs/bin/ahcid \
+		initfs/bin/bgad \
+		initfs/bin/pcid \
+		initfs/bin/ps2d \
+		initfs/bin/redoxfs \
+		initfs/bin/vesad \
+		initfs/etc/**
 	echo 'use collections::BTreeMap;' > $@
 	echo 'pub fn gen() -> BTreeMap<&'"'"'static [u8], (&'"'"'static [u8], bool)> {' >> $@
 	echo '    let mut files: BTreeMap<&'"'"'static [u8], (&'"'"'static [u8], bool)> = BTreeMap::new();' >> $@
