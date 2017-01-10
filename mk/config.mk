@@ -21,7 +21,7 @@ BUILD=build/userspace
 RUSTC=./rustc.sh
 RUSTDOC=./rustdoc.sh
 CARGO=RUSTC="$(RUSTC)" RUSTDOC="$(RUSTDOC)" cargo
-CARGOFLAGS=--target $(TARGET) --release --
+CARGOFLAGS=--target $(TARGET) --release -- -C codegen-units=`nproc`
 
 # Per host variables
 UNAME := $(shell uname)
