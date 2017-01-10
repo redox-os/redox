@@ -46,36 +46,67 @@ function op {
             ;;
         update)
             pushd build > /dev/null
-            xargo update
+            skip="0"
+            if [ "$(type -t recipe_update)" = "function" ]
+            then
+                recipe_update || skip="1"
+            fi
+            if [ "$skip" -eq "0" ]
+            then
+                xargo update
+            fi
             popd > /dev/null
             ;;
         build)
             pushd build > /dev/null
-            cp -r "$ROOT/Xargo.toml" "$ROOT/.cargo" "$ROOT/libc-artifacts" .
-            xargo build --target "$TARGET" --release $CARGOFLAGS
+            skip="0"
+            if [ "$(type -t recipe_build)" = "function" ]
+            then
+                recipe_build || skip="1"
+            fi
+            if [ "$skip" -eq "0" ]
+            then
+                cp -r "$ROOT/Xargo.toml" "$ROOT/.cargo" "$ROOT/libc-artifacts" .
+                xargo build --target "$TARGET" --release $CARGOFLAGS
+            fi
             popd > /dev/null
             ;;
         test)
             pushd build > /dev/null
-            cp -r "$ROOT/Xargo.toml" "$ROOT/.cargo" "$ROOT/libc-artifacts" .
-            xargo test --no-run --target "$TARGET" --release $CARGOFLAGS
+            skip="0"
+            if [ "$(type -t recipe_test)" = "function" ]
+            then
+                recipe_test || skip="1"
+            fi
+            if [ "$skip" -eq "0" ]
+            then
+                cp -r "$ROOT/Xargo.toml" "$ROOT/.cargo" "$ROOT/libc-artifacts" .
+                xargo test --no-run --target "$TARGET" --release $CARGOFLAGS
+            fi
             popd > /dev/null
             ;;
         clean)
             pushd build > /dev/null
-            xargo clean
+            skip="0"
+            if [ "$(type -t recipe_clean)" = "function" ]
+            then
+                recipe_clean || skip="1"
+            fi
+            if [ "$skip" -eq "0" ]
+            then
+                xargo clean
+            fi
             popd > /dev/null
             ;;
         stage)
             mkdir -p stage
             pushd build > /dev/null
-            skip_bins="0"
+            skip="0"
             if [ "$(type -t recipe_stage)" = "function" ]
             then
-                recipe_stage ../stage
-                skip_bins="$?"
+                recipe_stage ../stage || skip="1"
             fi
-            if [ "$skip_bins" -eq "0" ]
+            if [ "$skip" -eq "0" ]
             then
                 #TODO xargo install --root "../stage" $CARGOFLAGS
                 bins="$(find target/$TARGET/release/ -maxdepth 1 -type f ! -name '*.*')"
