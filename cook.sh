@@ -116,7 +116,7 @@ function op {
                     for bin in $bins
                     do
                         cp -v "$bin" "../stage/$BINDIR/$(basename $bin)"
-                        #strip -v "../stage/$BINDIR/$(basename $bin)"
+                        strip -v "../stage/$BINDIR/$(basename $bin)"
                     done
                 fi
             fi
