@@ -90,14 +90,11 @@ fn main() {
                 for (screen_id, screen) in scheme.screens.iter() {
                     if ! screen.will_block() {
                         let event_packet = Packet {
-                            id: 0,
-                            pid: 0,
-                            uid: 0,
-                            gid: 0,
                             a: syscall::number::SYS_FEVENT,
                             b: *screen_id,
                             c: EVENT_READ,
-                            d: mem::size_of::<orbclient::Event>()
+                            d: mem::size_of::<orbclient::Event>(),
+                            .. Packet::default()
                         };
 
                         socket.write(&event_packet).expect("vesad: failed to write display event");

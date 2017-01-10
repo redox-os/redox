@@ -105,14 +105,10 @@ fn main() {
 
             for event_count in event_queue.trigger_all(0).expect("e1000d: failed to trigger events") {
                 socket.borrow_mut().write(&Packet {
-                    id: 0,
-                    pid: 0,
-                    uid: 0,
-                    gid: 0,
                     a: syscall::number::SYS_FEVENT,
-                    b: 0,
                     c: syscall::flag::EVENT_READ,
-                    d: event_count
+                    d: event_count,
+                    .. Packet::default()
                 }).expect("e1000d: failed to write event");
             }
 
@@ -120,14 +116,10 @@ fn main() {
                 let event_count = event_queue.run().expect("e1000d: failed to handle events");
 
                 socket.borrow_mut().write(&Packet {
-                    id: 0,
-                    pid: 0,
-                    uid: 0,
-                    gid: 0,
                     a: syscall::number::SYS_FEVENT,
-                    b: 0,
                     c: syscall::flag::EVENT_READ,
-                    d: event_count
+                    d: event_count,
+                    .. Packet::default()
                 }).expect("e1000d: failed to write event");
             }
         }

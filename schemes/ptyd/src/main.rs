@@ -324,25 +324,18 @@ fn main(){
                 let read = master.read.borrow();
                 if let Some(data) = read.front() {
                     socket.write(&Packet {
-                        id: 0,
-                        pid: 0,
-                        uid: 0,
-                        gid: 0,
                         a: syscall::number::SYS_FEVENT,
                         b: *id,
                         c: syscall::flag::EVENT_READ,
-                        d: data.len()
+                        d: data.len(),
+                        .. Packet::default()
                     }).expect("pty: failed to write event");
                 } else if Rc::weak_count(&master.read) == 0 {
                     socket.write(&Packet {
-                        id: 0,
-                        pid: 0,
-                        uid: 0,
-                        gid: 0,
                         a: syscall::number::SYS_FEVENT,
                         b: *id,
                         c: syscall::flag::EVENT_READ,
-                        d: 0
+                        .. Packet::default()
                     }).expect("pty: failed to write event");
                 }
             }
@@ -352,26 +345,19 @@ fn main(){
                     let read = read_lock.borrow();
                     if ! read.is_empty() {
                         socket.write(&Packet {
-                            id: 0,
-                            pid: 0,
-                            uid: 0,
-                            gid: 0,
                             a: syscall::number::SYS_FEVENT,
                             b: *id,
                             c: syscall::flag::EVENT_READ,
-                            d: read.len()
+                            d: read.len(),
+                            .. Packet::default()
                         }).expect("pty: failed to write event");
                     }
                 } else {
                     socket.write(&Packet {
-                        id: 0,
-                        pid: 0,
-                        uid: 0,
-                        gid: 0,
                         a: syscall::number::SYS_FEVENT,
                         b: *id,
                         c: syscall::flag::EVENT_READ,
-                        d: 0
+                        .. Packet::default()
                     }).expect("pty: failed to write event");
                 }
             }

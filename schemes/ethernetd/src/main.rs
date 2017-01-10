@@ -52,14 +52,11 @@ fn main() {
                 for (id, handle) in scheme_net.borrow_mut().handles.iter() {
                     if let Some(frame) = handle.frames.get(0) {
                         socket_net.borrow_mut().write(&Packet {
-                            id: 0,
-                            pid: 0,
-                            uid: 0,
-                            gid: 0,
                             a: syscall::number::SYS_FEVENT,
                             b: *id,
                             c: syscall::flag::EVENT_READ,
-                            d: frame.data.len()
+                            d: frame.data.len(),
+                            .. Packet::default()
                         })?;
                     }
                 }

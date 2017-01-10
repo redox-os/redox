@@ -305,14 +305,11 @@ impl Tcpd {
                                 if handle.events & EVENT_READ == EVENT_READ {
                                     if let Some(&(ref _ip, ref tcp)) = handle.data.get(0) {
                                         self.scheme_file.write(&Packet {
-                                            id: 0,
-                                            pid: 0,
-                                            uid: 0,
-                                            gid: 0,
                                             a: syscall::number::SYS_FEVENT,
                                             b: *id,
                                             c: EVENT_READ,
-                                            d: tcp.data.len()
+                                            d: tcp.data.len(),
+                                            .. Packet::default()
                                         })?;
                                     }
                                 }
