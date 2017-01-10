@@ -4,4 +4,4 @@ version = "0.1.0"
 
 [dependencies]
 raw-cpuid = "2.*"
-redox_syscall = { path = "../../syscall/" }
+redox_syscall = { git = "https://github.com/redox-os/syscall.git" }
