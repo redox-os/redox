@@ -1,6 +1,6 @@
 $(KBUILD)/libcollections.rlib: rust/src/libcollections/Cargo.toml rust/src/libcollections/**
 	mkdir -p $(KBUILD)
-	$(KCARGO) rustc --verbose --manifest-path $< $(KCARGOFLAGS) -o $@
+	$(KCARGO) rustc --manifest-path $< $(KCARGOFLAGS) -o $@
 	cp rust/src/target/$(KTARGET)/release/deps/*.rlib $(KBUILD)
 
 $(KBUILD)/libkernel.a: kernel/Cargo.toml kernel/arch/** kernel/src/** $(KBUILD)/libcollections.rlib $(BUILD)/initfs.rs
