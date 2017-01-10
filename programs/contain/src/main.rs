@@ -132,7 +132,7 @@ pub fn main() {
                 usage();
             },
             "enter" => if let Some(root) = args.next() {
-                let cmd = args.next().unwrap_or("sh".to_string());
+                let cmd = args.next().unwrap_or(env::var("SHELL").unwrap_or("sh".to_string()));
                 let args: Vec<String> = args.collect();
                 enter(Path::new(&root), &cmd, &args);
             } else {
