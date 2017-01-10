@@ -3,6 +3,5 @@ name = "ethernetd"
 version = "0.1.0"
 
 [dependencies]
-event = { path = "../../crates/event/" }
-netutils = { path = "../../programs/netutils/" }
-redox_syscall = { path = "../../syscall/" }
+netutils = { git = "https://github.com/redox-os/netutils.git" }
+redox_syscall = { git = "https://github.com/redox-os/syscall.git" }
