@@ -48,6 +48,13 @@ include mk/filesystem.mk
 # Disk images
 include mk/disk.mk
 
-# Misc
+# An empty target
+FORCE:
+
+# A method of creating a listing for any binary
+%.list: %
+	objdump -C -M intel -D $< > $@
+
+# Wireshark
 wireshark: FORCE
 	wireshark build/network.pcap

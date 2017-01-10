@@ -42,10 +42,3 @@ else
 	VB_AUDIO="pulse"
 	VBM=VBoxManage
 endif
-
-# An empty target
-FORCE:
-
-# A method of creating a listing for any binary
-%.list: %
-	objdump -C -M intel -D $< > $@
