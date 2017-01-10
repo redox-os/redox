@@ -31,5 +31,6 @@ members = [
     "schemes/randd",
     "schemes/redoxfs",
     "schemes/tcpd",
-    "schemes/udpd"
+    "schemes/udpd",
+    "syscall"
 ]
