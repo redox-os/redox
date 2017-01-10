@@ -19,6 +19,8 @@ fn usage() -> ! {
 
 fn enter(root: &Path, cmd: &str, args: &[String]) {
     let names = [
+        "display",
+        "pty",
         "rand",
         "tcp",
         "udp"
