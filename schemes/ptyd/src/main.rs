@@ -1,4 +1,4 @@
-#![feature(rc_counts)]
+#![deny(warnings)]
 
 extern crate syscall;
 
