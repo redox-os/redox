@@ -11,3 +11,10 @@ class = 2
 vendor = 4332
 device = 33128
 command = ["/sbin/rtl8168d", "$NAME", "$BAR2", "$IRQ"]
+
+[[drivers]]
+name = "XHCI"
+class = 12
+subclass = 3
+interface = 48
+command = ["/sbin/xhcid", "$NAME", "$BAR0", "$IRQ"]

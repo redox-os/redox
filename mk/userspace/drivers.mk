@@ -1,7 +1,8 @@
 drivers: \
 	filesystem/sbin/pcid \
 	filesystem/sbin/e1000d \
-	filesystem/sbin/rtl8168d
+	filesystem/sbin/rtl8168d \
+	filesystem/sbin/xhcid
 
 initfs/bin/%: drivers/%/Cargo.toml drivers/%/src/** $(BUILD)/libstd.rlib
 	mkdir -p initfs/bin

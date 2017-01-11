@@ -8,6 +8,7 @@ members = [
     "drivers/ps2d",
     "drivers/rtl8168d",
     "drivers/vesad",
+    "drivers/xhcid",
     "installer",
     "kernel",
     "programs/acid",

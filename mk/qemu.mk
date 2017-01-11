@@ -17,6 +17,9 @@ endif
 ifeq ($(vga),no)
 	QEMUFLAGS+=-nographic -vga none
 endif
+ifneq ($(usb),no)
+	QEMUFLAGS+=-device nec-usb-xhci,id=xhci -device usb-tablet,bus=xhci.0
+endif
 ifeq ($(UNAME),Linux)
 	ifneq ($(kvm),no)
 		QEMUFLAGS+=-enable-kvm -cpu host
