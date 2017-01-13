@@ -43,9 +43,6 @@
 [submodule "installer"]
 	path = installer
 	url = https://github.com/redox-os/installer.git
-[submodule "syscall"]
-	path = syscall
-	url = https://github.com/redox-os/syscall.git
 [submodule "crates/docgen"]
 	path = crates/docgen
 	url = https://github.com/redox-os/docgen.git
