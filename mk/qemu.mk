@@ -31,12 +31,16 @@ endif
 qemu: build/harddrive.bin
 	$(QEMU) $(QEMUFLAGS) -drive file=$<,format=raw
 
+qemu_no_build:
+	$(QEMU) $(QEMUFLAGS) -drive file=build/harddrive.bin,format=raw
+
 qemu_extra: build/harddrive.bin
 	if [ ! -e build/extra.bin ]; then dd if=/dev/zero of=build/extra.bin bs=1048576 count=1024; fi
 	$(QEMU) $(QEMUFLAGS) -drive file=$<,format=raw -drive file=build/extra.bin,format=raw
 
-qemu_no_build:
-	$(QEMU) $(QEMUFLAGS) -drive file=build/harddrive.bin,format=raw
+qemu_extra_no_build:
+	if [ ! -e build/extra.bin ]; then dd if=/dev/zero of=build/extra.bin bs=1048576 count=1024; fi
+	$(QEMU) $(QEMUFLAGS) -drive file=$<,format=raw -drive file=build/extra.bin,format=raw
 
 qemu_live: build/livedisk.bin
 	$(QEMU) $(QEMUFLAGS) -device usb-ehci,id=flash_bus -drive id=flash_drive,file=$<,format=raw,if=none -device usb-storage,drive=flash_drive,bus=flash_bus.0
