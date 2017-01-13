@@ -4,7 +4,7 @@
 export TARGET=x86_64-unknown-redox
 
 # Automatic variables
-ROOT="$PWD"
+ROOT="$(cd `dirname "$0"` && pwd)"
 REPO="$ROOT/repo/$TARGET"
 export CC="$ROOT/libc-artifacts/gcc.sh"
 
@@ -148,9 +148,9 @@ function op {
 
 if [ -n "$1" ]
 then
-    if [ -d "recipes/$1" ]
+    if [ -d "$ROOT/recipes/$1" ]
     then
-        cd "recipes/$1"
+        cd "$ROOT/recipes/$1"
         source recipe.sh
         for arg in "${@:2}"
         do
