@@ -1,10 +1,25 @@
+#![deny(warnings)]
+
 extern crate syscall;
 
 use std::env;
-use std::fs::{File, read_dir};
-use std::io::{BufRead, BufReader, Result};
+use std::fs::{File, OpenOptions, read_dir};
+use std::io::{BufRead, BufReader, Error, Result};
+use std::os::unix::io::AsRawFd;
 use std::path::Path;
 use std::process::Command;
+
+fn switch_stdio(stdio: &str) -> Result<()> {
+    let stdin = OpenOptions::new().read(true).open(stdio)?;
+    let stdout = OpenOptions::new().write(true).open(stdio)?;
+    let stderr = OpenOptions::new().write(true).open(stdio)?;
+
+    syscall::dup2(stdin.as_raw_fd(), 0, &[]).map_err(|err| Error::from_raw_os_error(err.errno))?;
+    syscall::dup2(stdout.as_raw_fd(), 0, &[]).map_err(|err| Error::from_raw_os_error(err.errno))?;
+    syscall::dup2(stderr.as_raw_fd(), 0, &[]).map_err(|err| Error::from_raw_os_error(err.errno))?;
+
+    Ok(())
+}
 
 pub fn run(file: &Path) -> Result<()> {
     let file = File::open(file)?;
@@ -84,13 +99,9 @@ pub fn run(file: &Path) -> Result<()> {
                         println!("init: failed to run.d: no argument");
                     },
                     "stdio" => if let Some(stdio) = args.next() {
-                        let _ = syscall::close(2);
-                        let _ = syscall::close(1);
-                        let _ = syscall::close(0);
-
-                        let _ = syscall::open(&stdio, syscall::flag::O_RDWR);
-                        let _ = syscall::open(&stdio, syscall::flag::O_RDWR);
-                        let _ = syscall::open(&stdio, syscall::flag::O_RDWR);
+                        if let Err(err) = switch_stdio(&stdio) {
+                            println!("init: failed to switch stdio to '{}': {}", stdio, err);
+                        }
                     } else {
                         println!("init: failed to set stdio: no argument");
                     },
