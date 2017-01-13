@@ -15,8 +15,8 @@ fn switch_stdio(stdio: &str) -> Result<()> {
     let stderr = OpenOptions::new().write(true).open(stdio)?;
 
     syscall::dup2(stdin.as_raw_fd(), 0, &[]).map_err(|err| Error::from_raw_os_error(err.errno))?;
-    syscall::dup2(stdout.as_raw_fd(), 0, &[]).map_err(|err| Error::from_raw_os_error(err.errno))?;
-    syscall::dup2(stderr.as_raw_fd(), 0, &[]).map_err(|err| Error::from_raw_os_error(err.errno))?;
+    syscall::dup2(stdout.as_raw_fd(), 1, &[]).map_err(|err| Error::from_raw_os_error(err.errno))?;
+    syscall::dup2(stderr.as_raw_fd(), 2, &[]).map_err(|err| Error::from_raw_os_error(err.errno))?;
 
     Ok(())
 }
