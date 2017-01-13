@@ -1,5 +1,5 @@
 export PATH initfs:/bin
-vesad T T T G
+vesad T T G
 stdio display:1
 ps2d
 pcid /etc/pcid.toml
