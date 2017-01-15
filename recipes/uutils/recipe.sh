@@ -1,2 +1,2 @@
-GIT=git@github.com:DaanHoogland/uutils-core.git
+GIT=https://github.com/uutils/coreutils.git
 CARGOFLAGS="--no-default-features --features redox"
