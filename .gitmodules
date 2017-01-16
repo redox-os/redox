@@ -44,7 +44,7 @@
 	path = installer
 	url = https://github.com/redox-os/installer.git
 [submodule "crates/docgen"]
-	path = crates/docgen
+	path = docgen
 	url = https://github.com/redox-os/docgen.git
 [submodule "programs/binutils"]
 	path = programs/binutils
