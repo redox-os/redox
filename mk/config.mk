@@ -3,7 +3,7 @@ ARCH?=x86_64
 
 # Automatic variables
 ROOT=$(PWD)
-export RUST_TARGET_PATH=$(ROOT)/targets
+export RUST_TARGET_PATH=$(ROOT)/kernel/targets
 export CC=$(ROOT)/libc-artifacts/gcc.sh
 export CFLAGS=-fno-stack-protector -U_FORTIFY_SOURCE
 
