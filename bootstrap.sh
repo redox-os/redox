@@ -154,7 +154,7 @@ archLinux()
 	fi
 
 	if [ "$1" == "qemu" ]; then
-		if [ -z "$(which qemu-system-i386)" ]; then
+		if [ -z "$(which qemu-system-x86_64)" ]; then
 			echo "Installing QEMU..."
 			sudo pacman -S qemu
 		else
@@ -180,7 +180,7 @@ ubuntu()
 	echo "Installing required packages..."
 	sudo "$2" install build-essential libc6-dev-i386 nasm curl file git libfuse-dev
 	if [ "$1" == "qemu" ]; then
-		if [ -z "$(which qemu-system-i386)" ]; then
+		if [ -z "$(which qemu-system-x86_64)" ]; then
 			echo "Installing QEMU..."
 			sudo "$2" install qemu-system-x86 qemu-kvm
 		else
@@ -209,7 +209,7 @@ fedora()
 		sudo dnf install git-all
 	fi
 	if [ "$1" == "qemu" ]; then
-		if [ -z "$(which qemu-system-i386)" ]; then
+		if [ -z "$(which qemu-system-x86_64)" ]; then
 			echo "Installing QEMU..."
 			sudo dnf install qemu-system-x86 qemu-kvm
 		else
@@ -246,7 +246,7 @@ suse()
 		zypper install git
 	fi
 	if [ "$1" == "qemu" ]; then
-		if [ -z "$(which qemu-system-i386)" ]; then
+		if [ -z "$(which qemu-system-x86_64)" ]; then
 			echo "Installing QEMU..."
 			sudo zypper install qemu-x86 qemu-kvm
 		else
@@ -284,7 +284,7 @@ gentoo()
 	echo "Installing fuse..."
 	sudo emerge sys-fs/fuse
 	if [ "$2" == "qemu" ]; then
-		if [ -z "$(which qemu-system-i386)" ]; then
+		if [ -z "$(which qemu-system-x86_64)" ]; then
 			echo "Please install QEMU and re-run this script"
 			echo "Step1. Add QEMU_SOFTMMU_TARGETS=\"i386\" to /etc/portage/make.conf"
 			echo "Step2. Execute \"sudo emerge app-emulation/qemu\""
@@ -313,7 +313,7 @@ solus()
 	echo "Installing fuse..."
 	sudo eopkg it fuse-devel
 	if [ "$1" == "qemu" ]; then
-		if [ -z "$(which qemu-system-i386)" ]; then
+		if [ -z "$(which qemu-system-x86_64)" ]; then
 			sudo eopkg it qemu
 		else
 			echo "QEMU already installed!"
