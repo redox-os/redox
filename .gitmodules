@@ -43,7 +43,7 @@
 [submodule "installer"]
 	path = installer
 	url = https://github.com/redox-os/installer.git
-[submodule "crates/docgen"]
+[submodule "docgen"]
 	path = docgen
 	url = https://github.com/redox-os/docgen.git
 [submodule "programs/binutils"]

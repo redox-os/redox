@@ -1,6 +1,6 @@
 [workspace]
 members = [
-    "crates/docgen",
+    "docgen",
     "drivers/ahcid",
     "drivers/bgad",
     "drivers/e1000d",
