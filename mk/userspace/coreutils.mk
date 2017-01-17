@@ -34,6 +34,7 @@ coreutils: \
 	filesystem/bin/touch \
 	filesystem/bin/true \
 	filesystem/bin/wc \
+	filesystem/bin/which \
 	filesystem/bin/yes
 	#filesystem/bin/shutdown filesystem/bin/test
 
