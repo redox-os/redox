@@ -18,4 +18,4 @@ for arg in "$@"; do
     fi
 done
 
-RUST_BACKTRACE=1 exec rustc -L build/userspace "${args[@]}"
+RUST_BACKTRACE=1 exec rustc -L build/userspace -L native=libc-artifacts/usr/lib "${args[@]}"
