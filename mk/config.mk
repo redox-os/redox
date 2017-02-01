@@ -1,6 +1,28 @@
 # Configuration
 ARCH?=x86_64
 
+# Per host variables
+UNAME := $(shell uname)
+ifeq ($(UNAME),Darwin)
+	ECHO=/bin/echo
+	FUMOUNT=sudo umount
+	export LD=$(ARCH)-elf-ld
+	export LDFLAGS=--gc-sections
+	export NPROC=sysctl -n hw.ncpu
+	export STRIP=$(ARCH)-elf-strip
+	VB_AUDIO=coreaudio
+	VBM="/Applications/VirtualBox.app/Contents/MacOS/VBoxManage"
+else
+	ECHO=echo
+	FUMOUNT=fusermount -u
+	export LD=ld
+	export LDFLAGS=--gc-sections
+	export NPROC=nproc
+	export STRIP=strip
+	VB_AUDIO="pulse"
+	VBM=VBoxManage
+endif
+
 # Automatic variables
 ROOT=$(PWD)
 export RUST_TARGET_PATH=$(ROOT)/kernel/targets
@@ -21,24 +43,4 @@ BUILD=build/userspace
 RUSTC=./rustc.sh
 RUSTDOC=./rustdoc.sh
 CARGO=RUSTC="$(RUSTC)" RUSTDOC="$(RUSTDOC)" cargo
-CARGOFLAGS=--target $(TARGET) --release -- -C codegen-units=`nproc`
-
-# Per host variables
-UNAME := $(shell uname)
-ifeq ($(UNAME),Darwin)
-	ECHO=/bin/echo
-	FUMOUNT=sudo umount
-	export LD=$(ARCH)-elf-ld
-	export LDFLAGS=--gc-sections
-	export STRIP=$(ARCH)-elf-strip
-	VB_AUDIO=coreaudio
-	VBM="/Applications/VirtualBox.app/Contents/MacOS/VBoxManage"
-else
-	ECHO=echo
-	FUMOUNT=fusermount -u
-	export LD=ld
-	export LDFLAGS=--gc-sections
-	export STRIP=strip
-	VB_AUDIO="pulse"
-	VBM=VBoxManage
-endif
+CARGOFLAGS=--target $(TARGET) --release -- -C codegen-units=`$(NPROC)`
