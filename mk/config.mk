@@ -34,7 +34,7 @@ KTARGET=$(ARCH)-unknown-none
 KBUILD=build/kernel
 KRUSTC=./krustc.sh
 KRUSTDOC=./krustdoc.sh
-KCARGO=RUSTC="$(KRUSTC)" RUSTDOC="$(KRUSTDOC)" cargo
+KCARGO=RUSTC="$(KRUSTC)" RUSTDOC="$(KRUSTDOC)" CARGO_INCREMENTAL=1 cargo
 KCARGOFLAGS=--target $(KTARGET) --release -- -C soft-float
 
 # Userspace variables
@@ -42,5 +42,5 @@ export TARGET=$(ARCH)-unknown-redox
 BUILD=build/userspace
 RUSTC=./rustc.sh
 RUSTDOC=./rustdoc.sh
-CARGO=RUSTC="$(RUSTC)" RUSTDOC="$(RUSTDOC)" cargo
+CARGO=RUSTC="$(RUSTC)" RUSTDOC="$(RUSTDOC)" CARGO_INCREMENTAL=1 cargo
 CARGOFLAGS=--target $(TARGET) --release -- -C codegen-units=`$(NPROC)`
