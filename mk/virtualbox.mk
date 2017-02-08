@@ -31,7 +31,7 @@ virtualbox: build/harddrive.bin
 	$(VBM) modifyvm Redox --mouse ps2
 	$(VBM) modifyvm Redox --audio $(VB_AUDIO)
 	$(VBM) modifyvm Redox --audiocontroller ac97
-	$(VBM) modifyvm Redox --nestedpaging off
+	$(VBM) modifyvm Redox --nestedpaging on
 	echo "Create Disk"
 	$(VBM) convertfromraw $< build/harddrive.vdi
 	echo "Attach Disk"
