@@ -8,7 +8,7 @@ use std::collections::{BTreeMap, VecDeque};
 use std::cell::RefCell;
 use std::fs::File;
 use std::io::{self, Read, Write};
-use std::{mem, slice, str};
+use std::{mem, process, slice, str};
 use std::ops::{Deref, DerefMut};
 use std::os::unix::io::FromRawFd;
 use std::rc::Rc;
@@ -783,32 +783,47 @@ impl SchemeMut for Tcpd {
     }
 }
 
+fn daemon(tcp_fd: usize, scheme_fd: usize) {
+    let tcp_file = unsafe { File::from_raw_fd(tcp_fd) };
+    let scheme_file = unsafe { File::from_raw_fd(scheme_fd) };
+
+    let tcpd = Rc::new(RefCell::new(Tcpd::new(scheme_file, tcp_file)));
+
+    let mut event_queue = EventQueue::<()>::new().expect("tcpd: failed to create event queue");
+
+    let tcp_tcpd = tcpd.clone();
+    event_queue.add(tcp_fd, move |_count: usize| -> io::Result<Option<()>> {
+        tcp_tcpd.borrow_mut().tcp_event()?;
+        Ok(None)
+    }).expect("tcpd: failed to listen to events on ip:6");
+
+    event_queue.add(scheme_fd, move |_count: usize| -> io::Result<Option<()>> {
+        tcpd.borrow_mut().scheme_event()?;
+        Ok(None)
+    }).expect("tcpd: failed to listen to events on :tcp");
+
+    event_queue.trigger_all(0).expect("tcpd: failed to trigger event queue");
+
+    event_queue.run().expect("tcpd: failed to run event queue");
+}
+
 fn main() {
-    // Daemonize
-    if unsafe { syscall::clone(0).unwrap() } == 0 {
-        let scheme_fd = syscall::open(":tcp", O_RDWR | O_CREAT | O_NONBLOCK).expect("tcpd: failed to create :tcp");
-        let scheme_file = unsafe { File::from_raw_fd(scheme_fd) };
-
-        let tcp_fd = syscall::open("ip:6", O_RDWR | O_NONBLOCK).expect("tcpd: failed to open ip:6");
-        let tcp_file = unsafe { File::from_raw_fd(tcp_fd) };
-
-        let tcpd = Rc::new(RefCell::new(Tcpd::new(scheme_file, tcp_file)));
-
-        let mut event_queue = EventQueue::<()>::new().expect("tcpd: failed to create event queue");
-
-        let tcp_tcpd = tcpd.clone();
-        event_queue.add(tcp_fd, move |_count: usize| -> io::Result<Option<()>> {
-            tcp_tcpd.borrow_mut().tcp_event()?;
-            Ok(None)
-        }).expect("tcpd: failed to listen to events on ip:6");
-
-        event_queue.add(scheme_fd, move |_count: usize| -> io::Result<Option<()>> {
-            tcpd.borrow_mut().scheme_event()?;
-            Ok(None)
-        }).expect("tcpd: failed to listen to events on :tcp");
-
-        event_queue.trigger_all(0).expect("tcpd: failed to trigger event queue");
-
-        event_queue.run().expect("tcpd: failed to run event queue");
+    match syscall::open("ip:6", O_RDWR | O_NONBLOCK) {
+        Ok(tcp_fd) => match syscall::open(":tcp", O_RDWR | O_CREAT | O_NONBLOCK) {
+            Ok(scheme_fd) => {
+                // Daemonize
+                if unsafe { syscall::clone(0).unwrap() } == 0 {
+                    daemon(tcp_fd, scheme_fd);
+                }
+            },
+            Err(err) => {
+                println!("tcpd: failed to create tcp scheme: {}", err);
+                process::exit(1);
+            }
+        },
+        Err(err) => {
+            println!("tcpd: failed to open ip:6: {}", err);
+            process::exit(1);
+        }
     }
 }

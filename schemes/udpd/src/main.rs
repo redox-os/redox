@@ -8,7 +8,7 @@ use std::collections::{BTreeMap, VecDeque};
 use std::cell::RefCell;
 use std::fs::File;
 use std::io::{self, Read, Write};
-use std::{mem, slice, str};
+use std::{mem, process, slice, str};
 use std::ops::{Deref, DerefMut};
 use std::os::unix::io::FromRawFd;
 use std::rc::Rc;
@@ -450,33 +450,47 @@ impl SchemeMut for Udpd {
         Ok(0)
     }
 }
+fn daemon(udp_fd: usize, scheme_fd: usize) {
+    let udp_file = unsafe { File::from_raw_fd(udp_fd) };
+    let scheme_file = unsafe { File::from_raw_fd(scheme_fd) };
+
+    let udpd = Rc::new(RefCell::new(Udpd::new(scheme_file, udp_file)));
+
+    let mut event_queue = EventQueue::<()>::new().expect("udpd: failed to create event queue");
+
+    let udp_udpd = udpd.clone();
+    event_queue.add(udp_fd, move |_count: usize| -> io::Result<Option<()>> {
+        udp_udpd.borrow_mut().udp_event()?;
+        Ok(None)
+    }).expect("udpd: failed to listen to events on ip:11");
+
+    event_queue.add(scheme_fd, move |_count: usize| -> io::Result<Option<()>> {
+        udpd.borrow_mut().scheme_event()?;
+        Ok(None)
+    }).expect("udpd: failed to listen to events on :udp");
+
+    event_queue.trigger_all(0).expect("udpd: failed to trigger event queue");
+
+    event_queue.run().expect("udpd: failed to run event queue");
+}
 
 fn main() {
-    // Daemonize
-    if unsafe { syscall::clone(0).unwrap() } == 0 {
-        let scheme_fd = syscall::open(":udp", O_RDWR | O_CREAT | O_NONBLOCK).expect("udpd: failed to create :udp");
-        let scheme_file = unsafe { File::from_raw_fd(scheme_fd) };
-
-        let udp_fd = syscall::open("ip:11", O_RDWR | O_NONBLOCK).expect("udpd: failed to open ip:11");
-        let udp_file = unsafe { File::from_raw_fd(udp_fd) };
-
-        let udpd = Rc::new(RefCell::new(Udpd::new(scheme_file, udp_file)));
-
-        let mut event_queue = EventQueue::<()>::new().expect("udpd: failed to create event queue");
-
-        let udp_udpd = udpd.clone();
-        event_queue.add(udp_fd, move |_count: usize| -> io::Result<Option<()>> {
-            udp_udpd.borrow_mut().udp_event()?;
-            Ok(None)
-        }).expect("udpd: failed to listen to events on ip:11");
-
-        event_queue.add(scheme_fd, move |_count: usize| -> io::Result<Option<()>> {
-            udpd.borrow_mut().scheme_event()?;
-            Ok(None)
-        }).expect("udpd: failed to listen to events on :udp");
-
-        event_queue.trigger_all(0).expect("udpd: failed to trigger event queue");
-
-        event_queue.run().expect("udpd: failed to run event queue");
+    match syscall::open("ip:11", O_RDWR | O_NONBLOCK) {
+        Ok(udp_fd) => match syscall::open(":udp", O_RDWR | O_CREAT | O_NONBLOCK) {
+            Ok(scheme_fd) => {
+                // Daemonize
+                if unsafe { syscall::clone(0).unwrap() } == 0 {
+                    daemon(udp_fd, scheme_fd);
+                }
+            },
+            Err(err) => {
+                println!("udpd: failed to create udp scheme: {}", err);
+                process::exit(1);
+            }
+        },
+        Err(err) => {
+            println!("udpd: failed to open ip:11: {}", err);
+            process::exit(1);
+        }
     }
 }
