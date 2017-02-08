@@ -9,8 +9,8 @@ use std::collections::{BTreeMap, VecDeque};
 use std::fs::File;
 use std::io::{self, Read, Write};
 use std::os::unix::io::FromRawFd;
+use std::{process, slice, str};
 use std::rc::Rc;
-use std::{slice, str};
 use syscall::data::Packet;
 use syscall::error::{Error, Result, EACCES, EADDRNOTAVAIL, EBADF, EIO, EINVAL, ENOENT, EWOULDBLOCK};
 use syscall::flag::{EVENT_READ, O_NONBLOCK};
@@ -255,64 +255,85 @@ impl SchemeMut for Ipd {
     }
 }
 
-fn main() {
-    // Daemonize
-    if unsafe { syscall::clone(0).unwrap() } == 0 {
-        let scheme_fd = syscall::open(":ip", syscall::O_RDWR | syscall::O_CREAT | syscall::O_NONBLOCK).expect("ipd: failed to create :ip");
-        let scheme_file = unsafe { File::from_raw_fd(scheme_fd) };
+fn daemon(arp_fd: usize, ip_fd: usize, scheme_fd: usize) {
+    let scheme_file = unsafe { File::from_raw_fd(scheme_fd) };
 
-        let ipd = Rc::new(RefCell::new(Ipd::new(scheme_file)));
+    let ipd = Rc::new(RefCell::new(Ipd::new(scheme_file)));
 
-        let mut event_queue = EventQueue::<()>::new().expect("ipd: failed to create event queue");
+    let mut event_queue = EventQueue::<()>::new().expect("ipd: failed to create event queue");
 
-        //TODO: Multiple interfaces
-        {
-            let arp_fd = syscall::open("ethernet:806", syscall::O_RDWR | syscall::O_NONBLOCK).expect("ipd: failed to open ethernet:806");
-            let ip_fd = syscall::open("ethernet:800", syscall::O_RDWR | syscall::O_NONBLOCK).expect("ipd: failed to open ethernet:800");
-            let if_id = {
-                let mut ipd = ipd.borrow_mut();
-                let if_id = ipd.interfaces.len();
-                ipd.interfaces.push(Box::new(EthernetInterface::new(arp_fd, ip_fd)));
-                if_id
-            };
-
-            let arp_ipd = ipd.clone();
-            event_queue.add(arp_fd, move |_count: usize| -> io::Result<Option<()>> {
-                if let Some(mut interface) = arp_ipd.borrow_mut().interfaces.get_mut(if_id) {
-                    interface.arp_event()?;
-                }
-
-                Ok(None)
-            }).expect("ipd: failed to listen to events on ethernet:806");
-
-            let ip_ipd = ipd.clone();
-            event_queue.add(ip_fd, move |_count: usize| -> io::Result<Option<()>> {
-                ip_ipd.borrow_mut().ip_event(if_id)?;
-
-                Ok(None)
-            }).expect("ipd: failed to listen to events on ethernet:800");
-        }
-
-        let loopback_id = {
+    //TODO: Multiple interfaces
+    {
+        let if_id = {
             let mut ipd = ipd.borrow_mut();
             let if_id = ipd.interfaces.len();
-            ipd.interfaces.push(Box::new(LoopbackInterface::new()));
+            ipd.interfaces.push(Box::new(EthernetInterface::new(arp_fd, ip_fd)));
             if_id
         };
 
-        event_queue.add(scheme_fd, move |_count: usize| -> io::Result<Option<()>> {
-            let mut ipd = ipd.borrow_mut();
-
-            ipd.loopback_event(loopback_id)?;
-            ipd.scheme_event()?;
-            ipd.loopback_event(loopback_id)?;
+        let arp_ipd = ipd.clone();
+        event_queue.add(arp_fd, move |_count: usize| -> io::Result<Option<()>> {
+            if let Some(mut interface) = arp_ipd.borrow_mut().interfaces.get_mut(if_id) {
+                interface.arp_event()?;
+            }
 
             Ok(None)
-        }).expect("ipd: failed to listen to events on :ip");
+        }).expect("ipd: failed to listen to events on ethernet:806");
 
-        // Make sure that all descriptors are at EOF
-        event_queue.trigger_all(0).expect("ipd: failed to trigger event queue");
+        let ip_ipd = ipd.clone();
+        event_queue.add(ip_fd, move |_count: usize| -> io::Result<Option<()>> {
+            ip_ipd.borrow_mut().ip_event(if_id)?;
 
-        event_queue.run().expect("ipd: failed to run event queue");
+            Ok(None)
+        }).expect("ipd: failed to listen to events on ethernet:800");
+    }
+
+    let loopback_id = {
+        let mut ipd = ipd.borrow_mut();
+        let if_id = ipd.interfaces.len();
+        ipd.interfaces.push(Box::new(LoopbackInterface::new()));
+        if_id
+    };
+
+    event_queue.add(scheme_fd, move |_count: usize| -> io::Result<Option<()>> {
+        let mut ipd = ipd.borrow_mut();
+
+        ipd.loopback_event(loopback_id)?;
+        ipd.scheme_event()?;
+        ipd.loopback_event(loopback_id)?;
+
+        Ok(None)
+    }).expect("ipd: failed to listen to events on :ip");
+
+    // Make sure that all descriptors are at EOF
+    event_queue.trigger_all(0).expect("ipd: failed to trigger event queue");
+
+    event_queue.run().expect("ipd: failed to run event queue");
+}
+
+fn main() {
+    match syscall::open("ethernet:806", syscall::O_RDWR | syscall::O_NONBLOCK) {
+        Ok(arp_fd) => match syscall::open("ethernet:800", syscall::O_RDWR | syscall::O_NONBLOCK) {
+            Ok(ip_fd) => match syscall::open(":ip", syscall::O_RDWR | syscall::O_CREAT | syscall::O_NONBLOCK) {
+                Ok(scheme_fd) => {
+                    // Daemonize
+                    if unsafe { syscall::clone(0).unwrap() } == 0 {
+                        daemon(arp_fd, ip_fd, scheme_fd);
+                    }
+                },
+                Err(err) => {
+                    println!("ipd: failed to create ip scheme: {}", err);
+                    process::exit(1);
+                }
+            },
+            Err(err) => {
+                println!("ipd: failed to open ethernet:800: {}", err);
+                process::exit(1);
+            }
+        },
+        Err(err) => {
+            println!("ipd: failed to open ethernet:806: {}", err);
+            process::exit(1);
+        }
     }
 }
