@@ -809,16 +809,18 @@ fn daemon(tcp_fd: usize, scheme_fd: usize) {
 
 fn main() {
     match syscall::open("ip:6", O_RDWR | O_NONBLOCK) {
-        Ok(tcp_fd) => match syscall::open(":tcp", O_RDWR | O_CREAT | O_NONBLOCK) {
-            Ok(scheme_fd) => {
-                // Daemonize
-                if unsafe { syscall::clone(0).unwrap() } == 0 {
-                    daemon(tcp_fd, scheme_fd);
+        Ok(tcp_fd) => {
+            // Daemonize
+            if unsafe { syscall::clone(0).unwrap() } == 0 {
+                match syscall::open(":tcp", O_RDWR | O_CREAT | O_NONBLOCK) {
+                    Ok(scheme_fd) => {
+                        daemon(tcp_fd, scheme_fd);
+                    },
+                    Err(err) => {
+                        println!("tcpd: failed to create tcp scheme: {}", err);
+                        process::exit(1);
+                    }
                 }
-            },
-            Err(err) => {
-                println!("tcpd: failed to create tcp scheme: {}", err);
-                process::exit(1);
             }
         },
         Err(err) => {
