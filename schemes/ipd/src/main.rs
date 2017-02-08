@@ -314,16 +314,18 @@ fn daemon(arp_fd: usize, ip_fd: usize, scheme_fd: usize) {
 fn main() {
     match syscall::open("ethernet:806", syscall::O_RDWR | syscall::O_NONBLOCK) {
         Ok(arp_fd) => match syscall::open("ethernet:800", syscall::O_RDWR | syscall::O_NONBLOCK) {
-            Ok(ip_fd) => match syscall::open(":ip", syscall::O_RDWR | syscall::O_CREAT | syscall::O_NONBLOCK) {
-                Ok(scheme_fd) => {
-                    // Daemonize
-                    if unsafe { syscall::clone(0).unwrap() } == 0 {
-                        daemon(arp_fd, ip_fd, scheme_fd);
+            Ok(ip_fd) => {
+                // Daemonize
+                if unsafe { syscall::clone(0).unwrap() } == 0 {
+                    match syscall::open(":ip", syscall::O_RDWR | syscall::O_CREAT | syscall::O_NONBLOCK) {
+                        Ok(scheme_fd) => {
+                            daemon(arp_fd, ip_fd, scheme_fd);
+                        },
+                        Err(err) => {
+                            println!("ipd: failed to create ip scheme: {}", err);
+                            process::exit(1);
+                        }
                     }
-                },
-                Err(err) => {
-                    println!("ipd: failed to create ip scheme: {}", err);
-                    process::exit(1);
                 }
             },
             Err(err) => {

@@ -88,16 +88,18 @@ fn daemon(network_fd: usize, socket_fd: usize) {
 
 fn main() {
     match syscall::open("network:", syscall::O_RDWR | syscall::O_NONBLOCK) {
-        Ok(network_fd) => match syscall::open(":ethernet", syscall::O_RDWR | syscall::O_CREAT | syscall::O_NONBLOCK) {
-            Ok(socket_fd) => {
-                // Daemonize
-                if unsafe { syscall::clone(0).unwrap() } == 0 {
-                    daemon(network_fd, socket_fd);
+        Ok(network_fd) => {
+            // Daemonize
+            if unsafe { syscall::clone(0).unwrap() } == 0 {
+                match syscall::open(":ethernet", syscall::O_RDWR | syscall::O_CREAT | syscall::O_NONBLOCK) {
+                    Ok(socket_fd) => {
+                        daemon(network_fd, socket_fd);
+                    },
+                    Err(err) => {
+                        println!("ethernetd: failed to create ethernet scheme: {}", err);
+                        process::exit(1);
+                    }
                 }
-            },
-            Err(err) => {
-                println!("ethernetd: failed to create ethernet scheme: {}", err);
-                process::exit(1);
             }
         },
         Err(err) => {

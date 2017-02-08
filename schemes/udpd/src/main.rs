@@ -476,16 +476,18 @@ fn daemon(udp_fd: usize, scheme_fd: usize) {
 
 fn main() {
     match syscall::open("ip:11", O_RDWR | O_NONBLOCK) {
-        Ok(udp_fd) => match syscall::open(":udp", O_RDWR | O_CREAT | O_NONBLOCK) {
-            Ok(scheme_fd) => {
-                // Daemonize
-                if unsafe { syscall::clone(0).unwrap() } == 0 {
-                    daemon(udp_fd, scheme_fd);
+        Ok(udp_fd) => {
+            // Daemonize
+            if unsafe { syscall::clone(0).unwrap() } == 0 {
+                match syscall::open(":udp", O_RDWR | O_CREAT | O_NONBLOCK) {
+                    Ok(scheme_fd) => {
+                        daemon(udp_fd, scheme_fd);
+                    },
+                    Err(err) => {
+                        println!("udpd: failed to create udp scheme: {}", err);
+                        process::exit(1);
+                    }
                 }
-            },
-            Err(err) => {
-                println!("udpd: failed to create udp scheme: {}", err);
-                process::exit(1);
             }
         },
         Err(err) => {
