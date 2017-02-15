@@ -40,6 +40,7 @@ KCARGOFLAGS=--target $(KTARGET) --release -- -C soft-float
 # Userspace variables
 export TARGET=$(ARCH)-unknown-redox
 BUILD=build/userspace
+export INITFS_FOLDER=$(ROOT)/initfs
 RUSTC=./rustc.sh
 RUSTDOC=./rustdoc.sh
 CARGO=RUSTC="$(RUSTC)" RUSTDOC="$(RUSTDOC)" CARGO_INCREMENTAL=1 cargo
