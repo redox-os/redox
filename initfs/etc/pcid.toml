@@ -5,6 +5,12 @@ subclass = 6
 command = ["ahcid", "$NAME", "$BAR5", "$IRQ"]
 
 [[drivers]]
+name = "NVME storage"
+class = 1
+subclass = 8
+command = ["nvmed", "$NAME", "$BAR0", "$IRQ"]
+
+[[drivers]]
 name = "Bochs Graphics Array"
 class = 3
 vendor = 4660
