@@ -2,6 +2,7 @@ $(BUILD)/initfs.rs: \
 		initfs/bin/init \
 		initfs/bin/ahcid \
 		initfs/bin/bgad \
+		initfs/bin/nvmed \
 		initfs/bin/pcid \
 		initfs/bin/ps2d \
 		initfs/bin/redoxfs \

@@ -4,6 +4,7 @@ members = [
     "drivers/ahcid",
     "drivers/bgad",
     "drivers/e1000d",
+    "drivers/nvmed",
     "drivers/pcid",
     "drivers/ps2d",
     "drivers/rtl8168d",

@@ -36,7 +36,7 @@ qemu_no_build:
 
 qemu_extra: build/harddrive.bin
 	if [ ! -e build/extra.bin ]; then dd if=/dev/zero of=build/extra.bin bs=1048576 count=1024; fi
-	$(QEMU) $(QEMUFLAGS) -drive file=$<,format=raw -drive file=build/extra.bin,format=raw
+	$(QEMU) $(QEMUFLAGS) -drive file=$<,format=raw -drive file=build/extra.bin,format=raw,if=none,id=drv0 -device nvme,drive=drv0,serial=NVME_SERIAL
 
 qemu_extra_no_build:
 	if [ ! -e build/extra.bin ]; then dd if=/dev/zero of=build/extra.bin bs=1048576 count=1024; fi
