@@ -4,7 +4,7 @@
 
 **Redox** is an operating system written in Rust, a language with focus on safety and high performance. Redox, following the microkernel design, aims to be secure, usable, and free. Redox is inspired by previous kernels and operating systems, such as SeL4, Minix, Plan 9, and BSD.
 
-Redox _is not_ just a kernel, it's a full-featured Operating System, providing packages (memory allocator, file system, display manager, core utilities, etc.) that together makes up a functional and convenient operating system. You can loosly think of it as the GNU or BSD ecosystem, but in a memory safe language and with modern technology. See [this list](#ecosystem) for overview of the ecosystem.
+Redox _is not_ just a kernel, it's a full-featured Operating System, providing packages (memory allocator, file system, display manager, core utilities, etc.) that together make up a functional and convenient operating system. You can loosely think of it as the GNU or BSD ecosystem, but in a memory safe language and with modern technology. See [this list](#ecosystem) for overview of the ecosystem.
 
 The website can be found at https://www.redox-os.org.
 
