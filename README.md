@@ -151,6 +151,6 @@ $ make qemu
 $ make qemu kvm=no
 
 # Launch using QEMU without using KVM (Kernel Virtual Machine) nor Graphics
-make qemu kvm=no vga=no display=no
+make qemu kvm=no vga=no
 ```
 
