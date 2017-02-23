@@ -146,7 +146,11 @@ $ make all
 
 # Launch using QEMU
 $ make qemu
+
 # Launch using QEMU without using KVM (Kernel Virtual Machine). Try if QEMU gives an error.
 $ make qemu kvm=no
+
+# Launch using QEMU without using KVM (Kernel Virtual Machine) nor Graphics
+make qemu kvm=no vga=no display=no
 ```
 
