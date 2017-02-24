@@ -1,0 +1,92 @@
+{
+  "_args": [
+    [
+      {
+        "raw": "ace-css@^1.1.0",
+        "scope": null,
+        "escapedName": "ace-css",
+        "name": "ace-css",
+        "rawSpec": "^1.1.0",
+        "spec": ">=1.1.0 <2.0.0",
+        "type": "range"
+      },
+      "/home/garrett/projects/rst/web-ui"
+    ]
+  ],
+  "_from": "ace-css@>=1.1.0 <2.0.0",
+  "_id": "ace-css@1.1.0",
+  "_inCache": true,
+  "_location": "/ace-css",
+  "_nodeVersion": "6.2.1",
+  "_npmOperationalInternal": {
+    "host": "packages-16-east.internal.npmjs.com",
+    "tmp": "tmp/ace-css-1.1.0.tgz_1468274712769_0.4935038359835744"
+  },
+  "_npmUser": {
+    "name": "jxnblk",
+    "email": "jxnblk@gmail.com"
+  },
+  "_npmVersion": "3.10.2",
+  "_phantomChildren": {},
+  "_requested": {
+    "raw": "ace-css@^1.1.0",
+    "scope": null,
+    "escapedName": "ace-css",
+    "name": "ace-css",
+    "rawSpec": "^1.1.0",
+    "spec": ">=1.1.0 <2.0.0",
+    "type": "range"
+  },
+  "_requiredBy": [
+    "/"
+  ],
+  "_resolved": "https://registry.npmjs.org/ace-css/-/ace-css-1.1.0.tgz",
+  "_shasum": "1ddd63b5f8f93221facfa934ca406e0a95b3309d",
+  "_shrinkwrap": null,
+  "_spec": "ace-css@^1.1.0",
+  "_where": "/home/garrett/projects/rst/web-ui",
+  "author": {
+    "name": "Brent Jackson"
+  },
+  "dependencies": {
+    "basscss": "^8.0.0",
+    "basscss-addons": "^1.0.0",
+    "basscss-basic": "^1.0.0",
+    "colors.css": "^2.3.0"
+  },
+  "description": "Full-featured Basscss package for web apps",
+  "devDependencies": {
+    "autoprefixer": "^6.3.3",
+    "cssnano": "^3.5.2",
+    "postcss-calc": "^5.2.0",
+    "postcss-cli": "^2.5.1",
+    "postcss-color-function": "^2.0.0",
+    "postcss-custom-media": "^5.0.1",
+    "postcss-custom-properties": "^5.0.0",
+    "postcss-import": "^8.0.2",
+    "postcss-remove-root": "0.0.2"
+  },
+  "directories": {},
+  "dist": {
+    "shasum": "1ddd63b5f8f93221facfa934ca406e0a95b3309d",
+    "tarball": "https://registry.npmjs.org/ace-css/-/ace-css-1.1.0.tgz"
+  },
+  "gitHead": "594ff0aa999334e6b6b9c01fa02f0ed39b989f09",
+  "license": "MIT",
+  "main": "index.js",
+  "maintainers": [
+    {
+      "name": "jxnblk",
+      "email": "jxnblk@gmail.com"
+    }
+  ],
+  "name": "ace-css",
+  "optionalDependencies": {},
+  "readme": "ERROR: No README data found!",
+  "scripts": {
+    "minify": "postcss css/ace.css -u cssnano -o css/ace.min.css",
+    "prepublish": "npm start && npm run minify",
+    "start": "mkdir -p css && postcss index.css -u postcss-import -u postcss-custom-media -u postcss-custom-properties -u postcss-calc -u postcss-color-function -u postcss-remove-root -u autoprefixer -o css/ace.css"
+  },
+  "version": "1.1.0"
+}
