@@ -35,3 +35,6 @@ members = [
     "schemes/tcpd",
     "schemes/udpd"
 ]
+
+[replace]
+"jpeg-decoder:0.1.11" = { git = "https://github.com/redox-os/jpeg-decoder", branch="single_thread" }
