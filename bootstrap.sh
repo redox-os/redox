@@ -26,7 +26,7 @@ install_macos_pkg()
         BIN_NAME=$PKG_NAME
     fi
 
-    BIN_LOCATION=$(which $BIN_NAME)
+    BIN_LOCATION=$(which $BIN_NAME || true)
     if [ -z "$BIN_LOCATION" ]; then
         echo "$PKG_MANAGER install $PKG_NAME"
         $PKG_MANAGER install "$PKG_NAME"
