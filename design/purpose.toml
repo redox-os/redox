@@ -1,0 +1,124 @@
+# project purpose and definition documentation
+
+[REQ-0]
+text = "definitions and process for the redox project"
+
+[REQ-0-assertions]
+text = '''
+Assertions shall be used throughout these documents to mean:
+- **shall:** the statement must be implemented and it's
+    implementation verified.
+- **will:** statement of fact, not subject to verification.
+    i.e. "The X system will have timing as defined in ICD 1234"
+- **should:** goals, non-mandatory provisions. Statements using "should"
+    **should** be verified if possible, but verification is not mandatory if
+    not possible. Is a statement of intent.
+'''
+
+[REQ-0-prefix]
+text = '''
+In this project, the following conventions shall apply for artifact names:
+ - `ART-0-*` denotes definitions and artifact process only. These will be defined
+     as completed, as they are simply documenting the process of artifacts.
+ - `ART-1-*` denotes purpose REQs, which detail at the highest level why
+     this project exists
+
+Any artifact that is `1` will not be implemented in code (it will only be implemented
+by sub artifacts).
+
+The purpose of this prefix is to bring these artifacts to the top when they are listed,
+as well as make a simple and clear distinction between purpose documentation and 
+design/user requirements.
+'''
+
+[REQ-1]
+text = '''
+# Purpose 
+
+Redox is a general purpose operating system and surrounding ecosystem written in
+pure Rust. Our aim is to provide a fully functioning Unix-like microkernel, that
+is both secure and free.
+
+Redox is an attempt to make a complete, fully-functioning, general-purpose
+operating system with a focus on safety, freedom, reliability, correctness, and
+pragmatism.
+
+## The goals of Redox
+
+We want to be able to use it, without obstructions, as a alternative to Linux
+on our computers. It should be able to run most Linux programs with only
+minimal modifications. (see Why Free Software)
+
+We're aiming towards a complete, safe Rust ecosystem. This is a design choice,
+which hopefully improves correctness and security (see Why Rust).
+
+We want to improve the security design when compared to other Unix-like kernels
+by using safe defaults and disallowing insecure configurations where possible.
+
+## The non-goals of Redox
+
+We are not a Linux clone, or POSIX-compliant, nor are we crazy scientists, who
+wish to redesign everything. Generally, we stick to well-tested and proven
+correct designs. If it ain't broken don't fix it.
+
+This means that a large number of standard programs and libraries will be
+compatible with Redox. Some things that do not align with our design decisions
+will have to be ported.
+
+The key here is the trade off between correctness and compatibility. Ideally,
+you should be able achieve both, but unfortunately, you can't always do so.
+
+### References:
+- [why rust](https://doc.redox-os.org/book/introduction/why_rust.html)
+'''
+
+[REQ-1-syscalls]
+text = '''
+## Syscalls 
+
+The syscall interface should be unix-like without necessarily adhering to
+all unix standards.. We shall support at least the 31 most common system calls
+includeing open, pipe, pipe2, lseek, read, write, brk, execv, and so on.
+
+Compared to Linux, our syscall interface should much more minimal. This is not
+because of the stage in development, but because of a minimalist design.
+'''
+
+[REQ-1-schemes]
+text = '''
+## Scheme / url
+A sheme shall be an object used to specify resource descriptors which define 
+their own domain (read/write/seek) space. Schemes shall be a generalization of
+files which enable for generalization in a less "patchworky" way than
+posix.
+
+You can think of schemes as a kind of segregated virtual file system, which can
+be arbitrarily structured (they do not have to be tree-like) and arbitrarily
+defined by a program. 
+
+Schemes will also be called "urls" in outside documents and the terms will
+be equivalent.
+'''
+
+[REQ-1-kernel]
+text = '''
+## The Kernel
+Redox's kernel shall be a microkernel. The architecture is largely inspired by MINIX.
+
+Having vastly smaller amounts of code in the kernel will make it easier to find and
+fix bugs/security issues more efficiently. The main idea is to have components 
+and drivers that would be inside a monolithic kernel exist in user space and 
+follow the Principle of Least Authority (POLA). This is where every individual 
+component should be:
+- Completely isolated in memory and as separate user processes 
+	- The failure of one component does not crash other components 
+	- Allows foreign and untrusted code to not expose the entire system 
+	- Bugs and malware cannot spread to other components 
+- Has restricted communication with other components 
+- Doesn't have Admin/Super-User privileges Bugs are moved to user space which 
+	reduces their power
+
+All of this should increase the reliability of the system significantly and make
+redox useful. This for mission-critical applications and for users that want
+minimal issues with their computer systems. 
+'''

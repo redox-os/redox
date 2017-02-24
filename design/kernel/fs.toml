@@ -1,0 +1,22 @@
+
+[SPC-kernel]
+partof = "REQ-1-kernel"
+text = '''
+TODO: The redox kernel high level specification. 
+'''
+
+[SPC-kernel-schemes]
+text = '''
+The kernel provides a small number of schemes in order to support userspace.
+Name 	Description 	
+: 	    Root scheme - allows the creation of userspace schemes 	
+debug: 	Provides access to serial console
+event: 	Allows reading of `Event`s which are registered using fevent
+env: 	Access and modify environmental variables
+initfs:	Readonly filesystem used for initializing the system
+irq: 	Allows userspace handling of IRQs
+null: 	Scheme that will discard all writes, and read no bytes
+pipe: 	Used internally by the kernel to implement pipe
+sys: 	System information, such as the context list and scheme list
+zero: 	Scheme that will discard all writes, and always fill read buffers with zero
+'''
