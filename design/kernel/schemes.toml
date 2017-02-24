@@ -1,9 +1,4 @@
 
-[SPC-kernel]
-partof = "REQ-1-kernel"
-text = '''
-TODO: The redox kernel high level specification. 
-'''
 
 [SPC-kernel-schemes]
 text = '''
