@@ -350,7 +350,7 @@ usage()
 	echo "   -d             Only install the dependencies, skip boot step"
 	echo "EXAMPLES:"
 	echo
-	echo "./bootstrap.sh -b buddy -e qemu"
+	echo "./bootstrap.sh -e qemu"
 	exit
 }
 
