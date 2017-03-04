@@ -7,7 +7,8 @@ netutils: \
 	filesystem/bin/ntp \
 	filesystem/bin/telnetd \
 	filesystem/bin/wget \
-	filesystem/bin/ip
+	filesystem/bin/ip \
+	filesystem/bin/echoserver
 
 filesystem/bin/%: programs/netutils/Cargo.toml programs/netutils/src/%/**.rs $(BUILD)/libstd.rlib
 	mkdir -p filesystem/bin
