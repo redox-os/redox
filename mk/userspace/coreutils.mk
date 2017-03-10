@@ -30,13 +30,14 @@ coreutils: \
 	filesystem/bin/sort \
 	filesystem/bin/tail \
 	filesystem/bin/tee \
+	filesystem/bin/test \
 	filesystem/bin/time \
 	filesystem/bin/touch \
 	filesystem/bin/true \
 	filesystem/bin/wc \
 	filesystem/bin/which \
 	filesystem/bin/yes
-	#filesystem/bin/shutdown filesystem/bin/test
+	#filesystem/bin/shutdown
 
 filesystem/bin/%: programs/coreutils/Cargo.toml programs/coreutils/src/bin/%.rs $(BUILD)/libstd.rlib
 	mkdir -p filesystem/bin
