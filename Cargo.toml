@@ -39,3 +39,4 @@ members = [
 [replace]
 "jpeg-decoder:0.1.11" = { git = "https://github.com/redox-os/jpeg-decoder.git", branch = "single_thread" }
 "liner:0.1.3" = { git = "https://github.com/redox-os/liner.git", branch = "redox" }
+"rustls:0.5.7" = { git = "https://github.com/ctz/rustls.git" }
