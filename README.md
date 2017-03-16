@@ -1,5 +1,5 @@
 <p align="center">
-<img alt="Redox" height="120" src="https://github.com/redox-os/assets/raw/master/logo.png">
+<img alt="Redox" width="346" src="https://github.com/redox-os/assets/raw/master/logo.png">
 </p>
 
 **Redox** is an operating system written in Rust, a language with focus on safety and high performance. Redox, following the microkernel design, aims to be secure, usable, and free. Redox is inspired by previous kernels and operating systems, such as SeL4, Minix, Plan 9, and BSD.
@@ -53,19 +53,19 @@ The ecosystem and software Redox OS provides is listed below.
 | [libpager](https://github.com/redox-os/libpager)                            | [**@ticki**](https://github.com/ticki)
 | [Magnet (future package manager)](https://github.com/redox-os/magnet)       | [**@ticki**](https://github.com/ticki)
 | [netutils](https://github.com/redox-os/netutils)                            | [**@jackpot51**](https://github.com/jackpot51)
-| [orbclient (orbital client)](https://github.com/redox-os/orbclient)                          | [**@jackpot51**](https://github.com/jackpot51)
+| [orbclient (Orbital client)](https://github.com/redox-os/orbclient)                          | [**@jackpot51**](https://github.com/jackpot51)
 | [orbdata](https://github.com/redox-os/orbdata)                              | [**@jackpot51**](https://github.com/jackpot51)
-| [Orbital (windowing and compositing system](https://github.com/redox-os/orbital)                              | [**@jackpot51**](https://github.com/jackpot51)
-| [orbtk (orbital toolkit)](https://github.com/redox-os/orbtk)                                  | [**@stratact**](https://github.com/stratact)
-| [orbutils (orbital utilities))](https://github.com/redox-os/orbutils)                            | [**@jackpot51**](https://github.com/jackpot51)
+| [Orbital (windowing and compositing system)](https://github.com/redox-os/orbital)                              | [**@jackpot51**](https://github.com/jackpot51)
+| [orbtk (Orbital toolkit)](https://github.com/redox-os/orbtk)                                  | [**@stratact**](https://github.com/stratact)
+| [orbutils (Orbital utilities)](https://github.com/redox-os/orbutils)                            | [**@jackpot51**](https://github.com/jackpot51)
 | [pkgutils (current package manager)](https://github.com/redox-os/pkgutils)  | [**@jackpot51**](https://github.com/jackpot51)
 | [playbot (internal REPL bot)](https://github.com/redox-os/playbot)          | [**@ticki**](https://github.com/ticki)
 | [ralloc](https://github.com/redox-os/ralloc)                                | [**@ticki**](https://github.com/ticki)
-| [RANSID (rust ANSI driver)](https://github.com/redox-os/ransid)                                | [**@jackpot51**](https://github.com/jackpot51)
+| [RANSID (Rust ANSI driver)](https://github.com/redox-os/ransid)                                | [**@jackpot51**](https://github.com/jackpot51)
 | [redoxfs (old filesystem)](https://github.com/redox-os/redoxfs)             | [**@jackpot51**](https://github.com/jackpot51)
 | [syscall](https://github.com/redox-os/syscall)                              | [**@jackpot51**](https://github.com/jackpot51)
-| [Sodium (vim-inspired text editor)](https://github.com/redox-os/sodium)                       | [**@ticki**](https://github.com/ticki)
-| [libstd (Redox standard library](https://github.com/redox-os/libstd)                      | [**@jackpot51**](https://github.com/jackpot51)
+| [Sodium (Vim-inspired text editor)](https://github.com/redox-os/sodium)                       | [**@ticki**](https://github.com/ticki)
+| [libstd (Redox standard library)](https://github.com/redox-os/libstd)                      | [**@jackpot51**](https://github.com/jackpot51)
 | [userutils](https://github.com/redox-os/userutils)                          | [**@jackpot51**](https://github.com/jackpot51)
 | [TFS (ticki filesystem)](https://github.com/ticki/tfs)                            | [**@ticki**](https://github.com/ticki)
 | [The Redox book](https://github.com/redox-os/book)                          | [**@ticki**](https://github.com/ticki)
