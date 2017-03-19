@@ -26,6 +26,7 @@ coreutils: \
 	filesystem/bin/rmdir \
 	filesystem/bin/rm \
 	filesystem/bin/seq \
+	filesystem/bin/shutdown \
 	filesystem/bin/sleep \
 	filesystem/bin/sort \
 	filesystem/bin/tail \
@@ -37,7 +38,6 @@ coreutils: \
 	filesystem/bin/wc \
 	filesystem/bin/which \
 	filesystem/bin/yes
-	#filesystem/bin/shutdown
 
 filesystem/bin/%: programs/coreutils/Cargo.toml programs/coreutils/src/bin/%.rs $(BUILD)/libstd.rlib
 	mkdir -p filesystem/bin
