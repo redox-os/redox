@@ -3,10 +3,10 @@ $(KBUILD)/libcollections.rlib: rust/src/libcollections/Cargo.toml rust/src/libco
 	$(KCARGO) rustc --manifest-path $< $(KCARGOFLAGS) -o $@
 	cp rust/src/target/$(KTARGET)/release/deps/*.rlib $(KBUILD)
 
-$(KBUILD)/libkernel.a: kernel/Cargo.toml kernel/arch/** kernel/src/** $(KBUILD)/libcollections.rlib $(BUILD)/initfs.rs
+$(KBUILD)/libkernel.a: kernel/Cargo.toml kernel/arch/** kernel/src/** $(KBUILD)/libcollections.rlib $(KBUILD)/initfs.tag
 	$(KCARGO) rustc --manifest-path $< --lib $(KCARGOFLAGS) -o $@
 
-$(KBUILD)/libkernel_live.a: kernel/Cargo.toml kernel/arch/** kernel/src/** $(KBUILD)/libcollections.rlib $(BUILD)/initfs.rs build/filesystem.bin
+$(KBUILD)/libkernel_live.a: kernel/Cargo.toml kernel/arch/** kernel/src/** $(KBUILD)/libcollections.rlib $(KBUILD)/initfs.tag build/filesystem.bin
 	$(KCARGO) rustc --manifest-path $< --lib --features live $(KCARGOFLAGS) -o $@
 
 $(KBUILD)/kernel: $(KBUILD)/libkernel.a
