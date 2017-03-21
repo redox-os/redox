@@ -11,6 +11,7 @@ The website can be found at https://www.redox-os.org.
 Please make sure you use the **latest nightly** of `rustc` before building (for more troubleshooting, see ["Help! Redox won't compile!"](#compile-help)).
 
 [![Travis Build Status](https://travis-ci.org/redox-os/redox.svg?branch=master)](https://travis-ci.org/redox-os/redox)
+[![Downloads](https://img.shields.io/github/downloads/redox-os/redox/total.svg)](https://githb.com/redox-os/releases)
 [![MIT licensed](https://img.shields.io/badge/license-MIT-blue.svg)](./LICENSE.md)
 ![Rust Version](https://img.shields.io/badge/rust-rustc%201.16.0--nightly%20(24055d0f2%202017--01--31)-lightgrey.svg)
 
