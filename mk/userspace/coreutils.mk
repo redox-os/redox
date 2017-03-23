@@ -15,6 +15,7 @@ coreutils: \
 	filesystem/bin/free \
 	filesystem/bin/head \
 	filesystem/bin/kill \
+	filesystem/bin/ln \
 	filesystem/bin/ls \
 	filesystem/bin/mkdir \
 	filesystem/bin/mv \
