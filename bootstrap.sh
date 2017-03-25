@@ -163,7 +163,7 @@ archLinux()
 	fi
 
 	echo "Installing fuse..."
-	sudo pacman -S fuse
+	sudo pacman -S --needed fuse
 }
 
 ###############################################################################
