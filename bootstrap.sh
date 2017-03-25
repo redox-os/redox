@@ -140,30 +140,38 @@ osx_homebrew()
 archLinux()
 {
 	echo "Detected Arch Linux"
-	echo "Updating system..."
-	sudo pacman -Syu
 
-	if [ -z "$(which nasm)" ]; then
-		echo "Installing nasm..."
-		sudo pacman -S nasm
+    local needed_packages=()
+
+    which nasm > /dev/null
+	if [ $? -ne 0 ]; then
+        $packages+="nasm"
 	fi
 
-	if [ -z "$(which git)" ]; then
-		echo "Installing git..."
-		sudo pacman -S git
+    which git > /dev/null
+	if [ $? -ne 0 ]; then
+        needed_packages+="git"
 	fi
+
+    which fusermount > /dev/null
+    if [ $? -ne 0 ]; then
+        needed_packages+="fuse2"
+    fi
 
 	if [ "$1" == "qemu" ]; then
-		if [ -z "$(which qemu-system-x86_64)" ]; then
-			echo "Installing QEMU..."
-			sudo pacman -S qemu
-		else
-			echo "QEMU already installed!"
+        which qemu-system-x86_64 > /dev/null
+		if [ $? -ne 0 ]; then
+            needed_packages+="qemu"
 		fi
 	fi
 
-	echo "Installing fuse..."
-	sudo pacman -S fuse
+    if [ ${#needed_packages[@]} -ne 0 ]; then
+        echo "Need to install the following packages: " $needed_packages
+        echo "Going to run 'sudo pacman -Sy $needed_packages'"
+        sudo pacman -Sy $needed_packages
+    else
+        echo "All needed system packages are installed"
+    fi
 }
 
 ###############################################################################
