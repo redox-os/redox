@@ -1,13 +1,10 @@
 schemes: \
 	filesystem/sbin/ethernetd \
-	filesystem/sbin/ipd \
 	filesystem/sbin/orbital \
 	filesystem/sbin/ptyd \
 	filesystem/sbin/randd \
 	filesystem/sbin/redoxfs \
-	filesystem/sbin/redoxfs-mkfs \
-	filesystem/sbin/tcpd \
-	filesystem/sbin/udpd
+	filesystem/sbin/redoxfs-mkfs
 
 initfs/bin/%: schemes/%/Cargo.toml schemes/%/src/** $(BUILD)/libstd.rlib
 	mkdir -p initfs/bin

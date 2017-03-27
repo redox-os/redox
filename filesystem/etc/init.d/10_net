@@ -1,5 +1,2 @@
 /sbin/ethernetd
-/sbin/ipd
-/sbin/tcpd
-/sbin/udpd
 dhcpd -b
