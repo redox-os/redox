@@ -548,6 +548,8 @@ impl SchemeMut for Tcpd {
                         let ip = new_handle.create_ip(self.rng.gen(), tcp.to_bytes());
                         self.tcp_file.write(&ip.to_bytes()).map_err(|err| Error::new(err.raw_os_error().unwrap_or(EIO))).and(Ok(buf.len()))?;
 
+                        new_handle.seq += 1;
+
                         Handle::Tcp(new_handle)
                     } else {
                         return Err(Error::new(EINVAL));
