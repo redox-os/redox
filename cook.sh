@@ -44,6 +44,17 @@ function op {
         unfetch)
             rm -rfv build
             ;;
+        info)
+            pushd build > /dev/null
+            if [ -e Cargo.toml ]
+            then
+                package_version="$(cargo config package.version | tr -d '"')"
+            else
+                package_version="$(git rev-parse --short HEAD)"
+            fi
+            echo "$1_${package_version}"
+            popd > /dev/null
+            ;;
         update)
             pushd build > /dev/null
             skip="0"

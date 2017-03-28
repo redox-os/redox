@@ -10,6 +10,11 @@ echo "Update rust nightly"
 rustup update nightly
 echo "Downloading rust source"
 rustup component add rust-src
+if [ -z "$(which cargo-config)" ]
+then
+    echo "Installing cargo-config"
+    cargo install -f cargo-config
+fi
 if [ -z "$(which xargo)" ]
 then
     echo "Installing xargo"
