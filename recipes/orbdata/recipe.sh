@@ -1,7 +1,7 @@
 GIT=https://github.com/redox-os/orbdata.git
 
-function recipe_info {
-    echo "orbdata_0.0.1"
+function recipe_version {
+    echo "0.0.1"
     return 1
 }
 

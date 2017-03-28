@@ -15,7 +15,7 @@ export CARGOFLAGS=
 set -e
 
 function op {
-    echo -e "\033[01;38;5;215mcook - $1 $2\033[0m"
+    echo -e "\033[01;38;5;215mcook - $1 $2\033[0m" >&2
     case "$2" in
         dist)
             op $1 fetch
@@ -44,16 +44,16 @@ function op {
         unfetch)
             rm -rfv build
             ;;
-        info)
+        version)
             pushd build > /dev/null
             skip="0"
-            if [ "$(type -t recipe_info)" = "function" ]
+            if [ "$(type -t recipe_version)" = "function" ]
             then
-                recipe_info || skip="1"
+                recipe_version || skip="1"
             fi
             if [ "$skip" -eq "0" ]
             then
-                echo "$1_$(cargo config package.version | tr -d '"')"
+                cargo config package.version | tr -d '"'
             fi
             popd > /dev/null
             ;;
