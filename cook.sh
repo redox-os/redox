@@ -46,13 +46,15 @@ function op {
             ;;
         info)
             pushd build > /dev/null
-            if [ -e Cargo.toml ]
+            skip="0"
+            if [ "$(type -t recipe_info)" = "function" ]
             then
-                package_version="$(cargo config package.version | tr -d '"')"
-            else
-                package_version="$(git rev-parse --short HEAD)"
+                recipe_info || skip="1"
             fi
-            echo "$1_${package_version}"
+            if [ "$skip" -eq "0" ]
+            then
+                echo "$1_$(cargo config package.version | tr -d '"')"
+            fi
             popd > /dev/null
             ;;
         update)
