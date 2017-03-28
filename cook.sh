@@ -14,6 +14,24 @@ export CARGOFLAGS=
 
 set -e
 
+function usage {
+    echo "cook.sh $1 <op>" >&2
+    echo "  dist" >&2
+    echo "  distclean" >&2
+    echo "  build" >&2
+    echo "  clean" >&2
+    echo "  fetch" >&2
+    echo "  unfetch" >&2
+    echo "  publish" >&2
+    echo "  unpublish" >&2
+    echo "  stage" >&2
+    echo "  unstage" >&2
+    echo "  tar" >&2
+    echo "  untar" >&2
+    echo "  update" >&2
+    echo "  version" >&2
+}
+
 function op {
     echo -e "\033[01;38;5;215mcook - $1 $2\033[0m" >&2
     case "$2" in
@@ -154,7 +172,7 @@ function op {
             rm -rfv "$REPO/$1.tar"
             ;;
         *)
-            echo "cook.sh $1 {dist|distclean|build|clean|fetch|unfetch|publish|unpublish|stage|unstage|tar|untar|update}"
+            usage $1
             ;;
     esac
 }
@@ -170,8 +188,8 @@ then
             op "$1" "$arg"
         done
     else
-        echo "cook.sh: recipe '$1' not found"
+        echo "cook.sh: recipe '$1' not found" >&2
     fi
 else
-    echo "cook.sh {package} {dist|distclean|build|clean|fetch|unfetch|publish|unpublish|stage|unstage|tar|untar|update}"
+    usage "{package}"
 fi
