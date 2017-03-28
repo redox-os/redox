@@ -8,6 +8,7 @@ extrautils: \
 	filesystem/bin/mdless \
 	filesystem/bin/mtxt \
 	filesystem/bin/rem \
+	filesystem/bin/resize \
 	filesystem/bin/screenfetch
 	#filesystem/bin/dmesg filesystem/bin/info  filesystem/bin/watch
 
