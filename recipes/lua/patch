@@ -1,0 +1,15 @@
+diff -rupN lua/src/Makefile lua-redox/src/Makefile
+--- lua/src/Makefile	2015-05-27 04:10:11.000000000 -0700
++++ lua-redox/src/Makefile	2016-07-27 18:08:54.167232304 -0700
+@@ -4,9 +4,9 @@
+ # == CHANGE THE SETTINGS BELOW TO SUIT YOUR ENVIRONMENT =======================
+
+ # Your platform. See PLATS for possible values.
+-PLAT= none
++PLAT= posix
+
+-CC= gcc -std=gnu99
++CC:= $(CC) -std=gnu99
+ CFLAGS= -O2 -Wall -Wextra -DLUA_COMPAT_5_2 $(SYSCFLAGS) $(MYCFLAGS)
+ LDFLAGS= $(SYSLDFLAGS) $(MYLDFLAGS)
+ LIBS= -lm $(SYSLIBS) $(MYLIBS)
