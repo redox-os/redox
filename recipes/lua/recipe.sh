@@ -13,7 +13,7 @@ function recipe_update {
 }
 
 function recipe_build {
-    make generic
+    make generic CC="$CC -std=gnu99"
     return 1
 }
 
