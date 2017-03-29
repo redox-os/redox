@@ -48,19 +48,41 @@ function op {
             op $1 unfetch
             ;;
         fetch)
-            if [ ! -d build ]
+            if [ -z "$GIT" ]
             then
-                git clone --recursive "$GIT" build
+                if [ ! -f "$(basename "$SRC")" ]
+                then
+                    wget "$SRC"
+                fi
+
+                rm -rf build
+                tar xvf "$(basename "$SRC")"
+                mv "$DIR" build
+	    else
+                if [ ! -d build ]
+                then
+                    git clone --recursive "$GIT" build
+                fi
+
+                pushd build > /dev/null
+                git pull
+                git submodule sync
+                git submodule update --init --recursive
+                popd > /dev/null
             fi
 
-            pushd build > /dev/null
-            git pull
-            git submodule sync
-            git submodule update --init --recursive
-            popd > /dev/null
+            if [ -f "patch" ]
+            then
+	        patch -p1 -d build < patch
+            fi
+
             ;;
         unfetch)
             rm -rfv build
+            if [ ! -z "$SRC" ]
+            then
+                rm -f "$(basename "$SRC")"
+            fi
             ;;
         version)
             pushd build > /dev/null
