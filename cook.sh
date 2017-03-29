@@ -13,6 +13,7 @@ export BINDIR=bin
 export CARGOFLAGS=
 
 set -e
+shopt -s nullglob
 
 function usage {
     echo "cook.sh $1 <op>" >&2
@@ -71,10 +72,10 @@ function op {
                 popd > /dev/null
             fi
 
-            if [ -f "patch" ]
-            then
-	        patch -p1 -d build < patch
-            fi
+            for patch in *.patch
+            do
+	        patch -p1 -d build < "$patch"
+            done
 
             ;;
         unfetch)
