@@ -48,19 +48,45 @@ function op {
             op $1 unfetch
             ;;
         fetch)
-            if [ ! -d build ]
+            if [ -n "$TAR" ]
             then
-                git clone --recursive "$GIT" build
+                if [ ! -f source.tar ]
+                then
+                    wget "$TAR" -O source.tar
+                fi
+
+                if [ ! -d source ]
+                then
+                    mkdir source
+                    tar xvf source.tar -C source --strip-components 1
+                fi
+
+                rm -rf build
+                cp -r source build
+            elif [ -n "$GIT" ]
+            then
+                if [ ! -d source ]
+                then
+                    git clone --recursive "$GIT" source
+                fi
+
+                pushd source > /dev/null
+                git pull
+                git submodule sync
+                git submodule update --init --recursive
+                popd > /dev/null
+
+                rm -rf build
+                cp -r source build
             fi
 
-            pushd build > /dev/null
-            git pull
-            git submodule sync
-            git submodule update --init --recursive
-            popd > /dev/null
             ;;
         unfetch)
-            rm -rfv build
+            rm -rfv build source
+            if [ -n "$TAR" ]
+            then
+                rm -f source.tar
+            fi
             ;;
         version)
             pushd build > /dev/null
