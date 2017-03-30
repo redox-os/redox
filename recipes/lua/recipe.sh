@@ -1,6 +1,5 @@
 VERSION=5.3.1
-SRC=http://www.lua.org/ftp/lua-$VERSION.tar.gz
-DIR=lua-$VERSION
+TAR=http://www.lua.org/ftp/lua-$VERSION.tar.gz
 
 function recipe_version {
     echo "$VERSION"

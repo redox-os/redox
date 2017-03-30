@@ -13,7 +13,6 @@ export BINDIR=bin
 export CARGOFLAGS=
 
 set -e
-shopt -s nullglob
 
 function usage {
     echo "cook.sh $1 <op>" >&2
@@ -49,40 +48,44 @@ function op {
             op $1 unfetch
             ;;
         fetch)
-            if [ -z "$GIT" ]
+            if [ -n "$TAR" ]
             then
-                if [ ! -f "$(basename "$SRC")" ]
+                if [ ! -f source.tar ]
                 then
-                    wget "$SRC"
+                    wget "$TAR" -O source.tar
+                fi
+
+                if [ ! -d source ]
+                then
+                    mkdir source
+                    tar xvf source.tar -C source --strip-components 1
                 fi
 
                 rm -rf build
-                tar xvf "$(basename "$SRC")"
-                mv "$DIR" build
-	    else
-                if [ ! -d build ]
+                cp -r source build
+            elif [ -n "$GIT" ]
+            then
+                if [ ! -d source ]
                 then
-                    git clone --recursive "$GIT" build
+                    git clone --recursive "$GIT" source
                 fi
 
-                pushd build > /dev/null
+                pushd source > /dev/null
                 git pull
                 git submodule sync
                 git submodule update --init --recursive
                 popd > /dev/null
-            fi
 
-            for patch in *.patch
-            do
-	        patch -p1 -d build < "$patch"
-            done
+                rm -rf build
+                cp -r source build
+            fi
 
             ;;
         unfetch)
-            rm -rfv build
-            if [ ! -z "$SRC" ]
+            rm -rfv build source
+            if [ -n "$TAR" ]
             then
-                rm -f "$(basename "$SRC")"
+                rm -f source.tar
             fi
             ;;
         version)
