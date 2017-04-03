@@ -29,11 +29,11 @@ Please make sure you use the **latest nightly** of `rustc` before building (for 
 
 <img alt="Redox" height="150" src="https://github.com/redox-os/assets/raw/master/screenshots/Desktop.png">
 <img alt="Redox" height="150" src="https://github.com/redox-os/assets/raw/master/screenshots/Fancy_opacity.png">
-<img alt="Redox" height="150" src="https://github.com/redox-os/assets/raw/master/screenshots/File_manager.png">
+<img alt="Redox" height="150" src="https://github.com/redox-os/assets/raw/master/screenshots/IMG_1460.PNG">
 
 <img alt="Redox" height="150" src="https://github.com/redox-os/assets/raw/master/screenshots/Sodium_v1.png">
 <img alt="Redox" height="150" src="https://github.com/redox-os/assets/raw/master/screenshots/Boot.png">
-<img alt="Redox" height="150" src="https://github.com/redox-os/assets/raw/master/screenshots/start.png">
+<img alt="Redox" height="150" src="https://github.com/redox-os/assets/raw/master/screenshots/IMG_1459.PNG">
 
 ## <a name="ecosystem"> Ecosystem </a>
 
