@@ -113,7 +113,7 @@ $ make qemu kvm=no
 
 #### QEMU with KVM
 
-QEMU works faster when used without KVM(kernel-based virtual Machine). To use QEMU with KVM, you need a CPU with Intel® Virtualization Technology (Intel® VT) or AMD Virtualization™ (AMD-V™) support. You may need to reboot, go to the BIOS, and enable this feature, because by default, most systems have this feature disabled. 
+QEMU is faster when used without KVM(kernel-based virtual Machine). To use QEMU with KVM, you need a CPU with Intel® Virtualization Technology (Intel® VT), or AMD Virtualization™ (AMD-V™) support. This feature can be enabled in BIOS settings (most systems have this feature disabled). 
 
 ### <a name="manual-setup"> Manual Setup </a>
 
