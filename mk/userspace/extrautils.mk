@@ -3,6 +3,8 @@ extrautils: \
 	filesystem/bin/cksum \
 	filesystem/bin/cur \
 	filesystem/bin/grep \
+	filesystem/bin/gunzip \
+	filesystem/bin/gzip \
 	filesystem/bin/less \
 	filesystem/bin/man \
 	filesystem/bin/mdless \
