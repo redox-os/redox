@@ -26,7 +26,7 @@ do
             echo "$recipe: up to date (version $newver)."
         else
             echo "$recipe: updating $oldver -> $newver..."
-    	    ./cook.sh $recipe dist
+            ./cook.sh $recipe unstage untar dist
             publish="${publish} $recipe"
         fi
     fi
