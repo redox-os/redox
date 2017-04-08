@@ -101,6 +101,14 @@ function op {
             fi
             popd > /dev/null
             ;;
+        gitversion)
+            if [ -d build/.git ]
+            then
+                echo "$(op $1 version)-$(git -C build rev-parse --short HEAD)"
+            else
+                op $1 version
+            fi
+            ;;
         update)
             pushd build > /dev/null
             skip="0"
@@ -215,6 +223,7 @@ then
         done
     else
         echo "cook.sh: recipe '$1' not found" >&2
+        exit 1
     fi
 else
     usage "{package}"
