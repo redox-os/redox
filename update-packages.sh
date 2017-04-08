@@ -17,7 +17,7 @@ do
         ./cook.sh $recipe dist
     else
         oldver=$(./cook.sh $recipe gitversion)
-        ./cook.sh $recipe update
+        ./cook.sh $recipe fetch
         newver=$(./cook.sh $recipe gitversion)
         if [ "$oldver" = "$newver" ]
         then
