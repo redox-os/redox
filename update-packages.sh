@@ -2,7 +2,14 @@
 
 set -e
 
-for recipe in `ls -1 recipes`
+if [ $# = 0 ]
+then
+    recipes=$(ls -1 recipes)
+else
+    recipes=$@
+fi
+
+for recipe in $recipes
 do
     if [ ! -f "recipes/$recipe/stage.tar" ]
     then
