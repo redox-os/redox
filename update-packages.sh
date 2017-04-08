@@ -16,6 +16,7 @@ do
     then
         echo "$recipe: building..."
         ./cook.sh $recipe dist
+        publish="${publish} $recipe"
     else
         oldver=$(./cook.sh $recipe gitversion)
         ./cook.sh $recipe fetch
