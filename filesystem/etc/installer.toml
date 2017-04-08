@@ -10,6 +10,10 @@ prompt = false
 coreutils = {}
 extrautils = {}
 ion = {}
+netutils = {}
+pkgutils = {}
+tar = {}
+userutils = {}
 
 # User settings
 [users.root]
