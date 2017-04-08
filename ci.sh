@@ -2,6 +2,5 @@
 
 set -e
 
-./all.sh distclean
-./all.sh dist
+./update-packages.sh
 ./all.sh publish
