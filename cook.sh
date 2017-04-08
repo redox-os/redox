@@ -223,6 +223,7 @@ then
         done
     else
         echo "cook.sh: recipe '$1' not found" >&2
+        exit 1
     fi
 else
     usage "{package}"
