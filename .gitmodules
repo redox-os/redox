@@ -61,9 +61,6 @@
 [submodule "isolinux"]
 	path = isolinux
 	url = https://github.com/redox-os/isolinux.git
-[submodule "cookbook"]
-	path = cookbook
-	url = https://github.com/redox-os/cookbook.git
 [submodule "programs/init"]
 	path = programs/init
 	url = https://github.com/redox-os/init.git
