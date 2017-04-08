@@ -2,7 +2,6 @@ userspace: \
 	drivers \
 	coreutils \
 	extrautils \
-	games \
 	installer \
 	ion \
 	netutils \
@@ -12,15 +11,12 @@ userspace: \
 	schemes \
 	filesystem/bin/acid \
 	filesystem/bin/contain \
-	filesystem/bin/redox_installer \
 	filesystem/bin/smith \
 	filesystem/bin/tar
 
-include mk/userspace/binutils.mk
 include mk/userspace/coreutils.mk
 include mk/userspace/drivers.mk
 include mk/userspace/extrautils.mk
-include mk/userspace/games.mk
 include mk/userspace/installer.mk
 include mk/userspace/ion.mk
 include mk/userspace/netutils.mk
