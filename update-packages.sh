@@ -9,6 +9,7 @@ else
     recipes=$@
 fi
 
+publish=""
 for recipe in $recipes
 do
     if [ ! -f "recipes/$recipe/stage.tar" ]
@@ -25,6 +26,12 @@ do
         else
             echo "$recipe: updating $oldver -> $newver..."
     	    ./cook.sh $recipe dist
+            publish="${publish} $recipe"
         fi
     fi
+done
+
+for recipe in $publish
+do
+    ./cook.sh $recipe publish
 done
