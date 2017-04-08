@@ -574,11 +574,15 @@ impl SchemeMut for Tcpd {
             Handle::Tcp(ref mut handle) => {
                 if ! handle.is_connected() {
                     return Err(Error::new(ENOTCONN));
-                } else if let Some((_ip, tcp)) = handle.data.pop_front() {
+                } else if let Some((ip, mut tcp)) = handle.data.pop_front() {
                     let mut i = 0;
-                    while i < buf.len() && i < tcp.data.len() {
-                        buf[i] = tcp.data[i];
+                    let mut len = std::cmp::min(buf.len(), tcp.data.len());
+                    for c in tcp.data.drain(0..len) {
+                        buf[i] = c;
                         i += 1;
+                    }
+                    if !tcp.data.is_empty() {
+                        handle.data.push_front((ip, tcp));
                     }
 
                     return Ok(i);
