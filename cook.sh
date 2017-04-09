@@ -33,7 +33,7 @@ function usage {
 }
 
 function op {
-    if [ -z $COOK_QUIET ]
+    if [ ! "$COOK_QUIET" = "1" ]
     then
         echo -e "\033[01;38;5;215mcook - $1 $2\033[0m" >&2
     fi
