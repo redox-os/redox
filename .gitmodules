@@ -64,3 +64,6 @@
 [submodule "programs/init"]
 	path = programs/init
 	url = https://github.com/redox-os/init.git
+[submodule "dist/nix/rust-nightly-nix"]
+	path = dist/nix/rust-nightly-nix
+	url = https://github.com/solson/rust-nightly-nix

@@ -12,16 +12,23 @@ ifeq ($(UNAME),Darwin)
 	export STRIP=$(ARCH)-elf-strip
 	VB_AUDIO=coreaudio
 	VBM="/Applications/VirtualBox.app/Contents/MacOS/VBoxManage"
+	export GCC="x86_64-elf-gcc"
 else
 	ECHO=echo
-	FUMOUNT=fusermount -u
+	ifeq ($(FUMOUNT),)
+		FUMOUNT=fusermount -u
+	endif
 	export LD=ld
 	export LDFLAGS=--gc-sections
 	export NPROC=nproc
 	export STRIP=strip
 	VB_AUDIO="pulse"
 	VBM=VBoxManage
+	ifeq ($(GCC),)
+		export GCC="gcc"
+	endif
 endif
+
 
 # Automatic variables
 ROOT=$(PWD)
