@@ -155,3 +155,13 @@ $ make qemu kvm=no
 make qemu kvm=no vga=no
 ```
 
+### <a name="nixos"> NixOS </a>
+
+First clone as described under [Manual setup](#manual-setup), then use
+
+```
+$ nix-shell dist/nix --run "make <target>"
+```
+
+The nix expression will install a nightly rustc as well as qemu, if necessary adjust `buildInputs` to
+support more make targets.
