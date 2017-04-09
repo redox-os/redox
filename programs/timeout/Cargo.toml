@@ -1,0 +1,8 @@
+[package]
+name = "timeout"
+version = "0.1.0"
+authors = ["Jeremy Soller <jackpot51@gmail.com>"]
+
+[dependencies]
+redox_event = { git = "https://github.com/redox-os/event.git" }
+redox_syscall = "0.1"
