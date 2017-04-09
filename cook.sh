@@ -33,7 +33,11 @@ function usage {
 }
 
 function op {
-    echo -e "\033[01;38;5;215mcook - $1 $2\033[0m" >&2
+    if [ ! "$COOK_QUIET" = "1" ]
+    then
+        echo -e "\033[01;38;5;215mcook - $1 $2\033[0m" >&2
+    fi
+
     case "$2" in
         dist)
             op $1 fetch

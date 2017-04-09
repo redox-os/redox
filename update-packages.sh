@@ -18,15 +18,15 @@ do
         ./cook.sh $recipe dist
         publish="${publish} $recipe"
     else
-        oldver=$(./cook.sh $recipe gitversion)
+        oldver=$(COOK_QUIET=1 ./cook.sh $recipe gitversion)
         ./cook.sh $recipe fetch
-        newver=$(./cook.sh $recipe gitversion)
+        newver=$(COOK_QUIET=1 ./cook.sh $recipe gitversion)
         if [ "$oldver" = "$newver" ]
         then
             echo "$recipe: up to date (version $newver)."
         else
             echo "$recipe: updating $oldver -> $newver..."
-    	    ./cook.sh $recipe dist
+            ./cook.sh $recipe unstage untar dist
             publish="${publish} $recipe"
         fi
     fi
