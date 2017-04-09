@@ -173,9 +173,6 @@ impl Tcpd {
                 break;
             }
 
-            let mut time = TimeSpec::default();
-            syscall::clock_gettime(CLOCK_MONOTONIC, &mut time).map_err(|err| io::Error::from_raw_os_error(err.errno))?;
-
             let a = packet.a;
             self.handle(&mut packet);
             if packet.a == (-EWOULDBLOCK) as usize {
@@ -191,6 +188,9 @@ impl Tcpd {
 
                                 let timeout = match handle.read_timeout {
                                     Some(read_timeout) => {
+                                        let mut time = TimeSpec::default();
+                                        syscall::clock_gettime(CLOCK_MONOTONIC, &mut time).map_err(|err| io::Error::from_raw_os_error(err.errno))?;
+
                                         let timeout = add_time(&time, &read_timeout);
                                         self.time_file.write(&timeout)?;
                                         Some(timeout)
@@ -205,6 +205,9 @@ impl Tcpd {
 
                                 let timeout = match handle.write_timeout {
                                     Some(write_timeout) => {
+                                        let mut time = TimeSpec::default();
+                                        syscall::clock_gettime(CLOCK_MONOTONIC, &mut time).map_err(|err| io::Error::from_raw_os_error(err.errno))?;
+
                                         let timeout = add_time(&time, &write_timeout);
                                         self.time_file.write(&timeout)?;
                                         Some(timeout)
@@ -677,7 +680,7 @@ impl SchemeMut for Tcpd {
         };
 
         if let Handle::Tcp(ref mut handle) = *self.handles.get_mut(&file).ok_or(Error::new(EBADF))? {
-            let read_timeout = |timeout: &Option<TimeSpec>, buf: &mut [u8]| -> Result<usize> {
+            let get_timeout = |timeout: &Option<TimeSpec>, buf: &mut [u8]| -> Result<usize> {
                 if let Some(ref timespec) = *timeout {
                     timespec.deref().read(buf).map_err(|err| Error::new(err.raw_os_error().unwrap_or(EIO)))
                 } else {
@@ -695,10 +698,10 @@ impl SchemeMut for Tcpd {
                     }
                 },
                 SettingKind::ReadTimeout => {
-                    read_timeout(&handle.read_timeout, buf)
+                    get_timeout(&handle.read_timeout, buf)
                 },
                 SettingKind::WriteTimeout => {
-                    read_timeout(&handle.write_timeout, buf)
+                    get_timeout(&handle.write_timeout, buf)
                 }
             }
         } else {
@@ -734,7 +737,7 @@ impl SchemeMut for Tcpd {
         };
 
         if let Handle::Tcp(ref mut handle) = *self.handles.get_mut(&file).ok_or(Error::new(EBADF))? {
-            let write_timeout = |timeout: &mut Option<TimeSpec>, buf: &[u8]| -> Result<usize> {
+            let set_timeout = |timeout: &mut Option<TimeSpec>, buf: &[u8]| -> Result<usize> {
                 if buf.len() >= mem::size_of::<TimeSpec>() {
                     let mut timespec = TimeSpec::default();
                     let count = timespec.deref_mut().write(buf).map_err(|err| Error::new(err.raw_os_error().unwrap_or(EIO)))?;
@@ -756,10 +759,10 @@ impl SchemeMut for Tcpd {
                     }
                 },
                 SettingKind::ReadTimeout => {
-                    write_timeout(&mut handle.read_timeout, buf)
+                    set_timeout(&mut handle.read_timeout, buf)
                 },
                 SettingKind::WriteTimeout => {
-                    write_timeout(&mut handle.write_timeout, buf)
+                    set_timeout(&mut handle.write_timeout, buf)
                 }
             }
         } else {
