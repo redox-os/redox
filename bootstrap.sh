@@ -1,4 +1,4 @@
-#! /bin/bash
+#!/usr/bin/env bash
 
 ##########################################################
 # This function is simply a banner to introduce the script

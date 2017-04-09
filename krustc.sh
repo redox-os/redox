@@ -1,4 +1,4 @@
-#!/bin/bash
+#!/usr/bin/env bash
 have_o=false
 for arg in "$@"; do
     if [[ "$arg" = "-o" ]]; then
