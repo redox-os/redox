@@ -1,0 +1,14 @@
+[workspace]
+members = [
+    "ahcid",
+    "alxd",
+    "bgad",
+    "e1000d",
+    "nvmed",
+    "pcid",
+    "ps2d",
+    "rtl8168d",
+    "vboxd",
+    "vesad",
+    "xhcid"
+]
