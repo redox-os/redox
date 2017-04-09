@@ -12,7 +12,8 @@ userspace: \
 	filesystem/bin/acid \
 	filesystem/bin/contain \
 	filesystem/bin/smith \
-	filesystem/bin/tar
+	filesystem/bin/tar \
+	filesystem/bin/timeout
 
 include mk/userspace/coreutils.mk
 include mk/userspace/drivers.mk

@@ -24,6 +24,7 @@ members = [
     "programs/pkgutils",
     "programs/smith",
     "programs/tar",
+    "programs/timeout",
     "programs/userutils",
     "schemes/ethernetd",
     "schemes/ipd",
