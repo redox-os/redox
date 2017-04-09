@@ -16,9 +16,24 @@ use std::rc::Rc;
 use event::EventQueue;
 use netutils::{n16, n32, Ipv4, Ipv4Addr, Ipv4Header, Tcp, TcpHeader, Checksum, TCP_FIN, TCP_SYN, TCP_RST, TCP_PSH, TCP_ACK};
 use syscall::data::{Packet, TimeSpec};
-use syscall::error::{Error, Result, EACCES, EADDRINUSE, EBADF, EIO, EINVAL, EISCONN, EMSGSIZE, ENOTCONN, EWOULDBLOCK};
-use syscall::flag::{EVENT_READ, F_GETFL, F_SETFL, O_ACCMODE, O_CREAT, O_RDWR, O_NONBLOCK};
+use syscall::error::{Error, Result, EACCES, EADDRINUSE, EBADF, EIO, EINVAL, EISCONN, EMSGSIZE, ENOTCONN, ETIMEDOUT, EWOULDBLOCK};
+use syscall::flag::{CLOCK_MONOTONIC, EVENT_READ, F_GETFL, F_SETFL, O_ACCMODE, O_CREAT, O_RDWR, O_NONBLOCK};
 use syscall::scheme::SchemeMut;
+
+fn add_time(a: &TimeSpec, b: &TimeSpec) -> TimeSpec {
+    let mut secs = a.tv_sec + b.tv_sec;
+
+    let mut nsecs = a.tv_nsec + b.tv_nsec;
+    while nsecs >= 1000000000 {
+        nsecs -= 1000000000;
+        secs += 1;
+    }
+
+    TimeSpec {
+        tv_sec: secs,
+        tv_nsec: nsecs
+    }
+}
 
 fn parse_socket(socket: &str) -> (Ipv4Addr, u16) {
     let mut socket_parts = socket.split(":");
@@ -55,8 +70,8 @@ struct TcpHandle {
     ack: u32,
     data: VecDeque<(Ipv4, Tcp)>,
     todo_dup: VecDeque<Packet>,
-    todo_read: VecDeque<Packet>,
-    todo_write: VecDeque<Packet>,
+    todo_read: VecDeque<(Option<TimeSpec>, Packet)>,
+    todo_write: VecDeque<(Option<TimeSpec>, Packet)>,
 }
 
 impl TcpHandle {
@@ -131,6 +146,7 @@ enum Handle {
 struct Tcpd {
     scheme_file: File,
     tcp_file: File,
+    time_file: File,
     ports: BTreeMap<u16, usize>,
     next_id: usize,
     handles: BTreeMap<usize, Handle>,
@@ -138,10 +154,11 @@ struct Tcpd {
 }
 
 impl Tcpd {
-    fn new(scheme_file: File, tcp_file: File) -> Self {
+    fn new(scheme_file: File, tcp_file: File, time_file: File) -> Self {
         Tcpd {
             scheme_file: scheme_file,
             tcp_file: tcp_file,
+            time_file: time_file,
             ports: BTreeMap::new(),
             next_id: 1,
             handles: BTreeMap::new(),
@@ -156,6 +173,9 @@ impl Tcpd {
                 break;
             }
 
+            let mut time = TimeSpec::default();
+            syscall::clock_gettime(CLOCK_MONOTONIC, &mut time).map_err(|err| io::Error::from_raw_os_error(err.errno))?;
+
             let a = packet.a;
             self.handle(&mut packet);
             if packet.a == (-EWOULDBLOCK) as usize {
@@ -168,11 +188,31 @@ impl Tcpd {
                             },
                             syscall::number::SYS_READ => {
                                 packet.a = a;
-                                handle.todo_read.push_back(packet);
+
+                                let timeout = match handle.read_timeout {
+                                    Some(read_timeout) => {
+                                        let timeout = add_time(&time, &read_timeout);
+                                        self.time_file.write(&timeout)?;
+                                        Some(timeout)
+                                    },
+                                    None => None
+                                };
+
+                                handle.todo_read.push_back((timeout, packet));
                             },
                             syscall::number::SYS_WRITE => {
                                 packet.a = a;
-                                handle.todo_write.push_back(packet);
+
+                                let timeout = match handle.write_timeout {
+                                    Some(write_timeout) => {
+                                        let timeout = add_time(&time, &write_timeout);
+                                        self.time_file.write(&timeout)?;
+                                        Some(timeout)
+                                    },
+                                    None => None
+                                };
+
+                                handle.todo_write.push_back((timeout, packet));
                             },
                             _ => {
                                 self.scheme_file.write(&packet)?;
@@ -271,7 +311,7 @@ impl Tcpd {
                                 }
 
                                 while ! handle.todo_read.is_empty() && (! handle.data.is_empty() || handle.read_closed()) {
-                                    let mut packet = handle.todo_read.pop_front().unwrap();
+                                    let (_timeout, mut packet) = handle.todo_read.pop_front().unwrap();
                                     let buf = unsafe { slice::from_raw_parts_mut(packet.c as *mut u8, packet.d) };
                                     if let Some((_ip, tcp)) = handle.data.pop_front() {
                                         let mut i = 0;
@@ -288,7 +328,7 @@ impl Tcpd {
                                 }
 
                                 if ! handle.todo_write.is_empty() && handle.state == State::Established {
-                                    let mut packet = handle.todo_write.pop_front().unwrap();
+                                    let (_timeout, mut packet) = handle.todo_write.pop_front().unwrap();
                                     let buf = unsafe { slice::from_raw_parts(packet.c as *const u8, packet.d) };
 
                                     let tcp = handle.create_tcp(TCP_ACK | TCP_PSH, buf.to_vec());
@@ -397,6 +437,49 @@ impl Tcpd {
                             self.handles.insert(packet.a, new_handle);
                             self.scheme_file.write(&packet)?;
                         }
+                    }
+                }
+            }
+        }
+
+        Ok(())
+    }
+
+    fn time_event(&mut self) -> io::Result<()> {
+        let mut time = TimeSpec::default();
+        if self.time_file.read(&mut time)? < mem::size_of::<TimeSpec>() {
+            return Err(io::Error::from_raw_os_error(EINVAL));
+        }
+
+        for (_id, handle) in self.handles.iter_mut() {
+            if let Handle::Tcp(ref mut handle) = *handle {
+                let mut i = 0;
+                while i < handle.todo_read.len() {
+                    if let Some(timeout) =  handle.todo_read.get(i).map(|e| e.0.clone()).unwrap_or(None) {
+                        if time.tv_sec > timeout.tv_sec || (time.tv_sec == timeout.tv_sec && time.tv_nsec >= timeout.tv_nsec) {
+                            let (_timeout, mut packet) = handle.todo_read.remove(i).unwrap();
+                            packet.a = (-ETIMEDOUT) as usize;
+                            self.scheme_file.write(&packet)?;
+                        } else {
+                            i += 1;
+                        }
+                    } else {
+                        i += 1;
+                    }
+                }
+
+                let mut i = 0;
+                while i < handle.todo_write.len() {
+                    if let Some(timeout) = handle.todo_write.get(i).map(|e| e.0.clone()).unwrap_or(None) {
+                        if time.tv_sec > timeout.tv_sec || (time.tv_sec == timeout.tv_sec && time.tv_nsec >= timeout.tv_nsec) {
+                            let (_timeout, mut packet) = handle.todo_write.remove(i).unwrap();
+                            packet.a = (-ETIMEDOUT) as usize;
+                            self.scheme_file.write(&packet)?;
+                        } else {
+                            i += 1;
+                        }
+                    } else {
+                        i += 1;
                     }
                 }
             }
@@ -785,13 +868,20 @@ impl SchemeMut for Tcpd {
     }
 }
 
-fn daemon(tcp_fd: usize, scheme_fd: usize) {
-    let tcp_file = unsafe { File::from_raw_fd(tcp_fd) };
+fn daemon(scheme_fd: usize, tcp_fd: usize, time_fd: usize) {
     let scheme_file = unsafe { File::from_raw_fd(scheme_fd) };
+    let tcp_file = unsafe { File::from_raw_fd(tcp_fd) };
+    let time_file = unsafe { File::from_raw_fd(time_fd) };
 
-    let tcpd = Rc::new(RefCell::new(Tcpd::new(scheme_file, tcp_file)));
+    let tcpd = Rc::new(RefCell::new(Tcpd::new(scheme_file, tcp_file, time_file)));
 
     let mut event_queue = EventQueue::<()>::new().expect("tcpd: failed to create event queue");
+
+    let time_tcpd = tcpd.clone();
+    event_queue.add(time_fd, move |_count: usize| -> io::Result<Option<()>> {
+        time_tcpd.borrow_mut().time_event()?;
+        Ok(None)
+    }).expect("tcpd: failed to listen to events on time:");
 
     let tcp_tcpd = tcpd.clone();
     event_queue.add(tcp_fd, move |_count: usize| -> io::Result<Option<()>> {
@@ -810,23 +900,32 @@ fn daemon(tcp_fd: usize, scheme_fd: usize) {
 }
 
 fn main() {
-    match syscall::open("ip:6", O_RDWR | O_NONBLOCK) {
-        Ok(tcp_fd) => {
-            // Daemonize
-            if unsafe { syscall::clone(0).unwrap() } == 0 {
-                match syscall::open(":tcp", O_RDWR | O_CREAT | O_NONBLOCK) {
-                    Ok(scheme_fd) => {
-                        daemon(tcp_fd, scheme_fd);
-                    },
-                    Err(err) => {
-                        println!("tcpd: failed to create tcp scheme: {}", err);
-                        process::exit(1);
+    let time_path = format!("time:{}", CLOCK_MONOTONIC);
+    match syscall::open(&time_path, O_RDWR) {
+        Ok(time_fd) => {
+            match syscall::open("ip:6", O_RDWR | O_NONBLOCK) {
+                Ok(tcp_fd) => {
+                    // Daemonize
+                    if unsafe { syscall::clone(0).unwrap() } == 0 {
+                        match syscall::open(":tcp", O_RDWR | O_CREAT | O_NONBLOCK) {
+                            Ok(scheme_fd) => {
+                                daemon(scheme_fd, tcp_fd, time_fd);
+                            },
+                            Err(err) => {
+                                println!("tcpd: failed to create tcp scheme: {}", err);
+                                process::exit(1);
+                            }
+                        }
                     }
+                },
+                Err(err) => {
+                    println!("tcpd: failed to open ip:6: {}", err);
+                    process::exit(1);
                 }
             }
         },
         Err(err) => {
-            println!("tcpd: failed to open ip:6: {}", err);
+            println!("tcpd: failed to open {}: {}", time_path, err);
             process::exit(1);
         }
     }
