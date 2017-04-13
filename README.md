@@ -90,7 +90,7 @@ and then rebuild!
 
 If you're interested in this project, and you'd like to help us out, [here](CONTRIBUTING.md) is a list of ways you can do just that.
 
-## <a name="cloning-building-running"> Cloning, Building, and Running </a>
+## <a name="cloning-building-running"> Cloning, Building and Running </a>
 
 Redox is big, even compressed. Downloading the full history may take a lot of bandwidth, and can even be costly on some data plans. Clone at your own risk!
 
