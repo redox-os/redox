@@ -42,6 +42,16 @@ impl SchemeMut for RandScheme {
         Ok(i)
     }
 
+    fn fpath(&mut self, _file: usize, buf: &mut [u8]) -> Result<usize> {
+        let mut i = 0;
+        let scheme_path = b"rand";
+        while i < buf.len() && i < scheme_path.len() {
+            buf[i] = scheme_path[i];
+            i += 1;
+        }
+        Ok(i)
+    }
+
     fn close(&mut self, _file: usize) -> Result<usize> {
         Ok(0)
     }
