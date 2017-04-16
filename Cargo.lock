@@ -1113,7 +1113,12 @@ source = "git+https://github.com/redox-os/syscall.git#863080967dfee40e0a0c74936e
 [[package]]
 name = "redox_syscall"
 version = "0.1.17"
+
+[[package]]
+name = "redox_syscall"
+version = "0.1.17"
 source = "registry+https://github.com/rust-lang/crates.io-index"
+replace = "redox_syscall 0.1.17"
 
 [[package]]
 name = "redoxfs"
