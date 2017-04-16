@@ -100,3 +100,6 @@
 [submodule "libs/same-file"]
 	path = libs/same-file
 	url = https://github.com/redox-os/same-file.git
+[submodule "libs/mio"]
+	path = libs/mio
+	url = https://github.com/redox-os/mio.git
