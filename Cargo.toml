@@ -37,9 +37,12 @@ members = [
 ]
 
 [replace]
+"extra:0.1.0" = { path = "libs/extra" }
 "jpeg-decoder:0.1.12" = { path = "libs/jpeg-decoder" }
 "orbclient:0.3.3" = { path = "libs/orbclient" }
 "orbfont:0.1.7" = { path = "libs/orbfont" }
 "orbimage:0.1.15" = { path = "libs/orbimage" }
 "orbtk:0.2.19" = { path = "libs/orbtk" }
+"redox_event:0.1.0" = { path = "libs/event" }
+"redox_syscall:0.1.17" = { path = "libs/syscall" }
 "termion:1.3.0" = { path = "libs/termion" }

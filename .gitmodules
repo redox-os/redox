@@ -82,3 +82,12 @@
 [submodule "libs/termion"]
 	path = libs/termion
 	url = https://github.com/redox-os/termion.git
+[submodule "libs/syscall"]
+	path = libs/syscall
+	url = https://github.com/redox-os/syscall.git
+[submodule "libs/extra"]
+	path = libs/extra
+	url = https://github.com/redox-os/libextra.git
+[submodule "libs/event"]
+	path = libs/event
+	url = https://github.com/redox-os/event.git
