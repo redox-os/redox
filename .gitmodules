@@ -64,3 +64,21 @@
 [submodule "programs/init"]
 	path = programs/init
 	url = https://github.com/redox-os/init.git
+[submodule "libs/orbclient"]
+	path = libs/orbclient
+	url = https://github.com/redox-os/orbclient.git
+[submodule "libs/orbtk"]
+	path = libs/orbtk
+	url = https://github.com/redox-os/orbtk.git
+[submodule "libs/orbimage"]
+	path = libs/orbimage
+	url = https://github.com/redox-os/orbimage.git
+[submodule "libs/orbfont"]
+	path = libs/orbfont
+	url = https://github.com/redox-os/orbfont.git
+[submodule "libs/jpeg-decoder"]
+	path = libs/jpeg-decoder
+	url = https://github.com/redox-os/jpeg-decoder.git
+[submodule "libs/termion"]
+	path = libs/termion
+	url = https://github.com/redox-os/termion.git

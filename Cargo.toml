@@ -37,5 +37,9 @@ members = [
 ]
 
 [replace]
-"jpeg-decoder:0.1.12" = { git = "https://github.com/redox-os/jpeg-decoder.git", branch = "single_thread" }
-"termion:1.3.0" = { git = "https://github.com/redox-os/termion.git" }
+"jpeg-decoder:0.1.12" = { path = "libs/jpeg-decoder" }
+"orbclient:0.3.3" = { path = "libs/orbclient" }
+"orbfont:0.1.7" = { path = "libs/orbfont" }
+"orbimage:0.1.15" = { path = "libs/orbimage" }
+"orbtk:0.2.19" = { path = "libs/orbtk" }
+"termion:1.3.0" = { path = "libs/termion" }
