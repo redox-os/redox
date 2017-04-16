@@ -11,7 +11,7 @@ use std::str;
 
 use syscall::data::Packet;
 use syscall::error::{Error, Result, EBADF, EINVAL, ENOENT, EPIPE, EWOULDBLOCK};
-use syscall::flag::O_NONBLOCK;
+use syscall::flag::{F_GETFL, F_SETFL, O_ACCMODE, O_NONBLOCK};
 use syscall::scheme::SchemeMut;
 
 pub struct PtyScheme {
@@ -97,6 +97,18 @@ impl SchemeMut for PtyScheme {
         let slave_opt = self.ptys.1.get(&id).map(|pipe| pipe.clone());
         if let Some(pipe) = slave_opt {
             return pipe.write(buf);
+        }
+
+        Err(Error::new(EBADF))
+    }
+
+    fn fcntl(&mut self, id: usize, cmd: usize, arg: usize) -> Result<usize> {
+        if let Some(pipe) = self.ptys.0.get_mut(&id) {
+            return pipe.fcntl(cmd, arg);
+        }
+
+        if let Some(pipe) = self.ptys.1.get_mut(&id) {
+            return pipe.fcntl(cmd, arg);
         }
 
         Err(Error::new(EBADF))
@@ -203,6 +215,17 @@ impl PtyMaster {
 
         Ok(i)
     }
+
+    fn fcntl(&mut self, cmd: usize, arg: usize) -> Result<usize> {
+        match cmd {
+            F_GETFL => Ok(self.flags),
+            F_SETFL => {
+                self.flags = arg & ! O_ACCMODE;
+                Ok(0)
+            },
+            _ => Err(Error::new(EINVAL))
+        }
+    }
 }
 
 /// Read side of a pipe
@@ -284,6 +307,17 @@ impl PtySlave {
             Ok(0)
         } else {
             Err(Error::new(EPIPE))
+        }
+    }
+
+    fn fcntl(&mut self, cmd: usize, arg: usize) -> Result<usize> {
+        match cmd {
+            F_GETFL => Ok(self.flags),
+            F_SETFL => {
+                self.flags = arg & ! O_ACCMODE;
+                Ok(0)
+            },
+            _ => Err(Error::new(EINVAL))
         }
     }
 }
