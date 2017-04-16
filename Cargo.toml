@@ -13,6 +13,7 @@ members = [
     "drivers/xhcid",
     "installer",
     "kernel",
+    "libs/orbclient",
     "programs/acid",
     "programs/binutils",
     "programs/contain",
@@ -43,7 +44,7 @@ members = [
 "extra:0.1.0" = { path = "libs/extra" }
 "jpeg-decoder:0.1.12" = { path = "libs/jpeg-decoder" }
 "mio:0.6.2" = { path = "libs/mio" }
-"orbclient:0.3.3" = { path = "libs/orbclient" }
+"orbclient:0.3.4" = { path = "libs/orbclient" }
 "orbfont:0.1.7" = { path = "libs/orbfont" }
 "orbimage:0.1.15" = { path = "libs/orbimage" }
 "orbtk:0.2.19" = { path = "libs/orbtk" }
