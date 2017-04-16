@@ -39,6 +39,7 @@ members = [
 [replace]
 "extra:0.1.0" = { path = "libs/extra" }
 "jpeg-decoder:0.1.12" = { path = "libs/jpeg-decoder" }
+"mio:0.6.2" = { path = "libs/mio" }
 "orbclient:0.3.3" = { path = "libs/orbclient" }
 "orbfont:0.1.7" = { path = "libs/orbfont" }
 "orbimage:0.1.15" = { path = "libs/orbimage" }
