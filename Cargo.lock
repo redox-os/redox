@@ -1044,7 +1044,12 @@ dependencies = [
 [[package]]
 name = "ransid"
 version = "0.2.7"
+
+[[package]]
+name = "ransid"
+version = "0.2.7"
 source = "registry+https://github.com/rust-lang/crates.io-index"
+replace = "ransid 0.2.7"
 
 [[package]]
 name = "raw-cpuid"
