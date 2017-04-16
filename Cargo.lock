@@ -866,6 +866,7 @@ dependencies = [
  "orbimage 0.1.15 (registry+https://github.com/rust-lang/crates.io-index)",
  "orbtk 0.2.19 (registry+https://github.com/rust-lang/crates.io-index)",
  "ransid 0.2.7 (registry+https://github.com/rust-lang/crates.io-index)",
+ "redox_event 0.1.0 (git+https://github.com/redox-os/event.git)",
  "redox_syscall 0.1.17 (registry+https://github.com/rust-lang/crates.io-index)",
  "rustls 0.5.8 (registry+https://github.com/rust-lang/crates.io-index)",
  "tendril 0.2.3 (registry+https://github.com/rust-lang/crates.io-index)",
