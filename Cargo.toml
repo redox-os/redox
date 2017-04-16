@@ -45,6 +45,7 @@ members = [
 "orbimage:0.1.15" = { path = "libs/orbimage" }
 "orbtk:0.2.19" = { path = "libs/orbtk" }
 "pager:0.1.0" = { path = "libs/pager" }
+"ralloc:1.0.0" = { path = "libs/ralloc" }
 "ransid:0.2.7" = { path = "libs/ransid" }
 "redox_event:0.1.0" = { path = "libs/event" }
 "redox_syscall:0.1.17" = { path = "libs/syscall" }
