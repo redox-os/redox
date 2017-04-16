@@ -91,3 +91,12 @@
 [submodule "libs/event"]
 	path = libs/event
 	url = https://github.com/redox-os/event.git
+[submodule "libs/pager"]
+	path = libs/pager
+	url = https://github.com/redox-os/libpager.git
+[submodule "libs/ransid"]
+	path = libs/ransid
+	url = https://github.com/redox-os/ransid.git
+[submodule "libs/same-file"]
+	path = libs/same-file
+	url = https://github.com/redox-os/same-file.git
