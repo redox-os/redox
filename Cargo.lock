@@ -1246,21 +1246,6 @@ version = "0.3.15"
 source = "registry+https://github.com/rust-lang/crates.io-index"
 
 [[package]]
-name = "ralloc"
-version = "1.0.0"
-dependencies = [
- "ralloc_shim 0.1.1",
- "unborrow 0.3.1 (registry+https://github.com/rust-lang/crates.io-index)",
-]
-
-[[package]]
-name = "ralloc_shim"
-version = "0.1.1"
-dependencies = [
- "sc 0.1.5 (registry+https://github.com/rust-lang/crates.io-index)",
-]
-
-[[package]]
 name = "rand"
 version = "0.3.15"
 source = "registry+https://github.com/rust-lang/crates.io-index"
@@ -1496,11 +1481,6 @@ dependencies = [
  "kernel32-sys 0.2.2 (registry+https://github.com/rust-lang/crates.io-index)",
  "winapi 0.2.8 (registry+https://github.com/rust-lang/crates.io-index)",
 ]
-
-[[package]]
-name = "sc"
-version = "0.1.5"
-source = "registry+https://github.com/rust-lang/crates.io-index"
 
 [[package]]
 name = "scoped_threadpool"
@@ -1896,11 +1876,6 @@ dependencies = [
 ]
 
 [[package]]
-name = "unborrow"
-version = "0.3.1"
-source = "registry+https://github.com/rust-lang/crates.io-index"
-
-[[package]]
 name = "unicase"
 version = "1.4.0"
 source = "registry+https://github.com/rust-lang/crates.io-index"
@@ -2266,7 +2241,6 @@ dependencies = [
 "checksum rustls 0.5.8 (registry+https://github.com/rust-lang/crates.io-index)" = "fcfb2a577b14dca9caf13e6c6aa86d61158aa677347fbc155e5a1dac0f3b718f"
 "checksum rusttype 0.2.1 (registry+https://github.com/rust-lang/crates.io-index)" = "c3c64ffc93b0cc5a6f5e5e84da2a4082b0271e0a1dd76e821bdac570bda7797e"
 "checksum same-file 0.1.3 (registry+https://github.com/rust-lang/crates.io-index)" = "d931a44fdaa43b8637009e7632a02adc4f2b2e0733c08caa4cf00e8da4a117a7"
-"checksum sc 0.1.5 (registry+https://github.com/rust-lang/crates.io-index)" = "75a5fa736d03da66e77fb5827f78e2112754c6c78035c4269f192d21615b39f0"
 "checksum scoped_threadpool 0.1.7 (registry+https://github.com/rust-lang/crates.io-index)" = "3ef399c8893e8cb7aa9696e895427fab3a6bf265977bb96e126f24ddd2cda85a"
 "checksum scroll 0.3.0 (registry+https://github.com/rust-lang/crates.io-index)" = "39c82d0508f6a56bdb409031382d62e9fa7f5e198fa04dfc06a7a96f1dfc101d"
 "checksum sdl2 0.29.1 (registry+https://github.com/rust-lang/crates.io-index)" = "4c366cfa1f22d001774214ce2fb13f369af760b016bc79cc62d7f5ae15c00fea"
@@ -2310,7 +2284,6 @@ dependencies = [
 "checksum traitobject 0.1.0 (registry+https://github.com/rust-lang/crates.io-index)" = "efd1f82c56340fdf16f2a953d7bda4f8fdffba13d93b00844c25572110b26079"
 "checksum typeable 0.1.2 (registry+https://github.com/rust-lang/crates.io-index)" = "1410f6f91f21d1612654e7cc69193b0334f909dcf2c790c4826254fbb86f8887"
 "checksum typenum 1.8.0 (registry+https://github.com/rust-lang/crates.io-index)" = "f06b0aa9c30a626496836e8de28bd2910cf6c8614e9579c9f8644b0a5d8fb0f5"
-"checksum unborrow 0.3.1 (registry+https://github.com/rust-lang/crates.io-index)" = "e92e959f029e4f8ee25d70d15ab58d2b46f98a17bc238b9265ff0c26f6f3d67f"
 "checksum unicase 1.4.0 (registry+https://github.com/rust-lang/crates.io-index)" = "13a5906ca2b98c799f4b1ab4557b76367ebd6ae5ef14930ec841c74aed5f3764"
 "checksum unicode-bidi 0.2.5 (registry+https://github.com/rust-lang/crates.io-index)" = "d3a078ebdd62c0e71a709c3d53d2af693fe09fe93fbff8344aebe289b78f9032"
 "checksum unicode-normalization 0.1.4 (registry+https://github.com/rust-lang/crates.io-index)" = "e28fa37426fceeb5cf8f41ee273faa7c82c47dc8fba5853402841e665fcd86ff"
