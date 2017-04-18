@@ -1,7 +1,7 @@
 build/filesystem.bin: userspace
 	-$(FUMOUNT) build/filesystem/ || true
 	rm -rf $@ build/filesystem/
-	dd if=/dev/zero of=$@ bs=1048576 count=64
+	dd if=/dev/zero of=$@ bs=1048576 count=128
 	cargo run --manifest-path schemes/redoxfs/Cargo.toml --release --bin redoxfs-mkfs $@
 	mkdir -p build/filesystem/
 	cargo build --manifest-path schemes/redoxfs/Cargo.toml --release --bin redoxfs
