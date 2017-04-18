@@ -2,10 +2,10 @@ build/filesystem.bin: userspace
 	-$(FUMOUNT) build/filesystem/ || true
 	rm -rf $@ build/filesystem/
 	dd if=/dev/zero of=$@ bs=1048576 count=128
-	cargo run --manifest-path schemes/redoxfs/Cargo.toml --release --bin redoxfs-mkfs $@
+	cargo run --manifest-path schemes/redoxfs/Cargo.toml --quiet --release --bin redoxfs-mkfs $@
 	mkdir -p build/filesystem/
-	cargo build --manifest-path schemes/redoxfs/Cargo.toml --release --bin redoxfs
-	cargo run --manifest-path schemes/redoxfs/Cargo.toml --release --bin redoxfs -- $@ build/filesystem/
+	cargo build --manifest-path schemes/redoxfs/Cargo.toml --quiet --release --bin redoxfs
+	cargo run --manifest-path schemes/redoxfs/Cargo.toml --quiet --release --bin redoxfs -- $@ build/filesystem/
 	sleep 2
 	pgrep redoxfs
 	cp -RL filesystem/* build/filesystem/
@@ -30,8 +30,8 @@ build/filesystem.bin: userspace
 
 mount: FORCE
 	mkdir -p build/filesystem/
-	cargo build --manifest-path schemes/redoxfs/Cargo.toml --release --bin redoxfs
-	cargo run --manifest-path schemes/redoxfs/Cargo.toml --release --bin redoxfs -- build/harddrive.bin build/filesystem/
+	cargo build --manifest-path schemes/redoxfs/Cargo.toml --quiet --release --bin redoxfs
+	cargo run --manifest-path schemes/redoxfs/Cargo.toml --quiet --release --bin redoxfs -- build/harddrive.bin build/filesystem/
 	sleep 2
 	pgrep redoxfs
 
