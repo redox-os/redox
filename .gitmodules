@@ -34,9 +34,6 @@
 [submodule "programs/acid"]
 	path = programs/acid
 	url = https://github.com/redox-os/acid.git
-[submodule "programs/tar"]
-	path = programs/tar
-	url = https://github.com/redox-os/tar-rs.git
 [submodule "programs/pkgutils"]
 	path = programs/pkgutils
 	url = https://github.com/redox-os/pkgutils.git
@@ -115,3 +112,6 @@
 [submodule "libs/ralloc"]
 	path = libs/ralloc
 	url = https://github.com/redox-os/ralloc.git
+[submodule "libs/tar"]
+	path = libs/tar
+	url = https://github.com/redox-os/tar-rs.git
