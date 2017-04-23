@@ -11,7 +11,8 @@ extrautils: \
 	filesystem/bin/mtxt \
 	filesystem/bin/rem \
 	filesystem/bin/resize \
-	filesystem/bin/screenfetch
+	filesystem/bin/screenfetch \
+	filesystem/bin/tar
 	#filesystem/bin/dmesg filesystem/bin/info  filesystem/bin/watch
 
 filesystem/bin/%: programs/extrautils/Cargo.toml programs/extrautils/src/bin/%.rs $(BUILD)/libstd.rlib
