@@ -2,3 +2,6 @@
 	path = libc-artifacts
 	url = https://github.com/redox-os/libc-artifacts.git
 	branch = master
+[submodule "pkgutils"]
+	path = pkgutils
+	url = https://github.com/redox-os/pkgutils.git
