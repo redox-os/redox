@@ -195,9 +195,7 @@ function op {
             rm -rfv stage
             ;;
         tar)
-            pushd stage > /dev/null
-            tar cfv ../stage.tar .
-            popd > /dev/null
+            $ROOT/pkgutils/target/release/pkg create stage
             ;;
         untar)
             rm -rfv stage.tar
