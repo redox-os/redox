@@ -195,10 +195,14 @@ function op {
             rm -rfv stage
             ;;
         tar)
+            mkdir -p stage/etc/pkg.d
+            echo "name = \"$1\"" > "stage/etc/pkg.d/$1.toml"
+            echo "version = \"$(op $1 version)\"" >> "stage/etc/pkg.d/$1.toml"
+            echo "target = \"$TARGET\"" >> "stage/etc/pkg.d/$1.toml"
             $ROOT/pkgutils/target/release/pkg create stage
             ;;
         untar)
-            rm -rfv stage.tar
+            rm -rfv stage.tar stage.sig
             ;;
         publish)
             mkdir -p "$REPO"
