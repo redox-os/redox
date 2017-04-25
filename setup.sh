@@ -4,6 +4,9 @@ set -e
 echo "Downloading latest libc-artifacts"
 git submodule update --init --remote libc-artifacts
 
+echo "Downloading latest pkgutils"
+git submodule update --init --remote pkgutils
+
 echo "Defaulting to rust nightly"
 rustup override set nightly
 echo "Update rust nightly"
