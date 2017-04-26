@@ -3,4 +3,6 @@ repo
 source
 source.tar
 stage
+stage.sig
 stage.tar
+stage.toml
