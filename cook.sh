@@ -195,21 +195,24 @@ function op {
             rm -rfv stage
             ;;
         tar)
-            mkdir -p stage/etc/pkg.d
-            echo "name = \"$1\"" > "stage/etc/pkg.d/$1.toml"
-            echo "version = \"$(op $1 version)\"" >> "stage/etc/pkg.d/$1.toml"
-            echo "target = \"$TARGET\"" >> "stage/etc/pkg.d/$1.toml"
+            echo "name = \"$1\"" > "stage.toml"
+            echo "version = \"$(op $1 version)\"" >> "stage.toml"
+            echo "target = \"$TARGET\"" >> "stage.toml"
+            mkdir -p stage/pkg
+            cp -v stage.toml "stage/pkg/$1.toml"
             $ROOT/pkgutils/target/release/pkg create stage
             ;;
         untar)
-            rm -rfv stage.tar stage.sig
+            rm -rfv stage.tar stage.sig stage.toml
             ;;
         publish)
             mkdir -p "$REPO"
             cp -v stage.tar "$REPO/$1.tar"
+            cp -v stage.sig "$REPO/$1.sig"
+            cp -v stage.toml "$REPO/$1.toml"
             ;;
         unpublish)
-            rm -rfv "$REPO/$1.tar"
+            rm -rfv "$REPO/$1.tar" "$REPO/$1.sig" "$REPO/$1.toml"
             ;;
         *)
             usage $1
