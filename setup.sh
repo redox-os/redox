@@ -4,6 +4,9 @@ set -e
 echo "Downloading latest libc-artifacts"
 git submodule update --init --remote libc-artifacts
 
+echo "Downloading latest pkgutils"
+git submodule update --init --remote pkgutils
+
 echo "Defaulting to rust nightly"
 rustup override set nightly
 echo "Update rust nightly"
@@ -20,5 +23,11 @@ then
     echo "Installing xargo"
     cargo install -f xargo
 fi
+
+echo "Building pkgutils"
+pushd pkgutils
+# TODO Change pkgutils to not hard code TARGET
+TARGET=x86_64-unknown-redox cargo build --release
+popd
 
 echo "cook.sh is ready to use"
