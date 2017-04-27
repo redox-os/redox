@@ -20,6 +20,13 @@ device = 4111
 command = ["/sbin/e1000d", "$NAME", "$BAR0", "$IRQ"]
 
 [[drivers]]
+name = "82579V NIC"
+class = 2
+vendor = 32902
+device = 5379
+command = ["/sbin/e1000d", "$NAME", "$BAR0", "$IRQ"]
+
+[[drivers]]
 name = "RTL8168 NIC"
 class = 2
 vendor = 4332
