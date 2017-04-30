@@ -22,6 +22,7 @@ members = [
     "libs/orbfont",
     "libs/orbimage",
     "libs/orbtk",
+    "libs/orbkb",
     "libs/pager",
     #TODO "libs/ralloc",
     "libs/ransid",

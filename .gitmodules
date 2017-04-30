@@ -115,3 +115,6 @@
 [submodule "libs/tar"]
 	path = libs/tar
 	url = https://github.com/redox-os/tar-rs.git
+[submodule "libs/orbkb"]
+	path = libs/orbkb
+	url = git@github.com:kaedroho/orbkb.git
