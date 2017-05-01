@@ -72,7 +72,7 @@ News and updates for Redox are posted at [redox-os.org/news](https://redox-os.or
 
  * Apps development
  * Shell ([Ion](https://github.com/redox-os/ion)) development
- * Package manager ([Magnet](https://github.com/redox-os/magnet)) development
+ * Package management ([pkgutils](https://github.com/redox-os/pkgutils)) development
  * Other high-level code tasks
 
 #### If you are fluent in Rust, and have experience with OS Dev:
