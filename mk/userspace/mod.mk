@@ -12,7 +12,9 @@ userspace: \
 	filesystem/bin/acid \
 	filesystem/bin/contain \
 	filesystem/bin/smith \
-	filesystem/bin/timeout
+	filesystem/bin/timeout \
+	filesystem/ui/bin/orbterm \
+	filesystem/ui/bin/sodium
 
 include mk/userspace/coreutils.mk
 include mk/userspace/drivers.mk
@@ -39,3 +41,9 @@ filesystem/bin/%: programs/%/Cargo.toml programs/%/src/** $(BUILD)/libstd.rlib
 	mkdir -p filesystem/bin
 	$(CARGO) rustc --manifest-path $< --bin $* $(CARGOFLAGS) -o $@
 	$(STRIP) $@
+
+filesystem/ui/bin/%: programs/%/Cargo.toml programs/%/src/**.rs $(BUILD)/libstd.rlib
+	mkdir -p filesystem/ui/bin
+	$(CARGO) rustc --manifest-path $< --bin $* $(CARGOFLAGS) -o $@
+	$(STRIP) $@
+

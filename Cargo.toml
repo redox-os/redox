@@ -38,6 +38,7 @@ members = [
     "programs/init",
     "programs/ion",
     "programs/netutils",
+    "programs/orbterm",
     "programs/orbutils",
     "programs/pkgutils",
     "programs/smith",
