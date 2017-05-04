@@ -6,7 +6,7 @@ orbutils: \
 	filesystem/ui/bin/file_manager \
 	filesystem/ui/bin/launcher \
 	filesystem/ui/bin/orblogin \
-	filesystem/ui/bin/terminal \
+	filesystem/ui/bin/orbterm \
 	filesystem/ui/bin/viewer
 
 filesystem/ui/bin/%: programs/orbutils/Cargo.toml programs/orbutils/src/%/**.rs $(BUILD)/libstd.rlib
