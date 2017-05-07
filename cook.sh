@@ -229,12 +229,15 @@ then
             echo -e "\033[01;38;5;215mcook - repo\033[0m" >&2
         fi
 
-        echo "[packages]" > "$REPO.toml"
+        echo "[packages]" > "$REPO/repo.toml"
         for toml in "$REPO/"*".toml"
         do
             package="$(basename "$toml" .toml)"
-            version="$(grep version "$toml" | cut -d '=' -f2-)"
-            echo "$package =$version" >> "$REPO.toml"
+            if [ "$package" != "repo" ]
+            then
+                version="$(grep version "$toml" | cut -d '=' -f2-)"
+                echo "$package =$version" >> "$REPO/repo.toml"
+            fi
         done
     elif [ -d "$ROOT/recipes/$1" ]
     then
