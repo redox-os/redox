@@ -224,7 +224,10 @@ if [ -n "$1" ]
 then
     if [ "$1" = "repo" ]
     then
-        echo -e "\033[01;38;5;215mcook - repo\033[0m" >&2
+        if [ ! "$COOK_QUIET" = "1" ]
+        then
+            echo -e "\033[01;38;5;215mcook - repo\033[0m" >&2
+        fi
 
         echo "[packages]" > "$REPO.toml"
         for toml in "$REPO/"*".toml"
