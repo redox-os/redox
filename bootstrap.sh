@@ -110,10 +110,6 @@ osx_homebrew()
     echo "Homebrew detected! Now updating..."
     brew update
 
-    echo "Tapping required taps..."
-    brew tap homebrew/versions
-    brew tap glendc/gcc_cross_compilers
-
     echo "Installing missing packages..."
 
     install_brew_pkg "git"
