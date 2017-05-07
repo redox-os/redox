@@ -36,3 +36,5 @@ for recipe in $publish
 do
     ./cook.sh $recipe publish
 done
+
+./cook.sh repo

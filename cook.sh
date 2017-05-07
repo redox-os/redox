@@ -222,7 +222,18 @@ function op {
 
 if [ -n "$1" ]
 then
-    if [ -d "$ROOT/recipes/$1" ]
+    if [ "$1" = "repo" ]
+    then
+        echo -e "\033[01;38;5;215mcook - repo\033[0m" >&2
+
+        echo "[packages]" > "$REPO.toml"
+        for toml in "$REPO/"*".toml"
+        do
+            package="$(basename "$toml" .toml)"
+            version="$(grep version "$toml" | cut -d '=' -f2-)"
+            echo "$package =$version" >> "$REPO.toml"
+        done
+    elif [ -d "$ROOT/recipes/$1" ]
     then
         cd "$ROOT/recipes/$1"
         source recipe.sh
