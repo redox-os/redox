@@ -118,3 +118,6 @@
 [submodule "programs/orbterm"]
 	path = programs/orbterm
 	url = https://github.com/redox-os/orbterm.git
+[submodule "cookbook"]
+	path = cookbook
+	url = https://github.com/redox-os/cookbook.git
