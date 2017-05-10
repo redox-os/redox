@@ -1,4 +1,4 @@
-GIT=https://github.com/redox-os/drivers
+GIT=https://github.com/redox-os/drivers.git
 CARGOFLAGS=--all
 
 function recipe_version {
