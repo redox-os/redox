@@ -1,6 +1,10 @@
 GIT=https://github.com/redox-os/drivers
 CARGOFLAGS=--all
-BINDIR="/sbin"
+
+function recipe_version {
+    echo "0.1.0"
+    return 1
+}
 
 function recipe_update {
     cp ../Cargo.toml ./
