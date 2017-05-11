@@ -8,12 +8,8 @@ live: build/livedisk.bin
 iso: build/livedisk.iso
 
 clean:
-	cargo clean
-	cargo clean --manifest-path rust/src/libcollections/Cargo.toml
-	cargo clean --manifest-path rust/src/libstd/Cargo.toml
+	cargo clean --manifest-path kernel/Cargo.toml
 	-$(FUMOUNT) build/filesystem/ || true
-	rm -rf initfs/bin
-	rm -rf filesystem/bin filesystem/sbin filesystem/ui/bin
 	rm -rf build
 
 update:
@@ -34,12 +30,6 @@ include mk/virtualbox.mk
 
 # Kernel recipes
 include mk/kernel.mk
-
-# Userspace recipes
-include mk/userspace/mod.mk
-
-# Documentation
-include mk/doc.mk
 
 # Filesystem recipes
 include mk/initfs.mk
