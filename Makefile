@@ -12,16 +12,12 @@ clean:
 	-$(FUMOUNT) build/filesystem/ || true
 	rm -rf build
 
-update:
-	cargo update
-
 pull:
 	git pull --rebase --recurse-submodules
 	git submodule sync
 	git submodule update --recursive --init
 	git clean -X -f -d
 	make clean
-	make update
 
 # Emulation recipes
 include mk/qemu.mk
