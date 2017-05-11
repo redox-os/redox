@@ -1,7 +1,7 @@
-build/harddrive.bin: $(KBUILD)/kernel bootloader/$(ARCH)/** build/filesystem.bin
+build/harddrive.bin: build/kernel bootloader/$(ARCH)/** build/filesystem.bin
 	nasm -f bin -o $@ -D ARCH_$(ARCH) -ibootloader/$(ARCH)/ bootloader/$(ARCH)/harddrive.asm
 
-build/livedisk.bin: $(KBUILD)/kernel_live bootloader/$(ARCH)/**
+build/livedisk.bin: build/kernel_live bootloader/$(ARCH)/**
 	nasm -f bin -o $@ -D ARCH_$(ARCH) -ibootloader/$(ARCH)/ bootloader/$(ARCH)/livedisk.asm
 
 build/%.bin.gz: build/%.bin

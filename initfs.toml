@@ -1,3 +1,34 @@
+# This is the default configuration file
+
+# General settings
+[general]
+# Do not prompt if settings are not defined
+prompt = false
+sysroot = "build/initfs"
+
+# Package settings
+[packages]
+drivers = {}
+init = {}
+redoxfs = {}
+
+[[files]]
+path="/etc/init.rc"
+data="""
+export PATH initfs:/bin
+vesad T T G
+stdio display:1
+ps2d
+pcid /etc/pcid.toml
+redoxfs disk:0 file
+cd file:
+export PATH file:/bin
+run.d /etc/init.d
+"""
+
+[[files]]
+path="/etc/pcid.toml"
+data="""
 [[drivers]]
 name = "AHCI storage"
 class = 1
@@ -30,3 +61,4 @@ class = 8
 vendor = 33006
 device = 51966
 command = ["vboxd", "$NAME", "$BAR0", "$BAR1", "$IRQ"]
+"""
