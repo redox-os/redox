@@ -12,7 +12,6 @@ acid = {}
 binutils = {}
 contain = {}
 coreutils = {}
-drivers = {}
 extrautils = {}
 games = {}
 init = {}
@@ -52,7 +51,6 @@ path = "/etc/init.d/00_base"
 data = """
 randd
 ptyd
-pcid /etc/pcid.toml
 """
 
 [[files]]
@@ -126,50 +124,4 @@ path = "/etc/motd"
 data = """
 Welcome to Redox OS!
 
-"""
-
-[[files]]
-path = "/etc/pcid.toml"
-data = """
-[[drivers]]
-name = "82543GC NIC"
-class = 2
-vendor = 32902
-device = 4100
-command = ["e1000d", "$NAME", "$BAR0", "$IRQ"]
-
-[[drivers]]
-name = "82540EM NIC"
-class = 2
-vendor = 32902
-device = 4110
-command = ["e1000d", "$NAME", "$BAR0", "$IRQ"]
-
-[[drivers]]
-name = "82545EM NIC"
-class = 2
-vendor = 32902
-device = 4111
-command = ["e1000d", "$NAME", "$BAR0", "$IRQ"]
-
-[[drivers]]
-name = "82579V NIC"
-class = 2
-vendor = 32902
-device = 5379
-command = ["e1000d", "$NAME", "$BAR0", "$IRQ"]
-
-[[drivers]]
-name = "RTL8168 NIC"
-class = 2
-vendor = 4332
-device = 33128
-command = ["rtl8168d", "$NAME", "$BAR2", "$IRQ"]
-
-[[drivers]]
-name = "XHCI"
-class = 12
-subclass = 3
-interface = 48
-command = ["xhcid", "$NAME", "$BAR0", "$IRQ"]
 """
