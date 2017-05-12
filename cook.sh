@@ -127,7 +127,7 @@ function op {
             fi
             if [ "$skip" -eq "0" ]
             then
-                cp -r "$ROOT/Xargo.toml" "$ROOT/.cargo" "$ROOT/libc-artifacts" .
+                cp -r "$ROOT/Xargo.toml" .
                 xargo build --target "$TARGET" --release $CARGOFLAGS
             fi
             popd > /dev/null
@@ -141,7 +141,7 @@ function op {
             fi
             if [ "$skip" -eq "0" ]
             then
-                cp -r "$ROOT/Xargo.toml" "$ROOT/.cargo" "$ROOT/libc-artifacts" .
+                cp -r "$ROOT/Xargo.toml" .
                 xargo test --no-run --target "$TARGET" --release $CARGOFLAGS
             fi
             popd > /dev/null
