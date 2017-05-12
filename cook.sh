@@ -1,18 +1,10 @@
-#!/bin/bash
+#!/bin/bash -e
 
-# Configuration
-export TARGET=x86_64-unknown-redox
-
-# Automatic variables
-ROOT="$(cd `dirname "$0"` && pwd)"
-REPO="$ROOT/repo/$TARGET"
-export CC="$ROOT/libc-artifacts/gcc.sh"
+source config.sh
 
 # Variables to be overriden by recipes
 export BINDIR=bin
 export CARGOFLAGS=
-
-set -e
 
 function usage {
     echo "cook.sh $1 <op>" >&2
@@ -222,24 +214,7 @@ function op {
 
 if [ -n "$1" ]
 then
-    if [ "$1" = "repo" ]
-    then
-        if [ ! "$COOK_QUIET" = "1" ]
-        then
-            echo -e "\033[01;38;5;215mcook - repo\033[0m" >&2
-        fi
-
-        echo "[packages]" > "$REPO/repo.toml"
-        for toml in "$REPO/"*".toml"
-        do
-            package="$(basename "$toml" .toml)"
-            if [ "$package" != "repo" ]
-            then
-                version="$(grep version "$toml" | cut -d '=' -f2-)"
-                echo "$package =$version" >> "$REPO/repo.toml"
-            fi
-        done
-    elif [ -d "$ROOT/recipes/$1" ]
+    if [ -d "$ROOT/recipes/$1" ]
     then
         cd "$ROOT/recipes/$1"
         source recipe.sh
