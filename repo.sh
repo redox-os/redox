@@ -11,18 +11,12 @@ fi
 
 for recipe in $recipes
 do
-    if [ ! -d "recipes/$recipe/source" ]
-    then
-        echo -e "\033[01;38;5;215mrepo - fetching and updating $recipe\033[0m" >&2
-        ./cook.sh "$recipe" fetch
-    fi
-
     if [ ! -f "recipes/$recipe/stage.tar" ]
     then
         echo -e "\033[01;38;5;215mrepo - building $recipe\033[0m" >&2
         ./cook.sh $recipe update build stage tar
     else
-        TIME_SOURCE="$(find recipes/$recipe/source -printf "%Ts\n" | sort -nr | head -n 1)"
+        TIME_SOURCE="$(find recipes/$recipe/source -type f -not -path '*/.git*' -printf "%Ts\n" | sort -nr | head -n 1)"
         TIME_STAGE="$(stat -c "%Y" recipes/$recipe/stage.tar)"
         if [ "$TIME_SOURCE" -ge "$TIME_STAGE" ]
         then
