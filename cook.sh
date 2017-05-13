@@ -14,6 +14,8 @@ function usage {
     echo "  clean" >&2
     echo "  fetch" >&2
     echo "  unfetch" >&2
+    echo "  prepare" >&2
+    echo "  unprepare" >&2
     echo "  publish" >&2
     echo "  unpublish" >&2
     echo "  stage" >&2
@@ -32,7 +34,7 @@ function op {
 
     case "$2" in
         dist)
-            op $1 fetch
+            op $1 prepare
             op $1 update
             op $1 build
             op $1 stage
@@ -41,7 +43,7 @@ function op {
         distclean)
             op $1 untar
             op $1 unstage
-            op $1 unfetch
+            op $1 unprepare
             ;;
         fetch)
             if [ -n "$TAR" ]
@@ -56,9 +58,6 @@ function op {
                     mkdir source
                     tar xvf source.tar -C source --strip-components 1
                 fi
-
-                rm -rf build
-                cp -r source build
             elif [ -n "$GIT" ]
             then
                 if [ ! -d source ]
@@ -71,18 +70,21 @@ function op {
                 git submodule sync
                 git submodule update --init --recursive
                 popd > /dev/null
-
-                rm -rf build
-                cp -r source build
             fi
-
             ;;
         unfetch)
-            rm -rfv build source
+            rm -rfv source
             if [ -n "$TAR" ]
             then
                 rm -f source.tar
             fi
+            ;;
+        prepare)
+            rm -rf build
+            cp -r source build
+            ;;
+        unprepare)
+            rm -rf build
             ;;
         version)
             pushd build > /dev/null
