@@ -8,16 +8,16 @@ sysroot = "build/filesystem"
 
 # Package settings
 [packages]
-acid = {}
-binutils = {}
+#acid = {}
+#binutils = {}
 contain = {}
 coreutils = {}
 extrautils = {}
-games = {}
+#games = {}
 init = {}
 installer = {}
 ion = {}
-lua = {}
+#lua = {}
 netstack = {}
 netutils = {}
 orbdata = {}
