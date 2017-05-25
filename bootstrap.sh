@@ -298,16 +298,7 @@ gentoo()
 solus()
 {
 	echo "Detected SolusOS"
-	if [ -z "$(which nasm)" ]; then
-		echo "Installing nasm..."
-		sudo eopkg it nasm
-	fi
-	if [ -z "$(which git)" ]; then
-		echo "Installing git..."
-		sudo eopkg it git
-	fi
-	echo "Installing fuse..."
-	sudo eopkg it fuse-devel
+	
 	if [ "$1" == "qemu" ]; then
 		if [ -z "$(which qemu-system-x86_64)" ]; then
 			sudo eopkg it qemu
@@ -323,6 +314,10 @@ solus()
 			echo "Virtualbox already installed!"
 		fi
 	fi
+	
+	echo "Installing necessary build tools..."
+	#if guards are not necessary with eopkg since it does nothing if latest version is already installed
+	sudo eopkg it fuse-devel git gcc g++ libgcc-32bit libstdc++-32bit nasm make
 }
 
 ######################################################################
