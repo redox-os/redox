@@ -1,4 +1,4 @@
-#!/bin/bash
+#!/usr/bin/env bash
 
 # Configuration
 export TARGET=x86_64-unknown-redox
