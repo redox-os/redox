@@ -23,9 +23,10 @@ before_install:
   brew install nasm pkg-config Caskroom/cask/osxfuse &&
   travis_wait 30 brew install redox-os/gcc_cross_compilers/x86_64-elf-gcc;
   fi
+- cd cookbook && ./setup.sh && cd ..
 script:
-- make clean &&
-  make update &&
+- cd cookbook && ./fetch.sh && cd .. &&
+  make clean &&
   make build/harddrive.bin.gz build/livedisk.bin.gz build/livedisk.iso
 notifications:
   email: false

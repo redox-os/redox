@@ -1,14 +1,14 @@
-build/filesystem.bin: userspace
+build/filesystem.bin: filesystem.toml
 	-$(FUMOUNT) build/filesystem/ || true
-	rm -rf $@ build/filesystem/
-	dd if=/dev/zero of=$@ bs=1048576 count=128
-	cargo run --manifest-path schemes/redoxfs/Cargo.toml --quiet --release --bin redoxfs-mkfs $@
+	rm -rf $@  $@.partial build/filesystem/
+	dd if=/dev/zero of=$@.partial bs=1048576 count=128
+	cargo run --manifest-path installer/redoxfs/Cargo.toml --quiet --release --bin redoxfs-mkfs $@.partial
 	mkdir -p build/filesystem/
-	cargo build --manifest-path schemes/redoxfs/Cargo.toml --quiet --release --bin redoxfs
-	cargo run --manifest-path schemes/redoxfs/Cargo.toml --quiet --release --bin redoxfs -- $@ build/filesystem/
+	cargo build --manifest-path installer/redoxfs/Cargo.toml --quiet --release --bin redoxfs
+	cargo run --manifest-path installer/redoxfs/Cargo.toml --quiet --release --bin redoxfs -- $@.partial build/filesystem/
 	sleep 2
 	pgrep redoxfs
-	cp -RL filesystem/* build/filesystem/
+	cargo run --manifest-path installer/Cargo.toml -- --cookbook=cookbook $<
 	chown -R 0:0 build/filesystem
 	chown -R 1000:1000 build/filesystem/home/user
 	chmod -R uog+rX build/filesystem
@@ -27,11 +27,12 @@ build/filesystem.bin: userspace
 	sync
 	-$(FUMOUNT) build/filesystem/ || true
 	rm -rf build/filesystem/
+	mv $@.partial $@
 
 mount: FORCE
 	mkdir -p build/filesystem/
-	cargo build --manifest-path schemes/redoxfs/Cargo.toml --quiet --release --bin redoxfs
-	cargo run --manifest-path schemes/redoxfs/Cargo.toml --quiet --release --bin redoxfs -- build/harddrive.bin build/filesystem/
+	cargo build --manifest-path installer/redoxfs/Cargo.toml --quiet --release --bin redoxfs
+	cargo run --manifest-path installer/redoxfs/Cargo.toml --quiet --release --bin redoxfs -- build/harddrive.bin build/filesystem/
 	sleep 2
 	pgrep redoxfs
 

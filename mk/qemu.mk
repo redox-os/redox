@@ -28,28 +28,45 @@ endif
 #,int,pcall
 #-device intel-iommu
 
-qemu: build/harddrive.bin
-	$(QEMU) $(QEMUFLAGS) -drive file=$<,format=raw
+build/extra.qcow2:
+	qemu-img create -f qcow2 $@ 256M
 
-qemu_no_build:
-	$(QEMU) $(QEMUFLAGS) -drive file=build/harddrive.bin,format=raw
+qemu: build/harddrive.bin build/extra.qcow2
+	$(QEMU) $(QEMUFLAGS) \
+		-drive file=build/harddrive.bin,format=raw \
+		-drive file=build/extra.qcow2
 
-qemu_extra: build/harddrive.bin
-	if [ ! -e build/extra.bin ]; then dd if=/dev/zero of=build/extra.bin bs=1048576 count=1024; fi
-	$(QEMU) $(QEMUFLAGS) -drive file=$<,format=raw -drive file=build/extra.bin,format=raw,if=none,id=drv0 -device nvme,drive=drv0,serial=NVME_SERIAL
+qemu_no_build: build/extra.qcow2
+	$(QEMU) $(QEMUFLAGS) \
+		-drive file=build/harddrive.bin,format=raw \
+		-drive file=build/extra.qcow2
 
-qemu_extra_no_build:
-	if [ ! -e build/extra.bin ]; then dd if=/dev/zero of=build/extra.bin bs=1048576 count=1024; fi
-	$(QEMU) $(QEMUFLAGS) -drive file=$<,format=raw -drive file=build/extra.bin,format=raw
+qemu_nvme: build/harddrive.bin build/extra.qcow2
+	$(QEMU) $(QEMUFLAGS) \
+		-drive file=build/harddrive.bin,format=raw -drive file=build/extra.qcow2,if=none,id=drv0 -device nvme,drive=drv0,serial=NVME_SERIAL \
+		-drive file=build/extra.qcow2
 
-qemu_live: build/livedisk.bin
-	$(QEMU) $(QEMUFLAGS) -device usb-ehci,id=flash_bus -drive id=flash_drive,file=$<,format=raw,if=none -device usb-storage,drive=flash_drive,bus=flash_bus.0
+qemu_nvme_no_build: build/extra.qcow2
+	$(QEMU) $(QEMUFLAGS) \
+		-drive file=build/harddrive.bin,format=raw -drive file=build/extra.qcow2,if=none,id=drv0 -device nvme,drive=drv0,serial=NVME_SERIAL \
+		-drive file=build/extra.qcow2
 
-qemu_live_no_build:
-	$(QEMU) $(QEMUFLAGS) -device usb-ehci,id=flash_bus -drive id=flash_drive,file=build/livedisk.bin,format=raw,if=none -device usb-storage,drive=flash_drive,bus=flash_bus.0
+qemu_live: build/livedisk.bin build/extra.qcow2
+	$(QEMU) $(QEMUFLAGS) \
+		-device usb-ehci,id=flash_bus -drive id=flash_drive,file=build/livedisk.bin,format=raw,if=none -device usb-storage,drive=flash_drive,bus=flash_bus.0 \
+		-drive file=build/extra.qcow2
 
-qemu_iso: build/livedisk.iso
-	$(QEMU) $(QEMUFLAGS) -boot d -cdrom $<
+qemu_live_no_build: build/extra.qcow2
+	$(QEMU) $(QEMUFLAGS) \
+		-device usb-ehci,id=flash_bus -drive id=flash_drive,file=build/livedisk.bin,format=raw,if=none -device usb-storage,drive=flash_drive,bus=flash_bus.0 \
+		-drive file=build/extra.qcow2
 
-qemu_iso_no_build:
-		$(QEMU) $(QEMUFLAGS) -boot d -cdrom build/livedisk.iso
+qemu_iso: build/livedisk.iso build/extra.qcow2
+	$(QEMU) $(QEMUFLAGS) \
+		-boot d -cdrom build/livedisk.iso \
+		-drive file=build/extra.qcow2
+
+qemu_iso_no_build: build/extra.qcow2
+	$(QEMU) $(QEMUFLAGS) \
+		-boot d -cdrom build/livedisk.iso \
+		-drive file=build/extra.qcow2
