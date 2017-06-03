@@ -1,7 +1,7 @@
 build/filesystem.bin: filesystem.toml
 	-$(FUMOUNT) build/filesystem/ || true
 	rm -rf $@  $@.partial build/filesystem/
-	dd if=/dev/zero of=$@.partial bs=1048576 count=128
+	dd if=/dev/zero of=$@.partial bs=1048576 count=1024
 	cargo run --manifest-path installer/redoxfs/Cargo.toml --quiet --release --bin redoxfs-mkfs $@.partial
 	mkdir -p build/filesystem/
 	cargo build --manifest-path installer/redoxfs/Cargo.toml --quiet --release --bin redoxfs
