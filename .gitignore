@@ -1,6 +1,1 @@
 build
-target
-initfs/bin
-filesystem/bin
-filesystem/ref
-filesystem/sbin
