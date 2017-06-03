@@ -1,16 +1,11 @@
-$(KBUILD)/libcollections.rlib: rust/src/libcollections/Cargo.toml rust/src/libcollections/**
-	mkdir -p $(KBUILD)
-	$(KCARGO) rustc --manifest-path $< $(KCARGOFLAGS) -o $@
-	cp rust/src/target/$(KTARGET)/release/deps/*.rlib $(KBUILD)
+build/libkernel.a: kernel/Cargo.toml kernel/src/* kernel/src/*/* kernel/src/*/*/* build/initfs.tag
+	cd kernel && xargo rustc --lib --target $(KTARGET) --release -- -C soft-float --emit link=../$@
 
-$(KBUILD)/libkernel.a: kernel/Cargo.toml kernel/src/** $(KBUILD)/libcollections.rlib $(KBUILD)/initfs.tag
-	$(KCARGO) rustc --manifest-path $< --lib $(KCARGOFLAGS) -o $@
+build/libkernel_live.a: kernel/Cargo.toml kernel/src/* kernel/src/*/* kernel/src/*/*/* build/initfs.tag build/filesystem.bin
+	cd kernel && FILESYSTEM="$(PWD)/build/filesystem.bin" xargo rustc --lib --features live --target $(KTARGET) --release -- -C soft-float --emit link=../$@
 
-$(KBUILD)/libkernel_live.a: kernel/Cargo.toml kernel/src/** $(KBUILD)/libcollections.rlib $(KBUILD)/initfs.tag build/filesystem.bin
-	$(KCARGO) rustc --manifest-path $< --lib --features live $(KCARGOFLAGS) -o $@
+build/kernel: build/libkernel.a
+	$(LD) --gc-sections -z max-page-size=0x1000 -T kernel/linkers/$(ARCH).ld -o $@ $<
 
-$(KBUILD)/kernel: $(KBUILD)/libkernel.a
-	$(LD) $(LDFLAGS) -z max-page-size=0x1000 -T kernel/linkers/$(ARCH).ld -o $@ $<
-
-$(KBUILD)/kernel_live: $(KBUILD)/libkernel_live.a
-	$(LD) $(LDFLAGS) -z max-page-size=0x1000 -T kernel/linkers/$(ARCH).ld -o $@ $<
+build/kernel_live: build/libkernel_live.a
+	$(LD) --gc-sections -z max-page-size=0x1000 -T kernel/linkers/$(ARCH).ld -o $@ $<

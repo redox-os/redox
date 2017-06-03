@@ -1,0 +1,127 @@
+# This is the default configuration file
+
+# General settings
+[general]
+# Do not prompt if settings are not defined
+prompt = false
+sysroot = "build/filesystem"
+
+# Package settings
+[packages]
+#acid = {}
+#binutils = {}
+contain = {}
+coreutils = {}
+extrautils = {}
+#games = {}
+init = {}
+installer = {}
+ion = {}
+#lua = {}
+netstack = {}
+netutils = {}
+orbdata = {}
+orbital = {}
+orbterm = {}
+orbutils = {}
+#pixelcannon = {}
+pkgutils = {}
+ptyd = {}
+randd = {}
+redoxfs = {}
+smith = {}
+#sodium = {}
+userutils = {}
+
+# User settings
+[users.root]
+# Password is set to "password"
+password = "$argon2i$m=4096,t=10,p=1$Tnc4UVV0N00$ML9LIOujd3nmAfkAwEcSTMPqakWUF0OUiLWrIy0nGLk"
+uid = 0
+gid = 0
+name = "root"
+home = "/root"
+
+[users.user]
+# Password is unset
+password = ""
+
+[[files]]
+path = "/etc/init.d/00_base"
+data = """
+randd
+ptyd
+"""
+
+[[files]]
+path = "/etc/init.d/10_net"
+data = """
+ethernetd
+ipd
+tcpd
+udpd
+dhcpd -b
+"""
+
+[[files]]
+path = "/etc/init.d/20_orbital"
+data = """
+orbital display:3/activate /ui/bin/orblogin /ui/bin/launcher
+"""
+
+[[files]]
+path = "/etc/init.d/30_console"
+data = """
+getty display:2
+getty debug: -J
+"""
+
+[[files]]
+path = "/etc/net/dns"
+data = "208.67.222.222"
+
+[[files]]
+path = "/etc/net/ip"
+data = "10.0.2.15"
+
+[[files]]
+path = "/etc/net/ip_router"
+data = "10.0.2.2"
+
+[[files]]
+path = "/etc/net/ip_subnet"
+data = "255.255.255.0"
+
+[[files]]
+path = "/etc/net/mac"
+data = "00.00.00.00.00.00"
+
+[[files]]
+path = "/etc/pkg.d/50_redox"
+data = "https://static.redox-os.org/pkg"
+
+[[files]]
+path = "/etc/group"
+data = "sudo;1;user"
+
+[[files]]
+path = "/etc/hostname"
+data = "redox"
+
+[[files]]
+path = "/etc/issue"
+data = """
+########## Redox OS ##########
+# Login with the following:  #
+# `user`                     #
+# `root`:`password`          #
+##############################
+
+"""
+
+[[files]]
+path = "/etc/motd"
+data = """
+Welcome to Redox OS!
+
+"""
