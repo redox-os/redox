@@ -24,10 +24,4 @@ then
     cargo install -f xargo
 fi
 
-echo "Building pkgutils"
-pushd pkgutils
-# TODO Change pkgutils to not hard code TARGET
-TARGET=x86_64-unknown-redox cargo build --release
-popd
-
 echo "cook.sh is ready to use"
