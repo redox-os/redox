@@ -62,7 +62,12 @@ function op {
             then
                 if [ ! -d source ]
                 then
-                    git clone --recursive "$GIT" source
+                    if [ -n "$BRANCH" ]
+                    then
+                        git clone --recursive "$GIT" -b "$BRANCH" source
+                    else
+                        git clone --recursive "$GIT" source
+                    fi
                 fi
 
                 pushd source > /dev/null
