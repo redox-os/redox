@@ -62,7 +62,12 @@ function op {
             then
                 if [ ! -d source ]
                 then
-                    git clone --recursive "$GIT" source
+                    if [ -n "$BRANCH" ]
+                    then
+                        git clone --recursive "$GIT" -b "$BRANCH" source
+                    else
+                        git clone --recursive "$GIT" source
+                    fi
                 fi
 
                 pushd source > /dev/null
@@ -194,7 +199,7 @@ function op {
             echo "target = \"$TARGET\"" >> "stage.toml"
             mkdir -p stage/pkg
             cp -v stage.toml "stage/pkg/$1.toml"
-            $ROOT/pkgutils/target/release/pkg create stage
+            TARGET=x86_64-unknown-redox cargo run --release --manifest-path "$ROOT/pkgutils/Cargo.toml" --bin pkg -- create stage
             ;;
         untar)
             rm -rfv stage.tar stage.sig stage.toml
