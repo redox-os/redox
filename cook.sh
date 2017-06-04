@@ -1,18 +1,10 @@
-#!/usr/bin/env bash
+#!/usr/bin/env bash -e
 
-# Configuration
-export TARGET=x86_64-unknown-redox
-
-# Automatic variables
-ROOT="$(cd `dirname "$0"` && pwd)"
-REPO="$ROOT/repo/$TARGET"
-export CC="$ROOT/libc-artifacts/gcc.sh"
+source config.sh
 
 # Variables to be overriden by recipes
 export BINDIR=bin
 export CARGOFLAGS=
-
-set -e
 
 function usage {
     echo "cook.sh $1 <op>" >&2
@@ -22,6 +14,8 @@ function usage {
     echo "  clean" >&2
     echo "  fetch" >&2
     echo "  unfetch" >&2
+    echo "  prepare" >&2
+    echo "  unprepare" >&2
     echo "  publish" >&2
     echo "  unpublish" >&2
     echo "  stage" >&2
@@ -40,7 +34,7 @@ function op {
 
     case "$2" in
         dist)
-            op $1 fetch
+            op $1 prepare
             op $1 update
             op $1 build
             op $1 stage
@@ -49,7 +43,7 @@ function op {
         distclean)
             op $1 untar
             op $1 unstage
-            op $1 unfetch
+            op $1 unprepare
             ;;
         fetch)
             if [ -n "$TAR" ]
@@ -64,9 +58,6 @@ function op {
                     mkdir source
                     tar xvf source.tar -C source --strip-components 1
                 fi
-
-                rm -rf build
-                cp -r source build
             elif [ -n "$GIT" ]
             then
                 if [ ! -d source ]
@@ -79,18 +70,21 @@ function op {
                 git submodule sync
                 git submodule update --init --recursive
                 popd > /dev/null
-
-                rm -rf build
-                cp -r source build
             fi
-
             ;;
         unfetch)
-            rm -rfv build source
+            rm -rfv source
             if [ -n "$TAR" ]
             then
                 rm -f source.tar
             fi
+            ;;
+        prepare)
+            rm -rf build
+            cp -r source build
+            ;;
+        unprepare)
+            rm -rf build
             ;;
         version)
             pushd build > /dev/null
@@ -135,7 +129,7 @@ function op {
             fi
             if [ "$skip" -eq "0" ]
             then
-                cp -r "$ROOT/Xargo.toml" "$ROOT/.cargo" "$ROOT/libc-artifacts" .
+                cp -r "$ROOT/Xargo.toml" .
                 xargo build --target "$TARGET" --release $CARGOFLAGS
             fi
             popd > /dev/null
@@ -149,7 +143,7 @@ function op {
             fi
             if [ "$skip" -eq "0" ]
             then
-                cp -r "$ROOT/Xargo.toml" "$ROOT/.cargo" "$ROOT/libc-artifacts" .
+                cp -r "$ROOT/Xargo.toml" .
                 xargo test --no-run --target "$TARGET" --release $CARGOFLAGS
             fi
             popd > /dev/null
@@ -222,24 +216,7 @@ function op {
 
 if [ -n "$1" ]
 then
-    if [ "$1" = "repo" ]
-    then
-        if [ ! "$COOK_QUIET" = "1" ]
-        then
-            echo -e "\033[01;38;5;215mcook - repo\033[0m" >&2
-        fi
-
-        echo "[packages]" > "$REPO/repo.toml"
-        for toml in "$REPO/"*".toml"
-        do
-            package="$(basename "$toml" .toml)"
-            if [ "$package" != "repo" ]
-            then
-                version="$(grep version "$toml" | cut -d '=' -f2-)"
-                echo "$package =$version" >> "$REPO/repo.toml"
-            fi
-        done
-    elif [ -d "$ROOT/recipes/$1" ]
+    if [ -d "$ROOT/recipes/$1" ]
     then
         cd "$ROOT/recipes/$1"
         source recipe.sh

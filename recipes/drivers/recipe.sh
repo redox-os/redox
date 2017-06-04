@@ -1,7 +1,12 @@
-GIT=https://github.com/redox-os/drivers
+GIT=https://github.com/redox-os/drivers.git
 CARGOFLAGS=--all
-BINDIR="/sbin"
 
-function recipe_update {
-    cp ../Cargo.toml ./
+function recipe_version {
+    echo "0.1.1"
+    return 1
+}
+
+function recipe_stage {
+    mkdir -pv "$1/etc"
+    cp -v pcid.toml "$1/etc/pcid.toml"
 }
