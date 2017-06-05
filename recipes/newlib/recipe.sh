@@ -1,8 +1,6 @@
 GIT=https://github.com/redox-os/newlib.git
 BRANCH=redox
 
-CC=
-
 HOST=x86_64-elf-redox
 
 function recipe_version {
