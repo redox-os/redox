@@ -195,20 +195,12 @@ function op {
             rm -rfv stage
             ;;
         tar)
-            # Compile pkgutils if needed
-            if [ ! -f "$ROOT/pkgutils/target/release/pkg" ]
-            then
-                pushd "$ROOT/pkgutils/" > /dev/null
-                TARGET=x86_64-unknown-redox cargo build --release
-                popd > /dev/null
-            fi
-
             echo "name = \"$1\"" > "stage.toml"
             echo "version = \"$(op $1 version)\"" >> "stage.toml"
             echo "target = \"$TARGET\"" >> "stage.toml"
             mkdir -p stage/pkg
             cp -v stage.toml "stage/pkg/$1.toml"
-            "$ROOT/pkgutils/target/release/pkg" create stage
+            TARGET=x86_64-unknown-redox cargo run --release --manifest-path "$ROOT/pkgutils/Cargo.toml" --bin pkg -- create stage
             ;;
         untar)
             rm -rfv stage.tar stage.sig stage.toml
