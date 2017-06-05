@@ -1,6 +1,8 @@
 VERSION=5.3.1
 TAR=http://www.lua.org/ftp/lua-$VERSION.tar.gz
 
+HOST=x86_64-elf-redox
+
 function recipe_version {
     echo "$VERSION"
     return 1
@@ -12,7 +14,7 @@ function recipe_update {
 }
 
 function recipe_build {
-    make generic CC="$CC -std=gnu99"
+    make generic CC="${HOST}-gcc -std=gnu99"
     return 1
 }
 
