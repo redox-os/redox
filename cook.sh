@@ -97,7 +97,11 @@ function op {
             skip="0"
             if [ "$(type -t recipe_version)" = "function" ]
             then
-                recipe_version || skip="1"
+                recipe_version
+                if [ "$?" -ne "0" ]
+                then
+                    skip="1"
+                fi
             fi
             if [ "$skip" -eq "0" ]
             then
@@ -118,7 +122,11 @@ function op {
             skip="0"
             if [ "$(type -t recipe_update)" = "function" ]
             then
-                recipe_update || skip="1"
+                recipe_update
+                if [ "$?" -ne "0" ]
+                then
+                    skip="1"
+                fi
             fi
             if [ "$skip" -eq "0" ]
             then
@@ -131,7 +139,11 @@ function op {
             skip="0"
             if [ "$(type -t recipe_build)" = "function" ]
             then
-                recipe_build || skip="1"
+                recipe_build
+                if [ "$?" -ne "0" ]
+                then
+                    skip="1"
+                fi
             fi
             if [ "$skip" -eq "0" ]
             then
@@ -145,7 +157,11 @@ function op {
             skip="0"
             if [ "$(type -t recipe_test)" = "function" ]
             then
-                recipe_test || skip="1"
+                recipe_test
+                if [ "$?" -ne "0" ]
+                then
+                    skip="1"
+                fi
             fi
             if [ "$skip" -eq "0" ]
             then
@@ -159,7 +175,11 @@ function op {
             skip="0"
             if [ "$(type -t recipe_clean)" = "function" ]
             then
-                recipe_clean || skip="1"
+                recipe_clean
+                if [ "$?" -ne "0" ]
+                then
+                    skip="1"
+                fi
             fi
             if [ "$skip" -eq "0" ]
             then
@@ -173,7 +193,11 @@ function op {
             skip="0"
             if [ "$(type -t recipe_stage)" = "function" ]
             then
-                recipe_stage ../stage || skip="1"
+                recipe_stage ../stage
+                if [ "$?" -ne "0" ]
+                then
+                    skip="1"
+                fi
             fi
             if [ "$skip" -eq "0" ]
             then
