@@ -26,11 +26,8 @@ function recipe_build {
         automake-1.11 --cygnus Makefile
     popd
 
-    mkdir build
-    cd build
-
-    ../configure --target="${HOST}" --prefix=/
-    make
+    CC= ./configure --target="${HOST}" --prefix=/
+    make all
 
     return 1
 }
@@ -41,14 +38,12 @@ function recipe_test {
 }
 
 function recipe_clean {
-    cd build
     make clean
     return 1
 }
 
 function recipe_stage {
     dest="$(realpath $1)"
-    cd build
     make DESTDIR="$dest" install
     cd "$dest"
     mv x86_64-elf-redox/* ./
