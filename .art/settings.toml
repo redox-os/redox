@@ -1,0 +1,10 @@
+# artifact project settings
+
+# directories containing artifact toml files
+artifact_paths = ["{repo}/design"]
+
+# directories containing code that has artifact links
+code_paths = []
+
+# directories to exclude when searching through code
+exclude_code_paths = []

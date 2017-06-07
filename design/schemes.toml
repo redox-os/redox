@@ -1,0 +1,58 @@
+[SPC-schemes]
+partof = "REQ-1-schemes"
+text = '''
+Schemes shall be the natural counter-part to URLs (see: SPC-url). URLs are
+opened to schemes, which can then be opened to yield a resource.
+
+Schemes should be named such that the kernel is able to uniquely identify them.
+This name shall be used in the scheme part of the URL.
+
+Schemes will be a generalization of file systems. It should be noted that schemes
+do not necessarily represent normal files; they are often a "virtual file"
+(i.e., an abstract unit with certain operations defined on it).
+
+Throughout the whole ecosystem of Redox schemes should be used as the main
+communication primitive because they are a powerful abstraction. With schemes
+Redox can have one unified I/O interface.
+
+Schemes can be defined both in user space and in kernel space but when possible
+user space is preferred. 
+'''
+
+[SPC-url]
+partof = "REQ-1-schemes"
+text = '''
+## URL Representation
+
+Since it is impossible to go from user space to ring 0 in a typed manner we
+have to use some weakly typed representation (that is, we can't use an enum,
+unless we want to do transmutations and friends). Therefore we use a
+string-like representation when moving to kernel space. This is basically just
+a raw pointer to a C-like, null-terminating string. To avoid further overhead,
+we shall use more efficient representations: 
+
+### Url<'a>
+The first of the three representations is the simplest one. It consists of a
+struct containing two fat pointers, representing the scheme and the reference
+respectively. 
+
+### OwnedUrl
+This is a struct containing two Strings (that is, growable, heap-allocated
+UTF-8 string), being the scheme and the reference respectively. 
+
+### CowUrl<'a>
+This is a Copy-on-Write (CoW) URL, which, when mutated, gets cloned to heap.
+This way, you get efficient conditional allocation of the URL.
+
+Not much fanciness here.
+
+## Opening a URL
+Opening URLs happens through the OPEN system call. OPEN takes a C-like,
+null-terminating string, and two pointer-sized integers, keeping the open flags
+and the file mode, respectively.
+
+The path argument of OPEN do not have to be an URL. For compatibility reasons,
+it will default to the file: scheme. If otherwise specified, the scheme will be
+resolved by the registrar (see The root scheme), and then opened.
+'''
+
