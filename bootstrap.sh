@@ -152,7 +152,11 @@ archLinux()
 	if [ "$1" == "qemu" ]; then
 		if [ -z "$(which qemu-system-x86_64)" ]; then
 			echo "Installing QEMU..."
-			sudo pacman -S qemu
+			if [ "$(uname -m)" == "x86_64" ]; then
+				sudo pacman -S qemu-arch-extra
+			else
+				sudo pacman -S qemu
+			fi
 		else
 			echo "QEMU already installed!"
 		fi
