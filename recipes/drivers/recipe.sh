@@ -3,7 +3,7 @@ CARGOFLAGS=--all
 
 function recipe_version {
     echo "0.1.1"
-    return 1
+    skip=1
 }
 
 function recipe_stage {

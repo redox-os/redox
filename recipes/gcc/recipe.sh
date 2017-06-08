@@ -16,12 +16,12 @@ export STRIP="${HOST}-strip"
 
 function recipe_version {
     printf "r%s.%s" "$(git rev-list --count HEAD)" "$(git rev-parse --short HEAD)"
-    return 1
+    skip=1
 }
 
 function recipe_update {
     echo "skipping update"
-    return 1
+    skip=1
 }
 
 function recipe_build {
@@ -38,23 +38,23 @@ function recipe_build {
     cd build
     ../configure --host=${HOST} --target=${HOST} --prefix=/ --enable-static --disable-shared --disable-dlopen --disable-nls --enable-languages=c --without-headers
     make all-gcc all-target-libgcc
-    return 1
+    skip=1
 }
 
 function recipe_test {
     echo "skipping test"
-    return 1
+    skip=1
 }
 
 function recipe_clean {
     cd build
     make clean
-    return 1
+    skip=1
 }
 
 function recipe_stage {
     dest="$(realpath $1)"
     cd build
     make DESTDIR="$dest" install-gcc install-target-libgcc
-    return 1
+    skip=1
 }
