@@ -94,14 +94,10 @@ function op {
             ;;
         version)
             pushd build > /dev/null
-            skip="0"
+            skip=0
             if [ "$(type -t recipe_version)" = "function" ]
             then
                 recipe_version
-                if [ "$?" -ne "0" ]
-                then
-                    skip="1"
-                fi
             fi
             if [ "$skip" -eq "0" ]
             then
@@ -119,14 +115,10 @@ function op {
             ;;
         update)
             pushd build > /dev/null
-            skip="0"
+            skip=0
             if [ "$(type -t recipe_update)" = "function" ]
             then
                 recipe_update
-                if [ "$?" -ne "0" ]
-                then
-                    skip="1"
-                fi
             fi
             if [ "$skip" -eq "0" ]
             then
@@ -136,14 +128,10 @@ function op {
             ;;
         build)
             pushd build > /dev/null
-            skip="0"
+            skip=0
             if [ "$(type -t recipe_build)" = "function" ]
             then
                 recipe_build
-                if [ "$?" -ne "0" ]
-                then
-                    skip="1"
-                fi
             fi
             if [ "$skip" -eq "0" ]
             then
@@ -154,14 +142,10 @@ function op {
             ;;
         test)
             pushd build > /dev/null
-            skip="0"
+            skip=0
             if [ "$(type -t recipe_test)" = "function" ]
             then
                 recipe_test
-                if [ "$?" -ne "0" ]
-                then
-                    skip="1"
-                fi
             fi
             if [ "$skip" -eq "0" ]
             then
@@ -172,14 +156,10 @@ function op {
             ;;
         clean)
             pushd build > /dev/null
-            skip="0"
+            skip=0
             if [ "$(type -t recipe_clean)" = "function" ]
             then
                 recipe_clean
-                if [ "$?" -ne "0" ]
-                then
-                    skip="1"
-                fi
             fi
             if [ "$skip" -eq "0" ]
             then
@@ -190,14 +170,10 @@ function op {
         stage)
             mkdir -p stage
             pushd build > /dev/null
-            skip="0"
+            skip=0
             if [ "$(type -t recipe_stage)" = "function" ]
             then
                 recipe_stage ../stage
-                if [ "$?" -ne "0" ]
-                then
-                    skip="1"
-                fi
             fi
             if [ "$skip" -eq "0" ]
             then

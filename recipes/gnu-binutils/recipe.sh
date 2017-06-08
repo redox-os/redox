@@ -15,12 +15,12 @@ export STRIP="${HOST}-strip"
 
 function recipe_version {
     printf "r%s.%s" "$(git rev-list --count HEAD)" "$(git rev-parse --short HEAD)"
-    return 1
+    skip=1
 }
 
 function recipe_update {
     echo "skipping update"
-    return 1
+    skip=1
 }
 
 function recipe_build {
@@ -28,23 +28,23 @@ function recipe_build {
     cd build
     ../configure --host=${HOST} --target=${HOST} --prefix=/ --with-sysroot=/usr/x86_64-elf-redox --disable-gdb --disable-nls --disable-werror
     make
-    return 1
+    skip=1
 }
 
 function recipe_test {
     echo "skipping test"
-    return 1
+    skip=1
 }
 
 function recipe_clean {
     cd build
     make clean
-    return 1
+    skip=1
 }
 
 function recipe_stage {
     dest="$(realpath $1)"
     cd build
     make DESTDIR="$dest" install
-    return 1
+    skip=1
 }

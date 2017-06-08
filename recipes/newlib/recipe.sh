@@ -5,12 +5,12 @@ HOST=x86_64-elf-redox
 
 function recipe_version {
     printf "r%s.%s" "$(git rev-list --count HEAD)" "$(git rev-parse --short HEAD)"
-    return 1
+    skip=1
 }
 
 function recipe_update {
     echo "skipping update"
-    return 1
+    skip=1
 }
 
 function recipe_build {
@@ -29,17 +29,17 @@ function recipe_build {
     CC= ./configure --target="${HOST}" --prefix=/
     make all
 
-    return 1
+    skip=1
 }
 
 function recipe_test {
     echo "skipping test"
-    return 1
+    skip=1
 }
 
 function recipe_clean {
     make clean
-    return 1
+    skip=1
 }
 
 function recipe_stage {
@@ -48,5 +48,5 @@ function recipe_stage {
     cd "$dest"
     mv x86_64-elf-redox/* ./
     rmdir x86_64-elf-redox
-    return 1
+    skip=1
 }
