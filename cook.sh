@@ -88,6 +88,11 @@ function op {
         prepare)
             rm -rf build
             cp -r source build
+
+            for patch in *.patch
+            do
+                patch -p1 -d build < "$patch"
+            done
             ;;
         unprepare)
             rm -rf build
