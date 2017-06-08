@@ -1,5 +1,6 @@
 #!/usr/bin/env bash
 set -e
+shopt -s nullglob
 
 source config.sh
 
