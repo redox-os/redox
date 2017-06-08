@@ -168,6 +168,7 @@ function op {
             popd > /dev/null
             ;;
         stage)
+            op $1 unstage
             mkdir -p stage
             pushd build > /dev/null
             skip=0
