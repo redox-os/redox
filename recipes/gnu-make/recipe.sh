@@ -26,7 +26,6 @@ function recipe_update {
 }
 
 function recipe_build {
-    patch -p1 < ../make.patch
     ./configure --host=${HOST} --prefix=/ CFLAGS=-DPOSIX --without-guile
     make
     return 1
