@@ -24,9 +24,7 @@ function recipe_update {
 }
 
 function recipe_build {
-    mkdir build
-    cd build
-    ../configure --host=${HOST} --target=${HOST} --prefix=/ --with-sysroot=/usr/x86_64-elf-redox --disable-gdb --disable-nls --disable-werror
+    ./configure --host=${HOST} --target=${HOST} --prefix=/ --with-sysroot=/usr/x86_64-elf-redox --disable-gdb --disable-nls --disable-werror
     make
     skip=1
 }
@@ -37,14 +35,12 @@ function recipe_test {
 }
 
 function recipe_clean {
-    cd build
     make clean
     skip=1
 }
 
 function recipe_stage {
     dest="$(realpath $1)"
-    cd build
     make DESTDIR="$dest" install
     skip=1
 }

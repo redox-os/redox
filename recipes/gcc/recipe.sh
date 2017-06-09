@@ -34,9 +34,7 @@ function recipe_build {
     autoconf2.64
     popd
 
-    mkdir build
-    cd build
-    ../configure --host=${HOST} --target=${HOST} --prefix=/ --enable-static --disable-shared --disable-dlopen --disable-nls --enable-languages=c --without-headers
+    ./configure --host=${HOST} --target=${HOST} --prefix=/ --enable-static --disable-shared --disable-dlopen --disable-nls --enable-languages=c --without-headers
     make all-gcc all-target-libgcc
     skip=1
 }
@@ -47,14 +45,12 @@ function recipe_test {
 }
 
 function recipe_clean {
-    cd build
     make clean
     skip=1
 }
 
 function recipe_stage {
     dest="$(realpath $1)"
-    cd build
     make DESTDIR="$dest" install-gcc install-target-libgcc
     skip=1
 }
