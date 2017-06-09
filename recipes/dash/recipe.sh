@@ -44,5 +44,6 @@ function recipe_clean {
 function recipe_stage {
     dest="$(realpath $1)"
     make DESTDIR="$dest" install
+    cp "$1/bin/dash" "$1/bin/sh" # TODO: symlink when Redox supports them
     skip=1
 }
