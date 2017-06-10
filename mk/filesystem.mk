@@ -40,3 +40,5 @@ unmount: FORCE
 	sync
 	-$(FUMOUNT) build/filesystem/ || true
 	rm -rf build/filesystem/
+
+.PHONY: build/filesystem.bin
