@@ -94,7 +94,7 @@ data = "255.255.255.0"
 
 [[files]]
 path = "/etc/net/mac"
-data = "00.00.00.00.00.00"
+data = "54-52-00-ab-cd-ef"
 
 [[files]]
 path = "/etc/pkg.d/50_redox"
