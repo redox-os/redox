@@ -42,6 +42,6 @@ function recipe_clean {
 function recipe_stage {
     dest="$(realpath $1)"
     make DESTDIR="$dest" install
-    find "$dest" -exec x86_64-elf-redox-strip {} ';' 2> /dev/null
+    find "$dest/bin" -exec x86_64-elf-redox-strip {} ';' 2> /dev/null
     skip=1
 }
