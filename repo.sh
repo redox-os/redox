@@ -39,7 +39,8 @@ do
     else
         TIME_BUILD="$(find recipes/$recipe/build -type f -not -path '*/.git*' -printf "%Ts\n" | sort -nr | head -n 1)"
         TIME_STAGE="$(stat -c "%Y" recipes/$recipe/stage.tar)"
-        if [ "$TIME_BUILD" -gt "$TIME_STAGE" ]
+        TIME_RECIPE="$(find $(git ls-tree -r --name-only HEAD recipes/$recipe) -printf '%Ts\n' | sort -nr | head -n 1)"
+	if [ "$TIME_BUILD" -gt "$TIME_STAGE" -o "$TIME_RECIPE" -gt "$TIME_STAGE" ]
         then
             echo -e "\033[01;38;5;155mrepo - rebuilding $recipe\033[0m" >&2
             ./cook.sh "$recipe" untar unstage update build stage tar
