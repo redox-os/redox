@@ -58,6 +58,7 @@ path = "/etc/init.d/10_net"
 data = """
 ethernetd
 ipd
+icmpd
 tcpd
 udpd
 dhcpd -b
