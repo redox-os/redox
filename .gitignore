@@ -6,3 +6,4 @@ stage
 stage.sig
 stage.tar
 stage.toml
+xargo-home
