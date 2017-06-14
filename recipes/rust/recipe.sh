@@ -1,4 +1,4 @@
-mIT=https://github.com/ids1024/rust.git
+GIT=https://github.com/ids1024/rust.git
 BRANCH=compile-redox
 
 ARCH=x86_64
