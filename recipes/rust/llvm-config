@@ -4,7 +4,7 @@ import sys
 import os
 
 args = sys.argv[1:]
-prefix = os.path.realpath(os.path.dirname(os.path.abspath(sys.argv[0])) + "/../llvm-root")
+prefix = os.path.realpath(os.path.dirname(os.path.abspath(sys.argv[0])) + "/llvm-root")
 
 # The values here are copied from the output of llvm-config running under Redox.
 # This is a hack, and should be replaced if possible.
