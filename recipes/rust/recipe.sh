@@ -4,7 +4,7 @@ BRANCH=compile-redox
 ARCH=x86_64
 HOST=x86_64-elf-redox
 RUST_HOST=x86_64-unknown-redox
-LLVM_PREFIX=$PWD/llvm-root
+LLVM_PREFIX=$PWD/build/llvm-root
 SYSROOT=/usr/x86_64-elf-redox
 unset AR AS CC CXX LD NM OBJCOPY OBJDUMP RANLIB READELF STRIP
 
