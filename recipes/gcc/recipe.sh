@@ -53,5 +53,7 @@ function recipe_stage {
     dest="$(realpath $1)"
     make DESTDIR="$dest" install-gcc install-target-libgcc
     find "$dest"/{bin,libexec} -exec x86_64-elf-redox-strip {} ';' 2> /dev/null
+    echo -e '#!/bin/ion\ngcc @args[1..]' > "$1/bin/cc"
+    chmod a+x "$1/bin/cc"
     skip=1
 }
