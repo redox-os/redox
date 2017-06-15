@@ -44,6 +44,7 @@ function recipe_clean {
 function recipe_stage {
     dest="$(realpath $1)"
     make DESTDIR="$dest" install
-    cp "$1/bin/dash" "$1/bin/sh" # TODO: symlink when Redox supports them
+    echo -e '#!/bin/ion\ndash @args[1..]' > "$1/bin/sh"
+    chmod a+x "$1/bin/sh"
     skip=1
 }
