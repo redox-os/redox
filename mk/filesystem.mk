@@ -1,4 +1,4 @@
-build/filesystem.bin: filesystem.toml
+build/filesystem.bin: filesystem.toml build/kernel
 	-$(FUMOUNT) build/filesystem/ || true
 	rm -rf $@  $@.partial build/filesystem/
 	dd if=/dev/zero of=$@.partial bs=1048576 count=1024
@@ -8,6 +8,7 @@ build/filesystem.bin: filesystem.toml
 	cargo run --manifest-path installer/redoxfs/Cargo.toml --quiet --release --bin redoxfs -- $@.partial build/filesystem/
 	sleep 2
 	pgrep redoxfs
+	cp build/kernel build/filesystem/kernel
 	cargo run --manifest-path installer/Cargo.toml -- --cookbook=cookbook $<
 	chown -R 0:0 build/filesystem
 	chown -R 1000:1000 build/filesystem/home/user
