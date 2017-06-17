@@ -6,6 +6,9 @@ ifeq ($(iommu),yes)
 else
 	QEMUFLAGS+=-machine q35
 endif
+ifneq ($(audio),no)
+	QEMUFLAGS+=-device ich9-intel-hda -device hda-duplex
+endif
 ifeq ($(net),no)
 	QEMUFLAGS+=-net none
 else
