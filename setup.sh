@@ -1,11 +1,9 @@
 #!/usr/bin/env bash
 set -e
 
-echo "Downloading latest libc-artifacts"
-git submodule update --init --remote libc-artifacts
-
 echo "Downloading latest pkgutils"
 git submodule update --init --remote pkgutils
+cargo update --manifest-path pkgutils/Cargo.toml
 
 echo "Defaulting to rust nightly"
 rustup override set nightly
