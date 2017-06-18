@@ -5,5 +5,6 @@ source.tar
 stage
 stage.sig
 stage.tar
+stage.tar.gz
 stage.toml
 xargo-home
