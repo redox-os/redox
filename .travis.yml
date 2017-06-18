@@ -12,8 +12,9 @@ os:
 dist: trusty
 before_install:
 - if [ "$TRAVIS_OS_NAME" == "linux" ]; then
+  sudo add-apt-repository 'deb https://static.redox-os.org/toolchain/apt /' &&
   sudo apt-get update -qq &&
-  sudo apt-get install -qq nasm pkg-config fuse libfuse-dev genisoimage syslinux &&
+  sudo apt-get install -qq nasm pkg-config fuse libfuse-dev genisoimage syslinux x86-64-elf-redox-gcc &&
   sudo modprobe fuse &&
   sudo chmod 666 /dev/fuse &&
   sudo chown root:$USER /etc/fuse.conf;
@@ -25,8 +26,7 @@ before_install:
   fi
 - cd cookbook && ./setup.sh && cd ..
 script:
-- cd cookbook && ./fetch.sh && cd .. &&
-  make clean &&
+- make clean &&
   make build/harddrive.bin.gz build/livedisk.bin.gz build/livedisk.iso
 notifications:
   email: false
