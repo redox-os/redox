@@ -13,7 +13,7 @@ dist: trusty
 before_install:
 - if [ "$TRAVIS_OS_NAME" == "linux" ]; then
   sudo apt-key adv -q --batch --yes --keyserver keyserver.ubuntu.com --recv-keys AA12E97F0881517F &&
-  sudo add-apt-repository -q -y 'deb https://static.redox-os.org/toolchain/apt ./' &&
+  sudo add-apt-repository 'deb https://static.redox-os.org/toolchain/apt ./' &&
   sudo apt-get update -qq &&
   sudo apt-get install -qq nasm pkg-config fuse libfuse-dev genisoimage syslinux x86-64-elf-redox-gcc &&
   sudo modprobe fuse &&
