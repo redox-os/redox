@@ -8,6 +8,9 @@ live: build/livedisk.bin
 iso: build/livedisk.iso
 
 clean:
+	cargo clean --manifest-path cookbook/pkgutils/Cargo.toml
+	cargo clean --manifest-path installer/Cargo.toml
+	cargo clean --manifest-path installer/redoxfs/Cargo.toml
 	cargo clean --manifest-path kernel/Cargo.toml
 	-$(FUMOUNT) build/filesystem/ || true
 	rm -rf build
@@ -18,6 +21,13 @@ pull:
 	git submodule update --recursive --init
 	git clean -X -f -d
 	make clean
+	make update
+
+update:
+	cargo update --manifest-path cookbook/pkgutils/Cargo.toml
+	cargo update --manifest-path installer/Cargo.toml
+	cargo update --manifest-path installer/redoxfs/Cargo.toml
+	cargo update --manifest-path kernel/Cargo.toml
 
 # Emulation recipes
 include mk/qemu.mk
