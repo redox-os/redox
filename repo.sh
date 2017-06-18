@@ -33,13 +33,13 @@ do
         fi
     fi
 
-    if [ ! -f "recipes/$recipe/stage.tar" ]
+    if [ ! -f "recipes/$recipe/stage.tar.gz" ]
     then
         echo -e "\033[01;38;5;155mrepo - building $recipe\033[0m" >&2
         ./cook.sh "$recipe" update build stage tar
     else
         TIME_BUILD="$(find recipes/$recipe/build -type f -not -path '*/.git*' -printf "%Ts\n" | sort -nr | head -n 1)"
-        TIME_STAGE="$(stat -c "%Y" recipes/$recipe/stage.tar)"
+        TIME_STAGE="$(stat -c "%Y" recipes/$recipe/stage.tar.gz)"
         TIME_RECIPE="$(find recipes/$recipe/{recipe.sh,*.patch} -printf '%Ts\n' | sort -nr | head -n 1)"
         if [ "$TIME_BUILD" -gt "$TIME_STAGE" -o "$TIME_RECIPE" -gt "$TIME_STAGE" ]
         then
@@ -53,7 +53,7 @@ done
 
 for recipe in $recipes
 do
-    if [ "recipes/$recipe/stage.tar" -nt "$REPO/$recipe.tar" ]
+    if [ "recipes/$recipe/stage.tar.gz" -nt "$REPO/$recipe.tar.gz" ]
     then
         echo -e "\033[01;38;5;155mrepo - publishing $recipe\033[0m" >&2
         ./cook.sh $recipe publish
