@@ -210,16 +210,16 @@ function op {
             CC=cc cargo run --release --manifest-path "$ROOT/pkgutils/Cargo.toml" --bin pkg -- create stage
             ;;
         untar)
-            rm -rfv stage.tar stage.sig stage.toml
+            rm -rfv stage.tar.gz stage.sig stage.toml
             ;;
         publish)
             mkdir -p "$REPO"
-            cp -v stage.tar "$REPO/$1.tar"
+            cp -v stage.tar.gz "$REPO/$1.tar.gz"
             cp -v stage.sig "$REPO/$1.sig"
             cp -v stage.toml "$REPO/$1.toml"
             ;;
         unpublish)
-            rm -rfv "$REPO/$1.tar" "$REPO/$1.sig" "$REPO/$1.toml"
+            rm -rfv "$REPO/$1.tar.gz" "$REPO/$1.sig" "$REPO/$1.toml"
             ;;
         *)
             usage $1
