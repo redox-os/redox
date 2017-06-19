@@ -1,3 +1,3 @@
 [target.x86_64-unknown-redox]
-linker = "x86_64-elf-redox-gcc"
+linker = "libc-artifacts/gcc.sh"
 rustflags = []
