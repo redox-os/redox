@@ -8,6 +8,7 @@ live: build/livedisk.bin
 iso: build/livedisk.iso
 
 clean:
+	cd cookbook && ./clean.sh
 	cargo clean --manifest-path cookbook/pkgutils/Cargo.toml
 	cargo clean --manifest-path installer/Cargo.toml
 	cargo clean --manifest-path installer/redoxfs/Cargo.toml
