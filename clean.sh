@@ -15,4 +15,4 @@ do
     ./cook.sh "$recipe" distclean
 done
 
-rm -rf xargo-home
+rm -rf xargo
