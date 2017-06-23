@@ -48,35 +48,43 @@ function op {
             op $1 unprepare
             ;;
         fetch)
-            if [ -n "$TAR" ]
+            skip=0
+            if [ "$(type -t recipe_fetch)" = "function" ]
             then
-                if [ ! -f source.tar ]
-                then
-                    wget "$TAR" -O source.tar
-                fi
-
-                if [ ! -d source ]
-                then
-                    mkdir source
-                    tar xvf source.tar -C source --strip-components 1
-                fi
-            elif [ -n "$GIT" ]
+                recipe_fetch
+            fi
+            if [ "$skip" -eq "0" ]
             then
-                if [ ! -d source ]
+                if [ -n "$TAR" ]
                 then
-                    if [ -n "$BRANCH" ]
+                    if [ ! -f source.tar ]
                     then
-                        git clone --recursive "$GIT" -b "$BRANCH" source
-                    else
-                        git clone --recursive "$GIT" source
+                        wget "$TAR" -O source.tar
                     fi
-                fi
 
-                pushd source > /dev/null
-                git pull
-                git submodule sync
-                git submodule update --init --recursive
-                popd > /dev/null
+                    if [ ! -d source ]
+                    then
+                        mkdir source
+                        tar xvf source.tar -C source --strip-components 1
+                    fi
+                elif [ -n "$GIT" ]
+                then
+                    if [ ! -d source ]
+                    then
+                        if [ -n "$BRANCH" ]
+                        then
+                            git clone --recursive "$GIT" -b "$BRANCH" source
+                        else
+                            git clone --recursive "$GIT" source
+                        fi
+                    fi
+
+                    pushd source > /dev/null
+                    git pull
+                    git submodule sync
+                    git submodule update --init --recursive
+                    popd > /dev/null
+                fi
             fi
             ;;
         unfetch)
