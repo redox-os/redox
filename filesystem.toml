@@ -131,3 +131,11 @@ data = """
 Welcome to Redox OS!
 
 """
+
+[[files]]
+path = "/home/user/.ionrc"
+data = ""
+
+[[files]]
+path = "/root/.ionrc"
+data = ""
