@@ -6,7 +6,9 @@
 git clone https://github.com/redox-os/redox.git ; cd redox #1
 make pull #2
 docker build -t redox docker/ #3
-docker run --cap-add MKNOD --cap-add SYS_ADMIN --device /dev/fuse -e LOCAL_USER_ID="$(id -u)" -v "$(pwd):/src" --rm redox make all #4
+docker run --cap-add MKNOD --cap-add SYS_ADMIN \
+    --device /dev/fuse -e LOCAL_USER_ID="$(id -u)" \
+    -v "$(pwd):/src" --rm redox make all #4
 make qemu #5
 ```
 To unpack:
