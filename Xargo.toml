@@ -1,6 +1,6 @@
 [dependencies.std]
 features = ["panic_unwind"]
 
-#[dependencies.test]
-#stage = 1
+[dependencies.test]
+stage = 1
 
