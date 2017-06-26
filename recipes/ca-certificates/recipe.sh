@@ -1,15 +1,16 @@
 function recipe_fetch {
-    mkdir source
+    if [ ! -d source ]
+    then
+        mkdir source
+    fi
     pushd source
-        curl -o make-ca.sh http://anduin.linuxfromscratch.org/BLFS/other/make-ca.sh-20170514
-        curl -o certdata.txt http://anduin.linuxfromscratch.org/BLFS/other/certdata.txt
+        curl -o make-ca.sh --time-cond make-ca.sh http://anduin.linuxfromscratch.org/BLFS/other/make-ca.sh-20170514
+        curl -o certdata.txt --time-cond certdata.txt http://anduin.linuxfromscratch.org/BLFS/other/certdata.txt
     popd
     skip=1
 }
 
 function recipe_update {
-    curl -o make-ca.sh --time-cond make-ca.sh http://anduin.linuxfromscratch.org/BLFS/other/make-ca.sh-20170514
-    curl -o certdata.txt --time-cond certdata.txt http://anduin.linuxfromscratch.org/BLFS/other/certdata.txt
     skip=1
 }
 

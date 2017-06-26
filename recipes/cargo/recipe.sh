@@ -13,9 +13,9 @@ function recipe_build {
     mkdir openssl-prefix
 
     pushd openssl-redox
-        ./Configure no-shared no-dgram redox-x86_64 --prefix="$PWD/../openssl-prefix"
+        ./Configure no-shared no-dgram redox-x86_64 --prefix="/"
 	make -j"$(nproc)"
-	make install
+	make DESTDIR="$PWD/../openssl-prefix" install
     popd
 
     export OPENSSL_DIR=$PWD/openssl-prefix
