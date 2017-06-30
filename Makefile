@@ -11,8 +11,8 @@ clean:
 	cd cookbook && ./clean.sh
 	cargo clean --manifest-path cookbook/pkgutils/Cargo.toml
 	cargo clean --manifest-path installer/Cargo.toml
-	cargo clean --manifest-path installer/redoxfs/Cargo.toml
 	cargo clean --manifest-path kernel/Cargo.toml
+	cargo clean --manifest-path redoxfs/Cargo.toml
 	-$(FUMOUNT) build/filesystem/ || true
 	rm -rf build
 
@@ -27,8 +27,8 @@ pull:
 update:
 	cargo update --manifest-path cookbook/pkgutils/Cargo.toml
 	cargo update --manifest-path installer/Cargo.toml
-	cargo update --manifest-path installer/redoxfs/Cargo.toml
 	cargo update --manifest-path kernel/Cargo.toml
+	cargo update --manifest-path redoxfs/Cargo.toml
 
 # Emulation recipes
 include mk/qemu.mk
