@@ -214,7 +214,7 @@ function op {
             echo "target = \"$TARGET\"" >> "stage.toml"
             mkdir -p stage/pkg
             cp -v stage.toml "stage/pkg/$1.toml"
-            CC=cc cargo run --release --manifest-path "$ROOT/pkgutils/Cargo.toml" --bin pkg -- create stage
+            CC=cc cargo run --release --manifest-path "$ROOT/pkgutils/Cargo.toml" --bin pkg -- --target=$TARGET create stage
             ;;
         untar)
             rm -rfv stage.tar.gz stage.sig stage.toml
