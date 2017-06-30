@@ -47,11 +47,12 @@ include mk/disk.mk
 
 # Travis target
 travis: FORCE
-	make clean
 	INSTALLER_FLAGS= make build/harddrive.bin.gz build/livedisk.iso
+	rm -rf build/travis
 	mkdir build/travis
 	mv build/harddrive.bin.gz build/travis/redox_$(TRAVIS_TAG).bin.gz
 	mv build/livedisk.iso build/travis/redox_$(TRAVIS_TAG).iso
+	cd build/travis && sha256sum -b redox_$(TRAVIS_TAG).bin.gz redox_$(TRAVIS_TAG).iso > SHA256SUM
 
 # An empty target
 FORCE:

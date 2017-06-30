@@ -28,7 +28,7 @@ before_install:
   fi
 - cd cookbook && ./setup.sh && cd ..
 script:
-- make travis
+- make clean && make travis
 notifications:
   email: false
   webhooks: http://37.139.9.28:54863/travis
