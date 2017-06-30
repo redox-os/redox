@@ -16,3 +16,6 @@
 [submodule "rust"]
 	path = rust
 	url = https://github.com/redox-os/rust.git
+[submodule "redoxfs"]
+	path = redoxfs
+	url = https://github.com/redox-os/redoxfs.git
