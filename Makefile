@@ -45,6 +45,14 @@ include mk/filesystem.mk
 # Disk images
 include mk/disk.mk
 
+# Travis target
+travis: FORCE
+	make clean
+	INSTALLER_FLAGS= make build/harddrive.bin.gz build/livedisk.iso
+	mkdir build/travis
+	mv build/harddrive.bin.gz build/travis/redox_$(TRAVIS_TAG).bin.gz
+	mv build/livedisk.iso build/travis/redox_$(TRAVIS_TAG).iso
+
 # An empty target
 FORCE:
 
