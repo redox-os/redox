@@ -1,0 +1,1259 @@
+diff -ru git-2.13.1/apply.c git-2.13.1-new/apply.c
+--- git-2.13.1/apply.c	2017-06-04 18:08:11.000000000 -0700
++++ git-2.13.1-new/apply.c	2017-06-25 15:19:22.984088453 -0700
+@@ -449,7 +449,7 @@
+ 
+ static int is_dev_null(const char *str)
+ {
+-	return skip_prefix(str, "/dev/null", &str) && isspace(*str);
++	return skip_prefix(str, "null:", &str) && isspace(*str);
+ }
+ 
+ #define TERM_SPACE	1
+@@ -974,7 +974,7 @@
+ 		int len = strlen(*name);
+ 		char *another;
+ 		if (isnull)
+-			return error(_("git apply: bad git-diff - expected /dev/null, got %s on line %d"),
++			return error(_("git apply: bad git-diff - expected null:, got %s on line %d"),
+ 				     *name, state->linenr);
+ 		another = find_name(state, line, NULL, state->p_value, TERM_TAB);
+ 		if (!another || memcmp(another, *name, len + 1)) {
+@@ -985,9 +985,9 @@
+ 		}
+ 		free(another);
+ 	} else {
+-		/* expect "/dev/null" */
+-		if (memcmp("/dev/null", line, 9) || line[9] != '\n')
+-			return error(_("git apply: bad git-diff - expected /dev/null on line %d"), state->linenr);
++		/* expect "null:" */
++		if (memcmp("null:", line, 9) || line[9] != '\n')
++			return error(_("git apply: bad git-diff - expected null: on line %d"), state->linenr);
+ 	}
+ 
+ 	return 0;
+@@ -4309,11 +4309,13 @@
+ 		return !!mkdir(path, 0777);
+ 	}
+ 
++#if 0
+ 	if (has_symlinks && S_ISLNK(mode))
+ 		/* Although buf:size is counted string, it also is NUL
+ 		 * terminated.
+ 		 */
+ 		return !!symlink(buf, path);
++#endif
+ 
+ 	fd = open(path, O_CREAT | O_EXCL | O_WRONLY, (mode & 0100) ? 0777 : 0666);
+ 	if (fd < 0)
+diff -ru git-2.13.1/builtin/am.c git-2.13.1-new/builtin/am.c
+--- git-2.13.1/builtin/am.c	2017-06-04 18:08:11.000000000 -0700
++++ git-2.13.1-new/builtin/am.c	2017-06-25 15:19:22.550752475 -0700
+@@ -2342,7 +2342,7 @@
+ 		 * 1. mbox path(s) are provided on the command-line.
+ 		 * 2. stdin is not a tty: the user is trying to feed us a patch
+ 		 *    from standard input. This is somewhat unreliable -- stdin
+-		 *    could be /dev/null for example and the caller did not
++		 *    could be null: for example and the caller did not
+ 		 *    intend to feed us a patch but wanted to continue
+ 		 *    unattended.
+ 		 */
+diff -ru git-2.13.1/builtin/difftool.c git-2.13.1-new/builtin/difftool.c
+--- git-2.13.1/builtin/difftool.c	2017-06-04 18:08:11.000000000 -0700
++++ git-2.13.1-new/builtin/difftool.c	2017-06-25 15:19:22.667419854 -0700
+@@ -487,7 +487,7 @@
+ 				}
+ 				add_path(&wtdir, wtdir_len, dst_path);
+ 				if (symlinks) {
+-					if (symlink(wtdir.buf, rdir.buf)) {
++					if (1) {
+ 						ret = error_errno("could not symlink '%s' to '%s'", wtdir.buf, rdir.buf);
+ 						goto finish;
+ 					}
+diff -ru git-2.13.1/builtin/diff-tree.c git-2.13.1-new/builtin/diff-tree.c
+--- git-2.13.1/builtin/diff-tree.c	2017-06-04 18:08:11.000000000 -0700
++++ git-2.13.1-new/builtin/diff-tree.c	2017-06-25 15:19:22.580752658 -0700
+@@ -83,7 +83,7 @@
+ "git diff-tree [--stdin] [-m] [-c] [--cc] [-s] [-v] [--pretty] [-t] [-r] [--root] "
+ "[<common-diff-options>] <tree-ish> [<tree-ish>] [<path>...]\n"
+ "  -r            diff recursively\n"
+-"  --root        include the initial commit as diff against /dev/null\n"
++"  --root        include the initial commit as diff against null:\n"
+ COMMON_DIFF_OPTIONS_HELP;
+ 
+ static void diff_tree_tweak_rev(struct rev_info *rev, struct setup_revision_opt *opt)
+diff -ru git-2.13.1/builtin/fetch.c git-2.13.1-new/builtin/fetch.c
+--- git-2.13.1/builtin/fetch.c	2017-06-04 18:08:11.000000000 -0700
++++ git-2.13.1-new/builtin/fetch.c	2017-06-25 15:19:22.587419365 -0700
+@@ -730,7 +730,7 @@
+ 	const char *what, *kind;
+ 	struct ref *rm;
+ 	char *url;
+-	const char *filename = dry_run ? "/dev/null" : git_path_fetch_head();
++	const char *filename = dry_run ? "null:" : git_path_fetch_head();
+ 	int want_status;
+ 	int summary_width = transport_summary_width(ref_map);
+ 
+diff -ru git-2.13.1/builtin/init-db.c git-2.13.1-new/builtin/init-db.c
+--- git-2.13.1/builtin/init-db.c	2017-06-04 18:08:11.000000000 -0700
++++ git-2.13.1-new/builtin/init-db.c	2017-06-25 15:19:22.667419854 -0700
+@@ -74,7 +74,7 @@
+ 			struct strbuf lnk = STRBUF_INIT;
+ 			if (strbuf_readlink(&lnk, template->buf, 0) < 0)
+ 				die_errno(_("cannot readlink '%s'"), template->buf);
+-			if (symlink(lnk.buf, path->buf))
++			if (1)
+ 				die_errno(_("cannot symlink '%s' '%s'"),
+ 					  lnk.buf, path->buf);
+ 			strbuf_release(&lnk);
+@@ -231,7 +231,7 @@
+ 	 */
+ 	path = git_path_buf(&buf, "HEAD");
+ 	reinit = (!access(path, R_OK)
+-		  || readlink(path, junk, sizeof(junk)-1) != -1);
++		  || 1);
+ 	if (!reinit) {
+ 		if (create_symref("HEAD", "refs/heads/master", NULL) < 0)
+ 			exit(1);
+@@ -273,7 +273,7 @@
+ 		path = git_path_buf(&buf, "tXXXXXX");
+ 		if (!close(xmkstemp(path)) &&
+ 		    !unlink(path) &&
+-		    !symlink("testing", path) &&
++		    !1 &&
+ 		    !lstat(path, &st1) &&
+ 		    S_ISLNK(st1.st_mode))
+ 			unlink(path); /* good */
+diff -ru git-2.13.1/builtin/log.c git-2.13.1-new/builtin/log.c
+--- git-2.13.1/builtin/log.c	2017-06-04 18:08:11.000000000 -0700
++++ git-2.13.1-new/builtin/log.c	2017-06-25 15:19:22.664086500 -0700
+@@ -308,6 +308,7 @@
+ 
+ static void setup_early_output(struct rev_info *rev)
+ {
++#if 0
+ 	struct sigaction sa;
+ 
+ 	/*
+@@ -333,6 +334,7 @@
+ 	early_output_timer.it_value.tv_sec = 0;
+ 	early_output_timer.it_value.tv_usec = 100000;
+ 	setitimer(ITIMER_REAL, &early_output_timer, NULL);
++#endif
+ }
+ 
+ static void finish_early_output(struct rev_info *rev)
+diff -ru git-2.13.1/builtin/merge-file.c git-2.13.1-new/builtin/merge-file.c
+--- git-2.13.1/builtin/merge-file.c	2017-06-04 18:08:11.000000000 -0700
++++ git-2.13.1-new/builtin/merge-file.c	2017-06-25 15:19:22.604086133 -0700
+@@ -60,8 +60,8 @@
+ 	if (argc != 3)
+ 		usage_with_options(merge_file_usage, options);
+ 	if (quiet) {
+-		if (!freopen("/dev/null", "w", stderr))
+-			return error_errno("failed to redirect stderr to /dev/null");
++		if (!freopen("null:", "w", stderr))
++			return error_errno("failed to redirect stderr to null:");
+ 	}
+ 
+ 	for (i = 0; i < 3; i++) {
+diff -ru git-2.13.1/combine-diff.c git-2.13.1-new/combine-diff.c
+--- git-2.13.1/combine-diff.c	2017-06-04 18:08:11.000000000 -0700
++++ git-2.13.1-new/combine-diff.c	2017-06-25 15:19:22.767420465 -0700
+@@ -953,13 +953,13 @@
+ 		return;
+ 
+ 	if (added)
+-		dump_quoted_path("--- ", "", "/dev/null",
++		dump_quoted_path("--- ", "", "null:",
+ 				 line_prefix, c_meta, c_reset);
+ 	else
+ 		dump_quoted_path("--- ", a_prefix, elem->path,
+ 				 line_prefix, c_meta, c_reset);
+ 	if (deleted)
+-		dump_quoted_path("+++ ", "", "/dev/null",
++		dump_quoted_path("+++ ", "", "null:",
+ 				 line_prefix, c_meta, c_reset);
+ 	else
+ 		dump_quoted_path("+++ ", b_prefix, elem->path,
+diff -ru git-2.13.1/common-main.c git-2.13.1-new/common-main.c
+--- git-2.13.1/common-main.c	2017-06-04 18:08:11.000000000 -0700
++++ git-2.13.1-new/common-main.c	2017-06-25 15:19:23.000755222 -0700
+@@ -15,12 +15,14 @@
+  */
+ static void restore_sigpipe_to_default(void)
+ {
++/*
+ 	sigset_t unblock;
+ 
+ 	sigemptyset(&unblock);
+ 	sigaddset(&unblock, SIGPIPE);
+ 	sigprocmask(SIG_UNBLOCK, &unblock, NULL);
+ 	signal(SIGPIPE, SIG_DFL);
++*/
+ }
+ 
+ int main(int argc, const char **argv)
+diff -ru git-2.13.1/compat/hstrerror.c git-2.13.1-new/compat/hstrerror.c
+--- git-2.13.1/compat/hstrerror.c	2017-06-04 18:08:11.000000000 -0700
++++ git-2.13.1-new/compat/hstrerror.c	2017-06-25 15:19:22.704086744 -0700
+@@ -5,17 +5,6 @@
+ const char *githstrerror(int err)
+ {
+ 	static char buffer[48];
+-	switch (err)
+-	{
+-	case HOST_NOT_FOUND:
+-		return "Authoritative answer: host not found";
+-	case NO_DATA:
+-		return "Valid name, no data record of requested type";
+-	case NO_RECOVERY:
+-		return "Non recoverable errors, FORMERR, REFUSED, NOTIMP";
+-	case TRY_AGAIN:
+-		return "Non-authoritative \"host not found\", or SERVERFAIL";
+-	}
+ 	snprintf(buffer, sizeof(buffer), "Name resolution error %d", err);
+ 	return buffer;
+ }
+diff -ru git-2.13.1/compat/mingw.c git-2.13.1-new/compat/mingw.c
+--- git-2.13.1/compat/mingw.c	2017-06-04 18:08:11.000000000 -0700
++++ git-2.13.1-new/compat/mingw.c	2017-06-25 15:19:22.697420037 -0700
+@@ -352,7 +352,7 @@
+ 	mode = va_arg(args, int);
+ 	va_end(args);
+ 
+-	if (filename && !strcmp(filename, "/dev/null"))
++	if (filename && !strcmp(filename, "null:"))
+ 		filename = "nul";
+ 
+ 	if (xutftowcs_path(wfilename, filename) < 0)
+@@ -413,7 +413,7 @@
+ 	int hide = needs_hiding(filename);
+ 	FILE *file;
+ 	wchar_t wfilename[MAX_PATH], wotype[4];
+-	if (filename && !strcmp(filename, "/dev/null"))
++	if (filename && !strcmp(filename, "null:"))
+ 		filename = "nul";
+ 	if (xutftowcs_path(wfilename, filename) < 0 ||
+ 		xutftowcs(wotype, otype, ARRAY_SIZE(wotype)) < 0)
+@@ -433,7 +433,7 @@
+ 	int hide = needs_hiding(filename);
+ 	FILE *file;
+ 	wchar_t wfilename[MAX_PATH], wotype[4];
+-	if (filename && !strcmp(filename, "/dev/null"))
++	if (filename && !strcmp(filename, "null:"))
+ 		filename = "nul";
+ 	if (xutftowcs_path(wfilename, filename) < 0 ||
+ 		xutftowcs(wotype, otype, ARRAY_SIZE(wotype)) < 0)
+diff -ru git-2.13.1/compat/poll/poll.c git-2.13.1-new/compat/poll/poll.c
+--- git-2.13.1/compat/poll/poll.c	2017-06-04 18:08:11.000000000 -0700
++++ git-2.13.1-new/compat/poll/poll.c	2017-06-25 15:19:22.670753207 -0700
+@@ -302,7 +302,7 @@
+ 	happened |= (POLLIN | POLLRDNORM) & sought;
+ 
+       /* Distinguish hung-up sockets from other errors.  */
+-      else if (socket_errno == ESHUTDOWN || socket_errno == ECONNRESET
++      else if (socket_errno == ECONNRESET
+ 	       || socket_errno == ECONNABORTED || socket_errno == ENETRESET)
+ 	happened |= POLLHUP;
+ 
+diff -ru git-2.13.1/compat/terminal.c git-2.13.1-new/compat/terminal.c
+--- git-2.13.1/compat/terminal.c	2017-06-04 18:08:11.000000000 -0700
++++ git-2.13.1-new/compat/terminal.c	2017-06-25 15:19:22.704086744 -0700
+@@ -3,7 +3,9 @@
+ #include "sigchain.h"
+ #include "strbuf.h"
+ 
+-#if defined(HAVE_DEV_TTY) || defined(GIT_WINDOWS_NATIVE)
++ssize_t __getline(char **lptr, size_t *n, FILE *fp);
++
++#if 0
+ 
+ static void restore_term(void);
+ 
+@@ -141,7 +143,10 @@
+ 
+ char *git_terminal_prompt(const char *prompt, int echo)
+ {
+-	return getpass(prompt);
++	char *line = NULL;
++	size_t n = 0;
++	__getline(&line, &n, stdin);
++	return line; // XXX leak
+ }
+ 
+ #endif
+diff -ru git-2.13.1/config.c git-2.13.1-new/config.c
+--- git-2.13.1/config.c	2017-06-04 18:08:11.000000000 -0700
++++ git-2.13.1-new/config.c	2017-06-25 15:19:22.994088514 -0700
+@@ -1005,7 +1005,7 @@
+ 	}
+ 
+ 	if (!strcmp(var, "core.symlinks")) {
+-		has_symlinks = git_config_bool(var, value);
++		has_symlinks = 0;
+ 		return 0;
+ 	}
+ 
+@@ -1094,7 +1094,7 @@
+ 	}
+ 
+ 	if (!strcmp(var, "core.packedgitwindowsize")) {
+-		int pgsz_x2 = getpagesize() * 2;
++		int pgsz_x2 = 4096 * 2;
+ 		packed_git_window_size = git_config_ulong(var, value);
+ 
+ 		/* This value must be multiple of (pagesize * 2) */
+diff -ru git-2.13.1/configure.ac git-2.13.1-new/configure.ac
+--- git-2.13.1/configure.ac	2017-06-04 18:08:11.000000000 -0700
++++ git-2.13.1-new/configure.ac	2017-06-17 08:31:04.941134924 -0700
+@@ -732,10 +732,7 @@
+ [NO_SYS_SELECT_H=UnfortunatelyYes])
+ GIT_CONF_SUBST([NO_SYS_SELECT_H])
+ #
+-# Define NO_SYS_POLL_H if you don't have sys/poll.h
+-AC_CHECK_HEADER([sys/poll.h],
+-[NO_SYS_POLL_H=],
+-[NO_SYS_POLL_H=UnfortunatelyYes])
++NO_SYS_POLL_H=UnfortunatelyYes
+ GIT_CONF_SUBST([NO_SYS_POLL_H])
+ #
+ # Define NO_INTTYPES_H if you don't have inttypes.h
+@@ -860,56 +857,13 @@
+ #
+ # Define FREAD_READS_DIRECTORIES if your are on a system which succeeds
+ # when attempting to read from an fopen'ed directory.
+-AC_CACHE_CHECK([whether system succeeds to read fopen'ed directory],
+- [ac_cv_fread_reads_directories],
+-[
+-AC_RUN_IFELSE(
+-	[AC_LANG_PROGRAM([AC_INCLUDES_DEFAULT],
+-		[[char c;
+-		FILE *f = fopen(".", "r");
+-		return f && fread(&c, 1, 1, f)]])],
+-	[ac_cv_fread_reads_directories=no],
+-	[ac_cv_fread_reads_directories=yes])
+-])
+-if test $ac_cv_fread_reads_directories = yes; then
+-	FREAD_READS_DIRECTORIES=UnfortunatelyYes
+-else
+-	FREAD_READS_DIRECTORIES=
+-fi
++FREAD_READS_DIRECTORIES=UnfortunatelyYes
+ GIT_CONF_SUBST([FREAD_READS_DIRECTORIES])
+ #
+ # Define SNPRINTF_RETURNS_BOGUS if your are on a system which snprintf()
+ # or vsnprintf() return -1 instead of number of characters which would
+ # have been written to the final string if enough space had been available.
+-AC_CACHE_CHECK([whether snprintf() and/or vsnprintf() return bogus value],
+- [ac_cv_snprintf_returns_bogus],
+-[
+-AC_RUN_IFELSE(
+-	[AC_LANG_PROGRAM([AC_INCLUDES_DEFAULT
+-		#include "stdarg.h"
+-
+-		int test_vsnprintf(char *str, size_t maxsize, const char *format, ...)
+-		{
+-		  int ret;
+-		  va_list ap;
+-		  va_start(ap, format);
+-		  ret = vsnprintf(str, maxsize, format, ap);
+-		  va_end(ap);
+-		  return ret;
+-		}],
+-		[[char buf[6];
+-		  if (test_vsnprintf(buf, 3, "%s", "12345") != 5
+-		      || strcmp(buf, "12")) return 1;
+-		  if (snprintf(buf, 3, "%s", "12345") != 5
+-		      || strcmp(buf, "12")) return 1]])],
+-	[ac_cv_snprintf_returns_bogus=no],
+-	[ac_cv_snprintf_returns_bogus=yes])
+-])
+-if test $ac_cv_snprintf_returns_bogus = yes; then
+ 	SNPRINTF_RETURNS_BOGUS=UnfortunatelyYes
+-else
+-	SNPRINTF_RETURNS_BOGUS=
+-fi
+ GIT_CONF_SUBST([SNPRINTF_RETURNS_BOGUS])
+ #
+ # Define NEEDS_MODE_TRANSLATION if your OS strays from the typical file type
+@@ -1064,6 +1018,8 @@
+ #
+ #
+ # Define NO_MMAP if you want to avoid mmap.
++NO_MMAP=YES
++GIT_CONF_SUBST([NO_MMAP])
+ #
+ # Define NO_ICONV if your libc does not properly support iconv.
+ 
+diff -ru git-2.13.1/connect.c git-2.13.1-new/connect.c
+--- git-2.13.1/connect.c	2017-06-04 18:08:11.000000000 -0700
++++ git-2.13.1-new/connect.c	2017-06-25 16:49:55.499598388 -0700
+@@ -450,14 +450,11 @@
+ 
+ 	he = gethostbyname(host);
+ 	if (!he)
+-		die("Unable to look up %s (%s)", host, hstrerror(h_errno));
++		die("Unable to look up %s (%s)", host, strerror(errno));
+ 	nport = strtoul(port, &ep, 10);
+ 	if ( ep == port || *ep ) {
+ 		/* Not numeric */
+-		struct servent *se = getservbyname(port,"tcp");
+-		if ( !se )
+-			die("Unknown port %s", port);
+-		nport = se->s_port;
++		die("Unknown port %s", port);
+ 	}
+ 
+ 	if (flags & CONNECT_VERBOSE)
+@@ -507,7 +504,7 @@
+ 	int sockfd = git_tcp_connect_sock(host, flags);
+ 
+ 	fd[0] = sockfd;
+-	fd[1] = dup(sockfd);
++	fd[1] = sockfd;
+ }
+ 
+ 
+diff -ru git-2.13.1/credential-cache.c git-2.13.1-new/credential-cache.c
+--- git-2.13.1/credential-cache.c	2017-06-04 18:08:11.000000000 -0700
++++ git-2.13.1-new/credential-cache.c	2017-06-25 15:19:23.024088698 -0700
+@@ -11,7 +11,7 @@
+ static int send_request(const char *socket, const struct strbuf *out)
+ {
+ 	int got_data = 0;
+-	int fd = unix_stream_connect(socket);
++	int fd = -1;
+ 
+ 	if (fd < 0)
+ 		return -1;
+diff -ru git-2.13.1/credential-cache--daemon.c git-2.13.1-new/credential-cache--daemon.c
+--- git-2.13.1/credential-cache--daemon.c	2017-06-04 18:08:11.000000000 -0700
++++ git-2.13.1-new/credential-cache--daemon.c	2017-06-25 15:19:23.024088698 -0700
+@@ -156,6 +156,7 @@
+ 	strbuf_release(&action);
+ }
+ 
++#if 0
+ static int serve_cache_loop(int fd)
+ {
+ 	struct pollfd pfd;
+@@ -209,8 +210,8 @@
+ 	printf("ok\n");
+ 	fclose(stdout);
+ 	if (!debug) {
+-		if (!freopen("/dev/null", "w", stderr))
+-			die_errno("unable to point stderr to /dev/null");
++		if (!freopen("null:", "w", stderr))
++			die_errno("unable to point stderr to null:");
+ 	}
+ 
+ 	while (serve_cache_loop(fd))
+@@ -256,6 +257,7 @@
+ 
+ 	free(path_copy);
+ }
++#endif
+ 
+ int cmd_main(int argc, const char **argv)
+ {
+@@ -274,6 +276,7 @@
+ 
+ 	git_config_get_bool("credentialcache.ignoresighup", &ignore_sighup);
+ 
++#if 0
+ 	argc = parse_options(argc, argv, NULL, options, usage, 0);
+ 	socket_path = argv[0];
+ 
+@@ -291,6 +294,9 @@
+ 
+ 	serve_cache(socket_path, debug);
+ 	delete_tempfile(&socket_file);
++#endif
++
++	printf("git-credential-cache--daemon not working on Redox\n");
+ 
+ 	return 0;
+ }
+diff -ru git-2.13.1/csum-file.c git-2.13.1-new/csum-file.c
+--- git-2.13.1/csum-file.c	2017-06-04 18:08:11.000000000 -0700
++++ git-2.13.1-new/csum-file.c	2017-06-25 15:19:22.777420525 -0700
+@@ -128,9 +128,9 @@
+ 	int sink, check;
+ 	struct sha1file *f;
+ 
+-	sink = open("/dev/null", O_WRONLY);
++	sink = open("null:", O_WRONLY);
+ 	if (sink < 0)
+-		die_errno("unable to open /dev/null");
++		die_errno("unable to open null:");
+ 	check = open(name, O_RDONLY);
+ 	if (check < 0)
+ 		die_errno("unable to open '%s'", name);
+diff -ru git-2.13.1/daemon.c git-2.13.1-new/daemon.c
+--- git-2.13.1/daemon.c	2017-06-04 18:08:11.000000000 -0700
++++ git-2.13.1-new/daemon.c	2017-06-25 15:19:23.017421990 -0700
+@@ -71,6 +71,7 @@
+ 	return hi->ip_address.buf;
+ }
+ 
++#if 0
+ static void logreport(int priority, const char *err, va_list params)
+ {
+ 	if (log_syslog) {
+@@ -89,13 +90,14 @@
+ 		fflush(stderr);
+ 	}
+ }
++#endif
+ 
+ __attribute__((format (printf, 1, 2)))
+ static void logerror(const char *err, ...)
+ {
+ 	va_list params;
+ 	va_start(params, err);
+-	logreport(LOG_ERR, err, params);
++	//logreport(LOG_ERR, err, params);
+ 	va_end(params);
+ }
+ 
+@@ -106,13 +108,13 @@
+ 	if (!verbose)
+ 		return;
+ 	va_start(params, err);
+-	logreport(LOG_INFO, err, params);
++	//logreport(LOG_INFO, err, params);
+ 	va_end(params);
+ }
+ 
+ static void NORETURN daemon_die(const char *err, va_list params)
+ {
+-	logreport(LOG_ERR, err, params);
++	//logreport(LOG_ERR, err, params);
+ 	exit(1);
+ }
+ 
+@@ -888,8 +890,7 @@
+ 
+ 	if (!reuseaddr)
+ 		return 0;
+-	return setsockopt(sockfd, SOL_SOCKET, SO_REUSEADDR,
+-			  &on, sizeof(on));
++	return 0;
+ }
+ 
+ struct socketlist {
+@@ -901,7 +902,7 @@
+ static const char *ip2str(int family, struct sockaddr *sin, socklen_t len)
+ {
+ #ifdef NO_IPV6
+-	static char ip[INET_ADDRSTRLEN];
++	static char ip[1];
+ #else
+ 	static char ip[INET6_ADDRSTRLEN];
+ #endif
+@@ -980,7 +981,7 @@
+ 			close(sockfd);
+ 			continue;	/* not fatal */
+ 		}
+-		if (listen(sockfd, 5) < 0) {
++		if (1) {
+ 			logerror("Could not listen to %s: %s",
+ 				 ip2str(ai->ai_family, ai->ai_addr, ai->ai_addrlen),
+ 				 strerror(errno));
+@@ -1019,7 +1020,7 @@
+ 		if (inet_pton(AF_INET, listen_addr, &sin.sin_addr.s_addr) <= 0)
+ 			return 0;
+ 	} else {
+-		sin.sin_addr.s_addr = htonl(INADDR_ANY);
++		sin.sin_addr.s_addr = htonl(0);
+ 	}
+ 
+ 	sockfd = socket(AF_INET, SOCK_STREAM, 0);
+@@ -1042,7 +1043,7 @@
+ 		return 0;
+ 	}
+ 
+-	if (listen(sockfd, 5) < 0) {
++	if (0) {
+ 		logerror("Could not listen to %s: %s",
+ 			 ip2str(AF_INET, (struct sockaddr *)&sin, sizeof(sin)),
+ 			 strerror(errno));
+@@ -1080,6 +1081,8 @@
+ 
+ static int service_loop(struct socketlist *socklist)
+ {
++	die_errno("No daemon support");
++#if 0
+ 	struct pollfd *pfd;
+ 	int i;
+ 
+@@ -1116,7 +1119,7 @@
+ #endif
+ 				} ss;
+ 				socklen_t sslen = sizeof(ss);
+-				int incoming = accept(pfd[i].fd, &ss.sa, &sslen);
++				int incoming = -1;
+ 				if (incoming < 0) {
+ 					switch (errno) {
+ 					case EAGAIN:
+@@ -1131,6 +1134,7 @@
+ 			}
+ 		}
+ 	}
++#endif
+ }
+ 
+ #ifdef NO_POSIX_GOODIES
+@@ -1158,7 +1162,7 @@
+ static void drop_privileges(struct credentials *cred)
+ {
+ 	if (cred && (initgroups(cred->pass->pw_name, cred->gid) ||
+-	    setgid (cred->gid) || setuid(cred->pass->pw_uid)))
++	    1))
+ 		die("cannot drop privileges");
+ }
+ 
+@@ -1167,7 +1171,7 @@
+ {
+ 	static struct credentials c;
+ 
+-	c.pass = getpwnam(user_name);
++	c.pass = 0;
+ 	if (!c.pass)
+ 		die("user not found - %s", user_name);
+ 
+@@ -1349,7 +1353,7 @@
+ 	}
+ 
+ 	if (log_syslog) {
+-		openlog("git-daemon", LOG_PID, LOG_DAEMON);
++		//openlog("git-daemon", LOG_PID, LOG_DAEMON);
+ 		set_die_routine(daemon_die);
+ 	} else
+ 		/* avoid splitting a message in the middle */
+@@ -1377,8 +1381,8 @@
+ 		    base_path);
+ 
+ 	if (inetd_mode) {
+-		if (!freopen("/dev/null", "w", stderr))
+-			die_errno("failed to redirect stderr to /dev/null");
++		if (!freopen("null:", "w", stderr))
++			die_errno("failed to redirect stderr to null:");
+ 	}
+ 
+ 	if (inetd_mode || serve_mode)
+diff -ru git-2.13.1/diff.c git-2.13.1-new/diff.c
+--- git-2.13.1/diff.c	2017-06-04 18:08:11.000000000 -0700
++++ git-2.13.1-new/diff.c	2017-06-25 15:19:22.794087293 -0700
+@@ -389,7 +389,7 @@
+ /*
+  * Keep track of files used for diffing. Sometimes such an entry
+  * refers to a temporary file, sometimes to an existing file, and
+- * sometimes to "/dev/null".
++ * sometimes to "null:".
+  */
+ static struct diff_tempfile {
+ 	/*
+@@ -2401,11 +2401,11 @@
+ 
+ 	a_one = quote_two(a_prefix, name_a + (*name_a == '/'));
+ 	b_two = quote_two(b_prefix, name_b + (*name_b == '/'));
+-	lbl[0] = DIFF_FILE_VALID(one) ? a_one : "/dev/null";
+-	lbl[1] = DIFF_FILE_VALID(two) ? b_two : "/dev/null";
++	lbl[0] = DIFF_FILE_VALID(one) ? a_one : "null:";
++	lbl[1] = DIFF_FILE_VALID(two) ? b_two : "null:";
+ 	strbuf_addf(&header, "%s%sdiff --git %s %s%s\n", line_prefix, meta, a_one, b_two, reset);
+ 	if (lbl[0][0] == '/') {
+-		/* /dev/null */
++		/* null: */
+ 		strbuf_addf(&header, "%s%snew file mode %06o%s\n", line_prefix, meta, two->mode, reset);
+ 		if (xfrm_msg)
+ 			strbuf_addstr(&header, xfrm_msg);
+@@ -3000,7 +3000,7 @@
+ 		/* A '-' entry produces this for file-2, and
+ 		 * a '+' entry produces this for file-1.
+ 		 */
+-		temp->name = "/dev/null";
++		temp->name = "null:";
+ 		xsnprintf(temp->hex, sizeof(temp->hex), ".");
+ 		xsnprintf(temp->mode, sizeof(temp->mode), ".");
+ 		return temp;
+@@ -3260,7 +3260,7 @@
+ 
+ static void strip_prefix(int prefix_length, const char **namep, const char **otherp)
+ {
+-	/* Strip the prefix but do not molest /dev/null and absolute paths */
++	/* Strip the prefix but do not molest null: and absolute paths */
+ 	if (*namep && **namep != '/') {
+ 		*namep += prefix_length;
+ 		if (**namep == '/')
+@@ -4630,7 +4630,7 @@
+ 		if (p->one->mode == 0) {
+ 			patch_id_add_string(&ctx, "newfilemode");
+ 			patch_id_add_mode(&ctx, p->two->mode);
+-			patch_id_add_string(&ctx, "---/dev/null");
++			patch_id_add_string(&ctx, "---null:");
+ 			patch_id_add_string(&ctx, "+++b/");
+ 			git_SHA1_Update(&ctx, p->two->path, len2);
+ 		} else if (p->two->mode == 0) {
+@@ -4638,7 +4638,7 @@
+ 			patch_id_add_mode(&ctx, p->one->mode);
+ 			patch_id_add_string(&ctx, "---a/");
+ 			git_SHA1_Update(&ctx, p->one->path, len1);
+-			patch_id_add_string(&ctx, "+++/dev/null");
++			patch_id_add_string(&ctx, "+++null:");
+ 		} else {
+ 			patch_id_add_string(&ctx, "---a/");
+ 			git_SHA1_Update(&ctx, p->one->path, len1);
+@@ -4802,14 +4802,14 @@
+ 	    DIFF_OPT_TST(options, DIFF_FROM_CONTENTS)) {
+ 		/*
+ 		 * run diff_flush_patch for the exit status. setting
+-		 * options->file to /dev/null should be safe, because we
++		 * options->file to null: should be safe, because we
+ 		 * aren't supposed to produce any output anyway.
+ 		 */
+ 		if (options->close_file)
+ 			fclose(options->file);
+-		options->file = fopen("/dev/null", "w");
++		options->file = fopen("null:", "w");
+ 		if (!options->file)
+-			die_errno("Could not open /dev/null");
++			die_errno("Could not open null:");
+ 		options->close_file = 1;
+ 		for (i = 0; i < q->nr; i++) {
+ 			struct diff_filepair *p = q->queue[i];
+diff -ru git-2.13.1/diff-no-index.c git-2.13.1-new/diff-no-index.c
+--- git-2.13.1/diff-no-index.c	2017-06-04 18:08:11.000000000 -0700
++++ git-2.13.1-new/diff-no-index.c	2017-06-25 15:19:22.784087233 -0700
+@@ -44,7 +44,7 @@
+ {
+ 	struct stat st;
+ 
+-	if (!path || !strcmp(path, "/dev/null"))
++	if (!path || !strcmp(path, "null:"))
+ 		*mode = 0;
+ #ifdef GIT_WINDOWS_NATIVE
+ 	else if (!strcasecmp(path, "nul"))
+@@ -80,7 +80,7 @@
+ 	struct diff_filespec *s;
+ 
+ 	if (!name)
+-		name = "/dev/null";
++		name = "null:";
+ 	s = alloc_filespec(name);
+ 	fill_filespec(s, null_sha1, 0, mode);
+ 	if (name == file_from_standard_input)
+diff -ru git-2.13.1/dir.c git-2.13.1-new/dir.c
+--- git-2.13.1/dir.c	2017-06-04 18:08:11.000000000 -0700
++++ git-2.13.1-new/dir.c	2017-06-25 15:19:22.970755039 -0700
+@@ -1891,14 +1891,14 @@
+ static const char *get_ident_string(void)
+ {
+ 	static struct strbuf sb = STRBUF_INIT;
+-	struct utsname uts;
++	//struct utsname uts;
+ 
+ 	if (sb.len)
+ 		return sb.buf;
+-	if (uname(&uts) < 0)
+-		die_errno(_("failed to get kernel name and information"));
++	//if (uname(&uts) < 0)
++	//	die_errno(_("failed to get kernel name and information"));
+ 	strbuf_addf(&sb, "Location %s, system %s", get_git_work_tree(),
+-		    uts.sysname);
++		    "Redox");
+ 	return sb.buf;
+ }
+ 
+diff -ru git-2.13.1/entry.c git-2.13.1-new/entry.c
+--- git-2.13.1/entry.c	2017-06-04 18:08:11.000000000 -0700
++++ git-2.13.1-new/entry.c	2017-06-25 15:19:22.984088453 -0700
+@@ -167,6 +167,7 @@
+ 			return error("unable to read sha1 file of %s (%s)",
+ 				path, oid_to_hex(&ce->oid));
+ 
++#if 0
+ 		if (ce_mode_s_ifmt == S_IFLNK && has_symlinks && !to_tempfile) {
+ 			ret = symlink(new, path);
+ 			free(new);
+@@ -175,6 +176,7 @@
+ 						   path);
+ 			break;
+ 		}
++#endif
+ 
+ 		/*
+ 		 * Convert from git internal format to working tree format
+diff -ru git-2.13.1/environment.c git-2.13.1-new/environment.c
+--- git-2.13.1/environment.c	2017-06-04 18:08:11.000000000 -0700
++++ git-2.13.1-new/environment.c	2017-06-25 15:19:22.984088453 -0700
+@@ -15,7 +15,7 @@
+ int trust_executable_bit = 1;
+ int trust_ctime = 1;
+ int check_stat = 1;
+-int has_symlinks = 1;
++int has_symlinks = 0;
+ int minimum_abbrev = 4, default_abbrev = -1;
+ int ignore_case;
+ int assume_unchanged;
+diff -ru git-2.13.1/fast-import.c git-2.13.1-new/fast-import.c
+--- git-2.13.1/fast-import.c	2017-06-04 18:08:11.000000000 -0700
++++ git-2.13.1-new/fast-import.c	2017-06-25 15:19:23.007421930 -0700
+@@ -423,7 +423,6 @@
+ 
+ 	fprintf(rpt, "fast-import crash report:\n");
+ 	fprintf(rpt, "    fast-import process: %"PRIuMAX"\n", (uintmax_t) getpid());
+-	fprintf(rpt, "    parent process     : %"PRIuMAX"\n", (uintmax_t) getppid());
+ 	fprintf(rpt, "    at %s\n", show_date(time(NULL), 0, DATE_MODE(ISO8601)));
+ 	fputc('\n', rpt);
+ 
+@@ -531,6 +530,7 @@
+ 
+ static void set_checkpoint_signal(void)
+ {
++	/*
+ 	struct sigaction sa;
+ 
+ 	memset(&sa, 0, sizeof(sa));
+@@ -538,6 +538,7 @@
+ 	sigemptyset(&sa.sa_mask);
+ 	sa.sa_flags = SA_RESTART;
+ 	sigaction(SIGUSR1, &sa, NULL);
++	*/
+ }
+ 
+ #endif
+diff -ru git-2.13.1/git-compat-util.h git-2.13.1-new/git-compat-util.h
+--- git-2.13.1/git-compat-util.h	2017-06-04 18:08:11.000000000 -0700
++++ git-2.13.1-new/git-compat-util.h	2017-06-25 15:01:02.935061516 -0700
+@@ -179,7 +179,6 @@
+ #include <assert.h>
+ #include <regex.h>
+ #include <utime.h>
+-#include <syslog.h>
+ #ifndef NO_SYS_POLL_H
+ #include <sys/poll.h>
+ #else
+@@ -195,21 +194,16 @@
+ #elif defined(_MSC_VER)
+ #include "compat/msvc.h"
+ #else
+-#include <sys/utsname.h>
+ #include <sys/wait.h>
+ #include <sys/resource.h>
+ #include <sys/socket.h>
+-#include <sys/ioctl.h>
+-#include <termios.h>
+ #ifndef NO_SYS_SELECT_H
+ #include <sys/select.h>
+ #endif
+ #include <netinet/in.h>
+-#include <netinet/tcp.h>
+ #include <arpa/inet.h>
+ #include <netdb.h>
+ #include <pwd.h>
+-#include <sys/un.h>
+ #ifndef NO_INTTYPES_H
+ #include <inttypes.h>
+ #else
+@@ -1123,4 +1117,7 @@
+ 
+ extern int cmd_main(int, const char **);
+ 
++#define utime(...) 0
++#define shutdown(...) 0
++
+ #endif
+diff -ru git-2.13.1/ident.c git-2.13.1-new/ident.c
+--- git-2.13.1/ident.c	2017-06-04 18:08:11.000000000 -0700
++++ git-2.13.1-new/ident.c	2017-06-25 15:19:22.997421868 -0700
+@@ -33,8 +33,7 @@
+ 	struct passwd *pw;
+ 
+ 	errno = 0;
+-	pw = getpwuid(getuid());
+-	if (!pw) {
++	if (1) {
+ 		static struct passwd fallback;
+ 		fallback.pw_name = "unknown";
+ #ifndef NO_GECOS_IN_PWENT
+diff -ru git-2.13.1/imap-send.c git-2.13.1-new/imap-send.c
+--- git-2.13.1/imap-send.c	2017-06-04 18:08:11.000000000 -0700
++++ git-2.13.1-new/imap-send.c	2017-06-25 15:19:22.964088331 -0700
+@@ -1018,7 +1018,7 @@
+ 
+ 		addr.sin_addr.s_addr = *((int *) he->h_addr_list[0]);
+ 
+-		s = socket(PF_INET, SOCK_STREAM, 0);
++		s = socket(AF_INET, SOCK_STREAM, 0);
+ 
+ 		imap_info("Connecting to %s:%hu... ", inet_ntoa(addr.sin_addr), ntohs(addr.sin_port));
+ 		if (connect(s, (struct sockaddr *)&addr, sizeof(addr))) {
+diff -ru git-2.13.1/line-log.c git-2.13.1-new/line-log.c
+--- git-2.13.1/line-log.c	2017-06-04 18:08:11.000000000 -0700
++++ git-2.13.1-new/line-log.c	2017-06-25 15:19:22.830754184 -0700
+@@ -900,7 +900,7 @@
+ 	fprintf(opt->file, "%s%sdiff --git a/%s b/%s%s\n", prefix, c_meta, pair->one->path, pair->two->path, c_reset);
+ 	fprintf(opt->file, "%s%s--- %s%s%s\n", prefix, c_meta,
+ 	       pair->one->oid_valid ? "a/" : "",
+-	       pair->one->oid_valid ? pair->one->path : "/dev/null",
++	       pair->one->oid_valid ? pair->one->path : "null:",
+ 	       c_reset);
+ 	fprintf(opt->file, "%s%s+++ b/%s%s\n", prefix, c_meta, pair->two->path, c_reset);
+ 	for (i = 0; i < range->ranges.nr; i++) {
+diff -ru git-2.13.1/Makefile git-2.13.1-new/Makefile
+--- git-2.13.1/Makefile	2017-06-04 18:08:11.000000000 -0700
++++ git-2.13.1-new/Makefile	2017-06-25 15:02:55.796346882 -0700
+@@ -1202,7 +1202,7 @@
+ 	ifdef NEEDS_LIBINTL_BEFORE_LIBICONV
+ 		ICONV_LINK += -lintl
+ 	endif
+-	EXTLIBS += $(ICONV_LINK) -liconv
++	EXTLIBS += $(ICONV_LINK)
+ endif
+ ifdef NEEDS_LIBGEN
+ 	EXTLIBS += -lgen
+@@ -1260,11 +1260,9 @@
+ 	BASIC_CFLAGS += -DNO_GETTEXT
+ 	USE_GETTEXT_SCHEME ?= fallthrough
+ endif
+-ifdef NO_POLL
+ 	NO_SYS_POLL_H = YesPlease
+ 	COMPAT_CFLAGS += -DNO_POLL -Icompat/poll
+ 	COMPAT_OBJS += compat/poll/poll.o
+-endif
+ ifdef NO_STRCASESTR
+ 	COMPAT_CFLAGS += -DNO_STRCASESTR
+ 	COMPAT_OBJS += compat/strcasestr.o
+@@ -1368,11 +1366,9 @@
+ 	LIB_OBJS += compat/inet_pton.o
+ 	BASIC_CFLAGS += -DNO_INET_PTON
+ endif
+-ifndef NO_UNIX_SOCKETS
+ 	LIB_OBJS += unix-socket.o
+ 	PROGRAM_OBJS += credential-cache.o
+ 	PROGRAM_OBJS += credential-cache--daemon.o
+-endif
+ 
+ ifdef NO_ICONV
+ 	BASIC_CFLAGS += -DNO_ICONV
+@@ -1530,7 +1526,6 @@
+ endif
+ 
+ ifdef NEEDS_LIBRT
+-	EXTLIBS += -lrt
+ endif
+ 
+ ifdef HAVE_BSD_SYSCTL
+diff -ru git-2.13.1/merge-recursive.c git-2.13.1-new/merge-recursive.c
+--- git-2.13.1/merge-recursive.c	2017-06-04 18:08:11.000000000 -0700
++++ git-2.13.1-new/merge-recursive.c	2017-06-25 15:19:22.990755161 -0700
+@@ -832,6 +832,7 @@
+ 			}
+ 			write_in_full(fd, buf, size);
+ 			close(fd);
++#if 0
+ 		} else if (S_ISLNK(mode)) {
+ 			char *lnk = xmemdupz(buf, size);
+ 			safe_create_leading_directories_const(path);
+@@ -840,6 +841,7 @@
+ 				ret = err(o, _("failed to symlink '%s': %s"),
+ 					path, strerror(errno));
+ 			free(lnk);
++#endif
+ 		} else
+ 			ret = err(o,
+ 				  _("do not know what to do with %06o %s '%s'"),
+diff -ru git-2.13.1/path.c git-2.13.1-new/path.c
+--- git-2.13.1/path.c	2017-06-04 18:08:11.000000000 -0700
++++ git-2.13.1-new/path.c	2017-06-25 15:19:23.000755222 -0700
+@@ -565,12 +565,14 @@
+ 		return -1;
+ 
+ 	/* Make sure it is a "refs/.." symlink */
++/*
+ 	if (S_ISLNK(st.st_mode)) {
+ 		len = readlink(path, buffer, sizeof(buffer)-1);
+ 		if (len >= 5 && !memcmp("refs/", buffer, 5))
+ 			return 0;
+ 		return -1;
+ 	}
++*/
+ 
+ 	/*
+ 	 * Anything else, just open it and try to see if it is a symbolic ref.
+@@ -604,6 +606,7 @@
+ 	return -1;
+ }
+ 
++/*
+ static struct passwd *getpw_str(const char *username, size_t len)
+ {
+ 	struct passwd *pw;
+@@ -612,6 +615,7 @@
+ 	free(username_z);
+ 	return pw;
+ }
++*/
+ 
+ /*
+  * Return a string with ~ and ~user expanded via getpw*.  If buf != NULL,
+@@ -643,10 +647,7 @@
+ 			convert_slashes(user_path.buf);
+ #endif
+ 		} else {
+-			struct passwd *pw = getpw_str(username, username_len);
+-			if (!pw)
+ 				goto return_null;
+-			strbuf_addstr(&user_path, pw->pw_dir);
+ 		}
+ 		to_copy = first_slash;
+ 	}
+diff -ru git-2.13.1/progress.c git-2.13.1-new/progress.c
+--- git-2.13.1/progress.c	2017-06-04 18:08:11.000000000 -0700
++++ git-2.13.1-new/progress.c	2017-06-25 15:19:22.957421624 -0700
+@@ -52,11 +52,13 @@
+ 
+ 	progress_update = 0;
+ 
++	/*
+ 	memset(&sa, 0, sizeof(sa));
+ 	sa.sa_handler = progress_interval;
+ 	sigemptyset(&sa.sa_mask);
+ 	sa.sa_flags = SA_RESTART;
+ 	sigaction(SIGALRM, &sa, NULL);
++	*/
+ 
+ 	v.it_interval.tv_sec = 1;
+ 	v.it_interval.tv_usec = 0;
+@@ -74,8 +76,7 @@
+ 
+ static int is_foreground_fd(int fd)
+ {
+-	int tpgrp = tcgetpgrp(fd);
+-	return tpgrp < 0 || tpgrp == getpgid(0);
++	return 1;
+ }
+ 
+ static int display(struct progress *progress, unsigned n, const char *done)
+diff -ru git-2.13.1/refs/files-backend.c git-2.13.1-new/refs/files-backend.c
+--- git-2.13.1/refs/files-backend.c	2017-06-04 18:08:11.000000000 -0700
++++ git-2.13.1-new/refs/files-backend.c	2017-06-25 15:19:22.720753512 -0700
+@@ -2165,7 +2165,7 @@
+ static int create_ref_symlink(struct ref_lock *lock, const char *target)
+ {
+ 	int ret = -1;
+-#ifndef NO_SYMLINK_HEAD
++#if 0
+ 	char *ref_path = get_locked_file_path(lock->lk);
+ 	unlink(ref_path);
+ 	ret = symlink(target, ref_path);
+diff -ru git-2.13.1/rerere.c git-2.13.1-new/rerere.c
+--- git-2.13.1/rerere.c	2017-06-04 18:08:11.000000000 -0700
++++ git-2.13.1-new/rerere.c	2017-06-25 15:19:22.960754978 -0700
+@@ -682,7 +682,7 @@
+ 	 * A successful replay of recorded resolution.
+ 	 * Mark that "postimage" was used to help gc.
+ 	 */
+-	if (utime(rerere_path(id, "postimage"), NULL) < 0)
++	if (1)
+ 		warning_errno("failed utime() on %s",
+ 			      rerere_path(id, "postimage"));
+ 
+diff -ru git-2.13.1/run-command.c git-2.13.1-new/run-command.c
+--- git-2.13.1/run-command.c	2017-06-04 18:08:11.000000000 -0700
++++ git-2.13.1-new/run-command.c	2017-06-25 15:19:23.024088698 -0700
+@@ -120,9 +120,9 @@
+ #ifndef GIT_WINDOWS_NATIVE
+ static inline void dup_devnull(int to)
+ {
+-	int fd = open("/dev/null", O_RDWR);
++	int fd = open("null:", O_RDWR);
+ 	if (fd < 0)
+-		die_errno(_("open /dev/null failed"));
++		die_errno(_("open null: failed"));
+ 	if (dup2(fd, to) < 0)
+ 		die_errno(_("dup2(%d,%d) failed"), fd, to);
+ 	close(fd);
+@@ -483,21 +483,21 @@
+ 	struct argv_array nargv = ARGV_ARRAY_INIT;
+ 
+ 	if (cmd->no_stdin)
+-		fhin = open("/dev/null", O_RDWR);
++		fhin = open("null:", O_RDWR);
+ 	else if (need_in)
+ 		fhin = dup(fdin[0]);
+ 	else if (cmd->in)
+ 		fhin = dup(cmd->in);
+ 
+ 	if (cmd->no_stderr)
+-		fherr = open("/dev/null", O_RDWR);
++		fherr = open("null:", O_RDWR);
+ 	else if (need_err)
+ 		fherr = dup(fderr[1]);
+ 	else if (cmd->err > 2)
+ 		fherr = dup(cmd->err);
+ 
+ 	if (cmd->no_stdout)
+-		fhout = open("/dev/null", O_RDWR);
++		fhout = open("null:", O_RDWR);
+ 	else if (cmd->stdout_to_stderr)
+ 		fhout = dup(fherr);
+ 	else if (need_out)
+diff -ru git-2.13.1/send-pack.c git-2.13.1-new/send-pack.c
+--- git-2.13.1/send-pack.c	2017-06-04 18:08:11.000000000 -0700
++++ git-2.13.1-new/send-pack.c	2017-06-25 15:19:22.960754978 -0700
+@@ -570,7 +570,7 @@
+ 			if (args->stateless_rpc)
+ 				close(out);
+ 			if (git_connection_is_socket(conn))
+-				shutdown(fd[0], SHUT_WR);
++				; // XXX
+ 
+ 			/*
+ 			 * Do not even bother with the return value; we know we
+diff -ru git-2.13.1/setup.c git-2.13.1-new/setup.c
+--- git-2.13.1/setup.c	2017-06-04 18:08:11.000000000 -0700
++++ git-2.13.1-new/setup.c	2017-06-25 15:19:22.904087966 -0700
+@@ -1143,21 +1143,21 @@
+ 	return read_gitfile_gently(suspect, return_error_code);
+ }
+ 
+-/* if any standard file descriptor is missing open it to /dev/null */
++/* if any standard file descriptor is missing open it to null: */
+ void sanitize_stdfds(void)
+ {
+-	int fd = open("/dev/null", O_RDWR, 0);
++	int fd = open("null:", O_RDWR, 0);
+ 	while (fd != -1 && fd < 2)
+ 		fd = dup(fd);
+ 	if (fd == -1)
+-		die_errno("open /dev/null or dup failed");
++		die_errno("open null: or dup failed");
+ 	if (fd > 2)
+ 		close(fd);
+ }
+ 
+ int daemonize(void)
+ {
+-#ifdef NO_POSIX_GOODIES
++#if 1
+ 	errno = ENOSYS;
+ 	return -1;
+ #else
+diff -ru git-2.13.1/sha1_file.c git-2.13.1-new/sha1_file.c
+--- git-2.13.1/sha1_file.c	2017-06-04 18:08:11.000000000 -0700
++++ git-2.13.1-new/sha1_file.c	2017-06-25 15:19:23.014088636 -0700
+@@ -723,7 +723,7 @@
+ 		"pack_report: getpagesize()            = %10" SZ_FMT "\n"
+ 		"pack_report: core.packedGitWindowSize = %10" SZ_FMT "\n"
+ 		"pack_report: core.packedGitLimit      = %10" SZ_FMT "\n",
+-		sz_fmt(getpagesize()),
++		sz_fmt(4096),
+ 		sz_fmt(packed_git_window_size),
+ 		sz_fmt(packed_git_limit));
+ 	fprintf(stderr,
+diff -ru git-2.13.1/strbuf.c git-2.13.1-new/strbuf.c
+--- git-2.13.1/strbuf.c	2017-06-04 18:08:11.000000000 -0700
++++ git-2.13.1-new/strbuf.c	2017-06-25 15:43:47.829522282 -0700
+@@ -412,6 +412,7 @@
+ 
+ int strbuf_readlink(struct strbuf *sb, const char *path, size_t hint)
+ {
++#if 0
+ 	size_t oldalloc = sb->alloc;
+ 
+ 	if (hint < 32)
+@@ -435,6 +436,8 @@
+ 	}
+ 	if (oldalloc == 0)
+ 		strbuf_release(sb);
++#endif
++	fprintf(stderr, "No symlink support\n");
+ 	return -1;
+ }
+ 
+@@ -446,6 +449,11 @@
+ 	for (;; guessed_len *= 2) {
+ 		strbuf_grow(sb, guessed_len);
+ 		if (getcwd(sb->buf, sb->alloc)) {
++			if (strncmp(sb->buf, "file:", 5) == 0) {
++			    char *x = strdup(sb->buf);
++			    strcpy(sb->buf, x+5);
++			    free(x);
++			}
+ 			strbuf_setlen(sb, strlen(sb->buf));
+ 			return 0;
+ 		}
+diff -ru git-2.13.1/unix-socket.c git-2.13.1-new/unix-socket.c
+--- git-2.13.1/unix-socket.c	2017-06-04 18:08:11.000000000 -0700
++++ git-2.13.1-new/unix-socket.c	2017-06-25 15:19:23.024088698 -0700
+@@ -1,3 +1,4 @@
++#if 0
+ #include "cache.h"
+ #include "unix-socket.h"
+ 
+@@ -121,3 +122,4 @@
+ 	errno = saved_errno;
+ 	return -1;
+ }
++#endif
+diff -ru git-2.13.1/wrapper.c git-2.13.1-new/wrapper.c
+--- git-2.13.1/wrapper.c	2017-06-04 18:08:11.000000000 -0700
++++ git-2.13.1-new/wrapper.c	2017-06-25 15:19:23.014088636 -0700
+@@ -227,6 +227,7 @@
+ 	}
+ }
+ 
++#if 0
+ static int handle_nonblock(int fd, short poll_events, int err)
+ {
+ 	struct pollfd pfd;
+@@ -244,6 +245,7 @@
+ 	poll(&pfd, 1, -1);
+ 	return 1;
+ }
++#endif
+ 
+ /*
+  * xread() is the same a read(), but it automatically restarts read()
+@@ -260,8 +262,6 @@
+ 		if (nr < 0) {
+ 			if (errno == EINTR)
+ 				continue;
+-			if (handle_nonblock(fd, POLLIN, errno))
+-				continue;
+ 		}
+ 		return nr;
+ 	}
+@@ -282,8 +282,6 @@
+ 		if (nr < 0) {
+ 			if (errno == EINTR)
+ 				continue;
+-			if (handle_nonblock(fd, POLLOUT, errno))
+-				continue;
+ 		}
+ 
+ 		return nr;
+@@ -653,7 +651,7 @@
+ 
+ void sleep_millisec(int millisec)
+ {
+-	poll(NULL, 0, millisec);
++	//poll(NULL, 0, millisec);
+ }
+ 
+ int xgethostname(char *buf, size_t len)
+@@ -663,8 +661,6 @@
+ 	 * specify whether the buffer will be null-terminated, so to
+ 	 * be safe, do it ourselves.
+ 	 */
+-	int ret = gethostname(buf, len);
+-	if (!ret)
+-		buf[len - 1] = 0;
+-	return ret;
++	strcpy(buf, "redox");
++	return 0;
+ }
