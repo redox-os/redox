@@ -1,6 +1,6 @@
 diff -ru git-2.13.1/apply.c git-2.13.1-new/apply.c
 --- git-2.13.1/apply.c	2017-06-04 18:08:11.000000000 -0700
-+++ git-2.13.1-new/apply.c	2017-06-25 15:19:22.984088453 -0700
++++ git-2.13.1-new/apply.c	2017-07-05 12:22:03.501240281 -0700
 @@ -449,7 +449,7 @@
  
  static int is_dev_null(const char *str)
@@ -32,20 +32,6 @@ diff -ru git-2.13.1/apply.c git-2.13.1-new/apply.c
  	}
  
  	return 0;
-@@ -4309,11 +4309,13 @@
- 		return !!mkdir(path, 0777);
- 	}
- 
-+#if 0
- 	if (has_symlinks && S_ISLNK(mode))
- 		/* Although buf:size is counted string, it also is NUL
- 		 * terminated.
- 		 */
- 		return !!symlink(buf, path);
-+#endif
- 
- 	fd = open(path, O_CREAT | O_EXCL | O_WRONLY, (mode & 0100) ? 0777 : 0666);
- 	if (fd < 0)
 diff -ru git-2.13.1/builtin/am.c git-2.13.1-new/builtin/am.c
 --- git-2.13.1/builtin/am.c	2017-06-04 18:08:11.000000000 -0700
 +++ git-2.13.1-new/builtin/am.c	2017-06-25 15:19:22.550752475 -0700
@@ -58,18 +44,6 @@ diff -ru git-2.13.1/builtin/am.c git-2.13.1-new/builtin/am.c
  		 *    intend to feed us a patch but wanted to continue
  		 *    unattended.
  		 */
-diff -ru git-2.13.1/builtin/difftool.c git-2.13.1-new/builtin/difftool.c
---- git-2.13.1/builtin/difftool.c	2017-06-04 18:08:11.000000000 -0700
-+++ git-2.13.1-new/builtin/difftool.c	2017-06-25 15:19:22.667419854 -0700
-@@ -487,7 +487,7 @@
- 				}
- 				add_path(&wtdir, wtdir_len, dst_path);
- 				if (symlinks) {
--					if (symlink(wtdir.buf, rdir.buf)) {
-+					if (1) {
- 						ret = error_errno("could not symlink '%s' to '%s'", wtdir.buf, rdir.buf);
- 						goto finish;
- 					}
 diff -ru git-2.13.1/builtin/diff-tree.c git-2.13.1-new/builtin/diff-tree.c
 --- git-2.13.1/builtin/diff-tree.c	2017-06-04 18:08:11.000000000 -0700
 +++ git-2.13.1-new/builtin/diff-tree.c	2017-06-25 15:19:22.580752658 -0700
@@ -94,36 +68,6 @@ diff -ru git-2.13.1/builtin/fetch.c git-2.13.1-new/builtin/fetch.c
  	int want_status;
  	int summary_width = transport_summary_width(ref_map);
  
-diff -ru git-2.13.1/builtin/init-db.c git-2.13.1-new/builtin/init-db.c
---- git-2.13.1/builtin/init-db.c	2017-06-04 18:08:11.000000000 -0700
-+++ git-2.13.1-new/builtin/init-db.c	2017-06-25 15:19:22.667419854 -0700
-@@ -74,7 +74,7 @@
- 			struct strbuf lnk = STRBUF_INIT;
- 			if (strbuf_readlink(&lnk, template->buf, 0) < 0)
- 				die_errno(_("cannot readlink '%s'"), template->buf);
--			if (symlink(lnk.buf, path->buf))
-+			if (1)
- 				die_errno(_("cannot symlink '%s' '%s'"),
- 					  lnk.buf, path->buf);
- 			strbuf_release(&lnk);
-@@ -231,7 +231,7 @@
- 	 */
- 	path = git_path_buf(&buf, "HEAD");
- 	reinit = (!access(path, R_OK)
--		  || readlink(path, junk, sizeof(junk)-1) != -1);
-+		  || 1);
- 	if (!reinit) {
- 		if (create_symref("HEAD", "refs/heads/master", NULL) < 0)
- 			exit(1);
-@@ -273,7 +273,7 @@
- 		path = git_path_buf(&buf, "tXXXXXX");
- 		if (!close(xmkstemp(path)) &&
- 		    !unlink(path) &&
--		    !symlink("testing", path) &&
-+		    !1 &&
- 		    !lstat(path, &st1) &&
- 		    S_ISLNK(st1.st_mode))
- 			unlink(path); /* good */
 diff -ru git-2.13.1/builtin/log.c git-2.13.1-new/builtin/log.c
 --- git-2.13.1/builtin/log.c	2017-06-04 18:08:11.000000000 -0700
 +++ git-2.13.1-new/builtin/log.c	2017-06-25 15:19:22.664086500 -0700
@@ -285,16 +229,7 @@ diff -ru git-2.13.1/compat/terminal.c git-2.13.1-new/compat/terminal.c
  #endif
 diff -ru git-2.13.1/config.c git-2.13.1-new/config.c
 --- git-2.13.1/config.c	2017-06-04 18:08:11.000000000 -0700
-+++ git-2.13.1-new/config.c	2017-06-25 15:19:22.994088514 -0700
-@@ -1005,7 +1005,7 @@
- 	}
- 
- 	if (!strcmp(var, "core.symlinks")) {
--		has_symlinks = git_config_bool(var, value);
-+		has_symlinks = 0;
- 		return 0;
- 	}
- 
++++ git-2.13.1-new/config.c	2017-07-05 12:22:24.064535733 -0700
 @@ -1094,7 +1094,7 @@
  	}
  
@@ -767,37 +702,6 @@ diff -ru git-2.13.1/dir.c git-2.13.1-new/dir.c
  	return sb.buf;
  }
  
-diff -ru git-2.13.1/entry.c git-2.13.1-new/entry.c
---- git-2.13.1/entry.c	2017-06-04 18:08:11.000000000 -0700
-+++ git-2.13.1-new/entry.c	2017-06-25 15:19:22.984088453 -0700
-@@ -167,6 +167,7 @@
- 			return error("unable to read sha1 file of %s (%s)",
- 				path, oid_to_hex(&ce->oid));
- 
-+#if 0
- 		if (ce_mode_s_ifmt == S_IFLNK && has_symlinks && !to_tempfile) {
- 			ret = symlink(new, path);
- 			free(new);
-@@ -175,6 +176,7 @@
- 						   path);
- 			break;
- 		}
-+#endif
- 
- 		/*
- 		 * Convert from git internal format to working tree format
-diff -ru git-2.13.1/environment.c git-2.13.1-new/environment.c
---- git-2.13.1/environment.c	2017-06-04 18:08:11.000000000 -0700
-+++ git-2.13.1-new/environment.c	2017-06-25 15:19:22.984088453 -0700
-@@ -15,7 +15,7 @@
- int trust_executable_bit = 1;
- int trust_ctime = 1;
- int check_stat = 1;
--int has_symlinks = 1;
-+int has_symlinks = 0;
- int minimum_abbrev = 4, default_abbrev = -1;
- int ignore_case;
- int assume_unchanged;
 diff -ru git-2.13.1/fast-import.c git-2.13.1-new/fast-import.c
 --- git-2.13.1/fast-import.c	2017-06-04 18:08:11.000000000 -0700
 +++ git-2.13.1-new/fast-import.c	2017-06-25 15:19:23.007421930 -0700
@@ -947,44 +851,10 @@ diff -ru git-2.13.1/Makefile git-2.13.1-new/Makefile
  endif
  
  ifdef HAVE_BSD_SYSCTL
-diff -ru git-2.13.1/merge-recursive.c git-2.13.1-new/merge-recursive.c
---- git-2.13.1/merge-recursive.c	2017-06-04 18:08:11.000000000 -0700
-+++ git-2.13.1-new/merge-recursive.c	2017-06-25 15:19:22.990755161 -0700
-@@ -832,6 +832,7 @@
- 			}
- 			write_in_full(fd, buf, size);
- 			close(fd);
-+#if 0
- 		} else if (S_ISLNK(mode)) {
- 			char *lnk = xmemdupz(buf, size);
- 			safe_create_leading_directories_const(path);
-@@ -840,6 +841,7 @@
- 				ret = err(o, _("failed to symlink '%s': %s"),
- 					path, strerror(errno));
- 			free(lnk);
-+#endif
- 		} else
- 			ret = err(o,
- 				  _("do not know what to do with %06o %s '%s'"),
 diff -ru git-2.13.1/path.c git-2.13.1-new/path.c
 --- git-2.13.1/path.c	2017-06-04 18:08:11.000000000 -0700
-+++ git-2.13.1-new/path.c	2017-06-25 15:19:23.000755222 -0700
-@@ -565,12 +565,14 @@
- 		return -1;
- 
- 	/* Make sure it is a "refs/.." symlink */
-+/*
- 	if (S_ISLNK(st.st_mode)) {
- 		len = readlink(path, buffer, sizeof(buffer)-1);
- 		if (len >= 5 && !memcmp("refs/", buffer, 5))
- 			return 0;
- 		return -1;
- 	}
-+*/
- 
- 	/*
- 	 * Anything else, just open it and try to see if it is a symbolic ref.
-@@ -604,6 +606,7 @@
++++ git-2.13.1-new/path.c	2017-07-05 12:23:08.831145653 -0700
+@@ -604,6 +604,7 @@
  	return -1;
  }
  
@@ -992,7 +862,7 @@ diff -ru git-2.13.1/path.c git-2.13.1-new/path.c
  static struct passwd *getpw_str(const char *username, size_t len)
  {
  	struct passwd *pw;
-@@ -612,6 +615,7 @@
+@@ -612,6 +613,7 @@
  	free(username_z);
  	return pw;
  }
@@ -1000,7 +870,7 @@ diff -ru git-2.13.1/path.c git-2.13.1-new/path.c
  
  /*
   * Return a string with ~ and ~user expanded via getpw*.  If buf != NULL,
-@@ -643,10 +647,7 @@
+@@ -643,10 +645,7 @@
  			convert_slashes(user_path.buf);
  #endif
  		} else {
@@ -1038,18 +908,6 @@ diff -ru git-2.13.1/progress.c git-2.13.1-new/progress.c
  }
  
  static int display(struct progress *progress, unsigned n, const char *done)
-diff -ru git-2.13.1/refs/files-backend.c git-2.13.1-new/refs/files-backend.c
---- git-2.13.1/refs/files-backend.c	2017-06-04 18:08:11.000000000 -0700
-+++ git-2.13.1-new/refs/files-backend.c	2017-06-25 15:19:22.720753512 -0700
-@@ -2165,7 +2165,7 @@
- static int create_ref_symlink(struct ref_lock *lock, const char *target)
- {
- 	int ret = -1;
--#ifndef NO_SYMLINK_HEAD
-+#if 0
- 	char *ref_path = get_locked_file_path(lock->lk);
- 	unlink(ref_path);
- 	ret = symlink(target, ref_path);
 diff -ru git-2.13.1/rerere.c git-2.13.1-new/rerere.c
 --- git-2.13.1/rerere.c	2017-06-04 18:08:11.000000000 -0700
 +++ git-2.13.1-new/rerere.c	2017-06-25 15:19:22.960754978 -0700
@@ -1157,25 +1015,8 @@ diff -ru git-2.13.1/sha1_file.c git-2.13.1-new/sha1_file.c
  	fprintf(stderr,
 diff -ru git-2.13.1/strbuf.c git-2.13.1-new/strbuf.c
 --- git-2.13.1/strbuf.c	2017-06-04 18:08:11.000000000 -0700
-+++ git-2.13.1-new/strbuf.c	2017-06-25 15:43:47.829522282 -0700
-@@ -412,6 +412,7 @@
- 
- int strbuf_readlink(struct strbuf *sb, const char *path, size_t hint)
- {
-+#if 0
- 	size_t oldalloc = sb->alloc;
- 
- 	if (hint < 32)
-@@ -435,6 +436,8 @@
- 	}
- 	if (oldalloc == 0)
- 		strbuf_release(sb);
-+#endif
-+	fprintf(stderr, "No symlink support\n");
- 	return -1;
- }
- 
-@@ -446,6 +449,11 @@
++++ git-2.13.1-new/strbuf.c	2017-07-05 12:24:29.957791169 -0700
+@@ -446,6 +446,11 @@
  	for (;; guessed_len *= 2) {
  		strbuf_grow(sb, guessed_len);
  		if (getcwd(sb->buf, sb->alloc)) {
