@@ -63,8 +63,9 @@ function recipe_clean {
 
 function recipe_stage {
     dest="$(realpath $1)"
-    make prefix="$dest" install
+    make DESTDIR="$dest" install
     ${STRIP} $1/bin/* || true
     ${STRIP} $1/libexec/git-core/* || true
+    rm -rf $1/share/man
     skip=1
 }
