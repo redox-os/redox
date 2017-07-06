@@ -95,6 +95,21 @@ function op {
             fi
             ;;
         prepare)
+	    rm -rf sysroot
+	    mkdir sysroot
+
+            if [ ${#BUILD_DEPENDS} -gt 0 ]
+            then
+                pushd $ROOT
+	            ./repo.sh ${BUILD_DEPENDS}
+	        popd
+
+                for i in "${BUILD_DEPENDS[@]}"
+		do
+                    CC=cc cargo run --release --manifest-path "$ROOT/pkgutils/Cargo.toml" --bin pkg -- --target=$TARGET install --root sysroot "$REPO/$i.tar.gz"
+                done
+            fi
+
             rm -rf build
             cp -r source build
 
@@ -105,6 +120,7 @@ function op {
             ;;
         unprepare)
             rm -rf build
+	    rm -rf sysroot
             ;;
         version)
             pushd build > /dev/null
