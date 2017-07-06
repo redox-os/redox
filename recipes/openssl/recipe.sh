@@ -1,6 +1,5 @@
-GIT=https://github.com/ids1024/curl.git
+GIT=https://github.com/ids1024/openssl.git
 BRANCH=redox
-BUILD_DEPENDS=(openssl)
 
 HOST=x86_64-elf-redox
 
@@ -15,8 +14,8 @@ function recipe_update {
 }
 
 function recipe_build {
-    ./configure --prefix=/ --host=${HOST} --disable-tftp --disable-ftp --disable-ntlm-wb --with-ssl="$PWD/../sysroot" --with-ca-path=/ssl/certs
-    make
+    ./Configure no-shared no-dgram redox-x86_64 --prefix="/"
+    make -j"$(nproc)"
     skip=1
 }
 
@@ -31,7 +30,9 @@ function recipe_clean {
 }
 
 function recipe_stage {
-    mkdir "$1/bin"
-    cp src/curl "$1/bin"
+    dest="$(realpath $1)"
+    make DESTDIR="$dest" install
+    rm -rf "$1/lib/pkgconfig" # pkg-config returns paths based on / prefix, breaking cross compile
+    rm -rf "$1/{share,ssl}"
     skip=1
 }
