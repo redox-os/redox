@@ -1,6 +1,6 @@
 VERSION=2.13.1
 TAR=https://www.kernel.org/pub/software/scm/git/git-$VERSION.tar.xz
-BUILD_DEPENDS=(zlib)
+BUILD_DEPENDS=(zlib curl openssl expat)
 
 HOST=x86_64-elf-redox
 
@@ -16,7 +16,7 @@ export RANLIB="${HOST}-ranlib"
 export READELF="${HOST}-readelf"
 export STRIP="${HOST}-strip"
 
-MAKEFLAGS="NO_MMAP=1"
+MAKEFLAGS="NO_MMAP=1 NEEDS_SSL_WITH_CURL=1 NEEDS_CRYPTO_WITH_SSL=1"
 
 function recipe_version {
     echo "$VERSION"
@@ -29,7 +29,10 @@ function recipe_update {
 }
 
 function recipe_build {
-    ./configure --host=${HOST} --prefix=/ --with-zlib="${PWD}/../sysroot" ac_cv_fread_reads_directories=yes ac_cv_snprintf_returns_bogus=yes
+    sysroot="${PWD}/../sysroot"
+    export LDFLAGS="-L$sysroot/lib"
+    export CPPFLAGS="-I$sysroot/include"
+    ./configure --host=${HOST} --prefix=/ ac_cv_fread_reads_directories=yes ac_cv_snprintf_returns_bogus=yes ac_cv_lib_curl_curl_global_init=yes CURL_CONFIG=no
     make ${MAKEFLAGS}
     skip=1
 }
