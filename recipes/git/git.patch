@@ -268,18 +268,6 @@ diff -ru git-2.13.1/connect.c git-2.13.1-new/connect.c
  }
  
  
-diff -ru git-2.13.1/credential-cache.c git-2.13.1-new/credential-cache.c
---- git-2.13.1/credential-cache.c	2017-06-04 18:08:11.000000000 -0700
-+++ git-2.13.1-new/credential-cache.c	2017-06-25 15:19:23.024088698 -0700
-@@ -11,7 +11,7 @@
- static int send_request(const char *socket, const struct strbuf *out)
- {
- 	int got_data = 0;
--	int fd = unix_stream_connect(socket);
-+	int fd = -1;
- 
- 	if (fd < 0)
- 		return -1;
 diff -ru git-2.13.1/credential-cache--daemon.c git-2.13.1-new/credential-cache--daemon.c
 --- git-2.13.1/credential-cache--daemon.c	2017-06-04 18:08:11.000000000 -0700
 +++ git-2.13.1-new/credential-cache--daemon.c	2017-06-25 15:19:23.024088698 -0700
@@ -414,15 +402,6 @@ diff -ru git-2.13.1/daemon.c git-2.13.1-new/daemon.c
  			logerror("Could not listen to %s: %s",
  				 ip2str(ai->ai_family, ai->ai_addr, ai->ai_addrlen),
  				 strerror(errno));
-@@ -1019,7 +1020,7 @@
- 		if (inet_pton(AF_INET, listen_addr, &sin.sin_addr.s_addr) <= 0)
- 			return 0;
- 	} else {
--		sin.sin_addr.s_addr = htonl(INADDR_ANY);
-+		sin.sin_addr.s_addr = htonl(0);
- 	}
- 
- 	sockfd = socket(AF_INET, SOCK_STREAM, 0);
 @@ -1042,7 +1043,7 @@
  		return 0;
  	}
@@ -623,14 +602,6 @@ diff -ru git-2.13.1/dir.c git-2.13.1-new/dir.c
 diff -ru git-2.13.1/fast-import.c git-2.13.1-new/fast-import.c
 --- git-2.13.1/fast-import.c	2017-06-04 18:08:11.000000000 -0700
 +++ git-2.13.1-new/fast-import.c	2017-06-25 15:19:23.007421930 -0700
-@@ -423,7 +423,6 @@
- 
- 	fprintf(rpt, "fast-import crash report:\n");
- 	fprintf(rpt, "    fast-import process: %"PRIuMAX"\n", (uintmax_t) getpid());
--	fprintf(rpt, "    parent process     : %"PRIuMAX"\n", (uintmax_t) getppid());
- 	fprintf(rpt, "    at %s\n", show_date(time(NULL), 0, DATE_MODE(ISO8601)));
- 	fputc('\n', rpt);
- 
 @@ -531,6 +530,7 @@
  
  static void set_checkpoint_signal(void)
