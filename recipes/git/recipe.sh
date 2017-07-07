@@ -16,6 +16,8 @@ export RANLIB="${HOST}-ranlib"
 export READELF="${HOST}-readelf"
 export STRIP="${HOST}-strip"
 
+MAKEFLAGS="NO_MMAP=1"
+
 function recipe_version {
     echo "$VERSION"
     skip=1
@@ -27,9 +29,8 @@ function recipe_update {
 }
 
 function recipe_build {
-    autoconf -f
-    ./configure --host=${HOST} --prefix=/ --with-zlib="${PWD}/../sysroot"
-    make
+    ./configure --host=${HOST} --prefix=/ --with-zlib="${PWD}/../sysroot" ac_cv_fread_reads_directories=yes ac_cv_snprintf_returns_bogus=yes
+    make ${MAKEFLAGS}
     skip=1
 }
 
@@ -45,7 +46,7 @@ function recipe_clean {
 
 function recipe_stage {
     dest="$(realpath $1)"
-    make DESTDIR="$dest" install
+    make DESTDIR="$dest" ${MAKEFLAGS} install
     ${STRIP} $1/bin/* || true
     ${STRIP} $1/libexec/git-core/* || true
     rm -rf $1/share/man
