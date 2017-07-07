@@ -1,11 +1,10 @@
-GIT=https://github.com/ids1024/curl.git
-BRANCH=redox
-BUILD_DEPENDS=(openssl)
+VERSION=2.2.1
+TAR=http://downloads.sourceforge.net/project/expat/expat/$VERSION/expat-$VERSION.tar.bz2
 
 HOST=x86_64-elf-redox
 
 function recipe_version {
-    printf "r%s.%s" "$(git rev-list --count HEAD)" "$(git rev-parse --short HEAD)"
+    echo "$VERSION"
     skip=1
 }
 
@@ -15,8 +14,8 @@ function recipe_update {
 }
 
 function recipe_build {
-    ./configure --prefix=/ --host=${HOST} --disable-tftp --disable-ftp --disable-ntlm-wb --with-ssl="$PWD/../sysroot" --with-ca-path=/ssl/certs
-    make
+    ./configure --host=${HOST} --prefix=/
+    make -j"$(nproc)"
     skip=1
 }
 
@@ -33,6 +32,6 @@ function recipe_clean {
 function recipe_stage {
     dest="$(realpath $1)"
     make DESTDIR="$dest" install
-    rm -rf "$1"/{share,lib/pkgconfig}
+    rm -rf "$1"/{lib/pkgconfig,share}
     skip=1
 }
