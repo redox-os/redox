@@ -672,18 +672,6 @@ diff -ru git-2.13.1/ident.c git-2.13.1-new/ident.c
  		static struct passwd fallback;
  		fallback.pw_name = "unknown";
  #ifndef NO_GECOS_IN_PWENT
-diff -ru git-2.13.1/imap-send.c git-2.13.1-new/imap-send.c
---- git-2.13.1/imap-send.c	2017-06-04 18:08:11.000000000 -0700
-+++ git-2.13.1-new/imap-send.c	2017-06-25 15:19:22.964088331 -0700
-@@ -1018,7 +1018,7 @@
- 
- 		addr.sin_addr.s_addr = *((int *) he->h_addr_list[0]);
- 
--		s = socket(PF_INET, SOCK_STREAM, 0);
-+		s = socket(AF_INET, SOCK_STREAM, 0);
- 
- 		imap_info("Connecting to %s:%hu... ", inet_ntoa(addr.sin_addr), ntohs(addr.sin_port));
- 		if (connect(s, (struct sockaddr *)&addr, sizeof(addr))) {
 diff -ru git-2.13.1/line-log.c git-2.13.1-new/line-log.c
 --- git-2.13.1/line-log.c	2017-06-04 18:08:11.000000000 -0700
 +++ git-2.13.1-new/line-log.c	2017-06-25 15:19:22.830754184 -0700
