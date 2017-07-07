@@ -1,0 +1,341 @@
+diff -ru Python-3.6.1/config.sub Python-3.6.1-new/config.sub
+--- Python-3.6.1/config.sub	2017-03-20 23:32:38.000000000 -0700
++++ Python-3.6.1-new/config.sub	2017-07-03 11:56:03.528738808 -0700
+@@ -1358,7 +1358,7 @@
+ 	-gnu* | -bsd* | -mach* | -minix* | -genix* | -ultrix* | -irix* \
+ 	      | -*vms* | -sco* | -esix* | -isc* | -aix* | -cnk* | -sunos | -sunos[34]*\
+ 	      | -hpux* | -unos* | -osf* | -luna* | -dgux* | -auroraux* | -solaris* \
+-	      | -sym* | -kopensolaris* | -plan9* \
++	      | -sym* | -kopensolaris* | -plan9* | -redox* \
+ 	      | -amigaos* | -amigados* | -msdos* | -newsos* | -unicos* | -aof* \
+ 	      | -aos* | -aros* \
+ 	      | -nindy* | -vxsim* | -vxworks* | -ebmon* | -hms* | -mvs* \
+diff -ru Python-3.6.1/configure Python-3.6.1-new/configure
+--- Python-3.6.1/configure	2017-03-20 23:32:38.000000000 -0700
++++ Python-3.6.1-new/configure	2017-07-03 15:26:44.804152125 -0700
+@@ -3256,6 +3256,9 @@
+ 	*-*-cygwin*)
+ 		ac_sys_system=Cygwin
+ 		;;
++	*-*-redox*)
++		ac_sys_system=Redox
++		;;
+ 	*)
+ 		# for now, limit cross builds to known configurations
+ 		MACHDEP="unknown"
+@@ -3302,9 +3305,7 @@
+ 		_host_cpu=
+ 		;;
+ 	*)
+-		# for now, limit cross builds to known configurations
+-		MACHDEP="unknown"
+-		as_fn_error $? "cross build not supported for $host" "$LINENO" 5
++		_host_cpu=$host_cpu
+ 	esac
+ 	_PYTHON_HOST_PLATFORM="$MACHDEP${_host_cpu:+-$_host_cpu}"
+ fi
+@@ -11343,7 +11344,6 @@
+ _ACEOF
+ if ac_fn_c_try_compile "$LINENO"; then :
+ 
+-$as_echo "#define HAVE_FCHDIR 1" >>confdefs.h
+ 
+    { $as_echo "$as_me:${as_lineno-$LINENO}: result: yes" >&5
+ $as_echo "yes" >&6; }
+@@ -11393,7 +11393,6 @@
+ _ACEOF
+ if ac_fn_c_try_compile "$LINENO"; then :
+ 
+-$as_echo "#define HAVE_FDATASYNC 1" >>confdefs.h
+ 
+    { $as_echo "$as_me:${as_lineno-$LINENO}: result: yes" >&5
+ $as_echo "yes" >&6; }
+@@ -12093,7 +12092,6 @@
+ _ACEOF
+ if ac_fn_c_try_compile "$LINENO"; then :
+ 
+-$as_echo "#define HAVE_SETGROUPS 1" >>confdefs.h
+ 
+    { $as_echo "$as_me:${as_lineno-$LINENO}: result: yes" >&5
+ $as_echo "yes" >&6; }
+@@ -12491,8 +12489,8 @@
+ $as_echo "$ac_cv_lib_rt_clock_gettime" >&6; }
+ if test "x$ac_cv_lib_rt_clock_gettime" = xyes; then :
+ 
+-        LIBS="$LIBS -lrt"
+         $as_echo "#define HAVE_CLOCK_GETTIME 1" >>confdefs.h
++        LIBS="$LIBS -lrt"
+ 
+ 
+ $as_echo "#define TIMEMODULE_LIB rt" >>confdefs.h
+@@ -12510,7 +12508,6 @@
+   ac_fn_c_check_func "$LINENO" "clock_getres" "ac_cv_func_clock_getres"
+ if test "x$ac_cv_func_clock_getres" = xyes; then :
+   cat >>confdefs.h <<_ACEOF
+-#define HAVE_CLOCK_GETRES 1
+ _ACEOF
+ 
+ else
+@@ -12553,7 +12550,6 @@
+ $as_echo "$ac_cv_lib_rt_clock_getres" >&6; }
+ if test "x$ac_cv_lib_rt_clock_getres" = xyes; then :
+ 
+-        $as_echo "#define HAVE_CLOCK_GETRES 1" >>confdefs.h
+ 
+ 
+ fi
+diff -ru Python-3.6.1/Lib/posixpath.py Python-3.6.1-new/Lib/posixpath.py
+--- Python-3.6.1/Lib/posixpath.py	2017-03-20 23:32:38.000000000 -0700
++++ Python-3.6.1-new/Lib/posixpath.py	2017-07-04 13:28:08.034693302 -0700
+@@ -165,11 +165,7 @@
+ 
+ def islink(path):
+     """Test whether a path is a symbolic link"""
+-    try:
+-        st = os.lstat(path)
+-    except (OSError, AttributeError):
+-        return False
+-    return stat.S_ISLNK(st.st_mode)
++    return False
+ 
+ # Being true for dangling symbolic links is also useful.
+ 
+diff -ru Python-3.6.1/Modules/clinic/posixmodule.c.h Python-3.6.1-new/Modules/clinic/posixmodule.c.h
+--- Python-3.6.1/Modules/clinic/posixmodule.c.h	2017-03-20 23:32:38.000000000 -0700
++++ Python-3.6.1-new/Modules/clinic/posixmodule.c.h	2017-07-03 14:47:11.991792352 -0700
+@@ -519,7 +519,7 @@
+ 
+ #endif /* defined(HAVE_LCHFLAGS) */
+ 
+-#if defined(HAVE_CHROOT)
++#if 0
+ 
+ PyDoc_STRVAR(os_chroot__doc__,
+ "chroot($module, /, path)\n"
+diff -ru Python-3.6.1/Modules/faulthandler.c Python-3.6.1-new/Modules/faulthandler.c
+--- Python-3.6.1/Modules/faulthandler.c	2017-03-20 23:32:38.000000000 -0700
++++ Python-3.6.1-new/Modules/faulthandler.c	2017-07-03 14:39:30.321353882 -0700
+@@ -906,7 +906,7 @@
+     SetErrorMode(mode | SEM_NOGPFAULTERRORBOX);
+ #endif
+ 
+-#ifdef HAVE_SYS_RESOURCE_H
++#if 0
+     struct rlimit rl;
+ 
+     /* Disable creation of core dump */
+diff -ru Python-3.6.1/Modules/_io/fileio.c Python-3.6.1-new/Modules/_io/fileio.c
+--- Python-3.6.1/Modules/_io/fileio.c	2017-03-20 23:32:38.000000000 -0700
++++ Python-3.6.1-new/Modules/_io/fileio.c	2017-07-04 13:13:07.963211923 -0700
+@@ -433,16 +433,16 @@
+         }
+ 
+ #ifndef MS_WINDOWS
+-        if (_Py_set_inheritable(self->fd, 0, atomic_flag_works) < 0)
+-            goto error;
++//        if (_Py_set_inheritable(self->fd, 0, atomic_flag_works) < 0)
++//            goto error;
+ #endif
+     }
+ 
+     self->blksize = DEFAULT_BUFFER_SIZE;
+     Py_BEGIN_ALLOW_THREADS
+-    fstat_result = _Py_fstat_noraise(self->fd, &fdfstat);
++    //fstat_result = _Py_fstat_noraise(self->fd, &fdfstat);
+     Py_END_ALLOW_THREADS
+-    if (fstat_result < 0) {
++    if (0) {
+         /* Tolerate fstat() errors other than EBADF.  See Issue #25717, where
+         an anonymous file on a Virtual Box shared folder filesystem would
+         raise ENOENT. */
+@@ -457,7 +457,7 @@
+         }
+     }
+     else {
+-#if defined(S_ISDIR) && defined(EISDIR)
++#if 0
+         /* On Unix, open will succeed for directories.
+            In Python, there should be no file objects referring to
+            directories, so we need a check.  */
+@@ -467,7 +467,7 @@
+             goto error;
+         }
+ #endif /* defined(S_ISDIR) */
+-#ifdef HAVE_STRUCT_STAT_ST_BLKSIZE
++#if 0
+         if (fdfstat.st_blksize > 1)
+             self->blksize = fdfstat.st_blksize;
+ #endif /* HAVE_STRUCT_STAT_ST_BLKSIZE */
+diff -ru Python-3.6.1/Modules/posixmodule.c Python-3.6.1-new/Modules/posixmodule.c
+--- Python-3.6.1/Modules/posixmodule.c	2017-03-20 23:32:38.000000000 -0700
++++ Python-3.6.1-new/Modules/posixmodule.c	2017-07-03 15:31:13.753481813 -0700
+@@ -188,7 +188,6 @@
+ #define HAVE_PIPE       1
+ #define HAVE_SYSTEM     1
+ #define HAVE_WAIT       1
+-#define HAVE_TTYNAME    1
+ #endif  /* _MSC_VER */
+ #endif  /* ! __WATCOMC__ || __QNX__ */
+ 
+@@ -2940,7 +2939,7 @@
+ #endif /* HAVE_LCHFLAGS */
+ 
+ 
+-#ifdef HAVE_CHROOT
++#if 0
+ /*[clinic input]
+ os.chroot
+     path: path_t
+@@ -5563,8 +5562,6 @@
+ os_sched_yield_impl(PyObject *module)
+ /*[clinic end generated code: output=902323500f222cac input=e54d6f98189391d4]*/
+ {
+-    if (sched_yield())
+-        return posix_error();
+     Py_RETURN_NONE;
+ }
+ 
+@@ -11804,7 +11801,7 @@
+                  (name_len == 1 || (direntp->d_name[1] == '.' && name_len == 2));
+         if (!is_dot) {
+             entry = DirEntry_from_posix_info(&iterator->path, direntp->d_name,
+-                                            name_len, direntp->d_ino
++                                            name_len, 0
+ #ifdef HAVE_DIRENT_D_TYPE
+                                             , direntp->d_type
+ #endif
+diff -ru Python-3.6.1/Modules/pwdmodule.c Python-3.6.1-new/Modules/pwdmodule.c
+--- Python-3.6.1/Modules/pwdmodule.c	2017-03-20 23:32:38.000000000 -0700
++++ Python-3.6.1-new/Modules/pwdmodule.c	2017-07-03 14:45:03.600040924 -0700
+@@ -125,7 +125,7 @@
+                          "getpwuid(): uid not found");
+         return NULL;
+     }
+-    if ((p = getpwuid(uid)) == NULL) {
++    if (1) {
+         PyObject *uid_obj = _PyLong_FromUid(uid);
+         if (uid_obj == NULL)
+             return NULL;
+@@ -160,7 +160,7 @@
+         return NULL;
+     if (PyBytes_AsStringAndSize(bytes, &name, NULL) == -1)
+         goto out;
+-    if ((p = getpwnam(name)) == NULL) {
++    if (1) {
+         PyErr_Format(PyExc_KeyError,
+                      "getpwnam(): name not found: %s", name);
+         goto out;
+diff -ru Python-3.6.1/Modules/timemodule.c Python-3.6.1-new/Modules/timemodule.c
+--- Python-3.6.1/Modules/timemodule.c	2017-03-20 23:32:38.000000000 -0700
++++ Python-3.6.1-new/Modules/timemodule.c	2017-07-03 14:41:43.868293016 -0700
+@@ -966,7 +966,7 @@
+     return PyFloat_FromDouble(total * 1e-7);
+ #else
+ 
+-#if defined(HAVE_SYS_RESOURCE_H)
++#if 0
+     struct rusage ru;
+ #endif
+ #ifdef HAVE_TIMES
+@@ -1000,7 +1000,7 @@
+     }
+ #endif
+ 
+-#if defined(HAVE_SYS_RESOURCE_H)
++#if 0
+     if (getrusage(RUSAGE_SELF, &ru) == 0) {
+         double total;
+         total = ru.ru_utime.tv_sec + ru.ru_utime.tv_usec * 1e-6;
+@@ -1195,7 +1195,7 @@
+ 
+     And I'm lazy and hate C so nyer.
+      */
+-#if defined(HAVE_TZNAME) && !defined(__GLIBC__) && !defined(__CYGWIN__)
++#if 0
+     PyObject *otz0, *otz1;
+     tzset();
+     PyModule_AddIntConstant(m, "timezone", timezone);
+diff -ru Python-3.6.1/Python/fileutils.c Python-3.6.1-new/Python/fileutils.c
+--- Python-3.6.1/Python/fileutils.c	2017-03-20 23:32:38.000000000 -0700
++++ Python-3.6.1-new/Python/fileutils.c	2017-07-03 17:01:34.335204386 -0700
+@@ -965,7 +965,7 @@
+             return -1;
+     }
+ 
+-#ifndef MS_WINDOWS
++#if 0
+     if (set_inheritable(fd, 0, gil_held, atomic_flag_works) < 0) {
+         close(fd);
+         return -1;
+diff -ru Python-3.6.1/Python/pylifecycle.c Python-3.6.1-new/Python/pylifecycle.c
+--- Python-3.6.1/Python/pylifecycle.c	2017-03-20 23:32:38.000000000 -0700
++++ Python-3.6.1-new/Python/pylifecycle.c	2017-07-04 09:28:10.863071915 -0700
+@@ -998,7 +998,7 @@
+ #else
+     if (Py_FileSystemDefaultEncoding == NULL)
+     {
+-        Py_FileSystemDefaultEncoding = get_locale_encoding();
++        Py_FileSystemDefaultEncoding = "utf-8";
+         if (Py_FileSystemDefaultEncoding == NULL)
+             Py_FatalError("Py_Initialize: Unable to get the locale encoding");
+ 
+diff -ru Python-3.6.1/Python/pytime.c Python-3.6.1-new/Python/pytime.c
+--- Python-3.6.1/Python/pytime.c	2017-03-20 23:32:38.000000000 -0700
++++ Python-3.6.1-new/Python/pytime.c	2017-07-03 15:29:14.832184973 -0700
+@@ -578,9 +578,6 @@
+         info->implementation = "clock_gettime(CLOCK_REALTIME)";
+         info->monotonic = 0;
+         info->adjustable = 1;
+-        if (clock_getres(CLOCK_REALTIME, &res) == 0)
+-            info->resolution = res.tv_sec + res.tv_nsec * 1e-9;
+-        else
+             info->resolution = 1e-9;
+     }
+ #else   /* HAVE_CLOCK_GETTIME */
+@@ -714,15 +711,10 @@
+     }
+ 
+     if (info) {
+-        struct timespec res;
+         info->monotonic = 1;
+         info->implementation = implementation;
+         info->adjustable = 0;
+-        if (clock_getres(clk_id, &res) != 0) {
+-            PyErr_SetFromErrno(PyExc_OSError);
+-            return -1;
+-        }
+-        info->resolution = res.tv_sec + res.tv_nsec * 1e-9;
++        info->resolution = 1e-5;
+     }
+     if (_PyTime_FromTimespec(tp, &ts, raise) < 0)
+         return -1;
+diff -ru Python-3.6.1/Python/random.c Python-3.6.1-new/Python/random.c
+--- Python-3.6.1/Python/random.c	2017-03-20 23:32:38.000000000 -0700
++++ Python-3.6.1-new/Python/random.c	2017-07-03 16:07:31.740783648 -0700
+@@ -79,7 +79,7 @@
+ 
+ #else /* !MS_WINDOWS */
+ 
+-#if defined(HAVE_GETRANDOM) || defined(HAVE_GETRANDOM_SYSCALL)
++#if 0
+ #define PY_GETRANDOM 1
+ 
+ /* Call getrandom() to get random bytes:
+@@ -316,7 +316,7 @@
+         if (urandom_cache.fd >= 0)
+             fd = urandom_cache.fd;
+         else {
+-            fd = _Py_open("/dev/urandom", O_RDONLY);
++            fd = _Py_open("rand:", O_RDONLY);
+             if (fd < 0) {
+                 if (errno == ENOENT || errno == ENXIO ||
+                     errno == ENODEV || errno == EACCES) {
+@@ -361,7 +361,7 @@
+         } while (0 < size);
+     }
+     else {
+-        fd = _Py_open_noraise("/dev/urandom", O_RDONLY);
++        fd = _Py_open_noraise("rand:", O_RDONLY);
+         if (fd < 0) {
+             return -1;
+         }
