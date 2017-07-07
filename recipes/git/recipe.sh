@@ -1,5 +1,6 @@
 VERSION=2.13.1
 TAR=https://www.kernel.org/pub/software/scm/git/git-$VERSION.tar.xz
+BUILD_DEPENDS=(zlib)
 
 HOST=x86_64-elf-redox
 
@@ -26,27 +27,8 @@ function recipe_update {
 }
 
 function recipe_build {
-    if [ ! -d zlib ]
-    then
-	mkdir zlib
-    	if [ ! -f zlib-1.2.11.tar.gz ]
-	then
-            wget http://zlib.net/zlib-1.2.11.tar.gz
-        fi
-	tar xvf zlib-1.2.11.tar.gz -C zlib --strip-components 1
-    fi
-
-    rm -rf zlib-prefix
-    mkdir zlib-prefix
-
-    pushd zlib
-	./configure --static --prefix=/
-	make -j"$(nproc)"
-	make DESTDIR="$PWD/../zlib-prefix" install
-    popd
-
-    autoconf
-    ./configure --host=${HOST} --prefix=/ --with-zlib="${PWD}/zlib-prefix"
+    autoconf -f
+    ./configure --host=${HOST} --prefix=/ --with-zlib="${PWD}/../sysroot"
     make
     skip=1
 }
