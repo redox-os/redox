@@ -1,5 +1,6 @@
 GIT=https://github.com/ids1024/curl.git
 BRANCH=redox
+BUILD_DEPENDS=(openssl)
 
 HOST=x86_64-elf-redox
 
@@ -14,27 +15,8 @@ function recipe_update {
 }
 
 function recipe_build {
-    if [ -d openssl-redox ]
-    then
-        git -C openssl-redox pull
-    else
-        git clone https://github.com/ids1024/openssl.git -b redox --depth 1 openssl-redox
-    fi
-
-    rm -rf openssl-prefix
-    mkdir openssl-prefix
-
-    pushd openssl-redox
-        ./Configure no-shared no-dgram redox-x86_64 --prefix="/"
-	make -j"$(nproc)"
-	make DESTDIR="$PWD/../openssl-prefix" install
-    popd
-
-    rm -rf openssl-prefix/lib/pkgconfig # pkg-config returns paths based on / prefix, breaking cross compile
-
-    ./configure --prefix=/ --host=${HOST} --disable-tftp --disable-ftp --disable-ntlm-wb --with-ssl="$PWD/openssl-prefix" --with-ca-path=/ssl/certs
+    ./configure --prefix=/ --host=${HOST} --disable-tftp --disable-ftp --disable-ntlm-wb --with-ssl="$PWD/../sysroot" --with-ca-path=/ssl/certs
     make
-
     skip=1
 }
 

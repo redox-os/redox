@@ -1,18 +1,7 @@
-GIT=https://github.com/redox-os/dash.git
+GIT=https://github.com/ids1024/openssl.git
 BRANCH=redox
 
 HOST=x86_64-elf-redox
-export AR="${HOST}-ar"
-export AS="${HOST}-as"
-export CC="${HOST}-gcc"
-export CXX="${HOST}-g++"
-export LD="${HOST}-ld"
-export NM="${HOST}-nm"
-export OBJCOPY="${HOST}-objcopy"
-export OBJDUMP="${HOST}-objdump"
-export RANLIB="${HOST}-ranlib"
-export READELF="${HOST}-readelf"
-export STRIP="${HOST}-strip"
 
 function recipe_version {
     printf "r%s.%s" "$(git rev-list --count HEAD)" "$(git rev-parse --short HEAD)"
@@ -25,9 +14,8 @@ function recipe_update {
 }
 
 function recipe_build {
-    ./autogen.sh
-    ./configure --host=${HOST} --prefix=/
-    make
+    ./Configure no-shared no-dgram redox-x86_64 --prefix="/"
+    make -j"$(nproc)"
     skip=1
 }
 
@@ -44,6 +32,7 @@ function recipe_clean {
 function recipe_stage {
     dest="$(realpath $1)"
     make DESTDIR="$dest" install
-    ln -s "dash" "$1/bin/sh"
+    rm -rf "$1/lib/pkgconfig" # pkg-config returns paths based on / prefix, breaking cross compile
+    rm -rf "$1/{share,ssl}"
     skip=1
 }
