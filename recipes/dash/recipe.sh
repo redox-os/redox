@@ -44,7 +44,6 @@ function recipe_clean {
 function recipe_stage {
     dest="$(realpath $1)"
     make DESTDIR="$dest" install
-    echo -e '#!/bin/ion\ndash @args[1..]' > "$1/bin/sh"
-    chmod a+x "$1/bin/sh"
+    ln -s "dash" "$1/bin/sh"
     skip=1
 }
