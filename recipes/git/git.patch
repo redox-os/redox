@@ -725,50 +725,6 @@ diff -ru git-2.13.1/line-log.c git-2.13.1-new/line-log.c
  	       c_reset);
  	fprintf(opt->file, "%s%s+++ b/%s%s\n", prefix, c_meta, pair->two->path, c_reset);
  	for (i = 0; i < range->ranges.nr; i++) {
-diff -ru git-2.13.1/Makefile git-2.13.1-new/Makefile
---- git-2.13.1/Makefile	2017-06-04 18:08:11.000000000 -0700
-+++ git-2.13.1-new/Makefile	2017-06-25 15:02:55.796346882 -0700
-@@ -1202,7 +1202,7 @@
- 	ifdef NEEDS_LIBINTL_BEFORE_LIBICONV
- 		ICONV_LINK += -lintl
- 	endif
--	EXTLIBS += $(ICONV_LINK) -liconv
-+	EXTLIBS += $(ICONV_LINK)
- endif
- ifdef NEEDS_LIBGEN
- 	EXTLIBS += -lgen
-@@ -1260,11 +1260,9 @@
- 	BASIC_CFLAGS += -DNO_GETTEXT
- 	USE_GETTEXT_SCHEME ?= fallthrough
- endif
--ifdef NO_POLL
- 	NO_SYS_POLL_H = YesPlease
- 	COMPAT_CFLAGS += -DNO_POLL -Icompat/poll
- 	COMPAT_OBJS += compat/poll/poll.o
--endif
- ifdef NO_STRCASESTR
- 	COMPAT_CFLAGS += -DNO_STRCASESTR
- 	COMPAT_OBJS += compat/strcasestr.o
-@@ -1368,11 +1366,9 @@
- 	LIB_OBJS += compat/inet_pton.o
- 	BASIC_CFLAGS += -DNO_INET_PTON
- endif
--ifndef NO_UNIX_SOCKETS
- 	LIB_OBJS += unix-socket.o
- 	PROGRAM_OBJS += credential-cache.o
- 	PROGRAM_OBJS += credential-cache--daemon.o
--endif
- 
- ifdef NO_ICONV
- 	BASIC_CFLAGS += -DNO_ICONV
-@@ -1530,7 +1526,6 @@
- endif
- 
- ifdef NEEDS_LIBRT
--	EXTLIBS += -lrt
- endif
- 
- ifdef HAVE_BSD_SYSCTL
 diff -ru git-2.13.1/path.c git-2.13.1-new/path.c
 --- git-2.13.1/path.c	2017-06-04 18:08:11.000000000 -0700
 +++ git-2.13.1-new/path.c	2017-07-05 12:23:08.831145653 -0700
@@ -946,19 +902,6 @@ diff -ru git-2.13.1/strbuf.c git-2.13.1-new/strbuf.c
  			strbuf_setlen(sb, strlen(sb->buf));
  			return 0;
  		}
-diff -ru git-2.13.1/unix-socket.c git-2.13.1-new/unix-socket.c
---- git-2.13.1/unix-socket.c	2017-06-04 18:08:11.000000000 -0700
-+++ git-2.13.1-new/unix-socket.c	2017-06-25 15:19:23.024088698 -0700
-@@ -1,3 +1,4 @@
-+#if 0
- #include "cache.h"
- #include "unix-socket.h"
- 
-@@ -121,3 +122,4 @@
- 	errno = saved_errno;
- 	return -1;
- }
-+#endif
 diff -ru git-2.13.1/wrapper.c git-2.13.1-new/wrapper.c
 --- git-2.13.1/wrapper.c	2017-06-04 18:08:11.000000000 -0700
 +++ git-2.13.1-new/wrapper.c	2017-06-25 15:19:23.014088636 -0700
