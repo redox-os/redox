@@ -602,7 +602,7 @@ diff -ru git-2.13.1/dir.c git-2.13.1-new/dir.c
 diff -ru git-2.13.1/fast-import.c git-2.13.1-new/fast-import.c
 --- git-2.13.1/fast-import.c	2017-06-04 18:08:11.000000000 -0700
 +++ git-2.13.1-new/fast-import.c	2017-06-25 15:19:23.007421930 -0700
-@@ -531,6 +530,7 @@
+@@ -531,6 +531,7 @@
  
  static void set_checkpoint_signal(void)
  {
@@ -610,7 +610,7 @@ diff -ru git-2.13.1/fast-import.c git-2.13.1-new/fast-import.c
  	struct sigaction sa;
  
  	memset(&sa, 0, sizeof(sa));
-@@ -538,6 +538,7 @@
+@@ -538,6 +539,7 @@
  	sigemptyset(&sa.sa_mask);
  	sa.sa_flags = SA_RESTART;
  	sigaction(SIGUSR1, &sa, NULL);
@@ -684,6 +684,48 @@ diff -ru git-2.13.1/line-log.c git-2.13.1-new/line-log.c
  	       c_reset);
  	fprintf(opt->file, "%s%s+++ b/%s%s\n", prefix, c_meta, pair->two->path, c_reset);
  	for (i = 0; i < range->ranges.nr; i++) {
+diff -ru git-2.13.1/Makefile git-2.13.1-new/Makefile
+--- git-2.13.1/Makefile	2017-06-04 18:08:11.000000000 -0700
++++ git-2.13.1-new/Makefile	2017-07-07 19:49:39.730605650 -0700
+@@ -1802,7 +1802,6 @@
+ 
+ $(BUILT_INS): git$X
+ 	$(QUIET_BUILT_IN)$(RM) $@ && \
+-	ln $< $@ 2>/dev/null || \
+ 	ln -s $< $@ 2>/dev/null || \
+ 	cp $< $@
+ 
+@@ -2096,7 +2095,6 @@
+ 
+ $(REMOTE_CURL_ALIASES): $(REMOTE_CURL_PRIMARY)
+ 	$(QUIET_LNCP)$(RM) $@ && \
+-	ln $< $@ 2>/dev/null || \
+ 	ln -s $< $@ 2>/dev/null || \
+ 	cp $< $@
+ 
+@@ -2449,14 +2447,12 @@
+ 	for p in $(filter $(install_bindir_programs),$(BUILT_INS)); do \
+ 		$(RM) "$$bindir/$$p" && \
+ 		test -z "$(NO_INSTALL_HARDLINKS)" && \
+-		ln "$$bindir/git$X" "$$bindir/$$p" 2>/dev/null || \
+ 		ln -s "git$X" "$$bindir/$$p" 2>/dev/null || \
+ 		cp "$$bindir/git$X" "$$bindir/$$p" || exit; \
+ 	done && \
+ 	for p in $(BUILT_INS); do \
+ 		$(RM) "$$execdir/$$p" && \
+ 		test -z "$(NO_INSTALL_HARDLINKS)" && \
+-		ln "$$execdir/git$X" "$$execdir/$$p" 2>/dev/null || \
+ 		ln -s "git$X" "$$execdir/$$p" 2>/dev/null || \
+ 		cp "$$execdir/git$X" "$$execdir/$$p" || exit; \
+ 	done && \
+@@ -2464,7 +2460,6 @@
+ 	for p in $$remote_curl_aliases; do \
+ 		$(RM) "$$execdir/$$p" && \
+ 		test -z "$(NO_INSTALL_HARDLINKS)" && \
+-		ln "$$execdir/git-remote-http$X" "$$execdir/$$p" 2>/dev/null || \
+ 		ln -s "git-remote-http$X" "$$execdir/$$p" 2>/dev/null || \
+ 		cp "$$execdir/git-remote-http$X" "$$execdir/$$p" || exit; \
+ 	done && \
 diff -ru git-2.13.1/path.c git-2.13.1-new/path.c
 --- git-2.13.1/path.c	2017-06-04 18:08:11.000000000 -0700
 +++ git-2.13.1-new/path.c	2017-07-05 12:23:08.831145653 -0700
