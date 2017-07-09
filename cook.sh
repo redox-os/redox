@@ -101,7 +101,7 @@ function op {
             if [ ${#BUILD_DEPENDS} -gt 0 ]
             then
                 pushd $ROOT
-	            ./repo.sh ${BUILD_DEPENDS}
+	            ./repo.sh "${BUILD_DEPENDS[@]}"
 	        popd
 
                 for i in "${BUILD_DEPENDS[@]}"
