@@ -108,7 +108,9 @@ data = "https://static.redox-os.org/pkg"
 
 [[files]]
 path = "/etc/group"
-data = "sudo;1;user"
+data = """root;0;root
+user;1000;user
+sudo;1;user"""
 
 [[files]]
 path = "/etc/hostname"
