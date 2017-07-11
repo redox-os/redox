@@ -127,27 +127,6 @@ diff -ru Python-3.6.1/Modules/faulthandler.c Python-3.6.1-new/Modules/faulthandl
 diff -ru Python-3.6.1/Modules/_io/fileio.c Python-3.6.1-new/Modules/_io/fileio.c
 --- Python-3.6.1/Modules/_io/fileio.c	2017-03-20 23:32:38.000000000 -0700
 +++ Python-3.6.1-new/Modules/_io/fileio.c	2017-07-04 13:13:07.963211923 -0700
-@@ -433,16 +433,16 @@
-         }
- 
- #ifndef MS_WINDOWS
--        if (_Py_set_inheritable(self->fd, 0, atomic_flag_works) < 0)
--            goto error;
-+//        if (_Py_set_inheritable(self->fd, 0, atomic_flag_works) < 0)
-+//            goto error;
- #endif
-     }
- 
-     self->blksize = DEFAULT_BUFFER_SIZE;
-     Py_BEGIN_ALLOW_THREADS
--    fstat_result = _Py_fstat_noraise(self->fd, &fdfstat);
-+    //fstat_result = _Py_fstat_noraise(self->fd, &fdfstat);
-     Py_END_ALLOW_THREADS
--    if (fstat_result < 0) {
-+    if (0) {
-         /* Tolerate fstat() errors other than EBADF.  See Issue #25717, where
-         an anonymous file on a Virtual Box shared folder filesystem would
-         raise ENOENT. */
 @@ -457,7 +457,7 @@
          }
      }
@@ -204,27 +183,6 @@ diff -ru Python-3.6.1/Modules/posixmodule.c Python-3.6.1-new/Modules/posixmodule
  #ifdef HAVE_DIRENT_D_TYPE
                                              , direntp->d_type
  #endif
-diff -ru Python-3.6.1/Modules/pwdmodule.c Python-3.6.1-new/Modules/pwdmodule.c
---- Python-3.6.1/Modules/pwdmodule.c	2017-03-20 23:32:38.000000000 -0700
-+++ Python-3.6.1-new/Modules/pwdmodule.c	2017-07-03 14:45:03.600040924 -0700
-@@ -125,7 +125,7 @@
-                          "getpwuid(): uid not found");
-         return NULL;
-     }
--    if ((p = getpwuid(uid)) == NULL) {
-+    if (1) {
-         PyObject *uid_obj = _PyLong_FromUid(uid);
-         if (uid_obj == NULL)
-             return NULL;
-@@ -160,7 +160,7 @@
-         return NULL;
-     if (PyBytes_AsStringAndSize(bytes, &name, NULL) == -1)
-         goto out;
--    if ((p = getpwnam(name)) == NULL) {
-+    if (1) {
-         PyErr_Format(PyExc_KeyError,
-                      "getpwnam(): name not found: %s", name);
-         goto out;
 diff -ru Python-3.6.1/Modules/timemodule.c Python-3.6.1-new/Modules/timemodule.c
 --- Python-3.6.1/Modules/timemodule.c	2017-03-20 23:32:38.000000000 -0700
 +++ Python-3.6.1-new/Modules/timemodule.c	2017-07-03 14:41:43.868293016 -0700
@@ -255,18 +213,6 @@ diff -ru Python-3.6.1/Modules/timemodule.c Python-3.6.1-new/Modules/timemodule.c
      PyObject *otz0, *otz1;
      tzset();
      PyModule_AddIntConstant(m, "timezone", timezone);
-diff -ru Python-3.6.1/Python/fileutils.c Python-3.6.1-new/Python/fileutils.c
---- Python-3.6.1/Python/fileutils.c	2017-03-20 23:32:38.000000000 -0700
-+++ Python-3.6.1-new/Python/fileutils.c	2017-07-03 17:01:34.335204386 -0700
-@@ -965,7 +965,7 @@
-             return -1;
-     }
- 
--#ifndef MS_WINDOWS
-+#if 0
-     if (set_inheritable(fd, 0, gil_held, atomic_flag_works) < 0) {
-         close(fd);
-         return -1;
 diff -ru Python-3.6.1/Python/pylifecycle.c Python-3.6.1-new/Python/pylifecycle.c
 --- Python-3.6.1/Python/pylifecycle.c	2017-03-20 23:32:38.000000000 -0700
 +++ Python-3.6.1-new/Python/pylifecycle.c	2017-07-04 09:28:10.863071915 -0700
