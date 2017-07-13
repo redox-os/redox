@@ -28,7 +28,7 @@ Please make sure you use the **latest nightly** of `rustc` before building (for 
 ## <a name="screenshots"> What it looks like </a>
 
 <img alt="Redox" height="150" src="https://github.com/redox-os/assets/raw/master/screenshots/Desktop.png">
-<img alt="Redox" height="150" src="https://github.com/redox-os/assets/raw/master/screenshots/Fancy_opacity.png">
+<img alt="Redox" height="150" src="https://github.com/redox-os/assets/raw/master/screenshots/redox running.jpeg">
 <img alt="Redox" height="150" src="https://github.com/redox-os/assets/raw/master/screenshots/IMG_1460.PNG">
 
 <img alt="Redox" height="150" src="https://github.com/redox-os/assets/raw/master/screenshots/Sodium_v1.png">
@@ -71,7 +71,7 @@ The ecosystem and software Redox OS provides is listed below.
 | [TFS (ticki filesystem)](https://github.com/ticki/tfs)                            | [**@ticki**](https://github.com/ticki)
 | [The Redox book](https://github.com/redox-os/book)                          | [**@ticki**](https://github.com/ticki)
 | [The old kernel](https://github.com/redox-os/old)                           | **abandoned**
-| [ZFS](https://github.com/redox-os/zfs)                                      | **abandoned, superseded by TFS**
+| [ZFS](https://github.com/redox-os/zfs)                                      | **abandoned, superseded by [TFS](https://github.com/ticki/tfs)**
 
 ## <a name="compile-help"> Help! Redox won't compile! </a>
 

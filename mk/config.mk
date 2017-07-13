@@ -1,5 +1,6 @@
 # Configuration
 ARCH?=x86_64
+INSTALLER_FLAGS?=--cookbook=cookbook
 
 # Per host variables
 UNAME := $(shell uname)
@@ -25,6 +26,7 @@ endif
 ROOT=$(PWD)
 export INITFS_FOLDER=$(ROOT)/build/initfs
 export RUST_TARGET_PATH=$(ROOT)/kernel/targets
+export XARGO_HOME=$(ROOT)/build/xargo
 export XARGO_RUST_SRC=$(ROOT)/rust/src
 
 # Kernel variables

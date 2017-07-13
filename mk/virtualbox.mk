@@ -15,8 +15,8 @@ virtualbox: build/harddrive.bin
 	echo "Create VM"
 	$(VBM) createvm --name Redox --register
 	echo "Set Configuration"
-	$(VBM) modifyvm Redox --memory 1024
-	$(VBM) modifyvm Redox --vram 16
+	$(VBM) modifyvm Redox --memory 2048
+	$(VBM) modifyvm Redox --vram 32
 	if [ "$(net)" != "no" ]; \
 	then \
 		$(VBM) modifyvm Redox --nic1 nat; \
@@ -31,7 +31,7 @@ virtualbox: build/harddrive.bin
 	$(VBM) modifyvm Redox --keyboard ps2
 	$(VBM) modifyvm Redox --mouse ps2
 	$(VBM) modifyvm Redox --audio $(VB_AUDIO)
-	$(VBM) modifyvm Redox --audiocontroller ac97
+	$(VBM) modifyvm Redox --audiocontroller hda
 	$(VBM) modifyvm Redox --nestedpaging on
 	echo "Create Disk"
 	$(VBM) convertfromraw $< build/harddrive.vdi

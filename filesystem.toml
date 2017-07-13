@@ -12,14 +12,18 @@ sysroot = "build/filesystem"
 #binutils = {}
 contain = {}
 coreutils = {}
+#dash = {}
 extrautils = {}
 #games = {}
-init = {}
+#gcc = {}
+#gnu-binutils = {}
+#gnu-make = {}
 installer = {}
 ion = {}
 #lua = {}
 netstack = {}
 netutils = {}
+#newlib = {}
 orbdata = {}
 orbital = {}
 orbterm = {}
@@ -29,6 +33,7 @@ pkgutils = {}
 ptyd = {}
 randd = {}
 redoxfs = {}
+#rust = {}
 smith = {}
 #sodium = {}
 userutils = {}
@@ -103,7 +108,9 @@ data = "https://static.redox-os.org/pkg"
 
 [[files]]
 path = "/etc/group"
-data = "sudo;1;user"
+data = """root;0;root
+user;1000;user
+sudo;1;user"""
 
 [[files]]
 path = "/etc/hostname"
@@ -126,3 +133,11 @@ data = """
 Welcome to Redox OS!
 
 """
+
+[[files]]
+path = "/home/user/.ionrc"
+data = ""
+
+[[files]]
+path = "/root/.ionrc"
+data = ""

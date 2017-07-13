@@ -8,7 +8,11 @@ live: build/livedisk.bin
 iso: build/livedisk.iso
 
 clean:
+	cd cookbook && ./clean.sh
+	cargo clean --manifest-path cookbook/pkgutils/Cargo.toml
+	cargo clean --manifest-path installer/Cargo.toml
 	cargo clean --manifest-path kernel/Cargo.toml
+	cargo clean --manifest-path redoxfs/Cargo.toml
 	-$(FUMOUNT) build/filesystem/ || true
 	rm -rf build
 
@@ -18,6 +22,17 @@ pull:
 	git submodule update --recursive --init
 	git clean -X -f -d
 	make clean
+	make update
+
+update:
+	cargo update --manifest-path cookbook/pkgutils/Cargo.toml
+	cargo update --manifest-path installer/Cargo.toml
+	cargo update --manifest-path kernel/Cargo.toml
+	cargo update --manifest-path redoxfs/Cargo.toml
+
+fetch:
+	cd cookbook; \
+	./fetch.sh "$$(cargo run --manifest-path ../installer/Cargo.toml -- --list-packages ../initfs.toml ../filesystem.toml)"
 
 # Emulation recipes
 include mk/qemu.mk
@@ -33,6 +48,15 @@ include mk/filesystem.mk
 
 # Disk images
 include mk/disk.mk
+
+# Travis target
+travis: FORCE
+	INSTALLER_FLAGS= make build/harddrive.bin.gz build/livedisk.iso
+	rm -rf build/travis
+	mkdir build/travis
+	mv build/harddrive.bin.gz build/travis/redox_$(TRAVIS_TAG).bin.gz
+	mv build/livedisk.iso build/travis/redox_$(TRAVIS_TAG).iso
+	cd build/travis && sha256sum -b redox_$(TRAVIS_TAG).bin.gz redox_$(TRAVIS_TAG).iso > SHA256SUM
 
 # An empty target
 FORCE:
