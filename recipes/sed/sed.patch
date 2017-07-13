@@ -1,0 +1,36 @@
+diff -ru source/lib/getprogname.c source-new/lib/getprogname.c
+--- source/lib/getprogname.c	2017-01-16 21:36:00.000000000 -0800
++++ source-new/lib/getprogname.c	2017-07-13 16:13:35.966956860 -0700
+@@ -43,13 +43,11 @@
+ # include <string.h>
+ #endif
+ 
+-#ifdef __sgi
+ # include <string.h>
+ # include <unistd.h>
+ # include <stdio.h>
+ # include <fcntl.h>
+-# include <sys/procfs.h>
+-#endif
++# include <limits.h>
+ 
+ #include "dirname.h"
+ 
+@@ -178,7 +176,16 @@
+     }
+   return NULL;
+ # else
+-#  error "getprogname module not ported to this OS"
++  char filename[PATH_MAX];
++  int fd = open ("sys:exe", O_RDONLY);
++  if (fd > 0) {
++    int len = read(fd, filename, PATH_MAX-1);
++    if (len > 0) {
++       filename[len] = '\0';
++       return strdup(filename);
++    }
++  }
++  return NULL;
+ # endif
+ }
+ 
