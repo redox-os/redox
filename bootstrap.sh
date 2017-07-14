@@ -122,8 +122,8 @@ osx_homebrew()
         install_brew_pkg "virtualbox"
     fi
 
-    install_macports_pkg "coreutils"
-    install_macports_pkg "findutils"
+    install_brew_pkg "coreutils"
+    install_brew_pkg "findutils"
     install_brew_pkg "gcc49" "gcc-4.9"
     install_brew_pkg "nasm"
     install_brew_pkg "pkg-config"
