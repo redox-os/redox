@@ -93,6 +93,8 @@ osx_macports()
         install_macports_pkg "virtualbox"
     fi
 
+    install_macports_pkg "coreutils"
+    install_macports_pkg "findutils"
     install_macports_pkg "gcc49" "gcc-4.9"
     install_macports_pkg "nasm"
     install_macports_pkg "pkgconfig"
@@ -120,6 +122,8 @@ osx_homebrew()
         install_brew_pkg "virtualbox"
     fi
 
+    install_macports_pkg "coreutils"
+    install_macports_pkg "findutils"
     install_brew_pkg "gcc49" "gcc-4.9"
     install_brew_pkg "nasm"
     install_brew_pkg "pkg-config"
@@ -298,7 +302,7 @@ gentoo()
 solus()
 {
 	echo "Detected SolusOS"
-	
+
 	if [ "$1" == "qemu" ]; then
 		if [ -z "$(which qemu-system-x86_64)" ]; then
 			sudo eopkg it qemu
@@ -314,7 +318,7 @@ solus()
 			echo "Virtualbox already installed!"
 		fi
 	fi
-	
+
 	echo "Installing necessary build tools..."
 	#if guards are not necessary with eopkg since it does nothing if latest version is already installed
 	sudo eopkg it fuse-devel git gcc g++ libgcc-32bit libstdc++-32bit nasm make
