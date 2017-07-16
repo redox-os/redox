@@ -262,7 +262,7 @@ suse()
 		fi
 	fi
 	echo "Installing necessary build tools..."
-	sudo zypper install gcc gcc-c++ glibc-devel-32bit nasm make libfuse
+	sudo zypper install gcc gcc-c++ glibc-devel-32bit nasm make fuse-devel
 }
 
 ##############################################################################
