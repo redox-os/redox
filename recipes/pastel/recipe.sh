@@ -9,6 +9,10 @@ function recipe_stage {
 	name=Pastel
 	binary=/ui/bin/pastel
 	icon=/ui/pastel/accessories-bitmap-editor.png
+	accept=*.bmp
+	accept=*.jpg
+	accept=*.jpeg
+	accept=*.png
 	author=Robby Cerantola
 	description=Bitmap Editor
 	EOF
