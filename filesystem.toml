@@ -10,17 +10,23 @@ sysroot = "build/filesystem"
 [packages]
 #acid = {}
 #binutils = {}
+#ca-certificates = {}
 contain = {}
 coreutils = {}
+#curl = {}
 #dash = {}
 extrautils = {}
+findutils = {}
 #games = {}
+gawk = {}
 #gcc = {}
+#git = {}
 #gnu-binutils = {}
 #gnu-make = {}
 installer = {}
 ion = {}
 #lua = {}
+#nasm = {}
 netstack = {}
 netutils = {}
 #newlib = {}
@@ -28,12 +34,15 @@ orbdata = {}
 orbital = {}
 orbterm = {}
 orbutils = {}
+pastel = {}
 #pixelcannon = {}
 pkgutils = {}
 ptyd = {}
+#python = {}
 randd = {}
 redoxfs = {}
 #rust = {}
+sed = {}
 smith = {}
 #sodium = {}
 userutils = {}
@@ -72,7 +81,7 @@ dhcpd -b
 [[files]]
 path = "/etc/init.d/20_orbital"
 data = """
-orbital display:3/activate /ui/bin/orblogin /ui/bin/launcher
+orbital display:3/activate orblogin launcher
 """
 
 [[files]]
