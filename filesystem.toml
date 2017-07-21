@@ -15,6 +15,7 @@ contain = {}
 coreutils = {}
 #curl = {}
 #dash = {}
+drivers = {}
 extrautils = {}
 findutils = {}
 #games = {}
@@ -63,6 +64,7 @@ password = ""
 [[files]]
 path = "/etc/init.d/00_base"
 data = """
+pcid /etc/pcid/filesystem.toml
 randd
 ptyd
 """
@@ -93,23 +95,33 @@ getty debug: -J
 
 [[files]]
 path = "/etc/net/dns"
-data = "208.67.222.222"
+data = """
+208.67.222.222
+"""
 
 [[files]]
 path = "/etc/net/ip"
-data = "10.0.2.15"
+data = """
+10.0.2.15
+"""
 
 [[files]]
 path = "/etc/net/ip_router"
-data = "10.0.2.2"
+data = """
+10.0.2.2
+"""
 
 [[files]]
 path = "/etc/net/ip_subnet"
-data = "255.255.255.0"
+data = """
+255.255.255.0
+"""
 
 [[files]]
 path = "/etc/net/mac"
-data = "54-52-00-ab-cd-ef"
+data = """
+54-52-00-ab-cd-ef
+"""
 
 [[files]]
 path = "/etc/pkg.d/50_redox"
@@ -117,13 +129,17 @@ data = "https://static.redox-os.org/pkg"
 
 [[files]]
 path = "/etc/group"
-data = """root;0;root
+data = """
+root;0;root
 user;1000;user
-sudo;1;user"""
+sudo;1;user
+"""
 
 [[files]]
 path = "/etc/hostname"
-data = "redox"
+data = """
+redox
+"""
 
 [[files]]
 path = "/etc/issue"
