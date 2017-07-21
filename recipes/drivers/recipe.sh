@@ -7,6 +7,7 @@ function recipe_version {
 }
 
 function recipe_stage {
-    mkdir -pv "$1/etc"
-    cp -v pcid.toml "$1/etc/pcid.toml"
+    mkdir -pv "$1/etc/pcid"
+    cp -v initfs.toml "$1/etc/pcid/initfs.toml"
+    cp -v filesystem.toml "$1/etc/pcid/filesystem.toml"
 }
