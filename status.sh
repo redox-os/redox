@@ -16,7 +16,11 @@ do
     if [ -d "recipes/$recipe/source/.git" ]
     then
         git -C "recipes/$recipe/source" status
+    elif [ -e "recipes/$recipe/source.tar" ]
+    then
+        echo "Using source tarball"
+        tar --compare --file="recipes/$recipe/source.tar" -C "recipes/$recipe/source" --strip-components=1 2>&1| grep -v "tar: :" | grep -v '\(Mode\|Gid\|Uid\) differs' || true
     else
-        echo "Not a git repository"
+        echo "No original source found"
     fi
 done
