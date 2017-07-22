@@ -17,6 +17,6 @@ do
     then
         git -C "recipes/$recipe/source" status
     else
-        echo "Not a GIT repository"
+        echo "Not a git repository"
     fi
 done
