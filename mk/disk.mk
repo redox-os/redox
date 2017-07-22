@@ -1,5 +1,5 @@
 build/harddrive.bin: build/kernel build/filesystem.bin bootloader/$(ARCH)/**
-	nasm -f bin -o $@ -D ARCH_$(ARCH) -D KERNEL=$< -D FILESYSTEM=build/filesystem.bin -ibootloader/$(ARCH)/ bootloader/$(ARCH)/disk.asm
+	nasm -f bin -o $@ -D ARCH_$(ARCH) -D FILESYSTEM=build/filesystem.bin -ibootloader/$(ARCH)/ bootloader/$(ARCH)/disk.asm
 
 build/livedisk.bin: build/kernel_live bootloader/$(ARCH)/**
 	nasm -f bin -o $@ -D ARCH_$(ARCH) -D KERNEL=$< -ibootloader/$(ARCH)/ bootloader/$(ARCH)/disk.asm
