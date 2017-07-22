@@ -15,6 +15,8 @@ do
     echo -e "\e[1m$recipe\e[0m"
     if [ -d "recipes/$recipe/source/.git" ]
     then
-        git -C "recipes/$recipe/source" status -s
+        git -C "recipes/$recipe/source" status
+    else
+        echo "Not a GIT repository"
     fi
 done
