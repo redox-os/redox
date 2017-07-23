@@ -17,3 +17,11 @@ To unpack:
 3. Creates a new image in the local image repository named `redox` with Redox toolchain installed. You only need to rebuild the image if you want to update the toolchain.
 4. Builds Redox using the `redox` image. The arguments allow the container to use `fuse` and ensure the resulting files are owned by the current user.
 5. Runs Redox.
+
+On selinux systems, replace #4 with:
+```
+docker run --cap-add MKNOD --cap-add SYS_ADMIN \
+    --device /dev/fuse -e LOCAL_USER_ID="$(id -u)" \
+    -v "$(pwd):/src" --security-opt label=disable \
+    --rm redox make all
+```
