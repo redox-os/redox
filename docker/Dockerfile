@@ -8,7 +8,8 @@ ENV PATH $CARGO_HOME/bin:$PATH
 
 RUN apt-get update \
       && apt-get install -y git gosu gcc fuse nasm qemu-utils pkg-config \
-         libfuse-dev make curl file sudo apt-transport-https \
+         libfuse-dev make curl file sudo apt-transport-https autoconf flex \
+         bison texinfo \
       && mkdir -p $CARGO_HOME \
       && mkdir -p $RUSTUP_HOME \
       && curl https://sh.rustup.rs > sh.rustup.rs \
@@ -19,7 +20,10 @@ RUN apt-get update \
       && echo "deb $REDOX_TOOLCHAIN_APT /" >> /etc/apt/sources.list.d/redox.list \
       && apt-get update \
       && apt-get install -y --force-yes x86-64-elf-redox-newlib x86-64-elf-redox-binutils x86-64-elf-redox-gcc \
+      && curl -O https://ftp.gnu.org/gnu/automake/automake-1.15.1.tar.gz \
+      && tar -xvpf automake-1.15.1.tar.gz; cd automake-1.15.1; ./configure; make; make install; cd .. \
       && cargo install xargo \
+      && cargo install cargo-config \
       && mkdir -p "$SRC_PATH"
 
 WORKDIR $SRC_PATH
