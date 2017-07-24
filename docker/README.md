@@ -4,11 +4,13 @@
 
 ```shell
 git clone https://github.com/redox-os/redox.git ; cd redox #1
-make pull #2
-docker build -t redox docker/ #3
+git pull --rebase --recurse-submodules && git submodule sync \
+    && git submodule update --recursive --init #2
+docker build --build-arg LOCAL_UID="$(id -u)" --build-arg LOCAL_GID="$(id -g)" \
+    -t redox docker/ #3
 docker run --cap-add MKNOD --cap-add SYS_ADMIN \
-    --device /dev/fuse -e LOCAL_USER_ID="$(id -u)" \
-    -v "$(pwd):/src" --rm redox make all #4
+    -e LOCAL_UID="$(id -u)" -e LOCAL_GID="$(id -g)" \
+    --device /dev/fuse -v "$(pwd):/home/user/src" --rm redox make update all #4
 make qemu #5
 ```
 To unpack:
@@ -21,7 +23,7 @@ To unpack:
 On selinux systems, replace #4 with:
 ```
 docker run --cap-add MKNOD --cap-add SYS_ADMIN \
-    --device /dev/fuse -e LOCAL_USER_ID="$(id -u)" \
-    -v "$(pwd):/src" --security-opt label=disable \
-    --rm redox make all
+    -e LOCAL_UID="$(id -u)" -e LOCAL_GID="$(id -g)" \
+    --device /dev/fuse -v "$(pwd):/home/user/src" --security-opt label=disable \
+    --rm redox make update all
 ```
