@@ -1,0 +1,68 @@
+Only in source: grep.patch
+diff -ru source/lib/getdtablesize.c source-new/lib/getdtablesize.c
+--- source/lib/getdtablesize.c	2017-07-23 20:50:44.287742363 -0700
++++ source-new/lib/getdtablesize.c	2017-07-23 20:51:06.271284748 -0700
+@@ -109,15 +109,6 @@
+ int
+ getdtablesize (void)
+ {
+-  struct rlimit lim;
+-
+-  if (getrlimit (RLIMIT_NOFILE, &lim) == 0
+-      && 0 <= lim.rlim_cur && lim.rlim_cur <= INT_MAX
+-      && lim.rlim_cur != RLIM_INFINITY
+-      && lim.rlim_cur != RLIM_SAVED_CUR
+-      && lim.rlim_cur != RLIM_SAVED_MAX)
+-    return lim.rlim_cur;
+-
+   return INT_MAX;
+ }
+ 
+diff -ru source/lib/getprogname.c source-new/lib/getprogname.c
+--- source/lib/getprogname.c	2017-01-16 09:29:13.000000000 -0800
++++ source-new/lib/getprogname.c	2017-07-23 20:49:21.133618122 -0700
+@@ -43,13 +43,11 @@
+ # include <string.h>
+ #endif
+ 
+-#ifdef __sgi
+ # include <string.h>
+ # include <unistd.h>
+ # include <stdio.h>
+ # include <fcntl.h>
+-# include <sys/procfs.h>
+-#endif
++# include <limits.h>
+ 
+ #include "dirname.h"
+ 
+@@ -178,7 +176,16 @@
+     }
+   return NULL;
+ # else
+-#  error "getprogname module not ported to this OS"
++  char filename[PATH_MAX];
++  int fd = open ("sys:exe", O_RDONLY);
++  if (fd > 0) {
++    int len = read(fd, filename, PATH_MAX-1);
++    if (len > 0) {
++       filename[len] = '\0';
++       return strdup(filename);
++    }
++  }
++  return NULL;
+ # endif
+ }
+ 
+diff -ru source/src/grep.c source-new/src/grep.c
+--- source/src/grep.c	2017-07-02 10:41:41.000000000 -0700
++++ source-new/src/grep.c	2017-07-23 20:53:10.439131874 -0700
+@@ -2895,7 +2895,7 @@
+ #ifdef _SC_PAGESIZE
+   long psize = sysconf (_SC_PAGESIZE);
+ #else
+-  long psize = getpagesize ();
++  long psize = 4096;
+ #endif
+   if (! (0 < psize && psize <= (SIZE_MAX - sizeof (uword)) / 2))
+     abort ();
