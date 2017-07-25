@@ -14,7 +14,7 @@ function recipe_update {
 }
 
 function recipe_build {
-    rm -f build-aux/missing
+    autoreconf
     ./configure --host=${HOST} --prefix=/
     make
     skip=1
