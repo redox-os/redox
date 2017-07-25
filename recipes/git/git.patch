@@ -620,7 +620,7 @@ diff -ru git-2.13.1/fast-import.c git-2.13.1-new/fast-import.c
  #endif
 diff -ru git-2.13.1/git-compat-util.h git-2.13.1-new/git-compat-util.h
 --- git-2.13.1/git-compat-util.h	2017-06-04 18:08:11.000000000 -0700
-+++ git-2.13.1-new/git-compat-util.h	2017-06-25 15:01:02.935061516 -0700
++++ git-2.13.1-new/git-compat-util.h	2017-07-24 18:52:23.567535558 -0700
 @@ -179,7 +179,6 @@
  #include <assert.h>
  #include <regex.h>
@@ -651,7 +651,18 @@ diff -ru git-2.13.1/git-compat-util.h git-2.13.1-new/git-compat-util.h
  #ifndef NO_INTTYPES_H
  #include <inttypes.h>
  #else
-@@ -1123,4 +1117,7 @@
+@@ -319,9 +313,7 @@
+ #define PRIo32 "o"
+ #endif
+ 
+-#ifndef PATH_SEP
+-#define PATH_SEP ':'
+-#endif
++#define PATH_SEP ';'
+ 
+ #ifdef HAVE_PATHS_H
+ #include <paths.h>
+@@ -1123,4 +1115,7 @@
  
  extern int cmd_main(int, const char **);
  
@@ -797,7 +808,7 @@ diff -ru git-2.13.1/rerere.c git-2.13.1-new/rerere.c
  
 diff -ru git-2.13.1/run-command.c git-2.13.1-new/run-command.c
 --- git-2.13.1/run-command.c	2017-06-04 18:08:11.000000000 -0700
-+++ git-2.13.1-new/run-command.c	2017-06-25 15:19:23.024088698 -0700
++++ git-2.13.1-new/run-command.c	2017-07-24 18:38:38.359269687 -0700
 @@ -120,9 +120,9 @@
  #ifndef GIT_WINDOWS_NATIVE
  static inline void dup_devnull(int to)
@@ -810,6 +821,15 @@ diff -ru git-2.13.1/run-command.c git-2.13.1-new/run-command.c
  	if (dup2(fd, to) < 0)
  		die_errno(_("dup2(%d,%d) failed"), fd, to);
  	close(fd);
+@@ -138,7 +138,7 @@
+ 		return NULL;
+ 
+ 	while (1) {
+-		const char *end = strchrnul(p, ':');
++		const char *end = strchrnul(p, ';');
+ 
+ 		strbuf_reset(&buf);
+ 
 @@ -483,21 +483,21 @@
  	struct argv_array nargv = ARGV_ARRAY_INIT;
  
