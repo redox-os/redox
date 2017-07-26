@@ -37,7 +37,6 @@ function op {
     case "$2" in
         dist)
             op $1 prepare
-            op $1 update
             op $1 build
             op $1 stage
             op $1 tar
@@ -94,6 +93,19 @@ function op {
                 rm -f source.tar
             fi
             ;;
+        update)
+            pushd source > /dev/null
+            skip=0
+            if [ "$(type -t recipe_update)" = "function" ]
+            then
+                recipe_update
+            fi
+            if [ "$skip" -eq "0" ]
+            then
+                xargo update
+            fi
+            popd > /dev/null
+            ;;
         prepare)
 	    rm -rf sysroot
 	    mkdir sysroot
@@ -142,19 +154,6 @@ function op {
             else
                 op $1 version
             fi
-            ;;
-        update)
-            pushd build > /dev/null
-            skip=0
-            if [ "$(type -t recipe_update)" = "function" ]
-            then
-                recipe_update
-            fi
-            if [ "$skip" -eq "0" ]
-            then
-                xargo update
-            fi
-            popd > /dev/null
             ;;
         build)
             pushd build > /dev/null
