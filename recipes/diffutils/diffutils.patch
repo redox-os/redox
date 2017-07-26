@@ -1,0 +1,271 @@
+diff -ru source/lib/cmpbuf.c source-new/lib/cmpbuf.c
+--- source/lib/cmpbuf.c	2017-01-01 03:22:36.000000000 -0800
++++ source-new/lib/cmpbuf.c	2017-07-25 14:12:20.128407130 -0700
+@@ -71,8 +71,8 @@
+ 	     ancient AIX hosts that set errno to EINTR after uncaught
+ 	     SIGCONT.  See <news:1r77ojINN85n@ftp.UU.NET>
+ 	     (1993-04-22).  */
+-	  if (! SA_RESTART && errno == EINTR)
+-	    continue;
++	  //if (! SA_RESTART && errno == EINTR)
++	  //  continue;
+ 
+ 	  return SIZE_MAX;
+ 	}
+diff -ru source/lib/getdtablesize.c source-new/lib/getdtablesize.c
+--- source/lib/getdtablesize.c	2017-05-18 09:23:32.000000000 -0700
++++ source-new/lib/getdtablesize.c	2017-07-25 14:14:43.353197473 -0700
+@@ -109,15 +109,6 @@
+ int
+ getdtablesize (void)
+ {
+-  struct rlimit lim;
+-
+-  if (getrlimit (RLIMIT_NOFILE, &lim) == 0
+-      && 0 <= lim.rlim_cur && lim.rlim_cur <= INT_MAX
+-      && lim.rlim_cur != RLIM_INFINITY
+-      && lim.rlim_cur != RLIM_SAVED_CUR
+-      && lim.rlim_cur != RLIM_SAVED_MAX)
+-    return lim.rlim_cur;
+-
+   return INT_MAX;
+ }
+ 
+diff -ru source/lib/getprogname.c source-new/lib/getprogname.c
+--- source/lib/getprogname.c	2017-01-31 10:36:50.000000000 -0800
++++ source-new/lib/getprogname.c	2017-07-25 14:08:30.219353774 -0700
+@@ -43,13 +43,11 @@
+ # include <string.h>
+ #endif
+ 
+-#ifdef __sgi
+ # include <string.h>
+ # include <unistd.h>
+ # include <stdio.h>
+ # include <fcntl.h>
+-# include <sys/procfs.h>
+-#endif
++# include <limits.h>
+ 
+ #include "dirname.h"
+ 
+@@ -178,7 +176,16 @@
+     }
+   return NULL;
+ # else
+-#  error "getprogname module not ported to this OS"
++  char filename[PATH_MAX];
++  int fd = open ("sys:exe", O_RDONLY);
++  if (fd > 0) {
++    int len = read(fd, filename, PATH_MAX-1);
++    if (len > 0) {
++       filename[len] = '\0';
++       return strdup(filename);
++    }
++  }
++  return NULL;
+ # endif
+ }
+ 
+diff -ru source/lib/sigaction.c source-new/lib/sigaction.c
+--- source/lib/sigaction.c	2017-05-18 09:23:32.000000000 -0700
++++ source-new/lib/sigaction.c	2017-07-25 14:16:01.860655606 -0700
+@@ -1,3 +1,4 @@
++#if 0
+ /* POSIX compatible signal blocking.
+    Copyright (C) 2008-2017 Free Software Foundation, Inc.
+    Written by Eric Blake <ebb9@byu.net>, 2008.
+@@ -202,3 +203,4 @@
+   errno = saved_errno;
+   return -1;
+ }
++#endif
+diff -ru source/lib/sig-handler.h source-new/lib/sig-handler.h
+--- source/lib/sig-handler.h	2017-05-18 09:23:32.000000000 -0700
++++ source-new/lib/sig-handler.h	2017-07-25 14:10:17.137139018 -0700
+@@ -28,6 +28,7 @@
+ # define SIG_HANDLER_INLINE _GL_INLINE
+ #endif
+ 
++#if 0
+ /* Convenience type when working with signal handlers.  */
+ typedef void (*sa_handler_t) (int);
+ 
+@@ -48,6 +49,7 @@
+ #endif
+   return a->sa_handler;
+ }
++#endif
+ 
+ _GL_INLINE_HEADER_END
+ 
+diff -ru source/lib/signal.in.h source-new/lib/signal.in.h
+--- source/lib/signal.in.h	2017-05-18 09:23:32.000000000 -0700
++++ source-new/lib/signal.in.h	2017-07-25 14:04:47.960296802 -0700
+@@ -1,3 +1,4 @@
++#if 0
+ /* A GNU-like <signal.h>.
+ 
+    Copyright (C) 2006-2017 Free Software Foundation, Inc.
+@@ -461,3 +462,4 @@
+ #endif /* _@GUARD_PREFIX@_SIGNAL_H */
+ #endif /* _@GUARD_PREFIX@_SIGNAL_H */
+ #endif
++#endif
+diff -ru source/lib/sigprocmask.c source-new/lib/sigprocmask.c
+--- source/lib/sigprocmask.c	2017-05-18 09:23:32.000000000 -0700
++++ source-new/lib/sigprocmask.c	2017-07-25 14:17:19.291432128 -0700
+@@ -1,3 +1,4 @@
++#if 0
+ /* POSIX compatible signal blocking.
+    Copyright (C) 2006-2017 Free Software Foundation, Inc.
+    Written by Bruno Haible <bruno@clisp.org>, 2006.
+@@ -347,3 +348,4 @@
+   return 0;
+ }
+ #endif
++#endif
+diff -ru source/Makefile.am source-new/Makefile.am
+--- source/Makefile.am	2017-01-01 03:22:36.000000000 -0800
++++ source-new/Makefile.am	2017-07-25 14:36:08.905866861 -0700
+@@ -19,7 +19,7 @@
+ ALL_RECURSIVE_TARGETS =
+ 
+ EXTRA_DIST = bootstrap exgettext ChangeLog-2008 cfg.mk dist-check.mk
+-SUBDIRS = lib src tests doc man po gnulib-tests
++SUBDIRS = lib src tests doc po gnulib-tests
+ 
+ ACLOCAL_AMFLAGS = -I m4
+ AM_CFLAGS = $(WARN_CFLAGS) $(WERROR_CFLAGS)
+diff -ru source/src/sdiff.c source-new/src/sdiff.c
+--- source/src/sdiff.c	2017-05-18 10:39:59.000000000 -0700
++++ source-new/src/sdiff.c	2017-07-25 14:31:10.436289463 -0700
+@@ -86,7 +86,7 @@
+ #ifdef SIGPIPE
+        SIGPIPE,
+ #endif
+-       SIGINT
++       //SIGINT
+ };
+ enum
+   {
+@@ -226,7 +226,7 @@
+ static void
+ cleanup (int signo __attribute__((unused)))
+ {
+-#if HAVE_WORKING_FORK
++#if 0
+   if (0 < diffpid)
+     kill (diffpid, SIGPIPE);
+ #endif
+@@ -629,6 +629,7 @@
+ 	  perror_fatal ("fork");
+ 	if (! diffpid)
+ 	  {
++#if 0
+ 	    /* Alter the child's SIGINT and SIGPIPE handlers;
+ 	       this may munge the parent.
+ 	       The child ignores SIGINT in case the user interrupts the editor.
+@@ -636,6 +637,7 @@
+ 	    if (initial_handler (handler_index_of_SIGINT) != SIG_IGN)
+ 	      signal_handler (SIGINT, SIG_IGN);
+ 	    signal_handler (SIGPIPE, SIG_DFL);
++#endif
+ 	    close (diff_fds[0]);
+ 	    if (diff_fds[1] != STDOUT_FILENO)
+ 	      {
+@@ -727,11 +729,13 @@
+ static void
+ catchsig (int s)
+ {
++#if 0
+ #if ! HAVE_SIGACTION
+   signal (s, SIG_IGN);
+ #endif
+   if (! (s == SIGINT && ignore_SIGINT))
+     signal_received = s;
++#endif
+ }
+ 
+ #if HAVE_SIGACTION
+@@ -748,6 +752,7 @@
+ static void
+ trapsigs (void)
+ {
++#if 0
+   int i;
+ 
+ #if HAVE_SIGACTION
+@@ -772,6 +777,7 @@
+   /* System V fork+wait does not work if SIGCHLD is ignored.  */
+   signal (SIGCHLD, SIG_DFL);
+ #endif
++#endif
+ 
+   sigs_trapped = true;
+ }
+@@ -780,6 +786,7 @@
+ static void
+ untrapsig (int s)
+ {
++#if 0
+   int i;
+ 
+   if (sigs_trapped)
+@@ -792,6 +799,7 @@
+ 	  signal (sigs[i], initial_action[i]);
+ #endif
+ 	}
++#endif
+ }
+ 
+ /* Exit if a signal has been received.  */
+diff -ru source/src/util.c source-new/src/util.c
+--- source/src/util.c	2017-05-18 10:39:59.000000000 -0700
++++ source-new/src/util.c	2017-07-25 14:24:02.588763499 -0700
+@@ -161,6 +161,7 @@
+ 
+ /* The set of signals that are caught.  */
+ 
++#if 0
+ static sigset_t caught_signals;
+ 
+ /* If nonzero, the value of the pending fatal signal.  */
+@@ -192,6 +193,7 @@
+   if (! interrupt_signal)
+     stop_signal_count++;
+ }
++#endif
+ /* Process any pending signals.  If signals are caught, this function
+    should be called periodically.  Ideally there should never be an
+    unbounded amount of time when signals are not being processed.
+@@ -201,6 +203,7 @@
+ static void
+ process_signals (void)
+ {
++#if 0
+   while (interrupt_signal || stop_signal_count)
+     {
+       int sig;
+@@ -235,11 +238,13 @@
+       /* If execution reaches here, then the program has been
+          continued (after being suspended).  */
+     }
++#endif
+ }
+ 
+ static void
+ install_signal_handlers (void)
+ {
++# if 0
+   /* The signals that are trapped, and the number of such signals.  */
+   static int const sig[] =
+     {
+@@ -303,6 +308,7 @@
+       }
+ #endif
+     }
++#endif
+ }
+ 
+ static char const *current_name0;
