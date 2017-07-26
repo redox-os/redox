@@ -36,7 +36,7 @@ do
     if [ ! -f "recipes/$recipe/stage.tar.gz" ]
     then
         echo -e "\033[01;38;5;155mrepo - building $recipe\033[0m" >&2
-        ./cook.sh "$recipe" update build stage tar
+        ./cook.sh "$recipe" build stage tar
     else
         TIME_BUILD="$($FIND recipes/$recipe/build -type f -not -path '*/.git*' -printf "%Ts\n" | sort -nr | head -n 1)"
         TIME_STAGE="$($STAT -c "%Y" recipes/$recipe/stage.tar.gz)"
@@ -44,7 +44,7 @@ do
         if [ "$TIME_BUILD" -gt "$TIME_STAGE" -o "$TIME_RECIPE" -gt "$TIME_STAGE" ]
         then
             echo -e "\033[01;38;5;155mrepo - rebuilding $recipe\033[0m" >&2
-            ./cook.sh "$recipe" untar unstage update build stage tar
+            ./cook.sh "$recipe" untar unstage build stage tar
         else
             echo -e "\033[01;38;5;155mrepo - $recipe up to date\033[0m" >&2
         fi
