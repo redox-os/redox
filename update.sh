@@ -12,7 +12,7 @@ fi
 
 for recipe in $recipes
 do
-    if [ -d "recipes/$recipe/build" ]
+    if [ -d "recipes/$recipe/source" ]
     then
         ./cook.sh "$recipe" update
     fi
