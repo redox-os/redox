@@ -13,7 +13,7 @@ Please make sure you use the **latest nightly** of `rustc` before building (for 
 [![Travis Build Status](https://travis-ci.org/redox-os/redox.svg?branch=master)](https://travis-ci.org/redox-os/redox)
 [![Downloads](https://img.shields.io/github/downloads/redox-os/redox/total.svg)](https://github.com/redox-os/redox/releases)
 [![MIT licensed](https://img.shields.io/badge/license-MIT-blue.svg)](./LICENSE.md)
-![Rust Version](https://img.shields.io/badge/rust-nightly%202017--04--22-lightgrey.svg)
+![Rust Version](https://img.shields.io/badge/rust-nightly%202017--07--26-lightgrey.svg)
 
 ## Contents
 
@@ -158,4 +158,3 @@ $ make qemu kvm=no
 # Launch using QEMU without using KVM (Kernel Virtual Machine) nor Graphics
 make qemu kvm=no vga=no
 ```
-
