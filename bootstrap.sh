@@ -281,8 +281,10 @@ gentoo()
 		echo "Installing git..."
 		sudo emerge dev-vcs/git
 	fi
-	echo "Installing fuse..."
-	sudo emerge sys-fs/fuse
+	if [ -z "$(which fusermount)" ]; then
+		echo "Installing fuse..."
+		sudo emerge sys-fs/fuse
+	fi
 	if [ "$2" == "qemu" ]; then
 		if [ -z "$(which qemu-system-x86_64)" ]; then
 			echo "Please install QEMU and re-run this script"
