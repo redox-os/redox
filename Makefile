@@ -25,6 +25,7 @@ pull:
 	make update
 
 update:
+	cd cookbook && ./update.sh
 	cargo update --manifest-path cookbook/pkgutils/Cargo.toml
 	cargo update --manifest-path installer/Cargo.toml
 	cargo update --manifest-path kernel/Cargo.toml
