@@ -288,7 +288,7 @@ gentoo()
 	if [ "$2" == "qemu" ]; then
 		if [ -z "$(which qemu-system-x86_64)" ]; then
 			echo "Please install QEMU and re-run this script"
-			echo "Step1. Add QEMU_SOFTMMU_TARGETS=\"i386\" to /etc/portage/make.conf"
+			echo "Step1. Add QEMU_SOFTMMU_TARGETS=\"x86_64\" to /etc/portage/make.conf"
 			echo "Step2. Execute \"sudo emerge app-emulation/qemu\""
 		else
 			echo "QEMU already installed!"
