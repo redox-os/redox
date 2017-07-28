@@ -24,6 +24,7 @@ Please make sure you use the **latest nightly** of `rustc` before building (for 
 * [Cloning, Building and running](#cloning-building-running)
  * [Quick Setup](#quick-setup)
  * [Manual Setup](#manual-setup)
+ * [Setup Using Docker](#setup-using-docker)
 
 ## <a name="screenshots"> What it looks like </a>
 
@@ -158,3 +159,6 @@ $ make qemu kvm=no
 # Launch using QEMU without using KVM (Kernel Virtual Machine) nor Graphics
 make qemu kvm=no vga=no
 ```
+
+### <a name="setup-using-docker"> Setup using Docker </a>
+We also provide docker image. After cloning this repository, please follow README under the `docker` directory.
