@@ -1,2 +1,2 @@
-GIT=https://github.com/uutils/findutils
+GIT=https://github.com/redox-os/findutils
 CARGOFLAGS="--bin find"
