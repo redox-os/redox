@@ -34,8 +34,8 @@ function recipe_build {
     autoconf2.64
     popd
 
-    ./configure --host=${HOST} --target=${HOST} --prefix=/ --enable-static --disable-shared --disable-dlopen --disable-nls --enable-languages=c --without-headers
-    make all-gcc all-target-libgcc
+    ./configure --host=${HOST} --target=${HOST} --prefix=/ --enable-static --disable-shared --disable-dlopen --disable-nls --enable-languages=c,c++
+    make all-gcc all-target-libgcc all-target-libstdc++-v3
     skip=1
 }
 
@@ -51,7 +51,7 @@ function recipe_clean {
 
 function recipe_stage {
     dest="$(realpath $1)"
-    make DESTDIR="$dest" install-gcc install-target-libgcc
+    make DESTDIR="$dest" install-gcc install-target-libgcc install-target-libstdc++-v3
     find "$dest"/{bin,libexec} -exec x86_64-elf-redox-strip {} ';' 2> /dev/null
     ln -s "gcc" "$1/bin/cc"
     skip=1
