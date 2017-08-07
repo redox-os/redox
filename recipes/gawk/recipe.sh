@@ -1,8 +1,6 @@
 GIT=https://github.com/redox-os/gawk
 BRANCH=redox
 
-HOST=x86_64-elf-redox
-
 function recipe_update {
     echo "skipping update"
     skip=1

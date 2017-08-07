@@ -1,8 +1,6 @@
 VERSION=4.2.1
 TAR=https://ftp.gnu.org/gnu/make/make-$VERSION.tar.gz
 
-HOST=x86_64-elf-redox
-
 export AR="${HOST}-ar"
 export AS="${HOST}-as"
 export CC="${HOST}-gcc"

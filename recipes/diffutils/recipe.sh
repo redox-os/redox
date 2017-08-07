@@ -1,8 +1,6 @@
 VERSION=3.6
 TAR=http://ftp.gnu.org/gnu/diffutils/diffutils-$VERSION.tar.xz
 
-HOST=x86_64-elf-redox
-
 function recipe_version {
     echo "$VERSION"
     skip=1

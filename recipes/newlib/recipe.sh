@@ -1,8 +1,6 @@
 GIT=https://github.com/redox-os/newlib.git
 BRANCH=redox
 
-HOST=x86_64-elf-redox
-
 function recipe_version {
     printf "r%s.%s" "$(git rev-list --count HEAD)" "$(git rev-parse --short HEAD)"
     skip=1
@@ -46,7 +44,7 @@ function recipe_stage {
     dest="$(realpath $1)"
     make DESTDIR="$dest" install
     cd "$dest"
-    mv x86_64-elf-redox/* ./
-    rmdir x86_64-elf-redox
+    mv $HOST/* ./
+    rmdir $HOST
     skip=1
 }

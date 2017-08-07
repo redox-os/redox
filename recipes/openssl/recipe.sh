@@ -1,8 +1,6 @@
 GIT=https://github.com/ids1024/openssl.git
 BRANCH=redox
 
-HOST=x86_64-elf-redox
-
 function recipe_version {
     printf "r%s.%s" "$(git rev-list --count HEAD)" "$(git rev-parse --short HEAD)"
     skip=1
@@ -14,7 +12,7 @@ function recipe_update {
 }
 
 function recipe_build {
-    ./Configure no-shared no-dgram redox-x86_64 --prefix="/"
+    ./Configure no-shared no-dgram redox-$ARCH --prefix="/"
     make -j"$(nproc)"
     skip=1
 }

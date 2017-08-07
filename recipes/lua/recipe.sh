@@ -1,8 +1,6 @@
 VERSION=5.3.1
 TAR=http://www.lua.org/ftp/lua-$VERSION.tar.gz
 
-HOST=x86_64-elf-redox
-
 function recipe_version {
     echo "$VERSION"
     skip=1
