@@ -54,10 +54,10 @@ function recipe_clean {
 
 function recipe_stage {
     binpath="$1/bin"
-    libpath="$1/lib/rustlib/${RUST_HOST}/lib"
+    libpath="$1/lib/rustlib/${TARGET}/lib"
     mkdir -p "$binpath" "$libpath"
-    cp -fv "build/${RUST_HOST}/stage2/bin/rustc" "$binpath"
+    cp -fv "build/${TARGET}/stage2/bin/rustc" "$binpath"
     ${HOST}-strip "$binpath/rustc"
-    cp -fv $(find build/${RUST_HOST}/stage2/lib/rustlib/${RUST_HOST}/lib/ -type f | grep -v librustc) "$libpath"
+    cp -fv $(find build/${TARGET}/stage2/lib/rustlib/${TARGET}/lib/ -type f | grep -v librustc) "$libpath"
     skip=1
 }
