@@ -2,8 +2,6 @@ VERSION=2.13.1
 TAR=https://www.kernel.org/pub/software/scm/git/git-$VERSION.tar.xz
 BUILD_DEPENDS=(zlib curl openssl expat)
 
-HOST=x86_64-elf-redox
-
 export AR="${HOST}-ar"
 export AS="${HOST}-as"
 export CC="${HOST}-gcc"

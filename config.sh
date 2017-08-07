@@ -2,7 +2,10 @@
 set -e
 
 # Configuration
-export TARGET=x86_64-unknown-redox
+ARCH=x86_64
+export TARGET=$ARCH-unknown-redox
+HOST=$ARCH-elf-redox
+RUST_HOST=$ARCH-unknown-redox
 
 # Automatic variables
 ROOT="$(cd `dirname "$0"` && pwd)"
