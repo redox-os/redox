@@ -1,0 +1,12 @@
+diff -ru source/src/xz/file_io.c source-new/src/xz/file_io.c
+--- source/src/xz/file_io.c	2016-12-30 03:13:57.000000000 -0800
++++ source-new/src/xz/file_io.c	2017-08-08 12:49:15.225290972 -0700
+@@ -351,7 +351,7 @@
+ io_copy_attrs(const file_pair *pair)
+ {
+ 	// Skip chown and chmod on Windows.
+-#ifndef TUKLIB_DOSLIKE
++#if 0
+ 	// This function is more tricky than you may think at first.
+ 	// Blindly copying permissions may permit users to access the
+ 	// destination file who didn't have permission to access the
