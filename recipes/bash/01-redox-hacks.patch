@@ -1,0 +1,298 @@
+diff -ru source/builtins/read.def source-new/builtins/read.def
+--- source/builtins/read.def	2016-05-16 11:24:56.000000000 -0700
++++ source-new/builtins/read.def	2017-08-07 19:03:27.778688703 -0700
+@@ -94,8 +94,6 @@
+ #include "common.h"
+ #include "bashgetopt.h"
+ 
+-#include <shtty.h>
+-
+ #if defined (READLINE)
+ #include "../bashline.h"
+ #include <readline/readline.h>
+@@ -119,7 +117,6 @@
+ struct ttsave
+ {
+   int fd;
+-  TTYSTRUCT *attrs;
+ };
+ 
+ #if defined (READLINE)
+@@ -192,7 +189,6 @@
+   char *e, *t, *t1, *ps2, *tofree;
+   struct stat tsb;
+   SHELL_VAR *var;
+-  TTYSTRUCT ttattrs, ttset;
+ #if defined (ARRAY_VARS)
+   WORD_LIST *alist;
+ #endif
+@@ -482,11 +478,6 @@
+ 	{
+ 	  /* ttsave() */
+ 	  termsave.fd = fd;
+-	  ttgetattr (fd, &ttattrs);
+-	  termsave.attrs = &ttattrs;
+-
+-	  ttset = ttattrs;	  
+-	  i = silent ? ttfd_cbreak (fd, &ttset) : ttfd_onechar (fd, &ttset);
+ 	  if (i < 0)
+ 	    sh_ttyerror (1);
+ 	  tty_modified = 1;
+@@ -499,14 +490,6 @@
+     {
+       /* ttsave (); */
+       termsave.fd = fd;
+-      ttgetattr (fd, &ttattrs);
+-      termsave.attrs = &ttattrs;
+-
+-      ttset = ttattrs;
+-      i = ttfd_noecho (fd, &ttset);			/* ttnoecho (); */
+-      if (i < 0)
+-	sh_ttyerror (1);
+-
+       tty_modified = 1;
+       add_unwind_protect ((Function *)ttyrestore, (char *)&termsave);
+       if (interactive_shell == 0)
+@@ -995,7 +978,6 @@
+ ttyrestore (ttp)
+      struct ttsave *ttp;
+ {
+-  ttsetattr (ttp->fd, ttp->attrs);
+   tty_modified = 0;
+ }
+ 
+diff -ru source/general.c source-new/general.c
+--- source/general.c	2016-08-11 08:16:56.000000000 -0700
++++ source-new/general.c	2017-08-07 19:55:47.437464359 -0700
+@@ -476,6 +476,7 @@
+ void
+ check_dev_tty ()
+ {
++#if 0
+   int tty_fd;
+   char *tty;
+ 
+@@ -490,6 +491,7 @@
+     }
+   if (tty_fd >= 0)
+     close (tty_fd);
++#endif
+ }
+ 
+ /* Return 1 if PATH1 and PATH2 are the same file.  This is kind of
+diff -ru source/include/posixwait.h source-new/include/posixwait.h
+--- source/include/posixwait.h	2008-08-12 07:03:03.000000000 -0700
++++ source-new/include/posixwait.h	2017-08-07 18:37:29.854754332 -0700
+@@ -34,7 +34,7 @@
+ 
+ /* How to get the status of a job.  For Posix, this is just an
+    int, but for other systems we have to crack the union wait. */
+-#if !defined (_POSIX_VERSION)
++#if 0
+ typedef union wait WAIT;
+ #  define WSTATUS(t)  (t.w_status)
+ #else /* _POSIX_VERSION */
+@@ -50,7 +50,7 @@
+ 
+ /* More Posix P1003.1 definitions.  In the POSIX versions, the parameter is
+    passed as an `int', in the non-POSIX version, as `union wait'. */
+-#if defined (_POSIX_VERSION)
++#if 1
+ 
+ #  if !defined (WSTOPSIG)
+ #    define WSTOPSIG(s)       ((s) >> 8)
+diff -ru source/lib/sh/getcwd.c source-new/lib/sh/getcwd.c
+--- source/lib/sh/getcwd.c	2012-03-10 07:48:50.000000000 -0800
++++ source-new/lib/sh/getcwd.c	2017-08-07 19:53:52.379759811 -0700
+@@ -20,7 +20,7 @@
+ 
+ #include <config.h>
+ 
+-#if !defined (HAVE_GETCWD)
++#if 0
+ 
+ #if !defined (__GNUC__) && !defined (HAVE_ALLOCA_H) && defined (_AIX)
+   #pragma alloca
+diff -ru source/lib/sh/Makefile.in source-new/lib/sh/Makefile.in
+--- source/lib/sh/Makefile.in	2015-10-26 09:59:58.000000000 -0700
++++ source-new/lib/sh/Makefile.in	2017-08-07 19:12:46.587180259 -0700
+@@ -83,7 +83,7 @@
+ # The C code source files for this library.
+ CSOURCES = clktck.c clock.c getcwd.c getenv.c oslib.c setlinebuf.c \
+ 	   strcasecmp.c strerror.c strtod.c strtol.c strtoul.c \
+-	   vprint.c itos.c rename.c zread.c zwrite.c shtty.c \
++	   vprint.c itos.c rename.c zread.c zwrite.c \
+ 	   inet_aton.c netconn.c netopen.c strpbrk.c timeval.c makepath.c \
+ 	   pathcanon.c pathphys.c tmpfile.c stringlist.c stringvec.c spell.c \
+ 	   shquote.c strtrans.c strcasestr.c snprintf.c mailstat.c \
+@@ -100,7 +100,7 @@
+ # The object files contained in $(LIBRARY_NAME)
+ LIBOBJS = @LIBOBJS@
+ OBJECTS = clktck.o clock.o getenv.o oslib.o setlinebuf.o strnlen.o \
+-	  itos.o zread.o zwrite.o shtty.o shmatch.o eaccess.o \
++	  itos.o zread.o zwrite.o shmatch.o eaccess.o \
+ 	  netconn.o netopen.o timeval.o makepath.o pathcanon.o \
+ 	  pathphys.o tmpfile.o stringlist.o stringvec.o spell.o shquote.o \
+ 	  strtrans.o snprintf.o mailstat.o fmtulong.o \
+@@ -174,7 +174,6 @@
+ shmatch.o: shmatch.c
+ shmbchar.o: shmbchar.c
+ shquote.o: shquote.c
+-shtty.o: shtty.c
+ snprintf.o: snprintf.c
+ spell.o: spell.c
+ strcasecmp.o: strcasecmp.c
+@@ -251,7 +250,6 @@
+ shmatch.o: ${BUILD_DIR}/config.h
+ shmbchar.o: ${BUILD_DIR}/config.h
+ shquote.o: ${BUILD_DIR}/config.h
+-shtty.o: ${BUILD_DIR}/config.h
+ snprintf.o: ${BUILD_DIR}/config.h
+ spell.o: ${BUILD_DIR}/config.h
+ strcasecmp.o: ${BUILD_DIR}/config.h
+@@ -411,9 +409,6 @@
+ shquote.o: ${BASHINCDIR}/ansi_stdlib.h ${topdir}/xmalloc.h
+ shquote.o: ${BASHINCDIR}/shmbutil.h ${BASHINCDIR}/shmbchar.h
+ 
+-shtty.o: ${BASHINCDIR}/shtty.h
+-shtty.o: ${BASHINCDIR}/stdc.h
+-
+ snprintf.o: ${BASHINCDIR}/stdc.h ${topdir}/bashansi.h ${topdir}/xmalloc.h
+ snprintf.o: ${BASHINCDIR}/ansi_stdlib.h ${BASHINCDIR}/chartypes.h
+ snprintf.o: ${BASHINCDIR}/shmbutil.h ${BASHINCDIR}/shmbchar.h
+diff -ru source/lib/sh/oslib.c source-new/lib/sh/oslib.c
+--- source/lib/sh/oslib.c	2013-10-14 06:12:57.000000000 -0700
++++ source-new/lib/sh/oslib.c	2017-08-07 19:10:21.375838312 -0700
+@@ -236,10 +236,10 @@
+ #if !defined (HAVE_MKFIFO) && defined (PROCESS_SUBSTITUTION)
+ int
+ mkfifo (path, mode)
+-     char *path;
+-     int mode;
++     const char *path;
++     mode_t mode;
+ {
+-#if defined (S_IFIFO)
++#if 0
+   return (mknod (path, (mode | S_IFIFO), 0));
+ #else /* !S_IFIFO */
+   return (-1);
+diff -ru source/lib/sh/winsize.c source-new/lib/sh/winsize.c
+--- source/lib/sh/winsize.c	2016-01-25 10:24:45.000000000 -0800
++++ source-new/lib/sh/winsize.c	2017-08-07 19:14:41.571576687 -0700
+@@ -28,7 +28,6 @@
+ #  include <unistd.h>
+ #endif
+ 
+-#include <sys/ioctl.h>
+ 
+ /* Try to find the definitions of `struct winsize' and TIOGCWINSZ */
+ 
+diff -ru source/nojobs.c source-new/nojobs.c
+--- source/nojobs.c	2016-08-04 12:34:33.000000000 -0700
++++ source-new/nojobs.c	2017-08-07 18:35:09.650244654 -0700
+@@ -39,7 +39,6 @@
+ #endif
+ 
+ /* Need to include this up here for *_TTY_DRIVER definitions. */
+-#include "shtty.h"
+ 
+ #include "bashintl.h"
+ 
+@@ -829,7 +828,7 @@
+       CHECK_WAIT_INTR;
+       if (got_pid < 0 && errno == ECHILD)
+ 	{
+-#if !defined (_POSIX_VERSION)
++#if 0
+ 	  status.w_termsig = status.w_retcode = 0;
+ #else
+ 	  status = 0;
+@@ -929,13 +928,13 @@
+   return (result);
+ }
+ 
+-static TTYSTRUCT shell_tty_info;
+ static int got_tty_state;
+ 
+ /* Fill the contents of shell_tty_info with the current tty info. */
+ int
+ get_tty_state ()
+ {
++#if 0
+   int tty;
+ 
+   tty = input_tty ();
+@@ -946,6 +945,7 @@
+       if (check_window_size)
+ 	get_new_window_size (0, (int *)0, (int *)0);
+     }
++#endif
+   return 0;
+ }
+ 
+@@ -953,6 +953,7 @@
+ int
+ set_tty_state ()
+ {
++#if 0
+   int tty;
+ 
+   tty = input_tty ();
+@@ -962,6 +963,7 @@
+ 	return 0;
+       ttsetattr (tty, &shell_tty_info);
+     }
++#endif
+   return 0;
+ }
+ 
+diff -ru source/shell.c source-new/shell.c
+--- source/shell.c	2016-05-06 08:23:43.000000000 -0700
++++ source-new/shell.c	2017-08-07 19:54:44.320227849 -0700
+@@ -1276,7 +1276,7 @@
+ {
+   int e;
+ 
+-  if (setuid (current_user.uid) < 0)
++  if (1)
+     {
+       e = errno;
+       sys_error (_("cannot set uid to %d: effective uid %d"), current_user.uid, current_user.euid);
+@@ -1285,7 +1285,7 @@
+ 	exit (e);
+ #endif
+     }
+-  if (setgid (current_user.gid) < 0)
++  if (1)
+     sys_error (_("cannot set gid to %d: effective gid %d"), current_user.gid, current_user.egid);
+ 
+   current_user.euid = current_user.uid;
+diff -ru source/sig.c source-new/sig.c
+--- source/sig.c	2016-02-11 12:02:45.000000000 -0800
++++ source-new/sig.c	2017-08-07 19:56:13.637701224 -0700
+@@ -684,7 +684,9 @@
+ 
+ /* Perform OPERATION on NEWSET, perhaps leaving information in OLDSET. */
+ sigprocmask (operation, newset, oldset)
+-     int operation, *newset, *oldset;
++     int operation;
++     const sigset_t *newset;
++     sigset_t *oldset;
+ {
+   int old, new;
+ 
+@@ -696,11 +698,11 @@
+   switch (operation)
+     {
+     case SIG_BLOCK:
+-      old = sigblock (new);
++      //old = sigblock (new);
+       break;
+ 
+     case SIG_SETMASK:
+-      old = sigsetmask (new);
++      //old = sigsetmask (new);
+       break;
+ 
+     default:
