@@ -1,8 +1,6 @@
 VERSION=2.2.1
 TAR=http://downloads.sourceforge.net/project/expat/expat/$VERSION/expat-$VERSION.tar.bz2
 
-HOST=x86_64-elf-redox
-
 function recipe_version {
     echo "$VERSION"
     skip=1

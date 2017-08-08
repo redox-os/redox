@@ -1,8 +1,6 @@
 VERSION=2.13.01
 TAR=http://www.nasm.us/pub/nasm/releasebuilds/$VERSION/nasm-$VERSION.tar.gz
 
-HOST=x86_64-elf-redox
-
 function recipe_version {
     echo "$VERSION"
     skip=1

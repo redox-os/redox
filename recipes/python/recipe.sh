@@ -1,9 +1,6 @@
 VERSION=3.6.1
 TAR=https://www.python.org/ftp/python/$VERSION/Python-$VERSION.tar.xz
 
-ARCH=x86_64
-HOST=x86_64-elf-redox
-
 export AR="${HOST}-ar"
 export AS="${HOST}-as"
 export CC="${HOST}-gcc"

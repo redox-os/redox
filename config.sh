@@ -2,12 +2,14 @@
 set -e
 
 # Configuration
-export TARGET=x86_64-unknown-redox
+ARCH=x86_64
+export TARGET=$ARCH-unknown-redox
+HOST=$TARGET
 
 # Automatic variables
 ROOT="$(cd `dirname "$0"` && pwd)"
 REPO="$ROOT/repo/$TARGET"
-export CC="x86_64-elf-redox-gcc"
+export CC="$HOST-gcc"
 export XARGO_HOME="$ROOT/xargo"
 
 if [[ "$OSTYPE" == "darwin"* ]]; then
