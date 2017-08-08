@@ -20,5 +20,5 @@ sudo add-apt-repository 'deb https://static.redox-os.org/toolchain/apt /'
 sudo apt update
 
 # Install the cross compiler
-sudo apt install x86-64-elf-redox-gcc
+sudo apt install x86-64-unknown-redox-gcc
 ```
