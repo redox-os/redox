@@ -1,0 +1,16 @@
+diff -ru source/general.c source-new/general.c
+--- source/general.c	2016-08-11 08:16:56.000000000 -0700
++++ source-new/general.c	2017-08-07 20:22:31.581566466 -0700
+@@ -909,10 +909,10 @@
+      `:'.  If I is 0, then the path has a leading colon.  Trailing colons
+      are handled OK by the `else' part of the if statement; an empty
+      string is returned in that case. */
+-  if (i && string[i] == ':')
++  if (i && string[i] == ';')
+     i++;
+ 
+-  for (start = i; string[i] && string[i] != ':'; i++)
++  for (start = i; string[i] && string[i] != ';'; i++)
+     ;
+ 
+   *p_index = i;
