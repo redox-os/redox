@@ -2,8 +2,6 @@ GIT=https://github.com/ids1024/curl.git
 BRANCH=redox
 BUILD_DEPENDS=(openssl)
 
-HOST=x86_64-elf-redox
-
 function recipe_version {
     printf "r%s.%s" "$(git rev-list --count HEAD)" "$(git rev-parse --short HEAD)"
     skip=1

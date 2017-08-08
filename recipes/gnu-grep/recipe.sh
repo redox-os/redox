@@ -1,8 +1,6 @@
 VERSION=3.1
 TAR=https://ftp.gnu.org/gnu/grep/grep-$VERSION.tar.xz
 
-HOST=x86_64-elf-redox
-
 function recipe_version {
     echo "$VERSION"
     skip=1

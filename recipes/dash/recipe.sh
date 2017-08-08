@@ -1,7 +1,6 @@
 GIT=https://github.com/redox-os/dash.git
 BRANCH=redox
 
-HOST=x86_64-elf-redox
 export AR="${HOST}-ar"
 export AS="${HOST}-as"
 export CC="${HOST}-gcc"

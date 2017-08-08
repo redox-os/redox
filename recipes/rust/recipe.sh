@@ -1,12 +1,10 @@
 GIT=https://github.com/ids1024/rust.git
 BRANCH=compile-redox
 
-ARCH=x86_64
-HOST=x86_64-elf-redox
-RUST_HOST=x86_64-unknown-redox
 LLVM_PREFIX=$PWD/build/llvm-root
-SYSROOT=/usr/x86_64-elf-redox
+SYSROOT=/usr/$HOST
 unset AR AS CC CXX LD NM OBJCOPY OBJDUMP RANLIB READELF STRIP
+
 
 LLVM_CMAKE_ARGS=(-Wno-dev -DCMAKE_CROSSCOMPILING=True -DCMAKE_INSTALL_PREFIX="$LLVM_PREFIX" -DLLVM_DEFAULT_TARGET_TRIPLE=$HOST -DLLVM_TARGET_ARCH=$ARCH -DLLVM_TARGETS_TO_BUILD=X86 -DCMAKE_SYSTEM_NAME=Generic -DPYTHON_EXECUTABLE=/usr/bin/python2 -DUNIX=1 -DLLVM_ENABLE_THREADS=Off -DLLVM_INCLUDE_TESTS=OFF -target=$HOST -DLLVM_TABLEGEN=/usr/bin/llvm-tblgen -I"$SYSROOT/include" -DCMAKE_CXX_FLAGS='--std=gnu++11' -DLLVM_TOOL_LTO_BUILD=Off -DLLVM_TOOL_LLVM_PROFDATA_BUILD=Off -DLLVM_TOOL_LLI_BUILD=Off -DLLVM_TOOL_RDOBJ_BUILD=Off -DLLVM_TOOL_LLVM_COV_BUILD=Off -DLLVM_TOOL_LLVM_XRAY_BUILD=Off -DLLVM_TOOL_LLVM_LTO2_BUILD=Off -DLLVM_TOOL_LLVM_LTO_BUILD=Off -DLLVM_TOOL_LLVM_RTDYLD_BUILD=Off)
 
@@ -56,10 +54,10 @@ function recipe_clean {
 
 function recipe_stage {
     binpath="$1/bin"
-    libpath="$1/lib/rustlib/${RUST_HOST}/lib"
+    libpath="$1/lib/rustlib/${TARGET}/lib"
     mkdir -p "$binpath" "$libpath"
-    cp -fv "build/${RUST_HOST}/stage2/bin/rustc" "$binpath"
+    cp -fv "build/${TARGET}/stage2/bin/rustc" "$binpath"
     ${HOST}-strip "$binpath/rustc"
-    cp -fv $(find build/${RUST_HOST}/stage2/lib/rustlib/${RUST_HOST}/lib/ -type f | grep -v librustc) "$libpath"
+    cp -fv $(find build/${TARGET}/stage2/lib/rustlib/${TARGET}/lib/ -type f | grep -v librustc) "$libpath"
     skip=1
 }

@@ -1,7 +1,6 @@
 GIT=https://github.com/redox-os/gcc.git
 BRANCH=redox
 
-HOST=x86_64-elf-redox
 export AR="${HOST}-ar"
 export AS="${HOST}-as"
 export CC="${HOST}-gcc"
@@ -52,7 +51,7 @@ function recipe_clean {
 function recipe_stage {
     dest="$(realpath $1)"
     make DESTDIR="$dest" install-gcc install-target-libgcc install-target-libstdc++-v3
-    find "$dest"/{bin,libexec} -exec x86_64-elf-redox-strip {} ';' 2> /dev/null
+    find "$dest"/{bin,libexec} -exec $STRIP {} ';' 2> /dev/null
     ln -s "gcc" "$1/bin/cc"
     skip=1
 }
