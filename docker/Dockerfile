@@ -1,6 +1,6 @@
 FROM ubuntu:17.04
 
-ENV REDOX_TOOLCHAIN_APT http://static.redox-os.org/toolchain/apt/
+ENV REDOX_TOOLCHAIN_APT https://static.redox-os.org/toolchain/apt/
 
 ENV USER user
 ARG LOCAL_UID=local
@@ -9,12 +9,13 @@ ENV BUILD_UID=${LOCAL_UID:-9001}
 ENV BUILD_GID=${LOCAL_GID:-9001}
 
 RUN   apt-get update \
-      && apt-get install -y git gosu gcc fuse nasm qemu-utils pkg-config \
-             libfuse-dev make curl file sudo apt-transport-https autoconf flex \
+      && apt-get install -y dirmngr git gosu gcc fuse nasm qemu-utils pkg-config \
+             libfuse-dev make curl wget file sudo apt-transport-https autoconf flex \
              bison texinfo \
+      && apt-key adv --fetch-keys https://static.redox-os.org/toolchain/apt/keyFile \
       && echo "deb $REDOX_TOOLCHAIN_APT /" >> /etc/apt/sources.list.d/redox.list \
       && apt-get update -o Dir::Etc::sourcelist="redox.list" \
-      && apt-get install -y --force-yes x86-64-elf-redox-newlib x86-64-elf-redox-binutils x86-64-elf-redox-gcc \
+      && apt-get install -y x86-64-unknown-redox-newlib x86-64-unknown-redox-binutils x86-64-unknown-redox-gcc \
       && groupadd -g $BUILD_GID user \
       && useradd --shell /bin/bash -u $BUILD_UID -g $BUILD_GID -o -c "" -m $USER \
       && echo "$USER ALL=(ALL) NOPASSWD: ALL" > /etc/sudoers.d/user-no-sudo-password
