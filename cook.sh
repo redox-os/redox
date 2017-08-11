@@ -8,6 +8,13 @@ source config.sh
 export BINDIR=bin
 export CARGOFLAGS=
 
+if [ ! "$(uname -s)" = "Redox" ]
+then
+function pkg {
+    CC=cc cargo run --release --manifest-path "$ROOT/pkgutils/Cargo.toml" --bin pkg -- $@
+}
+fi
+
 function usage {
     echo "cook.sh $1 <op>" >&2
     echo "  dist" >&2
@@ -118,7 +125,7 @@ function op {
 
                 for i in "${BUILD_DEPENDS[@]}"
 		do
-                    CC=cc cargo run --release --manifest-path "$ROOT/pkgutils/Cargo.toml" --bin pkg -- --target=$TARGET install --root sysroot "$REPO/$i.tar.gz"
+                    pkg --target=$TARGET install --root sysroot "$REPO/$i.tar.gz"
                 done
             fi
 
@@ -229,7 +236,7 @@ function op {
             echo "target = \"$TARGET\"" >> "stage.toml"
             mkdir -p stage/pkg
             cp -v stage.toml "stage/pkg/$1.toml"
-            CC=cc cargo run --release --manifest-path "$ROOT/pkgutils/Cargo.toml" --bin pkg -- --target=$TARGET create stage
+            pkg --target=$TARGET create stage
             ;;
         untar)
             rm -rfv stage.tar.gz stage.sig stage.toml
