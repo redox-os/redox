@@ -12,7 +12,6 @@ function recipe_update {
 }
 
 function recipe_build {
-    autoreconf
     ./configure --host=${HOST} --prefix=/
     make
     skip=1
