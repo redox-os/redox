@@ -130,7 +130,7 @@ function op {
             fi
 
             rm -rf build
-            cp -r source build
+            cp -rp source build
 
             for patch in *.patch
             do
