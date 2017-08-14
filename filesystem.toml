@@ -49,6 +49,7 @@ randd = {}
 smith = {}
 #sodium = {}
 userutils = {}
+uutils = {}
 
 # User settings
 [users.root]
