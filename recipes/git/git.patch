@@ -1,76 +1,6 @@
-diff -ru git-2.13.1/apply.c git-2.13.1-new/apply.c
---- git-2.13.1/apply.c	2017-06-04 18:08:11.000000000 -0700
-+++ git-2.13.1-new/apply.c	2017-07-05 12:22:03.501240281 -0700
-@@ -449,7 +449,7 @@
- 
- static int is_dev_null(const char *str)
- {
--	return skip_prefix(str, "/dev/null", &str) && isspace(*str);
-+	return skip_prefix(str, "null:", &str) && isspace(*str);
- }
- 
- #define TERM_SPACE	1
-@@ -974,7 +974,7 @@
- 		int len = strlen(*name);
- 		char *another;
- 		if (isnull)
--			return error(_("git apply: bad git-diff - expected /dev/null, got %s on line %d"),
-+			return error(_("git apply: bad git-diff - expected null:, got %s on line %d"),
- 				     *name, state->linenr);
- 		another = find_name(state, line, NULL, state->p_value, TERM_TAB);
- 		if (!another || memcmp(another, *name, len + 1)) {
-@@ -985,9 +985,9 @@
- 		}
- 		free(another);
- 	} else {
--		/* expect "/dev/null" */
--		if (memcmp("/dev/null", line, 9) || line[9] != '\n')
--			return error(_("git apply: bad git-diff - expected /dev/null on line %d"), state->linenr);
-+		/* expect "null:" */
-+		if (memcmp("null:", line, 9) || line[9] != '\n')
-+			return error(_("git apply: bad git-diff - expected null: on line %d"), state->linenr);
- 	}
- 
- 	return 0;
-diff -ru git-2.13.1/builtin/am.c git-2.13.1-new/builtin/am.c
---- git-2.13.1/builtin/am.c	2017-06-04 18:08:11.000000000 -0700
-+++ git-2.13.1-new/builtin/am.c	2017-06-25 15:19:22.550752475 -0700
-@@ -2342,7 +2342,7 @@
- 		 * 1. mbox path(s) are provided on the command-line.
- 		 * 2. stdin is not a tty: the user is trying to feed us a patch
- 		 *    from standard input. This is somewhat unreliable -- stdin
--		 *    could be /dev/null for example and the caller did not
-+		 *    could be null: for example and the caller did not
- 		 *    intend to feed us a patch but wanted to continue
- 		 *    unattended.
- 		 */
-diff -ru git-2.13.1/builtin/diff-tree.c git-2.13.1-new/builtin/diff-tree.c
---- git-2.13.1/builtin/diff-tree.c	2017-06-04 18:08:11.000000000 -0700
-+++ git-2.13.1-new/builtin/diff-tree.c	2017-06-25 15:19:22.580752658 -0700
-@@ -83,7 +83,7 @@
- "git diff-tree [--stdin] [-m] [-c] [--cc] [-s] [-v] [--pretty] [-t] [-r] [--root] "
- "[<common-diff-options>] <tree-ish> [<tree-ish>] [<path>...]\n"
- "  -r            diff recursively\n"
--"  --root        include the initial commit as diff against /dev/null\n"
-+"  --root        include the initial commit as diff against null:\n"
- COMMON_DIFF_OPTIONS_HELP;
- 
- static void diff_tree_tweak_rev(struct rev_info *rev, struct setup_revision_opt *opt)
-diff -ru git-2.13.1/builtin/fetch.c git-2.13.1-new/builtin/fetch.c
---- git-2.13.1/builtin/fetch.c	2017-06-04 18:08:11.000000000 -0700
-+++ git-2.13.1-new/builtin/fetch.c	2017-06-25 15:19:22.587419365 -0700
-@@ -730,7 +730,7 @@
- 	const char *what, *kind;
- 	struct ref *rm;
- 	char *url;
--	const char *filename = dry_run ? "/dev/null" : git_path_fetch_head();
-+	const char *filename = dry_run ? "null:" : git_path_fetch_head();
- 	int want_status;
- 	int summary_width = transport_summary_width(ref_map);
- 
-diff -ru git-2.13.1/builtin/log.c git-2.13.1-new/builtin/log.c
---- git-2.13.1/builtin/log.c	2017-06-04 18:08:11.000000000 -0700
-+++ git-2.13.1-new/builtin/log.c	2017-06-25 15:19:22.664086500 -0700
+diff -ru source/builtin/log.c source-new/builtin/log.c
+--- source/builtin/log.c	2017-06-04 18:08:11.000000000 -0700
++++ source-new/builtin/log.c	2017-08-15 13:10:13.777597945 -0700
 @@ -308,6 +308,7 @@
  
  static void setup_early_output(struct rev_info *rev)
@@ -87,42 +17,8 @@ diff -ru git-2.13.1/builtin/log.c git-2.13.1-new/builtin/log.c
  }
  
  static void finish_early_output(struct rev_info *rev)
-diff -ru git-2.13.1/builtin/merge-file.c git-2.13.1-new/builtin/merge-file.c
---- git-2.13.1/builtin/merge-file.c	2017-06-04 18:08:11.000000000 -0700
-+++ git-2.13.1-new/builtin/merge-file.c	2017-06-25 15:19:22.604086133 -0700
-@@ -60,8 +60,8 @@
- 	if (argc != 3)
- 		usage_with_options(merge_file_usage, options);
- 	if (quiet) {
--		if (!freopen("/dev/null", "w", stderr))
--			return error_errno("failed to redirect stderr to /dev/null");
-+		if (!freopen("null:", "w", stderr))
-+			return error_errno("failed to redirect stderr to null:");
- 	}
- 
- 	for (i = 0; i < 3; i++) {
-diff -ru git-2.13.1/combine-diff.c git-2.13.1-new/combine-diff.c
---- git-2.13.1/combine-diff.c	2017-06-04 18:08:11.000000000 -0700
-+++ git-2.13.1-new/combine-diff.c	2017-06-25 15:19:22.767420465 -0700
-@@ -953,13 +953,13 @@
- 		return;
- 
- 	if (added)
--		dump_quoted_path("--- ", "", "/dev/null",
-+		dump_quoted_path("--- ", "", "null:",
- 				 line_prefix, c_meta, c_reset);
- 	else
- 		dump_quoted_path("--- ", a_prefix, elem->path,
- 				 line_prefix, c_meta, c_reset);
- 	if (deleted)
--		dump_quoted_path("+++ ", "", "/dev/null",
-+		dump_quoted_path("+++ ", "", "null:",
- 				 line_prefix, c_meta, c_reset);
- 	else
- 		dump_quoted_path("+++ ", b_prefix, elem->path,
-diff -ru git-2.13.1/common-main.c git-2.13.1-new/common-main.c
---- git-2.13.1/common-main.c	2017-06-04 18:08:11.000000000 -0700
-+++ git-2.13.1-new/common-main.c	2017-06-25 15:19:23.000755222 -0700
+--- source/common-main.c	2017-06-04 18:08:11.000000000 -0700
++++ source-new/common-main.c	2017-08-15 13:10:15.490958287 -0700
 @@ -15,12 +15,14 @@
   */
  static void restore_sigpipe_to_default(void)
@@ -138,9 +34,8 @@ diff -ru git-2.13.1/common-main.c git-2.13.1-new/common-main.c
  }
  
  int main(int argc, const char **argv)
-diff -ru git-2.13.1/compat/hstrerror.c git-2.13.1-new/compat/hstrerror.c
---- git-2.13.1/compat/hstrerror.c	2017-06-04 18:08:11.000000000 -0700
-+++ git-2.13.1-new/compat/hstrerror.c	2017-06-25 15:19:22.704086744 -0700
+--- source/compat/hstrerror.c	2017-06-04 18:08:11.000000000 -0700
++++ source-new/compat/hstrerror.c	2017-08-15 13:10:13.854265821 -0700
 @@ -5,17 +5,6 @@
  const char *githstrerror(int err)
  {
@@ -159,39 +54,8 @@ diff -ru git-2.13.1/compat/hstrerror.c git-2.13.1-new/compat/hstrerror.c
  	snprintf(buffer, sizeof(buffer), "Name resolution error %d", err);
  	return buffer;
  }
-diff -ru git-2.13.1/compat/mingw.c git-2.13.1-new/compat/mingw.c
---- git-2.13.1/compat/mingw.c	2017-06-04 18:08:11.000000000 -0700
-+++ git-2.13.1-new/compat/mingw.c	2017-06-25 15:19:22.697420037 -0700
-@@ -352,7 +352,7 @@
- 	mode = va_arg(args, int);
- 	va_end(args);
- 
--	if (filename && !strcmp(filename, "/dev/null"))
-+	if (filename && !strcmp(filename, "null:"))
- 		filename = "nul";
- 
- 	if (xutftowcs_path(wfilename, filename) < 0)
-@@ -413,7 +413,7 @@
- 	int hide = needs_hiding(filename);
- 	FILE *file;
- 	wchar_t wfilename[MAX_PATH], wotype[4];
--	if (filename && !strcmp(filename, "/dev/null"))
-+	if (filename && !strcmp(filename, "null:"))
- 		filename = "nul";
- 	if (xutftowcs_path(wfilename, filename) < 0 ||
- 		xutftowcs(wotype, otype, ARRAY_SIZE(wotype)) < 0)
-@@ -433,7 +433,7 @@
- 	int hide = needs_hiding(filename);
- 	FILE *file;
- 	wchar_t wfilename[MAX_PATH], wotype[4];
--	if (filename && !strcmp(filename, "/dev/null"))
-+	if (filename && !strcmp(filename, "null:"))
- 		filename = "nul";
- 	if (xutftowcs_path(wfilename, filename) < 0 ||
- 		xutftowcs(wotype, otype, ARRAY_SIZE(wotype)) < 0)
-diff -ru git-2.13.1/compat/poll/poll.c git-2.13.1-new/compat/poll/poll.c
---- git-2.13.1/compat/poll/poll.c	2017-06-04 18:08:11.000000000 -0700
-+++ git-2.13.1-new/compat/poll/poll.c	2017-06-25 15:19:22.670753207 -0700
+--- source/compat/poll/poll.c	2017-06-04 18:08:11.000000000 -0700
++++ source-new/compat/poll/poll.c	2017-08-15 13:10:13.820931962 -0700
 @@ -302,7 +302,7 @@
  	happened |= (POLLIN | POLLRDNORM) & sought;
  
@@ -201,9 +65,8 @@ diff -ru git-2.13.1/compat/poll/poll.c git-2.13.1-new/compat/poll/poll.c
  	       || socket_errno == ECONNABORTED || socket_errno == ENETRESET)
  	happened |= POLLHUP;
  
-diff -ru git-2.13.1/compat/terminal.c git-2.13.1-new/compat/terminal.c
---- git-2.13.1/compat/terminal.c	2017-06-04 18:08:11.000000000 -0700
-+++ git-2.13.1-new/compat/terminal.c	2017-06-25 15:19:22.704086744 -0700
+--- source/compat/terminal.c	2017-06-04 18:08:11.000000000 -0700
++++ source-new/compat/terminal.c	2017-08-15 13:10:13.857599207 -0700
 @@ -3,7 +3,9 @@
  #include "sigchain.h"
  #include "strbuf.h"
@@ -227,9 +90,8 @@ diff -ru git-2.13.1/compat/terminal.c git-2.13.1-new/compat/terminal.c
  }
  
  #endif
-diff -ru git-2.13.1/config.c git-2.13.1-new/config.c
---- git-2.13.1/config.c	2017-06-04 18:08:11.000000000 -0700
-+++ git-2.13.1-new/config.c	2017-07-05 12:22:24.064535733 -0700
+--- source/config.c	2017-06-04 18:08:11.000000000 -0700
++++ source-new/config.c	2017-08-15 13:10:15.497625059 -0700
 @@ -1094,7 +1094,7 @@
  	}
  
@@ -239,9 +101,8 @@ diff -ru git-2.13.1/config.c git-2.13.1-new/config.c
  		packed_git_window_size = git_config_ulong(var, value);
  
  		/* This value must be multiple of (pagesize * 2) */
-diff -ru git-2.13.1/connect.c git-2.13.1-new/connect.c
---- git-2.13.1/connect.c	2017-06-04 18:08:11.000000000 -0700
-+++ git-2.13.1-new/connect.c	2017-06-25 16:49:55.499598388 -0700
+--- source/connect.c	2017-06-04 18:08:11.000000000 -0700
++++ source-new/connect.c	2017-08-15 13:10:15.500958445 -0700
 @@ -450,14 +450,11 @@
  
  	he = gethostbyname(host);
@@ -268,9 +129,8 @@ diff -ru git-2.13.1/connect.c git-2.13.1-new/connect.c
  }
  
  
-diff -ru git-2.13.1/credential-cache--daemon.c git-2.13.1-new/credential-cache--daemon.c
---- git-2.13.1/credential-cache--daemon.c	2017-06-04 18:08:11.000000000 -0700
-+++ git-2.13.1-new/credential-cache--daemon.c	2017-06-25 15:19:23.024088698 -0700
+--- source/credential-cache--daemon.c	2017-06-04 18:08:11.000000000 -0700
++++ source-new/credential-cache--daemon.c	2017-08-15 13:10:15.500958445 -0700
 @@ -156,6 +156,7 @@
  	strbuf_release(&action);
  }
@@ -279,17 +139,6 @@ diff -ru git-2.13.1/credential-cache--daemon.c git-2.13.1-new/credential-cache--
  static int serve_cache_loop(int fd)
  {
  	struct pollfd pfd;
-@@ -209,8 +210,8 @@
- 	printf("ok\n");
- 	fclose(stdout);
- 	if (!debug) {
--		if (!freopen("/dev/null", "w", stderr))
--			die_errno("unable to point stderr to /dev/null");
-+		if (!freopen("null:", "w", stderr))
-+			die_errno("unable to point stderr to null:");
- 	}
- 
- 	while (serve_cache_loop(fd))
 @@ -256,6 +257,7 @@
  
  	free(path_copy);
@@ -316,24 +165,8 @@ diff -ru git-2.13.1/credential-cache--daemon.c git-2.13.1-new/credential-cache--
  
  	return 0;
  }
-diff -ru git-2.13.1/csum-file.c git-2.13.1-new/csum-file.c
---- git-2.13.1/csum-file.c	2017-06-04 18:08:11.000000000 -0700
-+++ git-2.13.1-new/csum-file.c	2017-06-25 15:19:22.777420525 -0700
-@@ -128,9 +128,9 @@
- 	int sink, check;
- 	struct sha1file *f;
- 
--	sink = open("/dev/null", O_WRONLY);
-+	sink = open("null:", O_WRONLY);
- 	if (sink < 0)
--		die_errno("unable to open /dev/null");
-+		die_errno("unable to open null:");
- 	check = open(name, O_RDONLY);
- 	if (check < 0)
- 		die_errno("unable to open '%s'", name);
-diff -ru git-2.13.1/daemon.c git-2.13.1-new/daemon.c
---- git-2.13.1/daemon.c	2017-06-04 18:08:11.000000000 -0700
-+++ git-2.13.1-new/daemon.c	2017-06-25 15:19:23.017421990 -0700
+--- source/daemon.c	2017-06-04 18:08:11.000000000 -0700
++++ source-new/daemon.c	2017-08-15 13:10:15.504291831 -0700
 @@ -71,6 +71,7 @@
  	return hi->ip_address.buf;
  }
@@ -464,122 +297,8 @@ diff -ru git-2.13.1/daemon.c git-2.13.1-new/daemon.c
  		set_die_routine(daemon_die);
  	} else
  		/* avoid splitting a message in the middle */
-@@ -1377,8 +1381,8 @@
- 		    base_path);
- 
- 	if (inetd_mode) {
--		if (!freopen("/dev/null", "w", stderr))
--			die_errno("failed to redirect stderr to /dev/null");
-+		if (!freopen("null:", "w", stderr))
-+			die_errno("failed to redirect stderr to null:");
- 	}
- 
- 	if (inetd_mode || serve_mode)
-diff -ru git-2.13.1/diff.c git-2.13.1-new/diff.c
---- git-2.13.1/diff.c	2017-06-04 18:08:11.000000000 -0700
-+++ git-2.13.1-new/diff.c	2017-06-25 15:19:22.794087293 -0700
-@@ -389,7 +389,7 @@
- /*
-  * Keep track of files used for diffing. Sometimes such an entry
-  * refers to a temporary file, sometimes to an existing file, and
-- * sometimes to "/dev/null".
-+ * sometimes to "null:".
-  */
- static struct diff_tempfile {
- 	/*
-@@ -2401,11 +2401,11 @@
- 
- 	a_one = quote_two(a_prefix, name_a + (*name_a == '/'));
- 	b_two = quote_two(b_prefix, name_b + (*name_b == '/'));
--	lbl[0] = DIFF_FILE_VALID(one) ? a_one : "/dev/null";
--	lbl[1] = DIFF_FILE_VALID(two) ? b_two : "/dev/null";
-+	lbl[0] = DIFF_FILE_VALID(one) ? a_one : "null:";
-+	lbl[1] = DIFF_FILE_VALID(two) ? b_two : "null:";
- 	strbuf_addf(&header, "%s%sdiff --git %s %s%s\n", line_prefix, meta, a_one, b_two, reset);
- 	if (lbl[0][0] == '/') {
--		/* /dev/null */
-+		/* null: */
- 		strbuf_addf(&header, "%s%snew file mode %06o%s\n", line_prefix, meta, two->mode, reset);
- 		if (xfrm_msg)
- 			strbuf_addstr(&header, xfrm_msg);
-@@ -3000,7 +3000,7 @@
- 		/* A '-' entry produces this for file-2, and
- 		 * a '+' entry produces this for file-1.
- 		 */
--		temp->name = "/dev/null";
-+		temp->name = "null:";
- 		xsnprintf(temp->hex, sizeof(temp->hex), ".");
- 		xsnprintf(temp->mode, sizeof(temp->mode), ".");
- 		return temp;
-@@ -3260,7 +3260,7 @@
- 
- static void strip_prefix(int prefix_length, const char **namep, const char **otherp)
- {
--	/* Strip the prefix but do not molest /dev/null and absolute paths */
-+	/* Strip the prefix but do not molest null: and absolute paths */
- 	if (*namep && **namep != '/') {
- 		*namep += prefix_length;
- 		if (**namep == '/')
-@@ -4630,7 +4630,7 @@
- 		if (p->one->mode == 0) {
- 			patch_id_add_string(&ctx, "newfilemode");
- 			patch_id_add_mode(&ctx, p->two->mode);
--			patch_id_add_string(&ctx, "---/dev/null");
-+			patch_id_add_string(&ctx, "---null:");
- 			patch_id_add_string(&ctx, "+++b/");
- 			git_SHA1_Update(&ctx, p->two->path, len2);
- 		} else if (p->two->mode == 0) {
-@@ -4638,7 +4638,7 @@
- 			patch_id_add_mode(&ctx, p->one->mode);
- 			patch_id_add_string(&ctx, "---a/");
- 			git_SHA1_Update(&ctx, p->one->path, len1);
--			patch_id_add_string(&ctx, "+++/dev/null");
-+			patch_id_add_string(&ctx, "+++null:");
- 		} else {
- 			patch_id_add_string(&ctx, "---a/");
- 			git_SHA1_Update(&ctx, p->one->path, len1);
-@@ -4802,14 +4802,14 @@
- 	    DIFF_OPT_TST(options, DIFF_FROM_CONTENTS)) {
- 		/*
- 		 * run diff_flush_patch for the exit status. setting
--		 * options->file to /dev/null should be safe, because we
-+		 * options->file to null: should be safe, because we
- 		 * aren't supposed to produce any output anyway.
- 		 */
- 		if (options->close_file)
- 			fclose(options->file);
--		options->file = fopen("/dev/null", "w");
-+		options->file = fopen("null:", "w");
- 		if (!options->file)
--			die_errno("Could not open /dev/null");
-+			die_errno("Could not open null:");
- 		options->close_file = 1;
- 		for (i = 0; i < q->nr; i++) {
- 			struct diff_filepair *p = q->queue[i];
-diff -ru git-2.13.1/diff-no-index.c git-2.13.1-new/diff-no-index.c
---- git-2.13.1/diff-no-index.c	2017-06-04 18:08:11.000000000 -0700
-+++ git-2.13.1-new/diff-no-index.c	2017-06-25 15:19:22.784087233 -0700
-@@ -44,7 +44,7 @@
- {
- 	struct stat st;
- 
--	if (!path || !strcmp(path, "/dev/null"))
-+	if (!path || !strcmp(path, "null:"))
- 		*mode = 0;
- #ifdef GIT_WINDOWS_NATIVE
- 	else if (!strcasecmp(path, "nul"))
-@@ -80,7 +80,7 @@
- 	struct diff_filespec *s;
- 
- 	if (!name)
--		name = "/dev/null";
-+		name = "null:";
- 	s = alloc_filespec(name);
- 	fill_filespec(s, null_sha1, 0, mode);
- 	if (name == file_from_standard_input)
-diff -ru git-2.13.1/dir.c git-2.13.1-new/dir.c
---- git-2.13.1/dir.c	2017-06-04 18:08:11.000000000 -0700
-+++ git-2.13.1-new/dir.c	2017-06-25 15:19:22.970755039 -0700
+--- source/dir.c	2017-06-04 18:08:11.000000000 -0700
++++ source-new/dir.c	2017-08-15 13:10:15.520958760 -0700
 @@ -1891,14 +1891,14 @@
  static const char *get_ident_string(void)
  {
@@ -599,9 +318,8 @@ diff -ru git-2.13.1/dir.c git-2.13.1-new/dir.c
  	return sb.buf;
  }
  
-diff -ru git-2.13.1/fast-import.c git-2.13.1-new/fast-import.c
---- git-2.13.1/fast-import.c	2017-06-04 18:08:11.000000000 -0700
-+++ git-2.13.1-new/fast-import.c	2017-06-25 15:19:23.007421930 -0700
+--- source/fast-import.c	2017-06-04 18:08:11.000000000 -0700
++++ source-new/fast-import.c	2017-08-15 13:10:15.527625532 -0700
 @@ -531,6 +531,7 @@
  
  static void set_checkpoint_signal(void)
@@ -618,9 +336,8 @@ diff -ru git-2.13.1/fast-import.c git-2.13.1-new/fast-import.c
  }
  
  #endif
-diff -ru git-2.13.1/git-compat-util.h git-2.13.1-new/git-compat-util.h
---- git-2.13.1/git-compat-util.h	2017-06-04 18:08:11.000000000 -0700
-+++ git-2.13.1-new/git-compat-util.h	2017-07-24 18:52:23.567535558 -0700
+--- source/git-compat-util.h	2017-06-04 18:08:11.000000000 -0700
++++ source-new/git-compat-util.h	2017-08-15 13:10:15.530958918 -0700
 @@ -179,7 +179,6 @@
  #include <assert.h>
  #include <regex.h>
@@ -670,9 +387,8 @@ diff -ru git-2.13.1/git-compat-util.h git-2.13.1-new/git-compat-util.h
 +#define shutdown(...) 0
 +
  #endif
-diff -ru git-2.13.1/ident.c git-2.13.1-new/ident.c
---- git-2.13.1/ident.c	2017-06-04 18:08:11.000000000 -0700
-+++ git-2.13.1-new/ident.c	2017-06-25 15:19:22.997421868 -0700
+--- source/ident.c	2017-06-04 18:08:11.000000000 -0700
++++ source-new/ident.c	2017-08-15 13:10:15.534292303 -0700
 @@ -33,8 +33,7 @@
  	struct passwd *pw;
  
@@ -683,21 +399,8 @@ diff -ru git-2.13.1/ident.c git-2.13.1-new/ident.c
  		static struct passwd fallback;
  		fallback.pw_name = "unknown";
  #ifndef NO_GECOS_IN_PWENT
-diff -ru git-2.13.1/line-log.c git-2.13.1-new/line-log.c
---- git-2.13.1/line-log.c	2017-06-04 18:08:11.000000000 -0700
-+++ git-2.13.1-new/line-log.c	2017-06-25 15:19:22.830754184 -0700
-@@ -900,7 +900,7 @@
- 	fprintf(opt->file, "%s%sdiff --git a/%s b/%s%s\n", prefix, c_meta, pair->one->path, pair->two->path, c_reset);
- 	fprintf(opt->file, "%s%s--- %s%s%s\n", prefix, c_meta,
- 	       pair->one->oid_valid ? "a/" : "",
--	       pair->one->oid_valid ? pair->one->path : "/dev/null",
-+	       pair->one->oid_valid ? pair->one->path : "null:",
- 	       c_reset);
- 	fprintf(opt->file, "%s%s+++ b/%s%s\n", prefix, c_meta, pair->two->path, c_reset);
- 	for (i = 0; i < range->ranges.nr; i++) {
-diff -ru git-2.13.1/Makefile git-2.13.1-new/Makefile
---- git-2.13.1/Makefile	2017-06-04 18:08:11.000000000 -0700
-+++ git-2.13.1-new/Makefile	2017-07-07 19:49:39.730605650 -0700
+--- source/Makefile	2017-06-04 18:08:11.000000000 -0700
++++ source-new/Makefile	2017-08-15 13:10:15.540959076 -0700
 @@ -1802,7 +1802,6 @@
  
  $(BUILT_INS): git$X
@@ -737,9 +440,8 @@ diff -ru git-2.13.1/Makefile git-2.13.1-new/Makefile
  		ln -s "git-remote-http$X" "$$execdir/$$p" 2>/dev/null || \
  		cp "$$execdir/git-remote-http$X" "$$execdir/$$p" || exit; \
  	done && \
-diff -ru git-2.13.1/path.c git-2.13.1-new/path.c
---- git-2.13.1/path.c	2017-06-04 18:08:11.000000000 -0700
-+++ git-2.13.1-new/path.c	2017-07-05 12:23:08.831145653 -0700
+--- source/path.c	2017-06-04 18:08:11.000000000 -0700
++++ source-new/path.c	2017-08-15 13:10:15.544292461 -0700
 @@ -604,6 +604,7 @@
  	return -1;
  }
@@ -756,7 +458,7 @@ diff -ru git-2.13.1/path.c git-2.13.1-new/path.c
  
  /*
   * Return a string with ~ and ~user expanded via getpw*.  If buf != NULL,
-@@ -643,10 +645,7 @@
+@@ -643,12 +645,9 @@
  			convert_slashes(user_path.buf);
  #endif
  		} else {
@@ -767,9 +469,11 @@ diff -ru git-2.13.1/path.c git-2.13.1-new/path.c
  		}
  		to_copy = first_slash;
  	}
-diff -ru git-2.13.1/progress.c git-2.13.1-new/progress.c
---- git-2.13.1/progress.c	2017-06-04 18:08:11.000000000 -0700
-+++ git-2.13.1-new/progress.c	2017-06-25 15:19:22.957421624 -0700
+ 	strbuf_addstr(&user_path, to_copy);
+ 	return strbuf_detach(&user_path, NULL);
+diff -ru source/progress.c source-new/progress.c
+--- source/progress.c	2017-06-04 18:08:11.000000000 -0700
++++ source-new/progress.c	2017-08-15 13:10:15.544292461 -0700
 @@ -52,11 +52,13 @@
  
  	progress_update = 0;
@@ -794,9 +498,8 @@ diff -ru git-2.13.1/progress.c git-2.13.1-new/progress.c
  }
  
  static int display(struct progress *progress, unsigned n, const char *done)
-diff -ru git-2.13.1/rerere.c git-2.13.1-new/rerere.c
---- git-2.13.1/rerere.c	2017-06-04 18:08:11.000000000 -0700
-+++ git-2.13.1-new/rerere.c	2017-06-25 15:19:22.960754978 -0700
+--- source/rerere.c	2017-06-04 18:08:11.000000000 -0700
++++ source-new/rerere.c	2017-08-15 13:10:15.547625847 -0700
 @@ -682,7 +682,7 @@
  	 * A successful replay of recorded resolution.
  	 * Mark that "postimage" was used to help gc.
@@ -806,21 +509,8 @@ diff -ru git-2.13.1/rerere.c git-2.13.1-new/rerere.c
  		warning_errno("failed utime() on %s",
  			      rerere_path(id, "postimage"));
  
-diff -ru git-2.13.1/run-command.c git-2.13.1-new/run-command.c
---- git-2.13.1/run-command.c	2017-06-04 18:08:11.000000000 -0700
-+++ git-2.13.1-new/run-command.c	2017-07-24 18:38:38.359269687 -0700
-@@ -120,9 +120,9 @@
- #ifndef GIT_WINDOWS_NATIVE
- static inline void dup_devnull(int to)
- {
--	int fd = open("/dev/null", O_RDWR);
-+	int fd = open("null:", O_RDWR);
- 	if (fd < 0)
--		die_errno(_("open /dev/null failed"));
-+		die_errno(_("open null: failed"));
- 	if (dup2(fd, to) < 0)
- 		die_errno(_("dup2(%d,%d) failed"), fd, to);
- 	close(fd);
+--- source/run-command.c	2017-06-04 18:08:11.000000000 -0700
++++ source-new/run-command.c	2017-08-15 13:10:15.550959233 -0700
 @@ -138,7 +138,7 @@
  		return NULL;
  
@@ -830,34 +520,8 @@ diff -ru git-2.13.1/run-command.c git-2.13.1-new/run-command.c
  
  		strbuf_reset(&buf);
  
-@@ -483,21 +483,21 @@
- 	struct argv_array nargv = ARGV_ARRAY_INIT;
- 
- 	if (cmd->no_stdin)
--		fhin = open("/dev/null", O_RDWR);
-+		fhin = open("null:", O_RDWR);
- 	else if (need_in)
- 		fhin = dup(fdin[0]);
- 	else if (cmd->in)
- 		fhin = dup(cmd->in);
- 
- 	if (cmd->no_stderr)
--		fherr = open("/dev/null", O_RDWR);
-+		fherr = open("null:", O_RDWR);
- 	else if (need_err)
- 		fherr = dup(fderr[1]);
- 	else if (cmd->err > 2)
- 		fherr = dup(cmd->err);
- 
- 	if (cmd->no_stdout)
--		fhout = open("/dev/null", O_RDWR);
-+		fhout = open("null:", O_RDWR);
- 	else if (cmd->stdout_to_stderr)
- 		fhout = dup(fherr);
- 	else if (need_out)
-diff -ru git-2.13.1/send-pack.c git-2.13.1-new/send-pack.c
---- git-2.13.1/send-pack.c	2017-06-04 18:08:11.000000000 -0700
-+++ git-2.13.1-new/send-pack.c	2017-06-25 15:19:22.960754978 -0700
+--- source/send-pack.c	2017-06-04 18:08:11.000000000 -0700
++++ source-new/send-pack.c	2017-08-15 13:10:15.550959233 -0700
 @@ -570,7 +570,7 @@
  			if (args->stateless_rpc)
  				close(out);
@@ -867,27 +531,9 @@ diff -ru git-2.13.1/send-pack.c git-2.13.1-new/send-pack.c
  
  			/*
  			 * Do not even bother with the return value; we know we
-diff -ru git-2.13.1/setup.c git-2.13.1-new/setup.c
---- git-2.13.1/setup.c	2017-06-04 18:08:11.000000000 -0700
-+++ git-2.13.1-new/setup.c	2017-06-25 15:19:22.904087966 -0700
-@@ -1143,21 +1143,21 @@
- 	return read_gitfile_gently(suspect, return_error_code);
- }
- 
--/* if any standard file descriptor is missing open it to /dev/null */
-+/* if any standard file descriptor is missing open it to null: */
- void sanitize_stdfds(void)
- {
--	int fd = open("/dev/null", O_RDWR, 0);
-+	int fd = open("null:", O_RDWR, 0);
- 	while (fd != -1 && fd < 2)
- 		fd = dup(fd);
- 	if (fd == -1)
--		die_errno("open /dev/null or dup failed");
-+		die_errno("open null: or dup failed");
- 	if (fd > 2)
- 		close(fd);
- }
+--- source/setup.c	2017-06-04 18:08:11.000000000 -0700
++++ source-new/setup.c	2017-08-15 13:10:15.554292619 -0700
+@@ -1157,7 +1157,7 @@
  
  int daemonize(void)
  {
@@ -896,9 +542,8 @@ diff -ru git-2.13.1/setup.c git-2.13.1-new/setup.c
  	errno = ENOSYS;
  	return -1;
  #else
-diff -ru git-2.13.1/sha1_file.c git-2.13.1-new/sha1_file.c
---- git-2.13.1/sha1_file.c	2017-06-04 18:08:11.000000000 -0700
-+++ git-2.13.1-new/sha1_file.c	2017-06-25 15:19:23.014088636 -0700
+--- source/sha1_file.c	2017-06-04 18:08:11.000000000 -0700
++++ source-new/sha1_file.c	2017-08-15 13:10:15.564292776 -0700
 @@ -723,7 +723,7 @@
  		"pack_report: getpagesize()            = %10" SZ_FMT "\n"
  		"pack_report: core.packedGitWindowSize = %10" SZ_FMT "\n"
@@ -908,9 +553,8 @@ diff -ru git-2.13.1/sha1_file.c git-2.13.1-new/sha1_file.c
  		sz_fmt(packed_git_window_size),
  		sz_fmt(packed_git_limit));
  	fprintf(stderr,
-diff -ru git-2.13.1/strbuf.c git-2.13.1-new/strbuf.c
---- git-2.13.1/strbuf.c	2017-06-04 18:08:11.000000000 -0700
-+++ git-2.13.1-new/strbuf.c	2017-07-05 12:24:29.957791169 -0700
+--- source/strbuf.c	2017-06-04 18:08:11.000000000 -0700
++++ source-new/strbuf.c	2017-08-15 13:10:15.564292776 -0700
 @@ -446,6 +446,11 @@
  	for (;; guessed_len *= 2) {
  		strbuf_grow(sb, guessed_len);
@@ -923,9 +567,8 @@ diff -ru git-2.13.1/strbuf.c git-2.13.1-new/strbuf.c
  			strbuf_setlen(sb, strlen(sb->buf));
  			return 0;
  		}
-diff -ru git-2.13.1/wrapper.c git-2.13.1-new/wrapper.c
---- git-2.13.1/wrapper.c	2017-06-04 18:08:11.000000000 -0700
-+++ git-2.13.1-new/wrapper.c	2017-06-25 15:19:23.014088636 -0700
+--- source/wrapper.c	2017-06-04 18:08:11.000000000 -0700
++++ source-new/wrapper.c	2017-08-15 13:10:15.567626162 -0700
 @@ -227,6 +227,7 @@
  	}
  }
