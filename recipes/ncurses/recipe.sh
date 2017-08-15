@@ -12,6 +12,7 @@ function recipe_update {
 }
 
 function recipe_build {
+    export CPPFLAGS="-P"
     ./configure --host=${HOST} --prefix=""
     make
     skip=1
