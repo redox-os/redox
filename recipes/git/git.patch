@@ -1,6 +1,6 @@
 diff -ru source/builtin/log.c source-new/builtin/log.c
 --- source/builtin/log.c	2017-06-04 18:08:11.000000000 -0700
-+++ source-new/builtin/log.c	2017-08-15 13:10:13.777597945 -0700
++++ source-new/builtin/log.c	2017-08-15 13:29:42.346302539 -0700
 @@ -308,6 +308,7 @@
  
  static void setup_early_output(struct rev_info *rev)
@@ -17,8 +17,9 @@ diff -ru source/builtin/log.c source-new/builtin/log.c
  }
  
  static void finish_early_output(struct rev_info *rev)
+diff -ru source/common-main.c source-new/common-main.c
 --- source/common-main.c	2017-06-04 18:08:11.000000000 -0700
-+++ source-new/common-main.c	2017-08-15 13:10:15.490958287 -0700
++++ source-new/common-main.c	2017-08-15 13:29:42.346302539 -0700
 @@ -15,12 +15,14 @@
   */
  static void restore_sigpipe_to_default(void)
@@ -34,8 +35,9 @@ diff -ru source/builtin/log.c source-new/builtin/log.c
  }
  
  int main(int argc, const char **argv)
+diff -ru source/compat/hstrerror.c source-new/compat/hstrerror.c
 --- source/compat/hstrerror.c	2017-06-04 18:08:11.000000000 -0700
-+++ source-new/compat/hstrerror.c	2017-08-15 13:10:13.854265821 -0700
++++ source-new/compat/hstrerror.c	2017-08-15 13:29:42.346302539 -0700
 @@ -5,17 +5,6 @@
  const char *githstrerror(int err)
  {
@@ -54,8 +56,9 @@ diff -ru source/builtin/log.c source-new/builtin/log.c
  	snprintf(buffer, sizeof(buffer), "Name resolution error %d", err);
  	return buffer;
  }
+diff -ru source/compat/poll/poll.c source-new/compat/poll/poll.c
 --- source/compat/poll/poll.c	2017-06-04 18:08:11.000000000 -0700
-+++ source-new/compat/poll/poll.c	2017-08-15 13:10:13.820931962 -0700
++++ source-new/compat/poll/poll.c	2017-08-15 13:29:42.346302539 -0700
 @@ -302,7 +302,7 @@
  	happened |= (POLLIN | POLLRDNORM) & sought;
  
@@ -65,8 +68,9 @@ diff -ru source/builtin/log.c source-new/builtin/log.c
  	       || socket_errno == ECONNABORTED || socket_errno == ENETRESET)
  	happened |= POLLHUP;
  
+diff -ru source/compat/terminal.c source-new/compat/terminal.c
 --- source/compat/terminal.c	2017-06-04 18:08:11.000000000 -0700
-+++ source-new/compat/terminal.c	2017-08-15 13:10:13.857599207 -0700
++++ source-new/compat/terminal.c	2017-08-15 13:29:42.349635894 -0700
 @@ -3,7 +3,9 @@
  #include "sigchain.h"
  #include "strbuf.h"
@@ -90,8 +94,9 @@ diff -ru source/builtin/log.c source-new/builtin/log.c
  }
  
  #endif
+diff -ru source/config.c source-new/config.c
 --- source/config.c	2017-06-04 18:08:11.000000000 -0700
-+++ source-new/config.c	2017-08-15 13:10:15.497625059 -0700
++++ source-new/config.c	2017-08-15 13:29:42.349635894 -0700
 @@ -1094,7 +1094,7 @@
  	}
  
@@ -101,8 +106,9 @@ diff -ru source/builtin/log.c source-new/builtin/log.c
  		packed_git_window_size = git_config_ulong(var, value);
  
  		/* This value must be multiple of (pagesize * 2) */
+diff -ru source/connect.c source-new/connect.c
 --- source/connect.c	2017-06-04 18:08:11.000000000 -0700
-+++ source-new/connect.c	2017-08-15 13:10:15.500958445 -0700
++++ source-new/connect.c	2017-08-15 13:29:42.349635894 -0700
 @@ -450,14 +450,11 @@
  
  	he = gethostbyname(host);
@@ -129,8 +135,9 @@ diff -ru source/builtin/log.c source-new/builtin/log.c
  }
  
  
+diff -ru source/credential-cache--daemon.c source-new/credential-cache--daemon.c
 --- source/credential-cache--daemon.c	2017-06-04 18:08:11.000000000 -0700
-+++ source-new/credential-cache--daemon.c	2017-08-15 13:10:15.500958445 -0700
++++ source-new/credential-cache--daemon.c	2017-08-15 13:29:42.349635894 -0700
 @@ -156,6 +156,7 @@
  	strbuf_release(&action);
  }
@@ -165,8 +172,9 @@ diff -ru source/builtin/log.c source-new/builtin/log.c
  
  	return 0;
  }
+diff -ru source/daemon.c source-new/daemon.c
 --- source/daemon.c	2017-06-04 18:08:11.000000000 -0700
-+++ source-new/daemon.c	2017-08-15 13:10:15.504291831 -0700
++++ source-new/daemon.c	2017-08-15 13:30:19.439876374 -0700
 @@ -71,6 +71,7 @@
  	return hi->ip_address.buf;
  }
@@ -279,16 +287,19 @@ diff -ru source/builtin/log.c source-new/builtin/log.c
  		die("cannot drop privileges");
  }
  
-@@ -1167,7 +1171,7 @@
- {
- 	static struct credentials c;
+@@ -1174,11 +1178,7 @@
+ 	if (!group_name)
+ 		c.gid = c.pass->pw_gid;
+ 	else {
+-		struct group *group = getgrnam(group_name);
+-		if (!group)
+ 			die("group not found - %s", group_name);
+-
+-		c.gid = group->gr_gid;
+ 	}
  
--	c.pass = getpwnam(user_name);
-+	c.pass = 0;
- 	if (!c.pass)
- 		die("user not found - %s", user_name);
- 
-@@ -1349,7 +1353,7 @@
+ 	return &c;
+@@ -1349,7 +1349,7 @@
  	}
  
  	if (log_syslog) {
@@ -297,8 +308,9 @@ diff -ru source/builtin/log.c source-new/builtin/log.c
  		set_die_routine(daemon_die);
  	} else
  		/* avoid splitting a message in the middle */
+diff -ru source/dir.c source-new/dir.c
 --- source/dir.c	2017-06-04 18:08:11.000000000 -0700
-+++ source-new/dir.c	2017-08-15 13:10:15.520958760 -0700
++++ source-new/dir.c	2017-08-15 13:29:42.352969248 -0700
 @@ -1891,14 +1891,14 @@
  static const char *get_ident_string(void)
  {
@@ -318,8 +330,9 @@ diff -ru source/builtin/log.c source-new/builtin/log.c
  	return sb.buf;
  }
  
+diff -ru source/fast-import.c source-new/fast-import.c
 --- source/fast-import.c	2017-06-04 18:08:11.000000000 -0700
-+++ source-new/fast-import.c	2017-08-15 13:10:15.527625532 -0700
++++ source-new/fast-import.c	2017-08-15 13:29:42.352969248 -0700
 @@ -531,6 +531,7 @@
  
  static void set_checkpoint_signal(void)
@@ -336,8 +349,9 @@ diff -ru source/builtin/log.c source-new/builtin/log.c
  }
  
  #endif
+diff -ru source/git-compat-util.h source-new/git-compat-util.h
 --- source/git-compat-util.h	2017-06-04 18:08:11.000000000 -0700
-+++ source-new/git-compat-util.h	2017-08-15 13:10:15.530958918 -0700
++++ source-new/git-compat-util.h	2017-08-15 13:29:42.356302602 -0700
 @@ -179,7 +179,6 @@
  #include <assert.h>
  #include <regex.h>
@@ -387,20 +401,9 @@ diff -ru source/builtin/log.c source-new/builtin/log.c
 +#define shutdown(...) 0
 +
  #endif
---- source/ident.c	2017-06-04 18:08:11.000000000 -0700
-+++ source-new/ident.c	2017-08-15 13:10:15.534292303 -0700
-@@ -33,8 +33,7 @@
- 	struct passwd *pw;
- 
- 	errno = 0;
--	pw = getpwuid(getuid());
--	if (!pw) {
-+	if (1) {
- 		static struct passwd fallback;
- 		fallback.pw_name = "unknown";
- #ifndef NO_GECOS_IN_PWENT
+diff -ru source/Makefile source-new/Makefile
 --- source/Makefile	2017-06-04 18:08:11.000000000 -0700
-+++ source-new/Makefile	2017-08-15 13:10:15.540959076 -0700
++++ source-new/Makefile	2017-08-15 13:29:42.356302602 -0700
 @@ -1802,7 +1802,6 @@
  
  $(BUILT_INS): git$X
@@ -440,40 +443,9 @@ diff -ru source/builtin/log.c source-new/builtin/log.c
  		ln -s "git-remote-http$X" "$$execdir/$$p" 2>/dev/null || \
  		cp "$$execdir/git-remote-http$X" "$$execdir/$$p" || exit; \
  	done && \
---- source/path.c	2017-06-04 18:08:11.000000000 -0700
-+++ source-new/path.c	2017-08-15 13:10:15.544292461 -0700
-@@ -604,6 +604,7 @@
- 	return -1;
- }
- 
-+/*
- static struct passwd *getpw_str(const char *username, size_t len)
- {
- 	struct passwd *pw;
-@@ -612,6 +613,7 @@
- 	free(username_z);
- 	return pw;
- }
-+*/
- 
- /*
-  * Return a string with ~ and ~user expanded via getpw*.  If buf != NULL,
-@@ -643,12 +645,9 @@
- 			convert_slashes(user_path.buf);
- #endif
- 		} else {
--			struct passwd *pw = getpw_str(username, username_len);
--			if (!pw)
- 				goto return_null;
--			strbuf_addstr(&user_path, pw->pw_dir);
- 		}
- 		to_copy = first_slash;
- 	}
- 	strbuf_addstr(&user_path, to_copy);
- 	return strbuf_detach(&user_path, NULL);
 diff -ru source/progress.c source-new/progress.c
 --- source/progress.c	2017-06-04 18:08:11.000000000 -0700
-+++ source-new/progress.c	2017-08-15 13:10:15.544292461 -0700
++++ source-new/progress.c	2017-08-15 13:29:42.356302602 -0700
 @@ -52,11 +52,13 @@
  
  	progress_update = 0;
@@ -498,8 +470,9 @@ diff -ru source/progress.c source-new/progress.c
  }
  
  static int display(struct progress *progress, unsigned n, const char *done)
+diff -ru source/rerere.c source-new/rerere.c
 --- source/rerere.c	2017-06-04 18:08:11.000000000 -0700
-+++ source-new/rerere.c	2017-08-15 13:10:15.547625847 -0700
++++ source-new/rerere.c	2017-08-15 13:29:42.356302602 -0700
 @@ -682,7 +682,7 @@
  	 * A successful replay of recorded resolution.
  	 * Mark that "postimage" was used to help gc.
@@ -509,8 +482,9 @@ diff -ru source/progress.c source-new/progress.c
  		warning_errno("failed utime() on %s",
  			      rerere_path(id, "postimage"));
  
+diff -ru source/run-command.c source-new/run-command.c
 --- source/run-command.c	2017-06-04 18:08:11.000000000 -0700
-+++ source-new/run-command.c	2017-08-15 13:10:15.550959233 -0700
++++ source-new/run-command.c	2017-08-15 13:29:42.359635956 -0700
 @@ -138,7 +138,7 @@
  		return NULL;
  
@@ -520,8 +494,9 @@ diff -ru source/progress.c source-new/progress.c
  
  		strbuf_reset(&buf);
  
+diff -ru source/send-pack.c source-new/send-pack.c
 --- source/send-pack.c	2017-06-04 18:08:11.000000000 -0700
-+++ source-new/send-pack.c	2017-08-15 13:10:15.550959233 -0700
++++ source-new/send-pack.c	2017-08-15 13:29:42.359635956 -0700
 @@ -570,7 +570,7 @@
  			if (args->stateless_rpc)
  				close(out);
@@ -531,8 +506,9 @@ diff -ru source/progress.c source-new/progress.c
  
  			/*
  			 * Do not even bother with the return value; we know we
+diff -ru source/setup.c source-new/setup.c
 --- source/setup.c	2017-06-04 18:08:11.000000000 -0700
-+++ source-new/setup.c	2017-08-15 13:10:15.554292619 -0700
++++ source-new/setup.c	2017-08-15 13:29:42.359635956 -0700
 @@ -1157,7 +1157,7 @@
  
  int daemonize(void)
@@ -542,8 +518,9 @@ diff -ru source/progress.c source-new/progress.c
  	errno = ENOSYS;
  	return -1;
  #else
+diff -ru source/sha1_file.c source-new/sha1_file.c
 --- source/sha1_file.c	2017-06-04 18:08:11.000000000 -0700
-+++ source-new/sha1_file.c	2017-08-15 13:10:15.564292776 -0700
++++ source-new/sha1_file.c	2017-08-15 13:29:42.359635956 -0700
 @@ -723,7 +723,7 @@
  		"pack_report: getpagesize()            = %10" SZ_FMT "\n"
  		"pack_report: core.packedGitWindowSize = %10" SZ_FMT "\n"
@@ -553,8 +530,9 @@ diff -ru source/progress.c source-new/progress.c
  		sz_fmt(packed_git_window_size),
  		sz_fmt(packed_git_limit));
  	fprintf(stderr,
+diff -ru source/strbuf.c source-new/strbuf.c
 --- source/strbuf.c	2017-06-04 18:08:11.000000000 -0700
-+++ source-new/strbuf.c	2017-08-15 13:10:15.564292776 -0700
++++ source-new/strbuf.c	2017-08-15 13:29:42.359635956 -0700
 @@ -446,6 +446,11 @@
  	for (;; guessed_len *= 2) {
  		strbuf_grow(sb, guessed_len);
@@ -567,8 +545,9 @@ diff -ru source/progress.c source-new/progress.c
  			strbuf_setlen(sb, strlen(sb->buf));
  			return 0;
  		}
+diff -ru source/wrapper.c source-new/wrapper.c
 --- source/wrapper.c	2017-06-04 18:08:11.000000000 -0700
-+++ source-new/wrapper.c	2017-08-15 13:10:15.567626162 -0700
++++ source-new/wrapper.c	2017-08-15 13:29:42.359635956 -0700
 @@ -227,6 +227,7 @@
  	}
  }
@@ -612,14 +591,3 @@ diff -ru source/progress.c source-new/progress.c
  }
  
  int xgethostname(char *buf, size_t len)
-@@ -663,8 +661,6 @@
- 	 * specify whether the buffer will be null-terminated, so to
- 	 * be safe, do it ourselves.
- 	 */
--	int ret = gethostname(buf, len);
--	if (!ret)
--		buf[len - 1] = 0;
--	return ret;
-+	strcpy(buf, "redox");
-+	return 0;
- }
