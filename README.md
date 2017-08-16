@@ -54,7 +54,6 @@ The ecosystem and software Redox OS provides is listed below.
 | [libextra](https://github.com/redox-os/libextra)                            | [**@ticki**](https://github.com/ticki)
 | [libpager](https://github.com/redox-os/libpager)                            | [**@ticki**](https://github.com/ticki)
 | [libstd (Redox standard library)](https://github.com/redox-os/libstd)                      | [**@jackpot51**](https://github.com/jackpot51)
-| [Magnet (future package manager)](https://github.com/redox-os/magnet)       | [**@ticki**](https://github.com/ticki)
 | [netutils](https://github.com/redox-os/netutils)                            | [**@jackpot51**](https://github.com/jackpot51)
 | [orbclient (Orbital client)](https://github.com/redox-os/orbclient)                          | [**@jackpot51**](https://github.com/jackpot51)
 | [orbdata](https://github.com/redox-os/orbdata)                              | [**@jackpot51**](https://github.com/jackpot51)
