@@ -1,5 +1,5 @@
 <p align="center">
-<img alt="Redox" width="346" src="https://github.com/redox-os/assets/raw/master/logo.png">
+<img alt="Redox" width="346" src="https://github.com/redox-os/assets/raw/master/logos/redox/logo.png">
 </p>
 
 **Redox** is an operating system written in Rust, a language with focus on safety and high performance. Redox, following the microkernel design, aims to be secure, usable, and free. Redox is inspired by previous kernels and operating systems, such as SeL4, Minix, Plan 9, and BSD.
