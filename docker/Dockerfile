@@ -1,7 +1,5 @@
 FROM ubuntu:17.04
 
-ENV REDOX_TOOLCHAIN_APT https://static.redox-os.org/toolchain/apt/
-
 ENV USER user
 ARG LOCAL_UID=local
 ARG LOCAL_GID=local
@@ -12,8 +10,8 @@ RUN   apt-get update \
       && apt-get install -y dirmngr git gosu gcc fuse nasm qemu-utils pkg-config \
              libfuse-dev make curl wget file sudo apt-transport-https autoconf flex \
              bison texinfo \
-      && apt-key adv --fetch-keys https://static.redox-os.org/toolchain/apt/keyFile \
-      && echo "deb $REDOX_TOOLCHAIN_APT /" >> /etc/apt/sources.list.d/redox.list \
+      && apt-key adv --keyserver keyserver.ubuntu.com --recv-keys AA12E97F0881517F \
+      && echo "deb https://static.redox-os.org/toolchain/apt/ /" >> /etc/apt/sources.list.d/redox.list \
       && apt-get update -o Dir::Etc::sourcelist="redox.list" \
       && apt-get install -y x86-64-unknown-redox-newlib x86-64-unknown-redox-binutils x86-64-unknown-redox-gcc \
       && groupadd -g $BUILD_GID user \
