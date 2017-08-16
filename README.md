@@ -163,3 +163,12 @@ make qemu kvm=no vga=no
 
 ### <a name="setup-using-docker"> Setup using Docker </a>
 We also provide docker image. After cloning this repository, please follow README under the `docker` directory.
+
+### Updating the codebase using the Makefile
+To update the codebase run:
+
+```
+make pull; make fetch
+```
+
+`make pull` pulls and updates the submodules, and `make fetch` updates the sources for cookbook recipes.
