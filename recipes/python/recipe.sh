@@ -1,4 +1,4 @@
-VERSION=3.6.1
+VERSION=3.6.2
 TAR=https://www.python.org/ftp/python/$VERSION/Python-$VERSION.tar.xz
 
 export AR="${HOST}-ar"
