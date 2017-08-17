@@ -169,10 +169,17 @@ function op {
             then
                 recipe_build
             fi
+
+            release_flag="--release"
+	    if [ "$cargo_build_debug_mode" == 1 ]
+            then
+                release_flag=
+            fi
+
             if [ "$skip" -eq "0" ]
             then
                 cp -r "$ROOT/Xargo.toml" .
-                xargo build --target "$TARGET" --release $CARGOFLAGS
+                xargo build --target "$TARGET" $release_flag $CARGOFLAGS
             fi
             popd > /dev/null
             ;;
@@ -183,10 +190,17 @@ function op {
             then
                 recipe_test
             fi
+
+            release_flag="--release"
+	    if [ "$cargo_build_debug_mode" == 1 ]
+            then
+                release_flag=
+            fi
+
             if [ "$skip" -eq "0" ]
             then
                 cp -r "$ROOT/Xargo.toml" .
-                xargo test --no-run --target "$TARGET" --release $CARGOFLAGS
+                xargo test --no-run --target "$TARGET" $release_flag $CARGOFLAGS
             fi
             popd > /dev/null
             ;;
@@ -215,13 +229,24 @@ function op {
             if [ "$skip" -eq "0" ]
             then
                 #TODO xargo install --root "../stage" $CARGOFLAGS
-                bins="$(find target/$TARGET/release/ -maxdepth 1 -type f ! -name '*.*')"
+		if [ "$cargo_build_debug_mode" == 1 ]
+		then
+		    build=debug
+		else
+		    build=release
+		fi
+                bins="$(find target/$TARGET/$build/ -maxdepth 1 -type f ! -name '*.*')"
                 if [ -n "$bins" ]
                 then
                     mkdir -p "../stage/$BINDIR"
                     for bin in $bins
                     do
-                        strip -v "$bin" -o "../stage/$BINDIR/$(basename $bin)"
+                        if [ "$cargo_build_debug_mode" == 1 ]
+			then
+                            cp -v "$bin" "../stage/$BINDIR/$(basename $bin)"
+			else
+                            strip -v "$bin" -o "../stage/$BINDIR/$(basename $bin)"
+			fi
                     done
                 fi
             fi
@@ -262,9 +287,22 @@ then
     then
         cd "$ROOT/recipes/$1"
         source recipe.sh
+
+	ops=()
+        cargo_build_debug_mode=
         for arg in "${@:2}"
         do
-            op "$1" "$arg"
+            if [ "$arg" == "--debug" ]
+            then
+                cargo_build_debug_mode=1
+            else
+                ops[${#ops[@]}]="$arg"
+            fi
+        done
+
+        for i in "${ops[@]}"
+        do
+            op "$1" "$i"
         done
     else
         echo "cook.sh: recipe '$1' not found" >&2
