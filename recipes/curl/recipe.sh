@@ -1,4 +1,4 @@
-GIT=https://github.com/ids1024/curl.git
+TAR=https://curl.haxx.se/download/curl-7.55.1.tar.gz
 BRANCH=redox
 BUILD_DEPENDS=(openssl)
 
@@ -13,7 +13,9 @@ function recipe_update {
 }
 
 function recipe_build {
-    ./configure --prefix=/ --host=${HOST} --disable-tftp --disable-ftp --disable-ntlm-wb --with-ssl="$PWD/../sysroot" --with-ca-path=/ssl/certs
+    wget -O config.sub http://git.savannah.gnu.org/cgit/config.git/plain/config.sub
+    autoreconf
+    ./configure --prefix=/ --host=${HOST} --disable-tftp --disable-ftp --disable-ntlm-wb --disable-threaded-resolver --with-ssl="$PWD/../sysroot" --with-ca-path=/ssl/certs
     make
     skip=1
 }

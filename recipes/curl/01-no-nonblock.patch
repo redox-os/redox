@@ -1,0 +1,12 @@
+diff -ru source/lib/nonblock.c source-new/lib/nonblock.c
+--- source/lib/nonblock.c	2017-08-07 15:42:29.000000000 -0700
++++ source-new/lib/nonblock.c	2017-08-17 10:57:30.123497389 -0700
+@@ -47,7 +47,7 @@
+ int curlx_nonblock(curl_socket_t sockfd,    /* operate on this */
+                    int nonblock   /* TRUE or FALSE */)
+ {
+-#if defined(USE_BLOCKING_SOCKETS)
++#if 1
+ 
+   return 0; /* returns success */
+ 
