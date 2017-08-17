@@ -1,8 +1,0 @@
-[package]
-name = "ipd"
-version = "0.1.0"
-
-[dependencies]
-event = { path = "../../crates/event/" }
-netutils = { path = "../../programs/netutils/" }
-redox_syscall = { path = "../../syscall/" }

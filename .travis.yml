@@ -5,23 +5,30 @@ rust:
 cache: cargo
 os:
 - linux
+#- osx
+#matrix:
+#  allow_failures:
+#  - os: osx
 dist: trusty
 before_install:
-- if [ `uname` = "Linux" ]; then
-  sudo apt-get install -qq nasm pkg-config fuse libfuse-dev genisoimage syslinux &&
+- if [ "$TRAVIS_OS_NAME" == "linux" ]; then
+  sudo apt-key adv -q --batch --yes --keyserver keyserver.ubuntu.com --recv-keys AA12E97F0881517F &&
+  sudo add-apt-repository 'deb https://static.redox-os.org/toolchain/apt ./' &&
+  sudo apt-get update -qq &&
+  sudo apt-get purge -qq binutils-doc &&
+  sudo apt-get install -qq nasm pkg-config fuse libfuse-dev genisoimage syslinux x86-64-unknown-redox-gcc &&
   sudo modprobe fuse &&
   sudo chmod 666 /dev/fuse &&
   sudo chown root:$USER /etc/fuse.conf;
   fi
-- if [ `uname` = "Darwin" ]; then brew update &&
-  brew install nasm gcc49 pkg-config Caskroom/cask/osxfuse &&
-  brew tap glendc/gcc_cross_compilers &&
-  brew install glendc/gcc_cross_compilers/x64-elf-binutils glendc/gcc_cross_compilers/x64-elf-gcc;
+- if [ "$TRAVIS_OS_NAME" == "osx" ]; then
+  brew update &&
+  brew install nasm pkg-config Caskroom/cask/osxfuse &&
+  travis_wait 30 brew install redox-os/gcc_cross_compilers/x86_64-elf-gcc;
   fi
+- cd cookbook && ./setup.sh && cd ..
 script:
-- make clean &&
-  make update &&
-  make build/harddrive.bin.gz build/livedisk.bin.gz build/livedisk.iso -j 2
+- make clean && make travis
 notifications:
   email: false
   webhooks: http://37.139.9.28:54863/travis
@@ -29,11 +36,10 @@ deploy:
   provider: releases
   api_key:
     secure: E5w3mgFbW4fAFNJn0FGcvwGKK33d+StC4izDX7dsGPxX/gwAsMnZqabDWpsrj8n/jFI5NdPzuyz4Ojkip4AXrEs0DWfX96d9CSWvJmWIirwwKhALnxZ5cqnHnBXY3wpk9k8MKpdODzKs3ZjM3pPug2jjjp2EHdrEV6iyc8LlnLAJutbtPpNJv0rJrx/TfCZRx70YWKQyx2Lfx5P6Vj+5yoYsKk+SHmKZlIQfj2E1cfC8+/w+fzc9CRTNhM9XFBisKnu9qql3nNhEW8VUNQ9FnltGpunmcTnCmsKzHPfs8Zv6kM/6y3wuoqxwPnIwRu+zsntkjM/eT7Zy3DtTBqJDjq+L5jov50QWOxzjUuFYMv0lAMeMC0PIGn0ECpFs546M+Wqvd7HKgabac0UhilEBPbinOdW+6aOOhbo+Fe2I2ec0XIGxlQpccQeWQUsjjOQ+6QuvnpPE+CbvQaVyrx27rVAkqD44cOP8xqOq2Es651J+Dt0O1OIhLdPB3FxOLCDpEIHU5Ojci1QbUxZgGKjShpo44nNqcTv7v71JrfzFSVG2pF9a35Mpo6bFEkzyQprOyrwH2fcnN+4jyxdJXzdNsgraXsQopWAB5cL/8i7SXMwHy9ivpFaX/zgoHQqpc1a4VjrmTtPA08rLORIllw9CplfvJNsmNmCi2aSeTXR06Xk=
-  file:
-  - build/harddrive.bin.gz
-  - build/livedisk.bin.gz
-  - build/livedisk.iso
+  file_glob: true
+  file: build/travis/*
   on:
     repo: redox-os/redox
     tags: true
+    condition: $TRAVIS_OS_NAME = linux
   skip_cleanup: true

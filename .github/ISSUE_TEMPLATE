@@ -4,7 +4,8 @@
 
 **Actual behavior**: [describe the actual behavior, which is presented through the repro.].
 
-**Build information**: [output of `rustc -V`, `git rev-parse HEAD`, `qemu-i386 -version`, `uname -a`, etc.]
+**Build information**: [only when using a self build version: output of `rustc -V`, `git rev-parse HEAD` `qemu-i386 -version`, `uname -a`, etc.]
+**Redox release**: [only when using a prebuild version: redox version]
 
 **Blocking/related**: [issues or PRs blocking or being related to this issue.]
 

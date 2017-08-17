@@ -1,0 +1,27 @@
+# This is the default configuration file
+
+# General settings
+[general]
+# Do not prompt if settings are not defined
+prompt = false
+sysroot = "build/initfs"
+
+# Package settings
+[packages]
+drivers = {}
+init = {}
+redoxfs = {}
+
+[[files]]
+path="/etc/init.rc"
+data="""
+export PATH /bin
+export TMPDIR /tmp
+vesad T T G
+stdio display:1
+ps2d
+pcid /etc/pcid/initfs.toml
+redoxfs disk:0 file
+cd file:
+run.d /etc/init.d
+"""

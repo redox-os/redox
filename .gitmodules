@@ -1,60 +1,21 @@
-[submodule "rust"]
-	path = rust
-	url = https://github.com/redox-os/rust.git
-[submodule "ion"]
-	path = programs/ion
-	url = https://github.com/redox-os/ion.git
-[submodule "programs/coreutils"]
-	path = programs/coreutils
-	url = https://github.com/redox-os/coreutils.git
-[submodule "schemes/redoxfs"]
-	path = schemes/redoxfs
-	url = https://github.com/redox-os/redoxfs
-[submodule "programs/extrautils"]
-	path = programs/extrautils
-	url = https://github.com/redox-os/extrautils.git
-[submodule "programs/smith"]
-	path = programs/smith
-	url = https://github.com/IGI-111/Smith.git
-[submodule "programs/userutils"]
-	path = programs/userutils
-	url = https://github.com/redox-os/userutils.git
-[submodule "programs/netutils"]
-	path = programs/netutils
-	url = https://github.com/redox-os/netutils.git
-[submodule "schemes/orbital"]
-	path = schemes/orbital
-	url = https://github.com/redox-os/orbital.git
-[submodule "programs/orbutils"]
-	path = programs/orbutils
-	url = https://github.com/redox-os/orbutils.git
-[submodule "filesystem/ui"]
-	path = filesystem/ui
-	url = https://github.com/redox-os/orbdata.git
-[submodule "programs/acid"]
-	path = programs/acid
-	url = https://github.com/redox-os/acid.git
-[submodule "programs/tar"]
-	path = programs/tar
-	url = https://github.com/redox-os/tar-rs.git
-[submodule "programs/pkgutils"]
-	path = programs/pkgutils
-	url = https://github.com/redox-os/pkgutils.git
+[submodule "bootloader"]
+	path = bootloader
+	url = https://github.com/redox-os/bootloader.git
+[submodule "cookbook"]
+	path = cookbook
+	url = https://github.com/redox-os/cookbook.git
 [submodule "installer"]
 	path = installer
 	url = https://github.com/redox-os/installer.git
-[submodule "syscall"]
-	path = syscall
-	url = https://github.com/redox-os/syscall.git
-[submodule "crates/docgen"]
-	path = crates/docgen
-	url = https://github.com/redox-os/docgen.git
-[submodule "programs/binutils"]
-	path = programs/binutils
-	url = https://github.com/redox-os/binutils.git
-[submodule "libc-artifacts"]
-	path = libc-artifacts
-	url = https://github.com/redox-os/libc-artifacts.git
-[submodule "programs/games"]
-	path = programs/games
-	url = https://github.com/redox-os/games.git
+[submodule "isolinux"]
+	path = isolinux
+	url = https://github.com/redox-os/isolinux.git
+[submodule "kernel"]
+	path = kernel
+	url = https://github.com/redox-os/kernel.git
+[submodule "rust"]
+	path = rust
+	url = https://github.com/redox-os/rust.git
+[submodule "redoxfs"]
+	path = redoxfs
+	url = https://github.com/redox-os/redoxfs.git
