@@ -18,7 +18,7 @@ function recipe_build {
     tar --strip-components=1 -xvf perl-cross-1.1.6.tar.gz
     wget -O cnf/config.sub http://git.savannah.gnu.org/cgit/config.git/plain/config.sub
     sysroot="$($HOST-gcc -print-sysroot)"
-    ./configure --target=${HOST} --prefix='/' --sysroot="$sysroot" --disable-mod=Sys-Syslog,POSIX,Time-HiRes --with-libs='m'
+    ./configure --target=${HOST} --prefix='/' --sysroot="$sysroot" --disable-mod=Sys-Syslog,Time-HiRes --with-libs='m'
     sed -i "s/^#define Netdb_name_t.*/#define Netdb_name_t const char*/" config.h # XXX
     sed -i 's/#define Strerror(e).*$/#define Strerror(e) strerror(e)/' config.h #
     echo "#define HAS_VPRINTF" >> config.h
