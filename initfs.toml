@@ -23,5 +23,6 @@ ps2d
 pcid /etc/pcid/initfs.toml
 redoxfs disk:0 file
 cd file:
+export PATH file:/bin
 run.d /etc/init.d
 """
