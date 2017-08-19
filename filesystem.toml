@@ -9,6 +9,9 @@ sysroot = "build/filesystem"
 # Package settings
 [packages]
 #acid = {}
+#autoconf = {}
+#automake = {}
+#bash = {}
 #binutils = {}
 #ca-certificates = {}
 #cargo = {}
@@ -16,6 +19,7 @@ sysroot = "build/filesystem"
 coreutils = {}
 #curl = {}
 #dash = {}
+#diffutils = {}
 drivers = {}
 extrautils = {}
 findutils = {}
@@ -32,11 +36,13 @@ ion = {}
 netstack = {}
 netutils = {}
 #newlib = {}
+#openssl = {}
 orbdata = {}
 orbital = {}
 orbterm = {}
 orbutils = {}
 #pastel = {}
+#patch = {}
 #pixelcannon = {}
 pkgutils = {}
 ptyd = {}
@@ -50,6 +56,7 @@ smith = {}
 #sodium = {}
 userutils = {}
 uutils = {}
+#xz = {}
 
 # User settings
 [users.root]
