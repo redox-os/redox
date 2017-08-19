@@ -1,4 +1,4 @@
-GIT=https://github.com/robbycerantola/pastel.git
+GIT=https://github.com/redox-os/pastel.git
 BINDIR=/ui/bin
 
 function recipe_stage {
