@@ -176,3 +176,8 @@ data = ""
 [[files]]
 path = "/root/.ionrc"
 data = ""
+
+[[files]]
+path = "/usr"
+data = "/"
+symlink = true
