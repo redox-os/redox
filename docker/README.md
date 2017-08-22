@@ -24,6 +24,6 @@ On selinux systems, replace #4 with:
 ```
 docker run --cap-add MKNOD --cap-add SYS_ADMIN \
     -e LOCAL_UID="$(id -u)" -e LOCAL_GID="$(id -g)" \
-    --device /dev/fuse -v "$(pwd):/home/user/src" --security-opt seccomp=unconfined apparmor=unconfined \
+    --device /dev/fuse -v "$(pwd):/home/user/src" --security-opt seccomp=unconfined --security-opt apparmor=unconfined \
     --rm redox make fetch all
 ```
