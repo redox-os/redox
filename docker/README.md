@@ -1,36 +1,61 @@
-### Building Redox using Docker images with the toolchain
+## Building Redox using a Docker image with the pre-built toolchain
 
-*All you need is git, make, qemu, fuse and docker. The method requires a non-privileged user able to run the `docker` command, which is usually achieved by adding the user to the `docker` group.*
+*All you need is `git`, `make`, `qemu`, `fuse` and `docker`. The method requires
+a non-privileged user able to run the `docker` command, which is usually achieved
+by adding the user to the `docker` group.*
 
+It's a four-steps process with variations depending on the platform.
+
+### <a name='get_the_sources'></a>Get the sources
+```
+git clone https://github.com/redox-os/redox.git ; cd redox
+```
+
+### Build the container
+This will prepare an Ubuntu 17.04 docker image with the required
+dependencies and the pre-built toolchain. As long as you rely on this particular
+dependencies and toolchain versions, you don't need to rebuild the container.
+#### Linux
 ```shell
-git clone https://github.com/redox-os/redox.git ; cd redox #1
 docker build --build-arg LOCAL_UID="$(id -u)" --build-arg LOCAL_GID="$(id -g)" \
-    -t redox docker/ #2
-git pull --rebase --recurse-submodules && git submodule sync \
-    && git submodule update --recursive --init #3
-docker run --cap-add MKNOD --cap-add SYS_ADMIN \
-    -e LOCAL_UID="$(id -u)" -e LOCAL_GID="$(id -g)" \
-    --device /dev/fuse -v "$(pwd):/home/user/src" --rm redox make fetch all #4
-make qemu #5
+    -t redox docker/
 ```
-To unpack:
-1. Creates a local copy of the repository.
-2. Creates a new image in the local image repository named `redox` with Redox toolchain installed. You only need to rebuild the image if you want to update the toolchain.
-3. Updates all the submodules in the repository.
-4. Builds Redox using the `redox` image. The arguments allow the container to use `fuse` and ensure the resulting files are owned by the current user.
-5. Runs Redox.
+#### MacOS
+```shell
+docker build -t redox docker/
+```
 
-For SELinux, seccomp, and AppArmor enabled systems, please add following commands to #4 accordingly:
+### Upate the source tree
+Note: if you use the container on a different host or
+with a different user, [get the sources first](#get_the_sources).
+```shell
+git pull --rebase --recurse-submodules && git submodule sync \
+    && git submodule update --recursive --init
 ```
+
+### Run the container to build Redox
+#### Linux without security modules
+```shell
+docker run --cap-add MKNOD --cap-add SYS_ADMIN --device /dev/fuse \
+    -e LOCAL_UID="$(id -u)" -e LOCAL_GID="$(id -g)" \
+    -v "$(pwd):/home/user/src" --rm redox make fetch all
+```
+#### Linux with security modules<br>
+Add the following options depending on the security modules activated on your system:
+```shell
 --security-opt label=disable         // disable SELinux
 --security-opt seccomp=unconfined    // disable seccomp
 --security-opt apparmor=unconfined   // disable AppArmor
 ```
-
-E.g., on SELinux systems, replace #4 with:
-```
-docker run --cap-add MKNOD --cap-add SYS_ADMIN \
+Ex.: for a SELinux only system such as Fedora or CentOS
+```shell
+docker run --cap-add MKNOD --cap-add SYS_ADMIN --device /dev/fuse \
     -e LOCAL_UID="$(id -u)" -e LOCAL_GID="$(id -g)" \
-    --device /dev/fuse -v "$(pwd):/home/user/src" --security-opt label=disable \
-    --rm redox make fetch all
+     --security-opt label=disable \
+    -v "$(pwd):/home/user/src" --rm redox make fetch all
+```
+#### MacOS
+```shell
+docker run --cap-add MKNOD --cap-add SYS_ADMIN --device /dev/fuse \
+    -v "$(pwd):/home/user/src" --rm redox make fetch all
 ```
