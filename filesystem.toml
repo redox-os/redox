@@ -65,7 +65,7 @@ password = "$argon2i$m=4096,t=10,p=1$Tnc4UVV0N00$ML9LIOujd3nmAfkAwEcSTMPqakWUF0O
 uid = 0
 gid = 0
 name = "root"
-home = "/root"
+home = "file:/root"
 
 [users.user]
 # Password is unset
@@ -168,14 +168,6 @@ data = """
 Welcome to Redox OS!
 
 """
-
-[[files]]
-path = "/home/user/.ionrc"
-data = ""
-
-[[files]]
-path = "/root/.ionrc"
-data = ""
 
 [[files]]
 path = "/usr"
