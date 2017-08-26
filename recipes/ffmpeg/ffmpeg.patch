@@ -1,0 +1,26 @@
+diff --git a/configure b/configure
+index 7201941..e3b2875 100755
+--- a/configure
++++ b/configure
+@@ -5055,6 +5055,8 @@ case $target_os in
+         ;;
+     minix)
+         ;;
++    redox)
++        ;;
+     none)
+         ;;
+     *)
+diff --git a/ffmpeg.c b/ffmpeg.c
+index 888d19a..aeeb0e5 100644
+--- a/ffmpeg.c
++++ b/ffmpeg.c
+@@ -91,7 +91,7 @@
+ 
+ #if HAVE_TERMIOS_H
+ #include <fcntl.h>
+-#include <sys/ioctl.h>
++//#include <sys/ioctl.h>
+ #include <sys/time.h>
+ #include <termios.h>
+ #elif HAVE_KBHIT
