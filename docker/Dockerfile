@@ -14,8 +14,12 @@ RUN   apt-get update \
       && echo "deb https://static.redox-os.org/toolchain/apt/ /" >> /etc/apt/sources.list.d/redox.list \
       && apt-get update -o Dir::Etc::sourcelist="redox.list" \
       && apt-get install -y x86-64-unknown-redox-newlib x86-64-unknown-redox-binutils x86-64-unknown-redox-gcc \
-      && groupadd -g $BUILD_GID user \
-      && useradd --shell /bin/bash -u $BUILD_UID -g $BUILD_GID -o -c "" -m $USER \
+      && if [ $BUILD_UID != local ] && [ $BUILD_GID != local ]; then \
+             groupadd -g $BUILD_GID user; \
+             useradd --shell /bin/bash -u $BUILD_UID -g $BUILD_GID -o -c "" -m $USER; \
+         else \
+             useradd --shell /bin/bash -c "" -m $USER; \
+         fi \
       && echo "$USER ALL=(ALL) NOPASSWD: ALL" > /etc/sudoers.d/user-no-sudo-password
 
 COPY entrypoint.sh /usr/local/bin/entrypoint.sh
