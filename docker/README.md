@@ -20,7 +20,14 @@ To unpack:
 4. Builds Redox using the `redox` image. The arguments allow the container to use `fuse` and ensure the resulting files are owned by the current user.
 5. Runs Redox.
 
-On selinux systems, replace #4 with:
+For SELinux, seccomp, and AppArmor enabled systems, please add following commands to #4 accordingly:
+```
+--security-opt label=disable         // disable SELinux
+--security-opt seccomp=unconfined    // disable seccomp
+--security-opt apparmor=unconfined   // disable AppArmor
+```
+
+E.g., on SELinux systems, replace #4 with:
 ```
 docker run --cap-add MKNOD --cap-add SYS_ADMIN \
     -e LOCAL_UID="$(id -u)" -e LOCAL_GID="$(id -g)" \
