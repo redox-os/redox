@@ -38,6 +38,7 @@ git pull --rebase --recurse-submodules && git submodule sync \
 ```shell
 docker run --cap-add MKNOD --cap-add SYS_ADMIN --device /dev/fuse \
     -e LOCAL_UID="$(id -u)" -e LOCAL_GID="$(id -g)" \
+    -v redox-"$(id -u)"-"$(id -g)"-cargo:/home/user/.cargo \
     -v "$(pwd):/home/user/src" --rm redox make fetch all
 ```
 #### Linux with security modules<br>
@@ -51,11 +52,24 @@ Ex.: for a SELinux only system such as Fedora or CentOS
 ```shell
 docker run --cap-add MKNOD --cap-add SYS_ADMIN --device /dev/fuse \
     -e LOCAL_UID="$(id -u)" -e LOCAL_GID="$(id -g)" \
-     --security-opt label=disable \
+    --security-opt label=disable \
+    -v redox-"$(id -u)"-"$(id -g)"-cargo:/home/user/.cargo \
     -v "$(pwd):/home/user/src" --rm redox make fetch all
 ```
 #### MacOS
 ```shell
 docker run --cap-add MKNOD --cap-add SYS_ADMIN --device /dev/fuse \
+    -v redox-cargo:/home/user/.cargo \
     -v "$(pwd):/home/user/src" --rm redox make fetch all
+```
+
+### Clear the named volume containing the cargo cache
+#### Linux
+```shell
+docker volume rm redox-"$(id -u)"-"$(id -g)"-cargo
+```
+
+#### MacOS
+```shell
+docker volume rm redox-cargo
 ```
