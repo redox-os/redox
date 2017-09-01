@@ -25,10 +25,16 @@ pull:
 	make update
 
 update:
+	cd cookbook; \
+	./update.sh "$$(cargo run --manifest-path ../installer/Cargo.toml -- --list-packages ../initfs.toml ../filesystem.toml)"
 	cargo update --manifest-path cookbook/pkgutils/Cargo.toml
 	cargo update --manifest-path installer/Cargo.toml
 	cargo update --manifest-path kernel/Cargo.toml
 	cargo update --manifest-path redoxfs/Cargo.toml
+
+fetch:
+	cd cookbook; \
+	./fetch.sh "$$(cargo run --manifest-path ../installer/Cargo.toml -- --list-packages ../initfs.toml ../filesystem.toml)"
 
 # Emulation recipes
 include mk/qemu.mk

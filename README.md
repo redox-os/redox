@@ -1,5 +1,5 @@
 <p align="center">
-<img alt="Redox" width="346" src="https://github.com/redox-os/assets/raw/master/logo.png">
+<img alt="Redox" width="346" src="https://github.com/redox-os/assets/raw/master/logos/redox/logo.png">
 </p>
 
 **Redox** is an operating system written in Rust, a language with focus on safety and high performance. Redox, following the microkernel design, aims to be secure, usable, and free. Redox is inspired by previous kernels and operating systems, such as SeL4, Minix, Plan 9, and BSD.
@@ -13,7 +13,7 @@ Please make sure you use the **latest nightly** of `rustc` before building (for 
 [![Travis Build Status](https://travis-ci.org/redox-os/redox.svg?branch=master)](https://travis-ci.org/redox-os/redox)
 [![Downloads](https://img.shields.io/github/downloads/redox-os/redox/total.svg)](https://github.com/redox-os/redox/releases)
 [![MIT licensed](https://img.shields.io/badge/license-MIT-blue.svg)](./LICENSE.md)
-![Rust Version](https://img.shields.io/badge/rust-nightly%202017--04--22-lightgrey.svg)
+![Rust Version](https://img.shields.io/badge/rust-nightly%202017--08--26-lightgrey.svg)
 
 ## Contents
 
@@ -24,10 +24,11 @@ Please make sure you use the **latest nightly** of `rustc` before building (for 
 * [Cloning, Building and running](#cloning-building-running)
  * [Quick Setup](#quick-setup)
  * [Manual Setup](#manual-setup)
+ * [Setup Using Docker](#setup-using-docker)
 
 ## <a name="screenshots"> What it looks like </a>
 
-<img alt="Redox" height="150" src="https://github.com/redox-os/assets/raw/master/screenshots/Desktop.png">
+<img alt="Redox" height="150" src="https://github.com/redox-os/assets/raw/master/screenshots/Senza%20titolo.jpeg">
 <img alt="Redox" height="150" src="https://github.com/redox-os/assets/raw/master/screenshots/redox running.jpeg">
 <img alt="Redox" height="150" src="https://github.com/redox-os/assets/raw/master/screenshots/IMG_1460.PNG">
 
@@ -53,7 +54,6 @@ The ecosystem and software Redox OS provides is listed below.
 | [libextra](https://github.com/redox-os/libextra)                            | [**@ticki**](https://github.com/ticki)
 | [libpager](https://github.com/redox-os/libpager)                            | [**@ticki**](https://github.com/ticki)
 | [libstd (Redox standard library)](https://github.com/redox-os/libstd)                      | [**@jackpot51**](https://github.com/jackpot51)
-| [Magnet (future package manager)](https://github.com/redox-os/magnet)       | [**@ticki**](https://github.com/ticki)
 | [netutils](https://github.com/redox-os/netutils)                            | [**@jackpot51**](https://github.com/jackpot51)
 | [orbclient (Orbital client)](https://github.com/redox-os/orbclient)                          | [**@jackpot51**](https://github.com/jackpot51)
 | [orbdata](https://github.com/redox-os/orbdata)                              | [**@jackpot51**](https://github.com/jackpot51)
@@ -77,13 +77,14 @@ The ecosystem and software Redox OS provides is listed below.
 
 Sometimes things go wrong when compiling. Try the following before opening an issue:
 
+1. Make sure you have a redox toolchain (`x86_64-unknown-redox-gcc`).
+    * You can install from .deb packages(`https://static.redox-os.org/toolchain/apt/`) or build [redox-os/libc](https://github.com/redox-os/libc) manually.
 1. Run `rustup update`
-2. Run `make clean`.
-3. Run `git clean -Xfd`.
-4. Make sure you have **the latest version of Rust nightly!** ([rustup.rs](https://www.rustup.rs) is recommended for managing Rust versions. If you already have it, run `rustup`).
-5. Update **GNU Make**, **NASM** and **QEMU/VirtualBox**.
-6. Pull the upstream master branch (`git remote add upstream git@github.com:redox-os/redox.git; git pull upstream master`).
-7. Update submodules (`git submodule update --recursive --init`).
+1. Run `make clean pull`.
+1. Make sure you have **the latest version of Rust nightly!** ([rustup.rs](https://www.rustup.rs) is recommended for managing Rust versions. If you already have it, run `rustup`).
+1. Update **GNU Make**, **NASM** and **QEMU/VirtualBox**.
+1. Pull the upstream master branch (`git remote add upstream git@github.com:redox-os/redox.git; git pull upstream master`).
+1. Update submodules (`git submodule update --recursive --init`).
 
 and then rebuild!
 
@@ -159,3 +160,14 @@ $ make qemu kvm=no
 make qemu kvm=no vga=no
 ```
 
+### <a name="setup-using-docker"> Setup using Docker </a>
+We also provide docker image. After cloning this repository, please follow README under the `docker` directory.
+
+### Updating the codebase using the Makefile
+To update the codebase run:
+
+```
+make pull; make fetch
+```
+
+`make pull` pulls and updates the submodules, and `make fetch` updates the sources for cookbook recipes.

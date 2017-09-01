@@ -93,6 +93,8 @@ osx_macports()
         install_macports_pkg "virtualbox"
     fi
 
+    install_macports_pkg "coreutils"
+    install_macports_pkg "findutils"
     install_macports_pkg "gcc49" "gcc-4.9"
     install_macports_pkg "nasm"
     install_macports_pkg "pkgconfig"
@@ -120,6 +122,8 @@ osx_homebrew()
         install_brew_pkg "virtualbox"
     fi
 
+    install_brew_pkg "coreutils"
+    install_brew_pkg "findutils"
     install_brew_pkg "gcc49" "gcc-4.9"
     install_brew_pkg "nasm"
     install_brew_pkg "pkg-config"
@@ -258,7 +262,7 @@ suse()
 		fi
 	fi
 	echo "Installing necessary build tools..."
-	sudo zypper install gcc gcc-c++ glibc-devel-32bit nasm make libfuse
+	sudo zypper install gcc gcc-c++ glibc-devel-32bit nasm make fuse-devel
 }
 
 ##############################################################################
@@ -277,12 +281,14 @@ gentoo()
 		echo "Installing git..."
 		sudo emerge dev-vcs/git
 	fi
-	echo "Installing fuse..."
-	sudo emerge sys-fs/fuse
+	if [ -z "$(which fusermount)" ]; then
+		echo "Installing fuse..."
+		sudo emerge sys-fs/fuse
+	fi
 	if [ "$2" == "qemu" ]; then
 		if [ -z "$(which qemu-system-x86_64)" ]; then
 			echo "Please install QEMU and re-run this script"
-			echo "Step1. Add QEMU_SOFTMMU_TARGETS=\"i386\" to /etc/portage/make.conf"
+			echo "Step1. Add QEMU_SOFTMMU_TARGETS=\"x86_64\" to /etc/portage/make.conf"
 			echo "Step2. Execute \"sudo emerge app-emulation/qemu\""
 		else
 			echo "QEMU already installed!"
@@ -298,7 +304,7 @@ gentoo()
 solus()
 {
 	echo "Detected SolusOS"
-	
+
 	if [ "$1" == "qemu" ]; then
 		if [ -z "$(which qemu-system-x86_64)" ]; then
 			sudo eopkg it qemu
@@ -314,7 +320,7 @@ solus()
 			echo "Virtualbox already installed!"
 		fi
 	fi
-	
+
 	echo "Installing necessary build tools..."
 	#if guards are not necessary with eopkg since it does nothing if latest version is already installed
 	sudo eopkg it fuse-devel git gcc g++ libgcc-32bit libstdc++-32bit nasm make

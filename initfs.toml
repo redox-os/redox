@@ -20,8 +20,9 @@ export TMPDIR /tmp
 vesad T T G
 stdio display:1
 ps2d
-pcid /etc/pcid.toml
+pcid /etc/pcid/initfs.toml
 redoxfs disk:0 file
 cd file:
+export PATH file:/bin
 run.d /etc/init.d
 """
