@@ -12,11 +12,7 @@ function recipe_build {
         --arch=x86_64 \
         --cross_prefix=x86_64-unknown-redox- \
         --prefix=/ \
-        --disable-doc \
-        --disable-network \
-        --disable-ffplay \
-        --disable-ffprobe \
-        --disable-ffserver
+        --disable-network
     make
     skip=1
 }
