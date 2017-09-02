@@ -1,5 +1,7 @@
 FROM rustlang/rust:nightly
 
+ENV IMAGE_NAME=redox-os-docker
+
 RUN set -ex;                                                                   \
     apt-get update;                                                            \
     apt-get install -q -y --no-install-recommends                              \
@@ -30,8 +32,8 @@ RUN set -ex;                                                                   \
     apt-get clean -q -y;                                                       \
     rm -rf /var/lib/apt/lists/*
 
-COPY entrypoint.sh /usr/local/bin/entrypoint.sh
-RUN chmod +x /usr/local/bin/entrypoint.sh
+COPY entrypoint.sh /usr/local/bin/
+COPY .bash_aliases /etc/skel/
 
-ENTRYPOINT ["/usr/local/bin/entrypoint.sh"]
+ENTRYPOINT ["bash", "/usr/local/bin/entrypoint.sh"]
 CMD ["/bin/bash"]
