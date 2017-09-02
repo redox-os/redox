@@ -52,6 +52,17 @@ docker run --cap-add MKNOD --cap-add SYS_ADMIN --device /dev/fuse \
     -v redox-"$(id -u)-$(id -g)"-rustup:/usr/local/rustup \
     -v "$(pwd):$(pwd)" -w "$(pwd)" --rm redox make fetch all
 ```
+### Run the container interactively
+```shell
+docker run --cap-add MKNOD --cap-add SYS_ADMIN --device /dev/fuse \
+    -e LOCAL_UID="$(id -u)" -e LOCAL_GID="$(id -g)" \
+    -v redox-"$(id -u)-$(id -g)"-cargo:/usr/local/cargo \
+    -v redox-"$(id -u)-$(id -g)"-rustup:/usr/local/rustup \
+    -v "$(pwd):$(pwd)" -w "$(pwd)" --rm -it redox
+```
+
+#### Demo
+![Image of Usage](interactive_demo.gif)
 
 ### Clear the named volume containing the cargo cache
 ```shell
