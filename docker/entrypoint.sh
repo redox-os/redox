@@ -1,18 +1,29 @@
 #!/usr/bin/env bash
 
-# Use -e LOCAL_UID="$(id -u)" -e LOCAL_GID="$(id -g)"
-# on the docker run command line if the container build user is different
-# from the run user
+# Add local user
+# Either use LOCAL_UID and LOCAL_GID if passed in at runtime via
+# -e LOCAL_UID="$(id -u)" -e LOCAL_GID="$(id -g)" or fallback
+USER_NAME=redox
+RUN_UID=${LOCAL_UID:-9001}
+RUN_GID=${LOCAL_GID:-9001}
 
-CONT_UID=`id -u user`
-CONT_GID=`id -g user`
-RUN_UID=${LOCAL_UID:-$CONT_UID}
-RUN_GID=${LOCAL_GID:-$CONT_GID}
+groupadd --non-unique --gid $RUN_GID $USER_NAME
+useradd --non-unique --create-home --uid $RUN_UID --gid $USER_NAME --groups sudo $USER_NAME
 
-if [ $RUN_UID != $CONT_UID ] || [ $RUN_GID != $CONT_GID ]; then
+echo "$USER_NAME ALL=(ALL) NOPASSWD: ALL" > /etc/sudoers.d/user-no-sudo-password
+
+export HOME=/home/$USER_NAME
+
+# Check current UID and GID of files in the named volume caches for
+# cargo and rustup. Test only one of the top level folders to speed
+# things up.
+TESTFILE=$RUSTUP_HOME/settings.toml
+CACHED_UID=$(stat -c "%u" $TESTFILE)
+CACHED_GID=$(stat -c "%g" $TESTFILE)
+
+if [ $CACHED_UID != $RUN_UID ] || [ $RUN_GID != $CACHED_GID ]; then
     echo -e "\033[01;38;5;155mChanging user id:group to ${RUN_UID}:${RUN_GID}. Please wait...\033[0m"
-    groupmod -g $RUN_GID user
-    usermod -u $RUN_UID -g $RUN_GID user
+    chown $RUN_UID:$RUN_GID -R $CARGO_HOME $RUSTUP_HOME
 fi
 
-exec gosu user:user "$@"
+exec gosu $USER_NAME "$@"

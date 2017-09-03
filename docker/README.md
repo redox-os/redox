@@ -12,15 +12,10 @@ git clone https://github.com/redox-os/redox.git ; cd redox
 ```
 
 ### Build the container
-This will prepare an Ubuntu 17.04 docker image with the required
-dependencies and the pre-built toolchain. As long as you rely on this particular
-dependencies and toolchain versions, you don't need to rebuild the container.
-#### Linux
-```shell
-docker build --build-arg LOCAL_UID="$(id -u)" --build-arg LOCAL_GID="$(id -g)" \
-    -t redox docker/
-```
-#### MacOS
+This will prepare a docker image with the required dependencies and
+the pre-built toolchain. As long as you rely on this particular
+dependencies and toolchain versions, you don't need to rebuild the
+container.
 ```shell
 docker build -t redox docker/
 ```
@@ -34,12 +29,12 @@ git pull --rebase --recurse-submodules && git submodule sync \
 ```
 
 ### Run the container to build Redox
-#### Linux without security modules
 ```shell
 docker run --cap-add MKNOD --cap-add SYS_ADMIN --device /dev/fuse \
     -e LOCAL_UID="$(id -u)" -e LOCAL_GID="$(id -g)" \
-    -v redox-"$(id -u)"-"$(id -g)"-cargo:/home/user/.cargo \
-    -v "$(pwd):/home/user/src" --rm redox make fetch all
+    -v redox-"$(id -u)-$(id -g)"-cargo:/usr/local/cargo \
+    -v redox-"$(id -u)-$(id -g)"-rustup:/usr/local/rustup \
+    -v "$(pwd):$(pwd)" -w "$(pwd)" --rm redox make fetch all
 ```
 #### Linux with security modules<br>
 Add the following options depending on the security modules activated on your system:
@@ -53,23 +48,24 @@ Ex.: for a SELinux only system such as Fedora or CentOS
 docker run --cap-add MKNOD --cap-add SYS_ADMIN --device /dev/fuse \
     -e LOCAL_UID="$(id -u)" -e LOCAL_GID="$(id -g)" \
     --security-opt label=disable \
-    -v redox-"$(id -u)"-"$(id -g)"-cargo:/home/user/.cargo \
-    -v "$(pwd):/home/user/src" --rm redox make fetch all
+    -v redox-"$(id -u)-$(id -g)"-cargo:/usr/local/cargo \
+    -v redox-"$(id -u)-$(id -g)"-rustup:/usr/local/rustup \
+    -v "$(pwd):$(pwd)" -w "$(pwd)" --rm redox make fetch all
 ```
-#### MacOS
+### Run the container interactively
 ```shell
 docker run --cap-add MKNOD --cap-add SYS_ADMIN --device /dev/fuse \
-    -v redox-cargo:/home/user/.cargo \
-    -v "$(pwd):/home/user/src" --rm redox make fetch all
+    -e LOCAL_UID="$(id -u)" -e LOCAL_GID="$(id -g)" \
+    -v redox-"$(id -u)-$(id -g)"-cargo:/usr/local/cargo \
+    -v redox-"$(id -u)-$(id -g)"-rustup:/usr/local/rustup \
+    -v "$(pwd):$(pwd)" -w "$(pwd)" --rm -it redox
 ```
+
+#### Demo
+![Image of Usage](interactive_demo.gif)
 
 ### Clear the named volume containing the cargo cache
-#### Linux
 ```shell
-docker volume rm redox-"$(id -u)"-"$(id -g)"-cargo
-```
-
-#### MacOS
-```shell
-docker volume rm redox-cargo
+docker volume rm redox-"$(id -u)-$(id -g)"-cargo \
+    redox-"$(id -u)-$(id -g)"-rustup
 ```
