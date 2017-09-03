@@ -4,20 +4,18 @@
 a non-privileged user able to run the `docker` command, which is usually achieved
 by adding the user to the `docker` group.*
 
-It's a four-steps process with variations depending on the platform.
+It's a three-steps process with variations depending on the platform.
+On the first execution of one of the following docker commands, the
+official container image will be pulled from dockerhub and stored
+locally.
+
+The image includes the required dependencies and the pre-built
+toolchain. As long as you rely on this particular dependencies and
+toolchain versions, you don't need to update the container.
 
 ### <a name='get_the_sources'></a>Get the sources
 ```
 git clone https://github.com/redox-os/redox.git ; cd redox
-```
-
-### Build the container
-This will prepare a docker image with the required dependencies and
-the pre-built toolchain. As long as you rely on this particular
-dependencies and toolchain versions, you don't need to rebuild the
-container.
-```shell
-docker build -t redox docker/
 ```
 
 ### Upate the source tree
@@ -34,9 +32,9 @@ docker run --cap-add MKNOD --cap-add SYS_ADMIN --device /dev/fuse \
     -e LOCAL_UID="$(id -u)" -e LOCAL_GID="$(id -g)" \
     -v redox-"$(id -u)-$(id -g)"-cargo:/usr/local/cargo \
     -v redox-"$(id -u)-$(id -g)"-rustup:/usr/local/rustup \
-    -v "$(pwd):$(pwd)" -w "$(pwd)" --rm redox make fetch all
+    -v "$(pwd):$(pwd)" -w "$(pwd)" --rm redoxos/redox make fetch all
 ```
-#### Linux with security modules<br>
+#### Linux with security modules
 Add the following options depending on the security modules activated on your system:
 ```shell
 --security-opt label=disable         // disable SELinux
@@ -50,7 +48,7 @@ docker run --cap-add MKNOD --cap-add SYS_ADMIN --device /dev/fuse \
     --security-opt label=disable \
     -v redox-"$(id -u)-$(id -g)"-cargo:/usr/local/cargo \
     -v redox-"$(id -u)-$(id -g)"-rustup:/usr/local/rustup \
-    -v "$(pwd):$(pwd)" -w "$(pwd)" --rm redox make fetch all
+    -v "$(pwd):$(pwd)" -w "$(pwd)" --rm redoxos/redox make fetch all
 ```
 ### Run the container interactively
 ```shell
@@ -58,14 +56,21 @@ docker run --cap-add MKNOD --cap-add SYS_ADMIN --device /dev/fuse \
     -e LOCAL_UID="$(id -u)" -e LOCAL_GID="$(id -g)" \
     -v redox-"$(id -u)-$(id -g)"-cargo:/usr/local/cargo \
     -v redox-"$(id -u)-$(id -g)"-rustup:/usr/local/rustup \
-    -v "$(pwd):$(pwd)" -w "$(pwd)" --rm -it redox
+    -v "$(pwd):$(pwd)" -w "$(pwd)" --rm -it redoxos/redox
 ```
 
 #### Demo
 ![Image of Usage](interactive_demo.gif)
 
-### Clear the named volume containing the cargo cache
+### Clear the named volumes containing the toolchain caches
 ```shell
 docker volume rm redox-"$(id -u)-$(id -g)"-cargo \
     redox-"$(id -u)-$(id -g)"-rustup
+```
+
+### Build the container manually
+If you cannot access dockerhub for whatever reason, you can also build
+the container image manually.
+```shell
+docker build -t redoxos/redox docker/
 ```
