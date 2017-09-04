@@ -23,10 +23,10 @@ virtualbox: build/harddrive.bin
 		$(VBM) modifyvm Redox --nictype1 82540EM; \
 		$(VBM) modifyvm Redox --cableconnected1 on; \
 		$(VBM) modifyvm Redox --nictrace1 on; \
-		$(VBM) modifyvm Redox --nictracefile1 "$(BUILDDIR)/redox_network.pcap"; \
+		$(VBM) modifyvm Redox --nictracefile1 "$(BUILDDIR)/network.pcap"; \
 	fi
 	$(VBM) modifyvm Redox --uart1 0x3F8 4
-	$(VBM) modifyvm Redox --uartmode1 file "$(BUILDDIR)/redox_serial.log"
+	$(VBM) modifyvm Redox --uartmode1 file "$(BUILDDIR)/serial.log"
 	$(VBM) modifyvm Redox --usb off # on
 	$(VBM) modifyvm Redox --keyboard ps2
 	$(VBM) modifyvm Redox --mouse ps2
