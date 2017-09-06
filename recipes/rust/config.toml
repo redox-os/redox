@@ -2,8 +2,8 @@
 backtrace = false
 
 [target.x86_64-unknown-redox]
-cc = "x86_64-elf-redox-gcc"
-cxx = "x86_64-elf-redox-g++"
+cc = "x86_64-unknown-redox-gcc"
+cxx = "x86_64-unknown-redox-g++"
 llvm-config = "./llvm-config"
 
 [build]
