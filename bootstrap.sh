@@ -512,26 +512,29 @@ else
 	if hash 2>/dev/null pacman; then
 		archLinux "$emulator"
 	fi
-	# Debian or any derivative of it
-	if hash 2>/dev/null apt-get; then
-		ubuntu "$emulator" "$defpackman"
-	fi
-	# Fedora
-	if hash 2>/dev/null dnf; then
-		fedora "$emulator"
-	fi
 	# Suse and derivatives
 	if hash 2>/dev/null zypper; then
 		suse "$emulator"
+	else
+		# Debian or any derivative of it
+		if hash 2>/dev/null apt-get; then
+			ubuntu "$emulator" "$defpackman"
+		fi
+		# Fedora
+		if hash 2>/dev/null dnf; then
+			fedora "$emulator"
+		fi
+
+		# Gentoo
+		if hash 2>/dev/null emerge; then
+			gentoo "$emulator"
+		fi
+		# SolusOS
+		if hash 2>/dev/null eopkg; then
+			solus "$emulator"
+		fi
 	fi
-	# Gentoo
-	if hash 2>/dev/null emerge; then
-		gentoo "$emulator"
- 	fi
-	# SolusOS
-	if hash 2>/dev/null eopkg; then
-		solus "$emulator"
-	fi
+
 fi
 
 if [ "$dependenciesonly" = false ]; then
