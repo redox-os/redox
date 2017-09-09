@@ -507,31 +507,29 @@ banner
 if [ "Darwin" == "$(uname -s)" ]; then
 	osx "$emulator"
 else
-	# Here we will user package managers to determine which operating system the user is using
+	# Here we will use package managers to determine which operating system the user is using.
+	
 	# Arch linux
 	if hash 2>/dev/null pacman; then
 		archLinux "$emulator"
-	fi
-	# Debian or any derivative of it
-	if hash 2>/dev/null apt-get; then
-		ubuntu "$emulator" "$defpackman"
-	fi
-	# Fedora
-	if hash 2>/dev/null dnf; then
-		fedora "$emulator"
-	fi
 	# Suse and derivatives
-	if hash 2>/dev/null zypper; then
+	elif hash 2>/dev/null zypper; then
 		suse "$emulator"
-	fi
+	# Debian or any derivative of it
+	elif hash 2>/dev/null apt-get; then
+		ubuntu "$emulator" "$defpackman"
+	# Fedora
+	elif hash 2>/dev/null dnf; then
+		fedora "$emulator"
 	# Gentoo
-	if hash 2>/dev/null emerge; then
+	elif hash 2>/dev/null emerge; then
 		gentoo "$emulator"
- 	fi
 	# SolusOS
-	if hash 2>/dev/null eopkg; then
+	elif hash 2>/dev/null eopkg; then
 		solus "$emulator"
-	fi
+	fi	
+	
+
 fi
 
 if [ "$dependenciesonly" = false ]; then
