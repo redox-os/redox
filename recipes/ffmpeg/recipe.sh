@@ -1,4 +1,5 @@
 GIT=https://github.com/FFmpeg/FFmpeg
+BRANCH=release/3.3
 
 function recipe_update {
     echo "skipping update"
@@ -9,8 +10,8 @@ function recipe_build {
     ./configure \
         --enable-cross-compile \
         --target-os=redox \
-        --arch=x86_64 \
-        --cross_prefix=x86_64-unknown-redox- \
+        --arch=${ARCH} \
+        --cross_prefix=${HOST}- \
         --prefix=/ \
         --disable-network
     make
