@@ -125,7 +125,7 @@ News and updates for Redox are posted at [redox-os.org/news](https://redox-os.or
 * Prefer `.into()` and `.to_owned()` over `.to_string()`.
 * Prefer passing references to the data over owned data. (Don't take `String`, take `&str`. Don't take `Vec<T>` take `&[T]`).
 * Use generics, traits, and other abstractions Rust provides.
-* Avoid using lossy conversions (for example: don't do `my_u32 as u16 == my_u16`, prefer `my_u32 == my_u16 as my_u32`).
+* Avoid using lossy conversions (for example: don't do `my_u32 as u16 == my_u16`, prefer `my_u32 == my_u16 as u32`).
 * Prefer in place (`box` keyword) when doing heap allocations.
 * Prefer platform independently sized integer over pointer sized integer (`u32` over `usize`, for example).
 * Follow the usual idioms of programming, such as "composition over inheritance", "let your program be divided in smaller pieces", and "resource acquisition is initialization".
