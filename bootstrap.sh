@@ -478,7 +478,7 @@ boot()
 	exit
 }
 
-if [ "$1" == "-h" ]; then
+if [ "$1" == "-h" ] || [ "$1" == "--help" ]; then
 	usage
 elif [ "$1" == "-u" ]; then
 	git pull upstream master
