@@ -2,10 +2,10 @@ build/filesystem.bin: filesystem.toml build/kernel
 	-$(FUMOUNT) build/filesystem/ || true
 	rm -rf $@  $@.partial build/filesystem/
 	dd if=/dev/zero of=$@.partial bs=1048576 count=512
-	cargo run --manifest-path redoxfs/Cargo.toml --quiet --release --bin redoxfs-mkfs $@.partial
+	cargo run --manifest-path redoxfs/Cargo.toml --release --bin redoxfs-mkfs $@.partial
 	mkdir -p build/filesystem/
-	cargo build --manifest-path redoxfs/Cargo.toml --quiet --release --bin redoxfs
-	cargo run --manifest-path redoxfs/Cargo.toml --quiet --release --bin redoxfs -- $@.partial build/filesystem/
+	cargo build --manifest-path redoxfs/Cargo.toml --release --bin redoxfs
+	cargo run --manifest-path redoxfs/Cargo.toml --release --bin redoxfs -- $@.partial build/filesystem/
 	sleep 2
 	pgrep redoxfs
 	cp build/kernel build/filesystem/kernel
@@ -32,8 +32,8 @@ build/filesystem.bin: filesystem.toml build/kernel
 
 mount: FORCE
 	mkdir -p build/filesystem/
-	cargo build --manifest-path redoxfs/Cargo.toml --quiet --release --bin redoxfs
-	cargo run --manifest-path redoxfs/Cargo.toml --quiet --release --bin redoxfs -- build/harddrive.bin build/filesystem/
+	cargo build --manifest-path redoxfs/Cargo.toml --release --bin redoxfs
+	cargo run --manifest-path redoxfs/Cargo.toml --release --bin redoxfs -- build/harddrive.bin build/filesystem/
 	sleep 2
 	pgrep redoxfs
 
