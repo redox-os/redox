@@ -7,6 +7,7 @@ source config.sh
 # Variables to be overriden by recipes
 export BINDIR=bin
 export CARGOFLAGS=
+export DEBUG=
 
 if [ ! "$(uname -s)" = "Redox" ]
 then
@@ -114,17 +115,17 @@ function op {
             popd > /dev/null
             ;;
         prepare)
-	    rm -rf sysroot
-	    mkdir sysroot
+            rm -rf sysroot
+            mkdir sysroot
 
             if [ ${#BUILD_DEPENDS} -gt 0 ]
             then
                 pushd $ROOT
-	            ./repo.sh "${BUILD_DEPENDS[@]}"
-	        popd
+                    ./repo.sh "${BUILD_DEPENDS[@]}"
+                popd
 
                 for i in "${BUILD_DEPENDS[@]}"
-		do
+                do
                     pkg --target=$TARGET install --root sysroot "$REPO/$i.tar.gz"
                 done
             fi
@@ -139,7 +140,7 @@ function op {
             ;;
         unprepare)
             rm -rf build
-	    rm -rf sysroot
+            rm -rf sysroot
             ;;
         version)
             pushd build > /dev/null
@@ -171,7 +172,7 @@ function op {
             fi
 
             release_flag="--release"
-	    if [ "$cargo_build_debug_mode" == 1 ]
+            if [ "$DEBUG" == 1 ]
             then
                 release_flag=
             fi
@@ -192,7 +193,7 @@ function op {
             fi
 
             release_flag="--release"
-	    if [ "$cargo_build_debug_mode" == 1 ]
+            if [ "$DEBUG" == 1 ]
             then
                 release_flag=
             fi
@@ -229,24 +230,24 @@ function op {
             if [ "$skip" -eq "0" ]
             then
                 #TODO xargo install --root "../stage" $CARGOFLAGS
-		if [ "$cargo_build_debug_mode" == 1 ]
-		then
-		    build=debug
-		else
-		    build=release
-		fi
+                if [ "$DEBUG" == 1 ]
+                then
+                    build=debug
+                else
+                    build=release
+                fi
                 bins="$(find target/$TARGET/$build/ -maxdepth 1 -type f ! -name '*.*')"
                 if [ -n "$bins" ]
                 then
                     mkdir -p "../stage/$BINDIR"
                     for bin in $bins
                     do
-                        if [ "$cargo_build_debug_mode" == 1 ]
-			then
+                        if [ "$DEBUG" == 1 ]
+                        then
                             cp -v "$bin" "../stage/$BINDIR/$(basename $bin)"
-			else
+                        else
                             strip -v "$bin" -o "../stage/$BINDIR/$(basename $bin)"
-			fi
+                        fi
                     done
                 fi
             fi
@@ -288,13 +289,12 @@ then
         cd "$ROOT/recipes/$1"
         source recipe.sh
 
-	ops=()
-        cargo_build_debug_mode=
+        ops=()
         for arg in "${@:2}"
         do
             if [ "$arg" == "--debug" ]
             then
-                cargo_build_debug_mode=1
+                DEBUG=1
             else
                 ops[${#ops[@]}]="$arg"
             fi
