@@ -1,5 +1,6 @@
 GIT=https://github.com/ids1024/rust.git
 BRANCH=compile-redox
+DEPENDS="gcc cargo"
 
 LLVM_PREFIX=$PWD/build/llvm-root
 SYSROOT=/usr/$HOST
