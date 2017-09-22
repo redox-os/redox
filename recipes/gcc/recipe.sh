@@ -1,5 +1,6 @@
 GIT=https://github.com/redox-os/gcc.git
 BRANCH=redox
+DEPENDS="gnu-binutils newlib"
 
 export AR="${HOST}-ar"
 export AS="${HOST}-as"
