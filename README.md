@@ -2,7 +2,7 @@
 <img alt="Redox" width="346" src="https://github.com/redox-os/assets/raw/master/logos/redox/logo.png">
 </p>
 
-**Redox** is an operating system written in Rust, a language with focus on safety and high performance. Redox, following the microkernel design, aims to be secure, usable, and free. Redox is inspired by previous kernels and operating systems, such as SeL4, Minix, Plan 9, and BSD.
+**Redox** is an operating system written in Rust, a language with focus on safety and high performance. Redox, following the microkernel design, aims to be secure, usable, and free. Redox is inspired by previous kernels and operating systems, such as SeL4, MINIX, Plan 9, and BSD.
 
 Redox _is not_ just a kernel, it's a **full-featured Operating System**, providing packages (memory allocator, file system, display manager, core utilities, etc.) that together make up a functional and convenient operating system. You can loosely think of it as the GNU or BSD ecosystem, but in a memory safe language and with modern technology. See [this list](#ecosystem) for overview of the ecosystem.
 
@@ -32,7 +32,7 @@ Please make sure you use the **latest nightly** of `rustc` before building (for 
 <img alt="Redox" height="150" src="https://github.com/redox-os/assets/raw/master/screenshots/redox running.jpeg">
 <img alt="Redox" height="150" src="https://github.com/redox-os/assets/raw/master/screenshots/IMG_1460.PNG">
 
-<img alt="Redox" height="150" src="https://github.com/redox-os/assets/raw/master/screenshots/Sodium_v1.png">
+<img alt="Redox" height="150" src="https://github.com/redox-os/assets/raw/master/screenshots/Sodium_v2.PNG">
 <img alt="Redox" height="150" src="https://github.com/redox-os/assets/raw/master/screenshots/Boot.png">
 <img alt="Redox" height="150" src="https://github.com/redox-os/assets/raw/master/screenshots/IMG_1459.PNG">
 
@@ -67,9 +67,9 @@ The ecosystem and software Redox OS provides is listed below.
 | [redoxfs (old filesystem)](https://github.com/redox-os/redoxfs)             | [**@jackpot51**](https://github.com/jackpot51)
 | [syscall](https://github.com/redox-os/syscall)                              | [**@jackpot51**](https://github.com/jackpot51)
 | [Sodium (Vim-inspired text editor)](https://github.com/redox-os/sodium)                       | [**@ticki**](https://github.com/ticki)
-| [userutils](https://github.com/redox-os/userutils)                          | [**@jackpot51**](https://github.com/jackpot51)
 | [TFS (ticki filesystem)](https://github.com/ticki/tfs)                            | [**@ticki**](https://github.com/ticki)
 | [The Redox book](https://github.com/redox-os/book)                          | [**@ticki**](https://github.com/ticki)
+| [userutils](https://github.com/redox-os/userutils)                          | [**@jackpot51**](https://github.com/jackpot51)
 | [The old kernel](https://github.com/redox-os/old)                           | **abandoned**
 | [ZFS](https://github.com/redox-os/zfs)                                      | **abandoned, superseded by [TFS](https://github.com/ticki/tfs)**
 
