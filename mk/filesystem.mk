@@ -9,7 +9,7 @@ build/filesystem.bin: filesystem.toml build/kernel
 	sleep 2
 	pgrep redoxfs
 	cp build/kernel build/filesystem/kernel
-	cargo run --manifest-path installer/Cargo.toml -- $(INSTALLER_FLAGS) $<
+	cargo run --manifest-path installer/Cargo.toml -- $(INSTALLER_FLAGS) -c $< build/filesystem/
 	chown -R 0:0 build/filesystem
 	chown -R 1000:1000 build/filesystem/home/user
 	chmod -R uog+rX build/filesystem

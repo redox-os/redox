@@ -25,16 +25,18 @@ pull:
 	make update
 
 update:
-	cd cookbook; \
-	./update.sh "$$(cargo run --manifest-path ../installer/Cargo.toml -- --list-packages ../initfs.toml ../filesystem.toml)"
+	cd cookbook && ./update.sh \
+		"$$(cargo run --manifest-path ../installer/Cargo.toml -- --list-packages -c ../initfs.toml)" \
+		"$$(cargo run --manifest-path ../installer/Cargo.toml -- --list-packages -c ../filesystem.toml)"
 	cargo update --manifest-path cookbook/pkgutils/Cargo.toml
 	cargo update --manifest-path installer/Cargo.toml
 	cargo update --manifest-path kernel/Cargo.toml
 	cargo update --manifest-path redoxfs/Cargo.toml
 
 fetch:
-	cd cookbook; \
-	./fetch.sh "$$(cargo run --manifest-path ../installer/Cargo.toml -- --list-packages ../initfs.toml ../filesystem.toml)"
+	cd cookbook && ./fetch.sh \
+		"$$(cargo run --manifest-path ../installer/Cargo.toml -- --list-packages -c ../initfs.toml)" \
+		"$$(cargo run --manifest-path ../installer/Cargo.toml -- --list-packages -c ../filesystem.toml)"
 
 # Emulation recipes
 include mk/qemu.mk
@@ -53,7 +55,7 @@ include mk/disk.mk
 
 # Travis target
 travis: FORCE
-	INSTALLER_FLAGS= make build/harddrive.bin.gz build/livedisk.iso
+	make INSTALLER_FLAGS= build/harddrive.bin.gz build/livedisk.iso
 	rm -rf build/travis
 	mkdir build/travis
 	mv build/harddrive.bin.gz build/travis/redox_$(TRAVIS_TAG).bin.gz
