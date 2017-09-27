@@ -4,7 +4,6 @@
 [general]
 # Do not prompt if settings are not defined
 prompt = false
-sysroot = "build/filesystem"
 
 # Package settings
 [packages]
