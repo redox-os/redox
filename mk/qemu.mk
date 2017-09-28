@@ -32,7 +32,7 @@ endif
 #-device intel-iommu
 
 build/extra.qcow2:
-	qemu-img create -f qcow2 $@ 256M
+	qemu-img create -f qcow2 $@ 1G
 
 qemu: build/harddrive.bin build/extra.qcow2
 	$(QEMU) $(QEMUFLAGS) \
@@ -72,4 +72,8 @@ qemu_iso: build/livedisk.iso build/extra.qcow2
 qemu_iso_no_build: build/extra.qcow2
 	$(QEMU) $(QEMUFLAGS) \
 		-boot d -cdrom build/livedisk.iso \
+		-drive file=build/extra.qcow2
+
+qemu_extra: build/extra.qcow2
+	$(QEMU) $(QEMUFLAGS) \
 		-drive file=build/extra.qcow2
