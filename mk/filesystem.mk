@@ -8,7 +8,7 @@ build/filesystem.bin: filesystem.toml build/bootloader build/kernel
 	cargo run --manifest-path redoxfs/Cargo.toml --release --bin redoxfs -- $@.partial build/filesystem/
 	sleep 2
 	pgrep redoxfs
-	cp build/bootloader build/kernel build/filesystem/
+	cp filesystem.toml build/bootloader build/kernel build/filesystem/
 	cargo run --manifest-path installer/Cargo.toml -- $(INSTALLER_FLAGS) -c $< build/filesystem/
 	chown -R 0:0 build/filesystem
 	chown -R 1000:1000 build/filesystem/home/user
