@@ -1,4 +1,5 @@
 build/bootloader: bootloader/$(ARCH)/**
+	mkdir -p build
 	nasm -f bin -o $@ -D ARCH_$(ARCH) -ibootloader/$(ARCH)/ bootloader/$(ARCH)/disk.asm
 
 build/harddrive.bin: build/filesystem.bin bootloader/$(ARCH)/**
