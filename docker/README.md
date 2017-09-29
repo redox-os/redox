@@ -74,3 +74,12 @@ the container image manually.
 ```shell
 docker build -t redoxos/redox docker/
 ```
+
+### Troubleshooting / updating
+Sometimes, builds may fail because the nightly toolchain of rust inside the container got out of sync with dependencies of redox, or there are issues with cargo. In this case, it might help to update your current container image and delete the rust and cargo caches. This way, you can start over from a clean state and rule out your local setup as the origin of errors.
+
+```shell
+docker pull redoxos/redox
+docker volume rm redox-"$(id -u)-$(id -g)"-cargo \
+    redox-"$(id -u)-$(id -g)"-rustup
+```
