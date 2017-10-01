@@ -1,13 +1,13 @@
 build/libkernel.a: kernel/Cargo.toml kernel/src/* kernel/src/*/* kernel/src/*/*/* build/initfs.tag
 # Temporary fix for https://github.com/redox-os/redox/issues/963 allowing to build on macOS
 ifeq ($(UNAME),Darwin)
-	cd kernel && CC=$(ARCH)-elf-gcc AR=$(ARCH)-elf-ar CFLAGS=-ffreestanding xargo rustc --lib --target $(KTARGET) --release -- -C soft-float --emit link=../$@
+	cd kernel && CC=$(ARCH)-elf-gcc AR=$(ARCH)-elf-ar CFLAGS=-ffreestanding xargo INITFS_FOLDER=$(ROOT)/build/initfs rustc --lib --target $(KTARGET) --release -- -C soft-float --emit link=../$@
 else
-	cd kernel && xargo rustc --lib --target $(KTARGET) --release -- -C soft-float --emit link=../$@
+	cd kernel && INITFS_FOLDER=$(ROOT)/build/initfs xargo rustc --lib --target $(KTARGET) --release -- -C soft-float --emit link=../$@
 endif
 
-build/libkernel_live.a: kernel/Cargo.toml kernel/src/* kernel/src/*/* kernel/src/*/*/* build/initfs.tag
-	cd kernel && xargo rustc --lib --features live --target $(KTARGET) --release -- -C soft-float --emit link=../$@
+build/libkernel_live.a: kernel/Cargo.toml kernel/src/* kernel/src/*/* kernel/src/*/*/* build/initfs_live.tag
+	cd kernel && INITFS_FOLDER=$(ROOT)/build/initfs_live xargo rustc --lib --features live --target $(KTARGET) --release -- -C soft-float --emit link=../$@
 
 build/kernel: kernel/linkers/$(ARCH).ld build/libkernel.a
 	$(LD) --gc-sections -z max-page-size=0x1000 -T $< -o $@ build/libkernel.a
