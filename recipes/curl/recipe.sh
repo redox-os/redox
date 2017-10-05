@@ -1,6 +1,7 @@
 TAR=https://curl.haxx.se/download/curl-7.55.1.tar.gz
 BRANCH=redox
 BUILD_DEPENDS=(openssl)
+DEPENDS="ca-certificates"
 
 function recipe_version {
     printf "r%s.%s" "$(git rev-list --count HEAD)" "$(git rev-parse --short HEAD)"
