@@ -1,4 +1,5 @@
 GIT=https://github.com/redox-os/uutils.git
+GIT_UPSTREAM=https://github.com/uutils/coreutils.git
 CARGOFLAGS="--no-default-features --features redox"
 
 function recipe_stage {
