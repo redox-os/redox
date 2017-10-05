@@ -1,4 +1,5 @@
 GIT=https://github.com/redox-os/pastel.git
+GIT_UPSTREAM=https://github.com/robbycerantola/pastel.git
 BINDIR=/ui/bin
 
 function recipe_stage {
