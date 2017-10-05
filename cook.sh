@@ -260,6 +260,18 @@ function op {
             echo "name = \"$1\"" > "stage.toml"
             echo "version = \"$(op $1 version)\"" >> "stage.toml"
             echo "target = \"$TARGET\"" >> "stage.toml"
+
+            # Add runtime dependencies to package if they exist
+            if [ -n "$DEPENDS" ]
+            then
+                # Remove leading and trailing whitespace, replace whitespace between
+                # package names with commas, and surround package names with quotes
+                dependencies=$(echo -e "$DEPENDS" | sed -E 's/^[[:space:]]*//;s/[[:space:]]*$//;s/[[:space:]]+/,/g;s/[^, ][^, ]*/"&"/g')
+                echo "depends = [$dependencies]" >> "stage.toml"
+			else
+				echo "depends = []" >> "stage.toml"
+            fi
+
             mkdir -p stage/pkg
             cp -v stage.toml "stage/pkg/$1.toml"
             pkg --target=$TARGET create stage
