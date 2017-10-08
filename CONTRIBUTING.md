@@ -1,6 +1,6 @@
 # Contributing to Redox
 
-Thank you for your interest in contributing to Redox! This document will outline the basics of where to start if you wish to contribute to the project. There are many ways to help us out and and we appreciate all of them. We look forward to your contribution!
+_**Thank you for your interest in contributing to Redox!** This document will outline the basics of where to start if you wish to contribute to the project. There are many ways to help us out and and we appreciate all of them. We look forward to **your contribution**!_
 
 ## Index
 
@@ -35,23 +35,23 @@ Thank you for your interest in contributing to Redox! This document will outline
 
 ### <a name="chat"> Chat </a>
 
-The quickest and most open way to communicate with the Redox team is on our chat server. Currently, you can only get an invite by sending an email request to [info@redox-os.org](mailto:info@redox-os.org), which might take a little while, since it's not automated. Simply say you'd like to join the chat. We're working on an better way to do this, but this is the best way right now.
+The quickest and most open way to **communicate with the Redox team** is on our **chat server**. Currently, you can only get an invite by sending an email request to [info@redox-os.org](mailto:info@redox-os.org), which might take a little while, since it's not automated. Simply say you'd like to join the chat. We're working on an better way to do this, but this is the best way right now.
 
 ### <a name="issues"> GitHub Issues </a>
 
-A bit more formal way of communication with fellow Redox devs, but a little less quick and convenient like the chat. Submit an issue when you run into problems compiling, testing, or just would like to discuss a certain topic, be it features, code style, code inconsistencies, minor changes and fixes, etc.
+A bit more formal way of communication with fellow Redox devs, but a little less quick and convenient like the chat. Submit an issue when you run into problems compiling, testing, or just would like to discuss a certain topic, be it _features, code style, code inconsistencies, minor changes and fixes, etc._
 
 ### <a name="prs"> Pull Requests </a>
 
-It's fine to just submit a small pull request without first making an issue or asking in the chat, but if it's a significant change that will require a lot of planning and reviewing. Also see [Creating a Pull Request](#creating-a-pr) and [Git Style Guidelines](#git-style-guidelines).
+It's fine to just submit a small pull request without first making an issue or asking in the chat, but if it's a significant change that will require a lot of **planning and reviewing**. Also see [Creating a Pull Request](#creating-a-pr) and [Git Style Guidelines](#git-style-guidelines).
 
 ### <a name="discourse"> Discourse </a>
 
-We have a discourse forum at [discourse.redox-os.org](https://discourse.redox-os.org). This is the best way to discuss more general topics that aren't about specific things that need to be addressed one way or another. You can sign up like any other website.
+We have a **discourse forum** at [discourse.redox-os.org](https://discourse.redox-os.org). This is the best way to discuss more general topics that aren't about specific things that need to be addressed one way or another. You can sign up like any other website.
 
 ### <a name="reddit"> Reddit </a>
 
-You can also find Redox on Reddit in [/r/rust/](https://www.reddit.com/r/rust) and [/r/redox/](https://www.reddit.com/r/redox). Redox news and discussion is posted on the latter, and Rust news and discussion, as well as some Redox posts, is on the former.
+You can also find **Redox on Reddit** in [/r/rust/](https://www.reddit.com/r/rust) and [/r/redox/](https://www.reddit.com/r/redox). Redox news and discussion is posted on the latter, and Rust news and discussion, as well as some Redox posts, is on the former.
 
 ### <a name="news"> News </a>
 
@@ -63,50 +63,64 @@ News and updates for Redox are posted at [redox-os.org/news](https://redox-os.or
 
 #### If you're not fluent in Rust:
 
- * Writing documentation
- * Using/testing Redox, filing issues for bugs and needed features
- * Web development ([Redox website, separate repo](https://github.com/redox-os/website))
- * Writing unit tests (may require minimal knowledge of rust)
+ * Writing _documentation_
+ * **Using/testing Redox**, filing issues for bugs and needed features
+ * **Web development** ([Redox website, separate repo](https://github.com/redox-os/website))
+ * **Writing unit tests** (may require minimal knowledge of rust)
 
 #### If you are fluent in Rust, but not OS Development:
 
- * Apps development
- * Shell ([Ion](https://github.com/redox-os/ion)) development
- * Package management ([pkgutils](https://github.com/redox-os/pkgutils)) development
+ * **Apps** development
+ * **Shell** ([Ion](https://github.com/redox-os/ion)) development
+ * **Package management** ([pkgutils](https://github.com/redox-os/pkgutils)) development
  * Other high-level code tasks
 
 #### If you are fluent in Rust, and have experience with OS Dev:
 
  * Familiarize yourself with the repository and codebase
  * Grep for `TODO`, `FIXME`, `BUG`, `UNOPTIMIZED`, `REWRITEME`, `DOCME`, and `PRETTYFYME` and fix the code you find.
- * Improve and optimize code, especially in the kernel
+ * **Improve and optimize code, especially in the kernel**
 
 ### <a name="creating-a-pr"> Creating a Pull Request </a>
 
-1. Fork the repository
-2. Clone the original repository to your local PC using one of the following commands based on the protocol you are using:
+**1**. _**Fork**_ the repository
+
+**2**. Clone the _original repository_ to your local PC using one of the following commands based on the protocol you are using:
  * HTTPS:`git clone https://github.com/redox-os/redox.git --origin upstream --recursive`
  * SSH:`git clone git@github.com:redox-os/redox.git --origin upstream --recursive`
  * Then rebase: `git rebase upstream master`
  If you use HTTPS, you will have to log in each time when pushing to your fork. (Recommended: learn about git SSH support, it logs in automatically using SSH keys)
-3. Add your fork with
+ 
+**3**. **Add** your fork with
  * HTTPS:`git remote add origin https://github.com/your-username/redox.git`
  * SSH:`git remote add origin git@github.com:your-username/redox.git`
-4. Alternatively, if you already have a fork and copy of the repo, you can simply check to make sure you're up-to-date
+ 
+**4**. Alternatively, if you already have a fork and copy of the repo, you can simply check to **make sure you're up-to-date**
  * Pull the upstream:`git pull upstream --rebase`
  * Update the submodules:`git submodule update --recursive --init`
-5. Create a separate branch (recommended if you're making multiple changes simultaneously) (`git checkout -b my-branch`)
-6. Make changes
-7. Commit (`git add <item(s) you changed>; git commit`) and write your commit message
-8. Optionally run [rustfmt](https://github.com/rust-lang-nursery/rustfmt) on the files you changed and commit again if it did anything (check with `git diff` first)
-9. Test your changes by cleaning (`make clean; git clean -Xfd`) and building with `make qemu` (you might have to use `make qemu kvm=no`) or `make virtualbox`.
+ 
+**5**. Create a _**separate branch**_ (recommended if you're making multiple changes simultaneously) (`git checkout -b my-branch`)
+
+**6**. _Make changes_
+
+**7**. **Commit** (`git add <item(s) you changed>; git commit`) and write your commit message
+
+**8**. Optionally run [rustfmt](https://github.com/rust-lang-nursery/rustfmt) on the _files you changed_ and commit again if it did anything (check with `git diff` first)
+
+**9**. Test your changes by **cleaning** (`make clean; git clean -Xfd`) and **building** with `make qemu` (you might have to use `make qemu kvm=no`) or `make virtualbox`.
 (see [Best Practices and Guidelines](#best-practices))
-10. Pull from upstream (`git pull upstream --rebase`) (Note: Make sure to include `--rebase`, as it will apply your changes on top of the changes you just pulled, allowing for a much cleaner merge)
-11. Repeat step 9 to make sure the rebase still builds and starts
-12. Push to your fork (`git push origin <branch>`), `<branch>` being the branch you created earlier
-13. Create a pull request
-14. If your changes are minor, you can just describe them in a paragraph or less. If they're major, please fill out the provided form.
-15. Submit!
+
+**10**. _**Pull**_ from upstream (`git pull upstream --rebase`) (Note: Make sure to include `--rebase`, as it will apply your changes on top of the changes you just pulled, allowing for a much cleaner merge)
+
+**11**. Repeat step **9** to make sure the rebase still builds and starts
+
+**12**. Push to **your fork** (`git push origin <branch>`), `<branch>` being the branch you created earlier
+
+**13**. Create a _pull request_
+
+**14**. If your changes are _minor_, you can just describe them in a paragraph or less. If they're _major_, please fill out the provided form.
+
+**15. Submit!**
 
 ## <a name="best-practices"> Best Practices and Guidelines </a>
 
@@ -146,7 +160,7 @@ News and updates for Redox are posted at [redox-os.org/news](https://redox-os.or
   Even though Rust is a safety-oriented language, something as unstable and low-level as an in-dev operating system will almost certainly have problems in many cases and may completely break on even the slightest critical change.
   Also, make sure you check how the unmodified version runs on your machine before making any changes. Else, you won't have anything to compare to, and it will generally just lead to confusion. TLDR: Rebuild and test boot often.
 
-* To run the ZFS tests:
+* To run the **ZFS** tests:
  * Create the zfs.img only once. If one has not been created, run `make filesystem/apps/zfs/zfs.img` before booting into Redox.
  * Run `open zfs.img` to open the created ZFS image.
  * Run `file /home/LICENSE.md` twice to ensure ARC isn't broken.
@@ -155,11 +169,11 @@ News and updates for Redox are posted at [redox-os.org/news](https://redox-os.or
 
 ### <a name="rust-style-guidelines"> Rust </a>
 
-Since Rust is a relatively small and new language compared to others like C, there's really only one standard. Just follow the official Rust standards for formatting, and maybe run `rustfmt` on your changes, until we setup the CI system to do it automatically.
+Since **Rust** is a relatively small and new language compared to others like _C_, there's really only one standard. Just follow the official Rust standards for formatting, and maybe run `rustfmt` on your changes, until we setup the CI system to do it automatically.
 
 ### <a name="git-style-guidelines"> Git </a>
 
-* You should have a fork of the repository on GitHub and a local copy on your computer. The local copy should have two remotes; `upstream` and `origin`, `upstream` should be set to the main repository and `origin` should be your fork.
+* You should have a fork of the repository on **GitHub** and a local copy on your computer. The local copy should have two remotes; `upstream` and `origin`, `upstream` should be set to the main repository and `origin` should be your fork.
 * When you start to make changes, you will want to create a separate branch, and keep the `master` branch of your fork identical to the main repository, so that you can compare your changes with the main branch and test out a more stable build if you need to.
 * Usually, when syncing your local copy with the master branch, you'll want to rebase instead of merge. This is because it will create duplicate commits that don't actually do anything when merged into the master branch. You can do this in one command with `git pull upstream --rebase`. This will pull from the upstream, then roll back to the current state of the upstream, and "replay" your changes on top of it. Make sure you commit before doing this, though. Git won't be able to rebase if you don't.
 * Prefer to omit the `-m` when using `git commit`. This opens your editor and should help get you in the habit of writing longer commit messages.
@@ -172,11 +186,11 @@ If you're not big on coding, but you still want to help keep the project going, 
 
 ### <a name="design"> Design </a>
 
-If you're a good designer, whether it's 2D graphics, 3D graphics, interfaces, web design, you can help. We need logos, UI design, UI skins, app icons, desktop backgrounds, etc. More information to come on this in the future, for now just join [the chat](#chat) and ask about graphic design.
+If you're a good designer, whether it's _2D graphics, 3D graphics, interfaces, web design, you can help. We need logos, UI design, UI skins, app icons, desktop backgrounds, etc_. More information to come on this in the future, for now just join [the chat](#chat) and ask about graphic design.
 
 ### <a name="patreon"> Patreon </a>
 
-Our BDFL, [jackpot51](https://github.com/jackpot51), has a [Patreon campaign](https://www.patreon.com/redox_os)! All money recieved will go towards Redox OS development. If you donate, you will be listed in the Redox credits as one of the people that made Redox OS possible. You'll also get other rewards the more you donate. However, please don't donate if you can't afford it.
+Our **BDFL**, [jackpot51](https://github.com/jackpot51), has a [Patreon campaign](https://www.patreon.com/redox_os)! **All money recieved will go towards Redox OS development**. If you donate, you will be listed in the **Redox credits** as one of the people that made Redox OS possible. You'll also get other rewards the more you donate. However, please don't donate if you can't afford it.
 
 <!--
 
