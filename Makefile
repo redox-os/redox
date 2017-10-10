@@ -17,12 +17,9 @@ clean:
 	rm -rf build
 
 pull:
-	git pull --rebase --recurse-submodules
-	git submodule sync
+	git pull --recurse-submodules
+	git submodule sync --recursive
 	git submodule update --recursive --init
-	git clean -X -f -d
-	make clean
-	make update
 
 update:
 	cd cookbook && ./update.sh \
