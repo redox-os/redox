@@ -18,7 +18,7 @@ export PATH /bin
 export TMPDIR /tmp
 vesad T T G
 stdio display:1
-ps2d
+ps2d us
 pcid /etc/pcid/initfs.toml
 redoxfs --uuid $REDOXFS_UUID file
 cd file:
