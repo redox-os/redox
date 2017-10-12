@@ -30,6 +30,7 @@ function usage {
     echo "  unpublish" >&2
     echo "  stage" >&2
     echo "  unstage" >&2
+    echo "  status" >&2
     echo "  tar" >&2
     echo "  untar" >&2
     echo "  update" >&2
@@ -107,6 +108,17 @@ function op {
             if [ -n "$TAR" ]
             then
                 rm -f source.tar
+            fi
+            ;;
+        status)
+            if [ -n "$TAR" ]
+            then
+                tar --compare --file="source.tar" -C "source" --strip-components=1 2>&1 |
+                grep -v "tar: :" | grep -v '\(Mod time\|Mode\|Gid\|Uid\) differs' ||
+                true
+            elif [ -n "$GIT" ]
+            then
+                git -C source diff --name-status
             fi
             ;;
         update)
