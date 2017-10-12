@@ -123,7 +123,7 @@ function op {
                 true
             elif [ -n "$GIT" ]
             then
-                git -C source diff --name-status
+                git -C source diff --stat --color
             fi
             ;;
         status_origin)
@@ -131,9 +131,9 @@ function op {
             then
                 if [ -n "$BRANCH" ]
                 then
-                    git -C source diff --name-status "origin/$BRANCH"
+                    git -C source diff --stat --color "origin/$BRANCH"
                 else
-                    git -C source diff --name-status "origin/master"
+                    git -C source diff --stat --color "origin/master"
                 fi
             fi
             ;;
@@ -142,9 +142,9 @@ function op {
             then
                 if [ -n "$BRANCH" ]
                 then
-                    git -C source diff --name-status "upstream/$BRANCH"
+                    git -C source diff --stat --color "upstream/$BRANCH"
                 else
-                    git -C source diff --name-status "upstream/master"
+                    git -C source diff --stat --color "upstream/master"
                 fi
             fi
             ;;
