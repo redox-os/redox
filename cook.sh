@@ -22,6 +22,9 @@ function usage {
     echo "  distclean" >&2
     echo "  build" >&2
     echo "  clean" >&2
+    echo "  diff" >&2
+    echo "  diff_origin" >&2
+    echo "  diff_upstream" >&2
     echo "  fetch" >&2
     echo "  unfetch" >&2
     echo "  prepare" >&2
@@ -31,6 +34,7 @@ function usage {
     echo "  stage" >&2
     echo "  unstage" >&2
     echo "  status" >&2
+    echo "  status_origin" >&2
     echo "  status_upstream" >&2
     echo "  tar" >&2
     echo "  untar" >&2
@@ -122,6 +126,17 @@ function op {
                 git -C source diff --name-status
             fi
             ;;
+        status_origin)
+            if [ -n "$GIT" ]
+            then
+                if [ -n "$BRANCH" ]
+                then
+                    git -C source diff --name-status "origin/$BRANCH"
+                else
+                    git -C source diff --name-status "origin/master"
+                fi
+            fi
+            ;;
         status_upstream)
             if [ -n "$GIT_UPSTREAM" ]
             then
@@ -130,6 +145,34 @@ function op {
                     git -C source diff --name-status "upstream/$BRANCH"
                 else
                     git -C source diff --name-status "upstream/master"
+                fi
+            fi
+            ;;
+        diff)
+            if [ -n "$GIT" ]
+            then
+                git -C source diff
+            fi
+            ;;
+        diff_origin)
+            if [ -n "$GIT" ]
+            then
+                if [ -n "$BRANCH" ]
+                then
+                    git -C source diff "origin/$BRANCH"
+                else
+                    git -C source diff "origin/master"
+                fi
+            fi
+            ;;
+        diff_upstream)
+            if [ -n "$GIT_UPSTREAM" ]
+            then
+                if [ -n "$BRANCH" ]
+                then
+                    git -C source diff "upstream/$BRANCH"
+                else
+                    git -C source diff "upstream/master"
                 fi
             fi
             ;;
