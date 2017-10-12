@@ -87,8 +87,16 @@ function op {
                     fi
 
                     pushd source > /dev/null
+                    git remote set-url origin "$GIT"
+                    git fetch origin
+                    if [ -n "$GIT_UPSTREAM" ]
+                    then
+                        git remote set-url upstream "$GIT_UPSTREAM" &> /dev/null ||
+                        git remote add upstream "$GIT_UPSTREAM"
+                        git fetch upstream
+                    fi
                     git pull
-                    git submodule sync
+                    git submodule sync --recursive
                     git submodule update --init --recursive
                     popd > /dev/null
                 fi
