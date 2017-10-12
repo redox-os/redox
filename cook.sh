@@ -31,6 +31,7 @@ function usage {
     echo "  stage" >&2
     echo "  unstage" >&2
     echo "  status" >&2
+    echo "  status_upstream" >&2
     echo "  tar" >&2
     echo "  untar" >&2
     echo "  update" >&2
@@ -119,6 +120,17 @@ function op {
             elif [ -n "$GIT" ]
             then
                 git -C source diff --name-status
+            fi
+            ;;
+        status_upstream)
+            if [ -n "$GIT_UPSTREAM" ]
+            then
+                if [ -n "$BRANCH" ]
+                then
+                    git -C source diff --name-status "upstream/$BRANCH"
+                else
+                    git -C source diff --name-status "upstream/master"
+                fi
             fi
             ;;
         update)
