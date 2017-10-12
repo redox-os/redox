@@ -25,6 +25,9 @@ function usage {
     echo "  diff" >&2
     echo "  diff_origin" >&2
     echo "  diff_upstream" >&2
+    echo "  difftool" >&2
+    echo "  difftool_origin" >&2
+    echo "  difftool_upstream" >&2
     echo "  fetch" >&2
     echo "  unfetch" >&2
     echo "  prepare" >&2
@@ -173,6 +176,34 @@ function op {
                     git -C source diff "upstream/$BRANCH"
                 else
                     git -C source diff "upstream/master"
+                fi
+            fi
+            ;;
+        difftool)
+            if [ -n "$GIT" ]
+            then
+                git -C source difftool -d
+            fi
+            ;;
+        difftool_origin)
+            if [ -n "$GIT" ]
+            then
+                if [ -n "$BRANCH" ]
+                then
+                    git -C source difftool -d "origin/$BRANCH"
+                else
+                    git -C source difftool -d "origin/master"
+                fi
+            fi
+            ;;
+        difftool_upstream)
+            if [ -n "$GIT_UPSTREAM" ]
+            then
+                if [ -n "$BRANCH" ]
+                then
+                    git -C source difftool -d "upstream/$BRANCH"
+                else
+                    git -C source difftool -d "upstream/master"
                 fi
             fi
             ;;
