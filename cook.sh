@@ -11,9 +11,15 @@ export DEBUG=
 
 if [ ! "$(uname -s)" = "Redox" ]
 then
+
 function pkg {
     CC=cc cargo run --release --manifest-path "$ROOT/pkgutils/Cargo.toml" --bin pkg -- $@
 }
+
+function docgen {
+    CC=cc cargo run --release --manifest-path "$ROOT/docgen/Cargo.toml" --bin docgen -- $@
+}
+
 fi
 
 function usage {
@@ -342,6 +348,7 @@ function op {
                 else
                     build=release
                 fi
+
                 bins="$(find target/$TARGET/$build/ -maxdepth 1 -type f ! -name '*.*')"
                 if [ -n "$bins" ]
                 then
@@ -356,6 +363,8 @@ function op {
                         fi
                     done
                 fi
+
+                docgen ../source ../stage/ref
             fi
             popd > /dev/null
             ;;
