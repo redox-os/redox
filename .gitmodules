@@ -1,8 +1,7 @@
-[submodule "libc-artifacts"]
-	path = libc-artifacts
-	url = https://github.com/redox-os/libc-artifacts.git
-	branch = master
 [submodule "pkgutils"]
 	path = pkgutils
 	url = https://github.com/redox-os/pkgutils.git
 	branch = master
+[submodule "docgen"]
+	path = docgen
+	url = https://github.com/redox-os/docgen.git
