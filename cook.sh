@@ -364,7 +364,7 @@ function op {
                     done
                 fi
 
-                docgen . ../stage/ref/
+                docgen ../source ../stage/ref
             fi
             popd > /dev/null
             ;;
