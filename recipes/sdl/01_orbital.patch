@@ -1,0 +1,735 @@
+diff -rupN sdl/build-scripts/config.sub sdl-redox/build-scripts/config.sub
+--- sdl/build-scripts/config.sub	2012-01-18 22:30:05.000000000 -0800
++++ sdl-redox/build-scripts/config.sub	2016-07-27 18:17:26.683907466 -0700
+@@ -1276,7 +1276,7 @@ case $os in
+ 	-gnu* | -bsd* | -mach* | -minix* | -genix* | -ultrix* | -irix* \
+ 	      | -*vms* | -sco* | -esix* | -isc* | -aix* | -cnk* | -sunos | -sunos[34]*\
+ 	      | -hpux* | -unos* | -osf* | -luna* | -dgux* | -solaris* | -sym* \
+-	      | -kopensolaris* \
++	      | -kopensolaris* | -redox* \
+ 	      | -amigaos* | -amigados* | -msdos* | -newsos* | -unicos* | -aof* \
+ 	      | -aos* | -aros* \
+ 	      | -nindy* | -vxsim* | -vxworks* | -ebmon* | -hms* | -mvs* \
+diff -rupN sdl/configure.in sdl-redox/configure.in
+--- sdl/configure.in	2012-01-18 22:30:05.000000000 -0800
++++ sdl-redox/configure.in	2016-07-27 18:17:26.683907466 -0700
+@@ -1646,6 +1646,19 @@ AC_HELP_STRING([--enable-video-dummy], [
+     fi
+ }
+ 
++dnl Set up the Orbital video driver.
++CheckOrbitalVideo()
++{
++    AC_ARG_ENABLE(video-orbital,
++AC_HELP_STRING([--enable-video-orbital], [use orbital video driver [[default=yes]]]),
++                  , enable_video_orbital=yes)
++    if test x$enable_video_orbital = xyes; then
++        AC_DEFINE(SDL_VIDEO_DRIVER_ORBITAL)
++        SOURCES="$SOURCES $srcdir/src/video/orbital/*.c"
++        have_video=yes
++    fi
++}
++
+ dnl Check to see if OpenGL support is desired
+ AC_ARG_ENABLE(video-opengl,
+ AC_HELP_STRING([--enable-video-opengl], [include OpenGL context creation [[default=yes]]]),
+@@ -2325,10 +2338,11 @@ case "$host" in
+             have_timers=yes
+         fi
+         ;;
+-    *-*-linux*|*-*-uclinux*|*-*-gnu*|*-*-k*bsd*-gnu|*-*-bsdi*|*-*-freebsd*|*-*-dragonfly*|*-*-netbsd*|*-*-openbsd*|*-*-sysv5*|*-*-solaris*|*-*-hpux*|*-*-irix*|*-*-aix*|*-*-osf*)
++    *-*-linux*|*-*-uclinux*|*-*-redox*|*-*-gnu*|*-*-k*bsd*-gnu|*-*-bsdi*|*-*-freebsd*|*-*-dragonfly*|*-*-netbsd*|*-*-openbsd*|*-*-sysv5*|*-*-solaris*|*-*-hpux*|*-*-irix*|*-*-aix*|*-*-osf*)
+         case "$host" in
+             *-*-linux*)         ARCH=linux ;;
+             *-*-uclinux*)       ARCH=linux ;;
++            *-*-redox*)         ARCH=redox ;;
+             *-*-kfreebsd*-gnu)  ARCH=kfreebsd-gnu ;;
+             *-*-knetbsd*-gnu)   ARCH=knetbsd-gnu ;;
+             *-*-kopenbsd*-gnu)  ARCH=kopenbsd-gnu ;;
+@@ -2347,6 +2361,7 @@ case "$host" in
+         esac
+         CheckVisibilityHidden
+         CheckDummyVideo
++        CheckOrbitalVideo
+         CheckDiskAudio
+         CheckDummyAudio
+         CheckDLOPEN
+diff -rupN sdl/include/SDL_config.h.in sdl-redox/include/SDL_config.h.in
+--- sdl/include/SDL_config.h.in	2012-01-18 22:30:05.000000000 -0800
++++ sdl-redox/include/SDL_config.h.in	2016-07-27 18:17:26.683907466 -0700
+@@ -268,6 +268,7 @@
+ #undef SDL_VIDEO_DRIVER_GGI
+ #undef SDL_VIDEO_DRIVER_IPOD
+ #undef SDL_VIDEO_DRIVER_NANOX
++#undef SDL_VIDEO_DRIVER_ORBITAL
+ #undef SDL_VIDEO_DRIVER_OS2FS
+ #undef SDL_VIDEO_DRIVER_PHOTON
+ #undef SDL_VIDEO_DRIVER_PICOGUI
+diff -rupN sdl/src/video/orbital/SDL_orbitalevents.c sdl-redox/src/video/orbital/SDL_orbitalevents.c
+--- sdl/src/video/orbital/SDL_orbitalevents.c	1969-12-31 16:00:00.000000000 -0800
++++ sdl-redox/src/video/orbital/SDL_orbitalevents.c	2016-07-27 18:17:26.683907466 -0700
+@@ -0,0 +1,159 @@
++/*
++    SDL - Simple DirectMedia Layer
++    Copyright (C) 1997-2012 Sam Lantinga
++
++    This library is free software; you can redistribute it and/or
++    modify it under the terms of the GNU Lesser General Public
++    License as published by the Free Software Foundation; either
++    version 2.1 of the License, or (at your option) any later version.
++
++    This library is distributed in the hope that it will be useful,
++    but WITHOUT ANY WARRANTY; without even the implied warranty of
++    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
++    Lesser General Public License for more details.
++
++    You should have received a copy of the GNU Lesser General Public
++    License along with this library; if not, write to the Free Software
++    Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
++
++    Sam Lantinga
++    slouken@libsdl.org
++*/
++#include "SDL_config.h"
++
++#include "SDL.h"
++#include "../../events/SDL_sysevents.h"
++#include "../../events/SDL_events_c.h"
++
++#include "SDL_orbitalvideo.h"
++#include "SDL_orbitalevents_c.h"
++#include "SDL_orbitalscancode.h"
++
++#include <unistd.h>
++
++static SDLKey keymap[128];
++
++#define EVENT_NONE 0
++#define EVENT_MOUSE 1
++#define EVENT_KEY 2
++#define EVENT_QUIT 3
++
++struct Event {
++    int64_t code;
++    int64_t a;
++    int64_t b;
++    int64_t c;
++} __attribute__((packed));
++
++void ORBITAL_PumpEvents(_THIS)
++{
++    struct Event event;
++    while(read(this->hidden->fd, &event, sizeof(event)) > 0){
++        if ( event.code == EVENT_KEY ) {
++            SDL_keysym keysym;
++        	keysym.unicode = event.a;
++        	keysym.scancode = event.b;
++        	keysym.sym = keymap[event.b];
++        	keysym.mod = KMOD_NONE;
++            if ( event.c > 0 ) {
++                SDL_PrivateKeyboard(SDL_PRESSED, &keysym);
++            } else {
++                SDL_PrivateKeyboard(SDL_RELEASED, &keysym);
++            }
++        } else if( event.code == EVENT_MOUSE ) {
++            SDL_PrivateMouseMotion(event.c, 0, event.a, event.b);
++            //SDL_PrivateMouseButton(Uint8 state, Uint8 button, Sint16 x, Sint16 y);
++        } else if ( event.code == EVENT_QUIT ) {
++            SDL_PrivateQuit();
++        }
++    }
++}
++
++void ORBITAL_InitOSKeymap(_THIS)
++{
++    int i;
++    for ( i = 0; i < SDL_arraysize(keymap); ++i )
++        keymap[i] = SDLK_UNKNOWN;
++
++    keymap[SCANCODE_ESCAPE] = SDLK_ESCAPE;
++    keymap[SCANCODE_1] = SDLK_1;
++    keymap[SCANCODE_2] = SDLK_2;
++    keymap[SCANCODE_3] = SDLK_3;
++    keymap[SCANCODE_4] = SDLK_4;
++    keymap[SCANCODE_5] = SDLK_5;
++    keymap[SCANCODE_6] = SDLK_6;
++    keymap[SCANCODE_7] = SDLK_7;
++    keymap[SCANCODE_8] = SDLK_8;
++    keymap[SCANCODE_9] = SDLK_9;
++    keymap[SCANCODE_0] = SDLK_0;
++    keymap[SCANCODE_MINUS] = SDLK_MINUS;
++    keymap[SCANCODE_EQUAL] = SDLK_EQUALS;
++    keymap[SCANCODE_BACKSPACE] = SDLK_BACKSPACE;
++    keymap[SCANCODE_TAB] = SDLK_TAB;
++    keymap[SCANCODE_Q] = SDLK_q;
++    keymap[SCANCODE_W] = SDLK_w;
++    keymap[SCANCODE_E] = SDLK_e;
++    keymap[SCANCODE_R] = SDLK_r;
++    keymap[SCANCODE_T] = SDLK_t;
++    keymap[SCANCODE_Y] = SDLK_y;
++    keymap[SCANCODE_U] = SDLK_u;
++    keymap[SCANCODE_I] = SDLK_i;
++    keymap[SCANCODE_O] = SDLK_o;
++    keymap[SCANCODE_P] = SDLK_p;
++    keymap[SCANCODE_BRACKET_LEFT] = SDLK_LEFTBRACKET;
++    keymap[SCANCODE_BRACKET_RIGHT] = SDLK_RIGHTBRACKET;
++    keymap[SCANCODE_ENTER] = SDLK_RETURN;
++    keymap[SCANCODE_LEFTCONTROL] = SDLK_LCTRL;
++    keymap[SCANCODE_A] = SDLK_a;
++    keymap[SCANCODE_S] = SDLK_s;
++    keymap[SCANCODE_D] = SDLK_d;
++    keymap[SCANCODE_F] = SDLK_f;
++    keymap[SCANCODE_G] = SDLK_g;
++    keymap[SCANCODE_H] = SDLK_h;
++    keymap[SCANCODE_J] = SDLK_j;
++    keymap[SCANCODE_K] = SDLK_k;
++    keymap[SCANCODE_L] = SDLK_l;
++    keymap[SCANCODE_SEMICOLON] = SDLK_SEMICOLON;
++    keymap[SCANCODE_APOSTROPHE] = SDLK_QUOTE;
++    keymap[SCANCODE_TICK] = SDLK_BACKQUOTE;
++    keymap[SCANCODE_LEFTSHIFT] = SDLK_LSHIFT;
++    keymap[SCANCODE_RIGHTSHIFT] = SDLK_RSHIFT;
++    keymap[SCANCODE_BACKSLASH] = SDLK_BACKSLASH;
++    keymap[SCANCODE_Z] = SDLK_z;
++    keymap[SCANCODE_X] = SDLK_x;
++    keymap[SCANCODE_C] = SDLK_c;
++    keymap[SCANCODE_V] = SDLK_v;
++    keymap[SCANCODE_B] = SDLK_b;
++    keymap[SCANCODE_N] = SDLK_n;
++    keymap[SCANCODE_M] = SDLK_m;
++    keymap[SCANCODE_COMMA] = SDLK_COMMA;
++    keymap[SCANCODE_PERIOD] = SDLK_PERIOD;
++    keymap[SCANCODE_SLASH] = SDLK_SLASH;
++    keymap[SCANCODE_LEFTALT] = SDLK_LALT;
++    keymap[SCANCODE_SPACE] = SDLK_SPACE;
++    keymap[SCANCODE_CAPSLOCK] = SDLK_CAPSLOCK;
++    keymap[SCANCODE_F1] = SDLK_F1;
++    keymap[SCANCODE_F2] = SDLK_F2;
++    keymap[SCANCODE_F3] = SDLK_F3;
++    keymap[SCANCODE_F4] = SDLK_F4;
++    keymap[SCANCODE_F5] = SDLK_F5;
++    keymap[SCANCODE_F6] = SDLK_F6;
++    keymap[SCANCODE_F7] = SDLK_F7;
++    keymap[SCANCODE_F8] = SDLK_F8;
++    keymap[SCANCODE_F9] = SDLK_F9;
++    keymap[SCANCODE_F10] = SDLK_F10;
++    keymap[SCANCODE_F11] = SDLK_F11;
++    keymap[SCANCODE_F12] = SDLK_F12;
++    keymap[SCANCODE_HOME] = SDLK_HOME;
++    keymap[SCANCODE_CURSORBLOCKUP] = SDLK_UP;
++    keymap[SCANCODE_PAGEUP] = SDLK_PAGEUP;
++    keymap[SCANCODE_CURSORBLOCKLEFT] = SDLK_LEFT;
++    keymap[SCANCODE_CURSORBLOCKRIGHT] = SDLK_RIGHT;
++    keymap[SCANCODE_END] = SDLK_END;
++    keymap[SCANCODE_CURSORBLOCKDOWN] = SDLK_DOWN;
++    keymap[SCANCODE_PAGEDOWN] = SDLK_PAGEDOWN;
++    keymap[SCANCODE_INSERT] = SDLK_INSERT;
++    keymap[SCANCODE_DELETE] = SDLK_DELETE;
++}
++
++/* end of SDL_orbitalevents.c ... */
+diff -rupN sdl/src/video/orbital/SDL_orbitalevents_c.h sdl-redox/src/video/orbital/SDL_orbitalevents_c.h
+--- sdl/src/video/orbital/SDL_orbitalevents_c.h	1969-12-31 16:00:00.000000000 -0800
++++ sdl-redox/src/video/orbital/SDL_orbitalevents_c.h	2016-07-27 18:17:26.683907466 -0700
+@@ -0,0 +1,32 @@
++/*
++    SDL - Simple DirectMedia Layer
++    Copyright (C) 1997-2012 Sam Lantinga
++
++    This library is free software; you can redistribute it and/or
++    modify it under the terms of the GNU Lesser General Public
++    License as published by the Free Software Foundation; either
++    version 2.1 of the License, or (at your option) any later version.
++
++    This library is distributed in the hope that it will be useful,
++    but WITHOUT ANY WARRANTY; without even the implied warranty of
++    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
++    Lesser General Public License for more details.
++
++    You should have received a copy of the GNU Lesser General Public
++    License along with this library; if not, write to the Free Software
++    Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
++
++    Sam Lantinga
++    slouken@libsdl.org
++*/
++#include "SDL_config.h"
++
++#include "SDL_orbitalvideo.h"
++
++/* Variables and functions exported by SDL_sysevents.c to other parts
++   of the native video subsystem (SDL_sysvideo.c)
++*/
++extern void ORBITAL_InitOSKeymap(_THIS);
++extern void ORBITAL_PumpEvents(_THIS);
++
++/* end of SDL_orbitalevents_c.h ... */
+diff -rupN sdl/src/video/orbital/SDL_orbitalmouse.c sdl-redox/src/video/orbital/SDL_orbitalmouse.c
+--- sdl/src/video/orbital/SDL_orbitalmouse.c	1969-12-31 16:00:00.000000000 -0800
++++ sdl-redox/src/video/orbital/SDL_orbitalmouse.c	2016-07-27 18:17:26.683907466 -0700
+@@ -0,0 +1,33 @@
++/*
++    SDL - Simple DirectMedia Layer
++    Copyright (C) 1997-2012 Sam Lantinga
++
++    This library is free software; you can redistribute it and/or
++    modify it under the terms of the GNU Lesser General Public
++    License as published by the Free Software Foundation; either
++    version 2.1 of the License, or (at your option) any later version.
++
++    This library is distributed in the hope that it will be useful,
++    but WITHOUT ANY WARRANTY; without even the implied warranty of
++    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
++    Lesser General Public License for more details.
++
++    You should have received a copy of the GNU Lesser General Public
++    License along with this library; if not, write to the Free Software
++    Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
++
++    Sam Lantinga
++    slouken@libsdl.org
++*/
++#include "SDL_config.h"
++
++#include "SDL_mouse.h"
++#include "../../events/SDL_events_c.h"
++
++#include "SDL_orbitalmouse_c.h"
++
++
++/* The implementation dependent data for the window manager cursor */
++struct WMcursor {
++	int unused;
++};
+diff -rupN sdl/src/video/orbital/SDL_orbitalmouse_c.h sdl-redox/src/video/orbital/SDL_orbitalmouse_c.h
+--- sdl/src/video/orbital/SDL_orbitalmouse_c.h	1969-12-31 16:00:00.000000000 -0800
++++ sdl-redox/src/video/orbital/SDL_orbitalmouse_c.h	2016-07-27 18:17:26.683907466 -0700
+@@ -0,0 +1,26 @@
++/*
++    SDL - Simple DirectMedia Layer
++    Copyright (C) 1997-2012 Sam Lantinga
++
++    This library is free software; you can redistribute it and/or
++    modify it under the terms of the GNU Lesser General Public
++    License as published by the Free Software Foundation; either
++    version 2.1 of the License, or (at your option) any later version.
++
++    This library is distributed in the hope that it will be useful,
++    but WITHOUT ANY WARRANTY; without even the implied warranty of
++    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
++    Lesser General Public License for more details.
++
++    You should have received a copy of the GNU Lesser General Public
++    License along with this library; if not, write to the Free Software
++    Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
++
++    Sam Lantinga
++    slouken@libsdl.org
++*/
++#include "SDL_config.h"
++
++#include "SDL_orbitalvideo.h"
++
++/* Functions to be exported */
+diff -rupN sdl/src/video/orbital/SDL_orbitalscancode.h sdl-redox/src/video/orbital/SDL_orbitalscancode.h
+--- sdl/src/video/orbital/SDL_orbitalscancode.h	1969-12-31 16:00:00.000000000 -0800
++++ sdl-redox/src/video/orbital/SDL_orbitalscancode.h	2016-07-27 18:17:26.687240818 -0700
+@@ -0,0 +1,80 @@
++#define SCANCODE_A	0x1E
++#define SCANCODE_B	0x30
++#define SCANCODE_C	0x2E
++#define SCANCODE_D	0x20
++#define SCANCODE_E	0x12
++#define SCANCODE_F	0x21
++#define SCANCODE_G	0x22
++#define SCANCODE_H	0x23
++#define SCANCODE_I	0x17
++#define SCANCODE_J	0x24
++#define SCANCODE_K	0x25
++#define SCANCODE_L	0x26
++#define SCANCODE_M	0x32
++#define SCANCODE_N	0x31
++#define SCANCODE_O	0x18
++#define SCANCODE_P	0x19
++#define SCANCODE_Q	0x10
++#define SCANCODE_R	0x13
++#define SCANCODE_S	0x1F
++#define SCANCODE_T	0x14
++#define SCANCODE_U	0x16
++#define SCANCODE_V	0x2F
++#define SCANCODE_W	0x11
++#define SCANCODE_X	0x2D
++#define SCANCODE_Y	0x15
++#define SCANCODE_Z	0x2C
++#define SCANCODE_0	0x0B
++#define SCANCODE_1	0x2
++#define SCANCODE_2	0x3
++#define SCANCODE_3	0x4
++#define SCANCODE_4	0x5
++#define SCANCODE_5	0x6
++#define SCANCODE_6	0x7
++#define SCANCODE_7	0x8
++#define SCANCODE_8	0x9
++#define SCANCODE_9	0x0A
++#define SCANCODE_TICK	0x29
++#define SCANCODE_MINUS	0x0C
++#define SCANCODE_EQUAL	0x0D
++#define SCANCODE_BACKSLASH	0x2B
++#define SCANCODE_BACKSPACE	0x0E
++#define SCANCODE_SPACE	0x39
++#define SCANCODE_TAB	0x0F
++#define SCANCODE_CAPSLOCK	0x3A
++#define SCANCODE_LEFTSHIFT	0x2A
++#define SCANCODE_LEFTCONTROL	0x1D
++#define SCANCODE_LEFTALT	0x38
++#define SCANCODE_RIGHTSHIFT	0x36
++#define SCANCODE_ENTER	0x1C
++#define SCANCODE_ESCAPE	0x1
++#define SCANCODE_F1	0x3B
++#define SCANCODE_F2	0x3C
++#define SCANCODE_F3	0x3D
++#define SCANCODE_F4	0x3E
++#define SCANCODE_F5	0x3F
++#define SCANCODE_F6	0x40
++#define SCANCODE_F7	0x41
++#define SCANCODE_F8	0x42
++#define SCANCODE_F9	0x43
++#define SCANCODE_F10	0x44
++#define SCANCODE_F11	0x57
++#define SCANCODE_F12	0x58
++#define SCANCODE_SCROLL	0x46
++#define SCANCODE_BRACKET_LEFT	0x1A
++#define SCANCODE_BRACKET_RIGHT	0x1B
++#define SCANCODE_INSERT	0x52
++#define SCANCODE_HOME	0x47
++#define SCANCODE_PAGEUP	0x49
++#define SCANCODE_DELETE	0x53
++#define SCANCODE_END	0x4F
++#define SCANCODE_PAGEDOWN	0x51
++#define SCANCODE_CURSORBLOCKUP	0x48
++#define SCANCODE_CURSORBLOCKLEFT	0x4B
++#define SCANCODE_CURSORBLOCKDOWN	0x50
++#define SCANCODE_CURSORBLOCKRIGHT	0x4D
++#define SCANCODE_SEMICOLON	0x27
++#define SCANCODE_APOSTROPHE	0x28
++#define SCANCODE_COMMA	0x33
++#define SCANCODE_PERIOD	0x34
++#define SCANCODE_SLASH	0x35
+diff -rupN sdl/src/video/orbital/SDL_orbitalvideo.c sdl-redox/src/video/orbital/SDL_orbitalvideo.c
+--- sdl/src/video/orbital/SDL_orbitalvideo.c	1969-12-31 16:00:00.000000000 -0800
++++ sdl-redox/src/video/orbital/SDL_orbitalvideo.c	2016-07-27 18:17:26.687240818 -0700
+@@ -0,0 +1,243 @@
++/*
++    SDL - Simple DirectMedia Layer
++    Copyright (C) 1997-2012 Sam Lantinga
++
++    This library is free software; you can redistribute it and/or
++    modify it under the terms of the GNU Lesser General Public
++    License as published by the Free Software Foundation; either
++    version 2.1 of the License, or (at your option) any later version.
++
++    This library is distributed in the hope that it will be useful,
++    but WITHOUT ANY WARRANTY; without even the implied warranty of
++    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
++    Lesser General Public License for more details.
++
++    You should have received a copy of the GNU Lesser General Public
++    License along with this library; if not, write to the Free Software
++    Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
++
++    Sam Lantinga
++    slouken@libsdl.org
++*/
++#include "SDL_config.h"
++
++/* Orbital SDL video driver implementation
++ *
++ * Initial work by Ryan C. Gordon (icculus@icculus.org). A good portion
++ *  of this was cut-and-pasted from Stephane Peter's work in the AAlib
++ *  SDL video driver.  Renamed to "DUMMY" by Sam Lantinga.
++ *  Repurposed to ORBITAL by Jeremy Soller.
++ */
++
++#include "SDL_video.h"
++#include "SDL_mouse.h"
++#include "../SDL_sysvideo.h"
++#include "../SDL_pixels_c.h"
++#include "../../events/SDL_events_c.h"
++
++#include "SDL_orbitalvideo.h"
++#include "SDL_orbitalevents_c.h"
++#include "SDL_orbitalmouse_c.h"
++
++#include <sys/types.h>
++#include <sys/stat.h>
++#include <sys/fcntl.h>
++
++#define ORBITALVID_DRIVER_NAME "orbital"
++
++/* Initialization/Query functions */
++static int ORBITAL_VideoInit(_THIS, SDL_PixelFormat *vformat);
++static SDL_Rect **ORBITAL_ListModes(_THIS, SDL_PixelFormat *format, Uint32 flags);
++static SDL_Surface *ORBITAL_SetVideoMode(_THIS, SDL_Surface *current, int width, int height, int bpp, Uint32 flags);
++static int ORBITAL_SetColors(_THIS, int firstcolor, int ncolors, SDL_Color *colors);
++static void ORBITAL_VideoQuit(_THIS);
++
++/* Hardware surface functions */
++static int ORBITAL_AllocHWSurface(_THIS, SDL_Surface *surface);
++static int ORBITAL_LockHWSurface(_THIS, SDL_Surface *surface);
++static void ORBITAL_UnlockHWSurface(_THIS, SDL_Surface *surface);
++static void ORBITAL_FreeHWSurface(_THIS, SDL_Surface *surface);
++
++/* etc. */
++static void ORBITAL_UpdateRects(_THIS, int numrects, SDL_Rect *rects);
++
++/* ORBITAL driver bootstrap functions */
++
++static int ORBITAL_Available(void)
++{
++	return(1);
++}
++
++static void ORBITAL_DeleteDevice(SDL_VideoDevice *device)
++{
++	SDL_free(device->hidden);
++	SDL_free(device);
++}
++
++static SDL_VideoDevice *ORBITAL_CreateDevice(int devindex)
++{
++	SDL_VideoDevice *device;
++
++	/* Initialize all variables that we clean on shutdown */
++	device = (SDL_VideoDevice *)SDL_malloc(sizeof(SDL_VideoDevice));
++	if ( device ) {
++		SDL_memset(device, 0, (sizeof *device));
++		device->hidden = (struct SDL_PrivateVideoData *)
++				SDL_malloc((sizeof *device->hidden));
++	}
++	if ( (device == NULL) || (device->hidden == NULL) ) {
++		SDL_OutOfMemory();
++		if ( device ) {
++			SDL_free(device);
++		}
++		return(0);
++	}
++	SDL_memset(device->hidden, 0, (sizeof *device->hidden));
++
++	/* Set the function pointers */
++	device->VideoInit = ORBITAL_VideoInit;
++	device->ListModes = ORBITAL_ListModes;
++	device->SetVideoMode = ORBITAL_SetVideoMode;
++	device->CreateYUVOverlay = NULL;
++	device->SetColors = ORBITAL_SetColors;
++	device->UpdateRects = ORBITAL_UpdateRects;
++	device->VideoQuit = ORBITAL_VideoQuit;
++	device->AllocHWSurface = ORBITAL_AllocHWSurface;
++	device->CheckHWBlit = NULL;
++	device->FillHWRect = NULL;
++	device->SetHWColorKey = NULL;
++	device->SetHWAlpha = NULL;
++	device->LockHWSurface = ORBITAL_LockHWSurface;
++	device->UnlockHWSurface = ORBITAL_UnlockHWSurface;
++	device->FlipHWSurface = NULL;
++	device->FreeHWSurface = ORBITAL_FreeHWSurface;
++	device->SetCaption = NULL;
++	device->SetIcon = NULL;
++	device->IconifyWindow = NULL;
++	device->GrabInput = NULL;
++	device->GetWMInfo = NULL;
++	device->InitOSKeymap = ORBITAL_InitOSKeymap;
++	device->PumpEvents = ORBITAL_PumpEvents;
++
++	device->free = ORBITAL_DeleteDevice;
++
++	return device;
++}
++
++VideoBootStrap ORBITAL_bootstrap = {
++	ORBITALVID_DRIVER_NAME, "SDL orbital video driver",
++	ORBITAL_Available, ORBITAL_CreateDevice
++};
++
++
++int ORBITAL_VideoInit(_THIS, SDL_PixelFormat *vformat)
++{
++	fprintf(stderr, "WARNING: You are using the SDL orbital video driver!\n");
++
++	/* Determine the screen depth (use default 32-bit depth) */
++	/* we change this during the SDL_SetVideoMode implementation... */
++	vformat->BitsPerPixel = 32;
++	vformat->BytesPerPixel = 4;
++
++	/* We're done! */
++	return(0);
++}
++
++SDL_Rect **ORBITAL_ListModes(_THIS, SDL_PixelFormat *format, Uint32 flags)
++{
++   	 return (SDL_Rect **) -1;
++}
++
++SDL_Surface *ORBITAL_SetVideoMode(_THIS, SDL_Surface *current,
++				int width, int height, int bpp, Uint32 flags)
++{
++	if ( this->hidden->fd ) {
++		close( this->hidden->fd );
++	}
++
++	if ( this->hidden->buffer ) {
++		SDL_free( this->hidden->buffer );
++	}
++
++	char path[4096];
++	snprintf(path, 4096, "orbital:/-1/-1/%d/%d/SDL", width, height);
++	this->hidden->fd = open(path, O_RDONLY);
++	printf("%s at %d\n", path, this->hidden->fd);
++
++	this->hidden->buffer = SDL_malloc(width * height * (bpp / 8));
++	if ( ! this->hidden->buffer ) {
++		SDL_SetError("Couldn't allocate buffer for requested mode");
++		return(NULL);
++	}
++
++ 	printf("Setting mode %dx%d@%d\n", width, height, bpp);
++
++	SDL_memset(this->hidden->buffer, 0, width * height * (bpp / 8));
++
++	/* Allocate the new pixel format for the screen */
++	if ( ! SDL_ReallocFormat(current, bpp, 0, 0, 0, 0) ) {
++		SDL_free(this->hidden->buffer);
++		this->hidden->buffer = NULL;
++		SDL_SetError("Couldn't allocate new pixel format for requested mode");
++		return(NULL);
++	}
++
++	/* Set up the new mode framebuffer */
++	current->flags = flags & SDL_FULLSCREEN;
++	this->hidden->w = current->w = width;
++	this->hidden->h = current->h = height;
++	current->pitch = current->w * (bpp / 8);
++	current->pixels = this->hidden->buffer;
++
++	/* We're done */
++	return(current);
++}
++
++/* We don't actually allow hardware surfaces other than the main one */
++static int ORBITAL_AllocHWSurface(_THIS, SDL_Surface *surface)
++{
++	return(-1);
++}
++static void ORBITAL_FreeHWSurface(_THIS, SDL_Surface *surface)
++{
++	return;
++}
++
++/* We need to wait for vertical retrace on page flipped displays */
++static int ORBITAL_LockHWSurface(_THIS, SDL_Surface *surface)
++{
++	return(0);
++}
++
++static void ORBITAL_UnlockHWSurface(_THIS, SDL_Surface *surface)
++{
++	return;
++}
++
++static void ORBITAL_UpdateRects(_THIS, int numrects, SDL_Rect *rects)
++{
++	write(this->hidden->fd, this->hidden->buffer, this->hidden->w * this->hidden->h * 4);
++}
++
++int ORBITAL_SetColors(_THIS, int firstcolor, int ncolors, SDL_Color *colors)
++{
++	/* do nothing of note. */
++	return(1);
++}
++
++/* Note:  If we are terminated, this could be called in the middle of
++   another SDL video routine -- notably UpdateRects.
++*/
++void ORBITAL_VideoQuit(_THIS)
++{
++	if ( this->hidden->fd ) {
++		close( this->hidden->fd );
++                this->hidden->fd = 0;
++	}
++
++	if (this->screen->pixels != NULL)
++	{
++		SDL_free(this->screen->pixels);
++		this->screen->pixels = NULL;
++	}
++}
+diff -rupN sdl/src/video/orbital/SDL_orbitalvideo.h sdl-redox/src/video/orbital/SDL_orbitalvideo.h
+--- sdl/src/video/orbital/SDL_orbitalvideo.h	1969-12-31 16:00:00.000000000 -0800
++++ sdl-redox/src/video/orbital/SDL_orbitalvideo.h	2016-07-27 18:17:26.687240818 -0700
+@@ -0,0 +1,41 @@
++/*
++    SDL - Simple DirectMedia Layer
++    Copyright (C) 1997-2012 Sam Lantinga
++
++    This library is free software; you can redistribute it and/or
++    modify it under the terms of the GNU Lesser General Public
++    License as published by the Free Software Foundation; either
++    version 2.1 of the License, or (at your option) any later version.
++
++    This library is distributed in the hope that it will be useful,
++    but WITHOUT ANY WARRANTY; without even the implied warranty of
++    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
++    Lesser General Public License for more details.
++
++    You should have received a copy of the GNU Lesser General Public
++    License along with this library; if not, write to the Free Software
++    Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
++
++    Sam Lantinga
++    slouken@libsdl.org
++*/
++#include "SDL_config.h"
++
++#ifndef _SDL_orbitalvideo_h
++#define _SDL_orbitalvideo_h
++
++#include "../SDL_sysvideo.h"
++
++/* Hidden "this" pointer for the video functions */
++#define _THIS	SDL_VideoDevice *this
++
++
++/* Private display data */
++
++struct SDL_PrivateVideoData {
++    int w, h;
++    int fd;
++    void *buffer;
++};
++
++#endif /* _SDL_orbitalvideo_h */
+diff -rupN sdl/src/video/SDL_sysvideo.h sdl-redox/src/video/SDL_sysvideo.h
+--- sdl/src/video/SDL_sysvideo.h	2012-01-18 22:30:06.000000000 -0800
++++ sdl-redox/src/video/SDL_sysvideo.h	2016-07-27 18:17:26.683907466 -0700
+@@ -410,6 +410,9 @@ extern VideoBootStrap AALIB_bootstrap;
+ #if SDL_VIDEO_DRIVER_CACA
+ extern VideoBootStrap CACA_bootstrap;
+ #endif
++#if SDL_VIDEO_DRIVER_ORBITAL
++extern VideoBootStrap ORBITAL_bootstrap;
++#endif
+ #if SDL_VIDEO_DRIVER_DUMMY
+ extern VideoBootStrap DUMMY_bootstrap;
+ #endif
+diff -rupN sdl/src/video/SDL_video.c sdl-redox/src/video/SDL_video.c
+--- sdl/src/video/SDL_video.c	2012-01-18 22:30:06.000000000 -0800
++++ sdl-redox/src/video/SDL_video.c	2016-07-27 18:17:26.683907466 -0700
+@@ -126,6 +126,9 @@ static VideoBootStrap *bootstrap[] = {
+ #if SDL_VIDEO_DRIVER_CACA
+ 	&CACA_bootstrap,
+ #endif
++#if SDL_VIDEO_DRIVER_ORBITAL
++	&ORBITAL_bootstrap,
++#endif
+ #if SDL_VIDEO_DRIVER_DUMMY
+ 	&DUMMY_bootstrap,
+ #endif
