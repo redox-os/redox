@@ -77,8 +77,8 @@ The ecosystem and software Redox OS provides is listed below.
 
 Sometimes things go wrong when compiling. Try the following before opening an issue:
 
-1. Make sure you have a redox toolchain (`x86_64-unknown-redox-gcc`).
-    * You can install from .deb packages(`https://static.redox-os.org/toolchain/apt/`) or build [redox-os/libc](https://github.com/redox-os/libc) manually.
+1. Make sure you have a Redox toolchain (`x86_64-unknown-redox-gcc`).
+    * You can install from .deb packages (`https://static.redox-os.org/toolchain/apt/`) or build [redox-os/libc](https://github.com/redox-os/libc) manually.
 1. Run `rustup update`
 1. Run `make clean pull`.
 1. Make sure you have **the latest version of Rust nightly!** ([rustup.rs](https://www.rustup.rs) is recommended for managing Rust versions. If you already have it, run `rustup`).
@@ -112,13 +112,13 @@ $ make all
 
 # Launch using QEMU
 $ make qemu
-# Launch using QEMU without using KVM (Kernel Virtual Machine). Try if QEMU gives an error.
+# Launch using QEMU without using KVM (Kernel-based Virtual Machine). Try if QEMU gives an error.
 $ make qemu kvm=no
 ```
 
 #### QEMU with KVM
 
-To use QEMU with KVM (kernel-based virtual Machine), which is faster than without KVM, you need a CPU with Intel® Virtualization Technology (Intel® VT) or AMD Virtualization™ (AMD-V™) support. Most systems have this disabled by default, so you may need to reboot, go into the BIOS, and enable it.
+To use QEMU with KVM (Kernel-based Virtual Machine), which is faster than without KVM, you need a CPU with Intel® Virtualization Technology (Intel® VT) or AMD Virtualization™ (AMD-V™) support. Most systems have this disabled by default, so you may need to reboot, go into the BIOS, and enable it.
 
 ### <a name="manual-setup"> Manual Setup </a>
 
@@ -153,10 +153,10 @@ $ make all
 # Launch using QEMU
 $ make qemu
 
-# Launch using QEMU without using KVM (Kernel Virtual Machine). Try if QEMU gives an error.
+# Launch using QEMU without using KVM (Kernel-based Virtual Machine). Try if QEMU gives an error.
 $ make qemu kvm=no
 
-# Launch using QEMU without using KVM (Kernel Virtual Machine) nor Graphics
+# Launch using QEMU without using KVM (Kernel-based Virtual Machine) nor Graphics
 make qemu kvm=no vga=no
 ```
 
