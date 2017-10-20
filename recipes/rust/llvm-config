@@ -15,8 +15,17 @@ elif args == ["--cxxflags"]:
     print("-I" + prefix + "/include --std=gnu++11 -fPIC -fvisibility-inlines-hidden -Wall -W -Wno-unused-parameter -Wwrite-strings -Wcast-qual -Wno-missing-field-initializers -pedantic -Wno-long-long -Wno-maybe-uninitialized -Wdelete-non-virtual-dtor -Wno-comment -Werror=date-time -std=gnu++11 -g  -fno-exceptions -fno-rtti -D__STDC_CONSTANT_MACROS -D__STDC_FORMAT_MACROS -D__STDC_LIMIT_MACROS")
 elif args == ["--components"]:
     print("all all-targets analysis asmparser asmprinter bitreader bitwriter codegen core coroutines coverage debuginfocodeview debuginfodwarf debuginfomsf debuginfopdb demangle engine executionengine globalisel instcombine instrumentation interpreter ipo irreader libdriver lineeditor linker lto mc mcdisassembler mcjit mcparser mirparser native nativecodegen objcarcopts object objectyaml option orcjit passes profiledata runtimedyld scalaropts selectiondag support symbolize tablegen target transformutils vectorize x86 x86asmparser x86asmprinter x86codegen x86desc x86disassembler x86info x86utils")
-elif args == ['--libs', '--link-static', 'asmparser', 'bitreader', 'bitwriter', 'instrumentation', 'interpreter', 'ipo', 'linker', 'mcjit', 'x86']:
-    print("-lLLVMX86Disassembler -lLLVMX86AsmParser -lLLVMX86CodeGen -lLLVMGlobalISel -lLLVMSelectionDAG -lLLVMAsmPrinter -lLLVMDebugInfoCodeView -lLLVMDebugInfoMSF -lLLVMX86Desc -lLLVMMCDisassembler -lLLVMX86Info -lLLVMX86AsmPrinter -lLLVMX86Utils -lLLVMMCJIT -lLLVMipo -lLLVMVectorize -lLLVMLinker -lLLVMIRReader -lLLVMInterpreter -lLLVMExecutionEngine -lLLVMRuntimeDyld -lLLVMCodeGen -lLLVMTarget -lLLVMScalarOpts -lLLVMInstCombine -lLLVMInstrumentation -lLLVMTransformUtils -lLLVMBitWriter -lLLVMAnalysis -lLLVMObject -lLLVMMCParser -lLLVMMC -lLLVMProfileData -lLLVMBitReader -lLLVMAsmParser -lLLVMCore -lLLVMSupport -lLLVMDemangle -lstdc++ -lgcc")
+elif args == ['--libs', '--link-static', 'asmparser', 'bitreader', 'bitwriter', 'instrumentation', 'interpreter', 'ipo', 'linker', 'lto', 'mcjit', 'x86']:
+    print(
+        "-lLLVMLTO -lLLVMObjCARCOpts -lLLVMPasses -lLLVMX86Disassembler -lLLVMX86AsmParser -lLLVMX86CodeGen"
+        + "  -lLLVMGlobalISel -lLLVMSelectionDAG -lLLVMAsmPrinter -lLLVMDebugInfoCodeView -lLLVMDebugInfoMSF"
+        + " -lLLVMX86Desc -lLLVMMCDisassembler -lLLVMX86Info -lLLVMX86AsmPrinter -lLLVMX86Utils -lLLVMMCJIT"
+        + " -lLLVMipo -lLLVMVectorize -lLLVMLinker -lLLVMIRReader -lLLVMInterpreter -lLLVMExecutionEngine"
+        + " -lLLVMRuntimeDyld -lLLVMCodeGen -lLLVMTarget -lLLVMScalarOpts -lLLVMInstCombine -lLLVMInstrumentation"
+        + " -lLLVMTransformUtils -lLLVMBitWriter -lLLVMAnalysis -lLLVMObject -lLLVMMCParser -lLLVMMC"
+        + " -lLLVMProfileData -lLLVMBitReader -lLLVMAsmParser -lLLVMCore -lLLVMSupport -lLLVMDemangle"
+        + " -lstdc++ -lgcc"
+    )
     # FIXME last two -l are are a hack
 elif args == ["--link-static", "--ldflags"]:
     print("-L" + prefix + "/lib");
