@@ -1,9 +1,9 @@
-GIT=https://github.com/ids1024/rust.git
-BRANCH=compile-redox
+GIT=https://github.com/redox-os/rust.git
+BRANCH=compile-redox-stage-0
 DEPENDS="gcc cargo"
 
-LLVM_PREFIX=$PWD/build/llvm-root
-SYSROOT=/usr/$HOST
+LLVM_PREFIX="$PWD/build/llvm-root"
+SYSROOT="/usr/$HOST"
 unset AR AS CC CXX LD NM OBJCOPY OBJDUMP RANLIB READELF STRIP
 
 
@@ -25,17 +25,18 @@ function recipe_build {
     then
         git -C llvm-redox pull
     else
-        git clone https://github.com/ids1024/llvm.git -b redox2 --depth 1 llvm-redox
+        git clone https://github.com/redox-os/llvm.git -b redox --depth 1 llvm-redox
     fi
 
     # Build LLVM
-    rm -rf $LLVM_PREFIX
-    mkdir $LLVM_PREFIX
+    rm -rf "$LLVM_PREFIX"
+    mkdir -p "$LLVM_PREFIX"
+    rm -rf llvm-redox/build
     mkdir -p llvm-redox/build
     pushd llvm-redox/build
         CC=$HOST-gcc CXX=$HOST-g++ cmake "${LLVM_CMAKE_ARGS[@]}" ..
-	make -j"$(nproc)"
-	make install
+        make -j4
+        make install
     popd
 
     cp ../{config.toml,llvm-config} ./
