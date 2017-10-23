@@ -1,4 +1,4 @@
-GIT=https://github.com/ids1024/cargo.git
+GIT=https://github.com/redox-os/cargo.git
 BRANCH=redox
 BUILD_DEPENDS=(openssl)
 
