@@ -35,7 +35,7 @@ function recipe_build {
     mkdir -p llvm-redox/build
     pushd llvm-redox/build
         CC=$HOST-gcc CXX=$HOST-g++ cmake "${LLVM_CMAKE_ARGS[@]}" ..
-        make -j4
+        make -j$(nproc)
         make install
     popd
 
