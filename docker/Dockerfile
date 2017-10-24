@@ -16,6 +16,7 @@ RUN set -ex;                                                                   \
         sudo                                                                   \
         texinfo                                                                \
         git                                                                    \
+        cmake                                                                  \
         ;                                                                      \
     apt-key adv --keyserver keyserver.ubuntu.com --recv-keys AA12E97F0881517F; \
     echo "deb https://static.redox-os.org/toolchain/apt/ /" >>                 \
