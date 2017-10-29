@@ -4,18 +4,18 @@ shopt -s nullglob
 
 source config.sh
 
-recipes=()
+recipes=""
 for arg in "${@:1}"
 do
     if [ "$arg" == "--debug" ]
     then
         DEBUG=--debug
     else
-        recipes[${#recipes[@]}]="$arg"
+        recipes+=" $arg"
     fi
 done
 
-if [ ${#recipes[@]} = 0 ]
+if [ "$recipes" == "" ]
 then
     recipes="$(ls -1 recipes)"
 fi
