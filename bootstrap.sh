@@ -461,6 +461,7 @@ boot()
 	echo "Cloning github repo..."
 	git clone https://github.com/redox-os/redox.git --origin upstream --recursive
 	rustInstall
+	cargo install xargo
 	echo "Cleaning up..."
 	rm bootstrap.sh
 	echo
