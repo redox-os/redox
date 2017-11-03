@@ -1,0 +1,4082 @@
+Only in source-new: addrmatch.o
+diff -ru source/atomicio.c source-new/atomicio.c
+--- source/atomicio.c	2017-10-02 12:34:26.000000000 -0700
++++ source-new/atomicio.c	2017-11-02 18:31:51.855545895 -0700
+@@ -116,7 +116,7 @@
+ 
+ #ifndef BROKEN_READV_COMPARISON
+ 	pfd.fd = fd;
+-	pfd.events = f == readv ? POLLIN : POLLOUT;
++	//pfd.events = f == readv ? POLLIN : POLLOUT;
+ #endif
+ 	for (; iovcnt > 0 && iov[0].iov_len > 0;) {
+ 		res = (f) (fd, iov, iovcnt);
+iff -ru source/auth-pam.c source-new/auth-pam.c
+--- source/auth-pam.c	2017-10-02 12:34:26.000000000 -0700
++++ source-new/auth-pam.c	2017-11-02 18:31:51.898879152 -0700
+@@ -128,6 +128,10 @@
+ typedef pthread_t sp_pthread_t;
+ #else
+ typedef pid_t sp_pthread_t;
++# define pthread_create(a, b, c, d)    _ssh_compat_pthread_create(a, b, c, d)
++# define pthread_exit(a)               _ssh_compat_pthread_exit(a)
++# define pthread_cancel(a)             _ssh_compat_pthread_cancel(a)
++# define pthread_join(a, b)            _ssh_compat_pthread_join(a, b)
+ #endif
+ 
+ struct pam_ctxt {
+diff -ru source/channels.c source-new/channels.c
+--- source/channels.c	2017-10-02 12:34:26.000000000 -0700
++++ source-new/channels.c	2017-11-02 18:31:51.902212479 -0700
+@@ -1556,14 +1556,16 @@
+ 
+ 	debug("X11 connection requested.");
+ 	addrlen = sizeof(addr);
+-	newsock = accept(c->sock, (struct sockaddr *)&addr, &addrlen);
+-	if (c->single_connection) {
+-		oerrno = errno;
+-		debug2("single_connection: closing X11 listener.");
+-		channel_close_fd(ssh, &c->sock);
+-		chan_mark_dead(ssh, c);
+-		errno = oerrno;
+-	}
++    /*
++	 *newsock = accept(c->sock, (struct sockaddr *)&addr, &addrlen);
++	 *if (c->single_connection) {
++	 *    oerrno = errno;
++	 *    debug2("single_connection: closing X11 listener.");
++	 *    channel_close_fd(ssh, &c->sock);
++	 *    chan_mark_dead(ssh, c);
++	 *    errno = oerrno;
++	 *}
++     */
+ 	if (newsock < 0) {
+ 		if (errno != EINTR && errno != EWOULDBLOCK &&
+ 		    errno != ECONNABORTED)
+@@ -1677,8 +1679,8 @@
+ 	 * Set socket options.
+ 	 * Allow local port reuse in TIME_WAIT.
+ 	 */
+-	if (setsockopt(fd, SOL_SOCKET, SO_REUSEADDR, &on, sizeof(on)) == -1)
+-		error("setsockopt SO_REUSEADDR fd %d: %s", fd, strerror(errno));
++//	if (setsockopt(fd, SOL_SOCKET, SO_REUSEADDR, &on, sizeof(on)) == -1)
++//		error("setsockopt SO_REUSEADDR fd %d: %s", fd, strerror(errno));
+ }
+ 
+ void
+@@ -1724,15 +1726,17 @@
+ 	}
+ 
+ 	addrlen = sizeof(addr);
+-	newsock = accept(c->sock, (struct sockaddr *)&addr, &addrlen);
+-	if (newsock < 0) {
+-		if (errno != EINTR && errno != EWOULDBLOCK &&
+-		    errno != ECONNABORTED)
+-			error("accept: %.100s", strerror(errno));
+-		if (errno == EMFILE || errno == ENFILE)
+-			c->notbefore = monotime() + 1;
+-		return;
+-	}
++    /*
++	 *newsock = accept(c->sock, (struct sockaddr *)&addr, &addrlen);
++	 *if (newsock < 0) {
++	 *    if (errno != EINTR && errno != EWOULDBLOCK &&
++	 *        errno != ECONNABORTED)
++	 *        error("accept: %.100s", strerror(errno));
++	 *    if (errno == EMFILE || errno == ENFILE)
++	 *        c->notbefore = monotime() + 1;
++	 *    return;
++	 *}
++     */
+ 	if (c->host_port != PORT_STREAMLOCAL)
+ 		set_nodelay(newsock);
+ 	nc = channel_new(ssh, rtype, nextstate, newsock, newsock, -1,
+@@ -1763,13 +1767,15 @@
+ 		return;
+ 
+ 	addrlen = sizeof(addr);
+-	newsock = accept(c->sock, (struct sockaddr *)&addr, &addrlen);
+-	if (newsock < 0) {
+-		error("accept from auth socket: %.100s", strerror(errno));
+-		if (errno == EMFILE || errno == ENFILE)
+-			c->notbefore = monotime() + 1;
+-		return;
+-	}
++    /*
++	 *newsock = accept(c->sock, (struct sockaddr *)&addr, &addrlen);
++	 *if (newsock < 0) {
++	 *    error("accept from auth socket: %.100s", strerror(errno));
++	 *    if (errno == EMFILE || errno == ENFILE)
++	 *        c->notbefore = monotime() + 1;
++	 *    return;
++	 *}
++     */
+ 	nc = channel_new(ssh, "accepted auth socket",
+ 	    SSH_CHANNEL_OPENING, newsock, newsock, -1,
+ 	    c->local_window_max, c->local_maxpacket,
+@@ -1792,10 +1798,12 @@
+ 		fatal(":%s: channel %d: no remote id", __func__, c->self);
+ 	/* for rdynamic the OPEN_CONFIRMATION has been sent already */
+ 	isopen = (c->type == SSH_CHANNEL_RDYNAMIC_FINISH);
+-	if (getsockopt(c->sock, SOL_SOCKET, SO_ERROR, &err, &sz) < 0) {
+-		err = errno;
+-		error("getsockopt SO_ERROR failed");
+-	}
++    /*
++	 *if (getsockopt(c->sock, SOL_SOCKET, SO_ERROR, &err, &sz) < 0) {
++	 *    err = errno;
++	 *    error("getsockopt SO_ERROR failed");
++	 *}
++     */
+ 	if (err == 0) {
+ 		debug("channel %d: connected to %s port %d",
+ 		    c->self, c->connect_ctx.host, c->connect_ctx.port);
+@@ -2234,13 +2242,15 @@
+ 	 */
+ 	memset(&addr, 0, sizeof(addr));
+ 	addrlen = sizeof(addr);
+-	if ((newsock = accept(c->sock, (struct sockaddr*)&addr,
+-	    &addrlen)) == -1) {
+-		error("%s accept: %s", __func__, strerror(errno));
+-		if (errno == EMFILE || errno == ENFILE)
+-			c->notbefore = monotime() + 1;
+-		return;
+-	}
++    /*
++	 *if ((newsock = accept(c->sock, (struct sockaddr*)&addr,
++	 *    &addrlen)) == -1) {
++	 *    error("%s accept: %s", __func__, strerror(errno));
++	 *    if (errno == EMFILE || errno == ENFILE)
++	 *        c->notbefore = monotime() + 1;
++	 *    return;
++	 *}
++     */
+ 
+ 	if (getpeereid(newsock, &euid, &egid) < 0) {
+ 		error("%s getpeereid failed: %s", __func__,
+@@ -4318,8 +4328,10 @@
+ 		if (sc->channels[i] == NULL || !sc->channels[i]->client_tty ||
+ 		    sc->channels[i]->type != SSH_CHANNEL_OPEN)
+ 			continue;
+-		if (ioctl(sc->channels[i]->rfd, TIOCGWINSZ, &ws) < 0)
+-			continue;
++        /*
++		 *if (ioctl(sc->channels[i]->rfd, TIOCGWINSZ, &ws) < 0)
++		 *    continue;
++         */
+ 		channel_request_start(ssh, i, "window-change", 0);
+ 		if ((r = sshpkt_put_u32(ssh, (u_int)ws.ws_col)) != 0 ||
+ 		    (r = sshpkt_put_u32(ssh, (u_int)ws.ws_row)) != 0 ||
+diff -ru source/cipher.c source-new/cipher.c
+--- source/cipher.c	2017-10-02 12:34:26.000000000 -0700
++++ source-new/cipher.c	2017-11-02 18:31:51.902212479 -0700
+@@ -297,7 +297,10 @@
+ 			goto out;
+ 		}
+ 	}
+-	if (EVP_CipherInit(cc->evp, NULL, (u_char *)key, NULL, -1) == 0) {
++	/* in OpenSSL 1.1.0, EVP_CipherInit clears all previous setups;
++	   use EVP_CipherInit_ex for augmenting */
++	if (EVP_CipherInit_ex(cc->evp, NULL, NULL, (u_char *)key, NULL, -1) == 0)
++	{
+ 		ret = SSH_ERR_LIBCRYPTO_ERROR;
+ 		goto out;
+ 	}
+@@ -486,7 +489,7 @@
+ 		   len, iv))
+ 		       return SSH_ERR_LIBCRYPTO_ERROR;
+ 	} else
+-		memcpy(iv, cc->evp->iv, len);
++		memcpy(iv, EVP_CIPHER_CTX_iv(cc->evp), len);
+ #endif
+ 	return 0;
+ }
+@@ -520,14 +523,19 @@
+ 		    EVP_CTRL_GCM_SET_IV_FIXED, -1, (void *)iv))
+ 			return SSH_ERR_LIBCRYPTO_ERROR;
+ 	} else
+-		memcpy(cc->evp->iv, iv, evplen);
++		memcpy(EVP_CIPHER_CTX_iv(cc->evp), iv, evplen);
+ #endif
+ 	return 0;
+ }
+ 
+ #ifdef WITH_OPENSSL
+-#define EVP_X_STATE(evp)	(evp)->cipher_data
+-#define EVP_X_STATE_LEN(evp)	(evp)->cipher->ctx_size
++# if OPENSSL_VERSION_NUMBER >= 0x10100000UL
++#define EVP_X_STATE(evp)	EVP_CIPHER_CTX_get_cipher_data(evp)
++#define EVP_X_STATE_LEN(evp)	EVP_CIPHER_impl_ctx_size(EVP_CIPHER_CTX_cipher(evp))
++# else
++#define EVP_X_STATE(evp)	(evp).cipher_data
++#define EVP_X_STATE_LEN(evp)	(evp).cipher->ctx_size
++# endif
+ #endif
+ 
+ int
+diff -ru source/cipher.h source-new/cipher.h
+--- source/cipher.h	2017-10-02 12:34:26.000000000 -0700
++++ source-new/cipher.h	2017-11-02 18:31:51.902212479 -0700
+@@ -46,7 +46,18 @@
+ #define CIPHER_DECRYPT		0
+ 
+ struct sshcipher;
++#if 0
++struct sshcipher_ctx {
++	int	plaintext;
++	int	encrypt;
++	EVP_CIPHER_CTX *evp;
++	struct chachapoly_ctx cp_ctx; /* XXX union with evp? */
++	struct aesctr_ctx ac_ctx; /* XXX union with evp? */
++	const struct sshcipher *cipher;
++};
++#else
+ struct sshcipher_ctx;
++#endif
+ 
+ const struct sshcipher *cipher_by_name(const char *);
+ const char *cipher_warning_message(const struct sshcipher_ctx *);
+diff -ru source/clientloop.c source-new/clientloop.c
+--- source/clientloop.c	2017-10-02 12:34:26.000000000 -0700
++++ source-new/clientloop.c	2017-11-02 18:31:51.902212479 -0700
+@@ -2182,8 +2182,8 @@
+ 		struct winsize ws;
+ 
+ 		/* Store window size in the packet. */
+-		if (ioctl(in_fd, TIOCGWINSZ, &ws) < 0)
+-			memset(&ws, 0, sizeof(ws));
++		//if (ioctl(in_fd, TIOCGWINSZ, &ws) < 0)
++		//	memset(&ws, 0, sizeof(ws));
+ 
+ 		channel_request_start(ssh, id, "pty-req", 1);
+ 		client_expect_confirm(ssh, id, "PTY allocation", CONFIRM_TTY);
+diff -ru source/config.sub source-new/config.sub
+--- source/config.sub	2017-10-02 12:34:26.000000000 -0700
++++ source-new/config.sub	2017-11-02 18:31:51.908879134 -0700
+@@ -1381,7 +1381,7 @@
+ 	# The portable systems comes first.
+ 	# Each alternative MUST END IN A *, to match a version number.
+ 	# -sysv* is not here because it comes later, after sysvr4.
+-	-gnu* | -bsd* | -mach* | -minix* | -genix* | -ultrix* | -irix* \
++	-gnu* | -bsd* | -redox* | -mach* | -minix* | -genix* | -ultrix* | -irix* \
+ 	      | -*vms* | -sco* | -esix* | -isc* | -aix* | -cnk* | -sunos | -sunos[34]*\
+ 	      | -hpux* | -unos* | -osf* | -luna* | -dgux* | -auroraux* | -solaris* \
+ 	      | -sym* | -kopensolaris* | -plan9* \
+diff -ru source/configure source-new/configure
+--- source/configure	2017-10-03 09:06:08.000000000 -0700
++++ source-new/configure	2017-11-02 18:31:51.908879134 -0700
+@@ -12688,7 +12688,6 @@
+ 				100*)   ;; # 1.0.x
+ 				200*)   ;; # LibreSSL
+ 			        *)
+-					as_fn_error $? "OpenSSL >= 1.1.0 is not yet supported (have \"$ssl_library_ver\")" "$LINENO" 5
+ 			                ;;
+ 			esac
+ 			{ $as_echo "$as_me:${as_lineno-$LINENO}: result: $ssl_library_ver" >&5
+diff -ru source/dh.c source-new/dh.c
+--- source/dh.c	2017-10-02 12:34:26.000000000 -0700
++++ source-new/dh.c	2017-11-02 18:31:51.912212462 -0700
+@@ -212,14 +212,15 @@
+ /* diffie-hellman-groupN-sha1 */
+ 
+ int
+-dh_pub_is_valid(DH *dh, BIGNUM *dh_pub)
++dh_pub_is_valid(const DH *dh, const BIGNUM *dh_pub)
+ {
+ 	int i;
+ 	int n = BN_num_bits(dh_pub);
+ 	int bits_set = 0;
+ 	BIGNUM *tmp;
++	const BIGNUM *p;
+ 
+-	if (dh_pub->neg) {
++	if (BN_is_negative(dh_pub)) {
+ 		logit("invalid public DH value: negative");
+ 		return 0;
+ 	}
+@@ -232,7 +233,8 @@
+ 		error("%s: BN_new failed", __func__);
+ 		return 0;
+ 	}
+-	if (!BN_sub(tmp, dh->p, BN_value_one()) ||
++	DH_get0_pqg(dh, &p, NULL, NULL);
++	if (!BN_sub(tmp, p, BN_value_one()) ||
+ 	    BN_cmp(dh_pub, tmp) != -1) {		/* pub_exp > p-2 */
+ 		BN_clear_free(tmp);
+ 		logit("invalid public DH value: >= p-1");
+@@ -243,14 +245,14 @@
+ 	for (i = 0; i <= n; i++)
+ 		if (BN_is_bit_set(dh_pub, i))
+ 			bits_set++;
+-	debug2("bits set: %d/%d", bits_set, BN_num_bits(dh->p));
++	debug2("bits set: %d/%d", bits_set, BN_num_bits(p));
+ 
+ 	/*
+ 	 * if g==2 and bits_set==1 then computing log_g(dh_pub) is trivial
+ 	 */
+ 	if (bits_set < 4) {
+ 		logit("invalid public DH value (%d/%d)",
+-		   bits_set, BN_num_bits(dh->p));
++		   bits_set, BN_num_bits(p));
+ 		return 0;
+ 	}
+ 	return 1;
+@@ -260,9 +262,13 @@
+ dh_gen_key(DH *dh, int need)
+ {
+ 	int pbits;
++	const BIGNUM *p, *pub_key;
++	BIGNUM *priv_key;
+ 
+-	if (need < 0 || dh->p == NULL ||
+-	    (pbits = BN_num_bits(dh->p)) <= 0 ||
++	DH_get0_pqg(dh, &p, NULL, NULL);
++
++	if (need < 0 || p == NULL ||
++	    (pbits = BN_num_bits(p)) <= 0 ||
+ 	    need > INT_MAX / 2 || 2 * need > pbits)
+ 		return SSH_ERR_INVALID_ARGUMENT;
+ 	if (need < 256)
+@@ -271,10 +277,13 @@
+ 	 * Pollard Rho, Big step/Little Step attacks are O(sqrt(n)),
+ 	 * so double requested need here.
+ 	 */
+-	dh->length = MINIMUM(need * 2, pbits - 1);
+-	if (DH_generate_key(dh) == 0 ||
+-	    !dh_pub_is_valid(dh, dh->pub_key)) {
+-		BN_clear_free(dh->priv_key);
++	DH_set_length(dh, MIN(need * 2, pbits - 1));
++	if (DH_generate_key(dh) == 0) {
++		return SSH_ERR_LIBCRYPTO_ERROR;
++	}
++	DH_get0_key(dh, &pub_key, &priv_key);
++	if (!dh_pub_is_valid(dh, pub_key)) {
++		BN_clear(priv_key);
+ 		return SSH_ERR_LIBCRYPTO_ERROR;
+ 	}
+ 	return 0;
+@@ -283,16 +292,27 @@
+ DH *
+ dh_new_group_asc(const char *gen, const char *modulus)
+ {
+-	DH *dh;
++	DH *dh = NULL;
++	BIGNUM *p=NULL, *g=NULL;
+ 
+-	if ((dh = DH_new()) == NULL)
+-		return NULL;
+-	if (BN_hex2bn(&dh->p, modulus) == 0 ||
+-	    BN_hex2bn(&dh->g, gen) == 0) {
+-		DH_free(dh);
+-		return NULL;
++	if ((dh = DH_new()) == NULL ||
++	    (p = BN_new()) == NULL ||
++	    (g = BN_new()) == NULL)
++		goto null;
++	if (BN_hex2bn(&p, modulus) == 0 ||
++	    BN_hex2bn(&g, gen) == 0) {
++		goto null;
+ 	}
++	if (DH_set0_pqg(dh, p, NULL, g) == 0) {
++		goto null;
++	}
++	p = g = NULL;
+ 	return (dh);
++null:
++	BN_free(p);
++	BN_free(g);
++	DH_free(dh);
++	return NULL;
+ }
+ 
+ /*
+@@ -307,8 +327,8 @@
+ 
+ 	if ((dh = DH_new()) == NULL)
+ 		return NULL;
+-	dh->p = modulus;
+-	dh->g = gen;
++	if (DH_set0_pqg(dh, modulus, NULL, gen) == 0)
++		return NULL;
+ 
+ 	return (dh);
+ }
+diff -ru source/dh.h source-new/dh.h
+--- source/dh.h	2017-10-02 12:34:26.000000000 -0700
++++ source-new/dh.h	2017-11-02 18:31:51.912212462 -0700
+@@ -42,7 +42,7 @@
+ DH	*dh_new_group_fallback(int);
+ 
+ int	 dh_gen_key(DH *, int);
+-int	 dh_pub_is_valid(DH *, BIGNUM *);
++int	 dh_pub_is_valid(const DH *, const BIGNUM *);
+ 
+ u_int	 dh_estimate(int);
+ 
+diff -ru source/digest-openssl.c source-new/digest-openssl.c
+--- source/digest-openssl.c	2017-10-02 12:34:26.000000000 -0700
++++ source-new/digest-openssl.c	2017-11-02 18:31:51.912212462 -0700
+@@ -43,7 +43,7 @@
+ 
+ struct ssh_digest_ctx {
+ 	int alg;
+-	EVP_MD_CTX mdctx;
++	EVP_MD_CTX *mdctx;
+ };
+ 
+ struct ssh_digest {
+@@ -106,20 +106,21 @@
+ size_t
+ ssh_digest_blocksize(struct ssh_digest_ctx *ctx)
+ {
+-	return EVP_MD_CTX_block_size(&ctx->mdctx);
++	return EVP_MD_CTX_block_size(ctx->mdctx);
+ }
+ 
+ struct ssh_digest_ctx *
+ ssh_digest_start(int alg)
+ {
+ 	const struct ssh_digest *digest = ssh_digest_by_alg(alg);
+-	struct ssh_digest_ctx *ret;
++	struct ssh_digest_ctx *ret = NULL;
+ 
+ 	if (digest == NULL || ((ret = calloc(1, sizeof(*ret))) == NULL))
+ 		return NULL;
+ 	ret->alg = alg;
+-	EVP_MD_CTX_init(&ret->mdctx);
+-	if (EVP_DigestInit_ex(&ret->mdctx, digest->mdfunc(), NULL) != 1) {
++	if ((ret->mdctx = EVP_MD_CTX_new()) == NULL ||
++	    EVP_DigestInit_ex(ret->mdctx, digest->mdfunc(), NULL) != 1) {
++		EVP_MD_CTX_free(ret->mdctx);
+ 		free(ret);
+ 		return NULL;
+ 	}
+@@ -132,7 +133,7 @@
+ 	if (from->alg != to->alg)
+ 		return SSH_ERR_INVALID_ARGUMENT;
+ 	/* we have bcopy-style order while openssl has memcpy-style */
+-	if (!EVP_MD_CTX_copy_ex(&to->mdctx, &from->mdctx))
++	if (!EVP_MD_CTX_copy_ex(to->mdctx, from->mdctx))
+ 		return SSH_ERR_LIBCRYPTO_ERROR;
+ 	return 0;
+ }
+@@ -140,7 +141,7 @@
+ int
+ ssh_digest_update(struct ssh_digest_ctx *ctx, const void *m, size_t mlen)
+ {
+-	if (EVP_DigestUpdate(&ctx->mdctx, m, mlen) != 1)
++	if (EVP_DigestUpdate(ctx->mdctx, m, mlen) != 1)
+ 		return SSH_ERR_LIBCRYPTO_ERROR;
+ 	return 0;
+ }
+@@ -161,7 +162,7 @@
+ 		return SSH_ERR_INVALID_ARGUMENT;
+ 	if (dlen < digest->digest_len) /* No truncation allowed */
+ 		return SSH_ERR_INVALID_ARGUMENT;
+-	if (EVP_DigestFinal_ex(&ctx->mdctx, d, &l) != 1)
++	if (EVP_DigestFinal_ex(ctx->mdctx, d, &l) != 1)
+ 		return SSH_ERR_LIBCRYPTO_ERROR;
+ 	if (l != digest->digest_len) /* sanity */
+ 		return SSH_ERR_INTERNAL_ERROR;
+@@ -172,7 +173,7 @@
+ ssh_digest_free(struct ssh_digest_ctx *ctx)
+ {
+ 	if (ctx != NULL) {
+-		EVP_MD_CTX_cleanup(&ctx->mdctx);
++		EVP_MD_CTX_free(ctx->mdctx);
+ 		explicit_bzero(ctx, sizeof(*ctx));
+ 		free(ctx);
+ 	}
+diff -ru source/groupaccess.c source-new/groupaccess.c
+--- source/groupaccess.c	2017-10-02 12:34:26.000000000 -0700
++++ source-new/groupaccess.c	2017-11-02 18:31:51.915545790 -0700
+@@ -67,8 +67,10 @@
+ 	if (getgrouplist(user, base, groups_bygid, &ngroups) == -1)
+ 		logit("getgrouplist: groups list too small");
+ 	for (i = 0, j = 0; i < ngroups; i++)
+-		if ((gr = getgrgid(groups_bygid[i])) != NULL)
+-			groups_byname[j++] = xstrdup(gr->gr_name);
++        /*
++		 *if ((gr = getgrgid(groups_bygid[i])) != NULL)
++		 *    groups_byname[j++] = xstrdup(gr->gr_name);
++         */
+ 	free(groups_bygid);
+ 	return (ngroups = j);
+ }
+diff -ru source/kexdhc.c source-new/kexdhc.c
+--- source/kexdhc.c	2017-10-02 12:34:26.000000000 -0700
++++ source-new/kexdhc.c	2017-11-02 18:31:51.918879116 -0700
+@@ -81,11 +81,16 @@
+ 		goto out;
+ 	}
+ 	debug("sending SSH2_MSG_KEXDH_INIT");
+-	if ((r = dh_gen_key(kex->dh, kex->we_need * 8)) != 0 ||
+-	    (r = sshpkt_start(ssh, SSH2_MSG_KEXDH_INIT)) != 0 ||
+-	    (r = sshpkt_put_bignum2(ssh, kex->dh->pub_key)) != 0 ||
++	{
++	const BIGNUM *pub_key;
++	if ((r = dh_gen_key(kex->dh, kex->we_need * 8)) != 0)
++		goto out;
++	DH_get0_key(kex->dh, &pub_key, NULL);
++	if ((r = sshpkt_start(ssh, SSH2_MSG_KEXDH_INIT)) != 0 ||
++	    (r = sshpkt_put_bignum2(ssh, pub_key)) != 0 ||
+ 	    (r = sshpkt_send(ssh)) != 0)
+ 		goto out;
++	}
+ #ifdef DEBUG_KEXDH
+ 	DHparams_print_fp(stderr, kex->dh);
+ 	fprintf(stderr, "pub= ");
+@@ -169,6 +174,9 @@
+ 
+ 	/* calc and verify H */
+ 	hashlen = sizeof(hash);
++	{
++	const BIGNUM *pub_key;
++	DH_get0_key(kex->dh, &pub_key, NULL);
+ 	if ((r = kex_dh_hash(
+ 	    kex->hash_alg,
+ 	    kex->client_version_string,
+@@ -176,11 +184,13 @@
+ 	    sshbuf_ptr(kex->my), sshbuf_len(kex->my),
+ 	    sshbuf_ptr(kex->peer), sshbuf_len(kex->peer),
+ 	    server_host_key_blob, sbloblen,
+-	    kex->dh->pub_key,
++	    pub_key,
+ 	    dh_server_pub,
+ 	    shared_secret,
+-	    hash, &hashlen)) != 0)
++	    hash, &hashlen)) != 0) {
+ 		goto out;
++	}
++	}
+ 
+ 	if ((r = sshkey_verify(server_host_key, signature, slen, hash, hashlen,
+ 	    ssh->compat)) != 0)
+diff -ru source/kexdhs.c source-new/kexdhs.c
+--- source/kexdhs.c	2017-10-02 12:34:26.000000000 -0700
++++ source-new/kexdhs.c	2017-11-02 18:31:51.918879116 -0700
+@@ -87,6 +87,10 @@
+ 	ssh_dispatch_set(ssh, SSH2_MSG_KEXDH_INIT, &input_kex_dh_init);
+ 	r = 0;
+  out:
++	if (r != 0) {
++		if (kex->dh) DH_free(kex->dh);
++		kex->dh = NULL;
++	}
+ 	return r;
+ }
+ 
+@@ -163,6 +167,9 @@
+ 		goto out;
+ 	/* calc H */
+ 	hashlen = sizeof(hash);
++	{
++	const BIGNUM *pub_key;
++	DH_get0_key(kex->dh, &pub_key, NULL);
+ 	if ((r = kex_dh_hash(
+ 	    kex->hash_alg,
+ 	    kex->client_version_string,
+@@ -171,10 +178,12 @@
+ 	    sshbuf_ptr(kex->my), sshbuf_len(kex->my),
+ 	    server_host_key_blob, sbloblen,
+ 	    dh_client_pub,
+-	    kex->dh->pub_key,
++	    pub_key,
+ 	    shared_secret,
+-	    hash, &hashlen)) != 0)
++	    hash, &hashlen)) != 0) {
+ 		goto out;
++	}
++	}
+ 
+ 	/* save session id := H */
+ 	if (kex->session_id == NULL) {
+@@ -195,12 +204,17 @@
+ 	/* destroy_sensitive_data(); */
+ 
+ 	/* send server hostkey, DH pubkey 'f' and singed H */
++	{
++	const BIGNUM *pub_key;
++	DH_get0_key(kex->dh, &pub_key, NULL);
+ 	if ((r = sshpkt_start(ssh, SSH2_MSG_KEXDH_REPLY)) != 0 ||
+ 	    (r = sshpkt_put_string(ssh, server_host_key_blob, sbloblen)) != 0 ||
+-	    (r = sshpkt_put_bignum2(ssh, kex->dh->pub_key)) != 0 ||	/* f */
++	    (r = sshpkt_put_bignum2(ssh, pub_key)) != 0 ||	/* f */
+ 	    (r = sshpkt_put_string(ssh, signature, slen)) != 0 ||
+-	    (r = sshpkt_send(ssh)) != 0)
++	    (r = sshpkt_send(ssh)) != 0) {
+ 		goto out;
++	}
++	}
+ 
+ 	if ((r = kex_derive_keys_bn(ssh, hash, hashlen, shared_secret)) == 0)
+ 		r = kex_send_newkeys(ssh);
+diff -ru source/kexgexc.c source-new/kexgexc.c
+--- source/kexgexc.c	2017-10-02 12:34:26.000000000 -0700
++++ source-new/kexgexc.c	2017-11-02 18:31:51.918879116 -0700
+@@ -118,11 +118,17 @@
+ 	p = g = NULL; /* belong to kex->dh now */
+ 
+ 	/* generate and send 'e', client DH public key */
+-	if ((r = dh_gen_key(kex->dh, kex->we_need * 8)) != 0 ||
+-	    (r = sshpkt_start(ssh, SSH2_MSG_KEX_DH_GEX_INIT)) != 0 ||
+-	    (r = sshpkt_put_bignum2(ssh, kex->dh->pub_key)) != 0 ||
+-	    (r = sshpkt_send(ssh)) != 0)
++	{
++	const BIGNUM *pub_key;
++	if ((r = dh_gen_key(kex->dh, kex->we_need * 8)) != 0)
++		goto out;
++	DH_get0_key(kex->dh, &pub_key, NULL);
++	if ((r = sshpkt_start(ssh, SSH2_MSG_KEX_DH_GEX_INIT)) != 0 ||
++	    (r = sshpkt_put_bignum2(ssh, pub_key)) != 0 ||
++	    (r = sshpkt_send(ssh)) != 0) {
+ 		goto out;
++	}
++	}
+ 	debug("SSH2_MSG_KEX_DH_GEX_INIT sent");
+ #ifdef DEBUG_KEXDH
+ 	DHparams_print_fp(stderr, kex->dh);
+@@ -134,10 +140,12 @@
+ 	ssh_dispatch_set(ssh, SSH2_MSG_KEX_DH_GEX_REPLY, &input_kex_dh_gex_reply);
+ 	r = 0;
+ out:
+-	if (p)
++	if (r != 0) {
+ 		BN_clear_free(p);
+-	if (g)
+ 		BN_clear_free(g);
++		DH_free(kex->dh);
++		kex->dh = NULL;
++	}
+ 	return r;
+ }
+ 
+@@ -214,6 +222,10 @@
+ 
+ 	/* calc and verify H */
+ 	hashlen = sizeof(hash);
++	{
++	const BIGNUM *p, *g, *pub_key;
++	DH_get0_pqg(kex->dh, &p, NULL, &g);
++	DH_get0_key(kex->dh, &pub_key, NULL);
+ 	if ((r = kexgex_hash(
+ 	    kex->hash_alg,
+ 	    kex->client_version_string,
+@@ -222,12 +234,14 @@
+ 	    sshbuf_ptr(kex->peer), sshbuf_len(kex->peer),
+ 	    server_host_key_blob, sbloblen,
+ 	    kex->min, kex->nbits, kex->max,
+-	    kex->dh->p, kex->dh->g,
+-	    kex->dh->pub_key,
++	    p, g,
++	    pub_key,
+ 	    dh_server_pub,
+ 	    shared_secret,
+-	    hash, &hashlen)) != 0)
++	    hash, &hashlen)) != 0) {
+ 		goto out;
++	}
++	}
+ 
+ 	if ((r = sshkey_verify(server_host_key, signature, slen, hash,
+ 	    hashlen, ssh->compat)) != 0)
+diff -ru source/kexgexs.c source-new/kexgexs.c
+--- source/kexgexs.c	2017-10-02 12:34:26.000000000 -0700
++++ source-new/kexgexs.c	2017-11-02 18:31:51.918879116 -0700
+@@ -101,11 +101,16 @@
+ 		goto out;
+ 	}
+ 	debug("SSH2_MSG_KEX_DH_GEX_GROUP sent");
++	{
++	const BIGNUM *p, *g;
++	DH_get0_pqg(kex->dh, &p, NULL, &g);
+ 	if ((r = sshpkt_start(ssh, SSH2_MSG_KEX_DH_GEX_GROUP)) != 0 ||
+-	    (r = sshpkt_put_bignum2(ssh, kex->dh->p)) != 0 ||
+-	    (r = sshpkt_put_bignum2(ssh, kex->dh->g)) != 0 ||
+-	    (r = sshpkt_send(ssh)) != 0)
++	    (r = sshpkt_put_bignum2(ssh, p)) != 0 ||
++	    (r = sshpkt_put_bignum2(ssh, g)) != 0 ||
++	    (r = sshpkt_send(ssh)) != 0) {
+ 		goto out;
++	}
++	}
+ 
+ 	/* Compute our exchange value in parallel with the client */
+ 	if ((r = dh_gen_key(kex->dh, kex->we_need * 8)) != 0)
+@@ -115,6 +120,10 @@
+ 	ssh_dispatch_set(ssh, SSH2_MSG_KEX_DH_GEX_INIT, &input_kex_dh_gex_init);
+ 	r = 0;
+  out:
++	if (r != 0) {
++		DH_free(kex->dh);
++		kex->dh = NULL;
++	}
+ 	return r;
+ }
+ 
+@@ -191,6 +200,10 @@
+ 		goto out;
+ 	/* calc H */
+ 	hashlen = sizeof(hash);
++	{
++	const BIGNUM *p, *g, *pub_key;
++	DH_get0_pqg(kex->dh, &p, NULL, &g);
++	DH_get0_key(kex->dh, &pub_key, NULL);
+ 	if ((r = kexgex_hash(
+ 	    kex->hash_alg,
+ 	    kex->client_version_string,
+@@ -199,12 +212,14 @@
+ 	    sshbuf_ptr(kex->my), sshbuf_len(kex->my),
+ 	    server_host_key_blob, sbloblen,
+ 	    kex->min, kex->nbits, kex->max,
+-	    kex->dh->p, kex->dh->g,
++	    p, g,
+ 	    dh_client_pub,
+-	    kex->dh->pub_key,
++	    pub_key,
+ 	    shared_secret,
+-	    hash, &hashlen)) != 0)
++	    hash, &hashlen)) != 0) {
+ 		goto out;
++	}
++	}
+ 
+ 	/* save session id := H */
+ 	if (kex->session_id == NULL) {
+@@ -225,12 +240,17 @@
+ 	/* destroy_sensitive_data(); */
+ 
+ 	/* send server hostkey, DH pubkey 'f' and singed H */
++	{
++	const BIGNUM *pub_key;
++	DH_get0_key(kex->dh, &pub_key, NULL);
+ 	if ((r = sshpkt_start(ssh, SSH2_MSG_KEX_DH_GEX_REPLY)) != 0 ||
+ 	    (r = sshpkt_put_string(ssh, server_host_key_blob, sbloblen)) != 0 ||
+-	    (r = sshpkt_put_bignum2(ssh, kex->dh->pub_key)) != 0 ||     /* f */
++	    (r = sshpkt_put_bignum2(ssh, pub_key)) != 0 ||     /* f */
+ 	    (r = sshpkt_put_string(ssh, signature, slen)) != 0 ||
+-	    (r = sshpkt_send(ssh)) != 0)
++	    (r = sshpkt_send(ssh)) != 0) {
+ 		goto out;
++	}
++	}
+ 
+ 	if ((r = kex_derive_keys_bn(ssh, hash, hashlen, shared_secret)) == 0)
+ 		r = kex_send_newkeys(ssh);
+diff -ru source/log.c source-new/log.c
+--- source/log.c	2017-10-02 12:34:26.000000000 -0700
++++ source-new/log.c	2017-11-02 18:31:51.928879098 -0700
+@@ -324,8 +324,8 @@
+ 	openlog_r(argv0 ? argv0 : __progname, LOG_PID, log_facility, &sdata);
+ 	closelog_r(&sdata);
+ #else
+-	openlog(argv0 ? argv0 : __progname, LOG_PID, log_facility);
+-	closelog();
++	//openlog(argv0 ? argv0 : __progname, LOG_PID, log_facility);
++	//closelog();
+ #endif
+ }
+ 
+@@ -465,9 +465,9 @@
+ 		syslog_r(pri, &sdata, "%.500s", fmtbuf);
+ 		closelog_r(&sdata);
+ #else
+-		openlog(argv0 ? argv0 : __progname, LOG_PID, log_facility);
+-		syslog(pri, "%.500s", fmtbuf);
+-		closelog();
++		//openlog(argv0 ? argv0 : __progname, LOG_PID, log_facility);
++		//syslog(pri, "%.500s", fmtbuf);
++		//closelog();
+ #endif
+ 	}
+ 	errno = saved_errno;
+diff -ru source/loginrec.c source-new/loginrec.c
+--- source/loginrec.c	2017-10-02 12:34:26.000000000 -0700
++++ source-new/loginrec.c	2017-11-02 18:31:51.928879098 -0700
+@@ -746,7 +746,7 @@
+ # ifdef HAVE_ADDR_V6_IN_UTMP
+ 	struct sockaddr_in6 *sa6;
+ #  endif
+-	memset(utx, '\0', sizeof(*utx));
++//	memset(utx, '\0', sizeof(*utx));
+ 
+ # ifdef HAVE_ID_IN_UTMPX
+ 	line_abbrevname(utx->ut_id, li->line, sizeof(utx->ut_id));
+@@ -755,19 +755,19 @@
+ 	/* this is done here to keep utmp constants out of loginrec.h */
+ 	switch (li->type) {
+ 	case LTYPE_LOGIN:
+-		utx->ut_type = USER_PROCESS;
++//		utx->ut_type = USER_PROCESS;
+ 		break;
+ 	case LTYPE_LOGOUT:
+-		utx->ut_type = DEAD_PROCESS;
++		//utx->ut_type = DEAD_PROCESS;
+ 		break;
+ 	}
+-	line_stripname(utx->ut_line, li->line, sizeof(utx->ut_line));
+-	set_utmpx_time(li, utx);
+-	utx->ut_pid = li->pid;
++//	line_stripname(utx->ut_line, li->line, sizeof(utx->ut_line));
++//	set_utmpx_time(li, utx);
++//	utx->ut_pid = li->pid;
+ 
+ 	/* strncpy(): Don't necessarily want null termination */
+-	strncpy(utx->ut_user, li->username,
+-	    MIN_SIZEOF(utx->ut_user, li->username));
++//	strncpy(utx->ut_user, li->username,
++//	    MIN_SIZEOF(utx->ut_user, li->username));
+ 
+ 	if (li->type == LTYPE_LOGOUT)
+ 		return;
+@@ -1023,20 +1023,22 @@
+ static int
+ utmpx_perform_login(struct logininfo *li)
+ {
+-	struct utmpx utx;
+-
+-	construct_utmpx(li, &utx);
+-# ifdef UTMPX_USE_LIBRARY
+-	if (!utmpx_write_library(li, &utx)) {
+-		logit("%s: utmp_write_library() failed", __func__);
+-		return (0);
+-	}
+-# else
+-	if (!utmpx_write_direct(li, &ut)) {
+-		logit("%s: utmp_write_direct() failed", __func__);
+-		return (0);
+-	}
+-# endif
++/*
++ *    struct utmpx utx;
++ *
++ *    construct_utmpx(li, &utx);
++ *# ifdef UTMPX_USE_LIBRARY
++ *    if (!utmpx_write_library(li, &utx)) {
++ *        logit("%s: utmp_write_library() failed", __func__);
++ *        return (0);
++ *    }
++ *# else
++ *    if (!utmpx_write_direct(li, &ut)) {
++ *        logit("%s: utmp_write_direct() failed", __func__);
++ *        return (0);
++ *    }
++ *# endif
++ */
+ 	return (1);
+ }
+ 
+@@ -1044,21 +1046,23 @@
+ static int
+ utmpx_perform_logout(struct logininfo *li)
+ {
+-	struct utmpx utx;
+-
+-	construct_utmpx(li, &utx);
+-# ifdef HAVE_ID_IN_UTMPX
+-	line_abbrevname(utx.ut_id, li->line, sizeof(utx.ut_id));
+-# endif
+-# ifdef HAVE_TYPE_IN_UTMPX
+-	utx.ut_type = DEAD_PROCESS;
+-# endif
+-
+-# ifdef UTMPX_USE_LIBRARY
+-	utmpx_write_library(li, &utx);
+-# else
+-	utmpx_write_direct(li, &utx);
+-# endif
++/*
++ *    struct utmpx utx;
++ *
++ *    construct_utmpx(li, &utx);
++ *# ifdef HAVE_ID_IN_UTMPX
++ *    line_abbrevname(utx.ut_id, li->line, sizeof(utx.ut_id));
++ *# endif
++ *# ifdef HAVE_TYPE_IN_UTMPX
++ *    utx.ut_type = DEAD_PROCESS;
++ *# endif
++ *
++ *# ifdef UTMPX_USE_LIBRARY
++ *    utmpx_write_library(li, &utx);
++ *# else
++ *    utmpx_write_direct(li, &utx);
++ *# endif
++ */
+ 	return (1);
+ }
+ 
+diff -ru source/misc.c source-new/misc.c
+--- source/misc.c	2017-10-02 12:34:26.000000000 -0700
++++ source-new/misc.c	2017-11-02 18:31:51.928879098 -0700
+@@ -153,10 +153,12 @@
+ 	socklen_t optlen;
+ 
+ 	optlen = sizeof opt;
+-	if (getsockopt(fd, IPPROTO_TCP, TCP_NODELAY, &opt, &optlen) == -1) {
+-		debug("getsockopt TCP_NODELAY: %.100s", strerror(errno));
+-		return;
+-	}
++    /*
++	 *if (getsockopt(fd, IPPROTO_TCP, TCP_NODELAY, &opt, &optlen) == -1) {
++	 *    debug("getsockopt TCP_NODELAY: %.100s", strerror(errno));
++	 *    return;
++	 *}
++     */
+ 	if (opt == 1) {
+ 		debug2("fd %d is TCP_NODELAY", fd);
+ 		return;
+@@ -1274,14 +1276,18 @@
+ {
+ 	int fd;
+ 
+-	if ((fd = open(_PATH_TTY, O_RDONLY | O_NOCTTY)) >= 0) {
+-		close(fd);
+-		return 0;	/* have controlling terminal */
+-	}
++    /*
++	 *if ((fd = open(_PATH_TTY, O_RDONLY | O_NOCTTY)) >= 0) {
++	 *    close(fd);
++	 *    return 0;	[> have controlling terminal <]
++	 *}
++     */
+ 	if (getppid() != 1)
+ 		return 0;	/* parent is not init */
+-	if (getsid(0) != getpid())
+-		return 0;	/* not session leader */
++    /*
++	 *if (getsid(0) != getpid())
++	 *    return 0;	[> not session leader <]
++     */
+ 	debug3("already daemonized");
+ 	return 1;
+ }
+diff -ru source/monitor.c source-new/monitor.c
+--- source/monitor.c	2017-10-02 12:34:26.000000000 -0700
++++ source-new/monitor.c	2017-11-02 18:31:51.932212426 -0700
+@@ -586,10 +586,12 @@
+ 		buffer_put_char(m, 0);
+ 		return (0);
+ 	} else {
++		const BIGNUM *p, *g;
++		DH_get0_pqg(dh, &p, NULL, &g);
+ 		/* Send first bignum */
+ 		buffer_put_char(m, 1);
+-		buffer_put_bignum2(m, dh->p);
+-		buffer_put_bignum2(m, dh->g);
++		buffer_put_bignum2(m, p);
++		buffer_put_bignum2(m, g);
+ 
+ 		DH_free(dh);
+ 	}
+@@ -1663,8 +1665,10 @@
+ 	int on = 1;
+ #endif
+ 
+-	if (socketpair(AF_UNIX, SOCK_STREAM, 0, pair) == -1)
+-		fatal("%s: socketpair: %s", __func__, strerror(errno));
++    /*
++	 *if (socketpair(AF_UNIX, SOCK_STREAM, 0, pair) == -1)
++	 *    fatal("%s: socketpair: %s", __func__, strerror(errno));
++     */
+ #ifdef SO_ZEROIZE
+ 	if (setsockopt(pair[0], SOL_SOCKET, SO_ZEROIZE, &on, sizeof(on)) < 0)
+ 		error("setsockopt SO_ZEROIZE(0): %.100s", strerror(errno));
+diff -ru source/nchan.c source-new/nchan.c
+--- source/nchan.c	2017-10-02 12:34:26.000000000 -0700
++++ source-new/nchan.c	2017-11-02 18:31:51.932212426 -0700
+@@ -375,10 +375,12 @@
+ 	/* shutdown failure is allowed if write failed already */
+ 	debug2("channel %d: close_write", c->self);
+ 	if (c->sock != -1) {
+-		if (shutdown(c->sock, SHUT_WR) < 0)
+-			debug2("channel %d: chan_shutdown_write: "
+-			    "shutdown() failed for fd %d: %.100s",
+-			    c->self, c->sock, strerror(errno));
++        /*
++		 *if (shutdown(c->sock, SHUT_WR) < 0)
++		 *    debug2("channel %d: chan_shutdown_write: "
++		 *        "shutdown() failed for fd %d: %.100s",
++		 *        c->self, c->sock, strerror(errno));
++         */
+ 	} else {
+ 		if (channel_close_fd(ssh, &c->wfd) < 0)
+ 			logit("channel %d: chan_shutdown_write: "
+@@ -399,12 +401,14 @@
+ 		 * write side has been closed already. (bug on Linux)
+ 		 * HP-UX may return ENOTCONN also.
+ 		 */
+-		if (shutdown(c->sock, SHUT_RD) < 0
+-		    && errno != ENOTCONN)
+-			error("channel %d: chan_shutdown_read: "
+-			    "shutdown() failed for fd %d [i%d o%d]: %.100s",
+-			    c->self, c->sock, c->istate, c->ostate,
+-			    strerror(errno));
++        /*
++		 *if (shutdown(c->sock, SHUT_RD) < 0
++		 *    && errno != ENOTCONN)
++		 *    error("channel %d: chan_shutdown_read: "
++		 *        "shutdown() failed for fd %d [i%d o%d]: %.100s",
++		 *        c->self, c->sock, c->istate, c->ostate,
++		 *        strerror(errno));
++         */
+ 	} else {
+ 		if (channel_close_fd(ssh, &c->rfd) < 0)
+ 			logit("channel %d: chan_shutdown_read: "
+diff -ru source/openbsd-compat/bsd-closefrom.c source-new/openbsd-compat/bsd-closefrom.c
+--- source/openbsd-compat/bsd-closefrom.c	2017-10-02 12:34:26.000000000 -0700
++++ source-new/openbsd-compat/bsd-closefrom.c	2017-11-02 18:31:51.938879081 -0700
+@@ -96,7 +96,7 @@
+ #ifdef HAVE_SYSCONF
+ 	maxfd = sysconf(_SC_OPEN_MAX);
+ #else
+-	maxfd = getdtablesize();
++	//maxfd = getdtablesize();
+ #endif /* HAVE_SYSCONF */
+ 	if (maxfd < 0)
+ 	    maxfd = OPEN_MAX;
+diff -ru source/openbsd-compat/bsd-misc.c source-new/openbsd-compat/bsd-misc.c
+--- source/openbsd-compat/bsd-misc.c	2017-10-02 12:34:26.000000000 -0700
++++ source-new/openbsd-compat/bsd-misc.c	2017-11-02 18:31:51.932212426 -0700
+@@ -193,9 +193,9 @@
+ {
+ 	int ctty_pgrp;
+ 
+-	if (ioctl(fd, TIOCGPGRP, &ctty_pgrp) == -1)
+-		return(-1);
+-	else
++	//if (ioctl(fd, TIOCGPGRP, &ctty_pgrp) == -1)
++	//	return(-1);
++	//else
+ 		return(ctty_pgrp);
+ }
+ #endif /* HAVE_TCGETPGRP */
+diff -ru source/openbsd-compat/bsd-misc.h source-new/openbsd-compat/bsd-misc.h
+--- source/openbsd-compat/bsd-misc.h	2017-10-02 12:34:26.000000000 -0700
++++ source-new/openbsd-compat/bsd-misc.h	2017-11-02 18:31:51.935545753 -0700
+@@ -18,12 +18,15 @@
+ #define _BSD_MISC_H
+ 
+ #include "includes.h"
++#include <fcntl.h>
+ 
+ char *ssh_get_progname(char *);
+ 
+-#ifndef HAVE_SETSID
+-#define setsid() setpgrp(0, getpid())
+-#endif /* !HAVE_SETSID */
++/*
++ *#ifndef HAVE_SETSID
++ *#define setsid() setpgrp(0, getpid())
++ *#endif [> !HAVE_SETSID <]
++ */
+ 
+ #ifndef HAVE_SETENV
+ int setenv(const char *, const char *, int);
+@@ -112,9 +115,11 @@
+ pid_t getpgid(pid_t);
+ #endif
+ 
+-#ifndef HAVE_ENDGRENT
+-# define endgrent() do { } while(0)
+-#endif
++/*
++ *#ifndef HAVE_ENDGRENT
++ *# define endgrent() do { } while(0)
++ *#endif
++ */
+ 
+ #ifndef HAVE_KRB5_GET_ERROR_MESSAGE
+ # define krb5_get_error_message krb5_get_err_text
+diff -ru source/openbsd-compat/bsd-statvfs.c source-new/openbsd-compat/bsd-statvfs.c
+--- source/openbsd-compat/bsd-statvfs.c	2017-10-02 12:34:26.000000000 -0700
++++ source-new/openbsd-compat/bsd-statvfs.c	2017-11-02 18:31:51.932212426 -0700
+@@ -24,6 +24,7 @@
+ #endif
+ 
+ #include <errno.h>
++#include <sys/statfs.h>
+ 
+ static void
+ copy_statfs_to_statvfs(struct statvfs *to, struct statfs *from)
+diff -ru source/openbsd-compat/daemon.c source-new/openbsd-compat/daemon.c
+--- source/openbsd-compat/daemon.c	2017-10-02 12:34:26.000000000 -0700
++++ source-new/openbsd-compat/daemon.c	2017-11-02 18:31:51.932212426 -0700
+@@ -62,8 +62,8 @@
+ 		_exit(0);
+ 	}
+ 
+-	if (setsid() == -1)
+-		return (-1);
++	//if (setsid() == -1)
++	//	return (-1);
+ 
+ 	if (!nochdir)
+ 		(void)chdir("/");
+diff -ru source/openbsd-compat/fake-rfc2553.c source-new/openbsd-compat/fake-rfc2553.c
+--- source/openbsd-compat/fake-rfc2553.c	2017-10-02 12:34:26.000000000 -0700
++++ source-new/openbsd-compat/fake-rfc2553.c	2017-11-02 18:31:51.932212426 -0700
+@@ -67,14 +67,16 @@
+ 			else
+ 				return (0);
+ 		} else {
+-			hp = gethostbyaddr((char *)&sin->sin_addr,
+-			    sizeof(struct in_addr), AF_INET);
+-			if (hp == NULL)
+-				return (EAI_NODATA);
+-
+-			if (strlcpy(host, hp->h_name, hostlen) >= hostlen)
+-				return (EAI_MEMORY);
+-			else
++/*
++ *            hp = gethostbyaddr((char *)&sin->sin_addr,
++ *                sizeof(struct in_addr), AF_INET);
++ *            if (hp == NULL)
++ *                return (EAI_NODATA);
++ *
++ *            if (strlcpy(host, hp->h_name, hostlen) >= hostlen)
++ *                return (EAI_MEMORY);
++ *            else
++ */
+ 				return (0);
+ 		}
+ 	}
+@@ -172,8 +174,8 @@
+ 		port = strtol(servname, &cp, 10);
+ 		if (port > 0 && port <= 65535 && *cp == '\0')
+ 			port = htons(port);
+-		else if ((sp = getservbyname(servname, NULL)) != NULL)
+-			port = sp->s_port;
++		//else if ((sp = getservbyname(servname, NULL)) != NULL)
++		//	port = sp->s_port;
+ 		else
+ 			port = 0;
+ 	}
+diff -ru source/openbsd-compat/getgrouplist.c source-new/openbsd-compat/getgrouplist.c
+--- source/openbsd-compat/getgrouplist.c	2017-10-02 12:34:26.000000000 -0700
++++ source-new/openbsd-compat/getgrouplist.c	2017-11-02 18:31:51.935545753 -0700
+@@ -66,28 +66,30 @@
+ 	/*
+ 	 * Scan the group file to find additional groups.
+ 	 */
+-	setgrent();
+-	while ((grp = getgrent())) {
+-		if (grp->gr_gid == agroup)
+-			continue;
+-		for (bail = 0, i = 0; bail == 0 && i < ngroups; i++)
+-			if (groups[i] == grp->gr_gid)
+-				bail = 1;
+-		if (bail)
+-			continue;
+-		for (i = 0; grp->gr_mem[i]; i++) {
+-			if (!strcmp(grp->gr_mem[i], uname)) {
+-				if (ngroups >= maxgroups) {
+-					ret = -1;
+-					goto out;
+-				}
+-				groups[ngroups++] = grp->gr_gid;
+-				break;
+-			}
+-		}
+-	}
++	//setgrent();
++    /*
++	 *while ((grp = getgrent())) {
++	 *    if (grp->gr_gid == agroup)
++	 *        continue;
++	 *    for (bail = 0, i = 0; bail == 0 && i < ngroups; i++)
++	 *        if (groups[i] == grp->gr_gid)
++	 *            bail = 1;
++	 *    if (bail)
++	 *        continue;
++	 *    for (i = 0; grp->gr_mem[i]; i++) {
++	 *        if (!strcmp(grp->gr_mem[i], uname)) {
++	 *            if (ngroups >= maxgroups) {
++	 *                ret = -1;
++	 *                goto out;
++	 *            }
++	 *            groups[ngroups++] = grp->gr_gid;
++	 *            break;
++	 *        }
++	 *    }
++	 *}
++     */
+ out:
+-	endgrent();
++	//endgrent();
+ 	*grpcnt = ngroups;
+ 	return (ret);
+ }
+diff -ru source/openbsd-compat/getrrsetbyname.c source-new/openbsd-compat/getrrsetbyname.c
+--- source/openbsd-compat/getrrsetbyname.c	2017-10-02 12:34:26.000000000 -0700
++++ source-new/openbsd-compat/getrrsetbyname.c	2017-11-02 18:31:51.935545753 -0700
+@@ -187,7 +187,7 @@
+     unsigned int rdtype, unsigned int flags,
+     struct rrsetinfo **res)
+ {
+-	struct __res_state *_resp = _THREAD_PRIVATE(_res, _res, &_res);
++	//struct __res_state *_resp = _THREAD_PRIVATE(_res, _res, &_res);
+ 	int result;
+ 	struct rrsetinfo *rrset = NULL;
+ 	struct dns_response *response = NULL;
+@@ -216,50 +216,54 @@
+ 	}
+ 
+ 	/* initialize resolver */
+-	if ((_resp->options & RES_INIT) == 0 && res_init() == -1) {
++	/*if ((_resp->options & RES_INIT) == 0 && res_init() == -1) {
+ 		result = ERRSET_FAIL;
+ 		goto fail;
+-	}
++	}*/
+ 
+ #ifdef DEBUG
+-	_resp->options |= RES_DEBUG;
++	//_resp->options |= RES_DEBUG;
+ #endif /* DEBUG */
+ 
+ #ifdef RES_USE_DNSSEC
+ 	/* turn on DNSSEC if EDNS0 is configured */
+-	if (_resp->options & RES_USE_EDNS0)
+-		_resp->options |= RES_USE_DNSSEC;
++    /*
++	 *if (_resp->options & RES_USE_EDNS0)
++	 *    _resp->options |= RES_USE_DNSSEC;
++     */
+ #endif /* RES_USE_DNSEC */
+ 
+ 	/* make query */
+-	length = res_query(hostname, (signed int) rdclass, (signed int) rdtype,
+-	    answer, sizeof(answer));
+-	if (length < 0) {
+-		switch(h_errno) {
+-		case HOST_NOT_FOUND:
+-			result = ERRSET_NONAME;
+-			goto fail;
+-		case NO_DATA:
+-			result = ERRSET_NODATA;
+-			goto fail;
+-		default:
+-			result = ERRSET_FAIL;
+-			goto fail;
+-		}
+-	}
+-
+-	/* parse result */
+-	response = parse_dns_response(answer, length);
+-	if (response == NULL) {
+-		result = ERRSET_FAIL;
+-		goto fail;
+-	}
+-
+-	if (response->header.qdcount != 1) {
+-		result = ERRSET_FAIL;
+-		goto fail;
+-	}
+-
++/*
++ *    length = res_query(hostname, (signed int) rdclass, (signed int) rdtype,
++ *        answer, sizeof(answer));
++ *    if (length < 0) {
++ *        switch(h_errno) {
++ *        case HOST_NOT_FOUND:
++ *            result = ERRSET_NONAME;
++ *            goto fail;
++ *        case NO_DATA:
++ *            result = ERRSET_NODATA;
++ *            goto fail;
++ *        default:
++ *            result = ERRSET_FAIL;
++ *            goto fail;
++ *        }
++ *    }
++ *
++ *    [> parse result <]
++ *    response = parse_dns_response(answer, length);
++ *    if (response == NULL) {
++ *        result = ERRSET_FAIL;
++ *        goto fail;
++ *    }
++ *
++ *    if (response->header.qdcount != 1) {
++ *        result = ERRSET_FAIL;
++ *        goto fail;
++ *    }
++ *
++ */
+ 	/* initialize rrset */
+ 	rrset = calloc(1, sizeof(struct rrsetinfo));
+ 	if (rrset == NULL) {
+@@ -465,19 +469,21 @@
+ 			prev->next = curr;
+ 
+ 		/* name */
+-		length = dn_expand(answer, answer + size, *cp, name,
+-		    sizeof(name));
+-		if (length < 0) {
+-			free_dns_query(head);
+-			return (NULL);
+-		}
+-		curr->name = strdup(name);
+-		if (curr->name == NULL) {
+-			free_dns_query(head);
+-			return (NULL);
+-		}
+-		*cp += length;
+-
++/*
++ *        length = dn_expand(answer, answer + size, *cp, name,
++ *            sizeof(name));
++ *        if (length < 0) {
++ *            free_dns_query(head);
++ *            return (NULL);
++ *        }
++ *        curr->name = strdup(name);
++ *        if (curr->name == NULL) {
++ *            free_dns_query(head);
++ *            return (NULL);
++ *        }
++ *        *cp += length;
++ *
++ */
+ 		/* type */
+ 		curr->type = _getshort(*cp);
+ 		*cp += INT16SZ;
+@@ -512,19 +518,21 @@
+ 			prev->next = curr;
+ 
+ 		/* name */
+-		length = dn_expand(answer, answer + size, *cp, name,
+-		    sizeof(name));
+-		if (length < 0) {
+-			free_dns_rr(head);
+-			return (NULL);
+-		}
+-		curr->name = strdup(name);
+-		if (curr->name == NULL) {
+-			free_dns_rr(head);
+-			return (NULL);
+-		}
+-		*cp += length;
+-
++/*
++ *        length = dn_expand(answer, answer + size, *cp, name,
++ *            sizeof(name));
++ *        if (length < 0) {
++ *            free_dns_rr(head);
++ *            return (NULL);
++ *        }
++ *        curr->name = strdup(name);
++ *        if (curr->name == NULL) {
++ *            free_dns_rr(head);
++ *            return (NULL);
++ *        }
++ *        *cp += length;
++ *
++ */
+ 		/* type */
+ 		curr->type = _getshort(*cp);
+ 		*cp += INT16SZ;
+diff -ru source/openbsd-compat/openssl-compat.c source-new/openbsd-compat/openssl-compat.c
+--- source/openbsd-compat/openssl-compat.c	2017-10-02 12:34:26.000000000 -0700
++++ source-new/openbsd-compat/openssl-compat.c	2017-11-02 18:31:51.932212426 -0700
+@@ -75,7 +75,6 @@
+ 	/* Enable use of crypto hardware */
+ 	ENGINE_load_builtin_engines();
+ 	ENGINE_register_all_complete();
+-	OPENSSL_config(NULL);
+ }
+ #endif
+ 
+diff -ru source/openbsd-compat/pwcache.c source-new/openbsd-compat/pwcache.c
+--- source/openbsd-compat/pwcache.c	2017-10-02 12:34:26.000000000 -0700
++++ source-new/openbsd-compat/pwcache.c	2017-11-02 18:31:51.935545753 -0700
+@@ -99,11 +99,13 @@
+ #endif
+ 			gropen = 1;
+ 		}
+-		if ((gr = getgrgid(gid)) == NULL) {
+-			if (nogroup)
+-				return (NULL);
+-			(void)snprintf(nbuf, sizeof(nbuf), "%u", gid);
+-		}
++        /*
++		 *if ((gr = getgrgid(gid)) == NULL) {
++		 *    if (nogroup)
++		 *        return (NULL);
++		 *    (void)snprintf(nbuf, sizeof(nbuf), "%u", gid);
++		 *}
++         */
+ 		cp->gid = gid;
+ 		if (cp->name != NULL)
+ 			free(cp->name);
+diff -ru source/openbsd-compat/readpassphrase.c source-new/openbsd-compat/readpassphrase.c
+--- source/openbsd-compat/readpassphrase.c	2017-10-02 12:34:26.000000000 -0700
++++ source-new/openbsd-compat/readpassphrase.c	2017-11-02 18:31:51.935545753 -0700
+@@ -123,15 +123,17 @@
+ 	sigemptyset(&sa.sa_mask);
+ 	sa.sa_flags = 0;		/* don't restart system calls */
+ 	sa.sa_handler = handler;
+-	(void)sigaction(SIGALRM, &sa, &savealrm);
+-	(void)sigaction(SIGHUP, &sa, &savehup);
+-	(void)sigaction(SIGINT, &sa, &saveint);
+-	(void)sigaction(SIGPIPE, &sa, &savepipe);
+-	(void)sigaction(SIGQUIT, &sa, &savequit);
+-	(void)sigaction(SIGTERM, &sa, &saveterm);
+-	(void)sigaction(SIGTSTP, &sa, &savetstp);
+-	(void)sigaction(SIGTTIN, &sa, &savettin);
+-	(void)sigaction(SIGTTOU, &sa, &savettou);
++    /*
++	 *(void)sigaction(SIGALRM, &sa, &savealrm);
++	 *(void)sigaction(SIGHUP, &sa, &savehup);
++	 *(void)sigaction(SIGINT, &sa, &saveint);
++	 *(void)sigaction(SIGPIPE, &sa, &savepipe);
++	 *(void)sigaction(SIGQUIT, &sa, &savequit);
++	 *(void)sigaction(SIGTERM, &sa, &saveterm);
++	 *(void)sigaction(SIGTSTP, &sa, &savetstp);
++	 *(void)sigaction(SIGTTIN, &sa, &savettin);
++	 *(void)sigaction(SIGTTOU, &sa, &savettou);
++     */
+ 
+ 	if (!(flags & RPP_STDIN))
+ 		(void)write(output, prompt, strlen(prompt));
+@@ -165,15 +167,17 @@
+ 			continue;
+ 		signo[SIGTTOU] = sigttou;
+ 	}
+-	(void)sigaction(SIGALRM, &savealrm, NULL);
+-	(void)sigaction(SIGHUP, &savehup, NULL);
+-	(void)sigaction(SIGINT, &saveint, NULL);
+-	(void)sigaction(SIGQUIT, &savequit, NULL);
+-	(void)sigaction(SIGPIPE, &savepipe, NULL);
+-	(void)sigaction(SIGTERM, &saveterm, NULL);
+-	(void)sigaction(SIGTSTP, &savetstp, NULL);
+-	(void)sigaction(SIGTTIN, &savettin, NULL);
+-	(void)sigaction(SIGTTOU, &savettou, NULL);
++    /*
++	 *(void)sigaction(SIGALRM, &savealrm, NULL);
++	 *(void)sigaction(SIGHUP, &savehup, NULL);
++	 *(void)sigaction(SIGINT, &saveint, NULL);
++	 *(void)sigaction(SIGQUIT, &savequit, NULL);
++	 *(void)sigaction(SIGPIPE, &savepipe, NULL);
++	 *(void)sigaction(SIGTERM, &saveterm, NULL);
++	 *(void)sigaction(SIGTSTP, &savetstp, NULL);
++	 *(void)sigaction(SIGTTIN, &savettin, NULL);
++	 *(void)sigaction(SIGTTOU, &savettou, NULL);
++     */
+ 	if (input != STDIN_FILENO)
+ 		(void)close(input);
+ 
+diff -ru source/openbsd-compat/xcrypt.c source-new/openbsd-compat/xcrypt.c
+--- source/openbsd-compat/xcrypt.c	2017-10-02 12:34:26.000000000 -0700
++++ source-new/openbsd-compat/xcrypt.c	2017-11-02 18:31:51.932212426 -0700
+@@ -80,18 +80,20 @@
+ 	if (salt[0] != '\0')
+ 		return salt;
+ 	strlcpy(salt, "xx", sizeof(salt));
+-	setpwent();
+-	while ((pw = getpwent()) != NULL) {
+-		passwd = shadow_pw(pw);
+-		if (passwd[0] == '$' && (p = strrchr(passwd+1, '$')) != NULL) {
+-			typelen = p - passwd + 1;
+-			strlcpy(salt, passwd, MIN(typelen, sizeof(salt)));
+-			explicit_bzero(passwd, strlen(passwd));
+-			goto out;
+-		}
+-	}
+- out:
+-	endpwent();
++ /*
++  *   setpwent();
++  *   while ((pw = getpwent()) != NULL) {
++  *       passwd = shadow_pw(pw);
++  *       if (passwd[0] == '$' && (p = strrchr(passwd+1, '$')) != NULL) {
++  *           typelen = p - passwd + 1;
++  *           strlcpy(salt, passwd, MIN(typelen, sizeof(salt)));
++  *           explicit_bzero(passwd, strlen(passwd));
++  *           goto out;
++  *       }
++  *   }
++  *out:
++  *   endpwent();
++  */
+ 	return salt;
+ }
+ 
+diff -ru source/progressmeter.c source-new/progressmeter.c
+--- source/progressmeter.c	2017-10-02 12:34:26.000000000 -0700
++++ source-new/progressmeter.c	2017-11-02 18:31:51.938879081 -0700
+@@ -81,7 +81,8 @@
+ static int
+ can_output(void)
+ {
+-	return (getpgrp() == tcgetpgrp(STDOUT_FILENO));
++	//return (getpgrp() == tcgetpgrp(STDOUT_FILENO));
++	return -1;
+ }
+ 
+ static void
+@@ -294,13 +295,15 @@
+ {
+ 	struct winsize winsize;
+ 
+-	if (ioctl(STDOUT_FILENO, TIOCGWINSZ, &winsize) != -1 &&
+-	    winsize.ws_col != 0) {
+-		if (winsize.ws_col > MAX_WINSIZE)
+-			win_size = MAX_WINSIZE;
+-		else
+-			win_size = winsize.ws_col;
+-	} else
++    /*
++	 *if (ioctl(STDOUT_FILENO, TIOCGWINSZ, &winsize) != -1 &&
++	 *    winsize.ws_col != 0) {
++	 *    if (winsize.ws_col > MAX_WINSIZE)
++	 *        win_size = MAX_WINSIZE;
++	 *    else
++	 *        win_size = winsize.ws_col;
++	 *} else
++     */
+ 		win_size = DEFAULT_WINSIZE;
+ 	win_size += 1;					/* trailing \0 */
+ }
+diff -ru source/readconf.c source-new/readconf.c
+--- source/readconf.c	2017-10-02 12:34:26.000000000 -0700
++++ source-new/readconf.c	2017-11-02 18:31:51.938879081 -0700
+@@ -465,8 +465,8 @@
+ 	struct servent *sp;
+ 
+ 	if (port == 0) {
+-		sp = getservbyname(SSH_SERVICE_NAME, "tcp");
+-		port = sp ? ntohs(sp->s_port) : SSH_DEFAULT_PORT;
++		//sp = getservbyname(SSH_SERVICE_NAME, "tcp");
++		//port = sp ? ntohs(sp->s_port) : SSH_DEFAULT_PORT;
+ 	}
+ 	return port;
+ }
+
+diff -ru source/regress/unittests/sshkey/test_file.c source-new/regress/unittests/sshkey/test_file.c
+--- source/regress/unittests/sshkey/test_file.c	2017-10-02 12:34:26.000000000 -0700
++++ source-new/regress/unittests/sshkey/test_file.c	2017-11-02 18:31:51.945545736 -0700
+@@ -60,9 +60,14 @@
+ 	a = load_bignum("rsa_1.param.n");
+ 	b = load_bignum("rsa_1.param.p");
+ 	c = load_bignum("rsa_1.param.q");
+-	ASSERT_BIGNUM_EQ(k1->rsa->n, a);
+-	ASSERT_BIGNUM_EQ(k1->rsa->p, b);
+-	ASSERT_BIGNUM_EQ(k1->rsa->q, c);
++	{
++	const BIGNUM *n, *p, *q;
++	RSA_get0_key(k1->rsa, &n, NULL, NULL);
++	RSA_get0_factors(k1->rsa, &p, &q);
++	ASSERT_BIGNUM_EQ(n, a);
++	ASSERT_BIGNUM_EQ(p, b);
++	ASSERT_BIGNUM_EQ(q, c);
++	}
+ 	BN_free(a);
+ 	BN_free(b);
+ 	BN_free(c);
+@@ -151,9 +156,14 @@
+ 	a = load_bignum("dsa_1.param.g");
+ 	b = load_bignum("dsa_1.param.priv");
+ 	c = load_bignum("dsa_1.param.pub");
+-	ASSERT_BIGNUM_EQ(k1->dsa->g, a);
+-	ASSERT_BIGNUM_EQ(k1->dsa->priv_key, b);
+-	ASSERT_BIGNUM_EQ(k1->dsa->pub_key, c);
++	{
++	const BIGNUM *g, *priv_key, *pub_key;
++	DSA_get0_pqg(k1->dsa, NULL, NULL, &g);
++	DSA_get0_key(k1->dsa, &pub_key, &priv_key);
++	ASSERT_BIGNUM_EQ(g, a);
++	ASSERT_BIGNUM_EQ(priv_key, b);
++	ASSERT_BIGNUM_EQ(pub_key, c);
++	}
+ 	BN_free(a);
+ 	BN_free(b);
+ 	BN_free(c);
+diff -ru source/regress/unittests/sshkey/test_sshkey.c source-new/regress/unittests/sshkey/test_sshkey.c
+--- source/regress/unittests/sshkey/test_sshkey.c	2017-10-02 12:34:26.000000000 -0700
++++ source-new/regress/unittests/sshkey/test_sshkey.c	2017-11-02 18:31:51.945545736 -0700
+@@ -197,9 +197,14 @@
+ 	k1 = sshkey_new(KEY_RSA);
+ 	ASSERT_PTR_NE(k1, NULL);
+ 	ASSERT_PTR_NE(k1->rsa, NULL);
+-	ASSERT_PTR_NE(k1->rsa->n, NULL);
+-	ASSERT_PTR_NE(k1->rsa->e, NULL);
+-	ASSERT_PTR_EQ(k1->rsa->p, NULL);
++	{
++	const BIGNUM *n, *e, *p;
++	RSA_get0_key(k1->rsa, &n, &e, NULL);
++	RSA_get0_factors(k1->rsa, &p, NULL);
++	ASSERT_PTR_NE(n, NULL);
++	ASSERT_PTR_NE(e, NULL);
++	ASSERT_PTR_EQ(p, NULL);
++	}
+ 	sshkey_free(k1);
+ 	TEST_DONE();
+ 
+@@ -207,8 +212,13 @@
+ 	k1 = sshkey_new(KEY_DSA);
+ 	ASSERT_PTR_NE(k1, NULL);
+ 	ASSERT_PTR_NE(k1->dsa, NULL);
+-	ASSERT_PTR_NE(k1->dsa->g, NULL);
+-	ASSERT_PTR_EQ(k1->dsa->priv_key, NULL);
++	{
++	const BIGNUM *g, *priv_key;
++	DSA_get0_pqg(k1->dsa, NULL, NULL, &g);
++	DSA_get0_key(k1->dsa, NULL, &priv_key);
++	ASSERT_PTR_NE(g, NULL);
++	ASSERT_PTR_EQ(priv_key, NULL);
++	}
+ 	sshkey_free(k1);
+ 	TEST_DONE();
+ 
+@@ -234,9 +244,14 @@
+ 	k1 = sshkey_new_private(KEY_RSA);
+ 	ASSERT_PTR_NE(k1, NULL);
+ 	ASSERT_PTR_NE(k1->rsa, NULL);
+-	ASSERT_PTR_NE(k1->rsa->n, NULL);
+-	ASSERT_PTR_NE(k1->rsa->e, NULL);
+-	ASSERT_PTR_NE(k1->rsa->p, NULL);
++	{
++	const BIGNUM *n, *e, *p;
++	RSA_get0_key(k1->rsa, &n, &e, NULL);
++	RSA_get0_factors(k1->rsa, &p, NULL);
++	ASSERT_PTR_NE(n, NULL);
++	ASSERT_PTR_NE(e, NULL);
++	ASSERT_PTR_NE(p, NULL);
++	}
+ 	ASSERT_INT_EQ(sshkey_add_private(k1), 0);
+ 	sshkey_free(k1);
+ 	TEST_DONE();
+@@ -245,8 +260,13 @@
+ 	k1 = sshkey_new_private(KEY_DSA);
+ 	ASSERT_PTR_NE(k1, NULL);
+ 	ASSERT_PTR_NE(k1->dsa, NULL);
+-	ASSERT_PTR_NE(k1->dsa->g, NULL);
+-	ASSERT_PTR_NE(k1->dsa->priv_key, NULL);
++	{
++	const BIGNUM *g, *priv_key;
++	DSA_get0_pqg(k1->dsa, NULL, NULL, &g);
++	DSA_get0_key(k1->dsa, NULL, &priv_key);
++	ASSERT_PTR_NE(g, NULL);
++	ASSERT_PTR_NE(priv_key, NULL);
++	}
+ 	ASSERT_INT_EQ(sshkey_add_private(k1), 0);
+ 	sshkey_free(k1);
+ 	TEST_DONE();
+@@ -285,18 +305,28 @@
+ 	ASSERT_INT_EQ(sshkey_generate(KEY_RSA, 1024, &kr), 0);
+ 	ASSERT_PTR_NE(kr, NULL);
+ 	ASSERT_PTR_NE(kr->rsa, NULL);
+-	ASSERT_PTR_NE(kr->rsa->n, NULL);
+-	ASSERT_PTR_NE(kr->rsa->e, NULL);
+-	ASSERT_PTR_NE(kr->rsa->p, NULL);
+-	ASSERT_INT_EQ(BN_num_bits(kr->rsa->n), 1024);
++	{
++	const BIGNUM *n, *e, *p;
++	RSA_get0_key(kr->rsa, &n, &e, NULL);
++	RSA_get0_factors(kr->rsa, &p, NULL);
++	ASSERT_PTR_NE(n, NULL);
++	ASSERT_PTR_NE(e, NULL);
++	ASSERT_PTR_NE(p, NULL);
++	ASSERT_INT_EQ(BN_num_bits(n), 1024);
++	}
+ 	TEST_DONE();
+ 
+ 	TEST_START("generate KEY_DSA");
+ 	ASSERT_INT_EQ(sshkey_generate(KEY_DSA, 1024, &kd), 0);
+ 	ASSERT_PTR_NE(kd, NULL);
+ 	ASSERT_PTR_NE(kd->dsa, NULL);
+-	ASSERT_PTR_NE(kd->dsa->g, NULL);
+-	ASSERT_PTR_NE(kd->dsa->priv_key, NULL);
++	{
++	const BIGNUM *g, *priv_key;
++	DSA_get0_pqg(kd->dsa, NULL, NULL, &g);
++	DSA_get0_key(kd->dsa, NULL, &priv_key);
++	ASSERT_PTR_NE(g, NULL);
++	ASSERT_PTR_NE(priv_key, NULL);
++	}
+ 	TEST_DONE();
+ 
+ #ifdef OPENSSL_HAS_ECC
+@@ -323,9 +353,14 @@
+ 	ASSERT_PTR_NE(kr, k1);
+ 	ASSERT_INT_EQ(k1->type, KEY_RSA);
+ 	ASSERT_PTR_NE(k1->rsa, NULL);
+-	ASSERT_PTR_NE(k1->rsa->n, NULL);
+-	ASSERT_PTR_NE(k1->rsa->e, NULL);
+-	ASSERT_PTR_EQ(k1->rsa->p, NULL);
++	{
++	const BIGNUM *n, *e, *p;
++	RSA_get0_key(k1->rsa, &n, &e, NULL);
++	RSA_get0_factors(k1->rsa, &p, NULL);
++	ASSERT_PTR_NE(n, NULL);
++	ASSERT_PTR_NE(e, NULL);
++	ASSERT_PTR_EQ(p, NULL);
++	}
+ 	TEST_DONE();
+ 
+ 	TEST_START("equal KEY_RSA/demoted KEY_RSA");
+@@ -339,8 +374,13 @@
+ 	ASSERT_PTR_NE(kd, k1);
+ 	ASSERT_INT_EQ(k1->type, KEY_DSA);
+ 	ASSERT_PTR_NE(k1->dsa, NULL);
+-	ASSERT_PTR_NE(k1->dsa->g, NULL);
+-	ASSERT_PTR_EQ(k1->dsa->priv_key, NULL);
++	{
++	const BIGNUM *g, *priv_key;
++	DSA_get0_pqg(k1->dsa, NULL, NULL, &g);
++	DSA_get0_key(k1->dsa, NULL, &priv_key);
++	ASSERT_PTR_NE(g, NULL);
++	ASSERT_PTR_EQ(priv_key, NULL);
++	}
+ 	TEST_DONE();
+ 
+ 	TEST_START("equal KEY_DSA/demoted KEY_DSA");
+diff -ru source/scp.c source-new/scp.c
+--- source/scp.c	2017-10-02 12:34:26.000000000 -0700
++++ source-new/scp.c	2017-11-02 18:31:51.948879063 -0700
+@@ -905,7 +905,7 @@
+ 		return;
+ 	}
+ 	while ((dp = readdir(dirp)) != NULL) {
+-		if (dp->d_ino == 0)
++//		if (dp->d_ino == 0)
+ 			continue;
+ 		if (!strcmp(dp->d_name, ".") || !strcmp(dp->d_name, ".."))
+ 			continue;
+diff -ru source/serverloop.c source-new/serverloop.c
+--- source/serverloop.c	2017-10-02 12:34:26.000000000 -0700
++++ source-new/serverloop.c	2017-11-02 18:31:51.948879063 -0700
+@@ -349,16 +349,18 @@
+ 	/* block SIGCHLD while we check for dead children */
+ 	sigemptyset(&nset);
+ 	sigaddset(&nset, SIGCHLD);
+-	sigprocmask(SIG_BLOCK, &nset, &oset);
+-	if (child_terminated) {
+-		debug("Received SIGCHLD.");
+-		while ((pid = waitpid(-1, &status, WNOHANG)) > 0 ||
+-		    (pid < 0 && errno == EINTR))
+-			if (pid > 0)
+-				session_close_by_pid(ssh, pid, status);
+-		child_terminated = 0;
+-	}
+-	sigprocmask(SIG_SETMASK, &oset, NULL);
++    /*
++	 *sigprocmask(SIG_BLOCK, &nset, &oset);
++	 *if (child_terminated) {
++	 *    debug("Received SIGCHLD.");
++	 *    while ((pid = waitpid(-1, &status, WNOHANG)) > 0 ||
++	 *        (pid < 0 && errno == EINTR))
++	 *        if (pid > 0)
++	 *            session_close_by_pid(ssh, pid, status);
++	 *    child_terminated = 0;
++	 *}
++	 *sigprocmask(SIG_SETMASK, &oset, NULL);
++     */
+ }
+ 
+ void
+diff -ru source/session.c source-new/session.c
+--- source/session.c	2017-10-02 12:34:26.000000000 -0700
++++ source-new/session.c	2017-11-02 18:31:51.948879063 -0700
+@@ -408,8 +408,8 @@
+ 		 * Create a new session and process group since the 4.4BSD
+ 		 * setlogin() affects the entire process group.
+ 		 */
+-		if (setsid() < 0)
+-			error("setsid failed: %.100s", strerror(errno));
++		//if (setsid() < 0)
++		//	error("setsid failed: %.100s", strerror(errno));
+ 
+ #ifdef USE_PIPES
+ 		/*
+@@ -1028,7 +1028,7 @@
+ # endif /* HAVE_CYGWIN */
+ #endif /* HAVE_LOGIN_CAP */
+ 
+-	snprintf(buf, sizeof buf, "%.200s/%.50s", _PATH_MAILDIR, pw->pw_name);
++	//snprintf(buf, sizeof buf, "%.200s/%.50s", _PATH_MAILDIR, pw->pw_name);
+ 	child_set_env(&env, &envsize, "MAIL", buf);
+ 
+ 	/* Normal systems set SHELL by default. */
+@@ -1302,8 +1302,8 @@
+ 	if (chdir(path) == -1)
+ 		fatal("Unable to chdir to chroot path \"%s\": "
+ 		    "%s", path, strerror(errno));
+-	if (chroot(path) == -1)
+-		fatal("chroot(\"%s\"): %s", path, strerror(errno));
++	//if (chroot(path) == -1)
++	//	fatal("chroot(\"%s\"): %s", path, strerror(errno));
+ 	if (chdir("/") == -1)
+ 		fatal("%s: chdir(/) after chroot: %s",
+ 		    __func__, strerror(errno));
+@@ -1328,16 +1328,20 @@
+ #else
+ 		if (setlogin(pw->pw_name) < 0)
+ 			error("setlogin failed: %s", strerror(errno));
+-		if (setgid(pw->pw_gid) < 0) {
+-			perror("setgid");
+-			exit(1);
+-		}
++        /*
++		 *if (setgid(pw->pw_gid) < 0) {
++		 *    perror("setgid");
++		 *    exit(1);
++		 *}
++         */
+ 		/* Initialize the group list. */
+-		if (initgroups(pw->pw_name, pw->pw_gid) < 0) {
+-			perror("initgroups");
+-			exit(1);
+-		}
+-		endgrent();
++        /*
++		 *if (initgroups(pw->pw_name, pw->pw_gid) < 0) {
++		 *    perror("initgroups");
++		 *    exit(1);
++		 *}
++         */
++		//endgrent();
+ #endif
+ 
+ 		platform_setusercontext_post_groups(pw);
+@@ -1444,7 +1448,7 @@
+ 	 * Close any extra file descriptors.  Note that there may still be
+ 	 * descriptors left by system functions.  They will be closed later.
+ 	 */
+-	endpwent();
++	//endpwent();
+ 
+ 	/*
+ 	 * Close any extra open file descriptors so that we don't have them
+diff -ru source/sftp.c source-new/sftp.c
+--- source/sftp.c	2017-10-02 12:34:26.000000000 -0700
++++ source-new/sftp.c	2017-11-02 18:31:51.948879063 -0700
+@@ -822,8 +822,10 @@
+ 		m += strlen(tmp);
+ 		free(tmp);
+ 
+-		if (ioctl(fileno(stdin), TIOCGWINSZ, &ws) != -1)
+-			width = ws.ws_col;
++        /*
++		 *if (ioctl(fileno(stdin), TIOCGWINSZ, &ws) != -1)
++		 *    width = ws.ws_col;
++         */
+ 
+ 		columns = width / (m + 2);
+ 		columns = MAXIMUM(columns, 1);
+@@ -950,8 +952,10 @@
+ 		return err;
+ 	}
+ 
+-	if (ioctl(fileno(stdin), TIOCGWINSZ, &ws) != -1)
+-		width = ws.ws_col;
++    /*
++	 *if (ioctl(fileno(stdin), TIOCGWINSZ, &ws) != -1)
++	 *    width = ws.ws_col;
++     */
+ 
+ 	if (!(lflag & LS_SHORT_VIEW)) {
+ 		/* Count entries for sort and find longest filename */
+@@ -2247,8 +2251,10 @@
+ #else /* USE_PIPES */
+ 	int inout[2];
+ 
+-	if (socketpair(AF_UNIX, SOCK_STREAM, 0, inout) == -1)
+-		fatal("socketpair: %s", strerror(errno));
++    /*
++	 *if (socketpair(AF_UNIX, SOCK_STREAM, 0, inout) == -1)
++	 *    fatal("socketpair: %s", strerror(errno));
++     */
+ 	*in = *out = inout[0];
+ 	c_in = c_out = inout[1];
+ #endif /* USE_PIPES */
+@@ -2512,8 +2518,10 @@
+ 	err = interactive_loop(conn, file1, file2);
+ 
+ #if !defined(USE_PIPES)
+-	shutdown(in, SHUT_RDWR);
+-	shutdown(out, SHUT_RDWR);
++    /*
++	 *shutdown(in, SHUT_RDWR);
++	 *shutdown(out, SHUT_RDWR);
++     */
+ #endif
+ 
+ 	close(in);
+diff -ru source/sftp-client.c source-new/sftp-client.c
+--- source/sftp-client.c	2017-10-02 12:34:26.000000000 -0700
++++ source-new/sftp-client.c	2017-11-02 18:31:51.948879063 -0700
+@@ -121,10 +121,12 @@
+ 	iov[1].iov_base = (u_char *)sshbuf_ptr(m);
+ 	iov[1].iov_len = sshbuf_len(m);
+ 
+-	if (atomiciov6(writev, conn->fd_out, iov, 2,
+-	    conn->limit_kbps > 0 ? sftpio : NULL, &conn->bwlimit_out) !=
+-	    sshbuf_len(m) + sizeof(mlen))
+-		fatal("Couldn't send packet: %s", strerror(errno));
++    /*
++	 *if (atomiciov6(writev, conn->fd_out, iov, 2,
++	 *    conn->limit_kbps > 0 ? sftpio : NULL, &conn->bwlimit_out) !=
++	 *    sshbuf_len(m) + sizeof(mlen))
++	 *    fatal("Couldn't send packet: %s", strerror(errno));
++     */
+ 
+ 	sshbuf_reset(m);
+ }
+@@ -1832,7 +1834,7 @@
+ 	}
+ 
+ 	while (((dp = readdir(dirp)) != NULL) && !interrupted) {
+-		if (dp->d_ino == 0)
++		//if (dp->d_ino == 0)
+ 			continue;
+ 		filename = dp->d_name;
+ 		new_dst = path_append(dst, filename);
+diff -ru source/sftp-glob.c source-new/sftp-glob.c
+--- source/sftp-glob.c	2017-10-02 12:34:26.000000000 -0700
++++ source-new/sftp-glob.c	2017-11-02 18:31:51.948879063 -0700
+@@ -92,12 +92,13 @@
+ 	 * ALTDIRFUNCs. Not that this is documented anywhere but the
+ 	 * source... Fake an inode number to appease it.
+ 	 */
+-	ret->d_ino = inum++;
++//	ret->d_ino = inum++;
+ 	if (!inum)
+ 		inum = 1;
+ #endif /* __GNU_LIBRARY__ */
+ 
+-	return(ret);
++//	return(ret);
++    return 0;
+ }
+ 
+ static void
+diff -ru source/ssh-agent.c source-new/ssh-agent.c
+--- source/ssh-agent.c	2017-10-02 12:34:26.000000000 -0700
++++ source-new/ssh-agent.c	2017-11-02 18:31:51.962212373 -0700
+@@ -788,23 +788,25 @@
+ 	int fd;
+ 
+ 	slen = sizeof(sunaddr);
+-	fd = accept(sockets[socknum].fd, (struct sockaddr *)&sunaddr, &slen);
+-	if (fd < 0) {
+-		error("accept from AUTH_SOCKET: %s", strerror(errno));
+-		return -1;
+-	}
+-	if (getpeereid(fd, &euid, &egid) < 0) {
+-		error("getpeereid %d failed: %s", fd, strerror(errno));
+-		close(fd);
+-		return -1;
+-	}
+-	if ((euid != 0) && (getuid() != euid)) {
+-		error("uid mismatch: peer euid %u != uid %u",
+-		    (u_int) euid, (u_int) getuid());
+-		close(fd);
+-		return -1;
+-	}
+-	new_socket(AUTH_CONNECTION, fd);
++    /*
++	 *fd = accept(sockets[socknum].fd, (struct sockaddr *)&sunaddr, &slen);
++	 *if (fd < 0) {
++	 *    error("accept from AUTH_SOCKET: %s", strerror(errno));
++	 *    return -1;
++	 *}
++	 *if (getpeereid(fd, &euid, &egid) < 0) {
++	 *    error("getpeereid %d failed: %s", fd, strerror(errno));
++	 *    close(fd);
++	 *    return -1;
++	 *}
++	 *if ((euid != 0) && (getuid() != euid)) {
++	 *    error("uid mismatch: peer euid %u != uid %u",
++	 *        (u_int) euid, (u_int) getuid());
++	 *    close(fd);
++	 *    return -1;
++	 *}
++	 *new_socket(AUTH_CONNECTION, fd);
++     */
+ 	return 0;
+ }
+ 
+@@ -1037,8 +1039,10 @@
+ 	sanitise_stdfd();
+ 
+ 	/* drop */
+-	setegid(getgid());
+-	setgid(getgid());
++    /*
++	 *setegid(getgid());
++	 *setgid(getgid());
++     */
+ 
+ 	platform_disable_tracing(0);	/* strict=no */
+ 
+@@ -1212,10 +1216,12 @@
+ 	/* child */
+ 	log_init(__progname, SYSLOG_LEVEL_INFO, SYSLOG_FACILITY_AUTH, 0);
+ 
+-	if (setsid() == -1) {
+-		error("setsid: %s", strerror(errno));
+-		cleanup_exit(1);
+-	}
++    /*
++	 *if (setsid() == -1) {
++	 *    error("setsid: %s", strerror(errno));
++	 *    cleanup_exit(1);
++	 *}
++     */
+ 
+ 	(void)chdir("/");
+ 	if ((fd = open(_PATH_DEVNULL, O_RDWR, 0)) != -1) {
+diff -ru source/sshconnect.c source-new/sshconnect.c
+--- source/sshconnect.c	2017-10-02 12:34:26.000000000 -0700
++++ source-new/sshconnect.c	2017-11-02 18:31:51.962212373 -0700
+@@ -115,9 +115,11 @@
+ 	if ((shell = getenv("SHELL")) == NULL)
+ 		shell = _PATH_BSHELL;
+ 
+-	if (socketpair(AF_UNIX, SOCK_STREAM, 0, sp) < 0)
+-		fatal("Could not create socketpair to communicate with "
+-		    "proxy dialer: %.100s", strerror(errno));
++    /*
++	 *if (socketpair(AF_UNIX, SOCK_STREAM, 0, sp) < 0)
++	 *    fatal("Could not create socketpair to communicate with "
++	 *        "proxy dialer: %.100s", strerror(errno));
++     */
+ 
+ 	command_string = expand_proxy_command(proxy_command, options.user,
+ 	    host, port);
+@@ -387,10 +389,12 @@
+ 		return -1;
+ 
+ 	/* Completed or failed */
+-	if (getsockopt(sockfd, SOL_SOCKET, SO_ERROR, &optval, &optlen) == -1) {
+-		debug("getsockopt: %s", strerror(errno));
+-		return -1;
+-	}
++    /*
++	 *if (getsockopt(sockfd, SOL_SOCKET, SO_ERROR, &optval, &optlen) == -1) {
++	 *    debug("getsockopt: %s", strerror(errno));
++	 *    return -1;
++	 *}
++     */
+ 	if (optval != 0) {
+ 		errno = optval;
+ 		return -1;
+@@ -665,8 +669,8 @@
+ {
+ 	switch (hostaddr->sa_family) {
+ 	case AF_INET:
+-		return (ntohl(((struct sockaddr_in *)hostaddr)->
+-		    sin_addr.s_addr) >> 24) == IN_LOOPBACKNET;
++		return 0;/*(ntohl(((struct sockaddr_in *)hostaddr)->
++		    sin_addr.s_addr) >> 24) == IN_LOOPBACKNET;*/
+ 	case AF_INET6:
+ 		return IN6_IS_ADDR_LOOPBACK(
+ 		    &(((struct sockaddr_in6 *)hostaddr)->sin6_addr));
+diff -ru source/sshd.c source-new/sshd.c
+--- source/sshd.c	2017-10-02 12:34:26.000000000 -0700
++++ source-new/sshd.c	2017-11-02 18:31:51.965545701 -0700
+@@ -541,9 +541,11 @@
+ 	/* Demote the child */
+ 	if (privsep_chroot) {
+ 		/* Change our root directory */
+-		if (chroot(_PATH_PRIVSEP_CHROOT_DIR) == -1)
+-			fatal("chroot(\"%s\"): %s", _PATH_PRIVSEP_CHROOT_DIR,
+-			    strerror(errno));
++        /*
++		 *if (chroot(_PATH_PRIVSEP_CHROOT_DIR) == -1)
++		 *    fatal("chroot(\"%s\"): %s", _PATH_PRIVSEP_CHROOT_DIR,
++		 *        strerror(errno));
++         */
+ 		if (chdir("/") == -1)
+ 			fatal("chdir(\"/\"): %s", strerror(errno));
+ 
+@@ -551,8 +553,10 @@
+ 		debug3("privsep user:group %u:%u", (u_int)privsep_pw->pw_uid,
+ 		    (u_int)privsep_pw->pw_gid);
+ 		gidset[0] = privsep_pw->pw_gid;
+-		if (setgroups(1, gidset) < 0)
+-			fatal("setgroups: %.100s", strerror(errno));
++        /*
++		 *if (setgroups(1, gidset) < 0)
++		 *    fatal("setgroups: %.100s", strerror(errno));
++         */
+ 		permanently_set_uid(privsep_pw);
+ 	}
+ }
+@@ -1054,9 +1058,11 @@
+ 		 * Set socket options.
+ 		 * Allow local port reuse in TIME_WAIT.
+ 		 */
+-		if (setsockopt(listen_sock, SOL_SOCKET, SO_REUSEADDR,
+-		    &on, sizeof(on)) == -1)
+-			error("setsockopt SO_REUSEADDR: %s", strerror(errno));
++        /*
++		 *if (setsockopt(listen_sock, SOL_SOCKET, SO_REUSEADDR,
++		 *    &on, sizeof(on)) == -1)
++		 *    error("setsockopt SO_REUSEADDR: %s", strerror(errno));
++         */
+ 
+ 		/* Only communicate in IPv6 over AF_INET6 sockets. */
+ 		if (ai->ai_family == AF_INET6)
+@@ -1158,95 +1164,95 @@
+ 				startup_pipes[i] = -1;
+ 				startups--;
+ 			}
+-		for (i = 0; i < num_listen_socks; i++) {
+-			if (!FD_ISSET(listen_socks[i], fdset))
+-				continue;
+-			fromlen = sizeof(from);
+-			*newsock = accept(listen_socks[i],
+-			    (struct sockaddr *)&from, &fromlen);
+-			if (*newsock < 0) {
+-				if (errno != EINTR && errno != EWOULDBLOCK &&
+-				    errno != ECONNABORTED && errno != EAGAIN)
+-					error("accept: %.100s",
+-					    strerror(errno));
+-				if (errno == EMFILE || errno == ENFILE)
+-					usleep(100 * 1000);
+-				continue;
+-			}
+-			if (unset_nonblock(*newsock) == -1) {
+-				close(*newsock);
+-				continue;
+-			}
+-			if (drop_connection(startups) == 1) {
+-				char *laddr = get_local_ipaddr(*newsock);
+-				char *raddr = get_peer_ipaddr(*newsock);
+-
+-				verbose("drop connection #%d from [%s]:%d "
+-				    "on [%s]:%d past MaxStartups", startups,
+-				    raddr, get_peer_port(*newsock),
+-				    laddr, get_local_port(*newsock));
+-				free(laddr);
+-				free(raddr);
+-				close(*newsock);
+-				continue;
+-			}
+-			if (pipe(startup_p) == -1) {
+-				close(*newsock);
+-				continue;
+-			}
+-
+-			if (rexec_flag && socketpair(AF_UNIX,
+-			    SOCK_STREAM, 0, config_s) == -1) {
+-				error("reexec socketpair: %s",
+-				    strerror(errno));
+-				close(*newsock);
+-				close(startup_p[0]);
+-				close(startup_p[1]);
+-				continue;
+-			}
+-
+-			for (j = 0; j < options.max_startups; j++)
+-				if (startup_pipes[j] == -1) {
+-					startup_pipes[j] = startup_p[0];
+-					if (maxfd < startup_p[0])
+-						maxfd = startup_p[0];
+-					startups++;
+-					break;
+-				}
++	//	for (i = 0; i < num_listen_socks; i++) {
++	//		if (!FD_ISSET(listen_socks[i], fdset))
++	//			continue;
++	//		fromlen = sizeof(from);
++   /*         *newsock = accept(listen_socks[i],*/
++				/*(struct sockaddr *)&from, &fromlen);*/
++			/*if (*newsock < 0) {*/
++				/*if (errno != EINTR && errno != EWOULDBLOCK &&*/
++					/*errno != ECONNABORTED && errno != EAGAIN)*/
++					/*error("accept: %.100s",*/
++						/*strerror(errno));*/
++				/*if (errno == EMFILE || errno == ENFILE)*/
++					/*usleep(100 * 1000);*/
++				/*continue;*/
++			/*}*/
++			/*if (unset_nonblock(*newsock) == -1) {*/
++				/*close(*newsock);*/
++				/*continue;*/
++			/*}*/
++			/*if (drop_connection(startups) == 1) {*/
++				/*char *laddr = get_local_ipaddr(*newsock);*/
++				/*char *raddr = get_peer_ipaddr(*newsock);*/
++
++				/*verbose("drop connection #%d from [%s]:%d "*/
++					/*"on [%s]:%d past MaxStartups", startups,*/
++					/*raddr, get_peer_port(*newsock),*/
++					/*laddr, get_local_port(*newsock));*/
++				/*free(laddr);*/
++				/*free(raddr);*/
++				/*close(*newsock);*/
++				/*continue;*/
++			/*}*/
++			/*if (pipe(startup_p) == -1) {*/
++				/*close(*newsock);*/
++				/*continue;*/
++			/*}*/
++
++			/*if (rexec_flag && socketpair(AF_UNIX,*/
++				/*SOCK_STREAM, 0, config_s) == -1) {*/
++				/*error("reexec socketpair: %s",*/
++					/*strerror(errno));*/
++				/*close(*newsock);*/
++				/*close(startup_p[0]);*/
++				/*close(startup_p[1]);*/
++				/*continue;*/
++			/*}*/
++
++			/*for (j = 0; j < options.max_startups; j++)*/
++				/*if (startup_pipes[j] == -1) {*/
++					/*startup_pipes[j] = startup_p[0];*/
++					/*if (maxfd < startup_p[0])*/
++						/*maxfd = startup_p[0];*/
++					/*startups++;*/
++					/*break;*/
++				/*}*/
+ 
+ 			/*
+ 			 * Got connection.  Fork a child to handle it, unless
+ 			 * we are in debugging mode.
+ 			 */
+-			if (debug_flag) {
++			/*if (debug_flag) {*/
+ 				/*
+ 				 * In debugging mode.  Close the listening
+ 				 * socket, and start processing the
+ 				 * connection without forking.
+ 				 */
+-				debug("Server will not fork when running in debugging mode.");
+-				close_listen_socks();
+-				*sock_in = *newsock;
+-				*sock_out = *newsock;
+-				close(startup_p[0]);
+-				close(startup_p[1]);
+-				startup_pipe = -1;
+-				pid = getpid();
+-				if (rexec_flag) {
+-					send_rexec_state(config_s[0],
+-					    &cfg);
+-					close(config_s[0]);
+-				}
+-				break;
+-			}
++				/*debug("Server will not fork when running in debugging mode.");*/
++				/*close_listen_socks();*/
++				/**sock_in = *newsock;*/
++				/**sock_out = *newsock;*/
++				/*close(startup_p[0]);*/
++				/*close(startup_p[1]);*/
++				/*startup_pipe = -1;*/
++				/*pid = getpid();*/
++				/*if (rexec_flag) {*/
++					/*send_rexec_state(config_s[0],*/
++						/*&cfg);*/
++					/*close(config_s[0]);*/
++				/*}*/
++				/*break;*/
++			/*}*/
+ 
+ 			/*
+ 			 * Normal production daemon.  Fork, and have
+ 			 * the child process the connection. The
+ 			 * parent continues listening.
+ 			 */
+-			platform_pre_fork();
+-			if ((pid = fork()) == 0) {
++			/*platform_pre_fork();*/
++			/*if ((pid = fork()) == 0) {*/
+ 				/*
+ 				 * Child.  Close the listening and
+ 				 * max_startup sockets.  Start using
+@@ -1255,54 +1261,54 @@
+ 				 * We break out of the loop to handle
+ 				 * the connection.
+ 				 */
+-				platform_post_fork_child();
+-				startup_pipe = startup_p[1];
+-				close_startup_pipes();
+-				close_listen_socks();
+-				*sock_in = *newsock;
+-				*sock_out = *newsock;
+-				log_init(__progname,
+-				    options.log_level,
+-				    options.log_facility,
+-				    log_stderr);
+-				if (rexec_flag)
+-					close(config_s[0]);
+-				break;
+-			}
+-
+-			/* Parent.  Stay in the loop. */
+-			platform_post_fork_parent(pid);
+-			if (pid < 0)
+-				error("fork: %.100s", strerror(errno));
+-			else
+-				debug("Forked child %ld.", (long)pid);
+-
+-			close(startup_p[1]);
+-
+-			if (rexec_flag) {
+-				send_rexec_state(config_s[0], &cfg);
+-				close(config_s[0]);
+-				close(config_s[1]);
+-			}
+-			close(*newsock);
++				/*platform_post_fork_child();*/
++				/*startup_pipe = startup_p[1];*/
++				/*close_startup_pipes();*/
++				/*close_listen_socks();*/
++				/**sock_in = *newsock;*/
++				/**sock_out = *newsock;*/
++				/*log_init(__progname,*/
++					/*options.log_level,*/
++					/*options.log_facility,*/
++					/*log_stderr);*/
++				/*if (rexec_flag)*/
++					/*close(config_s[0]);*/
++				/*break;*/
++			/*}*/
++
++			/*[> Parent.  Stay in the loop. <]*/
++			/*platform_post_fork_parent(pid);*/
++			/*if (pid < 0)*/
++				/*error("fork: %.100s", strerror(errno));*/
++			/*else*/
++				/*debug("Forked child %ld.", (long)pid);*/
++
++			/*close(startup_p[1]);*/
++
++			/*if (rexec_flag) {*/
++				/*send_rexec_state(config_s[0], &cfg);*/
++				/*close(config_s[0]);*/
++				/*close(config_s[1]);*/
++			/*}*/
++			/*close(*newsock);*/
+ 
+ 			/*
+ 			 * Ensure that our random state differs
+ 			 * from that of the child
+ 			 */
+-			arc4random_stir();
+-			arc4random_buf(rnd, sizeof(rnd));
+-#ifdef WITH_OPENSSL
+-			RAND_seed(rnd, sizeof(rnd));
+-			if ((RAND_bytes((u_char *)rnd, 1)) != 1)
+-				fatal("%s: RAND_bytes failed", __func__);
+-#endif
+-			explicit_bzero(rnd, sizeof(rnd));
+-		}
+-
+-		/* child process check (or debug mode) */
+-		if (num_listen_socks < 0)
+-			break;
++			/*arc4random_stir();*/
++			/*arc4random_buf(rnd, sizeof(rnd));*/
++/*#ifdef WITH_OPENSSL*/
++			/*RAND_seed(rnd, sizeof(rnd));*/
++			/*if ((RAND_bytes((u_char *)rnd, 1)) != 1)*/
++				/*fatal("%s: RAND_bytes failed", __func__);*/
++/*#endif*/
++			/*explicit_bzero(rnd, sizeof(rnd));*/
++		/*}*/
++
++		/*[> child process check (or debug mode) <]*/
++		/*if (num_listen_socks < 0)*/
++		 /*   break;*/
+ 	}
+ }
+ 
+@@ -1317,36 +1323,38 @@
+  * rest of the interaction and could still bypass security.  So we
+  * exit here if we detect any IP options.
+  */
+-static void
+-check_ip_options(struct ssh *ssh)
+-{
+-#ifdef IP_OPTIONS
+-	int sock_in = ssh_packet_get_connection_in(ssh);
+-	struct sockaddr_storage from;
+-	u_char opts[200];
+-	socklen_t i, option_size = sizeof(opts), fromlen = sizeof(from);
+-	char text[sizeof(opts) * 3 + 1];
+-
+-	memset(&from, 0, sizeof(from));
+-	if (getpeername(sock_in, (struct sockaddr *)&from,
+-	    &fromlen) < 0)
+-		return;
+-	if (from.ss_family != AF_INET)
+-		return;
+-	/* XXX IPv6 options? */
+-
+-	if (getsockopt(sock_in, IPPROTO_IP, IP_OPTIONS, opts,
+-	    &option_size) >= 0 && option_size != 0) {
+-		text[0] = '\0';
+-		for (i = 0; i < option_size; i++)
+-			snprintf(text + i*3, sizeof(text) - i*3,
+-			    " %2.2x", opts[i]);
+-		fatal("Connection from %.100s port %d with IP opts: %.800s",
+-		    ssh_remote_ipaddr(ssh), ssh_remote_port(ssh), text);
+-	}
+-	return;
+-#endif /* IP_OPTIONS */
+-}
++//static void
++/*
++ *check_ip_options(struct ssh *ssh)
++ *{
++ *#ifdef IP_OPTIONS
++ *    int sock_in = ssh_packet_get_connection_in(ssh);
++ *    struct sockaddr_storage from;
++ *    u_char opts[200];
++ *    socklen_t i, option_size = sizeof(opts), fromlen = sizeof(from);
++ *    char text[sizeof(opts) * 3 + 1];
++ *
++ *    memset(&from, 0, sizeof(from));
++ *    if (getpeername(sock_in, (struct sockaddr *)&from,
++ *        &fromlen) < 0)
++ *        return;
++ *    if (from.ss_family != AF_INET)
++ *        return;
++ *    [> XXX IPv6 options? <]
++ *
++ *    if (getsockopt(sock_in, IPPROTO_IP, IP_OPTIONS, opts,
++ *        &option_size) >= 0 && option_size != 0) {
++ *        text[0] = '\0';
++ *        for (i = 0; i < option_size; i++)
++ *            snprintf(text + i*3, sizeof(text) - i*3,
++ *                " %2.2x", opts[i]);
++ *        fatal("Connection from %.100s port %d with IP opts: %.800s",
++ *            ssh_remote_ipaddr(ssh), ssh_remote_port(ssh), text);
++ *    }
++ *    return;
++ *#endif [> IP_OPTIONS <]
++ *}
++ */
+ 
+ /*
+  * Main program for the daemon.
+@@ -1393,9 +1401,11 @@
+ 	av = saved_argv;
+ #endif
+ 
+-	if (geteuid() == 0 && setgroups(0, NULL) == -1)
+-		debug("setgroups(): %.200s", strerror(errno));
+-
++/*
++ *    if (geteuid() == 0 && setgroups(0, NULL) == -1)
++ *        debug("setgroups(): %.200s", strerror(errno));
++ *
++ */
+ 	/* Ensure that fds 0, 1 and 2 are open or directed to /dev/null */
+ 	sanitise_stdfd();
+ 
+@@ -1648,7 +1658,7 @@
+ 		free(privsep_pw->pw_passwd);
+ 		privsep_pw->pw_passwd = xstrdup("*");
+ 	}
+-	endpwent();
++	//endpwent();
+ 
+ 	/* load host keys */
+ 	sensitive_data.host_keys = xcalloc(options.num_host_key_files,
+@@ -1792,8 +1802,10 @@
+ 	 * to create a file, and we can't control the code in every
+ 	 * module which might be used).
+ 	 */
+-	if (setgroups(0, NULL) < 0)
+-		debug("setgroups() failed: %.200s", strerror(errno));
++    /*
++	 *if (setgroups(0, NULL) < 0)
++	 *    debug("setgroups() failed: %.200s", strerror(errno));
++     */
+ 
+ 	if (rexec_flag) {
+ 		rexec_argv = xcalloc(rexec_argc + 2, sizeof(char *));
+@@ -1885,8 +1897,10 @@
+ 	 * controlling terminal which will result in "could not set
+ 	 * controlling tty" errors.
+ 	 */
+-	if (!debug_flag && !inetd_flag && setsid() < 0)
+-		error("setsid: %.100s", strerror(errno));
++    /*
++	 *if (!debug_flag && !inetd_flag && setsid() < 0)
++	 *    error("setsid: %.100s", strerror(errno));
++     */
+ #endif
+ 
+ 	if (rexec_flag) {
+@@ -1953,7 +1967,7 @@
+ 	packet_set_server();
+ 	ssh = active_state; /* XXX */
+ 
+-	check_ip_options(ssh);
++	//check_ip_options(ssh);
+ 
+ 	/* Prepare the channels layer */
+ 	channel_init_channels(ssh);
+@@ -2026,7 +2040,7 @@
+ 
+ 	/* perform the key exchange */
+ 	/* authenticate user and start session */
+-	do_ssh2_kex();
++	//do_ssh2_kex();
+ 	do_authentication2(authctxt);
+ 
+ 	/*
+@@ -2142,73 +2156,75 @@
+ }
+ 
+ /* SSH2 key exchange */
+-static void
+-do_ssh2_kex(void)
+-{
+-	char *myproposal[PROPOSAL_MAX] = { KEX_SERVER };
+-	struct kex *kex;
+-	int r;
+-
+-	myproposal[PROPOSAL_KEX_ALGS] = compat_kex_proposal(
+-	    options.kex_algorithms);
+-	myproposal[PROPOSAL_ENC_ALGS_CTOS] = compat_cipher_proposal(
+-	    options.ciphers);
+-	myproposal[PROPOSAL_ENC_ALGS_STOC] = compat_cipher_proposal(
+-	    options.ciphers);
+-	myproposal[PROPOSAL_MAC_ALGS_CTOS] =
+-	    myproposal[PROPOSAL_MAC_ALGS_STOC] = options.macs;
+-
+-	if (options.compression == COMP_NONE) {
+-		myproposal[PROPOSAL_COMP_ALGS_CTOS] =
+-		    myproposal[PROPOSAL_COMP_ALGS_STOC] = "none";
+-	}
+-
+-	if (options.rekey_limit || options.rekey_interval)
+-		packet_set_rekey_limits(options.rekey_limit,
+-		    options.rekey_interval);
+-
+-	myproposal[PROPOSAL_SERVER_HOST_KEY_ALGS] = compat_pkalg_proposal(
+-	    list_hostkey_types());
+-
+-	/* start key exchange */
+-	if ((r = kex_setup(active_state, myproposal)) != 0)
+-		fatal("kex_setup: %s", ssh_err(r));
+-	kex = active_state->kex;
+-#ifdef WITH_OPENSSL
+-	kex->kex[KEX_DH_GRP1_SHA1] = kexdh_server;
+-	kex->kex[KEX_DH_GRP14_SHA1] = kexdh_server;
+-	kex->kex[KEX_DH_GRP14_SHA256] = kexdh_server;
+-	kex->kex[KEX_DH_GRP16_SHA512] = kexdh_server;
+-	kex->kex[KEX_DH_GRP18_SHA512] = kexdh_server;
+-	kex->kex[KEX_DH_GEX_SHA1] = kexgex_server;
+-	kex->kex[KEX_DH_GEX_SHA256] = kexgex_server;
+-# ifdef OPENSSL_HAS_ECC
+-	kex->kex[KEX_ECDH_SHA2] = kexecdh_server;
+-# endif
+-#endif
+-	kex->kex[KEX_C25519_SHA256] = kexc25519_server;
+-	kex->server = 1;
+-	kex->client_version_string=client_version_string;
+-	kex->server_version_string=server_version_string;
+-	kex->load_host_public_key=&get_hostkey_public_by_type;
+-	kex->load_host_private_key=&get_hostkey_private_by_type;
+-	kex->host_key_index=&get_hostkey_index;
+-	kex->sign = sshd_hostkey_sign;
+-
+-	ssh_dispatch_run_fatal(active_state, DISPATCH_BLOCK, &kex->done);
+-
+-	session_id2 = kex->session_id;
+-	session_id2_len = kex->session_id_len;
+-
+-#ifdef DEBUG_KEXDH
+-	/* send 1st encrypted/maced/compressed message */
+-	packet_start(SSH2_MSG_IGNORE);
+-	packet_put_cstring("markus");
+-	packet_send();
+-	packet_write_wait();
+-#endif
+-	debug("KEX done");
+-}
++/*
++ *static void
++ *do_ssh2_kex(void)
++ *{
++ *    char *myproposal[PROPOSAL_MAX] = { KEX_SERVER };
++ *    struct kex *kex;
++ *    int r;
++ *
++ *    myproposal[PROPOSAL_KEX_ALGS] = compat_kex_proposal(
++ *        options.kex_algorithms);
++ *    myproposal[PROPOSAL_ENC_ALGS_CTOS] = compat_cipher_proposal(
++ *        options.ciphers);
++ *    myproposal[PROPOSAL_ENC_ALGS_STOC] = compat_cipher_proposal(
++ *        options.ciphers);
++ *    myproposal[PROPOSAL_MAC_ALGS_CTOS] =
++ *        myproposal[PROPOSAL_MAC_ALGS_STOC] = options.macs;
++ *
++ *    if (options.compression == COMP_NONE) {
++ *        myproposal[PROPOSAL_COMP_ALGS_CTOS] =
++ *            myproposal[PROPOSAL_COMP_ALGS_STOC] = "none";
++ *    }
++ *
++ *    if (options.rekey_limit || options.rekey_interval)
++ *        packet_set_rekey_limits(options.rekey_limit,
++ *            options.rekey_interval);
++ *
++ *    myproposal[PROPOSAL_SERVER_HOST_KEY_ALGS] = compat_pkalg_proposal(
++ *        list_hostkey_types());
++ *
++ *    [> start key exchange <]
++ *    if ((r = kex_setup(active_state, myproposal)) != 0)
++ *        fatal("kex_setup: %s", ssh_err(r));
++ *    kex = active_state->kex;
++ *#ifdef WITH_OPENSSL
++ *    kex->kex[KEX_DH_GRP1_SHA1] = kexdh_server;
++ *    kex->kex[KEX_DH_GRP14_SHA1] = kexdh_server;
++ *    kex->kex[KEX_DH_GRP14_SHA256] = kexdh_server;
++ *    kex->kex[KEX_DH_GRP16_SHA512] = kexdh_server;
++ *    kex->kex[KEX_DH_GRP18_SHA512] = kexdh_server;
++ *    kex->kex[KEX_DH_GEX_SHA1] = kexgex_server;
++ *    kex->kex[KEX_DH_GEX_SHA256] = kexgex_server;
++ *# ifdef OPENSSL_HAS_ECC
++ *    kex->kex[KEX_ECDH_SHA2] = kexecdh_server;
++ *# endif
++ *#endif
++ *    kex->kex[KEX_C25519_SHA256] = kexc25519_server;
++ *    kex->server = 1;
++ *    kex->client_version_string=client_version_string;
++ *    kex->server_version_string=server_version_string;
++ *    kex->load_host_public_key=&get_hostkey_public_by_type;
++ *    kex->load_host_private_key=&get_hostkey_private_by_type;
++ *    kex->host_key_index=&get_hostkey_index;
++ *    kex->sign = sshd_hostkey_sign;
++ *
++ *    ssh_dispatch_run_fatal(active_state, DISPATCH_BLOCK, &kex->done);
++ *
++ *    session_id2 = kex->session_id;
++ *    session_id2_len = kex->session_id_len;
++ *
++ *#ifdef DEBUG_KEXDH
++ *    [> send 1st encrypted/maced/compressed message <]
++ *    packet_start(SSH2_MSG_IGNORE);
++ *    packet_put_cstring("markus");
++ *    packet_send();
++ *    packet_write_wait();
++ *#endif
++ *    debug("KEX done");
++ *}
++ */
+ 
+ /* server specific fatal cleanup */
+ void
+diff -ru source/ssh-dss.c source-new/ssh-dss.c
+--- source/ssh-dss.c	2017-10-02 12:34:26.000000000 -0700
++++ source-new/ssh-dss.c	2017-11-02 18:31:51.968879029 -0700
+@@ -53,6 +53,7 @@
+ 	DSA_SIG *sig = NULL;
+ 	u_char digest[SSH_DIGEST_MAX_LENGTH], sigblob[SIGBLOB_LEN];
+ 	size_t rlen, slen, len, dlen = ssh_digest_bytes(SSH_DIGEST_SHA1);
++	const BIGNUM *r, *s;
+ 	struct sshbuf *b = NULL;
+ 	int ret = SSH_ERR_INVALID_ARGUMENT;
+ 
+@@ -76,15 +77,16 @@
+ 		goto out;
+ 	}
+ 
+-	rlen = BN_num_bytes(sig->r);
+-	slen = BN_num_bytes(sig->s);
++	DSA_SIG_get0(sig, &r, &s);
++	rlen = BN_num_bytes(r);
++	slen = BN_num_bytes(s);
+ 	if (rlen > INTBLOB_LEN || slen > INTBLOB_LEN) {
+ 		ret = SSH_ERR_INTERNAL_ERROR;
+ 		goto out;
+ 	}
+ 	explicit_bzero(sigblob, SIGBLOB_LEN);
+-	BN_bn2bin(sig->r, sigblob + SIGBLOB_LEN - INTBLOB_LEN - rlen);
+-	BN_bn2bin(sig->s, sigblob + SIGBLOB_LEN - slen);
++	BN_bn2bin(r, sigblob + SIGBLOB_LEN - INTBLOB_LEN - rlen);
++	BN_bn2bin(s, sigblob + SIGBLOB_LEN - slen);
+ 
+ 	if (compat & SSH_BUG_SIGBLOB) {
+ 		if (sigp != NULL) {
+@@ -176,17 +178,26 @@
+ 	}
+ 
+ 	/* parse signature */
++	{
++	BIGNUM *r=NULL, *s=NULL;
+ 	if ((sig = DSA_SIG_new()) == NULL ||
+-	    (sig->r = BN_new()) == NULL ||
+-	    (sig->s = BN_new()) == NULL) {
++	    (r = BN_new()) == NULL ||
++	    (s = BN_new()) == NULL) {
+ 		ret = SSH_ERR_ALLOC_FAIL;
++		BN_free(r);
++		BN_free(s);
+ 		goto out;
+ 	}
+-	if ((BN_bin2bn(sigblob, INTBLOB_LEN, sig->r) == NULL) ||
+-	    (BN_bin2bn(sigblob+ INTBLOB_LEN, INTBLOB_LEN, sig->s) == NULL)) {
++	if ((BN_bin2bn(sigblob, INTBLOB_LEN, r) == NULL) ||
++	    (BN_bin2bn(sigblob+ INTBLOB_LEN, INTBLOB_LEN, s) == NULL)) {
+ 		ret = SSH_ERR_LIBCRYPTO_ERROR;
++		BN_free(r);
++		BN_free(s);
+ 		goto out;
+ 	}
++	DSA_SIG_set0(sig, r, s);
++	r = s = NULL;
++	}
+ 
+ 	/* sha1 the data */
+ 	if ((ret = ssh_digest_memory(SSH_DIGEST_SHA1, data, datalen,
+diff -ru source/ssh-ecdsa.c source-new/ssh-ecdsa.c
+--- source/ssh-ecdsa.c	2017-10-02 12:34:26.000000000 -0700
++++ source-new/ssh-ecdsa.c	2017-11-02 18:31:51.968879029 -0700
+@@ -80,9 +80,14 @@
+ 		ret = SSH_ERR_ALLOC_FAIL;
+ 		goto out;
+ 	}
+-	if ((ret = sshbuf_put_bignum2(bb, sig->r)) != 0 ||
+-	    (ret = sshbuf_put_bignum2(bb, sig->s)) != 0)
++	{
++	const BIGNUM *r, *s;
++	ECDSA_SIG_get0(sig, &r, &s);
++	if ((ret = sshbuf_put_bignum2(bb, r)) != 0 ||
++	    (ret = sshbuf_put_bignum2(bb, s)) != 0) {
+ 		goto out;
++	}
++	}
+ 	if ((ret = sshbuf_put_cstring(b, sshkey_ssh_name_plain(key))) != 0 ||
+ 	    (ret = sshbuf_put_stringb(b, bb)) != 0)
+ 		goto out;
+@@ -151,11 +156,27 @@
+ 		ret = SSH_ERR_ALLOC_FAIL;
+ 		goto out;
+ 	}
+-	if (sshbuf_get_bignum2(sigbuf, sig->r) != 0 ||
+-	    sshbuf_get_bignum2(sigbuf, sig->s) != 0) {
++	{
++	BIGNUM *r=NULL, *s=NULL;
++	if ((r = BN_new()) == NULL ||
++	    (s = BN_new()) == NULL) {
++		ret = SSH_ERR_ALLOC_FAIL;
++		goto out_rs;
++	}
++	if (sshbuf_get_bignum2(sigbuf, r) != 0 ||
++	    sshbuf_get_bignum2(sigbuf, s) != 0) {
+ 		ret = SSH_ERR_INVALID_FORMAT;
++		goto out_rs;
++	}
++	if (ECDSA_SIG_set0(sig, r, s) == 0) {
++		ret = SSH_ERR_LIBCRYPTO_ERROR;
++out_rs:
++		BN_free(r);
++		BN_free(s);
+ 		goto out;
+ 	}
++	r = s = NULL;
++	}
+ 	if (sshbuf_len(sigbuf) != 0) {
+ 		ret = SSH_ERR_UNEXPECTED_TRAILING_DATA;
+ 		goto out;
+diff -ru source/sshkey.c source-new/sshkey.c
+--- source/sshkey.c	2017-10-02 12:34:26.000000000 -0700
++++ source-new/sshkey.c	2017-11-02 18:31:51.968879029 -0700
+@@ -264,10 +264,18 @@
+ #ifdef WITH_OPENSSL
+ 	case KEY_RSA:
+ 	case KEY_RSA_CERT:
+-		return BN_num_bits(k->rsa->n);
++#if OPENSSL_VERSION_NUMBER >= 0x10100000UL
++		return RSA_bits(k->rsa);
++#else
++		return RSA_bits(key->rsa);
++#endif
+ 	case KEY_DSA:
+ 	case KEY_DSA_CERT:
++#if OPENSSL_VERSION_NUMBER >= 0x10100000UL
++		return DSA_bits(k->dsa);
++#else
+ 		return BN_num_bits(k->dsa->p);
++#endif
+ 	case KEY_ECDSA:
+ 	case KEY_ECDSA_CERT:
+ 		return sshkey_curve_nid_to_bits(k->ecdsa_nid);
+@@ -466,28 +474,55 @@
+ #ifdef WITH_OPENSSL
+ 	case KEY_RSA:
+ 	case KEY_RSA_CERT:
++		{
++		BIGNUM *n=NULL, *e=NULL; /* just allocate */
+ 		if ((rsa = RSA_new()) == NULL ||
+-		    (rsa->n = BN_new()) == NULL ||
+-		    (rsa->e = BN_new()) == NULL) {
++		    (n = BN_new()) == NULL ||
++		    (e = BN_new()) == NULL) {
++			BN_free(n);
++			BN_free(e);
+ 			if (rsa != NULL)
+ 				RSA_free(rsa);
+ 			free(k);
+ 			return NULL;
+ 		}
++		BN_clear(n); BN_clear(e);
++		if (RSA_set0_key(rsa, n, e, NULL) == 0)
++			return NULL;
++		n = e = NULL;
++		}
+ 		k->rsa = rsa;
+ 		break;
+ 	case KEY_DSA:
+ 	case KEY_DSA_CERT:
++		{
++		BIGNUM *p=NULL, *q=NULL, *g=NULL, *pubkey=NULL; /* just allocate */
+ 		if ((dsa = DSA_new()) == NULL ||
+-		    (dsa->p = BN_new()) == NULL ||
+-		    (dsa->q = BN_new()) == NULL ||
+-		    (dsa->g = BN_new()) == NULL ||
+-		    (dsa->pub_key = BN_new()) == NULL) {
++		    (p = BN_new()) == NULL ||
++		    (q = BN_new()) == NULL ||
++		    (g = BN_new()) == NULL ||
++		    (pubkey = BN_new()) == NULL) {
++			BN_free(p);
++			BN_free(q);
++			BN_free(g);
++			BN_free(pubkey);
+ 			if (dsa != NULL)
+ 				DSA_free(dsa);
+ 			free(k);
+ 			return NULL;
+ 		}
++		if (DSA_set0_pqg(dsa, p, q, g) == 0) {
++			BN_free(p); BN_free(q); BN_free(g);
++			BN_free(pubkey);
++			return NULL;
++		}
++		p = q = g = NULL;
++		if (DSA_set0_key(dsa, pubkey, NULL) == 0) {
++			BN_free(pubkey);
++			return NULL;
++		}
++		pubkey = NULL;
++		}
+ 		k->dsa = dsa;
+ 		break;
+ 	case KEY_ECDSA:
+@@ -523,6 +558,51 @@
+ #ifdef WITH_OPENSSL
+ 	case KEY_RSA:
+ 	case KEY_RSA_CERT:
++#if OPENSSL_VERSION_NUMBER >= 0x10100000UL
++		/* Allocate BIGNUM. This is a mess.
++		   For OpenSSL 1.1.x API these shouldn't be mandatory,
++		   but some regression tests for non-NULL pointer of
++		   the data. */
++#define new_or_dup(bn, nbn) \
++		if (bn == NULL) { \
++			if ((nbn = BN_new()) == NULL) \
++				return SSH_ERR_ALLOC_FAIL; \
++		} else { \
++			/* otherwise use-after-free will occur */ \
++			if ((nbn = BN_dup(bn)) == NULL) \
++				return SSH_ERR_ALLOC_FAIL; \
++		}
++		{
++		const BIGNUM *d, *iqmp, *q, *p, *dmq1, *dmp1; /* allocate if NULL */
++		BIGNUM *nd, *niqmp, *nq, *np, *ndmq1, *ndmp1;
++
++		RSA_get0_key(k->rsa, NULL, NULL, &d);
++		RSA_get0_factors(k->rsa, &p, &q);
++		RSA_get0_crt_params(k->rsa, &dmp1, &dmq1, &iqmp);
++
++		new_or_dup(d, nd);
++		new_or_dup(iqmp, niqmp);
++		new_or_dup(q, nq);
++		new_or_dup(p, np);
++		new_or_dup(dmq1, ndmq1);
++		new_or_dup(dmp1, ndmp1);
++
++		if (RSA_set0_key(k->rsa, NULL, NULL, nd) == 0)
++			goto error1;
++		nd = NULL;
++		if (RSA_set0_factors(k->rsa, np, nq) == 0)
++			goto error1;
++		np = nq = NULL;
++		if (RSA_set0_crt_params(k->rsa, ndmp1, ndmq1, niqmp) == 0) {
++error1:
++			BN_free(nd);
++			BN_free(np); BN_free(nq);
++			BN_free(ndmp1); BN_free(ndmq1); BN_free(niqmp);
++			return SSH_ERR_LIBCRYPTO_ERROR;
++		}
++		ndmp1 = ndmq1 = niqmp = NULL;
++		}
++#else
+ #define bn_maybe_alloc_failed(p) (p == NULL && (p = BN_new()) == NULL)
+ 		if (bn_maybe_alloc_failed(k->rsa->d) ||
+ 		    bn_maybe_alloc_failed(k->rsa->iqmp) ||
+@@ -531,13 +611,28 @@
+ 		    bn_maybe_alloc_failed(k->rsa->dmq1) ||
+ 		    bn_maybe_alloc_failed(k->rsa->dmp1))
+ 			return SSH_ERR_ALLOC_FAIL;
++#endif
+ 		break;
+ 	case KEY_DSA:
+ 	case KEY_DSA_CERT:
++#if OPENSSL_VERSION_NUMBER >= 0x10100000UL
++		{
++		const BIGNUM *priv_key;
++		BIGNUM *npriv_key;
++		DSA_get0_key(k->dsa, NULL, &priv_key);
++		new_or_dup(priv_key, npriv_key);
++		if (DSA_set0_key(k->dsa, NULL, npriv_key) == 0) {
++			BN_free(npriv_key);
++			return SSH_ERR_LIBCRYPTO_ERROR;
++		}
++		}
++#else
+ 		if (bn_maybe_alloc_failed(k->dsa->priv_key))
+ 			return SSH_ERR_ALLOC_FAIL;
++#endif
+ 		break;
+ #undef bn_maybe_alloc_failed
++#undef new_or_dup
+ 	case KEY_ECDSA:
+ 	case KEY_ECDSA_CERT:
+ 		/* Cannot do anything until we know the group */
+@@ -655,16 +750,34 @@
+ #ifdef WITH_OPENSSL
+ 	case KEY_RSA_CERT:
+ 	case KEY_RSA:
+-		return a->rsa != NULL && b->rsa != NULL &&
+-		    BN_cmp(a->rsa->e, b->rsa->e) == 0 &&
+-		    BN_cmp(a->rsa->n, b->rsa->n) == 0;
++		{
++		const BIGNUM *a_e, *b_e, *a_n, *b_n;
++		const BIGNUM *a_d, *b_d;
++		if (a->rsa == NULL) return 0;
++		if (b->rsa == NULL) return 0;
++		RSA_get0_key(a->rsa, &a_n, &a_e, &a_d);
++		RSA_get0_key(b->rsa, &b_n, &b_e, &b_d);
++		return 
++		    BN_cmp(a_e, b_e) == 0 &&
++		    BN_cmp(a_n, b_n) == 0;
++		}
+ 	case KEY_DSA_CERT:
+ 	case KEY_DSA:
+-		return a->dsa != NULL && b->dsa != NULL &&
+-		    BN_cmp(a->dsa->p, b->dsa->p) == 0 &&
+-		    BN_cmp(a->dsa->q, b->dsa->q) == 0 &&
+-		    BN_cmp(a->dsa->g, b->dsa->g) == 0 &&
+-		    BN_cmp(a->dsa->pub_key, b->dsa->pub_key) == 0;
++		{
++		const BIGNUM *a_p, *a_q, *a_g, *a_pub_key;
++		const BIGNUM *b_p, *b_q, *b_g, *b_pub_key;
++		if (a->dsa == NULL) return 0;
++		if (b->dsa == NULL) return 0;
++		DSA_get0_pqg(a->dsa, &a_p, &a_q, &a_g);
++		DSA_get0_pqg(b->dsa, &b_p, &b_q, &b_g);
++		DSA_get0_key(a->dsa, &a_pub_key, NULL);
++		DSA_get0_key(b->dsa, &b_pub_key, NULL);
++		return 
++		    BN_cmp(a_p, b_p) == 0 &&
++		    BN_cmp(a_q, b_q) == 0 &&
++		    BN_cmp(a_g, b_g) == 0 &&
++		    BN_cmp(a_pub_key, b_pub_key) == 0;
++		}
+ # ifdef OPENSSL_HAS_ECC
+ 	case KEY_ECDSA_CERT:
+ 	case KEY_ECDSA:
+@@ -742,12 +855,17 @@
+ 	case KEY_DSA:
+ 		if (key->dsa == NULL)
+ 			return SSH_ERR_INVALID_ARGUMENT;
++		{
++		const BIGNUM *p, *q, *g, *pub_key;
++		DSA_get0_pqg(key->dsa, &p, &q, &g);
++		DSA_get0_key(key->dsa, &pub_key, NULL);
+ 		if ((ret = sshbuf_put_cstring(b, typename)) != 0 ||
+-		    (ret = sshbuf_put_bignum2(b, key->dsa->p)) != 0 ||
+-		    (ret = sshbuf_put_bignum2(b, key->dsa->q)) != 0 ||
+-		    (ret = sshbuf_put_bignum2(b, key->dsa->g)) != 0 ||
+-		    (ret = sshbuf_put_bignum2(b, key->dsa->pub_key)) != 0)
++		    (ret = sshbuf_put_bignum2(b, p)) != 0 ||
++		    (ret = sshbuf_put_bignum2(b, q)) != 0 ||
++		    (ret = sshbuf_put_bignum2(b, g)) != 0 ||
++		    (ret = sshbuf_put_bignum2(b, pub_key)) != 0)
+ 			return ret;
++		}
+ 		break;
+ # ifdef OPENSSL_HAS_ECC
+ 	case KEY_ECDSA:
+@@ -763,10 +881,14 @@
+ 	case KEY_RSA:
+ 		if (key->rsa == NULL)
+ 			return SSH_ERR_INVALID_ARGUMENT;
++		{
++		const BIGNUM *e, *n;
++		RSA_get0_key(key->rsa, &n, &e, NULL);
+ 		if ((ret = sshbuf_put_cstring(b, typename)) != 0 ||
+-		    (ret = sshbuf_put_bignum2(b, key->rsa->e)) != 0 ||
+-		    (ret = sshbuf_put_bignum2(b, key->rsa->n)) != 0)
++		    (ret = sshbuf_put_bignum2(b, e)) != 0 ||
++		    (ret = sshbuf_put_bignum2(b, n)) != 0)
+ 			return ret;
++		}
+ 		break;
+ #endif /* WITH_OPENSSL */
+ 	case KEY_ED25519:
+@@ -1643,13 +1765,32 @@
+ 	case KEY_DSA_CERT:
+ 		if ((n = sshkey_new(k->type)) == NULL)
+ 			return SSH_ERR_ALLOC_FAIL;
+-		if ((BN_copy(n->dsa->p, k->dsa->p) == NULL) ||
+-		    (BN_copy(n->dsa->q, k->dsa->q) == NULL) ||
+-		    (BN_copy(n->dsa->g, k->dsa->g) == NULL) ||
+-		    (BN_copy(n->dsa->pub_key, k->dsa->pub_key) == NULL)) {
++		{
++		const BIGNUM *p, *q, *g, *pub_key, *priv_key;
++		BIGNUM *cp=NULL, *cq=NULL, *cg=NULL, *cpub_key=NULL;
++		DSA_get0_pqg(k->dsa, &p, &q, &g);
++		DSA_get0_key(k->dsa, &pub_key, &priv_key);
++		if ((cp = BN_dup(p)) == NULL ||
++		    (cq = BN_dup(q)) == NULL ||
++		    (cg = BN_dup(g)) == NULL ||
++		    (cpub_key = BN_dup(pub_key)) == NULL) {
++			BN_free(cp); BN_free(cq); BN_free(cg);
++			BN_free(cpub_key);
+ 			sshkey_free(n);
+ 			return SSH_ERR_ALLOC_FAIL;
+ 		}
++		if (DSA_set0_pqg(n->dsa, cp, cq, cg) == 0)
++			goto error1;
++		cp = cq = cg = NULL;
++		if (DSA_set0_key(n->dsa, cpub_key, NULL) == 0) {
++error1:
++			BN_free(cp); BN_free(cq); BN_free(cg);
++			BN_free(cpub_key);
++			sshkey_free(n);
++			return SSH_ERR_LIBCRYPTO_ERROR;
++		}
++		cpub_key = NULL;
++		}
+ 		break;
+ # ifdef OPENSSL_HAS_ECC
+ 	case KEY_ECDSA:
+@@ -1673,11 +1814,23 @@
+ 	case KEY_RSA_CERT:
+ 		if ((n = sshkey_new(k->type)) == NULL)
+ 			return SSH_ERR_ALLOC_FAIL;
+-		if ((BN_copy(n->rsa->n, k->rsa->n) == NULL) ||
+-		    (BN_copy(n->rsa->e, k->rsa->e) == NULL)) {
++		{
++		const BIGNUM *nn, *e, *d;
++		BIGNUM *cn=NULL, *ce=NULL;
++		RSA_get0_key(k->rsa, &nn, &e, &d);
++		if ((cn = BN_dup(nn)) == NULL ||
++		    (ce = BN_dup(e)) == NULL ) {
++			BN_free(cn); BN_free(ce);
+ 			sshkey_free(n);
+ 			return SSH_ERR_ALLOC_FAIL;
+ 		}
++		if (RSA_set0_key(n->rsa, cn, ce, NULL) == 0) {
++			BN_free(cn); BN_free(ce);
++			sshkey_free(n);
++			return SSH_ERR_LIBCRYPTO_ERROR;
++		}
++		cn = ce = NULL;
++		}
+ 		break;
+ #endif /* WITH_OPENSSL */
+ 	case KEY_ED25519:
+@@ -1875,12 +2028,27 @@
+ 			ret = SSH_ERR_ALLOC_FAIL;
+ 			goto out;
+ 		}
+-		if (sshbuf_get_bignum2(b, key->rsa->e) != 0 ||
+-		    sshbuf_get_bignum2(b, key->rsa->n) != 0) {
++		{
++		BIGNUM *e=NULL, *n=NULL;
++		if ((e = BN_new()) == NULL ||
++		    (n = BN_new()) == NULL ) {
++			ret = SSH_ERR_ALLOC_FAIL;
++			BN_free(e); BN_free(n);
++			goto out;
++		}
++		if (sshbuf_get_bignum2(b, e) != 0 ||
++		    sshbuf_get_bignum2(b, n) != 0) {
+ 			ret = SSH_ERR_INVALID_FORMAT;
++			BN_free(e); BN_free(n);
+ 			goto out;
+ 		}
+-		if (BN_num_bits(key->rsa->n) < SSH_RSA_MINIMUM_MODULUS_SIZE) {
++		if (RSA_set0_key(key->rsa, n, e, NULL) == 0) {
++			BN_free(e); BN_free(n);
++			return SSH_ERR_LIBCRYPTO_ERROR;
++		}
++		n = e = NULL;
++		}
++		if (RSA_bits(key->rsa) < SSH_RSA_MINIMUM_MODULUS_SIZE) {
+ 			ret = SSH_ERR_KEY_LENGTH;
+ 			goto out;
+ 		}
+@@ -1900,13 +2068,36 @@
+ 			ret = SSH_ERR_ALLOC_FAIL;
+ 			goto out;
+ 		}
+-		if (sshbuf_get_bignum2(b, key->dsa->p) != 0 ||
+-		    sshbuf_get_bignum2(b, key->dsa->q) != 0 ||
+-		    sshbuf_get_bignum2(b, key->dsa->g) != 0 ||
+-		    sshbuf_get_bignum2(b, key->dsa->pub_key) != 0) {
++		{
++		BIGNUM *p=NULL, *q=NULL, *g=NULL, *pub_key=NULL;
++		if ((p = BN_new()) == NULL ||
++		    (q = BN_new()) == NULL ||
++		    (g = BN_new()) == NULL ||
++		    (pub_key = BN_new()) == NULL) {
++			ret = SSH_ERR_ALLOC_FAIL;
++			goto error1;
++		}
++		if (sshbuf_get_bignum2(b, p) != 0 ||
++		    sshbuf_get_bignum2(b, q) != 0 ||
++		    sshbuf_get_bignum2(b, g) != 0 ||
++		    sshbuf_get_bignum2(b, pub_key) != 0) {
+ 			ret = SSH_ERR_INVALID_FORMAT;
++			goto error1;
++		}
++		if (DSA_set0_pqg(key->dsa, p, q, g) == 0) {
++			ret = SSH_ERR_LIBCRYPTO_ERROR;
++			goto error1;
++		}
++		p = q = g = NULL;
++		if (DSA_set0_key(key->dsa, pub_key, NULL) == 0) {
++			ret = SSH_ERR_LIBCRYPTO_ERROR;
++error1:
++			BN_free(p); BN_free(q); BN_free(g);
++			BN_free(pub_key);
+ 			goto out;
+ 		}
++		pub_key = NULL;
++		}
+ #ifdef DEBUG_PK
+ 		DSA_print_fp(stderr, key->dsa, 8);
+ #endif
+@@ -2140,26 +2331,63 @@
+ 			goto fail;
+ 		/* FALLTHROUGH */
+ 	case KEY_RSA:
+-		if ((pk->rsa = RSA_new()) == NULL ||
+-		    (pk->rsa->e = BN_dup(k->rsa->e)) == NULL ||
+-		    (pk->rsa->n = BN_dup(k->rsa->n)) == NULL) {
++		if ((pk->rsa = RSA_new()) == NULL ){
+ 			ret = SSH_ERR_ALLOC_FAIL;
+ 			goto fail;
+ 			}
++		{
++		const BIGNUM *ke, *kn;
++		BIGNUM *pke=NULL, *pkn=NULL;
++		RSA_get0_key(k->rsa, &kn, &ke, NULL);
++		 if ((pke = BN_dup(ke)) == NULL ||
++		     (pkn = BN_dup(kn)) == NULL) {
++			ret = SSH_ERR_ALLOC_FAIL;
++			BN_free(pke); BN_free(pkn);
++			goto fail;
++			}
++		if (RSA_set0_key(pk->rsa, pkn, pke, NULL) == 0) {
++			ret = SSH_ERR_LIBCRYPTO_ERROR;
++			BN_free(pke); BN_free(pkn);
++			goto fail;
++		}
++		pkn = pke = NULL;
++		}
+ 		break;
+ 	case KEY_DSA_CERT:
+ 		if ((ret = sshkey_cert_copy(k, pk)) != 0)
+ 			goto fail;
+ 		/* FALLTHROUGH */
+ 	case KEY_DSA:
+-		if ((pk->dsa = DSA_new()) == NULL ||
+-		    (pk->dsa->p = BN_dup(k->dsa->p)) == NULL ||
+-		    (pk->dsa->q = BN_dup(k->dsa->q)) == NULL ||
+-		    (pk->dsa->g = BN_dup(k->dsa->g)) == NULL ||
+-		    (pk->dsa->pub_key = BN_dup(k->dsa->pub_key)) == NULL) {
++		if ((pk->dsa = DSA_new()) == NULL ) {
+ 			ret = SSH_ERR_ALLOC_FAIL;
+ 			goto fail;
+ 		}
++		{
++		const BIGNUM *kp, *kq, *kg, *kpub_key;
++		BIGNUM *pkp=NULL, *pkq=NULL, *pkg=NULL, *pkpub_key=NULL;
++		DSA_get0_pqg(k->dsa, &kp, &kq, &kg);
++		DSA_get0_key(k->dsa, &kpub_key, NULL);
++		if ((pkp = BN_dup(kp)) == NULL ||
++		    (pkq = BN_dup(kq)) == NULL ||
++		    (pkg = BN_dup(kg)) == NULL ||
++		    (pkpub_key = BN_dup(kpub_key)) == NULL) {
++			ret = SSH_ERR_ALLOC_FAIL;
++			goto error1;
++		}
++		if (DSA_set0_pqg(pk->dsa, pkp, pkq, pkg) == 0) {
++			ret = SSH_ERR_LIBCRYPTO_ERROR;
++			goto error1;
++		}
++		pkp = pkq = pkg = NULL;
++		if (DSA_set0_key(pk->dsa, pkpub_key, NULL) == 0) {
++			ret = SSH_ERR_LIBCRYPTO_ERROR;
++error1:
++			BN_free(pkp); BN_free(pkq); BN_free(pkg);
++			BN_free(pkpub_key);
++			goto fail;
++		}
++		pkpub_key = NULL;
++		}
+ 		break;
+ 	case KEY_ECDSA_CERT:
+ 		if ((ret = sshkey_cert_copy(k, pk)) != 0)
+@@ -2281,11 +2509,17 @@
+ 	switch (k->type) {
+ #ifdef WITH_OPENSSL
+ 	case KEY_DSA_CERT:
+-		if ((ret = sshbuf_put_bignum2(cert, k->dsa->p)) != 0 ||
+-		    (ret = sshbuf_put_bignum2(cert, k->dsa->q)) != 0 ||
+-		    (ret = sshbuf_put_bignum2(cert, k->dsa->g)) != 0 ||
+-		    (ret = sshbuf_put_bignum2(cert, k->dsa->pub_key)) != 0)
++		{
++		const BIGNUM *p, *q, *g, *pub_key;
++		DSA_get0_pqg(k->dsa, &p, &q, &g);
++		DSA_get0_key(k->dsa, &pub_key, NULL);
++		if ((ret = sshbuf_put_bignum2(cert, p)) != 0 ||
++		    (ret = sshbuf_put_bignum2(cert, q)) != 0 ||
++		    (ret = sshbuf_put_bignum2(cert, g)) != 0 ||
++		    (ret = sshbuf_put_bignum2(cert, pub_key)) != 0) {
+ 			goto out;
++		}
++		}
+ 		break;
+ # ifdef OPENSSL_HAS_ECC
+ 	case KEY_ECDSA_CERT:
+@@ -2298,9 +2532,15 @@
+ 		break;
+ # endif /* OPENSSL_HAS_ECC */
+ 	case KEY_RSA_CERT:
+-		if ((ret = sshbuf_put_bignum2(cert, k->rsa->e)) != 0 ||
+-		    (ret = sshbuf_put_bignum2(cert, k->rsa->n)) != 0)
++		{
++		const BIGNUM *e, *n;
++		RSA_get0_key(k->rsa, &n, &e, NULL);
++		if (n == NULL || e == NULL ||
++		    (ret = sshbuf_put_bignum2(cert, e)) != 0 ||
++		    (ret = sshbuf_put_bignum2(cert, n)) != 0) {
+ 			goto out;
++		}
++		}
+ 		break;
+ #endif /* WITH_OPENSSL */
+ 	case KEY_ED25519_CERT:
+@@ -2474,42 +2714,67 @@
+ 	switch (key->type) {
+ #ifdef WITH_OPENSSL
+ 	case KEY_RSA:
+-		if ((r = sshbuf_put_bignum2(b, key->rsa->n)) != 0 ||
+-		    (r = sshbuf_put_bignum2(b, key->rsa->e)) != 0 ||
+-		    (r = sshbuf_put_bignum2(b, key->rsa->d)) != 0 ||
+-		    (r = sshbuf_put_bignum2(b, key->rsa->iqmp)) != 0 ||
+-		    (r = sshbuf_put_bignum2(b, key->rsa->p)) != 0 ||
+-		    (r = sshbuf_put_bignum2(b, key->rsa->q)) != 0)
++		{
++		const BIGNUM *n, *e, *d, *iqmp, *p, *q;
++		RSA_get0_key(key->rsa, &n, &e, &d);
++		RSA_get0_crt_params(key->rsa, NULL, NULL, &iqmp);
++		RSA_get0_factors(key->rsa, &p, &q);
++		if ((r = sshbuf_put_bignum2(b, n)) != 0 ||
++		    (r = sshbuf_put_bignum2(b, e)) != 0 ||
++		    (r = sshbuf_put_bignum2(b, d)) != 0 ||
++		    (r = sshbuf_put_bignum2(b, iqmp)) != 0 ||
++		    (r = sshbuf_put_bignum2(b, p)) != 0 ||
++		    (r = sshbuf_put_bignum2(b, q)) != 0) {
+ 			goto out;
++		}
++		}
+ 		break;
+ 	case KEY_RSA_CERT:
+ 		if (key->cert == NULL || sshbuf_len(key->cert->certblob) == 0) {
+ 			r = SSH_ERR_INVALID_ARGUMENT;
+ 			goto out;
+ 		}
++		{
++		const BIGNUM *d, *iqmp, *p, *q;
++		RSA_get0_key(key->rsa, NULL, NULL, &d);
++		RSA_get0_crt_params(key->rsa, NULL, NULL, &iqmp);
++		RSA_get0_factors(key->rsa, &p, &q);
+ 		if ((r = sshbuf_put_stringb(b, key->cert->certblob)) != 0 ||
+-		    (r = sshbuf_put_bignum2(b, key->rsa->d)) != 0 ||
+-		    (r = sshbuf_put_bignum2(b, key->rsa->iqmp)) != 0 ||
+-		    (r = sshbuf_put_bignum2(b, key->rsa->p)) != 0 ||
+-		    (r = sshbuf_put_bignum2(b, key->rsa->q)) != 0)
++		    (r = sshbuf_put_bignum2(b, d)) != 0 ||
++		    (r = sshbuf_put_bignum2(b, iqmp)) != 0 ||
++		    (r = sshbuf_put_bignum2(b, p)) != 0 ||
++		    (r = sshbuf_put_bignum2(b, q)) != 0) {
+ 			goto out;
++		}
++		}
+ 		break;
+ 	case KEY_DSA:
+-		if ((r = sshbuf_put_bignum2(b, key->dsa->p)) != 0 ||
+-		    (r = sshbuf_put_bignum2(b, key->dsa->q)) != 0 ||
+-		    (r = sshbuf_put_bignum2(b, key->dsa->g)) != 0 ||
+-		    (r = sshbuf_put_bignum2(b, key->dsa->pub_key)) != 0 ||
+-		    (r = sshbuf_put_bignum2(b, key->dsa->priv_key)) != 0)
++		{
++		const BIGNUM *p, *q, *g, *pub_key, *priv_key;
++		DSA_get0_pqg(key->dsa, &p, &q, &g);
++		DSA_get0_key(key->dsa, &pub_key, &priv_key);
++		if ((r = sshbuf_put_bignum2(b, p)) != 0 ||
++		    (r = sshbuf_put_bignum2(b, q)) != 0 ||
++		    (r = sshbuf_put_bignum2(b, g)) != 0 ||
++		    (r = sshbuf_put_bignum2(b, pub_key)) != 0 ||
++		    (r = sshbuf_put_bignum2(b, priv_key)) != 0) {
+ 			goto out;
++		}
++		}
+ 		break;
+ 	case KEY_DSA_CERT:
+ 		if (key->cert == NULL || sshbuf_len(key->cert->certblob) == 0) {
+ 			r = SSH_ERR_INVALID_ARGUMENT;
+ 			goto out;
+ 		}
++		{
++		const BIGNUM *priv_key;
++		DSA_get0_key(key->dsa, NULL, &priv_key);
+ 		if ((r = sshbuf_put_stringb(b, key->cert->certblob)) != 0 ||
+-		    (r = sshbuf_put_bignum2(b, key->dsa->priv_key)) != 0)
++		    (r = sshbuf_put_bignum2(b, priv_key)) != 0) {
+ 			goto out;
++		}
++		}
+ 		break;
+ # ifdef OPENSSL_HAS_ECC
+ 	case KEY_ECDSA:
+@@ -2585,18 +2850,61 @@
+ 			r = SSH_ERR_ALLOC_FAIL;
+ 			goto out;
+ 		}
+-		if ((r = sshbuf_get_bignum2(buf, k->dsa->p)) != 0 ||
+-		    (r = sshbuf_get_bignum2(buf, k->dsa->q)) != 0 ||
+-		    (r = sshbuf_get_bignum2(buf, k->dsa->g)) != 0 ||
+-		    (r = sshbuf_get_bignum2(buf, k->dsa->pub_key)) != 0 ||
+-		    (r = sshbuf_get_bignum2(buf, k->dsa->priv_key)) != 0)
++		{
++		BIGNUM *p=NULL, *q=NULL, *g=NULL, *pub_key=NULL, *priv_key=NULL;
++		if ((p = BN_new()) == NULL ||
++		    (q = BN_new()) == NULL ||
++		    (g = BN_new()) == NULL ||
++		    (pub_key = BN_new()) == NULL ||
++		    (priv_key = BN_new()) == NULL) {
++			r = SSH_ERR_ALLOC_FAIL;
++			goto error1;
++		}
++		if (p == NULL || q == NULL || g == NULL ||
++		    pub_key == NULL || priv_key == NULL ||
++		    (r = sshbuf_get_bignum2(buf, p)) != 0 ||
++		    (r = sshbuf_get_bignum2(buf, q)) != 0 ||
++		    (r = sshbuf_get_bignum2(buf, g)) != 0 ||
++		    (r = sshbuf_get_bignum2(buf, pub_key)) != 0 ||
++		    (r = sshbuf_get_bignum2(buf, priv_key)) != 0) {
++			goto error1;
++		}
++		if (DSA_set0_pqg(k->dsa, p, q, g) == 0) {
++			r = SSH_ERR_LIBCRYPTO_ERROR;
++			goto error1;
++		}
++		p = q = g = NULL;
++		if (DSA_set0_key(k->dsa, pub_key, priv_key) == 0) {
++			r = SSH_ERR_LIBCRYPTO_ERROR;
++error1:
++			BN_free(p); BN_free(q); BN_free(g);
++			BN_free(pub_key); BN_free(priv_key);
+ 			goto out;
++		}
++		pub_key = priv_key = NULL;
++		}
+ 		break;
+ 	case KEY_DSA_CERT:
+-		if ((r = sshkey_froms(buf, &k)) != 0 ||
++		{
++		BIGNUM *priv_key=NULL;
++		if ((priv_key = BN_new()) == NULL) {
++			r = SSH_ERR_ALLOC_FAIL;
++			goto out;
++		}
++		if (priv_key == NULL ||
++		    (r = sshkey_froms(buf, &k)) != 0 ||
+ 		    (r = sshkey_add_private(k)) != 0 ||
+-		    (r = sshbuf_get_bignum2(buf, k->dsa->priv_key)) != 0)
++		    (r = sshbuf_get_bignum2(buf, priv_key)) != 0) {
++			BN_free(priv_key);
++			goto out;
++		}
++		if (DSA_set0_key(k->dsa, NULL, priv_key) == 0) {
++			r = SSH_ERR_LIBCRYPTO_ERROR;
++			BN_free(priv_key);
+ 			goto out;
++		}
++		priv_key = NULL;
++		}
+ 		break;
+ # ifdef OPENSSL_HAS_ECC
+ 	case KEY_ECDSA:
+@@ -2655,29 +2963,104 @@
+ 			r = SSH_ERR_ALLOC_FAIL;
+ 			goto out;
+ 		}
+-		if ((r = sshbuf_get_bignum2(buf, k->rsa->n)) != 0 ||
+-		    (r = sshbuf_get_bignum2(buf, k->rsa->e)) != 0 ||
+-		    (r = sshbuf_get_bignum2(buf, k->rsa->d)) != 0 ||
+-		    (r = sshbuf_get_bignum2(buf, k->rsa->iqmp)) != 0 ||
+-		    (r = sshbuf_get_bignum2(buf, k->rsa->p)) != 0 ||
+-		    (r = sshbuf_get_bignum2(buf, k->rsa->q)) != 0 ||
+-		    (r = ssh_rsa_generate_additional_parameters(k)) != 0)
++		{
++		BIGNUM *n=NULL, *e=NULL, *d=NULL, *iqmp=NULL, *p=NULL, *q=NULL;
++		BIGNUM *dmp1=NULL, *dmq1=NULL; /* dummy for RSA_set0_crt_params */
++		if ((n = BN_new()) == NULL ||
++		    (e = BN_new()) == NULL ||
++		    (d = BN_new()) == NULL ||
++		    (iqmp = BN_new()) == NULL ||
++		    (p = BN_new()) == NULL ||
++		    (q = BN_new()) == NULL ||
++		    (dmp1 = BN_new()) == NULL ||
++		    (dmq1 = BN_new()) == NULL) {
++			r = SSH_ERR_ALLOC_FAIL;
++			goto error2;
++		}
++		BN_clear(dmp1); BN_clear(dmq1);
++		if ((r = sshbuf_get_bignum2(buf, n)) != 0 ||
++		    (r = sshbuf_get_bignum2(buf, e)) != 0 ||
++		    (r = sshbuf_get_bignum2(buf, d)) != 0 ||
++		    (r = sshbuf_get_bignum2(buf, iqmp)) != 0 ||
++		    (r = sshbuf_get_bignum2(buf, p)) != 0 ||
++		    (r = sshbuf_get_bignum2(buf, q)) != 0) {
++			goto error2;
++		}
++		if (RSA_set0_key(k->rsa, n, e, d) == 0) {
++			r = SSH_ERR_LIBCRYPTO_ERROR;
++			goto error2;
++		}
++		n = e = d = NULL;
++		/* dmp1,dmpq1 should be non NULL to set iqmp value */
++		if (RSA_set0_crt_params(k->rsa, dmp1, dmq1, iqmp) == 0) {
++			r = SSH_ERR_LIBCRYPTO_ERROR;
++			goto error2;
++		}
++		dmp1 = dmq1 = iqmp = NULL;
++		if (RSA_set0_factors(k->rsa, p, q) == 0) {
++			r = SSH_ERR_LIBCRYPTO_ERROR;
++ error2:
++			BN_free(n); BN_free(e); BN_free(d);
++			BN_free(iqmp);
++			BN_free(p); BN_free(q);
++			BN_free(dmp1); BN_free(dmq1);
++			goto out;
++		}
++		p = q = NULL;
++		if ((r = ssh_rsa_generate_additional_parameters(k)) != 0) {
+ 			goto out;
+-		if (BN_num_bits(k->rsa->n) < SSH_RSA_MINIMUM_MODULUS_SIZE) {
++		}
++		}
++		if (RSA_bits(k->rsa) < SSH_RSA_MINIMUM_MODULUS_SIZE) {
+ 			r = SSH_ERR_KEY_LENGTH;
+ 			goto out;
+ 		}
+ 		break;
+ 	case KEY_RSA_CERT:
++		{
++		BIGNUM *d=NULL, *iqmp=NULL, *p=NULL, *q=NULL;
++		BIGNUM *dmp1=NULL, *dmq1=NULL; /* dummy for RSA_set0_crt_params */
++		if ((d = BN_new()) == NULL ||
++		    (iqmp = BN_new()) == NULL ||
++		    (p = BN_new()) == NULL ||
++		    (q = BN_new()) == NULL ||
++		    (dmp1 = BN_new()) == NULL ||
++		    (dmq1 = BN_new()) == NULL) {
++			r = SSH_ERR_ALLOC_FAIL;
++			goto error3;
++		}
++		BN_clear(dmp1); BN_clear(dmq1);
+ 		if ((r = sshkey_froms(buf, &k)) != 0 ||
+ 		    (r = sshkey_add_private(k)) != 0 ||
+-		    (r = sshbuf_get_bignum2(buf, k->rsa->d)) != 0 ||
+-		    (r = sshbuf_get_bignum2(buf, k->rsa->iqmp)) != 0 ||
+-		    (r = sshbuf_get_bignum2(buf, k->rsa->p)) != 0 ||
+-		    (r = sshbuf_get_bignum2(buf, k->rsa->q)) != 0 ||
+-		    (r = ssh_rsa_generate_additional_parameters(k)) != 0)
++		    (r = sshbuf_get_bignum2(buf, d)) != 0 ||
++		    (r = sshbuf_get_bignum2(buf, iqmp)) != 0 ||
++		    (r = sshbuf_get_bignum2(buf, p)) != 0 ||
++		    (r = sshbuf_get_bignum2(buf, q)) != 0) {
++			goto error3;
++		}
++		if (RSA_set0_key(k->rsa, NULL, NULL, d) == 0) {
++			r = SSH_ERR_LIBCRYPTO_ERROR;
++			goto error3;
++		}
++		/* dmp1,dmpq1 should be non NULL to set value */
++		if (RSA_set0_crt_params(k->rsa, dmp1, dmq1, iqmp) == 0) {
++			r = SSH_ERR_LIBCRYPTO_ERROR;
++			goto error3;
++		}
++		dmp1 = dmq1 = iqmp = NULL;
++		if (RSA_set0_factors(k->rsa, p, q) == 0) {
++			r = SSH_ERR_LIBCRYPTO_ERROR;
++ error3:
++			BN_free(d); BN_free(iqmp);
++			BN_free(p); BN_free(q);
++			BN_free(dmp1); BN_free(dmq1);
+ 			goto out;
+-		if (BN_num_bits(k->rsa->n) < SSH_RSA_MINIMUM_MODULUS_SIZE) {
++		}
++		p = q = NULL;
++		if ((r = ssh_rsa_generate_additional_parameters(k)) != 0)
++			goto out;
++		}
++		if (RSA_bits(k->rsa) < SSH_RSA_MINIMUM_MODULUS_SIZE) {
+ 			r = SSH_ERR_KEY_LENGTH;
+ 			goto out;
+ 		}
+@@ -3395,7 +3778,6 @@
+ 		switch (pem_reason) {
+ 		case EVP_R_BAD_DECRYPT:
+ 			return SSH_ERR_KEY_WRONG_PASSPHRASE;
+-		case EVP_R_BN_DECODE_ERROR:
+ 		case EVP_R_DECODE_ERROR:
+ #ifdef EVP_R_PRIVATE_KEY_DECODE_ERROR
+ 		case EVP_R_PRIVATE_KEY_DECODE_ERROR:
+@@ -3460,7 +3842,7 @@
+ 		r = convert_libcrypto_error();
+ 		goto out;
+ 	}
+-	if (pk->type == EVP_PKEY_RSA &&
++	if (EVP_PKEY_id(pk) == EVP_PKEY_RSA &&
+ 	    (type == KEY_UNSPEC || type == KEY_RSA)) {
+ 		if ((prv = sshkey_new(KEY_UNSPEC)) == NULL) {
+ 			r = SSH_ERR_ALLOC_FAIL;
+@@ -3475,11 +3857,11 @@
+ 			r = SSH_ERR_LIBCRYPTO_ERROR;
+ 			goto out;
+ 		}
+-		if (BN_num_bits(prv->rsa->n) < SSH_RSA_MINIMUM_MODULUS_SIZE) {
++		if (RSA_bits(prv->rsa) < SSH_RSA_MINIMUM_MODULUS_SIZE) {
+ 			r = SSH_ERR_KEY_LENGTH;
+ 			goto out;
+ 		}
+-	} else if (pk->type == EVP_PKEY_DSA &&
++	} else if (EVP_PKEY_id(pk) == EVP_PKEY_DSA &&
+ 	    (type == KEY_UNSPEC || type == KEY_DSA)) {
+ 		if ((prv = sshkey_new(KEY_UNSPEC)) == NULL) {
+ 			r = SSH_ERR_ALLOC_FAIL;
+@@ -3491,7 +3873,7 @@
+ 		DSA_print_fp(stderr, prv->dsa, 8);
+ #endif
+ #ifdef OPENSSL_HAS_ECC
+-	} else if (pk->type == EVP_PKEY_EC &&
++	} else if (EVP_PKEY_id(pk) == EVP_PKEY_EC &&
+ 	    (type == KEY_UNSPEC || type == KEY_ECDSA)) {
+ 		if ((prv = sshkey_new(KEY_UNSPEC)) == NULL) {
+ 			r = SSH_ERR_ALLOC_FAIL;
+diff -ru source/ssh-keygen.c source-new/ssh-keygen.c
+--- source/ssh-keygen.c	2017-10-02 12:34:26.000000000 -0700
++++ source-new/ssh-keygen.c	2017-11-02 18:31:51.972212355 -0700
+@@ -496,11 +496,33 @@
+ 
+ 	switch (key->type) {
+ 	case KEY_DSA:
+-		buffer_get_bignum_bits(b, key->dsa->p);
+-		buffer_get_bignum_bits(b, key->dsa->g);
+-		buffer_get_bignum_bits(b, key->dsa->q);
+-		buffer_get_bignum_bits(b, key->dsa->pub_key);
+-		buffer_get_bignum_bits(b, key->dsa->priv_key);
++		{
++		BIGNUM *p=NULL, *g=NULL, *q=NULL, *pub_key=NULL, *priv_key=NULL;
++		if ((p=BN_new()) == NULL ||
++		    (g=BN_new()) == NULL ||
++		    (q=BN_new()) == NULL ||
++		    (pub_key=BN_new()) == NULL ||
++		    (priv_key=BN_new()) == NULL) {
++			BN_free(p);
++			BN_free(g);
++			BN_free(q);
++			BN_free(pub_key);
++			BN_free(priv_key);
++			return NULL;
++		}
++		buffer_get_bignum_bits(b, p);
++		buffer_get_bignum_bits(b, g);
++		buffer_get_bignum_bits(b, q);
++		buffer_get_bignum_bits(b, pub_key);
++		buffer_get_bignum_bits(b, priv_key);
++		if (DSA_set0_pqg(key->dsa, p, q, g) == 0 ||
++		    DSA_set0_key(key->dsa, pub_key, priv_key) == 0) {
++			fatal("failed to set DSA key");
++			BN_free(p); BN_free(g); BN_free(q);
++			BN_free(pub_key); BN_free(priv_key);
++			return NULL;
++		}
++		}
+ 		break;
+ 	case KEY_RSA:
+ 		if ((r = sshbuf_get_u8(b, &e1)) != 0 ||
+@@ -517,16 +539,52 @@
+ 			e += e3;
+ 			debug("e %lx", e);
+ 		}
+-		if (!BN_set_word(key->rsa->e, e)) {
++		{
++		BIGNUM *rsa_e = NULL;
++		BIGNUM *d=NULL, *n=NULL, *iqmp=NULL, *q=NULL, *p=NULL;
++		BIGNUM *dmp1=NULL, *dmq1=NULL; /* dummy input to set in RSA_set0_crt_params */
++		rsa_e = BN_new();
++		if (!rsa_e || !BN_set_word(rsa_e, e)) {
++			if (rsa_e) BN_free(rsa_e);
+ 			sshbuf_free(b);
+ 			sshkey_free(key);
+ 			return NULL;
+ 		}
+-		buffer_get_bignum_bits(b, key->rsa->d);
+-		buffer_get_bignum_bits(b, key->rsa->n);
+-		buffer_get_bignum_bits(b, key->rsa->iqmp);
+-		buffer_get_bignum_bits(b, key->rsa->q);
+-		buffer_get_bignum_bits(b, key->rsa->p);
++		if ((d=BN_new()) == NULL ||
++		    (n=BN_new()) == NULL ||
++		    (iqmp=BN_new()) == NULL ||
++		    (q=BN_new()) == NULL ||
++		    (p=BN_new()) == NULL ||
++		    (dmp1=BN_new()) == NULL ||
++		    (dmq1=BN_new()) == NULL) {
++			BN_free(d); BN_free(n); BN_free(iqmp);
++			BN_free(q); BN_free(p);
++			BN_free(dmp1); BN_free(dmq1);
++			return NULL;
++		}
++		BN_clear(dmp1); BN_clear(dmq1);
++		buffer_get_bignum_bits(b, d);
++		buffer_get_bignum_bits(b, n);
++		buffer_get_bignum_bits(b, iqmp);
++		buffer_get_bignum_bits(b, q);
++		buffer_get_bignum_bits(b, p);
++		if (RSA_set0_key(key->rsa, n, rsa_e, d) == 0)
++			goto null;
++		n = d = NULL;
++		if (RSA_set0_factors(key->rsa, p, q) == 0)
++			goto null;
++		p = q = NULL;
++		/* dmp1, dmq1 should not be NULL for initial set0 */
++		if (RSA_set0_crt_params(key->rsa, dmp1, dmq1, iqmp) == 0) {
++ null:
++			fatal("Failed to set RSA parameters");
++			BN_free(d); BN_free(n); BN_free(iqmp);
++			BN_free(q); BN_free(p);
++			BN_free(dmp1); BN_free(dmq1);
++			return NULL;
++		}
++		dmp1 = dmq1 = iqmp = NULL;
++		}
+ 		if ((r = ssh_rsa_generate_additional_parameters(key)) != 0)
+ 			fatal("generate RSA parameters failed: %s", ssh_err(r));
+ 		break;
+@@ -636,7 +694,7 @@
+ 		    identity_file);
+ 	}
+ 	fclose(fp);
+-	switch (EVP_PKEY_type(pubkey->type)) {
++	switch (EVP_PKEY_type(EVP_PKEY_id(pubkey))) {
+ 	case EVP_PKEY_RSA:
+ 		if ((*k = sshkey_new(KEY_UNSPEC)) == NULL)
+ 			fatal("sshkey_new failed");
+@@ -660,7 +718,7 @@
+ #endif
+ 	default:
+ 		fatal("%s: unsupported pubkey type %d", __func__,
+-		    EVP_PKEY_type(pubkey->type));
++		    EVP_PKEY_type(EVP_PKEY_id(pubkey)));
+ 	}
+ 	EVP_PKEY_free(pubkey);
+ 	return;
+@@ -1063,7 +1121,7 @@
+ 			    pub_tmp, strerror(errno));
+ 			goto failnext;
+ 		}
+-		(void)fchmod(fd, 0644);
++		//(void)fchmod(fd, 0644);
+ 		f = fdopen(fd, "w");
+ 		if (f == NULL) {
+ 			error("fdopen %s failed: %s", pub_tmp, strerror(errno));
+diff -ru source/ssh-pkcs11.c source-new/ssh-pkcs11.c
+--- source/ssh-pkcs11.c	2017-10-02 12:34:26.000000000 -0700
++++ source-new/ssh-pkcs11.c	2017-11-02 18:31:51.978879010 -0700
+@@ -67,7 +67,7 @@
+ 	struct pkcs11_provider	*provider;
+ 	CK_ULONG		slotidx;
+ 	int			(*orig_finish)(RSA *rsa);
+-	RSA_METHOD		rsa_method;
++	RSA_METHOD		*rsa_method;
+ 	char			*keyid;
+ 	int			keyid_len;
+ };
+@@ -326,13 +326,15 @@
+ 		k11->keyid = xmalloc(k11->keyid_len);
+ 		memcpy(k11->keyid, keyid_attrib->pValue, k11->keyid_len);
+ 	}
+-	k11->orig_finish = def->finish;
+-	memcpy(&k11->rsa_method, def, sizeof(k11->rsa_method));
+-	k11->rsa_method.name = "pkcs11";
+-	k11->rsa_method.rsa_priv_enc = pkcs11_rsa_private_encrypt;
+-	k11->rsa_method.rsa_priv_dec = pkcs11_rsa_private_decrypt;
+-	k11->rsa_method.finish = pkcs11_rsa_finish;
+-	RSA_set_method(rsa, &k11->rsa_method);
++	k11->orig_finish = RSA_meth_get_finish(def);
++
++	if ((k11->rsa_method = RSA_meth_new("pkcs11", RSA_meth_get_flags(def))) == NULL)
++		return -1;
++	RSA_meth_set_priv_enc(k11->rsa_method, pkcs11_rsa_private_encrypt);
++	RSA_meth_set_priv_dec(k11->rsa_method, pkcs11_rsa_private_decrypt);
++	RSA_meth_set_finish(k11->rsa_method, pkcs11_rsa_finish);
++
++	RSA_set_method(rsa, k11->rsa_method);
+ 	RSA_set_app_data(rsa, k11);
+ 	return (0);
+ }
+@@ -512,10 +514,19 @@
+ 			if ((rsa = RSA_new()) == NULL) {
+ 				error("RSA_new failed");
+ 			} else {
+-				rsa->n = BN_bin2bn(attribs[1].pValue,
+-				    attribs[1].ulValueLen, NULL);
+-				rsa->e = BN_bin2bn(attribs[2].pValue,
+-				    attribs[2].ulValueLen, NULL);
++				BIGNUM *n=NULL, *e=NULL;
++				n = BN_new();
++				e = BN_new();
++				if (n == NULL || e == NULL)
++					error("BN_new alloc failed");
++				if (BN_bin2bn(attribs[1].pValue,
++				      attribs[1].ulValueLen, n) == NULL ||
++				    BN_bin2bn(attribs[2].pValue,
++				      attribs[2].ulValueLen, e) == NULL)
++					error("BN_bin2bn failed");
++				if (RSA_set0_key(rsa, n, e, NULL) == 0)
++					error("RSA_set0_key failed");
++				n = e = NULL;
+ 			}
+ 		} else {
+ 			cp = attribs[2].pValue;
+@@ -525,17 +536,20 @@
+ 			    == NULL) {
+ 				error("d2i_X509 failed");
+ 			} else if ((evp = X509_get_pubkey(x509)) == NULL ||
+-			    evp->type != EVP_PKEY_RSA ||
+-			    evp->pkey.rsa == NULL) {
++			    EVP_PKEY_id(evp) != EVP_PKEY_RSA ||
++			    EVP_PKEY_get0_RSA(evp) == NULL) {
+ 				debug("X509_get_pubkey failed or no rsa");
+-			} else if ((rsa = RSAPublicKey_dup(evp->pkey.rsa))
++			} else if ((rsa = RSAPublicKey_dup(EVP_PKEY_get0_RSA(evp)))
+ 			    == NULL) {
+ 				error("RSAPublicKey_dup");
+ 			}
+ 			if (x509)
+ 				X509_free(x509);
+ 		}
+-		if (rsa && rsa->n && rsa->e &&
++		{
++		const BIGNUM *n, *e;
++		RSA_get0_key(rsa, &n, &e, NULL);
++		if (rsa && n && e &&
+ 		    pkcs11_rsa_wrap(p, slotidx, &attribs[0], rsa) == 0) {
+ 			if ((key = sshkey_new(KEY_UNSPEC)) == NULL)
+ 				fatal("sshkey_new failed");
+@@ -555,6 +569,7 @@
+ 		} else if (rsa) {
+ 			RSA_free(rsa);
+ 		}
++		}
+ 		for (i = 0; i < 3; i++)
+ 			free(attribs[i].pValue);
+ 	}
+diff -ru source/ssh-pkcs11-client.c source-new/ssh-pkcs11-client.c
+--- source/ssh-pkcs11-client.c	2017-10-02 12:34:26.000000000 -0700
++++ source-new/ssh-pkcs11-client.c	2017-11-02 18:31:51.978879010 -0700
+@@ -143,12 +143,13 @@
+ static int
+ wrap_key(RSA *rsa)
+ {
+-	static RSA_METHOD helper_rsa;
++	static RSA_METHOD *helper_rsa;
+ 
+-	memcpy(&helper_rsa, RSA_get_default_method(), sizeof(helper_rsa));
+-	helper_rsa.name = "ssh-pkcs11-helper";
+-	helper_rsa.rsa_priv_enc = pkcs11_rsa_private_encrypt;
+-	RSA_set_method(rsa, &helper_rsa);
++	if ((helper_rsa = RSA_meth_dup(RSA_get_default_method())) == NULL)
++		return (-1); /* XXX but caller isn't checking */
++	RSA_meth_set1_name(helper_rsa, "ssh-pkcs11-helper");
++	RSA_meth_set_priv_enc(helper_rsa, pkcs11_rsa_private_encrypt);
++	RSA_set_method(rsa, helper_rsa);
+ 	return (0);
+ }
+ 
+diff -ru source/sshpty.c source-new/sshpty.c
+--- source/sshpty.c	2017-10-02 12:34:26.000000000 -0700
++++ source-new/sshpty.c	2017-11-02 18:31:51.978879010 -0700
+@@ -128,12 +128,12 @@
+ #ifdef TIOCNOTTY
+ 	fd = open(_PATH_TTY, O_RDWR | O_NOCTTY);
+ 	if (fd >= 0) {
+-		(void) ioctl(fd, TIOCNOTTY, NULL);
++		//(void) ioctl(fd, TIOCNOTTY, NULL);
+ 		close(fd);
+ 	}
+ #endif /* TIOCNOTTY */
+-	if (setsid() < 0)
+-		error("setsid: %.100s", strerror(errno));
++	//if (setsid() < 0)
++	//	error("setsid: %.100s", strerror(errno));
+ 
+ 	/*
+ 	 * Verify that we are successfully disconnected from the controlling
+@@ -147,8 +147,8 @@
+ 	/* Make it our controlling tty. */
+ #ifdef TIOCSCTTY
+ 	debug("Setting controlling tty using TIOCSCTTY.");
+-	if (ioctl(*ttyfd, TIOCSCTTY, NULL) < 0)
+-		error("ioctl(TIOCSCTTY): %.100s", strerror(errno));
++	//if (ioctl(*ttyfd, TIOCSCTTY, NULL) < 0)
++	//	error("ioctl(TIOCSCTTY): %.100s", strerror(errno));
+ #endif /* TIOCSCTTY */
+ #ifdef NEED_SETPGRP
+ 	if (setpgrp(0,0) < 0)
+@@ -183,7 +183,7 @@
+ 	w.ws_col = col;
+ 	w.ws_xpixel = xpixel;
+ 	w.ws_ypixel = ypixel;
+-	(void) ioctl(ptyfd, TIOCSWINSZ, &w);
++	//(void) ioctl(ptyfd, TIOCSWINSZ, &w);
+ }
+ 
+ void
+@@ -195,9 +195,9 @@
+ 	struct stat st;
+ 
+ 	/* Determine the group to make the owner of the tty. */
+-	grp = getgrnam("tty");
+-	gid = (grp != NULL) ? grp->gr_gid : pw->pw_gid;
+-	mode = (grp != NULL) ? 0620 : 0600;
++	//grp = getgrnam("tty");
++	//gid = (grp != NULL) ? grp->gr_gid : pw->pw_gid;
++	//mode = (grp != NULL) ? 0620 : 0600;
+ 
+ 	/*
+ 	 * Change owner and mode of the tty as required.
+@@ -247,7 +247,7 @@
+ 	int fd;
+ 
+ 	if ((fd = open(_PATH_TTY, O_RDWR | O_NOCTTY)) >= 0) {
+-		(void) ioctl(fd, TIOCNOTTY, NULL);
++		//(void) ioctl(fd, TIOCNOTTY, NULL);
+ 		close(fd);
+ 	}
+ #endif /* TIOCNOTTY */
+diff -ru source/ssh-rsa.c source-new/ssh-rsa.c
+--- source/ssh-rsa.c	2017-10-02 12:34:26.000000000 -0700
++++ source-new/ssh-rsa.c	2017-11-02 18:31:51.978879010 -0700
+@@ -99,13 +99,27 @@
+ 	}
+ 	rsa = key->rsa;
+ 
+-	if ((BN_sub(aux, rsa->q, BN_value_one()) == 0) ||
+-	    (BN_mod(rsa->dmq1, rsa->d, aux, ctx) == 0) ||
+-	    (BN_sub(aux, rsa->p, BN_value_one()) == 0) ||
+-	    (BN_mod(rsa->dmp1, rsa->d, aux, ctx) == 0)) {
++	{
++	const BIGNUM *q, *d, *p;
++	BIGNUM *dmq1=NULL, *dmp1=NULL;
++	if ((dmq1 = BN_new()) == NULL ||
++	    (dmp1 = BN_new()) == NULL ) {
++		r = SSH_ERR_ALLOC_FAIL;
++		goto out;
++	}
++	RSA_get0_key(rsa, NULL, NULL, &d);
++	RSA_get0_factors(rsa, &p, &q);
++	if ((BN_sub(aux, q, BN_value_one()) == 0) ||
++	    (BN_mod(dmq1, d, aux, ctx) == 0) ||
++	    (BN_sub(aux, p, BN_value_one()) == 0) ||
++	    (BN_mod(dmp1, d, aux, ctx) == 0) ||
++	     RSA_set0_crt_params(rsa, dmp1, dmq1, NULL) == 0) {
+ 		r = SSH_ERR_LIBCRYPTO_ERROR;
++		BN_clear_free(dmp1);
++		BN_clear_free(dmq1);
+ 		goto out;
+ 	}
++	}
+ 	r = 0;
+  out:
+ 	BN_clear_free(aux);
+@@ -136,7 +150,7 @@
+ 	if (key == NULL || key->rsa == NULL || hash_alg == -1 ||
+ 	    sshkey_type_plain(key->type) != KEY_RSA)
+ 		return SSH_ERR_INVALID_ARGUMENT;
+-	if (BN_num_bits(key->rsa->n) < SSH_RSA_MINIMUM_MODULUS_SIZE)
++	if (RSA_bits(key->rsa) < SSH_RSA_MINIMUM_MODULUS_SIZE)
+ 		return SSH_ERR_KEY_LENGTH;
+ 	slen = RSA_size(key->rsa);
+ 	if (slen <= 0 || slen > SSHBUF_MAX_BIGNUM)
+@@ -210,7 +224,7 @@
+ 	    sshkey_type_plain(key->type) != KEY_RSA ||
+ 	    sig == NULL || siglen == 0)
+ 		return SSH_ERR_INVALID_ARGUMENT;
+-	if (BN_num_bits(key->rsa->n) < SSH_RSA_MINIMUM_MODULUS_SIZE)
++	if (RSA_bits(key->rsa) < SSH_RSA_MINIMUM_MODULUS_SIZE)
+ 		return SSH_ERR_KEY_LENGTH;
+ 
+ 	if ((b = sshbuf_from(sig, siglen)) == NULL)
+diff -ru source/uidswap.c source-new/uidswap.c
+--- source/uidswap.c	2017-10-02 12:34:26.000000000 -0700
++++ source-new/uidswap.c	2017-11-02 18:31:51.978879010 -0700
+@@ -82,14 +82,14 @@
+ 	privileged = 1;
+ 	temporarily_use_uid_effective = 1;
+ 
+-	saved_egroupslen = getgroups(0, NULL);
++	//saved_egroupslen = getgroups(0, NULL);
+ 	if (saved_egroupslen < 0)
+ 		fatal("getgroups: %.100s", strerror(errno));
+ 	if (saved_egroupslen > 0) {
+ 		saved_egroups = xreallocarray(saved_egroups,
+ 		    saved_egroupslen, sizeof(gid_t));
+-		if (getgroups(saved_egroupslen, saved_egroups) < 0)
+-			fatal("getgroups: %.100s", strerror(errno));
++	//	if (getgroups(saved_egroupslen, saved_egroups) < 0)
++    //		fatal("getgroups: %.100s", strerror(errno));
+ 	} else { /* saved_egroupslen == 0 */
+ 		free(saved_egroups);
+ 	}
+@@ -113,22 +113,26 @@
+ 		}
+ 	}
+ 	/* Set the effective uid to the given (unprivileged) uid. */
+-	if (setgroups(user_groupslen, user_groups) < 0)
+-		fatal("setgroups: %.100s", strerror(errno));
++    /*
++	 *if (setgroups(user_groupslen, user_groups) < 0)
++	 *    fatal("setgroups: %.100s", strerror(errno));
++     */
+ #ifndef SAVED_IDS_WORK_WITH_SETEUID
+ 	/* Propagate the privileged gid to all of our gids. */
+-	if (setgid(getegid()) < 0)
+-		debug("setgid %u: %.100s", (u_int) getegid(), strerror(errno));
+-	/* Propagate the privileged uid to all of our uids. */
+-	if (setuid(geteuid()) < 0)
+-		debug("setuid %u: %.100s", (u_int) geteuid(), strerror(errno));
+-#endif /* SAVED_IDS_WORK_WITH_SETEUID */
+-	if (setegid(pw->pw_gid) < 0)
+-		fatal("setegid %u: %.100s", (u_int)pw->pw_gid,
+-		    strerror(errno));
+-	if (seteuid(pw->pw_uid) == -1)
+-		fatal("seteuid %u: %.100s", (u_int)pw->pw_uid,
+-		    strerror(errno));
++/*
++ *    if (setgid(getegid()) < 0)
++ *        debug("setgid %u: %.100s", (u_int) getegid(), strerror(errno));
++ *    [> Propagate the privileged uid to all of our uids. <]
++ *    if (setuid(geteuid()) < 0)
++ */       debug("setuid %u: %.100s", (u_int) geteuid(), strerror(errno));
++ #endif [> SAVED_IDS_WORK_WITH_SETEUID <]
++ /*    if (setegid(pw->pw_gid) < 0)
++ *        fatal("setegid %u: %.100s", (u_int)pw->pw_gid,
++ *            strerror(errno));
++ *    if (seteuid(pw->pw_uid) == -1)
++ *        fatal("seteuid %u: %.100s", (u_int)pw->pw_uid,
++ *            strerror(errno));
++ */
+ }
+ 
+ void
+@@ -150,9 +154,11 @@
+ 	 * where fine-grained privileges are available (the user might be
+ 	 * deliberately allowed the right to setuid back to root).
+ 	 */
+-	if (old_uid != uid &&
+-	    (setuid(old_uid) != -1 || seteuid(old_uid) != -1))
+-		fatal("%s: was able to restore old [e]uid", __func__);
++    /*
++	 *if (old_uid != uid &&
++	 *    (setuid(old_uid) != -1 || seteuid(old_uid) != -1))
++	 *    fatal("%s: was able to restore old [e]uid", __func__);
++     */
+ #endif
+ 
+ 	/* Verify UID drop was successful */
+@@ -189,12 +195,12 @@
+ 	 * Propagate the real uid (usually more privileged) to effective uid
+ 	 * as well.
+ 	 */
+-	setuid(getuid());
+-	setgid(getgid());
++//	setuid(getuid());
++//	setgid(getgid());
+ #endif /* SAVED_IDS_WORK_WITH_SETEUID */
+ 
+-	if (setgroups(saved_egroupslen, saved_egroups) < 0)
+-		fatal("setgroups: %.100s", strerror(errno));
++	//if (setgroups(saved_egroupslen, saved_egroups) < 0)
++	//	fatal("setgroups: %.100s", strerror(errno));
+ 	temporarily_use_uid_effective = 0;
+ }
+ 
+@@ -233,25 +239,26 @@
+ 	if (setresuid(pw->pw_uid, pw->pw_uid, pw->pw_uid) < 0)
+ 		fatal("setresuid %u: %.100s", (u_int)pw->pw_uid, strerror(errno));
+ 
+-#ifndef NO_UID_RESTORATION_TEST
+-	/* Try restoration of GID if changed (test clearing of saved gid) */
+-	if (old_gid != pw->pw_gid && pw->pw_uid != 0 &&
+-	    (setgid(old_gid) != -1 || setegid(old_gid) != -1))
+-		fatal("%s: was able to restore old [e]gid", __func__);
+-#endif
+-
+-	/* Verify GID drop was successful */
+-	if (getgid() != pw->pw_gid || getegid() != pw->pw_gid) {
+-		fatal("%s: egid incorrect gid:%u egid:%u (should be %u)",
+-		    __func__, (u_int)getgid(), (u_int)getegid(),
+-		    (u_int)pw->pw_gid);
+-	}
++/*#ifndef NO_UID_RESTORATION_TEST
++ *
++ *    if (old_gid != pw->pw_gid && pw->pw_uid != 0 &&
++ *        (setgid(old_gid) != -1 || setegid(old_gid) != -1))
++ *        fatal("%s: was able to restore old [e]gid", __func__);
++ *#endif
++ *
++ *    [> Verify GID drop was successful <]
++ *    if (getgid() != pw->pw_gid || getegid() != pw->pw_gid) {
++ *        fatal("%s: egid incorrect gid:%u egid:%u (should be %u)",
++ *            __func__, (u_int)getgid(), (u_int)getegid(),
++ *            (u_int)pw->pw_gid);
++ *    }
++ */
+ 
+ #ifndef NO_UID_RESTORATION_TEST
+ 	/* Try restoration of UID if changed (test clearing of saved uid) */
+-	if (old_uid != pw->pw_uid &&
+-	    (setuid(old_uid) != -1 || seteuid(old_uid) != -1))
+-		fatal("%s: was able to restore old [e]uid", __func__);
++//	if (old_uid != pw->pw_uid &&
++//	    (setuid(old_uid) != -1 || seteuid(old_uid) != -1))
++//		fatal("%s: was able to restore old [e]uid", __func__);
+ #endif
+ 
+ 	/* Verify UID drop was successful */
