@@ -1,4 +1,10 @@
+VERSION=20140305
 TAR=http://invisible-island.net/datafiles/release/vttest.tar.gz
+
+function recipe_version {
+    echo "$VERSION"
+    skip=1
+}
 
 function recipe_update {
     echo "skipping update"
