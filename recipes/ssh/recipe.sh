@@ -1,6 +1,6 @@
 VERSION=7.6p1
 TAR=http://ftp.openbsd.org/pub/OpenBSD/OpenSSH/portable/openssh-$VERSION.tar.gz
-BUILD_DEPENDS=(zlib openssl1.0 newlib)
+BUILD_DEPENDS=(zlib openssl newlib)
 
 export AR="${HOST}-ar"
 export AS="${HOST}-as"
