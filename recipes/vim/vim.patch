@@ -1,211 +1,212 @@
 diff -ru source/src/channel.c source-new/src/channel.c
---- source/src/channel.c	2017-10-30 17:21:14.784946514 -0700
-+++ source-new/src/channel.c	2017-10-30 17:27:08.234992143 -0700
-@@ -852,29 +852,27 @@
+--- source/src/channel.c	2017-04-07 04:57:11.000000000 -0700
++++ source-new/src/channel.c	2017-11-04 14:36:18.494841805 -0700
+@@ -852,27 +852,29 @@
  	     * actually able to connect.
  	     * We detect a failure to connect when either read and write fds
  	     * are set.  Use getsockopt() to find out what kind of failure. */
--/*
-- *            if (FD_ISSET(sd, &rfds) || FD_ISSET(sd, &wfds))
-- *            {
-- *                ret = getsockopt(sd,
-- *                              SOL_SOCKET, SO_ERROR, &so_error, &so_error_len);
-- *                if (ret < 0 || (so_error != 0
-- *                        && so_error != EWOULDBLOCK
-- *                        && so_error != ECONNREFUSED
-- *# ifdef EINPROGRESS
-- *                        && so_error != EINPROGRESS
-- *# endif
-- *                        ))
-- *                {
-- *                    ch_errorn(channel,
-- *                            "channel_open: Connect failed with errno %d",
-- *                            so_error);
-- *                    PERROR(_(e_cannot_connect));
-- *                    sock_close(sd);
-- *                    channel_free(channel);
-- *                    return NULL;
-- *                }
-- *            }
-- */
-+	    if (FD_ISSET(sd, &rfds) || FD_ISSET(sd, &wfds))
-+	    {
-+		ret = getsockopt(sd,
-+			      SOL_SOCKET, SO_ERROR, &so_error, &so_error_len);
-+		if (ret < 0 || (so_error != 0
-+			&& so_error != EWOULDBLOCK
-+			&& so_error != ECONNREFUSED
-+# ifdef EINPROGRESS
-+			&& so_error != EINPROGRESS
-+# endif
-+			))
-+		{
-+		    ch_errorn(channel,
-+			    "channel_open: Connect failed with errno %d",
-+			    so_error);
-+		    PERROR(_(e_cannot_connect));
-+		    sock_close(sd);
-+		    channel_free(channel);
-+		    return NULL;
-+		}
-+	    }
+-	    if (FD_ISSET(sd, &rfds) || FD_ISSET(sd, &wfds))
+-	    {
+-		ret = getsockopt(sd,
+-			      SOL_SOCKET, SO_ERROR, &so_error, &so_error_len);
+-		if (ret < 0 || (so_error != 0
+-			&& so_error != EWOULDBLOCK
+-			&& so_error != ECONNREFUSED
+-# ifdef EINPROGRESS
+-			&& so_error != EINPROGRESS
+-# endif
+-			))
+-		{
+-		    ch_errorn(channel,
+-			    "channel_open: Connect failed with errno %d",
+-			    so_error);
+-		    PERROR(_(e_cannot_connect));
+-		    sock_close(sd);
+-		    channel_free(channel);
+-		    return NULL;
+-		}
+-	    }
++/*
++ *            if (FD_ISSET(sd, &rfds) || FD_ISSET(sd, &wfds))
++ *            {
++ *                ret = getsockopt(sd,
++ *                              SOL_SOCKET, SO_ERROR, &so_error, &so_error_len);
++ *                if (ret < 0 || (so_error != 0
++ *                        && so_error != EWOULDBLOCK
++ *                        && so_error != ECONNREFUSED
++ *# ifdef EINPROGRESS
++ *                        && so_error != EINPROGRESS
++ *# endif
++ *                        ))
++ *                {
++ *                    ch_errorn(channel,
++ *                            "channel_open: Connect failed with errno %d",
++ *                            so_error);
++ *                    PERROR(_(e_cannot_connect));
++ *                    sock_close(sd);
++ *                    channel_free(channel);
++ *                    return NULL;
++ *                }
++ *            }
++ */
  
  	    if (FD_ISSET(sd, &wfds) && so_error == 0)
  		/* Did not detect an error, connection is established. */
 diff -ru source/src/memfile.c source-new/src/memfile.c
---- source/src/memfile.c	2017-10-30 17:24:53.944974807 -0700
-+++ source-new/src/memfile.c	2017-10-30 17:27:08.244992145 -0700
+--- source/src/memfile.c	2016-11-10 09:24:37.000000000 -0800
++++ source-new/src/memfile.c	2017-11-04 14:36:18.494841805 -0700
 @@ -596,88 +596,88 @@
      if (hp == NULL || status == FAIL)
  	mfp->mf_dirty = FALSE;
  
--/*    if ((flags & MFS_FLUSH) && *p_sws != NUL)*/
--    /*{*/
--/*#if defined(UNIX)*/
--/*# ifdef HAVE_FSYNC*/
-+    if ((flags & MFS_FLUSH) && *p_sws != NUL)
-+    {
-+#if defined(UNIX)
-+# ifdef HAVE_FSYNC
+-    if ((flags & MFS_FLUSH) && *p_sws != NUL)
+-    {
+-#if defined(UNIX)
+-# ifdef HAVE_FSYNC
++/*    if ((flags & MFS_FLUSH) && *p_sws != NUL)*/
++    /*{*/
++/*#if defined(UNIX)*/
++/*# ifdef HAVE_FSYNC*/
  	/*
  	 * most Unixes have the very useful fsync() function, just what we need.
  	 */
--	/*if (STRCMP(p_sws, "fsync") == 0)*/
--	/*{*/
--	    /*if (fsync(mfp->mf_fd))*/
--		/*status = FAIL;*/
--	/*}*/
--	/*else*/
--/*# endif*/
--	    /*[> OpenNT is strictly POSIX (Benzinger) <]*/
--	    /*[> Tandem/Himalaya NSK-OSS doesn't have sync() <]*/
--	    /*[> No sync() on Stratus VOS <]*/
--/*# if defined(__OPENNT) || defined(__TANDEM) || defined(__VOS__)*/
--	    /*fflush(NULL);*/
--/*# else*/
--	    /*//sync();*/
--/*# endif*/
--/*#endif*/
--/*#ifdef VMS*/
--	/*if (STRCMP(p_sws, "fsync") == 0)*/
--	/*{*/
--	    /*if (fsync(mfp->mf_fd))*/
--		/*status = FAIL;*/
--	/*}*/
--/*#endif*/
--/*#ifdef SYNC_DUP_CLOSE*/
-+	if (STRCMP(p_sws, "fsync") == 0)
-+	{
-+	    if (fsync(mfp->mf_fd))
-+		status = FAIL;
-+	}
-+	else
-+# endif
-+	    /* OpenNT is strictly POSIX (Benzinger) */
-+	    /* Tandem/Himalaya NSK-OSS doesn't have sync() */
-+	    /* No sync() on Stratus VOS */
-+# if defined(__OPENNT) || defined(__TANDEM) || defined(__VOS__)
-+	    fflush(NULL);
-+# else
-+	    sync();
-+# endif
-+#endif
-+#ifdef VMS
-+	if (STRCMP(p_sws, "fsync") == 0)
-+	{
-+	    if (fsync(mfp->mf_fd))
-+		status = FAIL;
-+	}
-+#endif
-+#ifdef SYNC_DUP_CLOSE
+-	if (STRCMP(p_sws, "fsync") == 0)
+-	{
+-	    if (fsync(mfp->mf_fd))
+-		status = FAIL;
+-	}
+-	else
+-# endif
+-	    /* OpenNT is strictly POSIX (Benzinger) */
+-	    /* Tandem/Himalaya NSK-OSS doesn't have sync() */
+-	    /* No sync() on Stratus VOS */
+-# if defined(__OPENNT) || defined(__TANDEM) || defined(__VOS__)
+-	    fflush(NULL);
+-# else
+-	    sync();
+-# endif
+-#endif
+-#ifdef VMS
+-	if (STRCMP(p_sws, "fsync") == 0)
+-	{
+-	    if (fsync(mfp->mf_fd))
+-		status = FAIL;
+-	}
+-#endif
+-#ifdef SYNC_DUP_CLOSE
++	/*if (STRCMP(p_sws, "fsync") == 0)*/
++	/*{*/
++	    /*if (fsync(mfp->mf_fd))*/
++		/*status = FAIL;*/
++	/*}*/
++	/*else*/
++/*# endif*/
++	    /*[> OpenNT is strictly POSIX (Benzinger) <]*/
++	    /*[> Tandem/Himalaya NSK-OSS doesn't have sync() <]*/
++	    /*[> No sync() on Stratus VOS <]*/
++/*# if defined(__OPENNT) || defined(__TANDEM) || defined(__VOS__)*/
++	    /*fflush(NULL);*/
++/*# else*/
++	    /*//sync();*/
++/*# endif*/
++/*#endif*/
++/*#ifdef VMS*/
++	/*if (STRCMP(p_sws, "fsync") == 0)*/
++	/*{*/
++	    /*if (fsync(mfp->mf_fd))*/
++		/*status = FAIL;*/
++	/*}*/
++/*#endif*/
++/*#ifdef SYNC_DUP_CLOSE*/
  	/*
  	 * Win32 is a bit more work: Duplicate the file handle and close it.
  	 * This should flush the file to disk.
  	 */
--	/*if ((fd = dup(mfp->mf_fd)) >= 0)*/
--	    /*close(fd);*/
--/*#endif*/
--/*#ifdef AMIGA*/
--/*# if defined(__AROS__) || defined(__amigaos4__)*/
--	/*if (fsync(mfp->mf_fd) != 0)*/
--	    /*status = FAIL;*/
--/*# else*/
-+	if ((fd = dup(mfp->mf_fd)) >= 0)
-+	    close(fd);
-+#endif
-+#ifdef AMIGA
-+# if defined(__AROS__) || defined(__amigaos4__)
-+	if (fsync(mfp->mf_fd) != 0)
-+	    status = FAIL;
-+# else
+-	if ((fd = dup(mfp->mf_fd)) >= 0)
+-	    close(fd);
+-#endif
+-#ifdef AMIGA
+-# if defined(__AROS__) || defined(__amigaos4__)
+-	if (fsync(mfp->mf_fd) != 0)
+-	    status = FAIL;
+-# else
++	/*if ((fd = dup(mfp->mf_fd)) >= 0)*/
++	    /*close(fd);*/
++/*#endif*/
++/*#ifdef AMIGA*/
++/*# if defined(__AROS__) || defined(__amigaos4__)*/
++	/*if (fsync(mfp->mf_fd) != 0)*/
++	    /*status = FAIL;*/
++/*# else*/
  	/*
  	 * Flush() only exists for AmigaDos 2.0.
  	 * For 1.3 it should be done with close() + open(), but then the risk
  	 * is that the open() may fail and lose the file....
  	 */
--/*#  ifdef FEAT_ARP*/
--	/*if (dos2)*/
--/*#  endif*/
--/*#  ifdef SASC*/
--	/*{*/
--	    /*struct UFB *fp = chkufb(mfp->mf_fd);*/
-+#  ifdef FEAT_ARP
-+	if (dos2)
-+#  endif
-+#  ifdef SASC
-+	{
-+	    struct UFB *fp = chkufb(mfp->mf_fd);
+-#  ifdef FEAT_ARP
+-	if (dos2)
+-#  endif
+-#  ifdef SASC
+-	{
+-	    struct UFB *fp = chkufb(mfp->mf_fd);
++/*#  ifdef FEAT_ARP*/
++	/*if (dos2)*/
++/*#  endif*/
++/*#  ifdef SASC*/
++	/*{*/
++	    /*struct UFB *fp = chkufb(mfp->mf_fd);*/
  
--	    /*if (fp != NULL)*/
--		/*Flush(fp->ufbfh);*/
--	/*}*/
--/*#  else*/
--/*#   if defined(_DCC) || defined(__GNUC__) || defined(__MORPHOS__)*/
--	/*{*/
--/*#    if defined(__GNUC__) && !defined(__MORPHOS__) && defined(__libnix__)*/
-+	    if (fp != NULL)
-+		Flush(fp->ufbfh);
-+	}
-+#  else
-+#   if defined(_DCC) || defined(__GNUC__) || defined(__MORPHOS__)
-+	{
-+#    if defined(__GNUC__) && !defined(__MORPHOS__) && defined(__libnix__)
+-	    if (fp != NULL)
+-		Flush(fp->ufbfh);
+-	}
+-#  else
+-#   if defined(_DCC) || defined(__GNUC__) || defined(__MORPHOS__)
+-	{
+-#    if defined(__GNUC__) && !defined(__MORPHOS__) && defined(__libnix__)
++	    /*if (fp != NULL)*/
++		/*Flush(fp->ufbfh);*/
++	/*}*/
++/*#  else*/
++/*#   if defined(_DCC) || defined(__GNUC__) || defined(__MORPHOS__)*/
++	/*{*/
++/*#    if defined(__GNUC__) && !defined(__MORPHOS__) && defined(__libnix__)*/
  	    /* Have function (in libnix at least),
  	     * but ain't got no prototype anywhere. */
--	    /*extern unsigned long fdtofh(int filedescriptor);*/
--/*#    endif*/
--/*#    if !defined(__libnix__)*/
--	    /*fflush(NULL);*/
--/*#    else*/
--	    /*BPTR fh = (BPTR)fdtofh(mfp->mf_fd);*/
-+	    extern unsigned long fdtofh(int filedescriptor);
-+#    endif
-+#    if !defined(__libnix__)
-+	    fflush(NULL);
-+#    else
-+	    BPTR fh = (BPTR)fdtofh(mfp->mf_fd);
+-	    extern unsigned long fdtofh(int filedescriptor);
+-#    endif
+-#    if !defined(__libnix__)
+-	    fflush(NULL);
+-#    else
+-	    BPTR fh = (BPTR)fdtofh(mfp->mf_fd);
++	    /*extern unsigned long fdtofh(int filedescriptor);*/
++/*#    endif*/
++/*#    if !defined(__libnix__)*/
++	    /*fflush(NULL);*/
++/*#    else*/
++	    /*BPTR fh = (BPTR)fdtofh(mfp->mf_fd);*/
  
--	    /*if (fh != 0)*/
--		/*Flush(fh);*/
--/*#    endif*/
--	/*}*/
--/*#   else [> assume Manx <]*/
--	    /*Flush(_devtab[mfp->mf_fd].fd);*/
--/*#   endif*/
--/*#  endif*/
--/*# endif*/
--/*#endif [> AMIGA <]*/
--    /*}*/
-+	    if (fh != 0)
-+		Flush(fh);
-+#    endif
-+	}
-+#   else /* assume Manx */
-+	    Flush(_devtab[mfp->mf_fd].fd);
-+#   endif
-+#  endif
-+# endif
-+#endif /* AMIGA */
-+    }
+-	    if (fh != 0)
+-		Flush(fh);
+-#    endif
+-	}
+-#   else /* assume Manx */
+-	    Flush(_devtab[mfp->mf_fd].fd);
+-#   endif
+-#  endif
+-# endif
+-#endif /* AMIGA */
+-    }
++	    /*if (fh != 0)*/
++		/*Flush(fh);*/
++/*#    endif*/
++	/*}*/
++/*#   else [> assume Manx <]*/
++	    /*Flush(_devtab[mfp->mf_fd].fd);*/
++/*#   endif*/
++/*#  endif*/
++/*# endif*/
++/*#endif [> AMIGA <]*/
++    /*}*/
  
      got_int |= got_int_save;
+ 
