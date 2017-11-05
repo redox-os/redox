@@ -266,7 +266,7 @@ suse()
 }
 
 ##############################################################################
-# This function takes care of installing all dependencies for builing redox on
+# This function takes care of installing all dependencies for building redox on
 # gentoo linux
 # @params:	$1 the emulator to install, virtualbox or qemu
 ##############################################################################
@@ -297,7 +297,7 @@ gentoo()
 }
 
 ##############################################################################
-# This function takes care of installing all dependencies for builing redox on
+# This function takes care of installing all dependencies for building redox on
 # SolusOS
 # @params:	$1 the emulator to install, virtualbox or qemu
 ##############################################################################
