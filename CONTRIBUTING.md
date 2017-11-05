@@ -190,7 +190,7 @@ If you're a good designer, whether it's _2D graphics, 3D graphics, interfaces, w
 
 ### <a name="patreon"> Patreon </a>
 
-Our **BDFL**, [jackpot51](https://github.com/jackpot51), has a [Patreon campaign](https://www.patreon.com/redox_os)! **All money recieved will go towards Redox OS development**. If you donate, you will be listed in the **Redox credits** as one of the people that made Redox OS possible. You'll also get other rewards the more you donate. However, please don't donate if you can't afford it.
+Our **BDFL**, [jackpot51](https://github.com/jackpot51), has a [Patreon campaign](https://www.patreon.com/redox_os)! **All money received will go towards Redox OS development**. If you donate, you will be listed in the **Redox credits** as one of the people that made Redox OS possible. You'll also get other rewards the more you donate. However, please don't donate if you can't afford it.
 
 <!--
 

@@ -18,7 +18,7 @@ toolchain versions, you don't need to update the container.
 git clone https://github.com/redox-os/redox.git ; cd redox
 ```
 
-### Upate the source tree
+### Update the source tree
 Note: if you use the container on a different host or
 with a different user, [get the sources first](#get_the_sources).
 ```shell
