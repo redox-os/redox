@@ -1,21 +1,9 @@
-diff -rupN prboom-2.5.0/autotools/config.sub prboom-2.5.0-redox/autotools/config.sub
---- prboom-2.5.0/autotools/config.sub	2006-08-10 08:17:12.000000000 -0700
-+++ prboom-2.5.0-redox/autotools/config.sub	2017-10-14 22:17:14.000000000 -0700
-@@ -1214,7 +1214,7 @@ case $os in
- 	      | -os2* | -vos* | -palmos* | -uclinux* | -nucleus* \
- 	      | -morphos* | -superux* | -rtmk* | -rtmk-nova* | -windiss* \
- 	      | -powermax* | -dnix* | -nx6 | -nx7 | -sei* | -dragonfly* \
--	      | -skyos* | -haiku* | -rdos* | -toppers*)
-+	      | -skyos* | -haiku* | -rdos* | -toppers* | -redox*)
- 	# Remember, each alternative MUST END IN *, to match a version number.
- 		;;
- 	-qnx*)
 diff -rupN prboom-2.5.0/configure.ac prboom-2.5.0-redox/configure.ac
 --- prboom-2.5.0/configure.ac	2008-11-09 11:12:37.000000000 -0800
 +++ prboom-2.5.0-redox/configure.ac	2017-10-14 23:27:16.000000000 -0700
 @@ -85,8 +85,6 @@ if test "$cross_compiling" != "yes"; the
  fi
- 
+
  dnl --- Header files, typedefs, structures
 -AC_TYPE_UID_T
 -AC_TYPE_SIZE_T
@@ -28,7 +16,7 @@ diff -rupN prboom-2.5.0/src/d_deh.c prboom-2.5.0-redox/src/d_deh.c
 @@ -54,17 +54,6 @@
  #define TRUE 1
  #define FALSE 0
- 
+
 -#ifndef HAVE_STRLWR
 -#include <ctype.h>
 -
@@ -42,4 +30,3 @@ diff -rupN prboom-2.5.0/src/d_deh.c prboom-2.5.0-redox/src/d_deh.c
 -
  // killough 10/98: new functions, to allow processing DEH files in-memory
  // (e.g. from wads)
- 
