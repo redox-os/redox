@@ -14,8 +14,9 @@ function recipe_update {
 
 function recipe_build {
     autoreconf -if
+    wget -O autotools/config.sub http://git.savannah.gnu.org/cgit/config.git/plain/config.sub
     ./configure --prefix=/ --host=${HOST} --disable-sdltest --disable-gl --without-net --with-sdl-prefix="$PWD/../sysroot"
-    make 
+    make
     skip=1
 }
 
