@@ -226,29 +226,37 @@ function op {
             fi
             popd > /dev/null
             ;;
-        prepare)
-            rm -rf sysroot
-            mkdir sysroot
-
-            if [ ${#BUILD_DEPENDS} -gt 0 ]
+        prepare)            
+            skip=0
+            if [ "$(type -t recipe_prepare)" = "function" ]
             then
-                pushd $ROOT
-                    ./repo.sh "${BUILD_DEPENDS[@]}"
-                popd
+                recipe_prepare
+            fi
+            if [ "$skip" -eq "0" ]
+            then
+                rm -rf sysroot
+                mkdir sysroot
 
-                for i in "${BUILD_DEPENDS[@]}"
+                if [ ${#BUILD_DEPENDS} -gt 0 ]
+                then
+                    pushd $ROOT
+                        ./repo.sh "${BUILD_DEPENDS[@]}"
+                    popd
+
+                    for i in "${BUILD_DEPENDS[@]}"
+                    do
+                        pkg --target=$TARGET install --root sysroot "$REPO/$i.tar.gz"
+                    done
+                fi
+                
+                rm -rf build
+                cp -rp source build
+
+                for patch in *.patch
                 do
-                    pkg --target=$TARGET install --root sysroot "$REPO/$i.tar.gz"
+                    patch -p1 -d build < "$patch"
                 done
             fi
-
-            rm -rf build
-            cp -rp source build
-
-            for patch in *.patch
-            do
-                patch -p1 -d build < "$patch"
-            done
             ;;
         unprepare)
             rm -rf build
