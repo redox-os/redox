@@ -1,11 +1,24 @@
-[rust]
-backtrace = false
-
-[target.x86_64-unknown-redox]
-cc = "x86_64-unknown-redox-gcc"
-cxx = "x86_64-unknown-redox-g++"
-llvm-config = "./llvm-config"
+[llvm]
+static-libstdcpp = true
+ninja = true
 
 [build]
 host = ["x86_64-unknown-redox"]
 target = ["x86_64-unknown-redox"]
+docs = false
+submodules = false
+
+[rust]
+codegen-units = 0
+use-jemalloc = false
+backtrace = false
+rpath = false
+codegen-tests = false
+
+[target.x86_64-unknown-redox]
+cc = "x86_64-unknown-redox-gcc"
+cxx = "x86_64-unknown-redox-g++"
+ar = "x86_64-unknown-redox-ar"
+linker = "x86_64-unknown-redox-gcc"
+llvm-config = "../llvm-config"
+crt-static = true
