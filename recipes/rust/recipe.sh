@@ -2,7 +2,10 @@ GIT=https://github.com/redox-os/rust.git
 BRANCH=compile-redox-stage-0
 DEPENDS="gcc cargo"
 
-LLVM_PREFIX="$PWD/build/llvm-root"
+LLVM_GIT="https://github.com/redox-os/llvm.git"
+LLVM_SOURCE="$(realpath llvm-source)"
+LLVM_BUILD="$(realpath llvm-build)"
+LLVM_PREFIX="$(realpath llvm-prefix)"
 SYSROOT="/usr/$HOST"
 unset AR AS CC CXX LD NM OBJCOPY OBJDUMP RANLIB READELF STRIP
 
@@ -14,27 +17,38 @@ function recipe_version {
     skip=1
 }
 
+function recipe_fetch {
+    if [ ! -d "$LLVM_SOURCE" ]
+    then
+        git clone "$LLVM_GIT" -b redox --depth 1 "$LLVM_SOURCE"
+    fi
+
+    pushd "$LLVM_SOURCE" > /dev/null
+    git remote set-url origin "$LLVM_GIT"
+    git fetch origin
+    git pull
+    git submodule sync --recursive
+    git submodule update --init --recursive
+    popd > /dev/null
+}
+
+function recipe_prepare {
+    rm -rf "$LLVM_PREFIX"
+    mkdir -p "$LLVM_PREFIX"
+    
+    rm -rf "$LLVM_BUILD"
+    mkdir "$LLVM_BUILD"
+}
+
 function recipe_update {
     echo "skipping update"
     skip=1
 }
 
 function recipe_build {
-    # Download patched LLVM
-    if [ -d llvm-redox ]
-    then
-        git -C llvm-redox pull
-    else
-        git clone https://github.com/redox-os/llvm.git -b redox --depth 1 llvm-redox
-    fi
-
     # Build LLVM
-    rm -rf "$LLVM_PREFIX"
-    mkdir -p "$LLVM_PREFIX"
-    rm -rf llvm-redox/build
-    mkdir -p llvm-redox/build
-    pushd llvm-redox/build
-        CC=$HOST-gcc CXX=$HOST-g++ cmake "${LLVM_CMAKE_ARGS[@]}" ..
+    pushd "$LLVM_BUILD"
+        CC=$HOST-gcc CXX=$HOST-g++ cmake "${LLVM_CMAKE_ARGS[@]}" "${LLVM_SOURCE}"
         make -j$(nproc)
         make install
     popd
