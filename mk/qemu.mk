@@ -12,7 +12,11 @@ endif
 ifeq ($(net),no)
 	QEMUFLAGS+=-net none
 else
-	QEMUFLAGS+=-net nic,model=e1000 -net user -net dump,file=build/network.pcap
+	ifneq ($(bridge),)
+		QEMUFLAGS+=-netdev bridge,br=$(bridge),id=net0 -device e1000,netdev=net0,id=nic0
+	else
+		QEMUFLAGS+=-net nic,model=e1000 -net user -net dump,file=build/network.pcap
+	endif
 	ifeq ($(net),redir)
 		QEMUFLAGS+=-redir tcp:8023::8023 -redir tcp:8080::8080
 	endif
