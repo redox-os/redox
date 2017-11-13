@@ -175,32 +175,6 @@ Welcome to Redox OS!
 """
 
 [[files]]
-path = "/usr/bin"
-data = "/bin"
+path = "/usr"
+data = "/"
 symlink = true
-
-[[files]]
-path = "/usr/sbin"
-data = "/sbin"
-symlink = true
-
-[[files]]
-path = "/usr/var"
-data = "/var"
-symlink = true
-
-[[files]]
-path = "/usr/share"
-data = "/share"
-symlink = true
-
-[[files]]
-path = "/usr/include"
-data = "/include"
-symlink = true
-
-[[files]]
-path = "/usr/lib"
-data = "/lib"
-symlink = true
-
