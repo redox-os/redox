@@ -35,7 +35,7 @@ function recipe_fetch {
 function recipe_prepare {
     rm -rf "$LLVM_PREFIX"
     mkdir -p "$LLVM_PREFIX"
-    
+
     rm -rf "$LLVM_BUILD"
     mkdir "$LLVM_BUILD"
 }
@@ -53,8 +53,7 @@ function recipe_build {
         make install
     popd
 
-    cp ../{config.toml,llvm-config} ./
-    python x.py build
+    python x.py build --config ../config.toml --jobs $(nproc)
     skip=1
 }
 

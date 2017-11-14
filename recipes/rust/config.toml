@@ -9,7 +9,6 @@ docs = false
 submodules = false
 
 [rust]
-codegen-units = 0
 use-jemalloc = false
 backtrace = false
 rpath = false
