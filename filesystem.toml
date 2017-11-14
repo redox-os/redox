@@ -175,57 +175,7 @@ Welcome to Redox OS!
 """
 
 [[files]]
-path = "/usr/filesystem.toml"
-data = "/filesystem.toml"
-symlink = true
-
-[[files]]
 path = "/usr/bin"
 data = "/bin"
-symlink = true
-
-[[files]]
-path = "/usr/bootloader"
-data = "/bootloader"
-symlink = true
-
-[[files]]
-path = "/usr/etc"
-data = "/etc"
-symlink = true
-
-[[files]]
-path = "/usr/home"
-data = "/home"
-symlink = true
-
-[[files]]
-path = "/usr/kernel"
-data = "/kernel"
-symlink = true
-
-[[files]]
-path = "/usr/pkg"
-data = "/pkg"
-symlink = true
-
-[[files]]
-path = "/usr/ref"
-data = "/ref"
-symlink = true
-
-[[files]]
-path = "/usr/root"
-data = "/root"
-symlink = true
-
-[[files]]
-path = "/usr/tmp"
-data = "/tmp"
-symlink = true
-
-[[files]]
-path = "/usr/ui"
-data = "/ui"
 symlink = true
 
