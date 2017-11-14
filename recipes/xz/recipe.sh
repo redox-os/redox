@@ -1,5 +1,5 @@
 VERSION=5.2.3
-TAR=https://tukaani.org/xz/xz-$VERSION.tar.gz
+TAR=https://codeload.github.com/xz-mirror/xz/archive/v$VERSION.tar.gz
 
 function recipe_version {
     echo "$VERSION"
