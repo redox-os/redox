@@ -175,6 +175,7 @@ Welcome to Redox OS!
 """
 
 [[files]]
-path = "/usr"
-data = "/"
+path = "/usr/bin"
+data = "/bin"
 symlink = true
+
