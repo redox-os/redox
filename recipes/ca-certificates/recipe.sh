@@ -1,3 +1,8 @@
+function recipe_version {
+    date "+%Y%m%d"
+    skip=1
+}
+
 function recipe_fetch {
     if [ ! -d source ]
     then
