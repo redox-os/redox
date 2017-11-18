@@ -1,5 +1,5 @@
 VERSION=5.2.3
-TAR=https://codeload.github.com/xz-mirror/xz/archive/v$VERSION.tar.gz
+TAR=https://codeload.github.com/xz-mirror/xz/tar.gz/v$VERSION
 
 function recipe_version {
     echo "$VERSION"
@@ -12,6 +12,7 @@ function recipe_update {
 }
 
 function recipe_build {
+    ./autogen.sh
     wget -O build-aux/config.sub http://git.savannah.gnu.org/cgit/config.git/plain/config.sub
     ./configure --host=${HOST} --prefix=/ --enable-threads=no
     make
