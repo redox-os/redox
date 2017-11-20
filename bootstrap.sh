@@ -461,7 +461,11 @@ boot()
 	echo "Cloning github repo..."
 	git clone https://github.com/redox-os/redox.git --origin upstream --recursive
 	rustInstall
-	cargo install xargo
+	if [[ "`cargo install --list`" != *"xargo"* ]]; then
+		cargo install xargo
+	else
+		echo "You have xargo installed already!"
+	fi
 	echo "Cleaning up..."
 	rm bootstrap.sh
 	echo
