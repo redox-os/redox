@@ -16,7 +16,7 @@ diff -rupN sdl/configure.in sdl-redox/configure.in
 @@ -1646,6 +1646,19 @@ AC_HELP_STRING([--enable-video-dummy], [
      fi
  }
- 
+
 +dnl Set up the Orbital video driver.
 +CheckOrbitalVideo()
 +{
@@ -581,7 +581,7 @@ diff -rupN sdl/src/video/orbital/SDL_orbitalvideo.c sdl-redox/src/video/orbital/
 +	}
 +
 +	char path[4096];
-+	snprintf(path, 4096, "orbital:/-1/-1/%d/%d/SDL", width, height);
++	snprintf(path, 4096, "orbital:a/-1/-1/%d/%d/SDL", width, height);
 +	this->hidden->fd = open(path, O_RDONLY);
 +	printf("%s at %d\n", path, this->hidden->fd);
 +
