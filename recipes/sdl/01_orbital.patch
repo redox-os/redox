@@ -418,7 +418,7 @@ diff -rupN sdl/src/video/orbital/SDL_orbitalscancode.h sdl-redox/src/video/orbit
 diff -rupN sdl/src/video/orbital/SDL_orbitalvideo.c sdl-redox/src/video/orbital/SDL_orbitalvideo.c
 --- sdl/src/video/orbital/SDL_orbitalvideo.c	1969-12-31 17:00:00.000000000 -0700
 +++ sdl-redox/src/video/orbital/SDL_orbitalvideo.c	2017-11-21 19:34:44.269053445 -0700
-@@ -0,0 +1,261 @@
+@@ -0,0 +1,266 @@
 +/*
 +    SDL - Simple DirectMedia Layer
 +    Copyright (C) 1997-2012 Sam Lantinga
@@ -574,6 +574,11 @@ diff -rupN sdl/src/video/orbital/SDL_orbitalvideo.c sdl-redox/src/video/orbital/
 +SDL_Surface *ORBITAL_SetVideoMode(_THIS, SDL_Surface *current,
 +				int width, int height, int bpp, Uint32 flags)
 +{
++	if ( bpp != 32 ) {
++		SDL_SetError("Unsupported color depth - must use 32-bits per pixel");
++		return(NULL);
++	}
++
 +	if ( this->hidden->fd ) {
 +		close( this->hidden->fd );
 +                this->hidden->fd = 0;
@@ -586,7 +591,7 @@ diff -rupN sdl/src/video/orbital/SDL_orbitalvideo.c sdl-redox/src/video/orbital/
 +
 +	char path[4096];
 +	snprintf(path, 4096, "orbital:a/-1/-1/%d/%d/SDL", width, height);
-+	this->hidden->fd = open(path, O_RDONLY);
++	this->hidden->fd = open(path, O_RDWR);
 +	if ( this->hidden->fd <= 0 ) {
 +		this->hidden->fd = 0;
 +		SDL_SetError("Couldn't create window for requested mode");
