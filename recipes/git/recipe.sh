@@ -1,6 +1,7 @@
 VERSION=2.13.1
 TAR=https://www.kernel.org/pub/software/scm/git/git-$VERSION.tar.xz
 BUILD_DEPENDS=(zlib curl openssl expat)
+DEPENDS="ca-certificates"
 
 export AR="${HOST}-ar"
 export AS="${HOST}-as"
