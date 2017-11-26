@@ -47,6 +47,7 @@ orbutils = {}
 #patch = {}
 #pixelcannon = {}
 pkgutils = {}
+#prboom = {}
 ptyd = {}
 #python = {}
 randd = {}
@@ -87,12 +88,7 @@ ptyd
 [[files]]
 path = "/etc/init.d/10_net"
 data = """
-ethernetd
-ipd
-icmpd
-tcpd
-udpd
-dhcpd -b
+smolnetd
 """
 
 [[files]]
@@ -178,4 +174,3 @@ Welcome to Redox OS!
 path = "/usr/bin"
 data = "/bin"
 symlink = true
-
