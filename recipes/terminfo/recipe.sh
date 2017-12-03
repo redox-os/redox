@@ -21,12 +21,12 @@ function recipe_test {
 }
 
 function recipe_clean {
-    echo "skipping clean" 
+    echo "skipping clean"
     skip=1
 }
 
 function recipe_stage {
-    mkdir -p ../stage/share/terminfo
-    cp -r  * ../stage/share/terminfo/
+    mkdir -p ../stage/share
+    cp -r  * ../stage/share/
     skip=1
 }
