@@ -1,6 +1,7 @@
 VERSION=8.0.586
 TAR=http://ftp.vim.org/vim/unix/vim-$VERSION.tar.bz2
 BUILD_DEPENDS=(ncurses)
+DEPENDS="terminfo"
 
 export AR="${HOST}-ar"
 export AS="${HOST}-as"
@@ -35,7 +36,7 @@ function recipe_build {
     export vim_cv_stat_ignores_slash=no
     export vim_cv_memmove_handles_overlap=yes
     ./configure --host=${HOST} --prefix=/ --with-tlib=ncurses
-    make 
+    make
     skip=1
 }
 
