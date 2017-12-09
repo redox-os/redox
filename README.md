@@ -70,7 +70,7 @@ The ecosystem and software Redox OS provides is listed below.
 | [TFS (ticki filesystem)](https://github.com/ticki/tfs)                            | [**@ticki**](https://github.com/ticki)
 | [The Redox book](https://github.com/redox-os/book)                          | [**@ticki**](https://github.com/ticki)
 | [userutils](https://github.com/redox-os/userutils)                          | [**@jackpot51**](https://github.com/jackpot51)
-| [The old kernel](https://github.com/redox-os/old)                           | **abandoned**
+| The old kernel                                                              | **abandoned**
 | [ZFS](https://github.com/redox-os/zfs)                                      | **abandoned, superseded by [TFS](https://github.com/ticki/tfs)**
 
 ## <a name="compile-help"> Help! Redox won't compile! </a>
