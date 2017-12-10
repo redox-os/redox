@@ -100,6 +100,7 @@ osx_macports()
     install_macports_pkg "pkgconfig"
     install_macports_pkg "osxfuse"
     install_macports_pkg "x86_64-elf-gcc"
+    install_macports_pkg "cmake"
 }
 
 ###############################################################################
@@ -127,6 +128,7 @@ osx_homebrew()
     install_brew_pkg "gcc49" "gcc-4.9"
     install_brew_pkg "nasm"
     install_brew_pkg "pkg-config"
+    install_brew_pkg "cmake"
     install_brew_cask_pkg "osxfuse"
 
     install_brew_pkg "redox-os/gcc_cross_compilers/x86_64-elf-gcc"
@@ -164,6 +166,11 @@ archLinux()
 
 	echo "Installing fuse..."
 	sudo pacman -S --needed fuse
+	
+	if [ -z "$(which cmake)" ]; then
+		echo "Installing cmake..."
+		sudo pacman -S cmake
+	fi
 }
 
 ###############################################################################
@@ -178,7 +185,7 @@ ubuntu()
 	echo "Updating system..."
 	sudo "$2" update
 	echo "Installing required packages..."
-	sudo "$2" install build-essential libc6-dev-i386 nasm curl file git libfuse-dev fuse pkg-config
+	sudo "$2" install build-essential libc6-dev-i386 nasm curl file git libfuse-dev fuse pkg-config cmake
 	if [ "$1" == "qemu" ]; then
 		if [ -z "$(which qemu-system-x86_64)" ]; then
 			echo "Installing QEMU..."
@@ -224,7 +231,7 @@ fedora()
 		fi
 	fi
 	# Use rpm -q <package> to check if it's already installed
-	PKGS=$(for pkg in gcc gcc-c++ glibc-devel.i686 nasm make fuse-devel; do rpm -q $pkg > /dev/null; [ $? -ne 0 ] && echo $pkg; done)
+	PKGS=$(for pkg in gcc gcc-c++ glibc-devel.i686 nasm make fuse-devel cmake; do rpm -q $pkg > /dev/null; [ $? -ne 0 ] && echo $pkg; done)
 	# If the list of packages is not empty, install missing
 	COUNT=$(echo $PKGS | wc -w)
 	if [ $COUNT -ne 0 ]; then
@@ -262,7 +269,7 @@ suse()
 		fi
 	fi
 	echo "Installing necessary build tools..."
-	sudo zypper install gcc gcc-c++ glibc-devel-32bit nasm make fuse-devel
+	sudo zypper install gcc gcc-c++ glibc-devel-32bit nasm make fuse-devel cmake
 }
 
 ##############################################################################
@@ -294,6 +301,10 @@ gentoo()
 			echo "QEMU already installed!"
 		fi
 	fi
+	if [ -z "$(which cmake)" ]; then
+		echo "Installing cmake..."
+		sudo emerge dev-util/cmake
+	fi
 }
 
 ##############################################################################
@@ -323,7 +334,7 @@ solus()
 
 	echo "Installing necessary build tools..."
 	#if guards are not necessary with eopkg since it does nothing if latest version is already installed
-	sudo eopkg it fuse-devel git gcc g++ libgcc-32bit libstdc++-32bit nasm make
+	sudo eopkg it fuse-devel git gcc g++ libgcc-32bit libstdc++-32bit nasm make cmake
 }
 
 ######################################################################
