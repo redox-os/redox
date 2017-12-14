@@ -35,6 +35,7 @@ installer = {}
 ion = {}
 #lua = {}
 #nasm = {}
+netdb = {}
 netstack = {}
 netutils = {}
 #newlib = {}
