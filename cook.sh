@@ -226,7 +226,7 @@ function op {
             fi
             popd > /dev/null
             ;;
-        prepare)            
+        prepare)
             skip=0
             if [ "$(type -t recipe_prepare)" = "function" ]
             then
@@ -248,7 +248,7 @@ function op {
                         pkg --target=$TARGET install --root sysroot "$REPO/$i.tar.gz"
                     done
                 fi
-                
+
                 rm -rf build
                 cp -rp source build
 
