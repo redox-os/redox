@@ -15,8 +15,9 @@ function recipe_build {
     sysroot="${PWD}/../sysroot"
     export CC="${HOST}-gcc"
     export LD="${HOST}-ld"
-    export CFLAGS="-nostdinc -nostdlib -static $sysroot/lib/crt0.o"
-    export LIBS="-I $sysroot/include -L $sysroot/lib -lc -lm"
+    export CFLAGS="-static -nostdinc -I $sysroot/include -I /usr/lib/gcc/x86_64-unknown-redox/7.0.1/include/ -nostdlib -L $sysroot/lib"
+    export CRT="$sysroot/lib/crt0.o"
+    export CLIBS="-lc -lm"
 
     make all
     skip=1
