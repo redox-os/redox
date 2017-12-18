@@ -39,6 +39,7 @@ netdb = {}
 netstack = {}
 netutils = {}
 #newlib = {}
+nulld = {}
 #openssl = {}
 orbdata = {}
 orbital = {}
@@ -64,6 +65,7 @@ smith = {}
 userutils = {}
 uutils = {}
 #xz = {}
+zerod = {}
 
 # User settings
 [users.root]
@@ -81,6 +83,8 @@ password = ""
 [[files]]
 path = "/etc/init.d/00_base"
 data = """
+nulld
+zerod
 pcid /etc/pcid/filesystem.toml
 randd
 ptyd
