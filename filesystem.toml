@@ -10,7 +10,7 @@ prompt = false
 #acid = {}
 #autoconf = {}
 #automake = {}
-#bash = {}
+bash = {}
 #binutils = {}
 #ca-certificates = {}
 #cargo = {}
@@ -75,10 +75,12 @@ uid = 0
 gid = 0
 name = "root"
 home = "/root"
+shell = "/bin/bash"
 
 [users.user]
 # Password is unset
 password = ""
+shell = "/bin/bash"
 
 [[files]]
 path = "/etc/init.d/00_base"
