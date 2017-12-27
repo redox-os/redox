@@ -3,9 +3,9 @@ BRANCH=compile-redox-stage-0
 DEPENDS="gcc cargo"
 
 LLVM_GIT="https://github.com/redox-os/llvm.git"
-LLVM_SOURCE="$(realpath llvm-source)"
-LLVM_BUILD="$(realpath llvm-build)"
-LLVM_PREFIX="$(realpath llvm-prefix)"
+LLVM_SOURCE="$(realpath -m llvm-source)"
+LLVM_BUILD="$(realpath -m llvm-build)"
+LLVM_PREFIX="$(realpath -m llvm-prefix)"
 SYSROOT="/usr/$HOST"
 unset AR AS CC CXX LD NM OBJCOPY OBJDUMP RANLIB READELF STRIP
 
