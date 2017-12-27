@@ -1,5 +1,6 @@
 VERSION=6.0
 TAR=http://ftp.gnu.org/gnu/ncurses/ncurses-$VERSION.tar.gz
+DEPENDS="terminfo"
 
 function recipe_version {
     echo "$VERSION"
@@ -13,7 +14,7 @@ function recipe_update {
 
 function recipe_build {
     export CPPFLAGS="-P"
-    ./configure --host=${HOST} --prefix=""
+    ./configure --host=${HOST} --prefix="" --disable-db-install
     make
     skip=1
 }

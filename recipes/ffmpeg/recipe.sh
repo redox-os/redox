@@ -1,5 +1,11 @@
+VERSION=3.3
 GIT=https://github.com/FFmpeg/FFmpeg
-BRANCH=release/3.3
+BRANCH=release/$VERSION
+
+function recipe_version {
+    echo "$VERSION"
+    skip=1
+}
 
 function recipe_update {
     echo "skipping update"

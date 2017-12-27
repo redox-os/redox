@@ -1,6 +1,5 @@
 [llvm]
 static-libstdcpp = true
-ninja = true
 
 [build]
 host = ["x86_64-unknown-redox"]
@@ -9,11 +8,9 @@ docs = false
 submodules = false
 
 [rust]
-codegen-units = 0
 use-jemalloc = false
 backtrace = false
 rpath = false
-codegen-tests = false
 
 [target.x86_64-unknown-redox]
 cc = "x86_64-unknown-redox-gcc"

@@ -1,5 +1,6 @@
-VERSION=5.2.3
-TAR=https://codeload.github.com/xz-mirror/xz/tar.gz/v$VERSION
+VERSION=6.0
+TAR=http://ftp.gnu.org/gnu/ncurses/ncurses-$VERSION.tar.gz
+DEPENDS="terminfo"
 
 function recipe_version {
     echo "$VERSION"
@@ -12,9 +13,8 @@ function recipe_update {
 }
 
 function recipe_build {
-    ./autogen.sh
-    wget -O build-aux/config.sub http://git.savannah.gnu.org/cgit/config.git/plain/config.sub
-    ./configure --host=${HOST} --prefix=/ --enable-threads=no
+    export CPPFLAGS="-P"
+    ./configure --host=${HOST} --prefix="" --enable-widec --disable-db-install
     make
     skip=1
 }
@@ -32,6 +32,7 @@ function recipe_clean {
 function recipe_stage {
     dest="$(realpath $1)"
     make DESTDIR="$dest" install
-    rm -rf "$dest/share"
+    rm -rf "$1"/bin
+    rm -rf "$1"/share/{doc,info,man}
     skip=1
 }
