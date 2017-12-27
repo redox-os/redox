@@ -1,7 +1,6 @@
-VERSION=8.0.586
-TAR=http://ftp.vim.org/vim/unix/vim-$VERSION.tar.bz2
+GIT=https://github.com/abishekvashok/cmatrix
 BUILD_DEPENDS=(ncurses)
-DEPENDS="terminfo"
+DEPENDS=(terminfo)
 
 export AR="${HOST}-ar"
 export AS="${HOST}-as"
@@ -16,7 +15,7 @@ export READELF="${HOST}-readelf"
 export STRIP="${HOST}-strip"
 
 function recipe_version {
-    echo "$VERSION"
+    printf "r%s.%s" "$(git rev-list --count HEAD)" "$(git rev-parse --short HEAD)"
     skip=1
 }
 
@@ -29,14 +28,8 @@ function recipe_build {
     sysroot="${PWD}/../sysroot"
     export LDFLAGS="-L$sysroot/lib"
     export CPPFLAGS="-I$sysroot/include"
-    export vim_cv_toupper_broken=set
-    export vim_cv_terminfo=no
-    export vim_cv_tty_group=world
-    export vim_cv_getcwd_broken=yes
-    export vim_cv_stat_ignores_slash=no
-    export vim_cv_memmove_handles_overlap=yes
-    ./configure --host=${HOST} --prefix=/ --with-tlib=ncurses
-    make
+    ./configure --host=${HOST} --prefix=/ --without-fonts
+    make 
     skip=1
 }
 
@@ -52,6 +45,7 @@ function recipe_clean {
 
 function recipe_stage {
     dest="$(realpath $1)"
-    make DESTDIR="$dest" ${MAKEFLAGS} install
+    make DESTDIR="$dest" install
+    rm -rf $1/share/man
     skip=1
 }

@@ -1,0 +1,101 @@
+diff -ru source/cmatrix.c source-new/cmatrix.c
+--- source/cmatrix.c	2017-11-18 13:21:42.992870796 -0800
++++ source-new/cmatrix.c	2017-11-18 13:20:45.446407288 -0800
+@@ -37,7 +37,7 @@
+ #ifdef HAVE_NCURSES_H
+ #include <ncurses.h>
+ #else
+-#include <curses.h>
++#include <ncurses/curses.h>
+ #endif
+ 
+ #ifdef HAVE_SYS_IOCTL_H
+@@ -215,47 +215,49 @@
+ 
+ void handle_sigwinch(int s) {
+ 
+-    char *tty = NULL;
+-    int fd = 0;
+-    int result = 0;
+-    struct winsize win;
+-
+-    tty = ttyname(0);
+-    if (!tty) {
+-        return;
+-    }
+-    fd = open(tty, O_RDWR);
+-    if (fd == -1) {
+-        return;
+-    }
+-    result = ioctl(fd, TIOCGWINSZ, &win);
+-    if (result == -1) {
+-        return;
+-    }
+-
+-    COLS = win.ws_col;
+-    LINES = win.ws_row;
+-
+-    if(LINES <10){
+-        LINES = 10;
+-    }
+-    if(COLS <10){
+-        COLS = 10;
+-    }
+-
+-#ifdef HAVE_RESIZETERM
+-    resizeterm(LINES, COLS);
+-#ifdef HAVE_WRESIZE
+-    if (wresize(stdscr, LINES, COLS) == ERR) {
+-        c_die("Cannot resize window!");
+-    }
+-#endif /* HAVE_WRESIZE */
+-#endif /* HAVE_RESIZETERM */
+-
+-    var_init();
+-    /* Do these because width may have changed... */
+-    clear();
+-    refresh();
++/*
++ *    char *tty = NULL;
++ *    int fd = 0;
++ *    int result = 0;
++ *    struct winsize win;
++ *
++ *    tty = ttyname(0);
++ *    if (!tty) {
++ *        return;
++ *    }
++ *    fd = open(tty, O_RDWR);
++ *    if (fd == -1) {
++ *        return;
++ *    }
++ *    result = ioctl(fd, TIOCGWINSZ, &win);
++ *    if (result == -1) {
++ *        return;
++ *    }
++ *
++ *    COLS = win.ws_col;
++ *    LINES = win.ws_row;
++ *
++ *    if(LINES <10){
++ *        LINES = 10;
++ *    }
++ *    if(COLS <10){
++ *        COLS = 10;
++ *    }
++ *
++ *#ifdef HAVE_RESIZETERM
++ *    resizeterm(LINES, COLS);
++ *#ifdef HAVE_WRESIZE
++ *    if (wresize(stdscr, LINES, COLS) == ERR) {
++ *        c_die("Cannot resize window!");
++ *    }
++ *#endif [> HAVE_WRESIZE <]
++ *#endif [> HAVE_RESIZETERM <]
++ *
++ *    var_init();
++ *    [> Do these because width may have changed... <]
++ *    clear();
++ *    refresh();
++ */
+ }

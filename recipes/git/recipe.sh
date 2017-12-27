@@ -1,6 +1,7 @@
 VERSION=2.13.1
 TAR=https://www.kernel.org/pub/software/scm/git/git-$VERSION.tar.xz
 BUILD_DEPENDS=(zlib curl openssl expat)
+DEPENDS="ca-certificates"
 
 export AR="${HOST}-ar"
 export AS="${HOST}-as"
@@ -14,7 +15,7 @@ export RANLIB="${HOST}-ranlib"
 export READELF="${HOST}-readelf"
 export STRIP="${HOST}-strip"
 
-MAKEFLAGS="NO_MMAP=1 NEEDS_SSL_WITH_CURL=1 NEEDS_CRYPTO_WITH_SSL=1 NO_UNIX_SOCKETS=1 NO_POLL=1 NEEDS_LIBICONV= NEEDS_LIBRT= BLK_SHA1=1"
+MAKEFLAGS="NO_MMAP=1 NEEDS_SSL_WITH_CURL=1 NEEDS_CRYPTO_WITH_SSL=1 NO_UNIX_SOCKETS=1 NEEDS_LIBICONV= NEEDS_LIBRT= BLK_SHA1=1"
 
 function recipe_version {
     echo "$VERSION"
