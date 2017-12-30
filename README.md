@@ -139,9 +139,6 @@ $ ./bootstrap.sh -d
 # Install rustup.rs
 $ curl https://sh.rustup.rs -sSf | sh
 
-# Set override toolchain to nightly build
-$ rustup override set nightly
-
 # For successive builds start here. If this is your first build, just continue
 
 # Update git submodules
