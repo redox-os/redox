@@ -12,9 +12,14 @@ clean:
 	cargo clean --manifest-path cookbook/pkgutils/Cargo.toml
 	cargo clean --manifest-path installer/Cargo.toml
 	cargo clean --manifest-path kernel/Cargo.toml
+	cargo clean --manifest-path kernel/syscall/Cargo.toml
 	cargo clean --manifest-path redoxfs/Cargo.toml
 	-$(FUMOUNT) build/filesystem/ || true
 	rm -rf build
+
+distclean:
+	make clean
+	cd cookbook && ./unfetch.sh
 
 pull:
 	git pull --recurse-submodules
