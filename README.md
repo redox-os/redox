@@ -12,7 +12,7 @@ Please make sure you use the **latest nightly** of `rustc` before building (for 
 
 [![Travis Build Status](https://travis-ci.org/redox-os/redox.svg?branch=master)](https://travis-ci.org/redox-os/redox)
 [![Downloads](https://img.shields.io/github/downloads/redox-os/redox/total.svg)](https://github.com/redox-os/redox/releases)
-[![MIT licensed](https://img.shields.io/badge/license-MIT-blue.svg)](./LICENSE.md)
+[![MIT licensed](https://img.shields.io/badge/license-MIT-blue.svg)](./LICENSE)
 ![Rust Version](https://img.shields.io/badge/rust-nightly%202017--10--03-lightgrey.svg)
 
 ## Contents
