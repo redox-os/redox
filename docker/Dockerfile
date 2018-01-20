@@ -15,6 +15,7 @@ RUN set -ex;                                                                   \
         qemu-utils                                                             \
         sudo                                                                   \
         texinfo                                                                \
+        autopoint                                                              \
         git                                                                    \
         cmake                                                                  \
         ;                                                                      \
