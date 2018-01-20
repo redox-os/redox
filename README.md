@@ -12,7 +12,7 @@ Please make sure you use the **latest nightly** of `rustc` before building (for 
 
 [![Travis Build Status](https://travis-ci.org/redox-os/redox.svg?branch=master)](https://travis-ci.org/redox-os/redox)
 [![Downloads](https://img.shields.io/github/downloads/redox-os/redox/total.svg)](https://github.com/redox-os/redox/releases)
-[![MIT licensed](https://img.shields.io/badge/license-MIT-blue.svg)](./LICENSE.md)
+[![MIT licensed](https://img.shields.io/badge/license-MIT-blue.svg)](./LICENSE)
 ![Rust Version](https://img.shields.io/badge/rust-nightly%202017--10--03-lightgrey.svg)
 
 ## Contents
@@ -53,7 +53,6 @@ The ecosystem and software Redox OS provides is listed below.
 | [kernel](https://github.com/redox-os/kernel)                                | [**@jackpot51**](https://github.com/jackpot51)
 | [libextra](https://github.com/redox-os/libextra)                            | [**@ticki**](https://github.com/ticki)
 | [libpager](https://github.com/redox-os/libpager)                            | [**@ticki**](https://github.com/ticki)
-| [libstd (Redox standard library)](https://github.com/redox-os/libstd)                      | [**@jackpot51**](https://github.com/jackpot51)
 | [netutils](https://github.com/redox-os/netutils)                            | [**@jackpot51**](https://github.com/jackpot51)
 | [orbclient (Orbital client)](https://github.com/redox-os/orbclient)                          | [**@jackpot51**](https://github.com/jackpot51)
 | [orbdata](https://github.com/redox-os/orbdata)                              | [**@jackpot51**](https://github.com/jackpot51)
@@ -70,6 +69,7 @@ The ecosystem and software Redox OS provides is listed below.
 | [TFS (ticki filesystem)](https://github.com/ticki/tfs)                            | [**@ticki**](https://github.com/ticki)
 | [The Redox book](https://github.com/redox-os/book)                          | [**@ticki**](https://github.com/ticki)
 | [userutils](https://github.com/redox-os/userutils)                          | [**@jackpot51**](https://github.com/jackpot51)
+| [libstd](https://github.com/Yoric/libstd)                      | **abandoned, Rust's official libstd is now used**
 | The old kernel                                                              | **abandoned**
 | [ZFS](https://github.com/redox-os/zfs)                                      | **abandoned, superseded by [TFS](https://github.com/ticki/tfs)**
 
