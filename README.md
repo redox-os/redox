@@ -139,6 +139,9 @@ $ ./bootstrap.sh -d
 # Install rustup.rs
 $ curl https://sh.rustup.rs -sSf | sh
 
+# Install the sysroot manager Xargo
+$ cargo install xargo
+
 # For successive builds start here. If this is your first build, just continue
 
 # Update git submodules
