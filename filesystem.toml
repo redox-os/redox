@@ -33,6 +33,7 @@ findutils = {}
 #gnu-make = {}
 installer = {}
 ion = {}
+logd = {}
 #lua = {}
 #nasm = {}
 netdb = {}
@@ -85,9 +86,10 @@ path = "/etc/init.d/00_base"
 data = """
 nulld
 zerod
-pcid /etc/pcid/filesystem.toml
 randd
+logd
 ptyd
+pcid /etc/pcid/filesystem.toml
 """
 
 [[files]]
