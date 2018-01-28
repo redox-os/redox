@@ -96,6 +96,7 @@ pcid /etc/pcid/filesystem.toml
 path = "/etc/init.d/10_net"
 data = """
 smolnetd
+dnsd
 """
 
 [[files]]
