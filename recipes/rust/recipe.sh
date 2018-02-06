@@ -1,5 +1,5 @@
 GIT=https://github.com/redox-os/rust.git
-BRANCH=compile-redox-stage-0
+BRANCH=compile-redox
 DEPENDS="gcc cargo"
 
 LLVM_GIT="https://github.com/redox-os/llvm.git"
