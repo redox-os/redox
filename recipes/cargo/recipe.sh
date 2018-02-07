@@ -1,5 +1,5 @@
 GIT=https://github.com/redox-os/cargo.git
-BRANCH=redox_rebase
+BRANCH=redox
 BUILD_DEPENDS=(openssl zlib)
 
 function recipe_build {
