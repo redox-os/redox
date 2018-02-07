@@ -5,12 +5,15 @@ static-libstdcpp = true
 host = ["x86_64-unknown-redox"]
 target = ["x86_64-unknown-redox"]
 docs = false
-submodules = false
+submodules = true
+verbose = 2
 
 [rust]
+thinlto = false
 use-jemalloc = false
 backtrace = false
 rpath = false
+codegen-tests = false
 
 [target.x86_64-unknown-redox]
 cc = "x86_64-unknown-redox-gcc"
