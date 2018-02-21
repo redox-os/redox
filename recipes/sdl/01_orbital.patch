@@ -1,6 +1,6 @@
-diff -rupN sdl/build-scripts/config.sub sdl-redox/build-scripts/config.sub
---- sdl/build-scripts/config.sub	2012-01-18 23:30:05.000000000 -0700
-+++ sdl-redox/build-scripts/config.sub	2017-11-21 19:24:52.456066921 -0700
+diff -rupN source/build-scripts/config.sub source_orbital/build-scripts/config.sub
+--- source/build-scripts/config.sub	2012-01-19 07:30:05.000000000 +0100
++++ source_orbital/build-scripts/config.sub	2018-02-21 09:33:42.970275299 +0100
 @@ -1276,7 +1276,7 @@ case $os in
  	-gnu* | -bsd* | -mach* | -minix* | -genix* | -ultrix* | -irix* \
  	      | -*vms* | -sco* | -esix* | -isc* | -aix* | -cnk* | -sunos | -sunos[34]*\
@@ -10,13 +10,13 @@ diff -rupN sdl/build-scripts/config.sub sdl-redox/build-scripts/config.sub
  	      | -amigaos* | -amigados* | -msdos* | -newsos* | -unicos* | -aof* \
  	      | -aos* | -aros* \
  	      | -nindy* | -vxsim* | -vxworks* | -ebmon* | -hms* | -mvs* \
-diff -rupN sdl/configure.in sdl-redox/configure.in
---- sdl/configure.in	2012-01-18 22:30:05.000000000 -0800
-+++ sdl-redox/configure.in	2016-07-27 18:17:26.683907466 -0700
+diff -rupN source/configure.in source_orbital/configure.in
+--- source/configure.in	2012-01-19 07:30:05.000000000 +0100
++++ source_orbital/configure.in	2018-02-21 09:33:42.970275299 +0100
 @@ -1646,6 +1646,19 @@ AC_HELP_STRING([--enable-video-dummy], [
      fi
  }
-
+ 
 +dnl Set up the Orbital video driver.
 +CheckOrbitalVideo()
 +{
@@ -54,9 +54,9 @@ diff -rupN sdl/configure.in sdl-redox/configure.in
          CheckDiskAudio
          CheckDummyAudio
          CheckDLOPEN
-diff -rupN sdl/include/SDL_config.h.in sdl-redox/include/SDL_config.h.in
---- sdl/include/SDL_config.h.in	2012-01-18 23:30:05.000000000 -0700
-+++ sdl-redox/include/SDL_config.h.in	2017-11-21 19:24:52.460053442 -0700
+diff -rupN source/include/SDL_config.h.in source_orbital/include/SDL_config.h.in
+--- source/include/SDL_config.h.in	2012-01-19 07:30:05.000000000 +0100
++++ source_orbital/include/SDL_config.h.in	2018-02-21 09:33:43.110276438 +0100
 @@ -268,6 +268,7 @@
  #undef SDL_VIDEO_DRIVER_GGI
  #undef SDL_VIDEO_DRIVER_IPOD
@@ -65,10 +65,10 @@ diff -rupN sdl/include/SDL_config.h.in sdl-redox/include/SDL_config.h.in
  #undef SDL_VIDEO_DRIVER_OS2FS
  #undef SDL_VIDEO_DRIVER_PHOTON
  #undef SDL_VIDEO_DRIVER_PICOGUI
-diff -rupN sdl/src/video/orbital/SDL_orbitalevents.c sdl-redox/src/video/orbital/SDL_orbitalevents.c
---- sdl/src/video/orbital/SDL_orbitalevents.c	1969-12-31 17:00:00.000000000 -0700
-+++ sdl-redox/src/video/orbital/SDL_orbitalevents.c	2017-11-21 19:24:52.460053442 -0700
-@@ -0,0 +1,159 @@
+diff -rupN source/src/video/orbital/SDL_orbitalevents.c source_orbital/src/video/orbital/SDL_orbitalevents.c
+--- source/src/video/orbital/SDL_orbitalevents.c	1970-01-01 01:00:00.000000000 +0100
++++ source_orbital/src/video/orbital/SDL_orbitalevents.c	2018-02-21 10:35:32.798443506 +0100
+@@ -0,0 +1,173 @@
 +/*
 +    SDL - Simple DirectMedia Layer
 +    Copyright (C) 1997-2012 Sam Lantinga
@@ -105,15 +105,20 @@ diff -rupN sdl/src/video/orbital/SDL_orbitalevents.c sdl-redox/src/video/orbital
 +static SDLKey keymap[128];
 +
 +#define EVENT_NONE 0
-+#define EVENT_MOUSE 1
-+#define EVENT_KEY 2
-+#define EVENT_QUIT 3
++#define EVENT_KEY 1
++#define EVENT_MOUSE 2
++#define EVENT_BUTTON 3
++#define EVENT_SCROLL 4
++#define EVENT_QUIT 5
++#define EVENT_FOCUS 6
++#define EVENT_MOVE 7
++#define EVENT_RESIZE 8
++#define EVENT_SCREEN 9
 +
 +struct Event {
 +    int64_t code;
 +    int64_t a;
 +    int64_t b;
-+    int64_t c;
 +} __attribute__((packed));
 +
 +void ORBITAL_PumpEvents(_THIS)
@@ -122,18 +127,27 @@ diff -rupN sdl/src/video/orbital/SDL_orbitalevents.c sdl-redox/src/video/orbital
 +    while(read(this->hidden->fd, &event, sizeof(event)) > 0){
 +        if ( event.code == EVENT_KEY ) {
 +            SDL_keysym keysym;
-+        	keysym.unicode = event.a;
-+        	keysym.scancode = event.b;
-+        	keysym.sym = keymap[event.b];
++
++            // TODO: Find out why NetSurf recieves NULL chars when the Unicode field is used
++        	//keysym.unicode = event.a;
++        	keysym.scancode = event.b & 0xFF;
++        	keysym.sym = keymap[event.b & 0xFF];
 +        	keysym.mod = KMOD_NONE;
-+            if ( event.c > 0 ) {
++            if ( (event.b >> 8) & 0x01 > 0 ) {
 +                SDL_PrivateKeyboard(SDL_PRESSED, &keysym);
 +            } else {
 +                SDL_PrivateKeyboard(SDL_RELEASED, &keysym);
 +            }
 +        } else if( event.code == EVENT_MOUSE ) {
-+            SDL_PrivateMouseMotion(event.c, 0, event.a, event.b);
++            SDL_PrivateMouseMotion(0, 0, event.a, event.b);
 +            //SDL_PrivateMouseButton(Uint8 state, Uint8 button, Sint16 x, Sint16 y);
++        } else if( event.code == EVENT_BUTTON ) {
++            // TODO: Only emit events when the button state changed
++            if ( event.a & 0x01 > 0 ) {
++                SDL_PrivateMouseButton(SDL_PRESSED, SDL_BUTTON_LEFT, 0, 0);
++            } else {
++                SDL_PrivateMouseButton(SDL_RELEASED, SDL_BUTTON_LEFT, 0, 0);
++            }
 +        } else if ( event.code == EVENT_QUIT ) {
 +            SDL_PrivateQuit();
 +        }
@@ -228,9 +242,9 @@ diff -rupN sdl/src/video/orbital/SDL_orbitalevents.c sdl-redox/src/video/orbital
 +}
 +
 +/* end of SDL_orbitalevents.c ... */
-diff -rupN sdl/src/video/orbital/SDL_orbitalevents_c.h sdl-redox/src/video/orbital/SDL_orbitalevents_c.h
---- sdl/src/video/orbital/SDL_orbitalevents_c.h	1969-12-31 17:00:00.000000000 -0700
-+++ sdl-redox/src/video/orbital/SDL_orbitalevents_c.h	2017-11-21 19:24:52.460053442 -0700
+diff -rupN source/src/video/orbital/SDL_orbitalevents_c.h source_orbital/src/video/orbital/SDL_orbitalevents_c.h
+--- source/src/video/orbital/SDL_orbitalevents_c.h	1970-01-01 01:00:00.000000000 +0100
++++ source_orbital/src/video/orbital/SDL_orbitalevents_c.h	2018-02-21 09:33:43.238277480 +0100
 @@ -0,0 +1,32 @@
 +/*
 +    SDL - Simple DirectMedia Layer
@@ -264,9 +278,9 @@ diff -rupN sdl/src/video/orbital/SDL_orbitalevents_c.h sdl-redox/src/video/orbit
 +extern void ORBITAL_PumpEvents(_THIS);
 +
 +/* end of SDL_orbitalevents_c.h ... */
-diff -rupN sdl/src/video/orbital/SDL_orbitalmouse.c sdl-redox/src/video/orbital/SDL_orbitalmouse.c
---- sdl/src/video/orbital/SDL_orbitalmouse.c	1969-12-31 17:00:00.000000000 -0700
-+++ sdl-redox/src/video/orbital/SDL_orbitalmouse.c	2017-11-21 19:24:52.460053442 -0700
+diff -rupN source/src/video/orbital/SDL_orbitalmouse.c source_orbital/src/video/orbital/SDL_orbitalmouse.c
+--- source/src/video/orbital/SDL_orbitalmouse.c	1970-01-01 01:00:00.000000000 +0100
++++ source_orbital/src/video/orbital/SDL_orbitalmouse.c	2018-02-21 09:33:43.238277480 +0100
 @@ -0,0 +1,33 @@
 +/*
 +    SDL - Simple DirectMedia Layer
@@ -301,9 +315,9 @@ diff -rupN sdl/src/video/orbital/SDL_orbitalmouse.c sdl-redox/src/video/orbital/
 +struct WMcursor {
 +	int unused;
 +};
-diff -rupN sdl/src/video/orbital/SDL_orbitalmouse_c.h sdl-redox/src/video/orbital/SDL_orbitalmouse_c.h
---- sdl/src/video/orbital/SDL_orbitalmouse_c.h	1969-12-31 17:00:00.000000000 -0700
-+++ sdl-redox/src/video/orbital/SDL_orbitalmouse_c.h	2017-11-21 19:24:52.460053442 -0700
+diff -rupN source/src/video/orbital/SDL_orbitalmouse_c.h source_orbital/src/video/orbital/SDL_orbitalmouse_c.h
+--- source/src/video/orbital/SDL_orbitalmouse_c.h	1970-01-01 01:00:00.000000000 +0100
++++ source_orbital/src/video/orbital/SDL_orbitalmouse_c.h	2018-02-21 09:33:43.238277480 +0100
 @@ -0,0 +1,26 @@
 +/*
 +    SDL - Simple DirectMedia Layer
@@ -331,9 +345,9 @@ diff -rupN sdl/src/video/orbital/SDL_orbitalmouse_c.h sdl-redox/src/video/orbita
 +#include "SDL_orbitalvideo.h"
 +
 +/* Functions to be exported */
-diff -rupN sdl/src/video/orbital/SDL_orbitalscancode.h sdl-redox/src/video/orbital/SDL_orbitalscancode.h
---- sdl/src/video/orbital/SDL_orbitalscancode.h	1969-12-31 17:00:00.000000000 -0700
-+++ sdl-redox/src/video/orbital/SDL_orbitalscancode.h	2017-11-21 19:24:52.460053442 -0700
+diff -rupN source/src/video/orbital/SDL_orbitalscancode.h source_orbital/src/video/orbital/SDL_orbitalscancode.h
+--- source/src/video/orbital/SDL_orbitalscancode.h	1970-01-01 01:00:00.000000000 +0100
++++ source_orbital/src/video/orbital/SDL_orbitalscancode.h	2018-02-21 09:33:43.238277480 +0100
 @@ -0,0 +1,80 @@
 +#define SCANCODE_A	0x1E
 +#define SCANCODE_B	0x30
@@ -415,9 +429,9 @@ diff -rupN sdl/src/video/orbital/SDL_orbitalscancode.h sdl-redox/src/video/orbit
 +#define SCANCODE_COMMA	0x33
 +#define SCANCODE_PERIOD	0x34
 +#define SCANCODE_SLASH	0x35
-diff -rupN sdl/src/video/orbital/SDL_orbitalvideo.c sdl-redox/src/video/orbital/SDL_orbitalvideo.c
---- sdl/src/video/orbital/SDL_orbitalvideo.c	1969-12-31 17:00:00.000000000 -0700
-+++ sdl-redox/src/video/orbital/SDL_orbitalvideo.c	2017-11-21 19:34:44.269053445 -0700
+diff -rupN source/src/video/orbital/SDL_orbitalvideo.c source_orbital/src/video/orbital/SDL_orbitalvideo.c
+--- source/src/video/orbital/SDL_orbitalvideo.c	1970-01-01 01:00:00.000000000 +0100
++++ source_orbital/src/video/orbital/SDL_orbitalvideo.c	2018-02-21 09:33:43.266277708 +0100
 @@ -0,0 +1,266 @@
 +/*
 +    SDL - Simple DirectMedia Layer
@@ -685,9 +699,9 @@ diff -rupN sdl/src/video/orbital/SDL_orbitalvideo.c sdl-redox/src/video/orbital/
 +		this->screen->pixels = NULL;
 +	}
 +}
-diff -rupN sdl/src/video/orbital/SDL_orbitalvideo.h sdl-redox/src/video/orbital/SDL_orbitalvideo.h
---- sdl/src/video/orbital/SDL_orbitalvideo.h	1969-12-31 17:00:00.000000000 -0700
-+++ sdl-redox/src/video/orbital/SDL_orbitalvideo.h	2017-11-21 19:24:52.460053442 -0700
+diff -rupN source/src/video/orbital/SDL_orbitalvideo.h source_orbital/src/video/orbital/SDL_orbitalvideo.h
+--- source/src/video/orbital/SDL_orbitalvideo.h	1970-01-01 01:00:00.000000000 +0100
++++ source_orbital/src/video/orbital/SDL_orbitalvideo.h	2018-02-21 09:33:43.266277708 +0100
 @@ -0,0 +1,41 @@
 +/*
 +    SDL - Simple DirectMedia Layer
@@ -730,9 +744,79 @@ diff -rupN sdl/src/video/orbital/SDL_orbitalvideo.h sdl-redox/src/video/orbital/
 +};
 +
 +#endif /* _SDL_orbitalvideo_h */
-diff -rupN sdl/src/video/SDL_sysvideo.h sdl-redox/src/video/SDL_sysvideo.h
---- sdl/src/video/SDL_sysvideo.h	2012-01-18 23:30:06.000000000 -0700
-+++ sdl-redox/src/video/SDL_sysvideo.h	2017-11-21 19:24:52.460053442 -0700
+diff -rupN source/src/video/SDL_gamma.c source_orbital/src/video/SDL_gamma.c
+--- source/src/video/SDL_gamma.c	2012-01-19 07:30:06.000000000 +0100
++++ source_orbital/src/video/SDL_gamma.c	2018-02-20 20:51:31.151824659 +0100
+@@ -23,9 +23,9 @@
+ 
+ /* Gamma correction support */
+ 
+-#ifdef HAVE_MATH_H
+-#include <math.h>	/* Used for calculating gamma ramps */
+-#else
++//#ifdef HAVE_MATH_H
++//#include <math.h>	/* Used for calculating gamma ramps */
++//#else
+ /* Math routines from uClibc: http://www.uclibc.org */
+ #include "math_private.h"
+ #include "e_sqrt.h"
+@@ -33,7 +33,7 @@
+ #include "e_log.h"
+ #define pow(x, y)	__ieee754_pow(x, y)
+ #define log(x)		__ieee754_log(x)
+-#endif
++//#endif
+ 
+ #include "SDL_sysvideo.h"
+ 
+@@ -94,7 +94,7 @@ int SDL_SetGamma(float red, float green,
+ {
+ 	int succeeded;
+ 	SDL_VideoDevice *video = current_video;
+-	SDL_VideoDevice *this  = current_video;	
++	SDL_VideoDevice *this  = current_video;
+ 
+ 	succeeded = -1;
+ 	/* Prefer using SetGammaRamp(), as it's more flexible */
+@@ -120,7 +120,7 @@ int SDL_GetGamma(float *red, float *gree
+ {
+ 	int succeeded;
+ 	SDL_VideoDevice *video = current_video;
+-	SDL_VideoDevice *this  = current_video;	
++	SDL_VideoDevice *this  = current_video;
+ 
+ 	succeeded = -1;
+ 	/* Prefer using GetGammaRamp(), as it's more flexible */
+@@ -145,7 +145,7 @@ int SDL_SetGammaRamp(const Uint16 *red,
+ {
+ 	int succeeded;
+ 	SDL_VideoDevice *video = current_video;
+-	SDL_VideoDevice *this  = current_video;	
++	SDL_VideoDevice *this  = current_video;
+ 	SDL_Surface *screen = SDL_PublicSurface;
+ 
+ 	/* Verify the screen parameter */
+@@ -177,7 +177,7 @@ int SDL_SetGammaRamp(const Uint16 *red,
+ 		/* If physical palette has been set independently, use it */
+ 		if(video->physpal)
+ 		        pal = video->physpal;
+-		      
++
+ 		SDL_SetPalette(screen, SDL_PHYSPAL,
+ 			       pal->colors, 0, pal->ncolors);
+ 		return 0;
+@@ -196,7 +196,7 @@ int SDL_SetGammaRamp(const Uint16 *red,
+ int SDL_GetGammaRamp(Uint16 *red, Uint16 *green, Uint16 *blue)
+ {
+ 	SDL_VideoDevice *video = current_video;
+-	SDL_VideoDevice *this  = current_video;	
++	SDL_VideoDevice *this  = current_video;
+ 
+ 	/* Lazily allocate the gamma table */
+ 	if ( ! video->gamma ) {
+diff -rupN source/src/video/SDL_sysvideo.h source_orbital/src/video/SDL_sysvideo.h
+--- source/src/video/SDL_sysvideo.h	2012-01-19 07:30:06.000000000 +0100
++++ source_orbital/src/video/SDL_sysvideo.h	2018-02-21 09:33:43.266277708 +0100
 @@ -410,6 +410,9 @@ extern VideoBootStrap AALIB_bootstrap;
  #if SDL_VIDEO_DRIVER_CACA
  extern VideoBootStrap CACA_bootstrap;
@@ -743,9 +827,9 @@ diff -rupN sdl/src/video/SDL_sysvideo.h sdl-redox/src/video/SDL_sysvideo.h
  #if SDL_VIDEO_DRIVER_DUMMY
  extern VideoBootStrap DUMMY_bootstrap;
  #endif
-diff -rupN sdl/src/video/SDL_video.c sdl-redox/src/video/SDL_video.c
---- sdl/src/video/SDL_video.c	2012-01-18 23:30:06.000000000 -0700
-+++ sdl-redox/src/video/SDL_video.c	2017-11-21 19:24:52.460053442 -0700
+diff -rupN source/src/video/SDL_video.c source_orbital/src/video/SDL_video.c
+--- source/src/video/SDL_video.c	2012-01-19 07:30:06.000000000 +0100
++++ source_orbital/src/video/SDL_video.c	2018-02-21 09:33:43.350278392 +0100
 @@ -126,6 +126,9 @@ static VideoBootStrap *bootstrap[] = {
  #if SDL_VIDEO_DRIVER_CACA
  	&CACA_bootstrap,
