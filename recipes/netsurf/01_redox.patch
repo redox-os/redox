@@ -1,11 +1,16 @@
-diff -rupN source/libnsfb/Makefile source_redox/libnsfb/Makefile
---- source/libnsfb/Makefile	2017-10-16 12:09:35.000000000 +0200
-+++ source_redox/libnsfb/Makefile	2018-02-20 15:51:58.000000000 +0100
-@@ -46,9 +46,9 @@ NSFB_XCB_PKG_NAMES := xcb xcb-icccm xcb-
- $(eval $(call pkg_config_package_available,NSFB_VNC_AVAILABLE,libvncserver))
+diff -rupN source-original/libnsfb/Makefile source/libnsfb/Makefile
+--- source-original/libnsfb/Makefile	2017-10-16 12:09:35.000000000 +0200
++++ source/libnsfb/Makefile	2018-02-22 08:50:59.339914490 +0100
+@@ -43,12 +43,12 @@ endif
+ NSFB_XCB_PKG_NAMES := xcb xcb-icccm xcb-image xcb-keysyms xcb-atom
+ 
+ # determine which surface handlers can be compiled based upon avalable library
+-$(eval $(call pkg_config_package_available,NSFB_VNC_AVAILABLE,libvncserver))
++#$(eval $(call pkg_config_package_available,NSFB_VNC_AVAILABLE,libvncserver))
  $(eval $(call pkg_config_package_available,NSFB_SDL_AVAILABLE,sdl))
- $(eval $(call pkg_config_package_available,NSFB_XCB_AVAILABLE,$(NSFB_XCB_PKG_NAMES)))
+-$(eval $(call pkg_config_package_available,NSFB_XCB_AVAILABLE,$(NSFB_XCB_PKG_NAMES)))
 -$(eval $(call pkg_config_package_available,NSFB_WLD_AVAILABLE,wayland-client))
++#$(eval $(call pkg_config_package_available,NSFB_XCB_AVAILABLE,$(NSFB_XCB_PKG_NAMES)))
 +#$(eval $(call pkg_config_package_available,NSFB_WLD_AVAILABLE,wayland-client))
  
 -# surfaces not detectable via pkg-config 
@@ -27,26 +32,21 @@ diff -rupN source/libnsfb/Makefile source_redox/libnsfb/Makefile
  
    REQUIRED_PKGS := $(REQUIRED_PKGS) libvncserver
 -endif 
--
--ifeq ($(NSFB_WLD_AVAILABLE),yes)
--  $(eval $(call pkg_config_package_add_flags,wayland-client,CFLAGS))
--  $(eval $(call pkg_config_package_add_flags,wayland-client,TESTCFLAGS,TESTLDFLAGS))
 +endif
  
--  REQUIRED_PKGS := $(REQUIRED_PKGS) wayland-client
+ ifeq ($(NSFB_WLD_AVAILABLE),yes)
+   $(eval $(call pkg_config_package_add_flags,wayland-client,CFLAGS))
+   $(eval $(call pkg_config_package_add_flags,wayland-client,TESTCFLAGS,TESTLDFLAGS))
+ 
+   REQUIRED_PKGS := $(REQUIRED_PKGS) wayland-client
 -endif 
-+#ifeq ($(NSFB_WLD_AVAILABLE),yes)
-+#  $(eval $(call pkg_config_package_add_flags,wayland-client,CFLAGS))
-+#  $(eval $(call pkg_config_package_add_flags,wayland-client,TESTCFLAGS,TESTLDFLAGS))
-+#
-+#  REQUIRED_PKGS := $(REQUIRED_PKGS) wayland-client
-+#endif
++endif
  
  TESTLDFLAGS := -lm -Wl,--whole-archive -l$(COMPONENT) -Wl,--no-whole-archive $(TESTLDFLAGS)
  
-diff -rupN source/libnsfb/src/plot/32bpp-xbgr8888.c source_redox/libnsfb/src/plot/32bpp-xbgr8888.c
---- source/libnsfb/src/plot/32bpp-xbgr8888.c	2017-10-16 12:09:35.000000000 +0200
-+++ source_redox/libnsfb/src/plot/32bpp-xbgr8888.c	2018-02-20 21:17:57.000000000 +0100
+diff -rupN source-original/libnsfb/src/plot/32bpp-xbgr8888.c source/libnsfb/src/plot/32bpp-xbgr8888.c
+--- source-original/libnsfb/src/plot/32bpp-xbgr8888.c	2017-10-16 12:09:35.000000000 +0200
++++ source/libnsfb/src/plot/32bpp-xbgr8888.c	2018-02-20 21:17:57.000000000 +0100
 @@ -52,7 +52,7 @@ static inline nsfb_colour_t pixel_to_col
   */
  static inline uint32_t colour_to_pixel(UNUSED nsfb_t *nsfb, nsfb_colour_t c)
@@ -65,9 +65,9 @@ diff -rupN source/libnsfb/src/plot/32bpp-xbgr8888.c source_redox/libnsfb/src/plo
  }
  
  #endif
-diff -rupN source/libnsfb/src/plot/32bpp-xrgb8888.c source_redox/libnsfb/src/plot/32bpp-xrgb8888.c
---- source/libnsfb/src/plot/32bpp-xrgb8888.c	2017-10-16 12:09:35.000000000 +0200
-+++ source_redox/libnsfb/src/plot/32bpp-xrgb8888.c	2018-02-20 21:15:40.000000000 +0100
+diff -rupN source-original/libnsfb/src/plot/32bpp-xrgb8888.c source/libnsfb/src/plot/32bpp-xrgb8888.c
+--- source-original/libnsfb/src/plot/32bpp-xrgb8888.c	2017-10-16 12:09:35.000000000 +0200
++++ source/libnsfb/src/plot/32bpp-xrgb8888.c	2018-02-20 21:15:40.000000000 +0100
 @@ -52,7 +52,7 @@ static inline nsfb_colour_t pixel_to_col
   */
  static inline uint32_t colour_to_pixel(UNUSED nsfb_t *nsfb, nsfb_colour_t c)
@@ -86,9 +86,9 @@ diff -rupN source/libnsfb/src/plot/32bpp-xrgb8888.c source_redox/libnsfb/src/plo
  }
  
  #endif
-diff -rupN source/libnsfb/src/plot.h source_redox/libnsfb/src/plot.h
---- source/libnsfb/src/plot.h	2017-10-16 12:09:35.000000000 +0200
-+++ source_redox/libnsfb/src/plot.h	2018-02-20 15:46:48.000000000 +0100
+diff -rupN source-original/libnsfb/src/plot.h source/libnsfb/src/plot.h
+--- source-original/libnsfb/src/plot.h	2017-10-16 12:09:35.000000000 +0200
++++ source/libnsfb/src/plot.h	2018-02-20 15:46:48.000000000 +0100
 @@ -36,7 +36,7 @@
          #define NSFB_BE_BYTE_ORDER
      #endif
@@ -107,9 +107,9 @@ diff -rupN source/libnsfb/src/plot.h source_redox/libnsfb/src/plot.h
   *
   * Copy an area of the display.
   */
-diff -rupN source/libnsfb/src/surface/sdl.c source_redox/libnsfb/src/surface/sdl.c
---- source/libnsfb/src/surface/sdl.c	2017-10-16 12:09:35.000000000 +0200
-+++ source_redox/libnsfb/src/surface/sdl.c	2018-02-20 20:59:42.000000000 +0100
+diff -rupN source-original/libnsfb/src/surface/sdl.c source/libnsfb/src/surface/sdl.c
+--- source-original/libnsfb/src/surface/sdl.c	2017-10-16 12:09:35.000000000 +0200
++++ source/libnsfb/src/surface/sdl.c	2018-02-20 20:59:42.000000000 +0100
 @@ -371,7 +371,7 @@ set_palette(nsfb_t *nsfb)
  
  }
@@ -196,9 +196,9 @@ diff -rupN source/libnsfb/src/surface/sdl.c source_redox/libnsfb/src/surface/sdl
  
      /* Do nothing if there was no event */
      if (got_event == 0) {
-diff -rupN source/libparserutils/src/input/filter.c source_redox/libparserutils/src/input/filter.c
---- source/libparserutils/src/input/filter.c	2017-10-16 12:09:36.000000000 +0200
-+++ source_redox/libparserutils/src/input/filter.c	2018-02-21 16:50:43.449092236 +0100
+diff -rupN source-original/libparserutils/src/input/filter.c source/libparserutils/src/input/filter.c
+--- source-original/libparserutils/src/input/filter.c	2017-10-16 12:09:36.000000000 +0200
++++ source/libparserutils/src/input/filter.c	2018-02-21 16:50:43.449092236 +0100
 @@ -10,7 +10,7 @@
  #include <stdlib.h>
  #include <string.h>
@@ -311,9 +311,9 @@ diff -rupN source/libparserutils/src/input/filter.c source_redox/libparserutils/
  	if (input->cd != (iconv_t) -1) {
  		iconv_close(input->cd);
  		input->cd = (iconv_t) -1;
-diff -rupN source/netsurf/content/fetchers/file.c source_redox/netsurf/content/fetchers/file.c
---- source/netsurf/content/fetchers/file.c	2017-10-16 12:09:36.000000000 +0200
-+++ source_redox/netsurf/content/fetchers/file.c	2018-02-20 16:09:13.000000000 +0100
+diff -rupN source-original/netsurf/content/fetchers/file.c source/netsurf/content/fetchers/file.c
+--- source-original/netsurf/content/fetchers/file.c	2017-10-16 12:09:36.000000000 +0200
++++ source/netsurf/content/fetchers/file.c	2018-02-20 16:09:13.000000000 +0100
 @@ -39,7 +39,7 @@
  #include <time.h>
  #include <stdio.h>
@@ -368,9 +368,9 @@ diff -rupN source/netsurf/content/fetchers/file.c source_redox/netsurf/content/f
  				   (int64_t) fdstat->st_mtime)) {
  		goto fetch_file_process_aborted;
  	}
-diff -rupN source/netsurf/content/handlers/image/image.c source_redox/netsurf/content/handlers/image/image.c
---- source/netsurf/content/handlers/image/image.c	2017-10-16 12:09:36.000000000 +0200
-+++ source_redox/netsurf/content/handlers/image/image.c	2018-02-20 17:44:48.000000000 +0100
+diff -rupN source-original/netsurf/content/handlers/image/image.c source/netsurf/content/handlers/image/image.c
+--- source-original/netsurf/content/handlers/image/image.c	2017-10-16 12:09:36.000000000 +0200
++++ source/netsurf/content/handlers/image/image.c	2018-02-20 17:44:48.000000000 +0100
 @@ -31,10 +31,10 @@
  #include "image/gif.h"
  #include "image/ico.h"
@@ -413,9 +413,9 @@ diff -rupN source/netsurf/content/handlers/image/image.c source_redox/netsurf/co
  #ifdef WITH_RSVG
  	error = nsrsvg_init();
  	if (error != NSERROR_OK)
-diff -rupN source/netsurf/content/handlers/image/Makefile source_redox/netsurf/content/handlers/image/Makefile
---- source/netsurf/content/handlers/image/Makefile	2017-10-16 12:09:36.000000000 +0200
-+++ source_redox/netsurf/content/handlers/image/Makefile	2018-02-20 16:13:56.000000000 +0100
+diff -rupN source-original/netsurf/content/handlers/image/Makefile source/netsurf/content/handlers/image/Makefile
+--- source-original/netsurf/content/handlers/image/Makefile	2017-10-16 12:09:36.000000000 +0200
++++ source/netsurf/content/handlers/image/Makefile	2018-02-20 16:13:56.000000000 +0100
 @@ -5,11 +5,11 @@ S_IMAGE_YES := image.c image_cache.c
  S_IMAGE_NO :=
  S_IMAGE_$(NETSURF_USE_BMP) += bmp.c ico.c
@@ -434,9 +434,9 @@ diff -rupN source/netsurf/content/handlers/image/Makefile source_redox/netsurf/c
 +#S_IMAGE_$(NETSURF_USE_VIDEO) += video.c
  
  S_IMAGE := $(S_IMAGE_YES)
-diff -rupN source/netsurf/content/handlers/javascript/Makefile source_redox/netsurf/content/handlers/javascript/Makefile
---- source/netsurf/content/handlers/javascript/Makefile	2017-10-16 12:09:36.000000000 +0200
-+++ source_redox/netsurf/content/handlers/javascript/Makefile	2018-02-20 16:38:31.000000000 +0100
+diff -rupN source-original/netsurf/content/handlers/javascript/Makefile source/netsurf/content/handlers/javascript/Makefile
+--- source-original/netsurf/content/handlers/javascript/Makefile	2017-10-16 12:09:36.000000000 +0200
++++ source/netsurf/content/handlers/javascript/Makefile	2018-02-20 16:38:31.000000000 +0100
 @@ -6,13 +6,13 @@
  
  S_JAVASCRIPT_BINDING:=
@@ -455,9 +455,9 @@ diff -rupN source/netsurf/content/handlers/javascript/Makefile source_redox/nets
  
  # Fetcher for javascript scheme is always required
  S_JAVASCRIPT += fetcher.c
-diff -rupN source/netsurf/content/urldb.c source_redox/netsurf/content/urldb.c
---- source/netsurf/content/urldb.c	2017-10-16 12:09:36.000000000 +0200
-+++ source_redox/netsurf/content/urldb.c	2018-02-20 16:42:25.000000000 +0100
+diff -rupN source-original/netsurf/content/urldb.c source/netsurf/content/urldb.c
+--- source-original/netsurf/content/urldb.c	2017-10-16 12:09:36.000000000 +0200
++++ source/netsurf/content/urldb.c	2018-02-20 16:42:25.000000000 +0100
 @@ -630,7 +630,7 @@ static bool urldb__host_is_ip_address(co
  	size_t host_len = strlen(host);
  	const char *sane_host;
@@ -476,9 +476,9 @@ diff -rupN source/netsurf/content/urldb.c source_redox/netsurf/content/urldb.c
  	if ((host_len < 6) ||
  	    (sane_host[0] != '[') ||
  	    (sane_host[host_len - 1] != ']')) {
-diff -rupN source/netsurf/Makefile source_redox/netsurf/Makefile
---- source/netsurf/Makefile	2017-10-16 12:09:36.000000000 +0200
-+++ source_redox/netsurf/Makefile	2018-02-20 16:59:05.000000000 +0100
+diff -rupN source-original/netsurf/Makefile source/netsurf/Makefile
+--- source-original/netsurf/Makefile	2017-10-16 12:09:36.000000000 +0200
++++ source/netsurf/Makefile	2018-02-20 16:59:05.000000000 +0100
 @@ -268,7 +268,7 @@ else
                ifeq ($(origin GCCSDK_INSTALL_ENV),undefined)
                  PKG_CONFIG := pkg-config
@@ -526,9 +526,9 @@ diff -rupN source/netsurf/Makefile source_redox/netsurf/Makefile
  $(eval $(call pkg_config_find_and_add_enabled,BMP,libnsbmp,BMP))
  $(eval $(call pkg_config_find_and_add_enabled,GIF,libnsgif,GIF))
  $(eval $(call pkg_config_find_and_add_enabled,NSSVG,libsvgtiny,SVG))
-diff -rupN source/netsurf/utils/log.c source_redox/netsurf/utils/log.c
---- source/netsurf/utils/log.c	2017-10-16 12:09:36.000000000 +0200
-+++ source_redox/netsurf/utils/log.c	2018-02-20 17:50:20.000000000 +0100
+diff -rupN source-original/netsurf/utils/log.c source/netsurf/utils/log.c
+--- source-original/netsurf/utils/log.c	2017-10-16 12:09:36.000000000 +0200
++++ source/netsurf/utils/log.c	2018-02-20 17:50:20.000000000 +0100
 @@ -261,18 +261,18 @@ nserror nslog_init(nslog_ensure_t *ensur
  	/* sucessfull logging initialisation so log system info */
  	if (ret == NSERROR_OK) {
@@ -558,9 +558,9 @@ diff -rupN source/netsurf/utils/log.c source_redox/netsurf/utils/log.c
  	}
  
  	return ret;
-diff -rupN source/netsurf/utils/useragent.c source_redox/netsurf/utils/useragent.c
---- source/netsurf/utils/useragent.c	2017-10-16 12:09:36.000000000 +0200
-+++ source_redox/netsurf/utils/useragent.c	2018-02-20 17:50:51.000000000 +0100
+diff -rupN source-original/netsurf/utils/useragent.c source/netsurf/utils/useragent.c
+--- source-original/netsurf/utils/useragent.c	2017-10-16 12:09:36.000000000 +0200
++++ source/netsurf/utils/useragent.c	2018-02-20 17:50:51.000000000 +0100
 @@ -44,9 +44,9 @@ user_agent_build_string(void)
          char *ua_string;
          int len;
@@ -574,9 +574,9 @@ diff -rupN source/netsurf/utils/useragent.c source_redox/netsurf/utils/useragent
  
          len = snprintf(NULL, 0, NETSURF_UA_FORMAT_STRING,
                         netsurf_version_major,
-diff -rupN source/netsurf/utils/utsname.h source_redox/netsurf/utils/utsname.h
---- source/netsurf/utils/utsname.h	2017-10-16 12:09:36.000000000 +0200
-+++ source_redox/netsurf/utils/utsname.h	2018-02-20 16:46:22.000000000 +0100
+diff -rupN source-original/netsurf/utils/utsname.h source/netsurf/utils/utsname.h
+--- source-original/netsurf/utils/utsname.h	2017-10-16 12:09:36.000000000 +0200
++++ source/netsurf/utils/utsname.h	2018-02-20 16:46:22.000000000 +0100
 @@ -24,7 +24,7 @@
  #ifndef _NETSURF_UTILS_UTSNAME_H_
  #define _NETSURF_UTILS_UTSNAME_H_
