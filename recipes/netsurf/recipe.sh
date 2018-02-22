@@ -1,6 +1,6 @@
 VERSION=3.7
 TAR=http://download.netsurf-browser.org/netsurf/releases/source-full/netsurf-all-$VERSION.tar.gz
-BUILD_DEPENDS=(expat curl sdl openssl zlib newlib)
+BUILD_DEPENDS=(expat curl sdl openssl zlib)
 
 function recipe_version {
     echo "$VERSION"
@@ -20,7 +20,7 @@ function recipe_build {
     export TARGET="framebuffer"
     export PKG_CONFIG_PATH="$PWD/../sysroot/lib/pkgconfig"
 
-    make NSFB_SDL_AVAILABLE=yes WITHOUT_ICONV_FILTER=yes
+    make
     skip=1
 }
 

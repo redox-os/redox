@@ -24,7 +24,7 @@ function recipe_build {
         automake-1.11 --cygnus Makefile
     popd
 
-    CC= ./configure --target="${HOST}" --prefix=/ --enable-newlib-iconv
+    CC= ./configure --target="${HOST}" --prefix=/
     make all
 
     skip=1
