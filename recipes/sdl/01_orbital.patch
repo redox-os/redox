@@ -1,6 +1,6 @@
-diff -rupN source/build-scripts/config.sub source_orbital/build-scripts/config.sub
---- source/build-scripts/config.sub	2012-01-19 07:30:05.000000000 +0100
-+++ source_orbital/build-scripts/config.sub	2018-02-21 09:33:42.970275299 +0100
+diff -rupN source_original/build-scripts/config.sub source/build-scripts/config.sub
+--- source_original/build-scripts/config.sub	2012-01-19 07:30:05.000000000 +0100
++++ source/build-scripts/config.sub	2018-02-21 09:33:42.970275299 +0100
 @@ -1276,7 +1276,7 @@ case $os in
  	-gnu* | -bsd* | -mach* | -minix* | -genix* | -ultrix* | -irix* \
  	      | -*vms* | -sco* | -esix* | -isc* | -aix* | -cnk* | -sunos | -sunos[34]*\
@@ -10,9 +10,9 @@ diff -rupN source/build-scripts/config.sub source_orbital/build-scripts/config.s
  	      | -amigaos* | -amigados* | -msdos* | -newsos* | -unicos* | -aof* \
  	      | -aos* | -aros* \
  	      | -nindy* | -vxsim* | -vxworks* | -ebmon* | -hms* | -mvs* \
-diff -rupN source/configure.in source_orbital/configure.in
---- source/configure.in	2012-01-19 07:30:05.000000000 +0100
-+++ source_orbital/configure.in	2018-02-21 09:33:42.970275299 +0100
+diff -rupN source_original/configure.in source/configure.in
+--- source_original/configure.in	2012-01-19 07:30:05.000000000 +0100
++++ source/configure.in	2018-02-21 09:33:42.970275299 +0100
 @@ -1646,6 +1646,19 @@ AC_HELP_STRING([--enable-video-dummy], [
      fi
  }
@@ -54,9 +54,9 @@ diff -rupN source/configure.in source_orbital/configure.in
          CheckDiskAudio
          CheckDummyAudio
          CheckDLOPEN
-diff -rupN source/include/SDL_config.h.in source_orbital/include/SDL_config.h.in
---- source/include/SDL_config.h.in	2012-01-19 07:30:05.000000000 +0100
-+++ source_orbital/include/SDL_config.h.in	2018-02-21 09:33:43.110276438 +0100
+diff -rupN source_original/include/SDL_config.h.in source/include/SDL_config.h.in
+--- source_original/include/SDL_config.h.in	2012-01-19 07:30:05.000000000 +0100
++++ source/include/SDL_config.h.in	2018-02-21 09:33:43.110276438 +0100
 @@ -268,6 +268,7 @@
  #undef SDL_VIDEO_DRIVER_GGI
  #undef SDL_VIDEO_DRIVER_IPOD
@@ -65,10 +65,10 @@ diff -rupN source/include/SDL_config.h.in source_orbital/include/SDL_config.h.in
  #undef SDL_VIDEO_DRIVER_OS2FS
  #undef SDL_VIDEO_DRIVER_PHOTON
  #undef SDL_VIDEO_DRIVER_PICOGUI
-diff -rupN source/src/video/orbital/SDL_orbitalevents.c source_orbital/src/video/orbital/SDL_orbitalevents.c
---- source/src/video/orbital/SDL_orbitalevents.c	1970-01-01 01:00:00.000000000 +0100
-+++ source_orbital/src/video/orbital/SDL_orbitalevents.c	2018-02-21 10:35:32.798443506 +0100
-@@ -0,0 +1,173 @@
+diff -rupN source_original/src/video/orbital/SDL_orbitalevents.c source/src/video/orbital/SDL_orbitalevents.c
+--- source_original/src/video/orbital/SDL_orbitalevents.c	1970-01-01 01:00:00.000000000 +0100
++++ source/src/video/orbital/SDL_orbitalevents.c	2018-02-22 15:03:58.808696217 +0100
+@@ -0,0 +1,188 @@
 +/*
 +    SDL - Simple DirectMedia Layer
 +    Copyright (C) 1997-2012 Sam Lantinga
@@ -121,6 +121,9 @@ diff -rupN source/src/video/orbital/SDL_orbitalevents.c source_orbital/src/video
 +    int64_t b;
 +} __attribute__((packed));
 +
++/* Static variables so only changes are reported */
++static int64_t last_buttons = 0;
++
 +void ORBITAL_PumpEvents(_THIS)
 +{
 +    struct Event event;
@@ -138,15 +141,27 @@ diff -rupN source/src/video/orbital/SDL_orbitalevents.c source_orbital/src/video
 +            } else {
 +                SDL_PrivateKeyboard(SDL_RELEASED, &keysym);
 +            }
-+        } else if( event.code == EVENT_MOUSE ) {
++        } else if ( event.code == EVENT_MOUSE ) {
 +            SDL_PrivateMouseMotion(0, 0, event.a, event.b);
 +            //SDL_PrivateMouseButton(Uint8 state, Uint8 button, Sint16 x, Sint16 y);
-+        } else if( event.code == EVENT_BUTTON ) {
-+            // TODO: Only emit events when the button state changed
-+            if ( event.a & 0x01 > 0 ) {
-+                SDL_PrivateMouseButton(SDL_PRESSED, SDL_BUTTON_LEFT, 0, 0);
-+            } else {
-+                SDL_PrivateMouseButton(SDL_RELEASED, SDL_BUTTON_LEFT, 0, 0);
++        } else if ( event.code == EVENT_BUTTON ) {
++            int64_t changed = event.a ^ last_buttons;
++
++            if ( changed & 0x01 )
++                SDL_PrivateMouseButton((event.a & 0x01) ? SDL_PRESSED : SDL_RELEASED, SDL_BUTTON_LEFT, 0, 0);
++            if ( changed & 0x02 )
++                SDL_PrivateMouseButton((event.a & 0x02) ? SDL_PRESSED : SDL_RELEASED, SDL_BUTTON_MIDDLE, 0, 0);
++            if ( changed & 0x04 )
++                SDL_PrivateMouseButton((event.a & 0x04) ? SDL_PRESSED : SDL_RELEASED, SDL_BUTTON_RIGHT, 0, 0);
++
++            last_buttons = event.a;
++        } else if ( event.code == EVENT_SCROLL ) {
++            if ( event.b > 0 ) {
++                SDL_PrivateMouseButton(SDL_PRESSED, SDL_BUTTON_WHEELUP, 0, 0);
++                SDL_PrivateMouseButton(SDL_RELEASED, SDL_BUTTON_WHEELUP, 0, 0);
++            } else if ( event.b < 0 ) {
++                SDL_PrivateMouseButton(SDL_PRESSED, SDL_BUTTON_WHEELDOWN, 0, 0);
++                SDL_PrivateMouseButton(SDL_RELEASED, SDL_BUTTON_WHEELDOWN, 0, 0);
 +            }
 +        } else if ( event.code == EVENT_QUIT ) {
 +            SDL_PrivateQuit();
@@ -242,9 +257,9 @@ diff -rupN source/src/video/orbital/SDL_orbitalevents.c source_orbital/src/video
 +}
 +
 +/* end of SDL_orbitalevents.c ... */
-diff -rupN source/src/video/orbital/SDL_orbitalevents_c.h source_orbital/src/video/orbital/SDL_orbitalevents_c.h
---- source/src/video/orbital/SDL_orbitalevents_c.h	1970-01-01 01:00:00.000000000 +0100
-+++ source_orbital/src/video/orbital/SDL_orbitalevents_c.h	2018-02-21 09:33:43.238277480 +0100
+diff -rupN source_original/src/video/orbital/SDL_orbitalevents_c.h source/src/video/orbital/SDL_orbitalevents_c.h
+--- source_original/src/video/orbital/SDL_orbitalevents_c.h	1970-01-01 01:00:00.000000000 +0100
++++ source/src/video/orbital/SDL_orbitalevents_c.h	2018-02-21 09:33:43.238277480 +0100
 @@ -0,0 +1,32 @@
 +/*
 +    SDL - Simple DirectMedia Layer
@@ -278,9 +293,9 @@ diff -rupN source/src/video/orbital/SDL_orbitalevents_c.h source_orbital/src/vid
 +extern void ORBITAL_PumpEvents(_THIS);
 +
 +/* end of SDL_orbitalevents_c.h ... */
-diff -rupN source/src/video/orbital/SDL_orbitalmouse.c source_orbital/src/video/orbital/SDL_orbitalmouse.c
---- source/src/video/orbital/SDL_orbitalmouse.c	1970-01-01 01:00:00.000000000 +0100
-+++ source_orbital/src/video/orbital/SDL_orbitalmouse.c	2018-02-21 09:33:43.238277480 +0100
+diff -rupN source_original/src/video/orbital/SDL_orbitalmouse.c source/src/video/orbital/SDL_orbitalmouse.c
+--- source_original/src/video/orbital/SDL_orbitalmouse.c	1970-01-01 01:00:00.000000000 +0100
++++ source/src/video/orbital/SDL_orbitalmouse.c	2018-02-21 09:33:43.238277480 +0100
 @@ -0,0 +1,33 @@
 +/*
 +    SDL - Simple DirectMedia Layer
@@ -315,9 +330,9 @@ diff -rupN source/src/video/orbital/SDL_orbitalmouse.c source_orbital/src/video/
 +struct WMcursor {
 +	int unused;
 +};
-diff -rupN source/src/video/orbital/SDL_orbitalmouse_c.h source_orbital/src/video/orbital/SDL_orbitalmouse_c.h
---- source/src/video/orbital/SDL_orbitalmouse_c.h	1970-01-01 01:00:00.000000000 +0100
-+++ source_orbital/src/video/orbital/SDL_orbitalmouse_c.h	2018-02-21 09:33:43.238277480 +0100
+diff -rupN source_original/src/video/orbital/SDL_orbitalmouse_c.h source/src/video/orbital/SDL_orbitalmouse_c.h
+--- source_original/src/video/orbital/SDL_orbitalmouse_c.h	1970-01-01 01:00:00.000000000 +0100
++++ source/src/video/orbital/SDL_orbitalmouse_c.h	2018-02-21 09:33:43.238277480 +0100
 @@ -0,0 +1,26 @@
 +/*
 +    SDL - Simple DirectMedia Layer
@@ -345,9 +360,9 @@ diff -rupN source/src/video/orbital/SDL_orbitalmouse_c.h source_orbital/src/vide
 +#include "SDL_orbitalvideo.h"
 +
 +/* Functions to be exported */
-diff -rupN source/src/video/orbital/SDL_orbitalscancode.h source_orbital/src/video/orbital/SDL_orbitalscancode.h
---- source/src/video/orbital/SDL_orbitalscancode.h	1970-01-01 01:00:00.000000000 +0100
-+++ source_orbital/src/video/orbital/SDL_orbitalscancode.h	2018-02-21 09:33:43.238277480 +0100
+diff -rupN source_original/src/video/orbital/SDL_orbitalscancode.h source/src/video/orbital/SDL_orbitalscancode.h
+--- source_original/src/video/orbital/SDL_orbitalscancode.h	1970-01-01 01:00:00.000000000 +0100
++++ source/src/video/orbital/SDL_orbitalscancode.h	2018-02-21 09:33:43.238277480 +0100
 @@ -0,0 +1,80 @@
 +#define SCANCODE_A	0x1E
 +#define SCANCODE_B	0x30
@@ -429,9 +444,9 @@ diff -rupN source/src/video/orbital/SDL_orbitalscancode.h source_orbital/src/vid
 +#define SCANCODE_COMMA	0x33
 +#define SCANCODE_PERIOD	0x34
 +#define SCANCODE_SLASH	0x35
-diff -rupN source/src/video/orbital/SDL_orbitalvideo.c source_orbital/src/video/orbital/SDL_orbitalvideo.c
---- source/src/video/orbital/SDL_orbitalvideo.c	1970-01-01 01:00:00.000000000 +0100
-+++ source_orbital/src/video/orbital/SDL_orbitalvideo.c	2018-02-21 09:33:43.266277708 +0100
+diff -rupN source_original/src/video/orbital/SDL_orbitalvideo.c source/src/video/orbital/SDL_orbitalvideo.c
+--- source_original/src/video/orbital/SDL_orbitalvideo.c	1970-01-01 01:00:00.000000000 +0100
++++ source/src/video/orbital/SDL_orbitalvideo.c	2018-02-21 09:33:43.266277708 +0100
 @@ -0,0 +1,266 @@
 +/*
 +    SDL - Simple DirectMedia Layer
@@ -699,9 +714,9 @@ diff -rupN source/src/video/orbital/SDL_orbitalvideo.c source_orbital/src/video/
 +		this->screen->pixels = NULL;
 +	}
 +}
-diff -rupN source/src/video/orbital/SDL_orbitalvideo.h source_orbital/src/video/orbital/SDL_orbitalvideo.h
---- source/src/video/orbital/SDL_orbitalvideo.h	1970-01-01 01:00:00.000000000 +0100
-+++ source_orbital/src/video/orbital/SDL_orbitalvideo.h	2018-02-21 09:33:43.266277708 +0100
+diff -rupN source_original/src/video/orbital/SDL_orbitalvideo.h source/src/video/orbital/SDL_orbitalvideo.h
+--- source_original/src/video/orbital/SDL_orbitalvideo.h	1970-01-01 01:00:00.000000000 +0100
++++ source/src/video/orbital/SDL_orbitalvideo.h	2018-02-21 09:33:43.266277708 +0100
 @@ -0,0 +1,41 @@
 +/*
 +    SDL - Simple DirectMedia Layer
@@ -744,9 +759,9 @@ diff -rupN source/src/video/orbital/SDL_orbitalvideo.h source_orbital/src/video/
 +};
 +
 +#endif /* _SDL_orbitalvideo_h */
-diff -rupN source/src/video/SDL_gamma.c source_orbital/src/video/SDL_gamma.c
---- source/src/video/SDL_gamma.c	2012-01-19 07:30:06.000000000 +0100
-+++ source_orbital/src/video/SDL_gamma.c	2018-02-20 20:51:31.151824659 +0100
+diff -rupN source_original/src/video/SDL_gamma.c source/src/video/SDL_gamma.c
+--- source_original/src/video/SDL_gamma.c	2012-01-19 07:30:06.000000000 +0100
++++ source/src/video/SDL_gamma.c	2018-02-20 20:51:31.151824659 +0100
 @@ -23,9 +23,9 @@
  
  /* Gamma correction support */
@@ -814,9 +829,9 @@ diff -rupN source/src/video/SDL_gamma.c source_orbital/src/video/SDL_gamma.c
  
  	/* Lazily allocate the gamma table */
  	if ( ! video->gamma ) {
-diff -rupN source/src/video/SDL_sysvideo.h source_orbital/src/video/SDL_sysvideo.h
---- source/src/video/SDL_sysvideo.h	2012-01-19 07:30:06.000000000 +0100
-+++ source_orbital/src/video/SDL_sysvideo.h	2018-02-21 09:33:43.266277708 +0100
+diff -rupN source_original/src/video/SDL_sysvideo.h source/src/video/SDL_sysvideo.h
+--- source_original/src/video/SDL_sysvideo.h	2012-01-19 07:30:06.000000000 +0100
++++ source/src/video/SDL_sysvideo.h	2018-02-21 09:33:43.266277708 +0100
 @@ -410,6 +410,9 @@ extern VideoBootStrap AALIB_bootstrap;
  #if SDL_VIDEO_DRIVER_CACA
  extern VideoBootStrap CACA_bootstrap;
@@ -827,9 +842,9 @@ diff -rupN source/src/video/SDL_sysvideo.h source_orbital/src/video/SDL_sysvideo
  #if SDL_VIDEO_DRIVER_DUMMY
  extern VideoBootStrap DUMMY_bootstrap;
  #endif
-diff -rupN source/src/video/SDL_video.c source_orbital/src/video/SDL_video.c
---- source/src/video/SDL_video.c	2012-01-19 07:30:06.000000000 +0100
-+++ source_orbital/src/video/SDL_video.c	2018-02-21 09:33:43.350278392 +0100
+diff -rupN source_original/src/video/SDL_video.c source/src/video/SDL_video.c
+--- source_original/src/video/SDL_video.c	2012-01-19 07:30:06.000000000 +0100
++++ source/src/video/SDL_video.c	2018-02-21 09:33:43.350278392 +0100
 @@ -126,6 +126,9 @@ static VideoBootStrap *bootstrap[] = {
  #if SDL_VIDEO_DRIVER_CACA
  	&CACA_bootstrap,
