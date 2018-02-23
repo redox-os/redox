@@ -1,7 +1,7 @@
-diff -rupN source-original/libnsfb/Makefile source/libnsfb/Makefile
+diff -rupNw source-original/libnsfb/Makefile source/libnsfb/Makefile
 --- source-original/libnsfb/Makefile	2017-10-16 12:09:35.000000000 +0200
-+++ source/libnsfb/Makefile	2018-02-22 08:50:59.339914490 +0100
-@@ -43,12 +43,12 @@ endif
++++ source/libnsfb/Makefile	2018-02-23 14:45:29.000000000 +0100
+@@ -43,10 +43,10 @@ endif
  NSFB_XCB_PKG_NAMES := xcb xcb-icccm xcb-image xcb-keysyms xcb-atom
  
  # determine which surface handlers can be compiled based upon avalable library
@@ -13,40 +13,11 @@ diff -rupN source-original/libnsfb/Makefile source/libnsfb/Makefile
 +#$(eval $(call pkg_config_package_available,NSFB_XCB_AVAILABLE,$(NSFB_XCB_PKG_NAMES)))
 +#$(eval $(call pkg_config_package_available,NSFB_WLD_AVAILABLE,wayland-client))
  
--# surfaces not detectable via pkg-config 
-+# surfaces not detectable via pkg-config
+ # surfaces not detectable via pkg-config 
  NSFB_ABLE_AVAILABLE := no
- ifeq ($(findstring linux,$(HOST)),linux)
-   NSFB_LINUX_AVAILABLE := yes
-@@ -62,7 +62,7 @@ ifeq ($(NSFB_SDL_AVAILABLE),yes)
-   $(eval $(call pkg_config_package_add_flags,sdl,TESTCFLAGS,TESTLDFLAGS))
- 
-   REQUIRED_PKGS := $(REQUIRED_PKGS) sdl
--endif 
-+endif
- 
- ifeq ($(NSFB_XCB_AVAILABLE),yes)
-   # Size hint allocators were removed in xcb-icccm 0.3.0
-@@ -107,14 +107,14 @@ ifeq ($(NSFB_VNC_AVAILABLE),yes)
-   $(eval $(call pkg_config_package_add_flags,libvncserver,TESTCFLAGS,TESTLDFLAGS))
- 
-   REQUIRED_PKGS := $(REQUIRED_PKGS) libvncserver
--endif 
-+endif
- 
- ifeq ($(NSFB_WLD_AVAILABLE),yes)
-   $(eval $(call pkg_config_package_add_flags,wayland-client,CFLAGS))
-   $(eval $(call pkg_config_package_add_flags,wayland-client,TESTCFLAGS,TESTLDFLAGS))
- 
-   REQUIRED_PKGS := $(REQUIRED_PKGS) wayland-client
--endif 
-+endif
- 
- TESTLDFLAGS := -lm -Wl,--whole-archive -l$(COMPONENT) -Wl,--no-whole-archive $(TESTLDFLAGS)
- 
-diff -rupN source-original/libnsfb/src/plot/32bpp-xbgr8888.c source/libnsfb/src/plot/32bpp-xbgr8888.c
+diff -rupNw source-original/libnsfb/src/plot/32bpp-xbgr8888.c source/libnsfb/src/plot/32bpp-xbgr8888.c
 --- source-original/libnsfb/src/plot/32bpp-xbgr8888.c	2017-10-16 12:09:35.000000000 +0200
-+++ source/libnsfb/src/plot/32bpp-xbgr8888.c	2018-02-20 21:17:57.000000000 +0100
++++ source/libnsfb/src/plot/32bpp-xbgr8888.c	2018-02-23 14:45:29.000000000 +0100
 @@ -52,7 +52,7 @@ static inline nsfb_colour_t pixel_to_col
   */
  static inline uint32_t colour_to_pixel(UNUSED nsfb_t *nsfb, nsfb_colour_t c)
@@ -65,9 +36,9 @@ diff -rupN source-original/libnsfb/src/plot/32bpp-xbgr8888.c source/libnsfb/src/
  }
  
  #endif
-diff -rupN source-original/libnsfb/src/plot/32bpp-xrgb8888.c source/libnsfb/src/plot/32bpp-xrgb8888.c
+diff -rupNw source-original/libnsfb/src/plot/32bpp-xrgb8888.c source/libnsfb/src/plot/32bpp-xrgb8888.c
 --- source-original/libnsfb/src/plot/32bpp-xrgb8888.c	2017-10-16 12:09:35.000000000 +0200
-+++ source/libnsfb/src/plot/32bpp-xrgb8888.c	2018-02-20 21:15:40.000000000 +0100
++++ source/libnsfb/src/plot/32bpp-xrgb8888.c	2018-02-23 14:45:29.000000000 +0100
 @@ -52,7 +52,7 @@ static inline nsfb_colour_t pixel_to_col
   */
  static inline uint32_t colour_to_pixel(UNUSED nsfb_t *nsfb, nsfb_colour_t c)
@@ -86,9 +57,9 @@ diff -rupN source-original/libnsfb/src/plot/32bpp-xrgb8888.c source/libnsfb/src/
  }
  
  #endif
-diff -rupN source-original/libnsfb/src/plot.h source/libnsfb/src/plot.h
+diff -rupNw source-original/libnsfb/src/plot.h source/libnsfb/src/plot.h
 --- source-original/libnsfb/src/plot.h	2017-10-16 12:09:35.000000000 +0200
-+++ source/libnsfb/src/plot.h	2018-02-20 15:46:48.000000000 +0100
++++ source/libnsfb/src/plot.h	2018-02-23 14:45:29.000000000 +0100
 @@ -36,7 +36,7 @@
          #define NSFB_BE_BYTE_ORDER
      #endif
@@ -98,46 +69,9 @@ diff -rupN source-original/libnsfb/src/plot.h source/libnsfb/src/plot.h
      #if defined(__BYTE_ORDER__)
          #if __BYTE_ORDER__ == __ORDER_BIG_ENDIAN__
              #define NSFB_BE_BYTE_ORDER
-@@ -120,7 +120,7 @@ typedef bool (nsfb_plotfn_bitmap_t)(nsfb
- typedef bool (nsfb_plotfn_bitmap_tiles_t)(nsfb_t *nsfb, const nsfb_bbox_t *loc, int tiles_x, int tiles_y, const nsfb_colour_t *pixel, int bmp_width, int bmp_height, int bmp_stride, bool alpha);
- 
- 
--/** Copy an area of screen 
-+/** Copy an area of screen
-  *
-  * Copy an area of the display.
-  */
-diff -rupN source-original/libnsfb/src/surface/sdl.c source/libnsfb/src/surface/sdl.c
+diff -rupNw source-original/libnsfb/src/surface/sdl.c source/libnsfb/src/surface/sdl.c
 --- source-original/libnsfb/src/surface/sdl.c	2017-10-16 12:09:35.000000000 +0200
-+++ source/libnsfb/src/surface/sdl.c	2018-02-20 20:59:42.000000000 +0100
-@@ -371,7 +371,7 @@ set_palette(nsfb_t *nsfb)
- 
- }
- 
--static bool 
-+static bool
- sdlcopy(nsfb_t *nsfb, nsfb_bbox_t *srcbox, nsfb_bbox_t *dstbox)
- {
-     SDL_Rect src;
-@@ -393,15 +393,15 @@ sdlcopy(nsfb_t *nsfb, nsfb_bbox_t *srcbo
-     src.y = srcbox->y0;
-     src.w = srcbox->x1 - srcbox->x0;
-     src.h = srcbox->y1 - srcbox->y0;
-- 
-+
-     dst.x = dstbox->x0;
-     dst.y = dstbox->y0;
-     dst.w = dstbox->x1 - dstbox->x0;
-     dst.h = dstbox->y1 - dstbox->y0;
-- 
-+
-     SDL_BlitSurface(sdl_screen, &src, sdl_screen , &dst);
- 
--    if ((cursor != NULL) && 
-+    if ((cursor != NULL) &&
-         (cursor->plotted == false)) {
-         nsfb_cursor_plot(nsfb, cursor);
-     }
++++ source/libnsfb/src/surface/sdl.c	2018-02-23 14:45:29.000000000 +0100
 @@ -458,7 +458,7 @@ static int sdl_initialise(nsfb_t *nsfb)
          return -1;
  
@@ -147,15 +81,6 @@ diff -rupN source-original/libnsfb/src/surface/sdl.c source/libnsfb/src/surface/
          fprintf(stderr, "Unable to init SDL: %s\n", SDL_GetError());
          return -1;
      }
-@@ -532,7 +532,7 @@ static uint32_t wakeeventtimer(uint32_t
-     event.user.code = 0;
-     event.user.data1 = 0;
-     event.user.data2 = 0;
--    
-+
-     SDL_PushEvent(&event);
- 
-     return 0;
 @@ -545,23 +545,23 @@ static bool sdl_input(nsfb_t *nsfb, nsfb
  
      nsfb = nsfb; /* unused */
@@ -196,9 +121,9 @@ diff -rupN source-original/libnsfb/src/surface/sdl.c source/libnsfb/src/surface/
  
      /* Do nothing if there was no event */
      if (got_event == 0) {
-diff -rupN source-original/libparserutils/src/input/filter.c source/libparserutils/src/input/filter.c
+diff -rupNw source-original/libparserutils/src/input/filter.c source/libparserutils/src/input/filter.c
 --- source-original/libparserutils/src/input/filter.c	2017-10-16 12:09:36.000000000 +0200
-+++ source/libparserutils/src/input/filter.c	2018-02-21 16:50:43.449092236 +0100
++++ source/libparserutils/src/input/filter.c	2018-02-23 14:45:29.000000000 +0100
 @@ -10,7 +10,7 @@
  #include <stdlib.h>
  #include <string.h>
@@ -244,46 +169,15 @@ diff -rupN source-original/libparserutils/src/input/filter.c source/libparseruti
  	if (input->cd != (iconv_t) -1) {
  		iconv_close(input->cd);
  		input->cd = (iconv_t) -1;
-@@ -184,8 +184,8 @@ parserutils_error parserutils__filter_pr
+@@ -184,7 +184,7 @@ parserutils_error parserutils__filter_pr
  			output == NULL || *output == NULL || outlen == NULL)
  		return PARSERUTILS_BADPARM;
  
 -#ifndef WITHOUT_ICONV_FILTER
--	if (iconv(input->cd, (void *) data, len, 
 +#if 0
-+	if (iconv(input->cd, (void *) data, len,
+ 	if (iconv(input->cd, (void *) data, len, 
  			(char **) output, outlen) == (size_t) -1) {
  		switch (errno) {
- 		case E2BIG:
-@@ -206,8 +206,8 @@ parserutils_error parserutils__filter_pr
- 
- 			while (*len > 0) {
- 				size_t ret;
--				
--				ret = iconv(input->cd, (void *) data, len, 
-+
-+				ret = iconv(input->cd, (void *) data, len,
- 						(char **) output, outlen);
- 				if (ret != (size_t) -1 || errno != EILSEQ)
- 					break;
-@@ -226,7 +226,7 @@ parserutils_error parserutils__filter_pr
- 				(*len)--;
- 			}
- 
--			return errno == E2BIG ? PARSERUTILS_NOMEM 
-+			return errno == E2BIG ? PARSERUTILS_NOMEM
- 					      : PARSERUTILS_OK;
- 		}
- 	}
-@@ -283,7 +283,7 @@ parserutils_error parserutils__filter_pr
- 			}
- 		}
- 
--		if (read_error != PARSERUTILS_OK && 
-+		if (read_error != PARSERUTILS_OK &&
- 				read_error != PARSERUTILS_NOMEM)
- 			return read_error;
- 	}
 @@ -305,7 +305,7 @@ parserutils_error parserutils__filter_re
  	if (input == NULL)
  		return PARSERUTILS_BADPARM;
@@ -311,9 +205,9 @@ diff -rupN source-original/libparserutils/src/input/filter.c source/libparseruti
  	if (input->cd != (iconv_t) -1) {
  		iconv_close(input->cd);
  		input->cd = (iconv_t) -1;
-diff -rupN source-original/netsurf/content/fetchers/file.c source/netsurf/content/fetchers/file.c
+diff -rupNw source-original/netsurf/content/fetchers/file.c source/netsurf/content/fetchers/file.c
 --- source-original/netsurf/content/fetchers/file.c	2017-10-16 12:09:36.000000000 +0200
-+++ source/netsurf/content/fetchers/file.c	2018-02-20 16:09:13.000000000 +0100
++++ source/netsurf/content/fetchers/file.c	2018-02-23 14:45:29.000000000 +0100
 @@ -39,7 +39,7 @@
  #include <time.h>
  #include <stdio.h>
@@ -323,15 +217,6 @@ diff -rupN source-original/netsurf/content/fetchers/file.c source/netsurf/conten
  #include <sys/mman.h>
  #endif
  #include <libwapcaplet/libwapcaplet.h>
-@@ -156,7 +156,7 @@ fetch_file_setup(struct fetch *fetchh,
- 
- 	/* Scan request headers looking for If-None-Match */
- 	for (i = 0; headers[i] != NULL; i++) {
--		if (strncasecmp(headers[i], "If-None-Match:", 
-+		if (strncasecmp(headers[i], "If-None-Match:",
- 				SLEN("If-None-Match:")) == 0) {
- 			/* If-None-Match: "12345678" */
- 			const char *d = headers[i] + SLEN("If-None-Match:");
 @@ -262,7 +262,7 @@ fetch_file_process_error_aborted:
  static void fetch_file_process_plain(struct fetch_file_context *ctx,
  				     struct stat *fdstat)
@@ -341,123 +226,9 @@ diff -rupN source-original/netsurf/content/fetchers/file.c source/netsurf/conten
  	fetch_msg msg;
  	char *buf = NULL;
  	size_t buf_size;
-@@ -309,7 +309,7 @@ static void fetch_file_process_plain(str
- 	 */
- 
- 	/* content type */
--	if (fetch_file_send_header(ctx, "Content-Type: %s", 
-+	if (fetch_file_send_header(ctx, "Content-Type: %s",
- 				   guit->fetch->filetype(ctx->path))) {
- 		goto fetch_file_process_aborted;
- 	}
-@@ -392,7 +392,7 @@ fetch_file_process_aborted:
- 	 */
- 
- 	/* content type */
--	if (fetch_file_send_header(ctx, "Content-Type: %s", 
-+	if (fetch_file_send_header(ctx, "Content-Type: %s",
- 				   guit->fetch->filetype(ctx->path))) {
- 		goto fetch_file_process_aborted;
- 	}
-@@ -404,7 +404,7 @@ fetch_file_process_aborted:
- 	}
- 
- 	/* create etag */
--	if (fetch_file_send_header(ctx, "ETag: \"%10" PRId64 "\"", 
-+	if (fetch_file_send_header(ctx, "ETag: \"%10" PRId64 "\"",
- 				   (int64_t) fdstat->st_mtime)) {
- 		goto fetch_file_process_aborted;
- 	}
-diff -rupN source-original/netsurf/content/handlers/image/image.c source/netsurf/content/handlers/image/image.c
---- source-original/netsurf/content/handlers/image/image.c	2017-10-16 12:09:36.000000000 +0200
-+++ source/netsurf/content/handlers/image/image.c	2018-02-20 17:44:48.000000000 +0100
-@@ -31,10 +31,10 @@
- #include "image/gif.h"
- #include "image/ico.h"
- #include "image/jpeg.h"
--#include "image/nssprite.h"
-+//#include "image/nssprite.h"
- #include "image/png.h"
- #include "image/rsvg.h"
--#include "image/svg.h"
-+//#include "image/svg.h"
- #include "image/image.h"
- 
- /**
-@@ -76,18 +76,18 @@ nserror image_init(void)
- 		return error;
- #endif
- 
--#ifdef WITH_NSSPRITE
--	error = nssprite_init();
--	if (error != NSERROR_OK)
--		return error;
--#endif
-+//#ifdef WITH_NSSPRITE
-+//	error = nssprite_init();
-+//	if (error != NSERROR_OK)
-+//		return error;
-+//#endif
- 
- 	/* Prefer rsvg over libsvgtiny for svgs */
--#ifdef WITH_NS_SVG
--	error = svg_init();
--	if (error != NSERROR_OK)
--		return error;
--#endif
-+//#ifdef WITH_NS_SVG
-+//	error = svg_init();
-+//	if (error != NSERROR_OK)
-+//		return error;
-+//#endif
- #ifdef WITH_RSVG
- 	error = nsrsvg_init();
- 	if (error != NSERROR_OK)
-diff -rupN source-original/netsurf/content/handlers/image/Makefile source/netsurf/content/handlers/image/Makefile
---- source-original/netsurf/content/handlers/image/Makefile	2017-10-16 12:09:36.000000000 +0200
-+++ source/netsurf/content/handlers/image/Makefile	2018-02-20 16:13:56.000000000 +0100
-@@ -5,11 +5,11 @@ S_IMAGE_YES := image.c image_cache.c
- S_IMAGE_NO :=
- S_IMAGE_$(NETSURF_USE_BMP) += bmp.c ico.c
- S_IMAGE_$(NETSURF_USE_GIF) += gif.c
--S_IMAGE_$(NETSURF_USE_JPEG) += jpeg.c
--S_IMAGE_$(NETSURF_USE_ROSPRITE) += nssprite.c
--S_IMAGE_$(NETSURF_USE_PNG) += png.c
--S_IMAGE_$(NETSURF_USE_NSSVG) += svg.c
--S_IMAGE_$(NETSURF_USE_RSVG) += rsvg.c
--S_IMAGE_$(NETSURF_USE_VIDEO) += video.c
-+#S_IMAGE_$(NETSURF_USE_JPEG) += jpeg.c
-+#S_IMAGE_$(NETSURF_USE_ROSPRITE) += nssprite.c
-+#S_IMAGE_$(NETSURF_USE_PNG) += png.c
-+#S_IMAGE_$(NETSURF_USE_NSSVG) += svg.c
-+#S_IMAGE_$(NETSURF_USE_RSVG) += rsvg.c
-+#S_IMAGE_$(NETSURF_USE_VIDEO) += video.c
- 
- S_IMAGE := $(S_IMAGE_YES)
-diff -rupN source-original/netsurf/content/handlers/javascript/Makefile source/netsurf/content/handlers/javascript/Makefile
---- source-original/netsurf/content/handlers/javascript/Makefile	2017-10-16 12:09:36.000000000 +0200
-+++ source/netsurf/content/handlers/javascript/Makefile	2018-02-20 16:38:31.000000000 +0100
-@@ -6,13 +6,13 @@
- 
- S_JAVASCRIPT_BINDING:=
- 
--ifeq ($(NETSURF_USE_DUKTAPE),YES)
-+#ifeq ($(NETSURF_USE_DUKTAPE),YES)
- # Duktape
--include content/handlers/javascript/duktape/Makefile
--else
-+#include content/handlers/javascript/duktape/Makefile
-+#else
- # None
- include content/handlers/javascript/none/Makefile
--endif
-+#endif
- 
- # Fetcher for javascript scheme is always required
- S_JAVASCRIPT += fetcher.c
-diff -rupN source-original/netsurf/content/urldb.c source/netsurf/content/urldb.c
+diff -rupNw source-original/netsurf/content/urldb.c source/netsurf/content/urldb.c
 --- source-original/netsurf/content/urldb.c	2017-10-16 12:09:36.000000000 +0200
-+++ source/netsurf/content/urldb.c	2018-02-20 16:42:25.000000000 +0100
++++ source/netsurf/content/urldb.c	2018-02-23 14:45:29.000000000 +0100
 @@ -630,7 +630,7 @@ static bool urldb__host_is_ip_address(co
  	size_t host_len = strlen(host);
  	const char *sane_host;
@@ -476,59 +247,27 @@ diff -rupN source-original/netsurf/content/urldb.c source/netsurf/content/urldb.
  	if ((host_len < 6) ||
  	    (sane_host[0] != '[') ||
  	    (sane_host[host_len - 1] != ']')) {
-diff -rupN source-original/netsurf/Makefile source/netsurf/Makefile
---- source-original/netsurf/Makefile	2017-10-16 12:09:36.000000000 +0200
-+++ source/netsurf/Makefile	2018-02-20 16:59:05.000000000 +0100
-@@ -268,7 +268,7 @@ else
-               ifeq ($(origin GCCSDK_INSTALL_ENV),undefined)
-                 PKG_CONFIG := pkg-config
-               else
--                PKG_CONFIG := PKG_CONFIG_LIBDIR="$(GCCSDK_INSTALL_ENV)/lib/pkgconfig" pkg-config                
-+                PKG_CONFIG := PKG_CONFIG_LIBDIR="$(GCCSDK_INSTALL_ENV)/lib/pkgconfig" pkg-config
-               endif
- 
-               ifneq ($(origin GCCSDK_INSTALL_CROSSBIN),undefined)
-@@ -280,7 +280,7 @@ else
-                 ifeq ($(origin GCCSDK_INSTALL_ENV),undefined)
-                   PKG_CONFIG := pkg-config
-                 else
--                  PKG_CONFIG := PKG_CONFIG_LIBDIR="$(GCCSDK_INSTALL_ENV)/lib/pkgconfig" pkg-config                
-+                  PKG_CONFIG := PKG_CONFIG_LIBDIR="$(GCCSDK_INSTALL_ENV)/lib/pkgconfig" pkg-config
-                 endif
- 
-                 ifneq ($(origin GCCSDK_INSTALL_CROSSBIN),undefined)
-@@ -511,8 +511,8 @@ include Makefile.defaults
- # Pull in the user configuration
- -include Makefile.config
- 
--# libraries enabled by feature switch without pkgconfig file 
--$(eval $(call feature_switch,JPEG,JPEG (libjpeg),-DWITH_JPEG,-ljpeg,-UWITH_JPEG,))
-+# libraries enabled by feature switch without pkgconfig file
-+#$(eval $(call feature_switch,JPEG,JPEG (libjpeg),-DWITH_JPEG,-ljpeg,-UWITH_JPEG,))
- $(eval $(call feature_switch,HARU_PDF,PDF export (haru),-DWITH_PDF_EXPORT,-lhpdf -lpng,-UWITH_PDF_EXPORT,))
- $(eval $(call feature_switch,LIBICONV_PLUG,glibc internal iconv,-DLIBICONV_PLUG,,-ULIBICONV_PLUG,-liconv))
- $(eval $(call feature_switch,DUKTAPE,Javascript (Duktape),,,,,))
-@@ -529,7 +529,7 @@ LDFLAGS += -lz
- # Optional libraries with pkgconfig
- 
- # define additional CFLAGS and LDFLAGS requirements for pkg-configed libs
--NETSURF_FEATURE_PNG_CFLAGS := -DWITH_PNG
-+#NETSURF_FEATURE_PNG_CFLAGS := -DWITH_PNG
- NETSURF_FEATURE_BMP_CFLAGS := -DWITH_BMP
- NETSURF_FEATURE_GIF_CFLAGS := -DWITH_GIF
- NETSURF_FEATURE_CURL_CFLAGS := -DWITH_CURL
-@@ -552,7 +552,7 @@ else
- endif
- $(eval $(call pkg_config_find_and_add_enabled,OPENSSL,openssl,OpenSSL))
- 
--$(eval $(call pkg_config_find_and_add_enabled,PNG,libpng,PNG))
-+#$(eval $(call pkg_config_find_and_add_enabled,PNG,libpng,PNG))
- $(eval $(call pkg_config_find_and_add_enabled,BMP,libnsbmp,BMP))
- $(eval $(call pkg_config_find_and_add_enabled,GIF,libnsgif,GIF))
- $(eval $(call pkg_config_find_and_add_enabled,NSSVG,libsvgtiny,SVG))
-diff -rupN source-original/netsurf/utils/log.c source/netsurf/utils/log.c
+diff -rupNw source-original/netsurf/Makefile.config source/netsurf/Makefile.config
+--- source-original/netsurf/Makefile.config	1970-01-01 01:00:00.000000000 +0100
++++ source/netsurf/Makefile.config	2018-02-23 18:29:19.624058579 +0100
+@@ -0,0 +1,14 @@
++override NETSURF_HOMEPAGE := "https://www.redox-os.org/"
++override NETSURF_FB_FRONTEND := sdl
++
++override NETSURF_USE_JPEG := YES
++override NETSURF_USE_BMP := YES
++override NETSURF_USE_OPENSSL := YES
++override NETSURF_USE_CURL := YES
++
++override NETSURF_USE_PNG := NO
++override NETSURF_USE_NSSVG := NO
++override NETSURF_USE_RSVG := NO
++override NETSURF_USE_DUKTAPE := NO
++override NETSURF_USE_HARU_PDF := NO
++override NETSURF_USE_VIDEO := NO
+diff -rupNw source-original/netsurf/utils/log.c source/netsurf/utils/log.c
 --- source-original/netsurf/utils/log.c	2017-10-16 12:09:36.000000000 +0200
-+++ source/netsurf/utils/log.c	2018-02-20 17:50:20.000000000 +0100
++++ source/netsurf/utils/log.c	2018-02-23 14:45:29.000000000 +0100
 @@ -261,18 +261,18 @@ nserror nslog_init(nslog_ensure_t *ensur
  	/* sucessfull logging initialisation so log system info */
  	if (ret == NSERROR_OK) {
@@ -558,9 +297,9 @@ diff -rupN source-original/netsurf/utils/log.c source/netsurf/utils/log.c
  	}
  
  	return ret;
-diff -rupN source-original/netsurf/utils/useragent.c source/netsurf/utils/useragent.c
+diff -rupNw source-original/netsurf/utils/useragent.c source/netsurf/utils/useragent.c
 --- source-original/netsurf/utils/useragent.c	2017-10-16 12:09:36.000000000 +0200
-+++ source/netsurf/utils/useragent.c	2018-02-20 17:50:51.000000000 +0100
++++ source/netsurf/utils/useragent.c	2018-02-23 14:45:29.000000000 +0100
 @@ -44,9 +44,9 @@ user_agent_build_string(void)
          char *ua_string;
          int len;
@@ -574,9 +313,9 @@ diff -rupN source-original/netsurf/utils/useragent.c source/netsurf/utils/userag
  
          len = snprintf(NULL, 0, NETSURF_UA_FORMAT_STRING,
                         netsurf_version_major,
-diff -rupN source-original/netsurf/utils/utsname.h source/netsurf/utils/utsname.h
+diff -rupNw source-original/netsurf/utils/utsname.h source/netsurf/utils/utsname.h
 --- source-original/netsurf/utils/utsname.h	2017-10-16 12:09:36.000000000 +0200
-+++ source/netsurf/utils/utsname.h	2018-02-20 16:46:22.000000000 +0100
++++ source/netsurf/utils/utsname.h	2018-02-23 14:45:29.000000000 +0100
 @@ -24,7 +24,7 @@
  #ifndef _NETSURF_UTILS_UTSNAME_H_
  #define _NETSURF_UTILS_UTSNAME_H_
