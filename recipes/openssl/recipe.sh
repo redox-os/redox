@@ -30,7 +30,6 @@ function recipe_clean {
 function recipe_stage {
     dest="$(realpath $1)"
     make DESTDIR="$dest" install
-    rm -rf "$1/lib/pkgconfig" # pkg-config returns paths based on / prefix, breaking cross compile
     rm -rf "$1/{share,ssl}"
     skip=1
 }
