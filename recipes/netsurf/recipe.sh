@@ -1,6 +1,7 @@
 VERSION=3.7
 TAR=http://download.netsurf-browser.org/netsurf/releases/source-full/netsurf-all-$VERSION.tar.gz
-BUILD_DEPENDS=(expat curl sdl openssl zlib)
+BUILD_DEPENDS=(expat curl sdl openssl zlib libjpeg libpng)
+DEPENDS="ca-certificates"
 
 export PKG_CONFIG_PATH=
 export PKG_CONFIG_LIBDIR="$PWD/sysroot/lib/pkgconfig"
