@@ -9,8 +9,20 @@ HOST=$TARGET
 # Automatic variables
 ROOT="$(cd `dirname "$0"` && pwd)"
 REPO="$ROOT/repo/$TARGET"
-export CC="$HOST-gcc"
-export XARGO_HOME="$ROOT/xargo"
+export XARGO_HOME="${ROOT}/xargo"
+
+export AR="${HOST}-ar"
+export AS="${HOST}-as"
+export CC="${HOST}-gcc"
+export CXX="${HOST}-g++"
+export LD="${HOST}-ld"
+export NM="${HOST}-nm"
+export OBJCOPY="${HOST}-objcopy"
+export OBJDUMP="${HOST}-objdump"
+export PKG_CONFIG="${HOST}-pkg-config"
+export RANLIB="${HOST}-ranlib"
+export READELF="${HOST}-readelf"
+export STRIP="${HOST}-strip"
 
 if [[ "$OSTYPE" == "darwin"* ]]; then
     # GNU find

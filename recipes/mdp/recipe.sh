@@ -14,8 +14,6 @@ function recipe_update {
 
 function recipe_build {
     sysroot="${PWD}/../sysroot"
-    export CC="${HOST}-gcc"
-    export LD="${HOST}-ld"
     export CFLAGS="-I$sysroot/include -I$sysroot/include/ncursesw"
     export LDFLAGS="-L$sysroot/lib"
 
