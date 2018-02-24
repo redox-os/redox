@@ -1,6 +1,6 @@
 TAR=https://curl.haxx.se/download/curl-7.55.1.tar.gz
 BRANCH=redox
-BUILD_DEPENDS=(openssl)
+BUILD_DEPENDS=(openssl zlib)
 DEPENDS="ca-certificates"
 
 function recipe_version {
@@ -16,7 +16,7 @@ function recipe_update {
 function recipe_build {
     wget -O config.sub http://git.savannah.gnu.org/cgit/config.git/plain/config.sub
     autoreconf -i
-    ./configure --prefix=/ --host=${HOST} --disable-tftp --disable-ftp --disable-ntlm-wb --disable-threaded-resolver --with-ssl="$PWD/../sysroot" --with-ca-path=/ssl/certs
+    ./configure --prefix=/ --host=${HOST} --disable-tftp --disable-ftp --disable-ntlm-wb --disable-threaded-resolver --with-zlib="$PWD/../sysroot" --with-ssl="$PWD/../sysroot" --with-ca-path=/ssl/certs
     make
     skip=1
 }
