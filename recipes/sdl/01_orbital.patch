@@ -1,6 +1,6 @@
 diff -rupN source-original/build-scripts/config.sub source/build-scripts/config.sub
 --- source-original/build-scripts/config.sub	2012-01-19 07:30:05.000000000 +0100
-+++ source/build-scripts/config.sub	2018-02-26 11:41:15.584206480 +0100
++++ source/build-scripts/config.sub	2018-02-26 19:43:01.954278409 +0100
 @@ -1276,7 +1276,7 @@ case $os in
  	-gnu* | -bsd* | -mach* | -minix* | -genix* | -ultrix* | -irix* \
  	      | -*vms* | -sco* | -esix* | -isc* | -aix* | -cnk* | -sunos | -sunos[34]*\
@@ -12,7 +12,7 @@ diff -rupN source-original/build-scripts/config.sub source/build-scripts/config.
  	      | -nindy* | -vxsim* | -vxworks* | -ebmon* | -hms* | -mvs* \
 diff -rupN source-original/configure.in source/configure.in
 --- source-original/configure.in	2012-01-19 07:30:05.000000000 +0100
-+++ source/configure.in	2018-02-26 11:41:15.596206742 +0100
++++ source/configure.in	2018-02-26 19:43:01.954278409 +0100
 @@ -1646,6 +1646,19 @@ AC_HELP_STRING([--enable-video-dummy], [
      fi
  }
@@ -56,7 +56,7 @@ diff -rupN source-original/configure.in source/configure.in
          CheckDLOPEN
 diff -rupN source-original/include/SDL_config.h.in source/include/SDL_config.h.in
 --- source-original/include/SDL_config.h.in	2012-01-19 07:30:05.000000000 +0100
-+++ source/include/SDL_config.h.in	2018-02-26 11:41:15.596206742 +0100
++++ source/include/SDL_config.h.in	2018-02-26 19:43:01.954278409 +0100
 @@ -268,6 +268,7 @@
  #undef SDL_VIDEO_DRIVER_GGI
  #undef SDL_VIDEO_DRIVER_IPOD
@@ -67,7 +67,7 @@ diff -rupN source-original/include/SDL_config.h.in source/include/SDL_config.h.i
  #undef SDL_VIDEO_DRIVER_PICOGUI
 diff -rupN source-original/src/video/orbital/SDL_orbitalevents.c source/src/video/orbital/SDL_orbitalevents.c
 --- source-original/src/video/orbital/SDL_orbitalevents.c	1970-01-01 01:00:00.000000000 +0100
-+++ source/src/video/orbital/SDL_orbitalevents.c	2018-02-26 11:45:59.446509075 +0100
++++ source/src/video/orbital/SDL_orbitalevents.c	2018-02-26 19:43:01.998278827 +0100
 @@ -0,0 +1,190 @@
 +/*
 +    SDL - Simple DirectMedia Layer
@@ -261,7 +261,7 @@ diff -rupN source-original/src/video/orbital/SDL_orbitalevents.c source/src/vide
 +/* end of SDL_orbitalevents.c ... */
 diff -rupN source-original/src/video/orbital/SDL_orbitalevents_c.h source/src/video/orbital/SDL_orbitalevents_c.h
 --- source-original/src/video/orbital/SDL_orbitalevents_c.h	1970-01-01 01:00:00.000000000 +0100
-+++ source/src/video/orbital/SDL_orbitalevents_c.h	2018-02-26 11:41:15.600206830 +0100
++++ source/src/video/orbital/SDL_orbitalevents_c.h	2018-02-26 19:43:01.998278827 +0100
 @@ -0,0 +1,32 @@
 +/*
 +    SDL - Simple DirectMedia Layer
@@ -297,7 +297,7 @@ diff -rupN source-original/src/video/orbital/SDL_orbitalevents_c.h source/src/vi
 +/* end of SDL_orbitalevents_c.h ... */
 diff -rupN source-original/src/video/orbital/SDL_orbitalmouse.c source/src/video/orbital/SDL_orbitalmouse.c
 --- source-original/src/video/orbital/SDL_orbitalmouse.c	1970-01-01 01:00:00.000000000 +0100
-+++ source/src/video/orbital/SDL_orbitalmouse.c	2018-02-26 11:41:15.600206830 +0100
++++ source/src/video/orbital/SDL_orbitalmouse.c	2018-02-26 19:43:01.998278827 +0100
 @@ -0,0 +1,33 @@
 +/*
 +    SDL - Simple DirectMedia Layer
@@ -334,7 +334,7 @@ diff -rupN source-original/src/video/orbital/SDL_orbitalmouse.c source/src/video
 +};
 diff -rupN source-original/src/video/orbital/SDL_orbitalmouse_c.h source/src/video/orbital/SDL_orbitalmouse_c.h
 --- source-original/src/video/orbital/SDL_orbitalmouse_c.h	1970-01-01 01:00:00.000000000 +0100
-+++ source/src/video/orbital/SDL_orbitalmouse_c.h	2018-02-26 11:41:15.600206830 +0100
++++ source/src/video/orbital/SDL_orbitalmouse_c.h	2018-02-26 19:43:01.998278827 +0100
 @@ -0,0 +1,26 @@
 +/*
 +    SDL - Simple DirectMedia Layer
@@ -364,7 +364,7 @@ diff -rupN source-original/src/video/orbital/SDL_orbitalmouse_c.h source/src/vid
 +/* Functions to be exported */
 diff -rupN source-original/src/video/orbital/SDL_orbitalscancode.h source/src/video/orbital/SDL_orbitalscancode.h
 --- source-original/src/video/orbital/SDL_orbitalscancode.h	1970-01-01 01:00:00.000000000 +0100
-+++ source/src/video/orbital/SDL_orbitalscancode.h	2018-02-26 11:41:15.600206830 +0100
++++ source/src/video/orbital/SDL_orbitalscancode.h	2018-02-26 19:43:02.002278865 +0100
 @@ -0,0 +1,80 @@
 +#define SCANCODE_A	0x1E
 +#define SCANCODE_B	0x30
@@ -448,8 +448,8 @@ diff -rupN source-original/src/video/orbital/SDL_orbitalscancode.h source/src/vi
 +#define SCANCODE_SLASH	0x35
 diff -rupN source-original/src/video/orbital/SDL_orbitalvideo.c source/src/video/orbital/SDL_orbitalvideo.c
 --- source-original/src/video/orbital/SDL_orbitalvideo.c	1970-01-01 01:00:00.000000000 +0100
-+++ source/src/video/orbital/SDL_orbitalvideo.c	2018-02-26 11:50:02.769667936 +0100
-@@ -0,0 +1,287 @@
++++ source/src/video/orbital/SDL_orbitalvideo.c	2018-02-26 19:43:37.246613507 +0100
+@@ -0,0 +1,282 @@
 +/*
 +    SDL - Simple DirectMedia Layer
 +    Copyright (C) 1997-2012 Sam Lantinga
@@ -724,22 +724,17 @@ diff -rupN source-original/src/video/orbital/SDL_orbitalvideo.c source/src/video
 +	if ( this->hidden->buffer ) {
 +		redox_funmap( this->hidden->buffer );
 +		this->hidden->buffer = NULL;
++		this->screen->pixels = NULL;
 +	}
 +
 +	if ( this->hidden->fd >= 0) {
 +		close( this->hidden->fd );
 +                this->hidden->fd = 0;
 +	}
-+
-+	if (this->screen->pixels != NULL)
-+	{
-+		SDL_free(this->screen->pixels);
-+		this->screen->pixels = NULL;
-+	}
 +}
 diff -rupN source-original/src/video/orbital/SDL_orbitalvideo.h source/src/video/orbital/SDL_orbitalvideo.h
 --- source-original/src/video/orbital/SDL_orbitalvideo.h	1970-01-01 01:00:00.000000000 +0100
-+++ source/src/video/orbital/SDL_orbitalvideo.h	2018-02-26 11:41:15.600206830 +0100
++++ source/src/video/orbital/SDL_orbitalvideo.h	2018-02-26 19:43:02.002278865 +0100
 @@ -0,0 +1,41 @@
 +/*
 +    SDL - Simple DirectMedia Layer
@@ -784,7 +779,7 @@ diff -rupN source-original/src/video/orbital/SDL_orbitalvideo.h source/src/video
 +#endif /* _SDL_orbitalvideo_h */
 diff -rupN source-original/src/video/SDL_gamma.c source/src/video/SDL_gamma.c
 --- source-original/src/video/SDL_gamma.c	2012-01-19 07:30:06.000000000 +0100
-+++ source/src/video/SDL_gamma.c	2018-02-26 11:41:15.600206830 +0100
++++ source/src/video/SDL_gamma.c	2018-02-26 19:43:02.002278865 +0100
 @@ -23,9 +23,9 @@
  
  /* Gamma correction support */
@@ -854,7 +849,7 @@ diff -rupN source-original/src/video/SDL_gamma.c source/src/video/SDL_gamma.c
  	if ( ! video->gamma ) {
 diff -rupN source-original/src/video/SDL_sysvideo.h source/src/video/SDL_sysvideo.h
 --- source-original/src/video/SDL_sysvideo.h	2012-01-19 07:30:06.000000000 +0100
-+++ source/src/video/SDL_sysvideo.h	2018-02-26 11:41:15.604206916 +0100
++++ source/src/video/SDL_sysvideo.h	2018-02-26 19:43:02.002278865 +0100
 @@ -410,6 +410,9 @@ extern VideoBootStrap AALIB_bootstrap;
  #if SDL_VIDEO_DRIVER_CACA
  extern VideoBootStrap CACA_bootstrap;
@@ -867,7 +862,7 @@ diff -rupN source-original/src/video/SDL_sysvideo.h source/src/video/SDL_sysvide
  #endif
 diff -rupN source-original/src/video/SDL_video.c source/src/video/SDL_video.c
 --- source-original/src/video/SDL_video.c	2012-01-19 07:30:06.000000000 +0100
-+++ source/src/video/SDL_video.c	2018-02-26 11:44:58.717146828 +0100
++++ source/src/video/SDL_video.c	2018-02-26 19:43:02.002278865 +0100
 @@ -126,6 +126,9 @@ static VideoBootStrap *bootstrap[] = {
  #if SDL_VIDEO_DRIVER_CACA
  	&CACA_bootstrap,
