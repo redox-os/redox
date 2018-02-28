@@ -1,11 +1,7 @@
 VERSION=3.7
 TAR=http://download.netsurf-browser.org/netsurf/releases/source-full/netsurf-all-$VERSION.tar.gz
-BUILD_DEPENDS=(expat curl sdl openssl zlib libjpeg libpng)
+BUILD_DEPENDS=(curl expat libjpeg libpng openssl sdl zlib)
 DEPENDS="ca-certificates"
-
-export PKG_CONFIG_PATH=
-export PKG_CONFIG_LIBDIR="$PWD/sysroot/lib/pkgconfig"
-export PKG_CONFIG_SYSROOT_DIR="$PWD/sysroot"
 
 function recipe_version {
     echo "$VERSION"

@@ -421,16 +421,13 @@ if [ -n "$1" ]
 then
     if [ -d "$ROOT/recipes/$1" ]
     then
-        cd "$ROOT/recipes/$1"
+        export COOKBOOK_RECIPE="${ROOT}/recipes/$1"
 
-        function x86_64-unknown-redox-pkg-config {
-            export PKG_CONFIG_PATH=
-            export PKG_CONFIG_DIR=
-            export PKG_CONFIG_LIBDIR="$PWD/sysroot/lib/pkgconfig"
-            export PKG_CONFIG_SYSROOT_DIR="$PWD/sysroot"
+        export PKG_CONFIG_PATH=
+        export PKG_CONFIG_LIBDIR="${COOKBOOK_RECIPE}/sysroot/lib/pkgconfig"
+        export PKG_CONFIG_SYSROOT_DIR="${COOKBOOK_RECIPE}/sysroot"
 
-            exec pkg-config "$@"
-        }
+        cd "${COOKBOOK_RECIPE}"
 
         source recipe.sh
 
