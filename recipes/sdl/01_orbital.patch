@@ -1,6 +1,6 @@
-diff -rupN source-original/build-scripts/config.sub source/build-scripts/config.sub
---- source-original/build-scripts/config.sub	2012-01-19 07:30:05.000000000 +0100
-+++ source/build-scripts/config.sub	2018-02-26 19:43:01.954278409 +0100
+diff -rupN source/build-scripts/config.sub source-redox/build-scripts/config.sub
+--- source/build-scripts/config.sub	2012-01-18 23:30:05.000000000 -0700
++++ source-redox/build-scripts/config.sub	2018-02-27 20:42:46.287901516 -0700
 @@ -1276,7 +1276,7 @@ case $os in
  	-gnu* | -bsd* | -mach* | -minix* | -genix* | -ultrix* | -irix* \
  	      | -*vms* | -sco* | -esix* | -isc* | -aix* | -cnk* | -sunos | -sunos[34]*\
@@ -10,9 +10,9 @@ diff -rupN source-original/build-scripts/config.sub source/build-scripts/config.
  	      | -amigaos* | -amigados* | -msdos* | -newsos* | -unicos* | -aof* \
  	      | -aos* | -aros* \
  	      | -nindy* | -vxsim* | -vxworks* | -ebmon* | -hms* | -mvs* \
-diff -rupN source-original/configure.in source/configure.in
---- source-original/configure.in	2012-01-19 07:30:05.000000000 +0100
-+++ source/configure.in	2018-02-26 19:43:01.954278409 +0100
+diff -rupN source/configure.in source-redox/configure.in
+--- source/configure.in	2012-01-18 23:30:05.000000000 -0700
++++ source-redox/configure.in	2018-02-27 20:42:46.311902357 -0700
 @@ -1646,6 +1646,19 @@ AC_HELP_STRING([--enable-video-dummy], [
      fi
  }
@@ -54,9 +54,9 @@ diff -rupN source-original/configure.in source/configure.in
          CheckDiskAudio
          CheckDummyAudio
          CheckDLOPEN
-diff -rupN source-original/include/SDL_config.h.in source/include/SDL_config.h.in
---- source-original/include/SDL_config.h.in	2012-01-19 07:30:05.000000000 +0100
-+++ source/include/SDL_config.h.in	2018-02-26 19:43:01.954278409 +0100
+diff -rupN source/include/SDL_config.h.in source-redox/include/SDL_config.h.in
+--- source/include/SDL_config.h.in	2012-01-18 23:30:05.000000000 -0700
++++ source-redox/include/SDL_config.h.in	2018-02-27 20:42:46.311902357 -0700
 @@ -268,6 +268,7 @@
  #undef SDL_VIDEO_DRIVER_GGI
  #undef SDL_VIDEO_DRIVER_IPOD
@@ -65,9 +65,9 @@ diff -rupN source-original/include/SDL_config.h.in source/include/SDL_config.h.i
  #undef SDL_VIDEO_DRIVER_OS2FS
  #undef SDL_VIDEO_DRIVER_PHOTON
  #undef SDL_VIDEO_DRIVER_PICOGUI
-diff -rupN source-original/src/video/orbital/SDL_orbitalevents.c source/src/video/orbital/SDL_orbitalevents.c
---- source-original/src/video/orbital/SDL_orbitalevents.c	1970-01-01 01:00:00.000000000 +0100
-+++ source/src/video/orbital/SDL_orbitalevents.c	2018-02-26 19:43:01.998278827 +0100
+diff -rupN source/src/video/orbital/SDL_orbitalevents.c source-redox/src/video/orbital/SDL_orbitalevents.c
+--- source/src/video/orbital/SDL_orbitalevents.c	1969-12-31 17:00:00.000000000 -0700
++++ source-redox/src/video/orbital/SDL_orbitalevents.c	2018-02-27 20:42:46.335903198 -0700
 @@ -0,0 +1,190 @@
 +/*
 +    SDL - Simple DirectMedia Layer
@@ -259,9 +259,9 @@ diff -rupN source-original/src/video/orbital/SDL_orbitalevents.c source/src/vide
 +}
 +
 +/* end of SDL_orbitalevents.c ... */
-diff -rupN source-original/src/video/orbital/SDL_orbitalevents_c.h source/src/video/orbital/SDL_orbitalevents_c.h
---- source-original/src/video/orbital/SDL_orbitalevents_c.h	1970-01-01 01:00:00.000000000 +0100
-+++ source/src/video/orbital/SDL_orbitalevents_c.h	2018-02-26 19:43:01.998278827 +0100
+diff -rupN source/src/video/orbital/SDL_orbitalevents_c.h source-redox/src/video/orbital/SDL_orbitalevents_c.h
+--- source/src/video/orbital/SDL_orbitalevents_c.h	1969-12-31 17:00:00.000000000 -0700
++++ source-redox/src/video/orbital/SDL_orbitalevents_c.h	2018-02-27 20:42:46.335903198 -0700
 @@ -0,0 +1,32 @@
 +/*
 +    SDL - Simple DirectMedia Layer
@@ -295,9 +295,9 @@ diff -rupN source-original/src/video/orbital/SDL_orbitalevents_c.h source/src/vi
 +extern void ORBITAL_PumpEvents(_THIS);
 +
 +/* end of SDL_orbitalevents_c.h ... */
-diff -rupN source-original/src/video/orbital/SDL_orbitalmouse.c source/src/video/orbital/SDL_orbitalmouse.c
---- source-original/src/video/orbital/SDL_orbitalmouse.c	1970-01-01 01:00:00.000000000 +0100
-+++ source/src/video/orbital/SDL_orbitalmouse.c	2018-02-26 19:43:01.998278827 +0100
+diff -rupN source/src/video/orbital/SDL_orbitalmouse.c source-redox/src/video/orbital/SDL_orbitalmouse.c
+--- source/src/video/orbital/SDL_orbitalmouse.c	1969-12-31 17:00:00.000000000 -0700
++++ source-redox/src/video/orbital/SDL_orbitalmouse.c	2018-02-27 20:42:46.335903198 -0700
 @@ -0,0 +1,33 @@
 +/*
 +    SDL - Simple DirectMedia Layer
@@ -332,9 +332,9 @@ diff -rupN source-original/src/video/orbital/SDL_orbitalmouse.c source/src/video
 +struct WMcursor {
 +	int unused;
 +};
-diff -rupN source-original/src/video/orbital/SDL_orbitalmouse_c.h source/src/video/orbital/SDL_orbitalmouse_c.h
---- source-original/src/video/orbital/SDL_orbitalmouse_c.h	1970-01-01 01:00:00.000000000 +0100
-+++ source/src/video/orbital/SDL_orbitalmouse_c.h	2018-02-26 19:43:01.998278827 +0100
+diff -rupN source/src/video/orbital/SDL_orbitalmouse_c.h source-redox/src/video/orbital/SDL_orbitalmouse_c.h
+--- source/src/video/orbital/SDL_orbitalmouse_c.h	1969-12-31 17:00:00.000000000 -0700
++++ source-redox/src/video/orbital/SDL_orbitalmouse_c.h	2018-02-27 20:42:46.335903198 -0700
 @@ -0,0 +1,26 @@
 +/*
 +    SDL - Simple DirectMedia Layer
@@ -362,9 +362,9 @@ diff -rupN source-original/src/video/orbital/SDL_orbitalmouse_c.h source/src/vid
 +#include "SDL_orbitalvideo.h"
 +
 +/* Functions to be exported */
-diff -rupN source-original/src/video/orbital/SDL_orbitalscancode.h source/src/video/orbital/SDL_orbitalscancode.h
---- source-original/src/video/orbital/SDL_orbitalscancode.h	1970-01-01 01:00:00.000000000 +0100
-+++ source/src/video/orbital/SDL_orbitalscancode.h	2018-02-26 19:43:02.002278865 +0100
+diff -rupN source/src/video/orbital/SDL_orbitalscancode.h source-redox/src/video/orbital/SDL_orbitalscancode.h
+--- source/src/video/orbital/SDL_orbitalscancode.h	1969-12-31 17:00:00.000000000 -0700
++++ source-redox/src/video/orbital/SDL_orbitalscancode.h	2018-02-27 20:42:46.335903198 -0700
 @@ -0,0 +1,80 @@
 +#define SCANCODE_A	0x1E
 +#define SCANCODE_B	0x30
@@ -446,9 +446,9 @@ diff -rupN source-original/src/video/orbital/SDL_orbitalscancode.h source/src/vi
 +#define SCANCODE_COMMA	0x33
 +#define SCANCODE_PERIOD	0x34
 +#define SCANCODE_SLASH	0x35
-diff -rupN source-original/src/video/orbital/SDL_orbitalvideo.c source/src/video/orbital/SDL_orbitalvideo.c
---- source-original/src/video/orbital/SDL_orbitalvideo.c	1970-01-01 01:00:00.000000000 +0100
-+++ source/src/video/orbital/SDL_orbitalvideo.c	2018-02-26 19:43:37.246613507 +0100
+diff -rupN source/src/video/orbital/SDL_orbitalvideo.c source-redox/src/video/orbital/SDL_orbitalvideo.c
+--- source/src/video/orbital/SDL_orbitalvideo.c	1969-12-31 17:00:00.000000000 -0700
++++ source-redox/src/video/orbital/SDL_orbitalvideo.c	2018-02-27 20:42:46.335903198 -0700
 @@ -0,0 +1,282 @@
 +/*
 +    SDL - Simple DirectMedia Layer
@@ -732,9 +732,9 @@ diff -rupN source-original/src/video/orbital/SDL_orbitalvideo.c source/src/video
 +                this->hidden->fd = 0;
 +	}
 +}
-diff -rupN source-original/src/video/orbital/SDL_orbitalvideo.h source/src/video/orbital/SDL_orbitalvideo.h
---- source-original/src/video/orbital/SDL_orbitalvideo.h	1970-01-01 01:00:00.000000000 +0100
-+++ source/src/video/orbital/SDL_orbitalvideo.h	2018-02-26 19:43:02.002278865 +0100
+diff -rupN source/src/video/orbital/SDL_orbitalvideo.h source-redox/src/video/orbital/SDL_orbitalvideo.h
+--- source/src/video/orbital/SDL_orbitalvideo.h	1969-12-31 17:00:00.000000000 -0700
++++ source-redox/src/video/orbital/SDL_orbitalvideo.h	2018-02-27 20:42:46.335903198 -0700
 @@ -0,0 +1,41 @@
 +/*
 +    SDL - Simple DirectMedia Layer
@@ -777,79 +777,22 @@ diff -rupN source-original/src/video/orbital/SDL_orbitalvideo.h source/src/video
 +};
 +
 +#endif /* _SDL_orbitalvideo_h */
-diff -rupN source-original/src/video/SDL_gamma.c source/src/video/SDL_gamma.c
---- source-original/src/video/SDL_gamma.c	2012-01-19 07:30:06.000000000 +0100
-+++ source/src/video/SDL_gamma.c	2018-02-26 19:43:02.002278865 +0100
-@@ -23,9 +23,9 @@
- 
- /* Gamma correction support */
- 
--#ifdef HAVE_MATH_H
--#include <math.h>	/* Used for calculating gamma ramps */
--#else
-+//#ifdef HAVE_MATH_H
-+//#include <math.h>	/* Used for calculating gamma ramps */
-+//#else
- /* Math routines from uClibc: http://www.uclibc.org */
- #include "math_private.h"
- #include "e_sqrt.h"
-@@ -33,7 +33,7 @@
- #include "e_log.h"
- #define pow(x, y)	__ieee754_pow(x, y)
+diff -rupN source/src/video/SDL_gamma.c source-redox/src/video/SDL_gamma.c
+--- source/src/video/SDL_gamma.c	2012-01-18 23:30:06.000000000 -0700
++++ source-redox/src/video/SDL_gamma.c	2018-02-27 20:56:59.314549375 -0700
+@@ -35,6 +35,9 @@
  #define log(x)		__ieee754_log(x)
--#endif
-+//#endif
+ #endif
  
++#include "e_log.h"
++#define log(x)		__ieee754_log(x)
++
  #include "SDL_sysvideo.h"
  
-@@ -94,7 +94,7 @@ int SDL_SetGamma(float red, float green,
- {
- 	int succeeded;
- 	SDL_VideoDevice *video = current_video;
--	SDL_VideoDevice *this  = current_video;	
-+	SDL_VideoDevice *this  = current_video;
  
- 	succeeded = -1;
- 	/* Prefer using SetGammaRamp(), as it's more flexible */
-@@ -120,7 +120,7 @@ int SDL_GetGamma(float *red, float *gree
- {
- 	int succeeded;
- 	SDL_VideoDevice *video = current_video;
--	SDL_VideoDevice *this  = current_video;	
-+	SDL_VideoDevice *this  = current_video;
- 
- 	succeeded = -1;
- 	/* Prefer using GetGammaRamp(), as it's more flexible */
-@@ -145,7 +145,7 @@ int SDL_SetGammaRamp(const Uint16 *red,
- {
- 	int succeeded;
- 	SDL_VideoDevice *video = current_video;
--	SDL_VideoDevice *this  = current_video;	
-+	SDL_VideoDevice *this  = current_video;
- 	SDL_Surface *screen = SDL_PublicSurface;
- 
- 	/* Verify the screen parameter */
-@@ -177,7 +177,7 @@ int SDL_SetGammaRamp(const Uint16 *red,
- 		/* If physical palette has been set independently, use it */
- 		if(video->physpal)
- 		        pal = video->physpal;
--		      
-+
- 		SDL_SetPalette(screen, SDL_PHYSPAL,
- 			       pal->colors, 0, pal->ncolors);
- 		return 0;
-@@ -196,7 +196,7 @@ int SDL_SetGammaRamp(const Uint16 *red,
- int SDL_GetGammaRamp(Uint16 *red, Uint16 *green, Uint16 *blue)
- {
- 	SDL_VideoDevice *video = current_video;
--	SDL_VideoDevice *this  = current_video;	
-+	SDL_VideoDevice *this  = current_video;
- 
- 	/* Lazily allocate the gamma table */
- 	if ( ! video->gamma ) {
-diff -rupN source-original/src/video/SDL_sysvideo.h source/src/video/SDL_sysvideo.h
---- source-original/src/video/SDL_sysvideo.h	2012-01-19 07:30:06.000000000 +0100
-+++ source/src/video/SDL_sysvideo.h	2018-02-26 19:43:02.002278865 +0100
+diff -rupN source/src/video/SDL_sysvideo.h source-redox/src/video/SDL_sysvideo.h
+--- source/src/video/SDL_sysvideo.h	2012-01-18 23:30:06.000000000 -0700
++++ source-redox/src/video/SDL_sysvideo.h	2018-02-27 20:42:46.335903198 -0700
 @@ -410,6 +410,9 @@ extern VideoBootStrap AALIB_bootstrap;
  #if SDL_VIDEO_DRIVER_CACA
  extern VideoBootStrap CACA_bootstrap;
@@ -860,9 +803,9 @@ diff -rupN source-original/src/video/SDL_sysvideo.h source/src/video/SDL_sysvide
  #if SDL_VIDEO_DRIVER_DUMMY
  extern VideoBootStrap DUMMY_bootstrap;
  #endif
-diff -rupN source-original/src/video/SDL_video.c source/src/video/SDL_video.c
---- source-original/src/video/SDL_video.c	2012-01-19 07:30:06.000000000 +0100
-+++ source/src/video/SDL_video.c	2018-02-26 19:43:02.002278865 +0100
+diff -rupN source/src/video/SDL_video.c source-redox/src/video/SDL_video.c
+--- source/src/video/SDL_video.c	2012-01-18 23:30:06.000000000 -0700
++++ source-redox/src/video/SDL_video.c	2018-02-27 20:45:30.447873197 -0700
 @@ -126,6 +126,9 @@ static VideoBootStrap *bootstrap[] = {
  #if SDL_VIDEO_DRIVER_CACA
  	&CACA_bootstrap,
@@ -873,33 +816,6 @@ diff -rupN source-original/src/video/SDL_video.c source/src/video/SDL_video.c
  #if SDL_VIDEO_DRIVER_DUMMY
  	&DUMMY_bootstrap,
  #endif
-@@ -217,7 +220,7 @@ int SDL_VideoInit (const char *driver_na
- 	video->offset_x = 0;
- 	video->offset_y = 0;
- 	SDL_memset(&video->info, 0, (sizeof video->info));
--	
-+
- 	video->displayformatalphapixel = NULL;
- 
- 	/* Set some very sane GL defaults */
-@@ -240,7 +243,7 @@ int SDL_VideoInit (const char *driver_na
- 	video->gl_config.multisamplesamples = 0;
- 	video->gl_config.accelerated = -1; /* not known, don't set */
- 	video->gl_config.swap_control = -1; /* not known, don't set */
--	
-+
- 	/* Initialize the video subsystem */
- 	SDL_memset(&vformat, 0, sizeof(vformat));
- 	if ( video->VideoInit(video, &vformat) < 0 ) {
-@@ -397,7 +400,7 @@ int SDL_VideoModeOK (int width, int heig
- 		if ( sizes == (SDL_Rect **)0 ) {
- 			/* No sizes supported at this bit-depth */
- 			continue;
--		} else 
-+		} else
- 		if (sizes == (SDL_Rect **)NEGATIVE_ONE) {
- 			/* Any size supported at this bit-depth */
- 			supported = 1;
 @@ -726,7 +729,8 @@ SDL_Surface * SDL_SetVideoMode (int widt
  		video->offset_y = 0;
  		mode->offset = 0;
@@ -910,121 +826,7 @@ diff -rupN source-original/src/video/SDL_video.c source/src/video/SDL_video.c
  
  		/* Now adjust the offsets to match the desired mode */
  		video->offset_x = (mode->w-width)/2;
-@@ -788,7 +792,7 @@ SDL_Surface * SDL_SetVideoMode (int widt
- #endif /* __SDL_NOGETPROCADDR__ */
- 
- #include "SDL_glfuncs.h"
--#undef SDL_PROC	
-+#undef SDL_PROC
- 	}
- #endif /* SDL_VIDEO_OPENGL */
- 
-@@ -817,9 +821,9 @@ SDL_Surface * SDL_SetVideoMode (int widt
- 		   ) {
- 			video->is_32bit = 0;
- 			SDL_VideoSurface = SDL_CreateRGBSurface(
--				flags, 
--				width, 
--				height,  
-+				flags,
-+				width,
-+				height,
- 				16,
- 				31 << 11,
- 				63 << 5,
-@@ -832,10 +836,10 @@ SDL_Surface * SDL_SetVideoMode (int widt
- 		{
- 			video->is_32bit = 1;
- 			SDL_VideoSurface = SDL_CreateRGBSurface(
--				flags, 
--				width, 
--				height, 
--				32, 
-+				flags,
-+				width,
-+				height,
-+				32,
- #if SDL_BYTEORDER == SDL_LIL_ENDIAN
- 				0x000000FF,
- 				0x0000FF00,
-@@ -893,7 +897,7 @@ SDL_Surface * SDL_SetVideoMode (int widt
- 	     (
- 	     (  !(flags&SDL_ANYFORMAT) &&
- 			(SDL_VideoSurface->format->BitsPerPixel != bpp)) ||
--	     (   (flags&SDL_HWPALETTE) && 
-+	     (   (flags&SDL_HWPALETTE) &&
- 				!(SDL_VideoSurface->flags&SDL_HWPALETTE)) ||
- 		/* If the surface is in hardware, video writes are visible
- 		   as soon as they are performed, so we need to buffer them
-@@ -921,7 +925,7 @@ SDL_Surface * SDL_SetVideoMode (int widt
- 	return(SDL_PublicSurface);
- }
- 
--/* 
-+/*
-  * Convert a surface into the video pixel format.
-  */
- SDL_Surface * SDL_DisplayFormat (SDL_Surface *surface)
-@@ -935,7 +939,7 @@ SDL_Surface * SDL_DisplayFormat (SDL_Sur
- 	/* Set the flags appropriate for copying to display surface */
- 	if (((SDL_PublicSurface->flags&SDL_HWSURFACE) == SDL_HWSURFACE) && current_video->info.blit_hw)
- 		flags = SDL_HWSURFACE;
--	else 
-+	else
- 		flags = SDL_SWSURFACE;
- #ifdef AUTORLE_DISPLAYFORMAT
- 	flags |= (surface->flags & (SDL_SRCCOLORKEY|SDL_SRCALPHA));
-@@ -1063,14 +1067,14 @@ void SDL_UpdateRects (SDL_Surface *scree
- 			SDL_LockCursor();
- 			SDL_DrawCursor(SDL_ShadowSurface);
- 			for ( i=0; i<numrects; ++i ) {
--				SDL_LowerBlit(SDL_ShadowSurface, &rects[i], 
-+				SDL_LowerBlit(SDL_ShadowSurface, &rects[i],
- 						SDL_VideoSurface, &rects[i]);
- 			}
- 			SDL_EraseCursor(SDL_ShadowSurface);
- 			SDL_UnlockCursor();
- 		} else {
- 			for ( i=0; i<numrects; ++i ) {
--				SDL_LowerBlit(SDL_ShadowSurface, &rects[i], 
-+				SDL_LowerBlit(SDL_ShadowSurface, &rects[i],
- 						SDL_VideoSurface, &rects[i]);
- 			}
- 		}
-@@ -1576,42 +1580,42 @@ void SDL_GL_UpdateRects(int numrects, SD
- 
- 				if ( update.h > 256 )
- 					update.h = 256;
--			
-+
- 				this->glFlush();
--				this->glTexSubImage2D( 
--					GL_TEXTURE_2D, 
--					0, 
--					0, 
--					0, 
--					update.w, 
--					update.h, 
-+				this->glTexSubImage2D(
-+					GL_TEXTURE_2D,
-+					0,
-+					0,
-+					0,
-+					update.w,
-+					update.h,
- 					this->is_32bit? GL_RGBA : GL_RGB,
- #ifdef GL_VERSION_1_2
- 					this->is_32bit ? GL_UNSIGNED_BYTE : GL_UNSIGNED_SHORT_5_6_5,
- #else
- 					GL_UNSIGNED_BYTE,
- #endif
--					(Uint8 *)this->screen->pixels + 
--						this->screen->format->BytesPerPixel * update.x + 
-+					(Uint8 *)this->screen->pixels +
-+						this->screen->format->BytesPerPixel * update.x +
- 						update.y * this->screen->pitch );
--	
-+
+@@ -1598,7 +1602,7 @@ void SDL_GL_UpdateRects(int numrects, SD
  				this->glFlush();
  				/*
  				* Note the parens around the function name:
@@ -1033,30 +835,3 @@ diff -rupN source-original/src/video/SDL_video.c source/src/video/SDL_video.c
  				* as macros, and we don't want them expanded here.
  				*/
  				this->glBegin(GL_TRIANGLE_STRIP);
--					(this->glTexCoord2f)( 0.0, 0.0 );	
-+					(this->glTexCoord2f)( 0.0, 0.0 );
- 					(this->glVertex2i)( update.x, update.y );
--					(this->glTexCoord2f)( (float)(update.w / 256.0), 0.0 );	
-+					(this->glTexCoord2f)( (float)(update.w / 256.0), 0.0 );
- 					(this->glVertex2i)( update.x + update.w, update.y );
- 					(this->glTexCoord2f)( 0.0, (float)(update.h / 256.0) );
- 					(this->glVertex2i)( update.x, update.y + update.h );
--					(this->glTexCoord2f)( (float)(update.w / 256.0), (float)(update.h / 256.0) );	
-+					(this->glTexCoord2f)( (float)(update.w / 256.0), (float)(update.h / 256.0) );
- 					(this->glVertex2i)( update.x + update.w	, update.y + update.h );
--				this->glEnd();	
--			
-+				this->glEnd();
-+
- 				tmp.x += 256;
- 				tmp.w -= 256;
- 			}
-@@ -1641,7 +1645,7 @@ void SDL_GL_Lock()
- 		this->glDisable(GL_FOG);
- 		this->glDisable(GL_ALPHA_TEST);
- 		this->glDisable(GL_DEPTH_TEST);
--		this->glDisable(GL_SCISSOR_TEST);	
-+		this->glDisable(GL_SCISSOR_TEST);
- 		this->glDisable(GL_STENCIL_TEST);
- 		this->glDisable(GL_CULL_FACE);
- 
