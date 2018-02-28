@@ -423,6 +423,8 @@ then
     then
         export COOKBOOK_RECIPE="${ROOT}/recipes/$1"
 
+
+        export PKG_CONFIG_ALLOW_CROSS=1
         export PKG_CONFIG_PATH=
         export PKG_CONFIG_LIBDIR="${COOKBOOK_RECIPE}/sysroot/lib/pkgconfig"
         export PKG_CONFIG_SYSROOT_DIR="${COOKBOOK_RECIPE}/sysroot"

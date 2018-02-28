@@ -1,6 +1,6 @@
 #!/usr/bin/env bash
 
-export PKG_CONFIG_DIR=
+export PKG_CONFIG_PATH=
 export PKG_CONFIG_SYSROOT_DIR="${COOKBOOK_RECIPE}/sysroot"
 export PKG_CONFIG_LIBDIR="${PKG_CONFIG_SYSROOT_DIR}/lib/pkgconfig"
 
