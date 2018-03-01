@@ -13,6 +13,10 @@ function recipe_update {
 }
 
 function recipe_build {
+    sysroot="${PWD}/../sysroot"
+    export LDFLAGS="-L$sysroot/lib"
+    export CPPFLAGS="-I$sysroot/include"
+
     ./configure --host=${HOST} --prefix='/'
     make
     skip=1
