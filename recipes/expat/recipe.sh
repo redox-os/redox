@@ -1,5 +1,5 @@
 VERSION=2.2.1
-TAR=http://downloads.sourceforge.net/project/expat/expat/$VERSION/expat-$VERSION.tar.bz2
+TAR=https://github.com/libexpat/libexpat/releases/download/R_${VERSION//./_}/expat-${VERSION}.tar.bz2
 
 function recipe_version {
     echo "$VERSION"
