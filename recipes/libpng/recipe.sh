@@ -1,5 +1,5 @@
 VERSION=1.6.34
-TAR=https://download.sourceforge.net/libpng/libpng-$VERSION.tar.xz
+TAR=https://github.com/glennrp/libpng/archive/v${VERSION}.tar.gz
 BUILD_DEPENDS=(zlib)
 
 function recipe_version {
