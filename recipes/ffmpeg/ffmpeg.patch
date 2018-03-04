@@ -1,8 +1,7 @@
-diff --git a/configure b/configure
-index 7201941..e3b2875 100755
---- a/configure
-+++ b/configure
-@@ -5055,6 +5055,8 @@ case $target_os in
+diff -rupN source-original/configure source/configure
+--- source-original/configure	2018-03-04 11:13:59.000000000 +0100
++++ source/configure	2018-03-04 11:18:10.026033282 +0100
+@@ -5141,6 +5141,8 @@ case $target_os in
          ;;
      minix)
          ;;
@@ -11,10 +10,9 @@ index 7201941..e3b2875 100755
      none)
          ;;
      *)
-diff --git a/ffmpeg.c b/ffmpeg.c
-index 888d19a..aeeb0e5 100644
---- a/ffmpeg.c
-+++ b/ffmpeg.c
+diff -rupN source-original/fftools/ffmpeg.c source/fftools/ffmpeg.c
+--- source-original/fftools/ffmpeg.c	2018-03-04 11:13:59.000000000 +0100
++++ source/fftools/ffmpeg.c	2018-03-04 11:45:38.326394016 +0100
 @@ -91,7 +91,7 @@
  
  #if HAVE_TERMIOS_H
