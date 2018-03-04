@@ -1,6 +1,6 @@
 VERSION=2.9
 TAR=https://download.savannah.gnu.org/releases/freetype/freetype-$VERSION.tar.gz
-BUILD_DEPENDS=(zlib)
+BUILD_DEPENDS=(zlib libpng)
 
 function recipe_version {
     echo "$VERSION"
