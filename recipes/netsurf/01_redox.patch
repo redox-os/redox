@@ -357,7 +357,7 @@ diff -rupNw source-original/netsurf/utils/log.c source/netsurf/utils/log.c
 diff -rupNw source-original/netsurf/utils/useragent.c source/netsurf/utils/useragent.c
 --- source-original/netsurf/utils/useragent.c	2017-10-16 12:09:36.000000000 +0200
 +++ source/netsurf/utils/useragent.c	2018-03-04 20:43:18.252957604 +0100
-@@ -44,9 +44,9 @@ user_agent_build_string(void)
+@@ -44,9 +44,10 @@ user_agent_build_string(void)
          char *ua_string;
          int len;
  
@@ -367,6 +367,7 @@ diff -rupNw source-original/netsurf/utils/useragent.c source/netsurf/utils/usera
 +        //if (uname(&un) >= 0) {
 +        //        sysname = un.sysname;
 +        //}
++        sysname = "Redox";
  
          len = snprintf(NULL, 0, NETSURF_UA_FORMAT_STRING,
                         netsurf_version_major,
