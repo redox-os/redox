@@ -299,7 +299,7 @@ function op {
 
             if [ "$skip" -eq "0" ]
             then
-                cp -r "$ROOT/Xargo.toml" .
+                cp -p "$ROOT/Xargo.toml" "Xargo.toml"
                 xargo build --target "$TARGET" $release_flag $CARGOFLAGS
             fi
             popd > /dev/null
@@ -320,7 +320,7 @@ function op {
 
             if [ "$skip" -eq "0" ]
             then
-                cp -r "$ROOT/Xargo.toml" .
+                cp -p "$ROOT/Xargo.toml" "Xargo.toml"
                 xargo test --no-run --target "$TARGET" $release_flag $CARGOFLAGS
             fi
             popd > /dev/null
