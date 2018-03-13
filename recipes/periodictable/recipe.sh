@@ -1,4 +1,4 @@
-GIT=https://github.com/xtibor/periodictable.git
+GIT=https://github.com/redox-os/periodictable.git
 BINDIR="/ui/bin"
 
 function recipe_stage {
