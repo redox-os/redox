@@ -61,6 +61,7 @@ randd = {}
 #rust64 = {}
 #rustual-boy = {}
 #sed = {}
+shellstorm = {}
 #smith = {}
 #sodium = {}
 #termplay = {}
@@ -77,12 +78,12 @@ uid = 0
 gid = 0
 name = "root"
 home = "/root"
-shell = "/bin/lua"
+shell = "/bin/shellstorm"
 
 [users.user]
 # Password is unset
 password = ""
-shell = "/bin/lua"
+shell = "/bin/shellstorm"
 
 [[files]]
 path = "/etc/init.d/00_base"
@@ -144,8 +145,91 @@ data = """
 path = "/etc/motd"
 data = """
 
-¡redoX XTREME Edition!
+redoX XTREME Edition is locating your optimal shell...
 
+"""
+
+[[files]]
+path = "/etc/shellstorm"
+data = """
+basename
+calc
+chmod
+chown
+clear
+comm
+cp
+cut
+dash
+date
+df
+dircolors
+dirname
+dmesg
+du
+echo
+env
+expr
+false
+find
+free
+grep
+groupadd
+groupdel
+groupmod
+gunzip
+gzip
+id
+info
+install
+keymap
+kill
+link
+ln
+ls
+lua
+luac
+man
+mkdir
+mktemp
+mv
+paste
+printenv
+printf
+ps
+pwd
+readlink
+realpath
+relpath
+rem
+reset
+resize
+rm
+rmdir
+screenfetch
+seq
+sh
+shellstorm
+shutdown
+sleep
+stat
+sudo
+tar
+test
+time
+touch
+tr
+true
+truncate
+uname
+uptime
+useradd
+userdel
+usermod
+uutils
+watch
+which
+whoami
 """
 
 [[files]]
