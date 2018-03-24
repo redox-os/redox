@@ -25,7 +25,7 @@ extrautils = {}
 #fd = {}
 findutils = {}
 #game-2048 = {}
-#games = {}
+games = {}
 #gawk = {}
 #gcc = {}
 #git = {}
@@ -162,6 +162,7 @@ cp
 cut
 dash
 date
+dem
 df
 dircolors
 dirname
@@ -204,7 +205,6 @@ realpath
 relpath
 rem
 reset
-resize
 rm
 rmdir
 screenfetch
