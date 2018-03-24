@@ -12,15 +12,15 @@ prompt = false
 #automake = {}
 #bash = {}
 #binutils = {}
-ca-certificates = {}
+#ca-certificates = {}
 #cargo = {}
 #cleye = {}
 #contain = {}
 coreutils = {}
 #curl = {}
-#dash = {}
+dash = {}
 #diffutils = {}
-drivers = {}
+#drivers = {}
 extrautils = {}
 #fd = {}
 findutils = {}
@@ -31,37 +31,37 @@ findutils = {}
 #git = {}
 #gnu-binutils = {}
 #gnu-make = {}
-installer = {}
-ion = {}
-logd = {}
-#lua = {}
+#installer = {}
+#ion = {}
+#logd = {}
+lua = {}
 #nasm = {}
-netdb = {}
-netstack = {}
-netsurf = {}
-netutils = {}
+#netdb = {}
+#netstack = {}
+#netsurf = {}
+#netutils = {}
 #newlib = {}
 nulld = {}
 #openssl = {}
-orbdata = {}
-orbital = {}
-orbterm = {}
-orbutils = {}
+#orbdata = {}
+#orbital = {}
+#orbterm = {}
+#orbutils = {}
 #pastel = {}
 #patch = {}
 #pixelcannon = {}
-pkgutils = {}
+#pkgutils = {}
 #prboom = {}
 ptyd = {}
 #python = {}
 randd = {}
-redoxfs = {}
+#redoxfs = {}
 #rs-nes = {}
 #rust = {}
 #rust64 = {}
 #rustual-boy = {}
 #sed = {}
-smith = {}
+#smith = {}
 #sodium = {}
 #termplay = {}
 userutils = {}
@@ -77,10 +77,12 @@ uid = 0
 gid = 0
 name = "root"
 home = "/root"
+shell = "/bin/lua"
 
 [users.user]
 # Password is unset
 password = ""
+shell = "/bin/lua"
 
 [[files]]
 path = "/etc/init.d/00_base"
@@ -88,65 +90,15 @@ data = """
 nulld
 zerod
 randd
-logd
 ptyd
 pcid /etc/pcid/filesystem.toml
 """
 
 [[files]]
-path = "/etc/init.d/10_net"
+path = "/etc/init.d/10_console"
 data = """
-smolnetd
-dnsd
-dhcpd -b
+getty display:2/activate
 """
-
-[[files]]
-path = "/etc/init.d/20_orbital"
-data = """
-orbital display:3/activate orblogin launcher
-"""
-
-[[files]]
-path = "/etc/init.d/30_console"
-data = """
-getty display:2
-getty debug: -J
-"""
-
-[[files]]
-path = "/etc/net/dns"
-data = """
-208.67.222.222
-"""
-
-[[files]]
-path = "/etc/net/ip"
-data = """
-10.0.2.15
-"""
-
-[[files]]
-path = "/etc/net/ip_router"
-data = """
-10.0.2.2
-"""
-
-[[files]]
-path = "/etc/net/ip_subnet"
-data = """
-255.255.255.0
-"""
-
-[[files]]
-path = "/etc/net/mac"
-data = """
-54-52-00-ab-cd-ef
-"""
-
-[[files]]
-path = "/etc/pkg.d/50_redox"
-data = "https://static.redox-os.org/pkg"
 
 [[files]]
 path = "/etc/group"
@@ -165,7 +117,7 @@ redox
 [[files]]
 path = "/etc/issue"
 data = """
-########## Redox OS ##########
+#### redoX XTREME Edition ####
 # Login with the following:  #
 # `user`                     #
 # `root`:`password`          #
@@ -176,7 +128,8 @@ data = """
 [[files]]
 path = "/etc/motd"
 data = """
-Welcome to Redox OS!
+
+¡redoX XTREME Edition!
 
 """
 

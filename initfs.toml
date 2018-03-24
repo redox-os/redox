@@ -7,7 +7,7 @@ prompt = false
 
 # Package settings
 [packages]
-drivers = {}
+drivers-041 = {}
 init = {}
 redoxfs = {}
 
