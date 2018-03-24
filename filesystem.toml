@@ -21,6 +21,7 @@ coreutils = {}
 dash = {}
 #diffutils = {}
 #drivers = {}
+duktape = {}
 extrautils = {}
 #fd = {}
 findutils = {}
@@ -171,6 +172,7 @@ dircolors
 dirname
 dmesg
 du
+duk
 echo
 env
 expr
