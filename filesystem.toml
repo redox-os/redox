@@ -10,7 +10,7 @@ prompt = false
 #acid = {}
 #autoconf = {}
 #automake = {}
-#bash = {}
+bash = {}
 #binutils = {}
 #ca-certificates = {}
 #cargo = {}
@@ -153,6 +153,7 @@ redoX XTREME Edition is locating your optimal shell...
 path = "/etc/shellstorm"
 data = """
 basename
+bash
 calc
 chmod
 chown
