@@ -43,7 +43,7 @@ A bit more formal way of communication with fellow Redox devs, but a little less
 
 ### <a name="prs"> Pull Requests </a>
 
-It's fine to just submit a small pull request without first making an issue or asking in the chat, but if it's a significant change that will require a lot of **planning and reviewing**. Also see [Creating a Pull Request](#creating-a-pr) and [Git Style Guidelines](#git-style-guidelines).
+It's fine to just submit a small pull request without first making an issue or asking in the chat, **unless** it's a significant change that will require a lot of planning and reviewing. Also see [Creating a Pull Request](#creating-a-pr) and [Git Style Guidelines](#git-style-guidelines).
 
 ### <a name="discourse"> Discourse </a>
 
