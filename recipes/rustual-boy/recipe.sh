@@ -1,5 +1,6 @@
 GIT=https://github.com/redox-os/rustual-boy.git
 GIT_UPSTREAM=https://github.com/emu-rs/rustual-boy.git
+DEPENDS="orbital"
 
 function recipe_update {
     cd rustual-boy-cli
