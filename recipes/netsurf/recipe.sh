@@ -1,7 +1,7 @@
 VERSION=3.7
 TAR=http://download.netsurf-browser.org/netsurf/releases/source-full/netsurf-all-$VERSION.tar.gz
 BUILD_DEPENDS=(curl expat libjpeg libpng openssl sdl zlib freetype)
-DEPENDS="ca-certificates"
+DEPENDS="ca-certificates orbital"
 
 function recipe_version {
     echo "$VERSION"
