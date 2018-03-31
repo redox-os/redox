@@ -20,7 +20,7 @@ coreutils = {}
 #curl = {}
 dash = {}
 #diffutils = {}
-#drivers = {}
+drivers = {}
 duktape = {}
 extrautils = {}
 #fd = {}
@@ -34,7 +34,8 @@ games = {}
 #gnu-make = {}
 #installer = {}
 ion = {}
-#logd = {}
+keyboard-sfx = {}
+logd = {}
 lua = {}
 #nasm = {}
 #netdb = {}
@@ -92,7 +93,9 @@ data = """
 nulld
 zerod
 randd
+logd
 ptyd
+pcid /etc/pcid/filesystem.toml
 """
 
 [[files]]
