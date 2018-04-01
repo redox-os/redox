@@ -1,5 +1,5 @@
 GIT=https://github.com/redox-os/drivers.git
-GIT_BRANCH=0.4.1
+BRANCH=0.4.1
 CARGOFLAGS=--all
 
 function recipe_version {
