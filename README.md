@@ -105,7 +105,7 @@ $ cd path/to/your/projects/folder/
 # Run bootstrap setup
 $ curl -sf https://raw.githubusercontent.com/redox-os/redox/master/bootstrap.sh -o bootstrap.sh && bash -e bootstrap.sh
 
-#Change to project directory
+# Change to project directory
 $ cd redox
 
 # Build Redox
@@ -139,6 +139,7 @@ $ ./bootstrap.sh -d
 
 # Install rustup.rs
 $ curl https://sh.rustup.rs -sSf | sh
+$ source $HOME/.cargo/env
 
 # Install the sysroot manager Xargo
 $ cargo install xargo
