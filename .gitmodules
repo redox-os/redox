@@ -19,3 +19,6 @@
 [submodule "redoxfs"]
 	path = redoxfs
 	url = https://github.com/redox-os/redoxfs.git
+[submodule "bootloader-efi"]
+	path = bootloader-efi
+	url = https://github.com/redox-os/bootloader-efi.git
