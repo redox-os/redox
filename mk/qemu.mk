@@ -81,6 +81,18 @@ qemu_iso_no_build: build/extra.qcow2
 		-boot d -cdrom build/livedisk.iso \
 		-drive file=build/extra.qcow2
 
+qemu_iso_efi: build/livedisk-efi.iso build/extra.qcow2
+	$(QEMU) $(QEMUFLAGS) \
+		-bios /usr/share/ovmf/OVMF.fd \
+		-drive file=build/livedisk-efi.iso,format=raw \
+		-drive file=build/extra.qcow2
+
+qemu_iso_efi_no_build: build/extra.qcow2
+	$(QEMU) $(QEMUFLAGS) \
+		-bios /usr/share/ovmf/OVMF.fd \
+		-drive file=build/livedisk-efi.iso,format=raw \
+		-drive file=build/extra.qcow2
+
 qemu_extra: build/extra.qcow2
 	$(QEMU) $(QEMUFLAGS) \
 		-drive file=build/extra.qcow2
