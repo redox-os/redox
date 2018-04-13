@@ -23,3 +23,20 @@ build/livedisk.iso: build/livedisk.bin.gz
 					-no-emul-boot -boot-load-size 4 -boot-info-table \
 					build/iso/
 	isohybrid $@
+
+bootloader-efi/build/redox_bootloader/boot.efi:
+	env --unset=XARGO_RUST_SRC $(MAKE) -C bootloader-efi build/redox_bootloader/boot.efi
+
+build/bootloader.efi: bootloader-efi/build/redox_bootloader/boot.efi
+	cp $< $@
+
+build/livedisk-efi.iso: build/bootloader.efi build/kernel_live
+	dd if=/dev/zero of=$@.partial bs=1048576 count=384
+	mkfs.vfat $@.partial
+	mmd -i $@.partial efi
+	mmd -i $@.partial efi/boot
+	mcopy -i $@.partial $< ::efi/boot/bootx64.efi
+	mmd -i $@.partial redox_bootloader
+	mcopy -i $@.partial -s bootloader-efi/res ::redox_bootloader
+	mcopy -i $@.partial -s build/kernel_live ::redox_bootloader/kernel
+	mv $@.partial $@
