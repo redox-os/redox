@@ -1,2 +1,2 @@
-GIT=https://github.com/redox-os/termplay.git
-GIT_UPSTREAM=https://github.com/redox-os/termplay.git
+GIT=https://github.com/jD91mZM2/termplay.git
+CARGOFLAGS=--no-default-features --features "termion"
