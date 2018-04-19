@@ -368,7 +368,7 @@ function op {
                 then
                     if [ -n "$example" ]
                     then
-                        echo "$(tput bold)Note$(tput sgr0): No binaries detected, using example binaries" >&2
+                        echo "$(tput bold)Note$(tput sgr0): No binaries detected, using example binaries"
                     fi
                     mkdir -p "../stage/$BINDIR"
                     for bin in $bins
