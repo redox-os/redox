@@ -358,8 +358,18 @@ function op {
                 fi
 
                 bins="$(find target/$TARGET/$build/ -maxdepth 1 -type f ! -name '*.*')"
+                if [ -z "$bins" ]
+                then
+                    example=true
+                    bins="$(find target/$TARGET/$build/examples/ -maxdepth 1 -type f ! -name '*.*' ! -name '*-*' \
+                            2> /dev/null || true)"
+                fi
                 if [ -n "$bins" ]
                 then
+                    if [ -n "$example" ]
+                    then
+                        echo "$(tput bold)Note$(tput sgr0): No binaries detected, using example binaries" >&2
+                    fi
                     mkdir -p "../stage/$BINDIR"
                     for bin in $bins
                     do
@@ -370,6 +380,8 @@ function op {
                             strip -v "$bin" -o "../stage/$BINDIR/$(basename $bin)"
                         fi
                     done
+                else
+                    echo "$(tput bold)Warning$(tput sgr0): Recipe does not have any binaries" >&2
                 fi
 
                 docgen ../source ../stage/ref
