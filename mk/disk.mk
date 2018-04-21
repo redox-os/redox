@@ -30,6 +30,16 @@ bootloader-efi/build/redox_bootloader/boot.efi:
 build/bootloader.efi: bootloader-efi/build/redox_bootloader/boot.efi
 	cp $< $@
 
+build/harddrive-efi.bin: build/bootloader.efi build/filesystem.bin
+	dd if=/dev/zero of=$@.partial bs=1048576 count=4
+	mkfs.vfat $@.partial
+	mmd -i $@.partial efi
+	mmd -i $@.partial efi/boot
+	mcopy -i $@.partial $< ::efi/boot/bootx64.efi
+	mmd -i $@.partial redox_bootloader
+	mcopy -i $@.partial -s bootloader-efi/res ::redox_bootloader
+	cat $@.partial build/filesystem.bin > $@
+
 build/livedisk-efi.iso: build/bootloader.efi build/kernel_live
 	dd if=/dev/zero of=$@.partial bs=1048576 count=384
 	mkfs.vfat $@.partial
