@@ -51,6 +51,18 @@ qemu_no_build: build/extra.qcow2
 		-drive file=build/harddrive.bin,format=raw \
 		-drive file=build/extra.qcow2
 
+qemu_efi: build/harddrive-efi.bin build/extra.qcow2
+	$(QEMU) $(QEMUFLAGS) \
+		-bios /usr/share/ovmf/OVMF.fd \
+		-drive file=build/harddrive-efi.bin,format=raw \
+		-drive file=build/extra.qcow2
+
+qemu_efi_no_build: build/extra.qcow2
+	$(QEMU) $(QEMUFLAGS) \
+		-bios /usr/share/ovmf/OVMF.fd \
+		-drive file=build/harddrive-efi.bin,format=raw \
+		-drive file=build/extra.qcow2
+
 qemu_nvme: build/harddrive.bin build/extra.qcow2
 	$(QEMU) $(QEMUFLAGS) \
 		-drive file=build/harddrive.bin,format=raw -drive file=build/extra.qcow2,if=none,id=drv0 -device nvme,drive=drv0,serial=NVME_SERIAL \
@@ -84,13 +96,13 @@ qemu_iso_no_build: build/extra.qcow2
 qemu_iso_efi: build/livedisk-efi.iso build/extra.qcow2
 	$(QEMU) $(QEMUFLAGS) \
 		-bios /usr/share/ovmf/OVMF.fd \
-		-drive file=build/livedisk-efi.iso,format=raw \
+		-boot d -cdrom build/livedisk-efi.iso \
 		-drive file=build/extra.qcow2
 
 qemu_iso_efi_no_build: build/extra.qcow2
 	$(QEMU) $(QEMUFLAGS) \
 		-bios /usr/share/ovmf/OVMF.fd \
-		-drive file=build/livedisk-efi.iso,format=raw \
+		-boot d -cdrom build/livedisk-efi.iso \
 		-drive file=build/extra.qcow2
 
 qemu_extra: build/extra.qcow2
