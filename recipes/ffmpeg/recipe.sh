@@ -1,4 +1,4 @@
-VERSION=3.4
+VERSION=4.0
 GIT=https://github.com/FFmpeg/FFmpeg
 BRANCH=release/$VERSION
 
