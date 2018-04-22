@@ -1,22 +1,22 @@
-diff -rupN prboom-2.5.0/configure.ac prboom-2.5.0-redox/configure.ac
---- prboom-2.5.0/configure.ac	2008-11-09 11:12:37.000000000 -0800
-+++ prboom-2.5.0-redox/configure.ac	2017-10-14 23:27:16.000000000 -0700
+diff -burpN source-original/configure.ac source/configure.ac
+--- source-original/configure.ac	2008-11-09 20:12:37.000000000 +0100
++++ source/configure.ac	2018-04-22 23:41:16.945896818 +0200
 @@ -85,8 +85,6 @@ if test "$cross_compiling" != "yes"; the
  fi
-
+ 
  dnl --- Header files, typedefs, structures
 -AC_TYPE_UID_T
 -AC_TYPE_SIZE_T
  AC_DECL_SYS_SIGLIST
  AC_HEADER_SYS_WAIT
  AC_CHECK_HEADERS(unistd.h asm/byteorder.h sched.h)
-diff -rupN prboom-2.5.0/src/d_deh.c prboom-2.5.0-redox/src/d_deh.c
---- prboom-2.5.0/src/d_deh.c	2008-10-11 05:10:38.000000000 -0700
-+++ prboom-2.5.0-redox/src/d_deh.c	2017-10-14 23:29:00.000000000 -0700
+diff -burpN source-original/src/d_deh.c source/src/d_deh.c
+--- source-original/src/d_deh.c	2008-10-11 14:10:38.000000000 +0200
++++ source/src/d_deh.c	2018-04-22 23:41:16.949896859 +0200
 @@ -54,17 +54,6 @@
  #define TRUE 1
  #define FALSE 0
-
+ 
 -#ifndef HAVE_STRLWR
 -#include <ctype.h>
 -
@@ -30,3 +30,28 @@ diff -rupN prboom-2.5.0/src/d_deh.c prboom-2.5.0-redox/src/d_deh.c
 -
  // killough 10/98: new functions, to allow processing DEH files in-memory
  // (e.g. from wads)
+ 
+diff -burpN source-original/src/SDL/i_video.c source/src/SDL/i_video.c
+--- source-original/src/SDL/i_video.c	2008-10-18 15:32:29.000000000 +0200
++++ source/src/SDL/i_video.c	2018-04-23 00:51:18.944949507 +0200
+@@ -407,7 +407,7 @@ void I_FinishUpdate (void)
+     I_UploadNewPalette(newpal);
+     newpal = NO_PALETTE_CHANGE;
+   }
+-  SDL_Flip(screen);
++  SDL_UpdateRect(screen, 0, 0, screen->w, screen->h);
+ }
+ 
+ //
+diff -burpN source-original/src/v_video.c source/src/v_video.c
+--- source-original/src/v_video.c	2008-10-11 14:10:41.000000000 +0200
++++ source/src/v_video.c	2018-04-22 23:43:10.939034965 +0200
+@@ -558,7 +558,7 @@ void V_UpdateTrueColorPalette(video_mode
+             ng = (int)(g*t+roundUpG);
+             nb = (int)(b*t+roundUpB);
+             Palettes32[((p*256+i)*VID_NUMCOLORWEIGHTS)+w] = (
+-              (nr<<16) | (ng<<8) | nb
++              (255<<24) | (nr<<16) | (ng<<8) | nb
+             );
+           }
+         }
