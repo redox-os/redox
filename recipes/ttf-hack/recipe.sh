@@ -29,7 +29,7 @@ function recipe_clean {
 function recipe_stage {
     dest="$(realpath "$1")"
     for file in *.ttf; do
-        install -D -m 644 "$file" "$dest/ui/fonts/Hack/$file"
+        install -D -m 644 "$file" "$dest/ui/fonts/Mono/Hack/$file"
     done
     skip=1
 }
