@@ -13,8 +13,8 @@ function recipe_update {
 
 function recipe_build {
     ./autogen.sh
-    ./configure --prefix=/ --host=${HOST} --disable-shared --disable-pulseaudio --disable-video-x11 --disable-cdrom --disable-loadso --disable-threads --disable-timers --enable-audio --enable-dummyaudio --enable-video-orbital
-    make 
+    ./configure --prefix=/ --host=${HOST} --disable-shared --disable-pulseaudio --disable-video-x11 --disable-cdrom --disable-loadso --disable-threads --enable-audio --enable-dummyaudio --enable-video-orbital
+    make
     skip=1
 }
 
