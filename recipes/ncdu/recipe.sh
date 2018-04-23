@@ -27,7 +27,13 @@ function recipe_test {
 }
 function recipe_stage {
     dest="$(realpath "$1")"
-    echo "$dest"
     make DESTDIR="$dest" install
+    cd "$dest/usr/local/bin/"
+    find . -type f -exec install -D "{}" "$dest/usr/bin/{}" \;
+    cd -
+    cd "$dest/usr/local/share/"
+    find . -type f -exec install -D "{}" "$dest/share/{}" \;
+    cd -
+    rm -r "$dest/usr/local/"
     skip=1
 }
