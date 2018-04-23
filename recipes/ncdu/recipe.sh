@@ -25,6 +25,10 @@ function recipe_test {
     echo "skipping test"
     skip=1
 }
+function recipe_clean {
+    make clean
+    skip=1
+}
 function recipe_stage {
     dest="$(realpath "$1")"
     make DESTDIR="$dest" install
