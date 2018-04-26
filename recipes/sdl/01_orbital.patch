@@ -1,6 +1,6 @@
-diff -rupN source/build-scripts/config.sub source-redox/build-scripts/config.sub
---- source/build-scripts/config.sub	2012-01-18 23:30:05.000000000 -0700
-+++ source-redox/build-scripts/config.sub	2018-02-27 20:42:46.287901516 -0700
+diff -rupNw source-original/build-scripts/config.sub source/build-scripts/config.sub
+--- source-original/build-scripts/config.sub	2012-01-19 07:30:05.000000000 +0100
++++ source/build-scripts/config.sub	2018-04-23 17:03:35.533588029 +0200
 @@ -1276,7 +1276,7 @@ case $os in
  	-gnu* | -bsd* | -mach* | -minix* | -genix* | -ultrix* | -irix* \
  	      | -*vms* | -sco* | -esix* | -isc* | -aix* | -cnk* | -sunos | -sunos[34]*\
@@ -10,9 +10,9 @@ diff -rupN source/build-scripts/config.sub source-redox/build-scripts/config.sub
  	      | -amigaos* | -amigados* | -msdos* | -newsos* | -unicos* | -aof* \
  	      | -aos* | -aros* \
  	      | -nindy* | -vxsim* | -vxworks* | -ebmon* | -hms* | -mvs* \
-diff -rupN source/configure.in source-redox/configure.in
---- source/configure.in	2012-01-18 23:30:05.000000000 -0700
-+++ source-redox/configure.in	2018-02-27 20:42:46.311902357 -0700
+diff -rupNw source-original/configure.in source/configure.in
+--- source-original/configure.in	2012-01-19 07:30:05.000000000 +0100
++++ source/configure.in	2018-04-23 17:03:35.533588029 +0200
 @@ -1646,6 +1646,19 @@ AC_HELP_STRING([--enable-video-dummy], [
      fi
  }
@@ -54,9 +54,9 @@ diff -rupN source/configure.in source-redox/configure.in
          CheckDiskAudio
          CheckDummyAudio
          CheckDLOPEN
-diff -rupN source/include/SDL_config.h.in source-redox/include/SDL_config.h.in
---- source/include/SDL_config.h.in	2012-01-18 23:30:05.000000000 -0700
-+++ source-redox/include/SDL_config.h.in	2018-02-27 20:42:46.311902357 -0700
+diff -rupNw source-original/include/SDL_config.h.in source/include/SDL_config.h.in
+--- source-original/include/SDL_config.h.in	2012-01-19 07:30:05.000000000 +0100
++++ source/include/SDL_config.h.in	2018-04-23 17:03:35.533588029 +0200
 @@ -268,6 +268,7 @@
  #undef SDL_VIDEO_DRIVER_GGI
  #undef SDL_VIDEO_DRIVER_IPOD
@@ -65,10 +65,10 @@ diff -rupN source/include/SDL_config.h.in source-redox/include/SDL_config.h.in
  #undef SDL_VIDEO_DRIVER_OS2FS
  #undef SDL_VIDEO_DRIVER_PHOTON
  #undef SDL_VIDEO_DRIVER_PICOGUI
-diff -rupN source/src/video/orbital/SDL_orbitalevents.c source-redox/src/video/orbital/SDL_orbitalevents.c
---- source/src/video/orbital/SDL_orbitalevents.c	1969-12-31 17:00:00.000000000 -0700
-+++ source-redox/src/video/orbital/SDL_orbitalevents.c	2018-02-27 20:42:46.335903198 -0700
-@@ -0,0 +1,190 @@
+diff -rupNw source-original/src/video/orbital/SDL_orbitalevents.c source/src/video/orbital/SDL_orbitalevents.c
+--- source-original/src/video/orbital/SDL_orbitalevents.c	1970-01-01 01:00:00.000000000 +0100
++++ source/src/video/orbital/SDL_orbitalevents.c	2018-04-25 01:53:33.077960454 +0200
+@@ -0,0 +1,198 @@
 +/*
 +    SDL - Simple DirectMedia Layer
 +    Copyright (C) 1997-2012 Sam Lantinga
@@ -96,79 +96,87 @@ diff -rupN source/src/video/orbital/SDL_orbitalevents.c source-redox/src/video/o
 +#include "../../events/SDL_sysevents.h"
 +#include "../../events/SDL_events_c.h"
 +
++#include <orbital.h>
 +#include "SDL_orbitalvideo.h"
 +#include "SDL_orbitalevents_c.h"
-+#include "SDL_orbitalscancode.h"
 +
 +#include <unistd.h>
 +
 +static SDLKey keymap[128];
 +
-+#define EVENT_NONE 0
-+#define EVENT_KEY 1
-+#define EVENT_MOUSE 2
-+#define EVENT_BUTTON 3
-+#define EVENT_SCROLL 4
-+#define EVENT_QUIT 5
-+#define EVENT_FOCUS 6
-+#define EVENT_MOVE 7
-+#define EVENT_RESIZE 8
-+#define EVENT_SCREEN 9
-+
-+struct Event {
-+    int64_t code;
-+    int64_t a;
-+    int64_t b;
-+} __attribute__((packed));
-+
 +/* Static variables so only changes are reported */
-+static int64_t last_buttons = 0;
++static bool last_button_left = false;
++static bool last_button_middle = false;
++static bool last_button_right = false;
 +
++// TODO: Find out why NetSurf recieves NULL chars when the keysym.unicode field is used
 +void ORBITAL_PumpEvents(_THIS)
 +{
-+    struct Event event;
-+    while(read(this->hidden->fd, &event, sizeof(event)) > 0){
-+        if ( event.code == EVENT_KEY ) {
-+            SDL_keysym keysym;
++    SDL_keysym keysym;
 +
-+            // TODO: Find out why NetSurf recieves NULL chars when the Unicode field is used
-+        	//keysym.unicode = event.a;
-+        	keysym.scancode = event.b & 0xFF;
-+        	keysym.sym = keymap[event.b & 0xFF];
-+        	keysym.mod = KMOD_NONE;
-+            if ( (event.b >> 8) & 0x01 > 0 ) {
-+                SDL_PrivateKeyboard(SDL_PRESSED, &keysym);
-+            } else {
-+                SDL_PrivateKeyboard(SDL_RELEASED, &keysym);
-+            }
-+        } else if ( event.code == EVENT_MOUSE ) {
-+            SDL_PrivateMouseMotion(0, 0, event.a, event.b);
-+            //SDL_PrivateMouseButton(Uint8 state, Uint8 button, Sint16 x, Sint16 y);
-+        } else if ( event.code == EVENT_BUTTON ) {
-+            int64_t changed = event.a ^ last_buttons;
++    void* event_iter = orb_window_events(this->hidden->window);
++    OrbEventOption oeo = orb_events_next(event_iter);
 +
-+            if ( changed & 0x01 )
-+                SDL_PrivateMouseButton((event.a & 0x01) ? SDL_PRESSED : SDL_RELEASED, SDL_BUTTON_LEFT, 0, 0);
-+            if ( changed & 0x02 )
-+                SDL_PrivateMouseButton((event.a & 0x02) ? SDL_PRESSED : SDL_RELEASED, SDL_BUTTON_MIDDLE, 0, 0);
-+            if ( changed & 0x04 )
-+                SDL_PrivateMouseButton((event.a & 0x04) ? SDL_PRESSED : SDL_RELEASED, SDL_BUTTON_RIGHT, 0, 0);
++    while (oeo.tag != OrbEventOption_None) {
++        switch (oeo.tag) {
++            case OrbEventOption_Key:
++                //keysym.unicode = oeo.key.character;
++                keysym.scancode = oeo.key.scancode;
++                keysym.sym = keymap[oeo.key.scancode];
++                keysym.mod = KMOD_NONE;
 +
-+            last_buttons = event.a;
-+        } else if ( event.code == EVENT_SCROLL ) {
-+            if ( event.b > 0 ) {
-+                SDL_PrivateMouseButton(SDL_PRESSED, SDL_BUTTON_WHEELUP, 0, 0);
-+                SDL_PrivateMouseButton(SDL_RELEASED, SDL_BUTTON_WHEELUP, 0, 0);
-+            } else if ( event.b < 0 ) {
-+                SDL_PrivateMouseButton(SDL_PRESSED, SDL_BUTTON_WHEELDOWN, 0, 0);
-+                SDL_PrivateMouseButton(SDL_RELEASED, SDL_BUTTON_WHEELDOWN, 0, 0);
-+            }
-+        } else if ( event.code == EVENT_RESIZE ) {
-+            SDL_PrivateResize(event.a, event.b);
-+        } else if ( event.code == EVENT_QUIT ) {
-+            SDL_PrivateQuit();
++                SDL_PrivateKeyboard(oeo.key.pressed ? SDL_PRESSED : SDL_RELEASED, &keysym);
++                break;
++            case OrbEventOption_Mouse:
++                SDL_PrivateMouseMotion(0, 0, oeo.mouse.x, oeo.mouse.y);
++                break;
++            case OrbEventOption_Button:
++                if (oeo.button.left ^ last_button_left)
++                    SDL_PrivateMouseButton(oeo.button.left ? SDL_PRESSED : SDL_RELEASED, SDL_BUTTON_LEFT, 0, 0);
++                if (oeo.button.middle ^ last_button_middle)
++                    SDL_PrivateMouseButton(oeo.button.middle ? SDL_PRESSED : SDL_RELEASED, SDL_BUTTON_MIDDLE, 0, 0);
++                if (oeo.button.right ^ last_button_right)
++                    SDL_PrivateMouseButton(oeo.button.right ? SDL_PRESSED : SDL_RELEASED, SDL_BUTTON_RIGHT, 0, 0);
++
++                last_button_left = oeo.button.left;
++                last_button_middle = oeo.button.middle;
++                last_button_right = oeo.button.right;
++                break;
++            case OrbEventOption_Scroll:
++                if (oeo.scroll.y > 0) {
++                    SDL_PrivateMouseButton(SDL_PRESSED, SDL_BUTTON_WHEELUP, 0, 0);
++                    SDL_PrivateMouseButton(SDL_RELEASED, SDL_BUTTON_WHEELUP, 0, 0);
++                } else if (oeo.scroll.y < 0) {
++                    SDL_PrivateMouseButton(SDL_PRESSED, SDL_BUTTON_WHEELDOWN, 0, 0);
++                    SDL_PrivateMouseButton(SDL_RELEASED, SDL_BUTTON_WHEELDOWN, 0, 0);
++                }
++                break;
++            case OrbEventOption_Quit:
++                SDL_PrivateQuit();
++                break;
++            case OrbEventOption_Focus:
++                SDL_PrivateAppActive(oeo.focus.focused, SDL_APPMOUSEFOCUS);
++                break;
++            case OrbEventOption_Move:
++                // oeo.move.x, oeo.move.y
++                break;
++            case OrbEventOption_Resize:
++                SDL_PrivateResize(oeo.resize.width, oeo.resize.height);
++                break;
++            case OrbEventOption_Screen:
++                // oeo.screen.width, oeo.screen.height
++                break;
++            case OrbEventOption_Unknown:
++                // oeo.unknown.code, oeo.unknown.a, oeo.unknown.b
++                break;
++            default:
++                break;
 +        }
++
++        oeo = orb_events_next(event_iter);
 +    }
++
++    orb_events_destroy(event_iter);
 +}
 +
 +void ORBITAL_InitOSKeymap(_THIS)
@@ -177,91 +185,91 @@ diff -rupN source/src/video/orbital/SDL_orbitalevents.c source-redox/src/video/o
 +    for ( i = 0; i < SDL_arraysize(keymap); ++i )
 +        keymap[i] = SDLK_UNKNOWN;
 +
-+    keymap[SCANCODE_ESCAPE] = SDLK_ESCAPE;
-+    keymap[SCANCODE_1] = SDLK_1;
-+    keymap[SCANCODE_2] = SDLK_2;
-+    keymap[SCANCODE_3] = SDLK_3;
-+    keymap[SCANCODE_4] = SDLK_4;
-+    keymap[SCANCODE_5] = SDLK_5;
-+    keymap[SCANCODE_6] = SDLK_6;
-+    keymap[SCANCODE_7] = SDLK_7;
-+    keymap[SCANCODE_8] = SDLK_8;
-+    keymap[SCANCODE_9] = SDLK_9;
-+    keymap[SCANCODE_0] = SDLK_0;
-+    keymap[SCANCODE_MINUS] = SDLK_MINUS;
-+    keymap[SCANCODE_EQUAL] = SDLK_EQUALS;
-+    keymap[SCANCODE_BACKSPACE] = SDLK_BACKSPACE;
-+    keymap[SCANCODE_TAB] = SDLK_TAB;
-+    keymap[SCANCODE_Q] = SDLK_q;
-+    keymap[SCANCODE_W] = SDLK_w;
-+    keymap[SCANCODE_E] = SDLK_e;
-+    keymap[SCANCODE_R] = SDLK_r;
-+    keymap[SCANCODE_T] = SDLK_t;
-+    keymap[SCANCODE_Y] = SDLK_y;
-+    keymap[SCANCODE_U] = SDLK_u;
-+    keymap[SCANCODE_I] = SDLK_i;
-+    keymap[SCANCODE_O] = SDLK_o;
-+    keymap[SCANCODE_P] = SDLK_p;
-+    keymap[SCANCODE_BRACKET_LEFT] = SDLK_LEFTBRACKET;
-+    keymap[SCANCODE_BRACKET_RIGHT] = SDLK_RIGHTBRACKET;
-+    keymap[SCANCODE_ENTER] = SDLK_RETURN;
-+    keymap[SCANCODE_LEFTCONTROL] = SDLK_LCTRL;
-+    keymap[SCANCODE_A] = SDLK_a;
-+    keymap[SCANCODE_S] = SDLK_s;
-+    keymap[SCANCODE_D] = SDLK_d;
-+    keymap[SCANCODE_F] = SDLK_f;
-+    keymap[SCANCODE_G] = SDLK_g;
-+    keymap[SCANCODE_H] = SDLK_h;
-+    keymap[SCANCODE_J] = SDLK_j;
-+    keymap[SCANCODE_K] = SDLK_k;
-+    keymap[SCANCODE_L] = SDLK_l;
-+    keymap[SCANCODE_SEMICOLON] = SDLK_SEMICOLON;
-+    keymap[SCANCODE_APOSTROPHE] = SDLK_QUOTE;
-+    keymap[SCANCODE_TICK] = SDLK_BACKQUOTE;
-+    keymap[SCANCODE_LEFTSHIFT] = SDLK_LSHIFT;
-+    keymap[SCANCODE_RIGHTSHIFT] = SDLK_RSHIFT;
-+    keymap[SCANCODE_BACKSLASH] = SDLK_BACKSLASH;
-+    keymap[SCANCODE_Z] = SDLK_z;
-+    keymap[SCANCODE_X] = SDLK_x;
-+    keymap[SCANCODE_C] = SDLK_c;
-+    keymap[SCANCODE_V] = SDLK_v;
-+    keymap[SCANCODE_B] = SDLK_b;
-+    keymap[SCANCODE_N] = SDLK_n;
-+    keymap[SCANCODE_M] = SDLK_m;
-+    keymap[SCANCODE_COMMA] = SDLK_COMMA;
-+    keymap[SCANCODE_PERIOD] = SDLK_PERIOD;
-+    keymap[SCANCODE_SLASH] = SDLK_SLASH;
-+    keymap[SCANCODE_LEFTALT] = SDLK_LALT;
-+    keymap[SCANCODE_SPACE] = SDLK_SPACE;
-+    keymap[SCANCODE_CAPSLOCK] = SDLK_CAPSLOCK;
-+    keymap[SCANCODE_F1] = SDLK_F1;
-+    keymap[SCANCODE_F2] = SDLK_F2;
-+    keymap[SCANCODE_F3] = SDLK_F3;
-+    keymap[SCANCODE_F4] = SDLK_F4;
-+    keymap[SCANCODE_F5] = SDLK_F5;
-+    keymap[SCANCODE_F6] = SDLK_F6;
-+    keymap[SCANCODE_F7] = SDLK_F7;
-+    keymap[SCANCODE_F8] = SDLK_F8;
-+    keymap[SCANCODE_F9] = SDLK_F9;
-+    keymap[SCANCODE_F10] = SDLK_F10;
-+    keymap[SCANCODE_F11] = SDLK_F11;
-+    keymap[SCANCODE_F12] = SDLK_F12;
-+    keymap[SCANCODE_HOME] = SDLK_HOME;
-+    keymap[SCANCODE_CURSORBLOCKUP] = SDLK_UP;
-+    keymap[SCANCODE_PAGEUP] = SDLK_PAGEUP;
-+    keymap[SCANCODE_CURSORBLOCKLEFT] = SDLK_LEFT;
-+    keymap[SCANCODE_CURSORBLOCKRIGHT] = SDLK_RIGHT;
-+    keymap[SCANCODE_END] = SDLK_END;
-+    keymap[SCANCODE_CURSORBLOCKDOWN] = SDLK_DOWN;
-+    keymap[SCANCODE_PAGEDOWN] = SDLK_PAGEDOWN;
-+    keymap[SCANCODE_INSERT] = SDLK_INSERT;
-+    keymap[SCANCODE_DELETE] = SDLK_DELETE;
++    keymap[ORB_KEY_ESC] = SDLK_ESCAPE;
++    keymap[ORB_KEY_1] = SDLK_1;
++    keymap[ORB_KEY_2] = SDLK_2;
++    keymap[ORB_KEY_3] = SDLK_3;
++    keymap[ORB_KEY_4] = SDLK_4;
++    keymap[ORB_KEY_5] = SDLK_5;
++    keymap[ORB_KEY_6] = SDLK_6;
++    keymap[ORB_KEY_7] = SDLK_7;
++    keymap[ORB_KEY_8] = SDLK_8;
++    keymap[ORB_KEY_9] = SDLK_9;
++    keymap[ORB_KEY_0] = SDLK_0;
++    keymap[ORB_KEY_MINUS] = SDLK_MINUS;
++    keymap[ORB_KEY_EQUALS] = SDLK_EQUALS;
++    keymap[ORB_KEY_BKSP] = SDLK_BACKSPACE;
++    keymap[ORB_KEY_TAB] = SDLK_TAB;
++    keymap[ORB_KEY_Q] = SDLK_q;
++    keymap[ORB_KEY_W] = SDLK_w;
++    keymap[ORB_KEY_E] = SDLK_e;
++    keymap[ORB_KEY_R] = SDLK_r;
++    keymap[ORB_KEY_T] = SDLK_t;
++    keymap[ORB_KEY_Y] = SDLK_y;
++    keymap[ORB_KEY_U] = SDLK_u;
++    keymap[ORB_KEY_I] = SDLK_i;
++    keymap[ORB_KEY_O] = SDLK_o;
++    keymap[ORB_KEY_P] = SDLK_p;
++    keymap[ORB_KEY_BRACE_OPEN] = SDLK_LEFTBRACKET;
++    keymap[ORB_KEY_BRACE_CLOSE] = SDLK_RIGHTBRACKET;
++    keymap[ORB_KEY_ENTER] = SDLK_RETURN;
++    keymap[ORB_KEY_CTRL] = SDLK_LCTRL;
++    keymap[ORB_KEY_A] = SDLK_a;
++    keymap[ORB_KEY_S] = SDLK_s;
++    keymap[ORB_KEY_D] = SDLK_d;
++    keymap[ORB_KEY_F] = SDLK_f;
++    keymap[ORB_KEY_G] = SDLK_g;
++    keymap[ORB_KEY_H] = SDLK_h;
++    keymap[ORB_KEY_J] = SDLK_j;
++    keymap[ORB_KEY_K] = SDLK_k;
++    keymap[ORB_KEY_L] = SDLK_l;
++    keymap[ORB_KEY_SEMICOLON] = SDLK_SEMICOLON;
++    keymap[ORB_KEY_QUOTE] = SDLK_QUOTE;
++    keymap[ORB_KEY_TICK] = SDLK_BACKQUOTE;
++    keymap[ORB_KEY_LEFT_SHIFT] = SDLK_LSHIFT;
++    keymap[ORB_KEY_RIGHT_SHIFT] = SDLK_RSHIFT;
++    keymap[ORB_KEY_BACKSLASH] = SDLK_BACKSLASH;
++    keymap[ORB_KEY_Z] = SDLK_z;
++    keymap[ORB_KEY_X] = SDLK_x;
++    keymap[ORB_KEY_C] = SDLK_c;
++    keymap[ORB_KEY_V] = SDLK_v;
++    keymap[ORB_KEY_B] = SDLK_b;
++    keymap[ORB_KEY_N] = SDLK_n;
++    keymap[ORB_KEY_M] = SDLK_m;
++    keymap[ORB_KEY_COMMA] = SDLK_COMMA;
++    keymap[ORB_KEY_PERIOD] = SDLK_PERIOD;
++    keymap[ORB_KEY_SLASH] = SDLK_SLASH;
++    keymap[ORB_KEY_ALT] = SDLK_LALT;
++    keymap[ORB_KEY_SPACE] = SDLK_SPACE;
++    keymap[ORB_KEY_CAPS] = SDLK_CAPSLOCK;
++    keymap[ORB_KEY_F1] = SDLK_F1;
++    keymap[ORB_KEY_F2] = SDLK_F2;
++    keymap[ORB_KEY_F3] = SDLK_F3;
++    keymap[ORB_KEY_F4] = SDLK_F4;
++    keymap[ORB_KEY_F5] = SDLK_F5;
++    keymap[ORB_KEY_F6] = SDLK_F6;
++    keymap[ORB_KEY_F7] = SDLK_F7;
++    keymap[ORB_KEY_F8] = SDLK_F8;
++    keymap[ORB_KEY_F9] = SDLK_F9;
++    keymap[ORB_KEY_F10] = SDLK_F10;
++    keymap[ORB_KEY_F11] = SDLK_F11;
++    keymap[ORB_KEY_F12] = SDLK_F12;
++    keymap[ORB_KEY_HOME] = SDLK_HOME;
++    keymap[ORB_KEY_UP] = SDLK_UP;
++    keymap[ORB_KEY_PGUP] = SDLK_PAGEUP;
++    keymap[ORB_KEY_LEFT] = SDLK_LEFT;
++    keymap[ORB_KEY_RIGHT] = SDLK_RIGHT;
++    keymap[ORB_KEY_END] = SDLK_END;
++    keymap[ORB_KEY_DOWN] = SDLK_DOWN;
++    keymap[ORB_KEY_PGDN] = SDLK_PAGEDOWN;
++    keymap[ORB_KEY_INSERT] = SDLK_INSERT;
++    keymap[ORB_KEY_DEL] = SDLK_DELETE;
 +}
 +
 +/* end of SDL_orbitalevents.c ... */
-diff -rupN source/src/video/orbital/SDL_orbitalevents_c.h source-redox/src/video/orbital/SDL_orbitalevents_c.h
---- source/src/video/orbital/SDL_orbitalevents_c.h	1969-12-31 17:00:00.000000000 -0700
-+++ source-redox/src/video/orbital/SDL_orbitalevents_c.h	2018-02-27 20:42:46.335903198 -0700
+diff -rupNw source-original/src/video/orbital/SDL_orbitalevents_c.h source/src/video/orbital/SDL_orbitalevents_c.h
+--- source-original/src/video/orbital/SDL_orbitalevents_c.h	1970-01-01 01:00:00.000000000 +0100
++++ source/src/video/orbital/SDL_orbitalevents_c.h	2018-04-23 17:03:35.537588257 +0200
 @@ -0,0 +1,32 @@
 +/*
 +    SDL - Simple DirectMedia Layer
@@ -295,9 +303,9 @@ diff -rupN source/src/video/orbital/SDL_orbitalevents_c.h source-redox/src/video
 +extern void ORBITAL_PumpEvents(_THIS);
 +
 +/* end of SDL_orbitalevents_c.h ... */
-diff -rupN source/src/video/orbital/SDL_orbitalmouse.c source-redox/src/video/orbital/SDL_orbitalmouse.c
---- source/src/video/orbital/SDL_orbitalmouse.c	1969-12-31 17:00:00.000000000 -0700
-+++ source-redox/src/video/orbital/SDL_orbitalmouse.c	2018-02-27 20:42:46.335903198 -0700
+diff -rupNw source-original/src/video/orbital/SDL_orbitalmouse.c source/src/video/orbital/SDL_orbitalmouse.c
+--- source-original/src/video/orbital/SDL_orbitalmouse.c	1970-01-01 01:00:00.000000000 +0100
++++ source/src/video/orbital/SDL_orbitalmouse.c	2018-04-23 17:03:35.537588257 +0200
 @@ -0,0 +1,33 @@
 +/*
 +    SDL - Simple DirectMedia Layer
@@ -332,9 +340,9 @@ diff -rupN source/src/video/orbital/SDL_orbitalmouse.c source-redox/src/video/or
 +struct WMcursor {
 +	int unused;
 +};
-diff -rupN source/src/video/orbital/SDL_orbitalmouse_c.h source-redox/src/video/orbital/SDL_orbitalmouse_c.h
---- source/src/video/orbital/SDL_orbitalmouse_c.h	1969-12-31 17:00:00.000000000 -0700
-+++ source-redox/src/video/orbital/SDL_orbitalmouse_c.h	2018-02-27 20:42:46.335903198 -0700
+diff -rupNw source-original/src/video/orbital/SDL_orbitalmouse_c.h source/src/video/orbital/SDL_orbitalmouse_c.h
+--- source-original/src/video/orbital/SDL_orbitalmouse_c.h	1970-01-01 01:00:00.000000000 +0100
++++ source/src/video/orbital/SDL_orbitalmouse_c.h	2018-04-23 17:03:35.537588257 +0200
 @@ -0,0 +1,26 @@
 +/*
 +    SDL - Simple DirectMedia Layer
@@ -362,94 +370,10 @@ diff -rupN source/src/video/orbital/SDL_orbitalmouse_c.h source-redox/src/video/
 +#include "SDL_orbitalvideo.h"
 +
 +/* Functions to be exported */
-diff -rupN source/src/video/orbital/SDL_orbitalscancode.h source-redox/src/video/orbital/SDL_orbitalscancode.h
---- source/src/video/orbital/SDL_orbitalscancode.h	1969-12-31 17:00:00.000000000 -0700
-+++ source-redox/src/video/orbital/SDL_orbitalscancode.h	2018-02-27 20:42:46.335903198 -0700
-@@ -0,0 +1,80 @@
-+#define SCANCODE_A	0x1E
-+#define SCANCODE_B	0x30
-+#define SCANCODE_C	0x2E
-+#define SCANCODE_D	0x20
-+#define SCANCODE_E	0x12
-+#define SCANCODE_F	0x21
-+#define SCANCODE_G	0x22
-+#define SCANCODE_H	0x23
-+#define SCANCODE_I	0x17
-+#define SCANCODE_J	0x24
-+#define SCANCODE_K	0x25
-+#define SCANCODE_L	0x26
-+#define SCANCODE_M	0x32
-+#define SCANCODE_N	0x31
-+#define SCANCODE_O	0x18
-+#define SCANCODE_P	0x19
-+#define SCANCODE_Q	0x10
-+#define SCANCODE_R	0x13
-+#define SCANCODE_S	0x1F
-+#define SCANCODE_T	0x14
-+#define SCANCODE_U	0x16
-+#define SCANCODE_V	0x2F
-+#define SCANCODE_W	0x11
-+#define SCANCODE_X	0x2D
-+#define SCANCODE_Y	0x15
-+#define SCANCODE_Z	0x2C
-+#define SCANCODE_0	0x0B
-+#define SCANCODE_1	0x2
-+#define SCANCODE_2	0x3
-+#define SCANCODE_3	0x4
-+#define SCANCODE_4	0x5
-+#define SCANCODE_5	0x6
-+#define SCANCODE_6	0x7
-+#define SCANCODE_7	0x8
-+#define SCANCODE_8	0x9
-+#define SCANCODE_9	0x0A
-+#define SCANCODE_TICK	0x29
-+#define SCANCODE_MINUS	0x0C
-+#define SCANCODE_EQUAL	0x0D
-+#define SCANCODE_BACKSLASH	0x2B
-+#define SCANCODE_BACKSPACE	0x0E
-+#define SCANCODE_SPACE	0x39
-+#define SCANCODE_TAB	0x0F
-+#define SCANCODE_CAPSLOCK	0x3A
-+#define SCANCODE_LEFTSHIFT	0x2A
-+#define SCANCODE_LEFTCONTROL	0x1D
-+#define SCANCODE_LEFTALT	0x38
-+#define SCANCODE_RIGHTSHIFT	0x36
-+#define SCANCODE_ENTER	0x1C
-+#define SCANCODE_ESCAPE	0x1
-+#define SCANCODE_F1	0x3B
-+#define SCANCODE_F2	0x3C
-+#define SCANCODE_F3	0x3D
-+#define SCANCODE_F4	0x3E
-+#define SCANCODE_F5	0x3F
-+#define SCANCODE_F6	0x40
-+#define SCANCODE_F7	0x41
-+#define SCANCODE_F8	0x42
-+#define SCANCODE_F9	0x43
-+#define SCANCODE_F10	0x44
-+#define SCANCODE_F11	0x57
-+#define SCANCODE_F12	0x58
-+#define SCANCODE_SCROLL	0x46
-+#define SCANCODE_BRACKET_LEFT	0x1A
-+#define SCANCODE_BRACKET_RIGHT	0x1B
-+#define SCANCODE_INSERT	0x52
-+#define SCANCODE_HOME	0x47
-+#define SCANCODE_PAGEUP	0x49
-+#define SCANCODE_DELETE	0x53
-+#define SCANCODE_END	0x4F
-+#define SCANCODE_PAGEDOWN	0x51
-+#define SCANCODE_CURSORBLOCKUP	0x48
-+#define SCANCODE_CURSORBLOCKLEFT	0x4B
-+#define SCANCODE_CURSORBLOCKDOWN	0x50
-+#define SCANCODE_CURSORBLOCKRIGHT	0x4D
-+#define SCANCODE_SEMICOLON	0x27
-+#define SCANCODE_APOSTROPHE	0x28
-+#define SCANCODE_COMMA	0x33
-+#define SCANCODE_PERIOD	0x34
-+#define SCANCODE_SLASH	0x35
-diff -rupN source/src/video/orbital/SDL_orbitalvideo.c source-redox/src/video/orbital/SDL_orbitalvideo.c
---- source/src/video/orbital/SDL_orbitalvideo.c	1969-12-31 17:00:00.000000000 -0700
-+++ source-redox/src/video/orbital/SDL_orbitalvideo.c	2018-02-27 20:42:46.335903198 -0700
-@@ -0,0 +1,282 @@
+diff -rupNw source-original/src/video/orbital/SDL_orbitalvideo.c source/src/video/orbital/SDL_orbitalvideo.c
+--- source-original/src/video/orbital/SDL_orbitalvideo.c	1970-01-01 01:00:00.000000000 +0100
++++ source/src/video/orbital/SDL_orbitalvideo.c	2018-04-25 02:29:56.554079034 +0200
+@@ -0,0 +1,248 @@
 +/*
 +    SDL - Simple DirectMedia Layer
 +    Copyright (C) 1997-2012 Sam Lantinga
@@ -487,6 +411,7 @@ diff -rupN source/src/video/orbital/SDL_orbitalvideo.c source-redox/src/video/or
 +#include "../SDL_pixels_c.h"
 +#include "../../events/SDL_events_c.h"
 +
++#include <orbital.h>
 +#include "SDL_orbitalvideo.h"
 +#include "SDL_orbitalevents_c.h"
 +#include "SDL_orbitalmouse_c.h"
@@ -611,62 +536,37 @@ diff -rupN source/src/video/orbital/SDL_orbitalvideo.c source-redox/src/video/or
 +		return(NULL);
 +	}
 +
-+	if ( this->hidden->buffer ) {
-+		redox_funmap( this->hidden->buffer );
-+		this->hidden->buffer = NULL;
-+	}
-+
-+	if ( this->hidden->fd > 0 ) {
-+		/* If the window already exists send a resize message to the display server */
-+		char msg[4096];
-+		int msg_len = snprintf(msg, 4096, "S,%d,%d", width, height);
-+		int res = write(this->hidden->fd, msg, msg_len);
-+		if ( res != msg_len ) {
-+			close(this->hidden->fd);
-+			this->hidden->fd = 0;
-+			SDL_SetError("Couldn't write resize event");
-+			return(NULL);
-+		}
++	if (this->hidden->window) {
++		orb_window_set_size(this->hidden->window, width, height);
 +	} else {
-+		/* Otherwise create a new window */
-+		char path[4096];
-+		snprintf(path, 4096, "orbital:a%s/-1/-1/%d/%d/SDL", (flags & SDL_RESIZABLE) ? "r" : "", width, height);
-+		this->hidden->fd = open(path, O_RDWR);
-+		if ( this->hidden->fd <= 0 ) {
-+			this->hidden->fd = 0;
++		uint32_t flags = ORB_WINDOW_ASYNC;
++		if (flags & SDL_RESIZABLE)
++			flags |= ORB_WINDOW_RESIZABLE;
++
++		this->hidden->window = orb_window_new_flags(-1, -1, width, height, "SDL", flags);
++		if (!this->hidden->window) {
 +			SDL_SetError("Couldn't create window for requested mode");
 +			return(NULL);
 +		}
-+		printf("%s at %d\n", path, this->hidden->fd);
-+	}
-+
-+	this->hidden->buffer = redox_fmap(this->hidden->fd, 0, width * height * (bpp / 8));
-+	if ( ! this->hidden->buffer ) {
-+		close(this->hidden->fd);
-+		this->hidden->fd = 0;
-+		SDL_SetError("Couldn't map window for requested mode");
-+		return(NULL);
 +	}
 +
 + 	fprintf(stderr, "Setting mode %dx%d@%d\n", width, height, bpp);
 +
 +	/* Allocate the new pixel format for the screen */
-+
 +	if ( ! SDL_ReallocFormat(current, bpp, 0, 0, 0, 0) ) {
-+		redox_funmap(this->hidden->buffer);
-+		this->hidden->buffer = NULL;
-+		close(this->hidden->fd);
-+		this->hidden->fd = 0;
++		orb_window_destroy(this->hidden->window);
++		this->hidden->window = NULL;
++
 +		SDL_SetError("Couldn't allocate new pixel format for requested mode");
 +		return(NULL);
 +	}
 +
 +	/* Set up the new mode framebuffer */
 +	current->flags = flags /*& SDL_FULLSCREEN*/;
-+	this->hidden->w = current->w = width;
-+	this->hidden->h = current->h = height;
-+	current->pitch = current->w * (bpp / 8);
-+	current->pixels = this->hidden->buffer;
++	current->w = width;
++	current->h = height;
++	current->pitch = width * (bpp / 8);
++	current->pixels = orb_window_data(this->hidden->window);
 +
 +	/* We're done */
 +	return(current);
@@ -674,14 +574,8 @@ diff -rupN source/src/video/orbital/SDL_orbitalvideo.c source-redox/src/video/or
 +
 +static void ORBITAL_SetCaption(_THIS, const char *title, const char *icon)
 +{
-+	if ( this->hidden->fd > 0 ) {
-+		char msg[4096];
-+		int msg_len = snprintf(msg, 4096, "T,%s", title);
-+		int res = write(this->hidden->fd, msg, msg_len);
-+		if ( res != msg_len ) {
-+			SDL_SetError("Couldn't set window caption (write error)");
-+		}
-+	}
++	if (this->hidden->window)
++		orb_window_set_title(this->hidden->window, title);
 +}
 +
 +/* We don't actually allow hardware surfaces other than the main one */
@@ -707,7 +601,8 @@ diff -rupN source/src/video/orbital/SDL_orbitalvideo.c source-redox/src/video/or
 +
 +static void ORBITAL_UpdateRects(_THIS, int numrects, SDL_Rect *rects)
 +{
-+	fsync(this->hidden->fd);
++	if (this->hidden->window)
++		orb_window_sync(this->hidden->window);
 +}
 +
 +int ORBITAL_SetColors(_THIS, int firstcolor, int ncolors, SDL_Color *colors)
@@ -721,21 +616,16 @@ diff -rupN source/src/video/orbital/SDL_orbitalvideo.c source-redox/src/video/or
 +*/
 +void ORBITAL_VideoQuit(_THIS)
 +{
-+	if ( this->hidden->buffer ) {
-+		redox_funmap( this->hidden->buffer );
-+		this->hidden->buffer = NULL;
++	if (this->hidden->window) {
++		orb_window_destroy(this->hidden->window);
++		this->hidden->window = NULL;
 +		this->screen->pixels = NULL;
 +	}
-+
-+	if ( this->hidden->fd >= 0) {
-+		close( this->hidden->fd );
-+                this->hidden->fd = 0;
-+	}
 +}
-diff -rupN source/src/video/orbital/SDL_orbitalvideo.h source-redox/src/video/orbital/SDL_orbitalvideo.h
---- source/src/video/orbital/SDL_orbitalvideo.h	1969-12-31 17:00:00.000000000 -0700
-+++ source-redox/src/video/orbital/SDL_orbitalvideo.h	2018-02-27 20:42:46.335903198 -0700
-@@ -0,0 +1,41 @@
+diff -rupNw source-original/src/video/orbital/SDL_orbitalvideo.h source/src/video/orbital/SDL_orbitalvideo.h
+--- source-original/src/video/orbital/SDL_orbitalvideo.h	1970-01-01 01:00:00.000000000 +0100
++++ source/src/video/orbital/SDL_orbitalvideo.h	2018-04-23 17:04:31.224570535 +0200
+@@ -0,0 +1,39 @@
 +/*
 +    SDL - Simple DirectMedia Layer
 +    Copyright (C) 1997-2012 Sam Lantinga
@@ -771,15 +661,13 @@ diff -rupN source/src/video/orbital/SDL_orbitalvideo.h source-redox/src/video/or
 +/* Private display data */
 +
 +struct SDL_PrivateVideoData {
-+    int w, h;
-+    int fd;
-+    void *buffer;
++    void *window;
 +};
 +
 +#endif /* _SDL_orbitalvideo_h */
-diff -rupN source/src/video/SDL_gamma.c source-redox/src/video/SDL_gamma.c
---- source/src/video/SDL_gamma.c	2012-01-18 23:30:06.000000000 -0700
-+++ source-redox/src/video/SDL_gamma.c	2018-02-27 20:56:59.314549375 -0700
+diff -rupNw source-original/src/video/SDL_gamma.c source/src/video/SDL_gamma.c
+--- source-original/src/video/SDL_gamma.c	2012-01-19 07:30:06.000000000 +0100
++++ source/src/video/SDL_gamma.c	2018-04-23 17:03:35.537588257 +0200
 @@ -35,6 +35,9 @@
  #define log(x)		__ieee754_log(x)
  #endif
@@ -790,9 +678,9 @@ diff -rupN source/src/video/SDL_gamma.c source-redox/src/video/SDL_gamma.c
  #include "SDL_sysvideo.h"
  
  
-diff -rupN source/src/video/SDL_sysvideo.h source-redox/src/video/SDL_sysvideo.h
---- source/src/video/SDL_sysvideo.h	2012-01-18 23:30:06.000000000 -0700
-+++ source-redox/src/video/SDL_sysvideo.h	2018-02-27 20:42:46.335903198 -0700
+diff -rupNw source-original/src/video/SDL_sysvideo.h source/src/video/SDL_sysvideo.h
+--- source-original/src/video/SDL_sysvideo.h	2012-01-19 07:30:06.000000000 +0100
++++ source/src/video/SDL_sysvideo.h	2018-04-23 17:03:35.537588257 +0200
 @@ -410,6 +410,9 @@ extern VideoBootStrap AALIB_bootstrap;
  #if SDL_VIDEO_DRIVER_CACA
  extern VideoBootStrap CACA_bootstrap;
@@ -803,9 +691,9 @@ diff -rupN source/src/video/SDL_sysvideo.h source-redox/src/video/SDL_sysvideo.h
  #if SDL_VIDEO_DRIVER_DUMMY
  extern VideoBootStrap DUMMY_bootstrap;
  #endif
-diff -rupN source/src/video/SDL_video.c source-redox/src/video/SDL_video.c
---- source/src/video/SDL_video.c	2012-01-18 23:30:06.000000000 -0700
-+++ source-redox/src/video/SDL_video.c	2018-02-27 20:45:30.447873197 -0700
+diff -rupNw source-original/src/video/SDL_video.c source/src/video/SDL_video.c
+--- source-original/src/video/SDL_video.c	2012-01-19 07:30:06.000000000 +0100
++++ source/src/video/SDL_video.c	2018-04-23 17:03:35.541588484 +0200
 @@ -126,6 +126,9 @@ static VideoBootStrap *bootstrap[] = {
  #if SDL_VIDEO_DRIVER_CACA
  	&CACA_bootstrap,
@@ -826,12 +714,3 @@ diff -rupN source/src/video/SDL_video.c source-redox/src/video/SDL_video.c
  
  		/* Now adjust the offsets to match the desired mode */
  		video->offset_x = (mode->w-width)/2;
-@@ -1598,7 +1602,7 @@ void SDL_GL_UpdateRects(int numrects, SD
- 				this->glFlush();
- 				/*
- 				* Note the parens around the function name:
--				* This is because some OpenGL implementations define glTexCoord etc 
-+				* This is because some OpenGL implementations define glTexCoord etc
- 				* as macros, and we don't want them expanded here.
- 				*/
- 				this->glBegin(GL_TRIANGLE_STRIP);
