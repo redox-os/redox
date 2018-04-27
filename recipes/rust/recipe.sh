@@ -78,7 +78,7 @@ function recipe_build {
         make install
     popd
 
-    python x.py build --config ../config.toml --jobs $(nproc)
+    python x.py dist --config ../config.toml --jobs $(nproc) --incremental
     skip=1
 }
 
