@@ -540,11 +540,11 @@ diff -rupNw source-original/src/video/orbital/SDL_orbitalvideo.c source/src/vide
 +	if (this->hidden->window) {
 +		orb_window_set_size(this->hidden->window, width, height);
 +	} else {
-+		uint32_t flags = ORB_WINDOW_ASYNC;
++		uint32_t orb_flags = ORB_WINDOW_ASYNC;
 +		if (flags & SDL_RESIZABLE)
-+			flags |= ORB_WINDOW_RESIZABLE;
++			orb_flags |= ORB_WINDOW_RESIZABLE;
 +
-+		this->hidden->window = orb_window_new_flags(-1, -1, width, height, "SDL", flags);
++		this->hidden->window = orb_window_new_flags(-1, -1, width, height, "SDL", orb_flags);
 +		if (!this->hidden->window) {
 +			SDL_SetError("Couldn't create window for requested mode");
 +			return(NULL);
