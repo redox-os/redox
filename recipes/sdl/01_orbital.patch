@@ -13,10 +13,10 @@ diff -rupNw source-original/build-scripts/config.sub source/build-scripts/config
 diff -rupNw source-original/configure.in source/configure.in
 --- source-original/configure.in	2012-01-19 07:30:05.000000000 +0100
 +++ source/configure.in	2018-04-23 17:03:35.533588029 +0200
-@@ -1646,6 +1646,19 @@ AC_HELP_STRING([--enable-video-dummy], [
+@@ -1646,6 +1646,20 @@ AC_HELP_STRING([--enable-video-dummy], [
      fi
  }
- 
+
 +dnl Set up the Orbital video driver.
 +CheckOrbitalVideo()
 +{
@@ -26,6 +26,7 @@ diff -rupNw source-original/configure.in source/configure.in
 +    if test x$enable_video_orbital = xyes; then
 +        AC_DEFINE(SDL_VIDEO_DRIVER_ORBITAL)
 +        SOURCES="$SOURCES $srcdir/src/video/orbital/*.c"
++        SDL_LIBS="$SDL_LIBS -Wl,--gc-sections -lorbital"
 +        have_video=yes
 +    fi
 +}
@@ -671,13 +672,13 @@ diff -rupNw source-original/src/video/SDL_gamma.c source/src/video/SDL_gamma.c
 @@ -35,6 +35,9 @@
  #define log(x)		__ieee754_log(x)
  #endif
- 
+
 +#include "e_log.h"
 +#define log(x)		__ieee754_log(x)
 +
  #include "SDL_sysvideo.h"
- 
- 
+
+
 diff -rupNw source-original/src/video/SDL_sysvideo.h source/src/video/SDL_sysvideo.h
 --- source-original/src/video/SDL_sysvideo.h	2012-01-19 07:30:06.000000000 +0100
 +++ source/src/video/SDL_sysvideo.h	2018-04-23 17:03:35.537588257 +0200
@@ -711,6 +712,6 @@ diff -rupNw source-original/src/video/SDL_video.c source/src/video/SDL_video.c
 -		SDL_ClearSurface(mode);
 +		// Causes blinking under Orbital
 +		//SDL_ClearSurface(mode);
- 
+
  		/* Now adjust the offsets to match the desired mode */
  		video->offset_x = (mode->w-width)/2;
