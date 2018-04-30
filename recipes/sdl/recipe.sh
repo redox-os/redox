@@ -1,5 +1,9 @@
 VERSION=1.2.15
 TAR=https://www.libsdl.org/release/SDL-$VERSION.tar.gz
+BUILD_DEPENDS=(liborbital)
+
+export CFLAGS="-I$PWD/sysroot/include/"
+export LDFLAGS="-L$PWD/sysroot/lib/"
 
 function recipe_version {
     echo "$VERSION"
