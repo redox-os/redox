@@ -15,48 +15,6 @@ diff -rupNw source-original/libnsfb/Makefile source/libnsfb/Makefile
  
  # surfaces not detectable via pkg-config 
  NSFB_ABLE_AVAILABLE := no
-diff -rupNw source-original/libnsfb/src/plot/32bpp-xbgr8888.c source/libnsfb/src/plot/32bpp-xbgr8888.c
---- source-original/libnsfb/src/plot/32bpp-xbgr8888.c	2017-10-16 12:09:35.000000000 +0200
-+++ source/libnsfb/src/plot/32bpp-xbgr8888.c	2018-03-04 20:43:18.188956997 +0100
-@@ -52,7 +52,7 @@ static inline nsfb_colour_t pixel_to_col
-  */
- static inline uint32_t colour_to_pixel(UNUSED nsfb_t *nsfb, nsfb_colour_t c)
- {
--        return ((c & 0xFF) << 24) | ((c & 0xFF00) << 8) | ((c & 0xFF0000) >> 8);
-+        return ((c & 0xFF) << 24) | ((c & 0xFF00) << 8) | ((c & 0xFF0000) >> 8) | 0xFF;
- }
- 
- #else
-@@ -79,7 +79,7 @@ static inline nsfb_colour_t pixel_to_col
-  */
- static inline uint32_t colour_to_pixel(UNUSED nsfb_t *nsfb, nsfb_colour_t c)
- {
--        return c;
-+        return c | 0xFF000000;
- }
- 
- #endif
-diff -rupNw source-original/libnsfb/src/plot/32bpp-xrgb8888.c source/libnsfb/src/plot/32bpp-xrgb8888.c
---- source-original/libnsfb/src/plot/32bpp-xrgb8888.c	2017-10-16 12:09:35.000000000 +0200
-+++ source/libnsfb/src/plot/32bpp-xrgb8888.c	2018-03-04 20:43:18.188956997 +0100
-@@ -52,7 +52,7 @@ static inline nsfb_colour_t pixel_to_col
-  */
- static inline uint32_t colour_to_pixel(UNUSED nsfb_t *nsfb, nsfb_colour_t c)
- {
--        return (c << 8);
-+        return (c << 8) | 0xff;
- }
- 
- #else
-@@ -81,7 +81,7 @@ static inline nsfb_colour_t pixel_to_col
-  */
- static inline uint32_t colour_to_pixel(UNUSED nsfb_t *nsfb, nsfb_colour_t c)
- {
--        return ((c & 0xff0000) >> 16) | (c & 0xff00) | ((c & 0xff) << 16);
-+        return 0xff000000 | ((c & 0xff0000) >> 16) | (c & 0xff00) | ((c & 0xff) << 16);
- }
- 
- #endif
 diff -rupNw source-original/libnsfb/src/plot.h source/libnsfb/src/plot.h
 --- source-original/libnsfb/src/plot.h	2017-10-16 12:09:35.000000000 +0200
 +++ source/libnsfb/src/plot.h	2018-03-04 20:43:18.188956997 +0100
