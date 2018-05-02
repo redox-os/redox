@@ -1,7 +1,7 @@
-GIT=https://github.com/redox-os/freedoom.git
+GIT=https://github.com/redox-os/openttd-opengfx.git
 
 function recipe_version {
-    echo "0.11.3"
+    echo "0.5.2"
     skip=1
 }
 
@@ -26,8 +26,9 @@ function recipe_clean {
 }
 
 function recipe_stage {
-    mkdir -pv "$1/share/games/doom"
-    cp -Rv ./*.wad "$1/share/games/doom"
+    mkdir -pv "$1/share/games/openttd/baseset/opengfx"
+    cp -Rv ./* "$1/share/games/openttd/baseset/opengfx"
     skip=1
 }
+
 
