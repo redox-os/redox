@@ -1,0 +1,112 @@
+diff --git a/config.lib b/config.lib
+index bc2224f..54290b1 100644
+--- a/config.lib
++++ b/config.lib
+@@ -1486,7 +1486,7 @@ make_cflags_and_ldflags() {
+ 	# Special CXXFlags for HOST
+ 	CXXFLAGS="$CXXFLAGS"
+ 	# Libs to compile. In fact this is just LDFLAGS
+-	LIBS="-lstdc++"
++	LIBS="-lstdc++ -lSDL -lorbital"
+ 	# LDFLAGS used for HOST
+ 	LDFLAGS="$LDFLAGS"
+ 	# FEATURES for HOST (lto)
+@@ -1594,7 +1594,7 @@ make_cflags_and_ldflags() {
+ 	fi
+ 
+ 	if [ "$os" != "CYGWIN" ] && [ "$os" != "HAIKU" ] && [ "$os" != "OPENBSD" ] && [ "$os" != "MINGW" ] && [ "$os" != "MORPHOS" ] && [ "$os" != "OSX" ] && [ "$os" != "DOS" ] && [ "$os" != "WINCE" ] && [ "$os" != "PSP" ] && [ "$os" != "OS2" ]; then
+-		LIBS="$LIBS -lpthread"
++		LIBS="$LIBS"
+ 	fi
+ 
+ 	if [ "$os" != "CYGWIN" ] && [ "$os" != "HAIKU" ] && [ "$os" != "MINGW" ] && [ "$os" != "DOS" ] && [ "$os" != "WINCE" ]; then
+diff --git a/src/os/unix/crashlog_unix.cpp b/src/os/unix/crashlog_unix.cpp
+index 47de057..07a3b74 100644
+--- a/src/os/unix/crashlog_unix.cpp
++++ b/src/os/unix/crashlog_unix.cpp
+@@ -17,7 +17,7 @@
+ 
+ #include <errno.h>
+ #include <signal.h>
+-#include <sys/utsname.h>
++//#include <sys/utsname.h>
+ 
+ #if defined(__GLIBC__)
+ /* Execinfo (and thus making stacktraces) is a GNU extension */
+@@ -42,22 +42,22 @@ class CrashLogUnix : public CrashLog {
+ 
+ 	/* virtual */ char *LogOSVersion(char *buffer, const char *last) const
+ 	{
+-		struct utsname name;
+-		if (uname(&name) < 0) {
++		//struct utsname name;
++		//if (uname(&name) < 0) {
+ 			return buffer + seprintf(buffer, last, "Could not get OS version: %s\n", strerror(errno));
+-		}
+-
+-		return buffer + seprintf(buffer, last,
+-				"Operating system:\n"
+-				" Name:     %s\n"
+-				" Release:  %s\n"
+-				" Version:  %s\n"
+-				" Machine:  %s\n",
+-				name.sysname,
+-				name.release,
+-				name.version,
+-				name.machine
+-		);
++		//}
++
++		//return buffer + seprintf(buffer, last,
++		//		"Operating system:\n"
++		//		" Name:     %s\n"
++		//		" Release:  %s\n"
++		//		" Version:  %s\n"
++		//		" Machine:  %s\n",
++		//		name.sysname,
++		//		name.release,
++		//		name.version,
++		//		name.machine
++		//);
+ 	}
+ 
+ 	/* virtual */ char *LogError(char *buffer, const char *last, const char *message) const
+diff --git a/src/os/unix/unix.cpp b/src/os/unix/unix.cpp
+index d7c2304..ed3c706 100644
+--- a/src/os/unix/unix.cpp
++++ b/src/os/unix/unix.cpp
+@@ -28,7 +28,7 @@
+ #ifdef __APPLE__
+ 	#include <sys/mount.h>
+ #elif (defined(_POSIX_VERSION) && _POSIX_VERSION >= 200112L) || defined(__GLIBC__)
+-	#define HAS_STATVFS
++	//#define HAS_STATVFS
+ #endif
+ 
+ #if defined(OPENBSD) || defined(__NetBSD__) || defined(__FreeBSD__)
+diff --git a/src/rev.cpp.in b/src/rev.cpp.in
+index b6bddea..499ec09 100644
+--- a/src/rev.cpp.in
++++ b/src/rev.cpp.in
+@@ -57,7 +57,7 @@ const char _openttd_build_date[] = __DATE__ " " __TIME__;
+  * (compiling from sources without any version control software)
+  * and 2 is for modified revision.
+  */
+-const byte _openttd_revision_modified = !!MODIFIED!!;
++const byte _openttd_revision_modified = 2;
+ 
+ /**
+  * The NewGRF revision of OTTD:
+diff --git a/src/stringfilter.cpp b/src/stringfilter.cpp
+index 6045c19..6fc3f99 100644
+--- a/src/stringfilter.cpp
++++ b/src/stringfilter.cpp
+@@ -113,7 +113,7 @@ void StringFilter::AddLine(const char *str)
+ 	const WordState *end = this->word_index.End();
+ 	for (WordState *it = this->word_index.Begin(); it != end; ++it) {
+ 		if (!it->match) {
+-			if ((match_case ? strstr(str, it->start) : strcasestr(str, it->start)) != NULL) {
++			if ((match_case ? strstr(str, it->start) : strstr(str, it->start)) != NULL) {
+ 				it->match = true;
+ 				this->word_matches++;
+ 			}
