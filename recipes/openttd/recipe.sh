@@ -1,7 +1,7 @@
 VERSION=1.8
 GIT=https://github.com/OpenTTD/OpenTTD.git
 BRANCH=release/$VERSION
-BUILD_DEPENDS=(sdl liborbital zlib)
+BUILD_DEPENDS=(sdl liborbital zlib xz)
 
 function recipe_version {
     echo "$VERSION"
@@ -14,7 +14,7 @@ function recipe_update {
 }
 
 function recipe_build {
-    ./configure --build=`gcc -dumpmachine` --host=${HOST} --prefix='' --enable-static --without-lzma --without-liblzo2 --disable-network --without-threads
+    ./configure --build=`gcc -dumpmachine` --host=${HOST} --prefix='' --enable-static --without-liblzo2 --disable-network --without-threads
     make VERBOSE=1
     skip=1
 }
