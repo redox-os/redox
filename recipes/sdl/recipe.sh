@@ -17,7 +17,7 @@ function recipe_update {
 
 function recipe_build {
     ./autogen.sh
-    ./configure --prefix=/ --host=${HOST} --disable-shared --disable-pulseaudio --disable-video-x11 --disable-cdrom --disable-loadso --disable-threads --enable-audio --enable-dummyaudio --enable-video-orbital
+    ./configure --prefix=/ --host=${HOST} --disable-shared --disable-pulseaudio --disable-video-x11 --disable-loadso --disable-threads --enable-audio --enable-dummyaudio --enable-video-orbital --enable-cdrom
     make
     skip=1
 }
