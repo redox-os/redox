@@ -1,0 +1,11 @@
+--- source/include/cross_orig.h	2017-10-25 01:51:53.148610915 +0200
++++ source/include/cross.h	2017-10-25 00:56:43.896422986 +0200
+@@ -64,7 +64,7 @@
+ //Solaris maybe others
+ #if defined (DB_HAVE_NO_POWF)
+ #include <math.h>
+-static inline float powf (float x, float y) { return (float) pow (x,y); }
++//static inline float powf (float x, float y) { return (float) pow (x,y); }
+ #endif
+
+ class Cross { 
