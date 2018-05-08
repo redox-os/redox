@@ -13,6 +13,7 @@ function recipe_update {
 
 function recipe_build {
     ./autogen.sh
+    chmod +w build-aux/config.sub
     wget -O build-aux/config.sub http://git.savannah.gnu.org/cgit/config.git/plain/config.sub
     ./configure --host=${HOST} --prefix=/ --enable-threads=no
     make

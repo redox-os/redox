@@ -18,6 +18,7 @@ function recipe_build {
     export CPPFLAGS="-I$sysroot/include"
 
     ./autogen.sh
+    chmod +w config.sub
     wget -O config.sub http://git.savannah.gnu.org/cgit/config.git/plain/config.sub
     ./configure --host=${HOST} --prefix='/'
     make
