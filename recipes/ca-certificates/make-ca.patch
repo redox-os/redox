@@ -1,0 +1,12 @@
+1c1
+< #!/bin/bash
+---
+> #!/usr/bin/env bash
+31,33c31,33
+< CERTUTIL="/usr/bin/certutil"
+< KEYTOOL="/opt/jdk/bin/keytool"
+< OPENSSL="/usr/bin/openssl"
+---
+> CERTUTIL="certutil"
+> KEYTOOL="keytool"
+> OPENSSL="openssl"
