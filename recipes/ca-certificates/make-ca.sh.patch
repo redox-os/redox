@@ -1,0 +1,22 @@
+diff -ru source/make-ca.sh source2/make-ca.sh
+--- source/make-ca.sh	2018-05-08 10:27:57.829291956 +0200
++++ source2/make-ca.sh	2018-05-08 10:33:58.040239253 +0200
+@@ -1,4 +1,4 @@
+-#!/bin/bash
++#!/usr/bin/env bash
+ # Begin /usr/sbin/make-ca.sh
+ #
+ # Script to create OpenSSL certs directory, GnuTLS certificate bundle, NSS
+@@ -28,9 +28,9 @@
+ CERTDATA="certdata.txt"
+ PKIDIR="/etc/pki"
+ SSLDIR="/etc/ssl"
+-CERTUTIL="/usr/bin/certutil"
+-KEYTOOL="/opt/jdk/bin/keytool"
+-OPENSSL="/usr/bin/openssl"
++CERTUTIL="certutil"
++KEYTOOL="keytool"
++OPENSSL="openssl"
+ ANCHORDIR="${PKIDIR}/anchors"
+ CABUNDLE="${SSLDIR}/ca-bundle.crt"
+ CERTDIR="${SSLDIR}/certs"
