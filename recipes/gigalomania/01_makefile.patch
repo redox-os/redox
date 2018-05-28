@@ -1,0 +1,99 @@
+--- source/Makefile	2018-05-28 10:13:03.737049078 +0200
++++ build/Makefile	2018-05-28 11:23:29.808994973 +0200
+@@ -1,13 +1,14 @@
+-CC=g++
++CC=$(CPPHOST)
+ CCFLAGS=-O2 -Wall
+ CFILES=game.cpp gamestate.cpp gui.cpp image.cpp main.cpp panel.cpp player.cpp resources.cpp screen.cpp sector.cpp sound.cpp tutorial.cpp utils.cpp TinyXML/tinyxml.cpp TinyXML/tinyxmlerror.cpp TinyXML/tinyxmlparser.cpp
+ HFILES=game.h gamestate.h gui.h image.h panel.h player.h resources.h screen.h sector.h sound.h tutorial.h utils.h common.h stdafx.h TinyXML/tinyxml.h
+ OFILES=game.o gamestate.o gui.o image.o panel.o player.o resources.o screen.o sector.o sound.o tutorial.o utils.o main.o TinyXML/tinyxml.o TinyXML/tinyxmlerror.o TinyXML/tinyxmlparser.o
+ APP=gigalomania
+-INC=`sdl2-config --cflags`
+-LINKPATH=`sdl2-config --libs` -L/usr/X11R6/lib/ -L/usr/lib
++INC=$(CPPFLAGS)
++LINKPATH=$(LDFLAGS)
++GAMEPATH="/games/gigalomania"
+ 
+-LIBS=-lSDL2_image -lSDL2_mixer
++LIBS=-lSDL_mixer -lSDL_image -ljpeg -lpng -lSDL -lorbital -lz
+ 
+ all: $(APP)
+ 
+@@ -19,69 +20,16 @@
+ 
+ # REMEMBER to update debian/dirs if the system directories that we use are changed!!!
+ install: $(APP)
+-	mkdir -p $(DESTDIR)/opt/gigalomania # -p so we don't fail if folder already exists
+-	cp $(APP) $(DESTDIR)/opt/gigalomania
+-	cp readme.html $(DESTDIR)/opt/gigalomania
+-	cp -a gfx/ $(DESTDIR)/opt/gigalomania # -a need to copy permissions etc
+-	cp -a islands/ $(DESTDIR)/opt/gigalomania
+-	cp -a music/ $(DESTDIR)/opt/gigalomania
+-	cp -a sound/ $(DESTDIR)/opt/gigalomania
+-	# needed for DESTDIR option:
+-	mkdir -p $(DESTDIR)/usr/share/applications
+-	cp gigalomania.desktop $(DESTDIR)/usr/share/applications/
+-	#cp gigalomania_fullscreen.desktop $(DESTDIR)/usr/share/applications/
+-	# needed for DESTDIR option:
+-	mkdir -p $(DESTDIR)/usr/share/pixmaps
+-	cp gigalomania64.png $(DESTDIR)/usr/share/pixmaps/
+-# REMEMBER to update debian/dirs if the system directories that we use are changed!!!
++	mkdir -p $(DESTDIR)$(GAMEPATH) # -p so we don't fail if folder already exists
++	cp $(APP) $(DESTDIR)$(GAMEPATH)
++	cp readme.html $(DESTDIR)$(GAMEPATH)
++	cp -a gfx/ $(DESTDIR)$(GAMEPATH)
++	cp -a islands/ $(DESTDIR)$(GAMEPATH)
++	cp -a music/ $(DESTDIR)$(GAMEPATH)
++	cp -a sound/ $(DESTDIR)$(GAMEPATH)
+ 
+ uninstall:
+-	rm -rf $(DESTDIR)/opt/gigalomania # -f so we don't fail if folder doesn't exist
+-	rm -f $(DESTDIR)/usr/share/applications/gigalomania.desktop
+-	#rm -f $(DESTDIR)/usr/share/applications/gigalomania_fullscreen.desktop
+-	rm -f $(DESTDIR)/usr/share/pixmaps/gigalomania64.png
+-
+-install_maemo: $(APP)
+-	mkdir -p $(DESTDIR)/opt/gigalomania # -p so we don't fail if folder already exists
+-	cp $(APP) $(DESTDIR)/opt/gigalomania
+-	cp -a gfx/ $(DESTDIR)/opt/gigalomania # -a need to copy permissions etc
+-	cp -a islands/ $(DESTDIR)/opt/gigalomania
+-	cp -a music/ $(DESTDIR)/opt/gigalomania
+-	cp -a sound/ $(DESTDIR)/opt/gigalomania
+-	mkdir -p $(DESTDIR)/usr/share/applications/hildon/
+-	cp gigalomania_maemo.desktop $(DESTDIR)/usr/share/applications/hildon/
+-	mkdir -p $(DESTDIR)/usr/share/pixmaps
+-	cp gigalomania48.png $(DESTDIR)/usr/share/pixmaps/
+-	chmod a+x gigalomania_mobile.sh # workaround for permissions not set in zip file!
+-	mkdir -p $(DESTDIR)/usr/bin/
+-	cp gigalomania_mobile.sh $(DESTDIR)/usr/bin/gigalomania_mobile.sh
+-
+-uninstall_maemo:
+-	rm -rf $(DESTDIR)/opt/gigalomania # -f so we don't fail if folder doesn't exist
+-	rm -f $(DESTDIR)/usr/share/applications/hildon/gigalomania_maemo.desktop
+-	rm -f $(DESTDIR)/usr/share/pixmaps/gigalomania48.png
+-	rm -f $(DESTDIR)/usr/bin/gigalomania_mobile.sh
+-
+-install_meego: $(APP)
+-	mkdir -p $(DESTDIR)/opt/gigalomania # -p so we don't fail if folder already exists
+-	cp $(APP) $(DESTDIR)/opt/gigalomania
+-	cp -a gfx/ $(DESTDIR)/opt/gigalomania # -a need to copy permissions etc
+-	cp -a islands/ $(DESTDIR)/opt/gigalomania
+-	cp -a music/ $(DESTDIR)/opt/gigalomania
+-	cp -a sound/ $(DESTDIR)/opt/gigalomania
+-	mkdir -p $(DESTDIR)/usr/share/applications
+-	cp gigalomania_maemo.desktop $(DESTDIR)/usr/share/applications/
+-	mkdir -p $(DESTDIR)/usr/share/icons/hicolor/48x48/apps/
+-	cp gigalomania48.png $(DESTDIR)/usr/share/icons/hicolor/48x48/apps/
+-	chmod a+x gigalomania_mobile.sh # workaround for permissions not set in zip file!
+-	mkdir -p $(DESTDIR)/usr/bin/
+-	cp gigalomania_mobile.sh $(DESTDIR)/usr/bin/gigalomania_mobile.sh
+-
+-uninstall_meego:
+-	rm -rf $(DESTDIR)/opt/gigalomania # -f so we don't fail if folder doesn't exist
+-	rm -f $(DESTDIR)/usr/share/applications/gigalomania_maemo.desktop
+-	rm -f $(DESTDIR)/usr/share/icons/hicolor/48x48/apps/gigalomania48.png
+-	rm -f $(DESTDIR)/usr/bin/gigalomania_mobile.sh
++	rm -rf $(DESTDIR)$(GAMEPATH)
+ 
+ clean:
+ 	rm -rf *.o

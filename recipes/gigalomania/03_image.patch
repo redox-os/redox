@@ -1,0 +1,11 @@
+--- source/image.h	2018-05-28 10:13:03.769049093 +0200
++++ build/image.h	2018-05-28 11:11:33.754769751 +0200
+@@ -14,7 +14,7 @@
+ #elif defined(__MORPHOS__)
+ #include <SDL/SDL_image.h>
+ #else
+-#include <SDL_image.h>
++#include <SDL/SDL_image.h>
+ #endif
+ 
+ const int font_index_period_c = 26;

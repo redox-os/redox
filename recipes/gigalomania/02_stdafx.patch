@@ -1,0 +1,9 @@
+--- source/stdafx.h	2018-05-28 11:51:01.961563258 +0200
++++ build/stdafx.h	2018-05-28 11:55:02.478236113 +0200
+@@ -20,5 +20,5 @@
+ #elif defined(__MORPHOS__)
+ #include <SDL/SDL.h>
+ #else
+-#include <sdl.h>
++#include <SDL/SDL.h>
+ #endif
