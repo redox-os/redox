@@ -40,6 +40,7 @@ findutils = {}
 #gnu-make = {}
 installer = {}
 ion = {}
+ipcd = {}
 #lci = {}
 logd = {}
 #lua = {}
@@ -114,6 +115,7 @@ randd
 logd
 ptyd
 pcid /etc/pcid/filesystem.toml
+ipcd
 """
 
 [[files]]
