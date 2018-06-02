@@ -112,10 +112,10 @@ data = """
 nulld
 zerod
 randd
+ipcd
 logd
 ptyd
 pcid /etc/pcid/filesystem.toml
-ipcd
 """
 
 [[files]]
