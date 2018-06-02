@@ -32,7 +32,8 @@ RUN set -ex;                                                                   \
     cargo install cargo-config;                                                \
     apt-get autoremove -q -y;                                                  \
     apt-get clean -q -y;                                                       \
-    rm -rf /var/lib/apt/lists/*
+    rm -rf /var/lib/apt/lists/*                                                \
+    sudo chgrp redox /dev/fuse
 
 COPY entrypoint.sh /usr/local/bin/
 COPY .bash_aliases /etc/skel/
