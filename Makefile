@@ -40,6 +40,12 @@ fetch:
 		"$$(cargo run --manifest-path ../installer/Cargo.toml -- --list-packages -c ../initfs.toml)" \
 		"$$(cargo run --manifest-path ../installer/Cargo.toml -- --list-packages -c ../filesystem.toml)"
 
+ci:
+	cd cookbook && ./fetch.sh \
+		"$$(cargo run --manifest-path ../installer/Cargo.toml -- --list-packages -c ../ci.toml)"
+	cd cookbook && ./repo.sh \
+		"$$(cargo run --manifest-path ../installer/Cargo.toml -- --list-packages -c ../ci.toml)"
+
 # Emulation recipes
 include mk/qemu.mk
 include mk/bochs.mk
