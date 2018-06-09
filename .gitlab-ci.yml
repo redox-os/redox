@@ -1,5 +1,6 @@
 before_script:
  - |
+    apt-get update -qq &&
     apt-get install -qq build-essential gnupg nasm pkg-config fuse libfuse-dev genisoimage syslinux realpath &&
     apt-key adv -q --batch --yes --keyserver keyserver.ubuntu.com --recv-keys AA12E97F0881517F &&
     add-apt-repository 'deb https://static.redox-os.org/toolchain/apt ./' &&
