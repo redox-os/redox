@@ -1,10 +1,11 @@
 before_script:
  - |
+    apt-get install -qq build-essential gnupg nasm pkg-config fuse libfuse-dev genisoimage syslinux realpath &&
     apt-key adv -q --batch --yes --keyserver keyserver.ubuntu.com --recv-keys AA12E97F0881517F &&
     add-apt-repository 'deb https://static.redox-os.org/toolchain/apt ./' &&
     apt-get update -qq &&
     apt-get purge -qq binutils-doc &&
-    apt-get install -qq build-essential nasm pkg-config fuse libfuse-dev genisoimage syslinux realpath x86-64-unknown-redox-gcc &&
+    apt-get install -qq x86-64-unknown-redox-gcc &&
     modprobe fuse &&
     chmod 666 /dev/fuse &&
     chown root:$USER /etc/fuse.conf &&
