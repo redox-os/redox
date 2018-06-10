@@ -1,4 +1,4 @@
-GIT=https://github.com/redox-os/netdb
+GIT=https://gitlab.redox-os.org/redox-os/netdb
 
 function recipe_version {
     printf "r%s.%s" "$(git rev-list --count HEAD)" "$(git rev-parse --short HEAD)"
@@ -21,7 +21,7 @@ function recipe_test {
 }
 
 function recipe_clean {
-    echo "skipping clean" 
+    echo "skipping clean"
     skip=1
 }
 

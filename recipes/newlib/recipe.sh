@@ -1,4 +1,4 @@
-GIT=https://github.com/redox-os/newlib.git
+GIT=https://gitlab.redox-os.org/redox-os/newlib.git
 BRANCH=redox
 
 function recipe_version {

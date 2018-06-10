@@ -1,2 +1,2 @@
-GIT=https://github.com/redox-os/miniserve
+GIT=https://gitlab.redox-os.org/redox-os/miniserve
 BUILD_DEPENDS=(openssl zlib)
