@@ -1,1 +1,1 @@
-GIT=https://github.com/redox-os/init
+GIT=https://gitlab.redox-os.org/redox-os/init

@@ -1,1 +1,1 @@
-GIT=https://github.com/redox-os/randd.git
+GIT=https://gitlab.redox-os.org/redox-os/randd.git

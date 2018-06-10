@@ -1,1 +1,1 @@
-GIT=https://github.com/redox-os/installer.git
+GIT=https://gitlab.redox-os.org/redox-os/installer.git

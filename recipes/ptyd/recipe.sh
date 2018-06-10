@@ -1,1 +1,1 @@
-GIT=https://github.com/redox-os/ptyd.git
+GIT=https://gitlab.redox-os.org/redox-os/ptyd.git

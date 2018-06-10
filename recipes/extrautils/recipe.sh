@@ -1,2 +1,2 @@
-GIT=https://github.com/redox-os/extrautils.git
+GIT=https://gitlab.redox-os.org/redox-os/extrautils.git
 BUILD_DEPENDS=(xz)

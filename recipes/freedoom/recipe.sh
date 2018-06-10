@@ -1,4 +1,4 @@
-GIT=https://github.com/redox-os/freedoom.git
+GIT=https://gitlab.redox-os.org/redox-os/freedoom.git
 DEPENDS=(ion prboom)
 
 function recipe_version {

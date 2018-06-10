@@ -1,1 +1,1 @@
-GIT=https://github.com/redox-os/acid.git
+GIT=https://gitlab.redox-os.org/redox-os/acid.git

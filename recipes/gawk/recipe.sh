@@ -1,4 +1,4 @@
-GIT=https://github.com/redox-os/gawk
+GIT=https://gitlab.redox-os.org/redox-os/gawk
 BRANCH=redox
 
 function recipe_update {

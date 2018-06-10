@@ -1,4 +1,4 @@
-GIT=https://github.com/redox-os/dash.git
+GIT=https://gitlab.redox-os.org/redox-os/dash.git
 BRANCH=redox
 
 function recipe_version {

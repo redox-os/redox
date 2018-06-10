@@ -1,4 +1,4 @@
-GIT=https://github.com/redox-os/pastel.git
+GIT=https://gitlab.redox-os.org/redox-os/pastel.git
 GIT_UPSTREAM=https://github.com/robbycerantola/pastel.git
 BINDIR=/ui/bin
 DEPENDS="orbital"

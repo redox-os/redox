@@ -1,4 +1,4 @@
-GIT=https://github.com/redox-os/periodictable.git
+GIT=https://gitlab.redox-os.org/redox-os/periodictable.git
 BINDIR="/ui/bin"
 DEPENDS="orbital"
 
@@ -8,4 +8,3 @@ function recipe_stage {
     mkdir -pv "$1/ui/icons"
     cp -v pkg/icon.png "$1/ui/icons/periodictable.png"
 }
-
