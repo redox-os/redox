@@ -40,6 +40,9 @@ build/harddrive-efi.bin: build/bootloader.efi build/filesystem.bin
 	mcopy -i $@.partial -s bootloader-efi/res ::redox_bootloader
 	cat $@.partial build/filesystem.bin > $@
 
+build/harddrive-efi.bin.gz: build/harddrive-efi.bin
+	gzip -k -f $<
+
 build/livedisk-efi.iso: build/bootloader.efi build/kernel_live
 	dd if=/dev/zero of=$@.partial bs=1048576 count=272
 	mkfs.vfat $@.partial
@@ -50,3 +53,6 @@ build/livedisk-efi.iso: build/bootloader.efi build/kernel_live
 	mcopy -i $@.partial -s bootloader-efi/res ::redox_bootloader
 	mcopy -i $@.partial -s build/kernel_live ::redox_bootloader/kernel
 	mv $@.partial $@
+
+build/livedisk-efi.bin.gz: build/livedisk-efi.bin
+	gzip -k -f $<

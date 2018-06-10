@@ -32,7 +32,7 @@ matrix:
 before_script:
 - cd cookbook && ./setup.sh && cd ..
 script:
-- make clean && make travis
+- make clean && make travis IMG_TAG=$TRAVIS_TAG
 
 deploy:
   provider: releases

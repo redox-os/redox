@@ -1,21 +1,14 @@
 variables:
-  GIT_STRATEGY: "none"
-  GIT_SUBMODULE_STRATEGY: "none"
-  GIT_CHECKOUT: "false"
+  GIT_STRATEGY: "pull"
+  GIT_SUBMODULE_STRATEGY: "recursive"
+  GIT_CHECKOUT: "true"
 
 before_script:
  - |
     apt-get update -qq &&
     apt-get install -qq \
-        autopoint \
-        autoconf \
-        automake \
-        bison \
         build-essential \
-        clang \
-        cmake \
         curl \
-        flex \
         fuse \
         genisoimage \
         git \
@@ -24,26 +17,26 @@ before_script:
         nasm \
         pkg-config \
         software-properties-common \
-        syslinux \
-        texinfo \
-        wget &&
+        syslinux &&
     apt-key adv -q --batch --yes --keyserver keyserver.ubuntu.com --recv-keys AA12E97F0881517F &&
     add-apt-repository 'deb https://static.redox-os.org/toolchain/apt ./' &&
     apt-get update -qq &&
     apt-get purge -qq binutils-doc &&
     apt-get install -qq x86-64-unknown-redox-gcc &&
-    curl https://sh.rustup.rs -sSf | sh -s -- -y --default-toolchain none
+    curl https://sh.rustup.rs -sSf | sh -s -- -y --default-toolchain none &&
+    [ -d "$CI_PROJECT_NAME" ] || git clone "$CI_REPOSITORY_URL" "$CI_PROJECT_NAME" &&
+    cd "$CI_PROJECT_NAME" &&
+    git remote set-url origin "$CI_REPOSITORY_URL" &&
+    git fetch origin &&
+    git checkout "$CI_COMMIT_SHA" &&
+    git submodule update --init --recursive &&
+    source "$HOME/.cargo/env" &&
+    rustup update &&
+    cargo install cargo-config xargo
 
-build:
+img:
     script:
      - |
-        [ -d "$CI_PROJECT_NAME" ] || git clone "$CI_REPOSITORY_URL" "$CI_PROJECT_NAME" &&
         cd "$CI_PROJECT_NAME" &&
-        git remote set-url origin "$CI_REPOSITORY_URL" &&
-        git fetch origin &&
-        git checkout "$CI_COMMIT_SHA" &&
-        git submodule update --init --recursive &&
         source "$HOME/.cargo/env" &&
-        rustup update &&
-        cargo install cargo-config xargo &&
-        make ci
+        make ci-img IMG_TAG=$CI_COMMIT_REF_NAME
