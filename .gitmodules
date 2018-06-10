@@ -1,7 +1,7 @@
-[submodule "pkgutils"]
-	path = pkgutils
-	url = https://github.com/redox-os/pkgutils.git
-	branch = master
 [submodule "docgen"]
 	path = docgen
-	url = https://github.com/redox-os/docgen.git
+	url = https://gitlab.redox-os.org/redox-os/docgen.git
+[submodule "pkgutils"]
+	path = pkgutils
+	url = https://gitlab.redox-os.org/redox-os/pkgutils.git
+	branch = master
