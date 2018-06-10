@@ -1,8 +1,8 @@
-GIT=https://github.com/redox-os/rust.git
+GIT=https://gitlab.redox-os.org/redox-os/rust.git
 BRANCH=compile-redox
 DEPENDS="gcc cargo"
 
-LLVM_GIT="https://github.com/redox-os/llvm.git"
+LLVM_GIT="https://gitlab.redox-os.org/redox-os/llvm.git"
 LLVM_SOURCE="$(realpath -m llvm-source)"
 LLVM_BUILD="$(realpath -m llvm-build)"
 LLVM_PREFIX="$(realpath -m llvm-prefix)"

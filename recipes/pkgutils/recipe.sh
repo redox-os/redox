@@ -1,1 +1,1 @@
-GIT=https://github.com/redox-os/pkgutils.git
+GIT=https://gitlab.redox-os.org/redox-os/pkgutils.git

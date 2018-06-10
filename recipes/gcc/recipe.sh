@@ -1,4 +1,4 @@
-GIT=https://github.com/redox-os/gcc.git
+GIT=https://gitlab.redox-os.org/redox-os/gcc.git
 BRANCH=redox
 DEPENDS="gnu-binutils newlib"
 

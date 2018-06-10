@@ -1,4 +1,4 @@
-GIT=https://github.com/redox-os/binutils-gdb.git
+GIT=https://gitlab.redox-os.org/redox-os/binutils-gdb.git
 
 function recipe_version {
     printf "r%s.%s" "$(git rev-list --count HEAD)" "$(git rev-parse --short HEAD)"

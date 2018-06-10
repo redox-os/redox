@@ -1,4 +1,4 @@
-GIT=https://github.com/redox-os/newlibtest.git
+GIT=https://gitlab.redox-os.org/redox-os/newlibtest.git
 BUILD_DEPENDS=(newlib)
 
 function recipe_version {

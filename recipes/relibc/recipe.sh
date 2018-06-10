@@ -1,4 +1,4 @@
-GIT=https://github.com/redox-os/relibc.git
+GIT=https://gitlab.redox-os.org/redox-os/relibc.git
 
 function recipe_build {
     make

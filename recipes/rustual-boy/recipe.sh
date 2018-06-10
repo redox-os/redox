@@ -1,4 +1,4 @@
-GIT=https://github.com/redox-os/rustual-boy.git
+GIT=https://gitlab.redox-os.org/redox-os/rustual-boy.git
 GIT_UPSTREAM=https://github.com/emu-rs/rustual-boy.git
 DEPENDS="orbital"
 
