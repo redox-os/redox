@@ -31,13 +31,18 @@ before_script:
     apt-get update -qq &&
     apt-get purge -qq binutils-doc &&
     apt-get install -qq x86-64-unknown-redox-gcc &&
-    curl https://sh.rustup.rs -sSf | sh -s -- -y --default-toolchain none
+    curl https://sh.rustup.rs -sSf | sh -s -- -y --default-toolchain none &&
+    source "$HOME/.cargo/env" &&
+    cargo install cargo-config xargo
 
 build:
-   script:
-    - |
-       git pull &&
-       git submodule update --init --recursive &&
-       source "$HOME/.cargo/env" &&
-       cargo install cargo-config xargo &&
-       make ci
+    script:
+     - |
+        [ -d "$CI_PROJECT_DIR" ] || git clone "$CI_BUILD_REPO" "$CI_PROJECT_DIR" &&
+        cd "$CI_PROJECT_DIR" &&
+        git remote set-url origin "$CI_BUILD_REPO" &&
+        git fetch origin &&
+        git checkout "$CI_BUILD_REF" &&
+        git submodule update --init --recursive &&
+        source "$HOME/.cargo/env" &&
+        make ci
