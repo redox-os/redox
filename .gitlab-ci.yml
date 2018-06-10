@@ -30,5 +30,6 @@ img:
      - |
         source "$HOME/.cargo/env" &&
         rustup update &&
+        rustup component add rust-src &&
         cargo install cargo-config xargo &&
         make ci-img IMG_TAG=$CI_COMMIT_REF_NAME
