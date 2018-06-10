@@ -1,12 +1,14 @@
 variables:
-  GIT_STRATEGY: fetch
-  GIT_SUBMODULE_STRATEGY: recursive
+  GIT_STRATEGY: none
+  GIT_SUBMODULE_STRATEGY: none
 
 before_script:
  - |
     apt-get update -qq &&
     apt-get install -qq \
         autopoint \
+        autoconf \
+        automake \
         bison \
         build-essential \
         clang \
@@ -34,6 +36,8 @@ before_script:
 build:
    script:
     - |
+       git pull &&
+       git submodule update --init --recursive &&
        source "$HOME/.cargo/env" &&
        cargo install cargo-config xargo &&
        make ci
