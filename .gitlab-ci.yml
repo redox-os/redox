@@ -23,20 +23,12 @@ before_script:
     apt-get update -qq &&
     apt-get purge -qq binutils-doc &&
     apt-get install -qq x86-64-unknown-redox-gcc &&
-    curl https://sh.rustup.rs -sSf | sh -s -- -y --default-toolchain none &&
-    [ -d "$CI_PROJECT_NAME" ] || git clone "$CI_REPOSITORY_URL" "$CI_PROJECT_NAME" &&
-    cd "$CI_PROJECT_NAME" &&
-    git remote set-url origin "$CI_REPOSITORY_URL" &&
-    git fetch origin &&
-    git checkout "$CI_COMMIT_SHA" &&
-    git submodule update --init --recursive &&
-    source "$HOME/.cargo/env" &&
-    rustup update &&
-    cargo install cargo-config xargo
+    curl https://sh.rustup.rs -sSf | sh -s -- -y --default-toolchain none
 
 img:
     script:
      - |
-        cd "$CI_PROJECT_NAME" &&
         source "$HOME/.cargo/env" &&
+        rustup update &&
+        cargo install cargo-config xargo &&
         make ci-img IMG_TAG=$CI_COMMIT_REF_NAME
