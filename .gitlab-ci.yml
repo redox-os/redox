@@ -13,7 +13,6 @@ before_script:
         genisoimage \
         git \
         gnupg \
-        kmod \
         libfuse-dev \
         nasm \
         pkg-config \
@@ -24,7 +23,6 @@ before_script:
     apt-get update -qq &&
     apt-get purge -qq binutils-doc &&
     apt-get install -qq x86-64-unknown-redox-gcc &&
-    modprobe fuse &&
     curl https://sh.rustup.rs -sSf | sh -s -- -y --default-toolchain none
 
 img:
