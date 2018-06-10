@@ -1,7 +1,7 @@
 variables:
-  GIT_STRATEGY: none
-  GIT_SUBMODULE_STRATEGY: none
-  GIT_CHECKOUT: false
+  GIT_STRATEGY: "none"
+  GIT_SUBMODULE_STRATEGY: "none"
+  GIT_CHECKOUT: "false"
 
 before_script:
  - |
