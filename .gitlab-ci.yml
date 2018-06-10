@@ -1,6 +1,7 @@
 variables:
   GIT_STRATEGY: none
   GIT_SUBMODULE_STRATEGY: none
+  GIT_CHECKOUT: false
 
 before_script:
  - |
@@ -36,6 +37,7 @@ before_script:
 build:
     script:
      - |
+        ls &&
         [ -d "$CI_PROJECT_DIR" ] || git clone "$CI_BUILD_REPO" "$CI_PROJECT_DIR" &&
         cd "$CI_PROJECT_DIR" &&
         git remote set-url origin "$CI_BUILD_REPO" &&
