@@ -37,7 +37,7 @@ before_script:
 build:
     script:
      - |
-        ls &&
+        [ -d "$CI_PROJECT_DIR" -a ! -d "$CI_PROJECT_DIR/.git" ] && rm -rf "$CI_PROJECT_DIR" &&
         [ -d "$CI_PROJECT_DIR" ] || git clone "$CI_BUILD_REPO" "$CI_PROJECT_DIR" &&
         cd "$CI_PROJECT_DIR" &&
         git remote set-url origin "$CI_BUILD_REPO" &&
