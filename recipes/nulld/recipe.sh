@@ -1,1 +1,1 @@
-GIT=https://github.com/redox-os/nulld.git
+GIT=https://gitlab.redox-os.org/redox-os/nulld.git

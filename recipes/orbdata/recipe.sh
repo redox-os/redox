@@ -1,4 +1,4 @@
-GIT=https://github.com/redox-os/orbdata.git
+GIT=https://gitlab.redox-os.org/redox-os/orbdata.git
 
 function recipe_version {
     echo "0.0.1"

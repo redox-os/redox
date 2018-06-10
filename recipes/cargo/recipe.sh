@@ -1,4 +1,4 @@
-GIT=https://github.com/redox-os/cargo.git
+GIT=https://gitlab.redox-os.org/redox-os/cargo.git
 BRANCH=redox
 BUILD_DEPENDS=(openssl zlib)
 

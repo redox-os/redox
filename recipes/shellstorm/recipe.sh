@@ -1,1 +1,1 @@
-GIT=https://github.com/redox-os/shellstorm.git
+GIT=https://gitlab.redox-os.org/redox-os/shellstorm.git

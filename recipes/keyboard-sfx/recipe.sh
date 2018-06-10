@@ -1,4 +1,4 @@
-GIT=https://github.com/redox-os/keyboard-sfx.git
+GIT=https://gitlab.redox-os.org/redox-os/keyboard-sfx.git
 
 function recipe_version {
     echo "0.0.1"

@@ -1,1 +1,1 @@
-GIT=https://github.com/redox-os/zerod.git
+GIT=https://gitlab.redox-os.org/redox-os/zerod.git

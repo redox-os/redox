@@ -1,1 +1,1 @@
-GIT=https://github.com/redox-os/logd.git
+GIT=https://gitlab.redox-os.org/redox-os/logd.git

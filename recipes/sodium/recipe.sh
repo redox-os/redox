@@ -1,4 +1,4 @@
-GIT=https://github.com/redox-os/sodium.git
+GIT=https://gitlab.redox-os.org/redox-os/sodium.git
 BINDIR="/ui/bin"
 CARGOFLAGS="--features orbital"
 
@@ -8,4 +8,3 @@ function recipe_stage {
     mkdir -pv "$1/ui/icons"
     cp -v icon.png "$1/ui/icons/sodium.png"
 }
-

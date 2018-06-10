@@ -1,1 +1,1 @@
-GIT=https://github.com/redox-os/coreutils.git
+GIT=https://gitlab.redox-os.org/redox-os/coreutils.git

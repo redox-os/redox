@@ -1,4 +1,4 @@
-GIT=https://github.com/redox-os/drivers.git
+GIT=https://gitlab.redox-os.org/redox-os/drivers.git
 BRANCH=0.4.1
 CARGOFLAGS=--all
 
