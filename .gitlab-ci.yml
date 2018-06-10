@@ -9,6 +9,7 @@ before_script:
     apt-get install -qq \
         build-essential \
         curl \
+        dosfstools \
         fuse \
         genisoimage \
         git \
