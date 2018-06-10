@@ -1,3 +1,7 @@
+variables:
+  GIT_STRATEGY: fetch
+  GIT_SUBMODULE_STRATEGY: recursive
+
 before_script:
  - |
     apt-get update -qq &&
