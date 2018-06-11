@@ -41,3 +41,7 @@ img:
         mkdir -p "$HOME/.rustup/toolchains/nightly-2017-11-29-x86_64-unknown-linux-gnu/lib/rustlib/x86_64-unknown-linux-gnu/bin" &&
         popd &&
         make ci-img IMG_TAG=$CI_COMMIT_REF_NAME
+    artifacts:
+        paths:
+         - build/img/
+        expire_in: 1 week
