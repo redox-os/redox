@@ -9,6 +9,7 @@ before_script:
     apt-get install -qq \
         build-essential \
         curl \
+        dosfstools \
         fuse \
         genisoimage \
         git \
@@ -17,7 +18,9 @@ before_script:
         nasm \
         pkg-config \
         software-properties-common \
-        syslinux &&
+        syslinux \
+        syslinux-utils \
+        wget &&
     apt-key adv -q --batch --yes --keyserver keyserver.ubuntu.com --recv-keys AA12E97F0881517F &&
     add-apt-repository 'deb https://static.redox-os.org/toolchain/apt ./' &&
     apt-get update -qq &&
@@ -32,4 +35,13 @@ img:
         rustup update &&
         rustup component add rust-src &&
         cargo install cargo-config xargo &&
+        pushd bootloader-efi &&
+        rustup update &&
+        rustup component add rust-src &&
+        mkdir -p "$HOME/.rustup/toolchains/nightly-2017-11-29-x86_64-unknown-linux-gnu/lib/rustlib/x86_64-unknown-linux-gnu/bin" &&
+        popd &&
         make ci-img IMG_TAG=$CI_COMMIT_REF_NAME
+    artifacts:
+        paths:
+         - build/img/
+        expire_in: 1 week
