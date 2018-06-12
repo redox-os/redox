@@ -1,27 +1,27 @@
 [submodule "bootloader"]
 	path = bootloader
-	url = https://github.com/redox-os/bootloader.git
-[submodule "cookbook"]
-	path = cookbook
-	url = https://github.com/redox-os/cookbook.git
-[submodule "installer"]
-	path = installer
-	url = https://github.com/redox-os/installer.git
-[submodule "isolinux"]
-	path = isolinux
-	url = https://github.com/redox-os/isolinux.git
-[submodule "kernel"]
-	path = kernel
-	url = https://github.com/redox-os/kernel.git
-[submodule "rust"]
-	path = rust
-	url = https://github.com/redox-os/rust.git
-[submodule "redoxfs"]
-	path = redoxfs
-	url = https://github.com/redox-os/redoxfs.git
+	url = https://gitlab.redox-os.org/redox-os/bootloader.git
 [submodule "bootloader-efi"]
 	path = bootloader-efi
-	url = https://github.com/redox-os/bootloader-efi.git
+	url = https://gitlab.redox-os.org/redox-os/bootloader-efi.git
+[submodule "cookbook"]
+	path = cookbook
+	url = https://gitlab.redox-os.org/redox-os/cookbook.git
+[submodule "installer"]
+	path = installer
+	url = https://gitlab.redox-os.org/redox-os/installer.git
+[submodule "isolinux"]
+	path = isolinux
+	url = https://gitlab.redox-os.org/redox-os/isolinux.git
+[submodule "kernel"]
+	path = kernel
+	url = https://gitlab.redox-os.org/redox-os/kernel.git
+[submodule "rust"]
+	path = rust
+	url = https://gitlab.redox-os.org/redox-os/rust.git
+[submodule "redoxfs"]
+	path = redoxfs
+	url = https://gitlab.redox-os.org/redox-os/redoxfs.git
 [submodule "gitrepoman"]
 	path = gitrepoman
-	url = git@gitlab.redox-os.org:redox-os/gitrepoman.git
+	url = https://gitlab.redox-os.org/redox-os/gitrepoman.git
