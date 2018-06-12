@@ -22,6 +22,3 @@
 [submodule "redoxfs"]
 	path = redoxfs
 	url = https://gitlab.redox-os.org/redox-os/redoxfs.git
-[submodule "gitrepoman"]
-	path = gitrepoman
-	url = https://gitlab.redox-os.org/redox-os/gitrepoman.git
