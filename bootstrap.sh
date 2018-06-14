@@ -470,7 +470,7 @@ statusCheck() {
 boot()
 {
 	echo "Cloning github repo..."
-	git clone https://github.com/redox-os/redox.git --origin upstream --recursive
+	git clone https://gitlab.redox-os.org/redox-os/redox.git --origin upstream --recursive
 	rustInstall
 	if [[ "`cargo install --list`" != *"xargo"* ]]; then
 		cargo install xargo
