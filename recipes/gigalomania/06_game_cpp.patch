@@ -1,5 +1,16 @@
---- source/game.cpp	2018-05-28 14:37:45.401234128 +0200
-+++ build/game.cpp	2018-05-28 14:47:42.698867243 +0200
+--- source/game.cpp	2018-06-17 18:09:41.545548000 +0200
++++ build/game.cpp	2018-06-17 20:06:47.516838000 +0200
+@@ -2900,8 +2900,8 @@
+ 
+ #if SDL_MAJOR_VERSION == 1
+ 		const SDL_VideoInfo *videoInfo = SDL_GetVideoInfo();
+-		*user_width = videoInfo->current_w;
+-		*user_height = videoInfo->current_h;
++		*user_width = 640;//videoInfo->current_w;
++		*user_height = 480;//videoInfo->current_h;
+ 		LOG("desktop is %d x %d\n", *user_width, *user_height);
+ #else
+ 		SDL_DisplayMode displayMode;
 @@ -2942,11 +2942,11 @@
  		//user_width = 1184;
  		//user_height = 720;
@@ -46,8 +57,8 @@
  }
  
  //bool quit = false;
--bool debugwindow = true;
-+bool debugwindow = false;
+-bool debugwindow = false;
++bool debugwindow = true;
  
  void Game::requestQuit(bool force_quit) {
      if( !state_changed ) {
@@ -55,8 +66,8 @@
  	debugwindow = true;
  #endif
  
--	bool fullscreen = false;
-+	bool fullscreen = true;
+-	bool fullscreen = true;
++	bool fullscreen = false;
  #if defined(__amigaos4__) || defined(AROS) || defined(__MORPHOS__)
  	fullscreen = false; // run in windowed mode due to reported performance problems in fullscreen mode on AmigaOS 4; also randomly hangs on AROS in fullscreen mode; also included MorphOS just to be safe
  #endif

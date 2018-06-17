@@ -1,11 +1,11 @@
---- source/game.h	2018-05-28 11:51:01.785562766 +0200
-+++ build/game.h	2018-05-28 11:53:10.909923925 +0200
+--- source/game.h	2018-06-17 18:09:41.545548138 +0200
++++ build/game.h	2018-06-17 18:26:27.573161256 +0200
 @@ -530,7 +530,7 @@
  void startNewGame_g();
  
  // DATADIR is place to look if data not present in application's folder
 -//#define DATADIR "C:/temp/glmdata" // test on Windows
-+#define DATADIR "/games/gigalomania" // redox games dir?
++#define DATADIR "/games/gigalomania" // test on Windows
  
  extern string maps_dirname;
  #ifdef DATADIR
