@@ -1,24 +1,20 @@
---- source/gamestate.cpp	2018-05-28 11:51:01.789562777 +0200
-+++ build/gamestate.cpp	2018-05-28 14:24:06.690031507 +0200
-@@ -1428,8 +1428,9 @@
- };
+--- source/gamestate.cpp	2018-06-17 18:09:41.549547831 +0200
++++ build/gamestate.cpp	2018-06-17 18:31:22.793844378 +0200
+@@ -1429,7 +1429,7 @@
  
  void GameState::fadeScreen(bool out, int delay, void (*func_finish)()) {
--    if( fade != NULL )
-+    if( fade != NULL ) {
-         delete fade;
-+	}
+     if( fade != NULL )
+-        delete fade;
++    { delete fade; }
  	if( game_g->isTesting() ) {
  		if( func_finish != NULL ) {
  			func_finish();
-@@ -1442,8 +1443,9 @@
- 
+@@ -1443,7 +1443,7 @@
  void GameState::whiteFlash() {
  	//ASSERT( whitefade == NULL );
--    if( whitefade != NULL )
-+    if( whitefade != NULL ) {
-         delete whitefade;
-+	}
+     if( whitefade != NULL )
+-        delete whitefade;
++    { delete whitefade; }
  	if( !game_g->isTesting() ) {
  	    whitefade = new FadeEffect(true, false, 0, NULL);
  	}
