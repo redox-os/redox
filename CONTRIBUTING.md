@@ -6,7 +6,7 @@ _**Thank you for your interest in contributing to Redox!** This document will ou
 
 * [Communication](#communication)
  * [Chat](#chat)
- * [GitHub Issues](#issues)
+ * [GitLab Issues](#issues)
  * [Pull Requests](#prs)
  * [Discourse](#discourse)
  * [Reddit](#reddit)
@@ -37,7 +37,7 @@ _**Thank you for your interest in contributing to Redox!** This document will ou
 
 The quickest and most open way to **communicate with the Redox team** is on our **chat server**. Currently, you can only get an invite by sending an email request to [info@redox-os.org](mailto:info@redox-os.org), which might take a little while, since it's not automated. Simply say you'd like to join the chat. We're working on an better way to do this, but this is the best way right now.
 
-### <a name="issues"> GitHub Issues </a>
+### <a name="issues"> GitLab Issues </a>
 
 A bit more formal way of communication with fellow Redox devs, but a little less quick and convenient like the chat. Submit an issue when you run into problems compiling, testing, or just would like to discuss a certain topic, be it _features, code style, code inconsistencies, minor changes and fixes, etc._
 
