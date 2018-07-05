@@ -14,7 +14,7 @@ function recipe_update {
 
 function recipe_build {
     export CPPFLAGS="-P"
-    ./configure --host=${HOST} --prefix="" --disable-db-install
+    ./configure --host=${HOST} --prefix="" --disable-db-install --without-ada
     make
     skip=1
 }
