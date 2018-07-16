@@ -1,15 +1,13 @@
-$(BUILD)/initfs.rs: \
-		initfs/bin/init \
-		initfs/bin/ahcid \
-		initfs/bin/bgad \
-		initfs/bin/nvmed \
-		initfs/bin/pcid \
-		initfs/bin/ps2d \
-		initfs/bin/redoxfs \
-		initfs/bin/vesad \
-		initfs/etc/**
+build/initfs.tag: initfs.toml
+	cd kernel && xargo clean
+	rm -rf build/initfs
+	mkdir -p build/initfs
+	cargo run --manifest-path installer/Cargo.toml -- $(INSTALLER_FLAGS) -c $< build/initfs/
+	touch $@
 
-initfs/bin/%: programs/%/Cargo.toml programs/%/src/** $(BUILD)/libstd.rlib
-	mkdir -p initfs/bin
-	$(CARGO) rustc --manifest-path $< $(CARGOFLAGS) -o $@
-	$(STRIP) $@
+build/initfs_live.tag: initfs_live.toml
+	cd kernel && xargo clean
+	rm -rf build/initfs_live
+	mkdir -p build/initfs_live
+	cargo run --manifest-path installer/Cargo.toml -- $(INSTALLER_FLAGS) -c $< build/initfs_live/
+	touch $@

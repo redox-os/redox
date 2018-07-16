@@ -1,16 +1,25 @@
-$(KBUILD)/libcollections.rlib: rust/src/libcollections/Cargo.toml rust/src/libcollections/**
-	mkdir -p $(KBUILD)
-	$(KCARGO) rustc --manifest-path $< $(KCARGOFLAGS) -o $@
-	cp rust/src/target/$(KTARGET)/release/deps/*.rlib $(KBUILD)
+build/libkernel.a: kernel/Cargo.toml kernel/src/* kernel/src/*/* kernel/src/*/*/* kernel/src/*/*/*/* build/initfs.tag
+# Temporary fix for https://github.com/redox-os/redox/issues/963 allowing to build on macOS
+ifeq ($(UNAME),Darwin)
+	cd kernel && CC=$(ARCH)-elf-gcc AR=$(ARCH)-elf-ar CFLAGS=-ffreestanding INITFS_FOLDER=$(ROOT)/build/initfs xargo rustc --lib --target $(KTARGET) --release -- -C soft-float -C debuginfo=2 --emit link=../$@
+else
+	cd kernel && INITFS_FOLDER=$(ROOT)/build/initfs xargo rustc --lib --target $(KTARGET) --release -- -C soft-float -C debuginfo=2 --emit link=../$@
+endif
 
-$(KBUILD)/libkernel.a: kernel/Cargo.toml kernel/arch/** kernel/src/** $(KBUILD)/libcollections.rlib $(BUILD)/initfs.rs
-	$(KCARGO) rustc --manifest-path $< --lib $(KCARGOFLAGS) -o $@
+build/libkernel_live.a: kernel/Cargo.toml kernel/src/* kernel/src/*/* kernel/src/*/*/* kernel/src/*/*/*/* build/initfs_live.tag
+	cd kernel && INITFS_FOLDER=$(ROOT)/build/initfs_live xargo rustc --lib --features live --target $(KTARGET) --release -- -C soft-float --emit link=../$@
 
-$(KBUILD)/libkernel_live.a: kernel/Cargo.toml kernel/arch/** kernel/src/** $(KBUILD)/libcollections.rlib $(BUILD)/initfs.rs build/filesystem.bin
-	$(KCARGO) rustc --manifest-path $< --lib --features live $(KCARGOFLAGS) -o $@
+build/kernel: kernel/linkers/$(ARCH).ld build/libkernel.a
+	$(LD) --gc-sections -z max-page-size=0x1000 -T $< -o $@ build/libkernel.a
+	objcopy --only-keep-debug $@ $@.sym
+	objcopy --strip-debug $@
 
-$(KBUILD)/kernel: $(KBUILD)/libkernel.a
-	$(LD) $(LDFLAGS) -z max-page-size=0x1000 -T kernel/arch/$(ARCH)/src/linker.ld -o $@ $<
+build/kernel_live: kernel/linkers/$(ARCH).ld build/libkernel_live.a build/live.o
+	$(LD) --gc-sections -z max-page-size=0x1000 -T $< -o $@ build/libkernel_live.a build/live.o
 
-$(KBUILD)/kernel_live: $(KBUILD)/libkernel_live.a
-	$(LD) $(LDFLAGS) -z max-page-size=0x1000 -T kernel/arch/$(ARCH)/src/linker.ld -o $@ $<
+build/live.o: build/filesystem.bin
+	#TODO: More general use of $(ARCH)
+	objcopy -I binary -O elf64-x86-64 -B i386:x86-64 $< $@ \
+		--redefine-sym _binary_build_filesystem_bin_start=__live_start \
+		--redefine-sym _binary_build_filesystem_bin_end=__live_end \
+		--redefine-sym _binary_build_filesystem_bin_size=__live_size

@@ -1,3 +1,4 @@
+BUILDDIR = $(abspath $(dir $(firstword $(MAKEFILE_LIST))))/build
 virtualbox: build/harddrive.bin
 	echo "Delete VM"
 	-$(VBM) unregistervm Redox --delete; \
@@ -14,23 +15,23 @@ virtualbox: build/harddrive.bin
 	echo "Create VM"
 	$(VBM) createvm --name Redox --register
 	echo "Set Configuration"
-	$(VBM) modifyvm Redox --memory 1024
-	$(VBM) modifyvm Redox --vram 16
+	$(VBM) modifyvm Redox --memory 2048
+	$(VBM) modifyvm Redox --vram 32
 	if [ "$(net)" != "no" ]; \
 	then \
 		$(VBM) modifyvm Redox --nic1 nat; \
 		$(VBM) modifyvm Redox --nictype1 82540EM; \
 		$(VBM) modifyvm Redox --cableconnected1 on; \
 		$(VBM) modifyvm Redox --nictrace1 on; \
-		$(VBM) modifyvm Redox --nictracefile1 build/network.pcap; \
+		$(VBM) modifyvm Redox --nictracefile1 "$(BUILDDIR)/network.pcap"; \
 	fi
 	$(VBM) modifyvm Redox --uart1 0x3F8 4
-	$(VBM) modifyvm Redox --uartmode1 file build/serial.log
+	$(VBM) modifyvm Redox --uartmode1 file "$(BUILDDIR)/serial.log"
 	$(VBM) modifyvm Redox --usb off # on
 	$(VBM) modifyvm Redox --keyboard ps2
 	$(VBM) modifyvm Redox --mouse ps2
 	$(VBM) modifyvm Redox --audio $(VB_AUDIO)
-	$(VBM) modifyvm Redox --audiocontroller ac97
+	$(VBM) modifyvm Redox --audiocontroller hda
 	$(VBM) modifyvm Redox --nestedpaging on
 	echo "Create Disk"
 	$(VBM) convertfromraw $< build/harddrive.vdi

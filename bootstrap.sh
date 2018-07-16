@@ -93,11 +93,14 @@ osx_macports()
         install_macports_pkg "virtualbox"
     fi
 
+    install_macports_pkg "coreutils"
+    install_macports_pkg "findutils"
     install_macports_pkg "gcc49" "gcc-4.9"
     install_macports_pkg "nasm"
     install_macports_pkg "pkgconfig"
     install_macports_pkg "osxfuse"
     install_macports_pkg "x86_64-elf-gcc"
+    install_macports_pkg "cmake"
 }
 
 ###############################################################################
@@ -110,10 +113,6 @@ osx_homebrew()
     echo "Homebrew detected! Now updating..."
     brew update
 
-    echo "Tapping required taps..."
-    brew tap homebrew/versions
-    brew tap glendc/gcc_cross_compilers
-
     echo "Installing missing packages..."
 
     install_brew_pkg "git"
@@ -124,9 +123,12 @@ osx_homebrew()
         install_brew_pkg "virtualbox"
     fi
 
+    install_brew_pkg "coreutils"
+    install_brew_pkg "findutils"
     install_brew_pkg "gcc49" "gcc-4.9"
     install_brew_pkg "nasm"
     install_brew_pkg "pkg-config"
+    install_brew_pkg "cmake"
     install_brew_cask_pkg "osxfuse"
 
     install_brew_pkg "redox-os/gcc_cross_compilers/x86_64-elf-gcc"
@@ -163,7 +165,12 @@ archLinux()
 	fi
 
 	echo "Installing fuse..."
-	sudo pacman -S fuse
+	sudo pacman -S --needed fuse
+	
+	if [ -z "$(which cmake)" ]; then
+		echo "Installing cmake..."
+		sudo pacman -S cmake
+	fi
 }
 
 ###############################################################################
@@ -178,7 +185,7 @@ ubuntu()
 	echo "Updating system..."
 	sudo "$2" update
 	echo "Installing required packages..."
-	sudo "$2" install build-essential libc6-dev-i386 nasm curl file git libfuse-dev fuse
+	sudo "$2" install build-essential libc6-dev-i386 nasm curl file git libfuse-dev fuse pkg-config cmake autopoint autoconf libtool m4 syslinux-utils genisoimage flex bison gperf libpng-dev libhtml-parser-perl
 	if [ "$1" == "qemu" ]; then
 		if [ -z "$(which qemu-system-x86_64)" ]; then
 			echo "Installing QEMU..."
@@ -224,7 +231,7 @@ fedora()
 		fi
 	fi
 	# Use rpm -q <package> to check if it's already installed
-	PKGS=$(for pkg in gcc gcc-c++ glibc-devel.i686 nasm make fuse-devel; do rpm -q $pkg > /dev/null; [ $? -ne 0 ] && echo $pkg; done)
+	PKGS=$(for pkg in gcc gcc-c++ glibc-devel.i686 nasm make fuse-devel cmake; do rpm -q $pkg > /dev/null; [ $? -ne 0 ] && echo $pkg; done)
 	# If the list of packages is not empty, install missing
 	COUNT=$(echo $PKGS | wc -w)
 	if [ $COUNT -ne 0 ]; then
@@ -262,11 +269,11 @@ suse()
 		fi
 	fi
 	echo "Installing necessary build tools..."
-	sudo zypper install gcc gcc-c++ glibc-devel-32bit nasm make libfuse
+	sudo zypper install gcc gcc-c++ glibc-devel-32bit nasm make fuse-devel cmake
 }
 
 ##############################################################################
-# This function takes care of installing all dependencies for builing redox on
+# This function takes care of installing all dependencies for building redox on
 # gentoo linux
 # @params:	$1 the emulator to install, virtualbox or qemu
 ##############################################################################
@@ -281,37 +288,34 @@ gentoo()
 		echo "Installing git..."
 		sudo emerge dev-vcs/git
 	fi
-	echo "Installing fuse..."
-	sudo emerge sys-fs/fuse
+	if [ -z "$(which fusermount)" ]; then
+		echo "Installing fuse..."
+		sudo emerge sys-fs/fuse
+	fi
 	if [ "$2" == "qemu" ]; then
 		if [ -z "$(which qemu-system-x86_64)" ]; then
 			echo "Please install QEMU and re-run this script"
-			echo "Step1. Add QEMU_SOFTMMU_TARGETS=\"i386\" to /etc/portage/make.conf"
+			echo "Step1. Add QEMU_SOFTMMU_TARGETS=\"x86_64\" to /etc/portage/make.conf"
 			echo "Step2. Execute \"sudo emerge app-emulation/qemu\""
 		else
 			echo "QEMU already installed!"
 		fi
 	fi
+	if [ -z "$(which cmake)" ]; then
+		echo "Installing cmake..."
+		sudo emerge dev-util/cmake
+	fi
 }
 
 ##############################################################################
-# This function takes care of installing all dependencies for builing redox on
+# This function takes care of installing all dependencies for building redox on
 # SolusOS
 # @params:	$1 the emulator to install, virtualbox or qemu
 ##############################################################################
 solus()
 {
 	echo "Detected SolusOS"
-	if [ -z "$(which nasm)" ]; then
-		echo "Installing nasm..."
-		sudo eopkg it nasm
-	fi
-	if [ -z "$(which git)" ]; then
-		echo "Installing git..."
-		sudo eopkg it git
-	fi
-	echo "Installing fuse..."
-	sudo eopkg it fuse-devel
+
 	if [ "$1" == "qemu" ]; then
 		if [ -z "$(which qemu-system-x86_64)" ]; then
 			sudo eopkg it qemu
@@ -327,6 +331,10 @@ solus()
 			echo "Virtualbox already installed!"
 		fi
 	fi
+
+	echo "Installing necessary build tools..."
+	#if guards are not necessary with eopkg since it does nothing if latest version is already installed
+	sudo eopkg it fuse-devel git gcc g++ libgcc-32bit libstdc++-32bit nasm make cmake
 }
 
 ######################################################################
@@ -462,8 +470,13 @@ statusCheck() {
 boot()
 {
 	echo "Cloning github repo..."
-	git clone https://github.com/redox-os/redox.git --origin upstream --recursive
+	git clone https://gitlab.redox-os.org/redox-os/redox.git --origin upstream --recursive
 	rustInstall
+	if [[ "`cargo install --list`" != *"xargo"* ]]; then
+		cargo install xargo
+	else
+		echo "You have xargo installed already!"
+	fi
 	echo "Cleaning up..."
 	rm bootstrap.sh
 	echo
@@ -481,7 +494,7 @@ boot()
 	exit
 }
 
-if [ "$1" == "-h" ]; then
+if [ "$1" == "-h" ] || [ "$1" == "--help" ]; then
 	usage
 elif [ "$1" == "-u" ]; then
 	git pull upstream master
@@ -510,31 +523,29 @@ banner
 if [ "Darwin" == "$(uname -s)" ]; then
 	osx "$emulator"
 else
-	# Here we will user package managers to determine which operating system the user is using
+	# Here we will use package managers to determine which operating system the user is using.
+	
 	# Arch linux
 	if hash 2>/dev/null pacman; then
 		archLinux "$emulator"
-	fi
-	# Debian or any derivative of it
-	if hash 2>/dev/null apt-get; then
-		ubuntu "$emulator" "$defpackman"
-	fi
-	# Fedora
-	if hash 2>/dev/null dnf; then
-		fedora "$emulator"
-	fi
 	# Suse and derivatives
-	if hash 2>/dev/null zypper; then
+	elif hash 2>/dev/null zypper; then
 		suse "$emulator"
-	fi
+	# Debian or any derivative of it
+	elif hash 2>/dev/null apt-get; then
+		ubuntu "$emulator" "$defpackman"
+	# Fedora
+	elif hash 2>/dev/null dnf; then
+		fedora "$emulator"
 	# Gentoo
-	if hash 2>/dev/null emerge; then
+	elif hash 2>/dev/null emerge; then
 		gentoo "$emulator"
- 	fi
 	# SolusOS
-	if hash 2>/dev/null eopkg; then
+	elif hash 2>/dev/null eopkg; then
 		solus "$emulator"
-	fi
+	fi	
+	
+
 fi
 
 if [ "$dependenciesonly" = false ]; then
