@@ -66,6 +66,7 @@ The ecosystem and software Redox OS provides is listed below.
 | [RANSID (Rust ANSI driver)](https://gitlab.redox-os.org/redox-os/ransid)             | **@jackpot51**
 | [redoxfs (old filesystem)](https://gitlab.redox-os.org/redox-os/redoxfs)             | **@jackpot51**
 | [relibc (C Library in Rust)](https://gitlab.redox-os.org/redox-os/relibc)            | **@jD91mZM2** **@sajattack** **@Tommoa** **@stratact**
+| [small (stack String and other collections)](https://gitlab.redox-os.org/redox-os/small) | **@Tommoa**
 | [syscall](https://gitlab.redox-os.org/redox-os/syscall)                              | **@jackpot51**
 | [Sodium (Vim-inspired text editor)](https://gitlab.redox-os.org/redox-os/sodium)     | **vacant**
 | [TFS ((ticki) **T**he **F**ile **S**ystem)](https://gitlab.redox-os.org/redox-os/tfs) | **@Tommoa**
