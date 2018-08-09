@@ -49,6 +49,7 @@ The ecosystem and software Redox OS provides is listed below.
 | [extrautils](https://gitlab.redox-os.org/redox-os/extrautils)                        | **vacant**
 | [games](https://gitlab.redox-os.org/redox-os/games)                                  | **@enrico** (AKA **@HenryTheCat**) **@fabiao**
 | [Ion (shell)](https://gitlab.redox-os.org/redox-os/ion)                              | **@mmstick** **@stratact**
+| [ipcd](https://gitlab.redox-os.org/redox-os/ipcd)                                    | **@jD91mZM2**
 | [kernel](https://gitlab.redox-os.org/redox-os/kernel)                                | **@jackpot51**
 | [libextra](https://gitlab.redox-os.org/redox-os/libextra)                            | **vacant**
 | [libpager](https://gitlab.redox-os.org/redox-os/libpager)                            | **vacant**
