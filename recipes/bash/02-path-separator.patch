@@ -14,3 +14,22 @@ diff -ru source/general.c source-new/general.c
      ;
  
    *p_index = i;
+--- source/config-top.h	2016-05-19 20:34:02.000000000 +0200
++++ build/config-top.h	2018-08-07 15:00:14.440837632 +0200
+@@ -63,14 +63,14 @@
+ /* The default value of the PATH variable. */
+ #ifndef DEFAULT_PATH_VALUE
+ #define DEFAULT_PATH_VALUE \
+-  "/usr/local/bin:/usr/local/sbin:/usr/bin:/usr/sbin:/bin:/sbin:."
++  "/usr/local/bin;/usr/local/sbin;/usr/bin;/usr/sbin;/bin;/sbin;."
+ #endif
+ 
+ /* The value for PATH when invoking `command -p'.  This is only used when
+    the Posix.2 confstr () function, or CS_PATH define are not present. */
+ #ifndef STANDARD_UTILS_PATH
+ #define STANDARD_UTILS_PATH \
+-  "/bin:/usr/bin:/sbin:/usr/sbin:/etc:/usr/etc"
++  "/bin;/usr/bin;/sbin;/usr/sbin;/etc;/usr/etc"
+ #endif
+ 
+ /* Default primary and secondary prompt strings. */
