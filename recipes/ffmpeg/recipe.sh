@@ -1,6 +1,7 @@
 VERSION=4.0
 GIT=https://github.com/FFmpeg/FFmpeg
 BRANCH=release/$VERSION
+BUILD_DEPENDS=(zlib)
 
 function recipe_version {
     echo "$VERSION"
@@ -13,13 +14,19 @@ function recipe_update {
 }
 
 function recipe_build {
+    sysroot="$PWD/../sysroot"
+    export LDFLAGS="-L$sysroot/lib"
+    export CPPFLAGS="-I$sysroot/include"
     ./configure \
         --enable-cross-compile \
         --target-os=redox \
         --arch=${ARCH} \
         --cross_prefix=${HOST}- \
         --prefix=/ \
-        --disable-network
+        --disable-network \
+        --enable-zlib \
+        --enable-encoder=png \
+        --enable-decoder=png
     make
     skip=1
 }
