@@ -62,6 +62,7 @@ $(PREFIX)/gcc-install: $(PREFIX)/gcc $(PREFIX)/relibc-install
 	rm -rf "$<-build" "$@"
 	mkdir -p "$<-build" "$@"
 	cd "$<-build" && \
+	export PATH="$(PREFIX_FREESTANDING_PATH):$$PATH" && \
 	"$</configure" --target="$(TARGET)" --disable-werror --prefix="$@" --with-sysroot="$(PREFIX)/relibc-install" --disable-nls --enable-languages=c,c++ && \
 	make all-gcc -j `nproc` && \
 	make all-target-libgcc -j `nproc` && \
