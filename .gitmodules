@@ -22,3 +22,6 @@
 [submodule "redoxfs"]
 	path = redoxfs
 	url = https://gitlab.redox-os.org/redox-os/redoxfs.git
+[submodule "relibc"]
+	path = relibc
+	url = https://gitlab.redox-os.org/redox-os/relibc.git
