@@ -40,10 +40,8 @@ fetch:
 		"$$(cargo run --manifest-path ../installer/Cargo.toml -- --list-packages -c ../initfs.toml)" \
 		"$$(cargo run --manifest-path ../installer/Cargo.toml -- --list-packages -c ../filesystem.toml)"
 
-# Emulation recipes
-include mk/qemu.mk
-include mk/bochs.mk
-include mk/virtualbox.mk
+# Cross compiler recipes
+include mk/cross.mk
 
 # Kernel recipes
 include mk/kernel.mk
@@ -54,6 +52,11 @@ include mk/filesystem.mk
 
 # Disk images
 include mk/disk.mk
+
+# Emulation recipes
+include mk/qemu.mk
+include mk/bochs.mk
+include mk/virtualbox.mk
 
 # CI image target
 ci-img: FORCE
