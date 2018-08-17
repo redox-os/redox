@@ -1,12 +1,10 @@
 PREFIX=$(ROOT)/prefix
 
-binutils: $(PREFIX)/binutils-install
+PREFIX_FREESTANDING_PATH=$(PREFIX)/binutils-install/bin:$(PREFIX)/gcc-freestanding-install/bin
+PREFIX_PATH=$(PREFIX)/binutils-install/bin:$(PREFIX)/gcc-install/bin
 
-gcc-freestanding: $(PREFIX)/gcc-freestanding-install
-
-relibc: $(PREFIX)/relibc-install
-
-gcc: $(PREFIX)/gcc-install
+prefix: $(PREFIX)/gcc-install
+	touch "$@"
 
 $(PREFIX)/binutils.tar.bz2:
 	mkdir -p "$(@D)"
@@ -53,11 +51,11 @@ $(PREFIX)/relibc-install: $(PREFIX)/binutils-install $(PREFIX)/gcc-freestanding-
 	rm -rf "$(PREFIX)/relibc-build"
 	cp -r relibc "$(PREFIX)/relibc-build"
 	cd $(PREFIX)/relibc-build && \
-	export PATH="$(PREFIX)/binutils-install/bin:$(PREFIX)/gcc-freestanding-install/bin:$$PATH" && \
+	export PATH="$(PREFIX_FREESTANDING_PATH):$$PATH" && \
 	rustup target add "$(TARGET)" && \
 	make clean && \
 	make all && \
-	make DESTDIR="$@" install
+	make DESTDIR="$@/usr" install
 	touch "$@"
 
 $(PREFIX)/gcc-install: $(PREFIX)/gcc $(PREFIX)/relibc-install
