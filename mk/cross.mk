@@ -50,9 +50,14 @@ $(PREFIX)/gcc-freestanding-install: $(PREFIX)/gcc
 	touch "$@"
 
 $(PREFIX)/relibc-install: $(PREFIX)/binutils-install $(PREFIX)/gcc-freestanding-install
-	cd relibc && \
-	make all -j `nproc` && \
-	make DESTDIR="$@" install -j `nproc`
+	rm -rf "$(PREFIX)/relibc-build"
+	cp -r relibc "$(PREFIX)/relibc-build"
+	cd $(PREFIX)/relibc-build && \
+	export PATH="$(PREFIX)/binutils-install/bin:$(PREFIX)/gcc-freestanding-install/bin:$$PATH" && \
+	rustup target add "$(TARGET)" && \
+	make clean && \
+	make all && \
+	make DESTDIR="$@" install
 	touch "$@"
 
 $(PREFIX)/gcc-install: $(PREFIX)/gcc $(PREFIX)/relibc-install
