@@ -15,6 +15,7 @@ $(PREFIX)/binutils: $(PREFIX)/binutils.tar.bz2
 	mkdir -p "$@.partial"
 	tar --extract --file "$<" --directory "$@.partial" --strip-components=1
 	mv "$@.partial" "$@"
+	touch "$@"
 
 $(PREFIX)/binutils-install: $(PREFIX)/binutils
 	rm -rf "$<-build" "$@"
@@ -28,13 +29,14 @@ $(PREFIX)/binutils-install: $(PREFIX)/binutils
 $(PREFIX)/gcc.tar.bz2:
 	mkdir -p "$(@D)"
 	wget -O $@.partial "https://gitlab.redox-os.org/redox-os/gcc/-/archive/redox/gcc-redox.tar.bz2"
-	mv $@.partial $@
+	mv "$@.partial" "$@"
 
 $(PREFIX)/gcc: $(PREFIX)/gcc.tar.bz2
 	mkdir -p "$@.partial"
 	tar --extract --file "$<" --directory "$@.partial" --strip-components=1
 	cd "$@.partial" && ./contrib/download_prerequisites
 	mv "$@.partial" "$@"
+	touch "$@"
 
 $(PREFIX)/gcc-freestanding-install: $(PREFIX)/gcc
 	rm -rf "$<-freestanding-build" "$@"
@@ -58,7 +60,7 @@ $(PREFIX)/relibc-install: $(PREFIX)/binutils-install $(PREFIX)/gcc-freestanding-
 	make DESTDIR="$@/usr" install
 	touch "$@"
 
-$(PREFIX)/gcc-install: $(PREFIX)/gcc $(PREFIX)/relibc-install
+$(PREFIX)/gcc-install: $(PREFIX)/gcc | $(PREFIX)/relibc-install
 	rm -rf "$<-build" "$@"
 	mkdir -p "$<-build" "$@"
 	cd "$<-build" && \

@@ -41,7 +41,7 @@ fetch:
 		"$$(cargo run --manifest-path ../installer/Cargo.toml -- --list-packages -c ../filesystem.toml)"
 
 # Cross compiler recipes
-include mk/cross.mk
+include mk/prefix.mk
 
 # Kernel recipes
 include mk/kernel.mk
