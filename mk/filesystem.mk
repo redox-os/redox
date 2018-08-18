@@ -1,4 +1,4 @@
-build/filesystem.bin: filesystem.toml build/bootloader build/kernel
+build/filesystem.bin: filesystem.toml build/bootloader build/kernel prefix
 	-$(FUMOUNT) build/filesystem/ || true
 	rm -rf $@  $@.partial build/filesystem/
 	dd if=/dev/zero of=$@.partial bs=1048576 count=256
@@ -9,6 +9,7 @@ build/filesystem.bin: filesystem.toml build/bootloader build/kernel
 	sleep 2
 	pgrep redoxfs
 	cp filesystem.toml build/bootloader build/kernel build/filesystem/
+	export PATH="$(PREFIX_PATH):$$PATH" && \
 	cargo run --manifest-path installer/Cargo.toml --release -- $(INSTALLER_FLAGS) -c $< build/filesystem/
 	chown -R 0:0 build/filesystem
 	chown -R 1000:1000 build/filesystem/home/user
