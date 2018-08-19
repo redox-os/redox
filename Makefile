@@ -70,11 +70,12 @@ ci-img: FORCE
 	cd build/img && sha256sum -b * > SHA256SUM
 
 # CI packaging target
-ci-pkg: FORCE
-	cd cookbook && ./fetch.sh \
-		"$$(cargo run --manifest-path ../installer/Cargo.toml -- --list-packages -c ../ci.toml)"
-	cd cookbook && ./repo.sh \
-		"$$(cargo run --manifest-path ../installer/Cargo.toml -- --list-packages -c ../ci.toml)"
+ci-pkg: prefix FORCE
+	export PATH="$(PREFIX_PATH):$$PATH" && \
+	PACKAGES="$$(cargo run --manifest-path installer/Cargo.toml -- --list-packages -c ci.toml)" && \
+	cd cookbook && \
+	./fetch.sh "$${PACKAGES}" && \
+	./repo.sh "$${PACKAGES}"
 
 # An empty target
 FORCE:
