@@ -1,7 +1,8 @@
 PREFIX=$(ROOT)/prefix
 
-PREFIX_FREESTANDING_PATH=$(PREFIX)/binutils-install/bin:$(PREFIX)/gcc-freestanding-install/bin
-PREFIX_PATH=$(PREFIX)/binutils-install/bin:$(PREFIX)/gcc-install/bin
+PREFIX_BINUTILS_PATH=$(PREFIX)/binutils-install/bin
+PREFIX_FREESTANDING_PATH=$(PREFIX_BINUTILS_PATH):$(PREFIX)/gcc-freestanding-install/bin
+PREFIX_PATH=$(PREFIX_BINUTILS_PATH):$(PREFIX)/gcc-install/bin
 
 prefix: $(PREFIX)/gcc-install
 	touch "$@"
@@ -42,6 +43,7 @@ $(PREFIX)/gcc-freestanding-install: $(PREFIX)/gcc
 	rm -rf "$<-freestanding-build" "$@"
 	mkdir -p "$<-freestanding-build" "$@"
 	cd "$<-freestanding-build" && \
+	export PATH="$(PREFIX_BINUTILS_PATH):$$PATH" && \
 	"$</configure" --target="$(TARGET)" --prefix="$@" --disable-nls --enable-languages=c,c++ --without-headers && \
 	make all-gcc -j `nproc` && \
 	make all-target-libgcc -j `nproc` && \
