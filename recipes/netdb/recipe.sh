@@ -1,4 +1,4 @@
-GIT=https://gitlab.redox-os.org/redox-os/netdb
+GIT=https://gitlab.redox-os.org/redox-os/netdb.git
 
 function recipe_version {
     printf "r%s.%s" "$(git rev-list --count HEAD)" "$(git rev-parse --short HEAD)"
