@@ -10,21 +10,6 @@ build/filesystem.bin: filesystem.toml build/bootloader build/kernel
 	pgrep redoxfs
 	cp filesystem.toml build/bootloader build/kernel build/filesystem/
 	cargo run --manifest-path installer/Cargo.toml --release -- $(INSTALLER_FLAGS) -c $< build/filesystem/
-	chown -R 0:0 build/filesystem
-	chown -R 1000:1000 build/filesystem/home/user
-	chmod -R uog+rX build/filesystem
-	chmod -R u+w build/filesystem
-	chmod -R og-w build/filesystem
-	chmod -R 755 build/filesystem/bin
-	chmod -R u+rwX build/filesystem/root
-	chmod -R og-rwx build/filesystem/root
-	chmod -R u+rwX build/filesystem/home/user
-	chmod -R og-rwx build/filesystem/home/user
-	chmod +s build/filesystem/bin/passwd
-	chmod +s build/filesystem/bin/su
-	chmod +s build/filesystem/bin/sudo
-	mkdir build/filesystem/tmp
-	chmod 1777 build/filesystem/tmp
 	sync
 	-$(FUMOUNT) build/filesystem/ || true
 	rm -rf build/filesystem/
