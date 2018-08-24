@@ -100,8 +100,7 @@ zerod = {}
 
 # User settings
 [users.root]
-# Password is set to "password"
-password = "$argon2i$m=4096,t=10,p=1$Tnc4UVV0N00$ML9LIOujd3nmAfkAwEcSTMPqakWUF0OUiLWrIy0nGLk"
+password = "password"
 uid = 0
 gid = 0
 name = "root"
@@ -214,3 +213,10 @@ Welcome to Redox OS!
 path = "/usr/bin"
 data = "/bin"
 symlink = true
+
+[[files]]
+path = "/tmp"
+data = ""
+directory= true
+# 0o1777
+mode = 1023
