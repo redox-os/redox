@@ -65,14 +65,14 @@ News and updates for Redox are posted at [redox-os.org/news](https://redox-os.or
 
  * Writing _documentation_
  * **Using/testing Redox**, filing issues for bugs and needed features
- * **Web development** ([Redox website, separate repo](https://github.com/redox-os/website))
+ * **Web development** ([Redox website, separate repo](https://gitlab.redox-os.org/redox-os/website))
  * **Writing unit tests** (may require minimal knowledge of rust)
 
 #### If you are fluent in Rust, but not OS Development:
 
  * **Apps** development
- * **Shell** ([Ion](https://github.com/redox-os/ion)) development
- * **Package management** ([pkgutils](https://github.com/redox-os/pkgutils)) development
+ * **Shell** ([Ion](https://gitlab.redox-os.org/redox-os/ion)) development
+ * **Package management** ([pkgutils](https://gitlab.redox-os.org/redox-os/pkgutils)) development
  * Other high-level code tasks
 
 #### If you are fluent in Rust, and have experience with OS Dev:
@@ -86,14 +86,14 @@ News and updates for Redox are posted at [redox-os.org/news](https://redox-os.or
 **1**. _**Fork**_ the repository
 
 **2**. Clone the _original repository_ to your local PC using one of the following commands based on the protocol you are using:
- * HTTPS:`git clone https://github.com/redox-os/redox.git --origin upstream --recursive`
- * SSH:`git clone git@github.com:redox-os/redox.git --origin upstream --recursive`
+ * HTTPS:`git clone https://gitlab.redox-os.org/redox-os/redox.git --origin upstream --recursive`
+ * SSH:`git clone git@gitlab.redox-os.org:redox-os/redox.git --origin upstream --recursive`
  * Then rebase: `git rebase upstream master`
  If you use HTTPS, you will have to log in each time when pushing to your fork. (Recommended: learn about git SSH support, it logs in automatically using SSH keys)
  
 **3**. **Add** your fork with
- * HTTPS:`git remote add origin https://github.com/your-username/redox.git`
- * SSH:`git remote add origin git@github.com:your-username/redox.git`
+ * HTTPS:`git remote add origin https://gitlab.redox-os.org/your-username/redox.git`
+ * SSH:`git remote add origin git@gitlab.redox-os.org:your-username/redox.git`
  
 **4**. Alternatively, if you already have a fork and copy of the repo, you can simply check to **make sure you're up-to-date**
  * Pull the upstream:`git pull upstream --rebase`
@@ -190,7 +190,7 @@ If you're a good designer, whether it's _2D graphics, 3D graphics, interfaces, w
 
 ### <a name="patreon"> Patreon </a>
 
-Our **BDFL**, [jackpot51](https://github.com/jackpot51), has a [Patreon campaign](https://www.patreon.com/redox_os)! **All money received will go towards Redox OS development**. If you donate, you will be listed in the **Redox credits** as one of the people that made Redox OS possible. You'll also get other rewards the more you donate. However, please don't donate if you can't afford it.
+Our **BDFL**, [jackpot51](https://gitlab.redox-os.org/jackpot51), has a [Patreon campaign](https://www.patreon.com/redox_os)! **All money received will go towards Redox OS development**. If you donate, you will be listed in the **Redox credits** as one of the people that made Redox OS possible. You'll also get other rewards the more you donate. However, please don't donate if you can't afford it.
 
 <!--
 
