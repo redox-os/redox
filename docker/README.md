@@ -15,7 +15,7 @@ toolchain versions, you don't need to update the container.
 
 ### <a name='get_the_sources'></a>Get the sources
 ```
-git clone https://github.com/redox-os/redox.git ; cd redox
+git clone https://gitlab.redox-os.org/redox-os/redox.git ; cd redox
 ```
 
 ### Update the source tree
