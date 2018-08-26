@@ -450,7 +450,7 @@ statusCheck() {
 				echo "******************************************************************"
 				echo "The Travis build did not finish, this is an error with its config."
 				echo "I cannot reliably determine whether the build is succeeding or not."
-				echo "Consider checking for and maybe opening an issue on github"
+				echo "Consider checking for and maybe opening an issue on gitlab"
 				echo "******************************************************************"
 			else
 				echo
@@ -469,7 +469,7 @@ statusCheck() {
 ###########################################################################
 boot()
 {
-	echo "Cloning github repo..."
+	echo "Cloning gitlab repo..."
 	git clone https://gitlab.redox-os.org/redox-os/redox.git --origin upstream --recursive
 	rustInstall
 	if [[ "`cargo install --list`" != *"xargo"* ]]; then
