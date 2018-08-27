@@ -18,9 +18,6 @@ function recipe_build {
     cp config.sub isl/config.sub
     cp config.sub mpfr/config.sub
     cp -f config.sub mpc/config.sub
-    pushd libstdc++-v3
-    autoconf2.64
-    popd
 
     ./configure --host=${HOST} --target=${HOST} --prefix=/ --enable-static --disable-shared --disable-dlopen --disable-nls --enable-languages=c,c++
     make all-gcc all-target-libgcc all-target-libstdc++-v3
