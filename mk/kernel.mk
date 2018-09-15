@@ -16,6 +16,8 @@ build/kernel: kernel/linkers/$(ARCH).ld build/libkernel.a
 
 build/kernel_live: kernel/linkers/$(ARCH).ld build/libkernel_live.a build/live.o
 	$(LD) --gc-sections -z max-page-size=0x1000 -T $< -o $@ build/libkernel_live.a build/live.o
+	objcopy --only-keep-debug $@ $@.sym
+	objcopy --strip-debug $@
 
 build/live.o: build/filesystem.bin
 	#TODO: More general use of $(ARCH)
