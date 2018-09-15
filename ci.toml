@@ -87,6 +87,7 @@ randd = {}
 redoxfs = {}
 #redox-ssh = {}
 relibc = {}
+ripgrep = {}
 rs-nes = {}
 #rust = {}
 rust64 = {}
