@@ -52,7 +52,7 @@ $(PREFIX)/gcc-freestanding-install: $(PREFIX)/gcc
 	touch "$@"
 
 $(PREFIX)/relibc-install: $(PREFIX)/binutils-install $(PREFIX)/gcc-freestanding-install
-	rm -rf "$(PREFIX)/relibc-build"
+	rm -rf "$@"
 	cd relibc && \
 	export PATH="$(PREFIX_FREESTANDING_PATH):$$PATH" && \
 	rustup target add "$(TARGET)" && \
