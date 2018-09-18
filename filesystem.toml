@@ -24,6 +24,7 @@ coreutils = {}
 #dosbox = {}
 drivers = {}
 #duktape = {}
+exampled = {}
 extrautils = {}
 #fd = {}
 #ffmpeg = {}
@@ -137,6 +138,12 @@ path = "/etc/init.d/30_console"
 data = """
 getty display:2
 getty debug: -J
+"""
+
+[[files]]
+path = "/etc/init.d/99_exampled"
+data = """
+exampled
 """
 
 [[files]]
