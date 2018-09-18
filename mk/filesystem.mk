@@ -26,6 +26,7 @@ build/filesystem.bin: filesystem.toml build/bootloader build/kernel prefix
 	chmod +s build/filesystem/bin/passwd
 	chmod +s build/filesystem/bin/su
 	chmod +s build/filesystem/bin/sudo
+	chmod og-rwx build/filesystem/etc/shadow
 	mkdir build/filesystem/tmp
 	chmod 1777 build/filesystem/tmp
 	sync
