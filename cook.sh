@@ -341,15 +341,16 @@ function op {
         stage)
             op $1 unstage
             mkdir -p stage
+            stage="$(realpath stage)"
             pushd build > /dev/null
             skip=0
             if [ "$(type -t recipe_stage)" = "function" ]
             then
-                recipe_stage ../stage
+                recipe_stage "$stage"
             fi
             if [ "$skip" -eq "0" ]
             then
-                #TODO xargo install --root "../stage" $CARGOFLAGS
+                #TODO xargo install --root "$stage" $CARGOFLAGS
                 if [ "$DEBUG" == 1 ]
                 then
                     build=debug
@@ -370,14 +371,14 @@ function op {
                     then
                         echo "$(tput bold)Note$(tput sgr0): No binaries detected, using example binaries"
                     fi
-                    mkdir -p "../stage/$BINDIR"
+                    mkdir -p "$stage/$BINDIR"
                     for bin in $bins
                     do
                         if [ "$DEBUG" == 1 ]
                         then
-                            cp -v "$bin" "../stage/$BINDIR/$(basename $bin)"
+                            cp -v "$bin" "$stage/$BINDIR/$(basename $bin)"
                         else
-                            strip -v "$bin" -o "../stage/$BINDIR/$(basename $bin)"
+                            strip -v "$bin" -o "$stage/$BINDIR/$(basename $bin)"
                         fi
                     done
                 else
