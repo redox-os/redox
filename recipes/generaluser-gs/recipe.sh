@@ -1,5 +1,5 @@
 VERSION=1.471
-GIT=https://github.com/xTibor/redox-generaluser-gs.git
+GIT=https://gitlab.redox-os.org/redox-os/generaluser-gs.git
 
 function recipe_version {
     echo "$VERSION"
