@@ -10,27 +10,6 @@ diff -burpN source-original/configure.ac source/configure.ac
  AC_DECL_SYS_SIGLIST
  AC_HEADER_SYS_WAIT
  AC_CHECK_HEADERS(unistd.h asm/byteorder.h sched.h)
-diff -burpN source-original/src/d_deh.c source/src/d_deh.c
---- source-original/src/d_deh.c	2008-10-11 14:10:38.000000000 +0200
-+++ source/src/d_deh.c	2018-04-22 23:41:16.949896859 +0200
-@@ -54,17 +54,6 @@
- #define TRUE 1
- #define FALSE 0
- 
--#ifndef HAVE_STRLWR
--#include <ctype.h>
--
--static char* strlwr(char* str)
--{
--  char* p;
--  for (p=str; *p; p++) *p = tolower(*p);
--  return str;
--}
--#endif
--
- // killough 10/98: new functions, to allow processing DEH files in-memory
- // (e.g. from wads)
- 
 diff -burpN source-original/src/SDL/i_video.c source/src/SDL/i_video.c
 --- source-original/src/SDL/i_video.c	2008-10-18 15:32:29.000000000 +0200
 +++ source/src/SDL/i_video.c	2018-04-23 00:51:18.944949507 +0200
