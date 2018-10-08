@@ -1,6 +1,6 @@
 VERSION=3.7
 TAR=http://download.netsurf-browser.org/netsurf/releases/source-full/netsurf-all-$VERSION.tar.gz
-BUILD_DEPENDS=(curl expat libjpeg libpng openssl sdl zlib freetype liborbital)
+BUILD_DEPENDS=(curl expat libjpeg libpng openssl sdl zlib freetype liborbital libiconv)
 DEPENDS="ca-certificates orbital"
 
 function recipe_version {
@@ -17,7 +17,7 @@ function recipe_build {
     sysroot="${PWD}/../sysroot"
     export TARGET="framebuffer"
     export CFLAGS="-I$sysroot/include -I${PWD}/inst-${TARGET}/include"
-    export LDFLAGS="-L$sysroot/lib -L${PWD}/inst-${TARGET}/lib"
+    export LDFLAGS="-L$sysroot/lib -L${PWD}/inst-${TARGET}/lib -Wl,--allow-multiple-definition"
 
     make V=1
     skip=1
