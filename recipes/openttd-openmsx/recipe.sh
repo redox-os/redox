@@ -1,4 +1,4 @@
-GIT=https://github.com/xTibor/openttd-openmsx.git
+GIT=https://gitlab.redox-os.org/redox-os/openttd-openmsx.git
 
 function recipe_version {
     echo "0.3.1"
