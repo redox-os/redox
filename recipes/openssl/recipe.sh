@@ -1,5 +1,5 @@
 GIT=https://gitlab.redox-os.org/redox-os/openssl.git
-BRANCH=relibc
+BRANCH=redox
 
 function recipe_version {
     printf "r%s.%s" "$(git rev-list --count HEAD)" "$(git rev-parse --short HEAD)"
