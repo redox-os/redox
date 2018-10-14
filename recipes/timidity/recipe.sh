@@ -1,5 +1,5 @@
 VERSION=2.14.0
-GIT=https://github.com/xTibor/redox-timidity.git
+GIT=https://gitlab.redox-os.org/redox-os/timidity.git
 BRANCH=redox
 DEPENDS="generaluser-gs"
 
