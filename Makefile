@@ -40,10 +40,8 @@ fetch:
 		"$$(cargo run --manifest-path ../installer/Cargo.toml -- --list-packages -c ../initfs.toml)" \
 		"$$(cargo run --manifest-path ../installer/Cargo.toml -- --list-packages -c ../filesystem.toml)"
 
-# Emulation recipes
-include mk/qemu.mk
-include mk/bochs.mk
-include mk/virtualbox.mk
+# Cross compiler recipes
+include mk/prefix.mk
 
 # Kernel recipes
 include mk/kernel.mk
@@ -54,6 +52,11 @@ include mk/filesystem.mk
 
 # Disk images
 include mk/disk.mk
+
+# Emulation recipes
+include mk/qemu.mk
+include mk/bochs.mk
+include mk/virtualbox.mk
 
 # CI image target
 ci-img: FORCE
@@ -67,11 +70,12 @@ ci-img: FORCE
 	cd build/img && sha256sum -b * > SHA256SUM
 
 # CI packaging target
-ci-pkg: FORCE
-	cd cookbook && ./fetch.sh \
-		"$$(cargo run --manifest-path ../installer/Cargo.toml -- --list-packages -c ../ci.toml)"
-	cd cookbook && ./repo.sh \
-		"$$(cargo run --manifest-path ../installer/Cargo.toml -- --list-packages -c ../ci.toml)"
+ci-pkg: prefix FORCE
+	export PATH="$(PREFIX_PATH):$$PATH" && \
+	PACKAGES="$$(cargo run --manifest-path installer/Cargo.toml -- --list-packages -c ci.toml)" && \
+	cd cookbook && \
+	./fetch.sh "$${PACKAGES}" && \
+	./repo.sh "$${PACKAGES}"
 
 # An empty target
 FORCE:
