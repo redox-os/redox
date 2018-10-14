@@ -1,7 +1,8 @@
-GIT=https://gitlab.redox-os.org/redox-os/netdb.git
+VERSION=1.15
+TAR=https://ftp.gnu.org/pub/gnu/libiconv/libiconv-$VERSION.tar.gz
 
 function recipe_version {
-    printf "r%s.%s" "$(git rev-list --count HEAD)" "$(git rev-parse --short HEAD)"
+    echo "$VERSION"
     skip=1
 }
 
@@ -11,7 +12,8 @@ function recipe_update {
 }
 
 function recipe_build {
-    echo "skipping build"
+    ./configure --host=${HOST} --prefix='/' --disable-shared --enable-static
+    make
     skip=1
 }
 
@@ -21,11 +23,12 @@ function recipe_test {
 }
 
 function recipe_clean {
-    echo "skipping clean"
+    make clean
     skip=1
 }
 
 function recipe_stage {
-    cp -r  * ../stage/
+    dest="$(realpath $1)"
+    make DESTDIR="$dest" install
     skip=1
 }

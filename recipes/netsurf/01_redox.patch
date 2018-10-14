@@ -222,7 +222,7 @@ diff -rupNw source-original/netsurf/frontends/framebuffer/Makefile source/netsur
 diff -rupNw source-original/netsurf/Makefile.config source/netsurf/Makefile.config
 --- source-original/netsurf/Makefile.config	1970-01-01 01:00:00.000000000 +0100
 +++ source/netsurf/Makefile.config	2018-03-04 20:43:18.244957528 +0100
-@@ -0,0 +1,27 @@
+@@ -0,0 +1,28 @@
 +override NETSURF_HOMEPAGE := "https://www.redox-os.org/"
 +override NETSURF_FB_FRONTEND := sdl
 +
@@ -232,6 +232,7 @@ diff -rupNw source-original/netsurf/Makefile.config source/netsurf/Makefile.conf
 +override NETSURF_USE_CURL := YES
 +override NETSURF_USE_PNG := YES
 +
++override NETSURF_USE_LIBICONV_PLUG := NO
 +override NETSURF_USE_NSSVG := NO
 +override NETSURF_USE_RSVG := NO
 +override NETSURF_USE_DUKTAPE := NO
