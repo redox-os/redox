@@ -1,4 +1,4 @@
-VERSION=2.14.0
+VERSION=2.15.0
 GIT=https://gitlab.redox-os.org/redox-os/timidity.git
 BRANCH=redox
 DEPENDS="generaluser-gs"
@@ -16,7 +16,7 @@ function recipe_update {
 function recipe_build {
     autoreconf -f -i
     wget -O autoconf/config.sub http://git.savannah.gnu.org/cgit/config.git/plain/config.sub
-    ./configure --host=${HOST} --prefix=''
+    ./configure --host=${HOST} --prefix='' --enable-vt100
     make
     skip=1
 }
