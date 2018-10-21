@@ -77,8 +77,6 @@ The ecosystem and software Redox OS provides is listed below.
 
 Sometimes things go wrong when compiling. Try the following before opening an issue:
 
-1. Make sure you have a Redox toolchain (`x86_64-unknown-redox-gcc`).
-    * You can install from .deb packages (`https://static.redox-os.org/toolchain/apt/`) or build [redox-os/libc](https://gitlab.redox-os.org/redox-os/libc) manually.
 1. Run `rustup update`
 1. Run `make clean pull`.
 1. Make sure you have **the latest version of Rust nightly!** ([rustup.rs](https://www.rustup.rs) is recommended for managing Rust versions. If you already have it, run `rustup`).
