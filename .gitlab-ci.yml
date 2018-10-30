@@ -20,12 +20,8 @@ before_script:
         software-properties-common \
         syslinux \
         syslinux-utils \
+        texinfo \
         wget &&
-    apt-key adv -q --batch --yes --keyserver keyserver.ubuntu.com --recv-keys AA12E97F0881517F &&
-    add-apt-repository 'deb https://static.redox-os.org/toolchain/apt ./' &&
-    apt-get update -qq &&
-    apt-get purge -qq binutils-doc &&
-    apt-get install -qq x86-64-unknown-redox-gcc &&
     curl https://sh.rustup.rs -sSf | sh -s -- -y --default-toolchain none
 
 img:
