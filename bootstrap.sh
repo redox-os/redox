@@ -142,35 +142,18 @@ osx_homebrew()
 archLinux()
 {
 	echo "Detected Arch Linux"
+	packages="cmake fuse git gperf perl-html-parser nasm wget"
+	if [ "$1" == "qemu" ]; then
+		packages="$packages qemu"
+	elif [ "$1" == "virtualbox" ]; then
+		packages="$packages virtualbox"
+	fi
+
 	echo "Updating system..."
 	sudo pacman -Syu
 
-	if [ -z "$(which nasm)" ]; then
-		echo "Installing nasm..."
-		sudo pacman -S nasm
-	fi
-
-	if [ -z "$(which git)" ]; then
-		echo "Installing git..."
-		sudo pacman -S git
-	fi
-
-	if [ "$1" == "qemu" ]; then
-		if [ -z "$(which qemu-system-x86_64)" ]; then
-			echo "Installing QEMU..."
-			sudo pacman -S qemu
-		else
-			echo "QEMU already installed!"
-		fi
-	fi
-
-	echo "Installing fuse..."
-	sudo pacman -S --needed fuse
-	
-	if [ -z "$(which cmake)" ]; then
-		echo "Installing cmake..."
-		sudo pacman -S cmake
-	fi
+	echo "Installing packages $packages..."
+	sudo pacman -S --needed $packages
 }
 
 ###############################################################################
@@ -524,7 +507,7 @@ if [ "Darwin" == "$(uname -s)" ]; then
 	osx "$emulator"
 else
 	# Here we will use package managers to determine which operating system the user is using.
-	
+
 	# Arch linux
 	if hash 2>/dev/null pacman; then
 		archLinux "$emulator"
@@ -543,8 +526,8 @@ else
 	# SolusOS
 	elif hash 2>/dev/null eopkg; then
 		solus "$emulator"
-	fi	
-	
+	fi
+
 
 fi
 
