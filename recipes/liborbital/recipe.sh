@@ -1,4 +1,4 @@
-GIT=https://github.com/xtibor/liborbital
+GIT=https://gitlab.redox-os.org/redox-os/liborbital.git
 
 function recipe_stage {
     dest="$(realpath $1)"
