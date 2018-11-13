@@ -25,7 +25,7 @@ build/livedisk.iso: build/livedisk.bin.gz
 	isohybrid $@
 
 bootloader-efi/build/redox_bootloader/boot.efi:
-	env --unset=XARGO_RUST_SRC $(MAKE) -C bootloader-efi build/redox_bootloader/boot.efi
+	$(MAKE) -C bootloader-efi build/redox_bootloader/boot.efi
 
 build/bootloader.efi: bootloader-efi/build/redox_bootloader/boot.efi
 	cp $< $@
