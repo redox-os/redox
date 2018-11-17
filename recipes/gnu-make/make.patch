@@ -1,6 +1,6 @@
 diff -ru make-4.2/config/config.sub make-4.2-new/config/config.sub
---- make-4.2/config/config.sub	2016-05-22 06:27:16.000000000 -0700
-+++ make-4.2-new/config/config.sub	2017-05-09 13:36:20.519908366 -0700
+--- make-4.2/config/config.sub	2018-11-16 20:15:41.363343886 -0700
++++ make-4.2-new/config/config.sub	2018-11-16 20:15:58.095419089 -0700
 @@ -1376,7 +1376,7 @@
  	-gnu* | -bsd* | -mach* | -minix* | -genix* | -ultrix* | -irix* \
  	      | -*vms* | -sco* | -esix* | -isc* | -aix* | -cnk* | -sunos | -sunos[34]*\
@@ -10,9 +10,33 @@ diff -ru make-4.2/config/config.sub make-4.2-new/config/config.sub
  	      | -amigaos* | -amigados* | -msdos* | -newsos* | -unicos* | -aof* \
  	      | -aos* | -aros* | -cloudabi* | -sortix* \
  	      | -nindy* | -vxsim* | -vxworks* | -ebmon* | -hms* | -mvs* \
+diff -ru make-4.2/getopt1.c make-4.2-new/getopt1.c
+--- make-4.2/getopt1.c	2018-11-16 20:15:41.379343966 -0700
++++ make-4.2-new/getopt1.c	2018-11-16 20:28:25.520961828 -0700
+@@ -48,6 +48,8 @@
+ #endif
+ #endif
+ 
++#define ELIDE_CODE
++
+ #ifndef ELIDE_CODE
+ 
+ 
+diff -ru make-4.2/getopt.c make-4.2-new/getopt.c
+--- make-4.2/getopt.c	2018-11-16 20:15:41.359343867 -0700
++++ make-4.2-new/getopt.c	2018-11-16 20:28:07.653254603 -0700
+@@ -56,6 +56,8 @@
+ # endif
+ #endif
+ 
++#define ELIDE_CODE
++
+ #ifndef ELIDE_CODE
+ 
+ 
 diff -ru make-4.2/glob/glob.c make-4.2-new/glob/glob.c
---- make-4.2/glob/glob.c	2013-10-20 10:14:38.000000000 -0700
-+++ make-4.2-new/glob/glob.c	2017-05-09 14:14:14.319260425 -0700
+--- make-4.2/glob/glob.c	2018-11-16 20:15:41.359343867 -0700
++++ make-4.2-new/glob/glob.c	2018-11-16 20:15:58.095419089 -0700
 @@ -625,9 +625,9 @@
  #else
            const char *home_dir = getenv ("HOME");
@@ -35,8 +59,8 @@ diff -ru make-4.2/glob/glob.c make-4.2-new/glob/glob.c
  	{
  	  char *end_name = strchr (dirname, '/');
 diff -ru make-4.2/job.c make-4.2-new/job.c
---- make-4.2/job.c	2016-05-21 13:22:32.000000000 -0700
-+++ make-4.2-new/job.c	2017-05-09 13:52:47.806791042 -0700
+--- make-4.2/job.c	2018-11-16 20:15:41.351343827 -0700
++++ make-4.2-new/job.c	2018-11-16 20:15:58.099419106 -0700
 @@ -1038,7 +1038,7 @@
  void
  block_sigs (void)
@@ -59,8 +83,8 @@ diff -ru make-4.2/job.c make-4.2-new/job.c
  #endif
  
 diff -ru make-4.2/read.c make-4.2-new/read.c
---- make-4.2/read.c	2016-05-21 13:22:32.000000000 -0700
-+++ make-4.2-new/read.c	2017-05-09 13:55:08.237484319 -0700
+--- make-4.2/read.c	2018-11-16 20:15:41.359343867 -0700
++++ make-4.2-new/read.c	2018-11-16 20:15:58.099419106 -0700
 @@ -2937,7 +2937,7 @@
            free (home_dir);
            home_dir = getenv ("HOME");
