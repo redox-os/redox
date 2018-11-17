@@ -378,7 +378,7 @@ function op {
                         then
                             cp -v "$bin" "$stage/$BINDIR/$(basename $bin)"
                         else
-                            ${STRIP} -v "$bin" -o "$stage/$BINDIR/$(basename $bin)"
+                            "${STRIP}" -v "$bin" -o "$stage/$BINDIR/$(basename $bin)"
                         fi
                     done
                 else
