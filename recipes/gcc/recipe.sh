@@ -19,8 +19,8 @@ function recipe_build {
     cp config.sub mpfr/config.sub
     cp -f config.sub mpc/config.sub
 
-    ./configure --host=${HOST} --target=${HOST} --prefix=/ --enable-static --disable-shared --disable-dlopen --disable-nls --enable-languages=c,c++
-    make all-gcc all-target-libgcc all-target-libstdc++-v3
+    ./configure --host=${HOST} --target=${HOST} --prefix=/ --enable-static --disable-shared --disable-dlopen --disable-nls --enable-languages=c #,c++
+    make all-gcc all-target-libgcc #all-target-libstdc++-v3
     skip=1
 }
 
