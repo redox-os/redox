@@ -77,6 +77,10 @@ ci-pkg: prefix FORCE
 	./fetch.sh "$${PACKAGES}" && \
 	./repo.sh "$${PACKAGES}"
 
+env: prefix FORCE
+	export PATH="$(PREFIX_PATH):$$PATH" && \
+	bash
+
 # An empty target
 FORCE:
 
