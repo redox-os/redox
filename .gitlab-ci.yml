@@ -7,9 +7,11 @@ before_script:
  - |
     apt-get update -qq &&
     apt-get install -qq \
+        bison \
         build-essential \
         curl \
         dosfstools \
+        flex \
         fuse \
         genisoimage \
         git \
