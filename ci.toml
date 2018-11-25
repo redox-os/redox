@@ -1,8 +1,11 @@
 # This is the CI configuration file
 
+# General settings
 [general]
+# Do not prompt if settings are not defined
 prompt = false
 
+# Package settings
 [packages]
 acid = {}
 autoconf = {}
@@ -22,6 +25,7 @@ dash = {}
 drivers = {}
 #drivers-041 = {}
 #duktape = {} # strptime
+exampled = {}
 expat = {}
 extrautils = {}
 #fd = {} #  ctrlc-3.1.1
@@ -29,6 +33,7 @@ ffmpeg = {}
 findutils = {}
 freedoom = {}
 freetype = {}
+# friar = {} # mio patch
 game-2048 = {}
 games = {}
 #gawk = {} # langinfo.h
@@ -46,6 +51,7 @@ ipcd = {}
 jansson = {}
 keyboard-sfx = {}
 lci = {}
+libiconv = {}
 libjpeg = {}
 liborbital = {}
 libpng = {}
