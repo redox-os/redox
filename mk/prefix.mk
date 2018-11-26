@@ -4,7 +4,17 @@ PREFIX_BINUTILS_PATH=$(PREFIX)/binutils-install/bin
 PREFIX_FREESTANDING_PATH=$(PREFIX_BINUTILS_PATH):$(PREFIX)/gcc-freestanding-install/bin
 PREFIX_PATH=$(PREFIX_BINUTILS_PATH):$(PREFIX)/gcc-install/bin
 
-prefix: $(PREFIX)/gcc-install
+PREFIX_FREESTANDING_TARGETS=\
+	$(PREFIX)/binutils-install \
+	$(PREFIX)/gcc-freestanding-install
+
+PREFIX_TARGETS=\
+	$(PREFIX)/binutils-install \
+	$(PREFIX)/gcc-install
+
+prefix-freestanding: $(PREFIX_FREESTANDING_TARGETS)
+
+prefix: $(PREFIX_TARGETS)
 	touch "$@"
 
 $(PREFIX)/binutils.tar.bz2:
@@ -51,9 +61,9 @@ $(PREFIX)/gcc-freestanding-install: $(PREFIX)/gcc
 	make install-target-libgcc -j `nproc`
 	touch "$@"
 
-$(PREFIX)/relibc-install: $(PREFIX)/binutils-install $(PREFIX)/gcc-freestanding-install
+$(PREFIX)/relibc-install: $(ROOT)/relibc | $(PREFIX_FREESTANDING_TARGETS)
 	rm -rf "$@"
-	cd relibc && \
+	cd "$<" && \
 	export PATH="$(PREFIX_FREESTANDING_PATH):$$PATH" && \
 	make CARGO=xargo all && \
 	make CARGO=xargo DESTDIR="$@/usr" install
