@@ -1,7 +1,6 @@
-diff --git a/config.lib b/config.lib
-index bc2224f..54290b1 100644
---- a/config.lib
-+++ b/config.lib
+diff -rupNw source-original/config.lib source/config.lib
+--- source-original/config.lib	2018-11-23 19:25:11.000000000 +0100
++++ source/config.lib	2018-11-23 21:37:19.956620161 +0100
 @@ -1486,7 +1486,7 @@ make_cflags_and_ldflags() {
  	# Special CXXFlags for HOST
  	CXXFLAGS="$CXXFLAGS"
@@ -20,61 +19,9 @@ index bc2224f..54290b1 100644
  	fi
  
  	if [ "$os" != "CYGWIN" ] && [ "$os" != "HAIKU" ] && [ "$os" != "MINGW" ] && [ "$os" != "DOS" ] && [ "$os" != "WINCE" ]; then
-diff --git a/src/os/unix/crashlog_unix.cpp b/src/os/unix/crashlog_unix.cpp
-index 47de057..07a3b74 100644
---- a/src/os/unix/crashlog_unix.cpp
-+++ b/src/os/unix/crashlog_unix.cpp
-@@ -17,7 +17,7 @@
- 
- #include <errno.h>
- #include <signal.h>
--#include <sys/utsname.h>
-+//#include <sys/utsname.h>
- 
- #if defined(__GLIBC__)
- /* Execinfo (and thus making stacktraces) is a GNU extension */
-@@ -42,22 +42,22 @@ class CrashLogUnix : public CrashLog {
- 
- 	/* virtual */ char *LogOSVersion(char *buffer, const char *last) const
- 	{
--		struct utsname name;
--		if (uname(&name) < 0) {
-+		//struct utsname name;
-+		//if (uname(&name) < 0) {
- 			return buffer + seprintf(buffer, last, "Could not get OS version: %s\n", strerror(errno));
--		}
--
--		return buffer + seprintf(buffer, last,
--				"Operating system:\n"
--				" Name:     %s\n"
--				" Release:  %s\n"
--				" Version:  %s\n"
--				" Machine:  %s\n",
--				name.sysname,
--				name.release,
--				name.version,
--				name.machine
--		);
-+		//}
-+
-+		//return buffer + seprintf(buffer, last,
-+		//		"Operating system:\n"
-+		//		" Name:     %s\n"
-+		//		" Release:  %s\n"
-+		//		" Version:  %s\n"
-+		//		" Machine:  %s\n",
-+		//		name.sysname,
-+		//		name.release,
-+		//		name.version,
-+		//		name.machine
-+		//);
- 	}
- 
- 	/* virtual */ char *LogError(char *buffer, const char *last, const char *message) const
-diff --git a/src/os/unix/unix.cpp b/src/os/unix/unix.cpp
-index d7c2304..ed3c706 100644
---- a/src/os/unix/unix.cpp
-+++ b/src/os/unix/unix.cpp
+diff -rupNw source-original/src/os/unix/unix.cpp source/src/os/unix/unix.cpp
+--- source-original/src/os/unix/unix.cpp	2018-11-23 19:25:12.000000000 +0100
++++ source/src/os/unix/unix.cpp	2018-11-23 21:37:19.956620161 +0100
 @@ -28,7 +28,7 @@
  #ifdef __APPLE__
  	#include <sys/mount.h>
@@ -84,11 +31,10 @@ index d7c2304..ed3c706 100644
  #endif
  
  #if defined(OPENBSD) || defined(__NetBSD__) || defined(__FreeBSD__)
-diff --git a/src/rev.cpp.in b/src/rev.cpp.in
-index b6bddea..499ec09 100644
---- a/src/rev.cpp.in
-+++ b/src/rev.cpp.in
-@@ -57,7 +57,7 @@ const char _openttd_build_date[] = __DATE__ " " __TIME__;
+diff -rupNw source-original/src/rev.cpp.in source/src/rev.cpp.in
+--- source-original/src/rev.cpp.in	2018-11-23 19:25:12.000000000 +0100
++++ source/src/rev.cpp.in	2018-11-23 21:37:19.956620161 +0100
+@@ -57,7 +57,7 @@ const char _openttd_build_date[] = __DAT
   * (compiling from sources without any version control software)
   * and 2 is for modified revision.
   */
@@ -97,16 +43,28 @@ index b6bddea..499ec09 100644
  
  /**
   * The NewGRF revision of OTTD:
-diff --git a/src/stringfilter.cpp b/src/stringfilter.cpp
-index 6045c19..6fc3f99 100644
---- a/src/stringfilter.cpp
-+++ b/src/stringfilter.cpp
-@@ -113,7 +113,7 @@ void StringFilter::AddLine(const char *str)
- 	const WordState *end = this->word_index.End();
- 	for (WordState *it = this->word_index.Begin(); it != end; ++it) {
- 		if (!it->match) {
--			if ((match_case ? strstr(str, it->start) : strcasestr(str, it->start)) != NULL) {
-+			if ((match_case ? strstr(str, it->start) : strstr(str, it->start)) != NULL) {
- 				it->match = true;
- 				this->word_matches++;
- 			}
+diff -rupNw source-original/src/stdafx.h source/src/stdafx.h
+--- source-original/src/stdafx.h	2018-11-23 19:25:12.000000000 +0100
++++ source/src/stdafx.h	2018-11-23 19:49:25.000000000 +0100
+@@ -12,6 +12,9 @@
+ #ifndef STDAFX_H
+ #define STDAFX_H
+ 
++#include <strings.h>
++#include <alloca.h>
++
+ #if defined(__APPLE__)
+ 	#include "os/macosx/osx_stdafx.h"
+ #endif /* __APPLE__ */
+diff -rupNw source-original/src/string.cpp source/src/string.cpp
+--- source-original/src/string.cpp	2018-11-23 19:25:12.000000000 +0100
++++ source/src/string.cpp	2018-11-23 20:01:10.000000000 +0100
+@@ -528,7 +528,7 @@ size_t Utf8TrimString(char *s, size_t ma
+ 	return length;
+ }
+ 
+-#ifdef DEFINE_STRCASESTR
++#if 0
+ char *strcasestr(const char *haystack, const char *needle)
+ {
+ 	size_t hay_len = strlen(haystack);
