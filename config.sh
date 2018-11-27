@@ -2,9 +2,12 @@
 set -e
 
 # Configuration
-ARCH=x86_64
-export TARGET=$ARCH-unknown-redox
-HOST=$TARGET
+if [ -z "${TARGET}" ]
+then
+    export TARGET=x86_64-unknown-redox
+fi
+ARCH="${TARGET%%-*}"
+HOST="$TARGET"
 
 # Automatic variables
 ROOT="$(cd `dirname "$0"` && pwd)"
