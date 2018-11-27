@@ -1,6 +1,7 @@
 GIT=https://gitlab.redox-os.org/redox-os/gcc.git
 BRANCH=redox
-DEPENDS="gnu-binutils newlib"
+BUILD_DEPENDS=(relibc)
+DEPENDS="gnu-binutils relibc"
 
 function recipe_version {
     printf "r%s.%s" "$(git rev-list --count HEAD)" "$(git rev-parse --short HEAD)"
@@ -19,8 +20,12 @@ function recipe_build {
     cp config.sub mpfr/config.sub
     cp -f config.sub mpc/config.sub
 
-    ./configure --host=${HOST} --target=${HOST} --prefix=/ --enable-static --disable-shared --disable-dlopen --disable-nls --enable-languages=c,c++
-    make all-gcc all-target-libgcc all-target-libstdc++-v3
+    sysroot="${PWD}/../sysroot"
+    mkdir -p "$sysroot/usr"
+    ln -sf "$sysroot/include" "$sysroot/usr/include"
+    ln -sf "$sysroot/lib" "$sysroot/usr/lib"
+    ./configure --host=${HOST} --target=${HOST} --prefix=/ --with-sysroot=/ --with-build-sysroot="$sysroot" --enable-static --disable-shared --disable-dlopen --disable-nls --enable-languages=c,c++
+    make -j "$(nproc)" all-gcc all-target-libgcc all-target-libstdc++-v3
     skip=1
 }
 
