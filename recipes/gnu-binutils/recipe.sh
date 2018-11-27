@@ -1,4 +1,5 @@
 GIT=https://gitlab.redox-os.org/redox-os/binutils-gdb.git
+BUILD_DEPENDS=(relibc)
 
 function recipe_version {
     printf "r%s.%s" "$(git rev-list --count HEAD)" "$(git rev-parse --short HEAD)"
@@ -11,7 +12,11 @@ function recipe_update {
 }
 
 function recipe_build {
-    ./configure --host=${HOST} --target=${HOST} --prefix=/ --with-sysroot=/usr/$HOST --disable-gdb --disable-nls --disable-werror
+    sysroot="${PWD}/../sysroot"
+    mkdir -p "$sysroot/usr"
+    ln -sf "$sysroot/include" "$sysroot/usr/include"
+    ln -sf "$sysroot/lib" "$sysroot/usr/lib"
+    ./configure --host=${HOST} --target=${HOST} --prefix=/ --with-sysroot=/ --with-build-sysroot="$sysroot" --disable-gdb --disable-nls --disable-werror
     make
     skip=1
 }
