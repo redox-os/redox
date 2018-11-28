@@ -8,6 +8,7 @@ ifeq ($(PREFIX_RUSTC),1)
 	export RUSTUP_TOOLCHAIN=$(PREFIX)/rust-freestanding-install
 endif
 
+PREFIX_FREESTANDING_PATH=$(PREFIX_FREESTANDING_INSTALL)/bin
 PREFIX_PATH=$(PREFIX_INSTALL)/bin
 
 prefix-freestanding: $(PREFIX_FREESTANDING_INSTALL)
@@ -68,13 +69,14 @@ $(PREFIX)/rust-freestanding-install: $(ROOT)/rust | $(PREFIX)/gcc-freestanding-i
 	"$</configure" --prefix="$@" --disable-docs && \
 	make -j `nproc` && \
 	make install -j `nproc`
+	mkdir -p "$@/lib/rustlib/x86_64-unknown-linux-gnu/bin"
 	touch "$@"
 
 $(PREFIX)/relibc-install: $(ROOT)/relibc | $(PREFIX_FREESTANDING_INSTALL)
 	rm -rf "$@"
 	mkdir -p "$@"
 	cd "$<" && \
-	export PATH="$@/bin:$$PATH" && \
+	export PATH="$(PREFIX_FREESTANDING_PATH):$$PATH" && \
 	make CARGO=xargo all && \
 	make CARGO=xargo DESTDIR="$@/usr" install
 	touch "$@"
