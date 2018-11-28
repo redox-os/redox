@@ -20,7 +20,7 @@ function recipe_build {
     cp config.sub mpfr/config.sub
     cp -f config.sub mpc/config.sub
 
-    sysroot="${PWD}/../sysroot"
+    sysroot="$(realpath "${PWD}/../sysroot")"
     mkdir -p "$sysroot/usr"
     ln -sf "$sysroot/include" "$sysroot/usr/include"
     ln -sf "$sysroot/lib" "$sysroot/usr/lib"
