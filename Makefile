@@ -86,7 +86,7 @@ FORCE:
 
 # A method of creating a listing for any binary
 %.list: %
-	objdump -C -M intel -D $< > $@
+	$(OBJDUMP) -C -M intel -D $< > $@
 
 # Wireshark
 wireshark: FORCE
