@@ -91,9 +91,9 @@ $(PREFIX)/gcc-install: $(PREFIX)/gcc | $(PREFIX)/relibc-install
 	make all-gcc -j `nproc` && \
 	make all-target-libgcc -j `nproc` && \
 	make install-gcc -j `nproc` && \
-	make install-target-libgcc -j `nproc` # && \
-	#make all-target-libstdc++-v3 -j `nproc` && \
-	#make install-target-libstdc++-v3 -j `nproc`
+	make install-target-libgcc -j `nproc` && \
+	make all-target-libstdc++-v3 -j `nproc` && \
+	make install-target-libstdc++-v3 -j `nproc`
 	touch "$@"
 
 # Building full rustc may not be required
