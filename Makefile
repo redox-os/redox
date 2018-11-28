@@ -86,6 +86,7 @@ FORCE:
 
 # A method of creating a listing for any binary
 %.list: %
+	export PATH="$(PREFIX_PATH):$$PATH" && \
 	$(OBJDUMP) -C -M intel -D $< > $@
 
 # Wireshark
