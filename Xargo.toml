@@ -1,4 +1,7 @@
-[dependencies.std]
+[target.aarch64-unknown-redox.dependencies.std]
+features = ["panic_unwind"]
+
+[target.x86_64-unknown-redox.dependencies.std]
 features = ["panic_unwind", "backtrace"]
 
 #[dependencies.test]
