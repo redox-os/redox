@@ -1,6 +1,6 @@
 diff -ru source/builtin/log.c source-new/builtin/log.c
 --- source/builtin/log.c	2017-06-04 19:08:11.000000000 -0600
-+++ source-new/builtin/log.c	2018-12-02 14:18:59.800197927 -0700
++++ source-new/builtin/log.c	2018-12-02 16:07:24.784757087 -0700
 @@ -308,6 +308,7 @@
  
  static void setup_early_output(struct rev_info *rev)
@@ -19,7 +19,7 @@ diff -ru source/builtin/log.c source-new/builtin/log.c
  static void finish_early_output(struct rev_info *rev)
 diff -ru source/common-main.c source-new/common-main.c
 --- source/common-main.c	2017-06-04 19:08:11.000000000 -0600
-+++ source-new/common-main.c	2018-12-02 14:18:59.800197927 -0700
++++ source-new/common-main.c	2018-12-02 16:07:24.784757087 -0700
 @@ -15,12 +15,14 @@
   */
  static void restore_sigpipe_to_default(void)
@@ -37,7 +37,7 @@ diff -ru source/common-main.c source-new/common-main.c
  int main(int argc, const char **argv)
 diff -ru source/compat/hstrerror.c source-new/compat/hstrerror.c
 --- source/compat/hstrerror.c	2017-06-04 19:08:11.000000000 -0600
-+++ source-new/compat/hstrerror.c	2018-12-02 14:18:59.800197927 -0700
++++ source-new/compat/hstrerror.c	2018-12-02 16:07:24.784757087 -0700
 @@ -5,17 +5,6 @@
  const char *githstrerror(int err)
  {
@@ -58,7 +58,7 @@ diff -ru source/compat/hstrerror.c source-new/compat/hstrerror.c
  }
 diff -ru source/compat/poll/poll.c source-new/compat/poll/poll.c
 --- source/compat/poll/poll.c	2017-06-04 19:08:11.000000000 -0600
-+++ source-new/compat/poll/poll.c	2018-12-02 14:18:59.800197927 -0700
++++ source-new/compat/poll/poll.c	2018-12-02 16:07:24.784757087 -0700
 @@ -302,7 +302,7 @@
  	happened |= (POLLIN | POLLRDNORM) & sought;
  
@@ -70,7 +70,7 @@ diff -ru source/compat/poll/poll.c source-new/compat/poll/poll.c
  
 diff -ru source/compat/terminal.c source-new/compat/terminal.c
 --- source/compat/terminal.c	2017-06-04 19:08:11.000000000 -0600
-+++ source-new/compat/terminal.c	2018-12-02 14:18:59.800197927 -0700
++++ source-new/compat/terminal.c	2018-12-02 16:07:24.784757087 -0700
 @@ -3,7 +3,9 @@
  #include "sigchain.h"
  #include "strbuf.h"
@@ -96,7 +96,7 @@ diff -ru source/compat/terminal.c source-new/compat/terminal.c
  #endif
 diff -ru source/config.c source-new/config.c
 --- source/config.c	2017-06-04 19:08:11.000000000 -0600
-+++ source-new/config.c	2018-12-02 14:18:59.800197927 -0700
++++ source-new/config.c	2018-12-02 16:07:24.788757117 -0700
 @@ -1094,7 +1094,7 @@
  	}
  
@@ -108,7 +108,7 @@ diff -ru source/config.c source-new/config.c
  		/* This value must be multiple of (pagesize * 2) */
 diff -ru source/connect.c source-new/connect.c
 --- source/connect.c	2017-06-04 19:08:11.000000000 -0600
-+++ source-new/connect.c	2018-12-02 14:18:59.800197927 -0700
++++ source-new/connect.c	2018-12-02 16:07:24.788757117 -0700
 @@ -450,14 +450,11 @@
  
  	he = gethostbyname(host);
@@ -137,7 +137,7 @@ diff -ru source/connect.c source-new/connect.c
  
 diff -ru source/credential-cache--daemon.c source-new/credential-cache--daemon.c
 --- source/credential-cache--daemon.c	2017-06-04 19:08:11.000000000 -0600
-+++ source-new/credential-cache--daemon.c	2018-12-02 14:18:59.800197927 -0700
++++ source-new/credential-cache--daemon.c	2018-12-02 16:07:24.788757117 -0700
 @@ -156,6 +156,7 @@
  	strbuf_release(&action);
  }
@@ -174,7 +174,7 @@ diff -ru source/credential-cache--daemon.c source-new/credential-cache--daemon.c
  }
 diff -ru source/daemon.c source-new/daemon.c
 --- source/daemon.c	2017-06-04 19:08:11.000000000 -0600
-+++ source-new/daemon.c	2018-12-02 14:18:59.804197591 -0700
++++ source-new/daemon.c	2018-12-02 16:07:24.788757117 -0700
 @@ -71,6 +71,7 @@
  	return hi->ip_address.buf;
  }
@@ -310,7 +310,7 @@ diff -ru source/daemon.c source-new/daemon.c
  		/* avoid splitting a message in the middle */
 diff -ru source/dir.c source-new/dir.c
 --- source/dir.c	2017-06-04 19:08:11.000000000 -0600
-+++ source-new/dir.c	2018-12-02 14:18:59.804197591 -0700
++++ source-new/dir.c	2018-12-02 16:07:24.788757117 -0700
 @@ -1891,14 +1891,14 @@
  static const char *get_ident_string(void)
  {
@@ -332,7 +332,7 @@ diff -ru source/dir.c source-new/dir.c
  
 diff -ru source/fast-import.c source-new/fast-import.c
 --- source/fast-import.c	2017-06-04 19:08:11.000000000 -0600
-+++ source-new/fast-import.c	2018-12-02 14:18:59.804197591 -0700
++++ source-new/fast-import.c	2018-12-02 16:07:24.788757117 -0700
 @@ -531,6 +531,7 @@
  
  static void set_checkpoint_signal(void)
@@ -351,7 +351,7 @@ diff -ru source/fast-import.c source-new/fast-import.c
  #endif
 diff -ru source/git-compat-util.h source-new/git-compat-util.h
 --- source/git-compat-util.h	2017-06-04 19:08:11.000000000 -0600
-+++ source-new/git-compat-util.h	2018-12-02 14:18:59.804197591 -0700
++++ source-new/git-compat-util.h	2018-12-02 16:07:24.788757117 -0700
 @@ -179,7 +179,6 @@
  #include <assert.h>
  #include <regex.h>
@@ -403,7 +403,7 @@ diff -ru source/git-compat-util.h source-new/git-compat-util.h
  #endif
 diff -ru source/Makefile source-new/Makefile
 --- source/Makefile	2017-06-04 19:08:11.000000000 -0600
-+++ source-new/Makefile	2018-12-02 14:18:59.804197591 -0700
++++ source-new/Makefile	2018-12-02 16:07:24.788757117 -0700
 @@ -1802,7 +1802,6 @@
  
  $(BUILT_INS): git$X
@@ -445,7 +445,7 @@ diff -ru source/Makefile source-new/Makefile
  	done && \
 diff -ru source/progress.c source-new/progress.c
 --- source/progress.c	2017-06-04 19:08:11.000000000 -0600
-+++ source-new/progress.c	2018-12-02 14:18:59.804197591 -0700
++++ source-new/progress.c	2018-12-02 16:07:24.788757117 -0700
 @@ -52,11 +52,13 @@
  
  	progress_update = 0;
@@ -472,7 +472,7 @@ diff -ru source/progress.c source-new/progress.c
  static int display(struct progress *progress, unsigned n, const char *done)
 diff -ru source/rerere.c source-new/rerere.c
 --- source/rerere.c	2017-06-04 19:08:11.000000000 -0600
-+++ source-new/rerere.c	2018-12-02 14:18:59.804197591 -0700
++++ source-new/rerere.c	2018-12-02 16:07:24.788757117 -0700
 @@ -682,7 +682,7 @@
  	 * A successful replay of recorded resolution.
  	 * Mark that "postimage" was used to help gc.
@@ -484,7 +484,19 @@ diff -ru source/rerere.c source-new/rerere.c
  
 diff -ru source/run-command.c source-new/run-command.c
 --- source/run-command.c	2017-06-04 19:08:11.000000000 -0600
-+++ source-new/run-command.c	2018-12-02 14:18:59.804197591 -0700
++++ source-new/run-command.c	2018-12-02 16:07:55.100993213 -0700
+@@ -120,9 +120,9 @@
+ #ifndef GIT_WINDOWS_NATIVE
+ static inline void dup_devnull(int to)
+ {
+-	int fd = open("/dev/null", O_RDWR);
++	int fd = open("null:", O_RDWR);
+ 	if (fd < 0)
+-		die_errno(_("open /dev/null failed"));
++		die_errno(_("open null: failed"));
+ 	if (dup2(fd, to) < 0)
+ 		die_errno(_("dup2(%d,%d) failed"), fd, to);
+ 	close(fd);
 @@ -138,7 +138,7 @@
  		return NULL;
  
@@ -496,7 +508,7 @@ diff -ru source/run-command.c source-new/run-command.c
  
 diff -ru source/send-pack.c source-new/send-pack.c
 --- source/send-pack.c	2017-06-04 19:08:11.000000000 -0600
-+++ source-new/send-pack.c	2018-12-02 14:18:59.804197591 -0700
++++ source-new/send-pack.c	2018-12-02 16:07:24.788757117 -0700
 @@ -570,7 +570,7 @@
  			if (args->stateless_rpc)
  				close(out);
@@ -508,7 +520,7 @@ diff -ru source/send-pack.c source-new/send-pack.c
  			 * Do not even bother with the return value; we know we
 diff -ru source/setup.c source-new/setup.c
 --- source/setup.c	2017-06-04 19:08:11.000000000 -0600
-+++ source-new/setup.c	2018-12-02 14:19:36.749210959 -0700
++++ source-new/setup.c	2018-12-02 16:07:24.788757117 -0700
 @@ -1143,21 +1143,21 @@
  	return read_gitfile_gently(suspect, return_error_code);
  }
@@ -537,7 +549,7 @@ diff -ru source/setup.c source-new/setup.c
  #else
 diff -ru source/sha1_file.c source-new/sha1_file.c
 --- source/sha1_file.c	2017-06-04 19:08:11.000000000 -0600
-+++ source-new/sha1_file.c	2018-12-02 14:18:59.824195916 -0700
++++ source-new/sha1_file.c	2018-12-02 16:07:24.792757146 -0700
 @@ -723,7 +723,7 @@
  		"pack_report: getpagesize()            = %10" SZ_FMT "\n"
  		"pack_report: core.packedGitWindowSize = %10" SZ_FMT "\n"
@@ -549,7 +561,7 @@ diff -ru source/sha1_file.c source-new/sha1_file.c
  	fprintf(stderr,
 diff -ru source/strbuf.c source-new/strbuf.c
 --- source/strbuf.c	2017-06-04 19:08:11.000000000 -0600
-+++ source-new/strbuf.c	2018-12-02 14:18:59.824195916 -0700
++++ source-new/strbuf.c	2018-12-02 16:07:24.792757146 -0700
 @@ -446,6 +446,11 @@
  	for (;; guessed_len *= 2) {
  		strbuf_grow(sb, guessed_len);
@@ -564,7 +576,7 @@ diff -ru source/strbuf.c source-new/strbuf.c
  		}
 diff -ru source/wrapper.c source-new/wrapper.c
 --- source/wrapper.c	2017-06-04 19:08:11.000000000 -0600
-+++ source-new/wrapper.c	2018-12-02 14:18:59.824195916 -0700
++++ source-new/wrapper.c	2018-12-02 16:07:24.792757146 -0700
 @@ -227,6 +227,7 @@
  	}
  }
