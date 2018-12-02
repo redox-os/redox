@@ -23,13 +23,17 @@ coreutils = {}
 #diffutils = {}
 #dosbox = {}
 drivers = {}
+#drivers-041 = {}
 #duktape = {}
 #exampled = {}
+#expat = {}
 extrautils = {}
 #fd = {}
 #ffmpeg = {}
 findutils = {}
 #freedoom = {}
+#freetype = {}
+#friar = {} # mio patch
 #game-2048 = {}
 #games = {}
 #gawk = {}
@@ -44,14 +48,22 @@ findutils = {}
 installer = {}
 ion = {}
 ipcd = {}
+#jansson = {}
 #keyboard-sfx = {}
 #lci = {}
+#libiconv = {}
+#libjpeg = {}
+#liborbital = {}
+#libpng = {}
+#libsodium = {}
 logd = {}
 #lua = {}
 #mdp = {}
 #miniserve = {}
 #nasm = {}
 #ncdu = {}
+#ncurses = {}
+#ncursesw = {}
 netdb = {}
 netstack = {}
 netsurf = {}
@@ -59,6 +71,7 @@ netutils = {}
 #newlib = {}
 #newlibtest = {}
 nulld = {}
+#openjazz = {}
 #openssl = {}
 #openttd = {}
 #openttd-opengfx = {}
@@ -78,16 +91,24 @@ pkgutils = {}
 ptyd = {}
 #python = {}
 randd = {}
+#readline = {} # ncurses
 redoxfs = {}
 #redox-ssh = {}
 #relibc = {}
+#ripgrep = {}
 #rs-nes = {}
 #rust = {}
 #rust64 = {}
 #rustual-boy = {}
+#scummvm = {}
+#sdl = {}
+#sdl_image = {}
+#sdl_mixer = {}
 #sed = {}
+#shellstorm = {}
 smith = {}
 #sodium = {}
+#ssh = {}
 #terminfo = {}
 #termplay = {}
 #timidity = {}
@@ -98,6 +119,7 @@ uutils = {}
 #vttest = {}
 #xz = {}
 zerod = {}
+#zlib = {}
 
 # User settings
 [users.root]
@@ -213,6 +235,26 @@ Welcome to Redox OS!
 [[files]]
 path = "/usr/bin"
 data = "/bin"
+symlink = true
+
+[[files]]
+path = "/usr/games"
+data = "/games"
+symlink = true
+
+[[files]]
+path = "/usr/include"
+data = "/include"
+symlink = true
+
+[[files]]
+path = "/usr/lib"
+data = "/lib"
+symlink = true
+
+[[files]]
+path = "/usr/share"
+data = "/share"
 symlink = true
 
 [[files]]
