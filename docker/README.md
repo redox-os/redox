@@ -28,7 +28,7 @@ git pull --rebase --recurse-submodules && git submodule sync \
 
 ### Run the container to build Redox
 ```shell
-docker run --cap-add MKNOD --cap-add SYS_ADMIN --device /dev/fuse \
+docker run --privileged --cap-add MKNOD --cap-add SYS_ADMIN --device /dev/fuse \
     -e LOCAL_UID="$(id -u)" -e LOCAL_GID="$(id -g)" \
     -v redox-"$(id -u)-$(id -g)"-cargo:/usr/local/cargo \
     -v redox-"$(id -u)-$(id -g)"-rustup:/usr/local/rustup \
@@ -43,7 +43,7 @@ Add the following options depending on the security modules activated on your sy
 ```
 Ex.: for a SELinux only system such as Fedora or CentOS
 ```shell
-docker run --cap-add MKNOD --cap-add SYS_ADMIN --device /dev/fuse \
+docker run --privileged --cap-add MKNOD --cap-add SYS_ADMIN --device /dev/fuse \
     -e LOCAL_UID="$(id -u)" -e LOCAL_GID="$(id -g)" \
     --security-opt label=disable \
     -v redox-"$(id -u)-$(id -g)"-cargo:/usr/local/cargo \
@@ -52,7 +52,7 @@ docker run --cap-add MKNOD --cap-add SYS_ADMIN --device /dev/fuse \
 ```
 ### Run the container interactively
 ```shell
-docker run --cap-add MKNOD --cap-add SYS_ADMIN --device /dev/fuse \
+docker run --privileged --cap-add MKNOD --cap-add SYS_ADMIN --device /dev/fuse \
     -e LOCAL_UID="$(id -u)" -e LOCAL_GID="$(id -g)" \
     -v redox-"$(id -u)-$(id -g)"-cargo:/usr/local/cargo \
     -v redox-"$(id -u)-$(id -g)"-rustup:/usr/local/rustup \
@@ -60,7 +60,7 @@ docker run --cap-add MKNOD --cap-add SYS_ADMIN --device /dev/fuse \
 ```
 
 #### Demo
-![Image of Usage](interactive_demo.gif)
+![Image of Usage](demo.gif)
 
 ### Clear the named volumes containing the toolchain caches
 ```shell
