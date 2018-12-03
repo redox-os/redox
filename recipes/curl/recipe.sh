@@ -17,7 +17,7 @@ function recipe_build {
     wget -O config.sub http://git.savannah.gnu.org/cgit/config.git/plain/config.sub
     autoreconf -i
     ./configure --prefix=/ --host=${HOST} --disable-tftp --disable-ftp --disable-ntlm-wb --disable-threaded-resolver --with-zlib="$PWD/../sysroot" --with-ssl="$PWD/../sysroot" --with-ca-path=/ssl/certs
-    make
+    make -j"$(nproc)"
     skip=1
 }
 

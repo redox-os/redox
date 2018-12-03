@@ -16,8 +16,7 @@ function recipe_build {
     export CFLAGS="-static -nostdinc -I $sysroot/include -I /usr/lib/gcc/x86_64-unknown-redox/7.0.1/include/ -nostdlib -L $sysroot/lib"
     export CRT="$sysroot/lib/crt0.o"
     export CLIBS="-lc -lm"
-
-    make all
+    make all -j"$(nproc)"
     skip=1
 }
 

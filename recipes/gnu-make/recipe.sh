@@ -13,7 +13,7 @@ function recipe_update {
 
 function recipe_build {
     ./configure --host=${HOST} --prefix=/ CFLAGS="-DPOSIX -DNO_ARCHIVES -DNO_OUTPUT_SYNC" --without-guile
-    make
+    make -j"$(nproc)"
     skip=1
 }
 

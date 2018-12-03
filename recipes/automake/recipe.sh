@@ -15,9 +15,9 @@ function recipe_build {
     wget -O lib/config.sub http://git.savannah.gnu.org/cgit/config.git/plain/config.sub
     sed -i 's|.*/doc/help2man.*|\&\& true|' Makefile.in
     sed -i 's|install-info-am install-man|install-info-am|' Makefile.in
-    
+
     ./configure --host=${HOST} --prefix=''
-    make
+    make -j"$(nproc)"
     skip=1
 }
 

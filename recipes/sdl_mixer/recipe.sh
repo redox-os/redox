@@ -18,7 +18,7 @@ function recipe_update {
 function recipe_build {
     ./autogen.sh
     ./configure --prefix=/ --host=${HOST} --disable-shared --disable-sdltest --disable-music-cmd --disable-music-mp3 --disable-smpegtest
-    make
+    make -j"$(nproc)"
     skip=1
 }
 

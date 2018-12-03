@@ -18,7 +18,7 @@ function recipe_update {
 function recipe_build {
     ./autogen.sh
     ./configure --prefix=/ --host=${HOST} --disable-shared --disable-sdltest --enable-png --enable-jpg
-    make
+    make -j"$(nproc)"
     skip=1
 }
 
@@ -31,7 +31,7 @@ function recipe_clean {
     make clean
     skip=1
 }
- 
+
 function recipe_stage {
     dest="$(realpath $1)"
     make DESTDIR="$dest" install

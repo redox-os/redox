@@ -17,7 +17,7 @@ function recipe_build {
     autoreconf -f -i
     wget -O autoconf/config.sub http://git.savannah.gnu.org/cgit/config.git/plain/config.sub
     ./configure --host=${HOST} --prefix='' --enable-vt100
-    make
+    make -j"$(nproc)"
     skip=1
 }
 

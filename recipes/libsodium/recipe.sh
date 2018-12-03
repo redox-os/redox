@@ -15,7 +15,7 @@ function recipe_build {
     # Disclaimer: No idea what I'm doing
     ./autogen.sh
     ./configure --host=${HOST} --prefix='/'
-    make
+    make -j"$(nproc)"
     skip=1
 }
 

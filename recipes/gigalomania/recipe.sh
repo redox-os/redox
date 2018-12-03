@@ -18,7 +18,7 @@ function recipe_build {
     sysroot="${PWD}/../sysroot"
     export LDFLAGS="-L$sysroot/lib"
     export CPPFLAGS="-I$sysroot/include"
-    make all
+    make all -j"$(nproc)"
     skip=1
 }
 

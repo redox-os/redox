@@ -13,7 +13,7 @@ function recipe_update {
 
 function recipe_build {
     sed -i "s/= gcc/= $TARGET-gcc/g" Makefile.cmdline
-    make -f Makefile.cmdline
+    make -f Makefile.cmdline -j"$(nproc)"
     skip=1
 }
 

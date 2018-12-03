@@ -25,7 +25,7 @@ function recipe_build {
         --with-zlib-prefix="$sysroot" \
         --disable-timidity \
         --disable-mt32emu
-    make
+    make -j"$(nproc)"
     skip=1
 }
 
