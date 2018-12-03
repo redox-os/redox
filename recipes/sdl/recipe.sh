@@ -18,7 +18,7 @@ function recipe_update {
 function recipe_build {
     ./autogen.sh
     ./configure --prefix=/ --host=${HOST} --disable-shared --disable-pulseaudio --disable-video-x11 --disable-loadso --disable-threads --enable-audio --enable-dummyaudio --enable-video-orbital --enable-cdrom
-    make
+    make -j"$(nproc)"
     skip=1
 }
 

@@ -9,7 +9,7 @@ function recipe_update {
 
 function recipe_build {
     ./configure --host=${HOST} --prefix=/ ac_cv_func_gethostbyname=no ac_cv_func_connect=no
-    make
+    make -j"$(nproc)"
     skip=1
 }
 

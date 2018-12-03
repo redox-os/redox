@@ -18,7 +18,7 @@ function recipe_build {
     export CPPFLAGS="-I$sysroot/include"
 
     ./configure --host=${HOST} --prefix='/'
-    make
+    make -j"$(nproc)"
     skip=1
 }
 

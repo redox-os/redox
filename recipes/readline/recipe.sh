@@ -17,7 +17,7 @@ function recipe_build {
     export LDFLAGS="-L$sysroot/lib"
     export CFLAGS="-I$sysroot/include"
     ./configure --disable-shared --host=${HOST} --prefix=""
-    make
+    make -j"$(nproc)"
     skip=1
 }
 

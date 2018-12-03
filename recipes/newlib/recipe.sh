@@ -25,7 +25,7 @@ function recipe_build {
     popd
 
     CC= ./configure --target="${HOST}" --prefix=/
-    make all
+    make all -j"$(nproc)"
 
     skip=1
 }

@@ -17,7 +17,7 @@ function recipe_build {
     ln -sf "$sysroot/include" "$sysroot/usr/include"
     ln -sf "$sysroot/lib" "$sysroot/usr/lib"
     ./configure --host=${HOST} --target=${HOST} --prefix=/ --with-sysroot=/ --with-build-sysroot="$sysroot" --disable-gdb --disable-nls --disable-werror
-    make
+    make -j"$(nproc)"
     skip=1
 }
 

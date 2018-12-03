@@ -27,7 +27,7 @@ function recipe_build {
         --enable-zlib \
         --enable-encoder=png \
         --enable-decoder=png
-    make
+    make -j"$(nproc)"
     skip=1
 }
 

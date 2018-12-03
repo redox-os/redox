@@ -31,7 +31,7 @@ function newlib_build {
     popd
 
     CC= ./configure --target="${HOST}" --prefix=/
-    make all
+    make all -j"$(nproc)"
     make DESTDIR="$sysroot" install
     cd ..
     cp -r $sysroot/x86_64-unknown-redox/* $sysroot

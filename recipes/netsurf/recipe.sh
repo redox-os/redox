@@ -18,8 +18,7 @@ function recipe_build {
     export TARGET="framebuffer"
     export CFLAGS="-I$sysroot/include -I${PWD}/inst-${TARGET}/include"
     export LDFLAGS="-L$sysroot/lib -L${PWD}/inst-${TARGET}/lib -Wl,--allow-multiple-definition"
-
-    make V=1
+    make V=1 -j"$(nproc)"
     skip=1
 }
 

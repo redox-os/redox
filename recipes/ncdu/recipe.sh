@@ -18,7 +18,7 @@ function recipe_build {
     ./configure \
         --build x86_64-pc-linux-gnu \
         --host "$HOST"
-    make
+    make -j"$(nproc)"
     skip=1
 }
 function recipe_test {

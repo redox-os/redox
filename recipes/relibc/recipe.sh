@@ -1,8 +1,8 @@
 GIT=https://gitlab.redox-os.org/redox-os/relibc.git
 
 function recipe_build {
-    make
-    make -C tests
+    make -j"$(nproc)"
+    make -C tests -j"$(nproc)"
     skip=1
 }
 

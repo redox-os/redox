@@ -12,7 +12,7 @@ function recipe_update {
 }
 
 function recipe_build {
-    make generic CC="${HOST}-gcc -std=gnu99"
+    make generic CC="${HOST}-gcc -std=gnu99" -j"$(nproc)"
     skip=1
 }
 

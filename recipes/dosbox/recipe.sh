@@ -20,7 +20,7 @@ function recipe_build {
     ./autogen.sh
     wget -O config.sub http://git.savannah.gnu.org/cgit/config.git/plain/config.sub
     ./configure --host=${HOST} --prefix='' --disable-opengl --disable-sdltest --with-sdl-prefix="$PWD/../sysroot"
-    make
+    make -j"$(nproc)"
     skip=1
 }
 
@@ -38,4 +38,4 @@ function recipe_stage {
     dest="$(realpath $1)"
     make DESTDIR="$dest" install
     skip=1
-} 
+}

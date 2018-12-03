@@ -21,7 +21,7 @@ function recipe_build {
     chmod +w config.sub
     wget -O config.sub http://git.savannah.gnu.org/cgit/config.git/plain/config.sub
     ./configure --host=${HOST} --prefix='/'
-    make
+    make -j"$(nproc)"
     skip=1
 }
 

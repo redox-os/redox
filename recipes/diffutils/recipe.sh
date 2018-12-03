@@ -14,7 +14,7 @@ function recipe_update {
 function recipe_build {
     autoreconf
     ./configure --host=${HOST} --prefix=/
-    make
+    make -j"$(nproc)"
     skip=1
 }
 
