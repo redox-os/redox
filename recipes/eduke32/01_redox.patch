@@ -1,0 +1,156 @@
+diff -rupNw source-original/Common.mak source/Common.mak
+--- source-original/Common.mak	2018-07-14 23:36:44.000000000 +0200
++++ source/Common.mak	2018-12-03 19:13:25.028864957 +0100
+@@ -93,7 +93,7 @@ endif
+ 
+ ##### Makefile meta-settings
+ 
+-PRETTY_OUTPUT := 1
++PRETTY_OUTPUT := 0
+ 
+ NULLSTREAM := /dev/null
+ 
+@@ -172,6 +172,10 @@ ifeq ($(PLATFORM),WII)
+     CCFULLPATH = $(DEVKITPPC)/bin/$(CC)
+ endif
+ 
++ifeq ($(PLATFORM),REDOX)
++    CROSS := x86_64-unknown-redox-
++endif
++
+ CC := $(CROSS)gcc$(CROSS_SUFFIX)
+ CXX := $(CROSS)g++$(CROSS_SUFFIX)
+ 
+@@ -383,6 +387,15 @@ else ifeq ($(PLATFORM),$(filter $(PLATFO
+     override NOASM := 1
+ else ifeq ($(PLATFORM),$(filter $(PLATFORM),BEOS SKYOS))
+     override NOASM := 1
++else ifeq ($(PLATFORM),REDOX)
++    override USE_OPENGL := 0
++    override NETCODE := 0
++    override HAVE_GTK2 := 0
++    override HAVE_FLAC := 0
++    override HAVE_VORBIS := 0
++    override HAVE_XMP := 0
++    override MIXERTYPE := SDL
++    SDL_TARGET := 1
+ endif
+ 
+ ifneq (i386,$(strip $(IMPLICIT_ARCH)))
+@@ -868,7 +881,7 @@ ifeq ($(RENDERTYPE),SDL)
+         SDLCONFIG := sdl2-config
+         SDLNAME := SDL2
+     else ifeq ($(SDL_TARGET),1)
+-        SDLCONFIG := sdl-config
++        #SDLCONFIG := sdl-config
+         SDLNAME := SDL
+         ifeq (0,$(RELEASE))
+             COMPILERFLAGS += -DNOSDLPARACHUTE
+@@ -957,9 +970,11 @@ else ifeq ($(PLATFORM),WII)
+     LIBS += -laesnd_tueidj -lfat -lwiiuse -lbte -lwiikeyboard -logc
+ else ifeq ($(SUBPLATFORM),LINUX)
+     LIBS += -lrt
++else ifeq ($(PLATFORM),REDOX)
++    LIBS += -lorbital
+ endif
+ 
+-ifeq (,$(filter $(PLATFORM),WINDOWS WII))
++ifeq (,$(filter $(PLATFORM),WINDOWS WII REDOX))
+     ifneq ($(PLATFORM),BSD)
+         LIBS += -ldl
+     endif
+diff -rupNw source-original/source/build/include/compat.h source/source/build/include/compat.h
+--- source-original/source/build/include/compat.h	2018-10-07 07:21:24.000000000 +0200
++++ source/source/build/include/compat.h	2018-12-03 19:26:54.393942393 +0100
+@@ -7,6 +7,9 @@
+ 
+ #pragma once
+ 
++#  define B_LITTLE_ENDIAN 1
++#  define B_BIG_ENDIAN    0
++
+ #ifdef _WIN32
+ # include "windows_inc.h"
+ #endif
+@@ -400,6 +403,7 @@ defined __x86_64__ || defined __amd64__
+ #include <stdlib.h>
+ #include <stdio.h>
+ #include <string.h>
++#include <strings.h>
+ 
+ #include <math.h>
+ #include <float.h>
+@@ -542,8 +546,8 @@ typedef FILE BFILE;
+ # define BS_IWRITE S_IWUSR
+ # define BS_IREAD  S_IRUSR
+ #else
+-# define BS_IWRITE S_IWRITE
+-# define BS_IREAD  S_IREAD
++# define BS_IWRITE S_IWUSR
++# define BS_IREAD  S_IRUSR
+ #endif
+ 
+ #if defined(__cplusplus) && defined(_MSC_VER)
+diff -rupNw source-original/source/build/src/baselayer.cpp source/source/build/src/baselayer.cpp
+--- source-original/source/build/src/baselayer.cpp	2018-10-07 07:21:43.000000000 +0200
++++ source/source/build/src/baselayer.cpp	2018-12-03 19:21:47.982397954 +0100
+@@ -498,7 +498,7 @@ int32_t baselayer_init(void)
+ 
+ void maybe_redirect_outputs(void)
+ {
+-#if !(defined __APPLE__ && defined __BIG_ENDIAN__)
++#if 0
+     char *argp;
+ 
+     // pipe standard outputs to files
+diff -rupNw source-original/source/build/src/sdlayer.cpp source/source/build/src/sdlayer.cpp
+--- source-original/source/build/src/sdlayer.cpp	2018-10-07 07:23:44.000000000 +0200
++++ source/source/build/src/sdlayer.cpp	2018-12-03 19:24:07.239998594 +0100
+@@ -305,7 +305,7 @@ void wm_setapptitle(const char *name)
+ //
+ 
+ /* XXX: libexecinfo could be used on systems without gnu libc. */
+-#if !defined _WIN32 && defined __GNUC__ && !defined __OpenBSD__ && !(defined __APPLE__ && defined __BIG_ENDIAN__) && !defined GEKKO && !defined EDUKE32_TOUCH_DEVICES && !defined __OPENDINGUX__
++#if 0
+ # define PRINTSTACKONSEGV 1
+ # include <execinfo.h>
+ #endif
+diff -rupNw source-original/source/duke3d/src/common.cpp source/source/duke3d/src/common.cpp
+--- source-original/source/duke3d/src/common.cpp	2018-10-07 07:20:23.000000000 +0200
++++ source/source/duke3d/src/common.cpp	2018-12-03 19:34:09.893848178 +0100
+@@ -1173,6 +1173,7 @@ int32_t S_OpenAudio(const char *fn, char
+     Bfree(testfn);
+     return origfp;
+ }
++#endif
+ 
+ void Duke_CommonCleanup(void)
+ {
+@@ -1181,4 +1182,3 @@ void Duke_CommonCleanup(void)
+     DO_FREE_AND_NULL(g_rtsNamePtr);
+ }
+ 
+-#endif
+diff -rupNw source-original/source/duke3d/src/game.cpp source/source/duke3d/src/game.cpp
+--- source-original/source/duke3d/src/game.cpp	2018-10-07 07:23:48.000000000 +0200
++++ source/source/duke3d/src/game.cpp	2018-12-03 19:18:30.728171279 +0100
+@@ -6697,7 +6697,7 @@ MAIN_LOOP_RESTART:
+             static char buf[128];
+ #ifndef GEKKO
+             int32_t flag = 1;
+-            ioctl(0, FIONBIO, &flag);
++            //ioctl(0, FIONBIO, &flag);
+ #endif
+             if ((nb = read(0, &ch, 1)) > 0 && bufpos < sizeof(buf))
+             {
+diff -rupNw source-original/source/enet/include/enet/unix.h source/source/enet/include/enet/unix.h
+--- source-original/source/enet/include/enet/unix.h	2014-06-17 01:16:08.000000000 +0200
++++ source/source/enet/include/enet/unix.h	2018-12-03 19:17:06.295237252 +0100
+@@ -6,6 +6,7 @@
+ #define __ENET_UNIX_H__
+ 
+ #include <stdlib.h>
++#include <sys/select.h>
+ #include <sys/time.h>
+ #include <sys/types.h>
+ #if defined(GEKKO)
