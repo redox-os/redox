@@ -1,5 +1,5 @@
 VERSION=0.27
-GIT=https://git.code.sf.net/p/gigalomania/code
+GIT=https://github.com/fabiao/gigalomania
 BRANCH=master
 BUILD_DEPENDS=(sdl_mixer sdl_image sdl liborbital libpng libjpeg zlib)
 
