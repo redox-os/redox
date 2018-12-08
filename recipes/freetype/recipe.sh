@@ -35,5 +35,6 @@ function recipe_clean {
 function recipe_stage {
     dest="$(realpath $1)"
     make DESTDIR="$dest" install
+    sed -i -e "s%//lib/libpng16.la%$dest/../sysroot/lib/libpng16.la%" "$dest/lib/libfreetype.la"
     skip=1
 }
