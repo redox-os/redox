@@ -60,6 +60,7 @@ libsodium = {}
 logd = {}
 #lua = {} # tmpnam
 mesa = {}
+mesa_glu = {}
 #mdp = {} # ncursesw
 #miniserve = {} # actix
 nasm = {}
