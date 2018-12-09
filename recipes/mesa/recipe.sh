@@ -8,20 +8,18 @@ function recipe_update {
 }
 
 function recipe_build {
-    #NOCONFIGURE=1 ./autogen.sh
+    NOCONFIGURE=1 ./autogen.sh
     sysroot="${PWD}/../sysroot"
     export CFLAGS="-I$sysroot/include -DHAVE_PTHREAD=1"
     export CPPFLAGS="-I$sysroot/include -DHAVE_PTHREAD=1"
     export LDFLAGS="-L$sysroot/lib"
     EXPAT_LIBS="-lexpat" EXPAT_CFLAGS="." \
-    ./configure --host=${HOST} --prefix=/ \
-        --disable-gles1 \
-        --disable-gles2 \
+    ./configure --host="${HOST}" --prefix=/ \
         --disable-dri \
         --disable-dri3 \
-        --disable-glx \
-        --disable-egl \
         --disable-driglx-direct \
+        --disable-egl \
+        --disable-glx \
         --disable-gbm \
         --disable-llvm \
         --enable-gallium-osmesa \
