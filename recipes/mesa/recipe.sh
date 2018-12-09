@@ -42,5 +42,6 @@ function recipe_clean {
 function recipe_stage {
     dest="$(realpath $1)"
     make DESTDIR="$dest" install
+    sed -i -e "s%//lib/libglapi.la%$dest/lib/libglapi.la%" "$dest/lib/"*.la
     skip=1
 }
