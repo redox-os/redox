@@ -31,6 +31,6 @@ function recipe_clean {
 function recipe_stage {
     dest="$(realpath $1)"
     make DESTDIR="$dest" install
-    ln -s "dash" "$1/bin/sh"
+    ln -s "dash" "$dest/bin/sh"
     skip=1
 }

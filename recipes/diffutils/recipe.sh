@@ -31,7 +31,7 @@ function recipe_clean {
 function recipe_stage {
     dest="$(realpath $1)"
     make DESTDIR="$dest" install
-    ${HOST}-strip "$1"/bin/*
-    rm -rf "$1"/{lib,share}
+    ${HOST}-strip "$dest"/bin/*
+    rm -rf "$dest"/{lib,share}
     skip=1
 }
