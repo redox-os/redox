@@ -10,8 +10,12 @@ function recipe_update {
     skip=1
 }
 
+function recipe_prepare {
+    mkdir source
+    cp osdemo.c source
+}
+
 function recipe_build {
-    cp ../osdemo.c osdemo.c
     sysroot="$(realpath ../sysroot)"
     set -x
     "${CXX}" -I "$sysroot/include" -L "$sysroot/lib" osdemo.c -o osdemo -lorbital -lOSMesa -lGLU -lglapi -Wl,--whole-archive -lpthread -Wl,--no-whole-archive -lm

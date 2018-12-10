@@ -10,8 +10,12 @@ function recipe_update {
     skip=1
 }
 
+function recipe_prepare {
+    mkdir source
+    cp gears.c source
+}
+
 function recipe_build {
-    cp ../gears.c gears.c
     sysroot="$(realpath ../sysroot)"
     set -x
     "${CXX}" -I "$sysroot/include" -L "$sysroot/lib" gears.c -o gears -lorbital -lOSMesa -lGLU -lglapi -Wl,--whole-archive -lpthread -Wl,--no-whole-archive -lm
