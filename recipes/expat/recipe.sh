@@ -1,4 +1,4 @@
-VERSION=2.2.1
+VERSION=2.2.6
 TAR=https://github.com/libexpat/libexpat/releases/download/R_${VERSION//./_}/expat-${VERSION}.tar.bz2
 
 function recipe_version {
