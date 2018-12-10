@@ -14,7 +14,7 @@ function recipe_update {
 
 function newlib_build {
     rm -rf ../newlib
-    sysroot="${PWD}/../sysroot"
+    sysroot="$(realpath ../sysroot)"
     cd ..
     git clone --recursive https://github.com/sajattack/newlib -b ssh-deps
     cd newlib
@@ -42,7 +42,7 @@ function newlib_build {
 
 function recipe_build {
     newlib_build
-    sysroot="${PWD}/../sysroot"
+    sysroot="$(realpath ../sysroot)"
     export LDFLAGS="-L$sysroot/lib"
     export CPPFLAGS="-I$sysroot/include"
     ./configure --host=${HOST} --prefix=/

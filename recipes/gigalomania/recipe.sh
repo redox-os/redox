@@ -15,7 +15,7 @@ function recipe_update {
 
 function recipe_build {
     export CPPHOST=${HOST}-g++
-    sysroot="${PWD}/../sysroot"
+    sysroot="$(realpath ../sysroot)"
     export LDFLAGS="-L$sysroot/lib"
     export CPPFLAGS="-I$sysroot/include"
     make all -j"$(nproc)"

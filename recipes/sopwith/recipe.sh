@@ -14,9 +14,10 @@ function recipe_update {
 
 function recipe_build {
     wget -O autotools/config.sub http://git.savannah.gnu.org/cgit/config.git/plain/config.sub
-    sysroot="${PWD}/../sysroot"
+    sysroot="$(realpath ../sysroot)"
     export CFLAGS="-I$sysroot/include -I$sysroot/include/SDL"
     export LDFLAGS="-L$sysroot/lib"
+    export LIBS="-lSDL -lorbital" # TODO: Uses sdl-config instead of pkg-config
     ./configure --host=${HOST} --prefix='' --with-sdl-prefix="$sysroot"
     make -j"$(nproc)"
     skip=1

@@ -1,10 +1,12 @@
---- source/include/curl/curl.h	2017-08-07 15:42:29.000000000 -0700
-+++ build/include/curl/curl.h	2018-09-20 14:27:20.462414020 -0700
-@@ -74,6 +74,7 @@
+diff -ruw source/include/curl/curl.h source-new/include/curl/curl.h
+--- source/include/curl/curl.h	2018-10-30 10:53:59.000000000 -0600
++++ source-new/include/curl/curl.h	2018-12-10 12:42:52.504393368 -0700
+@@ -74,7 +74,7 @@
  #if defined(_AIX) || defined(__NOVELL_LIBC__) || defined(__NetBSD__) || \
      defined(__minix) || defined(__SYMBIAN32__) || defined(__INTEGRITY) || \
      defined(ANDROID) || defined(__ANDROID__) || defined(__OpenBSD__) || \
-+    defined(__redox__) || \
+-    defined(__CYGWIN__) || \
++    defined(__CYGWIN__) || defined(__redox__) \
     (defined(__FreeBSD_version) && (__FreeBSD_version < 800000))
  #include <sys/select.h>
  #endif

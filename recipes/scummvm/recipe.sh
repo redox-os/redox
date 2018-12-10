@@ -14,7 +14,7 @@ function recipe_update {
 
 function recipe_build {
     wget -O config.sub http://git.savannah.gnu.org/cgit/config.git/plain/config.sub
-    sysroot="${PWD}/../sysroot"
+    sysroot="$(realpath ../sysroot)"
 
     ./configure \
         --host=${HOST} \

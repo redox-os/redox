@@ -13,11 +13,10 @@ function recipe_update {
 }
 
 function recipe_build {
-    sysroot="${PWD}/../sysroot"
-    export SDL_CONFIG="$sysroot/bin/sdl-config"
-    export CPPFLAGS="-I$sysroot/include -I$sysroot/include/SDL"
+    sysroot="$(realpath ../sysroot)"
+    export SDL_CONFIG="${PKG_CONFIG} sdl"
+    export CPPFLAGS="-I$sysroot/include"
     export LDFLAGS="-L$sysroot/lib"
-
     make -j"$(nproc)"
     skip=1
 }

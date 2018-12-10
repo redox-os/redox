@@ -1,9 +1,6 @@
-VERSION=2.0.25
+VERSION=2.0.26
 TAR=https://sourceforge.net/projects/sdlgfx/files/SDL_gfx-$VERSION.tar.gz
 BUILD_DEPENDS=(sdl liborbital libiconv)
-
-export CFLAGS="-I$PWD/sysroot/include/"
-export LDFLAGS="-L$PWD/sysroot/lib/"
 
 function recipe_version {
     echo "$VERSION"
@@ -16,6 +13,9 @@ function recipe_update {
 }
 
 function recipe_build {
+    sysroot="$(realpath ../sysroot)"
+    export CFLAGS="-I$sysroot/include"
+    export LDFLAGS="-L$sysroot/lib"
     ./autogen.sh
     ./configure --prefix=/ --host=${HOST} --disable-shared --disable-sdltest
     make -j"$(nproc)"
@@ -34,8 +34,7 @@ function recipe_clean {
 
 function recipe_stage {
     dest="$(realpath $1)"
-    sysroot="$(realpath ../sysroot)"
     make DESTDIR="$dest" install
-    sed -i -e "s%//lib/libSDL.la%$sysroot/lib/libSDL.la%" "$dest/lib/"*.la
+    rm -f "$dest/lib/"*.la
     skip=1
 }

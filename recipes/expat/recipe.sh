@@ -30,6 +30,6 @@ function recipe_clean {
 function recipe_stage {
     dest="$(realpath $1)"
     make DESTDIR="$dest" install
-    rm -rf "$1"/{lib/pkgconfig,share}
+    rm -f "$dest/lib/"*.la
     skip=1
 }

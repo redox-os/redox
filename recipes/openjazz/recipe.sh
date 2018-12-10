@@ -2,10 +2,6 @@ VERSION=0.1
 GIT=https://github.com/AlisterT/openjazz
 BUILD_DEPENDS=(sdl liborbital zlib)
 
-export CFLAGS="-I$PWD/sysroot/include/ -I$PWD/sysroot/include/SDL/ -UUSE_SOCKETS -UUSE_SDL_NET"
-export CPPFLAGS="$CFLAGS"
-export LDFLAGS="-L$PWD/sysroot/lib/"
-
 function recipe_version {
     echo "$VERSION"
     skip=1
@@ -17,6 +13,10 @@ function recipe_update {
 }
 
 function recipe_build {
+    sysroot="$(realpath ../sysroot)"
+    export CFLAGS="-I$sysroot/include -UUSE_SOCKETS -UUSE_SDL_NET"
+    export CPPFLAGS="$CFLAGS"
+    export LDFLAGS="-L$sysroot/lib"
     touch INSTALL NEWS README AUTHORS ChangeLog COPYING
     autoreconf -fvi
     autoconf
