@@ -1,6 +1,12 @@
 GIT=https://gitlab.redox-os.org/redox-os/mesa.git
 GIT_UPSTREAM=git://anongit.freedesktop.org/mesa/mesa
+GIT_BRANCH=redox
 BUILD_DEPENDS=(expat zlib)
+
+function recipe_version {
+    printf "r%s.%s" "$(git rev-list --count HEAD)" "$(git rev-parse --short HEAD)"
+    skip=1
+}
 
 function recipe_update {
     echo "skipping update"

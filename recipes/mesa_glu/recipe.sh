@@ -1,6 +1,11 @@
 TAR=ftp://ftp.freedesktop.org/pub/mesa/glu/glu-9.0.0.tar.bz2
 BUILD_DEPENDS=(mesa)
 
+function recipe_version {
+    echo "9.0.0"
+    skip=1
+}
+
 function recipe_update {
     echo "skipping update"
     skip=1
