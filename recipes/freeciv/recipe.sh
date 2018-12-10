@@ -26,7 +26,8 @@ function recipe_build {
         --enable-fcmp=cli \
         --with-sdl-prefix="$sysroot" \
         ac_cv_lib_SDL_image_IMG_Load=yes \
-        ac_cv_lib_SDL_ttf_TTF_OpenFont=yes
+        ac_cv_lib_SDL_ttf_TTF_OpenFont=yes \
+        ac_cv_lib_SDL_gfx_rotozoomSurface=yes
     make -j"$(nproc)" V=1
     skip=1
 }
