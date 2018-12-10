@@ -23,10 +23,12 @@ export LD="${HOST}-ld"
 export NM="${HOST}-nm"
 export OBJCOPY="${HOST}-objcopy"
 export OBJDUMP="${HOST}-objdump"
-#export PKG_CONFIG="${HOST}-pkg-config"
+export PKG_CONFIG="${HOST}-pkg-config"
 export RANLIB="${HOST}-ranlib"
 export READELF="${HOST}-readelf"
 export STRIP="${HOST}-strip"
+
+export PKG_CONFIG_FOR_BUILD="pkg-config"
 
 if [[ "$OSTYPE" == "darwin"* ]]; then
     # GNU find
