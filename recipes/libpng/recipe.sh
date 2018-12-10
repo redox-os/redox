@@ -1,4 +1,4 @@
-VERSION=1.6.34
+VERSION=1.6.36
 TAR=https://github.com/glennrp/libpng/archive/v${VERSION}.tar.gz
 BUILD_DEPENDS=(zlib)
 
@@ -13,10 +13,9 @@ function recipe_update {
 }
 
 function recipe_build {
-    sysroot="${PWD}/../sysroot"
+    sysroot="$(realpath ../sysroot)"
     export LDFLAGS="-L$sysroot/lib"
     export CPPFLAGS="-I$sysroot/include"
-
     ./autogen.sh
     chmod +w config.sub
     wget -O config.sub http://git.savannah.gnu.org/cgit/config.git/plain/config.sub
