@@ -285,7 +285,7 @@ main(int argc, char *argv[])
     limit = 0;
   }
 
-  OSMesaContext ctx = OSMesaCreateContextExt(OSMESA_RGBA, 16, 0, 0, NULL);
+  OSMesaContext ctx = OSMesaCreateContextExt(OSMESA_BGRA, 16, 0, 0, NULL);
   if (!ctx) {
     printf("OSMesaCreateContextExt failed\n");
     return 1;

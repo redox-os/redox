@@ -415,7 +415,7 @@ test(GLenum type, GLint bits, const char *filename)
           type == GL_UNSIGNED_SHORT ||
           type == GL_FLOAT);
 
-   ctx = OSMesaCreateContextExt(OSMESA_RGBA, z, stencil, accum, NULL );
+   ctx = OSMesaCreateContextExt(OSMESA_BGRA, z, stencil, accum, NULL );
    if (!ctx) {
       printf("OSMesaCreateContextExt() failed!\n");
       return 0;
