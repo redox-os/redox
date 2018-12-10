@@ -11,6 +11,7 @@ function recipe_update {
 }
 
 function recipe_prepare {
+    rm -rf source
     mkdir source
     cp gears.c source
 }
