@@ -17,9 +17,8 @@ function recipe_build {
     sysroot="${PWD}/../sysroot"
     export CFLAGS="-I$sysroot/include -I$sysroot/include/SDL"
     export LDFLAGS="-L$sysroot/lib"
-
     ./configure --host=${HOST} --prefix='' --with-sdl-prefix="$sysroot"
-    make
+    make -j"$(nproc)"
     skip=1
 }
 

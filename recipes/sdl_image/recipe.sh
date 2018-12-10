@@ -34,6 +34,10 @@ function recipe_clean {
 
 function recipe_stage {
     dest="$(realpath $1)"
+    sysroot="$(realpath ../sysroot)"
     make DESTDIR="$dest" install
+    sed -i -e "s%//lib/libpng.la%$sysroot/lib/libpng.la%" "$dest/lib/"*.la
+    sed -i -e "s%//lib/libjpeg.la%$sysroot/lib/libjpeg.la%" "$dest/lib/"*.la
+    sed -i -e "s%//lib/libSDL.la%$sysroot/lib/libSDL.la%" "$dest/lib/"*.la
     skip=1
 }
