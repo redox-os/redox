@@ -2,9 +2,6 @@ VERSION=1.2.15
 TAR=https://www.libsdl.org/release/SDL-$VERSION.tar.gz
 BUILD_DEPENDS=(liborbital)
 
-export CFLAGS="-I$PWD/sysroot/include/"
-export LDFLAGS="-L$PWD/sysroot/lib/"
-
 function recipe_version {
     echo "$VERSION"
     skip=1
@@ -16,8 +13,22 @@ function recipe_update {
 }
 
 function recipe_build {
+    sysroot="$(realpath ../sysroot)"
+    export CFLAGS="-I$sysroot/include"
+    export LDFLAGS="-L$sysroot/lib"
     ./autogen.sh
-    ./configure --prefix=/ --host=${HOST} --disable-shared --disable-pulseaudio --disable-video-x11 --disable-loadso --disable-threads --enable-audio --enable-dummyaudio --enable-video-orbital --enable-cdrom
+    ./configure \
+        --host=${HOST} \
+        --prefix=/ \
+        --disable-shared \
+        --disable-pulseaudio \
+        --disable-video-x11 \
+        --disable-loadso \
+        --disable-threads \
+        --enable-audio \
+        --enable-dummyaudio \
+        --enable-video-orbital \
+        --enable-cdrom
     make -j"$(nproc)"
     skip=1
 }
@@ -35,5 +46,6 @@ function recipe_clean {
 function recipe_stage {
     dest="$(realpath $1)"
     make DESTDIR="$dest" install
+    rm -f "$dest/bin/"*-config "$dest/lib/"*.la
     skip=1
 }

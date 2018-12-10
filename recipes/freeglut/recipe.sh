@@ -1,9 +1,9 @@
-VERSION=1.2.12
-TAR=https://www.libsdl.org/projects/SDL_mixer/release/SDL_mixer-$VERSION.tar.gz
-BUILD_DEPENDS=(sdl liborbital)
+TAR=https://cytranet.dl.sourceforge.net/project/freeglut/freeglut/3.0.0/freeglut-3.0.0.tar.gz
+
+BUILD_DEPENDS=(mesa mesa_glu)
 
 function recipe_version {
-    echo "$VERSION"
+    echo "3.0.0"
     skip=1
 }
 
@@ -15,18 +15,14 @@ function recipe_update {
 function recipe_build {
     sysroot="$(realpath ../sysroot)"
     export CFLAGS="-I$sysroot/include"
+    export CPPFLAGS="-I$sysroot/include"
     export LDFLAGS="-L$sysroot/lib"
-    ./autogen.sh
-    ./configure \
-        --prefix=/ \
-        --host=${HOST} \
-        --disable-shared \
-        --disable-sdltest \
-        --disable-music-cmd \
-        --disable-music-mp3 \
-        --disable-smpegtest \
-        --disable-music-midi \
-        --disable-music-mod
+    cmake \
+      -D CMAKE_TOOLCHAIN_FILE=../redox_cross_toolchain.cmake \
+      -D CMAKE_INSTALL_PREFIX=/ \
+      -D FREEGLUT_GLES=0 \
+      .
+    #./configure --host="${HOST}" --prefix=/ --enable-osmesa
     make -j"$(nproc)"
     skip=1
 }
@@ -44,6 +40,5 @@ function recipe_clean {
 function recipe_stage {
     dest="$(realpath $1)"
     make DESTDIR="$dest" install
-    rm -f "$dest/lib/"*.la
     skip=1
 }

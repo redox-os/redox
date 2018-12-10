@@ -1,12 +1,14 @@
-diff -ru source/lib/nonblock.c source-new/lib/nonblock.c
---- source/lib/nonblock.c	2017-08-07 15:42:29.000000000 -0700
-+++ source-new/lib/nonblock.c	2017-08-17 10:57:30.123497389 -0700
+diff -ruw source/lib/nonblock.c source-new/lib/nonblock.c
+--- source/lib/nonblock.c	2018-10-27 04:00:54.000000000 -0600
++++ source-new/lib/nonblock.c	2018-12-10 12:40:21.350755609 -0700
 @@ -47,7 +47,7 @@
  int curlx_nonblock(curl_socket_t sockfd,    /* operate on this */
                     int nonblock   /* TRUE or FALSE */)
  {
 -#if defined(USE_BLOCKING_SOCKETS)
-+#if 1
- 
++#if defined(USE_BLOCKING_SOCKETS) || defined(__redox__)
+   (void)sockfd;
+   (void)nonblock;
    return 0; /* returns success */
- 
+Only in source-new/lib: nonblock.c.orig
+Only in source-new/lib: nonblock.c.rej

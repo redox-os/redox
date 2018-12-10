@@ -14,13 +14,14 @@ function recipe_update {
 }
 
 function recipe_build {
-    NOCONFIGURE=1 ./autogen.sh
-    sysroot="${PWD}/../sysroot"
+    sysroot="$(realpath ../sysroot)"
     export CFLAGS="-I$sysroot/include -DHAVE_PTHREAD=1"
     export CPPFLAGS="-I$sysroot/include -DHAVE_PTHREAD=1"
     export LDFLAGS="-L$sysroot/lib"
-    EXPAT_LIBS="-lexpat" EXPAT_CFLAGS="." \
-    ./configure --host="${HOST}" --prefix=/ \
+    NOCONFIGURE=1 ./autogen.sh
+    ./configure \
+        --host="${HOST}" \
+        --prefix=/ \
         --disable-dri \
         --disable-dri3 \
         --disable-driglx-direct \
@@ -48,6 +49,6 @@ function recipe_clean {
 function recipe_stage {
     dest="$(realpath $1)"
     make DESTDIR="$dest" install
-    sed -i -e "s%//lib/libglapi.la%$dest/lib/libglapi.la%" "$dest/lib/"*.la
+    rm -f "$dest/lib/"*.la
     skip=1
 }

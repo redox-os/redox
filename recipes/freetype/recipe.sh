@@ -1,4 +1,4 @@
-VERSION=2.9
+VERSION=2.9.1
 TAR=https://download.savannah.gnu.org/releases/freetype/freetype-$VERSION.tar.gz
 BUILD_DEPENDS=(zlib libpng)
 
@@ -13,10 +13,9 @@ function recipe_update {
 }
 
 function recipe_build {
-    sysroot="${PWD}/../sysroot"
+    sysroot="$(realpath ../sysroot)"
     export LDFLAGS="-L$sysroot/lib"
     export CPPFLAGS="-I$sysroot/include"
-
     ./configure --host=${HOST} --prefix='/'
     make -j"$(nproc)"
     skip=1
@@ -35,6 +34,6 @@ function recipe_clean {
 function recipe_stage {
     dest="$(realpath $1)"
     make DESTDIR="$dest" install
-    sed -i -e "s%//lib/libpng16.la%$dest/../sysroot/lib/libpng16.la%" "$dest/lib/libfreetype.la"
+    rm -f "$dest/lib/"*.la
     skip=1
 }

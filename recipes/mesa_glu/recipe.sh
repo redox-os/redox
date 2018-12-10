@@ -1,8 +1,9 @@
-TAR=ftp://ftp.freedesktop.org/pub/mesa/glu/glu-9.0.0.tar.bz2
+VERSION=9.0.0
+TAR=ftp://ftp.freedesktop.org/pub/mesa/glu/glu-$VERSION.tar.bz2
 BUILD_DEPENDS=(mesa)
 
 function recipe_version {
-    echo "9.0.0"
+    echo "$VERSION"
     skip=1
 }
 
@@ -12,11 +13,11 @@ function recipe_update {
 }
 
 function recipe_build {
-    wget -O config.sub http://git.savannah.gnu.org/cgit/config.git/plain/config.sub
-    sysroot="${PWD}/../sysroot"
+    sysroot="$(realpath ../sysroot)"
     export CFLAGS="-I$sysroot/include"
     export CPPFLAGS="-I$sysroot/include"
     export LDFLAGS="-L$sysroot/lib"
+    wget -O config.sub http://git.savannah.gnu.org/cgit/config.git/plain/config.sub
     ./configure --host="${HOST}" --prefix=/ --enable-osmesa
     make -j"$(nproc)"
     skip=1
@@ -35,5 +36,6 @@ function recipe_clean {
 function recipe_stage {
     dest="$(realpath $1)"
     make DESTDIR="$dest" install
+    rm -f "$dest/lib/"*.la
     skip=1
 }

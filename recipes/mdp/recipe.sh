@@ -13,7 +13,7 @@ function recipe_update {
 }
 
 function recipe_build {
-    sysroot="${PWD}/../sysroot"
+    sysroot="$(realpath ../sysroot)"
     export CFLAGS="-I$sysroot/include -I$sysroot/include/ncursesw"
     export LDFLAGS="-L$sysroot/lib"
     make -j"$(nproc)"

@@ -14,7 +14,7 @@ function recipe_update {
 }
 
 function recipe_build {
-    sysroot="${PWD}/../sysroot"
+    sysroot="$(realpath ../sysroot)"
     export TARGET="framebuffer"
     export CFLAGS="-I$sysroot/include -I${PWD}/inst-${TARGET}/include"
     export LDFLAGS="-L$sysroot/lib -L${PWD}/inst-${TARGET}/lib -Wl,--allow-multiple-definition"

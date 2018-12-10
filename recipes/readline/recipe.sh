@@ -13,7 +13,7 @@ function recipe_update {
 }
 
 function recipe_build {
-    sysroot="${PWD}/../sysroot"
+    sysroot="$(realpath ../sysroot)"
     export LDFLAGS="-L$sysroot/lib"
     export CFLAGS="-I$sysroot/include"
     ./configure --disable-shared --host=${HOST} --prefix=""
