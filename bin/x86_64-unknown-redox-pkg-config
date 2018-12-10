@@ -4,4 +4,4 @@ export PKG_CONFIG_PATH=
 export PKG_CONFIG_SYSROOT_DIR="${COOKBOOK_RECIPE}/sysroot"
 export PKG_CONFIG_LIBDIR="${PKG_CONFIG_SYSROOT_DIR}/lib/pkgconfig"
 
-exec pkg-config "$@"
+exec pkg-config --static "$@"
