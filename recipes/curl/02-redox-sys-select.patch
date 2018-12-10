@@ -6,7 +6,7 @@ diff -ruw source/include/curl/curl.h source-new/include/curl/curl.h
      defined(__minix) || defined(__SYMBIAN32__) || defined(__INTEGRITY) || \
      defined(ANDROID) || defined(__ANDROID__) || defined(__OpenBSD__) || \
 -    defined(__CYGWIN__) || \
-+    defined(__CYGWIN__) || defined(__redox__) \
++    defined(__CYGWIN__) || defined(__redox__) || \
     (defined(__FreeBSD_version) && (__FreeBSD_version < 800000))
  #include <sys/select.h>
  #endif
