@@ -10,15 +10,3 @@ diff -burpN source-original/configure.ac source/configure.ac
  AC_DECL_SYS_SIGLIST
  AC_HEADER_SYS_WAIT
  AC_CHECK_HEADERS(unistd.h asm/byteorder.h sched.h)
-diff -burpN source-original/src/SDL/i_video.c source/src/SDL/i_video.c
---- source-original/src/SDL/i_video.c	2008-10-18 15:32:29.000000000 +0200
-+++ source/src/SDL/i_video.c	2018-04-23 00:51:18.944949507 +0200
-@@ -407,7 +407,7 @@ void I_FinishUpdate (void)
-     I_UploadNewPalette(newpal);
-     newpal = NO_PALETTE_CHANGE;
-   }
--  SDL_Flip(screen);
-+  SDL_UpdateRect(screen, 0, 0, screen->w, screen->h);
- }
- 
- //

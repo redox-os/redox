@@ -564,7 +564,7 @@ diff -rupNw source-original/src/video/orbital/SDL_orbitalvideo.c source/src/vide
 +	}
 +
 +	/* Set up the new mode framebuffer */
-+	current->flags = flags /*& SDL_FULLSCREEN*/;
++	current->flags = flags & (~SDL_DOUBLEBUF);
 +	current->w = width;
 +	current->h = height;
 +	current->pitch = width * (bpp / 8);
