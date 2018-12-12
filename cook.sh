@@ -84,6 +84,11 @@ function op {
                         wget "$TAR" -O source.tar
                     fi
 
+                    if [ -n "$TAR_SHA256" ]
+                    then
+                        sha256sum -c <<< "${TAR_SHA256} source.tar"
+                    fi
+
                     if [ ! -d source ]
                     then
                         mkdir source
