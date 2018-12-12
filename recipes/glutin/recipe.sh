@@ -12,7 +12,7 @@ function recipe_build {
         -L "${sysroot}/lib" \
         -l OSMesa \
         -l glapi \
-        -l pthread \
-        -l stdc++
+        -l stdc++ \
+        -C link-args="-Wl,--whole-archive -lpthread -Wl,--no-whole-archive"
     skip=1
 }
