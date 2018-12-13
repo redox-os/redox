@@ -59,6 +59,7 @@ libjpeg = {}
 liborbital = {}
 libpng = {}
 libsodium = {}
+llvm = {}
 logd = {}
 #lua = {} # tmpnam
 mesa = {}
