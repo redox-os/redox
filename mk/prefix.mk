@@ -30,7 +30,12 @@ $(PREFIX)/binutils-install: $(PREFIX)/binutils
 	rm -rf "$<-build" "$@"
 	mkdir -p "$<-build" "$@"
 	cd "$<-build" && \
-	"$</configure" --target="$(TARGET)" --program-prefix="$(TARGET)-" --prefix="$@" --disable-werror && \
+	"$</configure" \
+		--target="$(TARGET)" \
+		--program-prefix="$(TARGET)-" \
+		--prefix="$@" \
+		--disable-werror \
+		&& \
 	make all -j `nproc` && \
 	make install -j `nproc`
 	touch "$@"
@@ -53,7 +58,14 @@ $(PREFIX)/gcc-freestanding-install: $(PREFIX)/gcc | $(PREFIX)/binutils-install
 	cp -r "$(PREFIX)/binutils-install" "$@"
 	cd "$<-freestanding-build" && \
 	export PATH="$@/bin:$$PATH" && \
-	"$</configure" --target="$(TARGET)" --program-prefix="$(TARGET)-" --prefix="$@" --disable-nls --enable-languages=c,c++ --without-headers && \
+	"$</configure" \
+		--target="$(TARGET)" \
+		--program-prefix="$(TARGET)-" \
+		--prefix="$@" \
+		--disable-nls \
+		--enable-languages=c,c++ \
+		--without-headers \
+		&& \
 	make all-gcc all-target-libgcc -j `nproc` && \
 	make install-gcc install-target-libgcc -j `nproc`
 	touch "$@"
@@ -82,10 +94,19 @@ $(PREFIX)/relibc-install: $(ROOT)/relibc | $(PREFIX_FREESTANDING_INSTALL)
 $(PREFIX)/gcc-install: $(PREFIX)/gcc | $(PREFIX)/relibc-install
 	rm -rf "$<-build" "$@"
 	mkdir -p "$<-build"
-	cp -r "$(PREFIX_FREESTANDING_INSTALL)" "$@"
+	cp -r "$(PREFIX)/binutils-install" "$@"
 	cd "$<-build" && \
 	export PATH="$@/bin:$$PATH" && \
-	"$</configure" --target="$(TARGET)" --program-prefix="$(TARGET)-" --prefix="$@" --with-sysroot="$(PREFIX)/relibc-install" --disable-nls --disable-werror --enable-languages=c,c++ && \
+	"$</configure" \
+		--target="$(TARGET)" \
+		--program-prefix="$(TARGET)-" \
+		--prefix="$@" \
+		--with-sysroot="$(PREFIX)/relibc-install" \
+		--disable-nls \
+		--disable-werror \
+		--enable-languages=c,c++ \
+		--enable-threads=posix \
+		&& \
 	make all-gcc all-target-libgcc all-target-libstdc++-v3 -j `nproc` && \
 	make install-gcc install-target-libgcc install-target-libstdc++-v3 -j `nproc`
 	touch "$@"
