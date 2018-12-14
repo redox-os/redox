@@ -1,4 +1,5 @@
 GIT=https://gitlab.redox-os.org/redox-os/gcc.git
+GIT_UPSTREAM=https://gcc.gnu.org/git/gcc.git
 BRANCH=redox
 BUILD_DEPENDS=(relibc)
 DEPENDS="gnu-binutils relibc"

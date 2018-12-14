@@ -1,4 +1,5 @@
 GIT=https://gitlab.redox-os.org/redox-os/llvm.git
+GIT_UPSTREAM=https://github.com/rust-lang/llvm.git
 BRANCH=redox
 
 function recipe_version {
@@ -32,7 +33,7 @@ function recipe_build {
         -DLLVM_ENABLE_THREADS=Off
         -DLLVM_INCLUDE_TESTS=Off
         -target="$HOST"
-        -DLLVM_TABLEGEN="/usr/bin/llvm-tblgen-4.0"
+        -DLLVM_TABLEGEN="/usr/bin/llvm-tblgen-7"
         -I"$sysroot/include"
         -DCMAKE_CXX_FLAGS='--std=gnu++11'
         -DLLVM_TOOL_LTO_BUILD=Off

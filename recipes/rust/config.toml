@@ -6,11 +6,10 @@ host = ["x86_64-unknown-redox"]
 target = ["x86_64-unknown-redox"]
 docs = false
 submodules = false
+tools = ["src"]
 verbose = 1
 
 [rust]
-thinlto = false
-use-jemalloc = false
 backtrace = false
 rpath = false
 codegen-tests = false
