@@ -32,6 +32,7 @@ function recipe_build {
         -DUNIX=1
         -DLLVM_ENABLE_THREADS=Off
         -DLLVM_INCLUDE_TESTS=Off
+        -DLLVM_INCLUDE_UTILS=Off
         -target="$HOST"
         -DLLVM_TABLEGEN="/usr/bin/llvm-tblgen-7"
         -I"$sysroot/include"
