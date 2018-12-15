@@ -29,6 +29,7 @@ function recipe_build {
         -DLLVM_TARGETS_TO_BUILD=X86
         -DCMAKE_SYSTEM_NAME=Generic
         -DPYTHON_EXECUTABLE="/usr/bin/python2"
+        -DLLVM_TABLEGEN="/usr/bin/llvm-tblgen-8"
         -DUNIX=1
         -DLLVM_ENABLE_THREADS=Off
         -DLLVM_BUILD_BENCHMARKS=Off
@@ -43,7 +44,7 @@ function recipe_build {
         -DLLVM_INCLUDE_UTILS=Off
         -target="$HOST"
         -I"$sysroot/include"
-        -DCMAKE_CXX_FLAGS='--std=gnu++11'
+        -DCMAKE_CXX_FLAGS='--std=gnu++11 -Wl,--whole-archive -lpthread -Wl,--no-whole-archive'
         -DLLVM_TOOL_LTO_BUILD=Off
         -DLLVM_TOOL_LLVM_PROFDATA_BUILD=Off
         -DLLVM_TOOL_LLI_BUILD=Off
@@ -55,7 +56,7 @@ function recipe_build {
         -DLLVM_TOOL_LLVM_RTDYLD_BUILD=Off
     )
     cmake "${CMAKE_ARGS[@]}" "$source"
-    make -j$(nproc)
+    make VERBOSE=1 -j$(nproc)
     skip=1
 }
 
