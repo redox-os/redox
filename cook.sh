@@ -8,6 +8,7 @@ source config.sh
 export BINDIR=bin
 export CARGOFLAGS=
 export DEBUG=
+export PREPARE_COPY=1
 
 if [ ! "$(uname -s)" = "Redox" ]
 then
@@ -250,7 +251,12 @@ function op {
                 fi
 
                 rm -rf build
-                cp -rp source build
+                if [ "$PREPARE_COPY" -eq "0" ]
+                then
+                    mkdir build
+                else
+                    cp -rp source build
+                fi
 
                 for patch in *.patch
                 do
