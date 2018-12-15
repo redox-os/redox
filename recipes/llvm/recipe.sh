@@ -40,8 +40,6 @@ function recipe_build {
         -DLLVM_INCLUDE_EXAMPLES=Off
         -DLLVM_BUILD_TESTS=Off
         -DLLVM_INCLUDE_TESTS=Off
-        -DLLVM_BUILD_TOOLS=Off
-        -DLLVM_INCLUDE_TOOLS=Off
         -DLLVM_BUILD_UTILS=Off
         -DLLVM_INCLUDE_UTILS=Off
         -target="$HOST"

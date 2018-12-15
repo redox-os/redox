@@ -2,6 +2,7 @@ GIT=https://gitlab.redox-os.org/redox-os/rust.git
 BRANCH=compile-redox
 BUILD_DEPENDS=(llvm)
 DEPENDS="gcc cargo"
+PREPARE_COPY=0
 
 function recipe_version {
     printf "r%s.%s" "$(git rev-list --count HEAD)" "$(git rev-parse --short HEAD)"
@@ -14,8 +15,10 @@ function recipe_update {
 }
 
 function recipe_build {
+    config="$(realpath ../config.toml)"
+    source="$(realpath ../source)"
     unset AR AS CC CXX LD NM OBJCOPY OBJDUMP RANLIB READELF STRIP
-    python x.py dist --config ../config.toml --jobs $(nproc) --incremental --keep-stage 0
+    python "$source/x.py" dist --config "$config" --jobs $(nproc) --incremental
     skip=1
 }
 
