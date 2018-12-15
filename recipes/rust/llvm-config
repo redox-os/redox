@@ -14,19 +14,28 @@ if args == ["--version"]:
 elif args == ["--cxxflags"]:
     print("-I" + prefix + "/include --std=gnu++11 -fPIC -Werror=date-time -Wall -Wextra -Wno-unused-parameter -Wwrite-strings -Wno-missing-field-initializers -pedantic -Wno-long-long -Wno-comment -g -D_DEBUG -D__STDC_CONSTANT_MACROS -D__STDC_FORMAT_MACROS -D__STDC_LIMIT_MACROS")
 elif args == ["--components"]:
-    print("aggressiveinstcombine all all-targets analysis asmparser asmprinter binaryformat bitreader bitwriter codegen core coroutines coverage debuginfocodeview debuginfodwarf debuginfomsf debuginfopdb demangle dlltooldriver engine executionengine fuzzmutate globalisel instcombine instrumentation interpreter ipo irreader libdriver lineeditor linker lto mc mcdisassembler mcjit mcparser mirparser native nativecodegen objcarcopts object objectyaml option orcjit passes profiledata runtimedyld scalaropts selectiondag support symbolize tablegen target transformutils vectorize windowsmanifest x86 x86asmparser x86asmprinter x86codegen x86desc x86disassembler x86info x86utils")
-elif args == ['--libs', '--link-static', 'asmparser', 'bitreader', 'bitwriter', 'instrumentation', 'interpreter', 'ipo', 'linker', 'lto', 'mcjit', 'x86']:
     print(
-        "-lLLVMLTO -lLLVMObjCARCOpts -lLLVMPasses -lLLVMX86Disassembler -lLLVMX86AsmParser -lLLVMX86CodeGen"
-        + "  -lLLVMGlobalISel -lLLVMSelectionDAG -lLLVMAsmPrinter -lLLVMDebugInfoCodeView -lLLVMDebugInfoMSF"
-        + " -lLLVMX86Desc -lLLVMMCDisassembler -lLLVMX86Info -lLLVMX86AsmPrinter -lLLVMX86Utils -lLLVMMCJIT"
-        + " -lLLVMipo -lLLVMVectorize -lLLVMLinker -lLLVMIRReader -lLLVMInterpreter -lLLVMExecutionEngine"
-        + " -lLLVMRuntimeDyld -lLLVMCodeGen -lLLVMTarget -lLLVMScalarOpts -lLLVMInstCombine -lLLVMInstrumentation"
-        + " -lLLVMTransformUtils -lLLVMBitWriter -lLLVMAnalysis -lLLVMObject -lLLVMMCParser -lLLVMMC"
-        + " -lLLVMProfileData -lLLVMBitReader -lLLVMAsmParser -lLLVMCore -lLLVMSupport -lLLVMDemangle"
+        "aggressiveinstcombine all all-targets analysis asmparser asmprinter binaryformat bitreader"
+        + " bitwriter codegen core coroutines coverage debuginfocodeview debuginfodwarf debuginfomsf"
+        + " debuginfopdb demangle dlltooldriver engine executionengine fuzzmutate globalisel instcombine"
+        + " instrumentation interpreter ipo irreader libdriver lineeditor linker lto mc mcdisassembler"
+        + " mcjit mcparser mirparser native nativecodegen objcarcopts object objectyaml option orcjit"
+        + " passes profiledata runtimedyld scalaropts selectiondag support symbolize tablegen target"
+        + " transformutils vectorize windowsmanifest x86 x86asmparser x86asmprinter x86codegen x86desc"
+        + " x86disassembler x86info x86utils")
+elif args == ["--link-static", "--libs", "asmparser", "bitreader", "bitwriter", "instrumentation", "interpreter", "ipo", "linker", "lto", "mcjit", "x86"]:
+    print(
+        "-lLLVMX86Disassembler -lLLVMX86AsmParser -lLLVMX86CodeGen -lLLVMGlobalISel -lLLVMSelectionDAG"
+        + " -lLLVMAsmPrinter -lLLVMX86Desc -lLLVMMCDisassembler -lLLVMX86Info -lLLVMX86AsmPrinter"
+        + " -lLLVMX86Utils -lLLVMMCJIT -lLLVMLTO -lLLVMPasses -lLLVMObjCARCOpts -lLLVMipo -lLLVMVectorize"
+        + " -lLLVMLinker -lLLVMIRReader -lLLVMInterpreter -lLLVMExecutionEngine -lLLVMRuntimeDyld"
+        + " -lLLVMCodeGen -lLLVMTarget -lLLVMScalarOpts -lLLVMInstCombine -lLLVMAggressiveInstCombine"
+        + " -lLLVMInstrumentation -lLLVMTransformUtils -lLLVMBitWriter -lLLVMAnalysis -lLLVMProfileData"
+        + " -lLLVMObject -lLLVMMCParser -lLLVMMC -lLLVMDebugInfoCodeView -lLLVMDebugInfoMSF -lLLVMBitReader"
+        + " -lLLVMAsmParser -lLLVMCore -lLLVMBinaryFormat -lLLVMSupport -lLLVMDemangle"
         + " -lstdc++ -lgcc"
     )
-    # FIXME last two -l are are a hack
+    # FIXME last two -l are a hack
 elif args == ["--link-static", "--ldflags"]:
     print("-L" + prefix + "/lib");
 else:
