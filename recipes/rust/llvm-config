@@ -10,7 +10,7 @@ prefix = os.path.realpath(os.path.dirname(os.path.abspath(sys.argv[0])) + "/sysr
 # This is a hack, and should be replaced if possible.
 
 if args == ["--version"]:
-    print("4.0.1")
+    print("8.0.0")
 elif args == ["--cxxflags"]:
     print("-I" + prefix + "/include --std=gnu++11 -fPIC -fvisibility-inlines-hidden -Wall -W -Wno-unused-parameter -Wwrite-strings -Wcast-qual -Wno-missing-field-initializers -pedantic -Wno-long-long -Wno-maybe-uninitialized -Wdelete-non-virtual-dtor -Wno-comment -Werror=date-time -std=gnu++11 -g  -fno-exceptions -fno-rtti -D__STDC_CONSTANT_MACROS -D__STDC_FORMAT_MACROS -D__STDC_LIMIT_MACROS")
 elif args == ["--components"]:
