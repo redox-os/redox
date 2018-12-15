@@ -25,7 +25,18 @@ function recipe_build {
     mkdir -p "$sysroot/usr"
     ln -sf "$sysroot/include" "$sysroot/usr/include"
     ln -sf "$sysroot/lib" "$sysroot/usr/lib"
-    ./configure --host=${HOST} --target=${HOST} --prefix=/ --with-sysroot=/ --with-build-sysroot="$sysroot" --enable-static --disable-shared --disable-dlopen --disable-nls --enable-languages=c,c++
+    ./configure \
+        --host=${HOST} \
+        --target=${HOST} \
+        --prefix=/ \
+        --with-sysroot=/ \
+        --with-build-sysroot="$sysroot" \
+        --enable-static \
+        --disable-shared \
+        --disable-dlopen \
+        --disable-nls \
+        --enable-languages=c,c++ \
+        --enable-threads=posix
     make -j "$(nproc)" all-gcc all-target-libgcc all-target-libstdc++-v3
     skip=1
 }
