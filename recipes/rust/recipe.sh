@@ -36,8 +36,9 @@ function recipe_stage {
     binpath="$1/bin"
     libpath="$1/lib/rustlib/${TARGET}/lib"
     mkdir -p "$binpath" "$libpath"
-    cp -fv "build/${TARGET}/stage2/bin/"* "$binpath"
+    cp -fv "build/"*"/stage2-rustc/${TARGET}/release/rustc_binary" "$binpath/rustc"
+    cp -fv "build/"*"/stage2-tools/${TARGET}/release/rustdoc_tool_binary" "$binpath/rustdoc"
+    cp -fv $(find "build/"*"/stage2/lib/rustlib/${TARGET}/lib/" -type f | grep -v librustc) "$libpath"
     ${STRIP} "$binpath/"*
-    cp -fv $(find build/*/stage2/lib/rustlib/${TARGET}/lib/ -type f | grep -v librustc) "$libpath"
     skip=1
 }
