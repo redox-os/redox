@@ -37,7 +37,7 @@ function recipe_stage {
     libpath="$1/lib/rustlib/${TARGET}/lib"
     mkdir -p "$binpath" "$libpath"
     cp -fv "build/${TARGET}/stage2/bin/"* "$binpath"
-    ${STRIP} "$binpath/rustc"
+    ${STRIP} "$binpath/"*
     cp -fv $(find build/*/stage2/lib/rustlib/${TARGET}/lib/ -type f | grep -v librustc) "$libpath"
     skip=1
 }
