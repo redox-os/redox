@@ -1,11 +1,5 @@
 #!/usr/bin/env python3
 
-import sys
-import os
-
-args = sys.argv[1:]
-prefix = os.path.realpath(os.path.dirname(os.path.abspath(sys.argv[0])) + "/sysroot")
-
 # The values here are copied from the output of llvm-config running under Redox.
 # This is a hack, and should be replaced if possible.
 
@@ -80,9 +74,29 @@ components = {
     "x86utils": "-lLLVMX86Utils -lLLVMCore -lLLVMBinaryFormat -lLLVMSupport -lLLVMDemangle",
 }
 
-if args == []:
+import os
+import sys
+
+def fail(message):
+    print("redox llvm-config failure", file=sys.stderr)
+    print(message, file=sys.stderr)
     sys.exit(1)
-if args == ["--version"]:
+
+prefix = os.environ["COOKBOOK_RECIPE"] + "/sysroot"
+
+args = []
+link_static = False
+for arg in sys.argv[1:]:
+    if arg == "--link-static":
+        link_static = True
+    elif arg == "--link-shared":
+        fail("shared linking disabled")
+    else:
+        args.append(arg)
+
+if args == []:
+    fail("no arguments")
+elif args == ["--version"]:
     print("8.0.0svn")
 elif args == ["--cppflags"]:
     print("-I" + prefix + "/include -D_DEBUG -D__STDC_CONSTANT_MACROS -D__STDC_FORMAT_MACROS -D__STDC_LIMIT_MACROS")
@@ -110,5 +124,4 @@ elif args[0] == "--libs":
 elif args[0] == "--shared-mode":
     print("static")
 else:
-    print("\n".join(args), file=sys.stderr)
-    sys.exit(1)
+    fail("unknown arguments: " + " ".join(args))
