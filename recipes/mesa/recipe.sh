@@ -19,8 +19,8 @@ function recipe_build {
     export CPPFLAGS="-I$sysroot/include -DHAVE_PTHREAD=1"
     export LDFLAGS="-L$sysroot/lib"
     export LIBS="-Wl,--whole-archive -lpthread -Wl,--no-whole-archive"
-    export LLVM_CONFIG="$(realpath ../llvm-config)"
-    NOCONFIGURE=1 ./autogen.sh
+    export LLVM_CONFIG="x86_64-unknown-redox-llvm-config"
+    #NOCONFIGURE=1 ./autogen.sh
     ./configure \
         --host="${HOST}" \
         --prefix=/ \
@@ -50,12 +50,7 @@ function recipe_clean {
 }
 
 function recipe_stage {
-    sysroot="$(realpath ../sysroot)"
-    export CFLAGS="-I$sysroot/include -DHAVE_PTHREAD=1"
-    export CPPFLAGS="-I$sysroot/include -DHAVE_PTHREAD=1"
-    export LDFLAGS="-L$sysroot/lib"
-    export LIBS="-Wl,--whole-archive -lpthread -Wl,--no-whole-archive"
-    export LLVM_CONFIG="$(realpath ../llvm-config)"
+    export LLVM_CONFIG="x86_64-unknown-redox-llvm-config"
     dest="$(realpath $1)"
     make DESTDIR="$dest" install
     rm -f "$dest/lib/"*.la
