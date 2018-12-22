@@ -33,7 +33,7 @@ function recipe_build {
         -DPYTHON_EXECUTABLE="/usr/bin/python2"
         #-DLLVM_TABLEGEN="/usr/bin/llvm-tblgen-8"
         -DUNIX=1
-        -DLLVM_ENABLE_THREADS=Off
+        -DLLVM_ENABLE_THREADS=On
         -DLLVM_BUILD_BENCHMARKS=Off
         -DLLVM_INCLUDE_BENCHMARKS=Off
         -DLLVM_BUILD_EXAMPLES=Off
