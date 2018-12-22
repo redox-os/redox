@@ -26,15 +26,15 @@ export XARGO_HOME=$(ROOT)/build/xargo
 export XARGO_RUST_SRC=$(ROOT)/rust/src
 
 # Cross compiler variables
-AR=$(TARGET)-ar
+AR=$(TARGET)-gcc-ar
 AS=$(TARGET)-as
 CC=$(TARGET)-gcc
 CXX=$(TARGET)-g++
 LD=$(TARGET)-ld
-NM=$(TARGET)-nm
+NM=$(TARGET)-gcc-nm
 OBJCOPY=$(TARGET)-objcopy
 OBJDUMP=$(TARGET)-objdump
-RANLIB=$(TARGET)-ranlib
+RANLIB=$(TARGET)-gcc-ranlib
 READELF=$(TARGET)-readelf
 STRIP=$(TARGET)-strip
 
