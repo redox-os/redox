@@ -73,6 +73,6 @@ function recipe_clean {
 function recipe_stage {
     dest="$(realpath $1)"
     make DESTDIR="$dest" install
-    find "$dest"/bin -exec $STRIP {} ';' 2> /dev/null
+    find "$dest"/{bin,lib} -exec $STRIP {} ';' 2> /dev/null
     skip=1
 }
