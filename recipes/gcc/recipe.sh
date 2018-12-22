@@ -21,10 +21,12 @@ function recipe_build {
     cp config.sub mpfr/config.sub
     cp -f config.sub mpc/config.sub
 
-    sysroot="$(realpath "${PWD}/../sysroot")"
+    sysroot="$(realpath ../sysroot)"
     mkdir -p "$sysroot/usr"
     ln -sf "$sysroot/include" "$sysroot/usr/include"
     ln -sf "$sysroot/lib" "$sysroot/usr/lib"
+
+    export LIBS='-lpthread'
     ./configure \
         --host=${HOST} \
         --target=${HOST} \
