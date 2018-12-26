@@ -6,7 +6,7 @@ diff -ruw source/Makefile source-new/Makefile
  CFLAGS = -Os
  LDFLAGS = -static
 -LIBS = -lpthread -lrt -lpthread
-+LIBS = -lpthread
++LIBS = -Wl,--whole-archive -lpthread -Wl,--no-whole-archive
  
  
  all: libc-bench
