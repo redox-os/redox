@@ -1,11 +1,11 @@
-diff -ru source/builtin/log.c source-new/builtin/log.c
+diff -ruw source/builtin/log.c source-new/builtin/log.c
 --- source/builtin/log.c	2017-06-04 19:08:11.000000000 -0600
-+++ source-new/builtin/log.c	2018-12-02 16:07:24.784757087 -0700
++++ source-new/builtin/log.c	2018-12-26 18:36:28.141445392 -0700
 @@ -308,6 +308,7 @@
  
  static void setup_early_output(struct rev_info *rev)
  {
-+#if 0
++#if !defined(__redox__)
  	struct sigaction sa;
  
  	/*
@@ -17,99 +17,69 @@ diff -ru source/builtin/log.c source-new/builtin/log.c
  }
  
  static void finish_early_output(struct rev_info *rev)
-diff -ru source/common-main.c source-new/common-main.c
+diff -ruw source/common-main.c source-new/common-main.c
 --- source/common-main.c	2017-06-04 19:08:11.000000000 -0600
-+++ source-new/common-main.c	2018-12-02 16:07:24.784757087 -0700
++++ source-new/common-main.c	2018-12-26 18:40:38.447229228 -0700
 @@ -15,12 +15,14 @@
   */
  static void restore_sigpipe_to_default(void)
  {
-+/*
++#if !defined(__redox__)
  	sigset_t unblock;
  
  	sigemptyset(&unblock);
  	sigaddset(&unblock, SIGPIPE);
  	sigprocmask(SIG_UNBLOCK, &unblock, NULL);
  	signal(SIGPIPE, SIG_DFL);
-+*/
++#endif
  }
  
  int main(int argc, const char **argv)
-diff -ru source/compat/hstrerror.c source-new/compat/hstrerror.c
+diff -ruw source/compat/hstrerror.c source-new/compat/hstrerror.c
 --- source/compat/hstrerror.c	2017-06-04 19:08:11.000000000 -0600
-+++ source-new/compat/hstrerror.c	2018-12-02 16:07:24.784757087 -0700
-@@ -5,17 +5,6 @@
++++ source-new/compat/hstrerror.c	2018-12-26 18:37:12.495372666 -0700
+@@ -5,6 +5,7 @@
  const char *githstrerror(int err)
  {
  	static char buffer[48];
--	switch (err)
--	{
--	case HOST_NOT_FOUND:
--		return "Authoritative answer: host not found";
--	case NO_DATA:
--		return "Valid name, no data record of requested type";
--	case NO_RECOVERY:
--		return "Non recoverable errors, FORMERR, REFUSED, NOTIMP";
--	case TRY_AGAIN:
--		return "Non-authoritative \"host not found\", or SERVERFAIL";
--	}
++#if !defined(__redox__)
+ 	switch (err)
+ 	{
+ 	case HOST_NOT_FOUND:
+@@ -16,6 +17,7 @@
+ 	case TRY_AGAIN:
+ 		return "Non-authoritative \"host not found\", or SERVERFAIL";
+ 	}
++#endif
  	snprintf(buffer, sizeof(buffer), "Name resolution error %d", err);
  	return buffer;
  }
-diff -ru source/compat/poll/poll.c source-new/compat/poll/poll.c
---- source/compat/poll/poll.c	2017-06-04 19:08:11.000000000 -0600
-+++ source-new/compat/poll/poll.c	2018-12-02 16:07:24.784757087 -0700
-@@ -302,7 +302,7 @@
- 	happened |= (POLLIN | POLLRDNORM) & sought;
- 
-       /* Distinguish hung-up sockets from other errors.  */
--      else if (socket_errno == ESHUTDOWN || socket_errno == ECONNRESET
-+      else if (socket_errno == ECONNRESET
- 	       || socket_errno == ECONNABORTED || socket_errno == ENETRESET)
- 	happened |= POLLHUP;
- 
-diff -ru source/compat/terminal.c source-new/compat/terminal.c
+diff -ruw source/compat/terminal.c source-new/compat/terminal.c
 --- source/compat/terminal.c	2017-06-04 19:08:11.000000000 -0600
-+++ source-new/compat/terminal.c	2018-12-02 16:07:24.784757087 -0700
-@@ -3,7 +3,9 @@
- #include "sigchain.h"
- #include "strbuf.h"
++++ source-new/compat/terminal.c	2018-12-26 18:39:47.177777683 -0700
+@@ -137,6 +137,18 @@
+ 	return buf.buf;
+ }
  
--#if defined(HAVE_DEV_TTY) || defined(GIT_WINDOWS_NATIVE)
++#elif defined(__redox__)
++
 +ssize_t __getline(char **lptr, size_t *n, FILE *fp);
 +
-+#if 0
- 
- static void restore_term(void);
- 
-@@ -141,7 +143,10 @@
- 
- char *git_terminal_prompt(const char *prompt, int echo)
- {
--	return getpass(prompt);
++char *git_terminal_prompt(const char *prompt, int echo)
++{
 +	char *line = NULL;
 +	size_t n = 0;
 +	__getline(&line, &n, stdin);
 +	return line; // XXX leak
- }
++}
++
+ #else
  
- #endif
-diff -ru source/config.c source-new/config.c
---- source/config.c	2017-06-04 19:08:11.000000000 -0600
-+++ source-new/config.c	2018-12-02 16:07:24.788757117 -0700
-@@ -1094,7 +1094,7 @@
- 	}
- 
- 	if (!strcmp(var, "core.packedgitwindowsize")) {
--		int pgsz_x2 = getpagesize() * 2;
-+		int pgsz_x2 = 4096 * 2;
- 		packed_git_window_size = git_config_ulong(var, value);
- 
- 		/* This value must be multiple of (pagesize * 2) */
-diff -ru source/connect.c source-new/connect.c
+ char *git_terminal_prompt(const char *prompt, int echo)
+diff -ruw source/connect.c source-new/connect.c
 --- source/connect.c	2017-06-04 19:08:11.000000000 -0600
-+++ source-new/connect.c	2018-12-02 16:07:24.788757117 -0700
-@@ -450,14 +450,11 @@
++++ source-new/connect.c	2018-12-26 18:56:40.601235949 -0700
+@@ -450,7 +450,7 @@
  
  	he = gethostbyname(host);
  	if (!he)
@@ -118,176 +88,46 @@ diff -ru source/connect.c source-new/connect.c
  	nport = strtoul(port, &ep, 10);
  	if ( ep == port || *ep ) {
  		/* Not numeric */
--		struct servent *se = getservbyname(port,"tcp");
--		if ( !se )
--			die("Unknown port %s", port);
--		nport = se->s_port;
-+		die("Unknown port %s", port);
- 	}
- 
- 	if (flags & CONNECT_VERBOSE)
-@@ -507,7 +504,7 @@
- 	int sockfd = git_tcp_connect_sock(host, flags);
- 
- 	fd[0] = sockfd;
--	fd[1] = dup(sockfd);
-+	fd[1] = sockfd;
- }
- 
- 
-diff -ru source/credential-cache--daemon.c source-new/credential-cache--daemon.c
---- source/credential-cache--daemon.c	2017-06-04 19:08:11.000000000 -0600
-+++ source-new/credential-cache--daemon.c	2018-12-02 16:07:24.788757117 -0700
-@@ -156,6 +156,7 @@
- 	strbuf_release(&action);
- }
- 
-+#if 0
- static int serve_cache_loop(int fd)
- {
- 	struct pollfd pfd;
-@@ -256,6 +257,7 @@
- 
- 	free(path_copy);
- }
-+#endif
- 
- int cmd_main(int argc, const char **argv)
- {
-@@ -274,6 +276,7 @@
- 
- 	git_config_get_bool("credentialcache.ignoresighup", &ignore_sighup);
- 
-+#if 0
- 	argc = parse_options(argc, argv, NULL, options, usage, 0);
- 	socket_path = argv[0];
- 
-@@ -291,6 +294,9 @@
- 
- 	serve_cache(socket_path, debug);
- 	delete_tempfile(&socket_file);
-+#endif
-+
-+	printf("git-credential-cache--daemon not working on Redox\n");
- 
- 	return 0;
- }
-diff -ru source/daemon.c source-new/daemon.c
+diff -ruw source/daemon.c source-new/daemon.c
 --- source/daemon.c	2017-06-04 19:08:11.000000000 -0600
-+++ source-new/daemon.c	2018-12-02 16:07:24.788757117 -0700
-@@ -71,6 +71,7 @@
++++ source-new/daemon.c	2018-12-26 19:15:52.002437841 -0700
+@@ -71,13 +71,21 @@
  	return hi->ip_address.buf;
  }
  
-+#if 0
++#if defined(__redox__)
++#define LOG_ERR 0
++#define LOG_INFO 1
++#endif
++
  static void logreport(int priority, const char *err, va_list params)
  {
++#if !defined(__redox__)
  	if (log_syslog) {
-@@ -89,13 +90,14 @@
- 		fflush(stderr);
- 	}
- }
+ 		char buf[1024];
+ 		vsnprintf(buf, sizeof(buf), err, params);
+ 		syslog(priority, "%s", buf);
+-	} else {
++	} else
 +#endif
- 
- __attribute__((format (printf, 1, 2)))
- static void logerror(const char *err, ...)
- {
- 	va_list params;
- 	va_start(params, err);
--	logreport(LOG_ERR, err, params);
-+	//logreport(LOG_ERR, err, params);
- 	va_end(params);
- }
- 
-@@ -106,13 +108,13 @@
- 	if (!verbose)
- 		return;
- 	va_start(params, err);
--	logreport(LOG_INFO, err, params);
-+	//logreport(LOG_INFO, err, params);
- 	va_end(params);
- }
- 
- static void NORETURN daemon_die(const char *err, va_list params)
- {
--	logreport(LOG_ERR, err, params);
-+	//logreport(LOG_ERR, err, params);
- 	exit(1);
- }
- 
-@@ -888,8 +890,7 @@
++	{
+ 		/*
+ 		 * Since stderr is set to buffered mode, the
+ 		 * logging of different processes will not overlap
+@@ -888,8 +896,12 @@
  
  	if (!reuseaddr)
  		return 0;
--	return setsockopt(sockfd, SOL_SOCKET, SO_REUSEADDR,
--			  &on, sizeof(on));
-+	return 0;
- }
- 
- struct socketlist {
-@@ -901,7 +902,7 @@
- static const char *ip2str(int family, struct sockaddr *sin, socklen_t len)
- {
- #ifdef NO_IPV6
--	static char ip[INET_ADDRSTRLEN];
-+	static char ip[1];
- #else
- 	static char ip[INET6_ADDRSTRLEN];
- #endif
-@@ -980,7 +981,7 @@
- 			close(sockfd);
- 			continue;	/* not fatal */
- 		}
--		if (listen(sockfd, 5) < 0) {
-+		if (1) {
- 			logerror("Could not listen to %s: %s",
- 				 ip2str(ai->ai_family, ai->ai_addr, ai->ai_addrlen),
- 				 strerror(errno));
-@@ -1042,7 +1043,7 @@
- 		return 0;
- 	}
- 
--	if (listen(sockfd, 5) < 0) {
-+	if (0) {
- 		logerror("Could not listen to %s: %s",
- 			 ip2str(AF_INET, (struct sockaddr *)&sin, sizeof(sin)),
- 			 strerror(errno));
-@@ -1080,6 +1081,8 @@
- 
- static int service_loop(struct socketlist *socklist)
- {
-+	die_errno("No daemon support");
-+#if 0
- 	struct pollfd *pfd;
- 	int i;
- 
-@@ -1116,7 +1119,7 @@
- #endif
- 				} ss;
- 				socklen_t sslen = sizeof(ss);
--				int incoming = accept(pfd[i].fd, &ss.sa, &sslen);
-+				int incoming = -1;
- 				if (incoming < 0) {
- 					switch (errno) {
- 					case EAGAIN:
-@@ -1131,6 +1134,7 @@
- 			}
- 		}
- 	}
++#if defined(__redox__)
++        return 0;
++#else
+ 	return setsockopt(sockfd, SOL_SOCKET, SO_REUSEADDR,
+ 			  &on, sizeof(on));
 +#endif
  }
  
- #ifdef NO_POSIX_GOODIES
-@@ -1158,7 +1162,7 @@
- static void drop_privileges(struct credentials *cred)
- {
- 	if (cred && (initgroups(cred->pass->pw_name, cred->gid) ||
--	    setgid (cred->gid) || setuid(cred->pass->pw_uid)))
-+	    1))
- 		die("cannot drop privileges");
- }
- 
-@@ -1174,11 +1178,7 @@
+ struct socketlist {
+@@ -1174,11 +1186,7 @@
  	if (!group_name)
  		c.gid = c.pass->pw_gid;
  	else {
@@ -299,45 +139,27 @@ diff -ru source/daemon.c source-new/daemon.c
  	}
  
  	return &c;
-@@ -1349,7 +1349,7 @@
+@@ -1348,10 +1356,12 @@
+ 		usage(daemon_usage);
  	}
  
++#if !defined(__redox__)
  	if (log_syslog) {
--		openlog("git-daemon", LOG_PID, LOG_DAEMON);
-+		//openlog("git-daemon", LOG_PID, LOG_DAEMON);
+ 		openlog("git-daemon", LOG_PID, LOG_DAEMON);
  		set_die_routine(daemon_die);
  	} else
++#endif
  		/* avoid splitting a message in the middle */
-diff -ru source/dir.c source-new/dir.c
---- source/dir.c	2017-06-04 19:08:11.000000000 -0600
-+++ source-new/dir.c	2018-12-02 16:07:24.788757117 -0700
-@@ -1891,14 +1891,14 @@
- static const char *get_ident_string(void)
- {
- 	static struct strbuf sb = STRBUF_INIT;
--	struct utsname uts;
-+	//struct utsname uts;
+ 		setvbuf(stderr, NULL, _IOFBF, 4096);
  
- 	if (sb.len)
- 		return sb.buf;
--	if (uname(&uts) < 0)
--		die_errno(_("failed to get kernel name and information"));
-+	//if (uname(&uts) < 0)
-+	//	die_errno(_("failed to get kernel name and information"));
- 	strbuf_addf(&sb, "Location %s, system %s", get_git_work_tree(),
--		    uts.sysname);
-+		    "Redox");
- 	return sb.buf;
- }
- 
-diff -ru source/fast-import.c source-new/fast-import.c
+diff -ruw source/fast-import.c source-new/fast-import.c
 --- source/fast-import.c	2017-06-04 19:08:11.000000000 -0600
-+++ source-new/fast-import.c	2018-12-02 16:07:24.788757117 -0700
++++ source-new/fast-import.c	2018-12-26 18:46:02.396322633 -0700
 @@ -531,6 +531,7 @@
  
  static void set_checkpoint_signal(void)
  {
-+	/*
++#if !defined(__redox__)
  	struct sigaction sa;
  
  	memset(&sa, 0, sizeof(sa));
@@ -345,65 +167,65 @@ diff -ru source/fast-import.c source-new/fast-import.c
  	sigemptyset(&sa.sa_mask);
  	sa.sa_flags = SA_RESTART;
  	sigaction(SIGUSR1, &sa, NULL);
-+	*/
++#endif
  }
  
  #endif
-diff -ru source/git-compat-util.h source-new/git-compat-util.h
+diff -ruw source/git-compat-util.h source-new/git-compat-util.h
 --- source/git-compat-util.h	2017-06-04 19:08:11.000000000 -0600
-+++ source-new/git-compat-util.h	2018-12-02 16:07:24.788757117 -0700
-@@ -179,7 +179,6 @@
++++ source-new/git-compat-util.h	2018-12-26 19:11:00.598201504 -0700
+@@ -179,7 +179,9 @@
  #include <assert.h>
  #include <regex.h>
  #include <utime.h>
--#include <syslog.h>
++#if !defined(__redox__)
+ #include <syslog.h>
++#endif
  #ifndef NO_SYS_POLL_H
  #include <sys/poll.h>
  #else
-@@ -195,21 +194,16 @@
- #elif defined(_MSC_VER)
- #include "compat/msvc.h"
- #else
--#include <sys/utsname.h>
+@@ -199,13 +201,17 @@
  #include <sys/wait.h>
  #include <sys/resource.h>
  #include <sys/socket.h>
--#include <sys/ioctl.h>
--#include <termios.h>
++#if !defined(__redox__)
+ #include <sys/ioctl.h>
++#endif
+ #include <termios.h>
  #ifndef NO_SYS_SELECT_H
  #include <sys/select.h>
  #endif
  #include <netinet/in.h>
--#include <netinet/tcp.h>
++#if !defined(__redox__)
+ #include <netinet/tcp.h>
++#endif
  #include <arpa/inet.h>
  #include <netdb.h>
  #include <pwd.h>
--#include <sys/un.h>
- #ifndef NO_INTTYPES_H
- #include <inttypes.h>
- #else
-@@ -319,9 +313,7 @@
- #define PRIo32 "o"
+@@ -320,8 +326,20 @@
  #endif
  
--#ifndef PATH_SEP
--#define PATH_SEP ':'
--#endif
+ #ifndef PATH_SEP
++#if defined(__redox__)
 +#define PATH_SEP ';'
++#else
+ #define PATH_SEP ':'
+ #endif
++#endif
++
++#ifndef DEV_NULL
++#if defined(__redox__)
++#define DEV_NULL "null:"
++#else
++#define DEV_NULL "/dev/null"
++#endif
++#endif
  
  #ifdef HAVE_PATHS_H
  #include <paths.h>
-@@ -1123,4 +1115,7 @@
- 
- extern int cmd_main(int, const char **);
- 
-+#define utime(...) 0
-+#define shutdown(...) 0
-+
- #endif
-diff -ru source/Makefile source-new/Makefile
+diff -ruw source/Makefile source-new/Makefile
 --- source/Makefile	2017-06-04 19:08:11.000000000 -0600
-+++ source-new/Makefile	2018-12-02 16:07:24.788757117 -0700
++++ source-new/Makefile	2018-12-26 18:35:54.096906095 -0700
 @@ -1802,7 +1802,6 @@
  
  $(BUILT_INS): git$X
@@ -443,57 +265,48 @@ diff -ru source/Makefile source-new/Makefile
  		ln -s "git-remote-http$X" "$$execdir/$$p" 2>/dev/null || \
  		cp "$$execdir/git-remote-http$X" "$$execdir/$$p" || exit; \
  	done && \
-diff -ru source/progress.c source-new/progress.c
+diff -ruw source/progress.c source-new/progress.c
 --- source/progress.c	2017-06-04 19:08:11.000000000 -0600
-+++ source-new/progress.c	2018-12-02 16:07:24.788757117 -0700
++++ source-new/progress.c	2018-12-26 19:13:24.522688882 -0700
 @@ -52,11 +52,13 @@
  
  	progress_update = 0;
  
-+	/*
++#if !defined(__redox__)
  	memset(&sa, 0, sizeof(sa));
  	sa.sa_handler = progress_interval;
  	sigemptyset(&sa.sa_mask);
  	sa.sa_flags = SA_RESTART;
  	sigaction(SIGALRM, &sa, NULL);
-+	*/
++#endif
  
  	v.it_interval.tv_sec = 1;
  	v.it_interval.tv_usec = 0;
-@@ -74,8 +76,7 @@
+@@ -74,8 +76,12 @@
  
  static int is_foreground_fd(int fd)
  {
--	int tpgrp = tcgetpgrp(fd);
--	return tpgrp < 0 || tpgrp == getpgid(0);
-+	return 1;
++#if defined(__redox__)
++        return 1;
++#else
+ 	int tpgrp = tcgetpgrp(fd);
+ 	return tpgrp < 0 || tpgrp == getpgid(0);
++#endif
  }
  
  static int display(struct progress *progress, unsigned n, const char *done)
-diff -ru source/rerere.c source-new/rerere.c
---- source/rerere.c	2017-06-04 19:08:11.000000000 -0600
-+++ source-new/rerere.c	2018-12-02 16:07:24.788757117 -0700
-@@ -682,7 +682,7 @@
- 	 * A successful replay of recorded resolution.
- 	 * Mark that "postimage" was used to help gc.
- 	 */
--	if (utime(rerere_path(id, "postimage"), NULL) < 0)
-+	if (1)
- 		warning_errno("failed utime() on %s",
- 			      rerere_path(id, "postimage"));
- 
-diff -ru source/run-command.c source-new/run-command.c
+diff -ruw source/run-command.c source-new/run-command.c
 --- source/run-command.c	2017-06-04 19:08:11.000000000 -0600
-+++ source-new/run-command.c	2018-12-02 16:07:55.100993213 -0700
++++ source-new/run-command.c	2018-12-26 19:19:21.042685078 -0700
 @@ -120,9 +120,9 @@
  #ifndef GIT_WINDOWS_NATIVE
  static inline void dup_devnull(int to)
  {
 -	int fd = open("/dev/null", O_RDWR);
-+	int fd = open("null:", O_RDWR);
++	int fd = open(DEV_NULL, O_RDWR);
  	if (fd < 0)
 -		die_errno(_("open /dev/null failed"));
-+		die_errno(_("open null: failed"));
++		die_errno(_("open %s failed"), DEV_NULL);
  	if (dup2(fd, to) < 0)
  		die_errno(_("dup2(%d,%d) failed"), fd, to);
  	close(fd);
@@ -502,121 +315,68 @@ diff -ru source/run-command.c source-new/run-command.c
  
  	while (1) {
 -		const char *end = strchrnul(p, ':');
-+		const char *end = strchrnul(p, ';');
++		const char *end = strchrnul(p, PATH_SEP);
  
  		strbuf_reset(&buf);
  
-diff -ru source/send-pack.c source-new/send-pack.c
---- source/send-pack.c	2017-06-04 19:08:11.000000000 -0600
-+++ source-new/send-pack.c	2018-12-02 16:07:24.788757117 -0700
-@@ -570,7 +570,7 @@
- 			if (args->stateless_rpc)
- 				close(out);
- 			if (git_connection_is_socket(conn))
--				shutdown(fd[0], SHUT_WR);
-+				; // XXX
+@@ -622,6 +622,7 @@
+ 	struct async *async = data;
+ 	intptr_t ret;
  
- 			/*
- 			 * Do not even bother with the return value; we know we
-diff -ru source/setup.c source-new/setup.c
++#if !defined(__redox__)
+ 	if (async->isolate_sigpipe) {
+ 		sigset_t mask;
+ 		sigemptyset(&mask);
+@@ -631,6 +632,7 @@
+ 			return (void *)ret;
+ 		}
+ 	}
++#endif
+ 
+ 	pthread_setspecific(async_key, async);
+ 	ret = async->proc(async->proc_in, async->proc_out, async->data);
+diff -ruw source/setup.c source-new/setup.c
 --- source/setup.c	2017-06-04 19:08:11.000000000 -0600
-+++ source-new/setup.c	2018-12-02 16:07:24.788757117 -0700
-@@ -1143,21 +1143,21 @@
- 	return read_gitfile_gently(suspect, return_error_code);
- }
- 
--/* if any standard file descriptor is missing open it to /dev/null */
-+/* if any standard file descriptor is missing open it to null: */
++++ source-new/setup.c	2018-12-26 18:52:50.070479933 -0700
+@@ -1146,11 +1146,11 @@
+ /* if any standard file descriptor is missing open it to /dev/null */
  void sanitize_stdfds(void)
  {
 -	int fd = open("/dev/null", O_RDWR, 0);
-+	int fd = open("null:", O_RDWR, 0);
++	int fd = open(DEV_NULL, O_RDWR, 0);
  	while (fd != -1 && fd < 2)
  		fd = dup(fd);
  	if (fd == -1)
 -		die_errno("open /dev/null or dup failed");
-+		die_errno("open null: or dup failed");
++		die_errno("open %s or dup failed", DEV_NULL);
  	if (fd > 2)
  		close(fd);
  }
- 
- int daemonize(void)
- {
--#ifdef NO_POSIX_GOODIES
-+#if 1
- 	errno = ENOSYS;
- 	return -1;
- #else
-diff -ru source/sha1_file.c source-new/sha1_file.c
---- source/sha1_file.c	2017-06-04 19:08:11.000000000 -0600
-+++ source-new/sha1_file.c	2018-12-02 16:07:24.792757146 -0700
-@@ -723,7 +723,7 @@
- 		"pack_report: getpagesize()            = %10" SZ_FMT "\n"
- 		"pack_report: core.packedGitWindowSize = %10" SZ_FMT "\n"
- 		"pack_report: core.packedGitLimit      = %10" SZ_FMT "\n",
--		sz_fmt(getpagesize()),
-+		sz_fmt(4096),
- 		sz_fmt(packed_git_window_size),
- 		sz_fmt(packed_git_limit));
- 	fprintf(stderr,
-diff -ru source/strbuf.c source-new/strbuf.c
+@@ -1169,8 +1169,10 @@
+ 		default:
+ 			exit(0);
+ 	}
++#if !defined(__redox__)
+ 	if (setsid() == -1)
+ 		die_errno("setsid failed");
++#endif
+ 	close(0);
+ 	close(1);
+ 	close(2);
+diff -ruw source/strbuf.c source-new/strbuf.c
 --- source/strbuf.c	2017-06-04 19:08:11.000000000 -0600
-+++ source-new/strbuf.c	2018-12-02 16:07:24.792757146 -0700
-@@ -446,6 +446,11 @@
++++ source-new/strbuf.c	2018-12-26 18:53:39.586122270 -0700
+@@ -446,6 +446,13 @@
  	for (;; guessed_len *= 2) {
  		strbuf_grow(sb, guessed_len);
  		if (getcwd(sb->buf, sb->alloc)) {
++#if defined(__redox__)
 +			if (strncmp(sb->buf, "file:", 5) == 0) {
 +			    char *x = strdup(sb->buf);
 +			    strcpy(sb->buf, x+5);
 +			    free(x);
 +			}
++#endif
  			strbuf_setlen(sb, strlen(sb->buf));
  			return 0;
  		}
-diff -ru source/wrapper.c source-new/wrapper.c
---- source/wrapper.c	2017-06-04 19:08:11.000000000 -0600
-+++ source-new/wrapper.c	2018-12-02 16:07:24.792757146 -0700
-@@ -227,6 +227,7 @@
- 	}
- }
- 
-+#if 0
- static int handle_nonblock(int fd, short poll_events, int err)
- {
- 	struct pollfd pfd;
-@@ -244,6 +245,7 @@
- 	poll(&pfd, 1, -1);
- 	return 1;
- }
-+#endif
- 
- /*
-  * xread() is the same a read(), but it automatically restarts read()
-@@ -260,8 +262,6 @@
- 		if (nr < 0) {
- 			if (errno == EINTR)
- 				continue;
--			if (handle_nonblock(fd, POLLIN, errno))
--				continue;
- 		}
- 		return nr;
- 	}
-@@ -282,8 +282,6 @@
- 		if (nr < 0) {
- 			if (errno == EINTR)
- 				continue;
--			if (handle_nonblock(fd, POLLOUT, errno))
--				continue;
- 		}
- 
- 		return nr;
-@@ -653,7 +651,7 @@
- 
- void sleep_millisec(int millisec)
- {
--	poll(NULL, 0, millisec);
-+	//poll(NULL, 0, millisec);
- }
- 
- int xgethostname(char *buf, size_t len)
