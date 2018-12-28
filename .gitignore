@@ -1,6 +1,7 @@
 build
 repo
 source
+source-new
 source.tar
 stage
 stage.sig
