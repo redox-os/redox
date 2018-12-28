@@ -17,7 +17,7 @@ function recipe_update {
 
 function recipe_build {
     sysroot="$(realpath ../sysroot)"
-    export LDFLAGS="-L$sysroot/lib"
+    export LDFLAGS="-L$sysroot/lib -Wl,--whole-archive -lpthread -Wl,--no-whole-archive"
     export CPPFLAGS="-I$sysroot/include"
     ./configure --host=${HOST} --prefix=/ ac_cv_fread_reads_directories=yes ac_cv_snprintf_returns_bogus=yes ac_cv_lib_curl_curl_global_init=yes CURL_CONFIG=no
     make ${MAKEFLAGS} -j"$(nproc)"
