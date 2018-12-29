@@ -8,6 +8,7 @@ prompt = false
 # Package settings
 [packages]
 #acid = {}
+audiod = {}
 #autoconf = {}
 #automake = {}
 #bash = {}
@@ -59,6 +60,7 @@ ipcd = {}
 #jansson = {}
 #keyboard-sfx = {}
 #lci = {}
+#libc-bench = {}
 #libiconv = {}
 #libjpeg = {}
 #liborbital = {}
@@ -112,6 +114,8 @@ redoxfs = {}
 #rs-nes = {}
 #rust = {}
 #rust64 = {}
+#rust-cairo = {}
+#rust-cairo-demo = {}
 #rustual-boy = {}
 #scummvm = {}
 #sdl = {}
@@ -175,6 +179,7 @@ dhcpd -b
 [[files]]
 path = "/etc/init.d/20_orbital"
 data = """
+audiod
 orbital display:3/activate orblogin launcher
 """
 
