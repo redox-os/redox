@@ -1,6 +1,6 @@
-diff -rupNw source-original/config.lib source/config.lib
---- source-original/config.lib	2018-11-23 19:25:11.000000000 +0100
-+++ source/config.lib	2018-11-23 21:37:19.956620161 +0100
+diff -rupwN source/config.lib source-new/config.lib
+--- source/config.lib	2018-12-29 07:28:58.975290421 -0700
++++ source-new/config.lib	2018-12-29 10:11:42.310241717 -0700
 @@ -1486,7 +1486,7 @@ make_cflags_and_ldflags() {
  	# Special CXXFlags for HOST
  	CXXFLAGS="$CXXFLAGS"
@@ -19,21 +19,24 @@ diff -rupNw source-original/config.lib source/config.lib
  	fi
  
  	if [ "$os" != "CYGWIN" ] && [ "$os" != "HAIKU" ] && [ "$os" != "MINGW" ] && [ "$os" != "DOS" ] && [ "$os" != "WINCE" ]; then
-diff -rupNw source-original/src/os/unix/unix.cpp source/src/os/unix/unix.cpp
---- source-original/src/os/unix/unix.cpp	2018-11-23 19:25:12.000000000 +0100
-+++ source/src/os/unix/unix.cpp	2018-11-23 21:37:19.956620161 +0100
-@@ -28,7 +28,7 @@
- #ifdef __APPLE__
- 	#include <sys/mount.h>
- #elif (defined(_POSIX_VERSION) && _POSIX_VERSION >= 200112L) || defined(__GLIBC__)
--	#define HAS_STATVFS
-+	//#define HAS_STATVFS
- #endif
- 
- #if defined(OPENBSD) || defined(__NetBSD__) || defined(__FreeBSD__)
-diff -rupNw source-original/src/rev.cpp.in source/src/rev.cpp.in
---- source-original/src/rev.cpp.in	2018-11-23 19:25:12.000000000 +0100
-+++ source/src/rev.cpp.in	2018-11-23 21:37:19.956620161 +0100
+diff -rupwN source/src/music/extmidi.cpp source-new/src/music/extmidi.cpp
+--- source/src/music/extmidi.cpp	2018-12-29 07:28:59.143295501 -0700
++++ source-new/src/music/extmidi.cpp	2018-12-29 10:14:06.637357598 -0700
+@@ -115,7 +115,11 @@ void MusicDriver_ExtMidi::DoPlay()
+ 	switch (this->pid) {
+ 		case 0: {
+ 			close(0);
++#if defined(__redox__)
++			int d = open("null:", O_RDONLY);
++#else
+ 			int d = open("/dev/null", O_RDONLY);
++#endif
+ 			if (d != -1 && dup2(d, 1) != -1 && dup2(d, 2) != -1) {
+ 				execvp(this->params[0], this->params);
+ 			}
+diff -rupwN source/src/rev.cpp.in source-new/src/rev.cpp.in
+--- source/src/rev.cpp.in	2018-12-29 07:28:59.167296226 -0700
++++ source-new/src/rev.cpp.in	2018-12-29 10:11:42.314241804 -0700
 @@ -57,7 +57,7 @@ const char _openttd_build_date[] = __DAT
   * (compiling from sources without any version control software)
   * and 2 is for modified revision.
@@ -43,9 +46,9 @@ diff -rupNw source-original/src/rev.cpp.in source/src/rev.cpp.in
  
  /**
   * The NewGRF revision of OTTD:
-diff -rupNw source-original/src/stdafx.h source/src/stdafx.h
---- source-original/src/stdafx.h	2018-11-23 19:25:12.000000000 +0100
-+++ source/src/stdafx.h	2018-11-23 19:49:25.000000000 +0100
+diff -rupwN source/src/stdafx.h source-new/src/stdafx.h
+--- source/src/stdafx.h	2018-12-29 07:28:59.203297314 -0700
++++ source-new/src/stdafx.h	2018-12-29 10:11:42.314241804 -0700
 @@ -12,6 +12,9 @@
  #ifndef STDAFX_H
  #define STDAFX_H
@@ -56,9 +59,9 @@ diff -rupNw source-original/src/stdafx.h source/src/stdafx.h
  #if defined(__APPLE__)
  	#include "os/macosx/osx_stdafx.h"
  #endif /* __APPLE__ */
-diff -rupNw source-original/src/string.cpp source/src/string.cpp
---- source-original/src/string.cpp	2018-11-23 19:25:12.000000000 +0100
-+++ source/src/string.cpp	2018-11-23 20:01:10.000000000 +0100
+diff -rupwN source/src/string.cpp source-new/src/string.cpp
+--- source/src/string.cpp	2018-12-29 07:28:59.207297436 -0700
++++ source-new/src/string.cpp	2018-12-29 10:11:42.314241804 -0700
 @@ -528,7 +528,7 @@ size_t Utf8TrimString(char *s, size_t ma
  	return length;
  }
