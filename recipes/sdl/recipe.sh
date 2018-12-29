@@ -25,10 +25,8 @@ function recipe_build {
         --disable-video-x11 \
         --disable-loadso \
         --disable-threads \
-        --enable-audio \
-        --enable-dummyaudio \
-        --enable-video-orbital \
-        --enable-cdrom
+        --enable-clock_gettime \
+        --enable-video-orbital
     make -j"$(nproc)"
     skip=1
 }
