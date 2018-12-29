@@ -8,6 +8,7 @@ prompt = false
 # Package settings
 [packages]
 acid = {}
+audiod = {}
 autoconf = {}
 automake = {}
 #bash = {} # sh_xmalloc
@@ -22,7 +23,7 @@ contain = {}
 coreutils = {}
 curl = {}
 dash = {}
-#diffutils = {} # sigaction issues
+diffutils = {}
 dosbox = {}
 drivers = {}
 #drivers-041 = {}
