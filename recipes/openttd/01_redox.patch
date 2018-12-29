@@ -15,7 +15,7 @@ diff -rupNw source-original/config.lib source/config.lib
  
  	if [ "$os" != "CYGWIN" ] && [ "$os" != "HAIKU" ] && [ "$os" != "OPENBSD" ] && [ "$os" != "MINGW" ] && [ "$os" != "MORPHOS" ] && [ "$os" != "OSX" ] && [ "$os" != "DOS" ] && [ "$os" != "WINCE" ] && [ "$os" != "PSP" ] && [ "$os" != "OS2" ]; then
 -		LIBS="$LIBS -lpthread"
-+		LIBS="$LIBS"
++		LIBS="$LIBS -Wl,--whole-archive -lpthread -Wl,--no-whole-archive"
  	fi
  
  	if [ "$os" != "CYGWIN" ] && [ "$os" != "HAIKU" ] && [ "$os" != "MINGW" ] && [ "$os" != "DOS" ] && [ "$os" != "WINCE" ]; then
