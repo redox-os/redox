@@ -14,7 +14,7 @@ function recipe_update {
 }
 
 function recipe_build {
-    ./configure --build=`gcc -dumpmachine` --host=${HOST} --prefix='' --enable-static --without-liblzo2 --disable-network
+    ./configure --build=`gcc -dumpmachine` --host=${HOST} --prefix='' --enable-static --without-liblzo2 --disable-network --without-threads
     make VERBOSE=1 -j"$(nproc)"
     skip=1
 }
