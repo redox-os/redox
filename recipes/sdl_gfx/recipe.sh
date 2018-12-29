@@ -1,4 +1,4 @@
-VERSION=2.0.26
+VERSION=2.0.25
 TAR=https://sourceforge.net/projects/sdlgfx/files/SDL_gfx-$VERSION.tar.gz
 BUILD_DEPENDS=(sdl liborbital libiconv)
 
