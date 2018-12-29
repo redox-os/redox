@@ -1,30 +1,36 @@
-diff -rupNw source-original/srclib/getprogname.c source/srclib/getprogname.c
---- source-original/srclib/getprogname.c	2017-01-02 00:02:21.000000000 +0100
-+++ source/srclib/getprogname.c	2018-10-03 19:32:07.382785859 +0200
-@@ -144,7 +144,7 @@ getprogname (void)
+diff -ruw source/srclib/getprogname.c source-new/srclib/getprogname.c
+--- source/srclib/getprogname.c	2017-01-01 16:02:21.000000000 -0700
++++ source-new/srclib/getprogname.c	2018-12-29 08:08:09.138286508 -0700
+@@ -43,6 +43,14 @@
+ # include <string.h>
+ #endif
+ 
++#if defined(__redox__)
++# include <string.h>
++# include <unistd.h>
++# include <stdio.h>
++# include <fcntl.h>
++# include <limits.h>
++#endif
++
+ #include "dirname.h"
+ 
+ #ifndef HAVE_GETPROGNAME             /* not Mac OS X, FreeBSD, NetBSD, OpenBSD >= 5.4, Cygwin */
+@@ -143,6 +151,17 @@
+       free (buf.ps_pathptr);
      }
    return p;
++# elif defined(__redox__)
++  char filename[PATH_MAX];
++  int fd = open ("sys:exe", O_RDONLY);
++  if (fd > 0) {
++    int len = read(fd, filename, PATH_MAX-1);
++    if (len > 0) {
++       filename[len] = '\0';
++       return strdup(filename);
++    }
++  }
++  return NULL;
  # else
--#  error "getprogname module not ported to this OS"
-+  return "?";
+ #  error "getprogname module not ported to this OS"
  # endif
- }
- 
-diff -rupNw source-original/srclib/signal.in.h source/srclib/signal.in.h
---- source-original/srclib/signal.in.h	2017-01-02 00:02:22.000000000 +0100
-+++ source/srclib/signal.in.h	2018-10-03 19:46:53.323659264 +0200
-@@ -186,12 +186,12 @@ _GL_WARN_ON_USE (raise, "raise can crash
- 
- /* Maximum signal number + 1.  */
- #  ifndef NSIG
--#   define NSIG 32
-+#   define NSIG 64
- #  endif
- 
- /* This code supports only 32 signals.  */
- #  if !GNULIB_defined_verify_NSIG_constraint
--typedef int verify_NSIG_constraint[NSIG <= 32 ? 1 : -1];
-+typedef int verify_NSIG_constraint[NSIG <= 64 ? 1 : -1];
- #   define GNULIB_defined_verify_NSIG_constraint 1
- #  endif
- 
