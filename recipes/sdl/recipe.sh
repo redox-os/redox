@@ -24,7 +24,7 @@ function recipe_build {
         --disable-pulseaudio \
         --disable-video-x11 \
         --disable-loadso \
-        --disable-threads \
+        --enable-redoxaudio \
         --enable-clock_gettime \
         --enable-video-orbital
     make -j"$(nproc)"
