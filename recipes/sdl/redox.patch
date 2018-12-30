@@ -12,7 +12,7 @@ diff -ruwN source/build-scripts/config.sub source-new/build-scripts/config.sub
  	      | -nindy* | -vxsim* | -vxworks* | -ebmon* | -hms* | -mvs* \
 diff -ruwN source/configure.in source-new/configure.in
 --- source/configure.in	2012-01-18 23:30:05.000000000 -0700
-+++ source-new/configure.in	2018-12-29 17:27:34.957444409 -0700
++++ source-new/configure.in	2018-12-30 08:48:46.611954605 -0700
 @@ -685,6 +685,18 @@
      fi
  }
@@ -101,7 +101,6 @@ diff -ruwN source/configure.in source-new/configure.in
            esac
          fi
          # Set up files for the thread library
-Binary files source/.git/index and source-new/.git/index differ
 diff -ruwN source/include/SDL_config.h.in source-new/include/SDL_config.h.in
 --- source/include/SDL_config.h.in	2012-01-18 23:30:05.000000000 -0700
 +++ source-new/include/SDL_config.h.in	2018-12-29 15:57:00.298520310 -0700
@@ -123,8 +122,8 @@ diff -ruwN source/include/SDL_config.h.in source-new/include/SDL_config.h.in
  #undef SDL_VIDEO_DRIVER_PICOGUI
 diff -ruwN source/src/audio/redox/SDL_redoxaudio.c source-new/src/audio/redox/SDL_redoxaudio.c
 --- source/src/audio/redox/SDL_redoxaudio.c	1969-12-31 17:00:00.000000000 -0700
-+++ source-new/src/audio/redox/SDL_redoxaudio.c	2018-12-29 19:03:23.935759505 -0700
-@@ -0,0 +1,175 @@
++++ source-new/src/audio/redox/SDL_redoxaudio.c	2018-12-30 08:49:12.532354653 -0700
+@@ -0,0 +1,169 @@
 +/*
 +    SDL - Simple DirectMedia Layer
 +    Copyright (C) 1997-2012 Sam Lantinga
@@ -172,8 +171,6 @@ diff -ruwN source/src/audio/redox/SDL_redoxaudio.c source-new/src/audio/redox/SD
 +static void REDOXAUD_PlayAudio(_THIS);
 +static Uint8 *REDOXAUD_GetAudioBuf(_THIS);
 +static void REDOXAUD_CloseAudio(_THIS);
-+
-+#define DEBUG_AUDIO 1
 +
 +/* Audio driver bootstrap functions */
 +static int REDOXAUD_Available(void)
@@ -229,14 +226,10 @@ diff -ruwN source/src/audio/redox/SDL_redoxaudio.c source-new/src/audio/redox/SD
 +
 +/* This function waits until it is possible to write a full sound buffer */
 +static void REDOXAUD_WaitAudio(_THIS)
-+{
-+	fprintf(stderr, "waitaudio\n");
-+}
++{}
 +
 +static void REDOXAUD_PlayAudio(_THIS)
 +{
-+	fprintf(stderr, "playaudio\n");
-+
 +	int written;
 +
 +	/* Write the audio data */
@@ -372,7 +365,7 @@ diff -ruwN source/src/audio/SDL_sysaudio.h source-new/src/audio/SDL_sysaudio.h
  #endif
 diff -ruwN source/src/thread/pthread/SDL_systhread.c source-new/src/thread/pthread/SDL_systhread.c
 --- source/src/thread/pthread/SDL_systhread.c	2012-01-18 23:30:06.000000000 -0700
-+++ source-new/src/thread/pthread/SDL_systhread.c	2018-12-29 19:17:46.203480243 -0700
++++ source-new/src/thread/pthread/SDL_systhread.c	2018-12-30 07:30:42.840742321 -0700
 @@ -86,7 +86,11 @@
  	for ( i=0; sig_list[i]; ++i ) {
  		sigaddset(&mask, sig_list[i]);
