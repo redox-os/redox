@@ -1,6 +1,6 @@
 GIT=https://gitlab.redox-os.org/redox-os/hematite.git
 GIT_UPSTREAM=https://github.com/PistonDevelopers/hematite.git
-BUILD_DEPENDS=(mesa)
+BUILD_DEPENDS=(mesa zlib)
 BRANCH=redox
 
 function recipe_build {
@@ -11,6 +11,7 @@ function recipe_build {
         -L "${sysroot}/lib" \
         -l OSMesa \
         -l glapi \
+        -l z \
         -l stdc++ \
         -C link-args="-Wl,--whole-archive -lpthread -Wl,--no-whole-archive"
     skip=1
