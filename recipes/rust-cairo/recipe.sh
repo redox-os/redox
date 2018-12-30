@@ -12,7 +12,13 @@ function recipe_build {
 	-l pixman-1 \
 	-l freetype \
 	-l png \
-	-l z 
+	-l z
     skip=1
 }
 
+function recipe_stage {
+    dest="$(realpath $1)"
+    mkdir -pv "$dest/bin"
+    cp -v "target/${TARGET}/release/examples/gui" "$dest/bin/rust-cairo"
+    skip=1
+}
