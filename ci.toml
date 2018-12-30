@@ -89,6 +89,7 @@ openssl = {}
 openttd = {}
 openttd-opengfx = {}
 openttd-openmsx = {}
+openttd-opensfx = {}
 orbdata = {}
 orbital = {}
 orbterm = {}
