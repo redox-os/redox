@@ -1,7 +1,7 @@
-diff -rupNw source-original/build-scripts/config.sub source/build-scripts/config.sub
---- source-original/build-scripts/config.sub	2012-01-19 07:30:05.000000000 +0100
-+++ source/build-scripts/config.sub	2018-05-01 17:31:52.766229515 +0200
-@@ -1276,7 +1276,7 @@ case $os in
+diff -ruwN source/build-scripts/config.sub source-new/build-scripts/config.sub
+--- source/build-scripts/config.sub	2012-01-18 23:30:05.000000000 -0700
++++ source-new/build-scripts/config.sub	2018-12-29 15:57:00.298520310 -0700
+@@ -1276,7 +1276,7 @@
  	-gnu* | -bsd* | -mach* | -minix* | -genix* | -ultrix* | -irix* \
  	      | -*vms* | -sco* | -esix* | -isc* | -aix* | -cnk* | -sunos | -sunos[34]*\
  	      | -hpux* | -unos* | -osf* | -luna* | -dgux* | -solaris* | -sym* \
@@ -10,10 +10,29 @@ diff -rupNw source-original/build-scripts/config.sub source/build-scripts/config
  	      | -amigaos* | -amigados* | -msdos* | -newsos* | -unicos* | -aof* \
  	      | -aos* | -aros* \
  	      | -nindy* | -vxsim* | -vxworks* | -ebmon* | -hms* | -mvs* \
-diff -rupNw source-original/configure.in source/configure.in
---- source-original/configure.in	2012-01-19 07:30:05.000000000 +0100
-+++ source/configure.in	2018-05-01 17:31:52.770229654 +0200
-@@ -1646,6 +1646,20 @@ AC_HELP_STRING([--enable-video-dummy], [
+diff -ruwN source/configure.in source-new/configure.in
+--- source/configure.in	2012-01-18 23:30:05.000000000 -0700
++++ source-new/configure.in	2018-12-29 17:27:34.957444409 -0700
+@@ -685,6 +685,18 @@
+     fi
+ }
+ 
++dnl Set up the Redox Audio driver
++CheckRedoxAudio()
++{
++    AC_ARG_ENABLE(redoxaudio,
++AC_HELP_STRING([--enable-redoxaudio], [support the redox audio driver [[default=yes]]]),
++                  , enable_redoxaudio=yes)
++    if test x$enable_audio = xyes -a x$enable_redoxaudio = xyes; then
++        AC_DEFINE(SDL_AUDIO_DRIVER_REDOX)
++        SOURCES="$SOURCES $srcdir/src/audio/redox/*.c"
++    fi
++}
++
+ dnl See if we can use x86 assembly blitters
+ # NASM is available from: http://nasm.sourceforge.net
+ CheckNASM()
+@@ -1646,6 +1658,20 @@
      fi
  }
  
@@ -34,7 +53,19 @@ diff -rupNw source-original/configure.in source/configure.in
  dnl Check to see if OpenGL support is desired
  AC_ARG_ENABLE(video-opengl,
  AC_HELP_STRING([--enable-video-opengl], [include OpenGL context creation [[default=yes]]]),
-@@ -2325,10 +2339,11 @@ case "$host" in
+@@ -1859,6 +1885,11 @@
+ AC_HELP_STRING([--enable-pthread-sem], [use pthread semaphores [[default=yes]]]),
+                   , enable_pthread_sem=yes)
+     case "$host" in
++        *-*-redox*)
++            pthread_cflags="-D_REENTRANT"
++            pthread_lib="-lpthread"
++            SDL_LIBS="$SDL_LIBS -Wl,--whole-archive -lpthread -Wl,--no-whole-archive"
++            ;;
+         *-*-linux*|*-*-uclinux*)
+             pthread_cflags="-D_REENTRANT"
+             pthread_lib="-lpthread"
+@@ -2325,10 +2356,11 @@
              have_timers=yes
          fi
          ;;
@@ -47,18 +78,41 @@ diff -rupNw source-original/configure.in source/configure.in
              *-*-kfreebsd*-gnu)  ARCH=kfreebsd-gnu ;;
              *-*-knetbsd*-gnu)   ARCH=knetbsd-gnu ;;
              *-*-kopenbsd*-gnu)  ARCH=kopenbsd-gnu ;;
-@@ -2347,6 +2362,7 @@ case "$host" in
+@@ -2347,8 +2379,10 @@
          esac
          CheckVisibilityHidden
          CheckDummyVideo
 +        CheckOrbitalVideo
          CheckDiskAudio
          CheckDummyAudio
++        CheckRedoxAudio
          CheckDLOPEN
-diff -rupNw source-original/include/SDL_config.h.in source/include/SDL_config.h.in
---- source-original/include/SDL_config.h.in	2012-01-19 07:30:05.000000000 +0100
-+++ source/include/SDL_config.h.in	2018-05-01 17:31:52.770229654 +0200
-@@ -268,6 +268,7 @@
+         CheckNASM
+         CheckAltivec
+@@ -2445,6 +2479,11 @@
+                 SOURCES="$SOURCES $srcdir/src/cdrom/osf/*.c"
+                 have_cdrom=yes
+             ;;
++            redox)
++                AC_DEFINE(SDL_CDROM_DUMMY)
++                SOURCES="$SOURCES $srcdir/src/cdrom/dummy/*.c"
++                have_cdrom=yes
++            ;;
+           esac
+         fi
+         # Set up files for the thread library
+diff -ruwN source/include/SDL_config.h.in source-new/include/SDL_config.h.in
+--- source/include/SDL_config.h.in	2012-01-18 23:30:05.000000000 -0700
++++ source-new/include/SDL_config.h.in	2018-12-29 15:57:00.298520310 -0700
+@@ -182,6 +182,7 @@
+ #undef SDL_AUDIO_DRIVER_OSS_SOUNDCARD_H
+ #undef SDL_AUDIO_DRIVER_PAUD
+ #undef SDL_AUDIO_DRIVER_QNXNTO
++#undef SDL_AUDIO_DRIVER_REDOX
+ #undef SDL_AUDIO_DRIVER_SNDMGR
+ #undef SDL_AUDIO_DRIVER_SUNAUDIO
+ #undef SDL_AUDIO_DRIVER_WAVEOUT
+@@ -268,6 +269,7 @@
  #undef SDL_VIDEO_DRIVER_GGI
  #undef SDL_VIDEO_DRIVER_IPOD
  #undef SDL_VIDEO_DRIVER_NANOX
@@ -66,9 +120,593 @@ diff -rupNw source-original/include/SDL_config.h.in source/include/SDL_config.h.
  #undef SDL_VIDEO_DRIVER_OS2FS
  #undef SDL_VIDEO_DRIVER_PHOTON
  #undef SDL_VIDEO_DRIVER_PICOGUI
-diff -rupNw source-original/src/video/orbital/SDL_orbitalevents.c source/src/video/orbital/SDL_orbitalevents.c
---- source-original/src/video/orbital/SDL_orbitalevents.c	1970-01-01 01:00:00.000000000 +0100
-+++ source/src/video/orbital/SDL_orbitalevents.c	2018-05-01 17:31:52.770229654 +0200
+diff -ruwN source/include/SDL_config.h.in.orig source-new/include/SDL_config.h.in.orig
+--- source/include/SDL_config.h.in.orig	1969-12-31 17:00:00.000000000 -0700
++++ source-new/include/SDL_config.h.in.orig	2018-12-29 15:57:00.298520310 -0700
+@@ -0,0 +1,313 @@
++/*
++    SDL - Simple DirectMedia Layer
++    Copyright (C) 1997-2012 Sam Lantinga
++
++    This library is free software; you can redistribute it and/or
++    modify it under the terms of the GNU Lesser General Public
++    License as published by the Free Software Foundation; either
++    version 2.1 of the License, or (at your option) any later version.
++
++    This library is distributed in the hope that it will be useful,
++    but WITHOUT ANY WARRANTY; without even the implied warranty of
++    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
++    Lesser General Public License for more details.
++
++    You should have received a copy of the GNU Lesser General Public
++    License along with this library; if not, write to the Free Software
++    Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
++
++    Sam Lantinga
++    slouken@libsdl.org
++*/
++
++#ifndef _SDL_config_h
++#define _SDL_config_h
++
++/* This is a set of defines to configure the SDL features */
++
++/* General platform specific identifiers */
++#include "SDL_platform.h"
++
++/* Make sure that this isn't included by Visual C++ */
++#ifdef _MSC_VER
++#error You should copy include/SDL_config.h.default to include/SDL_config.h
++#endif
++
++/* C language features */
++#undef const
++#undef inline
++#undef volatile
++
++/* C datatypes */
++#undef size_t
++#undef int8_t
++#undef uint8_t
++#undef int16_t
++#undef uint16_t
++#undef int32_t
++#undef uint32_t
++#undef int64_t
++#undef uint64_t
++#undef uintptr_t
++#undef SDL_HAS_64BIT_TYPE
++
++/* Endianness */
++#undef SDL_BYTEORDER
++
++/* Comment this if you want to build without any C library requirements */
++#undef HAVE_LIBC
++#if HAVE_LIBC
++
++/* Useful headers */
++#undef HAVE_ALLOCA_H
++#undef HAVE_SYS_TYPES_H
++#undef HAVE_STDIO_H
++#undef STDC_HEADERS
++#undef HAVE_STDLIB_H
++#undef HAVE_STDARG_H
++#undef HAVE_MALLOC_H
++#undef HAVE_MEMORY_H
++#undef HAVE_STRING_H
++#undef HAVE_STRINGS_H
++#undef HAVE_INTTYPES_H
++#undef HAVE_STDINT_H
++#undef HAVE_CTYPE_H
++#undef HAVE_MATH_H
++#undef HAVE_ICONV_H
++#undef HAVE_SIGNAL_H
++#undef HAVE_ALTIVEC_H
++
++/* C library functions */
++#undef HAVE_MALLOC
++#undef HAVE_CALLOC
++#undef HAVE_REALLOC
++#undef HAVE_FREE
++#undef HAVE_ALLOCA
++#ifndef _WIN32 /* Don't use C runtime versions of these on Windows */
++#undef HAVE_GETENV
++#undef HAVE_PUTENV
++#undef HAVE_UNSETENV
++#endif
++#undef HAVE_QSORT
++#undef HAVE_ABS
++#undef HAVE_BCOPY
++#undef HAVE_MEMSET
++#undef HAVE_MEMCPY
++#undef HAVE_MEMMOVE
++#undef HAVE_MEMCMP
++#undef HAVE_STRLEN
++#undef HAVE_STRLCPY
++#undef HAVE_STRLCAT
++#undef HAVE_STRDUP
++#undef HAVE__STRREV
++#undef HAVE__STRUPR
++#undef HAVE__STRLWR
++#undef HAVE_INDEX
++#undef HAVE_RINDEX
++#undef HAVE_STRCHR
++#undef HAVE_STRRCHR
++#undef HAVE_STRSTR
++#undef HAVE_ITOA
++#undef HAVE__LTOA
++#undef HAVE__UITOA
++#undef HAVE__ULTOA
++#undef HAVE_STRTOL
++#undef HAVE_STRTOUL
++#undef HAVE__I64TOA
++#undef HAVE__UI64TOA
++#undef HAVE_STRTOLL
++#undef HAVE_STRTOULL
++#undef HAVE_STRTOD
++#undef HAVE_ATOI
++#undef HAVE_ATOF
++#undef HAVE_STRCMP
++#undef HAVE_STRNCMP
++#undef HAVE__STRICMP
++#undef HAVE_STRCASECMP
++#undef HAVE__STRNICMP
++#undef HAVE_STRNCASECMP
++#undef HAVE_SSCANF
++#undef HAVE_SNPRINTF
++#undef HAVE_VSNPRINTF
++#undef HAVE_ICONV
++#undef HAVE_SIGACTION
++#undef HAVE_SA_SIGACTION
++#undef HAVE_SETJMP
++#undef HAVE_NANOSLEEP
++#undef HAVE_CLOCK_GETTIME
++#undef HAVE_GETPAGESIZE
++#undef HAVE_MPROTECT
++#undef HAVE_SEM_TIMEDWAIT
++
++#else
++/* We may need some replacement for stdarg.h here */
++#include <stdarg.h>
++#endif /* HAVE_LIBC */
++
++/* Allow disabling of core subsystems */
++#undef SDL_AUDIO_DISABLED
++#undef SDL_CDROM_DISABLED
++#undef SDL_CPUINFO_DISABLED
++#undef SDL_EVENTS_DISABLED
++#undef SDL_FILE_DISABLED
++#undef SDL_JOYSTICK_DISABLED
++#undef SDL_LOADSO_DISABLED
++#undef SDL_THREADS_DISABLED
++#undef SDL_TIMERS_DISABLED
++#undef SDL_VIDEO_DISABLED
++
++/* Enable various audio drivers */
++#undef SDL_AUDIO_DRIVER_ALSA
++#undef SDL_AUDIO_DRIVER_ALSA_DYNAMIC
++#undef SDL_AUDIO_DRIVER_ARTS
++#undef SDL_AUDIO_DRIVER_ARTS_DYNAMIC
++#undef SDL_AUDIO_DRIVER_BAUDIO
++#undef SDL_AUDIO_DRIVER_BSD
++#undef SDL_AUDIO_DRIVER_COREAUDIO
++#undef SDL_AUDIO_DRIVER_DART
++#undef SDL_AUDIO_DRIVER_DC
++#undef SDL_AUDIO_DRIVER_DISK
++#undef SDL_AUDIO_DRIVER_DUMMY
++#undef SDL_AUDIO_DRIVER_DMEDIA
++#undef SDL_AUDIO_DRIVER_DSOUND
++#undef SDL_AUDIO_DRIVER_PULSE
++#undef SDL_AUDIO_DRIVER_PULSE_DYNAMIC
++#undef SDL_AUDIO_DRIVER_ESD
++#undef SDL_AUDIO_DRIVER_ESD_DYNAMIC
++#undef SDL_AUDIO_DRIVER_MINT
++#undef SDL_AUDIO_DRIVER_MMEAUDIO
++#undef SDL_AUDIO_DRIVER_NAS
++#undef SDL_AUDIO_DRIVER_NAS_DYNAMIC
++#undef SDL_AUDIO_DRIVER_OSS
++#undef SDL_AUDIO_DRIVER_OSS_SOUNDCARD_H
++#undef SDL_AUDIO_DRIVER_PAUD
++#undef SDL_AUDIO_DRIVER_QNXNTO
++#undef SDL_AUDIO_DRIVER_REDOX
++#undef SDL_AUDIO_DRIVER_SNDMGR
++#undef SDL_AUDIO_DRIVER_SUNAUDIO
++#undef SDL_AUDIO_DRIVER_WAVEOUT
++
++/* Enable various cdrom drivers */
++#undef SDL_CDROM_AIX
++#undef SDL_CDROM_BEOS
++#undef SDL_CDROM_BSDI
++#undef SDL_CDROM_DC
++#undef SDL_CDROM_DUMMY
++#undef SDL_CDROM_FREEBSD
++#undef SDL_CDROM_LINUX
++#undef SDL_CDROM_MACOS
++#undef SDL_CDROM_MACOSX
++#undef SDL_CDROM_MINT
++#undef SDL_CDROM_OPENBSD
++#undef SDL_CDROM_OS2
++#undef SDL_CDROM_OSF
++#undef SDL_CDROM_QNX
++#undef SDL_CDROM_WIN32
++
++/* Enable various input drivers */
++#undef SDL_INPUT_LINUXEV
++#undef SDL_INPUT_TSLIB
++#undef SDL_JOYSTICK_BEOS
++#undef SDL_JOYSTICK_DC
++#undef SDL_JOYSTICK_DUMMY
++#undef SDL_JOYSTICK_IOKIT
++#undef SDL_JOYSTICK_LINUX
++#undef SDL_JOYSTICK_MACOS
++#undef SDL_JOYSTICK_MINT
++#undef SDL_JOYSTICK_OS2
++#undef SDL_JOYSTICK_RISCOS
++#undef SDL_JOYSTICK_WINMM
++#undef SDL_JOYSTICK_USBHID
++#undef SDL_JOYSTICK_USBHID_MACHINE_JOYSTICK_H
++
++/* Enable various shared object loading systems */
++#undef SDL_LOADSO_BEOS
++#undef SDL_LOADSO_DLCOMPAT
++#undef SDL_LOADSO_DLOPEN
++#undef SDL_LOADSO_DUMMY
++#undef SDL_LOADSO_LDG
++#undef SDL_LOADSO_MACOS
++#undef SDL_LOADSO_OS2
++#undef SDL_LOADSO_WIN32
++
++/* Enable various threading systems */
++#undef SDL_THREAD_BEOS
++#undef SDL_THREAD_DC
++#undef SDL_THREAD_OS2
++#undef SDL_THREAD_PTH
++#undef SDL_THREAD_PTHREAD
++#undef SDL_THREAD_PTHREAD_RECURSIVE_MUTEX
++#undef SDL_THREAD_PTHREAD_RECURSIVE_MUTEX_NP
++#undef SDL_THREAD_SPROC
++#undef SDL_THREAD_WIN32
++
++/* Enable various timer systems */
++#undef SDL_TIMER_BEOS
++#undef SDL_TIMER_DC
++#undef SDL_TIMER_DUMMY
++#undef SDL_TIMER_MACOS
++#undef SDL_TIMER_MINT
++#undef SDL_TIMER_OS2
++#undef SDL_TIMER_RISCOS
++#undef SDL_TIMER_UNIX
++#undef SDL_TIMER_WIN32
++#undef SDL_TIMER_WINCE
++
++/* Enable various video drivers */
++#undef SDL_VIDEO_DRIVER_AALIB
++#undef SDL_VIDEO_DRIVER_BWINDOW
++#undef SDL_VIDEO_DRIVER_CACA
++#undef SDL_VIDEO_DRIVER_DC
++#undef SDL_VIDEO_DRIVER_DDRAW
++#undef SDL_VIDEO_DRIVER_DGA
++#undef SDL_VIDEO_DRIVER_DIRECTFB
++#undef SDL_VIDEO_DRIVER_DRAWSPROCKET
++#undef SDL_VIDEO_DRIVER_DUMMY
++#undef SDL_VIDEO_DRIVER_FBCON
++#undef SDL_VIDEO_DRIVER_GAPI
++#undef SDL_VIDEO_DRIVER_GEM
++#undef SDL_VIDEO_DRIVER_GGI
++#undef SDL_VIDEO_DRIVER_IPOD
++#undef SDL_VIDEO_DRIVER_NANOX
++#undef SDL_VIDEO_DRIVER_OS2FS
++#undef SDL_VIDEO_DRIVER_PHOTON
++#undef SDL_VIDEO_DRIVER_PICOGUI
++#undef SDL_VIDEO_DRIVER_PS2GS
++#undef SDL_VIDEO_DRIVER_PS3
++#undef SDL_VIDEO_DRIVER_QTOPIA
++#undef SDL_VIDEO_DRIVER_QUARTZ
++#undef SDL_VIDEO_DRIVER_RISCOS
++#undef SDL_VIDEO_DRIVER_SVGALIB
++#undef SDL_VIDEO_DRIVER_TOOLBOX
++#undef SDL_VIDEO_DRIVER_VGL
++#undef SDL_VIDEO_DRIVER_WINDIB
++#undef SDL_VIDEO_DRIVER_WSCONS
++#undef SDL_VIDEO_DRIVER_X11
++#undef SDL_VIDEO_DRIVER_X11_DGAMOUSE
++#undef SDL_VIDEO_DRIVER_X11_DYNAMIC
++#undef SDL_VIDEO_DRIVER_X11_DYNAMIC_XEXT
++#undef SDL_VIDEO_DRIVER_X11_DYNAMIC_XRANDR
++#undef SDL_VIDEO_DRIVER_X11_DYNAMIC_XRENDER
++#undef SDL_VIDEO_DRIVER_X11_VIDMODE
++#undef SDL_VIDEO_DRIVER_X11_XINERAMA
++#undef SDL_VIDEO_DRIVER_X11_XME
++#undef SDL_VIDEO_DRIVER_X11_XRANDR
++#undef SDL_VIDEO_DRIVER_X11_XV
++#undef SDL_VIDEO_DRIVER_XBIOS
++
++/* Enable OpenGL support */
++#undef SDL_VIDEO_OPENGL
++#undef SDL_VIDEO_OPENGL_GLX
++#undef SDL_VIDEO_OPENGL_WGL
++#undef SDL_VIDEO_OPENGL_OSMESA
++#undef SDL_VIDEO_OPENGL_OSMESA_DYNAMIC
++
++/* Disable screensaver */
++#undef SDL_VIDEO_DISABLE_SCREENSAVER
++
++/* Enable assembly routines */
++#undef SDL_ASSEMBLY_ROUTINES
++#undef SDL_HERMES_BLITTERS
++#undef SDL_ALTIVEC_BLITTERS
++
++#endif /* _SDL_config_h */
+diff -ruwN source/src/audio/redox/SDL_redoxaudio.c source-new/src/audio/redox/SDL_redoxaudio.c
+--- source/src/audio/redox/SDL_redoxaudio.c	1969-12-31 17:00:00.000000000 -0700
++++ source-new/src/audio/redox/SDL_redoxaudio.c	2018-12-29 16:18:56.462459967 -0700
+@@ -0,0 +1,172 @@
++/*
++    SDL - Simple DirectMedia Layer
++    Copyright (C) 1997-2012 Sam Lantinga
++
++    This library is free software; you can redistribute it and/or
++    modify it under the terms of the GNU Lesser General Public
++    License as published by the Free Software Foundation; either
++    version 2.1 of the License, or (at your option) any later version.
++
++    This library is distributed in the hope that it will be useful,
++    but WITHOUT ANY WARRANTY; without even the implied warranty of
++    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
++    Lesser General Public License for more details.
++
++    You should have received a copy of the GNU Lesser General Public
++    License along with this library; if not, write to the Free Software
++    Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
++
++    Sam Lantinga
++    slouken@libsdl.org
++
++    This file written by Ryan C. Gordon (icculus@icculus.org)
++*/
++#include "SDL_config.h"
++
++/* Output raw audio data to a file. */
++
++#include <fcntl.h>
++#include <stdio.h>
++#include <unistd.h>
++
++#include "SDL_timer.h"
++#include "SDL_audio.h"
++#include "../SDL_audiomem.h"
++#include "../SDL_audio_c.h"
++#include "../SDL_audiodev_c.h"
++#include "SDL_redoxaudio.h"
++
++/* The tag name used by REDOX audio */
++#define REDOXAUD_DRIVER_NAME         "redox"
++
++/* Audio driver functions */
++static int REDOXAUD_OpenAudio(_THIS, SDL_AudioSpec *spec);
++static void REDOXAUD_WaitAudio(_THIS);
++static void REDOXAUD_PlayAudio(_THIS);
++static Uint8 *REDOXAUD_GetAudioBuf(_THIS);
++static void REDOXAUD_CloseAudio(_THIS);
++
++#define DEBUG_AUDIO 1
++
++/* Audio driver bootstrap functions */
++static int REDOXAUD_Available(void)
++{
++	return(1);
++}
++
++static void REDOXAUD_DeleteDevice(SDL_AudioDevice *device)
++{
++	SDL_free(device->hidden);
++	SDL_free(device);
++}
++
++static SDL_AudioDevice *REDOXAUD_CreateDevice(int devindex)
++{
++	SDL_AudioDevice *this;
++	const char *envr;
++
++	/* Initialize all variables that we clean on shutdown */
++	this = (SDL_AudioDevice *)SDL_malloc(sizeof(SDL_AudioDevice));
++	if ( this ) {
++		SDL_memset(this, 0, (sizeof *this));
++		this->hidden = (struct SDL_PrivateAudioData *)
++				SDL_malloc((sizeof *this->hidden));
++	}
++	if ( (this == NULL) || (this->hidden == NULL) ) {
++		SDL_OutOfMemory();
++		if ( this ) {
++			SDL_free(this);
++		}
++		return(0);
++	}
++	SDL_memset(this->hidden, 0, (sizeof *this->hidden));
++
++	this->hidden->output = -1;
++	this->hidden->write_delay = 150;
++
++	/* Set the function pointers */
++	this->OpenAudio = REDOXAUD_OpenAudio;
++	this->WaitAudio = REDOXAUD_WaitAudio;
++	this->PlayAudio = REDOXAUD_PlayAudio;
++	this->GetAudioBuf = REDOXAUD_GetAudioBuf;
++	this->CloseAudio = REDOXAUD_CloseAudio;
++
++	this->free = REDOXAUD_DeleteDevice;
++
++	return this;
++}
++
++AudioBootStrap REDOXAUD_bootstrap = {
++	REDOXAUD_DRIVER_NAME, "Redox audio",
++	REDOXAUD_Available, REDOXAUD_CreateDevice
++};
++
++/* This function waits until it is possible to write a full sound buffer */
++static void REDOXAUD_WaitAudio(_THIS)
++{
++	fprintf(stderr, "waitaudio\n");
++	SDL_Delay(this->hidden->write_delay);
++}
++
++static void REDOXAUD_PlayAudio(_THIS)
++{
++	fprintf(stderr, "playaudio\n");
++
++	int written;
++
++	/* Write the audio data */
++	written = write(this->hidden->output,
++                        this->hidden->mixbuf,
++                        this->hidden->mixlen);
++
++	/* If we couldn't write, assume fatal error for now */
++	if ( (Uint32)written != this->hidden->mixlen ) {
++		this->enabled = 0;
++	}
++#ifdef DEBUG_AUDIO
++	fprintf(stderr, "Wrote %d bytes of audio data\n", written);
++#endif
++}
++
++static Uint8 *REDOXAUD_GetAudioBuf(_THIS)
++{
++	return(this->hidden->mixbuf);
++}
++
++static void REDOXAUD_CloseAudio(_THIS)
++{
++	if ( this->hidden->mixbuf != NULL ) {
++		SDL_FreeAudioMem(this->hidden->mixbuf);
++		this->hidden->mixbuf = NULL;
++	}
++	if ( this->hidden->output >= 0 ) {
++		close(this->hidden->output);
++		this->hidden->output = -1;
++	}
++}
++
++static int REDOXAUD_OpenAudio(_THIS, SDL_AudioSpec *spec)
++{
++	fprintf(stderr, "WARNING: You are using the SDL redox audio driver!\n");
++
++	/* Open the audio device */
++	this->hidden->output = open("audio:", O_WRONLY);
++	if ( this->hidden->output < 0 ) {
++		perror("failed to open audio:");
++		return(-1);
++	}
++
++	/* Allocate mixing buffer */
++	this->hidden->mixlen = spec->size;
++	this->hidden->mixbuf = (Uint8 *) SDL_AllocAudioMem(this->hidden->mixlen);
++	if ( this->hidden->mixbuf == NULL ) {
++		perror("failed to allocate audio memory");
++		return(-1);
++	}
++	SDL_memset(this->hidden->mixbuf, spec->silence, spec->size);
++
++	fprintf(stderr, "openaudio success\n");
++
++	/* We're ready to rock and roll. :-) */
++	return(0);
++}
+diff -ruwN source/src/audio/redox/SDL_redoxaudio.h source-new/src/audio/redox/SDL_redoxaudio.h
+--- source/src/audio/redox/SDL_redoxaudio.h	1969-12-31 17:00:00.000000000 -0700
++++ source-new/src/audio/redox/SDL_redoxaudio.h	2018-12-29 16:14:13.727841810 -0700
+@@ -0,0 +1,41 @@
++/*
++    SDL - Simple DirectMedia Layer
++    Copyright (C) 1997-2012 Sam Lantinga
++
++    This library is free software; you can redistribute it and/or
++    modify it under the terms of the GNU Lesser General Public
++    License as published by the Free Software Foundation; either
++    version 2.1 of the License, or (at your option) any later version.
++
++    This library is distributed in the hope that it will be useful,
++    but WITHOUT ANY WARRANTY; without even the implied warranty of
++    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
++    Lesser General Public License for more details.
++
++    You should have received a copy of the GNU Lesser General Public
++    License along with this library; if not, write to the Free Software
++    Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
++
++    Sam Lantinga
++    slouken@libsdl.org
++*/
++#include "SDL_config.h"
++
++#ifndef _SDL_redoxaudio_h
++#define _SDL_redoxaudio_h
++
++#include "SDL_rwops.h"
++#include "../SDL_sysaudio.h"
++
++/* Hidden "this" pointer for the video functions */
++#define _THIS	SDL_AudioDevice *this
++
++struct SDL_PrivateAudioData {
++	/* The file descriptor for the audio device */
++	int output;
++	Uint8 *mixbuf;
++	Uint32 mixlen;
++	Uint32 write_delay;
++};
++
++#endif /* _SDL_redoxaudio_h */
+diff -ruwN source/src/audio/SDL_audio.c source-new/src/audio/SDL_audio.c
+--- source/src/audio/SDL_audio.c	2012-01-18 23:30:06.000000000 -0700
++++ source-new/src/audio/SDL_audio.c	2018-12-29 15:57:00.298520310 -0700
+@@ -36,6 +36,9 @@
+ 
+ /* Available audio drivers */
+ static AudioBootStrap *bootstrap[] = {
++#if SDL_AUDIO_DRIVER_REDOX
++	&REDOXAUD_bootstrap,
++#endif
+ #if SDL_AUDIO_DRIVER_PULSE
+ 	&PULSE_bootstrap,
+ #endif
+@@ -700,4 +703,3 @@
+ 		current_audio->SetCaption(current_audio, caption);
+ 	}
+ }
+-
+diff -ruwN source/src/audio/SDL_sysaudio.h source-new/src/audio/SDL_sysaudio.h
+--- source/src/audio/SDL_sysaudio.h	2012-01-18 23:30:06.000000000 -0700
++++ source-new/src/audio/SDL_sysaudio.h	2018-12-29 15:57:00.298520310 -0700
+@@ -102,6 +102,9 @@
+ 	SDL_AudioDevice *(*create)(int devindex);
+ } AudioBootStrap;
+ 
++#if SDL_AUDIO_DRIVER_REDOX
++extern AudioBootStrap REDOXAUD_bootstrap;
++#endif
+ #if SDL_AUDIO_DRIVER_BSD
+ extern AudioBootStrap BSD_AUDIO_bootstrap;
+ #endif
+diff -ruwN source/src/thread/pthread/SDL_systhread.c source-new/src/thread/pthread/SDL_systhread.c
+--- source/src/thread/pthread/SDL_systhread.c	2012-01-18 23:30:06.000000000 -0700
++++ source-new/src/thread/pthread/SDL_systhread.c	2018-12-29 17:18:17.810171502 -0700
+@@ -86,7 +86,11 @@
+ 	for ( i=0; sig_list[i]; ++i ) {
+ 		sigaddset(&mask, sig_list[i]);
+ 	}
++	#if defined(__redox__)
++	sigprocmask(SIG_BLOCK, &mask, 0);
++	#else
+ 	pthread_sigmask(SIG_BLOCK, &mask, 0);
++	#endif
+ 
+ #ifdef PTHREAD_CANCEL_ASYNCHRONOUS
+ 	/* Allow ourselves to be asynchronously cancelled */
+diff -ruwN source/src/video/orbital/SDL_orbitalevents.c source-new/src/video/orbital/SDL_orbitalevents.c
+--- source/src/video/orbital/SDL_orbitalevents.c	1969-12-31 17:00:00.000000000 -0700
++++ source-new/src/video/orbital/SDL_orbitalevents.c	2018-12-29 15:57:00.298520310 -0700
 @@ -0,0 +1,197 @@
 +/*
 +    SDL - Simple DirectMedia Layer
@@ -267,9 +905,9 @@ diff -rupNw source-original/src/video/orbital/SDL_orbitalevents.c source/src/vid
 +}
 +
 +/* end of SDL_orbitalevents.c ... */
-diff -rupNw source-original/src/video/orbital/SDL_orbitalevents_c.h source/src/video/orbital/SDL_orbitalevents_c.h
---- source-original/src/video/orbital/SDL_orbitalevents_c.h	1970-01-01 01:00:00.000000000 +0100
-+++ source/src/video/orbital/SDL_orbitalevents_c.h	2018-05-01 17:31:52.770229654 +0200
+diff -ruwN source/src/video/orbital/SDL_orbitalevents_c.h source-new/src/video/orbital/SDL_orbitalevents_c.h
+--- source/src/video/orbital/SDL_orbitalevents_c.h	1969-12-31 17:00:00.000000000 -0700
++++ source-new/src/video/orbital/SDL_orbitalevents_c.h	2018-12-29 15:57:00.302520335 -0700
 @@ -0,0 +1,32 @@
 +/*
 +    SDL - Simple DirectMedia Layer
@@ -303,9 +941,9 @@ diff -rupNw source-original/src/video/orbital/SDL_orbitalevents_c.h source/src/v
 +extern void ORBITAL_PumpEvents(_THIS);
 +
 +/* end of SDL_orbitalevents_c.h ... */
-diff -rupNw source-original/src/video/orbital/SDL_orbitalmouse.c source/src/video/orbital/SDL_orbitalmouse.c
---- source-original/src/video/orbital/SDL_orbitalmouse.c	1970-01-01 01:00:00.000000000 +0100
-+++ source/src/video/orbital/SDL_orbitalmouse.c	2018-05-01 17:31:52.770229654 +0200
+diff -ruwN source/src/video/orbital/SDL_orbitalmouse.c source-new/src/video/orbital/SDL_orbitalmouse.c
+--- source/src/video/orbital/SDL_orbitalmouse.c	1969-12-31 17:00:00.000000000 -0700
++++ source-new/src/video/orbital/SDL_orbitalmouse.c	2018-12-29 15:57:00.302520335 -0700
 @@ -0,0 +1,33 @@
 +/*
 +    SDL - Simple DirectMedia Layer
@@ -340,9 +978,9 @@ diff -rupNw source-original/src/video/orbital/SDL_orbitalmouse.c source/src/vide
 +struct WMcursor {
 +	int unused;
 +};
-diff -rupNw source-original/src/video/orbital/SDL_orbitalmouse_c.h source/src/video/orbital/SDL_orbitalmouse_c.h
---- source-original/src/video/orbital/SDL_orbitalmouse_c.h	1970-01-01 01:00:00.000000000 +0100
-+++ source/src/video/orbital/SDL_orbitalmouse_c.h	2018-05-01 17:31:52.770229654 +0200
+diff -ruwN source/src/video/orbital/SDL_orbitalmouse_c.h source-new/src/video/orbital/SDL_orbitalmouse_c.h
+--- source/src/video/orbital/SDL_orbitalmouse_c.h	1969-12-31 17:00:00.000000000 -0700
++++ source-new/src/video/orbital/SDL_orbitalmouse_c.h	2018-12-29 15:57:00.302520335 -0700
 @@ -0,0 +1,26 @@
 +/*
 +    SDL - Simple DirectMedia Layer
@@ -370,9 +1008,9 @@ diff -rupNw source-original/src/video/orbital/SDL_orbitalmouse_c.h source/src/vi
 +#include "SDL_orbitalvideo.h"
 +
 +/* Functions to be exported */
-diff -rupNw source-original/src/video/orbital/SDL_orbitalvideo.c source/src/video/orbital/SDL_orbitalvideo.c
---- source-original/src/video/orbital/SDL_orbitalvideo.c	1970-01-01 01:00:00.000000000 +0100
-+++ source/src/video/orbital/SDL_orbitalvideo.c	2018-05-01 17:32:53.000320923 +0200
+diff -ruwN source/src/video/orbital/SDL_orbitalvideo.c source-new/src/video/orbital/SDL_orbitalvideo.c
+--- source/src/video/orbital/SDL_orbitalvideo.c	1969-12-31 17:00:00.000000000 -0700
++++ source-new/src/video/orbital/SDL_orbitalvideo.c	2018-12-29 15:57:00.302520335 -0700
 @@ -0,0 +1,252 @@
 +/*
 +    SDL - Simple DirectMedia Layer
@@ -626,9 +1264,9 @@ diff -rupNw source-original/src/video/orbital/SDL_orbitalvideo.c source/src/vide
 +		this->screen->pixels = NULL;
 +	}
 +}
-diff -rupNw source-original/src/video/orbital/SDL_orbitalvideo.h source/src/video/orbital/SDL_orbitalvideo.h
---- source-original/src/video/orbital/SDL_orbitalvideo.h	1970-01-01 01:00:00.000000000 +0100
-+++ source/src/video/orbital/SDL_orbitalvideo.h	2018-05-01 17:31:52.770229654 +0200
+diff -ruwN source/src/video/orbital/SDL_orbitalvideo.h source-new/src/video/orbital/SDL_orbitalvideo.h
+--- source/src/video/orbital/SDL_orbitalvideo.h	1969-12-31 17:00:00.000000000 -0700
++++ source-new/src/video/orbital/SDL_orbitalvideo.h	2018-12-29 15:57:00.302520335 -0700
 @@ -0,0 +1,39 @@
 +/*
 +    SDL - Simple DirectMedia Layer
@@ -669,9 +1307,9 @@ diff -rupNw source-original/src/video/orbital/SDL_orbitalvideo.h source/src/vide
 +};
 +
 +#endif /* _SDL_orbitalvideo_h */
-diff -rupNw source-original/src/video/SDL_gamma.c source/src/video/SDL_gamma.c
---- source-original/src/video/SDL_gamma.c	2012-01-19 07:30:06.000000000 +0100
-+++ source/src/video/SDL_gamma.c	2018-05-01 17:31:52.770229654 +0200
+diff -ruwN source/src/video/SDL_gamma.c source-new/src/video/SDL_gamma.c
+--- source/src/video/SDL_gamma.c	2012-01-18 23:30:06.000000000 -0700
++++ source-new/src/video/SDL_gamma.c	2018-12-29 15:57:00.302520335 -0700
 @@ -35,6 +35,9 @@
  #define log(x)		__ieee754_log(x)
  #endif
@@ -682,10 +1320,10 @@ diff -rupNw source-original/src/video/SDL_gamma.c source/src/video/SDL_gamma.c
  #include "SDL_sysvideo.h"
  
  
-diff -rupNw source-original/src/video/SDL_sysvideo.h source/src/video/SDL_sysvideo.h
---- source-original/src/video/SDL_sysvideo.h	2012-01-19 07:30:06.000000000 +0100
-+++ source/src/video/SDL_sysvideo.h	2018-05-01 17:31:52.770229654 +0200
-@@ -410,6 +410,9 @@ extern VideoBootStrap AALIB_bootstrap;
+diff -ruwN source/src/video/SDL_sysvideo.h source-new/src/video/SDL_sysvideo.h
+--- source/src/video/SDL_sysvideo.h	2012-01-18 23:30:06.000000000 -0700
++++ source-new/src/video/SDL_sysvideo.h	2018-12-29 15:57:00.302520335 -0700
+@@ -410,6 +410,9 @@
  #if SDL_VIDEO_DRIVER_CACA
  extern VideoBootStrap CACA_bootstrap;
  #endif
@@ -695,10 +1333,10 @@ diff -rupNw source-original/src/video/SDL_sysvideo.h source/src/video/SDL_sysvid
  #if SDL_VIDEO_DRIVER_DUMMY
  extern VideoBootStrap DUMMY_bootstrap;
  #endif
-diff -rupNw source-original/src/video/SDL_video.c source/src/video/SDL_video.c
---- source-original/src/video/SDL_video.c	2012-01-19 07:30:06.000000000 +0100
-+++ source/src/video/SDL_video.c	2018-05-01 17:31:52.774229792 +0200
-@@ -126,6 +126,9 @@ static VideoBootStrap *bootstrap[] = {
+diff -ruwN source/src/video/SDL_video.c source-new/src/video/SDL_video.c
+--- source/src/video/SDL_video.c	2012-01-18 23:30:06.000000000 -0700
++++ source-new/src/video/SDL_video.c	2018-12-29 15:57:00.302520335 -0700
+@@ -126,6 +126,9 @@
  #if SDL_VIDEO_DRIVER_CACA
  	&CACA_bootstrap,
  #endif
@@ -708,7 +1346,7 @@ diff -rupNw source-original/src/video/SDL_video.c source/src/video/SDL_video.c
  #if SDL_VIDEO_DRIVER_DUMMY
  	&DUMMY_bootstrap,
  #endif
-@@ -726,7 +729,8 @@ SDL_Surface * SDL_SetVideoMode (int widt
+@@ -726,7 +729,8 @@
  		video->offset_y = 0;
  		mode->offset = 0;
  		SDL_SetClipRect(mode, NULL);
