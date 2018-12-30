@@ -1,4 +1,4 @@
-BUILD_DEPENDS=(liborbital mesa mesa_glu)
+BUILD_DEPENDS=(liborbital mesa mesa_glu zlib)
 
 function recipe_version {
     printf "1.0.0"
@@ -19,7 +19,7 @@ function recipe_prepare {
 function recipe_build {
     sysroot="$(realpath ../sysroot)"
     set -x
-    "${CXX}" -I "$sysroot/include" -L "$sysroot/lib" osdemo.c -o osdemo -lorbital -lOSMesa -lGLU -lglapi -Wl,--whole-archive -lpthread -Wl,--no-whole-archive -lm
+    "${CXX}" -I "$sysroot/include" -L "$sysroot/lib" osdemo.c -o osdemo -lorbital -lOSMesa -lGLU -lglapi -lz -Wl,--whole-archive -lpthread -Wl,--no-whole-archive -lm
     set +x
     skip=1
 }
