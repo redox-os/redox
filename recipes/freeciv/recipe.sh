@@ -1,6 +1,6 @@
 VERSION=2.6.0
 TAR=http://files.freeciv.org/stable/freeciv-$VERSION.tar.bz2
-BUILD_DEPENDS=(curl freetype libiconv liborbital libpng sdl sdl_gfx sdl_image sdl_mixer sdl_ttf zlib)
+BUILD_DEPENDS=(curl freetype libiconv liborbital libpng openssl sdl sdl_gfx sdl_image sdl_mixer sdl_ttf zlib)
 
 function recipe_version {
     echo "$VERSION"
@@ -17,7 +17,7 @@ function recipe_build {
     sysroot="$(realpath ../sysroot)"
     export CFLAGS="-I$sysroot/include"
     export LDFLAGS="-L$sysroot/lib"
-    export LIBS="-lpthread"
+    export LIBS="-Wl,--whole-archive -lpthread -Wl,--no-whole-archive"
     ./configure \
         --host="$HOST" \
         --prefix='' \
