@@ -1,17 +1,3 @@
-diff -rupNw source-original/audio/mixer.cpp source/audio/mixer.cpp
---- source-original/audio/mixer.cpp	2017-12-08 23:21:10.000000000 +0100
-+++ source/audio/mixer.cpp	2018-12-06 02:03:37.151198853 +0100
-@@ -237,7 +237,9 @@ void MixerImpl::playStream(
- 	}
- 
- 
--	assert(_mixerReady);
-+	if (autofreeStream == DisposeAfterUse::YES)
-+		delete stream;
-+	return;
- 
- 	// Prevent duplicate sounds
- 	if (id != -1) {
 diff -rupNw source-original/common/stream.cpp source/common/stream.cpp
 --- source-original/common/stream.cpp	2017-12-08 23:21:10.000000000 +0100
 +++ source/common/stream.cpp	2018-12-06 02:01:50.454108198 +0100
