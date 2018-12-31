@@ -368,8 +368,8 @@ diff -ruwN source/src/thread/pthread/SDL_systhread.c source-new/src/thread/pthre
  
 diff -ruwN source/src/video/orbital/SDL_orbitalevents.c source-new/src/video/orbital/SDL_orbitalevents.c
 --- source/src/video/orbital/SDL_orbitalevents.c	1969-12-31 17:00:00.000000000 -0700
-+++ source-new/src/video/orbital/SDL_orbitalevents.c	2018-12-30 19:51:10.263649275 -0700
-@@ -0,0 +1,197 @@
++++ source-new/src/video/orbital/SDL_orbitalevents.c	2018-12-30 20:37:39.185277773 -0700
+@@ -0,0 +1,192 @@
 +/*
 +    SDL - Simple DirectMedia Layer
 +    Copyright (C) 1997-2012 Sam Lantinga
@@ -414,42 +414,37 @@ diff -ruwN source/src/video/orbital/SDL_orbitalevents.c source-new/src/video/orb
 +{
 +    SDL_Keysym keysym;
 +
++    SDL_Mouse *mouse = SDL_GetMouse();
++
 +    void* event_iter = orb_window_events(this->hidden->window);
 +    OrbEventOption oeo = orb_events_next(event_iter);
 +
 +    while (oeo.tag != OrbEventOption_None) {
 +        switch (oeo.tag) {
 +            case OrbEventOption_Key:
-+                keysym.unicode = oeo.key.character;
 +                keysym.scancode = oeo.key.scancode;
 +                keysym.sym = keymap[oeo.key.scancode];
 +                keysym.mod = KMOD_NONE;
 +
-+                SDL_PrivateKeyboard(oeo.key.pressed ? SDL_PRESSED : SDL_RELEASED, &keysym);
++                SDL_SendKeyboardKey(oeo.key.pressed ? SDL_PRESSED : SDL_RELEASED, &keysym);
 +                break;
 +            case OrbEventOption_Mouse:
-+                SDL_PrivateMouseMotion(0, 0, oeo.mouse.x, oeo.mouse.y);
++                SDL_SendMouseMotion(mouse->focus, mouse->mouseID, SDL_FALSE, oeo.mouse.x, oeo.mouse.y);
 +                break;
 +            case OrbEventOption_Button:
 +                if (oeo.button.left ^ last_button_left)
-+                    SDL_PrivateMouseButton(oeo.button.left ? SDL_PRESSED : SDL_RELEASED, SDL_BUTTON_LEFT, 0, 0);
++                    SDL_SendMouseButton(mouse->focus, mouse->mouseID, oeo.button.left ? SDL_PRESSED : SDL_RELEASED, SDL_BUTTON_LEFT, 0, 0);
 +                if (oeo.button.middle ^ last_button_middle)
-+                    SDL_PrivateMouseButton(oeo.button.middle ? SDL_PRESSED : SDL_RELEASED, SDL_BUTTON_MIDDLE, 0, 0);
++                    SDL_SendMouseButton(mouse->focus, mouse->mouseID, oeo.button.middle ? SDL_PRESSED : SDL_RELEASED, SDL_BUTTON_MIDDLE, 0, 0);
 +                if (oeo.button.right ^ last_button_right)
-+                    SDL_PrivateMouseButton(oeo.button.right ? SDL_PRESSED : SDL_RELEASED, SDL_BUTTON_RIGHT, 0, 0);
++                    SDL_SendMouseButton(mouse->focus, mouse->mouseID, oeo.button.right ? SDL_PRESSED : SDL_RELEASED, SDL_BUTTON_RIGHT, 0, 0);
 +
 +                last_button_left = oeo.button.left;
 +                last_button_middle = oeo.button.middle;
 +                last_button_right = oeo.button.right;
 +                break;
 +            case OrbEventOption_Scroll:
-+                if (oeo.scroll.y > 0) {
-+                    SDL_PrivateMouseButton(SDL_PRESSED, SDL_BUTTON_WHEELUP, 0, 0);
-+                    SDL_PrivateMouseButton(SDL_RELEASED, SDL_BUTTON_WHEELUP, 0, 0);
-+                } else if (oeo.scroll.y < 0) {
-+                    SDL_PrivateMouseButton(SDL_PRESSED, SDL_BUTTON_WHEELDOWN, 0, 0);
-+                    SDL_PrivateMouseButton(SDL_RELEASED, SDL_BUTTON_WHEELDOWN, 0, 0);
-+                }
++                SDL_SendMouseWheel(mouse->focus, mouse->mouseID, oeo.scroll.x, oeo.scroll.y, SDL_MOUSEWHEEL_NORMAL);
 +                break;
 +            case OrbEventOption_Quit:
 +                SDL_PrivateQuit();
@@ -672,8 +667,8 @@ diff -ruwN source/src/video/orbital/SDL_orbitalmouse_c.h source-new/src/video/or
 +/* Functions to be exported */
 diff -ruwN source/src/video/orbital/SDL_orbitalvideo.c source-new/src/video/orbital/SDL_orbitalvideo.c
 --- source/src/video/orbital/SDL_orbitalvideo.c	1969-12-31 17:00:00.000000000 -0700
-+++ source-new/src/video/orbital/SDL_orbitalvideo.c	2018-12-30 19:51:10.267649280 -0700
-@@ -0,0 +1,252 @@
++++ source-new/src/video/orbital/SDL_orbitalvideo.c	2018-12-30 20:26:21.622297793 -0700
+@@ -0,0 +1,182 @@
 +/*
 +    SDL - Simple DirectMedia Layer
 +    Copyright (C) 1997-2012 Sam Lantinga
@@ -724,21 +719,8 @@ diff -ruwN source/src/video/orbital/SDL_orbitalvideo.c source-new/src/video/orbi
 +#define ORBITALVID_DRIVER_NAME "orbital"
 +
 +/* Initialization/Query functions */
-+static int ORBITAL_VideoInit(_THIS, SDL_PixelFormat *vformat);
-+static SDL_Rect **ORBITAL_ListModes(_THIS, SDL_PixelFormat *format, Uint32 flags);
-+static SDL_Surface *ORBITAL_SetVideoMode(_THIS, SDL_Surface *current, int width, int height, int bpp, Uint32 flags);
-+static int ORBITAL_SetColors(_THIS, int firstcolor, int ncolors, SDL_Color *colors);
++static int ORBITAL_VideoInit(_THIS);
 +static void ORBITAL_VideoQuit(_THIS);
-+static void ORBITAL_SetCaption(_THIS, const char *title, const char *icon);
-+
-+/* Hardware surface functions */
-+static int ORBITAL_AllocHWSurface(_THIS, SDL_Surface *surface);
-+static int ORBITAL_LockHWSurface(_THIS, SDL_Surface *surface);
-+static void ORBITAL_UnlockHWSurface(_THIS, SDL_Surface *surface);
-+static void ORBITAL_FreeHWSurface(_THIS, SDL_Surface *surface);
-+
-+/* etc. */
-+static void ORBITAL_UpdateRects(_THIS, int numrects, SDL_Rect *rects);
 +
 +/* ORBITAL driver bootstrap functions */
 +
@@ -775,26 +757,7 @@ diff -ruwN source/src/video/orbital/SDL_orbitalvideo.c source-new/src/video/orbi
 +
 +	/* Set the function pointers */
 +	device->VideoInit = ORBITAL_VideoInit;
-+	device->ListModes = ORBITAL_ListModes;
-+	device->SetVideoMode = ORBITAL_SetVideoMode;
-+	device->CreateYUVOverlay = NULL;
-+	device->SetColors = ORBITAL_SetColors;
-+	device->UpdateRects = ORBITAL_UpdateRects;
 +	device->VideoQuit = ORBITAL_VideoQuit;
-+	device->AllocHWSurface = ORBITAL_AllocHWSurface;
-+	device->CheckHWBlit = NULL;
-+	device->FillHWRect = NULL;
-+	device->SetHWColorKey = NULL;
-+	device->SetHWAlpha = NULL;
-+	device->LockHWSurface = ORBITAL_LockHWSurface;
-+	device->UnlockHWSurface = ORBITAL_UnlockHWSurface;
-+	device->FlipHWSurface = NULL;
-+	device->FreeHWSurface = ORBITAL_FreeHWSurface;
-+	device->SetCaption = ORBITAL_SetCaption;
-+	device->SetIcon = NULL;
-+	device->IconifyWindow = NULL;
-+	device->GrabInput = NULL;
-+	device->GetWMInfo = NULL;
 +	device->InitOSKeymap = ORBITAL_InitOSKeymap;
 +	device->PumpEvents = ORBITAL_PumpEvents;
 +
@@ -809,27 +772,27 @@ diff -ruwN source/src/video/orbital/SDL_orbitalvideo.c source-new/src/video/orbi
 +};
 +
 +
-+int ORBITAL_VideoInit(_THIS, SDL_PixelFormat *vformat)
++int ORBITAL_VideoInit(_THIS)
 +{
 +	fprintf(stderr, "WARNING: You are using the SDL orbital video driver!\n");
-+
-+	/* Determine the screen depth (use default 32-bit depth) */
-+	/* we change this during the SDL_SetVideoMode implementation... */
-+	vformat->BitsPerPixel = 32;
-+	vformat->BytesPerPixel = 4;
 +
 +	/* We're done! */
 +	return(0);
 +}
 +
-+SDL_Rect **ORBITAL_ListModes(_THIS, SDL_PixelFormat *format, Uint32 flags)
++/* Note:  If we are terminated, this could be called in the middle of
++   another SDL video routine -- notably UpdateRects.
++*/
++void ORBITAL_VideoQuit(_THIS)
 +{
-+	if (format->BitsPerPixel != 32)
-+		return NULL;
-+
-+	return (SDL_Rect **) -1;
++	if (this->hidden->window) {
++		orb_window_destroy(this->hidden->window);
++		this->hidden->window = NULL;
++		this->screen->pixels = NULL;
++	}
 +}
 +
++#if 0
 +SDL_Surface *ORBITAL_SetVideoMode(_THIS, SDL_Surface *current,
 +				int width, int height, int bpp, Uint32 flags)
 +{
@@ -880,27 +843,6 @@ diff -ruwN source/src/video/orbital/SDL_orbitalvideo.c source-new/src/video/orbi
 +		orb_window_set_title(this->hidden->window, title);
 +}
 +
-+/* We don't actually allow hardware surfaces other than the main one */
-+static int ORBITAL_AllocHWSurface(_THIS, SDL_Surface *surface)
-+{
-+	return(-1);
-+}
-+static void ORBITAL_FreeHWSurface(_THIS, SDL_Surface *surface)
-+{
-+	return;
-+}
-+
-+/* We need to wait for vertical retrace on page flipped displays */
-+static int ORBITAL_LockHWSurface(_THIS, SDL_Surface *surface)
-+{
-+	return(0);
-+}
-+
-+static void ORBITAL_UnlockHWSurface(_THIS, SDL_Surface *surface)
-+{
-+	return;
-+}
-+
 +static void ORBITAL_UpdateRects(_THIS, int numrects, SDL_Rect *rects)
 +{
 +	if (this->hidden->window) {
@@ -908,24 +850,7 @@ diff -ruwN source/src/video/orbital/SDL_orbitalvideo.c source-new/src/video/orbi
 +		orb_window_sync(this->hidden->window);
 +	}
 +}
-+
-+int ORBITAL_SetColors(_THIS, int firstcolor, int ncolors, SDL_Color *colors)
-+{
-+	/* do nothing of note. */
-+	return(1);
-+}
-+
-+/* Note:  If we are terminated, this could be called in the middle of
-+   another SDL video routine -- notably UpdateRects.
-+*/
-+void ORBITAL_VideoQuit(_THIS)
-+{
-+	if (this->hidden->window) {
-+		orb_window_destroy(this->hidden->window);
-+		this->hidden->window = NULL;
-+		this->screen->pixels = NULL;
-+	}
-+}
++#endif
 diff -ruwN source/src/video/orbital/SDL_orbitalvideo.h source-new/src/video/orbital/SDL_orbitalvideo.h
 --- source/src/video/orbital/SDL_orbitalvideo.h	1969-12-31 17:00:00.000000000 -0700
 +++ source-new/src/video/orbital/SDL_orbitalvideo.h	2018-12-30 19:51:10.267649280 -0700
