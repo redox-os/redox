@@ -1,27 +1,36 @@
 [submodule "bootloader"]
 	path = bootloader
 	url = https://gitlab.redox-os.org/redox-os/bootloader.git
+	branch = master
 [submodule "bootloader-efi"]
 	path = bootloader-efi
 	url = https://gitlab.redox-os.org/redox-os/bootloader-efi.git
+	branch = master
 [submodule "cookbook"]
 	path = cookbook
 	url = https://gitlab.redox-os.org/redox-os/cookbook.git
+	branch = master
 [submodule "installer"]
 	path = installer
 	url = https://gitlab.redox-os.org/redox-os/installer.git
+	branch = master
 [submodule "isolinux"]
 	path = isolinux
 	url = https://gitlab.redox-os.org/redox-os/isolinux.git
+	branch = master
 [submodule "kernel"]
 	path = kernel
 	url = https://gitlab.redox-os.org/redox-os/kernel.git
+	branch = master
 [submodule "rust"]
 	path = rust
 	url = https://gitlab.redox-os.org/redox-os/rust.git
+	branch = redox
 [submodule "redoxfs"]
 	path = redoxfs
 	url = https://gitlab.redox-os.org/redox-os/redoxfs.git
+	branch = master
 [submodule "relibc"]
 	path = relibc
 	url = https://gitlab.redox-os.org/redox-os/relibc.git
+	branch = master
