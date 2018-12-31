@@ -1,0 +1,24 @@
+diff -rupNw source-original/Makefile.am source/Makefile.am
+--- source-original/Makefile.am	2018-08-10 07:04:54.000000000 +0200
++++ source/Makefile.am	2018-12-30 23:18:07.957244170 +0100
+@@ -223,7 +223,7 @@ files_macosx = \
+ endif
+ 
+ if USE_NETWORK
+-cflags_network=-DUSE_NETWORK
++#cflags_network=-DUSE_NETWORK
+ endif
+ 
+ 
+diff -rupNw source-original/schism/main.c source/schism/main.c
+--- source-original/schism/main.c	2018-08-10 07:04:54.000000000 +0200
++++ source/schism/main.c	2018-12-30 23:19:24.954046191 +0100
+@@ -1033,7 +1033,7 @@ int main(int argc, char **argv)
+ 
+ 	video_fullscreen(0);
+ 
+-	tzset(); // localtime_r wants this
++	//tzset(); // localtime_r wants this
+ 	srand(time(NULL));
+ 	parse_options(argc, argv); /* shouldn't this be like, first? */
+ 
