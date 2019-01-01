@@ -118,8 +118,7 @@ elif args[0] == "--libs":
     libs = []
     for component in args[1:]:
         for lib in components[component].split(" "):
-            if not lib in libs:
-                libs.append(lib)
+            libs.append(lib)
     print(" ".join(libs))
 elif args[0] == "--shared-mode":
     print("static")
