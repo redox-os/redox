@@ -35,7 +35,8 @@ function recipe_build {
         -DLLVM_BUILD_TESTS=Off
         -DLLVM_BUILD_UTILS=Off
         -DLLVM_DEFAULT_TARGET_TRIPLE="$HOST"
-        -DLLVM_ENABLE_LTO=On
+        -DLLVM_ENABLE_LTO=Off
+        -DLLVM_ENABLE_RTTI=On
         -DLLVM_ENABLE_THREADS=On
         -DLLVM_INCLUDE_BENCHMARKS=Off
         -DLLVM_INCLUDE_EXAMPLES=Off
