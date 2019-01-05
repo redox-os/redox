@@ -1,0 +1,541 @@
+diff -ruwN source/configure.ac source-new/configure.ac
+--- source/configure.ac	2018-12-23 06:10:41.000000000 -0700
++++ source-new/configure.ac	2019-01-05 10:59:22.924421938 -0700
+@@ -981,7 +981,7 @@
+                                                           [int qclass = C_IN;])],
+                                          [AC_MSG_RESULT([yes])
+                                           NAMESER_COMPAT_INCLUDE="#include <arpa/nameser_compat.h>"],
+-                                         [AC_MSG_ERROR([could not compile test program either way])])])])
++                                         [AC_MSG_WARN([could not compile test program either way])])])])
+   AC_SUBST(NAMESER_COMPAT_INCLUDE)
+ 
+   # We can't just use AC_CHECK_FUNC/AC_CHECK_LIB here. Bug 586150
+@@ -1009,7 +1009,7 @@
+                                         [res_query("test", 0, 0, (void *)0, 0);],
+                                         [AC_MSG_RESULT([in -lbind])
+                                          NETWORK_LIBS="-lbind $NETWORK_LIBS"],
+-                                        [AC_MSG_ERROR(not found)])])
++                                        [AC_MSG_WARN(not found)])])
+                LIBS="$save_libs"])
+   AC_CHECK_FUNC(socket, :, AC_CHECK_LIB(socket, socket,
+ 				        [NETWORK_LIBS="-lsocket $NETWORK_LIBS"],
+diff -ruwN source/gio/ginetsocketaddress.c source-new/gio/ginetsocketaddress.c
+--- source/gio/ginetsocketaddress.c	2018-12-23 06:10:41.000000000 -0700
++++ source-new/gio/ginetsocketaddress.c	2019-01-05 12:05:33.754323562 -0700
+@@ -407,14 +407,21 @@
+ g_inet_socket_address_new_from_string (const char *address,
+                                        guint       port)
+ {
++#if !defined(__redox__)
+   static struct addrinfo *hints, hints_struct;
++#endif
+   GSocketAddress *saddr;
+   GInetAddress *iaddr;
++#if !defined(__redox__)
+   struct addrinfo *res;
++#endif
+   gint status;
+ 
+   if (strchr (address, ':'))
+     {
++#if defined(__redox__)
++      saddr = NULL;
++#else
+       /* IPv6 address (or it's invalid). We use getaddrinfo() because
+        * it will handle parsing a scope_id as well.
+        */
+@@ -442,6 +449,7 @@
+         saddr = NULL;
+ 
+       freeaddrinfo (res);
++#endif
+     }
+   else
+     {
+diff -ruwN source/gio/glocalfileinfo.c source-new/gio/glocalfileinfo.c
+--- source/gio/glocalfileinfo.c	2018-12-23 06:10:41.000000000 -0700
++++ source-new/gio/glocalfileinfo.c	2019-01-05 14:18:02.435425946 -0700
+@@ -1217,11 +1217,13 @@
+ lookup_gid_name (gid_t gid)
+ {
+   char *name;
++#if !defined(__redox__)
+ #if defined (HAVE_GETGRGID_R)
+   char buffer[4096];
+   struct group gbuf;
+ #endif
+   struct group *gbufp;
++#endif
+ 
+   if (gid_cache == NULL)
+     gid_cache = g_hash_table_new_full (NULL, NULL, NULL, (GDestroyNotify)g_free);
+@@ -1231,6 +1233,7 @@
+   if (name)
+     return name;
+ 
++#if !defined(__redox__)
+ #if defined (HAVE_GETGRGID_R)
+   getgrgid_r (gid, &gbuf, buffer, sizeof(buffer), &gbufp);
+ #else
+@@ -1242,6 +1245,7 @@
+       gbufp->gr_name[0] != 0)
+     name = convert_pwd_string_to_utf8 (gbufp->gr_name);
+   else
++#endif
+     name = g_strdup_printf("%d", (int)gid);
+   
+   g_hash_table_replace (gid_cache, GINT_TO_POINTER (gid), name);
+diff -ruwN source/gio/gnetworking.h.in source-new/gio/gnetworking.h.in
+--- source/gio/gnetworking.h.in	2018-12-23 06:10:41.000000000 -0700
++++ source-new/gio/gnetworking.h.in	2019-01-05 11:43:10.527612479 -0700
+@@ -40,14 +40,20 @@
+ 
+ #include <netdb.h>
+ #include <netinet/in.h>
++#if !defined(__redox__)
+ #include <netinet/tcp.h>
+ #include <resolv.h>
++#endif
+ #include <sys/socket.h>
+ #include <sys/un.h>
++#if !defined(__redox__)
+ #include <net/if.h>
++#endif
+ 
+ #include <arpa/inet.h>
++#if !defined(__redox__)
+ #include <arpa/nameser.h>
++#endif
+ @NAMESER_COMPAT_INCLUDE@
+ 
+ #ifndef T_SRV
+diff -ruwN source/gio/gresolver.c source-new/gio/gresolver.c
+--- source/gio/gresolver.c	2018-12-23 06:10:41.000000000 -0700
++++ source-new/gio/gresolver.c	2019-01-05 12:51:56.587550105 -0700
+@@ -342,7 +342,7 @@
+     {
+       g_set_error (error, G_RESOLVER_ERROR, G_RESOLVER_ERROR_NOT_FOUND,
+                    _("Error resolving “%s”: %s"),
+-                   hostname, gai_strerror (EAI_NONAME));
++                   hostname, "EAI_NONAME");
+       return TRUE;
+     }
+ 
+diff -ruwN source/gio/gsocket.c source-new/gio/gsocket.c
+--- source/gio/gsocket.c	2018-12-23 06:10:41.000000000 -0700
++++ source-new/gio/gsocket.c	2019-01-05 13:34:30.178211038 -0700
+@@ -1539,6 +1539,7 @@
+ 
+   g_return_val_if_fail (G_IS_SOCKET (socket), 0);
+ 
++#if !defined(__redox__)
+   if (socket->priv->family == G_SOCKET_FAMILY_IPV4)
+     {
+       g_socket_get_option (socket, IPPROTO_IP, IP_TTL,
+@@ -1550,6 +1551,7 @@
+ 			   &value, &error);
+     }
+   else
++#endif
+     g_return_val_if_reached (0);
+ 
+   if (error)
+@@ -1580,6 +1582,7 @@
+ 
+   g_return_if_fail (G_IS_SOCKET (socket));
+ 
++#if !defined(__redox__)
+   if (socket->priv->family == G_SOCKET_FAMILY_IPV4)
+     {
+       g_socket_set_option (socket, IPPROTO_IP, IP_TTL,
+@@ -1593,6 +1596,7 @@
+ 			   ttl, &error);
+     }
+   else
++#endif
+     g_return_if_reached ();
+ 
+   if (error)
+@@ -1688,6 +1692,7 @@
+ 
+   g_return_val_if_fail (G_IS_SOCKET (socket), FALSE);
+ 
++#if !defined(__redox__)
+   if (socket->priv->family == G_SOCKET_FAMILY_IPV4)
+     {
+       g_socket_get_option (socket, IPPROTO_IP, IP_MULTICAST_LOOP,
+@@ -1699,6 +1704,7 @@
+ 			   &value, &error);
+     }
+   else
++#endif
+     g_return_val_if_reached (FALSE);
+ 
+   if (error)
+@@ -1733,6 +1739,7 @@
+ 
+   loopback = !!loopback;
+ 
++#if !defined(__redox__)
+   if (socket->priv->family == G_SOCKET_FAMILY_IPV4)
+     {
+       g_socket_set_option (socket, IPPROTO_IP, IP_MULTICAST_LOOP,
+@@ -1746,6 +1753,7 @@
+ 			   loopback, &error);
+     }
+   else
++#endif
+     g_return_if_reached ();
+ 
+   if (error)
+@@ -1777,6 +1785,7 @@
+ 
+   g_return_val_if_fail (G_IS_SOCKET (socket), 0);
+ 
++#if !defined(__redox__)
+   if (socket->priv->family == G_SOCKET_FAMILY_IPV4)
+     {
+       g_socket_get_option (socket, IPPROTO_IP, IP_MULTICAST_TTL,
+@@ -1788,6 +1797,7 @@
+ 			   &value, &error);
+     }
+   else
++#endif
+     g_return_val_if_reached (FALSE);
+ 
+   if (error)
+@@ -1819,6 +1829,7 @@
+ 
+   g_return_if_fail (G_IS_SOCKET (socket));
+ 
++#if !defined(__redox__)
+   if (socket->priv->family == G_SOCKET_FAMILY_IPV4)
+     {
+       g_socket_set_option (socket, IPPROTO_IP, IP_MULTICAST_TTL,
+@@ -1832,6 +1843,7 @@
+ 			   ttl, &error);
+     }
+   else
++#endif
+     g_return_if_reached ();
+ 
+   if (error)
+@@ -2191,6 +2203,7 @@
+     return FALSE;
+ 
+   native_addr = g_inet_address_to_bytes (group);
++#if !defined(__redox__)
+   if (g_inet_address_get_family (group) == G_SOCKET_FAMILY_IPV4)
+     {
+ #ifdef HAVE_IP_MREQN
+@@ -2252,6 +2265,7 @@
+ 			   &mc_req_ipv6, sizeof (mc_req_ipv6));
+     }
+   else
++#endif
+     g_return_val_if_reached (FALSE);
+ 
+   if (result < 0)
+@@ -2912,6 +2926,7 @@
+   if (!check_timeout (socket, error))
+     return FALSE;
+ 
++#if !defined(__redox__)
+   if (!g_socket_get_option (socket, SOL_SOCKET, SO_ERROR, &value, error))
+     {
+       g_prefix_error (error, _("Unable to get pending error: "));
+@@ -2929,6 +2944,7 @@
+         }
+       return FALSE;
+     }
++#endif
+ 
+   socket->priv->connected_read = TRUE;
+   socket->priv->connected_write = TRUE;
+@@ -3001,7 +3017,7 @@
+     {
+ #ifdef G_OS_WIN32
+       if (ioctlsocket (socket->priv->fd, FIONREAD, &avail) < 0)
+-#else
++#elif !defined(__redox__)
+       if (ioctl (socket->priv->fd, FIONREAD, &avail) < 0)
+ #endif
+         avail = -1;
+@@ -4316,7 +4332,7 @@
+   #endif
+ }
+ 
+-#ifndef G_OS_WIN32
++#if !defined(G_OS_WIN32) && !defined(__redox__)
+ 
+ /* Unfortunately these have to be macros rather than inline functions due to
+  * using alloca(). */
+@@ -4673,7 +4689,9 @@
+       vectors = &one_vector;
+     }
+ 
+-#ifndef G_OS_WIN32
++#if defined(__redox__)
++	return -1;
++#elif !defined(G_OS_WIN32)
+   {
+     GOutputMessage output_message;
+     struct msghdr msg;
+@@ -5138,7 +5156,9 @@
+       vectors = &one_vector;
+     }
+ 
+-#ifndef G_OS_WIN32
++#if defined(__redox__)
++  return -1;
++#elif !defined(G_OS_WIN32)
+   {
+     GInputMessage input_message;
+     struct msghdr msg;
+@@ -5910,4 +5930,3 @@
+ #endif
+   return FALSE;
+ }
+-
+diff -ruwN source/gio/gthreadedresolver.c source-new/gio/gthreadedresolver.c
+--- source/gio/gthreadedresolver.c	2018-12-23 06:10:41.000000000 -0700
++++ source-new/gio/gthreadedresolver.c	2019-01-05 13:46:36.830327532 -0700
+@@ -49,6 +49,7 @@
+ {
+   switch (err)
+     {
++#if !defined(__redox__)
+     case EAI_FAIL:
+ #if defined(EAI_NODATA) && (EAI_NODATA != EAI_NONAME)
+     case EAI_NODATA:
+@@ -58,7 +59,7 @@
+ 
+     case EAI_AGAIN:
+       return G_RESOLVER_ERROR_TEMPORARY_FAILURE;
+-
++#endif
+     default:
+       return G_RESOLVER_ERROR_INTERNAL;
+     }
+@@ -92,6 +93,12 @@
+                    gpointer       task_data,
+                    GCancellable  *cancellable)
+ {
++#if defined(__redox__)
++    g_task_return_new_error (task,
++                             G_RESOLVER_ERROR,
++                             G_RESOLVER_ERROR_INTERNAL,
++                             _("do_lookup_by_name not implemented on Redox"));
++#else
+   LookupData *lookup_data = task_data;
+   const char *hostname = lookup_data->hostname;
+   struct addrinfo *res = NULL;
+@@ -163,6 +170,7 @@
+ 
+   if (res)
+     freeaddrinfo (res);
++#endif
+ }
+ 
+ static GList *
+@@ -289,6 +297,12 @@
+                       gpointer       task_data,
+                       GCancellable  *cancellable)
+ {
++#if defined(__redox__)
++    g_task_return_new_error (task,
++                             G_RESOLVER_ERROR,
++                             G_RESOLVER_ERROR_INTERNAL,
++                             _("do_lookup_by_address not implemented on Redox"));
++#else
+   GInetAddress *address = task_data;
+   struct sockaddr_storage sockaddr;
+   gsize sockaddr_size;
+@@ -319,6 +333,7 @@
+                                gai_strerror (retval));
+       g_free (phys);
+     }
++#endif
+ }
+ 
+ static gchar *
+@@ -369,7 +384,7 @@
+ }
+ 
+ 
+-#if defined(G_OS_UNIX)
++#if defined(G_OS_UNIX) && !defined(__redox__)
+ 
+ #if defined __BIONIC__ && !defined BIND_4_COMPAT
+ /* Copy from bionic/libc/private/arpa_nameser_compat.h
+@@ -920,6 +935,12 @@
+                    gpointer       task_data,
+                    GCancellable  *cancellable)
+ {
++#if defined(__redox__)
++    g_task_return_new_error (task,
++                             G_RESOLVER_ERROR,
++                             G_RESOLVER_ERROR_INTERNAL,
++                             _("do_lookup_records not implemented on Redox"));
++#else
+   LookupRecordsData *lrd = task_data;
+   GList *records;
+   GError *error = NULL;
+@@ -1005,6 +1026,7 @@
+     g_task_return_pointer (task, records, (GDestroyNotify) free_records);
+   else
+     g_task_return_error (task, error);
++#endif
+ }
+ 
+ static GList *
+diff -ruwN source/gio/gunixfdmessage.c source-new/gio/gunixfdmessage.c
+--- source/gio/gunixfdmessage.c	2018-12-23 06:10:41.000000000 -0700
++++ source-new/gio/gunixfdmessage.c	2019-01-05 14:22:53.097587821 -0700
+@@ -53,6 +53,10 @@
+ #include "gnetworking.h"
+ #include "gioerror.h"
+ 
++#if defined(__redox__)
++#define SCM_RIGHTS 1
++#endif
++
+ struct _GUnixFDMessagePrivate
+ {
+   GUnixFDList *list;
+diff -ruwN source/gio/gunixmounts.c source-new/gio/gunixmounts.c
+--- source/gio/gunixmounts.c	2018-12-23 06:10:41.000000000 -0700
++++ source-new/gio/gunixmounts.c	2019-01-05 14:25:31.846709810 -0700
+@@ -949,6 +949,21 @@
+   return return_list;
+ }
+ 
++/* Redox {{{2 */
++#elif defined(__redox__)
++
++static const char *
++get_mtab_monitor_file (void)
++{
++  return NULL;
++}
++
++static GList *
++_g_get_unix_mounts (void)
++{
++  return NULL;
++}
++
+ /* Common code {{{2 */
+ #else
+ #error No _g_get_unix_mounts() implementation for system
+@@ -1465,7 +1480,7 @@
+   return g_list_reverse (return_list);
+ }
+ /* Interix {{{2 */
+-#elif defined(__INTERIX)
++#elif defined(__INTERIX) || defined(__redox__)
+ static GList *
+ _g_get_unix_mount_points (void)
+ {
+diff -ruwN source/glib/glib-init.c source-new/glib/glib-init.c
+--- source/glib/glib-init.c	2018-12-23 06:10:41.000000000 -0700
++++ source-new/glib/glib-init.c	2019-01-05 11:09:03.083866992 -0700
+@@ -31,6 +31,10 @@
+ #include <stdio.h>
+ #include <ctype.h>
+ 
++#if defined(__redox__)
++int strcasecmp(const char *s1, const char *s2);
++#endif
++
+ /* This seems as good a place as any to make static assertions about platform
+  * assumptions we make throughout GLib. */
+ 
+diff -ruwN source/glib/gmain.c source-new/glib/gmain.c
+--- source/glib/gmain.c	2018-12-23 06:10:41.000000000 -0700
++++ source-new/glib/gmain.c	2019-01-05 11:10:02.228193887 -0700
+@@ -5891,13 +5891,21 @@
+       sigset_t all;
+ 
+       sigfillset (&all);
++      #if defined(__redox__)
++      sigprocmask (SIG_SETMASK, &all, &prev_mask);
++      #else
+       pthread_sigmask (SIG_SETMASK, &all, &prev_mask);
+ #endif
++#endif
+       glib_worker_context = g_main_context_new ();
+       g_thread_new ("gmain", glib_worker_main, NULL);
+ #ifdef G_OS_UNIX
++      #if defined(__redox__)
++      sigprocmask (SIG_SETMASK, &prev_mask, NULL);
++      #else
+       pthread_sigmask (SIG_SETMASK, &prev_mask, NULL);
+ #endif
++#endif
+       g_once_init_leave (&initialised, TRUE);
+     }
+ 
+diff -ruwN source/glib/gslice.c source-new/glib/gslice.c
+--- source/glib/gslice.c	2018-12-23 06:10:41.000000000 -0700
++++ source-new/glib/gslice.c	2019-01-05 11:11:23.896640840 -0700
+@@ -405,6 +405,8 @@
+     GetSystemInfo (&system_info);
+     sys_page_size = system_info.dwPageSize;
+   }
++#elif defined(__redox__)
++  sys_page_size = getpagesize();
+ #else
+   sys_page_size = sysconf (_SC_PAGESIZE); /* = sysconf (_SC_PAGE_SIZE); = getpagesize(); */
+ #endif
+diff -ruwN source/glib/gspawn.c source-new/glib/gspawn.c
+--- source/glib/gspawn.c	2018-12-23 06:10:41.000000000 -0700
++++ source-new/glib/gspawn.c	2019-01-05 11:20:25.669130455 -0700
+@@ -1217,7 +1217,11 @@
+       open_max = rl.rlim_max;
+   else
+ #endif
++#if defined(__redox__)
++      open_max = INT_MAX;
++#else
+       open_max = sysconf (_SC_OPEN_MAX);
++#endif
+ 
+   for (fd = 0; fd < open_max; fd++)
+       if ((res = cb (data, fd)) != 0)
+diff -ruwN source/glib/gstrfuncs.c source-new/glib/gstrfuncs.c
+--- source/glib/gstrfuncs.c	2018-12-23 06:10:41.000000000 -0700
++++ source-new/glib/gstrfuncs.c	2019-01-05 11:11:59.452834000 -0700
+@@ -55,6 +55,12 @@
+ #include "glibintl.h"
+ 
+ 
++#if defined(__redox__)
++int strcasecmp(const char *s1, const char *s2);
++int strncasecmp(const char *s1, const char *s2, size_t n);
++#endif
++
++
+ /**
+  * SECTION:string_utils
+  * @title: String Utility Functions
+diff -ruwN source/glib/gthread-posix.c source-new/glib/gthread-posix.c
+--- source/glib/gthread-posix.c	2018-12-23 06:10:41.000000000 -0700
++++ source-new/glib/gthread-posix.c	2019-01-05 11:40:57.454759289 -0700
+@@ -660,6 +660,7 @@
+ #elif defined (HAVE_PTHREAD_CONDATTR_SETCLOCK) && defined (CLOCK_MONOTONIC)
+   if G_UNLIKELY ((status = pthread_condattr_setclock (&attr, CLOCK_MONOTONIC)) != 0)
+     g_thread_abort (status, "pthread_condattr_setclock");
++#elif defined(__redox__)
+ #else
+ #error Cannot support GCond on your platform.
+ #endif
+@@ -896,7 +897,7 @@
+     if ((status = pthread_cond_timedwait_relative_np (g_cond_get_impl (cond), g_mutex_get_impl (mutex), &ts)) == 0)
+       return TRUE;
+   }
+-#elif defined (HAVE_PTHREAD_CONDATTR_SETCLOCK) && defined (CLOCK_MONOTONIC)
++#elif (defined (HAVE_PTHREAD_CONDATTR_SETCLOCK) && defined (CLOCK_MONOTONIC)) || defined(__redox__)
+   /* This is the exact check we used during init to set the clock to
+    * monotonic, so if we're in this branch, timedwait() will already be
+    * expecting a monotonic clock.
