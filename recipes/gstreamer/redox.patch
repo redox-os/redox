@@ -1,0 +1,24 @@
+diff -ruwN source/gst/gstpoll.c source-new/gst/gstpoll.c
+--- source/gst/gstpoll.c	2018-03-23 14:44:36.000000000 -0600
++++ source-new/gst/gstpoll.c	2019-01-05 15:17:35.861961634 -0700
+@@ -85,6 +85,10 @@
+ #include <sys/socket.h>
+ #endif
+ 
++#if defined(__redox__)
++#include <sys/select.h>
++#endif
++
+ #ifdef G_OS_WIN32
+ #  ifndef EWOULDBLOCK
+ #  define EWOULDBLOCK EAGAIN    /* This is just to placate gcc */
+@@ -689,7 +693,9 @@
+   {
+     gint control_sock[2];
+ 
++#if !defined(__redox__)
+     if (socketpair (PF_UNIX, SOCK_STREAM, 0, control_sock) < 0)
++#endif
+       goto no_socket_pair;
+ 
+     nset->control_read_fd.fd = control_sock[0];
