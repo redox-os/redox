@@ -1,0 +1,46 @@
+diff -ruwN source/gettext-tools/gnulib-lib/getdtablesize.c source-new/gettext-tools/gnulib-lib/getdtablesize.c
+--- source/gettext-tools/gnulib-lib/getdtablesize.c	2016-06-11 06:59:58.000000000 -0600
++++ source-new/gettext-tools/gnulib-lib/getdtablesize.c	2019-01-05 08:45:36.015291070 -0700
+@@ -84,6 +84,14 @@
+   return dtablesize;
+ }
+ 
++#elif defined(__redox__)
++
++int
++getdtablesize (void)
++{
++  return INT_MAX;
++}
++
+ #else
+ 
+ # include <limits.h>
+diff -ruwN source/gettext-tools/gnulib-lib/spawni.c source-new/gettext-tools/gnulib-lib/spawni.c
+--- source/gettext-tools/gnulib-lib/spawni.c	2016-06-11 07:00:02.000000000 -0600
++++ source-new/gettext-tools/gnulib-lib/spawni.c	2019-01-05 08:55:44.661641522 -0700
+@@ -51,10 +51,10 @@
+ # include <local-setxid.h>
+ #else
+ # if !HAVE_SETEUID
+-#  define seteuid(id) setresuid (-1, id, -1)
++#  define seteuid(id) setreuid (-1, id)
+ # endif
+ # if !HAVE_SETEGID
+-#  define setegid(id) setresgid (-1, id, -1)
++#  define setegid(id) setregid (-1, id)
+ # endif
+ # define local_seteuid(id) seteuid (id)
+ # define local_setegid(id) setegid (id)
+diff -ruwN source/gettext-tools/src/plural-eval.h source-new/gettext-tools/src/plural-eval.h
+--- source/gettext-tools/src/plural-eval.h	2016-03-20 01:37:53.000000000 -0600
++++ source-new/gettext-tools/src/plural-eval.h	2019-01-05 08:51:23.113067496 -0700
+@@ -29,7 +29,7 @@
+ #include <setjmp.h>
+ 
+ /* Some platforms don't have the sigjmp_buf type in <setjmp.h>.  */
+-#if defined _MSC_VER || defined __MINGW32__
++#if defined _MSC_VER || defined __MINGW32__ || defined(__redox__)
+ /* Native Woe32 API.  */
+ # define sigjmp_buf jmp_buf
+ # define sigsetjmp(env,savesigs) setjmp (env)
