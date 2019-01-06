@@ -13,7 +13,11 @@ function recipe_update {
 
 function recipe_build {
 	sysroot="$(realpath ../sysroot)"
-	./configure --host=${HOST} --prefix=/
+	./configure \
+		--host=${HOST} \
+		--prefix=/ \
+		--disable-shared \
+		--enable-static
 	make -j"$(nproc)"
 	skip=1
 }
