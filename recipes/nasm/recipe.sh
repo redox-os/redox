@@ -1,4 +1,4 @@
-VERSION=2.13.01
+VERSION=2.14.02
 TAR=http://www.nasm.us/pub/nasm/releasebuilds/$VERSION/nasm-$VERSION.tar.gz
 
 function recipe_version {
@@ -29,8 +29,7 @@ function recipe_clean {
 
 function recipe_stage {
     dest="$(realpath $1)"
-    make INSTALLROOT="$dest" install
-    rm -rf "$dest"/share
+    make install DESTDIR="$dest"
     find "$dest"/bin -exec ${HOST}-strip {} ';' 2> /dev/null
     skip=1
 }
