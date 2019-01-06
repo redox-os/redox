@@ -1,5 +1,5 @@
 VERSION=0.27
-GIT=https://github.com/fabiao/gigalomania
+GIT=https://gitlab.redox-os.org/redox-os/gigalomania.git
 BRANCH=master
 BUILD_DEPENDS=(sdl_mixer sdl_image sdl liborbital libpng libjpeg zlib)
 
