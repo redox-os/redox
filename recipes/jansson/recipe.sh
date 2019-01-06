@@ -32,6 +32,6 @@ function recipe_clean {
 
 function recipe_stage {
     dest="$(realpath $1)"
-    make DESTDIR="$dest" ${MAKEFLAGS} install
+    make DESTDIR="$dest" install
     skip=1
 }
