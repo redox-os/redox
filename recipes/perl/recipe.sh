@@ -22,7 +22,7 @@ function recipe_build {
     sed -i "s/^#define Netdb_name_t.*/#define Netdb_name_t const char*/" config.h # XXX
     sed -i 's/#define Strerror(e).*$/#define Strerror(e) strerror(e)/' config.h #
     echo "#define HAS_VPRINTF" >> config.h
-    make LIBS=-lm -j"$(nproc)"
+    make -j"$(nproc)"
     skip=1
 }
 

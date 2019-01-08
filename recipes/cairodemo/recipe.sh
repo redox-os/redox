@@ -21,7 +21,7 @@ function recipe_build {
     export LDFLAGS="-L$sysroot/lib"
     export CPPFLAGS="-I$sysroot/include"
     set -x
-    "${CXX}" -I "$sysroot/include" -L "$sysroot/lib" cairodemo.c -o cairodemo -lorbital -lcairo -lpixman-1 -lfreetype -lpng -lz -lm
+    "${CXX}" -I "$sysroot/include" -L "$sysroot/lib" cairodemo.c -o cairodemo -lorbital -lcairo -lpixman-1 -lfreetype -lpng -lz
     set +x
     skip=1
 }
