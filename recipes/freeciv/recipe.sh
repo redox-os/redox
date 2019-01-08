@@ -17,7 +17,6 @@ function recipe_build {
     sysroot="$(realpath ../sysroot)"
     export CFLAGS="-I$sysroot/include"
     export LDFLAGS="-L$sysroot/lib"
-    export LIBS="-Wl,--whole-archive -lpthread -Wl,--no-whole-archive"
     ./configure \
         --host="$HOST" \
         --prefix='' \

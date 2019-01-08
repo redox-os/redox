@@ -12,7 +12,7 @@ diff -ruwN source/build-scripts/config.sub source-new/build-scripts/config.sub
  	      | -nindy* | -vxsim* | -vxworks* | -ebmon* | -hms* | -mvs* \
 diff -ruwN source/configure.in source-new/configure.in
 --- source/configure.in	2012-01-18 23:30:05.000000000 -0700
-+++ source-new/configure.in	2018-12-30 08:48:46.611954605 -0700
++++ source-new/configure.in	2019-01-06 17:08:43.147342277 -0700
 @@ -685,6 +685,18 @@
      fi
  }
@@ -45,7 +45,7 @@ diff -ruwN source/configure.in source-new/configure.in
 +    if test x$enable_video_orbital = xyes; then
 +        AC_DEFINE(SDL_VIDEO_DRIVER_ORBITAL)
 +        SOURCES="$SOURCES $srcdir/src/video/orbital/*.c"
-+        SDL_LIBS="$SDL_LIBS -Wl,--gc-sections -lorbital"
++        SDL_LIBS="$SDL_LIBS -lorbital"
 +        have_video=yes
 +    fi
 +}
@@ -53,19 +53,18 @@ diff -ruwN source/configure.in source-new/configure.in
  dnl Check to see if OpenGL support is desired
  AC_ARG_ENABLE(video-opengl,
  AC_HELP_STRING([--enable-video-opengl], [include OpenGL context creation [[default=yes]]]),
-@@ -1859,6 +1885,11 @@
+@@ -1859,6 +1885,10 @@
  AC_HELP_STRING([--enable-pthread-sem], [use pthread semaphores [[default=yes]]]),
                    , enable_pthread_sem=yes)
      case "$host" in
 +        *-*-redox*)
 +            pthread_cflags="-D_REENTRANT"
 +            pthread_lib="-lpthread"
-+            SDL_LIBS="$SDL_LIBS -Wl,--whole-archive -lpthread -Wl,--no-whole-archive"
 +            ;;
          *-*-linux*|*-*-uclinux*)
              pthread_cflags="-D_REENTRANT"
              pthread_lib="-lpthread"
-@@ -2325,10 +2356,11 @@
+@@ -2325,10 +2355,11 @@
              have_timers=yes
          fi
          ;;
@@ -78,7 +77,7 @@ diff -ruwN source/configure.in source-new/configure.in
              *-*-kfreebsd*-gnu)  ARCH=kfreebsd-gnu ;;
              *-*-knetbsd*-gnu)   ARCH=knetbsd-gnu ;;
              *-*-kopenbsd*-gnu)  ARCH=kopenbsd-gnu ;;
-@@ -2347,8 +2379,10 @@
+@@ -2347,8 +2378,10 @@
          esac
          CheckVisibilityHidden
          CheckDummyVideo
@@ -89,7 +88,7 @@ diff -ruwN source/configure.in source-new/configure.in
          CheckDLOPEN
          CheckNASM
          CheckAltivec
-@@ -2445,6 +2479,11 @@
+@@ -2445,6 +2478,11 @@
                  SOURCES="$SOURCES $srcdir/src/cdrom/osf/*.c"
                  have_cdrom=yes
              ;;

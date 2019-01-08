@@ -111,7 +111,7 @@ elif args == ["--ldflags"]:
 elif args == ["--libdir"]:
     print(prefix + "/lib")
 elif args == ["--system-libs"]:
-    print("-Wl,--whole-archive -lpthread -Wl,--no-whole-archive -lm")
+    print("-lpthread -lm")
 elif args == ["--targets-built"]:
     print("X86")
 elif args[0] == "--libs":

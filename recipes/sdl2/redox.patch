@@ -1,6 +1,6 @@
 diff -ruwN source/configure.in source-new/configure.in
 --- source/configure.in	2018-10-31 09:07:22.000000000 -0600
-+++ source-new/configure.in	2018-12-30 20:01:02.572341419 -0700
++++ source-new/configure.in	2019-01-06 17:29:39.198302773 -0700
 @@ -1222,6 +1222,18 @@
      fi
  }
@@ -41,19 +41,18 @@ diff -ruwN source/configure.in source-new/configure.in
  dnl Set up the QNX video driver if enabled
  CheckQNXVideo()
  {
-@@ -2789,6 +2815,11 @@
+@@ -2789,6 +2815,10 @@
  AC_HELP_STRING([--enable-pthread-sem], [use pthread semaphores [[default=yes]]]),
                    , enable_pthread_sem=yes)
      case "$host" in
 +        *-*-redox*)
 +            pthread_cflags="-D_REENTRANT"
 +            pthread_lib="-lpthread"
-+            SDL_LIBS="$SDL_LIBS -Wl,--whole-archive -lpthread -Wl,--no-whole-archive"
 +            ;;
           *-*-android*)
              pthread_cflags="-D_REENTRANT -D_THREAD_SAFE"
              pthread_lib=""
-@@ -3362,7 +3393,7 @@
+@@ -3362,7 +3392,7 @@
  
  dnl Set up the configuration based on the host platform!
  case "$host" in
@@ -62,7 +61,7 @@ diff -ruwN source/configure.in source-new/configure.in
          case "$host" in
              *-*-android*)
                  # Android
-@@ -3383,6 +3414,7 @@
+@@ -3383,6 +3413,7 @@
                  ;;
              *-*-linux*)         ARCH=linux ;;
              *-*-uclinux*)       ARCH=linux ;;
@@ -70,7 +69,7 @@ diff -ruwN source/configure.in source-new/configure.in
              *-*-kfreebsd*-gnu)  ARCH=kfreebsd-gnu ;;
              *-*-knetbsd*-gnu)   ARCH=knetbsd-gnu ;;
              *-*-kopenbsd*-gnu)  ARCH=kopenbsd-gnu ;;
-@@ -3404,6 +3436,8 @@
+@@ -3404,6 +3435,8 @@
          CheckVisibilityHidden
          CheckDeclarationAfterStatement
          CheckDummyVideo
@@ -81,7 +80,7 @@ diff -ruwN source/configure.in source-new/configure.in
          CheckDLOPEN
 diff -ruwN source/include/SDL_config.h.in source-new/include/SDL_config.h.in
 --- source/include/SDL_config.h.in	2018-10-31 09:07:22.000000000 -0600
-+++ source-new/include/SDL_config.h.in	2018-12-30 19:54:01.263870482 -0700
++++ source-new/include/SDL_config.h.in	2018-12-31 14:01:08.736950947 -0700
 @@ -263,6 +263,7 @@
  #undef SDL_AUDIO_DRIVER_PULSEAUDIO
  #undef SDL_AUDIO_DRIVER_PULSEAUDIO_DYNAMIC
@@ -100,7 +99,7 @@ diff -ruwN source/include/SDL_config.h.in source-new/include/SDL_config.h.in
  #undef SDL_VIDEO_DRIVER_WAYLAND_QT_TOUCH
 diff -ruwN source/src/audio/redox/SDL_redoxaudio.c source-new/src/audio/redox/SDL_redoxaudio.c
 --- source/src/audio/redox/SDL_redoxaudio.c	1969-12-31 17:00:00.000000000 -0700
-+++ source-new/src/audio/redox/SDL_redoxaudio.c	2018-12-30 19:53:02.919797606 -0700
++++ source-new/src/audio/redox/SDL_redoxaudio.c	2018-12-31 14:01:08.736950947 -0700
 @@ -0,0 +1,169 @@
 +/*
 +    SDL - Simple DirectMedia Layer
@@ -273,7 +272,7 @@ diff -ruwN source/src/audio/redox/SDL_redoxaudio.c source-new/src/audio/redox/SD
 +}
 diff -ruwN source/src/audio/redox/SDL_redoxaudio.h source-new/src/audio/redox/SDL_redoxaudio.h
 --- source/src/audio/redox/SDL_redoxaudio.h	1969-12-31 17:00:00.000000000 -0700
-+++ source-new/src/audio/redox/SDL_redoxaudio.h	2018-12-30 19:53:02.919797606 -0700
++++ source-new/src/audio/redox/SDL_redoxaudio.h	2018-12-31 14:01:08.736950947 -0700
 @@ -0,0 +1,40 @@
 +/*
 +    SDL - Simple DirectMedia Layer
@@ -317,7 +316,7 @@ diff -ruwN source/src/audio/redox/SDL_redoxaudio.h source-new/src/audio/redox/SD
 +#endif /* _SDL_redoxaudio_h */
 diff -ruwN source/src/audio/SDL_audio.c source-new/src/audio/SDL_audio.c
 --- source/src/audio/SDL_audio.c	2018-10-31 09:07:22.000000000 -0600
-+++ source-new/src/audio/SDL_audio.c	2018-12-30 19:54:43.931922299 -0700
++++ source-new/src/audio/SDL_audio.c	2018-12-31 14:01:08.736950947 -0700
 @@ -35,6 +35,9 @@
  
  /* Available audio drivers */
@@ -330,7 +329,7 @@ diff -ruwN source/src/audio/SDL_audio.c source-new/src/audio/SDL_audio.c
  #endif
 diff -ruwN source/src/audio/SDL_sysaudio.h source-new/src/audio/SDL_sysaudio.h
 --- source/src/audio/SDL_sysaudio.h	2018-10-31 09:07:22.000000000 -0600
-+++ source-new/src/audio/SDL_sysaudio.h	2018-12-30 19:55:51.280001807 -0700
++++ source-new/src/audio/SDL_sysaudio.h	2018-12-31 14:01:08.736950947 -0700
 @@ -183,6 +183,7 @@
  } AudioBootStrap;
  
@@ -341,7 +340,7 @@ diff -ruwN source/src/audio/SDL_sysaudio.h source-new/src/audio/SDL_sysaudio.h
  extern AudioBootStrap JACK_bootstrap;
 diff -ruwN source/src/dynapi/SDL_dynapi.h source-new/src/dynapi/SDL_dynapi.h
 --- source/src/dynapi/SDL_dynapi.h	2018-10-31 09:07:22.000000000 -0600
-+++ source-new/src/dynapi/SDL_dynapi.h	2018-12-30 19:51:10.263649275 -0700
++++ source-new/src/dynapi/SDL_dynapi.h	2018-12-31 14:01:08.736950947 -0700
 @@ -55,6 +55,8 @@
  #define SDL_DYNAMIC_API 0
  #elif defined(__clang_analyzer__)
@@ -353,7 +352,7 @@ diff -ruwN source/src/dynapi/SDL_dynapi.h source-new/src/dynapi/SDL_dynapi.h
  /* everyone else. This is where we turn on the API if nothing forced it off. */
 diff -ruwN source/src/thread/pthread/SDL_systhread.c source-new/src/thread/pthread/SDL_systhread.c
 --- source/src/thread/pthread/SDL_systhread.c	2018-10-31 09:07:22.000000000 -0600
-+++ source-new/src/thread/pthread/SDL_systhread.c	2018-12-30 19:57:03.592084415 -0700
++++ source-new/src/thread/pthread/SDL_systhread.c	2018-12-31 14:01:08.740951021 -0700
 @@ -165,7 +165,11 @@
      for (i = 0; sig_list[i]; ++i) {
          sigaddset(&mask, sig_list[i]);
@@ -368,7 +367,7 @@ diff -ruwN source/src/thread/pthread/SDL_systhread.c source-new/src/thread/pthre
  
 diff -ruwN source/src/video/orbital/SDL_orbitalevents.c source-new/src/video/orbital/SDL_orbitalevents.c
 --- source/src/video/orbital/SDL_orbitalevents.c	1969-12-31 17:00:00.000000000 -0700
-+++ source-new/src/video/orbital/SDL_orbitalevents.c	2018-12-30 20:37:39.185277773 -0700
++++ source-new/src/video/orbital/SDL_orbitalevents.c	2018-12-31 14:01:08.740951021 -0700
 @@ -0,0 +1,192 @@
 +/*
 +    SDL - Simple DirectMedia Layer
@@ -564,7 +563,7 @@ diff -ruwN source/src/video/orbital/SDL_orbitalevents.c source-new/src/video/orb
 +/* end of SDL_orbitalevents.c ... */
 diff -ruwN source/src/video/orbital/SDL_orbitalevents_c.h source-new/src/video/orbital/SDL_orbitalevents_c.h
 --- source/src/video/orbital/SDL_orbitalevents_c.h	1969-12-31 17:00:00.000000000 -0700
-+++ source-new/src/video/orbital/SDL_orbitalevents_c.h	2018-12-30 19:51:10.263649275 -0700
++++ source-new/src/video/orbital/SDL_orbitalevents_c.h	2018-12-31 14:01:08.740951021 -0700
 @@ -0,0 +1,32 @@
 +/*
 +    SDL - Simple DirectMedia Layer
@@ -600,7 +599,7 @@ diff -ruwN source/src/video/orbital/SDL_orbitalevents_c.h source-new/src/video/o
 +/* end of SDL_orbitalevents_c.h ... */
 diff -ruwN source/src/video/orbital/SDL_orbitalmouse.c source-new/src/video/orbital/SDL_orbitalmouse.c
 --- source/src/video/orbital/SDL_orbitalmouse.c	1969-12-31 17:00:00.000000000 -0700
-+++ source-new/src/video/orbital/SDL_orbitalmouse.c	2018-12-30 19:51:10.263649275 -0700
++++ source-new/src/video/orbital/SDL_orbitalmouse.c	2018-12-31 14:01:08.740951021 -0700
 @@ -0,0 +1,33 @@
 +/*
 +    SDL - Simple DirectMedia Layer
@@ -637,7 +636,7 @@ diff -ruwN source/src/video/orbital/SDL_orbitalmouse.c source-new/src/video/orbi
 +};
 diff -ruwN source/src/video/orbital/SDL_orbitalmouse_c.h source-new/src/video/orbital/SDL_orbitalmouse_c.h
 --- source/src/video/orbital/SDL_orbitalmouse_c.h	1969-12-31 17:00:00.000000000 -0700
-+++ source-new/src/video/orbital/SDL_orbitalmouse_c.h	2018-12-30 19:51:10.267649280 -0700
++++ source-new/src/video/orbital/SDL_orbitalmouse_c.h	2018-12-31 14:01:08.740951021 -0700
 @@ -0,0 +1,26 @@
 +/*
 +    SDL - Simple DirectMedia Layer
@@ -667,7 +666,7 @@ diff -ruwN source/src/video/orbital/SDL_orbitalmouse_c.h source-new/src/video/or
 +/* Functions to be exported */
 diff -ruwN source/src/video/orbital/SDL_orbitalvideo.c source-new/src/video/orbital/SDL_orbitalvideo.c
 --- source/src/video/orbital/SDL_orbitalvideo.c	1969-12-31 17:00:00.000000000 -0700
-+++ source-new/src/video/orbital/SDL_orbitalvideo.c	2018-12-30 20:26:21.622297793 -0700
++++ source-new/src/video/orbital/SDL_orbitalvideo.c	2018-12-31 14:01:08.740951021 -0700
 @@ -0,0 +1,182 @@
 +/*
 +    SDL - Simple DirectMedia Layer
@@ -853,7 +852,7 @@ diff -ruwN source/src/video/orbital/SDL_orbitalvideo.c source-new/src/video/orbi
 +#endif
 diff -ruwN source/src/video/orbital/SDL_orbitalvideo.h source-new/src/video/orbital/SDL_orbitalvideo.h
 --- source/src/video/orbital/SDL_orbitalvideo.h	1969-12-31 17:00:00.000000000 -0700
-+++ source-new/src/video/orbital/SDL_orbitalvideo.h	2018-12-30 19:51:10.267649280 -0700
++++ source-new/src/video/orbital/SDL_orbitalvideo.h	2018-12-31 14:01:08.740951021 -0700
 @@ -0,0 +1,39 @@
 +/*
 +    SDL - Simple DirectMedia Layer
@@ -896,7 +895,7 @@ diff -ruwN source/src/video/orbital/SDL_orbitalvideo.h source-new/src/video/orbi
 +#endif /* _SDL_orbitalvideo_h */
 diff -ruwN source/src/video/SDL_sysvideo.h source-new/src/video/SDL_sysvideo.h
 --- source/src/video/SDL_sysvideo.h	2018-10-31 09:07:22.000000000 -0600
-+++ source-new/src/video/SDL_sysvideo.h	2018-12-30 19:58:01.920149215 -0700
++++ source-new/src/video/SDL_sysvideo.h	2018-12-31 14:01:08.740951021 -0700
 @@ -416,6 +416,7 @@
  extern VideoBootStrap PSP_bootstrap;
  extern VideoBootStrap RPI_bootstrap;
@@ -907,7 +906,7 @@ diff -ruwN source/src/video/SDL_sysvideo.h source-new/src/video/SDL_sysvideo.h
  extern VideoBootStrap NACL_bootstrap;
 diff -ruwN source/src/video/SDL_video.c source-new/src/video/SDL_video.c
 --- source/src/video/SDL_video.c	2018-10-31 09:07:22.000000000 -0600
-+++ source-new/src/video/SDL_video.c	2018-12-30 19:58:27.472177138 -0700
++++ source-new/src/video/SDL_video.c	2018-12-31 14:01:08.740951021 -0700
 @@ -112,6 +112,9 @@
  #if SDL_VIDEO_DRIVER_QNX
      &QNX_bootstrap,
