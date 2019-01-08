@@ -18,7 +18,6 @@ function recipe_build {
     export CFLAGS="-I$sysroot/include -DHAVE_PTHREAD=1"
     export CPPFLAGS="-I$sysroot/include -DHAVE_PTHREAD=1"
     export LDFLAGS="-L$sysroot/lib"
-    export LIBS="-Wl,--whole-archive -lpthread -Wl,--no-whole-archive"
     #export LLVM_CONFIG="x86_64-unknown-redox-llvm-config"
     NOCONFIGURE=1 ./autogen.sh
     ./configure \

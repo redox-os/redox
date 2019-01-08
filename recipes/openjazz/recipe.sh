@@ -22,7 +22,7 @@ function recipe_build {
     autoconf
     wget -O build-aux/config.sub http://git.savannah.gnu.org/cgit/config.git/plain/config.sub
     ./configure --host=${HOST} --prefix=''
-    make -j"$(nproc)"
+    make -j"$(nproc)" V=1
     skip=1
 }
 

@@ -26,7 +26,6 @@ function recipe_build {
     ln -sf "$sysroot/include" "$sysroot/usr/include"
     ln -sf "$sysroot/lib" "$sysroot/usr/lib"
 
-    export LIBS='-Wl,--whole-archive -lpthread -Wl,--no-whole-archive'
     ./configure \
         --host=${HOST} \
         --target=${HOST} \

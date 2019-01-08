@@ -1,7 +1,7 @@
-diff -rupwN source/config.lib source-new/config.lib
+diff -ruwN source/config.lib source-new/config.lib
 --- source/config.lib	2018-12-29 07:28:58.975290421 -0700
-+++ source-new/config.lib	2018-12-29 10:11:42.310241717 -0700
-@@ -1486,7 +1486,7 @@ make_cflags_and_ldflags() {
++++ source-new/config.lib	2019-01-06 17:30:43.830146522 -0700
+@@ -1486,7 +1486,7 @@
  	# Special CXXFlags for HOST
  	CXXFLAGS="$CXXFLAGS"
  	# Libs to compile. In fact this is just LDFLAGS
@@ -10,19 +10,10 @@ diff -rupwN source/config.lib source-new/config.lib
  	# LDFLAGS used for HOST
  	LDFLAGS="$LDFLAGS"
  	# FEATURES for HOST (lto)
-@@ -1594,7 +1594,7 @@ make_cflags_and_ldflags() {
- 	fi
- 
- 	if [ "$os" != "CYGWIN" ] && [ "$os" != "HAIKU" ] && [ "$os" != "OPENBSD" ] && [ "$os" != "MINGW" ] && [ "$os" != "MORPHOS" ] && [ "$os" != "OSX" ] && [ "$os" != "DOS" ] && [ "$os" != "WINCE" ] && [ "$os" != "PSP" ] && [ "$os" != "OS2" ]; then
--		LIBS="$LIBS -lpthread"
-+		LIBS="$LIBS -Wl,--whole-archive -lpthread -Wl,--no-whole-archive"
- 	fi
- 
- 	if [ "$os" != "CYGWIN" ] && [ "$os" != "HAIKU" ] && [ "$os" != "MINGW" ] && [ "$os" != "DOS" ] && [ "$os" != "WINCE" ]; then
-diff -rupwN source/src/music/extmidi.cpp source-new/src/music/extmidi.cpp
+diff -ruwN source/src/music/extmidi.cpp source-new/src/music/extmidi.cpp
 --- source/src/music/extmidi.cpp	2018-12-29 07:28:59.143295501 -0700
 +++ source-new/src/music/extmidi.cpp	2018-12-29 10:14:06.637357598 -0700
-@@ -115,7 +115,11 @@ void MusicDriver_ExtMidi::DoPlay()
+@@ -115,7 +115,11 @@
  	switch (this->pid) {
  		case 0: {
  			close(0);
@@ -34,10 +25,10 @@ diff -rupwN source/src/music/extmidi.cpp source-new/src/music/extmidi.cpp
  			if (d != -1 && dup2(d, 1) != -1 && dup2(d, 2) != -1) {
  				execvp(this->params[0], this->params);
  			}
-diff -rupwN source/src/rev.cpp.in source-new/src/rev.cpp.in
+diff -ruwN source/src/rev.cpp.in source-new/src/rev.cpp.in
 --- source/src/rev.cpp.in	2018-12-29 07:28:59.167296226 -0700
 +++ source-new/src/rev.cpp.in	2018-12-29 10:11:42.314241804 -0700
-@@ -57,7 +57,7 @@ const char _openttd_build_date[] = __DAT
+@@ -57,7 +57,7 @@
   * (compiling from sources without any version control software)
   * and 2 is for modified revision.
   */
@@ -46,7 +37,7 @@ diff -rupwN source/src/rev.cpp.in source-new/src/rev.cpp.in
  
  /**
   * The NewGRF revision of OTTD:
-diff -rupwN source/src/stdafx.h source-new/src/stdafx.h
+diff -ruwN source/src/stdafx.h source-new/src/stdafx.h
 --- source/src/stdafx.h	2018-12-29 07:28:59.203297314 -0700
 +++ source-new/src/stdafx.h	2018-12-29 10:11:42.314241804 -0700
 @@ -12,6 +12,9 @@
@@ -59,10 +50,10 @@ diff -rupwN source/src/stdafx.h source-new/src/stdafx.h
  #if defined(__APPLE__)
  	#include "os/macosx/osx_stdafx.h"
  #endif /* __APPLE__ */
-diff -rupwN source/src/string.cpp source-new/src/string.cpp
+diff -ruwN source/src/string.cpp source-new/src/string.cpp
 --- source/src/string.cpp	2018-12-29 07:28:59.207297436 -0700
 +++ source-new/src/string.cpp	2018-12-29 10:11:42.314241804 -0700
-@@ -528,7 +528,7 @@ size_t Utf8TrimString(char *s, size_t ma
+@@ -528,7 +528,7 @@
  	return length;
  }
  

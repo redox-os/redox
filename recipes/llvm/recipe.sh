@@ -25,7 +25,7 @@ function recipe_build {
         -DCMAKE_AR="$(which "${AR}")"
         -DCMAKE_BUILD_TYPE=Release
         -DCMAKE_CROSSCOMPILING=True
-        -DCMAKE_CXX_FLAGS="--std=gnu++11 -Wl,--whole-archive -lpthread -Wl,--no-whole-archive"
+        -DCMAKE_CXX_FLAGS="--std=gnu++11"
         -DCMAKE_RANLIB="$(which "${RANLIB}")"
         -DCMAKE_INSTALL_PREFIX="/"
         -DCMAKE_SYSTEM_NAME=Generic
