@@ -19,39 +19,6 @@ diff -ruwN source/configure.ac source-new/configure.ac
                 LIBS="$save_libs"])
    AC_CHECK_FUNC(socket, :, AC_CHECK_LIB(socket, socket,
  				        [NETWORK_LIBS="-lsocket $NETWORK_LIBS"],
-diff -ruwN source/gio/ginetsocketaddress.c source-new/gio/ginetsocketaddress.c
---- source/gio/ginetsocketaddress.c	2018-12-23 06:10:41.000000000 -0700
-+++ source-new/gio/ginetsocketaddress.c	2019-01-05 12:05:33.754323562 -0700
-@@ -407,14 +407,21 @@
- g_inet_socket_address_new_from_string (const char *address,
-                                        guint       port)
- {
-+#if !defined(__redox__)
-   static struct addrinfo *hints, hints_struct;
-+#endif
-   GSocketAddress *saddr;
-   GInetAddress *iaddr;
-+#if !defined(__redox__)
-   struct addrinfo *res;
-+#endif
-   gint status;
- 
-   if (strchr (address, ':'))
-     {
-+#if defined(__redox__)
-+      saddr = NULL;
-+#else
-       /* IPv6 address (or it's invalid). We use getaddrinfo() because
-        * it will handle parsing a scope_id as well.
-        */
-@@ -442,6 +449,7 @@
-         saddr = NULL;
- 
-       freeaddrinfo (res);
-+#endif
-     }
-   else
-     {
 diff -ruwN source/gio/glocalfileinfo.c source-new/gio/glocalfileinfo.c
 --- source/gio/glocalfileinfo.c	2018-12-23 06:10:41.000000000 -0700
 +++ source-new/gio/glocalfileinfo.c	2019-01-05 14:18:02.435425946 -0700
@@ -87,13 +54,12 @@ diff -ruwN source/gio/glocalfileinfo.c source-new/gio/glocalfileinfo.c
    g_hash_table_replace (gid_cache, GINT_TO_POINTER (gid), name);
 diff -ruwN source/gio/gnetworking.h.in source-new/gio/gnetworking.h.in
 --- source/gio/gnetworking.h.in	2018-12-23 06:10:41.000000000 -0700
-+++ source-new/gio/gnetworking.h.in	2019-01-05 11:43:10.527612479 -0700
-@@ -40,14 +40,20 @@
- 
++++ source-new/gio/gnetworking.h.in	2019-01-13 10:46:34.304980440 -0700
+@@ -41,13 +41,19 @@
  #include <netdb.h>
  #include <netinet/in.h>
-+#if !defined(__redox__)
  #include <netinet/tcp.h>
++#if !defined(__redox__)
  #include <resolv.h>
 +#endif
  #include <sys/socket.h>
@@ -109,18 +75,6 @@ diff -ruwN source/gio/gnetworking.h.in source-new/gio/gnetworking.h.in
  @NAMESER_COMPAT_INCLUDE@
  
  #ifndef T_SRV
-diff -ruwN source/gio/gresolver.c source-new/gio/gresolver.c
---- source/gio/gresolver.c	2018-12-23 06:10:41.000000000 -0700
-+++ source-new/gio/gresolver.c	2019-01-05 12:51:56.587550105 -0700
-@@ -342,7 +342,7 @@
-     {
-       g_set_error (error, G_RESOLVER_ERROR, G_RESOLVER_ERROR_NOT_FOUND,
-                    _("Error resolving “%s”: %s"),
--                   hostname, gai_strerror (EAI_NONAME));
-+                   hostname, "EAI_NONAME");
-       return TRUE;
-     }
- 
 diff -ruwN source/gio/gsocket.c source-new/gio/gsocket.c
 --- source/gio/gsocket.c	2018-12-23 06:10:41.000000000 -0700
 +++ source-new/gio/gsocket.c	2019-01-05 13:34:30.178211038 -0700
@@ -299,46 +253,8 @@ diff -ruwN source/gio/gsocket.c source-new/gio/gsocket.c
 -
 diff -ruwN source/gio/gthreadedresolver.c source-new/gio/gthreadedresolver.c
 --- source/gio/gthreadedresolver.c	2018-12-23 06:10:41.000000000 -0700
-+++ source-new/gio/gthreadedresolver.c	2019-01-05 13:46:36.830327532 -0700
-@@ -49,6 +49,7 @@
- {
-   switch (err)
-     {
-+#if !defined(__redox__)
-     case EAI_FAIL:
- #if defined(EAI_NODATA) && (EAI_NODATA != EAI_NONAME)
-     case EAI_NODATA:
-@@ -58,7 +59,7 @@
- 
-     case EAI_AGAIN:
-       return G_RESOLVER_ERROR_TEMPORARY_FAILURE;
--
-+#endif
-     default:
-       return G_RESOLVER_ERROR_INTERNAL;
-     }
-@@ -92,6 +93,12 @@
-                    gpointer       task_data,
-                    GCancellable  *cancellable)
- {
-+#if defined(__redox__)
-+    g_task_return_new_error (task,
-+                             G_RESOLVER_ERROR,
-+                             G_RESOLVER_ERROR_INTERNAL,
-+                             _("do_lookup_by_name not implemented on Redox"));
-+#else
-   LookupData *lookup_data = task_data;
-   const char *hostname = lookup_data->hostname;
-   struct addrinfo *res = NULL;
-@@ -163,6 +170,7 @@
- 
-   if (res)
-     freeaddrinfo (res);
-+#endif
- }
- 
- static GList *
-@@ -289,6 +297,12 @@
++++ source-new/gio/gthreadedresolver.c	2019-01-13 10:47:33.441032953 -0700
+@@ -289,6 +289,12 @@
                        gpointer       task_data,
                        GCancellable  *cancellable)
  {
@@ -351,7 +267,7 @@ diff -ruwN source/gio/gthreadedresolver.c source-new/gio/gthreadedresolver.c
    GInetAddress *address = task_data;
    struct sockaddr_storage sockaddr;
    gsize sockaddr_size;
-@@ -319,6 +333,7 @@
+@@ -319,6 +325,7 @@
                                 gai_strerror (retval));
        g_free (phys);
      }
@@ -359,7 +275,7 @@ diff -ruwN source/gio/gthreadedresolver.c source-new/gio/gthreadedresolver.c
  }
  
  static gchar *
-@@ -369,7 +384,7 @@
+@@ -369,7 +376,7 @@
  }
  
  
@@ -368,7 +284,7 @@ diff -ruwN source/gio/gthreadedresolver.c source-new/gio/gthreadedresolver.c
  
  #if defined __BIONIC__ && !defined BIND_4_COMPAT
  /* Copy from bionic/libc/private/arpa_nameser_compat.h
-@@ -920,6 +935,12 @@
+@@ -920,6 +927,12 @@
                     gpointer       task_data,
                     GCancellable  *cancellable)
  {
@@ -381,7 +297,7 @@ diff -ruwN source/gio/gthreadedresolver.c source-new/gio/gthreadedresolver.c
    LookupRecordsData *lrd = task_data;
    GList *records;
    GError *error = NULL;
-@@ -1005,6 +1026,7 @@
+@@ -1005,6 +1018,7 @@
      g_task_return_pointer (task, records, (GDestroyNotify) free_records);
    else
      g_task_return_error (task, error);
@@ -437,88 +353,6 @@ diff -ruwN source/gio/gunixmounts.c source-new/gio/gunixmounts.c
  static GList *
  _g_get_unix_mount_points (void)
  {
-diff -ruwN source/glib/glib-init.c source-new/glib/glib-init.c
---- source/glib/glib-init.c	2018-12-23 06:10:41.000000000 -0700
-+++ source-new/glib/glib-init.c	2019-01-05 11:09:03.083866992 -0700
-@@ -31,6 +31,10 @@
- #include <stdio.h>
- #include <ctype.h>
- 
-+#if defined(__redox__)
-+int strcasecmp(const char *s1, const char *s2);
-+#endif
-+
- /* This seems as good a place as any to make static assertions about platform
-  * assumptions we make throughout GLib. */
- 
-diff -ruwN source/glib/gmain.c source-new/glib/gmain.c
---- source/glib/gmain.c	2018-12-23 06:10:41.000000000 -0700
-+++ source-new/glib/gmain.c	2019-01-05 11:10:02.228193887 -0700
-@@ -5891,13 +5891,21 @@
-       sigset_t all;
- 
-       sigfillset (&all);
-+      #if defined(__redox__)
-+      sigprocmask (SIG_SETMASK, &all, &prev_mask);
-+      #else
-       pthread_sigmask (SIG_SETMASK, &all, &prev_mask);
- #endif
-+#endif
-       glib_worker_context = g_main_context_new ();
-       g_thread_new ("gmain", glib_worker_main, NULL);
- #ifdef G_OS_UNIX
-+      #if defined(__redox__)
-+      sigprocmask (SIG_SETMASK, &prev_mask, NULL);
-+      #else
-       pthread_sigmask (SIG_SETMASK, &prev_mask, NULL);
- #endif
-+#endif
-       g_once_init_leave (&initialised, TRUE);
-     }
- 
-diff -ruwN source/glib/gslice.c source-new/glib/gslice.c
---- source/glib/gslice.c	2018-12-23 06:10:41.000000000 -0700
-+++ source-new/glib/gslice.c	2019-01-05 11:11:23.896640840 -0700
-@@ -405,6 +405,8 @@
-     GetSystemInfo (&system_info);
-     sys_page_size = system_info.dwPageSize;
-   }
-+#elif defined(__redox__)
-+  sys_page_size = getpagesize();
- #else
-   sys_page_size = sysconf (_SC_PAGESIZE); /* = sysconf (_SC_PAGE_SIZE); = getpagesize(); */
- #endif
-diff -ruwN source/glib/gspawn.c source-new/glib/gspawn.c
---- source/glib/gspawn.c	2018-12-23 06:10:41.000000000 -0700
-+++ source-new/glib/gspawn.c	2019-01-05 11:20:25.669130455 -0700
-@@ -1217,7 +1217,11 @@
-       open_max = rl.rlim_max;
-   else
- #endif
-+#if defined(__redox__)
-+      open_max = INT_MAX;
-+#else
-       open_max = sysconf (_SC_OPEN_MAX);
-+#endif
- 
-   for (fd = 0; fd < open_max; fd++)
-       if ((res = cb (data, fd)) != 0)
-diff -ruwN source/glib/gstrfuncs.c source-new/glib/gstrfuncs.c
---- source/glib/gstrfuncs.c	2018-12-23 06:10:41.000000000 -0700
-+++ source-new/glib/gstrfuncs.c	2019-01-05 11:11:59.452834000 -0700
-@@ -55,6 +55,12 @@
- #include "glibintl.h"
- 
- 
-+#if defined(__redox__)
-+int strcasecmp(const char *s1, const char *s2);
-+int strncasecmp(const char *s1, const char *s2, size_t n);
-+#endif
-+
-+
- /**
-  * SECTION:string_utils
-  * @title: String Utility Functions
 diff -ruwN source/glib/gthread-posix.c source-new/glib/gthread-posix.c
 --- source/glib/gthread-posix.c	2018-12-23 06:10:41.000000000 -0700
 +++ source-new/glib/gthread-posix.c	2019-01-05 11:40:57.454759289 -0700
