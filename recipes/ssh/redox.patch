@@ -1,0 +1,138 @@
+diff -ruwN source/channels.c source-new/channels.c
+--- source/channels.c	2018-10-16 18:01:20.000000000 -0600
++++ source-new/channels.c	2019-01-15 21:01:12.203686148 -0700
+@@ -1865,10 +1865,10 @@
+ 		fatal(":%s: channel %d: no remote id", __func__, c->self);
+ 	/* for rdynamic the OPEN_CONFIRMATION has been sent already */
+ 	isopen = (c->type == SSH_CHANNEL_RDYNAMIC_FINISH);
+-	if (getsockopt(c->sock, SOL_SOCKET, SO_ERROR, &err, &sz) < 0) {
+-		err = errno;
+-		error("getsockopt SO_ERROR failed");
+-	}
++	// if (getsockopt(c->sock, SOL_SOCKET, SO_ERROR, &err, &sz) < 0) {
++	// 	err = errno;
++	// 	error("getsockopt SO_ERROR failed");
++	// }
+ 	if (err == 0) {
+ 		debug("channel %d: connected to %s port %d",
+ 		    c->self, c->connect_ctx.host, c->connect_ctx.port);
+diff -ruwN source/config.sub source-new/config.sub
+--- source/config.sub	2018-10-16 18:01:20.000000000 -0600
++++ source-new/config.sub	2019-01-15 19:39:26.234492329 -0700
+@@ -1407,7 +1407,7 @@
+ 	      | -morphos* | -superux* | -rtmk* | -rtmk-nova* | -windiss* \
+ 	      | -powermax* | -dnix* | -nx6 | -nx7 | -sei* | -dragonfly* \
+ 	      | -skyos* | -haiku* | -rdos* | -toppers* | -drops* | -es* \
+-	      | -onefs* | -tirtos* | -phoenix*)
++	      | -onefs* | -tirtos* | -phoenix* | -redox*)
+ 	# Remember, each alternative MUST END IN *, to match a version number.
+ 		;;
+ 	-qnx*)
+diff -ruwN source/openbsd-compat/bindresvport.c source-new/openbsd-compat/bindresvport.c
+--- source/openbsd-compat/bindresvport.c	2018-10-16 18:01:20.000000000 -0600
++++ source-new/openbsd-compat/bindresvport.c	2019-01-15 20:46:06.879804135 -0700
+@@ -42,6 +42,10 @@
+ #include <errno.h>
+ #include <string.h>
+ 
++#ifndef IPPORT_RESERVED
++#define IPPORT_RESERVED 1024
++#endif
++
+ #define STARTPORT 600
+ #define ENDPORT (IPPORT_RESERVED - 1)
+ #define NPORTS	(ENDPORT - STARTPORT + 1)
+diff -ruwN source/openbsd-compat/bsd-getpeereid.c source-new/openbsd-compat/bsd-getpeereid.c
+--- source/openbsd-compat/bsd-getpeereid.c	2018-10-16 18:01:20.000000000 -0600
++++ source-new/openbsd-compat/bsd-getpeereid.c	2019-01-15 20:43:12.410583244 -0700
+@@ -23,7 +23,7 @@
+ 
+ #include <unistd.h>
+ 
+-#if defined(SO_PEERCRED)
++#if defined(SO_PEERCRED) && !defined(__redox__)
+ int
+ getpeereid(int s, uid_t *euid, gid_t *gid)
+ {
+diff -ruwN source/openbsd-compat/bsd-misc.c source-new/openbsd-compat/bsd-misc.c
+--- source/openbsd-compat/bsd-misc.c	2018-10-16 18:01:20.000000000 -0600
++++ source-new/openbsd-compat/bsd-misc.c	2019-01-15 20:28:46.619332501 -0700
+@@ -25,6 +25,9 @@
+ # include <sys/time.h>
+ #endif
+ 
++#if defined(__redox__)
++#include <fcntl.h>
++#endif
+ #include <string.h>
+ #include <signal.h>
+ #include <stdlib.h>
+diff -ruwN source/openbsd-compat/getrrsetbyname.c source-new/openbsd-compat/getrrsetbyname.c
+--- source/openbsd-compat/getrrsetbyname.c	2018-10-16 18:01:20.000000000 -0600
++++ source-new/openbsd-compat/getrrsetbyname.c	2019-01-15 20:57:20.248721738 -0700
+@@ -47,7 +47,7 @@
+ 
+ #include "includes.h"
+ 
+-#if !defined (HAVE_GETRRSETBYNAME) && !defined (HAVE_LDNS)
++#if !defined (HAVE_GETRRSETBYNAME) && !defined (HAVE_LDNS) && !defined(__redox__)
+ 
+ #include <stdlib.h>
+ #include <string.h>
+diff -ruwN source/openbsd-compat/getrrsetbyname.h source-new/openbsd-compat/getrrsetbyname.h
+--- source/openbsd-compat/getrrsetbyname.h	2018-10-16 18:01:20.000000000 -0600
++++ source-new/openbsd-compat/getrrsetbyname.h	2019-01-15 19:54:39.564320719 -0700
+@@ -50,7 +50,7 @@
+ 
+ #include "includes.h"
+ 
+-#ifndef HAVE_GETRRSETBYNAME
++#if !defined(HAVE_GETRRSETBYNAME) && !defined(__redox__)
+ 
+ #include <sys/types.h>
+ #include <netinet/in.h>
+diff -ruwN source/openbsd-compat/openbsd-compat.h source-new/openbsd-compat/openbsd-compat.h
+--- source/openbsd-compat/openbsd-compat.h	2018-10-16 18:01:20.000000000 -0600
++++ source-new/openbsd-compat/openbsd-compat.h	2019-01-15 20:14:24.316498869 -0700
+@@ -36,6 +36,10 @@
+ 
+ #include <stddef.h>  /* for wchar_t */
+ 
++#if defined(__redox__)
++#include <stdio.h>
++#endif
++
+ /* OpenBSD function replacements */
+ #include "base64.h"
+ #include "sigact.h"
+diff -ruwN source/sshbuf-misc.c source-new/sshbuf-misc.c
+--- source/sshbuf-misc.c	2018-10-16 18:01:20.000000000 -0600
++++ source-new/sshbuf-misc.c	2019-01-15 20:45:08.969783102 -0700
+@@ -28,7 +28,9 @@
+ #include <stdio.h>
+ #include <limits.h>
+ #include <string.h>
++#if !defined(__redox__)
+ #include <resolv.h>
++#endif
+ #include <ctype.h>
+ 
+ #include "ssherr.h"
+@@ -158,4 +160,3 @@
+ 	r[l] = '\0';
+ 	return r;
+ }
+-
+diff -ruwN source/sshkey.c source-new/sshkey.c
+--- source/sshkey.c	2018-10-16 18:01:20.000000000 -0600
++++ source-new/sshkey.c	2019-01-15 20:13:21.629829281 -0700
+@@ -42,7 +42,9 @@
+ #include <limits.h>
+ #include <stdio.h>
+ #include <string.h>
++#if !defined(__redox__)
+ #include <resolv.h>
++#endif
+ #ifdef HAVE_UTIL_H
+ #include <util.h>
+ #endif /* HAVE_UTIL_H */
