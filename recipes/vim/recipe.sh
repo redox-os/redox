@@ -23,7 +23,7 @@ function recipe_build {
     export vim_cv_getcwd_broken=yes
     export vim_cv_stat_ignores_slash=no
     export vim_cv_memmove_handles_overlap=yes
-    ./configure --host=${HOST} --prefix=/ --with-tlib=ncurses
+    ./configure --build=${BUILD} --host=${HOST} --prefix=/ --with-tlib=ncurses
     make -j"$(nproc)"
     skip=1
 }

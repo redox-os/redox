@@ -18,6 +18,7 @@ function recipe_build {
     export CFLAGS="-I$sysroot/include"
     export LDFLAGS="-L$sysroot/lib"
     ./configure \
+        --build=${BUILD} \
         --host="$HOST" \
         --prefix='' \
         --disable-server \

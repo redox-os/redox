@@ -19,6 +19,7 @@ function recipe_build {
     autoreconf -i
     ./configure \
         --prefix=/ \
+        --build=${BUILD} \
         --host=${HOST} \
         --disable-tftp \
         --disable-ftp \

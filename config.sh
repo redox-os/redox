@@ -28,6 +28,8 @@ export RANLIB="${HOST}-gcc-ranlib"
 export READELF="${HOST}-readelf"
 export STRIP="${HOST}-strip"
 
+BUILD="$(cc -dumpmachine)"
+
 export PKG_CONFIG_FOR_BUILD="pkg-config"
 
 if [[ "$OSTYPE" == "darwin"* ]]; then

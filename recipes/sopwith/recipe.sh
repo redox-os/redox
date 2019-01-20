@@ -18,7 +18,7 @@ function recipe_build {
     export CFLAGS="-I$sysroot/include -I$sysroot/include/SDL"
     export LDFLAGS="-L$sysroot/lib"
     export LIBS="-lSDL -lorbital" # TODO: Uses sdl-config instead of pkg-config
-    ./configure --host=${HOST} --prefix='' --with-sdl-prefix="$sysroot"
+    ./configure --build=${BUILD} --host=${HOST} --prefix='' --with-sdl-prefix="$sysroot"
     make -j"$(nproc)"
     skip=1
 }

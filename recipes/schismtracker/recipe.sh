@@ -19,7 +19,7 @@ function recipe_build {
     export LDFLAGS="-L$sysroot/lib"
     export SDL_CONFIG="$sysroot/bin/sdl-config"
     autoreconf -i
-    ./configure --host=${HOST} --prefix=''
+    ./configure --build=${BUILD} --host=${HOST} --prefix=''
     make -j"$(nproc)"
     skip=1
 }

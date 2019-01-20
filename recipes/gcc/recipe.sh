@@ -27,6 +27,7 @@ function recipe_build {
     ln -sf "$sysroot/lib" "$sysroot/usr/lib"
 
     ./configure \
+        --build=${BUILD} \
         --host=${HOST} \
         --target=${HOST} \
         --prefix=/ \

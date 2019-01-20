@@ -14,7 +14,7 @@ function recipe_update {
 
 function recipe_build {
     export CPPFLAGS="-P"
-    ./configure --host=${HOST} --prefix="" --enable-widec --disable-db-install
+    ./configure --build=${BUILD} --host=${HOST} --prefix="" --enable-widec --disable-db-install
     make -j"$(nproc)"
     skip=1
 }

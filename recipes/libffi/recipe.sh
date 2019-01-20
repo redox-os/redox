@@ -18,6 +18,7 @@ function recipe_build {
     export LDFLAGS="-L$sysroot/lib"
     wget -O config.sub http://git.savannah.gnu.org/cgit/config.git/plain/config.sub
     ./configure \
+        --build=${BUILD} \
         --host=${HOST} \
         --prefix=/ \
         --disable-shared \

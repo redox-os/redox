@@ -15,7 +15,7 @@ function recipe_update {
 
 function recipe_build {
     cp ../config.site ./
-    ./configure --host=${HOST} --build=${ARCH} --prefix=/
+    ./configure --build=${BUILD} --host=${HOST} --build=${ARCH} --prefix=/
     make -j"$(nproc)"
     skip=1
 }

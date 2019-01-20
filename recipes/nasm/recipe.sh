@@ -12,7 +12,7 @@ function recipe_update {
 }
 
 function recipe_build {
-    ./configure --host=${HOST} --prefix=""
+    ./configure --build=${BUILD} --host=${HOST} --prefix=""
     make -j"$(nproc)"
     skip=1
 }

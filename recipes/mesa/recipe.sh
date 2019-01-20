@@ -21,6 +21,7 @@ function recipe_build {
     #export LLVM_CONFIG="x86_64-unknown-redox-llvm-config"
     NOCONFIGURE=1 ./autogen.sh
     ./configure \
+        --build=${BUILD} \
         --host="${HOST}" \
         --prefix=/ \
         --disable-dri \

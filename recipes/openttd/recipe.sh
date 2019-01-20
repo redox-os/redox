@@ -15,7 +15,7 @@ function recipe_update {
 
 function recipe_build {
     ./configure \
-        --build=`gcc -dumpmachine` \
+        --build=${BUILD} \
         --host=${HOST} \
         --prefix='' \
         --enable-static \

@@ -16,7 +16,7 @@ function recipe_build {
     sysroot="$(realpath ../sysroot)"
     export LDFLAGS="-L$sysroot/lib"
     export CPPFLAGS="-I$sysroot/include"
-    ./configure --host=${HOST} --prefix=/
+    ./configure --build=${BUILD} --host=${HOST} --prefix=/
     make -j$(nproc)
     skip=1
 }

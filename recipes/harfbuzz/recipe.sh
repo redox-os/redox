@@ -20,6 +20,7 @@ function recipe_build {
     FREETYPE_CFLAGS="$("${PKG_CONFIG}" --cflags freetype2)"
     FREETYPE_LIBS="$("${PKG_CONFIG}" --libs freetype2)"
     ./configure \
+        --build=${BUILD} \
         --host=${HOST} \
         --prefix=/ \
         --disable-shared \
