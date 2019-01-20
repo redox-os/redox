@@ -17,6 +17,7 @@ function recipe_build {
     export CFLAGS="-I$sysroot/include"
     export LDFLAGS="-L$sysroot/lib"
     glib_cv_stack_grows=no glib_cv_uscore=no ./autogen.sh \
+        --build=${BUILD} \
         --host=${HOST} \
         --prefix=/ \
         --disable-shared \

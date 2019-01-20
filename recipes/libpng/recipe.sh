@@ -18,7 +18,7 @@ function recipe_build {
     export CPPFLAGS="-I$sysroot/include"
     chmod +w config.sub
     wget -O config.sub http://git.savannah.gnu.org/cgit/config.git/plain/config.sub
-    ./configure --host=${HOST} --prefix='/'
+    ./configure --build=${BUILD} --host=${HOST} --prefix='/'
     make -j"$(nproc)"
     skip=1
 }

@@ -19,6 +19,7 @@ function recipe_build {
     ./autogen.sh
     ./configure \
         --prefix=/ \
+        --build=${BUILD} \
         --host=${HOST} \
         --disable-shared \
         --disable-sdltest \

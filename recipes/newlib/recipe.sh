@@ -24,7 +24,7 @@ function recipe_build {
         automake-1.11 --cygnus Makefile
     popd
 
-    CC= ./configure --target="${HOST}" --prefix=/
+    CC= ./configure --build=${BUILD} --target="${HOST}" --prefix=/
     make all -j"$(nproc)"
 
     skip=1

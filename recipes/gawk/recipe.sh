@@ -8,7 +8,7 @@ function recipe_update {
 }
 
 function recipe_build {
-    ./configure --host=${HOST} --prefix=/ ac_cv_func_gethostbyname=no ac_cv_func_connect=no
+    ./configure --build=${BUILD} --host=${HOST} --prefix=/ ac_cv_func_gethostbyname=no ac_cv_func_connect=no
     make -j"$(nproc)"
     skip=1
 }

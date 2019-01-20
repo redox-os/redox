@@ -16,7 +16,7 @@ function recipe_build {
     sed -i 's|.*/doc/help2man.*|\&\& true|' Makefile.in
     sed -i 's|install-info-am install-man|install-info-am|' Makefile.in
 
-    ./configure --host=${HOST} --prefix=''
+    ./configure --build=${BUILD} --host=${HOST} --prefix=''
     make -j"$(nproc)"
     skip=1
 }

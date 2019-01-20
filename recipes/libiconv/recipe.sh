@@ -12,7 +12,7 @@ function recipe_update {
 }
 
 function recipe_build {
-    ./configure --host=${HOST} --prefix='/' --disable-shared --enable-static
+    ./configure --build=${BUILD} --host=${HOST} --prefix='/' --disable-shared --enable-static
     make -j"$(nproc)"
     skip=1
 }

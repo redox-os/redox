@@ -18,6 +18,7 @@ function recipe_build {
     sysroot="$(realpath ../sysroot)"
 
     ./configure \
+        --build=${BUILD} \
         --host=${HOST} \
         --prefix='' \
         --with-sdl-prefix="$sysroot" \

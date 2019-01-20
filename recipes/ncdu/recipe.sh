@@ -16,7 +16,7 @@ function recipe_build {
     export LDFLAGS="-L$sysroot/lib"
     export CPPFLAGS="-I$sysroot/include -I$sysroot/include/ncurses"
     ./configure \
-        --build x86_64-pc-linux-gnu \
+        --build=${BUILD} \
         --host "$HOST"
     make -j"$(nproc)"
     skip=1

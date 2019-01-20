@@ -14,6 +14,7 @@ function recipe_update {
 
 function recipe_build {
     ./configure \
+        --build=${BUILD} \
         --host=${HOST} \
         --prefix="" \
         --disable-db-install \

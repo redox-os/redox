@@ -16,7 +16,7 @@ function recipe_build {
     sysroot="$(realpath ../sysroot)"
     export LDFLAGS="-L$sysroot/lib"
     export CFLAGS="-I$sysroot/include"
-    ./configure --disable-shared --host=${HOST} --prefix=""
+    ./configure --disable-shared --build=${BUILD} --host=${HOST} --prefix=""
     make -j"$(nproc)"
     skip=1
 }

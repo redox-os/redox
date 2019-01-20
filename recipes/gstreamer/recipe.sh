@@ -19,6 +19,7 @@ function recipe_build {
     export GLIB_GENMARSHAL="$(which glib-genmarshal)"
     export GLIB_MKENUMS="$(which glib-mkenums)"
     ./configure \
+        --build=${BUILD} \
         --host=${HOST} \
         --prefix=/ \
         --disable-shared \

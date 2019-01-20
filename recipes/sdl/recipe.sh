@@ -18,6 +18,7 @@ function recipe_build {
     export LDFLAGS="-L$sysroot/lib"
     ./autogen.sh
     ./configure \
+        --build=${BUILD} \
         --host=${HOST} \
         --prefix=/ \
         --disable-shared \
