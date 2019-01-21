@@ -1,6 +1,7 @@
 ata0-master: type=disk, path="build/harddrive.bin", mode=flat
 boot: disk
 com1: enabled=1, mode=file, dev=build/serial.log
+cpu: model=corei7_haswell_4770
 megs: 1024
 
 magic_break: enabled=1
