@@ -20,7 +20,7 @@ function recipe_build {
 	sysroot="$(realpath ../sysroot)"
 	export LDFLAGS="-L$sysroot/lib"
 	export CPPFLAGS="-I$sysroot/include"
-	CFLAGS="-DCAIRO_NO_MUTEX=1" ./configure --host=${HOST} --prefix=/ --enable-xlib=no --enable-script=no --enable-interpreter=no
+	CFLAGS="-DCAIRO_NO_MUTEX=1" ./configure --build=${BUILD} --host=${HOST} --prefix=/ --enable-xlib=no --enable-script=no --enable-interpreter=no
 	make
     	skip=1
 }
