@@ -15,7 +15,8 @@ function recipe_update {
 function recipe_build {
     sysroot="$(realpath ../sysroot)"
     export LDFLAGS="-L$sysroot/lib"
-    export CPPFLAGS="-I$sysroot/include"
+    export CPPFLAGS="-I$sysroot/include -I$sysroot/include/ncurses"
+    autoreconf -i
     ./configure --build=${BUILD} --host=${HOST} --prefix=/ --without-fonts
     make -j"$(nproc)"
     skip=1
@@ -34,6 +35,5 @@ function recipe_clean {
 function recipe_stage {
     dest="$(realpath $1)"
     make DESTDIR="$dest" install
-    rm -rf $1/share/man
     skip=1
 }

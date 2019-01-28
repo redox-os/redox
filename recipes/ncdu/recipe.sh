@@ -17,7 +17,8 @@ function recipe_build {
     export CPPFLAGS="-I$sysroot/include -I$sysroot/include/ncurses"
     ./configure \
         --build=${BUILD} \
-        --host "$HOST"
+        --host="$HOST" \
+        --prefix=/
     make -j"$(nproc)"
     skip=1
 }
@@ -32,12 +33,5 @@ function recipe_clean {
 function recipe_stage {
     dest="$(realpath "$1")"
     make DESTDIR="$dest" install
-    cd "$dest/usr/local/bin/"
-    find . -type f -exec install -D "{}" "$dest/usr/bin/{}" \;
-    cd -
-    cd "$dest/usr/local/share/"
-    find . -type f -exec install -D "{}" "$dest/share/{}" \;
-    cd -
-    rm -r "$dest/usr/local/"
     skip=1
 }
