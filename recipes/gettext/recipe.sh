@@ -22,7 +22,12 @@ function recipe_build {
         --host=${HOST} \
         --prefix=/ \
         --disable-shared \
-        --enable-static
+        --enable-static \
+        gt_cv_locale_fr=false \
+        gt_cv_locale_fr_utf8=false \
+        gt_cv_locale_ja=false \
+        gt_cv_locale_tr_utf8=false \
+        gt_cv_locale_zh_CN=false
     make -j"$(nproc)"
     skip=1
 }

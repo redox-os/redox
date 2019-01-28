@@ -19,6 +19,7 @@ function recipe_build {
         --prefix="" \
         --disable-db-install \
         --without-ada \
+        --without-tests \
         cf_cv_func_mkstemp=yes
     make -j"$(nproc)"
     skip=1
