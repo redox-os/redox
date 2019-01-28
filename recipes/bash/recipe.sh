@@ -1,5 +1,6 @@
 VERSION=4.4
 TAR=http://ftp.gnu.org/gnu/bash/bash-$VERSION.tar.gz
+BUILD_DEPENDS=(gettext)
 
 function recipe_version {
     echo "$VERSION"
@@ -12,9 +13,17 @@ function recipe_update {
 }
 
 function recipe_build {
+    sysroot="$PWD/../sysroot"
+    export LDFLAGS="-L$sysroot/lib"
+    export CPPFLAGS="-I$sysroot/include"
     wget -O support/config.sub http://git.savannah.gnu.org/cgit/config.git/plain/config.sub
-    ./configure --build=${BUILD} --host=${HOST} --prefix=/ --disable-readline
-    make -j"$(nproc)"
+    ./configure \
+        --build=${BUILD} \
+        --host=${HOST} \
+        --prefix=/ \
+        --disable-readline \
+        bash_cv_getenv_redef=no
+    make # -j"$(nproc)"
     skip=1
 }
 
