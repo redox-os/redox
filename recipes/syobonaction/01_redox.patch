@@ -31,7 +31,7 @@ diff -rupNw source-original/Makefile source/Makefile
 @@ -1,8 +1,8 @@
  SyobonAction:main.o loadg.o DxLib.o
 -	gcc main.o loadg.o DxLib.o -o SyobonAction `sdl-config --libs` -lSDL_gfx -lSDL_image -lSDL_mixer -lSDL_ttf
-+	${CXX} ${LDFLAGS} main.o loadg.o DxLib.o -o SyobonAction `${SDL_CONFIG} --libs` -lSDL_gfx -lSDL_image -lSDL_mixer -lpng -ljpeg -lz -lSDL -lSDL_ttf -lfreetype
++	${CXX} ${LDFLAGS} main.o loadg.o DxLib.o -o SyobonAction `${SDL_CONFIG} --libs` -lSDL_gfx -lSDL_image -lSDL_mixer -lpng -ljpeg -lz -lSDL -lSDL_ttf -lfreetype -lvorbisfile -lvorbis -logg
  main.o:main.cpp
 -	gcc -c main.cpp
 +	${CXX} ${CPPFLAGS} `${SDL_CONFIG} --cflags` -c main.cpp
