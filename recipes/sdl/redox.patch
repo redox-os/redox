@@ -380,7 +380,7 @@ diff -ruwN source/src/thread/pthread/SDL_systhread.c source-new/src/thread/pthre
 diff -ruwN source/src/video/orbital/SDL_orbitalevents.c source-new/src/video/orbital/SDL_orbitalevents.c
 --- source/src/video/orbital/SDL_orbitalevents.c	1969-12-31 17:00:00.000000000 -0700
 +++ source-new/src/video/orbital/SDL_orbitalevents.c	2018-12-29 15:57:00.298520310 -0700
-@@ -0,0 +1,197 @@
+@@ -0,0 +1,201 @@
 +/*
 +    SDL - Simple DirectMedia Layer
 +    Copyright (C) 1997-2012 Sam Lantinga
@@ -424,6 +424,10 @@ diff -ruwN source/src/video/orbital/SDL_orbitalevents.c source-new/src/video/orb
 +void ORBITAL_PumpEvents(_THIS)
 +{
 +    SDL_keysym keysym;
++
++    if (!this->hidden->window) {
++        return;
++    }
 +
 +    void* event_iter = orb_window_events(this->hidden->window);
 +    OrbEventOption oeo = orb_events_next(event_iter);
