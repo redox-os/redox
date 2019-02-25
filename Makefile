@@ -3,6 +3,8 @@ include mk/config.mk
 
 all: build/harddrive.bin
 
+coreboot: build/coreboot.elf
+
 live: build/livedisk.bin
 
 iso: build/livedisk.iso
