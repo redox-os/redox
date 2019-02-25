@@ -311,7 +311,7 @@ function op {
             if [ "$skip" -eq "0" ]
             then
                 cp -p "$ROOT/Xargo.toml" "Xargo.toml"
-                xargo build --target "$TARGET" $release_flag $CARGOFLAGS
+                xargo rustc --target "$TARGET" $release_flag $CARGOFLAGS
             fi
             popd > /dev/null
             ;;
