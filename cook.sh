@@ -6,6 +6,7 @@ source config.sh
 
 # Variables to be overriden by recipes
 export BINDIR=bin
+export CARGOBUILD=rustc
 export CARGOFLAGS=
 export DEBUG=
 export PREPARE_COPY=1
@@ -311,7 +312,7 @@ function op {
             if [ "$skip" -eq "0" ]
             then
                 cp -p "$ROOT/Xargo.toml" "Xargo.toml"
-                xargo rustc --target "$TARGET" $release_flag $CARGOFLAGS
+                xargo "$CARGOBUILD" --target "$TARGET" $release_flag $CARGOFLAGS
             fi
             popd > /dev/null
             ;;
