@@ -24,6 +24,12 @@ build/livedisk.iso: build/livedisk.bin.gz
 					build/iso/
 	isohybrid $@
 
+bootloader-coreboot/build/bootloader: build/kernel_coreboot
+	$(MAKE) -C bootloader-coreboot clean build/bootloader KERNEL="$(ROOT)/$<"
+
+build/coreboot.elf: bootloader-coreboot/build/bootloader
+	cp $< $@
+
 bootloader-efi/build/redox_bootloader/boot.efi:
 	$(MAKE) -C bootloader-efi build/redox_bootloader/boot.efi
 

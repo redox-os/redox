@@ -34,3 +34,6 @@
 	path = relibc
 	url = https://gitlab.redox-os.org/redox-os/relibc.git
 	branch = master
+[submodule "bootloader-coreboot"]
+	path = bootloader-coreboot
+	url = https://gitlab.redox-os.org/redox-os/bootloader-coreboot.git
