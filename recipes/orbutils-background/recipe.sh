@@ -1,4 +1,4 @@
 GIT=https://gitlab.redox-os.org/redox-os/orbutils.git
 BINDIR=/ui/bin
-CARGOFLAGS="--bin background --bin launcher --bin orblogin"
+CARGOFLAGS="--bin background -- -C lto"
 DEPENDS="orbital"

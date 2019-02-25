@@ -1,5 +1,6 @@
 GIT=https://gitlab.redox-os.org/redox-os/drivers.git
-CARGOFLAGS=--all
+CARGOBUILD="build"
+CARGOFLAGS="--all"
 
 function recipe_version {
     echo "0.1.1"
