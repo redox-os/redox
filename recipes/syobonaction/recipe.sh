@@ -1,6 +1,6 @@
 VERSION=1.0-rc3
 GIT=https://github.com/angelXwind/OpenSyobonAction
-BUILD_DEPENDS=(sdl liborbital sdl_mixer sdl_image sdl_gfx sdl_ttf freetype libjpeg libpng zlib)
+BUILD_DEPENDS=(sdl liborbital sdl_mixer sdl_image sdl_gfx sdl_ttf freetype libjpeg libpng zlib libogg libvorbis)
 
 function recipe_version {
     echo "$VERSION"

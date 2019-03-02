@@ -1,6 +1,6 @@
 VERSION=1.2.12
 TAR=https://www.libsdl.org/projects/SDL_mixer/release/SDL_mixer-$VERSION.tar.gz
-BUILD_DEPENDS=(sdl liborbital)
+BUILD_DEPENDS=(sdl liborbital libogg libvorbis)
 
 function recipe_version {
     echo "$VERSION"
@@ -16,11 +16,13 @@ function recipe_build {
     sysroot="$(realpath ../sysroot)"
     export CFLAGS="-I$sysroot/include"
     export LDFLAGS="-L$sysroot/lib"
+    export LIBS="-lvorbis -logg"
     ./autogen.sh
     ./configure \
         --prefix=/ \
         --build=${BUILD} \
         --host=${HOST} \
+        --enable-music-ogg \
         --disable-shared \
         --disable-sdltest \
         --disable-music-cmd \
