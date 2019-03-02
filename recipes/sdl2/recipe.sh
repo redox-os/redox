@@ -1,6 +1,6 @@
 VERSION=2.0.9
-TAR=https://www.libsdl.org/release/SDL2-$VERSION.tar.gz
-BUILD_DEPENDS=(liborbital)
+GIT=https://gitlab.redox-os.org/fabiao/sdl2-src.git
+BUILD_DEPENDS=(liborbital mesa)
 
 function recipe_version {
     echo "$VERSION"
@@ -26,7 +26,7 @@ function recipe_build {
         --disable-video-x11 \
         --disable-loadso \
         --disable-sdl-dlopen \
-        --disable-threads \
+        --enable-threads \
         --enable-audio \
         --enable-dummyaudio \
         --enable-video-orbital \
