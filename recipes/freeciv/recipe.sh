@@ -22,6 +22,7 @@ function recipe_build {
         --host="$HOST" \
         --prefix='' \
         --disable-server \
+        --enable-ipv6=no \
         --enable-client=sdl \
         --enable-fcmp=cli \
         --with-sdl-prefix="$sysroot" \
