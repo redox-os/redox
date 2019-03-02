@@ -1,0 +1,138 @@
+diff --git a/CMakeLists.txt b/CMakeLists.txt
+index fa01e3a5..5910934a 100644
+--- a/CMakeLists.txt
++++ b/CMakeLists.txt
+@@ -1,4 +1,4 @@
+-cmake_minimum_required(VERSION 3.1)
++cmake_minimum_required(VERSION 3.4)
+ if(POLICY CMP0025)
+ 	cmake_policy(SET CMP0025 NEW)
+ endif()
+@@ -241,8 +241,8 @@ elseif(UNIX)
+ 		add_definitions(-D_GNU_SOURCE)
+ 	endif()
+ 	if(NOT APPLE AND NOT HAIKU)
+-		set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} -pthread")
+-		set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -pthread")
++		set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} -lpthread")
++		set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -lpthread")
+ 	endif()
+ 
+ 	list(APPEND CORE_VFS_SRC ${CMAKE_CURRENT_SOURCE_DIR}/src/util/vfs/vfs-fd.c ${CMAKE_CURRENT_SOURCE_DIR}/src/util/vfs/vfs-dirent.c)
+diff --git a/include/mgba-util/platform/posix/threading.h b/include/mgba-util/platform/posix/threading.h
+index 468e1460..50cba731 100644
+--- a/include/mgba-util/platform/posix/threading.h
++++ b/include/mgba-util/platform/posix/threading.h
+@@ -85,25 +85,8 @@ static inline int ThreadJoin(Thread thread) {
+ }
+ 
+ static inline int ThreadSetName(const char* name) {
+-#ifdef __APPLE__
+-#if __ENVIRONMENT_MAC_OS_X_VERSION_MIN_REQUIRED__ >= 1060
+-	return pthread_setname_np(name);
+-#else
+ 	UNUSED(name);
+ 	return 0;
+-#endif
+-#elif defined(__FreeBSD__) || defined(__OpenBSD__)
+-	pthread_set_name_np(pthread_self(), name);
+-	return 0;
+-#elif defined(__HAIKU__)
+-	rename_thread(find_thread(NULL), name);
+-	return 0;
+-#elif !defined(BUILD_PANDORA) // Pandora's glibc is too old
+-	return pthread_setname_np(pthread_self(), name);
+-#else
+-	UNUSED(name);
+-	return 0;
+-#endif
+ }
+ 
+ CXX_GUARD_END
+diff --git a/include/mgba/core/interface.h b/include/mgba/core/interface.h
+index e5c9dde1..82d3b828 100644
+--- a/include/mgba/core/interface.h
++++ b/include/mgba/core/interface.h
+@@ -31,7 +31,7 @@ typedef uint32_t color_t;
+ #define M_G8(X) (((((X) >> 2) & 0xF8) * 0x21) >> 5)
+ #define M_B8(X) (((((X) >> 7) & 0xF8) * 0x21) >> 5)
+ 
+-#define M_RGB5_TO_BGR8(X) ((M_R5(X) << 3) | (M_G5(X) << 11) | (M_B5(X) << 19))
++#define M_RGB5_TO_BGR8(X) ((M_B5(X) << 3) | (M_G5(X) << 11) | (M_R5(X) << 19))
+ #define M_RGB8_TO_BGR5(X) ((((X) & 0xF8) >> 3) | (((X) & 0xF800) >> 6) | (((X) & 0xF80000) >> 9))
+ #define M_RGB8_TO_RGB5(X) ((((X) & 0xF8) << 7) | (((X) & 0xF800) >> 6) | (((X) & 0xF80000) >> 19))
+ 
+diff --git a/src/platform/sdl/sdl-audio.c b/src/platform/sdl/sdl-audio.c
+index ab0bd830..7cd77495 100644
+--- a/src/platform/sdl/sdl-audio.c
++++ b/src/platform/sdl/sdl-audio.c
+@@ -24,6 +24,15 @@ bool mSDLInitAudio(struct mSDLAudio* context, struct mCoreThread* threadContext)
+ 		return false;
+ 	}
+ 
++	// Workaround: The thread of _mSDLAudioCallback cannot see these changes
++	// unless they are made before the SDL_OpenAudio call.
++	// This makes the `if (!context || !audioContext->core) {` check in
++	// _mSDLAudioCallback not bail out. This is rather important, the whole
++	// emulation seems to be synched to the audio.
++	context->core = threadContext->core;
++	context->sync = &threadContext->impl->sync;
++	// --
++
+ 	context->desiredSpec.freq = context->sampleRate;
+ 	context->desiredSpec.format = AUDIO_S16SYS;
+ 	context->desiredSpec.channels = 2;
+diff --git a/src/third-party/zlib/contrib/minizip/ioapi.c b/src/third-party/zlib/contrib/minizip/ioapi.c
+index 7f5c191b..744dd96b 100644
+--- a/src/third-party/zlib/contrib/minizip/ioapi.c
++++ b/src/third-party/zlib/contrib/minizip/ioapi.c
+@@ -14,7 +14,7 @@
+         #define _CRT_SECURE_NO_WARNINGS
+ #endif
+ 
+-#if defined(__APPLE__) || defined(IOAPI_NO_64)
++#if defined(__APPLE__) || defined(IOAPI_NO_64) || defined(__redox__)
+ // In darwin and perhaps other BSD variants off_t is a 64 bit value, hence no need for specific 64 bit functions
+ #define FOPEN_FUNC(filename, mode) fopen(filename, mode)
+ #define FTELLO_FUNC(stream) ftello(stream)
+diff --git a/src/util/vfs/vfs-fd.c b/src/util/vfs/vfs-fd.c
+index 4a20eaf7..3307709c 100644
+--- a/src/util/vfs/vfs-fd.c
++++ b/src/util/vfs/vfs-fd.c
+@@ -42,7 +42,8 @@ struct VFile* VFileOpenFD(const char* path, int flags) {
+ 	MultiByteToWideChar(CP_UTF8, 0, path, -1, wpath, sizeof(wpath) / sizeof(*wpath));
+ 	int fd = _wopen(wpath, flags, 0666);
+ #else
+-	int fd = open(path, flags, 0666);
++	// Workaround for the _vfdMap permission problems below
++	int fd = open(path, flags | O_RDWR, 0666);
+ #endif
+ 	return VFileFromFD(fd);
+ }
+@@ -164,24 +165,6 @@ static ssize_t _vfdSize(struct VFile* vf) {
+ static bool _vfdSync(struct VFile* vf, const void* buffer, size_t size) {
+ 	UNUSED(buffer);
+ 	UNUSED(size);
+-	struct VFileFD* vfd = (struct VFileFD*) vf;
+-#ifndef _WIN32
+-#ifdef __HAIKU__
+-	futimens(vfd->fd, NULL);
+-#else
+-	futimes(vfd->fd, NULL);
+-#endif
+-	if (buffer && size) {
+-		return msync(buffer, size, MS_SYNC) == 0;
+-	}
+-	return fsync(vfd->fd) == 0;
+-#else
+-	HANDLE h = (HANDLE) _get_osfhandle(vfd->fd);
+-	FILETIME ft;
+-	SYSTEMTIME st;
+-	GetSystemTime(&st);
+-	SystemTimeToFileTime(&st, &ft);
+-	SetFileTime(h, NULL, &ft, &ft);
+-	return FlushFileBuffers(h);
+-#endif
++	printf("_vfdSync\n");
++	return true;
+ }
