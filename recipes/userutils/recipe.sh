@@ -22,22 +22,22 @@ function recipe_stage {
     else
         build=release
     fi
-    
+
     mkdir -p "$1/bin"
-    
+
     for bin in "${BINS[@]}"
     do
-        cp -v "target/x86_64-unknown-redox/$build/$bin" "$1/bin"
+        cp -v "target/$TARGET/$build/$bin" "$1/bin"
     done
-    
+
     cp -Rv "res" "$1/etc"
-    
+
     ln -s id "$1/bin/whoami"
     chmod +s "$1/bin/passwd"
     chmod +s "$1/bin/sudo"
     chmod +s "$1/bin/su"
-    
+
     docgen ../source ../stage/ref
-    
+
     skip=1
 }
