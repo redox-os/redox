@@ -36,7 +36,9 @@ function recipe_clean {
 
 function recipe_stage {
     dest="$(realpath $1)"
-    mkdir -pv "$dest/bin"
-    cp -v "sdl2_gears" "$dest/bin/sdl2_gears"
+    mkdir -pv "$dest/games/sdl2_gears"
+    mkdir -pv "$dest/home/user"
+    cp -v "sdl2_gears" "$dest/games/sdl2_gears/sdl2_gears"
+    cp -v "../test.wav" "$dest/home/user/test.wav"
     skip=1
 }
