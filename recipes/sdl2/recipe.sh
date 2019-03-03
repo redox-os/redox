@@ -30,6 +30,7 @@ function recipe_build {
         --enable-audio \
         --enable-dummyaudio \
         --enable-video-orbital \
+        --enable-redoxaudio \
         --enable-cdrom
     make -j"$(nproc)"
     skip=1
