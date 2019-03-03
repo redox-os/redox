@@ -191,8 +191,6 @@ draw(void)
     glPopMatrix();
 
     glPopMatrix();
-
-    glFinish();
 }
 
 static void
@@ -201,9 +199,11 @@ idle(void)
     angle += delta;
     if (angle > 360.0f)
         angle -= 360.0f;
-    
+
     draw();
-    
+
+    glFlush();
+
     SDL_GL_SwapWindow(window);
 }
 
@@ -264,22 +264,39 @@ init(void)
 
 void CheckSDLError(int line)
 {
-	const char* error = SDL_GetError();
-	if (error != "")
-	{
-		printf("SLD Error: %s\n", error);
+    const char *error = SDL_GetError();
+    if (error != "")
+    {
+        printf("SLD Error: %s\n", error);
 
-		if (line != -1)
-			printf("\nLine: %d\n", line);
+        if (line != -1)
+            printf("\nLine: %d\n", line);
 
-		SDL_ClearError();
-	}
+        SDL_ClearError();
+    }
+}
+
+void audio_callback(void *userdata, Uint8 *stream, int len);
+static Uint8 *audio_pos; // global pointer to the audio buffer to be played
+static Uint32 audio_len; // remaining length of the sample we have to play
+
+void audio_callback(void *userdata, Uint8 *stream, int len)
+{
+    if (audio_len == 0)
+        return;
+
+    len = (len > audio_len ? audio_len : len);
+    SDL_memcpy (stream, audio_pos, len); 					// simply copy from one buffer into the other
+    //SDL_MixAudio(stream, audio_pos, len, SDL_MIX_MAXVOLUME); //FIXME: broken in redox
+
+    audio_pos += len;
+    audio_len -= len;
 }
 
 int main(int argc, char *argv[])
 {
     printf("Initializing SDL\n");
-    if (SDL_Init(SDL_INIT_VIDEO) < 0)
+    if (SDL_Init(SDL_INIT_VIDEO | SDL_INIT_AUDIO) < 0)
     {
         printf("Failed to init SDL\n");
         CheckSDLError(__LINE__);
@@ -288,71 +305,144 @@ int main(int argc, char *argv[])
 
     printf("Creating SDL window\n");
     window = SDL_CreateWindow(
-        "Gears", 
+        "Gears",
         -1,
         -1,
         width,
         height,
-        SDL_WINDOW_OPENGL
-    );
+        SDL_WINDOW_OPENGL);
     if (window == NULL)
-	{
-		printf("Unable to create window\n");
-		CheckSDLError(__LINE__);
-		return -1;
+    {
+        printf("Unable to create window\n");
+        CheckSDLError(__LINE__);
+        return -1;
     }
-    printf("SDL window created %p\n", window);
 
     printf("Creating SDL GL context\n");
     context = SDL_GL_CreateContext(window);
     if (context == NULL)
-	{
-		printf("Unable to create SDL GL context\n");
-		CheckSDLError(__LINE__);
-		return -1;
+    {
+        printf("Unable to create SDL GL context\n");
+        CheckSDLError(__LINE__);
+        return -1;
     }
-    printf("SDL GL context created %p\n", context);
 
     init();
 
     reshape(width, height);
 
+    // Audio
+    // local variables
+    static Uint32 wav_length = 0;    // length of our sample
+    static Uint8 *wav_buffer = NULL; // buffer containing our audio file
+    static SDL_AudioSpec wav_spec;   // the specs of our piece of music
+
+    // Load the WAV
+    // the specs, length and buffer of our wav are filled
+    const char* audio_file_name = "./test.wav";
+    if (SDL_LoadWAV(audio_file_name, &wav_spec, &wav_buffer, &wav_length) == NULL)
+    {
+        fprintf(stderr, "Couldn't open audio file %s: %s\n", audio_file_name, SDL_GetError());
+        return -1;
+    }
+
+    // set the callback function
+    wav_spec.callback = audio_callback;
+    wav_spec.userdata = NULL;
+    // set our global static variables
+    audio_pos = wav_buffer; // copy sound buffer
+    audio_len = wav_length; // copy file length
+
+    /* Open the audio device */
+    if (SDL_OpenAudio(&wav_spec, NULL) < 0)
+    {
+        fprintf(stderr, "Couldn't open audio: %s\n", SDL_GetError());
+        return -1;
+    }
+
     int running = 1;
     SDL_Event event;
-	while (running)
-	{
+    int playing_audio = 0;
+    while (running)
+    {
         idle();
 
-		while (SDL_PollEvent(&event))
-		{
-			if (event.type == SDL_QUIT)
-				running = 0;
+        // Loop track
+        if (audio_len <= 0) {
+            audio_pos = wav_buffer;
+            audio_len = wav_length;
+        }
 
-			if (event.type == SDL_KEYDOWN)
-			{
-				switch (event.key.keysym.sym)
-				{
-				case SDLK_a:
-					delta += 1.0f;
+        while (SDL_PollEvent(&event))
+        {
+            if (event.type == SDL_QUIT)
+                running = 0;
+
+            if (event.type == SDL_KEYDOWN)
+            {
+                switch (event.key.keysym.sym)
+                {
+                case SDLK_p:
+                {
+                    if (playing_audio)
+                    {
+                        fprintf(stderr, "Pausing SDL audio\n");
+                    }
+                    else
+                    {
+                        fprintf(stderr, "Playing SDL audio\n");
+                    }
+                    SDL_PauseAudio(playing_audio);
+                    playing_audio = playing_audio > 0 ? 0 : 1;
                     break;
-                case SDLK_s:
-					delta -= 1.0f;
+                }
+                case SDLK_a:
+                case SDLK_LEFT:
+                {
+                    delta -= 0.2f;
                     break;
+                }
+                case SDLK_d:
+                case SDLK_RIGHT:
+                {
+                    delta += 0.2f;
+                    break;
+                }
                 case SDLK_ESCAPE:
-					running = 0;
+                {
+                    running = 0;
                     break;
+                }
                 default:
                     break;
+                }
+            }
+
+            if (event.type == SDL_MOUSEBUTTONDOWN)
+            {
+                if (event.button.button == SDL_BUTTON_LEFT)
+                {
+                    printf("Left mouse btn pressed at position %d,%d\n", event.button.x, event.button.y);
+                }
+                else if (event.button.button == SDL_BUTTON_MIDDLE)
+                {
+                    printf("Middle mouse btn pressed at position %d,%d\n", event.button.x, event.button.y);
+                }
+                else if (event.button.button == SDL_BUTTON_RIGHT)
+                {
+                    printf("Right mouse btn pressed at position %d,%d\n", event.button.x, event.button.y);
                 }
             }
         }
     }
 
     SDL_GL_DeleteContext(context);
-    
     SDL_DestroyWindow(window);
 
-	// Shutdown SDL 2
+    SDL_CloseAudio();
+    SDL_FreeWAV(wav_buffer);
+
+    // Shutdown SDL 2
     SDL_Quit();
 
     return 0;
