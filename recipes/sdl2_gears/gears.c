@@ -8,11 +8,11 @@
 
 /* Conversion to GLUT by Mark J. Kilgard */
 
-#include <math.h>
-#include <stdlib.h>
-#include <GL/gl.h>
-#include <GL/glu.h>
 #include <SDL2/SDL.h>
+#include <SDL2/SDL_opengl.h>
+#include <SDL2/SDL_image.h>
+#include <SDL2/SDL_mixer.h>
+#include <SDL2/SDL_ttf.h>
 
 #ifndef M_PI
 #define M_PI 3.14159265
@@ -56,6 +56,7 @@ gear(GLfloat inner_radius, GLfloat outer_radius, GLfloat width,
     {
         angle = i * 2.0 * M_PI / teeth;
         glVertex3f(r0 * cos(angle), r0 * sin(angle), width * 0.5);
+
         glVertex3f(r1 * cos(angle), r1 * sin(angle), width * 0.5);
         glVertex3f(r0 * cos(angle), r0 * sin(angle), width * 0.5);
         glVertex3f(r1 * cos(angle + 3 * da), r1 * sin(angle + 3 * da), width * 0.5);
@@ -276,33 +277,65 @@ void CheckSDLError(int line)
     }
 }
 
-void audio_callback(void *userdata, Uint8 *stream, int len);
-static Uint8 *audio_pos; // global pointer to the audio buffer to be played
-static Uint32 audio_len; // remaining length of the sample we have to play
+SDL_Surface *image;
+const char *IMAGE_FILE_NAME = "image.png";
 
-void audio_callback(void *userdata, Uint8 *stream, int len)
+Mix_Music *music = NULL;
+const char *MUSIC_FILE_NAME = "music.wav";
+
+TTF_Font *font = NULL;
+const char *TTF_FILE_NAME = "font.ttf";
+
+void cleanup()
 {
-    if (audio_len == 0)
-        return;
+    if (context != NULL)
+    {
+        SDL_GL_DeleteContext(context);
+        context = NULL;
+    }
+    if (window != NULL)
+    {
+        SDL_DestroyWindow(window);
+        window = NULL;
+    }
 
-    len = (len > audio_len ? audio_len : len);
-    SDL_memcpy (stream, audio_pos, len); 					// simply copy from one buffer into the other
-    //SDL_MixAudio(stream, audio_pos, len, SDL_MIX_MAXVOLUME); //FIXME: broken in redox
+    if (image != NULL)
+    {
+        SDL_FreeSurface(image);
+        image = NULL;
+        IMG_Quit();
+    }
 
-    audio_pos += len;
-    audio_len -= len;
+    if (music != NULL)
+    {
+        Mix_FreeMusic(music);
+        music = NULL;
+        Mix_CloseAudio();
+    }
+
+    if (font != NULL)
+    {
+        TTF_CloseFont(font);
+        font = NULL;
+    }
+
+    // Shutdown SDL 2
+    SDL_Quit();
 }
 
 int main(int argc, char *argv[])
 {
+    // Main
     printf("Initializing SDL\n");
     if (SDL_Init(SDL_INIT_VIDEO | SDL_INIT_AUDIO) < 0)
     {
         printf("Failed to init SDL\n");
         CheckSDLError(__LINE__);
+        cleanup();
         return -1;
     }
 
+    // Video / window
     printf("Creating SDL window\n");
     window = SDL_CreateWindow(
         "Gears",
@@ -315,6 +348,7 @@ int main(int argc, char *argv[])
     {
         printf("Unable to create window\n");
         CheckSDLError(__LINE__);
+        cleanup();
         return -1;
     }
 
@@ -324,6 +358,7 @@ int main(int argc, char *argv[])
     {
         printf("Unable to create SDL GL context\n");
         CheckSDLError(__LINE__);
+        cleanup();
         return -1;
     }
 
@@ -331,32 +366,70 @@ int main(int argc, char *argv[])
 
     reshape(width, height);
 
-    // Audio
-    // local variables
-    static Uint32 wav_length = 0;    // length of our sample
-    static Uint8 *wav_buffer = NULL; // buffer containing our audio file
-    static SDL_AudioSpec wav_spec;   // the specs of our piece of music
-
-    // Load the WAV
-    // the specs, length and buffer of our wav are filled
-    const char* audio_file_name = "./test.wav";
-    if (SDL_LoadWAV(audio_file_name, &wav_spec, &wav_buffer, &wav_length) == NULL)
+    // Image
+    printf("Initializing SDL image supporting formats png and jpeg\n");
+    int flags = IMG_INIT_JPG | IMG_INIT_PNG;
+    int initted = IMG_Init(flags);
+    if ((initted & flags) != flags)
     {
-        fprintf(stderr, "Couldn't open audio file %s: %s\n", audio_file_name, SDL_GetError());
+        printf("IMG_Init: Failed to init required jpg and png support: %s\n", IMG_GetError());
+        CheckSDLError(__LINE__);
+        cleanup();
         return -1;
     }
 
-    // set the callback function
-    wav_spec.callback = audio_callback;
-    wav_spec.userdata = NULL;
-    // set our global static variables
-    audio_pos = wav_buffer; // copy sound buffer
-    audio_len = wav_length; // copy file length
-
-    /* Open the audio device */
-    if (SDL_OpenAudio(&wav_spec, NULL) < 0)
+    image = IMG_Load(IMAGE_FILE_NAME);
+    if (image == NULL)
     {
-        fprintf(stderr, "Couldn't open audio: %s\n", SDL_GetError());
+        printf("IMG_Load failed: %s\n", IMG_GetError());
+        CheckSDLError(__LINE__);
+        cleanup();
+        return -1;
+    }
+
+    // Audio
+    printf("Opening SDL mixer audio\n");
+    if (Mix_OpenAudio(44100, MIX_DEFAULT_FORMAT, 2, 4096) < 0)
+    {
+        fprintf(stderr, "Couldn't open audio mixer: %s\n", SDL_GetError());
+        CheckSDLError(__LINE__);
+        cleanup();
+        return -1;
+    }
+
+    music = Mix_LoadMUS(MUSIC_FILE_NAME);
+    if (music == NULL)
+    {
+        fprintf(stderr, "Couldn't open audio file %s: %s\n", MUSIC_FILE_NAME, SDL_GetError());
+        CheckSDLError(__LINE__);
+        cleanup();
+        return -1;
+    }
+
+    if (Mix_PlayMusic(music, -1) < 0)
+    {
+        fprintf(stderr, "Couldn't play music: %s\n", SDL_GetError());
+        CheckSDLError(__LINE__);
+        cleanup();
+        return -1;
+    }
+
+    // TTF
+    printf("Initializing TTF\n");
+    if (TTF_Init() < 0)
+    {
+        printf("Failed to init TTF\n");
+        CheckSDLError(__LINE__);
+        cleanup();
+        return -1;
+    }
+
+    font = TTF_OpenFont(TTF_FILE_NAME, 30);
+    if (font == NULL)
+    {
+        printf("Couldn't open TTF file %s: %s\n", TTF_FILE_NAME, SDL_GetError());
+        CheckSDLError(__LINE__);
+        cleanup();
         return -1;
     }
 
@@ -368,10 +441,7 @@ int main(int argc, char *argv[])
         idle();
 
         // Loop track
-        if (audio_len <= 0) {
-            audio_pos = wav_buffer;
-            audio_len = wav_length;
-        }
+        Mix_PlayingMusic();
 
         while (SDL_PollEvent(&event))
         {
@@ -384,16 +454,27 @@ int main(int argc, char *argv[])
                 {
                 case SDLK_p:
                 {
-                    if (playing_audio)
+                    if (!Mix_PlayingMusic())
                     {
-                        fprintf(stderr, "Pausing SDL audio\n");
+                        if (Mix_PlayMusic(music, -1) < 0)
+                        {
+                            fprintf(stderr, "Couldn't play music: %s\n", SDL_GetError());
+                            CheckSDLError(__LINE__);
+                            cleanup();
+                            return -1;
+                        }
                     }
                     else
                     {
-                        fprintf(stderr, "Playing SDL audio\n");
+                        if (Mix_PausedMusic())
+                        {
+                            Mix_ResumeMusic();
+                        }
+                        else
+                        {
+                            Mix_PauseMusic();
+                        }
                     }
-                    SDL_PauseAudio(playing_audio);
-                    playing_audio = playing_audio > 0 ? 0 : 1;
                     break;
                 }
                 case SDLK_a:
@@ -434,16 +515,11 @@ int main(int argc, char *argv[])
                 }
             }
         }
+
+        SDL_Delay(10);
     }
 
-    SDL_GL_DeleteContext(context);
-    SDL_DestroyWindow(window);
-
-    SDL_CloseAudio();
-    SDL_FreeWAV(wav_buffer);
-
-    // Shutdown SDL 2
-    SDL_Quit();
+    cleanup();
 
     return 0;
 }
