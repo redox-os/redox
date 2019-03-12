@@ -1,6 +1,7 @@
 QEMU=SDL_VIDEO_X11_DGAMOUSE=0 qemu-system-$(ARCH)
-QEMUFLAGS=-serial mon:stdio -d cpu_reset -d guest_errors
+QEMUFLAGS=-d cpu_reset -d guest_errors
 QEMUFLAGS+=-smp 4 -m 2048
+QEMUFLAGS+=-chardev stdio,id=debug -device isa-debugcon,iobase=0x402,chardev=debug
 ifeq ($(iommu),yes)
 	QEMUFLAGS+=-machine q35,iommu=on
 else
