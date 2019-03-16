@@ -32,11 +32,10 @@ img:
         source "$HOME/.cargo/env" &&
         rustup update &&
         rustup component add rust-src &&
-        cargo install cargo-config xargo &&
+        cargo install cargo-config cargo-xbuild xargo &&
         pushd bootloader-efi &&
         rustup update &&
         rustup component add rust-src &&
-        mkdir -p "$HOME/.rustup/toolchains/nightly-2017-11-29-x86_64-unknown-linux-gnu/lib/rustlib/x86_64-unknown-linux-gnu/bin" &&
         popd &&
         make ci-img IMG_TAG=$CI_COMMIT_REF_NAME
     artifacts:
