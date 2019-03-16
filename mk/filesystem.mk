@@ -1,7 +1,7 @@
 build/filesystem.bin: filesystem.toml build/bootloader build/kernel prefix
 	-$(FUMOUNT) build/filesystem/ || true
 	rm -rf $@  $@.partial build/filesystem/
-	dd if=/dev/zero of=$@.partial bs=1048576 count=256
+	dd if=/dev/zero of=$@.partial bs=1048576 count="$(FILESYSTEM_SIZE)"
 	cargo run --manifest-path redoxfs/Cargo.toml --release --bin redoxfs-mkfs $@.partial
 	mkdir -p build/filesystem/
 	cargo build --manifest-path redoxfs/Cargo.toml --release --bin redoxfs
