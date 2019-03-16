@@ -43,6 +43,9 @@ export AR_$(subst -,_,$(TARGET))=$(TARGET)-ar
 export CC_$(subst -,_,$(TARGET))=$(TARGET)-gcc
 export CXX_$(subst -,_,$(TARGET))=$(TARGET)-g++
 
+# Bootloader variables
+EFI_TARGET=$(ARCH)-efi-pe
+
 # Kernel variables
 KTARGET=$(ARCH)-unknown-none
 KBUILD=build/kernel
