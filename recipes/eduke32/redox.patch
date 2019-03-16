@@ -1,6 +1,6 @@
-diff -rupNw source-original/Common.mak source/Common.mak
---- source-original/Common.mak	2018-07-14 23:36:44.000000000 +0200
-+++ source/Common.mak	2018-12-03 19:13:25.028864957 +0100
+diff -rupwN source/Common.mak source-new/Common.mak
+--- source/Common.mak	2018-07-14 15:36:44.000000000 -0600
++++ source-new/Common.mak	2019-03-15 21:28:32.366856380 -0600
 @@ -93,7 +93,7 @@ endif
  
  ##### Makefile meta-settings
@@ -21,7 +21,7 @@ diff -rupNw source-original/Common.mak source/Common.mak
  CC := $(CROSS)gcc$(CROSS_SUFFIX)
  CXX := $(CROSS)g++$(CROSS_SUFFIX)
  
-@@ -383,6 +387,15 @@ else ifeq ($(PLATFORM),$(filter $(PLATFO
+@@ -383,6 +387,14 @@ else ifeq ($(PLATFORM),$(filter $(PLATFO
      override NOASM := 1
  else ifeq ($(PLATFORM),$(filter $(PLATFORM),BEOS SKYOS))
      override NOASM := 1
@@ -30,14 +30,13 @@ diff -rupNw source-original/Common.mak source/Common.mak
 +    override NETCODE := 0
 +    override HAVE_GTK2 := 0
 +    override HAVE_FLAC := 0
-+    override HAVE_VORBIS := 0
 +    override HAVE_XMP := 0
 +    override MIXERTYPE := SDL
 +    SDL_TARGET := 1
  endif
  
  ifneq (i386,$(strip $(IMPLICIT_ARCH)))
-@@ -868,7 +881,7 @@ ifeq ($(RENDERTYPE),SDL)
+@@ -868,7 +880,7 @@ ifeq ($(RENDERTYPE),SDL)
          SDLCONFIG := sdl2-config
          SDLNAME := SDL2
      else ifeq ($(SDL_TARGET),1)
@@ -46,12 +45,12 @@ diff -rupNw source-original/Common.mak source/Common.mak
          SDLNAME := SDL
          ifeq (0,$(RELEASE))
              COMPILERFLAGS += -DNOSDLPARACHUTE
-@@ -957,9 +970,11 @@ else ifeq ($(PLATFORM),WII)
+@@ -957,9 +969,11 @@ else ifeq ($(PLATFORM),WII)
      LIBS += -laesnd_tueidj -lfat -lwiiuse -lbte -lwiikeyboard -logc
  else ifeq ($(SUBPLATFORM),LINUX)
      LIBS += -lrt
 +else ifeq ($(PLATFORM),REDOX)
-+    LIBS += -lorbital
++    LIBS += -lorbital -lvorbisfile -lvorbis -logg
  endif
  
 -ifeq (,$(filter $(PLATFORM),WINDOWS WII))
@@ -59,9 +58,9 @@ diff -rupNw source-original/Common.mak source/Common.mak
      ifneq ($(PLATFORM),BSD)
          LIBS += -ldl
      endif
-diff -rupNw source-original/source/build/include/compat.h source/source/build/include/compat.h
---- source-original/source/build/include/compat.h	2018-10-07 07:21:24.000000000 +0200
-+++ source/source/build/include/compat.h	2018-12-03 19:26:54.393942393 +0100
+diff -rupwN source/source/build/include/compat.h source-new/source/build/include/compat.h
+--- source/source/build/include/compat.h	2018-10-06 23:21:24.000000000 -0600
++++ source-new/source/build/include/compat.h	2019-03-15 21:21:09.285856877 -0600
 @@ -7,6 +7,9 @@
  
  #pragma once
@@ -91,9 +90,9 @@ diff -rupNw source-original/source/build/include/compat.h source/source/build/in
  #endif
  
  #if defined(__cplusplus) && defined(_MSC_VER)
-diff -rupNw source-original/source/build/src/baselayer.cpp source/source/build/src/baselayer.cpp
---- source-original/source/build/src/baselayer.cpp	2018-10-07 07:21:43.000000000 +0200
-+++ source/source/build/src/baselayer.cpp	2018-12-03 19:21:47.982397954 +0100
+diff -rupwN source/source/build/src/baselayer.cpp source-new/source/build/src/baselayer.cpp
+--- source/source/build/src/baselayer.cpp	2018-10-06 23:21:43.000000000 -0600
++++ source-new/source/build/src/baselayer.cpp	2019-03-15 21:21:09.285856877 -0600
 @@ -498,7 +498,7 @@ int32_t baselayer_init(void)
  
  void maybe_redirect_outputs(void)
@@ -103,9 +102,9 @@ diff -rupNw source-original/source/build/src/baselayer.cpp source/source/build/s
      char *argp;
  
      // pipe standard outputs to files
-diff -rupNw source-original/source/build/src/sdlayer.cpp source/source/build/src/sdlayer.cpp
---- source-original/source/build/src/sdlayer.cpp	2018-10-07 07:23:44.000000000 +0200
-+++ source/source/build/src/sdlayer.cpp	2018-12-03 19:24:07.239998594 +0100
+diff -rupwN source/source/build/src/sdlayer.cpp source-new/source/build/src/sdlayer.cpp
+--- source/source/build/src/sdlayer.cpp	2018-10-06 23:23:44.000000000 -0600
++++ source-new/source/build/src/sdlayer.cpp	2019-03-15 21:21:09.289856979 -0600
 @@ -305,7 +305,7 @@ void wm_setapptitle(const char *name)
  //
  
@@ -115,9 +114,9 @@ diff -rupNw source-original/source/build/src/sdlayer.cpp source/source/build/src
  # define PRINTSTACKONSEGV 1
  # include <execinfo.h>
  #endif
-diff -rupNw source-original/source/duke3d/src/common.cpp source/source/duke3d/src/common.cpp
---- source-original/source/duke3d/src/common.cpp	2018-10-07 07:20:23.000000000 +0200
-+++ source/source/duke3d/src/common.cpp	2018-12-03 19:34:09.893848178 +0100
+diff -rupwN source/source/duke3d/src/common.cpp source-new/source/duke3d/src/common.cpp
+--- source/source/duke3d/src/common.cpp	2018-10-06 23:20:23.000000000 -0600
++++ source-new/source/duke3d/src/common.cpp	2019-03-15 21:21:09.289856979 -0600
 @@ -1173,6 +1173,7 @@ int32_t S_OpenAudio(const char *fn, char
      Bfree(testfn);
      return origfp;
@@ -131,9 +130,9 @@ diff -rupNw source-original/source/duke3d/src/common.cpp source/source/duke3d/sr
  }
  
 -#endif
-diff -rupNw source-original/source/duke3d/src/game.cpp source/source/duke3d/src/game.cpp
---- source-original/source/duke3d/src/game.cpp	2018-10-07 07:23:48.000000000 +0200
-+++ source/source/duke3d/src/game.cpp	2018-12-03 19:18:30.728171279 +0100
+diff -rupwN source/source/duke3d/src/game.cpp source-new/source/duke3d/src/game.cpp
+--- source/source/duke3d/src/game.cpp	2018-10-06 23:23:48.000000000 -0600
++++ source-new/source/duke3d/src/game.cpp	2019-03-15 21:21:09.293857082 -0600
 @@ -6697,7 +6697,7 @@ MAIN_LOOP_RESTART:
              static char buf[128];
  #ifndef GEKKO
@@ -143,9 +142,9 @@ diff -rupNw source-original/source/duke3d/src/game.cpp source/source/duke3d/src/
  #endif
              if ((nb = read(0, &ch, 1)) > 0 && bufpos < sizeof(buf))
              {
-diff -rupNw source-original/source/enet/include/enet/unix.h source/source/enet/include/enet/unix.h
---- source-original/source/enet/include/enet/unix.h	2014-06-17 01:16:08.000000000 +0200
-+++ source/source/enet/include/enet/unix.h	2018-12-03 19:17:06.295237252 +0100
+diff -rupwN source/source/enet/include/enet/unix.h source-new/source/enet/include/enet/unix.h
+--- source/source/enet/include/enet/unix.h	2014-06-16 17:16:08.000000000 -0600
++++ source-new/source/enet/include/enet/unix.h	2019-03-15 21:21:09.293857082 -0600
 @@ -6,6 +6,7 @@
  #define __ENET_UNIX_H__
  
