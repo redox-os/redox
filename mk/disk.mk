@@ -33,30 +33,25 @@ build/coreboot.elf: bootloader-coreboot/build/bootloader
 bootloader-efi/build/redox_bootloader/boot.efi:
 	$(MAKE) -C bootloader-efi build/redox_bootloader/boot.efi
 
-build/bootloader.efi: bootloader-efi/build/redox_bootloader/boot.efi
-	cp $< $@
-
-build/harddrive-efi.bin: build/bootloader.efi build/filesystem.bin
+build/harddrive-efi.bin: bootloader-efi/build/x86_64-efi-pe/boot.efi build/filesystem.bin
 	dd if=/dev/zero of=$@.partial bs=1048576 count=4
 	mkfs.vfat $@.partial
 	mmd -i $@.partial efi
 	mmd -i $@.partial efi/boot
 	mcopy -i $@.partial $< ::efi/boot/bootx64.efi
 	mmd -i $@.partial redox_bootloader
-	mcopy -i $@.partial -s bootloader-efi/res ::redox_bootloader
 	cat $@.partial build/filesystem.bin > $@
 
 build/harddrive-efi.bin.gz: build/harddrive-efi.bin
 	gzip -k -f $<
 
-build/livedisk-efi.iso: build/bootloader.efi build/kernel_live
+build/livedisk-efi.iso: bootloader-efi/build/x86_64-efi-pe/boot.efi build/kernel_live
 	dd if=/dev/zero of=$@.partial bs=1048576 count=272
 	mkfs.vfat $@.partial
 	mmd -i $@.partial efi
 	mmd -i $@.partial efi/boot
 	mcopy -i $@.partial $< ::efi/boot/bootx64.efi
 	mmd -i $@.partial redox_bootloader
-	mcopy -i $@.partial -s bootloader-efi/res ::redox_bootloader
 	mcopy -i $@.partial -s build/kernel_live ::redox_bootloader/kernel
 	mv $@.partial $@
 
