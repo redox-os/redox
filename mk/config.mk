@@ -2,6 +2,8 @@
 ARCH?=x86_64
 INSTALLER_FLAGS?=--cookbook=cookbook
 PREFIX_RUSTC?=0
+# Filesystem Size in MB
+FILESYSTEM_SIZE?=256
 
 # Per host variables
 UNAME := $(shell uname)
