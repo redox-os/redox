@@ -15,7 +15,9 @@ prefix-freestanding: $(PREFIX_FREESTANDING_INSTALL)
 
 prefix: $(PREFIX_INSTALL)
 
-PREFIX_STRIP=find bin libexec "$(TARGET)/bin" -type f -exec strip {} ';' 2> /dev/null
+PREFIX_STRIP=\
+	mkdir -p bin libexec "$(TARGET)/bin" && \
+	find bin libexec "$(TARGET)/bin" -type f -exec strip {} ';' 2> /dev/null
 
 $(PREFIX)/relibc-install: $(ROOT)/relibc | $(PREFIX)/gcc-install
 	rm -rf "$@.partial" "$@"
