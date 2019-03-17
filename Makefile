@@ -20,7 +20,7 @@ clean:
 	rm -rf build
 
 distclean:
-	make clean
+	$(MAKE) clean
 	cd cookbook && ./unfetch.sh
 
 pull:
@@ -62,7 +62,7 @@ include mk/virtualbox.mk
 
 # CI image target
 ci-img: FORCE
-	make INSTALLER_FLAGS= \
+	$(MAKE) INSTALLER_FLAGS= \
 		build/coreboot.elf.gz \
 		build/harddrive.bin.gz \
 		build/livedisk.iso.gz \
