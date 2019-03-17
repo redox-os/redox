@@ -75,6 +75,7 @@ $(PREFIX)/binutils-install: $(PREFIX)/binutils
 		&& \
 	make -j `$(NPROC)` all && \
 	make -j `$(NPROC)` install DESTDIR="$(ROOT)/$@.partial"
+	rm -rf "$<-build"
 	find "$@.partial" -exec strip {} ';' 2> /dev/null
 	touch "$@.partial"
 	mv "$@.partial" "$@"
@@ -107,6 +108,7 @@ $(PREFIX)/gcc-freestanding-install: $(PREFIX)/gcc | $(PREFIX)/binutils-install
 		&& \
 	make -j `$(NPROC)` all-gcc all-target-libgcc && \
 	make -j `$(NPROC)` install-gcc install-target-libgcc DESTDIR="$(ROOT)/$@.partial"
+	rm -rf "$<-freestanding-build"
 	find "$@.partial" -exec strip {} ';' 2> /dev/null
 	touch "$@.partial"
 	mv "$@.partial" "$@"
@@ -117,9 +119,10 @@ $(PREFIX)/rust-freestanding-install: $(ROOT)/rust | $(PREFIX)/gcc-freestanding-i
 	cp -r "$(PREFIX)/gcc-freestanding-install" "$@.partial"
 	cd "$(PREFIX)/rust-freestanding-build" && \
 	export PATH="$(ROOT)/$@.partial/bin:$$PATH" && \
-	"$</configure" --prefix="" --disable-docs && \
+	"$(ROOT)/$</configure" --prefix="" --disable-docs && \
 	make -j `$(NPROC)` && \
 	make -j `$(NPROC)` install DESTDIR="$(ROOT)/$@.partial"
+	rm -rf "$(PREFIX)/rust-freestanding-build"
 	mkdir -p "$@.partial/lib/rustlib/x86_64-unknown-linux-gnu/bin"
 	find "$@.partial" -exec strip {} ';' 2> /dev/null
 	touch "$@.partial"
@@ -158,6 +161,7 @@ $(PREFIX)/gcc-install: $(PREFIX)/gcc | $(PREFIX)/relibc-freestanding-install
 		&& \
 	make -j `$(NPROC)` all-gcc all-target-libgcc all-target-libstdc++-v3 && \
 	make -j `$(NPROC)` install-gcc install-target-libgcc install-target-libstdc++-v3 DESTDIR="$(ROOT)/$@.partial"
+	rm -rf "$<-build"
 	find "$@.partial" -exec strip {} ';' 2> /dev/null
 	touch "$@.partial"
 	mv "$@.partial" "$@"
