@@ -22,12 +22,17 @@ bootloader-coreboot/build/bootloader: build/kernel_coreboot
 	$(MAKE) -C bootloader-coreboot clean build/bootloader KERNEL="$(ROOT)/$<"
 
 build/coreboot.elf: bootloader-coreboot/build/bootloader
+	mkdir -p build
 	cp -v $< $@
 
 bootloader-efi/build/$(EFI_TARGET)/boot.efi: FORCE
-	$(MAKE) -C bootloader-efi build/$(EFI_TARGET)/boot.efi TARGET=$(EFI_TARGET)
+	unset XARGO_HOME XARGO_RUST_SRC && \
+	cd bootloader-efi && \
+	rustup component add rust-src && \
+	$(MAKE) build/$(EFI_TARGET)/boot.efi TARGET=$(EFI_TARGET)
 
 build/bootloader.efi: bootloader-efi/build/$(EFI_TARGET)/boot.efi
+	mkdir -p build
 	cp -v $< $@
 
 build/harddrive-efi.bin: build/bootloader.efi build/filesystem.bin
