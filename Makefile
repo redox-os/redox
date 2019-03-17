@@ -69,7 +69,7 @@ ci-img: FORCE
 		build/harddrive-efi.bin.gz \
 		build/livedisk-efi.iso.gz
 	rm -rf build/img
-	mkdir build/img
+	mkdir -p build/img
 	mv build/coreboot.elf.gz build/img/redox_$(IMG_TAG)_coreboot.elf.gz
 	mv build/harddrive.bin.gz build/img/redox_$(IMG_TAG)_harddrive.bin.gz
 	mv build/livedisk.iso.gz build/img/redox_$(IMG_TAG)_livedisk.iso.gz
@@ -84,6 +84,13 @@ ci-pkg: prefix FORCE
 	cd cookbook && \
 	./fetch.sh "$${PACKAGES}" && \
 	./repo.sh "$${PACKAGES}"
+
+# CI toolchain
+ci-toolchain: prefix/$(TARGET)/gcc-install.tar.gz
+	rm -rf build/toolchain
+	mkdir -p "build/toolchain/$(TARGET)"
+	mv "$<" "build/toolchain/$(TARGET)"
+	cd "build/toolchain/$(TARGET)" && sha256sum -b * > SHA256SUM
 
 env: prefix FORCE
 	export PATH="$(PREFIX_PATH):$$PATH" && \

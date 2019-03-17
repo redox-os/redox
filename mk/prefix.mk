@@ -1,19 +1,45 @@
-PREFIX=$(ROOT)/prefix/$(TARGET)
+PREFIX=prefix/$(TARGET)
 
 PREFIX_FREESTANDING_INSTALL=$(PREFIX)/gcc-freestanding-install
-PREFIX_INSTALL=$(PREFIX)/gcc-install
+PREFIX_INSTALL=$(PREFIX)/relibc-install
 
 ifeq ($(PREFIX_RUSTC),1)
 	PREFIX_FREESTANDING_INSTALL=$(PREFIX)/rust-freestanding-install
 	export RUSTUP_TOOLCHAIN=$(PREFIX)/rust-freestanding-install
 endif
 
-PREFIX_FREESTANDING_PATH=$(PREFIX_FREESTANDING_INSTALL)/bin
-PREFIX_PATH=$(PREFIX_INSTALL)/bin
+PREFIX_FREESTANDING_PATH=$(ROOT)/$(PREFIX_FREESTANDING_INSTALL)/bin
+PREFIX_PATH=$(ROOT)/$(PREFIX_INSTALL)/bin
 
 prefix-freestanding: $(PREFIX_FREESTANDING_INSTALL)
 
 prefix: $(PREFIX_INSTALL)
+
+$(PREFIX)/relibc-install: $(ROOT)/relibc | $(PREFIX)/gcc-install
+	rm -rf "$@.partial" "$@"
+	cp -r "$(PREFIX)/gcc-install" "$@.partial"
+	cd "$<" && \
+	export PATH="$(ROOT)/$@.partial/bin:$$PATH" && \
+	export CARGO=xargo && \
+	make -j `nproc` all && \
+	make -j `nproc` install DESTDIR="$(ROOT)/$@.partial/$(TARGET)"
+	touch "$@.partial"
+	mv "$@.partial" "$@"
+
+ifeq ($(PREFIX_BINARY),1)
+
+$(PREFIX)/gcc-install.tar.gz:
+	mkdir -p "$(@D)"
+	wget -O $@.partial "https://static.redox-os.org/toolchain/$(TARGET)/gcc-install.tar.gz"
+	mv $@.partial $@
+
+$(PREFIX)/gcc-install: $(PREFIX)/gcc-install.tar.gz
+	mkdir -p "$@.partial"
+	tar --extract --file "$<" --directory "$@.partial" --strip-components=1
+	touch "$@.partial"
+	mv "$@.partial" "$@"
+
+else
 
 $(PREFIX)/binutils.tar.bz2:
 	mkdir -p "$(@D)"
@@ -23,22 +49,23 @@ $(PREFIX)/binutils.tar.bz2:
 $(PREFIX)/binutils: $(PREFIX)/binutils.tar.bz2
 	mkdir -p "$@.partial"
 	tar --extract --file "$<" --directory "$@.partial" --strip-components=1
+	touch "$@.partial"
 	mv "$@.partial" "$@"
-	touch "$@"
 
 $(PREFIX)/binutils-install: $(PREFIX)/binutils
-	rm -rf "$<-build" "$@"
-	mkdir -p "$<-build" "$@"
+	rm -rf "$<-build" "$@.partial" "$@"
+	mkdir -p "$<-build" "$@.partial"
 	cd "$<-build" && \
-	"$</configure" \
+	"$(ROOT)/$</configure" \
 		--target="$(TARGET)" \
 		--program-prefix="$(TARGET)-" \
-		--prefix="$@" \
+		--prefix="" \
 		--disable-werror \
 		&& \
-	make all -j `nproc` && \
-	make install -j `nproc`
-	touch "$@"
+	make -j `nproc` all && \
+	make -j `nproc` install DESTDIR="$(ROOT)/$@.partial"
+	touch "$@.partial"
+	mv "$@.partial" "$@"
 
 $(PREFIX)/gcc.tar.bz2:
 	mkdir -p "$(@D)"
@@ -49,67 +76,83 @@ $(PREFIX)/gcc: $(PREFIX)/gcc.tar.bz2
 	mkdir -p "$@.partial"
 	tar --extract --file "$<" --directory "$@.partial" --strip-components=1
 	cd "$@.partial" && ./contrib/download_prerequisites
+	touch "$@.partial"
 	mv "$@.partial" "$@"
-	touch "$@"
 
 $(PREFIX)/gcc-freestanding-install: $(PREFIX)/gcc | $(PREFIX)/binutils-install
-	rm -rf "$<-freestanding-build" "$@"
+	rm -rf "$<-freestanding-build" "$@.partial" "$@"
 	mkdir -p "$<-freestanding-build"
-	cp -r "$(PREFIX)/binutils-install" "$@"
+	cp -r "$(PREFIX)/binutils-install" "$@.partial"
 	cd "$<-freestanding-build" && \
-	export PATH="$@/bin:$$PATH" && \
-	"$</configure" \
+	export PATH="$(ROOT)/$@.partial/bin:$$PATH" && \
+	"$(ROOT)/$</configure" \
 		--target="$(TARGET)" \
 		--program-prefix="$(TARGET)-" \
-		--prefix="$@" \
+		--prefix="" \
 		--disable-nls \
 		--enable-languages=c,c++ \
 		--without-headers \
 		&& \
-	make all-gcc all-target-libgcc -j `nproc` && \
-	make install-gcc install-target-libgcc -j `nproc`
-	touch "$@"
+	make -j `nproc` all-gcc all-target-libgcc && \
+	make -j `nproc` install-gcc install-target-libgcc DESTDIR="$(ROOT)/$@.partial"
+	touch "$@.partial"
+	mv "$@.partial" "$@"
 
 $(PREFIX)/rust-freestanding-install: $(ROOT)/rust | $(PREFIX)/gcc-freestanding-install
-	rm -rf "$(PREFIX)/rust-freestanding-build" "$@"
+	rm -rf "$(PREFIX)/rust-freestanding-build" "$@.partial" "$@"
 	mkdir -p "$(PREFIX)/rust-freestanding-build"
-	cp -r "$(PREFIX)/gcc-freestanding-install" "$@"
+	cp -r "$(PREFIX)/gcc-freestanding-install" "$@.partial"
 	cd "$(PREFIX)/rust-freestanding-build" && \
-	export PATH="$@/bin:$$PATH" && \
-	"$</configure" --prefix="$@" --disable-docs && \
+	export PATH="$(ROOT)/$@.partial/bin:$$PATH" && \
+	"$</configure" --prefix="" --disable-docs && \
 	make -j `nproc` && \
-	make install -j `nproc`
-	mkdir -p "$@/lib/rustlib/x86_64-unknown-linux-gnu/bin"
-	touch "$@"
+	make -j `nproc` install DESTDIR="$(ROOT)/$@.partial"
+	mkdir -p "$@.partial/lib/rustlib/x86_64-unknown-linux-gnu/bin"
+	touch "$@.partial"
+	mv "$@.partial" "$@"
 
-$(PREFIX)/relibc-install: $(ROOT)/relibc | $(PREFIX_FREESTANDING_INSTALL)
-	rm -rf "$@"
-	mkdir -p "$@"
+# TODO: Only make headers for freestanding install
+$(PREFIX)/relibc-freestanding-install: $(ROOT)/relibc | $(PREFIX_FREESTANDING_INSTALL)
+	rm -rf "$@.partial" "$@"
+	mkdir -p "$@.partial"
 	cd "$<" && \
 	export PATH="$(PREFIX_FREESTANDING_PATH):$$PATH" && \
-	make CARGO=xargo all && \
-	make CARGO=xargo DESTDIR="$@/usr" install
-	touch "$@"
+	export CARGO=xargo && \
+	make -j `nproc` all && \
+	make -j `nproc` install DESTDIR="$(ROOT)/$@.partial/$(TARGET)"
+	touch "$@.partial"
+	mv "$@.partial" "$@"
 
-$(PREFIX)/gcc-install: $(PREFIX)/gcc | $(PREFIX)/relibc-install
-	rm -rf "$<-build" "$@"
+$(PREFIX)/gcc-install: $(PREFIX)/gcc | $(PREFIX)/relibc-freestanding-install
+	rm -rf "$<-build" "$@.partial" "$@"
 	mkdir -p "$<-build"
-	cp -r "$(PREFIX)/binutils-install" "$@"
+	cp -r "$(PREFIX)/binutils-install" "$@.partial"
 	cd "$<-build" && \
-	export PATH="$@/bin:$$PATH" && \
-	"$</configure" \
+	export PATH="$(ROOT)/$@.partial/bin:$$PATH" && \
+	"$(ROOT)/$</configure" \
 		--target="$(TARGET)" \
 		--program-prefix="$(TARGET)-" \
-		--prefix="$@" \
-		--with-sysroot="$(PREFIX)/relibc-install" \
+		--prefix="" \
+		--with-sysroot \
+		--with-build-sysroot="$(ROOT)/$(PREFIX)/relibc-freestanding-install/$(TARGET)" \
+		--with-native-system-header-dir="/include" \
 		--disable-nls \
 		--disable-werror \
 		--enable-languages=c,c++ \
 		--enable-threads=posix \
 		&& \
-	make all-gcc all-target-libgcc all-target-libstdc++-v3 -j `nproc` && \
-	make install-gcc install-target-libgcc install-target-libstdc++-v3 -j `nproc`
-	touch "$@"
+	make -j `nproc` all-gcc all-target-libgcc all-target-libstdc++-v3 && \
+	make -j `nproc` install-gcc install-target-libgcc install-target-libstdc++-v3 DESTDIR="$(ROOT)/$@.partial"
+	touch "$@.partial"
+	mv "$@.partial" "$@"
+
+$(PREFIX)/gcc-install.tar.gz: $(PREFIX)/gcc-install
+	tar \
+		--create \
+		--gzip \
+		--file "$@" \
+		--directory="$<" \
+		.
 
 # Building full rustc may not be required
 # $(PREFIX)/rust-install: $(ROOT)/rust | $(PREFIX)/gcc-install
@@ -121,3 +164,5 @@ $(PREFIX)/gcc-install: $(PREFIX)/gcc | $(PREFIX)/relibc-install
 # 	make -j `nproc` && \
 # 	make install -j `nproc`
 # 	touch "$@"
+
+endif
