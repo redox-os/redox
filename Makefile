@@ -70,11 +70,11 @@ ci-img: FORCE
 		build/livedisk-efi.iso.gz
 	rm -rf build/img
 	mkdir -p build/img
-	mv build/coreboot.elf.gz build/img/redox_$(IMG_TAG)_coreboot.elf.gz
-	mv build/harddrive.bin.gz build/img/redox_$(IMG_TAG)_harddrive.bin.gz
-	mv build/livedisk.iso.gz build/img/redox_$(IMG_TAG)_livedisk.iso.gz
-	mv build/harddrive-efi.bin.gz build/img/redox_$(IMG_TAG)_harddrive-efi.bin.gz
-	mv build/livedisk-efi.iso.gz build/img/redox_$(IMG_TAG)_livedisk-efi.iso.gz
+	cp "build/coreboot.elf.gz" "build/img/redox_$(IMG_TAG)_coreboot.elf.gz"
+	cp "build/harddrive.bin.gz" "build/img/redox_$(IMG_TAG)_harddrive.bin.gz"
+	cp "build/livedisk.iso.gz" "build/img/redox_$(IMG_TAG)_livedisk.iso.gz"
+	cp "build/harddrive-efi.bin.gz" "build/img/redox_$(IMG_TAG)_harddrive-efi.bin.gz"
+	cp "build/livedisk-efi.iso.gz" "build/img/redox_$(IMG_TAG)_livedisk-efi.iso.gz"
 	cd build/img && sha256sum -b * > SHA256SUM
 
 # CI packaging target
@@ -86,10 +86,14 @@ ci-pkg: prefix FORCE
 	./repo.sh "$${PACKAGES}"
 
 # CI toolchain
-ci-toolchain: prefix/$(TARGET)/gcc-install.tar.gz
+ci-toolchain: FORCE
+	$(MAKE) PREFIX_BINARY=0 \
+		"prefix/$(TARGET)/gcc-install.tar.gz" \
+		"prefix/$(TARGET)/relibc-install.tar.gz"
 	rm -rf build/toolchain
 	mkdir -p "build/toolchain/$(TARGET)"
-	mv "$<" "build/toolchain/$(TARGET)"
+	cp "prefix/$(TARGET)/gcc-install.tar.gz" "build/toolchain/$(TARGET)/gcc-install.tar.gz"
+	cp "prefix/$(TARGET)/relibc-install.tar.gz" "build/toolchain/$(TARGET)/relibc-install.tar.gz"
 	cd "build/toolchain/$(TARGET)" && sha256sum -b * > SHA256SUM
 
 env: prefix FORCE

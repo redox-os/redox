@@ -26,6 +26,14 @@ $(PREFIX)/relibc-install: $(ROOT)/relibc | $(PREFIX)/gcc-install
 	touch "$@.partial"
 	mv "$@.partial" "$@"
 
+$(PREFIX)/relibc-install.tar.gz: $(PREFIX)/relibc-install
+	tar \
+		--create \
+		--gzip \
+		--file "$@" \
+		--directory="$<" \
+		.
+
 ifeq ($(PREFIX_BINARY),1)
 
 $(PREFIX)/gcc-install.tar.gz:
