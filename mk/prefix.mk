@@ -34,6 +34,7 @@ $(PREFIX)/gcc-install.tar.gz:
 	mv $@.partial $@
 
 $(PREFIX)/gcc-install: $(PREFIX)/gcc-install.tar.gz
+	rm -rf "$@.partial" "$@"
 	mkdir -p "$@.partial"
 	tar --extract --file "$<" --directory "$@.partial" --strip-components=1
 	touch "$@.partial"
@@ -47,6 +48,7 @@ $(PREFIX)/binutils.tar.bz2:
 	mv $@.partial $@
 
 $(PREFIX)/binutils: $(PREFIX)/binutils.tar.bz2
+	rm -rf "$@.partial" "$@"
 	mkdir -p "$@.partial"
 	tar --extract --file "$<" --directory "$@.partial" --strip-components=1
 	touch "$@.partial"
