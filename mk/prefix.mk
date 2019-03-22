@@ -123,7 +123,7 @@ $(PREFIX)/rust-freestanding-install: $(ROOT)/rust | $(PREFIX)/gcc-freestanding-i
 	cp -r "$(PREFIX)/gcc-freestanding-install" "$@.partial"
 	cd "$(PREFIX)/rust-freestanding-build" && \
 	export PATH="$(ROOT)/$@.partial/bin:$$PATH" && \
-	"$</configure" --prefix="" --disable-docs && \
+	"$</configure" --prefix="/" --disable-docs && \
 	make -j `$(NPROC)` && \
 	make -j `$(NPROC)` install DESTDIR="$(ROOT)/$@.partial"
 	rm -rf "$(PREFIX)/rust-freestanding-build"
