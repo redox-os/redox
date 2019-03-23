@@ -5,7 +5,7 @@ PREFIX_INSTALL=$(PREFIX)/relibc-install
 
 ifeq ($(PREFIX_RUSTC),1)
 	PREFIX_FREESTANDING_INSTALL=$(PREFIX)/rust-freestanding-install
-	export RUSTUP_TOOLCHAIN=$(PREFIX)/rust-freestanding-install
+	export RUSTUP_TOOLCHAIN=$(ROOT)/$(PREFIX)/rust-freestanding-install
 endif
 
 PREFIX_FREESTANDING_PATH=$(ROOT)/$(PREFIX_FREESTANDING_INSTALL)/bin
