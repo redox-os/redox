@@ -5,7 +5,7 @@ PREFIX_INSTALL=$(PREFIX)/relibc-install
 
 ifeq ($(PREFIX_RUSTC),1)
 	PREFIX_FREESTANDING_INSTALL=$(PREFIX)/rust-freestanding-install
-	export RUSTUP_TOOLCHAIN=$(PREFIX)/rust-freestanding-install
+	export RUSTUP_TOOLCHAIN=$(ROOT)/$(PREFIX)/rust-freestanding-install
 endif
 
 PREFIX_FREESTANDING_PATH=$(ROOT)/$(PREFIX_FREESTANDING_INSTALL)/bin
@@ -123,7 +123,7 @@ $(PREFIX)/rust-freestanding-install: $(ROOT)/rust | $(PREFIX)/gcc-freestanding-i
 	cp -r "$(PREFIX)/gcc-freestanding-install" "$@.partial"
 	cd "$(PREFIX)/rust-freestanding-build" && \
 	export PATH="$(ROOT)/$@.partial/bin:$$PATH" && \
-	"$</configure" --prefix="" --disable-docs && \
+	"$</configure" --prefix="/" --disable-docs && \
 	make -j `$(NPROC)` && \
 	make -j `$(NPROC)` install DESTDIR="$(ROOT)/$@.partial"
 	rm -rf "$(PREFIX)/rust-freestanding-build"
