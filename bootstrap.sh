@@ -142,7 +142,7 @@ osx_homebrew()
 archLinux()
 {
 	echo "Detected Arch Linux"
-	packages="cmake fuse git gperf perl-html-parser nasm wget"
+	packages="cmake fuse git gperf perl-html-parser nasm wget texinfo bison flex yacc"
 	if [ "$1" == "qemu" ]; then
 		packages="$packages qemu"
 	elif [ "$1" == "virtualbox" ]; then
