@@ -117,13 +117,16 @@ $(PREFIX)/gcc-freestanding-install: $(PREFIX)/gcc | $(PREFIX)/binutils-install
 	touch "$@.partial"
 	mv "$@.partial" "$@"
 
-$(PREFIX)/rust-freestanding-install: $(ROOT)/rust | $(PREFIX)/gcc-freestanding-install
+$(PREFIX)/rust-freestanding-install: $(ROOT)/rust | $(PREFIX)/binutils-install
 	rm -rf "$(PREFIX)/rust-freestanding-build" "$@.partial" "$@"
 	mkdir -p "$(PREFIX)/rust-freestanding-build"
-	cp -r "$(PREFIX)/gcc-freestanding-install" "$@.partial"
+	cp -r "$(PREFIX)/binutils-install" "$@.partial"
 	cd "$(PREFIX)/rust-freestanding-build" && \
 	export PATH="$(ROOT)/$@.partial/bin:$$PATH" && \
-	"$</configure" --prefix="/" --disable-docs && \
+	"$</configure" \
+		--prefix="/" \
+		--disable-docs \
+		&& \
 	make -j `$(NPROC)` && \
 	make -j `$(NPROC)` install DESTDIR="$(ROOT)/$@.partial"
 	rm -rf "$(PREFIX)/rust-freestanding-build"
