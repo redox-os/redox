@@ -140,11 +140,11 @@ $(PREFIX)/rust-freestanding-install: $(ROOT)/rust | $(PREFIX)/binutils-install
 	mv "$@.partial" "$@"
 
 # TODO: Only make headers for freestanding install
-$(PREFIX)/relibc-freestanding-install: $(ROOT)/relibc | $(PREFIX_FREESTANDING_INSTALL)
+$(PREFIX)/relibc-freestanding-install: $(ROOT)/relibc | $(PREFIX_BASE_INSTALL) $(PREFIX_FREESTANDING_INSTALL)
 	rm -rf "$@.partial" "$@"
 	mkdir -p "$@.partial"
 	cd "$<" && \
-	export PATH="$(PREFIX_FREESTANDING_PATH):$$PATH" && \
+	export PATH="$(PREFIX_BASE_INSTALL):$(PREFIX_FREESTANDING_PATH):$$PATH" && \
 	export CARGO=xargo && \
 	make -j `$(NPROC)` all && \
 	make -j `$(NPROC)` install DESTDIR="$(ROOT)/$@.partial/$(TARGET)"
@@ -155,7 +155,7 @@ $(PREFIX)/relibc-freestanding-install: $(ROOT)/relibc | $(PREFIX_FREESTANDING_IN
 $(PREFIX)/gcc-install: $(PREFIX)/gcc | $(PREFIX)/relibc-freestanding-install
 	rm -rf "$<-build" "$@.partial" "$@"
 	mkdir -p "$<-build"
-	cp -r "$(PREFIX)/binutils-install" "$@.partial"
+	cp -r "$(PREFIX_BASE_INSTALL)" "$@.partial"
 	cd "$<-build" && \
 	export PATH="$(ROOT)/$@.partial/bin:$$PATH" && \
 	"$(ROOT)/$</configure" \
