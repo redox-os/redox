@@ -23,13 +23,14 @@ function recipe_build {
         --prefix=/ \
         --build=${BUILD} \
         --host=${HOST} \
-        --disable-tftp \
         --disable-ftp \
+        --disable-ipv6 \
         --disable-ntlm-wb \
+        --disable-tftp \
         --disable-threaded-resolver \
-        --with-zlib="$sysroot" \
+        --with-ca-path=/ssl/certs \
         --with-ssl="$sysroot" \
-        --with-ca-path=/ssl/certs
+        --with-zlib="$sysroot"
     make -j"$(nproc)"
     skip=1
 }
