@@ -90,7 +90,7 @@ ci-toolchain: FORCE
 	$(MAKE) PREFIX_BINARY=0 \
 		"prefix/$(TARGET)/gcc-install.tar.gz" \
 		"prefix/$(TARGET)/relibc-install.tar.gz"
-	rm -rf build/toolchain
+	rm -rf "build/toolchain/$(TARGET)"
 	mkdir -p "build/toolchain/$(TARGET)"
 	cp "prefix/$(TARGET)/gcc-install.tar.gz" "build/toolchain/$(TARGET)/gcc-install.tar.gz"
 	cp "prefix/$(TARGET)/relibc-install.tar.gz" "build/toolchain/$(TARGET)/relibc-install.tar.gz"
