@@ -1,7 +1,8 @@
-ata0-master: type=disk, path="build/harddrive.bin", mode=flat
+ata0-master: type=disk, path="build/livedisk.bin", mode=flat
 boot: disk
 com1: enabled=1, mode=file, dev=build/serial.log
 cpu: model=corei7_haswell_4770
+#e1000: enabled=1, mac=52:54:00:12:34:56 ethmod=vnet
 megs: 1024
 
 magic_break: enabled=1

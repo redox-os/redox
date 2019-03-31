@@ -1,2 +1,2 @@
-bochs: build/harddrive.bin
+bochs: build/livedisk.bin
 	bochs -f bochs.$(ARCH)
