@@ -214,7 +214,7 @@ fedora()
 		fi
 	fi
 	# Use rpm -q <package> to check if it's already installed
-	PKGS=$(for pkg in gcc gcc-c++ glibc-devel.i686 nasm make fuse-devel cmake texinfo; do rpm -q $pkg > /dev/null; [ $? -ne 0 ] && echo $pkg; done)
+	PKGS=$(for pkg in gcc gcc-c++ glibc-devel.i686 nasm make fuse-devel cmake texinfo bison flex patch gettext-devel libtool gperf libpng-devel perl-HTML-Parser; do rpm -q $pkg > /dev/null; [ $? -ne 0 ] && echo $pkg; done)
 	# If the list of packages is not empty, install missing
 	COUNT=$(echo $PKGS | wc -w)
 	if [ $COUNT -ne 0 ]; then
