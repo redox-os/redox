@@ -1,62 +1,6 @@
-diff -ruw source/builtin/log.c source-new/builtin/log.c
---- source/builtin/log.c	2017-06-04 19:08:11.000000000 -0600
-+++ source-new/builtin/log.c	2018-12-26 18:36:28.141445392 -0700
-@@ -308,6 +308,7 @@
- 
- static void setup_early_output(struct rev_info *rev)
- {
-+#if !defined(__redox__)
- 	struct sigaction sa;
- 
- 	/*
-@@ -333,6 +334,7 @@
- 	early_output_timer.it_value.tv_sec = 0;
- 	early_output_timer.it_value.tv_usec = 100000;
- 	setitimer(ITIMER_REAL, &early_output_timer, NULL);
-+#endif
- }
- 
- static void finish_early_output(struct rev_info *rev)
-diff -ruw source/common-main.c source-new/common-main.c
---- source/common-main.c	2017-06-04 19:08:11.000000000 -0600
-+++ source-new/common-main.c	2018-12-26 18:40:38.447229228 -0700
-@@ -15,12 +15,14 @@
-  */
- static void restore_sigpipe_to_default(void)
- {
-+#if !defined(__redox__)
- 	sigset_t unblock;
- 
- 	sigemptyset(&unblock);
- 	sigaddset(&unblock, SIGPIPE);
- 	sigprocmask(SIG_UNBLOCK, &unblock, NULL);
- 	signal(SIGPIPE, SIG_DFL);
-+#endif
- }
- 
- int main(int argc, const char **argv)
-diff -ruw source/compat/hstrerror.c source-new/compat/hstrerror.c
---- source/compat/hstrerror.c	2017-06-04 19:08:11.000000000 -0600
-+++ source-new/compat/hstrerror.c	2018-12-26 18:37:12.495372666 -0700
-@@ -5,6 +5,7 @@
- const char *githstrerror(int err)
- {
- 	static char buffer[48];
-+#if !defined(__redox__)
- 	switch (err)
- 	{
- 	case HOST_NOT_FOUND:
-@@ -16,6 +17,7 @@
- 	case TRY_AGAIN:
- 		return "Non-authoritative \"host not found\", or SERVERFAIL";
- 	}
-+#endif
- 	snprintf(buffer, sizeof(buffer), "Name resolution error %d", err);
- 	return buffer;
- }
 diff -ruw source/compat/terminal.c source-new/compat/terminal.c
 --- source/compat/terminal.c	2017-06-04 19:08:11.000000000 -0600
-+++ source-new/compat/terminal.c	2018-12-26 18:39:47.177777683 -0700
++++ source-new/compat/terminal.c	2019-03-13 14:50:29.028179965 -0600
 @@ -137,6 +137,18 @@
  	return buf.buf;
  }
@@ -76,21 +20,21 @@ diff -ruw source/compat/terminal.c source-new/compat/terminal.c
  #else
  
  char *git_terminal_prompt(const char *prompt, int echo)
-diff -ruw source/connect.c source-new/connect.c
---- source/connect.c	2017-06-04 19:08:11.000000000 -0600
-+++ source-new/connect.c	2018-12-26 18:56:40.601235949 -0700
-@@ -450,7 +450,7 @@
- 
- 	he = gethostbyname(host);
- 	if (!he)
--		die("Unable to look up %s (%s)", host, hstrerror(h_errno));
-+		die("Unable to look up %s (%s)", host, strerror(errno));
- 	nport = strtoul(port, &ep, 10);
- 	if ( ep == port || *ep ) {
- 		/* Not numeric */
+diff -ruw source/configure source-new/configure
+--- source/configure	2017-06-04 19:08:11.000000000 -0600
++++ source-new/configure	2019-03-27 19:53:37.398482599 -0600
+@@ -6156,7 +6156,7 @@
+ ac_res=$ac_cv_search_getaddrinfo
+ if test "$ac_res" != no; then :
+   test "$ac_res" = "none required" || LIBS="$ac_res $LIBS"
+-  NO_IPV6=
++  NO_IPV6=YesPlease
+ else
+   NO_IPV6=YesPlease
+ fi
 diff -ruw source/daemon.c source-new/daemon.c
 --- source/daemon.c	2017-06-04 19:08:11.000000000 -0600
-+++ source-new/daemon.c	2018-12-26 19:15:52.002437841 -0700
++++ source-new/daemon.c	2019-03-13 14:50:29.028179965 -0600
 @@ -71,13 +71,21 @@
  	return hi->ip_address.buf;
  }
@@ -152,28 +96,9 @@ diff -ruw source/daemon.c source-new/daemon.c
  		/* avoid splitting a message in the middle */
  		setvbuf(stderr, NULL, _IOFBF, 4096);
  
-diff -ruw source/fast-import.c source-new/fast-import.c
---- source/fast-import.c	2017-06-04 19:08:11.000000000 -0600
-+++ source-new/fast-import.c	2018-12-26 18:46:02.396322633 -0700
-@@ -531,6 +531,7 @@
- 
- static void set_checkpoint_signal(void)
- {
-+#if !defined(__redox__)
- 	struct sigaction sa;
- 
- 	memset(&sa, 0, sizeof(sa));
-@@ -538,6 +539,7 @@
- 	sigemptyset(&sa.sa_mask);
- 	sa.sa_flags = SA_RESTART;
- 	sigaction(SIGUSR1, &sa, NULL);
-+#endif
- }
- 
- #endif
 diff -ruw source/git-compat-util.h source-new/git-compat-util.h
 --- source/git-compat-util.h	2017-06-04 19:08:11.000000000 -0600
-+++ source-new/git-compat-util.h	2018-12-26 19:11:00.598201504 -0700
++++ source-new/git-compat-util.h	2019-03-13 15:56:28.419769725 -0600
 @@ -179,7 +179,9 @@
  #include <assert.h>
  #include <regex.h>
@@ -184,25 +109,7 @@ diff -ruw source/git-compat-util.h source-new/git-compat-util.h
  #ifndef NO_SYS_POLL_H
  #include <sys/poll.h>
  #else
-@@ -199,13 +201,17 @@
- #include <sys/wait.h>
- #include <sys/resource.h>
- #include <sys/socket.h>
-+#if !defined(__redox__)
- #include <sys/ioctl.h>
-+#endif
- #include <termios.h>
- #ifndef NO_SYS_SELECT_H
- #include <sys/select.h>
- #endif
- #include <netinet/in.h>
-+#if !defined(__redox__)
- #include <netinet/tcp.h>
-+#endif
- #include <arpa/inet.h>
- #include <netdb.h>
- #include <pwd.h>
-@@ -320,8 +326,20 @@
+@@ -320,8 +322,20 @@
  #endif
  
  #ifndef PATH_SEP
@@ -225,7 +132,7 @@ diff -ruw source/git-compat-util.h source-new/git-compat-util.h
  #include <paths.h>
 diff -ruw source/Makefile source-new/Makefile
 --- source/Makefile	2017-06-04 19:08:11.000000000 -0600
-+++ source-new/Makefile	2018-12-26 18:35:54.096906095 -0700
++++ source-new/Makefile	2019-03-13 14:50:29.028179965 -0600
 @@ -1802,7 +1802,6 @@
  
  $(BUILT_INS): git$X
@@ -265,39 +172,9 @@ diff -ruw source/Makefile source-new/Makefile
  		ln -s "git-remote-http$X" "$$execdir/$$p" 2>/dev/null || \
  		cp "$$execdir/git-remote-http$X" "$$execdir/$$p" || exit; \
  	done && \
-diff -ruw source/progress.c source-new/progress.c
---- source/progress.c	2017-06-04 19:08:11.000000000 -0600
-+++ source-new/progress.c	2018-12-26 19:13:24.522688882 -0700
-@@ -52,11 +52,13 @@
- 
- 	progress_update = 0;
- 
-+#if !defined(__redox__)
- 	memset(&sa, 0, sizeof(sa));
- 	sa.sa_handler = progress_interval;
- 	sigemptyset(&sa.sa_mask);
- 	sa.sa_flags = SA_RESTART;
- 	sigaction(SIGALRM, &sa, NULL);
-+#endif
- 
- 	v.it_interval.tv_sec = 1;
- 	v.it_interval.tv_usec = 0;
-@@ -74,8 +76,12 @@
- 
- static int is_foreground_fd(int fd)
- {
-+#if defined(__redox__)
-+        return 1;
-+#else
- 	int tpgrp = tcgetpgrp(fd);
- 	return tpgrp < 0 || tpgrp == getpgid(0);
-+#endif
- }
- 
- static int display(struct progress *progress, unsigned n, const char *done)
 diff -ruw source/run-command.c source-new/run-command.c
 --- source/run-command.c	2017-06-04 19:08:11.000000000 -0600
-+++ source-new/run-command.c	2018-12-26 19:19:21.042685078 -0700
++++ source-new/run-command.c	2019-03-13 15:56:57.331276675 -0600
 @@ -120,9 +120,9 @@
  #ifndef GIT_WINDOWS_NATIVE
  static inline void dup_devnull(int to)
@@ -319,25 +196,9 @@ diff -ruw source/run-command.c source-new/run-command.c
  
  		strbuf_reset(&buf);
  
-@@ -622,6 +622,7 @@
- 	struct async *async = data;
- 	intptr_t ret;
- 
-+#if !defined(__redox__)
- 	if (async->isolate_sigpipe) {
- 		sigset_t mask;
- 		sigemptyset(&mask);
-@@ -631,6 +632,7 @@
- 			return (void *)ret;
- 		}
- 	}
-+#endif
- 
- 	pthread_setspecific(async_key, async);
- 	ret = async->proc(async->proc_in, async->proc_out, async->data);
 diff -ruw source/setup.c source-new/setup.c
 --- source/setup.c	2017-06-04 19:08:11.000000000 -0600
-+++ source-new/setup.c	2018-12-26 18:52:50.070479933 -0700
++++ source-new/setup.c	2019-03-13 14:50:29.028179965 -0600
 @@ -1146,11 +1146,11 @@
  /* if any standard file descriptor is missing open it to /dev/null */
  void sanitize_stdfds(void)
@@ -365,7 +226,7 @@ diff -ruw source/setup.c source-new/setup.c
  	close(2);
 diff -ruw source/strbuf.c source-new/strbuf.c
 --- source/strbuf.c	2017-06-04 19:08:11.000000000 -0600
-+++ source-new/strbuf.c	2018-12-26 18:53:39.586122270 -0700
++++ source-new/strbuf.c	2019-03-13 14:50:29.028179965 -0600
 @@ -446,6 +446,13 @@
  	for (;; guessed_len *= 2) {
  		strbuf_grow(sb, guessed_len);
