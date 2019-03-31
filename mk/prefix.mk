@@ -1,6 +1,6 @@
 PREFIX=prefix/$(TARGET)
 
-PREFIX_BASE_INSTALL=$(PREFIX)/binutils
+PREFIX_BASE_INSTALL=$(PREFIX)/binutils-install
 PREFIX_FREESTANDING_INSTALL=$(PREFIX)/gcc-freestanding-install
 PREFIX_INSTALL=$(PREFIX)/relibc-install
 
