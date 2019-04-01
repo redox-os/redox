@@ -163,6 +163,7 @@ timidity = {}
 ttf-hack = {}
 userutils = {}
 uutils = {}
+vice = {}
 vim = {}
 vttest = {}
 webrender = {}
