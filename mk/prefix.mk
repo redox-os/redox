@@ -139,15 +139,14 @@ $(PREFIX)/rust-freestanding-install: $(ROOT)/rust | $(PREFIX)/binutils-install
 	touch "$@.partial"
 	mv "$@.partial" "$@"
 
-# TODO: Only make headers for freestanding install
 $(PREFIX)/relibc-freestanding-install: $(ROOT)/relibc | $(PREFIX_BASE_INSTALL) $(PREFIX_FREESTANDING_INSTALL)
 	rm -rf "$@.partial" "$@"
 	mkdir -p "$@.partial"
 	cd "$<" && \
 	export PATH="$(PREFIX_BASE_INSTALL):$(PREFIX_FREESTANDING_PATH):$$PATH" && \
 	export CARGO=xargo && \
-	make -j `$(NPROC)` all && \
-	make -j `$(NPROC)` install DESTDIR="$(ROOT)/$@.partial/$(TARGET)"
+	make -j `$(NPROC)` headers && \
+	make -j `$(NPROC)` install-headers DESTDIR="$(ROOT)/$@.partial/$(TARGET)"
 	cd "$@.partial" && $(PREFIX_STRIP)
 	touch "$@.partial"
 	mv "$@.partial" "$@"
