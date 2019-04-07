@@ -149,6 +149,7 @@ $(PREFIX)/relibc-freestanding-install: $(ROOT)/relibc | $(PREFIX_BASE_INSTALL) $
 	export CARGO=xargo && \
 	make -j `$(NPROC)` headers && \
 	make -j `$(NPROC)` install-headers DESTDIR="$(ROOT)/$@.partial/$(TARGET)" && \
+	export CC_$(subst -,_,$(TARGET))="$(TARGET)-gcc -isystem $(ROOT)/$@.partial/$(TARGET)/include" && \
 	make -j `$(NPROC)` all && \
 	make -j `$(NPROC)` install DESTDIR="$(ROOT)/$@.partial/$(TARGET)"
 	cd "$@.partial" && $(PREFIX_STRIP)
