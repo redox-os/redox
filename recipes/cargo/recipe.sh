@@ -1,7 +1,7 @@
 GIT=https://gitlab.redox-os.org/redox-os/cargo.git
 GIT_UPSTREAM=https://github.com/rust-lang/cargo.git
 BRANCH=redox
-BUILD_DEPENDS=(openssl zlib)
+BUILD_DEPENDS=(curl openssl zlib)
 
 function recipe_build {
     sysroot="$(realpath ../sysroot)"
