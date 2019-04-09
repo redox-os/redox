@@ -1,5 +1,6 @@
 GIT=https://gitlab.redox-os.org/redox-os/openssl.git
 BRANCH=redox
+GIT_UPSTREAM=https://github.com/openssl/openssl.git
 
 function recipe_version {
     printf "r%s.%s" "$(git rev-list --count HEAD)" "$(git rev-parse --short HEAD)"
