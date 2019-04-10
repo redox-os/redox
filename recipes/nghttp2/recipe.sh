@@ -15,7 +15,7 @@ function recipe_build {
     ./configure \
         --build="${BUILD}" \
         --host="${HOST}" \
-        --prefix="" \
+        --prefix=/ \
         --enable-lib-only
     make -j"$(nproc)"
     skip=1
@@ -34,7 +34,6 @@ function recipe_clean {
 function recipe_stage {
     dest="$(realpath $1)"
     make install DESTDIR="$dest"
-    find "$dest/lib" -exec ${HOST}-strip {} ';' 2> /dev/null
     rm -f "$dest/lib/"*.la
     skip=1
 }
