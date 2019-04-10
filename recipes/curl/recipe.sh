@@ -17,6 +17,8 @@ function recipe_update {
 
 function recipe_build {
     sysroot="$(realpath ../sysroot)"
+    export CFLAGS="-I$sysroot/include"
+    export LDFLAGS="-L$sysroot/lib"
     wget -O config.sub http://git.savannah.gnu.org/cgit/config.git/plain/config.sub
     autoreconf -i
     ./configure \
@@ -29,6 +31,7 @@ function recipe_build {
         --disable-tftp \
         --disable-threaded-resolver \
         --with-ca-path=/ssl/certs \
+        --with-nghttp2="$sysroot" \
         --with-ssl="$sysroot" \
         --with-zlib="$sysroot"
     make -j"$(nproc)"
