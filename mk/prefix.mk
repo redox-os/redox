@@ -82,7 +82,6 @@ $(PREFIX)/binutils-install: $(PREFIX)/binutils
 		--program-prefix="$(TARGET)-" \
 		--prefix="" \
 		--disable-werror \
-		--enable-shared \
 		&& \
 	make -j `$(NPROC)` all && \
 	make -j `$(NPROC)` install DESTDIR="$(ROOT)/$@.partial"
