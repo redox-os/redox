@@ -114,11 +114,10 @@ $(PREFIX)/gcc-freestanding-install: $(PREFIX)/gcc | $(PREFIX)/binutils-install
 		--prefix="" \
 		--disable-nls \
 		--enable-languages=c,c++ \
-		--enable-shared \
 		--without-headers \
 		&& \
-	make -j `$(NPROC)` all-gcc all-target-libgcc && \
-	make -j `$(NPROC)` install-gcc install-target-libgcc DESTDIR="$(ROOT)/$@.partial"
+	make -j `$(NPROC)` all-gcc && \
+	make -j `$(NPROC)` install-gcc DESTDIR="$(ROOT)/$@.partial"
 	rm -rf "$<-freestanding-build"
 	cd "$@.partial" && $(PREFIX_STRIP)
 	touch "$@.partial"
