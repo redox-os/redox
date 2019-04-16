@@ -169,6 +169,7 @@ $(PREFIX)/gcc-install: $(PREFIX)/gcc | $(PREFIX)/relibc-freestanding-install
 		--with-sysroot \
 		--with-build-sysroot="$(ROOT)/$(PREFIX)/relibc-freestanding-install/$(TARGET)" \
 		--with-native-system-header-dir="/include" \
+		--disable-multilib \
 		--disable-nls \
 		--disable-werror \
 		--enable-languages=c,c++ \
