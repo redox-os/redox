@@ -177,7 +177,8 @@ $(PREFIX)/gcc-install: $(PREFIX)/gcc | $(PREFIX)/relibc-freestanding-install
 		--enable-threads=posix \
 		&& \
 	make -j `$(NPROC)` all-gcc all-target-libgcc all-target-libstdc++-v3 && \
-	make -j `$(NPROC)` install-gcc install-target-libgcc install-target-libstdc++-v3 DESTDIR="$(ROOT)/$@.partial"
+	make -j `$(NPROC)` install-gcc install-target-libgcc install-target-libstdc++-v3 DESTDIR="$(ROOT)/$@.partial" && \
+	rm $(ROOT)/$@.partial/$(TARGET)/lib/*.la
 	rm -rf "$<-build"
 	cd "$@.partial" && $(PREFIX_STRIP)
 	touch "$@.partial"
