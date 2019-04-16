@@ -11,6 +11,8 @@ build/filesystem.bin: filesystem.toml build/bootloader build/kernel prefix
 	cp $< build/filesystem/filesystem.toml
 	cp build/bootloader build/filesystem/bootloader
 	cp build/kernel build/filesystem/kernel
+	cp -r $(ROOT)/$(PREFIX_INSTALL)/$(TARGET)/include build/filesystem/include
+	cp -r $(ROOT)/$(PREFIX_INSTALL)/$(TARGET)/lib build/filesystem/lib
 	export PATH="$(PREFIX_PATH):$$PATH" && \
 	cargo run --manifest-path installer/Cargo.toml --release -- $(INSTALLER_FLAGS) -c $< build/filesystem/
 	sync
