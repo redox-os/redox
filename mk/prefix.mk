@@ -21,7 +21,10 @@ prefix: $(PREFIX_INSTALL)
 
 PREFIX_STRIP=\
 	mkdir -p bin libexec "$(TARGET)/bin" && \
-	find bin libexec "$(TARGET)/bin" -type f -exec strip {} ';' 2> /dev/null
+	find bin libexec "$(TARGET)/bin" "$(TARGET)/lib" \
+		-type f \
+		-exec strip --strip-unneeded {} ';' \
+		2> /dev/null
 
 $(PREFIX)/relibc-install: $(ROOT)/relibc | $(PREFIX)/gcc-install
 	rm -rf "$@.partial" "$@"
