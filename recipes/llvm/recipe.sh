@@ -1,5 +1,5 @@
-GIT=https://gitlab.redox-os.org/redox-os/llvm.git
-GIT_UPSTREAM=https://github.com/rust-lang/llvm.git
+GIT=https://gitlab.redox-os.org/redox-os/llvm-project.git
+GIT_UPSTREAM=https://github.com/rust-lang/llvm-project.git
 BRANCH=redox
 
 function recipe_version {
@@ -19,7 +19,7 @@ function recipe_prepare {
 
 function recipe_build {
     native="$(realpath ../native.cmake)"
-    source="$(realpath ../source)"
+    source="$(realpath ../source/llvm)"
     sysroot="$(realpath ../sysroot)"
     CMAKE_ARGS=(
         -DCMAKE_AR="$(which "${AR}")"
@@ -60,8 +60,10 @@ function recipe_build {
         -I"$sysroot/include"
         -Wno-dev
     )
+    set -x
     cmake "${CMAKE_ARGS[@]}" "$source"
     make -j$(nproc)
+    set +x
     skip=1
 }
 
