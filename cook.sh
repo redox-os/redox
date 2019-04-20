@@ -6,7 +6,7 @@ source config.sh
 
 # Variables to be overriden by recipes
 export BINDIR=bin
-export CARGO=xargo
+export CARGO=(env RUSTFLAGS="$PREFIX_RUSTFLAGS" xargo)
 export CARGOBUILD=rustc
 export CARGOFLAGS=
 export DEBUG=
@@ -230,7 +230,7 @@ function op {
             fi
             if [ "$skip" -eq "0" ]
             then
-                "${CARGO}" update
+                "${CARGO[@]}" update
             fi
             popd > /dev/null
             ;;
@@ -313,7 +313,7 @@ function op {
             if [ "$skip" -eq "0" ]
             then
                 cp -p "$ROOT/Xargo.toml" "Xargo.toml"
-                "${CARGO}" "$CARGOBUILD" --target "$TARGET" $release_flag $CARGOFLAGS
+                "${CARGO[@]}" "$CARGOBUILD" --target "$TARGET" $release_flag $CARGOFLAGS
             fi
             popd > /dev/null
             ;;
@@ -334,7 +334,7 @@ function op {
             if [ "$skip" -eq "0" ]
             then
                 cp -p "$ROOT/Xargo.toml" "Xargo.toml"
-                "${CARGO}" test --no-run --target "$TARGET" $release_flag $CARGOFLAGS
+                "${CARGO[@]}" test --no-run --target "$TARGET" $release_flag $CARGOFLAGS
             fi
             popd > /dev/null
             ;;
@@ -347,7 +347,7 @@ function op {
             fi
             if [ "$skip" -eq "0" ]
             then
-                "${CARGO}" clean
+                "${CARGO[@]}" clean
             fi
             popd > /dev/null
             ;;
@@ -363,7 +363,7 @@ function op {
             fi
             if [ "$skip" -eq "0" ]
             then
-                #TODO "${CARGO}" install --root "$stage" $CARGOFLAGS
+                #TODO "${CARGO[@]}" install --root "$stage" $CARGOFLAGS
                 if [ "$DEBUG" == 1 ]
                 then
                     build=debug
