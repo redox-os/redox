@@ -6,12 +6,7 @@ INSTALLER_FLAGS?=--cookbook=cookbook
 ## Enabled to use binary prefix (much faster)
 PREFIX_BINARY?=1
 ## Enabled to build custom rustc
-ifeq ($(ARCH),aarch64)
-	# aarch64 requires rustc prefix
-	PREFIX_RUSTC?=1
-else
-	PREFIX_RUSTC?=0
-endif
+PREFIX_RUSTC?=1
 ## Filesystem size in MB (256 is the default)
 FILESYSTEM_SIZE?=256
 
