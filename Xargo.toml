@@ -2,7 +2,8 @@
 features = ["panic_unwind"]
 
 [target.x86_64-unknown-redox.dependencies.std]
-features = ["panic_unwind", "backtrace"]
+features = ["panic_unwind"]
+#features = ["panic_unwind", "backtrace"]
 
 #[dependencies.test]
 #stage = 1
