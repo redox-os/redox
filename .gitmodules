@@ -25,7 +25,7 @@
 [submodule "rust"]
 	path = rust
 	url = https://gitlab.redox-os.org/redox-os/rust.git
-	branch = redox-2019-04-06
+	branch = redox-unix-2019-04-06
 [submodule "redoxfs"]
 	path = redoxfs
 	url = https://gitlab.redox-os.org/redox-os/redoxfs.git
@@ -37,3 +37,4 @@
 [submodule "bootloader-coreboot"]
 	path = bootloader-coreboot
 	url = https://gitlab.redox-os.org/redox-os/bootloader-coreboot.git
+	branch = master
