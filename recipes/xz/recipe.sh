@@ -12,6 +12,10 @@ function recipe_update {
 }
 
 function recipe_build {
+    # Workaround of
+    # xzdec: hidden symbol `main' in xzdec-xzdec.o is referenced by DSO
+    export CFLAGS="-fvisibility=default"
+
     ./autogen.sh
     chmod +w build-aux/config.sub
     wget -O build-aux/config.sub http://git.savannah.gnu.org/cgit/config.git/plain/config.sub
