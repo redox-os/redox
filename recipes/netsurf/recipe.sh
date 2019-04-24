@@ -17,7 +17,7 @@ function recipe_build {
     sysroot="$(realpath ../sysroot)"
     export TARGET="framebuffer"
     export CFLAGS="-I$sysroot/include -I${PWD}/inst-${TARGET}/include"
-    export LDFLAGS="-L$sysroot/lib -L${PWD}/inst-${TARGET}/lib -Wl,--allow-multiple-definition"
+    export LDFLAGS="-L$sysroot/lib -L${PWD}/inst-${TARGET}/lib -Wl,--allow-multiple-definition -Wl,-Bstatic"
     # nghttp2 is not linked for some reason
     export LDFLAGS="${LDFLAGS} -lcurl -lnghttp2"
     make V=1 -j"$(nproc)"
