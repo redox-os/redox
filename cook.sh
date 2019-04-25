@@ -10,6 +10,7 @@ export CARGO=(env RUSTFLAGS="$PREFIX_RUSTFLAGS" xargo)
 export CARGOBUILD=rustc
 export CARGOFLAGS=
 export DEBUG=
+export EXAMPLES=
 export PREPARE_COPY=1
 
 if [ ! "$(uname -s)" = "Redox" ]
@@ -355,6 +356,7 @@ function op {
             op $1 unstage
             mkdir -p stage
             stage="$(realpath stage)"
+            source="$(realpath source)"
             pushd build > /dev/null
             skip=0
             if [ "$(type -t recipe_stage)" = "function" ]
@@ -372,15 +374,15 @@ function op {
                 fi
 
                 bins="$(find target/$TARGET/$build/ -maxdepth 1 -type f ! -name '*.*')"
-                if [ -z "$bins" ]
+                if [ -z "$bins" ] || [ "$EXAMPLES" == 1 ]
                 then
                     example=true
-                    bins="$(find target/$TARGET/$build/examples/ -maxdepth 1 -type f ! -name '*.*' ! -name '*-*' \
+                    bins="$bins $(find target/$TARGET/$build/examples/ -maxdepth 1 -type f ! -name '*.*' ! -name '*-*' \
                             2> /dev/null || true)"
                 fi
                 if [ -n "$bins" ]
                 then
-                    if [ -n "$example" ]
+                    if [ -n "$example" ] && [ "$EXAMPLES" != 1 ]
                     then
                         echo "$(tput bold)Note$(tput sgr0): No binaries detected, using example binaries"
                     fi
@@ -398,7 +400,7 @@ function op {
                     echo "$(tput bold)Warning$(tput sgr0): Recipe does not have any binaries" >&2
                 fi
 
-                docgen ../source ../stage/ref
+                docgen "$source" "$stage/ref"
             fi
             popd > /dev/null
             ;;
