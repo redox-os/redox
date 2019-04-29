@@ -90,7 +90,7 @@ netsurf = {}
 netutils = {}
 #newlib = {}
 #newlibtest = {}
-nulld = {}
+#nulld = {}
 #openjazz = {}
 #openssl = {}
 #openttd = {}
@@ -115,11 +115,12 @@ pkgutils = {}
 ptyd = {}
 #python = {}
 #qemu = {}
-randd = {}
+#randd = {}
 #readline = {} # ncurses
 redoxfs = {}
 #redox-ssh = {}
 #relibc = {}
+#relibc-tests = {}
 #ripgrep = {}
 #rodioplay = {}
 #rs-nes = {}
@@ -156,7 +157,7 @@ uutils = {}
 #webrender = {}
 #winit = {}
 #xz = {}
-zerod = {}
+#zerod = {}
 #zlib = {}
 
 # User settings
@@ -174,9 +175,6 @@ password = ""
 [[files]]
 path = "/etc/init.d/00_base"
 data = """
-nulld
-zerod
-randd
 ipcd
 logd
 ptyd
