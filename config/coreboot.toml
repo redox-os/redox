@@ -90,7 +90,7 @@ ipcd = {}
 #netutils = {}
 #newlib = {}
 #newlibtest = {}
-nulld = {}
+#nulld = {}
 #openjazz = {}
 #openssl = {}
 #openttd = {}
@@ -118,7 +118,7 @@ orbutils-orblogin = {}
 ptyd = {}
 #python = {}
 #qemu = {}
-randd = {}
+#randd = {}
 #readline = {} # ncurses
 #redoxfs = {}
 #redox-ssh = {}
@@ -159,7 +159,7 @@ uutils = {}
 #webrender = {}
 #winit = {}
 #xz = {}
-zerod = {}
+#zerod = {}
 #zlib = {}
 
 # User settings
@@ -177,9 +177,6 @@ password = ""
 [[files]]
 path = "/etc/init.d/00_base"
 data = """
-nulld
-zerod
-randd
 ipcd
 #logd
 ptyd
