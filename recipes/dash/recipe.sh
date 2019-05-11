@@ -13,7 +13,12 @@ function recipe_update {
 
 function recipe_build {
     ./autogen.sh
-    ./configure --build=${BUILD} --host=${HOST} --prefix=/ cross_compiling=yes
+    ./configure \
+        --build=${BUILD} \
+        --host=${HOST} \
+        --prefix=/ \
+        --enable-static \
+        cross_compiling=yes
     make -j"$(nproc)"
     skip=1
 }
