@@ -1,4 +1,5 @@
 GIT=https://gitlab.redox-os.org/redox-os/uutils.git
+BRANCH=redox-unix
 GIT_UPSTREAM=https://github.com/uutils/coreutils.git
 CARGOFLAGS="--no-default-features --features redox --bin uutils -- -C lto"
 
