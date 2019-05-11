@@ -1,5 +1,8 @@
 export PATH /bin
 export TMPDIR /tmp
+nulld
+zerod
+randd
 vesad T T G
 stdio display:1
 ps2d us
