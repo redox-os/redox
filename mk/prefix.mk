@@ -54,6 +54,33 @@ $(PREFIX)/relibc-install.tar.gz: $(PREFIX)/relibc-install
 		--directory="$<" \
 		.
 
+$(PREFIX)/rust-install: $(ROOT)/rust | $(PREFIX)/relibc-install
+	rm -rf "$(PREFIX)/rust-build" "$@.partial" "$@"
+	mkdir -p "$(PREFIX)/rust-build"
+	cp -r "$(PREFIX)/relibc-install" "$@.partial"
+	cd "$(PREFIX)/rust-build" && \
+	export PATH="$(ROOT)/$@.partial/bin:$$PATH" && \
+	"$</configure" \
+		--prefix="/" \
+		--disable-docs \
+		--target="$(TARGET)" \
+		&& \
+	make -j `$(NPROC)` && \
+	make -j `$(NPROC)` install DESTDIR="$(ROOT)/$@.partial"
+	rm -rf "$(PREFIX)/rust-build"
+	mkdir -p "$@.partial/lib/rustlib/x86_64-unknown-linux-gnu/bin"
+	cd "$@.partial" && $(PREFIX_STRIP)
+	touch "$@.partial"
+	mv "$@.partial" "$@"
+
+$(PREFIX)/rust-install.tar.gz: $(PREFIX)/rust-install
+	tar \
+		--create \
+		--gzip \
+		--file "$@" \
+		--directory="$<" \
+		.
+
 ifeq ($(PREFIX_BINARY),1)
 
 $(PREFIX)/gcc-install.tar.gz:
