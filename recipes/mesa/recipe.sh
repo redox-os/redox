@@ -1,6 +1,6 @@
 GIT=https://gitlab.redox-os.org/redox-os/mesa.git
 GIT_UPSTREAM=git://anongit.freedesktop.org/mesa/mesa
-GIT_BRANCH=redox
+BRANCH=redox
 BUILD_DEPENDS=(expat llvm zlib)
 
 function recipe_version {
