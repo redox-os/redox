@@ -26,9 +26,7 @@ build/coreboot.elf: bootloader-coreboot/build/bootloader
 	cp -v $< $@
 
 bootloader-efi/build/$(EFI_TARGET)/boot.efi: FORCE
-	unset XARGO_HOME XARGO_RUST_SRC && \
 	cd bootloader-efi && \
-	rustup component add rust-src && \
 	$(MAKE) build/$(EFI_TARGET)/boot.efi TARGET=$(EFI_TARGET)
 
 build/bootloader.efi: bootloader-efi/build/$(EFI_TARGET)/boot.efi
@@ -36,7 +34,7 @@ build/bootloader.efi: bootloader-efi/build/$(EFI_TARGET)/boot.efi
 	cp -v $< $@
 
 build/harddrive-efi.bin: build/bootloader.efi build/filesystem.bin
-	dd if=/dev/zero of=$@.partial bs=1048576 count=$$(du -m $< | cut -f1)
+	dd if=/dev/zero of=$@.partial bs=1048576 count=$$(expr $$(du -m $< | cut -f1) + 1)
 	mkfs.vfat $@.partial
 	mmd -i $@.partial efi
 	mmd -i $@.partial efi/boot
