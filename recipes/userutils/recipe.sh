@@ -28,7 +28,7 @@ function recipe_stage {
 
     for bin in "${BINS[@]}"
     do
-        cp -v "target/$TARGET/$build/$bin" "$1/bin"
+        "$STRIP" -v "target/$TARGET/$build/$bin" -o "$1/bin/$bin"
     done
 
     cp -Rv "res" "$1/etc"

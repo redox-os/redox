@@ -1,7 +1,7 @@
 VERSION="7.62.0"
 #TAR=https://curl.haxx.se/download/curl-$VERSION.tar.gz
 GIT=https://gitlab.redox-os.org/redox-os/curl.git
-GIT_BRANCH=redox
+BRANCH=redox
 BUILD_DEPENDS=(nghttp2 openssl zlib)
 DEPENDS="ca-certificates"
 
