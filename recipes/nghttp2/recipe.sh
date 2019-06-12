@@ -12,6 +12,8 @@ function recipe_update {
 }
 
 function recipe_build {
+    export CFLAGS="-static"
+
     ./configure \
         --build="${BUILD}" \
         --host="${HOST}" \
