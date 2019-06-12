@@ -12,14 +12,23 @@ function recipe_update {
 }
 
 function recipe_build {
-    # Workaround of
-    # xzdec: hidden symbol `main' in xzdec-xzdec.o is referenced by DSO
-    export CFLAGS="-fvisibility=default"
+    export CFLAGS="-static"
 
     ./autogen.sh
     chmod +w build-aux/config.sub
     wget -O build-aux/config.sub http://git.savannah.gnu.org/cgit/config.git/plain/config.sub
-    ./configure --build=${BUILD} --host=${HOST} --prefix=/ --enable-threads=no
+    ./configure \
+        --build=${BUILD} \
+        --host=${HOST} \
+        --prefix=/ \
+        --disable-lzmadec \
+        --disable-lzmainfo \
+        --disable-xz \
+        --disable-xzdec \
+        --enable-shared=no \
+        --enable-static=yes \
+        --enable-threads=no \
+        --with-pic=no
     make -j"$(nproc)"
     skip=1
 }
