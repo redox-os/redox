@@ -508,11 +508,8 @@ if [ "Darwin" == "$(uname -s)" ]; then
 else
 	# Here we will use package managers to determine which operating system the user is using.
 
-	# Arch linux
-	if hash 2>/dev/null pacman; then
-		archLinux "$emulator"
 	# Suse and derivatives
-	elif hash 2>/dev/null zypper; then
+	if hash 2>/dev/null zypper; then
 		suse "$emulator"
 	# Debian or any derivative of it
 	elif hash 2>/dev/null apt-get; then
@@ -526,6 +523,9 @@ else
 	# SolusOS
 	elif hash 2>/dev/null eopkg; then
 		solus "$emulator"
+	# Arch linux
+	elif hash 2>/dev/null pacman; then
+		archLinux "$emulator"
 	fi
 
 
