@@ -20,7 +20,7 @@
 [submodule "patches/ring"]
 	path = patches/ring
 	url = https://gitlab.redox-os.org/redox-os/ring.git
-	branch = redox-unix
+	branch = redox-unix-0.13.5
 [submodule "patches/time"]
 	path = patches/time
 	url = https://gitlab.redox-os.org/redox-os/time.git
