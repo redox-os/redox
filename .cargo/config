@@ -5,7 +5,7 @@ paths = [
     "patches/net2-rs",
     "patches/pb",
     "patches/platform-info",
-    #"patches/ring",
+    "patches/ring",
     "patches/tar-rs",
     "patches/tempfile",
     "patches/termsize",
