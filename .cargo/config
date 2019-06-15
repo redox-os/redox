@@ -1,3 +1,17 @@
+paths = [
+    "patches/atty",
+    "patches/liblibc",
+    "patches/mio",
+    "patches/net2-rs",
+    "patches/pb",
+    "patches/platform-info",
+    #"patches/ring",
+    "patches/tar-rs",
+    "patches/tempfile",
+    "patches/termsize",
+    "patches/time",
+]
+
 [target.aarch64-unknown-redox]
 linker = "aarch64-unknown-redox-gcc"
 rustflags = []
