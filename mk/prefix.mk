@@ -229,16 +229,4 @@ $(PREFIX)/gcc-install.tar.gz: $(PREFIX)/gcc-install
 		--file "$@" \
 		--directory="$<" \
 		.
-
-# Building full rustc may not be required
-# $(PREFIX)/rust-install: $(ROOT)/rust | $(PREFIX)/gcc-install
-# 	rm -rf "$(PREFIX)/rust-build" "$@"
-# 	mkdir -p "$(PREFIX)/rust-build" "$@"
-# 	cd "$(PREFIX)/rust-build" && \
-# 	export PATH="$(PREFIX_PATH):$$PATH" && \
-# 	"$</configure" --target="$(TARGET)" --prefix="$@" --disable-docs && \
-# 	make -j `$(NPROC)` && \
-# 	make -j `$(NPROC)` install
-# 	touch "$@"
-
 endif
