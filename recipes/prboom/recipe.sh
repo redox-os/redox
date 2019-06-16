@@ -13,10 +13,19 @@ function recipe_update {
 }
 
 function recipe_build {
+    export CFLAGS="-static"
     sysroot="$(realpath ../sysroot)"
     autoreconf -if
     wget -O autotools/config.sub http://git.savannah.gnu.org/cgit/config.git/plain/config.sub
-    ./configure --prefix=/ --build=${BUILD} --host=${HOST} --disable-sdltest --disable-cpu-opt --disable-gl --without-net --with-sdl-prefix="$sysroot"
+    ./configure \
+        --prefix=/ \
+        --build=${BUILD} \
+        --host=${HOST} \
+        --disable-sdltest \
+        --disable-cpu-opt \
+        --disable-gl \
+        --without-net \
+        --with-sdl-prefix="$sysroot"
     make -j"$(nproc)"
     skip=1
 }
