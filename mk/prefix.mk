@@ -80,6 +80,7 @@ $(PREFIX)/rust-install.tar.gz: $(PREFIX)/rust-install
 		--file "$@" \
 		--directory="$<" \
 		.
+
 ifeq ($(PREFIX_BINARY),1)
 
 $(PREFIX)/gcc-install.tar.gz:
@@ -91,6 +92,8 @@ $(PREFIX)/gcc-install: $(PREFIX)/gcc-install.tar.gz
 	rm -rf "$@.partial" "$@"
 	mkdir -p "$@.partial"
 	tar --extract --file "$<" --directory "$@.partial" --strip-components=1
+	[ -n "$$NIX_INTERPRETER" ] && find "$@.partial" -executable -type f -exec \
+		patchelf --set-interpreter "$$NIX_INTERPRETER" "{}" \;
 	touch "$@.partial"
 	mv "$@.partial" "$@"
 
