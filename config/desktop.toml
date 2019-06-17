@@ -120,6 +120,7 @@ ptyd = {}
 redoxfs = {}
 #redox-ssh = {}
 #relibc = {}
+#relibc-tests = {}
 #ripgrep = {}
 #rodioplay = {}
 #rs-nes = {}

@@ -1,14 +1,6 @@
-let
-  pkgs = import <nixpkgs> {
-    overlays = [
-      (import (builtins.fetchTarball https://github.com/mozilla/nixpkgs-mozilla/archive/master.tar.gz))
-    ];
-  };
-  rust = (pkgs.rustChannelOf {
-    date = "2019-04-06";
-    channel = "nightly";
-  }).rust;
-in pkgs.mkShell rec {
+{ pkgs ? import <nixpkgs> {} }:
+
+pkgs.mkShell rec {
   hardeningDisable = [ "all" ];
 
   # used in mk/prefix.mk to patch interpreter when PREFIX_BINARY=1
@@ -20,7 +12,7 @@ in pkgs.mkShell rec {
   ];
   LD_LIBRARY_PATH = LIBRARY_PATH;
 
-  nativeBuildInputs = with pkgs; [ gnumake cmake nasm pkgconfig gcc automake autoconf bison gperf qemu rust ];
+  nativeBuildInputs = with pkgs; [ gnumake cmake nasm pkgconfig gcc automake autoconf bison gperf qemu rustup ];
   buildInputs = with pkgs; [ fuse openssl gettext libtool flex libpng perl perlPackages.HTMLParser ];
 
   shellHook = ''
