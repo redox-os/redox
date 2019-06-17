@@ -1,5 +1,4 @@
 GIT=https://gitlab.redox-os.org/redox-os/userutils.git
-BRANCH=redox-unix
 BINS=(
     id
     getty
