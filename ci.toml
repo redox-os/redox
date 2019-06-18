@@ -112,6 +112,7 @@ orbutils-orblogin = {}
 osdemo = {}
 pastel = {}
 patch = {}
+#pathfinder = {} # servo-fontconfig
 pcre = {}
 periodictable = {}
 #perl = {} # ctermid, tempnam, ttyname
