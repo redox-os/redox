@@ -17,7 +17,7 @@ function recipe_build {
     sysroot="$(realpath ../sysroot)"
     export CFLAGS="-I$sysroot/include -DHAVE_PTHREAD=1"
     export CPPFLAGS="-I$sysroot/include -DHAVE_PTHREAD=1"
-    export LDFLAGS="-L$sysroot/lib"
+    export LDFLAGS="-L$sysroot/lib --static"
     #export LLVM_CONFIG="x86_64-unknown-redox-llvm-config"
     NOCONFIGURE=1 ./autogen.sh
     ./configure \
@@ -31,11 +31,13 @@ function recipe_build {
         --disable-glx \
         --disable-gbm \
         --disable-llvm-shared-libs \
+        --disable-shared \
         --enable-llvm \
         --enable-gallium-osmesa \
+        --enable-static \
         --with-gallium-drivers=swrast \
         --with-platforms=surfaceless
-    make -j"$(nproc)"
+    make V=1 -j"$(nproc)"
     skip=1
 }
 
