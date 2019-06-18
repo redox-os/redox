@@ -19,6 +19,7 @@ before_script:
         libfuse-dev \
         nasm \
         pkg-config \
+        python \
         software-properties-common \
         syslinux \
         syslinux-utils \
