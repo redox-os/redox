@@ -126,6 +126,7 @@ ptyd = {}
 #qemu = {}
 randd = {}
 readline = {}
+redoxerd = {}
 redoxfs = {}
 #redox-ssh = {}
 relibc = {}
