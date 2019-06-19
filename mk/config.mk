@@ -4,7 +4,7 @@ ARCH?=x86_64
 ## Flags to pass to the installer (empty to download binary packages)
 INSTALLER_FLAGS?=--cookbook=cookbook
 ## Enabled to use binary prefix (much faster)
-PREFIX_BINARY?=0
+PREFIX_BINARY?=1
 ## Enabled to build custom rustc
 PREFIX_RUSTC?=1
 ## Filesystem size in MB (256 is the default)
