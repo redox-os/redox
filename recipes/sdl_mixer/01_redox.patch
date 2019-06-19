@@ -1,7 +1,7 @@
-diff -rupN sdl_mixer/build-scripts/config.sub sdl_mixer-redox/build-scripts/config.sub
---- sdl_mixer/build-scripts/config.sub	2012-01-15 14:01:05.000000000 -0800
-+++ sdl_mixer-redox/build-scripts/config.sub	2016-07-27 18:17:24.513894959 -0700
-@@ -1276,7 +1276,7 @@ case $os in
+diff -ruw source/build-scripts/config.sub source-new/build-scripts/config.sub
+--- source/build-scripts/config.sub	2012-01-15 15:01:05.000000000 -0700
++++ source-new/build-scripts/config.sub	2019-06-18 20:56:54.052482658 -0600
+@@ -1276,7 +1276,7 @@
  	-gnu* | -bsd* | -mach* | -minix* | -genix* | -ultrix* | -irix* \
  	      | -*vms* | -sco* | -esix* | -isc* | -aix* | -cnk* | -sunos | -sunos[34]*\
  	      | -hpux* | -unos* | -osf* | -luna* | -dgux* | -solaris* | -sym* \
@@ -9,4 +9,21 @@ diff -rupN sdl_mixer/build-scripts/config.sub sdl_mixer-redox/build-scripts/conf
 +	      | -kopensolaris* | -redox* \
  	      | -amigaos* | -amigados* | -msdos* | -newsos* | -unicos* | -aof* \
  	      | -aos* | -aros* \
-| -nindy* | -vxsim* | -vxworks* | -ebmon* | -hms* | -mvs* \
+ 	      | -nindy* | -vxsim* | -vxworks* | -ebmon* | -hms* | -mvs* \
+Only in source-new/build-scripts: config.sub.orig
+diff -ruw source/Makefile.in source-new/Makefile.in
+--- source/Makefile.in	2012-01-15 15:01:04.000000000 -0700
++++ source-new/Makefile.in	2019-06-18 20:57:42.376687909 -0600
+@@ -66,10 +66,10 @@
+ 	$(LIBTOOL) --mode=link $(CC) -o $@ $(OBJECTS) $(VERSION_OBJECTS) $(LDFLAGS) $(EXTRA_LDFLAGS) $(LT_LDFLAGS)
+ 
+ $(objects)/playwave$(EXE): $(objects)/playwave.lo $(objects)/$(TARGET)
+-	$(LIBTOOL) --mode=link $(CC) -o $@ $(objects)/playwave.lo $(SDL_CFLAGS) $(SDL_LIBS) $(objects)/$(TARGET)
++	$(LIBTOOL) --mode=link $(CC) -o $@ $(objects)/playwave.lo $(SDL_CFLAGS) $(SDL_LIBS) $(objects)/$(TARGET) --static
+ 
+ $(objects)/playmus$(EXE): $(objects)/playmus.lo $(objects)/$(TARGET)
+-	$(LIBTOOL) --mode=link $(CC) -o $@ $(objects)/playmus.lo $(SDL_CFLAGS) $(SDL_LIBS) $(objects)/$(TARGET)
++	$(LIBTOOL) --mode=link $(CC) -o $@ $(objects)/playmus.lo $(SDL_CFLAGS) $(SDL_LIBS) $(objects)/$(TARGET) --static
+ 
+ install: all install-hdrs install-lib #install-bin
+ install-hdrs:
