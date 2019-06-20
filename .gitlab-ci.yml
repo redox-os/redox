@@ -1,3 +1,5 @@
+image: "ubuntu:18.04"
+
 variables:
   GIT_STRATEGY: "pull"
   GIT_SUBMODULE_STRATEGY: "recursive"
@@ -30,13 +32,7 @@ img:
     script:
      - |
         source "$HOME/.cargo/env" &&
-        rustup update &&
-        rustup component add rust-src &&
         cargo install cargo-config cargo-xbuild xargo &&
-        pushd bootloader-efi &&
-        rustup update &&
-        rustup component add rust-src &&
-        popd &&
         make ci-img IMG_TAG=$CI_COMMIT_REF_NAME
     artifacts:
         paths:
