@@ -63,6 +63,7 @@ $(PREFIX)/rust-install: $(ROOT)/rust | $(PREFIX)/relibc-install
 	"$</configure" \
 		--prefix="/" \
 		--disable-docs \
+		--enable-extended \
 		--target="$(TARGET)" \
 		&& \
 	make -j `$(NPROC)` && \
@@ -168,6 +169,7 @@ $(PREFIX)/rust-freestanding-install: $(ROOT)/rust | $(PREFIX)/binutils-install
 	"$</configure" \
 		--prefix="/" \
 		--disable-docs \
+		--enable-extended \
 		&& \
 	make -j `$(NPROC)` && \
 	make -j `$(NPROC)` install DESTDIR="$(ROOT)/$@.partial"
