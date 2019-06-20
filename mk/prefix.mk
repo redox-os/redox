@@ -64,13 +64,15 @@ $(PREFIX)/rust-install: $(ROOT)/rust | $(PREFIX)/relibc-install
 		--prefix="/" \
 		--disable-docs \
 		--enable-extended \
+		--tools=cargo \
 		--target="$(TARGET)" \
 		&& \
 	make -j `$(NPROC)` && \
+	rm -rf "$(ROOT)/$@.partial/lib/rustlib" "$(ROOT)/$@.partial/share/doc/rust" && \
 	make -j `$(NPROC)` install DESTDIR="$(ROOT)/$@.partial"
 	rm -rf "$(PREFIX)/rust-build"
 	mkdir -p "$@.partial/lib/rustlib/x86_64-unknown-linux-gnu/bin"
-	cd "$@.partial" && $(PREFIX_STRIP)
+	cd "$@.partial" && find . -name *.old -exec rm {} ';' && $(PREFIX_STRIP)
 	touch "$@.partial"
 	mv "$@.partial" "$@"
 
@@ -170,6 +172,7 @@ $(PREFIX)/rust-freestanding-install: $(ROOT)/rust | $(PREFIX)/binutils-install
 		--prefix="/" \
 		--disable-docs \
 		--enable-extended \
+		--tools=cargo \
 		&& \
 	make -j `$(NPROC)` && \
 	make -j `$(NPROC)` install DESTDIR="$(ROOT)/$@.partial"
