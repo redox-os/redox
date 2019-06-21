@@ -63,6 +63,7 @@ $(PREFIX)/rust-install: $(ROOT)/rust | $(PREFIX)/relibc-install
 	"$</configure" \
 		--prefix="/" \
 		--disable-docs \
+		--enable-cargo-native-static \
 		--enable-extended \
 		--tools=cargo \
 		--target="$(TARGET)" \
@@ -171,6 +172,7 @@ $(PREFIX)/rust-freestanding-install: $(ROOT)/rust | $(PREFIX)/binutils-install
 	"$</configure" \
 		--prefix="/" \
 		--disable-docs \
+		--enable-cargo-native-static \
 		--enable-extended \
 		--tools=cargo \
 		&& \
