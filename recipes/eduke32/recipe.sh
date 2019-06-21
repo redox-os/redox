@@ -14,9 +14,9 @@ function recipe_update {
 
 function recipe_build {
     sysroot="$(realpath ../sysroot)"
-    export LDFLAGS="-L$sysroot/lib"
     export CFLAGS="-I$sysroot/include -I$sysroot/include/SDL"
-    export SDLCONFIG="$sysroot/bin/sdl-config"
+    export LDFLAGS="-L$sysroot/lib -static"
+    export SDLCONFIG="$sysroot/bin/sdl-config --prefix=$sysroot"
 
     PLATFORM=REDOX make -j"$(nproc)"
     skip=1
