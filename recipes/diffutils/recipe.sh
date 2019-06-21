@@ -12,6 +12,7 @@ function recipe_update {
 }
 
 function recipe_build {
+    export LDFLAGS="-static"
     autoreconf
     ./configure \
         --build=${BUILD} \
