@@ -18,7 +18,7 @@ function recipe_update {
 function recipe_build {
     sysroot="$(realpath ../sysroot)"
     export CFLAGS="-I$sysroot/include"
-    export LDFLAGS="-L$sysroot/lib"
+    export LDFLAGS="-L$sysroot/lib --static"
     wget -O config.sub http://git.savannah.gnu.org/cgit/config.git/plain/config.sub
     autoreconf -i
     ./configure \
@@ -28,8 +28,10 @@ function recipe_build {
         --disable-ftp \
         --disable-ipv6 \
         --disable-ntlm-wb \
+        --disable-shared \
         --disable-tftp \
         --disable-threaded-resolver \
+        --enable-static \
         --with-ca-path=/ssl/certs \
         --with-nghttp2="$sysroot" \
         --with-ssl="$sysroot" \
