@@ -26,4 +26,9 @@ if [ $CACHED_UID != $RUN_UID ] || [ $RUN_GID != $CACHED_GID ]; then
     chown $RUN_UID:$RUN_GID -R $CARGO_HOME $RUSTUP_HOME
 fi
 
+# fixes issue in docker for mac where fuse permissions are restricted to root:root
+# https://github.com/theferrit32/data-commons-workspace/issues/5
+# https://github.com/heliumdatacommons/data-commons-workspace/commit/f96624c8a55f5ded5ac60f4f54182a59be92e66d
+if [ -f /dev/fuse ]; then chmod 666 /dev/fuse; fi
+
 exec gosu $USER_NAME "$@"
