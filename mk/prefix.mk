@@ -65,6 +65,7 @@ $(PREFIX)/rust-install: $(ROOT)/rust | $(PREFIX)/relibc-install
 		--disable-docs \
 		--enable-cargo-native-static \
 		--enable-extended \
+		--enable-llvm-static-stdcpp \
 		--tools=cargo \
 		--target="$(TARGET)" \
 		&& \
@@ -174,6 +175,7 @@ $(PREFIX)/rust-freestanding-install: $(ROOT)/rust | $(PREFIX)/binutils-install
 		--disable-docs \
 		--enable-cargo-native-static \
 		--enable-extended \
+		--enable-llvm-static-stdcpp \
 		--tools=cargo \
 		&& \
 	make -j `$(NPROC)` && \
