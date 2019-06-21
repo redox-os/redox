@@ -16,10 +16,16 @@ function recipe_build {
     sysroot="$(realpath ../sysroot)"
     export CFLAGS="-I$sysroot/include/SDL"
     export CPPFLAGS="-I$sysroot/include/SDL"
-    export LDFLAGS="-L$sysroot/lib"
+    export LDFLAGS="-L$sysroot/lib -static"
     ./autogen.sh
     wget -O config.sub http://git.savannah.gnu.org/cgit/config.git/plain/config.sub
-    ./configure --build=${BUILD} --host=${HOST} --prefix='' --disable-opengl --disable-sdltest --with-sdl-prefix="$sysroot"
+    ./configure \
+        --build=${BUILD} \
+        --host=${HOST} \
+        --prefix='' \
+        --disable-opengl \
+        --disable-sdltest \
+        --with-sdl-prefix="$sysroot"
     make -j"$(nproc)"
     skip=1
 }
