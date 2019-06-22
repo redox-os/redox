@@ -12,7 +12,11 @@ function recipe_update {
 }
 
 function recipe_build {
-    ./configure --build=${BUILD} --host=${HOST} --prefix=/
+    export LDFLAGS="-static"
+    ./configure \
+        --build=${BUILD} \
+        --host=${HOST} \
+        --prefix=/
     make -j"$(nproc)"
     skip=1
 }

@@ -20,7 +20,7 @@ function recipe_build {
     export sdl_config="$sysroot/bin/sdl-config"
     export CFLAGS="-I$sysroot/include -I$sysroot/include/SDL"
     export CXXFLAGS="$CFLAGS"
-    export LDFLAGS="-L$sysroot/lib"
+    export LDFLAGS="-L$sysroot/lib -static"
 
     ./configure \
         --build=${BUILD} \

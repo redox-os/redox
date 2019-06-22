@@ -12,6 +12,7 @@ function recipe_update {
 }
 
 function recipe_build {
+    export LDFLAGS="-static"
     wget -O build-aux/config.sub http://git.savannah.gnu.org/cgit/config.git/plain/config.sub
     autoreconf
     ./configure --build=${BUILD} --host=${HOST} --prefix=/

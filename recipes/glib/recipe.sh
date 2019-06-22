@@ -15,7 +15,7 @@ function recipe_update {
 function recipe_build {
     sysroot="$(realpath ../sysroot)"
     export CFLAGS="-I$sysroot/include"
-    export LDFLAGS="-L$sysroot/lib"
+    export LDFLAGS="-L$sysroot/lib --static"
     glib_cv_stack_grows=no glib_cv_uscore=no ./autogen.sh \
         --build=${BUILD} \
         --host=${HOST} \

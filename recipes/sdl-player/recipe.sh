@@ -14,7 +14,7 @@ function recipe_update {
 function recipe_build {
     sysroot="$(realpath ../sysroot)"
     export CPPFLAGS="-I$sysroot/include"
-    export LDFLAGS="-L$sysroot/lib"
+    export LDFLAGS="-L$sysroot/lib -static"
     make -j"$(nproc)"
     skip=1
 }

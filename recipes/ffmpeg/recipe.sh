@@ -15,8 +15,8 @@ function recipe_update {
 
 function recipe_build {
     sysroot="$PWD/../sysroot"
-    export LDFLAGS="-L$sysroot/lib"
     export CPPFLAGS="-I$sysroot/include"
+    export LDFLAGS="-L$sysroot/lib -static"
     ./configure \
         --enable-cross-compile \
         --target-os=redox \

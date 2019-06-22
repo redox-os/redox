@@ -14,9 +14,14 @@ function recipe_update {
 }
 
 function recipe_build {
+    export LDFLAGS="-static"
     autoreconf -f -i
     wget -O autoconf/config.sub http://git.savannah.gnu.org/cgit/config.git/plain/config.sub
-    ./configure --build=${BUILD} --host=${HOST} --prefix='' --enable-vt100
+    ./configure \
+        --build=${BUILD} \
+        --host=${HOST} \
+        --prefix='' \
+        --enable-vt100
     make -j"$(nproc)"
     skip=1
 }

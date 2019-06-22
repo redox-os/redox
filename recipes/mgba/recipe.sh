@@ -16,7 +16,7 @@ function recipe_update {
 function recipe_build {
     sysroot="$(realpath ../sysroot)"
     export CFLAGS="-I$sysroot/include -I$sysroot/include/SDL"
-    export LDFLAGS="-L$sysroot/lib"
+    export LDFLAGS="-L$sysroot/lib -static"
 
     mkdir -p build
     cd build

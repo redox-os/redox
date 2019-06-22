@@ -16,7 +16,7 @@ function recipe_build {
     sysroot="$(realpath ../sysroot)"
     export CFLAGS="-I$sysroot/include -UUSE_SOCKETS -UUSE_SDL_NET"
     export CPPFLAGS="$CFLAGS"
-    export LDFLAGS="-L$sysroot/lib"
+    export LDFLAGS="-L$sysroot/lib -static"
     touch INSTALL NEWS README AUTHORS ChangeLog COPYING
     autoreconf -fvi
     autoconf
