@@ -13,8 +13,8 @@ function recipe_update {
 }
 function recipe_build {
     sysroot="$PWD/../sysroot"
-    export LDFLAGS="-L$sysroot/lib"
     export CPPFLAGS="-I$sysroot/include -I$sysroot/include/ncurses"
+    export LDFLAGS="-L$sysroot/lib -static"
     ./configure \
         --build=${BUILD} \
         --host="$HOST" \

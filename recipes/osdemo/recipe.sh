@@ -19,7 +19,7 @@ function recipe_prepare {
 function recipe_build {
     sysroot="$(realpath ../sysroot)"
     set -x
-    "${CXX}" -O2 -I "$sysroot/include" -L "$sysroot/lib" osdemo.c -o osdemo -lorbital $("${PKG_CONFIG}" --libs glu) -lglapi -lz
+    "${CXX}" -O2 -I "$sysroot/include" -L "$sysroot/lib" osdemo.c -o osdemo -static -lorbital $("${PKG_CONFIG}" --libs glu) -lglapi -lz
     set +x
     skip=1
 }

@@ -16,7 +16,7 @@ function recipe_update {
 function recipe_build {
     sysroot="${PWD}/../sysroot"
     export CFLAGS="-I$sysroot/include -I$sysroot/include/SDL"
-    export LDFLAGS="-L$sysroot/lib"
+    export LDFLAGS="-L$sysroot/lib -static"
     export SDL_CONFIG="$sysroot/bin/sdl-config"
     autoreconf -i
     ./configure --build=${BUILD} --host=${HOST} --prefix=''

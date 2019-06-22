@@ -15,7 +15,7 @@ function recipe_update {
 
 function recipe_build {
     sysroot="$(realpath ../sysroot)"
-    export LDFLAGS="-L$sysroot/lib"
+    export LDFLAGS="-L$sysroot/lib -static"
     export CPPFLAGS="-I$sysroot/include"
     export vim_cv_toupper_broken=set
     export vim_cv_terminfo=no

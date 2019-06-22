@@ -15,7 +15,7 @@ function recipe_update {
 function recipe_build {
     sysroot="$(realpath ../sysroot)"
     export CFLAGS="-I$sysroot/include"
-    export LDFLAGS="-L$sysroot/lib"
+    export LDFLAGS="-L$sysroot/lib --static"
     wget -O build-aux/config.sub http://git.savannah.gnu.org/cgit/config.git/plain/config.sub
     ./configure \
         --build=${BUILD} \
