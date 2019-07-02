@@ -177,7 +177,7 @@ data = """
 ipcd
 logd
 ptyd
-pcid /etc/pcid/filesystem.toml
+pcid /etc/pcid.d/
 """
 
 [[files]]
