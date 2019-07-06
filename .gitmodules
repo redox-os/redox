@@ -49,3 +49,6 @@
 	path = patches/mio
 	url = https://gitlab.redox-os.org/redox-os/mio.git
 	branch = redox-unix
+[submodule "patches/tokio"]
+	path = patches/tokio
+	url = git@gitlab.redox-os.org:redox-os/tokio.git

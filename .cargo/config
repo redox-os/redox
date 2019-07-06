@@ -2,6 +2,8 @@ paths = [
     "patches/atty",
     "patches/liblibc",
     "patches/mio",
+    "patches/tokio/tokio",
+    "patches/tokio/tokio-reactor",
     "patches/net2-rs",
     "patches/pb",
     "patches/platform-info",
