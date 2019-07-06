@@ -51,4 +51,4 @@
 	branch = redox-unix
 [submodule "patches/tokio"]
 	path = patches/tokio
-	url = git@gitlab.redox-os.org:redox-os/tokio.git
+	url = https://gitlab.redox-os.org/redox-os/tokio.git
