@@ -1,6 +1,6 @@
-diff -ruw source/compat/terminal.c source-new/compat/terminal.c
+diff -ruwN source/compat/terminal.c source-new/compat/terminal.c
 --- source/compat/terminal.c	2017-06-04 19:08:11.000000000 -0600
-+++ source-new/compat/terminal.c	2019-03-13 14:50:29.028179965 -0600
++++ source-new/compat/terminal.c	2019-07-10 20:15:47.185121514 -0600
 @@ -137,6 +137,18 @@
  	return buf.buf;
  }
@@ -20,9 +20,9 @@ diff -ruw source/compat/terminal.c source-new/compat/terminal.c
  #else
  
  char *git_terminal_prompt(const char *prompt, int echo)
-diff -ruw source/configure source-new/configure
+diff -ruwN source/configure source-new/configure
 --- source/configure	2017-06-04 19:08:11.000000000 -0600
-+++ source-new/configure	2019-03-27 19:53:37.398482599 -0600
++++ source-new/configure	2019-07-10 20:15:47.189121560 -0600
 @@ -6156,7 +6156,7 @@
  ac_res=$ac_cv_search_getaddrinfo
  if test "$ac_res" != no; then :
@@ -32,9 +32,9 @@ diff -ruw source/configure source-new/configure
  else
    NO_IPV6=YesPlease
  fi
-diff -ruw source/daemon.c source-new/daemon.c
+diff -ruwN source/daemon.c source-new/daemon.c
 --- source/daemon.c	2017-06-04 19:08:11.000000000 -0600
-+++ source-new/daemon.c	2019-03-13 14:50:29.028179965 -0600
++++ source-new/daemon.c	2019-07-10 20:15:47.189121560 -0600
 @@ -71,13 +71,21 @@
  	return hi->ip_address.buf;
  }
@@ -96,9 +96,9 @@ diff -ruw source/daemon.c source-new/daemon.c
  		/* avoid splitting a message in the middle */
  		setvbuf(stderr, NULL, _IOFBF, 4096);
  
-diff -ruw source/git-compat-util.h source-new/git-compat-util.h
+diff -ruwN source/git-compat-util.h source-new/git-compat-util.h
 --- source/git-compat-util.h	2017-06-04 19:08:11.000000000 -0600
-+++ source-new/git-compat-util.h	2019-03-13 15:56:28.419769725 -0600
++++ source-new/git-compat-util.h	2019-07-10 20:15:47.189121560 -0600
 @@ -179,7 +179,9 @@
  #include <assert.h>
  #include <regex.h>
@@ -130,9 +130,18 @@ diff -ruw source/git-compat-util.h source-new/git-compat-util.h
  
  #ifdef HAVE_PATHS_H
  #include <paths.h>
-diff -ruw source/Makefile source-new/Makefile
+diff -ruwN source/Makefile source-new/Makefile
 --- source/Makefile	2017-06-04 19:08:11.000000000 -0600
-+++ source-new/Makefile	2019-03-13 14:50:29.028179965 -0600
++++ source-new/Makefile	2019-07-10 20:15:59.809264435 -0600
+@@ -979,7 +979,7 @@
+ BUILTIN_OBJS += builtin/write-tree.o
+ 
+ GITLIBS = common-main.o $(LIB_FILE) $(XDIFF_LIB)
+-EXTLIBS =
++EXTLIBS = -lnghttp2
+ 
+ GIT_USER_AGENT = git/$(GIT_VERSION)
+ 
 @@ -1802,7 +1802,6 @@
  
  $(BUILT_INS): git$X
@@ -172,9 +181,9 @@ diff -ruw source/Makefile source-new/Makefile
  		ln -s "git-remote-http$X" "$$execdir/$$p" 2>/dev/null || \
  		cp "$$execdir/git-remote-http$X" "$$execdir/$$p" || exit; \
  	done && \
-diff -ruw source/run-command.c source-new/run-command.c
+diff -ruwN source/run-command.c source-new/run-command.c
 --- source/run-command.c	2017-06-04 19:08:11.000000000 -0600
-+++ source-new/run-command.c	2019-03-13 15:56:57.331276675 -0600
++++ source-new/run-command.c	2019-07-10 20:15:47.193121606 -0600
 @@ -120,9 +120,9 @@
  #ifndef GIT_WINDOWS_NATIVE
  static inline void dup_devnull(int to)
@@ -196,9 +205,9 @@ diff -ruw source/run-command.c source-new/run-command.c
  
  		strbuf_reset(&buf);
  
-diff -ruw source/setup.c source-new/setup.c
+diff -ruwN source/setup.c source-new/setup.c
 --- source/setup.c	2017-06-04 19:08:11.000000000 -0600
-+++ source-new/setup.c	2019-03-13 14:50:29.028179965 -0600
++++ source-new/setup.c	2019-07-10 20:15:47.193121606 -0600
 @@ -1146,11 +1146,11 @@
  /* if any standard file descriptor is missing open it to /dev/null */
  void sanitize_stdfds(void)
@@ -224,9 +233,9 @@ diff -ruw source/setup.c source-new/setup.c
  	close(0);
  	close(1);
  	close(2);
-diff -ruw source/strbuf.c source-new/strbuf.c
+diff -ruwN source/strbuf.c source-new/strbuf.c
 --- source/strbuf.c	2017-06-04 19:08:11.000000000 -0600
-+++ source-new/strbuf.c	2019-03-13 14:50:29.028179965 -0600
++++ source-new/strbuf.c	2019-07-10 20:15:47.193121606 -0600
 @@ -446,6 +446,13 @@
  	for (;; guessed_len *= 2) {
  		strbuf_grow(sb, guessed_len);
