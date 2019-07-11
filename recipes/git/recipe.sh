@@ -25,7 +25,7 @@ function recipe_update {
 
 function recipe_build {
     sysroot="$(realpath ../sysroot)"
-    export LDFLAGS="-L$sysroot/lib"
+    export LDFLAGS="-L$sysroot/lib -static"
     export CPPFLAGS="-I$sysroot/include"
     export CURL_CONFIG="$sysroot/bin/curl-config"
     ./configure \
