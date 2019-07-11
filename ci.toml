@@ -102,6 +102,7 @@ openttd = {}
 openttd-opengfx = {}
 openttd-openmsx = {}
 openttd-opensfx = {}
+orbclient = {}
 orbdata = {}
 orbital = {}
 orbterm = {}
