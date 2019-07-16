@@ -1,0 +1,21 @@
+diff -ruwN source/src/fccache.c source-new/src/fccache.c
+--- source/src/fccache.c	2019-06-10 05:36:37.000000000 -0600
++++ source-new/src/fccache.c	2019-07-16 17:13:18.730013599 -0600
+@@ -1526,7 +1526,7 @@
+ #if defined(_WIN32)
+ 	    if (_locking (fd, _LK_LOCK, 1) == -1)
+ 		goto bail;
+-#else
++#elif !defined(__redox__)
+ 	    struct flock fl;
+ 
+ 	    fl.l_type = F_WRLCK;
+@@ -1556,7 +1556,7 @@
+     {
+ #if defined(_WIN32)
+ 	_locking (fd, _LK_UNLCK, 1);
+-#else
++#elif !defined(__redox__)
+ 	struct flock fl;
+ 
+ 	fl.l_type = F_UNLCK;
