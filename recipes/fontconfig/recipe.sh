@@ -39,8 +39,8 @@ function recipe_clean {
 }
 
 function recipe_stage {
-	echo "skipping stage"
 	dest="$(realpath $1)"
 	make DESTDIR="$dest" install
+	rm -f "$dest/lib/"*.la
 	skip=1
 }
