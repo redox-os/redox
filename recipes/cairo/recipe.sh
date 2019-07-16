@@ -21,7 +21,7 @@ function recipe_build {
 	export LDFLAGS="-L$sysroot/lib"
 	export CPPFLAGS="-I$sysroot/include"
 	CFLAGS="-DCAIRO_NO_MUTEX=1" ./configure --build=${BUILD} --host=${HOST} --prefix=/ --enable-xlib=no --enable-script=no --enable-interpreter=no
-	make
+	make -j"$(nproc)"
     	skip=1
 }
 
@@ -36,8 +36,8 @@ function recipe_clean {
 }
 
 function recipe_stage {
-	echo "skipping stage"
 	dest="$(realpath $1)"
 	make DESTDIR="$dest" install
+	rm -f "$dest/lib/"*.la
 	skip=1
 }
