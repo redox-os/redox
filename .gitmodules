@@ -29,10 +29,6 @@
 	path = patches/termsize
 	url = https://gitlab.redox-os.org/redox-os/termsize.git
 	branch = redox-unix
-[submodule "patches/tempfile"]
-	path = patches/tempfile
-	url = https://gitlab.redox-os.org/redox-os/tempfile.git
-	branch = redox-unix
 [submodule "patches/platform-info"]
 	path = patches/platform-info
 	url = https://gitlab.redox-os.org/redox-os/platform-info.git
