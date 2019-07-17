@@ -1,0 +1,14 @@
+diff -ruwN source/configure source-new/configure
+--- source/configure	2017-10-20 07:00:49.000000000 -0600
++++ source-new/configure	2019-07-16 19:45:25.127698132 -0600
+@@ -12930,8 +12930,8 @@
+ 
+ 
+ 
+-GLIB_MKENUMS=`$PKG_CONFIG --variable=glib_mkenums glib-2.0`
+-GLIB_GENMARSHAL=`$PKG_CONFIG --variable=glib_genmarshal glib-2.0`
++#GLIB_MKENUMS=`$PKG_CONFIG --variable=glib_mkenums glib-2.0`
++#GLIB_GENMARSHAL=`$PKG_CONFIG --variable=glib_genmarshal glib-2.0`
+ 
+ 
+ 
