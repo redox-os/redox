@@ -1,6 +1,6 @@
 VERSION="1.16.0"
 TAR=https://www.cairographics.org/releases/cairo-$VERSION.tar.xz
-BUILD_DEPENDS=(zlib pixman freetype libpng)
+BUILD_DEPENDS=(expat freetype fontconfig libpng pixman zlib)
 
 function recipe_version {
 	echo "$VERSION"
@@ -20,7 +20,13 @@ function recipe_build {
 	sysroot="$(realpath ../sysroot)"
 	export LDFLAGS="-L$sysroot/lib"
 	export CPPFLAGS="-I$sysroot/include"
-	CFLAGS="-DCAIRO_NO_MUTEX=1" ./configure --build=${BUILD} --host=${HOST} --prefix=/ --enable-xlib=no --enable-script=no --enable-interpreter=no
+	CFLAGS="-DCAIRO_NO_MUTEX=1" ./configure \
+	    --build=${BUILD} \
+	    --host=${HOST} \
+	    --prefix=/ \
+	    --enable-xlib=no \
+	    --enable-script=no \
+	    --enable-interpreter=no
 	make -j"$(nproc)"
     	skip=1
 }
