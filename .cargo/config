@@ -9,7 +9,6 @@ paths = [
     "patches/platform-info",
     "patches/ring",
     "patches/tar-rs",
-    "patches/tempfile",
     "patches/termsize",
     "patches/time",
 ]
