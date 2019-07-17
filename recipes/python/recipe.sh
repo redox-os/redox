@@ -15,6 +15,7 @@ function recipe_update {
 }
 
 function recipe_build {
+    export LDFLAGS="-static"
     cp ../config.site ./
     ./configure \
         --build=${BUILD} \
@@ -42,6 +43,6 @@ function recipe_clean {
 function recipe_stage {
     dest="$(realpath $1)"
     make DESTDIR="$dest" install -j"$(nproc)"
-    "$STRIP" "$dest/bin/python3.7"
+    "$STRIP" "$dest/bin/python3.7" "$dest/bin/python3.7m"
     skip=1
 }
