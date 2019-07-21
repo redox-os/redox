@@ -1,6 +1,6 @@
 diff -ruwN source/compat/terminal.c source-new/compat/terminal.c
 --- source/compat/terminal.c	2017-06-04 19:08:11.000000000 -0600
-+++ source-new/compat/terminal.c	2019-07-10 20:15:47.185121514 -0600
++++ source-new/compat/terminal.c	2019-07-20 19:05:48.503775048 -0600
 @@ -137,6 +137,18 @@
  	return buf.buf;
  }
@@ -22,7 +22,7 @@ diff -ruwN source/compat/terminal.c source-new/compat/terminal.c
  char *git_terminal_prompt(const char *prompt, int echo)
 diff -ruwN source/configure source-new/configure
 --- source/configure	2017-06-04 19:08:11.000000000 -0600
-+++ source-new/configure	2019-07-10 20:15:47.189121560 -0600
++++ source-new/configure	2019-07-20 19:05:48.503775048 -0600
 @@ -6156,7 +6156,7 @@
  ac_res=$ac_cv_search_getaddrinfo
  if test "$ac_res" != no; then :
@@ -34,7 +34,7 @@ diff -ruwN source/configure source-new/configure
  fi
 diff -ruwN source/daemon.c source-new/daemon.c
 --- source/daemon.c	2017-06-04 19:08:11.000000000 -0600
-+++ source-new/daemon.c	2019-07-10 20:15:47.189121560 -0600
++++ source-new/daemon.c	2019-07-20 19:05:48.503775048 -0600
 @@ -71,13 +71,21 @@
  	return hi->ip_address.buf;
  }
@@ -98,8 +98,27 @@ diff -ruwN source/daemon.c source-new/daemon.c
  
 diff -ruwN source/git-compat-util.h source-new/git-compat-util.h
 --- source/git-compat-util.h	2017-06-04 19:08:11.000000000 -0600
-+++ source-new/git-compat-util.h	2019-07-10 20:15:47.189121560 -0600
-@@ -179,7 +179,9 @@
++++ source-new/git-compat-util.h	2019-07-20 21:11:24.199972278 -0600
+@@ -1,6 +1,18 @@
+ #ifndef GIT_COMPAT_UTIL_H
+ #define GIT_COMPAT_UTIL_H
+ 
++#ifndef SIG_DFL
++#define SIG_DFL 0
++#endif
++
++#ifndef SIG_IGN
++#define SIG_IGN 1
++#endif
++
++#ifndef SIG_ERR
++#define SIG_ERR (-1)
++#endif
++
+ #define _FILE_OFFSET_BITS 64
+ 
+ 
+@@ -179,7 +191,9 @@
  #include <assert.h>
  #include <regex.h>
  #include <utime.h>
@@ -109,7 +128,7 @@ diff -ruwN source/git-compat-util.h source-new/git-compat-util.h
  #ifndef NO_SYS_POLL_H
  #include <sys/poll.h>
  #else
-@@ -320,8 +322,20 @@
+@@ -320,8 +334,20 @@
  #endif
  
  #ifndef PATH_SEP
@@ -130,9 +149,55 @@ diff -ruwN source/git-compat-util.h source-new/git-compat-util.h
  
  #ifdef HAVE_PATHS_H
  #include <paths.h>
+@@ -333,6 +359,16 @@
+ #ifndef has_dos_drive_prefix
+ static inline int git_has_dos_drive_prefix(const char *path)
+ {
++#if defined(__redox__)
++	char * pos = (char *)path;
++	char c;
++	while (c = *pos) {
++		pos++;
++		if (c == ':') {
++			return pos - path;
++		}
++	}
++#endif
+ 	return 0;
+ }
+ #define has_dos_drive_prefix git_has_dos_drive_prefix
+@@ -341,7 +377,13 @@
+ #ifndef skip_dos_drive_prefix
+ static inline int git_skip_dos_drive_prefix(char **path)
+ {
++#if defined(__redox__)
++	int ret = has_dos_drive_prefix(*path);
++	*path += ret;
++	return ret;
++#else
+ 	return 0;
++#endif
+ }
+ #define skip_dos_drive_prefix git_skip_dos_drive_prefix
+ #endif
+@@ -357,7 +399,14 @@
+ #ifndef offset_1st_component
+ static inline int git_offset_1st_component(const char *path)
+ {
++#if defined(__redox__)
++	char * pos = (char *)path;
++	skip_dos_drive_prefix(&pos);
++	pos += is_dir_sep(*pos);
++	return pos - path;
++#else
+ 	return is_dir_sep(path[0]);
++#endif
+ }
+ #define offset_1st_component git_offset_1st_component
+ #endif
 diff -ruwN source/Makefile source-new/Makefile
 --- source/Makefile	2017-06-04 19:08:11.000000000 -0600
-+++ source-new/Makefile	2019-07-10 20:15:59.809264435 -0600
++++ source-new/Makefile	2019-07-20 19:05:48.507774930 -0600
 @@ -979,7 +979,7 @@
  BUILTIN_OBJS += builtin/write-tree.o
  
@@ -183,7 +248,7 @@ diff -ruwN source/Makefile source-new/Makefile
  	done && \
 diff -ruwN source/run-command.c source-new/run-command.c
 --- source/run-command.c	2017-06-04 19:08:11.000000000 -0600
-+++ source-new/run-command.c	2019-07-10 20:15:47.193121606 -0600
++++ source-new/run-command.c	2019-07-20 19:05:48.507774930 -0600
 @@ -120,9 +120,9 @@
  #ifndef GIT_WINDOWS_NATIVE
  static inline void dup_devnull(int to)
@@ -207,7 +272,7 @@ diff -ruwN source/run-command.c source-new/run-command.c
  
 diff -ruwN source/setup.c source-new/setup.c
 --- source/setup.c	2017-06-04 19:08:11.000000000 -0600
-+++ source-new/setup.c	2019-07-10 20:15:47.193121606 -0600
++++ source-new/setup.c	2019-07-20 19:05:48.507774930 -0600
 @@ -1146,11 +1146,11 @@
  /* if any standard file descriptor is missing open it to /dev/null */
  void sanitize_stdfds(void)
@@ -233,20 +298,3 @@ diff -ruwN source/setup.c source-new/setup.c
  	close(0);
  	close(1);
  	close(2);
-diff -ruwN source/strbuf.c source-new/strbuf.c
---- source/strbuf.c	2017-06-04 19:08:11.000000000 -0600
-+++ source-new/strbuf.c	2019-07-10 20:15:47.193121606 -0600
-@@ -446,6 +446,13 @@
- 	for (;; guessed_len *= 2) {
- 		strbuf_grow(sb, guessed_len);
- 		if (getcwd(sb->buf, sb->alloc)) {
-+#if defined(__redox__)
-+			if (strncmp(sb->buf, "file:", 5) == 0) {
-+			    char *x = strdup(sb->buf);
-+			    strcpy(sb->buf, x+5);
-+			    free(x);
-+			}
-+#endif
- 			strbuf_setlen(sb, strlen(sb->buf));
- 			return 0;
- 		}
