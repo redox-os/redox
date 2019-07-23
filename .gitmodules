@@ -48,3 +48,11 @@
 [submodule "patches/tokio"]
 	path = patches/tokio
 	url = https://gitlab.redox-os.org/redox-os/tokio.git
+[submodule "patches/libc"]
+	path = patches/libc
+	url = https://github.com/AdminXVII/libc
+	branch = extra-traits-redox
+[submodule "patches/nix"]
+	path = patches/nix
+	url = https://github.com/AdminXVII/nix
+	branch = add-redox-support
