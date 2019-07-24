@@ -126,6 +126,7 @@ periodictable = {}
 #perl = {} # ctermid, tempnam, ttyname
 pixelcannon = {}
 pixman = {}
+pkg-config = {}
 pkgutils = {}
 #powerline = {} # dirs
 prboom = {}
