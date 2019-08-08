@@ -1,6 +1,6 @@
 VERSION=1.6.0
 TAR="https://neverball.org/neverball-${VERSION}.tar.gz"
-BUILD_DEPENDS=(gettext libjpeg libogg liborbital libpng libvorbis llvm mesa sdl2 sdl2_ttf)
+BUILD_DEPENDS=(freetype libjpeg libogg liborbital libpng libvorbis llvm mesa sdl2 sdl2_ttf zlib)
 
 function recipe_version {
     echo "$VERSION"
@@ -16,7 +16,8 @@ function recipe_build {
     sysroot="$(realpath ../sysroot)"
     export CPPFLAGS="-I$sysroot/include"
     export LDFLAGS="-L$sysroot/lib -static"
-    make ENABLE_FS=stdio -j"$(nproc)"
+    #TODO: Make sol using host compiler
+    make -j"$(nproc)" ENABLE_FS=stdio ENABLE_NLS=0 neverball neverputt
     skip=1
 }
 
