@@ -1,5 +1,5 @@
 VERSION=3.2.1
-TAR=ftp://sourceware.org/pub/libffi/libffi-$VERSION.tar.gz
+TAR=https://sourceware.org/pub/libffi/libffi-$VERSION.tar.gz
 BUILD_DEPENDS=()
 
 function recipe_version {
