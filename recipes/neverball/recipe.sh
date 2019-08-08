@@ -13,10 +13,12 @@ function recipe_update {
 }
 
 function recipe_build {
+    env -i PATH=/usr/bin:/bin PKG_CONFIG=pkg-config \
+    make -j"$(nproc)" ENABLE_FS=stdio mapc sols
     sysroot="$(realpath ../sysroot)"
     export CPPFLAGS="-I$sysroot/include"
     export LDFLAGS="-L$sysroot/lib -static"
-    #TODO: Make sol using host compiler
+    make -j"$(nproc)" ENABLE_FS=stdio ENABLE_NLS=0 clean-src
     make -j"$(nproc)" ENABLE_FS=stdio ENABLE_NLS=0 neverball neverputt
     skip=1
 }
@@ -33,6 +35,11 @@ function recipe_clean {
 
 function recipe_stage {
     dest="$(realpath $1)"
-    make DESTDIR="$dest" install
+    mkdir -p "${dest}/games"
+    cp -rv data "${dest}/games/neverball"
+    for bin in neverball neverputt
+    do
+        "${STRIP}" -v "$bin" -o "${dest}/games/neverball/$bin"
+    done
     skip=1
 }

@@ -73,18 +73,3 @@ diff -ruwN source/Makefile source-new/Makefile
  
  $(BALL_TARG) : $(BALL_OBJS)
  	$(LINK) -o $(BALL_TARG) $(BALL_OBJS) $(LDFLAGS) $(ALL_LIBS)
-diff -ruwN source/share/version.h source-new/share/version.h
---- source/share/version.h	2019-08-07 22:43:26.197100463 -0600
-+++ source-new/share/version.h	1969-12-31 17:00:00.000000000 -0700
-@@ -1,6 +0,0 @@
--#ifndef VERSION_H
--#define VERSION_H
--
--#define VERSION "1.6.0"
--
--#endif
-diff -ruwN source/.version source-new/.version
---- source/.version	2019-08-07 22:43:26.197100463 -0600
-+++ source-new/.version	1969-12-31 17:00:00.000000000 -0700
-@@ -1 +0,0 @@
--1.6.0
