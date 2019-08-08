@@ -35,11 +35,11 @@ function recipe_clean {
 
 function recipe_stage {
     dest="$(realpath $1)"
-    mkdir -p "${dest}/games"
-    cp -rv data "${dest}/games/neverball"
+    mkdir -p "${dest}/games/neverball"
     for bin in neverball neverputt
     do
         "${STRIP}" -v "$bin" -o "${dest}/games/neverball/$bin"
     done
+    cp -rv data "${dest}/games/neverball"
     skip=1
 }
