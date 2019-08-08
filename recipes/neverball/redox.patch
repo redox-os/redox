@@ -1,6 +1,6 @@
 diff -ruwN source/Makefile source-new/Makefile
 --- source/Makefile	2019-08-07 22:16:07.630185664 -0600
-+++ source-new/Makefile	2019-08-07 22:30:34.246756435 -0600
++++ source-new/Makefile	2019-08-07 22:48:03.915634667 -0600
 @@ -38,11 +38,11 @@
  ifeq ($(DEBUG),1)
  	CFLAGS   := -g
@@ -46,12 +46,45 @@ diff -ruwN source/Makefile source-new/Makefile
  
  ifeq ($(PLATFORM),mingw)
  	ifneq ($(ENABLE_NLS),0)
-@@ -175,7 +175,7 @@
+@@ -175,8 +175,8 @@
  	                                           /usr/local/lib))
  endif
  
 -OGG_LIBS := -lvorbisfile
-+OGG_LIBS := -lvorbisfile -lvorbis -logg
- TTF_LIBS := -lSDL2_ttf
+-TTF_LIBS := -lSDL2_ttf
++OGG_LIBS := $(shell $(PKG_CONFIG) vorbisfile --libs)
++TTF_LIBS := $(shell $(PKG_CONFIG) SDL2_ttf --libs) -lfreetype
  
  ALL_LIBS := $(HMD_LIBS) $(TILT_LIBS) $(INTL_LIBS) $(TTF_LIBS) \
+ 	$(OGG_LIBS) $(SDL_LIBS) $(OGL_LIBS) $(BASE_LIBS)
+@@ -411,11 +411,11 @@
+ 
+ all : $(BALL_TARG) $(PUTT_TARG) $(MAPC_TARG) sols locales desktops
+ 
+-ifeq ($(ENABLE_HMD),libovr)
++#ifeq ($(ENABLE_HMD),libovr)
+ LINK := $(CXX) $(ALL_CXXFLAGS)
+-else
+-LINK := $(CC) $(ALL_CFLAGS)
+-endif
++#else
++#LINK := $(CC) $(ALL_CFLAGS)
++#endif
+ 
+ $(BALL_TARG) : $(BALL_OBJS)
+ 	$(LINK) -o $(BALL_TARG) $(BALL_OBJS) $(LDFLAGS) $(ALL_LIBS)
+diff -ruwN source/share/version.h source-new/share/version.h
+--- source/share/version.h	2019-08-07 22:43:26.197100463 -0600
++++ source-new/share/version.h	1969-12-31 17:00:00.000000000 -0700
+@@ -1,6 +0,0 @@
+-#ifndef VERSION_H
+-#define VERSION_H
+-
+-#define VERSION "1.6.0"
+-
+-#endif
+diff -ruwN source/.version source-new/.version
+--- source/.version	2019-08-07 22:43:26.197100463 -0600
++++ source-new/.version	1969-12-31 17:00:00.000000000 -0700
+@@ -1 +0,0 @@
+-1.6.0
