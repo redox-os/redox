@@ -37,7 +37,7 @@ $(PREFIX)/relibc-install: $(ROOT)/relibc | $(PREFIX)/gcc-install
 	cp -r "$(PREFIX)/gcc-install" "$@.partial"
 	cd "$<" && \
 	export PATH="$(ROOT)/$@.partial/bin:$$PATH" && \
-	export CARGO=xargo && \
+	export CARGO="env -u CARGO xargo" && \
 	make -j `$(NPROC)` headers && \
 	make -j `$(NPROC)` install-headers DESTDIR="$(ROOT)/$@.partial/$(TARGET)" && \
 	make -j `$(NPROC)` all && \
@@ -191,7 +191,7 @@ $(PREFIX)/relibc-freestanding-install: $(ROOT)/relibc | $(PREFIX_BASE_INSTALL) $
 	mkdir -p "$@.partial"
 	cd "$<" && \
 	export PATH="$(PREFIX_BASE_INSTALL):$(PREFIX_FREESTANDING_PATH):$$PATH" && \
-	export CARGO=xargo && \
+	export CARGO="env -u CARGO xargo" && \
 	make -j `$(NPROC)` headers && \
 	make -j `$(NPROC)` install-headers DESTDIR="$(ROOT)/$@.partial/$(TARGET)" && \
 	export CC_$(subst -,_,$(TARGET))="$(TARGET)-gcc -isystem $(ROOT)/$@.partial/$(TARGET)/include" && \
