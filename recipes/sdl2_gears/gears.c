@@ -203,8 +203,6 @@ idle(void)
 
     draw();
 
-    glFlush();
-
     SDL_GL_SwapWindow(window);
 }
 
