@@ -1,4 +1,4 @@
-BUILD_DEPENDS=(liborbital cairo pixman zlib libpng freetype)
+BUILD_DEPENDS=(cairo expat fontconfig freetype liborbital libpng pixman zlib)
 
 function recipe_version {
     printf "1.0.0"
@@ -21,7 +21,7 @@ function recipe_build {
     export LDFLAGS="-L$sysroot/lib"
     export CPPFLAGS="-I$sysroot/include"
     set -x
-    "${CXX}" -I "$sysroot/include" -L "$sysroot/lib" cairodemo.c -o cairodemo -static -lorbital -lcairo -lpixman-1 -lfreetype -lpng -lz
+    "${CXX}" $("${PKG_CONFIG}" --cflags cairo) cairodemo.c -o cairodemo -static $("${PKG_CONFIG}" --libs cairo) -lorbital
     set +x
     skip=1
 }
