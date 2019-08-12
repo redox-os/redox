@@ -1,6 +1,6 @@
 diff -ruwN source/build-scripts/config.sub source-new/build-scripts/config.sub
 --- source/build-scripts/config.sub	2012-01-18 23:30:05.000000000 -0700
-+++ source-new/build-scripts/config.sub	2018-12-29 15:57:00.298520310 -0700
++++ source-new/build-scripts/config.sub	2019-08-10 20:55:13.662786449 -0600
 @@ -1276,7 +1276,7 @@
  	-gnu* | -bsd* | -mach* | -minix* | -genix* | -ultrix* | -irix* \
  	      | -*vms* | -sco* | -esix* | -isc* | -aix* | -cnk* | -sunos | -sunos[34]*\
@@ -12,7 +12,7 @@ diff -ruwN source/build-scripts/config.sub source-new/build-scripts/config.sub
  	      | -nindy* | -vxsim* | -vxworks* | -ebmon* | -hms* | -mvs* \
 diff -ruwN source/configure.in source-new/configure.in
 --- source/configure.in	2012-01-18 23:30:05.000000000 -0700
-+++ source-new/configure.in	2019-01-06 17:08:43.147342277 -0700
++++ source-new/configure.in	2019-08-10 20:55:13.662786449 -0600
 @@ -685,6 +685,18 @@
      fi
  }
@@ -102,7 +102,7 @@ diff -ruwN source/configure.in source-new/configure.in
          # Set up files for the thread library
 diff -ruwN source/include/SDL_config.h.in source-new/include/SDL_config.h.in
 --- source/include/SDL_config.h.in	2012-01-18 23:30:05.000000000 -0700
-+++ source-new/include/SDL_config.h.in	2018-12-29 15:57:00.298520310 -0700
++++ source-new/include/SDL_config.h.in	2019-08-10 20:55:13.662786449 -0600
 @@ -182,6 +182,7 @@
  #undef SDL_AUDIO_DRIVER_OSS_SOUNDCARD_H
  #undef SDL_AUDIO_DRIVER_PAUD
@@ -121,7 +121,7 @@ diff -ruwN source/include/SDL_config.h.in source-new/include/SDL_config.h.in
  #undef SDL_VIDEO_DRIVER_PICOGUI
 diff -ruwN source/src/audio/redox/SDL_redoxaudio.c source-new/src/audio/redox/SDL_redoxaudio.c
 --- source/src/audio/redox/SDL_redoxaudio.c	1969-12-31 17:00:00.000000000 -0700
-+++ source-new/src/audio/redox/SDL_redoxaudio.c	2018-12-30 08:49:12.532354653 -0700
++++ source-new/src/audio/redox/SDL_redoxaudio.c	2019-08-10 20:55:13.662786449 -0600
 @@ -0,0 +1,169 @@
 +/*
 +    SDL - Simple DirectMedia Layer
@@ -294,7 +294,7 @@ diff -ruwN source/src/audio/redox/SDL_redoxaudio.c source-new/src/audio/redox/SD
 +}
 diff -ruwN source/src/audio/redox/SDL_redoxaudio.h source-new/src/audio/redox/SDL_redoxaudio.h
 --- source/src/audio/redox/SDL_redoxaudio.h	1969-12-31 17:00:00.000000000 -0700
-+++ source-new/src/audio/redox/SDL_redoxaudio.h	2018-12-29 18:56:18.062713776 -0700
++++ source-new/src/audio/redox/SDL_redoxaudio.h	2019-08-10 20:55:13.662786449 -0600
 @@ -0,0 +1,40 @@
 +/*
 +    SDL - Simple DirectMedia Layer
@@ -338,7 +338,7 @@ diff -ruwN source/src/audio/redox/SDL_redoxaudio.h source-new/src/audio/redox/SD
 +#endif /* _SDL_redoxaudio_h */
 diff -ruwN source/src/audio/SDL_audio.c source-new/src/audio/SDL_audio.c
 --- source/src/audio/SDL_audio.c	2012-01-18 23:30:06.000000000 -0700
-+++ source-new/src/audio/SDL_audio.c	2018-12-29 19:18:57.332057838 -0700
++++ source-new/src/audio/SDL_audio.c	2019-08-10 20:55:13.662786449 -0600
 @@ -36,6 +36,9 @@
  
  /* Available audio drivers */
@@ -351,7 +351,7 @@ diff -ruwN source/src/audio/SDL_audio.c source-new/src/audio/SDL_audio.c
  #endif
 diff -ruwN source/src/audio/SDL_sysaudio.h source-new/src/audio/SDL_sysaudio.h
 --- source/src/audio/SDL_sysaudio.h	2012-01-18 23:30:06.000000000 -0700
-+++ source-new/src/audio/SDL_sysaudio.h	2018-12-29 15:57:00.298520310 -0700
++++ source-new/src/audio/SDL_sysaudio.h	2019-08-10 20:55:13.666786472 -0600
 @@ -102,6 +102,9 @@
  	SDL_AudioDevice *(*create)(int devindex);
  } AudioBootStrap;
@@ -364,7 +364,7 @@ diff -ruwN source/src/audio/SDL_sysaudio.h source-new/src/audio/SDL_sysaudio.h
  #endif
 diff -ruwN source/src/thread/pthread/SDL_systhread.c source-new/src/thread/pthread/SDL_systhread.c
 --- source/src/thread/pthread/SDL_systhread.c	2012-01-18 23:30:06.000000000 -0700
-+++ source-new/src/thread/pthread/SDL_systhread.c	2018-12-30 07:30:42.840742321 -0700
++++ source-new/src/thread/pthread/SDL_systhread.c	2019-08-10 20:55:13.666786472 -0600
 @@ -86,7 +86,11 @@
  	for ( i=0; sig_list[i]; ++i ) {
  		sigaddset(&mask, sig_list[i]);
@@ -379,8 +379,8 @@ diff -ruwN source/src/thread/pthread/SDL_systhread.c source-new/src/thread/pthre
  	/* Allow ourselves to be asynchronously cancelled */
 diff -ruwN source/src/video/orbital/SDL_orbitalevents.c source-new/src/video/orbital/SDL_orbitalevents.c
 --- source/src/video/orbital/SDL_orbitalevents.c	1969-12-31 17:00:00.000000000 -0700
-+++ source-new/src/video/orbital/SDL_orbitalevents.c	2018-12-29 15:57:00.298520310 -0700
-@@ -0,0 +1,201 @@
++++ source-new/src/video/orbital/SDL_orbitalevents.c	2019-08-12 13:35:31.236162876 -0600
+@@ -0,0 +1,261 @@
 +/*
 +    SDL - Simple DirectMedia Layer
 +    Copyright (C) 1997-2012 Sam Lantinga
@@ -407,6 +407,7 @@ diff -ruwN source/src/video/orbital/SDL_orbitalevents.c source-new/src/video/orb
 +#include "SDL.h"
 +#include "../../events/SDL_sysevents.h"
 +#include "../../events/SDL_events_c.h"
++#include "../SDL_cursor_c.h"
 +
 +#include <orbital.h>
 +#include "SDL_orbitalvideo.h"
@@ -420,6 +421,55 @@ diff -ruwN source/src/video/orbital/SDL_orbitalevents.c source-new/src/video/orb
 +static bool last_button_left = false;
 +static bool last_button_middle = false;
 +static bool last_button_right = false;
++static int last_x = 0;
++static int last_y = 0;
++
++/* Variable for mouse relative processing */
++static int mouse_relative = 0;
++
++/* Check to see if we need to enter or leave mouse relative mode */
++
++void ORBITAL_CheckMouseMode(_THIS)
++{
++    if (!this->hidden->window) {
++        return;
++    }
++
++    /* If the mouse is hidden and input is grabbed, we use relative mode */
++    if ( !(SDL_cursorstate & CURSOR_VISIBLE) &&
++        (this->input_grab != SDL_GRAB_OFF) ) {
++        if (!mouse_relative) {
++            orb_window_set_mouse_relative(this->hidden->window, true);
++        }
++        mouse_relative = 1;
++    } else {
++        if (mouse_relative) {
++            orb_window_set_mouse_relative(this->hidden->window, false);
++        }
++        mouse_relative = 0;
++    }
++}
++
++/* Current grab mode */
++static SDL_GrabMode grab_mode = SDL_GRAB_OFF;
++
++SDL_GrabMode ORBITAL_GrabInput(_THIS, SDL_GrabMode mode) {
++    if (this->hidden->window) {
++        switch (mode) {
++        case SDL_GRAB_OFF:
++            orb_window_set_mouse_grab(this->hidden->window, false);
++            grab_mode = SDL_GRAB_OFF;
++            break;
++        case SDL_GRAB_ON:
++            orb_window_set_mouse_grab(this->hidden->window, true);
++            grab_mode = SDL_GRAB_ON;
++            break;
++        default:
++            break;
++        }
++    }
++    return(grab_mode);
++}
 +
 +void ORBITAL_PumpEvents(_THIS)
 +{
@@ -443,7 +493,17 @@ diff -ruwN source/src/video/orbital/SDL_orbitalevents.c source-new/src/video/orb
 +                SDL_PrivateKeyboard(oeo.key.pressed ? SDL_PRESSED : SDL_RELEASED, &keysym);
 +                break;
 +            case OrbEventOption_Mouse:
-+                SDL_PrivateMouseMotion(0, 0, oeo.mouse.x, oeo.mouse.y);
++                if (mouse_relative) {
++                    SDL_PrivateMouseMotion(0, 1, oeo.mouse.x - last_x, oeo.mouse.y - last_y);
++                } else {
++                    SDL_PrivateMouseMotion(0, 0, oeo.mouse.x, oeo.mouse.y);
++                }
++
++                last_x = oeo.mouse.x;
++                last_y = oeo.mouse.y;
++                break;
++            case OrbEventOption_MouseRelative:
++                SDL_PrivateMouseMotion(0, 1, oeo.mouse_relative.dx, oeo.mouse_relative.dy);
 +                break;
 +            case OrbEventOption_Button:
 +                if (oeo.button.left ^ last_button_left)
@@ -584,7 +644,7 @@ diff -ruwN source/src/video/orbital/SDL_orbitalevents.c source-new/src/video/orb
 +/* end of SDL_orbitalevents.c ... */
 diff -ruwN source/src/video/orbital/SDL_orbitalevents_c.h source-new/src/video/orbital/SDL_orbitalevents_c.h
 --- source/src/video/orbital/SDL_orbitalevents_c.h	1969-12-31 17:00:00.000000000 -0700
-+++ source-new/src/video/orbital/SDL_orbitalevents_c.h	2018-12-29 15:57:00.302520335 -0700
++++ source-new/src/video/orbital/SDL_orbitalevents_c.h	2019-08-12 13:21:41.975750603 -0600
 @@ -0,0 +1,32 @@
 +/*
 +    SDL - Simple DirectMedia Layer
@@ -620,8 +680,8 @@ diff -ruwN source/src/video/orbital/SDL_orbitalevents_c.h source-new/src/video/o
 +/* end of SDL_orbitalevents_c.h ... */
 diff -ruwN source/src/video/orbital/SDL_orbitalmouse.c source-new/src/video/orbital/SDL_orbitalmouse.c
 --- source/src/video/orbital/SDL_orbitalmouse.c	1969-12-31 17:00:00.000000000 -0700
-+++ source-new/src/video/orbital/SDL_orbitalmouse.c	2018-12-29 15:57:00.302520335 -0700
-@@ -0,0 +1,33 @@
++++ source-new/src/video/orbital/SDL_orbitalmouse.c	2019-08-12 13:31:25.606869756 -0600
+@@ -0,0 +1,61 @@
 +/*
 +    SDL - Simple DirectMedia Layer
 +    Copyright (C) 1997-2012 Sam Lantinga
@@ -653,12 +713,40 @@ diff -ruwN source/src/video/orbital/SDL_orbitalmouse.c source-new/src/video/orbi
 +
 +/* The implementation dependent data for the window manager cursor */
 +struct WMcursor {
-+	int unused;
++    int unused;
 +};
++
++WMcursor * ORBITAL_CreateWMCursor (_THIS,
++        Uint8 * data, Uint8 * mask, int w, int h, int hot_x, int hot_y)
++{
++    WMcursor * cursor ;
++
++    cursor = (WMcursor *) SDL_malloc (sizeof (WMcursor)) ;
++    if (cursor == NULL) {
++        SDL_OutOfMemory () ;
++        return NULL ;
++    }
++
++    return cursor ;
++}
++
++void ORBITAL_FreeWMCursor (_THIS, WMcursor * cursor)
++{
++    SDL_free (cursor) ;
++}
++
++int ORBITAL_ShowWMCursor (_THIS, WMcursor * cursor)
++{
++    if (!this->hidden->window) {
++        return;
++    }
++
++    orb_window_set_mouse_cursor(this->hidden->window, cursor != NULL);
++}
 diff -ruwN source/src/video/orbital/SDL_orbitalmouse_c.h source-new/src/video/orbital/SDL_orbitalmouse_c.h
 --- source/src/video/orbital/SDL_orbitalmouse_c.h	1969-12-31 17:00:00.000000000 -0700
-+++ source-new/src/video/orbital/SDL_orbitalmouse_c.h	2018-12-29 15:57:00.302520335 -0700
-@@ -0,0 +1,26 @@
++++ source-new/src/video/orbital/SDL_orbitalmouse_c.h	2019-08-12 13:14:47.509444528 -0600
+@@ -0,0 +1,28 @@
 +/*
 +    SDL - Simple DirectMedia Layer
 +    Copyright (C) 1997-2012 Sam Lantinga
@@ -684,11 +772,13 @@ diff -ruwN source/src/video/orbital/SDL_orbitalmouse_c.h source-new/src/video/or
 +
 +#include "SDL_orbitalvideo.h"
 +
-+/* Functions to be exported */
++extern WMcursor * ORBITAL_CreateWMCursor (_THIS, Uint8 * data, Uint8 * mask, int w, int h, int hot_x, int hot_y) ;
++void ORBITAL_FreeWMCursor (_THIS, WMcursor * cursor) ;
++extern int ORBITAL_ShowWMCursor (_THIS, WMcursor * cursor) ;
 diff -ruwN source/src/video/orbital/SDL_orbitalvideo.c source-new/src/video/orbital/SDL_orbitalvideo.c
 --- source/src/video/orbital/SDL_orbitalvideo.c	1969-12-31 17:00:00.000000000 -0700
-+++ source-new/src/video/orbital/SDL_orbitalvideo.c	2018-12-29 15:57:00.302520335 -0700
-@@ -0,0 +1,252 @@
++++ source-new/src/video/orbital/SDL_orbitalvideo.c	2019-08-12 13:32:48.391306374 -0600
+@@ -0,0 +1,260 @@
 +/*
 +    SDL - Simple DirectMedia Layer
 +    Copyright (C) 1997-2012 Sam Lantinga
@@ -752,6 +842,10 @@ diff -ruwN source/src/video/orbital/SDL_orbitalvideo.c source-new/src/video/orbi
 +static void ORBITAL_UnlockHWSurface(_THIS, SDL_Surface *surface);
 +static void ORBITAL_FreeHWSurface(_THIS, SDL_Surface *surface);
 +
++/* Input handling */
++static void ORBITAL_CheckMouseMode(_THIS);
++static SDL_GrabMode ORBITAL_GrabInput(_THIS, SDL_GrabMode mode);
++
 +/* etc. */
 +static void ORBITAL_UpdateRects(_THIS, int numrects, SDL_Rect *rects);
 +
@@ -759,175 +853,179 @@ diff -ruwN source/src/video/orbital/SDL_orbitalvideo.c source-new/src/video/orbi
 +
 +static int ORBITAL_Available(void)
 +{
-+	return(1);
++    return(1);
 +}
 +
 +static void ORBITAL_DeleteDevice(SDL_VideoDevice *device)
 +{
-+	SDL_free(device->hidden);
-+	SDL_free(device);
++    SDL_free(device->hidden);
++    SDL_free(device);
 +}
 +
 +static SDL_VideoDevice *ORBITAL_CreateDevice(int devindex)
 +{
-+	SDL_VideoDevice *device;
++    SDL_VideoDevice *device;
 +
-+	/* Initialize all variables that we clean on shutdown */
-+	device = (SDL_VideoDevice *)SDL_malloc(sizeof(SDL_VideoDevice));
-+	if ( device ) {
-+		SDL_memset(device, 0, (sizeof *device));
-+		device->hidden = (struct SDL_PrivateVideoData *)
-+				SDL_malloc((sizeof *device->hidden));
-+	}
-+	if ( (device == NULL) || (device->hidden == NULL) ) {
-+		SDL_OutOfMemory();
-+		if ( device ) {
-+			SDL_free(device);
-+		}
-+		return(0);
-+	}
-+	SDL_memset(device->hidden, 0, (sizeof *device->hidden));
++    /* Initialize all variables that we clean on shutdown */
++    device = (SDL_VideoDevice *)SDL_malloc(sizeof(SDL_VideoDevice));
++    if ( device ) {
++        SDL_memset(device, 0, (sizeof *device));
++        device->hidden = (struct SDL_PrivateVideoData *)
++                SDL_malloc((sizeof *device->hidden));
++    }
++    if ( (device == NULL) || (device->hidden == NULL) ) {
++        SDL_OutOfMemory();
++        if ( device ) {
++            SDL_free(device);
++        }
++        return(0);
++    }
++    SDL_memset(device->hidden, 0, (sizeof *device->hidden));
 +
-+	/* Set the function pointers */
-+	device->VideoInit = ORBITAL_VideoInit;
-+	device->ListModes = ORBITAL_ListModes;
-+	device->SetVideoMode = ORBITAL_SetVideoMode;
-+	device->CreateYUVOverlay = NULL;
-+	device->SetColors = ORBITAL_SetColors;
-+	device->UpdateRects = ORBITAL_UpdateRects;
-+	device->VideoQuit = ORBITAL_VideoQuit;
-+	device->AllocHWSurface = ORBITAL_AllocHWSurface;
-+	device->CheckHWBlit = NULL;
-+	device->FillHWRect = NULL;
-+	device->SetHWColorKey = NULL;
-+	device->SetHWAlpha = NULL;
-+	device->LockHWSurface = ORBITAL_LockHWSurface;
-+	device->UnlockHWSurface = ORBITAL_UnlockHWSurface;
-+	device->FlipHWSurface = NULL;
-+	device->FreeHWSurface = ORBITAL_FreeHWSurface;
-+	device->SetCaption = ORBITAL_SetCaption;
-+	device->SetIcon = NULL;
-+	device->IconifyWindow = NULL;
-+	device->GrabInput = NULL;
-+	device->GetWMInfo = NULL;
-+	device->InitOSKeymap = ORBITAL_InitOSKeymap;
-+	device->PumpEvents = ORBITAL_PumpEvents;
++    /* Set the function pointers */
++    device->VideoInit = ORBITAL_VideoInit;
++    device->ListModes = ORBITAL_ListModes;
++    device->SetVideoMode = ORBITAL_SetVideoMode;
++    device->CreateYUVOverlay = NULL;
++    device->SetColors = ORBITAL_SetColors;
++    device->UpdateRects = ORBITAL_UpdateRects;
++    device->VideoQuit = ORBITAL_VideoQuit;
++    device->AllocHWSurface = ORBITAL_AllocHWSurface;
++    device->CheckHWBlit = NULL;
++    device->FillHWRect = NULL;
++    device->SetHWColorKey = NULL;
++    device->SetHWAlpha = NULL;
++    device->LockHWSurface = ORBITAL_LockHWSurface;
++    device->UnlockHWSurface = ORBITAL_UnlockHWSurface;
++    device->FlipHWSurface = NULL;
++    device->FreeHWSurface = ORBITAL_FreeHWSurface;
++    device->SetCaption = ORBITAL_SetCaption;
++    device->SetIcon = NULL;
++    device->IconifyWindow = NULL;
++    device->FreeWMCursor =  ORBITAL_FreeWMCursor;
++    device->CreateWMCursor = ORBITAL_CreateWMCursor;
++    device->ShowWMCursor = ORBITAL_ShowWMCursor;
++    device->CheckMouseMode = ORBITAL_CheckMouseMode;
++    device->GrabInput = ORBITAL_GrabInput;
++    device->GetWMInfo = NULL;
++    device->InitOSKeymap = ORBITAL_InitOSKeymap;
++    device->PumpEvents = ORBITAL_PumpEvents;
 +
-+	device->free = ORBITAL_DeleteDevice;
++    device->free = ORBITAL_DeleteDevice;
 +
-+	return device;
++    return device;
 +}
 +
 +VideoBootStrap ORBITAL_bootstrap = {
-+	ORBITALVID_DRIVER_NAME, "SDL orbital video driver",
-+	ORBITAL_Available, ORBITAL_CreateDevice
++    ORBITALVID_DRIVER_NAME, "SDL orbital video driver",
++    ORBITAL_Available, ORBITAL_CreateDevice
 +};
 +
 +
 +int ORBITAL_VideoInit(_THIS, SDL_PixelFormat *vformat)
 +{
-+	fprintf(stderr, "WARNING: You are using the SDL orbital video driver!\n");
++    fprintf(stderr, "WARNING: You are using the SDL orbital video driver!\n");
 +
-+	/* Determine the screen depth (use default 32-bit depth) */
-+	/* we change this during the SDL_SetVideoMode implementation... */
-+	vformat->BitsPerPixel = 32;
-+	vformat->BytesPerPixel = 4;
++    /* Determine the screen depth (use default 32-bit depth) */
++    /* we change this during the SDL_SetVideoMode implementation... */
++    vformat->BitsPerPixel = 32;
++    vformat->BytesPerPixel = 4;
 +
-+	/* We're done! */
-+	return(0);
++    /* We're done! */
++    return(0);
 +}
 +
 +SDL_Rect **ORBITAL_ListModes(_THIS, SDL_PixelFormat *format, Uint32 flags)
 +{
-+	if (format->BitsPerPixel != 32)
-+		return NULL;
++    if (format->BitsPerPixel != 32)
++        return NULL;
 +
-+	return (SDL_Rect **) -1;
++    return (SDL_Rect **) -1;
 +}
 +
 +SDL_Surface *ORBITAL_SetVideoMode(_THIS, SDL_Surface *current,
-+				int width, int height, int bpp, Uint32 flags)
++                int width, int height, int bpp, Uint32 flags)
 +{
-+	if ( bpp != 32 ) {
-+		SDL_SetError("Unsupported color depth - must use 32-bits per pixel");
-+		return(NULL);
-+	}
++    if ( bpp != 32 ) {
++        SDL_SetError("Unsupported color depth - must use 32-bits per pixel");
++        return(NULL);
++    }
 +
-+	if (this->hidden->window) {
-+		orb_window_set_size(this->hidden->window, width, height);
-+	} else {
-+		uint32_t orb_flags = ORB_WINDOW_ASYNC;
-+		if (flags & SDL_RESIZABLE)
-+			orb_flags |= ORB_WINDOW_RESIZABLE;
++    if (this->hidden->window) {
++        orb_window_set_size(this->hidden->window, width, height);
++    } else {
++        uint32_t orb_flags = ORB_WINDOW_ASYNC;
++        if (flags & SDL_RESIZABLE)
++            orb_flags |= ORB_WINDOW_RESIZABLE;
 +
-+		this->hidden->window = orb_window_new_flags(-1, -1, width, height, "SDL", orb_flags);
-+		if (!this->hidden->window) {
-+			SDL_SetError("Couldn't create window for requested mode");
-+			return(NULL);
-+		}
-+	}
++        this->hidden->window = orb_window_new_flags(-1, -1, width, height, "SDL", orb_flags);
++        if (!this->hidden->window) {
++            SDL_SetError("Couldn't create window for requested mode");
++            return(NULL);
++        }
++    }
 +
-+ 	fprintf(stderr, "Setting mode %dx%d@%d\n", width, height, bpp);
++    fprintf(stderr, "Setting mode %dx%d@%d\n", width, height, bpp);
 +
-+	/* Allocate the new pixel format for the screen */
-+	if ( ! SDL_ReallocFormat(current, bpp, 0x00FF0000, 0x0000FF00, 0x000000FF, 0xFF000000) ) {
-+		orb_window_destroy(this->hidden->window);
-+		this->hidden->window = NULL;
++    /* Allocate the new pixel format for the screen */
++    if ( ! SDL_ReallocFormat(current, bpp, 0x00FF0000, 0x0000FF00, 0x000000FF, 0xFF000000) ) {
++        orb_window_destroy(this->hidden->window);
++        this->hidden->window = NULL;
 +
-+		SDL_SetError("Couldn't allocate new pixel format for requested mode");
-+		return(NULL);
-+	}
++        SDL_SetError("Couldn't allocate new pixel format for requested mode");
++        return(NULL);
++    }
 +
-+	/* Set up the new mode framebuffer */
-+	current->flags = flags & (~SDL_DOUBLEBUF);
-+	current->w = width;
-+	current->h = height;
-+	current->pitch = width * (bpp / 8);
-+	current->pixels = orb_window_data(this->hidden->window);
++    /* Set up the new mode framebuffer */
++    current->flags = flags & (~SDL_DOUBLEBUF);
++    current->w = width;
++    current->h = height;
++    current->pitch = width * (bpp / 8);
++    current->pixels = orb_window_data(this->hidden->window);
 +
-+	/* We're done */
-+	return(current);
++    /* We're done */
++    return(current);
 +}
 +
 +static void ORBITAL_SetCaption(_THIS, const char *title, const char *icon)
 +{
-+	if (this->hidden->window)
-+		orb_window_set_title(this->hidden->window, title);
++    if (this->hidden->window)
++        orb_window_set_title(this->hidden->window, title);
 +}
 +
 +/* We don't actually allow hardware surfaces other than the main one */
 +static int ORBITAL_AllocHWSurface(_THIS, SDL_Surface *surface)
 +{
-+	return(-1);
++    return(-1);
 +}
 +static void ORBITAL_FreeHWSurface(_THIS, SDL_Surface *surface)
 +{
-+	return;
++    return;
 +}
 +
 +/* We need to wait for vertical retrace on page flipped displays */
 +static int ORBITAL_LockHWSurface(_THIS, SDL_Surface *surface)
 +{
-+	return(0);
++    return(0);
 +}
 +
 +static void ORBITAL_UnlockHWSurface(_THIS, SDL_Surface *surface)
 +{
-+	return;
++    return;
 +}
 +
 +static void ORBITAL_UpdateRects(_THIS, int numrects, SDL_Rect *rects)
 +{
-+	if (this->hidden->window) {
-+		SDL_SetAlphaChannel(this->screen, SDL_ALPHA_OPAQUE);
-+		orb_window_sync(this->hidden->window);
-+	}
++    if (this->hidden->window) {
++        SDL_SetAlphaChannel(this->screen, SDL_ALPHA_OPAQUE);
++        orb_window_sync(this->hidden->window);
++    }
 +}
 +
 +int ORBITAL_SetColors(_THIS, int firstcolor, int ncolors, SDL_Color *colors)
 +{
-+	/* do nothing of note. */
-+	return(1);
++    /* do nothing of note. */
++    return(1);
 +}
 +
 +/* Note:  If we are terminated, this could be called in the middle of
@@ -935,15 +1033,15 @@ diff -ruwN source/src/video/orbital/SDL_orbitalvideo.c source-new/src/video/orbi
 +*/
 +void ORBITAL_VideoQuit(_THIS)
 +{
-+	if (this->hidden->window) {
-+		orb_window_destroy(this->hidden->window);
-+		this->hidden->window = NULL;
-+		this->screen->pixels = NULL;
-+	}
++    if (this->hidden->window) {
++        orb_window_destroy(this->hidden->window);
++        this->hidden->window = NULL;
++        this->screen->pixels = NULL;
++    }
 +}
 diff -ruwN source/src/video/orbital/SDL_orbitalvideo.h source-new/src/video/orbital/SDL_orbitalvideo.h
 --- source/src/video/orbital/SDL_orbitalvideo.h	1969-12-31 17:00:00.000000000 -0700
-+++ source-new/src/video/orbital/SDL_orbitalvideo.h	2018-12-29 15:57:00.302520335 -0700
++++ source-new/src/video/orbital/SDL_orbitalvideo.h	2019-08-12 13:22:05.603878968 -0600
 @@ -0,0 +1,39 @@
 +/*
 +    SDL - Simple DirectMedia Layer
@@ -974,7 +1072,7 @@ diff -ruwN source/src/video/orbital/SDL_orbitalvideo.h source-new/src/video/orbi
 +#include "../SDL_sysvideo.h"
 +
 +/* Hidden "this" pointer for the video functions */
-+#define _THIS	SDL_VideoDevice *this
++#define _THIS SDL_VideoDevice *this
 +
 +
 +/* Private display data */
@@ -986,7 +1084,7 @@ diff -ruwN source/src/video/orbital/SDL_orbitalvideo.h source-new/src/video/orbi
 +#endif /* _SDL_orbitalvideo_h */
 diff -ruwN source/src/video/SDL_gamma.c source-new/src/video/SDL_gamma.c
 --- source/src/video/SDL_gamma.c	2012-01-18 23:30:06.000000000 -0700
-+++ source-new/src/video/SDL_gamma.c	2018-12-29 15:57:00.302520335 -0700
++++ source-new/src/video/SDL_gamma.c	2019-08-10 20:55:13.670786496 -0600
 @@ -35,6 +35,9 @@
  #define log(x)		__ieee754_log(x)
  #endif
@@ -999,7 +1097,7 @@ diff -ruwN source/src/video/SDL_gamma.c source-new/src/video/SDL_gamma.c
  
 diff -ruwN source/src/video/SDL_sysvideo.h source-new/src/video/SDL_sysvideo.h
 --- source/src/video/SDL_sysvideo.h	2012-01-18 23:30:06.000000000 -0700
-+++ source-new/src/video/SDL_sysvideo.h	2018-12-29 15:57:00.302520335 -0700
++++ source-new/src/video/SDL_sysvideo.h	2019-08-10 20:55:13.670786496 -0600
 @@ -410,6 +410,9 @@
  #if SDL_VIDEO_DRIVER_CACA
  extern VideoBootStrap CACA_bootstrap;
@@ -1012,7 +1110,7 @@ diff -ruwN source/src/video/SDL_sysvideo.h source-new/src/video/SDL_sysvideo.h
  #endif
 diff -ruwN source/src/video/SDL_video.c source-new/src/video/SDL_video.c
 --- source/src/video/SDL_video.c	2012-01-18 23:30:06.000000000 -0700
-+++ source-new/src/video/SDL_video.c	2018-12-29 15:57:00.302520335 -0700
++++ source-new/src/video/SDL_video.c	2019-08-10 20:55:13.670786496 -0600
 @@ -126,6 +126,9 @@
  #if SDL_VIDEO_DRIVER_CACA
  	&CACA_bootstrap,
