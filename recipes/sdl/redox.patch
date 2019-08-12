@@ -379,7 +379,7 @@ diff -ruwN source/src/thread/pthread/SDL_systhread.c source-new/src/thread/pthre
  	/* Allow ourselves to be asynchronously cancelled */
 diff -ruwN source/src/video/orbital/SDL_orbitalevents.c source-new/src/video/orbital/SDL_orbitalevents.c
 --- source/src/video/orbital/SDL_orbitalevents.c	1969-12-31 17:00:00.000000000 -0700
-+++ source-new/src/video/orbital/SDL_orbitalevents.c	2019-08-12 14:34:59.125356217 -0600
++++ source-new/src/video/orbital/SDL_orbitalevents.c	2019-08-12 14:51:38.427129083 -0600
 @@ -0,0 +1,242 @@
 +/*
 +    SDL - Simple DirectMedia Layer
@@ -430,7 +430,7 @@ diff -ruwN source/src/video/orbital/SDL_orbitalevents.c source-new/src/video/orb
 +    bool mouse_relative =
 +        !(SDL_cursorstate & CURSOR_VISIBLE) &&
 +        (this->input_grab != SDL_GRAB_OFF);
-+    printf("ORBITAL_CheckMouseMode = %d\n", mouse_relative);
++    // printf("ORBITAL_CheckMouseMode = %d\n", mouse_relative);
 +    if (mouse_relative != this->hidden->mouse_relative) {
 +        this->hidden->mouse_relative = mouse_relative;
 +        if (this->hidden->window) {
@@ -441,7 +441,7 @@ diff -ruwN source/src/video/orbital/SDL_orbitalevents.c source-new/src/video/orb
 +
 +SDL_GrabMode ORBITAL_GrabInput(_THIS, SDL_GrabMode mode) {
 +    bool mouse_grab = mode != SDL_GRAB_OFF;
-+    printf("ORBITAL_GrabInput(%d) = %d\n", mode, mouse_grab);
++    // printf("ORBITAL_GrabInput(%d) = %d\n", mode, mouse_grab);
 +    if (mouse_grab != this->hidden->mouse_grab) {
 +        this->hidden->mouse_grab = mouse_grab;
 +        if (this->hidden->window) {
@@ -661,8 +661,8 @@ diff -ruwN source/src/video/orbital/SDL_orbitalevents_c.h source-new/src/video/o
 +/* end of SDL_orbitalevents_c.h ... */
 diff -ruwN source/src/video/orbital/SDL_orbitalmouse.c source-new/src/video/orbital/SDL_orbitalmouse.c
 --- source/src/video/orbital/SDL_orbitalmouse.c	1969-12-31 17:00:00.000000000 -0700
-+++ source-new/src/video/orbital/SDL_orbitalmouse.c	2019-08-12 14:04:19.079802985 -0600
-@@ -0,0 +1,67 @@
++++ source-new/src/video/orbital/SDL_orbitalmouse.c	2019-08-12 14:51:48.555193061 -0600
+@@ -0,0 +1,64 @@
 +/*
 +    SDL - Simple DirectMedia Layer
 +    Copyright (C) 1997-2012 Sam Lantinga
@@ -708,21 +708,18 @@ diff -ruwN source/src/video/orbital/SDL_orbitalmouse.c source-new/src/video/orbi
 +        return NULL ;
 +    }
 +
-+    printf("ORBITAL_CreateWMCursor = %p\n", cursor);
-+
 +    return cursor ;
 +}
 +
 +void ORBITAL_FreeWMCursor (_THIS, WMcursor * cursor)
 +{
-+    printf("ORBITAL_FreeWMCursor(%p)\n", cursor);
 +    SDL_free (cursor) ;
 +}
 +
 +int ORBITAL_ShowWMCursor (_THIS, WMcursor * cursor)
 +{
 +    bool mouse_cursor = cursor != NULL;
-+    printf("ORBITAL_ShowWMCursor(%p) = %d\n", cursor, mouse_cursor);
++    // printf("ORBITAL_ShowWMCursor(%p) = %d\n", cursor, mouse_cursor);
 +    if (mouse_cursor != this->hidden->mouse_cursor) {
 +        this->hidden->mouse_cursor = mouse_cursor;
 +        if (this->hidden->window) {
