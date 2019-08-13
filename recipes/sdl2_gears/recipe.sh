@@ -11,9 +11,11 @@ function recipe_update {
 }
 
 function recipe_prepare {
-    rm -rf source
+    m -rf source
     mkdir source
     cp gears.c source
+    mkdir source/assets
+    cp assets/* source/assets
 }
 
 function recipe_build {
@@ -30,17 +32,17 @@ function recipe_test {
 }
 
 function recipe_clean {
-    make clean
+    echo "skipping clean"
     skip=1
 }
 
 function recipe_stage {
     dest="$(realpath $1)"
     mkdir -pv "$dest/games/sdl2_gears"
-    mkdir -pv "$dest/home/user"
+    mkdir -pv "$dest/games/sdl2_gears/assets"
     cp -v "sdl2_gears" "$dest/games/sdl2_gears/sdl2_gears"
-    cp -v "../image.png" "$dest/home/user/image.png"
-    cp -v "../music.wav" "$dest/home/user/music.wav"
-    cp -v "../font.ttf" "$dest/home/user/font.ttf"
+    cp -v "assets/image.png" "$dest/games/sdl2_gears/assets/image.png"
+    cp -v "assets/music.wav" "$dest/games/sdl2_gears/assets/music.wav"
+    cp -v "assets/font.ttf" "$dest/games/sdl2_gears/assets/font.ttf"
     skip=1
 }
