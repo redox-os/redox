@@ -14,10 +14,10 @@ function recipe_update {
 
 function recipe_build {
     sysroot="$(realpath ../sysroot)"
-    export CFLAGS="-I$sysroot/include"
+    export CFLAGS="-I$sysroot/include -I$sysroot/include/freetype2"
     export LDFLAGS="-L$sysroot/lib"
     ./autogen.sh
-    ./configure --prefix=/ --build=${BUILD} --host=${HOST} --disable-shared --disable-sdltest
+    ./configure --prefix=/ --build=${BUILD} --host=${HOST} --disable-shared
     make -j"$(nproc)"
     skip=1
 }
