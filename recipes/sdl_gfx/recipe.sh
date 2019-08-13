@@ -17,7 +17,7 @@ function recipe_build {
     export CFLAGS="-I$sysroot/include"
     export LDFLAGS="-L$sysroot/lib"
     ./autogen.sh
-    ./configure --prefix=/ --build=${BUILD} --host=${HOST} --disable-shared --disable-sdltest
+    ./configure --prefix=/ --build=${BUILD} --host=${HOST} --disable-shared
     make -j"$(nproc)"
     skip=1
 }
