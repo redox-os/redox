@@ -1,6 +1,6 @@
 VERSION=2.6.0
 TAR=http://files.freeciv.org/stable/freeciv-$VERSION.tar.bz2
-BUILD_DEPENDS=(curl freetype libiconv liborbital libpng openssl sdl sdl_gfx sdl_image sdl_mixer sdl_ttf zlib)
+BUILD_DEPENDS=(curl freetype libiconv liborbital libpng openssl nghttp2 sdl sdl_gfx sdl_image sdl_mixer sdl_ttf zlib)
 
 function recipe_version {
     echo "$VERSION"
@@ -25,6 +25,7 @@ function recipe_build {
         --enable-ipv6=no \
         --enable-client=sdl \
         --enable-fcmp=cli \
+        --with-ft-prefix="$sysroot" \
         --with-sdl-prefix="$sysroot" \
         ac_cv_lib_SDL_image_IMG_Load=yes \
         ac_cv_lib_SDL_ttf_TTF_OpenFont=yes \
