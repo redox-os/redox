@@ -45,17 +45,18 @@ diff -ruw source/configure.in source-new/configure.in
 -if test "$FREETYPE_CONFIG" = "no" ; then
 -    AC_MSG_ERROR([
 -*** Unable to find FreeType2 library (http://www.freetype.org/)
-+PKG_CHECK_MODULES([FT2], [freetype2 >= 7.0.1], [], [dnl
-+    AC_CHECK_FT2(,,[AC_MSG_ERROR([dnl
-+*** Unable to find FreeType2 library (http://www.freetype.org/)])]
-+    )
- ])
++#PKG_CHECK_MODULES([FT2], [freetype2 >= 7.0.1], [], [dnl
++#    AC_CHECK_FT2(,,[AC_MSG_ERROR([dnl
++#*** Unable to find FreeType2 library (http://www.freetype.org/)])]
++#    )
++#])
+-])
 -else
 -    CFLAGS="$CFLAGS `$FREETYPE_CONFIG $freetypeconf_args --cflags`"
 -    LIBS="$LIBS `$FREETYPE_CONFIG $freetypeconf_args --libs`"
 -fi
 +CFLAGS="$CFLAGS $FT2_CFLAGS"
-+LIBS="$LIBS $FT2_LIBS"
++LIBS="$LIBS $FT2_LIBS -lfreetype -lpng -lz"
  
  dnl Check for SDL
  SDL_VERSION=1.2.4
