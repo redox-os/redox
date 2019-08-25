@@ -69,15 +69,13 @@ qemu_efi_no_build: build/extra.qcow2
 		-drive file=build/harddrive-efi.bin,format=raw \
 		-drive file=build/extra.qcow2
 
-qemu_nvme: build/harddrive.bin build/extra.qcow2
+qemu_nvme: build/harddrive.bin
 	$(QEMU) $(QEMUFLAGS) \
-		-drive file=build/harddrive.bin,format=raw \
-		-drive file=build/extra.qcow2,if=none,id=drv0 -device nvme,drive=drv0,serial=NVME_SERIAL
+		-drive file=build/harddrive.bin,format=raw,if=none,id=drv0 -device nvme,drive=drv0,serial=NVME_SERIAL
 
-qemu_nvme_no_build: build/extra.qcow2
+qemu_nvme_no_build:
 	$(QEMU) $(QEMUFLAGS) \
-		-drive file=build/harddrive.bin,format=raw \
-		-drive file=build/extra.qcow2,if=none,id=drv0 -device nvme,drive=drv0,serial=NVME_SERIAL
+		-drive file=build/harddrive.bin,format=raw,if=none,id=drv0 -device nvme,drive=drv0,serial=NVME_SERIAL
 
 qemu_live: build/livedisk.bin build/extra.qcow2
 	$(QEMU) $(QEMUFLAGS) \
