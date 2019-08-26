@@ -1,5 +1,4 @@
 GIT=https://gitlab.redox-os.org/redox-os/drivers.git
-BRANCH=redox-unix
 CARGOBUILD="build"
 CARGOFLAGS="--all"
 
