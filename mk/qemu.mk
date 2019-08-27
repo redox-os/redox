@@ -77,6 +77,16 @@ qemu_nvme_no_build:
 	$(QEMU) $(QEMUFLAGS) \
 		-drive file=build/harddrive.bin,format=raw,if=none,id=drv0 -device nvme,drive=drv0,serial=NVME_SERIAL
 
+qemu_nvme_efi: build/harddrive-efi.bin
+	$(QEMU) $(QEMUFLAGS) \
+		-bios /usr/share/OVMF/OVMF_CODE.fd \
+		-drive file=build/harddrive-efi.bin,format=raw,if=none,id=drv0 -device nvme,drive=drv0,serial=NVME_SERIAL
+
+qemu_nvme_efi_no_build:
+	$(QEMU) $(QEMUFLAGS) \
+		-bios /usr/share/OVMF/OVMF_CODE.fd \
+		-drive file=build/harddrive-efi.bin,format=raw,if=none,id=drv0 -device nvme,drive=drv0,serial=NVME_SERIAL
+
 qemu_live: build/livedisk.bin build/extra.qcow2
 	$(QEMU) $(QEMUFLAGS) \
 		-drive file=build/livedisk.bin,format=raw \
