@@ -13,7 +13,13 @@ function recipe_update {
 
 function recipe_build {
     export LDFLAGS="--static"
-    ./configure --build=${BUILD} --host=${HOST} --prefix='/' --disable-shared --enable-static
+    ./configure \
+        --build="${BUILD}" \
+        --host="${HOST}" \
+        --prefix='/' \
+        --disable-shared \
+        --enable-static \
+        ac_cv_have_decl_program_invocation_name=no
     make -j"$(nproc)"
     skip=1
 }
