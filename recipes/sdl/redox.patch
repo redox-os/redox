@@ -16,7 +16,7 @@ diff -ruwN source/configure.in source-new/configure.in
 @@ -685,6 +685,18 @@
      fi
  }
- 
+
 +dnl Set up the Redox Audio driver
 +CheckRedoxAudio()
 +{
@@ -35,7 +35,7 @@ diff -ruwN source/configure.in source-new/configure.in
 @@ -1646,6 +1658,20 @@
      fi
  }
- 
+
 +dnl Set up the Orbital video driver.
 +CheckOrbitalVideo()
 +{
@@ -340,7 +340,7 @@ diff -ruwN source/src/audio/SDL_audio.c source-new/src/audio/SDL_audio.c
 --- source/src/audio/SDL_audio.c	2012-01-18 23:30:06.000000000 -0700
 +++ source-new/src/audio/SDL_audio.c	2019-08-10 20:55:13.662786449 -0600
 @@ -36,6 +36,9 @@
- 
+
  /* Available audio drivers */
  static AudioBootStrap *bootstrap[] = {
 +#if SDL_AUDIO_DRIVER_REDOX
@@ -355,7 +355,7 @@ diff -ruwN source/src/audio/SDL_sysaudio.h source-new/src/audio/SDL_sysaudio.h
 @@ -102,6 +102,9 @@
  	SDL_AudioDevice *(*create)(int devindex);
  } AudioBootStrap;
- 
+
 +#if SDL_AUDIO_DRIVER_REDOX
 +extern AudioBootStrap REDOXAUD_bootstrap;
 +#endif
@@ -374,13 +374,13 @@ diff -ruwN source/src/thread/pthread/SDL_systhread.c source-new/src/thread/pthre
 +	#else
  	pthread_sigmask(SIG_BLOCK, &mask, 0);
 +	#endif
- 
+
  #ifdef PTHREAD_CANCEL_ASYNCHRONOUS
  	/* Allow ourselves to be asynchronously cancelled */
 diff -ruwN source/src/video/orbital/SDL_orbitalevents.c source-new/src/video/orbital/SDL_orbitalevents.c
 --- source/src/video/orbital/SDL_orbitalevents.c	1969-12-31 17:00:00.000000000 -0700
 +++ source-new/src/video/orbital/SDL_orbitalevents.c	2019-08-12 14:51:38.427129083 -0600
-@@ -0,0 +1,242 @@
+@@ -0,0 +1,240 @@
 +/*
 +    SDL - Simple DirectMedia Layer
 +    Copyright (C) 1997-2012 Sam Lantinga
@@ -462,8 +462,6 @@ diff -ruwN source/src/video/orbital/SDL_orbitalevents.c source-new/src/video/orb
 +    void* event_iter = orb_window_events(this->hidden->window);
 +    OrbEventOption oeo = orb_events_next(event_iter);
 +    while (oeo.tag != OrbEventOption_None) {
-+        found_event = true;
-+
 +        switch (oeo.tag) {
 +            case OrbEventOption_Key:
 +                keysym.unicode = oeo.key.character;
@@ -1081,13 +1079,13 @@ diff -ruwN source/src/video/SDL_gamma.c source-new/src/video/SDL_gamma.c
 @@ -35,6 +35,9 @@
  #define log(x)		__ieee754_log(x)
  #endif
- 
+
 +#include "e_log.h"
 +#define log(x)		__ieee754_log(x)
 +
  #include "SDL_sysvideo.h"
- 
- 
+
+
 diff -ruwN source/src/video/SDL_sysvideo.h source-new/src/video/SDL_sysvideo.h
 --- source/src/video/SDL_sysvideo.h	2012-01-18 23:30:06.000000000 -0700
 +++ source-new/src/video/SDL_sysvideo.h	2019-08-10 20:55:13.670786496 -0600
@@ -1121,6 +1119,6 @@ diff -ruwN source/src/video/SDL_video.c source-new/src/video/SDL_video.c
 -		SDL_ClearSurface(mode);
 +		// Causes blinking under Orbital
 +		//SDL_ClearSurface(mode);
- 
+
  		/* Now adjust the offsets to match the desired mode */
  		video->offset_x = (mode->w-width)/2;
