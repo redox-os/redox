@@ -257,24 +257,6 @@ redox
 """
 
 [[files]]
-path = "/etc/issue"
-data = """
-########## Redox OS ##########
-# Login with the following:  #
-# `user`                     #
-# `root`:`password`          #
-##############################
-
-"""
-
-[[files]]
-path = "/etc/motd"
-data = """
-Welcome to Redox OS!
-
-"""
-
-[[files]]
 path = "/usr/bin"
 data = "/bin"
 symlink = true
