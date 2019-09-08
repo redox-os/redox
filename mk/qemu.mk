@@ -69,23 +69,27 @@ qemu_efi_no_build: build/extra.qcow2
 		-drive file=build/harddrive-efi.bin,format=raw \
 		-drive file=build/extra.qcow2
 
-qemu_nvme: build/harddrive.bin
+qemu_nvme: build/harddrive.bin build/extra.qcow2
 	$(QEMU) $(QEMUFLAGS) \
-		-drive file=build/harddrive.bin,format=raw,if=none,id=drv0 -device nvme,drive=drv0,serial=NVME_SERIAL
+		-drive file=build/harddrive.bin,format=raw,if=none,id=drv0 -device nvme,drive=drv0,serial=NVME_SERIAL \
+		-drive file=build/extra.qcow2,if=none,id=drv1 -device nvme,drive=drv1,serial=NVME_EXTRA
 
-qemu_nvme_no_build:
+qemu_nvme_no_build: build/extra.qcow2
 	$(QEMU) $(QEMUFLAGS) \
-		-drive file=build/harddrive.bin,format=raw,if=none,id=drv0 -device nvme,drive=drv0,serial=NVME_SERIAL
+		-drive file=build/harddrive.bin,format=raw,if=none,id=drv0 -device nvme,drive=drv0,serial=NVME_SERIAL \
+		-drive file=build/extra.qcow2,if=none,id=drv1 -device nvme,drive=drv1,serial=NVME_EXTRA
 
-qemu_nvme_efi: build/harddrive-efi.bin
+qemu_nvme_efi: build/harddrive-efi.bin build/extra.qcow2
 	$(QEMU) $(QEMUFLAGS) \
 		-bios /usr/share/OVMF/OVMF_CODE.fd \
-		-drive file=build/harddrive-efi.bin,format=raw,if=none,id=drv0 -device nvme,drive=drv0,serial=NVME_SERIAL
+		-drive file=build/harddrive-efi.bin,format=raw,if=none,id=drv0 -device nvme,drive=drv0,serial=NVME_SERIAL \
+		-drive file=build/extra.qcow2,if=none,id=drv1 -device nvme,drive=drv1,serial=NVME_EXTRA
 
-qemu_nvme_efi_no_build:
+qemu_nvme_efi_no_build: build/extra.qcow2
 	$(QEMU) $(QEMUFLAGS) \
 		-bios /usr/share/OVMF/OVMF_CODE.fd \
-		-drive file=build/harddrive-efi.bin,format=raw,if=none,id=drv0 -device nvme,drive=drv0,serial=NVME_SERIAL
+		-drive file=build/harddrive-efi.bin,format=raw,if=none,id=drv0 -device nvme,drive=drv0,serial=NVME_SERIAL \
+		-drive file=build/extra.qcow2,if=none,id=drv1 -device nvme,drive=drv1,serial=NVME_EXTRA
 
 qemu_live: build/livedisk.bin build/extra.qcow2
 	$(QEMU) $(QEMUFLAGS) \
