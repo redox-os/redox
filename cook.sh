@@ -423,7 +423,16 @@ function op {
 				echo "depends = []" >> "stage.toml"
             fi
 
+            rm -rf stage/pkg
             mkdir -p stage/pkg
+
+            pushd stage > /dev/null
+            find . -type f | cut -d / -f 2- | sort | while read file
+            do
+                sha256sum "$file" >> "pkg/$1.sha256sums"
+            done
+            popd > /dev/null
+
             cp -v stage.toml "stage/pkg/$1.toml"
             pkg --target=$TARGET create stage
             ;;
