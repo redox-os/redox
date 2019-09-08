@@ -33,7 +33,7 @@ endif
 ifneq ($(usb),no)
 	QEMUFLAGS+=-device nec-usb-xhci,id=xhci -device usb-tablet,bus=xhci.0
 endif
-ifneq ($(gdb),yes)
+ifeq ($(gdb),yes)
 	QEMUFLAGS+=-s
 endif
 ifeq ($(UNAME),Linux)
