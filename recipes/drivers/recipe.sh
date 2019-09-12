@@ -10,7 +10,6 @@ function recipe_version {
 function recipe_stage {
     mkdir -pv "$1/etc/pcid"
     cp -v initfs.toml "$1/etc/pcid/initfs.toml"
-    cp -v filesystem.toml "$1/etc/pcid/filesystem.toml"
 
     mkdir -pv "$1/etc/pcid.d"
     for conf in `find . -maxdepth 2 -type f -name 'config.toml'`; do
