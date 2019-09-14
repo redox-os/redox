@@ -23,6 +23,7 @@ function recipe_build {
         --prefix=/ \
         --disable-shared \
         --enable-static \
+        ac_cv_have_decl_program_invocation_name=no \
         gt_cv_locale_fr=false \
         gt_cv_locale_fr_utf8=false \
         gt_cv_locale_ja=false \
