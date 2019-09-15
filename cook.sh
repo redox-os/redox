@@ -119,6 +119,10 @@ function op {
                         git remote add upstream "$GIT_UPSTREAM"
                         git fetch upstream
                     fi
+                    if [ -n "$BRANCH" ]
+                    then
+                        git checkout "$BRANCH"
+                    fi
                     git pull
                     git submodule sync --recursive
                     git submodule update --init --recursive
