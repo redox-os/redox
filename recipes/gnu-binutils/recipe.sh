@@ -1,4 +1,5 @@
 GIT=https://gitlab.redox-os.org/redox-os/binutils-gdb.git
+BRANCH=redox
 GIT_UPSTREAM=git://sourceware.org/git/binutils-gdb.git
 BUILD_DEPENDS=(relibc)
 
