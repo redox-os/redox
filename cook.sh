@@ -122,6 +122,9 @@ function op {
                     if [ -n "$BRANCH" ]
                     then
                         git checkout "$BRANCH"
+                    else
+                        #TODO: Find correct upstream default branch
+                        git checkout master
                     fi
                     git pull
                     git submodule sync --recursive
