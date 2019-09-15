@@ -119,14 +119,17 @@ function op {
                         git remote add upstream "$GIT_UPSTREAM"
                         git fetch upstream
                     fi
+
+                    ORIGIN_BRANCH="$(git branch --remotes | grep '^  origin/HEAD -> ' | cut -d ' ' -f 5-)"
                     if [ -n "$BRANCH" ]
                     then
-                        git checkout "$BRANCH"
-                    else
-                        #TODO: Find correct upstream default branch
-                        git checkout master
+                        ORIGIN_BRANCH="origin/$BRANCH"
                     fi
-                    git pull
+
+                    if [ "$(git rev-parse HEAD)" != "$(git rev-parse $ORIGIN_BRANCH)" ]
+                    then
+                        git checkout -B "$(echo "$ORIGIN_BRANCH" | cut -d / -f 2-)" "$ORIGIN_BRANCH"
+                    fi
                     git submodule sync --recursive
                     git submodule update --init --recursive
                     popd > /dev/null
