@@ -321,10 +321,16 @@ function op {
                 release_flag=
             fi
 
+            if [ -n "$CARGO_PACKAGE" ]; then
+                package_flag="--package=$CARGO_PACKAGE"
+            else
+                package_flag=
+            fi
+
             if [ "$skip" -eq "0" ]
             then
                 cp -p "$ROOT/Xargo.toml" "Xargo.toml"
-                "${CARGO[@]}" "$CARGOBUILD" --target "$TARGET" $release_flag $CARGOFLAGS
+                "${CARGO[@]}" "$CARGOBUILD" --target "$TARGET" $release_flag $package_flag $CARGOFLAGS
             fi
             popd > /dev/null
             ;;
