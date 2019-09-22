@@ -443,7 +443,7 @@ function op {
             mkdir -p stage/pkg
 
             pushd stage > /dev/null
-            find . -type f | cut -d / -f 2- | sort | while read file
+            find -L . -type f | cut -d / -f 2- | sort | while read file
             do
                 sha256sum "$file" >> "pkg/$1.sha256sums"
             done
