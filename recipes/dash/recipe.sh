@@ -19,6 +19,7 @@ function recipe_build {
         --prefix=/ \
         --enable-static \
         cross_compiling=yes
+    sed -i 's|#define HAVE_GETRLIMIT 1|/* #undef HAVE_GETRLIMIT */|g' config.h
     make -j"$(nproc)"
     skip=1
 }
