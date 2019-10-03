@@ -1,0 +1,12 @@
+diff -ruwN source/src/cairoint.h source-new/src/cairoint.h
+--- source/src/cairoint.h	2018-08-16 19:10:53.000000000 -0600
++++ source-new/src/cairoint.h	2019-10-02 19:55:59.131388156 -0600
+@@ -187,7 +187,7 @@
+ static inline int cairo_const
+ _cairo_popcount (uint32_t mask)
+ {
+-#if __GNUC__ > 3 || (__GNUC__ == 3 && __GNUC_MINOR__ >= 4)
++#if !defined(__redox__) && (__GNUC__ > 3 || (__GNUC__ == 3 && __GNUC_MINOR__ >= 4))
+     return __builtin_popcount (mask);
+ #else
+     register int y;
