@@ -1,6 +1,4 @@
 paths = [
-    "patches/atty",
-    "patches/libc",
     "patches/mio",
     "patches/nix",
     "patches/tokio/tokio",
