@@ -27,6 +27,13 @@ mount: FORCE
 	sleep 2
 	pgrep redoxfs
 
+mount_extra: FORCE
+	mkdir -p build/filesystem/
+	cargo build --manifest-path redoxfs/Cargo.toml --release --bin redoxfs
+	cargo run --manifest-path redoxfs/Cargo.toml --release --bin redoxfs -- build/extra.bin build/filesystem/
+	sleep 2
+	pgrep redoxfs
+
 unmount: FORCE
 	sync
 	-$(FUMOUNT) build/filesystem/ || true
