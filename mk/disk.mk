@@ -43,7 +43,7 @@ build/harddrive-efi.bin: build/bootloader.efi build/filesystem.bin
 	cat $@.partial build/filesystem.bin > $@
 
 build/livedisk-efi.iso: build/bootloader.efi build/kernel_live
-	dd if=/dev/zero of=$@.partial bs=1048576 count=$$(du -mc $^ | grep 'total$$' | cut -f1)
+	dd if=/dev/zero of=$@.partial bs=1048576 count=$$(expr $$(du -mc $^ | grep 'total$$' | cut -f1) + 1)
 	mkfs.vfat $@.partial
 	mmd -i $@.partial efi
 	mmd -i $@.partial efi/boot
