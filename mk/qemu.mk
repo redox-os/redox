@@ -91,6 +91,16 @@ qemu_nvme_efi_no_build: build/extra.bin
 		-drive file=build/harddrive-efi.bin,format=raw,if=none,id=drv0 -device nvme,drive=drv0,serial=NVME_SERIAL \
 		-drive file=build/extra.bin,format=raw,if=none,id=drv1 -device nvme,drive=drv1,serial=NVME_EXTRA
 
+qemu_nvme_live: build/livedisk.bin build/extra.bin
+	$(QEMU) $(QEMUFLAGS) \
+		-drive file=build/livedisk.bin,format=raw,if=none,id=drv0 -device nvme,drive=drv0,serial=NVME_SERIAL \
+		-drive file=build/extra.bin,format=raw,if=none,id=drv1 -device nvme,drive=drv1,serial=NVME_EXTRA
+
+qemu_nvme_live_no_build: build/extra.bin
+	$(QEMU) $(QEMUFLAGS) \
+		-drive file=build/livedisk.bin,format=raw,if=none,id=drv0 -device nvme,drive=drv0,serial=NVME_SERIAL \
+		-drive file=build/extra.bin,format=raw,if=none,id=drv1 -device nvme,drive=drv1,serial=NVME_EXTRA
+
 qemu_live: build/livedisk.bin build/extra.bin
 	$(QEMU) $(QEMUFLAGS) \
 		-drive file=build/livedisk.bin,format=raw \
