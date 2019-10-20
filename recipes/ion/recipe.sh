@@ -1,2 +1,2 @@
 GIT=https://gitlab.redox-os.org/redox-os/ion.git
-BRANCH=redox-unix
+BRANCH=master
