@@ -168,7 +168,29 @@ ubuntu()
 	echo "Updating system..."
 	sudo "$2" update
 	echo "Installing required packages..."
-	sudo "$2" install build-essential libc6-dev-i386 nasm curl file git libfuse-dev fuse pkg-config cmake autopoint autoconf libtool m4 syslinux-utils genisoimage flex bison gperf libpng-dev libhtml-parser-perl texinfo
+	sudo "$2" install \
+		autoconf \
+		autopoint \
+		bison \
+		build-essential \
+		cmake \
+		curl \
+		file \
+		flex \
+		fuse \
+		genisoimage \
+		git \
+		gperf \
+		libc6-dev-i386 \
+		libfuse-dev \
+		libhtml-parser-perl \
+		libpng-dev \
+		libtool \
+		m4 \
+		nasm \
+		pkg-config \
+		syslinux-utils \
+		texinfo
 	if [ "$1" == "qemu" ]; then
 		if [ -z "$(which qemu-system-x86_64)" ]; then
 			echo "Installing QEMU..."
