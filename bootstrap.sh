@@ -149,8 +149,12 @@ archLinux()
 		packages="$packages virtualbox"
 	fi
 
-	echo "Updating system..."
-	sudo pacman -Syu
+	# Scripts should not cause a system update in order to just install a couple
+	#   of packages. If pacman -S --needed is going to fail, let it fail and the
+	#   user will figure out the issues (without updating if required) and rerun
+	#   the script.
+	#echo "Updating system..."
+	#sudo pacman -Syu
 
 	echo "Installing packages $packages..."
 	sudo pacman -S --needed $packages
@@ -514,15 +518,26 @@ fi
 emulator="qemu"
 defpackman="apt-get"
 dependenciesonly=false
-while getopts ":e:p:d" opt
+update=false
+while getopts ":e:p:udhs" opt
 do
 	case "$opt" in
 		e) emulator="$OPTARG";;
 		p) defpackman="$OPTARG";;
 		d) dependenciesonly=true;;
+		u) update=true;;
+		h) usage;;
+		s) statusCheck && exit;;
 		\?) echo "I don't know what to do with that option, try -h for help"; exit;;
 	esac
 done
+
+if [ "$update" == "true" ]; then
+	git pull upstream master
+	git submodule update --recursive --init
+	rustup update nightly
+	exit
+fi
 
 banner
 if [ "Darwin" == "$(uname -s)" ]; then
@@ -549,8 +564,6 @@ else
 	elif hash 2>/dev/null pacman; then
 		archLinux "$emulator"
 	fi
-
-
 fi
 
 if [ "$dependenciesonly" = false ]; then
