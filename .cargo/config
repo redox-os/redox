@@ -10,7 +10,7 @@ paths = [
     "patches/ring",
     "patches/tar-rs",
     "patches/termsize",
-#   "patches/time",
+    "patches/time",
 ]
 
 [target.aarch64-unknown-redox]
