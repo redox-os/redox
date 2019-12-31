@@ -1,6 +1,7 @@
-GIT=https://gitlab.redox-os.org/redox-os/gcc.git
-GIT_UPSTREAM=https://gcc.gnu.org/git/gcc.git
-BRANCH=redox
+TAR=https://gitlab.redox-os.org/redox-os/gcc/-/archive/redox/gcc-redox.tar.gz
+#GIT=https://gitlab.redox-os.org/redox-os/gcc.git
+#GIT_UPSTREAM=https://gcc.gnu.org/git/gcc.git
+#BRANCH=redox
 BUILD_DEPENDS=(relibc)
 DEPENDS="gnu-binutils relibc"
 
