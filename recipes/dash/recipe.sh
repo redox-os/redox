@@ -19,7 +19,9 @@ function recipe_build {
         --prefix=/ \
         --enable-static \
         cross_compiling=yes
-    sed -i 's|#define HAVE_GETRLIMIT 1|/* #undef HAVE_GETRLIMIT */|g' config.h
+
+    # See https://stackoverflow.com/questions/4247068/sed-command-with-i-option-failing-on-mac-but-works-on-linux.
+    sed -i'' -e 's|#define HAVE_GETRLIMIT 1|/* #undef HAVE_GETRLIMIT */|g' config.h
     make -j"$(nproc)"
     skip=1
 }
