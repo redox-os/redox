@@ -12,7 +12,8 @@ function recipe_update {
 }
 
 function recipe_build {
-    ./configure --static --prefix=/
+    # See https://stackoverflow.com/questions/21396988/zlib-build-not-configuring-properly-with-cross-compiler-ignores-ar.
+    CHOST=x86_64-unknown-redox ./configure --static --prefix=/
     make -j"$(nproc)"
     skip=1
 }
