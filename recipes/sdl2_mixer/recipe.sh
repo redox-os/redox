@@ -1,6 +1,6 @@
 VERSION=2.0.4
 TAR=https://www.libsdl.org/projects/SDL_mixer/release/SDL2_mixer-$VERSION.tar.gz
-BUILD_DEPENDS=(sdl2 liborbital llvm mesa mesa_glu zlib)
+BUILD_DEPENDS=(sdl2 liborbital llvm mesa mesa_glu zlib libogg libvorbis)
 
 function recipe_version {
     echo "$VERSION"
@@ -16,7 +16,7 @@ function recipe_build {
     sysroot="$(realpath ../sysroot)"
     export CFLAGS="-I$sysroot/include"
     export LDFLAGS="-L$sysroot/lib"
-    export SDL_LIBS="-lSDL2 -lorbital $("${PKG_CONFIG}" --libs glu) -lglapi -lz -lm -lpthread -lstdc++"
+    export SDL_LIBS="-lSDL2 -lorbital $("${PKG_CONFIG}" --libs glu) -lglapi -lvorbis -logg -lz -lm -lpthread -lstdc++"
     ./autogen.sh
     ./configure \
         --prefix=/ \
@@ -24,6 +24,7 @@ function recipe_build {
         --host=${HOST} \
         --disable-shared \
         --disable-sdltest \
+        --enable-music-ogg \
         --disable-music-cmd \
         --disable-music-mp3 \
         --disable-smpegtest \
