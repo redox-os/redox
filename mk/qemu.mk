@@ -57,6 +57,16 @@ qemu_no_build: build/extra.bin
 		-drive file=build/harddrive.bin,format=raw \
 		-drive file=build/extra.bin,format=raw
 
+qemu_mbr: build/harddrive-mbr.bin build/extra.bin
+	$(QEMU) $(QEMUFLAGS) \
+		-drive file=build/harddrive-mbr.bin,format=raw \
+		-drive file=build/extra.bin,format=raw
+
+qemu_mbr_no_build: build/extra.bin
+	$(QEMU) $(QEMUFLAGS) \
+		-drive file=build/harddrive-mbr.bin,format=raw \
+		-drive file=build/extra.bin,format=raw
+
 qemu_efi: build/harddrive-efi.bin build/extra.bin
 	$(QEMU) $(QEMUFLAGS) \
 		-bios /usr/share/OVMF/OVMF_CODE.fd \
