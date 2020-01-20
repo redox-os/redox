@@ -6,11 +6,10 @@ build/harddrive.bin: build/filesystem.bin bootloader/$(ARCH)/**
 	nasm -f bin -o $@ -D ARCH_$(ARCH) -D FILESYSTEM=$< -ibootloader/$(ARCH)/ bootloader/$(ARCH)/disk.asm
 
 build/harddrive-mbr.bin: build/filesystem.bin bootloader/$(ARCH)/**
-	# TODO: Determine the correct size
 	nasm -f bin -o build/bootsector.bin -D ARCH_$(ARCH) -ibootloader/$(ARCH)/ bootloader/$(ARCH)/disk.asm
-	dd if=/dev/zero of=$@.partial bs=1M count=384
+	dd if=/dev/zero of=$@.partial bs=1M count=$$(expr $$(du -m $< | cut -f1) + 2)
 	parted -s -a minimal $@.partial mklabel msdos
-	parted -s -a minimal $@.partial mkpart primary 2048s 786431s
+	parted -s -a minimal $@.partial mkpart primary 2048s $$(expr $$(du -m $< | cut -f1) \* 2048 + 2048)s
 	dd if=build/bootsector.bin of=$@.partial bs=1 count=446 conv=notrunc
 	dd if=build/bootsector.bin of=$@.partial bs=512 skip=1 seek=1 conv=notrunc
 	dd if=$< of=$@.partial bs=1M seek=1 conv=notrunc
