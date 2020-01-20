@@ -40,6 +40,6 @@ function recipe_clean {
 function recipe_stage {
     dest="$(realpath $1)"
     mkdir -p "$1/ssl"
-    cp -rL build/etc/ssl/certs "$1/ssl"
+    cp -RL build/etc/ssl/certs "$1/ssl"
     skip=1
 }
