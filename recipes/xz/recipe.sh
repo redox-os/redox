@@ -13,12 +13,16 @@ function recipe_update {
 
 function recipe_build {
     export CFLAGS="-static"
-
+    
     # autogen.sh requires autopoint which is provided by the gettext homebrew
     # formula on macOS. Unfortunately, homebrew does not install it into PATH
     # because macOS provides the BSD gettext library. So we make sure to include
-    # it in PATH.
-    PATH="/usr/local/opt/gettext/bin:$PATH" ./autogen.sh
+    # it in PATH, preceding the default BSD version.
+    if [[ "$(uname)" == "Darwin" ]]; then
+        export PATH="/usr/local/opt/gettext/bin:$PATH"
+    fi
+
+    ./autogen.sh
 
     chmod +w build-aux/config.sub
     wget -O build-aux/config.sub http://git.savannah.gnu.org/cgit/config.git/plain/config.sub
