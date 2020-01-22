@@ -69,7 +69,8 @@ build/harddrive-efi.bin: build/bootloader.efi build/filesystem.bin
 	efi_end=$$(expr 2048 + $$efi_disk_blkcount) && \
 	efi_last=$$(expr $$efi_end - 1) && \
 	parted -s -a minimal $@ mkpart EFI fat32 2048s "$${efi_last}s" && \
-	fs_disk_size=$$(du -m build/filesystem.bin | cut -f1) fs_disk_blkcount=$$(expr $$fs_disk_size \* $$(expr 1048576 / 512)) && \
+	fs_disk_size=$$(du -m build/filesystem.bin | cut -f1) && \
+	fs_disk_blkcount=$$(expr $$fs_disk_size \* $$(expr 1048576 / 512)) && \
 	parted -s -a minimal $@ mkpart redox ext4 "$${efi_end}s" $$(expr $$efi_end + $$fs_disk_blkcount)s && \
 	parted -s -a minimal $@ set 1 boot on && \
 	parted -s -a minimal $@ set 1 esp on && \
