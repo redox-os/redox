@@ -52,7 +52,6 @@ build/harddrive-efi-old.bin: build/bootloader.efi build/filesystem.bin
 	mcopy -i $@.partial $< ::efi/boot/bootx64.efi
 	cat $@.partial build/filesystem.bin > $@
 
-.ONESHELL:
 build/harddrive-efi.bin: build/bootloader.efi build/filesystem.bin
 	# TODO: Validate the correctness of this
 	# Populate an EFI system partition
