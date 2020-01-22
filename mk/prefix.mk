@@ -42,9 +42,9 @@ $(PREFIX)/relibc-install: $(ROOT)/relibc | $(PREFIX)/gcc-install
 	make -j `$(NPROC)` install-headers DESTDIR="$(ROOT)/$@.partial/$(TARGET)" && \
 	make -j `$(NPROC)` all && \
 	make -j `$(NPROC)` install DESTDIR="$(ROOT)/$@.partial/$(TARGET)"
-	cd "$(ROOT)/$@.partial" && $(PREFIX_STRIP)
-	touch "$(ROOT)/$@.partial"
-	mv "$(ROOT)/$@.partial" "$(ROOT)/$@"
+	cd "$@.partial" && $(PREFIX_STRIP)
+	touch "$@.partial"
+	mv "$@.partial" "$@"
 
 $(PREFIX)/relibc-install.tar.gz: $(PREFIX)/relibc-install
 	tar \
