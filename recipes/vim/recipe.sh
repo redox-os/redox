@@ -1,4 +1,4 @@
-VERSION=8.0.586
+VERSION=8.2
 TAR=http://ftp.vim.org/vim/unix/vim-$VERSION.tar.bz2
 BUILD_DEPENDS=(ncurses)
 DEPENDS="terminfo"
@@ -17,11 +17,12 @@ function recipe_build {
     sysroot="$(realpath ../sysroot)"
     export LDFLAGS="-L$sysroot/lib -static"
     export CPPFLAGS="-I$sysroot/include"
-    export vim_cv_toupper_broken=set
-    export vim_cv_terminfo=no
+    export vim_cv_toupper_broken=no
+    export vim_cv_tgetent=zero
+    export vim_cv_terminfo=yes
     export vim_cv_tty_group=world
-    export vim_cv_getcwd_broken=yes
-    export vim_cv_stat_ignores_slash=no
+    export vim_cv_getcwd_broken=no
+    export vim_cv_stat_ignores_slash=yes
     export vim_cv_memmove_handles_overlap=yes
     ./configure --build=${BUILD} --host=${HOST} --prefix=/ --with-tlib=ncurses
     make -j"$(nproc)"
