@@ -14,10 +14,15 @@ function recipe_update {
 
 function recipe_build {
     sysroot="$(realpath ../sysroot)"
-    export LDFLAGS="-L$sysroot/lib"
+    export LDFLAGS="-L$sysroot/lib -static"
     export CPPFLAGS="-I$sysroot/include -I$sysroot/include/ncurses"
     autoreconf -i
-    ./configure --build=${BUILD} --host=${HOST} --prefix=/ --without-fonts
+    ./configure \
+        --build=${BUILD} \
+        --host=${HOST} \
+        --prefix=/ \
+        --without-fonts
+    sed -i'' -e 's|#define USE_TIOCSTI 1|/* #undef USE_TIOCSTI */|g' config.h
     make -j"$(nproc)"
     skip=1
 }
