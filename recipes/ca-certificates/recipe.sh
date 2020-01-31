@@ -9,8 +9,11 @@ function recipe_fetch {
         mkdir source
     fi
     pushd source
-        curl -o make-ca.sh --time-cond make-ca.sh http://anduin.linuxfromscratch.org/BLFS/other/make-ca.sh-20170514
-        curl -o certdata.txt --time-cond certdata.txt http://anduin.linuxfromscratch.org/BLFS/other/certdata.txt
+        cp ../make-ca.sh make-ca.sh
+        curl \
+            -o certdata.txt \
+            --time-cond certdata.txt \
+            https://hg.mozilla.org/releases/mozilla-release/raw-file/default/security/nss/lib/ckfw/builtins/certdata.txt
     popd
     skip=1
 }
