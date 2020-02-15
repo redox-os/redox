@@ -371,6 +371,18 @@ usage()
 	exit
 }
 
+
+#############################################################
+# Looks for and installs a cargo-managed binary or subcommand
+#############################################################
+cargoInstall() {
+	if [[ "`cargo install --list`" != *"$1"* ]]; then
+		cargo install $1
+	else
+		echo "You have $1 installed already!"
+	fi
+}
+
 ####################################################################################
 # This function takes care of everything associated to rust, and the version manager
 # That controls it, it can install rustup and uninstall multirust as well as making
@@ -481,11 +493,8 @@ boot()
 	echo "Cloning gitlab repo..."
 	git clone https://gitlab.redox-os.org/redox-os/redox.git --origin upstream --recursive
 	rustInstall
-	if [[ "`cargo install --list`" != *"xargo"* ]]; then
-		cargo install xargo
-	else
-		echo "You have xargo installed already!"
-	fi
+	cargoInstall cargo-config
+	cargoInstall xargo
 	echo "Cleaning up..."
 	rm bootstrap.sh
 	echo
