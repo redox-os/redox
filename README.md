@@ -138,8 +138,8 @@ $ ./bootstrap.sh -d
 $ curl https://sh.rustup.rs -sSf | sh
 $ source $HOME/.cargo/env
 
-# Install the sysroot manager Xargo
-$ cargo install xargo
+# Install the sysroot manager Xargo and cargo-config
+$ cargo install xargo cargo-config
 
 # For successive builds start here. If this is your first build, just continue
 
