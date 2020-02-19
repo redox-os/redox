@@ -11,7 +11,7 @@ function recipe_update {
 }
 
 function recipe_build {
-	nasm -f bin -o bootloader -D "ARCH_${ARCH}" -i"${ARCH}/" "${ARCH}/disk.asm"
+    nasm -f bin -o bootloader -D "ARCH_${ARCH}" -i"${ARCH}/" "${ARCH}/disk.asm"
     skip=1
 }
 
