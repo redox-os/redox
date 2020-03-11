@@ -60,3 +60,7 @@
 	path = patches/jobserver-rs
 	url = https://gitlab.redox-os.org/redox-os/jobserver-rs.git
 	branch = redox
+[submodule "pkgar"]
+	path = pkgar
+	url = https://gitlab.redox-os.org/redox-os/pkgar.git
+	branch = master

@@ -15,15 +15,17 @@ export PREPARE_COPY=1
 
 if [ ! "$(uname -s)" = "Redox" ]
 then
+function docgen {
+    CC=cc cargo run --release --manifest-path "$ROOT/docgen/Cargo.toml" --bin docgen -- "$@"
+}
 
 function pkg {
-    CC=cc cargo run --release --manifest-path "$ROOT/pkgutils/Cargo.toml" --bin pkg -- $@
+    CC=cc cargo run --release --manifest-path "$ROOT/pkgutils/Cargo.toml" --bin pkg -- "$@"
 }
 
-function docgen {
-    CC=cc cargo run --release --manifest-path "$ROOT/docgen/Cargo.toml" --bin docgen -- $@
+function pkgar {
+    CC=cc cargo run --release --manifest-path "$ROOT/pkgar/Cargo.toml" --bin pkgar -- "$@"
 }
-
 fi
 
 function usage {
@@ -422,6 +424,33 @@ function op {
             ;;
         unstage)
             rm -rfv stage
+            ;;
+        pkg)
+            if [ ! -e "${ROOT}/build/secret.key" ]
+            then
+                mkdir -p "${ROOT}/build"
+                pkgar \
+                    keygen \
+                    --secret "${ROOT}/build/secret.key" \
+                    --public "${ROOT}/build/public.key"
+            fi
+
+            pkgar \
+                create \
+                --secret "${ROOT}/build/secret.key" \
+                --file stage.pkg \
+                stage
+
+            if command -v pigz > /dev/null
+            then
+                pigz --force stage.pkg
+            else
+                echo "Install pigz for increased performance"
+                gzip --force recipes/jeremy/stage.pkg
+            fi
+            ;;
+        unpkg)
+            rm -fv stage.pkg stage.pkg.gz
             ;;
         tar)
             echo "name = \"$1\"" > "stage.toml"
