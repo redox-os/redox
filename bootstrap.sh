@@ -123,15 +123,17 @@ osx_homebrew()
         install_brew_pkg "virtualbox"
     fi
 
-    install_brew_pkg "coreutils"
-    install_brew_pkg "findutils"
-    install_brew_pkg "gcc49" "gcc-4.9"
+    install_brew_pkg "automake"
+    install_brew_pkg "bison"
+    install_brew_pkg "gettext"
+    install_brew_pkg "libtool"
+    install_brew_pkg "make"
     install_brew_pkg "nasm"
+    install_brew_pkg "gcc@7" "gcc-7"
     install_brew_pkg "pkg-config"
-    install_brew_pkg "cmake"
-    install_brew_cask_pkg "osxfuse"
+    install_brew_pkg "Caskroom/cask/osxfuse"
 
-    install_brew_pkg "redox-os/gcc_cross_compilers/x86_64-elf-gcc"
+    install_brew_pkg "redox-os/gcc_cross_compilers/x86_64-elf-gcc" "x86_64-elf-gcc"
 }
 
 ###############################################################################
