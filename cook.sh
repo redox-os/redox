@@ -42,6 +42,8 @@ function usage {
     echo "  difftool_upstream" >&2
     echo "  fetch" >&2
     echo "  unfetch" >&2
+    echo "  pkg" >&2
+    echo "  unpkg" >&2
     echo "  prepare" >&2
     echo "  unprepare" >&2
     echo "  publish" >&2
@@ -69,8 +71,10 @@ function op {
             op $1 build
             op $1 stage
             op $1 tar
+            op $1 pkg
             ;;
         distclean)
+            op $1 unpkg
             op $1 untar
             op $1 unstage
             op $1 unprepare
@@ -440,17 +444,9 @@ function op {
                 --secret "${ROOT}/build/secret.key" \
                 --file stage.pkg \
                 stage
-
-            if command -v pigz > /dev/null
-            then
-                pigz --force stage.pkg
-            else
-                echo "Install pigz for increased performance"
-                gzip --force recipes/jeremy/stage.pkg
-            fi
             ;;
         unpkg)
-            rm -fv stage.pkg stage.pkg.gz
+            rm -fv stage.pkg
             ;;
         tar)
             echo "name = \"$1\"" > "stage.toml"
