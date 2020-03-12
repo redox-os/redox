@@ -58,6 +58,20 @@ do
             echo -e "\033[01;38;5;155mrepo - $recipe up to date\033[0m" >&2
         fi
     fi
+
+    if [ ! -f "recipes/$recipe/stage.pkg" ]
+    then
+        echo -e "\033[01;38;5;155mrepo - packaging $recipe\033[0m" >&2
+        ./cook.sh "$recipe" pkg $DEBUG
+    else
+        TIME_STAGE="$($STAT -c "%Y" recipes/$recipe/stage.tar.gz)"
+        TIME_PKG="$($STAT -c "%Y" recipes/$recipe/stage.pkg)"
+        if [ "$TIME_STAGE" -gt "$TIME_PKG" ]
+        then
+            echo -e "\033[01;38;5;155mrepo - repackaging $recipe\033[0m" >&2
+            ./cook.sh "$recipe" unpkg pkg $DEBUG
+        fi
+    fi
 done
 
 for recipe in $recipes
@@ -66,6 +80,12 @@ do
     then
         echo -e "\033[01;38;5;155mrepo - publishing $recipe\033[0m" >&2
         ./cook.sh $recipe publish
+    fi
+
+    if [ "recipes/$recipe/stage.pkg" -nt "$REPO/$recipe.pkg" ]
+    then
+        echo -e "\033[01;38;5;155mrepo - publishing $recipe\033[0m" >&2
+        cp -v "recipes/$recipe/stage.pkg" "$REPO/$recipe.pkg"
     fi
 done
 
