@@ -59,13 +59,13 @@ do
         fi
     fi
 
-    if [ ! -f "recipes/$recipe/stage.pkg" ]
+    if [ ! -f "recipes/$recipe/stage.pkgar" ]
     then
         echo -e "\033[01;38;5;155mrepo - packaging $recipe\033[0m" >&2
         ./cook.sh "$recipe" pkg $DEBUG
     else
         TIME_STAGE="$($STAT -c "%Y" recipes/$recipe/stage.tar.gz)"
-        TIME_PKG="$($STAT -c "%Y" recipes/$recipe/stage.pkg)"
+        TIME_PKG="$($STAT -c "%Y" recipes/$recipe/stage.pkgar)"
         if [ "$TIME_STAGE" -gt "$TIME_PKG" ]
         then
             echo -e "\033[01;38;5;155mrepo - repackaging $recipe\033[0m" >&2
@@ -82,10 +82,10 @@ do
         ./cook.sh $recipe publish
     fi
 
-    if [ "recipes/$recipe/stage.pkg" -nt "$REPO/$recipe.pkg" ]
+    if [ "recipes/$recipe/stage.pkgar" -nt "$REPO/$recipe.pkgar" ]
     then
         echo -e "\033[01;38;5;155mrepo - publishing $recipe\033[0m" >&2
-        cp -v "recipes/$recipe/stage.pkg" "$REPO/$recipe.pkg"
+        cp -v "recipes/$recipe/stage.pkgar" "$REPO/$recipe.pkgar"
     fi
 done
 
