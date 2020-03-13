@@ -442,11 +442,11 @@ function op {
             pkgar \
                 create \
                 --secret "${ROOT}/build/secret.key" \
-                --file stage.pkg \
+                --file stage.pkgar \
                 stage
             ;;
         unpkg)
-            rm -fv stage.pkg
+            rm -fv stage.pkgar
             ;;
         tar)
             echo "name = \"$1\"" > "stage.toml"
