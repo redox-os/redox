@@ -5,6 +5,7 @@ source-new
 source.tar
 stage
 stage.pkg
+stage.pkgar
 stage.sig
 stage.tar
 stage.tar.gz
