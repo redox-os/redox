@@ -1,5 +1,5 @@
 GIT=https://gitlab.redox-os.org/redox-os/kernel.git
-BUILD_DEPENDS=(drivers init nulld randd redoxfs zerod)
+BUILD_DEPENDS=(drivers init nulld ramfs randd redoxfs zerod)
 
 function recipe_build {
     export INITFS_FOLDER="$(realpath ../sysroot)"
