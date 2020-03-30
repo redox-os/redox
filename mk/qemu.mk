@@ -1,6 +1,7 @@
 QEMU=SDL_VIDEO_X11_DGAMOUSE=0 qemu-system-$(ARCH)
 QEMUFLAGS=-d cpu_reset -d guest_errors
 QEMUFLAGS+=-smp 4 -m 2048
+QEMU_EFI=/usr/share/OVMF/OVMF_CODE.fd
 ifeq ($(serial),no)
 	QEMUFLAGS+=-chardev stdio,id=debug -device isa-debugcon,iobase=0x402,chardev=debug
 else
@@ -69,13 +70,13 @@ qemu_mbr_no_build: build/extra.bin
 
 qemu_efi: build/harddrive-efi.bin build/extra.bin
 	$(QEMU) $(QEMUFLAGS) \
-		-bios /usr/share/OVMF/OVMF_CODE.fd \
+		-bios $(QEMU_EFI) \
 		-drive file=build/harddrive-efi.bin,format=raw \
 		-drive file=build/extra.bin,format=raw
 
 qemu_efi_no_build: build/extra.bin
 	$(QEMU) $(QEMUFLAGS) \
-		-bios /usr/share/OVMF/OVMF_CODE.fd \
+		-bios $(QEMU_EFI) \
 		-drive file=build/harddrive-efi.bin,format=raw \
 		-drive file=build/extra.bin,format=raw
 
@@ -91,13 +92,13 @@ qemu_nvme_no_build: build/extra.bin
 
 qemu_nvme_efi: build/harddrive-efi.bin build/extra.bin
 	$(QEMU) $(QEMUFLAGS) \
-		-bios /usr/share/OVMF/OVMF_CODE.fd \
+		-bios $(QEMU_EFI) \
 		-drive file=build/harddrive-efi.bin,format=raw,if=none,id=drv0 -device nvme,drive=drv0,serial=NVME_SERIAL \
 		-drive file=build/extra.bin,format=raw,if=none,id=drv1 -device nvme,drive=drv1,serial=NVME_EXTRA
 
 qemu_nvme_efi_no_build: build/extra.bin
 	$(QEMU) $(QEMUFLAGS) \
-		-bios /usr/share/OVMF/OVMF_CODE.fd \
+		-bios $(QEMU_EFI) \
 		-drive file=build/harddrive-efi.bin,format=raw,if=none,id=drv0 -device nvme,drive=drv0,serial=NVME_SERIAL \
 		-drive file=build/extra.bin,format=raw,if=none,id=drv1 -device nvme,drive=drv1,serial=NVME_EXTRA
 
@@ -133,13 +134,13 @@ qemu_iso_no_build: build/extra.bin
 
 qemu_iso_efi: build/livedisk-efi.iso build/extra.bin
 	$(QEMU) $(QEMUFLAGS) \
-		-bios /usr/share/OVMF/OVMF_CODE.fd \
+		-bios $(QEMU_EFI) \
 		-boot d -cdrom build/livedisk-efi.iso \
 		-drive file=build/extra.bin,format=raw
 
 qemu_iso_efi_no_build: build/extra.bin
 	$(QEMU) $(QEMUFLAGS) \
-		-bios /usr/share/OVMF/OVMF_CODE.fd \
+		-bios $(QEMU_EFI) \
 		-boot d -cdrom build/livedisk-efi.iso \
 		-drive file=build/extra.bin,format=raw
 
