@@ -10,6 +10,7 @@ prompt = false
 drivers = {}
 init = {}
 nulld = {}
+ramfs = {}
 randd = {}
 redoxfs = {}
 zerod = {}
@@ -25,6 +26,7 @@ randd
 vesad T T G
 stdio display:1
 ps2d us
+ramfs logging
 pcid /etc/pcid/initfs.toml
 redoxfs --uuid $REDOXFS_UUID file $REDOXFS_BLOCK
 cd file:
