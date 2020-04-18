@@ -102,6 +102,9 @@ env: prefix FORCE
 	export PATH="$(PREFIX_PATH):$$PATH" && \
 	bash
 
+gdb: FORCE
+	gdb build/kernel.sym --eval-command="target remote localhost:1234"
+
 # An empty target
 FORCE:
 
