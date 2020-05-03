@@ -19,7 +19,7 @@ function recipe_build {
         --host=${HOST} \
         --prefix=/ \
         --without-guile
-    make -j"$(nproc)"
+    $REDOX_MAKE -j"$($NPROC)"
     skip=1
 }
 
@@ -29,12 +29,12 @@ function recipe_test {
 }
 
 function recipe_clean {
-    make clean
+    $REDOX_MAKE clean
     skip=1
 }
 
 function recipe_stage {
     dest="$(realpath $1)"
-    make DESTDIR="$dest" install
+    $REDOX_MAKE DESTDIR="$dest" install
     skip=1
 }

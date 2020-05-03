@@ -30,7 +30,7 @@ function recipe_build {
         ac_cv_lib_SDL_image_IMG_Load=yes \
         ac_cv_lib_SDL_ttf_TTF_OpenFont=yes \
         ac_cv_lib_SDL_gfx_rotozoomSurface=yes
-    make -j"$(nproc)" V=1
+    $REDOX_MAKE -j"$($NPROC)" V=1
     skip=1
 }
 
@@ -40,12 +40,12 @@ function recipe_test {
 }
 
 function recipe_clean {
-    make clean
+    $REDOX_MAKE clean
     skip=1
 }
 
 function recipe_stage {
     dest="$(realpath $1)"
-    make DESTDIR="$dest" install
+    $REDOX_MAKE DESTDIR="$dest" install
     skip=1
 }

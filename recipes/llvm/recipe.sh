@@ -63,7 +63,7 @@ function recipe_build {
     )
     set -x
     cmake "${CMAKE_ARGS[@]}" "$source"
-    make -j$(nproc)
+    $REDOX_MAKE -j$(nproc)
     set +x
     skip=1
 }
@@ -74,13 +74,13 @@ function recipe_test {
 }
 
 function recipe_clean {
-    make clean
+    $REDOX_MAKE clean
     skip=1
 }
 
 function recipe_stage {
     dest="$(realpath $1)"
-    make DESTDIR="$dest" install
+    $REDOX_MAKE DESTDIR="$dest" install
     find "$dest"/bin -exec $STRIP {} ';' 2> /dev/null
     skip=1
 }

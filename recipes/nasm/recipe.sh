@@ -14,7 +14,7 @@ function recipe_update {
 function recipe_build {
     export LDFLAGS="-static"
     ./configure --build=${BUILD} --host=${HOST} --prefix=""
-    make -j"$(nproc)"
+    $REDOX_MAKE -j"$($NPROC)"
     skip=1
 }
 
@@ -24,13 +24,13 @@ function recipe_test {
 }
 
 function recipe_clean {
-    make clean
+    $REDOX_MAKE clean
     skip=1
 }
 
 function recipe_stage {
     dest="$(realpath $1)"
-    make install DESTDIR="$dest"
+    $REDOX_MAKE install DESTDIR="$dest"
     find "$dest"/bin -exec ${HOST}-strip {} ';' 2> /dev/null
     skip=1
 }
