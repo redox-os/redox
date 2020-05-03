@@ -18,6 +18,12 @@ ifeq ($(UNAME),Darwin)
 	PREFIX_BINARY=0
 	VB_AUDIO=coreaudio
 	VBM=/Applications/VirtualBox.app/Contents/MacOS/VBoxManage
+ifeq ($(UNAME),FreeBSD)
+	FUMOUNT=sudo umount
+	export NPROC=sysctl -n hw.ncpu
+	PREFIX_BINARY=0
+	VB_AUDIO=pulse # To check, will probaly be OSS on most setups
+	VBM=VBoxManage
 else
 	FUMOUNT=fusermount -u
 	export NPROC=nproc

@@ -12,12 +12,12 @@ banner()
 
 ###################################################################################
 # This function takes care of installing a dependency via package manager of choice
-# for building redox on MacOS.
+# for building redox on BSDs (MacOS, FreeBSD, etc.).
 # @params:    $1 package manager
 #            $2 package name
 #            $3 binary name (optional)
 ###################################################################################
-install_macos_pkg()
+install_bsd_pkg()
 {
     PKG_MANAGER=$1
     PKG_NAME=$2
@@ -37,17 +37,22 @@ install_macos_pkg()
 
 install_macports_pkg()
 {
-    install_macos_pkg "sudo port" "$1" "$2"
+    install_bsd_pkg "sudo port" "$1" "$2"
 }
 
 install_brew_pkg()
 {
-    install_macos_pkg "brew" $@
+    install_bsd_pkg "brew" $@
 }
 
 install_brew_cask_pkg()
 {
-    install_macos_pkg "brew cask" $@
+    install_bsd_pkg "brew cask" $@
+}
+
+install_freebsd_pkg()
+{
+    install_bsd_pkg "sudo pkg" $@
 }
 
 ###############################################################################
@@ -134,6 +139,35 @@ osx_homebrew()
     install_brew_pkg "Caskroom/cask/osxfuse"
 
     install_brew_pkg "redox-os/gcc_cross_compilers/x86_64-elf-gcc" "x86_64-elf-gcc"
+}
+
+###############################################################################
+# This function takes care of installing all dependencies using pkg
+# for building redox on FreeBSD
+# @params:    $1 the emulator to install, virtualbox or qemu
+###############################################################################
+freebsd()
+{
+    echo "FreeBSD detected!"
+    echo "Installing missing packages..."
+
+    install_freebsd_pkg "git"
+
+    if [ "$1" == "qemu" ]; then
+        install_freebsd_pkg "qemu" "qemu-system-x86_64"
+    else
+        install_freebsd_pkg "virtualbox"
+    fi
+
+    install_freebsd_pkg "coreutils"
+    install_freebsd_pkg "findutils"
+    install_freebsd_pkg "gcc"
+    install_freebsd_pkg "nasm"
+    install_freebsd_pkg "pkgconf"
+    install_freebsd_pkg "fusefs-libs"
+    install_freebsd_pkg "cmake"
+    install_freebsd_pkg "gmake"
+    install_freebsd_pkg "wget"
 }
 
 ###############################################################################
@@ -574,6 +608,12 @@ else
 	# Arch linux
 	elif hash 2>/dev/null pacman; then
 		archLinux "$emulator"
+	# FreeBSD
+	elif hash 2>/dev/null pkg; then
+		freebsd "$emulator"
+	# Unsupported platform
+	else
+    	printf "\e[31;1mFatal error: \e[0;31mUnsupported platform, please open an issue\[0m"
 	fi
 fi
 
