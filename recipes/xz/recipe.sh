@@ -38,7 +38,7 @@ function recipe_build {
         --enable-static=yes \
         --enable-threads=no \
         --with-pic=no
-    make -j"$(nproc)"
+    $REDOX_MAKE -j"$($NPROC)"
     skip=1
 }
 
@@ -48,13 +48,13 @@ function recipe_test {
 }
 
 function recipe_clean {
-    make clean
+    $REDOX_MAKE clean
     skip=1
 }
 
 function recipe_stage {
     dest="$(realpath $1)"
-    make DESTDIR="$dest" install
+    $REDOX_MAKE DESTDIR="$dest" install
     rm -rf "$dest/share"
     skip=1
 }

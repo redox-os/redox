@@ -19,7 +19,7 @@ function recipe_build {
         --host="${HOST}" \
         --prefix=/ \
         --enable-lib-only
-    make -j"$(nproc)"
+    $REDOX_MAKE -j"$($NPROC)"
     skip=1
 }
 
@@ -29,13 +29,13 @@ function recipe_test {
 }
 
 function recipe_clean {
-    make clean
+    $REDOX_MAKE clean
     skip=1
 }
 
 function recipe_stage {
     dest="$(realpath $1)"
-    make install DESTDIR="$dest"
+    $REDOX_MAKE install DESTDIR="$dest"
     rm -f "$dest/lib/"*.la
     skip=1
 }

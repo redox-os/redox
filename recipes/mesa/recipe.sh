@@ -37,7 +37,7 @@ function recipe_build {
         --enable-static \
         --with-gallium-drivers=swrast \
         --with-platforms=surfaceless
-    make V=1 -j"$(nproc)"
+    $REDOX_MAKE V=1 -j"$($NPROC)"
     skip=1
 }
 
@@ -47,14 +47,14 @@ function recipe_test {
 }
 
 function recipe_clean {
-    make clean
+    $REDOX_MAKE clean
     skip=1
 }
 
 function recipe_stage {
     #export LLVM_CONFIG="x86_64-unknown-redox-llvm-config"
     dest="$(realpath $1)"
-    make DESTDIR="$dest" install
+    $REDOX_MAKE DESTDIR="$dest" install
     rm -f "$dest/lib/"*.la
     skip=1
 }

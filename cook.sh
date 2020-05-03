@@ -13,6 +13,11 @@ export DEBUG=
 export EXAMPLES=
 export PREPARE_COPY=1
 
+SHASUM="sha256sum"
+if hash shasum 2>/dev/null; then
+    SHASUM="shasum -a 256"
+fi
+
 if [ ! "$(uname -s)" = "Redox" ]
 then
 function docgen {
@@ -96,7 +101,7 @@ function op {
 
                     if [ -n "$TAR_SHA256" ]
                     then
-                        sha256sum -c <<< "${TAR_SHA256} source.tar"
+                        $SHASUM -c <<< "${TAR_SHA256} source.tar"
                     fi
 
                     if [ ! -d source ]
@@ -470,7 +475,7 @@ function op {
             pushd stage > /dev/null
             find -L . -type f | cut -d / -f 2- | sort | while read file
             do
-                sha256sum "$file" >> "pkg/$1.sha256sums"
+                $SHASUM "$file" >> "pkg/$1.sha256sums"
             done
             popd > /dev/null
 

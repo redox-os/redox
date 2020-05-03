@@ -22,7 +22,7 @@ function recipe_build {
     sed -i "s/^#define Netdb_name_t.*/#define Netdb_name_t const char*/" config.h # XXX
     sed -i 's/#define Strerror(e).*$/#define Strerror(e) strerror(e)/' config.h #
     echo "#define HAS_VPRINTF" >> config.h
-    make -j"$(nproc)"
+    $REDOX_MAKE -j"$($NPROC)"
     skip=1
 }
 
@@ -32,13 +32,13 @@ function recipe_test {
 }
 
 function recipe_clean {
-    make clean
+    $REDOX_MAKE clean
     skip=1
 }
 
 function recipe_stage {
     dest="$(realpath $1)"
-    make DESTDIR="$dest" install
+    $REDOX_MAKE DESTDIR="$dest" install
     rm -rf "$1/man"
     skip=1
 }

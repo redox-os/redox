@@ -25,7 +25,7 @@ function recipe_build {
     export vim_cv_stat_ignores_slash=yes
     export vim_cv_memmove_handles_overlap=yes
     ./configure --build=${BUILD} --host=${HOST} --prefix=/ --with-tlib=ncurses
-    make -j"$(nproc)"
+    $REDOX_MAKE -j"$($NPROC)"
     skip=1
 }
 
@@ -35,12 +35,12 @@ function recipe_test {
 }
 
 function recipe_clean {
-    make clean
+    $REDOX_MAKE clean
     skip=1
 }
 
 function recipe_stage {
     dest="$(realpath $1)"
-    make DESTDIR="$dest" ${MAKEFLAGS} install
+    $REDOX_MAKE DESTDIR="$dest" ${MAKEFLAGS} install
     skip=1
 }

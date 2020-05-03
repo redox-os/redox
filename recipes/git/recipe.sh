@@ -39,7 +39,7 @@ function recipe_build {
         ac_cv_fread_reads_directories=yes \
         ac_cv_snprintf_returns_bogus=yes \
         ac_cv_lib_curl_curl_global_init=yes
-    make "${MAKEFLAGS[@]}" -j"$(nproc)"
+    $REDOX_MAKE "${MAKEFLAGS[@]}" -j"$($NPROC)"
     skip=1
 }
 
@@ -49,13 +49,13 @@ function recipe_test {
 }
 
 function recipe_clean {
-    make clean
+    $REDOX_MAKE clean
     skip=1
 }
 
 function recipe_stage {
     dest="$(realpath $1)"
-    make DESTDIR="$dest" "${MAKEFLAGS[@]}" install
+    $REDOX_MAKE DESTDIR="$dest" "${MAKEFLAGS[@]}" install
     ${STRIP} $1/bin/* || true
     ${STRIP} $1/libexec/git-core/* || true
     rm -rf $1/share/man

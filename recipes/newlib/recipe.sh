@@ -25,7 +25,7 @@ function recipe_build {
     popd
 
     CC= ./configure --build=${BUILD} --target="${HOST}" --prefix=/
-    make all -j"$(nproc)"
+    $REDOX_MAKE all -j"$($NPROC)"
 
     skip=1
 }
@@ -36,13 +36,13 @@ function recipe_test {
 }
 
 function recipe_clean {
-    make clean
+    $REDOX_MAKE clean
     skip=1
 }
 
 function recipe_stage {
     dest="$(realpath $1)"
-    make DESTDIR="$dest" install
+    $REDOX_MAKE DESTDIR="$dest" install
     cd "$dest"
     mv $HOST/* ./
     rmdir $HOST
