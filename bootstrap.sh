@@ -170,6 +170,7 @@ freebsd()
     install_freebsd_pkg "gmake"
     install_freebsd_pkg "wget"
     install_freebsd_pkg "texinfo"
+    install_freebsd_pkg "python"
     set +xe
 }
 
