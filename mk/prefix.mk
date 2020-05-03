@@ -38,8 +38,8 @@ $(PREFIX)/relibc-install: $(ROOT)/relibc | $(PREFIX)/gcc-install
 	cd "$<" && \
 	export PATH="$(ROOT)/$@.partial/bin:$$PATH" && \
 	export CARGO="env -u CARGO xargo" && \
-	make -j `$(NPROC)` all && \
-	make -j `$(NPROC)` install DESTDIR="$(ROOT)/$@.partial/$(TARGET)"
+	$(MAKE) -j `$(NPROC)` all && \
+	$(MAKE) -j `$(NPROC)` install DESTDIR="$(ROOT)/$@.partial/$(TARGET)"
 	cd "$@.partial" && $(PREFIX_STRIP)
 	touch "$@.partial"
 	mv "$@.partial" "$@"
@@ -67,9 +67,9 @@ $(PREFIX)/rust-install: $(ROOT)/rust | $(PREFIX)/relibc-install
 		--tools=cargo \
 		--target="$(TARGET)" \
 		&& \
-	make -j `$(NPROC)` && \
+	$(MAKE) -j `$(NPROC)` && \
 	rm -rf "$(ROOT)/$@.partial/lib/rustlib" "$(ROOT)/$@.partial/share/doc/rust" && \
-	make -j `$(NPROC)` install DESTDIR="$(ROOT)/$@.partial"
+	$(MAKE) -j `$(NPROC)` install DESTDIR="$(ROOT)/$@.partial"
 	rm -rf "$(PREFIX)/rust-build"
 	mkdir -p "$@.partial/lib/rustlib/x86_64-unknown-linux-gnu/bin"
 	cd "$@.partial" && find . -name *.old -exec rm {} ';' && $(PREFIX_STRIP)
@@ -122,8 +122,8 @@ $(PREFIX)/binutils-install: $(PREFIX)/binutils
 		--prefix="" \
 		--disable-werror \
 		&& \
-	make -j `$(NPROC)` all && \
-	make -j `$(NPROC)` install DESTDIR="$(ROOT)/$@.partial"
+	$(MAKE) -j `$(NPROC)` all && \
+	$(MAKE) -j `$(NPROC)` install DESTDIR="$(ROOT)/$@.partial"
 	rm -rf "$<-build"
 	cd "$@.partial" && $(PREFIX_STRIP)
 	touch "$@.partial"
@@ -155,8 +155,8 @@ $(PREFIX)/gcc-freestanding-install: $(PREFIX)/gcc | $(PREFIX)/binutils-install
 		--enable-languages=c,c++ \
 		--without-headers \
 		&& \
-	make -j `$(NPROC)` all-gcc && \
-	make -j `$(NPROC)` install-gcc DESTDIR="$(ROOT)/$@.partial"
+	$(MAKE) -j `$(NPROC)` all-gcc && \
+	$(MAKE) -j `$(NPROC)` install-gcc DESTDIR="$(ROOT)/$@.partial"
 	rm -rf "$<-freestanding-build"
 	cd "$@.partial" && $(PREFIX_STRIP)
 	touch "$@.partial"
@@ -176,8 +176,8 @@ $(PREFIX)/rust-freestanding-install: $(ROOT)/rust | $(PREFIX)/binutils-install
 		--enable-llvm-static-stdcpp \
 		--tools=cargo \
 		&& \
-	make -j `$(NPROC)` && \
-	make -j `$(NPROC)` install DESTDIR="$(ROOT)/$@.partial"
+	$(MAKE) -j `$(NPROC)` && \
+	$(MAKE) -j `$(NPROC)` install DESTDIR="$(ROOT)/$@.partial"
 	rm -rf "$(PREFIX)/rust-freestanding-build"
 	mkdir -p "$@.partial/lib/rustlib/x86_64-unknown-linux-gnu/bin"
 	cd "$@.partial" && $(PREFIX_STRIP)
@@ -191,8 +191,8 @@ $(PREFIX)/relibc-freestanding-install: $(ROOT)/relibc | $(PREFIX_BASE_INSTALL) $
 	export PATH="$(PREFIX_BASE_INSTALL):$(PREFIX_FREESTANDING_PATH):$$PATH" && \
 	export CARGO="env -u CARGO xargo" && \
 	export CC_$(subst -,_,$(TARGET))="$(TARGET)-gcc -isystem $(ROOT)/$@.partial/$(TARGET)/include" && \
-	make -j `$(NPROC)` all && \
-	make -j `$(NPROC)` install DESTDIR="$(ROOT)/$@.partial/$(TARGET)"
+	$(MAKE) -j `$(NPROC)` all && \
+	$(MAKE) -j `$(NPROC)` install DESTDIR="$(ROOT)/$@.partial/$(TARGET)"
 	cd "$@.partial" && $(PREFIX_STRIP)
 	touch "$@.partial"
 	mv "$@.partial" "$@"
@@ -217,8 +217,8 @@ $(PREFIX)/gcc-install: $(PREFIX)/gcc | $(PREFIX)/relibc-freestanding-install
 		--enable-shared \
 		--enable-threads=posix \
 		&& \
-	make -j `$(NPROC)` all-gcc all-target-libgcc all-target-libstdc++-v3 && \
-	make -j `$(NPROC)` install-gcc install-target-libgcc install-target-libstdc++-v3 DESTDIR="$(ROOT)/$@.partial" && \
+	$(MAKE) -j `$(NPROC)` all-gcc all-target-libgcc all-target-libstdc++-v3 && \
+	$(MAKE) -j `$(NPROC)` install-gcc install-target-libgcc install-target-libstdc++-v3 DESTDIR="$(ROOT)/$@.partial" && \
 	rm $(ROOT)/$@.partial/$(TARGET)/lib/*.la
 	rm -rf "$<-build"
 	cd "$@.partial" && $(PREFIX_STRIP)
