@@ -171,7 +171,10 @@ freebsd()
     install_freebsd_pkg "wget"
     install_freebsd_pkg "texinfo"
     install_freebsd_pkg "python"
-    install_freebsd_pkg "sha256sum"
+    install_freebsd_pkg "automake"
+    install_freebsd_pkg "gettext"
+    install_freebsd_pkg "bison"
+    install_freebsd_pkg "gperf"
     set +xe
 }
 
@@ -548,6 +551,7 @@ boot()
 	MAKE="make"
 	if [[ "$(uname)" -eq FreeBSD ]]; then
     	MAKE="gmake"
+    	echo "kldload fuse.ko # This loads the kernel module for fuse"
     fi
 	echo "$MAKE all"
 	echo "$MAKE virtualbox or qemu"
