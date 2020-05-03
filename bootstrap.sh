@@ -171,6 +171,7 @@ freebsd()
     install_freebsd_pkg "wget"
     install_freebsd_pkg "texinfo"
     install_freebsd_pkg "python"
+    install_freebsd_pkg "sha256sum"
     set +xe
 }
 
@@ -544,8 +545,12 @@ boot()
 	statusCheck
 	echo "Run the following commands to build redox:"
 	echo "cd redox"
-	echo "make all"
-	echo "make virtualbox or qemu"
+	MAKE="make"
+	if [[ "$(uname)" -eq FreeBSD ]]; then
+    	MAKE="gmake"
+    fi
+	echo "$MAKE all"
+	echo "$MAKE virtualbox or qemu"
 	echo
 	echo "      Good luck!"
 
