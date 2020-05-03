@@ -148,6 +148,7 @@ osx_homebrew()
 ###############################################################################
 freebsd()
 {
+    set -xe
     echo "FreeBSD detected!"
     echo "Installing missing packages..."
 
@@ -168,6 +169,7 @@ freebsd()
     install_freebsd_pkg "cmake"
     install_freebsd_pkg "gmake"
     install_freebsd_pkg "wget"
+    set +xe
 }
 
 ###############################################################################
