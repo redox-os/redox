@@ -45,8 +45,13 @@ endif
 #,int,pcall
 #-device intel-iommu
 
+ifeq ($(UNAME),Linux)
 build/extra.bin:
 	fallocate --posix --length 1G $@
+else
+build/extra.bin:
+	truncate -s 1g $@
+endif
 
 qemu: build/harddrive.bin build/extra.bin
 	$(QEMU) $(QEMUFLAGS) \
