@@ -18,7 +18,7 @@ function recipe_build {
     export LDFLAGS="-L$sysroot/lib"
     export SDL_LIBS="-lSDL2 -lorbital $("${PKG_CONFIG}" --libs glu) -lglapi -lz -lm -lpthread -lstdc++"
     ./configure --prefix=/ --build=${BUILD} --host=${HOST} --disable-shared --disable-sdltest --enable-png --enable-jpg
-    $REDOX_MAKE -j"$($NPROC)"
+    "$REDOX_MAKE" -j"$($NPROC)"
     skip=1
 }
 
@@ -28,13 +28,13 @@ function recipe_test {
 }
 
 function recipe_clean {
-    $REDOX_MAKE clean
+    "$REDOX_MAKE" clean
     skip=1
 }
 
 function recipe_stage {
     dest="$(realpath $1)"
-    $REDOX_MAKE DESTDIR="$dest" install
+    "$REDOX_MAKE" DESTDIR="$dest" install
     rm -f "$dest/lib/"*.la
     skip=1
 }

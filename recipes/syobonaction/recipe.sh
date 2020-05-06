@@ -17,7 +17,7 @@ function recipe_build {
     export SDL_CONFIG="${PKG_CONFIG} sdl"
     export CPPFLAGS="-I$sysroot/include"
     export LDFLAGS="-L$sysroot/lib"
-    $REDOX_MAKE -j"$($NPROC)"
+    "$REDOX_MAKE" -j"$($NPROC)"
     skip=1
 }
 
@@ -27,7 +27,7 @@ function recipe_test {
 }
 
 function recipe_clean {
-    $REDOX_MAKE clean
+    "$REDOX_MAKE" clean
     skip=1
 }
 

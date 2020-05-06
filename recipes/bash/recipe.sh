@@ -23,7 +23,7 @@ function recipe_build {
         --prefix=/ \
         --disable-readline \
         bash_cv_getenv_redef=no
-    $REDOX_MAKE # -j"$($NPROC)"
+    "$REDOX_MAKE" # -j"$($NPROC)"
     skip=1
 }
 
@@ -33,12 +33,12 @@ function recipe_test {
 }
 
 function recipe_clean {
-    $REDOX_MAKE clean
+    "$REDOX_MAKE" clean
     skip=1
 }
 
 function recipe_stage {
     dest="$(realpath $1)"
-    $REDOX_MAKE DESTDIR="$dest" ${MAKEFLAGS} install
+    "$REDOX_MAKE" DESTDIR="$dest" ${MAKEFLAGS} install
     skip=1
 }

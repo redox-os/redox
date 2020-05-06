@@ -22,7 +22,7 @@ function recipe_build {
     autoconf
     wget -O build-aux/config.sub http://git.savannah.gnu.org/cgit/config.git/plain/config.sub
     ./configure --build=${BUILD} --host=${HOST} --prefix=''
-    $REDOX_MAKE -j"$($NPROC)" V=1
+    "$REDOX_MAKE" -j"$($NPROC)" V=1
     skip=1
 }
 
@@ -32,12 +32,12 @@ function recipe_test {
 }
 
 function recipe_clean {
-    $REDOX_MAKE clean
+    "$REDOX_MAKE" clean
     skip=1
 }
 
 function recipe_stage {
     dest="$(realpath $1)"
-    $REDOX_MAKE DESTDIR="$dest" install
+    "$REDOX_MAKE" DESTDIR="$dest" install
     skip=1
 }
