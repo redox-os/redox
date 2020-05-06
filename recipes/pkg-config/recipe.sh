@@ -21,7 +21,7 @@ function recipe_build {
 	    --prefix="" \
 	    --disable-shared \
 	    --enable-static
-	$REDOX_MAKE -j"$($NPROC)"
+	"$REDOX_MAKE" -j"$($NPROC)"
     	skip=1
 }
 
@@ -31,13 +31,13 @@ function recipe_test {
 }
 
 function recipe_clean {
-	$REDOX_MAKE clean
+	"$REDOX_MAKE" clean
 	skip=1
 }
 
 function recipe_stage {
 	export DESTDIR="$(realpath $1)"
-	$REDOX_MAKE install
+	"$REDOX_MAKE" install
 	rm -f "${DESTDIR}/lib/"*.la
 	skip=1
 }

@@ -22,7 +22,7 @@ function recipe_build {
         --host=${HOST} \
         --prefix='' \
         --enable-vt100
-    $REDOX_MAKE -j"$($NPROC)"
+    "$REDOX_MAKE" -j"$($NPROC)"
     skip=1
 }
 
@@ -32,13 +32,13 @@ function recipe_test {
 }
 
 function recipe_clean {
-    $REDOX_MAKE clean
+    "$REDOX_MAKE" clean
     skip=1
 }
 
 function recipe_stage {
     dest="$(realpath $1)"
-    $REDOX_MAKE DESTDIR="$dest" install
+    "$REDOX_MAKE" DESTDIR="$dest" install
 
     mkdir -pv "$1/share/timidity"
     echo "soundfont /share/generaluser-gs/generaluser-gs.sf2" >> "$1/share/timidity/timidity.cfg"

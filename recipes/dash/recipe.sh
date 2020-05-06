@@ -22,7 +22,7 @@ function recipe_build {
 
     # See https://stackoverflow.com/questions/4247068/sed-command-with-i-option-failing-on-mac-but-works-on-linux.
     sed -i'' -e 's|#define HAVE_GETRLIMIT 1|/* #undef HAVE_GETRLIMIT */|g' config.h
-    $REDOX_MAKE -j"$($NPROC)"
+    "$REDOX_MAKE" -j"$($NPROC)"
     skip=1
 }
 
@@ -32,13 +32,13 @@ function recipe_test {
 }
 
 function recipe_clean {
-    $REDOX_MAKE clean
+    "$REDOX_MAKE" clean
     skip=1
 }
 
 function recipe_stage {
     dest="$(realpath $1)"
-    $REDOX_MAKE DESTDIR="$dest" install
+    "$REDOX_MAKE" DESTDIR="$dest" install
     ln -s "dash" "$dest/bin/sh"
     skip=1
 }

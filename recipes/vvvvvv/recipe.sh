@@ -21,7 +21,7 @@ function recipe_build {
         -DSDL2_LIBRARIES="-static -lSDL2main -lSDL2_mixer -lSDL2 $("${PKG_CONFIG}" --libs glu) -lglapi -lorbital -lz -lvorbisfile -lvorbis -logg" \
         .
 
-    $REDOX_MAKE -j"$($NPROC)"
+    "$REDOX_MAKE" -j"$($NPROC)"
     skip=1
 }
 

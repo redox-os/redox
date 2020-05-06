@@ -31,7 +31,7 @@ function recipe_build {
         -DSDL_VERSION="1.2" \
         -DSDL_LIBRARY="-lSDL -lorbital" \
         ..
-    VERBOSE=1 $REDOX_MAKE all -j"$($NPROC)"
+    VERBOSE=1 "$REDOX_MAKE" all -j"$($NPROC)"
     skip=1
 }
 
@@ -41,7 +41,7 @@ function recipe_test {
 }
 
 function recipe_clean {
-    $REDOX_MAKE clean
+    "$REDOX_MAKE" clean
     skip=1
 }
 

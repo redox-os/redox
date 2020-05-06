@@ -68,7 +68,7 @@ function recipe_test {
 }
 
 function recipe_clean {
-	$REDOX_MAKE clean
+	"$REDOX_MAKE" clean
 	skip=1
 }
 

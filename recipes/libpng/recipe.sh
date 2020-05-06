@@ -19,7 +19,7 @@ function recipe_build {
     chmod +w config.sub
     wget -O config.sub http://git.savannah.gnu.org/cgit/config.git/plain/config.sub
     ./configure --build=${BUILD} --host=${HOST} --prefix='/'
-    $REDOX_MAKE -j"$($NPROC)"
+    "$REDOX_MAKE" -j"$($NPROC)"
     skip=1
 }
 
@@ -29,13 +29,13 @@ function recipe_test {
 }
 
 function recipe_clean {
-    $REDOX_MAKE clean
+    "$REDOX_MAKE" clean
     skip=1
 }
 
 function recipe_stage {
     dest="$(realpath $1)"
-    $REDOX_MAKE DESTDIR="$dest" install
+    "$REDOX_MAKE" DESTDIR="$dest" install
     rm -f "$dest/bin/"*-config "$dest/lib/"*.la
     skip=1
 }

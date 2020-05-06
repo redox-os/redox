@@ -40,7 +40,7 @@ function recipe_build {
         --disable-nls \
         --enable-languages=c,c++ \
         --enable-threads=posix
-    $REDOX_MAKE -j "$(nproc)" all-gcc all-target-libgcc all-target-libstdc++-v3
+    "$REDOX_MAKE" -j "$(nproc)" all-gcc all-target-libgcc all-target-libstdc++-v3
     skip=1
 }
 
@@ -50,13 +50,13 @@ function recipe_test {
 }
 
 function recipe_clean {
-    $REDOX_MAKE clean
+    "$REDOX_MAKE" clean
     skip=1
 }
 
 function recipe_stage {
     dest="$(realpath $1)"
-    $REDOX_MAKE DESTDIR="$dest" install-gcc install-target-libgcc install-target-libstdc++-v3
+    "$REDOX_MAKE" DESTDIR="$dest" install-gcc install-target-libgcc install-target-libstdc++-v3
     find "$dest"/{bin,libexec} -exec $STRIP {} ';' 2> /dev/null
     ln -s "gcc" "$1/bin/cc"
     skip=1
