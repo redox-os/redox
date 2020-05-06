@@ -1,7 +1,7 @@
 GIT=https://gitlab.redox-os.org/redox-os/relibc.git
 
 function recipe_build {
-    make CARGO=xargo NATIVE_RELIBC=1 -C tests -j"$(nproc)"
+    $REDOX_MAKE CARGO=xargo NATIVE_RELIBC=1 -C tests -j"$($NPROC)"
     skip=1
 }
 

@@ -26,7 +26,7 @@ function recipe_build {
     sed -i 's|#define HAVE_PTHREAD_KILL 1|/* #undef HAVE_PTHREAD_KILL */|g' pyconfig.h
     sed -i 's|#define HAVE_SCHED_SETSCHEDULER 1|/* #undef HAVE_SCHED_SETSCHEDULER */|g' pyconfig.h
     sed -i 's|#define HAVE_SYS_RESOURCE_H 1|/* #undef HAVE_SYS_RESOURCE_H */|g' pyconfig.h
-    make -j"$(nproc)"
+    $REDOX_MAKE -j"$($NPROC)"
     skip=1
 }
 
@@ -36,13 +36,13 @@ function recipe_test {
 }
 
 function recipe_clean {
-    make clean
+    $REDOX_MAKE clean
     skip=1
 }
 
 function recipe_stage {
     dest="$(realpath $1)"
-    make DESTDIR="$dest" install -j"$(nproc)"
+    $REDOX_MAKE DESTDIR="$dest" install -j"$($NPROC)"
     "$STRIP" "$dest/bin/python3.7" "$dest/bin/python3.7m"
     skip=1
 }

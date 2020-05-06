@@ -32,7 +32,7 @@ BUILD="$(cc -dumpmachine)"
 
 export PKG_CONFIG_FOR_BUILD="pkg-config"
 
-if [[ "$OSTYPE" == "darwin"* ]]; then
+if [[ "$OSTYPE" == "darwin"* ]] || [[ "$OSTYPE" == "FreeBSD" ]]; then
     # GNU find
     FIND="gfind";
 
@@ -42,6 +42,8 @@ if [[ "$OSTYPE" == "darwin"* ]]; then
     elif [ ! -z "$(which port)" ]; then
         # TODO: find a programatic way of asking MacPorts for it's root dir.
         STAT="/opt/local/opt/coreutils/libexec/gnubin/stat";
+    elif [ ! -z "$(which pkg)" ]; then
+        STAT="gnustat"
     else
         echo "Please install either Homebrew or MacPorts and run the boostrap script."
         exit 1

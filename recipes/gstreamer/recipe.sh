@@ -27,7 +27,7 @@ function recipe_build {
         --disable-benchmarks \
         --disable-examples \
         --disable-tests
-    make -j"$(nproc)" V=1
+    $REDOX_MAKE -j"$($NPROC)" V=1
     skip=1
 }
 
@@ -37,13 +37,13 @@ function recipe_test {
 }
 
 function recipe_clean {
-    make clean
+    $REDOX_MAKE clean
     skip=1
 }
 
 function recipe_stage {
     dest="$(realpath $1)"
-    make DESTDIR="$dest" install
+    $REDOX_MAKE DESTDIR="$dest" install
     rm -f "$dest/lib/"*.la
     skip=1
 }
