@@ -18,7 +18,7 @@ function recipe_build {
     sysroot="$(realpath ../sysroot)"
     export LDFLAGS="-L$sysroot/lib"
     export CPPFLAGS="-I$sysroot/include"
-    make all -j"$(nproc)"
+    $REDOX_MAKE all -j"$($NPROC)"
     skip=1
 }
 
@@ -28,7 +28,7 @@ function recipe_test {
 }
 
 function recipe_clean {
-    make clean
+    $REDOX_MAKE clean
     skip=1
 }
 
@@ -36,7 +36,7 @@ function recipe_stage {
     dest="$(realpath $1)"
     bundledir="$dest/bundle"
 
-    make VERBOSE=1 DESTDIR="$dest" install
+    $REDOX_MAKE VERBOSE=1 DESTDIR="$dest" install
     rm -rf "$bundledir"
     skip=1
 }

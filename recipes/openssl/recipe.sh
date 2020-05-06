@@ -14,7 +14,7 @@ function recipe_update {
 
 function recipe_build {
     ./Configure no-shared no-dgram redox-$ARCH --prefix="/"
-    make -j"$(nproc)"
+    $REDOX_MAKE -j"$($NPROC)"
     skip=1
 }
 
@@ -24,13 +24,13 @@ function recipe_test {
 }
 
 function recipe_clean {
-    make clean
+    $REDOX_MAKE clean
     skip=1
 }
 
 function recipe_stage {
     dest="$(realpath $1)"
-    make DESTDIR="$dest" install
+    $REDOX_MAKE DESTDIR="$dest" install
     rm -rf "$1/{share,ssl}"
     skip=1
 }

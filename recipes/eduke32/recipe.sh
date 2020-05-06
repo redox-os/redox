@@ -18,7 +18,7 @@ function recipe_build {
     export LDFLAGS="-L$sysroot/lib -static"
     export SDLCONFIG="$sysroot/bin/sdl-config --prefix=$sysroot"
 
-    PLATFORM=REDOX make -j"$(nproc)"
+    PLATFORM=REDOX $REDOX_MAKE -j"$($NPROC)"
     skip=1
 }
 
@@ -28,7 +28,7 @@ function recipe_test {
 }
 
 function recipe_clean {
-    make clean
+    $REDOX_MAKE clean
     skip=1
 }
 

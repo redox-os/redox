@@ -13,7 +13,7 @@ function recipe_update {
 
 function recipe_build {
     sed -i "s/= gcc/= $TARGET-gcc/g" Makefile.cmdline
-    make -f Makefile.cmdline -j"$(nproc)"
+    $REDOX_MAKE -f Makefile.cmdline -j"$($NPROC)"
     skip=1
 }
 
@@ -23,7 +23,7 @@ function recipe_test {
 }
 
 function recipe_clean {
-    make clean
+    $REDOX_MAKE clean
     skip=1
 }
 

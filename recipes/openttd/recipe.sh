@@ -22,7 +22,7 @@ function recipe_build {
         --without-liblzo2 \
         --disable-network \
         --without-threads
-    make VERBOSE=1 -j"$(nproc)"
+    $REDOX_MAKE VERBOSE=1 -j"$($NPROC)"
     skip=1
 }
 
@@ -32,7 +32,7 @@ function recipe_test {
 }
 
 function recipe_clean {
-    make clean
+    $REDOX_MAKE clean
     skip=1
 }
 
@@ -40,7 +40,7 @@ function recipe_stage {
     dest="$(realpath $1)"
     bundledir="$dest/bundle"
 
-    make VERBOSE=1 ROOT_DIR="$dest/../build/" BUNDLE_DIR="$bundledir" INSTALL_DIR="$dest" install
+    $REDOX_MAKE VERBOSE=1 ROOT_DIR="$dest/../build/" BUNDLE_DIR="$bundledir" INSTALL_DIR="$dest" install
     rm -rf "$bundledir"
     skip=1
 }

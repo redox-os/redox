@@ -15,7 +15,7 @@ function recipe_build {
     sysroot="$(realpath ../sysroot)"
     export CPPFLAGS="-I$sysroot/include"
     export LDFLAGS="-L$sysroot/lib -static"
-    make -j"$(nproc)"
+    $REDOX_MAKE -j"$($NPROC)"
     skip=1
 }
 
@@ -25,7 +25,7 @@ function recipe_test {
 }
 
 function recipe_clean {
-    make clean
+    $REDOX_MAKE clean
     skip=1
 }
 

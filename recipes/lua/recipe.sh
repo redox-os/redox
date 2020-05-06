@@ -12,7 +12,7 @@ function recipe_update {
 }
 
 function recipe_build {
-    make generic CC="${HOST}-gcc -std=gnu99" -j"$(nproc)"
+    $REDOX_MAKE generic CC="${HOST}-gcc -std=gnu99" -j"$($NPROC)"
     skip=1
 }
 
@@ -22,7 +22,7 @@ function recipe_test {
 }
 
 function recipe_clean {
-    make clean
+    $REDOX_MAKE clean
     skip=1
 }
 

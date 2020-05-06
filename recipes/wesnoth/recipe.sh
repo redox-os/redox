@@ -49,7 +49,7 @@ function recipe_build {
         -DVORBISFILE_INCLUDE_DIR="${sysroot}/include" \
         -DVORBISFILE_LIBRARY=vorbisfile \
         ..
-    VERBOSE=1 make all -j"$(nproc)"
+    VERBOSE=1 $REDOX_MAKE all -j"$($NPROC)"
     set +x
     skip=1
 }

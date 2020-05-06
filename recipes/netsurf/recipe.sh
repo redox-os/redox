@@ -20,7 +20,7 @@ function recipe_build {
     export LDFLAGS="-L$sysroot/lib -L${PWD}/inst-${TARGET}/lib -static -Wl,--allow-multiple-definition -Wl,-Bstatic"
     # nghttp2 is not linked for some reason
     export LDFLAGS="${LDFLAGS} -lcurl -lnghttp2"
-    make V=1 -j"$(nproc)"
+    $REDOX_MAKE V=1 -j"$($NPROC)"
     skip=1
 }
 
@@ -30,13 +30,13 @@ function recipe_test {
 }
 
 function recipe_clean {
-    make clean
+    $REDOX_MAKE clean
     skip=1
 }
 
 function recipe_stage {
     dest="$(realpath $1)"
-    make DESTDIR="$dest" install
+    $REDOX_MAKE DESTDIR="$dest" install
     mkdir -pv "$dest/ui/apps"
     cp -v ../manifest "$dest/ui/apps/00_netsurf"
     skip=1
