@@ -15,12 +15,21 @@ UNAME := $(shell uname)
 ifeq ($(UNAME),Darwin)
 	FUMOUNT=sudo umount
 	export NPROC=sysctl -n hw.ncpu
+	export REDOX_MAKE=make
 	PREFIX_BINARY=0
 	VB_AUDIO=coreaudio
 	VBM=/Applications/VirtualBox.app/Contents/MacOS/VBoxManage
+else ifeq ($(UNAME),FreeBSD)
+	FUMOUNT=sudo umount
+	export NPROC=sysctl -n hw.ncpu
+	export REDOX_MAKE=gmake
+	PREFIX_BINARY=0
+	VB_AUDIO=pulse # To check, will probaly be OSS on most setups
+	VBM=VBoxManage
 else
 	FUMOUNT=fusermount -u
 	export NPROC=nproc
+	export REDOX_MAKE=make
 	VB_AUDIO=pulse
 	VBM=VBoxManage
 endif
