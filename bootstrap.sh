@@ -549,7 +549,7 @@ boot()
 	echo "Run the following commands to build redox:"
 	echo "cd redox"
 	MAKE="make"
-	if [[ "$(uname)" -eq FreeBSD ]]; then
+	if [[ "$(uname)" == "FreeBSD" ]]; then
     	MAKE="gmake"
     	echo "kldload fuse.ko # This loads the kernel module for fuse"
     fi
