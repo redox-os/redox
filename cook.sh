@@ -13,8 +13,10 @@ export DEBUG=
 export EXAMPLES=
 export PREPARE_COPY=1
 
-SHASUM="sha256sum"
-if hash shasum 2>/dev/null; then
+if hash sha256sum 2>/dev/null
+then
+    SHASUM="sha256sum"
+else
     SHASUM="shasum -a 256"
 fi
 
