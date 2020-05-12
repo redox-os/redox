@@ -277,7 +277,11 @@ function op {
 
                     for i in "${BUILD_DEPENDS[@]}"
                     do
-                        pkg --target=$TARGET install --root sysroot "$REPO/$i.tar.gz"
+                        pkgar \
+                            extract \
+                            sysroot \
+                            --file "$REPO/$i.pkgar" \
+                            --public "${ROOT}/build/public.key"
                     done
                 fi
 
