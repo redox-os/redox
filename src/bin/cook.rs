@@ -258,8 +258,6 @@ fn fetch(recipe_dir: &Path, source: &SourceRecipe) -> Result<PathBuf, String> {
                             status
                         ));
                     }
-
-                    run_command(command)?;
                 }
 
                 // Move source.tmp to source atomically
