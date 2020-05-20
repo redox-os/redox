@@ -4,8 +4,9 @@ use cookbook::sha256::sha256_progress;
 use std::{
     env,
     fs,
-    path::Path,
-    process::{self, Command},
+    io::Write,
+    path::{Path, PathBuf},
+    process::{self, Command, Stdio},
 };
 use termion::{color, style};
 
@@ -57,7 +58,7 @@ fn run_command(mut command: process::Command) -> Result<(), String> {
     Ok(())
 }
 
-fn fetch(source: &SourceRecipe, recipe_dir: &Path) -> Result<(), String> {
+fn fetch(recipe_dir: &Path, source: &SourceRecipe) -> Result<PathBuf, String> {
     let source_dir = recipe_dir.join("source");
     match source {
         SourceRecipe::Git { git, upstream, branch, rev } => {
@@ -130,7 +131,7 @@ fn fetch(source: &SourceRecipe, recipe_dir: &Path) -> Result<(), String> {
             command.arg("submodule").arg("update").arg("--init").arg("--recursive");
             run_command(command)?;
         },
-        SourceRecipe::Tar { tar, blake3, sha256 } => {
+        SourceRecipe::Tar { tar, blake3, sha256, patches } => {
             if ! source_dir.is_dir() {
                 // Download tar
                 //TODO: replace wget
@@ -197,7 +198,69 @@ fn fetch(source: &SourceRecipe, recipe_dir: &Path) -> Result<(), String> {
                 command.arg("--verbose");
                 command.arg("--file").arg(&source_tar);
                 command.arg("--directory").arg(&source_dir_tmp);
+                command.arg("--strip-components").arg("1");
                 run_command(command)?;
+
+                // Apply patches
+                for patch_name in patches {
+                    let patch_file = recipe_dir.join(&patch_name);
+                    if ! patch_file.is_file() {
+                        return Err(format!(
+                            "failed to find patch file '{}'",
+                            patch_file.display()
+                        ));
+                    }
+
+                    let patch = fs::read_to_string(&patch_file).map_err(|err| format!(
+                        "failed to read patch file '{}': {}\n{:#?}",
+                        patch_file.display(),
+                        err,
+                        err
+                    ))?;
+
+                    let mut command = Command::new("patch");
+                    command.arg("--directory").arg(&source_dir_tmp);
+                    command.arg("--strip=1");
+                    command.stdin(Stdio::piped());
+
+                    let mut child = command.spawn().map_err(|err| format!(
+                        "failed to spawn {:?}: {}\n{:#?}",
+                        command,
+                        err,
+                        err
+                    ))?;
+
+                    if let Some(ref mut stdin) = child.stdin {
+                        stdin.write_all(patch.as_bytes()).map_err(|err| format!(
+                            "failed to write stdin of {:?}: {}\n{:#?}",
+                            command,
+                            err,
+                            err
+                        ))?;
+                    } else {
+                        return Err(format!(
+                            "failed to find stdin of {:?}",
+                            command
+                        ));
+                    }
+
+                    let status = child.wait().map_err(|err| format!(
+                        "failed to run {:?}: {}\n{:#?}",
+                        command,
+                        err,
+                        err
+                    ))?;
+
+                    if ! status.success() {
+                        return Err(format!(
+                            "failed to run {:?}: exited with status {}",
+                            command,
+                            status
+                        ));
+                    }
+
+                    run_command(command)?;
+                }
 
                 // Move source.tmp to source atomically
                 rename(&source_dir_tmp, &source_dir)?;
@@ -205,7 +268,7 @@ fn fetch(source: &SourceRecipe, recipe_dir: &Path) -> Result<(), String> {
         }
     }
 
-    Ok(())
+    Ok(source_dir)
 }
 
 fn cook(recipe_name: &str) -> Result<(), String> {
@@ -240,7 +303,7 @@ fn cook(recipe_name: &str) -> Result<(), String> {
         err
     ))?;
 
-    fetch(&recipe.source, &recipe_dir).map_err(|err| format!(
+    let source_dir = fetch(&recipe_dir, &recipe.source).map_err(|err| format!(
         "failed to fetch: {}",
         err
     ))?;
