@@ -26,6 +26,9 @@ pub enum SourceRecipe {
         blake3: Option<String>,
         /// The optional sha256 sum of the tar file. This is a slower alternative to a blake3 sum
         sha256: Option<String>,
+        /// A list of patch files to apply to the source
+        #[serde(default)]
+        patches: Vec<String>,
     },
 }
 
@@ -48,9 +51,6 @@ pub enum BuildRecipe {
 pub struct Recipe {
     /// Specifies how to donload the source for this recipe
     pub source: SourceRecipe,
-    /// A list of patch files to apply to the source
-    #[serde(default)]
-    pub patches: Vec<String>,
     /// Specifies how to build this recipe
     pub build: BuildRecipe,
 }
