@@ -58,6 +58,48 @@ fn run_command(mut command: process::Command) -> Result<(), String> {
     Ok(())
 }
 
+fn run_command_stdin(mut command: process::Command, stdin_data: &[u8]) -> Result<(), String> {
+    command.stdin(Stdio::piped());
+
+    let mut child = command.spawn().map_err(|err| format!(
+        "failed to spawn {:?}: {}\n{:#?}",
+        command,
+        err,
+        err
+    ))?;
+
+    if let Some(ref mut stdin) = child.stdin {
+        stdin.write_all(stdin_data).map_err(|err| format!(
+            "failed to write stdin of {:?}: {}\n{:#?}",
+            command,
+            err,
+            err
+        ))?;
+    } else {
+        return Err(format!(
+            "failed to find stdin of {:?}",
+            command
+        ));
+    }
+
+    let status = child.wait().map_err(|err| format!(
+        "failed to run {:?}: {}\n{:#?}",
+        command,
+        err,
+        err
+    ))?;
+
+    if ! status.success() {
+        return Err(format!(
+            "failed to run {:?}: exited with status {}",
+            command,
+            status
+        ));
+    }
+
+    Ok(())
+}
+
 fn fetch(recipe_dir: &Path, source: &SourceRecipe) -> Result<PathBuf, String> {
     let source_dir = recipe_dir.join("source");
     match source {
@@ -73,7 +115,7 @@ fn fetch(recipe_dir: &Path, source: &SourceRecipe) -> Result<PathBuf, String> {
                 if let Some(branch) = branch {
                     command.arg("--branch").arg(&branch);
                 }
-                command.arg(&source_dir);
+                command.arg(&source_dir_tmp);
                 run_command(command)?;
 
                 // Move source.tmp to source atomically
@@ -221,43 +263,7 @@ fn fetch(recipe_dir: &Path, source: &SourceRecipe) -> Result<PathBuf, String> {
                     let mut command = Command::new("patch");
                     command.arg("--directory").arg(&source_dir_tmp);
                     command.arg("--strip=1");
-                    command.stdin(Stdio::piped());
-
-                    let mut child = command.spawn().map_err(|err| format!(
-                        "failed to spawn {:?}: {}\n{:#?}",
-                        command,
-                        err,
-                        err
-                    ))?;
-
-                    if let Some(ref mut stdin) = child.stdin {
-                        stdin.write_all(patch.as_bytes()).map_err(|err| format!(
-                            "failed to write stdin of {:?}: {}\n{:#?}",
-                            command,
-                            err,
-                            err
-                        ))?;
-                    } else {
-                        return Err(format!(
-                            "failed to find stdin of {:?}",
-                            command
-                        ));
-                    }
-
-                    let status = child.wait().map_err(|err| format!(
-                        "failed to run {:?}: {}\n{:#?}",
-                        command,
-                        err,
-                        err
-                    ))?;
-
-                    if ! status.success() {
-                        return Err(format!(
-                            "failed to run {:?}: exited with status {}",
-                            command,
-                            status
-                        ));
-                    }
+                    run_command_stdin(command, patch.as_bytes())?;
                 }
 
                 // Move source.tmp to source atomically
@@ -267,6 +273,83 @@ fn fetch(recipe_dir: &Path, source: &SourceRecipe) -> Result<PathBuf, String> {
     }
 
     Ok(source_dir)
+}
+
+fn build(recipe_dir: &Path, source_dir: &Path, build: &BuildRecipe) -> Result<PathBuf, String> {
+    let stage_dir = recipe_dir.join("stage");
+    if ! stage_dir.is_dir() {
+        // Create stage.tmp
+        let stage_dir_tmp = recipe_dir.join("stage.tmp");
+        create_dir_clean(&stage_dir_tmp)?;
+
+        // Create build, if it does not exist
+        //TODO: flag for clean builds where build is wiped out
+        let build_dir = recipe_dir.join("build");
+        if ! build_dir.is_dir() {
+            create_dir_clean(&build_dir)?;
+        }
+
+        //TODO: better integration with redoxer (library instead of binary)
+        //TODO: configurable target
+        match build {
+            BuildRecipe::Cargo => {
+                let mut command = Command::new("redoxer");
+                command.arg("install");
+                //TODO: --debug if desired
+                command.arg("--path").arg(&source_dir);
+                command.arg("--root").arg(&stage_dir_tmp);
+                command.env("CARGO_TARGET_DIR", &build_dir);
+                run_command(command)?;
+            },
+            BuildRecipe::Configure => {
+                //TODO: Add more configurability, convert script to Rust
+                let mut command = Command::new("redoxer");
+                command.arg("env");
+                command.arg("bash").arg("-ex");
+                //TODO: remove unwraps
+                command.env("COOKBOOK_STAGE", &stage_dir_tmp.canonicalize().unwrap());
+                command.env("COOKBOOK_SOURCE", &source_dir.canonicalize().unwrap());
+                command.current_dir(&build_dir);
+                run_command_stdin(command, r#"
+                    export LDFLAGS="--static"
+                    "${COOKBOOK_SOURCE}/configure" \
+                        --host="${TARGET}" \
+                        --prefix="" \
+                        --disable-shared \
+                        --enable-static
+                    make -j "$(nproc)"
+                    make install DESTDIR="${COOKBOOK_STAGE}"
+
+                    # Strip binaries
+                    if [ -d "${COOKBOOK_STAGE}/bin" ]
+                    then
+                        find "${COOKBOOK_STAGE}/bin" -type f -exec "${TARGET}-strip" -v {} ';'
+                    fi
+
+                    # Remove libtool files
+                    if [ -d "${COOKBOOK_STAGE}/lib" ]
+                    then
+                        find "${COOKBOOK_STAGE}/lib" -type f -name '*.la' -exec rm -fv {} ';'
+                    fi
+                "#.as_bytes())?;
+            },
+            BuildRecipe::Custom { script } => {
+                let mut command = Command::new("redoxer");
+                command.arg("env");
+                command.arg("bash").arg("-ex");
+                //TODO: remove unwraps
+                command.env("COOKBOOK_STAGE", &stage_dir_tmp.canonicalize().unwrap());
+                command.env("COOKBOOK_SOURCE", &source_dir.canonicalize().unwrap());
+                command.current_dir(&build_dir);
+                run_command_stdin(command, script.as_bytes())?;
+            },
+        }
+
+        // Move stage.tmp to stage atomically
+        rename(&stage_dir_tmp, &stage_dir)?;
+    }
+
+    Ok(stage_dir)
 }
 
 fn cook(recipe_name: &str) -> Result<(), String> {
@@ -303,6 +386,11 @@ fn cook(recipe_name: &str) -> Result<(), String> {
 
     let source_dir = fetch(&recipe_dir, &recipe.source).map_err(|err| format!(
         "failed to fetch: {}",
+        err
+    ))?;
+
+    let stage_dir = build(&recipe_dir, &source_dir, &recipe.build).map_err(|err| format!(
+        "failed to build: {}",
         err
     ))?;
 

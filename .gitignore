@@ -12,3 +12,9 @@ stage.tar.gz
 stage.toml
 sysroot
 xargo
+
+
+#Added by cargo
+
+/target
+**/*.rs.bk
