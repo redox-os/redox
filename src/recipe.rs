@@ -39,6 +39,9 @@ pub enum BuildRecipe {
     /// Will build and install using cargo
     #[serde(rename = "cargo")]
     Cargo,
+    /// Will build and install using configure and make
+    #[serde(rename = "configure")]
+    Configure,
     /// Will build and install using custom commands
     #[serde(rename = "custom")]
     Custom {

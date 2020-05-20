@@ -1,0 +1,8 @@
+[source]
+tar = "https://ftp.pcre.org/pub/pcre/pcre-8.42.tar.bz2"
+patches = [
+    "redox.patch"
+]
+
+[build]
+template = "configure"
