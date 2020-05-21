@@ -22,6 +22,12 @@ fi
 
 for recipe in $recipes
 do
+    if [ -e "recipes/$recipe/recipe.toml" ]
+    then
+        cargo run --release -- "$recipe"
+        continue
+    fi
+
     if [ ! -d "recipes/$recipe/source/" ]
     then
         echo -e "\033[01;38;5;155mrepo - fetching $recipe\033[0m" >&2
