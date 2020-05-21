@@ -1,0 +1,33 @@
+[source]
+tar = "ftp://xmlsoft.org/libxml2/libxml2-2.9.9.tar.gz"
+
+[build]
+template = "custom"
+dependencies = [
+    "xz",
+    "zlib"
+]
+script = """
+export CFLAGS="-I'${COOKBOOK_SYSROOT}/include'"
+export LDFLAGS="-L'${COOKBOOK_SYSROOT}/lib' --static"
+"${COOKBOOK_SOURCE}/configure" \
+    --host="${TARGET}" \
+    --prefix="" \
+    --disable-shared \
+    --enable-static \
+    --without-python
+make -j "$(nproc)"
+make install DESTDIR="${COOKBOOK_STAGE}"
+
+# Strip binaries
+if [ -d "${COOKBOOK_STAGE}/bin" ]
+then
+    find "${COOKBOOK_STAGE}/bin" -type f -exec "${TARGET}-strip" -v {} ';'
+fi
+
+# Remove libtool files
+if [ -d "${COOKBOOK_STAGE}/lib" ]
+then
+    find "${COOKBOOK_STAGE}/lib" -type f -name '*.la' -exec rm -fv {} ';'
+fi
+"""
