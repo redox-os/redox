@@ -5,20 +5,16 @@ patches = [
     "02-o_noctty.patch",
     "03-no-signals.patch"
 ]
+script = """
+./autogen.sh
+chmod +w build-aux/config.sub
+wget -O build-aux/config.sub http://git.savannah.gnu.org/cgit/config.git/plain/config.sub
+"""
 
 [build]
 template = "custom"
 script = """
-#TODO: simpler recipe
-rsync -av --delete "${COOKBOOK_SOURCE}/" ./
-
-./autogen.sh
-
-chmod +w build-aux/config.sub
-wget -O build-aux/config.sub http://git.savannah.gnu.org/cgit/config.git/plain/config.sub
-
 export CFLAGS="-static"
-COOKBOOK_CONFIGURE="./configure"
 COOKBOOK_CONFIGURE_FLAGS=(
     --host="${TARGET}"
     --prefix=""

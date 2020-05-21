@@ -173,7 +173,7 @@ fn fetch(recipe_dir: &Path, source: &SourceRecipe) -> Result<PathBuf, String> {
             command.arg("submodule").arg("update").arg("--init").arg("--recursive");
             run_command(command)?;
         },
-        SourceRecipe::Tar { tar, blake3, sha256, patches } => {
+        SourceRecipe::Tar { tar, blake3, sha256, patches, script } => {
             if ! source_dir.is_dir() {
                 // Download tar
                 //TODO: replace wget
@@ -264,6 +264,14 @@ fn fetch(recipe_dir: &Path, source: &SourceRecipe) -> Result<PathBuf, String> {
                     command.arg("--directory").arg(&source_dir_tmp);
                     command.arg("--strip=1");
                     run_command_stdin(command, patch.as_bytes())?;
+                }
+
+                // Run source script
+                if let Some(script) = script {
+                    let mut command = Command::new("bash");
+                    command.arg("-ex");
+                    command.current_dir(&source_dir_tmp);
+                    run_command_stdin(command, script.as_bytes())?;
                 }
 
                 // Move source.tmp to source atomically
