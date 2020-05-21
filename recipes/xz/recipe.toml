@@ -18,17 +18,18 @@ chmod +w build-aux/config.sub
 wget -O build-aux/config.sub http://git.savannah.gnu.org/cgit/config.git/plain/config.sub
 
 export CFLAGS="-static"
-"./configure" \
-    --host="${TARGET}" \
-    --prefix="" \
-    --disable-lzmadec \
-    --disable-lzmainfo \
-    --disable-xz \
-    --disable-xzdec \
-    --enable-shared=no \
-    --enable-static=yes \
-    --enable-threads=no \
+COOKBOOK_CONFIGURE="./configure"
+COOKBOOK_CONFIGURE_FLAGS=(
+    --host="${TARGET}"
+    --prefix=""
+    --disable-lzmadec
+    --disable-lzmainfo
+    --disable-xz
+    --disable-xzdec
+    --enable-shared=no
+    --enable-static=yes
+    --enable-threads=no
     --with-pic=no
-make -j "$(nproc)"
-make install DESTDIR="${COOKBOOK_STAGE}"
+)
+cookbook_configure
 """

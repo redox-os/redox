@@ -8,26 +8,8 @@ dependencies = [
     "zlib"
 ]
 script = """
-export CFLAGS="-I'${COOKBOOK_SYSROOT}/include'"
-export LDFLAGS="-L'${COOKBOOK_SYSROOT}/lib' --static"
-"${COOKBOOK_SOURCE}/configure" \
-    --host="${TARGET}" \
-    --prefix="" \
-    --disable-shared \
-    --enable-static \
+COOKBOOK_CONFIGURE_FLAGS+=(
     --without-python
-make -j "$(nproc)"
-make install DESTDIR="${COOKBOOK_STAGE}"
-
-# Strip binaries
-if [ -d "${COOKBOOK_STAGE}/bin" ]
-then
-    find "${COOKBOOK_STAGE}/bin" -type f -exec "${TARGET}-strip" -v {} ';'
-fi
-
-# Remove libtool files
-if [ -d "${COOKBOOK_STAGE}/lib" ]
-then
-    find "${COOKBOOK_STAGE}/lib" -type f -name '*.la' -exec rm -fv {} ';'
-fi
+)
+cookbook_configure
 """

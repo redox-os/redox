@@ -6,9 +6,9 @@ template = "custom"
 script = """
     export LDFLAGS="--static"
     # See https://stackoverflow.com/questions/21396988/zlib-build-not-configuring-properly-with-cross-compiler-ignores-ar.
-    CHOST="${TARGET}" "${COOKBOOK_SOURCE}/configure" \
+    CHOST="${TARGET}" "${COOKBOOK_CONFIGURE}" \
         --prefix="" \
         --static
-    make -j "$(nproc)"
-    make install DESTDIR="${COOKBOOK_STAGE}"
+    "${COOKBOOK_MAKE}" -j "$(nproc)"
+    "${COOKBOOK_MAKE}" install DESTDIR="${COOKBOOK_STAGE}"
 """
