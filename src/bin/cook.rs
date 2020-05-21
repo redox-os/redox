@@ -282,6 +282,21 @@ fn build(recipe_dir: &Path, source_dir: &Path, build: &BuildRecipe) -> Result<Pa
         let sysroot_dir_tmp = recipe_dir.join("sysroot.tmp");
         create_dir_clean(&sysroot_dir_tmp)?;
 
+        // Make sure sysroot/include exists
+        fs::create_dir(sysroot_dir_tmp.join("include")).map_err(|err| format!(
+            "failed to create '{}/include': {}\n{:#?}",
+            sysroot_dir_tmp.display(),
+            err,
+            err
+        ))?;
+        // Make sure sysroot/lib exists
+        fs::create_dir(sysroot_dir_tmp.join("lib")).map_err(|err| format!(
+            "failed to create '{}/lib': {}\n{:#?}",
+            sysroot_dir_tmp.display(),
+            err,
+            err
+        ))?;
+
         for dependency in build.dependencies.iter() {
             let public_path = "build/public.key";
             //TODO: sanitize name
@@ -315,64 +330,95 @@ fn build(recipe_dir: &Path, source_dir: &Path, build: &BuildRecipe) -> Result<Pa
             create_dir_clean(&build_dir)?;
         }
 
+        let pre_script = r#"# Common pre script
+# This puts cargo build artifacts in the build directory
+export CARGO_TARGET_DIR="${COOKBOOK_BUILD}/target"
+
+# This adds the sysroot includes for most C compilation
+#TODO: check paths for spaces!
+export CFLAGS="-I${COOKBOOK_SYSROOT}/include"
+
+# This adds the sysroot libraries and compiles binaries statically for most C compilation
+#TODO: check paths for spaces!
+export LDFLAGS="-L${COOKBOOK_SYSROOT}/lib --static"
+
+# These ensure that pkg-config gets the right flags from the sysroot
+export PKG_CONFIG_ALLOW_CROSS=1
+export PKG_CONFIG_PATH=
+export PKG_CONFIG_LIBDIR="${COOKBOOK_SYSROOT}/lib/pkgconfig"
+export PKG_CONFIG_SYSROOT_DIR="${COOKBOOK_SYSROOT}"
+
+# cargo template
+COOKBOOK_CARGO="redoxer"
+COOKBOOK_CARGO_FLAGS=(
+    --path "${COOKBOOK_SOURCE}"
+    --root "${COOKBOOK_STAGE}"
+)
+function cookbook_cargo {
+    "${COOKBOOK_CARGO}" install "${COOKBOOK_CARGO_FLAGS[@]}"
+}
+
+# configure template
+COOKBOOK_CONFIGURE="${COOKBOOK_SOURCE}/configure"
+COOKBOOK_CONFIGURE_FLAGS=(
+    --host="${TARGET}"
+    --prefix=""
+    --disable-shared
+    --enable-static
+)
+COOKBOOK_MAKE="make"
+function cookbook_configure {
+    "${COOKBOOK_CONFIGURE}" "${COOKBOOK_CONFIGURE_FLAGS[@]}"
+    "${COOKBOOK_MAKE}" -j "$(nproc)"
+    "${COOKBOOK_MAKE}" install DESTDIR="${COOKBOOK_STAGE}"
+}
+"#;
+
+        let post_script = r#"# Common post script
+# Strip binaries
+if [ -d "${COOKBOOK_STAGE}/bin" ]
+then
+    find "${COOKBOOK_STAGE}/bin" -type f -exec "${TARGET}-strip" -v {} ';'
+fi
+
+# Remove libtool files
+if [ -d "${COOKBOOK_STAGE}/lib" ]
+then
+    find "${COOKBOOK_STAGE}/lib" -type f -name '*.la' -exec rm -fv {} ';'
+fi
+"#;
+
         //TODO: better integration with redoxer (library instead of binary)
         //TODO: configurable target
-        match &build.kind {
-            BuildKind::Cargo => {
-                let mut command = Command::new("redoxer");
-                command.arg("install");
-                //TODO: --debug if desired
-                command.arg("--path").arg(&source_dir);
-                command.arg("--root").arg(&stage_dir_tmp);
-                command.env("CARGO_TARGET_DIR", &build_dir);
-                run_command(command)?;
-            },
-            BuildKind::Configure => {
-                //TODO: Add more configurability, convert script to Rust
-                let mut command = Command::new("redoxer");
-                command.arg("env");
-                command.arg("bash").arg("-ex");
-                //TODO: remove unwraps
-                command.env("COOKBOOK_STAGE", &stage_dir_tmp.canonicalize().unwrap());
-                command.env("COOKBOOK_SOURCE", &source_dir.canonicalize().unwrap());
-                command.env("COOKBOOK_SYSROOT", &sysroot_dir.canonicalize().unwrap());
-                command.current_dir(&build_dir);
-                run_command_stdin(command, r#"
-                    export CFLAGS="-I'${COOKBOOK_SYSROOT}/include'"
-                    export LDFLAGS="-L'${COOKBOOK_SYSROOT}/lib' --static"
-                    "${COOKBOOK_SOURCE}/configure" \
-                        --host="${TARGET}" \
-                        --prefix="" \
-                        --disable-shared \
-                        --enable-static
-                    make -j "$(nproc)"
-                    make install DESTDIR="${COOKBOOK_STAGE}"
+        //TODO: Add more configurability, convert scripts to Rust?
+        let script = match &build.kind {
+            BuildKind::Cargo => "cookbook_cargo",
+            BuildKind::Configure => "cookbook_configure",
+            BuildKind::Custom { script } => script
+        };
 
-                    # Strip binaries
-                    if [ -d "${COOKBOOK_STAGE}/bin" ]
-                    then
-                        find "${COOKBOOK_STAGE}/bin" -type f -exec "${TARGET}-strip" -v {} ';'
-                    fi
+        let command = {
+            let mut command = Command::new("redoxer");
+            command.arg("env");
+            command.arg("bash").arg("-ex");
 
-                    # Remove libtool files
-                    if [ -d "${COOKBOOK_STAGE}/lib" ]
-                    then
-                        find "${COOKBOOK_STAGE}/lib" -type f -name '*.la' -exec rm -fv {} ';'
-                    fi
-                "#.as_bytes())?;
-            },
-            BuildKind::Custom { script } => {
-                let mut command = Command::new("redoxer");
-                command.arg("env");
-                command.arg("bash").arg("-ex");
-                //TODO: remove unwraps
-                command.env("COOKBOOK_STAGE", &stage_dir_tmp.canonicalize().unwrap());
-                command.env("COOKBOOK_SOURCE", &source_dir.canonicalize().unwrap());
-                command.env("COOKBOOK_SYSROOT", &sysroot_dir.canonicalize().unwrap());
-                command.current_dir(&build_dir);
-                run_command_stdin(command, script.as_bytes())?;
-            },
-        }
+            //TODO: remove unwraps
+            let cookbook_build = build_dir.canonicalize().unwrap();
+            let cookbook_recipe = recipe_dir.canonicalize().unwrap();
+            let cookbook_stage = stage_dir_tmp.canonicalize().unwrap();
+            let cookbook_source = source_dir.canonicalize().unwrap();
+            let cookbook_sysroot = sysroot_dir.canonicalize().unwrap();
+            command.current_dir(&cookbook_build);
+            command.env("COOKBOOK_BUILD", &cookbook_build);
+            command.env("COOKBOOK_RECIPE", &cookbook_recipe);
+            command.env("COOKBOOK_STAGE", &cookbook_stage);
+            command.env("COOKBOOK_SOURCE", &cookbook_source);
+            command.env("COOKBOOK_SYSROOT", &cookbook_sysroot);
+            command
+        };
+
+        let full_script = format!("{}\n{}\n{}", pre_script, script, post_script);
+        run_command_stdin(command, full_script.as_bytes())?;
 
         // Move stage.tmp to stage atomically
         rename(&stage_dir_tmp, &stage_dir)?;
