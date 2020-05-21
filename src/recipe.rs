@@ -29,6 +29,8 @@ pub enum SourceRecipe {
         /// A list of patch files to apply to the source
         #[serde(default)]
         patches: Vec<String>,
+        /// Optional script to run to prepare the source, such as ./autogen.sh
+        script: Option<String>,
     },
 }
 
@@ -129,6 +131,7 @@ mod tests {
                 blake3: None,
                 sha256: Some("4f3fc6178a533d392064f14776b23c397ed4b9f48f5de297aba73b643f955c08".to_string()),
                 patches: Vec::new(),
+                script: None,
             },
             build: BuildRecipe {
                 kind: BuildKind::Custom {
