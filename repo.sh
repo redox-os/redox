@@ -20,11 +20,13 @@ then
     recipes="$(ls -1 recipes)"
 fi
 
+cargo build --release
+
 for recipe in $recipes
 do
     if [ -e "recipes/$recipe/recipe.toml" ]
     then
-        cargo run --release -- "$recipe"
+        target/release/cook "$recipe"
         continue
     fi
 
