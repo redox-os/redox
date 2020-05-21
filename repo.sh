@@ -82,6 +82,8 @@ do
     fi
 done
 
+mkdir -p "$REPO"
+
 for recipe in $recipes
 do
     if [ "recipes/$recipe/stage.tar.gz" -nt "$REPO/$recipe.tar.gz" ]
