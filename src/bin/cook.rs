@@ -1,5 +1,5 @@
 use cookbook::blake3::blake3_progress;
-use cookbook::recipe::{Recipe, SourceRecipe, BuildRecipe};
+use cookbook::recipe::{Recipe, SourceRecipe, BuildKind, BuildRecipe, PackageRecipe};
 use cookbook::sha256::sha256_progress;
 use std::{
     env,
@@ -276,6 +276,32 @@ fn fetch(recipe_dir: &Path, source: &SourceRecipe) -> Result<PathBuf, String> {
 }
 
 fn build(recipe_dir: &Path, source_dir: &Path, build: &BuildRecipe) -> Result<PathBuf, String> {
+    let sysroot_dir = recipe_dir.join("sysroot");
+    if ! sysroot_dir.is_dir() {
+        // Create sysroot.tmp
+        let sysroot_dir_tmp = recipe_dir.join("sysroot.tmp");
+        create_dir_clean(&sysroot_dir_tmp)?;
+
+        for dependency in build.dependencies.iter() {
+            let public_path = "build/public.key";
+            //TODO: sanitize name
+            let archive_path = format!("recipes/{}/stage.pkgar", dependency);
+            pkgar::bin::extract(
+                public_path,
+                &archive_path,
+                sysroot_dir_tmp.to_str().unwrap()
+            ).map_err(|err| format!(
+                "failed to install '{}' in '{}': {:?}",
+                archive_path,
+                sysroot_dir_tmp.display(),
+                err
+            ))?;
+        }
+
+        // Move sysroot.tmp to sysroot atomically
+        rename(&sysroot_dir_tmp, &sysroot_dir)?;
+    }
+
     let stage_dir = recipe_dir.join("stage");
     if ! stage_dir.is_dir() {
         // Create stage.tmp
@@ -291,8 +317,8 @@ fn build(recipe_dir: &Path, source_dir: &Path, build: &BuildRecipe) -> Result<Pa
 
         //TODO: better integration with redoxer (library instead of binary)
         //TODO: configurable target
-        match build {
-            BuildRecipe::Cargo => {
+        match &build.kind {
+            BuildKind::Cargo => {
                 let mut command = Command::new("redoxer");
                 command.arg("install");
                 //TODO: --debug if desired
@@ -301,7 +327,7 @@ fn build(recipe_dir: &Path, source_dir: &Path, build: &BuildRecipe) -> Result<Pa
                 command.env("CARGO_TARGET_DIR", &build_dir);
                 run_command(command)?;
             },
-            BuildRecipe::Configure => {
+            BuildKind::Configure => {
                 //TODO: Add more configurability, convert script to Rust
                 let mut command = Command::new("redoxer");
                 command.arg("env");
@@ -309,9 +335,11 @@ fn build(recipe_dir: &Path, source_dir: &Path, build: &BuildRecipe) -> Result<Pa
                 //TODO: remove unwraps
                 command.env("COOKBOOK_STAGE", &stage_dir_tmp.canonicalize().unwrap());
                 command.env("COOKBOOK_SOURCE", &source_dir.canonicalize().unwrap());
+                command.env("COOKBOOK_SYSROOT", &sysroot_dir.canonicalize().unwrap());
                 command.current_dir(&build_dir);
                 run_command_stdin(command, r#"
-                    export LDFLAGS="--static"
+                    export CFLAGS="-I'${COOKBOOK_SYSROOT}/include'"
+                    export LDFLAGS="-L'${COOKBOOK_SYSROOT}/lib' --static"
                     "${COOKBOOK_SOURCE}/configure" \
                         --host="${TARGET}" \
                         --prefix="" \
@@ -333,13 +361,14 @@ fn build(recipe_dir: &Path, source_dir: &Path, build: &BuildRecipe) -> Result<Pa
                     fi
                 "#.as_bytes())?;
             },
-            BuildRecipe::Custom { script } => {
+            BuildKind::Custom { script } => {
                 let mut command = Command::new("redoxer");
                 command.arg("env");
                 command.arg("bash").arg("-ex");
                 //TODO: remove unwraps
                 command.env("COOKBOOK_STAGE", &stage_dir_tmp.canonicalize().unwrap());
                 command.env("COOKBOOK_SOURCE", &source_dir.canonicalize().unwrap());
+                command.env("COOKBOOK_SYSROOT", &sysroot_dir.canonicalize().unwrap());
                 command.current_dir(&build_dir);
                 run_command_stdin(command, script.as_bytes())?;
             },
@@ -352,38 +381,34 @@ fn build(recipe_dir: &Path, source_dir: &Path, build: &BuildRecipe) -> Result<Pa
     Ok(stage_dir)
 }
 
-fn cook(recipe_name: &str) -> Result<(), String> {
-    //TODO: sanitize recipe name?
-    let recipe_dir = Path::new("recipes").join(recipe_name);
-    if ! recipe_dir.is_dir() {
-        return Err(format!(
-            "failed to find recipe directory '{}'",
-            recipe_dir.display()
-        ));
+fn package(recipe_dir: &Path, stage_dir: &Path, package: &PackageRecipe) -> Result<PathBuf, String> {
+    //TODO: metadata like dependencies, name, and version
+
+    let secret_path = "build/secret.key";
+    let public_path = "build/public.key";
+    if ! Path::new(secret_path).is_file() || ! Path::new(public_path).is_file() {
+        pkgar::bin::keygen(secret_path, public_path).map_err(|err| format!(
+            "failed to generate pkgar keys: {:?}",
+            err
+        ))?;
     }
 
-    let recipe_file = recipe_dir.join("recipe.toml");
-    if ! recipe_file.is_file() {
-        return Err(format!(
-            "failed to find recipe file '{}'",
-            recipe_file.display()
-        ));
+    let package_file = recipe_dir.join("stage.pkgar");
+    if ! package_file.is_file() {
+        pkgar::bin::create(
+            secret_path,
+            package_file.to_str().unwrap(),
+            stage_dir.to_str().unwrap()
+        ).map_err(|err| format!(
+            "failed to create pkgar archive: {:?}",
+            err
+        ))?;
     }
 
-    let recipe_toml = fs::read_to_string(&recipe_file).map_err(|err| format!(
-        "failed to read recipe file '{}': {}\n{:#?}",
-        recipe_file.display(),
-        err,
-        err
-    ))?;
+    Ok(package_file)
+}
 
-    let recipe: Recipe = toml::from_str(&recipe_toml).map_err(|err| format!(
-        "failed to parse recipe file '{}': {}\n{:#?}",
-        recipe_file.display(),
-        err,
-        err
-    ))?;
-
+fn cook(recipe_dir: &Path, recipe: &Recipe) -> Result<(), String> {
     let source_dir = fetch(&recipe_dir, &recipe.source).map_err(|err| format!(
         "failed to fetch: {}",
         err
@@ -394,41 +419,151 @@ fn cook(recipe_name: &str) -> Result<(), String> {
         err
     ))?;
 
+    let package_file = package(&recipe_dir, &stage_dir, &recipe.package).map_err(|err| format!(
+        "failed to package: {}",
+        err
+    ))?;
+
     Ok(())
+}
+
+pub struct CookRecipe {
+    name: String,
+    dir: PathBuf,
+    recipe: Recipe,
+}
+
+impl CookRecipe {
+    pub fn new(name: String) -> Result<Self, String> {
+        //TODO: sanitize recipe name?
+        let dir = Path::new("recipes").join(&name);
+        if ! dir.is_dir() {
+            return Err(format!(
+                "failed to find recipe directory '{}'",
+                dir.display()
+            ));
+        }
+
+        let file = dir.join("recipe.toml");
+        if ! file.is_file() {
+            return Err(format!(
+                "failed to find recipe file '{}'",
+                file.display()
+            ));
+        }
+
+        let toml = fs::read_to_string(&file).map_err(|err| format!(
+            "failed to read recipe file '{}': {}\n{:#?}",
+            file.display(),
+            err,
+            err
+        ))?;
+
+        let recipe: Recipe = toml::from_str(&toml).map_err(|err| format!(
+            "failed to parse recipe file '{}': {}\n{:#?}",
+            file.display(),
+            err,
+            err
+        ))?;
+
+        Ok(Self {
+            name,
+            dir,
+            recipe
+        })
+    }
+
+    //TODO: make this more efficient, smarter, and not return duplicates
+    pub fn new_recursive(names: &[String], recursion: usize) -> Result<Vec<Self>, String> {
+        if recursion == 0 {
+            return Err(format!(
+                "recursion limit while processing build dependencies: {:#?}",
+                names
+            ));
+        }
+
+        let mut recipes = Vec::new();
+        for name in names {
+            let recipe = Self::new(name.clone())?;
+
+            let dependencies = Self::new_recursive(
+                &recipe.recipe.build.dependencies,
+                recursion - 1
+            ).map_err(|err| format!(
+                "{}: failed on loading build dependencies:\n{}",
+                name,
+                err
+            ))?;
+
+            for dependency in dependencies {
+                recipes.push(dependency);
+            }
+
+            recipes.push(recipe);
+        }
+
+        Ok(recipes)
+    }
 }
 
 fn main() {
     let mut matching = true;
+    let mut dry_run = false;
     let mut quiet = false;
     let mut recipe_names = Vec::new();
     for arg in env::args().skip(1) {
         match arg.as_str() {
             "--" if matching => matching = false,
+            "-d" | "--dry-run" if matching => dry_run = true,
             "-q" | "--quiet" if matching => quiet = true,
             _ => recipe_names.push(arg),
         }
     }
 
-    for recipe_name in recipe_names.iter() {
+    let recipes = match CookRecipe::new_recursive(&recipe_names, 16) {
+        Ok(ok) => ok,
+        Err(err) => {
+            eprintln!(
+                "{}{}cook - error:{}{} {}",
+                style::Bold,
+                color::Fg(color::AnsiValue(196)),
+                color::Fg(color::Reset),
+                style::Reset,
+                err,
+            );
+            process::exit(1);
+        }
+    };
+
+    for recipe in recipes {
         if ! quiet {
             eprintln!(
                 "{}{}cook - {}{}{}",
                 style::Bold,
                 color::Fg(color::AnsiValue(215)),
-                recipe_name,
+                recipe.name,
                 color::Fg(color::Reset),
                 style::Reset,
             );
         }
 
-        match cook(recipe_name) {
+        let res = if dry_run {
+            if ! quiet {
+                eprintln!("DRY RUN: {:#?}", recipe.recipe);
+            }
+            Ok(())
+        } else {
+            cook(&recipe.dir, &recipe.recipe)
+        };
+
+        match res {
             Ok(()) => {
                 if ! quiet {
                     eprintln!(
                         "{}{}cook - {} - successful{}{}",
                         style::Bold,
                         color::Fg(color::AnsiValue(46)),
-                        recipe_name,
+                        recipe.name,
                         color::Fg(color::Reset),
                         style::Reset,
                     );
@@ -439,7 +574,7 @@ fn main() {
                     "{}{}cook - {} - error:{}{} {}",
                     style::Bold,
                     color::Fg(color::AnsiValue(196)),
-                    recipe_name,
+                    recipe.name,
                     color::Fg(color::Reset),
                     style::Reset,
                     err,
