@@ -1,18 +1,3 @@
-paths = [
-    "patches/jobserver-rs",
-    "patches/mio",
-    "patches/nix",
-    "patches/tokio/tokio",
-    "patches/tokio/tokio-reactor",
-    "patches/net2-rs",
-    "patches/pb",
-    "patches/platform-info",
-    "patches/ring",
-    "patches/tar-rs",
-    "patches/termsize",
-    "patches/time",
-]
-
 [target.aarch64-unknown-redox]
 linker = "aarch64-unknown-redox-gcc"
 rustflags = []
