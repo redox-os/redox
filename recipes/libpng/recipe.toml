@@ -1,0 +1,13 @@
+[source]
+tar = "https://github.com/glennrp/libpng/archive/v1.6.36.tar.gz"
+script = """
+chmod +w config.sub
+wget -O config.sub http://git.savannah.gnu.org/cgit/config.git/plain/config.sub
+"""
+
+
+[build]
+template = "configure"
+dependencies = [
+    "zlib"
+]
