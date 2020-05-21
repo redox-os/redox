@@ -1,66 +1,12 @@
 [submodule "docgen"]
 	path = docgen
 	url = https://gitlab.redox-os.org/redox-os/docgen.git
-[submodule "pkgutils"]
-	path = pkgutils
-	url = https://gitlab.redox-os.org/redox-os/pkgutils.git
 	branch = master
-[submodule "patches/atty"]
-	path = patches/atty
-	url = https://gitlab.redox-os.org/redox-os/atty.git
-	branch = redox-unix
-[submodule "patches/pb"]
-	path = patches/pb
-	url = https://gitlab.redox-os.org/redox-os/pb.git
-	branch = redox-unix
-[submodule "patches/net2-rs"]
-	path = patches/net2-rs
-	url = https://gitlab.redox-os.org/redox-os/net2-rs.git
-	branch = redox-unix
-[submodule "patches/ring"]
-	path = patches/ring
-	url = https://gitlab.redox-os.org/redox-os/ring.git
-	branch = redox-unix-0.13.5
-[submodule "patches/time"]
-	path = patches/time
-	url = https://gitlab.redox-os.org/redox-os/time.git
-	branch = redox-unix
-[submodule "patches/termsize"]
-	path = patches/termsize
-	url = https://gitlab.redox-os.org/redox-os/termsize.git
-	branch = redox-unix
-[submodule "patches/platform-info"]
-	path = patches/platform-info
-	url = https://gitlab.redox-os.org/redox-os/platform-info.git
-	branch = redox-unix
-[submodule "patches/tar-rs"]
-	path = patches/tar-rs
-	url = https://gitlab.redox-os.org/redox-os/tar-rs.git
-	branch = redox-unix
-[submodule "patches/liblibc"]
-	path = patches/liblibc
-	url = https://gitlab.redox-os.org/redox-os/liblibc.git
-	branch = redox-unix
-[submodule "patches/mio"]
-	path = patches/mio
-	url = https://gitlab.redox-os.org/redox-os/mio.git
-	branch = redox-unix
-[submodule "patches/tokio"]
-	path = patches/tokio
-	url = https://gitlab.redox-os.org/redox-os/tokio.git
-[submodule "patches/libc"]
-	path = patches/libc
-	url = https://github.com/AdminXVII/libc
-	branch = extra-traits-redox
-[submodule "patches/nix"]
-	path = patches/nix
-	url = https://github.com/AdminXVII/nix
-	branch = add-redox-support
-[submodule "patches/jobserver-rs"]
-	path = patches/jobserver-rs
-	url = https://gitlab.redox-os.org/redox-os/jobserver-rs.git
-	branch = redox
 [submodule "pkgar"]
 	path = pkgar
 	url = https://gitlab.redox-os.org/redox-os/pkgar.git
+	branch = master
+[submodule "pkgutils"]
+	path = pkgutils
+	url = https://gitlab.redox-os.org/redox-os/pkgutils.git
 	branch = master
