@@ -14,6 +14,7 @@ build/filesystem.bin: filesystem.toml build/bootloader build/kernel prefix
 	cp build/kernel build/filesystem/kernel
 	cp -r $(ROOT)/$(PREFIX_INSTALL)/$(TARGET)/include build/filesystem/include
 	cp -r $(ROOT)/$(PREFIX_INSTALL)/$(TARGET)/lib build/filesystem/lib
+	export REDOXER_TOOLCHAIN="$(ROOT)/$(PREFIX_INSTALL)" && \
 	export PATH="$(PREFIX_PATH):$$PATH" && \
  	installer/target/release/redox_installer $(INSTALLER_FLAGS) -c $< build/filesystem/
 	sync
