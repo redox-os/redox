@@ -1,18 +1,15 @@
 PREFIX=prefix/$(TARGET)
 
-PREFIX_BASE_INSTALL=$(PREFIX)/binutils-install
+PREFIX_BASE_INSTALL=$(PREFIX)/rust-freestanding-install
 PREFIX_FREESTANDING_INSTALL=$(PREFIX)/gcc-freestanding-install
 PREFIX_INSTALL=$(PREFIX)/relibc-install
-PREFIX_RELIBC_BASE=$(PREFIX)/gcc-install
 
-ifeq ($(PREFIX_RUSTC),1)
-	PREFIX_BASE_INSTALL=$(PREFIX)/rust-freestanding-install
-	ifeq ($(PREFIX_BINARY),1)
-		export RUSTUP_TOOLCHAIN=$(ROOT)/$(PREFIX)/gcc-install
-		PREFIX_RELIBC_BASE=$(PREFIX)/rust-install
-	else
-		export RUSTUP_TOOLCHAIN=$(ROOT)/$(PREFIX)/rust-freestanding-install
-	endif
+ifeq ($(PREFIX_BINARY),1)
+	PREFIX_RELIBC_BASE=$(PREFIX)/rust-install
+	export RUSTUP_TOOLCHAIN=$(ROOT)/$(PREFIX)/gcc-install
+else
+	PREFIX_RELIBC_BASE=$(PREFIX)/gcc-install
+	export RUSTUP_TOOLCHAIN=$(ROOT)/$(PREFIX)/rust-freestanding-install
 endif
 
 PREFIX_BASE_PATH=$(ROOT)/$(PREFIX_BASE_INSTALL)/bin
