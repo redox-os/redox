@@ -361,7 +361,7 @@ export PKG_CONFIG_LIBDIR="${COOKBOOK_SYSROOT}/lib/pkgconfig"
 export PKG_CONFIG_SYSROOT_DIR="${COOKBOOK_SYSROOT}"
 
 # cargo template
-COOKBOOK_CARGO="target/release/cookbook_redoxer"
+COOKBOOK_CARGO="${COOKBOOK_ROOT}/target/release/cookbook_redoxer"
 COOKBOOK_CARGO_FLAGS=(
     --path "${COOKBOOK_SOURCE}"
     --root "${COOKBOOK_STAGE}"
