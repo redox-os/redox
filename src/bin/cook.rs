@@ -361,7 +361,7 @@ export PKG_CONFIG_LIBDIR="${COOKBOOK_SYSROOT}/lib/pkgconfig"
 export PKG_CONFIG_SYSROOT_DIR="${COOKBOOK_SYSROOT}"
 
 # cargo template
-COOKBOOK_CARGO="${COOKBOOK_ROOT}/target/release/cookbook_redoxer"
+COOKBOOK_CARGO="${COOKBOOK_REDOXER}"
 COOKBOOK_CARGO_FLAGS=(
     --path "${COOKBOOK_SOURCE}"
     --root "${COOKBOOK_STAGE}"
@@ -410,20 +410,22 @@ fi
         };
 
         let command = {
-            let mut command = Command::new("target/release/cookbook_redoxer");
-            command.arg("env");
-            command.arg("bash").arg("-ex");
-
             //TODO: remove unwraps
             let cookbook_build = build_dir.canonicalize().unwrap();
             let cookbook_recipe = recipe_dir.canonicalize().unwrap();
+            let cookbook_redoxer = Path::new("target/release/cookbook_redoxer").canonicalize().unwrap();
             let cookbook_root = Path::new(".").canonicalize().unwrap();
             let cookbook_stage = stage_dir_tmp.canonicalize().unwrap();
             let cookbook_source = source_dir.canonicalize().unwrap();
             let cookbook_sysroot = sysroot_dir.canonicalize().unwrap();
+
+            let mut command = Command::new(&cookbook_redoxer);
+            command.arg("env");
+            command.arg("bash").arg("-ex");
             command.current_dir(&cookbook_build);
             command.env("COOKBOOK_BUILD", &cookbook_build);
             command.env("COOKBOOK_RECIPE", &cookbook_recipe);
+            command.env("COOKBOOK_REDOXER", &cookbook_redoxer);
             command.env("COOKBOOK_ROOT", &cookbook_root);
             command.env("COOKBOOK_STAGE", &cookbook_stage);
             command.env("COOKBOOK_SOURCE", &cookbook_source);
