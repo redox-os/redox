@@ -339,6 +339,9 @@ fn build(recipe_dir: &Path, source_dir: &Path, build: &BuildRecipe) -> Result<Pa
         }
 
         let pre_script = r#"# Common pre script
+# Add cookbook bins to path
+export PATH="${COOKBOOK_ROOT}/bin:${PATH}"
+
 # This puts cargo build artifacts in the build directory
 export CARGO_TARGET_DIR="${COOKBOOK_BUILD}/target"
 
@@ -414,12 +417,14 @@ fi
             //TODO: remove unwraps
             let cookbook_build = build_dir.canonicalize().unwrap();
             let cookbook_recipe = recipe_dir.canonicalize().unwrap();
+            let cookbook_root = Path::new(".").canonicalize().unwrap();
             let cookbook_stage = stage_dir_tmp.canonicalize().unwrap();
             let cookbook_source = source_dir.canonicalize().unwrap();
             let cookbook_sysroot = sysroot_dir.canonicalize().unwrap();
             command.current_dir(&cookbook_build);
             command.env("COOKBOOK_BUILD", &cookbook_build);
             command.env("COOKBOOK_RECIPE", &cookbook_recipe);
+            command.env("COOKBOOK_ROOT", &cookbook_root);
             command.env("COOKBOOK_STAGE", &cookbook_stage);
             command.env("COOKBOOK_SOURCE", &cookbook_source);
             command.env("COOKBOOK_SYSROOT", &cookbook_sysroot);
