@@ -32,9 +32,11 @@ PREFIX_STRIP=\
 		-exec strip --strip-unneeded {} ';' \
 		2> /dev/null
 
-$(PREFIX)/relibc-install: $(ROOT)/relibc | $(PREFIX)/gcc-install
+$(PREFIX)/relibc-install: $(ROOT)/relibc | $(PREFIX)/rust-install
 	rm -rf "$@.partial" "$@"
-	cp -r "$(PREFIX)/gcc-install" "$@.partial"
+	cp -r "$(PREFIX)/rust-install" "$@.partial"
+	rm -rf "$@.partial/$(TARGET)/include/"*
+	cp -r "$(PREFIX)/rust-install/$(TARGET)/include/c++" "$@.partial/$(TARGET)/include/c++"
 	cd "$<" && \
 	export PATH="$(ROOT)/$@.partial/bin:$$PATH" && \
 	export CARGO="env -u CARGO xargo" && \
@@ -52,38 +54,6 @@ $(PREFIX)/relibc-install.tar.gz: $(PREFIX)/relibc-install
 		--directory="$<" \
 		.
 
-$(PREFIX)/rust-install: $(ROOT)/rust | $(PREFIX)/relibc-install
-	rm -rf "$(PREFIX)/rust-build" "$@.partial" "$@"
-	mkdir -p "$(PREFIX)/rust-build"
-	cp -r "$(PREFIX)/relibc-install" "$@.partial"
-	cd "$(PREFIX)/rust-build" && \
-	export PATH="$(ROOT)/$@.partial/bin:$$PATH" && \
-	"$</configure" \
-		--prefix="/" \
-		--disable-docs \
-		--enable-cargo-native-static \
-		--enable-extended \
-		--enable-llvm-static-stdcpp \
-		--tools=cargo \
-		--target="$(TARGET)" \
-		&& \
-	$(MAKE) -j `$(NPROC)` && \
-	rm -rf "$(ROOT)/$@.partial/lib/rustlib" "$(ROOT)/$@.partial/share/doc/rust" && \
-	$(MAKE) -j `$(NPROC)` install DESTDIR="$(ROOT)/$@.partial"
-	rm -rf "$(PREFIX)/rust-build"
-	mkdir -p "$@.partial/lib/rustlib/x86_64-unknown-linux-gnu/bin"
-	cd "$@.partial" && find . -name *.old -exec rm {} ';' && $(PREFIX_STRIP)
-	touch "$@.partial"
-	mv "$@.partial" "$@"
-
-$(PREFIX)/rust-install.tar.gz: $(PREFIX)/rust-install
-	tar \
-		--create \
-		--gzip \
-		--file "$@" \
-		--directory="$<" \
-		.
-
 ifeq ($(PREFIX_BINARY),1)
 
 $(PREFIX)/gcc-install.tar.gz:
@@ -92,6 +62,18 @@ $(PREFIX)/gcc-install.tar.gz:
 	mv $@.partial $@
 
 $(PREFIX)/gcc-install: $(PREFIX)/gcc-install.tar.gz
+	rm -rf "$@.partial" "$@"
+	mkdir -p "$@.partial"
+	tar --extract --file "$<" --directory "$@.partial" --strip-components=1
+	touch "$@.partial"
+	mv "$@.partial" "$@"
+
+$(PREFIX)/rust-install.tar.gz:
+	mkdir -p "$(@D)"
+	wget -O $@.partial "https://static.redox-os.org/toolchain/$(TARGET)/rust-install.tar.gz"
+	mv $@.partial $@
+
+$(PREFIX)/rust-install: $(PREFIX)/rust-install.tar.gz
 	rm -rf "$@.partial" "$@"
 	mkdir -p "$@.partial"
 	tar --extract --file "$<" --directory "$@.partial" --strip-components=1
@@ -226,6 +208,38 @@ $(PREFIX)/gcc-install: $(PREFIX)/gcc | $(PREFIX)/relibc-freestanding-install
 	mv "$@.partial" "$@"
 
 $(PREFIX)/gcc-install.tar.gz: $(PREFIX)/gcc-install
+	tar \
+		--create \
+		--gzip \
+		--file "$@" \
+		--directory="$<" \
+		.
+
+$(PREFIX)/rust-install: $(ROOT)/rust | $(PREFIX)/relibc-install
+	rm -rf "$(PREFIX)/rust-build" "$@.partial" "$@"
+	mkdir -p "$(PREFIX)/rust-build"
+	cp -r "$(PREFIX)/relibc-install" "$@.partial"
+	cd "$(PREFIX)/rust-build" && \
+	export PATH="$(ROOT)/$@.partial/bin:$$PATH" && \
+	"$</configure" \
+		--prefix="/" \
+		--disable-docs \
+		--enable-cargo-native-static \
+		--enable-extended \
+		--enable-llvm-static-stdcpp \
+		--tools=cargo \
+		--target="$(TARGET)" \
+		&& \
+	$(MAKE) -j `$(NPROC)` && \
+	rm -rf "$(ROOT)/$@.partial/lib/rustlib" "$(ROOT)/$@.partial/share/doc/rust" && \
+	$(MAKE) -j `$(NPROC)` install DESTDIR="$(ROOT)/$@.partial"
+	rm -rf "$(PREFIX)/rust-build"
+	mkdir -p "$@.partial/lib/rustlib/x86_64-unknown-linux-gnu/bin"
+	cd "$@.partial" && find . -name *.old -exec rm {} ';' && $(PREFIX_STRIP)
+	touch "$@.partial"
+	mv "$@.partial" "$@"
+
+$(PREFIX)/rust-install.tar.gz: $(PREFIX)/rust-install
 	tar \
 		--create \
 		--gzip \
