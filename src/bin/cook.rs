@@ -361,7 +361,7 @@ export PKG_CONFIG_LIBDIR="${COOKBOOK_SYSROOT}/lib/pkgconfig"
 export PKG_CONFIG_SYSROOT_DIR="${COOKBOOK_SYSROOT}"
 
 # cargo template
-COOKBOOK_CARGO="redoxer"
+COOKBOOK_CARGO="target/release/cookbook_redoxer"
 COOKBOOK_CARGO_FLAGS=(
     --path "${COOKBOOK_SOURCE}"
     --root "${COOKBOOK_STAGE}"
@@ -410,7 +410,7 @@ fi
         };
 
         let command = {
-            let mut command = Command::new("redoxer");
+            let mut command = Command::new("target/release/cookbook_redoxer");
             command.arg("env");
             command.arg("bash").arg("-ex");
 
@@ -447,6 +447,13 @@ fn package(recipe_dir: &Path, stage_dir: &Path, package: &PackageRecipe) -> Resu
     let secret_path = "build/secret.key";
     let public_path = "build/public.key";
     if ! Path::new(secret_path).is_file() || ! Path::new(public_path).is_file() {
+        if ! Path::new("build").is_dir() {
+            fs::create_dir("build").map_err(|err| format!(
+                "failed to create 'build': {}\n{:?}",
+                err,
+                err
+            ))?;
+        }
         pkgar::bin::keygen(secret_path, public_path).map_err(|err| format!(
             "failed to generate pkgar keys: {:?}",
             err
