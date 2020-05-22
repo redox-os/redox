@@ -3,11 +3,13 @@ PREFIX=prefix/$(TARGET)
 PREFIX_BASE_INSTALL=$(PREFIX)/binutils-install
 PREFIX_FREESTANDING_INSTALL=$(PREFIX)/gcc-freestanding-install
 PREFIX_INSTALL=$(PREFIX)/relibc-install
+PREFIX_RELIBC_BASE=$(PREFIX)/gcc-install
 
 ifeq ($(PREFIX_RUSTC),1)
 	PREFIX_BASE_INSTALL=$(PREFIX)/rust-freestanding-install
 	ifeq ($(PREFIX_BINARY),1)
 		export RUSTUP_TOOLCHAIN=$(ROOT)/$(PREFIX)/gcc-install
+		PREFIX_RELIBC_BASE=$(PREFIX)/rust-install
 	else
 		export RUSTUP_TOOLCHAIN=$(ROOT)/$(PREFIX)/rust-freestanding-install
 	endif
@@ -32,11 +34,11 @@ PREFIX_STRIP=\
 		-exec strip --strip-unneeded {} ';' \
 		2> /dev/null
 
-$(PREFIX)/relibc-install: $(ROOT)/relibc | $(PREFIX)/rust-install
+$(PREFIX)/relibc-install: $(ROOT)/relibc | $(PREFIX_RELIBC_BASE)
 	rm -rf "$@.partial" "$@"
-	cp -r "$(PREFIX)/rust-install" "$@.partial"
+	cp -r "$(PREFIX_RELIBC_BASE)" "$@.partial"
 	rm -rf "$@.partial/$(TARGET)/include/"*
-	cp -r "$(PREFIX)/rust-install/$(TARGET)/include/c++" "$@.partial/$(TARGET)/include/c++"
+	cp -r "$(PREFIX_RELIBC_BASE)/$(TARGET)/include/c++" "$@.partial/$(TARGET)/include/c++"
 	cd "$<" && \
 	export PATH="$(ROOT)/$@.partial/bin:$$PATH" && \
 	export CARGO="env -u CARGO xargo" && \
