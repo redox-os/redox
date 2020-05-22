@@ -771,7 +771,7 @@ dependencies = [
  "blake3 0.3.3 (registry+https://github.com/rust-lang/crates.io-index)",
  "pbr 1.0.2 (registry+https://github.com/rust-lang/crates.io-index)",
  "pkgar 0.1.6 (registry+https://github.com/rust-lang/crates.io-index)",
- "redoxer 0.2.18 (registry+https://github.com/rust-lang/crates.io-index)",
+ "redoxer 0.2.19 (registry+https://github.com/rust-lang/crates.io-index)",
  "serde 1.0.110 (registry+https://github.com/rust-lang/crates.io-index)",
  "sha2 0.8.1 (registry+https://github.com/rust-lang/crates.io-index)",
  "termion 1.5.5 (registry+https://github.com/rust-lang/crates.io-index)",
@@ -856,7 +856,7 @@ dependencies = [
 
 [[package]]
 name = "redoxer"
-version = "0.2.18"
+version = "0.2.19"
 source = "registry+https://github.com/rust-lang/crates.io-index"
 dependencies = [
  "dirs 2.0.2 (registry+https://github.com/rust-lang/crates.io-index)",
@@ -1390,7 +1390,7 @@ dependencies = [
 "checksum redox_syscall 0.1.56 (registry+https://github.com/rust-lang/crates.io-index)" = "2439c63f3f6139d1b57529d16bc3b8bb855230c8efcc5d3a896c8bea7c3b1e84"
 "checksum redox_termios 0.1.1 (registry+https://github.com/rust-lang/crates.io-index)" = "7e891cfe48e9100a70a3b6eb652fef28920c117d366339687bd5576160db0f76"
 "checksum redox_users 0.3.4 (registry+https://github.com/rust-lang/crates.io-index)" = "09b23093265f8d200fa7b4c2c76297f47e681c655f6f1285a8780d6a022f7431"
-"checksum redoxer 0.2.18 (registry+https://github.com/rust-lang/crates.io-index)" = "32c6983b8e5e20567168c6f0f0abd300d3870ea658ac88483d658ba6b83a34c8"
+"checksum redoxer 0.2.19 (registry+https://github.com/rust-lang/crates.io-index)" = "9641f270dd15b5835a8e7f8d61c80fada81f4242bdc670dd48e4f7183fef97f0"
 "checksum redoxfs 0.4.1 (registry+https://github.com/rust-lang/crates.io-index)" = "d2cf914a0e128dfd60c462d07ae347449959af11acf84fd9cd684bd8b89e1965"
 "checksum remove_dir_all 0.5.2 (registry+https://github.com/rust-lang/crates.io-index)" = "4a83fa3702a688b9359eccba92d153ac33fd2e8462f9e0e3fdf155239ea7792e"
 "checksum ring 0.13.5 (registry+https://github.com/rust-lang/crates.io-index)" = "2c4db68a2e35f3497146b7e4563df7d4773a2433230c5e4b448328e31740458a"
