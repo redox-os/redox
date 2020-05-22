@@ -40,6 +40,10 @@ do
     then
         echo -e "\033[01;38;5;155mrepo - preparing $recipe\033[0m" >&2
         ./cook.sh "$recipe" prepare
+    elif [ ! -d "recipes/$recipe/sysroot/" ]
+    then
+        echo -e "\033[01;38;5;155mrepo - repreparing $recipe\033[0m" >&2
+        ./cook.sh "$recipe" unprepare prepare
     else
         TIME_SOURCE="$($FIND recipes/$recipe/source/ -type f -not -path '*/.git*' -printf "%Ts\n" | sort -nr | head -n 1)"
         TIME_BUILD="$($FIND recipes/$recipe/build/ -type f -not -path '*/.git*' -printf "%Ts\n" | sort -nr | head -n 1)"
