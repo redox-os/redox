@@ -1,0 +1,23 @@
+[source]
+tar = "https://www.libsdl.org/release/SDL-1.2.15.tar.gz"
+patches = [
+    "redox.patch"
+]
+script = "./autogen.sh"
+
+[build]
+template = "custom"
+dependencies = [
+    "liborbital"
+]
+script = """
+COOKBOOK_CONFIGURE_FLAGS+=(
+    --disable-pulseaudio
+    --disable-video-x11
+    --disable-loadso
+    --enable-redoxaudio
+    --enable-clock_gettime
+    --enable-video-orbital
+)
+cookbook_configure
+"""
