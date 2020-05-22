@@ -23,7 +23,7 @@ path = "src/lib.rs"
 blake3 = "0.3.3"
 pbr = "1.0.2"
 pkgar = "0.1.6"
-redoxer = "0.2.18"
+redoxer = "0.2.19"
 serde = { version = "1.0", features = ["derive"] }
 sha2 = "0.8.1"
 termion = "1.5.5"
