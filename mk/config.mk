@@ -46,6 +46,10 @@ KBUILD=build/kernel
 ## Userspace variables
 export TARGET=$(ARCH)-unknown-redox
 BUILD=build/userspace
+INSTALLER=\
+	export REDOXER_TOOLCHAIN="$(ROOT)/$(PREFIX_INSTALL)" && \
+	export PATH="$(PREFIX_PATH):$$PATH" && \
+ 	installer/target/release/redox_installer $(INSTALLER_FLAGS)
 
 ## Bootloader variables
 EFI_TARGET=$(ARCH)-efi-pe

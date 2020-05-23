@@ -1,6 +1,6 @@
 build/filesystem.bin: filesystem.toml build/bootloader build/kernel prefix
-	cargo build --manifest-path redoxfs/Cargo.toml --release
 	cargo build --manifest-path installer/Cargo.toml --release
+	cargo build --manifest-path redoxfs/Cargo.toml --release
 	-$(FUMOUNT) build/filesystem/ || true
 	rm -rf $@  $@.partial build/filesystem/
 	dd if=/dev/zero of=$@.partial bs=1048576 count="$(FILESYSTEM_SIZE)"
@@ -14,9 +14,7 @@ build/filesystem.bin: filesystem.toml build/bootloader build/kernel prefix
 	cp build/kernel build/filesystem/kernel
 	cp -r $(ROOT)/$(PREFIX_INSTALL)/$(TARGET)/include build/filesystem/include
 	cp -r $(ROOT)/$(PREFIX_INSTALL)/$(TARGET)/lib build/filesystem/lib
-	export REDOXER_TOOLCHAIN="$(ROOT)/$(PREFIX_INSTALL)" && \
-	export PATH="$(PREFIX_PATH):$$PATH" && \
- 	installer/target/release/redox_installer $(INSTALLER_FLAGS) -c $< build/filesystem/
+	$(INSTALLER) -c $< build/filesystem/
 	sync
 	-$(FUMOUNT) build/filesystem/ || true
 	rm -rf build/filesystem/
