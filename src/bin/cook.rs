@@ -4,25 +4,73 @@ use cookbook::sha256::sha256_progress;
 use std::{
     env,
     fs,
-    io::Write,
+    io::{self, Write},
     path::{Path, PathBuf},
     process::{self, Command, Stdio},
+    time::SystemTime,
 };
 use termion::{color, style};
+use walkdir::WalkDir;
+
+fn remove_all(path: &Path) -> Result<(), String> {
+    if path.is_dir() {
+        fs::remove_dir_all(path)
+    } else {
+        fs::remove_file(path)
+    }.map_err(|err| format!(
+        "failed to remove '{}': {}\n{:?}",
+        path.display(),
+        err,
+        err
+    ))
+}
+
+fn create_dir(dir: &Path) -> Result<(), String> {
+    fs::create_dir(&dir).map_err(|err| format!(
+        "failed to create '{}': {}\n{:?}",
+        dir.display(),
+        err,
+        err
+    ))
+}
 
 fn create_dir_clean(dir: &Path) -> Result<(), String> {
     if dir.is_dir() {
-        // Remove previous directory
-        fs::remove_dir_all(&dir).map_err(|err| format!(
-            "failed to remove '{}': {}\n{:?}",
-            dir.display(),
-            err,
-            err
-        ))?;
+        remove_all(dir)?;
     }
-    // directory
-    fs::create_dir(&dir).map_err(|err| format!(
-        "failed to create '{}': {}\n{:?}",
+    create_dir(dir)
+}
+
+fn modified(path: &Path) -> Result<SystemTime, String> {
+    let metadata = fs::metadata(path).map_err(|err| format!(
+        "failed to get metadata of '{}': {}\n{:#?}",
+        path.display(),
+        err,
+        err
+    ))?;
+    metadata.modified().map_err(|err| format!(
+        "failed to get modified time of '{}': {}\n{:#?}",
+        path.display(),
+        err,
+        err
+    ))
+}
+
+fn modified_dir(dir: &Path) -> Result<SystemTime, String> {
+    fn modified_dir_io(dir: &Path) -> io::Result<SystemTime> {
+        let mut newest = fs::metadata(dir)?.modified()?;
+        for entry_res in WalkDir::new(dir) {
+            let entry = entry_res?;
+            let modified = entry.metadata()?.modified()?;
+            if modified > newest {
+                newest = modified;
+            }
+        }
+        Ok(newest)
+    }
+
+    modified_dir_io(&dir).map_err(|err| format!(
+        "failed to get modified time of '{}': {}\n{:#?}",
         dir.display(),
         err,
         err
@@ -104,6 +152,7 @@ fn fetch(recipe_dir: &Path, source: &SourceRecipe) -> Result<PathBuf, String> {
     let source_dir = recipe_dir.join("source");
     match source {
         SourceRecipe::Git { git, upstream, branch, rev } => {
+            //TODO: use libgit?
             if ! source_dir.is_dir() {
                 // Create source.tmp
                 let source_dir_tmp = recipe_dir.join("source.tmp");
@@ -190,16 +239,14 @@ fn fetch(recipe_dir: &Path, source: &SourceRecipe) -> Result<PathBuf, String> {
                     rename(&source_tar_tmp, &source_tar)?;
                 }
 
+                // Calculate blake3
+                let source_tar_blake3 = blake3_progress(&source_tar).map_err(|err| format!(
+                    "failed to calculate blake3 of '{}': {}\n{:?}",
+                    source_tar.display(),
+                    err,
+                    err
+                ))?;
                 if let Some(blake3) = blake3 {
-                    //TODO
-                    // Calculate blake3
-                    let source_tar_blake3 = blake3_progress(&source_tar).map_err(|err| format!(
-                        "failed to calculate blake3 of '{}': {}\n{:?}",
-                        source_tar.display(),
-                        err,
-                        err
-                    ))?;
-
                     // Check if it matches recipe
                     if &source_tar_blake3 != blake3 {
                         return Err(format!(
@@ -208,8 +255,16 @@ fn fetch(recipe_dir: &Path, source: &SourceRecipe) -> Result<PathBuf, String> {
                             blake3
                         ));
                     }
+                } else {
+                    //TODO: set blake3 hash on the recipe with something like "cook fix"
+                    eprintln!(
+                        "WARNING: set blake3 for '{}' to '{}'",
+                        source_tar.display(),
+                        source_tar_blake3
+                    );
                 }
 
+                //TODO: if blake3 is set, remove sha256
                 if let Some(sha256) = sha256 {
                     // Calculate sha256
                     let source_tar_sha256 = sha256_progress(&source_tar).map_err(|err| format!(
@@ -284,26 +339,25 @@ fn fetch(recipe_dir: &Path, source: &SourceRecipe) -> Result<PathBuf, String> {
 }
 
 fn build(recipe_dir: &Path, source_dir: &Path, build: &BuildRecipe) -> Result<PathBuf, String> {
+    let source_modified = modified_dir(&source_dir)?;
+
     let sysroot_dir = recipe_dir.join("sysroot");
+    // Rebuild sysroot if source is newer
+    //TODO: rebuild on recipe changes
+    if sysroot_dir.is_dir() {
+        if modified_dir(&sysroot_dir)? < source_modified {
+            remove_all(&sysroot_dir)?;
+        }
+    }
     if ! sysroot_dir.is_dir() {
         // Create sysroot.tmp
         let sysroot_dir_tmp = recipe_dir.join("sysroot.tmp");
         create_dir_clean(&sysroot_dir_tmp)?;
 
         // Make sure sysroot/include exists
-        fs::create_dir(sysroot_dir_tmp.join("include")).map_err(|err| format!(
-            "failed to create '{}/include': {}\n{:#?}",
-            sysroot_dir_tmp.display(),
-            err,
-            err
-        ))?;
+        create_dir(&sysroot_dir_tmp.join("include"))?;
         // Make sure sysroot/lib exists
-        fs::create_dir(sysroot_dir_tmp.join("lib")).map_err(|err| format!(
-            "failed to create '{}/lib': {}\n{:#?}",
-            sysroot_dir_tmp.display(),
-            err,
-            err
-        ))?;
+        create_dir(&sysroot_dir_tmp.join("lib"))?;
 
         for dependency in build.dependencies.iter() {
             let public_path = "build/public.key";
@@ -326,6 +380,13 @@ fn build(recipe_dir: &Path, source_dir: &Path, build: &BuildRecipe) -> Result<Pa
     }
 
     let stage_dir = recipe_dir.join("stage");
+    // Rebuild stage if source is newer
+    //TODO: rebuild on recipe changes
+    if stage_dir.is_dir() {
+        if modified_dir(&stage_dir)? < source_modified {
+            remove_all(&stage_dir)?;
+        }
+    }
     if ! stage_dir.is_dir() {
         // Create stage.tmp
         let stage_dir_tmp = recipe_dir.join("stage.tmp");
@@ -450,11 +511,7 @@ fn package(recipe_dir: &Path, stage_dir: &Path, package: &PackageRecipe) -> Resu
     let public_path = "build/public.key";
     if ! Path::new(secret_path).is_file() || ! Path::new(public_path).is_file() {
         if ! Path::new("build").is_dir() {
-            fs::create_dir("build").map_err(|err| format!(
-                "failed to create 'build': {}\n{:?}",
-                err,
-                err
-            ))?;
+            create_dir(Path::new("build"))?;
         }
         pkgar::bin::keygen(secret_path, public_path).map_err(|err| format!(
             "failed to generate pkgar keys: {:?}",
@@ -463,6 +520,14 @@ fn package(recipe_dir: &Path, stage_dir: &Path, package: &PackageRecipe) -> Resu
     }
 
     let package_file = recipe_dir.join("stage.pkgar");
+    // Rebuild package if stage is newer
+    //TODO: rebuild on recipe changes
+    if package_file.is_file() {
+        let stage_modified = modified_dir(&stage_dir)?;
+        if modified(&package_file)? < stage_modified {
+            remove_all(&package_file)?;
+        }
+    }
     if ! package_file.is_file() {
         pkgar::bin::create(
             secret_path,
