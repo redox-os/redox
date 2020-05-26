@@ -10,7 +10,7 @@ use std::{
     time::SystemTime,
 };
 use termion::{color, style};
-use walkdir::WalkDir;
+use walkdir::{DirEntry, WalkDir};
 
 fn remove_all(path: &Path) -> Result<(), String> {
     if path.is_dir() {
@@ -56,20 +56,31 @@ fn modified(path: &Path) -> Result<SystemTime, String> {
     ))
 }
 
-fn modified_dir(dir: &Path) -> Result<SystemTime, String> {
-    fn modified_dir_io(dir: &Path) -> io::Result<SystemTime> {
-        let mut newest = fs::metadata(dir)?.modified()?;
-        for entry_res in WalkDir::new(dir) {
-            let entry = entry_res?;
-            let modified = entry.metadata()?.modified()?;
-            if modified > newest {
-                newest = modified;
-            }
+fn modified_dir_inner<F: FnMut(&DirEntry) -> bool>(dir: &Path, filter: F) -> io::Result<SystemTime> {
+    let mut newest = fs::metadata(dir)?.modified()?;
+    for entry_res in WalkDir::new(dir).into_iter().filter_entry(filter) {
+        let entry = entry_res?;
+        let modified = entry.metadata()?.modified()?;
+        if modified > newest {
+            newest = modified;
         }
-        Ok(newest)
     }
+    Ok(newest)
+}
 
-    modified_dir_io(&dir).map_err(|err| format!(
+fn modified_dir(dir: &Path) -> Result<SystemTime, String> {
+    modified_dir_inner(&dir, |_| true).map_err(|err| format!(
+        "failed to get modified time of '{}': {}\n{:#?}",
+        dir.display(),
+        err,
+        err
+    ))
+}
+
+fn modified_dir_ignore_git(dir: &Path) -> Result<SystemTime, String> {
+    modified_dir_inner(&dir, |entry| {
+        entry.file_name().to_str().map(|s| s != ".git").unwrap_or(true)
+    }).map_err(|err| format!(
         "failed to get modified time of '{}': {}\n{:#?}",
         dir.display(),
         err,
@@ -339,13 +350,14 @@ fn fetch(recipe_dir: &Path, source: &SourceRecipe) -> Result<PathBuf, String> {
 }
 
 fn build(recipe_dir: &Path, source_dir: &Path, build: &BuildRecipe) -> Result<PathBuf, String> {
-    let source_modified = modified_dir(&source_dir)?;
+    let source_modified = modified_dir_ignore_git(&source_dir)?;
 
     let sysroot_dir = recipe_dir.join("sysroot");
     // Rebuild sysroot if source is newer
     //TODO: rebuild on recipe changes
     if sysroot_dir.is_dir() {
         if modified_dir(&sysroot_dir)? < source_modified {
+            eprintln!("DEBUG: '{}' newer than '{}'", source_dir.display(), sysroot_dir.display());
             remove_all(&sysroot_dir)?;
         }
     }
@@ -384,6 +396,7 @@ fn build(recipe_dir: &Path, source_dir: &Path, build: &BuildRecipe) -> Result<Pa
     //TODO: rebuild on recipe changes
     if stage_dir.is_dir() {
         if modified_dir(&stage_dir)? < source_modified {
+            eprintln!("DEBUG: '{}' newer than '{}'", source_dir.display(), stage_dir.display());
             remove_all(&stage_dir)?;
         }
     }
@@ -525,6 +538,7 @@ fn package(recipe_dir: &Path, stage_dir: &Path, package: &PackageRecipe) -> Resu
     if package_file.is_file() {
         let stage_modified = modified_dir(&stage_dir)?;
         if modified(&package_file)? < stage_modified {
+            eprintln!("DEBUG: '{}' newer than '{}'", stage_dir.display(), package_file.display());
             remove_all(&package_file)?;
         }
     }
