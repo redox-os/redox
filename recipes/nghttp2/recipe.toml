@@ -1,0 +1,11 @@
+[source]
+tar = "https://github.com/nghttp2/nghttp2/releases/download/v1.37.0/nghttp2-1.37.0.tar.xz"
+
+[build]
+template = "custom"
+script = """
+COOKBOOK_CONFIGURE_FLAGS+=(
+    --enable-lib-only
+)
+cookbook_configure
+"""

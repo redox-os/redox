@@ -1,0 +1,27 @@
+[source]
+git = "https://gitlab.redox-os.org/redox-os/drivers.git"
+
+[build]
+template = "custom"
+script = """
+redoxer build --release \
+    --manifest-path "${COOKBOOK_SOURCE}/Cargo.toml" \
+    --workspace
+
+mkdir -pv "${COOKBOOK_STAGE}/bin"
+find "target/${TARGET}/release" \
+    -maxdepth 1 \
+    -executable \
+    -type f \
+    -exec cp -v {} "${COOKBOOK_STAGE}/bin/" ';'
+
+mkdir -pv "${COOKBOOK_STAGE}/etc/pcid"
+cp -v "${COOKBOOK_SOURCE}/initfs.toml" "${COOKBOOK_STAGE}/etc/pcid/initfs.toml"
+
+mkdir -pv "${COOKBOOK_STAGE}/etc/pcid.d"
+find "${COOKBOOK_SOURCE}" -maxdepth 2 -type f -name 'config.toml' | while read conf
+do
+    driver="$(basename "$(dirname "$conf")")"
+    cp -v "$conf" "${COOKBOOK_STAGE}/etc/pcid.d/$driver.toml"
+done
+"""

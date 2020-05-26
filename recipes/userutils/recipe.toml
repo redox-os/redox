@@ -1,0 +1,13 @@
+[source]
+git = "https://gitlab.redox-os.org/redox-os/userutils.git"
+
+[build]
+template = "custom"
+script = """
+cookbook_cargo
+cp -rv "${COOKBOOK_SOURCE}/res" "${COOKBOOK_STAGE}/etc"
+ln -s id "${COOKBOOK_STAGE}/bin/whoami"
+chmod +s "${COOKBOOK_STAGE}/bin/passwd"
+chmod +s "${COOKBOOK_STAGE}/bin/sudo"
+chmod +s "${COOKBOOK_STAGE}/bin/su"
+"""

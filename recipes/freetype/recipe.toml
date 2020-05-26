@@ -1,0 +1,9 @@
+[source]
+tar = "https://download.savannah.gnu.org/releases/freetype/freetype-2.9.1.tar.gz"
+
+[build]
+template = "configure"
+dependencies = [
+    "libpng",
+    "zlib"
+]

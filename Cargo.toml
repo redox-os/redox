@@ -1,0 +1,31 @@
+[package]
+name = "redox_cookbook"
+version = "0.1.0"
+authors = ["Jeremy Soller <jackpot51@gmail.com>"]
+edition = "2018"
+default-run = "cook"
+
+# See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
+
+[[bin]]
+name = "cook"
+path = "src/bin/cook.rs"
+
+[[bin]]
+name = "cookbook_redoxer"
+path = "src/bin/cookbook_redoxer.rs"
+
+[lib]
+name = "cookbook"
+path = "src/lib.rs"
+
+[dependencies]
+blake3 = "0.3.4"
+pbr = "1.0.2"
+pkgar = "0.1.6"
+redoxer = "0.2.19"
+serde = { version = "1.0.110", features = ["derive"] }
+sha2 = "0.8.2"
+termion = "1.5.5"
+toml = "0.5.6"
+walkdir = "2.3.1"

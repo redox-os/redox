@@ -1,0 +1,39 @@
+[source]
+git = "https://gitlab.redox-os.org/redox-os/curl.git"
+branch = "redox"
+
+[build]
+template = "custom"
+dependencies = [
+    "nghttp2",
+    "openssl",
+    "zlib"
+]
+script = """
+rsync -av --delete "${COOKBOOK_SOURCE}/" ./
+wget -O config.sub http://git.savannah.gnu.org/cgit/config.git/plain/config.sub
+autoreconf -i
+COOKBOOK_CONFIGURE="./configure"
+COOKBOOK_CONFIGURE_FLAGS=(
+    --build="$(cc -dumpmachine)"
+    --host="${TARGET}"
+    --prefix=""
+    --disable-ftp
+    --disable-ipv6
+    --disable-ntlm-wb
+    --disable-shared
+    --disable-tftp
+    --disable-threaded-resolver
+    --enable-static
+    --with-ca-path=/ssl/certs
+    --with-nghttp2="${COOKBOOK_SYSROOT}"
+    --with-ssl="${COOKBOOK_SYSROOT}"
+    --with-zlib="${COOKBOOK_SYSROOT}"
+)
+cookbook_configure
+"""
+
+[package]
+dependencies = [
+    "ca-certificates"
+]

@@ -1,0 +1,14 @@
+[source]
+tar = "https://ftp.gnu.org/pub/gnu/libiconv/libiconv-1.15.tar.gz"
+patches = [
+    "01_redox.patch"
+]
+
+[build]
+template = "custom"
+script = """
+COOKBOOK_CONFIGURE_FLAGS+=(
+    ac_cv_have_decl_program_invocation_name=no
+)
+cookbook_configure
+"""
