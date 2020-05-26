@@ -1,0 +1,15 @@
+[source]
+tar = "ftp://xmlsoft.org/libxml2/libxml2-2.9.9.tar.gz"
+
+[build]
+template = "custom"
+dependencies = [
+    "xz",
+    "zlib"
+]
+script = """
+COOKBOOK_CONFIGURE_FLAGS+=(
+    --without-python
+)
+cookbook_configure
+"""

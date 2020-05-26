@@ -1,0 +1,31 @@
+[source]
+tar = "https://codeload.github.com/xz-mirror/xz/tar.gz/v5.2.3"
+patches = [
+    "01-no-poll.patch",
+    "02-o_noctty.patch",
+    "03-no-signals.patch"
+]
+script = """
+./autogen.sh
+chmod +w build-aux/config.sub
+wget -O build-aux/config.sub http://git.savannah.gnu.org/cgit/config.git/plain/config.sub
+"""
+
+[build]
+template = "custom"
+script = """
+export CFLAGS="-static"
+COOKBOOK_CONFIGURE_FLAGS=(
+    --host="${TARGET}"
+    --prefix=""
+    --disable-lzmadec
+    --disable-lzmainfo
+    --disable-xz
+    --disable-xzdec
+    --enable-shared=no
+    --enable-static=yes
+    --enable-threads=no
+    --with-pic=no
+)
+cookbook_configure
+"""

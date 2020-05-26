@@ -1,0 +1,18 @@
+[source]
+git = "https://gitlab.redox-os.org/redox-os/openssl.git"
+branch = "redox"
+
+[build]
+template = "custom"
+script = """
+ARCH="${TARGET%%-*}"
+COOKBOOK_CONFIGURE="${COOKBOOK_SOURCE}/Configure"
+COOKBOOK_CONFIGURE_FLAGS=(
+    no-shared
+    no-dgram
+    "redox-${ARCH}"
+    --prefix="/"
+)
+cookbook_configure
+rm -rfv "${COOKBOOK_STAGE}/"{share,ssl}
+"""
