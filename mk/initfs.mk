@@ -1,4 +1,5 @@
 build/initfs.tag: initfs.toml prefix
+	cargo build --manifest-path cookbook/Cargo.toml --release
 	cargo build --manifest-path installer/Cargo.toml --release
 	rm -f build/libkernel.a
 	rm -rf build/initfs
@@ -7,6 +8,7 @@ build/initfs.tag: initfs.toml prefix
 	touch $@
 
 build/initfs_coreboot.tag: initfs_coreboot.toml prefix
+	cargo build --manifest-path cookbook/Cargo.toml --release
 	cargo build --manifest-path installer/Cargo.toml --release
 	rm -f build/libkernel_coreboot.a
 	rm -rf build/initfs_coreboot
@@ -15,6 +17,7 @@ build/initfs_coreboot.tag: initfs_coreboot.toml prefix
 	touch $@
 
 build/initfs_live.tag: initfs_live.toml prefix
+	cargo build --manifest-path cookbook/Cargo.toml --release
 	cargo build --manifest-path installer/Cargo.toml --release
 	rm -f build/libkernel_live.a
 	rm -rf build/initfs_live

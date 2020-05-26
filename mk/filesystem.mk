@@ -1,4 +1,5 @@
 build/filesystem.bin: filesystem.toml build/bootloader build/kernel prefix
+	cargo build --manifest-path cookbook/Cargo.toml --release
 	cargo build --manifest-path installer/Cargo.toml --release
 	cargo build --manifest-path redoxfs/Cargo.toml --release
 	-$(FUMOUNT) build/filesystem/ || true
