@@ -148,7 +148,7 @@ $(PREFIX)/relibc-freestanding-install: $(ROOT)/relibc | $(PREFIX_BASE_INSTALL) $
 	mkdir -p "$@.partial"
 	cd "$<" && \
 	export PATH="$(PREFIX_BASE_INSTALL):$(PREFIX_FREESTANDING_PATH):$$PATH" && \
-	export CARGO="env -u CARGO xargo" && \
+	export CARGO="env -u CARGO -u RUSTUP_TOOLCHAIN xargo" && \
 	export CC_$(subst -,_,$(TARGET))="$(TARGET)-gcc -isystem $(ROOT)/$@.partial/$(TARGET)/include" && \
 	$(MAKE) -j `$(NPROC)` all && \
 	$(MAKE) -j `$(NPROC)` install DESTDIR="$(ROOT)/$@.partial/$(TARGET)"
@@ -192,10 +192,10 @@ $(PREFIX)/gcc-install.tar.gz: $(PREFIX)/gcc-install
 		--directory="$<" \
 		.
 
-$(PREFIX)/rust-install: $(ROOT)/rust | $(PREFIX)/relibc-freestanding-install
+$(PREFIX)/rust-install: $(ROOT)/rust | $(PREFIX)/gcc-install
 	rm -rf "$(PREFIX)/rust-build" "$@.partial" "$@"
 	mkdir -p "$(PREFIX)/rust-build"
-	cp -r "$(PREFIX)/relibc-freestanding-install" "$@.partial"
+	cp -r "$(PREFIX)/gcc-install" "$@.partial"
 	cd "$(PREFIX)/rust-build" && \
 	export PATH="$(ROOT)/$@.partial/bin:$$PATH" && \
 	"$</configure" \
