@@ -1,26 +1,10 @@
 PREFIX=prefix/$(TARGET)
 
-PREFIX_BASE_INSTALL=$(PREFIX)/rust-freestanding-install
-PREFIX_FREESTANDING_INSTALL=$(PREFIX)/gcc-freestanding-install
 PREFIX_INSTALL=$(PREFIX)/relibc-install
-
-ifeq ($(PREFIX_BINARY),1)
-	PREFIX_RELIBC_BASE=$(PREFIX)/rust-install
-	export RUSTUP_TOOLCHAIN=$(ROOT)/$(PREFIX)/rust-install
-else
-	PREFIX_RELIBC_BASE=$(PREFIX)/gcc-install
-	export RUSTUP_TOOLCHAIN=$(ROOT)/$(PREFIX)/rust-freestanding-install
-endif
-
-PREFIX_BASE_PATH=$(ROOT)/$(PREFIX_BASE_INSTALL)/bin
-PREFIX_FREESTANDING_PATH=$(ROOT)/$(PREFIX_FREESTANDING_INSTALL)/bin
 PREFIX_PATH=$(ROOT)/$(PREFIX_INSTALL)/bin
 
 export PREFIX_RUSTFLAGS=-L $(ROOT)/$(PREFIX_INSTALL)/$(TARGET)/lib
-
-prefix-base: $(PREFIX_BASE_INSTALL)
-
-prefix-freestanding: $(PREFIX_FREESTANDING_INSTALL)
+export RUSTUP_TOOLCHAIN=$(ROOT)/$(PREFIX_INSTALL)
 
 prefix: $(PREFIX_INSTALL)
 
@@ -31,11 +15,11 @@ PREFIX_STRIP=\
 		-exec strip --strip-unneeded {} ';' \
 		2> /dev/null
 
-$(PREFIX)/relibc-install: $(ROOT)/relibc | $(PREFIX_RELIBC_BASE)
+$(PREFIX)/relibc-install: $(ROOT)/relibc | $(PREFIX)/rust-install
 	rm -rf "$@.partial" "$@"
-	cp -r "$(PREFIX_RELIBC_BASE)" "$@.partial"
+	cp -r "$(PREFIX)/rust-install" "$@.partial"
 	rm -rf "$@.partial/$(TARGET)/include/"*
-	cp -r "$(PREFIX_RELIBC_BASE)/$(TARGET)/include/c++" "$@.partial/$(TARGET)/include/c++"
+	cp -r "$(PREFIX)rust-install/$(TARGET)/include/c++" "$@.partial/$(TARGET)/include/c++"
 	cd "$<" && \
 	export PATH="$(ROOT)/$@.partial/bin:$$PATH" && \
 	export CARGO="env -u CARGO xargo" && \
@@ -55,18 +39,6 @@ $(PREFIX)/relibc-install.tar.gz: $(PREFIX)/relibc-install
 
 ifeq ($(PREFIX_BINARY),1)
 
-$(PREFIX)/gcc-install.tar.gz:
-	mkdir -p "$(@D)"
-	wget -O $@.partial "https://static.redox-os.org/toolchain/$(TARGET)/gcc-install.tar.gz"
-	mv $@.partial $@
-
-$(PREFIX)/gcc-install: $(PREFIX)/gcc-install.tar.gz
-	rm -rf "$@.partial" "$@"
-	mkdir -p "$@.partial"
-	tar --extract --file "$<" --directory "$@.partial" --strip-components=1
-	touch "$@.partial"
-	mv "$@.partial" "$@"
-
 $(PREFIX)/rust-install.tar.gz:
 	mkdir -p "$(@D)"
 	wget -O $@.partial "https://static.redox-os.org/toolchain/$(TARGET)/rust-install.tar.gz"
@@ -80,6 +52,12 @@ $(PREFIX)/rust-install: $(PREFIX)/rust-install.tar.gz
 	mv "$@.partial" "$@"
 
 else
+
+PREFIX_BASE_INSTALL=$(PREFIX)/rust-freestanding-install
+PREFIX_FREESTANDING_INSTALL=$(PREFIX)/gcc-freestanding-install
+
+PREFIX_BASE_PATH=$(ROOT)/$(PREFIX_BASE_INSTALL)/bin
+PREFIX_FREESTANDING_PATH=$(ROOT)/$(PREFIX_FREESTANDING_INSTALL)/bin
 
 $(PREFIX)/binutils.tar.bz2:
 	mkdir -p "$(@D)"
@@ -214,10 +192,10 @@ $(PREFIX)/gcc-install.tar.gz: $(PREFIX)/gcc-install
 		--directory="$<" \
 		.
 
-$(PREFIX)/rust-install: $(ROOT)/rust | $(PREFIX)/relibc-install
+$(PREFIX)/rust-install: $(ROOT)/rust | $(PREFIX)/relibc-freestanding-install
 	rm -rf "$(PREFIX)/rust-build" "$@.partial" "$@"
 	mkdir -p "$(PREFIX)/rust-build"
-	cp -r "$(PREFIX)/relibc-install" "$@.partial"
+	cp -r "$(PREFIX)/relibc-freestanding-install" "$@.partial"
 	cd "$(PREFIX)/rust-build" && \
 	export PATH="$(ROOT)/$@.partial/bin:$$PATH" && \
 	"$</configure" \
