@@ -1,31 +1,22 @@
+GIT="https://gitlab.redox-os.org/redox-os/ca-certificates.git"
+
 function recipe_version {
     date "+%Y%m%d"
     skip=1
 }
 
-function recipe_fetch {
-    if [ ! -d source ]
-    then
-        mkdir source
-    fi
-    pushd source
-        cp ../make-ca.sh make-ca.sh
-        curl \
-            -o certdata.txt \
-            --time-cond certdata.txt \
-            https://hg.mozilla.org/releases/mozilla-release/raw-file/default/security/nss/lib/ckfw/builtins/certdata.txt
-    popd
-    skip=1
-}
-
 function recipe_update {
+    echo "skipping update"
     skip=1
 }
 
 function recipe_build {
     rm -rf build
     mkdir build
-    chmod +x ./make-ca.sh
+    curl \
+        -o certdata.txt \
+        --time-cond certdata.txt \
+        https://hg.mozilla.org/releases/mozilla-release/raw-file/default/security/nss/lib/ckfw/builtins/certdata.txt
     ./make-ca.sh -D "$PWD/build"
     skip=1
 }
