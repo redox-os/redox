@@ -19,7 +19,7 @@ $(PREFIX)/relibc-install: $(ROOT)/relibc | $(PREFIX)/rust-install
 	rm -rf "$@.partial" "$@"
 	cp -r "$(PREFIX)/rust-install" "$@.partial"
 	rm -rf "$@.partial/$(TARGET)/include/"*
-	cp -r "$(PREFIX)rust-install/$(TARGET)/include/c++" "$@.partial/$(TARGET)/include/c++"
+	cp -r "$(PREFIX)/rust-install/$(TARGET)/include/c++" "$@.partial/$(TARGET)/include/c++"
 	cd "$<" && \
 	export PATH="$(ROOT)/$@.partial/bin:$$PATH" && \
 	export CARGO="env -u CARGO xargo" && \
