@@ -147,7 +147,7 @@ $(PREFIX)/relibc-freestanding-install: $(ROOT)/relibc | $(PREFIX_BASE_INSTALL) $
 	rm -rf "$@.partial" "$@"
 	mkdir -p "$@.partial"
 	cd "$<" && \
-	export PATH="$(PREFIX_BASE_INSTALL):$(PREFIX_FREESTANDING_PATH):$$PATH" && \
+	export PATH="$(PREFIX_BASE_PATH):$(PREFIX_FREESTANDING_PATH):$$PATH" && \
 	export CARGO="env -u CARGO -u RUSTUP_TOOLCHAIN xargo" && \
 	export CC_$(subst -,_,$(TARGET))="$(TARGET)-gcc -isystem $(ROOT)/$@.partial/$(TARGET)/include" && \
 	$(MAKE) -j `$(NPROC)` all && \
