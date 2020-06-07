@@ -1,6 +1,9 @@
 # Configuration and variables
 include mk/config.mk
 
+# Dependencies
+include mk/depends.mk
+
 all: build/harddrive.bin
 
 coreboot: build/coreboot.elf
