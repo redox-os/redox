@@ -4,7 +4,7 @@ git = "https://gitlab.redox-os.org/redox-os/drivers.git"
 [build]
 template = "custom"
 script = """
-redoxer build --release \
+"${COOKBOOK_CARGO}" build --release \
     --manifest-path "${COOKBOOK_SOURCE}/Cargo.toml" \
     --workspace
 
