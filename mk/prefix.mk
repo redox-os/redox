@@ -192,10 +192,11 @@ $(PREFIX)/gcc-install.tar.gz: $(PREFIX)/gcc-install
 		--directory="$<" \
 		.
 
-$(PREFIX)/rust-install: $(ROOT)/rust | $(PREFIX)/gcc-install
+$(PREFIX)/rust-install: $(ROOT)/rust | $(PREFIX)/gcc-install $(PREFIX)/relibc-freestanding-install
 	rm -rf "$(PREFIX)/rust-build" "$@.partial" "$@"
 	mkdir -p "$(PREFIX)/rust-build"
 	cp -r "$(PREFIX)/gcc-install" "$@.partial"
+	cp -r "$(PREFIX)/relibc-freestanding-install/$(TARGET)" "$@.partial"
 	cd "$(PREFIX)/rust-build" && \
 	export PATH="$(ROOT)/$@.partial/bin:$$PATH" && \
 	"$</configure" \
