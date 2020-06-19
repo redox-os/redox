@@ -45,6 +45,7 @@ findutils = {}
 #games = {}
 #gawk = {}
 #gcc = {}
+gdbserver = {}
 #gears = {}
 #generaluser-gs = {}
 #gettext = {}

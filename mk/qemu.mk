@@ -21,11 +21,14 @@ else
 	ifneq ($(bridge),)
 		QEMUFLAGS+=-netdev bridge,br=$(bridge),id=net0 -device e1000,netdev=net0,id=nic0
 	else
-		QEMUFLAGS+=-netdev user,id=net0 -device e1000,netdev=net0 \
-					-object filter-dump,id=f1,netdev=net0,file=build/network.pcap
-	endif
-	ifeq ($(net),redir)
-		QEMUFLAGS+=-redir tcp:8023::8023 -redir tcp:8080::8080
+	    ifeq ($(net),redir)
+			# port 8080 and 8083 - webservers
+			# port 64126 - our gdbserver implementation
+			QEMUFLAGS+=-netdev user,id=net0,hostfwd=tcp::8080-:8080,hostfwd=tcp::8083-:8083,hostfwd=tcp::64126-:64126 -device e1000,netdev=net0,id=nic0
+		else
+			QEMUFLAGS+=-netdev user,id=net0 -device e1000,netdev=net0 \
+						-object filter-dump,id=f1,netdev=net0,file=build/network.pcap
+		endif
 	endif
 endif
 ifeq ($(vga),no)
