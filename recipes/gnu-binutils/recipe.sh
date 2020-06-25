@@ -26,7 +26,7 @@ function recipe_build {
         --prefix=/ \
         --with-sysroot=/ \
         --with-build-sysroot="$sysroot" \
-        --disable-gdb \
+        --enable-gdb \
         --disable-nls \
         --disable-werror
     "$REDOX_MAKE" -j"$($NPROC)"
