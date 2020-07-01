@@ -1,7 +1,7 @@
 GIT=https://gitlab.redox-os.org/redox-os/binutils-gdb.git
 BRANCH=redox
 GIT_UPSTREAM=git://sourceware.org/git/binutils-gdb.git
-BUILD_DEPENDS=(relibc)
+BUILD_DEPENDS=(expat)
 
 function recipe_version {
     printf "r%s.%s" "$(git rev-list --count HEAD)" "$(git rev-parse --short HEAD)"
@@ -18,7 +18,8 @@ function recipe_build {
     mkdir -p "$sysroot/usr"
     ln -sf "$sysroot/include" "$sysroot/usr/include"
     ln -sf "$sysroot/lib" "$sysroot/usr/lib"
-    export LDFLAGS="--static"
+    export CPPFLAGS="-I$sysroot/include -g"
+    export LDFLAGS="-L$sysroot/lib -static -g"
     ./configure \
         --build=${BUILD} \
         --host=${HOST} \
@@ -27,6 +28,10 @@ function recipe_build {
         --with-sysroot=/ \
         --with-build-sysroot="$sysroot" \
         --enable-gdb \
+        --with-expat \
+        --with-multilib \
+        --with-interwork \
+        --enable-targets=x86_64-unknown-redox \
         --disable-nls \
         --disable-werror
     "$REDOX_MAKE" -j"$($NPROC)"
