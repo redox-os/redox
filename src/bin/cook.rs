@@ -439,6 +439,7 @@ COOKBOOK_CARGO="${COOKBOOK_REDOXER}"
 COOKBOOK_CARGO_FLAGS=(
     --path "${COOKBOOK_SOURCE}"
     --root "${COOKBOOK_STAGE}"
+    --locked
 )
 function cookbook_cargo {
     "${COOKBOOK_CARGO}" install "${COOKBOOK_CARGO_FLAGS[@]}"
