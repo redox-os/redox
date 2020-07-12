@@ -1,3 +1,5 @@
+-include .config
+
 # Configuration
 ## Architecture to build Redox for (aarch64 or x86_64)
 ARCH?=x86_64
