@@ -32,7 +32,9 @@ img:
     script:
      - |
         source "$HOME/.cargo/env" &&
-        cargo install cargo-config cargo-xbuild xargo &&
+        cargo install --version 0.1.1 cargo-config &&
+        cargo install --version 0.3.20 cargo-xbuild &&
+        cargo install xargo &&
         make ci-img IMG_TAG=$CI_COMMIT_REF_NAME
     artifacts:
         paths:
