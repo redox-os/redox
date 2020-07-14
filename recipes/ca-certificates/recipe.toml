@@ -9,5 +9,6 @@ curl \
     --time-cond certdata.txt \
     https://hg.mozilla.org/releases/mozilla-release/raw-file/default/security/nss/lib/ckfw/builtins/certdata.txt
 "${COOKBOOK_SOURCE}/make-ca.sh" -D "${COOKBOOK_BUILD}"
-cp -rv "${COOKBOOK_BUILD}/etc/ssl/certs" "${COOKBOOK_STAGE}/ssl"
+mkdir -pv "${COOKBOOK_STAGE}/ssl"
+cp -rv "${COOKBOOK_BUILD}/etc/ssl/certs" "${COOKBOOK_STAGE}/ssl/certs"
 """
