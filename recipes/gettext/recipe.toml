@@ -1,0 +1,27 @@
+[source]
+tar = "http://ftp.gnu.org/pub/gnu/gettext/gettext-0.19.8.1.tar.xz"
+patches = [
+    "redox.patch"
+]
+script = """
+wget -O build-aux/config.sub http://git.savannah.gnu.org/cgit/config.git/plain/config.sub
+"""
+
+[build]
+template = "custom"
+dependencies = [
+    "libiconv"
+]
+script = """
+COOKBOOK_CONFIGURE_FLAGS+=(
+    --disable-shared
+    --enable-static
+    ac_cv_have_decl_program_invocation_name=no
+    gt_cv_locale_fr=false
+    gt_cv_locale_fr_utf8=false
+    gt_cv_locale_ja=false
+    gt_cv_locale_tr_utf8=false
+    gt_cv_locale_zh_CN=false
+)
+cookbook_configure
+"""
