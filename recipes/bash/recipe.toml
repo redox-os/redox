@@ -1,0 +1,21 @@
+[source]
+tar = "http://ftp.gnu.org/gnu/bash/bash-4.4.tar.gz"
+dependencies = [
+    "gettext"
+]
+patches = [
+    "redox.patch"
+]
+script = """
+wget -O support/config.sub http://git.savannah.gnu.org/cgit/config.git/plain/config.sub
+"""
+
+[build]
+template = "custom"
+script = """
+COOKBOOK_CONFIGURE_FLAGS+=(
+    --disable-readline
+    bash_cv_getenv_redef=no
+)
+cookbook_configure
+"""
