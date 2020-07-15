@@ -80,6 +80,7 @@ $(PREFIX)/binutils-install: $(PREFIX)/binutils
 		--program-prefix="$(TARGET)-" \
 		--prefix="" \
 		--disable-werror \
+		--with-arch=x86-64 \
 		&& \
 	$(MAKE) -j `$(NPROC)` all && \
 	$(MAKE) -j `$(NPROC)` install DESTDIR="$(ROOT)/$@.partial"
@@ -113,6 +114,7 @@ $(PREFIX)/gcc-freestanding-install: $(PREFIX)/gcc | $(PREFIX)/binutils-install
 		--disable-nls \
 		--enable-languages=c,c++ \
 		--without-headers \
+		--with-arch=x86-64 \
 		&& \
 	$(MAKE) -j `$(NPROC)` all-gcc && \
 	$(MAKE) -j `$(NPROC)` install-gcc DESTDIR="$(ROOT)/$@.partial"
@@ -175,6 +177,7 @@ $(PREFIX)/gcc-install: $(PREFIX)/gcc | $(PREFIX)/relibc-freestanding-install
 		--enable-languages=c,c++ \
 		--enable-shared \
 		--enable-threads=posix \
+		--with-arch=x86-64 \
 		&& \
 	$(MAKE) -j `$(NPROC)` all-gcc all-target-libgcc all-target-libstdc++-v3 && \
 	$(MAKE) -j `$(NPROC)` install-gcc install-target-libgcc install-target-libstdc++-v3 DESTDIR="$(ROOT)/$@.partial" && \
