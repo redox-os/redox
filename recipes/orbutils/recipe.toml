@@ -13,6 +13,6 @@ cookbook_cargo
 """
 
 [package]
-depends = [
+dependencies = [
     "orbital"
 ]
