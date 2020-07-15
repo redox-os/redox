@@ -75,12 +75,12 @@ $(PREFIX)/binutils-install: $(PREFIX)/binutils
 	rm -rf "$<-build" "$@.partial" "$@"
 	mkdir -p "$<-build" "$@.partial"
 	cd "$<-build" && \
+	export CFLAGS="-march=x86-64" CXXFLAGS="-march=x86-64" && \
 	"$(ROOT)/$</configure" \
 		--target="$(TARGET)" \
 		--program-prefix="$(TARGET)-" \
 		--prefix="" \
 		--disable-werror \
-		--with-arch=x86-64 \
 		&& \
 	$(MAKE) -j `$(NPROC)` all && \
 	$(MAKE) -j `$(NPROC)` install DESTDIR="$(ROOT)/$@.partial"
@@ -107,6 +107,7 @@ $(PREFIX)/gcc-freestanding-install: $(PREFIX)/gcc | $(PREFIX)/binutils-install
 	cp -r "$(PREFIX)/binutils-install" "$@.partial"
 	cd "$<-freestanding-build" && \
 	export PATH="$(ROOT)/$@.partial/bin:$$PATH" && \
+	export CFLAGS="-march=x86-64" CXXFLAGS="-march=x86-64" && \
 	"$(ROOT)/$</configure" \
 		--target="$(TARGET)" \
 		--program-prefix="$(TARGET)-" \
@@ -114,7 +115,6 @@ $(PREFIX)/gcc-freestanding-install: $(PREFIX)/gcc | $(PREFIX)/binutils-install
 		--disable-nls \
 		--enable-languages=c,c++ \
 		--without-headers \
-		--with-arch=x86-64 \
 		&& \
 	$(MAKE) -j `$(NPROC)` all-gcc && \
 	$(MAKE) -j `$(NPROC)` install-gcc DESTDIR="$(ROOT)/$@.partial"
@@ -129,6 +129,7 @@ $(PREFIX)/rust-freestanding-install: $(ROOT)/rust | $(PREFIX)/binutils-install
 	cp -r "$(PREFIX)/binutils-install" "$@.partial"
 	cd "$(PREFIX)/rust-freestanding-build" && \
 	export PATH="$(ROOT)/$@.partial/bin:$$PATH" && \
+	export CFLAGS="-march=x86-64" CXXFLAGS="-march=x86-64" && \
 	"$</configure" \
 		--prefix="/" \
 		--disable-docs \
@@ -164,6 +165,7 @@ $(PREFIX)/gcc-install: $(PREFIX)/gcc | $(PREFIX)/relibc-freestanding-install
 	cp -r "$(PREFIX_BASE_INSTALL)" "$@.partial"
 	cd "$<-build" && \
 	export PATH="$(ROOT)/$@.partial/bin:$$PATH" && \
+	export CFLAGS="-march=x86-64" CXXFLAGS="-march=x86-64" && \
 	"$(ROOT)/$</configure" \
 		--target="$(TARGET)" \
 		--program-prefix="$(TARGET)-" \
@@ -177,7 +179,6 @@ $(PREFIX)/gcc-install: $(PREFIX)/gcc | $(PREFIX)/relibc-freestanding-install
 		--enable-languages=c,c++ \
 		--enable-shared \
 		--enable-threads=posix \
-		--with-arch=x86-64 \
 		&& \
 	$(MAKE) -j `$(NPROC)` all-gcc all-target-libgcc all-target-libstdc++-v3 && \
 	$(MAKE) -j `$(NPROC)` install-gcc install-target-libgcc install-target-libstdc++-v3 DESTDIR="$(ROOT)/$@.partial" && \
@@ -202,6 +203,7 @@ $(PREFIX)/rust-install: $(ROOT)/rust | $(PREFIX)/gcc-install $(PREFIX)/relibc-fr
 	cp -r "$(PREFIX)/relibc-freestanding-install/$(TARGET)" "$@.partial"
 	cd "$(PREFIX)/rust-build" && \
 	export PATH="$(ROOT)/$@.partial/bin:$$PATH" && \
+	export CFLAGS="-march=x86-64" CXXFLAGS="-march=x86-64" && \
 	"$</configure" \
 		--prefix="/" \
 		--disable-docs \
