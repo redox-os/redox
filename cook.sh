@@ -520,7 +520,9 @@ then
 
         cd "${COOKBOOK_RECIPE}"
 
-        source recipe.sh
+        if [ -e recipe.sh ]; then
+            source recipe.sh
+        fi
 
         ops=()
         for arg in "${@:2}"
