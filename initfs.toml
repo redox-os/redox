@@ -9,6 +9,7 @@ prompt = false
 [packages]
 drivers = {}
 init = {}
+#pciids = {}
 nulld = {}
 ramfs = {}
 randd = {}
