@@ -5,7 +5,8 @@ QEMU_EFI=/usr/share/OVMF/OVMF_CODE.fd
 ifeq ($(serial),no)
 	QEMUFLAGS+=-chardev stdio,id=debug -device isa-debugcon,iobase=0x402,chardev=debug
 else
-	QEMUFLAGS+=-serial mon:stdio
+	QEMUFLAGS+=-chardev stdio,id=debug,signal=off,mux=on,"$(if $(qemu_serial_logfile),logfile=$(qemu_serial_logfile))"
+	QEMUFLAGS+=-serial chardev:debug -mon chardev=debug
 endif
 ifeq ($(iommu),yes)
 	QEMUFLAGS+=-machine q35,iommu=on
