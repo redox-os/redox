@@ -182,7 +182,7 @@ password = ""
 [[files]]
 path = "/etc/init.d/00_base"
 data = """
-pcid --add-config-dir ---config=file:/etc/pcid.d
+pcid --add-config-dir --config=file:/etc/pcid.d
 ipcd
 logd
 ptyd
