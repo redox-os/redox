@@ -1,5 +1,8 @@
 [source]
 tar = "https://codeload.github.com/xz-mirror/xz/tar.gz/v5.2.5"
+script = """
+./autogen.sh
+"""
 
 [build]
 template = "custom"
