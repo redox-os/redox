@@ -12,5 +12,11 @@ fi
 
 for recipe in $recipes
 do
+    if [ -e "recipes/$recipe/recipe.toml" ]
+    then
+        target/release/cook --fetch-only "$recipe"
+        continue
+    fi
+
     ./cook.sh "$recipe" fetch
 done
