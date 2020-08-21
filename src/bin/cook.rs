@@ -557,11 +557,13 @@ fn package(recipe_dir: &Path, stage_dir: &Path, package: &PackageRecipe) -> Resu
     Ok(package_file)
 }
 
-fn cook(recipe_dir: &Path, recipe: &Recipe) -> Result<(), String> {
+fn cook(recipe_dir: &Path, recipe: &Recipe, fetch_only: bool) -> Result<(), String> {
     let source_dir = fetch(&recipe_dir, &recipe.source).map_err(|err| format!(
         "failed to fetch: {}",
         err
     ))?;
+
+    if fetch_only { return Ok(()); }
 
     let stage_dir = build(&recipe_dir, &source_dir, &recipe.build).map_err(|err| format!(
         "failed to build: {}",
@@ -658,12 +660,14 @@ impl CookRecipe {
 fn main() {
     let mut matching = true;
     let mut dry_run = false;
+    let mut fetch_only = false;
     let mut quiet = false;
     let mut recipe_names = Vec::new();
     for arg in env::args().skip(1) {
         match arg.as_str() {
             "--" if matching => matching = false,
             "-d" | "--dry-run" if matching => dry_run = true,
+            "--fetch-only" if matching => fetch_only = true,
             "-q" | "--quiet" if matching => quiet = true,
             _ => recipe_names.push(arg),
         }
@@ -702,7 +706,7 @@ fn main() {
             }
             Ok(())
         } else {
-            cook(&recipe.dir, &recipe.recipe)
+            cook(&recipe.dir, &recipe.recipe, fetch_only)
         };
 
         match res {
