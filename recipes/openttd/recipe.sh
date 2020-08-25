@@ -14,6 +14,9 @@ function recipe_update {
 }
 
 function recipe_build {
+    sysroot="$(realpath ../sysroot)"
+    export CFLAGS="-I$sysroot/include"
+    export LDFLAGS="-L$sysroot/lib --static"
     ./configure \
         --build=${BUILD} \
         --host=${HOST} \
