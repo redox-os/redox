@@ -1,4 +1,4 @@
-BUILD_DEPENDS=(sdl2_image sdl2_mixer sdl2_ttf sdl2 liborbital llvm mesa mesa_glu freetype libjpeg libpng zlib)
+BUILD_DEPENDS=(sdl2_image sdl2_mixer sdl2_ttf sdl2 liborbital llvm mesa mesa_glu freetype libjpeg libpng libogg libvorbis zlib)
 
 function recipe_version {
     printf "1.0.0"
@@ -21,7 +21,7 @@ function recipe_prepare {
 function recipe_build {
     sysroot="$(realpath ../sysroot)"
     set -x
-    "${CXX}" -O2 -I "$sysroot/include" -L "$sysroot/lib" gears.c -o sdl2_gears -static -lSDL2_image -lSDL2_mixer -lSDL2_ttf -lSDL2 -lorbital $("${PKG_CONFIG}" --libs glu) -lfreetype -lpng -ljpeg -lglapi -lz
+    "${CXX}" -O2 -I "$sysroot/include" -L "$sysroot/lib" gears.c -o sdl2_gears -static -lSDL2_image -lSDL2_mixer -lSDL2_ttf -lSDL2 -lorbital $("${PKG_CONFIG}" --libs glu) -lfreetype -lpng -ljpeg -lvorbisfile -lvorbis -logg -lglapi -lz
     set +x
     skip=1
 }
