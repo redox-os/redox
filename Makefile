@@ -41,6 +41,7 @@ update:
 	cargo update --manifest-path redoxfs/Cargo.toml
 
 fetch:
+	cargo build --manifest-path cookbook/Cargo.toml --release
 	cd cookbook && ./fetch.sh \
 		"$$(cargo run --manifest-path ../installer/Cargo.toml -- --list-packages -c ../initfs.toml)" \
 		"$$(cargo run --manifest-path ../installer/Cargo.toml -- --list-packages -c ../filesystem.toml)"
@@ -82,6 +83,7 @@ ci-img: FORCE
 
 # CI packaging target
 ci-pkg: prefix FORCE
+	cargo build --manifest-path cookbook/Cargo.toml --release
 	export PATH="$(PREFIX_PATH):$$PATH" && \
 	PACKAGES="$$(cargo run --manifest-path installer/Cargo.toml -- --list-packages -c ci.toml)" && \
 	cd cookbook && \
