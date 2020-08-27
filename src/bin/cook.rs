@@ -209,16 +209,23 @@ fn fetch(recipe_dir: &Path, source: &SourceRecipe) -> Result<PathBuf, String> {
                 run_command(command)?;
             } else {
                 //TODO: complicated stuff to check and reset branch to origin
-                // ORIGIN_BRANCH="$(git branch --remotes | grep '^  origin/HEAD -> ' | cut -d ' ' -f 5-)"
-                // if [ -n "$BRANCH" ]
-                // then
-                //     ORIGIN_BRANCH="origin/$BRANCH"
-                // fi
-                //
-                // if [ "$(git rev-parse HEAD)" != "$(git rev-parse $ORIGIN_BRANCH)" ]
-                // then
-                //     git checkout -B "$(echo "$ORIGIN_BRANCH" | cut -d / -f 2-)" "$ORIGIN_BRANCH"
-                // fi
+                let mut command = Command::new("bash");
+                command.arg("-c").arg(r#"
+ORIGIN_BRANCH="$(git branch --remotes | grep '^  origin/HEAD -> ' | cut -d ' ' -f 5-)"
+if [ -n "$BRANCH" ]
+then
+    ORIGIN_BRANCH="origin/$BRANCH"
+fi
+
+if [ "$(git rev-parse HEAD)" != "$(git rev-parse $ORIGIN_BRANCH)" ]
+then
+    git checkout -B "$(echo "$ORIGIN_BRANCH" | cut -d / -f 2-)" "$ORIGIN_BRANCH"
+fi"#);
+                if let Some(branch) = branch {
+                    command.env("BRANCH", branch);
+                }
+                command.current_dir(&source_dir);
+                run_command(command)?;
             }
 
             // Sync submodules URL
