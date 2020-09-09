@@ -44,6 +44,8 @@ endif
 ifeq ($(UNAME),Linux)
 	ifneq ($(kvm),no)
 		QEMUFLAGS+=-enable-kvm -cpu host
+	else
+		QEMUFLAGS+=-cpu Skylake-Client
 	endif
 endif
 #,int,pcall
