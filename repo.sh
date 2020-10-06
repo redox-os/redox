@@ -25,6 +25,10 @@ do
     if [ -e "recipes/$recipe/recipe.toml" ]
     then
         target/release/cook "$recipe"
+
+        echo -e "\033[01;38;5;155mrepo - legacy tar for $recipe\033[0m" >&2
+        ./cook.sh "$recipe" tar
+
         continue
     fi
 
