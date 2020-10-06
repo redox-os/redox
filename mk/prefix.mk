@@ -28,6 +28,8 @@ $(PREFIX)/relibc-install: $(ROOT)/relibc | $(PREFIX)/rust-install
 	cd "$@.partial" && $(PREFIX_STRIP)
 	touch "$@.partial"
 	mv "$@.partial" "$@"
+	mkdir $@/lib/rustlib/src
+	ln -s $(ROOT)/rust $@/lib/rustlib/src
 
 $(PREFIX)/relibc-install.tar.gz: $(PREFIX)/relibc-install
 	tar \
