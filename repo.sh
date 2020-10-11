@@ -26,8 +26,22 @@ do
     then
         target/release/cook "$recipe"
 
-        echo -e "\033[01;38;5;155mrepo - legacy tar for $recipe\033[0m" >&2
-        ./cook.sh "$recipe" tar
+        if [ ! -f "recipes/$recipe/stage.tar.gz" ]
+        then
+            echo -e "\033[01;38;5;155mrepo - legacy packaging $recipe\033[0m" >&2
+            ./cook.sh "$recipe" tar $DEBUG
+        else
+            TIME_PKG="$($STAT -c "%Y" recipes/$recipe/stage.pkgar)"
+            TIME_STAGE="$($STAT -c "%Y" recipes/$recipe/stage.tar.gz)"
+            if [ "$TIME_PKG" -gt "$TIME_STAGE" ]
+            then
+                echo -e "\033[01;38;5;155mrepo - legacy repackaging $recipe\033[0m" >&2
+                ./cook.sh "$recipe" untar tar $DEBUG
+            fi
+        fi
+
+        # Match pkgar and tar time
+        touch --no-create --reference="recipes/$recipe/stage.tar.gz" "recipes/$recipe/stage.pkgar"
 
         continue
     fi
