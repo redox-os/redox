@@ -3,9 +3,6 @@ build/bootloader: bootloader/$(ARCH)/**
 	nasm -f bin -o $@ -D ARCH_$(ARCH) -ibootloader/$(ARCH)/ bootloader/$(ARCH)/disk.asm
 
 build/harddrive.bin: build/filesystem.bin bootloader/$(ARCH)/**
-	nasm -f bin -o $@ -D ARCH_$(ARCH) -D FILESYSTEM=$< -ibootloader/$(ARCH)/ bootloader/$(ARCH)/disk.asm
-
-build/harddrive-mbr.bin: build/filesystem.bin bootloader/$(ARCH)/**
 	nasm -f bin -o build/bootsector.bin -D ARCH_$(ARCH) -ibootloader/$(ARCH)/ bootloader/$(ARCH)/disk.asm
 	dd if=/dev/zero of=$@.partial bs=1M count=$$(expr $$(du -m $< | cut -f1) + 2)
 	parted -s -a minimal $@.partial mklabel msdos
