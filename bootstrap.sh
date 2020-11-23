@@ -238,6 +238,7 @@ ubuntu()
 		m4 \
 		nasm \
 		pkg-config \
+		po4a \
 		syslinux-utils \
 		texinfo
 	if [ "$1" == "qemu" ]; then
