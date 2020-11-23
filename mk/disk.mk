@@ -41,14 +41,6 @@ build/bootloader.efi: bootloader-efi/build/$(EFI_TARGET)/boot.efi
 	mkdir -p build
 	cp -v $< $@
 
-build/harddrive-efi-old.bin: build/bootloader.efi build/filesystem.bin
-	dd if=/dev/zero of=$@.partial bs=1048576 count=$$(expr $$(du -m $< | cut -f1) + 1)
-	mkfs.vfat $@.partial
-	mmd -i $@.partial efi
-	mmd -i $@.partial efi/boot
-	mcopy -i $@.partial $< ::efi/boot/bootx64.efi
-	cat $@.partial build/filesystem.bin > $@
-
 build/harddrive-efi.bin: build/bootloader.efi build/filesystem.bin
 	# TODO: Validate the correctness of this \
 	# Populate an EFI system partition \
