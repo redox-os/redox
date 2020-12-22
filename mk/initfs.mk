@@ -5,6 +5,10 @@ build/initfs.tag: initfs.toml prefix
 	rm -rf build/initfs
 	mkdir -p build/initfs
 	$(INSTALLER) -c $< build/initfs/
+	#TODO: HACK FOR SMALLER INITFS, FIX IN PACKAGING
+	for bin in alxd e1000d ihdad ixgbed pcspkrd redoxfs-ar redoxfs-mkfs rtl8168d usbctl usbhidd usbscsid xhcid; do \
+		rm -f build/initfs/bin/$$bin; \
+	done
 	touch $@
 
 build/initfs_coreboot.tag: initfs_coreboot.toml prefix
