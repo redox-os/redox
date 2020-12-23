@@ -1,6 +1,6 @@
 GIT=https://gitlab.redox-os.org/redox-os/llvm-project.git
 GIT_UPSTREAM=https://github.com/rust-lang/llvm-project.git
-BRANCH=redox
+BRANCH=redox-2020-07-27
 
 function recipe_version {
     printf "r%s.%s" "$(git rev-list --count HEAD)" "$(git rev-parse --short HEAD)"
