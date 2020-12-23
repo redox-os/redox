@@ -11,6 +11,7 @@ drivers = {}
 init = {}
 nulld = {}
 #pciids = {}
+ramfs = {}
 randd = {}
 redoxfs = {}
 zerod = {}
@@ -26,6 +27,7 @@ randd
 vesad T T G
 stdio display:1
 ps2d us
+ramfs logging
 pcid /etc/pcid/initfs.toml
 redoxfs disk/live: file
 cd file:
