@@ -23,6 +23,7 @@ function recipe_build {
 	    --prefix=/ \
 	    --disable-shared \
 	    --enable-static \
+	    --disable-docs \
 	    ac_cv_func_XML_SetDoctypeDeclHandler=yes
 	"$REDOX_MAKE" -j"$($NPROC)"
     	skip=1
