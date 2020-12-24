@@ -14,6 +14,7 @@
 #include <GL/glu.h>
 #include <GL/osmesa.h>
 #include <orbital.h>
+#include <stdio.h>
 
 #ifndef M_PI
 #define M_PI 3.14159265
