@@ -449,8 +449,6 @@ rustInstall() {
 			echo "Please manually uninstall multirust and any other versions of rust, then re-run bootstrap."
 			exit
 		fi
-	else
-		echo "Old multirust not installed, you are good to go."
 	fi
 	# If rustup is not installed we should offer to install it for them
 	if [ -z "$(which rustup)" ]; then
@@ -467,7 +465,6 @@ rustInstall() {
 			echo "export PATH=\"\$HOME/.cargo/bin:\$PATH\"" >> ~/.bashrc
 			# source the variables so that we can execute rustup commands in the current shell
 			source ~/.cargo/env
-			rustup default nightly
 		else
 			echo "Rustup will not be installed!"
 		fi
@@ -479,22 +476,8 @@ rustInstall() {
 		echo "or install rustc nightly manually (not recommended) via:"
 		echo "\#curl -sSf https://static.rust-lang.org/rustup.sh | sh -s -- --channel=nightly"
 		exit
-	fi
-	# If the system has rustup installed then update rustc to the latest nightly
-	if hash 2>/dev/null rustup; then
-		rustup update nightly
-		rustup default nightly
-	fi
-	# Check to make sure that the default rustc is the nightly
-	if echo "$(rustc --version)" | grep -viq "nightly" ;then
-		echo "It appears that you have rust installed, but it"
-		echo "is not the nightly version, please either install"
-		echo "the nightly manually (not recommended) or run this"
-		echo "script again, accepting the rustup install"
-		echo
 	else
 		echo "Your rust install looks good!"
-		echo
 	fi
 }
 
@@ -538,9 +521,6 @@ boot()
 {
 	echo "Cloning gitlab repo..."
 	git clone https://gitlab.redox-os.org/redox-os/redox.git --origin upstream --recursive
-	rustInstall
-	cargoInstall cargo-config 0.1.1
-	cargoInstall xargo 0.3.20
 	echo "Cleaning up..."
 	rm bootstrap.sh
 	echo
@@ -592,6 +572,12 @@ do
 	esac
 done
 
+banner
+
+rustInstall
+cargoInstall cargo-config 0.1.1
+cargoInstall xargo 0.3.20
+
 if [ "$update" == "true" ]; then
 	git pull upstream master
 	git submodule update --recursive --init
@@ -599,7 +585,6 @@ if [ "$update" == "true" ]; then
 	exit
 fi
 
-banner
 if [ "Darwin" == "$(uname -s)" ]; then
 	osx "$emulator"
 else
@@ -635,3 +620,5 @@ fi
 if [ "$dependenciesonly" = false ]; then
 	boot
 fi
+
+echo "Redox bootstrap complete!"
