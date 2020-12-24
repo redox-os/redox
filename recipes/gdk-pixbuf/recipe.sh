@@ -59,7 +59,7 @@ function recipe_build {
 	    -Dgir=false \
 	    -Dx11=false
 	ninja -C _build -v
-    	skip=1
+	skip=1
 }
 
 function recipe_test {
