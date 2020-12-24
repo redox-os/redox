@@ -137,6 +137,7 @@ ptyd = {}
 #python = {} # getaddrinfo
 #qemu = {}
 randd = {}
+ramfs = {}
 readline = {}
 redoxerd = {}
 redoxfs = {}
