@@ -67,14 +67,12 @@ include mk/virtualbox.mk
 # CI image target
 ci-img: FORCE
 	$(MAKE) INSTALLER_FLAGS= \
-		build/coreboot.elf.gz \
 		build/harddrive.bin.gz \
 		build/livedisk.iso.gz \
 		build/harddrive-efi.bin.gz \
 		build/livedisk-efi.iso.gz
 	rm -rf build/img
 	mkdir -p build/img
-	cp "build/coreboot.elf.gz" "build/img/redox_$(IMG_TAG)_coreboot.elf.gz"
 	cp "build/harddrive.bin.gz" "build/img/redox_$(IMG_TAG)_harddrive.bin.gz"
 	cp "build/livedisk.iso.gz" "build/img/redox_$(IMG_TAG)_livedisk.iso.gz"
 	cp "build/harddrive-efi.bin.gz" "build/img/redox_$(IMG_TAG)_harddrive-efi.bin.gz"
