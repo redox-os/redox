@@ -19,7 +19,7 @@ function recipe_prepare {
 function recipe_build {
     sysroot="$(realpath ../sysroot)"
     set -x
-    "${CXX}" -O2 -I "$sysroot/include" -L "$sysroot/lib" gears.c -o gears -static -lorbital $("${PKG_CONFIG}" --libs glu) -lglapi -lz
+    "${CXX}" -O2 -I "$sysroot/include" -L "$sysroot/lib" gears.c -o gears -static -lorbital $("${PKG_CONFIG}" --libs glu) $("${TARGET}-llvm-config" --libs all) -lz
     set +x
     skip=1
 }
