@@ -1,4 +1,4 @@
-image: "ubuntu:18.04"
+image: "ubuntu:20.04"
 
 variables:
   GIT_STRATEGY: "pull"
@@ -7,6 +7,7 @@ variables:
 
 before_script:
  - |
+    export DEBIAN_FRONTEND=noninteractive
     apt-get update -qq &&
     apt-get install -qq \
         bison \
