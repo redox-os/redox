@@ -422,10 +422,10 @@ usage()
 # Looks for and installs a cargo-managed binary or subcommand
 #############################################################
 cargoInstall() {
-	if [[ "`cargo install --list`" != *"$1"* ]]; then
-		cargo install $1
+	if [[ "`cargo install --list`" != *"$1 v$2"* ]]; then
+		cargo install --force --version "$2" "$1"
 	else
-		echo "You have $1 installed already!"
+		echo "You have $1 version $2 installed already!"
 	fi
 }
 
@@ -539,8 +539,8 @@ boot()
 	echo "Cloning gitlab repo..."
 	git clone https://gitlab.redox-os.org/redox-os/redox.git --origin upstream --recursive
 	rustInstall
-	cargoInstall cargo-config
-	cargoInstall xargo
+	cargoInstall cargo-config 0.1.1
+	cargoInstall xargo 0.3.20
 	echo "Cleaning up..."
 	rm bootstrap.sh
 	echo
