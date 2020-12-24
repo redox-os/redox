@@ -53,7 +53,7 @@ INSTALLER=\
  	installer/target/release/redox_installer $(INSTALLER_FLAGS)
 
 ## Bootloader variables
-EFI_TARGET=$(ARCH)-efi-pe
+EFI_TARGET=$(ARCH)-unknown-uefi
 
 ## Cross compiler variables
 AR=$(TARGET)-gcc-ar
