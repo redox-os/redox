@@ -7,14 +7,14 @@ prompt = false
 
 # Package settings
 [packages]
-drivers = {}
-init = {}
-nulld = {}
-#pciids = {}
-ramfs = {}
-randd = {}
-redoxfs = {}
-zerod = {}
+#drivers = {}
+#init = {}
+#nulld = {}
+pciids = {}
+#ramfs = {}
+#randd = {}
+#redoxfs = {}
+#zerod = {}
 
 [[files]]
 path="/etc/init.rc"

@@ -21,7 +21,7 @@
 [submodule "kernel"]
 	path = kernel
 	url = https://gitlab.redox-os.org/redox-os/kernel.git
-	branch = master
+	branch = aarch64-rebase
 [submodule "rust"]
 	path = rust
 	url = https://gitlab.redox-os.org/redox-os/rust.git

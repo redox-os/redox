@@ -2,7 +2,7 @@
 
 # Configuration
 ## Architecture to build Redox for (aarch64 or x86_64)
-ARCH?=x86_64
+ARCH?=aarch64
 ## Flags to pass to the installer (empty to download binary packages)
 INSTALLER_FLAGS?=--cookbook=cookbook
 ## Enabled to use binary prefix (much faster)
@@ -41,7 +41,7 @@ export RUST_TARGET_PATH=$(ROOT)/kernel/targets
 export XARGO_RUST_SRC=$(ROOT)/rust/src
 
 ## Kernel variables
-KTARGET=$(ARCH)-unknown-none
+KTARGET=$(ARCH)-unknown-redox
 KBUILD=build/kernel
 
 ## Userspace variables
