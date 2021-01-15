@@ -41,7 +41,7 @@ export RUST_TARGET_PATH=$(ROOT)/kernel/targets
 export XARGO_RUST_SRC=$(ROOT)/rust/src
 
 ## Kernel variables
-KTARGET=$(ARCH)-unknown-redox
+KTARGET=$(ARCH)-unknown-none
 KBUILD=build/kernel
 
 ## Userspace variables
