@@ -54,6 +54,7 @@ INSTALLER=\
 
 ## Bootloader variables
 EFI_TARGET=$(ARCH)-unknown-uefi
+PARTED=/sbin/parted
 
 ## Cross compiler variables
 AR=$(TARGET)-gcc-ar

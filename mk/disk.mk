@@ -5,8 +5,8 @@ build/bootloader: bootloader/$(ARCH)/**
 build/harddrive.bin: build/filesystem.bin bootloader/$(ARCH)/**
 	nasm -f bin -o build/bootsector.bin -D ARCH_$(ARCH) -ibootloader/$(ARCH)/ bootloader/$(ARCH)/disk.asm
 	dd if=/dev/zero of=$@.partial bs=1M count=$$(expr $$(du -m $< | cut -f1) + 2)
-	parted -s -a minimal $@.partial mklabel msdos
-	parted -s -a minimal $@.partial mkpart primary 2048s $$(expr $$(du -m $< | cut -f1) \* 2048 + 2048)s
+	$(PARTED) -s -a minimal $@.partial mklabel msdos
+	$(PARTED) -s -a minimal $@.partial mkpart primary 2048s $$(expr $$(du -m $< | cut -f1) \* 2048 + 2048)s
 	dd if=build/bootsector.bin of=$@.partial bs=1 count=446 conv=notrunc
 	dd if=build/bootsector.bin of=$@.partial bs=512 skip=1 seek=1 conv=notrunc
 	dd if=$< of=$@.partial bs=1M seek=1 conv=notrunc
@@ -52,17 +52,17 @@ build/harddrive-efi.bin: build/bootloader.efi build/filesystem.bin
 	# Create the disk \
 	dd if=/dev/zero of=$@ bs=1048576 count=$$(expr $$(du -m $< | cut -f1) + 2 + $$(du -m build/filesystem.bin | cut -f1)) && \
 	# Create partition table \
-	parted -s -a minimal $@ mklabel gpt && \
+	$(PARTED) -s -a minimal $@ mklabel gpt && \
 	efi_disk_size=$$(du -m $< | cut -f1) && \
 	efi_disk_blkcount=$$(expr $$efi_disk_size \* $$(expr 1048576 / 512)) && \
 	efi_end=$$(expr 2048 + $$efi_disk_blkcount) && \
 	efi_last=$$(expr $$efi_end - 1) && \
-	parted -s -a minimal $@ mkpart EFI fat32 2048s "$${efi_last}s" && \
+	$(PARTED) -s -a minimal $@ mkpart EFI fat32 2048s "$${efi_last}s" && \
 	fs_disk_size=$$(du -m build/filesystem.bin | cut -f1) && \
 	fs_disk_blkcount=$$(expr $$fs_disk_size \* $$(expr 1048576 / 512)) && \
-	parted -s -a minimal $@ mkpart redox ext4 "$${efi_end}s" $$(expr $$efi_end + $$fs_disk_blkcount)s && \
-	parted -s -a minimal $@ set 1 boot on && \
-	parted -s -a minimal $@ set 1 esp on && \
+	$(PARTED) -s -a minimal $@ mkpart redox ext4 "$${efi_end}s" $$(expr $$efi_end + $$fs_disk_blkcount)s && \
+	$(PARTED) -s -a minimal $@ set 1 boot on && \
+	$(PARTED) -s -a minimal $@ set 1 esp on && \
 	# Write the partitions \
 	dd if=$@.esp bs=512 seek=2048 conv=notrunc count=$$efi_disk_blkcount of=$@ && \
 	dd if=build/filesystem.bin seek=$$efi_end bs=512 conv=notrunc of=$@ count=$$fs_disk_blkcount
