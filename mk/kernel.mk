@@ -16,21 +16,21 @@ build/libkernel_live.a: kernel/Cargo.toml kernel/src/* kernel/src/*/* kernel/src
 	cd kernel && \
 	cargo rustc --lib --target=$(ROOT)/kernel/targets/$(KTARGET).json --release --features live -Z build-std=core,alloc -- -C soft-float -C debuginfo=2 -C lto --emit link=../$@
 
-build/kernel: kernel/linkers/$(ARCH).ld build/libkernel.a
+build/kernel: kernel/linkers/$(ARCH).ld mk/kernel_ld.sh build/libkernel.a
 	export PATH="$(PREFIX_PATH):$$PATH" && \
-	$(LD) --gc-sections -z max-page-size=0x1000 -T $< -o $@ build/libkernel.a && \
+	$(ROOT)/mk/kernel_ld.sh $(LD) --gc-sections -z max-page-size=0x1000 -T $< -o $@ build/libkernel.a && \
 	$(OBJCOPY) --only-keep-debug $@ $@.sym && \
 	$(OBJCOPY) --strip-debug $@
 
-build/kernel_coreboot: kernel/linkers/$(ARCH).ld build/libkernel_coreboot.a build/live.o
+build/kernel_coreboot: kernel/linkers/$(ARCH).ld mk/kernel_ld.sh build/libkernel_coreboot.a build/live.o
 	export PATH="$(PREFIX_PATH):$$PATH" && \
-	$(LD) --gc-sections -z max-page-size=0x1000 -T $< -o $@ build/libkernel_coreboot.a build/live.o && \
+	$(ROOT)/mk/kernel_ld.sh $(LD) --gc-sections -z max-page-size=0x1000 -T $< -o $@ build/libkernel_coreboot.a build/live.o && \
 	$(OBJCOPY) --only-keep-debug $@ $@.sym && \
 	$(OBJCOPY) --strip-debug $@
 
-build/kernel_live: kernel/linkers/$(ARCH).ld build/libkernel_live.a build/live.o
+build/kernel_live: kernel/linkers/$(ARCH).ld mk/kernel_ld.sh build/libkernel_live.a build/live.o
 	export PATH="$(PREFIX_PATH):$$PATH" && \
-	$(LD) --gc-sections -z max-page-size=0x1000 -T $< -o $@ build/libkernel_live.a build/live.o && \
+	$(ROOT)/mk/kernel_ld.sh $(LD) --gc-sections -z max-page-size=0x1000 -T $< -o $@ build/libkernel_live.a build/live.o && \
 	$(OBJCOPY) --only-keep-debug $@ $@.sym && \
 	$(OBJCOPY) --strip-debug $@
 
