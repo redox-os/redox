@@ -5,15 +5,17 @@ function recipe_build {
     export INITFS_FOLDER="$(realpath ../sysroot)"
     mkdir -pv "$INITFS_FOLDER/etc"
     cp -v "$(realpath ../init.rc)" "$INITFS_FOLDER/etc/init.rc"
-    xargo rustc \
+    cargo rustc \
         --lib \
         --target "${ARCH}-unknown-none" \
         --release \
+		-Z build-std=core,alloc \
         -- \
         -C soft-float \
         -C debuginfo=2 \
+		-C lto \
         --emit link=libkernel.a
-    "${LD}" \
+    ../kernel_ld.sh "${LD}" \
         --gc-sections \
         -z max-page-size=0x1000 \
         -T "linkers/${ARCH}.ld" \

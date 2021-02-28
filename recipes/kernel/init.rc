@@ -6,8 +6,9 @@ randd
 vesad T T G
 stdio display:1
 ps2d us
+ramfs logging
 pcid /etc/pcid/initfs.toml
-redoxfs --uuid $REDOXFS_UUID file
+redoxfs --uuid $REDOXFS_UUID file $REDOXFS_BLOCK
 cd file:
 export PATH file:/bin
 run.d /etc/init.d
