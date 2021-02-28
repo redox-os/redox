@@ -2,7 +2,7 @@
 tar = "https://github.com/glennrp/libpng/archive/v1.6.36.tar.gz"
 script = """
 chmod +w config.sub
-wget -O config.sub http://git.savannah.gnu.org/cgit/config.git/plain/config.sub
+wget -O config.sub "https://gitlab.redox-os.org/redox-os/gnu-config/-/raw/master/config.sub?inline=false"
 """
 
 

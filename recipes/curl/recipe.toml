@@ -11,7 +11,7 @@ dependencies = [
 ]
 script = """
 rsync -av --delete "${COOKBOOK_SOURCE}/" ./
-wget -O config.sub http://git.savannah.gnu.org/cgit/config.git/plain/config.sub
+wget -O config.sub "https://gitlab.redox-os.org/redox-os/gnu-config/-/raw/master/config.sub?inline=false"
 autoreconf -i
 COOKBOOK_CONFIGURE="./configure"
 COOKBOOK_CONFIGURE_FLAGS=(

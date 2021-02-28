@@ -12,7 +12,7 @@ function recipe_update {
 }
 
 function recipe_build {
-    wget -O build-aux/config.sub http://git.savannah.gnu.org/cgit/config.git/plain/config.sub
+    wget -O build-aux/config.sub "https://gitlab.redox-os.org/redox-os/gnu-config/-/raw/master/config.sub?inline=false"
     ./configure --build=${BUILD} --host=${HOST} --prefix=''
     "$REDOX_MAKE" -j"$($NPROC)"
     skip=1
