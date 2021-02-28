@@ -16,7 +16,7 @@ function recipe_build {
     sysroot="$PWD/../sysroot"
     export LDFLAGS="-L$sysroot/lib -static"
     export CPPFLAGS="-I$sysroot/include"
-    wget -O support/config.sub http://git.savannah.gnu.org/cgit/config.git/plain/config.sub
+    wget -O support/config.sub "https://gitlab.redox-os.org/redox-os/gnu-config/-/raw/master/config.sub?inline=false"
     ./configure \
         --build=${BUILD} \
         --host=${HOST} \

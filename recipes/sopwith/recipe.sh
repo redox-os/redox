@@ -13,7 +13,7 @@ function recipe_update {
 }
 
 function recipe_build {
-    wget -O autotools/config.sub http://git.savannah.gnu.org/cgit/config.git/plain/config.sub
+    wget -O autotools/config.sub "https://gitlab.redox-os.org/redox-os/gnu-config/-/raw/master/config.sub?inline=false"
     sysroot="$(realpath ../sysroot)"
     export CFLAGS="-I$sysroot/include -I$sysroot/include/SDL"
     export LDFLAGS="-L$sysroot/lib -static"

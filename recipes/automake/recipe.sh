@@ -12,7 +12,7 @@ function recipe_update {
 }
 
 function recipe_build {
-    wget -O lib/config.sub http://git.savannah.gnu.org/cgit/config.git/plain/config.sub
+    wget -O lib/config.sub "https://gitlab.redox-os.org/redox-os/gnu-config/-/raw/master/config.sub?inline=false"
     sed -i 's|.*/doc/help2man.*|\&\& true|' Makefile.in
     sed -i 's|install-info-am install-man|install-info-am|' Makefile.in
 

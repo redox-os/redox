@@ -16,7 +16,7 @@ function recipe_update {
 function recipe_build {
     curl -L -O --time-cond perl-cross-1.1.6.tar.gz https://github.com/arsv/perl-cross/releases/download/1.1.6/perl-cross-1.1.6.tar.gz
     tar --strip-components=1 -xvf perl-cross-1.1.6.tar.gz
-    wget -O cnf/config.sub http://git.savannah.gnu.org/cgit/config.git/plain/config.sub
+    wget -O cnf/config.sub "https://gitlab.redox-os.org/redox-os/gnu-config/-/raw/master/config.sub?inline=false"
     sysroot="$($HOST-gcc -print-sysroot)"
     ./configure --build=${BUILD} --target=${HOST} --prefix='/' --sysroot="$sysroot" --disable-mod=Sys-Syslog,Time-HiRes --with-libs='m'
     sed -i "s/^#define Netdb_name_t.*/#define Netdb_name_t const char*/" config.h # XXX

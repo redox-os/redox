@@ -16,7 +16,7 @@ function recipe_build {
     export CFLAGS="-static"
     sysroot="$(realpath ../sysroot)"
     autoreconf -if
-    wget -O autotools/config.sub http://git.savannah.gnu.org/cgit/config.git/plain/config.sub
+    wget -O autotools/config.sub "https://gitlab.redox-os.org/redox-os/gnu-config/-/raw/master/config.sub?inline=false"
     ./configure \
         --prefix=/ \
         --build=${BUILD} \
