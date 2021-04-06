@@ -2,7 +2,7 @@ VERSION=2.0
 GIT=https://github.com/xTibor/VVVVVV
 BRANCH=redox
 GIT_UPSTREAM=https://github.com/TerryCavanagh/VVVVVV
-BUILD_DEPENDS=(sdl2_image sdl2_mixer sdl2 liborbital mesa mesa_glu zlib llvm libogg libvorbis)
+BUILD_DEPENDS=(sdl2_image sdl2_mixer sdl2 liborbital mesa mesa_glu zlib libogg libvorbis)
 
 function recipe_version {
     printf "1.0.0"
@@ -18,7 +18,7 @@ function recipe_build {
         -DBUILD_STATIC=ON \
         -DBUILD_SHARED=OFF \
         -DSDL2_INCLUDE_DIRS="$sysroot/include/SDL2" \
-        -DSDL2_LIBRARIES="-static -lSDL2main -lSDL2_mixer -lSDL2 $("${PKG_CONFIG}" --libs glu) -lglapi -lorbital -lz -lvorbisfile -lvorbis -logg" \
+        -DSDL2_LIBRARIES="-static -lSDL2main -lSDL2_mixer -lSDL2 $("${PKG_CONFIG}" --libs glu) -lorbital -lz -lvorbisfile -lvorbis -logg" \
         .
 
     "$REDOX_MAKE" -j"$($NPROC)"
