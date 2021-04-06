@@ -1,6 +1,6 @@
 VERSION=2.0.4
 TAR=https://www.libsdl.org/projects/SDL_image/release/SDL2_image-$VERSION.tar.gz
-BUILD_DEPENDS=(sdl2 liborbital mesa llvm mesa mesa_glu libiconv libjpeg libpng zlib)
+BUILD_DEPENDS=(sdl2 liborbital mesa mesa mesa_glu libiconv libjpeg libpng zlib)
 
 function recipe_version {
     echo "$VERSION"
@@ -16,7 +16,7 @@ function recipe_build {
     sysroot="$(realpath ../sysroot)"
     export CFLAGS="-I$sysroot/include"
     export LDFLAGS="-L$sysroot/lib"
-    export SDL_LIBS="-lSDL2 -lorbital $("${PKG_CONFIG}" --libs glu) -lglapi -lz -lm -lpthread -lstdc++"
+    export SDL_LIBS="-lSDL2 -lorbital $("${PKG_CONFIG}" --libs glu) -lz -lm -lpthread -lstdc++"
     ./configure --prefix=/ --build=${BUILD} --host=${HOST} --disable-shared --disable-sdltest --enable-png --enable-jpg
     "$REDOX_MAKE" -j"$($NPROC)"
     skip=1

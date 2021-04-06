@@ -1,7 +1,7 @@
 GIT=https://gitlab.redox-os.org/redox-os/mesa.git
 GIT_UPSTREAM=git://anongit.freedesktop.org/mesa/mesa
 BRANCH=redox
-BUILD_DEPENDS=(expat llvm zlib)
+BUILD_DEPENDS=(expat zlib)
 
 function recipe_version {
     printf "r%s.%s" "$(git rev-list --count HEAD)" "$(git rev-parse --short HEAD)"
@@ -17,7 +17,7 @@ function recipe_build {
     sysroot="$(realpath ../sysroot)"
     export CFLAGS="-I$sysroot/include -DHAVE_PTHREAD=1"
     export CPPFLAGS="-I$sysroot/include -DHAVE_PTHREAD=1"
-    export LDFLAGS="-L$sysroot/lib --static $("${TARGET}-llvm-config" --libfiles all)"
+    export LDFLAGS="-L$sysroot/lib --static"
     #export LLVM_CONFIG="x86_64-unknown-redox-llvm-config"
 
     # TODO: Fix this annoying shite
@@ -27,7 +27,7 @@ function recipe_build {
     echo "ar = '${AR}'" >> cross_file.txt
     echo "strip = '${STRIP}'" >> cross_file.txt
     echo "pkgconfig = '${PKG_CONFIG}'" >> cross_file.txt
-    echo "llvm-config = '${TARGET}-llvm-config'" >> cross_file.txt
+    #echo "llvm-config = '${TARGET}-llvm-config'" >> cross_file.txt
 
     echo "[host_machine]" >> cross_file.txt
     echo "system = 'redox'" >> cross_file.txt
@@ -60,7 +60,7 @@ function recipe_build {
         --strip \
         -Ddefault_library=static \
         -Dglx=disabled \
-        -Dllvm=enabled \
+        -Dllvm=disabled \
         -Dosmesa=gallium \
         -Dplatforms= \
         -Dshader-cache=disabled \

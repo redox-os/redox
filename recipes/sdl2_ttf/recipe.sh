@@ -1,6 +1,6 @@
 VERSION=2.0.15
 TAR=https://www.libsdl.org/projects/SDL_ttf/release/SDL2_ttf-$VERSION.tar.gz
-BUILD_DEPENDS=(sdl2 liborbital llvm mesa mesa_glu freetype libpng zlib)
+BUILD_DEPENDS=(sdl2 liborbital mesa mesa_glu freetype libpng zlib)
 
 function recipe_version {
     echo "$VERSION"
@@ -16,7 +16,7 @@ function recipe_build {
     sysroot="$(realpath ../sysroot)"
     export CFLAGS="-I$sysroot/include"
     export LDFLAGS="-L$sysroot/lib"
-    export SDL_LIBS="-lSDL2 -lorbital $("${PKG_CONFIG}" --libs glu) -lglapi -lz -lm -lpthread -lstdc++"
+    export SDL_LIBS="-lSDL2 -lorbital $("${PKG_CONFIG}" --libs glu) -lz -lm -lpthread -lstdc++"
     ./autogen.sh
     ./configure --prefix=/ --build=${BUILD} --host=${HOST} --enable-opengl --disable-shared --disable-sdltest
     "$REDOX_MAKE" -j"$($NPROC)"
