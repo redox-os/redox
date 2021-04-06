@@ -1,6 +1,6 @@
 VERSION=1.6.0
 TAR="https://neverball.org/neverball-${VERSION}.tar.gz"
-BUILD_DEPENDS=(freetype libjpeg libogg liborbital libpng libvorbis llvm mesa sdl2 sdl2_ttf zlib)
+BUILD_DEPENDS=(freetype libjpeg libogg liborbital libpng libvorbis mesa sdl2 sdl2_ttf zlib)
 
 function recipe_version {
     echo "$VERSION"
@@ -17,7 +17,7 @@ function recipe_build {
     "$REDOX_MAKE" -j"$($NPROC)" ENABLE_FS=stdio mapc sols
     sysroot="$(realpath ../sysroot)"
     export CPPFLAGS="-I$sysroot/include"
-    export LDFLAGS="-L$sysroot/lib -static"
+	export LDFLAGS="-L$sysroot/lib -static"
     "$REDOX_MAKE" -j"$($NPROC)" ENABLE_FS=stdio ENABLE_NLS=0 clean-src
     "$REDOX_MAKE" -j"$($NPROC)" ENABLE_FS=stdio ENABLE_NLS=0 neverball neverputt
     skip=1

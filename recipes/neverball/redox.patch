@@ -42,7 +42,7 @@ diff -ruwN source/Makefile source-new/Makefile
  endif
  
 -OGL_LIBS := -lGL
-+OGL_LIBS := -lorbital $(shell $(PKG_CONFIG) osmesa --libs) -lglapi
++OGL_LIBS := -lorbital $(shell $(PKG_CONFIG) osmesa --libs)
  
  ifeq ($(PLATFORM),mingw)
  	ifneq ($(ENABLE_NLS),0)
