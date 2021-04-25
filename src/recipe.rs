@@ -69,7 +69,7 @@ pub struct PackageRecipe {
 #[derive(Debug, Deserialize, PartialEq, Serialize)]
 pub struct Recipe {
     /// Specifies how to donload the source for this recipe
-    pub source: SourceRecipe,
+    pub source: Option<SourceRecipe>,
     /// Specifies how to build this recipe
     pub build: BuildRecipe,
     /// Specifies how to package this recipe
@@ -95,12 +95,12 @@ mod tests {
         "#).unwrap();
 
         assert_eq!(recipe, Recipe {
-            source: SourceRecipe::Git {
+            source: Some(SourceRecipe::Git {
                 git: "https://gitlab.redox-os.org/redox-os/acid.git".to_string(),
                 upstream: None,
                 branch: Some("master".to_string()),
                 rev: Some("06344744d3d55a5ac9a62a6059cb363d40699bbc".to_string()),
-            },
+            }),
             build: BuildRecipe {
                 kind: BuildKind::Cargo,
                 dependencies: Vec::new(),
@@ -126,13 +126,13 @@ mod tests {
         "#).unwrap();
 
         assert_eq!(recipe, Recipe {
-            source: SourceRecipe::Tar {
+            source: Some(SourceRecipe::Tar {
                 tar: "http://downloads.xiph.org/releases/ogg/libogg-1.3.3.tar.xz".to_string(),
                 blake3: None,
                 sha256: Some("4f3fc6178a533d392064f14776b23c397ed4b9f48f5de297aba73b643f955c08".to_string()),
                 patches: Vec::new(),
                 script: None,
-            },
+            }),
             build: BuildRecipe {
                 kind: BuildKind::Custom {
                     script: "make".to_string()
