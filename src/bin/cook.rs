@@ -159,10 +159,10 @@ fn run_command_stdin(mut command: process::Command, stdin_data: &[u8]) -> Result
     Ok(())
 }
 
-fn fetch(recipe_dir: &Path, source: &SourceRecipe) -> Result<PathBuf, String> {
+fn fetch(recipe_dir: &Path, source: &Option<SourceRecipe>) -> Result<PathBuf, String> {
     let source_dir = recipe_dir.join("source");
     match source {
-        SourceRecipe::Git { git, upstream, branch, rev } => {
+        Some(SourceRecipe::Git { git, upstream, branch, rev }) => {
             //TODO: use libgit?
             if ! source_dir.is_dir() {
                 // Create source.tmp
@@ -181,6 +181,15 @@ fn fetch(recipe_dir: &Path, source: &SourceRecipe) -> Result<PathBuf, String> {
                 // Move source.tmp to source atomically
                 rename(&source_dir_tmp, &source_dir)?;
             } else {
+                // Don't let this code reset the origin for the cookbook repo
+                let source_git_dir = source_dir.join(".git");
+                if ! source_git_dir.is_dir() {
+                    return Err(format!(
+                        "'{}' is not a git repository, but recipe indicated git source",
+                        source_dir.display(),
+                    ));
+                }
+
                 // Reset origin
                 let mut command = Command::new("git");
                 command.arg("-C").arg(&source_dir);
@@ -240,7 +249,7 @@ fi"#);
             command.arg("submodule").arg("update").arg("--init").arg("--recursive");
             run_command(command)?;
         },
-        SourceRecipe::Tar { tar, blake3, sha256, patches, script } => {
+        Some(SourceRecipe::Tar { tar, blake3, sha256, patches, script }) => {
             if ! source_dir.is_dir() {
                 // Download tar
                 //TODO: replace wget
@@ -350,7 +359,16 @@ fi"#);
                 // Move source.tmp to source atomically
                 rename(&source_dir_tmp, &source_dir)?;
             }
-        }
+        },
+        // Local Sources
+        None => {
+            if ! source_dir.is_dir() {
+                return Err(format!(
+                    "Recipe without source section expected source dir at '{}'",
+                    source_dir.display(),
+                ))
+            }
+        },
     }
 
     Ok(source_dir)
