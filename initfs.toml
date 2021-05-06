@@ -28,6 +28,7 @@ vesad T T G
 stdio display:1
 ps2d us
 ramfs logging
+acpid
 pcid /etc/pcid/initfs.toml
 redoxfs --uuid $REDOXFS_UUID file $REDOXFS_BLOCK
 cd file:
