@@ -9,6 +9,9 @@ submodules = false
 tools = ["src"]
 verbose = 1
 
+[install]
+prefix = "install"
+
 [rust]
 backtrace = false
 rpath = false
