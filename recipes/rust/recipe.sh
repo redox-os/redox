@@ -18,7 +18,7 @@ function recipe_build {
     config="$(realpath ../config.toml)"
     source="$(realpath ../source)"
     unset AR AS CC CXX LD NM OBJCOPY OBJDUMP RANLIB READELF STRIP
-    python3 "$source/x.py" dist --config "$config" --jobs $(nproc) --incremental
+    python3 "$source/x.py" install --config "$config" --jobs $(nproc) --incremental
     skip=1
 }
 
@@ -33,10 +33,8 @@ function recipe_clean {
 }
 
 function recipe_stage {
-    binpath="$1/bin"
-    libpath="$1/lib"
-    cp -frv "build/${TARGET}/stage2/bin" "$binpath"
-    cp -frv "build/${TARGET}/stage2/lib" "$libpath"
-    ${STRIP} "$binpath/"*
+    rsync -av --delete "install/" "$1/"
+    # Cannot use STRIP because it is unset in recipe_build
+    "${HOST}-strip" -v "$1/bin/"{rustc,rustdoc}
     skip=1
 }
