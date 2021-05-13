@@ -1,12 +1,12 @@
 -include .config
 
 # Configuration
-## Architecture to build Redox for (aarch64 or x86_64)
-ARCH?=aarch64
+## Architecture to build Redox for (aarch64, riscv64, or x86_64)
+ARCH?=riscv64
 ## Flags to pass to the installer (empty to download binary packages)
 INSTALLER_FLAGS?=--cookbook=cookbook
 ## Enabled to use binary prefix (much faster)
-PREFIX_BINARY?=1
+PREFIX_BINARY?=0
 ## Filesystem size in MB (256 is the default)
 FILESYSTEM_SIZE?=48
 
