@@ -312,7 +312,8 @@ function op {
             fi
             if [ "$skip" -eq "0" ]
             then
-                cargo config package.version | tr -d '"'
+                # there's an unstable built-in cargo config command, so hack around it
+                cargo-config config package.version | tr -d '"'
             fi
             popd > /dev/null
             ;;
