@@ -324,7 +324,7 @@ suse()
 		fi
 	fi
 	echo "Installing necessary build tools..."
-	sudo zypper install gcc gcc-c++ glibc-devel-32bit nasm make fuse-devel cmake
+	sudo zypper install gcc gcc-c++ glibc-devel-32bit nasm make fuse-devel cmake openssl automake gettext-tools libtool po4a patch flex gperf
 }
 
 ##############################################################################
