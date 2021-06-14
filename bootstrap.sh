@@ -389,7 +389,7 @@ solus()
 
 	echo "Installing necessary build tools..."
 	#if guards are not necessary with eopkg since it does nothing if latest version is already installed
-	sudo eopkg it fuse-devel git gcc g++ libgcc-32bit libstdc++-32bit nasm make cmake
+	sudo eopkg it fuse-devel git gcc g++ libgcc-32bit libstdc++-32bit nasm make cmake binutils-gold glibc-devel pkg-config fuse2-devel linux-headers rsync automake autoconf m4 libtool-devel po4a patch bison flex gperf libpng-devel perl-html-parser
 }
 
 ######################################################################
