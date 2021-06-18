@@ -21,6 +21,7 @@ $(PREFIX)/relibc-install: $(ROOT)/relibc | $(PREFIX)/rust-install
 	rm -rf "$@.partial/$(TARGET)/include/"*
 	cp -r "$(PREFIX)/rust-install/$(TARGET)/include/c++" "$@.partial/$(TARGET)/include/c++"
 	cp -r "$(PREFIX)/rust-install/lib/rustlib/$(HOST_TARGET)/lib/" "$@.partial/lib/rustlib/$(HOST_TARGET)/"
+	rm -rf $@.partial/lib/rustlib/src
 	mkdir $@.partial/lib/rustlib/src
 	ln -s $(ROOT)/rust $@.partial/lib/rustlib/src
 	cd "$<" && \
@@ -44,7 +45,8 @@ ifeq ($(PREFIX_BINARY),1)
 
 $(PREFIX)/rust-install.tar.gz:
 	mkdir -p "$(@D)"
-	wget -O $@.partial "https://static.redox-os.org/toolchain/$(TARGET)/rust-install.tar.gz"
+	#TODO: figure out why rust-install.tar.gz is missing /lib/rustlib/$(HOST_TARGET)/lib
+	wget -O $@.partial "https://static.redox-os.org/toolchain/$(TARGET)/relibc-install.tar.gz"
 	mv $@.partial $@
 
 $(PREFIX)/rust-install: $(PREFIX)/rust-install.tar.gz
