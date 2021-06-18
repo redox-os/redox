@@ -20,7 +20,7 @@ $(PREFIX)/relibc-install: $(ROOT)/relibc | $(PREFIX)/rust-install
 	cp -r "$(PREFIX)/rust-install" "$@.partial"
 	rm -rf "$@.partial/$(TARGET)/include/"*
 	cp -r "$(PREFIX)/rust-install/$(TARGET)/include/c++" "$@.partial/$(TARGET)/include/c++"
-	cp -r "$(PREFIX)/rust-freestanding-install/lib/rustlib/$(HOST_TARGET)/lib/" "$@.partial/lib/rustlib/$(HOST_TARGET)/"
+	cp -r "$(PREFIX)/rust-install/lib/rustlib/$(HOST_TARGET)/lib/" "$@.partial/lib/rustlib/$(HOST_TARGET)/"
 	mkdir $@.partial/lib/rustlib/src
 	ln -s $(ROOT)/rust $@.partial/lib/rustlib/src
 	cd "$<" && \
