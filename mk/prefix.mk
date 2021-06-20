@@ -20,16 +20,18 @@ $(PREFIX)/relibc-install: $(ROOT)/relibc | $(PREFIX)/rust-install
 	cp -r "$(PREFIX)/rust-install" "$@.partial"
 	rm -rf "$@.partial/$(TARGET)/include/"*
 	cp -r "$(PREFIX)/rust-install/$(TARGET)/include/c++" "$@.partial/$(TARGET)/include/c++"
+	cp -r "$(PREFIX)/rust-install/lib/rustlib/$(HOST_TARGET)/lib/" "$@.partial/lib/rustlib/$(HOST_TARGET)/"
+	rm -rf $@.partial/lib/rustlib/src
+	mkdir $@.partial/lib/rustlib/src
+	ln -s $(ROOT)/rust $@.partial/lib/rustlib/src
 	cd "$<" && \
 	export PATH="$(ROOT)/$@.partial/bin:$$PATH" && \
-	export CARGO="env -u CARGO xargo" && \
+	export CARGO="env -u CARGO cargo" && \
 	$(MAKE) -j `$(NPROC)` all && \
 	$(MAKE) -j `$(NPROC)` install DESTDIR="$(ROOT)/$@.partial/$(TARGET)"
 	cd "$@.partial" && $(PREFIX_STRIP)
 	touch "$@.partial"
 	mv "$@.partial" "$@"
-	mkdir $@/lib/rustlib/src
-	ln -s $(ROOT)/rust $@/lib/rustlib/src
 
 $(PREFIX)/relibc-install.tar.gz: $(PREFIX)/relibc-install
 	tar \
@@ -43,7 +45,8 @@ ifeq ($(PREFIX_BINARY),1)
 
 $(PREFIX)/rust-install.tar.gz:
 	mkdir -p "$(@D)"
-	wget -O $@.partial "https://static.redox-os.org/toolchain/$(TARGET)/rust-install.tar.gz"
+	#TODO: figure out why rust-install.tar.gz is missing /lib/rustlib/$(HOST_TARGET)/lib
+	wget -O $@.partial "https://static.redox-os.org/toolchain/$(TARGET)/relibc-install.tar.gz"
 	mv $@.partial $@
 
 $(PREFIX)/rust-install: $(PREFIX)/rust-install.tar.gz
@@ -144,13 +147,15 @@ $(PREFIX)/rust-freestanding-install: $(ROOT)/rust | $(PREFIX)/binutils-install
 	cd "$@.partial" && $(PREFIX_STRIP)
 	touch "$@.partial"
 	mv "$@.partial" "$@"
+	mkdir $@/lib/rustlib/src
+	ln -s $(ROOT)/rust $@/lib/rustlib/src
 
 $(PREFIX)/relibc-freestanding-install: $(ROOT)/relibc | $(PREFIX_BASE_INSTALL) $(PREFIX_FREESTANDING_INSTALL)
 	rm -rf "$@.partial" "$@"
 	mkdir -p "$@.partial"
 	cd "$<" && \
 	export PATH="$(PREFIX_BASE_PATH):$(PREFIX_FREESTANDING_PATH):$$PATH" && \
-	export CARGO="env -u CARGO -u RUSTUP_TOOLCHAIN xargo" && \
+	export CARGO="env -u CARGO -u RUSTUP_TOOLCHAIN cargo" && \
 	export CC_$(subst -,_,$(TARGET))="$(TARGET)-gcc -isystem $(ROOT)/$@.partial/$(TARGET)/include" && \
 	$(MAKE) -j `$(NPROC)` all && \
 	$(MAKE) -j `$(NPROC)` install DESTDIR="$(ROOT)/$@.partial/$(TARGET)"

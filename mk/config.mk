@@ -19,6 +19,7 @@ ifeq ($(UNAME),Darwin)
 	PREFIX_BINARY=0
 	VB_AUDIO=coreaudio
 	VBM=/Applications/VirtualBox.app/Contents/MacOS/VBoxManage
+	HOST_TARGET ?= $(ARCH)-apple-darwin
 else ifeq ($(UNAME),FreeBSD)
 	FUMOUNT=sudo umount
 	export NPROC=sysctl -n hw.ncpu
@@ -26,12 +27,14 @@ else ifeq ($(UNAME),FreeBSD)
 	PREFIX_BINARY=0
 	VB_AUDIO=pulse # To check, will probaly be OSS on most setups
 	VBM=VBoxManage
+	HOST_TARGET ?= $(ARCH)-unknown-freebsd
 else
 	FUMOUNT=fusermount -u
 	export NPROC=nproc
 	export REDOX_MAKE=make
 	VB_AUDIO=pulse
 	VBM=VBoxManage
+	HOST_TARGET ?= $(ARCH)-unknown-linux-gnu
 endif
 
 # Automatic variables
@@ -41,7 +44,7 @@ export RUST_TARGET_PATH=$(ROOT)/kernel/targets
 export XARGO_RUST_SRC=$(ROOT)/rust/src
 
 ## Kernel variables
-KTARGET=$(ARCH)-unknown-none
+KTARGET=$(ARCH)-unknown-kernel
 KBUILD=build/kernel
 
 ## Userspace variables
