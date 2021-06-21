@@ -611,6 +611,8 @@ else
 	# FreeBSD
 	elif hash 2>/dev/null pkg; then
 		freebsd "$emulator"
+	elif hash 2>/dev/null xbps-install; then
+	  voidlinux "$emulator"
 	# Unsupported platform
 	else
     	printf "\e[31;1mFatal error: \e[0;31mUnsupported platform, please open an issue\[0m"
