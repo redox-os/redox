@@ -28,6 +28,7 @@ vesad T T G
 stdio display:1
 ps2d us
 ramfs logging
+acpid
 
 # %NOFORK will prevent init from waiting forever for the process to fork, if it's not going to do that.
 %NOFORK pcid --config=/etc/pcid/initfs.toml

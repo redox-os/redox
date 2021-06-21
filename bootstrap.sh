@@ -286,7 +286,7 @@ fedora()
 		fi
 	fi
 	# Use rpm -q <package> to check if it's already installed
-	PKGS=$(for pkg in gcc gcc-c++ glibc-devel.i686 nasm make fuse-devel cmake texinfo gettext-devel bison flex perl-HTML-Parser po4a; do rpm -q $pkg > /dev/null || echo $pkg; done)
+	PKGS=$(for pkg in gcc gcc-c++ glibc-devel.i686 nasm make fuse-devel cmake texinfo gettext-devel bison flex perl-HTML-Parser po4a openssl patch automake libtool perl-Pod-Html perl-FindBin gperf libpng-devel; do rpm -q $pkg > /dev/null || echo $pkg; done)
 	# If the list of packages is not empty, install missing
 	COUNT=$(echo $PKGS | wc -w)
 	if [ $COUNT -ne 0 ]; then
@@ -324,7 +324,7 @@ suse()
 		fi
 	fi
 	echo "Installing necessary build tools..."
-	sudo zypper install gcc gcc-c++ glibc-devel-32bit nasm make fuse-devel cmake
+	sudo zypper install gcc gcc-c++ glibc-devel-32bit nasm make fuse-devel cmake openssl automake gettext-tools libtool po4a patch flex gperf
 }
 
 ##############################################################################
@@ -389,7 +389,7 @@ solus()
 
 	echo "Installing necessary build tools..."
 	#if guards are not necessary with eopkg since it does nothing if latest version is already installed
-	sudo eopkg it fuse-devel git gcc g++ libgcc-32bit libstdc++-32bit nasm make cmake
+	sudo eopkg it fuse-devel git gcc g++ libgcc-32bit libstdc++-32bit nasm make cmake binutils-gold glibc-devel pkg-config fuse2-devel linux-headers rsync automake autoconf m4 libtool-devel po4a patch bison flex gperf libpng-devel perl-html-parser
 }
 
 ######################################################################
