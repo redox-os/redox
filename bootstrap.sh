@@ -520,7 +520,7 @@ statusCheck() {
 boot()
 {
 	echo "Cloning gitlab repo..."
-	git clone --depth 1 --shallow-submodules https://gitlab.redox-os.org/redox-os/redox.git --origin upstream --recursive
+	git clone https://gitlab.redox-os.org/redox-os/redox.git --origin upstream --recursive
 	echo "Cleaning up..."
 	rm bootstrap.sh
 	echo
