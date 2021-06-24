@@ -19,40 +19,40 @@ banner()
 ###################################################################################
 install_bsd_pkg()
 {
-    PKG_MANAGER=$1
-    PKG_NAME=$2
-    BIN_NAME=$3
-    if [ -z "$BIN_NAME" ]; then
-        BIN_NAME=$PKG_NAME
-    fi
+	PKG_MANAGER=$1
+	PKG_NAME=$2
+	BIN_NAME=$3
+	if [ -z "$BIN_NAME" ]; then
+		BIN_NAME=$PKG_NAME
+	fi
 
-    BIN_LOCATION=$(which $BIN_NAME || true)
-    if [ -z "$BIN_LOCATION" ]; then
-        echo "$PKG_MANAGER install $PKG_NAME"
-        $PKG_MANAGER install "$PKG_NAME"
-    else
-        echo "$BIN_NAME already exists at $BIN_LOCATION, no need to install $PKG_NAME..."
-    fi
+	BIN_LOCATION=$(which $BIN_NAME || true)
+	if [ -z "$BIN_LOCATION" ]; then
+		echo "$PKG_MANAGER install $PKG_NAME"
+		$PKG_MANAGER install "$PKG_NAME"
+	else
+		echo "$BIN_NAME already exists at $BIN_LOCATION, no need to install $PKG_NAME..."
+	fi
 }
 
 install_macports_pkg()
 {
-    install_bsd_pkg "sudo port" "$1" "$2"
+	install_bsd_pkg "sudo port" "$1" "$2"
 }
 
 install_brew_pkg()
 {
-    install_bsd_pkg "brew" $@
+	install_bsd_pkg "brew" $@
 }
 
 install_brew_cask_pkg()
 {
-    install_bsd_pkg "brew cask" $@
+	install_bsd_pkg "brew cask" $@
 }
 
 install_freebsd_pkg()
 {
-    install_bsd_pkg "sudo pkg" $@
+	install_bsd_pkg "sudo pkg" $@
 }
 
 ###############################################################################
@@ -64,18 +64,18 @@ install_freebsd_pkg()
 ###############################################################################
 osx()
 {
-    echo "Detected OSX!"
+	echo "Detected OSX!"
 
-    if [ ! -z "$(which brew)" ]; then
-        osx_homebrew $@
-    elif [ ! -z "$(which port)" ]; then
-        osx_macports $@
-    else
-        echo "Please install either Homebrew or MacPorts, if you wish to use this script"
-        echo "Re-run this script once you installed one of those package managers"
-        echo "Will not install, now exiting..."
-        exit 1
-    fi
+	if [ ! -z "$(which brew)" ]; then
+		osx_homebrew $@
+	elif [ ! -z "$(which port)" ]; then
+		osx_macports $@
+	else
+		echo "Please install either Homebrew or MacPorts, if you wish to use this script"
+		echo "Re-run this script once you installed one of those package managers"
+		echo "Will not install, now exiting..."
+		exit 1
+	fi
 }
 
 ###############################################################################
@@ -85,27 +85,27 @@ osx()
 ###############################################################################
 osx_macports()
 {
-    echo "Macports detected! Now updating..."
-    sudo port -v selfupdate
+	echo "Macports detected! Now updating..."
+	sudo port -v selfupdate
 
-    echo "Installing missing packages..."
+	echo "Installing missing packages..."
 
-    install_macports_pkg "git"
+	install_macports_pkg "git"
 
-    if [ "$1" == "qemu" ]; then
-        install_macports_pkg "qemu" "qemu-system-x86_64"
-    else
-        install_macports_pkg "virtualbox"
-    fi
+	if [ "$1" == "qemu" ]; then
+		install_macports_pkg "qemu" "qemu-system-x86_64"
+	else
+		install_macports_pkg "virtualbox"
+	fi
 
-    install_macports_pkg "coreutils"
-    install_macports_pkg "findutils"
-    install_macports_pkg "gcc49" "gcc-4.9"
-    install_macports_pkg "nasm"
-    install_macports_pkg "pkgconfig"
-    install_macports_pkg "osxfuse"
-    install_macports_pkg "x86_64-elf-gcc"
-    install_macports_pkg "cmake"
+	install_macports_pkg "coreutils"
+	install_macports_pkg "findutils"
+	install_macports_pkg "gcc49" "gcc-4.9"
+	install_macports_pkg "nasm"
+	install_macports_pkg "pkgconfig"
+	install_macports_pkg "osxfuse"
+	install_macports_pkg "x86_64-elf-gcc"
+	install_macports_pkg "cmake"
 }
 
 ###############################################################################
@@ -115,31 +115,31 @@ osx_macports()
 ###############################################################################
 osx_homebrew()
 {
-    echo "Homebrew detected! Now updating..."
-    brew update
+	echo "Homebrew detected! Now updating..."
+	brew update
 
-    echo "Installing missing packages..."
+	echo "Installing missing packages..."
 
-    install_brew_pkg "git"
+	install_brew_pkg "git"
 
-    if [ "$1" == "qemu" ]; then
-        install_brew_pkg "qemu" "qemu-system-x86_64"
-    else
-        install_brew_pkg "virtualbox"
-    fi
+	if [ "$1" == "qemu" ]; then
+		install_brew_pkg "qemu" "qemu-system-x86_64"
+	else
+		install_brew_pkg "virtualbox"
+	fi
 
-    install_brew_pkg "automake"
-    install_brew_pkg "bison"
-    install_brew_pkg "gettext"
-    install_brew_pkg "libtool"
-    install_brew_pkg "make"
-    install_brew_pkg "nasm"
-    install_brew_pkg "gcc@7" "gcc-7"
-    install_brew_pkg "pkg-config"
-    install_brew_pkg "cmake"
-    install_brew_pkg "Caskroom/cask/osxfuse"
+	install_brew_pkg "automake"
+	install_brew_pkg "bison"
+	install_brew_pkg "gettext"
+	install_brew_pkg "libtool"
+	install_brew_pkg "make"
+	install_brew_pkg "nasm"
+	install_brew_pkg "gcc@7" "gcc-7"
+	install_brew_pkg "pkg-config"
+	install_brew_pkg "cmake"
+	install_brew_pkg "Caskroom/cask/osxfuse"
 
-    install_brew_pkg "redox-os/gcc_cross_compilers/x86_64-elf-gcc" "x86_64-elf-gcc"
+	install_brew_pkg "redox-os/gcc_cross_compilers/x86_64-elf-gcc" "x86_64-elf-gcc"
 }
 
 ###############################################################################
@@ -149,34 +149,34 @@ osx_homebrew()
 ###############################################################################
 freebsd()
 {
-    set -xe
-    echo "FreeBSD detected!"
-    echo "Installing missing packages..."
+	set -xe
+	echo "FreeBSD detected!"
+	echo "Installing missing packages..."
 
-    install_freebsd_pkg "git"
+	install_freebsd_pkg "git"
 
-    if [ "$1" == "qemu" ]; then
-        install_freebsd_pkg "qemu" "qemu-system-x86_64"
-    else
-        install_freebsd_pkg "virtualbox"
-    fi
+	if [ "$1" == "qemu" ]; then
+		install_freebsd_pkg "qemu" "qemu-system-x86_64"
+	else
+		install_freebsd_pkg "virtualbox"
+	fi
 
-    install_freebsd_pkg "coreutils"
-    install_freebsd_pkg "findutils"
-    install_freebsd_pkg "gcc"
-    install_freebsd_pkg "nasm"
-    install_freebsd_pkg "pkgconf"
-    install_freebsd_pkg "fusefs-libs"
-    install_freebsd_pkg "cmake"
-    install_freebsd_pkg "gmake"
-    install_freebsd_pkg "wget"
-    install_freebsd_pkg "texinfo"
-    install_freebsd_pkg "python"
-    install_freebsd_pkg "automake"
-    install_freebsd_pkg "gettext"
-    install_freebsd_pkg "bison"
-    install_freebsd_pkg "gperf"
-    set +xe
+	install_freebsd_pkg "coreutils"
+	install_freebsd_pkg "findutils"
+	install_freebsd_pkg "gcc"
+	install_freebsd_pkg "nasm"
+	install_freebsd_pkg "pkgconf"
+	install_freebsd_pkg "fusefs-libs"
+	install_freebsd_pkg "cmake"
+	install_freebsd_pkg "gmake"
+	install_freebsd_pkg "wget"
+	install_freebsd_pkg "texinfo"
+	install_freebsd_pkg "python"
+	install_freebsd_pkg "automake"
+	install_freebsd_pkg "gettext"
+	install_freebsd_pkg "bison"
+	install_freebsd_pkg "gperf"
+	set +xe
 }
 
 ###############################################################################
@@ -520,7 +520,7 @@ statusCheck() {
 boot()
 {
 	echo "Cloning gitlab repo..."
-	git clone https://gitlab.redox-os.org/redox-os/redox.git --origin upstream --recursive
+	git clone --depth 1 --shallow-submodules https://gitlab.redox-os.org/redox-os/redox.git --origin upstream --recursive
 	echo "Cleaning up..."
 	rm bootstrap.sh
 	echo
@@ -532,9 +532,9 @@ boot()
 	echo "cd redox"
 	MAKE="make"
 	if [[ "$(uname)" == "FreeBSD" ]]; then
-    	MAKE="gmake"
-    	echo "kldload fuse.ko # This loads the kernel module for fuse"
-    fi
+		MAKE="gmake"
+		echo "kldload fuse.ko # This loads the kernel module for fuse"
+	fi
 	echo "$MAKE all"
 	echo "$MAKE virtualbox or qemu"
 	echo
@@ -613,7 +613,7 @@ else
 		freebsd "$emulator"
 	# Unsupported platform
 	else
-    	printf "\e[31;1mFatal error: \e[0;31mUnsupported platform, please open an issue\[0m"
+		printf "\e[31;1mFatal error: \e[0;31mUnsupported platform, please open an issue\[0m"
 	fi
 fi
 
