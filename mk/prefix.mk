@@ -213,7 +213,7 @@ $(PREFIX)/rust-install: $(ROOT)/rust | $(PREFIX)/gcc-install $(PREFIX)/relibc-fr
 		--enable-extended \
 		--enable-llvm-static-stdcpp \
 		--tools=cargo \
-		--target="$(TARGET)" \
+		--target="$(HOST_TARGET),$(TARGET)" \
 		&& \
 	$(MAKE) -j `$(NPROC)` && \
 	rm -rf "$(ROOT)/$@.partial/lib/rustlib" "$(ROOT)/$@.partial/share/doc/rust" && \
