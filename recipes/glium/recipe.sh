@@ -6,12 +6,11 @@ CARGOFLAGS="--example teapot"
 
 function recipe_build {
     sysroot="$(realpath ../sysroot)"
-    cp -p "$ROOT/Xargo.toml" "Xargo.toml"
     set -x
-    xargo rustc --target "$TARGET" --release ${CARGOFLAGS} \
+    cargo rustc --target "$TARGET" --release ${CARGOFLAGS} \
         -- \
         -L "${sysroot}/lib" \
-        -C link-args="$("${PKG_CONFIG}" --libs osmesa) -lglapi -lz -lstdc++ -lc -lgcc"
+        -C link-args="-Wl,-Bstatic $("${PKG_CONFIG}" --libs osmesa) -lstdc++ -lc -lgcc"
     set +x
     skip=1
 }
