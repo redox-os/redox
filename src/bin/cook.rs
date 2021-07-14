@@ -479,9 +479,10 @@ COOKBOOK_CONFIGURE_FLAGS=(
     --enable-static
 )
 COOKBOOK_MAKE="make"
+COOKBOOK_MAKE_JOBS="$(nproc)"
 function cookbook_configure {
     "${COOKBOOK_CONFIGURE}" "${COOKBOOK_CONFIGURE_FLAGS[@]}"
-    "${COOKBOOK_MAKE}" -j "$(nproc)"
+    "${COOKBOOK_MAKE}" -j "${COOKBOOK_MAKE_JOBS}"
     "${COOKBOOK_MAKE}" install DESTDIR="${COOKBOOK_STAGE}"
 }
 "#;
