@@ -20,7 +20,7 @@ function recipe_build {
     touch INSTALL NEWS README AUTHORS ChangeLog COPYING
     autoreconf -fvi
     autoconf
-    wget -O build-aux/config.sub "https://gitlab.redox-os.org/redox-os/gnu-config/-/raw/master/config.sub?inline=false"
+    wget -O builds/autotools/config.sub "https://gitlab.redox-os.org/redox-os/gnu-config/-/raw/master/config.sub?inline=false"
     ./configure --build=${BUILD} --host=${HOST} --prefix=''
     "$REDOX_MAKE" -j"$($NPROC)" V=1
     skip=1
