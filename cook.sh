@@ -6,7 +6,7 @@ source config.sh
 
 # Variables to be overriden by recipes
 export BINDIR=bin
-export CARGO=(env RUSTFLAGS="$PREFIX_RUSTFLAGS -C link-arg=-zmuldefs" xargo)
+export CARGO=(env RUSTFLAGS="$PREFIX_RUSTFLAGS -C link-arg=-zmuldefs" cargo)
 export CARGOBUILD=rustc
 export CARGOFLAGS=
 export DEBUG=
