@@ -7,7 +7,7 @@ function recipe_build {
     cp -v "$(realpath ../init.rc)" "$INITFS_FOLDER/etc/init.rc"
     cargo rustc \
         --lib \
-        --target "${ARCH}-unknown-none" \
+        --target "${ARCH}-unknown-kernel" \
         --release \
 		-Z build-std=core,alloc \
         -- \
