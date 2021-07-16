@@ -231,7 +231,9 @@ ubuntu()
 		git \
 		gperf \
 		libc6-dev-i386 \
+		libexpat-dev \
 		libfuse-dev \
+		libgmp-dev \
 		libhtml-parser-perl \
 		libpng-dev \
 		libtool \
