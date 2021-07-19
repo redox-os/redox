@@ -1,0 +1,5 @@
+[source]
+tar = "https://gmplib.org/download/gmp/gmp-6.2.1.tar.xz"
+
+[build]
+template = "configure"
