@@ -75,6 +75,7 @@ keyboard-sfx = {}
 lci = {}
 libc-bench = {}
 libffi = {}
+libgmp = {}
 libiconv = {}
 libjpeg = {}
 libogg = {}
