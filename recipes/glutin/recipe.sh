@@ -10,7 +10,7 @@ function recipe_build {
     cargo rustc --target "$TARGET" --release ${CARGOFLAGS} \
         -- \
         -L "${sysroot}/lib" \
-        -C link-args="-Wl,-Bstatic $("${PKG_CONFIG}" --libs osmesa) -lstdc++ -lc -lgcc"
+        -C link-args="-Wl,-Bstatic $("${PKG_CONFIG}" --libs osmesa) -lz -lstdc++ -lc -lgcc"
     set +x
     skip=1
 }
