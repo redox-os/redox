@@ -51,7 +51,6 @@ KBUILD=build/kernel
 export TARGET=$(ARCH)-unknown-redox
 BUILD=build/userspace
 INSTALLER=\
-	export REDOXER_TOOLCHAIN="$(ROOT)/$(PREFIX_INSTALL)" && \
 	export PATH="$(PREFIX_PATH):$$PATH" && \
  	installer/target/release/redox_installer $(INSTALLER_FLAGS)
 
