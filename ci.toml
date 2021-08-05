@@ -146,6 +146,7 @@ redoxfs = {}
 #redox-ssh = {}
 relibc = {}
 #relibc-tests = {}
+resist = {}
 ripgrep = {}
 rodioplay = {}
 rs-nes = {}
