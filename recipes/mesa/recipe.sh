@@ -1,5 +1,5 @@
 GIT=https://gitlab.redox-os.org/redox-os/mesa.git
-GIT_UPSTREAM=git://anongit.freedesktop.org/mesa/mesa
+GIT_UPSTREAM=https://gitlab.freedesktop.org/mesa/mesa
 BRANCH=redox
 BUILD_DEPENDS=(expat zlib)
 
