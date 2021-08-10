@@ -1,14 +1,14 @@
 [source]
 git = "https://gitlab.redox-os.org/redox-os/uutils.git"
-branch = "redox-unix"
+branch = "redox"
 
 [build]
 template = "custom"
 script = """
 COOKBOOK_CARGO_FLAGS+=(
     --no-default-features
-    --features redox
-    --bin uutils
+    --features feat_os_unix_redox
+    --bin coreutils
 )
 cookbook_cargo
 
@@ -16,15 +16,20 @@ BINS=(
     base32
     base64
     basename
+    basenc
     cat
     chmod
     cksum
     comm
     cp
+    csplit
     cut
     date
+    dd
+    df
     dircolors
     dirname
+    du
     echo
     env
     expand
@@ -40,14 +45,14 @@ BINS=(
     link
     ln
     ls
-    md5sum
     mkdir
     mktemp
-    more
     mv
     nl
+    numfmt
     od
     paste
+    pr
     printenv
     printf
     ptx
@@ -58,18 +63,6 @@ BINS=(
     rm
     rmdir
     seq
-    sha1sum
-    sha224sum
-    sha256sum
-    sha3-224sum
-    sha3-256sum
-    sha3-384sum
-    sha3-512sum
-    sha384sum
-    sha3sum
-    sha512sum
-    shake128sum
-    shake256sum
     shred
     shuf
     sleep
@@ -88,11 +81,10 @@ BINS=(
     unexpand
     uniq
     wc
-    yes
 )
 
 for bin in "${BINS[@]}"
 do
-  ln -sv uutils "${COOKBOOK_STAGE}/bin/$bin"
+  ln -sv coreutils "${COOKBOOK_STAGE}/bin/$bin"
 done
 """
