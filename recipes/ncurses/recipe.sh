@@ -19,6 +19,7 @@ function recipe_build {
         --prefix="" \
         --disable-db-install \
         --without-ada \
+        --without-cxx-binding \
         --without-tests \
         cf_cv_func_mkstemp=yes
     "$REDOX_MAKE" -j"$($NPROC)"
