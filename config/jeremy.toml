@@ -1,4 +1,4 @@
-# This is the default configuration file
+# This is Jeremy's configuration file
 
 # General settings
 [general]
@@ -7,29 +7,138 @@ prompt = false
 
 # Package settings
 [packages]
+acid = {}
+atk = {}
+audiod = {}
+autoconf = {}
+automake = {}
 ca-certificates = {}
+cairo = {}
+cairodemo = {}
+cleye = {}
+cmatrix = {}
 contain = {}
 coreutils = {}
+cpal = {}
+curl = {}
 dash = {}
 diffutils = {}
+dosbox = {}
 drivers = {}
+eduke32 = {}
+expat = {}
 extrautils = {}
+ffmpeg = {}
 findutils = {}
+fontconfig = {}
+freedoom = {}
+freetype = {}
+fribidi = {}
+games = {}
+gcc = {}
+gdbserver = {}
+gears = {}
+generaluser-gs = {}
+gettext = {}
+gigalomania = {}
+git = {}
+glib = {}
+glium = {}
+glutin = {}
+gnu-binutils = {}
+gnu-grep = {}
 gnu-make = {}
+harfbuzz = {}
 installer = {}
 ion = {}
 ipcd = {}
+jansson = {}
+jeremy = {}
+keyboard-sfx = {}
+lci = {}
+libc-bench = {}
+libffi = {}
+libiconv = {}
+libjpeg = {}
+libogg = {}
+liborbital = {}
+libpng = {}
+libsodium = {}
+libvorbis = {}
+libxml2 = {}
+llvm = {}
 logd = {}
+mesa = {}
+mesa_glu = {}
+nasm = {}
+ncurses = {}
 netdb = {}
 netstack = {}
+netsurf = {}
 netutils = {}
+neverball = {}
+nghttp2 = {}
+openjazz = {}
+openssl = {}
+openttd = {}
+openttd-opengfx = {}
+openttd-openmsx = {}
+openttd-opensfx = {}
+orbclient = {}
+orbdata = {}
+orbital = {}
+orbterm = {}
+orbutils = {}
+osdemo = {}
+pango = {}
+patch = {}
+pcre = {}
+periodictable = {}
+pixelcannon = {}
+pixman = {}
+pkg-config = {}
 pkgutils = {}
+prboom = {}
 ptyd = {}
+readline = {}
 redoxfs = {}
 resist = {}
+ripgrep = {}
+rodioplay = {}
+rs-nes = {}
+rust64 = {}
+rust-cairo = {}
+rust-cairo-demo = {}
+rustual-boy = {}
+schismtracker = {}
+scummvm = {}
+sdl = {}
+sdl2 = {}
+sdl2_gears = {}
+sdl2_image = {}
+sdl2_mixer = {}
+sdl2_ttf = {}
+sdl_gfx = {}
+sdl_image = {}
+sdl_mixer = {}
+sed = {}
 smith = {}
+sodium = {}
+sopwith = {}
+strace = {}
+syobonaction = {}
+terminfo = {}
+timidity = {}
+ttf-hack = {}
 userutils = {}
 uutils = {}
+vice = {}
+vim = {}
+vttest = {}
+vvvvvv = {}
+winit = {}
+xz = {}
+zlib = {}
 
 # User settings
 [users.root]
@@ -61,9 +170,16 @@ dhcpd -b
 """
 
 [[files]]
+path = "/etc/init.d/20_orbital"
+data = """
+audiod
+orbital display:3/activate orblogin launcher
+"""
+
+[[files]]
 path = "/etc/init.d/30_console"
 data = """
-getty display:2/activate
+getty display:2
 getty debug: -J
 """
 
