@@ -1,0 +1,166 @@
+# This is the default configuration file
+
+# General settings
+[general]
+# Do not prompt if settings are not defined
+prompt = false
+
+# Package settings
+[packages]
+coreutils = {}
+dash = {}
+diffutils = {}
+drivers = {}
+extrautils = {}
+findutils = {}
+gcc = {}
+gnu-binutils = {}
+gnu-make = {}
+ipcd = {}
+logd = {}
+netdb = {}
+netstack = {}
+netutils = {}
+ptyd = {}
+resist = {}
+userutils = {}
+uutils = {}
+
+# User settings
+[users.root]
+password = "password"
+uid = 0
+gid = 0
+name = "root"
+home = "/root"
+
+[users.user]
+# Password is unset
+password = ""
+
+[[files]]
+path = "/etc/init.d/00_base"
+data = """
+ipcd
+logd
+ptyd
+pcid /etc/pcid.d/
+"""
+
+[[files]]
+path = "/etc/init.d/10_net"
+data = """
+smolnetd
+dnsd
+dhcpd
+"""
+
+[[files]]
+path = "/etc/init.d/20_resist"
+data = """
+export RUST_BACKTRACE full
+resist /share/resist/redox/spec.toml
+resist /share/resist/posix/base.toml
+resist /share/resist/posix/shell.toml
+shutdown
+"""
+
+[[files]]
+path = "/etc/net/dns"
+data = """
+208.67.222.222
+"""
+
+[[files]]
+path = "/etc/net/ip"
+data = """
+10.0.2.15
+"""
+
+[[files]]
+path = "/etc/net/ip_router"
+data = """
+10.0.2.2
+"""
+
+[[files]]
+path = "/etc/net/ip_subnet"
+data = """
+255.255.255.0
+"""
+
+[[files]]
+path = "/etc/net/mac"
+data = """
+54-52-00-ab-cd-ef
+"""
+
+[[files]]
+path = "/etc/pkg.d/50_redox"
+data = "https://static.redox-os.org/pkg"
+
+[[files]]
+path = "/etc/group"
+data = """
+root;0;root
+user;1000;user
+sudo;1;user
+"""
+
+[[files]]
+path = "/etc/hostname"
+data = """
+redox
+"""
+
+[[files]]
+path = "/usr/bin"
+data = "/bin"
+symlink = true
+
+[[files]]
+path = "/usr/games"
+data = "/games"
+symlink = true
+
+[[files]]
+path = "/usr/include"
+data = "/include"
+symlink = true
+
+[[files]]
+path = "/usr/lib"
+data = "/lib"
+symlink = true
+
+[[files]]
+path = "/usr/share"
+data = "/share"
+symlink = true
+
+[[files]]
+path = "/tmp"
+data = ""
+directory= true
+# 0o1777
+mode = 1023
+
+[[files]]
+path = "/dev/null"
+data = "null:"
+symlink = true
+
+[[files]]
+path = "/dev/random"
+data = "rand:"
+symlink = true
+
+[[files]]
+path = "/dev/urandom"
+data = "rand:"
+symlink = true
+
+[[files]]
+path = "/dev/zero"
+data = "zero:"
+symlink = true
