@@ -77,7 +77,6 @@ BINS=(
     true
     truncate
     tsort
-    uname
     unexpand
     uniq
     wc
