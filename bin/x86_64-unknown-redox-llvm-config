@@ -108,6 +108,8 @@ if args == []:
     fail("no arguments")
 elif args == ["--version"]:
     print("10.0.1")
+elif args == ["--bindir"]:
+    print(prefix + "/bin")
 elif args == ["--cppflags"]:
     print("-I" + prefix + "/include -D__STDC_CONSTANT_MACROS -D__STDC_FORMAT_MACROS -D__STDC_LIMIT_MACROS")
 elif args == ["--cxxflags"]:
