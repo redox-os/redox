@@ -1,5 +1,5 @@
 VERSION=8.42
-TAR=https://ftp.pcre.org/pub/pcre/pcre-$VERSION.tar.bz2
+TAR=https://iweb.dl.sourceforge.net/project/pcre/pcre/$VERSION/pcre-$VERSION.tar.bz2
 BUILD_DEPENDS=()
 
 function recipe_version {
