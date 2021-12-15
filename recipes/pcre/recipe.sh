@@ -1,5 +1,5 @@
-VERSION=10.39
-TAR=https://github.com/PhilipHazel/pcre2/releases/download/pcre2-${VERSION}/pcre2-${VERSION}.tar.bz2
+VERSION=8.42
+TAR=https://ftp.pcre.org/pub/pcre/pcre-$VERSION.tar.bz2
 BUILD_DEPENDS=()
 
 function recipe_version {
