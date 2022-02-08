@@ -2,10 +2,6 @@
 	path = bootloader
 	url = https://gitlab.redox-os.org/redox-os/bootloader.git
 	branch = master
-[submodule "bootloader-efi"]
-	path = bootloader-efi
-	url = https://gitlab.redox-os.org/redox-os/bootloader-efi.git
-	branch = master
 [submodule "cookbook"]
 	path = cookbook
 	url = https://gitlab.redox-os.org/redox-os/cookbook.git
