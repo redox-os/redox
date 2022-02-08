@@ -1,14 +1,9 @@
-build/bootloader: bootloader/$(ARCH)/**
-	mkdir -p build
-	nasm -f bin -o $@ -D ARCH_$(ARCH) -ibootloader/$(ARCH)/ bootloader/$(ARCH)/disk.asm
-
-build/harddrive.bin: build/filesystem.bin bootloader/$(ARCH)/**
-	nasm -f bin -o build/bootsector.bin -D ARCH_$(ARCH) -ibootloader/$(ARCH)/ bootloader/$(ARCH)/disk.asm
+build/harddrive.bin: build/filesystem.bin build/bootloader.bin
 	dd if=/dev/zero of=$@.partial bs=1M count=$$(expr $$(du -m $< | cut -f1) + 2)
 	$(PARTED) -s -a minimal $@.partial mklabel msdos
 	$(PARTED) -s -a minimal $@.partial mkpart primary 2048s $$(expr $$(du -m $< | cut -f1) \* 2048 + 2048)s
-	dd if=build/bootsector.bin of=$@.partial bs=1 count=446 conv=notrunc
-	dd if=build/bootsector.bin of=$@.partial bs=512 skip=1 seek=1 conv=notrunc
+	dd if=build/bootloader.bin of=$@.partial bs=1 count=446 conv=notrunc
+	dd if=build/bootloader.bin of=$@.partial bs=512 skip=1 seek=1 conv=notrunc
 	dd if=$< of=$@.partial bs=1M seek=1 conv=notrunc
 	mv $@.partial $@
 
@@ -24,22 +19,6 @@ build/livedisk.iso: build/livedisk.bin.gz
 					-no-emul-boot -boot-load-size 4 -boot-info-table \
 					build/iso/
 	isohybrid $@
-
-bootloader-coreboot/build/bootloader: build/kernel_coreboot
-	env --unset=RUST_TARGET_PATH --unset=RUSTUP_TOOLCHAIN --unset=XARGO_RUST_SRC \
-	$(MAKE) -C bootloader-coreboot clean build/bootloader KERNEL="$(ROOT)/$<"
-
-build/coreboot.elf: bootloader-coreboot/build/bootloader
-	mkdir -p build
-	cp -v $< $@
-
-bootloader-efi/build/$(EFI_TARGET)/boot.efi: FORCE
-	env --unset=RUST_TARGET_PATH --unset=RUSTUP_TOOLCHAIN --unset=XARGO_RUST_SRC \
-	$(MAKE) -C bootloader-efi build/$(EFI_TARGET)/boot.efi TARGET=$(EFI_TARGET)
-
-build/bootloader.efi: bootloader-efi/build/$(EFI_TARGET)/boot.efi
-	mkdir -p build
-	cp -v $< $@
 
 build/harddrive-efi.bin: build/bootloader.efi build/filesystem.bin
 	# TODO: Validate the correctness of this \
