@@ -7,8 +7,19 @@ build/harddrive.bin: build/filesystem.bin build/bootloader.bin
 	dd if=$< of=$@.partial bs=1M seek=1 conv=notrunc
 	mv $@.partial $@
 
-build/livedisk.bin: build/kernel_live bootloader/$(ARCH)/**
-	nasm -f bin -o $@ -D ARCH_$(ARCH) -D KERNEL=$< -ibootloader/$(ARCH)/ bootloader/$(ARCH)/disk.asm
+build/livedisk: build/kernel_live
+	mkdir -p $@.partial
+	cp $< $@.partial/kernel
+	mv $@.partial $@
+
+build/livedisk.bin: build/filesystem-live.bin build/bootloader.bin
+	dd if=/dev/zero of=$@.partial bs=1M count=$$(expr $$(du -m $< | cut -f1) + 2)
+	$(PARTED) -s -a minimal $@.partial mklabel msdos
+	$(PARTED) -s -a minimal $@.partial mkpart primary 2048s $$(expr $$(du -m $< | cut -f1) \* 2048 + 2048)s
+	dd if=build/bootloader.bin of=$@.partial bs=1 count=446 conv=notrunc
+	dd if=build/bootloader.bin of=$@.partial bs=512 skip=1 seek=1 conv=notrunc
+	dd if=$< of=$@.partial bs=1M seek=1 conv=notrunc
+	mv $@.partial $@
 
 build/livedisk.iso: build/livedisk.bin.gz
 	rm -rf build/iso/
