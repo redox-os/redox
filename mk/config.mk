@@ -55,6 +55,11 @@ INSTALLER=\
  	installer/target/release/redox_installer $(INSTALLER_FLAGS)
 
 ## Bootloader variables
+ifeq ($(ARCH),x86_64)
+	BOOTLOADER_TARGET=x86-unknown-none
+else
+	BOOTLOADER_TARGET=$(ARCH)-unknown-none
+endif
 EFI_TARGET=$(ARCH)-unknown-uefi
 PARTED=/sbin/parted
 

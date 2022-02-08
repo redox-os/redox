@@ -49,6 +49,9 @@ fetch:
 # Cross compiler recipes
 include mk/prefix.mk
 
+# Bootloader recipes
+include mk/bootloader.mk
+
 # Kernel recipes
 include mk/kernel.mk
 
