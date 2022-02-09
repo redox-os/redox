@@ -1,5 +1,5 @@
 QEMU=SDL_VIDEO_X11_DGAMOUSE=0 qemu-system-$(ARCH)
-QEMUFLAGS=-d cpu_reset -d guest_errors
+QEMUFLAGS=-d cpu_reset
 QEMUFLAGS+=-smp 4 -m 2048
 QEMU_EFI=/usr/share/OVMF/OVMF_CODE.fd
 ifeq ($(serial),no)
