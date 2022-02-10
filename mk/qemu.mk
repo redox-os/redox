@@ -123,6 +123,18 @@ qemu_live_no_build: build/extra.bin
 		-drive file=build/livedisk.bin,format=raw \
 		-drive file=build/extra.bin,format=raw
 
+qemu_live_efi: build/livedisk-efi.bin build/extra.bin
+	$(QEMU) $(QEMUFLAGS) \
+		-bios $(QEMU_EFI) \
+		-drive file=build/livedisk-efi.bin,format=raw \
+		-drive file=build/extra.bin,format=raw
+
+qemu_live_efi_no_build: build/extra.bin
+	$(QEMU) $(QEMUFLAGS) \
+		-bios $(QEMU_EFI) \
+		-drive file=build/livedisk-efi.bin,format=raw \
+		-drive file=build/extra.bin,format=raw
+
 qemu_iso: build/livedisk.iso build/extra.bin
 	$(QEMU) $(QEMUFLAGS) \
 		-boot d -cdrom build/livedisk.iso \
@@ -131,18 +143,6 @@ qemu_iso: build/livedisk.iso build/extra.bin
 qemu_iso_no_build: build/extra.bin
 	$(QEMU) $(QEMUFLAGS) \
 		-boot d -cdrom build/livedisk.iso \
-		-drive file=build/extra.bin,format=raw
-
-qemu_iso_efi: build/livedisk-efi.iso build/extra.bin
-	$(QEMU) $(QEMUFLAGS) \
-		-bios $(QEMU_EFI) \
-		-boot d -cdrom build/livedisk-efi.iso \
-		-drive file=build/extra.bin,format=raw
-
-qemu_iso_efi_no_build: build/extra.bin
-	$(QEMU) $(QEMUFLAGS) \
-		-bios $(QEMU_EFI) \
-		-boot d -cdrom build/livedisk-efi.iso \
 		-drive file=build/extra.bin,format=raw
 
 qemu_extra: build/extra.bin
