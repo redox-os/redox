@@ -7,11 +7,6 @@ build/harddrive.bin: build/filesystem.bin build/bootloader.bin
 	dd if=$< of=$@.partial bs=1M seek=1 conv=notrunc
 	mv $@.partial $@
 
-build/livedisk: build/kernel_live
-	mkdir -p $@.partial
-	cp $< $@.partial/kernel
-	mv $@.partial $@
-
 build/livedisk.bin: build/filesystem-live.bin build/bootloader.bin
 	dd if=/dev/zero of=$@.partial bs=1M count=$$(expr $$(du -m $< | cut -f1) + 2)
 	$(PARTED) -s -a minimal $@.partial mklabel msdos
