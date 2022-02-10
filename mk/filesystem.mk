@@ -20,13 +20,6 @@ build/filesystem.bin: filesystem.toml build/kernel prefix
 	rm -rf build/filesystem/
 	mv $@.partial $@
 
-build/filesystem-live.bin: build/kernel_live
-	rm -rf $@ $@.partial build/filesystem-live/
-	mkdir -p build/filesystem-live/
-	cp $< build/filesystem-live/kernel
-	cargo run --manifest-path redoxfs/Cargo.toml --release --bin redoxfs-ar -- $@.partial build/filesystem-live
-	mv $@.partial $@
-
 mount: FORCE
 	mkdir -p build/filesystem/
 	cargo build --manifest-path redoxfs/Cargo.toml --release --bin redoxfs
