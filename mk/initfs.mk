@@ -1,4 +1,4 @@
-INITFS_RM_BINS=alxd e1000d ihdad ixgbed pcspkrd redoxfs-ar redoxfs-mkfs rtl8168d usbctl usbhidd usbscsid xhcid
+INITFS_RM_BINS=alxd e1000d ihdad ixgbed pcspkrd redoxfs-ar redoxfs-mkfs rtl8168d usbctl
 
 build/initfs.tag: initfs.toml prefix
 	cargo build --manifest-path cookbook/Cargo.toml --release
