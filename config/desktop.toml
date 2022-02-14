@@ -21,7 +21,6 @@ gnu-make = {}
 installer = {}
 ion = {}
 ipcd = {}
-logd = {}
 netdb = {}
 netstack = {}
 netsurf = {}
@@ -56,7 +55,6 @@ password = ""
 path = "/etc/init.d/00_base"
 data = """
 ipcd
-logd
 ptyd
 pcid /etc/pcid.d/
 """

@@ -74,7 +74,6 @@ ipcd = {}
 #libpng = {}
 #libsodium = {}
 #llvm = {}
-#logd = {}
 #lua = {}
 #mdp = {}
 #mesa = {}
@@ -179,7 +178,6 @@ password = ""
 path = "/etc/init.d/00_base"
 data = """
 ipcd
-#logd
 ptyd
 #pcid /etc/pcid.d/
 """

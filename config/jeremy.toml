@@ -67,7 +67,6 @@ libsodium = {}
 libvorbis = {}
 libxml2 = {}
 llvm = {}
-logd = {}
 mesa = {}
 mesa_glu = {}
 nasm = {}
@@ -106,6 +105,7 @@ resist = {}
 ripgrep = {}
 rodioplay = {}
 rs-nes = {}
+rust = {}
 rust64 = {}
 rust-cairo = {}
 rust-cairo-demo = {}
@@ -156,7 +156,6 @@ password = ""
 path = "/etc/init.d/00_base"
 data = """
 ipcd
-logd
 ptyd
 pcid /etc/pcid.d/
 """

@@ -82,7 +82,7 @@ libsodium = {}
 libvorbis = {}
 libxml2 = {}
 llvm = {}
-logd = {}
+#logd = {}
 #lua = {}
 #mdp = {}
 mesa = {}
@@ -200,7 +200,6 @@ password = ""
 path = "/etc/init.d/00_base"
 data = """
 ipcd
-logd
 ptyd
 pcid /etc/pcid.d/
 """
