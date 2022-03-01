@@ -1,4 +1,4 @@
-build/filesystem.bin: filesystem.toml build/kernel prefix
+build/filesystem.bin: filesystem.toml build/bootloader.bin build/kernel prefix
 	cargo build --manifest-path cookbook/Cargo.toml --release
 	cargo build --manifest-path installer/Cargo.toml --release
 	cargo build --manifest-path redoxfs/Cargo.toml --release
@@ -11,6 +11,7 @@ build/filesystem.bin: filesystem.toml build/kernel prefix
 	sleep 2
 	pgrep redoxfs
 	cp $< build/filesystem/filesystem.toml
+	cp build/bootloader.bin build/filesystem/bootloader
 	cp build/kernel build/filesystem/kernel
 	cp -r $(ROOT)/$(PREFIX_INSTALL)/$(TARGET)/include build/filesystem/include
 	cp -r $(ROOT)/$(PREFIX_INSTALL)/$(TARGET)/lib build/filesystem/lib
