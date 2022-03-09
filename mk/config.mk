@@ -9,6 +9,8 @@ INSTALLER_FLAGS?=--cookbook=cookbook
 PREFIX_BINARY?=1
 ## Filesystem size in MB (256 is the default)
 FILESYSTEM_SIZE?=256
+## Flags to pass to redoxfs-mkfs. Add --encrypt to set up disk encryption
+REDOXFS_MKFS_FLAGS?=
 
 # Per host variables
 UNAME := $(shell uname)
