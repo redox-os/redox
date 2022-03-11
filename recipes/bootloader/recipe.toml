@@ -4,11 +4,18 @@ git = "https://gitlab.redox-os.org/redox-os/bootloader.git"
 [build]
 template = "custom"
 script = """
+rsync -av --delete "${COOKBOOK_SOURCE}/" ./
+
 ARCH="$(echo "${TARGET}" | cut -d - -f1)"
-nasm \
-    -f bin \
-    -o "${COOKBOOK_STAGE}/bootloader" \
-    -D "ARCH_${ARCH}" \
-    -i"${COOKBOOK_SOURCE}/${ARCH}/" \
-    "${COOKBOOK_SOURCE}/${ARCH}/disk.asm"
+if [ "${ARCH}" == "x86_64" ]
+then
+    export TARGET="x86-unknown-none"
+    "${COOKBOOK_MAKE}" -j "${COOKBOOK_MAKE_JOBS}"
+    cp "build/${TARGET}/bootloader.bin" "${COOKBOOK_STAGE}/bootloader"
+fi
+
+# TODO: fails due to environmental variables
+# export TARGET="${ARCH}-unknown-uefi"
+# cleanenv "${COOKBOOK_MAKE}" -j "${COOKBOOK_MAKE_JOBS}"
+# cp "build/${TARGET}/bootloader.efi" "${COOKBOOK_STAGE}/bootloader.efi"
 """
