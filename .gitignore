@@ -1,3 +1,4 @@
 /build/
 /prefix/
 .config
+.DS_Store
