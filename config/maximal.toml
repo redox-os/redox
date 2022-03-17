@@ -276,27 +276,27 @@ redox
 
 [[files]]
 path = "/usr/bin"
-data = "/bin"
+data = "../bin"
 symlink = true
 
 [[files]]
 path = "/usr/games"
-data = "/games"
+data = "../games"
 symlink = true
 
 [[files]]
 path = "/usr/include"
-data = "/include"
+data = "../include"
 symlink = true
 
 [[files]]
 path = "/usr/lib"
-data = "/lib"
+data = "../lib"
 symlink = true
 
 [[files]]
 path = "/usr/share"
-data = "/share"
+data = "../share"
 symlink = true
 
 [[files]]
