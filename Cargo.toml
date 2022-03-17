@@ -22,8 +22,9 @@ path = "src/lib.rs"
 [dependencies]
 blake3 = "0.3.4"
 pbr = "1.0.2"
-pkgar = "0.1.6"
-redoxer = "0.2.24"
+pkgar = "0.1.7"
+pkgar-keys = "0.1.0"
+redoxer = "0.2.25"
 serde = { version = "1.0.110", features = ["derive"] }
 sha2 = "0.8.2"
 termion = "1.5.5"

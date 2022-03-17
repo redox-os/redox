@@ -280,8 +280,8 @@ function op {
                         pkgar \
                             extract \
                             sysroot \
-                            --file "$REPO/$i.pkgar" \
-                            --public "${ROOT}/build/public.key"
+                            --archive "$REPO/$i.pkgar" \
+                            --pkey "${ROOT}/build/id_ed25519.pub.toml"
                     done
                 fi
 
@@ -441,19 +441,10 @@ function op {
             rm -rfv stage
             ;;
         pkg)
-            if [ ! -e "${ROOT}/build/secret.key" ]
-            then
-                mkdir -p "${ROOT}/build"
-                pkgar \
-                    keygen \
-                    --secret "${ROOT}/build/secret.key" \
-                    --public "${ROOT}/build/public.key"
-            fi
-
             pkgar \
                 create \
-                --secret "${ROOT}/build/secret.key" \
-                --file stage.pkgar \
+                --archive stage.pkgar \
+                --skey "${ROOT}/build/id_ed25519.toml" \
                 stage
             ;;
         unpkg)

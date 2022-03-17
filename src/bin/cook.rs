@@ -397,10 +397,10 @@ fn build(recipe_dir: &Path, source_dir: &Path, build: &BuildRecipe) -> Result<Pa
         create_dir(&sysroot_dir_tmp.join("lib"))?;
 
         for dependency in build.dependencies.iter() {
-            let public_path = "build/public.key";
+            let public_path = "build/id_ed25519.pub.toml";
             //TODO: sanitize name
             let archive_path = format!("recipes/{}/stage.pkgar", dependency);
-            pkgar::bin::extract(
+            pkgar::extract(
                 public_path,
                 &archive_path,
                 sysroot_dir_tmp.to_str().unwrap()
@@ -547,14 +547,19 @@ fi
 fn package(recipe_dir: &Path, stage_dir: &Path, package: &PackageRecipe) -> Result<PathBuf, String> {
     //TODO: metadata like dependencies, name, and version
 
-    let secret_path = "build/secret.key";
-    let public_path = "build/public.key";
+    let secret_path = "build/id_ed25519.toml";
+    let public_path = "build/id_ed25519.pub.toml";
     if ! Path::new(secret_path).is_file() || ! Path::new(public_path).is_file() {
         if ! Path::new("build").is_dir() {
             create_dir(Path::new("build"))?;
         }
-        pkgar::bin::keygen(secret_path, public_path).map_err(|err| format!(
-            "failed to generate pkgar keys: {:?}",
+        let (public_key, secret_key) = pkgar_keys::SecretKeyFile::new();
+        public_key.save(&public_path).map_err(|err| format!(
+            "failed to save pkgar public key: {:?}",
+            err
+        ))?;
+        secret_key.save(&secret_path).map_err(|err| format!(
+            "failed to save pkgar secret key: {:?}",
             err
         ))?;
     }
@@ -570,7 +575,7 @@ fn package(recipe_dir: &Path, stage_dir: &Path, package: &PackageRecipe) -> Resu
         }
     }
     if ! package_file.is_file() {
-        pkgar::bin::create(
+        pkgar::create(
             secret_path,
             package_file.to_str().unwrap(),
             stage_dir.to_str().unwrap()
