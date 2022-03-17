@@ -4,9 +4,11 @@ nulld
 zerod
 randd
 vesad T T G
-stdio display:1
+logd debug: display:1
+stdio log:
 ps2d us
 ramfs logging
+acpid
 pcid /etc/pcid/initfs.toml
 redoxfs --uuid $REDOXFS_UUID file $REDOXFS_BLOCK
 cd file:
