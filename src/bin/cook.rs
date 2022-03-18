@@ -499,6 +499,15 @@ if [ -d "${COOKBOOK_STAGE}/lib" ]
 then
     find "${COOKBOOK_STAGE}/lib" -type f -name '*.la' -exec rm -fv {} ';'
 fi
+
+# Remove cargo install files
+for file in .crates.toml .crates2.json
+do
+    if [ -f "${COOKBOOK_STAGE}/${file}" ]
+    then
+        rm -v "${COOKBOOK_STAGE}/${file}"
+    fi
+done
 "#;
 
         //TODO: better integration with redoxer (library instead of binary)
