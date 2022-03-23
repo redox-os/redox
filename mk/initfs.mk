@@ -22,6 +22,7 @@ build/initfs.tag: initfs.toml prefix
 	mkdir -p build/initfs
 	$(INSTALLER) -c $< build/initfs/
 	#TODO: HACK FOR SMALLER INITFS, FIX IN PACKAGING
+	rm -rf build/initfs/pkg
 	for bin in $(INITFS_RM_BINS); do \
 		rm -f build/initfs/bin/$$bin; \
 	done
