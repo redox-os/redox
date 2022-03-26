@@ -139,6 +139,8 @@ $(PREFIX)/rust-freestanding-install: $(ROOT)/rust | $(PREFIX)/binutils-install
 		--enable-cargo-native-static \
 		--enable-extended \
 		--enable-llvm-static-stdcpp \
+		--set 'llvm.targets=AArch64;X86' \
+		--set 'llvm.experimental-targets=' \
 		--tools=cargo \
 		&& \
 	$(MAKE) -j `$(NPROC)` && \
