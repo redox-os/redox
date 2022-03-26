@@ -1,4 +1,4 @@
-build/filesystem.bin: filesystem.toml build/bootloader.bin build/kernel prefix
+build/filesystem.bin: filesystem.toml build/bootloader.bin build/kernel prefix build/initfs.img
 	cargo build --manifest-path cookbook/Cargo.toml --release
 	cargo build --manifest-path installer/Cargo.toml --release
 	cargo build --manifest-path redoxfs/Cargo.toml --release
@@ -21,6 +21,7 @@ build/filesystem.bin: filesystem.toml build/bootloader.bin build/kernel prefix
 	#TODO cp -r $(ROOT)/$(PREFIX_INSTALL)/$(TARGET)/include build/filesystem/include
 	#TODO cp -r $(ROOT)/$(PREFIX_INSTALL)/$(TARGET)/lib build/filesystem/lib
 	$(INSTALLER) -c $< build/filesystem/
+	cp build/initfs.img build/filesystem/initfs
 	sync
 	-$(FUMOUNT) build/filesystem/ || true
 	rm -rf build/filesystem/
