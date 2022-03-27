@@ -18,10 +18,10 @@ pub fn sha256<R: Read>(r: &mut R) -> Result<String> {
             break;
         }
 
-        hasher.input(&data[..count]);
+        hasher.update(&data[..count]);
     }
 
-    Ok(format!("{:x}", hasher.result()))
+    Ok(format!("{:x}", hasher.finalize()))
 }
 
 pub fn sha256_progress<P: AsRef<Path>>(path: P) -> Result<String> {
