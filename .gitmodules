@@ -34,3 +34,6 @@
 	path = bootloader-coreboot
 	url = https://gitlab.redox-os.org/redox-os/bootloader-coreboot.git
 	branch = master
+[submodule "redox-initfs"]
+	path = redox-initfs
+	url = https://gitlab.redox-os.org/redox-os/redox-initfs.git
