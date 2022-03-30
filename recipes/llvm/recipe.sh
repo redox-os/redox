@@ -29,6 +29,8 @@ function recipe_build {
         -DCMAKE_EXE_LINKER_FLAGS="-static"
         -DCMAKE_RANLIB="$(which "${RANLIB}")"
         -DCMAKE_INSTALL_PREFIX="/"
+        -DCMAKE_INSTALL_INCLUDEDIR="include"
+        -DCMAKE_INSTALL_OLDINCLUDEDIR="/include"
         -DCMAKE_SYSTEM_NAME=Generic
         -DCROSS_TOOLCHAIN_FLAGS_NATIVE="-DCMAKE_TOOLCHAIN_FILE=$native"
         -DLLVM_BUILD_BENCHMARKS=Off
@@ -44,7 +46,6 @@ function recipe_build {
         -DLLVM_INCLUDE_TESTS=Off
         -DLLVM_INCLUDE_UTILS=Off
         -DLLVM_OPTIMIZED_TABLEGEN=On
-        #-DLLVM_TABLEGEN="/usr/bin/llvm-tblgen-8"
         -DLLVM_TARGET_ARCH="$ARCH"
         -DLLVM_TARGETS_TO_BUILD=X86
         -DLLVM_TOOL_LLVM_COV_BUILD=Off
@@ -55,10 +56,10 @@ function recipe_build {
         -DLLVM_TOOL_LLVM_XRAY_BUILD=Off
         -DLLVM_TOOL_LLI_BUILD=Off
         -DLLVM_TOOL_LTO_BUILD=Off
+        -DLLVM_TOOLS_INSTALL_DIR=bin
+        -DLLVM_UTILS_INSTALL_DIR=bin
         -DPYTHON_EXECUTABLE="/usr/bin/python2"
         -DUNIX=1
-        #-target="$HOST"
-        #-I"$sysroot/include"
         -Wno-dev
     )
     set -x
@@ -80,7 +81,12 @@ function recipe_clean {
 
 function recipe_stage {
     dest="$(realpath $1)"
+    set -x
     "$REDOX_MAKE" DESTDIR="$dest" install
-    find "$dest"/bin -exec $STRIP {} ';' 2> /dev/null
+    mv -vT "$dest"/usr/include "$dest/include"
+    mv -vT "$dest"/usr/share "$dest/share"
+    rmdir -v "$dest"/usr
+    find "$dest"/bin -exec "$STRIP" -v {} ';' 2> /dev/null
+    set +x
     skip=1
 }
