@@ -1,6 +1,6 @@
 [source]
 tar = "http://zlib.net/fossils/zlib-1.2.12.tar.gz"
-blake3 = "20db628054c3c09edea193700ca39d3c033655529cbdc5d88f3c5da7514ad949"
+blake3 = "b7ad5638d87c69665afaae138bab40cc9a53a7ae7da9d168303e3df6b051d2b5"
 
 [build]
 template = "custom"
