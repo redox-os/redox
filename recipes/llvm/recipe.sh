@@ -1,6 +1,6 @@
 GIT=https://gitlab.redox-os.org/redox-os/llvm-project.git
 GIT_UPSTREAM=https://github.com/rust-lang/llvm-project.git
-BRANCH=redox-2020-07-27
+BRANCH=redox-2022-03-18
 
 function recipe_version {
     printf "r%s.%s" "$(git rev-list --count HEAD)" "$(git rev-parse --short HEAD)"
@@ -57,8 +57,8 @@ function recipe_build {
         -DLLVM_TOOL_LTO_BUILD=Off
         -DPYTHON_EXECUTABLE="/usr/bin/python2"
         -DUNIX=1
-        -target="$HOST"
-        -I"$sysroot/include"
+        #-target="$HOST"
+        #-I"$sysroot/include"
         -Wno-dev
     )
     set -x
