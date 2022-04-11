@@ -6,6 +6,6 @@ build/libkernel.a: kernel/Cargo.lock kernel/Cargo.toml kernel/src/* kernel/src/*
 
 build/kernel: kernel/linkers/$(ARCH).ld mk/kernel_ld.sh build/libkernel.a
 	export PATH="$(PREFIX_PATH):$$PATH" && \
-	$(ROOT)/mk/kernel_ld.sh $(LD) --gc-sections -z max-page-size=0x1000 -T $< -o $@ build/libkernel.a && \
-	$(OBJCOPY) --only-keep-debug $@ $@.sym && \
-	$(OBJCOPY) --strip-debug $@
+	$(ROOT)/mk/kernel_ld.sh $(LD) --gc-sections -z max-page-size=0x1000 -T $< -o $@.all build/libkernel.a && \
+	$(OBJCOPY) --only-keep-debug $@.all $@.sym && \
+	$(OBJCOPY) --strip-debug $@.all $@
