@@ -14,10 +14,9 @@ INITFS_RM_BINS=\
 	vboxd \
 	xhcid
 
-build/initfs.tag: initfs.toml prefix
+build/initfs.img: initfs.toml prefix
 	cargo build --manifest-path cookbook/Cargo.toml --release
 	cargo build --manifest-path installer/Cargo.toml --release
-	rm -f build/libkernel.a
 	rm -rf build/initfs
 	mkdir -p build/initfs
 	$(INSTALLER) -c $< build/initfs/
@@ -26,4 +25,4 @@ build/initfs.tag: initfs.toml prefix
 	for bin in $(INITFS_RM_BINS); do \
 		rm -f build/initfs/bin/$$bin; \
 	done
-	touch $@
+	cargo run --manifest-path redox-initfs/tools/Cargo.toml --bin redox-initfs-ar -- build/initfs -o $@

@@ -1,6 +1,5 @@
-build/libkernel.a: kernel/Cargo.lock kernel/Cargo.toml kernel/src/* kernel/src/*/* kernel/src/*/*/* kernel/src/*/*/*/* build/initfs.tag
+build/libkernel.a: kernel/Cargo.lock kernel/Cargo.toml kernel/src/* kernel/src/*/* kernel/src/*/*/* kernel/src/*/*/*/*
 	export PATH="$(PREFIX_PATH):$$PATH" && \
-	export INITFS_FOLDER=$(ROOT)/build/initfs && \
 	cd kernel && \
 	cargo rustc --lib --target=$(ROOT)/kernel/targets/$(KTARGET).json --release -- -C soft-float -C debuginfo=2 -C lto --emit link=../$@
 
