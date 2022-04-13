@@ -1,0 +1,30 @@
+[source]
+git = "https://gitlab.redox-os.org/redox-os/drivers.git"
+
+[build]
+template = "custom"
+script = """
+BINS=(
+    acpid
+    ahcid
+    nvmed
+    pcid
+    ps2d
+    vesad
+)
+
+mkdir -pv "${COOKBOOK_STAGE}/bin"
+for bin in "${BINS[@]}"
+do
+    "${COOKBOOK_CARGO}" rustc --release \
+        --manifest-path "${COOKBOOK_SOURCE}/${bin}/Cargo.toml" \
+        --bin "${bin}" \
+        -- \
+        -C opt-level=z \
+        -C panic=abort
+    cp -v "target/${TARGET}/release/${bin}" "${COOKBOOK_STAGE}/bin"
+done
+
+mkdir -pv "${COOKBOOK_STAGE}/etc/pcid"
+cp -v "${COOKBOOK_SOURCE}/initfs.toml" "${COOKBOOK_STAGE}/etc/pcid/initfs.toml"
+"""
