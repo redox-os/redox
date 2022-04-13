@@ -35,7 +35,7 @@ function recipe_build {
         --with-sysroot=/ \
         --with-build-sysroot="$sysroot" \
         --enable-static \
-        --disable-shared \
+        --enable-shared \
         --disable-dlopen \
         --disable-nls \
         --enable-languages=c,c++ \
