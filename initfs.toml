@@ -7,7 +7,7 @@ prompt = false
 
 # Package settings
 [packages]
-drivers = {}
+drivers-initfs = {}
 init = {}
 logd = {}
 nulld = {}
