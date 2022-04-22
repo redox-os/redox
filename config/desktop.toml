@@ -35,6 +35,7 @@ redoxfs = {}
 resist = {}
 smith = {}
 strace = {}
+terminfo = {}
 userutils = {}
 uutils = {}
 vim = {}
