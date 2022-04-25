@@ -30,6 +30,7 @@ diffutils = {}
 dosbox = {}
 drivers = {}
 #drivers-041 = {}
+drivers-initfs = {}
 #duktape = {} # strptime
 eduke32 = {}
 exampled = {}
