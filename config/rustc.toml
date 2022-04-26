@@ -111,6 +111,10 @@ path = "/etc/pkg.d/50_redox"
 data = "https://static.redox-os.org/pkg"
 
 [[files]]
+path = "/etc/redox-release"
+data = "0.7.0 beta"
+
+[[files]]
 path = "/etc/group"
 data = """
 root;0;root
