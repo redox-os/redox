@@ -9,6 +9,7 @@ prompt = false
 [packages]
 ipcd = {}
 ptyd = {}
+drivers = {}
 
 # User settings
 [users.root]
@@ -27,6 +28,7 @@ path = "/etc/init.d/00_base"
 data = """
 ipcd
 ptyd
+pcid /etc/pcid.d/
 """
 
 [[files]]
