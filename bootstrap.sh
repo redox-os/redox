@@ -226,7 +226,6 @@ ubuntu()
 		curl \
 		file \
 		flex \
-		fuse \
 		genisoimage \
 		git \
 		gperf \
