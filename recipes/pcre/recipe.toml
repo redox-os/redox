@@ -1,5 +1,5 @@
 [source]
-tar = "https://iweb.dl.sourceforge.net/project/pcre/pcre/8.42/pcre-8.42.tar.bz2"
+tar = "https://mirrors.gigenet.com/OSDN//sfnet/p/pc/pcre/pcre/8.42/pcre-8.42.tar.gz"
 patches = [
     "redox.patch"
 ]
