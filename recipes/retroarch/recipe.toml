@@ -1,0 +1,24 @@
+[source]
+git = "https://github.com/jackpot51/retroarch.git"
+
+[build]
+template = "custom"
+dependencies = [
+    "liborbital",
+    "sdl",
+]
+script = """
+pushd "${COOKBOOK_SOURCE}"
+./fetch-submodules.sh
+popd
+
+rsync -av --delete "${COOKBOOK_SOURCE}/" ./
+
+COOKBOOK_CONFIGURE_FLAGS=(
+    --host="${TARGET}"
+    --prefix="/"
+    --disable-networking # missing ifaddrs.h
+    --disable-thread_storage # crash in pthread_setspecific called by sthread_tls_set
+)
+cookbook_configure
+"""
