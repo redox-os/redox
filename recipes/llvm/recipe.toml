@@ -1,0 +1,59 @@
+[source]
+git = "https://gitlab.redox-os.org/redox-os/llvm-project.git"
+upstream = "https://github.com/rust-lang/llvm-project.git"
+branch = "redox-2022-03-18"
+
+[build]
+template = "custom"
+dependencies = []
+script = """
+COOKBOOK_CONFIGURE="cmake"
+COOKBOOK_CONFIGURE_FLAGS=(
+    -DCMAKE_AR="$(which "${TARGET}-ar")"
+    -DCMAKE_BUILD_TYPE=Release
+    -DCMAKE_CROSSCOMPILING=True
+    -DCMAKE_CXX_FLAGS="--std=gnu++11"
+    -DCMAKE_EXE_LINKER_FLAGS="-static"
+    -DCMAKE_RANLIB="$(which "${TARGET}-ranlib")"
+    -DCMAKE_INSTALL_PREFIX="/"
+    -DCMAKE_INSTALL_INCLUDEDIR="include"
+    -DCMAKE_INSTALL_OLDINCLUDEDIR="/include"
+    -DCMAKE_SYSTEM_NAME=Generic
+    -DCROSS_TOOLCHAIN_FLAGS_NATIVE="-DCMAKE_TOOLCHAIN_FILE=$(realpath ../native.cmake)"
+    -DLLVM_BUILD_BENCHMARKS=Off
+    -DLLVM_BUILD_EXAMPLES=Off
+    -DLLVM_BUILD_TESTS=Off
+    -DLLVM_BUILD_UTILS=Off
+    -DLLVM_DEFAULT_TARGET_TRIPLE="${TARGET}"
+    -DLLVM_ENABLE_LTO=Off
+    -DLLVM_ENABLE_RTTI=On
+    -DLLVM_ENABLE_THREADS=On
+    -DLLVM_INCLUDE_BENCHMARKS=Off
+    -DLLVM_INCLUDE_EXAMPLES=Off
+    -DLLVM_INCLUDE_TESTS=Off
+    -DLLVM_INCLUDE_UTILS=Off
+    -DLLVM_OPTIMIZED_TABLEGEN=On
+    -DLLVM_TARGET_ARCH="$(echo "${TARGET}" | cut -d - -f1)"
+    -DLLVM_TARGETS_TO_BUILD=X86 # TODO: get from TARGET
+    -DLLVM_TOOL_LLVM_COV_BUILD=Off
+    -DLLVM_TOOL_LLVM_LTO_BUILD=Off
+    -DLLVM_TOOL_LLVM_LTO2_BUILD=Off
+    -DLLVM_TOOL_LLVM_PROFDATA_BUILD=Off
+    -DLLVM_TOOL_LLVM_RTDYLD_BUILD=Off
+    -DLLVM_TOOL_LLVM_XRAY_BUILD=Off
+    -DLLVM_TOOL_LLI_BUILD=Off
+    -DLLVM_TOOL_LTO_BUILD=Off
+    -DLLVM_TOOLS_INSTALL_DIR=bin
+    -DLLVM_UTILS_INSTALL_DIR=bin
+    -DPYTHON_EXECUTABLE="/usr/bin/python2"
+    -DUNIX=1
+    -Wno-dev
+    "${COOKBOOK_SOURCE}/llvm"
+)
+set -x
+cookbook_configure
+mv -vT "${COOKBOOK_STAGE}"/usr/include "${COOKBOOK_STAGE}/include"
+mv -vT "${COOKBOOK_STAGE}"/usr/share "${COOKBOOK_STAGE}/share"
+rmdir -v "${COOKBOOK_STAGE}"/usr
+set +x
+"""
