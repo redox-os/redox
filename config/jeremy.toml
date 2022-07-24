@@ -54,6 +54,7 @@ ion = {}
 ipcd = {}
 jansson = {}
 jeremy = {}
+kernel = {}
 keyboard-sfx = {}
 lci = {}
 libc-bench = {}

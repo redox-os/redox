@@ -42,12 +42,7 @@ endif
 # Automatic variables
 ROOT=$(CURDIR)
 export RUST_COMPILER_RT_ROOT=$(ROOT)/rust/src/llvm-project/compiler-rt
-export RUST_TARGET_PATH=$(ROOT)/kernel/targets
 export XARGO_RUST_SRC=$(ROOT)/rust/src
-
-## Kernel variables
-KTARGET=$(ARCH)-unknown-kernel
-KBUILD=build/kernel
 
 ## Userspace variables
 export TARGET=$(ARCH)-unknown-redox

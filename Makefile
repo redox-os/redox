@@ -16,8 +16,6 @@ clean:
 	cd cookbook && ./clean.sh
 	cargo clean --manifest-path cookbook/pkgutils/Cargo.toml
 	cargo clean --manifest-path installer/Cargo.toml
-	cargo clean --manifest-path kernel/Cargo.toml
-	cargo clean --manifest-path kernel/syscall/Cargo.toml
 	cargo clean --manifest-path redoxfs/Cargo.toml
 	-$(FUMOUNT) build/filesystem/ || true
 	rm -rf build
@@ -37,7 +35,6 @@ update:
 		"$$(cargo run --manifest-path ../installer/Cargo.toml -- --list-packages -c ../filesystem.toml)"
 	cargo update --manifest-path cookbook/pkgutils/Cargo.toml
 	cargo update --manifest-path installer/Cargo.toml
-	cargo update --manifest-path kernel/Cargo.toml
 	cargo update --manifest-path redoxfs/Cargo.toml
 
 fetch:
@@ -51,9 +48,6 @@ include mk/prefix.mk
 
 # Bootloader recipes
 include mk/bootloader.mk
-
-# Kernel recipes
-include mk/kernel.mk
 
 # Filesystem recipes
 include mk/initfs.mk
@@ -111,7 +105,7 @@ env: prefix FORCE
 	bash
 
 gdb: FORCE
-	gdb build/kernel.sym --eval-command="target remote localhost:1234"
+	gdb cookbook/recipes/kernel/build/kernel.sym --eval-command="target remote localhost:1234"
 
 # An empty target
 FORCE:

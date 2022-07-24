@@ -17,6 +17,7 @@ gcc = {}
 gnu-binutils = {}
 gnu-make = {}
 ipcd = {}
+kernel = {}
 netdb = {}
 netstack = {}
 netutils = {}
