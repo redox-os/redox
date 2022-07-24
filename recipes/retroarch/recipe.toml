@@ -5,7 +5,10 @@ git = "https://github.com/jackpot51/retroarch.git"
 template = "custom"
 dependencies = [
     "liborbital",
-    "sdl",
+    "llvm",
+    "mesa",
+    "sdl2",
+    "zlib",
 ]
 script = """
 pushd "${COOKBOOK_SOURCE}"
@@ -17,8 +20,11 @@ rsync -av --delete "${COOKBOOK_SOURCE}/" ./
 COOKBOOK_CONFIGURE_FLAGS=(
     --host="${TARGET}"
     --prefix="/"
+    --disable-builtinzlib
     --disable-networking # missing ifaddrs.h
     --disable-thread_storage # crash in pthread_setspecific called by sthread_tls_set
+    --enable-opengl
+    --enable-zlib
 )
 cookbook_configure
 """
