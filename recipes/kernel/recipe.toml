@@ -1,0 +1,35 @@
+[source]
+git = "https://gitlab.redox-os.org/redox-os/kernel.git"
+
+[build]
+template = "custom"
+script = """
+export RUST_TARGET_PATH="${COOKBOOK_SOURCE}/targets"
+ARCH="$(echo "${TARGET}" | cut -d - -f1)"
+cargo rustc \
+	--lib \
+	--manifest-path "${COOKBOOK_SOURCE}/Cargo.toml" \
+	--target "${COOKBOOK_SOURCE}/targets/${ARCH}-unknown-kernel.json" \
+	--release \
+	-Z build-std=core,alloc \
+	-- \
+	-C soft-float \
+	-C debuginfo=2 \
+	-C lto \
+	--emit link="${PWD}/libkernel.a"
+"${COOKBOOK_RECIPE}/kernel_ld.sh" "${TARGET}-ld" \
+	--gc-sections \
+	-z max-page-size=0x1000 \
+	-T "${COOKBOOK_SOURCE}/linkers/${ARCH}.ld" \
+	-o kernel.all \
+	libkernel.a
+"${TARGET}-objcopy" \
+	--only-keep-debug \
+	kernel.all \
+	kernel.sym
+"${TARGET}-objcopy" \
+	--strip-debug \
+	kernel.all \
+	kernel
+cp -v kernel "${COOKBOOK_STAGE}"
+"""
