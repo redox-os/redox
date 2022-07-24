@@ -1,4 +1,4 @@
-BUILD_DEPENDS=(liborbital mesa mesa_glu zlib)
+BUILD_DEPENDS=(liborbital llvm mesa mesa_glu zlib)
 
 function recipe_version {
     printf "1.0.0"
