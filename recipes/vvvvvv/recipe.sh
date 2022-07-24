@@ -2,7 +2,7 @@ VERSION=2.0
 GIT=https://github.com/xTibor/VVVVVV
 BRANCH=redox
 GIT_UPSTREAM=https://github.com/TerryCavanagh/VVVVVV
-BUILD_DEPENDS=(sdl2_image sdl2_mixer sdl2 liborbital mesa mesa_glu zlib libogg libvorbis)
+BUILD_DEPENDS=(sdl2_image sdl2_mixer sdl2 liborbital llvm mesa mesa_glu zlib libogg libvorbis)
 
 function recipe_version {
     printf "1.0.0"
