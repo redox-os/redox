@@ -1,6 +1,6 @@
 VERSION=1.6.0
 TAR="https://neverball.org/neverball-${VERSION}.tar.gz"
-BUILD_DEPENDS=(freetype libjpeg libogg liborbital libpng libvorbis mesa sdl2 sdl2_ttf zlib)
+BUILD_DEPENDS=(freetype libjpeg libogg liborbital libpng libvorbis llvm mesa sdl2 sdl2_ttf zlib)
 
 function recipe_version {
     echo "$VERSION"
