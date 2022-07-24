@@ -1,4 +1,4 @@
-build/filesystem.bin: prefix filesystem.toml build/bootloader.bin build/kernel build/initfs.img
+build/filesystem.bin: prefix filesystem.toml build/bootloader.bin build/initfs.img
 	cargo build --manifest-path cookbook/Cargo.toml --release
 	cargo build --manifest-path installer/Cargo.toml --release
 	cargo build --manifest-path redoxfs/Cargo.toml --release
@@ -15,7 +15,6 @@ build/filesystem.bin: prefix filesystem.toml build/bootloader.bin build/kernel b
 	pgrep redoxfs
 	cp -v filesystem.toml build/filesystem/filesystem.toml
 	cp -v build/bootloader.bin build/filesystem/bootloader
-	cp -v build/kernel build/filesystem/kernel
 	mkdir -v build/filesystem/pkg
 	cp -v cookbook/build/id_ed25519.pub.toml build/filesystem/pkg/id_ed25519.pub.toml
 	#TODO cp -r $(ROOT)/$(PREFIX_INSTALL)/$(TARGET)/include build/filesystem/include

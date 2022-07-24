@@ -70,6 +70,7 @@ ion = {}
 ipcd = {}
 jansson = {}
 keyboard-sfx = {}
+kernel = {}
 lci = {}
 libc-bench = {}
 libffi = {}

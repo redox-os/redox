@@ -21,6 +21,7 @@ gnu-make = {}
 installer = {}
 ion = {}
 ipcd = {}
+kernel = {}
 netdb = {}
 netstack = {}
 netutils = {}

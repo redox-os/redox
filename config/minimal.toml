@@ -7,9 +7,10 @@ prompt = false
 
 # Package settings
 [packages]
-ipcd = {}
-ptyd = {}
 drivers = {}
+ipcd = {}
+kernel = {}
+ptyd = {}
 
 # User settings
 [users.root]
