@@ -1,0 +1,28 @@
+#TODO: TEST
+[source]
+git = "https://gitlab.redox-os.org/fabiao/sdl2-src.git"
+
+[build]
+template = "custom"
+dependencies = [
+    "liborbital",
+    "mesa",
+]
+script = """
+COOKBOOK_CONFIGURE_FLAGS=(
+    --host="${TARGET}"
+    --prefix="/"
+    --disable-shared
+    --disable-pulseaudio
+    --disable-video-x11
+    --disable-loadso
+    --disable-sdl-dlopen
+    --enable-threads
+    --enable-audio
+    --enable-dummyaudio
+    --enable-video-orbital
+    --enable-redoxaudio
+    --enable-cdrom
+)
+cookbook_configure
+"""
