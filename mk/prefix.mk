@@ -146,7 +146,7 @@ $(PREFIX)/rust-freestanding-install: $(ROOT)/rust | $(PREFIX)/binutils-install
 	$(MAKE) -j `$(NPROC)` && \
 	$(MAKE) -j `$(NPROC)` install DESTDIR="$(ROOT)/$@.partial"
 	rm -rf "$(PREFIX)/rust-freestanding-build"
-	mkdir -p "$@.partial/lib/rustlib/x86_64-unknown-linux-gnu/bin"
+	mkdir -p "$@.partial/lib/rustlib/$(HOST_TARGET)/bin"
 	cd "$@.partial" && $(PREFIX_STRIP)
 	touch "$@.partial"
 	mv "$@.partial" "$@"
@@ -222,7 +222,7 @@ $(PREFIX)/rust-install: $(ROOT)/rust | $(PREFIX)/gcc-install $(PREFIX)/relibc-fr
 	rm -rf "$(ROOT)/$@.partial/lib/rustlib" "$(ROOT)/$@.partial/share/doc/rust" && \
 	$(MAKE) -j `$(NPROC)` install DESTDIR="$(ROOT)/$@.partial"
 	rm -rf "$(PREFIX)/rust-build"
-	mkdir -p "$@.partial/lib/rustlib/x86_64-unknown-linux-gnu/bin"
+	mkdir -p "$@.partial/lib/rustlib/$(HOST_TARGET)/bin"
 	cd "$@.partial" && find . -name *.old -exec rm {} ';' && $(PREFIX_STRIP)
 	touch "$@.partial"
 	mv "$@.partial" "$@"
