@@ -13,6 +13,7 @@ FILESYSTEM_SIZE?=256
 REDOXFS_MKFS_FLAGS?=
 
 # Per host variables
+HOST_ARCH=x86_64 # TODO: get automatically
 HOST_CARGO=env --unset=RUSTUP_TOOLCHAIN cargo
 UNAME := $(shell uname)
 ifeq ($(UNAME),Darwin)
@@ -22,7 +23,7 @@ ifeq ($(UNAME),Darwin)
 	PREFIX_BINARY=0
 	VB_AUDIO=coreaudio
 	VBM=/Applications/VirtualBox.app/Contents/MacOS/VBoxManage
-	HOST_TARGET ?= $(ARCH)-apple-darwin
+	HOST_TARGET ?= $(HOST_ARCH)-apple-darwin
 else ifeq ($(UNAME),FreeBSD)
 	FUMOUNT=sudo umount
 	export NPROC=sysctl -n hw.ncpu
@@ -30,14 +31,14 @@ else ifeq ($(UNAME),FreeBSD)
 	PREFIX_BINARY=0
 	VB_AUDIO=pulse # To check, will probaly be OSS on most setups
 	VBM=VBoxManage
-	HOST_TARGET ?= $(ARCH)-unknown-freebsd
+	HOST_TARGET ?= $(HOST_ARCH)-unknown-freebsd
 else
 	FUMOUNT=fusermount -u
 	export NPROC=nproc
 	export REDOX_MAKE=make
 	VB_AUDIO=pulse
 	VBM=VBoxManage
-	HOST_TARGET ?= $(ARCH)-unknown-linux-gnu
+	HOST_TARGET ?= $(HOST_ARCH)-unknown-linux-gnu
 endif
 
 # Automatic variables
@@ -54,6 +55,8 @@ INSTALLER=\
 
 ## Bootloader variables
 ifeq ($(ARCH),x86_64)
+	BOOTLOADER_TARGET=x86-unknown-none
+else ifeq ($(ARCH),i686)
 	BOOTLOADER_TARGET=x86-unknown-none
 else
 	BOOTLOADER_TARGET=$(ARCH)-unknown-none
