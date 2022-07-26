@@ -1,11 +1,11 @@
 build/filesystem.bin: prefix filesystem.toml build/bootloader.bin build/initfs.img
-	cargo build --manifest-path cookbook/Cargo.toml --release
-	cargo build --manifest-path installer/Cargo.toml --release
-	cargo build --manifest-path redoxfs/Cargo.toml --release
+	$(HOST_CARGO) build --manifest-path cookbook/Cargo.toml --release
+	$(HOST_CARGO) build --manifest-path installer/Cargo.toml --release
+	$(HOST_CARGO) build --manifest-path redoxfs/Cargo.toml --release
 	-$(FUMOUNT) build/filesystem/ || true
 	rm -rf $@  $@.partial build/filesystem/
 	fallocate --posix --length "$(FILESYSTEM_SIZE)MiB" $@.partial
-	cargo run --release \
+	$(HOST_CARGO) run --release \
 		--manifest-path redoxfs/Cargo.toml \
 		--bin redoxfs-mkfs \
 		-- $(REDOXFS_MKFS_FLAGS) $@.partial
@@ -28,14 +28,14 @@ build/filesystem.bin: prefix filesystem.toml build/bootloader.bin build/initfs.i
 
 mount: FORCE
 	mkdir -p build/filesystem/
-	cargo build --manifest-path redoxfs/Cargo.toml --release --bin redoxfs
+	$(HOST_CARGO) build --manifest-path redoxfs/Cargo.toml --release --bin redoxfs
 	redoxfs/target/release/redoxfs build/harddrive.bin build/filesystem/
 	sleep 2
 	pgrep redoxfs
 
 mount_extra: FORCE
 	mkdir -p build/filesystem/
-	cargo build --manifest-path redoxfs/Cargo.toml --release --bin redoxfs
+	$(HOST_CARGO) build --manifest-path redoxfs/Cargo.toml --release --bin redoxfs
 	redoxfs/target/release/redoxfs build/extra.bin build/filesystem/
 	sleep 2
 	pgrep redoxfs

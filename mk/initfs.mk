@@ -3,8 +3,8 @@ INITFS_RM_BINS=\
 	redoxfs-mkfs
 
 build/initfs.img: initfs.toml prefix
-	cargo build --manifest-path cookbook/Cargo.toml --release
-	cargo build --manifest-path installer/Cargo.toml --release
+	$(HOST_CARGO) build --manifest-path cookbook/Cargo.toml --release
+	$(HOST_CARGO) build --manifest-path installer/Cargo.toml --release
 	rm -rf build/initfs
 	mkdir -p build/initfs
 	$(INSTALLER) -c $< build/initfs/
