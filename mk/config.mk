@@ -13,7 +13,8 @@ FILESYSTEM_SIZE?=256
 REDOXFS_MKFS_FLAGS?=
 
 # Per host variables
-HOST_ARCH=x86_64 # TODO: get automatically
+# TODO: get host arch automatically
+HOST_ARCH=x86_64
 HOST_CARGO=env --unset=RUSTUP_TOOLCHAIN cargo
 UNAME := $(shell uname)
 ifeq ($(UNAME),Darwin)
