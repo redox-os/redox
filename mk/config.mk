@@ -13,6 +13,7 @@ FILESYSTEM_SIZE?=256
 REDOXFS_MKFS_FLAGS?=
 
 # Per host variables
+HOST_CARGO=env --unset=RUSTUP_TOOLCHAIN cargo
 UNAME := $(shell uname)
 ifeq ($(UNAME),Darwin)
 	FUMOUNT=sudo umount
