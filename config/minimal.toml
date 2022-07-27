@@ -7,9 +7,12 @@ prompt = false
 
 # Package settings
 [packages]
+bootstrap = {}
 drivers = {}
 ipcd = {}
 kernel = {}
+# TODO: Should the minimal conf have escalated?
+escalated = {}
 ptyd = {}
 
 # User settings
@@ -30,6 +33,7 @@ data = """
 ipcd
 ptyd
 pcid /etc/pcid.d/
+escalated
 """
 
 [[files]]

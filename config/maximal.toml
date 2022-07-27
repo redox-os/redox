@@ -14,6 +14,7 @@ autoconf = {}
 automake = {}
 #bash = {}
 binutils = {}
+bootstrap = {}
 ca-certificates = {}
 cairo = {}
 cairodemo = {}
@@ -31,6 +32,7 @@ drivers = {}
 #drivers-041 = {}
 #duktape = {}
 eduke32 = {}
+escalated = {}
 exampled = {}
 expat = {}
 extrautils = {}
@@ -203,6 +205,7 @@ data = """
 ipcd
 ptyd
 pcid /etc/pcid.d/
+escalated
 """
 
 [[files]]

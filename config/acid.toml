@@ -7,8 +7,11 @@ prompt = false
 
 # Package settings
 [packages]
+bootstrap = {}
 acid = {}
 coreutils = {}
+# TODO: Does this need escalated?
+escalated = {}
 ion = {}
 ipcd = {}
 kernel = {}
@@ -31,6 +34,7 @@ path = "/etc/init.d/00_base"
 data = """
 ipcd
 ptyd
+escalated
 """
 
 [[files]]
