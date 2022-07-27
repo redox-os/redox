@@ -1,6 +1,5 @@
-[recipe]
-# TODO: Set git link once userspace_fexec is merged.
-#GIT=https://gitlab.redox-os.org/redox-os/relibc.git
+[source]
+GIT=https://gitlab.redox-os.org/redox-os/relibc.git
 
 [build]
 template = "custom"
