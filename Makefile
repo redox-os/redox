@@ -17,6 +17,7 @@ clean:
 	cargo clean --manifest-path cookbook/pkgutils/Cargo.toml
 	cargo clean --manifest-path installer/Cargo.toml
 	cargo clean --manifest-path redoxfs/Cargo.toml
+	cargo clean --manifest-path relibc/Cargo.toml
 	-$(FUMOUNT) build/filesystem/ || true
 	rm -rf build
 
@@ -36,6 +37,7 @@ update:
 	cargo update --manifest-path cookbook/pkgutils/Cargo.toml
 	cargo update --manifest-path installer/Cargo.toml
 	cargo update --manifest-path redoxfs/Cargo.toml
+	cargo update --manifest-path relibc/Cargo.toml
 
 fetch:
 	cargo build --manifest-path cookbook/Cargo.toml --release
