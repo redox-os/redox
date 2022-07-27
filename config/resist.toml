@@ -7,10 +7,12 @@ prompt = false
 
 # Package settings
 [packages]
+bootstrap = {}
 coreutils = {}
 dash = {}
 diffutils = {}
 drivers = {}
+escalated = {}
 extrautils = {}
 findutils = {}
 gcc = {}
@@ -44,6 +46,7 @@ data = """
 ipcd
 ptyd
 pcid /etc/pcid.d/
+escalated
 """
 
 [[files]]
