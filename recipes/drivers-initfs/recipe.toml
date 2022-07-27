@@ -9,9 +9,16 @@ BINS=(
     ahcid
     nvmed
     pcid
-    ps2d
     vesad
 )
+
+case "${ARCH}" in
+    i686 | x86_64)
+        BINS+=(ps2d)
+        ;;
+    *)
+        ;;
+esac
 
 mkdir -pv "${COOKBOOK_STAGE}/bin"
 for bin in "${BINS[@]}"
