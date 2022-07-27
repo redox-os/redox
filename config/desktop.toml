@@ -8,12 +8,14 @@ prompt = false
 # Package settings
 [packages]
 audiod = {}
+bootstrap = {}
 ca-certificates = {}
 contain = {}
 coreutils = {}
 dash = {}
 diffutils = {}
 drivers = {}
+escalated = {}
 extrautils = {}
 findutils = {}
 gdbserver = {}
@@ -33,6 +35,7 @@ orbutils = {}
 pkgutils = {}
 ptyd = {}
 redoxfs = {}
+relibc = {}
 resist = {}
 smith = {}
 strace = {}
@@ -59,6 +62,7 @@ data = """
 ipcd
 ptyd
 pcid /etc/pcid.d/
+escalated
 """
 
 [[files]]
