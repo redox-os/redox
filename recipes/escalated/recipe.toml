@@ -1,2 +1,5 @@
+[source]
+git = "https://gitlab.redox-os.org/redox-os/escalated.git"
+
 [build]
 template = "cargo"
