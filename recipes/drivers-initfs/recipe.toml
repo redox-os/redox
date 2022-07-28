@@ -12,8 +12,8 @@ BINS=(
     vesad
 )
 
-case "${ARCH}" in
-    i686 | x86_64)
+case "${TARGET}" in
+    i686-unknown-redox | x86_64-unknown-redox)
         BINS+=(ps2d)
         ;;
     *)
