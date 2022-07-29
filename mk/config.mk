@@ -56,11 +56,16 @@ INSTALLER=\
 
 ## Bootloader variables
 ifeq ($(ARCH),x86_64)
+	BOOTLOADER_EFI_PATH=efi/boot/bootx64.efi
 	BOOTLOADER_TARGET=x86-unknown-none
 else ifeq ($(ARCH),i686)
+	BOOTLOADER_EFI_PATH=efi/boot/bootia32.efi
 	BOOTLOADER_TARGET=x86-unknown-none
+else ifeq ($(ARCH),aarch64)
+	BOOTLOADER_EFI_PATH=efi/boot/bootaa64.efi
+	BOOTLOADER_TARGET=aarch64-unknown-none
 else
-	BOOTLOADER_TARGET=$(ARCH)-unknown-none
+$(error Unsupported ARCH for bootloader "$(ARCH)")
 endif
 EFI_TARGET=$(ARCH)-unknown-uefi
 PARTED=/sbin/parted

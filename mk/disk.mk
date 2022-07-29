@@ -33,7 +33,7 @@ build/harddrive-efi.bin: build/bootloader.efi build/filesystem.bin
 	mkfs.vfat $@.esp && \
 	mmd -i $@.esp efi && \
 	mmd -i $@.esp efi/boot && \
-	mcopy -i $@.esp $< ::efi/boot/bootx64.efi && \
+	mcopy -i $@.esp $< ::$(BOOTLOADER_EFI_PATH) && \
 	# Create the disk \
 	dd if=/dev/zero of=$@ bs=1048576 count=$$(expr $$(du -m $< | cut -f1) + 2 + $$(du -m build/filesystem.bin | cut -f1)) && \
 	# Create partition table \
