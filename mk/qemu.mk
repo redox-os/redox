@@ -1,42 +1,34 @@
 ifeq ($(ARCH),i686)
-
-#TODO: support kvm
-kvm=no
-QEMU_ARCH=i386
-QEMU_MACHINE=pc
-QEMU_CPU=pentium2
-#TODO: support higher RAM sizes
-QEMU_MEM=512
-#TODO: support higher CPU counts
-QEMU_SMP=1
-
+	#TODO: support kvm
+	kvm=no
+	QEMU_ARCH=i386
+	QEMU_MACHINE=pc
+	QEMU_CPU=pentium2
+	#TODO: support higher RAM sizes
+	#TODO: support higher CPU counts
+	QEMUFLAGS=-smp 1 -m 512
 else ifeq ($(ARCH),x86_64)
-
-QEMU_ARCH=x86_64
-QEMU_MACHINE=q35
-QEMU_CPU=max
-QEMU_MEM=2048
-QEMU_SMP=4
-
+	QEMU_ARCH=x86_64
+	QEMU_MACHINE=q35
+	QEMU_CPU=max
+	QEMU_EFI=/usr/share/OVMF/OVMF_CODE.fd
+	QEMUFLAGS=-smp 4 -m 2048
 else ifeq ($(ARCH),aarch64)
-
-kvm=no
-QEMU_ARCH=aarch64
-QEMU_MACHINE=virt
-QEMU_CPU=max
-QEMU_MEM=2048
-QEMU_SMP=1
-
+	kvm=no
+	QEMU_ARCH=aarch64
+	QEMU_MACHINE=virt
+	QEMU_CPU=max
+	QEMU_EFI=/usr/share/AAVMF/AAVMF_CODE.fd
+	QEMUFLAGS=-smp 1 -m 2048
+	ifneq ($(vga),no)
+		QEMUFLAGS+=-device virtio-gpu-pci
+	endif
 else
-
-$(error Unsupported QEMU ARCH))
-
+$(error Unsupported ARCH for QEMU "$(ARCH)"))
 endif
 
 QEMU=SDL_VIDEO_X11_DGAMOUSE=0 qemu-system-$(QEMU_ARCH)
-QEMUFLAGS=-d cpu_reset,guest_errors,int -no-reboot
-QEMUFLAGS+=-smp $(QEMU_SMP) -m $(QEMU_MEM)
-QEMU_EFI=/usr/share/OVMF/OVMF_CODE.fd
+QEMUFLAGS+=-d cpu_reset,guest_errors -no-reboot
 ifeq ($(serial),no)
 	QEMUFLAGS+=-chardev stdio,id=debug -device isa-debugcon,iobase=0x402,chardev=debug
 else
@@ -94,6 +86,9 @@ build/extra.bin:
 	truncate -s 1g $@
 endif
 
+build/firmware.rom:
+	cp $(QEMU_EFI) $@
+
 qemu: build/harddrive.bin build/extra.bin
 	$(QEMU) $(QEMUFLAGS) \
 		-drive file=build/harddrive.bin,format=raw \
@@ -104,15 +99,15 @@ qemu_no_build: build/extra.bin
 		-drive file=build/harddrive.bin,format=raw \
 		-drive file=build/extra.bin,format=raw
 
-qemu_efi: build/harddrive-efi.bin build/extra.bin
+qemu_efi: build/harddrive-efi.bin build/extra.bin build/firmware.rom
 	$(QEMU) $(QEMUFLAGS) \
-		-bios $(QEMU_EFI) \
+		-bios build/firmware.rom \
 		-drive file=build/harddrive-efi.bin,format=raw \
 		-drive file=build/extra.bin,format=raw
 
-qemu_efi_no_build: build/extra.bin
+qemu_efi_no_build: build/extra.bin build/firmware.rom
 	$(QEMU) $(QEMUFLAGS) \
-		-bios $(QEMU_EFI) \
+		-bios build/firmware.rom \
 		-drive file=build/harddrive-efi.bin,format=raw \
 		-drive file=build/extra.bin,format=raw
 
@@ -126,15 +121,15 @@ qemu_nvme_no_build: build/extra.bin
 		-drive file=build/harddrive.bin,format=raw,if=none,id=drv0 -device nvme,drive=drv0,serial=NVME_SERIAL \
 		-drive file=build/extra.bin,format=raw,if=none,id=drv1 -device nvme,drive=drv1,serial=NVME_EXTRA
 
-qemu_nvme_efi: build/harddrive-efi.bin build/extra.bin
+qemu_nvme_efi: build/harddrive-efi.bin build/extra.bin build/firmware.rom
 	$(QEMU) $(QEMUFLAGS) \
-		-bios $(QEMU_EFI) \
+		-bios build/firmware.rom \
 		-drive file=build/harddrive-efi.bin,format=raw,if=none,id=drv0 -device nvme,drive=drv0,serial=NVME_SERIAL \
 		-drive file=build/extra.bin,format=raw,if=none,id=drv1 -device nvme,drive=drv1,serial=NVME_EXTRA
 
-qemu_nvme_efi_no_build: build/extra.bin
+qemu_nvme_efi_no_build: build/extra.bin build/firmware.rom
 	$(QEMU) $(QEMUFLAGS) \
-		-bios $(QEMU_EFI) \
+		-bios build/firmware.rom \
 		-drive file=build/harddrive-efi.bin,format=raw,if=none,id=drv0 -device nvme,drive=drv0,serial=NVME_SERIAL \
 		-drive file=build/extra.bin,format=raw,if=none,id=drv1 -device nvme,drive=drv1,serial=NVME_EXTRA
 
@@ -158,15 +153,15 @@ qemu_live_no_build: build/extra.bin
 		-drive file=build/livedisk.bin,format=raw \
 		-drive file=build/extra.bin,format=raw
 
-qemu_live_efi: build/livedisk-efi.bin build/extra.bin
+qemu_live_efi: build/livedisk-efi.bin build/extra.bin build/firmware.rom
 	$(QEMU) $(QEMUFLAGS) \
-		-bios $(QEMU_EFI) \
+		-bios build/firmware.rom \
 		-drive file=build/livedisk-efi.bin,format=raw \
 		-drive file=build/extra.bin,format=raw
 
-qemu_live_efi_no_build: build/extra.bin
+qemu_live_efi_no_build: build/extra.bin build/firmware.rom
 	$(QEMU) $(QEMUFLAGS) \
-		-bios $(QEMU_EFI) \
+		-bios build/firmware.rom \
 		-drive file=build/livedisk-efi.bin,format=raw \
 		-drive file=build/extra.bin,format=raw
 
