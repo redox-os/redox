@@ -1,6 +1,25 @@
-QEMU=SDL_VIDEO_X11_DGAMOUSE=0 qemu-system-$(ARCH)
-QEMUFLAGS=-d cpu_reset
-QEMUFLAGS+=-smp 4 -m 2048
+ifeq ($(ARCH),i686)
+	#TODO: support kvm
+	kvm=no
+	QEMU_ARCH=i386
+	QEMU_MACHINE=pc
+	QEMU_CPU=pentium2
+	#TODO: support higher RAM sizes
+	QEMU_MEM=512
+	#TODO: support higher CPU counts
+	QEMU_SMP=1
+else ifeq ($(ARCH,x86_64))
+	QEMU_ARCH=x86_64
+	QEMU_MACHINE=q35
+	QEMU_CPU=max
+	QEMU_MEM=2048
+	QEMU_SMP=4
+else
+	#error Unsupported QEMU ARCH
+endif
+QEMU=SDL_VIDEO_X11_DGAMOUSE=0 qemu-system-$(QEMU_ARCH)
+QEMUFLAGS=-d cpu_reset,guest_errors,int -no-reboot
+QEMUFLAGS+=-smp $(QEMU_SMP) -m $(QEMU_MEM)
 QEMU_EFI=/usr/share/OVMF/OVMF_CODE.fd
 ifeq ($(serial),no)
 	QEMUFLAGS+=-chardev stdio,id=debug -device isa-debugcon,iobase=0x402,chardev=debug
@@ -9,9 +28,9 @@ else
 	QEMUFLAGS+=-serial chardev:debug -mon chardev=debug
 endif
 ifeq ($(iommu),yes)
-	QEMUFLAGS+=-machine q35,iommu=on
+	QEMUFLAGS+=-machine $(QEMU_MACHINE),iommu=on
 else
-	QEMUFLAGS+=-machine q35
+	QEMUFLAGS+=-machine $(QEMU_MACHINE)
 endif
 ifneq ($(audio),no)
 	QEMUFLAGS+=-device ich9-intel-hda -device hda-duplex
@@ -45,7 +64,7 @@ ifeq ($(UNAME),Linux)
 	ifneq ($(kvm),no)
 		QEMUFLAGS+=-enable-kvm -cpu host
 	else
-		QEMUFLAGS+=-cpu max
+		QEMUFLAGS+=-cpu $(QEMU_CPU)
 	endif
 endif
 #,int,pcall
