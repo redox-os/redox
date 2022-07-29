@@ -1,22 +1,38 @@
 ifeq ($(ARCH),i686)
-	#TODO: support kvm
-	kvm=no
-	QEMU_ARCH=i386
-	QEMU_MACHINE=pc
-	QEMU_CPU=pentium2
-	#TODO: support higher RAM sizes
-	QEMU_MEM=512
-	#TODO: support higher CPU counts
-	QEMU_SMP=1
-else ifeq ($(ARCH,x86_64))
-	QEMU_ARCH=x86_64
-	QEMU_MACHINE=q35
-	QEMU_CPU=max
-	QEMU_MEM=2048
-	QEMU_SMP=4
+
+#TODO: support kvm
+kvm=no
+QEMU_ARCH=i386
+QEMU_MACHINE=pc
+QEMU_CPU=pentium2
+#TODO: support higher RAM sizes
+QEMU_MEM=512
+#TODO: support higher CPU counts
+QEMU_SMP=1
+
+else ifeq ($(ARCH),x86_64)
+
+QEMU_ARCH=x86_64
+QEMU_MACHINE=q35
+QEMU_CPU=max
+QEMU_MEM=2048
+QEMU_SMP=4
+
+else ifeq ($(ARCH),aarch64)
+
+kvm=no
+QEMU_ARCH=aarch64
+QEMU_MACHINE=virt
+QEMU_CPU=max
+QEMU_MEM=2048
+QEMU_SMP=1
+
 else
-	#error Unsupported QEMU ARCH
+
+$(error Unsupported QEMU ARCH))
+
 endif
+
 QEMU=SDL_VIDEO_X11_DGAMOUSE=0 qemu-system-$(QEMU_ARCH)
 QEMUFLAGS=-d cpu_reset,guest_errors,int -no-reboot
 QEMUFLAGS+=-smp $(QEMU_SMP) -m $(QEMU_MEM)
