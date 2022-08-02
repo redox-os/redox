@@ -15,6 +15,7 @@ automake = {}
 #bash = {} # setrlimit
 binutils = {}
 bootloader = {}
+bootstrap = {}
 ca-certificates = {}
 cairo = {}
 #cairodemo = {} # multiple definition of __rust_alloc
