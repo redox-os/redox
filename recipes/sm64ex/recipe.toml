@@ -1,0 +1,22 @@
+[source]
+git = "https://github.com/jackpot51/sm64ex.git"
+
+[build]
+template = "custom"
+dependencies = [
+    "liborbital",
+    "llvm",
+    "mesa",
+    "sdl2",
+    "zlib",
+]
+script = """
+rsync -av --delete "${COOKBOOK_SOURCE}/" ./
+# You must find your own ROM
+cp -v "${COOKBOOK_RECIPE}/baserom.us.z64" baserom.us.z64
+
+export CROSS="${TARGET}-"
+"${COOKBOOK_MAKE}" -j "${COOKBOOK_MAKE_JOBS}"
+mkdir -p "${COOKBOOK_STAGE}/bin"
+cp -v build/us_pc/sm64.us.f3dex2e "${COOKBOOK_STAGE}/bin/sm64"
+"""
