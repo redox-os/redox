@@ -1,6 +1,18 @@
+diff -ruwN source/bashline.c source-new/bashline.c
+--- source/bashline.c	2016-08-05 19:44:05.000000000 -0600
++++ source-new/bashline.c	2022-08-04 09:09:21.816427263 -0600
+@@ -2465,7 +2465,7 @@
+      const char *text;
+      int state;
+ {
+-#if defined (__WIN32__) || defined (__OPENNT) || !defined (HAVE_GRP_H)
++#if defined (__WIN32__) || defined (__OPENNT) || !defined (HAVE_GRP_H) || defined(__redox__)
+   return ((char *)NULL);
+ #else
+   static char *gname = (char *)NULL;
 diff -ruwN source/builtins/ulimit.def source-new/builtins/ulimit.def
 --- source/builtins/ulimit.def	2016-03-11 07:18:54.000000000 -0700
-+++ source-new/builtins/ulimit.def	2020-07-14 20:52:15.875646752 -0600
++++ source-new/builtins/ulimit.def	2022-08-04 09:07:18.413033575 -0600
 @@ -598,7 +598,7 @@
        }
    else
@@ -12,7 +24,7 @@ diff -ruwN source/builtins/ulimit.def source-new/builtins/ulimit.def
  #  if defined (HPUX9)
 diff -ruwN source/config-top.h source-new/config-top.h
 --- source/config-top.h	2016-05-19 12:34:02.000000000 -0600
-+++ source-new/config-top.h	2020-07-14 20:50:54.546545430 -0600
++++ source-new/config-top.h	2022-08-04 09:07:18.413033575 -0600
 @@ -63,14 +63,14 @@
  /* The default value of the PATH variable. */
  #ifndef DEFAULT_PATH_VALUE
@@ -32,7 +44,7 @@ diff -ruwN source/config-top.h source-new/config-top.h
  /* Default primary and secondary prompt strings. */
 diff -ruwN source/configure.ac source-new/configure.ac
 --- source/configure.ac	2016-09-07 14:56:28.000000000 -0600
-+++ source-new/configure.ac	2020-07-14 20:50:54.550545485 -0600
++++ source-new/configure.ac	2022-08-04 09:07:18.413033575 -0600
 @@ -90,6 +90,7 @@
  *-opennt*|*-interix*)	opt_bash_malloc=no ;;	# Interix, now owned by Microsoft
  *-nsk*)		opt_bash_malloc=no ;;	# HP NonStop
@@ -43,7 +55,7 @@ diff -ruwN source/configure.ac source-new/configure.ac
  # memory scrambling on free()
 diff -ruwN source/execute_cmd.c source-new/execute_cmd.c
 --- source/execute_cmd.c	2016-08-26 05:10:08.000000000 -0600
-+++ source-new/execute_cmd.c	2020-07-14 20:50:54.550545485 -0600
++++ source-new/execute_cmd.c	2022-08-04 09:07:18.413033575 -0600
 @@ -1335,15 +1335,17 @@
    nullcmd = (command == 0) || (command->type == cm_simple && command->value.Simple->words == 0 && command->value.Simple->redirects == 0);
    if (posixly_correct && nullcmd)
@@ -65,7 +77,7 @@ diff -ruwN source/execute_cmd.c source-new/execute_cmd.c
    old_flags = command->flags;
 diff -ruwN source/general.c source-new/general.c
 --- source/general.c	2016-08-11 09:16:56.000000000 -0600
-+++ source-new/general.c	2020-07-14 20:50:54.550545485 -0600
++++ source-new/general.c	2022-08-04 09:07:18.413033575 -0600
 @@ -476,6 +476,7 @@
  void
  check_dev_tty ()
@@ -97,7 +109,7 @@ diff -ruwN source/general.c source-new/general.c
    *p_index = i;
 diff -ruwN source/include/posixwait.h source-new/include/posixwait.h
 --- source/include/posixwait.h	2008-08-12 08:03:03.000000000 -0600
-+++ source-new/include/posixwait.h	2020-07-14 20:50:54.554545541 -0600
++++ source-new/include/posixwait.h	2022-08-04 09:07:18.413033575 -0600
 @@ -34,7 +34,7 @@
  
  /* How to get the status of a job.  For Posix, this is just an
@@ -118,7 +130,7 @@ diff -ruwN source/include/posixwait.h source-new/include/posixwait.h
  #    define WSTOPSIG(s)       ((s) >> 8)
 diff -ruwN source/lib/sh/getcwd.c source-new/lib/sh/getcwd.c
 --- source/lib/sh/getcwd.c	2012-03-10 08:48:50.000000000 -0700
-+++ source-new/lib/sh/getcwd.c	2020-07-14 20:50:54.554545541 -0600
++++ source-new/lib/sh/getcwd.c	2022-08-04 09:07:18.413033575 -0600
 @@ -20,7 +20,7 @@
  
  #include <config.h>
@@ -130,7 +142,7 @@ diff -ruwN source/lib/sh/getcwd.c source-new/lib/sh/getcwd.c
    #pragma alloca
 diff -ruwN source/sig.c source-new/sig.c
 --- source/sig.c	2016-02-11 13:02:45.000000000 -0700
-+++ source-new/sig.c	2020-07-14 20:50:54.554545541 -0600
++++ source-new/sig.c	2022-08-04 09:07:18.413033575 -0600
 @@ -680,7 +680,9 @@
  }
  
