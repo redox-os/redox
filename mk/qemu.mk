@@ -28,7 +28,7 @@ $(error Unsupported ARCH for QEMU "$(ARCH)"))
 endif
 
 QEMU=SDL_VIDEO_X11_DGAMOUSE=0 qemu-system-$(QEMU_ARCH)
-QEMUFLAGS+=-d cpu_reset,guest_errors -no-reboot
+QEMUFLAGS+=-d cpu_reset,guest_errors
 ifeq ($(serial),no)
 	QEMUFLAGS+=-chardev stdio,id=debug -device isa-debugcon,iobase=0x402,chardev=debug
 else
