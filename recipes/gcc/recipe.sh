@@ -26,7 +26,7 @@ function recipe_build {
     mkdir -p "$sysroot/usr"
     ln -sf "$sysroot/include" "$sysroot/usr/include"
     ln -sf "$sysroot/lib" "$sysroot/usr/lib"
-    export LDFLAGS="-static"
+    export LDFLAGS="--static"
     ./configure \
         --build=${BUILD} \
         --host=${HOST} \

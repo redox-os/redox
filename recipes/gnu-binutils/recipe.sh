@@ -19,7 +19,7 @@ function recipe_build {
     ln -sf "$sysroot/include" "$sysroot/usr/include"
     ln -sf "$sysroot/lib" "$sysroot/usr/lib"
     export CPPFLAGS="-I$sysroot/include -pie -fPIC -g"
-    export LDFLAGS="-L$sysroot/lib -static -g"
+    export LDFLAGS="-L$sysroot/lib --static -g"
     ./configure \
         --build=${BUILD} \
         --host=${HOST} \
