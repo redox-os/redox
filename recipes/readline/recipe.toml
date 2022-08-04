@@ -1,0 +1,11 @@
+[source]
+tar = "http://ftp.gnu.org/gnu/readline/readline-7.0.tar.gz"
+patches = [
+    "redox.patch"
+]
+
+[build]
+template = "configure"
+depends = [
+    "ncurses",
+]
