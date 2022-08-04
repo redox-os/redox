@@ -16,7 +16,7 @@ function recipe_build {
     sysroot="$(realpath ../sysroot)"
     export SDL_CONFIG="${PKG_CONFIG} sdl"
     export CPPFLAGS="-I$sysroot/include"
-    export LDFLAGS="-L$sysroot/lib"
+    export LDFLAGS="-L$sysroot/lib --static"
     "$REDOX_MAKE" -j"$($NPROC)"
     skip=1
 }
