@@ -45,10 +45,11 @@ vim = {}
 # apps
 periodictable = {}
 pixelcannon = {}
-#schismtracker = {}
+schismtracker = {}
 sodium = {}
 # cli
 acid = {}
+bash = {}
 cleye = {}
 curl = {}
 ffmpeg = {}
@@ -84,23 +85,24 @@ pkg-config = {}
 # games
 dosbox = {}
 eduke32 = {}
-#freedoom = {}
+freedoom = {}
 games = {}
-gigalomania = {} # crashes system!
+gigalomania = {}
 neverball = {}
 openjazz = {}
 openttd = {}
 openttd-opengfx = {}
 openttd-openmsx = {}
 openttd-opensfx = {}
-#prboom = {}
+prboom = {}
 retroarch = {} # need to package cores
 rs-nes = {} # need game for testing
 rust64 = {} # need roms
 rustual-boy = {} # need game for testing
 scummvm = {} # need game for testing
+sm64ex = {}
 sopwith = {}
-#syobonaction = {}
+syobonaction = {}
 vice = {}
 vvvvvv = {}
 # stuff
