@@ -10,11 +10,11 @@ wget -O support/config.sub "https://gitlab.redox-os.org/redox-os/gnu-config/-/ra
 [build]
 template = "custom"
 dependencies = [
-    "gettext"
+    "gettext",
+    "readline",
 ]
 script = """
 COOKBOOK_CONFIGURE_FLAGS+=(
-    --disable-readline
     bash_cv_getenv_redef=no
 )
 COOKBOOK_MAKE_JOBS=1 # workaround for parallel make bugs
