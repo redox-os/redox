@@ -1,0 +1,31 @@
+[source]
+tar = "https://www.libsdl.org/projects/SDL_mixer/release/SDL2_mixer-2.0.4.tar.gz"
+
+[build]
+template = "custom"
+dependencies = [
+    "sdl2",
+    "liborbital",
+    "llvm",
+    "mesa",
+    "zlib",
+    "libogg",
+    "libvorbis",
+]
+script = """
+export SDL_LIBS="-lSDL2 -lorbital $("${TARGET}-pkg-config" --libs osmesa) -lvorbis -logg -lz -lm -lpthread -lstdc++"
+COOKBOOK_CONFIGURE_FLAGS=(
+    --prefix=/
+    --host="${TARGET}"
+    --disable-shared
+    --disable-sdltest
+    --enable-music-ogg
+    --disable-music-cmd
+    --disable-music-mp3
+    --disable-smpegtest
+    --disable-music-midi
+    --disable-music-mod
+)
+set -x
+cookbook_configure
+"""
