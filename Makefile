@@ -32,7 +32,6 @@ pull:
 
 update:
 	cd cookbook && ./update.sh \
-		"$$(cargo run --manifest-path ../installer/Cargo.toml -- --list-packages -c ../initfs.toml)" \
 		"$$(cargo run --manifest-path ../installer/Cargo.toml -- --list-packages -c ../filesystem.toml)"
 	cargo update --manifest-path cookbook/pkgutils/Cargo.toml
 	cargo update --manifest-path installer/Cargo.toml
@@ -42,7 +41,6 @@ update:
 fetch:
 	cargo build --manifest-path cookbook/Cargo.toml --release
 	cd cookbook && ./fetch.sh \
-		"$$(cargo run --manifest-path ../installer/Cargo.toml -- --list-packages -c ../initfs.toml)" \
 		"$$(cargo run --manifest-path ../installer/Cargo.toml -- --list-packages -c ../filesystem.toml)"
 
 # Cross compiler recipes
@@ -52,7 +50,6 @@ include mk/prefix.mk
 include mk/bootloader.mk
 
 # Filesystem recipes
-include mk/initfs.mk
 include mk/filesystem.mk
 
 # Disk images

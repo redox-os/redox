@@ -20,6 +20,7 @@ extrautils = {}
 findutils = {}
 gdbserver = {}
 gnu-make = {}
+initfs = {}
 installer = {}
 ion = {}
 ipcd = {}
