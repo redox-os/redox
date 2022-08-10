@@ -16,18 +16,18 @@ dependencies = [
 script = """
 INITFS_RM_BINS='redoxfs-ar redoxfs-mkfs'
 
-mkdir -p $COOKBOOK_BUILD/initfs/etc
+mkdir -p "${COOKBOOK_BUILD}/initfs/etc"
 
-cp -r $COOKBOOK_SYSROOT/* $COOKBOOK_BUILD/initfs
+cp -r "${COOKBOOK_SYSROOT}/"* "${COOKBOOK_BUILD}/initfs"
 
 # TODO: Move init.rc to another recipe, perhaps initfs-misc? Then it can be installed as a regular dependency.
-cp $COOKBOOK_RECIPE/init.rc $COOKBOOK_BUILD/initfs/etc/init.rc
+cp "${COOKBOOK_RECIPE}/init.rc" "${COOKBOOK_BUILD}/initfs/etc/init.rc"
 
-for bin in $INITFS_RM_BINS; do
-  rm -f $COOKBOOK_BUILD/initfs/bin/$bin
+for bin in ${INITFS_RM_BINS}; do
+  rm -f "${COOKBOOK_BUILD}/initfs/bin/$bin"
 done
 
-env -u CARGO cargo run --manifest-path $COOKBOOK_SOURCE/tools/Cargo.toml --bin redox-initfs-ar -- $COOKBOOK_BUILD/initfs -o $COOKBOOK_BUILD/initfs.img
+env -u CARGO cargo run --manifest-path "${COOKBOOK_SOURCE}/tools/Cargo.toml" --bin redox-initfs-ar -- "${COOKBOOK_BUILD}/initfs" -o "${COOKBOOK_BUILD}/initfs.img"
 
-cp $COOKBOOK_BUILD/initfs.img $COOKBOOK_STAGE/initfs
+cp "${COOKBOOK_BUILD}/initfs.img" "${COOKBOOK_STAGE}/initfs"
 """
