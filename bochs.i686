@@ -1,0 +1,28 @@
+megs: 1024
+boot: disk
+ata0-master: type=disk, path="build/harddrive.bin", mode=flat
+
+#com1: enabled=1, mode=file, dev=build/serial.log
+cpu: model=p2_klamath
+#e1000: enabled=1, mac=52:54:00:12:34:56 ethmod=vnet
+
+
+# enable "cirrus" SVGA. Note that neither this nor VBE works perfectly
+#vga: extension=cirrus
+#vgaromimage: file=$BXSHARE/VGABIOS-lgpl-latest-cirrus
+
+#vga: extension=vbe
+
+
+magic_break: enabled=1
+
+#uncomment to choose either display library to use
+#display_library: sdl2
+display_library: x, options="gui_debug"
+
+log: -
+debug: action=ignore
+info: action=report
+error: action=report
+panic: action=ask
+debugger_log: -
