@@ -12,6 +12,7 @@ acid = {}
 coreutils = {}
 # TODO: Does this need escalated?
 escalated = {}
+initfs = {}
 ion = {}
 ipcd = {}
 kernel = {}

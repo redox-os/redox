@@ -20,6 +20,7 @@ findutils = {}
 gnu-make = {}
 installer = {}
 ion = {}
+initfs = {}
 ipcd = {}
 kernel = {}
 netdb = {}

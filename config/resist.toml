@@ -18,6 +18,7 @@ findutils = {}
 gcc = {}
 gnu-binutils = {}
 gnu-make = {}
+initfs = {}
 ipcd = {}
 kernel = {}
 netdb = {}
