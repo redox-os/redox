@@ -22,6 +22,7 @@ gnu-binutils = {}
 gnu-make = {}
 installer = {}
 ion = {}
+initfs = {}
 ipcd = {}
 kernel = {}
 netdb = {}
