@@ -138,6 +138,7 @@ $(PREFIX)/rust-freestanding-install: $(ROOT)/rust | $(PREFIX)/binutils-install
 		--disable-docs \
 		--enable-cargo-native-static \
 		--enable-extended \
+		--enable-lld \
 		--enable-llvm-static-stdcpp \
 		--set 'llvm.targets=AArch64;X86' \
 		--set 'llvm.experimental-targets=' \
@@ -214,6 +215,7 @@ $(PREFIX)/rust-install: $(ROOT)/rust | $(PREFIX)/gcc-install $(PREFIX)/relibc-fr
 		--disable-docs \
 		--enable-cargo-native-static \
 		--enable-extended \
+		--enable-lld \
 		--enable-llvm-static-stdcpp \
 		--tools=cargo \
 		--target="$(HOST_TARGET),$(TARGET)" \
