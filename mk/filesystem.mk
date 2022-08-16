@@ -13,13 +13,11 @@ build/filesystem.bin: prefix filesystem.toml build/bootloader.bin
 	redoxfs/target/release/redoxfs $@.partial build/filesystem/
 	sleep 2
 	pgrep redoxfs
+	$(INSTALLER) -c filesystem.toml build/filesystem/
 	cp -v filesystem.toml build/filesystem/filesystem.toml
 	cp -v build/bootloader.bin build/filesystem/bootloader
-	mkdir -v build/filesystem/pkg
+	mkdir -pv build/filesystem/pkg
 	cp -v cookbook/build/id_ed25519.pub.toml build/filesystem/pkg/id_ed25519.pub.toml
-	#TODO cp -r $(ROOT)/$(PREFIX_INSTALL)/$(TARGET)/include build/filesystem/include
-	#TODO cp -r $(ROOT)/$(PREFIX_INSTALL)/$(TARGET)/lib build/filesystem/lib
-	$(INSTALLER) -c filesystem.toml build/filesystem/
 	sync
 	-$(FUMOUNT) build/filesystem/ || true
 	rm -rf build/filesystem/
