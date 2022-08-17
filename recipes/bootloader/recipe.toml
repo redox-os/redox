@@ -11,7 +11,7 @@ if [ "${ARCH}" == "x86_64" ]
 then
     export TARGET="x86-unknown-none"
     "${COOKBOOK_MAKE}" -j "${COOKBOOK_MAKE_JOBS}"
-    cp "build/${TARGET}/bootloader.bin" "${COOKBOOK_STAGE}/bootloader"
+    cp "build/${TARGET}/bootloader.bin" "${COOKBOOK_STAGE}/bootloader.bios"
 fi
 
 export TARGET="${ARCH}-unknown-uefi"
