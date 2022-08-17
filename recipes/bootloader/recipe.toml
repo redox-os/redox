@@ -14,8 +14,7 @@ then
     cp "build/${TARGET}/bootloader.bin" "${COOKBOOK_STAGE}/bootloader"
 fi
 
-# TODO: fails due to environmental variables
-# export TARGET="${ARCH}-unknown-uefi"
-# cleanenv "${COOKBOOK_MAKE}" -j "${COOKBOOK_MAKE_JOBS}"
-# cp "build/${TARGET}/bootloader.efi" "${COOKBOOK_STAGE}/bootloader.efi"
+export TARGET="${ARCH}-unknown-uefi"
+"${COOKBOOK_MAKE}" -j "${COOKBOOK_MAKE_JOBS}"
+cp "build/${TARGET}/bootloader.efi" "${COOKBOOK_STAGE}/bootloader.efi"
 """
