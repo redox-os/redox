@@ -26,8 +26,9 @@ cargo \
     --target-dir "${COOKBOOK_BUILD}" \
     -- \
     --emit link="${COOKBOOK_BUILD}/${TARGET}/release/libbootstrap.a"
+mkdir -v "${COOKBOOK_STAGE}/boot"
 "${TARGET}-ld" \
-    -o "${COOKBOOK_STAGE}/bootstrap" \
+    -o "${COOKBOOK_STAGE}/boot/bootstrap" \
     --gc-sections \
     -T "${COOKBOOK_SOURCE}/src/${ARCH}.ld" \
     "${COOKBOOK_BUILD}/asm.o" \

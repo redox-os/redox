@@ -29,5 +29,6 @@ done
 
 env -u CARGO cargo run --manifest-path "${COOKBOOK_SOURCE}/tools/Cargo.toml" --bin redox-initfs-ar -- "${COOKBOOK_BUILD}/initfs" -o "${COOKBOOK_BUILD}/initfs.img"
 
-cp "${COOKBOOK_BUILD}/initfs.img" "${COOKBOOK_STAGE}/initfs"
+mkdir -v "${COOKBOOK_STAGE}/boot"
+cp "${COOKBOOK_BUILD}/initfs.img" "${COOKBOOK_STAGE}/boot/initfs"
 """

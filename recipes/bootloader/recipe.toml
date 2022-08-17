@@ -6,12 +6,14 @@ template = "custom"
 script = """
 rsync -av --delete "${COOKBOOK_SOURCE}/" ./
 
+mkdir -v "${COOKBOOK_STAGE}/boot"
+
 function bootloader {
     export TARGET="$1"
     src="$2"
     dst="$3"
     "${COOKBOOK_MAKE}" -j "${COOKBOOK_MAKE_JOBS}" "build/${TARGET}/${src}"
-    cp -v "build/${TARGET}/${src}" "${COOKBOOK_STAGE}/${dst}"
+    cp -v "build/${TARGET}/${src}" "${COOKBOOK_STAGE}/boot/${dst}"
 }
 
 ARCH="$(echo "${TARGET}" | cut -d - -f1)"
