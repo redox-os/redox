@@ -31,5 +31,6 @@ cargo rustc \
 	--strip-debug \
 	kernel.all \
 	kernel
-cp -v kernel "${COOKBOOK_STAGE}"
+mkdir -v "${COOKBOOK_STAGE}/boot"
+cp -v kernel "${COOKBOOK_STAGE}/boot"
 """
