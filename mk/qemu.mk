@@ -1,8 +1,6 @@
 ifeq ($(ARCH),i686)
-	#TODO: support kvm
-	kvm=no
 	QEMU_ARCH=i386
-	QEMU_MACHINE=pc
+	QEMU_MACHINE=q35
 	QEMU_CPU=pentium2
 	#TODO: support higher RAM sizes
 	#TODO: support higher CPU counts
@@ -66,7 +64,7 @@ ifneq ($(usb),no)
 	QEMUFLAGS+=-device nec-usb-xhci,id=xhci
 endif
 ifeq ($(gdb),yes)
-	QEMUFLAGS+=-s
+	QEMUFLAGS+=-s -S
 endif
 ifeq ($(UNAME),Linux)
 	ifneq ($(kvm),no)
