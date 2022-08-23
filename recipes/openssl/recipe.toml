@@ -13,6 +13,7 @@ COOKBOOK_CONFIGURE_FLAGS=(
     "redox-${ARCH}"
     --prefix="/"
 )
+export CC="${TARGET}-gcc"
 cookbook_configure
 rm -rfv "${COOKBOOK_STAGE}/"{share,ssl}
 """
