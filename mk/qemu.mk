@@ -2,9 +2,8 @@ ifeq ($(ARCH),i686)
 	QEMU_ARCH=i386
 	QEMU_MACHINE=q35
 	QEMU_CPU=pentium2
-	#TODO: support higher RAM sizes
 	#TODO: support higher CPU counts
-	QEMUFLAGS=-smp 1 -m 512
+	QEMUFLAGS=-smp 1 -m 2048
 else ifeq ($(ARCH),x86_64)
 	QEMU_ARCH=x86_64
 	QEMU_MACHINE=q35
