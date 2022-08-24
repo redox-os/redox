@@ -11,7 +11,10 @@ else ifeq ($(ARCH),x86_64)
 	QEMU_EFI=/usr/share/OVMF/OVMF_CODE.fd
 	QEMUFLAGS=-smp 4 -m 2048
 else ifeq ($(ARCH),aarch64)
+	efi=yes
 	kvm=no
+	#TODO: support vga
+	vga=no
 	QEMU_ARCH=aarch64
 	QEMU_MACHINE=virt
 	QEMU_CPU=max
@@ -20,8 +23,28 @@ else ifeq ($(ARCH),aarch64)
 	ifneq ($(vga),no)
 		QEMUFLAGS+=-device virtio-gpu-pci
 	endif
+	ifneq ($(usb),no)
+		QEMUFLAGS+=-device usb-ehci -device usb-kbd -device usb-mouse
+	endif
 else
 $(error Unsupported ARCH for QEMU "$(ARCH)"))
+endif
+
+ifeq ($(efi),yes)
+	FIRMWARE=build/firmware.rom
+	QEMUFLAGS+=-bios build/firmware.rom
+	ifeq ($(live),yes)
+		HARDDRIVE=build/harddrive-efi.bin
+	else
+		HARDDRIVE=build/livedisk-efi.bin
+	endif
+else
+	FIRMWARE=
+	ifeq ($(live),yes)
+		HARDDRIVE=build/harddrive.bin
+	else
+		HARDDRIVE=build/livedisk.bin
+	endif
 endif
 
 QEMU=SDL_VIDEO_X11_DGAMOUSE=0 qemu-system-$(QEMU_ARCH)
@@ -86,96 +109,40 @@ endif
 build/firmware.rom:
 	cp $(QEMU_EFI) $@
 
-qemu: build/harddrive.bin build/extra.bin
+qemu: $(HARDDRIVE) $(FIRMWARE) build/extra.bin
 	$(QEMU) $(QEMUFLAGS) \
-		-drive file=build/harddrive.bin,format=raw \
+		-drive file=$(HARDDRIVE),format=raw \
 		-drive file=build/extra.bin,format=raw
 
-qemu_no_build: build/extra.bin
+qemu_no_build: $(FIRMWARE) build/extra.bin
 	$(QEMU) $(QEMUFLAGS) \
-		-drive file=build/harddrive.bin,format=raw \
+		-drive file=$(HARDDRIVE),format=raw \
 		-drive file=build/extra.bin,format=raw
 
-qemu_efi: build/harddrive-efi.bin build/extra.bin build/firmware.rom
+qemu_nvme: $(HARDDRIVE) $(FIRMWARE) build/extra.bin
 	$(QEMU) $(QEMUFLAGS) \
-		-bios build/firmware.rom \
-		-drive file=build/harddrive-efi.bin,format=raw \
-		-drive file=build/extra.bin,format=raw
-
-qemu_efi_no_build: build/extra.bin build/firmware.rom
-	$(QEMU) $(QEMUFLAGS) \
-		-bios build/firmware.rom \
-		-drive file=build/harddrive-efi.bin,format=raw \
-		-drive file=build/extra.bin,format=raw
-
-qemu_nvme: build/harddrive.bin build/extra.bin
-	$(QEMU) $(QEMUFLAGS) \
-		-drive file=build/harddrive.bin,format=raw,if=none,id=drv0 -device nvme,drive=drv0,serial=NVME_SERIAL \
+		-drive file=$(HARDDRIVE),format=raw,if=none,id=drv0 -device nvme,drive=drv0,serial=NVME_SERIAL \
 		-drive file=build/extra.bin,format=raw,if=none,id=drv1 -device nvme,drive=drv1,serial=NVME_EXTRA
 
-qemu_nvme_no_build: build/extra.bin
+qemu_nvme_no_build: $(FIRMWARE) build/extra.bin
 	$(QEMU) $(QEMUFLAGS) \
-		-drive file=build/harddrive.bin,format=raw,if=none,id=drv0 -device nvme,drive=drv0,serial=NVME_SERIAL \
+		-drive file=$(HARDDRIVE),format=raw,if=none,id=drv0 -device nvme,drive=drv0,serial=NVME_SERIAL \
 		-drive file=build/extra.bin,format=raw,if=none,id=drv1 -device nvme,drive=drv1,serial=NVME_EXTRA
 
-qemu_nvme_efi: build/harddrive-efi.bin build/extra.bin build/firmware.rom
-	$(QEMU) $(QEMUFLAGS) \
-		-bios build/firmware.rom \
-		-drive file=build/harddrive-efi.bin,format=raw,if=none,id=drv0 -device nvme,drive=drv0,serial=NVME_SERIAL \
-		-drive file=build/extra.bin,format=raw,if=none,id=drv1 -device nvme,drive=drv1,serial=NVME_EXTRA
-
-qemu_nvme_efi_no_build: build/extra.bin build/firmware.rom
-	$(QEMU) $(QEMUFLAGS) \
-		-bios build/firmware.rom \
-		-drive file=build/harddrive-efi.bin,format=raw,if=none,id=drv0 -device nvme,drive=drv0,serial=NVME_SERIAL \
-		-drive file=build/extra.bin,format=raw,if=none,id=drv1 -device nvme,drive=drv1,serial=NVME_EXTRA
-
-qemu_nvme_live: build/livedisk.bin build/extra.bin
-	$(QEMU) $(QEMUFLAGS) \
-		-drive file=build/livedisk.bin,format=raw,if=none,id=drv0 -device nvme,drive=drv0,serial=NVME_SERIAL \
-		-drive file=build/extra.bin,format=raw,if=none,id=drv1 -device nvme,drive=drv1,serial=NVME_EXTRA
-
-qemu_nvme_live_no_build: build/extra.bin
-	$(QEMU) $(QEMUFLAGS) \
-		-drive file=build/livedisk.bin,format=raw,if=none,id=drv0 -device nvme,drive=drv0,serial=NVME_SERIAL \
-		-drive file=build/extra.bin,format=raw,if=none,id=drv1 -device nvme,drive=drv1,serial=NVME_EXTRA
-
-qemu_live: build/livedisk.bin build/extra.bin
-	$(QEMU) $(QEMUFLAGS) \
-		-drive file=build/livedisk.bin,format=raw \
-		-drive file=build/extra.bin,format=raw
-
-qemu_live_no_build: build/extra.bin
-	$(QEMU) $(QEMUFLAGS) \
-		-drive file=build/livedisk.bin,format=raw \
-		-drive file=build/extra.bin,format=raw
-
-qemu_live_efi: build/livedisk-efi.bin build/extra.bin build/firmware.rom
-	$(QEMU) $(QEMUFLAGS) \
-		-bios build/firmware.rom \
-		-drive file=build/livedisk-efi.bin,format=raw \
-		-drive file=build/extra.bin,format=raw
-
-qemu_live_efi_no_build: build/extra.bin build/firmware.rom
-	$(QEMU) $(QEMUFLAGS) \
-		-bios build/firmware.rom \
-		-drive file=build/livedisk-efi.bin,format=raw \
-		-drive file=build/extra.bin,format=raw
-
-qemu_iso: build/livedisk.iso build/extra.bin
+qemu_iso: build/livedisk.iso $(FIRMWARE) build/extra.bin
 	$(QEMU) $(QEMUFLAGS) \
 		-boot d -cdrom build/livedisk.iso \
 		-drive file=build/extra.bin,format=raw
 
-qemu_iso_no_build: build/extra.bin
+qemu_iso_no_build: $(FIRMWARE) build/extra.bin
 	$(QEMU) $(QEMUFLAGS) \
 		-boot d -cdrom build/livedisk.iso \
 		-drive file=build/extra.bin,format=raw
 
-qemu_extra: build/extra.bin
+qemu_extra: $(FIRMWARE) build/extra.bin
 	$(QEMU) $(QEMUFLAGS) \
 		-drive file=build/extra.bin,format=raw
 
-qemu_nvme_extra: build/extra.bin
+qemu_nvme_extra: $(FIRMWARE) build/extra.bin
 	$(QEMU) $(QEMUFLAGS) \
 		-drive file=build/extra.bin,format=raw,if=none,id=drv1 -device nvme,drive=drv1,serial=NVME_EXTRA
