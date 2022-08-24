@@ -34,16 +34,16 @@ ifeq ($(efi),yes)
 	FIRMWARE=build/firmware.rom
 	QEMUFLAGS+=-bios build/firmware.rom
 	ifeq ($(live),yes)
-		HARDDRIVE=build/harddrive-efi.bin
-	else
 		HARDDRIVE=build/livedisk-efi.bin
+	else
+		HARDDRIVE=build/harddrive-efi.bin
 	endif
 else
 	FIRMWARE=
 	ifeq ($(live),yes)
-		HARDDRIVE=build/harddrive.bin
-	else
 		HARDDRIVE=build/livedisk.bin
+	else
+		HARDDRIVE=build/harddrive.bin
 	endif
 endif
 
