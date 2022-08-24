@@ -1,4 +1,5 @@
 ifeq ($(ARCH),i686)
+	efi=no
 	QEMU_ARCH=i386
 	QEMU_MACHINE=q35
 	QEMU_CPU=pentium2
