@@ -1,7 +1,7 @@
 -include .config
 
 # Configuration
-## Architecture to build Redox for (aarch64 or x86_64)
+## Architecture to build Redox for (aarch64, i686, or x86_64)
 ARCH?=x86_64
 ## Flags to pass to the installer (empty to download binary packages)
 INSTALLER_FLAGS?=--cookbook=cookbook
