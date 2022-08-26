@@ -12,6 +12,10 @@ live: build/livedisk.bin
 
 iso: build/livedisk.iso
 
+rebuild:
+	touch $(FILESYSTEM_CONFIG)
+	$(MAKE) all
+
 clean:
 	cd cookbook && ./clean.sh
 	cargo clean --manifest-path cookbook/pkgutils/Cargo.toml
