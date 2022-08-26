@@ -7,6 +7,8 @@ ARCH?=x86_64
 INSTALLER_FLAGS?=--cookbook=cookbook
 ## Enabled to use binary prefix (much faster)
 PREFIX_BINARY?=1
+## Select filesystem config
+FILESYSTEM_CONFIG?=config/$(ARCH)/desktop.toml
 ## Filesystem size in MB (256 is the default)
 FILESYSTEM_SIZE?=256
 ## Flags to pass to redoxfs-mkfs. Add --encrypt to set up disk encryption

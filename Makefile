@@ -32,7 +32,7 @@ pull:
 
 update:
 	cd cookbook && ./update.sh \
-		"$$(cargo run --manifest-path ../installer/Cargo.toml -- --list-packages -c ../filesystem.toml)"
+		"$$(cargo run --manifest-path ../installer/Cargo.toml -- --list-packages -c ../$(FILESYSTEM_CONFIG))"
 	cargo update --manifest-path cookbook/pkgutils/Cargo.toml
 	cargo update --manifest-path installer/Cargo.toml
 	cargo update --manifest-path redoxfs/Cargo.toml
@@ -41,7 +41,7 @@ update:
 fetch:
 	cargo build --manifest-path cookbook/Cargo.toml --release
 	cd cookbook && ./fetch.sh \
-		"$$(cargo run --manifest-path ../installer/Cargo.toml -- --list-packages -c ../filesystem.toml)"
+		"$$(cargo run --manifest-path ../installer/Cargo.toml -- --list-packages -c ../$(FILESYSTEM_CONFIG))"
 
 # Cross compiler recipes
 include mk/prefix.mk

@@ -1,4 +1,4 @@
-build/filesystem.bin: prefix filesystem.toml
+build/filesystem.bin: prefix $(FILESYSTEM_CONFIG)
 	$(HOST_CARGO) build --manifest-path cookbook/Cargo.toml --release
 	$(HOST_CARGO) build --manifest-path installer/Cargo.toml --release
 	$(HOST_CARGO) build --manifest-path redoxfs/Cargo.toml --release
@@ -13,8 +13,8 @@ build/filesystem.bin: prefix filesystem.toml
 	redoxfs/target/release/redoxfs $@.partial build/filesystem/
 	sleep 2
 	pgrep redoxfs
-	$(INSTALLER) -c filesystem.toml build/filesystem/
-	cp -v filesystem.toml build/filesystem/filesystem.toml
+	$(INSTALLER) -c $(FILESYSTEM_CONFIG) build/filesystem/
+	cp -v $(FILESYSTEM_CONFIG) build/filesystem/filesystem.toml
 	mkdir -pv build/filesystem/pkg
 	cp -v cookbook/build/id_ed25519.pub.toml build/filesystem/pkg/id_ed25519.pub.toml
 	sync
