@@ -13,6 +13,7 @@ else ifeq ($(ARCH),x86_64)
 else ifeq ($(ARCH),aarch64)
 	efi=yes
 	kvm=no
+	live=yes
 	#TODO: support vga
 	vga=no
 	QEMU_ARCH=aarch64
