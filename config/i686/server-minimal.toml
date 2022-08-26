@@ -41,7 +41,7 @@ escalated
 """
 
 [[files]]
-path = "/etc/init.d/10_console"
+path = "/etc/init.d/30_console"
 data = """
 getty display:2/activate
 getty debug: -J
