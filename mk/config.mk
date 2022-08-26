@@ -2,7 +2,7 @@
 
 # Configuration
 ## Architecture to build Redox for (aarch64, i686, or x86_64)
-ARCH?=i686
+ARCH?=x86_64
 ## Flags to pass to the installer (empty to download binary packages)
 INSTALLER_FLAGS?=--cookbook=cookbook
 ## Enabled to use binary prefix (much faster)
@@ -10,7 +10,7 @@ PREFIX_BINARY?=1
 ## Select filesystem config
 FILESYSTEM_CONFIG?=config/$(ARCH)/desktop.toml
 ## Filesystem size in MB (256 is the default)
-FILESYSTEM_SIZE?=100
+FILESYSTEM_SIZE?=256
 ## Flags to pass to redoxfs-mkfs. Add --encrypt to set up disk encryption
 REDOXFS_MKFS_FLAGS?=
 
