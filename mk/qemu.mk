@@ -34,18 +34,14 @@ endif
 ifeq ($(efi),yes)
 	FIRMWARE=build/firmware.rom
 	QEMUFLAGS+=-bios build/firmware.rom
-	ifeq ($(live),yes)
-		HARDDRIVE=build/livedisk-efi.bin
-	else
-		HARDDRIVE=build/harddrive-efi.bin
-	endif
 else
 	FIRMWARE=
-	ifeq ($(live),yes)
-		HARDDRIVE=build/livedisk.bin
-	else
-		HARDDRIVE=build/harddrive.bin
-	endif
+endif
+
+ifeq ($(live),yes)
+	HARDDRIVE=build/livedisk.bin
+else
+	HARDDRIVE=build/harddrive.bin
 endif
 
 QEMU=SDL_VIDEO_X11_DGAMOUSE=0 qemu-system-$(QEMU_ARCH)

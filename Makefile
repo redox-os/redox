@@ -69,16 +69,12 @@ ci-img: FORCE
 	$(MAKE) INSTALLER_FLAGS= \
 		build/harddrive.bin.gz \
 		build/livedisk.bin.gz \
-		build/livedisk.iso.gz \
-		build/harddrive-efi.bin.gz \
-		build/livedisk-efi.bin.gz
+		build/livedisk.iso.gz
 	rm -rf build/img
 	mkdir -p build/img
 	cp "build/harddrive.bin.gz" "build/img/redox_$(IMG_TAG)_harddrive.bin.gz"
 	cp "build/livedisk.bin.gz" "build/img/redox_$(IMG_TAG)_livedisk.bin.gz"
 	cp "build/livedisk.iso.gz" "build/img/redox_$(IMG_TAG)_livedisk.iso.gz"
-	cp "build/harddrive-efi.bin.gz" "build/img/redox_$(IMG_TAG)_harddrive-efi.bin.gz"
-	cp "build/livedisk-efi.bin.gz" "build/img/redox_$(IMG_TAG)_livedisk-efi.bin.gz"
 	cd build/img && sha256sum -b * > SHA256SUM
 
 # CI packaging target
