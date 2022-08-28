@@ -1,8 +1,22 @@
-build/harddrive.bin: build/bootloader.efi build/filesystem.bin $(BOOTLOADER_BIOS)
-	env PARTED=$(PARTED) ./mk/disk.sh $@ build/filesystem.bin $< $(BOOTLOADER_EFI_PATH) $(BOOTLOADER_BIOS)
+build/harddrive.bin: build/filesystem.bin $(BOOTLOADER_EFI) $(BOOTLOADER_BIOS)
+	rm -f $@ $@.partial
+	env \
+		PARTED=$(PARTED) \
+		BOOTLOADER_EFI=$(BOOTLOADER_EFI) \
+		BOOTLOADER_EFI_PATH=$(BOOTLOADER_EFI_PATH) \
+		BOOTLOADER_BIOS=$(BOOTLOADER_BIOS) \
+		./mk/disk.sh $@.partial $<
+	mv "$@.partial" "$@"
 
-build/livedisk.bin: build/bootloader-live.efi build/filesystem.bin $(BOOTLOADER_BIOS_LIVE)
-	env PARTED=$(PARTED) ./mk/disk.sh $@ build/filesystem.bin $< $(BOOTLOADER_EFI_PATH) $(BOOTLOADER_BIOS_LIVE)
+build/livedisk.bin: build/filesystem.bin $(BOOTLOADER_EFI_LIVE) $(BOOTLOADER_BIOS_LIVE)
+	rm -f $@ $@.partial
+	env \
+		PARTED=$(PARTED) \
+		BOOTLOADER_EFI=$(BOOTLOADER_EFI_LIVE) \
+		BOOTLOADER_EFI_PATH=$(BOOTLOADER_EFI_PATH) \
+		BOOTLOADER_BIOS=$(BOOTLOADER_BIOS_LIVE) \
+		./mk/disk.sh $@.partial $<
+	mv "$@.partial" "$@"
 
 build/livedisk.iso: build/livedisk.bin.gz
 	rm -rf build/iso/
