@@ -1,4 +1,5 @@
 build/filesystem.bin: prefix $(FILESYSTEM_CONFIG)
+	mkdir -p build/filesystem/
 	$(HOST_CARGO) build --manifest-path cookbook/Cargo.toml --release
 	$(HOST_CARGO) build --manifest-path installer/Cargo.toml --release
 	$(HOST_CARGO) build --manifest-path redoxfs/Cargo.toml --release
