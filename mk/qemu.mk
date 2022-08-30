@@ -1,15 +1,18 @@
+QEMU=SDL_VIDEO_X11_DGAMOUSE=0 qemu-system-$(QEMU_ARCH)
+QEMUFLAGS=-d cpu_reset,guest_errors --trace "pci_nvme_*" --trace "nvme_*"
+
 ifeq ($(ARCH),i686)
 	efi=no
 	QEMU_ARCH=i386
 	QEMU_MACHINE=q35
 	QEMU_CPU=pentium2
-	QEMUFLAGS=-smp 4 -m 2048
+	QEMUFLAGS+=-smp 4 -m 2048
 else ifeq ($(ARCH),x86_64)
 	QEMU_ARCH=x86_64
 	QEMU_MACHINE=q35
 	QEMU_CPU=core2duo
 	QEMU_EFI=/usr/share/OVMF/OVMF_CODE.fd
-	QEMUFLAGS=-smp 4 -m 2048
+	QEMUFLAGS+=-smp 4 -m 2048
 else ifeq ($(ARCH),aarch64)
 	efi=yes
 	kvm=no
@@ -20,7 +23,7 @@ else ifeq ($(ARCH),aarch64)
 	QEMU_MACHINE=virt
 	QEMU_CPU=max
 	QEMU_EFI=/usr/share/AAVMF/AAVMF_CODE.fd
-	QEMUFLAGS=-smp 1 -m 2048
+	QEMUFLAGS+=-smp 1 -m 2048
 	ifneq ($(vga),no)
 		QEMUFLAGS+=-device virtio-gpu-pci
 	endif
@@ -44,22 +47,23 @@ else
 	HARDDRIVE=build/harddrive.bin
 endif
 
-QEMU=SDL_VIDEO_X11_DGAMOUSE=0 qemu-system-$(QEMU_ARCH)
-QEMUFLAGS+=-d cpu_reset,guest_errors
 ifeq ($(serial),no)
 	QEMUFLAGS+=-chardev stdio,id=debug -device isa-debugcon,iobase=0x402,chardev=debug
 else
 	QEMUFLAGS+=-chardev stdio,id=debug,signal=off,mux=on,"$(if $(qemu_serial_logfile),logfile=$(qemu_serial_logfile))"
 	QEMUFLAGS+=-serial chardev:debug -mon chardev=debug
 endif
+
 ifeq ($(iommu),yes)
 	QEMUFLAGS+=-machine $(QEMU_MACHINE),iommu=on
 else
 	QEMUFLAGS+=-machine $(QEMU_MACHINE)
 endif
+
 ifneq ($(audio),no)
 	QEMUFLAGS+=-device ich9-intel-hda -device hda-duplex
 endif
+
 ifeq ($(net),no)
 	QEMUFLAGS+=-net none
 else
@@ -76,15 +80,19 @@ else
 		endif
 	endif
 endif
+
 ifeq ($(vga),no)
 	QEMUFLAGS+=-nographic -vga none
 endif
+
 ifneq ($(usb),no)
 	QEMUFLAGS+=-device nec-usb-xhci,id=xhci
 endif
+
 ifeq ($(gdb),yes)
 	QEMUFLAGS+=-s -S
 endif
+
 ifeq ($(UNAME),Linux)
 	ifneq ($(kvm),no)
 		QEMUFLAGS+=-enable-kvm -cpu host
@@ -92,8 +100,6 @@ ifeq ($(UNAME),Linux)
 		QEMUFLAGS+=-cpu $(QEMU_CPU)
 	endif
 endif
-#,int,pcall
-#-device intel-iommu
 
 ifeq ($(UNAME),Linux)
 build/extra.bin:
