@@ -56,30 +56,6 @@ INSTALLER=\
 	export PATH="$(PREFIX_PATH):$$PATH" && \
  	installer/target/release/redox_installer $(INSTALLER_FLAGS)
 
-## Bootloader variables
-ifeq ($(ARCH),x86_64)
-	BOOTLOADER_BIOS=build/bootloader.bin
-	BOOTLOADER_BIOS_LIVE=build/bootloader-live.bin
-	BOOTLOADER_EFI=build/bootloader.efi
-	BOOTLOADER_EFI_LIVE=build/bootloader-live.efi
-	BOOTLOADER_EFI_PATH=efi/boot/bootx64.efi
-	BOOTLOADER_TARGET=x86-unknown-none
-else ifeq ($(ARCH),i686)
-	BOOTLOADER_BIOS=build/bootloader.bin
-	BOOTLOADER_BIOS_LIVE=build/bootloader-live.bin
-	BOOTLOADER_EFI_PATH=efi/boot/bootia32.efi
-	BOOTLOADER_TARGET=x86-unknown-none
-else ifeq ($(ARCH),aarch64)
-	BOOTLOADER_EFI=build/bootloader.efi
-	BOOTLOADER_EFI_LIVE=build/bootloader-live.efi
-	BOOTLOADER_EFI_PATH=efi/boot/bootaa64.efi
-	BOOTLOADER_TARGET=aarch64-unknown-none
-else
-$(error Unsupported ARCH for bootloader "$(ARCH)")
-endif
-EFI_TARGET=$(ARCH)-unknown-uefi
-PARTED=/sbin/parted
-
 ## Cross compiler variables
 AR=$(TARGET)-gcc-ar
 AS=$(TARGET)-as

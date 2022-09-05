@@ -1,22 +1,18 @@
-build/harddrive.bin: build/filesystem.bin $(BOOTLOADER_EFI) $(BOOTLOADER_BIOS)
-	rm -f $@ $@.partial
-	env \
-		PARTED=$(PARTED) \
-		BOOTLOADER_EFI=$(BOOTLOADER_EFI) \
-		BOOTLOADER_EFI_PATH=$(BOOTLOADER_EFI_PATH) \
-		BOOTLOADER_BIOS=$(BOOTLOADER_BIOS) \
-		./mk/disk.sh $@.partial $<
-	mv "$@.partial" "$@"
+build/harddrive.bin: $(FILESYSTEM_CONFIG)
+	$(HOST_CARGO) build --manifest-path installer/Cargo.toml --release
+	mkdir -p build
+	rm -rf $@  $@.partial
+	fallocate --posix --length "$(FILESYSTEM_SIZE)MiB" $@.partial
+	$(INSTALLER) -c $(FILESYSTEM_CONFIG) $@.partial
+	mv $@.partial $@
 
-build/livedisk.bin: build/filesystem.bin $(BOOTLOADER_EFI_LIVE) $(BOOTLOADER_BIOS_LIVE)
-	rm -f $@ $@.partial
-	env \
-		PARTED=$(PARTED) \
-		BOOTLOADER_EFI=$(BOOTLOADER_EFI_LIVE) \
-		BOOTLOADER_EFI_PATH=$(BOOTLOADER_EFI_PATH) \
-		BOOTLOADER_BIOS=$(BOOTLOADER_BIOS_LIVE) \
-		./mk/disk.sh $@.partial $<
-	mv "$@.partial" "$@"
+build/livedisk.bin: $(FILESYSTEM_CONFIG)
+	$(HOST_CARGO) build --manifest-path installer/Cargo.toml --release
+	mkdir -p build
+	rm -rf $@  $@.partial
+	fallocate --posix --length "$(FILESYSTEM_SIZE)MiB" $@.partial
+	$(INSTALLER) -c $(FILESYSTEM_CONFIG) --live $@.partial
+	mv $@.partial $@
 
 build/livedisk.iso: build/livedisk.bin.gz
 	rm -rf build/iso/
@@ -27,3 +23,22 @@ build/livedisk.iso: build/livedisk.bin.gz
 					-no-emul-boot -boot-load-size 4 -boot-info-table \
 					build/iso/
 	isohybrid $@
+
+mount: FORCE
+	mkdir -p build/filesystem/
+	$(HOST_CARGO) build --manifest-path redoxfs/Cargo.toml --release --bin redoxfs
+	redoxfs/target/release/redoxfs build/harddrive.bin build/filesystem/
+	sleep 2
+	pgrep redoxfs
+
+mount_extra: FORCE
+	mkdir -p build/filesystem/
+	$(HOST_CARGO) build --manifest-path redoxfs/Cargo.toml --release --bin redoxfs
+	redoxfs/target/release/redoxfs build/extra.bin build/filesystem/
+	sleep 2
+	pgrep redoxfs
+
+unmount: FORCE
+	sync
+	-$(FUMOUNT) build/filesystem/ || true
+	rm -rf build/filesystem/
