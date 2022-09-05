@@ -53,9 +53,6 @@ include mk/prefix.mk
 # Bootloader recipes
 include mk/bootloader.mk
 
-# Filesystem recipes
-include mk/filesystem.mk
-
 # Disk images
 include mk/disk.mk
 
