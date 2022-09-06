@@ -6,10 +6,6 @@
 	path = installer
 	url = https://gitlab.redox-os.org/redox-os/installer.git
 	branch = master
-[submodule "isolinux"]
-	path = isolinux
-	url = https://gitlab.redox-os.org/redox-os/isolinux.git
-	branch = master
 [submodule "rust"]
 	path = rust
 	url = https://gitlab.redox-os.org/redox-os/rust.git
