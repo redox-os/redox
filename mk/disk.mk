@@ -14,15 +14,15 @@ build/livedisk.bin: $(FILESYSTEM_CONFIG)
 	$(INSTALLER) -c $(FILESYSTEM_CONFIG) --live $@.partial
 	mv $@.partial $@
 
-build/livedisk.iso: build/livedisk.bin.gz
-	rm -rf build/iso/
+build/livedisk.iso: build/livedisk.bin
+	rm -rf build/iso/ $@.partial
 	mkdir -p build/iso/
-	cp -RL isolinux build/iso/
-	cp $< build/iso/livedisk.gz
-	genisoimage -o $@ -b isolinux/isolinux.bin -c isolinux/boot.cat \
-					-no-emul-boot -boot-load-size 4 -boot-info-table \
-					build/iso/
-	isohybrid $@
+	cp -v $< build/iso/livedisk.bin
+	genisoimage -o $@.partial \
+		-hard-disk-boot \
+		-b livedisk.bin \
+		build/iso/
+	mv $@.partial $@
 
 mount: FORCE
 	mkdir -p build/filesystem/
