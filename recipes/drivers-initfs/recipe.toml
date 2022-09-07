@@ -6,6 +6,7 @@ template = "custom"
 script = """
 BINS=(
     ahcid
+    ided
     nvmed
     pcid
     vesad
