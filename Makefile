@@ -4,13 +4,11 @@ include mk/config.mk
 # Dependencies
 include mk/depends.mk
 
-all: build/harddrive.bin
+all: build/harddrive.img
 
 coreboot: build/coreboot.elf
 
-live: build/livedisk.bin
-
-iso: build/livedisk.iso
+live: build/livedisk.iso
 
 rebuild:
 	touch $(FILESYSTEM_CONFIG)
@@ -62,15 +60,14 @@ include mk/bochs.mk
 include mk/virtualbox.mk
 
 # CI image target
+IMG_TAG?=$(shell git describe --tags)
 ci-img: FORCE
 	$(MAKE) INSTALLER_FLAGS= \
-		build/harddrive.bin.gz \
-		build/livedisk.bin.gz \
+		build/harddrive.img.gz \
 		build/livedisk.iso.gz
 	rm -rf build/img
 	mkdir -p build/img
-	cp "build/harddrive.bin.gz" "build/img/redox_$(IMG_TAG)_harddrive.bin.gz"
-	cp "build/livedisk.bin.gz" "build/img/redox_$(IMG_TAG)_livedisk.bin.gz"
+	cp "build/harddrive.img.gz" "build/img/redox_$(IMG_TAG)_harddrive.img.gz"
 	cp "build/livedisk.iso.gz" "build/img/redox_$(IMG_TAG)_livedisk.iso.gz"
 	cd build/img && sha256sum -b * > SHA256SUM
 

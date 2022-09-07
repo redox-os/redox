@@ -1,4 +1,4 @@
-virtualbox: build/harddrive.bin
+virtualbox: build/harddrive.img
 	echo "Delete VM"
 	-$(VBM) unregistervm Redox --delete; \
 	if [ $$? -ne 0 ]; \

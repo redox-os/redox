@@ -42,9 +42,9 @@ else
 endif
 
 ifeq ($(live),yes)
-	HARDDRIVE=build/livedisk.bin
+	DISK=build/livedisk.iso
 else
-	HARDDRIVE=build/harddrive.bin
+	DISK=build/harddrive.img
 endif
 
 ifeq ($(serial),no)
@@ -102,50 +102,55 @@ ifeq ($(UNAME),Linux)
 endif
 
 ifeq ($(UNAME),Linux)
-build/extra.bin:
+build/extra.img:
 	fallocate --posix --length 1G $@
 else
-build/extra.bin:
+build/extra.img:
 	truncate -s 1g $@
 endif
 
 build/firmware.rom:
 	cp $(QEMU_EFI) $@
 
-qemu: $(HARDDRIVE) $(FIRMWARE) build/extra.bin
+qemu: $(DISK) $(FIRMWARE) build/extra.img
 	$(QEMU) $(QEMUFLAGS) \
-		-drive file=$(HARDDRIVE),format=raw \
-		-drive file=build/extra.bin,format=raw
+		-drive file=$(DISK),format=raw \
+		-drive file=build/extra.img,format=raw
 
-qemu_no_build: $(FIRMWARE) build/extra.bin
+qemu_no_build: $(FIRMWARE) build/extra.img
 	$(QEMU) $(QEMUFLAGS) \
-		-drive file=$(HARDDRIVE),format=raw \
-		-drive file=build/extra.bin,format=raw
+		-drive file=$(DISK),format=raw \
+		-drive file=build/extra.img,format=raw
 
-qemu_nvme: $(HARDDRIVE) $(FIRMWARE) build/extra.bin
+qemu_cdrom: $(DISK) $(FIRMWARE) build/extra.img
 	$(QEMU) $(QEMUFLAGS) \
-		-drive file=$(HARDDRIVE),format=raw,if=none,id=drv0 -device nvme,drive=drv0,serial=NVME_SERIAL \
-		-drive file=build/extra.bin,format=raw,if=none,id=drv1 -device nvme,drive=drv1,serial=NVME_EXTRA
+		-boot d -cdrom $(DISK) \
+		-drive file=build/extra.img,format=raw
 
-qemu_nvme_no_build: $(FIRMWARE) build/extra.bin
+qemu_cdrom_no_build: $(FIRMWARE) build/extra.img
 	$(QEMU) $(QEMUFLAGS) \
-		-drive file=$(HARDDRIVE),format=raw,if=none,id=drv0 -device nvme,drive=drv0,serial=NVME_SERIAL \
-		-drive file=build/extra.bin,format=raw,if=none,id=drv1 -device nvme,drive=drv1,serial=NVME_EXTRA
+		-boot d -cdrom $(DISK) \
+		-drive file=build/extra.img,format=raw
 
-qemu_iso: build/livedisk.iso $(FIRMWARE) build/extra.bin
+qemu_nvme: $(DISK) $(FIRMWARE) build/extra.img
 	$(QEMU) $(QEMUFLAGS) \
-		-boot d -cdrom build/livedisk.iso \
-		-drive file=build/extra.bin,format=raw
+		-drive file=$(DISK),format=raw,if=none,id=drv0 -device nvme,drive=drv0,serial=NVME_SERIAL \
+		-drive file=build/extra.img,format=raw,if=none,id=drv1 -device nvme,drive=drv1,serial=NVME_EXTRA
 
-qemu_iso_no_build: $(FIRMWARE) build/extra.bin
+qemu_nvme_no_build: $(FIRMWARE) build/extra.img
 	$(QEMU) $(QEMUFLAGS) \
-		-boot d -cdrom build/livedisk.iso \
-		-drive file=build/extra.bin,format=raw
+		-drive file=$(DISK),format=raw,if=none,id=drv0 -device nvme,drive=drv0,serial=NVME_SERIAL \
+		-drive file=build/extra.img,format=raw,if=none,id=drv1 -device nvme,drive=drv1,serial=NVME_EXTRA
 
-qemu_extra: $(FIRMWARE) build/extra.bin
+qemu_usb: $(DISK) $(FIRMWARE)
 	$(QEMU) $(QEMUFLAGS) \
-		-drive file=build/extra.bin,format=raw
+		-drive if=none,id=usbstick,format=raw,file=$(DISK) \
+		-device usb-storage,drive=usbstick
 
-qemu_nvme_extra: $(FIRMWARE) build/extra.bin
+qemu_extra: $(FIRMWARE) build/extra.img
 	$(QEMU) $(QEMUFLAGS) \
-		-drive file=build/extra.bin,format=raw,if=none,id=drv1 -device nvme,drive=drv1,serial=NVME_EXTRA
+		-drive file=build/extra.img,format=raw
+
+qemu_nvme_extra: $(FIRMWARE) build/extra.img
+	$(QEMU) $(QEMUFLAGS) \
+		-drive file=build/extra.img,format=raw,if=none,id=drv1 -device nvme,drive=drv1,serial=NVME_EXTRA
