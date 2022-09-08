@@ -37,6 +37,9 @@ echo "prefix = '/'" >> cross_file.txt
 echo "libdir = 'lib'" >> cross_file.txt
 echo "bindir = 'bin'" >> cross_file.txt
 
+echo "[properties]" >> cross_file.txt
+echo "needs_exe_wrapper = true" >> cross_file.txt
+
 meson "${COOKBOOK_SOURCE}" . \
     --cross-file cross_file.txt \
     --buildtype release \
