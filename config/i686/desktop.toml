@@ -19,8 +19,6 @@ drivers = {}
 escalated = {}
 extrautils = {}
 findutils = {}
-#gdbserver = {} # needs updated redox_syscall
-gnu-make = {}
 initfs = {}
 installer = {}
 ion = {}
@@ -40,11 +38,8 @@ redoxfs = {}
 relibc = {}
 resist = {}
 smith = {}
-#strace = {} # needs updated redox_syscall
-terminfo = {}
 userutils = {}
 uutils = {}
-#vim = {} # relibc issues?
 
 # User settings
 [users.root]

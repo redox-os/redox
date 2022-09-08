@@ -19,8 +19,6 @@ diffutils = {}
 #escalated = {} # porting
 extrautils = {}
 findutils = {}
-#gdbserver = {} # very x86_64 specific
-gnu-make = {}
 initfs = {}
 #installer = {} # failure to build ring
 ion = {}
@@ -40,11 +38,8 @@ redoxfs = {}
 relibc = {}
 resist = {}
 smith = {}
-#strace = {} # very x86_64 specific
-terminfo = {}
 userutils = {}
 uutils = {}
-#vim = {} # ncurses problem
 
 # User settings
 [users.root]

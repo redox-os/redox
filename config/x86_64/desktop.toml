@@ -38,10 +38,8 @@ redoxfs = {}
 relibc = {}
 resist = {}
 smith = {}
-terminfo = {}
 userutils = {}
 uutils = {}
-vim = {}
 
 # User settings
 [users.root]
