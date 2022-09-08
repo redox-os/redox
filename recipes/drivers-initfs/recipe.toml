@@ -6,7 +6,6 @@ template = "custom"
 script = """
 BINS=(
     ahcid
-    ided
     nvmed
     pcid
     vesad
@@ -14,7 +13,7 @@ BINS=(
 
 case "${TARGET}" in
     i686-unknown-redox | x86_64-unknown-redox)
-        BINS+=(acpid ps2d)
+        BINS+=(acpid ided ps2d)
         ;;
     *)
         ;;
