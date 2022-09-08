@@ -4,13 +4,13 @@ QEMUFLAGS=-d cpu_reset,guest_errors
 ifeq ($(ARCH),i686)
 	efi=no
 	QEMU_ARCH=i386
-	QEMU_MACHINE=q35
-	QEMU_CPU=pentium2
+	QEMU_MACHINE?=pc
+	QEMU_CPU?=pentium2
 	QEMUFLAGS+=-smp 4 -m 2048
 else ifeq ($(ARCH),x86_64)
 	QEMU_ARCH=x86_64
-	QEMU_MACHINE=q35
-	QEMU_CPU=core2duo
+	QEMU_MACHINE?=q35
+	QEMU_CPU?=core2duo
 	QEMU_EFI=/usr/share/OVMF/OVMF_CODE.fd
 	QEMUFLAGS+=-smp 4 -m 2048
 else ifeq ($(ARCH),aarch64)
