@@ -71,6 +71,7 @@ gnu-make = {}
 harfbuzz = {}
 #hematite = {} # needs crate patches for redox-unix
 init = {}
+initfs = {}
 installer = {}
 ion = {}
 ipcd = {}
