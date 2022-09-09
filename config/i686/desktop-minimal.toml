@@ -61,7 +61,7 @@ getty debug: -J
 
 [[files]]
 path = "/etc/redox-release"
-data = "0.7.0"
+data = "0.8.0alpha"
 
 [[files]]
 path = "/etc/group"
