@@ -87,6 +87,7 @@ gnu-binutils = {}
 nasm = {}
 patch = {}
 pkg-config = {}
+relibc = {}
 rust = {}
 
 # games
