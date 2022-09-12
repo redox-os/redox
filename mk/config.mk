@@ -3,10 +3,10 @@
 # Configuration
 ## Architecture to build Redox for (aarch64, i686, or x86_64)
 ARCH?=x86_64
-## Flags to pass to the installer (empty to download binary packages)
-INSTALLER_FLAGS?=--cookbook=cookbook
-## Enabled to use binary prefix (much faster)
+## Enable to use binary prefix (much faster)
 PREFIX_BINARY?=1
+## Enable to use binary packages (much faster)
+REPO_BINARY?=0
 ## Select filesystem config
 FILESYSTEM_CONFIG?=config/$(ARCH)/desktop.toml
 ## Filesystem size in MB (256 is the default)
@@ -51,10 +51,11 @@ export XARGO_RUST_SRC=$(ROOT)/rust/src
 
 ## Userspace variables
 export TARGET=$(ARCH)-unknown-redox
-BUILD=build/userspace
-INSTALLER=\
-	export PATH="$(PREFIX_PATH):$$PATH" && \
- 	installer/target/release/redox_installer $(INSTALLER_FLAGS)
+INSTALLER=installer/target/release/redox_installer
+ifeq ($(REPO_BINARY),0)
+INSTALLER+=--cookbook=cookbook
+REPO_TAG=build/repo.tag
+endif
 
 ## Cross compiler variables
 AR=$(TARGET)-gcc-ar

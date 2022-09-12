@@ -6,12 +6,11 @@ include mk/depends.mk
 
 all: build/harddrive.img
 
-coreboot: build/coreboot.elf
-
 live: build/livedisk.iso
 
 rebuild:
-	touch $(FILESYSTEM_CONFIG)
+	-$(FUMOUNT) build/filesystem/ || true
+	rm -rf build
 	$(MAKE) all
 
 clean:
@@ -32,24 +31,15 @@ pull:
 	git submodule sync --recursive
 	git submodule update --recursive --init
 
-update:
-	cd cookbook && ./update.sh \
-		"$$(cargo run --manifest-path ../installer/Cargo.toml -- --list-packages -c ../$(FILESYSTEM_CONFIG))"
-	cargo update --manifest-path cookbook/pkgutils/Cargo.toml
-	cargo update --manifest-path installer/Cargo.toml
-	cargo update --manifest-path redoxfs/Cargo.toml
-	cargo update --manifest-path relibc/Cargo.toml
+fetch: build/fetch.tag
 
-fetch:
-	cargo build --manifest-path cookbook/Cargo.toml --release
-	cd cookbook && ./fetch.sh \
-		"$$(cargo run --manifest-path ../installer/Cargo.toml -- --list-packages -c ../$(FILESYSTEM_CONFIG))"
+repo: build/repo.tag
 
 # Cross compiler recipes
 include mk/prefix.mk
 
-# Bootloader recipes
-include mk/bootloader.mk
+# Repository maintenance
+include mk/repo.mk
 
 # Disk images
 include mk/disk.mk
@@ -62,7 +52,7 @@ include mk/virtualbox.mk
 # CI image target
 IMG_TAG?=$(shell git describe --tags)
 ci-img: FORCE
-	$(MAKE) INSTALLER_FLAGS= \
+	$(MAKE) REPO_BINARY=1 \
 		build/harddrive.img.gz \
 		build/livedisk.iso.gz
 	rm -rf build/img
@@ -73,9 +63,10 @@ ci-img: FORCE
 
 # CI packaging target
 ci-pkg: prefix FORCE
-	cargo build --manifest-path cookbook/Cargo.toml --release
+	$(HOST_CARGO) build --manifest-path cookbook/Cargo.toml --release
+	$(HOST_CARGO) build --manifest-path installer/Cargo.toml --release
 	export PATH="$(PREFIX_PATH):$$PATH" && \
-	PACKAGES="$$(cargo run --manifest-path installer/Cargo.toml -- --list-packages -c ci.toml)" && \
+	PACKAGES="$$($(INSTALLER) --list-packages -c ci.toml)" && \
 	cd cookbook && \
 	./fetch.sh "$${PACKAGES}" && \
 	./repo.sh "$${PACKAGES}"
@@ -106,11 +97,6 @@ FORCE:
 # Gzip any binary
 %.gz: %
 	gzip -k -f $<
-
-# Create a listing for any binary
-%.list: %
-	export PATH="$(PREFIX_PATH):$$PATH" && \
-	$(OBJDUMP) -C -M intel -D $< > $@
 
 # Wireshark
 wireshark: FORCE

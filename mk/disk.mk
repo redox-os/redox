@@ -1,31 +1,21 @@
-build/harddrive.img: prefix $(FILESYSTEM_CONFIG)
-	$(HOST_CARGO) build --manifest-path installer/Cargo.toml --release
-	mkdir -p build
+build/harddrive.img: $(REPO_TAG)
 	rm -rf $@  $@.partial
 	fallocate --posix --length "$(FILESYSTEM_SIZE)MiB" $@.partial
 	$(INSTALLER) -c $(FILESYSTEM_CONFIG) $@.partial
 	mv $@.partial $@
 
-build/livedisk.iso: prefix $(FILESYSTEM_CONFIG)
-	$(HOST_CARGO) build --manifest-path installer/Cargo.toml --release
-	mkdir -p build
+build/livedisk.iso: $(REPO_TAG)
 	rm -rf $@  $@.partial
 	fallocate --posix --length "$(FILESYSTEM_SIZE)MiB" $@.partial
 	$(INSTALLER) -c $(FILESYSTEM_CONFIG) --live $@.partial
 	mv $@.partial $@
 
-build/filesystem.img: prefix $(FILESYSTEM_CONFIG)
-	mkdir -p build
-	$(HOST_CARGO) build --manifest-path cookbook/Cargo.toml --release
-	$(HOST_CARGO) build --manifest-path installer/Cargo.toml --release
+build/filesystem.img: $(REPO_TAG)
 	$(HOST_CARGO) build --manifest-path redoxfs/Cargo.toml --release
 	-$(FUMOUNT) build/filesystem/ || true
 	rm -rf $@  $@.partial build/filesystem/
 	fallocate --posix --length "$(FILESYSTEM_SIZE)MiB" $@.partial
-	$(HOST_CARGO) run --release \
-		--manifest-path redoxfs/Cargo.toml \
-		--bin redoxfs-mkfs \
-		-- $(REDOXFS_MKFS_FLAGS) $@.partial
+	redoxfs/target/release/redoxfs-mkfs $(REDOXFS_MKFS_FLAGS) $@.partial
 	mkdir -p build/filesystem/
 	redoxfs/target/release/redoxfs $@.partial build/filesystem/
 	sleep 1
