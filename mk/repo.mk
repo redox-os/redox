@@ -4,6 +4,7 @@ build/fetch.tag: cookbook installer prefix $(FILESYSTEM_CONFIG)
 	PACKAGES="$$($(INSTALLER) --list-packages -c $(FILESYSTEM_CONFIG))" && \
 	cd cookbook && \
 	./fetch.sh "$${PACKAGES}"
+	touch $@
 
 build/repo.tag: build/fetch.tag
 	$(HOST_CARGO) build --manifest-path cookbook/Cargo.toml --release
