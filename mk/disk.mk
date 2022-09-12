@@ -1,16 +1,19 @@
 build/harddrive.img: $(REPO_TAG)
+	mkdir -p build
 	rm -rf $@  $@.partial
 	fallocate --posix --length "$(FILESYSTEM_SIZE)MiB" $@.partial
 	$(INSTALLER) -c $(FILESYSTEM_CONFIG) $@.partial
 	mv $@.partial $@
 
 build/livedisk.iso: $(REPO_TAG)
+	mkdir -p build
 	rm -rf $@  $@.partial
 	fallocate --posix --length "$(FILESYSTEM_SIZE)MiB" $@.partial
 	$(INSTALLER) -c $(FILESYSTEM_CONFIG) --live $@.partial
 	mv $@.partial $@
 
 build/filesystem.img: $(REPO_TAG)
+	mkdir -p build
 	$(HOST_CARGO) build --manifest-path redoxfs/Cargo.toml --release
 	-$(FUMOUNT) build/filesystem/ || true
 	rm -rf $@  $@.partial build/filesystem/
