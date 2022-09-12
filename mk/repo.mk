@@ -4,6 +4,7 @@ build/fetch.tag: cookbook installer prefix $(FILESYSTEM_CONFIG)
 	PACKAGES="$$($(INSTALLER) --list-packages -c $(FILESYSTEM_CONFIG))" && \
 	cd cookbook && \
 	./fetch.sh "$${PACKAGES}"
+	mkdir -p build
 	touch $@
 
 build/repo.tag: build/fetch.tag
