@@ -53,12 +53,12 @@ include mk/virtualbox.mk
 IMG_TAG?=$(shell git describe --tags)
 ci-img: FORCE
 	$(MAKE) REPO_BINARY=1 \
-		build/harddrive.img.gz \
-		build/livedisk.iso.gz
+		build/harddrive.img \
+		build/livedisk.iso
 	rm -rf build/img
 	mkdir -p build/img
-	cp "build/harddrive.img.gz" "build/img/redox_$(IMG_TAG)_harddrive.img.gz"
-	cp "build/livedisk.iso.gz" "build/img/redox_$(IMG_TAG)_livedisk.iso.gz"
+	cp "build/harddrive.img" "build/img/redox_$(IMG_TAG)_harddrive.img"
+	cp "build/livedisk.iso" "build/img/redox_$(IMG_TAG)_livedisk.iso"
 	cd build/img && sha256sum -b * > SHA256SUM
 
 # CI packaging target
