@@ -246,6 +246,8 @@ ubuntu()
 		if [ -z "$(which qemu-system-x86_64)" ]; then
 			echo "Installing QEMU..."
 			sudo "$2" install qemu-system-x86 qemu-kvm
+			sudo "$2" install qemu-efi-arm qemu-system-arm
+			sudo "$2" install qemu-system-riscv64 u-boot-qemu opensbi qemu-system-misc qemu-utils 
 		else
 			echo "QEMU already installed!"
 		fi
