@@ -577,8 +577,6 @@ done
 banner
 
 rustInstall
-cargoInstall cargo-config 0.1.1
-cargoInstall xargo 0.3.20
 
 if [ "$update" == "true" ]; then
 	git pull upstream master
@@ -618,6 +616,9 @@ else
     	printf "\e[31;1mFatal error: \e[0;31mUnsupported platform, please open an issue\[0m"
 	fi
 fi
+
+cargoInstall cargo-config 0.1.1
+cargoInstall xargo 0.3.20
 
 if [ "$dependenciesonly" = false ]; then
 	boot
