@@ -613,7 +613,7 @@ else
 		freebsd "$emulator"
 	# Unsupported platform
 	else
-    	printf "\e[31;1mFatal error: \e[0;31mUnsupported platform, please open an issue\[0m"
+    	printf "\e[31;1mFatal error: \e[0;31mUnsupported platform, please open an issue\e[0m\n"
 	fi
 fi
 
