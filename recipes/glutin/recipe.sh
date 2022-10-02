@@ -1,13 +1,12 @@
 GIT=https://gitlab.redox-os.org/redox-os/glutin.git
-GIT_UPSTREAM=https://github.com/tomaka/glutin.git
+GIT_UPSTREAM=https://github.com/rust-windowing/glutin.git
 BUILD_DEPENDS=(llvm mesa zlib)
-BRANCH=redox
-CARGOFLAGS="--example window"
+BRANCH=redox-0.29
 
 function recipe_build {
     sysroot="$(realpath ../sysroot)"
     set -x
-    cargo rustc --target "$TARGET" --release ${CARGOFLAGS} \
+    cargo rustc --target "$TARGET" --release --package glutin_examples --example window \
         -- \
         -L "${sysroot}/lib" \
         -C link-args="-Wl,-Bstatic $("${PKG_CONFIG}" --libs osmesa) -lz -lstdc++ -lc -lgcc"
