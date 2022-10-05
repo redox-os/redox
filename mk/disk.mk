@@ -1,6 +1,7 @@
 build/harddrive.img: $(REPO_TAG)
 	mkdir -p build
 	rm -rf $@  $@.partial
+	-$(FUMOUNT) /tmp/redox_installer || true
 	fallocate --posix --length "$(FILESYSTEM_SIZE)MiB" $@.partial
 	$(INSTALLER) -c $(FILESYSTEM_CONFIG) $@.partial
 	mv $@.partial $@
@@ -8,6 +9,7 @@ build/harddrive.img: $(REPO_TAG)
 build/livedisk.iso: $(REPO_TAG)
 	mkdir -p build
 	rm -rf $@  $@.partial
+	-$(FUMOUNT) /tmp/redox_installer || true
 	fallocate --posix --length "$(FILESYSTEM_SIZE)MiB" $@.partial
 	$(INSTALLER) -c $(FILESYSTEM_CONFIG) --live $@.partial
 	mv $@.partial $@
@@ -17,6 +19,7 @@ build/filesystem.img: $(REPO_TAG)
 	$(HOST_CARGO) build --manifest-path redoxfs/Cargo.toml --release
 	-$(FUMOUNT) build/filesystem/ || true
 	rm -rf $@  $@.partial build/filesystem/
+	-$(FUMOUNT) /tmp/redox_installer || true
 	fallocate --posix --length "$(FILESYSTEM_SIZE)MiB" $@.partial
 	redoxfs/target/release/redoxfs-mkfs $(REDOXFS_MKFS_FLAGS) $@.partial
 	mkdir -p build/filesystem/
