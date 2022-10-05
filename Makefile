@@ -10,6 +10,7 @@ live: build/livedisk.iso
 
 rebuild:
 	-$(FUMOUNT) build/filesystem/ || true
+	-$(FUMOUNT) /tmp/redox_installer/ || true
 	rm -rf build
 	$(MAKE) all
 
@@ -20,6 +21,7 @@ clean:
 	cargo clean --manifest-path redoxfs/Cargo.toml
 	cargo clean --manifest-path relibc/Cargo.toml
 	-$(FUMOUNT) build/filesystem/ || true
+	-$(FUMOUNT) /tmp/redox_installer/ || true
 	rm -rf build
 
 distclean:
