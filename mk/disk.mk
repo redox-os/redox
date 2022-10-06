@@ -50,3 +50,4 @@ unmount: FORCE
 	sync
 	-$(FUMOUNT) build/filesystem/ || true
 	rm -rf build/filesystem/
+	-$(FUMOUNT) /tmp/redox_installer || true
