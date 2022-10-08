@@ -241,7 +241,8 @@ ubuntu()
 		pkg-config \
 		po4a \
 		syslinux-utils \
-		texinfo
+		texinfo \
+		po4a
 	if [ "$1" == "qemu" ]; then
 		if [ -z "$(which qemu-system-x86_64)" ]; then
 			echo "Installing QEMU..."
