@@ -1,6 +1,6 @@
 #TODO: TEST
 [source]
-git = "https://gitlab.redox-os.org/redox-os/sdl2-src.git"
+git = "https://gitlab.redox-os.org/redox-os/sdl2.git"
 
 [build]
 template = "custom"
