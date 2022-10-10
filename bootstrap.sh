@@ -241,7 +241,11 @@ ubuntu()
 		pkg-config \
 		po4a \
 		syslinux-utils \
-		texinfo
+		texinfo \
+		libsdl1.2-dev \
+		ninja-build \
+		meson \
+		python3-mako
 	if [ "$1" == "qemu" ]; then
 		if [ -z "$(which qemu-system-x86_64)" ]; then
 			echo "Installing QEMU..."
