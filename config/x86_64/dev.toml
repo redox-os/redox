@@ -1,4 +1,4 @@
-# Configuration for using rustc
+# Configuration for development, includes cargo and rustc
 
 # General settings
 [general]
@@ -9,9 +9,11 @@ prompt = false
 
 # Package settings
 [packages]
+audiod = {}
 bootloader = {}
 bootstrap = {}
 ca-certificates = {}
+cargo = {}
 contain = {}
 coreutils = {}
 dash = {}
@@ -23,18 +25,24 @@ findutils = {}
 gcc = {}
 gnu-binutils = {}
 gnu-make = {}
+initfs = {}
 installer = {}
 ion = {}
-initfs = {}
 ipcd = {}
 kernel = {}
 netdb = {}
 netstack = {}
+netsurf = {}
 netutils = {}
+orbdata = {}
+orbital = {}
+orbterm = {}
+orbutils = {}
 pkgutils = {}
 ptyd = {}
 redoxfs = {}
 relibc = {}
+resist = {}
 rust = {}
 smith = {}
 userutils = {}
@@ -78,9 +86,16 @@ dhcpd -b
 """
 
 [[files]]
+path = "/etc/init.d/20_orbital"
+data = """
+audiod
+orbital display:3/activate orblogin launcher
+"""
+
+[[files]]
 path = "/etc/init.d/30_console"
 data = """
-getty display:2/activate
+getty display:2
 getty debug: -J
 """
 
