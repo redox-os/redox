@@ -1,0 +1,17 @@
+[source]
+git = "https://gitlab.redox-os.org/redox-os/cargo.git"
+upstream = "https://github.com/rust-lang/cargo.git"
+branch = "redox-2022-03-18"
+
+[build]
+template = "custom"
+dependencies = [
+    "libssh2",
+    "openssl",
+    "zlib",
+]
+script = """
+export LIBSSH2_SYS_USE_PKG_CONFIG=1
+export LIBZ_SYS_STATIC=1
+cookbook_cargo
+"""
