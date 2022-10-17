@@ -9,8 +9,8 @@ PREFIX_BINARY?=1
 REPO_BINARY?=0
 ## Select filesystem config
 FILESYSTEM_CONFIG?=config/$(ARCH)/desktop.toml
-## Filesystem size in MB (256 is the default)
-FILESYSTEM_SIZE?=256
+## Filesystem size in MB (default comes from filesystem_size in the FILESYSTEM_CONFIG)
+FILESYSTEM_SIZE?=$(shell grep filesystem_size $(FILESYSTEM_CONFIG) | cut -d' ' -f3)
 ## Flags to pass to redoxfs-mkfs. Add --encrypt to set up disk encryption
 REDOXFS_MKFS_FLAGS?=
 
