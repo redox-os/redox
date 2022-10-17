@@ -1,15 +1,26 @@
 IMG_TAG?=$(shell git describe --tags)
+IMG_SEPARATOR?=_
+IMG_DIR?=build/img
+DEMO_FS_SIZE?=1500
 
-# CI image target
+# CI image target - build desktop, server and demo images
+# To leave out the build tag, set both IMG_TAG and IMG_SEPARATOR to null
 ci-img: FORCE
+	rm -rf $(IMG_DIR)
+	mkdir -p $(IMG_DIR)
+	$(MAKE) desktop server
+	$(MAKE) FILESYSTEM_SIZE=$(DEMO_FS_SIZE) demo
+	cd $(IMG_DIR) && sha256sum -b * > SHA256SUM
+
+# The name of the target must match the name of the filesystem config file
+desktop server demo: FORCE
+	rm -f "build/harddrive.img" "build/livedisk.iso"
 	$(MAKE) REPO_BINARY=1 \
+		FILESYSTEM_CONFIG=config/$(ARCH)/$@.toml \
 		build/harddrive.img \
 		build/livedisk.iso
-	rm -rf build/img
-	mkdir -p build/img
-	cp "build/harddrive.img" "build/img/redox_$(IMG_TAG)_harddrive.img"
-	cp "build/livedisk.iso" "build/img/redox_$(IMG_TAG)_livedisk.iso"
-	cd build/img && sha256sum -b * > SHA256SUM
+	cp "build/harddrive.img" "$(IMG_DIR)/redox_$(@)$(IMG_SEPARATOR)$(IMG_TAG)_harddrive.img"
+	cp "build/livedisk.iso" "$(IMG_DIR)/redox_$(@)$(IMG_SEPARATOR)$(IMG_TAG)_livedisk.iso"
 
 # CI packaging target
 ci-pkg: prefix FORCE
@@ -33,3 +44,4 @@ ci-toolchain: FORCE
 	cp "prefix/$(TARGET)/relibc-install.tar.gz" "build/toolchain/$(TARGET)/relibc-install.tar.gz"
 	cp "prefix/$(TARGET)/rust-install.tar.gz" "build/toolchain/$(TARGET)/rust-install.tar.gz"
 	cd "build/toolchain/$(TARGET)" && sha256sum -b * > SHA256SUM
+
