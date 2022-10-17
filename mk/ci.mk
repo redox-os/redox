@@ -1,15 +1,13 @@
 IMG_TAG?=$(shell git describe --tags)
 IMG_SEPARATOR?=_
 IMG_DIR?=build/img
-DEMO_FS_SIZE?=1500
 
 # CI image target - build desktop, server and demo images
 # To leave out the build tag, set both IMG_TAG and IMG_SEPARATOR to null
 ci-img: FORCE
 	rm -rf $(IMG_DIR)
 	mkdir -p $(IMG_DIR)
-	$(MAKE) desktop server
-	$(MAKE) FILESYSTEM_SIZE=$(DEMO_FS_SIZE) demo
+	$(MAKE) demo desktop server
 	cd $(IMG_DIR) && sha256sum -b * > SHA256SUM
 
 # The name of the target must match the name of the filesystem config file
@@ -44,4 +42,3 @@ ci-toolchain: FORCE
 	cp "prefix/$(TARGET)/relibc-install.tar.gz" "build/toolchain/$(TARGET)/relibc-install.tar.gz"
 	cp "prefix/$(TARGET)/rust-install.tar.gz" "build/toolchain/$(TARGET)/rust-install.tar.gz"
 	cd "build/toolchain/$(TARGET)" && sha256sum -b * > SHA256SUM
-
