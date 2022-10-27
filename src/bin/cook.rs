@@ -465,6 +465,7 @@ COOKBOOK_CARGO_FLAGS=(
     --path "${COOKBOOK_SOURCE}"
     --root "${COOKBOOK_STAGE}"
     --locked
+    --no-track
 )
 function cookbook_cargo {
     "${COOKBOOK_CARGO}" install "${COOKBOOK_CARGO_FLAGS[@]}"
