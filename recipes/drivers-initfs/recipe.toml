@@ -26,7 +26,7 @@ do
         --manifest-path "${COOKBOOK_SOURCE}/${bin}/Cargo.toml" \
         --bin "${bin}" \
         -- \
-        -C opt-level=z \
+        -C opt-level=s \
         -C panic=abort
     cp -v "target/${TARGET}/release/${bin}" "${COOKBOOK_STAGE}/bin"
 done
