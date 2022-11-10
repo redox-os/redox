@@ -35,16 +35,16 @@ $(error Unsupported ARCH for QEMU "$(ARCH)"))
 endif
 
 ifeq ($(efi),yes)
-	FIRMWARE=build/firmware.rom
-	QEMUFLAGS+=-bios build/firmware.rom
+	FIRMWARE=$(BUILD)/firmware.rom
+	QEMUFLAGS+=-bios $(BUILD)/firmware.rom
 else
 	FIRMWARE=
 endif
 
 ifeq ($(live),yes)
-	DISK=build/livedisk.iso
+	DISK=$(BUILD)/livedisk.iso
 else
-	DISK=build/harddrive.img
+	DISK=$(BUILD)/harddrive.img
 endif
 
 ifeq ($(serial),no)
@@ -76,7 +76,7 @@ else
 			QEMUFLAGS+=-netdev user,id=net0,hostfwd=tcp::8080-:8080,hostfwd=tcp::8083-:8083,hostfwd=tcp::64126-:64126 -device e1000,netdev=net0,id=nic0
 		else
 			QEMUFLAGS+=-netdev user,id=net0 -device e1000,netdev=net0 \
-						-object filter-dump,id=f1,netdev=net0,file=build/network.pcap
+						-object filter-dump,id=f1,netdev=net0,file=$(BUILD)/network.pcap
 		endif
 	endif
 endif
@@ -102,56 +102,56 @@ ifeq ($(UNAME),Linux)
 endif
 
 ifeq ($(UNAME),Linux)
-build/extra.img:
+$(BUILD)/extra.img:
 	fallocate --posix --length 1G $@
 else
-build/extra.img:
+$(BUILD)/extra.img:
 	truncate -s 1g $@
 endif
 
-build/firmware.rom:
+$(BUILD)/firmware.rom:
 	cp $(QEMU_EFI) $@
 
-qemu: $(DISK) $(FIRMWARE) build/extra.img
+qemu: $(DISK) $(FIRMWARE) $(BUILD)/extra.img
 	$(QEMU) $(QEMUFLAGS) \
 		-hdc $(DISK)
 		echo -drive file=$(DISK),format=raw \
-		-drive file=build/extra.img,format=raw
+		-drive file=$(BUILD)/extra.img,format=raw
 
-qemu_no_build: $(FIRMWARE) build/extra.img
+qemu_no_build: $(FIRMWARE) $(BUILD)/extra.img
 	$(QEMU) $(QEMUFLAGS) \
 		-drive file=$(DISK),format=raw \
-		-drive file=build/extra.img,format=raw
+		-drive file=$(BUILD)/extra.img,format=raw
 
-qemu_cdrom: $(DISK) $(FIRMWARE) build/extra.img
+qemu_cdrom: $(DISK) $(FIRMWARE) $(BUILD)/extra.img
 	$(QEMU) $(QEMUFLAGS) \
 		-boot d -cdrom $(DISK) \
-		-drive file=build/extra.img,format=raw
+		-drive file=$(BUILD)/extra.img,format=raw
 
-qemu_cdrom_no_build: $(FIRMWARE) build/extra.img
+qemu_cdrom_no_build: $(FIRMWARE) $(BUILD)/extra.img
 	$(QEMU) $(QEMUFLAGS) \
 		-boot d -cdrom $(DISK) \
-		-drive file=build/extra.img,format=raw
+		-drive file=$(BUILD)/extra.img,format=raw
 
-qemu_nvme: $(DISK) $(FIRMWARE) build/extra.img
+qemu_nvme: $(DISK) $(FIRMWARE) $(BUILD)/extra.img
 	$(QEMU) $(QEMUFLAGS) \
 		-drive file=$(DISK),format=raw,if=none,id=drv0 -device nvme,drive=drv0,serial=NVME_SERIAL \
-		-drive file=build/extra.img,format=raw,if=none,id=drv1 -device nvme,drive=drv1,serial=NVME_EXTRA
+		-drive file=$(BUILD)/extra.img,format=raw,if=none,id=drv1 -device nvme,drive=drv1,serial=NVME_EXTRA
 
-qemu_nvme_no_build: $(FIRMWARE) build/extra.img
+qemu_nvme_no_build: $(FIRMWARE) $(BUILD)/extra.img
 	$(QEMU) $(QEMUFLAGS) \
 		-drive file=$(DISK),format=raw,if=none,id=drv0 -device nvme,drive=drv0,serial=NVME_SERIAL \
-		-drive file=build/extra.img,format=raw,if=none,id=drv1 -device nvme,drive=drv1,serial=NVME_EXTRA
+		-drive file=$(BUILD)/extra.img,format=raw,if=none,id=drv1 -device nvme,drive=drv1,serial=NVME_EXTRA
 
 qemu_usb: $(DISK) $(FIRMWARE)
 	$(QEMU) $(QEMUFLAGS) \
 		-drive if=none,id=usbstick,format=raw,file=$(DISK) \
 		-device usb-storage,drive=usbstick
 
-qemu_extra: $(FIRMWARE) build/extra.img
+qemu_extra: $(FIRMWARE) $(BUILD)/extra.img
 	$(QEMU) $(QEMUFLAGS) \
-		-drive file=build/extra.img,format=raw
+		-drive file=$(BUILD)/extra.img,format=raw
 
-qemu_nvme_extra: $(FIRMWARE) build/extra.img
+qemu_nvme_extra: $(FIRMWARE) $(BUILD)/extra.img
 	$(QEMU) $(QEMUFLAGS) \
-		-drive file=build/extra.img,format=raw,if=none,id=drv1 -device nvme,drive=drv1,serial=NVME_EXTRA
+		-drive file=$(BUILD)/extra.img,format=raw,if=none,id=drv1 -device nvme,drive=drv1,serial=NVME_EXTRA

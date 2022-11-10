@@ -51,10 +51,11 @@ export XARGO_RUST_SRC=$(ROOT)/rust/src
 
 ## Userspace variables
 export TARGET=$(ARCH)-unknown-redox
+BUILD=build/$(ARCH)
 INSTALLER=installer/target/release/redox_installer
 ifeq ($(REPO_BINARY),0)
 INSTALLER+=--cookbook=cookbook
-REPO_TAG=build/repo.tag
+REPO_TAG=$(BUILD)/repo.tag
 endif
 
 ## Cross compiler variables
