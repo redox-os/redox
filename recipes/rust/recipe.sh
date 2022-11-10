@@ -15,7 +15,7 @@ function recipe_update {
 }
 
 function recipe_build {
-    config="$(realpath ../config.toml)"
+    config="$(realpath "${COOKBOOK_RECIPE}/config.toml")"
     source="$(realpath ../source)"
     unset AR AS CC CXX LD NM OBJCOPY OBJDUMP RANLIB READELF STRIP
     python3 "$source/x.py" install --config "$config" --jobs $(nproc) --incremental
