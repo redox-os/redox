@@ -4,14 +4,14 @@ include mk/config.mk
 # Dependencies
 include mk/depends.mk
 
-all: build/harddrive.img
+all: $(BUILD)/harddrive.img
 
-live: build/livedisk.iso
+live: $(BUILD)/livedisk.iso
 
 rebuild:
-	-$(FUMOUNT) build/filesystem/ || true
+	-$(FUMOUNT) $(BUILD)/filesystem/ || true
 	-$(FUMOUNT) /tmp/redox_installer/ || true
-	rm -rf build
+	rm -rf $(BUILD)
 	$(MAKE) all
 
 clean:
@@ -20,9 +20,9 @@ clean:
 	cargo clean --manifest-path installer/Cargo.toml
 	cargo clean --manifest-path redoxfs/Cargo.toml
 	cargo clean --manifest-path relibc/Cargo.toml
-	-$(FUMOUNT) build/filesystem/ || true
+	-$(FUMOUNT) $(BUILD)/filesystem/ || true
 	-$(FUMOUNT) /tmp/redox_installer/ || true
-	rm -rf build
+	rm -rf $(BUILD)
 
 distclean:
 	$(MAKE) clean
@@ -33,9 +33,9 @@ pull:
 	git submodule sync --recursive
 	git submodule update --recursive --init
 
-fetch: build/fetch.tag
+fetch: $(BUILD)/fetch.tag
 
-repo: build/repo.tag
+repo: $(BUILD)/repo.tag
 
 # Cross compiler recipes
 include mk/prefix.mk
@@ -48,7 +48,6 @@ include mk/disk.mk
 
 # Emulation recipes
 include mk/qemu.mk
-include mk/bochs.mk
 include mk/virtualbox.mk
 
 # CI
@@ -70,4 +69,4 @@ FORCE:
 
 # Wireshark
 wireshark: FORCE
-	wireshark build/network.pcap
+	wireshark $(BUILD)/network.pcap

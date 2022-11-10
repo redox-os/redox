@@ -1,6 +1,6 @@
 IMG_TAG?=$(shell git describe --tags)
 IMG_SEPARATOR?=_
-IMG_DIR?=build/img
+IMG_DIR?=$(BUILD)/img
 
 # CI image target - build desktop, server and demo images
 # To leave out the build tag, set both IMG_TAG and IMG_SEPARATOR to null
@@ -12,13 +12,13 @@ ci-img: FORCE
 
 # The name of the target must match the name of the filesystem config file
 desktop server demo: FORCE
-	rm -f "build/harddrive.img" "build/livedisk.iso"
+	rm -f "$(BUILD)/harddrive.img" "$(BUILD)/livedisk.iso"
 	$(MAKE) REPO_BINARY=1 \
 		FILESYSTEM_CONFIG=config/$(ARCH)/$@.toml \
-		build/harddrive.img \
-		build/livedisk.iso
-	cp "build/harddrive.img" "$(IMG_DIR)/redox_$(@)$(IMG_SEPARATOR)$(IMG_TAG)_harddrive.img"
-	cp "build/livedisk.iso" "$(IMG_DIR)/redox_$(@)$(IMG_SEPARATOR)$(IMG_TAG)_livedisk.iso"
+		$(BUILD)/harddrive.img \
+		$(BUILD)/livedisk.iso
+	cp "$(BUILD)/harddrive.img" "$(IMG_DIR)/redox_$(@)$(IMG_SEPARATOR)$(IMG_TAG)_harddrive.img"
+	cp "$(BUILD)/livedisk.iso" "$(IMG_DIR)/redox_$(@)$(IMG_SEPARATOR)$(IMG_TAG)_livedisk.iso"
 
 # CI packaging target
 ci-pkg: prefix FORCE
@@ -36,9 +36,9 @@ ci-toolchain: FORCE
 		"prefix/$(TARGET)/gcc-install.tar.gz" \
 		"prefix/$(TARGET)/relibc-install.tar.gz" \
 		"prefix/$(TARGET)/rust-install.tar.gz"
-	rm -rf "build/toolchain/$(TARGET)"
-	mkdir -p "build/toolchain/$(TARGET)"
-	cp "prefix/$(TARGET)/gcc-install.tar.gz" "build/toolchain/$(TARGET)/gcc-install.tar.gz"
-	cp "prefix/$(TARGET)/relibc-install.tar.gz" "build/toolchain/$(TARGET)/relibc-install.tar.gz"
-	cp "prefix/$(TARGET)/rust-install.tar.gz" "build/toolchain/$(TARGET)/rust-install.tar.gz"
-	cd "build/toolchain/$(TARGET)" && sha256sum -b * > SHA256SUM
+	rm -rf "$(BUILD)/toolchain"
+	mkdir -p "$(BUILD)/toolchain"
+	cp "prefix/$(TARGET)/gcc-install.tar.gz" "$(BUILD)/toolchain/gcc-install.tar.gz"
+	cp "prefix/$(TARGET)/relibc-install.tar.gz" "$(BUILD)/toolchain/relibc-install.tar.gz"
+	cp "prefix/$(TARGET)/rust-install.tar.gz" "$(BUILD)/toolchain/rust-install.tar.gz"
+	cd "$(BUILD)/toolchain" && sha256sum -b * > SHA256SUM

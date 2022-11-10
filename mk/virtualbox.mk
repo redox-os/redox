@@ -1,4 +1,4 @@
-virtualbox: build/harddrive.img
+virtualbox: $(BUILD)/harddrive.img
 	echo "Delete VM"
 	-$(VBM) unregistervm Redox --delete; \
 	if [ $$? -ne 0 ]; \
@@ -22,10 +22,10 @@ virtualbox: build/harddrive.img
 		$(VBM) modifyvm Redox --nictype1 82540EM; \
 		$(VBM) modifyvm Redox --cableconnected1 on; \
 		$(VBM) modifyvm Redox --nictrace1 on; \
-		$(VBM) modifyvm Redox --nictracefile1 "$(ROOT)/build/network.pcap"; \
+		$(VBM) modifyvm Redox --nictracefile1 "$(ROOT)/$(BUILD)/network.pcap"; \
 	fi
 	$(VBM) modifyvm Redox --uart1 0x3F8 4
-	$(VBM) modifyvm Redox --uartmode1 file "$(ROOT)/build/serial.log"
+	$(VBM) modifyvm Redox --uartmode1 file "$(ROOT)/$(BUILD)/serial.log"
 	$(VBM) modifyvm Redox --usb off # on
 	$(VBM) modifyvm Redox --keyboard ps2
 	$(VBM) modifyvm Redox --mouse ps2
@@ -33,9 +33,9 @@ virtualbox: build/harddrive.img
 	$(VBM) modifyvm Redox --audiocontroller hda
 	$(VBM) modifyvm Redox --nestedpaging on
 	echo "Create Disk"
-	$(VBM) convertfromraw $< build/harddrive.vdi
+	$(VBM) convertfromraw $< $(BUILD)/harddrive.vdi
 	echo "Attach Disk"
 	$(VBM) storagectl Redox --name ATA --add sata --controller IntelAHCI --bootable on --portcount 1
-	$(VBM) storageattach Redox --storagectl ATA --port 0 --device 0 --type hdd --medium build/harddrive.vdi
+	$(VBM) storageattach Redox --storagectl ATA --port 0 --device 0 --type hdd --medium $(BUILD)/harddrive.vdi
 	echo "Run VM"
 	$(VBM) startvm Redox
