@@ -98,7 +98,7 @@ def fail(message):
     print(message, file=sys.stderr)
     sys.exit(1)
 
-prefix = os.environ["COOKBOOK_RECIPE"] + "/sysroot"
+prefix = os.environ["COOKBOOK_SYSROOT"]
 
 args = []
 link_static = False
