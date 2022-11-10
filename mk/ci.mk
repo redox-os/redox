@@ -1,6 +1,6 @@
 IMG_TAG?=$(shell git describe --tags)
 IMG_SEPARATOR?=_
-IMG_DIR?=$(BUILD)/img
+IMG_DIR?=build/img/$(ARCH)
 
 # CI image target - build desktop, server and demo images
 # To leave out the build tag, set both IMG_TAG and IMG_SEPARATOR to null
