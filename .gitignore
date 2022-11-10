@@ -1,24 +1,8 @@
-build
-repo
+/build
+/repo
 source
 source.tmp
 source-new
 source.tar
 source.tar.tmp
-stage
-stage.tmp
-stage.pkg
-stage.pkgar
-stage.sig
-stage.tar
-stage.tar.gz
-stage.toml
-sysroot
-sysroot.tmp
-xargo
-
-
-#Added by cargo
-
-/target
-**/*.rs.bk
+target

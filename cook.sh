@@ -266,8 +266,8 @@ function op {
             fi
             if [ "$skip" -eq "0" ]
             then
-                rm -rf sysroot
-                mkdir sysroot
+                rm -rf "${COOKBOOK_SYSROOT}"
+                mkdir "${COOKBOOK_SYSROOT}"
 
                 if [ ${#BUILD_DEPENDS} -gt 0 ]
                 then
@@ -279,32 +279,32 @@ function op {
                     do
                         pkgar \
                             extract \
-                            sysroot \
+                            "${COOKBOOK_SYSROOT}" \
                             --archive "$REPO/$i.pkgar" \
                             --pkey "${ROOT}/build/id_ed25519.pub.toml"
                     done
                 fi
 
-                rm -rf build
+                rm -rf "${COOKBOOK_BUILD}"
                 if [ "$PREPARE_COPY" -eq "0" ]
                 then
-                    mkdir build
+                    mkdir "${COOKBOOK_BUILD}"
                 else
-                    cp -rp source build
+                    cp -rp source "${COOKBOOK_BUILD}"
                 fi
 
                 for patch in *.patch
                 do
-                    patch -p1 -d build < "$patch"
+                    patch -p1 -d "${COOKBOOK_BUILD}" < "$patch"
                 done
             fi
             ;;
         unprepare)
-            rm -rf build
-            rm -rf sysroot
+            rm -rf "${COOKBOOK_BUILD}"
+            rm -rf "${COOKBOOK_SYSROOT}"
             ;;
         version)
-            pushd build > /dev/null
+            pushd "${COOKBOOK_BUILD}" > /dev/null
             skip=0
             if [ "$(type -t recipe_version)" = "function" ]
             then
@@ -317,15 +317,15 @@ function op {
             popd > /dev/null
             ;;
         gitversion)
-            if [ -d build/.git ]
+            if [ -d "${COOKBOOK_BUILD}"/.git ]
             then
-                echo "$(op $1 version)-$(git -C build rev-parse --short HEAD)"
+                echo "$(op $1 version)-$(git -C "${COOKBOOK_BUILD}" rev-parse --short HEAD)"
             else
                 op $1 version
             fi
             ;;
         build)
-            pushd build > /dev/null
+            pushd "${COOKBOOK_BUILD}" > /dev/null
             skip=0
             if [ "$(type -t recipe_build)" = "function" ]
             then
@@ -352,7 +352,7 @@ function op {
             popd > /dev/null
             ;;
         test)
-            pushd build > /dev/null
+            pushd "${COOKBOOK_BUILD}" > /dev/null
             skip=0
             if [ "$(type -t recipe_test)" = "function" ]
             then
@@ -373,7 +373,7 @@ function op {
             popd > /dev/null
             ;;
         clean)
-            pushd build > /dev/null
+            pushd "${COOKBOOK_BUILD}" > /dev/null
             skip=0
             if [ "$(type -t recipe_clean)" = "function" ]
             then
@@ -387,10 +387,10 @@ function op {
             ;;
         stage)
             op $1 unstage
-            mkdir -p stage
-            stage="$(realpath stage)"
+            mkdir -p "${COOKBOOK_STAGE}"
+            stage="$(realpath "${COOKBOOK_STAGE}")"
             source="$(realpath source)"
-            pushd build > /dev/null
+            pushd "${COOKBOOK_BUILD}" > /dev/null
             skip=0
             if [ "$(type -t recipe_stage)" = "function" ]
             then
@@ -438,22 +438,22 @@ function op {
             popd > /dev/null
             ;;
         unstage)
-            rm -rfv stage
+            rm -rfv "${COOKBOOK_STAGE}"
             ;;
         pkg)
             pkgar \
                 create \
-                --archive stage.pkgar \
+                --archive "${COOKBOOK_STAGE}.pkgar" \
                 --skey "${ROOT}/build/id_ed25519.toml" \
-                stage
+                "${COOKBOOK_STAGE}"
             ;;
         unpkg)
-            rm -fv stage.pkgar
+            rm -fv "${COOKBOOK_STAGE}.pkgar"
             ;;
         tar)
-            echo "name = \"$1\"" > "stage.toml"
-            echo "version = \"$(op $1 version)\"" >> "stage.toml"
-            echo "target = \"$TARGET\"" >> "stage.toml"
+            echo "name = \"$1\"" > "${COOKBOOK_STAGE}.toml"
+            echo "version = \"$(op $1 version)\"" >> "${COOKBOOK_STAGE}.toml"
+            echo "target = \"$TARGET\"" >> "${COOKBOOK_STAGE}.toml"
 
             # Add runtime dependencies to package if they exist
             if [ -n "$DEPENDS" ]
@@ -461,32 +461,34 @@ function op {
                 # Remove leading and trailing whitespace, replace whitespace between
                 # package names with commas, and surround package names with quotes
                 dependencies=$(echo -e "$DEPENDS" | sed -E 's/^[[:space:]]*//;s/[[:space:]]*$//;s/[[:space:]]+/,/g;s/[^, ][^, ]*/"&"/g')
-                echo "depends = [$dependencies]" >> "stage.toml"
-			else
-				echo "depends = []" >> "stage.toml"
+                echo "depends = [$dependencies]" >> "${COOKBOOK_STAGE}.toml"
+            else
+                echo "depends = []" >> "${COOKBOOK_STAGE}.toml"
             fi
 
-            rm -rf stage/pkg
-            mkdir -p stage/pkg
+            rm -rf "${COOKBOOK_STAGE}/pkg"
+            mkdir -p "${COOKBOOK_STAGE}/pkg"
 
-            pushd stage > /dev/null
+            pushd "${COOKBOOK_STAGE}" > /dev/null
             find -L . -type f | cut -d / -f 2- | sort | while read file
             do
                 $SHASUM "$file" >> "pkg/$1.sha256sums"
             done
             popd > /dev/null
 
-            cp -v stage.toml "stage/pkg/$1.toml"
-            pkg --target=$TARGET create stage
+            cp -v "${COOKBOOK_STAGE}.toml" "${COOKBOOK_STAGE}/pkg/$1.toml"
+            pushd "$(dirname "${COOKBOOK_STAGE}")" > /dev/null
+                pkg --target="$TARGET" create "$(basename "${COOKBOOK_STAGE}")"
+            popd > /dev/null
             ;;
         untar)
-            rm -rfv stage.tar.gz stage.sig stage.toml
+            rm -rfv "${COOKBOOK_STAGE}.tar.gz" "${COOKBOOK_STAGE}.sig" "${COOKBOOK_STAGE}.toml"
             ;;
         publish)
             mkdir -p "$REPO"
-            cp -v stage.tar.gz "$REPO/$1.tar.gz"
-            cp -v stage.sig "$REPO/$1.sig"
-            cp -v stage.toml "$REPO/$1.toml"
+            cp -v "${COOKBOOK_STAGE}.tar.gz" "$REPO/$1.tar.gz"
+            cp -v "${COOKBOOK_STAGE}.sig" "$REPO/$1.sig"
+            cp -v "${COOKBOOK_STAGE}.toml" "$REPO/$1.toml"
             ;;
         unpublish)
             rm -rfv "$REPO/$1.tar.gz" "$REPO/$1.sig" "$REPO/$1.toml"
@@ -503,11 +505,18 @@ then
     then
         export COOKBOOK_RECIPE="${ROOT}/recipes/$1"
 
+        TARGET_DIR="${COOKBOOK_RECIPE}/target/${TARGET}"
+        mkdir -p "${TARGET_DIR}"
+
+        export COOKBOOK_BUILD="${TARGET_DIR}/build"
+        export COOKBOOK_STAGE="${TARGET_DIR}/stage"
+        export COOKBOOK_SOURCE="${COOKBOOK_RECIPE}/source"
+        export COOKBOOK_SYSROOT="${TARGET_DIR}/sysroot"
 
         export PKG_CONFIG_ALLOW_CROSS=1
         export PKG_CONFIG_PATH=
-        export PKG_CONFIG_LIBDIR="${COOKBOOK_RECIPE}/sysroot/lib/pkgconfig"
-        export PKG_CONFIG_SYSROOT_DIR="${COOKBOOK_RECIPE}/sysroot"
+        export PKG_CONFIG_LIBDIR="${COOKBOOK_SYSROOT}/lib/pkgconfig"
+        export PKG_CONFIG_SYSROOT_DIR="${COOKBOOK_SYSROOT}"
 
         cd "${COOKBOOK_RECIPE}"
 

@@ -374,10 +374,10 @@ fi"#);
     Ok(source_dir)
 }
 
-fn build(recipe_dir: &Path, source_dir: &Path, build: &BuildRecipe) -> Result<PathBuf, String> {
+fn build(recipe_dir: &Path, source_dir: &Path, target_dir: &Path, build: &BuildRecipe) -> Result<PathBuf, String> {
     let source_modified = modified_dir_ignore_git(&source_dir)?;
 
-    let sysroot_dir = recipe_dir.join("sysroot");
+    let sysroot_dir = target_dir.join("sysroot");
     // Rebuild sysroot if source is newer
     //TODO: rebuild on recipe changes
     if sysroot_dir.is_dir() {
@@ -388,7 +388,7 @@ fn build(recipe_dir: &Path, source_dir: &Path, build: &BuildRecipe) -> Result<Pa
     }
     if ! sysroot_dir.is_dir() {
         // Create sysroot.tmp
-        let sysroot_dir_tmp = recipe_dir.join("sysroot.tmp");
+        let sysroot_dir_tmp = target_dir.join("sysroot.tmp");
         create_dir_clean(&sysroot_dir_tmp)?;
 
         // Make sure sysroot/include exists
@@ -399,7 +399,7 @@ fn build(recipe_dir: &Path, source_dir: &Path, build: &BuildRecipe) -> Result<Pa
         for dependency in build.dependencies.iter() {
             let public_path = "build/id_ed25519.pub.toml";
             //TODO: sanitize name
-            let archive_path = format!("recipes/{}/stage.pkgar", dependency);
+            let archive_path = format!("recipes/{}/target/{}/stage.pkgar", dependency, redoxer::target());
             pkgar::extract(
                 public_path,
                 &archive_path,
@@ -416,7 +416,7 @@ fn build(recipe_dir: &Path, source_dir: &Path, build: &BuildRecipe) -> Result<Pa
         rename(&sysroot_dir_tmp, &sysroot_dir)?;
     }
 
-    let stage_dir = recipe_dir.join("stage");
+    let stage_dir = target_dir.join("stage");
     // Rebuild stage if source is newer
     //TODO: rebuild on recipe changes
     if stage_dir.is_dir() {
@@ -427,12 +427,12 @@ fn build(recipe_dir: &Path, source_dir: &Path, build: &BuildRecipe) -> Result<Pa
     }
     if ! stage_dir.is_dir() {
         // Create stage.tmp
-        let stage_dir_tmp = recipe_dir.join("stage.tmp");
+        let stage_dir_tmp = target_dir.join("stage.tmp");
         create_dir_clean(&stage_dir_tmp)?;
 
         // Create build, if it does not exist
         //TODO: flag for clean builds where build is wiped out
-        let build_dir = recipe_dir.join("build");
+        let build_dir = target_dir.join("build");
         if ! build_dir.is_dir() {
             create_dir_clean(&build_dir)?;
         }
@@ -554,7 +554,7 @@ done
     Ok(stage_dir)
 }
 
-fn package(recipe_dir: &Path, stage_dir: &Path, package: &PackageRecipe) -> Result<PathBuf, String> {
+fn package(recipe_dir: &Path, stage_dir: &Path, target_dir: &Path, package: &PackageRecipe) -> Result<PathBuf, String> {
     //TODO: metadata like dependencies, name, and version
 
     let secret_path = "build/id_ed25519.toml";
@@ -574,7 +574,7 @@ fn package(recipe_dir: &Path, stage_dir: &Path, package: &PackageRecipe) -> Resu
         ))?;
     }
 
-    let package_file = recipe_dir.join("stage.pkgar");
+    let package_file = target_dir.join("stage.pkgar");
     // Rebuild package if stage is newer
     //TODO: rebuild on recipe changes
     if package_file.is_file() {
@@ -606,12 +606,21 @@ fn cook(recipe_dir: &Path, recipe: &Recipe, fetch_only: bool) -> Result<(), Stri
 
     if fetch_only { return Ok(()); }
 
-    let stage_dir = build(&recipe_dir, &source_dir, &recipe.build).map_err(|err| format!(
+    let target_parent_dir = recipe_dir.join("target");
+    if ! target_parent_dir.is_dir() {
+        create_dir(&target_parent_dir)?;
+    }
+    let target_dir = target_parent_dir.join(redoxer::target());
+    if ! target_dir.is_dir() {
+        create_dir(&target_dir)?;
+    }
+
+    let stage_dir = build(&recipe_dir, &source_dir, &target_dir, &recipe.build).map_err(|err| format!(
         "failed to build: {}",
         err
     ))?;
 
-    let package_file = package(&recipe_dir, &stage_dir, &recipe.package).map_err(|err| format!(
+    let package_file = package(&recipe_dir, &stage_dir, &target_dir, &recipe.package).map_err(|err| format!(
         "failed to package: {}",
         err
     ))?;

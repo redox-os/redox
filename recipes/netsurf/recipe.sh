@@ -35,9 +35,9 @@ function recipe_clean {
 }
 
 function recipe_stage {
-    dest="$(realpath $1)"
+    dest="$(realpath "$1")"
     "$REDOX_MAKE" DESTDIR="$dest" install
     mkdir -pv "$dest/ui/apps"
-    cp -v ../manifest "$dest/ui/apps/00_netsurf"
+    cp -v "${COOKBOOK_RECIPE}/manifest" "$dest/ui/apps/00_netsurf"
     skip=1
 }
