@@ -25,7 +25,7 @@ ci-pkg: prefix FORCE
 	$(HOST_CARGO) build --manifest-path cookbook/Cargo.toml --release
 	$(HOST_CARGO) build --manifest-path installer/Cargo.toml --release
 	export PATH="$(PREFIX_PATH):$$PATH" && \
-	PACKAGES="$$($(INSTALLER) --list-packages -c ci.toml)" && \
+	PACKAGES="$$($(INSTALLER) --list-packages -c config/$(ARCH)/ci.toml)" && \
 	cd cookbook && \
 	./fetch.sh "$${PACKAGES}" && \
 	./repo.sh "$${PACKAGES}"
