@@ -6,7 +6,7 @@
 
 Redox _is not_ just a kernel, it's a **full-featured Operating System**, providing packages (memory allocator, file system, display manager, core utilities, etc.) that together make up a functional and convenient operating system. You can loosely think of it as the GNU or BSD ecosystem, but in a memory safe language and with modern technology. See [this list](#ecosystem) for overview of the ecosystem.
 
-The website can be found at https://www.redox-os.org.
+The website can be found at https://www.redox-os.org. For hardware compatibility, see [HARDWARE.md](HARDWARE.md).
 
 Please make sure you use the **latest nightly** of `rustc` before building (for more troubleshooting, see ["Help! Redox won't compile!"](#compile-help)).
 
