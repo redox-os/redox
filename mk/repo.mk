@@ -1,4 +1,7 @@
-$(BUILD)/fetch.tag: cookbook installer prefix $(FILESYSTEM_CONFIG)
+$(BUILD)/fetch.tag: cookbook installer prefix $(FILESYSTEM_CONFIG) $(CONTAINER_TAG)
+ifeq ($(PODMAN_BUILD),1)
+	$(PODMAN_RUN) $(MAKE) $@
+else
 	$(HOST_CARGO) build --manifest-path cookbook/Cargo.toml --release
 	$(HOST_CARGO) build --manifest-path installer/Cargo.toml --release
 	PACKAGES="$$($(INSTALLER) --list-packages -c $(FILESYSTEM_CONFIG))" && \
@@ -6,8 +9,12 @@ $(BUILD)/fetch.tag: cookbook installer prefix $(FILESYSTEM_CONFIG)
 	./fetch.sh "$${PACKAGES}"
 	mkdir -p $(BUILD)
 	touch $@
+endif
 
-$(BUILD)/repo.tag: $(BUILD)/fetch.tag
+$(BUILD)/repo.tag: $(BUILD)/fetch.tag $(CONTAINER_TAG)
+ifeq ($(PODMAN_BUILD),1)
+	$(PODMAN_RUN) $(MAKE) $@
+else
 	$(HOST_CARGO) build --manifest-path cookbook/Cargo.toml --release
 	$(HOST_CARGO) build --manifest-path installer/Cargo.toml --release
 	export PATH="$(PREFIX_PATH):$$PATH" && \
@@ -15,4 +22,7 @@ $(BUILD)/repo.tag: $(BUILD)/fetch.tag
 	cd cookbook && \
 	./repo.sh "$${PACKAGES}"
 	mkdir -p $(BUILD)
+	# make sure fetch.tag is newer than the things repo modifies
+	touch $<
 	touch $@
+endif

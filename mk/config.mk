@@ -13,6 +13,10 @@ FILESYSTEM_CONFIG?=config/$(ARCH)/desktop.toml
 FILESYSTEM_SIZE?=$(shell grep filesystem_size $(FILESYSTEM_CONFIG) | cut -d' ' -f3)
 ## Flags to pass to redoxfs-mkfs. Add --encrypt to set up disk encryption
 REDOXFS_MKFS_FLAGS?=
+## Set to 1 to enable Podman build, any other value will disable it
+PODMAN_BUILD?=0
+## The containerfile to use for the Podman base image
+CONTAINERFILE?=podman/redox-base-containerfile
 
 # Per host variables
 # TODO: get host arch automatically
@@ -75,3 +79,11 @@ STRIP=$(TARGET)-strip
 export AR_$(subst -,_,$(TARGET))=$(TARGET)-ar
 export CC_$(subst -,_,$(TARGET))=$(TARGET)-gcc
 export CXX_$(subst -,_,$(TARGET))=$(TARGET)-g++
+
+
+## If Podman is being used, a container is required
+ifeq ($(PODMAN_BUILD),1)
+CONTAINER_TAG=build/container.tag
+else
+CONTAINER_TAG=
+endif
