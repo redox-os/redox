@@ -1,0 +1,48 @@
+FROM ubuntu:latest
+
+RUN apt-get update \
+    && apt-get install -y --no-install-recommends \        
+        autoconf \
+        automake \
+        autopoint \
+        bison \
+        build-essential \
+        ca-certificates \
+        cmake \
+        curl \
+        file \
+        flex \
+        fuse \
+        genisoimage \
+        git \
+        gperf \
+        libc6-dev-i386 \
+        libexpat-dev \
+        libfuse-dev \
+        libgmp-dev \
+        libhtml-parser-perl \
+        libpng-dev \
+        libtool \
+        m4 \
+        nasm \
+        pkg-config \
+        po4a \
+        syslinux-utils \
+        texinfo \
+        libsdl1.2-dev \
+        ninja-build \
+        meson \
+        python3-mako \
+        rsync \
+        wget
+
+# _UID_ must be replaced with the user's uid on host
+RUN useradd --create-home --no-log-init --uid _UID_ poduser
+
+USER poduser
+
+RUN curl https://sh.rustup.rs -sSf | sh -s -- -y --default-toolchain nightly && \
+        /home/poduser/.cargo/bin/cargo install --force --version 0.1.1 cargo-config && \
+        /home/poduser/.cargo/bin/cargo install --force --version 0.3.20 xargo
+
+CMD [ "bash", "-c"]
