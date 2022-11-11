@@ -6,11 +6,6 @@ function recipe_version {
     skip=1
 }
 
-function recipe_update {
-    echo "skipping update"
-    skip=1
-}
-
 function recipe_build {
     export LDFLAGS="-static"
     autoreconf
@@ -24,11 +19,6 @@ function recipe_build {
         gt_cv_locale_tr_utf8=false \
         gt_cv_locale_zh_CN=false
     "$REDOX_MAKE" -j"$($NPROC)"
-    skip=1
-}
-
-function recipe_test {
-    echo "skipping test"
     skip=1
 }
 

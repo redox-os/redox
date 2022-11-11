@@ -7,11 +7,6 @@ function recipe_version {
 	skip=1
 }
 
-function recipe_update {
-	echo "skipping update"
-	skip=1
-}
-
 function recipe_build {
 	sysroot="$(realpath ../sysroot)"
 	export CFLAGS="-I$sysroot/include"
@@ -22,11 +17,6 @@ function recipe_build {
 	    --prefix=/
 	make
     	skip=1
-}
-
-function recipe_test {
-	echo "skipping test"
-	skip=1
 }
 
 function recipe_clean {

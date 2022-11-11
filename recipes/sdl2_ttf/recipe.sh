@@ -7,11 +7,6 @@ function recipe_version {
     skip=1
 }
 
-function recipe_update {
-    echo "skipping update"
-    skip=1
-}
-
 function recipe_build {
     sysroot="$(realpath ../sysroot)"
     export CFLAGS="-I$sysroot/include"
@@ -20,11 +15,6 @@ function recipe_build {
     ./autogen.sh
     ./configure --prefix=/ --build=${BUILD} --host=${HOST} --enable-opengl --disable-shared --disable-sdltest
     "$REDOX_MAKE" -j"$($NPROC)"
-    skip=1
-}
-
-function recipe_test {
-    echo "skipping test"
     skip=1
 }
 

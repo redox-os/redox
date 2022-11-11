@@ -6,11 +6,6 @@ function recipe_version {
     skip=1
 }
 
-function recipe_update {
-    echo "skipping update"
-    skip=1
-}
-
 function recipe_build {
     wget -O lib/config.sub "https://gitlab.redox-os.org/redox-os/gnu-config/-/raw/master/config.sub?inline=false"
     sed -i 's|.*/doc/help2man.*|\&\& true|' Makefile.in
@@ -18,11 +13,6 @@ function recipe_build {
 
     ./configure --build=${BUILD} --host=${HOST} --prefix=''
     "$REDOX_MAKE" -j"$($NPROC)"
-    skip=1
-}
-
-function recipe_test {
-    echo "skipping test"
     skip=1
 }
 

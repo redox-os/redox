@@ -8,11 +8,6 @@ function recipe_version {
     skip=1
 }
 
-function recipe_update {
-    echo "skipping update"
-    skip=1
-}
-
 function recipe_build {
     sysroot="$PWD/../sysroot"
     export CPPFLAGS="-I$sysroot/include"
@@ -28,11 +23,6 @@ function recipe_build {
         --enable-encoder=png \
         --enable-decoder=png
     "$REDOX_MAKE" -j"$($NPROC)"
-    skip=1
-}
-
-function recipe_test {
-    echo "skipping test"
     skip=1
 }
 

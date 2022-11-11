@@ -9,20 +9,10 @@ function recipe_version {
     skip=1
 }
 
-function recipe_update {
-    echo "skipping update"
-    skip=1
-}
-
 function recipe_build {
     source="$(realpath ../source)"
     unset AR AS CC CXX LD NM OBJCOPY OBJDUMP RANLIB READELF STRIP
     "$source/mach" build --target "${TARGET}" --release --with-frame-pointer # --jobs "$(nproc)"
-    skip=1
-}
-
-function recipe_test {
-    echo "skipping test"
     skip=1
 }
 

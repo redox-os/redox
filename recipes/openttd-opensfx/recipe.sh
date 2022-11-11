@@ -5,18 +5,8 @@ function recipe_version {
     skip=1
 }
 
-function recipe_update {
-    echo "skipping update"
-    skip=1
-}
-
 function recipe_build {
     echo "skipping build"
-    skip=1
-}
-
-function recipe_test {
-    echo "skipping test"
     skip=1
 }
 
@@ -30,5 +20,3 @@ function recipe_stage {
     cp -Rv ./* "$1/share/games/openttd/baseset/opensfx"
     skip=1
 }
-
-

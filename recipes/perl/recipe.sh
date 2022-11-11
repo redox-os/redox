@@ -8,11 +8,6 @@ function recipe_version {
     skip=1
 }
 
-function recipe_update {
-    echo "skipping update"
-    skip=1
-}
-
 function recipe_build {
     curl -L -O --time-cond perl-cross-1.1.6.tar.gz https://github.com/arsv/perl-cross/releases/download/1.1.6/perl-cross-1.1.6.tar.gz
     tar --strip-components=1 -xvf perl-cross-1.1.6.tar.gz
@@ -23,11 +18,6 @@ function recipe_build {
     sed -i 's/#define Strerror(e).*$/#define Strerror(e) strerror(e)/' config.h #
     echo "#define HAS_VPRINTF" >> config.h
     "$REDOX_MAKE" -j"$($NPROC)"
-    skip=1
-}
-
-function recipe_test {
-    echo "skipping test"
     skip=1
 }
 

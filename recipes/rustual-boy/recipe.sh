@@ -3,10 +3,6 @@ GIT_UPSTREAM=https://github.com/emu-rs/rustual-boy.git
 BRANCH="redox"
 DEPENDS="orbital"
 
-function recipe_update {
-    cd rustual-boy-cli
-}
-
 function recipe_build {
     cd rustual-boy-cli
 }

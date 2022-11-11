@@ -5,11 +5,6 @@ function recipe_version {
     skip=1
 }
 
-function recipe_update {
-    echo "skipping update"
-    skip=1
-}
-
 function recipe_prepare {
     rm -rf source
     mkdir source
@@ -23,11 +18,6 @@ function recipe_build {
     set -x
     "${CXX}" $("${PKG_CONFIG}" --cflags cairo) cairodemo.c -o cairodemo -static $("${PKG_CONFIG}" --libs cairo) -lorbital
     set +x
-    skip=1
-}
-
-function recipe_test {
-    echo "skipping test"
     skip=1
 }
 

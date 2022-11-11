@@ -10,11 +10,6 @@ function recipe_version {
     skip=1
 }
 
-function recipe_update {
-    echo "skipping update"
-    skip=1
-}
-
 function recipe_build {
     ./contrib/download_prerequisites
     cp config.sub gmp/config.sub
@@ -41,11 +36,6 @@ function recipe_build {
         --enable-languages=c,c++ \
         --enable-threads=posix
     "$REDOX_MAKE" -j "$(nproc)" all-gcc all-target-libgcc all-target-libstdc++-v3
-    skip=1
-}
-
-function recipe_test {
-    echo "skipping test"
     skip=1
 }
 

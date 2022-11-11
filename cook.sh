@@ -41,28 +41,16 @@ function usage {
     echo "  distclean" >&2
     echo "  build" >&2
     echo "  clean" >&2
-    echo "  diff" >&2
-    echo "  diff_origin" >&2
-    echo "  diff_upstream" >&2
-    echo "  difftool" >&2
-    echo "  difftool_origin" >&2
-    echo "  difftool_upstream" >&2
     echo "  fetch" >&2
     echo "  unfetch" >&2
     echo "  pkg" >&2
     echo "  unpkg" >&2
     echo "  prepare" >&2
     echo "  unprepare" >&2
-    echo "  publish" >&2
-    echo "  unpublish" >&2
     echo "  stage" >&2
     echo "  unstage" >&2
-    echo "  status" >&2
-    echo "  status_origin" >&2
-    echo "  status_upstream" >&2
     echo "  tar" >&2
     echo "  untar" >&2
-    echo "  update" >&2
     echo "  version" >&2
 }
 
@@ -156,108 +144,6 @@ function op {
                 rm -f source.tar
             fi
             ;;
-        status)
-            if [ -n "$TAR" ]
-            then
-                tar --compare --file="source.tar" -C "source" --strip-components=1 2>&1 |
-                grep -v "tar: :" | grep -v '\(Mod time\|Mode\|Gid\|Uid\) differs' ||
-                true
-            elif [ -n "$GIT" ]
-            then
-                git -C source diff --stat --color
-            fi
-            ;;
-        status_origin)
-            if [ -n "$GIT" ]
-            then
-                if [ -n "$BRANCH" ]
-                then
-                    git -C source diff --stat --color "origin/$BRANCH"
-                else
-                    git -C source diff --stat --color "origin/master"
-                fi
-            fi
-            ;;
-        status_upstream)
-            if [ -n "$GIT_UPSTREAM" ]
-            then
-                if [ -n "$BRANCH" ]
-                then
-                    git -C source diff --stat --color "upstream/$BRANCH"
-                else
-                    git -C source diff --stat --color "upstream/master"
-                fi
-            fi
-            ;;
-        diff)
-            if [ -n "$GIT" ]
-            then
-                git -C source diff
-            fi
-            ;;
-        diff_origin)
-            if [ -n "$GIT" ]
-            then
-                if [ -n "$BRANCH" ]
-                then
-                    git -C source diff "origin/$BRANCH"
-                else
-                    git -C source diff "origin/master"
-                fi
-            fi
-            ;;
-        diff_upstream)
-            if [ -n "$GIT_UPSTREAM" ]
-            then
-                if [ -n "$BRANCH" ]
-                then
-                    git -C source diff "upstream/$BRANCH"
-                else
-                    git -C source diff "upstream/master"
-                fi
-            fi
-            ;;
-        difftool)
-            if [ -n "$GIT" ]
-            then
-                git -C source difftool -d
-            fi
-            ;;
-        difftool_origin)
-            if [ -n "$GIT" ]
-            then
-                if [ -n "$BRANCH" ]
-                then
-                    git -C source difftool -d "origin/$BRANCH"
-                else
-                    git -C source difftool -d "origin/master"
-                fi
-            fi
-            ;;
-        difftool_upstream)
-            if [ -n "$GIT_UPSTREAM" ]
-            then
-                if [ -n "$BRANCH" ]
-                then
-                    git -C source difftool -d "upstream/$BRANCH"
-                else
-                    git -C source difftool -d "upstream/master"
-                fi
-            fi
-            ;;
-        update)
-            pushd source > /dev/null
-            skip=0
-            if [ "$(type -t recipe_update)" = "function" ]
-            then
-                recipe_update
-            fi
-            if [ "$skip" -eq "0" ]
-            then
-                "${CARGO[@]}" update
-            fi
-            popd > /dev/null
-            ;;
         prepare)
             skip=0
             if [ "$(type -t recipe_prepare)" = "function" ]
@@ -348,27 +234,6 @@ function op {
             then
                 cp -p "$ROOT/Xargo.toml" "Xargo.toml"
                 "${CARGO[@]}" "$CARGOBUILD" --target "$TARGET" $release_flag $package_flag $CARGOFLAGS
-            fi
-            popd > /dev/null
-            ;;
-        test)
-            pushd "${COOKBOOK_BUILD}" > /dev/null
-            skip=0
-            if [ "$(type -t recipe_test)" = "function" ]
-            then
-                recipe_test
-            fi
-
-            release_flag="--release"
-            if [ "$DEBUG" == 1 ]
-            then
-                release_flag=
-            fi
-
-            if [ "$skip" -eq "0" ]
-            then
-                cp -p "$ROOT/Xargo.toml" "Xargo.toml"
-                "${CARGO[@]}" test --no-run --target "$TARGET" $release_flag $CARGOFLAGS
             fi
             popd > /dev/null
             ;;
@@ -483,15 +348,6 @@ function op {
             ;;
         untar)
             rm -rfv "${COOKBOOK_STAGE}.tar.gz" "${COOKBOOK_STAGE}.sig" "${COOKBOOK_STAGE}.toml"
-            ;;
-        publish)
-            mkdir -p "$REPO"
-            cp -v "${COOKBOOK_STAGE}.tar.gz" "$REPO/$1.tar.gz"
-            cp -v "${COOKBOOK_STAGE}.sig" "$REPO/$1.sig"
-            cp -v "${COOKBOOK_STAGE}.toml" "$REPO/$1.toml"
-            ;;
-        unpublish)
-            rm -rfv "$REPO/$1.tar.gz" "$REPO/$1.sig" "$REPO/$1.toml"
             ;;
         *)
             usage $1

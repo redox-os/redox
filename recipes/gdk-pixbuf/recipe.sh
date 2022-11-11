@@ -7,11 +7,6 @@ function recipe_version {
 	skip=1
 }
 
-function recipe_update {
-	echo "skipping update"
-	skip=1
-}
-
 function recipe_build {
 	sysroot="$(realpath ../sysroot)"
 	export LDFLAGS="-static"
@@ -59,11 +54,6 @@ function recipe_build {
 	    -Dgir=false \
 	    -Dx11=false
 	ninja -C _build -v
-	skip=1
-}
-
-function recipe_test {
-	echo "skipping test"
 	skip=1
 }
 

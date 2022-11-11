@@ -9,21 +9,9 @@ function recipe_version {
     skip=1
 }
 
-function recipe_update {
-    echo "skipping update"
-    skip=1
-}
-
 function recipe_build {
-    config="$(realpath "${COOKBOOK_RECIPE}/config.toml")"
-    source="$(realpath ../source)"
     unset AR AS CC CXX LD NM OBJCOPY OBJDUMP RANLIB READELF STRIP
-    python3 "$source/x.py" install --config "$config" --jobs $(nproc) --incremental
-    skip=1
-}
-
-function recipe_test {
-    echo "skipping test"
+    python3 "${COOKBOOK_SOURCE}/x.py" install --config "${COOKBOOK_RECIPE}/config.toml" --jobs $(nproc) --incremental
     skip=1
 }
 

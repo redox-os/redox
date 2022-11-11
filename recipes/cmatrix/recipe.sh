@@ -7,11 +7,6 @@ function recipe_version {
     skip=1
 }
 
-function recipe_update {
-    echo "skipping update"
-    skip=1
-}
-
 function recipe_build {
     sysroot="$(realpath ../sysroot)"
     export LDFLAGS="-L$sysroot/lib -static"
@@ -24,11 +19,6 @@ function recipe_build {
         --without-fonts
     sed -i'' -e 's|#define USE_TIOCSTI 1|/* #undef USE_TIOCSTI */|g' config.h
     "$REDOX_MAKE" -j"$($NPROC)"
-    skip=1
-}
-
-function recipe_test {
-    echo "skipping test"
     skip=1
 }
 

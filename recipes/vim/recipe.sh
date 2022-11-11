@@ -8,11 +8,6 @@ function recipe_version {
     skip=1
 }
 
-function recipe_update {
-    echo "skipping update"
-    skip=1
-}
-
 function recipe_build {
     sysroot="$(realpath ../sysroot)"
     export LDFLAGS="-L$sysroot/lib -static"
@@ -26,11 +21,6 @@ function recipe_build {
     export vim_cv_memmove_handles_overlap=yes
     ./configure --build=${BUILD} --host=${HOST} --prefix=/ --with-tlib=ncurses
     "$REDOX_MAKE" -j"$($NPROC)"
-    skip=1
-}
-
-function recipe_test {
-    echo "skipping test"
     skip=1
 }
 

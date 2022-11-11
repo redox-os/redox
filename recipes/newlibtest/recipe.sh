@@ -6,22 +6,12 @@ function recipe_version {
     skip=1
 }
 
-function recipe_update {
-    echo "skipping update"
-    skip=1
-}
-
 function recipe_build {
     sysroot="$(realpath ../sysroot)"
     export CFLAGS="-static -nostdinc -I $sysroot/include -I /usr/lib/gcc/x86_64-unknown-redox/7.0.1/include/ -nostdlib -L $sysroot/lib"
     export CRT="$sysroot/lib/crt0.o"
     export CLIBS="-lc"
     "$REDOX_MAKE" all -j"$($NPROC)"
-    skip=1
-}
-
-function recipe_test {
-    echo "skipping test"
     skip=1
 }
 
