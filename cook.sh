@@ -47,6 +47,8 @@ function usage {
     echo "  unpkg" >&2
     echo "  prepare" >&2
     echo "  unprepare" >&2
+    echo "  publish" >&2
+    echo "  unpublish" >&2
     echo "  stage" >&2
     echo "  unstage" >&2
     echo "  tar" >&2
@@ -349,6 +351,15 @@ function op {
             ;;
         untar)
             rm -rfv "${COOKBOOK_STAGE}.tar.gz" "${COOKBOOK_STAGE}.sig" "${COOKBOOK_STAGE}.toml"
+            ;;
+        publish)
+            mkdir -p "$REPO"
+            cp -v "${COOKBOOK_STAGE}.tar.gz" "$REPO/$1.tar.gz"
+            cp -v "${COOKBOOK_STAGE}.sig" "$REPO/$1.sig"
+            cp -v "${COOKBOOK_STAGE}.toml" "$REPO/$1.toml"
+            ;;
+        unpublish)
+            rm -rfv "$REPO/$1.tar.gz" "$REPO/$1.sig" "$REPO/$1.toml"
             ;;
         *)
             usage $1
