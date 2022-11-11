@@ -16,7 +16,10 @@ PREFIX_STRIP=\
 		-exec strip --strip-unneeded {} ';' \
 		2> /dev/null
 
-$(PREFIX)/relibc-install: $(ROOT)/relibc | $(PREFIX)/rust-install
+$(PREFIX)/relibc-install: $(ROOT)/relibc | $(PREFIX)/rust-install $(CONTAINER_TAG)
+ifeq ($(PODMAN_BUILD),1)
+	$(PODMAN_RUN) $(MAKE) $@
+else
 	rm -rf "$@.partial" "$@"
 	cp -r "$(PREFIX)/rust-install" "$@.partial"
 	rm -rf "$@.partial/$(TARGET)/include/"*
@@ -33,6 +36,7 @@ $(PREFIX)/relibc-install: $(ROOT)/relibc | $(PREFIX)/rust-install
 	cd "$@.partial" && $(PREFIX_STRIP)
 	touch "$@.partial"
 	mv "$@.partial" "$@"
+endif
 
 $(PREFIX)/relibc-install.tar.gz: $(PREFIX)/relibc-install
 	tar \
@@ -77,7 +81,10 @@ $(PREFIX)/binutils: $(PREFIX)/binutils.tar.bz2
 	touch "$@.partial"
 	mv "$@.partial" "$@"
 
-$(PREFIX)/binutils-install: $(PREFIX)/binutils
+$(PREFIX)/binutils-install: $(PREFIX)/binutils $(CONTAINER_TAG)
+ifeq ($(PODMAN_BUILD),1)
+	$(PODMAN_RUN) $(MAKE) $@
+else
 	rm -rf "$<-build" "$@.partial" "$@"
 	mkdir -p "$<-build" "$@.partial"
 	cd "$<-build" && \
@@ -93,6 +100,7 @@ $(PREFIX)/binutils-install: $(PREFIX)/binutils
 	cd "$@.partial" && $(PREFIX_STRIP)
 	touch "$@.partial"
 	mv "$@.partial" "$@"
+endif
 
 $(PREFIX)/gcc.tar.bz2:
 	mkdir -p "$(@D)"
@@ -106,7 +114,10 @@ $(PREFIX)/gcc: $(PREFIX)/gcc.tar.bz2
 	touch "$@.partial"
 	mv "$@.partial" "$@"
 
-$(PREFIX)/gcc-freestanding-install: $(PREFIX)/gcc | $(PREFIX)/binutils-install
+$(PREFIX)/gcc-freestanding-install: $(PREFIX)/gcc | $(PREFIX)/binutils-install $(CONTAINER_TAG)
+ifeq ($(PODMAN_BUILD),1)
+	$(PODMAN_RUN) $(MAKE) $@
+else
 	rm -rf "$<-freestanding-build" "$@.partial" "$@"
 	mkdir -p "$<-freestanding-build"
 	cp -r "$(PREFIX)/binutils-install" "$@.partial"
@@ -126,8 +137,12 @@ $(PREFIX)/gcc-freestanding-install: $(PREFIX)/gcc | $(PREFIX)/binutils-install
 	cd "$@.partial" && $(PREFIX_STRIP)
 	touch "$@.partial"
 	mv "$@.partial" "$@"
+endif
 
-$(PREFIX)/rust-freestanding-install: $(ROOT)/rust | $(PREFIX)/binutils-install
+$(PREFIX)/rust-freestanding-install: $(ROOT)/rust | $(PREFIX)/binutils-install $(CONTAINER_TAG)
+ifeq ($(PODMAN_BUILD),1)
+	$(PODMAN_RUN) $(MAKE) $@
+else
 	rm -rf "$(PREFIX)/rust-freestanding-build" "$@.partial" "$@"
 	mkdir -p "$(PREFIX)/rust-freestanding-build"
 	cp -r "$(PREFIX)/binutils-install" "$@.partial"
@@ -153,8 +168,12 @@ $(PREFIX)/rust-freestanding-install: $(ROOT)/rust | $(PREFIX)/binutils-install
 	mv "$@.partial" "$@"
 	mkdir $@/lib/rustlib/src
 	ln -s $(ROOT)/rust $@/lib/rustlib/src
+endif
 
-$(PREFIX)/relibc-freestanding-install: $(ROOT)/relibc | $(PREFIX_BASE_INSTALL) $(PREFIX_FREESTANDING_INSTALL)
+$(PREFIX)/relibc-freestanding-install: $(ROOT)/relibc | $(PREFIX_BASE_INSTALL) $(PREFIX_FREESTANDING_INSTALL) $(CONTAINER_TAG)
+ifeq ($(PODMAN_BUILD),1)
+	$(PODMAN_RUN) $(MAKE) $@
+else
 	rm -rf "$@.partial" "$@"
 	mkdir -p "$@.partial"
 	cd "$<" && \
@@ -166,8 +185,12 @@ $(PREFIX)/relibc-freestanding-install: $(ROOT)/relibc | $(PREFIX_BASE_INSTALL) $
 	cd "$@.partial" && $(PREFIX_STRIP)
 	touch "$@.partial"
 	mv "$@.partial" "$@"
+endif
 
-$(PREFIX)/gcc-install: $(PREFIX)/gcc | $(PREFIX)/relibc-freestanding-install
+$(PREFIX)/gcc-install: $(PREFIX)/gcc | $(PREFIX)/relibc-freestanding-install $(CONTAINER_TAG)
+ifeq ($(PODMAN_BUILD),1)
+	$(PODMAN_RUN) $(MAKE) $@
+else
 	rm -rf "$<-build" "$@.partial" "$@"
 	mkdir -p "$<-build"
 	cp -r "$(PREFIX_BASE_INSTALL)" "$@.partial"
@@ -194,6 +217,7 @@ $(PREFIX)/gcc-install: $(PREFIX)/gcc | $(PREFIX)/relibc-freestanding-install
 	cd "$@.partial" && $(PREFIX_STRIP)
 	touch "$@.partial"
 	mv "$@.partial" "$@"
+endif
 
 $(PREFIX)/gcc-install.tar.gz: $(PREFIX)/gcc-install
 	tar \
@@ -203,7 +227,10 @@ $(PREFIX)/gcc-install.tar.gz: $(PREFIX)/gcc-install
 		--directory="$<" \
 		.
 
-$(PREFIX)/rust-install: $(ROOT)/rust | $(PREFIX)/gcc-install $(PREFIX)/relibc-freestanding-install
+$(PREFIX)/rust-install: $(ROOT)/rust | $(PREFIX)/gcc-install $(PREFIX)/relibc-freestanding-install $(CONTAINER_TAG)
+ifeq ($(PODMAN_BUILD),1)
+	$(PODMAN_RUN) $(MAKE) $@
+else
 	rm -rf "$(PREFIX)/rust-build" "$@.partial" "$@"
 	mkdir -p "$(PREFIX)/rust-build"
 	cp -r "$(PREFIX)/gcc-install" "$@.partial"
@@ -228,6 +255,7 @@ $(PREFIX)/rust-install: $(ROOT)/rust | $(PREFIX)/gcc-install $(PREFIX)/relibc-fr
 	cd "$@.partial" && find . -name *.old -exec rm {} ';' && $(PREFIX_STRIP)
 	touch "$@.partial"
 	mv "$@.partial" "$@"
+endif
 
 $(PREFIX)/rust-install.tar.gz: $(PREFIX)/rust-install
 	tar \

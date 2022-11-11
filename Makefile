@@ -14,19 +14,27 @@ rebuild:
 	rm -rf $(BUILD)
 	$(MAKE) all
 
-clean:
+clean: $(CONTAINER_TAG)
+ifeq ($(PODMAN_BUILD),1)
+	$(PODMAN_RUN) $(MAKE) $@
+else
 	cd cookbook && ./clean.sh
 	cargo clean --manifest-path cookbook/pkgutils/Cargo.toml
 	cargo clean --manifest-path installer/Cargo.toml
 	cargo clean --manifest-path redoxfs/Cargo.toml
 	cargo clean --manifest-path relibc/Cargo.toml
+endif
 	-$(FUMOUNT) $(BUILD)/filesystem/ || true
 	-$(FUMOUNT) /tmp/redox_installer/ || true
 	rm -rf $(BUILD)
 
-distclean:
+distclean: $(CONTAINER_TAG)
+ifeq ($(PODMAN_BUILD),1)
+	$(PODMAN_RUN) $(MAKE) $@
+else
 	$(MAKE) clean
 	cd cookbook && ./unfetch.sh
+endif
 
 pull:
 	git pull --recurse-submodules
@@ -36,6 +44,9 @@ pull:
 fetch: $(BUILD)/fetch.tag
 
 repo: $(BUILD)/repo.tag
+
+# Podman build recipes and vars
+include mk/podman.mk
 
 # Cross compiler recipes
 include mk/prefix.mk
