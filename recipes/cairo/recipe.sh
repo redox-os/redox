@@ -7,11 +7,6 @@ function recipe_version {
 	skip=1
 }
 
-function recipe_update {
-	echo "skipping update"
-	skip=1
-}
-
 function recipe_build {
 	#Workaround to disable the not redox compatible tests
 	printf "all:\n\ninstall:\n" > ./test/Makefile.in
@@ -29,11 +24,6 @@ function recipe_build {
 	    --enable-interpreter=no
 	"$REDOX_MAKE" -j"$($NPROC)"
     	skip=1
-}
-
-function recipe_test {
-	echo "skipping test"
-	skip=1
 }
 
 function recipe_clean {

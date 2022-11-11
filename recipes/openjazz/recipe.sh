@@ -7,11 +7,6 @@ function recipe_version {
     skip=1
 }
 
-function recipe_update {
-    echo "skipping update"
-    skip=1
-}
-
 function recipe_build {
     sysroot="$(realpath ../sysroot)"
     export CFLAGS="-I$sysroot/include -UUSE_SOCKETS -UUSE_SDL_NET"
@@ -23,11 +18,6 @@ function recipe_build {
     wget -O builds/autotools/config.sub "https://gitlab.redox-os.org/redox-os/gnu-config/-/raw/master/config.sub?inline=false"
     ./configure --build=${BUILD} --host=${HOST} --prefix=''
     "$REDOX_MAKE" -j"$($NPROC)" V=1
-    skip=1
-}
-
-function recipe_test {
-    echo "skipping test"
     skip=1
 }
 

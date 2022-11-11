@@ -7,11 +7,6 @@ function recipe_version {
     skip=1
 }
 
-function recipe_update {
-    echo "skipping update"
-    skip=1
-}
-
 function recipe_build {
     sysroot="$(realpath ../sysroot)"
     export CFLAGS="-I$sysroot/include/SDL"
@@ -27,11 +22,6 @@ function recipe_build {
         --disable-sdltest \
         --with-sdl-prefix="$sysroot"
     "$REDOX_MAKE" -j"$($NPROC)"
-    skip=1
-}
-
-function recipe_test {
-    echo "skipping test"
     skip=1
 }
 

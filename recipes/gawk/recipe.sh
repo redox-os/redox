@@ -2,19 +2,9 @@ GIT=https://gitlab.redox-os.org/redox-os/gawk.git
 GIT_UPSTREAM=https://git.savannah.gnu.org/git/gawk.git
 BRANCH=redox
 
-function recipe_update {
-    echo "skipping update"
-    skip=1
-}
-
 function recipe_build {
     ./configure --build=${BUILD} --host=${HOST} --prefix=/ ac_cv_func_gethostbyname=no ac_cv_func_connect=no
     "$REDOX_MAKE" -j"$($NPROC)"
-    skip=1
-}
-
-function recipe_test {
-    echo "skipping test"
     skip=1
 }
 

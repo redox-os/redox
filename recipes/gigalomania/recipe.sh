@@ -8,22 +8,12 @@ function recipe_version {
     skip=1
 }
 
-function recipe_update {
-    echo "skipping update"
-    skip=1
-}
-
 function recipe_build {
     export CPPHOST=${HOST}-g++
     sysroot="$(realpath ../sysroot)"
     export LDFLAGS="-L$sysroot/lib --static"
     export CPPFLAGS="-I$sysroot/include"
     "$REDOX_MAKE" all -j"$($NPROC)"
-    skip=1
-}
-
-function recipe_test {
-    echo "skipping test"
     skip=1
 }
 

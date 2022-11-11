@@ -5,11 +5,6 @@ function recipe_version {
     skip=1
 }
 
-function recipe_update {
-    echo "skipping update"
-    skip=1
-}
-
 function recipe_prepare {
     rm -rf source
     mkdir source
@@ -23,11 +18,6 @@ function recipe_build {
     set -x
     "${CXX}" -O2 -I "$sysroot/include" -L "$sysroot/lib" gears.c -o sdl2_gears -static -lSDL2_image -lSDL2_mixer -lSDL2_ttf -lSDL2 -lorbital $("${PKG_CONFIG}" --libs osmesa) -lfreetype -lpng -ljpeg -lvorbisfile -lvorbis -logg -lz
     set +x
-    skip=1
-}
-
-function recipe_test {
-    echo "skipping test"
     skip=1
 }
 

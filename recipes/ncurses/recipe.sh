@@ -7,11 +7,6 @@ function recipe_version {
     skip=1
 }
 
-function recipe_update {
-    echo "skipping update"
-    skip=1
-}
-
 function recipe_build {
     ./configure \
         --build=${BUILD} \
@@ -23,11 +18,6 @@ function recipe_build {
         --without-tests \
         cf_cv_func_mkstemp=yes
     "$REDOX_MAKE" -j"$($NPROC)"
-    skip=1
-}
-
-function recipe_test {
-    echo "skipping test"
     skip=1
 }
 

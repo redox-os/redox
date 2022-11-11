@@ -7,11 +7,6 @@ function recipe_version {
     skip=1
 }
 
-function recipe_update {
-    echo "skipping update"
-    skip=1
-}
-
 function recipe_build {
     wget -O bootstrap/config.sub "https://gitlab.redox-os.org/redox-os/gnu-config/-/raw/master/config.sub?inline=false"
     sysroot="$(realpath ../sysroot)"
@@ -31,11 +26,6 @@ function recipe_build {
         ac_cv_lib_SDL_ttf_TTF_OpenFont=yes \
         ac_cv_lib_SDL_gfx_rotozoomSurface=yes
     "$REDOX_MAKE" -j"$($NPROC)" V=1
-    skip=1
-}
-
-function recipe_test {
-    echo "skipping test"
     skip=1
 }
 

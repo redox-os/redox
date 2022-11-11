@@ -7,11 +7,6 @@ function recipe_version {
     skip=1
 }
 
-function recipe_update {
-    echo "skipping update"
-    skip=1
-}
-
 function recipe_build {
     env -i PATH=/usr/bin:/bin PKG_CONFIG=pkg-config \
     "$REDOX_MAKE" -j"$($NPROC)" ENABLE_FS=stdio mapc sols
@@ -20,11 +15,6 @@ function recipe_build {
 	export LDFLAGS="-L$sysroot/lib -static"
     "$REDOX_MAKE" -j"$($NPROC)" ENABLE_FS=stdio ENABLE_NLS=0 clean-src
     "$REDOX_MAKE" -j"$($NPROC)" ENABLE_FS=stdio ENABLE_NLS=0 neverball neverputt
-    skip=1
-}
-
-function recipe_test {
-    echo "skipping test"
     skip=1
 }
 

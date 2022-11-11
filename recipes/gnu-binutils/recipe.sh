@@ -8,11 +8,6 @@ function recipe_version {
     skip=1
 }
 
-function recipe_update {
-    echo "skipping update"
-    skip=1
-}
-
 function recipe_build {
     sysroot="$(realpath ../sysroot)"
     mkdir -p "$sysroot/usr"
@@ -35,11 +30,6 @@ function recipe_build {
         --disable-nls \
         --disable-werror
     "$REDOX_MAKE" -j"$($NPROC)"
-    skip=1
-}
-
-function recipe_test {
-    echo "skipping test"
     skip=1
 }
 

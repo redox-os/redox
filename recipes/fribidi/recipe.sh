@@ -7,11 +7,6 @@ function recipe_version {
 	skip=1
 }
 
-function recipe_update {
-	echo "skipping update"
-	skip=1
-}
-
 function recipe_build {
 	sysroot="$(realpath ../sysroot)"
 	export CFLAGS="-I$sysroot/include"
@@ -25,11 +20,6 @@ function recipe_build {
 	sed -i 's|#define HAVE_SYS_TIMES_H 1|/* #undef HAVE_SYS_TIMES_H */|g' config.h
 	"$REDOX_MAKE" -j"$($NPROC)"
     	skip=1
-}
-
-function recipe_test {
-	echo "skipping test"
-	skip=1
 }
 
 function recipe_clean {

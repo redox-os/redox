@@ -7,10 +7,6 @@ function recipe_version {
     echo "$VERSION"
     skip=1
 }
-function recipe_update {
-    echo "skipping update"
-    skip=1
-}
 function recipe_build {
     sysroot="$PWD/../sysroot"
     export CPPFLAGS="-I$sysroot/include -I$sysroot/include/ncurses"
@@ -20,10 +16,6 @@ function recipe_build {
         --host="$HOST" \
         --prefix=/
     "$REDOX_MAKE" -j"$($NPROC)"
-    skip=1
-}
-function recipe_test {
-    echo "skipping test"
     skip=1
 }
 function recipe_clean {

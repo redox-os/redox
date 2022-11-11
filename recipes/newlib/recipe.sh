@@ -6,11 +6,6 @@ function recipe_version {
     skip=1
 }
 
-function recipe_update {
-    echo "skipping update"
-    skip=1
-}
-
 function recipe_build {
     pushd newlib/libc/sys
         aclocal-1.11 -I ../..
@@ -27,11 +22,6 @@ function recipe_build {
     CC= ./configure --build=${BUILD} --target="${HOST}" --prefix=/
     "$REDOX_MAKE" all -j"$($NPROC)"
 
-    skip=1
-}
-
-function recipe_test {
-    echo "skipping test"
     skip=1
 }
 

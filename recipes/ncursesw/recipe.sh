@@ -7,20 +7,10 @@ function recipe_version {
     skip=1
 }
 
-function recipe_update {
-    echo "skipping update"
-    skip=1
-}
-
 function recipe_build {
     export CPPFLAGS="-P"
     ./configure --build=${BUILD} --host=${HOST} --prefix="" --enable-widec --disable-db-install
     "$REDOX_MAKE" -j"$($NPROC)"
-    skip=1
-}
-
-function recipe_test {
-    echo "skipping test"
     skip=1
 }
 

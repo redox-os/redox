@@ -5,11 +5,6 @@ function recipe_version {
     skip=1
 }
 
-function recipe_update {
-    echo "skipping update"
-    skip=1
-}
-
 function recipe_prepare {
     rm -rf source
     mkdir source
@@ -21,11 +16,6 @@ function recipe_build {
     set -x
 	"${CXX}" -O2 -I "$sysroot/include" -L "$sysroot/lib" osdemo.c -o osdemo -static -lorbital $("${PKG_CONFIG}" --libs glu) -lz
     set +x
-    skip=1
-}
-
-function recipe_test {
-    echo "skipping test"
     skip=1
 }
 

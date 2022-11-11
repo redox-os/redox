@@ -7,11 +7,6 @@ function recipe_version {
 	skip=1
 }
 
-function recipe_update {
-	echo "skipping update"
-	skip=1
-}
-
 function recipe_build {
 	wget -O config.sub "https://gitlab.redox-os.org/redox-os/gnu-config/-/raw/master/config.sub?inline=false"
 	sysroot="$(realpath ../sysroot)"
@@ -27,11 +22,6 @@ function recipe_build {
 	    ac_cv_func_XML_SetDoctypeDeclHandler=yes
 	"$REDOX_MAKE" -j"$($NPROC)"
     	skip=1
-}
-
-function recipe_test {
-	echo "skipping test"
-	skip=1
 }
 
 function recipe_clean {

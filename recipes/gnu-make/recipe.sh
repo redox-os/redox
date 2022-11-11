@@ -6,11 +6,6 @@ function recipe_version {
     skip=1
 }
 
-function recipe_update {
-    echo "skipping update"
-    skip=1
-}
-
 function recipe_build {
     export CFLAGS="-DPOSIX -DNO_ARCHIVES -DNO_OUTPUT_SYNC"
     export LDFLAGS="-static"
@@ -20,11 +15,6 @@ function recipe_build {
         --prefix=/ \
         --without-guile
     "$REDOX_MAKE" -j"$($NPROC)"
-    skip=1
-}
-
-function recipe_test {
-    echo "skipping test"
     skip=1
 }
 

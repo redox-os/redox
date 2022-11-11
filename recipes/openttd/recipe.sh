@@ -8,11 +8,6 @@ function recipe_version {
     skip=1
 }
 
-function recipe_update {
-    echo "skipping update"
-    skip=1
-}
-
 function recipe_build {
     sysroot="$(realpath ../sysroot)"
     export CFLAGS="-I$sysroot/include"
@@ -26,11 +21,6 @@ function recipe_build {
         --disable-network \
         --without-threads
     "$REDOX_MAKE" VERBOSE=1 -j"$($NPROC)"
-    skip=1
-}
-
-function recipe_test {
-    echo "skipping test"
     skip=1
 }
 

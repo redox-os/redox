@@ -6,11 +6,6 @@ function recipe_version {
 	skip=1
 }
 
-function recipe_update {
-	echo "skipping update"
-	skip=1
-}
-
 function recipe_build {
 	sysroot="$(realpath ../sysroot)"
 	./configure \
@@ -20,11 +15,6 @@ function recipe_build {
             --disable-shared \
             --enable-static
 	"$REDOX_MAKE" -j"$($NPROC)"
-	skip=1
-}
-
-function recipe_test {
-	echo "skipping test"
 	skip=1
 }
 

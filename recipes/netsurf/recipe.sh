@@ -8,11 +8,6 @@ function recipe_version {
     skip=1
 }
 
-function recipe_update {
-    echo "skipping update"
-    skip=1
-}
-
 function recipe_build {
     sysroot="$(realpath ../sysroot)"
     export TARGET="framebuffer"
@@ -21,11 +16,6 @@ function recipe_build {
     # nghttp2 is not linked for some reason
     export LDFLAGS="${LDFLAGS} -lcurl -lnghttp2"
     "$REDOX_MAKE" V=1 -j"$($NPROC)"
-    skip=1
-}
-
-function recipe_test {
-    echo "skipping test"
     skip=1
 }
 
