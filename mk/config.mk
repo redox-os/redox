@@ -11,6 +11,8 @@ REPO_BINARY?=0
 FILESYSTEM_CONFIG?=config/$(ARCH)/desktop.toml
 ## Filesystem size in MB (default comes from filesystem_size in the FILESYSTEM_CONFIG)
 FILESYSTEM_SIZE?=$(shell grep filesystem_size $(FILESYSTEM_CONFIG) | cut -d' ' -f3)
+## Name of the configuration to include in the image name e.g. desktop or server
+CONFIG_NAME?=$(shell basename $(FILESYSTEM_CONFIG) .toml)
 ## Flags to pass to redoxfs-mkfs. Add --encrypt to set up disk encryption
 REDOXFS_MKFS_FLAGS?=
 ## Set to 1 to enable Podman build, any other value will disable it
@@ -55,7 +57,7 @@ export XARGO_RUST_SRC=$(ROOT)/rust/src
 
 ## Userspace variables
 export TARGET=$(ARCH)-unknown-redox
-BUILD=build/$(ARCH)
+BUILD=build/$(ARCH)/$(CONFIG_NAME)
 INSTALLER=installer/target/release/redox_installer
 ifeq ($(REPO_BINARY),0)
 INSTALLER+=--cookbook=cookbook
