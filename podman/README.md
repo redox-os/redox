@@ -76,13 +76,13 @@ Most of the packages required for the build are installed in the container as pa
 ### Pop!_OS
 
 ```sh
-sudo install podman
+sudo apt-get install podman
 ```
 
 ### Ubuntu
 
 ```sh
-sudo install podman curl git make libfuse-dev
+sudo apt-get install podman curl git make libfuse-dev
 ```
 
 ### ArchLinux
