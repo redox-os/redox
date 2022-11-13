@@ -101,7 +101,7 @@ sudo dnf install podman
 
 **Podman** is a container that executes a virtual machine image. In our case, we are creating an **Ubuntu** image, with a **Rust** installation and all the packages needed to build the system.
 
-The build process is performed in your normal working directory, e.g. `~/tryredox/redox`. Compilation of the Redox components is performed in the container, but the final Redox image (`build/harddrive.img` or `build/livedisk.iso`) is constructed using [Fuse](https://github.com/libfuse/libfuse) running directly on your host machine.
+The build process is performed in your normal working directory, e.g. `~/tryredox/redox`. Compilation of the Redox components is performed in the container, but the final Redox image (`build/ARCH/CONFIG/harddrive.img` or `build/ARCH/CONFIG/livedisk.iso`) is constructed using [Fuse](https://github.com/libfuse/libfuse) running directly on your host machine.
 
 Setting `PODMAN_BUILD` to 1 in the environment (e.g. `PODMAN_BUILD=1 make all`) or in `mk/config.mk` will cause **Podman** to be invoked when building.
 
@@ -113,21 +113,21 @@ The build process is using **Podman**'s `keep-id` feature, which allows your reg
 
 ### NOTES
 
-- Envionment and Command Line Variables are not passed to the part of `make` that is done in **Podman**. You must set any config variables in `mk/config.mk` and not on the command line or in your environment.
+- Envionment and Command Line Variables, other than ARCH, CONFIG_NAME and FILESYSTEM_CONFIG, are not passed to the part of `make` that is done in **Podman**. You must set any other config variables in `mk/config.mk` and not on the command line or in your environment.
 
 - If you are building your own software to include in Redox, and you need to install additional packages using `apt-get` for the build, follow [Adding Packages to the Build](#adding-packages-to-the-build).
 
 ## build/container.tag
 
-The building of the **image** is controlled by the *tag file* `build/container.tag`. If you run `make all` with **PODMAN_BUILD=1**, the file `build/container.tag` will be created after the **image** is built. This file tells `make` that it can skip updating the **image** after the first time.
+The building of the **image** is controlled by the *tag* file `build/container.tag`. If you run `make all` with **PODMAN_BUILD=1**, the file `build/container.tag` will be created after the **image** is built. This file tells `make` that it can skip updating the **image** after the first time.
 
-Many targets in the Makefiles `mk/*.mk` include `build/container.tag` as a dependency. If the *tag file* is missing, building any of those targets may trigger an image to be created, which can take some time.
+Many targets in the Makefiles `mk/*.mk` include `build/container.tag` as a dependency. If the *tag* file is missing, building any of those targets may trigger an image to be created, which can take some time.
 
 When you move to a new working directory, if you want to save a few minutes, and you are confident that your **image** is correct, you can do
 ```sh
 make container_touch
 ```
-This will create the file `build/container.tag`. However, it will fail if the image does not exist. If it fails, just do a normal `make`, it will create the container when needed.
+This will create the file `build/container.tag` without rebuilding the image. However, it will fail if the image does not exist. If it fails, just do a normal `make`, it will create the container when needed.
 
 ## Cleaning Up
 
@@ -147,7 +147,7 @@ podman system reset
 ```
 will remove **all** images and containers. You still may need to remove `build/container.tag` if you did not do `make container_clean`.
 
-**Note:** `make clean` invokes `cargo clean` on various components, and since the build is designed to not require **Cargo** on your host machine, it must run `cargo clean` in a container, and could trigger an image build. Also, note that `make clean` does **not** run `make container_clean` and will **not** remove the contianer image.
+**Note:** `make clean` could trigger an image build. It invokes `cargo clean` on various components, which it must run in a container, since the build is designed to not require **Cargo** on your host machine. `make clean` does **not** run `make container_clean` and will **not** remove the container image.
 
 ## Debugging your Build Process
 
@@ -158,7 +158,11 @@ make container_shell
 
 This will start a `bash` shell in the **Podman** container environment, as a normal user without `sudo` privilege. Within that environment, you can build the Redox components with:
 ```sh
-make build/repo.tag
+make repo
+```
+or, if you need to change `ARCH` or `CONFIG_NAME`,
+```sh
+./build.sh -a ARCH -c CONFIG_NAME repo
 ```
 
 If you need `root` privileges, while you are **still running** the above `bash` shell, go to a separate **Terminal** or **Console** window on the host and type:
@@ -191,9 +195,9 @@ Then, edit `mk/config.mk`, and change the variable **CONTAINERFILE** to point to
 CONTAINERFILE?=podman/my-containerfile
 ```
 
-If your Containerfile is newer than the **base image**, a new **base image** will be created.
+If your Containerfile is newer than `build/container.tag`, a new **image** will be created. You can force the image to be rebuilt with `make container_clean`.
 
-If you feel the need to have more than one **base image**, you can change the variable **IMAGE_TAG** in `mk/podman.mk` to give the image a different tag.
+If you feel the need to have more than one **image**, you can change the variable **IMAGE_TAG** in `mk/podman.mk` to give the image a different name.
 
 ## Summary of Podman-related Make Targets and Podman Commands
 
@@ -223,7 +227,7 @@ The working directory is made available in the container by **mounting** it as a
 ```
 takes the directory that `make` was started in as the host working directory, and **mounts** it at the location `$CONTAINER_WORKDIR`, normally set to `/mnt/redox`. The `:Z` at the end of the name indicates that the mounted directory should not be shared between simultaneous container instances. It is optional on some Linux distros, and not optional on others.
 
-For our invocation of Podman, we set the PATH environment variable as an option to `podman run`. This is to avoid the need for our `make` command to run `.bashrc`, which would add extra complexity.
+For our invocation of Podman, we set the PATH environment variable as an option to `podman run`. This is to avoid the need for our `make` command to run `.bashrc`, which would add extra complexity. The `ARCH`, `CONFIG_NAME` and `FILESYSTEM_CONFIG` variables are passed in the environment to allow you to override the values in `mk/config.mk`, e.g. by setting them on your `make` command line or by using `build.sh`.
 
 We also set `PODMAN_BUILD=0` in the environment, to ensure that the instance of `make` running in the container knows not to invoke **Podman**. This overrides the value set in `mk/config.mk`.
 
