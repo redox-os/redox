@@ -38,12 +38,8 @@ RUN apt-get update \
         wget
 
 # _UID_ must be replaced with the user's uid on host
-RUN useradd --create-home --no-log-init --uid _UID_ poduser
+# podman root is mapped to your user id on host during build,
+# poduser is mapped to your user id during podman run
+RUN useradd --create-home --no-log-init --uid _UID_ poduser && \
+        chown -R root:root /home
 
-USER poduser
-
-RUN curl https://sh.rustup.rs -sSf | sh -s -- -y --default-toolchain nightly && \
-        /home/poduser/.cargo/bin/cargo install --force --version 0.1.1 cargo-config && \
-        /home/poduser/.cargo/bin/cargo install --force --version 0.3.20 xargo
-
-CMD [ "bash", "-c"]
