@@ -60,7 +60,13 @@ else
 	QEMUFLAGS+=-machine $(QEMU_MACHINE)
 endif
 
-ifneq ($(audio),no)
+ifeq ($(audio),no)
+	# No audio
+else ifeq ($(audio),ac97)
+	# AC'97
+	QEMUFLAGS+=-device AC97
+else
+	# Intel High Definition Audio
 	QEMUFLAGS+=-device ich9-intel-hda -device hda-duplex
 endif
 
