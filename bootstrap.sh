@@ -6,16 +6,16 @@
 banner()
 {
 	echo "|------------------------------------------|"
-	echo "|----- Welcome to the redox bootstrap -----|"
+	echo "|----- Welcome to the Redox bootstrap -----|"
 	echo "|------------------------------------------|"
 }
 
 ###################################################################################
 # This function takes care of installing a dependency via package manager of choice
-# for building redox on BSDs (MacOS, FreeBSD, etc.).
+# for building Redox on BSDs (macOS, FreeBSD, etc.).
 # @params:    $1 package manager
-#            $2 package name
-#            $3 binary name (optional)
+#             $2 package name
+#             $3 binary name (optional)
 ###################################################################################
 install_bsd_pkg()
 {
@@ -57,14 +57,14 @@ install_freebsd_pkg()
 
 ###############################################################################
 # This function checks which of the supported package managers
-# is available on the OSX Host.
+# is available on the macOS host.
 # If a supported package manager is found, it delegates the installing work to
 # the relevant function.
 # Otherwise this function will exit this script with an error.
 ###############################################################################
 osx()
 {
-    echo "Detected OSX!"
+    echo "Detected macOS!"
 
     if [ ! -z "$(which brew)" ]; then
         osx_homebrew $@
@@ -80,12 +80,12 @@ osx()
 
 ###############################################################################
 # This function takes care of installing all dependencies using MacPorts
-# for building redox on Mac OSX
-# @params:    $1 the emulator to install, virtualbox or qemu
+# for building Redox on macOS
+# @params:    $1 the emulator to install, "virtualbox" or "qemu"
 ###############################################################################
 osx_macports()
 {
-    echo "Macports detected! Now updating..."
+    echo "MacPorts detected! Now updating..."
     sudo port -v selfupdate
 
     echo "Installing missing packages..."
@@ -110,8 +110,8 @@ osx_macports()
 
 ###############################################################################
 # This function takes care of installing all dependencies using Homebrew
-# for building redox on Mac OSX
-# @params:    $1 the emulator to install, virtualbox or qemu
+# for building Redox on macOS
+# @params:    $1 the emulator to install, "virtualbox" or "qemu"
 ###############################################################################
 osx_homebrew()
 {
@@ -144,8 +144,8 @@ osx_homebrew()
 
 ###############################################################################
 # This function takes care of installing all dependencies using pkg
-# for building redox on FreeBSD
-# @params:    $1 the emulator to install, virtualbox or qemu
+# for building Redox on FreeBSD
+# @params:    $1 the emulator to install, "virtualbox" or "qemu"
 ###############################################################################
 freebsd()
 {
@@ -180,9 +180,9 @@ freebsd()
 }
 
 ###############################################################################
-# This function takes care of installing all dependencies for building redox on
-# Arch linux
-# @params:	$1 the emulator to install, virtualbox or qemu
+# This function takes care of installing all dependencies for building Redox on
+# Arch Linux
+# @params:	$1 the emulator to install, "virtualbox" or "qemu"
 ###############################################################################
 archLinux()
 {
@@ -206,9 +206,9 @@ archLinux()
 }
 
 ###############################################################################
-# This function takes care of installing all dependencies for building redox on
-# debian based linux
-# @params:	$1 the emulator to install, virtualbox or qemu
+# This function takes care of installing all dependencies for building Redox on
+# Debian-based Linux
+# @params:	$1 the emulator to install, "virtualbox" or "qemu"
 # 		$2 the package manager to use
 ###############################################################################
 ubuntu()
@@ -256,18 +256,18 @@ ubuntu()
 		fi
 	else
 		if [ -z "$(which virtualbox)" ]; then
-			echo "Installing Virtualbox..."
+			echo "Installing VirtualBox..."
 			sudo "$2" install virtualbox
 		else
-			echo "Virtualbox already installed!"
+			echo "VirtualBox already installed!"
 		fi
 	fi
 }
 
 ###############################################################################
-# This function takes care of installing all dependencies for building redox on
-# fedora linux
-# @params:	$1 the emulator to install, virtualbox or qemu
+# This function takes care of installing all dependencies for building Redox on
+# Fedora Linux
+# @params:	$1 the emulator to install, "virtualbox" or "qemu"
 ###############################################################################
 fedora()
 {
@@ -285,10 +285,10 @@ fedora()
 		fi
 	else
 		if [ -z "$(which virtualbox)" ]; then
-			echo "Installing virtualbox..."
+			echo "Installing VirtualBox..."
 			sudo dnf install virtualbox
 		else
-			echo "Virtualbox already installed!"
+			echo "VirtualBox already installed!"
 		fi
 	fi
 	# Use rpm -q <package> to check if it's already installed
@@ -302,9 +302,9 @@ fedora()
 }
 
 ###############################################################################
-# This function takes care of installing all dependencies for building redox on
-# *suse linux
-# @params:	$1 the emulator to install, virtualbox or qemu
+# This function takes care of installing all dependencies for building Redox on
+# *SUSE Linux
+# @params:	$1 the emulator to install, "virtualbox" or "qemu"
 ###############################################################################
 suse()
 {
@@ -322,11 +322,11 @@ suse()
 		fi
 	else
 		if [ -z "$(which virtualbox)" ]; then
-			echo "Please install Virtualbox and re-run this script,"
+			echo "Please install VirtualBox and re-run this script,"
 			echo "or run with -e qemu"
 			exit
 		else
-			echo "Virtualbox already installed!"
+			echo "VirtualBox already installed!"
 		fi
 	fi
 	echo "Installing necessary build tools..."
@@ -334,9 +334,9 @@ suse()
 }
 
 ##############################################################################
-# This function takes care of installing all dependencies for building redox on
-# gentoo linux
-# @params:	$1 the emulator to install, virtualbox or qemu
+# This function takes care of installing all dependencies for building Redox on
+# Gentoo Linux
+# @params:	$1 the emulator to install, "virtualbox" or "qemu"
 ##############################################################################
 gentoo()
 {
@@ -369,13 +369,13 @@ gentoo()
 }
 
 ##############################################################################
-# This function takes care of installing all dependencies for building redox on
-# SolusOS
-# @params:	$1 the emulator to install, virtualbox or qemu
+# This function takes care of installing all dependencies for building Redox on
+# Solus
+# @params:	$1 the emulator to install, "virtualbox" or "qemu"
 ##############################################################################
 solus()
 {
-	echo "Detected SolusOS"
+	echo "Detected Solus"
 
 	if [ "$1" == "qemu" ]; then
 		if [ -z "$(which qemu-system-x86_64)" ]; then
@@ -385,11 +385,11 @@ solus()
 		fi
 	else
 		if [ -z "$(which virtualbox)" ]; then
-			echo "Please install Virtualbox and re-run this script,"
+			echo "Please install VirtualBox and re-run this script,"
 			echo "or run with -e qemu"
 			exit
 		else
-			echo "Virtualbox already installed!"
+			echo "VirtualBox already installed!"
 		fi
 	fi
 
@@ -483,7 +483,7 @@ rustInstall() {
 		echo "\#curl -sSf https://static.rust-lang.org/rustup.sh | sh -s -- --channel=nightly"
 		exit
 	else
-		echo "Your rust install looks good!"
+		echo "Your Rust install looks good!"
 	fi
 }
 
@@ -534,12 +534,12 @@ boot()
 	echo "Well it looks like you are ready to go!"
 	echo "---------------------------------------"
 	statusCheck
-	echo "Run the following commands to build redox:"
+	echo "Run the following commands to build Redox:"
 	echo "cd redox"
 	MAKE="make"
 	if [[ "$(uname)" == "FreeBSD" ]]; then
     	MAKE="gmake"
-    	echo "kldload fuse.ko # This loads the kernel module for fuse"
+    	echo "kldload fuse.ko # This loads the kernel module for FUSE"
     fi
 	echo "$MAKE all"
 	echo "$MAKE virtualbox or qemu"
@@ -594,7 +594,7 @@ if [ "Darwin" == "$(uname -s)" ]; then
 else
 	# Here we will use package managers to determine which operating system the user is using.
 
-	# Suse and derivatives
+	# SUSE and derivatives
 	if hash 2>/dev/null zypper; then
 		suse "$emulator"
 	# Debian or any derivative of it
@@ -606,10 +606,10 @@ else
 	# Gentoo
 	elif hash 2>/dev/null emerge; then
 		gentoo "$emulator"
-	# SolusOS
+	# Solus
 	elif hash 2>/dev/null eopkg; then
 		solus "$emulator"
-	# Arch linux
+	# Arch Linux
 	elif hash 2>/dev/null pacman; then
 		archLinux "$emulator"
 	# FreeBSD
@@ -617,7 +617,7 @@ else
 		freebsd "$emulator"
 	# Unsupported platform
 	else
-    	printf "\e[31;1mFatal error: \e[0;31mUnsupported platform, please open an issue\[0m"
+    	printf "\e[31;1mFatal error: \e[0;31mUnsupported platform, please open an issue\e[0m\n"
 	fi
 fi
 
