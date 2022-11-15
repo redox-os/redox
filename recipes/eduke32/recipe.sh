@@ -23,9 +23,15 @@ function recipe_clean {
 }
 
 function recipe_stage {
-    dest="$(realpath $1)"
     mkdir -pv "$1/games"
-    cp ./eduke32 "$1/games/eduke32"
-    cp ./mapster32 "$1/games/mapster32"
+    cp -v ./eduke32 "$1/games/eduke32"
+    cp -v ./mapster32 "$1/games/mapster32"
+
+    mkdir -pv "$1/ui/apps"
+    cp -v "${COOKBOOK_RECIPE}/manifest" "$1/ui/apps/eduke32"
+
+    mkdir -pv "$1/ui/icons/apps"
+    cp -v "${COOKBOOK_RECIPE}/icon.png" "$1/ui/icons/apps/eduke32.png"
+
     skip=1
 }
