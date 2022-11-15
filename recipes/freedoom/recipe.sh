@@ -17,7 +17,7 @@ function recipe_clean {
 }
 
 function recipe_stage {
-    mkdir -pv "$1/games" "$1/share/games/doom"
+    mkdir -pv "$1/games" "$1/share/games/doom" "$1/ui/apps" "$1/ui/icons/apps"
     for file in ./*.wad
     do
         game="$(basename "$file" .wad)"
@@ -29,6 +29,12 @@ function recipe_stage {
         echo "#!/bin/ion" > "$1$bin"
         echo "/games/prboom -geom 800x600 -vidmode 32 -iwad $wad" >> "$1$bin"
         chmod +x "$1$bin"
+
+        echo "name=$game" | sed 's/freedoom/FreeDOOM /' > "$1/ui/apps/$game"
+        echo "binary=/games/$game" >> "$1/ui/apps/$game"
+        echo "icon=/ui/icons/apps/$game.png" >> "$1/ui/apps/$game"
+
+        cp -v "$game.png" "$1/ui/icons/apps/$game.png"
     done
     skip=1
 }
