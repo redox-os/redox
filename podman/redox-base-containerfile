@@ -33,6 +33,7 @@ RUN apt-get update \
         ninja-build \
         meson \
         python3-mako \
+        xxd \
         rsync \
         wget
 
