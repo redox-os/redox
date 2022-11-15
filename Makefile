@@ -64,9 +64,13 @@ include mk/virtualbox.mk
 # CI
 include mk/ci.mk
 
-env: prefix FORCE
+env: prefix FORCE $(CONTAINER_TAG)
+ifeq ($(PODMAN_BUILD),1)
+	$(PODMAN_RUN) $(MAKE) $@
+else
 	export PATH="$(PREFIX_PATH):$$PATH" && \
 	bash
+endif
 
 gdb: FORCE
 	gdb cookbook/recipes/kernel/build/kernel.sym --eval-command="target remote localhost:1234"
