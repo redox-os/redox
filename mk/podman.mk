@@ -8,8 +8,10 @@
 IMAGE_TAG?=redox-base
 ## Working Directory in Podman
 CONTAINER_WORKDIR?=/mnt/redox
+## Podman Home Directory
+PODMAN_HOME?=$(HOME)/.local/share/containers/storage/podman_home
 ## Podman command with its many arguments
-PODMAN_VOLUMES?=--volume "`pwd`":$(CONTAINER_WORKDIR):Z
+PODMAN_VOLUMES?=--volume "`pwd`":$(CONTAINER_WORKDIR):Z --volume $(PODMAN_HOME):/home:Z
 PODMAN_ENV?=--env PATH=/home/poduser/.cargo/bin:/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin --env PODMAN_BUILD=0
 PODMAN_CONFIG?=--env ARCH=$(ARCH) --env CONFIG_NAME=$(CONFIG_NAME) --env FILESYSTEM_CONFIG=$(FILESYSTEM_CONFIG)
 PODMAN_OPTIONS?=--rm --workdir $(CONTAINER_WORKDIR) --userns keep-id --user `id -u` --interactive --tty --env TERM=$(TERM)
@@ -24,13 +26,16 @@ endif
 
 container_clean: FORCE
 	rm -f build/container.tag
+	@echo "If podman_home dir cannot be removed, "
+	@echo "remove with either \"sudo rm\" or \"podman system reset\"."
+	-rm -rf $(PODMAN_HOME) || true
 	@echo "For complete clean of images and containers, use \"podman system reset\""
 	-podman image rm --force $(IMAGE_TAG) || true
 
 container_touch: FORCE
 ifeq ($(PODMAN_BUILD),1)
-	@echo If you get an error, the image does not exist. Just do a normal make.
-	podman image exists $(IMAGE_TAG)
+	rm -f build/container.tag
+	podman image exists $(IMAGE_TAG) || (echo "Image does not exist, it will be rebuilt during normal make."; exit 1)
 	touch build/container.tag
 else
 	@echo PODMAN_BUILD=$(PODMAN_BUILD), container not required.
@@ -40,13 +45,18 @@ endif
 build/container.tag: $(CONTAINERFILE)
 ifeq ($(PODMAN_BUILD),1)
 	rm -f build/container.tag
+	@echo "If podman_home dir cannot be removed, "
+	@echo "remove with either \"sudo rm\" or \"podman system reset\"."
+	-rm -rf $(PODMAN_HOME) || true
 	-podman image rm --force $(IMAGE_TAG) || true
+	mkdir -p $(PODMAN_HOME)
 	@echo "Building Podman image. This may take some time."
 	sed s/_UID_/`id -u`/ $(CONTAINERFILE) | podman build --file - $(PODMAN_VOLUMES) --tag $(IMAGE_TAG)
 	@echo "Mapping Podman user space. Please wait."
-	$(PODMAN_RUN) echo "Podman ready!"
+	$(PODMAN_RUN) bash -e podman/rustinstall.sh
 	mkdir -p build
 	touch $@
+	@echo "Podman ready!"
 else
 	@echo PODMAN_BUILD=$(PODMAN_BUILD), container not required.
 endif
