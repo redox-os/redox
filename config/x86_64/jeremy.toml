@@ -3,7 +3,7 @@
 # General settings
 [general]
 # Filesystem size in MiB
-filesystem_size = 2048
+filesystem_size = 4096
 # Do not prompt if settings are not defined
 prompt = false
 
@@ -55,7 +55,7 @@ sodium = {}
 
 # cli
 acid = {}
-bash = {}
+#bash = {} # wcsrtombs
 cleye = {}
 curl = {}
 ffmpeg = {}
@@ -67,7 +67,7 @@ xz = {}
 
 # demos
 cairodemo = {}
-cmatrix = {} # slow in terminal
+#cmatrix = {} # addwstr
 cpal = {}
 gears = {}
 glium = {} # does not show anything
