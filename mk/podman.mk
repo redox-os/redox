@@ -1,4 +1,3 @@
-
 ##############################################
 # podman.mk - Use Podman to build components #
 ##############################################
@@ -9,7 +8,7 @@ IMAGE_TAG?=redox-base
 ## Working Directory in Podman
 CONTAINER_WORKDIR?=/mnt/redox
 ## Podman Home Directory
-PODMAN_HOME?=$(HOME)/.local/share/containers/storage/podman_home
+PODMAN_HOME?=build/podman
 ## Podman command with its many arguments
 PODMAN_VOLUMES?=--volume "`pwd`":$(CONTAINER_WORKDIR):Z --volume $(PODMAN_HOME):/home:Z
 PODMAN_ENV?=--env PATH=/home/poduser/.cargo/bin:/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin --env PODMAN_BUILD=0
@@ -26,8 +25,8 @@ endif
 
 container_clean: FORCE
 	rm -f build/container.tag
-	@echo "If podman_home dir cannot be removed, "
-	@echo "remove with either \"sudo rm\" or \"podman system reset\"."
+	@echo "If podman dir cannot be removed, "
+	@echo "remove with \"sudo rm\"."
 	-rm -rf $(PODMAN_HOME) || true
 	@echo "For complete clean of images and containers, use \"podman system reset\""
 	-podman image rm --force $(IMAGE_TAG) || true
@@ -46,7 +45,7 @@ build/container.tag: $(CONTAINERFILE)
 ifeq ($(PODMAN_BUILD),1)
 	rm -f build/container.tag
 	@echo "If podman_home dir cannot be removed, "
-	@echo "remove with either \"sudo rm\" or \"podman system reset\"."
+	@echo "remove with \"sudo rm\"."
 	-rm -rf $(PODMAN_HOME) || true
 	-podman image rm --force $(IMAGE_TAG) || true
 	mkdir -p $(PODMAN_HOME)
