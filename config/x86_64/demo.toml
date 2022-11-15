@@ -73,12 +73,14 @@ sodium = {}
 dosbox = {}
 freedoom = {}
 games = {}
+neverball = {}
 prboom = {}
 sopwith = {}
 syobonaction = {}
 
 # Demos
 orbclient = {}
+rodioplay = {}
 
 # User settings
 [users.root]
