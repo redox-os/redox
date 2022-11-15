@@ -25,11 +25,25 @@ function recipe_clean {
 
 function recipe_stage {
     dest="$(realpath $1)"
-    mkdir -p "${dest}/games/neverball"
+
+    # Create install directories
+    mkdir -pv "${dest}/games/neverball" "${dest}/ui/apps" "${dest}/ui/icons/apps"
+
+    # Copy assets
+    cp -rv data "${dest}/games/neverball"
+
+    # For each game
     for bin in neverball neverputt
     do
-        "${STRIP}" -v "$bin" -o "${dest}/games/neverball/$bin"
+        # Install binary
+        "${STRIP}" -v "${bin}" -o "${dest}/games/neverball/${bin}"
+
+        # Install manifest
+        cp -v "${COOKBOOK_RECIPE}/manifest-${bin}" "${dest}/ui/apps/${bin}"
+
+        # Install icon
+        cp -v "dist/${bin}_48.png" "${dest}/ui/icons/apps/${bin}.png"
     done
-    cp -rv data "${dest}/games/neverball"
+
     skip=1
 }
