@@ -16,6 +16,7 @@ ca-certificates = {}
 cargo = {}
 contain = {}
 coreutils = {}
+curl = {}
 dash = {}
 diffutils = {}
 drivers = {}
@@ -23,6 +24,7 @@ escalated = {}
 extrautils = {}
 findutils = {}
 gcc = {}
+git = {}
 gnu-binutils = {}
 gnu-make = {}
 initfs = {}
@@ -45,8 +47,10 @@ relibc = {}
 resist = {}
 rust = {}
 smith = {}
+terminfo = {}
 userutils = {}
 uutils = {}
+vim = {}
 
 # User settings
 [users.root]
