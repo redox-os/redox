@@ -31,6 +31,7 @@ function recipe_stage {
         chmod +x "$1$bin"
 
         echo "name=$game" | sed 's/freedoom/FreeDOOM /' > "$1/ui/apps/$game"
+        echo "category=Games" >> "$1/ui/apps/$game"
         echo "binary=/games/$game" >> "$1/ui/apps/$game"
         echo "icon=/ui/icons/apps/$game.png" >> "$1/ui/apps/$game"
 
