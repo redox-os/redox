@@ -4,7 +4,7 @@ BRANCH=main
 function recipe_build {
     sysroot="$(realpath ../sysroot)"
     set -x
-    cargo build --target "$TARGET" --release --package editor-orbclient
+    cargo build --target "$TARGET" --release --package editor-orbclient --features vi
     set +x
     skip=1
 }
