@@ -1,4 +1,4 @@
 name=DOSBox
+category=Games
 binary=/bin/dosbox
 icon=/ui/icons/apps/dosbox.png
-
