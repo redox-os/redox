@@ -40,7 +40,7 @@ BINS=(
     fold
     hashsum
     head
-    install
+    #install need gid2grp
     join
     link
     ln
