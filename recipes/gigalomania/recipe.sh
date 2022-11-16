@@ -28,5 +28,12 @@ function recipe_stage {
 
     "$REDOX_MAKE" VERBOSE=1 DESTDIR="$dest" install
     rm -rf "$bundledir"
+
+    mkdir -pv "$1/ui/apps"
+    cp -v "${COOKBOOK_RECIPE}/manifest" "$1/ui/apps/gigalomania"
+
+    mkdir -pv "$1/ui/icons/apps"
+    cp -v "gigalomania64.png" "$1/ui/icons/apps/gigalomania.png"
+
     skip=1
 }
