@@ -35,5 +35,12 @@ function recipe_stage {
 
     "$REDOX_MAKE" VERBOSE=1 ROOT_DIR="$dest/../build/" BUNDLE_DIR="$bundledir" INSTALL_DIR="$dest" install
     rm -rf "$bundledir"
+
+    mkdir -pv "$1/ui/apps"
+    cp -v "${COOKBOOK_RECIPE}/manifest" "$1/ui/apps/openttd"
+
+    mkdir -pv "$1/ui/icons/apps"
+    cp -v "media/openttd.64.png" "$1/ui/icons/apps/openttd.png"
+
     skip=1
 }
