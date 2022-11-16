@@ -2,6 +2,7 @@ QEMU=SDL_VIDEO_X11_DGAMOUSE=0 qemu-system-$(QEMU_ARCH)
 QEMUFLAGS=-d cpu_reset,guest_errors
 
 ifeq ($(ARCH),i686)
+	audio?=ac97
 	efi=no
 	QEMU_ARCH=i386
 	QEMU_MACHINE?=pc
