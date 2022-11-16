@@ -3,7 +3,7 @@
 # General settings
 [general]
 # Filesystem size in MiB
-filesystem_size = 4096
+filesystem_size = 1024
 # Do not prompt if settings are not defined
 prompt = false
 
@@ -15,7 +15,7 @@ bootstrap = {}
 ca-certificates = {}
 contain = {}
 coreutils = {}
-dash = {}
+#dash = {} # relibc issues?
 diffutils = {}
 drivers = {}
 escalated = {}
@@ -28,7 +28,7 @@ ipcd = {}
 kernel = {}
 netdb = {}
 netstack = {}
-netsurf = {}
+#netsurf = {} # openssl issues
 netutils = {}
 orbdata = {}
 orbital = {}
@@ -47,82 +47,28 @@ uutils = {}
 cosmic-text = {}
 periodictable = {}
 pixelcannon = {}
-schismtracker = {}
 sodium = {}
 
 # cli
 acid = {}
-bash = {}
 cleye = {}
-curl = {}
-ffmpeg = {}
-git = {}
-gnu-grep = {}
 ripgrep = {}
-sed = {}
-vim = {}
-xz = {}
 
 # demos
-cairodemo = {}
-#cmatrix = {} # addwstr
 cpal = {}
-gears = {}
-glium = {} # does not show anything
 glutin = {}
 orbclient = {}
-osdemo = {} # does not show anything
 rodioplay = {}
-rust-cairo = {}
-rust-cairo-demo = {}
-sdl2_gears = {}
-vttest = {}
 winit = {}
 
-# dev
-autoconf = {}
-automake = {}
-gcc = {}
-gnu-binutils = {}
-gnu-make = {}
-nasm = {}
-patch = {}
-pkg-config = {}
-rust = {}
-
 # games
-dosbox = {}
-eduke32 = {}
-freedoom = {}
 games = {}
-gigalomania = {}
-mgba = {}
-neverball = {}
-openjazz = {}
-openttd = {}
-openttd-opengfx = {}
-openttd-openmsx = {}
-openttd-opensfx = {}
-prboom = {}
-retroarch = {} # need to package cores
-rs-nes = {} # need game for testing
-rust64 = {} # need roms
-rustual-boy = {} # need game for testing
-scummvm = {} # need game for testing
-sm64ex = {}
-sopwith = {}
-spacecadetpinball = {}
-syobonaction = {}
-vice = {}
-vvvvvv = {}
 
 # stuff
 generaluser-gs = {}
 jeremy = {}
 keyboard-sfx = {}
-libc-bench = {}
 terminfo = {}
-timidity = {}
 ttf-hack = {}
 
 # User settings
@@ -271,3 +217,29 @@ symlink = true
 path = "/dev/zero"
 data = "zero:"
 symlink = true
+
+[[files]]
+path = "/home/user/Welcome.txt"
+data = """
+##############################################################################
+#                                                                            #
+#                             Welcome to Redox!                              #
+#                                                                            #
+# Redox is an operating system written in Rust, a language with focus        #
+# on safety and high performance. Redox, following the microkernel design,   #
+# aims to be secure, usable, and free. Redox is inspired by previous kernels #
+# and operating systems, such as SeL4, MINIX, Plan 9, and BSD.               #
+#                                                                            #
+# Redox _is not_ just a kernel, it's a full-featured Operating System,       #
+# providing packages (memory allocator, file system, display manager, core   #
+# utilities, etc.) that together make up a functional and convenient         #
+# operating system. You can loosely think of it as the GNU or BSD ecosystem, #
+# but in a memory safe language and with modern technology.                  #
+#                                                                            #
+# The website can be found at https://www.redox-os.org.                      #
+#                                                                            #
+# For things to try on Redox, please see                                     #
+# https://doc.redox-os.org/book/ch02-06-trying-out-redox.html                #
+#                                                                            #
+##############################################################################
+"""
