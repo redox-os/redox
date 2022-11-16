@@ -42,7 +42,7 @@ function recipe_stage {
         cp -v "${COOKBOOK_RECIPE}/manifest-${bin}" "${dest}/ui/apps/${bin}"
 
         # Install icon
-        cp -v "dist/${bin}_48.png" "${dest}/ui/icons/apps/${bin}.png"
+        cp -v "dist/${bin}_64.png" "${dest}/ui/icons/apps/${bin}.png"
     done
 
     skip=1
