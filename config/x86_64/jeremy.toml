@@ -48,6 +48,7 @@ uutils = {}
 vim = {}
 
 # apps
+cosmic-text = {}
 periodictable = {}
 pixelcannon = {}
 schismtracker = {}
