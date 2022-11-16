@@ -45,7 +45,6 @@ uutils = {}
 
 # apps
 cosmic-text = {}
-periodictable = {}
 pixelcannon = {}
 sodium = {}
 
@@ -56,7 +55,6 @@ ripgrep = {}
 
 # demos
 cpal = {}
-glutin = {}
 orbclient = {}
 rodioplay = {}
 winit = {}
