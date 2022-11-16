@@ -55,7 +55,7 @@ sodium = {}
 
 # cli
 acid = {}
-#bash = {} # wcsrtombs
+bash = {}
 cleye = {}
 curl = {}
 ffmpeg = {}
