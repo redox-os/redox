@@ -1,0 +1,4 @@
+name=DOSBox
+binary=/bin/dosbox
+icon=/ui/icons/apps/dosbox.png
+

@@ -33,5 +33,12 @@ function recipe_clean {
 function recipe_stage {
     dest="$(realpath $1)"
     "$REDOX_MAKE" DESTDIR="$dest" install
+
+    mkdir -pv "$1/ui/apps"
+    cp -v "${COOKBOOK_RECIPE}/manifest" "$1/ui/apps/dosbox"
+
+    mkdir -pv "$1/ui/icons/apps"
+    cp -v "${COOKBOOK_RECIPE}/icon.png" "$1/ui/icons/apps/dosbox.png"
+
     skip=1
 }
