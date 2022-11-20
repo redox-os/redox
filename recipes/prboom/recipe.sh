@@ -1,6 +1,6 @@
 VERSION=2.5.0
 TAR=https://downloads.sourceforge.net/project/prboom/prboom%20stable/$VERSION/prboom-$VERSION.tar.gz
-BUILD_DEPENDS=(sdl liborbital)
+BUILD_DEPENDS=(sdl liborbital sdl_mixer libogg libvorbis)
 
 function recipe_version {
     echo "$VERSION"
@@ -9,6 +9,7 @@ function recipe_version {
 
 function recipe_build {
     export CFLAGS="-static"
+    export MIXER_LIBS="-lSDL_mixer -lvorbisfile -lvorbis -logg"
     sysroot="$(realpath ../sysroot)"
     autoreconf -if
     wget -O autotools/config.sub "https://gitlab.redox-os.org/redox-os/gnu-config/-/raw/master/config.sub?inline=false"
@@ -20,7 +21,8 @@ function recipe_build {
         --disable-cpu-opt \
         --disable-gl \
         --without-net \
-        --with-sdl-prefix="$sysroot"
+        --with-sdl-prefix="$sysroot" \
+        ac_cv_lib_SDL_mixer_Mix_OpenAudio=yes
     "$REDOX_MAKE" -j"$($NPROC)"
     skip=1
 }
