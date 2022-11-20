@@ -18,12 +18,12 @@ function recipe_build {
         --build=${BUILD} \
         --host=${HOST} \
         --enable-music-ogg \
+        --enable-music-midi \
         --disable-shared \
         --disable-sdltest \
         --disable-music-cmd \
         --disable-music-mp3 \
         --disable-smpegtest \
-        --disable-music-midi \
         --disable-music-mod
     "$REDOX_MAKE" -j"$($NPROC)"
     skip=1
