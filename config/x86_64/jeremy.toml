@@ -117,6 +117,7 @@ vice = {}
 vvvvvv = {}
 
 # stuff
+freepats = {}
 generaluser-gs = {}
 jeremy = {}
 keyboard-sfx = {}
