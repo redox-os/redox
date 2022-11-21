@@ -82,6 +82,9 @@ syobonaction = {}
 orbclient = {}
 rodioplay = {}
 
+# MIDI
+freepats = {}
+
 # User settings
 [users.root]
 password = "password"
