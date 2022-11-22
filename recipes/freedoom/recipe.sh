@@ -30,7 +30,7 @@ function recipe_stage {
         echo "/games/prboom -geom 800x600 -vidmode 32 -iwad $wad" >> "$1$bin"
         chmod +x "$1$bin"
 
-        echo "name=$game" | sed 's/freedoom/FreeDOOM /' > "$1/ui/apps/$game"
+        echo "name=$game" | sed 's/freedoom/FreeDOOM: Phase /' | sed 's/doom1/DOOM (Shareware)/' > "$1/ui/apps/$game"
         echo "category=Games" >> "$1/ui/apps/$game"
         echo "binary=/games/$game" >> "$1/ui/apps/$game"
         echo "icon=/ui/icons/apps/$game.png" >> "$1/ui/apps/$game"
