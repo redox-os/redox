@@ -10,7 +10,6 @@ features.
 
 Due to incomplete USB support, desktops are generally not recommended.
 
-- Sound support is incomplete and disabled by default
 - USB support is incomplete
 - Wireless networking is not supported
 
