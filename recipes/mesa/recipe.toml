@@ -12,6 +12,9 @@ dependencies = [
     "zlib",
 ]
 script = """
+#TODO: do this in cook instead
+unset AR AS CC CXX LD NM OBJCOPY OBJDUMP RANLIB READELF STRIP
+
 export CFLAGS="-I${COOKBOOK_SYSROOT}/include -DHAVE_PTHREAD=1"
 export CPPFLAGS="-I${COOKBOOK_SYSROOT}/include -DHAVE_PTHREAD=1"
 export LDFLAGS="-L${COOKBOOK_SYSROOT}/lib --static"
