@@ -205,7 +205,7 @@ data = "https://static.redox-os.org/pkg"
 
 [[files]]
 path = "/etc/redox-release"
-data = "0.8.0alpha"
+data = "0.8.0"
 
 [[files]]
 path = "/etc/group"
