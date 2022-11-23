@@ -12,10 +12,10 @@ ci-img: FORCE
 
 # The name of the target must match the name of the filesystem config file
 desktop server demo: FORCE
-	rm -f "$(BUILD)/harddrive.img" "$(BUILD)/livedisk.iso"
-	$(MAKE) FILESYSTEM_CONFIG=config/$(ARCH)/$@.toml $(BUILD)/harddrive.img $(BUILD)/livedisk.iso
-	cp "$(BUILD)/harddrive.img" "$(IMG_DIR)/redox_$(@)$(IMG_SEPARATOR)$(IMG_TAG)_harddrive.img"
-	cp "$(BUILD)/livedisk.iso" "$(IMG_DIR)/redox_$(@)$(IMG_SEPARATOR)$(IMG_TAG)_livedisk.iso"
+	rm -f "build/$(ARCH)/$@/harddrive.img" "build/$(ARCH)/$@/livedisk.iso"
+	$(MAKE) FILESYSTEM_CONFIG=config/$(ARCH)/$@.toml build/$(ARCH)/$@/harddrive.img build/$(ARCH)/$@/livedisk.iso
+	cp "build/$(ARCH)/$@/harddrive.img" "$(IMG_DIR)/redox_$(@)$(IMG_SEPARATOR)$(IMG_TAG)_harddrive.img"
+	cp "build/$(ARCH)/$@/livedisk.iso" "$(IMG_DIR)/redox_$(@)$(IMG_SEPARATOR)$(IMG_TAG)_livedisk.iso"
 
 # CI packaging target
 ci-pkg: prefix FORCE
