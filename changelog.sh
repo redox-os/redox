@@ -9,6 +9,7 @@ echo "Last release: ${LAST_RELEASE_TAG} at ${LAST_RELEASE_TIMESTAMP}"
 REPOS=(
     redox=.
     cookbook=cookbook
+    rust=rust
 )
 
 for package in $(installer/target/release/redox_installer --list-packages -c config/x86_64/desktop.toml)
