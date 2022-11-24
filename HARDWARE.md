@@ -87,6 +87,14 @@ Status: ⚠️ Booting
 - Boots to desktop
 - No ethernet driver
 
+### Lenovo G570
+
+Status: 🚫 Broken
+
+- Booted using BIOS
+- Correct video mode not offered, this is a firmware issue
+- Bootloader panics in alloc_zeroed_page_aligned
+
 ## i686
 
 Test performed using https://static.redox-os.org/img/i686/redox_desktop_i686_2022-11-11_629_livedisk.iso
