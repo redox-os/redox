@@ -38,6 +38,14 @@ Status: ✅ Recommended
 - Booted using UEFI
 - Boots to desktop
 
+### Asus X554L
+
+Status: ⚠️ Booting
+
+- Booted using BIOS
+- Boots to desktop
+- No audio, HDA driver cannot find output pins
+
 ### Dell XPS 13 (9350)
 
 Status: ⚠️ Booting
