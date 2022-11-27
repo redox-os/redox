@@ -236,6 +236,10 @@ ubuntu()
 		libhtml-parser-perl \
 		libpng-dev \
 		libtool \
+		libjpeg-dev \
+		libvorbis-dev \
+		libsdl2-ttf-dev \
+		libosmesa6-dev \
 		m4 \
 		nasm \
 		pkg-config \
