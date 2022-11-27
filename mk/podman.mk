@@ -8,9 +8,9 @@ IMAGE_TAG?=redox-base
 ## Working Directory in Podman
 CONTAINER_WORKDIR?=/mnt/redox
 ## Podman Home Directory
-PODMAN_HOME?="`pwd`/build/podman"
+PODMAN_HOME?=$(ROOT)/build/podman
 ## Podman command with its many arguments
-PODMAN_VOLUMES?=--volume "`pwd`":$(CONTAINER_WORKDIR):Z --volume $(PODMAN_HOME):/home:Z
+PODMAN_VOLUMES?=--volume $(ROOT):$(CONTAINER_WORKDIR):Z --volume $(PODMAN_HOME):/home:Z
 PODMAN_ENV?=--env PATH=/home/poduser/.cargo/bin:/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin --env PODMAN_BUILD=0
 PODMAN_CONFIG?=--env ARCH=$(ARCH) --env CONFIG_NAME=$(CONFIG_NAME) --env FILESYSTEM_CONFIG=$(FILESYSTEM_CONFIG)
 PODMAN_OPTIONS?=--rm --workdir $(CONTAINER_WORKDIR) --userns keep-id --user `id -u` --interactive --tty --env TERM=$(TERM)
@@ -22,6 +22,9 @@ ifeq ($(PODMAN_BUILD),1)
 else
 	@echo PODMAN_BUILD=$(PODMAN_BUILD), please set it to 1 in mk/config.mk
 endif
+
+container_su: FORCE
+	podman exec --user=0 --latest --interactive --tty bash
 
 container_clean: FORCE
 	rm -f build/container.tag
@@ -38,6 +41,9 @@ ifeq ($(PODMAN_BUILD),1)
 else
 	@echo PODMAN_BUILD=$(PODMAN_BUILD), container not required.
 endif
+
+container_kill: FORCE
+	podman kill --latest --signal SIGKILL
 
 ## Must match the value of CONTAINER_TAG in config.mk
 build/container.tag: $(CONTAINERFILE)
