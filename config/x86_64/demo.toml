@@ -80,6 +80,7 @@ syobonaction = {}
 
 # Demos
 orbclient = {}
+pixelcannon = {}
 rodioplay = {}
 
 # MIDI
