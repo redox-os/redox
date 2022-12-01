@@ -3,7 +3,7 @@
 # General settings
 [general]
 # Filesystem size in MiB
-filesystem_size = 1024
+filesystem_size = 2048
 # Do not prompt if settings are not defined
 prompt = false
 
@@ -13,20 +13,14 @@ audiod = {}
 bootloader = {}
 bootstrap = {}
 ca-certificates = {}
-cargo = {}
 contain = {}
 coreutils = {}
-curl = {}
 dash = {}
 diffutils = {}
 drivers = {}
 escalated = {}
 extrautils = {}
 findutils = {}
-gcc = {}
-git = {}
-gnu-binutils = {}
-gnu-make = {}
 initfs = {}
 installer = {}
 ion = {}
@@ -45,12 +39,24 @@ ptyd = {}
 redoxfs = {}
 relibc = {}
 resist = {}
-rust = {}
 smith = {}
-terminfo = {}
 userutils = {}
 uutils = {}
+
+# CLI programs
+curl = {}
+git = {}
+terminfo = {}
 vim = {}
+
+
+# Development tools
+cargo = {}
+crates-io-index = {}
+gcc = {}
+gnu-binutils = {}
+gnu-make = {}
+rust = {}
 
 # User settings
 [users.root]
