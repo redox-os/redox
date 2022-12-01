@@ -33,5 +33,8 @@ function recipe_stage {
     mkdir -pv "$1/etc/timidity"
     echo "soundfont /share/generaluser-gs/generaluser-gs.sf2" >> "$1/etc/timidity/timidity.cfg"
 
+    mkdir -pv "$1/share/timidity"
+    echo "soundfont /share/generaluser-gs/generaluser-gs.sf2" >> "$1/share/timidity/timidity.cfg"
+
     skip=1
 }
