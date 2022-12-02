@@ -15,7 +15,7 @@ diff -rupwN source/Common.mak source-new/Common.mak
  endif
  
 +ifeq ($(PLATFORM),REDOX)
-+    CROSS := x86_64-unknown-redox-
++    CROSS := $(TARGET)-
 +endif
 +
  CC := $(CROSS)gcc$(CROSS_SUFFIX)
