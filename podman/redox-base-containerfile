@@ -27,6 +27,7 @@ RUN apt-get update \
         libvorbis-dev \
         libsdl2-ttf-dev \
         libosmesa6-dev \
+        libfontconfig1-dev \
         m4 \
         nasm \
         pkg-config \
