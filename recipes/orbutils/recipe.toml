@@ -5,7 +5,13 @@ git = "https://gitlab.redox-os.org/redox-os/orbutils.git"
 template = "custom"
 script = """
 COOKBOOK_CARGO_FLAGS=(
-    --path "${COOKBOOK_SOURCE}"
+    --path "${COOKBOOK_SOURCE}/src"
+    --root "${COOKBOOK_STAGE}/ui"
+    --locked
+)
+cookbook_cargo
+COOKBOOK_CARGO_FLAGS=(
+    --path "${COOKBOOK_SOURCE}/calculator"
     --root "${COOKBOOK_STAGE}/ui"
     --locked
 )
@@ -14,5 +20,10 @@ cookbook_cargo
 
 [package]
 dependencies = [
-    "orbital"
+    "orbital",
+    "expat",
+    "fontconfig",
+    "freetype",
+    "libpng",
+    "zlib",
 ]
