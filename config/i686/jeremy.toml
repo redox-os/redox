@@ -15,7 +15,7 @@ bootstrap = {}
 ca-certificates = {}
 contain = {}
 coreutils = {}
-#dash = {} # relibc issues?
+dash = {}
 diffutils = {}
 drivers = {}
 escalated = {}
@@ -60,9 +60,14 @@ rodioplay = {}
 winit = {}
 
 # games
+dosbox = {}
+eduke32 = {}
+freedoom = {}
 games = {}
+prboom = {}
 
 # stuff
+freepats = {}
 generaluser-gs = {}
 jeremy = {}
 keyboard-sfx = {}
