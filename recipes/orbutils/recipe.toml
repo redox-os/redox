@@ -1,19 +1,22 @@
 [source]
 git = "https://gitlab.redox-os.org/redox-os/orbutils.git"
+branch = "slint_port/calculator"
 
 [build]
 template = "custom"
 script = """
 COOKBOOK_CARGO_FLAGS=(
-    --path "${COOKBOOK_SOURCE}/src"
+    --path "${COOKBOOK_SOURCE}/orbutils"
     --root "${COOKBOOK_STAGE}/ui"
     --locked
+    --no-track
 )
 cookbook_cargo
 COOKBOOK_CARGO_FLAGS=(
     --path "${COOKBOOK_SOURCE}/calculator"
     --root "${COOKBOOK_STAGE}/ui"
     --locked
+    --no-track
 )
 cookbook_cargo
 """
