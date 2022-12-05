@@ -17,7 +17,7 @@ script = """
         --package styling \
         -- \
         -L "${COOKBOOK_SYSROOT}/lib" \
-        -C link-args="-Wl,-Bstatic $("${PKG_CONFIG}" --libs osmesa) -lz -lstdc++ -lc -lgcc"
+        -C link-args="-Wl,-Bstatic $("${TARGET}-pkg-config" --libs osmesa) -lz -lstdc++ -lc -lgcc"
     mkdir -pv "${COOKBOOK_STAGE}/bin"
     cp -v "target/${TARGET}/release/styling" "${COOKBOOK_STAGE}/bin/iced"
 """
