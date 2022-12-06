@@ -1,0 +1,22 @@
+[source]
+tar = "https://www.freedesktop.org/software/harfbuzz/release/harfbuzz-2.3.0.tar.bz2"
+
+[build]
+template = "custom"
+dependencies = [
+    "freetype",
+    "gettext",
+    "glib",
+    "libiconv",
+    "libpng",
+    "pcre",
+    "zlib"
+]
+script = """
+COOKBOOK_CONFIGURE_FLAGS+=(
+    --with-glib=yes
+    --with-freetype=yes
+    --with-icu=no
+)
+cookbook_configure
+"""
