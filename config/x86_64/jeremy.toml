@@ -70,6 +70,7 @@ cpal = {}
 gears = {}
 glium = {} # does not show anything
 glutin = {}
+iced = {}
 orbclient = {}
 osdemo = {} # does not show anything
 rodioplay = {}
@@ -77,7 +78,7 @@ rust-cairo = {}
 rust-cairo-demo = {}
 sdl2_gears = {}
 vttest = {}
-#winit = {} # tzset
+winit = {}
 
 # dev
 autoconf = {}
