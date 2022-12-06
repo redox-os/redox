@@ -1,0 +1,9 @@
+[source]
+git = "https://github.com/pop-os/icon-theme.git"
+
+[build]
+template = "custom"
+script = """
+meson setup -Dprefix=/ . "${COOKBOOK_SOURCE}"
+env DESTDIR="${COOKBOOK_STAGE}" meson install
+"""
