@@ -5,17 +5,16 @@ BUILD_DEPENDS=(freetype libpng llvm mesa zlib)
 
 function recipe_build {
     sysroot="$(realpath ../sysroot)"
-    cp -p "$ROOT/Xargo.toml" "Xargo.toml"
     for rs in $(find examples/ -maxdepth 1 -type f -name '*.rs')
     do
         bin="$(basename "$rs" .rs)"
         set -x
-        xargo rustc --target "$TARGET" --release --manifest-path examples/Cargo.toml --bin "$bin" \
+        cargo rustc --target "$TARGET" --release --manifest-path examples/Cargo.toml --bin "$bin" \
             -- \
             -L "${sysroot}/lib" \
             -l static=freetype \
             -l static=png \
-            -C link-args="$("${PKG_CONFIG}" --libs osmesa) -lglapi -lz -lstdc++ -lc -lgcc"
+            -C link-args="-Wl,-Bstatic $("${PKG_CONFIG}" --libs osmesa) -lz -lstdc++ -lc -lgcc"
         set +x
     done
     skip=1
