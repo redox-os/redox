@@ -4,20 +4,12 @@ branch = "redox"
 
 [build]
 template = "custom"
-dependencies = [
-    "llvm",
-    "mesa",
-    "zlib"
-]
 script = """
     set -x
-    ${COOKBOOK_CARGO} rustc \
+    ${COOKBOOK_CARGO} build \
         --release \
         --manifest-path "${COOKBOOK_SOURCE}/Cargo.toml" \
-        --package cosmic \
-        -- \
-        -L "${COOKBOOK_SYSROOT}/lib" \
-        -C link-args="-Wl,-Bstatic $("${PKG_CONFIG}" --libs osmesa) -lz -lstdc++ -lc -lgcc"
+        --package cosmic
     mkdir -pv "${COOKBOOK_STAGE}/bin"
     cp -v "target/${TARGET}/release/cosmic" "${COOKBOOK_STAGE}/bin/libcosmic"
 """
