@@ -1,0 +1,32 @@
+[source]
+git = "https://gitlab.redox-os.org/redox-os/glutin.git"
+branch = "redox-0.29"
+upstream = "https://github.com/rust-windowing/glutin.git"
+
+[build]
+template = "custom"
+dependencies = [
+    "llvm",
+    "mesa",
+    "zlib"
+]
+script = """
+EXAMPLES=(
+    multiwindow
+    transparent
+    window
+)
+for example in "${EXAMPLES[@]}"
+do
+    cargo rustc \
+        --target "$TARGET" \
+        --release \
+        --manifest-path "${COOKBOOK_SOURCE}/glutin_examples/Cargo.toml" \
+        --example "${example}" \
+        -- \
+        -L "${COOKBOK_SYSROOT}/lib" \
+        -C link-args="-Wl,-Bstatic $("${TARGET}-pkg-config" --libs osmesa) -lz -lstdc++ -lc -lgcc"
+    mkdir -pv "${COOKBOOK_STAGE}/bin"
+    cp -v "target/${TARGET}/release/examples/${example}" "${COOKBOOK_STAGE}/bin/glutin_${example}"
+done
+"""
