@@ -1,0 +1,10 @@
+[source]
+git = "https://github.com/googlefonts/noto-emoji.git"
+
+[build]
+template = "custom"
+script = """
+DEST="${COOKBOOK_STAGE}/ui/fonts/Emoji/Noto"
+mkdir -pv "${DEST}"
+cp -v "${COOKBOOK_SOURCE}/fonts/NotoColorEmoji.ttf" "${DEST}"
+"""
