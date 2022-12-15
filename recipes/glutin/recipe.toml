@@ -1,6 +1,6 @@
 [source]
 git = "https://gitlab.redox-os.org/redox-os/glutin.git"
-branch = "redox-0.29"
+branch = "redox-0.30"
 upstream = "https://github.com/rust-windowing/glutin.git"
 
 [build]
@@ -12,8 +12,6 @@ dependencies = [
 ]
 script = """
 EXAMPLES=(
-    multiwindow
-    transparent
     window
 )
 for example in "${EXAMPLES[@]}"
