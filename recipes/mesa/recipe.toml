@@ -1,8 +1,7 @@
-#TODO: TEST
 [source]
 git = "https://gitlab.redox-os.org/redox-os/mesa.git"
 upstream = "https://gitlab.freedesktop.org/mesa/mesa"
-branch = "redox"
+branch = "redox-22.3.1"
 
 [build]
 template = "custom"
@@ -48,9 +47,10 @@ meson "${COOKBOOK_SOURCE}" . \
     --buildtype release \
     --strip \
     -Ddefault_library=static \
+    -Ddri-drivers= \
     -Dglx=disabled \
     -Dllvm=enabled \
-    -Dosmesa=gallium \
+    -Dosmesa=true \
     -Dplatforms= \
     -Dshader-cache=disabled \
     -Dshared-llvm=disabled \
