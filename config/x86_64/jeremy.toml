@@ -3,7 +3,7 @@
 # General settings
 [general]
 # Filesystem size in MiB
-filesystem_size = 4096
+filesystem_size = 8192
 # Do not prompt if settings are not defined
 prompt = false
 
@@ -80,6 +80,7 @@ rust-cairo = {}
 rust-cairo-demo = {}
 sdl2_gears = {}
 vttest = {}
+webrender = {}
 winit = {}
 
 # dev
