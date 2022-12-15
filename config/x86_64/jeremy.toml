@@ -70,6 +70,7 @@ cpal = {}
 gears = {}
 glium = {} # does not show anything
 glutin = {}
+hematite = {}
 iced = {}
 libcosmic = {}
 orbclient = {}
