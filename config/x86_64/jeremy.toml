@@ -75,6 +75,7 @@ iced = {}
 libcosmic = {}
 orbclient = {}
 osdemo = {} # does not show anything
+pathfinder = {}
 rodioplay = {}
 rust-cairo = {}
 rust-cairo-demo = {}
