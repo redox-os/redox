@@ -5,6 +5,7 @@ git = "https://github.com/jackpot51/retroarch.git"
 template = "custom"
 dependencies = [
     "liborbital",
+    "libretro-super",
     "llvm",
     "mesa",
     "openssl",
@@ -18,17 +19,25 @@ popd
 
 rsync -av --delete "${COOKBOOK_SOURCE}/" ./
 
+# For now, we will statically link with the snes9x libretro
+mkdir -pv "${COOKBOOK_SYSROOT}/lib"
+cp -v "${COOKBOOK_SYSROOT}/share/libretro/snes9x_libretro.a" "${COOKBOOK_SYSROOT}/lib/libretro.a"
+
 COOKBOOK_CONFIGURE_FLAGS=(
     --host="${TARGET}"
     --prefix="/"
     --disable-builtinzlib # conflicts with zlib
     --disable-discord # does not link
+    --disable-dylib
+    --disable-dynamic
     --disable-netplaydiscovery # missing ifaddrs.h
     --disable-thread_storage # crash in pthread_setspecific called by sthread_tls_set
+    --disable-threads # prevents hang
     --enable-opengl
     --enable-sdl2
     --enable-ssl
     --enable-zlib
+    --with-libretro="-lretro -lstdc++ -lz"
 )
 cookbook_configure
 """
