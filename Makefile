@@ -8,6 +8,12 @@ all: $(BUILD)/harddrive.img
 
 live: $(BUILD)/livedisk.iso
 
+image:
+	-$(FUMOUNT) $(BUILD)/filesystem/ || true
+	-$(FUMOUNT) /tmp/redox_installer/ || true
+	rm -rf $(BUILD)/harddrive.img
+	$(MAKE) all
+
 rebuild:
 	-$(FUMOUNT) $(BUILD)/filesystem/ || true
 	-$(FUMOUNT) /tmp/redox_installer/ || true
