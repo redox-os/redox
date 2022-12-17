@@ -26,3 +26,13 @@ else
 	touch $<
 	touch $@
 endif
+
+# Invoke repo.sh for a single target
+r.%: FORCE
+ifeq ($(PODMAN_BUILD),1)
+	$(PODMAN_RUN) $(MAKE) $@
+else
+	export PATH="$(PREFIX_PATH):$$PATH" && \
+	cd cookbook && \
+	./repo.sh $*
+endif
