@@ -1,0 +1,8 @@
+[source]
+tar = "https://github.com/xiph/flac/releases/download/1.4.2/flac-1.4.2.tar.xz"
+
+[build]
+template = "configure"
+dependencies = [
+    "libogg",
+]
