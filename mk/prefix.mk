@@ -241,6 +241,7 @@ else
 		--prefix="/" \
 		--disable-docs \
 		--enable-cargo-native-static \
+		--enable-dist-src \
 		--enable-extended \
 		--enable-lld \
 		--enable-llvm-static-stdcpp \
