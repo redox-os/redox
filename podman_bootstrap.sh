@@ -423,6 +423,8 @@ boot()
 {
 	echo "Cloning gitlab repo..."
 	git clone https://gitlab.redox-os.org/redox-os/redox.git --origin upstream --recursive
+	echo "Creating .config with PODMAN_BUILD=1"
+	echo 'PODMAN_BUILD?=1' > redox/.config
 	echo "Cleaning up..."
 	rm podman_bootstrap.sh
 	echo
@@ -430,6 +432,7 @@ boot()
 	echo "Well it looks like you are ready to go!"
 	echo "---------------------------------------"
 	statusCheck
+	echo "The file redox/.config was created with PODMAN_BUILD=1."
 	echo "Run the following commands to build redox using Podman:"
 	echo
 	echo "cd redox"
@@ -438,7 +441,6 @@ boot()
     	MAKE="gmake"
     	echo "kldload fuse.ko # This loads the kernel module for fuse"
     fi
-	echo "export PODMAN_BUILD=1"
 	echo "$MAKE all"
 	echo "$MAKE virtualbox or qemu"
 	echo
