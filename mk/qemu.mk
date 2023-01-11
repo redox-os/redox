@@ -121,8 +121,7 @@ $(BUILD)/firmware.rom:
 
 qemu: $(DISK) $(FIRMWARE) $(BUILD)/extra.img
 	$(QEMU) $(QEMUFLAGS) \
-		-hdc $(DISK)
-		echo -drive file=$(DISK),format=raw \
+		-drive file=$(DISK),format=raw \
 		-drive file=$(BUILD)/extra.img,format=raw
 
 qemu_no_build: $(FIRMWARE) $(BUILD)/extra.img
