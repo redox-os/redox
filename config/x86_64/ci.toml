@@ -73,6 +73,7 @@ harfbuzz = {}
 init = {}
 initfs = {}
 installer = {}
+installer-gui = {}
 ion = {}
 ipcd = {}
 jansson = {}
