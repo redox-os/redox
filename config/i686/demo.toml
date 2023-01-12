@@ -45,6 +45,7 @@ extrautils = {}
 findutils = {}
 initfs = {}
 installer = {}
+installer-gui = {}
 ion = {}
 ipcd = {}
 kernel = {}
