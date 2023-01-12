@@ -11,7 +11,7 @@ live: $(BUILD)/livedisk.iso
 image:
 	-$(FUMOUNT) $(BUILD)/filesystem/ || true
 	-$(FUMOUNT) /tmp/redox_installer/ || true
-	rm -rf $(BUILD)/harddrive.img
+	rm -f $(BUILD)/harddrive.img $(BUILD)/livedisk.iso
 	$(MAKE) all
 
 rebuild:
