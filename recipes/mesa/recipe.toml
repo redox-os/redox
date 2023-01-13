@@ -57,7 +57,8 @@ meson "${COOKBOOK_SOURCE}" . \
     -Dshared-glapi=disabled
 ninja -v
 DESTDIR="${COOKBOOK_STAGE}" ninja install
+
 # Hack to add LLVM libs
 #TODO: only add necessary LLVM libs, not all of them
-sed -i "s/ -lOSMesa / -lOSMesa $("${TARGET}-llvm-config" --libs) /" "${COOKBOOK_STAGE}/lib/pkgconfig/osmesa.pc"
+sed -i "s/ -lOSMesa / -lOSMesa $("${TARGET}-llvm-config" --libs) -lstdc++ /" "${COOKBOOK_STAGE}/lib/pkgconfig/osmesa.pc"
 """
