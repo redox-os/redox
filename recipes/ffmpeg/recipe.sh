@@ -1,7 +1,7 @@
 VERSION=4.0
 GIT=https://github.com/FFmpeg/FFmpeg
 BRANCH=release/$VERSION
-BUILD_DEPENDS=(zlib)
+BUILD_DEPENDS=(liborbital llvm mesa sdl2 zlib)
 
 function recipe_version {
     echo "$VERSION"
@@ -9,9 +9,8 @@ function recipe_version {
 }
 
 function recipe_build {
-    sysroot="$PWD/../sysroot"
-    export CPPFLAGS="-I$sysroot/include"
-    export LDFLAGS="-L$sysroot/lib -static"
+    export CPPFLAGS="-I${COOKBOOK_SYSROOT}/include"
+    export LDFLAGS="-L${COOKBOOK_SYSROOT}/lib -static"
     ./configure \
         --enable-cross-compile \
         --target-os=redox \
@@ -19,6 +18,7 @@ function recipe_build {
         --cross_prefix=${HOST}- \
         --prefix=/ \
         --disable-network \
+        --enable-sdl2 \
         --enable-zlib \
         --enable-encoder=png \
         --enable-decoder=png
