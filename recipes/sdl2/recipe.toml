@@ -25,4 +25,7 @@ COOKBOOK_CONFIGURE_FLAGS=(
     --enable-cdrom
 )
 cookbook_configure
+
+# Hack to add OSMesa
+sed -i "s/Requires:/Requires: osmesa >= 8.0.0/" "${COOKBOOK_STAGE}/lib/pkgconfig/sdl2.pc"
 """
