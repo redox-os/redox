@@ -1,5 +1,5 @@
 VERSION=1.8.4
-TAR=https://sourceforge.net/projects/sdl-sopwith/files/sdl_sopwith/$VERSION/sopwith-$VERSION.tar.gz
+TAR=https://sourceforge.net/projects/sdl-sopwith/files/sdl_sopwith/$VERSION/sopwith-$VERSION.tar.gz/download
 BUILD_DEPENDS=(sdl liborbital libiconv)
 
 function recipe_version {
