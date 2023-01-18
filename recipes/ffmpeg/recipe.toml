@@ -1,0 +1,31 @@
+[source]
+tar = "https://ffmpeg.org/releases/ffmpeg-5.1.2.tar.xz"
+patches = [
+    "ffmpeg.patch"
+]
+
+[build]
+template = "custom"
+dependencies = [
+    "liborbital",
+    "llvm",
+    "mesa",
+    "sdl2",
+    "zlib",
+]
+script = """
+ARCH="${TARGET%%-*}"
+COOKBOOK_CONFIGURE_FLAGS=(
+    --enable-cross-compile
+    --target-os=redox
+    --arch="${ARCH}"
+    --cross_prefix="${TARGET}-"
+    --prefix=/
+    --disable-network
+    --enable-sdl2
+    --enable-zlib
+    --enable-encoder=png
+    --enable-decoder=png
+)
+cookbook_configure
+"""
