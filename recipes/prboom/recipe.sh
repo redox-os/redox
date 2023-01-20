@@ -17,9 +17,10 @@ function recipe_build {
         --prefix=/ \
         --build=${BUILD} \
         --host=${HOST} \
-        --disable-sdltest \
         --disable-cpu-opt \
+        --disable-i386-asm \
         --disable-gl \
+        --disable-sdltest \
         --without-net \
         --with-sdl-prefix="$sysroot" \
         ac_cv_lib_SDL_mixer_Mix_OpenAudio=yes
