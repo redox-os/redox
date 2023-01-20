@@ -90,6 +90,8 @@ endif
 
 ifeq ($(vga),no)
 	QEMUFLAGS+=-nographic -vga none
+else ifeq ($(vga),multi)
+	QEMUFLAGS+=-display sdl -vga std -device secondary-vga
 endif
 
 ifneq ($(usb),no)
