@@ -1,9 +1,5 @@
 [source]
-tar = "https://www.libsdl.org/release/SDL-1.2.15.tar.gz"
-patches = [
-    "redox.patch"
-]
-script = "./autogen.sh"
+git = "https://gitlab.redox-os.org/redox-os/sdl1.2.git"
 
 [build]
 template = "custom"
