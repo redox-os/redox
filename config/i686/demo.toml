@@ -25,7 +25,7 @@
 # General settings
 [general]
 # Filesystem size in MiB
-filesystem_size = 512
+filesystem_size = 256
 # Do not prompt if settings are not defined
 prompt = false
 
@@ -66,7 +66,8 @@ smith = {}
 userutils = {}
 uutils = {}
 
-#TODO: Add demos
+freedoom = {}
+prboom = {}
 
 # User settings
 [users.root]
