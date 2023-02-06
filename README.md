@@ -83,7 +83,7 @@ Sometimes things go wrong when compiling. Try the following before opening an is
 1. Update **GNU Make**, **NASM** and **QEMU/VirtualBox**.
 1. Pull the upstream master branch (`git remote add upstream git@gitlab.redox-os.org:redox-os/redox.git; git pull upstream master`).
 1. Update submodules (`git submodule update --recursive --init`).
-1. Rebuild `make rebuild`
+1. Rebuild with `make rebuild`
 
 ## <a name="contributing"> Contributing to Redox </a>
 
@@ -161,14 +161,14 @@ make qemu kvm=no vga=no
 ### <a name="setup-using-docker"> Setup using Docker </a>
 We also provide docker image. After cloning this repository, please follow README under the `docker` directory.
 
-### Updating the codebase using the Makefile
+### Update the codebase using the Makefile
 To update the codebase run:
 
 `make pull; make fetch`
 
 `make pull` pulls and updates the submodules, and `make fetch` updates the sources for cookbook recipes.
 
-### Updating the codebase and compile
+### Update the codebase and compile new changes
 Run:
 
 `make rebuild`
