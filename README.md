@@ -78,17 +78,16 @@ The ecosystem and software Redox OS provides is listed below.
 Sometimes things go wrong when compiling. Try the following before opening an issue:
 
 1. Run `rustup update`
-1. Run `make clean pull`.
+1. Run `make clean pull`
 1. Make sure you have **the latest version of Rust nightly!** ([rustup.rs](https://www.rustup.rs) is recommended for managing Rust versions. If you already have it, run `rustup`).
 1. Update **GNU Make**, **NASM** and **QEMU/VirtualBox**.
 1. Pull the upstream master branch (`git remote add upstream git@gitlab.redox-os.org:redox-os/redox.git; git pull upstream master`).
 1. Update submodules (`git submodule update --recursive --init`).
-
-and then rebuild!
+1. Rebuild `make rebuild`
 
 ## <a name="contributing"> Contributing to Redox </a>
 
-If you're interested in this project, and you'd like to help us out, [here](CONTRIBUTING.md) is a list of ways you can do just that.
+If you're interested in this project, and you'd like to help us out, [here](https://doc.redox-os.org/book/ch10-02-low-hanging-fruit.html) is a list of ways you can do just that.
 
 ## <a name="cloning-building-running"> Cloning, Building and Running </a>
 
@@ -165,8 +164,11 @@ We also provide docker image. After cloning this repository, please follow READM
 ### Updating the codebase using the Makefile
 To update the codebase run:
 
-```
-make pull; make fetch
-```
+`make pull; make fetch`
 
 `make pull` pulls and updates the submodules, and `make fetch` updates the sources for cookbook recipes.
+
+### Updating the codebase and compile
+Run:
+
+`make rebuild`
