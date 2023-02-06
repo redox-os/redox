@@ -13,7 +13,6 @@ _**Thank you for your interest in contributing to Redox!** This document will ou
  * [News](#news)
 * [Code Contributions](#code-contributions)
  * [Low-Hanging Fruit - Easy Targets for Newbies](#easy-targets)
- * [Creating a Pull Request](#creating-a-pr)
 * [Best Practices/Guidelines](#best-practices)
  * [General](#general)
  * [Kernel](#kernel)
@@ -35,7 +34,11 @@ _**Thank you for your interest in contributing to Redox!** This document will ou
 
 ### <a name="chat"> Chat </a>
 
-The quickest and most open way to **communicate with the Redox team** is on our **chat server**. Currently, you can only get an invite by sending an email request to [info@redox-os.org](mailto:info@redox-os.org), which might take a little while, since it's not automated. Simply say you'd like to join the chat. We're working on an better way to do this, but this is the best way right now.
+- [Redox Dev room]
+- [Redox Support room]
+
+[Redox Dev room]: https://matrix.to/#/#redox-dev:matrix.org
+[Redox Support room]: https://matrix.to/#/#redox-support:matrix.org
 
 ### <a name="issues"> GitLab Issues </a>
 
@@ -43,7 +46,7 @@ A bit more formal way of communication with fellow Redox devs, but a little less
 
 ### <a name="prs"> Pull Requests </a>
 
-It's fine to just submit a small pull request without first making an issue or asking in the chat, **unless** it's a significant change that will require a lot of planning and reviewing. Also see [Creating a Pull Request](#creating-a-pr) and [Git Style Guidelines](#git-style-guidelines).
+[How to make pull requests properly]: https://doc.redox-os.org/book/ch12-04-creating-proper-pull-requests.html
 
 ### <a name="discourse"> Discourse </a>
 
@@ -80,47 +83,6 @@ News and updates for Redox are posted at [redox-os.org/news](https://redox-os.or
  * Familiarize yourself with the repository and codebase
  * Grep for `TODO`, `FIXME`, `BUG`, `UNOPTIMIZED`, `REWRITEME`, `DOCME`, and `PRETTYFYME` and fix the code you find.
  * **Improve and optimize code, especially in the kernel**
-
-### <a name="creating-a-pr"> Creating a Pull Request </a>
-
-**1**. _**Fork**_ the repository
-
-**2**. Clone the _original repository_ to your local PC using one of the following commands based on the protocol you are using:
- * HTTPS:`git clone https://gitlab.redox-os.org/redox-os/redox.git --origin upstream --recursive`
- * SSH:`git clone git@gitlab.redox-os.org:redox-os/redox.git --origin upstream --recursive`
- * Then rebase: `git rebase upstream master`
- If you use HTTPS, you will have to log in each time when pushing to your fork. (Recommended: learn about git SSH support, it logs in automatically using SSH keys)
- 
-**3**. **Add** your fork with
- * HTTPS:`git remote add origin https://gitlab.redox-os.org/your-username/redox.git`
- * SSH:`git remote add origin git@gitlab.redox-os.org:your-username/redox.git`
- 
-**4**. Alternatively, if you already have a fork and copy of the repo, you can simply check to **make sure you're up-to-date**
- * Pull the upstream:`git pull upstream --rebase`
- * Update the submodules:`git submodule update --recursive --init`
- 
-**5**. Create a _**separate branch**_ (recommended if you're making multiple changes simultaneously) (`git checkout -b my-branch`)
-
-**6**. _Make changes_
-
-**7**. **Commit** (`git add <item(s) you changed>; git commit`) and write your commit message
-
-**8**. Optionally run [rustfmt](https://github.com/rust-lang-nursery/rustfmt) on the _files you changed_ and commit again if it did anything (check with `git diff` first)
-
-**9**. Test your changes by **cleaning** (`make clean; git clean -Xfd`) and **building** with `make qemu` (you might have to use `make qemu kvm=no`) or `make virtualbox`.
-(see [Best Practices and Guidelines](#best-practices))
-
-**10**. _**Pull**_ from upstream (`git pull upstream --rebase`) (Note: Make sure to include `--rebase`, as it will apply your changes on top of the changes you just pulled, allowing for a much cleaner merge)
-
-**11**. Repeat step **9** to make sure the rebase still builds and starts
-
-**12**. Push to **your fork** (`git push origin <branch>`), `<branch>` being the branch you created earlier
-
-**13**. Create a _pull request_
-
-**14**. If your changes are _minor_, you can just describe them in a paragraph or less. If they're _major_, please fill out the provided form.
-
-**15. Submit!**
 
 ## <a name="best-practices"> Best Practices and Guidelines </a>
 
