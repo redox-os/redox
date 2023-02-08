@@ -10,10 +10,8 @@ The website can be found at https://www.redox-os.org. For hardware compatibility
 
 Please make sure you use the **latest nightly** of `rustc` before building (for more troubleshooting, see ["Help! Redox won't compile!"](#compile-help)).
 
-[![Travis Build Status](https://travis-ci.org/redox-os/redox.svg?branch=master)](https://travis-ci.org/redox-os/redox)
 [![Downloads](https://img.shields.io/github/downloads/redox-os/redox/total.svg)](https://gitlab.redox-os.org/redox-os/redox/tags)
 [![MIT licensed](https://img.shields.io/badge/license-MIT-blue.svg)](./LICENSE)
-![Rust Version](https://img.shields.io/badge/rust-nightly%202017--10--03-lightgrey.svg)
 
 ## Contents
 
@@ -24,6 +22,7 @@ Please make sure you use the **latest nightly** of `rustc` before building (for 
 * [Cloning, Building and running](#cloning-building-running)
  * [Quick Setup](#quick-setup)
  * [Manual Setup](#manual-setup)
+ * [Setup Using Podman](setup-using-podman)
  * [Setup Using Docker](#setup-using-docker)
 
 ## <a name="screenshots"> What it looks like </a>
@@ -64,13 +63,12 @@ The ecosystem and software Redox OS provides is listed below.
 | [pkgutils (current package manager)](https://gitlab.redox-os.org/redox-os/pkgutils)  | **@jackpot51**
 | [ralloc](https://gitlab.redox-os.org/redox-os/ralloc)                                | **@Tommoa** **@NilSet**
 | [RANSID (Rust ANSI driver)](https://gitlab.redox-os.org/redox-os/ransid)             | **@jackpot51**
-| [redoxfs (old filesystem)](https://gitlab.redox-os.org/redox-os/redoxfs)             | **@jackpot51**
+| [redoxfs (default filesystem)](https://gitlab.redox-os.org/redox-os/redoxfs)             | **@jackpot51**
 | [relibc (C Library in Rust)](https://gitlab.redox-os.org/redox-os/relibc)            | **@jD91mZM2** **@sajattack** **@Tommoa** **@stratact**
 | [small (stack String and other collections)](https://gitlab.redox-os.org/redox-os/small) | **@Tommoa**
 | [syscall](https://gitlab.redox-os.org/redox-os/syscall)                              | **@jackpot51**
 | [Sodium (Vim-inspired text editor)](https://gitlab.redox-os.org/redox-os/sodium)     | **vacant**
-| [TFS ((ticki) **T**he **F**ile **S**ystem)](https://gitlab.redox-os.org/redox-os/tfs) | **@Tommoa**
-| [The Redox book](https://gitlab.redox-os.org/redox-os/book)                          | **vacant**
+| [The Redox book](https://gitlab.redox-os.org/redox-os/book)                          |    **@hatred_45**
 | [userutils](https://gitlab.redox-os.org/redox-os/userutils)                          | **@jackpot51**
 
 ## <a name="compile-help"> Help! Redox won't compile! </a>
@@ -78,16 +76,17 @@ The ecosystem and software Redox OS provides is listed below.
 Sometimes things go wrong when compiling. Try the following before opening an issue:
 
 1. Run `rustup update`
-1. Run `make clean pull`
+1. Run `make clean pull`.
 1. Make sure you have **the latest version of Rust nightly!** ([rustup.rs](https://www.rustup.rs) is recommended for managing Rust versions. If you already have it, run `rustup`).
 1. Update **GNU Make**, **NASM** and **QEMU/VirtualBox**.
 1. Pull the upstream master branch (`git remote add upstream git@gitlab.redox-os.org:redox-os/redox.git; git pull upstream master`).
 1. Update submodules (`git submodule update --recursive --init`).
-1. Rebuild with `make rebuild`
+
+and then rebuild!
 
 ## <a name="contributing"> Contributing to Redox </a>
 
-If you're interested in this project, and you'd like to help us out, [here](https://doc.redox-os.org/book/ch10-02-low-hanging-fruit.html) is a list of ways you can do just that.
+If you're interested in this project, and you'd like to help us out, [here](CONTRIBUTING.md) is a list of ways you can do just that.
 
 ## <a name="cloning-building-running"> Cloning, Building and Running </a>
 
@@ -157,18 +156,18 @@ $ make qemu kvm=no
 # Launch using QEMU without using KVM (Kernel-based Virtual Machine) nor Graphics
 make qemu kvm=no vga=no
 ```
+### <a name="setup-using-podman"> Setup using Podman </a>
+
+[Redox Book instructions]
+
+[Redox Book instructions]: https://doc.redox-os.org/book/ch02-06-podman-build.html
 
 ### <a name="setup-using-docker"> Setup using Docker </a>
 We also provide docker image. After cloning this repository, please follow README under the `docker` directory.
 
-### Update the codebase using the Makefile
-To update the codebase run:
+### Updating the codebase using the Makefile
+To update the codebase, run:
 
-`make pull; make fetch`
+- `make pull; make fetch`
 
-`make pull` pulls and updates the submodules, and `make fetch` updates the sources for cookbook recipes.
-
-### Update the codebase and compile new changes
-Run:
-
-`make rebuild`
+- `make pull` pulls and updates the submodules, and `make fetch` updates the sources for cookbook recipes.
