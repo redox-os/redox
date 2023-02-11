@@ -1,4 +1,5 @@
 [llvm]
+download-ci-llvm = false
 static-libstdcpp = true
 
 [build]
