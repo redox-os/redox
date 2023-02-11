@@ -151,6 +151,7 @@ else
 	"$</configure" \
 		--prefix="/" \
 		--disable-docs \
+		--disable-download-ci-llvm \
 		--enable-cargo-native-static \
 		--enable-extended \
 		--enable-lld \
@@ -240,6 +241,7 @@ else
 	"$</configure" \
 		--prefix="/" \
 		--disable-docs \
+		--disable-download-ci-llvm \
 		--enable-cargo-native-static \
 		--enable-dist-src \
 		--enable-extended \
