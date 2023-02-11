@@ -5,7 +5,9 @@ branch = "redox-2023-01-21"
 
 [build]
 template = "custom"
-dependencies = []
+dependencies = [
+    "zlib"
+]
 script = """
 COOKBOOK_CONFIGURE="cmake"
 COOKBOOK_CONFIGURE_FLAGS=(
@@ -28,6 +30,7 @@ COOKBOOK_CONFIGURE_FLAGS=(
     -DLLVM_ENABLE_LTO=Off
     -DLLVM_ENABLE_RTTI=On
     -DLLVM_ENABLE_THREADS=On
+    -DLLVM_ENABLE_ZSTD=Off
     -DLLVM_INCLUDE_BENCHMARKS=Off
     -DLLVM_INCLUDE_EXAMPLES=Off
     -DLLVM_INCLUDE_TESTS=Off
@@ -47,6 +50,8 @@ COOKBOOK_CONFIGURE_FLAGS=(
     -DLLVM_UTILS_INSTALL_DIR=bin
     -DPYTHON_EXECUTABLE="/usr/bin/python2"
     -DUNIX=1
+    -DZLIB_LIBRARY=-lz
+    -DZLIB_INCLUDE_DIR="${COOKBOOK_SYSROOT}/include"
     -Wno-dev
     "${COOKBOOK_SOURCE}/llvm"
 )
