@@ -1,5 +1,5 @@
 VERSION=20140305
-TAR=http://invisible-island.net/datafiles/release/vttest.tar.gz
+TAR="https://invisible-island.net/archives/vttest/vttest-${VERSION}.tgz"
 
 function recipe_version {
     echo "$VERSION"
