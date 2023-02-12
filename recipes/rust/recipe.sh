@@ -23,6 +23,7 @@ function recipe_clean {
 function recipe_stage {
     rsync -av --delete "install/" "$1/"
     # Cannot use STRIP because it is unset in recipe_build
-    "${HOST}-strip" -v "$1/bin/"{rustc,rustdoc}
+    #TODO: rustdoc
+    "${HOST}-strip" -v "$1/bin/rustc"
     skip=1
 }
