@@ -88,6 +88,7 @@ winit = {}
 # dev
 autoconf = {}
 automake = {}
+cargo = {}
 gcc = {}
 gnu-binutils = {}
 gnu-make = {}
