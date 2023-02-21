@@ -30,7 +30,6 @@ RUN set -ex;                                                                   \
         x86-64-unknown-redox-binutils                                          \
         x86-64-unknown-redox-gcc                                               \
         ;                                                                      \
-    cargo install xargo;                                                       \
     cargo install cargo-config;                                                \
     apt-get autoremove -q -y;                                                  \
     apt-get clean -q -y;                                                       \
