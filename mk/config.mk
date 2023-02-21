@@ -53,7 +53,6 @@ endif
 # Automatic variables
 ROOT=$(CURDIR)
 export RUST_COMPILER_RT_ROOT=$(ROOT)/rust/src/llvm-project/compiler-rt
-export XARGO_RUST_SRC=$(ROOT)/rust/src
 
 ## Userspace variables
 export TARGET=$(ARCH)-unknown-redox

@@ -626,7 +626,6 @@ else
 fi
 
 cargoInstall cargo-config 0.1.1
-cargoInstall xargo 0.3.20
 
 if [ "$dependenciesonly" = false ]; then
 	boot
