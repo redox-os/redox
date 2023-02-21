@@ -14,5 +14,3 @@ for recipe in $recipes
 do
     ./cook.sh "$recipe" distclean
 done
-
-rm -rf xargo

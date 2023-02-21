@@ -4,7 +4,6 @@ CARGOFLAGS="--example gui"
 
 function recipe_build {
     sysroot="$(realpath ../sysroot)"
-    cp -p "$ROOT/Xargo.toml" "Xargo.toml"
     cargo rustc --target "$TARGET" --release ${CARGOFLAGS} \
         -- \
         -L "${sysroot}/lib" \

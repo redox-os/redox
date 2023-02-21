@@ -13,7 +13,6 @@ HOST="$TARGET"
 ROOT="$(cd `dirname "$0"` && pwd)"
 REPO="$ROOT/repo/$TARGET"
 export PATH="${ROOT}/bin:$PATH"
-export XARGO_HOME="${ROOT}/xargo"
 
 export AR="${HOST}-gcc-ar"
 export AS="${HOST}-as"

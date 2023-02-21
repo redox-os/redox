@@ -235,7 +235,6 @@ function op {
 
             if [ "$skip" -eq "0" ]
             then
-                cp -p "$ROOT/Xargo.toml" "Xargo.toml"
                 "${CARGO[@]}" "$CARGOBUILD" --target "$TARGET" $release_flag $package_flag $CARGOFLAGS
             fi
             popd > /dev/null
