@@ -7,19 +7,10 @@ _**Thank you for your interest in contributing to Redox!** This document will ou
 - [Code Of Conduct](#code-of-conduct)
 - [License](#license)
 - [Communication](#communication)
- - [Chat](#chat)
- - [GitLab Issues](#gitlab-issues)
- - [Pull Requests](#pull-requests)
 - [Low-Hanging Fruit - Easy Targets for Newbies](#low-hanging-fruit-easy-targets-for-newbies)
 - [Best Practices/Guidelines](#best-practices-and-guidelines)
- - [General](#general)
- - [Testing Practices](#testing-practices)
 - [Style Guidelines](#style-guidelines)
- - [Rust](#rust)
- - [Git](#git)
 - [Other Ways to Contribute](#other-ways-to-contribute)
- - [Design](#design)
- - [Donate to Redox](#donate-to-redox)
 
 ## Other External Links
 
@@ -81,10 +72,6 @@ For those who want to contribute to the Redox GUI, our GUI strategy has recently
  * OrbTk is now sunsetting, and its developers have moved to other projects such as the ones below. There is currently no Redox-specific GUI development underway.
  * Redox is in the process of adopting other Rust-lang GUIs such as [Iced](https://iced.rs) and [Slint](https://slint-ui.com/). Please check out those projects if this is your area of interest.
 
-## Book ToDos
-
-- [Book README](https://gitlab.redox-os.org/redox-os/book/-/blob/master/README.md)
-
 ## Best Practices and Guidelines
 
 - [Redox Book Guide](https://doc.redox-os.org/book/ch11-00-best-practices.html)
@@ -106,6 +93,10 @@ Please follow [how to create a proper pull request](https://doc.redox-os.org/boo
 ## Other Ways to Contribute
 
 If you're not big on coding, but you still want to help keep the project going, you can still contribute/support in a variety of ways! We'll try to find a way to use anything you have to offer. 
+
+### Book ToDos
+
+- [Book README](https://gitlab.redox-os.org/redox-os/book/-/blob/master/README.md)
 
 ### Design
 
