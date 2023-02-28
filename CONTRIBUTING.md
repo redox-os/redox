@@ -5,6 +5,7 @@ _**Thank you for your interest in contributing to Redox!** This document will ou
 ## Index
 
 - [Code Of Conduct](#code-of-conduct)
+- [License](#license)
 - [Communication](#communication)
  - [Chat](#chat)
  - [GitLab Issues](#gitlab-issues)
@@ -29,6 +30,12 @@ _**Thank you for your interest in contributing to Redox!** This document will ou
 ## Code Of Conduct
 
 We follow the [Rust Code Of Conduct](https://www.rust-lang.org/policies/code-of-conduct).
+
+## License
+
+All contributions are under the MIT license.
+
+- [Our Philosophy](https://doc.redox-os.org/book/ch01-02-philosophy.html)
 
 ## Communication
 
