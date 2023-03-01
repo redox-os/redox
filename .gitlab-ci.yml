@@ -6,6 +6,7 @@ variables:
 img:
     script:
      - |
+        curl https://sh.rustup.rs -sSf | sh -s -- -y --default-toolchain none &&
         ./bootstrap.sh -d &&
         source "$HOME/.cargo/env" &&
         make ci-img IMG_TAG=$CI_COMMIT_REF_NAME
