@@ -1,42 +1,13 @@
-image: "ubuntu:20.04"
+image: "ubuntu:22.04"
 
 variables:
-  GIT_STRATEGY: "pull"
   GIT_SUBMODULE_STRATEGY: "recursive"
-  GIT_CHECKOUT: "true"
-
-before_script:
- - |
-    export DEBIAN_FRONTEND=noninteractive
-    apt-get update -qq &&
-    apt-get install -qq \
-        bison \
-        build-essential \
-        curl \
-        dosfstools \
-        flex \
-        fuse \
-        genisoimage \
-        git \
-        gnupg \
-        libfuse-dev \
-        nasm \
-        parted \
-        pkg-config \
-        software-properties-common \
-        syslinux \
-        syslinux-utils \
-        texinfo \
-        wget &&
-    curl https://sh.rustup.rs -sSf | sh -s -- -y --default-toolchain none
 
 img:
     script:
      - |
+        ./bootstrap -d &&
         source "$HOME/.cargo/env" &&
-        cargo install --version 0.1.1 cargo-config &&
-        cargo install cargo-xbuild &&
-        cargo install --version 0.3.20 xargo &&
         make ci-img IMG_TAG=$CI_COMMIT_REF_NAME
     artifacts:
         paths:
