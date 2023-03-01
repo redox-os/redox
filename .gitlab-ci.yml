@@ -7,8 +7,8 @@ variables:
 img:
     script:
      - |
-        sudo apt-get update -qq &&
-        sudo apt-get install -qq -y curl &&
+        apt-get update -qq &&
+        apt-get install -qq -y curl &&
         curl https://sh.rustup.rs -sSf | sh -s -- -y --default-toolchain none &&
         ./bootstrap.sh -d &&
         source "$HOME/.cargo/env" &&
