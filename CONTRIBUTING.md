@@ -28,7 +28,7 @@ You can contribute to Redox documentation/code on these repositories:
 - [Drivers](https://gitlab.redox-os.org/redox-os/drivers)
 - [Kernel](https://gitlab.redox-os.org/redox-os/kernel)
 
-### Low-Hanging Fruit - Easy Targets for Newbies
+### Easy Targets
 
 If you're not fluent in Rust:
 
