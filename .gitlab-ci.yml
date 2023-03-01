@@ -10,8 +10,8 @@ img:
         apt-get update -qq &&
         apt-get install -qq -y curl &&
         curl https://sh.rustup.rs -sSf | sh -s -- -y --default-toolchain none &&
-        ./bootstrap.sh -d &&
         source "$HOME/.cargo/env" &&
+        ./bootstrap.sh -d &&
         make ci-img IMG_TAG=$CI_COMMIT_REF_NAME
     artifacts:
         paths:
