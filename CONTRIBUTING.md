@@ -34,15 +34,15 @@ If you're not fluent in Rust:
 
  * Writing documentation
  * Using/testing Redox, filing issues for bugs and needed features
- * Web development ([Redox website, separate repo](https://gitlab.redox-os.org/redox-os/website))
- * Writing unit tests (may require minimal knowledge of rust)
+ * Web development ([Redox website repository](https://gitlab.redox-os.org/redox-os/website))
+ * Writing unit tests (may require minimal knowledge of Rust)
 
 If you are fluent in Rust, but not OS Development:
 
  * Port applications written in Rust to Redox
  * Rewritten-in-Rust libc ([relibc](https://gitlab.redox-os.org/redox-os/relibc))
  * Shell ([Ion](https://gitlab.redox-os.org/redox-os/ion))
- * Package manager ([pkgutils](https://gitlab.redox-os.org/redox-os/pkgutils))
+ * Package Manager ([pkgutils](https://gitlab.redox-os.org/redox-os/pkgutils))
 
 If you are fluent in Rust, and have experience with OS Dev:
 
