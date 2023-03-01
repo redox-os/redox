@@ -4,14 +4,36 @@ variables:
   GIT_STRATEGY: "clone"
   GIT_SUBMODULE_STRATEGY: "recursive"
 
+before_script:
+ - |
+    export DEBIAN_FRONTEND=noninteractive
+    apt-get update -qq &&
+    apt-get install -qq \
+        bison \
+        build-essential \
+        curl \
+        dosfstools \
+        flex \
+        fuse \
+        genisoimage \
+        git \
+        gnupg \
+        libfuse-dev \
+        nasm \
+        parted \
+        pkg-config \
+        software-properties-common \
+        syslinux \
+        syslinux-utils \
+        texinfo \
+        wget &&
+    curl https://sh.rustup.rs -sSf | sh -s -- -y --default-toolchain none
+
 img:
     script:
      - |
-        apt-get update -qq &&
-        apt-get install -qq -y curl &&
-        curl https://sh.rustup.rs -sSf | sh -s -- -y --default-toolchain none &&
         source "$HOME/.cargo/env" &&
-        ./bootstrap.sh -d &&
+        cargo install --version 0.1.1 cargo-config &&
         make ci-img IMG_TAG=$CI_COMMIT_REF_NAME
     artifacts:
         paths:
