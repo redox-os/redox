@@ -47,6 +47,7 @@ fontconfig = {}
 #freeciv = {}
 freedoom = {}
 #freeglut = {}
+freepats = {}
 freetype = {}
 #friar = {} # mio patch
 fribidi = {}
