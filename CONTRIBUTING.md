@@ -34,7 +34,7 @@ If you're not fluent in Rust:
 
  * Writing documentation
  * Using/testing Redox, filing issues for bugs and needed features
- * Web development ([Redox website repository](https://gitlab.redox-os.org/redox-os/website))
+ * Web development ([Redox website](https://gitlab.redox-os.org/redox-os/website))
  * Writing unit tests (may require minimal knowledge of Rust)
 
 If you are fluent in Rust, but not OS Development:
@@ -58,8 +58,8 @@ For those who want to contribute to the Redox GUI, our GUI strategy has recently
 
 ## Best Practices and Guidelines
 
-- [Redox Book Guide](https://doc.redox-os.org/book/ch11-00-best-practices.html)
-- [Redox Book Guide](https://doc.redox-os.org/book/ch09-03-testing-practices.html)
+- [Best Practices](https://doc.redox-os.org/book/ch11-00-best-practices.html)
+- [Testing Practices](https://doc.redox-os.org/book/ch09-03-testing-practices.html)
 
 ## Style Guidelines
 
