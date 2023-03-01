@@ -1,7 +1,6 @@
 image: "ubuntu:22.04"
 
 variables:
-  GIT_STRATEGY: "clone"
   GIT_SUBMODULE_STRATEGY: "recursive"
 
 img:
