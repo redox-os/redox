@@ -8,7 +8,9 @@ We follow the [Rust Code Of Conduct](https://www.rust-lang.org/policies/code-of-
 
 ## License
 
-All contributions are under the MIT license.
+In general, your contributions to Redox are governed by the MIT License. Each project repository has a LICENSE file that provides the license terms for that project.
+
+Please review the LICENSE for the project you are contributing to.
 
 - [Our Philosophy](https://doc.redox-os.org/book/ch01-02-philosophy.html)
 
