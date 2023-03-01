@@ -2,31 +2,6 @@
 
 _**Thank you for your interest in contributing to Redox!** This document will outline the basics of where to start if you wish to contribute to the project. There are many ways to help us out and and we appreciate all of them. We look forward to **your contribution**!_
 
-## Index
-
-- [Code Of Conduct](#code-of-conduct)
-- [License](#license)
-- [Communication](#communication)
- - [Chat](#chat)
- - [GitLab Issues](#gitlab-issues)
- - [Pull Requests](#pull-requests)
-- [Low-Hanging Fruit - Easy Targets for Newbies](#low-hanging-fruit-easy-targets-for-newbies)
-- [Best Practices/Guidelines](#best-practices-and-guidelines)
- - [General](#general)
- - [Testing Practices](#testing-practices)
-- [Style Guidelines](#style-guidelines)
- - [Rust](#rust)
- - [Git](#git)
-- [Other Ways to Contribute](#other-ways-to-contribute)
- - [Design](#design)
- - [Donate to Redox](#donate-to-redox)
-
-## Other External Links
-
-* [redox-os.org](https://redox-os.org)
-* [rust-os-comparison](https://github.com/flosse/rust-os-comparison)
-* [rust-lang.org](http://rust-lang.org)
-
 ## Code Of Conduct
 
 We follow the [Rust Code Of Conduct](https://www.rust-lang.org/policies/code-of-conduct).
@@ -37,25 +12,48 @@ All contributions are under the MIT license.
 
 - [Our Philosophy](https://doc.redox-os.org/book/ch01-02-philosophy.html)
 
-## Communication
-
-### Chat
-
-Join us on [Matrix Chat](https://doc.redox-os.org/book/ch13-01-chat.html) to discuss issues or ask questions.
-
-### GitLab Issues
-
-You will need to have a Redox GitLab account to file an issue, and registration can take a few days.
-
-- [Redox Book Guide](https://doc.redox-os.org/book/ch13-03-gitlab-issues.html)
-
-### Pull Requests
-
-Please follow our process for [creating proper pull requests](https://doc.redox-os.org/book/ch12-04-creating-proper-pull-requests.html).
-
 ## Low-Hanging Fruit - Easy Targets for Newbies
 
-- [Redox Book Guide](https://doc.redox-os.org/book/ch10-02-low-hanging-fruit.html)
+If you're not fluent in Rust:
+
+ * Writing documentation
+ * Using/testing Redox, filing issues for bugs and needed features
+ * Web development ([Redox website, separate repo](https://gitlab.redox-os.org/redox-os/website))
+ * Writing unit tests (may require minimal knowledge of rust)
+
+If you are fluent in Rust, but not OS Development:
+
+ * Port applications written in Rust to Redox
+ * Rewritten-in-Rust libc ([relibc](https://gitlab.redox-os.org/redox-os/relibc))
+ * Shell ([Ion](https://gitlab.redox-os.org/redox-os/ion))
+ * Package manager ([pkgutils](https://gitlab.redox-os.org/redox-os/pkgutils))
+
+If you are fluent in Rust, and have experience with OS Dev:
+
+ * Familiarize yourself with the repository and codebase
+ * Grep for `TODO`, `FIXME`, `BUG`, `UNOPTIMIZED`, `REWRITEME`, `DOCME`, and `PRETTYFYME` and fix the code you find.
+ * Update older code to remove warnings.
+ * Improve and optimize code, especially in the kernel
+
+For those who want to contribute to the Redox GUI, our GUI strategy has recently changed.
+
+ * OrbTk is now sunsetting, and its developers have moved to other projects such as the ones below. There is currently no Redox-specific GUI development underway.
+ * Redox is in the process of adopting other Rust-lang GUIs such as [Iced](https://iced.rs) and [Slint](https://slint-ui.com/). Please check out those projects if this is your area of interest.
+
+You can contribute to Redox documentation/code on these repositories:
+
+(The order is based on difficulty, easy things first)
+
+- [Website](https://gitlab.redox-os.org/redox-os/website)
+- [Book](https://gitlab.redox-os.org/redox-os/book)
+- [Main Repository (build system/config)](https://gitlab.redox-os.org/redox-os/redox)
+- [Cookbook (all system components/ported software)](https://gitlab.redox-os.org/redox-os/cookbook)
+- [Display Server/Desktop Environment](https://gitlab.redox-os.org/redox-os/orbital)
+- [Orbital Client Library](https://gitlab.redox-os.org/redox-os/orbclient)
+- [Orbital Applications](https://gitlab.redox-os.org/redox-os/orbutils)
+- [Redox C Library](https://gitlab.redox-os.org/redox-os/relibc)
+- [Drivers](https://gitlab.redox-os.org/redox-os/drivers)
+- [Kernel](https://gitlab.redox-os.org/redox-os/kernel)
 
 ## Best Practices and Guidelines
 
@@ -73,11 +71,38 @@ Since **Rust** is a relatively small and new language compared to others like _C
 
 ### Git
 
-Please follow [how to create a proper pull request](https://doc.redox-os.org/book/ch12-04-creating-proper-pull-requests.html).
+Please follow our [Git style for pull requests](https://doc.redox-os.org/book/ch12-04-creating-proper-pull-requests.html).
+
+## GitLab
+
+### Issues
+
+You will need to have a Redox GitLab account to file an issue, and registration can take a few days.
+
+- [Redox Book Guide](https://doc.redox-os.org/book/ch13-03-gitlab-issues.html)
+
+### Pull Requests
+
+Please follow our process for [creating proper pull requests](https://doc.redox-os.org/book/ch12-04-creating-proper-pull-requests.html).
+
+
+## External Links
+
+* [redox-os.org](https://redox-os.org)
+* [rust-os-comparison](https://github.com/flosse/rust-os-comparison)
+* [rust-lang.org](http://rust-lang.org)
+
+## Chat
+
+Join us on [Matrix Chat](https://doc.redox-os.org/book/ch13-01-chat.html) to discuss issues or ask questions.
 
 ## Other Ways to Contribute
 
 If you're not big on coding, but you still want to help keep the project going, you can still contribute/support in a variety of ways! We'll try to find a way to use anything you have to offer. 
+
+### Book ToDos
+
+- [Book README](https://gitlab.redox-os.org/redox-os/book/-/blob/master/README.md)
 
 ### Design
 
