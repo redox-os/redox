@@ -79,7 +79,7 @@ Please follow our [Git style for pull requests](https://doc.redox-os.org/book/ch
 
 You will need to have a Redox GitLab account to file an issue, and registration can take a few days.
 
-- [Redox Book Guide](https://doc.redox-os.org/book/ch13-03-gitlab-issues.html)
+- [Redox Book Guide](https://doc.redox-os.org/book/ch12-05-issues.html)
 
 ### Pull Requests
 
