@@ -17,6 +17,15 @@ Please make sure you use the **latest nightly** of `rustc` before building (for 
 
 See [Redox in Action](https://www.redox-os.org/screens/).
 
+<img alt="Redox" height="150" src="https://gitlab.redox-os.org/redox-os/assets/raw/master/screenshots/Senza%20titolo.jpeg">
+<img alt="Redox" height="150" src="https://gitlab.redox-os.org/redox-os/assets/raw/master/screenshots/redox running.jpeg">
+<img alt="Redox" height="150" src="https://gitlab.redox-os.org/redox-os/assets/raw/master/screenshots/IMG_1460.PNG">
+
+<img alt="Redox" height="150" src="https://gitlab.redox-os.org/redox-os/assets/raw/master/screenshots/Sodium_v2.PNG">
+<img alt="Redox" height="150" src="https://gitlab.redox-os.org/redox-os/assets/raw/master/screenshots/Boot.png">
+<img alt="Redox" height="150" src="https://gitlab.redox-os.org/redox-os/assets/raw/master/screenshots/IMG_1459.PNG">
+
+
 ## Getting Started
 
 Please read the [Getting Started Guide](https://doc.redox-os.org/book/ch02-00-getting-started.html) in the [Redox Book](https://doc.redox-os.org/book/).
