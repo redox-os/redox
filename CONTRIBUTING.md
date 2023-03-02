@@ -59,7 +59,6 @@ For those who want to contribute to the Redox GUI, our GUI strategy has recently
 ## Best Practices and Guidelines
 
 - [Best Practices](https://doc.redox-os.org/book/ch11-00-best-practices.html)
-- [Testing Practices](https://doc.redox-os.org/book/ch09-03-testing-practices.html)
 
 ## Style Guidelines
 
