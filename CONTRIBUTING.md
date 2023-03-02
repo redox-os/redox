@@ -14,6 +14,10 @@ Please review the LICENSE for the project you are contributing to.
 
 - [Our Philosophy](https://doc.redox-os.org/book/ch01-02-philosophy.html)
 
+## Chat
+
+Join us on [Matrix Chat](https://doc.redox-os.org/book/ch13-01-chat.html) to discuss issues or ask questions.
+
 ## Suggestions for Contributions
 
 You can contribute to Redox documentation/code on these repositories:
@@ -88,10 +92,6 @@ Please follow our process for [creating proper pull requests](https://doc.redox-
 * [redox-os.org](https://redox-os.org)
 * [rust-os-comparison](https://github.com/flosse/rust-os-comparison)
 * [rust-lang.org](http://rust-lang.org)
-
-## Chat
-
-Join us on [Matrix Chat](https://doc.redox-os.org/book/ch13-01-chat.html) to discuss issues or ask questions.
 
 ## Other Ways to Contribute
 
