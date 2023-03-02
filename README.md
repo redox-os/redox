@@ -8,8 +8,6 @@ Redox _is not_ just a kernel, it's a **full-featured Operating System**, providi
 
 The website can be found at https://www.redox-os.org. For hardware compatibility, see [HARDWARE.md](HARDWARE.md).
 
-Please make sure you use the **latest nightly** of `rustc` before building (for more troubleshooting, see [Troubleshooting the Build](https://doc.redox-os.org/book/ch08-05-troubleshooting.html)).
-
 [![Downloads](https://img.shields.io/github/downloads/redox-os/redox/total.svg)](https://gitlab.redox-os.org/redox-os/redox/tags)
 [![MIT licensed](https://img.shields.io/badge/license-MIT-blue.svg)](./LICENSE)
 
