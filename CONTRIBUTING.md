@@ -14,21 +14,39 @@ Please review the LICENSE for the project you are contributing to.
 
 - [Our Philosophy](https://doc.redox-os.org/book/ch01-02-philosophy.html)
 
-## Low-Hanging Fruit - Easy Targets for Newbies
+## Chat
+
+Join us on [Matrix Chat](https://doc.redox-os.org/book/ch13-01-chat.html) to discuss issues or ask questions.
+
+## Suggestions for Contributions
+
+You can contribute to Redox documentation/code on these repositories:
+
+(The order is based on difficulty, easy things first)
+
+- [Website](https://gitlab.redox-os.org/redox-os/website)
+- [Book](https://gitlab.redox-os.org/redox-os/book)
+- [Main Repository (build system/config)](https://gitlab.redox-os.org/redox-os/redox)
+- [Cookbook (all system components/ported software)](https://gitlab.redox-os.org/redox-os/cookbook)
+- [Redox C Library](https://gitlab.redox-os.org/redox-os/relibc)
+- [Drivers](https://gitlab.redox-os.org/redox-os/drivers)
+- [Kernel](https://gitlab.redox-os.org/redox-os/kernel)
+
+### Easy Targets
 
 If you're not fluent in Rust:
 
  * Writing documentation
  * Using/testing Redox, filing issues for bugs and needed features
- * Web development ([Redox website, separate repo](https://gitlab.redox-os.org/redox-os/website))
- * Writing unit tests (may require minimal knowledge of rust)
+ * Web development ([Redox website](https://gitlab.redox-os.org/redox-os/website))
+ * Writing unit tests (may require minimal knowledge of Rust)
 
 If you are fluent in Rust, but not OS Development:
 
  * Port applications written in Rust to Redox
  * Rewritten-in-Rust libc ([relibc](https://gitlab.redox-os.org/redox-os/relibc))
  * Shell ([Ion](https://gitlab.redox-os.org/redox-os/ion))
- * Package manager ([pkgutils](https://gitlab.redox-os.org/redox-os/pkgutils))
+ * Package Manager ([pkgutils](https://gitlab.redox-os.org/redox-os/pkgutils))
 
 If you are fluent in Rust, and have experience with OS Dev:
 
@@ -42,28 +60,9 @@ For those who want to contribute to the Redox GUI, our GUI strategy has recently
  * OrbTk is now sunsetting, and its developers have moved to other projects such as the ones below. There is currently no Redox-specific GUI development underway.
  * Redox is in the process of adopting other Rust-lang GUIs such as [Iced](https://iced.rs) and [Slint](https://slint-ui.com/). Please check out those projects if this is your area of interest.
 
-You can contribute to Redox documentation/code on these repositories:
-
-(The order is based on difficulty, easy things first)
-
-- [Website](https://gitlab.redox-os.org/redox-os/website)
-- [Book](https://gitlab.redox-os.org/redox-os/book)
-- [Main Repository (build system/config)](https://gitlab.redox-os.org/redox-os/redox)
-- [Cookbook (all system components/ported software)](https://gitlab.redox-os.org/redox-os/cookbook)
-- [Display Server/Desktop Environment](https://gitlab.redox-os.org/redox-os/orbital)
-- [Orbital Client Library](https://gitlab.redox-os.org/redox-os/orbclient)
-- [Orbital Applications](https://gitlab.redox-os.org/redox-os/orbutils)
-- [Redox C Library](https://gitlab.redox-os.org/redox-os/relibc)
-- [Drivers](https://gitlab.redox-os.org/redox-os/drivers)
-- [Kernel](https://gitlab.redox-os.org/redox-os/kernel)
-
 ## Best Practices and Guidelines
 
-- [Redox Book Guide](https://doc.redox-os.org/book/ch11-00-best-practices.html)
-
-### Testing Practices
-
-- [Redox Book Guide](https://doc.redox-os.org/book/ch09-03-testing-practices.html)
+- [Best Practices](https://doc.redox-os.org/book/ch11-00-best-practices.html)
 
 ## Style Guidelines
 
@@ -93,10 +92,6 @@ Please follow our process for [creating proper pull requests](https://doc.redox-
 * [redox-os.org](https://redox-os.org)
 * [rust-os-comparison](https://github.com/flosse/rust-os-comparison)
 * [rust-lang.org](http://rust-lang.org)
-
-## Chat
-
-Join us on [Matrix Chat](https://doc.redox-os.org/book/ch13-01-chat.html) to discuss issues or ask questions.
 
 ## Other Ways to Contribute
 
