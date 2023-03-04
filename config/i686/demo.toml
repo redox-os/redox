@@ -25,7 +25,7 @@
 # General settings
 [general]
 # Filesystem size in MiB
-filesystem_size = 256
+filesystem_size = 320
 # Do not prompt if settings are not defined
 prompt = false
 
@@ -66,8 +66,14 @@ smith = {}
 userutils = {}
 uutils = {}
 
+# Games
+dosbox = {}
 freedoom = {}
+games = {}
 prboom = {}
+
+# MIDI
+freepats = {}
 
 # User settings
 [users.root]
