@@ -63,6 +63,8 @@ INSTALLER+=--cookbook=cookbook
 REPO_TAG=$(BUILD)/repo.tag
 endif
 
+FSTOOLS_TAG=build/fstools.tag
+
 ## Cross compiler variables
 AR=$(TARGET)-gcc-ar
 AS=$(TARGET)-as

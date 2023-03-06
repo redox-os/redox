@@ -54,6 +54,9 @@ repo: $(BUILD)/repo.tag
 # Podman build recipes and vars
 include mk/podman.mk
 
+# Disk Imaging and Cookbook tools
+include mk/fstools.mk
+
 # Cross compiler recipes
 include mk/prefix.mk
 

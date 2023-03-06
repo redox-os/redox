@@ -1,4 +1,4 @@
-$(BUILD)/harddrive.img: $(REPO_TAG)
+$(BUILD)/harddrive.img: $(FSTOOLS_TAG) $(REPO_TAG)
 	mkdir -p $(BUILD)
 	rm -rf $@  $@.partial
 	-$(FUMOUNT) /tmp/redox_installer || true
@@ -6,7 +6,7 @@ $(BUILD)/harddrive.img: $(REPO_TAG)
 	$(INSTALLER) -c $(FILESYSTEM_CONFIG) $@.partial
 	mv $@.partial $@
 
-$(BUILD)/livedisk.iso: $(REPO_TAG)
+$(BUILD)/livedisk.iso: $(FSTOOLS_TAG) $(REPO_TAG)
 	mkdir -p $(BUILD)
 	rm -rf $@  $@.partial
 	-$(FUMOUNT) /tmp/redox_installer || true
@@ -14,9 +14,8 @@ $(BUILD)/livedisk.iso: $(REPO_TAG)
 	$(INSTALLER) -c $(FILESYSTEM_CONFIG) --live $@.partial
 	mv $@.partial $@
 
-$(BUILD)/filesystem.img: $(REPO_TAG)
+$(BUILD)/filesystem.img: $(FSTOOLS_TAG) $(REPO_TAG)
 	mkdir -p $(BUILD)
-	$(HOST_CARGO) build --manifest-path redoxfs/Cargo.toml --release
 	-$(FUMOUNT) $(BUILD)/filesystem/ || true
 	rm -rf $@  $@.partial $(BUILD)/filesystem/
 	-$(FUMOUNT) /tmp/redox_installer || true
@@ -32,16 +31,14 @@ $(BUILD)/filesystem.img: $(REPO_TAG)
 	rm -rf $(BUILD)/filesystem/
 	mv $@.partial $@
 
-mount: FORCE
+mount: $(FSTOOLS_TAG) FORCE
 	mkdir -p $(BUILD)/filesystem/
-	$(HOST_CARGO) build --manifest-path redoxfs/Cargo.toml --release --bin redoxfs
 	redoxfs/target/release/redoxfs $(BUILD)/harddrive.img $(BUILD)/filesystem/
 	sleep 2
 	pgrep redoxfs
 
-mount_extra: FORCE
+mount_extra: $(FSTOOLS_TAG) FORCE
 	mkdir -p $(BUILD)/filesystem/
-	$(HOST_CARGO) build --manifest-path redoxfs/Cargo.toml --release --bin redoxfs
 	redoxfs/target/release/redoxfs $(BUILD)/extra.img $(BUILD)/filesystem/
 	sleep 2
 	pgrep redoxfs
