@@ -62,8 +62,8 @@ For those who want to contribute to the Redox GUI, our GUI strategy has recently
 
 ## Tracking Issues
 
-- [Missing POSIX APIs in relibc](https://gitlab.redox-os.org/redox-os/relibc/-/issues/173)
-- [Recipes with old config format](https://gitlab.redox-os.org/redox-os/cookbook/-/issues/174)
+- [Missing POSIX APIs in relibc](https://gitlab.redox-os.org/redox-os/relibc/-/issues/173) - high-priority
+- [Recipes with old config format](https://gitlab.redox-os.org/redox-os/cookbook/-/issues/174) - medium-priority
 
 ## Best Practices and Guidelines
 
