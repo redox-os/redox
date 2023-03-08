@@ -32,7 +32,7 @@ You can contribute to Redox documentation/code on these repositories:
 - [Drivers](https://gitlab.redox-os.org/redox-os/drivers)
 - [Kernel](https://gitlab.redox-os.org/redox-os/kernel)
 
-### Easy Targets
+### Important Places to Contribute
 
 If you're not fluent in Rust:
 
@@ -59,6 +59,11 @@ For those who want to contribute to the Redox GUI, our GUI strategy has recently
 
  * OrbTk is now sunsetting, and its developers have moved to other projects such as the ones below. There is currently no Redox-specific GUI development underway.
  * Redox is in the process of adopting other Rust-lang GUIs such as [Iced](https://iced.rs) and [Slint](https://slint-ui.com/). Please check out those projects if this is your area of interest.
+
+## Tracking Issues
+
+- [Missing POSIX APIs in relibc](https://gitlab.redox-os.org/redox-os/relibc/-/issues/173) - high-priority
+- [Recipes with old config format](https://gitlab.redox-os.org/redox-os/cookbook/-/issues/174) - medium-priority
 
 ## Best Practices and Guidelines
 
