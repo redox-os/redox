@@ -36,29 +36,30 @@ You can contribute to Redox documentation/code on these repositories:
 
 If you're not fluent in Rust:
 
- * Writing documentation
- * Using/testing Redox, filing issues for bugs and needed features
- * Web development ([Redox website](https://gitlab.redox-os.org/redox-os/website))
- * Writing unit tests (may require minimal knowledge of Rust)
+ - Write documentation
+ - Use/test Redox, filing issues for bugs and needed features (verify the GitLab issues before)
+ - Web development ([Redox website](https://gitlab.redox-os.org/redox-os/website))
+ - Write unit tests (may require minimal knowledge of Rust)
 
 If you are fluent in Rust, but not OS Development:
 
- * Port applications written in Rust to Redox
- * Rewritten-in-Rust libc ([relibc](https://gitlab.redox-os.org/redox-os/relibc))
- * Shell ([Ion](https://gitlab.redox-os.org/redox-os/ion))
- * Package Manager ([pkgutils](https://gitlab.redox-os.org/redox-os/pkgutils))
+ - Port applications written in Rust to Redox (missing support on relibc will make patches dirty)
+ - Rewritten-in-Rust libc ([relibc](https://gitlab.redox-os.org/redox-os/relibc))
+ - Shell ([Ion](https://gitlab.redox-os.org/redox-os/ion))
+ - Package Manager ([pkgutils](https://gitlab.redox-os.org/redox-os/pkgutils))
 
 If you are fluent in Rust, and have experience with OS Dev:
 
- * Familiarize yourself with the repository and codebase
- * Grep for `TODO`, `FIXME`, `BUG`, `UNOPTIMIZED`, `REWRITEME`, `DOCME`, and `PRETTYFYME` and fix the code you find.
- * Update older code to remove warnings.
- * Improve and optimize code, especially in the kernel
+ - Familiarize yourself with the repository and codebase
+ - Grep for `TODO`, `FIXME`, `BUG`, `UNOPTIMIZED`, `REWRITEME`, `DOCME`, and `PRETTYFYME` and fix the code you find
+ - Update older code to remove warnings
+ - Improve and optimize code, especially in the kernel
+ - Write drivers
 
 For those who want to contribute to the Redox GUI, our GUI strategy has recently changed.
 
- * OrbTk is now sunsetting, and its developers have moved to other projects such as the ones below. There is currently no Redox-specific GUI development underway.
- * Redox is in the process of adopting other Rust-lang GUIs such as [Iced](https://iced.rs) and [Slint](https://slint-ui.com/). Please check out those projects if this is your area of interest.
+ - OrbTk is now sunsetting, and its developers have moved to other projects such as the ones below. There is currently no Redox-specific GUI development underway.
+ - Redox is in the process of adopting other Rust-lang GUIs such as [Iced](https://iced.rs) and [Slint](https://slint-ui.com/). Please check out those projects if this is your area of interest.
 
 ## Tracking Issues
 
@@ -94,9 +95,9 @@ Please follow our process for [creating proper pull requests](https://doc.redox-
 
 ## External Links
 
-* [redox-os.org](https://redox-os.org)
-* [rust-os-comparison](https://github.com/flosse/rust-os-comparison)
-* [rust-lang.org](http://rust-lang.org)
+- [redox-os.org](https://redox-os.org)
+- [rust-os-comparison](https://github.com/flosse/rust-os-comparison)
+- [rust-lang.org](http://rust-lang.org)
 
 ## Other Ways to Contribute
 
