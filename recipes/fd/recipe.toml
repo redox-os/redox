@@ -1,0 +1,5 @@
+[source]
+git = "https://github.com/sharkdp/fd.git"
+
+[build]
+template = "cargo"
