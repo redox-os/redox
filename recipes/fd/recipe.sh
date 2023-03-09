@@ -1,1 +1,0 @@
-GIT=https://github.com/sharkdp/fd.git
