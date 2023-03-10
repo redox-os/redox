@@ -80,6 +80,7 @@ sopwith = {}
 syobonaction = {}
 
 # Demos
+acid = {}
 orbclient = {}
 pixelcannon = {}
 rodioplay = {}
