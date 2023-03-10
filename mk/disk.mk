@@ -3,7 +3,7 @@ $(BUILD)/harddrive.img: $(FSTOOLS_TAG) $(REPO_TAG)
 	rm -rf $@  $@.partial
 	-$(FUMOUNT) /tmp/redox_installer || true
 	fallocate --posix --length "$(FILESYSTEM_SIZE)MiB" $@.partial
-	$(INSTALLER) -c $(FILESYSTEM_CONFIG) $@.partial
+	umask 002 && $(INSTALLER) -c $(FILESYSTEM_CONFIG) $@.partial
 	mv $@.partial $@
 
 $(BUILD)/livedisk.iso: $(FSTOOLS_TAG) $(REPO_TAG)
@@ -11,7 +11,7 @@ $(BUILD)/livedisk.iso: $(FSTOOLS_TAG) $(REPO_TAG)
 	rm -rf $@  $@.partial
 	-$(FUMOUNT) /tmp/redox_installer || true
 	fallocate --posix --length "$(FILESYSTEM_SIZE)MiB" $@.partial
-	$(INSTALLER) -c $(FILESYSTEM_CONFIG) --live $@.partial
+	umask 002 && $(INSTALLER) -c $(FILESYSTEM_CONFIG) --live $@.partial
 	mv $@.partial $@
 
 $(BUILD)/filesystem.img: $(FSTOOLS_TAG) $(REPO_TAG)
@@ -25,7 +25,7 @@ $(BUILD)/filesystem.img: $(FSTOOLS_TAG) $(REPO_TAG)
 	redoxfs/target/release/redoxfs $@.partial $(BUILD)/filesystem/
 	sleep 1
 	pgrep redoxfs
-	$(INSTALLER) -c $(FILESYSTEM_CONFIG) $(BUILD)/filesystem/
+	umask 002 && $(INSTALLER) -c $(FILESYSTEM_CONFIG) $(BUILD)/filesystem/
 	sync
 	-$(FUMOUNT) $(BUILD)/filesystem/ || true
 	rm -rf $(BUILD)/filesystem/
