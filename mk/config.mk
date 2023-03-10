@@ -61,6 +61,9 @@ INSTALLER=installer/target/release/redox_installer
 ifeq ($(REPO_BINARY),0)
 INSTALLER+=--cookbook=cookbook
 REPO_TAG=$(BUILD)/repo.tag
+else
+INSTALLER+=--cookbook=cookbook --cooking
+REPO_TAG=$(BUILD)/repo.tag
 endif
 
 FSTOOLS_TAG=build/fstools.tag
