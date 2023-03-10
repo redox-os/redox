@@ -31,7 +31,6 @@ dash = {}
 diffutils = {}
 dosbox = {}
 drivers = {}
-#drivers-041 = {}
 drivers-initfs = {}
 duktape = {}
 eduke32 = {}
