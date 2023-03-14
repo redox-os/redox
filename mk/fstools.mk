@@ -7,6 +7,7 @@ else
 	$(HOST_CARGO) build --manifest-path cookbook/Cargo.toml --release
 	$(HOST_CARGO) build --manifest-path installer/Cargo.toml --release
 	$(HOST_CARGO) build --manifest-path redoxfs/Cargo.toml --release --bin redoxfs
+	$(HOST_CARGO) build --manifest-path redoxfs/Cargo.toml --release --bin redoxfs-mkfs
 	mkdir -p build
 	touch $@
 endif
