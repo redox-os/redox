@@ -25,6 +25,7 @@ cleye = {}
 #cmatrix = {} # needs ncursesw now
 contain = {}
 coreutils = {}
+cosmic-text = {}
 cpal = {}
 curl = {}
 dash = {}
