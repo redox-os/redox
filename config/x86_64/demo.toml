@@ -68,14 +68,15 @@ uutils = {}
 
 # Apps
 periodictable = {}
-sodium = {}
-git = {}
-gnu-grep = {}
+
+# Shell Apps
 bash = {}
 binutils = {}
 curl = {}
+git = {}
+gnu-grep = {}
 ripgrep = {}
-
+sodium = {}
 
 # Games
 dosbox = {}
