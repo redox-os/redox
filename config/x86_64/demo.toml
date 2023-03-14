@@ -68,6 +68,14 @@ uutils = {}
 
 # Apps
 periodictable = {}
+
+# Shell Apps
+bash = {}
+binutils = {}
+curl = {}
+git = {}
+gnu-grep = {}
+ripgrep = {}
 sodium = {}
 
 # Games
@@ -84,6 +92,7 @@ acid = {}
 orbclient = {}
 pixelcannon = {}
 rodioplay = {}
+gears = {}
 
 # MIDI
 freepats = {}
