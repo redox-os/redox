@@ -42,7 +42,13 @@ else ifeq ($(UNAME),FreeBSD)
 	VBM=VBoxManage
 	HOST_TARGET ?= $(HOST_ARCH)-unknown-freebsd
 else
-	FUMOUNT=fusermount -u
+	# Detect which version of the fusermount binary is available.
+	ifneq (, $(shell which fusermount3))
+		FUMOUNT=fusermount3 -u
+	else
+		FUMOUNT=fusermount -u
+	endif
+
 	export NPROC=nproc
 	export REDOX_MAKE=make
 	VB_AUDIO=pulse
