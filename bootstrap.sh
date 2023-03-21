@@ -353,7 +353,7 @@ gentoo()
 		echo "Installing git..."
 		sudo emerge dev-vcs/git
 	fi
-	if [ -z "$(which fusermount)" ]; then
+	if [ -z "$(which fusermount 2>/dev/null)" ] && [ -z "$(which fusermount3 2>/dev/null)" ]; then
 		echo "Installing fuse..."
 		sudo emerge sys-fs/fuse
 	fi
