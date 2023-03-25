@@ -370,6 +370,9 @@ gentoo()
 		echo "Installing cmake..."
 		sudo emerge dev-util/cmake
 	fi
+	if [ -z "$(ldconfig -p | grep fontconfig)" ]; then
+		sudo emerge media-libs/fontconfig
+	fi
 }
 
 ##############################################################################
