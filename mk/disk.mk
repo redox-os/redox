@@ -2,7 +2,7 @@ $(BUILD)/harddrive.img: $(FSTOOLS_TAG) $(REPO_TAG)
 	mkdir -p $(BUILD)
 	rm -rf $@  $@.partial
 	-$(FUMOUNT) /tmp/redox_installer || true
-	fallocate --posix --length "$(FILESYSTEM_SIZE)MiB" $@.partial
+	${ALLOC_FILE} $@.partial
 	umask 002 && $(INSTALLER) -c $(FILESYSTEM_CONFIG) $@.partial
 	mv $@.partial $@
 
@@ -10,7 +10,7 @@ $(BUILD)/livedisk.iso: $(FSTOOLS_TAG) $(REPO_TAG)
 	mkdir -p $(BUILD)
 	rm -rf $@  $@.partial
 	-$(FUMOUNT) /tmp/redox_installer || true
-	fallocate --posix --length "$(FILESYSTEM_SIZE)MiB" $@.partial
+	${ALLOC_FILE} $@.partial
 	umask 002 && $(INSTALLER) -c $(FILESYSTEM_CONFIG) --live $@.partial
 	mv $@.partial $@
 
@@ -19,7 +19,7 @@ $(BUILD)/filesystem.img: $(FSTOOLS_TAG) $(REPO_TAG)
 	-$(FUMOUNT) $(BUILD)/filesystem/ || true
 	rm -rf $@  $@.partial $(BUILD)/filesystem/
 	-$(FUMOUNT) /tmp/redox_installer || true
-	fallocate --posix --length "$(FILESYSTEM_SIZE)MiB" $@.partial
+	${ALLOC_FILE} $@.partial
 	redoxfs/target/release/redoxfs-mkfs $(REDOXFS_MKFS_FLAGS) $@.partial
 	mkdir -p $(BUILD)/filesystem/
 	redoxfs/target/release/redoxfs $@.partial $(BUILD)/filesystem/
