@@ -26,7 +26,7 @@ HOST_ARCH=x86_64
 HOST_CARGO=env -u RUSTUP_TOOLCHAIN cargo
 UNAME := $(shell uname)
 ifeq ($(UNAME),Darwin)
-	FUMOUNT=sudo umount
+	FUMOUNT=umount
 	export NPROC=sysctl -n hw.ncpu
 	export REDOX_MAKE=make
 	PREFIX_BINARY=0
