@@ -23,7 +23,7 @@ CONTAINERFILE?=podman/redox-base-containerfile
 # Per host variables
 # TODO: get host arch automatically
 HOST_ARCH=x86_64
-HOST_CARGO=env --unset=RUSTUP_TOOLCHAIN cargo
+HOST_CARGO=env -u RUSTUP_TOOLCHAIN cargo
 UNAME := $(shell uname)
 ifeq ($(UNAME),Darwin)
 	FUMOUNT=sudo umount
