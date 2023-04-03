@@ -23,16 +23,17 @@ CONTAINERFILE?=podman/redox-base-containerfile
 # Per host variables
 # TODO: get host arch automatically
 HOST_ARCH=x86_64
-HOST_CARGO=env --unset=RUSTUP_TOOLCHAIN cargo
+HOST_CARGO=env -u RUSTUP_TOOLCHAIN cargo
 UNAME := $(shell uname)
 ifeq ($(UNAME),Darwin)
-	FUMOUNT=sudo umount
+	FUMOUNT=umount
 	export NPROC=sysctl -n hw.ncpu
 	export REDOX_MAKE=make
 	PREFIX_BINARY=0
 	VB_AUDIO=coreaudio
 	VBM=/Applications/VirtualBox.app/Contents/MacOS/VBoxManage
 	HOST_TARGET ?= $(HOST_ARCH)-apple-darwin
+	ALLOC_FILE=truncate -s "$(FILESYSTEM_SIZE)m"
 else ifeq ($(UNAME),FreeBSD)
 	FUMOUNT=sudo umount
 	export NPROC=sysctl -n hw.ncpu
@@ -41,6 +42,7 @@ else ifeq ($(UNAME),FreeBSD)
 	VB_AUDIO=pulse # To check, will probaly be OSS on most setups
 	VBM=VBoxManage
 	HOST_TARGET ?= $(HOST_ARCH)-unknown-freebsd
+	ALLOC_FILE=fallocate --posix --length "$(FILESYSTEM_SIZE)MiB"
 else
 	# Detect which version of the fusermount binary is available.
 	ifneq (, $(shell which fusermount3))
@@ -54,6 +56,7 @@ else
 	VB_AUDIO=pulse
 	VBM=VBoxManage
 	HOST_TARGET ?= $(HOST_ARCH)-unknown-linux-gnu
+	ALLOC_FILE=fallocate --posix --length "$(FILESYSTEM_SIZE)MiB"
 endif
 
 # Automatic variables
