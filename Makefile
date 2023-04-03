@@ -8,6 +8,9 @@ all: $(BUILD)/harddrive.img
 
 live: $(BUILD)/livedisk.iso
 
+popsicle: $(BUILD)/livedisk.iso
+	popsicle-gtk $(BUILD)/livedisk.iso
+
 image:
 	-$(FUMOUNT) $(BUILD)/filesystem/ || true
 	-$(FUMOUNT) /tmp/redox_installer/ || true
