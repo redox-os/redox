@@ -25,7 +25,7 @@
 # General settings
 [general]
 # Filesystem size in MiB
-filesystem_size = 768
+filesystem_size = 1024
 # Do not prompt if settings are not defined
 prompt = false
 
