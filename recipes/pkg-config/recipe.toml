@@ -1,0 +1,14 @@
+[source]
+tar = "https://pkg-config.freedesktop.org/releases/pkg-config-0.29.2.tar.gz"
+script = """
+wget -O config.sub "https://gitlab.redox-os.org/redox-os/gnu-config/-/raw/master/config.sub?inline=false"
+"""
+
+[build]
+dependencies = [
+    "gettext",
+    "glib",
+    "libiconv",
+    "pcre",
+]
+template = "configure"
