@@ -18,15 +18,13 @@ else ifeq ($(ARCH),aarch64)
 	efi=yes
 	kvm=no
 	live=yes
-	#TODO: support vga
-	vga=no
 	QEMU_ARCH=aarch64
 	QEMU_MACHINE=virt
 	QEMU_CPU=max
 	QEMU_EFI=/usr/share/AAVMF/AAVMF_CODE.fd
 	QEMUFLAGS+=-smp 1 -m 2048
 	ifneq ($(vga),no)
-		QEMUFLAGS+=-device virtio-gpu-pci
+		QEMUFLAGS+=-device ramfb
 	endif
 	ifneq ($(usb),no)
 		QEMUFLAGS+=-device usb-ehci -device usb-kbd -device usb-mouse
