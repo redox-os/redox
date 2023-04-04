@@ -51,3 +51,6 @@ else
     FIND="find"
     STAT="stat";
 fi
+
+export FIND
+export STAT
