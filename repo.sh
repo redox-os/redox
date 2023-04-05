@@ -48,7 +48,7 @@ do
         fi
 
         # Match pkgar and tar time
-        touch --no-create --reference="${COOKBOOK_STAGE}.tar.gz" "${COOKBOOK_STAGE}.pkgar"
+        touch -c -r "${COOKBOOK_STAGE}.tar.gz" "${COOKBOOK_STAGE}.pkgar"
 
         continue
     fi
