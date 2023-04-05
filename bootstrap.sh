@@ -108,6 +108,7 @@ osx_macports()
     install_macports_pkg "cmake"
     install_macports_pkg "ninja"
     install_macports_pkg "po4a"
+    install_macports_pkg "findutils"
 }
 
 ###############################################################################
@@ -142,6 +143,7 @@ osx_homebrew()
     install_brew_pkg "ninja"
     install_brew_pkg "po4a"
     install_brew_pkg "Caskroom/cask/osxfuse"
+    install_brew_pkg "findutils"
 
     install_brew_pkg "redox-os/gcc_cross_compilers/x86_64-elf-gcc" "x86_64-elf-gcc"
 }
