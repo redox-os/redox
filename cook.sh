@@ -23,15 +23,15 @@ fi
 if [ ! "$(uname -s)" = "Redox" ]
 then
 function docgen {
-    CC=cc cargo run --release --manifest-path "$ROOT/docgen/Cargo.toml" --bin docgen -- "$@"
+    CC=cc AR=ar RANLIB=ranlib cargo run --release --manifest-path "$ROOT/docgen/Cargo.toml" --bin docgen -- "$@"
 }
 
 function pkg {
-    CC=cc cargo run --release --manifest-path "$ROOT/pkgutils/Cargo.toml" --bin pkg -- "$@"
+    CC=cc AR=ar RANLIB=ranlib cargo run --release --manifest-path "$ROOT/pkgutils/Cargo.toml" --bin pkg -- "$@"
 }
 
 function pkgar {
-    CC=cc cargo run --release --manifest-path "$ROOT/pkgar/Cargo.toml" --bin pkgar -- "$@"
+    CC=cc AR=ar RANLIB=ranlib cargo run --release --manifest-path "$ROOT/pkgar/Cargo.toml" --bin pkgar -- "$@"
 }
 fi
 
