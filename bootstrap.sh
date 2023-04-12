@@ -142,7 +142,7 @@ osx_homebrew()
     install_brew_pkg "cmake"
     install_brew_pkg "ninja"
     install_brew_pkg "po4a"
-    install_brew_pkg "Caskroom/cask/osxfuse"
+    install_brew_pkg "macfuse"
     install_brew_pkg "findutils"
 
     install_brew_pkg "redox-os/gcc_cross_compilers/x86_64-elf-gcc" "x86_64-elf-gcc"
