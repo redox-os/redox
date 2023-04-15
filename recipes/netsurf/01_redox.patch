@@ -84,3 +84,27 @@ diff -ruwN source/netsurf/utils/config.h source-new/netsurf/utils/config.h
  #undef HAVE_STRPTIME
  #undef HAVE_STRFTIME
  #else
+ diff -ruwN source/buildsystem/makefiles/Makefile.tools source-new/buildsystem/makefiles/Makefile.tools
+--- source/buildsystem/makefiles/Makefile.tools    2023-04-15 08:48:37.000000000 +0100
++++ source-new/buildsystem/makefiles/Makefile.tools    2023-04-15 08:48:37.000000000 +0100
+@@ -135,7 +135,7 @@
+   endif
+
+   # Search the path for the compiler
+-  toolpath_ := $(shell /bin/which $(CC__))
++  toolpath_ := $(shell which $(CC__))
+   ifeq ($(toolpath_),)
+     toolpath_ := /opt/netsurf/$(HOST)/cross/bin/
+     CC__  := $(toolpath_)$(HOST)-gcc
+diff -ruwN source/netsurf/frontends/framebuffer/Makefile source-new/netsurf/frontends/framebuffer/Makefile 
+--- source/netsurf/frontends/framebuffer/Makefile   2020-05-24 22:35:23.000000000 +0100
++++ source-new/netsurf/frontends/framebuffer/Makefile   2023-04-15 09:09:18.000000000 +0100
+@@ -222,7 +222,7 @@
+ install-framebuffer:
+ 	$(VQ)echo " INSTALL: $(DESTDIR)/$(PREFIX)"
+ 	$(Q)$(INSTALL) -d $(DESTDIR)/$(NETSURF_FRAMEBUFFER_BIN)
+-	$(Q)$(INSTALL) -T $(EXETARGET) $(DESTDIR)/$(NETSURF_FRAMEBUFFER_BIN)/netsurf-fb
++	$(Q)$(INSTALL) $(EXETARGET) $(DESTDIR)/$(NETSURF_FRAMEBUFFER_BIN)/netsurf-fb
+ 	$(Q)$(INSTALL) -d $(DESTDIR)/$(NETSURF_FRAMEBUFFER_RESOURCES)
+ 	$(Q)for F in $(NETSURF_FRAMEBUFFER_RESOURCE_LIST); do $(INSTALL) -m 644 $(FRONTEND_RESOURCES_DIR)/$$F $(DESTDIR)/$(NETSURF_FRAMEBUFFER_RESOURCES); done
+ 	$(Q)$(RM) $(DESTDIR)/$(NETSURF_FRAMEBUFFER_RESOURCES)/Messages
