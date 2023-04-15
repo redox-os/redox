@@ -178,7 +178,7 @@ function op {
                 then
                     mkdir "${COOKBOOK_BUILD}"
                 else
-                    cp -rp source "${COOKBOOK_BUILD}"
+                    cp -Rp source "${COOKBOOK_BUILD}"
                 fi
 
                 for patch in *.patch
