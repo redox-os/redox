@@ -109,6 +109,7 @@ osx_macports()
     install_macports_pkg "ninja"
     install_macports_pkg "po4a"
     install_macports_pkg "findutils"
+    install_macports_pkg "texinfo"
 }
 
 ###############################################################################
@@ -144,6 +145,7 @@ osx_homebrew()
     install_brew_pkg "po4a"
     install_brew_pkg "macfuse"
     install_brew_pkg "findutils"
+    install_brew_pkg "texinfo"
 
     install_brew_pkg "redox-os/gcc_cross_compilers/x86_64-elf-gcc" "x86_64-elf-gcc"
 }
