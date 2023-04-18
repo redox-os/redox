@@ -108,3 +108,15 @@ diff -ruwN source/netsurf/frontends/framebuffer/Makefile source-new/netsurf/fron
  	$(Q)$(INSTALL) -d $(DESTDIR)/$(NETSURF_FRAMEBUFFER_RESOURCES)
  	$(Q)for F in $(NETSURF_FRAMEBUFFER_RESOURCE_LIST); do $(INSTALL) -m 644 $(FRONTEND_RESOURCES_DIR)/$$F $(DESTDIR)/$(NETSURF_FRAMEBUFFER_RESOURCES); done
  	$(Q)$(RM) $(DESTDIR)/$(NETSURF_FRAMEBUFFER_RESOURCES)/Messages
+diff -ruwN source/buildsystem/makefiles/Makefile.top source-new/buildsystem/makefiles/Makefile.top
+--- source/buildsystem/makefiles/Makefile.top	2020-05-24 22:35:19.000000000 +0100
++++ source-new/buildsystem/makefiles/Makefile.top	2023-04-18 18:50:10.000000000 +0100
+@@ -444,7 +444,7 @@
+
+   define build_c
+     ifeq ($$(findstring $$(BUILDDIR)/$2,$$(BUILDFILES)),)
+-      $$(BUILDDIR)/$2: $$(BUILDDIR)/stamp $1
++      $$(BUILDDIR)/$2: $$(BUILDDIR)/stamp $1 | $$(PRE_TARGETS)
+ 	$$(VQ)$$(ECHO) $$(ECHOFLAGS) " COMPILE: $1"
+ 	$$(Q)$$(CC) -MMD -MP $$($3) -o $$@ -c $1
+
