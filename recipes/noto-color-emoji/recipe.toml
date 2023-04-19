@@ -1,5 +1,6 @@
 [source]
-git = "https://github.com/googlefonts/noto-emoji.git"
+tar = "https://github.com/googlefonts/noto-emoji/archive/refs/tags/v2.038.tar.gz"
+blake3 = "68967033281403aaeb0de59a95343a3cc4a76cbc9c3384cec93f2d46ac71037f"
 
 [build]
 template = "custom"
