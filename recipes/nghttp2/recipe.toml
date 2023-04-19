@@ -1,5 +1,6 @@
 [source]
 tar = "https://github.com/nghttp2/nghttp2/releases/download/v1.50.0/nghttp2-1.50.0.tar.xz"
+blake3 = "7d85ed39d4892cc6c7054277f2c637e95a68b1e0d8b298824d5ee93177d28584"
 
 [build]
 template = "custom"
