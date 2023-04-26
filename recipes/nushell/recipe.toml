@@ -1,0 +1,16 @@
+#TODO: build fails to link, we need the following in relibc
+# - cfmakeraw
+# - getgrgid_r
+# - getgrouplist
+# Additionally, openssl fails to link fprintf and sscanf
+
+[source]
+git = "https://github.com/jackpot51/nushell.git"
+branch = "redox"
+
+[build]
+dependencies = [
+  "openssl"
+]
+template = "cargo"
+
