@@ -108,6 +108,10 @@ ifeq ($(UNAME),Linux)
 	endif
 endif
 
+ifeq ($(UNAME),Darwin)
+	QEMUFLAGS+=-cpu $(QEMU_CPU)
+endif
+
 ifeq ($(UNAME),Linux)
 $(BUILD)/extra.img:
 	fallocate --posix --length 1G $@
