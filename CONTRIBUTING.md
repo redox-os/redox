@@ -66,6 +66,12 @@ For those who want to contribute to the Redox GUI, our GUI strategy has recently
 - [Missing POSIX APIs in relibc](https://gitlab.redox-os.org/redox-os/relibc/-/issues/173) - high-priority
 - [Recipes with old config format](https://gitlab.redox-os.org/redox-os/cookbook/-/issues/174) - medium-priority
 
+## Build System
+
+You can find the Redox build system organization and commands on this page:
+
+- [Build System Quick Reference](https://doc.redox-os.org/book/ch08-06-build-system-reference.html)
+
 ## Best Practices and Guidelines
 
 - [Best Practices](https://doc.redox-os.org/book/ch11-00-best-practices.html)
