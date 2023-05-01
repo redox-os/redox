@@ -1,5 +1,5 @@
-# [source]
-# git = "https://github.com/Byron/gitoxide.git"
+[source]
+git = "https://github.com/Byron/gitoxide.git"
 
 [build]
 dependencies = [
