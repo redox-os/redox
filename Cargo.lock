@@ -1441,9 +1441,9 @@ dependencies = [
 
 [[package]]
 name = "redox_simple_endian"
-version = "0.2.1"
+version = "0.3.0"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "c4e4404b4e54e59e7bb5f5236b61d8e822c2a77b2e955be8072002ff7ff8d69c"
+checksum = "175b27da3d5db1502bd20ae0917ba132d256a2b169f1686681304ebb86504eab"
 
 [[package]]
 name = "redox_syscall"
@@ -1485,9 +1485,9 @@ dependencies = [
 
 [[package]]
 name = "redoxer"
-version = "0.2.31"
+version = "0.2.33"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "7830166975364d40bd409e987ae7e282cc82a5446761d9fddcf940c13734fc92"
+checksum = "72a79e1c4ca4927f7373903a079ceced8cffaee49e204e95d8b1e499683e67b7"
 dependencies = [
  "dirs 4.0.0",
  "proc-mounts",
@@ -1500,9 +1500,9 @@ dependencies = [
 
 [[package]]
 name = "redoxfs"
-version = "0.5.6"
+version = "0.5.7"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "0b8f67a8da4dcf9df428cdfeaa698e539daee56087fd6df5e733d5082a74ba9a"
+checksum = "ff0a3a5754ac84857d321cb53f3362bb43b2b5df27d2bba556d49625dfd75126"
 dependencies = [
  "aes",
  "argon2",
