@@ -103,6 +103,7 @@ rust = {}
 # games
 dosbox = {}
 eduke32 = {}
+flycast = {}
 freedoom = {}
 games = {}
 gigalomania = {}
