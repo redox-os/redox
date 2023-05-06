@@ -24,7 +24,7 @@ blake3 = "1"
 pbr = "1.0.2"
 pkgar = "0.1.7"
 pkgar-keys = "0.1.0"
-redoxer = "0.2.31"
+redoxer = "0.2"
 serde = { version = "1.0.110", features = ["derive"] }
 sha2 = "0.10"
 termion = "1.5.5"
