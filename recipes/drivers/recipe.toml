@@ -4,9 +4,40 @@ git = "https://gitlab.redox-os.org/redox-os/drivers.git"
 [build]
 template = "custom"
 script = """
-"${COOKBOOK_CARGO}" build --release \
-    --manifest-path "${COOKBOOK_SOURCE}/Cargo.toml" \
-    --workspace
+# Drivers that are built on all architectures, and NOT in drivers-initfs
+BINS=(  alxd
+        e1000d
+        ihdad
+        ixgbed
+        rtl8168d
+        usbctl
+        usbhidd
+        usbscsid
+        xhcid
+)
+
+# Add additional drivers to the list to build, that are not in drivers-initfs
+# depending on the target architecture
+case "${TARGET}" in
+    i686-unknown-redox | x86_64-unknown-redox)
+        BINS+=(ac97d bgad pcid pcspkrd sb16d vboxd)
+        ;;
+    *)
+        ;;
+esac
+
+#Build each driver in the list
+mkdir -pv "${COOKBOOK_STAGE}/bin"
+for bin in "${BINS[@]}"
+do
+    "${COOKBOOK_CARGO}" rustc --release \
+        --manifest-path "${COOKBOOK_SOURCE}/${bin}/Cargo.toml" \
+        --bin "${bin}" \
+        -- \
+        -C opt-level=s \
+        -C panic=abort
+    cp -v "target/${TARGET}/release/${bin}" "${COOKBOOK_STAGE}/bin"
+done
 
 mkdir -pv "${COOKBOOK_STAGE}/bin"
 ${FIND} "target/${TARGET}/release" \
