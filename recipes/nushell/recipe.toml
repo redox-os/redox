@@ -1,5 +1,4 @@
 #TODO: build fails to link, we need the following in relibc
-# - cfmakeraw
 # - getgrgid_r
 # - getgrouplist
 # Additionally, openssl fails to link fprintf and sscanf
@@ -12,5 +11,10 @@ branch = "redox"
 dependencies = [
   "openssl"
 ]
-template = "cargo"
+template = "custom"
+script = """
+export OPENSSL_DIR="${COOKBOOK_SYSROOT}"
+export OPENSSL_STATIC="true"
+cookbook_cargo
+"""
 
