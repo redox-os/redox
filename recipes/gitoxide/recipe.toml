@@ -7,7 +7,7 @@ dependencies = [
 ]
 template = "custom"
 script = """
-export OPENSSL_DIR=${COOKBOOK_ROOT}/recipes/openssl/target/${TARGET}/stage
+export OPENSSL_DIR="${COOKBOOK_SYSROOT}"
 export OPENSSL_STATIC="true"
 cookbook_cargo
 """
