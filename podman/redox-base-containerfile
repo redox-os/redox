@@ -40,7 +40,17 @@ RUN apt-get update \
         python3-mako \
         xxd \
         rsync \
-        wget
+        wget \
+        python3 \
+		make \
+		xdg-utils \
+		zip \
+		unzip \
+		llvm \
+		clang \
+		perl \
+		lua \
+		luajit
 
 # _UID_ must be replaced with the user's uid on host
 # podman root is mapped to your user id on host during build,
