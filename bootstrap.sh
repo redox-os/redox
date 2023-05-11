@@ -195,7 +195,7 @@ freebsd()
 archLinux()
 {
 	echo "Detected Arch Linux"
-	packages="cmake fuse git gperf perl-html-parser nasm wget texinfo bison flex po4a autoconf curl file expat gmp libpng libtool libjpeg-turbo libvorbis sdla2_ttf m4 pkgconf po4a syslinux sdl12-compat meson python python-mako make xdg-utils zip unzip llvm clang perl lua luajit"
+	packages="cmake fuse git gperf perl-html-parser nasm wget texinfo bison flex po4a autoconf curl file expat gmp libpng libtool libjpeg-turbo libvorbis sdla2_ttf m4 pkgconf po4a syslinux sdl12-compat meson python python-mako make xdg-utils zip unzip llvm clang perl"
 	if [ "$1" == "qemu" ]; then
 		packages="$packages qemu"
 	elif [ "$1" == "virtualbox" ]; then
@@ -265,9 +265,7 @@ ubuntu()
 		unzip \
 		llvm \
 		clang \
-		perl \
-		lua \
-		luajit
+		perl
 	if [ "$1" == "qemu" ]; then
 		if [ -z "$(which qemu-system-x86_64)" ]; then
 			echo "Installing QEMU..."
