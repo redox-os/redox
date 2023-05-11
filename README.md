@@ -50,18 +50,18 @@ The ecosystem and software Redox OS provides is listed below.
 
 | Name (lexicographic order)                                                           | Maintainer
 |--------------------------------------------------------------------------------------|---------------------------
-| [acid (kernel integration tests)](https://gitlab.redox-os.org/redox-os/acid)         | **@jackpot51** **@NilSet**
-| [binutils](https://gitlab.redox-os.org/redox-os/binutils)                            | **vacant**
-| [cookbook](https://gitlab.redox-os.org/redox-os/cookbook)                            | **@jackpot51** **@ids1024** **@sajattack**
-| [coreutils](https://gitlab.redox-os.org/redox-os/coreutils)                          | **vacant**
-| [extrautils](https://gitlab.redox-os.org/redox-os/extrautils)                        | **vacant**
-| [games](https://gitlab.redox-os.org/redox-os/games)                                  | **@enrico** (AKA **@HenryTheCat**) **@fabiao**
-| [Ion (shell)](https://gitlab.redox-os.org/redox-os/ion)                              | **@mmstick** **@stratact**
-| [ipcd](https://gitlab.redox-os.org/redox-os/ipcd)                                    | **@jD91mZM2**
+| [acid (kernel integration tests)](https://gitlab.redox-os.org/redox-os/acid)         | **@jackpot51**
+| [binutils](https://gitlab.redox-os.org/redox-os/binutils)                            | **@jackpot51**
+| [cookbook](https://gitlab.redox-os.org/redox-os/cookbook)                            | **@jackpot51** **@hatred_45** **@ids1024**
+| [coreutils](https://gitlab.redox-os.org/redox-os/coreutils)                          | **@jackpot51**
+| [extrautils](https://gitlab.redox-os.org/redox-os/extrautils)                        | **@jackpot51**
+| [games](https://gitlab.redox-os.org/redox-os/games)                                  | **@fabiao**
+| [Ion (shell)](https://gitlab.redox-os.org/redox-os/ion)                              | **@jackpot51**
+| [ipcd](https://gitlab.redox-os.org/redox-os/ipcd)                                    | **@jackpot51**
 | [kernel](https://gitlab.redox-os.org/redox-os/kernel)                                | **@jackpot51**
-| [libextra](https://gitlab.redox-os.org/redox-os/libextra)                            | **vacant**
-| [libpager](https://gitlab.redox-os.org/redox-os/libpager)                            | **vacant**
-| [netstack](https://gitlab.redox-os.org/redox-os/netstack)                            | **@batonius** **@dlrobertson**
+| [libextra](https://gitlab.redox-os.org/redox-os/libextra)                            | **@jackpot51**
+| [libpager](https://gitlab.redox-os.org/redox-os/libpager)                            | **@jackpot51**
+| [netstack](https://gitlab.redox-os.org/redox-os/netstack)                            | **@jackpot51**
 | [netutils](https://gitlab.redox-os.org/redox-os/netutils)                            | **@jackpot51**
 | [orbclient (Orbital client)](https://gitlab.redox-os.org/redox-os/orbclient)         | **@jackpot51** **@FloVanGH**
 | [orbdata](https://gitlab.redox-os.org/redox-os/orbdata)                              | **@jackpot51**
@@ -70,13 +70,13 @@ The ecosystem and software Redox OS provides is listed below.
 | [orbtk (Orbital toolkit)](https://gitlab.redox-os.org/redox-os/orbtk)                | **@FloVanGH**
 | [orbutils (Orbital utilities)](https://gitlab.redox-os.org/redox-os/orbutils)        | **@jackpot51**
 | [pkgutils (current package manager)](https://gitlab.redox-os.org/redox-os/pkgutils)  | **@jackpot51**
-| [ralloc](https://gitlab.redox-os.org/redox-os/ralloc)                                | **@Tommoa** **@NilSet**
+| [ralloc](https://gitlab.redox-os.org/redox-os/ralloc)                                | **@jackpot51**
 | [RANSID (Rust ANSI driver)](https://gitlab.redox-os.org/redox-os/ransid)             | **@jackpot51**
 | [redoxfs (default filesystem)](https://gitlab.redox-os.org/redox-os/redoxfs)             | **@jackpot51**
-| [relibc (C Library in Rust)](https://gitlab.redox-os.org/redox-os/relibc)            | **@jD91mZM2** **@sajattack** **@Tommoa** **@stratact**
-| [small (stack String and other collections)](https://gitlab.redox-os.org/redox-os/small) | **@Tommoa**
+| [relibc (C Library in Rust)](https://gitlab.redox-os.org/redox-os/relibc)            | **@jackpot51**
+| [small (stack String and other collections)](https://gitlab.redox-os.org/redox-os/small) | **@jackpot51**
 | [syscall](https://gitlab.redox-os.org/redox-os/syscall)                              | **@jackpot51**
-| [Sodium (Vim-inspired text editor)](https://gitlab.redox-os.org/redox-os/sodium)     | **vacant**
+| [Sodium (Vim-inspired text editor)](https://gitlab.redox-os.org/redox-os/sodium)     | **@jackpot51**
 | [The Redox book](https://gitlab.redox-os.org/redox-os/book)                          |    **@hatred_45**
 | [userutils](https://gitlab.redox-os.org/redox-os/userutils)                          | **@jackpot51**
 
