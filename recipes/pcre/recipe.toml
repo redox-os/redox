@@ -1,5 +1,6 @@
 [source]
 tar = "https://mirrors.gigenet.com/OSDN//sfnet/p/pc/pcre/pcre/8.42/pcre-8.42.tar.gz"
+blake3 = "12d515ba12a816994def6b1e7196b5783fd2cfe495733a9167fa4d71dbe10248"
 patches = [
     "redox.patch"
 ]

@@ -1,4 +1,4 @@
-VERSION=0.74
+VERSION=0.74-3
 TAR=https://sourceforge.net/projects/dosbox/files/dosbox/$VERSION/dosbox-$VERSION.tar.gz/download
 BUILD_DEPENDS=(sdl liborbital)
 

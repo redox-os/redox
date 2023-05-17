@@ -1,5 +1,5 @@
-VERSION=2.2.0
-TAR=http://duktape.org/duktape-$VERSION.tar.xz
+VERSION=2.7.0
+TAR=https://duktape.org/duktape-$VERSION.tar.xz
 
 function recipe_version {
     echo "$VERSION"

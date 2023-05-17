@@ -1,5 +1,5 @@
-VERSION=2.69
-TAR=http://ftp.gnu.org/gnu/autoconf/autoconf-$VERSION.tar.xz
+VERSION=2.71
+TAR=https://ftp.gnu.org/gnu/autoconf/autoconf-$VERSION.tar.xz
 
 function recipe_version {
     echo "$VERSION"

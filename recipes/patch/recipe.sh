@@ -1,5 +1,5 @@
-VERSION=2.7.5
-TAR=http://ftp.gnu.org/gnu/patch/patch-$VERSION.tar.xz
+VERSION=2.7.6
+TAR=https://ftp.gnu.org/gnu/patch/patch-$VERSION.tar.xz
 
 function recipe_version {
     echo "$VERSION"

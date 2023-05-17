@@ -1,7 +1,8 @@
 [source]
-tar = "http://zlib.net/fossils/zlib-1.2.12.tar.gz"
-blake3 = "b7ad5638d87c69665afaae138bab40cc9a53a7ae7da9d168303e3df6b051d2b5"
-
+#git = "https://github.com/madler/zlib"
+#rev = "04f42ceca40f73e2978b50e93806c2a18c1281fc"
+tar = "https://zlib.net/zlib-1.2.13.tar.xz"
+blake3 = "cc042bf8507e02f5799cf6fdb49278402a7b748defe3ade425e35e14a7c00186"
 [build]
 template = "custom"
 script = """

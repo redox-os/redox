@@ -1,5 +1,5 @@
 [source]
 tar = "https://gmplib.org/download/gmp/gmp-6.2.1.tar.xz"
-
+blake3 = "52cecfbbe286820d1f8bc118769008acb6451bd074fe6dea9e868d54b2ada855"
 [build]
 template = "configure"

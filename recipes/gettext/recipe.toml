@@ -1,5 +1,8 @@
 [source]
-tar = "http://ftp.gnu.org/pub/gnu/gettext/gettext-0.19.8.1.tar.xz"
+#git = "https://git.savannah.gnu.org/git/gettext.git"
+#rev = "c737bf843616ca984c9416048a2da845e9ad3f50"
+tar = "https://ftp.gnu.org/pub/gnu/gettext/gettext-0.21.1.tar.gz"
+blake3 = "0d0af5a79978fbeac4641ee64480943650af99f70467353e7c3068ffd5523acd"
 patches = [
     "redox.patch"
 ]

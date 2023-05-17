@@ -1,7 +1,8 @@
 [source]
-tar = "http://downloads.xiph.org/releases/vorbis/libvorbis-1.3.6.tar.xz"
-sha256 = "af00bb5a784e7c9e69f56823de4637c350643deedaf333d0fa86ecdba6fcb415"
-
+#git = "https://gitlab.xiph.org/xiph/vorbis"
+#rev = "0657aee69dec8508a0011f47f3b69d7538e9d262"
+tar = "https://downloads.xiph.org/releases/vorbis/libvorbis-1.3.7.tar.gz"
+blake3 = "a8e88482b8d70321c8435616b0cec1a931b11445f003649774fd6940e593a254"
 [build]
 template = "configure"
 dependencies = [

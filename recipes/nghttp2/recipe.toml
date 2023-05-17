@@ -1,7 +1,8 @@
 [source]
-tar = "https://github.com/nghttp2/nghttp2/releases/download/v1.50.0/nghttp2-1.50.0.tar.xz"
-blake3 = "ac40e313ebb5fb341f82cec8daa4795673b27ff02061dfbf980ca1dbe8dc4115"
-
+#git = "https://github.com/nghttp2/nghttp2"
+#rev = "be0491294a63d891bd12b6b1b7e372a45a5d0ffe"
+tar = "https://github.com/nghttp2/nghttp2/releases/download/v1.53.0/nghttp2-1.53.0.tar.xz"
+blake3 = "bad5f220a66b7e6f3df20f69f4fc7e7beca46e6c143fc63b95a2656a2e897caf"
 [build]
 template = "custom"
 script = """

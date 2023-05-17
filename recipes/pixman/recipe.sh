@@ -1,4 +1,4 @@
-VERSION="0.36.0"
+VERSION="0.42.2"
 TAR=https://www.cairographics.org/releases/pixman-$VERSION.tar.gz
 
 function recipe_version {

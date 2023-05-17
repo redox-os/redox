@@ -1,5 +1,5 @@
 [source]
-tar = "http://ijg.org/files/jpegsrc.v9c.tar.gz"
-
+tar = "http://ijg.org/files/jpegsrc.v9e.tar.gz"
+blake3 = "f0d6072e15de609397cbd8428758d7054dd921dc448018111e3822b17bcbcc5d"
 [build]
 template = "configure"
