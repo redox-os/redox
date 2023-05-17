@@ -1,5 +1,8 @@
 [source]
+#git = "https://git.savannah.gnu.org/git/libiconv.git"
+#rev = "941f63afe17adcb01e150e29ddb50c6fd40f1291"
 tar = "https://ftp.gnu.org/pub/gnu/libiconv/libiconv-1.15.tar.gz"
+blake3 = "b736af4e8245ae9f1618ef226a3bf2a998334b745520565cf413c0a7d54b6924"
 patches = [
     "01_redox.patch"
 ]

@@ -1,5 +1,5 @@
-VERSION="1.0.5"
-TAR="https://github.com/fribidi/fribidi/releases/download/v${VERSION}/fribidi-${VERSION}.tar.bz2"
+VERSION="1.0.13"
+TAR="https://github.com/fribidi/fribidi/releases/download/v${VERSION}/fribidi-${VERSION}.tar.xz"
 BUILD_DEPENDS=()
 
 function recipe_version {

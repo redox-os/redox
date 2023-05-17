@@ -1,5 +1,8 @@
 [source]
+#git = "https://git.savannah.gnu.org/git/bash.git"
+#rev = "a0c0a00fc419b7bc08202a79134fcd5bc0427071"
 tar = "http://ftp.gnu.org/gnu/bash/bash-4.4.tar.gz"
+blake3 = "926927c370142cffa37dfc0a310ec386493b8b558ff3cc062376898154bc7ccb"
 patches = [
     "redox.patch"
 ]

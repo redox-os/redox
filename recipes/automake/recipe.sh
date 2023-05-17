@@ -1,5 +1,5 @@
-VERSION=1.15
-TAR=http://ftp.gnu.org/gnu/automake/automake-$VERSION.tar.xz
+VERSION=1.16.5
+TAR=https://ftp.gnu.org/gnu/automake/automake-$VERSION.tar.xz
 
 function recipe_version {
     echo "$VERSION"

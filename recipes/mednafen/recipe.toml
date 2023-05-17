@@ -1,5 +1,6 @@
 [source]
 tar = "https://mednafen.github.io/releases/files/mednafen-1.29.0.tar.xz"
+blake3 = "c75c1044cdc9328b2349915a67972d6135c77eb53eb0d995788f22b7daacf79b"
 patches = [
     "redox.patch",
 ]
