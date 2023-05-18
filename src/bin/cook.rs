@@ -471,6 +471,38 @@ function cookbook_cargo {
     "${COOKBOOK_CARGO}" install "${COOKBOOK_CARGO_FLAGS[@]}"
 }
 
+# helper for installing binaries that are cargo examples
+function cookbook_cargo_examples {
+    recipe="$(basename "${COOKBOOK_RECIPE}")"
+    for example in "$@"
+    do
+        "${COOKBOOK_CARGO}" build \
+            --manifest-path "${COOKBOOK_SOURCE}/Cargo.toml" \
+            --example "${example}" \
+            --release
+        mkdir -pv "${COOKBOOK_STAGE}/bin"
+        cp -v \
+            "target/${TARGET}/release/examples/${example}" \
+            "${COOKBOOK_STAGE}/bin/${recipe}_${example}"
+    done
+}
+
+# helper for installing binaries that are cargo packages
+function cookbook_cargo_packages {
+    recipe="$(basename "${COOKBOOK_RECIPE}")"
+    for package in "$@"
+    do
+        "${COOKBOOK_CARGO}" build \
+            --manifest-path "${COOKBOOK_SOURCE}/Cargo.toml" \
+            --package "${package}" \
+            --release
+        mkdir -pv "${COOKBOOK_STAGE}/bin"
+        cp -v \
+            "target/${TARGET}/release/${package}" \
+            "${COOKBOOK_STAGE}/bin/${recipe}_${package}"
+    done
+}
+
 # configure template
 COOKBOOK_CONFIGURE="${COOKBOOK_SOURCE}/configure"
 COOKBOOK_CONFIGURE_FLAGS=(

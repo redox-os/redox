@@ -1,0 +1,8 @@
+[source]
+git = "https://gitlab.redox-os.org/redox-os/orbclient.git"
+
+[build]
+template = "custom"
+script = """
+cookbook_cargo_examples simple
+"""

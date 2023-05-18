@@ -1,0 +1,9 @@
+[source]
+git = "https://github.com/pop-os/cosmic-text.git"
+branch = "main"
+
+[build]
+template = "custom"
+script = """
+cookbook_cargo_packages editor-orbclient
+"""
