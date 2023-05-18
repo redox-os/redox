@@ -5,12 +5,7 @@ branch = "redox"
 [build]
 template = "custom"
 script = """
-COOKBOOK_CARGO_FLAGS+=(
-    --no-default-features
-    --features feat_os_unix_redox
-    --bin coreutils
-)
-cookbook_cargo
+cookbook_cargo --no-default-features --features feat_os_unix_redox --bin coreutils
 
 BINS=(
     base32

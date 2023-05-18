@@ -5,11 +5,5 @@ branch = "redox"
 [build]
 template = "custom"
 script = """
-    set -x
-    ${COOKBOOK_CARGO} build \
-        --release \
-        --manifest-path "${COOKBOOK_SOURCE}/Cargo.toml" \
-        --package cosmic
-    mkdir -pv "${COOKBOOK_STAGE}/bin"
-    cp -v "target/${TARGET}/release/cosmic" "${COOKBOOK_STAGE}/bin/libcosmic"
+cookbook_cargo_packages cosmic
 """

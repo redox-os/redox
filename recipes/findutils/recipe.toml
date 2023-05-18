@@ -4,8 +4,5 @@ git = "https://gitlab.redox-os.org/redox-os/findutils.git"
 [build]
 template = "custom"
 script = """
-COOKBOOK_CARGO_FLAGS+=(
-    --bin find
-)
-cookbook_cargo
+cookbook_cargo --bin find
 """

@@ -4,9 +4,6 @@ git = "https://gitlab.redox-os.org/redox-os/redoxer.git"
 [build]
 template = "custom"
 script = """
-COOKBOOK_CARGO_FLAGS=(
-    --path "${COOKBOOK_SOURCE}/daemon"
-    --root "${COOKBOOK_STAGE}"
-)
+COOKBOOK_SOURCE="${COOKBOOK_SOURCE}/daemon"
 cookbook_cargo
 """
