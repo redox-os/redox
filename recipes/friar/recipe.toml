@@ -1,0 +1,4 @@
+[source]
+git = "https://github.com/jackpot51/friar.git"
+[build]
+template = "cargo"

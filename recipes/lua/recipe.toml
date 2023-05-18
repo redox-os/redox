@@ -1,0 +1,11 @@
+[source]
+tar = "https://www.lua.org/ftp/lua-5.4.4.tar.gz"
+[build]
+template = "custom"
+script = """
+rsync -av --delete "${COOKBOOK_SOURCE}/" ./
+export CC="${TARGET}-gcc -std=gnu99"
+"${COOKBOOK_MAKE}" generic -j"${COOKBOOK_MAKE_JOBS}"
+mkdir -pv "${COOKBOOK_STAGE}/bin"
+cp src/lua src/luac "${COOKBOOK_STAGE}/bin"
+"""
