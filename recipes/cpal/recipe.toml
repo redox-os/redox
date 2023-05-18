@@ -1,0 +1,10 @@
+[source]
+git = "https://gitlab.redox-os.org/redox-os/cpal.git"
+branch = "redox"
+upstream = "https://github.com/tomaka/cpal.git"
+
+[build]
+template = "custom"
+script = """
+cookbook_cargo_examples beep
+"""

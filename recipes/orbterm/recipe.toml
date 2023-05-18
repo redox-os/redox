@@ -8,6 +8,7 @@ COOKBOOK_CARGO_FLAGS=(
     --path "${COOKBOOK_SOURCE}"
     --root "${COOKBOOK_STAGE}/ui"
     --locked
+    --no-track
 )
 cookbook_cargo
 """
