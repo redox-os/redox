@@ -1,5 +1,5 @@
 [source]
 git = "https://github.com/anordal/shellharden.git"
-
+rev = "bd24c99d5d1e76452b6d0749404837c1c95d923c"
 [build]
 template = "cargo"

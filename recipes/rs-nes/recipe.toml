@@ -1,0 +1,8 @@
+[source]
+git = "https://gitlab.redox-os.org/redox-os/rs-nes.git"
+#git_upstream = "https://github.com/bgourlie/rs-nes.git"
+[build]
+template = "cargo"
+dependencies = [
+    "orbital"
+]

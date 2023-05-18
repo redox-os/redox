@@ -1,6 +1,8 @@
 [source]
-tar = "ftp://xmlsoft.org/libxml2/libxml2-2.9.9.tar.gz"
-
+#git = "https://gitlab.gnome.org/GNOME/libxml2"
+#rev = "838bf42d54f94c8ff99b6e5022899a32875ed5d7"
+tar = "https://download.gnome.org/sources/libxml2/2.11/libxml2-2.11.3.tar.xz"
+blake3 = "0653d3750576299c4cb88740942165671b576ff93019f3d669b3f37136225ab7"
 [build]
 template = "custom"
 dependencies = [
