@@ -461,14 +461,13 @@ export PKG_CONFIG_SYSROOT_DIR="${COOKBOOK_SYSROOT}"
 
 # cargo template
 COOKBOOK_CARGO="${COOKBOOK_REDOXER}"
-COOKBOOK_CARGO_FLAGS=(
-    --path "${COOKBOOK_SOURCE}"
-    --root "${COOKBOOK_STAGE}"
-    --locked
-    --no-track
-)
 function cookbook_cargo {
-    "${COOKBOOK_CARGO}" install "${COOKBOOK_CARGO_FLAGS[@]}"
+    "${COOKBOOK_CARGO}" install \
+        --path "${COOKBOOK_SOURCE}" \
+        --root "${COOKBOOK_STAGE}" \
+        --locked \
+        --no-track \
+        "$@"
 }
 
 # helper for installing binaries that are cargo examples

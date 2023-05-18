@@ -4,12 +4,7 @@ git = "https://gitlab.redox-os.org/redox-os/orbterm.git"
 [build]
 template = "custom"
 script = """
-COOKBOOK_CARGO_FLAGS=(
-    --path "${COOKBOOK_SOURCE}"
-    --root "${COOKBOOK_STAGE}/ui"
-    --locked
-    --no-track
-)
+COOKBOOK_STAGE="${COOKBOOK_STAGE}/ui"
 cookbook_cargo
 """
 

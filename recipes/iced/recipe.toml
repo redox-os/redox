@@ -5,17 +5,5 @@ branch = "redox"
 [build]
 template = "custom"
 script = """
-EXAMPLES=(
-    styling
-)
-set -x
-for example in "${EXAMPLES[@]}"
-do
-    ${COOKBOOK_CARGO} build \
-        --release \
-        --manifest-path "${COOKBOOK_SOURCE}/Cargo.toml" \
-        --package "${example}"
-    mkdir -pv "${COOKBOOK_STAGE}/bin"
-    cp -v "target/${TARGET}/release/${example}" "${COOKBOOK_STAGE}/bin/iced_${example}"
-done
+cookbook_cargo_packages styling
 """

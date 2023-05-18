@@ -4,28 +4,12 @@ git = "https://gitlab.redox-os.org/redox-os/orbutils.git"
 [build]
 template = "custom"
 script = """
-COOKBOOK_CARGO_FLAGS=(
-    --path "${COOKBOOK_SOURCE}/orbutils"
-    --root "${COOKBOOK_STAGE}/ui"
-    --locked
-    --no-track
-)
+COOKBOOK_STAGE="${COOKBOOK_STAGE}/ui"
+ORIGINAL_SOURCE="${COOKBOOK_SOURCE}"
+
+COOKBOOK_SOURCE="${ORIGINAL_SOURCE}/orbutils"
 cookbook_cargo
-COOKBOOK_CARGO_FLAGS=(
-    --path "${COOKBOOK_SOURCE}/calculator"
-    --root "${COOKBOOK_STAGE}/ui"
-    --locked
-    --no-track
-)
+
+COOKBOOK_SOURCE="${ORIGINAL_SOURCE}/calculator"
 cookbook_cargo
 """
-
-[package]
-dependencies = [
-    "orbital",
-    "expat",
-    "fontconfig",
-    "freetype",
-    "libpng",
-    "zlib",
-]
