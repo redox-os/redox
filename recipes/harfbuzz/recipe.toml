@@ -19,6 +19,7 @@ COOKBOOK_CONFIGURE_FLAGS+=(
     --with-glib=yes
     --with-freetype=yes
     --with-icu=no
+    ac_cv_func_sincosf=no
 )
 cookbook_configure
 """
