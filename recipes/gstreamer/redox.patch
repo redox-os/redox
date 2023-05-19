@@ -1,6 +1,6 @@
 diff -ruwN source/gst/gstpoll.c source-new/gst/gstpoll.c
---- source/gst/gstpoll.c	2018-03-23 14:44:36.000000000 -0600
-+++ source-new/gst/gstpoll.c	2019-01-05 15:17:35.861961634 -0700
+--- source/gst/gstpoll.c	2023-02-23 11:23:11.000000000 -0700
++++ source-new/gst/gstpoll.c	2023-05-19 13:22:32.365660597 -0600
 @@ -85,6 +85,10 @@
  #include <sys/socket.h>
  #endif
@@ -22,3 +22,36 @@ diff -ruwN source/gst/gstpoll.c source-new/gst/gstpoll.c
        goto no_socket_pair;
  
      nset->control_read_fd.fd = control_sock[0];
+diff -ruwN source/libs/gst/check/libcheck/meson.build source-new/libs/gst/check/libcheck/meson.build
+--- source/libs/gst/check/libcheck/meson.build	2023-02-23 11:23:11.000000000 -0700
++++ source-new/libs/gst/check/libcheck/meson.build	2023-05-19 13:26:51.285620215 -0600
+@@ -40,13 +40,13 @@
+ endif
+ 
+ # FIXME: check that timer_create, timer_settime, timer_delete are in rt_lib
+-if not rt_lib.found()
++#if not rt_lib.found()
+   libcheck_files += files(
+     'libcompat/timer_create.c',
+     'libcompat/timer_settime.c',
+     'libcompat/timer_delete.c'
+   )
+-endif
++#endif
+ 
+ configure_file(input : 'check.h.in',
+   output : 'check.h',
+diff -ruwN source/plugins/elements/gstfilesink.c source-new/plugins/elements/gstfilesink.c
+--- source/plugins/elements/gstfilesink.c	2023-02-23 11:23:11.000000000 -0700
++++ source-new/plugins/elements/gstfilesink.c	2023-05-19 13:23:26.885652108 -0600
+@@ -148,8 +148,10 @@
+   else
+     g_assert_not_reached ();
+ 
++#if !defined(__redox__)
+   if (o_sync)
+     flags |= O_SYNC;
++#endif
+ 
+   fd = open (filename, flags, 0666);
+ 
