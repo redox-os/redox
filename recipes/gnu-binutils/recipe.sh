@@ -26,7 +26,7 @@ function recipe_build {
         --with-expat \
         --with-multilib \
         --with-interwork \
-        --enable-targets=x86_64-unknown-redox \
+        --enable-targets="${TARGET}" \
         --disable-nls \
         --disable-werror
     "$REDOX_MAKE" -j"$($NPROC)"
