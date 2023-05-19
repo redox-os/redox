@@ -30,8 +30,8 @@ echo "llvm-config = '${TARGET}-llvm-config'" >> cross_file.txt
 
 echo "[host_machine]" >> cross_file.txt
 echo "system = 'redox'" >> cross_file.txt
-echo "cpu_family = 'x86_64'" >> cross_file.txt
-echo "cpu = 'x86_64'" >> cross_file.txt
+echo "cpu_family = '$(echo "${TARGET}" | cut -d - -f1)'" >> cross_file.txt
+echo "cpu = '$(echo "${TARGET}" | cut -d - -f1)'" >> cross_file.txt
 echo "endian = 'little'" >> cross_file.txt
 
 echo "[paths]" >> cross_file.txt
