@@ -1,6 +1,6 @@
 VERSION="1.10"
 TAR="https://freedesktop.org/~hadess/shared-mime-info-${VERSION}.tar.xz"
-BUILD_DEPENDS=(gettext glib libffi libiconv libxml2 pcre zlib)
+BUILD_DEPENDS=(gettext glib libffi libiconv libxml2 pcre xz zlib)
 
 function recipe_version {
 	echo "$VERSION"
