@@ -1,8 +1,8 @@
 [source]
 #git = "https://gitlab.freedesktop.org/freetype/freetype"
 #rev = "de8b92dd7ec634e9e2b25ef534c54a3537555c11"
-tar = "https://download.savannah.gnu.org/releases/freetype/freetype-2.13.0.tar.gz"
-blake3 = "8bf2db46b2a406d63da15d65b12ff986c6ac9a62cc10d429b03b4db58ea78f35"
+tar = "https://download.savannah.gnu.org/releases/freetype/freetype-2.12.1.tar.xz"
+blake3 = "c4a1d8438ca4e93bb8cb9f8e70e95cd16acdc5a9f0fba496e43911175f55affd"
 [build]
 template = "configure"
 dependencies = [
