@@ -20,6 +20,8 @@ Join us on [Matrix Chat](https://doc.redox-os.org/book/ch13-01-chat.html) to dis
 
 ## Suggestions for Contributions
 
+(Before start to contribute you **must** read the [FAQ](https://www.redox-os.org/faq/) and the [Book](https://doc.redox-os.org/book/))
+
 You can contribute to Redox documentation/code on these repositories:
 
 (The order is based on difficulty, easy things first)
@@ -108,10 +110,6 @@ Please follow our process for [creating proper pull requests](https://doc.redox-
 ## Other Ways to Contribute
 
 If you're not big on coding, but you still want to help keep the project going, you can still contribute/support in a variety of ways! We'll try to find a way to use anything you have to offer. 
-
-### Book ToDos
-
-- [Book README](https://gitlab.redox-os.org/redox-os/book/-/blob/master/README.md)
 
 ### Design
 
