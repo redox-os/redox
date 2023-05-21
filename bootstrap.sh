@@ -195,7 +195,7 @@ freebsd()
 archLinux()
 {
 	echo "Detected Arch Linux"
-	packages="cmake fuse git gperf perl-html-parser nasm wget texinfo bison flex po4a autoconf curl file expat gmp libpng libtool libjpeg-turbo libvorbis sdla2_ttf m4 pkgconf po4a syslinux sdl12-compat meson python python-mako make xdg-utils zip unzip llvm clang perl"
+	packages="cmake fuse git gperf perl-html-parser nasm wget texinfo bison flex po4a autoconf curl file expat gmp libtool m4 pkgconf po4a syslinux meson python python-mako make xdg-utils zip unzip llvm clang perl doxygen"
 	if [ "$1" == "qemu" ]; then
 		packages="$packages qemu"
 	elif [ "$1" == "virtualbox" ]; then
@@ -242,19 +242,13 @@ ubuntu()
 		libfuse-dev \
 		libgmp-dev \
 		libhtml-parser-perl \
-		libpng-dev \
 		libtool \
-		libjpeg-dev \
-		libvorbis-dev \
-		libsdl2-ttf-dev \
-		libosmesa6-dev \
 		m4 \
 		nasm \
 		pkg-config \
 		po4a \
 		syslinux-utils \
 		texinfo \
-		libsdl1.2-dev \
 		ninja-build \
 		meson \
 		python3-mako \
@@ -265,7 +259,8 @@ ubuntu()
 		unzip \
 		llvm \
 		clang \
-		perl
+		perl \
+		doxygen
 	if [ "$1" == "qemu" ]; then
 		if [ -z "$(which qemu-system-x86_64)" ]; then
 			echo "Installing QEMU..."
@@ -312,7 +307,7 @@ fedora()
 		fi
 	fi
 	# Use rpm -q <package> to check if it's already installed
-	PKGS=$(for pkg in file autoconf vim bison flex genisoimage gperf glibc-devel.i686 expat expat-devel fuse-devel fuse3-devel gmp-devel perl perl-HTML-Parser libpng-devel libtool libjpeg-turbo-devel libvorbis-devel SDL2_ttf-devel mesa-libOSMesa-devel m4 nasm po4a syslinux texinfo sdl12-compat-devel ninja-build meson python3-mako make gcc gcc-c++ openssl patch automake perl-Pod-Html perl-FindBin gperf curl gettext-devel perl-Pod-Xhtml pkgconf-pkg-config cmake llvm zip unzip lua luajit make clang ; do rpm -q $pkg > /dev/null || echo $pkg; done)
+	PKGS=$(for pkg in file autoconf vim bison flex genisoimage gperf glibc-devel.i686 expat expat-devel fuse-devel fuse3-devel gmp-devel perl perl-HTML-Parser libtool m4 nasm po4a syslinux texinfo ninja-build meson python3-mako make gcc gcc-c++ openssl patch automake perl-Pod-Html perl-FindBin gperf curl gettext-devel perl-Pod-Xhtml pkgconf-pkg-config cmake llvm zip unzip lua luajit make clang doxygen ; do rpm -q $pkg > /dev/null || echo $pkg; done)
 	# If the list of packages is not empty, install missing
 	COUNT=$(echo $PKGS | wc -w)
 	if [ $COUNT -ne 0 ]; then

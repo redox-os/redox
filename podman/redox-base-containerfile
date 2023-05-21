@@ -21,12 +21,7 @@ RUN apt-get update \
         libfuse-dev \
         libgmp-dev \
         libhtml-parser-perl \
-        libpng-dev \
         libtool \
-        libjpeg-dev \
-        libvorbis-dev \
-        libsdl2-ttf-dev \
-        libosmesa6-dev \
         libfontconfig1-dev \
         m4 \
         nasm \
@@ -34,7 +29,6 @@ RUN apt-get update \
         po4a \
         syslinux-utils \
         texinfo \
-        libsdl1.2-dev \
         ninja-build \
         meson \
         python3-mako \
@@ -48,7 +42,8 @@ RUN apt-get update \
 		unzip \
 		llvm \
 		clang \
-		perl
+		perl \
+        doxygen
 
 # _UID_ must be replaced with the user's uid on host
 # podman root is mapped to your user id on host during build,
