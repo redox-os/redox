@@ -28,9 +28,12 @@ else
 	rm -rf "$@.partial/$(TARGET)/include/"*
 	cp -r "$(PREFIX)/rust-install/$(TARGET)/include/c++" "$@.partial/$(TARGET)/include/c++"
 	cp -r "$(PREFIX)/rust-install/lib/rustlib/$(HOST_TARGET)/lib/" "$@.partial/lib/rustlib/$(HOST_TARGET)/"
+# Temporary hack to avoid breaking stuff before new pre-build prefix tarball with fixed rustlib/src is build and served at https://static.redox-os.org/toolchain/$(TARGET)/relibc-install.tar.gz 
+ifeq ($(PREFIX_BINARY),1)
 	rm -rf $@.partial/lib/rustlib/src
 	mkdir $@.partial/lib/rustlib/src
 	ln -s $(ROOT)/rust $@.partial/lib/rustlib/src
+endif
 	cd "$<" && \
 	export PATH="$(ROOT)/$@.partial/bin:$$PATH" && \
 	export CARGO="env -u CARGO cargo" && \
@@ -161,7 +164,7 @@ else
 		--enable-llvm-static-stdcpp \
 		--set 'llvm.targets=AArch64;X86' \
 		--set 'llvm.experimental-targets=' \
-		--tools=cargo \
+		--tools=cargo,src \
 		&& \
 	$(MAKE) -j `$(NPROC)` && \
 	$(MAKE) -j `$(NPROC)` install DESTDIR="$(ROOT)/$@.partial"
@@ -170,8 +173,6 @@ else
 	cd "$@.partial" && $(PREFIX_STRIP)
 	touch "$@.partial"
 	mv "$@.partial" "$@"
-	mkdir $@/lib/rustlib/src
-	ln -s $(ROOT)/rust $@/lib/rustlib/src
 endif
 
 $(PREFIX)/relibc-freestanding-install: $(ROOT)/relibc | $(PREFIX_BASE_INSTALL) $(PREFIX_FREESTANDING_INSTALL) $(CONTAINER_TAG)
@@ -250,11 +251,11 @@ else
 		--enable-extended \
 		--enable-lld \
 		--enable-llvm-static-stdcpp \
-		--tools=cargo \
+		--tools=cargo,src \
 		--target="$(HOST_TARGET),$(TARGET)" \
 		&& \
 	$(MAKE) -j `$(NPROC)` && \
-	rm -rf "$(ROOT)/$@.partial/lib/rustlib" "$(ROOT)/$@.partial/share/doc/rust" && \
+	rm -rf $(ROOT)/$@.partial/lib/rustlib/{components,install.log,rust-installer-version,uninstall.sh,manifest-*} "$(ROOT)/$@.partial/share/doc/rust" && \
 	$(MAKE) -j `$(NPROC)` install DESTDIR="$(ROOT)/$@.partial"
 	rm -rf "$(PREFIX)/rust-build"
 	mkdir -p "$@.partial/lib/rustlib/$(HOST_TARGET)/bin"
