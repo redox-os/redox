@@ -195,7 +195,7 @@ freebsd()
 archLinux()
 {
 	echo "Detected Arch Linux"
-	packages="cmake fuse git gperf perl-html-parser nasm wget texinfo bison flex po4a autoconf curl file expat gmp libtool m4 pkgconf po4a syslinux meson python python-mako make xdg-utils zip unzip llvm clang perl doxygen"
+	packages="cmake fuse git gperf perl-html-parser nasm wget texinfo bison flex po4a autoconf curl file expat gmp libtool libpng m4 pkgconf po4a syslinux meson python python-mako make xdg-utils zip unzip llvm clang perl doxygen"
 	if [ "$1" == "qemu" ]; then
 		packages="$packages qemu"
 	elif [ "$1" == "virtualbox" ]; then
@@ -241,6 +241,7 @@ ubuntu()
 		libexpat-dev \
 		libfuse-dev \
 		libgmp-dev \
+		libpng-dev \
 		libhtml-parser-perl \
 		libtool \
 		m4 \
@@ -307,7 +308,7 @@ fedora()
 		fi
 	fi
 	# Use rpm -q <package> to check if it's already installed
-	PKGS=$(for pkg in file autoconf vim bison flex genisoimage gperf glibc-devel.i686 expat expat-devel fuse-devel fuse3-devel gmp-devel perl perl-HTML-Parser libtool m4 nasm po4a syslinux texinfo ninja-build meson python3-mako make gcc gcc-c++ openssl patch automake perl-Pod-Html perl-FindBin gperf curl gettext-devel perl-Pod-Xhtml pkgconf-pkg-config cmake llvm zip unzip lua luajit make clang doxygen ; do rpm -q $pkg > /dev/null || echo $pkg; done)
+	PKGS=$(for pkg in file autoconf vim bison flex genisoimage gperf glibc-devel.i686 expat expat-devel fuse-devel fuse3-devel gmp-devel libpng-devel perl perl-HTML-Parser libtool m4 nasm po4a syslinux texinfo ninja-build meson python3-mako make gcc gcc-c++ openssl patch automake perl-Pod-Html perl-FindBin gperf curl gettext-devel perl-Pod-Xhtml pkgconf-pkg-config cmake llvm zip unzip lua luajit make clang doxygen ; do rpm -q $pkg > /dev/null || echo $pkg; done)
 	# If the list of packages is not empty, install missing
 	COUNT=$(echo $PKGS | wc -w)
 	if [ $COUNT -ne 0 ]; then

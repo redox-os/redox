@@ -23,6 +23,7 @@ RUN apt-get update \
         libhtml-parser-perl \
         libtool \
         libfontconfig1-dev \
+        libpng-dev
         m4 \
         nasm \
         pkg-config \
