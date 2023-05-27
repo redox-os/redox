@@ -24,6 +24,7 @@ RUN apt-get update \
         libtool \
         libfontconfig1-dev \
         libpng-dev \
+        libjpeg-dev \
         libsdl2-ttf-dev \
         libsdl1.2-dev \
         m4 \
