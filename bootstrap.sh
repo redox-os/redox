@@ -311,7 +311,7 @@ fedora()
 		fi
 	fi
 	# Use rpm -q <package> to check if it's already installed
-	PKGS=$(for pkg in file autoconf vim bison flex genisoimage gperf glibc-devel.i686 expat expat-devel fuse-devel fuse3-devel gmp-devel libpng-devel perl perl-HTML-Parser libtool libjpeg-turbo-devel SDL2_ttf-devel sdl12-compat=devel m4 nasm po4a syslinux texinfo ninja-build meson python3-mako make gcc gcc-c++ openssl patch automake perl-Pod-Html perl-FindBin gperf curl gettext-devel perl-Pod-Xhtml pkgconf-pkg-config cmake llvm zip unzip lua luajit make clang doxygen ; do rpm -q $pkg > /dev/null || echo $pkg; done)
+	PKGS=$(for pkg in file autoconf vim bison flex genisoimage gperf glibc-devel.i686 expat expat-devel fuse-devel fuse3-devel gmp-devel libpng-devel perl perl-HTML-Parser libtool libjpeg-turbo-devel SDL2_ttf-devel sdl12-compat-devel m4 nasm po4a syslinux texinfo ninja-build meson python3-mako make gcc gcc-c++ openssl patch automake perl-Pod-Html perl-FindBin gperf curl gettext-devel perl-Pod-Xhtml pkgconf-pkg-config cmake llvm zip unzip lua luajit make clang doxygen ; do rpm -q $pkg > /dev/null || echo $pkg; done)
 	# If the list of packages is not empty, install missing
 	COUNT=$(echo $PKGS | wc -w)
 	if [ $COUNT -ne 0 ]; then
