@@ -12,14 +12,10 @@ script = """
 COOKBOOK_CONFIGURE_FLAGS=(
     --host="${TARGET}"
     --prefix="/"
-    --disable-loadso
-    --disable-pthread-sem
     --disable-pulseaudio
-    --disable-sdl-dlopen
     --disable-shared
     --disable-video-x11
     --enable-audio
-    --enable-cdrom
     --enable-dummyaudio
     --enable-redoxaudio
     --enable-threads
