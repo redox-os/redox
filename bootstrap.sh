@@ -110,6 +110,39 @@ osx_macports()
     install_macports_pkg "po4a"
     install_macports_pkg "findutils"
     install_macports_pkg "texinfo"
+	install_macports_pkg "autoconf"
+	install_macports_pkg "openssl3"
+	install_macports_pkg "openssl11"
+	install_macports_pkg "bison"
+	install_macports_pkg "curl"
+	install_macports_pkg "wget"
+	install_macports_pkg "file"
+	install_macports_pkg "flex"
+	install_macports_pkg "gperf"
+	install_macports_pkg "expat"
+	install_macports_pkg "gmp"
+	install_macports_pkg "libpng"
+	install_macports_pkg "jpeg"
+	install_macports_pkg "libsdl12"
+	install_macports_pkg "libsdl2_ttf"
+	install_macports_pkg "libtool"
+	install_macports_pkg "m4"
+	install_macports_pkg "ninja"
+	install_macports_pkg "meson"
+	install_macports_pkg "python311"
+	install_macports_pkg "py37-mako"
+	install_macports_pkg "xdg-utils"
+	install_macports_pkg "zip"
+	install_macports_pkg "unzip"
+	install_macports_pkg "llvm-16"
+	install_macports_pkg "clang-16"
+	install_macports_pkg "perl5.24"
+	install_macports_pkg "p5-html-parser"
+	install_macports_pkg "doxygen"
+	install_macports_pkg "gpatch"
+	install_macports_pkg "automake"
+	install_macports_pkg "scons"
+	install_macports_pkg "gmake"
 }
 
 ###############################################################################
@@ -146,6 +179,32 @@ osx_homebrew()
     install_brew_pkg "macfuse"
     install_brew_pkg "findutils"
     install_brew_pkg "texinfo"
+	install_brew_pkg "openssl@1.1"
+	install_brew_pkg "openssl@3.0"
+	install_brew_pkg "autoconf"
+	install_brew_pkg "curl"
+	install_brew_pkg "wget"
+	install_brew_pkg "flex"
+	install_brew_pkg "gperf"
+	install_brew_pkg "expat"
+	install_brew_pkg "gmp"
+	install_brew_pkg "libpng"
+	install_brew_pkg "jpeg"
+	install_brew_pkg "sdl12-compat"
+	install_brew_pkg "sdl2_ttf"
+	install_brew_pkg "perl"
+	install_brew_pkg "libtool"
+	install_brew_pkg "m4"
+	install_brew_pkg "ninja"
+	install_brew_pkg "meson"
+	install_brew_pkg "python@3.11"
+	install_brew_pkg "zip"
+	install_brew_pkg "unzip"
+	install_brew_pkg "llvm"
+	install_brew_pkg "doxygen"
+	install_brew_pkg "gpatch"
+	install_brew_pkg "automake"
+	install_brew_pkg "scons"
 
     install_brew_pkg "redox-os/gcc_cross_compilers/x86_64-elf-gcc" "x86_64-elf-gcc"
 }
@@ -174,16 +233,43 @@ freebsd()
     install_freebsd_pkg "gcc"
     install_freebsd_pkg "nasm"
     install_freebsd_pkg "pkgconf"
-    install_freebsd_pkg "fusefs-libs"
+    install_freebsd_pkg "fusefs-libs3"
     install_freebsd_pkg "cmake"
     install_freebsd_pkg "gmake"
     install_freebsd_pkg "wget"
+	install_freebsd_pkg "openssl"
     install_freebsd_pkg "texinfo"
     install_freebsd_pkg "python"
     install_freebsd_pkg "automake"
     install_freebsd_pkg "gettext"
     install_freebsd_pkg "bison"
     install_freebsd_pkg "gperf"
+	install_freebsd_pkg "autoconf"
+	install_freebsd_pkg "curl"
+	install_freebsd_pkg "file"
+	install_freebsd_pkg "flex"
+	install_freebsd_pkg "expat2"
+	install_freebsd_pkg "gmp"
+	install_freebsd_pkg "png"
+	install_freebsd_pkg "libjpeg-turbo"
+	install_freebsd_pkg "sdl12"
+	install_freebsd_pkg "sdl2_ttf"
+	install_freebsd_pkg "perl5.36"
+	install_freebsd_pkg "p5-HTML-Parser"
+	install_freebsd_pkg "libtool"
+	install_freebsd_pkg "m4"
+	install_freebsd_pkg "po4a"
+	install_freebsd_pkg "syslinux"
+	install_freebsd_pkg "ninja"
+	install_freebsd_pkg "meson"
+	install_freebsd_pkg "xdg-utils"
+	install_freebsd_pkg "zip"
+	install_freebsd_pkg "unzip"
+	install_freebsd_pkg "llvm"
+	install_freebsd_pkg "doxygen"
+	install_freebsd_pkg "patch"
+	install_freebsd_pkg "automake"
+	install_freebsd_pkg "scons"
     set +xe
 }
 
@@ -195,7 +281,7 @@ freebsd()
 archLinux()
 {
 	echo "Detected Arch Linux"
-	packages="cmake fuse git gperf perl-html-parser nasm wget texinfo bison flex po4a autoconf curl file expat gmp libtool libpng libjpeg-turbo sdl12-compat m4 pkgconf po4a syslinux meson python python-mako make xdg-utils zip unzip llvm clang perl doxygen"
+	packages="cmake fuse git gperf perl-html-parser nasm wget texinfo bison flex po4a autoconf curl file patch automake scons waf expat gmp libtool libpng libjpeg-turbo sdl12-compat m4 pkgconf po4a syslinux meson python python-mako make xdg-utils zip unzip llvm clang perl doxygen"
 	if [ "$1" == "qemu" ]; then
 		packages="$packages qemu"
 	elif [ "$1" == "virtualbox" ]; then
@@ -232,6 +318,7 @@ ubuntu()
 		build-essential \
 		cmake \
 		curl \
+		wget \
 		file \
 		flex \
 		genisoimage \
@@ -249,6 +336,9 @@ ubuntu()
 		libtool \
 		m4 \
 		nasm \
+		patch \
+		automake \
+		scons \
 		pkg-config \
 		po4a \
 		syslinux-utils \
@@ -311,7 +401,7 @@ fedora()
 		fi
 	fi
 	# Use rpm -q <package> to check if it's already installed
-	PKGS=$(for pkg in file autoconf vim bison flex genisoimage gperf glibc-devel.i686 expat expat-devel fuse-devel fuse3-devel gmp-devel libpng-devel perl perl-HTML-Parser libtool libjpeg-turbo-devel SDL2_ttf-devel sdl12-compat-devel m4 nasm po4a syslinux texinfo ninja-build meson python3-mako make gcc gcc-c++ openssl patch automake perl-Pod-Html perl-FindBin gperf curl gettext-devel perl-Pod-Xhtml pkgconf-pkg-config cmake llvm zip unzip lua luajit make clang doxygen ; do rpm -q $pkg > /dev/null || echo $pkg; done)
+	PKGS=$(for pkg in file autoconf vim bison flex genisoimage gperf glibc-devel.i686 expat expat-devel fuse-devel fuse3-devel gmp-devel libpng-devel perl perl-HTML-Parser libtool libjpeg-turbo-devel SDL2_ttf-devel sdl12-compat-devel m4 nasm po4a syslinux texinfo ninja-build meson waf python3-mako make gcc gcc-c++ openssl patch automake perl-Pod-Html perl-FindBin gperf curl gettext-devel perl-Pod-Xhtml pkgconf-pkg-config cmake llvm zip unzip lua luajit make clang doxygen ; do rpm -q $pkg > /dev/null || echo $pkg; done)
 	# If the list of packages is not empty, install missing
 	COUNT=$(echo $PKGS | wc -w)
 	if [ $COUNT -ne 0 ]; then
@@ -349,7 +439,47 @@ suse()
 		fi
 	fi
 	echo "Installing necessary build tools..."
-	sudo zypper install gcc gcc-c++ glibc-devel-32bit nasm make fuse-devel cmake openssl automake gettext-tools libtool po4a patch flex gperf
+	sudo zypper install \
+		gcc \
+		gcc-c++ \
+		glibc-devel-32bit \
+		nasm \
+		make \
+		fuse-devel \
+		cmake \
+		openssl \
+		automake \
+		gettext-tools \
+		libtool \
+		po4a \
+		patch \
+		flex \
+		gperf \
+		autoconf \
+		bison \
+		curl \
+		wget \
+		file \
+		libexpat-devel \
+		gmp-devel \
+		libpng16-devel \
+		libjpeg8-devel \
+		perl \
+		perl-HTML-Parser \
+		m4 \
+		patch \
+		scons \
+		pkgconf \
+		syslinux-utils \
+		ninja \
+		meson \
+		python-Mako \
+		xdg-utils \
+		zip \
+		unzip \
+		llvm \
+		clang \
+		doxygen \
 }
 
 ##############################################################################
