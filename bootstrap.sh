@@ -311,8 +311,7 @@ ubuntu()
 	echo "Updating system..."
 	sudo "$2" update
 	echo "Installing required packages..."
-	sudo "$2" install \
-		autoconf \
+	pkgs="autoconf \
 		autopoint \
 		bison \
 		build-essential \
@@ -324,7 +323,6 @@ ubuntu()
 		genisoimage \
 		git \
 		gperf \
-		libc6-dev-i386 \
 		libexpat-dev \
 		libfuse-dev \
 		libgmp-dev \
@@ -341,7 +339,6 @@ ubuntu()
 		scons \
 		pkg-config \
 		po4a \
-		syslinux-utils \
 		texinfo \
 		ninja-build \
 		meson \
@@ -354,7 +351,12 @@ ubuntu()
 		llvm \
 		clang \
 		perl \
-		doxygen
+		doxygen"
+	# Not availible for at least ARM hosts
+	case "$host_arch" in
+		x86*|i?86) pkgs="$pkgs libc6-dev-i386 syslinux-utils";;
+	esac
+	sudo "$2" install $pkgs
 	if [ "$1" == "qemu" ]; then
 		if [ -z "$(which qemu-system-x86_64)" ]; then
 			echo "Installing QEMU..."
@@ -713,6 +715,7 @@ elif [ "$1" == "-s" ]; then
 	exit
 fi
 
+host_arch=$(uname -m)
 emulator="qemu"
 defpackman="apt-get"
 dependenciesonly=false
