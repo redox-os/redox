@@ -1,7 +1,7 @@
 #!/usr/bin/env bash
 
 # Ensure arch and config are set as desired, we use these to find the build dir
-export ARCH=x86_64
+export ARCH=$(uname -m)
 export CONFIG_NAME=desktop
 
 # Make sure to unmount the image first
