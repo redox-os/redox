@@ -16,7 +16,6 @@ else ifeq ($(ARCH),x86_64)
 	QEMUFLAGS+=-smp 4 -m 2048
 else ifeq ($(ARCH),aarch64)
 	efi=yes
-	kvm=no
 	live=yes
 	QEMU_ARCH=aarch64
 	QEMU_MACHINE=virt
@@ -31,6 +30,10 @@ else ifeq ($(ARCH),aarch64)
 	endif
 else
 $(error Unsupported ARCH for QEMU "$(ARCH)"))
+endif
+
+ifneq ($(ARCH),$(HOST_ARCH))
+	kvm=no
 endif
 
 ifeq ($(efi),yes)

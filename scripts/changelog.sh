@@ -12,7 +12,7 @@ REPOS=(
     rust=rust
 )
 
-for package in $(installer/target/release/redox_installer --list-packages -c config/x86_64/desktop.toml)
+for package in $(installer/target/release/redox_installer --list-packages -c config/$(uname -m)/desktop.toml)
 do
     REPOS+=("${package}=cookbook/recipes/${package}/source")
 done
