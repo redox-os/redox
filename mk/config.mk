@@ -1,8 +1,10 @@
 -include .config
 
+HOST_ARCH?=$(shell uname -m)
+
 # Configuration
-## Architecture to build Redox for (aarch64, i686, or x86_64)
-ARCH?=x86_64
+## Architecture to build Redox for (aarch64, i686, or x86_64). Defaults to a host one
+ARCH?=$(HOST_ARCH)
 ## Enable to use binary prefix (much faster)
 PREFIX_BINARY?=1
 ## Enable to use binary packages (much faster)
@@ -21,15 +23,12 @@ PODMAN_BUILD?=0
 CONTAINERFILE?=podman/redox-base-containerfile
 
 # Per host variables
-# TODO: get host arch automatically
-HOST_ARCH=x86_64
 HOST_CARGO=env -u RUSTUP_TOOLCHAIN cargo
 UNAME := $(shell uname)
 ifeq ($(UNAME),Darwin)
 	FUMOUNT=umount
 	export NPROC=sysctl -n hw.ncpu
 	export REDOX_MAKE=make
-	PREFIX_BINARY=0
 	VB_AUDIO=coreaudio
 	VBM=/Applications/VirtualBox.app/Contents/MacOS/VBoxManage
 	HOST_TARGET ?= $(HOST_ARCH)-apple-darwin
@@ -38,7 +37,6 @@ else ifeq ($(UNAME),FreeBSD)
 	FUMOUNT=sudo umount
 	export NPROC=sysctl -n hw.ncpu
 	export REDOX_MAKE=gmake
-	PREFIX_BINARY=0
 	VB_AUDIO=pulse # To check, will probaly be OSS on most setups
 	VBM=VBoxManage
 	HOST_TARGET ?= $(HOST_ARCH)-unknown-freebsd
@@ -57,6 +55,13 @@ else
 	VBM=VBoxManage
 	HOST_TARGET ?= $(HOST_ARCH)-unknown-linux-gnu
 	ALLOC_FILE=fallocate --posix --length "$(FILESYSTEM_SIZE)MiB"
+endif
+
+ifneq ($(UNAME),Linux)
+	PREFIX_BINARY=0
+endif
+ifneq ($(HOST_ARCH),x86_64)
+	PREFIX_BINARY=0
 endif
 
 # Automatic variables
