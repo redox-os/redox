@@ -72,6 +72,9 @@ freedoom = {}
 games = {}
 prboom = {}
 
+# Demos
+pixelcannon = {}
+
 # MIDI
 freepats = {}
 
