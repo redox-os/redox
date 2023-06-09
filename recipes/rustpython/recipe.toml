@@ -10,8 +10,7 @@ script = """
 export BUILDTIME_RUSTPYTHONPATH=/lib/rustpython
 export OPENSSL_DIR="${COOKBOOK_SYSROOT}"
 export ZLIB_STATIC=1
-COOKBOOK_CARGO_FLAGS+=(--features ssl)
-cookbook_cargo
+cookbook_cargo --features ssl
 mkdir -p "${COOKBOOK_STAGE}/lib"
 rsync -aE \
   --exclude 'test/' \
