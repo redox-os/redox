@@ -7,6 +7,7 @@ ARCHS=(
     x86_64
 )
 CONFIGS=(
+    demo
     desktop
 )
 
@@ -26,5 +27,7 @@ do
         cp -v "${IMAGE}" "${VENTOY}/redox-${CONFIG_NAME}-${ARCH}.iso"
     done
 done
+
+sync
 
 echo "Finished copying configs (${CONFIGS[@]}) for archs (${ARCHS[@]})"
