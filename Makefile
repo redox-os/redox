@@ -6,7 +6,11 @@ include mk/depends.mk
 
 all: $(BUILD)/harddrive.img
 
-live: $(BUILD)/livedisk.iso
+live:
+	-$(FUMOUNT) $(BUILD)/filesystem/ || true
+	-$(FUMOUNT) /tmp/redox_installer/ || true
+	rm -f $(BUILD)/livedisk.iso
+	$(MAKE) $(BUILD)/livedisk.iso
 
 popsicle: $(BUILD)/livedisk.iso
 	popsicle-gtk $(BUILD)/livedisk.iso
