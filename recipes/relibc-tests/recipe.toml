@@ -1,0 +1,16 @@
+[source]
+git = "https://gitlab.redox-os.org/redox-os/relibc.git"
+branch = "master"
+
+[build]
+template = "custom"
+script = """
+rsync -av --delete "${COOKBOOK_SOURCE}/" ./
+pushd tests
+export CARGO_TEST="${COOKBOOK_CARGO}"
+export NATIVE_RELIBC=1
+"${COOKBOOK_MAKE}" -j "${COOKBOOK_MAKE_JOBS}" all bins_verify/relibc-tests
+popd
+mkdir -pv "${COOKBOOK_STAGE}/share/relibc"
+cp -rv "tests" "${COOKBOOK_STAGE}/share/relibc/tests"
+"""
