@@ -32,6 +32,7 @@ ifeq ($(PODMAN_BUILD),1)
 	$(PODMAN_RUN) $(MAKE) $@
 else
 	cd cookbook && ./clean.sh
+	-rm -rf cookbook/repo
 	cargo clean --manifest-path cookbook/pkgutils/Cargo.toml
 	cargo clean --manifest-path installer/Cargo.toml
 	cargo clean --manifest-path redoxfs/Cargo.toml
