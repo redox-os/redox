@@ -76,6 +76,12 @@ You can find the Redox build system organization and commands on this page:
 
 - [Build System Quick Reference](https://doc.redox-os.org/book/ch08-06-build-system-reference.html)
 
+## Porting Software
+
+You can read how to use the Cookbook recipe system to port applications on this page:
+
+- [Porting Applications Using Recipes](https://doc.redox-os.org/book/ch09-03-porting-applications.html)
+
 ## Best Practices and Guidelines
 
 - [Best Practices](https://doc.redox-os.org/book/ch11-00-best-practices.html)
