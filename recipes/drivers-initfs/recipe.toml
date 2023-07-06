@@ -9,6 +9,9 @@ BINS=(
     nvmed
     pcid
     vesad
+    inputd
+    virtio-blkd
+    virtio-gpud
 )
 
 case "${TARGET}" in
