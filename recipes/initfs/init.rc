@@ -3,8 +3,9 @@ export TMPDIR /tmp
 nulld
 zerod
 randd
+inputd
 vesad T T G
-logd debug: display:1
+logd debug: display/vesa:1
 stdio log:
 ps2d us
 ramfs logging
