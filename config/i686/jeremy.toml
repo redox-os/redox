@@ -108,7 +108,7 @@ dhcpd -b
 path = "/etc/init.d/20_orbital"
 data = """
 audiod
-orbital display:3/activate orblogin launcher
+orbital orblogin launcher
 """
 
 [[files]]
