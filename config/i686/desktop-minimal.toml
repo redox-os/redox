@@ -51,7 +51,7 @@ escalated
 [[files]]
 path = "/etc/init.d/20_orbital"
 data = """
-orbital display:3/activate orblogin launcher
+orbital orblogin launcher
 """
 
 [[files]]
