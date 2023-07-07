@@ -5,16 +5,18 @@ git = "https://gitlab.redox-os.org/redox-os/drivers.git"
 template = "custom"
 script = """
 # Drivers that are built on all architectures, and NOT in drivers-initfs
-BINS=(  alxd
-        e1000d
-        ihdad
-        ixgbed
-        rtl8168d
-        usbctl
-        usbhidd
-        usbscsid
-        xhcid
-        virtio-netd
+BINS=(
+    alxd
+    e1000d
+    ihdad
+    ixgbed
+    rtl8139d
+    rtl8168d
+    usbctl
+    usbhidd
+    usbscsid
+    virtio-netd
+    xhcid
 )
 
 # Add additional drivers to the list to build, that are not in drivers-initfs
