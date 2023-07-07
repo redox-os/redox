@@ -68,7 +68,7 @@ dhcpd -b
 [[files]]
 path = "/etc/init.d/30_console"
 data = """
-getty display:2/activate
+getty display/vesa:2/activate
 getty debug: -J
 """
 

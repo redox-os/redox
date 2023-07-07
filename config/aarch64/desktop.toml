@@ -82,7 +82,7 @@ orbital orblogin launcher
 [[files]]
 path = "/etc/init.d/30_console"
 data = """
-getty display:2
+getty display/vesa:2
 getty debug: -J
 """
 
