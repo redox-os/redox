@@ -51,13 +51,13 @@ escalated
 [[files]]
 path = "/etc/init.d/20_orbital"
 data = """
-orbital display:3/activate orblogin launcher
+orbital orblogin launcher
 """
 
 [[files]]
 path = "/etc/init.d/30_console"
 data = """
-getty display:2
+getty display/vesa:2
 getty debug: -J
 """
 
