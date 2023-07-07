@@ -1,9 +1,9 @@
-# Jeremy's configuration
+# Default desktop configuration
 
 # General settings
 [general]
 # Filesystem size in MiB
-filesystem_size = 8192
+filesystem_size = 256
 # Do not prompt if settings are not defined
 prompt = false
 
@@ -17,130 +17,31 @@ contain = {}
 coreutils = {}
 dash = {}
 diffutils = {}
-drivers = {}
-escalated = {}
+#drivers = {} # more porting work
+#escalated = {} # porting
 extrautils = {}
 findutils = {}
 initfs = {}
-installer = {}
-installer-gui = {}
+#installer = {} # failure to build ring
 ion = {}
 ipcd = {}
 kernel = {}
 netdb = {}
 netstack = {}
-netsurf = {}
+#netsurf = {} # lots of porting issues
 netutils = {}
 orbdata = {}
 orbital = {}
 orbterm = {}
 orbutils = {}
-pkgutils = {}
+#pkgutils = {} # failure to build ring
 ptyd = {}
 redoxfs = {}
 relibc = {}
-relibc-tests = {}
 resist = {}
 smith = {}
 userutils = {}
 uutils = {}
-
-# apps
-cosmic-text = {}
-periodictable = {}
-pixelcannon = {}
-schismtracker = {}
-sodium = {}
-
-# cli
-acid = {}
-bash = {}
-cleye = {}
-curl = {}
-ffmpeg = {}
-git = {}
-gnu-grep = {}
-perg = {}
-ripgrep = {}
-sed = {}
-shellharden = {}
-vim = {}
-xz = {}
-
-# demos
-cairodemo = {}
-#cmatrix = {} # addwstr
-cpal = {}
-gears = {}
-glium = {} # does not show anything
-glutin = {}
-hematite = {}
-iced = {}
-libcosmic = {}
-orbclient = {}
-osdemo = {} # does not show anything
-pathfinder = {}
-procedural-wallpapers-rs = {}
-rodioplay = {}
-rust-cairo = {}
-rust-cairo-demo = {}
-sdl2_gears = {}
-vttest = {}
-webrender = {}
-winit = {}
-
-# dev
-autoconf = {}
-automake = {}
-cargo = {}
-gcc = {}
-gnu-binutils = {}
-gnu-make = {}
-nasm = {}
-patch = {}
-pkg-config = {}
-rust = {}
-rustpython = {}
-
-# games
-dosbox = {}
-eduke32 = {}
-flycast = {}
-freedoom = {}
-games = {}
-gigalomania = {}
-mednafen = {}
-mgba = {}
-neverball = {}
-openjazz = {}
-openttd = {}
-openttd-opengfx = {}
-openttd-openmsx = {}
-openttd-opensfx = {}
-prboom = {}
-#retroarch = {} # need to package cores
-rs-nes = {} # need game for testing
-rust64 = {} # need roms
-rustual-boy = {} # need game for testing
-scummvm = {} # need game for testing
-sm64ex = {}
-sopwith = {}
-spacecadetpinball = {}
-syobonaction = {}
-vice = {}
-vvvvvv = {}
-
-# stuff
-freepats = {}
-generaluser-gs = {}
-jeremy = {}
-keyboard-sfx = {}
-libc-bench = {}
-noto-color-emoji = {}
-pop-icon-theme = {}
-terminfo = {}
-timidity = {}
-ttf-hack = {}
 
 # User settings
 [users.root]
@@ -175,13 +76,13 @@ dhcpd -b
 path = "/etc/init.d/20_orbital"
 data = """
 audiod
-orbital orblogin launcher
+orbital display:3/activate launcher
 """
 
 [[files]]
 path = "/etc/init.d/30_console"
 data = """
-getty display/vesa:2
+getty display:2
 getty debug: -J
 """
 
