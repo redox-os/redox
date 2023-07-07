@@ -74,6 +74,10 @@ endif
 
 ifeq ($(net),no)
 	QEMUFLAGS+=-net none
+else ifeq ($(net),rtl8139)
+	# RTL8139
+	QEMUFLAGS+=-netdev user,id=net0 -device rtl8139,netdev=net0 \
+				-object filter-dump,id=f1,netdev=net0,file=$(BUILD)/network.pcap
 else
 	ifneq ($(bridge),)
 		QEMUFLAGS+=-netdev bridge,br=$(bridge),id=net0 -device e1000,netdev=net0,id=nic0
