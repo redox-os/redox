@@ -6,10 +6,10 @@ template = "custom"
 script = """
 BINS=(
     ahcid
+    inputd
     nvmed
     pcid
     vesad
-    inputd
     virtio-blkd
     virtio-gpud
 )
