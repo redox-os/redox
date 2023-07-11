@@ -65,10 +65,9 @@ For those who want to contribute to the Redox GUI, our GUI strategy has recently
 
 ## Tracking Issues
 
-- [Missing POSIX APIs in relibc](https://gitlab.redox-os.org/redox-os/relibc/-/issues/173) - high-priority
-- [TOML recipe format conversion status](https://gitlab.redox-os.org/redox-os/cookbook/-/issues/174) - medium-priority
-- [Crates porting status](https://gitlab.redox-os.org/redox-os/redox/-/issues/1378) - medium-priority
-- [Forks status](https://gitlab.redox-os.org/redox-os/redox/-/issues/1380) - low-priority
+We use tracking issues to ease the development workflow, you can find them on this page:
+
+- [Tracking issues index](https://gitlab.redox-os.org/redox-os/redox/-/issues/1384)
 
 ## Build System
 
