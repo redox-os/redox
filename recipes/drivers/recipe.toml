@@ -17,6 +17,7 @@ BINS=(
     usbscsid
     virtio-netd
     xhcid
+    inputd
 )
 
 # Add additional drivers to the list to build, that are not in drivers-initfs
