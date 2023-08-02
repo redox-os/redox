@@ -1,139 +1,228 @@
-# Redox 0.8.0 Hardware Compatibility
+# Hardware Compatibility
 
-Updated on November 11, 2022 in preparation for the 0.8.0 release. Systems are
-rated on a scale of 🚫 Broken, ⚠️ Booting, and ✅ Recommended. Broken means the
-system cannot boot to a desktop, booting means the system boots to a desktop
-but has issues, and recommended means the system provides all implemented
-features.
+This document tracks the current hardware compatibility of Redox.
+
+- [Status](#status)
+- [General](#general)
+- [x86_64](#x86_64)
+    - [System76](#system76)
+    - [Dell](#dell)
+    - [HP](#hp)
+    - [ASUS](#asus)
+    - [Lenovo](#lenovo)
+    - [Toshiba](#toshiba)
+- [i686](#i686)
+    - [Dell](#dell-1)
+    - [ASUS](#asus-1)
+    - [Lenovo](#lenovo-1)
+    - [Toshiba](#toshiba-1)
+    - [Panasonic](#panasonic)
+
+## Status
+
+- Broken - The system can't boot.
+- Booting - The system boots with some issues.
+- Recommended - The system start with all features working.
 
 ## General
 
 Due to incomplete USB support, desktops are generally not recommended.
 
-- USB support is incomplete
-- Wireless networking is not supported
+- USB support is incomplete.
+- Wireless networking is not supported.
 
 ## x86_64
 
+Computers using a 64 bits Intel/AMD CPU.
+
 Test performed using https://static.redox-os.org/img/x86_64/redox_desktop_x86_64_2022-11-11_629_livedisk.iso
 
-### Lenovo IdeaPad Y510P
+### System76
 
-Status: ✅ Recommended
+- **System76 Galago Pro (galp5)**
 
-- Booted using both BIOS and UEFI
-- Boots to desktop
-
-### System76 Galago Pro (galp5)
-
-Status: ✅ Recommended
+- Status - Recommended
+- Redox version - 0.8.0
+- Variant - desktop
+- Image date - 11-11-2022
 
 - Booted using UEFI
 - Boots to desktop
 
-### System76 Lemur Pro (lemp9)
+- **System76 Lemur Pro (lemp9)**
 
-Status: ✅ Recommended
-
-- Booted using UEFI
-- Boots to desktop
-
-### Asus X554L
-
-Status: ⚠️ Booting
-
-- Booted using BIOS
-- Boots to desktop
-- No audio, HDA driver cannot find output pins
-
-### Dell XPS 13 (9350)
-
-Status: ⚠️ Booting
-
-- Booted using both BIOS and UEFI
-- Boots to desktop
-- NVMe driver livelocks
-
-### HP Dev One
-
-Status: ⚠️ Booting
+- Status - Recommended
+- Redox version - 0.8.0
+- Variant - desktop
+- Image date - 11-11-2022
 
 - Booted using UEFI
 - Boots to desktop
-- No touchpad support, requires I2C HID
 
-### System76 Oryx Pro (oryp10)
+- **System76 Oryx Pro (oryp10)**
 
-Status: ⚠️ Booting
+- Status - Booting
+- Redox version - 0.8.0
+- Variant - desktop
+- Image date - 11-11-2022
 
 - Booted using UEFI
 - Boots to desktop
 - No touchpad support, though it should be working
 
-### System76 Pangolin (pang12)
+- **System76 Pangolin (pang12)**
 
-Status: ⚠️ Booting
+- Status - Booting
+- Redox version - 0.8.0
+- Variant - desktop
+- Image date - 11-11-2022
 
 - Booted using UEFI
 - Boots to desktop
 - No touchpad support, requires I2C HID
 
-### Toshiba Satellite L500
+### Dell
 
-Status: ⚠️ Booting
+- **Dell XPS 13 (9350)**
+
+- Status - Booting
+- Redox version - 0.8.0
+- Variant - desktop
+- Image date - 11-11-2022
+
+- Booted using both BIOS and UEFI
+- Boots to desktop
+- NVMe driver livelocks
+
+### HP
+
+- **HP Dev One**
+
+- Status - Booting
+- Redox version - 0.8.0
+- Variant - desktop
+- Image date - 11-11-2022
+
+- Booted using UEFI
+- Boots to desktop
+- No touchpad support, requires I2C HID
+
+### ASUS
+
+- **ASUS X554L**
+
+- Status - Booting
+- Redox version - 0.8.0
+- Variant - desktop
+- Image date - 11-11-2022
 
 - Booted using BIOS
-- Correct video mode not offered, this is a firmware issue
 - Boots to desktop
-- No ethernet driver
+- No audio, HDA driver cannot find output pins
 
-### Lenovo G570
+### Lenovo
 
-Status: 🚫 Broken
+- **Lenovo IdeaPad Y510P**
+
+- Status - Recommended
+- Redox version - 0.8.0
+- Variant - desktop
+- Image date - 11-11-2022
+
+- Booted using both BIOS and UEFI
+- Boots to desktop
+
+- **Lenovo G570**
+
+- Status - Broken
+- Redox version - 0.8.0
+- Variant - desktop
+- Image date - 11-11-2022
 
 - Booted using BIOS
 - Correct video mode not offered, this is a firmware issue
 - Bootloader panics in alloc_zeroed_page_aligned
 
-## i686
+### Toshiba
 
-Test performed using https://static.redox-os.org/img/i686/redox_desktop_i686_2022-11-11_629_livedisk.iso
+- **Toshiba Satellite L500**
 
-### Asus Eee PC 900
-
-Status: ⚠️ Booting
+- Status - Booting
+- Redox version - 0.8.0
+- Variant - desktop
+- Image date - 11-11-2022
 
 - Booted using BIOS
 - Correct video mode not offered, this is a firmware issue
 - Boots to desktop
 - No ethernet driver
 
-### Dell XPS 13 (9350)
+## i686
 
-Status: ⚠️ Booting
+Computers with a 32 bits Intel/AMD CPU.
+
+Test performed using https://static.redox-os.org/img/i686/redox_desktop_i686_2022-11-11_629_livedisk.iso
+
+### Dell
+
+- **Dell XPS 13 (9350)**
+
+- Status - Booting
+- Redox version - 0.8.0
+- Variant - desktop
+- Image date - 11-11-2022
 
 - Booted using BIOS
 - Boots to desktop
 - NVMe driver livelocks
 
-### Lenovo IdeaPad Y510P
+### ASUS
 
-Status: 🚫 Broken
+- **ASUS Eee PC 900**
+
+- Status - Booting
+- Redox version - 0.8.0
+- Variant - desktop
+- Image date - 11-11-2022
+
+- Booted using BIOS
+- Correct video mode not offered, this is a firmware issue
+- Boots to desktop
+- No ethernet driver
+
+### Lenovo
+
+- **Lenovo IdeaPad Y510P**
+
+- Status - Broken
+- Redox version - 0.8.0
+- Variant - desktop
+- Image date - 11-11-2022
 
 - Booted using BIOS
 - Panics on phys_to_virt overflow, probably having invalid mappings for 32-bit
 
-### Panasonic Toughbook CF-18
+### Toshiba
 
-Status: 🚫 Broken
+- **Toshiba Satellite L500**
 
-- Booted using BIOS
-- Hangs after PIT initialization
-
-### Toshiba Satellite L500
-
-Status: 🚫 Broken
+- Status - Broken
+- Redox version - 0.8.0
+- Variant - desktop
+- Image date - 11-11-2022
 
 - Booted using BIOS
 - Correct video mode not offered, this is a firmware issue
 - Panics on phys_to_virt overflow, probably having invalid mappings for 32-bit
+
+### Panasonic
+
+- **Panasonic Toughbook CF-18**
+
+- Status - Broken
+- Redox version - 0.8.0
+- Variant - desktop
+- Image date - 11-11-2022
+
+- Booted using BIOS
+- Hangs after PIT initialization
