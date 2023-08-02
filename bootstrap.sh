@@ -143,6 +143,7 @@ osx_macports()
 	install_macports_pkg "automake"
 	install_macports_pkg "scons"
 	install_macports_pkg "gmake"
+	install_macports_pkg "lua"
 }
 
 ###############################################################################
@@ -205,6 +206,7 @@ osx_homebrew()
 	install_brew_pkg "gpatch"
 	install_brew_pkg "automake"
 	install_brew_pkg "scons"
+	install_brew_pkg "lua"
 
     install_brew_pkg "redox-os/gcc_cross_compilers/x86_64-elf-gcc" "x86_64-elf-gcc"
 }
@@ -270,6 +272,7 @@ freebsd()
 	install_freebsd_pkg "patch"
 	install_freebsd_pkg "automake"
 	install_freebsd_pkg "scons"
+	install_freebsd_pkg "lua54"
     set +xe
 }
 
@@ -281,7 +284,46 @@ freebsd()
 archLinux()
 {
 	echo "Detected Arch Linux"
-	packages="cmake fuse git gperf perl-html-parser nasm wget texinfo bison flex po4a autoconf curl file patch automake scons waf expat gmp libtool libpng libjpeg-turbo sdl12-compat m4 pkgconf po4a syslinux meson python python-mako make xdg-utils zip unzip llvm clang perl doxygen"
+	packages="cmake \
+	fuse \
+	git \
+	gperf \
+	perl-html-parser \
+	nasm \
+	wget \
+	texinfo \
+	bison \
+	flex \
+	po4a \
+	autoconf \
+	curl \
+	file \
+	patch \
+	automake \
+	scons \
+	waf \
+	expat \
+	gmp \
+	libtool \
+	libpng \
+	libjpeg-turbo \
+	sdl12-compat \
+	m4 \
+	pkgconf \
+	po4a \
+	syslinux \
+	meson \
+	python \
+	python-mako \
+	make \
+	xdg-utils \
+	zip \
+	unzip \
+	llvm \
+	clang \
+	perl \
+	doxygen \
+	lua"
 	if [ "$1" == "qemu" ]; then
 		packages="$packages qemu"
 	elif [ "$1" == "virtualbox" ]; then
@@ -351,7 +393,9 @@ ubuntu()
 		llvm \
 		clang \
 		perl \
-		doxygen"
+		doxygen \
+		g++ \
+		lua5.4"
 	# Not availible for at least ARM hosts
 	case "$host_arch" in
 		x86*|i?86) pkgs="$pkgs libc6-dev-i386 syslinux-utils";;
@@ -403,7 +447,57 @@ fedora()
 		fi
 	fi
 	# Use rpm -q <package> to check if it's already installed
-	PKGS=$(for pkg in file autoconf vim bison flex genisoimage gperf glibc-devel.i686 expat expat-devel fuse-devel fuse3-devel gmp-devel libpng-devel perl perl-HTML-Parser libtool libjpeg-turbo-devel SDL2_ttf-devel sdl12-compat-devel m4 nasm po4a syslinux texinfo ninja-build meson waf python3-mako make gcc gcc-c++ openssl patch automake perl-Pod-Html perl-FindBin gperf curl gettext-devel perl-Pod-Xhtml pkgconf-pkg-config cmake llvm zip unzip lua luajit make clang doxygen ; do rpm -q $pkg > /dev/null || echo $pkg; done)
+	PKGS=$(for pkg in file \
+	autoconf \
+	vim \
+	bison \
+	flex \
+	genisoimage \
+	gperf \
+	glibc-devel.i686 \
+	expat \
+	expat-devel \
+	fuse-devel \
+	fuse3-devel \
+	gmp-devel \
+	libpng-devel \
+	perl \
+	perl-HTML-Parser \
+	libtool \
+	libjpeg-turbo-devel \
+	SDL2_ttf-devel \
+	sdl12-compat-devel \
+	m4 \
+	nasm \
+	po4a \
+	syslinux \
+	texinfo \
+	ninja-build \
+	meson \
+	waf \
+	python3-mako \
+	make \
+	gcc \
+	gcc-c++ \
+	openssl \
+	patch \
+	automake \
+	perl-Pod-Html \
+	perl-FindBin \
+	gperf \
+	curl \
+	gettext-devel \
+	perl-Pod-Xhtml \
+	pkgconf-pkg-config \
+	cmake \
+	llvm \
+	zip \
+	unzip \
+	lua \
+	luajit \
+	make \
+	clang \
+	doxygen ; do rpm -q $pkg > /dev/null || echo $pkg; done)
 	# If the list of packages is not empty, install missing
 	COUNT=$(echo $PKGS | wc -w)
 	if [ $COUNT -ne 0 ]; then
@@ -481,7 +575,8 @@ suse()
 		unzip \
 		llvm \
 		clang \
-		doxygen
+		doxygen \
+		lua54
 }
 
 ##############################################################################
@@ -549,7 +644,32 @@ solus()
 
 	echo "Installing necessary build tools..."
 	#if guards are not necessary with eopkg since it does nothing if latest version is already installed
-	sudo eopkg it fuse-devel git gcc g++ libgcc-32bit libstdc++-32bit nasm make cmake binutils-gold glibc-devel pkg-config fuse2-devel linux-headers rsync automake autoconf m4 libtool-devel po4a patch bison flex gperf libpng-devel perl-html-parser
+	sudo eopkg it fuse-devel \
+	git \
+	gcc \
+	g++ \
+	libgcc-32bit \
+	libstdc++-32bit \
+	nasm \
+	make \
+	cmake \
+	binutils-gold \
+	glibc-devel \
+	pkg-config \
+	fuse2-devel \
+	linux-headers \
+	rsync \
+	automake \
+	autoconf \
+	m4 \
+	libtool-devel \
+	po4a \
+	patch \
+	bison \
+	flex \
+	gperf \
+	libpng-devel \
+	perl-html-parser
 }
 
 ######################################################################
