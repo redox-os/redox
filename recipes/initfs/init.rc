@@ -4,7 +4,7 @@ nulld
 zerod
 randd
 inputd
-vesad T T T T T T T T T T T T
+vesad T T G
 logd debug: display/vesa:1
 stdio log:
 ps2d us
@@ -14,5 +14,4 @@ pcid /etc/pcid/initfs.toml
 redoxfs --uuid $REDOXFS_UUID file $REDOXFS_BLOCK
 cd file:
 export PATH file:/bin
-inputd -G 3
 run.d /etc/init.d
