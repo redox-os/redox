@@ -3,7 +3,7 @@
 # General settings
 [general]
 # Filesystem size in MiB
-filesystem_size = 256
+filesystem_size = 300
 # Do not prompt if settings are not defined
 prompt = false
 
@@ -35,6 +35,11 @@ resist = {}
 smith = {}
 userutils = {}
 uutils = {}
+
+bash = {}
+git = {}
+curl = {}
+vim = {}
 
 # User settings
 [users.root]
