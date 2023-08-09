@@ -5,7 +5,7 @@ source config.sh
 
 if [ $# = 0 ]
 then
-    recipes="$(ls -1 recipes)"
+    recipes="$(target/release/list_recipes)"
 else
     recipes="$@"
 fi

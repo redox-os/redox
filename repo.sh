@@ -17,12 +17,14 @@ done
 
 if [ "$recipes" == "" ]
 then
-    recipes="$(ls -1 recipes)"
+    recipes="$(target/release/list_recipes)"
 fi
 
 for recipe in $recipes
 do
-    COOKBOOK_RECIPE="recipes/$recipe"
+    recipe_path=`target/release/find_recipe $recipe`
+    echo recipe path is $recipe_path
+    COOKBOOK_RECIPE="$recipe_path"
     TARGET_DIR="${COOKBOOK_RECIPE}/target/${TARGET}"
     COOKBOOK_BUILD="${TARGET_DIR}/build"
     COOKBOOK_STAGE="${TARGET_DIR}/stage"
@@ -113,7 +115,8 @@ mkdir -p "$REPO"
 
 for recipe in $recipes
 do
-    COOKBOOK_RECIPE="recipes/$recipe"
+    recipe_path=`target/release/find_recipe $recipe`
+    COOKBOOK_RECIPE="$recipe_path"
     TARGET_DIR="${COOKBOOK_RECIPE}/target/${TARGET}"
     COOKBOOK_STAGE="${TARGET_DIR}/stage"
 

@@ -5,14 +5,15 @@ source config.sh
 
 if [ $# = 0 ]
 then
-    recipes="$(ls -1 recipes)"
+    recipes="$(target/release/list_recipes)"
 else
     recipes="$@"
 fi
 
 for recipe in $recipes
 do
-    if [ -d "recipes/$recipe/source" ]
+    recipe_path=`target/release/find_recipe $recipe`
+    if [ -d "$recipe_path/source" ]
     then
         status="$(COOK_QUIET=1 ./cook.sh "$recipe" status_origin)"
 

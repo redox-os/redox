@@ -1,6 +1,7 @@
 use cookbook::blake3::blake3_progress;
 use cookbook::recipe::{Recipe, SourceRecipe, BuildKind, BuildRecipe, PackageRecipe};
 use cookbook::sha256::sha256_progress;
+use cookbook::recipe_find::recipe_find;
 use std::{
     env,
     fs,
@@ -399,7 +400,14 @@ fn build(recipe_dir: &Path, source_dir: &Path, target_dir: &Path, build: &BuildR
         for dependency in build.dependencies.iter() {
             let public_path = "build/id_ed25519.pub.toml";
             //TODO: sanitize name
-            let archive_path = format!("recipes/{}/target/{}/stage.pkgar", dependency, redoxer::target());
+            let dependency_dir = recipe_find(dependency, Path::new("recipes"))?;
+            if dependency_dir.is_none() {
+                return Err(format!(
+                    "failed to find recipe directory '{}'",
+                    dependency
+                ));
+            }
+            let archive_path = format!("{}/target/{}/stage.pkgar", dependency_dir.unwrap().display(), redoxer::target());
             pkgar::extract(
                 public_path,
                 &archive_path,
@@ -668,14 +676,14 @@ pub struct CookRecipe {
 impl CookRecipe {
     pub fn new(name: String) -> Result<Self, String> {
         //TODO: sanitize recipe name?
-        let dir = Path::new("recipes").join(&name);
-        if ! dir.is_dir() {
+        let dir = recipe_find(&name, Path::new("recipes"))?;
+        if dir.is_none() {
             return Err(format!(
                 "failed to find recipe directory '{}'",
-                dir.display()
+                name
             ));
         }
-
+        let dir = dir.unwrap();
         let file = dir.join("recipe.toml");
         if ! file.is_file() {
             return Err(format!(
