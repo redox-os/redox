@@ -66,6 +66,11 @@ smith = {}
 userutils = {}
 uutils = {}
 
+bash = {}
+git = {}
+curl = {}
+vim = {}
+
 # Games
 dosbox = {}
 freedoom = {}
