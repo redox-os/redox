@@ -17,7 +17,7 @@ cargo rustc \
 	-C debuginfo=2 \
 	-C lto \
 	--emit link="${PWD}/libkernel.a"
-"${COOKBOOK_RECIPE}/kernel_ld.sh" "${TARGET}-ld" \
+"${TARGET}-ld" \
 	--gc-sections \
 	-z max-page-size=0x1000 \
 	-T "${COOKBOOK_SOURCE}/linkers/${ARCH}.ld" \
