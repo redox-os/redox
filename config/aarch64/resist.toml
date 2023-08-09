@@ -1,52 +1,36 @@
-# Default demo configuration
+# Configuration for using resist
 
 # General settings
 [general]
 # Filesystem size in MiB
-filesystem_size = 300
+filesystem_size = 256
 # Do not prompt if settings are not defined
 prompt = false
 
 # Package settings
 [packages]
-audiod = {}
 bootloader = {}
 bootstrap = {}
-ca-certificates = {}
-contain = {}
 coreutils = {}
 dash = {}
 diffutils = {}
-#drivers = {} # more porting work
-#escalated = {} # porting
+drivers = {}
+escalated = {}
 extrautils = {}
 findutils = {}
+gcc = {}
+gnu-binutils = {}
+gnu-make = {}
 initfs = {}
-#installer = {} # failure to build ring
-ion = {}
 ipcd = {}
 kernel = {}
 netdb = {}
 netstack = {}
-#netsurf = {} # lots of porting issues
 netutils = {}
-orbdata = {}
-orbital = {}
-orbterm = {}
-orbutils = {}
-#pkgutils = {} # failure to build ring
 ptyd = {}
-redoxfs = {}
-relibc = {}
 resist = {}
-smith = {}
 userutils = {}
 uutils = {}
-
-bash = {}
-git = {}
-curl = {}
-vim = {}
 
 # User settings
 [users.root]
@@ -74,21 +58,17 @@ path = "/etc/init.d/10_net"
 data = """
 smolnetd
 dnsd
-dhcpd -b
+dhcpd
 """
 
 [[files]]
-path = "/etc/init.d/20_orbital"
+path = "/etc/init.d/20_resist"
 data = """
-audiod
-orbital launcher
-"""
-
-[[files]]
-path = "/etc/init.d/30_console"
-data = """
-getty 2
-getty debug: -J
+export RUST_BACKTRACE full
+resist /share/resist/redox/spec.toml
+resist /share/resist/posix/base.toml
+resist /share/resist/posix/shell.toml
+shutdown
 """
 
 [[files]]
