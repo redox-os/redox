@@ -70,6 +70,7 @@ uutils = {}
 periodictable = {}
 
 # Shell Apps
+
 bash = {}
 binutils = {}
 curl = {}
@@ -77,6 +78,7 @@ git = {}
 gnu-grep = {}
 ripgrep = {}
 sodium = {}
+vim = {}
 
 # Games
 dosbox = {}
