@@ -368,9 +368,10 @@ function op {
 
 if [ -n "$1" ]
 then
-    if [ -d "$ROOT/recipes/$1" ]
+    recipe_path=`target/release/find_recipe $1`
+    if [ -d "$ROOT/$recipe_path" ]
     then
-        export COOKBOOK_RECIPE="${ROOT}/recipes/$1"
+        export COOKBOOK_RECIPE="${ROOT}/$recipe_path"
 
         TARGET_DIR="${COOKBOOK_RECIPE}/target/${TARGET}"
         mkdir -p "${TARGET_DIR}"
