@@ -47,7 +47,8 @@ RUN apt-get update \
 		llvm \
 		clang \
 		perl \
-        doxygen
+        doxygen \
+        ant
 
 # _UID_ must be replaced with the user's uid on host
 # podman root is mapped to your user id on host during build,
