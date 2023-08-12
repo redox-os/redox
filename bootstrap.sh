@@ -207,6 +207,7 @@ osx_homebrew()
 	install_brew_pkg "automake"
 	install_brew_pkg "scons"
 	install_brew_pkg "lua"
+	install_brew_pkg "ant"
 
     install_brew_pkg "redox-os/gcc_cross_compilers/x86_64-elf-gcc" "x86_64-elf-gcc"
 }
@@ -323,7 +324,8 @@ archLinux()
 	clang \
 	perl \
 	doxygen \
-	lua"
+	lua \
+	ant"
 	if [ "$1" == "qemu" ]; then
 		packages="$packages qemu"
 	elif [ "$1" == "virtualbox" ]; then
@@ -395,7 +397,8 @@ ubuntu()
 		perl \
 		doxygen \
 		g++ \
-		lua5.4"
+		lua5.4 \
+		ant"
 	# Not availible for at least ARM hosts
 	case "$host_arch" in
 		x86*|i?86) pkgs="$pkgs libc6-dev-i386 syslinux-utils";;
@@ -497,7 +500,8 @@ fedora()
 	luajit \
 	make \
 	clang \
-	doxygen ; do rpm -q $pkg > /dev/null || echo $pkg; done)
+	doxygen \
+	ant ; do rpm -q $pkg > /dev/null || echo $pkg; done)
 	# If the list of packages is not empty, install missing
 	COUNT=$(echo $PKGS | wc -w)
 	if [ $COUNT -ne 0 ]; then
@@ -576,7 +580,8 @@ suse()
 		llvm \
 		clang \
 		doxygen \
-		lua54
+		lua54 \
+		ant
 }
 
 ##############################################################################
