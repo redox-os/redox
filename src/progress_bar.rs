@@ -30,7 +30,7 @@ pub struct ProgressBarWrite<'p, 'w, P: Write + 'p, W: Write + 'w> {
 }
 
 impl<'p, 'w, P: Write, W: Write> ProgressBarWrite<'p, 'w, P, W> {
-    pub fn new(pb: &'p mut ProgressBar<P>, w: &'w mut W) -> ProgressBarWrite<'p, 'w, P, W> {
+    pub fn _new(pb: &'p mut ProgressBar<P>, w: &'w mut W) -> ProgressBarWrite<'p, 'w, P, W> {
         ProgressBarWrite {
             pb,
             w
