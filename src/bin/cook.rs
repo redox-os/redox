@@ -381,11 +381,9 @@ fn build(recipe_dir: &Path, source_dir: &Path, target_dir: &Path, build: &BuildR
     let sysroot_dir = target_dir.join("sysroot");
     // Rebuild sysroot if source is newer
     //TODO: rebuild on recipe changes
-    if sysroot_dir.is_dir() {
-        if modified_dir(&sysroot_dir)? < source_modified {
-            eprintln!("DEBUG: '{}' newer than '{}'", source_dir.display(), sysroot_dir.display());
-            remove_all(&sysroot_dir)?;
-        }
+    if sysroot_dir.is_dir() && modified_dir(&sysroot_dir)? < source_modified {
+        eprintln!("DEBUG: '{}' newer than '{}'", source_dir.display(), sysroot_dir.display());
+        remove_all(&sysroot_dir)?;
     }
     if ! sysroot_dir.is_dir() {
         // Create sysroot.tmp
@@ -427,12 +425,11 @@ fn build(recipe_dir: &Path, source_dir: &Path, target_dir: &Path, build: &BuildR
     let stage_dir = target_dir.join("stage");
     // Rebuild stage if source is newer
     //TODO: rebuild on recipe changes
-    if stage_dir.is_dir() {
-        if modified_dir(&stage_dir)? < source_modified {
-            eprintln!("DEBUG: '{}' newer than '{}'", source_dir.display(), stage_dir.display());
-            remove_all(&stage_dir)?;
-        }
+    if stage_dir.is_dir() && modified_dir(&stage_dir)? < source_modified {
+        eprintln!("DEBUG: '{}' newer than '{}'", source_dir.display(), stage_dir.display());
+        remove_all(&stage_dir)?;
     }
+    
     if ! stage_dir.is_dir() {
         // Create stage.tmp
         let stage_dir_tmp = target_dir.join("stage.tmp");
