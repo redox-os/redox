@@ -27,7 +27,7 @@ fn remove_all(path: &Path) -> Result<(), String> {
 }
 
 fn create_dir(dir: &Path) -> Result<(), String> {
-    fs::create_dir(&dir).map_err(|err| format!(
+    fs::create_dir(dir).map_err(|err| format!(
         "failed to create '{}': {}\n{:?}",
         dir.display(),
         err,
@@ -70,7 +70,7 @@ fn modified_dir_inner<F: FnMut(&DirEntry) -> bool>(dir: &Path, filter: F) -> io:
 }
 
 fn modified_dir(dir: &Path) -> Result<SystemTime, String> {
-    modified_dir_inner(&dir, |_| true).map_err(|err| format!(
+    modified_dir_inner(dir, |_| true).map_err(|err| format!(
         "failed to get modified time of '{}': {}\n{:#?}",
         dir.display(),
         err,
@@ -79,7 +79,7 @@ fn modified_dir(dir: &Path) -> Result<SystemTime, String> {
 }
 
 fn modified_dir_ignore_git(dir: &Path) -> Result<SystemTime, String> {
-    modified_dir_inner(&dir, |entry| {
+    modified_dir_inner(dir, |entry| {
         entry.file_name().to_str().map(|s| s != ".git").unwrap_or(true)
     }).map_err(|err| format!(
         "failed to get modified time of '{}': {}\n{:#?}",
@@ -172,9 +172,9 @@ fn fetch(recipe_dir: &Path, source: &Option<SourceRecipe>) -> Result<PathBuf, St
 
                 // Clone the repository to source.tmp
                 let mut command = Command::new("git");
-                command.arg("clone").arg("--recursive").arg(&git);
+                command.arg("clone").arg("--recursive").arg(git);
                 if let Some(branch) = branch {
-                    command.arg("--branch").arg(&branch);
+                    command.arg("--branch").arg(branch);
                 }
                 command.arg(&source_dir_tmp);
                 run_command(command)?;
@@ -194,7 +194,7 @@ fn fetch(recipe_dir: &Path, source: &Option<SourceRecipe>) -> Result<PathBuf, St
                 // Reset origin
                 let mut command = Command::new("git");
                 command.arg("-C").arg(&source_dir);
-                command.arg("remote").arg("set-url").arg("origin").arg(&git);
+                command.arg("remote").arg("set-url").arg("origin").arg(git);
                 run_command(command)?;
 
                 // Fetch origin
@@ -204,7 +204,7 @@ fn fetch(recipe_dir: &Path, source: &Option<SourceRecipe>) -> Result<PathBuf, St
                 run_command(command)?;
             }
 
-            if let Some(upstream) = upstream {
+            if let Some(_upstream) = upstream {
                 //TODO: set upstream URL
                 // git remote set-url upstream "$GIT_UPSTREAM" &> /dev/null ||
                 // git remote add upstream "$GIT_UPSTREAM"
@@ -215,7 +215,7 @@ fn fetch(recipe_dir: &Path, source: &Option<SourceRecipe>) -> Result<PathBuf, St
                 // Check out specified revision
                 let mut command = Command::new("git");
                 command.arg("-C").arg(&source_dir);
-                command.arg("checkout").arg(&rev);
+                command.arg("checkout").arg(rev);
                 run_command(command)?;
             } else {
                 //TODO: complicated stuff to check and reset branch to origin
@@ -259,7 +259,7 @@ fi"#);
                     let source_tar_tmp = recipe_dir.join("source.tar.tmp");
 
                     let mut command = Command::new("wget");
-                    command.arg(&tar);
+                    command.arg(tar);
                     command.arg("-O").arg(&source_tar_tmp);
                     run_command(command)?;
 
@@ -328,7 +328,7 @@ fi"#);
 
                 // Apply patches
                 for patch_name in patches {
-                    let patch_file = recipe_dir.join(&patch_name);
+                    let patch_file = recipe_dir.join(patch_name);
                     if ! patch_file.is_file() {
                         return Err(format!(
                             "failed to find patch file '{}'",
@@ -376,16 +376,14 @@ fi"#);
 }
 
 fn build(recipe_dir: &Path, source_dir: &Path, target_dir: &Path, build: &BuildRecipe) -> Result<PathBuf, String> {
-    let source_modified = modified_dir_ignore_git(&source_dir)?;
+    let source_modified = modified_dir_ignore_git(source_dir)?;
 
     let sysroot_dir = target_dir.join("sysroot");
     // Rebuild sysroot if source is newer
     //TODO: rebuild on recipe changes
-    if sysroot_dir.is_dir() {
-        if modified_dir(&sysroot_dir)? < source_modified {
-            eprintln!("DEBUG: '{}' newer than '{}'", source_dir.display(), sysroot_dir.display());
-            remove_all(&sysroot_dir)?;
-        }
+    if sysroot_dir.is_dir() && modified_dir(&sysroot_dir)? < source_modified {
+        eprintln!("DEBUG: '{}' newer than '{}'", source_dir.display(), sysroot_dir.display());
+        remove_all(&sysroot_dir)?;
     }
     if ! sysroot_dir.is_dir() {
         // Create sysroot.tmp
@@ -427,12 +425,11 @@ fn build(recipe_dir: &Path, source_dir: &Path, target_dir: &Path, build: &BuildR
     let stage_dir = target_dir.join("stage");
     // Rebuild stage if source is newer
     //TODO: rebuild on recipe changes
-    if stage_dir.is_dir() {
-        if modified_dir(&stage_dir)? < source_modified {
-            eprintln!("DEBUG: '{}' newer than '{}'", source_dir.display(), stage_dir.display());
-            remove_all(&stage_dir)?;
-        }
+    if stage_dir.is_dir() && modified_dir(&stage_dir)? < source_modified {
+        eprintln!("DEBUG: '{}' newer than '{}'", source_dir.display(), stage_dir.display());
+        remove_all(&stage_dir)?;
     }
+    
     if ! stage_dir.is_dir() {
         // Create stage.tmp
         let stage_dir_tmp = target_dir.join("stage.tmp");
@@ -593,7 +590,7 @@ done
     Ok(stage_dir)
 }
 
-fn package(recipe_dir: &Path, stage_dir: &Path, target_dir: &Path, package: &PackageRecipe) -> Result<PathBuf, String> {
+fn package(_recipe_dir: &Path, stage_dir: &Path, target_dir: &Path, _package: &PackageRecipe) -> Result<PathBuf, String> {
     //TODO: metadata like dependencies, name, and version
 
     let secret_path = "build/id_ed25519.toml";
@@ -603,11 +600,11 @@ fn package(recipe_dir: &Path, stage_dir: &Path, target_dir: &Path, package: &Pac
             create_dir(Path::new("build"))?;
         }
         let (public_key, secret_key) = pkgar_keys::SecretKeyFile::new();
-        public_key.save(&public_path).map_err(|err| format!(
+        public_key.save(public_path).map_err(|err| format!(
             "failed to save pkgar public key: {:?}",
             err
         ))?;
-        secret_key.save(&secret_path).map_err(|err| format!(
+        secret_key.save(secret_path).map_err(|err| format!(
             "failed to save pkgar secret key: {:?}",
             err
         ))?;
@@ -617,7 +614,7 @@ fn package(recipe_dir: &Path, stage_dir: &Path, target_dir: &Path, package: &Pac
     // Rebuild package if stage is newer
     //TODO: rebuild on recipe changes
     if package_file.is_file() {
-        let stage_modified = modified_dir(&stage_dir)?;
+        let stage_modified = modified_dir(stage_dir)?;
         if modified(&package_file)? < stage_modified {
             eprintln!("DEBUG: '{}' newer than '{}'", stage_dir.display(), package_file.display());
             remove_all(&package_file)?;
@@ -638,7 +635,7 @@ fn package(recipe_dir: &Path, stage_dir: &Path, target_dir: &Path, package: &Pac
 }
 
 fn cook(recipe_dir: &Path, recipe: &Recipe, fetch_only: bool) -> Result<(), String> {
-    let source_dir = fetch(&recipe_dir, &recipe.source).map_err(|err| format!(
+    let source_dir = fetch(recipe_dir, &recipe.source).map_err(|err| format!(
         "failed to fetch: {}",
         err
     ))?;
@@ -654,12 +651,12 @@ fn cook(recipe_dir: &Path, recipe: &Recipe, fetch_only: bool) -> Result<(), Stri
         create_dir(&target_dir)?;
     }
 
-    let stage_dir = build(&recipe_dir, &source_dir, &target_dir, &recipe.build).map_err(|err| format!(
+    let stage_dir = build(recipe_dir, &source_dir, &target_dir, &recipe.build).map_err(|err| format!(
         "failed to build: {}",
         err
     ))?;
 
-    let package_file = package(&recipe_dir, &stage_dir, &target_dir, &recipe.package).map_err(|err| format!(
+    let _package_file = package(recipe_dir, &stage_dir, &target_dir, &recipe.package).map_err(|err| format!(
         "failed to package: {}",
         err
     ))?;
