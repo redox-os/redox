@@ -81,6 +81,12 @@ You can read how to use the Cookbook recipe system to port applications on this 
 
 - [Porting Applications Using Recipes](https://doc.redox-os.org/book/ch09-03-porting-applications.html)
 
+## Developer FAQ
+
+You can see the most common questions and problems on this page:
+
+- [Develper FAQ](https://doc.redox-os.org/book/ch09-05-developer-faq.html)
+
 ## Best Practices and Guidelines
 
 - [Best Practices](https://doc.redox-os.org/book/ch11-00-best-practices.html)
