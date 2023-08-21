@@ -87,6 +87,12 @@ You can see the most common questions and problems on this page:
 
 - [Develper FAQ](https://doc.redox-os.org/book/ch09-05-developer-faq.html)
 
+## Development Tips
+
+You can find important tips on this section:
+
+- [Development Tips](https://doc.redox-os.org/book/ch09-02-coding-and-building.html#development-tips)
+
 ## Best Practices and Guidelines
 
 - [Best Practices](https://doc.redox-os.org/book/ch11-00-best-practices.html)
