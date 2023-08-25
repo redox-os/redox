@@ -144,6 +144,7 @@ osx_macports()
 	install_macports_pkg "scons"
 	install_macports_pkg "gmake"
 	install_macports_pkg "lua"
+	install_macports_pkg "protobuf-c"
 }
 
 ###############################################################################
@@ -208,6 +209,7 @@ osx_homebrew()
 	install_brew_pkg "scons"
 	install_brew_pkg "lua"
 	install_brew_pkg "ant"
+	install_brew_pkg "protobuf"
 
     install_brew_pkg "redox-os/gcc_cross_compilers/x86_64-elf-gcc" "x86_64-elf-gcc"
 }
@@ -274,6 +276,7 @@ freebsd()
 	install_freebsd_pkg "automake"
 	install_freebsd_pkg "scons"
 	install_freebsd_pkg "lua54"
+	install_freebsd_pkg "py-protobuf-compiler"
     set +xe
 }
 
@@ -325,7 +328,8 @@ archLinux()
 	perl \
 	doxygen \
 	lua \
-	ant"
+	ant \
+	protobuf"
 	if [ "$1" == "qemu" ]; then
 		packages="$packages qemu"
 	elif [ "$1" == "virtualbox" ]; then
@@ -398,7 +402,8 @@ ubuntu()
 		doxygen \
 		g++ \
 		lua5.4 \
-		ant"
+		ant \
+		protobuf-compiler"
 	# Not availible for at least ARM hosts
 	case "$host_arch" in
 		x86*|i?86) pkgs="$pkgs libc6-dev-i386 syslinux-utils";;
@@ -501,7 +506,8 @@ fedora()
 	make \
 	clang \
 	doxygen \
-	ant ; do rpm -q $pkg > /dev/null || echo $pkg; done)
+	ant \
+	protobuf-compiler ; do rpm -q $pkg > /dev/null || echo $pkg; done)
 	# If the list of packages is not empty, install missing
 	COUNT=$(echo $PKGS | wc -w)
 	if [ $COUNT -ne 0 ]; then
@@ -581,7 +587,8 @@ suse()
 		clang \
 		doxygen \
 		lua54 \
-		ant
+		ant \
+		protobuf
 }
 
 ##############################################################################
