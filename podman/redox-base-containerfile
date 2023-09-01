@@ -19,6 +19,7 @@ RUN apt-get update \
         libc6-dev-i386 \
         libexpat-dev \
         libfuse-dev \
+        libfuse3-dev \
         libgmp-dev \
         libhtml-parser-perl \
         libtool \
