@@ -642,12 +642,6 @@ dependencies = [
 ]
 
 [[package]]
-name = "fuchsia-cprng"
-version = "0.1.1"
-source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "a06f77d526c1a601b7c4cdd98f54b5eaabffc14d5f2f0296febdc7f357c6d3ba"
-
-[[package]]
 name = "fuser"
 version = "0.12.0"
 source = "registry+https://github.com/rust-lang/crates.io-index"
@@ -719,7 +713,7 @@ dependencies = [
  "bitflags 2.4.0",
  "crc",
  "log 0.4.20",
- "uuid 1.4.1",
+ "uuid",
 ]
 
 [[package]]
@@ -1183,36 +1177,13 @@ dependencies = [
 
 [[package]]
 name = "rand"
-version = "0.3.23"
-source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "64ac302d8f83c0c1974bf758f6b041c6c8ada916fbb44a609158ca8b064cc76c"
-dependencies = [
- "libc",
- "rand 0.4.6",
-]
-
-[[package]]
-name = "rand"
-version = "0.4.6"
-source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "552840b97013b1a26992c11eac34bdd778e464601a4c2054b5f0bff7c6761293"
-dependencies = [
- "fuchsia-cprng",
- "libc",
- "rand_core 0.3.1",
- "rdrand",
- "winapi",
-]
-
-[[package]]
-name = "rand"
 version = "0.8.5"
 source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "34af8d1a0e25924bc5b7c43c079c942339d8f0a8b57c39049bef581b46327404"
 dependencies = [
  "libc",
  "rand_chacha",
- "rand_core 0.6.4",
+ "rand_core",
 ]
 
 [[package]]
@@ -1222,23 +1193,8 @@ source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "e6c10a63a0fa32252be49d21e7709d4d4baf8d231c2dbce1eaa8141b9b127d88"
 dependencies = [
  "ppv-lite86",
- "rand_core 0.6.4",
+ "rand_core",
 ]
-
-[[package]]
-name = "rand_core"
-version = "0.3.1"
-source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "7a6fdeb83b075e8266dcc8762c22776f6877a63111121f5f8c7411e5be7eed4b"
-dependencies = [
- "rand_core 0.4.2",
-]
-
-[[package]]
-name = "rand_core"
-version = "0.4.2"
-source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "9c33a3c44ca05fa6f1807d8e6743f3824e8509beca625669633be0acbdf509dc"
 
 [[package]]
 name = "rand_core"
@@ -1248,6 +1204,12 @@ checksum = "ec0be4795e2f6a28069bec0b5ff3e2ac9bafc99e6a9a7dc3547996c5c816922c"
 dependencies = [
  "getrandom 0.2.10",
 ]
+
+[[package]]
+name = "range-tree"
+version = "0.1.0"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "384c2842d4e069d5ccacf5fe1dca4ef8d07a5444329715f0fc3c61813502d4d1"
 
 [[package]]
 name = "rayon"
@@ -1272,15 +1234,6 @@ dependencies = [
 ]
 
 [[package]]
-name = "rdrand"
-version = "0.4.0"
-source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "678054eb77286b51581ba43620cc911abf02758c91f93f479767aed0f90458b2"
-dependencies = [
- "rand_core 0.3.1",
-]
-
-[[package]]
 name = "redox_cookbook"
 version = "0.1.0"
 dependencies = [
@@ -1298,9 +1251,9 @@ dependencies = [
 
 [[package]]
 name = "redox_installer"
-version = "0.2.12"
+version = "0.2.13"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "e23ecfde5f5853d0e75f4da6d9403e8f1c478abd1417eb2f98ff66a7ff582942"
+checksum = "8cc9fcfc6c1685dbb258f28d39cb2c45c6da3179ec12c0cee565912e22a069ac"
 dependencies = [
  "arg_parser",
  "failure",
@@ -1311,17 +1264,17 @@ dependencies = [
  "pkgar",
  "pkgar-core",
  "pkgar-keys",
- "rand 0.8.5",
+ "rand",
  "redox_liner",
  "redox_pkgutils",
- "redox_syscall 0.2.16",
+ "redox_syscall 0.4.0",
  "redoxfs",
  "rust-argon2",
  "serde",
  "serde_derive",
  "termion",
  "toml 0.5.11",
- "uuid 0.8.2",
+ "uuid",
 ]
 
 [[package]]
@@ -1384,6 +1337,15 @@ dependencies = [
 ]
 
 [[package]]
+name = "redox_syscall"
+version = "0.4.0"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "ded0bce2d41cc3c57aefa284708ced249a64acb01745dbbe72bd78610bfd644c"
+dependencies = [
+ "bitflags 1.3.2",
+]
+
+[[package]]
 name = "redox_termios"
 version = "0.1.2"
 source = "registry+https://github.com/rust-lang/crates.io-index"
@@ -1405,14 +1367,14 @@ dependencies = [
 
 [[package]]
 name = "redoxer"
-version = "0.2.33"
+version = "0.2.34"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "72a79e1c4ca4927f7373903a079ceced8cffaee49e204e95d8b1e499683e67b7"
+checksum = "28f4c43d4a8cafc66cb3e21354a135d6d01dbcdca916b72d8dd58adbf5f9ca62"
 dependencies = [
  "dirs 4.0.0",
  "proc-mounts",
  "redox_installer",
- "redox_syscall 0.2.16",
+ "redox_syscall 0.4.0",
  "redoxfs",
  "tempfile",
  "toml 0.7.6",
@@ -1420,9 +1382,9 @@ dependencies = [
 
 [[package]]
 name = "redoxfs"
-version = "0.5.7"
+version = "0.5.8"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "ff0a3a5754ac84857d321cb53f3362bb43b2b5df27d2bba556d49625dfd75126"
+checksum = "0c1effb4750117347c5f64723b80251f7e73cd8863bdaf4116c485944e6111d0"
 dependencies = [
  "aes",
  "argon2",
@@ -1432,12 +1394,14 @@ dependencies = [
  "fuser",
  "getrandom 0.2.10",
  "libc",
+ "log 0.4.20",
+ "range-tree",
  "redox_simple_endian",
- "redox_syscall 0.2.16",
+ "redox_syscall 0.4.0",
  "seahash",
  "termion",
  "time",
- "uuid 0.5.1",
+ "uuid",
 ]
 
 [[package]]
@@ -1950,24 +1914,6 @@ checksum = "24cc0f6d6f267b73e5a2cadf007ba8f9bc39c6a6f9666f8cf25ea809a153b032"
 dependencies = [
  "libc",
  "log 0.4.20",
-]
-
-[[package]]
-name = "uuid"
-version = "0.5.1"
-source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "bcc7e3b898aa6f6c08e5295b6c89258d1331e9ac578cc992fb818759951bdc22"
-dependencies = [
- "rand 0.3.23",
-]
-
-[[package]]
-name = "uuid"
-version = "0.8.2"
-source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "bc5cf98d8186244414c848017f0e2676b3fcb46807f6668a97dfe67359a3c4b7"
-dependencies = [
- "getrandom 0.2.10",
 ]
 
 [[package]]
