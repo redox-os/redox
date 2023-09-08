@@ -12,6 +12,7 @@ BINS=(
     vesad
     virtio-blkd
     virtio-gpud
+    lived
 )
 
 case "${TARGET}" in
