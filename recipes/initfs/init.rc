@@ -11,6 +11,7 @@ ps2d us
 ramfs logging
 acpid
 pcid /etc/pcid/initfs.toml
+lived
 redoxfs --uuid $REDOXFS_UUID file $REDOXFS_BLOCK
 cd file:
 export PATH file:/bin
