@@ -3,6 +3,9 @@ PREFIX=prefix/$(TARGET)
 PREFIX_INSTALL=$(PREFIX)/relibc-install
 PREFIX_PATH=$(ROOT)/$(PREFIX_INSTALL)/bin
 
+BINUTILS_BRANCH=redox-2.41
+GCC_BRANCH=redox-13.2.0
+
 export PREFIX_RUSTFLAGS=-L $(ROOT)/$(PREFIX_INSTALL)/$(TARGET)/lib
 export RUSTUP_TOOLCHAIN=$(ROOT)/$(PREFIX_INSTALL)
 export REDOXER_TOOLCHAIN=$(RUSTUP_TOOLCHAIN)
@@ -75,9 +78,10 @@ PREFIX_FREESTANDING_INSTALL=$(PREFIX)/gcc-freestanding-install
 PREFIX_BASE_PATH=$(ROOT)/$(PREFIX_BASE_INSTALL)/bin
 PREFIX_FREESTANDING_PATH=$(ROOT)/$(PREFIX_FREESTANDING_INSTALL)/bin
 
-$(PREFIX)/binutils.tar.bz2:
+$(PREFIX)/binutils-$(BINUTILS_BRANCH).tar.bz2:
 	mkdir -p "$(@D)"
-	wget -O $@.partial "https://gitlab.redox-os.org/redox-os/binutils-gdb/-/archive/redox/binutils-gdb-redox.tar.bz2"
+	rm -fv $(PREFIX)/binutils*.tar.bz2*
+	wget -O $@.partial "https://gitlab.redox-os.org/redox-os/binutils-gdb/-/archive/$(BINUTILS_BRANCH)/binutils-gdb-$(BINUTILS_BRANCH).tar.bz2"
 	mv $@.partial $@
 
 $(PREFIX)/binutils: $(PREFIX)/binutils.tar.bz2
@@ -108,12 +112,13 @@ else
 	mv "$@.partial" "$@"
 endif
 
-$(PREFIX)/gcc.tar.bz2:
+$(PREFIX)/gcc-$(GCC_BRANCH).tar.bz2:
 	mkdir -p "$(@D)"
-	wget -O $@.partial "https://gitlab.redox-os.org/redox-os/gcc/-/archive/redox/gcc-redox.tar.bz2"
+	rm -fv $(PREFIX)/gcc*.tar.bz2*
+	wget -O $@.partial "https://gitlab.redox-os.org/redox-os/gcc/-/archive/$(GCC_BRANCH)/gcc-$(GCC_BRANCH).tar.bz2"
 	mv "$@.partial" "$@"
 
-$(PREFIX)/gcc: $(PREFIX)/gcc.tar.bz2
+$(PREFIX)/gcc: $(PREFIX)/gcc-$(GCC_BRANCH).tar.bz2
 	mkdir -p "$@.partial"
 	tar --extract --file "$<" --directory "$@.partial" --strip-components=1
 	cd "$@.partial" && ./contrib/download_prerequisites
