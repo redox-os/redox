@@ -1,12 +1,13 @@
-TAR=https://gitlab.redox-os.org/redox-os/gcc/-/archive/redox/gcc-redox.tar.gz
+VERSION="13.2.0"
+TAR="https://gitlab.redox-os.org/redox-os/gcc/-/archive/redox-${VERSION}/gcc-redox-${VERSION}.tar.gz"
 #GIT=https://gitlab.redox-os.org/redox-os/gcc.git
 #GIT_UPSTREAM=https://gcc.gnu.org/git/gcc.git
-#BRANCH=redox
+#BRANCH="redox-${VERSION}"
 BUILD_DEPENDS=(relibc)
 DEPENDS="gnu-binutils relibc"
 
 function recipe_version {
-    printf "r%s.%s" "$(git rev-list --count HEAD)" "$(git rev-parse --short HEAD)"
+    echo "${VERSION}"
     skip=1
 }
 
