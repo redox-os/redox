@@ -359,51 +359,55 @@ ubuntu()
 	echo "Updating system..."
 	sudo "$2" update
 	echo "Installing required packages..."
-	pkgs="autoconf \
+	pkgs="\
+		ant \
+		automake \
 		autopoint \
 		bison \
 		build-essential \
+		clang \
 		cmake \
 		curl \
-		wget \
+		doxygen \
 		file \
 		flex \
+		g++ \
 		genisoimage \
 		git \
 		gperf \
 		libexpat-dev \
 		libfuse-dev \
 		libgmp-dev \
-		libpng-dev \
+		libhtml-parser-perl \
 		libjpeg-dev \
+		libpng-dev \
 		libsdl1.2-dev \
 		libsdl2-ttf-dev \
-		libhtml-parser-perl \
 		libtool \
+		llvm \
+		lua5.4 \
 		m4 \
+		make \
+		meson \
 		nasm \
+		ninja-build \
 		patch \
-		automake \
-		scons \
+		perl \
 		pkg-config \
 		po4a \
-		texinfo \
-		ninja-build \
-		meson \
-		python3-mako \
+		protobuf-compiler \
 		python3 \
-		make \
+		python3-mako \
+		scons \
+		texinfo \
+		unzip \
+		wget \
 		xdg-utils \
 		zip \
-		unzip \
-		llvm \
-		clang \
-		perl \
-		doxygen \
-		g++ \
-		lua5.4 \
-		ant \
-		protobuf-compiler"
+        autoconf \
+        libmpfr-dev \
+        xxd \
+        "
 	# Not availible for at least ARM hosts
 	case "$host_arch" in
 		x86*|i?86) pkgs="$pkgs libc6-dev-i386 syslinux-utils";;
