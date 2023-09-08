@@ -84,7 +84,7 @@ $(PREFIX)/binutils-$(BINUTILS_BRANCH).tar.bz2:
 	wget -O $@.partial "https://gitlab.redox-os.org/redox-os/binutils-gdb/-/archive/$(BINUTILS_BRANCH)/binutils-gdb-$(BINUTILS_BRANCH).tar.bz2"
 	mv $@.partial $@
 
-$(PREFIX)/binutils: $(PREFIX)/binutils.tar.bz2
+$(PREFIX)/binutils: $(PREFIX)/binutils-$(BINUTILS_BRANCH).tar.bz2
 	rm -rf "$@.partial" "$@"
 	mkdir -p "$@.partial"
 	tar --extract --file "$<" --directory "$@.partial" --strip-components=1
