@@ -1,6 +1,6 @@
 [source]
 tar = "http://ftp.gnu.org/gnu/bash/bash-5.2.15.tar.gz"
-blake3 = "926927c370142cffa37dfc0a310ec386493b8b558ff3cc062376898154bc7ccb"
+blake3 = "c1548e3f2a9b6de5296e18c28b3d2007985e647273e03f039efd3e489edaa41f"
 patches = [
     "redox.patch"
 ]
