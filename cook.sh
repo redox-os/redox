@@ -140,11 +140,7 @@ function op {
             fi
             ;;
         unfetch)
-            rm -rfv source
-            if [ -n "$TAR" ]
-            then
-                rm -f source.tar
-            fi
+            rm -rfv source source.tar
             ;;
         prepare)
             skip=0
