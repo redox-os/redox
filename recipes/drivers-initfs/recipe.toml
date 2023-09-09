@@ -16,7 +16,10 @@ BINS=(
 )
 
 case "${TARGET}" in
-    i686-unknown-redox | x86_64-unknown-redox)
+    i686-unknown-redox)
+        BINS+=(ided ps2d)
+        ;;
+    x86_64-unknown-redox)
         BINS+=(acpid ided ps2d)
         ;;
     *)
