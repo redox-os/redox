@@ -1,6 +1,6 @@
 diff -ruwN bash-5.2.15/bashline.c source/bashline.c
 --- bash-5.2.15/bashline.c	2022-04-17 16:37:12.000000000 -0600
-+++ source/bashline.c	2023-09-09 07:52:41.177719614 -0600
++++ source/bashline.c	2023-09-09 09:07:14.698070413 -0600
 @@ -2645,7 +2645,7 @@
       const char *text;
       int state;
@@ -12,7 +12,7 @@ diff -ruwN bash-5.2.15/bashline.c source/bashline.c
    static char *gname = (char *)NULL;
 diff -ruwN bash-5.2.15/builtins/ulimit.def source/builtins/ulimit.def
 --- bash-5.2.15/builtins/ulimit.def	2021-11-05 07:19:53.000000000 -0600
-+++ source/builtins/ulimit.def	2023-09-09 07:52:41.177719614 -0600
++++ source/builtins/ulimit.def	2023-09-09 09:07:14.698070413 -0600
 @@ -609,7 +609,7 @@
        }
    else
@@ -24,7 +24,7 @@ diff -ruwN bash-5.2.15/builtins/ulimit.def source/builtins/ulimit.def
  #  if defined (HPUX9)
 diff -ruwN bash-5.2.15/config-top.h source/config-top.h
 --- bash-5.2.15/config-top.h	2021-11-05 07:11:12.000000000 -0600
-+++ source/config-top.h	2023-09-09 07:52:41.177719614 -0600
++++ source/config-top.h	2023-09-09 09:07:14.698070413 -0600
 @@ -63,24 +63,24 @@
  /* The default value of the PATH variable. */
  #ifndef DEFAULT_PATH_VALUE
@@ -56,7 +56,7 @@ diff -ruwN bash-5.2.15/config-top.h source/config-top.h
  /* Default primary and secondary prompt strings. */
 diff -ruwN bash-5.2.15/configure source/configure
 --- bash-5.2.15/configure	2022-09-23 08:13:22.000000000 -0600
-+++ source/configure	2023-09-09 07:55:01.365878738 -0600
++++ source/configure	2023-09-09 09:07:14.702070414 -0600
 @@ -3298,6 +3298,7 @@
  *-nsk*)		opt_bash_malloc=no ;;	# HP NonStop
  *-haiku*)	opt_bash_malloc=no ;;	# Haiku OS
@@ -67,7 +67,7 @@ diff -ruwN bash-5.2.15/configure source/configure
  # memory scrambling on free()
 diff -ruwN bash-5.2.15/configure.ac source/configure.ac
 --- bash-5.2.15/configure.ac	2022-09-23 08:12:27.000000000 -0600
-+++ source/configure.ac	2023-09-09 07:52:41.177719614 -0600
++++ source/configure.ac	2023-09-09 09:07:14.702070414 -0600
 @@ -92,6 +92,7 @@
  *-nsk*)		opt_bash_malloc=no ;;	# HP NonStop
  *-haiku*)	opt_bash_malloc=no ;;	# Haiku OS
@@ -78,7 +78,7 @@ diff -ruwN bash-5.2.15/configure.ac source/configure.ac
  # memory scrambling on free()
 diff -ruwN bash-5.2.15/execute_cmd.c source/execute_cmd.c
 --- bash-5.2.15/execute_cmd.c	2022-12-13 10:09:02.000000000 -0700
-+++ source/execute_cmd.c	2023-09-09 08:04:16.779201158 -0600
++++ source/execute_cmd.c	2023-09-09 09:07:14.702070414 -0600
 @@ -1379,11 +1379,11 @@
    nullcmd = (command == 0) || (command->type == cm_simple && command->value.Simple->words == 0 && command->value.Simple->redirects == 0);
    if (posixly_correct && nullcmd)
@@ -95,7 +95,7 @@ diff -ruwN bash-5.2.15/execute_cmd.c source/execute_cmd.c
  #endif
 diff -ruwN bash-5.2.15/general.c source/general.c
 --- bash-5.2.15/general.c	2022-11-23 15:10:12.000000000 -0700
-+++ source/general.c	2023-09-09 07:52:41.177719614 -0600
++++ source/general.c	2023-09-09 09:07:14.702070414 -0600
 @@ -589,6 +589,7 @@
  void
  check_dev_tty ()
@@ -127,7 +127,7 @@ diff -ruwN bash-5.2.15/general.c source/general.c
    *p_index = i;
 diff -ruwN bash-5.2.15/include/posixwait.h source/include/posixwait.h
 --- bash-5.2.15/include/posixwait.h	2019-03-29 11:25:52.000000000 -0600
-+++ source/include/posixwait.h	2023-09-09 07:52:41.177719614 -0600
++++ source/include/posixwait.h	2023-09-09 09:07:14.702070414 -0600
 @@ -34,7 +34,7 @@
  
  /* How to get the status of a job.  For Posix, this is just an
@@ -146,9 +146,33 @@ diff -ruwN bash-5.2.15/include/posixwait.h source/include/posixwait.h
  
  #  if !defined (WSTOPSIG)
  #    define WSTOPSIG(s)       ((s) >> 8)
+diff -ruwN bash-5.2.15/lib/readline/input.c source/lib/readline/input.c
+--- bash-5.2.15/lib/readline/input.c	2022-04-08 13:43:24.000000000 -0600
++++ source/lib/readline/input.c	2023-09-09 09:07:14.702070414 -0600
+@@ -805,7 +805,7 @@
+   int result;
+   unsigned char c;
+   int fd;
+-#if defined (HAVE_PSELECT)
++#if defined (HAVE_PSELECT) || defined (HAVE_SELECT)
+   sigset_t empty_set;
+   fd_set readfds;
+ #endif
+diff -ruwN bash-5.2.15/lib/readline/terminal.c source/lib/readline/terminal.c
+--- bash-5.2.15/lib/readline/terminal.c	2022-04-05 08:44:17.000000000 -0600
++++ source/lib/readline/terminal.c	2023-09-09 09:09:03.162131539 -0600
+@@ -102,7 +102,7 @@
+ 
+ static int tcap_initialized;
+ 
+-#if !defined (__linux__) && !defined (NCURSES_VERSION)
++#if !defined (__linux__) && !defined (NCURSES_VERSION) && !defined (__redox__)
+ #  if defined (__EMX__) || defined (NEED_EXTERN_PC)
+ extern 
+ #  endif /* __EMX__ || NEED_EXTERN_PC */
 diff -ruwN bash-5.2.15/lib/sh/getcwd.c source/lib/sh/getcwd.c
 --- bash-5.2.15/lib/sh/getcwd.c	2012-03-10 08:48:50.000000000 -0700
-+++ source/lib/sh/getcwd.c	2023-09-09 07:52:41.177719614 -0600
++++ source/lib/sh/getcwd.c	2023-09-09 09:07:14.702070414 -0600
 @@ -20,7 +20,7 @@
  
  #include <config.h>
@@ -158,3 +182,74 @@ diff -ruwN bash-5.2.15/lib/sh/getcwd.c source/lib/sh/getcwd.c
  
  #if !defined (__GNUC__) && !defined (HAVE_ALLOCA_H) && defined (_AIX)
    #pragma alloca
+diff -ruwN bash-5.2.15/lib/sh/input_avail.c source/lib/sh/input_avail.c
+--- bash-5.2.15/lib/sh/input_avail.c	2021-05-24 09:16:33.000000000 -0600
++++ source/lib/sh/input_avail.c	2023-09-09 09:07:14.702070414 -0600
+@@ -33,7 +33,7 @@
+ #  include <sys/file.h>
+ #endif /* HAVE_SYS_FILE_H */
+ 
+-#if defined (HAVE_PSELECT)
++#if defined (HAVE_PSELECT) || defined (HAVE_SELECT)
+ #  include <signal.h>
+ #endif
+ 
+diff -ruwN bash-5.2.15/lib/sh/strtoimax.c source/lib/sh/strtoimax.c
+--- bash-5.2.15/lib/sh/strtoimax.c	2021-09-10 08:32:35.000000000 -0600
++++ source/lib/sh/strtoimax.c	2023-09-09 09:10:21.618185121 -0600
+@@ -55,6 +55,8 @@
+ extern long long strtoll PARAMS((const char *, char **, int));
+ #endif
+ 
++#if !defined (__redox__)
++
+ #ifdef strtoimax
+ #undef strtoimax
+ #endif
+@@ -79,6 +81,8 @@
+   return (strtol (ptr, endptr, base));
+ }
+ 
++#endif
++
+ #ifdef TESTING
+ # include <stdio.h>
+ int
+diff -ruwN bash-5.2.15/parse.y source/parse.y
+--- bash-5.2.15/parse.y	2022-12-13 10:09:02.000000000 -0700
++++ source/parse.y	2023-09-09 09:07:14.706070416 -0600
+@@ -2625,6 +2625,7 @@
+       parser_state |= PST_ENDALIAS;
+       /* We need to do this to make sure last_shell_getc_is_singlebyte returns
+ 	 true, since we are returning a single-byte space. */
++#if defined (HANDLE_MULTIBYTE)
+       if (shell_input_line_index == shell_input_line_len && last_shell_getc_is_singlebyte == 0)
+ 	{
+ #if 0
+@@ -2638,6 +2639,7 @@
+ 	  shell_input_line_property[shell_input_line_index - 1] = 1;
+ #endif
+ 	}
++#endif /* HANDLE_MULTIBYTE */
+       return ' ';	/* END_ALIAS */
+     }
+ #endif
+diff -ruwN bash-5.2.15/y.tab.c source/y.tab.c
+--- bash-5.2.15/y.tab.c	2022-12-13 10:09:02.000000000 -0700
++++ source/y.tab.c	2023-09-09 09:07:14.706070416 -0600
+@@ -4936,6 +4936,7 @@
+       parser_state |= PST_ENDALIAS;
+       /* We need to do this to make sure last_shell_getc_is_singlebyte returns
+ 	 true, since we are returning a single-byte space. */
++#if defined (HANDLE_MULTIBYTE)
+       if (shell_input_line_index == shell_input_line_len && last_shell_getc_is_singlebyte == 0)
+ 	{
+ #if 0
+@@ -4949,6 +4950,7 @@
+ 	  shell_input_line_property[shell_input_line_index - 1] = 1;
+ #endif
+ 	}
++#endif /* HANDLE_MULTIBYTE */
+       return ' ';	/* END_ALIAS */
+     }
+ #endif
