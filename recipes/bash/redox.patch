@@ -1,6 +1,6 @@
-diff -ruwN source/bashline.c source-new/bashline.c
---- source/bashline.c	2022-04-17 16:37:12.000000000 -0600
-+++ source-new/bashline.c	2023-09-09 07:46:51.157322285 -0600
+diff -ruwN bash-5.2.15/bashline.c source/bashline.c
+--- bash-5.2.15/bashline.c	2022-04-17 16:37:12.000000000 -0600
++++ source/bashline.c	2023-09-09 07:52:41.177719614 -0600
 @@ -2645,7 +2645,7 @@
       const char *text;
       int state;
@@ -10,9 +10,9 @@ diff -ruwN source/bashline.c source-new/bashline.c
    return ((char *)NULL);
  #else
    static char *gname = (char *)NULL;
-diff -ruwN source/builtins/ulimit.def source-new/builtins/ulimit.def
---- source/builtins/ulimit.def	2021-11-05 07:19:53.000000000 -0600
-+++ source-new/builtins/ulimit.def	2023-09-09 07:46:51.157322285 -0600
+diff -ruwN bash-5.2.15/builtins/ulimit.def source/builtins/ulimit.def
+--- bash-5.2.15/builtins/ulimit.def	2021-11-05 07:19:53.000000000 -0600
++++ source/builtins/ulimit.def	2023-09-09 07:52:41.177719614 -0600
 @@ -609,7 +609,7 @@
        }
    else
@@ -22,9 +22,9 @@ diff -ruwN source/builtins/ulimit.def source-new/builtins/ulimit.def
        if (getrlimit (limits[ind].parameter, &limit) < 0)
  	return -1;
  #  if defined (HPUX9)
-diff -ruwN source/config-top.h source-new/config-top.h
---- source/config-top.h	2021-11-05 07:11:12.000000000 -0600
-+++ source-new/config-top.h	2023-09-09 07:49:50.705526090 -0600
+diff -ruwN bash-5.2.15/config-top.h source/config-top.h
+--- bash-5.2.15/config-top.h	2021-11-05 07:11:12.000000000 -0600
++++ source/config-top.h	2023-09-09 07:52:41.177719614 -0600
 @@ -63,24 +63,24 @@
  /* The default value of the PATH variable. */
  #ifndef DEFAULT_PATH_VALUE
@@ -54,9 +54,20 @@ diff -ruwN source/config-top.h source-new/config-top.h
  #endif
  
  /* Default primary and secondary prompt strings. */
-diff -ruwN source/configure.ac source-new/configure.ac
---- source/configure.ac	2022-09-23 08:12:27.000000000 -0600
-+++ source-new/configure.ac	2023-09-09 07:47:28.393364561 -0600
+diff -ruwN bash-5.2.15/configure source/configure
+--- bash-5.2.15/configure	2022-09-23 08:13:22.000000000 -0600
++++ source/configure	2023-09-09 07:55:01.365878738 -0600
+@@ -3298,6 +3298,7 @@
+ *-nsk*)		opt_bash_malloc=no ;;	# HP NonStop
+ *-haiku*)	opt_bash_malloc=no ;;	# Haiku OS
+ *-genode*)	opt_bash_malloc=no ;;	# Genode has no sbrk
++*-redox*)	opt_bash_malloc=no ;;	# Redox OS
+ esac
+ 
+ # memory scrambling on free()
+diff -ruwN bash-5.2.15/configure.ac source/configure.ac
+--- bash-5.2.15/configure.ac	2022-09-23 08:12:27.000000000 -0600
++++ source/configure.ac	2023-09-09 07:52:41.177719614 -0600
 @@ -92,6 +92,7 @@
  *-nsk*)		opt_bash_malloc=no ;;	# HP NonStop
  *-haiku*)	opt_bash_malloc=no ;;	# Haiku OS
@@ -65,9 +76,26 @@ diff -ruwN source/configure.ac source-new/configure.ac
  esac
  
  # memory scrambling on free()
-diff -ruwN source/general.c source-new/general.c
---- source/general.c	2022-11-23 15:10:12.000000000 -0700
-+++ source-new/general.c	2023-09-09 07:46:51.161322290 -0600
+diff -ruwN bash-5.2.15/execute_cmd.c source/execute_cmd.c
+--- bash-5.2.15/execute_cmd.c	2022-12-13 10:09:02.000000000 -0700
++++ source/execute_cmd.c	2023-09-09 08:04:16.779201158 -0600
+@@ -1379,11 +1379,11 @@
+   nullcmd = (command == 0) || (command->type == cm_simple && command->value.Simple->words == 0 && command->value.Simple->redirects == 0);
+   if (posixly_correct && nullcmd)
+     {
+-#if defined (HAVE_GETRUSAGE)
++#if defined (HAVE_GETRUSAGE) && defined (HAVE_GETTIMEOFDAY)
+       selfb.ru_utime.tv_sec = kidsb.ru_utime.tv_sec = selfb.ru_stime.tv_sec = kidsb.ru_stime.tv_sec = 0;
+       selfb.ru_utime.tv_usec = kidsb.ru_utime.tv_usec = selfb.ru_stime.tv_usec = kidsb.ru_stime.tv_usec = 0;
+       before = shellstart;
+-#else
++#elif defined (HAVE_TIMES)
+       before.tms_utime = before.tms_stime = before.tms_cutime = before.tms_cstime = 0;
+       tbefore = shell_start_time;
+ #endif
+diff -ruwN bash-5.2.15/general.c source/general.c
+--- bash-5.2.15/general.c	2022-11-23 15:10:12.000000000 -0700
++++ source/general.c	2023-09-09 07:52:41.177719614 -0600
 @@ -589,6 +589,7 @@
  void
  check_dev_tty ()
@@ -97,9 +125,9 @@ diff -ruwN source/general.c source-new/general.c
      ;
  
    *p_index = i;
-diff -ruwN source/include/posixwait.h source-new/include/posixwait.h
---- source/include/posixwait.h	2019-03-29 11:25:52.000000000 -0600
-+++ source-new/include/posixwait.h	2023-09-09 07:46:51.161322290 -0600
+diff -ruwN bash-5.2.15/include/posixwait.h source/include/posixwait.h
+--- bash-5.2.15/include/posixwait.h	2019-03-29 11:25:52.000000000 -0600
++++ source/include/posixwait.h	2023-09-09 07:52:41.177719614 -0600
 @@ -34,7 +34,7 @@
  
  /* How to get the status of a job.  For Posix, this is just an
@@ -118,9 +146,9 @@ diff -ruwN source/include/posixwait.h source-new/include/posixwait.h
  
  #  if !defined (WSTOPSIG)
  #    define WSTOPSIG(s)       ((s) >> 8)
-diff -ruwN source/lib/sh/getcwd.c source-new/lib/sh/getcwd.c
---- source/lib/sh/getcwd.c	2012-03-10 08:48:50.000000000 -0700
-+++ source-new/lib/sh/getcwd.c	2023-09-09 07:46:51.161322290 -0600
+diff -ruwN bash-5.2.15/lib/sh/getcwd.c source/lib/sh/getcwd.c
+--- bash-5.2.15/lib/sh/getcwd.c	2012-03-10 08:48:50.000000000 -0700
++++ source/lib/sh/getcwd.c	2023-09-09 07:52:41.177719614 -0600
 @@ -20,7 +20,7 @@
  
  #include <config.h>

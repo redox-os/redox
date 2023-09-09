@@ -2,11 +2,9 @@
 tar = "http://ftp.gnu.org/gnu/bash/bash-5.2.15.tar.gz"
 blake3 = "c1548e3f2a9b6de5296e18c28b3d2007985e647273e03f039efd3e489edaa41f"
 patches = [
-    "redox.patch"
+    "redox.patch",
+    "10309-parse.y-fix-compilation-for-non-multibyte-builds.patch",
 ]
-script = """
-wget -O support/config.sub "https://gitlab.redox-os.org/redox-os/gnu-config/-/raw/master/config.sub?inline=false"
-"""
 
 [build]
 template = "custom"
@@ -17,7 +15,9 @@ dependencies = [
 script = """
 COOKBOOK_CONFIGURE_FLAGS+=(
     ac_cv_func_wcwidth=no # TODO: add more wc functions and remove this
+    bash_cv_func_sigsetjmp=no
     bash_cv_getenv_redef=no
+    --disable-multibyte # TODO: add more multibyte functions and remove this
 )
 COOKBOOK_MAKE_JOBS=1 # workaround for parallel make bugs
 cookbook_configure
