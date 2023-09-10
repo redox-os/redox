@@ -1,8 +1,23 @@
+diff -ruwN source/src/libvterm/include/vterm.h source-new/src/libvterm/include/vterm.h
+--- source/src/libvterm/include/vterm.h	2019-12-04 14:09:41.000000000 -0700
++++ source-new/src/libvterm/include/vterm.h	2023-09-09 19:06:56.211783900 -0600
+@@ -15,9 +15,11 @@
+ #define TRUE 1
+ #define FALSE 0
+ 
++#if !defined (__redox__)
+ // from stdint.h
+ typedef unsigned char		uint8_t;
+ typedef unsigned int		uint32_t;
++#endif
+ 
+ typedef struct VTerm VTerm;
+ typedef struct VTermState VTermState;
 diff -ruwN source/src/memfile.c source-new/src/memfile.c
---- source/src/memfile.c	2016-11-10 10:24:37.000000000 -0700
-+++ source-new/src/memfile.c	2020-01-25 18:19:55.524324451 -0700
-@@ -615,6 +615,8 @@
- 	    /* No sync() on Stratus VOS */
+--- source/src/memfile.c	2019-12-04 13:51:25.000000000 -0700
++++ source-new/src/memfile.c	2023-09-09 19:06:08.999846625 -0600
+@@ -610,6 +610,8 @@
+ 	    // No sync() on Stratus VOS
  # if defined(__OPENNT) || defined(__TANDEM) || defined(__VOS__)
  	    fflush(NULL);
 +# elif defined(__redox__)
