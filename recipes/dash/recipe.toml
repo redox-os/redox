@@ -18,5 +18,4 @@ sed -i'' -e 's|#define HAVE_GETRLIMIT 1|/* #undef HAVE_GETRLIMIT */|g' config.h
 COOKBOOK_CONFIGURE="true"
 COOKBOOK_CONFIGURE_FLAGS=()
 cookbook_configure
-ln -s "dash" "${COOKBOOK_STAGE}/bin/sh"
 """

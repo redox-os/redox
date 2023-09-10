@@ -20,4 +20,5 @@ COOKBOOK_CONFIGURE_FLAGS+=(
 )
 COOKBOOK_MAKE_JOBS=1 # workaround for parallel make bugs
 cookbook_configure
+ln -s "bash" "${COOKBOOK_STAGE}/bin/sh"
 """
