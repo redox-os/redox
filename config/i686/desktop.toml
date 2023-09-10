@@ -10,12 +10,12 @@ prompt = false
 # Package settings
 [packages]
 audiod = {}
+bash = {}
 bootloader = {}
 bootstrap = {}
 ca-certificates = {}
 contain = {}
 coreutils = {}
-dash = {}
 diffutils = {}
 drivers = {}
 escalated = {}
@@ -44,7 +44,6 @@ smith = {}
 userutils = {}
 uutils = {}
 
-bash = {}
 git = {}
 curl = {}
 vim = {}

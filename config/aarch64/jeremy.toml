@@ -10,12 +10,12 @@ prompt = false
 # Package settings
 [packages]
 audiod = {}
+bash = {}
 bootloader = {}
 bootstrap = {}
 ca-certificates = {}
 contain = {}
 coreutils = {}
-dash = {}
 diffutils = {}
 #drivers = {} # more porting work
 #escalated = {} # porting

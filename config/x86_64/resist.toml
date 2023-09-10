@@ -9,10 +9,10 @@ prompt = false
 
 # Package settings
 [packages]
+bash = {}
 bootloader = {}
 bootstrap = {}
 coreutils = {}
-dash = {}
 diffutils = {}
 drivers = {}
 escalated = {}

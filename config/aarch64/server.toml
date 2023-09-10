@@ -9,12 +9,12 @@ prompt = false
 
 # Package settings
 [packages]
+bash = {}
 bootloader = {}
 bootstrap = {}
 ca-certificates = {}
 contain = {}
 coreutils = {}
-dash = {}
 diffutils = {}
 # FIXME: failed to build
 # drivers = {}
@@ -40,7 +40,6 @@ smith = {}
 userutils = {}
 uutils = {}
 
-bash = {}
 git = {}
 curl = {}
 vim = {}
