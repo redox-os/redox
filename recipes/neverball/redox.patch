@@ -1,6 +1,6 @@
-diff -ruwN source/Makefile source-new/Makefile
---- source/Makefile	2019-08-07 22:16:07.630185664 -0600
-+++ source-new/Makefile	2019-08-09 21:41:20.296942596 -0600
+diff -ruwN neverball-1.6.0/Makefile source/Makefile
+--- neverball-1.6.0/Makefile	2014-05-21 07:21:43.000000000 -0600
++++ source/Makefile	2023-09-09 20:03:22.113348963 -0600
 @@ -38,11 +38,11 @@
  ifeq ($(DEBUG),1)
  	CFLAGS   := -g
@@ -73,3 +73,15 @@ diff -ruwN source/Makefile source-new/Makefile
  
  $(BALL_TARG) : $(BALL_OBJS)
  	$(LINK) -o $(BALL_TARG) $(BALL_OBJS) $(LDFLAGS) $(ALL_LIBS)
+diff -ruwN neverball-1.6.0/share/text.h source/share/text.h
+--- neverball-1.6.0/share/text.h	2014-05-21 07:21:43.000000000 -0600
++++ source/share/text.h	2023-09-09 20:02:10.117248865 -0600
+@@ -15,7 +15,7 @@
+ 
+ /*---------------------------------------------------------------------------*/
+ 
+-char text_input[MAXSTR];
++extern char text_input[MAXSTR];
+ 
+ void text_input_start(void (*cb)(int typing));
+ void text_input_stop(void);

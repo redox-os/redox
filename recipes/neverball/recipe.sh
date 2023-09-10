@@ -8,13 +8,18 @@ function recipe_version {
 }
 
 function recipe_build {
-    env -i PATH=/usr/bin:/bin PKG_CONFIG=pkg-config \
+    set -x
+    env -i \
+        LDFLAGS="-static" \
+        PATH="/usr/bin:/bin" \
+        PKG_CONFIG="pkg-config" \
     "$REDOX_MAKE" -j"$($NPROC)" ENABLE_FS=stdio mapc sols
     sysroot="$(realpath ../sysroot)"
     export CPPFLAGS="-I$sysroot/include"
-	export LDFLAGS="-L$sysroot/lib -static"
+	export LDFLAGS="-L$sysroot/lib -static -z noexecstack"
     "$REDOX_MAKE" -j"$($NPROC)" ENABLE_FS=stdio ENABLE_NLS=0 clean-src
     "$REDOX_MAKE" -j"$($NPROC)" ENABLE_FS=stdio ENABLE_NLS=0 neverball neverputt
+    set +x
     skip=1
 }
 
