@@ -33,16 +33,6 @@ else
 	./clean.sh $*
 endif
 
-# Invoke unfetch.sh for a single target
-d.%: $(FSTOOLS_TAG) FORCE
-ifeq ($(PODMAN_BUILD),1)
-	$(PODMAN_RUN) $(MAKE) $@
-else
-	export PATH="$(PREFIX_PATH):$$PATH" && \
-	cd cookbook && \
-	./unfetch.sh $*
-endif
-
 # Invoke fetch.sh for a single target
 f.%: $(FSTOOLS_TAG) FORCE
 ifeq ($(PODMAN_BUILD),1)
@@ -61,4 +51,14 @@ else
 	export PATH="$(PREFIX_PATH):$$PATH" && \
 	cd cookbook && \
 	./repo.sh $*
+endif
+
+# Invoke unfetch.sh for a single target
+u.%: $(FSTOOLS_TAG) FORCE
+ifeq ($(PODMAN_BUILD),1)
+	$(PODMAN_RUN) $(MAKE) $@
+else
+	export PATH="$(PREFIX_PATH):$$PATH" && \
+	cd cookbook && \
+	./unfetch.sh $*
 endif
