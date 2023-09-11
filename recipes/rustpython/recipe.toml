@@ -6,7 +6,7 @@ branch = "redox-release"
 dependencies = ["openssl", "zlib"]
 template = "custom"
 script = """
-(cd "${COOKBOOK_SOURCE}" && bash scripts/redox/uncomment-cargo.sh)
+(cd "${COOKBOOK_SOURCE}" && bash scripts/redox/uncomment-cargo.sh && cargo update)
 export BUILDTIME_RUSTPYTHONPATH=/lib/rustpython
 export OPENSSL_DIR="${COOKBOOK_SYSROOT}"
 export ZLIB_STATIC=1
