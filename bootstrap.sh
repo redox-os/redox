@@ -361,6 +361,7 @@ ubuntu()
 	echo "Installing required packages..."
 	pkgs="\
 		ant \
+		autoconf \
 		automake \
 		autopoint \
 		bison \
@@ -368,6 +369,7 @@ ubuntu()
 		clang \
 		cmake \
 		curl \
+		dos2unix \
 		doxygen \
 		file \
 		flex \
@@ -380,6 +382,7 @@ ubuntu()
 		libgmp-dev \
 		libhtml-parser-perl \
 		libjpeg-dev \
+		libmpfr-dev \
 		libpng-dev \
 		libsdl1.2-dev \
 		libsdl2-ttf-dev \
@@ -403,11 +406,9 @@ ubuntu()
 		unzip \
 		wget \
 		xdg-utils \
+		xxd \
 		zip \
-        autoconf \
-        libmpfr-dev \
-        xxd \
-        "
+		"
 	# Not availible for at least ARM hosts
 	case "$host_arch" in
 		x86*|i?86) pkgs="$pkgs libc6-dev-i386 syslinux-utils";;
