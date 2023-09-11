@@ -25,7 +25,7 @@ then
     export CONFIG_NAME=demo
 fi
 
-IMAGE="build/${ARCH}/${CONFIG_NAME}/harddrive.img"
+IMAGE="build/${ARCH}/${CONFIG_NAME}/filesystem.img"
 set -x
 make "${IMAGE}"
 sudo popsicle "${IMAGE}" "${DISK}"
@@ -49,3 +49,5 @@ EOF
 set +x
 
 sync
+
+echo "Finished installing Redox OS dual boot"
