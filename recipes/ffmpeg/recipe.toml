@@ -1,10 +1,9 @@
 [source]
-#git = "https://git.ffmpeg.org/ffmpeg.git"
-#rev = "eacfcbae690f914a4b1b4ad06999f138540cc3d8"
-tar = "https://ffmpeg.org/releases/ffmpeg-5.1.2.tar.xz"
-blake3 = "69fddb793c6b4fb6fd1093e54c8228c3c498614be3e48c311bb3f609a12daf5f"
+tar = "https://ffmpeg.org/releases/ffmpeg-6.0.tar.xz"
+blake3 = "4879074c357102f85932673044c57c144b0c188ae58edec2a115965536ee340f"
 patches = [
-    "ffmpeg.patch"
+    "ffmpeg.patch",
+    "binutils-2.41.patch",
 ]
 
 [build]
