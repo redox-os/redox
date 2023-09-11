@@ -1,7 +1,7 @@
 GIT=https://gitlab.redox-os.org/redox-os/binutils-gdb.git
 BRANCH=redox-2.41
 GIT_UPSTREAM=git://sourceware.org/git/binutils-gdb.git
-BUILD_DEPENDS=(expat libgmp)
+BUILD_DEPENDS=(expat libgmp libmpfr)
 
 function recipe_version {
     printf "r%s.%s" "$(git rev-list --count HEAD)" "$(git rev-parse --short HEAD)"
