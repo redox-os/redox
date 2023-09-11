@@ -1,0 +1,9 @@
+[source]
+tar = "https://www.mpfr.org/mpfr-current/mpfr-4.2.1.tar.xz"
+blake3 = "f428023b8f7569fc1178faf63265ecb6cab4505fc3fce5d8c46af70db848a334"
+
+[build]
+dependencies = [
+    "libgmp",
+]
+template = "configure"
