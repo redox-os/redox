@@ -23,7 +23,6 @@ fi
 for recipe in $recipes
 do
     recipe_path=`target/release/find_recipe $recipe`
-    echo recipe path is $recipe_path
     COOKBOOK_RECIPE="$recipe_path"
     TARGET_DIR="${COOKBOOK_RECIPE}/target/${TARGET}"
     COOKBOOK_BUILD="${TARGET_DIR}/build"
