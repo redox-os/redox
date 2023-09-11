@@ -40,6 +40,7 @@ endif
 	cd "$<" && \
 	export PATH="$(ROOT)/$@.partial/bin:$$PATH" && \
 	export CARGO="env -u CARGO cargo" && \
+	$(MAKE) clean && \
 	$(MAKE) -j `$(NPROC)` all && \
 	$(MAKE) -j `$(NPROC)` install DESTDIR="$(ROOT)/$@.partial/$(TARGET)"
 	cd "$@.partial" && $(PREFIX_STRIP)
@@ -190,6 +191,7 @@ else
 	export PATH="$(PREFIX_BASE_PATH):$(PREFIX_FREESTANDING_PATH):$$PATH" && \
 	export CARGO="env -u CARGO -u RUSTUP_TOOLCHAIN cargo" && \
 	export CC_$(subst -,_,$(TARGET))="$(TARGET)-gcc -isystem $(ROOT)/$@.partial/$(TARGET)/include" && \
+	$(MAKE) clean && \
 	$(MAKE) -j `$(NPROC)` all && \
 	$(MAKE) -j `$(NPROC)` install DESTDIR="$(ROOT)/$@.partial/$(TARGET)"
 	cd "$@.partial" && $(PREFIX_STRIP)
