@@ -126,7 +126,7 @@ sm64ex = {}
 sopwith = {}
 spacecadetpinball = {}
 syobonaction = {}
-vice = {}
+#vice = {} # broken on new toolchain
 vvvvvv = {}
 
 # stuff
