@@ -1,5 +1,5 @@
 GIT=https://gitlab.redox-os.org/redox-os/rust.git
-BRANCH=redox-2023-01-21
+BRANCH=redox-2023-09-07
 BUILD_DEPENDS=(llvm)
 DEPENDS="gcc cargo"
 PREPARE_COPY=0
