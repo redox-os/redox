@@ -90,6 +90,7 @@ syobonaction = {}
 
 # Demos
 acid = {}
+nushell = {}
 orbclient = {}
 pixelcannon = {}
 rodioplay = {}
