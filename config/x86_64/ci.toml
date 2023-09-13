@@ -113,6 +113,7 @@ neverball = {}
 #newlibtest = {} # obsolete
 nghttp2 = {}
 nulld = {}
+nushell = {}
 openjazz = {}
 openssl = {}
 openttd = {}
