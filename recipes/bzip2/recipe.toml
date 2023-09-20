@@ -16,6 +16,8 @@ rsync -av --delete "${COOKBOOK_SOURCE}/" ./
     bzip2
 mkdir -pv "${COOKBOOK_STAGE}/bin"
 cp -v bzip2 "${COOKBOOK_STAGE}/bin"
+mkdir -pv "${COOKBOOK_STAGE}/include"
+cp -v bzlib.h "${COOKBOOK_STAGE}/include"
 mkdir -pv "${COOKBOOK_STAGE}/lib"
 cp -v libbz2.a "${COOKBOOK_STAGE}/lib"
 """
