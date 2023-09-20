@@ -59,8 +59,10 @@ curl = {}
 ffmpeg = {}
 git = {}
 gnu-grep = {}
+lua = {}
 perg = {}
 ripgrep = {}
+rustpython = {}
 sed = {}
 shellharden = {}
 vim = {}
@@ -102,6 +104,7 @@ rust = {}
 rustpython = {}
 
 # games
+devilutionx = {}
 dosbox = {}
 eduke32 = {}
 flycast = {}
