@@ -1,0 +1,24 @@
+diff -ruwN lua-5.4.4/src/Makefile source/src/Makefile
+--- lua-5.4.4/src/Makefile	2021-07-15 08:01:52.000000000 -0600
++++ source/src/Makefile	2023-09-20 09:43:33.165057570 -0600
+@@ -4,15 +4,15 @@
+ # == CHANGE THE SETTINGS BELOW TO SUIT YOUR ENVIRONMENT =======================
+ 
+ # Your platform. See PLATS for possible values.
+-PLAT= guess
++PLAT= generic
+ 
+-CC= gcc -std=gnu99
++CC= $(TARGET)-gcc -std=gnu99
+ CFLAGS= -O2 -Wall -Wextra -DLUA_COMPAT_5_3 $(SYSCFLAGS) $(MYCFLAGS)
+-LDFLAGS= $(SYSLDFLAGS) $(MYLDFLAGS)
++LDFLAGS= -static $(SYSLDFLAGS) $(MYLDFLAGS)
+ LIBS= -lm $(SYSLIBS) $(MYLIBS)
+ 
+-AR= ar rcu
+-RANLIB= ranlib
++AR= $(TARGET)-ar rcu
++RANLIB= $(TARGET)-ranlib
+ RM= rm -f
+ UNAME= uname
+ 
