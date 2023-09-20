@@ -19,6 +19,7 @@ export CXXFLAGS="${CXXFLAGS} -I${COOKBOOK_SYSROOT}/include -I${COOKBOOK_SYSROOT}
 cat > redox.cmake <<EOF
 # the name of the target operating system
 set(CMAKE_SYSTEM_NAME Generic)
+set(CMAKE_SYSTEM_PROCESSOR "${TARGET%%-*}")
 
 # which compilers to use for C and C++
 set(CMAKE_C_COMPILER "${TARGET}-gcc")
@@ -31,9 +32,10 @@ set(CMAKE_FIND_ROOT_PATH "${COOKBOOK_SYSROOT}")
 # search programs in the host environment
 set(CMAKE_FIND_ROOT_PATH_MODE_PROGRAM NEVER)
 
-# search headers and libraries in the target environment
-set(CMAKE_FIND_ROOT_PATH_MODE_LIBRARY ONLY)
+# search headers, libraries, and packages in the target environment
 set(CMAKE_FIND_ROOT_PATH_MODE_INCLUDE ONLY)
+set(CMAKE_FIND_ROOT_PATH_MODE_LIBRARY ONLY)
+set(CMAKE_FIND_ROOT_PATH_MODE_PACKAGE ONLY)
 EOF
 COOKBOOK_CONFIGURE="cmake"
 COOKBOOK_CONFIGURE_FLAGS=(
@@ -50,5 +52,8 @@ COOKBOOK_CONFIGURE_FLAGS=(
     -DZLIB_LIBRARY="-lz"
     "${COOKBOOK_SOURCE}"
 )
-cookbook_configure
+"${COOKBOOK_CONFIGURE}" "${COOKBOOK_CONFIGURE_FLAGS[@]}"
+"${COOKBOOK_MAKE}" -j "${COOKBOOK_MAKE_JOBS}" openjk_sp.x86_64
+mkdir -pv "${COOKBOOK_STAGE}/home/user/JediAcademy"
+cp -v openjk_sp.x86_64 "${COOKBOOK_STAGE}/home/user/JediAcademy"
 """
