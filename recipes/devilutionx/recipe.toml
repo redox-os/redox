@@ -1,0 +1,36 @@
+[source]
+tar = "https://github.com/diasurgical/devilutionX/archive/refs/tags/1.5.1.tar.gz"
+blake3 = "8425152bf50a692573d17ba85a8445734a564a372eba2190223bf0aa04f31d86"
+
+[build]
+template = "custom"
+dependencies = [
+    "libiconv",
+    "liborbital",
+    "sdl",
+]
+script = """
+export CFLAGS="${CFLAGS} -I${COOKBOOK_SYSROOT}/include"
+export CXXFLAGS="${CXXFLAGS} -I${COOKBOOK_SYSROOT}/include"
+COOKBOOK_CONFIGURE="cmake"
+COOKBOOK_CONFIGURE_FLAGS=(
+    -DCMAKE_BUILD_TYPE=Release
+    -DCMAKE_CROSSCOMPILING=ON
+    -DCMAKE_CXX_COMPILER="${TARGET}-g++"
+    -DCMAKE_C_COMPILER="${TARGET}-gcc"
+    -DCMAKE_INSTALL_PREFIX="/"
+    -DCMAKE_VERBOSE_MAKEFILE=ON
+    -DBUILD_TESTING=OFF
+    -DDEVILUTIONX_STATIC_BZIP2=ON
+    -DDEVILUTIONX_STATIC_ZLIB=ON
+    -DDEVILUTIONX_SYSTEM_BZIP2=OFF
+    -DDEVILUTIONX_SYSTEM_ZLIB=OFF
+    -DNONET=ON
+    -DUSE_SDL1=ON
+    -DSDL_LIBRARY="-lSDL -lorbital"
+    "${COOKBOOK_SOURCE}"
+)
+cookbook_configure
+mkdir -v "${COOKBOOK_STAGE}/bin"
+cp -v devilutionx "${COOKBOOK_STAGE}/bin"
+"""
