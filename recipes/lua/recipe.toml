@@ -1,14 +1,17 @@
 [source]
 tar = "https://www.lua.org/ftp/lua-5.4.4.tar.gz"
-patches = [
-    "redox.patch"
-]
+blake3 = "ca54489393cd38e35d295a9c35dbf0da5336a66ddb7b2213eed6c2f3039f53b1"
 
 [build]
 template = "custom"
 script = """
 rsync -av --delete "${COOKBOOK_SOURCE}/" ./
-"${COOKBOOK_MAKE}" generic -j"${COOKBOOK_MAKE_JOBS}"
+"${COOKBOOK_MAKE}" -j"${COOKBOOK_MAKE_JOBS}" \
+    AR="${TARGET}-ar rcu" \
+    CC="${TARGET}-gcc -std=gnu99" \
+    RANLIB="${TARGET}-ranlib" \
+    SYSLDFLAGS="-static" \
+    generic
 mkdir -pv "${COOKBOOK_STAGE}/bin"
 cp src/lua src/luac "${COOKBOOK_STAGE}/bin"
 """
