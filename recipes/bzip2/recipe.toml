@@ -1,0 +1,21 @@
+[source]
+tar = "https://sourceware.org/pub/bzip2/bzip2-1.0.8.tar.gz"
+blake3 = "97af3f520629c65fe41292f77e6ca798fe594d7987bfb2aebe7c6fcdc7ab5ed2"
+
+[build]
+template = "custom"
+script = """
+rsync -av --delete "${COOKBOOK_SOURCE}/" ./
+"${COOKBOOK_MAKE}" -j"${COOKBOOK_MAKE_JOBS}" \
+    AR="${TARGET}-ar" \
+    CC="${TARGET}-gcc" \
+    LDFLAGS="-static" \
+    PREFIX=/ \
+    RANLIB="${TARGET}-ranlib" \
+    libbz2.a \
+    bzip2
+mkdir -pv "${COOKBOOK_STAGE}/bin"
+cp -v bzip2 "${COOKBOOK_STAGE}/bin"
+mkdir -pv "${COOKBOOK_STAGE}/lib"
+cp -v libbz2.a "${COOKBOOK_STAGE}/lib"
+"""
