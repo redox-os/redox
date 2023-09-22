@@ -9,6 +9,7 @@ prompt = false
 
 # Package settings
 [packages]
+bootloader = {}
 bootstrap = {}
 coreutils = {}
 escalated = {}
