@@ -46,7 +46,6 @@ escalated
 [[files]]
 path = "/etc/init.d/30_console"
 data = """
-inputd -A 2
 getty 2
 getty debug: -J
 """
