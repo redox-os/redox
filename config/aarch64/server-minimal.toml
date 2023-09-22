@@ -3,12 +3,13 @@
 # General settings
 [general]
 # Filesystem size in MiB
-filesystem_size = 64
+filesystem_size = 128
 # Do not prompt if settings are not defined
 prompt = false
 
 # Package settings
 [packages]
+bootloader = {}
 bootstrap = {}
 coreutils = {}
 escalated = {}
@@ -45,7 +46,6 @@ escalated
 [[files]]
 path = "/etc/init.d/30_console"
 data = """
-inputd -A 2
 getty 2
 getty debug: -J
 """
