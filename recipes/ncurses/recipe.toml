@@ -1,0 +1,22 @@
+[source]
+tar = "https://ftp.gnu.org/gnu/ncurses/ncurses-6.4.tar.gz"
+blake3 = "0d1c9fdf53c0ca4bd66ba707d49a079d2dd6f5a960cdec74a56e29952c4ffe73"
+
+[build]
+template = "custom"
+script = """
+COOKBOOK_CONFIGURE_FLAGS+=(
+    --disable-db-install
+    --without-ada
+    --without-cxx-binding
+    --without-tests
+    cf_cv_func_mkstemp=yes
+)
+cookbook_configure
+rm -rfv "${COOKBOOK_STAGE}/bin" "${COOKBOOK_STAGE}/share/"{doc,info,man}
+"""
+
+[package]
+dependencies = [
+    "terminfo",
+]
