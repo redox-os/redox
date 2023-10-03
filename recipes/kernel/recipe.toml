@@ -14,8 +14,6 @@ cargo rustc \
 	-Z build-std=core,alloc \
 	-- \
 	-C soft-float \
-	-C debuginfo=2 \
-	-C lto \
 	--emit link="${PWD}/libkernel.a"
 "${TARGET}-ld" \
 	--gc-sections \
