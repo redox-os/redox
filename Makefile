@@ -95,10 +95,6 @@ gdb: FORCE
 # An empty target
 FORCE:
 
-# Gzip any binary
-%.gz: %
-	gzip -k -f $<
-
 # Wireshark
 wireshark: FORCE
 	wireshark $(BUILD)/network.pcap
