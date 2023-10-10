@@ -41,7 +41,7 @@ expat = {}
 extrautils = {}
 #fal
 #fd = {} # ctrlc-3.1.1
-#ffmpeg = {} # undefined references
+ffmpeg = {}
 findutils = {}
 fontconfig = {}
 #freeciv = {}
