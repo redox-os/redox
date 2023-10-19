@@ -69,7 +69,7 @@ else ifeq ($(audio),ac97)
 	QEMUFLAGS+=-device AC97
 else
 	# Intel High Definition Audio
-	QEMUFLAGS+=-device ich9-intel-hda -device hda-duplex
+	QEMUFLAGS+=-device ich9-intel-hda -device hda-output
 endif
 
 ifeq ($(net),no)
