@@ -1,5 +1,8 @@
 VERSION=8.2
-TAR=http://ftp.vim.org/vim/unix/vim-$VERSION.tar.bz2
+# We use `https://ftp.nluug.nl` because `ftp.vim.org` doesn't support `https`
+# see https://www.vim.org/mirrors.php
+TAR=https://ftp.nluug.nl/pub/vim/unix/vim-$VERSION.tar.bz2
+
 BUILD_DEPENDS=(ncurses)
 DEPENDS="terminfo"
 

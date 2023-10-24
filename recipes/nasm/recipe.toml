@@ -1,5 +1,5 @@
 [source]
-tar = "http://www.nasm.us/pub/nasm/releasebuilds/2.14.02/nasm-2.14.02.tar.gz"
+tar = "https://www.nasm.us/pub/nasm/releasebuilds/2.14.02/nasm-2.14.02.tar.gz"
 
 [build]
 template = "configure"
