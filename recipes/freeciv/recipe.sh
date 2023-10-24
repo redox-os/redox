@@ -1,5 +1,5 @@
 VERSION=2.6.6
-TAR=http://files.freeciv.org/stable/freeciv-$VERSION.tar.bz2
+TAR=https://files.freeciv.org/stable/freeciv-$VERSION.tar.bz2
 BUILD_DEPENDS=(curl freetype libiconv liborbital libpng openssl nghttp2 sdl sdl_gfx sdl_image sdl_mixer sdl_ttf zlib)
 
 function recipe_version {

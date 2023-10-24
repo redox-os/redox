@@ -1,5 +1,5 @@
 VERSION=20110206
-TAR=http://www.etalabs.net/releases/libc-bench-$VERSION.tar.gz
+TAR=https://www.etalabs.net/releases/libc-bench-$VERSION.tar.gz
 
 function recipe_version {
     echo "$VERSION"

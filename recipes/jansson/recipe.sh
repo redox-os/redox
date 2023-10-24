@@ -1,5 +1,5 @@
 VERSION=2.10
-TAR=http://www.digip.org/jansson/releases/jansson-$VERSION.tar.gz
+TAR=https://www.digip.org/jansson/releases/jansson-$VERSION.tar.gz
 
 function recipe_version {
     echo "$VERSION"

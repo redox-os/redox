@@ -1,5 +1,5 @@
 VERSION=3.10
-TAR=http://download.netsurf-browser.org/netsurf/releases/source-full/netsurf-all-$VERSION.tar.gz
+TAR=https://download.netsurf-browser.org/netsurf/releases/source-full/netsurf-all-$VERSION.tar.gz
 BUILD_DEPENDS=(curl expat libjpeg libpng nghttp2 openssl sdl zlib freetype liborbital libiconv)
 DEPENDS="ca-certificates orbital"
 

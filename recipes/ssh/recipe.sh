@@ -1,5 +1,5 @@
 VERSION=7.9p1
-TAR=http://ftp.openbsd.org/pub/OpenBSD/OpenSSH/portable/openssh-$VERSION.tar.gz
+TAR=https://ftp.openbsd.org/pub/OpenBSD/OpenSSH/portable/openssh-$VERSION.tar.gz
 BUILD_DEPENDS=(openssl zlib)
 
 function recipe_version {

@@ -1,5 +1,5 @@
 VERSION=6.0
-TAR=http://ftp.gnu.org/gnu/ncurses/ncurses-$VERSION.tar.gz
+TAR=https://ftp.gnu.org/gnu/ncurses/ncurses-$VERSION.tar.gz
 DEPENDS="terminfo"
 
 function recipe_version {

@@ -1,5 +1,5 @@
 VERSION=3.6
-TAR=http://ftp.gnu.org/gnu/diffutils/diffutils-$VERSION.tar.xz
+TAR=https://ftp.gnu.org/gnu/diffutils/diffutils-$VERSION.tar.xz
 
 function recipe_version {
     echo "$VERSION"
