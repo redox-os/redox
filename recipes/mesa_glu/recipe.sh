@@ -1,5 +1,5 @@
 VERSION=9.0.1
-TAR=ftp://ftp.freedesktop.org/pub/mesa/glu/glu-$VERSION.tar.xz
+TAR=https://archive.mesa3d.org/glu/glu-$VERSION.tar.xz
 BUILD_DEPENDS=(mesa)
 
 function recipe_version {
