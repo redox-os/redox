@@ -2,51 +2,31 @@
 <img alt="Redox" width="346" src="https://gitlab.redox-os.org/redox-os/assets/raw/master/logos/redox/logo.png">
 </p>
 
-**Redox** is an operating system written in Rust, a language with focus on safety and high performance. Redox, following the microkernel design, aims to be secure, usable, and free. Redox is inspired by previous kernels and operating systems, such as SeL4, MINIX, Plan 9, and BSD.
+[Redox](https://www.redox-os.org) is an operating system written in Rust, a language with focus on safety, efficiency and high performance. Redox, following the microkernel design, aims to be reliable, secure, usable, correct and free. Redox is inspired by previous operating systems, such as seL4, MINIX, Plan 9, Linux and BSD.
 
-Redox _is not_ just a kernel, it's a **full-featured Operating System**, providing packages (memory allocator, file system, display manager, core utilities, etc.) that together make up a functional and convenient operating system. You can loosely think of it as the GNU or BSD ecosystem, but in a memory safe language and with modern technology.
-
-The website can be found at https://www.redox-os.org. For hardware compatibility, see [HARDWARE.md](HARDWARE.md).
+Redox _is not_ just a kernel, it's a **full-featured operating system**, providing components (memory allocator, file system, display manager, core utilities, etc.) that together make up a functional and convenient operating system. You can loosely think of it as the GNU or BSD ecosystem, but in a memory safe language and with modern technology.
 
 [![Downloads](https://img.shields.io/github/downloads/redox-os/redox/total.svg)](https://gitlab.redox-os.org/redox-os/redox/tags)
 [![MIT licensed](https://img.shields.io/badge/license-MIT-blue.svg)](./LICENSE)
 
-## What it looks like
+## Guide
 
-See [Redox in Action](https://www.redox-os.org/screens/).
+This is the main repository of the Redox GitLab where the build system files are stored, this README is used to guide new developers.
 
-<img alt="Redox" height="150" src="https://gitlab.redox-os.org/redox-os/assets/raw/master/screenshots/Senza%20titolo.jpeg">
-<img alt="Redox" height="150" src="https://gitlab.redox-os.org/redox-os/assets/raw/master/screenshots/redox running.jpeg">
-<img alt="Redox" height="150" src="https://gitlab.redox-os.org/redox-os/assets/raw/master/screenshots/IMG_1460.PNG">
+You can find the most important pages below:
 
-<img alt="Redox" height="150" src="https://gitlab.redox-os.org/redox-os/assets/raw/master/screenshots/Sodium_v2.PNG">
-<img alt="Redox" height="150" src="https://gitlab.redox-os.org/redox-os/assets/raw/master/screenshots/Boot.png">
-<img alt="Redox" height="150" src="https://gitlab.redox-os.org/redox-os/assets/raw/master/screenshots/IMG_1459.PNG">
-
-
-## Getting Started
-
-Please read the [Getting Started Guide](https://doc.redox-os.org/book/ch02-00-getting-started.html) in the [Redox Book](https://doc.redox-os.org/book/).
-
-### Trying Out Redox
-
-You can try out the Redox download in an emulator, or boot from a USB. Please see the [Getting Started Guide](https://doc.redox-os.org/book/ch02-00-getting-started.html).
-
-### Building Redox
-
-The Redox build system is unique and complex, so you are best to follow the practices in the book. Please see the [Getting Started Guide](https://doc.redox-os.org/book/ch02-00-getting-started.html).
-
-### Getting Help
-
-Please join us on [Redox Chat](https://doc.redox-os.org/book/ch13-01-chat.html) for any concerns. You can post your questions or issues in [Redox Support](https://matrix.to/#/#redox-support:matrix.org) room.
-
-## Contributing
-
-If you're interested in this project, and you'd like to help us out, have a look at [CONTRIBUTING](CONTRIBUTING.md).
+- [Book](https://doc.redox-os.org/book/)
+- [Contribute](CONTRIBUTING.md)
+- [Hardware Compatibility](HARDWARE.md)
+- [Trying Out Redox](https://doc.redox-os.org/book/ch02-04-trying-out-redox.html)
+- [Building Redox](https://doc.redox-os.org/book/ch02-05-building-redox.html)
+- [Build System Documentation](https://doc.redox-os.org/book/ch08-06-build-system-reference.html)
+- [Developer FAQ](https://doc.redox-os.org/book/ch09-05-developer-faq.html)
+- [Chat/Discussions/Help](https://doc.redox-os.org/book/ch13-01-chat.html)
 
 ## Ecosystem
 
-The ecosystem and software Redox OS provides is listed below.
+These are the most important repositories available on the Redox GitLab:
 
 | Name (lexicographic order)                                                           | Maintainer
 |--------------------------------------------------------------------------------------|---------------------------
@@ -80,3 +60,14 @@ The ecosystem and software Redox OS provides is listed below.
 | [The Redox book](https://gitlab.redox-os.org/redox-os/book)                          |    **@hatred_45**
 | [userutils](https://gitlab.redox-os.org/redox-os/userutils)                          | **@jackpot51**
 
+## What it looks like
+
+<img alt="Redox" height="150" src="https://gitlab.redox-os.org/redox-os/assets/raw/master/screenshots/Senza%20titolo.jpeg">
+<img alt="Redox" height="150" src="https://gitlab.redox-os.org/redox-os/assets/raw/master/screenshots/redox running.jpeg">
+<img alt="Redox" height="150" src="https://gitlab.redox-os.org/redox-os/assets/raw/master/screenshots/IMG_1460.PNG">
+
+<img alt="Redox" height="150" src="https://gitlab.redox-os.org/redox-os/assets/raw/master/screenshots/Sodium_v2.PNG">
+<img alt="Redox" height="150" src="https://gitlab.redox-os.org/redox-os/assets/raw/master/screenshots/Boot.png">
+<img alt="Redox" height="150" src="https://gitlab.redox-os.org/redox-os/assets/raw/master/screenshots/IMG_1459.PNG">
+
+See [Redox in Action](https://www.redox-os.org/screens/) for photos and videos.
