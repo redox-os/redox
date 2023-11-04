@@ -1,5 +1,7 @@
-VERSION=0.1
-GIT=https://github.com/AlisterT/openjazz
+#TODO: support cmake version 20231028
+VERSION=20190106
+TAR="https://github.com/AlisterT/openjazz/releases/download/${VERSION}/openjazz-${VERSION}.tar.xz"
+TAR_SHA256="91341adcc4908db12aad6b82d2fb0125429a26585f65d7eb32d403656313eaab"
 BUILD_DEPENDS=(sdl liborbital zlib)
 
 function recipe_version {
@@ -15,7 +17,7 @@ function recipe_build {
     touch INSTALL NEWS README AUTHORS ChangeLog COPYING
     autoreconf -fvi
     autoconf
-    wget -O builds/autotools/config.sub "https://gitlab.redox-os.org/redox-os/gnu-config/-/raw/master/config.sub?inline=false"
+    wget -O build-aux/config.sub "https://gitlab.redox-os.org/redox-os/gnu-config/-/raw/master/config.sub?inline=false"
     ./configure --build=${BUILD} --host=${HOST} --prefix=''
     "$REDOX_MAKE" -j"$($NPROC)" V=1
     skip=1
