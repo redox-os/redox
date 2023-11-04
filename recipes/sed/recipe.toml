@@ -1,5 +1,5 @@
 [source]
-tar = "http://ftp.gnu.org/gnu/sed/sed-4.4.tar.xz"
+tar = "https://ftp.gnu.org/gnu/sed/sed-4.4.tar.xz"
 patches = [
     "sed.patch"
 ]

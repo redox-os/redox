@@ -1,7 +1,7 @@
 [source]
 #git = "https://git.savannah.gnu.org/git/readline.git"
 #rev = "d49a9082c0e15bba8cd3d8cc0a994409cf823cac"
-tar = "http://ftp.gnu.org/gnu/readline/readline-7.0.tar.gz"
+tar = "https://ftp.gnu.org/gnu/readline/readline-7.0.tar.gz"
 blake3 = "962483e201f36f05a5ccb507bb7330b4d4e4989fd52f41eb15ba65582ad02703"
 patches = [
     "redox.patch"
