@@ -93,7 +93,7 @@ winit = {}
 # dev
 autoconf = {}
 automake = {}
-cargo = {}
+#cargo = {} # openssl issues
 gcc = {}
 gnu-binutils = {}
 gnu-make = {}
