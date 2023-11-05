@@ -13,6 +13,7 @@ A collection of software ports for Redox.
 - `examples` - Softwares with examples
 - `games` - Any kind of game
 - `gui` - Graphical interfaces
+- `icons` - Icon packs
 - `libraries` - Software with functions for other softwares, like OpenSSL
 - `network` - Networking tools
 - `other` - Software that can't fit on other categories
