@@ -25,7 +25,7 @@ A collection of software ports for Redox.
 - `video` - Video players and video processing/production tools
 - `wip` - Software that needs porting or incomplete recipes
 
-[![MIT licensed](https://img.shields.io/badge/license-MIT-blue.svg)](./LICENSE)
-
 In order for this repository to be useful, it must be set up with an environment
-from the [Redox repository](https://gitlab.redox-os.org/redox-os/redox).
+from the [redox](https://gitlab.redox-os.org/redox-os/redox) repository.
+
+[![MIT licensed](https://img.shields.io/badge/license-MIT-blue.svg)](./LICENSE)
