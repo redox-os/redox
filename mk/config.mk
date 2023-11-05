@@ -76,7 +76,7 @@ ifeq ($(REPO_BINARY),0)
 INSTALLER+=--cookbook=cookbook
 REPO_TAG=$(BUILD)/repo.tag
 else
-INSTALLER+=--cookbook=cookbook --cooking
+INSTALLER+=--cookbook=cookbook --repo-binary
 REPO_TAG=$(BUILD)/repo.tag
 endif
 
