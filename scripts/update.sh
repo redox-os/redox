@@ -1,8 +1,9 @@
 #!/usr/bin/env bash
 
+# Download the bootstrap script
+curl -sf https://gitlab.redox-os.org/redox-os/redox/raw/master/bootstrap.sh -o bootstrap.sh
 # Update Ubuntu/Debian-based systems
-sudo apt update || true
-sudo apt upgrade -y || true
+bash -e bootstrap.sh -d
 # Update the Rust toolchain
 rustup update || true
 # Update the build system source and submodules
