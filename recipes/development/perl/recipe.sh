@@ -1,5 +1,5 @@
 VERSION=5.24.2
-TAR=http://www.cpan.org/src/5.0/perl-$VERSION.tar.gz
+TAR=https://www.cpan.org/src/5.0/perl-$VERSION.tar.gz
 
 unset AR AS CC CXX LD NM OBJCOPY OBJDUMP RANLIB READELF STRIP
 
