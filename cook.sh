@@ -88,7 +88,7 @@ function op {
                 then
                     if [ ! -f source.tar ]
                     then
-                        wget "$TAR" -O source.tar
+                        wget "$TAR" --continue -O source.tar
                     fi
 
                     if [ -n "$TAR_SHA256" ]
