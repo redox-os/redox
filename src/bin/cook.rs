@@ -260,7 +260,7 @@ fi"#);
 
                     let mut command = Command::new("wget");
                     command.arg(tar);
-                    command.arg("-O").arg(&source_tar_tmp);
+                    command.arg("--continue").arg("-O").arg(&source_tar_tmp);
                     run_command(command)?;
 
                     // Move source.tar.tmp to source.tar atomically
