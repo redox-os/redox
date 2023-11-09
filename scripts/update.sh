@@ -6,8 +6,6 @@ curl -sf https://gitlab.redox-os.org/redox-os/redox/raw/master/bootstrap.sh -o b
 bash -e bootstrap.sh -d
 # Update the Rust toolchain
 rustup update || true
-# Change the active directory to the root of the build system
-cd ..
 # Update the build system source and submodules
 make pull
 # Update the relibc folder timestamp
