@@ -5,6 +5,8 @@ variables:
   GIT_SUBMODULE_STRATEGY: "recursive"
 
 before_script:
+ # Disable the wget progress bar
+ - echo 'show-progress = off' >> ~/.wgetrc
  - |
     export DEBIAN_FRONTEND=noninteractive
     apt-get update -qq &&
