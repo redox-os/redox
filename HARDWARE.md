@@ -31,10 +31,13 @@ This document tracks the current hardware compatibility of Redox.
 
 ## General
 
-Due to incomplete USB support, desktops are generally not recommended.
+This section cover things to consider.
 
-- USB support is incomplete.
-- Wireless networking is not supported.
+- ACPI support is incomplete (some things are hardcoded on the kernel)
+- USB support is incomplete (desktops are generally not recommended)
+- Wi-Fi is not supported
+- GPU drivers aren't supported (only VESA and GOP)
+- Automatic operating system discovery on boot loader is not implemented (remember this before installing Redox)
 
 ## Template
 
