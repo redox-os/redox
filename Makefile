@@ -90,7 +90,7 @@ else
 endif
 
 gdb: FORCE
-	gdb cookbook/recipes/kernel/build/kernel.sym --eval-command="target remote localhost:1234"
+	gdb cookbook/recipes/kernel/target/$(TARGET)/build/kernel.sym --eval-command="target remote localhost:1234"
 
 # An empty target
 FORCE:
