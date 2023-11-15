@@ -48,6 +48,7 @@ findutils = {}
 initfs = {}
 installer = {}
 installer-gui = {}
+intel-one-mono = {}
 ion = {}
 ipcd = {}
 kernel = {}
