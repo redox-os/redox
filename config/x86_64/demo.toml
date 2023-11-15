@@ -38,6 +38,7 @@ bootstrap = {}
 ca-certificates = {}
 contain = {}
 coreutils = {}
+cosmic-edit = {}
 diffutils = {}
 drivers = {}
 escalated = {}
