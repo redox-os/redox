@@ -1,0 +1,11 @@
+[source]
+tar="https://github.com/intel/intel-one-mono/archive/refs/tags/V1.3.0.tar.gz"
+blake3="9caff71b0a9fe8627253c55889964612ea4ae144584a283cd2fe88b7a14a4140"
+
+[build]
+template = "custom"
+script = """
+DEST="${COOKBOOK_STAGE}/ui/fonts/Mono/Intel-One"
+mkdir -pv "${DEST}"
+cp -v "${COOKBOOK_SOURCE}/fonts/ttf/"*".ttf" "${DEST}"
+"""
