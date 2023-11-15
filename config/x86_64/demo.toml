@@ -25,7 +25,7 @@
 # General settings
 [general]
 # Filesystem size in MiB
-filesystem_size = 1024
+filesystem_size = 1536
 # Do not prompt if settings are not defined
 prompt = false
 
@@ -39,6 +39,7 @@ ca-certificates = {}
 contain = {}
 coreutils = {}
 cosmic-edit = {}
+cosmic-icons = {}
 diffutils = {}
 drivers = {}
 escalated = {}
@@ -59,6 +60,7 @@ orbital = {}
 orbterm = {}
 orbutils = {}
 pkgutils = {}
+pop-icon-theme = {}
 ptyd = {}
 redoxfs = {}
 relibc = {}
