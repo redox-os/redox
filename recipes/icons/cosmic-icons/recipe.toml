@@ -1,0 +1,9 @@
+[source]
+git = "https://github.com/pop-os/cosmic-icons.git"
+
+[build]
+template = "custom"
+script = """
+cd "${COOKBOOK_SOURCE}"
+just rootdir="${COOKBOOK_STAGE}" prefix="" install
+"""
