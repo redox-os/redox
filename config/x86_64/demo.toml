@@ -82,9 +82,9 @@ vim = {}
 # Games
 dosbox = {}
 freedoom = {}
-games = {}
 neverball = {}
 prboom = {}
+redox-games = {}
 sopwith = {}
 syobonaction = {}
 

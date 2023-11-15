@@ -73,8 +73,8 @@ vim = {}
 # Games
 dosbox = {}
 freedoom = {}
-games = {}
 prboom = {}
+redox-games = {}
 
 # Demos
 pixelcannon = {}
