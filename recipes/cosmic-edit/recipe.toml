@@ -1,0 +1,9 @@
+[source]
+git = "https://github.com/pop-os/cosmic-edit.git"
+branch = "master_jammy"
+
+[build]
+template = "custom"
+script = """
+cookbook_cargo --no-default-features
+"""
