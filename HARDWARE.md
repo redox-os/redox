@@ -155,6 +155,19 @@ Image date - 11-11-2022
 - No audio, HDA driver cannot find output pins
 ```
 
+- **ASUS ROG g55vw**
+
+```
+Satus - Booting
+Redox version - 0.8.0
+Variant - desktop
+Image date - 11-11-2023
+
+- Booted using BIOS
+- Boots to desktop
+- UEFI panic in SETUP
+```
+
 ### Lenovo
 
 - **Lenovo IdeaPad Y510P**
