@@ -135,8 +135,10 @@ syobonaction = {}
 vvvvvv = {}
 
 # stuff
+cosmic-icons = {}
 freepats = {}
 generaluser-gs = {}
+intel-one-mono = {}
 jeremy = {}
 keyboard-sfx = {}
 libc-bench = {}
