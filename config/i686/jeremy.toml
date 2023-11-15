@@ -64,8 +64,8 @@ winit = {}
 dosbox = {}
 eduke32 = {}
 freedoom = {}
-games = {}
 prboom = {}
+redox-games = {}
 
 # stuff
 freepats = {}
