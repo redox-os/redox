@@ -46,6 +46,7 @@ userutils = {}
 uutils = {}
 
 # apps
+cosmic-edit = {}
 cosmic-text = {}
 periodictable = {}
 pixelcannon = {}
