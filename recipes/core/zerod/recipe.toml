@@ -2,4 +2,12 @@
 git = "https://gitlab.redox-os.org/redox-os/zerod.git"
 
 [build]
-template = "cargo"
+template = "custom"
+script = """
+cookbook_cargo --bin zerod
+
+# TODO: symlinks aren't supported by redox-initfs
+#ln -sv zerod "${COOKBOOK_STAGE}/bin/nulld"
+
+cp "${COOKBOOK_STAGE}/bin/zerod" "${COOKBOOK_STAGE}/bin/nulld"
+"""

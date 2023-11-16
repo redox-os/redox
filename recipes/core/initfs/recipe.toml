@@ -7,7 +7,6 @@ dependencies = [
   "drivers-initfs",
   "init",
   "logd",
-  "nulld",
   "ramfs",
   "randd",
   "redoxfs",
