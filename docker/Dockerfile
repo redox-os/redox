@@ -31,6 +31,7 @@ RUN set -ex;                                                                   \
         x86-64-unknown-redox-gcc                                               \
         ;                                                                      \
     cargo install cargo-config;                                                \
+    cargo install just@1.16.0;                                                 \
     apt-get autoremove -q -y;                                                  \
     apt-get clean -q -y;                                                       \
     rm -rf /var/lib/apt/lists/*
