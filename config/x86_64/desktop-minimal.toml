@@ -11,6 +11,7 @@ prompt = false
 [packages]
 bootstrap = {}
 coreutils = {}
+drivers = {}
 escalated = {}
 extrautils = {}
 initfs = {}
@@ -45,6 +46,7 @@ path = "/etc/init.d/00_base"
 data = """
 ipcd
 ptyd
+pcid /etc/pcid.d/
 escalated
 """
 
