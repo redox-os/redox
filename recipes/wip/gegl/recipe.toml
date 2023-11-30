@@ -1,0 +1,9 @@
+#TODO missing script for Meson, see https://gitlab.gnome.org/GNOME/gegl/-/blob/master/docs/development.adoc?ref_type=heads#user-content-debugging
+[source]
+tar = "https://download.gimp.org/pub/gegl/0.4/gegl-0.4.46.tar.xz"
+[build]
+template = "custom"
+dependencies = [
+    "libpng",
+    "glib",
+]

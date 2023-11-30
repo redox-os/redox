@@ -1,0 +1,5 @@
+#TODO probably wrong template, lacking build instructions
+[source]
+tar = "https://sourceforge.net/projects/gphoto/files/libgphoto/2.5.31/libgphoto2-2.5.31.tar.xz/download"
+[build]
+template = "configure"

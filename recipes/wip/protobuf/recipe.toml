@@ -1,0 +1,5 @@
+#TODO missing script for CMake, see https://github.com/protocolbuffers/protobuf/blob/main/cmake/README.md
+[source]
+tar = "https://github.com/protocolbuffers/protobuf/releases/download/v25.1/protobuf-25.1.tar.gz"
+[build]
+template = "custom"

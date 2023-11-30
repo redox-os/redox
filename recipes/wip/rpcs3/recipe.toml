@@ -1,0 +1,38 @@
+#TODO probably wrong script, see https://github.com/RPCS3/rpcs3/blob/master/BUILDING.md#linux-1
+# customization - https://wiki.rpcs3.net/index.php?title=Help:Building_RPCS3#CMake_Build_Options
+[source]
+git = "https://github.com/RPCS3/rpcs3"
+[build]
+template = "custom"
+dependencies = [
+    "mesa",
+    "qt5-base",
+    "sdl2",
+    "eudev",
+    "glew",
+    "openal",
+    "zlib",
+    "libpng",
+    "libevdev",
+    "libedit",
+    "libvulkan",
+    "pulseaudio",
+]
+script = """
+    COOKBOOK_CONFIGURE="cmake"
+    COOKBOOK_CONFIGURE_FLAGS=(
+	-DCMAKE_BUILD_TYPE=Release
+	-DCMAKE_CROSSCOMPILING=True
+	-DCMAKE_EXE_LINKER_FLAGS="-static"
+	-DCMAKE_INSTALL_PREFIX="/"
+    -DUSE_NATIVE_INSTRUCTIONS=OFF
+    -DUSE_ALSA=OFF
+    -DUSE_PULSE=OFF
+    -DUSE_DISCORD_RPC=OFF
+    -DBUILD_LLVM_SUBMODULE=OFF
+    -DUSE_SYSTEM_FFMPEG=ON
+    -DUSE_SYSTEM_LIBPNG=ON
+"${COOKBOOK_SOURCE}"
+)
+cookbook_configure
+"""

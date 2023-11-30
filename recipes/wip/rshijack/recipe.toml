@@ -1,0 +1,5 @@
+#TODO pnet_sys crate error
+[source]
+git = "https://github.com/kpcyrd/rshijack"
+[build]
+template = "cargo"

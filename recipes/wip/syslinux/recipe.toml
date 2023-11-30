@@ -1,0 +1,5 @@
+#TODO Compilation error
+[source]
+tar = "https://mirrors.edge.kernel.org/pub/linux/utils/boot/syslinux/syslinux-6.03.tar.gz"
+[build]
+template = "configure"

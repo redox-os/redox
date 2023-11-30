@@ -1,0 +1,5 @@
+#TODO Not compiled or tested
+[source]
+tar = "https://www.gnu.org/software/xorriso/xorriso-1.5.6.pl02.tar.gz"
+[build]
+template = "configure"

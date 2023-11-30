@@ -1,0 +1,8 @@
+#TODO require NodeJS and NPM
+[source]
+tar = "https://github.com/ekzhang/sshx"
+[build]
+template = "custom"
+script = """
+cookbook_cargo_packages sshx
+"""

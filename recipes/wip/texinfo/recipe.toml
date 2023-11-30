@@ -1,0 +1,5 @@
+#TODO Compilation error
+[source]
+tar = "https://ftp.gnu.org/gnu/texinfo/texinfo-7.0.3.tar.xz"
+[build]
+template = "configure"

@@ -1,0 +1,9 @@
+#TODO missing script for "make", see https://github.com/yaa110/cb#build-manually
+#TODO probably wrong dependency
+[source]
+git = "https://github.com/yaa110/cb"
+[build]
+template = "custom"
+dependencies = [
+    "libxcb",
+]

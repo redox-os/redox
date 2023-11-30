@@ -1,0 +1,11 @@
+#TODO missing script for CMake, see https://github.com/openvkl/openvkl#building-open-vkl-from-source
+[source]
+tar = "https://github.com/openvkl/openvkl/archive/refs/tags/v2.0.0.tar.gz"
+[build]
+template = "custom"
+dependencies = [
+    "ispc",
+    "librkcommon",
+    "embree",
+    "level-zero",
+]

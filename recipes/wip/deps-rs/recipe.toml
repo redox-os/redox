@@ -1,0 +1,8 @@
+#TODO weird libssh2 error (using cargo update)
+[source]
+git = "https://github.com/deps-rs/deps.rs"
+[build]
+template = "cargo"
+dependencies = [
+    "openssl1",
+]

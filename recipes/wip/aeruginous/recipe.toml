@@ -1,0 +1,5 @@
+#TODO Not compiled or tested
+[source]
+tar = "https://github.com/kevinmatthes/aeruginous-rs/archive/refs/tags/v3.3.0.tar.gz"
+[build]
+template = "cargo"

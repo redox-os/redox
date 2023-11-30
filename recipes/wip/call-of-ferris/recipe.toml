@@ -1,0 +1,5 @@
+#TODO require a update on the redox_syscall crate (after a update on the libc crate)
+[source]
+git = "https://github.com/Andy-Python-Programmer/CallOfFerris"
+[build]
+template = "cargo"

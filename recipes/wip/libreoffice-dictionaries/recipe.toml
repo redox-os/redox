@@ -1,0 +1,5 @@
+#TODO probably wrong template
+[source]
+tar = "https://download.documentfoundation.org/libreoffice/src/7.6.2/libreoffice-dictionaries-7.6.2.1.tar.xz?idx=2"
+[build]
+template = "configure"

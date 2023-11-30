@@ -1,0 +1,23 @@
+#TODO probably wrong template, see https://firefox-source-docs.mozilla.org/setup/linux_build.html#build
+[source]
+tar = "https://ftp.mozilla.org/pub/firefox/releases/115.4.0esr/linux-x86_64/en-US/firefox-115.4.0esr.tar.bz2"
+[build]
+template = "configure"
+dependencies = [
+    "fontconfig",
+    "atk",
+    "cairo",
+    "dbus",
+    "libffi",
+    "freetype2",
+    "gdk-pixbuf",
+    "glib",
+    "gtk3",
+    "pango",
+    "sqlite3",
+    "nss-nspr",
+    "startup-notification",
+    "zlib",
+    "libvpx",
+    "ffmpeg6",
+]

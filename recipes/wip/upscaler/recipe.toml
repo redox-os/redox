@@ -1,0 +1,9 @@
+#TODO missing script for Meson, see https://gitlab.gnome.org/World/Upscaler#meson
+[source]
+tar = "https://gitlab.gnome.org/World/Upscaler/-/archive/1.2.2/Upscaler-1.2.2.tar.gz"
+[build]
+template = "custom"
+dependencies = [
+    "gtk4",
+    "libadwaita",
+]

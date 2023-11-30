@@ -1,0 +1,5 @@
+#TODO compilation error - POSIX header not found
+[source]
+tar = "https://github.com/eudev-project/eudev/releases/download/v3.2.14/eudev-3.2.14.tar.gz"
+[build]
+template = "configure"

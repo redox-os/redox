@@ -1,0 +1,10 @@
+#TODO missing script for CMake, see https://github.com/Tencent/ncnn/wiki/how-to-build#build-for-linux
+[source]
+git = "https://github.com/Tencent/ncnn"
+[build]
+template = "custom"
+dependencies = [
+    "protobuf",
+    "libvulkan",
+    "opencv4",
+]

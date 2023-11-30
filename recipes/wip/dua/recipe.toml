@@ -1,0 +1,5 @@
+#TODO open crate error
+[source]
+tar = "https://github.com/Byron/dua-cli/archive/refs/tags/v2.20.1.tar.gz"
+[build]
+template = "cargo"

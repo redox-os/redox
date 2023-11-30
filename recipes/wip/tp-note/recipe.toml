@@ -1,0 +1,8 @@
+#TODO require Wayland?
+[source]
+tar = "https://gitlab.com/getreu/tp-note/-/archive/v1.21.4/tp-note-v1.21.4.tar.gz"
+[build]
+template = "custom"
+script = """
+cookbook_cargo_packages tp-note
+"""

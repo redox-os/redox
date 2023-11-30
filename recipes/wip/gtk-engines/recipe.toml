@@ -1,0 +1,5 @@
+#TODO probably wrong template
+[source]
+tar = "https://download.gnome.org/sources/gtk-engines/2.91/gtk-engines-2.91.1.tar.gz"
+[build]
+template = "configure"

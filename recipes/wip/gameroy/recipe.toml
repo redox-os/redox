@@ -1,0 +1,8 @@
+#TODO Not compiled or tested
+[source]
+tar = "https://github.com/Rodrigodd/gameroy/archive/refs/tags/v0.3.1.tar.gz"
+[build]
+template = "custom"
+script = """
+cookbook_cargo_packages gameroy-native
+"""

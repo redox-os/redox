@@ -1,0 +1,8 @@
+#TODO make libgit2 dependency work
+[source]
+git = "https://github.com/tkellogg/dura"
+[build]
+template = "cargo"
+dependencies = [
+    "libgit2",
+]

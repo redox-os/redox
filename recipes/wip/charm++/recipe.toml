@@ -1,0 +1,5 @@
+#TODO missing script for cross-compilation, see https://charm.readthedocs.io/en/latest/charm++/manual.html#installing-charm
+[source]
+tar = "http://charm.cs.illinois.edu/distrib/charm-7.0.0.tar.gz"
+[build]
+template = "custom"

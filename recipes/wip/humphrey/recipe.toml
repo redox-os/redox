@@ -1,0 +1,16 @@
+#TODO Not compiled or tested
+[source]
+git = "https://github.com/w-henderson/Humphrey"
+[build]
+template = "custom"
+script = """
+"${COOKBOOK_CARGO}" build \
+            --manifest-path "${COOKBOOK_SOURCE}/Cargo.toml" \
+            --package "${humphrey_server}" \
+            --release
+           --all-features
+        mkdir -pv "${COOKBOOK_STAGE}/bin"
+        cp -v \
+            "target/${TARGET}/release/${humphrey_server}" \
+            "${COOKBOOK_STAGE}/bin/${humphrey}_${humphrey_server}"
+"""

@@ -1,0 +1,16 @@
+#TODO probably wrong script, see https://www.erlang.org/doc/installation_guide/install
+[source]
+tar = "https://github.com/erlang/otp/releases/download/OTP-26.1.1/otp_src_26.1.1.tar.gz"
+[build]
+template = "custom"
+dependencies = [
+    "openssl1",
+]
+script = """
+export ERL_TOP="${COOKBOOK_SOURCE}"
+COOKBOOK_CONFIGURE_FLAGS+=(
+    --without-termcap
+    --enable-bootstrap-only
+)
+cookbook_configure
+"""

@@ -1,0 +1,9 @@
+#TODO missing script for Meson, see https://gi.readthedocs.io/en/latest/build_test.html
+[source]
+tar = "https://download.gnome.org/sources/gobject-introspection/1.76/gobject-introspection-1.76.1.tar.xz"
+[build]
+template = "custom"
+dependencies = [
+    "cairo",
+    "glib",
+]

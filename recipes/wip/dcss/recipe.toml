@@ -1,0 +1,15 @@
+#TODO missing script for "make", see https://github.com/crawl/crawl/blob/master/crawl-ref/INSTALL.md#compiling
+#TODO require DejaVu fonts
+[source]
+tar = "https://github.com/crawl/crawl/releases/download/0.30.0/stone_soup-0.30.0.tar.xz"
+[build]
+template = "custom"
+dependencies = [
+    "sdl2",
+    "sdl2-image",
+    "sqlite3",
+    "ncurses",
+    "pcre",
+    "zlib",
+    "libpng",
+]

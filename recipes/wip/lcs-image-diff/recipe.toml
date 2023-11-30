@@ -1,0 +1,5 @@
+#TODO Not compiled or tested
+[source]
+tar = "https://github.com/bokuweb/lcs-image-diff-rs/archive/refs/tags/0.1.7.tar.gz"
+[build]
+template = "cargo"

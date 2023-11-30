@@ -1,0 +1,13 @@
+#TODO missing script for CMake, see https://gitlab.com/xonotic/netradiant#advanced-compilation
+[source]
+git = "https://gitlab.com/xonotic/netradiant"
+[build]
+template = "custom"
+dependencies = [
+    "libxml2",
+    "mesa",
+    "gtk2",
+    "libjpeg",
+    "libpng",
+    "zlib",
+]

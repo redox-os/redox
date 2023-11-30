@@ -1,0 +1,5 @@
+#TODO missing script for CMake, see https://github.com/AOMediaCodec/libavif#build-notes
+[source]
+tar = "https://github.com/AOMediaCodec/libavif/archive/refs/tags/v1.0.2.tar.gz"
+[build]
+template = "custom"

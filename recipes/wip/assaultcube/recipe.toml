@@ -1,0 +1,14 @@
+#TODO missing script for "make", see https://wiki.cubers.net/action/view/Linux_Support#Compiling_AssaultCube
+[source]
+tar = "https://github.com/assaultcube/AC/archive/refs/tags/v1.3.0.2.tar.gz"
+[build]
+template = "configure"
+dependencies = [
+    "sdl1",
+    "sdl1-image",
+    "openal",
+    "libogg",
+    "zlib",
+    "curl",
+    "libvorbis",
+]

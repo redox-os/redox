@@ -1,0 +1,21 @@
+#TODO probably wrong script, see https://sourceware.org/gdb/wiki/BuildingNatively
+[source]
+tar = "https://ftp.gnu.org/gnu/gdb/gdb-13.2.tar.xz"
+[build]
+template = "custom"
+dependencies = [
+    "libgmp",
+]
+script = """
+COOKBOOK_CONFIGURE_FLAGS+=(
+    --disable-binutils
+    --disable-ld
+    --disable-gold
+    --disable-gas
+    --disable-sim
+    --disable-gprof
+    --disable-gprofng
+    --disable-intl
+)
+cookbook_configure
+"""

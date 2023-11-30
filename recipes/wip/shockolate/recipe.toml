@@ -1,0 +1,46 @@
+#TODO something wrong with keyboard input
+[source]
+git = "https://github.com/Interrupt/systemshock"
+[build]
+template = "custom"
+dependencies = [
+    "libogg",
+    "liborbital",
+    "libvorbis",
+    "mesa",
+    "sdl2",
+    "sdl2_mixer",
+    "zlib",
+]
+script = """
+COOKBOOK_CONFIGURE="cmake"
+COOKBOOK_CONFIGURE_FLAGS=(
+    -DCMAKE_BUILD_TYPE=Release
+    -DCMAKE_CROSSCOMPILING=True
+    -DCMAKE_C_FLAGS="-I${COOKBOOK_SYSROOT}/include -I${COOKBOOK_SYSROOT}/include/SDL2"
+    -DCMAKE_CXX_FLAGS="-I${COOKBOOK_SYSROOT}/include -I${COOKBOOK_SYSROOT}/include/SDL2"
+    -DCMAKE_EXE_LINKER_FLAGS="-L${COOKBOOK_SYSROOT}/lib -static"
+    -DCMAKE_INSTALL_PREFIX="/"
+    -DCMAKE_PREFIX_PATH="${COOKBOOK_SYSROOT}"
+    -DCMAKE_SYSTEM_NAME=Generic
+    -DCMAKE_SYSTEM_PROCESSOR="$(echo "${TARGET}" | cut -d - -f1)"
+    -DCMAKE_VERBOSE_MAKEFILE=On
+    -DENABLE_FLUIDSYNTH=OFF
+    -DENABLE_SDL2=ON
+    -DENABLE_SOUND=ON
+    -DOPENGL_INCLUDE_DIR="${COOKBOOK_SYSROOT}"
+    -DOPENGL_opengl_LIBRARY="-lgl"
+    -DOPENGL_glx_LIBRARY="-lglx"
+    -DSDL2_MIXER_LIBRARIES="-lSDL2_mixer -lvorbisfile -lvorbis -logg -lSDL2 -lorbital $("${TARGET}-pkg-config" --libs osmesa)"
+    "${COOKBOOK_SOURCE}"
+)
+cmake "${COOKBOOK_CONFIGURE_FLAGS[@]}"
+make -j "${COOKBOOK_MAKE_JOBS}"
+mkdir -pv "${COOKBOOK_STAGE}/home/user/systemshock"
+cp -v systemshock "${COOKBOOK_STAGE}/home/user/systemshock/systemshock"
+cp -rv "${COOKBOOK_SOURCE}/shaders" "${COOKBOOK_STAGE}/home/user/systemshock/shaders"
+"""
+[package]
+dependencies = [
+    "llvm",
+]

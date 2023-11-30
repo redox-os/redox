@@ -1,0 +1,5 @@
+#TODO Not compiled or tested
+[source]
+tar = "https://github.com/prefix-dev/pixi/archive/refs/tags/v0.6.0.tar.gz"
+[build]
+template = "cargo"

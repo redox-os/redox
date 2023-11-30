@@ -1,0 +1,34 @@
+#TODO missing script for building, see https://chromium.googlesource.com/chromium/src/+/main/docs/linux/build_instructions.md
+#TODO probably missing dependencies
+#TODO require Wayland
+[source]
+tar = "https://commondatastorage.googleapis.com/chromium-browser-official/chromium-119.0.6045.123.tar.xz"
+[build]
+template = "custom"
+dependencies = [
+    "gtk3",
+    "nss",
+    "xdg-utils",
+    "libgcrypt",
+    "dbus",
+    "libva",
+    "libffi",
+    "fontconfig",
+    "libjpeg",
+    "libflac",
+    "libxml2",
+    "ffmpeg6",
+    "libwebp",
+    "opus",
+    "harfbuzz",
+    "libpng",
+    "freetype2",
+    "bzip2",
+    "expat",
+    "glib",
+    "cairo",
+    "atk",
+    "libcap",
+    "pango",
+    "java21",
+]

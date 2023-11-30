@@ -1,0 +1,6 @@
+#TODO customization - https://librdf.org/INSTALL.html
+#TODO compilation error
+[source]
+tar = "http://download.librdf.org/source/redland-1.0.17.tar.gz"
+[build]
+template = "configure"

@@ -1,0 +1,13 @@
+#TODO missing script for CMake, see https://github.com/libjxl/libjxl/blob/main/BUILDING.md
+[source]
+tar = "https://github.com/libjxl/libjxl/archive/refs/tags/v0.8.2.tar.gz"
+[build]
+template = "custom"
+dependencies = [
+    "libbrotli",
+    "libjpeg",
+    "libgif",
+    "libpng",
+    "libwebp",
+    "openexr",
+]

@@ -1,0 +1,5 @@
+#TODO Not compiled or tested
+[source]
+tar = "https://github.com/yykamei/thwack/archive/refs/tags/v0.8.16.tar.gz"
+[build]
+template = "cargo"

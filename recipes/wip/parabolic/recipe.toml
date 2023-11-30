@@ -1,0 +1,13 @@
+#TODO missing script for Cake, see https://github.com/NickvisionApps/Parabolic/blob/main/CONTRIBUTING.md#developing-on-linux
+#TODO missing dependencies - https://github.com/NickvisionApps/Parabolic/blob/main/CONTRIBUTING.md#developing-on-linux
+[source]
+tar = "https://github.com/NickvisionApps/Parabolic/archive/refs/tags/2023.9.1.tar.gz"
+[build]
+template = "custom"
+dependencies = [
+    "ffmpeg6",
+    "yt-dlp",
+    "gtk4",
+    "libadwaita",
+    "aria2",
+]

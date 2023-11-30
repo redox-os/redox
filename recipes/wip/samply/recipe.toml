@@ -1,0 +1,5 @@
+#TODO Not compiled or tested
+[source]
+tar = "https://github.com/mstange/samply/archive/refs/tags/samply-v0.11.0.tar.gz"
+[build]
+template = "cargo"

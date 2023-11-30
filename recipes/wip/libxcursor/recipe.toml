@@ -1,0 +1,5 @@
+#TODO Not compiled or tested
+[source]
+tar = "https://www.x.org/releases/individual/lib/libXcursor-1.2.1.tar.xz"
+[build]
+template = "configure"

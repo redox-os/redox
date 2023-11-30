@@ -1,0 +1,5 @@
+#TODO Not compiled or tested
+[source]
+tar = "https://github.com/rust-fuzz/cargo-fuzz/archive/refs/tags/0.11.2.tar.gz"
+[build]
+template = "cargo"

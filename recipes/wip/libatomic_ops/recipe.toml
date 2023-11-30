@@ -1,0 +1,5 @@
+#TODO not compiled or tested
+[source]
+tar = "https://github.com/ivmai/libatomic_ops/releases/download/v7.8.0/libatomic_ops-7.8.0.tar.gz"
+[build]
+template = "configure"

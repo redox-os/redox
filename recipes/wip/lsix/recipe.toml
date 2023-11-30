@@ -1,0 +1,14 @@
+#TODO move to proper category
+[source]
+git = "https://github.com/hackerb9/lsix"
+[build]
+template = "custom"
+script = """
+mkdir -pv "${COOKBOOK_STAGE}"/bin
+cp "${COOKBOOK_SOURCE}"/lsix "${COOKBOOK_STAGE}"/bin/lsix
+chmod a+x "${COOKBOOK_STAGE}"/bin/lsix
+"""
+[package]
+dependencies = [
+    "imagemagick7",
+]

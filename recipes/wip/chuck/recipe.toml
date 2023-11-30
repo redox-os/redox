@@ -1,0 +1,9 @@
+#TODO missing script for "make", see https://github.com/ccrma/chuck#linux
+[source]
+tar = "https://chuck.cs.princeton.edu/release/files/chuck-1.5.1.3.tgz"
+[build]
+template = "custom"
+dependencies = [
+    "pulseaudio",
+    "libsndfile",
+]

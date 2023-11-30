@@ -1,0 +1,5 @@
+#TODO compiled after cargo update, not tested
+[source]
+tar = "https://github.com/your-tools/ruplacer/archive/refs/tags/v0.8.1.tar.gz"
+[build]
+template = "cargo"

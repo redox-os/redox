@@ -1,0 +1,8 @@
+#TODO missing script for "make", see https://github.com/google/honggfuzz#installation
+[source]
+tar = "https://github.com/google/honggfuzz/archive/refs/tags/2.6.tar.gz"
+[build]
+template = "custom"
+dependencies = [
+    "libunwind",
+]

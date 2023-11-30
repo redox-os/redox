@@ -1,0 +1,9 @@
+#TODO missing script for CMake, see https://docs.srsran.com/projects/4g/en/latest/general/source/1_installation.html#installation-from-source
+[source]
+tar = "https://github.com/srsran/srsRAN_4G/archive/refs/tags/release_23_11.tar.gz"
+[build]
+template = "custom"
+dependencies = [
+    "fftw",
+    "mbedtls",
+]

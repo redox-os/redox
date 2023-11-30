@@ -1,0 +1,5 @@
+#TODO compiled but not tested
+[source]
+tar = "https://github.com/ajeetdsouza/zoxide/archive/refs/tags/v0.9.1.tar.gz"
+[build]
+template = "cargo"

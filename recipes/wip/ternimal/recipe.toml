@@ -1,0 +1,8 @@
+#TODO probably wrong script, see https://github.com/p-e-w/ternimal#building
+[source]
+git = "https://github.com/p-e-w/ternimal"
+[build]
+template = "custom"
+script = """
+rustc -O "${COOKBOOK_SOURCE}"/ternimal.rs
+"""

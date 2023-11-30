@@ -1,0 +1,5 @@
+#TODO Not compiled or tested
+[source]
+tar = "https://github.com/mozilla/cbindgen/archive/refs/tags/0.26.0.tar.gz"
+[build]
+template = "cargo"

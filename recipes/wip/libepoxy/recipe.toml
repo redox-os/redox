@@ -1,0 +1,8 @@
+#TODO missing script for Meson, see https://github.com/anholt/libepoxy#building
+[source]
+tar = "https://download.gnome.org/sources/libepoxy/1.5/libepoxy-1.5.10.tar.xz"
+[build]
+template = "custom"
+dependencies = [
+    "mesa",
+]

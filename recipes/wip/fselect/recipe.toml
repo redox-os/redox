@@ -1,0 +1,8 @@
+#TODO make the mimalloc dependency work
+[source]
+tar = "https://github.com/jhspetersson/fselect/archive/refs/tags/0.8.3.tar.gz"
+[build]
+template = "cargo"
+dependencies = [
+    "mimalloc",
+]

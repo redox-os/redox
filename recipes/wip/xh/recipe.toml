@@ -1,0 +1,5 @@
+#TODO compiled but not tested (after a patch on the ring crate and cargo update)
+[source]
+tar = "https://github.com/ducaale/xh/archive/refs/tags/v0.18.0.tar.gz"
+[build]
+template = "cargo"

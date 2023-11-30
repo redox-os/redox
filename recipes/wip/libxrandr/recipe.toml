@@ -1,0 +1,5 @@
+#TODO Not compiled or tested
+[source]
+tar = "https://www.x.org/releases/individual/lib/libXrandr-1.5.4.tar.xz"
+[build]
+template = "configure"

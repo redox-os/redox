@@ -1,0 +1,9 @@
+#TODO Not compiled or tested yet
+[source]
+tar = "https://github.com/alacritty/alacritty/archive/refs/tags/v0.12.3.tar.gz"
+[build]
+template = "cargo"
+dependencies = [
+    "freetype2",
+    "fontconfig",
+]

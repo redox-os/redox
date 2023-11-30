@@ -1,0 +1,15 @@
+#TODO missing script for building, see https://github.com/xenia-project/xenia/blob/master/docs/building.md#linux
+[source]
+tar = "https://github.com/xenia-project/xenia"
+[build]
+template = "custom"
+dependencies = [
+    "gtk3",
+    "sdl2",
+    "mesa",
+    "lz4",
+    "libunwind",
+    "libpthread-stubs",
+    "libx11",
+    "libvulkan",
+]

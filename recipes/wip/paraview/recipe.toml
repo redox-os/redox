@@ -1,0 +1,6 @@
+#TODO missing script for CMake, see https://kitware.github.io/paraviewweb/docs/configure_and_build_pvweb.html
+# build instructions (if the above doesn't work) - https://github.com/Kitware/ParaView/blob/master/Documentation/dev/build.md
+[source]
+tar = "https://www.paraview.org/paraview-downloads/download.php?submit=Download&version=v5.11&type=source&os=Sources&downloadFile=ParaView-v5.11.2.tar.xz"
+[build]
+template = "custom"

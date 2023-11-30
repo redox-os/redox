@@ -1,0 +1,5 @@
+#TODO compilation error
+[source]
+tar = "https://webkitgtk.org/releases/webkit-1.9.6.tar.xz"
+[build]
+template = "configure"

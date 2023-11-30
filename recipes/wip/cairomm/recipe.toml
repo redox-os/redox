@@ -1,0 +1,5 @@
+#TODO missing script for Meson, see https://cgit.freedesktop.org/cairo/tree/INSTALL
+[source]
+tar = "https://www.cairographics.org/releases/cairomm-1.16.2.tar.xz"
+[build]
+template = "custom"

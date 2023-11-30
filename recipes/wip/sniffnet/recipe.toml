@@ -1,0 +1,9 @@
+#TODO make the libpcap dependency work
+[source]
+tar = "https://github.com/GyulyVGC/sniffnet/archive/refs/tags/v1.2.2.tar.gz"
+[build]
+template = "cargo"
+dependencies = [
+    "libpcap",
+    "fontconfig",
+]

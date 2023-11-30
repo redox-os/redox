@@ -1,0 +1,5 @@
+#TODO camino crate error
+[source]
+git = "https://github.com/pacak/cargo-show-asm"
+[build]
+template = "cargo"

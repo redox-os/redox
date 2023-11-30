@@ -1,0 +1,8 @@
+#TODO compilation error
+[source]
+tar = "https://invisible-island.net/archives/lynx/tarballs/lynx2.8.9rel.1.tar.gz"
+[build]
+template = "configure"
+dependencies = [
+    "ncurses",
+]

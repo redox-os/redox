@@ -1,0 +1,9 @@
+#TODO missing script for CMake, see https://github.com/OpenImageDenoise/oidn#compiling-on-linuxmacos
+[source]
+git = "https://github.com/OpenImageDenoise/oidn"
+[build]
+template = "custom"
+dependencies = [
+    "ispc",
+    "onetbb",
+]

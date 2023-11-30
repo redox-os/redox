@@ -1,0 +1,9 @@
+#TODO missing script for Meson, lacking build instructions
+[source]
+tar = "https://download.gnome.org/sources/totem-pl-parser/3.26/totem-pl-parser-3.26.6.tar.xz"
+[build]
+template = "configure"
+dependencies = [
+    "libxml2",
+    "glib",
+]

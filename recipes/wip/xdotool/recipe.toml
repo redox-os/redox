@@ -1,0 +1,12 @@
+#TODO missing script for "make", see https://github.com/jordansissel/xdotool/#building--compiling
+[source]
+tar = "https://github.com/jordansissel/xdotool/archive/refs/tags/v3.20211022.1.tar.gz"
+[build]
+template = "custom"
+dependencies = [
+    "libx11",
+    "libxi",
+    "libxinerama",
+    "libxkbcommon",
+    "libxtst",
+]

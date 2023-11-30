@@ -1,0 +1,5 @@
+#TODO Not compiled or tested
+[source]
+tar = "https://github.com/KunalBagaria/rustyvibes/archive/refs/tags/v1.0.9.tar.gz"
+[build]
+template = "cargo"

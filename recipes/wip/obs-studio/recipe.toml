@@ -1,0 +1,15 @@
+#TODO missing script for CMake, see https://github.com/obsproject/obs-studio/wiki/Building-OBS-Studio
+#TODO determine dependencies
+[source]
+tar = "https://github.com/obsproject/obs-studio/archive/refs/tags/30.0.0.tar.gz"
+[build]
+template = "custom"
+dependencies = [
+    "ffmpeg6",
+    "x264",
+    "curl",
+    "mbedtls",
+    "libwayland",
+    "libva",
+    "qt5-base",
+]

@@ -1,0 +1,5 @@
+#TODO Needs to patch outdated crates
+[source]
+git = "https://github.com/LegNeato/asciinema-rs"
+[build]
+template = "cargo"

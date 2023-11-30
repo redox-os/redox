@@ -1,0 +1,5 @@
+#TODO Not compiled or tested
+[source]
+tar = "https://ftp.mozilla.org/pub/security/nss/releases/NSS_3_9_2_RTM/src/nss-3.9.2.tar.gz"
+[build]
+template = "configure"

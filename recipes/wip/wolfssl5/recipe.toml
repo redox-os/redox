@@ -1,0 +1,9 @@
+#TODO not compiled or tested
+[source]
+tar = "https://github.com/wolfSSL/wolfssl/archive/refs/tags/v5.6.4-stable.tar.gz"
+[build]
+template = "custom"
+script = """
+./autogen.sh
+cookbook_configure
+"""

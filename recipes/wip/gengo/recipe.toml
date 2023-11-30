@@ -1,0 +1,5 @@
+#TODO Not compiled or tested
+[source]
+tar = "https://github.com/spenserblack/gengo/archive/refs/tags/v0.5.2.tar.gz"
+[build]
+template = "cargo"

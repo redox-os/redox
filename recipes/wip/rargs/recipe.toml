@@ -1,0 +1,5 @@
+#TODO compiled after cargo update, not tested
+[source]
+git = "https://github.com/lotabout/rargs"
+[build]
+template = "cargo"

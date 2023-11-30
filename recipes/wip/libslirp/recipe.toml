@@ -1,0 +1,5 @@
+#TODO missing script for Meson, see https://gitlab.freedesktop.org/slirp/libslirp#building
+[source]
+tar = "https://gitlab.freedesktop.org/slirp/libslirp/-/archive/v4.7.0/libslirp-v4.7.0.tar.bz2"
+[build]
+template = "custom"

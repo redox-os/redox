@@ -1,0 +1,8 @@
+#TODO make GnuTLS work
+[source]
+tar = "https://ftp.gnu.org/gnu/wget/wget-1.21.4.tar.gz"
+[build]
+template = "configure"
+dependencies = [
+    "gnutls",
+]

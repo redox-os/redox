@@ -1,0 +1,8 @@
+#TODO Not compiled or tested
+[source]
+tar = "https://github.com/slint-ui/cargo-ui/archive/refs/tags/v0.3.3.tar.gz"
+[build]
+template = "cargo"
+dependencies = [
+    "fontconfig",
+]

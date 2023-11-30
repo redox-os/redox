@@ -1,0 +1,14 @@
+#TODO missing script for GNU Autotools, see https://github.com/tux4kids/t4kcommon/blob/master/INSTALL#L33
+[source]
+git = "https://github.com/tux4kids/t4kcommon"
+[build]
+template = "custom"
+dependencies = [
+    "sdl1",
+    "sdl1_mixer",
+    "sdl1_image",
+    "sdl-pango",
+    "sdl2-net",
+    "libpng",
+    "libxml2",
+]

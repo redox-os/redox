@@ -1,0 +1,9 @@
+#TODO missing script for CMake, see https://github.com/embree/embree#linux-and-macos
+[source]
+tar = "https://github.com/embree/embree/archive/refs/tags/v4.3.0.tar.gz"
+[build]
+template = "custom"
+dependencies = [
+    "glfw",
+    "onetbb",
+]

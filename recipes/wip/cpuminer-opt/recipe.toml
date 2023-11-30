@@ -1,0 +1,11 @@
+#TODO maybe wrong template, see https://github.com/JayDDee/cpuminer-opt/wiki/Compiling-from-source
+[source]
+tar = "https://github.com/JayDDee/cpuminer-opt/archive/refs/tags/v23.13.tar.gz"
+[build]
+template = "configure"
+dependencies = [
+    "curl",
+    "jansson",
+    "libgmp",
+    "zlib",
+]

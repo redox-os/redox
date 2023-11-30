@@ -1,0 +1,5 @@
+#TODO not compiled or tested
+[source]
+tar = "https://www.tcpdump.org/release/libpcap-1.10.4.tar.gz"
+[build]
+template = "configure"

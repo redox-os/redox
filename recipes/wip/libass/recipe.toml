@@ -1,0 +1,11 @@
+#TODO waiting the TOML conversion of fribidi dependency
+[source]
+tar = "https://github.com/libass/libass/releases/download/0.17.1/libass-0.17.1.tar.xz"
+[build]
+template = "configure"
+dependencies = [
+    "freetype2",
+    "zlib",
+    "libpng",
+    "fribidi",
+]
