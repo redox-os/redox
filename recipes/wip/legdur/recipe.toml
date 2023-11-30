@@ -1,0 +1,5 @@
+#TODO camino crate error
+[source]
+tar = "https://hg.sr.ht/~cyplo/legdur/archive/tip.tar.gz"
+[build]
+template = "cargo"

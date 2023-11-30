@@ -1,0 +1,8 @@
+#TODO probably wrong template, see https://github.com/memcached/memcached/wiki/Install#from-source
+[source]
+tar = "https://www.memcached.org/files/memcached-1.6.22.tar.gz"
+[build]
+template = "configure"
+dependencies = [
+    "libevent",
+]

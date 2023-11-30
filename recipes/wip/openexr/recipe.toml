@@ -1,0 +1,9 @@
+#TODO missing script for CMake, see https://openexr.com/en/latest/install.html#linux-macos
+[source]
+tar = "https://github.com/AcademySoftwareFoundation/openexr/archive/refs/tags/v3.2.1.tar.gz"
+[build]
+template = "custom"
+dependencies = [
+    "libdeflate",
+    "libimath"
+]

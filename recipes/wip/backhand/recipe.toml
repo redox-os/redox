@@ -1,0 +1,5 @@
+#TODO broken program
+[source]
+tar = "https://github.com/wcampbell0x2a/backhand/archive/refs/tags/v0.12.0.tar.gz"
+[build]
+template = "cargo"

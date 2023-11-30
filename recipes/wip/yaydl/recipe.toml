@@ -1,0 +1,8 @@
+#TODO compilation error (after cargo update and a patch on the ring crate)
+[source]
+git = "https://github.com/dertuxmalwieder/yaydl"
+[build]
+template = "cargo"
+dependencies = [
+    "openssl1",
+]

@@ -1,0 +1,5 @@
+#TODO camino crate error (after cargo update and a patch on the ring crate)
+[source]
+git = "https://github.com/mozilla/cargo-vet"
+[build]
+template = "cargo"

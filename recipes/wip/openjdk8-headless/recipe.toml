@@ -1,0 +1,10 @@
+#TODO build instructions - https://github.com/openjdk/jdk8u/blob/master/doc/building.md
+#TODO not compiled or tested
+#TODO build it in headless mode
+[source]
+tar = "https://github.com/openjdk/jdk8u/archive/refs/tags/jdk8u392-b08.tar.gz"
+[build]
+template = "custom"
+dependencies = [
+    "freetype2",
+]

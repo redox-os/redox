@@ -1,0 +1,13 @@
+#TODO weird OpenSSL error on compilation (using cargo update)
+[source]
+tar = "https://github.com/Y2Z/monolith/archive/refs/tags/v2.7.0.tar.gz"
+[build]
+template = "custom"
+dependencies = [
+    "openssl1",
+]
+script = """
+export OPENSSL_DIR="${COOKBOOK_SYSROOT}"
+export OPENSSL_STATIC="true"
+cookbook_cargo
+"""

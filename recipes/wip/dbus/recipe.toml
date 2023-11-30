@@ -1,0 +1,8 @@
+#TODO missing Unix sockets support?
+[source]
+tar = "https://dbus.freedesktop.org/releases/dbus/dbus-1.14.10.tar.xz"
+[build]
+template = "configure"
+dependencies = [
+    "expat",
+]

@@ -1,0 +1,5 @@
+#TODO Not compiled or tested
+[source]
+tar = "https://www.python.org/ftp/python/3.12.0/Python-3.12.0.tar.xz"
+[build]
+template = "configure"

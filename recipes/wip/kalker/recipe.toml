@@ -1,0 +1,13 @@
+#TODO gmp-mpfr-sys crate error
+[source]
+git = "https://github.com/PaddiM8/kalker"
+[build]
+template = "custom"
+dependencies = [
+    "libgmp",
+    "libmpfr",
+    "mpc",
+]
+script = """
+cookbook_cargo_packages kalker
+"""

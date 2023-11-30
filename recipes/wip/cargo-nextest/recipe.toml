@@ -1,0 +1,8 @@
+#TODO Not compiled or tested
+[source]
+git = "https://github.com/nextest-rs/nextest"
+[build]
+template = "custom"
+script = """
+cookbook_cargo_packages cargo-nextest
+"""

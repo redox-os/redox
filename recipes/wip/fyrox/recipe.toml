@@ -1,0 +1,5 @@
+#TODO Not compiled or tested yet
+[source]
+tar = "https://github.com/FyroxEngine/Fyrox/archive/refs/tags/v0.29.tar.gz"
+[buiild]
+template = "cargo"

@@ -1,0 +1,15 @@
+#TODO missing script for building, see https://github.com/tux4kids/tuxmath/blob/master/doc/INSTALL
+[source]
+git = "https://github.com/tux4kids/tuxmath"
+[build]
+template = "custom"
+dependencies = [
+    "t4kcommon",
+    "sdl1",
+    "sdl1-image",
+    "sdl1-mixer",
+    "sdl1-ttf",
+    "sdl2-net",
+    "sdl-pango",
+    "librsvg",
+]

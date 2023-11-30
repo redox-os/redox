@@ -1,0 +1,9 @@
+#TODO Not compiled or tested
+[source]
+tar = "https://sourceforge.net/projects/urlget/files/uget%20%28stable%29/2.2.3/uget-2.2.3-1.tar.gz/download"
+[build]
+template = "configure"
+dependencies = [
+    "gtk3",
+    "curl",
+]

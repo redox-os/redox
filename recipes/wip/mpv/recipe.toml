@@ -1,0 +1,16 @@
+#TODO missing script for Meson (use system libraries), see https://github.com/mpv-player/mpv#compilation
+#TODO missing dependencies
+[source]
+tar = "https://github.com/mpv-player/mpv/archive/refs/tags/v0.37.0.tar.gz"
+[build]
+template = "custom"
+dependencies = [
+    "ffmpeg6",
+    "libass",
+    "libjpeg",
+    "libiconv",
+    "zlib",
+    "mesa",
+    "libx11",
+    "pulseaudio",
+]

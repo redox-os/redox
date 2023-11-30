@@ -1,0 +1,12 @@
+#TODO not compiled or tested
+[source]
+tar = "https://github.com/hrkfdn/ncspot/archive/refs/tags/v0.13.4.tar.gz"
+[build]
+template = "custom"
+dependencies = [
+    "openssl1",
+    "ncurses",
+]
+script = """
+cookbook_cargo --features rodio_backend,pancurses_backend
+"""

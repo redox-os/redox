@@ -1,0 +1,8 @@
+#TODO Make nmap work
+[source]
+tar = "https://github.com/RustScan/RustScan/archive/refs/tags/2.1.1.tar.gz"
+[build]
+template = "cargo"
+dependencies = [
+    "nmap",
+]

@@ -1,0 +1,11 @@
+#TODO missing script for "make", see https://github.com/xyproto/zsnes#build
+[source]
+git = "https://github.com/xyproto/zsnes"
+[build]
+template = "custom"
+dependencies = [
+    "sdl1",
+    "zlib",
+    "mesa",
+    "libpng",
+]

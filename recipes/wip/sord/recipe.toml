@@ -1,0 +1,5 @@
+#TODO missing script for Meson, see https://gitlab.com/drobilla/sord/-/blob/master/INSTALL.md?ref_type=heads
+[source]
+tar = "https://download.drobilla.net/sord-0.16.14.tar.xz"
+[build]
+template = "custom"

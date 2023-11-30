@@ -1,0 +1,5 @@
+#TODO missing script for building, see https://github.com/hpcg-benchmark/hpcg/blob/master/INSTALL
+[source]
+git = "https://github.com/hpcg-benchmark/hpcg"
+[build]
+template = "custom"

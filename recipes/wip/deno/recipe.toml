@@ -1,0 +1,9 @@
+#TODO v8 crate error (after cargo update -p tokio)
+#TODO Add static objects for the Redox target (doesn't exist on librusty_v8 upstream)
+[source]
+tar = "https://github.com/denoland/deno/releases/download/v1.36.1/deno_src.tar.gz"
+[build]
+template = "custom"
+script = """
+cookbook_cargo_packages deno
+"""

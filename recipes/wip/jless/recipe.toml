@@ -1,0 +1,5 @@
+#TODO redox_syscall crate error
+[source]
+tar = "https://github.com/PaulJuliusMartinez/jless/archive/refs/tags/v0.8.0.tar.gz"
+[build]
+template = "cargo"

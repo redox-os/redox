@@ -1,0 +1,12 @@
+#TODO make all dependencies work
+[source]
+tar = "https://download.samba.org/pub/rsync/src/rsync-3.2.7.tar.gz"
+[build]
+template = "configure"
+dependencies = [
+    "zstd",
+    "zlib",
+    "lz4",
+    "popt",
+    "xxhash",
+]

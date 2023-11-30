@@ -1,0 +1,5 @@
+#TODO compiled but not tested
+[source]
+git = "https://github.com/mgdm/htmlq"
+[build]
+template = "cargo"

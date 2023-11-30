@@ -1,0 +1,13 @@
+#TODO OpenSSL error
+[source]
+tar = "https://github.com/lasantosr/intelli-shell/archive/refs/tags/v0.2.6.tar.gz"
+[build]
+template = "custom"
+dependencies = [
+    "openssl1",
+]
+script = """
+export OPENSSL_DIR="${COOKBOOK_SYSROOT}"
+export OPENSSL_STATIC="true"
+cookbook_cargo
+"""

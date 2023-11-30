@@ -1,0 +1,13 @@
+#TODO funty crate version deleted by the owner
+[source]
+git = "https://github.com/kpcyrd/authoscope"
+[build]
+template = "custom"
+dependencies = [
+    "openssl1",
+]
+script = """
+export OPENSSL_DIR="${COOKBOOK_SYSROOT}"
+export OPENSSL_STATIC="true"
+cookbook_cargo
+"""

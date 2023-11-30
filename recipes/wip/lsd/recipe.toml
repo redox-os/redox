@@ -1,0 +1,5 @@
+#TODO users crate error
+[source]
+tar = "https://github.com/lsd-rs/lsd/archive/refs/tags/0.23.1.tar.gz"
+[build]
+template = "cargo"

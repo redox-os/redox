@@ -1,0 +1,5 @@
+#TODO missing script for building, see https://github.com/Tencent/TNN/blob/master/doc/en/user/compile_en.md#iv-compilex86-linux
+[source]
+tar = "https://github.com/Tencent/TNN/archive/refs/tags/v0.3.0.tar.gz"
+[build]
+template = "custom"

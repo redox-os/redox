@@ -1,0 +1,5 @@
+#TODO compilation error
+[source]
+tar = "https://mpg123.de/download/mpg123-1.31.3.tar.bz2"
+[build]
+template = "configure"

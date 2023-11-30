@@ -1,0 +1,5 @@
+#TODO sys-info crate build.rs does not recognize Redox
+[source]
+tar = "https://github.com/sharkdp/bat/archive/refs/tags/v0.23.0.tar.gz"
+[build]
+template = "cargo"

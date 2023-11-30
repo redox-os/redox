@@ -1,0 +1,32 @@
+#TODO probably wrong script, see:
+# https://mariadb.com/kb/en/generic-build-instructions/
+# https://mariadb.com/kb/en/cross-compiling-mariadb/
+[source]
+tar = "https://archive.mariadb.org/mariadb-11.2.2/source/mariadb-11.2.2.tar.gz"
+[build]
+template = "custom"
+dependencies = [
+    "ncurses",
+    "zlib",
+    "libevent",
+    "openssl1",
+    "curl",
+    "libxml2",
+    "boost",
+    "libaio",
+]
+script = """
+COOKBOOK_CONFIGURE="cmake"
+COOKBOOK_CONFIGURE_FLAGS=(
+    -DCMAKE_BUILD_TYPE=Release
+    -DCMAKE_CROSSCOMPILING=True
+    -DCMAKE_EXE_LINKER_FLAGS="-static"
+    -DCMAKE_INSTALL_PREFIX="/"
+    -DCMAKE_PREFIX_PATH="${COOKBOOK_SYSROOT}"
+    -DCMAKE_SYSTEM_NAME=Generic
+    -DCMAKE_SYSTEM_PROCESSOR="$(echo "${TARGET}" | cut -d - -f1)"
+    -DCMAKE_VERBOSE_MAKEFILE=On
+"${COOKBOOK_SOURCE}"
+)
+cookbook_configure
+"""

@@ -1,0 +1,6 @@
+#TODO not compiled or tested
+#TODO probably missing dependencies
+[source]
+tar = "https://www.x.org/releases/individual/xcb/libpthread-stubs-0.5.tar.xz"
+[build]
+template = "configure"

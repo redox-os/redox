@@ -1,0 +1,5 @@
+#TODO camino crate compilation error
+[source]
+tar = "https://github.com/Canop/bacon/archive/refs/tags/v2.8.1.tar.gz"
+[build]
+template = "cargo"

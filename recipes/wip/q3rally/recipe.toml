@@ -1,0 +1,8 @@
+#TODO missing script for "make", see https://github.com/Q3Rally-Team/q3rally/blob/master/engine/README.md
+[source]
+git = "https://github.com/Q3Rally-Team/q3rally"
+[build]
+template = "custom"
+dependencies = [
+    "sdl2",
+]

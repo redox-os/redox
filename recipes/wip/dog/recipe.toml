@@ -1,0 +1,13 @@
+#TODO weird OpenSSL error?
+[source]
+git = "https://github.com/ogham/dog"
+[build]
+template = "custom"
+dependencies = [
+    "openssl1",
+]
+script = """
+export OPENSSL_DIR="${COOKBOOK_SYSROOT}"
+export OPENSSL_STATIC="true"
+cookbook_cargo
+"""

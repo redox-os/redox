@@ -1,0 +1,8 @@
+#TODO make the smartmontools dependency work
+[source]
+tar = "https://github.com/alttch/shd/archive/refs/tags/v0.1.5.tar.gz"
+[build]
+template = "cargo"
+dependencies = [
+    "smartmontools",
+]

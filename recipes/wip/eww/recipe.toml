@@ -1,0 +1,11 @@
+#TODO Make GTK3 work
+[source]
+tar = "https://github.com/elkowar/eww/archive/refs/tags/v0.4.0.tar.gz"
+[build]
+template = "cargo"
+dependencies = [
+    "gtk3",
+    "gdk-pixbuf",
+    "glib",
+    "cairo",
+]

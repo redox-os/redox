@@ -1,0 +1,5 @@
+#TODO program error, maybe needs porting
+[source]
+git = "https://gitlab.com/whom/relish"
+[build]
+template = "cargo"

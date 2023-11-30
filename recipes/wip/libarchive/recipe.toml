@@ -1,0 +1,5 @@
+#TODO Undefined reference to "getgrnam" and "getgrgid"
+[source]
+tar = "https://libarchive.org/downloads/libarchive-3.6.2.tar.xz"
+[build]
+template = "configure"

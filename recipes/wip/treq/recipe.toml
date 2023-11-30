@@ -1,0 +1,8 @@
+#TODO thread-id crate error (after cargo update)
+[source]
+tar = "https://github.com/talis-fb/TReq/archive/refs/tags/v0.4.0.tar.gz"
+[build]
+template = "cargo"
+dependencies = [
+    "openssl1",
+]

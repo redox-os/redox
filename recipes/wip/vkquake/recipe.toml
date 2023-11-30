@@ -1,0 +1,12 @@
+#TODO missing script for Meson, see https://github.com/Novum/vkQuake#linux-1
+[source]
+git = "https://github.com/Novum/vkQuake"
+[build]
+template = "custom"
+dependencies = [
+    "sdl2",
+    "libvulkan",
+    "libvorbis",
+    "libx11",
+    "libmad",
+]

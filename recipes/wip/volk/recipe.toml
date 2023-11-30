@@ -1,0 +1,5 @@
+#TODO missing script for CMake, see https://github.com/gnuradio/volk#building-on-most-x86-32-bit-and-64-bit-platforms
+[source]
+tar = "https://www.libvolk.org/releases/volk-3.0.0.tar.gz"
+[build]
+template = "custom"

@@ -1,0 +1,11 @@
+#TODO missing script for building, see https://espanso.org/docs/install/linux/#wayland-compile
+[source]
+tar = "https://github.com/espanso/espanso/archive/refs/tags/v2.1.8.tar.gz"
+[build]
+template = "custom"
+dependencies = [
+    "libxkbcommon",
+    "dbus",
+    "wxwidgets3",
+    "openssl1",
+]

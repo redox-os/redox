@@ -1,0 +1,11 @@
+#TODO Make OpenCV 4 work
+[source]
+tar = "https://github.com/maxcurzi/tplay/archive/refs/tags/v0.4.5.tar.gz"
+[build]
+template = "cargo"
+dependencies = [
+    "ffmpeg6",
+    "llvm",
+    "openssl1",
+    "opencv4",
+]

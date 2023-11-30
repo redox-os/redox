@@ -1,0 +1,5 @@
+#TODO compilation error (related to X11?)
+[source]
+git = "https://github.com/transmissions11/headers"
+[build]
+template = "cargo"

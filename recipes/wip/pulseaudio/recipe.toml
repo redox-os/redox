@@ -1,0 +1,14 @@
+#TODO missing script for Meson, see https://www.freedesktop.org/wiki/Software/PulseAudio/Documentation/Developer/PulseAudioFromGit/
+#TODO only build the library and disable the daemon in favor of PipeWire, see https://gitlab.freedesktop.org/pipewire/pipewire/-/blob/master/INSTALL.md#pulseaudio-replacement
+[source]
+tar = "https://freedesktop.org/software/pulseaudio/releases/pulseaudio-16.1.tar.xz"
+[build]
+template = "custom"
+dependencies = [
+    "libsndfile",
+    "libatomic_ops",
+    "speexdsp",
+    "libtool",
+    "json-c",
+    "gettext",
+]

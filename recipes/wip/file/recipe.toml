@@ -1,0 +1,5 @@
+#TODO not compiled or tested
+[source]
+tar = "https://github.com/file/file/archive/refs/tags/FILE5_44.tar.gz"
+[build]
+template = "configure"

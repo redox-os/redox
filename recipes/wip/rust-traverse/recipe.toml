@@ -1,0 +1,5 @@
+#TODO trash crate error
+[source]
+tar = "https://github.com/dmcg310/Rust-Traverse/archive/refs/tags/v1.0.0.tar.gz"
+[build]
+template = "cargo"

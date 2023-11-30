@@ -1,0 +1,5 @@
+#TODO Not compiled or tested
+[source]
+tar = "https://github.com/axboe/fio/archive/refs/tags/fio-3.36.tar.gz"
+[build]
+template = "configure"

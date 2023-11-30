@@ -1,0 +1,6 @@
+#TODO missing script for Meson, see https://github.com/libfuse/libfuse#installation
+#TODO require the "fused" daemon (equivalent to the Linux kernel module but in user-space)
+[source]
+tar = "https://github.com/libfuse/libfuse/releases/download/fuse-2.9.9/fuse-2.9.9.tar.gz"
+[build]
+template = "custom"

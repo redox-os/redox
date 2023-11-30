@@ -1,0 +1,5 @@
+#TODO Not compiled or tested yet
+[source]
+tar = "https://ftp.mozilla.org/pub/nspr/releases/v4.9.6/src/nspr-4.9.6.tar.gz"
+[build]
+template = "configure"

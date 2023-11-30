@@ -1,0 +1,5 @@
+#TODO missing script for "make", see https://github.com/mitnk/cicada/blob/master/docs/install.md#option-c-via-source
+[source]
+tar = "https://github.com/mitnk/cicada/archive/refs/tags/v0.9.38.tar.gz"
+[build]
+template = "custom"

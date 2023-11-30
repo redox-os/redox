@@ -1,0 +1,12 @@
+#TODO Require headless Java
+[source]
+git = "https://github.com/ruffle-rs/ruffle"
+[build]
+template = "custom"
+dependencies = [
+	"openssl1",
+	"java19",
+]
+script = """
+cookbook_cargo_packages ruffle_desktop
+"""

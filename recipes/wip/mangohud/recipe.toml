@@ -1,0 +1,9 @@
+#TODO missing script for Meson, see https://github.com/flightlessmango/MangoHud#installation---build-from-source
+[source]
+tar = "https://github.com/flightlessmango/MangoHud/releases/download/v0.7.0/MangoHud-v0.7.0-Source.tar.xz"
+[build]
+template = "custom"
+dependencies = [
+    "mesa",
+    "libx11",
+]

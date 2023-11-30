@@ -1,0 +1,5 @@
+#TODO compiled after cargo update but not tested
+[source]
+tar = "https://github.com/nnethercote/counts/archive/refs/tags/0.2.0.tar.gz"
+[build]
+template = "cargo"

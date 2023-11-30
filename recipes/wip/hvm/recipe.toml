@@ -1,0 +1,5 @@
+#TODO compilation error
+[source]
+git = "https://github.com/HigherOrderCO/HVM"
+[build]
+template = "cargo"

@@ -1,0 +1,8 @@
+#TODO Compilation error
+[source]
+tar = "https://github.com/Macchina-CLI/macchina/archive/refs/tags/v6.1.8.tar.gz"
+[build]
+template = "cargo"
+dependencies = [
+    "libgit2",
+]

@@ -1,0 +1,8 @@
+#TODO Compilation error (after a patch to update tokio on Cargo.toml)
+[source]
+tar = "https://github.com/fcsonline/drill/archive/refs/tags/0.8.3.tar.gz"
+[build]
+template = "cargo"
+dependencies = [
+    "openssl1",
+]

@@ -1,0 +1,56 @@
+#TODO probably wrong script, see https://github.com/xbmc/xbmc/blob/master/docs/README.Linux.md#4-build-kodi
+#TODO missing dependencies, see: https://github.com/xbmc/xbmc/blob/master/docs/README.Linux.md#3-install-the-required-packages
+[source]
+tar = "https://github.com/xbmc/xbmc/archive/refs/tags/20.2-Nexus.tar.gz"
+[build]
+template = "custom"
+dependencies = [
+    "libass",
+    "libbluray",
+    "mesa",
+    "bzip2",
+    "curl",
+    "dbus",
+    "libflac",
+    "fontconfig",
+    "libfmt",
+    "freetype2",
+    "fribidi",
+    "libgcrypt",
+    "libgif",
+    "glew",
+    "gnutls3",
+    "mesa_glu",
+    "libgpg-error",
+    "libjpeg",
+    "libogg",
+    "pcre",
+    "libpng",
+    "openssl1",
+    "libtiff",
+    "sqlite3",
+    "libevdev",
+    "libunistring",
+    "libva",
+    "libvorbis",
+    "libxkbcommon",
+    "libuuid",
+    "libxslt",
+]
+script = """
+COOKBOOK_CONFIGURE="cmake"
+COOKBOOK_CONFIGURE_FLAGS=(
+    -DCMAKE_BUILD_TYPE=Release
+    -DCMAKE_CROSSCOMPILING=True
+    -DCMAKE_EXE_LINKER_FLAGS="-static"
+    -DCMAKE_INSTALL_PREFIX="/"
+    -DCMAKE_PREFIX_PATH="${COOKBOOK_SYSROOT}"
+    -DCMAKE_SYSTEM_NAME=Generic
+    -DCMAKE_SYSTEM_PROCESSOR="$(echo "${TARGET}" | cut -d - -f1)"
+    -DCMAKE_VERBOSE_MAKEFILE=On
+    -DCORE_PLATFORM_NAME=wayland
+    -DAPP_RENDER_SYSTEM=gl
+"${COOKBOOK_SOURCE}"
+)
+cookbook_configure
+"""

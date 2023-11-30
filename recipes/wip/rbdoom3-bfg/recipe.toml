@@ -1,0 +1,12 @@
+#TODO missing script for CMake, see https://github.com/RobertBeckebans/RBDOOM-3-BFG#compiling-on-linux-
+[source]
+git = "https://github.com/RobertBeckebans/RBDOOM-3-BFG"
+rev = "39ae1202b4e61ccb8d8e59609f5cd62b04a62a58"
+[build]
+template = "custom"
+dependencies = [
+    "sdl2",
+    "openal",
+    "ffmpeg6",
+    "libvulkan",
+]

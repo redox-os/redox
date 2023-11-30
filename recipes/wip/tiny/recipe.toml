@@ -1,0 +1,8 @@
+#TODO compiled but not tested (after a patch on the ring crate)
+[source]
+tar = "https://github.com/osa1/tiny/archive/refs/tags/v0.11.0.tar.gz"
+[build]
+template = "custom"
+script = """
+cookbook_cargo_packages tiny
+"""

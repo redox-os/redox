@@ -1,0 +1,28 @@
+#TODO probably wrong script, see https://github.com/hrydgard/ppsspp/wiki/Build-instructions#building-with-cmake-other-platforms-eg-linux
+[source]
+git = "https://github.com/hrydgard/ppsspp"
+[build]
+template = "custom"
+dependencies = [
+    "sdl2",
+    "sdl2_ttf",
+    "mesa",
+    "fontconfig",
+    "curl",
+]
+script = """
+    COOKBOOK_CONFIGURE="cmake"
+    COOKBOOK_CONFIGURE_FLAGS=(
+	-DCMAKE_BUILD_TYPE=Release
+	-DCMAKE_CROSSCOMPILING=True
+	-DCMAKE_EXE_LINKER_FLAGS="-static"
+	-DCMAKE_INSTALL_PREFIX="/"
+    -DUSING_X11_VULKAN=OFF
+    -DUSE_SYSTEM_LIBSDL2=ON
+    -DUSE_MINIUPNPC=OFF
+    -DUSE_FFMPEG=OFF
+    -DUSE_DISCORD=OFF
+"${COOKBOOK_SOURCE}"
+)
+cookbook_configure
+"""

@@ -1,0 +1,8 @@
+#TODO compilation error (after a patch on the ring crate)
+[source]
+tar = "https://github.com/ffizer/ffizer/archive/refs/tags/2.10.3.tar.gz"
+[build]
+template = "custom"
+script = """
+cookbook_cargo --features cli
+"""

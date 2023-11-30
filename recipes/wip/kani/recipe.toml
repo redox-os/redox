@@ -1,0 +1,5 @@
+#TODO compiled but not tested
+[source]
+tar = "https://github.com/model-checking/kani/archive/refs/tags/kani-0.28.0.tar.gz"
+[build]
+template = "cargo"

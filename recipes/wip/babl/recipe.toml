@@ -1,0 +1,5 @@
+#TODO missing script for Meson, see https://gitlab.gnome.org/GNOME/babl/-/blob/master/INSTALL.in?ref_type=heads
+[source]
+tar = "https://download.gimp.org/pub/babl/0.1/babl-0.1.106.tar.xz"
+[build]
+template = "custom"

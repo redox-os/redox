@@ -1,0 +1,5 @@
+#TODO can't find the Redox target
+[source]
+tar = "https://nodejs.org/dist/v20.6.1/node-v20.6.1.tar.gz"
+[build]
+template = "configure"

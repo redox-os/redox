@@ -1,0 +1,5 @@
+#TODO compiled but not tested
+[source]
+tar = "https://github.com/vmchale/tin-summer/archive/refs/tags/1.21.14.tar.gz"
+[build]
+template = "cargo"

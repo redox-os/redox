@@ -1,0 +1,8 @@
+#TODO termios/ioctl-rs crate error
+[source]
+tar = "https://github.com/pvolok/mprocs/archive/refs/tags/v0.6.4.tar.gz"
+[build]
+template = "custom"
+script = """
+cookbook_cargo_packages mprocs
+"""

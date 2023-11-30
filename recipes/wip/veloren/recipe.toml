@@ -1,0 +1,15 @@
+#TODO Not compiled or tested yet
+[source]
+git = "https://github.com/veloren/veloren"
+[build]
+template = "cargo"
+dependencies = [
+    "glib",
+    "cairo",
+    "pango",
+    "atk",
+    "gdk-pixbuf",
+    "gtk3",
+    "eudev3",
+    "mesa",
+]

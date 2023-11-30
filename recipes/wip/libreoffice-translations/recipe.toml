@@ -1,0 +1,5 @@
+#TODO probably wrong template
+[source]
+tar = "https://download.documentfoundation.org/libreoffice/src/7.6.2/libreoffice-translations-7.6.2.1.tar.xz?idx=4"
+[build]
+template = "configure"

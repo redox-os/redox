@@ -1,0 +1,16 @@
+#TODO missing script for CMake, see https://wiki.gnuradio.org/index.php?title=LinuxInstall#For_GNU_Radio_3.10,_3.9,_and_Main_Branch
+#TODO probably missing dependencies, see https://wiki.gnuradio.org/index.php?title=UbuntuInstall#Install_Dependencies
+[source]
+tar = "https://github.com/gnuradio/gnuradio/archive/refs/tags/v3.10.8.0.tar.gz"
+[build]
+template = "custom"
+dependencies = [
+    "volk",
+    "boost",
+    "libgmp",
+    "fftw",
+    "sdl1",
+    "qt5-base",
+    "libusb",
+    "libevdev",
+]

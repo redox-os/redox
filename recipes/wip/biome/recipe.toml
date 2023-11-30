@@ -1,0 +1,8 @@
+#TODO probably wrong script, lacking build instructions
+[source]
+tar = "https://github.com/biomejs/biome/archive/refs/tags/cli/v1.4.0.tar.gz"
+[build]
+template = "custom"
+script = """
+cookbook_cargo_packages biome_cli
+"""

@@ -1,0 +1,34 @@
+#TODO probably wrong script, see https://github.com/yvt/openspades#on-unixes-from-source
+# The game crash with the Wayland backend of SDL2, you need to use the "SDL_VIDEODRIVER=x11" environment variable to use XWayland
+# a script to workaround this is the best solution
+[source]
+git = "https://github.com/yvt/openspades"
+[build]
+template = "custom"
+dependencies = [
+	"glew",
+	"openssl1",
+	"sdl2",
+	"sdl2-image",
+	"freealut",
+	"freetype2",
+	"opus",
+	"opusfile",
+	"libjpeg",
+	"openal",
+]
+script = """
+    COOKBOOK_CONFIGURE="cmake"
+    COOKBOOK_CONFIGURE_FLAGS=(
+    -DCMAKE_BUILD_TYPE=Release
+    -DCMAKE_CROSSCOMPILING=True
+    -DCMAKE_EXE_LINKER_FLAGS="-static"
+    -DCMAKE_INSTALL_PREFIX="/"
+    -DCMAKE_PREFIX_PATH="${COOKBOOK_SYSROOT}"
+    -DCMAKE_SYSTEM_NAME=Generic
+    -DCMAKE_SYSTEM_PROCESSOR="$(echo "${TARGET}" | cut -d - -f1)"
+    -DCMAKE_VERBOSE_MAKEFILE=On
+"${COOKBOOK_SOURCE}"
+)
+cookbook_configure
+"""

@@ -1,0 +1,10 @@
+#TODO missing script for Meson, see https://pipewire.pages.freedesktop.org/wireplumber/installing-wireplumber.html
+[source]
+tar = "https://gitlab.freedesktop.org/pipewire/wireplumber/-/archive/0.4.16/wireplumber-0.4.16.tar.bz2"
+[build]
+template = "custom"
+dependencies = [
+    "pipewire",
+    "glib",
+    "lua54",
+]

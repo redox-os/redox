@@ -1,0 +1,10 @@
+#TODO make dependencies work
+[source]
+tar = "https://github.com/orhun/gpg-tui/archive/refs/tags/v0.10.0.tar.gz"
+[build]
+template = "cargo"
+dependencies = [
+    "gnupg",
+    "gpgme",
+    "libgpg-error",
+]

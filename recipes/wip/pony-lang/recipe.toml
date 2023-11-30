@@ -1,0 +1,6 @@
+#TODO missing script for CMake, see https://github.com/ponylang/ponyc/blob/main/BUILD.md
+[source]
+git = "https://github.com/ponylang/ponyc"
+rev = "a161b7c97666f820bbacbb328d95dc820f353edd"
+[build]
+template = "custom"

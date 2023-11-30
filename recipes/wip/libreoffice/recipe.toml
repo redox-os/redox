@@ -1,0 +1,16 @@
+#TODO missing dependencies, see https://wiki.documentfoundation.org/Development/BuildingOnLinux#Build_dependencies
+[source]
+tar = "https://download.documentfoundation.org/libreoffice/src/7.6.2/libreoffice-7.6.2.1.tar.xz?idx=1"
+[build]
+template = "configure"
+dependencies = [
+    "kerberos5",
+    "python37",
+    "qt5-base",
+    "gtk3",
+    "nss",
+    "fontconfig",
+    "xwayland",
+    "gstreamer",
+    "libcups",
+]

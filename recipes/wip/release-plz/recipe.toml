@@ -1,0 +1,13 @@
+#TODO openssl-sys crate error
+[source]
+tar = "https://github.com/MarcoIeni/release-plz/archive/refs/tags/release-plz-v0.3.20.tar.gz"
+[build]
+dependencies = [
+    "openssl1",
+]
+template = "custom"
+script = """
+export OPENSSL_DIR="${COOKBOOK_SYSROOT}"
+export OPENSSL_STATIC="true"
+cookbook_cargo_packages release-plz
+"""

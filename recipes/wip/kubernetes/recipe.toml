@@ -1,0 +1,6 @@
+#TODO missing script for "make", see https://github.com/kubernetes/community/blob/master/contributors/devel/development.md#building-kubernetes-on-a-local-osshell-environment
+#TODO require Go
+[source]
+tar = "https://github.com/kubernetes/kubernetes/archive/refs/tags/v1.25.16.tar.gz"
+[build]
+template = "custom"

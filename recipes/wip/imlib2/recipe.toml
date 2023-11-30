@@ -1,0 +1,10 @@
+#TODO not compiled or tested
+[source]
+tar = "https://git.enlightenment.org/old/legacy-imlib2/archive/v1.11.1.tar.gz"
+[build]
+template = "configure"
+dependencies = [
+    "libjpeg",
+    "libpng",
+    "freetype2",
+]

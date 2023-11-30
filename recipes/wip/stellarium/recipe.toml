@@ -1,0 +1,37 @@
+#TODO probably wrong script, see https://github.com/Stellarium/stellarium/blob/master/BUILDING.md#building
+#TODO missing dependencies - https://github.com/Stellarium/stellarium/blob/master/BUILDING.md#qt6
+[source]
+tar = "https://github.com/Stellarium/stellarium/releases/download/v23.3/stellarium-23.3.tar.xz"
+[build]
+template = "custom"
+dependencies = [
+    "mesa",
+    "zlib",
+    "gstreamer",
+    "qt6-base",
+    "qt6-multimedia",
+    "qt6-webengine",
+    "qt6-positioning",
+    "qt6-charts",
+    "qt6-imageformats",
+    "qt6-translations",
+    "qt6-tools",
+    "libxkbcommon",
+    "gexiv2",
+    "libnlopt",
+]
+script = """
+COOKBOOK_CONFIGURE="cmake"
+COOKBOOK_CONFIGURE_FLAGS=(
+    -DCMAKE_BUILD_TYPE=Release
+    -DCMAKE_CROSSCOMPILING=True
+    -DCMAKE_EXE_LINKER_FLAGS="-static"
+    -DCMAKE_INSTALL_PREFIX="/"
+    -DCMAKE_PREFIX_PATH="${COOKBOOK_SYSROOT}"
+    -DCMAKE_SYSTEM_NAME=Generic
+    -DCMAKE_SYSTEM_PROCESSOR="$(echo "${TARGET}" | cut -d - -f1)"
+    -DCMAKE_VERBOSE_MAKEFILE=On
+"${COOKBOOK_SOURCE}"
+)
+cookbook_configure
+"""

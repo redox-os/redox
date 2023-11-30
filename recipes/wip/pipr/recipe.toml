@@ -1,0 +1,5 @@
+#TODO compilation error (after an update on tokio, crossterm and tui crates)
+[source]
+git = "https://github.com/Elkowar/pipr"
+[build]
+template = "cargo"

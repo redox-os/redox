@@ -1,0 +1,5 @@
+#TODO probably wrong template, check inside the tarball
+[source]
+tar = "https://files.musepack.net/source/musepack_src_r475.tar.gz"
+[build]
+template = "configure"

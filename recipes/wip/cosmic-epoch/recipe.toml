@@ -1,0 +1,20 @@
+#TODO missing script for "just", see https://github.com/pop-os/cosmic-epoch#testing
+#TODO Dependencies will change after alpha?
+[source]
+git = "https://github.com/pop-os/cosmic-epoch"
+[build]
+template = "custom"
+dependencies = [
+    "mesa",
+    "freetype2",
+    "fontconfig",
+    "expat",
+    "dbus",
+    "gtk4",
+    "seatd",
+    "eudev3",
+    "libinput",
+    "libwayland",
+    "libxkbcommon",
+    "pipewire",
+]

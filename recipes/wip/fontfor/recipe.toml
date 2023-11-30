@@ -1,0 +1,5 @@
+#TODO Not compiled or tested
+[source]
+tar = "https://github.com/7sDream/fontfor/archive/refs/tags/v0.4.1.tar.gz"
+[build]
+template = "cargo"

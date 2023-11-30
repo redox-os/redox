@@ -1,0 +1,5 @@
+#TODO rust-serialize crate error
+[source]
+git = "https://github.com/gabrieldemian/vincenzo"
+[build]
+template = "cargo"

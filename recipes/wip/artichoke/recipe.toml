@@ -1,0 +1,5 @@
+#TODO not compiled/tested yet
+[source]
+git = "https://github.com/artichoke/artichoke"
+[build]
+template = "cargo"

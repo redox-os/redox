@@ -1,0 +1,5 @@
+#TODO Not compiled or tested
+[source]
+git = "https://github.com/tokio-rs/console"
+[build]
+template = "cargo"

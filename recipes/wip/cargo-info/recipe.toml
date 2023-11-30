@@ -1,0 +1,5 @@
+#TODO Not compiled or tested
+[source]
+tar = "https://gitlab.com/imp/cargo-info/-/archive/0.7.6/cargo-info-0.7.6.tar.gz"
+[build]
+template = "cargo"

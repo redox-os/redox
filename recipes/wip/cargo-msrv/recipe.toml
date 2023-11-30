@@ -1,0 +1,5 @@
+#TODO Not compiled or tested
+[source]
+tar = "https://github.com/foresterre/cargo-msrv/archive/refs/tags/v0.15.1.tar.gz"
+[build]
+template = "cargo"

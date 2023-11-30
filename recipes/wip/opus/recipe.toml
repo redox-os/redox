@@ -1,0 +1,5 @@
+#TODO compiled but not tested
+[source]
+tar = "https://downloads.xiph.org/releases/opus/opus-1.4.tar.gz"
+[build]
+template = "configure"

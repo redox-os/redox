@@ -1,0 +1,8 @@
+#TODO require a update on the tokio crate and a patch on the ring crate
+[source]
+tar = "https://github.com/Nukesor/pueue/archive/refs/tags/v3.1.2.tar.gz"
+[build]
+template = "custom"
+script = """
+cookbook_cargo_packages pueue
+"""

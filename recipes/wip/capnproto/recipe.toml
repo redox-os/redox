@@ -1,0 +1,5 @@
+#TODO Not compiled or tested
+[source]
+tar = "https://capnproto.org/capnproto-c++-1.0.1.1.tar.gz"
+[build]
+template = "configure"

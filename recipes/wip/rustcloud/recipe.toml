@@ -1,0 +1,8 @@
+#TODO mio crate error (after cargo update -p libc redox_syscall)
+[source]
+git = "https://github.com/cetra3/rustcloud"
+[build]
+template = "cargo"
+dependencies = [
+    "openssl1",
+]

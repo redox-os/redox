@@ -1,0 +1,5 @@
+#TODO create a standalone script, see https://github.com/mesonbuild/meson#creating-a-standalone-script
+[source]
+tar = "https://github.com/mesonbuild/meson/releases/download/1.3.0/meson-1.3.0.tar.gz"
+[build]
+template = "custom"
