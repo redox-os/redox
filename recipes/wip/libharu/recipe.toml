@@ -1,0 +1,9 @@
+#TODO not compiled or tested
+[source]
+tar = "https://github.com/libharu/libharu/archive/refs/tags/v2.4.3.tar.gz"
+[build]
+template = "custom"
+script = """
+./buildconf.sh
+cookbook_configure
+"""

@@ -1,0 +1,5 @@
+#TODO users crate error
+[source]
+tar = "https://gitlab.com/edneville/please/-/archive/v0.5.4/please-v0.5.4.tar.gz"
+[build]
+template = "cargo"

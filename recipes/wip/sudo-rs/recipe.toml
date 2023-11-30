@@ -1,0 +1,5 @@
+#TODO requires Linux PAM, probably needs porting
+[source]
+tar = "https://github.com/memorysafety/sudo-rs/archive/refs/tags/v0.2.1.tar.gz"
+[build]
+template = "cargo"

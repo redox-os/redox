@@ -1,0 +1,12 @@
+#TODO missing script for Meson, see https://libcamera.org/getting-started.html
+[source]
+git = "https://git.libcamera.org/libcamera/libcamera"
+[build]
+template = "custom"
+dependencies = [
+    "libyaml",
+    "libevdev",
+    "gstreamer",
+    "libjpeg",
+    "sdl2",
+]

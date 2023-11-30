@@ -1,0 +1,6 @@
+#TODO missing script for Meson (probably)
+#TODO probably missing dependencies
+[source]
+tar = "https://download.gnome.org/sources/gtkmm/4.11/gtkmm-4.11.2.tar.xz"
+[build]
+template = "custom"

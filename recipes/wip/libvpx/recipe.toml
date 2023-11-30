@@ -1,0 +1,5 @@
+#TODO probably wrong template
+[source]
+tar = "https://chromium.googlesource.com/webm/libvpx/+archive/v1.13.0.tar.gz"
+[build]
+template = "configure"

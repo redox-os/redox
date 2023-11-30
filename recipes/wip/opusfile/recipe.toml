@@ -1,0 +1,10 @@
+#TODO compiled but not tested
+[source]
+tar = "https://downloads.xiph.org/releases/opus/opusfile-0.12.tar.gz"
+[build]
+template = "configure"
+dependencies = [
+    "openssl1",
+    "libogg",
+    "opus",
+]

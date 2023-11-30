@@ -1,0 +1,5 @@
+#TODO Not compiled or tested
+[source]
+tar = "https://github.com/nelsonjchen/speedtest-rs/archive/refs/tags/v0.1.4.tar.gz"
+[build]
+template = "cargo"

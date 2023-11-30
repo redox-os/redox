@@ -1,0 +1,9 @@
+#TODO Weird compilation error with satisfied dependency
+[source]
+tar = "https://www.gnupg.org/ftp/gcrypt/gnutls/v3.6/gnutls-3.6.16.tar.xz"
+[build]
+template = "configure"
+dependencies = [
+    "libgmp",
+    "libnettle",
+]

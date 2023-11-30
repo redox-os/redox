@@ -1,0 +1,10 @@
+#TODO missing script for installation, see https://tribler.readthedocs.io/en/latest/development/development_on_linux.html
+#TODO missing Python libraries
+[source]
+tar = "https://github.com/Tribler/tribler/releases/download/v7.13.0/Tribler-7.13.0.tar.xz"
+[build]
+template = "custom"
+dependencies = [
+    "openssl1",
+    "libgmp",
+]

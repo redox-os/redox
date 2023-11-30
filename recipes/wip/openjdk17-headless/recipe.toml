@@ -1,0 +1,15 @@
+#TODO build instructions - https://github.com/openjdk/jdk17u/blob/master/doc/building.md
+#TODO not compiled or tested
+[source]
+tar = "https://github.com/openjdk/jdk17u/archive/jdk-17.0.9+8.tar.gz"
+[build]
+template = "custom"
+dependencies = [
+    "fontconfig",
+]
+script = """
+COOKBOOK_CONFIGURE_FLAGS+=(
+    --enable-headless-only=yes
+)
+cookbook_configure
+"""

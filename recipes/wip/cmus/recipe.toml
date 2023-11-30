@@ -1,0 +1,8 @@
+#TODO Not compiled or tested yet
+[source]
+tar = "https://github.com/cmus/cmus/archive/refs/tags/v2.10.0.tar.gz"
+[build]
+template = "configure"
+dependencies = [
+    "ncurses",
+]

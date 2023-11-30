@@ -1,0 +1,11 @@
+#TODO Not compiled or tested
+[source]
+tar = "https://storage.googleapis.com/downloads.webmproject.org/releases/webp/libwebp-1.3.2.tar.gz"
+[build]
+template = "configure"
+dependencies = [
+    "libjpeg",
+    "libpng",
+    "libtiff",
+    "libgif",
+]

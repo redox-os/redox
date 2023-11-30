@@ -1,0 +1,8 @@
+#TODO Not compiled or tested
+[source]
+tar = "https://github.com/rust-diplomat/diplomat/archive/refs/tags/v0.6.0.tar.gz"
+[build]
+template = "custom"
+script = """
+cookbook_cargo_packages tool
+"""

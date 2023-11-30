@@ -1,0 +1,12 @@
+#TODO build instructions - https://doc.qt.io/qt-6/linux-building.html
+#TODO customization - https://doc.qt.io/qt-6/configure-options.html
+[source]
+tar = "https://download.qt.io/official_releases/qt/6.6/6.6.1/submodules/qtbase-everywhere-src-6.6.1.tar.xz"
+[build]
+template = "configure"
+dependencies = [
+    "fontconfig",
+    "freetype2",
+    "mesa",
+    "libxkbcommon",
+]

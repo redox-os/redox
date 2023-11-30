@@ -1,0 +1,9 @@
+#TODO the redox target is not supported on the configure
+[source]
+tar = "http://downloads.xiph.org/releases/theora/libtheora-1.1.1.tar.bz2"
+[build]
+template = "configure"
+dependencies = [
+    "libogg",
+    "libvorbis",
+]

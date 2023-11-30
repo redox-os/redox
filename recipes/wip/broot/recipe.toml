@@ -1,0 +1,5 @@
+#TODO nix crate compilation error
+[source]
+tar = "https://github.com/Canop/broot/archive/refs/tags/v1.22.1.tar.gz"
+[build]
+template = "cargo"

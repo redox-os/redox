@@ -1,0 +1,5 @@
+#TODO compilation error
+[source]
+tar = "https://portland.freedesktop.org/download/xdg-utils-1.1.3.tar.gz"
+[build]
+template = "configure"

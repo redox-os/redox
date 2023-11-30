@@ -1,0 +1,8 @@
+#TODO Not compiled or tested
+[source]
+tar = "https://github.com/evcxr/evcxr/archive/refs/tags/v0.15.1.tar.gz"
+[build]
+template = "custom"
+script = """
+cookbook_cargo_packages evcxr_repl
+"""

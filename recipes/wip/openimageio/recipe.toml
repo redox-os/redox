@@ -1,0 +1,17 @@
+#TODO missing script for building, see https://github.com/AcademySoftwareFoundation/OpenImageIO/blob/master/INSTALL.md#building-openimageio-on-linux-or-os-x
+[source]
+tar = "https://github.com/AcademySoftwareFoundation/OpenImageIO/archive/refs/tags/v2.5.5.0.tar.gz"
+[build]
+template = "custom"
+dependencies = [
+    "boost",
+    "libtiff",
+    "libjpeg",
+    "libpng",
+    "openexr",
+    "libfmt",
+    "opencv4",
+    "ffmpeg6",
+    "libwebp",
+    "freetype2",
+]

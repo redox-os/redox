@@ -1,0 +1,8 @@
+#TODO Compiled but not tested yet
+[source]
+tar = "https://github.com/qarmin/czkawka/archive/refs/tags/6.0.0.tar.gz"
+[build]
+template = "custom"
+script = """
+cookbook_cargo_packages czkawka_cli
+"""

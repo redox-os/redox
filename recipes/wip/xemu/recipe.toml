@@ -1,0 +1,16 @@
+#TODO probably wrong template, see https://xemu.app/docs/dev/building-from-source/#linux
+#TODO maybe require patches on submodules
+[source]
+tar = "https://github.com/xemu-project/xemu/releases/download/v0.7.117/src.tar.gz"
+[build]
+template = "configure"
+dependencies = [
+    "sdl2",
+    "libepoxy",
+    "libsamplerate",
+    "pixman",
+    "gtk3",
+    "openssl1",
+    "libpcap",
+    "libslirp",
+]

@@ -1,0 +1,9 @@
+#TODO make mpv works
+[source]
+tar = "https://github.com/LeoRiether/tori/archive/refs/tags/v0.2.5.tar.gz"
+[build]
+template = "cargo"
+dependencies = [
+    "mpv",
+    "cava",
+]

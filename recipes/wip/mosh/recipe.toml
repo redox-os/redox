@@ -1,0 +1,10 @@
+#TODO not compiled or tested
+[source]
+tar = "https://mosh.org/mosh-1.4.0.tar.gz"
+[build]
+template = "configure"
+dependencies = [
+    "openssl1",
+    "ncurses",
+    "zlib",
+]

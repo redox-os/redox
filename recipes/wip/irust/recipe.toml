@@ -1,0 +1,5 @@
+#TODO Not compiled or tested
+[source]
+tar = "https://github.com/sigmaSd/IRust/archive/refs/tags/irust@1.71.4.tar.gz"
+[build]
+template = "cargo"

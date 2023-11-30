@@ -1,0 +1,9 @@
+#TODO missing script for the SCons, see https://github.com/guillaumechereau/goxel#linuxbsd
+[source]
+tar = "https://github.com/guillaumechereau/goxel/archive/refs/tags/v0.12.0.tar.gz"
+[build]
+template = "custom"
+dependencies = [
+    "gtk3",
+    "glfw3",
+]

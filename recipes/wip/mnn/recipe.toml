@@ -1,0 +1,5 @@
+#TODO missing script for CMake, lacking English build instructions
+[source]
+tar = "https://github.com/alibaba/MNN/archive/refs/tags/2.7.1.tar.gz"
+[build]
+template = "custom"

@@ -1,0 +1,10 @@
+#TODO missing script for CMake, see https://github.com/appleseedhq/appleseed/wiki/Building-appleseed-on-Linux
+[source]
+tar = "https://github.com/appleseedhq/appleseed/archive/refs/tags/2.1.0-beta.tar.gz"
+[build]
+template = "custom"
+dependencies = [
+    "zlib",
+    "qt5-base",
+    "libnsl",
+]

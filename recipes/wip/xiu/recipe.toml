@@ -1,0 +1,13 @@
+#TODO OpenSSL error on program source code (after cargo update)
+[source]
+tar = "https://github.com/harlanc/xiu/archive/refs/tags/v0.6.0.tar.gz"
+[build]
+template = "custom"
+dependencies = [
+    "openssl1",
+]
+script = """
+export OPENSSL_DIR="${COOKBOOK_SYSROOT}"
+export OPENSSL_STATIC="true"
+cookbook_cargo_packages xiu
+"""

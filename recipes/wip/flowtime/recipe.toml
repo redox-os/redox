@@ -1,0 +1,10 @@
+#TODO missing script for Meson, see https://github.com/Diego-Ivan/Flowtime#building-from-source
+[source]
+tar = "https://github.com/Diego-Ivan/Flowtime/archive/refs/tags/v6.1.tar.gz"
+[build]
+template = "custom"
+dependencies = [
+    "gtk4",
+    "libxml2",
+    "libadwaita",
+]

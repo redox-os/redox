@@ -1,0 +1,11 @@
+#TODO missing script for QMake, see https://github.com/AnimeEffectsDevs/AnimeEffects#clone--building
+[source]
+tar = "https://github.com/AnimeEffectsDevs/AnimeEffects/archive/refs/tags/v1.5.0.tar.gz"
+[build]
+template = "custom"
+dependencies = [
+    "ffmpeg6",
+    "mesa",
+    "qt5-base",
+    "glib",
+]

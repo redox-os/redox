@@ -1,0 +1,8 @@
+#TODO Not compiled or tested
+[source]
+tar = "https://github.com/mm2/Little-CMS/releases/download/lcms2.15/lcms2-2.15.tar.gz"
+[build]
+template = "configure"
+dependencies = [
+    "libtiff",
+]

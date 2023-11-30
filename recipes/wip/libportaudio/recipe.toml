@@ -1,0 +1,5 @@
+#TODO compilation error and require some Linux audio server
+[source]
+tar = "https://github.com/PortAudio/portaudio/archive/refs/tags/v19.7.0.tar.gz"
+[build]
+template = "configure"

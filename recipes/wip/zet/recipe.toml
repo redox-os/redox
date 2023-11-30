@@ -1,0 +1,5 @@
+#TODO compiled after cargo update, not tested
+[source]
+tar = "https://github.com/yarrow/zet/archive/refs/tags/v1.0.0.tar.gz"
+[build]
+template = "cargo"

@@ -1,0 +1,9 @@
+#TODO probably wrong template, see https://github.com/rr-debugger/rr/wiki/Building-And-Installing
+[source]
+tar = "https://github.com/rr-debugger/rr/archive/refs/tags/5.7.0.tar.gz"
+[build]
+template = "configure"
+dependencies = [
+    "zlib",
+    "capnproto",
+]

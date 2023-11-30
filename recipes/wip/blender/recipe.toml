@@ -1,0 +1,42 @@
+#TODO probably wrong script, see https://wiki.blender.org/wiki/Building_Blender/Linux/Generic_Distro
+#TODO probably missing dependencies
+#TODO customization - https://wiki.blender.org/wiki/Building_Blender/Options
+[source]
+tar = "https://download.blender.org/source/blender-4.0.0.tar.xz"
+[build]
+template = "custom"
+dependencies = [
+    "dbus",
+    "libdecor",
+    "libjpeg",
+    "libpng",
+    "freetype2",
+    "fontconfig",
+    "zstd",
+    "bzip2",
+    "xz",
+    "sdl2",
+    "libepoxy",
+    "shaderc",
+    "libxml2",
+    "libharu",
+    "mesa",
+    "libx11",
+    "libwayland",
+    "libxkbcommon",
+]
+script = """
+COOKBOOK_CONFIGURE="cmake"
+COOKBOOK_CONFIGURE_FLAGS=(
+    -DCMAKE_BUILD_TYPE=Release
+    -DCMAKE_CROSSCOMPILING=True
+    -DCMAKE_EXE_LINKER_FLAGS="-static"
+    -DCMAKE_INSTALL_PREFIX="/"
+    -DCMAKE_PREFIX_PATH="${COOKBOOK_SYSROOT}"
+    -DCMAKE_SYSTEM_NAME=Generic
+    -DCMAKE_SYSTEM_PROCESSOR="$(echo "${TARGET}" | cut -d - -f1)"
+    -DCMAKE_VERBOSE_MAKEFILE=On
+"${COOKBOOK_SOURCE}"
+)
+cookbook_configure
+"""

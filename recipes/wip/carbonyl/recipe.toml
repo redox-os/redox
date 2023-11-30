@@ -1,0 +1,10 @@
+#TODO require Chromium building
+[source]
+tar = "https://github.com/fathyb/carbonyl/archive/refs/tags/v0.0.3.tar.gz"
+[build]
+template = "cargo"
+dependencies = [
+    "nss",
+    "fontconfig",
+    "expat",
+]

@@ -1,0 +1,5 @@
+#TODO Not compiled or tested
+[source]
+tar = "https://github.com/Lenivaya/qrrs/archive/refs/tags/v0.1.8.tar.gz"
+[build]
+template = "cargo"

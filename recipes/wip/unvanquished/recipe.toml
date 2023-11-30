@@ -1,0 +1,23 @@
+#TODO missing script for CMake, see https://github.com/DaemonEngine/Daemon#build-instructions
+# data files - https://github.com/Unvanquished/Unvanquished#downloading-the-games-assets
+[source]
+git = "https://github.com/DaemonEngine/Daemon"
+[build]
+template = "custom"
+dependencies = [
+    "zlib",
+    "libgmp",
+    "libnettle",
+    "curl",
+    "sdl2",
+    "glew",
+    "libpng",
+    "libjpeg",
+    "libwebp",
+    "freetype",
+    "openal",
+    "libogg",
+    "libvorbis",
+    "opus",
+    "opusfile",
+]

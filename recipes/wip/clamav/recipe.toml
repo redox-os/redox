@@ -1,0 +1,31 @@
+#TODO probably wrong script, see https://docs.clamav.net/manual/Installing/Installing-from-source-Unix.html
+#TODO missing Sendmail Mail Filter API (Milter)
+[source]
+tar = "https://www.clamav.net/downloads/production/clamav-1.2.1.tar.gz"
+[build]
+template = "custom"
+dependencies = [
+    "curl",
+    "ncurses",
+    "bzip2",
+    "json-c",
+    "pcre",
+    "openssl1",
+    "libxml2",
+    "zlib",
+]
+script = """
+    COOKBOOK_CONFIGURE="cmake"
+    COOKBOOK_CONFIGURE_FLAGS=(
+    -DCMAKE_BUILD_TYPE=Release
+    -DCMAKE_CROSSCOMPILING=True
+    -DCMAKE_EXE_LINKER_FLAGS="-static"
+    -DCMAKE_INSTALL_PREFIX="/"
+    -DCMAKE_PREFIX_PATH="${COOKBOOK_SYSROOT}"
+    -DCMAKE_SYSTEM_NAME=Generic
+    -DCMAKE_SYSTEM_PROCESSOR="$(echo "${TARGET}" | cut -d - -f1)"
+    -DCMAKE_VERBOSE_MAKEFILE=On
+"${COOKBOOK_SOURCE}"
+)
+cookbook_configure
+"""

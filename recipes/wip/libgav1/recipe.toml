@@ -1,0 +1,6 @@
+#TODO missing script for CMake, see https://chromium.googlesource.com/codecs/libgav1/#compile
+[source]
+git = "https://chromium.googlesource.com/codecs/libgav1"
+rev = "e386d8f1fb983200972d159b9be47fd5d0776708"
+[build]
+template = "custom"

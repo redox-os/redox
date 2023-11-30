@@ -1,0 +1,35 @@
+#TODO probably wrong script, see https://github.com/supertuxkart/stk-code/blob/master/INSTALL.md#compiling
+[source]
+tar = "https://github.com/supertuxkart/stk-code/releases/download/1.4/SuperTuxKart-1.4-src.tar.xz"
+[build]
+template = "custom"
+dependencies = [
+    "openal",
+    "libogg",
+    "libvorbis",
+    "freetype2",
+    "harfbuzz",
+    "curl",
+    "openssl1",
+    "libpng",
+    "zlib",
+    "libjpeg",
+    "sdl2",
+]
+script = """
+    COOKBOOK_CONFIGURE="cmake"
+    COOKBOOK_CONFIGURE_FLAGS=(
+	-DCMAKE_BUILD_TYPE=Release
+	-DCMAKE_CROSSCOMPILING=True
+	-DCMAKE_EXE_LINKER_FLAGS="-static"
+	-DCMAKE_INSTALL_PREFIX="/"
+    -DCMAKE_PREFIX_PATH="${COOKBOOK_SYSROOT}"
+    -DCMAKE_SYSTEM_NAME=Generic
+    -DCMAKE_SYSTEM_PROCESSOR="$(echo "${TARGET}" | cut -d - -f1)"
+    -DCMAKE_VERBOSE_MAKEFILE=On
+    -DNO_SHADERC=on
+    -DBUILD_RECORDER=off
+"${COOKBOOK_SOURCE}"
+)
+cookbook_configure
+"""

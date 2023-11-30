@@ -1,0 +1,12 @@
+#TODO missing script for dotnet, see https://github.com/Ryujinx/Ryujinx#building
+#TODO require .NET Framework 8
+#TODO maybe missing dependencies
+[source]
+git = "https://github.com/Ryujinx/Ryujinx"
+[build]
+template = "custom"
+dependencies = [
+    "sdl2",
+    "freealut",
+    "openal",
+]

@@ -1,0 +1,5 @@
+#TODO os::QueryIter
+[source]
+tar = "https://github.com/zellij-org/zellij/archive/refs/tags/v0.36.0.tar.gz"
+[build]
+template = "cargo"

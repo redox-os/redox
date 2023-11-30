@@ -1,0 +1,5 @@
+#TODO missing script for CMake, see https://github.com/ARM-software/astc-encoder/blob/main/Docs/Building.md#macos-and-linux-using-make
+[source]
+tar = "https://github.com/ARM-software/astc-encoder/archive/refs/tags/4.6.1.tar.gz"
+[build]
+template = "custom"

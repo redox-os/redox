@@ -1,0 +1,5 @@
+#TODO missing script for "make", see https://github.com/P-H-C/phc-winner-argon2#usage
+[source]
+tar = "https://github.com/P-H-C/phc-winner-argon2/archive/refs/tags/20190702.tar.gz"
+[build]
+template = "custom"

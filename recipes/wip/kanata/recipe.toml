@@ -1,0 +1,5 @@
+#TODO program error, maybe needs porting
+[source]
+tar = "https://github.com/jtroo/kanata/archive/refs/tags/v1.3.0.tar.gz"
+[build]
+template = "cargo"

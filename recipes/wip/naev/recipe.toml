@@ -1,0 +1,17 @@
+#TODO missing script for Meson, see https://github.com/naev/naev/wiki/Compiling-on-*nix
+[source]
+tar = "https://github.com/naev/naev/releases/download/v0.10.6/naev-0.10.6-source.tar.xz"
+[build]
+template = "custom"
+dependencies = [
+    "sdl2",
+    "sdl2_image",
+    "libpng",
+    "libxml2",
+    "libwebp",
+    "mesa",
+    "openal",
+    "openblas",
+    "freetype2",
+    "libvorbis",
+]

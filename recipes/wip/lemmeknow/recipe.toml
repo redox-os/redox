@@ -1,0 +1,5 @@
+#TODO compiled but not tested
+[source]
+tar = "https://github.com/swanandx/lemmeknow/archive/refs/tags/v0.8.0.tar.gz"
+[build]
+template = "cargo"

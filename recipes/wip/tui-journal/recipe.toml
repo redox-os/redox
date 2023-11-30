@@ -1,0 +1,9 @@
+#TODO SQLite is not working
+[source]
+tar = "https://github.com/AmmarAbouZor/tui-journal/archive/refs/tags/v0.2.0.tar.gz"
+[build]
+template = "cargo"
+dependencies = [
+    "openssl1",
+    "sqlite3",
+]

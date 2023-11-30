@@ -1,0 +1,5 @@
+#TODO not compiled or tested
+[source]
+tar = "https://www.x.org/releases/individual/lib/xtrans-1.4.0.tar.gz"
+[build]
+template = "configure"

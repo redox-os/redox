@@ -1,0 +1,16 @@
+#TODO missing script for "make", see https://gitlab.com/xonotic/xonotic/-/wikis/Compiling
+[source]
+tar = "https://gitlab.com/xonotic/xonotic/-/archive/xonotic-v0.8.5/xonotic-xonotic-v0.8.5.tar.gz"
+[build]
+template = "custom"
+dependencies = [
+    "libgmp",
+    "sdl2",
+    "libjpeg",
+    "libpng",
+    "freetype2",
+    "libogg",
+    "libvorbis",
+    "curl",
+    "rsync",
+]

@@ -1,0 +1,8 @@
+#TODO weird error on the end of compilation
+[source]
+tar = "https://github.com/orf/gping/archive/refs/tags/gping-v1.12.0.tar.gz"
+[build]
+template = "custom"
+script = """
+cookbook_cargo_packages gping
+"""

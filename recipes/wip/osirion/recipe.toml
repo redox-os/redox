@@ -1,0 +1,17 @@
+#TODO Not compiled or tested
+# data files - http://osirion.org/files/osirion-0.2.8-data.zip
+[source]
+tar = "http://osirion.org/files/osirion-0.2.8-src.tar.bz2"
+[build]
+template = "configure"
+dependencies = [
+    "zlib",
+    "bullet-physics",
+    "libpng",
+    "libjpeg",
+    "sdl2",
+    "mesa",
+    "mesa-glu",
+    "openal",
+    "libvorbis",
+]

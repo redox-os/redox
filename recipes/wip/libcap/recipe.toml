@@ -1,0 +1,5 @@
+#TODO missing script for "make" (maybe need the Go), see https://git.kernel.org/pub/scm/libs/libcap/libcap.git/tree/README#n20
+[source]
+tar = "https://git.kernel.org/pub/scm/libs/libcap/libcap.git/snapshot/libcap-cap/v1.2.69.tar.gz"
+[build]
+template = "custom"

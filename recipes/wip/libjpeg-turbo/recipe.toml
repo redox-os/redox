@@ -1,0 +1,5 @@
+#TODO missing script for CMake, see https://github.com/libjpeg-turbo/libjpeg-turbo/blob/main/BUILDING.md#build-procedure
+[source]
+tar = "https://sourceforge.net/projects/libjpeg-turbo/files/3.0.1/libjpeg-turbo-3.0.1.tar.gz"
+[build]
+template = "custom"

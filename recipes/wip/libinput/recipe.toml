@@ -1,0 +1,9 @@
+#TODO missing script for Meson, see https://wayland.freedesktop.org/libinput/doc/latest/building.html#building
+[source]
+tar = "https://gitlab.freedesktop.org/libinput/libinput/-/archive/1.24.0/libinput-1.24.0.tar.gz"
+[build]
+template = "custom"
+dependencies = [
+    "eudev",
+    "libevdev",
+]

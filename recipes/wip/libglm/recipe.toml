@@ -1,0 +1,5 @@
+#TODO Needs to determine the script
+[source]
+tar = "https://github.com/g-truc/glm/archive/refs/tags/0.9.9.8.tar.gz"
+[build]
+template = "custom"

@@ -1,0 +1,12 @@
+#TODO missing script for CMake, see https://zdoom.org/wiki/Compile_GZDoom_on_Linux
+[source]
+tar = "https://github.com/ZDoom/gzdoom/archive/refs/tags/g4.10.0.tar.gz"
+[build]
+template = "custom"
+dependencies = [
+    "sdl2",
+    "mesa",
+    "mesa-glu",
+    "openal",
+    "zmusic",
+]

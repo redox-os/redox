@@ -1,0 +1,5 @@
+#TODO compilation error
+[source]
+tar = "https://gnupg.org/ftp/gcrypt/libgcrypt/libgcrypt-1.10.2.tar.bz2"
+[build]
+template = "configure"

@@ -1,0 +1,11 @@
+#TODO missing script for Cmake, see https://clickhouse.com/docs/en/development/build#how-to-build-clickhouse-on-any-linux
+#TODO probably disable some submodules to use our recipes
+[source]
+tar = "https://github.com/ClickHouse/ClickHouse"
+[build]
+template = "custom"
+dependencies = [
+    "curl",
+    "openssl1",
+    "xz",
+]

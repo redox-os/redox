@@ -1,0 +1,5 @@
+#TODO socket and pipe compilation errors
+[source]
+tar = "https://github.com/dalance/procs/archive/refs/tags/v0.14.0.tar.gz"
+[build]
+template = "cargo"

@@ -1,0 +1,5 @@
+#TODO Not compiled or tested
+[source]
+tar = "https://github.com/ckampfe/russ"
+[build]
+template = "cargo"

@@ -1,0 +1,8 @@
+#TODO Not compiled or tested
+[source]
+tar = "https://github.com/hickory-dns/hickory-dns/archive/refs/tags/v0.24.0.tar.gz"
+[build]
+template = "cargo"
+dependencies = [
+    "openssl1",
+]

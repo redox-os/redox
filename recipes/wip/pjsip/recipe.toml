@@ -1,0 +1,11 @@
+#TODO Not compiled or tested
+# customization - https://docs.pjsip.org/en/latest/get-started/posix/build_instructions.html
+[source]
+tar = "https://github.com/pjsip/pjproject/archive/refs/tags/2.14.tar.gz"
+[build]
+template = "configure"
+dependencies = [
+    "openssl1",
+    "ffmpeg6",
+    "libvpx",
+]

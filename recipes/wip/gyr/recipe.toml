@@ -1,0 +1,5 @@
+#TODO compiled but not tested
+[source]
+tar = "https://git.sr.ht/~f9/gyr/archive/v0.1.3.tar.gz"
+[build]
+template = "cargo"

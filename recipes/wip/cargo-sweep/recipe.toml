@@ -1,0 +1,5 @@
+#TODO needs to update the redox_syscall version
+[source]
+git = "https://github.com/holmgr/cargo-sweep"
+[build]
+template = "cargo"

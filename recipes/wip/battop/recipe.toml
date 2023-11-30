@@ -1,0 +1,5 @@
+#TODO Not compiled or tested
+[source]
+tar = "https://github.com/svartalf/rust-battop/archive/refs/tags/v0.2.4.tar.gz"
+[build]
+template = "cargo"

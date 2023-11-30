@@ -1,0 +1,5 @@
+#TODO link error: getgroups
+[source]
+git = "https://github.com/kyoheiu/felix"
+[build]
+template = "cargo"

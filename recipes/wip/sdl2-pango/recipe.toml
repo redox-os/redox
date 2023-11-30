@@ -1,0 +1,10 @@
+#TODO Not compiled or tested
+[source]
+tar = "https://github.com/markuskimius/SDL2_Pango/archive/refs/tags/v2.1.5.tar.gz"
+[build]
+template = "configure"
+dependencies = [
+    "pango",
+    "freetype2",
+    "sdl2",
+]

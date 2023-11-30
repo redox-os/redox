@@ -1,0 +1,5 @@
+#TODO probably wrong template, see https://gitlab.gnome.org/GNOME/glibmm#building
+[source]
+tar = "https://download.gnome.org/sources/glibmm/2.76/glibmm-2.76.0.tar.xz"
+[build]
+template = "configure"

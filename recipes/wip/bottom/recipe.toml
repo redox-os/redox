@@ -1,0 +1,5 @@
+#TODO starship-battery crate compilation error
+[source]
+tar = "https://github.com/ClementTsang/bottom/archive/refs/tags/0.9.1.tar.gz"
+[build]
+template = "cargo"

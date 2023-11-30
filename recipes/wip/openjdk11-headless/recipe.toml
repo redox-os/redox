@@ -1,0 +1,15 @@
+#TODO build instructions - https://github.com/openjdk/jdk11u/blob/master/doc/building.md
+#TODO not compiled or tested
+[source]
+tar = "https://github.com/openjdk/jdk11u/archive/jdk-11.0.21+9.tar.gz"
+[build]
+template = "custom"
+dependencies = [
+    "fontconfig",
+]
+script = """
+COOKBOOK_CONFIGURE_FLAGS+=(
+    --enable-headless-only=yes
+)
+cookbook_configure
+"""

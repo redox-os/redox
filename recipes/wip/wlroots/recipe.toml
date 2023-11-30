@@ -1,0 +1,13 @@
+#TODO missing script for Meson, see https://gitlab.freedesktop.org/wlroots/wlroots#building
+[source]
+tar = "https://gitlab.freedesktop.org/wlroots/wlroots/-/releases/0.17.0/downloads/wlroots-0.17.0.tar.gz"
+[build]
+template = "custom"
+dependencies = [
+    "libwayland",
+    "libxcb",
+    "libinput",
+    "libxkbcommon",
+    "pixman",
+    "seatd",
+]

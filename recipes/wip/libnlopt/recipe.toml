@@ -1,0 +1,5 @@
+#TODO missing script for CMake, see https://github.com/stevengj/nlopt#readme
+[source]
+tar = "https://github.com/stevengj/nlopt/archive/refs/tags/v2.7.1.tar.gz"
+[build]
+template = "custom"

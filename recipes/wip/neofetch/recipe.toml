@@ -1,0 +1,10 @@
+#TODO Add Redox OS on the Bash script
+[source]
+tar = "https://github.com/dylanaraps/neofetch/archive/refs/tags/7.1.0.tar.gz"
+[build]
+template = "custom"
+script = """
+mkdir -pv "${COOKBOOK_STAGE}"/bin
+cp "${COOKBOOK_SOURCE}"/neofetch "${COOKBOOK_STAGE}"/bin/neofetch
+chmod a+x "${COOKBOOK_STAGE}"/bin/neofetch
+"""

@@ -1,0 +1,5 @@
+#TODO compiled but not tested
+[source]
+tar = "https://github.com/bootandy/dust/archive/refs/tags/v0.8.6.tar.gz"
+[build]
+template = "cargo"

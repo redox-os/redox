@@ -1,0 +1,5 @@
+#TODO camino crate error (after a patch on the ring crate)
+[source]
+tar = "https://github.com/axodotdev/oranda/archive/refs/tags/v0.3.1.tar.gz"
+[build]
+template = "cargo"

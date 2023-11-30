@@ -1,0 +1,5 @@
+#TODO file-owner crate error
+[source]
+tar = "https://github.com/pkolaczk/fclones/archive/refs/tags/v0.30.0.tar.gz"
+[build]
+template = "cargo"

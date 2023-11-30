@@ -1,0 +1,5 @@
+#TODO Not compiled or tested
+[source]
+git = "https://git.zx2c4.com/wireguard-rs"
+[build]
+template = "cargo"

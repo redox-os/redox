@@ -1,0 +1,11 @@
+#TODO Not compiled or tested yet
+[source]
+tar = "https://github.com/dandavison/delta/archive/refs/tags/0.15.1.tar.gz"
+[build]
+template = "custom"
+dependencies = [
+    "less",
+]
+script = """
+cookbook_cargo_packages git-delta
+"""

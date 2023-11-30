@@ -1,0 +1,38 @@
+#TODO probably wrong script, see https://docs.krita.org/en/untranslatable_pages/building_krita.html#building-on-linux
+#TODO missing dependencies?
+[source]
+tar = "https://download.kde.org/stable/krita/5.2.1/krita-5.2.1.tar.gz"
+[build]
+template = "custom"
+dependencies = [
+    "gexiv2",
+    "ffmpeg6",
+    "fftw",
+    "fontconfig",
+    "freetype2",
+    "fribidi",
+    "libgif",
+    "harfbuzz",
+    "liblcms",
+    "libpng",
+    "libtiff",
+    "libwebp",
+    "qt5-base",
+    "zlib",
+    "libmypaint",
+]
+script = """
+COOKBOOK_CONFIGURE="cmake"
+COOKBOOK_CONFIGURE_FLAGS=(
+    -DCMAKE_BUILD_TYPE=Release
+    -DCMAKE_CROSSCOMPILING=True
+    -DCMAKE_EXE_LINKER_FLAGS="-static"
+    -DCMAKE_INSTALL_PREFIX="/"
+    -DCMAKE_PREFIX_PATH="${COOKBOOK_SYSROOT}"
+    -DCMAKE_SYSTEM_NAME=Generic
+    -DCMAKE_SYSTEM_PROCESSOR="$(echo "${TARGET}" | cut -d - -f1)"
+    -DCMAKE_VERBOSE_MAKEFILE=On
+"${COOKBOOK_SOURCE}"
+)
+cookbook_configure
+"""

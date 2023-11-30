@@ -1,0 +1,5 @@
+#TODO Not compiled or tested
+[source]
+tar = "https://github.com/alexhallam/tv/archive/refs/tags/1.5.2.tar.gz"
+[build]
+template = "cargo"

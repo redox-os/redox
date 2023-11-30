@@ -1,0 +1,13 @@
+#TODO missing script for CMake, see https://github.com/ospray/ospray_studio#standard-cmake-build
+[source]
+tar = "https://github.com/ospray/ospray_studio/archive/refs/tags/v0.13.0.tar.gz"
+[build]
+template = "custom"
+dependencies = [
+    "ospray",
+    "onetbb",
+    "librkcommon",
+    "mesa",
+    "glfw",
+    "open-image-denoise",
+]

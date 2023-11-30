@@ -1,0 +1,5 @@
+#TODO compilation error
+[source]
+tar = "https://ftp.postgresql.org/pub/source/v16.0/postgresql-16.0.tar.bz2"
+[build]
+template = "configure"

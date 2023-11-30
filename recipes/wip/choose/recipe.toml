@@ -1,0 +1,5 @@
+#TODO compiled after cargo update but not tested
+[source]
+tar = "https://github.com/theryangeary/choose/archive/refs/tags/v1.3.4.tar.gz"
+[build]
+template = "cargo"

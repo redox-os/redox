@@ -1,0 +1,27 @@
+#TODO make dependencies work
+[source]
+tar = "https://download.gimp.org/gimp/v2.10/gimp-2.10.36.tar.bz2"
+[build]
+template = "configure"
+dependencies = [
+    "gtk2",
+    "gobject-introspection",
+    "glib",
+    "cairo",
+    "pango",
+    "liblcms",
+    "libmypaint",
+    "gexiv2",
+    "gegl",
+    "babl",
+    "librsvg",
+    "libtiff",
+    "libjpeg",
+    "libpng",
+    "fontconfig",
+    "freetype2",
+    "atk",
+    "harfbuzz",
+    "bzip2",
+    "zlib",
+]
