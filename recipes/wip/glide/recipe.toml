@@ -1,0 +1,9 @@
+#TODO Make GTK4 work
+[source]
+tar = "https://github.com/philn/glide/archive/refs/tags/0.6.0.tar.gz"
+[build]
+template = "cargo"
+dependencies = [
+    "gtk4",
+    "gstreamer",
+]

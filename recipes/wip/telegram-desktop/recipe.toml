@@ -1,0 +1,38 @@
+#TODO probably wrong script, lacking build instructions
+[source]
+tar = "https://github.com/telegramdesktop/tdesktop/releases/download/v4.11.6/tdesktop-4.11.6-full.tar.gz"
+[build]
+template = "custom"
+dependencies = [
+    "qt6-wayland",
+    "qt6-svg",
+    "qt6-imageformats",
+    "fontconfig",
+    "freetype2",
+    "gobject-introspection",
+    "glib",
+    "expat",
+    "libuuid",
+    "libpng",
+    "zlib",
+    "libffi",
+    "libpcre",
+    "libbsd",
+    "libmd",
+    "libbrotli",
+]
+script = """
+COOKBOOK_CONFIGURE="cmake"
+COOKBOOK_CONFIGURE_FLAGS=(
+    -DCMAKE_BUILD_TYPE=Release
+    -DCMAKE_CROSSCOMPILING=True
+    -DCMAKE_EXE_LINKER_FLAGS="-static"
+    -DCMAKE_INSTALL_PREFIX="/"
+    -DCMAKE_PREFIX_PATH="${COOKBOOK_SYSROOT}"
+    -DCMAKE_SYSTEM_NAME=Generic
+    -DCMAKE_SYSTEM_PROCESSOR="$(echo "${TARGET}" | cut -d - -f1)"
+    -DCMAKE_VERBOSE_MAKEFILE=On
+"${COOKBOOK_SOURCE}"
+)
+cookbook_configure
+"""

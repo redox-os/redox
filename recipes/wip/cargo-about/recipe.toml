@@ -1,0 +1,5 @@
+#TODO needs to update the tokio version
+[source]
+tar = "https://github.com/EmbarkStudios/cargo-about/archive/refs/tags/0.5.6.tar.gz"
+[build]
+template = "cargo"

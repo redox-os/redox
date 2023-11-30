@@ -1,0 +1,9 @@
+#TODO Not tested
+[source]
+tar = "https://github.com/minetest/minetest_game/archive/refs/tags/5.7.0.tar.gz"
+[build]
+template = "custom"
+script = """
+mkdir -pv "${COOKBOOK_STAGE}"/home/user/.minetest/games/minetest_game
+cp -rv "${COOKBOOK_SOURCE}"/* "${COOKBOOK_STAGE}"/home/user/.minetest/games/minetest_game
+"""

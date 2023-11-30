@@ -1,0 +1,12 @@
+#TODO missing script for building, lacking build instructions
+#TODO what is game code? - http://files.poulsander.com/~poul19/public_files/oa/dev088/oa-0.8.8.tar.bz2
+[source]
+tar = "http://files.poulsander.com/~poul19/public_files/oa/dev088/openarena-engine-source-0.8.8.tar.bz2"
+[build]
+template = "custom"
+dependencies = [
+    "sdl1",
+    "openal",
+    "libvorbis",
+    "mesa",
+]

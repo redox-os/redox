@@ -1,0 +1,5 @@
+#TODO missing script for Meson, see https://github.com/xkbcommon/libxkbcommon#building
+[source]
+tar = "https://xkbcommon.org/download/libxkbcommon-1.5.0.tar.xz"
+[build]
+template = "custom"

@@ -1,0 +1,8 @@
+#TODO async-tar crate error
+[source]
+tar = "https://github.com/magic-wormhole/magic-wormhole.rs/archive/refs/tags/0.6.0.tar.gz"
+[build]
+template = "custom"
+script = """
+cookbook_cargo_packages magic-wormhole
+"""

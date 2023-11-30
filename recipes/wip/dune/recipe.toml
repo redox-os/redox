@@ -1,0 +1,5 @@
+#TODO Not compiled or tested
+[source]
+tar = "https://github.com/adam-mcdaniel/dune/archive/refs/tags/v0.1.9.tar.gz"
+[build]
+template = "cargo"

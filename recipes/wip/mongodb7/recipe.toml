@@ -1,0 +1,9 @@
+#TODO missing script for SCons, see https://github.com/mongodb/mongo/blob/master/docs/building.md
+[source]
+tar = "https://github.com/mongodb/mongo/archive/refs/tags/r7.1.1.tar.gz"
+[build]
+template = "custom"
+dependencies = [
+    "curl",
+    "xz",
+]

@@ -1,0 +1,5 @@
+#TODO compilation error
+[source]
+tar = "http://ccrma.stanford.edu/software/stk/release/stk-4.6.2.tar.gz"
+[build]
+template = "configure"

@@ -1,0 +1,5 @@
+#TODO missing script for Meson, lacking build instructions
+[source]
+tar = "https://git.sr.ht/~kennylevinsen/seatd/archive/0.8.0.tar.gz"
+[build]
+template = "custom"

@@ -1,0 +1,21 @@
+#TODO missing script for CMake, see https://rawpedia.rawtherapee.com/Linux#Compile_RawTherapee
+#TODO missing dependencies, see https://rawpedia.rawtherapee.com/Linux#Dependencies
+[source]
+tar = "https://rawtherapee.com/shared/source/rawtherapee-5.9.tar.xz"
+[build]
+template = "custom"
+dependencies = [
+    "gexiv2",
+    "expat",
+    "fftw",
+    "glib",
+    "gtk3",
+    "gtk3mm",
+    "libjpeg",
+    "liblcms",
+    "libpng",
+    "librsvg",
+    "libsigc++",
+    "libtiff",
+    "zlib",
+]

@@ -1,0 +1,5 @@
+#TODO compilation error
+[source]
+tar = "https://ftpmirror.gnu.org/libtool/libtool-2.4.6.tar.gz"
+[build]
+template = "configure"

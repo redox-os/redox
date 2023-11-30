@@ -1,0 +1,37 @@
+#TODO probably wrong script, see https://docs.darlinghq.org/build-instructions.html#building-and-installing
+#TODO require Git LFS installed on host
+[source]
+git = "https://github.com/darlinghq/darling"
+[build]
+template = "custom"
+dependencies = [
+    "libfuse3",
+    "libevdev",
+    "cairo",
+    "mesa",
+    "libtiff",
+    "freetype",
+    "libxml2",
+    "fontconfig",
+    "libbsd",
+    "libgif",
+    "ffmpeg6",
+    "openssl1",
+    "libxkbfile",
+]
+script = """
+COOKBOOK_CONFIGURE="cmake"
+COOKBOOK_CONFIGURE_FLAGS=(
+    -DCMAKE_BUILD_TYPE=Release
+    -DCMAKE_CROSSCOMPILING=True
+    -DCMAKE_EXE_LINKER_FLAGS="-static"
+    -DCMAKE_INSTALL_PREFIX="/"
+    -DCMAKE_PREFIX_PATH="${COOKBOOK_SYSROOT}"
+    -DCMAKE_SYSTEM_NAME=Generic
+    -DCMAKE_SYSTEM_PROCESSOR="$(echo "${TARGET}" | cut -d - -f1)"
+    -DCMAKE_VERBOSE_MAKEFILE=On
+    -DTARGET_i386=OFF
+"${COOKBOOK_SOURCE}"
+)
+cookbook_configure
+"""

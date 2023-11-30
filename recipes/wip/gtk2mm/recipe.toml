@@ -1,0 +1,5 @@
+#TODO probably missing dependencies
+[source]
+tar = "https://download.gnome.org/sources/gtkmm/2.91/gtkmm-2.91.7.tar.gz"
+[build]
+template = "configure"

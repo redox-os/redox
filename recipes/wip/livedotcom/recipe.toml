@@ -1,0 +1,5 @@
+#TODO missing script for the build system, see http://www.live555.com/liveMedia/#config-unix
+[source]
+tar = "http://www.live555.com/liveMedia/public/live555-latest.tar.gz"
+[build]
+template = "custom"

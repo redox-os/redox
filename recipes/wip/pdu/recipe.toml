@@ -1,0 +1,5 @@
+#TODO compiled but not tested
+[source]
+tar = "https://github.com/KSXGitHub/parallel-disk-usage/archive/refs/tags/0.9.0.tar.gz"
+[build]
+template = "cargo"

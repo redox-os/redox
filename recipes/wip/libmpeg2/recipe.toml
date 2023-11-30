@@ -1,0 +1,5 @@
+#TODO the redox target is not supported on the configure
+[source]
+tar = "https://libmpeg2.sourceforge.io/files/libmpeg2-0.5.1.tar.gz"
+[build]
+template = "configure"

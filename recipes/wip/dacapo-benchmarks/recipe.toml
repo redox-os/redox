@@ -1,0 +1,5 @@
+#TODO missing script for "ant", see https://github.com/dacapobench/dacapobench#building
+[source]
+tar = "https://github.com/dacapobench/dacapobench/archive/refs/tags/v23.11-chopin.tar.gz"
+[build]
+template = "custom"

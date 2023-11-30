@@ -1,0 +1,11 @@
+#TODO missing script for CMake, see https://github.com/etlegacy/etlegacy#compile-and-install
+[source]
+git = "https://github.com/etlegacy/etlegacy"
+rev = "956269f4c13ebe31ba2a0f0b805588383209bd5b"
+[build]
+template = "custom"
+dependencies = [
+    "sdl2",
+    "openssl1",
+    "mesa",
+]

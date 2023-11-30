@@ -1,0 +1,5 @@
+#TODO camino crate error
+[source]
+tar = "https://github.com/sourcefrog/cargo-mutants/archive/refs/tags/cargo-mutants-1.2.3.tar.gz"
+[build]
+template = "cargo"

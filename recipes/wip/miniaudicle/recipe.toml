@@ -1,0 +1,10 @@
+#TODO missing script for "make", see https://github.com/ccrma/miniAudicle#linux
+[source]
+tar = "https://github.com/ccrma/miniAudicle/archive/refs/tags/chuck-1.5.1.8.tar.gz"
+[build]
+template = "custom"
+dependencies = [
+    "pulseaudio",
+    "libsndfile",
+    "qt6-base",
+]

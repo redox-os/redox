@@ -1,0 +1,14 @@
+#TODO Make neovim work
+[source]
+tar = "https://github.com/neovide/neovide/archive/refs/tags/0.10.4.tar.gz"
+[build]
+template = "cargo"
+dependencies = [
+    "neovim",
+    "openssl1",
+    "freetype2",
+    "expat",
+    "bzip2",
+    "freeglut",
+    "fontconfig",
+]

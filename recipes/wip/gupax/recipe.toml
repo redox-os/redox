@@ -1,0 +1,5 @@
+#TODO Not compiled or tested
+[source]
+tar = "https://github.com/hinto-janai/gupax/archive/refs/tags/v1.3.1.tar.gz"
+[build]
+template = "cargo"

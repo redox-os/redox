@@ -1,0 +1,5 @@
+#TODO determine dependencies
+[source]
+tar = "https://sourceforge.net/projects/gnuplot/files/gnuplot/5.4.10/gnuplot-5.4.10.tar.gz/download"
+[build]
+template = "configure"

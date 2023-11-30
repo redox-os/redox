@@ -1,0 +1,10 @@
+#TODO missing script for CMake, see https://github.com/srsran/srsRAN_Project#build-instructions
+#TODO missing dependencies
+[source]
+tar = "https://github.com/srsran/srsRAN_Project/archive/refs/tags/release_23_10_1.tar.gz"
+[build]
+template = "custom"
+dependencies = [
+    "fftw",
+    "mbedtls",
+]

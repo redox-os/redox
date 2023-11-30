@@ -1,0 +1,5 @@
+#TODO probably wrong script, see https://gitlab.gnome.org/GNOME/atkmm
+[source]
+tar = "https://download.gnome.org/sources/atkmm/2.36/atkmm-2.36.2.tar.xz"
+[build]
+template = "configure"

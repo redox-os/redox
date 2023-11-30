@@ -1,0 +1,16 @@
+#TODO Not compiled or tested
+#TODO more features - http://www.graphicsmagick.org/README.html#add-on-libraries-programs
+[source]
+tar = "https://sourceforge.net/projects/graphicsmagick/files/graphicsmagick/1.3.42/GraphicsMagick-1.3.42.tar.xz/download"
+[build]
+template = "configure"
+dependencies = [
+    "bzip2",
+    "freetype2",
+    "libwebp",
+    "libjpeg",
+    "libpng",
+    "libtiff",
+    "libxml2",
+    "zlib",
+]

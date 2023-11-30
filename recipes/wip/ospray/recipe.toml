@@ -1,0 +1,13 @@
+#TODO missing script for CMake, see https://github.com/ospray/OSPRay#building-and-finding-ospray
+[source]
+tar = "https://github.com/ospray/OSPRay/archive/v3.0.0.tar.gz"
+[build]
+template = "custom"
+dependencies = [
+    "librkcommon",
+    "embree",
+    "ispc",
+    "onetbb",
+    "openvkl",
+    "open-image-denoise",
+]

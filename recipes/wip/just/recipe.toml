@@ -1,0 +1,5 @@
+#TODO Schemes not supported
+[source]
+tar = "https://github.com/casey/just/archive/refs/tags/1.13.0.tar.gz"
+[build]
+template = "cargo"

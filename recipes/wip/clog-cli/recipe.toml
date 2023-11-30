@@ -1,0 +1,5 @@
+#TODO Needs to patch the rustc-serialize crate and update the redox_syscall version
+[source]
+tar = "https://github.com/clog-tool/clog-cli/archive/refs/tags/v0.9.3.tar.gz"
+[build]
+template = "cargo"

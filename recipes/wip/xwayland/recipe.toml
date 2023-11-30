@@ -1,0 +1,10 @@
+#TODO missing script for Meson, see https://wayland.freedesktop.org/xserver.html#heading_toc_j_3
+[source]
+tar = "https://www.x.org/releases/individual/xserver/xwayland-23.1.1.tar.xz"
+[build]
+template = "custom"
+dependencies = [
+    "libepoxy",
+    "libxtrans",
+    "libxkbfile",
+]

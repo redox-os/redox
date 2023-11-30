@@ -1,0 +1,10 @@
+#TODO missing script for "make", see https://github.com/kondrak/vkQuake2#linux
+[source]
+tar = "https://github.com/kondrak/vkQuake2/archive/refs/tags/1.5.9.tar.gz"
+[build]
+template = "custom"
+dependencies = [
+    "mesa",
+    "libx11",
+    "libxcb",
+]

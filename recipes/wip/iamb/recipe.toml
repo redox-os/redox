@@ -1,0 +1,5 @@
+#TODO Rust version error (after cargo update)
+[source]
+git = "https://github.com/ulyssa/iamb"
+[build]
+template = "cargo"

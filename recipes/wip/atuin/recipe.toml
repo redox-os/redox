@@ -1,0 +1,8 @@
+#TODO require a patch on tokio (update the version)
+[source]
+tar = "https://github.com/ellie/atuin/archive/refs/tags/v14.0.1.tar.gz"
+[build]
+template = "custom"
+script = """
+cookbook_cargo_packages atuin
+"""

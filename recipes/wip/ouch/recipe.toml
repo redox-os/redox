@@ -1,0 +1,10 @@
+#TODO Broken bzip2 dependency
+[source]
+tar = "https://github.com/ouch-org/ouch/archive/refs/tags/0.4.1.tar.gz"
+[build]
+template = "cargo"
+dependencies = [
+    "zlib",
+    "bzip2",
+    "xz",
+]

@@ -1,0 +1,10 @@
+#TODO missing script for CMake, see https://dev.mysql.com/doc/refman/8.2/en/installing-source-distribution.html
+[source]
+tar = "https://dev.mysql.com/downloads/file/?id=523432"
+[build]
+template = "custom"
+dependencies = [
+    "boost",
+    "ncurses",
+    "openssl1",
+]

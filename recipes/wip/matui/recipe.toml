@@ -1,0 +1,8 @@
+#TODO xdg-home crate error
+[source]
+tar = "https://github.com/pkulak/matui/archive/refs/tags/v0.4.4.tar.gz"
+[build]
+template = "cargo"
+dependencies = [
+    "openssl1",
+]

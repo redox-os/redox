@@ -1,0 +1,13 @@
+#TODO openssl-sys crate compilation error
+[source]
+tar = "https://github.com/mihaigalos/aim/archive/refs/tags/1.8.5.tar.gz"
+[build]
+dependencies = [
+    "openssl1",
+]
+template = "custom"
+script = """
+export OPENSSL_DIR="${COOKBOOK_SYSROOT}"
+export OPENSSL_STATIC="true"
+cookbook_cargo
+"""

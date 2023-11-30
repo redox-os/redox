@@ -1,0 +1,9 @@
+#TODO Not compiled or tested
+[source]
+tar = "https://download.open-mpi.org/release/hwloc/v2.9/hwloc-2.9.3.tar.bz2"
+[build]
+template = "configure"
+dependencies = [
+    "libxml2",
+    "libevdev",
+]

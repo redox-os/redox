@@ -1,0 +1,12 @@
+#TODO Not compiled or tested
+[source]
+tar = "http://lttng.org/files/lttng-ust/lttng-ust-2.13.6.tar.bz2"
+[build]
+template = "configure"
+dependencies = [
+    "libxml2",
+    "lttng",
+    "liburcu",
+    "libuuid",
+    "popt",
+]

@@ -1,0 +1,12 @@
+#TODO vmaf-sys crate error
+[source]
+git = "https://github.com/imager-io/imager"
+[build]
+template = "custom"
+dependencies = [
+    "xz",
+    "openssl1",
+]
+script = """
+cookbook_cargo_packages imager
+"""

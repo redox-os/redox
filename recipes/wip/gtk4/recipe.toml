@@ -1,0 +1,19 @@
+#TODO missing script for Meson, see https://docs.gtk.org/gtk4/building.html
+[source]
+tar = "https://download.gnome.org/sources/gtk/4.11/gtk-4.11.2.tar.xz"
+[build]
+template = "custom"
+dependencies = [
+    "glib",
+    "gdk-pixbuf",
+    "pango",
+    "cairo",
+    "libepoxy",
+    "atk",
+    "gobject-introspection",
+    "shared-mime-info",
+    "graphene",
+    "libwayland",
+    "libxkbcommon",
+    "gstreamer",
+]

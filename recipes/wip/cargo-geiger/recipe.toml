@@ -1,0 +1,13 @@
+#TODO camino crate compilation error
+[source]
+tar = "https://github.com/rust-secure-code/cargo-geiger/archive/refs/tags/cargo-geiger-0.11.6.tar.gz"
+[build]
+template = "custom"
+dependencies = [
+    "openssl1",
+]
+script = """
+export OPENSSL_DIR="${COOKBOOK_SYSROOT}"
+export OPENSSL_STATIC="true"
+cookbook_cargo_packages cargo-geiger
+"""

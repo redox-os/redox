@@ -1,0 +1,5 @@
+#TODO Compiled but not tested
+[source]
+tar = "https://downloads.sourceforge.net/twolame/twolame-0.4.0.tar.gz"
+[build]
+template = "configure"

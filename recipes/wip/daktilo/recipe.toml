@@ -1,0 +1,5 @@
+#TODO Not compiled or tested
+[source]
+tar = "https://github.com/orhun/daktilo/archive/refs/tags/v0.1.0.tar.gz"
+[build]
+template = "cargo"

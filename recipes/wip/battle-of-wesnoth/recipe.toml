@@ -1,0 +1,21 @@
+#TODO missing script for building, see https://github.com/wesnoth/wesnoth/blob/master/INSTALL.md
+#TODO require OpenSSL 3.x
+[source]
+tar = "https://sourceforge.net/projects/wesnoth/files/wesnoth-1.16/wesnoth-1.16.10/wesnoth-1.16.10.tar.bz2/download"
+[build]
+template = "custom"
+dependencies = [
+    "boost",
+    "sdl2",
+    "sdl2-image",
+    "sdl2-mixer",
+    "fontconfig",
+    "cairo",
+    "pango",
+    "libvorbis",
+    "bzip2",
+    "zlib",
+    "openssl1",
+    "curl",
+    "readline",
+]

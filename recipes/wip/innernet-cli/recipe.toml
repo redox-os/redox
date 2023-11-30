@@ -1,0 +1,8 @@
+#TODO Not compiled or tested
+[source]
+tar = "https://github.com/tonarino/innernet/archive/refs/tags/v1.6.0.tar.gz"
+[build]
+template = "custom"
+script = """
+cookbook_cargo_packages innernet
+"""

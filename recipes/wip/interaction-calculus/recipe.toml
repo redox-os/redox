@@ -1,0 +1,5 @@
+#TODO redox_syscall is very outdated on the dependency tree
+[source]
+git = "https://github.com/VictorTaelin/Interaction-Calculus"
+[build]
+template = "cargo"

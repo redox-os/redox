@@ -1,0 +1,10 @@
+#TODO Not compiled or tested yet
+[source]
+tar = "https://www.chocolate-doom.org/downloads/3.0.1/chocolate-doom-3.0.1.tar.gz"
+[build]
+template = "configure"
+dependencies = [
+    "sdl2",
+    "sdl2_mixer",
+    "sdl2_net",
+]

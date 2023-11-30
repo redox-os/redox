@@ -1,0 +1,8 @@
+#TODO ring crate error
+[source]
+tar = "https://github.com/soywod/himalaya/archive/refs/tags/v0.7.3.tar.gz"
+[build]
+template = "cargo"
+dependencies = [
+    "openssl1",
+]

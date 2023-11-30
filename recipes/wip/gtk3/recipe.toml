@@ -1,0 +1,18 @@
+#TODO probably missing dependencies, see https://docs.gtk.org/gtk3/building.html#dependencies
+[source]
+tar = "https://download.gnome.org/sources/gtk+/3.24/gtk%2B-3.24.37.tar.xz"
+[build]
+template = "configure"
+dependencies = [
+    "glib",
+    "gdk-pixbuf",
+    "pango",
+    "cairo",
+    "libepoxy",
+    "atk",
+    "gobject-introspection",
+    "shared-mime-info",
+    "graphene",
+    "libwayland",
+    "gstreamer",
+]

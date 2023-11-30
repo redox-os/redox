@@ -1,0 +1,8 @@
+#TODO region crate error (after a patch on ring)
+[source]
+tar = "https://github.com/dprint/dprint/archive/refs/tags/0.41.0.tar.gz"
+[build]
+template = "custom"
+script = """
+cookbook_cargo_packages dprint
+"""

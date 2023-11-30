@@ -1,0 +1,8 @@
+#TODO Not compiled or tested
+[source]
+tar = "https://github.com/sharkdp/numbat/archive/refs/tags/v1.8.0.tar.gz"
+[build]
+template = "custom"
+script = """
+cookbook_cargo_packages numbat-cli
+"""

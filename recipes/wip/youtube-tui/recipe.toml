@@ -1,0 +1,12 @@
+#TODO compilation error
+[source]
+tar = "https://github.com/Siriusmart/youtube-tui/archive/refs/tags/v0.8.0.tar.gz"
+[build]
+template = "custom"
+dependencies = [
+    "openssl1",
+    "mpv",
+]
+script = """
+cookbook_cargo --no-default-features
+"""

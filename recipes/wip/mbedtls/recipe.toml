@@ -1,0 +1,21 @@
+#TODO probaly wrong script, see https://mbed-tls.readthedocs.io/en/latest/getting_started/building/#building-with-cmake
+# They say that the CMake method is better than GNU make
+[source]
+tar = "https://github.com/Mbed-TLS/mbedtls/archive/refs/tags/v3.5.1.tar.gz"
+[build]
+template = "custom"
+script = """
+COOKBOOK_CONFIGURE="cmake"
+COOKBOOK_CONFIGURE_FLAGS=(
+    -DCMAKE_BUILD_TYPE=Release
+    -DCMAKE_CROSSCOMPILING=True
+    -DCMAKE_EXE_LINKER_FLAGS="-static"
+    -DCMAKE_INSTALL_PREFIX="/"
+    -DCMAKE_PREFIX_PATH="${COOKBOOK_SYSROOT}"
+    -DCMAKE_SYSTEM_NAME=Generic
+    -DCMAKE_SYSTEM_PROCESSOR="$(echo "${TARGET}" | cut -d - -f1)"
+    -DCMAKE_VERBOSE_MAKEFILE=On
+"${COOKBOOK_SOURCE}"
+)
+cookbook_configure
+"""

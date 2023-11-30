@@ -1,0 +1,6 @@
+#TODO missing script for CMake, see https://aomedia.googlesource.com/aom/#basic-build
+[source]
+git = "https://aomedia.googlesource.com/aom"
+rev = "aca387522ccc0a1775716923d5489dd2d4b1e628"
+[build]
+template = "custom"

@@ -1,0 +1,8 @@
+#TODO tikv-jemalloc-sys crate error
+[source]
+git = "https://github.com/scsibug/nostr-rs-relay"
+[build]
+template = "cargo"
+dependencies = [
+    "openssl1",
+]

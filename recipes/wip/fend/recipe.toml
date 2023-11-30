@@ -1,0 +1,8 @@
+#TODO compilation error (after a patch on the ring crate)
+[source]
+tar = "https://github.com/printfn/fend/archive/refs/tags/v1.2.2.tar.gz"
+[build]
+template = "custom"
+script = """
+cookbook_cargo_packages fend
+"""

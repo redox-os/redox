@@ -1,0 +1,11 @@
+#TODO compilation error (after an update on tokio and a patch on ring)
+[source]
+tar = "https://github.com/lycheeverse/lychee/archive/refs/tags/v0.13.0.tar.gz"
+[build]
+template = "custom"
+dependencies = [
+    "openssl1",
+]
+script = """
+cookbook_cargo_packages lychee
+"""

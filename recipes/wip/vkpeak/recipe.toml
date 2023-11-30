@@ -1,0 +1,8 @@
+#TODO missing script for CMake, see https://github.com/nihui/vkpeak#build-from-source
+[source]
+git = "https://github.com/nihui/vkpeak"
+[build]
+template = "custom"
+dependencies = [
+    "libvulkan",
+]

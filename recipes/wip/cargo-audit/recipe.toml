@@ -1,0 +1,14 @@
+#TODO Weird error with libssh2-sys crate
+[source]
+tar = "https://github.com/rustsec/rustsec/archive/refs/tags/cargo-audit/v0.17.6.tar.gz"
+[build]
+template = "custom"
+dependencies = [
+    "openssl1",
+    "libssh2",
+]
+script = """
+export OPENSSL_DIR="${COOKBOOK_SYSROOT}"
+export OPENSSL_STATIC="true"
+cookbook_cargo_packages cargo-audit
+"""

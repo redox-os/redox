@@ -1,0 +1,8 @@
+#TODO missing script for CMake, see https://oneapi-src.github.io/oneDNN/dev_guide_build.html#linux-macos
+[source]
+tar = "https://github.com/oneapi-src/oneDNN/archive/refs/tags/v3.3.1.tar.gz"
+[build]
+template = "custom"
+dependencies = [
+    "onetbb",
+]

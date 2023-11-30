@@ -1,0 +1,17 @@
+#TODO missing script for Ninja, see https://github.com/fontforge/fontforge/blob/master/INSTALL.md
+[source]
+tar = "https://github.com/fontforge/fontforge/releases/download/20230101/fontforge-20230101.tar.xz"
+[build]
+template = "custom"
+dependencies = [
+    "libtiff",
+    "libjpeg",
+    "libpng",
+    "libgif",
+    "libxml2",
+    "gtk3",
+    "freetype2",
+    "pango",
+    "cairo",
+    "libspiro",
+]

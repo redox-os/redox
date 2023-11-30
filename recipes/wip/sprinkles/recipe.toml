@@ -1,0 +1,5 @@
+#TODO Compiled but not tested
+[source]
+tar = "https://github.com/KhalilOuali/sprinkles/archive/refs/tags/1.0.0.tar.gz"
+[build]
+template = "cargo"

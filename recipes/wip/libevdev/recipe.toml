@@ -1,0 +1,5 @@
+#TODO weird error, seems to be related to outdated compiler.
+[source]
+tar = "https://www.freedesktop.org/software/libevdev/libevdev-1.13.1.tar.xz"
+[build]
+template = "configure"

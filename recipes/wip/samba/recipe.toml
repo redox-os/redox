@@ -1,0 +1,11 @@
+#TODO probably wrong tarball
+# filesystem support - https://wiki.samba.org/index.php/File_System_Support
+[source]
+tar = "https://download.samba.org/pub/samba/samba-4.19.3.tar.gz"
+[build]
+template = "configure"
+dependencies = [
+    "gnutls",
+    "zlib",
+    "kerberos5",
+]

@@ -1,0 +1,6 @@
+#TODO probably wrong template, lacking build instructions
+#TODO configure the CLI and service
+[source]
+tar = "https://github.com/influxdata/influxdb/archive/refs/tags/v2.7.3.tar.gz"
+[build]
+template = "cargo"

@@ -1,0 +1,9 @@
+#TODO SQLite is not working
+[source]
+tar = "https://github.com/kpcyrd/sn0int/archive/refs/tags/v0.25.0.tar.gz"
+[build]
+template = "cargo"
+dependencies = [
+    "libsodium",
+    "sqlite3",
+]

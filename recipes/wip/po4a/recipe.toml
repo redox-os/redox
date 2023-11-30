@@ -1,0 +1,5 @@
+#TODO missing script for installation, see https://github.com/mquinson/po4a#installation
+[source]
+tar = "https://github.com/mquinson/po4a/releases/download/v0.69/po4a-0.69.tar.gz"
+[build]
+template = "custom"

@@ -1,0 +1,9 @@
+#TODO Not compiled or tested
+[source]
+tar = "https://github.com/karlstav/cava/archive/refs/tags/0.9.1.tar.gz"
+[build]
+template = "configure"
+dependencies = [
+    "ncurses",
+    "fftw",
+]

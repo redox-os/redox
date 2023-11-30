@@ -1,0 +1,28 @@
+#TODO probably wrong script, see https://github.com/transmission/transmission#building-a-transmission-release-from-the-command-line
+[source]
+tar = "https://github.com/transmission/transmission/releases/download/4.0.4/transmission-4.0.4.tar.xz"
+[build]
+template = "custom"
+dependencies = [
+    "openssl1",
+    "gtk3",
+    "glib",
+    "curl",
+    "libevent",
+    "miniupnpc",
+]
+script = """
+COOKBOOK_CONFIGURE="cmake"
+COOKBOOK_CONFIGURE_FLAGS=(
+    -DCMAKE_BUILD_TYPE=Release
+    -DCMAKE_CROSSCOMPILING=True
+    -DCMAKE_EXE_LINKER_FLAGS="-static"
+    -DCMAKE_INSTALL_PREFIX="/"
+    -DCMAKE_PREFIX_PATH="${COOKBOOK_SYSROOT}"
+    -DCMAKE_SYSTEM_NAME=Generic
+    -DCMAKE_SYSTEM_PROCESSOR="$(echo "${TARGET}" | cut -d - -f1)"
+    -DCMAKE_VERBOSE_MAKEFILE=On
+"${COOKBOOK_SOURCE}"
+)
+cookbook_configure
+"""

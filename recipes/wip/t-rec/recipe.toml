@@ -1,0 +1,8 @@
+#TODO require XWayland
+[source]
+tar = "https://github.com/sassman/t-rec-rs/archive/refs/tags/v0.7.6.tar.gz"
+[build]
+template = "cargo"
+dependencies = [
+    "imagemagick",
+]

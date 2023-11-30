@@ -1,0 +1,5 @@
+#TODO Not compiled or tested
+[source]
+tar = "https://github.com/xd009642/tarpaulin/archive/refs/tags/0.27.1.tar.gz"
+[build]
+template = "cargo"

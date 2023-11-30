@@ -1,0 +1,5 @@
+#TODO probably wrong template
+[source]
+tar = "https://www.leonerd.org.uk/code/libvterm/libvterm-0.3.2.tar.gz"
+[build]
+template = "configure"

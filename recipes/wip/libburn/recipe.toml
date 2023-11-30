@@ -1,0 +1,5 @@
+#TODO compilation error
+[source]
+tar = "http://files.libburnia-project.org/releases/libburn-1.5.4.tar.gz"
+[build]
+template = "configure"

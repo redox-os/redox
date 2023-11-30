@@ -1,0 +1,10 @@
+#TODO Make the libevent works
+[source]
+tar = "https://dist.torproject.org/tor-0.4.8.9.tar.gz"
+[build]
+template = "configure"
+dependencies = [
+    "libevent",
+    "openssl1"
+    "zlib",
+]

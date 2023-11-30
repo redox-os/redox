@@ -1,0 +1,5 @@
+#TODO missing script for "make", see https://github.com/charmplusplus/projections#compiling-projections
+[source]
+tar = "https://github.com/charmplusplus/projections/archive/refs/tags/7.0.0.tar.gz"
+[build]
+template = "custom"

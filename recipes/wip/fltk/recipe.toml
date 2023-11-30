@@ -1,0 +1,17 @@
+#TODO probably wrong script, see https://github.com/fltk/fltk/blob/master/README.Unix.txt
+[source]
+tar = "https://www.fltk.org/pub/fltk/1.3.8/fltk-1.3.8-source.tar.bz2"
+[build]
+template = "configure"
+dependencies = [
+    "mesa_glu",
+    "freeglut",
+    "cairo"
+    "fontconfig",
+    "glew",
+    "libjpeg",
+    "libpng",
+    "pango",
+    "zlib",
+    "libx11",
+]

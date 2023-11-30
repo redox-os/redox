@@ -1,0 +1,5 @@
+#TODO Not compiled or tested
+[source]
+tar = "https://github.com/the-lean-crate/cargo-diet/archive/refs/tags/v1.2.7.tar.gz"
+[build]
+template = "cargo"

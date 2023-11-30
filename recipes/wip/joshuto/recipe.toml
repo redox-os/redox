@@ -1,0 +1,5 @@
+#TODO open/trash crates error
+[source]
+git = "https://github.com/kamiyaa/joshuto"
+[build]
+template = "cargo"

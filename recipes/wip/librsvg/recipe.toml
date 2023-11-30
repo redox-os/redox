@@ -1,0 +1,16 @@
+#TODO not compiled or tested
+#TODO build instructions - https://gnome.pages.gitlab.gnome.org/librsvg/devel-docs/compiling.html
+[source]
+tar = "https://download.gnome.org/sources/librsvg/2.56/librsvg-2.56.0.tar.xz"
+[build]
+template = "configure"
+dependencies = [
+    "cairo",
+    "freetype2",
+    "gdk-pixbuf",
+    "glib",
+    "gobject-introspection",
+    "harfbuzz",
+    "pango",
+    "libxml2",
+]

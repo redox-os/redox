@@ -1,0 +1,5 @@
+#TODO compilation error
+[source]
+tar = "https://www.gnupg.org/ftp/gcrypt/libgpg-error/libgpg-error-1.47.tar.bz2"
+[build]
+template = "configure"

@@ -1,0 +1,10 @@
+#TODO Need to make libxkbcommon work
+[source]
+tar = "https://github.com/raphamorim/rio/archive/refs/tags/v0.0.25.tar.gz"
+[build]
+template = "cargo"
+dependencies = [
+    "freetype2",
+    "fontconfig",
+    "libxkbcommon",
+]

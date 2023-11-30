@@ -1,0 +1,7 @@
+#TODO ucred::get_peer_cred
+#TODO nix::sys::socket
+#TODO cmsg_space!
+[source]
+git = "https://github.com/trimental/inlyne.git"
+[build]
+template = "cargo"

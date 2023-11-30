@@ -1,0 +1,10 @@
+#TODO Not compiled/tested yet
+[source]
+tar = "https://github.com/fabiangreffrath/crispy-doom/archive/refs/tags/crispy-doom-6.0.tar.gz"
+[build]
+template = "configure"
+dependencies = [
+    "sdl2",
+    "sdl2_mixer",
+    "sdl2_net",
+]
