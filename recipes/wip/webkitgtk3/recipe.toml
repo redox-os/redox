@@ -5,7 +5,7 @@ tar = "https://webkitgtk.org/releases/webkitgtk-2.42.2.tar.xz"
 [build]
 template = "custom"
 dependencies = [
-    "gtk4",
+    "gtk3",
     "cairo",
     "fontconfig",
     "freetype2",

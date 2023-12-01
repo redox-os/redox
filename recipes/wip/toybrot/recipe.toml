@@ -1,0 +1,9 @@
+#TODO missing script for CMake, see https://gitlab.com/VileLasagna/toyBrot#building-toybrot
+[source]
+git = "https://gitlab.com/VileLasagna/toyBrot"
+[build]
+template = "custom"
+dependencies = [
+    "sdl2",
+    "libpng",
+]

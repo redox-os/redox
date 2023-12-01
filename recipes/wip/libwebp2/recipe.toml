@@ -1,0 +1,5 @@
+#TODO missing script for CMake, see https://chromium.googlesource.com/codecs/libwebp2/#compiling
+[source]
+git = "https://chromium.googlesource.com/codecs/libwebp2"
+[build]
+template = "custom"

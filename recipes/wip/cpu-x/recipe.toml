@@ -1,0 +1,14 @@
+#TODO missing script for CMake, see https://github.com/TheTumultuousUnicornOfDarkness/CPU-X/wiki/manual-build#build-and-install-cpu-x
+[source]
+tar = "https://github.com/TheTumultuousUnicornOfDarkness/CPU-X/archive/refs/tags/v5.0.2.tar.gz"
+[build]
+template = "custom"
+dependencies = [
+    "gtk3mm",
+    "ncurses",
+    "glfw",
+    "libvulkan",
+    "libstatgrab",
+    "libcpuid",
+    "pciutils",
+]

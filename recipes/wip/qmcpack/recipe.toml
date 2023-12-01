@@ -1,0 +1,14 @@
+#TODO missing script for CMake, see https://qmcpack.readthedocs.io/en/develop/installation.html#building-with-cmake
+#TODO probably missing dependencies
+[source]
+tar = "https://github.com/QMCPACK/qmcpack/archive/refs/tags/v3.17.1.tar.gz"
+[build]
+template = "custom"
+dependencies = [
+    "openmpi",
+    "openblas",
+    "hdf5",
+    "libxml2",
+    "boost",
+    "fftw",
+]
