@@ -1,0 +1,5 @@
+#TODO discover the dependencies, probably the same of PCSX
+[source]
+git = "https://github.com/notaz/pcsx_rearmed"
+[build]
+template = "configure"

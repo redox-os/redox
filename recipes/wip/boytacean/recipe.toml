@@ -1,0 +1,8 @@
+#TODO Not compiled or tested
+[source]
+tar = "https://github.com/joamag/boytacean/archive/refs/tags/0.9.16.tar.gz"
+[build]
+template = "cargo"
+dependencies = [
+    "sdl2",
+]

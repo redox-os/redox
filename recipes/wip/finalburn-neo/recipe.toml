@@ -1,0 +1,9 @@
+#TODO missing script for "make", see https://github.com/finalburnneo/FBNeo/blob/master/README-SDL.md#sdl2
+[source]
+git = "https://github.com/finalburnneo/FBNeo"
+[build]
+template = "custom"
+dependencies = [
+    "sdl2",
+    "sdl2-image",
+]
