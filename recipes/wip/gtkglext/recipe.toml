@@ -1,0 +1,5 @@
+#TODO Not compiled or tested
+[source]
+tar = "https://download.gnome.org/sources/gtkglext/1.2/gtkglext-1.2.0.tar.bz2"
+[build]
+template = "configure"

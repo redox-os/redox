@@ -1,0 +1,11 @@
+#TODO missing script for CMake, see https://github.com/devmiyax/yabause/blob/master/yabause/README.LIN#L77
+[source]
+git = "https://github.com/devmiyax/yabause"
+[build]
+template = "custom"
+dependencies = [
+    "gtk2",
+    "sdl2",
+    "mesa",
+    "gtkglext",
+]

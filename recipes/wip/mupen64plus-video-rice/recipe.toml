@@ -1,0 +1,5 @@
+#TODO missing script for "make", see https://github.com/mupen64plus/mupen64plus-video-rice/blob/master/INSTALL#L11
+[source]
+tar = "https://github.com/mupen64plus/mupen64plus-video-rice"
+[build]
+template = "custom"

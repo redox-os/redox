@@ -1,0 +1,5 @@
+#TODO discover the dependencies
+[source]
+git = "https://github.com/notaz/picodrive"
+[build]
+template = "configure"

@@ -1,0 +1,15 @@
+#TODO missing script for CMake, see https://github.com/melonDS-emu/melonDS#linux
+[source]
+tar = "https://github.com/melonDS-emu/melonDS/archive/refs/tags/0.9.5.tar.gz"
+[build]
+template = "custom"
+dependencies = [
+    "curl",
+    "libpcap",
+    "sdl2",
+    "qt5-base",
+    "qt5-multimedia",
+    "libslirp",
+    "libarchive",
+    "zstd",
+]

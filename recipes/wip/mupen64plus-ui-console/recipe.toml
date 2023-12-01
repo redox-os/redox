@@ -1,0 +1,12 @@
+#TODO missing script for "make", see https://github.com/mupen64plus/mupen64plus-ui-console/blob/master/INSTALL#L11
+[source]
+git = "https://github.com/mupen64plus/mupen64plus-ui-console"
+[build]
+template = "custom"
+dependencies = [
+    "mupen64plus-core",
+    "mupen64plus-audio-sdl",
+    "mupen64plus-input-sdl",
+    "mupen64plus-video-rice",
+    "mupen64plus-video-glide64",
+]

@@ -1,0 +1,5 @@
+#TODO Not compiled or tested
+[source]
+git = "https://github.com/mupen64plus/mupen64plus-audio-sdl"
+[build]
+template = "custom"

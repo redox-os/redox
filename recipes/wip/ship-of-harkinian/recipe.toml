@@ -1,0 +1,12 @@
+#TODO missing script for CMake, see https://github.com/HarbourMasters/Shipwright/blob/develop/docs/BUILDING.md#linux
+[source]
+git = "https://github.com/HarbourMasters/Shipwright"
+rev = "818addfdda660f6b4b54edd19636d6fd9d839f28"
+[build]
+template = "custom"
+dependencies = [
+    "libx11",
+    "sdl2",
+    "libpng",
+    "glew",
+]

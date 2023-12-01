@@ -1,0 +1,12 @@
+#TODO missing script for "make", see https://docs.mamedev.org/initialsetup/compilingmame.html
+[source]
+tar = "https://github.com/mamedev/mame/archive/refs/tags/mame0261.tar.gz"
+[build]
+template = "custom"
+dependencies = [
+    "sdl2",
+    "sdl2-ttf",
+    "fontconfig",
+    "qt5-base",
+    "qt5-tools",
+]
