@@ -1,0 +1,5 @@
+#TODO missing script for "make", see https://pingcap.github.io/tidb-dev-guide/get-started/build-tidb-from-source.html#build
+[source]
+tar = "https://github.com/pingcap/tidb/archive/refs/tags/v7.5.0.tar.gz"
+[build]
+template = "custom"

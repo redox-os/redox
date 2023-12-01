@@ -1,0 +1,6 @@
+#TODO Not compiled or tested
+# in case of problems, read https://www.php.net/manual/en/install.unix.php
+[source]
+tar = "https://www.php.net/distributions/php-8.3.0.tar.xz"
+[build]
+template = "configure"

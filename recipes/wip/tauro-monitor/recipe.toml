@@ -1,0 +1,5 @@
+#TODO missing script for Meson, lacking installation instructions
+[source]
+tar = "https://github.com/taunoe/tauno-monitor/archive/refs/tags/v0.1.5.tar.gz"
+[build]
+template = "custom"

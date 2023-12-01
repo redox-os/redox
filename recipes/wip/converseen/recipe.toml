@@ -1,0 +1,8 @@
+#TODO missing script for CMake, see https://github.com/Faster3ck/Converseen/blob/main/INSTALL.md#install-converseen-using-qt6
+[source]
+tar = "https://github.com/Faster3ck/Converseen/archive/refs/tags/v0.12.0.0.tar.gz"
+[build]
+template = "custom"
+dependencies = [
+    "qt6-base",
+]

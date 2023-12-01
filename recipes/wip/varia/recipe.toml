@@ -1,0 +1,6 @@
+#TODO missing script for Meson, see https://github.com/giantpinkrobots/varia#building
+#TODO probably missing dependencies
+[source]
+git = "https://github.com/giantpinkrobots/varia"
+[build]
+template = "custom"

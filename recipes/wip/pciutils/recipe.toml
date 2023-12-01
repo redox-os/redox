@@ -1,0 +1,8 @@
+#TODO missing script for "make", see https://git.kernel.org/pub/scm/utils/pciutils/pciutils.git/tree/README#n52
+[source]
+tar = "https://mirrors.edge.kernel.org/pub/software/utils/pciutils/pciutils-3.9.0.tar.xz"
+[build]
+template = "custom"
+dependencies = [
+    "zlib",
+]
