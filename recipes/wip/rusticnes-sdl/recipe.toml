@@ -1,0 +1,9 @@
+#TODO Not compiled or tested
+[source]
+git = "https://github.com/zeta0134/rusticnes-sdl"
+[build]
+template = "cargo"
+dependencies = [
+    "sdl2",
+    "gtk3",
+]
