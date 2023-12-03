@@ -1,0 +1,5 @@
+#TODO customization - https://ghostscript.readthedocs.io/en/latest/Make.html
+[source]
+tar = "https://github.com/ArtifexSoftware/ghostpdl-downloads/releases/download/gs10021/ghostscript-10.02.1.tar.gz"
+[build]
+template = "configure"

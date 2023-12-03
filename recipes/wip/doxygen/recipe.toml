@@ -1,0 +1,5 @@
+#TODO missing script for CMake, see https://www.doxygen.nl/manual/install.html#install_src_unix
+[source]
+tar = "https://www.doxygen.nl/files/doxygen-1.9.8.src.tar.gz"
+[build]
+template = "custom"
