@@ -1,0 +1,5 @@
+#TODO Not compiled or tested
+[source]
+tar = "https://ftp.gnu.org/gnu/groff/groff-1.23.0.tar.gz"
+[build]
+template = "configure"
