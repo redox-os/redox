@@ -1,0 +1,25 @@
+#TODO missing script for building, see https://kdevelop.org/build-it/
+#TODO missing dependencies, see https://packages.debian.org/source/trixie/kdevelop
+[source]
+tar = "https://invent.kde.org/kdevelop/kdevelop/-/archive/v23.08.3/kdevelop-v23.08.3.tar.bz2"
+[build]
+template = "custom"
+dependencies = [
+    "boost",
+    "kf5-archive",
+    "kf5-config",
+    "kf5-crash",
+    "kf5-declarative",
+    "kf5-guiaddons",
+    "kf5-iconthemes",
+    "kf5-io",
+    "kf5-newstuff",
+    "kf5-notifications",
+    "kf5-notifyconfig",
+    "kf5-purpose",
+    "kf5-widgetaddons",
+    "kf5-xmlgui",
+    "qt5-base",
+    "qt5-declarative",
+    "shared-mime-info",
+]
