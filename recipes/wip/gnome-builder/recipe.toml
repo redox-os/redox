@@ -1,0 +1,20 @@
+#TODO missing script for Meson, see https://builder.readthedocs.io/installation.html#via-release-tarball
+#TODO missing dependencies, see https://packages.debian.org/source/trixie/gnome-builder
+[source]
+tar = "https://download.gnome.org/sources/gnome-builder/45/gnome-builder-45.0.tar.xz"
+[build]
+template = "custom"
+dependencies = [
+    "cairo",
+    "llvm",
+    "gdk-pixbuf",
+    "glib",
+    "gobject-introspection",
+    "gtk4",
+    "libadwaita",
+    "libgit2",
+    "libpeas",
+    "libxml2",
+    "pango",
+    "webkitgtk4",
+]

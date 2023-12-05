@@ -1,0 +1,5 @@
+#TODO Not compiled or tested
+[source]
+tar = "https://github.com/ikatson/rqbit/archive/refs/tags/v4.0.0.tar.gz"
+[build]
+template = "cargo"

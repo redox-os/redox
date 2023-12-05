@@ -1,6 +1,6 @@
 #TODO probably wrong script, see https://sourceware.org/gdb/wiki/BuildingNatively
 [source]
-tar = "https://ftp.gnu.org/gnu/gdb/gdb-13.2.tar.xz"
+tar = "https://ftp.gnu.org/gnu/gdb/gdb-14.1.tar.xz"
 [build]
 template = "custom"
 dependencies = [
