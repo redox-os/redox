@@ -16,4 +16,9 @@ ifeq ($(shell env -u RUSTUP_TOOLCHAIN cargo install --list | grep '^cargo-config
 $(error cargo-config $(CARGO_CONFIG_VERSION) not found, run "cargo install --force --version $(CARGO_CONFIG_VERSION) cargo-config")
 endif
 
+JUST_VERSION=1.16.0
+ifeq ($(shell env -u RUSTUP_TOOLCHAIN cargo install --list | grep '^just v$(JUST_VERSION):$$'),)
+$(error just $(JUST_VERSION) not found, run "cargo install --force --version $(JUST_VERSION) just")
+endif
+
 endif
