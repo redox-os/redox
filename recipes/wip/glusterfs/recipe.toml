@@ -1,0 +1,14 @@
+#TODO Not compiled or tested
+#TODO probably missing dependencies, see https://docs.gluster.org/en/latest/Developer-guide/Building-GlusterFS/#build-requirements
+# customization - https://docs.gluster.org/en/latest/Developer-guide/Building-GlusterFS/#configuring-for-building
+[source]
+tar = "https://download.gluster.org/pub/gluster/glusterfs/9/LATEST/glusterfs-9.6.tar.gz"
+[build]
+template = "configure"
+dependencies = [
+    "openssl1",
+    "libxml2",
+    "libaio",
+    "sqlite3",
+    "libfuse3",
+]

@@ -1,0 +1,18 @@
+#TODO missing script for building, see https://github.com/defold/defold/blob/dev/README_BUILD.md
+#TODO build the editor, see https://github.com/defold/defold/blob/dev/editor/README_BUILD.md
+# probably the SDKs can't run on Redox, avoid them
+[source]
+tar = "https://github.com/defold/defold/archive/refs/tags/1.6.2.tar.gz"
+[build]
+template = "custom"
+dependencies = [
+    "libxi",
+    "libxext",
+    "mesa-glu",
+    "mesa",
+    "curl",
+    "freeglut",
+    "libuuid",
+    "openal",
+    "ncurses",
+]

@@ -1,0 +1,10 @@
+#TODO missing script for building, see https://github.com/moosefs/moosefs#source-code
+[source]
+tar = "https://github.com/moosefs/moosefs/archive/refs/tags/v3.0.117.tar.gz"
+[build]
+template = "custom"
+dependencies = [
+    "libfuse3",
+    "libpcap",
+    "zlib",
+]

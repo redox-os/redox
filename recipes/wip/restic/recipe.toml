@@ -1,0 +1,6 @@
+#TODO missing script for Go, see https://restic.readthedocs.io/en/stable/020_installation.html#from-source
+#TODO maybe needs to be patched
+[source]
+tar = "https://github.com/restic/restic/releases/download/v0.16.2/restic-0.16.2.tar.gz"
+[build]
+template = "custom"
