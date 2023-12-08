@@ -1,0 +1,10 @@
+#TODO Not compiled or tested
+[source]
+git = "https://github.com/CoolnsX/dra-cla"
+[build]
+template = "custom"
+script = """
+mkdir -pv "${COOKBOOK_STAGE}"/bin
+cp "${COOKBOOK_SOURCE}"/dra-cla "${COOKBOOK_STAGE}"/bin/dra-cla
+chmod a+x "${COOKBOOK_STAGE}"/bin/dra-cla
+"""

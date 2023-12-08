@@ -1,0 +1,9 @@
+#TODO missing script for Meson, see https://github.com/libfuse/sshfs#installation
+[source]
+tar = "https://github.com/libfuse/sshfs/releases/download/sshfs-3.7.3/sshfs-3.7.3.tar.xz"
+[build]
+template = "custom"
+dependencies = [
+    "libfuse3",
+    "glib",
+]

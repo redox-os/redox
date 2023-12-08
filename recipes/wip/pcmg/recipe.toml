@@ -1,0 +1,6 @@
+#TODO probably wrong template
+#TODO require WebAssembly
+[source]
+git = "https://github.com/JohnDowson/pcmg"
+[build]
+template = "cargo"

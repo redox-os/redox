@@ -1,0 +1,5 @@
+#TODO Not compiled or tested
+[source]
+tar = "https://github.com/thomas-mauran/chess-tui/archive/refs/tags/1.0.0.tar.gz"
+[build]
+template = "cargo"

@@ -1,0 +1,8 @@
+#TODO missing script for CMake, see https://cvmfs.readthedocs.io/en/stable/cpt-quickstart.html#building-from-source
+[source]
+tar = "https://ecsft.cern.ch/dist/cvmfs/cvmfs-2.11.2/source.tar.gz"
+[build]
+template = "custom"
+dependencies = [
+    "libfuse3",
+]

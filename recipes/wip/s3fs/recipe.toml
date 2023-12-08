@@ -1,0 +1,16 @@
+#TODO Not compiled or tested
+# build instructions - https://github.com/s3fs-fuse/s3fs-fuse/blob/master/COMPILATION.md
+[source]
+tar = "https://github.com/s3fs-fuse/s3fs-fuse/archive/refs/tags/v1.93.tar.gz"
+[build]
+template = "custom"
+dependencies = [
+    "libfuse2",
+    "curl",
+    "libxml2",
+    "openssl1",
+]
+script = """
+./autogen.sh
+cookbook_configure
+"""

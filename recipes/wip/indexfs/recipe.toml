@@ -1,0 +1,11 @@
+#TODO not compiled or tested
+#TODO probably missing dependencies
+# build instructions - https://github.com/MajenkoProjects/indexfs/blob/master/INSTALL
+[source]
+git = "https://github.com/MajenkoProjects/indexfs"
+[build]
+template = "custom"
+script = """
+./autogen.sh
+cookbook_configure
+"""

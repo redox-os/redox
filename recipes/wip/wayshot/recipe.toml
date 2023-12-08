@@ -1,0 +1,5 @@
+#TODO missing script for "make", see https://git.sr.ht/~shinyzenith/wayshot#compiling
+[source]
+tar = "https://git.sr.ht/~shinyzenith/wayshot/archive/43fae61e239d75b8381f1e07e09e40dc2103cc8e.tar.gz"
+[build]
+template = "custom"
