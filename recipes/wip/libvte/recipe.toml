@@ -1,0 +1,5 @@
+#TODO missing script for Meson, see https://gitlab.gnome.org/GNOME/vte/#installation
+[source]
+tar = "https://download.gnome.org/sources/vte/0.74/vte-0.74.1.tar.xz"
+[build]
+template = "custom"

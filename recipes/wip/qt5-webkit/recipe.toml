@@ -1,0 +1,27 @@
+#TODO probably wrong branch
+#TODO missing script for CMake, see https://github.com/qtwebkit/qtwebkit/wiki/Building-QtWebKit-on-Linux
+#TODO determine dependencies
+[source]
+git = "https://github.com/movableink/webkit"
+[build]
+template = "custom"
+dependencies = [
+    "qt5-base",
+    "qt5-guiaddons",
+    "qt5-connectivity",
+    "qt5-networkauth",
+    "qt5-positioning",
+    "qt5-sensors",
+    "qt5-declarative",
+    "qt5-webchannel",
+    "sqlite3",
+    "libicu",
+    "libhyphen",
+    "libxml2",
+    "libxslt",
+    "libjpeg-turbo",
+    "libpng",
+    "zlib",
+    "glib",
+    "gstreamer",
+]

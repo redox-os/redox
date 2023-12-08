@@ -1,0 +1,8 @@
+#TODO missing script for Meson, see https://gitlab.gnome.org/GNOME/json-glib/#build-and-installation
+[source]
+tar = "https://download.gnome.org/sources/json-glib/1.8/json-glib-1.8.0.tar.xz"
+[build]
+template = "custom"
+dependencies = [
+    "glib",
+]

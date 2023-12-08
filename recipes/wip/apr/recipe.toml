@@ -1,0 +1,5 @@
+#TODO Not compiled or tested
+[source]
+tar = "https://dlcdn.apache.org//apr/apr-1.7.4.tar.bz2"
+[build]
+template = "configure"

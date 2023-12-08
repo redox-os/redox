@@ -1,0 +1,8 @@
+#TODO not compiled or tested
+[source]
+tar = "https://www.cairographics.org/releases/cairomm-1.18.0.tar.xz"
+[build]
+template = "configure"
+dependencies = [
+    "cairo",
+]

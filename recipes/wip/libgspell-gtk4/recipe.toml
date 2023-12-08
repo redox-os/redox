@@ -1,0 +1,14 @@
+#TODO probably wrong script
+[source]
+tar = "https://gitlab.gnome.org/otrocodigo/gspell/-/archive/1.11.1/gspell-1.11.1.tar.bz2"
+[build]
+template = "custom"
+dependencies = [
+    "glib",
+    "gtk4",
+    "libicu",
+]
+script = """
+./autogen.sh
+cookbook_configure
+"""
