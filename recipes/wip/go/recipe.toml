@@ -1,0 +1,6 @@
+#TODO missing script for building, see https://go.dev/doc/install/source
+#TODO use the Go frontend from GCC or build the official compiler?
+[source]
+tar = "https://go.dev/dl/go1.21.5.src.tar.gz"
+[build]
+template = "custom"

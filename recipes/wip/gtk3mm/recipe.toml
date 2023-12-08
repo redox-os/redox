@@ -1,12 +1,12 @@
 #TODO missing script for Meson, see https://gnome.pages.gitlab.gnome.org/gtkmm-documentation/sec-install-unix-and-linux.html
 [source]
-tar = "https://download.gnome.org/sources/gtkmm/4.13/gtkmm-4.13.2.tar.xz"
+tar = "https://download.gnome.org/sources/gtkmm/3.24/gtkmm-3.24.8.tar.xz"
 [build]
 template = "custom"
 dependencies = [
     "libsigc++",
-    "gtk4",
+    "gtk3",
     "glibmm",
-    "cairomm-1.16+",
+    "cairomm-1.0+",
     "pangomm",
 ]

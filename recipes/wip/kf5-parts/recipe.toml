@@ -1,0 +1,5 @@
+#TODO missing script for building, lacking build instructions
+[source]
+tar = "https://invent.kde.org/frameworks/kparts/-/archive/v5.112.0/kparts-v5.112.0.tar.bz2"
+[build]
+template = "custom"

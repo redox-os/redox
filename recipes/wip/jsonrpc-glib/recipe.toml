@@ -1,0 +1,8 @@
+#TODO missing script for Meson, see https://gitlab.gnome.org/GNOME/jsonrpc-glib#building
+[source]
+tar = "https://download.gnome.org/sources/jsonrpc-glib/3.44/jsonrpc-glib-3.44.0.tar.xz"
+[build]
+template = "custom"
+dependencies = [
+    "glib",
+]

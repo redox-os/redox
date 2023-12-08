@@ -1,5 +1,8 @@
-#TODO probably missing dependencies
+#TODO determine dependencies
 [source]
-tar = "https://download.gnome.org/sources/gtkmm/2.91/gtkmm-2.91.7.tar.gz"
+tar = "https://download.gnome.org/sources/gtkmm/2.24/gtkmm-2.24.5.tar.xz"
 [build]
 template = "configure"
+dependencies = [
+    "gtk2",
+]

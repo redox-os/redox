@@ -1,0 +1,10 @@
+#TODO Not compiled or tested
+[source]
+tar = "https://download.gnome.org/sources/gspell/1.12/gspell-1.12.2.tar.xz"
+[build]
+template = "configure"
+dependencies = [
+    "gtk3",
+    "glib",
+    "libicu",
+]
