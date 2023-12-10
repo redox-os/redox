@@ -3,3 +3,6 @@
 tar = "https://download.gnome.org/sources/atkmm/2.36/atkmm-2.36.2.tar.xz"
 [build]
 template = "configure"
+dependencies = [
+    "atk",
+]

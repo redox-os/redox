@@ -1,0 +1,5 @@
+#TODO Not compiled or tested
+[source]
+tar = "https://www.colm.net/files/colm/colm-0.14.7.tar.gz"
+[build]
+template = "configure"

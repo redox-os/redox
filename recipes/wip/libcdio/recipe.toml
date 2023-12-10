@@ -1,0 +1,9 @@
+#TODO probably wrong script, see https://git.savannah.gnu.org/cgit/libcdio.git/tree/INSTALL
+[source]
+tar = "https://git.savannah.gnu.org/cgit/libcdio.git/snapshot/libcdio-release-2.1.0.tar.gz"
+[build]
+template = "custom"
+script = """
+./autogen.sh
+cookbook_configure
+"""

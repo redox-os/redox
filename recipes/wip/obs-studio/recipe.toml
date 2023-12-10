@@ -1,10 +1,19 @@
 #TODO missing script for CMake, see https://github.com/obsproject/obs-studio/wiki/Building-OBS-Studio
-#TODO determine dependencies
+#TODO maybe missing dependencies
 [source]
-tar = "https://github.com/obsproject/obs-studio/archive/refs/tags/30.0.0.tar.gz"
+tar = "https://github.com/obsproject/obs-studio/archive/refs/tags/30.0.1.tar.gz"
 [build]
 template = "custom"
 dependencies = [
+    "boost",
+    "librsvg",
+    "dbus",
+    "fontconfig",
+    "freetype2",
+    "jansson",
+    "pipewire",
+    "mesa",
+    "speexdsp",
     "ffmpeg6",
     "x264",
     "curl",
@@ -12,4 +21,12 @@ dependencies = [
     "libwayland",
     "libva",
     "qt5-base",
+    "qt5-svg",
+    "qt5-x11extras",
+    "eudev",
+    "pciutils",
+    "libqrcodegenc",
+    "librist",
+    "libsrt",
+    "libwebsocket++",
 ]
