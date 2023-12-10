@@ -1,0 +1,12 @@
+#TODO Not compiled or tested
+[source]
+tar = "https://github.com/strukturag/libde265/releases/download/v1.0.14/libde265-1.0.14.tar.gz"
+[build]
+template = "custom"
+script = """
+COOKBOOK_CONFIGURE_FLAGS+=(
+    --disable-dec265
+    --disable-sherlock265
+)
+cookbook_configure
+"""

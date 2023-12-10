@@ -1,0 +1,14 @@
+#TODO missing script for CMake, see https://git.dcmtk.org/?p=dcmtk.git;a=blob;f=INSTALL;h=97087f9a05e65040264d90027912c736958e67f3;hb=HEAD#l667
+[source]
+tar = "https://dicom.offis.de/download/dcmtk/dcmtk367/dcmtk-3.6.7.tar.gz"
+[build]
+template = "custom"
+dependencies = [
+    "libiconv",
+    "libicu",
+    "libpng",
+    "libxml2",
+    "libtiff",
+    "zlib",
+    "openjpeg",
+]

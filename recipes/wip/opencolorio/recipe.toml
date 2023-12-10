@@ -1,0 +1,11 @@
+#TODO missing dependencies, see https://opencolorio.readthedocs.io/en/latest/quick_start/installation.html#dependencies
+#TODO missing script for CMake, see https://opencolorio.readthedocs.io/en/latest/quick_start/installation.html
+[source]
+tar = "https://github.com/AcademySoftwareFoundation/OpenColorIO/archive/refs/tags/v2.3.1.tar.gz"
+[build]
+template = "custom"
+dependencies = [
+    "expat",
+    "imath",
+    "zlib",
+]

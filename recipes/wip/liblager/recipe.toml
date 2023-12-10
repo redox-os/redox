@@ -1,0 +1,9 @@
+#TODO missing script for CMake, see https://github.com/arximboldi/lager#usage
+[source]
+git = "https://github.com/arximboldi/lager"
+[build]
+template = "custom"
+dependencies = [
+    "libzug",
+    "boost",
+]

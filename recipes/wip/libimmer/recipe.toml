@@ -1,0 +1,5 @@
+#TODO missing script for CMake, see https://github.com/arximboldi/immer#usage
+[source]
+tar = "https://github.com/arximboldi/immer/archive/refs/tags/v0.8.1.tar.gz"
+[build]
+template = "custom"

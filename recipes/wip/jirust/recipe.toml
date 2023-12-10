@@ -1,0 +1,5 @@
+#TODO Not compiled or tested
+[source]
+tar = "https://github.com/moali87/jirust/archive/refs/tags/1.1.6.tar.gz"
+[build]
+template = "cargo"

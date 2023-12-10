@@ -1,0 +1,5 @@
+#TODO Not compiled or tested
+[source]
+tar = "https://ftp.gnu.org/pub/gnu/libiconv/libiconv-1.17.tar.gz"
+[build]
+template = "configure"

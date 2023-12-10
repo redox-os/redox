@@ -1,0 +1,8 @@
+#TODO missing script for CMake, see https://invent.kde.org/graphics/kseexpr#super-impatient-cmake-building-and-installing-guide
+[source]
+tar = "https://invent.kde.org/graphics/kseexpr/-/archive/v4.0.4.0/kseexpr-v4.0.4.0.tar.bz2"
+[build]
+template = "custom"
+dependencies = [
+    "qt5-base",
+]

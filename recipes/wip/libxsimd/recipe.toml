@@ -1,0 +1,5 @@
+#TODO missing script for CMake, see https://github.com/xtensor-stack/xsimd#install-from-sources
+[source]
+tar = "https://github.com/xtensor-stack/xsimd/archive/refs/tags/12.1.0.tar.gz"
+[build]
+template = "custom"
