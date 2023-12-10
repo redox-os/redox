@@ -1,5 +1,5 @@
 #TODO probably wrong script, see https://github.com/xbmc/xbmc/blob/master/docs/README.Linux.md#4-build-kodi
-#TODO missing dependencies, see: https://github.com/xbmc/xbmc/blob/master/docs/README.Linux.md#3-install-the-required-packages
+#TODO maybe missing dependencies, see https://archlinux.org/packages/extra/x86_64/kodi/
 [source]
 tar = "https://github.com/xbmc/xbmc/archive/refs/tags/20.2-Nexus.tar.gz"
 [build]
@@ -20,7 +20,7 @@ dependencies = [
     "libgif",
     "glew",
     "gnutls3",
-    "mesa_glu",
+    "mesa-glu",
     "libgpg-error",
     "libjpeg",
     "libogg",
@@ -36,6 +36,7 @@ dependencies = [
     "libxkbcommon",
     "libuuid",
     "libxslt",
+    "pipewire",
 ]
 script = """
 COOKBOOK_CONFIGURE="cmake"

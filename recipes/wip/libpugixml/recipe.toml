@@ -1,0 +1,5 @@
+#TODO missing script for building, see https://pugixml.org/docs/quickstart.html#install
+[source]
+tar = "https://github.com/zeux/pugixml/releases/download/v1.14/pugixml-1.14.tar.gz"
+[build]
+template = "custom"

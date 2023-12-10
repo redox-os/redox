@@ -1,0 +1,8 @@
+#TODO Not compiled or tested
+[source]
+tar = "http://prdownloads.sourceforge.net/swig/swig-4.1.1.tar.gz"
+[build]
+template = "configure"
+dependencies = [
+    "pcre",
+]

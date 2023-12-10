@@ -1,0 +1,9 @@
+#TODO Not compiled or tested
+[source]
+tar = "https://sourceforge.net/projects/libwpd/files/librevenge/librevenge-0.0.5/librevenge-0.0.5.tar.xz/download"
+[build]
+template = "configure"
+dependencies = [
+    "boost",
+    "zlib",
+]

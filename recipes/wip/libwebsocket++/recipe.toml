@@ -1,0 +1,9 @@
+#TODO missing script for installation, lacking build instructions
+[source]
+tar = "https://github.com/zaphoyd/websocketpp/archive/refs/tags/0.8.2.tar.gz"
+[build]
+template = "custom"
+dependencies = [
+    "openssl1",
+    "zlib",
+]

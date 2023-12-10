@@ -1,0 +1,5 @@
+#TODO missing script for Meson, see https://code.videolan.org/rist/librist#compile-using-mesonninja-linux-osx-and-windows-mingw
+[source]
+tar = "https://code.videolan.org/rist/librist/-/archive/v0.2.10/librist-v0.2.10.tar.bz2"
+[build]
+template = "custom"
