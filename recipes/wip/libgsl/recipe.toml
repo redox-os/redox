@@ -1,0 +1,5 @@
+#TODO Not compiled or tested
+[source]
+tar = "https://ftp.gnu.org/gnu/gsl/gsl-2.7.1.tar.gz"
+[build]
+template = "configure"

@@ -1,0 +1,9 @@
+#TODO missing script for CMake, see https://github.com/strukturag/libheif#compiling
+[source]
+tar = "https://github.com/strukturag/libheif/releases/download/v1.17.5/libheif-1.17.5.tar.gz"
+[build]
+template = "custom"
+dependencies = [
+    "x265",
+    "libde265",
+]

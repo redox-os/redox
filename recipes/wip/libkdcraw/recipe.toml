@@ -1,0 +1,9 @@
+#TODO missing script for CMake, see https://invent.kde.org/graphics/libkdcraw/-/blob/master/README?ref_type=heads
+[source]
+tar = "https://invent.kde.org/graphics/libkdcraw/-/archive/v23.08.4/libkdcraw-v23.08.4.tar.bz2"
+[build]
+template = "custom"
+dependencies = [
+    "libraw",
+    "qt5-base",
+]

@@ -1,0 +1,5 @@
+#TODO missing script for CMake, see https://gitlab.com/libeigen/eigen/-/blob/master/INSTALL?ref_type=heads
+[source]
+tar = "https://gitlab.com/libeigen/eigen/-/archive/3.4.0/eigen-3.4.0.tar.bz2"
+[build]
+template = "custom"

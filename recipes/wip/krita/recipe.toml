@@ -1,5 +1,5 @@
 #TODO probably wrong script, see https://docs.krita.org/en/untranslatable_pages/building_krita.html#building-on-linux
-#TODO missing dependencies?
+#TODO maybe missing dependencies
 [source]
 tar = "https://download.kde.org/stable/krita/5.2.1/krita-5.2.1.tar.gz"
 [build]
@@ -18,8 +18,39 @@ dependencies = [
     "libtiff",
     "libwebp",
     "qt5-base",
+    "qt5-svg",
+    "qt5-x11extras",
     "zlib",
     "libmypaint",
+    "boost",
+    "libheif",
+    "libjpeg-turbo",
+    "libjxl",
+    "kf5-extra-cmake-modules",
+    "kf5-completion",
+    "kf5-config",
+    "kf5-coreaddons",
+    "kf5-crash",
+    "kf5-guiaddons",
+    "kf5-i18n",
+    "kf5-itemviews",
+    "kf5-widgetaddons",
+    "kf5-windowsystem",
+    "mlt",
+    "opencolorio",
+    "openexr",
+    "openjpeg",
+    "sdl2",
+    "libxcb",
+    "libxi",
+    "zlib",
+    "libeigen",
+    "libgsl",
+    "libseexpr-kde",
+    "liblager",
+    "libunibreak",
+    "libxsimd",
+    "libxtl",
 ]
 script = """
 COOKBOOK_CONFIGURE="cmake"

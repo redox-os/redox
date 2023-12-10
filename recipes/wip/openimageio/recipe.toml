@@ -6,7 +6,7 @@ template = "custom"
 dependencies = [
     "boost",
     "libtiff",
-    "libjpeg",
+    "libjpeg-turbo",
     "libpng",
     "openexr",
     "libfmt",
@@ -14,4 +14,10 @@ dependencies = [
     "ffmpeg6",
     "libwebp",
     "freetype2",
+    "libraw",
+    "openjpeg",
+    "tbb",
+    "libgif",
+    "libheif",
+    "libwebp",
 ]

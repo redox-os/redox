@@ -1,0 +1,5 @@
+#TODO Not compiled or tested
+[source]
+tar = "https://github.com/adah1972/libunibreak/releases/download/libunibreak_5_1/libunibreak-5.1.tar.gz"
+[build]
+template = "configure"
