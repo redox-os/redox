@@ -1,5 +1,5 @@
 #TODO probably wrong script, see https://github.com/keepassxreboot/keepassxc/wiki/Building-KeePassXC#linux
-#TODO probably missing dependencies, see https://github.com/keepassxreboot/keepassxc/wiki/Building-KeePassXC#required-dependencies
+#TODO probably missing dependencies, see https://github.com/keepassxreboot/keepassxc/wiki/Set-up-Build-Environment-on-Linux#install-the-required-dependencies
 [source]
 tar = "https://github.com/keepassxreboot/keepassxc/releases/download/2.7.6/keepassxc-2.7.6-src.tar.xz"
 [build]
@@ -7,9 +7,13 @@ template = "custom"
 dependencies = [
     "qt5-base",
     "qt5-svg",
+    "qt5-x11extras",
     "zlib",
     "libbotan",
     "libargon2",
+    "libxi",
+    "libxtst",
+    "readline",
 ]
 script = """
 COOKBOOK_CONFIGURE="cmake"

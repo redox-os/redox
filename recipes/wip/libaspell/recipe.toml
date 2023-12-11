@@ -1,0 +1,5 @@
+#TODO Not compiled or tested
+[source]
+tar = "https://ftp.gnu.org/gnu/aspell/aspell-0.60.8.tar.gz"
+[build]
+template = "configure"
