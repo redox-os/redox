@@ -1,0 +1,24 @@
+[source]
+git = "https://github.com/RustPython/RustPython"
+branch = "redox-release"
+
+[build]
+dependencies = [
+  "openssl1",
+  "zlib",
+]
+template = "custom"
+script = """
+(cd "${COOKBOOK_SOURCE}" && bash scripts/redox/uncomment-cargo.sh && cargo update)
+export BUILDTIME_RUSTPYTHONPATH=/lib/rustpython
+export OPENSSL_DIR="${COOKBOOK_SYSROOT}"
+export ZLIB_STATIC=1
+cookbook_cargo --features ssl
+mkdir -p "${COOKBOOK_STAGE}/lib"
+rsync -aE \
+  --exclude 'test/' \
+  --exclude '__pycache__/' \
+  --exclude '*.pyc' \
+  --exclude '/README.md' \
+  "${COOKBOOK_SOURCE}"/Lib/ "${COOKBOOK_STAGE}/lib/rustpython"
+"""

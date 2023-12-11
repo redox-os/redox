@@ -1,6 +1,6 @@
 VERSION="1.42.4"
 TAR="ftp.gnome.org/pub/GNOME/sources/pango/${VERSION%.*}/pango-${VERSION}.tar.xz"
-BUILD_DEPENDS=(cairo expat fontconfig freetype fribidi gettext glib harfbuzz libffi libiconv libpng pcre pixman zlib)
+BUILD_DEPENDS=(cairo expat fontconfig freetype2 fribidi gettext glib harfbuzz libffi libiconv libpng pcre pixman zlib)
 
 function recipe_version {
 	echo "$VERSION"

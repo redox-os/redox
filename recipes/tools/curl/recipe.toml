@@ -6,7 +6,7 @@ branch = "redox"
 template = "custom"
 dependencies = [
     "nghttp2",
-    "openssl",
+    "openssl1",
     "zlib"
 ]
 script = """

@@ -1,7 +1,7 @@
 VERSION=20181223
 TAR=https://github.com/schismtracker/schismtracker/archive/$VERSION.tar.gz
 TAR_SHA256=fc32930c611fdb78face87dbe8a3c62e70088fd8d4ad803140e0b9a0b2e72ad7
-BUILD_DEPENDS=(sdl liborbital libiconv)
+BUILD_DEPENDS=(sdl12 liborbital libiconv)
 
 function recipe_version {
     echo "$VERSION"

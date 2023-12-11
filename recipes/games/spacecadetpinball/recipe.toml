@@ -12,7 +12,7 @@ dependencies = [
     "llvm",
     "mesa",
     "sdl2",
-    "sdl2_mixer",
+    "sdl2-mixer",
     "zlib",
 ]
 script = """

@@ -1,7 +1,7 @@
 VERSION=1.8
 GIT=https://github.com/OpenTTD/OpenTTD.git
 BRANCH=release/$VERSION
-BUILD_DEPENDS=(freetype liborbital libpng sdl xz zlib)
+BUILD_DEPENDS=(freetype2 liborbital libpng sdl1 xz zlib)
 
 function recipe_version {
     echo "$VERSION"

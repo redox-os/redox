@@ -2,7 +2,7 @@
 VERSION=20190106
 TAR="https://github.com/AlisterT/openjazz/releases/download/${VERSION}/openjazz-${VERSION}.tar.xz"
 TAR_SHA256="91341adcc4908db12aad6b82d2fb0125429a26585f65d7eb32d403656313eaab"
-BUILD_DEPENDS=(sdl liborbital zlib)
+BUILD_DEPENDS=(sdl1 liborbital zlib)
 
 function recipe_version {
     echo "$VERSION"

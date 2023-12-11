@@ -1,7 +1,7 @@
 VERSION=0.7
 GIT=https://github.com/mgba-emu/mgba.git
 BRANCH=$VERSION
-BUILD_DEPENDS=(sdl liborbital libiconv pixman)
+BUILD_DEPENDS=(sdl1 liborbital libiconv pixman)
 
 function recipe_version {
     echo "$VERSION"

@@ -1,7 +1,7 @@
 GIT=https://gitlab.redox-os.org/redox-os/servo.git
 GIT_UPSTREAM=https://github.com/servo/servo.git
 BRANCH=redox
-BUILD_DEPENDS=(freetype gettext glib gstreamer harfbuzz libffi libiconv libpng openssl pcre zlib)
+BUILD_DEPENDS=(freetype2 gettext glib gstreamer harfbuzz libffi libiconv libpng openssl1 pcre zlib)
 PREPARE_COPY=0
 
 function recipe_version {
