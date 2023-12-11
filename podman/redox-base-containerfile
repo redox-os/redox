@@ -50,7 +50,8 @@ RUN apt-get update \
 		perl \
         doxygen \
         ant \
-        protobuf-compiler
+        protobuf-compiler \
+        intltool
 
 # _UID_ must be replaced with the user's uid on host
 # podman root is mapped to your user id on host during build,
