@@ -1,6 +1,6 @@
 VERSION=2.13.1
 TAR=https://www.kernel.org/pub/software/scm/git/git-$VERSION.tar.xz
-BUILD_DEPENDS=(zlib curl openssl expat nghttp2)
+BUILD_DEPENDS=(zlib curl openssl1 expat nghttp2)
 DEPENDS="ca-certificates"
 
 MAKEFLAGS=(

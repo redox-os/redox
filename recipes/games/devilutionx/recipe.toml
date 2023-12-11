@@ -7,7 +7,7 @@ template = "custom"
 dependencies = [
     "libiconv",
     "liborbital",
-    "sdl",
+    "sdl1",
 ]
 script = """
 export CFLAGS="${CFLAGS} -I${COOKBOOK_SYSROOT}/include"

@@ -1,7 +1,7 @@
 VERSION=3.3
 TAR=https://sourceforge.net/projects/vice-emu/files/releases/vice-$VERSION.tar.gz/download
 TAR_SHA256=1a55b38cc988165b077808c07c52a779d181270b28c14b5c9abf4e569137431d
-BUILD_DEPENDS=(sdl liborbital)
+BUILD_DEPENDS=(sdl1 liborbital)
 
 function recipe_version {
     echo "$VERSION"

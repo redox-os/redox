@@ -3,17 +3,17 @@ GIT=https://github.com/wesnoth/wesnoth.git
 BRANCH=$VERSION
 BUILD_DEPENDS=(
     cairo
-    freetype
+    freetype2
     glib
     libjpeg
     liborbital
     libpng
     libvorbis
     llvm
-    mesa mesa_glu
+    mesa mesa-glu
     pcre
     pixman
-    sdl2 sdl2_image sdl2_mixer sdl2_ttf
+    sdl2 sdl2-image sdl2-mixer sdl2-ttf
     zlib
 )
 

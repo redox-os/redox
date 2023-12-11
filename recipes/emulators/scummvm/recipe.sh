@@ -1,7 +1,7 @@
 VERSION=2.0.0
 TAR=https://downloads.scummvm.org/frs/scummvm/$VERSION/scummvm-$VERSION.tar.xz
 TAR_SHA256=9784418d555ba75822d229514a05cf226b8ce1a751eec425432e6b7e128fca60
-BUILD_DEPENDS=(sdl liborbital freetype zlib libpng)
+BUILD_DEPENDS=(sdl1 liborbital freetype2 zlib libpng)
 
 function recipe_version {
     echo "$VERSION"

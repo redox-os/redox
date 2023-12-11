@@ -1,6 +1,6 @@
 VERSION=2.5.0
 TAR=https://downloads.sourceforge.net/project/prboom/prboom%20stable/$VERSION/prboom-$VERSION.tar.gz
-BUILD_DEPENDS=(sdl liborbital sdl_mixer libogg libvorbis)
+BUILD_DEPENDS=(sdl1 liborbital sdl1-mixer libogg libvorbis)
 
 function recipe_version {
     echo "$VERSION"

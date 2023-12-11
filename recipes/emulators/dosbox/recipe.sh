@@ -1,6 +1,6 @@
 VERSION=0.74-3
 TAR=https://sourceforge.net/projects/dosbox/files/dosbox/$VERSION/dosbox-$VERSION.tar.gz/download
-BUILD_DEPENDS=(sdl liborbital)
+BUILD_DEPENDS=(sdl1 liborbital)
 
 function recipe_version {
     echo "$VERSION"

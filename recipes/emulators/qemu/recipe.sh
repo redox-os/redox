@@ -1,6 +1,6 @@
 VERSION=3.1.0
 TAR=https://download.qemu.org/qemu-$VERSION.tar.xz
-BUILD_DEPENDS=(curl glib libiconv libpng pcre pixman sdl zlib)
+BUILD_DEPENDS=(curl glib libiconv libpng pcre pixman sdl1 zlib)
 
 function recipe_version {
     echo "$VERSION"
