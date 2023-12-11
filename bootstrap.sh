@@ -373,10 +373,12 @@ ubuntu()
 		doxygen \
 		file \
 		flex \
+		fuse \
 		g++ \
 		genisoimage \
 		git \
 		gperf \
+		intltool \
 		libexpat-dev \
 		libfuse-dev \
 		libgmp-dev \
@@ -401,6 +403,7 @@ ubuntu()
 		protobuf-compiler \
 		python3 \
 		python3-mako \
+		rsync \
 		scons \
 		texinfo \
 		unzip \
