@@ -74,17 +74,27 @@ We use the Tracking Issues Index to ease the development workflow, you can find 
 
 You can find the Redox build system organization and commands on [this](https://doc.redox-os.org/book/ch08-06-build-system-reference.html) page.
 
+## Developer FAQ
+
+You can see the most common questions and problems on [this](https://doc.redox-os.org/book/ch09-07-developer-faq.html) page.
+
 ## Porting Software
 
 You can read how to use the Cookbook recipe system to port applications on [this](https://doc.redox-os.org/book/ch09-03-porting-applications.html) page.
 
-## Developer FAQ
+## Libraries and APIs
 
-You can see the most common questions and problems on [this](https://doc.redox-os.org/book/ch09-05-developer-faq.html) page.
+You can read [this](https://doc.redox-os.org/book/ch09-06-libraries-apis.html) page to learn about the libraries and APIs used in Redox.
 
 ## Development Tips
 
 You can find important tips on [this](https://doc.redox-os.org/book/ch09-02-coding-and-building.html#development-tips) section.
+
+## References
+
+We maintain a list of wikis, articles and videos to learn Rust, OS development and computer science on [this](https://doc.redox-os.org/book/ch09-08-references.html) page.
+
+If you are skilled there's a possibility that they could improve your knowledge in some way.
 
 ## Best Practices and Guidelines
 
