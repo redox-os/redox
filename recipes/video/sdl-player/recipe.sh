@@ -1,5 +1,5 @@
 GIT=https://gitlab.redox-os.org/redox-os/sdl-player.git
-BUILD_DEPENDS=(ffmpeg liborbital sdl zlib)
+BUILD_DEPENDS=(ffmpeg6 liborbital sdl1 zlib)
 
 function recipe_version {
     echo "1.0.0"

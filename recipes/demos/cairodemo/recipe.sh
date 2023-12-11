@@ -1,4 +1,4 @@
-BUILD_DEPENDS=(cairo expat fontconfig freetype liborbital libpng pixman zlib)
+BUILD_DEPENDS=(cairo expat fontconfig freetype2 liborbital libpng pixman zlib)
 
 function recipe_version {
     printf "1.0.0"

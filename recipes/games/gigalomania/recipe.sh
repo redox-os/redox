@@ -1,7 +1,7 @@
 VERSION=1.0.1
 GIT=https://gitlab.redox-os.org/redox-os/gigalomania.git
 BRANCH=master
-BUILD_DEPENDS=(sdl_mixer sdl_image sdl liborbital libogg libpng libjpeg libvorbis zlib)
+BUILD_DEPENDS=(sdl1-mixer sdl1-image sdl1 liborbital libogg libpng libjpeg libvorbis zlib)
 
 function recipe_version {
     echo "$VERSION"

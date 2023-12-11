@@ -1,5 +1,5 @@
 GIT=https://gitlab.redox-os.org/redox-os/rust-cairo.git
-BUILD_DEPENDS=(cairo expat fontconfig freetype libpng pixman zlib)
+BUILD_DEPENDS=(cairo expat fontconfig freetype2 libpng pixman zlib)
 CARGOFLAGS="--example gui"
 
 function recipe_build {
