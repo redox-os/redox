@@ -8,7 +8,7 @@ dependencies = [
     "libretro-super",
     "llvm",
     "mesa",
-    "openssl",
+    "openssl1",
     "sdl2",
     "zlib",
 ]

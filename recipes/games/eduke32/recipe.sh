@@ -1,6 +1,6 @@
 VERSION=20181010-7067
 TAR=https://dukeworld.com/eduke32/synthesis/$VERSION/eduke32_src_$VERSION.tar.xz
-BUILD_DEPENDS=(sdl sdl_mixer liborbital libiconv libogg libvorbis)
+BUILD_DEPENDS=(sdl1 sdl1-mixer liborbital libiconv libogg libvorbis)
 
 function recipe_version {
     echo "$VERSION"

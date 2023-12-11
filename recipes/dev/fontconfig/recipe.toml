@@ -1,0 +1,27 @@
+[source]
+#git = "https://gitlab.freedesktop.org/fontconfig/fontconfig"
+#rev = "a919700fbde28c29ccdb1d2a8bceba80ade19e73"
+tar = "https://www.freedesktop.org/software/fontconfig/release/fontconfig-2.14.2.tar.xz"
+blake3 = "dc342745b8e19ecda458464a9df7cf1266d0af759b230d07f43964b34ca86581"
+patches = [
+	"redox.patch"
+]
+script = """
+wget -O config.sub "https://gitlab.redox-os.org/redox-os/gnu-config/-/raw/master/config.sub?inline=false"
+"""
+
+[build]
+template = "custom"
+dependencies = [
+	"expat",
+	"freetype2",
+	"libpng",
+	"zlib",
+]
+script = """
+COOKBOOK_CONFIGURE_FLAGS+=(
+    --disable-docs \
+    ac_cv_func_XML_SetDoctypeDeclHandler=yes
+)
+cookbook_configure
+"""

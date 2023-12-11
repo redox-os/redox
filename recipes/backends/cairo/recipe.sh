@@ -1,6 +1,6 @@
 VERSION="1.16.0"
 TAR=https://www.cairographics.org/releases/cairo-$VERSION.tar.xz
-BUILD_DEPENDS=(expat freetype fontconfig libpng pixman zlib)
+BUILD_DEPENDS=(expat freetype2 fontconfig libpng pixman zlib)
 
 function recipe_version {
 	echo "$VERSION"

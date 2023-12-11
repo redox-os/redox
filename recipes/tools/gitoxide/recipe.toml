@@ -3,7 +3,7 @@ git = "https://github.com/Byron/gitoxide.git"
 
 [build]
 dependencies = [
-    "openssl",
+    "openssl1",
 ]
 template = "custom"
 script = """

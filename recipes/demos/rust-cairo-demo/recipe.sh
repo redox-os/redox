@@ -1,5 +1,5 @@
 GIT=https://gitlab.redox-os.org/redox-os/rust-cairo-demo.git
-BUILD_DEPENDS=(cairo expat fontconfig freetype libpng pixman zlib)
+BUILD_DEPENDS=(cairo expat fontconfig freetype2 libpng pixman zlib)
 
 function recipe_build {
     sysroot="$(realpath ../sysroot)"

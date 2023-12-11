@@ -10,7 +10,7 @@ dependencies = [
     "llvm",
     "mesa",
     "nghttp2",
-    "openssl",
+    "openssl1",
     "sdl2",
     "zlib",
 ]
