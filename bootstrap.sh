@@ -373,7 +373,6 @@ ubuntu()
 		doxygen \
 		file \
 		flex \
-		fuse \
 		g++ \
 		genisoimage \
 		git \
