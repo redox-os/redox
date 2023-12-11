@@ -1,5 +1,5 @@
 #TODO probably wrong script, see https://inkscape.org/develop/getting-started/#compile
-#TODO missing dependencies, see: https://gitlab.com/inkscape/inkscape-ci-docker/-/raw/master/install_dependencies.sh
+#TODO missing dependencies, see https://gitlab.com/inkscape/inkscape-ci-docker/-/raw/master/install_dependencies.sh
 [source]
 tar = "https://inkscape.org/gallery/item/44467/inkscape-1.3.1.tar.xz"
 [build]
@@ -11,6 +11,7 @@ dependencies = [
     "gtk3",
     "gtk3mm",
     "gdk-pixbuf",
+    "gtksourceview",
     "cairo",
     "cairomm",
     "pango",
@@ -24,6 +25,7 @@ dependencies = [
     "lib2geom",
     "atkmm",
     "harfbuzz",
+    "libblas",
     "libsoup",
     "libsigc++",
     "librsvg",
@@ -38,6 +40,7 @@ dependencies = [
     "libgspell-gtk3",
     "libjpeg-turbo",
     "liblcms",
+    "liblapack",
 ]
 script = """
 COOKBOOK_CONFIGURE="cmake"
