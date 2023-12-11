@@ -94,7 +94,7 @@ These TODOs improve the packagers cooperation and understanding.
 - `not compiled or tested` - It means that your recipe is fully configured and don't lack necessary dependencies.
 - `missing script for x, see insert-the-link-for-build-instructions-here` - It means that your recipe is lacking the cross-compilation script for some build system, where `x` is the build system name. After `see` you will insert the link for the build instructions of the program or library, it will help other packagers to insert the script for you.
 - `missing dependencies, see insert-the-link-for-required-dependencies-here` - It means that the `dependencies = []` section is incomplete.
-- `probably wrong script, see insert-the-link-for-build-instructions-here` - It means that you don't if your script will work.
+- `probably wrong script, see insert-the-link-for-build-instructions-here` - It means that you don't know if your script will work.
 - `probably wrong template, see insert-the-link-for-build-instructions-here` - It means that you don't know if the Cookbook template will work.
 - `probably missing dependencies, see insert-the-link-for-required-dependencies-here` - It means that you don't know if the required dependencies are satisfied.
 
