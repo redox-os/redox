@@ -1,6 +1,6 @@
 [source]
 git = "https://gitlab.redox-os.org/redox-os/openssl.git"
-branch = "redox"
+branch = "redox-v1"
 
 [build]
 template = "custom"
