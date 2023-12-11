@@ -20,7 +20,11 @@ else ifeq ($(ARCH),aarch64)
 	QEMU_ARCH=aarch64
 	QEMU_MACHINE=virt
 	QEMU_CPU=max
-	QEMU_EFI=/usr/share/AAVMF/AAVMF_CODE.fd
+	ifeq ($(BOARD),raspi3bp)
+		QEMU_EFI=https://gitlab.redox-os.org/Ivan/redox_firmware/-/raw/main/platform/raspberry_pi/rpi3/u-boot-rpi-3-b-plus.bin
+	else
+		QEMU_EFI=https://gitlab.redox-os.org/Ivan/redox_firmware/-/raw/main/platform/qemu/qemu_arm64/u-boot-qemu-arm64.bin
+	endif
 	QEMUFLAGS+=-smp 1 -m 2048
 	ifneq ($(vga),no)
 		QEMUFLAGS+=-device ramfb
@@ -134,7 +138,11 @@ $(BUILD)/extra.img:
 endif
 
 $(BUILD)/firmware.rom:
+ifeq ($(ARCH),aarch64)
+	wget -O $@ $(QEMU_EFI)
+else
 	cp $(QEMU_EFI) $@
+endif
 
 qemu: $(DISK) $(FIRMWARE) $(BUILD)/extra.img
 	$(QEMU) $(QEMUFLAGS) \
@@ -178,3 +186,9 @@ qemu_extra: $(FIRMWARE) $(BUILD)/extra.img
 qemu_nvme_extra: $(FIRMWARE) $(BUILD)/extra.img
 	$(QEMU) $(QEMUFLAGS) \
 		-drive file=$(BUILD)/extra.img,format=raw,if=none,id=drv1 -device nvme,drive=drv1,serial=NVME_EXTRA
+
+#additional steps for $(DISK) are required!!!
+qemu_raspi: $(FIRMWARE) $(DISK)
+	$(QEMU) -M raspi3b -smp 4,cores=1 \
+		-kernel $(FIRMWARE) \
+		-serial stdio -display none -sd $(DISK)
