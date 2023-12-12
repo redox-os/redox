@@ -1,6 +1,6 @@
 [source]
-git = "https://gitlab.redox-os.org/redox-os/uutils.git"
-branch = "redox"
+git = "https://github.com/uutils/coreutils"
+rev = "181cfc885b460bbcdf2cf1c866cb1ea48c3f6009"
 
 [build]
 template = "custom"
@@ -63,6 +63,7 @@ BINS=(
     sleep
     sort
     split
+    stat
     sum
     tac
     tail
