@@ -55,7 +55,7 @@ vim = {}
 # Development tools
 cargo = {}
 crates-io-index = {}
-gcc = {}
+gcc13 = {}
 gnu-binutils = {}
 gnu-make = {}
 rust = {}

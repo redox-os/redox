@@ -41,7 +41,7 @@ expat = {}
 extrautils = {}
 #fal
 #fd = {} # ctrlc-3.1.1
-#ffmpeg = {} # undefined references
+#ffmpeg6 = {} # undefined references
 findutils = {}
 fontconfig = {}
 #freeciv = {}
@@ -53,7 +53,7 @@ freetype = {}
 fribidi = {}
 #game-2048 = {} # rustc-serialize
 #gawk = {} # langinfo.h
-gcc = {}
+gcc13 = {}
 gdbserver = {}
 #gdk-pixbuf = {} # shared-mime-info
 gears = {}
