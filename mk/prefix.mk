@@ -22,7 +22,12 @@ PREFIX_STRIP=\
 		-exec strip --strip-unneeded {} ';' \
 		2> /dev/null
 
-$(PREFIX)/relibc-install: $(ROOT)/relibc | $(PREFIX)/rust-install $(CONTAINER_TAG)
+$(PREFIX)/relibc: $(ROOT)/relibc
+	rm -rf "$@.partial" "$@"
+	cp -r "$^" "$@.partial"
+	mv "$@.partial" "$@"
+
+$(PREFIX)/relibc-install: $(PREFIX)/relibc | $(PREFIX)/rust-install $(CONTAINER_TAG)
 ifeq ($(PODMAN_BUILD),1)
 	$(PODMAN_RUN) $(MAKE) $@
 else
