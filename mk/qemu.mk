@@ -7,7 +7,7 @@ ifeq ($(ARCH),i686)
 	QEMU_ARCH=i386
 	QEMU_MACHINE?=pc
 	QEMU_CPU?=pentium2
-	QEMUFLAGS+=-smp 4 -m 2048
+	QEMUFLAGS+=-smp 1 -m 1024
 else ifeq ($(ARCH),x86_64)
 	QEMU_ARCH=x86_64
 	QEMU_MACHINE?=q35
@@ -37,7 +37,7 @@ $(error Unsupported ARCH for QEMU "$(ARCH)"))
 endif
 
 ifneq ($(ARCH),$(HOST_ARCH))
-	kvm=no
+	kvm?=no
 endif
 
 ifeq ($(efi),yes)
