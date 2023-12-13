@@ -23,6 +23,7 @@ PREFIX_STRIP=\
 		2> /dev/null
 
 $(PREFIX)/relibc: $(ROOT)/relibc
+	mkdir -p "$(@D)"
 	rm -rf "$@.partial" "$@"
 	cp -r "$^" "$@.partial"
 	mv "$@.partial" "$@"
