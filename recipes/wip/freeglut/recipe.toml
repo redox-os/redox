@@ -1,0 +1,49 @@
+[source]
+tar = "https://cytranet.dl.sourceforge.net/project/freeglut/freeglut/3.0.0/freeglut-3.0.0.tar.gz"
+blake3 = "08c8874d6ddad5be4860813865d4d4e2a84c294da0f3cf82a29e43920806b0da"
+
+[build]
+dependencies = [
+    "mesa",
+    "mesa-glu",
+]
+template = "custom"
+script = """
+export CFLAGS="-I${COOKBOOK_SYSROOT}/include"
+export CPPFLAGS="-I${COOKBOOK_SYSROOT}/include"
+export CXXFLAGS="-I${COOKBOOK_SYSROOT}/include"
+export LDFLAGS="-L${COOKBOOK_SYSROOT}/lib"
+
+cat > redox.cmake <<EOF
+# the name of the target operating system
+set(CMAKE_SYSTEM_NAME Generic)
+set(CMAKE_SYSTEM_PROCESSOR "${TARGET%%-*}")
+
+# which compilers to use for C and C++
+set(CMAKE_C_COMPILER "${TARGET}-gcc")
+set(CMAKE_CXX_COMPILER "${TARGET}-g++")
+
+# where is the target environment located
+set(CMAKE_FIND_ROOT_PATH "${COOKBOOK_SYSROOT}")
+
+# adjust the default behavior of the FIND_XXX() commands:
+# search programs in the host environment
+set(CMAKE_FIND_ROOT_PATH_MODE_PROGRAM NEVER)
+
+# search headers, libraries, and packages in the target environment
+set(CMAKE_FIND_ROOT_PATH_MODE_INCLUDE ONLY)
+set(CMAKE_FIND_ROOT_PATH_MODE_LIBRARY ONLY)
+set(CMAKE_FIND_ROOT_PATH_MODE_PACKAGE ONLY)
+EOF
+
+COOKBOOK_CONFIGURE=cmake
+COOKBOOK_CONFIGURE_FLAGS=(
+    -DCMAKE_BUILD_TYPE=Release
+    -DCMAKE_INSTALL_PREFIX=/
+    -DCMAKE_TOOLCHAIN_FILE=redox.cmake
+    -DCMAKE_VERBOSE_MAKEFILE=On
+    -DFREEGLUT_GLES=0
+    "${COOKBOOK_SOURCE}"
+)
+cookbook_configure
+"""
