@@ -1,0 +1,11 @@
+[source]
+tar = "https://archive.mesa3d.org/glu/glu-9.0.1.tar.xz"
+blake3 = "461543526cd681bc8fa91a1ece9519188c64ce7ad130a71213bdd0867e0884c9"
+
+[build]
+dependencies = ["mesa"]
+template = "custom"
+script = """
+COOKBOOK_CONFIGURE_FLAGS+=(--enable-osmesa)
+cookbook_configure
+"""
