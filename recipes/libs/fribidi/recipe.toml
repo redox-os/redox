@@ -1,0 +1,12 @@
+[source]
+tar = "https://github.com/fribidi/fribidi/releases/download/v1.0.13/fribidi-1.0.13.tar.xz"
+blake3 = "b43d333a98e39fc25cf7ce5fd11409424cf33e74aa28ec4a727f867aea83ce39"
+
+[build]
+template = "custom"
+script = """
+COOKBOOK_CONFIGURE_FLAGS+=(
+    ac_cv_header_sys_times_h=no
+)
+cookbook_configure
+"""
