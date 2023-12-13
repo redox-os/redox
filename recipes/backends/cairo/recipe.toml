@@ -1,0 +1,28 @@
+[source]
+tar = "https://www.cairographics.org/releases/cairo-1.16.0.tar.xz"
+blake3 = "33e88a21de1fa52405f3952647b3bfd21d5d9d394e1abbc9ddb050a8ca09e35a"
+script = """
+#Workaround to disable the not redox compatible tests
+printf "all:\n\ninstall:\n" > ./test/Makefile.in
+printf "all:\n\ninstall:\n" > ./perf/Makefile.in
+"""
+
+[build]
+dependencies = [
+	"expat",
+	"freetype2",
+	"fontconfig",
+	"libpng",
+	"pixman",
+	"zlib",
+]
+template = "custom"
+script = """
+export CFLAGS="-DCAIRO_NO_MUTEX=1"
+COOKBOOK_CONFIGURE_FLAGS+=(
+    --enable-xlib=no
+    --enable-script=no
+    --enable-interpreter=no
+)
+cookbook_configure
+"""
