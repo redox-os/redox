@@ -5,5 +5,5 @@ git = "https://gitlab.redox-os.org/redox-os/relibc.git"
 template = "custom"
 script = """
 rsync -av --delete "${COOKBOOK_SOURCE}/" ./
-"$REDOX_MAKE" CARGO="env -u CARGO cargo" -j"$($NPROC)" DESTDIR="${COOKBOOK_STAGE}" install
+"${COOKBOOK_MAKE}" CARGO="env -u CARGO cargo" -j"$($NPROC)" DESTDIR="${COOKBOOK_STAGE}" install
 """
