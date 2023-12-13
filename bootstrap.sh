@@ -1,5 +1,7 @@
 #!/usr/bin/env bash
 
+set -e
+
 ##########################################################
 # This function is simply a banner to introduce the script
 ##########################################################
@@ -92,11 +94,15 @@ osx_macports()
 
     install_macports_pkg "git"
 
-    if [ "$1" == "qemu" ]; then
+
+	if [ "$1" == "qemu" ]; then
         install_macports_pkg "qemu" "qemu-system-x86_64"
-    else
+	elif [ "$1" == "virtualbox" ]; then
         install_macports_pkg "virtualbox"
-    fi
+    else
+	   echo "Unknown emulator: $1"
+	   exit 1
+	fi
 
     install_macports_pkg "coreutils"
     install_macports_pkg "findutils"
@@ -161,11 +167,15 @@ osx_homebrew()
 
     install_brew_pkg "git"
 
-    if [ "$1" == "qemu" ]; then
+
+	if [ "$1" == "qemu" ]; then
         install_brew_pkg "qemu" "qemu-system-x86_64"
-    else
+    elif [ "$1" == "virtualbox" ]; then
         install_brew_pkg "virtualbox"
-    fi
+    else
+	   echo "Unknown emulator: $1"
+	   exit 1
+	fi
 
     install_brew_pkg "automake"
     install_brew_pkg "bison"
@@ -221,18 +231,21 @@ osx_homebrew()
 ###############################################################################
 freebsd()
 {
-    set -xe
+    set -x
     echo "FreeBSD detected!"
     echo "Installing missing packages..."
 
     install_freebsd_pkg "git"
 
-    if [ "$1" == "qemu" ]; then
-        install_freebsd_pkg "qemu" "qemu-system-x86_64"
-    else
-        install_freebsd_pkg "virtualbox"
-    fi
 
+	if [ "$1" == "qemu" ]; then
+        install_freebsd_pkg "qemu" "qemu-system-x86_64"
+    elif [ "$1" == "virtualbox" ]; then
+        install_freebsd_pkg "virtualbox"
+    else
+	   echo "Unknown emulator: $1"
+	   exit 1
+	fi
     install_freebsd_pkg "coreutils"
     install_freebsd_pkg "findutils"
     install_freebsd_pkg "gcc"
@@ -277,7 +290,7 @@ freebsd()
 	install_freebsd_pkg "scons"
 	install_freebsd_pkg "lua54"
 	install_freebsd_pkg "py-protobuf-compiler"
-    set +xe
+    set +x
 }
 
 ###############################################################################
@@ -330,12 +343,15 @@ archLinux()
 	lua \
 	ant \
 	protobuf"
+
 	if [ "$1" == "qemu" ]; then
 		packages="$packages qemu"
 	elif [ "$1" == "virtualbox" ]; then
 		packages="$packages virtualbox"
+	else
+	   echo "Unknown emulator: $1"
+	   exit 1
 	fi
-
 	# Scripts should not cause a system update in order to just install a couple
 	#   of packages. If pacman -S --needed is going to fail, let it fail and the
 	#   user will figure out the issues (without updating if required) and rerun
@@ -424,13 +440,25 @@ ubuntu()
 		else
 			echo "QEMU already installed!"
 		fi
-	else
+	elif [ "$1" == "virtualbox" ]; then
 		if [ -z "$(which virtualbox)" ]; then
-			echo "Installing VirtualBox..."
-			sudo "$2" install virtualbox
+
+			if grep '^ID=debian$' /etc/os-release > /dev/null; then
+				echo "Virtualbox is not in the official debian packages"
+				echo "To install virtualbox on debian, see https://wiki.debian.org/VirtualBox"
+				echo "Please install VirtualBox and re-run this script,"
+				echo "or run with -e qemu"
+				exit 1
+			else
+				echo "Installing VirtualBox..."
+				sudo "$2" install virtualbox
+			fi
 		else
 			echo "VirtualBox already installed!"
 		fi
+	else
+	   echo "Unknown emulator: $1"
+	   exit 1
 	fi
 }
 
@@ -446,6 +474,7 @@ fedora()
 		echo "Installing git..."
 		sudo dnf install git-all
 	fi
+
 	if [ "$1" == "qemu" ]; then
 		if [ -z "$(which qemu-system-x86_64)" ]; then
 			echo "Installing QEMU..."
@@ -453,14 +482,19 @@ fedora()
 		else
 			echo "QEMU already installed!"
 		fi
-	else
+	elif [ "$1" == "virtualbox" ]; then
 		if [ -z "$(which virtualbox)" ]; then
-			echo "Installing VirtualBox..."
-			sudo dnf install virtualbox
+			echo "Please install VirtualBox and re-run this script,"
+			echo "or run with -e qemu"
+			exit 1
 		else
 			echo "VirtualBox already installed!"
 		fi
+	else
+	   echo "Unknown emulator: $1"
+	   exit 1
 	fi
+		
 	# Use rpm -q <package> to check if it's already installed
 	PKGS=$(for pkg in file \
 	autoconf \
@@ -531,71 +565,127 @@ fedora()
 suse()
 {
 	echo "Detected SUSE Linux"
+
+	packages=(
+		"gcc"
+		"gcc-c++"
+		"glibc-devel-32bit"
+		"nasm"
+		"make"
+		"fuse-devel"
+		"cmake"
+		"openssl"
+		"automake"
+		"gettext-tools"
+		"libtool"
+		"po4a"
+		"patch"
+		"flex"
+		"gperf"
+		"autoconf"
+		"bison"
+		"curl"
+		"wget"
+		"file"
+		"libexpat-devel"
+		"gmp-devel"
+		"libpng16-devel"
+		"libjpeg8-devel"
+		"perl"
+		"perl-HTML-Parser"
+		"m4"
+		"patch"
+		"scons"
+		"pkgconf"
+		"syslinux-utils"
+		"ninja"
+		"meson"
+		"python-Mako"
+		"xdg-utils"
+		"zip"
+		"unzip"
+		"llvm"
+		"clang"
+		"doxygen"
+		"lua54"
+		"ant"
+		"protobuf"
+	)
+
 	if [ -z "$(which git)" ]; then
-		echo "Installing git..."
-		zypper install git
+		echo "Will install git ..."
+		packages+=(git)
 	fi
+
 	if [ "$1" == "qemu" ]; then
 		if [ -z "$(which qemu-system-x86_64)" ]; then
-			echo "Installing QEMU..."
-			sudo zypper install qemu-x86 qemu-kvm
+			echo "Will install QEMU..."
+			packages+=(qemu-x86 qemu-kvm)
 		else
 			echo "QEMU already installed!"
 		fi
-	else
+	elif [ "$1" == "virtualbox" ]; then
 		if [ -z "$(which virtualbox)" ]; then
 			echo "Please install VirtualBox and re-run this script,"
 			echo "or run with -e qemu"
-			exit
+			exit 1
 		else
 			echo "VirtualBox already installed!"
 		fi
+	else
+	   echo "Unknown emulator: $1"
+	   exit 1
 	fi
+	
 	echo "Installing necessary build tools..."
-	sudo zypper install \
-		gcc \
-		gcc-c++ \
-		glibc-devel-32bit \
-		nasm \
-		make \
-		fuse-devel \
-		cmake \
-		openssl \
-		automake \
-		gettext-tools \
-		libtool \
-		po4a \
-		patch \
-		flex \
-		gperf \
-		autoconf \
-		bison \
-		curl \
-		wget \
-		file \
-		libexpat-devel \
-		gmp-devel \
-		libpng16-devel \
-		libjpeg8-devel \
-		perl \
-		perl-HTML-Parser \
-		m4 \
-		patch \
-		scons \
-		pkgconf \
-		syslinux-utils \
-		ninja \
-		meson \
-		python-Mako \
-		xdg-utils \
-		zip \
-		unzip \
-		llvm \
-		clang \
-		doxygen \
-		lua54 \
-		ant \
-		protobuf
+
+	# We could install all the packages in a single zypper command with:
+	#
+	#        zypper install package1 package2 package3
+	# 
+	# But there is an issue with this: zypper returns a success code if at
+	# least one of the packages was correctly installed, but we need it to fail
+	# if any of the packages is missing.
+	#
+	# To confirm that the packages are available, we try to install them one by
+	# one with --dry-run.
+	# We still install all the packages in a single zypper command so that the
+	# user has to confirm only once.
+	for p in ${packages[@]}; do
+		if rpm -q "${p}" > /dev/null ; then
+		   echo "${p} is already installed"
+		else
+		   # Zypper shows a confirmation prompt and the "y" answer even with 
+		   # --non-interactive and --no-confirm:
+		   #
+		   #   1 new package to install.
+           #   Overall download size: 281.7 KiB. Already cached: 0 B. After the operation, additional 394.6 KiB will be used.
+           #   Continue? [y/n/v/...? shows all options] (y): y
+		   #
+		   # That could make the user think that the package was installed, 
+		   # when it was only a dry run.
+		   # To avoid the confusion, we hide the output unless there was an
+		   # error.
+		   if out="$(zypper --non-interactive install --no-confirm --dry-run --force-resolution ${p}  2>&1)"  ; then
+		      echo "${p} can be installed"
+		   else
+		   	  echo "no"
+			  echo ""
+		      echo "Zypper output:"
+			  echo ""
+			  echo "${out}"
+			  echo ""
+		      echo "Could not find how to install '${p}', try running:"
+			  echo ""
+			  echo "     zypper install ${p}"
+			  echo ""
+			  exit 1
+		   fi
+		fi
+	done
+
+	zypper install ${packages[@]}
+
 }
 
 ##############################################################################
@@ -618,15 +708,29 @@ gentoo()
 		echo "Installing fuse..."
 		sudo emerge sys-fs/fuse
 	fi
-	if [ "$2" == "qemu" ]; then
+
+	if [ "$1" == "qemu" ]; then
 		if [ -z "$(which qemu-system-x86_64)" ]; then
 			echo "Please install QEMU and re-run this script"
 			echo "Step1. Add QEMU_SOFTMMU_TARGETS=\"x86_64\" to /etc/portage/make.conf"
 			echo "Step2. Execute \"sudo emerge app-emulation/qemu\""
+            exit 1
 		else
 			echo "QEMU already installed!"
 		fi
+	elif [ "$1" == "virtualbox" ]; then
+		if [ -z "$(which virtualbox)" ]; then
+			echo "Please install VirtualBox and re-run this script,"
+			echo "or run with -e qemu"
+			exit 1
+		else
+			echo "VirtualBox already installed!"
+		fi
+	else
+	   echo "Unknown emulator: $1"
+	   exit 1
 	fi
+
 	if [ -z "$(which cmake)" ]; then
 		echo "Installing cmake..."
 		sudo emerge dev-util/cmake
@@ -651,14 +755,17 @@ solus()
 		else
 			echo "QEMU already installed!"
 		fi
-	else
+	elif [ "$1" == "virtualbox" ]; then
 		if [ -z "$(which virtualbox)" ]; then
 			echo "Please install VirtualBox and re-run this script,"
 			echo "or run with -e qemu"
-			exit
+			exit 1
 		else
 			echo "VirtualBox already installed!"
 		fi
+	else
+	   echo "Unknown emulator: $1"
+	   exit 1
 	fi
 
 	echo "Installing necessary build tools..."
@@ -746,7 +853,7 @@ rustInstall() {
 			sudo /usr/local/lib/rustlib/uninstall.sh
 		else
 			echo "Please manually uninstall multirust and any other versions of rust, then re-run bootstrap."
-			exit
+			exit 1
 		fi
 	fi
 	# If rustup is not installed we should offer to install it for them
@@ -774,7 +881,7 @@ rustInstall() {
 		echo "Please either run the script again, accepting rustup install"
 		echo "or install rustc nightly manually (not recommended) via:"
 		echo "\#curl -sSf https://static.rust-lang.org/rustup.sh | sh -s -- --channel=nightly"
-		exit
+		exit 1
 	else
 		echo "Your Rust install looks good!"
 	fi
@@ -868,7 +975,7 @@ do
 		u) update=true;;
 		h) usage;;
 		s) statusCheck && exit;;
-		\?) echo "I don't know what to do with that option, try -h for help"; exit;;
+		\?) echo "I don't know what to do with that option, try -h for help"; exit 1;;
 	esac
 done
 

@@ -1,5 +1,7 @@
 #!/usr/bin/env bash
 
+set -e
+
 ##########################################################
 # This function is simply a banner to introduce the script
 ##########################################################
@@ -13,10 +15,10 @@ banner()
 
 ###################################################################################
 # This function takes care of installing a dependency via package manager of choice
-# for building redox on BSDs (MacOS, FreeBSD, etc.).
+# for building Redox on BSDs (macOS, FreeBSD, etc.).
 # @params:    $1 package manager
-#            $2 package name
-#            $3 binary name (optional)
+#             $2 package name
+#             $3 binary name (optional)
 ###################################################################################
 install_bsd_pkg()
 {
@@ -58,14 +60,14 @@ install_freebsd_pkg()
 
 ###############################################################################
 # This function checks which of the supported package managers
-# is available on the OSX Host.
+# is available on the macOS host.
 # If a supported package manager is found, it delegates the installing work to
 # the relevant function.
 # Otherwise this function will exit this script with an error.
 ###############################################################################
 osx()
 {
-    echo "Detected OSX!"
+    echo "Detected macOS!"
 
     if [ ! -z "$(which brew)" ]; then
         osx_homebrew $@
@@ -81,24 +83,27 @@ osx()
 
 ###############################################################################
 # This function takes care of installing all dependencies using MacPorts
-# for building redox on Mac OSX
-# @params:    $1 the emulator to install, virtualbox or qemu
+# for building Redox on macOS
+# @params:    $1 the emulator to install, "virtualbox" or "qemu"
 ###############################################################################
 osx_macports()
 {
-    echo "Macports detected! Now updating..."
+    echo "MacPorts detected! Now updating..."
     sudo port -v selfupdate
 
     echo "Installing missing packages..."
 
     install_macports_pkg "git"
-    install_macports_pkg "cmake"
 
-    if [ "$1" == "qemu" ]; then
+
+	if [ "$1" == "qemu" ]; then
         install_macports_pkg "qemu" "qemu-system-x86_64"
-    else
+	elif [ "$1" == "virtualbox" ]; then
         install_macports_pkg "virtualbox"
-    fi
+    else
+	   echo "Unknown emulator: $1"
+	   exit 1
+	fi
 
     install_macports_pkg "osxfuse"
 	install_macports_pkg "podman"
@@ -106,8 +111,8 @@ osx_macports()
 
 ###############################################################################
 # This function takes care of installing all dependencies using Homebrew
-# for building redox on Mac OSX
-# @params:    $1 the emulator to install, virtualbox or qemu
+# for building Redox on macOS
+# @params:    $1 the emulator to install, "virtualbox" or "qemu"
 ###############################################################################
 osx_homebrew()
 {
@@ -118,11 +123,15 @@ osx_homebrew()
 
     install_brew_pkg "git"
 
-    if [ "$1" == "qemu" ]; then
+
+	if [ "$1" == "qemu" ]; then
         install_brew_pkg "qemu" "qemu-system-x86_64"
-    else
+    elif [ "$1" == "virtualbox" ]; then
         install_brew_pkg "virtualbox"
-    fi
+    else
+	   echo "Unknown emulator: $1"
+	   exit 1
+	fi
 
     install_brew_pkg "make"
 	install_brew_pkg "podman"
@@ -130,43 +139,50 @@ osx_homebrew()
 
 ###############################################################################
 # This function takes care of installing all dependencies using pkg
-# for building redox on FreeBSD
-# @params:    $1 the emulator to install, virtualbox or qemu
+# for building Redox on FreeBSD
+# @params:    $1 the emulator to install, "virtualbox" or "qemu"
 ###############################################################################
 freebsd()
 {
-    set -xe
+    set -x
     echo "FreeBSD detected!"
     echo "Installing missing packages..."
 
     install_freebsd_pkg "git"
 
-    if [ "$1" == "qemu" ]; then
+
+	if [ "$1" == "qemu" ]; then
         install_freebsd_pkg "qemu" "qemu-system-x86_64"
-    else
+    elif [ "$1" == "virtualbox" ]; then
         install_freebsd_pkg "virtualbox"
-    fi
+    else
+	   echo "Unknown emulator: $1"
+	   exit 1
+	fi
 
     install_freebsd_pkg "gmake"
     install_freebsd_pkg "podman"
-    set +xe
+    set +x
 }
 
 ###############################################################################
-# This function takes care of installing all dependencies for building redox on
-# Arch linux
-# @params:	$1 the emulator to install, virtualbox or qemu
+# This function takes care of installing all dependencies for building Redox on
+# Arch Linux
+# @params:	$1 the emulator to install, "virtualbox" or "qemu"
 ###############################################################################
 archLinux()
 {
+
 	echo "Detected Arch Linux"
 	packages="git podman fuse"
 	if [ "$1" == "qemu" ]; then
 		packages="$packages qemu"
 	elif [ "$1" == "virtualbox" ]; then
 		packages="$packages virtualbox"
+	else
+	   echo "Unknown emulator: $1"
+	   exit 1
 	fi
-
 	# Scripts should not cause a system update in order to just install a couple
 	#   of packages. If pacman -S --needed is going to fail, let it fail and the
 	#   user will figure out the issues (without updating if required) and rerun
@@ -176,12 +192,13 @@ archLinux()
 
 	echo "Installing packages $packages..."
 	sudo pacman -S --needed $packages
+	
 }
 
 ###############################################################################
-# This function takes care of installing all dependencies for building redox on
-# debian based linux
-# @params:	$1 the emulator to install, virtualbox or qemu
+# This function takes care of installing all dependencies for building Redox on
+# Debian-based Linux
+# @params:	$1 the emulator to install, "virtualbox" or "qemu"
 # 		$2 the package manager to use
 ###############################################################################
 ubuntu()
@@ -200,20 +217,33 @@ ubuntu()
 		else
 			echo "QEMU already installed!"
 		fi
-	else
+	elif [ "$1" == "virtualbox" ]; then
 		if [ -z "$(which virtualbox)" ]; then
-			echo "Installing Virtualbox..."
-			sudo "$2" install virtualbox
+
+			if grep '^ID=debian$' /etc/os-release > /dev/null; then
+				echo "Virtualbox is not in the official debian packages"
+				echo "To install virtualbox on debian, see https://wiki.debian.org/VirtualBox"
+				echo "Please install VirtualBox and re-run this script,"
+				echo "or run with -e qemu"
+				exit 1
+			else
+				echo "Installing VirtualBox..."
+				sudo "$2" install virtualbox
+			fi
 		else
-			echo "Virtualbox already installed!"
+			echo "VirtualBox already installed!"
 		fi
+	else
+	   echo "Unknown emulator: $1"
+	   exit 1
 	fi
+
 }
 
 ###############################################################################
-# This function takes care of installing all dependencies for building redox on
-# fedora linux
-# @params:	$1 the emulator to install, virtualbox or qemu
+# This function takes care of installing all dependencies for building Redox on
+# Fedora Linux
+# @params:	$1 the emulator to install, "virtualbox" or "qemu"
 ###############################################################################
 fedora()
 {
@@ -222,6 +252,7 @@ fedora()
 		echo "Installing git..."
 		sudo dnf install git-all
 	fi
+
 	if [ "$1" == "qemu" ]; then
 		if [ -z "$(which qemu-system-x86_64)" ]; then
 			echo "Installing QEMU..."
@@ -229,14 +260,19 @@ fedora()
 		else
 			echo "QEMU already installed!"
 		fi
-	else
+	elif [ "$1" == "virtualbox" ]; then
 		if [ -z "$(which virtualbox)" ]; then
-			echo "Installing virtualbox..."
-			sudo dnf install virtualbox
+			echo "Please install VirtualBox and re-run this script,"
+			echo "or run with -e qemu"
+			exit 1
 		else
-			echo "Virtualbox already installed!"
+			echo "VirtualBox already installed!"
 		fi
+	else
+	   echo "Unknown emulator: $1"
+	   exit 1
 	fi
+		
 	# Use rpm -q <package> to check if it's already installed
 	PKGS=$(for pkg in podman; do rpm -q $pkg > /dev/null || echo $pkg; done)
 	# If the list of packages is not empty, install missing
@@ -248,41 +284,100 @@ fedora()
 }
 
 ###############################################################################
-# This function takes care of installing all dependencies for building redox on
-# *suse linux
-# @params:	$1 the emulator to install, virtualbox or qemu
+# This function takes care of installing all dependencies for building Redox on
+# *SUSE Linux
+# @params:	$1 the emulator to install, "virtualbox" or "qemu"
 ###############################################################################
 suse()
 {
 	echo "Detected SUSE Linux"
+
+	packages=(
+		"make"
+		"fuse-devel"
+		"podman"
+	)
+
 	if [ -z "$(which git)" ]; then
-		echo "Installing git..."
-		zypper install git
+		echo "Will install git ..."
+		packages+=(git)
 	fi
+
 	if [ "$1" == "qemu" ]; then
 		if [ -z "$(which qemu-system-x86_64)" ]; then
-			echo "Installing QEMU..."
-			sudo zypper install qemu-x86 qemu-kvm
+			echo "Will install QEMU..."
+			packages+=(qemu-x86 qemu-kvm)
 		else
 			echo "QEMU already installed!"
 		fi
-	else
+	elif [ "$1" == "virtualbox" ]; then
 		if [ -z "$(which virtualbox)" ]; then
-			echo "Please install Virtualbox and re-run this script,"
+			echo "Please install VirtualBox and re-run this script,"
 			echo "or run with -e qemu"
-			exit
+			exit 1
 		else
-			echo "Virtualbox already installed!"
+			echo "VirtualBox already installed!"
 		fi
+	else
+	   echo "Unknown emulator: $1"
+	   exit 1
 	fi
+	
 	echo "Installing necessary build tools..."
-	sudo zypper install make fuse-devel podman
+
+	# We could install all the packages in a single zypper command with:
+	#
+	#        zypper install package1 package2 package3
+	# 
+	# But there is an issue with this: zypper returns a success code if at
+	# least one of the packages was correctly installed, but we need it to fail
+	# if any of the packages is missing.
+	#
+	# To confirm that the packages are available, we try to install them one by
+	# one with --dry-run.
+	# We still install all the packages in a single zypper command so that the
+	# user has to confirm only once.
+	for p in ${packages[@]}; do
+		if rpm -q "${p}" > /dev/null ; then
+		   echo "${p} is already installed"
+		else
+		   # Zypper shows a confirmation prompt and the "y" answer even with 
+		   # --non-interactive and --no-confirm:
+		   #
+		   #   1 new package to install.
+           #   Overall download size: 281.7 KiB. Already cached: 0 B. After the operation, additional 394.6 KiB will be used.
+           #   Continue? [y/n/v/...? shows all options] (y): y
+		   #
+		   # That could make the user think that the package was installed, 
+		   # when it was only a dry run.
+		   # To avoid the confusion, we hide the output unless there was an
+		   # error.
+		   if out="$(zypper --non-interactive install --no-confirm --dry-run --force-resolution ${p}  2>&1)"  ; then
+		      echo "${p} can be installed"
+		   else
+		   	  echo "no"
+			  echo ""
+		      echo "Zypper output:"
+			  echo ""
+			  echo "${out}"
+			  echo ""
+		      echo "Could not find how to install '${p}', try running:"
+			  echo ""
+			  echo "     zypper install ${p}"
+			  echo ""
+			  exit 1
+		   fi
+		fi
+	done
+
+	zypper install ${packages[@]}
+
 }
 
 ##############################################################################
-# This function takes care of installing all dependencies for building redox on
-# gentoo linux
-# @params:	$1 the emulator to install, virtualbox or qemu
+# This function takes care of installing all dependencies for building Redox on
+# Gentoo Linux
+# @params:	$1 the emulator to install, "virtualbox" or "qemu"
 ##############################################################################
 gentoo()
 {
@@ -295,32 +390,47 @@ gentoo()
 		echo "Installing fuse..."
 		sudo emerge sys-fs/fuse
 	fi
-	if [ "$2" == "qemu" ]; then
+
+	if [ "$1" == "qemu" ]; then
 		if [ -z "$(which qemu-system-x86_64)" ]; then
 			echo "Please install QEMU and re-run this script"
 			echo "Step1. Add QEMU_SOFTMMU_TARGETS=\"x86_64\" to /etc/portage/make.conf"
 			echo "Step2. Execute \"sudo emerge app-emulation/qemu\""
+            exit 1
 		else
 			echo "QEMU already installed!"
 		fi
+	elif [ "$1" == "virtualbox" ]; then
+		if [ -z "$(which virtualbox)" ]; then
+			echo "Please install VirtualBox and re-run this script,"
+			echo "or run with -e qemu"
+			exit 1
+		else
+			echo "VirtualBox already installed!"
+		fi
+	else
+	   echo "Unknown emulator: $1"
+	   exit 1
 	fi
+
 	if [ -z "$(which cmake)" ]; then
 		echo "Installing cmake..."
 		sudo emerge dev-util/cmake
 	fi
 	if [ -z "$(which podman)" ]; then
 		echo "Please install Podman, https://wiki.gentoo.org/wiki/Podman"
+		exit 1
 	fi
 }
 
 ##############################################################################
-# This function takes care of installing all dependencies for building redox on
-# SolusOS
-# @params:	$1 the emulator to install, virtualbox or qemu
+# This function takes care of installing all dependencies for building Redox on
+# Solus
+# @params:	$1 the emulator to install, "virtualbox" or "qemu"
 ##############################################################################
 solus()
 {
-	echo "Detected SolusOS"
+	echo "Detected Solus"
 
 	if [ "$1" == "qemu" ]; then
 		if [ -z "$(which qemu-system-x86_64)" ]; then
@@ -328,14 +438,17 @@ solus()
 		else
 			echo "QEMU already installed!"
 		fi
-	else
+	elif [ "$1" == "virtualbox" ]; then
 		if [ -z "$(which virtualbox)" ]; then
-			echo "Please install Virtualbox and re-run this script,"
+			echo "Please install VirtualBox and re-run this script,"
 			echo "or run with -e qemu"
-			exit
+			exit 1
 		else
-			echo "Virtualbox already installed!"
+			echo "VirtualBox already installed!"
 		fi
+	else
+	   echo "Unknown emulator: $1"
+	   exit 1
 	fi
 
 	echo "Installing necessary build tools..."
@@ -343,6 +456,7 @@ solus()
 	sudo eopkg it fuse-devel git make fuse2-devel rsync
 	if [ -z "$(which podman)" ]; then
 		echo "Please install Podman"
+		exit 1
 	fi
 }
 
@@ -439,13 +553,10 @@ boot()
 	MAKE="make"
 	if [[ "$(uname)" == "FreeBSD" ]]; then
     	MAKE="gmake"
-    	echo "kldload fuse.ko # This loads the kernel module for fuse"
+    	echo "kldload fuse.ko # This loads the kernel module for FUSE"
     fi
 	echo "$MAKE all"
 	echo "$MAKE virtualbox or qemu"
-	echo
-	echo "You can also edit mk/config.mk and change PODMAN_BUILD to 1 so"
-	echo "you don't need to specify it on the command line."
 	echo
 	echo "      Good luck!"
 
@@ -477,7 +588,7 @@ do
 		u) update=true;;
 		h) usage;;
 		s) statusCheck && exit;;
-		\?) echo "I don't know what to do with that option, try -h for help"; exit;;
+		\?) echo "I don't know what to do with that option, try -h for help"; exit 1;;
 	esac
 done
 
@@ -494,7 +605,7 @@ if [ "Darwin" == "$(uname -s)" ]; then
 else
 	# Here we will use package managers to determine which operating system the user is using.
 
-	# Suse and derivatives
+	# SUSE and derivatives
 	if hash 2>/dev/null zypper; then
 		suse "$emulator"
 	# Debian or any derivative of it
@@ -506,10 +617,10 @@ else
 	# Gentoo
 	elif hash 2>/dev/null emerge; then
 		gentoo "$emulator"
-	# SolusOS
+	# Solus
 	elif hash 2>/dev/null eopkg; then
 		solus "$emulator"
-	# Arch linux
+	# Arch Linux
 	elif hash 2>/dev/null pacman; then
 		archLinux "$emulator"
 	# FreeBSD
@@ -517,7 +628,7 @@ else
 		freebsd "$emulator"
 	# Unsupported platform
 	else
-    	printf "\e[31;1mFatal error: \e[0;31mUnsupported platform, please open an issue\[0m"
+    	printf "\e[31;1mFatal error: \e[0;31mUnsupported platform, please open an issue\e[0m\n"
 	fi
 fi
 
