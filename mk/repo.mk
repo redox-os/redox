@@ -62,3 +62,13 @@ else
 	cd cookbook && \
 	./unfetch.sh $*
 endif
+
+# Invoke clean.sh, and repo.sh for a single target
+cr.%: $(FSTOOLS_TAG) FORCE
+	$(MAKE) c.$*
+	$(MAKE) r.$*
+
+# Invoke unfetch.sh, clean.sh, and repo.sh for a single target
+ucr.%: $(FSTOOLS_TAG) FORCE
+	$(MAKE) u.$*
+	$(MAKE) cr.$*
