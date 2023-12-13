@@ -1,1 +1,0 @@
-SET(CMAKE_SYSTEM_NAME Redox)
