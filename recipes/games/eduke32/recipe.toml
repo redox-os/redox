@@ -1,0 +1,35 @@
+[source]
+tar = "https://dukeworld.com/eduke32/synthesis/20181010-7067/eduke32_src_20181010-7067.tar.xz"
+blake3 = "b0b759fe9ca51849f42669e4832ae1ae1f9ad7938529769108f7cf6a6a176558"
+patches = ["redox.patch"]
+
+[build]
+dependencies = [
+    "sdl1",
+    "sdl1-mixer",
+    "liborbital",
+    "libiconv",
+    "libogg",
+    "libvorbis",
+]
+template = "custom"
+script = """
+# Copy source to build directory
+rsync -av --delete "${COOKBOOK_SOURCE}/" ./
+
+export CFLAGS="-I${COOKBOOK_SYSROOT}/include -I${COOKBOOK_SYSROOT}/include/SDL"
+export LDFLAGS="-L${COOKBOOK_SYSROOT}/lib -static"
+export SDLCONFIG="${COOKBOOK_SYSROOT}/bin/sdl-config --prefix=${COOKBOOK_SYSROOT}"
+
+PLATFORM=REDOX "${COOKBOOK_MAKE}" -j"$($NPROC)"
+
+mkdir -pv "${COOKBOOK_STAGE}/games"
+cp -v ./eduke32 "${COOKBOOK_STAGE}/games/eduke32"
+cp -v ./mapster32 "${COOKBOOK_STAGE}/games/mapster32"
+
+mkdir -pv "${COOKBOOK_STAGE}/ui/apps"
+cp -v "${COOKBOOK_RECIPE}/manifest" "${COOKBOOK_STAGE}/ui/apps/eduke32"
+
+mkdir -pv "${COOKBOOK_STAGE}/ui/icons/apps"
+cp -v "${COOKBOOK_RECIPE}/icon.png" "${COOKBOOK_STAGE}/ui/icons/apps/eduke32.png"
+"""
