@@ -364,10 +364,11 @@ fi"#);
         // Local Sources
         None => {
             if ! source_dir.is_dir() {
-                return Err(format!(
-                    "Recipe without source section expected source dir at '{}'",
+                eprintln!(
+                    "WARNING: Recipe without source section expected source dir at '{}'",
                     source_dir.display(),
-                ))
+                );
+                create_dir(&source_dir)?;
             }
         },
     }
