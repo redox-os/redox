@@ -1,0 +1,29 @@
+[source]
+tar = "https://www.libsdl.org/projects/SDL_mixer/release/SDL_mixer-1.2.12.tar.gz"
+blake3 = "ef23bab2d42250dfdc51ce6939ee7b393973ff11a0dd3481f32180b489d2661c"
+patches = ["redox.patch"]
+script = """
+./autogen.sh
+"""
+
+[build]
+dependencies = [
+    "libogg",
+    "liborbital",
+    "libvorbis",
+    "sdl1",
+]
+template = "custom"
+script = """
+export LIBS="-lvorbis -logg"
+COOKBOOK_CONFIGURE_FLAGS+=(
+    --enable-music-ogg
+    --enable-music-midi
+    --disable-sdltest
+    --disable-music-cmd
+    --disable-music-mp3
+    --disable-smpegtest
+    --disable-music-mod
+)
+cookbook_configure
+"""
