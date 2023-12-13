@@ -1,0 +1,32 @@
+[source]
+tar = "https://sourceforge.net/projects/dosbox/files/dosbox/0.74-3/dosbox-0.74-3.tar.gz/download"
+blake3 = "8bc50ffdba20579fb3080a0dca32cb939c8a3c19259aed026482c6ac069b0007"
+patches = ["01_redox.patch"]
+script = """
+./autogen.sh
+wget -O config.sub "https://gitlab.redox-os.org/redox-os/gnu-config/-/raw/master/config.sub?inline=false"
+"""
+
+[build]
+dependencies = [
+    "liborbital",
+    "sdl1",
+]
+template = "custom"
+script = """
+export CFLAGS="-I${COOKBOOK_SYSROOT}/include/SDL"
+export CPPFLAGS="-I${COOKBOOK_SYSROOT}/include/SDL"
+export LDFLAGS="-L${COOKBOOK_SYSROOT}/lib -static"
+COOKBOOK_CONFIGURE_FLAGS+=(
+    --disable-opengl
+    --disable-sdltest
+    --with-sdl-prefix="${COOKBOOK_SYSROOT}"
+)
+cookbook_configure
+
+mkdir -pv "${COOKBOOK_STAGE}/ui/apps"
+cp -v "${COOKBOOK_RECIPE}/manifest" "${COOKBOOK_STAGE}/ui/apps/dosbox"
+
+mkdir -pv "${COOKBOOK_STAGE}/ui/icons/apps"
+cp -v "${COOKBOOK_RECIPE}/icon.png" "${COOKBOOK_STAGE}/ui/icons/apps/dosbox.png"
+"""
