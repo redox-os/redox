@@ -1,0 +1,7 @@
+[source]
+tar = "https://www.cairographics.org/releases/pixman-0.42.2.tar.gz"
+blake3 = "40f8a5cb809ae218ef33c75499d0fed6cbe625b26d78e88822304947cc07f183"
+patches = ["redox.patch"]
+
+[build]
+template = "configure"
