@@ -1,5 +1,5 @@
-#TODO Not compiled or tested
+#TODO wgpu-hal crate error
 [source]
-tar = "https://github.com/sharkdp/binocle/archive/refs/tags/v0.3.1.tar.gz"
+tar = "https://github.com/sharkdp/binocle/archive/refs/tags/v0.3.2.tar.gz"
 [build]
 template = "cargo"
