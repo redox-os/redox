@@ -1,6 +1,4 @@
 [source]
-#git = "https://github.com/tukaani-project/xz"
-#rev = "2327a461e1afce862c22269b80d3517801103c1b"
 tar = "https://tukaani.org/xz/xz-5.4.3.tar.xz"
 blake3 = "4b1b814bcf3794973fe9076d549a0edfbee01d2fd57821fe3280537ef6c7deae"
 script = """

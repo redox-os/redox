@@ -1,6 +1,4 @@
 [source]
-#git = "https://gitlab.gnome.org/GNOME/glib"
-#rev = "37f41eb44a7d423069ff93f44dd0baec92adad62"
 tar = "https://download.gnome.org/sources/glib/2.59/glib-2.59.0.tar.xz"
 blake3 = "4b10f071bad767bbed9dc3ca742aac4de1f5746c03d515908e7dad4ea8334cbf"
 patches = [

@@ -1,6 +1,4 @@
 [source]
-#git = "https://gitlab.xiph.org/xiph/flac"
-#rev = "b32e5cbf9818ca23dd22aaa75522042c16ea7d17"
 tar = "https://github.com/xiph/flac/releases/download/1.4.2/flac-1.4.2.tar.xz"
 blake3 = "d165b9a18eb83b6f6e9993cc2074547566df706fc61464eb17ff088fd0c88104"
 [build]

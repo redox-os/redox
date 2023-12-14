@@ -1,6 +1,4 @@
 [source]
-#git = "https://github.com/harfbuzz/harfbuzz"
-#rev = "4941e95f10fe0fe658752134a42b58896fb19c42"
 tar = "https://github.com/harfbuzz/harfbuzz/releases/download/7.3.0/harfbuzz-7.3.0.tar.xz"
 blake3 = "6572676ffef55bd37bacdd33052bedfb07333b659371495a2a26b9825ce685c0"
 [build]
