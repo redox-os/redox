@@ -1,17 +1,8 @@
-#TODO Not compiled or tested yet
+#TODO missing script for the "hello_world" example and the "wayland" flag
 [source]
 tar = "https://github.com/bevyengine/bevy/archive/refs/tags/v0.11.1.tar.gz"
 [build]
 template = "custom"
-script = """
-package="hello_world"
-"${COOKBOOK_CARGO}" build \
-            --manifest-path "${COOKBOOK_SOURCE}/Cargo.toml" \
-            --package "${package}" \
-            --release
-           --no-default-features
-        mkdir -pv "${COOKBOOK_STAGE}/bin"
-        cp -v \
-            "target/${TARGET}/release/${package}" \
-            "${COOKBOOK_STAGE}/bin/${package}"
-"""
+dependencies = [
+    "libwayland",
+]

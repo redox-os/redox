@@ -1,8 +1,12 @@
-#TODO require a custom script to move the binary?
+#TODO probably wrong script
 [source]
 tar = "https://github.com/BLAKE3-team/BLAKE3/archive/refs/tags/1.4.1.tar.gz"
 [build]
 template = "custom"
 script = """
-cookbook_cargo_packages blake3
+"${COOKBOOK_CARGO}" install \
+        --path "${COOKBOOK_SOURCE}/b3sum" \
+        --root "${COOKBOOK_STAGE}" \
+        --locked \
+        --no-track
 """
