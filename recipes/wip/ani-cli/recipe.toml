@@ -1,4 +1,4 @@
-#TODO Not compiled or tested
+#TODO move to the "tools" category
 [source]
 tar = "https://github.com/pystardust/ani-cli/archive/refs/tags/v4.6.tar.gz"
 [build]

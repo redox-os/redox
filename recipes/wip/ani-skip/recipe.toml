@@ -1,4 +1,4 @@
-#TODO Not compiled or tested
+#TODO move to the "tools" category
 [source]
 git = "https://github.com/synacktraa/ani-skip"
 [build]

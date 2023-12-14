@@ -1,4 +1,4 @@
-#TODO Not compiled or tested yet
+#TODO compiled but not tested (after cargo update)
 [source]
 git = "https://github.com/allthemusicllc/atm-cli"
 [build]
