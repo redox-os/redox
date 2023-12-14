@@ -1,0 +1,15 @@
+export PATH /bin
+export TMPDIR /tmp
+nulld
+zerod
+randd
+inputd
+vesad T T G
+logd debug: display.vesa:1
+stdio log:
+ramfs logging
+lived
+redoxfs --uuid $REDOXFS_UUID file $REDOXFS_BLOCK
+cd file:
+export PATH file:/bin
+run.d /etc/init.d
