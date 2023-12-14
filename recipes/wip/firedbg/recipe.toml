@@ -1,0 +1,5 @@
+#TODO probably wrong template, if it doesn't work use the "command" package
+[source]
+tar = "https://github.com/SeaQL/FireDBG.for.Rust/archive/refs/tags/1.74.1.tar.gz"
+[build]
+template = "cargo"

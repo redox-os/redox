@@ -1,0 +1,5 @@
+#TODO Not compiled or tested
+[source]
+git = "https://github.com/J-Bockhofer/succeed2ban-tui"
+[build]
+template = "cargo"

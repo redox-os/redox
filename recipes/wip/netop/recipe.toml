@@ -1,0 +1,8 @@
+#TODO Not compiled or tested
+[source]
+git = "https://github.com/ZingerLittleBee/netop"
+[build]
+template = "cargo"
+dependencies = [
+    "libpcap",
+]
