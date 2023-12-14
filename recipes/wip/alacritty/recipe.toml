@@ -8,5 +8,5 @@ dependencies = [
     "fontconfig",
 ]
 script = """
-cookbook_cargo --no-default-features --package alacritty
+cookbook_cargo --no-default-features --bin alacritty
 """
