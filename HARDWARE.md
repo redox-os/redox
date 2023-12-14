@@ -305,6 +305,22 @@ If you have a customized computer, put it here.
 
 Computers using a 64 bits ARM CPU.
 
+### Raspberry Pi
+
+- **Raspberry Pi 3 Model B+**
+
+```
+Status - Booting
+Redox version - 0.8.0
+Variant - server
+Image date - None
+
+- Booted using Uboot
+- Boots to UART serial console
+- a bcm2835-sdhci/mmc driver
+- pl011 UART
+```
+
 ### Custom
 
 If you have a customized ARM board, put it here.
