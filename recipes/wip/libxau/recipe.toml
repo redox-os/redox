@@ -1,0 +1,5 @@
+#TODO Not compiled or tested
+[source]
+tar = "https://www.x.org/releases/individual/lib/libXau-1.0.11.tar.xz"
+[build]
+template = "configure"

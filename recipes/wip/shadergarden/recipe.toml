@@ -1,0 +1,5 @@
+#TODO Not compiled or tested
+[source]
+git = "https://github.com/tonarino/shadergarden"
+[build]
+template = "cargo"

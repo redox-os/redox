@@ -1,0 +1,12 @@
+#TODO missing script for CMake, see https://github.com/zealdocs/zeal#build-instructions
+[source]
+tar = "https://github.com/zealdocs/zeal/releases/download/v0.7.0/zeal-0.7.0.tar.xz"
+[build]
+template = "custom"
+dependencies = [
+    "qt6-base",
+    "qt6-webengine",
+    "libarchive",
+    "sqlite3",
+    "mesa",
+]

@@ -1,0 +1,5 @@
+#TODO Not compiled or tested
+[source]
+tar = "https://www.x.org/releases/individual/lib/libICE-1.1.1.tar.xz"
+[build]
+template = "configure"

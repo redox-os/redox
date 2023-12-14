@@ -1,6 +1,7 @@
-#TODO make dbus work
+#TODO make D-Bus work
 [source]
 git = "https://github.com/hinto-janai/festival"
+rev = "512dc7bfc76341c0e06902252c634e24700d7140"
 [build]
 template = "custom"
 dependencies = [

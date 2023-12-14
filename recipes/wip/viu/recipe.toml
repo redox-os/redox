@@ -1,0 +1,5 @@
+#TODO Not compiled or tested
+[source]
+tar = "https://github.com/atanunq/viu/archive/refs/tags/v1.5.0.tar.gz"
+[build]
+template = "cargo"
