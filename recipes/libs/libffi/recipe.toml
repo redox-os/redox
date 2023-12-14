@@ -1,6 +1,4 @@
 [source]
-#git = "https://github.com/libffi/libffi"
-#rev = "20562ac0427c3578250d04c6e34fb0127d4551cf"
 tar = "https://sourceware.org/pub/libffi/libffi-3.2.1.tar.gz"
 blake3 = "a00597a8bd26304977d7c180135e91969a175a5108bd0024a03eb0636e6cb0bf"
 patches = [

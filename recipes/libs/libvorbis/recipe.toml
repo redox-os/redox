@@ -1,6 +1,4 @@
 [source]
-#git = "https://gitlab.xiph.org/xiph/vorbis"
-#rev = "0657aee69dec8508a0011f47f3b69d7538e9d262"
 tar = "https://github.com/xiph/vorbis/releases/download/v1.3.7/libvorbis-1.3.7.tar.xz"
 blake3 = "c67f3f74ec26d93a5571c4404a64eb6e6587d7d77b46b552f7b410f5bc5b1f03"
 [build]
