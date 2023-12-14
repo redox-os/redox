@@ -1,0 +1,5 @@
+#TODO Not compiled or tested
+[source]
+tar = "https://www.x.org/releases/individual/lib/libXaw-1.0.15.tar.xz"
+[build]
+template = "configure"

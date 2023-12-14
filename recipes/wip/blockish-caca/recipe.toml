@@ -1,0 +1,8 @@
+#TODO Not compiled or tested
+[source]
+git = "https://github.com/yazgoo/blockish-caca"
+[build]
+template = "cargo"
+dependencies = [
+    "libcaca",
+]

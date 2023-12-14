@@ -1,0 +1,14 @@
+#TODO missing script for CMake, see https://github.com/patriciogonzalezvivo/glslViewer/wiki/Compile-on-linux#3-compile
+#TODO determine the X11 libraries
+[source]
+git = "https://github.com/patriciogonzalezvivo/glslViewer"
+rev = "7eb6254cb4cedf03f1c78653f90905fe0c3b48fb"
+[build]
+template = "custom"
+dependencies = [
+    "mesa-glu",
+    "ncurses",
+    "ncursesw",
+    "ffmpeg6",
+    "glfw",
+]

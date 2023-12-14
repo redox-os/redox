@@ -1,0 +1,5 @@
+#TODO Not compiled or tested
+[source]
+tar = "https://www.x.org/releases/individual/proto/xorgproto-2023.2.tar.xz"
+[build]
+template = "configure"

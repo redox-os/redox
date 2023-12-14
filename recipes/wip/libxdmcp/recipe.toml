@@ -1,0 +1,5 @@
+#TODO Not compiled or tested
+[source]
+tar = "https://www.x.org/releases/individual/lib/libXdmcp-1.1.4.tar.xz"
+[build]
+template = "configure"

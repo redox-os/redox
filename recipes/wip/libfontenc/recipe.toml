@@ -1,0 +1,5 @@
+#TODO Not compiled or tested
+[source]
+tar = "https://www.x.org/releases/individual/lib/libfontenc-1.1.7.tar.xz"
+[build]
+template = "configure"

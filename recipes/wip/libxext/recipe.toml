@@ -1,0 +1,5 @@
+#TODO Not compiled or tested
+[source]
+tar = "https://www.x.org/releases/individual/lib/libXext-1.3.5.tar.xz"
+[build]
+template = "configure"

@@ -1,0 +1,8 @@
+#TODO Not compiled or tested
+[source]
+git = "https://github.com/rust-av/avp"
+[build]
+template = "cargo"
+dependencies = [
+    "sdl2",
+]
