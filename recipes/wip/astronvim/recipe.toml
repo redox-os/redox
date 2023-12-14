@@ -1,4 +1,4 @@
-#TODO Not tested yet
+#TODO move to the "tools" category
 [source]
 git = "https://github.com/AstroNvim/AstroNvim"
 [build]
@@ -7,7 +7,3 @@ script = """
 mkdir -pv "${COOKBOOK_STAGE}"/home/user/.config/nvim
 cp -rv "${COOKBOOK_SOURCE}"/* "${COOKBOOK_STAGE}"/home/user/.config/nvim
 """
-[package]
-dependencies = [
-    "neovim",
-]

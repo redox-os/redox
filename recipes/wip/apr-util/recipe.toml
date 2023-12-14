@@ -1,5 +1,14 @@
-#TODO Not compiled or tested
+#TODO make apr work
 [source]
 tar = "https://dlcdn.apache.org//apr/apr-util-1.6.3.tar.bz2"
 [build]
-template = "configure"
+template = "custom"
+dependencies = [
+    "apr",
+]
+script = """
+COOKBOOK_CONFIGURE_FLAGS+=(
+    --with-apr
+)
+cookbook_configure
+"""

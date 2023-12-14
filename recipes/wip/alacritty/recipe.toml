@@ -1,4 +1,4 @@
-#TODO Not compiled or tested yet
+#TODO make Wayland work
 [source]
 tar = "https://github.com/alacritty/alacritty/archive/refs/tags/v0.12.3.tar.gz"
 [build]
@@ -6,16 +6,8 @@ template = "custom"
 dependencies = [
     "freetype2",
     "fontconfig",
+    "libwayland",
 ]
 script = """
-package="alacritty"
-"${COOKBOOK_CARGO}" build \
-            --manifest-path "${COOKBOOK_SOURCE}/Cargo.toml" \
-            --package "${package}" \
-            --release
-           --no-default-features
-        mkdir -pv "${COOKBOOK_STAGE}/bin"
-        cp -v \
-            "target/${TARGET}/release/${package}" \
-            "${COOKBOOK_STAGE}/bin/${package}"
+cookbook_cargo_packages alacritty
 """

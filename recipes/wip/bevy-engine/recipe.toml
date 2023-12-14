@@ -4,13 +4,14 @@ tar = "https://github.com/bevyengine/bevy/archive/refs/tags/v0.11.1.tar.gz"
 [build]
 template = "custom"
 script = """
+package="hello_world"
 "${COOKBOOK_CARGO}" build \
             --manifest-path "${COOKBOOK_SOURCE}/Cargo.toml" \
-            --package "${hello_world}" \
+            --package "${package}" \
             --release
            --no-default-features
         mkdir -pv "${COOKBOOK_STAGE}/bin"
         cp -v \
-            "target/${TARGET}/release/${hello_world}" \
-            "${COOKBOOK_STAGE}/bin/${bevy-engine}_${hello_world}"
+            "target/${TARGET}/release/${package}" \
+            "${COOKBOOK_STAGE}/bin/${package}"
 """
