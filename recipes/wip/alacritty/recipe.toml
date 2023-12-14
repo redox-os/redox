@@ -2,8 +2,11 @@
 [source]
 tar = "https://github.com/alacritty/alacritty/archive/refs/tags/v0.12.3.tar.gz"
 [build]
-template = "cargo"
+template = "custom"
 dependencies = [
     "freetype2",
     "fontconfig",
 ]
+script = """
+cookbook_cargo_packages alacritty
+"""
