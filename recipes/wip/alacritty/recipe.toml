@@ -8,5 +8,14 @@ dependencies = [
     "fontconfig",
 ]
 script = """
-cookbook_cargo --no-default-features --bin alacritty
+package="alacritty"
+"${COOKBOOK_CARGO}" build \
+            --manifest-path "${COOKBOOK_SOURCE}/Cargo.toml" \
+            --package "${package}" \
+            --release
+           --no-default-features
+        mkdir -pv "${COOKBOOK_STAGE}/bin"
+        cp -v \
+            "target/${TARGET}/release/${package}" \
+            "${COOKBOOK_STAGE}/bin/${package}"
 """
