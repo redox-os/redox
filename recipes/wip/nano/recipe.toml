@@ -2,7 +2,11 @@
 [source]
 tar = "https://www.nano-editor.org/dist/v7/nano-7.2.tar.xz"
 [build]
-template = "configure"
+template = "custom"
 dependencies = [
     "ncurses",
 ]
+script = """
+export CPPFLAGS="-I${COOKBOOK_SYSROOT}/include"
+cookbook_configure
+"""

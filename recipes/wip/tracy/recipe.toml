@@ -1,0 +1,11 @@
+#TODO missing script for "make", see https://github.com/wolfpld/tracy/releases/latest/download/tracy.pdf
+[source]
+tar = "https://github.com/wolfpld/tracy/archive/refs/tags/v0.10.tar.gz"
+[build]
+template = "custom"
+dependencies = [
+    "glfw",
+    "freetype2",
+    "dbus",
+    "capstone",
+]

@@ -1,0 +1,6 @@
+#TODO missing script for CMake, see https://github.com/apitrace/apitrace/blob/master/docs/INSTALL.markdown#linux
+[source]
+git = "https://github.com/apitrace/apitrace"
+rev = "9352fc02bba106fbbeef9e8452ef34643c0d0764"
+[build]
+template = "custom"
