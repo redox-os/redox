@@ -1,6 +1,4 @@
 [source]
-#git = "https://gitlab.freedesktop.org/pkg-config/pkg-config"
-#rev = "edf8e6f0ea77ede073f07bff0d2ae1fc7a38103b"
 tar = "https://pkg-config.freedesktop.org/releases/pkg-config-0.29.2.tar.gz"
 blake3 = "713372b09a1fafeec130dc9bf812a3880f2a90496af5d2194e508d91ccf667d0"
 script = """

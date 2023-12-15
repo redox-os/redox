@@ -1,6 +1,4 @@
 [source]
-#git = "https://github.com/libexpat/libexpat"
-#rev = "654d2de0da85662fcc7644a7acd7c2dd2cfb21f0"
 tar = "https://github.com/libexpat/libexpat/releases/download/R_2_5_0/expat-2.5.0.tar.xz"
 blake3 = "ea89dd9a5a2e48d5e44fed38554b36a8f2e365a5091a99d08e30bfb1c15dda5e"
 [build]
