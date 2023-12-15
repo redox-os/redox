@@ -15,12 +15,31 @@ BINS=(
     lived
 )
 
+aarch64_redefine_bin()
+{
+    BINS=(inputd lived)
+    case "${BOARD}" in
+        raspi3bp)
+            BINS+=(bcm2835-sdhcid)
+        ;;
+        raspi3b)
+            BINS+=(bcm2835-sdhcid)
+        ;;
+        *)
+        #qemu-virt
+        ;;
+    esac
+}
+
 case "${TARGET}" in
     i686-unknown-redox)
         BINS+=(ided ps2d)
         ;;
     x86_64-unknown-redox)
         BINS+=(acpid ided ps2d)
+        ;;
+    aarch64-unknown-redox)
+        aarch64_redefine_bin
         ;;
     *)
         ;;
