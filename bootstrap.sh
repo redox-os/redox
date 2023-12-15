@@ -1024,6 +1024,7 @@ fi
 
 cargoInstall cargo-config 0.1.1
 cargoInstall just 1.16.0
+cargoInstall cbindgen 0.26.0
 
 if [ "$dependenciesonly" = false ]; then
 	boot
