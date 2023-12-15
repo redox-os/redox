@@ -1,0 +1,11 @@
+#TODO Not compiled or tested
+[source]
+tar = "https://github.com/replydev/cotp/archive/refs/tags/v1.3.0.tar.gz"
+[build]
+template = "cargo"
+dependencies = [
+    "libxcb",
+    "libx11",
+    "libxfixes",
+    "libxkbcommon",
+]

@@ -1,4 +1,4 @@
-#TODO probably wrong script, lacking build instructions
+#TODO tikv-jemalloc-sys crate error
 [source]
 tar = "https://github.com/biomejs/biome/archive/refs/tags/cli/v1.4.0.tar.gz"
 [build]

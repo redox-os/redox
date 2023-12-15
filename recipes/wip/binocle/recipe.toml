@@ -1,4 +1,4 @@
-#TODO wgpu-hal crate error
+#TODO compiled but not tested
 [source]
 tar = "https://github.com/sharkdp/binocle/archive/refs/tags/v0.3.2.tar.gz"
 [build]
