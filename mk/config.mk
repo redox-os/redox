@@ -21,6 +21,8 @@ REDOXFS_MKFS_FLAGS?=
 PODMAN_BUILD?=0
 ## The containerfile to use for the Podman base image
 CONTAINERFILE?=podman/redox-base-containerfile
+## Sub-device type for aarch64 if needed
+BOARD?=
 
 # Per host variables
 HOST_CARGO=env -u RUSTUP_TOOLCHAIN cargo
@@ -81,6 +83,7 @@ REPO_TAG=$(BUILD)/repo.tag
 endif
 
 FSTOOLS_TAG=build/fstools.tag
+export BOARD
 
 ## Cross compiler variables
 AR=$(TARGET)-gcc-ar
