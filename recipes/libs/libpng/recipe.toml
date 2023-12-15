@@ -1,6 +1,4 @@
 [source]
-#git = "https://github.com/glennrp/libpng"
-#rev = "eddf9023206dc40974c26f589ee2ad63a4227a1e"
 tar = "https://github.com/glennrp/libpng/archive/v1.6.39.tar.gz"
 blake3 = "02513cc5d15ac79c4c402f2ae623425f4f80bdbbf15ebc95430fb8ccfc987996"
 script = """

@@ -1,6 +1,4 @@
 [source]
-#git = "https://github.com/libssh2/libssh2"
-#rev = "635caa90787220ac3773c1d5ba11f1236c22eae8"
 tar = "https://www.libssh2.org/download/libssh2-1.10.0.tar.gz"
 blake3 = "2447216ce82c1d22301456bb02f60dfb6688f1461417b90f900c099a87f1292f"
 patches = []
