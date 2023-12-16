@@ -8,7 +8,6 @@ dependencies = [
     "libffi",
     "libxml2",
     "zlib",
-    "terminfo",
 ]
 script = """
 cookbook_cargo_packages c2rust
