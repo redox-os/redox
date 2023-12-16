@@ -1,5 +1,6 @@
 #TODO camino crate compilation error
 [source]
-tar = "https://github.com/matthiaskrgr/cargo-cache/archive/refs/tags/0.8.3.tar.gz"
+git = "https://github.com/matthiaskrgr/cargo-cache"
+rev = "f26f8b8bb1ce96481973483de9a939ff80f97d5d"
 [build]
 template = "cargo"
