@@ -1,4 +1,4 @@
-#TODO Not compiled or tested
+#TODO weird error on the workspace
 [source]
 git = "https://github.com/crev-dev/cargo-crev"
 rev = "be532d95731dc067302e7910164120a2e4fdf745"
