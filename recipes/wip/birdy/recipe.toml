@@ -1,5 +1,8 @@
-#TODO Not compiled or tested
+#TODO make Wayland work
 [source]
 git = "https://github.com/kakoc/birdy"
 [build]
 template = "cargo"
+dependencies = [
+    "libwayland",
+]
