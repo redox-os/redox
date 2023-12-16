@@ -1,5 +1,6 @@
 #TODO Not compiled or tested
 [source]
-tar = "https://github.com/EmbarkStudios/cargo-deny/archive/refs/tags/0.14.3.tar.gz"
+git = "https://github.com/EmbarkStudios/cargo-deny"
+rev = "80860f0f6c974810e9ce38655309293e8aa841e4"
 [build]
 template = "cargo"
