@@ -1,6 +1,7 @@
 #TODO openssl-sys crate compilation error
 [source]
-tar = "https://github.com/mihaigalos/aim/archive/refs/tags/1.8.5.tar.gz"
+git = "https://github.com/mihaigalos/aim"
+rev = "bd1c6f91061cd7bc1c849a75e7616a2de90408dd"
 [build]
 dependencies = [
     "openssl1",

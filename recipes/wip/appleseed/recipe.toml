@@ -1,6 +1,7 @@
 #TODO missing script for CMake, see https://github.com/appleseedhq/appleseed/wiki/Building-appleseed-on-Linux
 [source]
-tar = "https://github.com/appleseedhq/appleseed/archive/refs/tags/2.1.0-beta.tar.gz"
+git = "https://github.com/appleseedhq/appleseed"
+rev = "015adb503af58cb80103e0c3ddeefc20d99d204f"
 [build]
 template = "custom"
 dependencies = [

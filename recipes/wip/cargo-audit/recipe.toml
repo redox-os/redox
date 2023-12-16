@@ -1,4 +1,4 @@
-#TODO Weird error with libssh2-sys crate (after a patch on the ring crate)
+#TODO camino crate error (after a patch on the ring crate)
 [source]
 tar = "https://github.com/rustsec/rustsec/archive/refs/tags/cargo-audit/v0.18.3.tar.gz"
 [build]
