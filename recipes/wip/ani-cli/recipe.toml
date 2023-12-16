@@ -1,6 +1,7 @@
 #TODO move to the "tools" category
 [source]
-tar = "https://github.com/pystardust/ani-cli/archive/refs/tags/v4.6.tar.gz"
+git = "https://github.com/pystardust/ani-cli"
+rev = "4a77bca5d95ae755ab5ac129c2db2025feab217b"
 [build]
 template = "custom"
 script = """
