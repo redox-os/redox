@@ -1,0 +1,22 @@
+#TODO make dependencies work
+[source]
+tar = "https://github.com/NixOS/nix/archive/refs/tags/2.19.2.tar.gz"
+[build]
+template = "custom"
+dependencies = [
+    "libbrotili",
+    "openssl1",
+    "curl",
+    "sqlite3",
+    "libeditline",
+    "boost",
+    "libsodium",
+    "libcpuid",
+]
+script = """
+autoreconf -vfi
+COOKBOOK_CONFIGURE_FLAGS+=(
+    --disable-tests
+)
+cookbook_configure
+"""
