@@ -5,9 +5,6 @@ git = "https://github.com/immunant/c2rust"
 template = "custom"
 dependencies = [
     "openssl1",
-    "libffi",
-    "libxml2",
-    "zlib",
 ]
 script = """
 cookbook_cargo_packages c2rust
