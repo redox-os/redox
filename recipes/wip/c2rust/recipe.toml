@@ -1,10 +1,14 @@
-#TODO Can't find LLVM
+#TODO compilation error
 [source]
 git = "https://github.com/immunant/c2rust"
 [build]
 template = "custom"
 dependencies = [
     "openssl1",
+    "libffi",
+    "libxml2",
+    "zlib",
+    "terminfo",
 ]
 script = """
 cookbook_cargo_packages c2rust
