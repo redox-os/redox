@@ -1,4 +1,4 @@
-#TODO needs to update the tokio version
+#TODO camino crate error
 [source]
 tar = "https://github.com/EmbarkStudios/cargo-about/archive/refs/tags/0.6.0.tar.gz"
 [build]
