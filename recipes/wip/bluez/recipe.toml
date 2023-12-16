@@ -1,3 +1,4 @@
+#TODO require signalfd
 #TODO require Bluetooth drivers
 #TODO build instructions - https://git.kernel.org/pub/scm/bluetooth/bluez.git/tree/INSTALL
 [source]
