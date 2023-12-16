@@ -1,6 +1,6 @@
 #TODO Can't find LLVM
 [source]
-tar = "https://github.com/immunant/c2rust/archive/refs/tags/v0.17.0.tar.gz"
+git = "https://github.com/immunant/c2rust"
 [build]
 template = "custom"
 dependencies = [
