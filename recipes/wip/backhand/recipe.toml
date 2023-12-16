@@ -1,5 +1,9 @@
-#TODO broken program
+#TODO not compiled or tested
 [source]
-tar = "https://github.com/wcampbell0x2a/backhand/archive/refs/tags/v0.12.0.tar.gz"
+git = "https://github.com/wcampbell0x2a/backhand"
+rev = "96c83729a791526ff0a3fd8e9390740c25ae8184"
 [build]
-template = "cargo"
+template = "custom"
+script = """
+cookbook_cargo_packages backhand-cli
+"""

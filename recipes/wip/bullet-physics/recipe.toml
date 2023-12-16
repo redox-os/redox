@@ -1,5 +1,6 @@
 #TODO missing script for Premake or CMake, see https://github.com/bulletphysics/bullet3#build-instructions-for-bullet-using-premake-you-can-also-use-cmake-instead
 [source]
-tar = "https://github.com/bulletphysics/bullet3/archive/refs/tags/3.25.tar.gz"
+git = "https://github.com/bulletphysics/bullet3"
+rev = "2c204c49e56ed15ec5fcfa71d199ab6d6570b3f5"
 [build]
 template = "custom"

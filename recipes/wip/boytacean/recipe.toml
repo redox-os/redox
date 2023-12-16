@@ -1,6 +1,7 @@
 #TODO Not compiled or tested
 [source]
-tar = "https://github.com/joamag/boytacean/archive/refs/tags/0.9.16.tar.gz"
+git = "https://github.com/joamag/boytacean"
+rev = "1ef4a9d1689319722dff73dec4a824a7d4289f5d"
 [build]
 template = "cargo"
 dependencies = [

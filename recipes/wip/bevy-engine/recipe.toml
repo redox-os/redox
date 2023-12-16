@@ -1,6 +1,7 @@
 #TODO missing script for the "hello_world" example and the "wayland" flag
 [source]
-tar = "https://github.com/bevyengine/bevy/archive/refs/tags/v0.11.1.tar.gz"
+git = "https://github.com/bevyengine/bevy"
+rev = "22e39c4abf6e2fdf99ba0820b3c35db73be71347"
 [build]
 template = "custom"
 dependencies = [

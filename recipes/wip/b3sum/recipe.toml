@@ -1,6 +1,7 @@
 #TODO probably wrong script
 [source]
-tar = "https://github.com/BLAKE3-team/BLAKE3/archive/refs/tags/1.4.1.tar.gz"
+git = "https://github.com/BLAKE3-team/BLAKE3"
+rev = "5aa53f07f7188a569cadfc5daf1522972d9a9630"
 [build]
 template = "custom"
 script = """
