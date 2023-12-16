@@ -3,4 +3,10 @@
 git = "https://github.com/crev-dev/cargo-crev"
 rev = "be532d95731dc067302e7910164120a2e4fdf745"
 [build]
-template = "cargo"
+template = "custom"
+dependencies = [
+    "openssl1",
+]
+script = """
+cookbook_cargo_packages cargo-crev
+"""
