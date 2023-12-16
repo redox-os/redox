@@ -1,5 +1,6 @@
 #TODO missing script for building, see https://github.com/capstone-engine/capstone/blob/next/COMPILE.TXT
 [source]
-tar = "https://github.com/capstone-engine/capstone/archive/refs/tags/5.0.1.tar.gz"
+git = "https://github.com/capstone-engine/capstone"
+rev = "097c04d9413c59a58b00d4d1c8d5dc0ac158ffaa"
 [build]
 template = "custom"

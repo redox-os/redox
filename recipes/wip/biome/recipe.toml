@@ -1,6 +1,7 @@
 #TODO tikv-jemalloc-sys crate error
 [source]
-tar = "https://github.com/biomejs/biome/archive/refs/tags/cli/v1.4.0.tar.gz"
+git = "https://github.com/biomejs/biome"
+rev = "a88751306242058374575b9f511e3c22213032b6"
 [build]
 template = "custom"
 script = """

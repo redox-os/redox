@@ -1,6 +1,7 @@
 #TODO camino crate error (after a patch on the ring crate)
 [source]
-tar = "https://github.com/rustsec/rustsec/archive/refs/tags/cargo-audit/v0.18.3.tar.gz"
+git = "https://github.com/rustsec/rustsec"
+rev = "3544515990b09441ecc12df8d0291bc6f23d3d30"
 [build]
 template = "custom"
 dependencies = [

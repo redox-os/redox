@@ -1,7 +1,7 @@
 #TODO probably missing dependencies, see https://github.com/xtreme8000/BetterSpades#build-requirements
 #TODO probably wrong script, see https://github.com/xtreme8000/BetterSpades#linux
 [source]
-tar = "https://github.com/xtreme8000/BetterSpades/archive/refs/tags/v0.1.5.tar.gz"
+git = "https://github.com/xtreme8000/BetterSpades"
 [build]
 template = "custom"
 dependencies = [

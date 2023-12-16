@@ -1,5 +1,6 @@
 #TODO missing Meson build instructions
 [source]
-tar = "https://github.com/bottlesdevs/Bottles/archive/refs/tags/51.9.tar.gz"
+git = "https://github.com/bottlesdevs/Bottles"
+rev = "0914b2e34c1800784b26ca52d1a80f06d65252fa"
 [build]
 template = "custom"

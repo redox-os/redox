@@ -1,5 +1,6 @@
 #TODO compiled but not tested
 [source]
-tar = "https://github.com/sharkdp/binocle/archive/refs/tags/v0.3.2.tar.gz"
+git = "https://github.com/sharkdp/binocle"
+rev = "f7e1bfe28938b5e289e8b353bf592aa3c26ca71f"
 [build]
 template = "cargo"
