@@ -4,5 +4,5 @@ tar = "https://github.com/oll3/bita/archive/refs/tags/v0.11.0.tar.gz"
 [build]
 template = "custom"
 script = """
-cookbook_cargo --features rustls-tls
+cookbook_cargo --no-default-features --features rustls-tls
 """
