@@ -1,4 +1,4 @@
-#TODO require a update on the redox_syscall crate (after a update on the libc crate)
+#TODO camino crate error (after a cargo update)
 [source]
 git = "https://github.com/Andy-Python-Programmer/CallOfFerris"
 [build]
