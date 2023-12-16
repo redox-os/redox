@@ -1,5 +1,6 @@
 #TODO Not compiled or tested
 [source]
-tar = "https://github.com/crev-dev/cargo-crev/archive/refs/tags/v0.25.4.tar.gz"
+git = "https://github.com/crev-dev/cargo-crev"
+rev = "be532d95731dc067302e7910164120a2e4fdf745"
 [build]
 template = "cargo"
