@@ -1,4 +1,4 @@
-#TODO Not compiled or tested
+#TODO compilation error (after a cargo update and a patch on the ring and tokio crates)
 [source]
 tar = "https://github.com/oll3/bita/archive/refs/tags/v0.11.0.tar.gz"
 [build]

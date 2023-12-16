@@ -1,4 +1,4 @@
-#TODO Not compiled or tested
+#TODO make libcaca work
 [source]
 git = "https://github.com/yazgoo/blockish-caca"
 [build]

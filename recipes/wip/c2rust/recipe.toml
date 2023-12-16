@@ -5,7 +5,6 @@ tar = "https://github.com/immunant/c2rust/archive/refs/tags/v0.17.0.tar.gz"
 template = "custom"
 dependencies = [
     "openssl1",
-    "llvm",
 ]
 script = """
 cookbook_cargo_packages c2rust
