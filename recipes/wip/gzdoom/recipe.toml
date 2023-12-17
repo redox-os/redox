@@ -1,6 +1,7 @@
 #TODO missing script for CMake, see https://zdoom.org/wiki/Compile_GZDoom_on_Linux
 [source]
-tar = "https://github.com/ZDoom/gzdoom/archive/refs/tags/g4.10.0.tar.gz"
+git = "https://github.com/ZDoom/gzdoom"
+rev = "6ce809efe2902e43ceaa7031b875225d3a0367de"
 [build]
 template = "custom"
 dependencies = [

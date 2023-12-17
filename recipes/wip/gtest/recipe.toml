@@ -1,6 +1,7 @@
 #TODO probably wrong script, see https://github.com/google/googletest/blob/main/googletest/README.md
 [source]
-tar = "https://github.com/google/googletest/archive/refs/tags/v1.13.0.tar.gz"
+git = "https://github.com/google/googletest"
+rev = "f8d7d77c06936315286eb55f8de22cd23c188571"
 [build]
 template = "custom"
 script = """

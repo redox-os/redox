@@ -1,6 +1,7 @@
 #TODO missing script for Meson, see https://github.com/Diego-Ivan/Flowtime#building-from-source
 [source]
-tar = "https://github.com/Diego-Ivan/Flowtime/archive/refs/tags/v6.1.tar.gz"
+git = "https://github.com/Diego-Ivan/Flowtime"
+rev = "2cb1160f7f61ec0a6add292deca38a3150336f03"
 [build]
 template = "custom"
 dependencies = [

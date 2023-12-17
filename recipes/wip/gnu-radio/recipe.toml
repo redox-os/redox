@@ -1,7 +1,8 @@
 #TODO missing script for CMake, see https://wiki.gnuradio.org/index.php?title=LinuxInstall#For_GNU_Radio_3.10,_3.9,_and_Main_Branch
 #TODO probably missing dependencies, see https://wiki.gnuradio.org/index.php?title=UbuntuInstall#Install_Dependencies
 [source]
-tar = "https://github.com/gnuradio/gnuradio/archive/refs/tags/v3.10.8.0.tar.gz"
+git = "https://github.com/gnuradio/gnuradio"
+rev = "bd928539d9eaa73736f8381cd2e60953a0eb8cb8"
 [build]
 template = "custom"
 dependencies = [

@@ -1,6 +1,7 @@
 #TODO missing script for CMake, see https://flameshot.org/docs/installation/source-code/#compilation
 [source]
-tar = "https://github.com/flameshot-org/flameshot/archive/refs/tags/v12.1.0.tar.gz"
+git = "https://github.com/flameshot-org/flameshot"
+rev = "70be63d478a271da549597d69bd4868607c0a395"
 [build]
 template = "custom"
 dependencies = [

@@ -1,6 +1,7 @@
 #TODO weird error on the end of compilation
 [source]
-tar = "https://github.com/orf/gping/archive/refs/tags/gping-v1.12.0.tar.gz"
+git = "https://github.com/orf/gping"
+rev = "7547db0d2d8c22cf15066d51fcd41dc57cb5b046"
 [build]
 template = "custom"
 script = """
