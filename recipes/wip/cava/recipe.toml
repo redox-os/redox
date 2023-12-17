@@ -1,6 +1,7 @@
 #TODO Not compiled or tested
 [source]
-tar = "https://github.com/karlstav/cava/archive/refs/tags/0.9.1.tar.gz"
+git = "https://github.com/karlstav/cava"
+rev = "81211e9e16302312ee4322a99840c110bce0e13d"
 [build]
 template = "configure"
 dependencies = [

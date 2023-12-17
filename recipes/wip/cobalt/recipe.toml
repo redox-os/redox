@@ -1,5 +1,6 @@
 #TODO Not compiled or tested
 [source]
-tar = "https://github.com/cobalt-org/cobalt.rs/archive/refs/tags/v0.19.0.tar.gz"
+git = "https://github.com/cobalt-org/cobalt.rs"
+rev = "70e8e19631819c7f552b63c35f4907920d23ae22"
 [build]
 template = "cargo"

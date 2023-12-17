@@ -1,5 +1,6 @@
 #TODO missing script for CMake, see https://github.com/vgvassilev/cling#building-from-source
 [source]
-tar = "https://github.com/vgvassilev/cling/archive/refs/tags/v1.0.tar.gz"
+git = "https://github.com/vgvassilev/cling"
+rev = "ab81cdcc61f26dfd6a31fb141f1f4b335f6922be"
 [build]
 template = "custom"

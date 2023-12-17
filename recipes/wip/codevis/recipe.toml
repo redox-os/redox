@@ -1,5 +1,6 @@
 #TODO Not compiled or tested
 [source]
-tar = "https://github.com/sloganking/codevis/archive/refs/tags/v0.8.4.tar.gz"
+git = "https://github.com/sloganking/codevis"
+rev = "af85406a2e5ebe3a0c8d1cd679c8184f6f7a99d2"
 [build]
 template = "cargo"

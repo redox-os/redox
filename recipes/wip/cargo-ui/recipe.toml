@@ -1,6 +1,7 @@
 #TODO Not compiled or tested
 [source]
-tar = "https://github.com/slint-ui/cargo-ui/archive/refs/tags/v0.3.3.tar.gz"
+git = "https://github.com/slint-ui/cargo-ui"
+rev = "230652da8e9d91f109d5e4be3a5831452243ebc0"
 [build]
 template = "cargo"
 dependencies = [

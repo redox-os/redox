@@ -1,5 +1,6 @@
 #TODO Not compiled or tested
 [source]
-tar = "https://github.com/xd009642/tarpaulin/archive/refs/tags/0.27.1.tar.gz"
+git = "https://github.com/xd009642/tarpaulin"
+rev = "669e0b4d0e1f880f118ea481b43e309bd6c9154c"
 [build]
 template = "cargo"

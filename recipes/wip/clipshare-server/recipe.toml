@@ -1,6 +1,7 @@
 #TODO probably wrong script, see https://github.com/RastislavKish/clipshare#building
 [source]
-tar = "https://github.com/RastislavKish/clipshare/archive/refs/tags/v0.1.2.tar.gz"
+git = "https://github.com/RastislavKish/clipshare"
+rev = "2afa9c5af1a5ebaa6e1e372da6e01a289d31fdb3"
 [build]
 template = "custom"
 dependencies = [

@@ -1,6 +1,7 @@
 #TODO probably wrong script, see https://conky.cc/documents/compiling
 [source]
-tar = "https://github.com/brndnmtthws/conky/archive/refs/tags/v1.19.6.tar.gz"
+git = "https://github.com/brndnmtthws/conky"
+rev = "bbdc7081aec27daafca07fc40523335a2ea0a992"
 [build]
 template = "custom"
 dependencies = [
