@@ -1,6 +1,7 @@
 #TODO compiled but not tested (after a patch on the ring crate)
 [source]
-tar = "https://github.com/orhun/git-cliff/archive/refs/tags/v1.2.0.tar.gz"
+git = "https://github.com/orhun/git-cliff"
+rev = "0af9eb24888d1a8c9b2887fbe5427985582a0f26"
 [build]
 template = "custom"
 script = """

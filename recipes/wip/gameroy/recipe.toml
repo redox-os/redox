@@ -1,6 +1,7 @@
 #TODO Not compiled or tested
 [source]
-tar = "https://github.com/Rodrigodd/gameroy/archive/refs/tags/v0.3.1.tar.gz"
+git = "https://github.com/Rodrigodd/gameroy"
+rev = "78d12b7a74cda37002cd2b964baaa761285925ab"
 [build]
 template = "custom"
 script = """

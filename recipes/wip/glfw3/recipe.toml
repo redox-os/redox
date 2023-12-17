@@ -1,6 +1,7 @@
 #TODO probably wrong script, see https://www.glfw.org/docs/latest/compile.html
 [source]
-tar = "https://github.com/glfw/glfw/archive/refs/tags/3.3.8.tar.gz"
+git = "https://github.com/glfw/glfw"
+rev = "e2c92645460f680fd272fd2eed591efb2be7dc31"
 [build]
 template = "custom"
 dependencies = [

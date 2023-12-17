@@ -1,5 +1,6 @@
 #TODO probably wrong template, if it doesn't work use the "command" package
 [source]
-tar = "https://github.com/SeaQL/FireDBG.for.Rust/archive/refs/tags/1.74.1.tar.gz"
+git = "https://github.com/SeaQL/FireDBG.for.Rust"
+rev = "2c1ec30113e2a0c857a37beb4177884528ae69bc"
 [build]
 template = "cargo"

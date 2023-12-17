@@ -1,6 +1,7 @@
 #TODO Make GTK4 work
 [source]
-tar = "https://github.com/philn/glide/archive/refs/tags/0.6.0.tar.gz"
+git = "https://github.com/philn/glide"
+rev = "fc86c0e8672e0713b26edae8c6388b85d5d05177"
 [build]
 template = "cargo"
 dependencies = [

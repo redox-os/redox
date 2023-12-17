@@ -1,5 +1,6 @@
 #TODO compiled but not tested
 [source]
-tar = "https://github.com/pemistahl/grex/archive/refs/tags/v1.4.1.tar.gz"
+git = "https://github.com/pemistahl/grex"
+rev = "9b4ccfa9cc724bce43f19c51c8d512accbad93b6"
 [build]
 template = "cargo"

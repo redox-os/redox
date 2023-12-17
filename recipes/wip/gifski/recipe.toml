@@ -1,5 +1,6 @@
 #TODO Not compiled or tested
 [source]
-tar = "https://github.com/ImageOptim/gifski/archive/refs/tags/1.13.0.tar.gz"
+git = "https://github.com/ImageOptim/gifski"
+rev = "ba659390435d79db66f2e5e0a876b5d2e8681dcb"
 [build]
 template = "cargo"

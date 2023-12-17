@@ -1,5 +1,6 @@
 #TODO missing script for Go, see https://github.com/kahing/goofys/#installation
 [source]
-tar = "https://github.com/kahing/goofys/archive/refs/tags/v0.24.0.tar.gz"
+git = "https://github.com/kahing/goofys"
+rev = "45b8d78375af1b24604439d2e60c567654bcdf88"
 [build]
 template = "custom"

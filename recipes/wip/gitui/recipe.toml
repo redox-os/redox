@@ -1,6 +1,7 @@
 #TODO openssl-sys crate error
 [source]
-tar = "https://github.com/extrawurst/gitui/archive/refs/tags/v0.22.1.tar.gz"
+git = "https://github.com/extrawurst/gitui"
+rev = "87686118768e89b5e86611b4057c05d0d7abb2bc"
 [build]
 template = "custom"
 dependencies = [

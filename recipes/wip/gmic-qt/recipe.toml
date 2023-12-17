@@ -1,6 +1,7 @@
 #TODO missing script for building, see https://github.com/c-koi/gmic-qt#build-instructions
 #TODO probably missing dependencies
 [source]
-tar = "https://github.com/c-koi/gmic-qt/archive/refs/tags/v.3.3.2.tar.gz"
+git = "https://github.com/c-koi/gmic-qt"
+rev = "b616829854c0e482d63b9fe8eca48e73d7cd3bd8"
 [build]
 template = "custom"

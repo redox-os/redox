@@ -1,5 +1,6 @@
 #TODO Not compiled or tested
 [source]
-tar = "https://github.com/tummychow/git-absorb/archive/refs/tags/0.6.10.tar.gz"
+git = "https://github.com/tummychow/git-absorb"
+rev = "1c5aecfcc5244b8fb49c9c962387ef3713170392"
 [build]
 template = "cargo"

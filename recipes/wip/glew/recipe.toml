@@ -1,6 +1,7 @@
 #TODO missing script for "make", see https://github.com/nigels-com/glew#linux-and-mac
 [source]
-tar = "https://github.com/nigels-com/glew/archive/refs/tags/glew-2.2.0.tar.gz"
+git = "https://github.com/nigels-com/glew"
+rev = "9fb23c3e61cbd2d581e33ff7d8579b572b38ee26"
 [build]
 template = "custom"
 dependencies = [
