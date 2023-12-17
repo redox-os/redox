@@ -4,3 +4,6 @@ git = "https://gitlab.com/imp/cargo-info"
 rev = "8a7b4db5b7c7a19c43bf4e01c22abdb43dfcbe71"
 [build]
 template = "cargo"
+dependencies = [
+    "openssl1",
+]
