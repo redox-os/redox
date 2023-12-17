@@ -1,6 +1,7 @@
 #TODO fs_at crate error
 [source]
-tar = "https://github.com/cargo-generate/cargo-generate/archive/refs/tags/v0.18.3.tar.gz"
+git = "https://github.com/cargo-generate/cargo-generate"
+rev = "f7728a02149c9120fdbe50332e9342b92621faa6"
 [build]
 template = "cargo"
 dependencies = [

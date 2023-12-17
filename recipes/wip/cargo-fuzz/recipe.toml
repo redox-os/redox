@@ -1,4 +1,4 @@
-#TODO Not compiled or tested
+#TODO compiled but not tested (after an update on proc-macro2)
 [source]
 git = "https://github.com/rust-fuzz/cargo-fuzz"
 rev = "0a992ee43d91746a6a627e9977cfb27693ce3b86"
