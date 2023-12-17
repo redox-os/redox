@@ -1,5 +1,6 @@
 #TODO Not compiled or tested
 [source]
-tar = "https://github.com/rust-fuzz/cargo-fuzz/archive/refs/tags/0.11.2.tar.gz"
+git = "https://github.com/rust-fuzz/cargo-fuzz"
+rev = "0a992ee43d91746a6a627e9977cfb27693ce3b86"
 [build]
 template = "cargo"
