@@ -5,6 +5,8 @@ HOST_ARCH?=$(shell uname -m)
 # Configuration
 ## Architecture to build Redox for (aarch64, i686, or x86_64). Defaults to a host one
 ARCH?=$(HOST_ARCH)
+## Sub-device type for aarch64 if needed
+BOARD?=
 ## Enable to use binary prefix (much faster)
 PREFIX_BINARY?=1
 ## Enable to use binary packages (much faster)
@@ -12,7 +14,11 @@ REPO_BINARY?=0
 ## Name of the configuration to include in the image name e.g. desktop or server
 CONFIG_NAME?=desktop
 ## Select filesystem config
+ifeq ($(BOARD),)
 FILESYSTEM_CONFIG?=config/$(ARCH)/$(CONFIG_NAME).toml
+else
+FILESYSTEM_CONFIG?=config/$(ARCH)/$(BOARD)/$(CONFIG_NAME).toml
+endif
 ## Filesystem size in MB (default comes from filesystem_size in the FILESYSTEM_CONFIG)
 FILESYSTEM_SIZE?=$(shell grep filesystem_size $(FILESYSTEM_CONFIG) | cut -d' ' -f3)
 ## Flags to pass to redoxfs-mkfs. Add --encrypt to set up disk encryption
@@ -21,8 +27,6 @@ REDOXFS_MKFS_FLAGS?=
 PODMAN_BUILD?=0
 ## The containerfile to use for the Podman base image
 CONTAINERFILE?=podman/redox-base-containerfile
-## Sub-device type for aarch64 if needed
-BOARD?=
 
 # Per host variables
 HOST_CARGO=env -u RUSTUP_TOOLCHAIN cargo
