@@ -1,5 +1,6 @@
 #TODO Not compiled or tested
 [source]
-tar = "https://github.com/mozilla/cbindgen/archive/refs/tags/0.26.0.tar.gz"
+git = "https://github.com/mozilla/cbindgen"
+rev = "703b53c06f9fe2dbc0193d67626558cfa84a0f62"
 [build]
 template = "cargo"

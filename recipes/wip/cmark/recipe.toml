@@ -1,5 +1,6 @@
 #TODO missing script for CMake, see https://github.com/commonmark/cmark#installing
 [source]
-tar = "https://github.com/commonmark/cmark/archive/refs/tags/0.30.3.tar.gz"
+git = "https://github.com/commonmark/cmark"
+rev = "5ba25ff40eba44c811f79ab6a792baf945b8307c"
 [build]
 template = "custom"

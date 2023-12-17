@@ -1,6 +1,7 @@
 #TODO Not compiled or tested yet
 [source]
-tar = "https://github.com/cmus/cmus/archive/refs/tags/v2.10.0.tar.gz"
+git = "https://github.com/cmus/cmus"
+rev = "ade6e2a7253d7a256e87fdac3da17c9158e6700e"
 [build]
 template = "configure"
 dependencies = [

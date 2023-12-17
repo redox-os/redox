@@ -1,5 +1,5 @@
-#TODO compiled after cargo update but not tested
+#TODO compiled but not tested (after cargo update)
 [source]
-tar = "https://github.com/theryangeary/choose/archive/refs/tags/v1.3.4.tar.gz"
+git = "https://github.com/theryangeary/choose"
 [build]
 template = "cargo"
