@@ -1,6 +1,7 @@
 #TODO Not compiled or tested
 [source]
-tar = "https://github.com/the-lean-crate/criner/archive/refs/tags/v0.3.1.tar.gz"
+git = "https://github.com/the-lean-crate/criner"
+rev = "e0cd0e1c7937477c466d46e4fd571ddfd15fb4d7"
 [build]
 template = "custom"
 script = """

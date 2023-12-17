@@ -2,7 +2,8 @@
 #TODO build the editor, see https://github.com/defold/defold/blob/dev/editor/README_BUILD.md
 # probably the SDKs can't run on Redox, avoid them
 [source]
-tar = "https://github.com/defold/defold/archive/refs/tags/1.6.2.tar.gz"
+git = "https://github.com/defold/defold"
+rev = "4e156b7cf37a380122aada30dacbf2b590ead76b"
 [build]
 template = "custom"
 dependencies = [

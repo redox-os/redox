@@ -1,5 +1,6 @@
 #TODO outdated redox_syscall crate
 [source]
-tar = "https://github.com/eza-community/eza/archive/refs/tags/v0.11.0.tar.gz"
+git = "https://github.com/eza-community/eza"
+rev = "edcf392c78abd8abea76d4f59fb639ad134a0d8b"
 [build]
 template = "cargo"

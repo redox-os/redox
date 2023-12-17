@@ -1,5 +1,6 @@
 #TODO program source code error
 [source]
-tar = "https://github.com/solidiquis/erdtree/archive/refs/tags/v2.0.0.tar.gz"
+git = "https://github.com/solidiquis/erdtree"
+rev = "2b1db8bcc843c3fa8b634df86f94716c75ca470a"
 [build]
 template = "cargo"

@@ -1,6 +1,7 @@
 #TODO not compiled/tested yet
 [source]
-tar = "https://github.com/Wilfred/difftastic/archive/refs/tags/0.47.0.tar.gz"
+git = "https://github.com/Wilfred/difftastic"
+rev = "a67ad5b9afe31e577540f27280885652c792b103"
 [build]
 template = "cargo"
 dependencies = [

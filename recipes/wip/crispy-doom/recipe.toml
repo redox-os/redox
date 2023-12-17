@@ -1,6 +1,7 @@
 #TODO Not compiled/tested yet
 [source]
-tar = "https://github.com/fabiangreffrath/crispy-doom/archive/refs/tags/crispy-doom-6.0.tar.gz"
+git = "https://github.com/fabiangreffrath/crispy-doom"
+rev = "593f5b97023ed39b7640073160c06895bbfc3d26"
 [build]
 template = "configure"
 dependencies = [

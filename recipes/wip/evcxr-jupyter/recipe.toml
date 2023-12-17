@@ -1,6 +1,7 @@
 #TODO Not compiled or tested
 [source]
-tar = "https://github.com/evcxr/evcxr/archive/refs/tags/v0.15.1.tar.gz"
+git = "https://github.com/evcxr/evcxr"
+rev = "e6deec6060bc47297eb90674cca496c6874f99ba"
 [build]
 template = "custom"
 script = """

@@ -1,5 +1,6 @@
 #TODO Not compiled or tested
 [source]
-tar = "https://github.com/orhun/daktilo/archive/refs/tags/v0.1.0.tar.gz"
+git = "https://github.com/orhun/daktilo"
+rev = "f51dde4e1b83fb18018ebb25ff246613a136817f"
 [build]
 template = "cargo"

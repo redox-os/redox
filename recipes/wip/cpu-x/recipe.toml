@@ -1,6 +1,7 @@
 #TODO missing script for CMake, see https://github.com/TheTumultuousUnicornOfDarkness/CPU-X/wiki/manual-build#build-and-install-cpu-x
 [source]
-tar = "https://github.com/TheTumultuousUnicornOfDarkness/CPU-X/archive/refs/tags/v5.0.2.tar.gz"
+git = "https://github.com/TheTumultuousUnicornOfDarkness/CPU-X"
+rev = "b957c031a2eab2c6c88275c4616a6a5e8c8e7670"
 [build]
 template = "custom"
 dependencies = [

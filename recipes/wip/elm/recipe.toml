@@ -1,5 +1,6 @@
 #TODO missing script for building, lacking build instructions
 [source]
-tar = "https://github.com/elm/compiler/archive/refs/tags/0.19.1.tar.gz"
+git = "https://github.com/elm/compiler"
+rev = "c9aefb6230f5e0bda03205ab0499f6e4af924495"
 [build]
 template = "custom"
