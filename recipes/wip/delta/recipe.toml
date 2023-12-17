@@ -1,6 +1,7 @@
 #TODO Not compiled or tested yet
 [source]
-tar = "https://github.com/dandavison/delta/archive/refs/tags/0.15.1.tar.gz"
+git = "https://github.com/dandavison/delta"
+rev = "03f1569a9aff964e9291371d9928d0584327eae2"
 [build]
 template = "custom"
 dependencies = [

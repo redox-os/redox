@@ -1,6 +1,7 @@
 #TODO Compilation error (after a patch to update tokio on Cargo.toml)
 [source]
-tar = "https://github.com/fcsonline/drill/archive/refs/tags/0.8.3.tar.gz"
+git = "https://github.com/fcsonline/drill"
+rev = "f56d89a25fc5838da57727a75ec3340758c30318"
 [build]
 template = "cargo"
 dependencies = [

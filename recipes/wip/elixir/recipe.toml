@@ -1,5 +1,6 @@
 #TODO missing script for "make", see https://github.com/elixir-lang/elixir#compiling-from-source
 [source]
-tar = "https://github.com/elixir-lang/elixir/archive/refs/tags/v1.15.7.tar.gz"
+git = "https://github.com/elixir-lang/elixir"
+rev = "927b10df80ee1c1c7396e68efe00d06bc3e80420"
 [build]
 template = "custom"

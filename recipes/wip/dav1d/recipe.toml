@@ -1,5 +1,6 @@
 #TODO missing script for Meson, see https://code.videolan.org/videolan/dav1d#compile
 [source]
-tar = "https://code.videolan.org/videolan/dav1d/-/archive/1.3.0/dav1d-1.3.0.tar.bz2"
+git = "https://code.videolan.org/videolan/dav1d"
+rev = "48035599cdd4e4415732e408c407e0c1cd1c7444"
 [build]
 template = "custom"

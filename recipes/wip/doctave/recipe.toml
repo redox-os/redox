@@ -1,5 +1,5 @@
 #TODO Not compiled or tested
 [source]
-tar = "https://github.com/Doctave/doctave/archive/refs/tags/0.4.2.tar.gz"
+git = "https://github.com/Doctave/doctave"
 [build]
 template = "cargo"

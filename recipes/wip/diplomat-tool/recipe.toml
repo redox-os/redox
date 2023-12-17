@@ -1,6 +1,7 @@
 #TODO Not compiled or tested
 [source]
-tar = "https://github.com/rust-diplomat/diplomat/archive/refs/tags/v0.6.0.tar.gz"
+git = "https://github.com/rust-diplomat/diplomat"
+rev = "01bfb4bc53211e1c2a5ea58f64205c3a06727f7d"
 [build]
 template = "custom"
 script = """

@@ -1,5 +1,6 @@
 #TODO Not compiled or tested
 [source]
-tar = "https://github.com/adam-mcdaniel/dune/archive/refs/tags/v0.1.9.tar.gz"
+git = "https://github.com/adam-mcdaniel/dune"
+rev = "a0750ad11341bd94c2f2808601ef4bc73d5cf445"
 [build]
 template = "cargo"

@@ -1,6 +1,7 @@
 #TODO compilation error (after a patch on the ring crate)
 [source]
-tar = "https://github.com/printfn/fend/archive/refs/tags/v1.2.2.tar.gz"
+git = "https://github.com/printfn/fend"
+rev = "e2b728fcf804cfaff4bda86eff495adda81a50d7"
 [build]
 template = "custom"
 script = """

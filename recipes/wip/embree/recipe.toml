@@ -1,6 +1,7 @@
 #TODO missing script for CMake, see https://github.com/embree/embree#linux-and-macos
 [source]
-tar = "https://github.com/embree/embree/archive/refs/tags/v4.3.0.tar.gz"
+git = "https://github.com/embree/embree"
+rev = "be0accfd0b246e2b03355b8ee7710a22c1b49240"
 [build]
 template = "custom"
 dependencies = [

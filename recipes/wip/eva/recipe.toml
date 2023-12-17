@@ -1,5 +1,5 @@
 #TODO rustyline crate error
 [source]
-tar = "https://github.com/nerdypepper/eva/archive/refs/tags/v0.3.1.tar.gz"
+git = "https://github.com/nerdypepper/eva"
 [build]
 template = "cargo"
