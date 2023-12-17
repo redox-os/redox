@@ -1,0 +1,122 @@
+# Minimal configuration
+
+# General settings
+[general]
+# Filesystem size in MiB
+filesystem_size = 256
+# Do not prompt if settings are not defined
+prompt = false
+efi_partition_size = 128
+
+# Package settings
+[packages]
+bootloader = {}
+bootstrap = {}
+coreutils = {}
+escalated = {}
+extrautils = {}
+initfs = {}
+ion = {}
+ipcd = {}
+kernel = {}
+ptyd = {}
+smith = {}
+userutils = {}
+uutils = {}
+
+# User settings
+[users.root]
+password = "password"
+uid = 0
+gid = 0
+name = "root"
+home = "/root"
+
+[users.user]
+# Password is unset
+password = ""
+
+[[files]]
+path = "/etc/init.d/00_base"
+data = """
+ipcd
+ptyd
+escalated
+"""
+
+[[files]]
+path = "/etc/init.d/30_console"
+data = """
+getty 2
+getty debug: -J
+"""
+
+[[files]]
+path = "/etc/redox-release"
+data = "0.8.0"
+
+[[files]]
+path = "/etc/group"
+data = """
+root;0;root
+user;1000;user
+sudo;1;user
+"""
+
+[[files]]
+path = "/etc/hostname"
+data = """
+redox
+"""
+
+[[files]]
+path = "/usr/bin"
+data = "../bin"
+symlink = true
+
+[[files]]
+path = "/usr/games"
+data = "../games"
+symlink = true
+
+[[files]]
+path = "/usr/include"
+data = "../include"
+symlink = true
+
+[[files]]
+path = "/usr/lib"
+data = "../lib"
+symlink = true
+
+[[files]]
+path = "/usr/share"
+data = "../share"
+symlink = true
+
+[[files]]
+path = "/tmp"
+data = ""
+directory= true
+# 0o1777
+mode = 1023
+
+[[files]]
+path = "/dev/null"
+data = "null:"
+symlink = true
+
+[[files]]
+path = "/dev/random"
+data = "rand:"
+symlink = true
+
+[[files]]
+path = "/dev/urandom"
+data = "rand:"
+symlink = true
+
+[[files]]
+path = "/dev/zero"
+data = "zero:"
+symlink = true
