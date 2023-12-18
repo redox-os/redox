@@ -1,6 +1,7 @@
 #TODO make dependencies work
 [source]
-tar = "https://github.com/NixOS/nix/archive/refs/tags/2.19.2.tar.gz"
+git = "https://github.com/NixOS/nix"
+rev = "50f8f1c8bc019a4c0fd098b9ac674b94cfc6af0d"
 [build]
 template = "custom"
 dependencies = [

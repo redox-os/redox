@@ -1,6 +1,7 @@
 #TODO not compiled or tested
 [source]
-tar = "https://github.com/hrkfdn/ncspot/archive/refs/tags/v0.13.4.tar.gz"
+git = "https://github.com/hrkfdn/ncspot"
+rev = "92e0852b3796601f406ebfdd697635ea63566a31"
 [build]
 template = "custom"
 dependencies = [

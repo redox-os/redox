@@ -1,6 +1,7 @@
 #TODO xdg-home crate error
 [source]
-tar = "https://github.com/pkulak/matui/archive/refs/tags/v0.4.4.tar.gz"
+git = "https://github.com/pkulak/matui"
+rev = "44397982508666e3abd3b69b401dee9496bba2d6"
 [build]
 template = "cargo"
 dependencies = [

@@ -1,6 +1,7 @@
 #TODO Not tested
 [source]
-tar = "https://github.com/minetest/minetest_game/archive/refs/tags/5.7.0.tar.gz"
+git = "https://github.com/minetest/minetest_game"
+rev = "b9c089474cc343b37f90cb8cefc4b5553af2e9ea"
 [build]
 template = "custom"
 script = """

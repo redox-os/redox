@@ -1,5 +1,6 @@
 #TODO Compiled but not tested
 [source]
-tar = "https://github.com/urbanogilson/lineselect/archive/refs/tags/v0.1.0.tar.gz"
+git = "https://github.com/urbanogilson/lineselect"
+rev = "080d1c62fcdd70cce0c94361ee10fd680aa92b4d"
 [build]
 template = "cargo"

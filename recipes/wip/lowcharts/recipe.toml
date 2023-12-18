@@ -1,5 +1,6 @@
 #TODO compiled but not tested
 [source]
-tar = "https://github.com/juan-leon/lowcharts/archive/refs/tags/v0.5.8.tar.gz"
+git = "https://github.com/juan-leon/lowcharts"
+rev = "94e3db44b5e20c155d4bf2348eb1293508772cdb"
 [build]
 template = "cargo"

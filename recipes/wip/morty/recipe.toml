@@ -1,5 +1,6 @@
 #TODO Not compiled or tested
 [source]
-tar = "https://github.com/pulp-platform/morty/archive/refs/tags/v0.9.0.tar.gz"
+git = "https://github.com/pulp-platform/morty"
+rev = "a1a5b483fabc8b119a78f3c5b1921e8d6510720d"
 [build]
 template = "cargo"

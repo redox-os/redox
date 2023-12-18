@@ -1,6 +1,7 @@
 #TODO probably wrong script, see https://github.com/microsoft/mimalloc#macos-linux-bsd-etc
 [source]
-tar = "https://github.com/microsoft/mimalloc/archive/refs/tags/v2.1.2.tar.gz"
+git = "https://github.com/microsoft/mimalloc"
+rev = "43ce4bd7fd34bcc730c1c7471c99995597415488"
 [build]
 template = "custom"
 script = """

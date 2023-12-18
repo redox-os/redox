@@ -1,7 +1,8 @@
 #TODO missing script for Meson (use system libraries), see https://github.com/mpv-player/mpv#compilation
 #TODO missing dependencies
 [source]
-tar = "https://github.com/mpv-player/mpv/archive/refs/tags/v0.37.0.tar.gz"
+git = "https://github.com/mpv-player/mpv"
+rev = "818ce7c51a6b9179307950e919983e0909942098"
 [build]
 template = "custom"
 dependencies = [

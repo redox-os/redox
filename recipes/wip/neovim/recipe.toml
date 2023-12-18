@@ -1,6 +1,7 @@
 #TODO probably wrong script, see https://github.com/neovim/neovim/wiki/Installing-Neovim#install-from-source
 [source]
-tar = "https://github.com/neovim/neovim/archive/refs/tags/v0.9.0.tar.gz"
+git = "https://github.com/neovim/neovim"
+rev = "d772f697a281ce9c58bf933997b87c7f27428a60"
 [build]
 template = "custom"
 dependencies = [

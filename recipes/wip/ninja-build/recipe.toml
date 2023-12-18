@@ -1,6 +1,7 @@
 #TODO probably wrong script, see https://github.com/ninja-build/ninja#building-ninja-itself
 [source]
-tar = "https://github.com/ninja-build/ninja/archive/refs/tags/v1.11.1.tar.gz"
+git = "https://github.com/ninja-build/ninja"
+rev = "a524bf3f6bacd1b4ad85d719eed2737d8562f27a"
 [build]
 template = "custom"
 script = """

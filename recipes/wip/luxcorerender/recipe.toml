@@ -1,7 +1,8 @@
 #TODO missing script for CMake, see https://wiki.luxcorerender.org/Compiling_LuxCore
 #TODO probably missing dependencies
 [source]
-tar = "https://github.com/LuxCoreRender/LuxCore/archive/refs/tags/luxcorerender_v2.6.tar.gz"
+git = "https://github.com/LuxCoreRender/LuxCore"
+rev = "c8f10e9ddf5171fa705782a3da3f48123f96a4cb"
 [build]
 template = "custom"
 dependencies = [
