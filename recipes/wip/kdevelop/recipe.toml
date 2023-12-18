@@ -1,7 +1,8 @@
 #TODO missing script for building, see https://kdevelop.org/build-it/
 #TODO probably missing dependencies, see https://packages.debian.org/source/trixie/kdevelop
 [source]
-tar = "https://invent.kde.org/kdevelop/kdevelop/-/archive/v23.08.3/kdevelop-v23.08.3.tar.bz2"
+git = "https://invent.kde.org/kdevelop/kdevelop"
+rev = "3021daeb5d62bc7a7a7dec4bcc23e19d3bfdaadd"
 [build]
 template = "custom"
 dependencies = [

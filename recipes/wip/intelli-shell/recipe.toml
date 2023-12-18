@@ -1,6 +1,7 @@
 #TODO OpenSSL error
 [source]
-tar = "https://github.com/lasantosr/intelli-shell/archive/refs/tags/v0.2.6.tar.gz"
+git = "https://github.com/lasantosr/intelli-shell"
+rev = "f1a3f24c8dbc9a9a10bfc702f6feb205f433fed0"
 [build]
 template = "custom"
 dependencies = [

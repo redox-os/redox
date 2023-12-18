@@ -1,5 +1,6 @@
 #TODO missing script for Maven, see https://github.com/apache/iotdb#build-iotdb-from-source
 [source]
-tar = "https://github.com/apache/iotdb/archive/refs/tags/v1.2.2.tar.gz"
+git = "https://github.com/apache/iotdb"
+rev = "5d0bfb0c25082b61cb8830aa04ec34a13edccd31"
 [build]
 template = "custom"

@@ -1,5 +1,6 @@
 #TODO missing script for CMake, see https://docs.lammps.org/Build_cmake.html
 [source]
-tar = "https://github.com/lammps/lammps/archive/refs/tags/stable_2Aug2023_update1.tar.gz"
+git = "https://github.com/lammps/lammps"
+rev = "27e8d0f19cfd60ff513828af74d07d2c8f3c4451"
 [build]
 template = "custom"

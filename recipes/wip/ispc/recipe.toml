@@ -1,5 +1,6 @@
 #TODO missing script for building, see https://github.com/ispc/ispc/wiki/ISPC-Development-Guide#build-system
 [source]
-tar = "https://github.com/ispc/ispc/archive/refs/tags/v1.22.0.tar.gz"
+git = "https://github.com/ispc/ispc"
+rev = "bd2c42d42e0cc3da1baf92160b82d4dc820a02ee"
 [build]
 template = "custom"

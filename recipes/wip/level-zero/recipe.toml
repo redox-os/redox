@@ -1,5 +1,6 @@
 #TODO missing script for CMake, see https://github.com/oneapi-src/level-zero#building-and-installing
 [source]
-tar = "https://github.com/oneapi-src/level-zero/archive/refs/tags/v1.15.1.tar.gz"
+git = "https://github.com/oneapi-src/level-zero"
+rev = "ea5be99d8d34480447ab1e3c7efc30d6f179b123"
 [build]
 template = "custom"

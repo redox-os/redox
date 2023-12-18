@@ -1,5 +1,6 @@
 #TODO compiled after cargo update, but not tested
 [source]
-tar = "https://github.com/Canop/lfs/archive/refs/tags/v2.6.0.tar.gz"
+git = "https://github.com/Canop/dysk"
+rev = "eecc8cf86a26e840cdf1c97758a7deb3a4852e63"
 [build]
 template = "cargo"

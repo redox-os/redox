@@ -1,5 +1,6 @@
 #TODO Not compiled or tested
 [source]
-tar = "https://github.com/sigmaSd/IRust/archive/refs/tags/irust@1.71.4.tar.gz"
+git = "https://github.com/sigmaSd/IRust"
+rev = "6f9dbaf9387b39019a44dfe5ef5397e6bb8d2a1a"
 [build]
 template = "cargo"

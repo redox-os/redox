@@ -1,7 +1,8 @@
 #TODO probably wrong script, see https://github.com/xbmc/xbmc/blob/master/docs/README.Linux.md#4-build-kodi
 #TODO maybe missing dependencies, see https://archlinux.org/packages/extra/x86_64/kodi/
 [source]
-tar = "https://github.com/xbmc/xbmc/archive/refs/tags/20.2-Nexus.tar.gz"
+git = "https://github.com/xbmc/xbmc"
+rev = "5f418d0b133535c6675154688ac7144e34f4d436"
 [build]
 template = "custom"
 dependencies = [

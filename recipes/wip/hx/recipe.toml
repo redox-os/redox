@@ -1,5 +1,6 @@
 #TODO missing script for "make", see https://github.com/krpors/hx#compiling-and-running
 [source]
-tar = "https://github.com/krpors/hx/archive/refs/tags/v1.0.14.tar.gz"
+git = "https://github.com/krpors/hx"
+rev = "c124b40586f701e47b35628fde286d20bf9988ca"
 [build]
 template = "custom"
