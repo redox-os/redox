@@ -1,6 +1,7 @@
 #TODO compilation error (after an update on tokio and a patch on ring)
 [source]
-tar = "https://github.com/lycheeverse/lychee/archive/refs/tags/v0.13.0.tar.gz"
+git = "https://github.com/lycheeverse/lychee"
+rev = "75e80190fb39abd52ceabacce1073784c7bbaa5c"
 [build]
 template = "custom"
 dependencies = [

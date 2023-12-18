@@ -1,5 +1,6 @@
 #TODO missing script for CMake, see https://github.com/xtensor-stack/xtl#install-from-sources
 [source]
-tar = "https://github.com/xtensor-stack/xtl/archive/refs/tags/0.7.5.tar.gz"
+git = "https://github.com/xtensor-stack/xtl"
+rev = "c95f6c8b13ffb7f74f16d3fd6882668b79bd8412"
 [build]
 template = "custom"

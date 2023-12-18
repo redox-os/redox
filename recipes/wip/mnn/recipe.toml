@@ -1,5 +1,6 @@
 #TODO missing script for CMake, lacking English build instructions
 [source]
-tar = "https://github.com/alibaba/MNN/archive/refs/tags/2.7.1.tar.gz"
+git = "https://github.com/alibaba/MNN"
+rev = "1ea55f467fb231655cf1e08f77d4a0f1043c4c29"
 [build]
 template = "custom"

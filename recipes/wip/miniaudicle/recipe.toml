@@ -1,6 +1,7 @@
 #TODO missing script for "make", see https://github.com/ccrma/miniAudicle#linux
 [source]
-tar = "https://github.com/ccrma/miniAudicle/archive/refs/tags/chuck-1.5.1.8.tar.gz"
+git = "https://github.com/ccrma/miniAudicle"
+rev = "3ef25e881cec9ee823d9cf93346c2d6feb089007"
 [build]
 template = "custom"
 dependencies = [

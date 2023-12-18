@@ -1,6 +1,7 @@
 #TODO missing script for CMake, see https://github.com/melonDS-emu/melonDS#linux
 [source]
-tar = "https://github.com/melonDS-emu/melonDS/archive/refs/tags/0.9.5.tar.gz"
+git = "https://github.com/melonDS-emu/melonDS"
+rev = "430de6b2702bb93faa8c2004aff3fbd084db4a1e"
 [build]
 template = "custom"
 dependencies = [

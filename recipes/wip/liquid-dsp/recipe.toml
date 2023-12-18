@@ -1,6 +1,7 @@
 #TODO probably wrong script, see https://github.com/jgaeddert/liquid-dsp#installation-and-dependencies
 [source]
-tar = "https://github.com/jgaeddert/liquid-dsp/archive/refs/tags/v1.6.0.tar.gz"
+git = "https://github.com/jgaeddert/liquid-dsp"
+rev = "8bf87b6fe325d98c250d6911fa50518d14175d86"
 [build]
 template = "custom"
 dependencies = [

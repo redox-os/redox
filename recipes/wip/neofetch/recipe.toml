@@ -1,6 +1,7 @@
 #TODO Add Redox OS on the Bash script
 [source]
-tar = "https://github.com/dylanaraps/neofetch/archive/refs/tags/7.1.0.tar.gz"
+git = "https://github.com/dylanaraps/neofetch"
+rev = "60d07dee6b76769d8c487a40639fb7b5a1a7bc85"
 [build]
 template = "custom"
 script = """

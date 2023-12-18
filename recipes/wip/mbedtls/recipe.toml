@@ -1,7 +1,8 @@
 #TODO probaly wrong script, see https://mbed-tls.readthedocs.io/en/latest/getting_started/building/#building-with-cmake
 # They say that the CMake method is better than GNU make
 [source]
-tar = "https://github.com/Mbed-TLS/mbedtls/archive/refs/tags/v3.5.1.tar.gz"
+git = "https://github.com/Mbed-TLS/mbedtls"
+rev = "edb8fec9882084344a314368ac7fd957a187519c"
 [build]
 template = "custom"
 script = """

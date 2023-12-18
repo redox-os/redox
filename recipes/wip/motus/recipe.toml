@@ -1,5 +1,6 @@
 #TODO x11rb crate error
 [source]
-tar = "https://github.com/oleiade/motus/archive/refs/tags/v0.2.0.tar.gz"
+git = "https://github.com/oleiade/motus"
+rev = "318b33e070995f50ccd28df2c319d55bd6116a2d"
 [build]
 template = "cargo"

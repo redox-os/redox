@@ -1,5 +1,6 @@
 #TODO Not compiled or tested
 [source]
-tar = "https://github.com/jacobdeichert/mask/archive/refs/tags/mask/0.11.4.tar.gz"
+git = "https://github.com/jacobdeichert/mask"
+rev = "a082ee0e5c0a87ccd2447d569fe3a055222864c3"
 [build]
 template = "cargo"

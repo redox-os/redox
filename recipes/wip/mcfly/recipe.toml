@@ -1,5 +1,6 @@
 #TODO Not compiled or tested
 [source]
-tar = "https://github.com/cantino/mcfly/archive/refs/tags/v0.8.1.tar.gz"
+git = "https://github.com/cantino/mcfly"
+rev = "2bddd8bd83a2011a2ddaf3f00d66346673672644"
 [build]
 template = "cargo"

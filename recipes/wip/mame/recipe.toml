@@ -1,6 +1,7 @@
 #TODO missing script for "make", see https://docs.mamedev.org/initialsetup/compilingmame.html
 [source]
-tar = "https://github.com/mamedev/mame/archive/refs/tags/mame0261.tar.gz"
+git = "https://github.com/mamedev/mame"
+rev = "ca50094e8d5467aed7a18c718cdff8903e1bfe27"
 [build]
 template = "custom"
 dependencies = [
