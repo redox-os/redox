@@ -1,6 +1,7 @@
 #TODO Not compiled or tested
 [source]
-tar = "https://github.com/hickory-dns/hickory-dns/archive/refs/tags/v0.24.0.tar.gz"
+git = "https://github.com/hickory-dns/hickory-dns"
+rev = "408d0baca080d1b201cd33e616dc4abd160ef6c0"
 [build]
 template = "cargo"
 dependencies = [

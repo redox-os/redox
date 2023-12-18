@@ -1,5 +1,6 @@
 #TODO x11rb crate error
 [source]
-tar = "https://github.com/ndd7xv/heh/archive/refs/tags/v0.4.0.tar.gz"
+git = "https://github.com/ndd7xv/heh"
+rev = "bd69f6657b98225796369a0563bf24f3f148046c"
 [build]
 template = "cargo"

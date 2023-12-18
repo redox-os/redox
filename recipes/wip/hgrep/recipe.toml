@@ -1,5 +1,6 @@
 #TODO Not compiled or tested
 [source]
-tar = "https://github.com/rhysd/hgrep/archive/refs/tags/v0.3.3.tar.gz"
+git = "https://github.com/rhysd/hgrep"
+rev = "85d7271d477a41708d89e1e7bc14e94dcab149ba"
 [build]
 template = "cargo"
