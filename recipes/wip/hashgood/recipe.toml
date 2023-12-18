@@ -1,5 +1,6 @@
 #TODO Not compiled or tested
 [source]
-tar = "https://github.com/thombles/hashgood/archive/refs/tags/v0.4.0.tar.gz"
+git = "https://github.com/thombles/hashgood"
+rev = "9e476ded77bd2f2289f4ebe08cdfc87332827292"
 [build]
 template = "cargo"

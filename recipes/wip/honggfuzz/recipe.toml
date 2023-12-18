@@ -1,6 +1,7 @@
 #TODO missing script for "make", see https://github.com/google/honggfuzz#installation
 [source]
-tar = "https://github.com/google/honggfuzz/archive/refs/tags/2.6.tar.gz"
+git = "https://github.com/google/honggfuzz"
+rev = "83a8415a372d84dcc69ac1e2c2f152190bcf76d1"
 [build]
 template = "custom"
 dependencies = [
