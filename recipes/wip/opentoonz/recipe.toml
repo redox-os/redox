@@ -1,7 +1,8 @@
 #TODO probably wrong script, see https://github.com/opentoonz/opentoonz/blob/master/doc/how_to_build_linux.md
 #TODO missing dependencies
 [source]
-tar = "https://github.com/opentoonz/opentoonz/archive/refs/tags/v1.7.1.tar.gz"
+git = "https://github.com/opentoonz/opentoonz"
+rev = "dd4cb36142ebf65a2aa74ff8575002863d3e17fc"
 [build]
 template = "custom"
 dependencies = [

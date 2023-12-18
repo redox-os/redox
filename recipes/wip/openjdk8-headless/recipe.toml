@@ -2,7 +2,8 @@
 #TODO not compiled or tested
 #TODO build it in headless mode
 [source]
-tar = "https://github.com/openjdk/jdk8u/archive/refs/tags/jdk8u392-b08.tar.gz"
+git = "https://github.com/openjdk/jdk8u"
+rev = "9c9d6b267c41e4c713cacc41befb66007cdb2601"
 [build]
 template = "custom"
 dependencies = [

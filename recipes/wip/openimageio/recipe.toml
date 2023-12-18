@@ -1,6 +1,7 @@
 #TODO missing script for building, see https://github.com/AcademySoftwareFoundation/OpenImageIO/blob/master/INSTALL.md#building-openimageio-on-linux-or-os-x
 [source]
-tar = "https://github.com/AcademySoftwareFoundation/OpenImageIO/archive/refs/tags/v2.5.5.0.tar.gz"
+git = "https://github.com/AcademySoftwareFoundation/OpenImageIO"
+rev = "5c29caab40a3913d415ac5d37cd84983e824c75b"
 [build]
 template = "custom"
 dependencies = [

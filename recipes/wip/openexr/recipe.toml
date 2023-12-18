@@ -1,6 +1,7 @@
 #TODO missing script for CMake, see https://openexr.com/en/latest/install.html#linux-macos
 [source]
-tar = "https://github.com/AcademySoftwareFoundation/openexr/archive/refs/tags/v3.2.1.tar.gz"
+git = "https://github.com/AcademySoftwareFoundation/openexr"
+rev = "737b2707a001e67f3812d86a639c3d037efe2ea8"
 [build]
 template = "custom"
 dependencies = [

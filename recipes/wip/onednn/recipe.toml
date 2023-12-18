@@ -1,6 +1,7 @@
 #TODO missing script for CMake, see https://oneapi-src.github.io/oneDNN/dev_guide_build.html#linux-macos
 [source]
-tar = "https://github.com/oneapi-src/oneDNN/archive/refs/tags/v3.3.1.tar.gz"
+git = "https://github.com/oneapi-src/oneDNN"
+rev = "16720eaaab9557158ff77ebf3bc610e9682928d6"
 [build]
 template = "custom"
 dependencies = [

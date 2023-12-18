@@ -1,5 +1,6 @@
 #TODO configure the service
 [source]
-tar = "https://github.com/pendulum-project/ntpd-rs/archive/refs/tags/v1.0.0.tar.gz"
+git = "https://github.com/pendulum-project/ntpd-rs"
+rev = "913700dc79420f6db5fe1f2110d3146d7f9addfe"
 [build]
 template = "cargo"
