@@ -1,7 +1,8 @@
 #TODO build instructions - https://github.com/openjdk/jdk21u/blob/master/doc/building.md
 #TODO not compiled or tested
 [source]
-tar = "https://github.com/openjdk/jdk21u/archive/jdk-21+35.tar.gz"
+git = "https://github.com/openjdk/jdk21u"
+rev = "060c4f7589e7f13febd402f4dac3320f4c032b08"
 [build]
 template = "custom"
 dependencies = [

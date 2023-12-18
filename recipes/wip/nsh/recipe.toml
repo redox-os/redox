@@ -1,5 +1,6 @@
 #TODO Not compiled or tested
 [source]
-tar = "https://github.com/nuta/nsh/archive/refs/tags/v0.4.2.tar.gz"
+git = "https://github.com/nuta/nsh"
+rev = "93fa01cd5b5bba6f1c6aaabc218f3979d0ca2360"
 [build]
 template = "cargo"

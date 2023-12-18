@@ -1,5 +1,6 @@
 #TODO camino crate error (after a patch on the ring crate)
 [source]
-tar = "https://github.com/axodotdev/oranda/archive/refs/tags/v0.3.1.tar.gz"
+git = "https://github.com/axodotdev/oranda"
+rev = "11790dd3fd16029b2095c5ea97efc9f6a41e68ef"
 [build]
 template = "cargo"

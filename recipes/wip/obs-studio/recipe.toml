@@ -1,7 +1,8 @@
 #TODO missing script for CMake, see https://github.com/obsproject/obs-studio/wiki/Building-OBS-Studio
 #TODO maybe missing dependencies
 [source]
-tar = "https://github.com/obsproject/obs-studio/archive/refs/tags/30.0.1.tar.gz"
+git = "https://github.com/obsproject/obs-studio"
+rev = "b45a73296f4f898e2ed455023020058075c30bab"
 [build]
 template = "custom"
 dependencies = [

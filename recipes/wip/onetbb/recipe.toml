@@ -1,5 +1,6 @@
 #TODO missing script for CMake, see https://github.com/oneapi-src/oneTBB/blob/master/INSTALL.md
 [source]
-tar = "https://github.com/oneapi-src/oneTBB/archive/refs/tags/v2021.11.0.tar.gz"
+git = "https://github.com/oneapi-src/oneTBB"
+rev = "8b829acc65569019edb896c5150d427f288e8aba"
 [build]
 template = "custom"

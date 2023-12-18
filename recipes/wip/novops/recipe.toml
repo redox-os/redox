@@ -1,5 +1,6 @@
 #TODO missing script for "make", see https://pierrebeucher.github.io/novops/install.html#from-source
 [source]
-tar = "https://github.com/PierreBeucher/novops/archive/refs/tags/v0.9.0.tar.gz"
+git = "https://github.com/PierreBeucher/novops"
+rev = "e0891144108a889f18448b39aebe9d5a5ac2689d"
 [build]
 template = "custom"

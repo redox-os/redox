@@ -1,6 +1,7 @@
 #TODO missing script for CMake, see https://github.com/ospray/ospray_studio#standard-cmake-build
 [source]
-tar = "https://github.com/ospray/ospray_studio/archive/refs/tags/v0.13.0.tar.gz"
+git = "https://github.com/ospray/ospray_studio"
+rev = "d2c83a67c841f1329f47cf9648a56b3dacbcdcaa"
 [build]
 template = "custom"
 dependencies = [

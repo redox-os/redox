@@ -1,5 +1,6 @@
 #TODO compiled (after a cargo update) but hangs during execution
 [source]
-tar = "https://github.com/o2sh/onefetch/archive/refs/tags/2.18.1.tar.gz"
+git = "https://github.com/o2sh/onefetch"
+rev = "13376155f2f8197aa9d95830298ceee007413895"
 [build]
 template = "cargo"
