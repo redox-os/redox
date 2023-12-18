@@ -1,5 +1,6 @@
 #TODO Schemes not supported
 [source]
-tar = "https://github.com/casey/just/archive/refs/tags/1.13.0.tar.gz"
+git = "https://github.com/casey/just"
+rev = "63c0234c968b5a12a7ecceb4ebc6540996274a85"
 [build]
 template = "cargo"

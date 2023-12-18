@@ -1,6 +1,7 @@
 #TODO missing script for "make", see https://github.com/xcompact3d/Incompact3d#source-download-and-compilation
 #TODO probably missing dependencies
 [source]
-tar = "https://github.com/xcompact3d/Incompact3d/archive/refs/tags/v4.0.tar.gz"
+git = "https://github.com/xcompact3d/Incompact3d"
+rev = "2546f404cf3bbf78bc745d6133173c37e46c82df"
 [build]
 template = "custom"

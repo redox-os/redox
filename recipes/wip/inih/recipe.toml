@@ -1,5 +1,6 @@
 #TODO missing script for Meson, see https://github.com/benhoyt/inih#meson-notes
 [source]
-tar = "https://github.com/benhoyt/inih/archive/refs/tags/r57.tar.gz"
+git = "https://github.com/benhoyt/inih"
+rev = "9cecf0643da0846e77f64d10a126d9f48b9e05e8"
 [build]
 template = "custom"

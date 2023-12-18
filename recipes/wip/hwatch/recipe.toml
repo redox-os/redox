@@ -1,5 +1,6 @@
 #TODO Not compiled or tested
 [source]
-tar = "https://github.com/blacknon/hwatch/archive/refs/tags/0.3.10.tar.gz"
+git = "https://github.com/blacknon/hwatch"
+rev = "1267168468948ce4d14e61f837ac3c3474a52563"
 [build]
 template = "cargo"

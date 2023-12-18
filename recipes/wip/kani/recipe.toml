@@ -1,5 +1,6 @@
 #TODO compiled but not tested
 [source]
-tar = "https://github.com/model-checking/kani/archive/refs/tags/kani-0.28.0.tar.gz"
+git = "https://github.com/model-checking/kani"
+rev = "1e6213d3e41ce1545d5129f5d71dc566d615ccb9"
 [build]
 template = "cargo"

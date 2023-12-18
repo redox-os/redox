@@ -1,6 +1,6 @@
 #TODO not compiled or tested
 [source]
-tar = "https://git.enlightenment.org/old/legacy-imlib2/archive/v1.11.1.tar.gz"
+tar = "https://downloads.sourceforge.net/project/enlightenment/imlib2-src/1.12.1/imlib2-1.12.1.tar.xz"
 [build]
 template = "configure"
 dependencies = [

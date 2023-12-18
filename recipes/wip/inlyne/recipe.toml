@@ -2,6 +2,6 @@
 #TODO nix::sys::socket
 #TODO cmsg_space!
 [source]
-git = "https://github.com/trimental/inlyne.git"
+git = "https://github.com/trimental/inlyne"
 [build]
 template = "cargo"

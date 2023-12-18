@@ -1,6 +1,7 @@
 #TODO missing script for CMake, see https://invent.kde.org/multimedia/kdenlive/-/blob/master/dev-docs/build.md#build-and-install-the-projects
 [source]
-tar = "https://invent.kde.org/multimedia/kdenlive/-/archive/v23.08.3/kdenlive-v23.08.3.tar.bz2"
+git = "https://invent.kde.org/multimedia/kdenlive"
+rev = "da6ecdfbba7aadf88572ac5f87aeb88ff2d80f57"
 [build]
 template = "custom"
 dependencies = [

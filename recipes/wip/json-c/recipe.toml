@@ -1,6 +1,7 @@
 #TODO maybe wrong script, see https://github.com/json-c/json-c#build-instructions--
 [source]
-tar = "https://github.com/json-c/json-c/archive/refs/tags/json-c-0.17-20230812.tar.gz"
+git = "https://github.com/json-c/json-c"
+rev = "b4c371fa0cbc4dcbaccc359ce9e957a22988fb34"
 [build]
 template = "custom"
 script = """

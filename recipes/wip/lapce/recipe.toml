@@ -1,5 +1,6 @@
 #TODO not compiled or tested
 [source]
-tar = "https://github.com/lapce/lapce/archive/refs/tags/v0.2.7.tar.gz"
+git = "https://github.com/lapce/lapce"
+rev = "cb96e5ac3f3e4e70bd18b7a1307c5406e4247164"
 [build]
 template = "cargo"

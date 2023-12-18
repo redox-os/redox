@@ -1,6 +1,7 @@
 #TODO probably wrong script, see https://i2pd.readthedocs.io/en/latest/devs/building/unix/
 [source]
-tar = "https://github.com/PurpleI2P/i2pd/archive/refs/tags/2.48.0.tar.gz"
+git = "https://github.com/PurpleI2P/i2pd"
+rev = "beffdb9fe175a93164bd88ee0fafe1a22595ed15"
 [build]
 template = "custom"
 dependencies = [
