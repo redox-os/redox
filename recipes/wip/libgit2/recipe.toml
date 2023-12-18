@@ -1,6 +1,7 @@
 #TODO maybe wrong script, see https://github.com/libgit2/libgit2#building-libgit2---using-cmake
 [source]
-tar = "https://github.com/libgit2/libgit2/archive/refs/tags/v1.6.4.tar.gz"
+git = "https://github.com/libgit2/libgit2"
+rev = "a2bde63741977ca0f4ef7db2f609df320be67a08"
 [build]
 template = "custom"
 dependencies = [

@@ -1,5 +1,6 @@
 #TODO missing script for building, see https://github.com/google/double-conversion#building
 [source]
-tar = "https://github.com/google/double-conversion/archive/refs/tags/v3.3.0.tar.gz"
+git = "https://github.com/google/double-conversion"
+rev = "4f7a25d8ced8c7cf6eee6fd09d6788eaa23c9afe"
 [build]
 template = "custom"

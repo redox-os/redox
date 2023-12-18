@@ -1,6 +1,7 @@
 #TODO probably wrong script, see https://fmt.dev/latest/usage.html#building-the-library
 [source]
-tar = "https://github.com/fmtlib/fmt/archive/refs/tags/10.0.0.tar.gz"
+git = "https://github.com/fmtlib/fmt"
+rev = "f5e54359df4c26b6230fc61d38aa294581393084"
 [build]
 template = "custom"
 script = """

@@ -1,5 +1,6 @@
 #TODO missing script for CMake, see https://github.com/Reference-LAPACK/lapack#installation
 [source]
-tar = "https://github.com/Reference-LAPACK/lapack/archive/refs/tags/v3.12.0.tar.gz"
+git = "https://github.com/Reference-LAPACK/lapack"
+rev = "04b044e020a3560ccfa9988c8a80a1fb7083fc2e"
 [build]
 template = "custom"

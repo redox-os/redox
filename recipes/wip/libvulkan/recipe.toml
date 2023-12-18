@@ -1,6 +1,7 @@
 #TODO probably wrong script, see https://github.com/KhronosGroup/Vulkan-Loader/blob/main/BUILD.md
 [source]
-tar = "https://github.com/KhronosGroup/Vulkan-Loader/archive/refs/tags/v1.3.270.tar.gz"
+git = "https://github.com/KhronosGroup/Vulkan-Loader"
+rev = "cf1a1eff115465b2425d287bef1e94ca62b0de1b"
 [build]
 template = "custom"
 dependencies = [

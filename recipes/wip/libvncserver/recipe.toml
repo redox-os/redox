@@ -1,6 +1,7 @@
 #TODO probably wrong script, see https://github.com/LibVNC/libvncserver#how-to-build
 [source]
-tar = "https://github.com/LibVNC/libvncserver/archive/refs/tags/LibVNCServer-0.9.14.tar.gz"
+git = "https://github.com/LibVNC/libvncserver"
+rev = "10e9eb75f73e973725dc75c373de5d89807af028"
 [build]
 template = "custom"
 dependencies = [

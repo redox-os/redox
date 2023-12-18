@@ -1,6 +1,7 @@
 #TODO probably wrong template, see https://github.com/Haivision/srt/blob/master/docs/build/build-linux.md
 [source]
-tar = "https://github.com/Haivision/srt/archive/refs/tags/v1.5.3.tar.gz"
+git = "https://github.com/Haivision/srt"
+rev = "09f35c0f1743e23f514cb41444504a7faeacf89e"
 [build]
 template = "configure"
 dependencies = [

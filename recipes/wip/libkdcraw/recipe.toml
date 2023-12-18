@@ -1,6 +1,7 @@
 #TODO missing script for CMake, see https://invent.kde.org/graphics/libkdcraw/-/blob/master/README?ref_type=heads
 [source]
-tar = "https://invent.kde.org/graphics/libkdcraw/-/archive/v23.08.4/libkdcraw-v23.08.4.tar.bz2"
+git = "https://invent.kde.org/graphics/libkdcraw"
+rev = "fbd01409c8009f403bccac6776fe4cfefa57d5bd"
 [build]
 template = "custom"
 dependencies = [
