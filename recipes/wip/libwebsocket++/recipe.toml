@@ -1,6 +1,7 @@
 #TODO missing script for installation, lacking build instructions
 [source]
-tar = "https://github.com/zaphoyd/websocketpp/archive/refs/tags/0.8.2.tar.gz"
+git = "https://github.com/zaphoyd/websocketpp"
+rev = "56123c87598f8b1dd471be83ca841ceae07f95ba"
 [build]
 template = "custom"
 dependencies = [

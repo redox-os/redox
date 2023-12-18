@@ -1,6 +1,7 @@
 #TODO Not compiled or tested
 [source]
-tar = "https://github.com/rocky/libcdio-paranoia/archive/refs/tags/release-10.2+2.0.1.tar.gz"
+git = "https://github.com/rocky/libcdio-paranoia"
+rev = "db4dfff9e11c516ae35d87e568f511002ddae9d7"
 [build]
 template = "custom"
 script = """

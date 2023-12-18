@@ -1,5 +1,6 @@
 #TODO missing script for CMake, see https://imath.readthedocs.io/en/latest/install.html#linux-macos
 [source]
-tar = "https://github.com/AcademySoftwareFoundation/Imath/archive/refs/tags/v3.1.9.tar.gz"
+git = "https://github.com/AcademySoftwareFoundation/Imath"
+rev = "d690a3fcff4e877ead5ae56c7e964595ade8a35e"
 [build]
 template = "custom"

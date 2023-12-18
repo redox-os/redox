@@ -1,5 +1,6 @@
 #TODO probably wrong template
 [source]
-tar = "https://chromium.googlesource.com/webm/libvpx/+archive/v1.13.0.tar.gz"
+git = "https://chromium.googlesource.com/webm/libvpx"
+rev = "10b9492dcf05b652e2e4b370e205bd605d421972"
 [build]
 template = "configure"

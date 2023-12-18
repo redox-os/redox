@@ -1,6 +1,7 @@
 #TODO not compiled or tested
 [source]
-tar = "https://github.com/libharu/libharu/archive/refs/tags/v2.4.3.tar.gz"
+git = "https://github.com/libharu/libharu"
+rev = "0c598becaadaef8e3d12b883f9fc2864a118c12d"
 [build]
 template = "custom"
 script = """

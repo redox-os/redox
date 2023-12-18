@@ -1,6 +1,7 @@
 #TODO missing script for CMake, see https://invent.kde.org/graphics/kseexpr#super-impatient-cmake-building-and-installing-guide
 [source]
-tar = "https://invent.kde.org/graphics/kseexpr/-/archive/v4.0.4.0/kseexpr-v4.0.4.0.tar.bz2"
+git = "https://invent.kde.org/graphics/kseexpr"
+rev = "d834b2dc6a7f452ffca4602f90b709db86a3a630"
 [build]
 template = "custom"
 dependencies = [

@@ -1,6 +1,7 @@
 #TODO probably wrong script, see https://github.com/google/brotli#cmake
 [source]
-tar = "https://github.com/google/brotli/archive/refs/tags/v1.1.0.tar.gz"
+git = "https://github.com/google/brotli"
+rev = "ed738e842d2fbdf2d6459e39267a633c4a9b2f5d"
 [build]
 template = "custom"
 script = """

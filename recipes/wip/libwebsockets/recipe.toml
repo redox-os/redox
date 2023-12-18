@@ -1,6 +1,7 @@
 #TODO maybe wrong script
 [source]
-tar = "https://github.com/warmcat/libwebsockets/archive/refs/tags/v4.3.2.tar.gz"
+git = "https://github.com/warmcat/libwebsockets"
+rev = "4415e84c095857629863804e941b9e1c2e9347ef"
 [build]
 template = "custom"
 dependencies = [

@@ -1,5 +1,6 @@
 #TODO missing script for CMake, lacking build instructions
 [source]
-tar = "https://invent.kde.org/sdk/libkomparediff2/-/archive/v23.08.4/libkomparediff2-v23.08.4.tar.bz2"
+git = "https://invent.kde.org/sdk/libkomparediff2"
+rev = "ea9034ee3e4952862a937255bc6cc4ee392907f6"
 [build]
 template = "custom"
