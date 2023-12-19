@@ -1,5 +1,6 @@
 #TODO tuikit crate error
 [source]
-tar = "https://github.com/lotabout/skim/archive/refs/tags/v0.10.4.tar.gz"
+git = "https://github.com/lotabout/skim"
+rev = "db9f194c12486343ae23b37781123ff0dbfaaf16"
 [build]
 template = "cargo"

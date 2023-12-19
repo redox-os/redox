@@ -1,5 +1,6 @@
 #TODO missing script for "make", see https://disservin.github.io/stockfish-docs/pages/Compiling-from-source.html
 [source]
-tar = "https://github.com/official-stockfish/Stockfish/archive/refs/tags/sf_16.tar.gz"
+git = "https://github.com/official-stockfish/Stockfish"
+rev = "68e1e9b3811e16cad014b590d7443b9063b3eb52"
 [build]
 template = "custom"

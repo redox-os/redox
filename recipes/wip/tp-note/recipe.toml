@@ -1,6 +1,7 @@
 #TODO require Wayland?
 [source]
-tar = "https://gitlab.com/getreu/tp-note/-/archive/v1.21.4/tp-note-v1.21.4.tar.gz"
+git = "https://gitlab.com/getreu/tp-note"
+rev = "1a8241211382efafb37961888aebc0065d56a95e"
 [build]
 template = "custom"
 script = """

@@ -1,5 +1,6 @@
 #TODO source code error (after cargo update)
 [source]
-tar = "https://github.com/fujiapple852/trippy/archive/refs/tags/0.8.0.tar.gz"
+git = "https://github.com/fujiapple852/trippy"
+rev = "388b99c495da48c548c72ff94e9d23a2f125e186"
 [build]
 template = "cargo"

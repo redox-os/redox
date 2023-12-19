@@ -1,5 +1,6 @@
 #TODO missing script for CMake, see https://github.com/ultravideo/uvg266#compiling-uvg266
 [source]
-tar = "https://github.com/ultravideo/uvg266/archive/refs/tags/v0.8.0.tar.gz"
+git = "https://github.com/ultravideo/uvg266"
+rev = "9add13b7053a6ba3f6b22bf82728e01fc437a447"
 [build]
 template = "custom"

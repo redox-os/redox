@@ -1,6 +1,7 @@
 #TODO probably wrong script, see https://github.com/snes9xgit/snes9x/wiki/Compiling
 [source]
-tar = "https://github.com/snes9xgit/snes9x/archive/refs/tags/1.62.3.tar.gz"
+git = "https://github.com/snes9xgit/snes9x"
+rev = "8b82d487937d9ea39f7229d280c6f6686c415fe7"
 [build]
 template = "custom"
 dependencies = [

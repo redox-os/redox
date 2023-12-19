@@ -1,5 +1,6 @@
 #TODO missing script for GNU Autotools, see https://specfem3d.readthedocs.io/en/latest/02_getting_started/
 [source]
-tar = "https://github.com/SPECFEM/specfem3d/archive/refs/tags/v4.0.0.tar.gz"
+git = "https://github.com/SPECFEM/specfem3d"
+rev = "c97d521a9a19ed41523837f161c70deacdb180cc"
 [build]
 template = "custom"

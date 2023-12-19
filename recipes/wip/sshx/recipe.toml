@@ -1,6 +1,6 @@
 #TODO require NodeJS and NPM
 [source]
-tar = "https://github.com/ekzhang/sshx"
+git = "https://github.com/ekzhang/sshx"
 [build]
 template = "custom"
 script = """

@@ -1,6 +1,7 @@
 #TODO require rustc 1.70 or newer
 [source]
-tar = "https://github.com/typst/typst/archive/refs/tags/v0.7.0.tar.gz"
+git = "https://github.com/typst/typst"
+rev = "70ca0d257bb4ba927f63260e20443f244e0bb58c"
 [build]
 template = "custom"
 script = """
