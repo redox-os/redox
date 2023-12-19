@@ -1,0 +1,5 @@
+#TODO Not compiled or tested
+[source]
+git = "https://github.com/pop-os/cosmic-term"
+[build]
+template = "cargo"
