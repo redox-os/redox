@@ -1,0 +1,5 @@
+#TODO Not compiled or tested
+[source]
+git = "https://github.com/kachark/game-of-life-rs"
+[build]
+template = "cargo"

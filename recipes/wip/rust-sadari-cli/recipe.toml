@@ -1,0 +1,5 @@
+#TODO Not compiled or tested
+[source]
+git = "https://github.com/24seconds/rust-sadari-cli"
+[build]
+template = "cargo"

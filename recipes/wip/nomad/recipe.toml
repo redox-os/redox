@@ -1,0 +1,6 @@
+#TODO not compiled or tested
+#TODO require Nerd Fonts
+[source]
+git = "https://github.com/JosephLai241/nomad"
+[build]
+template = "cargo"
