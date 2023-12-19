@@ -1,5 +1,6 @@
 #TODO missing script for Meson, see https://gitlab.gnome.org/World/warp#meson
 [source]
-tar = "https://gitlab.gnome.org/World/warp/-/archive/v0.6.1/warp-v0.6.1.tar.gz"
+git = "https://gitlab.gnome.org/World/warp"
+rev = "1daa60691aa1a697acaff55450dcccb085023fc7"
 [build]
 template = "custom"

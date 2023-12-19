@@ -1,6 +1,7 @@
 #TODO missing script for Meson, see https://pipewire.pages.freedesktop.org/wireplumber/installing-wireplumber.html
 [source]
-tar = "https://gitlab.freedesktop.org/pipewire/wireplumber/-/archive/0.4.16/wireplumber-0.4.16.tar.bz2"
+git = "https://gitlab.freedesktop.org/pipewire/wireplumber"
+rev = "d3eb77b292655cef333a8f4cab4e861415bc37c2"
 [build]
 template = "custom"
 dependencies = [

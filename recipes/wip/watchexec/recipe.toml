@@ -1,5 +1,6 @@
 #TODO Not compiled or tested
 [source]
-tar = "https://github.com/watchexec/watchexec/archive/refs/tags/v1.23.0.tar.gz"
+git = "https://github.com/watchexec/watchexec"
+rev = "a72ff0e1426ff95f76788bbd23e1a7473068f1e0"
 [build]
 template = "cargo"

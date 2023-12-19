@@ -1,6 +1,7 @@
 #TODO not compiled or tested
 [source]
-tar = "https://github.com/wolfSSL/wolfssl/archive/refs/tags/v5.6.4-stable.tar.gz"
+git = "https://github.com/wolfSSL/wolfssl"
+rev = "37884f864d6fd9b04f44677cb04da15d0c9d6526"
 [build]
 template = "custom"
 script = """

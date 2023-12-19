@@ -1,6 +1,6 @@
 #TODO missing script for building, see https://github.com/xenia-project/xenia/blob/master/docs/building.md#linux
 [source]
-tar = "https://github.com/xenia-project/xenia"
+git = "https://github.com/xenia-project/xenia"
 [build]
 template = "custom"
 dependencies = [

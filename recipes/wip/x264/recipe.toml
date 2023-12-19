@@ -1,5 +1,5 @@
 #TODO the redox target is not supported on the configure
 [source]
-tar = "https://code.videolan.org/videolan/x264/-/archive/master/x264-master.tar.bz2"
+git = "https://code.videolan.org/videolan/x264"
 [build]
 template = "configure"

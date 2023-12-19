@@ -1,6 +1,7 @@
 #TODO missing script for "make", see https://github.com/kondrak/vkQuake2#linux
 [source]
-tar = "https://github.com/kondrak/vkQuake2/archive/refs/tags/1.5.9.tar.gz"
+git = "https://github.com/kondrak/vkQuake2"
+rev = "bdd39b142fbadf581fd9d904968a83fb9b4a929a"
 [build]
 template = "custom"
 dependencies = [

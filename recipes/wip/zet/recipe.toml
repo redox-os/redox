@@ -1,5 +1,6 @@
 #TODO compiled after cargo update, not tested
 [source]
-tar = "https://github.com/yarrow/zet/archive/refs/tags/v1.0.0.tar.gz"
+git = "https://github.com/yarrow/zet"
+rev = "c1ee170d6a910650a668ad8180dd40f1787d1733"
 [build]
 template = "cargo"

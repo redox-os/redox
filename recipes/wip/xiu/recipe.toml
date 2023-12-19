@@ -1,6 +1,7 @@
 #TODO OpenSSL error on program source code (after cargo update)
 [source]
-tar = "https://github.com/harlanc/xiu/archive/refs/tags/v0.6.0.tar.gz"
+git = "https://github.com/harlanc/xiu"
+rev = "80f20d7056d7b9a1de239c6a46ce45e5043e916c"
 [build]
 template = "custom"
 dependencies = [

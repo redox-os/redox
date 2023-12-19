@@ -1,6 +1,7 @@
 #TODO missing script for "make", see https://github.com/zerotier/ZeroTierOne#build-and-platform-notes
 [source]
-tar = "https://github.com/zerotier/ZeroTierOne/archive/refs/tags/1.12.2.tar.gz"
+git = "https://github.com/zerotier/ZeroTierOne"
+rev = "327eb9013b39809835a912c9117a0b9669f4661f"
 [build]
 template = "custom"
 dependencies = [

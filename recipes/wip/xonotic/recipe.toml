@@ -1,6 +1,7 @@
 #TODO missing script for "make", see https://gitlab.com/xonotic/xonotic/-/wikis/Compiling
 [source]
-tar = "https://gitlab.com/xonotic/xonotic/-/archive/xonotic-v0.8.5/xonotic-xonotic-v0.8.5.tar.gz"
+git = "https://gitlab.com/xonotic/xonotic"
+rev = "0100f2c8d7947267292db66714c1af55039809ad"
 [build]
 template = "custom"
 dependencies = [

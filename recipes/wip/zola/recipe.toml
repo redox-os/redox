@@ -1,5 +1,6 @@
 #TODO Not compiled or tested
 [source]
-tar = "https://github.com/getzola/zola/archive/refs/tags/v0.17.2.tar.gz"
+git = "https://github.com/getzola/zola"
+rev = "77c87f5e2f20ee90cf73cc98fa5f3fb096bcfffd"
 [build]
 template = "cargo"

@@ -1,6 +1,7 @@
 #TODO compilation error
 [source]
-tar = "https://github.com/Siriusmart/youtube-tui/archive/refs/tags/v0.8.0.tar.gz"
+git = "https://github.com/Siriusmart/youtube-tui"
+rev = "f321f7c1e9b41644b976ea8672807c3062908c5c"
 [build]
 template = "custom"
 dependencies = [

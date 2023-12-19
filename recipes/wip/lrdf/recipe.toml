@@ -2,6 +2,5 @@
 [source]
 git = "https://github.com/x42/LRDF"
 rev = "e61f7aa4a1e240a884e3a0cb4b2db65046cfcaa6"
-rev = "
 [build]
 template = "configure"
