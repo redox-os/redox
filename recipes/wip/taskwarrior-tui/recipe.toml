@@ -1,0 +1,6 @@
+#TODO Not compiled or tested
+[source]
+git = "https://github.com/kdheepak/taskwarrior-tui"
+rev = "fe171ea35a5bfe794e2d822aa03f7b7db2f86616"
+[build]
+template = "cargo"

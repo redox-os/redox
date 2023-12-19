@@ -1,0 +1,6 @@
+#TODO Not compiled or tested
+[source]
+git = "https://github.com/kyu08/fzf-make"
+rev = "e334513f976f42f4174c4dd175da653f248ec9b8"
+[build]
+template = "cargo"

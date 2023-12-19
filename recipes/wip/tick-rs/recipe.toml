@@ -1,0 +1,6 @@
+#TODO Not compiled or tested
+[source]
+git = "https://github.com/tarkah/tickrs"
+rev = "8a04f5411adf72fc08146eab0632765f1002e9e6"
+[build]
+template = "cargo"

@@ -1,0 +1,5 @@
+#TODO Not compiled or tested
+[source]
+git = "https://github.com/woxjro/lazy-etherscan"
+[build]
+template = "cargo"

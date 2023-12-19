@@ -1,0 +1,6 @@
+#TODO Not compiled or tested
+[source]
+git = "https://github.com/Xithrius/twitch-tui"
+rev = "4c382da4afcb7b994e1a7659addfb55fde9518df"
+[build]
+template = "cargo"

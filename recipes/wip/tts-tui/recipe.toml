@@ -1,0 +1,9 @@
+#TODO Not compiled or tested
+[source]
+git = "https://github.com/lesleyrs/tts-tui"
+rev = "820689ba21ead76981376b7dfed17bfc59e5b013"
+[build]
+template = "cargo"
+dependencies = [
+    "speech-dispatcher",
+]
