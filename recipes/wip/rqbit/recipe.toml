@@ -1,5 +1,6 @@
 #TODO Not compiled or tested
 [source]
-tar = "https://github.com/ikatson/rqbit/archive/refs/tags/v4.0.0.tar.gz"
+git = "https://github.com/ikatson/rqbit"
+rev = "3dc2e3eace2fce7c448d7fcf8360fe0f312a29c7"
 [build]
 template = "cargo"

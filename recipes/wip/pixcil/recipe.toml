@@ -1,5 +1,6 @@
 #TODO require WebAssembly
 [source]
-tar = "https://github.com/sile/pixcil/archive/refs/tags/0.5.0.tar.gz"
+git = "https://github.com/sile/pixcil"
+rev = "2309661977c3191f44e730c5a17639874e497b69"
 [build]
 template = "cargo"

@@ -1,5 +1,6 @@
 #TODO Not compiled or tested
 [source]
-tar = "https://github.com/rust-lang/rustlings/archive/refs/tags/5.6.1.tar.gz"
+git = "https://github.com/rust-lang/rustlings"
+rev = "9a743f80c57cc6bf27819589a8ddb5a5579ab1a4"
 [build]
 template = "cargo"

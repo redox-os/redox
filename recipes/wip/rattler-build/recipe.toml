@@ -1,5 +1,6 @@
 #TODO Not compiled or tested
 [source]
-tar = "https://github.com/prefix-dev/rattler-build/archive/refs/tags/v0.4.0.tar.gz"
+git = "https://github.com/prefix-dev/rattler-build"
+rev = "4e554ccf35e50f598f9110bfc8c8be909de203da"
 [build]
 template = "cargo"

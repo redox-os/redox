@@ -1,5 +1,6 @@
 #TODO Not compiled or tested
 [source]
-tar = "https://github.com/shssoichiro/oxipng/archive/refs/tags/v9.0.0.tar.gz"
+git = "https://github.com/shssoichiro/oxipng"
+rev = "e1db84fd9745f3320c08b883e4942cd5b30b98a6"
 [build]
 template = "cargo"

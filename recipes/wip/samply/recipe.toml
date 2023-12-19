@@ -1,5 +1,6 @@
 #TODO Not compiled or tested
 [source]
-tar = "https://github.com/mstange/samply/archive/refs/tags/samply-v0.11.0.tar.gz"
+git = "https://github.com/mstange/samply"
+rev = "0a3dd8b1af8f67b676e4c05e7b9846754644c0d7"
 [build]
 template = "cargo"

@@ -1,7 +1,8 @@
 #TODO missing script for CMake, see https://qmcpack.readthedocs.io/en/develop/installation.html#building-with-cmake
 #TODO probably missing dependencies
 [source]
-tar = "https://github.com/QMCPACK/qmcpack/archive/refs/tags/v3.17.1.tar.gz"
+git = "https://github.com/QMCPACK/qmcpack"
+rev = "9d0d968139fc33f71dbf9159f526dd7b47f10a3b"
 [build]
 template = "custom"
 dependencies = [

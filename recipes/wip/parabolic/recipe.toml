@@ -1,7 +1,8 @@
 #TODO missing script for Cake, see https://github.com/NickvisionApps/Parabolic/blob/main/CONTRIBUTING.md#developing-on-linux
 #TODO missing dependencies - https://github.com/NickvisionApps/Parabolic/blob/main/CONTRIBUTING.md#developing-on-linux
 [source]
-tar = "https://github.com/NickvisionApps/Parabolic/archive/refs/tags/2023.9.1.tar.gz"
+git = "https://github.com/NickvisionApps/Parabolic"
+rev = "0aeaf7ab241f7405278352e448372c720ddb85f0"
 [build]
 template = "custom"
 dependencies = [

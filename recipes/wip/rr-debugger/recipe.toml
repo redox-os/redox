@@ -1,6 +1,7 @@
 #TODO probably wrong template, see https://github.com/rr-debugger/rr/wiki/Building-And-Installing
 [source]
-tar = "https://github.com/rr-debugger/rr/archive/refs/tags/5.7.0.tar.gz"
+git = "https://github.com/rr-debugger/rr"
+rev = "7cf5a12dba5aaeea9efc5ad97176b07b5614e350"
 [build]
 template = "configure"
 dependencies = [

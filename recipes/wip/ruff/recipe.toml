@@ -1,6 +1,7 @@
 #TODO nonsense rustc version requirement
 [source]
-tar = "https://github.com/charliermarsh/ruff/archive/refs/tags/v0.0.270.tar.gz"
+git = "https://github.com/charliermarsh/ruff"
+rev = "c014622003e9b348310d7b7be862f6ccffae7137"
 [build]
 template = "custom"
 script = """

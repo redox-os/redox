@@ -1,5 +1,6 @@
 #TODO missing script for CMake, lacking build instructions
 [source]
-tar = "https://github.com/imageworks/pystring/archive/refs/tags/v1.1.4.tar.gz"
+git = "https://github.com/imageworks/pystring"
+rev = "7d16bc814ccb4cad03c300dcb77440034caa84f7"
 [build]
 template = "custom"

@@ -1,5 +1,6 @@
 #TODO Not compiled or tested
 [source]
-tar = "https://github.com/ColorCookie-dev/porsmo/archive/refs/tags/0.2.4.tar.gz"
+git = "https://github.com/ColorCookie-dev/porsmo"
+rev = "bd7eab08d8856b7499ee13672dff9a9232994d23"
 [build]
 template = "cargo"

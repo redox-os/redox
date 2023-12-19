@@ -1,6 +1,7 @@
 #TODO Probably wrong script, see https://github.com/projectM-visualizer/projectm/wiki/Building-libprojectM#build-and-install-projectm
 [source]
-tar = "https://github.com/projectM-visualizer/projectm/archive/refs/tags/v4.0.0.tar.gz"
+git = "https://github.com/projectM-visualizer/projectm"
+rev = "422af469731559c32c93e9513cebf2fe6c2fec78"
 [build]
 template = "custom"
 dependencies = [
