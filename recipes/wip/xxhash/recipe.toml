@@ -1,5 +1,6 @@
 #TODO missing script for building, lacking build instructions
 [source]
-tar = "https://github.com/Cyan4973/xxHash/archive/refs/tags/v0.8.1.tar.gz"
+git = "https://github.com/Cyan4973/xxHash"
+rev = "bbb27a5efb85b92a0486cf361a8635715a53f6ba"
 [build]
 template = "custom"

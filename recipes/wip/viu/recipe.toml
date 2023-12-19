@@ -1,5 +1,6 @@
 #TODO Not compiled or tested
 [source]
-tar = "https://github.com/atanunq/viu/archive/refs/tags/v1.5.0.tar.gz"
+git = "https://github.com/atanunq/viu"
+rev = "af8f2ae90040baeeb24b92adedc645edc4ea0e85"
 [build]
 template = "cargo"

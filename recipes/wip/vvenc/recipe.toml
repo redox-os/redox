@@ -1,5 +1,6 @@
 #TODO missing script for CMake, see https://github.com/fraunhoferhhi/vvenc/wiki/Build#build-using-plain-cmake
 [source]
-tar = "https://github.com/fraunhoferhhi/vvenc/archive/refs/tags/v1.9.1.tar.gz"
+git = "https://github.com/fraunhoferhhi/vvenc"
+rev = "eea6fce28c8e822a0ece7a343a10fd5d6dd0e7bb"
 [build]
 template = "custom"

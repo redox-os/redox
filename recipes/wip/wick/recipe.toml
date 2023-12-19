@@ -1,5 +1,6 @@
 #TODO Missing script for "just", see https://github.com/candlecorp/wick#install-from-source
 [source]
-tar = "https://github.com/candlecorp/wick/archive/refs/tags/0.16.1.tar.gz"
+git = "https://github.com/candlecorp/wick"
+rev = "7d498210c0cb729ee9b96d6fb226e0db3a514cba"
 [build]
 template = "custom"

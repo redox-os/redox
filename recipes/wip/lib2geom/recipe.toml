@@ -1,6 +1,6 @@
 #TODO missing script for CMake, see https://gitlab.com/inkscape/lib2geom#building
 [source]
-tar = "https://gitlab.com/inkscape/lib2geom"
+git = "https://gitlab.com/inkscape/lib2geom"
 rev = "18fc32f9972dfaee597055b3226c5b7ef3bfbb4c"
 [build]
 template = "custom"

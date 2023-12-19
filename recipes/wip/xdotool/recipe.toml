@@ -1,6 +1,7 @@
 #TODO missing script for "make", see https://github.com/jordansissel/xdotool/#building--compiling
 [source]
-tar = "https://github.com/jordansissel/xdotool/archive/refs/tags/v3.20211022.1.tar.gz"
+git = "https://github.com/jordansissel/xdotool"
+rev = "eb489de1b4fb3fd0cd935d68ae16ecd4c653ac7d"
 [build]
 template = "custom"
 dependencies = [

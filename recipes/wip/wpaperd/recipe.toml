@@ -1,6 +1,7 @@
 #TODO Not compiled or tested
 [source]
-tar = "https://github.com/danyspin97/wpaperd/archive/refs/tags/0.3.0.tar.gz"
+git = "https://github.com/danyspin97/wpaperd"
+rev = "a99e4e3d8c05a933a3f428329c2883e635feca14"
 [build]
 template = "cargo"
 dependencies = [
