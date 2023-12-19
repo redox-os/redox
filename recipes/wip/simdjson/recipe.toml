@@ -1,5 +1,6 @@
 #TODO missing script for CMake, see https://github.com/simdjson/simdjson/blob/master/HACKING.md#usage-cmake-on-64-bit-platforms-like-linux-freebsd-or-macos
 [source]
-tar = "https://github.com/simdjson/simdjson/archive/refs/tags/v3.6.0.tar.gz"
+git = "https://github.com/simdjson/simdjson"
+rev = "6060be2fdf62edf4a8f51a8b0883d57d09397b30"
 [build]
 template = "custom"

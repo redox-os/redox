@@ -1,6 +1,7 @@
 #TODO missing script for CMake, see https://docs.srsran.com/projects/4g/en/latest/general/source/1_installation.html#installation-from-source
 [source]
-tar = "https://github.com/srsran/srsRAN_4G/archive/refs/tags/release_23_11.tar.gz"
+git = "https://github.com/srsran/srsRAN_4G"
+rev = "eea87b1d893ae58e0b08bc381730c502024ae71f"
 [build]
 template = "custom"
 dependencies = [

@@ -1,6 +1,7 @@
 #TODO missing script for "make", see https://github.com/wolfpld/tracy/releases/latest/download/tracy.pdf
 [source]
-tar = "https://github.com/wolfpld/tracy/archive/refs/tags/v0.10.tar.gz"
+git = "https://github.com/wolfpld/tracy"
+rev = "37aff70dfa50cf6307b3fee6074d627dc2929143"
 [build]
 template = "custom"
 dependencies = [

@@ -1,7 +1,8 @@
 #TODO missing script for CMake, see https://github.com/srsran/srsRAN_Project#build-instructions
 #TODO missing dependencies
 [source]
-tar = "https://github.com/srsran/srsRAN_Project/archive/refs/tags/release_23_10_1.tar.gz"
+git = "https://github.com/srsran/srsRAN_Project"
+rev = "374200deefd8e1b96fab7328525fd593a808a641"
 [build]
 template = "custom"
 dependencies = [

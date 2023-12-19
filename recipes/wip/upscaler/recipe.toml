@@ -1,6 +1,7 @@
 #TODO missing script for Meson, see https://gitlab.gnome.org/World/Upscaler#meson
 [source]
-tar = "https://gitlab.gnome.org/World/Upscaler/-/archive/1.2.2/Upscaler-1.2.2.tar.gz"
+git = "https://gitlab.gnome.org/World/Upscaler"
+rev = "30c2a8411fac281ed548189a9fea45dc9efe5b68"
 [build]
 template = "custom"
 dependencies = [

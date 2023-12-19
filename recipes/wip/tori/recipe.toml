@@ -1,6 +1,7 @@
 #TODO make mpv works
 [source]
-tar = "https://github.com/LeoRiether/tori/archive/refs/tags/v0.2.5.tar.gz"
+git = "https://github.com/LeoRiether/tori"
+rev = "422e5bbb1477b6fdd3a56e0db1b3553ce362e153"
 [build]
 template = "cargo"
 dependencies = [

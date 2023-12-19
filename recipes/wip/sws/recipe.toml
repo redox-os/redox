@@ -1,5 +1,6 @@
 #TODO Not compiled or tested
 [source]
-tar = "https://github.com/static-web-server/static-web-server/archive/refs/tags/v2.24.1.tar.gz"
+git = "https://github.com/static-web-server/static-web-server"
+rev = "98a5cc40d276f3dac3c2c36530b966b213fb9ffc"
 [build]
 template = "cargo"

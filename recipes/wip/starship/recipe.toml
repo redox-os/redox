@@ -1,5 +1,6 @@
 #TODO nix::unistd::User
 [source]
-tar = "https://github.com/starship/starship/archive/refs/tags/v1.16.0.tar.gz"
+git = "https://github.com/starship/starship"
+rev = "dcf7b7646c4610947765d76cf4e024a60576b2cd"
 [build]
 template = "cargo"

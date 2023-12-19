@@ -1,6 +1,7 @@
 #TODO SQLite is not working
 [source]
-tar = "https://github.com/AmmarAbouZor/tui-journal/archive/refs/tags/v0.2.0.tar.gz"
+git = "https://github.com/AmmarAbouZor/tui-journal"
+rev = "40943d8b4081d61cd549398ff68c6f219444167b"
 [build]
 template = "cargo"
 dependencies = [

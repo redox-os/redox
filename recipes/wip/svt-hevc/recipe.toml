@@ -1,5 +1,6 @@
 #TODO missing script for CMake, see https://github.com/OpenVisualCloud/SVT-HEVC#linux-operating-systems-64-bit
 [source]
-tar = "https://github.com/OpenVisualCloud/SVT-HEVC/archive/refs/tags/v1.5.1.tar.gz"
+git = "https://github.com/OpenVisualCloud/SVT-HEVC"
+rev = "b65eba07e6dee37407631cc441561960838b0333"
 [build]
 template = "custom"

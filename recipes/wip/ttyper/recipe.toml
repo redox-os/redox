@@ -1,5 +1,6 @@
 #TODO Not compiled or tested
 [source]
-tar = "https://github.com/max-niederman/ttyper/archive/refs/tags/v1.4.0.tar.gz"
+git = "https://github.com/max-niederman/ttyper"
+rev = "662a6682984afa6efca707b693ae68622e52ac24"
 [build]
 template = "cargo"

@@ -1,5 +1,5 @@
-#TODO require a patch on ring and tokio on the dependency chain (locked version)
+#TODO require a patch on ring
 [source]
-tar = "https://github.com/dbrgn/tealdeer/archive/refs/tags/v1.6.1.tar.gz"
+git = "https://github.com/dbrgn/tealdeer"
 [build]
 template = "cargo"

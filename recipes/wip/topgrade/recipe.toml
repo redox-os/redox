@@ -1,5 +1,6 @@
 #TODO compiled but not tested
 [source]
-tar = "https://github.com/topgrade-rs/topgrade/archive/refs/tags/v12.0.2.tar.gz"
+git = "https://github.com/topgrade-rs/topgrade"
+rev = "41c6d1cd9ab86254ffd29945b91e5e1b8eeebf64"
 [build]
 template = "cargo"

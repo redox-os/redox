@@ -1,5 +1,6 @@
 #TODO Compiled but not tested
 [source]
-tar = "https://github.com/KhalilOuali/sprinkles/archive/refs/tags/1.0.0.tar.gz"
+git = "https://github.com/KhalilOuali/sprinkles"
+rev = "8c30f5f8e63b8fa89692ed712c52c928b42a556a"
 [build]
 template = "cargo"

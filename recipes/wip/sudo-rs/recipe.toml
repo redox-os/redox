@@ -1,5 +1,6 @@
 #TODO requires Linux PAM, probably needs porting
 [source]
-tar = "https://github.com/memorysafety/sudo-rs/archive/refs/tags/v0.2.1.tar.gz"
+git = "https://github.com/memorysafety/sudo-rs"
+rev = "195d6f851904ab00357f040eef35e31abaebbe1b"
 [build]
 template = "cargo"

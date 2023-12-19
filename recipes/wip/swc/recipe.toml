@@ -1,5 +1,5 @@
 #TODO Not compiled or tested
 [source]
-tar = "https://github.com/swc-project/swc"
+git = "https://github.com/swc-project/swc"
 [build]
 template = "cargo"

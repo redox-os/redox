@@ -1,6 +1,7 @@
 #TODO SQLite is not working
 [source]
-tar = "https://github.com/kpcyrd/sn0int/archive/refs/tags/v0.25.0.tar.gz"
+git = "https://github.com/kpcyrd/sn0int"
+rev = "b49aba5a8a6ae09c885c1aaee03fcfc9515fb42a"
 [build]
 template = "cargo"
 dependencies = [

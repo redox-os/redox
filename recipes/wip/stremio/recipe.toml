@@ -1,7 +1,7 @@
 #TODO missing script for qmake and make, see https://github.com/Stremio/stremio-shell/blob/master/DEBIAN.md
 #TODO probably missing dependencies, see https://github.com/Stremio/stremio-shell/blob/master/DEBIAN.md#31-install-missing-dependencies
 [source]
-tar = "https://github.com/Stremio/stremio-shell"
+git = "https://github.com/Stremio/stremio-shell"
 [build]
 template = "custom"
 dependencies = [

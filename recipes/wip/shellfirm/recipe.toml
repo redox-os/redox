@@ -1,5 +1,6 @@
 #TODO Not compiled or tested
 [source]
-tar = "https://github.com/kaplanelad/shellfirm/archive/refs/tags/v0.2.7.tar.gz"
+git = "https://github.com/kaplanelad/shellfirm"
+rev = "0587f023a1d6b58e9fdb71d9a4e8d5460ee33c77"
 [build]
 template = "cargo"

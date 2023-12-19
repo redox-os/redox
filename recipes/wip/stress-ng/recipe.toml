@@ -1,7 +1,8 @@
 #TODO missing script for "make", see https://github.com/ColinIanKing/stress-ng#building-stress-ng
 #TODO missing dependencies
 [source]
-tar = "https://github.com/ColinIanKing/stress-ng/archive/refs/tags/V0.17.01.tar.gz"
+git = "https://github.com/ColinIanKing/stress-ng"
+rev = "8c39f5a2d9b199189456f414afd9e536dae69d1b"
 [build]
 template = "custom"
 dependencies = [
