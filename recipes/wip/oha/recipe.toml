@@ -1,0 +1,9 @@
+#TODO Not compiled or tested
+[source]
+git = "https://github.com/hatoo/oha"
+rev = "2c88d2acc0b4773089faaa959debaec15ef355a8"
+[build]
+template = "custom"
+script = """
+cookbook_cargo --no-default-features --features rustls
+"""

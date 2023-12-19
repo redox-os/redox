@@ -1,0 +1,10 @@
+#TODO Not compiled or tested
+[source]
+tar = "https://github.com/brailcom/speechd/releases/download/0.11.5/speech-dispatcher-0.11.5.tar.gz"
+[build]
+template = "configure"
+dependencies = [
+    "glib",
+    "libsndfile",
+    "libdotconf",
+]

@@ -1,0 +1,6 @@
+#TODO missing script for configuration, see https://github.com/coastalwhite/lemurs#compiling-from-source
+[source]
+git = "https://github.com/coastalwhite/lemurs"
+rev = "37963b8ff6945ae8bdbabee658e5e36d0f67b84a"
+[build]
+template = "custom"

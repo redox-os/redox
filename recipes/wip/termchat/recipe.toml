@@ -1,0 +1,8 @@
+#TODO Not compiled or tested
+[source]
+git = "https://github.com/lemunozm/termchat"
+[build]
+template = "custom"
+script = """
+cookbook_cargo --all-features
+"""

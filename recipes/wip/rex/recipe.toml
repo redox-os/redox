@@ -1,0 +1,6 @@
+#TODO Not compiled or tested
+[source]
+git = "https://github.com/TheRustyPickle/Rex"
+rev = "096eace40e33f48bf7216c4b6f2c9cc84287e47d"
+[build]
+template = "cargo"

@@ -1,0 +1,6 @@
+#TODO missing script for "make", see https://vector.dev/docs/setup/installation/manual/from-source/
+[source]
+git = "https://github.com/vectordotdev/vector"
+rev = "86f1c22d7f00d7d80210a2704ea9f5061f74ee55"
+[build]
+template = "custom"
