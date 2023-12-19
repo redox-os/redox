@@ -1,6 +1,7 @@
 #TODO missing script for CMake, see https://gitlab.inria.fr/scotch/scotch#installation
 #TODO probably missing dependencies
 [source]
-tar = "https://gitlab.inria.fr/scotch/scotch/-/archive/v7.0.4/scotch-v7.0.4.tar.bz2"
+git = "https://gitlab.inria.fr/scotch/scotch"
+rev = "82ec87f558f4acb7ccb69a079f531be380504c92"
 [build]
 template = "custom"

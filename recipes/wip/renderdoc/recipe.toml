@@ -1,6 +1,7 @@
 #TODO probably wrong script, see https://github.com/baldurk/renderdoc/blob/v1.x/docs/CONTRIBUTING/Compiling.md#linux
 [source]
-tar = "https://github.com/baldurk/renderdoc/archive/refs/tags/v1.29.tar.gz"
+git = "https://github.com/baldurk/renderdoc"
+rev = "5f95fb95a2a225a092372e7bd0bfd2073525d3ac"
 [build]
 template = "custom"
 dependencies = [

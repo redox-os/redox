@@ -1,6 +1,7 @@
 #TODO Not compiled or tested
 [source]
-tar = "https://github.com/markuskimius/SDL2_Pango/archive/refs/tags/v2.1.5.tar.gz"
+git = "https://github.com/markuskimius/SDL2_Pango"
+rev = "3afd884fddf8d81dbe2c140135deea0c79de31c1"
 [build]
 template = "configure"
 dependencies = [

@@ -1,6 +1,7 @@
 #TODO probably wrong script, see https://github.com/raysan5/raylib/wiki/Working-on-GNU-Linux
 [source]
-tar = "https://github.com/raysan5/raylib/archive/refs/tags/5.0.tar.gz"
+git = "https://github.com/raysan5/raylib"
+rev = "ae50bfa2cc569c0f8d5bc4315d39db64005b1b08"
 [build]
 template = "custom"
 dependencies = [

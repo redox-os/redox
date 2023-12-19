@@ -1,6 +1,7 @@
 #TODO Probably wrong script, see https://github.com/google/shaderc#getting-and-building-shaderc
 [source]
-tar = "https://github.com/google/shaderc/archive/refs/tags/v2023.3.tar.gz"
+git = "https://github.com/google/shaderc"
+rev = "3882b16417077aa8eaa7b5775920e7ba4b8a224d"
 [build]
 template = "custom"
 script = """

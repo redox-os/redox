@@ -1,5 +1,6 @@
 #TODO compiled but not tested
 [source]
-tar = "https://github.com/KSXGitHub/parallel-disk-usage/archive/refs/tags/0.9.0.tar.gz"
+git = "https://github.com/KSXGitHub/parallel-disk-usage"
+rev = "2b59c3b8bf5b89c80ca478478a69e3e96c36af14"
 [build]
 template = "cargo"

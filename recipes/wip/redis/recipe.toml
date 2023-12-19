@@ -1,5 +1,6 @@
 #TODO Missing script for "make", see https://redis.io/docs/install/install-redis/install-redis-from-source/
 [source]
-tar = "https://github.com/redis/redis/archive/7.2.0.tar.gz"
+git = "https://github.com/redis/redis"
+rev = "7f4bae817614988c43c3024402d16edcbf3b3277"
 [build]
 template = "custom"

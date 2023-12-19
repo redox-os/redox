@@ -1,5 +1,5 @@
 #TODO mio crate error
 [source]
-tar = "https://github.com/cowboy8625/rusty-rain/archive/refs/tags/v0.3.6.tar.gz"
+git = "https://github.com/cowboy8625/rusty-rain"
 [build]
 template = "cargo"

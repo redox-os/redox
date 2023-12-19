@@ -1,5 +1,6 @@
 #TODO missing script for Meson, see https://gitlab.freedesktop.org/pipewire/pipewire/-/blob/master/INSTALL.md
 [source]
-tar = "https://gitlab.freedesktop.org/pipewire/pipewire/-/archive/1.0.0/pipewire-1.0.0.tar.bz2"
+git = "https://gitlab.freedesktop.org/pipewire/pipewire"
+rev = "4debdcd40b055b3eaa83a8f4443aa990ea566bfe"
 [build]
 template = "custom"

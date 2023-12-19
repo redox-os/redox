@@ -1,5 +1,6 @@
 #TODO compiled but not tested
 [source]
-tar = "https://github.com/ismaelgv/rnr/archive/refs/tags/v0.4.2.tar.gz"
+git = "https://github.com/ismaelgv/rnr"
+rev = "dfdf644ea8a4084ec73a349de68ef063eb47028f"
 [build]
 template = "cargo"

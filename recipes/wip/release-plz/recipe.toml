@@ -1,6 +1,7 @@
 #TODO openssl-sys crate error
 [source]
-tar = "https://github.com/MarcoIeni/release-plz/archive/refs/tags/release-plz-v0.3.20.tar.gz"
+git = "https://github.com/MarcoIeni/release-plz"
+rev = "68baf26d77a887c3ad90e4ad75ce77d9788f2442"
 [build]
 dependencies = [
     "openssl1",

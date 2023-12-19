@@ -1,6 +1,7 @@
 #TODO missing script for "make", see https://github.com/facebook/rocksdb/blob/main/INSTALL.md
 [source]
-tar = "https://github.com/facebook/rocksdb/archive/refs/tags/v8.8.1.tar.gz"
+git = "https://github.com/facebook/rocksdb"
+rev = "49ce8a1064dd1ad89117899839bf136365e49e79"
 [build]
 template = "custom"
 dependencies = [

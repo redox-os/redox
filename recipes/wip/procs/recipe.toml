@@ -1,5 +1,6 @@
 #TODO socket and pipe compilation errors
 [source]
-tar = "https://github.com/dalance/procs/archive/refs/tags/v0.14.0.tar.gz"
+git = "https://github.com/dalance/procs"
+rev = "0378206ddc8635d37d23c53afc0189c987daeb1d"
 [build]
 template = "cargo"

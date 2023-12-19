@@ -1,6 +1,7 @@
-#TODO Broken bzip2 dependency
+#TODO not compiled or tested
 [source]
-tar = "https://github.com/ouch-org/ouch/archive/refs/tags/0.4.1.tar.gz"
+git = "https://github.com/ouch-org/ouch"
+rev = "796a03a41d1412dbd0f1cf973ca88c59a4614cc8"
 [build]
 template = "cargo"
 dependencies = [

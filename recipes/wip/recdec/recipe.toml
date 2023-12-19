@@ -1,6 +1,7 @@
 #TODO probably wrong script, see https://github.com/avast/retdec#process
 [source]
-tar = "https://github.com/avast/retdec/archive/refs/tags/v5.0.tar.gz"
+git = "https://github.com/avast/retdec"
+rev = "53e55b4b26e9b843787f0e06d867441e32b1604e"
 [build]
 template = "custom"
 dependencies = [
