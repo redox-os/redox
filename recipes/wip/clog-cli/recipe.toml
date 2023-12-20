@@ -1,4 +1,4 @@
-#TODO Needs to patch the rustc-serialize crate and update the redox_syscall version
+#TODO rust-serialize crate error (after cargo update)
 [source]
 git = "https://github.com/clog-tool/clog-cli"
 [build]

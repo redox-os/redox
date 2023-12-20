@@ -1,6 +1,5 @@
-#TODO Not compiled or tested
+#TODO open crate error
 [source]
 git = "https://github.com/sloganking/codevis"
-rev = "af85406a2e5ebe3a0c8d1cd679c8184f6f7a99d2"
 [build]
 template = "cargo"

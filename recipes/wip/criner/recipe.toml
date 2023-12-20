@@ -1,9 +1,11 @@
 #TODO Not compiled or tested
 [source]
 git = "https://github.com/the-lean-crate/criner"
-rev = "e0cd0e1c7937477c466d46e4fd571ddfd15fb4d7"
 [build]
 template = "custom"
+dependencies = [
+    "openssl1",
+]
 script = """
 cookbook_cargo_packages criner
 """

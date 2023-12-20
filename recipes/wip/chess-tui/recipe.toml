@@ -1,4 +1,4 @@
-#TODO Not compiled or tested
+#TODO compiled but not tested
 [source]
 git = "https://github.com/thomas-mauran/chess-tui"
 rev = "b61e559b26e4de63808509fc2626730a4ff31774"
