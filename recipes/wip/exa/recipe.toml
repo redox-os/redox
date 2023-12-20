@@ -1,4 +1,4 @@
-#TODO redox_syscall crate error
+#TODO outdated redox_syscall crate (after cargo update)
 [source]
 git = "https://github.com/ogham/exa"
 [build]
