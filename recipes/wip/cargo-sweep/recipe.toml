@@ -1,4 +1,4 @@
-#TODO needs to update the redox_syscall version
+#TODO compiled but not tested
 [source]
 git = "https://github.com/holmgr/cargo-sweep"
 [build]
