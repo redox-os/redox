@@ -1,4 +1,5 @@
 #TODO compilation error
+#TODO make dependencies work
 [source]
 tar = "https://ftp.gnu.org/gnu/emacs/emacs-29.1.tar.xz"
 [build]

@@ -1,4 +1,4 @@
-#TODO rust-serialize crate error
+#TODO rustc-serialize crate error
 [source]
 git = "https://github.com/gabrieldemian/vincenzo"
 [build]

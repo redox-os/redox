@@ -1,4 +1,4 @@
-#TODO program source code error
+#TODO program source code error (after cargo update)
 [source]
 git = "https://github.com/nachoparker/dutree"
 [build]
