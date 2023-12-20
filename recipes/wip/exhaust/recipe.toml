@@ -1,4 +1,4 @@
-#TODO Not compiled or tested
+#TODO outdated redox_syscall crate
 [source]
 git = "https://github.com/heyrict/exhaust"
 [build]
