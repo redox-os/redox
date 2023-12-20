@@ -1,8 +1,5 @@
-#TODO Not compiled or tested
+#TODO can't find libtool
 [source]
 tar = "http://crosstool-ng.org/download/crosstool-ng/crosstool-ng-1.26.0.tar.xz"
 [build]
 template = "configure"
-dependencies = [
-    "libtool",
-]
