@@ -1,4 +1,4 @@
-#TODO region crate error (after a patch on ring)
+#TODO region crate error
 [source]
 git = "https://github.com/dprint/dprint"
 rev = "1a71f9c58a076ad46ef1bb63d1585add20002f32"

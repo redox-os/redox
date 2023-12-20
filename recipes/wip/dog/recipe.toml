@@ -1,4 +1,4 @@
-#TODO weird OpenSSL error?
+#TODO compiled but not tested (after cargo update)
 [source]
 git = "https://github.com/ogham/dog"
 [build]
