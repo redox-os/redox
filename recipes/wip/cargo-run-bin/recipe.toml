@@ -1,4 +1,4 @@
-#TODO Not compiled or tested
+#TODO compilation error
 [source]
 git = "https://github.com/dustinblackman/cargo-run-bin"
 [build]
