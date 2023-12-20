@@ -1,4 +1,4 @@
-#TODO weird libssh2 error (using cargo update)
+#TODO camino crate error
 [source]
 git = "https://github.com/deps-rs/deps.rs"
 [build]
