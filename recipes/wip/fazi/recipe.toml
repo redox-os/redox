@@ -1,4 +1,4 @@
-#TODO Not compiled or tested
+#TODO library source code error
 [source]
 git = "https://github.com/landaire/fazi"
 [build]

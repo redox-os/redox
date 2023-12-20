@@ -1,6 +1,5 @@
 #TODO file-owner crate error
 [source]
 git = "https://github.com/pkolaczk/fclones"
-rev = "a55e427dadc8eb6f6c9ecc967fb6e0bdf5257123"
 [build]
 template = "cargo"
