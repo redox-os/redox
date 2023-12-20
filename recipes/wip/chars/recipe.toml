@@ -2,4 +2,7 @@
 [source]
 git = "https://github.com/boinkor-net/chars"
 [build]
-template = "cargo"
+template = "custom"
+script = """
+cookbook_cargo_packages chars
+"""
