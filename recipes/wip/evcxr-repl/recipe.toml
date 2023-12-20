@@ -1,7 +1,6 @@
-#TODO Not compiled or tested
+#TODO camino crate error
 [source]
 git = "https://github.com/evcxr/evcxr"
-rev = "e6deec6060bc47297eb90674cca496c6874f99ba"
 [build]
 template = "custom"
 script = """
