@@ -6,6 +6,6 @@ rev = "593f5b97023ed39b7640073160c06895bbfc3d26"
 template = "configure"
 dependencies = [
     "sdl2",
-    "sdl2_mixer",
-    "sdl2_net",
+    "sdl2-mixer",
+    "sdl2-net",
 ]

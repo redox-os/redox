@@ -1,4 +1,5 @@
-#TODO Not compiled or tested
+#TODO compiled but not tested (after cargo update)
+#TODO missing script to properly move th binary
 [source]
 git = "https://github.com/the-lean-crate/criner"
 [build]
