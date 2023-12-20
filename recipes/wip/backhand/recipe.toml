@@ -5,5 +5,5 @@ rev = "96c83729a791526ff0a3fd8e9390740c25ae8184"
 [build]
 template = "custom"
 script = """
-cookbook_cargo --bin backhand-cli
+cookbook_cargo_packages backhand
 """
