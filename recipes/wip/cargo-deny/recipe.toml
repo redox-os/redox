@@ -1,6 +1,5 @@
 #TODO camino crate error (after a patch on the ring crate)
 [source]
 git = "https://github.com/EmbarkStudios/cargo-deny"
-rev = "80860f0f6c974810e9ce38655309293e8aa841e4"
 [build]
 template = "cargo"

@@ -1,7 +1,6 @@
 #TODO camino crate error
 [source]
 git = "https://github.com/rust-secure-code/cargo-geiger"
-rev = "5da482d71b2d7e0cde2ccb716c2457df4c70ca7a"
 [build]
 template = "custom"
 dependencies = [

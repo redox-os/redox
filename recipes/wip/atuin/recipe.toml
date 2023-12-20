@@ -1,7 +1,6 @@
 #TODO require a patch on tokio (update the version)
 [source]
 git = "https://github.com/ellie/atuin"
-rev = "da2e58fbb17aa05510df2480f7e1d47e21e74c73"
 [build]
 template = "custom"
 script = """

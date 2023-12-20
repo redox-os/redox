@@ -1,6 +1,5 @@
 #TODO camino crate error
 [source]
 git = "https://github.com/EmbarkStudios/cargo-about"
-rev = "2f6275808e651dca7d739dbbcd45efc48f4f388d"
 [build]
 template = "cargo"

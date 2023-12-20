@@ -1,7 +1,6 @@
 #TODO camino crate error (after a patch on the ring crate)
 [source]
 git = "https://github.com/rustsec/rustsec"
-rev = "3544515990b09441ecc12df8d0291bc6f23d3d30"
 [build]
 template = "custom"
 dependencies = [

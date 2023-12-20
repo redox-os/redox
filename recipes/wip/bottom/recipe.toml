@@ -1,6 +1,5 @@
 #TODO starship-battery crate compilation error
 [source]
 git = "https://github.com/ClementTsang/bottom"
-rev = "6d251098710f3119af11ecdd8761929acb010fab"
 [build]
 template = "cargo"
