@@ -1,4 +1,4 @@
-#TODO Compiled but not tested yet
+#TODO Compiled but not tested
 [source]
 git = "https://github.com/qarmin/czkawka"
 rev = "44400e08af3c8f030493b8ec6fa965c7d42e560e"

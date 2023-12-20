@@ -1,4 +1,4 @@
-#TODO Not compiled or tested
+#TODO rdev crate error
 [source]
 git = "https://github.com/orhun/daktilo"
 rev = "f51dde4e1b83fb18018ebb25ff246613a136817f"

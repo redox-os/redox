@@ -1,4 +1,5 @@
 #TODO missing Unix domain sockets support
+#TODO compilation error
 [source]
 tar = "https://dbus.freedesktop.org/releases/dbus/dbus-1.14.10.tar.xz"
 [build]

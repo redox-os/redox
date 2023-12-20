@@ -1,4 +1,4 @@
-#TODO Not compiled or tested
+#TODO make elfutils work
 [source]
 tar = "https://sourceware.org/ftp/debugedit/5.0/debugedit-5.0.tar.xz"
 [build]

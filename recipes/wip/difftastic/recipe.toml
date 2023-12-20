@@ -1,4 +1,4 @@
-#TODO not compiled/tested yet
+#TODO make mimalloc work
 [source]
 git = "https://github.com/Wilfred/difftastic"
 rev = "a67ad5b9afe31e577540f27280885652c792b103"
