@@ -1,4 +1,4 @@
-#TODO require a patch on tokio (update the version)
+#TODO require Wayland
 [source]
 git = "https://github.com/ellie/atuin"
 [build]
