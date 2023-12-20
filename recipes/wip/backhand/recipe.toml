@@ -1,7 +1,6 @@
 #TODO not compiled or tested
 [source]
 git = "https://github.com/wcampbell0x2a/backhand"
-rev = "96c83729a791526ff0a3fd8e9390740c25ae8184"
 [build]
 template = "custom"
 script = """
