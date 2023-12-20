@@ -1,4 +1,4 @@
-#TODO Not compiled or tested
+#TODO compilation error (after an update on proc-macro2)
 [source]
 git = "https://github.com/cobalt-org/cobalt.rs"
 rev = "70e8e19631819c7f552b63c35f4907920d23ae22"
