@@ -1,6 +1,5 @@
 #TODO nix crate compilation error
 [source]
 git = "https://github.com/Canop/broot"
-rev = "c12f94f23551cbc7142ac6677385fa28cea29d1d"
 [build]
 template = "cargo"

@@ -1,6 +1,5 @@
 #TODO camino crate compilation error
 [source]
 git = "https://github.com/Canop/bacon"
-rev = "4ab9e68ba3003c4f6c97c07df0c2e23508890f52"
 [build]
 template = "cargo"

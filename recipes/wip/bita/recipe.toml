@@ -1,7 +1,6 @@
 #TODO compilation error (after a cargo update and a patch on the ring and tokio crates)
 [source]
 git = "https://github.com/oll3/bita"
-rev = "202579482b94db85e3e49e52dfba1edd498bf733"
 [build]
 template = "custom"
 script = """

@@ -1,6 +1,5 @@
 #TODO redox_syscall crate error
 [source]
 git = "https://github.com/imsnif/bandwhich"
-rev = "f987636f785f13fd9e96d942a6b73176c5673d1f"
 [build]
 template = "cargo"

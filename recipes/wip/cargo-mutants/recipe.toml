@@ -1,7 +1,6 @@
 #TODO camino crate error
 [source]
 git = "https://github.com/sourcefrog/cargo-mutants"
-rev = "6c254852eb79273b87e2ec50606bf82f9a5db0b6"
 rev = "
 [build]
 template = "cargo"

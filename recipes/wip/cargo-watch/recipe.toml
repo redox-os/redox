@@ -1,6 +1,5 @@
 #TODO xdg-home crate error
 [source]
 git = "https://github.com/watchexec/cargo-watch"
-rev = "0a85f5f76bf35009233f751c91f02d31afd2b94f"
 [build]
 template = "cargo"

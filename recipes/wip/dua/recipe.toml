@@ -1,6 +1,5 @@
 #TODO open crate error
 [source]
 git = "https://github.com/Byron/dua-cli"
-rev = "491b5587ca0e9d157b9a4f8907c35137d57983d5"
 [build]
 template = "cargo"

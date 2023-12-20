@@ -1,7 +1,6 @@
 #TODO pwd-grp crate error
 [source]
 git = "https://gitlab.torproject.org/tpo/core/arti"
-rev = "db9a5263e7b185b90750c658dff8e5a50fce0a2e"
 [build]
 template = "custom"
 dependencies = [
