@@ -4,5 +4,5 @@ git = "https://github.com/landaire/fazi"
 [build]
 template = "custom"
 script = """
-cookbook_cargo_examples simple_harness
+cookbook_cargo_packages fazi
 """
