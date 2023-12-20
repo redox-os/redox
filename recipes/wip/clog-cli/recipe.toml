@@ -1,4 +1,4 @@
-#TODO rust-serialize crate error (after cargo update)
+#TODO rustc-serialize crate error (after cargo update)
 [source]
 git = "https://github.com/clog-tool/clog-cli"
 [build]

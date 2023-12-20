@@ -1,6 +1,5 @@
-#TODO compiled after cargo update, but not tested
+#TODO nix crate error
 [source]
 git = "https://github.com/Canop/dysk"
-rev = "eecc8cf86a26e840cdf1c97758a7deb3a4852e63"
 [build]
 template = "cargo"

@@ -1,4 +1,4 @@
-#TODO not compiled or tested
+#TODO missing script to properly move the binary
 [source]
 git = "https://github.com/wcampbell0x2a/backhand"
 [build]
