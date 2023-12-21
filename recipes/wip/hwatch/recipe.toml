@@ -1,4 +1,4 @@
-#TODO Not compiled or tested
+#TODO async-io crate error (after cargo update)
 [source]
 git = "https://github.com/blacknon/hwatch"
 [build]
