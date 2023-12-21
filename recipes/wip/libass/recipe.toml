@@ -9,4 +9,5 @@ dependencies = [
     "libpng",
     "fribidi",
     "harfbuzz",
+    "glib",
 ]
