@@ -5,6 +5,7 @@ tar = "https://ftp.gnu.org/gnu/gdb/gdb-14.1.tar.xz"
 template = "custom"
 dependencies = [
     "libgmp",
+    "libmpfr",
 ]
 script = """
 COOKBOOK_CONFIGURE_FLAGS+=(
