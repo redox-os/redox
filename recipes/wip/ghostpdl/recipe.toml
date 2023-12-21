@@ -1,4 +1,4 @@
-#TODO Not compiled or tested
+#TODO error on the libtiff configure script
 [source]
 tar = "https://github.com/ArtifexSoftware/ghostpdl-downloads/releases/download/gs10021/ghostpdl-10.02.1.tar.gz"
 [build]
