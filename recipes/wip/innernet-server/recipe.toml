@@ -8,5 +8,5 @@ dependencies = [
     "sqlite3",
 ]
 script = """
-cookbook_cargo_packages innernet-server
+cookbook_cargo_packages server
 """

@@ -5,5 +5,5 @@ rev = "8d058c8d879bdeec64506f2d34c2c55e2975ec28"
 [build]
 template = "custom"
 script = """
-cookbook_cargo_packages innernet
+cookbook_cargo_packages client
 """
