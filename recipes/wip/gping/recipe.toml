@@ -1,4 +1,4 @@
-#TODO weird error on the end of compilation
+#TODO program source code error
 [source]
 git = "https://github.com/orf/gping"
 rev = "7547db0d2d8c22cf15066d51fcd41dc57cb5b046"
