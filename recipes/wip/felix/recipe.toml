@@ -1,4 +1,4 @@
-#TODO link error: getgroups
+#TODO compiled but not tested
 [source]
 git = "https://github.com/kyoheiu/felix"
 [build]
