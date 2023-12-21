@@ -1,4 +1,4 @@
-#TODO open/trash crates error
+#TODO open and trash crates error
 [source]
 git = "https://github.com/kamiyaa/joshuto"
 [build]
