@@ -1,4 +1,4 @@
-#TODO Not compiled or tested
+#TODO compiled but not tested (after cargo update)
 [source]
 git = "https://github.com/bokuweb/lcs-image-diff-rs"
 [build]
