@@ -1,4 +1,4 @@
-#TODO 
+#TODO make libgphoto2 work
 [source]
 tar = "https://sourceforge.net/projects/gphoto/files/gphoto/2.5.28/gphoto2-2.5.28.tar.xz/download"
 [build]
