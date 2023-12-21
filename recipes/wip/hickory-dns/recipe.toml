@@ -3,7 +3,19 @@
 git = "https://github.com/hickory-dns/hickory-dns"
 rev = "408d0baca080d1b201cd33e616dc4abd160ef6c0"
 [build]
-template = "cargo"
+template = "custom"
 dependencies = [
     "openssl1",
 ]
+script = """
+package="hickory-dns"
+"${COOKBOOK_CARGO}" build \
+            --manifest-path "${COOKBOOK_SOURCE}/Cargo.toml" \
+            --package "${package}" \
+            --release
+           --all-features
+        mkdir -pv "${COOKBOOK_STAGE}/bin"
+        cp -v \
+            "target/${TARGET}/release/${package}" \
+            "${COOKBOOK_STAGE}/bin/${package}"
+"""
