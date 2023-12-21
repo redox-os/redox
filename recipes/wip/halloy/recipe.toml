@@ -1,4 +1,4 @@
-#TODO  (after cargo update)
+#TODO xdg-home crate error (after cargo update)
 [source]
 git = "https://github.com/squidowl/halloy"
 [build]
