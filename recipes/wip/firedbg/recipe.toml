@@ -5,5 +5,5 @@ rev = "2c1ec30113e2a0c857a37beb4177884528ae69bc"
 [build]
 template = "custom"
 script = """
-cookbook_cargo_packages command
+cookbook_cargo_packages firedbg
 """
