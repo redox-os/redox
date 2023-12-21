@@ -1,7 +1,7 @@
+#TODO make Wayland work
 [source]
-tar = "https://cytranet.dl.sourceforge.net/project/freeglut/freeglut/3.0.0/freeglut-3.0.0.tar.gz"
-blake3 = "08c8874d6ddad5be4860813865d4d4e2a84c294da0f3cf82a29e43920806b0da"
-
+tar = "https://github.com/freeglut/freeglut/releases/download/v3.4.0/freeglut-3.4.0.tar.gz"
+#blake3 = "08c8874d6ddad5be4860813865d4d4e2a84c294da0f3cf82a29e43920806b0da"
 [build]
 dependencies = [
     "mesa",

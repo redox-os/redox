@@ -3,4 +3,7 @@
 git = "https://github.com/FyroxEngine/Fyrox"
 rev = "8d3e2e2cf29b7eefa78d14ff92156caeed88b955"
 [buiild]
-template = "cargo"
+template = "custom"
+script = """
+cookbook_cargo_packages fyrox-template
+"""
