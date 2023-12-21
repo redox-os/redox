@@ -3,6 +3,9 @@
 git = "https://github.com/ffizer/ffizer"
 [build]
 template = "custom"
+dependencies = [
+    "openssl1",
+]
 script = """
 cookbook_cargo --features cli
 """
