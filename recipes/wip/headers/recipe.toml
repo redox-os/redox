@@ -1,5 +1,8 @@
-#TODO compilation error (related to X11?)
+#TODO make libxcb work
 [source]
 git = "https://github.com/transmissions11/headers"
 [build]
 template = "cargo"
+dependencies = [
+    "libxcb",
+]
