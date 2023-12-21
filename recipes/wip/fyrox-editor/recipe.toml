@@ -1,9 +1,9 @@
-#TODO compiled but not tested
+#TODO 
 [source]
 git = "https://github.com/FyroxEngine/Fyrox"
 rev = "8d3e2e2cf29b7eefa78d14ff92156caeed88b955"
 [build]
 template = "custom"
 script = """
-cookbook_cargo_packages fyrox-template
+cookbook_cargo_packages editor
 """
