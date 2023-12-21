@@ -1,4 +1,4 @@
-#TODO Rust version error (after cargo update)
+#TODO x11rb crate error (after a patch on ring)
 [source]
 git = "https://github.com/ulyssa/iamb"
 [build]

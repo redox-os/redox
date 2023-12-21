@@ -1,4 +1,4 @@
-#TODO Not compiled or tested
+#TODO compiled but not tested
 [source]
 git = "https://github.com/konradsz/igrep"
 rev = "8588755641e64cd40e569893e03628cf83cfc59f"
