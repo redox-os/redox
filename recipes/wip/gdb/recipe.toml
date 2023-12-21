@@ -1,4 +1,4 @@
-#TODO probably wrong script, see https://sourceware.org/gdb/wiki/BuildingNatively
+#TODO compiled but not tested
 [source]
 tar = "https://ftp.gnu.org/gnu/gdb/gdb-14.1.tar.xz"
 [build]
