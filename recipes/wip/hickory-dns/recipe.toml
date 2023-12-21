@@ -8,14 +8,5 @@ dependencies = [
     "openssl1",
 ]
 script = """
-package="hickory-dns"
-"${COOKBOOK_CARGO}" build \
-            --manifest-path "${COOKBOOK_SOURCE}/Cargo.toml" \
-            --package "${package}" \
-            --release
-           --all-features
-        mkdir -pv "${COOKBOOK_STAGE}/bin"
-        cp -v \
-            "target/${TARGET}/release/${package}" \
-            "${COOKBOOK_STAGE}/bin/${package}"
+cookbook_cargo -p hickory-dns --all-features
 """
