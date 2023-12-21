@@ -1,4 +1,4 @@
-#TODO Not compiled or tested (after an update on proc-macro2)
+#TODO shared crate error
 [source]
 git = "https://github.com/tonarino/innernet"
 [build]
