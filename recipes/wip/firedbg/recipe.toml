@@ -1,4 +1,4 @@
-#TODO 
+#TODO missing script to properly move the binary
 [source]
 git = "https://github.com/SeaQL/FireDBG.for.Rust"
 rev = "2c1ec30113e2a0c857a37beb4177884528ae69bc"
