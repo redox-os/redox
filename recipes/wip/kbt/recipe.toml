@@ -1,6 +1,5 @@
 #TODO Not compiled or tested
 [source]
 git = "https://github.com/bloznelis/kbt"
-rev = "a121e6de83044cc94343edc98eec33be20afc335"
 [build]
 template = "cargo"

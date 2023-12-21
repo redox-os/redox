@@ -1,4 +1,4 @@
-#TODO program error, maybe needs porting
+#TODO kanata-parser crate error
 [source]
 git = "https://github.com/jtroo/kanata"
 [build]
