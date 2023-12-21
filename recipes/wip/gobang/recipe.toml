@@ -1,4 +1,4 @@
-#TODO Not compiled or tested
+#TODO mio crate error (after cargo update and patch on ring)
 [source]
 git = "https://github.com/TaKO8Ki/gobang"
 [build]

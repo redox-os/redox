@@ -1,4 +1,4 @@
-#TODO Not compiled or tested
+#TODO x11rb crate error
 [source]
 git = "https://github.com/Nurrl/glou"
 [build]

@@ -1,4 +1,4 @@
-#TODO compiled but not tested (after a patch on the ring crate)
+#TODO compiled but not tested (after a cargo update and a patch on the ring crate)
 [source]
 git = "https://github.com/sondr3/git-ignore"
 [build]
