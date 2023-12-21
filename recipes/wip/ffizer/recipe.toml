@@ -1,7 +1,6 @@
 #TODO compilation error (after a patch on the ring crate)
 [source]
 git = "https://github.com/ffizer/ffizer"
-rev = "050eedc1a609575b4fe21649f8995aa803b6c9bb"
 [build]
 template = "custom"
 script = """
