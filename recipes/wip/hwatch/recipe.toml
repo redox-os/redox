@@ -1,6 +1,5 @@
 #TODO Not compiled or tested
 [source]
 git = "https://github.com/blacknon/hwatch"
-rev = "1267168468948ce4d14e61f837ac3c3474a52563"
 [build]
 template = "cargo"
