@@ -7,4 +7,5 @@ dependencies = [
     "libjpeg",
     "libpng",
     "freetype2",
+    "zlib",
 ]
