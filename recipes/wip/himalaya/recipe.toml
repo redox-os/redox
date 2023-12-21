@@ -1,4 +1,4 @@
-#TODO ring crate error
+#TODO xdg-home crate error (after a patch on ring)
 [source]
 git = "https://github.com/soywod/himalaya"
 [build]
