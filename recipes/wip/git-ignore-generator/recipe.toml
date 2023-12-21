@@ -1,6 +1,5 @@
 #TODO compiled but not tested (after a patch on the ring crate)
 [source]
 git = "https://github.com/sondr3/git-ignore"
-rev = "299a7149d114dbdad2c5f82617fdf36e45ccfcb0"
 [build]
 template = "cargo"
