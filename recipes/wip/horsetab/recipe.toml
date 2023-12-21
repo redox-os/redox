@@ -1,4 +1,4 @@
-#TODO Not compiled or tested
+#TODO rdev crate error
 [source]
 git = "https://github.com/ChrisVilches/horsetab"
 [build]
