@@ -1,7 +1,6 @@
 #TODO ring crate error
 [source]
 git = "https://github.com/soywod/himalaya"
-rev = "7ad1772c83f53f672d93dcf3921c722cf750d38f"
 [build]
 template = "cargo"
 dependencies = [
