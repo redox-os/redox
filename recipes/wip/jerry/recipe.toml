@@ -1,4 +1,4 @@
-#TODO Not compiled or tested
+#TODO move to proper category
 [source]
 git = "https://github.com/justchokingaround/jerry"
 [build]

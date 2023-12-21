@@ -1,6 +1,5 @@
 #TODO redox_syscall crate error
 [source]
 git = "https://github.com/PaulJuliusMartinez/jless"
-rev = "21dd6100edb47145bb9570931bec29697bcd0d9b"
 [build]
 template = "cargo"
