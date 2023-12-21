@@ -1,4 +1,4 @@
-#TODO gmp-mpfr-sys crate error
+#TODO gmp-mpfr-sys crate error (after cargo update)
 [source]
 git = "https://github.com/PaddiM8/kalker"
 [build]
