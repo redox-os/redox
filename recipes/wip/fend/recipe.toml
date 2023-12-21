@@ -1,4 +1,4 @@
-#TODO compilation error (after a patch on the ring crate)
+#TODO compiled but not tested
 [source]
 git = "https://github.com/printfn/fend"
 [build]
