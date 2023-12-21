@@ -2,10 +2,16 @@
 [source]
 tar = "https://downloads.sourceforge.net/project/enlightenment/imlib2-src/1.12.1/imlib2-1.12.1.tar.xz"
 [build]
-template = "configure"
+template = "custom"
 dependencies = [
     "libjpeg",
     "libpng",
     "freetype2",
     "zlib",
 ]
+script = """
+COOKBOOK_CONFIGURE_FLAGS+=(
+    --without-x
+)
+cookbook_configure
+"""
