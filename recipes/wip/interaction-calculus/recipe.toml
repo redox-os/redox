@@ -1,4 +1,4 @@
-#TODO redox_syscall is very outdated on the dependency tree
+#TODO compiled but not tested (after cargo update)
 [source]
 git = "https://github.com/VictorTaelin/Interaction-Calculus"
 [build]

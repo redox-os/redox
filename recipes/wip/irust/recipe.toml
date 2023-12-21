@@ -3,4 +3,7 @@
 git = "https://github.com/sigmaSd/IRust"
 rev = "6f9dbaf9387b39019a44dfe5ef5397e6bb8d2a1a"
 [build]
-template = "cargo"
+template = "custom"
+script = """
+cookbook_cargo_packages irust
+"""
