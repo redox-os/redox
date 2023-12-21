@@ -1,4 +1,4 @@
-#TODO not compiled or tested
+#TODO compilation error - unknown type name "sigjmp_buf"
 [source]
 tar = "https://downloads.sourceforge.net/project/enlightenment/imlib2-src/1.12.1/imlib2-1.12.1.tar.xz"
 [build]
