@@ -8,4 +8,5 @@ dependencies = [
     "zlib",
     "libpng",
     "fribidi",
+    "harfbuzz",
 ]

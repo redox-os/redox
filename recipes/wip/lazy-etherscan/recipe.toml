@@ -1,4 +1,4 @@
-#TODO Not compiled or tested
+#TODO camino crate error
 [source]
 git = "https://github.com/woxjro/lazy-etherscan"
 [build]

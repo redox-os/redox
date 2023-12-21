@@ -1,4 +1,4 @@
-#TODO Not compiled or tested
+#TODO outdated redox_syscall crate (after cargo update)
 [source]
 git = "https://github.com/bloznelis/kbt"
 [build]

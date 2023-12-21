@@ -1,4 +1,4 @@
-#TODO Not compiled or tested
+#TODO compilation error
 [source]
 tar = "https://github.com/ultravideo/kvazaar/releases/download/v2.2.0/kvazaar-2.2.0.tar.xz"
 [build]

@@ -1,4 +1,4 @@
-#TODO The redox target is not supported on the configure
+#TODO The redox target is not supported on the configure script
 [source]
 tar = "https://sourceforge.net/projects/lame/files/lame/3.100/lame-3.100.tar.gz/download"
 [build]
