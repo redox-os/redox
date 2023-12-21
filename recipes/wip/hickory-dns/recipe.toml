@@ -8,5 +8,5 @@ dependencies = [
     "openssl1",
 ]
 script = """
-cookbook_cargo -- -p hickory-dns --all-features
+cookbook_cargo_packages hickory-dns --all-features
 """
