@@ -1,4 +1,4 @@
-#TODO not compiled or tested
+#TODO compilation error
 [source]
 tar = "https://astron.com/pub/file/file-5.45.tar.gz"
 [build]
