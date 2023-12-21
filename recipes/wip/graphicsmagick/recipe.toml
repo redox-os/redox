@@ -1,4 +1,4 @@
-#TODO Not compiled or tested
+#TODO compilation error - missing sys/poll.h
 #TODO fix libwebp
 #TODO more features - http://www.graphicsmagick.org/README.html#add-on-libraries-programs
 [source]

@@ -1,5 +1,5 @@
-#TODO not compiled or tested
+#TODO missing script for Meson
 [source]
 tar = "https://download.gnome.org/sources/gtk-doc/1.33/gtk-doc-1.33.2.tar.xz"
 [build]
-template = "configure"
+template = "custom"
