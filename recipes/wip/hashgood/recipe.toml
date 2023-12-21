@@ -1,6 +1,5 @@
 #TODO Not compiled or tested
 [source]
 git = "https://github.com/thombles/hashgood"
-rev = "9e476ded77bd2f2289f4ebe08cdfc87332827292"
 [build]
 template = "cargo"
