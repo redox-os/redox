@@ -1,6 +1,6 @@
 #TODO helix-term error (after cargo update)
 [source]
-tar = "https://github.com/helix-editor/helix"
+tar = "https://github.com/helix-editor/helix/releases/download/23.10/helix-23.10-source.tar.xz"
 [build]
 template = "custom"
 script = """
