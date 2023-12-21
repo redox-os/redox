@@ -1,6 +1,5 @@
 #TODO not compiled or tested
 [source]
-git = "https://github.com/file/file"
-rev = "4cbd5c8f0851201d203755b76cb66ba991ffd8be"
+tar = "https://astron.com/pub/file/file-5.45.tar.gz"
 [build]
 template = "configure"
