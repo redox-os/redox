@@ -1,4 +1,4 @@
-#TODO Not compiled or tested
+#TODO configuration problem, can't recognize the Redox target
 [source]
 tar = "https://download.gnome.org/sources/gtkglext/1.2/gtkglext-1.2.0.tar.bz2"
 [build]

@@ -1,5 +1,8 @@
-#TODO half 2.3.1 package require rustc 1.70 or newer
+#TODO  (after cargo update)
 [source]
 git = "https://github.com/squidowl/halloy"
 [build]
 template = "cargo"
+dependencies = [
+    "openssl1",
+]

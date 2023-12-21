@@ -1,4 +1,4 @@
-#TODO Not compiled or tested
+#TODO compilation error - port fseterr.c
 [source]
 tar = "https://ftp.gnu.org/gnu/groff/groff-1.23.0.tar.gz"
 [build]
