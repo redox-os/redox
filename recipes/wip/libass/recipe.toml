@@ -11,4 +11,5 @@ dependencies = [
     "harfbuzz",
     "glib",
     "pcre",
+    "fontconfig",
 ]
