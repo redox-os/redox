@@ -1,4 +1,4 @@
-#TODO Not compiled or tested
+#TODO make dependencies work
 # data files - http://osirion.org/files/osirion-0.2.8-data.zip
 [source]
 tar = "http://osirion.org/files/osirion-0.2.8-src.tar.bz2"
