@@ -1,4 +1,4 @@
-#TODO Not compiled or tested
+#TODO missing dependencies
 [source]
 tar = "https://www.x.org/releases/individual/lib/libXext-1.3.5.tar.xz"
 [build]

@@ -3,3 +3,7 @@
 tar = "https://www.x.org/releases/individual/lib/libXft-2.3.8.tar.xz"
 [build]
 template = "configure"
+dependencies = [
+    "libxrender",
+    "libx11",
+]
