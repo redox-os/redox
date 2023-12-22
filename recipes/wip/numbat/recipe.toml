@@ -1,7 +1,6 @@
 #TODO Not compiled or tested
 [source]
 git = "https://github.com/sharkdp/numbat"
-rev = "c04afb354608ef22e475d8d6fec955ca6e823d97"
 [build]
 template = "custom"
 script = """
