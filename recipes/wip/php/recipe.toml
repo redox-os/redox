@@ -1,4 +1,4 @@
-#TODO Not compiled or tested
+#TODO can't detect libiconv
 # in case of problems, read https://www.php.net/manual/en/install.unix.php
 [source]
 tar = "https://www.php.net/distributions/php-8.3.0.tar.xz"
