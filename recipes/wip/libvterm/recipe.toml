@@ -1,5 +1,5 @@
 #TODO probably wrong template
 [source]
-tar = "https://www.leonerd.org.uk/code/libvterm/libvterm-0.3.2.tar.gz"
+tar = "https://launchpad.net/libvterm/trunk/v0.3/+download/libvterm-0.3.3.tar.gz"
 [build]
 template = "configure"

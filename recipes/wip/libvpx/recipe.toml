@@ -1,4 +1,4 @@
-#TODO probably wrong template
+#TODO error with the redox target
 [source]
 git = "https://chromium.googlesource.com/webm/libvpx"
 rev = "10b9492dcf05b652e2e4b370e205bd605d421972"
