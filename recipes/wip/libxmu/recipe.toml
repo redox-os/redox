@@ -1,5 +1,9 @@
-#TODO Not compiled or tested
+#TODO missing dependencies
 [source]
 tar = "https://www.x.org/releases/individual/lib/libXmu-1.1.4.tar.xz"
 [build]
 template = "configure"
+dependencies = [
+    "libx11",
+    "libxext",
+]
