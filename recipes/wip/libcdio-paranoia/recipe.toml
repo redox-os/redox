@@ -1,10 +1,6 @@
-#TODO Not compiled or tested
+#TODO missing script for building
 [source]
 git = "https://github.com/rocky/libcdio-paranoia"
 rev = "db4dfff9e11c516ae35d87e568f511002ddae9d7"
 [build]
 template = "custom"
-script = """
-./autogen.sh
-cookbook_configure
-"""

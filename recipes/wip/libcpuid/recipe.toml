@@ -1,4 +1,4 @@
-#TODO Not compiled or tested
+#TODO libtool error
 # require a POSIX-compatible shell, see https://github.com/anrieff/libcpuid#prerequisites
 [source]
 tar = "https://github.com/anrieff/libcpuid/releases/download/v0.6.4/libcpuid-0.6.4.tar.gz"
