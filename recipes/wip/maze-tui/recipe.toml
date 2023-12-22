@@ -1,5 +1,5 @@
-#TODO Not compiled or tested
+#TODO go to the "maze_progs" folder and build "run_tui" and "run_maze"
 [source]
 git = "https://github.com/agl-alexglopez/maze-tui"
 [build]
-template = "cargo"
+template = "custom"
