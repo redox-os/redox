@@ -1,4 +1,4 @@
-#TODO Not compiled or tested
+#TODO openssl-sys crate error
 [source]
 git = "https://github.com/dustinblackman/oatmeal"
 rev = "96f08a7b65c7be249a9f8497e247cc920c08459d"
