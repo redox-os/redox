@@ -1,4 +1,4 @@
-#TODO termios and ioctl-rs crates error
+#TODO termios crates error (after cargo update)
 [source]
 git = "https://github.com/pvolok/mprocs"
 [build]

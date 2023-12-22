@@ -1,4 +1,4 @@
-#TODO Not compiled or tested
+#TODO make libpcap work
 [source]
 git = "https://github.com/ZingerLittleBee/netop"
 [build]
