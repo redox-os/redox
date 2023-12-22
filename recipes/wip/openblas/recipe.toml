@@ -1,5 +1,5 @@
 #TODO missing script for "make", see https://github.com/OpenMathLib/OpenBLAS/wiki/Installation-Guide
-#TODO require the Fortran frontend from GCC?
+#TODO require the Fortran frontend from GCC
 [source]
 tar = "https://github.com/OpenMathLib/OpenBLAS/releases/download/v0.3.25/OpenBLAS-0.3.25.tar.gz"
 [build]
