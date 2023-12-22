@@ -6,4 +6,5 @@ tar = "https://www.php.net/distributions/php-8.3.0.tar.xz"
 template = "configure"
 dependencies = [
     "libxml2",
+    "sqlite3",
 ]
