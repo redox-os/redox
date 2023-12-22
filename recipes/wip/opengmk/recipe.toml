@@ -1,4 +1,4 @@
-#TODO Not compiled or tested
+#TODO libsoundio-sys crate error, require ALSA (needs to be ported)
 [source]
 git = "https://github.com/OpenGMK/OpenGMK"
 [build]

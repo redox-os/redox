@@ -1,5 +1,5 @@
+#TODO permission denied on the configure script
 #TODO build instructions - https://github.com/openjdk/jdk11u/blob/master/doc/building.md
-#TODO not compiled or tested
 [source]
 git = "https://github.com/openjdk/jdk11u"
 rev = "09b402a6bcecce976ee17ce358b0a90ea127ab69"

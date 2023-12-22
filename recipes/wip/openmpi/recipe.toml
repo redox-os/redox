@@ -1,4 +1,5 @@
 #TODO missing dependencies, see https://docs.open-mpi.org/en/v5.0.x/installing-open-mpi/required-support-libraries.html
+#TODO make libevent works
 [source]
 tar = "https://download.open-mpi.org/release/open-mpi/v5.0/openmpi-5.0.0.tar.bz2"
 [build]
