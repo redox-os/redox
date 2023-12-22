@@ -10,4 +10,5 @@ dependencies = [
     "fribidi",
     "harfbuzz",
     "glib",
+    "pcre",
 ]
