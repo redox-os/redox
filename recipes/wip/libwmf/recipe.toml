@@ -1,4 +1,4 @@
-#TODO Not compiled or tested
+#TODO can't recognize the redox target
 [source]
 tar = "https://sourceforge.net/projects/wvware/files/libwmf/0.2.8.4/libwmf-0.2.8.4.tar.gz/download"
 [build]

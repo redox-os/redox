@@ -1,4 +1,4 @@
-#TODO Not compiled or tested
+#TODO make libgif work
 [source]
 tar = "https://storage.googleapis.com/downloads.webmproject.org/releases/webp/libwebp-1.3.2.tar.gz"
 [build]

@@ -1,4 +1,4 @@
-#TODO Not compiled or tested
+#TODO make dependencies work
 [source]
 tar = "https://sourceforge.net/projects/libwpd/files/libwpd/libwpd-0.10.3/libwpd-0.10.3.tar.xz/download"
 [build]
