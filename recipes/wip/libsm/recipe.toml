@@ -3,3 +3,8 @@
 tar = "https://www.x.org/releases/individual/lib/libSM-1.2.4.tar.xz"
 [build]
 template = "configure"
+dependencies = [
+    "libice",
+    "libxtrans",
+    "x11proto",
+]
