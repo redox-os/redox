@@ -1,6 +1,5 @@
 #TODO users crate error
 [source]
 git = "https://github.com/lsd-rs/lsd"
-rev = "9b8ed0ef732bd0cfc0f16c0cdb0040bcff2936d5"
 [build]
 template = "cargo"
