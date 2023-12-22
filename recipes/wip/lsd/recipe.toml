@@ -1,4 +1,4 @@
-#TODO users crate error
+#TODO compiled but not tested (after cargo update)
 [source]
 git = "https://github.com/lsd-rs/lsd"
 [build]

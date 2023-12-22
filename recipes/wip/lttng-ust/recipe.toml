@@ -1,4 +1,4 @@
-#TODO Not compiled or tested
+#TODO make dependencies work
 [source]
 tar = "http://lttng.org/files/lttng-ust/lttng-ust-2.13.6.tar.bz2"
 [build]
