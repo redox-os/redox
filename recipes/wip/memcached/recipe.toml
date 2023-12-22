@@ -1,4 +1,5 @@
 #TODO probably wrong template, see https://github.com/memcached/memcached/wiki/Install#from-source
+#TODO make libevent works
 [source]
 tar = "https://www.memcached.org/files/memcached-1.6.22.tar.gz"
 [build]

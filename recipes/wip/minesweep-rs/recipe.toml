@@ -1,6 +1,5 @@
 #TODO Not compiled or tested
 [source]
 git = "https://github.com/cpcloud/minesweep-rs"
-rev = "9ed752aa9670b0e5220a25923dca50adb0a92c6f"
 [build]
 template = "cargo"
