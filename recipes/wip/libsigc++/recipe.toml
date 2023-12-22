@@ -1,5 +1,5 @@
-#TODO build instructions - https://github.com/libsigcplusplus/libsigcplusplus#building-from-a-release-tarball
+#TODO missing script for building, see https://github.com/libsigcplusplus/libsigcplusplus#building-from-a-release-tarball
 [source]
 tar = "https://download.gnome.org/sources/libsigc++/3.6/libsigc%2B%2B-3.6.0.tar.xz"
 [build]
-template = "configure"
+template = "custom"

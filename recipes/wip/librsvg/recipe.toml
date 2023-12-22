@@ -1,4 +1,4 @@
-#TODO not compiled or tested
+#TODO make dependencies work
 #TODO build instructions - https://gnome.pages.gitlab.gnome.org/librsvg/devel-docs/compiling.html
 [source]
 tar = "https://download.gnome.org/sources/librsvg/2.56/librsvg-2.56.0.tar.xz"
