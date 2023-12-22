@@ -4,5 +4,5 @@ git = "https://github.com/OpenGMK/OpenGMK"
 [build]
 template = "custom"
 script = """
-cookbook_cargo_packages opengmk
+cookbook_cargo_packages gm8emulator
 """
