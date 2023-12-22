@@ -1,4 +1,4 @@
-#TODO weird error, seems to be related to outdated compiler.
+#TODO compilation error
 [source]
 tar = "https://www.freedesktop.org/software/libevdev/libevdev-1.13.1.tar.xz"
 [build]

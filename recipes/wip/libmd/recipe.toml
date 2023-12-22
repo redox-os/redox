@@ -1,4 +1,4 @@
-#TODO Not compiled or tested
+#TODO compiled but not tested
 [source]
 tar = "https://archive.hadrons.org/software/libmd/libmd-1.1.0.tar.xz"
 [build]

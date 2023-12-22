@@ -1,4 +1,4 @@
-#TODO the redox target is not supported on the configure
+#TODO the redox target is not supported on the configure script
 [source]
 tar = "https://sourceforge.net/projects/mad/files/libmad/0.15.1b/libmad-0.15.1b.tar.gz/download"
 [build]

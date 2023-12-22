@@ -1,4 +1,4 @@
-#TODO compiled but not tested
+#TODO make gnutls work
 [source]
 tar = "https://ftp.gnu.org/gnu/nettle/nettle-3.8.1.tar.gz"
 [build]

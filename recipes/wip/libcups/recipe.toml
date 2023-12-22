@@ -1,4 +1,4 @@
-#TODO require printer drivers
+#TODO make gnutls work
 [source]
 tar = "https://github.com/OpenPrinting/cups/releases/download/v2.4.7/cups-2.4.7-source.tar.gz"
 [build]

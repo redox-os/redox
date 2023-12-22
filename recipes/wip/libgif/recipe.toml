@@ -1,5 +1,5 @@
-#TODO Not compiled or tested
+#TODO missing script for building
 [source]
 tar = "https://sourceforge.net/projects/giflib/files/giflib-5.2.1.tar.gz/download"
 [build]
-template = "configure"
+template = "custom"

@@ -1,4 +1,4 @@
-#TODO Not compiled or tested
+#TODO missing plural.h
 [source]
 tar = "https://download.savannah.nongnu.org/releases/m17n/m17n-lib-1.8.4.tar.gz"
 [build]
