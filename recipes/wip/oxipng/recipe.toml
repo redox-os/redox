@@ -1,4 +1,4 @@
-#TODO Not compiled or tested
+#TODO compiled but not tested
 [source]
 git = "https://github.com/shssoichiro/oxipng"
 rev = "e1db84fd9745f3320c08b883e4942cd5b30b98a6"
