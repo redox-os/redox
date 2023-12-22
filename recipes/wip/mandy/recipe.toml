@@ -3,4 +3,7 @@
 git = "https://github.com/angeldollface/mandy"
 rev = "a64f20d0386af628af2662ed2a1e72faf9efe355"
 [build]
-template = "cargo"
+template = "custom"
+script = """
+cookbook_cargo_packages mandy-bin
+"""
