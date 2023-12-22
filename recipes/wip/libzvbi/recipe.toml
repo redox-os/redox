@@ -1,4 +1,4 @@
-#TODO the redox target is not supported on the configure
+#TODO the redox target is not supported on the configure script
 [source]
 tar = "https://sourceforge.net/projects/zapping/files/zvbi/0.2.35/zvbi-0.2.35.tar.bz2/download"
 [build]
