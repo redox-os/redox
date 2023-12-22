@@ -1,4 +1,4 @@
-#TODO Not compiled or tested
+#TODO make libicu work
 [source]
 tar = "https://github.com/Qalculate/libqalculate/releases/download/v4.9.0/libqalculate-4.9.0.tar.gz"
 [build]
