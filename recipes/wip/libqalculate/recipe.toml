@@ -9,5 +9,6 @@ dependencies = [
     "libxml2",
     "readline",
     "libiconv",
+    "libicu",
     "curl",
 ]
