@@ -1,6 +1,5 @@
-#TODO compiled (after a cargo update) but hangs during execution
+#TODO 
 [source]
 git = "https://github.com/o2sh/onefetch"
-rev = "13376155f2f8197aa9d95830298ceee007413895"
 [build]
 template = "cargo"
