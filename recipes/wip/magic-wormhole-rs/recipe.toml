@@ -1,4 +1,4 @@
-#TODO async-tar crate error
+#TODO async-tar and rustix crates error
 [source]
 git = "https://github.com/magic-wormhole/magic-wormhole.rs"
 [build]
