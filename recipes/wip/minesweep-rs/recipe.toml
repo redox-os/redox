@@ -1,4 +1,4 @@
-#TODO Not compiled or tested
+#TODO ratatui crate error
 [source]
 git = "https://github.com/cpcloud/minesweep-rs"
 [build]

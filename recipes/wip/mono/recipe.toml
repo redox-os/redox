@@ -1,4 +1,4 @@
-#TODO Not compiled or tested
+#TODO can't recognize the redox target
 [source]
 tar = "https://download.mono-project.com/sources/mono/mono-6.12.0.199.tar.xz"
 [build]
