@@ -1,4 +1,4 @@
-#TODO compilation error (after an update on tokio and a patch on ring)
+#TODO async-io crate error (after cargo update)
 [source]
 git = "https://github.com/lycheeverse/lychee"
 [build]
