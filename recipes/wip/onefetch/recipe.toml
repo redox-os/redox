@@ -1,4 +1,4 @@
-#TODO 
+#TODO compiled but not tested
 [source]
 git = "https://github.com/o2sh/onefetch"
 [build]
