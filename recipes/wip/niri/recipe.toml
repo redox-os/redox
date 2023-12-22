@@ -1,8 +1,12 @@
+#TODO Port Smithay
 #TODO probably wrong script for configuration, see https://github.com/YaLTeR/niri#installation
 [source]
 git = "https://github.com/YaLTeR/niri"
 [build]
 template = "custom"
+dependencies = [
+    "libwayland",
+]
 script = """
 mkdir -pv "${COOKBOOK_STAGE}"/bin
 mkdir -pv "${COOKBOOK_STAGE}"/home/user/.local/share/wayland-sessions
