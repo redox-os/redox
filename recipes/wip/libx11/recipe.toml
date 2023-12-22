@@ -1,4 +1,4 @@
-#TODO maybe wrong template
+#TODO directory error
 [source]
 tar = "https://www.x.org/releases/individual/lib/libX11-1.8.7.tar.xz"
 [build]
