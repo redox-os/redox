@@ -1,5 +1,5 @@
-#TODO probably wrong template, see https://github.com/leonerd/libtickit
+#TODO missing script for building, see https://github.com/leonerd/libtickit
 [source]
 tar = "https://www.leonerd.org.uk/code/libtickit/libtickit-0.4.3.tar.gz"
 [build]
-template = "configure"
+template = "custom"

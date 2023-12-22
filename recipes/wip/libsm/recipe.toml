@@ -1,4 +1,4 @@
-#TODO Not compiled or tested
+#TODO make dependencies work
 [source]
 tar = "https://www.x.org/releases/individual/lib/libSM-1.2.4.tar.xz"
 [build]

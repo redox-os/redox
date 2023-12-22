@@ -1,4 +1,4 @@
-#TODO the redox target is not supported on the configure
+#TODO the redox target is not supported on the configure script
 [source]
 tar = "http://downloads.xiph.org/releases/theora/libtheora-1.1.1.tar.bz2"
 [build]

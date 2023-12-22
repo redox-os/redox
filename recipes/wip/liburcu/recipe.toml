@@ -1,4 +1,4 @@
-#TODO Not compiled or tested
+#TODO can't configure pthread support
 [source]
 tar = "https://lttng.org/files/urcu/userspace-rcu-0.14.0.tar.bz2"
 [build]
