@@ -7,7 +7,6 @@ template = "configure"
 dependencies = [
     "cairo",
     "freetype2",
-    "gdk-pixbuf",
     "glib",
     "gobject-introspection",
     "harfbuzz",
