@@ -1,5 +1,9 @@
-#TODO Not compiled or tested
+#TODO make dependencies work
 [source]
 tar = "https://www.x.org/releases/individual/lib/libXcomposite-0.4.6.tar.xz"
 [build]
 template = "configure"
+dependencies = [
+    "libx11",
+    "x11proto",
+]
