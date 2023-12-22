@@ -1,4 +1,4 @@
-#TODO Not compiled or tested
+#TODO compiled but not tested
 [source]
 git = "https://github.com/rust-lang/mdBook"
 rev = "b7f46213c7df8f499eca0c82e7b41804cc15e369"

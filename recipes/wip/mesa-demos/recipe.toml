@@ -1,4 +1,5 @@
 #TODO missing script for Meson, see https://gitlab.freedesktop.org/mesa/demos/-/blob/main/README.rst?ref_type=heads
+#TODO make freeglut works
 [source]
 tar = "https://archive.mesa3d.org/demos/mesa-demos-9.0.0.tar.xz"
 [build]

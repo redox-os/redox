@@ -1,4 +1,4 @@
-#TODO Not compiled or tested
+#TODO mio crate error (even after cargo update)
 [source]
 git = "https://github.com/jawline/Mimic"
 [build]
