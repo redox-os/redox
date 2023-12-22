@@ -1,6 +1,5 @@
 #TODO Not compiled or tested
 [source]
 git = "https://github.com/nuta/nsh"
-rev = "93fa01cd5b5bba6f1c6aaabc218f3979d0ca2360"
 [build]
 template = "cargo"
