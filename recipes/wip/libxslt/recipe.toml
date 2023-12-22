@@ -1,4 +1,4 @@
-#TODO not compiled or tested
+#TODO require Python 3.10
 [source]
 tar = "https://download.gnome.org/sources/libxslt/1.1/libxslt-1.1.38.tar.xz"
 [build]

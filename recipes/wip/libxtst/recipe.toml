@@ -1,5 +1,10 @@
-#TODO Not compiled or tested
+#TODO missing dependencies
 [source]
 tar = "https://www.x.org/releases/individual/lib/libXtst-1.2.4.tar.xz"
 [build]
 template = "configure"
+dependencies = [
+    "libx11",
+    "libxi",
+    "libxext",
+]
