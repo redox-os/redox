@@ -1,6 +1,5 @@
 #TODO 
 [source]
 git = "https://github.com/Macchina-CLI/macchina"
-rev = "f228e72bd6a84bb18c26f1665c412cf206d425a3"
 [build]
 template = "cargo"
