@@ -7,4 +7,5 @@ template = "configure"
 dependencies = [
     "libxml2",
     "sqlite3",
+    "libiconv",
 ]
