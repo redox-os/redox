@@ -5,7 +5,7 @@ tar = "https://github.com/naev/naev/releases/download/v0.10.6/naev-0.10.6-source
 template = "custom"
 dependencies = [
     "sdl2",
-    "sdl2_image",
+    "sdl2-image",
     "libpng",
     "libxml2",
     "libwebp",

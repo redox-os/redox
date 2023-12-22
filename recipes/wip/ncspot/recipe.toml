@@ -1,4 +1,4 @@
-#TODO not compiled or tested
+#TODO ncurses crate error
 [source]
 git = "https://github.com/hrkfdn/ncspot"
 rev = "92e0852b3796601f406ebfdd697635ea63566a31"

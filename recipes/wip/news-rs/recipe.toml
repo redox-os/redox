@@ -1,6 +1,5 @@
 #TODO Not compiled or tested
 [source]
 git = "https://github.com/Atticus64/news"
-rev = "84d7598c6ec44fa9c1ee2a42d0c73163e3c7e407"
 [build]
 template = "cargo"

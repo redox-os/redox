@@ -1,4 +1,4 @@
-#TODO Not compiled or tested
+#TODO don't recognize the redox target
 [source]
 git = "https://github.com/NBISweden/MrBayes"
 [build]
