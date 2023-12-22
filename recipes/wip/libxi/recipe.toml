@@ -1,4 +1,4 @@
-#TODO Not compiled or tested
+#TODO missing dependencies
 [source]
 tar = "https://www.x.org/releases/individual/lib/libXi-1.8.1.tar.xz"
 [build]
