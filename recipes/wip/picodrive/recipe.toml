@@ -1,5 +1,13 @@
+#TODO configuration problem
 #TODO discover the dependencies
 [source]
 git = "https://github.com/notaz/picodrive"
 [build]
-template = "configure"
+template = "custom"
+script = """
+COOKBOOK_CONFIGURE_FLAGS+=(
+    --platform=generic
+    --sound-drivers=sdl
+)
+cookbook_configure
+"""
