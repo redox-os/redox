@@ -1,6 +1,5 @@
 #TODO Not compiled or tested
 [source]
 git = "https://github.com/pulp-platform/morty"
-rev = "a1a5b483fabc8b119a78f3c5b1921e8d6510720d"
 [build]
 template = "cargo"

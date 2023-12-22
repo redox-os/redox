@@ -1,4 +1,4 @@
-#TODO weird OpenSSL error on compilation (using cargo update)
+#TODO compiled but not tested (after cargo update)
 [source]
 git = "https://github.com/Y2Z/monolith"
 [build]
