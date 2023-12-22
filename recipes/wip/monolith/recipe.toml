@@ -1,7 +1,6 @@
 #TODO weird OpenSSL error on compilation (using cargo update)
 [source]
 git = "https://github.com/Y2Z/monolith"
-rev = "1c71e708e1e343ac2bace250e698966abbba1568"
 [build]
 template = "custom"
 dependencies = [
