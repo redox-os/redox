@@ -1,6 +1,5 @@
-#TODO Not compiled or tested
+#TODO program source code error
 [source]
 git = "https://github.com/cantino/mcfly"
-rev = "2bddd8bd83a2011a2ddaf3f00d66346673672644"
 [build]
 template = "cargo"

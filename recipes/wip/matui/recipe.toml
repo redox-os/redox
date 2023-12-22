@@ -1,7 +1,6 @@
 #TODO xdg-home crate error
 [source]
 git = "https://github.com/pkulak/matui"
-rev = "44397982508666e3abd3b69b401dee9496bba2d6"
 [build]
 template = "cargo"
 dependencies = [
