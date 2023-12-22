@@ -1,7 +1,6 @@
-#TODO termios/ioctl-rs crate error
+#TODO termios and ioctl-rs crates error
 [source]
 git = "https://github.com/pvolok/mprocs"
-rev = "71b65984dba7c768b383544cd7829ab099b965a9"
 [build]
 template = "custom"
 script = """

@@ -1,4 +1,4 @@
-#TODO not compiled or tested
+#TODO missing headers
 [source]
 tar = "https://mosh.org/mosh-1.4.0.tar.gz"
 [build]
