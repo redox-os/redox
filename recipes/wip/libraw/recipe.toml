@@ -1,11 +1,12 @@
 #TODO Not compiled or tested
+#TODO make libjasper work
 [source]
 tar = "https://www.libraw.org/data/LibRaw-0.21.1.tar.gz"
 [build]
 template = "configure"
 dependencies = [
     "zlib",
-    "libjasper",
+    #"libjasper",
     "libjpeg",
     "liblcms",
 ]
