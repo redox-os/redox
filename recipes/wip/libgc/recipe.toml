@@ -1,4 +1,4 @@
-#TODO Not compiled or tested
+#TODO compilation error - pthreads not supported by the GC on this platform
 [source]
 tar = "https://www.hboehm.info/gc/gc_source/gc-8.2.4.tar.gz"
 [build]

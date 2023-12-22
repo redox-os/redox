@@ -1,5 +1,9 @@
-#TODO Not compiled or tested
+#TODO missing packages
 [source]
 tar = "https://www.x.org/releases/individual/lib/libICE-1.1.1.tar.xz"
 [build]
 template = "configure"
+dependencies = [
+    "libxtrans",
+    "x11proto",
+]

@@ -1,4 +1,4 @@
-#TODO Not compiled or tested
+#TODO missing headers for compilation
 [source]
 tar = "https://github.com/thkukuk/libnsl/releases/download/v2.0.1/libnsl-2.0.1.tar.xz"
 [build]

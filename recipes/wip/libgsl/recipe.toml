@@ -1,4 +1,4 @@
-#TODO Not compiled or tested
+#TODO can't recognize Redox target
 [source]
 tar = "https://ftp.gnu.org/gnu/gsl/gsl-2.7.1.tar.gz"
 [build]

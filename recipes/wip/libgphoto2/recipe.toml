@@ -1,4 +1,4 @@
-#TODO probably wrong template, lacking build instructions
+#TODO can't find libtool
 [source]
 tar = "https://sourceforge.net/projects/gphoto/files/libgphoto/2.5.31/libgphoto2-2.5.31.tar.xz/download"
 [build]
