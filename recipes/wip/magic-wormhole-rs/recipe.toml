@@ -1,7 +1,6 @@
 #TODO async-tar crate error
 [source]
 git = "https://github.com/magic-wormhole/magic-wormhole.rs"
-rev = "8a8cba4ba70df6be258497d7deb784d00a098c43"
 [build]
 template = "custom"
 script = """
