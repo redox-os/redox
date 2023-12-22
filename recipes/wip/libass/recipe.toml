@@ -1,4 +1,4 @@
-#TODO waiting the TOML conversion of fribidi dependency
+#TODO can't detect fontconfig
 [source]
 tar = "https://github.com/libass/libass/releases/download/0.17.1/libass-0.17.1.tar.xz"
 [build]

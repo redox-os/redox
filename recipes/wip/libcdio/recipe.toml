@@ -1,6 +1,6 @@
 #TODO probably wrong script, see https://git.savannah.gnu.org/cgit/libcdio.git/tree/INSTALL
 [source]
-git = "https://git.savannah.gnu.org/cgit/libcdio.git"
+git = "https://git.savannah.gnu.org/git/libcdio.git"
 rev = "9c7a2779846da161279bc1501e83c849cf89a594"
 [build]
 template = "custom"
