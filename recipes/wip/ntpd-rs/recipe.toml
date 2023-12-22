@@ -5,5 +5,5 @@ rev = "913700dc79420f6db5fe1f2110d3146d7f9addfe"
 [build]
 template = "custom"
 script = """
-cookbook_cargo_packages ntpd-rs
+cookbook_cargo_packages ntpd
 """
