@@ -1,4 +1,4 @@
-#TODO probably wrong template
+#TODO missing script for "make"
 [source]
 tar = "https://launchpad.net/libvterm/trunk/v0.3/+download/libvterm-0.3.3.tar.gz"
 [build]
