@@ -1,5 +1,10 @@
-#TODO Not compiled or tested
+#TODO missing dependencies
 [source]
 tar = "https://www.x.org/releases/individual/lib/libXdamage-1.1.6.tar.xz"
 [build]
 template = "configure"
+dependencies = [
+    "libxfixes",
+    "libx11",
+    "x11proto",
+]

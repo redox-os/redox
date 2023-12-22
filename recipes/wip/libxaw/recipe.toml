@@ -1,5 +1,11 @@
-#TODO Not compiled or tested
+#TODO make dependencies work
 [source]
 tar = "https://www.x.org/releases/individual/lib/libXaw-1.0.15.tar.xz"
 [build]
 template = "configure"
+dependencies = [
+    "libx11",
+    "x11proto",
+    "libxext",
+    "libxmu",
+]
