@@ -1,4 +1,4 @@
-#TODO Not compiled or tested
+#TODO update the mio crate to 0.8.x
 [source]
 git = "https://github.com/lemunozm/termchat"
 [build]

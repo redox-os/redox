@@ -5,8 +5,8 @@ git = "https://github.com/lukexor/tetanes"
 template = "cargo"
 dependencies = [
     "sdl2",
-    "sdl2_image",
-    "sdl2_mixer",
-    "sdl2_ttf",
-    "sdl2_gfx",
+    "sdl2-image",
+    "sdl2-mixer",
+    "sdl2-ttf",
+    "sdl2-gfx",
 ]
