@@ -1,5 +1,4 @@
-#TODO libusb needs to be patched
-#TODO not compiled or tested
+#TODO compilation error
 [source]
 tar = "https://www.kernel.org/pub/linux/utils/usb/usbutils/usbutils-017.tar.xz"
 [build]

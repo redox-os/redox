@@ -10,6 +10,6 @@ dependencies = [
     "atk",
     "gdk-pixbuf",
     "gtk3",
-    "eudev3",
+    "eudev",
     "mesa",
 ]

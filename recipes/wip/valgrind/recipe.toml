@@ -1,4 +1,4 @@
-#TODO Not compiled or tested
+#TODO port to redox
 [source]
 tar = "https://sourceware.org/pub/valgrind/valgrind-3.22.0.tar.bz2"
 [build]
