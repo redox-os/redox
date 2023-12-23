@@ -5,4 +5,5 @@ git = "https://github.com/developomp/pomky"
 template = "cargo"
 dependencies = [
     "glib",
+    "pcre",
 ]
