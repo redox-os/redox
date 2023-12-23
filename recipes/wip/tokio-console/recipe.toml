@@ -2,4 +2,7 @@
 [source]
 git = "https://github.com/tokio-rs/console"
 [build]
-template = "cargo"
+template = "custom"
+script = """
+cookbook_cargo_packages tokio-console
+"""
