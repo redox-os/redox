@@ -1,4 +1,4 @@
-#TODO Not compiled or tested yet
+#TODO configuration problem
 [source]
 tar = "https://sndio.org/sndio-1.9.0.tar.gz"
 [build]

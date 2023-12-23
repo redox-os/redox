@@ -1,4 +1,4 @@
-#TODO SQLite is not working
+#TODO outdated redox_syscall crate
 [source]
 git = "https://github.com/kpcyrd/sn0int"
 [build]
