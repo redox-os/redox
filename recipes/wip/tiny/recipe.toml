@@ -1,7 +1,6 @@
 #TODO compiled but not tested (after a patch on the ring crate)
 [source]
 git = "https://github.com/osa1/tiny"
-rev = "939fe1a689cd622161a43da445ebc6718478040d"
 [build]
 template = "custom"
 script = """

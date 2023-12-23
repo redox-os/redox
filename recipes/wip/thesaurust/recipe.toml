@@ -1,4 +1,4 @@
-#TODO Not compiled or tested
+#TODO openssl error
 [source]
 git = "https://github.com/QuietPigeon2001/thesaurust"
 [build]
