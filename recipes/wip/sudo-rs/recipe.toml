@@ -1,4 +1,5 @@
-#TODO requires Linux PAM, probably needs porting
+#TODO libc crate error
+#TODO requires Linux PAM
 [source]
 git = "https://github.com/memorysafety/sudo-rs"
 [build]
