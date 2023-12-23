@@ -1,4 +1,4 @@
-#TODO Not compiled or tested
+#TODO rustyline crate error
 [source]
 git = "https://github.com/mattwparas/steel"
 [build]
