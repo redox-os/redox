@@ -1,4 +1,4 @@
-#TODO Not compiled or tested
+#TODO tvix-castore crate error (after cargo update)
 [source]
 git = "https://github.com/tvlfyi/tvix"
 [build]
