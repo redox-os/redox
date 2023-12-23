@@ -1,6 +1,5 @@
-#TODO Not compiled or tested
+#TODO xdg-home crate error
 [source]
 git = "https://github.com/ColorCookie-dev/porsmo"
-rev = "bd7eab08d8856b7499ee13672dff9a9232994d23"
 [build]
 template = "cargo"
