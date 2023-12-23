@@ -1,4 +1,4 @@
-#TODO Not compiled or tested
+#TODO deltalake crate error (after a patch on ring)
 [source]
 git = "https://github.com/timvw/qv"
 [build]

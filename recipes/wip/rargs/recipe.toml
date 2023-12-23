@@ -1,4 +1,4 @@
-#TODO compiled after cargo update, not tested
+#TODO compiled but not tested (after cargo update)
 [source]
 git = "https://github.com/lotabout/rargs"
 [build]

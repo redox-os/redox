@@ -4,3 +4,6 @@ git = "https://github.com/prefix-dev/rattler-build"
 rev = "4e554ccf35e50f598f9110bfc8c8be909de203da"
 [build]
 template = "cargo"
+dependencies = [
+    "openssl1",
+]
