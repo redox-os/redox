@@ -1,4 +1,4 @@
-#TODO Not compiled or tested
+#TODO compiled but not tested
 [source]
 git = "https://github.com/acheronfail/repgrep"
 rev = "2e270809de00d0aefda272016afb6b5cf1ac4af5"
