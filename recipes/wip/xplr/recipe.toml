@@ -1,6 +1,5 @@
-#TODO Not compiled or tested
+#TODO tuikit crate error
 [source]
 git = "https://github.com/sayanarijit/xplr"
-rev = "8af1647c090d84416feb77a9c9874629433c8314"
 [build]
 template = "cargo"
