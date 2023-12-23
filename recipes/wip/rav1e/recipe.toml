@@ -1,4 +1,4 @@
-#TODO Not compiled or tested
+#TODO libc crate error - RUSAGE_SELF
 [source]
 git = "https://github.com/xiph/rav1e"
 [build]

@@ -1,4 +1,4 @@
-#TODO program error, maybe needs porting
+#TODO program source code error
 [source]
 git = "https://gitlab.com/whom/relish"
 [build]
