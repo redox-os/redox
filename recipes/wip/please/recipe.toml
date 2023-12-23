@@ -1,6 +1,5 @@
 #TODO users crate error
 [source]
 git = "https://gitlab.com/edneville/please"
-rev = "68c82e4be33f52a6fc4444fd28539e11d47d0602"
 [build]
 template = "cargo"

@@ -1,4 +1,4 @@
-#TODO Not compiled or tested
+#TODO fs4 crate error (after cargo update)
 [source]
 git = "https://github.com/prefix-dev/pixi"
 [build]
