@@ -1,6 +1,5 @@
 #TODO can't update libc crate version
 [source]
 git = "https://github.com/cfal/tobaru"
-rev = "95afac34f0c54694ef0e114e87555f8e671d9f1b"
 [build]
 template = "cargo"
