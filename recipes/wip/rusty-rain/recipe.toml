@@ -1,4 +1,4 @@
-#TODO mio crate error
+#TODO compiled but not tested
 [source]
 git = "https://github.com/cowboy8625/rusty-rain"
 [build]
