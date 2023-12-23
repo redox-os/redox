@@ -1,4 +1,4 @@
-#TODO compiled but not tested (after a patch on the ring crate)
+#TODO compiled but not tested (after cargo update and a patch on ring)
 [source]
 git = "https://github.com/osa1/tiny"
 [build]
