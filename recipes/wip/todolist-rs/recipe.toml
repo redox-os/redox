@@ -1,5 +1,0 @@
-#TODO Not compiled or tested
-[source]
-git = "https://github.com/ebubekirgungor/todolist-rust"
-[build]
-template = "cargo"
