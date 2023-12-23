@@ -5,5 +5,5 @@ rev = "1a8241211382efafb37961888aebc0065d56a95e"
 [build]
 template = "custom"
 script = """
-cookbook_cargo_packages tp-note
+cookbook_cargo_packages tpnote
 """
