@@ -1,4 +1,4 @@
-#TODO Not compiled or tested
+#TODO openssl-sys crate error
 [source]
 git = "https://github.com/sebastienrousseau/shokunin"
 rev = "9592f12701fb0ef3bc298f4499d2787e24fca4f3"
