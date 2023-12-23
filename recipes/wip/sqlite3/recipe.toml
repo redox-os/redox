@@ -1,3 +1,4 @@
+#TODO compiled but not tested
 #TODO incomplete port
 [source]
 tar = "https://www.sqlite.org/2023/sqlite-autoconf-3440000.tar.gz"

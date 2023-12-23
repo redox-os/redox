@@ -1,3 +1,4 @@
+#TODO program source code error (after cargo update)
 #TODO require NodeJS and NPM
 [source]
 git = "https://github.com/ekzhang/sshx"
