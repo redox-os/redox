@@ -1,6 +1,5 @@
 #TODO xattr crate error
 [source]
 git = "https://github.com/tarka/xcp"
-rev = "7713084d0ea1e683b6e97fdee8db5c353ba1f37b"
 [build]
 template = "cargo"
