@@ -1,4 +1,4 @@
-#TODO the redox target is not supported on the configure
+#TODO the redox target is not supported on the configure script
 [source]
 git = "https://code.videolan.org/videolan/x264"
 [build]
