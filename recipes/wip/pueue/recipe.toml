@@ -1,4 +1,4 @@
-#TODO 
+#TODO pueue_lib crate error (after cargo update and a patch on ring)
 [source]
 git = "https://github.com/Nukesor/pueue"
 [build]

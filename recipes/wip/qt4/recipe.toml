@@ -1,4 +1,4 @@
-#TODO probably wrong template and missing dependencies
+#TODO find a tarball link
 [source]
 tar = "http://download.qt.io/official_releases/qt/4.8/4.8.7/qt-everywhere-opensource-src-4.8.7.tar.gz"
 [build]

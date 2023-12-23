@@ -1,3 +1,4 @@
+#TODO make boost work
 #TODO probably wrong template, see https://www.quantlib.org/install/linux.shtml
 [source]
 tar = "https://github.com/lballabio/QuantLib/releases/download/v1.32/QuantLib-1.32.tar.gz"
