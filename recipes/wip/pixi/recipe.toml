@@ -4,3 +4,6 @@ git = "https://github.com/prefix-dev/pixi"
 rev = "40aa081fd2039d40c33a20efd4887d82ac6b66ce"
 [build]
 template = "cargo"
+dependencies = [
+    "openssl1",
+]
