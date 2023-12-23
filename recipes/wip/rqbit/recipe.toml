@@ -4,6 +4,9 @@ git = "https://github.com/ikatson/rqbit"
 rev = "3dc2e3eace2fce7c448d7fcf8360fe0f312a29c7"
 [build]
 template = "custom"
+dependencies = [
+    "openssl1",
+]
 script = """
 cookbook_cargo_packages rqbit
 """
