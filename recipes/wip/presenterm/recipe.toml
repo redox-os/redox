@@ -1,4 +1,4 @@
-#TODO Not compiled or tested
+#TODO compiled but not tested
 [source]
 git = "https://github.com/mfontanini/presenterm"
 rev = "284db812aa876d43f3a7d7e8b96f75c72a9945fa"
