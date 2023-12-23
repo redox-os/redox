@@ -1,4 +1,4 @@
-#TODO Not compiled or tested
+#TODO xdg-home and nix crates error (after cargo update)
 [source]
 git = "https://github.com/aryakaul/rusty-krab-manager"
 [build]
