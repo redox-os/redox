@@ -1,4 +1,4 @@
-#TODO probably need a script for custom build options
+#TODO compilation error
 [source]
 tar = "https://mirrors.edge.kernel.org/pub/linux/utils/util-linux/v2.39/util-linux-2.39.tar.xz"
 [build]
