@@ -1,4 +1,4 @@
-#TODO source code error (after cargo update)
+#TODO source code error
 [source]
 git = "https://github.com/fujiapple852/trippy"
 [build]

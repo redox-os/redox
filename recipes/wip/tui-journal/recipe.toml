@@ -1,4 +1,4 @@
-#TODO SQLite is not working
+#TODO make Wayland work
 [source]
 git = "https://github.com/AmmarAbouZor/tui-journal"
 rev = "40943d8b4081d61cd549398ff68c6f219444167b"

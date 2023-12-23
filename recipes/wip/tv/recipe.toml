@@ -1,6 +1,5 @@
 #TODO Not compiled or tested
 [source]
 git = "https://github.com/alexhallam/tv"
-rev = "ec8f7cf81f201e0046c0047dc5ed840c4e9f6e3b"
 [build]
 template = "cargo"
