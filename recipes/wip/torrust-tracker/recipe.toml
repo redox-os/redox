@@ -1,6 +1,5 @@
 #TODO Not compiled or tested
 [source]
 git = "https://github.com/torrust/torrust-tracker"
-rev = "048d35c1172d686ce85cadaa42f77d30703ca80a"
 [build]
 template = "cargo"
