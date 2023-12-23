@@ -1,4 +1,4 @@
-#TODO Not compiled/tested yet
+#TODO waiting gdk-pixbuf conversion to TOML
 [source]
 git = "https://github.com/developomp/pomky"
 [build]
@@ -6,4 +6,5 @@ template = "cargo"
 dependencies = [
     "glib",
     "pcre",
+    "gdk-pixbuf",
 ]
