@@ -1,11 +1,10 @@
-#TODO make openjdk19-headless work
+#TODO 
 [source]
 git = "https://github.com/ruffle-rs/ruffle"
 [build]
 template = "custom"
 dependencies = [
 	"openssl1",
-	"openjdk19-headless",
 ]
 script = """
 cookbook_cargo_packages ruffle_desktop
