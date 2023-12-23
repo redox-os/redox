@@ -1,4 +1,4 @@
-#TODO thread-id crate error (after cargo update)
+#TODO openssl error (after cargo update)
 [source]
 git = "https://github.com/talis-fb/TReq"
 [build]
