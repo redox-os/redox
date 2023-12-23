@@ -3,6 +3,3 @@
 git = "https://github.com/wez/wezterm"
 [build]
 template = "cargo"
-dependencies = [
-    "libwayland",
-]
