@@ -1,6 +1,5 @@
 #TODO Not compiled or tested
 [source]
 git = "https://github.com/nelsonjchen/speedtest-rs"
-rev = "b512fb824ddd663ddf862d6b38f78caa3791b502"
 [build]
 template = "cargo"

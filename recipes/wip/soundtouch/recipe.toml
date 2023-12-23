@@ -1,5 +1,5 @@
-#TODO not compiled or tested
+#TODO missing script for building
 [source]
 tar = "https://www.surina.net/soundtouch/soundtouch-2.3.2.tar.gz"
 [build]
-template = "configure"
+template = "custom"
