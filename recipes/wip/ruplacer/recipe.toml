@@ -1,6 +1,5 @@
 #TODO compiled after cargo update, not tested
 [source]
 git = "https://github.com/your-tools/ruplacer"
-rev = "11531fc7ae15d63199ddd92bd2487384714b8884"
 [build]
 template = "cargo"
