@@ -1,4 +1,4 @@
-#TODO tuikit crate error
+#TODO tuikit crate error (after cargo update)
 [source]
 git = "https://github.com/lotabout/skim"
 [build]
