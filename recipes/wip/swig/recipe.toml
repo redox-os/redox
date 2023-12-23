@@ -1,4 +1,4 @@
-#TODO Not compiled or tested
+#TODO missing pcre2.h
 [source]
 tar = "http://prdownloads.sourceforge.net/swig/swig-4.1.1.tar.gz"
 [build]
