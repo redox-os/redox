@@ -3,3 +3,6 @@
 git = "https://github.com/tonarino/shadergarden"
 [build]
 template = "cargo"
+dependencies = [
+    "ffmpeg6",
+]

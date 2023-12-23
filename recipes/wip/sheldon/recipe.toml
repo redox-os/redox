@@ -4,3 +4,6 @@ git = "https://github.com/rossmacarthur/sheldon"
 rev = "9a56dcfc79c6e9f9bcf8480c162c50db013bb172"
 [build]
 template = "cargo"
+dependencies = [
+    "openssl1",
+]
