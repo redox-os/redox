@@ -1,6 +1,5 @@
 #TODO Not compiled or tested
 [source]
 git = "https://github.com/KunalBagaria/rustyvibes"
-rev = "f19fdf961ae602122ed7a2b95f570be0def79c34"
 [build]
 template = "cargo"
