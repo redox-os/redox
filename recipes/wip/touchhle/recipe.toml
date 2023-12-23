@@ -1,4 +1,4 @@
-#TODO Boost is not working
+#TODO make boost work
 [source]
 git = "https://github.com/hikari-no-yume/touchHLE"
 [build]
