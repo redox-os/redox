@@ -1,7 +1,6 @@
 #TODO thread-id crate error (after cargo update)
 [source]
 git = "https://github.com/talis-fb/TReq"
-rev = "74a5d919fe34aff6c8f3f2a614e107f0dca70caf"
 [build]
 template = "cargo"
 dependencies = [
