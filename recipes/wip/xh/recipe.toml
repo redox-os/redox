@@ -1,6 +1,5 @@
 #TODO compiled but not tested (after a patch on the ring crate and cargo update)
 [source]
 git = "https://github.com/ducaale/xh"
-rev = "b694c7776b4e016cd5dfcbff42be6729fbdaa0af"
 [build]
 template = "cargo"

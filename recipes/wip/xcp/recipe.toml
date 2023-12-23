@@ -1,4 +1,4 @@
-#TODO xattr crate error
+#TODO compiled but not tested
 [source]
 git = "https://github.com/tarka/xcp"
 [build]
