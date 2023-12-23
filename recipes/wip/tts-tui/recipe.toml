@@ -1,4 +1,4 @@
-#TODO Not compiled or tested
+#TODO make speech-dispatcher work
 [source]
 git = "https://github.com/lesleyrs/tts-tui"
 rev = "820689ba21ead76981376b7dfed17bfc59e5b013"

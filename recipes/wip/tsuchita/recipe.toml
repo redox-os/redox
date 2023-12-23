@@ -1,4 +1,4 @@
-#TODO Not compiled or tested
+#TODO update mio to 0.8 (after cargo update)
 [source]
 git = "https://github.com/kamiyaa/tsuchita"
 [build]
