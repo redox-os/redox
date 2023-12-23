@@ -1,4 +1,4 @@
-#TODO rustc-serialize crate error
+#TODO compiled but not tested
 [source]
 git = "https://github.com/gabrieldemian/vincenzo"
 [build]

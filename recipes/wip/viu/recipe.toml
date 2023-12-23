@@ -1,4 +1,4 @@
-#TODO Not compiled or tested
+#TODO compiled but not tested
 [source]
 git = "https://github.com/atanunq/viu"
 rev = "af8f2ae90040baeeb24b92adedc645edc4ea0e85"
