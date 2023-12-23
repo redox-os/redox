@@ -3,4 +3,7 @@
 git = "https://github.com/charliermarsh/ruff"
 rev = "0263f2715eba81aee471e3dd5a50ea5f9426cbb1"
 [build]
-template = "cargo"
+template = "custom"
+script = """
+cookbook_cargo_packages ruff_cli
+"""
