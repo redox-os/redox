@@ -1,6 +1,5 @@
 #TODO Not compiled or tested
 [source]
 git = "https://github.com/timvw/qv"
-rev = "af0063096c6264c72c7462f4eeb0c4a7e0b1d646"
 [build]
 template = "cargo"

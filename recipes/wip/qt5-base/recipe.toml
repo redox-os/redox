@@ -1,3 +1,4 @@
+#TODO make libxkbcommon work
 #TODO build instructions - https://doc.qt.io/qt-5/linux-building.html
 #TODO customization - https://doc.qt.io/qt-5/configure-options.html
 [source]
