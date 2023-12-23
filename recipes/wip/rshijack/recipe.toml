@@ -1,4 +1,4 @@
-#TODO pnet_sys crate error
+#TODO pnet_sys crate error (after cargo update)
 [source]
 git = "https://github.com/kpcyrd/rshijack"
 [build]

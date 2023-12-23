@@ -1,9 +1,6 @@
 #TODO nonsense rustc version requirement
 [source]
 git = "https://github.com/charliermarsh/ruff"
-rev = "c014622003e9b348310d7b7be862f6ccffae7137"
+rev = "0263f2715eba81aee471e3dd5a50ea5f9426cbb1"
 [build]
-template = "custom"
-script = """
-cookbook_cargo_packages ruff
-"""
+template = "cargo"
