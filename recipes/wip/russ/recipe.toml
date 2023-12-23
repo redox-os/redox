@@ -1,4 +1,4 @@
-#TODO Not compiled or tested
+#TODO require Wayland (after cargo update)
 [source]
 git = "https://github.com/ckampfe/russ"
 [build]
