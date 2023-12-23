@@ -1,10 +1,11 @@
-#TODO make libgpg-error dependency work (after cargo update)
+#TODO make libgpg-error dependency work
 [source]
 git = "https://github.com/cortex/ripasso"
 [build]
 template = "custom"
 dependencies = [
     "openssl1",
+    "libgpg-error",
 ]
 script = """
 cookbook_cargo_packages ripasso-cursive
