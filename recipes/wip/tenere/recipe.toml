@@ -1,6 +1,5 @@
 #TODO Not compiled or tested
 [source]
 git = "https://github.com/pythops/tenere"
-rev = "46fe89004dfc461f64b61c9f6c7e8c161aed707c"
 [build]
 template = "cargo"
