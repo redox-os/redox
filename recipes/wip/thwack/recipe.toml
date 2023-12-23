@@ -1,4 +1,4 @@
-#TODO Not compiled or tested
+#TODO make Wayland work
 [source]
 git = "https://github.com/yykamei/thwack"
 rev = "6763a2a9da03ffb746580c69f8d77161e5f6ba4e"
