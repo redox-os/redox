@@ -1,4 +1,4 @@
-#TODO Not compiled or tested
+#TODO slice-deque crate error
 [source]
 git = "https://github.com/KunalBagaria/rustyvibes"
 [build]
