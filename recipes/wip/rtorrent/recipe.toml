@@ -1,4 +1,4 @@
-#TODO Maybe missing libtorrent dependency
+#TODO can't find pthreads support
 [source]
 tar = "https://github.com/rakshasa/rtorrent-archive/raw/master/rtorrent-0.9.8.tar.gz"
 [build]

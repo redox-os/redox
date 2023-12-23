@@ -1,3 +1,4 @@
+#TODO make capnproto work
 #TODO probably wrong template, see https://github.com/rr-debugger/rr/wiki/Building-And-Installing
 [source]
 git = "https://github.com/rr-debugger/rr"
