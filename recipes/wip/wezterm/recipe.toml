@@ -1,5 +1,10 @@
+#TODO probably wrong script, see https://wezfurlong.org/wezterm/install/source.html
 #TODO Require Wayland
 [source]
 git = "https://github.com/wez/wezterm"
 [build]
-template = "cargo"
+template = "custom"
+script = """
+./get-deps
+cookbook_cargo_packages wezterm
+"""

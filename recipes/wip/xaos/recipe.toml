@@ -6,6 +6,5 @@ rev = "7f36177f32a23eea88911afb90878046912d7e2d"
 template = "custom"
 dependencies = [
     "qt6-base",
-    "qt5-tools",
     "mesa",
 ]
