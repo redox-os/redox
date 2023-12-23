@@ -1,3 +1,4 @@
+#TODO can't recognize the redox target
 #TODO probably missing dependencies
 [source]
 tar = "https://sourceforge.net/projects/sdlpango/files/SDL_Pango/0.1.2/SDL_Pango-0.1.2.tar.gz/download"
