@@ -3,7 +3,4 @@
 git = "https://github.com/bvaisvil/zenith"
 rev = "798999e2563e25636fef6c1a587f949ed264ad41"
 [build]
-template = "build-system"
-dependencies = [
-    "library1",
-]
+template = "cargo"
