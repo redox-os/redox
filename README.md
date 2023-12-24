@@ -60,6 +60,10 @@ Before sending your recipe to upstream (to become a public package), you must fo
 - All recipes must use our cross-compilers, a Cookbook [template](https://doc.redox-os.org/book/ch09-03-porting-applications.html#templates) does this automatically but it's not always possible, study the build system of your program/library to find these options or patch the configuration files.
 - Don't hardcode the CPU architecture on the recipe script.
 
+#### Tarballs
+
+- Don't use the auto-generated tarballs from GitHub, they aren't static and don't verify the archive integrity.
+
 #### Library Linking
 
 - Keep the static linking of libraries, there's an exception if the package become bigger than 100MB, big libraries/runtimes like LLVM can be dynamically linked.
