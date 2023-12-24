@@ -1,4 +1,4 @@
-#TODO compilation error
+#TODO 
 [source]
 git = "https://github.com/Siriusmart/youtube-tui"
 rev = "f321f7c1e9b41644b976ea8672807c3062908c5c"
@@ -6,7 +6,6 @@ rev = "f321f7c1e9b41644b976ea8672807c3062908c5c"
 template = "custom"
 dependencies = [
     "openssl1",
-    "mpv",
 ]
 script = """
 cookbook_cargo --no-default-features
