@@ -2,4 +2,7 @@
 [source]
 git = "https://github.com/sxyazi/yazi"
 [build]
-template = "cargo"
+template = "custom"
+script = """
+cookbook_cargo_packages yazi-fm
+"""
