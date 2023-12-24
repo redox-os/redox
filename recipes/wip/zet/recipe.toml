@@ -1,6 +1,5 @@
 #TODO compiled after cargo update, not tested
 [source]
 git = "https://github.com/yarrow/zet"
-rev = "c1ee170d6a910650a668ad8180dd40f1787d1733"
 [build]
 template = "cargo"
