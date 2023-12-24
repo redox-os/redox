@@ -1,4 +1,4 @@
-#TODO mio crate error (after cargo update and patch on ring)
+#TODO update mio to 0.8 (after cargo update and patch on ring)
 [source]
 git = "https://github.com/TaKO8Ki/gobang"
 [build]

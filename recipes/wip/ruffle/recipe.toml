@@ -5,6 +5,7 @@ git = "https://github.com/ruffle-rs/ruffle"
 template = "custom"
 dependencies = [
 	"openssl1",
+	"gtk3",
 ]
 script = """
 cookbook_cargo_packages ruffle_desktop
