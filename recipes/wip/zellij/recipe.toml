@@ -1,4 +1,4 @@
-#TODO os::QueryIter
+#TODO openssl-sys crate error (after cargo update)
 [source]
 git = "https://github.com/zellij-org/zellij"
 [build]
