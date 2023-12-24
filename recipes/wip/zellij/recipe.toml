@@ -1,6 +1,5 @@
 #TODO os::QueryIter
 [source]
 git = "https://github.com/zellij-org/zellij"
-rev = "d9b956bc40cd1b526b683291d3d55673a191b5a2"
 [build]
 template = "cargo"
