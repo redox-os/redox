@@ -1,4 +1,4 @@
-#TODO mio crate error (even after cargo update)
+#TODO update mio to 0.8
 [source]
 git = "https://github.com/jawline/Mimic"
 [build]
