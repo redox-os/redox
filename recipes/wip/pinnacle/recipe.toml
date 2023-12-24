@@ -1,0 +1,15 @@
+#TODO Not compiled or tested
+[source]
+git = "https://github.com/pinnacle-comp/pinnacle"
+[build]
+template = "custom"
+dependencies = [
+    "libwayland",
+    "libxkbcommon",
+    "libinput",
+    "libeudev",
+    "seatd",
+]
+script = """
+cookbook_cargo_packages pinnacle
+"""

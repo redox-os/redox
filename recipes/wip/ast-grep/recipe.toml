@@ -1,0 +1,9 @@
+#TODO Not compiled or tested
+[source]
+git = "https://github.com/ast-grep/ast-grep"
+rev = "74c54fc3e322c6017bc043e199420644ad961ff5"
+[build]
+template = "custom"
+script = """
+cookbook_cargo_packages ast-grep
+"""
