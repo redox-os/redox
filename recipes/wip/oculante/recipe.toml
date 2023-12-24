@@ -1,0 +1,12 @@
+#TODO Not compiled or tested
+#TODO probably missing dependencies
+[source]
+git = "https://github.com/woelper/oculante"
+rev = "25b6ae94f743988be216dfd341dde159337d193d"
+[build]
+template = "cargo"
+dependencies = [
+    "libxcb",
+    "libxfixes",
+    "gtk3",
+]
