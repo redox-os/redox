@@ -1,4 +1,4 @@
-#TODO compilation error (after cargo update and a patch on the ring crate)
+#TODO compilation error (after cargo update)
 [source]
 git = "https://github.com/dertuxmalwieder/yaydl"
 [build]
