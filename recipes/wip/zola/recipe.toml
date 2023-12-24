@@ -1,6 +1,5 @@
-#TODO Not compiled or tested
+#TODO camino crate error
 [source]
 git = "https://github.com/getzola/zola"
-rev = "77c87f5e2f20ee90cf73cc98fa5f3fb096bcfffd"
 [build]
 template = "cargo"
