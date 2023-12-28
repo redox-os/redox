@@ -1,0 +1,8 @@
+#TODO Not compiled or tested
+[source]
+tar = "https://github.com/moonrepo/proto/releases/download/v0.26.2/source.tar.gz"
+[build]
+template = "custom"
+script = """
+cookbook_cargo_packages proto_cli
+"""
