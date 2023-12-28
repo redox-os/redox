@@ -1,6 +1,6 @@
 #TODO compilation error
 [source]
-tar = "https://cache.ruby-lang.org/pub/ruby/3.2/ruby-3.2.2.tar.gz"
+tar = "https://cache.ruby-lang.org/pub/ruby/3.3/ruby-3.3.0.tar.gz"
 [build]
 template = "configure"
 dependencies = [
