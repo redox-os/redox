@@ -1,0 +1,9 @@
+#TODO Not compiled or tested
+[source]
+git = "https://github.com/moonrepo/moon"
+rev = "2d60d2cff16b37063ec5242451d086871bce7fd5"
+[build]
+template = "custom"
+script = """
+cookbook_cargo_packages moon_cli
+"""
