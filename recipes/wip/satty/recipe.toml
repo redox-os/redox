@@ -1,0 +1,20 @@
+#TODO Not compiled or tested
+[source]
+git = "https://github.com/gabm/Satty"
+[build]
+template = "custom"
+dependencies = [
+    "gtk4",
+    "libadwaita",
+    "cairo",
+    "glib",
+    "pango",
+    "gdk-pixbuf",
+]
+script = """
+mkdir -pv "${COOKBOOK_STAGE}"/home/user/.local/share/applications
+mkdir -pv "${COOKBOOK_STAGE}"/home/user/.local/share/icons/hicolor/scalable/apps
+cp -rv "${COOKBOOK_SOURCE}"/satty.desktop "${COOKBOOK_STAGE}"/home/user/.local/share/applications
+cp -rv "${COOKBOOK_SOURCE}"/assets/satty.svg "${COOKBOOK_STAGE}"/home/user/.local/share/icons/hicolor/scalable/apps
+cookbook_cargo_packages satty
+"""
