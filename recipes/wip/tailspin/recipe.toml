@@ -1,0 +1,5 @@
+#TODO Not compiled or tested
+[source]
+git = "https://github.com/bensadeh/tailspin"
+[build]
+template = "cargo"
