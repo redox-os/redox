@@ -10,6 +10,9 @@ do
     if [ "$arg" == "--debug" ]
     then
         DEBUG=--debug
+    elif [ "$arg" == "--nonstop" ]
+    then
+        set +e
     else
         recipes+=" $arg"
     fi
