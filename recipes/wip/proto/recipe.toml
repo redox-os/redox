@@ -1,6 +1,6 @@
-#TODO Not compiled or tested
+#TODO fs-set-times crate error
 [source]
-tar = "https://github.com/moonrepo/proto/releases/download/v0.26.2/source.tar.gz"
+git = "https://github.com/moonrepo/proto"
 [build]
 template = "custom"
 script = """
