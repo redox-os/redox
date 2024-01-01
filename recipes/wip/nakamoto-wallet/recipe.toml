@@ -1,4 +1,4 @@
-#TODO Not compiled or tested
+#TODO hidapi crate error - redox not supported (after cargo update)
 [source]
 git = "https://github.com/cloudhead/nakamoto"
 [build]
