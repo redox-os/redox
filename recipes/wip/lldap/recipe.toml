@@ -1,4 +1,4 @@
-#TODO Not compiled or tested
+#TODO program source code error (after cargo update and a patch on ring)
 [source]
 git = "https://github.com/lldap/lldap"
 [build]
