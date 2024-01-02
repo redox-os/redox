@@ -1,6 +1,5 @@
 #TODO compiled but not tested
 [source]
 git = "https://github.com/bootandy/dust"
-rev = "b8aab2df979004d13c84006e378297af10e20777"
 [build]
 template = "cargo"
