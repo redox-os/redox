@@ -1,6 +1,5 @@
 #TODO compiled but not tested
 [source]
 git = "https://github.com/ismaelgv/rnr"
-rev = "dfdf644ea8a4084ec73a349de68ef063eb47028f"
 [build]
 template = "cargo"
