@@ -1,0 +1,6 @@
+#TODO Not compiled or tested
+[source]
+git = "https://github.com/YS-L/csvlens"
+rev = "d023864c9959b4febc6c599266b1203130ca0d87"
+[build]
+template = "cargo"
