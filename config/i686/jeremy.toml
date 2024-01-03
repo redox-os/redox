@@ -176,11 +176,6 @@ data = "../bin"
 symlink = true
 
 [[files]]
-path = "/usr/games"
-data = "../games"
-symlink = true
-
-[[files]]
 path = "/usr/include"
 data = "../include"
 symlink = true
