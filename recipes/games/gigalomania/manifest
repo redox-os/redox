@@ -1,4 +1,4 @@
 name=Gigalomania
 category=Games
-binary=/games/gigalomania/gigalomania
+binary=/usr/games/gigalomania/gigalomania
 icon=/ui/icons/apps/gigalomania.png
