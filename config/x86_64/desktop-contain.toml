@@ -1,0 +1,207 @@
+# Default desktop configuration
+
+# General settings
+[general]
+# Filesystem size in MiB
+filesystem_size = 512
+# Do not prompt if settings are not defined
+prompt = false
+
+# Package settings
+[packages]
+audiod = {}
+bash = {}
+bootloader = {}
+bootstrap = {}
+ca-certificates = {}
+contain = {}
+coreutils = {}
+diffutils = {}
+drivers = {}
+escalated = {}
+extrautils = {}
+findutils = {}
+initfs = {}
+installer = {}
+installer-gui = {}
+ion = {}
+ipcd = {}
+kernel = {}
+netdb = {}
+netstack = {}
+netsurf = {}
+netutils = {}
+orbdata = {}
+orbital = {}
+orbterm = {}
+orbutils = {}
+pkgutils = {}
+ptyd = {}
+redoxfs = {}
+relibc = {}
+resist = {}
+smith = {}
+userutils = {}
+uutils = {}
+
+git = {}
+curl = {}
+vim = {}
+
+# User settings
+[users.root]
+password = "password"
+uid = 0
+gid = 0
+name = "root"
+home = "/root"
+
+[users.user]
+# Password is unset
+password = ""
+
+[[files]]
+path = "/etc/init.d/00_base"
+data = """
+ipcd
+ptyd
+pcid /etc/pcid.d/
+escalated
+"""
+
+[[files]]
+path = "/etc/init.d/10_net"
+data = """
+smolnetd
+dnsd
+dhcpd -b
+"""
+
+[[files]]
+path = "/etc/init.d/20_orbital"
+data = """
+audiod
+orbital contain_orblogin launcher
+"""
+
+[[files]]
+path = "/etc/init.d/30_console"
+data = """
+getty 2
+getty --contain debug: -J
+"""
+
+[[files]]
+path = "/etc/net/dns"
+data = """
+208.67.222.222
+"""
+
+[[files]]
+path = "/etc/net/ip"
+data = """
+10.0.2.15
+"""
+
+[[files]]
+path = "/etc/net/ip_router"
+data = """
+10.0.2.2
+"""
+
+[[files]]
+path = "/etc/net/ip_subnet"
+data = """
+255.255.255.0
+"""
+
+[[files]]
+path = "/etc/net/mac"
+data = """
+54-52-00-ab-cd-ef
+"""
+
+[[files]]
+path = "/etc/pkg.d/50_redox"
+data = "https://static.redox-os.org/pkg"
+
+[[files]]
+path = "/etc/redox-release"
+data = "0.8.0"
+
+[[files]]
+path = "/etc/group"
+data = """
+root;0;root
+user;1000;user
+sudo;1;user
+"""
+
+[[files]]
+path = "/etc/hostname"
+data = """
+redox
+"""
+
+[[files]]
+path = "/usr/bin"
+data = "../bin"
+symlink = true
+
+[[files]]
+path = "/usr/games"
+data = "../games"
+symlink = true
+
+[[files]]
+path = "/usr/include"
+data = "../include"
+symlink = true
+
+[[files]]
+path = "/usr/lib"
+data = "../lib"
+symlink = true
+
+[[files]]
+path = "/usr/share"
+data = "../share"
+symlink = true
+
+[[files]]
+path = "/tmp"
+data = ""
+directory= true
+# 0o1777
+mode = 1023
+
+[[files]]
+path = "/dev/null"
+data = "null:"
+symlink = true
+
+[[files]]
+path = "/dev/random"
+data = "rand:"
+symlink = true
+
+[[files]]
+path = "/dev/urandom"
+data = "rand:"
+symlink = true
+
+[[files]]
+path = "/dev/zero"
+data = "zero:"
+symlink = true
+
+[[files]]
+path = "/etc/contain.toml"
+data = """
+pass_schemes = ["rand", "null", "tcp", "udp", "thisproc", "pty", "orbital", "display.vesa"]
+sandbox_schemes = ["file"]
+files = ["file:/dev/null"]
+rofiles = ["file:/etc/passwd", "file:/etc/hostname", "file:/etc/localtime"]
+dirs = ["file:/tmp"]
+rodirs = ["file:/bin", "file:/ui"]
+"""
