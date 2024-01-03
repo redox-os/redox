@@ -1,4 +1,4 @@
-#TODO compiled but not tested
+#TODO move to proper category
 [source]
 git = "https://git.sr.ht/~f9/gyr"
 rev = "3418fb65da1c181eade2f5f5284cf175cafb41ec"
