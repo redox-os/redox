@@ -1,4 +1,4 @@
 name=Neverputt
 category=Games
-binary=/games/neverball/neverputt
+binary=/usr/games/neverball/neverputt
 icon=/ui/icons/apps/neverputt.png

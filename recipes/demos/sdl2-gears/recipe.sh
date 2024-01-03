@@ -28,11 +28,11 @@ function recipe_clean {
 
 function recipe_stage {
     dest="$(realpath $1)"
-    mkdir -pv "$dest/games/sdl2_gears"
-    mkdir -pv "$dest/games/sdl2_gears/assets"
-    cp -v "sdl2_gears" "$dest/games/sdl2_gears/sdl2_gears"
-    cp -v "assets/image.png" "$dest/games/sdl2_gears/assets/image.png"
-    cp -v "assets/music.wav" "$dest/games/sdl2_gears/assets/music.wav"
-    cp -v "assets/font.ttf" "$dest/games/sdl2_gears/assets/font.ttf"
+    mkdir -pv "$dest/usr/games/sdl2_gears"
+    mkdir -pv "$dest/usr/games/sdl2_gears/assets"
+    cp -v "sdl2_gears" "$dest/usr/games/sdl2_gears/sdl2_gears"
+    cp -v "assets/image.png" "$dest/usr/games/sdl2_gears/assets/image.png"
+    cp -v "assets/music.wav" "$dest/usr/games/sdl2_gears/assets/music.wav"
+    cp -v "assets/font.ttf" "$dest/usr/games/sdl2_gears/assets/font.ttf"
     skip=1
 }
