@@ -33,7 +33,7 @@ function recipe_stage {
     dest="$(realpath $1)"
     bundledir="$dest/bundle"
 
-    "$REDOX_MAKE" VERBOSE=1 ROOT_DIR="$dest/../build/" BUNDLE_DIR="$bundledir" INSTALL_DIR="$dest" install
+    "$REDOX_MAKE" VERBOSE=1 ROOT_DIR="$dest/../build/" BUNDLE_DIR="$bundledir" INSTALL_DIR="$dest/usr" install
     rm -rf "$bundledir"
 
     mkdir -pv "$1/ui/apps"
