@@ -4,7 +4,7 @@ git = "https://gitlab.redox-os.org/redox-os/freedoom.git"
 [build]
 template = "custom"
 script = """
-mkdir -pv "${COOKBOOK_STAGE}/games" "${COOKBOOK_STAGE}/share/games/doom" "${COOKBOOK_STAGE}/ui/apps" "${COOKBOOK_STAGE}/ui/icons/apps"
+mkdir -pv "${COOKBOOK_STAGE}/usr/games" "${COOKBOOK_STAGE}/share/games/doom" "${COOKBOOK_STAGE}/ui/apps" "${COOKBOOK_STAGE}/ui/icons/apps"
 for file in "${COOKBOOK_SOURCE}/"*.wad
 do
     game="$(basename "$file" .wad)"
@@ -12,14 +12,14 @@ do
     wad="/share/games/doom/$game.wad"
     cp -v "$file" "${COOKBOOK_STAGE}$wad"
 
-    bin="/games/$game"
+    bin="/usr/games/$game"
     echo "#!/bin/ion" > "${COOKBOOK_STAGE}$bin"
-    echo "/games/prboom -geom 800x600 -vidmode 32 -iwad $wad" >> "${COOKBOOK_STAGE}$bin"
+    echo "/usr/games/prboom -geom 800x600 -vidmode 32 -iwad $wad" >> "${COOKBOOK_STAGE}$bin"
     chmod +x "${COOKBOOK_STAGE}$bin"
 
     echo "name=$game" | sed 's/freedoom/FreeDOOM: Phase /' | sed 's/doom1/DOOM (Shareware)/' > "${COOKBOOK_STAGE}/ui/apps/$game"
     echo "category=Games" >> "${COOKBOOK_STAGE}/ui/apps/$game"
-    echo "binary=/games/$game" >> "${COOKBOOK_STAGE}/ui/apps/$game"
+    echo "binary=/usr/games/$game" >> "${COOKBOOK_STAGE}/ui/apps/$game"
     echo "icon=/ui/icons/apps/$game.png" >> "${COOKBOOK_STAGE}/ui/apps/$game"
 
     cp -v "${COOKBOOK_SOURCE}/$game.png" "${COOKBOOK_STAGE}/ui/icons/apps/$game.png"

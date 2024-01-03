@@ -1,4 +1,4 @@
 name=Neverball
 category=Games
-binary=/games/neverball/neverball
+binary=/usr/games/neverball/neverball
 icon=/ui/icons/apps/neverball.png

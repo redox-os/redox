@@ -32,16 +32,16 @@ function recipe_stage {
     dest="$(realpath $1)"
 
     # Create install directories
-    mkdir -pv "${dest}/games/neverball" "${dest}/ui/apps" "${dest}/ui/icons/apps"
+    mkdir -pv "${dest}/usr/games/neverball" "${dest}/ui/apps" "${dest}/ui/icons/apps"
 
     # Copy assets
-    cp -rv data "${dest}/games/neverball"
+    cp -rv data "${dest}/usr/games/neverball"
 
     # For each game
     for bin in neverball neverputt
     do
         # Install binary
-        "${STRIP}" -v "${bin}" -o "${dest}/games/neverball/${bin}"
+        "${STRIP}" -v "${bin}" -o "${dest}/usr/games/neverball/${bin}"
 
         # Install manifest
         cp -v "${COOKBOOK_RECIPE}/manifest-${bin}" "${dest}/ui/apps/${bin}"
