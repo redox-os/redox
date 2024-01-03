@@ -129,13 +129,8 @@ ifeq ($(UNAME),Darwin)
 	QEMUFLAGS+=-cpu $(QEMU_CPU)
 endif
 
-ifeq ($(UNAME),Linux)
-$(BUILD)/extra.img:
-	fallocate --posix --length 1G $@
-else
 $(BUILD)/extra.img:
 	truncate -s 1g $@
-endif
 
 $(BUILD)/firmware.rom:
 ifeq ($(ARCH),aarch64)
