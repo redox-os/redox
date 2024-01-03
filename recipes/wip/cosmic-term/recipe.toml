@@ -1,5 +1,0 @@
-#TODO update mio to 0.8
-[source]
-git = "https://github.com/pop-os/cosmic-term"
-[build]
-template = "cargo"
