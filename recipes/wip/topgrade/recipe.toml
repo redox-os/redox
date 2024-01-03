@@ -1,6 +1,5 @@
-#TODO compiled but not tested
+#TODO xdg-home crate error
 [source]
 git = "https://github.com/topgrade-rs/topgrade"
-rev = "41c6d1cd9ab86254ffd29945b91e5e1b8eeebf64"
 [build]
 template = "cargo"
