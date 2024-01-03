@@ -13,6 +13,9 @@ PREFIX_BINARY?=1
 REPO_BINARY?=0
 ## Name of the configuration to include in the image name e.g. desktop or server
 CONFIG_NAME?=desktop
+## Ignore errors when building the repo, attempt to build every package
+## REPO_NONSTOP?=--nonstop
+REPO_NONSTOP?=
 ## Select filesystem config
 ifeq ($(BOARD),)
 FILESYSTEM_CONFIG?=config/$(ARCH)/$(CONFIG_NAME).toml

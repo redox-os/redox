@@ -16,7 +16,7 @@ else
 	export PATH="$(PREFIX_PATH):$$PATH" && \
 	PACKAGES="$$($(INSTALLER) --list-packages -c $(FILESYSTEM_CONFIG))" && \
 	cd cookbook && \
-	./repo.sh "$${PACKAGES}"
+	./repo.sh $(REPO_NONSTOP) "$${PACKAGES}"
 	mkdir -p $(BUILD)
 	# make sure fetch.tag is newer than the things repo modifies
 	touch $<
@@ -72,3 +72,11 @@ cr.%: $(FSTOOLS_TAG) FORCE
 ucr.%: $(FSTOOLS_TAG) FORCE
 	$(MAKE) u.$*
 	$(MAKE) cr.$*
+
+uc.%: $(FSTOOLS_TAG) FORCE
+	$(MAKE) u.$*
+	$(MAKE) c.$*
+
+ucf.%: (FSTOOLS_TAG) FORCE
+	$(MAKE) uc.$*
+	$(MAKE) f.$*
