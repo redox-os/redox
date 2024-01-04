@@ -22,47 +22,15 @@
 #                                                                            #
 ##############################################################################
 
-include = ["../net.toml"]
+include = ["../desktop.toml"]
 
 # General settings
 [general]
 # Filesystem size in MiB
 filesystem_size = 512
-# Do not prompt if settings are not defined
-prompt = false
 
 # Package settings
 [packages]
-audiod = {}
-bash = {}
-bootloader = {}
-ca-certificates = {}
-contain = {}
-coreutils = {}
-diffutils = {}
-extrautils = {}
-findutils = {}
-installer = {}
-installer-gui = {}
-ion = {}
-netdb = {}
-netsurf = {}
-orbdata = {}
-orbital = {}
-orbterm = {}
-orbutils = {}
-pkgutils = {}
-redoxfs = {}
-relibc = {}
-resist = {}
-smith = {}
-userutils = {}
-uutils = {}
-
-git = {}
-curl = {}
-vim = {}
-
 # Games
 dosbox = {}
 freedoom = {}
@@ -74,24 +42,6 @@ pixelcannon = {}
 
 # MIDI
 freepats = {}
-
-[[files]]
-path = "/etc/init.d/20_orbital"
-data = """
-audiod
-orbital orblogin launcher
-"""
-
-[[files]]
-path = "/etc/init.d/30_console"
-data = """
-getty 2
-getty debug: -J
-"""
-
-[[files]]
-path = "/etc/pkg.d/50_redox"
-data = "https://static.redox-os.org/pkg"
 
 [[files]]
 path = "/home/user/Welcome.txt"
