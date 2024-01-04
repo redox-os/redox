@@ -1,0 +1,56 @@
+# Base configuration: This configuration is meant to be included by
+# other configurations rather than use directly. It is the greatest
+# common divisor of all other configurations and misses several
+# parts necessary to create a bootable system.
+
+# General settings
+[general]
+# Do not prompt if settings are not defined
+prompt = false
+
+[[files]]
+path = "/usr/bin"
+data = "../bin"
+symlink = true
+
+[[files]]
+path = "/usr/include"
+data = "../include"
+symlink = true
+
+[[files]]
+path = "/usr/lib"
+data = "../lib"
+symlink = true
+
+[[files]]
+path = "/usr/share"
+data = "../share"
+symlink = true
+
+[[files]]
+path = "/tmp"
+data = ""
+directory = true
+# 0o1777
+mode = 1023
+
+[[files]]
+path = "/dev/null"
+data = "null:"
+symlink = true
+
+[[files]]
+path = "/dev/random"
+data = "rand:"
+symlink = true
+
+[[files]]
+path = "/dev/urandom"
+data = "rand:"
+symlink = true
+
+[[files]]
+path = "/dev/zero"
+data = "zero:"
+symlink = true
