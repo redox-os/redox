@@ -1,0 +1,5 @@
+#TODO Not compiled or tested
+[source]
+git = "https://github.com/arjunkomath/rustyink"
+[build]
+template = "cargo"
