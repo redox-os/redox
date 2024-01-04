@@ -1,0 +1,11 @@
+[source]
+git = "https://github.com/pop-os/cosmic-files.git"
+branch = "master_jammy"
+
+[build]
+template = "custom"
+script = """
+cookbook_cargo --no-default-features
+mkdir -pv "${COOKBOOK_STAGE}/ui/apps"
+cp -v "${COOKBOOK_RECIPE}/manifest" "${COOKBOOK_STAGE}/ui/apps/cosmic-files"
+"""
