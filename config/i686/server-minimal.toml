@@ -12,14 +12,11 @@ prompt = false
 # Package settings
 [packages]
 bootloader = {}
-bootstrap = {}
 coreutils = {}
 escalated = {}
 extrautils = {}
-initfs = {}
 ion = {}
 ipcd = {}
-kernel = {}
 ptyd = {}
 smith = {}
 userutils = {}

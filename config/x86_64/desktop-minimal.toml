@@ -11,15 +11,12 @@ prompt = false
 
 # Package settings
 [packages]
-bootstrap = {}
 coreutils = {}
 drivers = {}
 escalated = {}
 extrautils = {}
-initfs = {}
 ion = {}
 ipcd = {}
-kernel = {}
 orbdata = {}
 orbital = {}
 orbterm = {}

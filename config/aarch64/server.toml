@@ -13,7 +13,6 @@ prompt = false
 [packages]
 bash = {}
 bootloader = {}
-bootstrap = {}
 ca-certificates = {}
 contain = {}
 coreutils = {}
@@ -24,12 +23,10 @@ diffutils = {}
 # escalated = {}
 extrautils = {}
 findutils = {}
-initfs = {}
 # FIXME: failed to build
 # installer = {}
 ion = {}
 ipcd = {}
-kernel = {}
 netdb = {}
 # FIXME: failed to build
 # pkgutils = {}
