@@ -1,0 +1,33 @@
+# Default desktop configuration
+
+include = ["server.toml"]
+
+# General settings
+[general]
+# Filesystem size in MiB
+filesystem_size = 512
+
+# Package settings
+[packages]
+audiod = {}
+installer-gui = {}
+netsurf = {}
+orbdata = {}
+orbital = {}
+orbterm = {}
+orbutils = {}
+
+[[files]]
+path = "/etc/init.d/20_orbital"
+data = """
+audiod
+orbital orblogin launcher
+"""
+
+# Override console config to not switch to VT 2
+[[files]]
+path = "/etc/init.d/30_console"
+data = """
+getty 2
+getty debug: -J
+"""
