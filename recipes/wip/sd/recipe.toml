@@ -1,4 +1,4 @@
-#TODO compiled but not tested
+#TODO relibc function not implemented
 [source]
 git = "https://github.com/chmln/sd.git"
 [build]

@@ -1,4 +1,4 @@
-#TODO compiled but not tested
+#TODO move to proper category
 [source]
 git = "https://github.com/sharkdp/hexyl"
 rev = "7a9234c182b19070f8707468c572b5a0e6e704d4"
