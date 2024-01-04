@@ -1,6 +1,6 @@
 # Minimal configuration
 
-include = ["../base.toml"]
+include = ["../server-minimal.toml"]
 
 # General settings
 [general]
@@ -8,31 +8,3 @@ include = ["../base.toml"]
 filesystem_size = 128
 # Do not prompt if settings are not defined
 prompt = false
-
-# Package settings
-[packages]
-bootloader = {}
-coreutils = {}
-escalated = {}
-extrautils = {}
-ion = {}
-ipcd = {}
-ptyd = {}
-smith = {}
-userutils = {}
-uutils = {}
-
-[[files]]
-path = "/etc/init.d/00_base"
-data = """
-ipcd
-ptyd
-escalated
-"""
-
-[[files]]
-path = "/etc/init.d/30_console"
-data = """
-getty 2
-getty debug: -J
-"""
