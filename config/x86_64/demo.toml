@@ -22,52 +22,25 @@
 #                                                                            #
 ##############################################################################
 
-include = ["../net.toml"]
+include = ["../desktop.toml"]
 
 # General settings
 [general]
 # Filesystem size in MiB
 filesystem_size = 1536
-# Do not prompt if settings are not defined
-prompt = false
 
 # Package settings
 [packages]
-audiod = {}
-bash = {}
-bootloader = {}
-ca-certificates = {}
-contain = {}
-coreutils = {}
+# GUI Apps
 cosmic-edit = {}
-cosmic-icons = {}
-diffutils = {}
-extrautils = {}
-findutils = {}
-installer = {}
-installer-gui = {}
-intel-one-mono = {}
-ion = {}
-netdb = {}
-netsurf = {}
-orbdata = {}
-orbital = {}
-orbterm = {}
-orbutils = {}
-pkgutils = {}
-pop-icon-theme = {}
-redoxfs = {}
-relibc = {}
-resist = {}
-smith = {}
-userutils = {}
-uutils = {}
-
-# Apps
 periodictable = {}
 
-# Shell Apps
+# GUI Data
+cosmic-icons = {}
+intel-one-mono = {}
+pop-icon-theme = {}
 
+# Shell Apps
 binutils = {}
 curl = {}
 git = {}
@@ -95,24 +68,6 @@ gears = {}
 
 # MIDI
 freepats = {}
-
-[[files]]
-path = "/etc/init.d/20_orbital"
-data = """
-audiod
-orbital orblogin launcher
-"""
-
-[[files]]
-path = "/etc/init.d/30_console"
-data = """
-getty 2
-getty debug: -J
-"""
-
-[[files]]
-path = "/etc/pkg.d/50_redox"
-data = "https://static.redox-os.org/pkg"
 
 [[files]]
 path = "/home/user/Welcome.txt"
