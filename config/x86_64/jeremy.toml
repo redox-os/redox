@@ -18,14 +18,11 @@ ca-certificates = {}
 contain = {}
 coreutils = {}
 diffutils = {}
-drivers = {}
-escalated = {}
 extrautils = {}
 findutils = {}
 installer = {}
 installer-gui = {}
 ion = {}
-ipcd = {}
 netdb = {}
 netsurf = {}
 orbdata = {}
@@ -33,7 +30,6 @@ orbital = {}
 orbterm = {}
 orbutils = {}
 pkgutils = {}
-ptyd = {}
 redoxfs = {}
 relibc = {}
 relibc-tests = {}
@@ -147,15 +143,6 @@ pop-icon-theme = {}
 terminfo = {}
 timidity = {}
 ttf-hack = {}
-
-[[files]]
-path = "/etc/init.d/00_base"
-data = """
-ipcd
-ptyd
-pcid /etc/pcid.d/
-escalated
-"""
 
 [[files]]
 path = "/etc/init.d/20_orbital"

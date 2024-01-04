@@ -42,15 +42,12 @@ coreutils = {}
 cosmic-edit = {}
 cosmic-icons = {}
 diffutils = {}
-drivers = {}
-escalated = {}
 extrautils = {}
 findutils = {}
 installer = {}
 installer-gui = {}
 intel-one-mono = {}
 ion = {}
-ipcd = {}
 netdb = {}
 netsurf = {}
 orbdata = {}
@@ -59,7 +56,6 @@ orbterm = {}
 orbutils = {}
 pkgutils = {}
 pop-icon-theme = {}
-ptyd = {}
 redoxfs = {}
 relibc = {}
 resist = {}
@@ -99,15 +95,6 @@ gears = {}
 
 # MIDI
 freepats = {}
-
-[[files]]
-path = "/etc/init.d/00_base"
-data = """
-ipcd
-ptyd
-pcid /etc/pcid.d/
-escalated
-"""
 
 [[files]]
 path = "/etc/init.d/20_orbital"

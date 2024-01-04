@@ -40,14 +40,11 @@ ca-certificates = {}
 contain = {}
 coreutils = {}
 diffutils = {}
-drivers = {}
-escalated = {}
 extrautils = {}
 findutils = {}
 installer = {}
 installer-gui = {}
 ion = {}
-ipcd = {}
 netdb = {}
 netsurf = {}
 orbdata = {}
@@ -55,7 +52,6 @@ orbital = {}
 orbterm = {}
 orbutils = {}
 pkgutils = {}
-ptyd = {}
 redoxfs = {}
 relibc = {}
 resist = {}
@@ -78,15 +74,6 @@ pixelcannon = {}
 
 # MIDI
 freepats = {}
-
-[[files]]
-path = "/etc/init.d/00_base"
-data = """
-ipcd
-ptyd
-pcid /etc/pcid.d/
-escalated
-"""
 
 [[files]]
 path = "/etc/init.d/20_orbital"
