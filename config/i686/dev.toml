@@ -57,18 +57,6 @@ gnu-binutils = {}
 gnu-make = {}
 rust = {}
 
-# User settings
-[users.root]
-password = "password"
-uid = 0
-gid = 0
-name = "root"
-home = "/root"
-
-[users.user]
-# Password is unset
-password = ""
-
 [[files]]
 path = "/home/user/example.rs"
 data = """
