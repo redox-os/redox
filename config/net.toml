@@ -3,11 +3,6 @@
 
 include = ["base.toml"]
 
-# General settings
-[general]
-# Do not prompt if settings are not defined
-prompt = false
-
 ## Network packages
 [packages]
 netstack = {}

@@ -1,0 +1,60 @@
+# Configuration for using resist
+
+include = ["net.toml"]
+
+# General settings
+[general]
+# Filesystem size in MiB
+filesystem_size = 256
+
+# Package settings
+[packages]
+bash = {}
+bootloader = {}
+coreutils = {}
+diffutils = {}
+drivers = {}
+escalated = {}
+extrautils = {}
+findutils = {}
+gcc13 = {}
+gnu-binutils = {}
+gnu-make = {}
+ipcd = {}
+netdb = {}
+ptyd = {}
+resist = {}
+userutils = {}
+uutils = {}
+
+[[files]]
+path = "/etc/init.d/00_base"
+data = """
+ipcd
+ptyd
+pcid /etc/pcid.d/
+escalated
+"""
+
+# Override to not background dhcpd
+[[files]]
+path = "/etc/init.d/10_net"
+data = """
+smolnetd
+dnsd
+dhcpd
+"""
+
+[[files]]
+path = "/etc/init.d/20_resist"
+data = """
+export RUST_BACKTRACE full
+resist /share/resist/redox/spec.toml
+resist /share/resist/posix/base.toml
+resist /share/resist/posix/shell.toml
+shutdown
+"""
+
+[[files]]
+path = "/etc/pkg.d/50_redox"
+data = "https://static.redox-os.org/pkg"

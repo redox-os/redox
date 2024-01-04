@@ -1,24 +1,22 @@
-# Minimal configuration
+# Configuration for using acid
 
 include = ["base.toml"]
 
 # General settings
 [general]
 # Filesystem size in MiB
-filesystem_size = 128
+filesystem_size = 256
 
 # Package settings
 [packages]
 bootloader = {}
+acid = {}
 coreutils = {}
+# TODO: Does this need escalated?
 escalated = {}
-extrautils = {}
 ion = {}
 ipcd = {}
 ptyd = {}
-smith = {}
-userutils = {}
-uutils = {}
 
 [[files]]
 path = "/etc/init.d/00_base"
@@ -29,8 +27,13 @@ escalated
 """
 
 [[files]]
-path = "/etc/init.d/30_console"
+path = "/etc/init.d/10_acid"
 data = """
-getty 2
-getty debug: -J
+export RUST_BACKTRACE full
+acid
+acid create_test
+acid switch
+acid tls
+acid thread
+shutdown
 """
