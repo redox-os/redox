@@ -23,9 +23,9 @@ export SDLCONFIG="${COOKBOOK_SYSROOT}/bin/sdl-config --prefix=${COOKBOOK_SYSROOT
 
 PLATFORM=REDOX "${COOKBOOK_MAKE}" -j"$($NPROC)"
 
-mkdir -pv "${COOKBOOK_STAGE}/games"
-cp -v ./eduke32 "${COOKBOOK_STAGE}/games/eduke32"
-cp -v ./mapster32 "${COOKBOOK_STAGE}/games/mapster32"
+mkdir -pv "${COOKBOOK_STAGE}/usr/games"
+cp -v ./eduke32 "${COOKBOOK_STAGE}/usr/games/eduke32"
+cp -v ./mapster32 "${COOKBOOK_STAGE}/usr/games/mapster32"
 
 mkdir -pv "${COOKBOOK_STAGE}/ui/apps"
 cp -v "${COOKBOOK_RECIPE}/manifest" "${COOKBOOK_STAGE}/ui/apps/eduke32"

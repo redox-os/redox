@@ -1,4 +1,4 @@
 name=EDuke32
 category=Games
-binary=/games/eduke32
+binary=/usr/games/eduke32
 icon=/ui/icons/apps/eduke32.png

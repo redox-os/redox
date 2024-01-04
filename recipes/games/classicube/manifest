@@ -1,4 +1,4 @@
 name=ClassiCube
 category=Games
-binary=/games/classicube/ClassiCube
+binary=/usr/games/classicube/ClassiCube
 icon=/ui/icons/apps/classicube.png
