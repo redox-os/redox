@@ -1,4 +1,4 @@
-#TODO compiled but not tested
+#TODO working but don't exit
 [source]
 git = "https://github.com/nwtnni/tock"
 [build]

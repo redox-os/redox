@@ -1,4 +1,4 @@
-#TODO compiled but not tested
+#TODO move to proper category
 [source]
 git = "https://github.com/Lenivaya/qrrs"
 rev = "74ea9129a808f199afb386a38df7492cc8c7d094"

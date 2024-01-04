@@ -1,4 +1,4 @@
-#TODO compiled but not tested
+#TODO move to proper category
 [source]
 git = "https://github.com/your-tools/ruplacer"
 [build]
