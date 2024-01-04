@@ -74,6 +74,15 @@ path = "/dev/zero"
 data = "zero:"
 symlink = true
 
+# Group settings
+[[files]]
+path = "/etc/group"
+data = """
+root;0;root
+user;1000;user
+sudo;1;user
+"""
+
 # User settings
 [users.root]
 password = "password"

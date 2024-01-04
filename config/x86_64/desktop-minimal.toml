@@ -49,11 +49,3 @@ data = """
 getty 2
 getty debug: -J
 """
-
-[[files]]
-path = "/etc/group"
-data = """
-root;0;root
-user;1000;user
-sudo;1;user
-"""
