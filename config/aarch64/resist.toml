@@ -1,6 +1,6 @@
 # Configuration for using resist
 
-include = ["../base.toml"]
+include = ["../net.toml"]
 
 # General settings
 [general]
@@ -27,8 +27,6 @@ initfs = {}
 ipcd = {}
 kernel = {}
 netdb = {}
-netstack = {}
-netutils = {}
 ptyd = {}
 resist = {}
 userutils = {}
@@ -55,6 +53,7 @@ pcid /etc/pcid.d/
 escalated
 """
 
+# Override to not background dhcpd
 [[files]]
 path = "/etc/init.d/10_net"
 data = """
@@ -74,42 +73,8 @@ shutdown
 """
 
 [[files]]
-path = "/etc/net/dns"
-data = """
-208.67.222.222
-"""
-
-[[files]]
-path = "/etc/net/ip"
-data = """
-10.0.2.15
-"""
-
-[[files]]
-path = "/etc/net/ip_router"
-data = """
-10.0.2.2
-"""
-
-[[files]]
-path = "/etc/net/ip_subnet"
-data = """
-255.255.255.0
-"""
-
-[[files]]
-path = "/etc/net/mac"
-data = """
-54-52-00-ab-cd-ef
-"""
-
-[[files]]
 path = "/etc/pkg.d/50_redox"
 data = "https://static.redox-os.org/pkg"
-
-[[files]]
-path = "/etc/redox-release"
-data = "0.8.0"
 
 [[files]]
 path = "/etc/group"
@@ -117,10 +82,4 @@ data = """
 root;0;root
 user;1000;user
 sudo;1;user
-"""
-
-[[files]]
-path = "/etc/hostname"
-data = """
-redox
 """
