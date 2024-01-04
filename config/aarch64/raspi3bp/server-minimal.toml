@@ -13,14 +13,11 @@ efi_partition_size = 128
 # Package settings
 [packages]
 bootloader = {}
-bootstrap = {}
 coreutils = {}
 escalated = {}
 extrautils = {}
-initfs = {}
 ion = {}
 ipcd = {}
-kernel = {}
 ptyd = {}
 smith = {}
 userutils = {}

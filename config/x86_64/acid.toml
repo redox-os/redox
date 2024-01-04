@@ -12,15 +12,12 @@ prompt = false
 # Package settings
 [packages]
 bootloader = {}
-bootstrap = {}
 acid = {}
 coreutils = {}
 # TODO: Does this need escalated?
 escalated = {}
-initfs = {}
 ion = {}
 ipcd = {}
-kernel = {}
 ptyd = {}
 
 # User settings

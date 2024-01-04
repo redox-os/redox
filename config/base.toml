@@ -8,6 +8,11 @@
 # Do not prompt if settings are not defined
 prompt = false
 
+[packages]
+bootstrap = {}
+initfs = {}
+kernel = {}
+
 ## Configuration files
 [[files]]
 path = "/etc/hostname"

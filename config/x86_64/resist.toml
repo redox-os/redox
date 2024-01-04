@@ -13,7 +13,6 @@ prompt = false
 [packages]
 bash = {}
 bootloader = {}
-bootstrap = {}
 coreutils = {}
 diffutils = {}
 drivers = {}
@@ -23,9 +22,7 @@ findutils = {}
 gcc13 = {}
 gnu-binutils = {}
 gnu-make = {}
-initfs = {}
 ipcd = {}
-kernel = {}
 netdb = {}
 ptyd = {}
 resist = {}
