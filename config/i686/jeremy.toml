@@ -1,42 +1,14 @@
 # Jeremy's configuration
 
-include = ["../net.toml"]
+include = ["../desktop.toml"]
 
 # General settings
 [general]
 # Filesystem size in MiB
 filesystem_size = 4000
-# Do not prompt if settings are not defined
-prompt = false
 
 # Package settings
 [packages]
-audiod = {}
-bash = {}
-bootloader = {}
-ca-certificates = {}
-contain = {}
-coreutils = {}
-diffutils = {}
-extrautils = {}
-findutils = {}
-installer = {}
-installer-gui = {}
-ion = {}
-netdb = {}
-netsurf = {}
-orbdata = {}
-orbital = {}
-orbterm = {}
-orbutils = {}
-pkgutils = {}
-redoxfs = {}
-relibc = {}
-resist = {}
-smith = {}
-userutils = {}
-uutils = {}
-
 # apps
 cosmic-text = {}
 pixelcannon = {}
@@ -65,49 +37,4 @@ freepats = {}
 generaluser-gs = {}
 jeremy = {}
 keyboard-sfx = {}
-terminfo = {}
 ttf-hack = {}
-
-[[files]]
-path = "/etc/init.d/20_orbital"
-data = """
-audiod
-orbital orblogin launcher
-"""
-
-[[files]]
-path = "/etc/init.d/30_console"
-data = """
-getty 2
-getty debug: -J
-"""
-
-[[files]]
-path = "/etc/pkg.d/50_redox"
-data = "https://static.redox-os.org/pkg"
-
-[[files]]
-path = "/home/user/Welcome.txt"
-data = """
-##############################################################################
-#                                                                            #
-#                             Welcome to Redox!                              #
-#                                                                            #
-# Redox is an operating system written in Rust, a language with focus        #
-# on safety and high performance. Redox, following the microkernel design,   #
-# aims to be secure, usable, and free. Redox is inspired by previous kernels #
-# and operating systems, such as SeL4, MINIX, Plan 9, and BSD.               #
-#                                                                            #
-# Redox _is not_ just a kernel, it's a full-featured Operating System,       #
-# providing packages (memory allocator, file system, display manager, core   #
-# utilities, etc.) that together make up a functional and convenient         #
-# operating system. You can loosely think of it as the GNU or BSD ecosystem, #
-# but in a memory safe language and with modern technology.                  #
-#                                                                            #
-# The website can be found at https://www.redox-os.org.                      #
-#                                                                            #
-# For things to try on Redox, please see                                     #
-# https://doc.redox-os.org/book/ch02-06-trying-out-redox.html                #
-#                                                                            #
-##############################################################################
-"""

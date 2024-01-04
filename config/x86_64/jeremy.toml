@@ -1,43 +1,14 @@
 # Jeremy's configuration
 
-include = ["../net.toml"]
+include = ["../desktop.toml"]
 
 # General settings
 [general]
 # Filesystem size in MiB
 filesystem_size = 8192
-# Do not prompt if settings are not defined
-prompt = false
 
 # Package settings
 [packages]
-audiod = {}
-bash = {}
-bootloader = {}
-ca-certificates = {}
-contain = {}
-coreutils = {}
-diffutils = {}
-extrautils = {}
-findutils = {}
-installer = {}
-installer-gui = {}
-ion = {}
-netdb = {}
-netsurf = {}
-orbdata = {}
-orbital = {}
-orbterm = {}
-orbutils = {}
-pkgutils = {}
-redoxfs = {}
-relibc = {}
-relibc-tests = {}
-resist = {}
-smith = {}
-userutils = {}
-uutils = {}
-
 # apps
 cosmic-edit = {}
 cosmic-files = {}
@@ -51,18 +22,16 @@ sodium = {}
 # cli
 acid = {}
 cleye = {}
-curl = {}
 ffmpeg6 = {}
-git = {}
 gnu-grep = {}
 lua54 = {}
 nano = {}
 perg = {}
+relibc-tests = {}
 ripgrep = {}
 rustpython = {}
 sed = {}
 shellharden = {}
-vim = {}
 xz = {}
 
 # demos
@@ -140,24 +109,5 @@ keyboard-sfx = {}
 libc-bench = {}
 noto-color-emoji = {}
 pop-icon-theme = {}
-terminfo = {}
 timidity = {}
 ttf-hack = {}
-
-[[files]]
-path = "/etc/init.d/20_orbital"
-data = """
-audiod
-orbital orblogin launcher
-"""
-
-[[files]]
-path = "/etc/init.d/30_console"
-data = """
-getty 2
-getty debug: -J
-"""
-
-[[files]]
-path = "/etc/pkg.d/50_redox"
-data = "https://static.redox-os.org/pkg"
