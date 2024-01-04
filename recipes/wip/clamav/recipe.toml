@@ -15,6 +15,7 @@ dependencies = [
     "zlib",
 ]
 script = """
+export CPPFLAGS="-I${COOKBOOK_SYSROOT}/include/ncurses"
     COOKBOOK_CONFIGURE="cmake"
     COOKBOOK_CONFIGURE_FLAGS=(
     -DCMAKE_BUILD_TYPE=Release

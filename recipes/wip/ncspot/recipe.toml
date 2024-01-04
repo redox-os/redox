@@ -9,5 +9,6 @@ dependencies = [
     "ncurses",
 ]
 script = """
+export CPPFLAGS="-I${COOKBOOK_SYSROOT}/include/ncurses"
 cookbook_cargo --features rodio_backend,pancurses_backend
 """
