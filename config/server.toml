@@ -1,0 +1,44 @@
+# Default server configuration
+
+include = ["net.toml"]
+
+# General settings
+[general]
+# Filesystem size in MiB
+filesystem_size = 512
+
+# Package settings
+[packages]
+bash = {}
+bootloader = {}
+ca-certificates = {}
+contain = {}
+coreutils = {}
+curl = {}
+diffutils = {}
+extrautils = {}
+findutils = {}
+git = {}
+installer = {}
+ion = {}
+netdb = {}
+pkgutils = {}
+redoxfs = {}
+relibc = {}
+resist = {}
+smith = {}
+userutils = {}
+uutils = {}
+vim = {}
+
+[[files]]
+path = "/etc/init.d/30_console"
+data = """
+inputd -A 2
+getty 2
+getty debug: -J
+"""
+
+[[files]]
+path = "/etc/pkg.d/50_redox"
+data = "https://static.redox-os.org/pkg"
