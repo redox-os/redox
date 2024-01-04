@@ -18,13 +18,10 @@ ca-certificates = {}
 contain = {}
 coreutils = {}
 diffutils = {}
-#drivers = {} # more porting work
-#escalated = {} # porting
 extrautils = {}
 findutils = {}
 #installer = {} # failure to build ring
 ion = {}
-ipcd = {}
 netdb = {}
 #netsurf = {} # lots of porting issues
 orbdata = {}
@@ -32,22 +29,12 @@ orbital = {}
 orbterm = {}
 orbutils = {}
 #pkgutils = {} # failure to build ring
-ptyd = {}
 redoxfs = {}
 relibc = {}
 resist = {}
 smith = {}
 userutils = {}
 uutils = {}
-
-[[files]]
-path = "/etc/init.d/00_base"
-data = """
-ipcd
-ptyd
-pcid /etc/pcid.d/
-escalated
-"""
 
 [[files]]
 path = "/etc/init.d/20_orbital"

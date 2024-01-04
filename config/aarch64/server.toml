@@ -17,20 +17,14 @@ ca-certificates = {}
 contain = {}
 coreutils = {}
 diffutils = {}
-# FIXME: failed to build
-# drivers = {}
-# FIXME: failed to build
-# escalated = {}
 extrautils = {}
 findutils = {}
 # FIXME: failed to build
 # installer = {}
 ion = {}
-ipcd = {}
 netdb = {}
 # FIXME: failed to build
 # pkgutils = {}
-ptyd = {}
 redoxfs = {}
 resist = {}
 smith = {}
@@ -40,15 +34,6 @@ uutils = {}
 git = {}
 curl = {}
 vim = {}
-
-[[files]]
-path = "/etc/init.d/00_base"
-data = """
-ipcd
-ptyd
-pcid /etc/pcid.d/
-escalated
-"""
 
 [[files]]
 path = "/etc/init.d/30_console"

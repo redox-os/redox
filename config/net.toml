@@ -3,10 +3,18 @@
 
 include = ["base.toml"]
 
-## Network packages
+# Package settings
 [packages]
+drivers = {}
 netstack = {}
 netutils = {}
+
+## Driver init
+[[files]]
+path = "/etc/init.d/00_drivers"
+data = """
+pcid /etc/pcid.d/
+"""
 
 ## Network init
 [[files]]

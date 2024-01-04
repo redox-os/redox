@@ -17,16 +17,12 @@ ca-certificates = {}
 contain = {}
 coreutils = {}
 diffutils = {}
-drivers = {}
-escalated = {}
 extrautils = {}
 findutils = {}
 installer = {}
 ion = {}
-ipcd = {}
 netdb = {}
 pkgutils = {}
-ptyd = {}
 redoxfs = {}
 resist = {}
 smith = {}
@@ -36,15 +32,6 @@ uutils = {}
 git = {}
 curl = {}
 vim = {}
-
-[[files]]
-path = "/etc/init.d/00_base"
-data = """
-ipcd
-ptyd
-pcid /etc/pcid.d/
-escalated
-"""
 
 [[files]]
 path = "/etc/init.d/30_console"

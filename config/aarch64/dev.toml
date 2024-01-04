@@ -19,13 +19,11 @@ contain = {}
 coreutils = {}
 diffutils = {}
 drivers = {}
-escalated = {}
 extrautils = {}
 findutils = {}
 installer = {}
 installer-gui = {}
 ion = {}
-ipcd = {}
 netdb = {}
 netsurf = {}
 orbdata = {}
@@ -33,7 +31,6 @@ orbital = {}
 orbterm = {}
 orbutils = {}
 pkgutils = {}
-ptyd = {}
 redoxfs = {}
 relibc = {}
 resist = {}
@@ -63,15 +60,6 @@ data = """
 fn main() {
     println!("Hello, Redox!");
 }
-"""
-
-[[files]]
-path = "/etc/init.d/00_base"
-data = """
-ipcd
-ptyd
-pcid /etc/pcid.d/
-escalated
 """
 
 [[files]]

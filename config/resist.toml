@@ -12,7 +12,6 @@ filesystem_size = 256
 bash = {}
 coreutils = {}
 diffutils = {}
-drivers = {}
 extrautils = {}
 findutils = {}
 gcc13 = {}
@@ -22,12 +21,6 @@ netdb = {}
 resist = {}
 userutils = {}
 uutils = {}
-
-[[files]]
-path = "/etc/init.d/00_drivers"
-data = """
-pcid /etc/pcid.d/
-"""
 
 # Override to not background dhcpd
 [[files]]
