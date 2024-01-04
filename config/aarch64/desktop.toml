@@ -1,5 +1,7 @@
 # Default desktop configuration
 
+include = ["../base.toml"]
+
 # General settings
 [general]
 # Filesystem size in MiB
@@ -141,50 +143,3 @@ path = "/etc/hostname"
 data = """
 redox
 """
-
-[[files]]
-path = "/usr/bin"
-data = "../bin"
-symlink = true
-
-[[files]]
-path = "/usr/include"
-data = "../include"
-symlink = true
-
-[[files]]
-path = "/usr/lib"
-data = "../lib"
-symlink = true
-
-[[files]]
-path = "/usr/share"
-data = "../share"
-symlink = true
-
-[[files]]
-path = "/tmp"
-data = ""
-directory= true
-# 0o1777
-mode = 1023
-
-[[files]]
-path = "/dev/null"
-data = "null:"
-symlink = true
-
-[[files]]
-path = "/dev/random"
-data = "rand:"
-symlink = true
-
-[[files]]
-path = "/dev/urandom"
-data = "rand:"
-symlink = true
-
-[[files]]
-path = "/dev/zero"
-data = "zero:"
-symlink = true
