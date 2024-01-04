@@ -10,10 +10,21 @@ prompt = false
 
 [packages]
 bootstrap = {}
+escalated = {}
 initfs = {}
+ipcd = {}
 kernel = {}
+ptyd = {}
 
 ## Configuration files
+[[files]]
+path = "/etc/init.d/00_base"
+data = """
+ipcd
+ptyd
+escalated
+"""
+
 [[files]]
 path = "/etc/hostname"
 data = """

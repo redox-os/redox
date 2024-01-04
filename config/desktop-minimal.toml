@@ -1,6 +1,6 @@
 # Default desktop configuration
 
-include = ["base.toml"]
+include = ["server-minimal.toml"]
 
 # General settings
 [general]
@@ -9,41 +9,22 @@ filesystem_size = 128
 
 # Package settings
 [packages]
-coreutils = {}
 drivers = {}
-escalated = {}
-extrautils = {}
-ion = {}
-ipcd = {}
 orbdata = {}
 orbital = {}
 orbterm = {}
 orbutils-background = {}
 orbutils-launcher = {}
 orbutils-orblogin = {}
-ptyd = {}
-smith = {}
-userutils = {}
-uutils = {}
 
 [[files]]
-path = "/etc/init.d/00_base"
+path = "/etc/init.d/00_drivers"
 data = """
-ipcd
-ptyd
 pcid /etc/pcid.d/
-escalated
 """
 
 [[files]]
 path = "/etc/init.d/20_orbital"
 data = """
 orbital orblogin launcher
-"""
-
-[[files]]
-path = "/etc/init.d/30_console"
-data = """
-getty 2
-getty debug: -J
 """

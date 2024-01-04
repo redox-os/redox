@@ -9,22 +9,9 @@ filesystem_size = 256
 
 # Package settings
 [packages]
-bootloader = {}
 acid = {}
 coreutils = {}
-# TODO: Does this need escalated?
-escalated = {}
 ion = {}
-ipcd = {}
-ptyd = {}
-
-[[files]]
-path = "/etc/init.d/00_base"
-data = """
-ipcd
-ptyd
-escalated
-"""
 
 [[files]]
 path = "/etc/init.d/10_acid"
