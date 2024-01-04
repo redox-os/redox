@@ -6,6 +6,5 @@ include = ["../../server-minimal.toml"]
 [general]
 # Filesystem size in MiB
 filesystem_size = 256
-# Do not prompt if settings are not defined
-prompt = false
+# EFI partition size in MiB
 efi_partition_size = 128
