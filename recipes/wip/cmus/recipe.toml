@@ -3,7 +3,11 @@
 git = "https://github.com/cmus/cmus"
 rev = "ade6e2a7253d7a256e87fdac3da17c9158e6700e"
 [build]
-template = "configure"
+template = "custom"
 dependencies = [
     "ncurses",
 ]
+script = """
+export CPPFLAGS="-I${COOKBOOK_SYSROOT}/include/ncurses"
+cookbook_configure
+"""

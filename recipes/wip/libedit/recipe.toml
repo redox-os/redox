@@ -2,9 +2,13 @@
 [source]
 tar = "https://www.thrysoee.dk/editline/libedit-20221030-3.1.tar.gz"
 [build]
-template = "configure"
+template = "custom"
 dependencies = [
     "ncurses",
     "termcap",
     "terminfo",
 ]
+script = """
+export CPPFLAGS="-I${COOKBOOK_SYSROOT}/include/ncurses"
+cookbook_configure
+"""

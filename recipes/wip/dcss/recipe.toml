@@ -13,3 +13,6 @@ dependencies = [
     "zlib",
     "libpng",
 ]
+script = """
+export CPPFLAGS="-I${COOKBOOK_SYSROOT}/include/ncurses"
+"""

@@ -1,4 +1,4 @@
-#TODO wrong script
+#TODO compiled but not tested
 [source]
 git = "https://github.com/hickory-dns/hickory-dns"
 rev = "408d0baca080d1b201cd33e616dc4abd160ef6c0"
@@ -8,14 +8,14 @@ dependencies = [
     "openssl1",
 ]
 script = """
-package=hickory-dns"
+binary=hickory-dns
 "${COOKBOOK_CARGO}" build \
             --manifest-path "${COOKBOOK_SOURCE}/Cargo.toml" \
-            --package "${package}" \
+            --bin "${binary}" \
             --release
             --all-features
         mkdir -pv "${COOKBOOK_STAGE}/bin"
         cp -v \
-            "target/${TARGET}/release/${package}" \
-            "${COOKBOOK_STAGE}/bin/${package}"
+            "target/${TARGET}/release/${binary}" \
+            "${COOKBOOK_STAGE}/bin/${binary}"
 """

@@ -3,8 +3,12 @@
 git = "https://github.com/karlstav/cava"
 rev = "81211e9e16302312ee4322a99840c110bce0e13d"
 [build]
-template = "configure"
+template = "custom"
 dependencies = [
     "ncurses",
     "fftw",
 ]
+script = """
+export CPPFLAGS="-I${COOKBOOK_SYSROOT}/include/ncurses"
+cookbook_configure
+"""

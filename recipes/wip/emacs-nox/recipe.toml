@@ -3,7 +3,7 @@
 [source]
 tar = "https://ftp.gnu.org/gnu/emacs/emacs-29.1.tar.xz"
 [build]
-template = "configure"
+template = "custom"
 dependencies = [
     "dbus",
     "libgmp",
@@ -16,3 +16,7 @@ dependencies = [
     "zlib",
     "ncurses",
 ]
+script = """
+export CPPFLAGS="-I${COOKBOOK_SYSROOT}/include/ncurses"
+cookbook_configure
+"""
