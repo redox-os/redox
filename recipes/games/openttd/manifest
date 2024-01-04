@@ -1,4 +1,4 @@
 name=OpenTTD
 category=Games
-binary=/games/openttd
+binary=/usr/games/openttd
 icon=/ui/icons/apps/openttd.png

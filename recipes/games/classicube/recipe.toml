@@ -15,8 +15,8 @@ rsync -av --delete "${COOKBOOK_SOURCE}/" ./
 
 "${COOKBOOK_MAKE}" -j "${COOKBOOK_MAKE_JOBS}" -C src redox
 
-mkdir -pv "${COOKBOOK_STAGE}/games/classicube"
-cp -v "src/ClassiCube" "${COOKBOOK_STAGE}/games/classicube"
+mkdir -pv "${COOKBOOK_STAGE}/usr/games/classicube"
+cp -v "src/ClassiCube" "${COOKBOOK_STAGE}/usr/games/classicube"
 
 mkdir -pv "${COOKBOOK_STAGE}/ui/apps"
 cp -v "${COOKBOOK_RECIPE}/manifest" "${COOKBOOK_STAGE}/ui/apps/classicube"

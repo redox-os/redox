@@ -32,7 +32,7 @@ function recipe_clean {
 
 function recipe_stage {
     dest="$(realpath $1)"
-    mkdir -pv "$1/games/vvvvvv"
-    cp ./desktop_version/VVVVVV "$1/games/vvvvvv"
+    mkdir -pv "$1/usr/games/vvvvvv"
+    cp ./desktop_version/VVVVVV "$1/usr/games/vvvvvv"
     skip=1
 }

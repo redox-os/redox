@@ -35,6 +35,6 @@ function recipe_clean {
 
 function recipe_stage {
     dest="$(realpath $1)"
-    "$REDOX_MAKE" DESTDIR="$dest" install
+    "$REDOX_MAKE" DESTDIR="$dest/usr" install
     skip=1
 }

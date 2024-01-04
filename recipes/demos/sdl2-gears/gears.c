@@ -276,13 +276,13 @@ void CheckSDLError(int line)
 }
 
 SDL_Surface *image;
-const char *IMAGE_FILE_NAME = "/games/sdl2_gears/assets/image.png";
+const char *IMAGE_FILE_NAME = "/usr/games/sdl2_gears/assets/image.png";
 
 Mix_Music *music = NULL;
-const char *MUSIC_FILE_NAME = "/games/sdl2_gears/assets/music.wav";
+const char *MUSIC_FILE_NAME = "/usr/games/sdl2_gears/assets/music.wav";
 
 TTF_Font *font = NULL;
-const char *TTF_FILE_NAME = "/games/sdl2_gears/assets/font.ttf";
+const char *TTF_FILE_NAME = "/usr/games/sdl2_gears/assets/font.ttf";
 
 void cleanup()
 {
