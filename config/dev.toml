@@ -1,0 +1,27 @@
+# Configuration for development, includes cargo and rustc
+
+include = ["desktop.toml"]
+
+# General settings
+[general]
+# Filesystem size in MiB
+filesystem_size = 2048
+# Do not prompt if settings are not defined
+prompt = false
+
+# Package settings
+[packages]
+cargo = {}
+crates-io-index = {}
+gcc13 = {}
+gnu-binutils = {}
+gnu-make = {}
+rust = {}
+
+[[files]]
+path = "/home/user/example.rs"
+data = """
+fn main() {
+    println!("Hello, Redox!");
+}
+"""
