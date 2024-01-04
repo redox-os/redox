@@ -45,18 +45,6 @@ git = {}
 curl = {}
 vim = {}
 
-# User settings
-[users.root]
-password = "password"
-uid = 0
-gid = 0
-name = "root"
-home = "/root"
-
-[users.user]
-# Password is unset
-password = ""
-
 [[files]]
 path = "/etc/init.d/00_base"
 data = """
