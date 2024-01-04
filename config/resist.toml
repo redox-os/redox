@@ -10,30 +10,23 @@ filesystem_size = 256
 # Package settings
 [packages]
 bash = {}
-bootloader = {}
 coreutils = {}
 diffutils = {}
 drivers = {}
-escalated = {}
 extrautils = {}
 findutils = {}
 gcc13 = {}
 gnu-binutils = {}
 gnu-make = {}
-ipcd = {}
 netdb = {}
-ptyd = {}
 resist = {}
 userutils = {}
 uutils = {}
 
 [[files]]
-path = "/etc/init.d/00_base"
+path = "/etc/init.d/00_drivers"
 data = """
-ipcd
-ptyd
 pcid /etc/pcid.d/
-escalated
 """
 
 # Override to not background dhcpd

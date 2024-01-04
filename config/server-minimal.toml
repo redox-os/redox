@@ -9,24 +9,12 @@ filesystem_size = 128
 
 # Package settings
 [packages]
-bootloader = {}
 coreutils = {}
-escalated = {}
 extrautils = {}
 ion = {}
-ipcd = {}
-ptyd = {}
 smith = {}
 userutils = {}
 uutils = {}
-
-[[files]]
-path = "/etc/init.d/00_base"
-data = """
-ipcd
-ptyd
-escalated
-"""
 
 [[files]]
 path = "/etc/init.d/30_console"
