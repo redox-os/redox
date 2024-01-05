@@ -85,6 +85,26 @@ path = "/dev/zero"
 data = "zero:"
 symlink = true
 
+[[files]]
+path = "/dev/tty"
+data = "libc:tty"
+symlink = true
+
+[[files]]
+path = "/dev/stdin"
+data = "libc:stdin"
+symlink = true
+
+[[files]]
+path = "/dev/stdout"
+data = "libc:stdout"
+symlink = true
+
+[[files]]
+path = "/dev/stderr"
+data = "libc:stderr"
+symlink = true
+
 # Group settings
 [[files]]
 path = "/etc/group"
