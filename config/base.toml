@@ -37,23 +37,53 @@ data = "0.8.0"
 
 ## Symlinks for usrmerge
 [[files]]
+path = "/usr"
+data = ""
+directory = true
+mode = 0o755
+
+[[files]]
 path = "/usr/bin"
-data = "../bin"
+data = ""
+directory = true
+mode = 0o755
+
+[[files]]
+path = "/bin"
+data = "usr/bin"
 symlink = true
 
 [[files]]
 path = "/usr/include"
-data = "../include"
+data = ""
+directory = true
+mode = 0o755
+
+[[files]]
+path = "/include"
+data = "usr/include"
 symlink = true
 
 [[files]]
 path = "/usr/lib"
-data = "../lib"
+data = ""
+directory = true
+mode = 0o755
+
+[[files]]
+path = "/lib"
+data = "usr/lib"
 symlink = true
 
 [[files]]
 path = "/usr/share"
-data = "../share"
+data = ""
+directory = true
+mode = 0o755
+
+[[files]]
+path = "/share"
+data = "usr/share"
 symlink = true
 
 ## /tmp directory with special mode
@@ -61,8 +91,7 @@ symlink = true
 path = "/tmp"
 data = ""
 directory = true
-# 0o1777
-mode = 1023
+mode = 0o1777
 
 ## Device file symlinks
 [[files]]
