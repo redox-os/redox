@@ -14,7 +14,7 @@ coreutils = {}
 ion = {}
 
 [[files]]
-path = "/etc/init.d/10_acid"
+path = "/usr/lib/init.d/10_acid"
 data = """
 export RUST_BACKTRACE full
 acid

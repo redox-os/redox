@@ -18,7 +18,7 @@ ptyd = {}
 
 ## Configuration files
 [[files]]
-path = "/etc/init.d/00_base"
+path = "/usr/lib/init.d/00_base"
 data = """
 ipcd
 ptyd
