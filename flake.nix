@@ -76,6 +76,8 @@
           qemu_kvm
 
           (rust-bin.fromRustupToolchainFile ./rust-toolchain.toml)
+          rust-cbindgen
+          just
         ];
       };
     });
