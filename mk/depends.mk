@@ -1,5 +1,8 @@
 # Dependencies
 
+# Don't check for Rust/Cargo if you will be using Nix
+ifneq ($(NIX_SHELL_BUILD),1)
+
 # Don't check for Rust/Cargo if you will be using Podman
 ifneq ($(PODMAN_BUILD),1)
 
@@ -25,4 +28,5 @@ ifeq ($(shell env -u RUSTUP_TOOLCHAIN cargo install --list | grep '^just v$(JUST
 $(error just $(JUST_VERSION) not found, run "cargo install --force --version $(JUST_VERSION) just")
 endif
 
+endif
 endif
