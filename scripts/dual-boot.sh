@@ -38,7 +38,7 @@ then
     exit 1
 fi
 
-BOOTLOADER="cookbook/recipes/bootloader/target/${ARCH}-unknown-redox/stage/boot/bootloader.efi"
+BOOTLOADER="cookbook/recipes/core/bootloader/target/${ARCH}-unknown-redox/stage/boot/bootloader.efi"
 set -x
 sudo mkdir -pv "${ESP}/EFI" "${ESP}/loader/entries"
 sudo cp -v "${BOOTLOADER}" "${ESP}/EFI/redox.efi"
