@@ -15,4 +15,4 @@ lived
 redoxfs --uuid $REDOXFS_UUID file $REDOXFS_BLOCK
 cd file:
 export PATH file:/bin
-run.d /etc/init.d
+run.d /usr/lib/init.d /etc/init.d
