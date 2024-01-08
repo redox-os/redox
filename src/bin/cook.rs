@@ -1,6 +1,5 @@
 use cookbook::blake3::blake3_progress;
 use cookbook::recipe::{Recipe, SourceRecipe, BuildKind, BuildRecipe, PackageRecipe};
-use cookbook::sha256::sha256_progress;
 use cookbook::recipe_find::recipe_find;
 use std::{
     env,
@@ -250,7 +249,7 @@ fi"#);
             command.arg("submodule").arg("update").arg("--init").arg("--recursive");
             run_command(command)?;
         },
-        Some(SourceRecipe::Tar { tar, blake3, sha256, patches, script }) => {
+        Some(SourceRecipe::Tar { tar, blake3, patches, script }) => {
             if ! source_dir.is_dir() {
                 // Download tar
                 //TODO: replace wget
@@ -290,26 +289,6 @@ fi"#);
                         source_tar.display(),
                         source_tar_blake3
                     );
-                }
-
-                //TODO: if blake3 is set, remove sha256
-                if let Some(sha256) = sha256 {
-                    // Calculate sha256
-                    let source_tar_sha256 = sha256_progress(&source_tar).map_err(|err| format!(
-                        "failed to calculate sha256 of '{}': {}\n{:?}",
-                        source_tar.display(),
-                        err,
-                        err
-                    ))?;
-
-                    // Check if it matches recipe
-                    if &source_tar_sha256 != sha256 {
-                        return Err(format!(
-                            "calculated sha256 '{}' does not match recipe sha256 '{}'",
-                            source_tar_sha256,
-                            sha256
-                        ));
-                    }
                 }
 
                 // Create source.tmp
@@ -430,7 +409,7 @@ fn build(recipe_dir: &Path, source_dir: &Path, target_dir: &Path, build: &BuildR
         eprintln!("DEBUG: '{}' newer than '{}'", source_dir.display(), stage_dir.display());
         remove_all(&stage_dir)?;
     }
-    
+
     if ! stage_dir.is_dir() {
         // Create stage.tmp
         let stage_dir_tmp = target_dir.join("stage.tmp");
