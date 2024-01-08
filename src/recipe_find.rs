@@ -1,3 +1,4 @@
+use std::ffi::OsStr;
 use std::fs::{self};
 use std::path::{Path, PathBuf};
 
@@ -8,11 +9,11 @@ pub fn recipe_find(recipe: &str, dir: &Path) -> Result<Option<PathBuf>, String> 
     }
     for entry in fs::read_dir(dir).map_err(|e| e.to_string())? {
         let entry = entry.map_err(|e| e.to_string())?;
-        if entry.file_name().to_string_lossy() == "recipe.sh"
-            || entry.file_name().to_string_lossy() == "recipe.toml"
+        if entry.file_name() == OsStr::new("recipe.sh")
+            || entry.file_name() == OsStr::new("recipe.toml")
         {
             // println!("recipe is {:?}", dir.file_name());
-            if dir.file_name().unwrap().to_string_lossy() != recipe {
+            if dir.file_name().unwrap() != OsStr::new(recipe) {
                 return Ok(None);
             } else {
                 return Ok(Some(dir.to_path_buf()));
@@ -51,8 +52,8 @@ pub fn list_recipes(dir: &Path) -> Result<Vec<String>, String> {
     }
     for entry in fs::read_dir(dir).map_err(|e| e.to_string())? {
         let entry = entry.map_err(|e| e.to_string())?;
-        if entry.file_name().to_string_lossy() == "recipe.sh"
-            || entry.file_name().to_string_lossy() == "recipe.toml"
+        if entry.file_name() == OsStr::new("recipe.sh")
+            || entry.file_name() == OsStr::new("recipe.toml")
         {
             recipes.push(dir.file_name().ok_or(format!("could not unwrap the filename for {:?}", dir))?.to_string_lossy().to_string());
             return Ok(recipes);
