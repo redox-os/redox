@@ -18,13 +18,13 @@ orbutils-launcher = {}
 orbutils-orblogin = {}
 
 [[files]]
-path = "/etc/init.d/00_drivers"
+path = "/usr/lib/init.d/00_drivers"
 data = """
 pcid /etc/pcid.d/
 """
 
 [[files]]
-path = "/etc/init.d/20_orbital"
+path = "/usr/lib/init.d/20_orbital"
 data = """
 orbital orblogin launcher
 """

@@ -18,7 +18,7 @@ orbterm = {}
 orbutils = {}
 
 [[files]]
-path = "/etc/init.d/20_orbital"
+path = "/usr/lib/init.d/20_orbital"
 data = """
 audiod
 orbital orblogin launcher
@@ -26,7 +26,7 @@ orbital orblogin launcher
 
 # Override console config to not switch to VT 2
 [[files]]
-path = "/etc/init.d/30_console"
+path = "/usr/lib/init.d/30_console"
 data = """
 getty 2
 getty debug: -J

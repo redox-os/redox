@@ -11,14 +11,14 @@ netutils = {}
 
 ## Driver init
 [[files]]
-path = "/etc/init.d/00_drivers"
+path = "/usr/lib/init.d/00_drivers"
 data = """
 pcid /etc/pcid.d/
 """
 
 ## Network init
 [[files]]
-path = "/etc/init.d/10_net"
+path = "/usr/lib/init.d/10_net"
 data = """
 smolnetd
 dnsd
