@@ -17,7 +17,7 @@ userutils = {}
 uutils = {}
 
 [[files]]
-path = "/etc/init.d/30_console"
+path = "/usr/lib/init.d/30_console"
 data = """
 getty 2
 getty debug: -J
