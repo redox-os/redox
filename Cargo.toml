@@ -26,7 +26,6 @@ pkgar = "0.1.7"
 pkgar-keys = "0.1.0"
 redoxer = "0.2"
 serde = { version = "1.0.110", features = ["derive"] }
-sha2 = "0.10"
 termion = "1.5.5"
 toml = "0.5.6"
 walkdir = "2.3.1"
