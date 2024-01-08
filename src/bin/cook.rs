@@ -444,6 +444,16 @@ export PKG_CONFIG_PATH=
 export PKG_CONFIG_LIBDIR="${COOKBOOK_SYSROOT}/lib/pkgconfig"
 export PKG_CONFIG_SYSROOT_DIR="${COOKBOOK_SYSROOT}"
 
+# To build the debug version of a Cargo program, add COOKBOOK_DEBUG=true, and
+# to not strip symbols from the final package, add COOKBOOK_NOSTRIP=true to the recipe
+# (or to your environment) before calling cookbook_cargo or cookbook_cargo_packages
+build_type=release
+if [ ! -z "${COOKBOOK_DEBUG}" ]
+then
+    install_flags=--debug
+    build_type=debug
+fi
+
 # cargo template
 COOKBOOK_CARGO="${COOKBOOK_REDOXER}"
 function cookbook_cargo {
@@ -452,6 +462,7 @@ function cookbook_cargo {
         --root "${COOKBOOK_STAGE}/usr" \
         --locked \
         --no-track \
+        ${install_flags} \
         "$@"
 }
 
@@ -463,10 +474,10 @@ function cookbook_cargo_examples {
         "${COOKBOOK_CARGO}" build \
             --manifest-path "${COOKBOOK_SOURCE}/Cargo.toml" \
             --example "${example}" \
-            --release
+            --${build_type}
         mkdir -pv "${COOKBOOK_STAGE}/usr/bin"
         cp -v \
-            "target/${TARGET}/release/examples/${example}" \
+            "target/${TARGET}/${build_type}/examples/${example}" \
             "${COOKBOOK_STAGE}/usr/bin/${recipe}_${example}"
     done
 }
@@ -479,10 +490,10 @@ function cookbook_cargo_packages {
         "${COOKBOOK_CARGO}" build \
             --manifest-path "${COOKBOOK_SOURCE}/Cargo.toml" \
             --package "${package}" \
-            --release
+            --${build_type}
         mkdir -pv "${COOKBOOK_STAGE}/usr/bin"
         cp -v \
-            "target/${TARGET}/release/${package}" \
+            "target/${TARGET}/${build_type}/${package}" \
             "${COOKBOOK_STAGE}/usr/bin/${recipe}_${package}"
     done
 }
@@ -506,12 +517,12 @@ function cookbook_configure {
 
         let post_script = r#"# Common post script
 # Strip binaries
-if [ -d "${COOKBOOK_STAGE}/bin" ]
+if [ -d "${COOKBOOK_STAGE}/bin" ] && [ -z "${COOKBOOK_NOSTRIP}" ]
 then
     find "${COOKBOOK_STAGE}/bin" -type f -exec "${TARGET}-strip" -v {} ';'
 fi
 
-if [ -d "${COOKBOOK_STAGE}/usr/bin" ]
+if [ -d "${COOKBOOK_STAGE}/usr/bin" ] && [ -z "${COOKBOOK_NOSTRIP}" ]
 then
     find "${COOKBOOK_STAGE}/usr/bin" -type f -exec "${TARGET}-strip" -v {} ';'
 fi
