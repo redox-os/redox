@@ -36,6 +36,28 @@ data = """
 redox
 """
 
+# https://www.freedesktop.org/software/systemd/man/latest/os-release.html
+[[files]]
+path = "/usr/lib/os-release"
+data = """
+PRETTY_NAME = "Redox OS 0.8.0"
+NAME = "Redox OS"
+VERSION_ID="0.8.0"
+VERSION="0.8.0"
+ID="redox-os"
+
+HOME_URL="https://redox-os.org/"
+DOCUMENTATION_URL="https://redox-os.org/docs/"
+SUPPORT_URL="https://redox-os.org/community/"
+"""
+# FIXME maybe add VARIANT= and VARIANT_ID= keys depending on the chosen configuration?
+
+[[files]]
+path = "/etc/os-release"
+data = "../usr/lib/os-release"
+symlink = true
+
+# FIXME remove once screenfetch supports reading os-release instead
 [[files]]
 path = "/etc/redox-release"
 data = "0.8.0"
