@@ -14,7 +14,6 @@ extrautils = {}
 ion = {}
 smith = {}
 userutils = {}
-uutils = {}
 
 [[files]]
 path = "/etc/init.d/30_console"
