@@ -20,7 +20,6 @@ gnu-make = {}
 netdb = {}
 resist = {}
 userutils = {}
-uutils = {}
 
 # Override to not background dhcpd
 [[files]]
