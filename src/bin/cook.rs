@@ -449,7 +449,7 @@ COOKBOOK_CARGO="${COOKBOOK_REDOXER}"
 function cookbook_cargo {
     "${COOKBOOK_CARGO}" install \
         --path "${COOKBOOK_SOURCE}" \
-        --root "${COOKBOOK_STAGE}" \
+        --root "${COOKBOOK_STAGE}/usr" \
         --locked \
         --no-track \
         "$@"
