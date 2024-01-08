@@ -49,7 +49,8 @@ mkdir -pv "${COOKBOOK_STAGE}/bin"
 for bin in "${BINS[@]}"
 do
     "${COOKBOOK_CARGO}" rustc --release \
-        --manifest-path "${COOKBOOK_SOURCE}/${bin}/Cargo.toml" \
+        --manifest-path "${COOKBOOK_SOURCE}/Cargo.toml" \
+        -p "${bin}" \
         --bin "${bin}" \
         -- \
         -C opt-level=s \
