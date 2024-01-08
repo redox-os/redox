@@ -27,6 +27,14 @@ elif [ -e ${COOKBOOK_RECIPE}/${TARGET}/init.rc ]; then
     cp "${COOKBOOK_RECIPE}/${TARGET}/init.rc" "${COOKBOOK_BUILD}/initfs/etc/init.rc"
 fi
 
+# Move /usr/bin files to /bin
+mkdir -p "${COOKBOOK_BUILD}/initfs/bin"
+if [ -d "${COOKBOOK_BUILD}/initfs/usr/bin" ]
+then
+    mv "${COOKBOOK_BUILD}/initfs/usr/bin/"* "${COOKBOOK_BUILD}/initfs/bin"
+    rmdir "${COOKBOOK_BUILD}/initfs/usr/bin"
+fi
+
 for bin in ${INITFS_RM_BINS}; do
   rm -f "${COOKBOOK_BUILD}/initfs/bin/$bin"
 done
