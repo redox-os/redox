@@ -7,7 +7,7 @@ script = """
 cookbook_cargo --bin zerod
 
 # TODO: symlinks aren't supported by redox-initfs
-#ln -sv zerod "${COOKBOOK_STAGE}/bin/nulld"
+#ln -sv zerod "${COOKBOOK_STAGE}/usr/bin/nulld"
 
-cp "${COOKBOOK_STAGE}/bin/zerod" "${COOKBOOK_STAGE}/bin/nulld"
+cp "${COOKBOOK_STAGE}/usr/bin/zerod" "${COOKBOOK_STAGE}/usr/bin/nulld"
 """

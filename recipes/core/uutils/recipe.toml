@@ -80,6 +80,6 @@ BINS=(
 
 for bin in "${BINS[@]}"
 do
-  ln -sv coreutils "${COOKBOOK_STAGE}/bin/$bin"
+  ln -sv coreutils "${COOKBOOK_STAGE}/usr/bin/$bin"
 done
 """
