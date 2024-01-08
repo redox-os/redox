@@ -15,11 +15,16 @@ initfs = {}
 ipcd = {}
 kernel = {}
 ptyd = {}
+uutils = {}
 
 ## Configuration files
 [[files]]
 path = "/usr/lib/init.d/00_base"
 data = """
+# clear and recreate tmpdir with 0o1777 permission
+rm -r /tmp
+mkdir -m a=rwxt /tmp
+
 ipcd
 ptyd
 escalated
@@ -85,13 +90,6 @@ mode = 0o755
 path = "/share"
 data = "usr/share"
 symlink = true
-
-## /tmp directory with special mode
-[[files]]
-path = "/tmp"
-data = ""
-directory = true
-mode = 0o1777
 
 ## Device file symlinks
 [[files]]

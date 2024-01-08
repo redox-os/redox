@@ -29,7 +29,6 @@ resist = {}
 smith = {}
 terminfo = {}
 userutils = {}
-uutils = {}
 vim = {}
 
 [[files]]
