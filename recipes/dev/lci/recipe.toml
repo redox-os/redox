@@ -1,0 +1,5 @@
+[source]
+git = "https://github.com/jD91mZM2/rust-lci"
+
+[build]
+template = "cargo"
