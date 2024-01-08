@@ -33,21 +33,20 @@ CONTAINERFILE?=podman/redox-base-containerfile
 
 # Per host variables
 HOST_CARGO=env -u RUSTUP_TOOLCHAIN cargo
+export NPROC=nproc
+export REDOX_MAKE=make
+HOST_TARGET := $(shell rustc -vV | grep host | cut -d: -f2 | tr -d " ")
 UNAME := $(shell uname)
 ifeq ($(UNAME),Darwin)
 	FUMOUNT=umount
 	export NPROC=sysctl -n hw.ncpu
-	export REDOX_MAKE=make
 	VB_AUDIO=coreaudio
 	VBM=/Applications/VirtualBox.app/Contents/MacOS/VBoxManage
-	HOST_TARGET ?= $(HOST_ARCH)-apple-darwin
 else ifeq ($(UNAME),FreeBSD)
 	FUMOUNT=sudo umount
-	export NPROC=sysctl -n hw.ncpu
 	export REDOX_MAKE=gmake
-	VB_AUDIO=pulse # To check, will probaly be OSS on most setups
+	VB_AUDIO=pulse # To check, will probably be OSS on most setups
 	VBM=VBoxManage
-	HOST_TARGET ?= $(HOST_ARCH)-unknown-freebsd
 else
 	# Detect which version of the fusermount binary is available.
 	ifneq (, $(shell which fusermount3))
@@ -56,11 +55,8 @@ else
 		FUMOUNT=fusermount -u
 	endif
 
-	export NPROC=nproc
-	export REDOX_MAKE=make
 	VB_AUDIO=pulse
 	VBM=VBoxManage
-	HOST_TARGET ?= $(HOST_ARCH)-unknown-linux-gnu
 endif
 
 ifneq ($(UNAME),Linux)
