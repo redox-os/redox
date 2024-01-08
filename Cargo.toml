@@ -20,7 +20,7 @@ name = "cookbook"
 path = "src/lib.rs"
 
 [dependencies]
-blake3 = "1"
+blake3 = "1.5"
 pbr = "1.0.2"
 pkgar = "0.1.7"
 pkgar-keys = "0.1.0"
