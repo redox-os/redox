@@ -485,10 +485,10 @@ function cookbook_cargo_examples {
             --manifest-path "${COOKBOOK_SOURCE}/Cargo.toml" \
             --example "${example}" \
             --release
-        mkdir -pv "${COOKBOOK_STAGE}/bin"
+        mkdir -pv "${COOKBOOK_STAGE}/usr/bin"
         cp -v \
             "target/${TARGET}/release/examples/${example}" \
-            "${COOKBOOK_STAGE}/bin/${recipe}_${example}"
+            "${COOKBOOK_STAGE}/usr/bin/${recipe}_${example}"
     done
 }
 
@@ -501,10 +501,10 @@ function cookbook_cargo_packages {
             --manifest-path "${COOKBOOK_SOURCE}/Cargo.toml" \
             --package "${package}" \
             --release
-        mkdir -pv "${COOKBOOK_STAGE}/bin"
+        mkdir -pv "${COOKBOOK_STAGE}/usr/bin"
         cp -v \
             "target/${TARGET}/release/${package}" \
-            "${COOKBOOK_STAGE}/bin/${recipe}_${package}"
+            "${COOKBOOK_STAGE}/usr/bin/${recipe}_${package}"
     done
 }
 
@@ -532,10 +532,20 @@ then
     find "${COOKBOOK_STAGE}/bin" -type f -exec "${TARGET}-strip" -v {} ';'
 fi
 
+if [ -d "${COOKBOOK_STAGE}/usr/bin" ]
+then
+    find "${COOKBOOK_STAGE}/usr/bin" -type f -exec "${TARGET}-strip" -v {} ';'
+fi
+
 # Remove libtool files
 if [ -d "${COOKBOOK_STAGE}/lib" ]
 then
     find "${COOKBOOK_STAGE}/lib" -type f -name '*.la' -exec rm -fv {} ';'
+fi
+
+if [ -d "${COOKBOOK_STAGE}/usr/lib" ]
+then
+    find "${COOKBOOK_STAGE}/usr/lib" -type f -name '*.la' -exec rm -fv {} ';'
 fi
 
 # Remove cargo install files
