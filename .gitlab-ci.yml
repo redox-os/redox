@@ -14,19 +14,12 @@ before_script:
         bison \
         build-essential \
         curl \
-        dosfstools \
         flex \
         fuse \
-        genisoimage \
         git \
-        gnupg \
         libfuse-dev \
         nasm \
-        parted \
         pkg-config \
-        software-properties-common \
-        syslinux \
-        syslinux-utils \
         texinfo \
         wget &&
     curl https://sh.rustup.rs -sSf | sh -s -- -y --default-toolchain none
