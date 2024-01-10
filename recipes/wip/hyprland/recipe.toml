@@ -19,6 +19,6 @@ dependencies = [
     "libxfixes",
 ]
 script = """
-mkdir -pv "${COOKBOOK_STAGE}"/home/user/.local/share/wayland-sessions
-cp -rv "${COOKBOOK_SOURCE}"/example/hyprland.desktop "${COOKBOOK_STAGE}"/home/user/.local/share/wayland-sessions
+mkdir -pv "${COOKBOOK_STAGE}"/usr/share/wayland-sessions
+cp -rv "${COOKBOOK_SOURCE}"/example/hyprland.desktop "${COOKBOOK_STAGE}"/usr/share/wayland-sessions
 """

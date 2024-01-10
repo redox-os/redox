@@ -12,9 +12,9 @@ dependencies = [
     "gdk-pixbuf",
 ]
 script = """
-mkdir -pv "${COOKBOOK_STAGE}"/home/user/.local/share/applications
-mkdir -pv "${COOKBOOK_STAGE}"/home/user/.local/share/icons/hicolor/scalable/apps
-cp -rv "${COOKBOOK_SOURCE}"/satty.desktop "${COOKBOOK_STAGE}"/home/user/.local/share/applications
-cp -rv "${COOKBOOK_SOURCE}"/assets/satty.svg "${COOKBOOK_STAGE}"/home/user/.local/share/icons/hicolor/scalable/apps
+mkdir -pv "${COOKBOOK_STAGE}"/usr/share/applications
+mkdir -pv "${COOKBOOK_STAGE}"/usr/share/icons/hicolor/scalable/apps
+cp -rv "${COOKBOOK_SOURCE}"/satty.desktop "${COOKBOOK_STAGE}"/usr/share/applications
+cp -rv "${COOKBOOK_SOURCE}"/assets/satty.svg "${COOKBOOK_STAGE}"/usr/share/icons/hicolor/scalable/apps
 cookbook_cargo_packages satty
 """
