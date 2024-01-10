@@ -51,7 +51,7 @@ else
 endif
 
 pull:
-	git pull --recurse-submodules
+	git pull
 	git submodule sync --recursive
 	git submodule update --recursive --init
 
