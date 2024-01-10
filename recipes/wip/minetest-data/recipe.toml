@@ -5,6 +5,6 @@ rev = "b9c089474cc343b37f90cb8cefc4b5553af2e9ea"
 [build]
 template = "custom"
 script = """
-mkdir -pv "${COOKBOOK_STAGE}"/home/user/.minetest/games/minetest_game
-cp -rv "${COOKBOOK_SOURCE}"/* "${COOKBOOK_STAGE}"/home/user/.minetest/games/minetest_game
+mkdir -pv "${COOKBOOK_STAGE}"/usr/share/minetest/games/minetest_game
+cp -rv "${COOKBOOK_SOURCE}"/* "${COOKBOOK_STAGE}"/usr/share/minetest/games/minetest_game
 """
