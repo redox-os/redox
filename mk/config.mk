@@ -35,7 +35,7 @@ CONTAINERFILE?=podman/redox-base-containerfile
 HOST_CARGO=env -u RUSTUP_TOOLCHAIN cargo
 export NPROC=nproc
 export REDOX_MAKE=make
-HOST_TARGET := $(shell rustc -vV | grep host | cut -d: -f2 | tr -d " ")
+HOST_TARGET := $(shell env -u RUSTUP_TOOLCHAIN rustc -vV | grep host | cut -d: -f2 | tr -d " ")
 UNAME := $(shell uname)
 ifeq ($(UNAME),Darwin)
 	FUMOUNT=umount
