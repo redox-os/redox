@@ -1,17 +1,17 @@
-#TODO wrong script
+#TODO not compiled or tested
 [source]
 git = "https://github.com/w-henderson/Humphrey"
 [build]
 template = "custom"
 script = """
-package="humphrey_server"
+binary=humphrey_server
 "${COOKBOOK_CARGO}" build \
             --manifest-path "${COOKBOOK_SOURCE}/Cargo.toml" \
-            --package "${package}" \
+            --bin "${binary}" \
             --release
-           --all-features
-        mkdir -pv "${COOKBOOK_STAGE}/bin"
+            --all-features
+        mkdir -pv "${COOKBOOK_STAGE}/usr/bin"
         cp -v \
-            "target/${TARGET}/release/${package}" \
-            "${COOKBOOK_STAGE}/bin/${package}"
+            "target/${TARGET}/release/${binary}" \
+            "${COOKBOOK_STAGE}/usr/bin/${binary}"
 """

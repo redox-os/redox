@@ -8,10 +8,10 @@ dependencies = [
     "libwayland",
 ]
 script = """
-mkdir -pv "${COOKBOOK_STAGE}"/bin
+mkdir -pv "${COOKBOOK_STAGE}"/usr/bin
 mkdir -pv "${COOKBOOK_STAGE}"/home/user/.local/share/wayland-sessions
 mkdir -pv "${COOKBOOK_STAGE}"/home/user/.local/share/xdg-desktop-portal
-cp -rv "${COOKBOOK_SOURCE}"/resources/niri-session "${COOKBOOK_STAGE}"/bin
+cp -rv "${COOKBOOK_SOURCE}"/resources/niri-session "${COOKBOOK_STAGE}"/usr/bin
 cp -rv "${COOKBOOK_SOURCE}"/resources/niri.desktop "${COOKBOOK_STAGE}"/home/user/.local/share/wayland-sessions
 cp -rv "${COOKBOOK_SOURCE}"/resources/niri-portals.conf "${COOKBOOK_STAGE}"/home/user/.local/share/xdg-desktop-portal
 cookbook_cargo

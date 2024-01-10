@@ -4,7 +4,7 @@ git = "https://github.com/justchokingaround/jerry"
 [build]
 template = "custom"
 script = """
-mkdir -pv "${COOKBOOK_STAGE}"/bin
-cp "${COOKBOOK_SOURCE}"/jerry.sh "${COOKBOOK_STAGE}"/bin/jerry
-chmod a+x "${COOKBOOK_STAGE}"/bin/jerry
+mkdir -pv "${COOKBOOK_STAGE}"/usr/bin
+cp "${COOKBOOK_SOURCE}"/jerry.sh "${COOKBOOK_STAGE}"/usr/bin/jerry
+chmod a+x "${COOKBOOK_STAGE}"/usr/bin/jerry
 """

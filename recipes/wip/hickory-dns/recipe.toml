@@ -14,8 +14,8 @@ binary=hickory-dns
             --bin "${binary}" \
             --release
             --all-features
-        mkdir -pv "${COOKBOOK_STAGE}/bin"
+        mkdir -pv "${COOKBOOK_STAGE}/usr/bin"
         cp -v \
             "target/${TARGET}/release/${binary}" \
-            "${COOKBOOK_STAGE}/bin/${binary}"
+            "${COOKBOOK_STAGE}/usr/bin/${binary}"
 """

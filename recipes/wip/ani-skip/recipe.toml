@@ -4,9 +4,9 @@ git = "https://github.com/synacktraa/ani-skip"
 [build]
 template = "custom"
 script = """
-mkdir -pv "${COOKBOOK_STAGE}"/bin
+mkdir -pv "${COOKBOOK_STAGE}"/usr/bin
 mkdir -pv "${COOKBOOK_STAGE}"/home/user/.config/mpv/scripts
-cp "${COOKBOOK_SOURCE}"/ani-skip "${COOKBOOK_STAGE}"/bin/ani-skip
+cp "${COOKBOOK_SOURCE}"/ani-skip "${COOKBOOK_STAGE}"/usr/bin/ani-skip
 cp "${COOKBOOK_SOURCE}"/skip.lua "${COOKBOOK_STAGE}"/home/user/.config/mpv/scripts
-chmod a+x "${COOKBOOK_STAGE}"/bin/ani-skip
+chmod a+x "${COOKBOOK_STAGE}"/usr/bin/ani-skip
 """
