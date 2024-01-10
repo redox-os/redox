@@ -5,7 +5,7 @@ rev = "4a77bca5d95ae755ab5ac129c2db2025feab217b"
 [build]
 template = "custom"
 script = """
-mkdir -pv "${COOKBOOK_STAGE}"/bin
-cp "${COOKBOOK_SOURCE}"/ani-cli "${COOKBOOK_STAGE}"/bin/ani-cli
-chmod a+x "${COOKBOOK_STAGE}"/bin/ani-cli
+mkdir -pv "${COOKBOOK_STAGE}"/usr/bin
+cp "${COOKBOOK_SOURCE}"/ani-cli "${COOKBOOK_STAGE}"/usr/bin/ani-cli
+chmod a+x "${COOKBOOK_STAGE}"/usr/bin/ani-cli
 """

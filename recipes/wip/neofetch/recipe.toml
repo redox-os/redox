@@ -5,7 +5,7 @@ rev = "60d07dee6b76769d8c487a40639fb7b5a1a7bc85"
 [build]
 template = "custom"
 script = """
-mkdir -pv "${COOKBOOK_STAGE}"/bin
-cp "${COOKBOOK_SOURCE}"/neofetch "${COOKBOOK_STAGE}"/bin/neofetch
-chmod a+x "${COOKBOOK_STAGE}"/bin/neofetch
+mkdir -pv "${COOKBOOK_STAGE}"/usr/bin
+cp "${COOKBOOK_SOURCE}"/neofetch "${COOKBOOK_STAGE}"/usr/bin/neofetch
+chmod a+x "${COOKBOOK_STAGE}"/usr/bin/neofetch
 """
