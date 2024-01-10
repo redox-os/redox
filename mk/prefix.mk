@@ -73,6 +73,9 @@ $(PREFIX)/rust-install: $(PREFIX)/rust-install.tar.gz
 
 else
 
+$(ROOT)/rust:
+	git submodule update --init --recursive --checkout rust
+
 PREFIX_BASE_INSTALL=$(PREFIX)/rust-freestanding-install
 PREFIX_FREESTANDING_INSTALL=$(PREFIX)/gcc-freestanding-install
 
