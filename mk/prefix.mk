@@ -179,6 +179,7 @@ else
 	$(MAKE) -j `$(NPROC)` install DESTDIR="$(ROOT)/$@.partial"
 	rm -rf "$(PREFIX)/rust-freestanding-build"
 	mkdir -p "$@.partial/lib/rustlib/$(HOST_TARGET)/bin"
+	mkdir -p "$@.partial/lib/rustlib/$(HOST_TARGET)/lib"
 	cd "$@.partial" && $(PREFIX_STRIP)
 	touch "$@.partial"
 	mv "$@.partial" "$@"
@@ -269,6 +270,7 @@ else
 	$(MAKE) -j `$(NPROC)` install DESTDIR="$(ROOT)/$@.partial"
 	rm -rf "$(PREFIX)/rust-build"
 	mkdir -p "$@.partial/lib/rustlib/$(HOST_TARGET)/bin"
+	mkdir -p "$@.partial/lib/rustlib/$(HOST_TARGET)/lib"
 	cd "$@.partial" && find . -name *.old -exec rm {} ';' && $(PREFIX_STRIP)
 	touch "$@.partial"
 	mv "$@.partial" "$@"
