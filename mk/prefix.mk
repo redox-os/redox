@@ -37,12 +37,6 @@ else
 	rm -rf "$@.partial/$(TARGET)/include/"*
 	cp -r "$(PREFIX)/rust-install/$(TARGET)/include/c++" "$@.partial/$(TARGET)/include/c++"
 	cp -r "$(PREFIX)/rust-install/lib/rustlib/$(HOST_TARGET)/lib/" "$@.partial/lib/rustlib/$(HOST_TARGET)/"
-# Temporary hack to avoid breaking stuff before new pre-build prefix tarball with fixed rustlib/src is build and served at https://static.redox-os.org/toolchain/$(TARGET)/relibc-install.tar.gz 
-ifeq ($(PREFIX_BINARY),1)
-	rm -rf $@.partial/lib/rustlib/src
-	mkdir $@.partial/lib/rustlib/src
-	ln -s $(ROOT)/rust $@.partial/lib/rustlib/src
-endif
 	cd "$<" && \
 	export PATH="$(ROOT)/$@.partial/bin:$$PATH" && \
 	export CARGO="env -u CARGO cargo" && \
@@ -78,6 +72,9 @@ $(PREFIX)/rust-install: $(PREFIX)/rust-install.tar.gz
 	mv "$@.partial" "$@"
 
 else
+
+$(ROOT)/rust:
+	git submodule update --init --recursive --checkout rust
 
 PREFIX_BASE_INSTALL=$(PREFIX)/rust-freestanding-install
 PREFIX_FREESTANDING_INSTALL=$(PREFIX)/gcc-freestanding-install
