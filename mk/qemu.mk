@@ -8,6 +8,11 @@ ifeq ($(ARCH),i686)
 	QEMU_MACHINE?=pc
 	QEMU_CPU?=pentium2
 	QEMUFLAGS+=-smp 1 -m 1024
+
+	# Default to using kvm when arch is i686 and host is x86_64
+	ifeq ($(HOST_ARCH),x86_64)
+		kvm?=yes
+	endif
 else ifeq ($(ARCH),x86_64)
 	QEMU_ARCH=x86_64
 	QEMU_MACHINE?=q35
@@ -36,6 +41,8 @@ else
 $(error Unsupported ARCH for QEMU "$(ARCH)"))
 endif
 
+# If host and target arch do not match, disable kvm
+# (unless overridden above or by environment)
 ifneq ($(ARCH),$(HOST_ARCH))
 	kvm?=no
 endif
