@@ -29,7 +29,6 @@ nano = {}
 perg = {}
 relibc-tests = {}
 ripgrep = {}
-rustpython = {}
 sed = {}
 shellharden = {}
 xz = {}
