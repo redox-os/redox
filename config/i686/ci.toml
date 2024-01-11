@@ -41,5 +41,6 @@ resist = {}
 smith = {}
 userutils = {}
 uutils = {}
+vim = {}
 
 #TODO: Add more packages
