@@ -1,3 +1,14 @@
 # Default desktop configuration
 
 include = ["../desktop-minimal.toml"]
+
+# Override the default settings here
+
+# General settings
+[general]
+# Filesystem size in MiB
+# filesystem_size = 1024
+
+# Package settings
+[packages]
+# example = {}
