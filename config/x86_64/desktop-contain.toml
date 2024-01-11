@@ -2,6 +2,17 @@
 
 include = ["../desktop.toml"]
 
+# Override the default settings here
+
+# General settings
+[general]
+# Filesystem size in MiB
+# filesystem_size = 1024
+
+# Package settings
+[packages]
+# example = {}
+
 # Override orbital init to use contain_orblogin
 [[files]]
 path = "/etc/init.d/20_orbital"
