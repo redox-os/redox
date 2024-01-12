@@ -1,11 +1,30 @@
-#TODO probably wrong tarball
-# filesystem support - https://wiki.samba.org/index.php/File_System_Support
+#TODO: needs gnutls3 to compile
 [source]
-tar = "https://download.samba.org/pub/samba/samba-4.19.3.tar.gz"
+git = "https://gitlab.redox-os.org/redox-os/samba.git"
+upstream = "https://github.com/samba-team/samba.git"
+
 [build]
-template = "configure"
+template = "custom"
 dependencies = [
-    "gnutls",
-    "zlib",
-    "kerberos5",
+    "gnutls3"
 ]
+script = """
+rsync -av --delete --exclude .git "${COOKBOOK_SOURCE}/" ./
+cp -v "${COOKBOOK_RECIPE}/answers.txt" answers.txt
+
+COOKBOOK_CONFIGURE_FLAGS=(
+    --builtin-libraries=ALL
+    --cross-compile
+    --cross-answers=answers.txt
+    --disable-python
+    --disable-rpath
+    --enable-fhs
+    --host="${TARGET}"
+    --localstatedir=/var
+    --prefix=/usr
+    --sysconfdir=/etc
+    --with-static-modules=ALL
+    --without-ad-dc
+)
+cookbook_configure
+"""
