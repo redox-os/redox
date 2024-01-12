@@ -108,5 +108,6 @@ keyboard-sfx = {}
 libc-bench = {}
 noto-color-emoji = {}
 pop-icon-theme = {}
+shared-mime-info = {}
 timidity = {}
 ttf-hack = {}
