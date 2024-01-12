@@ -3,8 +3,14 @@
 # Don't check for Rust/Cargo if you will be using Podman
 ifneq ($(PODMAN_BUILD),1)
 
+
+# Don't check for Rust/Cargo if you will be using Nix
+ifneq ($(NIX_SHELL_BUILD),1)
+
 ifeq ($(shell which rustup),)
 $(error rustup not found, install from "https://rustup.rs/")
+endif
+
 endif
 
 ifeq ($(shell which cbindgen),)
