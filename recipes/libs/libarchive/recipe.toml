@@ -1,5 +1,6 @@
-#TODO Undefined reference to "getgrnam" and "getgrgid"
 [source]
 tar = "https://libarchive.org/downloads/libarchive-3.6.2.tar.xz"
+blake3 = "f98695fe81235a74fa3fc2c3ba0f0d4f13ea15f9be3850b83e304cf5d78be710"
+
 [build]
 template = "configure"
