@@ -14,30 +14,25 @@ before_script:
         bison \
         build-essential \
         curl \
-        dosfstools \
         flex \
         fuse \
-        genisoimage \
         git \
-        gnupg \
         libfuse-dev \
         nasm \
-        parted \
         pkg-config \
-        software-properties-common \
-        syslinux \
-        syslinux-utils \
         texinfo \
-        wget &&
+        wget \
+        zstd &&
     curl https://sh.rustup.rs -sSf | sh -s -- -y --default-toolchain none
 
 img:
     script:
      - |
         source "$HOME/.cargo/env" &&
-        cargo install --version 0.1.1 cargo-config &&
-        cargo install --version 1.16.0 just &&
-        cargo install --version 0.26.0 cbindgen &&
+        curl -L --proto '=https' --tlsv1.2 -sSf https://raw.githubusercontent.com/cargo-bins/cargo-binstall/main/install-from-binstall-release.sh | bash &&
+        cargo binstall --no-confirm --version 0.1.1 cargo-config &&
+        cargo binstall --no-confirm --version 1.16.0 just &&
+        cargo binstall --no-confirm --version 0.26.0 cbindgen &&
         cargo build --manifest-path installer/Cargo.toml --release &&
         make ci-img IMG_TAG=$CI_COMMIT_REF_NAME REPO_BINARY=1
     artifacts:
