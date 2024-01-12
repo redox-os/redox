@@ -39,6 +39,7 @@ periodictable = {}
 cosmic-icons = {}
 intel-one-mono = {}
 pop-icon-theme = {}
+shared-mime-info = {}
 
 # Shell Apps
 binutils = {}
