@@ -1,9 +1,9 @@
-#TODO make gnutls work
 [source]
-tar = "https://ftp.gnu.org/gnu/nettle/nettle-3.8.1.tar.gz"
+tar = "https://ftp.gnu.org/gnu/nettle/nettle-3.9.1.tar.gz"
+blake3 = "e4bfbda32f4fdf5ed96c152efe3a3867193b690faa5378d02a2a6fd052ee3393"
+
 [build]
 template = "configure"
-depencencies = [
-	"gnutls",
-    "libgmp",
+dependencies = [
+    "libgmp"
 ]
