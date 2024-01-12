@@ -14,6 +14,7 @@ COOKBOOK_CONFIGURE_FLAGS+=(
     --with-included-libtasn1
     --with-included-unistring
     --without-p11-kit
+    gl_cv_socket_ipv6=no
 )
 cookbook_configure
 """
