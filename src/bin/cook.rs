@@ -356,12 +356,26 @@ fi"#);
 }
 
 fn build(recipe_dir: &Path, source_dir: &Path, target_dir: &Path, build: &BuildRecipe) -> Result<PathBuf, String> {
+    let mut dep_pkgars = vec![];
+    for dependency in build.dependencies.iter() {
+        //TODO: sanitize name
+        let dependency_dir = recipe_find(dependency, Path::new("recipes"))?;
+        if dependency_dir.is_none() {
+            return Err(format!(
+                "failed to find recipe directory '{}'",
+                dependency
+            ));
+        }
+        dep_pkgars.push(dependency_dir.unwrap().join("target").join(redoxer::target()).join("stage.pkgar"));
+    }
+
     let source_modified = modified_dir_ignore_git(source_dir)?;
+    let deps_modified = dep_pkgars.iter().map(|pkgar| modified(pkgar)).max().unwrap_or(Ok(SystemTime::UNIX_EPOCH))?;
 
     let sysroot_dir = target_dir.join("sysroot");
     // Rebuild sysroot if source is newer
     //TODO: rebuild on recipe changes
-    if sysroot_dir.is_dir() && modified_dir(&sysroot_dir)? < source_modified {
+    if sysroot_dir.is_dir() && (modified_dir(&sysroot_dir)? < source_modified || modified_dir(&sysroot_dir)? < deps_modified) {
         eprintln!("DEBUG: '{}' newer than '{}'", source_dir.display(), sysroot_dir.display());
         remove_all(&sysroot_dir)?;
     }
@@ -375,24 +389,15 @@ fn build(recipe_dir: &Path, source_dir: &Path, target_dir: &Path, build: &BuildR
         // Make sure sysroot/lib exists
         create_dir(&sysroot_dir_tmp.join("lib"))?;
 
-        for dependency in build.dependencies.iter() {
+        for archive_path in dep_pkgars {
             let public_path = "build/id_ed25519.pub.toml";
-            //TODO: sanitize name
-            let dependency_dir = recipe_find(dependency, Path::new("recipes"))?;
-            if dependency_dir.is_none() {
-                return Err(format!(
-                    "failed to find recipe directory '{}'",
-                    dependency
-                ));
-            }
-            let archive_path = format!("{}/target/{}/stage.pkgar", dependency_dir.unwrap().display(), redoxer::target());
             pkgar::extract(
                 public_path,
                 &archive_path,
                 sysroot_dir_tmp.to_str().unwrap()
             ).map_err(|err| format!(
                 "failed to install '{}' in '{}': {:?}",
-                archive_path,
+                archive_path.display(),
                 sysroot_dir_tmp.display(),
                 err
             ))?;
@@ -405,7 +410,7 @@ fn build(recipe_dir: &Path, source_dir: &Path, target_dir: &Path, build: &BuildR
     let stage_dir = target_dir.join("stage");
     // Rebuild stage if source is newer
     //TODO: rebuild on recipe changes
-    if stage_dir.is_dir() && modified_dir(&stage_dir)? < source_modified {
+    if stage_dir.is_dir() && (modified_dir(&stage_dir)? < source_modified || modified_dir(&stage_dir)? < deps_modified) {
         eprintln!("DEBUG: '{}' newer than '{}'", source_dir.display(), stage_dir.display());
         remove_all(&stage_dir)?;
     }
