@@ -2,3 +2,4 @@ Checking for HAVE_LITTLE_ENDIAN - runtime: OK
 Checking for large file support without additional flags: OK
 Checking for HAVE_SECURE_MKSTEMP: OK
 Checking for HAVE_MREMAP: OK
+Checking whether setreuid is available: OK
