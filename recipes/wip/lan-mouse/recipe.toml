@@ -1,0 +1,9 @@
+#TODO Not compiled or tested
+[source]
+git = "https://github.com/feschber/lan-mouse"
+[build]
+template = "cargo"
+dependencies = [
+    "libadwaita",
+    "gtk4",
+]
