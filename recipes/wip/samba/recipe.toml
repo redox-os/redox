@@ -1,4 +1,4 @@
-#TODO: needs gnutls3 to compile
+#TODO: needs libmodule-build-parse-yapp-perl dependency
 [source]
 git = "https://gitlab.redox-os.org/redox-os/samba.git"
 upstream = "https://github.com/samba-team/samba.git"
@@ -6,7 +6,11 @@ upstream = "https://github.com/samba-team/samba.git"
 [build]
 template = "custom"
 dependencies = [
-    "gnutls3"
+    "gnutls3",
+    "libarchive",
+    "libnettle",
+    "jansson",
+    "zlib",
 ]
 script = """
 rsync -av --delete --exclude .git "${COOKBOOK_SOURCE}/" ./
@@ -23,8 +27,14 @@ COOKBOOK_CONFIGURE_FLAGS=(
     --localstatedir=/var
     --prefix=/usr
     --sysconfdir=/etc
-    --with-static-modules=ALL
+    --with-static-modules=ALL,!vfs_snapper
+    --without-acl-support
     --without-ad-dc
+    --without-ads
+    --without-gettext
+    --without-ldap
+    --without-libunwind
+    --without-pam
 )
 cookbook_configure
 """
