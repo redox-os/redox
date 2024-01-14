@@ -4,8 +4,9 @@ nulld
 zerod
 randd
 inputd
-vesad T T G
-logd debug: display.vesa:1
+vesad G G G
+fbcond 1 2
+logd debug: fbcon:1
 stdio log:
 ps2d us
 ramfs logging
