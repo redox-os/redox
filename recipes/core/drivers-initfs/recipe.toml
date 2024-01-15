@@ -6,6 +6,7 @@ template = "custom"
 script = """
 BINS=(
     ahcid
+    fbcond
     inputd
     nvmed
     pcid
