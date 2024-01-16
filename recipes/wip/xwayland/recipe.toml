@@ -1,6 +1,6 @@
 #TODO missing script for Meson, see https://wayland.freedesktop.org/xserver.html#heading_toc_j_3
 [source]
-tar = "https://www.x.org/releases/individual/xserver/xwayland-23.2.3.tar.xz"
+tar = "https://www.x.org/releases/individual/xserver/xwayland-23.2.4.tar.xz"
 [build]
 template = "custom"
 dependencies = [
