@@ -1,7 +1,7 @@
 #TODO compiled but not tested
 #TODO incomplete port
 [source]
-tar = "https://www.sqlite.org/2023/sqlite-autoconf-3440000.tar.gz"
+tar = "https://www.sqlite.org/2024/sqlite-autoconf-3450000.tar.gz"
 #blake3 = "44bc75a40d32afa71cffe149f766857c3cc41dea261b1e4645fde5f73f4c9268"
 [build]
 template = "custom"
