@@ -15,7 +15,7 @@ include = ["../desktop.toml"]
 
 # Override orbital init to use contain_orblogin
 [[files]]
-path = "/etc/init.d/20_orbital"
+path = "/usr/lib/init.d/20_orbital"
 data = """
 audiod
 orbital contain_orblogin launcher
@@ -23,7 +23,7 @@ orbital contain_orblogin launcher
 
 # Override console init to use contain
 [[files]]
-path = "/etc/init.d/30_console"
+path = "/usr/lib/init.d/30_console"
 data = """
 getty --contain 2
 getty --contain debug: -J
