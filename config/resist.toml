@@ -23,7 +23,7 @@ userutils = {}
 
 # Override to not background dhcpd
 [[files]]
-path = "/etc/init.d/10_net"
+path = "/usr/lib/init.d/10_net"
 data = """
 smolnetd
 dnsd
@@ -31,7 +31,7 @@ dhcpd
 """
 
 [[files]]
-path = "/etc/init.d/20_resist"
+path = "/usr/lib/init.d/20_resist"
 data = """
 export RUST_BACKTRACE full
 resist /share/resist/redox/spec.toml
