@@ -1,5 +1,5 @@
 GIT=https://gitlab.redox-os.org/redox-os/periodictable.git
-BINDIR="/ui/bin"
+BINDIR="/usr/bin"
 DEPENDS="orbital"
 
 function recipe_stage {
