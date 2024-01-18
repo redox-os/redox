@@ -12,5 +12,5 @@ ramfs logging
 lived
 redoxfs --uuid $REDOXFS_UUID file $REDOXFS_BLOCK
 cd /
-export PATH /bin
+export PATH /usr/bin
 run.d /usr/lib/init.d /etc/init.d
