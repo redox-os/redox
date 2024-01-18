@@ -5,13 +5,17 @@ zerod
 randd
 inputd
 vesad G G G
+unset FRAMEBUFFER_ADDR FRAMEBUFFER_VIRT FRAMEBUFFER_WIDTH FRAMEBUFFER_HEIGHT FRAMEBUFFER_STRIDE
+#TODO: unset FRAMEBUFFER1 and beyond?
 fbcond 1 2
 logd /scheme/debug /scheme/fbcon/1
 stdio /scheme/log
 ramfs logging
 lived
+unset DISK_LIVE_ADDR DISK_LIVE_SIZE
 bcm2835-sdhcid
 redoxfs --uuid $REDOXFS_UUID file $REDOXFS_BLOCK
+unset REDOXFS_UUID REDOXFS_BLOCK REDOXFS_PASSWORD_ADDR REDOXFS_PASSWORD_SIZE
 cd /
 export PATH /usr/bin
 run.d /usr/lib/init.d /etc/init.d
