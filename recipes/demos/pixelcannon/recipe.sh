@@ -1,5 +1,5 @@
 GIT=https://github.com/jackpot51/pixelcannon.git
-BINDIR=/ui/bin
+BINDIR=/usr/bin
 DEPENDS="orbital"
 
 function recipe_stage {
