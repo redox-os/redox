@@ -9,7 +9,7 @@ ORIGINAL_SOURCE="${COOKBOOK_SOURCE}"
 COOKBOOK_SOURCE="${ORIGINAL_SOURCE}/orbutils"
 "${COOKBOOK_CARGO}" install \
         --path "${COOKBOOK_SOURCE}" \
-        --root "${COOKBOOK_STAGE}/ui" \
+        --root "${COOKBOOK_STAGE}/usr" \
         --locked \
         --no-track \
         ${install_flags}
@@ -17,7 +17,7 @@ COOKBOOK_SOURCE="${ORIGINAL_SOURCE}/orbutils"
 COOKBOOK_SOURCE="${ORIGINAL_SOURCE}/calculator"
 "${COOKBOOK_CARGO}" install \
         --path "${COOKBOOK_SOURCE}" \
-        --root "${COOKBOOK_STAGE}/ui" \
+        --root "${COOKBOOK_STAGE}/usr" \
         --locked \
         --no-track \
         ${install_flags}
