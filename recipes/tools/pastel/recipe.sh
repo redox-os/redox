@@ -1,6 +1,6 @@
 GIT=https://gitlab.redox-os.org/redox-os/pastel.git
 GIT_UPSTREAM=https://github.com/robbycerantola/pastel.git
-BINDIR=/ui/bin
+BINDIR=/usr/bin
 DEPENDS="orbital"
 
 function recipe_stage {
@@ -9,7 +9,7 @@ function recipe_stage {
 	mkdir "$1/ui/apps"
 	cat > "$1/ui/apps/pastel" <<-EOF
 	name=Pastel
-	binary=/ui/bin/pastel
+	binary=/usr/bin/pastel
 	icon=/ui/pastel/accessories-bitmap-editor.png
 	accept=*.bmp
 	accept=*.jpg
