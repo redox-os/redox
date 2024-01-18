@@ -42,7 +42,6 @@ pop-icon-theme = {}
 shared-mime-info = {}
 
 # Shell Apps
-binutils = {}
 curl = {}
 git = {}
 gnu-grep = {}
