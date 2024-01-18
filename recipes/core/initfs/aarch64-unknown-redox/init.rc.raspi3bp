@@ -1,4 +1,4 @@
-export PATH /bin
+export PATH /scheme/initfs/bin
 export TMPDIR /tmp
 nulld
 zerod
@@ -6,12 +6,12 @@ randd
 inputd
 vesad G G G
 fbcond 1 2
-logd debug: fbcon:1
-stdio log:
+logd /scheme/debug /scheme/fbcon/1
+stdio /scheme/log
 ramfs logging
 lived
 bcm2835-sdhcid
 redoxfs --uuid $REDOXFS_UUID file $REDOXFS_BLOCK
-cd file:
-export PATH file:/bin
-run.d /etc/init.d
+cd /
+export PATH /bin
+run.d /usr/lib/init.d /etc/init.d
