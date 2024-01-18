@@ -6,7 +6,7 @@ template = "custom"
 script = """
 "${COOKBOOK_CARGO}" install \
     --path "${COOKBOOK_SOURCE}" \
-    --root "${COOKBOOK_STAGE}/ui" \
+    --root "${COOKBOOK_STAGE}/usr" \
     --locked \
     --no-track \
     --features orbital
