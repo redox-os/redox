@@ -21,16 +21,20 @@ COOKBOOK_CONFIGURE_FLAGS=(
     -DCMAKE_VERBOSE_MAKEFILE=On
     -DCMAKE_CROSSCOMPILING=True
     -DCMAKE_BUILD_TYPE=Release
-    -DCMAKE_INSTALL_PREFIX="/"
+    -DCMAKE_INSTALL_PREFIX="/usr"
     -DSDL2_INCLUDE_DIR="${COOKBOOK_SYSROOT}/include/SDL2"
     -DSDL2_LIBRARY="-lSDL2_mixer -lvorbisfile -lvorbis -logg -lSDL2 -lorbital $("${TARGET}-pkg-config" --libs osmesa)"
     -DSDL2_MIXER_INCLUDE_DIR="${COOKBOOK_SYSROOT}/include/SDL2"
     -DSDL2_MIXER_LIBRARY="SDL2_mixer"
     "${COOKBOOK_SOURCE}"
 )
-set -x
 cookbook_configure
-mv -vT "${COOKBOOK_STAGE}"/usr/bin "${COOKBOOK_STAGE}/bin"
-rmdir -v "${COOKBOOK_STAGE}"/usr
-set +x
+
+mkdir -pv "${COOKBOOK_STAGE}/ui/apps"
+cat > "${COOKBOOK_STAGE}"/ui/apps/spacecadetpinball <<EOF
+name=Space Cadet Pinball
+category=Games
+binary=/usr/bin/SpaceCadetPinball
+icon=/usr/share/icons/hicolor/128x128/apps/SpaceCadetPinball.png
+EOF
 """
