@@ -1,0 +1,6 @@
+#TODO Not compiled or tested
+#TODO in case of errors, read https://github.com/Ragnt/AngryOxide#building-from-source
+[source]
+git = "https://github.com/Ragnt/AngryOxide"
+[build]
+template = "cargo"
