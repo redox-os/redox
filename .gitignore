@@ -2,3 +2,4 @@
 /prefix/
 .config
 **/my_*
+.direnv/
