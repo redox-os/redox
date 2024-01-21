@@ -21,7 +21,7 @@ You can find the most important pages below:
 - [Trying Out Redox](https://doc.redox-os.org/book/ch02-04-trying-out-redox.html)
 - [Building Redox](https://doc.redox-os.org/book/ch02-05-building-redox.html)
 - [Build System Documentation](https://doc.redox-os.org/book/ch08-06-build-system-reference.html)
-- [Developer FAQ](https://doc.redox-os.org/book/ch09-05-developer-faq.html)
+- [Developer FAQ](https://doc.redox-os.org/book/ch09-07-developer-faq.html)
 - [Chat/Discussions/Help](https://doc.redox-os.org/book/ch13-01-chat.html)
 
 ## Ecosystem
