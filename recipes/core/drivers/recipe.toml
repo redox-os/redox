@@ -34,11 +34,11 @@ esac
 mkdir -pv "${COOKBOOK_STAGE}/bin"
 export CARGO_PROFILE_RELEASE_OPT_LEVEL=s
 export CARGO_PROFILE_RELEASE_PANIC=abort
+"${COOKBOOK_CARGO}" build --release \
+    --manifest-path "${COOKBOOK_SOURCE}/Cargo.toml" \
+    $(for bin in "${BINS[@]}"; do echo "-p" "${bin}"; done)
 for bin in "${BINS[@]}"
 do
-    "${COOKBOOK_CARGO}" build --release \
-        --manifest-path "${COOKBOOK_SOURCE}/Cargo.toml" \
-        -p "${bin}"
     cp -v "target/${TARGET}/release/${bin}" "${COOKBOOK_STAGE}/bin"
 done
 
