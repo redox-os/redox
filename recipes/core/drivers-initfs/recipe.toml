@@ -47,15 +47,13 @@ case "${TARGET}" in
 esac
 
 mkdir -pv "${COOKBOOK_STAGE}/bin"
+export CARGO_PROFILE_RELEASE_OPT_LEVEL=s
+export CARGO_PROFILE_RELEASE_PANIC=abort
 for bin in "${BINS[@]}"
 do
-    "${COOKBOOK_CARGO}" rustc --release \
+    "${COOKBOOK_CARGO}" build --release \
         --manifest-path "${COOKBOOK_SOURCE}/Cargo.toml" \
-        -p "${bin}" \
-        --bin "${bin}" \
-        -- \
-        -C opt-level=s \
-        -C panic=abort
+        -p "${bin}"
     cp -v "target/${TARGET}/release/${bin}" "${COOKBOOK_STAGE}/bin"
 done
 
