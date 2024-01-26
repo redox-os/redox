@@ -25,6 +25,7 @@ installer-gui = {}
 ion = {}
 ipcd = {}
 kernel = {}
+nano = {}
 netdb = {}
 netstack = {}
 netsurf = {}

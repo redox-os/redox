@@ -21,6 +21,7 @@ findutils = {}
 git = {}
 installer = {}
 ion = {}
+nano = {}
 netdb = {}
 pkgutils = {}
 redoxfs = {}
