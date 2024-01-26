@@ -1,5 +1,5 @@
 QEMU=SDL_VIDEO_X11_DGAMOUSE=0 qemu-system-$(QEMU_ARCH)
-QEMUFLAGS=-d cpu_reset,guest_errors -name "Redox OS $(ARCH)"
+QEMUFLAGS=-d guest_errors -name "Redox OS $(ARCH)"
 
 ifeq ($(ARCH),i686)
 	audio?=ac97
@@ -121,7 +121,7 @@ ifneq ($(usb),no)
 endif
 
 ifeq ($(gdb),yes)
-	QEMUFLAGS+=-s -S
+	QEMUFLAGS+=-d cpu_reset -s -S
 endif
 
 ifeq ($(UNAME),Linux)
