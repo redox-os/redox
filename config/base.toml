@@ -57,11 +57,6 @@ path = "/etc/os-release"
 data = "../usr/lib/os-release"
 symlink = true
 
-# FIXME remove once screenfetch supports reading os-release instead
-[[files]]
-path = "/etc/redox-release"
-data = "0.8.0"
-
 ## Symlinks for usrmerge
 [[files]]
 path = "/usr"
