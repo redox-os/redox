@@ -102,6 +102,7 @@ mesa = {}
 mesa-glu = {}
 mgba = {}
 #miniserve = {} # actix
+nano = {}
 nasm = {}
 #ncdu = {} # fails to link with ncurses
 ncurses = {}
