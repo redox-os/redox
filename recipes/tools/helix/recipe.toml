@@ -1,0 +1,16 @@
+#TODO signal handling is disabled, it should be re-enabled when Redox is ready
+#TODO language files are not built, only the "hx" editor is built
+#TODO Consider adding `export RUSTFLAGS+="-C target-feature=-crt-static"` when adding language support
+#TODO configuration - https://docs.helix-editor.com/install.html#configuring-helixs-runtime-files
+[source]
+git = "https://gitlab.redox-os.org/redox-os/helix.git"
+branch = "redox"
+
+[build]
+template = "custom"
+script = """
+export HELIX_DISABLE_AUTO_GRAMMAR_BUILD=1
+COOKBOOK_SOURCE+="/helix-term"
+cookbook_cargo
+"""
+

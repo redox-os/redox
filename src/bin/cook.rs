@@ -453,9 +453,12 @@ export PKG_CONFIG_SYSROOT_DIR="${COOKBOOK_SYSROOT}"
 # to not strip symbols from the final package, add COOKBOOK_NOSTRIP=true to the recipe
 # (or to your environment) before calling cookbook_cargo or cookbook_cargo_packages
 build_type=release
+install_flags=
+build_flags=--release
 if [ ! -z "${COOKBOOK_DEBUG}" ]
 then
     install_flags=--debug
+    build_flags=
     build_type=debug
 fi
 
@@ -479,7 +482,7 @@ function cookbook_cargo_examples {
         "${COOKBOOK_CARGO}" build \
             --manifest-path "${COOKBOOK_SOURCE}/Cargo.toml" \
             --example "${example}" \
-            --${build_type}
+            ${build_flags}
         mkdir -pv "${COOKBOOK_STAGE}/usr/bin"
         cp -v \
             "target/${TARGET}/${build_type}/examples/${example}" \
@@ -495,7 +498,7 @@ function cookbook_cargo_packages {
         "${COOKBOOK_CARGO}" build \
             --manifest-path "${COOKBOOK_SOURCE}/Cargo.toml" \
             --package "${package}" \
-            --${build_type}
+            ${build_flags}
         mkdir -pv "${COOKBOOK_STAGE}/usr/bin"
         cp -v \
             "target/${TARGET}/${build_type}/${package}" \
