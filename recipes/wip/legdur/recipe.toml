@@ -1,3 +1,4 @@
+#TODO the repository can't be cloned because it's using the Mercurial now? what doesn't makes sense
 #TODO camino crate error
 [source]
 git = "https://hg.sr.ht/~cyplo/legdur"
