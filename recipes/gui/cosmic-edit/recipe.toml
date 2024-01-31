@@ -1,6 +1,6 @@
 [source]
 git = "https://github.com/pop-os/cosmic-edit.git"
-branch = "master_jammy"
+branch = "master"
 
 [build]
 template = "custom"
