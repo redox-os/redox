@@ -1,28 +1,41 @@
-#TODO probably wrong script, see https://github.com/hrydgard/ppsspp/wiki/Build-instructions#building-with-cmake-other-platforms-eg-linux
 [source]
-git = "https://github.com/hrydgard/ppsspp"
+git = "https://github.com/jackpot51/ppsspp"
+
 [build]
 template = "custom"
 dependencies = [
-    "sdl2",
-    "sdl2_ttf",
+    "liborbital",
+    "llvm",
     "mesa",
-    "fontconfig",
-    "curl",
+    "mesa-glu",
+    "sdl2",
+    "zlib",
 ]
 script = """
-    COOKBOOK_CONFIGURE="cmake"
-    COOKBOOK_CONFIGURE_FLAGS=(
-	-DCMAKE_BUILD_TYPE=Release
-	-DCMAKE_CROSSCOMPILING=True
-	-DCMAKE_EXE_LINKER_FLAGS="-static"
-	-DCMAKE_INSTALL_PREFIX="/"
-    -DUSING_X11_VULKAN=OFF
-    -DUSE_SYSTEM_LIBSDL2=ON
-    -DUSE_MINIUPNPC=OFF
-    -DUSE_FFMPEG=OFF
+COOKBOOK_CONFIGURE="cmake"
+COOKBOOK_CONFIGURE_FLAGS=(
+    -DCMAKE_BUILD_TYPE=Release
+    -DCMAKE_CROSSCOMPILING=True
+    -DCMAKE_C_FLAGS="-I${COOKBOOK_SYSROOT}/include -I${COOKBOOK_SYSROOT}/include/SDL2"
+    -DCMAKE_CXX_FLAGS="-I${COOKBOOK_SYSROOT}/include -I${COOKBOOK_SYSROOT}/include/SDL2"
+    -DCMAKE_EXE_LINKER_FLAGS="-L${COOKBOOK_SYSROOT}/lib -static"
+    -DCMAKE_INSTALL_PREFIX="/"
+    -DCMAKE_PREFIX_PATH="${COOKBOOK_SYSROOT}"
+    -DCMAKE_SYSTEM_NAME=Generic
+    -DCMAKE_SYSTEM_PROCESSOR="$(echo "${TARGET}" | cut -d - -f1)"
+    -DCMAKE_VERBOSE_MAKEFILE=On 
+    -DOPENGL_opengl_LIBRARY="/dev/null"
+    -DOPENGL_glx_LIBRARY="/dev/null"
     -DUSE_DISCORD=OFF
-"${COOKBOOK_SOURCE}"
+    -DUSE_FFMPEG=OFF
+    -DUSE_MINIUPNPC=OFF
+    -DUSE_SYSTEM_LIBSDL2=ON
+    -DUSING_EGL=OFF
+    -DUSING_FBDEV=OFF
+    -DUSING_GLES2=OFF
+    -DUSING_X11_VULKAN=OFF
+    -DUNIX=ON
+    "${COOKBOOK_SOURCE}"
 )
 cookbook_configure
 """
