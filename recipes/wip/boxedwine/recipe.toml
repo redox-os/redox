@@ -82,5 +82,6 @@ ${TARGET}-gcc -std=c++17 -O2 \
   -DGLEW_OSMESA \
   -DSDL2=1 \
   -DSIMDE_SSE2_NO_NATIVE \
+  -static \
   -o "${COOKBOOK_STAGE}/bin/boxedwine"
 """
