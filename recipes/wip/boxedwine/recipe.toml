@@ -1,0 +1,86 @@
+[source]
+git = "https://github.com/jackpot51/Boxedwine"
+
+[build]
+template = "custom"
+dependencies = [
+    "curl",
+    "liborbital",
+    "llvm",
+    "mesa",
+    "mesa-glu",
+    "nghttp2",
+    "openssl1",
+    "sdl2",
+    "zlib",
+]
+script = """
+mkdir -p "${COOKBOOK_STAGE}/bin"
+cd "${COOKBOOK_SOURCE}/project/linux"
+#TODO: USE MAKEFILE
+#TODO: USE X64 CPU CORE
+${TARGET}-gcc -std=c++17 -O2 \
+  -Wall \
+  -Wno-delete-incomplete \
+  -Wno-unused-result \
+  -Wno-unknown-pragmas \
+  -Wno-unused-local-typedefs \
+  -Wno-unused-variable \
+  -Wno-unused-function \
+  -Wno-unused-but-set-variable \
+  -I "${COOKBOOK_SYSROOT}/include/SDL2" \
+  -I../../include \
+  -I../../lib/glew/include \
+  -I../../lib/imgui \
+  ../../lib/imgui/imgui.cpp \
+  ../../lib/pugixml/src/*.cpp \
+  ../../lib/imgui/imgui_draw.cpp \
+  ../../lib/imgui/imgui_widgets.cpp \
+  ../../lib/imgui/examples/imgui_impl_opengl2.cpp \
+  ../../lib/imgui/examples/imgui_impl_sdl.cpp \
+  ../../lib/imgui/addon/imguitinyfiledialogs.cpp \
+  ../../source/sdl/*.cpp \
+  ../../source/sdl/singleThreaded/*.cpp \
+  ../../lib/glew/src/glew.cpp \
+  ../../source/ui/*.cpp \
+  ../../source/ui/controls/*.cpp \
+  ../../source/ui/data/*.cpp \
+  ../../source/ui/opengl/*.cpp \
+  ../../source/ui/utils/*.cpp \
+  ../../platform/sdl/*.cpp \
+  ../../platform/linux/*.cpp \
+  ../../source/emulation/cpu/*.cpp \
+  ../../source/emulation/cpu/common/*.cpp \
+  ../../source/emulation/cpu/normal/*.cpp \
+  ../../source/emulation/softmmu/*.cpp \
+  ../../source/io/*.cpp \
+  ../../source/kernel/*.cpp \
+  ../../source/kernel/devs/*.cpp \
+  ../../source/kernel/proc/*.cpp \
+  ../../source/kernel/sys/*.cpp \
+  ../../source/kernel/loader/*.cpp \
+  ../../source/util/*.cpp \
+  ../../source/opengl/sdl/*.cpp \
+  ../../source/opengl/*.cpp \
+  ../../lib/tiny-process/process.cpp \
+  ../../lib/tiny-process/process_unix.cpp \
+  ../../lib/zlib/contrib/minizip/ioapi.c \
+  ../../lib/zlib/contrib/minizip/mztools.c \
+  ../../lib/zlib/contrib/minizip/unzip.c \
+  ../../lib/zlib/contrib/minizip/zip.c \
+  `${PKG_CONFIG} libcurl --cflags --libs` \
+  `${PKG_CONFIG} sdl2 --cflags --libs` \
+  -lz \
+  -lstdc++ \
+  "-DGLH=<SDL_opengl.h>" \
+  -DBOXEDWINE_64 \
+  -DBOXEDWINE_HAS_SETJMP \
+  -DBOXEDWINE_OPENGL_IMGUI_V2 \
+  -DBOXEDWINE_OPENGL_SDL \
+  -DBOXEDWINE_POSIX \
+  -DBOXEDWINE_ZLIB \
+  -DGLEW_OSMESA \
+  -DSDL2=1 \
+  -DSIMDE_SSE2_NO_NATIVE \
+  -o "${COOKBOOK_STAGE}/bin/boxedwine"
+"""
