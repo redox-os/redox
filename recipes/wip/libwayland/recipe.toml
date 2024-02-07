@@ -1,5 +1,48 @@
 #TODO missing script for Meson, see https://gitlab.freedesktop.org/wayland/wayland/-/blob/main/README.md?ref_type=heads
 [source]
 tar = "https://gitlab.freedesktop.org/wayland/wayland/-/releases/1.22.0/downloads/wayland-1.22.0.tar.xz"
+
 [build]
+dependencies = [
+    "libffi"
+]
 template = "custom"
+script = """
+#TODO: do this in cook instead
+unset AR AS CC CXX LD NM OBJCOPY OBJDUMP RANLIB READELF STRIP
+
+export CFLAGS="-I${COOKBOOK_SYSROOT}/include -DHAVE_PTHREAD=1"
+export CPPFLAGS="-I${COOKBOOK_SYSROOT}/include -DHAVE_PTHREAD=1"
+export LDFLAGS="-L${COOKBOOK_SYSROOT}/lib --static"
+export LLVM_CONFIG="${TARGET}-llvm-config"
+
+# TODO: Fix this annoying shite
+echo "[binaries]" > cross_file.txt
+echo "c = '${TARGET}-gcc'" >> cross_file.txt
+echo "cpp = '${TARGET}-g++'" >> cross_file.txt
+echo "ar = '${TARGET}-ar'" >> cross_file.txt
+echo "strip = '${TARGET}-strip'" >> cross_file.txt
+echo "pkgconfig = '${TARGET}-pkg-config'" >> cross_file.txt
+echo "llvm-config = '${TARGET}-llvm-config'" >> cross_file.txt
+
+echo "[host_machine]" >> cross_file.txt
+echo "system = 'redox'" >> cross_file.txt
+echo "cpu_family = '$(echo "${TARGET}" | cut -d - -f1)'" >> cross_file.txt
+echo "cpu = '$(echo "${TARGET}" | cut -d - -f1)'" >> cross_file.txt
+echo "endian = 'little'" >> cross_file.txt
+
+echo "[paths]" >> cross_file.txt
+echo "prefix = '/'" >> cross_file.txt
+echo "libdir = 'lib'" >> cross_file.txt
+echo "bindir = 'bin'" >> cross_file.txt
+
+echo "[properties]" >> cross_file.txt
+echo "needs_exe_wrapper = true" >> cross_file.txt
+
+meson "${COOKBOOK_SOURCE}" . \
+    --cross-file cross_file.txt \
+    --buildtype release \
+    --strip \
+    -Ddefault_library=static
+DESTDIR="${COOKBOOK_STAGE}" ninja install
+"""
