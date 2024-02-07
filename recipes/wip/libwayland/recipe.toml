@@ -3,10 +3,12 @@
 tar = "https://gitlab.freedesktop.org/wayland/wayland/-/releases/1.22.0/downloads/wayland-1.22.0.tar.xz"
 
 [build]
-dependencies = [
-    "libffi"
-]
 template = "custom"
+dependencies = [
+    "expat",
+    "libffi",
+    "libxml2",
+]
 script = """
 #TODO: do this in cook instead
 unset AR AS CC CXX LD NM OBJCOPY OBJDUMP RANLIB READELF STRIP
