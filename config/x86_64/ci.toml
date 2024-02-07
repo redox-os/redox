@@ -98,6 +98,7 @@ llvm = {}
 logd = {}
 lua54 = {}
 #mdp = {} # ncursesw
+mednafen = {}
 mesa = {}
 mesa-glu = {}
 mgba = {}
