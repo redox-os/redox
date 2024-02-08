@@ -1,0 +1,17 @@
+# Configuration for redoxer GUI image
+
+include = ["redoxer.toml"]
+
+# Package settings
+[packages]
+orbdata = {}
+orbital = {}
+
+# Override to run inside of orbital
+[[files]]
+path = "/usr/lib/init.d/30_redoxer"
+data = """
+echo
+echo ## running redoxer in orbital ##
+orbital redoxerd
+"""
