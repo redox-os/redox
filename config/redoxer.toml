@@ -1,0 +1,53 @@
+# Configuration for redoxer image
+
+include = ["net.toml"]
+
+# Package settings
+[packages]
+bash = {}
+ca-certificates = {}
+coreutils = {}
+extrautils = {}
+findutils = {}
+gcc13 = {}
+gnu-binutils = {}
+netdb = {}
+pkgutils = {}
+redoxerd = {}
+relibc = {}
+
+# Override to not background dhcpd
+[[files]]
+path = "/usr/lib/init.d/10_net"
+data = """
+smolnetd
+dnsd
+dhcpd
+"""
+
+[[files]]
+path = "/usr/lib/init.d/20_env"
+data = """
+echo
+echo ## preparing environment ##
+export GROUPS 0
+export HOME /root
+export HOST redox
+export SHELL /bin/sh
+export UID 0
+export USER root
+cd /root
+env
+"""
+
+[[files]]
+path = "/usr/lib/init.d/30_redoxer"
+data = """
+echo
+echo ## running redoxer ##
+redoxerd
+"""
+
+[[files]]
+path = "/etc/pkg.d/50_redox"
+data = "https://static.redox-os.org/pkg"
