@@ -12,5 +12,6 @@ script = """
 export HELIX_DISABLE_AUTO_GRAMMAR_BUILD=1
 COOKBOOK_SOURCE+="/helix-term"
 cookbook_cargo
+mv "${COOKBOOK_STAGE}/usr/bin/hx" "${COOKBOOK_STAGE}/usr/bin/helix"
 """
 
