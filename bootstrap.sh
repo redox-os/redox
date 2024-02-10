@@ -297,9 +297,17 @@ freebsd()
 # This function takes care of installing all dependencies for building Redox on
 # Arch Linux
 # @params:	$1 the emulator to install, "virtualbox" or "qemu"
+# 		$2 install non-interactively, boolean
 ###############################################################################
 archLinux()
 {
+	noninteractive=$2
+
+	pacman_install="pacman -S --needed"
+	if [ "$noninteractive" = true ]; then
+		pacman_install+="  --noconfirm"
+	fi
+
 	echo "Detected Arch Linux"
 	packages="cmake \
 	fuse \
@@ -360,20 +368,34 @@ archLinux()
 	#sudo pacman -Syu
 
 	echo "Installing packages $packages..."
-	sudo pacman -S --needed $packages
+	sudo $pacman_install $packages
 }
 
 ###############################################################################
 # This function takes care of installing all dependencies for building Redox on
 # Debian-based Linux
 # @params:	$1 the emulator to install, "virtualbox" or "qemu"
-# 		$2 the package manager to use
+# 		$2 install non-interactively, boolean
+#		$3 the package manager to use
 ###############################################################################
 ubuntu()
 {
+	noninteractive=$2
+	package_manager=$3
 	echo "Detected Ubuntu/Debian"
 	echo "Updating system..."
-	sudo "$2" update
+	sudo $package_manager update
+
+	if [ $package_manager == "apt-get" ]; then
+		if [ "$noninteractive" = true ]; then
+			install_command+="DEBIAN_FRONTEND=noninteractive apt-get install --assume-yes --quiet"
+		else
+			install_command="apt-get install"
+		fi
+	else
+		install_command="$package_manager install"
+	fi
+
 	echo "Installing required packages..."
 	pkgs="\
 		ant \
@@ -432,12 +454,12 @@ ubuntu()
 	case "$host_arch" in
 		x86*|i?86) pkgs="$pkgs libc6-dev-i386 syslinux-utils";;
 	esac
-	sudo "$2" install $pkgs
+	sudo $install_command $pkgs
 	if [ "$1" == "qemu" ]; then
 		if [ -z "$(which qemu-system-x86_64)" ]; then
 			echo "Installing QEMU..."
-			sudo "$2" install qemu-system-x86 qemu-kvm
-			sudo "$2" install qemu-efi-arm qemu-system-arm
+			sudo $install_command qemu-system-x86 qemu-kvm
+			sudo $install_command qemu-efi-arm qemu-system-arm
 		else
 			echo "QEMU already installed!"
 		fi
@@ -449,10 +471,10 @@ ubuntu()
 				echo "To install virtualbox on debian, see https://wiki.debian.org/VirtualBox"
 				echo "Please install VirtualBox and re-run this script,"
 				echo "or run with -e qemu"
-				exit 1
+			exit 1
 			else
 				echo "Installing VirtualBox..."
-				sudo "$2" install virtualbox
+				sudo $install_command virtualbox
 			fi
 		else
 			echo "VirtualBox already installed!"
@@ -467,19 +489,27 @@ ubuntu()
 # This function takes care of installing all dependencies for building Redox on
 # Fedora Linux
 # @params:	$1 the emulator to install, "virtualbox" or "qemu"
+# 		$2 install non-interactively, boolean
 ###############################################################################
 fedora()
 {
+	noninteractive=$2
+
+	dnf_install="dnf install"
+	if [ "$noninteractive" = true ]; then
+		dnf_install+=" --assumeyes --quiet"
+	fi
+
 	echo "Detected Fedora"
 	if [ -z "$(which git)" ]; then
 		echo "Installing git..."
-		sudo dnf install git-all
+		sudo $dnf_install git-all
 	fi
 
 	if [ "$1" == "qemu" ]; then
 		if [ -z "$(which qemu-system-x86_64)" ]; then
 			echo "Installing QEMU..."
-			sudo dnf install qemu-system-x86 qemu-kvm
+			sudo $dnf_install qemu-system-x86 qemu-kvm
 		else
 			echo "QEMU already installed!"
 		fi
@@ -554,14 +584,13 @@ fedora()
 	COUNT=$(echo $PKGS | wc -w)
 	if [ $COUNT -ne 0 ]; then
 					echo "Installing necessary build tools..."
-					sudo dnf install $PKGS
+					sudo $dnf_install $PKGS
 	fi
 }
 
 ###############################################################################
 # This function takes care of installing all dependencies for building Redox on
 # *SUSE Linux
-# @params:	$1 the emulator to install, "virtualbox" or "qemu"
 ###############################################################################
 suse()
 {
@@ -818,6 +847,10 @@ usage()
 	echo "   -p [package    Choose an Ubuntu package manager, apt-fast or"
 	echo "       manager]   aptitude"
 	echo "   -d             Only install the dependencies, skip boot step"
+	echo "   -y             Install non-interactively. Answer \"yes\" or"
+	echo "                  select the default option for rustup and package"
+	echo "					managers. Only the apt, dnf and pacman"
+	echo "                  package managers are supported."
 	echo "EXAMPLES:"
 	echo
 	echo "./bootstrap.sh -e qemu"
@@ -840,8 +873,10 @@ cargoInstall() {
 # This function takes care of everything associated to rust, and the version manager
 # That controls it, it can install rustup and uninstall multirust as well as making
 # sure that the correct version of rustc is selected by rustup
+# @params:	$1 install non-interactively, boolean
 ####################################################################################
 rustInstall() {
+	noninteractive=$1
 	# Check to see if multirust is installed, we don't want it messing with rustup
 	# In the future we can probably remove this but I believe it's good to have for now
 	if [ -e /usr/local/lib/rustlib/uninstall.sh ] ; then
@@ -859,15 +894,21 @@ rustInstall() {
 	fi
 	# If rustup is not installed we should offer to install it for them
 	if [ -z "$(which rustup)" ]; then
+        rustup_options="--default-toolchain nightly"
 		echo "You do not have rustup installed."
-		echo "We HIGHLY recommend using rustup."
-		echo "Would you like to install it now?"
-		echo "*WARNING* this involves a 'curl | sh' style command"
-		printf "(y/N): "
-		read rustup
+		if [ "$noninteractive" = true ]; then
+		   rustup="y"
+		   rustup_options+=" -y"
+		else
+			echo "We HIGHLY recommend using rustup."
+			echo "Would you like to install it now?"
+			echo "*WARNING* this involves a 'curl | sh' style command"
+			printf "(y/N): "
+			read rustup
+		fi
 		if echo "$rustup" | grep -iq "^y" ;then
 			#install rustup
-			curl https://sh.rustup.rs -sSf | sh -s -- --default-toolchain nightly
+			curl https://sh.rustup.rs -sSf | sh -s -- $rustup_options
 			# You have to add the rustup variables to the $PATH
 			echo "export PATH=\"\$HOME/.cargo/bin:\$PATH\"" >> ~/.bashrc
 			# source the variables so that we can execute rustup commands in the current shell
@@ -967,7 +1008,9 @@ emulator="qemu"
 defpackman="apt-get"
 dependenciesonly=false
 update=false
-while getopts ":e:p:udhs" opt
+noninteractive=false
+
+while getopts ":e:p:udhys" opt
 do
 	case "$opt" in
 		e) emulator="$OPTARG";;
@@ -975,6 +1018,7 @@ do
 		d) dependenciesonly=true;;
 		u) update=true;;
 		h) usage;;
+		y) noninteractive=true;;
 		s) statusCheck && exit;;
 		\?) echo "I don't know what to do with that option, try -h for help"; exit 1;;
 	esac
@@ -982,7 +1026,7 @@ done
 
 banner
 
-rustInstall
+rustInstall "$noninteractive"
 
 if [ "$update" == "true" ]; then
 	git pull upstream master
@@ -1001,10 +1045,10 @@ else
 		suse "$emulator"
 	# Debian or any derivative of it
 	elif hash 2>/dev/null apt-get; then
-		ubuntu "$emulator" "$defpackman"
+		ubuntu "$emulator" "$noninteractive" "$defpackman"
 	# Fedora
 	elif hash 2>/dev/null dnf; then
-		fedora "$emulator"
+		fedora "$emulator" "$noninteractive"
 	# Gentoo
 	elif hash 2>/dev/null emerge; then
 		gentoo "$emulator"
@@ -1013,7 +1057,7 @@ else
 		solus "$emulator"
 	# Arch Linux
 	elif hash 2>/dev/null pacman; then
-		archLinux "$emulator"
+		archLinux "$emulator" "$noninteractive"
 	# FreeBSD
 	elif hash 2>/dev/null pkg; then
 		freebsd "$emulator"
