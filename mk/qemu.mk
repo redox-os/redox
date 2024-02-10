@@ -18,7 +18,7 @@ else ifeq ($(ARCH),x86_64)
 	QEMU_MACHINE?=q35
 	QEMU_CPU?=core2duo
 	QEMU_EFI=/usr/share/OVMF/OVMF_CODE.fd
-	QEMUFLAGS+=-smp 4 -m 2048
+	QEMUFLAGS+=-smp 1 -m 2048
 else ifeq ($(ARCH),aarch64)
 	efi=yes
 	live=yes
