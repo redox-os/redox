@@ -15,7 +15,7 @@ before_script:
         build-essential \
         curl \
         flex \
-        fuse \
+        fuse3 \
         git \
         libfuse-dev \
         nasm \

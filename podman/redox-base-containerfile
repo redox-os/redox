@@ -12,7 +12,7 @@ RUN apt-get update \
         curl \
         file \
         flex \
-        fuse \
+        fuse3 \
         genisoimage \
         git \
         gperf \
