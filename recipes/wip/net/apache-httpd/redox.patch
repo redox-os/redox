@@ -1,0 +1,436 @@
+diff --git a/Makefile.in b/Makefile.in
+index ebf7a16..296e661 100644
+--- a/Makefile.in
++++ b/Makefile.in
+@@ -1,5 +1,5 @@
+ 
+-SUBDIRS = srclib os server modules support
++SUBDIRS = srclib os server modules
+ CLEAN_SUBDIRS = test
+ 
+ PROGRAM_NAME         = $(progname)
+@@ -7,9 +7,10 @@ PROGRAM_SOURCES      = modules.c
+ PROGRAM_LDADD        = buildmark.o $(HTTPD_LDFLAGS) $(PROGRAM_DEPENDENCIES) $(PCRE_LIBS) $(EXTRA_LIBS) $(AP_LIBS) $(LIBS)
+ PROGRAM_PRELINK      = $(COMPILE) -c $(top_srcdir)/server/buildmark.c
+ PROGRAM_DEPENDENCIES = \
++  -lc \
++  $(MPM_LIB) \
+   server/libmain.la \
+   $(BUILTIN_LIBS) \
+-  $(MPM_LIB) \
+   os/$(OS_DIR)/libos.la
+ 
+ sbin_PROGRAMS   = $(PROGRAM_NAME)
+@@ -290,28 +291,7 @@ install-man:
+ 	  cd $(DESTDIR)$(manualdir) && find . -name ".svn" -type d -print | xargs rm -rf 2>/dev/null || true; \
+ 	fi
+ 
+-install-suexec: install-suexec-$(INSTALL_SUEXEC)
+-
+-install-suexec-binary:
+-	@if test -f $(builddir)/support/suexec; then \
+-            test -d $(DESTDIR)$(sbindir) || $(MKINSTALLDIRS) $(DESTDIR)$(sbindir); \
+-            $(INSTALL_PROGRAM) $(top_builddir)/support/suexec $(DESTDIR)$(sbindir); \
+-	fi
+-
+-install-suexec-setuid: install-suexec-binary
+-	@if test -f $(builddir)/support/suexec; then \
+-	    chmod 4755 $(DESTDIR)$(sbindir)/suexec; \
+-	fi
+-
+-install-suexec-caps: install-suexec-binary
+-	@if test -f $(builddir)/support/suexec; then \
+-            setcap 'cap_setuid,cap_setgid+pe' $(DESTDIR)$(sbindir)/suexec; \
+-	fi
+-
+-suexec:
+-	cd support && $(MAKE) suexec
+-
+-x-local-distclean:
++-local-distclean:
+ 	@rm -rf autom4te.cache
+ 
+ # XXX: This looks awfully platform-specific [read: bad form and style]
+diff --git a/configure b/configure
+index 6eb60fd..46b490e 100755
+--- a/configure
++++ b/configure
+@@ -4998,7 +4998,7 @@ else
+       done
+       if test $apr_addto_duplicate = "0"; then
+         test "x$silent" != "xyes" && echo "  adding \"$i\" to LDFLAGS"
+-        LDFLAGS="$LDFLAGS $i"
++        # LDFLAGS="$LDFLAGS $i"
+       fi
+     done
+   fi
+@@ -5006,6 +5006,7 @@ else
+   APU_BINDIR=`$apu_config --bindir`
+   APU_INCLUDEDIR=`$apu_config --includedir`
+   APU_INCLUDES=`$apu_config --includes`
++  echo "$apu_config --includes" = "$APU_INCLUDES"
+   APU_VERSION=`$apu_config --version`
+   APU_CONFIG="$APU_BINDIR/apu-`echo ${APU_VERSION} | sed 's,\..*,,'`-config"
+ fi
+@@ -6268,9 +6269,9 @@ $as_echo "$as_me: Using external PCRE library from $PCRE_CONFIG" >&6;}
+ 
+   if test "x$PCRE_LIBS" = "x"; then
+     test "x$silent" != "xyes" && echo "  setting PCRE_LIBS to \"`$PCRE_CONFIG --libs8 2>/dev/null || $PCRE_CONFIG --libs`\""
+-    PCRE_LIBS="`$PCRE_CONFIG --libs8 2>/dev/null || $PCRE_CONFIG --libs`"
++    PCRE_LIBS="-lpcre"
+   else
+-    apr_addto_bugger="`$PCRE_CONFIG --libs8 2>/dev/null || $PCRE_CONFIG --libs`"
++    apr_addto_bugger="-lpcre"
+     for i in $apr_addto_bugger; do
+       apr_addto_duplicate="0"
+       for j in $PCRE_LIBS; do
+@@ -40691,9 +40692,11 @@ fi
+ 
+ 
+ if test x${apu_found} != xobsolete; then
+-  AP_LIBS="$AP_LIBS `$apu_config --avoid-ldap --link-libtool --libs`"
++  # AP_LIBS="$AP_LIBS `$apu_config --avoid-ldap --link-libtool --libs`" -ldb-5.3
++  AP_LIBS="$AP_LIBS -laprutil-1  -lgdbm  -lexpat"
+ fi
+-AP_LIBS="$AP_LIBS `$apr_config --link-libtool --libs`"
++# AP_LIBS="$AP_LIBS `$apr_config --link-libtool --libs`"
++AP_LIBS="$AP_LIBS -lapr-1 -luuid -lrt -lcrypt  -lpthread -ldl"
+ 
+   APACHE_VAR_SUBST="$APACHE_VAR_SUBST AP_LIBS"
+ 
+diff --git a/os/unix/unixd.c b/os/unix/unixd.c
+index 0245720..cd241d2 100644
+--- a/os/unix/unixd.c
++++ b/os/unix/unixd.c
+@@ -231,31 +231,6 @@ AP_DECLARE(apr_status_t) ap_unixd_set_proc_mutex_perms(apr_proc_mutex_t *pmutex)
+         apr_lockmech_e mech = proc_mutex_mech(pmutex);
+ 
+         switch(mech) {
+-#if APR_HAS_SYSVSEM_SERIALIZE
+-        case APR_LOCK_SYSVSEM:
+-        {
+-            apr_os_proc_mutex_t ospmutex;
+-#if !APR_HAVE_UNION_SEMUN
+-            union semun {
+-                long val;
+-                struct semid_ds *buf;
+-                unsigned short *array;
+-            };
+-#endif
+-            union semun ick;
+-            struct semid_ds buf = { { 0 } };
+-
+-            apr_os_proc_mutex_get(&ospmutex, pmutex);
+-            buf.sem_perm.uid = ap_unixd_config.user_id;
+-            buf.sem_perm.gid = ap_unixd_config.group_id;
+-            buf.sem_perm.mode = 0600;
+-            ick.buf = &buf;
+-            if (semctl(ospmutex.crossproc, 0, IPC_SET, ick) < 0) {
+-                return errno;
+-            }
+-        }
+-        break;
+-#endif
+ #if APR_HAS_FLOCK_SERIALIZE
+         case APR_LOCK_FLOCK:
+         {
+diff --git a/server/Makefile.in b/server/Makefile.in
+index 8111877..0449553 100644
+--- a/server/Makefile.in
++++ b/server/Makefile.in
+@@ -1,5 +1,5 @@
+ 
+-CLEAN_TARGETS = gen_test_char test_char.h \
++CLEAN_TARGETS = \
+ 	ApacheCoreOS2.def httpd.exp export_files \
+ 	exports.c export_vars.h
+ 
+@@ -24,12 +24,6 @@ TARGETS = delete-exports $(LTLIBRARY_NAME) $(CORE_IMPLIB_FILE) export_vars.h htt
+ include $(top_builddir)/build/rules.mk
+ include $(top_srcdir)/build/library.mk
+ 
+-gen_test_char_OBJECTS = gen_test_char.lo
+-gen_test_char: $(gen_test_char_OBJECTS)
+-	$(LINK) $(EXTRA_LDFLAGS) $(gen_test_char_OBJECTS) $(EXTRA_LIBS)
+-
+-test_char.h: gen_test_char
+-	./gen_test_char > test_char.h
+ 
+ util.lo: test_char.h
+ 
+diff --git a/server/gen_test_char.c b/server/gen_test_char.c
+deleted file mode 100644
+index 248216b..0000000
+--- a/server/gen_test_char.c
++++ /dev/null
+@@ -1,192 +0,0 @@
+-/* Licensed to the Apache Software Foundation (ASF) under one or more
+- * contributor license agreements.  See the NOTICE file distributed with
+- * this work for additional information regarding copyright ownership.
+- * The ASF licenses this file to You under the Apache License, Version 2.0
+- * (the "License"); you may not use this file except in compliance with
+- * the License.  You may obtain a copy of the License at
+- *
+- *     http://www.apache.org/licenses/LICENSE-2.0
+- *
+- * Unless required by applicable law or agreed to in writing, software
+- * distributed under the License is distributed on an "AS IS" BASIS,
+- * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+- * See the License for the specific language governing permissions and
+- * limitations under the License.
+- */
+-
+-#ifdef CROSS_COMPILE
+-
+-#include <ctype.h>
+-#define apr_isalnum(c) (isalnum(((unsigned char)(c))))
+-#define apr_isalpha(c) (isalpha(((unsigned char)(c))))
+-#define apr_iscntrl(c) (iscntrl(((unsigned char)(c))))
+-#define apr_isprint(c) (isprint(((unsigned char)(c))))
+-#define APR_HAVE_STDIO_H 1
+-#define APR_HAVE_STRING_H 1
+-
+-#else
+-
+-#include "apr.h"
+-#include "apr_lib.h"
+-
+-#endif
+-
+-#if defined(WIN32) || defined(OS2)
+-#define NEED_ENHANCED_ESCAPES
+-#endif
+-
+-#if APR_HAVE_STDIO_H
+-#include <stdio.h>
+-#endif
+-#if APR_HAVE_STRING_H
+-#include <string.h>
+-#endif
+-
+-/* A bunch of functions in util.c scan strings looking for certain characters.
+- * To make that more efficient we encode a lookup table.
+- */
+-#define T_ESCAPE_SHELL_CMD    (0x01)
+-#define T_ESCAPE_PATH_SEGMENT (0x02)
+-#define T_OS_ESCAPE_PATH      (0x04)
+-#define T_HTTP_TOKEN_STOP     (0x08)
+-#define T_ESCAPE_LOGITEM      (0x10)
+-#define T_ESCAPE_FORENSIC     (0x20)
+-#define T_ESCAPE_URLENCODED   (0x40)
+-#define T_HTTP_CTRLS          (0x80)
+-#define T_VCHAR_OBSTEXT      (0x100)
+-#define T_URI_UNRESERVED     (0x200)
+-
+-int main(int argc, char *argv[])
+-{
+-    unsigned c;
+-    unsigned short flags;
+-
+-    printf("/* this file is automatically generated by gen_test_char, "
+-           "do not edit */\n"
+-           "#define T_ESCAPE_SHELL_CMD     (%u)\n"
+-           "#define T_ESCAPE_PATH_SEGMENT  (%u)\n"
+-           "#define T_OS_ESCAPE_PATH       (%u)\n"
+-           "#define T_HTTP_TOKEN_STOP      (%u)\n"
+-           "#define T_ESCAPE_LOGITEM       (%u)\n"
+-           "#define T_ESCAPE_FORENSIC      (%u)\n"
+-           "#define T_ESCAPE_URLENCODED    (%u)\n"
+-           "#define T_HTTP_CTRLS           (%u)\n"
+-           "#define T_VCHAR_OBSTEXT        (%u)\n"
+-           "#define T_URI_UNRESERVED       (%u)\n"
+-           "\n"
+-           "static const unsigned short test_char_table[256] = {",
+-           T_ESCAPE_SHELL_CMD,
+-           T_ESCAPE_PATH_SEGMENT,
+-           T_OS_ESCAPE_PATH,
+-           T_HTTP_TOKEN_STOP,
+-           T_ESCAPE_LOGITEM,
+-           T_ESCAPE_FORENSIC,
+-           T_ESCAPE_URLENCODED,
+-           T_HTTP_CTRLS,
+-           T_VCHAR_OBSTEXT,
+-           T_URI_UNRESERVED
+-        );
+-
+-    for (c = 0; c < 256; ++c) {
+-        flags = 0;
+-        if (c % 8 == 0)
+-            printf("\n    ");
+-
+-        /* escape_shell_cmd */
+-#ifdef NEED_ENHANCED_ESCAPES
+-        /* Win32/OS2 have many of the same vulnerable characters
+-         * as Unix sh, plus the carriage return and percent char.
+-         * The proper escaping of these characters varies from unix
+-         * since Win32/OS2 use carets or doubled-double quotes,
+-         * and neither lf nor cr can be escaped.  We escape unix
+-         * specific as well, to assure that cross-compiled unix
+-         * applications behave similarly when invoked on win32/os2.
+-         *
+-         * Rem please keep in-sync with apr's list in win32/filesys.c
+-         */
+-        if (c && strchr("&;`'\"|*?~<>^()[]{}$\\\n\r%", c)) {
+-            flags |= T_ESCAPE_SHELL_CMD;
+-        }
+-#else
+-        if (c && strchr("&;`'\"|*?~<>^()[]{}$\\\n", c)) {
+-            flags |= T_ESCAPE_SHELL_CMD;
+-        }
+-#endif
+-
+-        if (!apr_isalnum(c) && !strchr("$-_.+!*'(),:@&=~", c)) {
+-            flags |= T_ESCAPE_PATH_SEGMENT;
+-        }
+-
+-        if (!apr_isalnum(c) && !strchr("$-_.+!*'(),:;@&=/~", c)) {
+-            flags |= T_OS_ESCAPE_PATH;
+-        }
+-
+-        if (!apr_isalnum(c) && !strchr(".-*_ ", c)) {
+-            flags |= T_ESCAPE_URLENCODED;
+-        }
+-
+-        /* Stop for any non-'token' character, including ctrls, obs-text,
+-         * and "tspecials" (RFC2068) a.k.a. "separators" (RFC2616), which
+-         * is easier to express as characters remaining in the ASCII token set
+-         */
+-        if (!c || !(apr_isalnum(c) || strchr("!#$%&'*+-.^_`|~", c))) {
+-            flags |= T_HTTP_TOKEN_STOP;
+-        }
+-
+-        /* Catch CTRLs other than VCHAR, HT and SP, and obs-text (RFC7230 3.2)
+-         * This includes only the C0 plane, not C1 (which is obs-text itself.)
+-         * XXX: We should verify that all ASCII C0 ctrls/DEL corresponding to
+-         * the current EBCDIC translation are captured, and ASCII C1 ctrls
+-         * corresponding are all permitted (as they fall under obs-text rule)
+-         */
+-        if (!c || (apr_iscntrl(c) && c != '\t')) {
+-            flags |= T_HTTP_CTRLS;
+-        }
+-
+-        /* From RFC3986, the specific sets of gen-delims, sub-delims (2.2),
+-         * and unreserved (2.3) that are possible somewhere within a URI.
+-         * Spec requires all others to be %XX encoded, including obs-text.
+-         */
+-        if (c && !apr_iscntrl(c) && c != ' ') {
+-            flags |= T_VCHAR_OBSTEXT;
+-        }
+-
+-        /* For logging, escape all control characters,
+-         * double quotes (because they delimit the request in the log file)
+-         * backslashes (because we use backslash for escaping)
+-         * and 8-bit chars with the high bit set
+-         */
+-        if (c && (!apr_isprint(c) || c == '"' || c == '\\' || apr_iscntrl(c))) {
+-            flags |= T_ESCAPE_LOGITEM;
+-        }
+-
+-        /* For forensic logging, escape all control characters, top bit set,
+-         * :, | (used as delimiters) and % (used for escaping).
+-         */
+-        if (!apr_isprint(c) || c == ':' || c == '|' || c == '%'
+-            || apr_iscntrl(c) || !c) {
+-            flags |= T_ESCAPE_FORENSIC;
+-        }
+-
+-        /* Characters in the RFC 3986 "unreserved" set.
+-         * https://datatracker.ietf.org/doc/html/rfc3986#section-2.3 */
+-        if (c && (apr_isalnum(c) || strchr("-._~", c))) {
+-            flags |= T_URI_UNRESERVED;
+-        }
+-        
+-        printf("0x%03x%c", flags, (c < 255) ? ',' : ' ');
+-    }
+-
+-    printf("\n};\n\n");
+-
+-    printf(
+-      "/* we assume the folks using this ensure 0 <= c < 256... which means\n"
+-      " * you need a cast to (unsigned char) first, you can't just plug a\n"
+-      " * char in here and get it to work, because if char is signed then it\n"
+-      " * will first be sign extended.\n"
+-      " */\n"
+-      "#define TEST_CHAR(c, f) (test_char_table[(unsigned char)(c)] & (f))\n"
+-    );
+-
+-    return 0;
+-}
+diff --git a/server/mpm_fdqueue.c b/server/mpm_fdqueue.c
+index 3697ca7..9f9d36e 100644
+--- a/server/mpm_fdqueue.c
++++ b/server/mpm_fdqueue.c
+@@ -17,6 +17,7 @@
+ #include "mpm_fdqueue.h"
+ 
+ #if APR_HAS_THREADS
++#warning "apr_has_threads"
+ 
+ #include <apr_atomic.h>
+ 
+@@ -531,4 +532,6 @@ apr_status_t ap_queue_term(fd_queue_t *queue)
+     return queue_interrupt(queue, 1, 1);
+ }
+ 
++#else
++#warning "no apr_has_threads"
+ #endif /* APR_HAS_THREADS */
+diff --git a/server/test_char.h b/server/test_char.h
+new file mode 100644
+index 0000000..ebd7395
+--- /dev/null
++++ b/server/test_char.h
+@@ -0,0 +1,53 @@
++/* this file is automatically generated by gen_test_char, do not edit */
++#define T_ESCAPE_SHELL_CMD     (1)
++#define T_ESCAPE_PATH_SEGMENT  (2)
++#define T_OS_ESCAPE_PATH       (4)
++#define T_HTTP_TOKEN_STOP      (8)
++#define T_ESCAPE_LOGITEM       (16)
++#define T_ESCAPE_FORENSIC      (32)
++#define T_ESCAPE_URLENCODED    (64)
++#define T_HTTP_CTRLS           (128)
++#define T_VCHAR_OBSTEXT        (256)
++#define T_URI_UNRESERVED       (512)
++
++static const unsigned short test_char_table[256] = {
++    0x0a8,0x0fe,0x0fe,0x0fe,0x0fe,0x0fe,0x0fe,0x0fe,
++    0x0fe,0x07e,0x0ff,0x0fe,0x0fe,0x0fe,0x0fe,0x0fe,
++    0x0fe,0x0fe,0x0fe,0x0fe,0x0fe,0x0fe,0x0fe,0x0fe,
++    0x0fe,0x0fe,0x0fe,0x0fe,0x0fe,0x0fe,0x0fe,0x0fe,
++    0x00e,0x140,0x15f,0x146,0x141,0x166,0x141,0x141,
++    0x149,0x149,0x101,0x140,0x148,0x300,0x300,0x14a,
++    0x300,0x300,0x300,0x300,0x300,0x300,0x300,0x300,
++    0x300,0x300,0x168,0x14b,0x14f,0x148,0x14f,0x14f,
++    0x148,0x300,0x300,0x300,0x300,0x300,0x300,0x300,
++    0x300,0x300,0x300,0x300,0x300,0x300,0x300,0x300,
++    0x300,0x300,0x300,0x300,0x300,0x300,0x300,0x300,
++    0x300,0x300,0x300,0x14f,0x15f,0x14f,0x147,0x300,
++    0x147,0x300,0x300,0x300,0x300,0x300,0x300,0x300,
++    0x300,0x300,0x300,0x300,0x300,0x300,0x300,0x300,
++    0x300,0x300,0x300,0x300,0x300,0x300,0x300,0x300,
++    0x300,0x300,0x300,0x14f,0x167,0x14f,0x341,0x0fe,
++    0x17e,0x17e,0x17e,0x17e,0x17e,0x17e,0x17e,0x17e,
++    0x17e,0x17e,0x17e,0x17e,0x17e,0x17e,0x17e,0x17e,
++    0x17e,0x17e,0x17e,0x17e,0x17e,0x17e,0x17e,0x17e,
++    0x17e,0x17e,0x17e,0x17e,0x17e,0x17e,0x17e,0x17e,
++    0x17e,0x17e,0x17e,0x17e,0x17e,0x17e,0x17e,0x17e,
++    0x17e,0x17e,0x17e,0x17e,0x17e,0x17e,0x17e,0x17e,
++    0x17e,0x17e,0x17e,0x17e,0x17e,0x17e,0x17e,0x17e,
++    0x17e,0x17e,0x17e,0x17e,0x17e,0x17e,0x17e,0x17e,
++    0x17e,0x17e,0x17e,0x17e,0x17e,0x17e,0x17e,0x17e,
++    0x17e,0x17e,0x17e,0x17e,0x17e,0x17e,0x17e,0x17e,
++    0x17e,0x17e,0x17e,0x17e,0x17e,0x17e,0x17e,0x17e,
++    0x17e,0x17e,0x17e,0x17e,0x17e,0x17e,0x17e,0x17e,
++    0x17e,0x17e,0x17e,0x17e,0x17e,0x17e,0x17e,0x17e,
++    0x17e,0x17e,0x17e,0x17e,0x17e,0x17e,0x17e,0x17e,
++    0x17e,0x17e,0x17e,0x17e,0x17e,0x17e,0x17e,0x17e,
++    0x17e,0x17e,0x17e,0x17e,0x17e,0x17e,0x17e,0x17e 
++};
++
++/* we assume the folks using this ensure 0 <= c < 256... which means
++ * you need a cast to (unsigned char) first, you can't just plug a
++ * char in here and get it to work, because if char is signed then it
++ * will first be sign extended.
++ */
++#define TEST_CHAR(c, f) (test_char_table[(unsigned char)(c)] & (f))
