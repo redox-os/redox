@@ -9,6 +9,7 @@
 prompt = false
 
 [packages]
+bootloader = {}
 bootstrap = {}
 escalated = {}
 initfs = {}
