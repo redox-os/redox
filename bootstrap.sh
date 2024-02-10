@@ -449,6 +449,7 @@ ubuntu()
 		xdg-utils \
 		xxd \
 		zip \
+		zstd \
 		"
 	# Not availible for at least ARM hosts
 	case "$host_arch" in
@@ -579,7 +580,8 @@ fedora()
 	clang \
 	doxygen \
 	ant \
-	protobuf-compiler ; do rpm -q $pkg > /dev/null || echo $pkg; done)
+	protobuf-compiler \
+	zstd ; do rpm -q $pkg > /dev/null || echo $pkg; done)
 	# If the list of packages is not empty, install missing
 	COUNT=$(echo $PKGS | wc -w)
 	if [ $COUNT -ne 0 ]; then
