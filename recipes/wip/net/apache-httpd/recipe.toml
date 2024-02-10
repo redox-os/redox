@@ -1,0 +1,50 @@
+#apache-httpd
+[source]
+tar="https://dlcdn.apache.org/httpd/httpd-2.4.58.tar.bz2"
+patches = [
+    "redox.patch",
+]
+[build]
+dependencies = [
+    "apr",
+    "apr-util",
+    "curl",
+    "expat",
+    "gdbm",
+    "libuuid",
+    "libxcrypt",
+    "libxml2",
+    "openssl1",
+    "pcre",
+    "zlib",
+]
+
+template = "custom"
+script = """
+# cookbook_configure
+
+export COOKBOOK_MAKE_JOBS=1
+export CPPFLAGS="$CPPFLAGS -I${COOKBOOK_SYSROOT}/include/apr-1 -DDEBUG=1"
+export LTFLAGS="$LTFLAGS -Wall"
+COOKBOOK_CONFIGURE_FLAGS=(
+    --build=$(/usr/bin/cc -dumpmachine)
+    --host=${TARGET}
+    --with-apr=$COOKBOOK_SYSROOT
+    --with-apr-util=$COOKBOOK_SYSROOT
+    --enable-unixd=static
+    --enable-authz_core=static
+    --enable-authz_host=static
+    ac_cv_prog_PCRE_CONFIG=$COOKBOOK_SYSROOT/bin/pcre-config
+    ap_cv_void_ptr_lt_long=no
+)
+cd ${COOKBOOK_SOURCE}
+sed -i build/rules.mk.in -e 's/--mode=compile/& --tag=CC/'
+sed -i build/rules.mk.in -e 's/--mode=link/& --tag=CC/'
+"${COOKBOOK_CONFIGURE}" "${COOKBOOK_CONFIGURE_FLAGS[@]}"
+"${COOKBOOK_MAKE}" -j "${COOKBOOK_MAKE_JOBS}"
+"${COOKBOOK_MAKE}" install DESTDIR="${COOKBOOK_STAGE}"
+sed -s 's/^LoadModule /# &/' -i ${COOKBOOK_STAGE}/usr/local/apache2/conf/httpd.conf
+sed -s 's/^User daemon/User user/' -i ${COOKBOOK_STAGE}/usr/local/apache2/conf/httpd.conf
+sed -s 's/^Group daemon/Group #1000/' -i ${COOKBOOK_STAGE}/usr/local/apache2/conf/httpd.conf
+touch ${COOKBOOK_STAGE}/usr/local/apache2/logs/keep_dir
+"""
