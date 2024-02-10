@@ -1,5 +1,7 @@
-#TODO can't recognize Redox target
 [source]
 tar = "https://sourceforge.net/projects/libuuid/files/libuuid-1.0.3.tar.gz/download"
+patches = [
+  "redox.patch"
+]
 [build]
 template = "configure"
