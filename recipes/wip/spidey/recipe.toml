@@ -1,0 +1,5 @@
+#TODO needs to determine the build method (Cargo or Meson)
+[source]
+git = "https://github.com/kdwk/Spidey"
+[build]
+template = "custom"
