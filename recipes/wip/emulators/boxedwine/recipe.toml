@@ -15,7 +15,6 @@ dependencies = [
     "zlib",
 ]
 script = """
-mkdir -p "${COOKBOOK_STAGE}/bin"
 cd "${COOKBOOK_SOURCE}/project/linux"
 #TODO: USE MAKEFILE
 #TODO: USE X64 CPU CORE
@@ -83,5 +82,7 @@ ${TARGET}-gcc -std=c++17 -O2 \
   -DSDL2=1 \
   -DSIMDE_SSE2_NO_NATIVE \
   -static \
-  -o "${COOKBOOK_STAGE}/bin/boxedwine"
+  -o "${COOKBOOK_BUILD}/boxedwine"
+mkdir -p "${COOKBOOK_STAGE}/bin"
+cp -v "${COOKBOOK_BUILD}/boxedwine" "${COOKBOOK_STAGE}/bin/boxedwine"
 """
