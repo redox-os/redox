@@ -14,7 +14,7 @@ function recipe_build {
     export LDFLAGS="-L${COOKBOOK_SYSROOT}/lib -L${PWD}/inst-${TARGET}/lib -static -Wl,--allow-multiple-definition -Wl,-Bstatic"
     # nghttp2 is not linked for some reason
     export LDFLAGS="${LDFLAGS} -lcurl -lnghttp2"
-    "$REDOX_MAKE" V=1 -j"$($NPROC)"
+    "$REDOX_MAKE" PREFIX=/usr V=1 -j"$($NPROC)"
     skip=1
 }
 
@@ -25,7 +25,7 @@ function recipe_clean {
 
 function recipe_stage {
     dest="$(realpath "$1")"
-    "$REDOX_MAKE" DESTDIR="$dest" install
+    "$REDOX_MAKE" DESTDIR="$dest" PREFIX=/usr install
     mkdir -pv "$dest/ui/apps"
     cp -v "${COOKBOOK_RECIPE}/manifest" "$dest/ui/apps/00_netsurf"
     skip=1
