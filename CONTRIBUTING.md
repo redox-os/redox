@@ -20,7 +20,7 @@ On [this](https://doc.redox-os.org/book/ch01-02-philosophy.html) page we explain
 
 Join us on [Matrix Chat](https://doc.redox-os.org/book/ch13-01-chat.html) to discuss issues or ask questions.
 
-## Suggestions for Contributions
+## Important Places to Contribute
 
 (Before starting to contribute you **must** read the [FAQ](https://www.redox-os.org/faq/) and the [Redox Book](https://doc.redox-os.org/book/))
 
@@ -29,46 +29,49 @@ You can contribute to the Redox documentation and code on these repositories:
 (The order is based on difficulty, easy things first)
 
 - [Website](https://gitlab.redox-os.org/redox-os/website)
-- [Book](https://gitlab.redox-os.org/redox-os/book)
+- [Book](https://gitlab.redox-os.org/redox-os/book) - High-level documentation
 - [Build System Configuration](https://gitlab.redox-os.org/redox-os/redox) - Our main repository
-- [Cookbook](https://gitlab.redox-os.org/redox-os/cookbook) - Package system
+- [Cookbook](https://gitlab.redox-os.org/redox-os/cookbook) - Ports system
+- [Orbital](https://gitlab.redox-os.org/redox-os/orbital) - Display server and window manager
+- [Package Manager](https://gitlab.redox-os.org/redox-os/pkgutils)
 - [relibc](https://gitlab.redox-os.org/redox-os/relibc) - Redox C Library
-- [Drivers](https://gitlab.redox-os.org/redox-os/drivers)
+- [Drivers](https://gitlab.redox-os.org/redox-os/drivers) - Device daemons
 - [Kernel](https://gitlab.redox-os.org/redox-os/kernel)
 
-### Places to Contribute
+### Skill Levels
 
 If you aren't fluent in Rust:
 
 - Write documentation
-- Use and test Redox, fill issues for bugs or needed features (verify the repository issues before)
-- Web development on the [website](https://gitlab.redox-os.org/redox-os/website)
+- Use and test Redox, fill issues for bugs or needed features (please verify the repository issues before)
+- Web development on the website (we don't accept JavaScript code)
 - Write unit tests (may require minimal knowledge of Rust)
 
 If you are fluent in Rust, but not operating system Development:
 
+- Improve the Orbital display server and window manager.
 - Port programs written in Rust to Redox (in most cases you need to port crates, be aware of missing functions on relibc, porting without these functions will make patches dirty)
-- [relibc](https://gitlab.redox-os.org/redox-os/relibc) - Redox C Library
-- The [Ion Shell](https://gitlab.redox-os.org/redox-os/ion)
-- [Package Manager](https://gitlab.redox-os.org/redox-os/pkgutils)
+- Improve the program compatibility in relibc
+- Improve the package manager
+- Improve the [Ion](https://gitlab.redox-os.org/redox-os/ion) shell
 
 If you are fluent in Rust, and have experience with operating system development:
 
-- Familiarize yourself with the repository and codebase
+- Familiarize yourself with the repository and code
 - Grep for `TODO`, `FIXME`, `BUG`, `UNOPTIMIZED`, `REWRITEME`, `DOCME`, and `PRETTYFYME` and fix the code you find
-- Update older code to remove warnings
+- Update old code to remove warnings
 - Improve and optimize code, especially in the kernel
-- Write drivers
+- Write device drivers
 
 For those who want to contribute to the Redox GUI, our GUI strategy has recently changed.
 
-- We are porting the [COSMIC compositor](https://github.com/pop-os/cosmic-comp), help wanted.
-- Redox is in the process of adopting other Rust-lang GUIs such as [Iced](https://iced.rs) and [Slint](https://slint-ui.com/). Please check out those projects if this is your area of interest.
+- We are improving the [Orbital](https://gitlab.redox-os.org/redox-os/orbital) display server and window manager, you can read more about it on [this](https://gitlab.redox-os.org/redox-os/redox/-/issues/1430) tracking issue.
+- Redox is in the process of adopting other Rust-written GUI toolkits, such as [Iced](https://iced.rs) and [Slint](https://slint-ui.com/). Please check out those projects if this is your area of interest.
 - OrbTk is in maintenance mode, and its developers have moved to other projects such as the ones below. There is currently no Redox-specific GUI development underway.
 
 ## Tracking Issues Index
 
-We use the Tracking Issues Index to ease the development workflow, you can find them on [this](https://gitlab.redox-os.org/redox-os/redox/-/issues/1384) page.
+We use an index to track the development priorities, you can find them on [this](https://gitlab.redox-os.org/redox-os/redox/-/issues/1384) page.
 
 ## Build System
 
