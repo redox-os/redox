@@ -1,0 +1,6 @@
+#TODO missing script for CMake, read https://github.com/unicorn-engine/unicorn/blob/master/docs/COMPILE.md
+[source]
+git = "https://github.com/unicorn-engine/unicorn"
+rev = "e9c1c17f6df8f8f5da85ee80ad527452db5870ce"
+[build]
+template = "custom"
