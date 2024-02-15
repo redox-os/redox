@@ -10,6 +10,7 @@ filesystem_size = 8192
 # Package settings
 [packages]
 # apps
+boxedwine = {}
 cosmic-edit = {}
 cosmic-files = {}
 cosmic-term = {}
@@ -26,6 +27,7 @@ ffmpeg6 = {}
 gnu-grep = {}
 lua54 = {}
 nano = {}
+nushell = {}
 perg = {}
 relibc-tests = {}
 ripgrep = {}
