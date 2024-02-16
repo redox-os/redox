@@ -1,7 +1,0 @@
-#TODO require signalfd
-#TODO require Bluetooth drivers
-#TODO build instructions - https://git.kernel.org/pub/scm/bluetooth/bluez.git/tree/INSTALL
-[source]
-tar = "http://www.kernel.org/pub/linux/bluetooth/bluez-5.66.tar.xz"
-[build]
-template = "configure"
