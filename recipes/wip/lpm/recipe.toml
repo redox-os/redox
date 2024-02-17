@@ -1,8 +1,0 @@
-#TODO compilation error
-[source]
-git = "https://github.com/lodosgroup/lpm"
-[build]
-template = "custom"
-script = """
-cookbook_cargo_packages lpm
-"""
