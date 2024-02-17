@@ -1,0 +1,15 @@
+#TODO Not compiled or tested
+[source]
+git = "https://github.com/elkowar/eww"
+[build]
+template = "custom"
+dependencies = [
+    "gtk3",
+    "pango",
+    "cairo",
+    "gdk-pixbuf",
+    "glib",
+]
+script = """
+cookbook_cargo_packages eww
+"""
