@@ -29,26 +29,26 @@ from the [redox](https://gitlab.redox-os.org/redox-os/redox) repository.
 
 The categories inside the `recipes` folder.
 
-- `backends` - Middlewares, like SDL2
-- `core` - System components (included on `server` build)
-- `demos` - Software with demos
-- `development` - Any software used for development, like compilers and dependency managers
-- `documentation` - Software used for documentation
-- `emulators` - Console emulators or compatibility/translation layers
-- `examples` - Softwares with examples
+- `core` - System components
+- `demos` - Programs with demos and examples
+- `dev` - Programs used for development and programming languages, like compilers and dependency managers
+- `doc` - Programs used for documentation
+- `emulators` - Console emulators or compatibility layers
 - `games` - Any kind of game
+- `graphics` - Programs used for graphics processing or production
 - `gui` - Graphical interfaces
 - `icons` - Icon packs
-- `libraries` - Software with functions for other softwares, like OpenSSL
-- `network` - Networking tools
+- `libs` - Software with functions for other softwares, like OpenSSL
+- `math` - Programs used for calculations
+- `net` - Networking tools
 - `other` - Software that can't fit on other categories
-- `shells` - Terminal interpreters
-- `sound` - Software used for sound processing/production
+- `shells` - Terminal interpreters and extensions
+- `sound` - Software used for sound processing or production
 - `tests` - Software used to test other softwares
-- `toolkits` - Software used to create other softwares with a framework-like approach
 - `tools` - Text editors, terminal tools and any other kind of tools
-- `tui` - Graphical terminal interfaces
-- `video` - Video players and video processing/production tools
+- `tui` - Programs with a [terminal user interface](https://en.wikipedia.org/wiki/Text-based_user_interface)
+- `video` - Programs used for video playback, processing and production
+- `web` - World Wide Web browsers and tools
 - `wip` - Software that needs porting or incomplete recipes
 
 ### Package Policy
