@@ -1,0 +1,8 @@
+#TODO Not compiled or tested
+[source]
+git = "https://github.com/ymgyt/syndicationd"
+[build]
+template = "custom"
+script = """
+cookbook_cargo_packages synd-term
+"""
