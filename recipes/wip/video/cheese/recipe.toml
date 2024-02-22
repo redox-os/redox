@@ -1,0 +1,6 @@
+#TODO missing script for Meson, see https://gitlab.gnome.org/GNOME/cheese
+#TODO maybe need GStreamer as dependency
+[source]
+tar = "https://download.gnome.org/sources/cheese/44/cheese-44.1.tar.xz"
+[build]
+template = "custom"
