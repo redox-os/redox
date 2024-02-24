@@ -17,3 +17,6 @@ dependencies = [
     "openal",
     "ncurses",
 ]
+script = """
+export CPPFLAGS="-I${COOKBOOK_SYSROOT}/include/ncurses"
+"""

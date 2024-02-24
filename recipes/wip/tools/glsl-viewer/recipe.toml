@@ -12,3 +12,6 @@ dependencies = [
     "ffmpeg6",
     "glfw",
 ]
+script = """
+export CPPFLAGS="-I${COOKBOOK_SYSROOT}/include/ncurses"
+"""
