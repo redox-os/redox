@@ -8,3 +8,6 @@ dependencies = [
     "ncurses",
     "openssl1",
 ]
+script = """
+export CPPFLAGS="-I${COOKBOOK_SYSROOT}/include/ncurses"
+"""
