@@ -1,0 +1,8 @@
+#TODO Not compiled or tested
+[source]
+git = "https://github.com/rnestler/attractorr"
+[build]
+template = "cargo"
+dependencies = [
+    "openssl1",
+]
