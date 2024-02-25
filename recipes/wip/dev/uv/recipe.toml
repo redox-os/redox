@@ -1,0 +1,8 @@
+#TODO Not compiled or tested
+[source]
+git = "https://github.com/astral-sh/uv"
+[build]
+template = "custom"
+script = """
+cookbook_cargo_packages uv
+"""
