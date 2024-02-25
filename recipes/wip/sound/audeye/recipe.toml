@@ -1,0 +1,8 @@
+#TODO Not compiled or tested
+[source]
+git = "https://github.com/maxmarsc/audeye"
+[build]
+template = "cargo"
+dependencies = [
+    "libsndfile",
+]
