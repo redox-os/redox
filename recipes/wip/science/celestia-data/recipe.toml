@@ -1,0 +1,5 @@
+#TODO missing script for CMake, see https://github.com/CelestiaProject/Celestia/blob/master/INSTALL.md#installing-the-content
+[source]
+git = "https://github.com/CelestiaProject/CelestiaContent"
+[build]
+template = "custom"
