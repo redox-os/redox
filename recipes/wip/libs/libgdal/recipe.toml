@@ -1,0 +1,5 @@
+#TODO missing script for CMake, see https://gdal.org/development/building_from_source.html
+[source]
+tar = "https://github.com/OSGeo/gdal/releases/download/v3.8.4/gdal-3.8.4.tar.gz"
+[build]
+template = "custom"

@@ -1,0 +1,10 @@
+#TODO missing script for CMake, see https://docs.openspaceproject.com/en/latest/dev/compiling/index.html#
+[source]
+git = "https://github.com/OpenSpace/OpenSpace"
+rev = "b3681167a3b95d49ac7aa7d06b07cbd88c687e9a"
+[build]
+template = "custom"
+dependencies = [
+    "qt6-base",
+    "libgdal",
+]
