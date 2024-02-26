@@ -1,0 +1,11 @@
+#TODO missing script for CMake, see https://github.com/audacity/audacity/blob/master/BUILDING.md
+#TODO use the GTK2 or wxWidgets frontend?
+#TODO probably need audio server patching
+[source]
+tar = "https://github.com/audacity/audacity/releases/download/Audacity-3.4.2/audacity-sources-3.4.2.tar.gz"
+[build]
+template = "custom"
+dependencies = [
+    "gtk2",
+    "libuuid",
+]
