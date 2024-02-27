@@ -1,0 +1,11 @@
+#TODO missing script for CMake, see https://dev.opencascade.org/doc/overview/html/build_upgrade__building_occt.html
+#TODO missing dependencies, see https://dev.opencascade.org/doc/overview/html/build_upgrade_building_3rdparty.html#build_3rdparty_linux
+[source]
+tar = "https://github.com/Open-Cascade-SAS/OCCT/archive/refs/tags/V7_8_0.tar.gz"
+[build]
+template = "custom"
+dependencies = [
+    "freetype2",
+    "tcl",
+    "tk",
+]

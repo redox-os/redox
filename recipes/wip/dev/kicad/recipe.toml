@@ -1,0 +1,18 @@
+#TODO missing script for CMake, see https://dev-docs.kicad.org/en/build/linux/
+#TODO maybe missing dependencies, see https://dev-docs.kicad.org/en/build/getting-started/
+[source]
+git = "https://gitlab.com/kicad/code/kicad"
+rev = "942661fc10e172febf9d9990de2471d4b1020618"
+[build]
+template = "custom"
+dependencies = [
+    "wxwidgets-gtk3",
+    "cairo",
+    "boost",
+    "glew",
+    "zlib",
+    "freeglut",
+    "glm",
+    "curl",
+    "ngspice",
+]
