@@ -53,7 +53,7 @@ mkdir -pv "${COOKBOOK_STAGE}/etc/pcid"
 cp -v "${COOKBOOK_SOURCE}/initfs.toml" "${COOKBOOK_STAGE}/etc/pcid/initfs.toml"
 
 mkdir -pv "${COOKBOOK_STAGE}/etc/pcid.d"
-${FIND} "${COOKBOOK_SOURCE}" -maxdepth 2 -type f -name 'config.toml' | while read conf
+${FIND} "${COOKBOOK_SOURCE}" -maxdepth 3 -type f -name 'config.toml' | while read conf
 do
     driver="$(basename "$(dirname "$conf")")"
     cp -v "$conf" "${COOKBOOK_STAGE}/etc/pcid.d/$driver.toml"
