@@ -1,0 +1,11 @@
+#TODO Not compiled or tested
+[source]
+git = "https://github.com/rustzx/rustzx"
+[build]
+template = "custom"
+dependencies = [
+    "sdl2",
+]
+script = """
+cookbook_cargo_packages rustzx
+"""

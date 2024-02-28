@@ -1,0 +1,5 @@
+#TODO Not compiled or tested
+[source]
+git = "https://github.com/YJDoc2/8086-Emulator"
+[build]
+template = "cargo"
