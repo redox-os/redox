@@ -49,9 +49,3 @@ path = "/etc/net/ip_subnet"
 data = """
 255.255.255.0
 """
-
-[[files]]
-path = "/etc/net/mac"
-data = """
-54-52-00-ab-cd-ef
-"""
