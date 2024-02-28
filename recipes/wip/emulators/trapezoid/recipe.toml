@@ -1,0 +1,5 @@
+#TODO Not compiled or tested
+[source]
+git = "https://github.com/Amjad50/Trapezoid"
+[build]
+template = "cargo"

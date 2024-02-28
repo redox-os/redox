@@ -1,0 +1,8 @@
+#TODO Not compiled or tested
+[source]
+git = "https://github.com/RainbowCookie32/rusty-psn"
+[build]
+template = "cargo"
+dependencies = [
+    "openssl1",
+]

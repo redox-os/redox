@@ -1,0 +1,5 @@
+#TODO Not compiled or tested
+[source]
+git = "https://github.com/TheWaWaR/simple-http-server"
+[build]
+template = "cargo"
