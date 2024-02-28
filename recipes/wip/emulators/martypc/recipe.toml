@@ -1,0 +1,9 @@
+#TODO maybe wrong script, see https://github.com/dbalsom/martypc/blob/version_0_2_0/BUILDING.md#building-for-linux
+[source]
+git = "https://github.com/dbalsom/martypc"
+[build]
+template = "custom"
+script = """
+cd install
+cookbook_cargo
+"""
