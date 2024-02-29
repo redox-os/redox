@@ -1,0 +1,12 @@
+#TODO Not compiled or tested
+[source]
+git = "https://github.com/michelhe/rustboyadvance-ng"
+[build]
+template = "custom"
+dependencies = [
+    "sdl2",
+    "sdl2-image",
+]
+script = """
+cookbook_cargo_packages rustboyadvance-sdl2
+"""
