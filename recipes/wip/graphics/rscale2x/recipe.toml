@@ -1,0 +1,5 @@
+#TODO Not compiled or tested
+[source]
+git = "https://github.com/ahmetmutlugun/rscale2x"
+[build]
+template = "cargo"
