@@ -1,0 +1,12 @@
+#TODO Not compiled or tested
+[source]
+git = "https://github.com/scottlamb/moonfire-nvr"
+[build]
+template = "custom"
+dependencies = [
+    "sqlite3",
+]
+script = """
+cd server
+cookbook_cargo
+"""
