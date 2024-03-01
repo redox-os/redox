@@ -1,0 +1,11 @@
+#TODO maybe missing dependencies, see https://github.com/gyroflow/gyroflow/blob/master/_scripts/linux.just
+[source]
+git = "https://github.com/gyroflow/gyroflow"
+[build]
+template = "cargo"
+dependencies = [
+    "fontconfig",
+    "freetype2",
+    "ffmpeg6",
+    "qt6-base",
+]
