@@ -1,0 +1,8 @@
+#TODO Not compiled or tested
+[source]
+git = "https://github.com/ONdraid/reve"
+[build]
+template = "custom"
+script = """
+cookbook_cargo --features reve-cli reve-gui
+"""

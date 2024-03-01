@@ -1,0 +1,11 @@
+#TODO Not compiled or tested
+[source]
+git = "https://github.com/master-of-zen/Av1an"
+[build]
+template = "custom"
+dependencies = [
+    "ffmpeg6",
+]
+script = """
+cookbook_cargo_packages av1an
+"""
