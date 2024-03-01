@@ -1,0 +1,5 @@
+#TODO Not compiled or tested
+[source]
+git = "https://github.com/Seebass22/video4discord"
+[build]
+template = "cargo"
