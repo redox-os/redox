@@ -1,0 +1,8 @@
+#TODO Not compiled or tested
+[source]
+git = "https://github.com/gamebooster/soundboard"
+[build]
+template = "custom"
+script = """
+cookbook_cargo --features full
+"""

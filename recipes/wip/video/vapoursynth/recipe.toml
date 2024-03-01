@@ -1,0 +1,13 @@
+#TODO maybe wrong script, see https://vapoursynth.com/doc/installation.html#linux-and-os-x-compilation
+[source]
+git = "https://github.com/vapoursynth/vapoursynth"
+rev = "3157049549a0940359b37004aeeeebd8f1db665e"
+[build]
+template = "custom"
+dependencies = [
+    "library1",
+]
+script = """
+./autogen.sh
+cookbook_configure
+"""
