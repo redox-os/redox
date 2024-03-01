@@ -1,0 +1,9 @@
+#TODO Not compiled or tested
+[source]
+git = "https://github.com/dimtpap/coppwr"
+rev = "f4e664b860b89801ec60eee479802f00af3cfdfc"
+[build]
+template = "cargo"
+dependencies = [
+    "pipewire",
+]

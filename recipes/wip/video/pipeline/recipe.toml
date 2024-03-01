@@ -1,0 +1,16 @@
+#TODO Not compiled or tested
+[source]
+tar = "https://gitlab.com/schmiddi-on-mobile/pipeline/-/package_files/114831818/download"
+[build]
+template = "custom"
+dependencies = [
+    "gtk4",
+    "glib",
+    "libadwaita",
+    "gdk-pixbuf",
+]
+script = """
+cookbook_cargo
+mkdir -pv "${COOKBOOK_STAGE}"/usr/share/glib-2.0/schemas
+cp -rv "${COOKBOOK_SOURCE}"/data/de.schmidhuberj.tubefeeder.gschema.xml "${COOKBOOK_STAGE}"/usr/share/glib-2.0/schemas
+"""
