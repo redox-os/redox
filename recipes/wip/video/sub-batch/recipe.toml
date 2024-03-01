@@ -1,0 +1,6 @@
+#TODO Not compiled or tested
+[source]
+git = "https://github.com/kl/sub-batch"
+rev = "a63ba33c6d0fdcb0e7a83da1c16bd8a19a43472b"
+[build]
+template = "cargo"
