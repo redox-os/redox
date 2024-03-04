@@ -5,5 +5,5 @@ branch = "main"
 [build]
 template = "custom"
 script = """
-cookbook_cargo_packages editor-orbclient
+cookbook_cargo_packages editor
 """
