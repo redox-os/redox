@@ -1,5 +1,15 @@
-#TODO missing script for building, see https://github.com/facebook/zstd#build-instructions
+#TODO waiting for openat implementation, building without openat fails
+#NOTE although project supports building without openat, but the corresponding #if check
+# checks for the presence of st_mtime, and if it exists it falsely assumes that AT_FDCWD is supported too
+# for more info see starting from programs/util.c line 262: #if (PLATFORM_POSIX_VERSION >= 200809L) && defined(st_mtime)
+
 [source]
 tar = "https://github.com/facebook/zstd/releases/download/v1.5.5/zstd-1.5.5.tar.gz"
+
 [build]
 template = "custom"
+script = """
+rsync -av --delete "${COOKBOOK_SOURCE}/" ./
+${COOKBOOK_MAKE}
+"""
+
