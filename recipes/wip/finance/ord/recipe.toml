@@ -1,0 +1,8 @@
+#TODO Not compiled or tested
+[source]
+git = "https://github.com/ordinals/ord"
+[build]
+template = "cargo"
+dependencies = [
+    "openssl1",
+]
