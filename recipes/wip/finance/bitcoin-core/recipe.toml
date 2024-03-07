@@ -1,0 +1,15 @@
+#TODO Not compiled or tested
+[source]
+tar = "https://bitcoincore.org/bin/bitcoin-core-26.0/bitcoin-26.0.tar.gz"
+[build]
+template = "custom"
+dependencies = [
+    "boost",
+    "libevent",
+]
+script = """
+COOKBOOK_CONFIGURE_FLAGS+=(
+    --disable-wallet
+)
+cookbook_configure
+"""

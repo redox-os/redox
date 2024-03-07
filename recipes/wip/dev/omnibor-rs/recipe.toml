@@ -1,0 +1,17 @@
+#TODO Not compiled or tested
+[source]
+git = "https://github.com/omnibor/omnibor-rs"
+[build]
+template = "custom"
+script = """
+binary=omnibor
+"${COOKBOOK_CARGO}" build \
+            --manifest-path "${COOKBOOK_SOURCE}/Cargo.toml" \
+            --bin "${binary}" \
+            --release
+            --build-binary
+        mkdir -pv "${COOKBOOK_STAGE}/usr/bin"
+        cp -v \
+            "target/${TARGET}/release/${binary}" \
+            "${COOKBOOK_STAGE}/usr/bin/${binary}"
+"""

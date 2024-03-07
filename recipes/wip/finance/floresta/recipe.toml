@@ -1,0 +1,8 @@
+#TODO Not compiled or tested
+[source]
+git = "https://github.com/Davidson-Souza/Floresta"
+[build]
+template = "custom"
+script = """
+cookbook_cargo_packages florestad
+"""

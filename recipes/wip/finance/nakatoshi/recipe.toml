@@ -1,0 +1,5 @@
+#TODO Not compiled or tested
+[source]
+git = "https://github.com/ndelvalle/nakatoshi"
+[build]
+template = "cargo"
