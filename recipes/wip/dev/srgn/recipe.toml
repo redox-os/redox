@@ -1,0 +1,5 @@
+#TODO Not compiled or tested
+[source]
+git = "https://github.com/alexpovel/srgn"
+[build]
+template = "cargo"
