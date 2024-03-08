@@ -1,0 +1,20 @@
+[source]
+git = "https://github.com/pop-os/cosmic-player.git"
+branch = "master"
+
+[build]
+dependencies = [
+    "ffmpeg6",
+    "liborbital",
+    "llvm",
+    "mesa",
+    "sdl2",
+    "zlib",
+]
+template = "custom"
+script = """
+unset CC
+cookbook_cargo --no-default-features --features static --verbose
+mkdir -pv "${COOKBOOK_STAGE}/ui/apps"
+cp -v "${COOKBOOK_RECIPE}/manifest" "${COOKBOOK_STAGE}/ui/apps/cosmic-player"
+"""
