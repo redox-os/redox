@@ -1,0 +1,8 @@
+#TODO Not compiled or tested
+[source]
+git = "https://github.com/explodingcamera/tinywasm"
+[build]
+template = "custom"
+script = """
+cookbook_cargo_packages tinywasm-cli
+"""
