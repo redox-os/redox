@@ -1,0 +1,10 @@
+#TODO missing script for GNU Make, see https://www.veracrypt.fr/en/CompilingGuidelineLinux.html#CompileVeraCrypt
+[source]
+tar = "https://launchpad.net/veracrypt/trunk/1.26.7/+download/VeraCrypt_1.26.7_Source.tar.bz2"
+[build]
+template = "custom"
+dependencies = [
+    "libfuse3",
+    "libpcsclite",
+    "wxwidgets-gtk3",
+]
