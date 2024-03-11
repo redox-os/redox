@@ -1,0 +1,7 @@
+#TODO missing script for cross-compilation, see https://github.com/ventoy/Ventoy/blob/master/DOC/BuildVentoyFromSource.txt
+#TODO missing dependencies, try to figure out what it needs at build-time and runtime
+[source]
+git = "https://github.com/ventoy/Ventoy"
+rev = "3f65f0ef03e4aebcd14f233ca808a4f894657802"
+[build]
+template = "custom"
