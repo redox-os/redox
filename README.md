@@ -57,8 +57,8 @@ Before sending your recipe to upstream (to become a public package), you must fo
 
 #### Cross-Compilation
 
-- All recipes must use our cross-compilers, a Cookbook [template](https://doc.redox-os.org/book/ch09-03-porting-applications.html#templates) does this automatically but it's not always possible, study the build system of your program/library to find these options or patch the configuration files.
-- Don't hardcode the CPU architecture on the recipe script.
+- All recipes must use our cross-compilers, a Cookbook [template](https://doc.redox-os.org/book/ch09-03-porting-applications.html#templates) does this automatically but it's not always possible, study the build system of your program or library to find these options or patch the configuration files.
+- Don't hardcode the CPU architecture on the recipe script (this would break the multi-arch support).
 
 #### Tarballs
 
@@ -66,7 +66,8 @@ Before sending your recipe to upstream (to become a public package), you must fo
 
 #### Library Linking
 
-- Keep the static linking of libraries, there's an exception if the package become bigger than 100MB, big libraries/runtimes like LLVM can be dynamically linked.
+- Keep the static linking of libraries to reduce the launch time and improve security.
+- If your package is bigger than 50MB, dynamic link big libraries until your package is equal or less than 50MB (to reduce the RAM usage).
 
 #### ABI stability
 
@@ -78,8 +79,9 @@ Before sending your recipe to upstream (to become a public package), you must fo
 
 #### License
 
-- Don't package programs/libraries lacking a license.
+- Don't package programs or libraries lacking a license.
 - Verify if the program has some license violation, in case of doubt ask us on the [chat](https://doc.redox-os.org/book/ch13-01-chat.html).
+- Non-free programs and assets should go to a subcategory of the `nonfree` category and be approved per license.
 
 ### Testing Area
 
