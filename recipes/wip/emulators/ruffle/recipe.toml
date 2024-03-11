@@ -1,4 +1,4 @@
-#TODO make Wayland work
+#TODO not compiled or tested
 [source]
 git = "https://github.com/ruffle-rs/ruffle"
 [build]
