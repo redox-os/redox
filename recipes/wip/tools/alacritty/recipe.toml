@@ -1,4 +1,4 @@
-#TODO make Wayland work
+#TODO port to Orbital
 [source]
 git = "https://github.com/alacritty/alacritty"
 rev = "5efb0690a3174dd4e21516bda59f74f3aa8ba3e3"
@@ -7,7 +7,6 @@ template = "custom"
 dependencies = [
     "freetype2",
     "fontconfig",
-    "libwayland",
 ]
 script = """
 cookbook_cargo_packages alacritty

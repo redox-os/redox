@@ -1,12 +1,9 @@
-#TODO make Wayland work
+#TODO port to Orbital
 [source]
 git = "https://github.com/Rodrigodd/gameroy"
 rev = "78d12b7a74cda37002cd2b964baaa761285925ab"
 [build]
 template = "custom"
-dependencies = [
-    "libwayland",
-]
 script = """
 cookbook_cargo_packages gameroy-native
 """

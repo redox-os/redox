@@ -1,4 +1,4 @@
-#TODO make Wayland work
+#TODO port to Orbital
 [source]
 tar = "https://github.com/freeglut/freeglut/releases/download/v3.4.0/freeglut-3.4.0.tar.gz"
 #blake3 = "08c8874d6ddad5be4860813865d4d4e2a84c294da0f3cf82a29e43920806b0da"
