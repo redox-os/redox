@@ -4,6 +4,7 @@ git = "https://gitlab.redox-os.org/redox-os/redox-initfs.git"
 [build]
 template = "custom"
 dependencies = [
+  "bootstrap",
   "drivers-initfs",
   "init",
   "logd",
@@ -39,7 +40,7 @@ for bin in ${INITFS_RM_BINS}; do
   rm -f "${COOKBOOK_BUILD}/initfs/bin/$bin"
 done
 
-env -u CARGO cargo run --manifest-path "${COOKBOOK_SOURCE}/tools/Cargo.toml" --bin redox-initfs-ar -- "${COOKBOOK_BUILD}/initfs" -o "${COOKBOOK_BUILD}/initfs.img"
+env -u CARGO cargo run --manifest-path "${COOKBOOK_SOURCE}/tools/Cargo.toml" --bin redox-initfs-ar -- "${COOKBOOK_BUILD}/initfs" "${COOKBOOK_SYSROOT}/boot/bootstrap" -o "${COOKBOOK_BUILD}/initfs.img"
 
 mkdir -v "${COOKBOOK_STAGE}/boot"
 cp "${COOKBOOK_BUILD}/initfs.img" "${COOKBOOK_STAGE}/boot/initfs"
