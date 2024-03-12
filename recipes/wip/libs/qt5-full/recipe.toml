@@ -1,8 +1,8 @@
-#TODO make libxkbcommon work
+#TODO port to Orbital
 #TODO build instructions - https://doc.qt.io/qt-5/linux-building.html
 #TODO customization - https://doc.qt.io/qt-5/configure-options.html
 [source]
-tar = "https://download.qt.io/official_releases/qt/5.15/5.15.11/submodules/qtbase-everywhere-opensource-src-5.15.11.tar.xz"
+tar = "https://download.qt.io/official_releases/qt/5.15/5.15.11/single/qt-everywhere-opensource-src-5.15.11.tar.xz"
 [build]
 template = "configure"
 dependencies = [

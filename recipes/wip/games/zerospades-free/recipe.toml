@@ -1,7 +1,8 @@
 #TODO probably wrong script, see https://github.com/yvt/openspades#on-unixes-from-source
 #TODO port GLEW to Orbital
+#TODO add the FOSS assets on the script, see https://github.com/DeathByDenim/openspades-free-pak
 [source]
-git = "https://github.com/yvt/openspades"
+git = "https://github.com/siecvi/zerospades"
 [build]
 template = "custom"
 dependencies = [
