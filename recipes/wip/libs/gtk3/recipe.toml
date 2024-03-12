@@ -1,8 +1,9 @@
-#TODO missing script for Meson, see https://docs.gtk.org/gtk4/building.html
+#TODO probably missing dependencies, see https://docs.gtk.org/gtk3/building.html#dependencies
+#TODO port to Orbital
 [source]
-tar = "https://download.gnome.org/sources/gtk/4.11/gtk-4.11.2.tar.xz"
+tar = "https://download.gnome.org/sources/gtk+/3.24/gtk%2B-3.24.37.tar.xz"
 [build]
-template = "custom"
+template = "configure"
 dependencies = [
     "glib",
     "gdk-pixbuf",
@@ -14,6 +15,5 @@ dependencies = [
     "shared-mime-info",
     "graphene",
     "libwayland",
-    "libxkbcommon",
     "gstreamer",
 ]

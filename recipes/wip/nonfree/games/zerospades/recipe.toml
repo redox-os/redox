@@ -1,6 +1,5 @@
 #TODO probably wrong script, see https://github.com/yvt/openspades#on-unixes-from-source
-# The game crash with the Wayland backend of SDL2, you need to use the "SDL_VIDEODRIVER=x11" environment variable to use XWayland
-# a script to workaround this is the best solution
+#TODO port GLEW to Orbital
 [source]
 git = "https://github.com/siecvi/zerospades"
 [build]

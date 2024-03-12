@@ -1,3 +1,4 @@
+#TODO port to Orbital
 #TODO Missing script for GNU Autotools and CMake
 [source]
 tar = "https://download.qt.io/official_releases/qt/6.6/6.6.1/single/qt-everywhere-src-6.6.1.tar.xz"

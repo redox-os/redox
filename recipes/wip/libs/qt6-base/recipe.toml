@@ -1,4 +1,5 @@
 #TODO make libxkbcommon work
+#TODO port to Orbital
 #TODO build instructions - https://doc.qt.io/qt-6/linux-building.html
 #TODO customization - https://doc.qt.io/qt-6/configure-options.html
 [source]
