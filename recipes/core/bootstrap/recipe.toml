@@ -19,5 +19,6 @@ mkdir -v "${COOKBOOK_STAGE}/boot"
     -o "${COOKBOOK_STAGE}/boot/bootstrap" \
     --gc-sections \
     -T "${COOKBOOK_SOURCE}/src/${ARCH}.ld" \
+    -z max-page-size=4096 \
     "${COOKBOOK_BUILD}/${TARGET}/release/libbootstrap.a"
 """
