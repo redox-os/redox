@@ -10,6 +10,7 @@ BINS=(
     e1000d
     ihdad
     ixgbed
+    pcid
     rtl8139d
     rtl8168d
     usbctl
@@ -24,7 +25,7 @@ BINS=(
 # depending on the target architecture
 case "${TARGET}" in
     i686-unknown-redox | x86_64-unknown-redox)
-        BINS+=(ac97d bgad pcid pcspkrd sb16d vboxd)
+        BINS+=(ac97d bgad pcspkrd sb16d vboxd)
         ;;
     *)
         ;;
