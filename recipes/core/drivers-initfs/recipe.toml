@@ -5,42 +5,48 @@ git = "https://gitlab.redox-os.org/redox-os/drivers.git"
 template = "custom"
 script = """
 BINS=(
-    ahcid
     fbcond
     inputd
     nvmed
     pcid
     vesad
-    virtio-blkd
-    virtio-gpud
     lived
 )
 
-aarch64_redefine_bin()
+virt_bins()
 {
-    BINS=(inputd lived)
+    BINS+=(virtio-blkd virtio-gpud)
+}
+
+x86_common_bins()
+{
+    BINS+=(ahcid ided ps2d vesad)
+    virt_bins
+}
+
+aarch64_bins()
+{
     case "${BOARD}" in
-        raspi3bp)
-            BINS+=(bcm2835-sdhcid)
-        ;;
-        raspi3b)
+        raspi3b | raspi3bp)
             BINS+=(bcm2835-sdhcid)
         ;;
         *)
         #qemu-virt
+            virt_bins
         ;;
     esac
 }
 
 case "${TARGET}" in
     i686-unknown-redox)
-        BINS+=(ided ps2d)
+        x86_common_bins
         ;;
     x86_64-unknown-redox)
-        BINS+=(acpid ided ps2d)
+        x86_common_bins
+        BINS+=(acpid)
         ;;
     aarch64-unknown-redox)
-        aarch64_redefine_bin
+        aarch64_bins
         ;;
     *)
         ;;
