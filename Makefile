@@ -89,6 +89,7 @@ else
 	bash
 endif
 
+export RUST_GDB=gdb-multiarch # Necessary when debugging for another architecture than the host
 gdb: FORCE
 	gdb cookbook/recipes/core/kernel/target/$(TARGET)/build/kernel.sym --eval-command="target remote localhost:1234"
 
