@@ -1,5 +1,6 @@
 export PATH /scheme/initfs/bin
 export TMPDIR /tmp
+export RUST_BACKTRACE 1
 nulld
 zerod
 randd
@@ -11,6 +12,7 @@ fbcond 1 2
 logd /scheme/debug /scheme/fbcon/1
 stdio /scheme/log
 ramfs logging
+pcid /scheme/initfs/etc/pcid/initfs.toml
 lived
 unset DISK_LIVE_ADDR DISK_LIVE_SIZE
 redoxfs --uuid $REDOXFS_UUID file $REDOXFS_BLOCK
