@@ -1,0 +1,6 @@
+#TODO Not compiled or tested
+#TODO require bat and mpv at runtime
+[source]
+git = "https://github.com/mrfluffy-dev/kami"
+[build]
+template = "cargo"
