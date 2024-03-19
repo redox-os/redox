@@ -1,6 +1,6 @@
 #TODO Not compiled or tested
 [source]
 git = "https://github.com/ckaznable/tenki"
-rev = "f59ba2125d46bc22680a4d2ee63b5ce864e00209"
+rev = "9cf863f925e42eb30f7613db89469d739add7362"
 [build]
 template = "cargo"
