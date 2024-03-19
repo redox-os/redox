@@ -1,0 +1,6 @@
+#TODO Not compiled or tested
+#TODO require Ruby and asciidoctor at runtime
+[source]
+git = "https://github.com/dswd/vpncloud"
+[build]
+template = "cargo"

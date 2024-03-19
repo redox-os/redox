@@ -1,0 +1,8 @@
+#TODO Not compiled or tested
+[source]
+git = "https://github.com/mxinden/if-watch"
+[build]
+template = "custom"
+script = """
+cookbook_cargo_examples if_watch
+"""
