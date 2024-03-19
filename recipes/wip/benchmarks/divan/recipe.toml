@@ -4,5 +4,5 @@ git = "https://github.com/nvzqz/divan"
 [build]
 template = "custom"
 script = """
-cookbook_cargo_packages examples
+cookbook_cargo_examples examples
 """
