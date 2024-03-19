@@ -1,8 +1,0 @@
-#TODO Not compiled or tested
-[source]
-git = "https://github.com/nvzqz/divan"
-[build]
-template = "custom"
-script = """
-cookbook_cargo_examples examples
-"""

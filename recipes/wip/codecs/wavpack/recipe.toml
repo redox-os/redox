@@ -3,3 +3,6 @@
 tar = "https://github.com/dbry/WavPack/releases/download/5.7.0/wavpack-5.7.0.tar.xz"
 [build]
 template = "configure"
+dependencies = [
+    "libiconv",
+]
