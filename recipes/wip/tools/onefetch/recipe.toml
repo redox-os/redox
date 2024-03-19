@@ -1,4 +1,4 @@
-#TODO compiled but not tested
+#TODO update rustc version
 [source]
 git = "https://github.com/o2sh/onefetch"
 [build]
