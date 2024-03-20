@@ -17,18 +17,24 @@ else ifeq ($(ARCH),x86_64)
 	QEMU_ARCH=x86_64
 	QEMU_MACHINE?=q35
 	QEMU_CPU?=core2duo
-	QEMU_EFI=/usr/share/OVMF/OVMF_CODE.fd
 	QEMUFLAGS+=-smp 4 -m 2048
+	ifeq ($(efi),yes)
+		FIRMWARE=/usr/share/OVMF/OVMF_CODE.fd
+	endif
 else ifeq ($(ARCH),aarch64)
-	efi=yes
+	# Default to UEFI as U-Boot doesn't set up a framebuffer for us and we don't yet support
+	# setting up a framebuffer ourself.
+	efi?=yes
 	live=yes
 	QEMU_ARCH=aarch64
 	QEMU_MACHINE=virt
 	QEMU_CPU=max
 	ifeq ($(BOARD),raspi3bp)
-		QEMU_EFI=https://gitlab.redox-os.org/Ivan/redox_firmware/-/raw/main/platform/raspberry_pi/rpi3/u-boot-rpi-3-b-plus.bin
+		FIRMWARE=$(BUILD)/raspi3bp_uboot.rom
+	else ifeq ($(efi),yes)
+		FIRMWARE=/usr/share/AAVMF/AAVMF_CODE.fd
 	else
-		QEMU_EFI=/usr/share/AAVMF/AAVMF_CODE.fd
+		FIRMWARE=$(BUILD)/qemu_uboot.rom
 	endif
 	QEMUFLAGS+=-smp 1 -m 2048
 	ifneq ($(vga),no)
@@ -47,11 +53,8 @@ ifneq ($(ARCH),$(HOST_ARCH))
 	kvm?=no
 endif
 
-ifeq ($(efi),yes)
-	FIRMWARE=$(BUILD)/firmware.rom
-	QEMUFLAGS+=-bios $(BUILD)/firmware.rom
-else
-	FIRMWARE=
+ifneq ($(FIRMWARE),)
+	QEMUFLAGS+=-bios $(FIRMWARE)
 endif
 
 ifeq ($(live),yes)
@@ -139,12 +142,16 @@ endif
 $(BUILD)/extra.img:
 	truncate -s 1g $@
 
-$(BUILD)/firmware.rom:
-ifeq ($(BOARD),raspi3bp)
-	wget -O $@ $(QEMU_EFI)
-else
-	cp $(QEMU_EFI) $@
-endif
+$(BUILD)/raspi3bp_uboot.rom:
+	wget -O $@ https://gitlab.redox-os.org/Ivan/redox_firmware/-/raw/main/platform/raspberry_pi/rpi3/u-boot-rpi-3-b-plus.bin
+
+$(BUILD)/qemu_uboot.rom:
+	wget -O $@ https://gitlab.redox-os.org/Ivan/redox_firmware/-/raw/main/platform/qemu/qemu_arm64/u-boot-qemu-arm64.bin
+
+/usr/share/AAVMF/AAVMF_CODE.fd:
+	echo "\n\n\nMissing /usr/share/AAVMF/AAVMF_CODE.fd UEFI firmware file.\n\
+Please install the qemu-efi-aarch64 package or use efi=no to download U-Boot instead.\n" \
+	&& exit 1
 
 qemu: $(DISK) $(FIRMWARE) $(BUILD)/extra.img
 	$(QEMU) $(QEMUFLAGS) \
