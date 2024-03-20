@@ -28,7 +28,7 @@ else ifeq ($(ARCH),aarch64)
 	ifeq ($(BOARD),raspi3bp)
 		QEMU_EFI=https://gitlab.redox-os.org/Ivan/redox_firmware/-/raw/main/platform/raspberry_pi/rpi3/u-boot-rpi-3-b-plus.bin
 	else
-		QEMU_EFI=https://gitlab.redox-os.org/Ivan/redox_firmware/-/raw/main/platform/qemu/qemu_arm64/u-boot-qemu-arm64.bin
+		QEMU_EFI=/usr/share/AAVMF/AAVMF_CODE.fd
 	endif
 	QEMUFLAGS+=-smp 1 -m 2048
 	ifneq ($(vga),no)
@@ -140,7 +140,7 @@ $(BUILD)/extra.img:
 	truncate -s 1g $@
 
 $(BUILD)/firmware.rom:
-ifeq ($(ARCH),aarch64)
+ifeq ($(BOARD),raspi3bp)
 	wget -O $@ $(QEMU_EFI)
 else
 	cp $(QEMU_EFI) $@
