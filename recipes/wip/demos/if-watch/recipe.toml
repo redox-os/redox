@@ -1,4 +1,4 @@
-#TODO Not compiled or tested
+#TODO require the "smol" feature flag
 [source]
 git = "https://github.com/mxinden/if-watch"
 [build]

@@ -1,4 +1,4 @@
-#TODO Not compiled or tested
+#TODO compiled but not tested
 [source]
 git = "https://github.com/ckaznable/tenki"
 rev = "9cf863f925e42eb30f7613db89469d739add7362"
