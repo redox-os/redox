@@ -1,4 +1,4 @@
-#TODO Not compiled or tested
+#TODO rustc-serialize crate error
 [source]
 git = "https://github.com/ix/oxidizer"
 [build]

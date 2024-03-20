@@ -1,6 +1,5 @@
-#TODO Not compiled or tested
+#TODO fs-set-times crate error
 [source]
 git = "https://github.com/bytecodealliance/wasmtime"
-rev = "6613acd1e4817957a4a7745125ef063b43c273a7"
 [build]
 template = "cargo"
