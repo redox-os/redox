@@ -1,5 +1,8 @@
-#TODO Not compiled or tested
+#TODO make shaderc work
 [source]
 git = "https://github.com/Amjad50/Trapezoid"
 [build]
 template = "cargo"
+dependencies = [
+    "shaderc",
+]
