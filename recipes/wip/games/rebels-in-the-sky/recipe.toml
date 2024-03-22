@@ -1,4 +1,4 @@
-#TODO Not compiled or tested
+#TODO async-io and rustix crate error
 [source]
 git = "https://github.com/ricott1/rebels-in-the-sky"
 rev = "decd5fa822e667e283fc1f0e52b5d75cedf2c35f"
