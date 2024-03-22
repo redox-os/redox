@@ -6,5 +6,5 @@ template = "cargo"
 dependencies = [
     "libgmp",
     "libmpfr",
-    "libmpc",
+    "mpc",
 ]
