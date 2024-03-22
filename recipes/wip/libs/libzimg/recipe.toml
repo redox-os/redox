@@ -1,10 +1,6 @@
-#TODO Not compiled or tested
+#TODO missing script
 [source]
 git = "https://github.com/sekrit-twc/zimg"
 rev = "e5b0de6bebbcbc66732ed5afaafef6b2c7dfef87"
 [build]
 template = "custom"
-script = """
-./autogen.sh
-cookbook_configure
-"""
