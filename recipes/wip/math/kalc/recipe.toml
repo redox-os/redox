@@ -3,3 +3,8 @@
 git = "https://github.com/bgkillas/kalc"
 [build]
 template = "cargo"
+dependencies = [
+    "libgmp",
+    "libmpfr",
+    "libmpc",
+]
