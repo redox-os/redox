@@ -1,4 +1,4 @@
-#TODO Not compiled or tested
+#TODO Bash error with the "--build-binary" Cargo flag
 [source]
 git = "https://github.com/omnibor/omnibor-rs"
 [build]
