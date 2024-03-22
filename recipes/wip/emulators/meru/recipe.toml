@@ -1,4 +1,4 @@
-#TODO Not compiled or tested
+#TODO value-bag crate error
 [source]
 git = "https://github.com/tanakh/meru"
 [build]
