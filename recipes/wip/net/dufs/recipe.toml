@@ -1,4 +1,4 @@
-#TODO Not compiled or tested
+#TODO if-addrs crate error
 [source]
 git = "https://github.com/sigoden/dufs"
 [build]
