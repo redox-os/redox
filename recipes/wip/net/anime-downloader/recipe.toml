@@ -1,6 +1,5 @@
-#TODO Not compiled or tested
+#TODO port to Orbital
 [source]
 git = "https://github.com/B0SEmc/Anime-Downloader"
-rev = "36439fcf8665a363d95fe0e56de69909d0ff381b"
 [build]
 template = "cargo"
