@@ -4,5 +4,5 @@ git = "https://github.com/ONdraid/reve"
 [build]
 template = "custom"
 script = """
-cookbook_cargo --features reve-cli
+cookbook_cargo_packages reve-cli
 """
