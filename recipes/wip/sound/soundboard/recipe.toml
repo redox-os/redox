@@ -6,3 +6,6 @@ template = "custom"
 script = """
 cookbook_cargo --features full
 """
+dependencies = [
+    "glib",
+]

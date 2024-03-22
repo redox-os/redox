@@ -1,4 +1,4 @@
-#TODO Not compiled or tested
+#TODO compilation error
 [source]
 tar = "https://ftp.gnu.org/gnu/grub/grub-2.12.tar.xz"
 [build]
