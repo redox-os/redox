@@ -1,5 +1,0 @@
-#TODO Not compiled or tested
-[source]
-git = "https://github.com/opensourcecheemsburgers/RustyTube"
-[build]
-template = "cargo"

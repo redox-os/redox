@@ -1,4 +1,4 @@
-#TODO Not compiled or tested
+#TODO fix the script
 [source]
 git = "https://github.com/LyonSyonII/run"
 [build]
