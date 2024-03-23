@@ -17,6 +17,7 @@ gcc13 = {}
 gnu-binutils = {}
 gnu-make = {}
 rust = {}
+rustpython = {}
 
 [[files]]
 path = "/home/user/example.rs"
