@@ -1,4 +1,4 @@
-#TODO Not compiled or tested
+#TODO configuration error
 [source]
 git = "https://github.com/explodingcamera/tinywasm"
 [build]
