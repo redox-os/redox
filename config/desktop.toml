@@ -16,6 +16,7 @@ orbdata = {}
 orbital = {}
 orbterm = {}
 orbutils = {}
+rustpython = {}
 
 [[files]]
 path = "/usr/lib/init.d/20_orbital"
