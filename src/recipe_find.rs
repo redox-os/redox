@@ -45,8 +45,8 @@ pub fn recipe_find(recipe: &str, dir: &Path) -> Result<Option<PathBuf>, String> 
     Ok(recipe_path)
 }
 
-pub fn list_recipes(dir: &Path) -> Result<Vec<String>, String> {
-    let mut recipes = Vec::<String>::new();
+pub fn list_recipes(dir: &Path, prefix: PathBuf) -> Result<Vec<PathBuf>, String> {
+    let mut recipes = Vec::<PathBuf>::new();
     if !dir.is_dir() {
         return Ok(recipes);
     }
@@ -55,7 +55,7 @@ pub fn list_recipes(dir: &Path) -> Result<Vec<String>, String> {
         if entry.file_name() == OsStr::new("recipe.sh")
             || entry.file_name() == OsStr::new("recipe.toml")
         {
-            recipes.push(dir.file_name().ok_or(format!("could not unwrap the filename for {:?}", dir))?.to_string_lossy().to_string());
+            recipes.push(prefix);
             return Ok(recipes);
         }
     }
@@ -65,7 +65,12 @@ pub fn list_recipes(dir: &Path) -> Result<Vec<String>, String> {
         if !entry.file_type().map_err(|e| e.to_string())?.is_dir() {
             continue;
         }
-        let mut found = list_recipes(entry.path().as_path())?;
+        let name = entry.file_name();
+        let Some(name) = name.to_str() else {
+            eprintln!("invalid UTF-8 for entry {entry:?}");
+            continue;
+        };
+        let mut found = list_recipes(entry.path().as_path(), prefix.join(name))?;
         recipes.append(&mut found);
     }
     recipes.sort();

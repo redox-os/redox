@@ -10,7 +10,7 @@ else
     recipes="$@"
 fi
 
-for recipe in $recipes
+for recipe_path in $recipes
 do
-    ./cook.sh "$recipe" unfetch
+    ./cook.sh "$recipe_path" unfetch
 done
