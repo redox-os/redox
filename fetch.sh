@@ -10,14 +10,12 @@ else
     recipes="$@"
 fi
 
-for recipe in $recipes
+for recipe_path in $recipes
 do
-    recipe_path=`target/release/find_recipe $recipe`
     if [ -e "$recipe_path/recipe.toml" ]
     then
-        target/release/cook --fetch-only "$recipe"
-        continue
+        target/release/cook --fetch-only "$recipe_path"
+    else
+        ./cook.sh "$recipe_path" fetch
     fi
-
-    ./cook.sh "$recipe" fetch
 done
