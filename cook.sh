@@ -365,7 +365,14 @@ function op {
 
 if [ -n "$1" ]
 then
-    recipe_path=`target/release/find_recipe $1`
+    if (echo "$1" | grep '.*/.*' >/dev/null); then
+        recipe_name=$(basename "$1")
+        recipe_path="recipes/$1"
+    else
+        recipe_name="$1"
+        recipe_path=`target/release/find_recipe $recipe_name`
+    fi
+
     if [ -d "$ROOT/$recipe_path" ]
     then
         export COOKBOOK_RECIPE="${ROOT}/$recipe_path"
@@ -402,10 +409,10 @@ then
 
         for i in "${ops[@]}"
         do
-            op "$1" "$i"
+            op "$recipe_name" "$i"
         done
     else
-        echo "cook.sh: recipe '$1' not found" >&2
+        echo "cook.sh: recipe '$recipe_name' at not found" >&2
         exit 1
     fi
 else
