@@ -1,4 +1,4 @@
-#TODO Not compiled or tested
+#TODO port to Orbital
 [source]
 git = "https://github.com/Avarel/bvr"
 [build]

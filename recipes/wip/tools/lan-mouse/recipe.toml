@@ -1,4 +1,4 @@
-#TODO Not compiled or tested
+#TODO make GTK4 work
 [source]
 git = "https://github.com/feschber/lan-mouse"
 [build]
