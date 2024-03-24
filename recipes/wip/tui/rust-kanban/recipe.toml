@@ -3,3 +3,6 @@
 git = "https://github.com/yashs662/rust_kanban"
 [build]
 template = "cargo"
+dependencies = [
+    "openssl1",
+]
