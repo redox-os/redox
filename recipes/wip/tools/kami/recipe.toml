@@ -5,5 +5,5 @@ git = "https://github.com/mrfluffy-dev/kami"
 [build]
 template = "cargo"
 dependencies = [
-    "openssl!',
+    "openssl1',
 ]
