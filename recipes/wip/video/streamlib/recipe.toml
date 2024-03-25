@@ -1,4 +1,4 @@
-#TODO Not compiled or tested
+#TODO shared_child crate error
 [source]
 git = "https://github.com/streamlib/streamlib"
 [build]
