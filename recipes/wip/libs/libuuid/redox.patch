@@ -1,0 +1,26 @@
+diff --git a/config.sub b/config.sub
+index 52f04bc..4a352eb 100755
+--- a/config.sub
++++ b/config.sub
+@@ -1376,7 +1376,7 @@ case $os in
+ 	      | -os2* | -vos* | -palmos* | -uclinux* | -nucleus* \
+ 	      | -morphos* | -superux* | -rtmk* | -rtmk-nova* | -windiss* \
+ 	      | -powermax* | -dnix* | -nx6 | -nx7 | -sei* | -dragonfly* \
+-	      | -skyos* | -haiku* | -rdos* | -toppers* | -drops* | -es*)
++	      | -skyos* | -haiku* | -rdos* | -redox* | -toppers* | -drops* | -es*)
+ 	# Remember, each alternative MUST END IN *, to match a version number.
+ 		;;
+ 	-qnx*)
+diff --git a/randutils.c b/randutils.c
+index 80893d3..a39168d 100644
+--- a/randutils.c
++++ b/randutils.c
+@@ -13,7 +13,7 @@
+ #include <string.h>
+ #include <sys/time.h>
+ 
+-#include <sys/syscall.h>
++// #include <sys/syscall.h>
+ 
+ #include "randutils.h"
+ 

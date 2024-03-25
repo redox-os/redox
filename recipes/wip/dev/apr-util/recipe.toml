@@ -1,14 +1,29 @@
-#TODO make apr work
 [source]
-tar = "https://dlcdn.apache.org//apr/apr-util-1.6.3.tar.bz2"
+tar = "https://archive.apache.org/dist/apr/apr-util-1.6.0.tar.bz2"
+patches = [
+    "redox.patch",
+]
 [build]
 template = "custom"
 dependencies = [
     "apr",
+    "expat",
 ]
 script = """
 COOKBOOK_CONFIGURE_FLAGS+=(
-    --with-apr
+    --with-apr="${COOKBOOK_SYSROOT}"
 )
-cookbook_configure
+export CFLAGS="-I${COOKBOOK_SYSROOT}/include/ -I${COOKBOOK_SYSROOT}/include/apr-1 "
+ls ${COOKBOOK_SYSROOT}/include/
+export CFLAGS_="${CFLAGS}"
+cd ${COOKBOOK_SOURCE}
+autoreconf -fi
+"${COOKBOOK_CONFIGURE}" "${COOKBOOK_CONFIGURE_FLAGS[@]}"
+sed -i build/rules.mk -e "s;\\(apr_builddir=\\)\\(.*\\);\\1${COOKBOOK_SYSROOT}\\2;" \\
+ -e "s;--mode=link;& --tag=CC;g" -e "s;--mode=compile;& --tag=CC -v;g" \\
+
+sed -i build/rules.mk -e "/apr_builders=/s;apr_builders=;apr_builders=${COOKBOOK_SYSROOT};"
+sed -i build/rules.mk -e "/^CFLAGS=/s;=.*;=${CFLAGS_};"
+"${COOKBOOK_MAKE}" -j "${COOKBOOK_MAKE_JOBS}"
+"${COOKBOOK_MAKE}" install DESTDIR="${COOKBOOK_STAGE}"
 """
