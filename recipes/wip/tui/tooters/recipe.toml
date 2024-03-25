@@ -1,4 +1,4 @@
-#TODO Not compiled or tested
+#TODO port the webbrowser crate
 [source]
 git = "https://github.com/joshka/tooters"
 [build]
