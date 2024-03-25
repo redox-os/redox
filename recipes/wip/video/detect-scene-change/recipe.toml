@@ -3,3 +3,6 @@
 git = "https://github.com/soruly/detect-scene-change"
 [build]
 template = "cargo"
+dependencies = [
+    "ffmpeg6",
+]
