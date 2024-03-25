@@ -2,4 +2,7 @@
 [source]
 git = "https://github.com/Seebass22/video4discord"
 [build]
-template = "cargo"
+template = "custom"
+script = """
+cookbook_cargo_packages video4discord
+"""
