@@ -21,6 +21,9 @@ else ifeq ($(ARCH),x86_64)
 	ifeq ($(efi),yes)
 		FIRMWARE=/usr/share/OVMF/OVMF_CODE.fd
 	endif
+	ifneq ($(usb),no)
+		QEMUFLAGS+=-device nec-usb-xhci,id=xhci
+	endif
 else ifeq ($(ARCH),aarch64)
 	# Default to UEFI as U-Boot doesn't set up a framebuffer for us and we don't yet support
 	# setting up a framebuffer ourself.
@@ -41,7 +44,7 @@ else ifeq ($(ARCH),aarch64)
 		QEMUFLAGS+=-device ramfb
 	endif
 	ifneq ($(usb),no)
-		QEMUFLAGS+=-device usb-ehci -device usb-kbd -device usb-mouse
+		QEMUFLAGS+=-device qemu-xhci -device usb-kbd -device usb-mouse
 	endif
 else
 $(error Unsupported ARCH for QEMU "$(ARCH)"))
@@ -117,10 +120,6 @@ else ifeq ($(vga),multi)
 	QEMUFLAGS+=-display sdl -vga std -device secondary-vga
 else ifeq ($(vga),virtio)
 	QEMUFLAGS+=-vga virtio
-endif
-
-ifneq ($(usb),no)
-	QEMUFLAGS+=-device nec-usb-xhci,id=xhci
 endif
 
 ifeq ($(gdb),yes)
