@@ -1,8 +1,9 @@
 #TODO probably wrong script, see https://wiki.blender.org/wiki/Building_Blender/Linux/Generic_Distro
 #TODO probably missing dependencies
+#TODO port to Orbital
 #TODO customization - https://wiki.blender.org/wiki/Building_Blender/Options
 [source]
-tar = "https://download.blender.org/source/blender-4.0.0.tar.xz"
+tar = "https://download.blender.org/source/blender-4.1.0.tar.xz"
 [build]
 template = "custom"
 dependencies = [
@@ -21,8 +22,6 @@ dependencies = [
     "libxml2",
     "libharu",
     "mesa",
-    "libx11",
-    "libwayland",
     "libxkbcommon",
 ]
 script = """

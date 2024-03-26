@@ -1,5 +1,6 @@
 #TODO probably wrong script, see https://wiki.blender.org/wiki/Building_Blender/Linux/Generic_Distro
 #TODO probably missing dependencies
+#TODO port to Orbital
 #TODO customization - https://wiki.blender.org/wiki/Building_Blender/Options
 [source]
 tar = "https://download.blender.org/source/blender-3.6.5.tar.xz"
@@ -21,8 +22,6 @@ dependencies = [
     "libxml2",
     "libharu",
     "mesa",
-    "libx11",
-    "libwayland",
     "libxkbcommon",
 ]
 script = """
