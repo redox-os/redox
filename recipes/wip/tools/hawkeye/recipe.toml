@@ -1,0 +1,9 @@
+#TODO Not compiled or tested
+[source]
+git = "https://github.com/korandoru/hawkeye"
+rev = "4795c3f0a1bdbb2e129fa367d378e0597d12b42c"
+[build]
+template = "custom"
+script = """
+cookbook_cargo_packages cli fmt
+"""
