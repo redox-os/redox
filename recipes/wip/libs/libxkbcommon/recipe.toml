@@ -1,5 +1,4 @@
 #TODO missing script for Meson, see https://github.com/xkbcommon/libxkbcommon#building
-#TODO port to Orbital
 [source]
 tar = "https://xkbcommon.org/download/libxkbcommon-1.5.0.tar.xz"
 [build]
