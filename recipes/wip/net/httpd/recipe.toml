@@ -1,8 +1,0 @@
-#TODO Not compiled or tested
-[source]
-tar = "https://dlcdn.apache.org/httpd/httpd-2.4.58.tar.bz2"
-[build]
-template = "configure"
-dependencies = [
-    "pcre",
-]
