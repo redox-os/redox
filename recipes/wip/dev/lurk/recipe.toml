@@ -1,0 +1,5 @@
+#TODO Not compiled or tested
+[source]
+git = "https://github.com/JakWai01/lurk"
+[build]
+template = "cargo"
