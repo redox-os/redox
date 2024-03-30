@@ -1,0 +1,8 @@
+#TODO Not compiled or tested
+[source]
+git = "https://github.com/godzie44/BugStalker"
+[build]
+template = "cargo"
+dependencies = [
+    "libunwind",
+]
