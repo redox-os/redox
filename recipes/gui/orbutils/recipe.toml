@@ -6,6 +6,9 @@ template = "custom"
 script = """
 ORIGINAL_SOURCE="${COOKBOOK_SOURCE}"
 
+mkdir -pv "${COOKBOOK_STAGE}/ui"
+cp -rv "${COOKBOOK_SOURCE}/apps" "${COOKBOOK_STAGE}/ui/apps"
+
 COOKBOOK_SOURCE="${ORIGINAL_SOURCE}/orbutils"
 "${COOKBOOK_CARGO}" install \
         --path "${COOKBOOK_SOURCE}" \
