@@ -30,11 +30,13 @@ function recipe_build {
         --prefix=/ \
         --with-sysroot=/ \
         --with-build-sysroot="$sysroot" \
-        --enable-static \
-        --enable-shared \
+        --with-static-standard-libraries \
         --disable-dlopen \
+        --disable-lto \
         --disable-nls \
         --enable-languages=c,c++ \
+        --enable-shared \
+        --enable-static \
         --enable-threads=posix
     "$REDOX_MAKE" -j "$(nproc)" all-gcc all-target-libgcc all-target-libstdc++-v3
     skip=1
