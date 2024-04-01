@@ -99,6 +99,17 @@ data = "usr/lib"
 symlink = true
 
 [[files]]
+path = "/usr/libexec"
+data = ""
+directory = true
+mode = 0o755
+
+[[files]]
+path = "/libexec"
+data = "usr/libexec"
+symlink = true
+
+[[files]]
 path = "/usr/share"
 data = ""
 directory = true
