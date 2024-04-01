@@ -27,6 +27,7 @@ function recipe_build {
         --with-multilib \
         --with-interwork \
         --enable-targets="${TARGET}" \
+        --disable-lto \
         --disable-nls \
         --disable-werror
     "$REDOX_MAKE" -j"$($NPROC)"
