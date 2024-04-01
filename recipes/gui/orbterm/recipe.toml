@@ -4,6 +4,9 @@ git = "https://gitlab.redox-os.org/redox-os/orbterm.git"
 [build]
 template = "custom"
 script = """
+mkdir -pv "${COOKBOOK_STAGE}/ui"
+cp -rv "${COOKBOOK_SOURCE}/apps" "${COOKBOOK_STAGE}/ui/apps"
+
 "${COOKBOOK_CARGO}" install \
         --path "${COOKBOOK_SOURCE}" \
         --root "${COOKBOOK_STAGE}/usr" \
