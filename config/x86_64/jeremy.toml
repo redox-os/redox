@@ -60,14 +60,14 @@ winit = {}
 # dev
 autoconf = {}
 automake = {}
-#cargo = {} # openssl issues
-#gcc13 = {} # libiberty errors
+cargo = {}
+gcc13 = {}
 gnu-binutils = {}
 gnu-make = {}
 nasm = {}
 patch = {}
 pkg-config = {}
-#rust = {} # takes too long to compile
+rust = {}
 rustpython = {}
 
 # games
