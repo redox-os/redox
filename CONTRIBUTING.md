@@ -75,7 +75,25 @@ We use an index to track the development priorities, you can find them on [this]
 
 ## Build System
 
-You can find the Redox build system organization and commands on [this](https://doc.redox-os.org/book/ch08-06-build-system-reference.html) page.
+To download the build system use the following commands:
+
+(You need to have [curl](https://curl.se/) installed on your system)
+
+```sh
+curl -sf https://gitlab.redox-os.org/redox-os/redox/raw/master/bootstrap.sh -o bootstrap.sh
+```
+
+```sh
+time bash -e bootstrap.sh
+```
+
+To start the compilation of the default recipes run the command below:
+
+```sh
+make all
+```
+
+You can find the build system organization and commands on [this](https://doc.redox-os.org/book/ch08-06-build-system-reference.html) page.
 
 ## Developer FAQ
 
