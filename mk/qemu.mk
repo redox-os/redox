@@ -7,7 +7,8 @@ ifeq ($(ARCH),i686)
 	QEMU_ARCH=i386
 	QEMU_MACHINE?=pc
 	QEMU_CPU?=pentium2
-	QEMUFLAGS+=-smp 1 -m 1024
+	QEMU_SMP?=1
+	QEMU_MEM?=1024
 
 	# Default to using kvm when arch is i686 and host is x86_64
 	ifeq ($(HOST_ARCH),x86_64)
@@ -17,7 +18,8 @@ else ifeq ($(ARCH),x86_64)
 	QEMU_ARCH=x86_64
 	QEMU_MACHINE?=q35
 	QEMU_CPU?=core2duo
-	QEMUFLAGS+=-smp 4 -m 2048
+	QEMU_SMP?=4
+	QEMU_MEM?=2048
 	ifeq ($(efi),yes)
 		FIRMWARE=/usr/share/OVMF/OVMF_CODE.fd
 	endif
@@ -32,6 +34,8 @@ else ifeq ($(ARCH),aarch64)
 	QEMU_ARCH=aarch64
 	QEMU_MACHINE=virt
 	QEMU_CPU=max
+	QEMU_SMP?=1
+	QEMU_MEM?=2048
 	ifeq ($(BOARD),raspi3bp)
 		FIRMWARE=$(BUILD)/raspi3bp_uboot.rom
 	else ifeq ($(efi),yes)
@@ -39,7 +43,6 @@ else ifeq ($(ARCH),aarch64)
 	else
 		FIRMWARE=$(BUILD)/qemu_uboot.rom
 	endif
-	QEMUFLAGS+=-smp 1 -m 2048
 	ifneq ($(vga),no)
 		QEMUFLAGS+=-device ramfb
 	endif
@@ -49,6 +52,8 @@ else ifeq ($(ARCH),aarch64)
 else
 $(error Unsupported ARCH for QEMU "$(ARCH)"))
 endif
+
+QEMUFLAGS+=-smp $(QEMU_SMP) -m $(QEMU_MEM)
 
 # If host and target arch do not match, disable kvm
 # (unless overridden above or by environment)
