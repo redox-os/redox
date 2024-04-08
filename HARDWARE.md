@@ -140,6 +140,20 @@ Image date - 11-11-2022
 - No touchpad support, requires I2C HID
 ```
 
+- **HP EliteBook 2570p**
+
+```
+Status - Broken
+Redox version - 0.8.0
+Variant - demo
+Image date - 2022-11-23
+
+- UEFI Hybrid & Native boot don't work
+- Booted using 'legacy'
+- Gets to resolution selection  
+- Fails assert in `src/os/bios/mod.rs:77` after selecting resolution
+```
+
 ### ASUS
 
 - **ASUS X554L**
