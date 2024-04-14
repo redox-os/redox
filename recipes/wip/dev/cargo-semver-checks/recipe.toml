@@ -1,0 +1,5 @@
+#TODO Not compiled or tested
+[source]
+git = "https://github.com/obi1kenobi/cargo-semver-checks"
+[build]
+template = "cargo"
