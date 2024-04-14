@@ -1,0 +1,9 @@
+#TODO Not compiled or tested
+[source]
+git = "https://github.com/tweag/nickel"
+rev = "13ffc851aed22b4c7d9630cd423e627304b7ea8f"
+[build]
+template = "custom"
+script = """
+cookbook_cargo_packages nickel-lang-cli
+"""
