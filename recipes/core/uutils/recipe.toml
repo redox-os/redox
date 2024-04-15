@@ -1,6 +1,6 @@
 [source]
 git = "https://github.com/uutils/coreutils"
-rev = "68c77b4bd129bdc12d03cc74fe0f817d2df75894"
+rev = "9d82fa3b9abd3d359afae0b6b9eb2a22b93b9a1c"
 
 [build]
 template = "custom"
