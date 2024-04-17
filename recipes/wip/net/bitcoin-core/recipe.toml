@@ -1,6 +1,6 @@
 #TODO Not compiled or tested
 [source]
-tar = "https://bitcoincore.org/bin/bitcoin-core-26.0/bitcoin-26.0.tar.gz"
+tar = "https://bitcoincore.org/bin/bitcoin-core-27.0/bitcoin-27.0.tar.gz"
 [build]
 template = "custom"
 dependencies = [
