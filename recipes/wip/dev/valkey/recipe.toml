@@ -1,0 +1,6 @@
+#TODO Missing script for "make", see https://github.com/valkey-io/valkey#building-valkey
+[source]
+git = "https://github.com/valkey-io/valkey"
+rev = "26388270f197bce84817eea0a73d687d58442654"
+[build]
+template = "custom"

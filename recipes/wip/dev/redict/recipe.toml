@@ -1,0 +1,6 @@
+#TODO Missing script for "make", see https://redict.io/docs/install/#installing-from-source
+[source]
+git = "https://codeberg.org/redict/redict"
+rev = "5684cdbd9f2aefb494dfb346292d4322319d236b"
+[build]
+template = "custom"
