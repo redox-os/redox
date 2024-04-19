@@ -15,6 +15,7 @@ BINS=(
     rtl8168d
     usbctl
     usbhidd
+    usbhubd
     usbscsid
     virtio-netd
     xhcid
