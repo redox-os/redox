@@ -2,4 +2,11 @@
 git = "https://gitlab.redox-os.org/redox-os/pkgar.git"
 
 [build]
-template = "cargo"
+template = "custom"
+script = """
+"${COOKBOOK_CARGO}" install \
+    --path "${COOKBOOK_SOURCE}/pkgar" \
+    --root "${COOKBOOK_STAGE}/usr" \
+    --locked \
+    --no-track
+"""
