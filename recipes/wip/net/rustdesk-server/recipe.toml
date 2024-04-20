@@ -1,0 +1,5 @@
+#TODO Not compiled or tested
+[source]
+git = "https://github.com/rustdesk/rustdesk-server"
+[build]
+template = "cargo"
