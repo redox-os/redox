@@ -1,0 +1,6 @@
+#TODO Not compiled or tested
+[source]
+git = "https://github.com/crunchy-labs/crunchy-cli"
+rev = "8fff807ae68b61931aa8b1c899b8c8bba4df0784"
+[build]
+template = "cargo"
