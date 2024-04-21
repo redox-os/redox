@@ -1,0 +1,5 @@
+#TODO Not compiled or tested
+[source]
+git = "https://github.com/your-tools/rusync"
+[build]
+template = "cargo"
