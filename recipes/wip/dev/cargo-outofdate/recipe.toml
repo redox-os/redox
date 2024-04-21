@@ -1,0 +1,5 @@
+#TODO Not compiled or tested
+[source]
+git = "https://github.com/quininer/cargo-outofdate"
+[build]
+template = "cargo"
