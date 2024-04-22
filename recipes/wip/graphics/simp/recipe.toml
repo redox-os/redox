@@ -4,7 +4,3 @@ git = "https://github.com/Kl4rry/simp"
 rev = "195b2ef334e4c72ba8f44ee8af9f5cc0c259cc52"
 [build]
 template = "cargo"
-dependencies = [
-    "openssl1",
-    "libxkbcommon",
-]
