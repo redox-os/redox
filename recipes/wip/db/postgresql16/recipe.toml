@@ -1,5 +1,18 @@
-#TODO compilation error
+#TODO waiting on sigjmp_buf and related POSIX functions in relibc
 [source]
 tar = "https://ftp.postgresql.org/pub/source/v16.0/postgresql-16.0.tar.bz2"
 [build]
-template = "configure"
+template = "custom"
+dependencies = [
+    "readline",
+    "zlib",
+]
+script = """
+cp "${COOKBOOK_SOURCE}/src/backend/utils/errcodes.h" "${COOKBOOK_SOURCE}/src/include/utils/errcodes.h"
+COOKBOOK_CONFIGURE_FLAGS+=(
+    --without-icu
+    --without-readline
+    --with-template=redox
+)
+cookbook_configure
+"""
