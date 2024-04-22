@@ -1,0 +1,8 @@
+#TODO Not compiled or tested
+[source]
+git = "https://github.com/kyren/piccolo"
+[build]
+template = "custom"
+script = """
+cookbook_cargo_examples interpreter
+"""
