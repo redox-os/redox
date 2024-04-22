@@ -12,22 +12,43 @@ REPOS=(
     rust=rust
 )
 
+if [ "$1" = "--summary" ]
+then
+    summary=true
+elif [ "$1" = "--mdlinks" ]
+then
+    mdlinks=true
+fi
+
 for package in $(installer/target/release/redox_installer --list-packages -c config/$(uname -m)/desktop.toml)
 do
-    REPOS+=("${package}=cookbook/recipes/${package}/source")
+    package_source="$(cd cookbook; target/release/find_recipe ${package})"
+    REPOS+=("${package}=cookbook/${package_source}/source")
 done
 
 # TODO: resolve dependencies instead of manually adding these initfs packages
-for package in init logd nulld ramfs randd zerod
+for package in init logd ramfs randd zerod
 do
-    REPOS+=("${package}=cookbook/recipes/${package}/source")
+    package_source="$(cd cookbook; target/release/find_recipe ${package})"
+    REPOS+=("${package}=cookbook/${package_source}/source")
 done
 
 for name_repo in "${REPOS[@]}"
 do
     name="$(echo "${name_repo}" | cut -d "=" -f 1)"
     repo="$(echo "${name_repo}" | cut -d "=" -f 2-)"
-    echo -en "\x1B[1m${name}:\x1B[0m "
+    if [ "${summary}" = true ]
+    then
+        echo
+        echo "### ${name}"
+        echo
+    elif [ "${mdlinks}" = true ]
+    then
+        echo -n "- [${name}]"
+    else
+        echo -en "\x1B[1m${name}:\x1B[0m "
+    fi
+
     if [ -e "${repo}/.git" ]
     then
         remote="$(git -C "${repo}" remote get-url origin)"
@@ -41,7 +62,15 @@ do
         then
             echo "No changes"
         else
-            echo "${website}/-/compare/${before}...${after}"
+            if [ "${summary}" = true ]
+            then
+                git -C "${repo}" log ${before}...${after} --oneline
+            elif [ "${mdlinks}" = true ]
+            then
+                echo "(${website}/-/compare/${before}...${after})"
+            else
+                echo "${website}/-/compare/${before}...${after}"
+            fi
         fi
     else
         echo "Not a git repository"
