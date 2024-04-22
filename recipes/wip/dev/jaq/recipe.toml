@@ -1,0 +1,8 @@
+#TODO Not compiled or tested
+[source]
+git = "https://github.com/01mf02/jaq"
+[build]
+template = "custom"
+script = """
+cookbook_cargo_packages jaq
+"""
