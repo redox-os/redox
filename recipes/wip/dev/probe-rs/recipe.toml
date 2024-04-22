@@ -1,0 +1,11 @@
+#TODO maybe missing dependencies
+[source]
+git = "https://github.com/probe-rs/probe-rs"
+[build]
+template = "custom"
+dependencies = [
+    "libudev",
+]
+script = """
+cookbook_cargo --features cli
+"""

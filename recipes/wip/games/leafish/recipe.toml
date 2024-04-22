@@ -1,0 +1,9 @@
+#TODO Not compiled or tested
+[source]
+git = "https://github.com/Lea-fish/Leafish"
+[build]
+template = "cargo"
+dependencies = [
+    "gtk3",
+    "openssl1",
+]

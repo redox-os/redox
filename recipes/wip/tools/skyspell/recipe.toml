@@ -1,0 +1,12 @@
+#TODO missing an enchant backend and dictionary, see https://github.com/your-tools/skyspell#installation
+[source]
+git = "https://github.com/your-tools/skyspell"
+[build]
+template = "custom"
+dependencies = [
+    "sqlite3",
+    "enchant",
+]
+script = """
+cookbook_cargo_packages skyspell
+"""

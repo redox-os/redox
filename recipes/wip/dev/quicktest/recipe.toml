@@ -1,0 +1,6 @@
+#TODO Not compiled or tested
+[source]
+git = "https://github.com/LuchoBazz/quicktest"
+rev = "f4d32f87d350a725b47d5bc92756e7be208cd466"
+[build]
+template = "cargo"
