@@ -2,7 +2,7 @@
 #TODO use the GTK2 or wxWidgets frontend?
 #TODO probably need audio server patching
 [source]
-tar = "https://github.com/audacity/audacity/releases/download/Audacity-3.4.2/audacity-sources-3.4.2.tar.gz"
+tar = "https://github.com/audacity/audacity/releases/download/Audacity-3.5.1/audacity-sources-3.5.1.tar.gz"
 [build]
 template = "custom"
 dependencies = [
