@@ -98,7 +98,7 @@ sopwith = {}
 spacecadetpinball = {}
 syobonaction = {}
 #vice = {} # broken on new toolchain
-vvvvvv = {}
+#vvvvvv = {} # cannot find -lgcc_s
 
 # stuff
 cosmic-icons = {}
