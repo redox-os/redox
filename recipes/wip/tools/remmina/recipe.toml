@@ -1,0 +1,21 @@
+#TODO missing script for CMake, see https://gitlab.com/Remmina/Remmina/-/wikis/Compilation/Compilation-guide
+#TODO dependencies need a cleanup (outdated and up-to-date information is mixed in the build instructions)
+[source]
+git = "https://gitlab.com/Remmina/Remmina"
+rev = "2a455eadd6462457d08c2d066c5c245e0dee3bf9"
+[build]
+template = "custom"
+dependencies = [
+    "openssl1",
+    "libxml2",
+    "gstreamer",
+    "ffmpeg6",
+    "gtk3",
+    "libgcrypt",
+    "libssh",
+    "libvte",
+    "libjpeg",
+    "gnutls3",
+    "libsodium",
+    "pcre",
+]
