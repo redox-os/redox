@@ -3,3 +3,6 @@
 git = "https://github.com/rust-lang/crater"
 [build]
 template = "cargo"
+dependencies = [
+    "openssl1",
+]
