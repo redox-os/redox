@@ -1,4 +1,4 @@
-#TODO Not compiled or tested
+#TODO mimalloc error
 [source]
 git = "https://github.com/01mf02/jaq"
 [build]

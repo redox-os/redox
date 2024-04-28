@@ -1,4 +1,4 @@
-#TODO Not compiled or tested
+#TODO undefined reference
 [source]
 tar = "https://github.com/jqlang/jq/releases/download/jq-1.7.1/jq-1.7.1.tar.gz"
 [build]
