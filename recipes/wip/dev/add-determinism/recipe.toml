@@ -1,4 +1,4 @@
-#TODO Not compiled or tested
+#TODO pyo3-ffi crate error
 [source]
 git = "https://github.com/keszybz/add-determinism"
 [build]
