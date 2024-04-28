@@ -1,4 +1,4 @@
-#TODO Not compiled or tested
+#TODO require rustc 1.76 or newer
 [source]
 git = "https://github.com/rust-lang/rust-analyzer"
 [build]
