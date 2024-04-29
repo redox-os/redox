@@ -1,4 +1,4 @@
-#TODO (after cargo update)
+#TODO serde crate error (after cargo update)
 [source]
 git = "https://github.com/aswinnnn/pyscan"
 [build]
