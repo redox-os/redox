@@ -7,5 +7,5 @@ template = "custom"
 script = """
 cookbook_cargo --no-default-features
 mkdir -pv "${COOKBOOK_STAGE}/ui/apps"
-cp -v "${COOKBOOK_RECIPE}/manifest" "${COOKBOOK_STAGE}/ui/apps/cosmic-files"
+cp -v "${COOKBOOK_RECIPE}/manifest" "${COOKBOOK_STAGE}/ui/apps/20_cosmic-files"
 """
