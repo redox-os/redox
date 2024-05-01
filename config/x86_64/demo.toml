@@ -32,15 +32,10 @@ filesystem_size = 1536
 # Package settings
 [packages]
 # GUI Apps
-cosmic-edit = {}
-cosmic-files = {}
 periodictable = {}
 
 # GUI Data
-cosmic-icons = {}
 intel-one-mono = {}
-pop-icon-theme = {}
-shared-mime-info = {}
 
 # Shell Apps
 curl = {}

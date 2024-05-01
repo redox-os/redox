@@ -10,13 +10,18 @@ filesystem_size = 512
 # Package settings
 [packages]
 audiod = {}
+cosmic-edit = {}
+cosmic-icons = {}
+cosmic-files = {}
 installer-gui = {}
 netsurf = {}
 orbdata = {}
 orbital = {}
 orbterm = {}
 orbutils = {}
+pop-icon-theme = {}
 rustpython = {}
+shared-mime-info = {}
 
 [[files]]
 path = "/usr/lib/init.d/20_orbital"
