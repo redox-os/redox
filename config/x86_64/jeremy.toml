@@ -11,8 +11,6 @@ filesystem_size = 8192
 [packages]
 # apps
 boxedwine = {}
-cosmic-edit = {}
-cosmic-files = {}
 cosmic-term = {}
 cosmic-text = {}
 periodictable = {}
@@ -101,7 +99,6 @@ syobonaction = {}
 #vvvvvv = {} # cannot find -lgcc_s
 
 # stuff
-cosmic-icons = {}
 freepats = {}
 generaluser-gs = {}
 intel-one-mono = {}
@@ -109,7 +106,5 @@ jeremy = {}
 keyboard-sfx = {}
 libc-bench = {}
 noto-color-emoji = {}
-pop-icon-theme = {}
-shared-mime-info = {}
 timidity = {}
 ttf-hack = {}
