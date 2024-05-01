@@ -1,4 +1,4 @@
-#TODO camino crate compilation error
+#TODO camino crate error
 [source]
 git = "https://github.com/matthiaskrgr/cargo-cache"
 [build]

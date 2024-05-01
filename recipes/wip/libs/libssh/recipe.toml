@@ -1,0 +1,9 @@
+#TODO missing script for CMake, see https://git.libssh.org/projects/libssh.git/tree/INSTALL#n36
+[source]
+tar = "https://www.libssh.org/files/0.10/libssh-0.10.6.tar.xz"
+[build]
+template = "custom"
+dependencies = [
+    "zlib",
+    "openssl1",
+]
