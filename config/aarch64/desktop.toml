@@ -10,11 +10,16 @@ filesystem_size = 256
 # Package settings
 [packages]
 audiod = {}
+cosmic-edit = {}
+cosmic-icons = {}
+cosmic-files = {}
 drivers = {}
 orbdata = {}
 orbital = {}
 orbterm = {}
 orbutils = {}
+pop-icon-theme = {}
+shared-mime-info = {}
 
 [[files]]
 path = "/usr/lib/init.d/00_drivers"
