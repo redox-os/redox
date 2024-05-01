@@ -1,5 +1,8 @@
-#TODO Not compiled or tested
+#TODO serde crate error
 [source]
 git = "https://github.com/rust-lang/rustup"
 [build]
 template = "cargo"
+dependencies = [
+    "openssl1",
+]

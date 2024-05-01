@@ -1,4 +1,4 @@
-#TODO Not compiled or tested
+#TODO serde crate error
 [source]
 git = "https://github.com/M4SS-Code/cargo-goggles"
 [build]
