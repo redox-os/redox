@@ -1,0 +1,15 @@
+# This does not build update-mime-database to avoid bringing in C code to Redox
+[source]
+tar = "https://gitlab.freedesktop.org/xdg/shared-mime-info/-/archive/2.4/shared-mime-info-2.4.tar.gz"
+blake3 = "ad130f2f923ab3d5455c643e6257abf3598339fdd134ad0fac4e5dbbbf070eb9"
+
+[build]
+template = "custom"
+script = """
+mkdir -p "${COOKBOOK_STAGE}/usr/share/mime/packages"
+msgfmt --xml \
+    --template="${COOKBOOK_SOURCE}/data/freedesktop.org.xml.in" \
+    -d "${COOKBOOK_SOURCE}/po" \
+    -o "${COOKBOOK_STAGE}/usr/share/mime/packages/freedesktop.org.xml"
+update-mime-database -V "${COOKBOOK_STAGE}/usr/share/mime"
+"""
