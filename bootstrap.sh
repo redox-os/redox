@@ -864,8 +864,8 @@ usage()
 # Looks for and installs a cargo-managed binary or subcommand
 #############################################################
 cargoInstall() {
-	if [[ "`cargo install --list`" != *"$1 v$2"* ]]; then
-		cargo install --force --version "$2" "$1"
+	if [[ "`cargo +stable install --list`" != *"$1 v$2"* ]]; then
+		cargo +stable install --force --version "$2" "$1"
 	else
 		echo "You have $1 version $2 installed already!"
 	fi
