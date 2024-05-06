@@ -36,6 +36,10 @@ CONTAINERFILE?=podman/redox-base-containerfile
 export NPROC=nproc
 export REDOX_MAKE=make
 HOST_TARGET := $(shell env -u RUSTUP_TOOLCHAIN rustc -vV | grep host | cut -d: -f2 | tr -d " ")
+ifneq ($(HOST_TARGET),x86_64-unknown-linux-gnu)
+	# The binary prefix is only built for x86_64 Linux hosts
+	PREFIX_BINARY=0
+endif
 UNAME := $(shell uname)
 ifeq ($(UNAME),Darwin)
 	FUMOUNT=umount
