@@ -5,7 +5,7 @@ include = ["server.toml"]
 # General settings
 [general]
 # Filesystem size in MiB
-filesystem_size = 512
+filesystem_size = 560
 
 # Package settings
 [packages]
