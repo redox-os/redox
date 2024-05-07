@@ -1,0 +1,5 @@
+#TODO Not compiled or tested
+[source]
+git = "https://github.com/flo-at/minmon"
+[build]
+template = "cargo"
