@@ -1,0 +1,5 @@
+#TODO Not compiled or tested
+[source]
+git = "https://github.com/MitMaro/git-interactive-rebase-tool"
+[build]
+template = "cargo"
