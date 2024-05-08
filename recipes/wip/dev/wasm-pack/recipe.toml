@@ -1,0 +1,5 @@
+#TODO Not compiled or tested
+[source]
+git = "https://github.com/rustwasm/wasm-pack"
+[build]
+template = "cargo"

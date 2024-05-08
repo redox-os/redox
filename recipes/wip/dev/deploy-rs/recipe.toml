@@ -1,0 +1,9 @@
+#TODO Not compiled or tested
+[source]
+git = "https://github.com/serokell/deploy-rs"
+[build]
+template = "custom"
+script = """
+mv "${COOKBOOK_STAGE}/usr/bin/deploy" "${COOKBOOK_STAGE}/usr/bin/deploy-rs"
+cookbook_cargo
+"""
