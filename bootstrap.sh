@@ -350,7 +350,8 @@ archLinux()
 	doxygen \
 	lua \
 	ant \
-	protobuf"
+	protobuf \
+	rsync"
 
 	if [ "$1" == "qemu" ]; then
 		packages="$packages qemu"
@@ -526,7 +527,7 @@ fedora()
 	   echo "Unknown emulator: $1"
 	   exit 1
 	fi
-		
+
 	# Use rpm -q <package> to check if it's already installed
 	PKGS=$(for pkg in file \
 	autoconf \
@@ -668,13 +669,13 @@ suse()
 	   echo "Unknown emulator: $1"
 	   exit 1
 	fi
-	
+
 	echo "Installing necessary build tools..."
 
 	# We could install all the packages in a single zypper command with:
 	#
 	#        zypper install package1 package2 package3
-	# 
+	#
 	# But there is an issue with this: zypper returns a success code if at
 	# least one of the packages was correctly installed, but we need it to fail
 	# if any of the packages is missing.
@@ -687,14 +688,14 @@ suse()
 		if rpm -q "${p}" > /dev/null ; then
 		   echo "${p} is already installed"
 		else
-		   # Zypper shows a confirmation prompt and the "y" answer even with 
+		   # Zypper shows a confirmation prompt and the "y" answer even with
 		   # --non-interactive and --no-confirm:
 		   #
 		   #   1 new package to install.
            #   Overall download size: 281.7 KiB. Already cached: 0 B. After the operation, additional 394.6 KiB will be used.
            #   Continue? [y/n/v/...? shows all options] (y): y
 		   #
-		   # That could make the user think that the package was installed, 
+		   # That could make the user think that the package was installed,
 		   # when it was only a dry run.
 		   # To avoid the confusion, we hide the output unless there was an
 		   # error.
