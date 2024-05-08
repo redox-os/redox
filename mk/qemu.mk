@@ -47,7 +47,7 @@ else ifeq ($(ARCH),aarch64)
 		QEMUFLAGS+=-device ramfb
 	endif
 	ifneq ($(usb),no)
-		QEMUFLAGS+=-device qemu-xhci -device usb-kbd -device usb-mouse
+		QEMUFLAGS+=-device qemu-xhci -device usb-kbd -device usb-tablet
 	endif
 else
 $(error Unsupported ARCH for QEMU "$(ARCH)"))
