@@ -1,0 +1,5 @@
+#TODO Not compiled or tested
+[source]
+git = "https://github.com/mozilla/grcov"
+[build]
+template = "cargo"

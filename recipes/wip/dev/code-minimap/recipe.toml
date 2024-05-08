@@ -1,0 +1,5 @@
+#TODO Not compiled or tested
+[source]
+git = "https://github.com/wfxr/code-minimap"
+[build]
+template = "cargo"
