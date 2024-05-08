@@ -1,0 +1,5 @@
+#TODO Not compiled or tested
+[source]
+git = "https://github.com/bytecodealliance/wasm-tools"
+[build]
+template = "cargo"
