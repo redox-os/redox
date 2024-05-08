@@ -1,0 +1,8 @@
+#TODO Not compiled or tested
+[source]
+git = "https://github.com/domoritz/arrow-tools"
+[build]
+template = "custom"
+script = """
+cookbook_cargo_packages csv2arrow csv2parquet json2arrow json2parquet
+"""

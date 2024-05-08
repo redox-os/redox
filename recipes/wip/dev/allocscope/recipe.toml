@@ -1,0 +1,14 @@
+#TODO Not compiled or tested
+[source]
+git = "https://github.com/matt-kimball/allocscope"
+[build]
+template = "custom"
+dependencies = [
+    "libiberty",
+    "ncurses",
+    "sqlite3",
+    "libunwind",
+]
+script = """
+cookbook_cargo_packages allocscope-trace allocscope-view
+"""
