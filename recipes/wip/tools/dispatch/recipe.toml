@@ -1,0 +1,5 @@
+#TODO Not compiled or tested
+[source]
+git = "https://github.com/brianyu28/dispatch"
+[build]
+template = "cargo"
