@@ -56,6 +56,7 @@ RUN apt-get update \
 # _UID_ must be replaced with the user's uid on host
 # podman root is mapped to your user id on host during build,
 # poduser is mapped to your user id during podman run
-RUN useradd --create-home --no-log-init --uid _UID_ poduser && \
+RUN userdel ubuntu && \
+        useradd --create-home --no-log-init --uid _UID_ poduser && \
         chown -R root:root /home
 
