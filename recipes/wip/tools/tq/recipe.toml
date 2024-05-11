@@ -1,0 +1,5 @@
+#TODO Not compiled or tested
+[source]
+git = "https://github.com/cryptaliagy/tq-rs"
+[build]
+template = "cargo"
