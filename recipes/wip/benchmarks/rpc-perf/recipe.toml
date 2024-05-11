@@ -1,6 +1,5 @@
 #TODO Not compiled or tested
 [source]
-git = "https://github.com/twitter/rpc-perf"
-
+git = "https://github.com/iopsystems/rpc-perf"
 [build]
 template = "cargo"
