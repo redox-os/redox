@@ -897,7 +897,7 @@ rustInstall() {
 	fi
 	# If rustup is not installed we should offer to install it for them
 	if [ -z "$(which rustup)" ]; then
-        rustup_options="--default-toolchain nightly"
+        rustup_options="--default-toolchain stable"
 		echo "You do not have rustup installed."
 		if [ "$noninteractive" = true ]; then
 		   rustup="y"
@@ -924,8 +924,8 @@ rustInstall() {
 	if [ -z "$(which rustc)" ]; then
 		echo "Rust is not installed"
 		echo "Please either run the script again, accepting rustup install"
-		echo "or install rustc nightly manually (not recommended) via:"
-		echo "\#curl -sSf https://static.rust-lang.org/rustup.sh | sh -s -- --channel=nightly"
+		echo "or install rustc stable manually (not recommended) via:"
+		echo "\#curl -sSf https://static.rust-lang.org/rustup.sh | sh -s -- --channel=stable"
 		exit 1
 	else
 		echo "Your Rust install looks good!"
@@ -999,7 +999,6 @@ if [ "$1" == "-h" ] || [ "$1" == "--help" ]; then
 elif [ "$1" == "-u" ]; then
 	git pull upstream master
 	git submodule update --recursive --init
-	rustup update nightly
 	exit
 elif [ "$1" == "-s" ]; then
 	statusCheck
@@ -1034,7 +1033,6 @@ rustInstall "$noninteractive"
 if [ "$update" == "true" ]; then
 	git pull upstream master
 	git submodule update --recursive --init
-	rustup update nightly
 	exit
 fi
 
