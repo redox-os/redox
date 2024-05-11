@@ -1,0 +1,8 @@
+#TODO Not compiled or tested
+[source]
+git = "https://github.com/d-e-s-o/nitrocli"
+[build]
+template = "cargo"
+dependencies = [
+    "libhidapi",
+]

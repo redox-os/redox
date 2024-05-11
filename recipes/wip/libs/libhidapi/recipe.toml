@@ -1,0 +1,9 @@
+#TODO missing script for CMake, see https://github.com/libusb/hidapi/blob/master/BUILD.cmake.md
+[source]
+git = "https://github.com/libusb/hidapi"
+rev = "d3013f0af3f4029d82872c1a9487ea461a56dee4"
+[build]
+template = "custom"
+dependencies = [
+    "libiconv",
+]
