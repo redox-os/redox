@@ -26,6 +26,7 @@ $(PREFIX)/relibc: $(ROOT)/relibc
 	mkdir -p "$(@D)"
 	rm -rf "$@.partial" "$@"
 	cp -r "$^" "$@.partial"
+	touch "$@.partial"
 	mv "$@.partial" "$@"
 
 $(PREFIX)/relibc-install: $(PREFIX)/relibc | $(PREFIX)/rust-install $(CONTAINER_TAG)
@@ -185,7 +186,15 @@ else
 	mv "$@.partial" "$@"
 endif
 
-$(PREFIX)/relibc-freestanding-install: $(PREFIX)/relibc | $(PREFIX_BASE_INSTALL) $(PREFIX_FREESTANDING_INSTALL) $(CONTAINER_TAG)
+$(PREFIX)/relibc-freestanding: $(ROOT)/relibc
+	mkdir -p "$(@D)"
+	rm -rf "$@.partial" "$@"
+	cp -r "$^" "$@.partial"
+	touch "$@.partial"
+	mv "$@.partial" "$@"
+
+
+$(PREFIX)/relibc-freestanding-install: $(PREFIX)/relibc-freestanding | $(PREFIX_BASE_INSTALL) $(PREFIX_FREESTANDING_INSTALL) $(CONTAINER_TAG)
 ifeq ($(PODMAN_BUILD),1)
 	$(PODMAN_RUN) $(MAKE) $@
 else
