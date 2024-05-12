@@ -1,0 +1,5 @@
+#TODO Not compiled or tested
+[source]
+git = "https://github.com/alt-art/commit"
+[build]
+template = "cargo"
