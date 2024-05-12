@@ -1,0 +1,11 @@
+#TODO Not compiled or tested
+[source]
+git = "https://github.com/nabijaczleweli/cargo-update"
+[build]
+template = "cargo"
+dependencies = [
+    "curl",
+    "openssl1",
+    "libssh2",
+    "libgit2",
+]

@@ -1,0 +1,5 @@
+#TODO Not compiled or tested
+[source]
+git = "https://github.com/regexident/cargo-modules"
+[build]
+template = "cargo"
