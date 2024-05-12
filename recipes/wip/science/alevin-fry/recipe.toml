@@ -1,0 +1,5 @@
+#TODO Not compiled or tested
+[source]
+git = "https://github.com/COMBINE-lab/alevin-fry"
+[build]
+template = "cargo"
