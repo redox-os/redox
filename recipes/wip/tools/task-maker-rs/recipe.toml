@@ -1,0 +1,5 @@
+#TODO Not compiled or tested
+[source]
+git = "https://github.com/edomora97/task-maker-rust"
+[build]
+template = "cargo"

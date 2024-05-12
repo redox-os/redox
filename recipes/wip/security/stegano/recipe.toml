@@ -1,0 +1,8 @@
+#TODO Not compiled or tested
+[source]
+git = "https://github.com/steganogram/stegano-rs"
+[build]
+template = "custom"
+script = """
+cookbook_cargo_packages stegano-cli
+"""
