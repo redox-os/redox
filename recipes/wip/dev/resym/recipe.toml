@@ -1,0 +1,8 @@
+#TODO Not compiled or tested
+[source]
+git = "https://github.com/ergrelet/resym"
+[build]
+template = "custom"
+script = """
+cookbook_cargo_packages resym resymc
+"""
