@@ -1,0 +1,8 @@
+#TODO Not compiled or tested
+[source]
+git = "https://github.com/cargo-lambda/cargo-lambda"
+[build]
+template = "custom"
+script = """
+cookbook_cargo_packages cargo-lambda-cli
+"""
