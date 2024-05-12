@@ -1,0 +1,8 @@
+#TODO Not compiled or tested
+[source]
+git = "https://github.com/pxp-lang/pxp"
+[build]
+template = "custom"
+script = """
+cookbook_cargo_packages pxp-tools
+"""

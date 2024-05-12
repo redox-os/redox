@@ -1,0 +1,6 @@
+#TODO Not compiled or tested
+#TODO create a service
+[source]
+git = "https://github.com/galeone/bacup"
+[build]
+template = "cargo"
