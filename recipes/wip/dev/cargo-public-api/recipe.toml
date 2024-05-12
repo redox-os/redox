@@ -1,0 +1,8 @@
+#TODO Not compiled or tested
+[source]
+git = "https://github.com/Enselic/cargo-public-api"
+[build]
+template = "custom"
+script = """
+cookbook_cargo_packages cargo-public-api
+"""

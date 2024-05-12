@@ -1,0 +1,5 @@
+#TODO Not compiled or tested
+[source]
+git = "https://github.com/dtolnay/cargo-llvm-lines"
+[build]
+template = "cargo"
