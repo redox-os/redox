@@ -1,0 +1,5 @@
+#TODO Not compiled or tested
+[source]
+git = "https://gitlab.com/timvisee/apbf"
+[build]
+template = "cargo"
