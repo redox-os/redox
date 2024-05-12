@@ -172,7 +172,7 @@ Image date - 11-11-2022
 - **ASUS ROG g55vw**
 
 ```
-Satus - Booting
+Status - Booting
 Redox version - 0.8.0
 Variant - desktop
 Image date - 11-11-2023
@@ -181,7 +181,17 @@ Image date - 11-11-2023
 - Boots to desktop
 - UEFI panic in SETUP
 ```
+### Fujitsu
+- **Fujitsu Lifebook AH530**
+```
+Status - Booting
+Redox version - 0.8.0
+Variant - demo
+Image date - 11-11-2023
 
+- Displays desktop, mouse glide pad and buttons work correctly, Web browser window shows black inside borders, incorrect display dimensions offered at boot time, fan operating at max (does not happen with Ubuntu MATE), thermal shutdown.  Intel i5-460M cpu.
+```
+  
 ### Lenovo
 
 - **Lenovo IdeaPad Y510P**
