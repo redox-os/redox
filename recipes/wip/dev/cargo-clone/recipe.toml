@@ -1,0 +1,8 @@
+#TODO Not compiled or tested
+[source]
+git = "https://github.com/JanLikar/cargo-clone"
+[build]
+template = "custom"
+script = """
+cookbook_cargo_packages cargo-clone
+"""
