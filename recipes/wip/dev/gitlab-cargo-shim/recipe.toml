@@ -1,0 +1,5 @@
+#TODO Not compiled or tested
+[source]
+git = "https://github.com/w4/gitlab-cargo-shim"
+[build]
+template = "cargo"
