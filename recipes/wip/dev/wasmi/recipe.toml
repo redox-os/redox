@@ -1,0 +1,8 @@
+#TODO Not compiled or tested
+[source]
+git = "https://github.com/wasmi-labs/wasmi"
+[build]
+template = "custom"
+script = """
+cookbook_cargo_packages wasmi_cli
+"""
