@@ -1,0 +1,5 @@
+#TODO Not compiled or tested
+[source]
+git = "https://github.com/PLSysSec/cargo-scan"
+[build]
+template = "cargo"
