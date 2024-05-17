@@ -1,0 +1,8 @@
+#TODO Not compiled or tested
+[source]
+git = "https://github.com/a11ywatch/rust-to-npm"
+[build]
+template = "custom"
+script = """
+cookbook_cargo_packages cli
+"""
