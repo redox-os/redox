@@ -1,0 +1,8 @@
+#TODO Not compiled or tested
+[source]
+git = "https://github.com/formal-land/coq-of-rust"
+[build]
+template = "custom"
+script = """
+cookbook_cargo_packages lib cli
+"""
