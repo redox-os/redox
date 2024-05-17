@@ -1,0 +1,5 @@
+#TODO Not compiled or tested
+[source]
+git = "https://github.com/Canop/glassbench"
+[build]
+template = "cargo"
