@@ -1,0 +1,5 @@
+#TODO Not compiled or tested
+[source]
+git = "https://github.com/integer32llc/margo"
+[build]
+template = "cargo"

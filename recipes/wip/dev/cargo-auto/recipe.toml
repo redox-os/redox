@@ -1,0 +1,5 @@
+#TODO Not compiled or tested
+[source]
+git = "https://github.com/automation-tasks-rs/cargo-auto"
+[build]
+template = "cargo"
