@@ -1,0 +1,5 @@
+#TODO Not compiled or tested
+[source]
+git = "https://github.com/hack-ink/cargo-featalign"
+[build]
+template = "cargo"
