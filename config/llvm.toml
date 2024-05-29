@@ -1,0 +1,29 @@
+# Default desktop configuration
+
+include = ["base.toml"]
+
+[general]
+filesystem_size = 2048
+
+[packages]
+bash = {}
+llvm = {}
+
+[[files]]
+path = "/usr/lib/init.d/99_gen_llvm-config-generate"
+data = """
+bash /usr/bin/llvm-config-generate
+"""
+
+[[files]]
+path = "/usr/bin/llvm-config-generate"
+data = """
+for flag in --version --bindir --cppflags --cxxflags --includedir --ldflags --libdir --system-libs --targets-built --has-rtti --shared-mode
+do
+    echo -e "'$flag': '$(llvm-config $flag)',"
+done
+for component in $(llvm-config --components)
+do
+    echo -e "'$component': '$(llvm-config --libs $component)',"
+done
+"""
