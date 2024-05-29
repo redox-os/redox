@@ -1,7 +1,7 @@
 [source]
 git = "https://gitlab.redox-os.org/redox-os/mesa.git"
 upstream = "https://gitlab.freedesktop.org/mesa/mesa"
-branch = "redox-22.3.1"
+branch = "redox-24.0"
 
 [build]
 template = "custom"
@@ -47,7 +47,6 @@ meson "${COOKBOOK_SOURCE}" . \
     --buildtype release \
     --strip \
     -Ddefault_library=static \
-    -Ddri-drivers= \
     -Dglx=disabled \
     -Dllvm=enabled \
     -Dosmesa=true \
