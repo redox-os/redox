@@ -12,6 +12,7 @@ verbose = 1
 
 [install]
 prefix = "install"
+sysconfdir = "etc"
 
 [rust]
 backtrace = false
