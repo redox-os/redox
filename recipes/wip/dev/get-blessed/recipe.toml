@@ -1,0 +1,5 @@
+#TODO Not compiled or tested
+[source]
+git = "https://github.com/josueBarretogit/get_blessed_rs"
+[build]
+template = "cargo"

@@ -1,0 +1,13 @@
+#TODO Not compiled or tested
+[source]
+git = "https://github.com/Orange-OpenSource/hurl"
+[build]
+template = "cargo"
+dependencies = [
+    "openssl1",
+    "curl",
+    "libxml2",
+]
+script = """
+cookbook_cargo_packages hurl
+"""
