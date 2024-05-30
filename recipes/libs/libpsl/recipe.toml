@@ -1,0 +1,6 @@
+[source]
+tar = "https://github.com/rockdaboot/libpsl/releases/download/0.21.5/libpsl-0.21.5.tar.lz"
+blake3 = "91318b7b876b12ff4649b7a0d6f6ed4ab1ab44f48a49508c8978ab7b4ccf3298"
+
+[build]
+template = "configure"
