@@ -7,6 +7,7 @@ dependencies = [
     "curl",
     "libiconv",
     "liborbital",
+    "libpsl",
     "llvm",
     "mesa",
     "nghttp2",
@@ -20,7 +21,7 @@ export CXXFLAGS="${CXXFLAGS} -D_GLIBCXX_USE_C99_MATH_TR1=1 -I${COOKBOOK_SYSROOT}
 #TODO: don't use this
 export SDL_LIBS="-lSDL2 -lorbital $("${TARGET}-pkg-config" --libs osmesa) -lstdc++"
 #TODO: don't add curl
-export SDL_LIBS="${SDL_LIBS} -lcurl -lnghttp2 -lssl -lcrypto"
+export SDL_LIBS="${SDL_LIBS} -lcurl -lnghttp2 -lpsl -lssl -lcrypto"
 COOKBOOK_CONFIGURE="cmake"
 COOKBOOK_CONFIGURE_FLAGS=(
     -DCMAKE_VERBOSE_MAKEFILE=On
