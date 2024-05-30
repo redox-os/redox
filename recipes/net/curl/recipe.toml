@@ -1,10 +1,12 @@
 [source]
 git = "https://gitlab.redox-os.org/redox-os/curl.git"
-branch = "redox"
+branch = "redox-8.6"
+upstream = "https://github.com/curl/curl.git"
 
 [build]
 template = "custom"
 dependencies = [
+    "libpsl",
     "nghttp2",
     "openssl1",
     "zlib"
