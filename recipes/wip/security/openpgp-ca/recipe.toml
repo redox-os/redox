@@ -1,0 +1,8 @@
+#TODO Not compiled or tested
+[source]
+git = "https://gitlab.com/openpgp-ca/openpgp-ca"
+[build]
+template = "custom"
+script = """
+cookbook_cargo_packages openpgp-ca openpgp-ca-restd
+"""
