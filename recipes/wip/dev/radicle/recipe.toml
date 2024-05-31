@@ -1,0 +1,8 @@
+#TODO Not compiled or tested
+[source]
+git = "https://seed.radicle.xyz/z3gqcJUoA1n9HaHKufZs5FCSGazv5.git"
+[build]
+template = "custom"
+script = """
+cookbook_cargo_packages radicle-cli radicle-node radicle-remote-helper
+"""

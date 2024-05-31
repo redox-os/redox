@@ -1,0 +1,5 @@
+#TODO Not compiled or tested
+[source]
+git = "https://gitlab.com/sequoia-pgp/sequoia-sq"
+[build]
+template = "cargo"
