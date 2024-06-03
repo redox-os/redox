@@ -1,13 +1,10 @@
+#TODO probably need to be ported to Orbital
 #TODO probably wrong script, see https://github.com/KhronosGroup/Vulkan-Tools/blob/main/BUILD.md
 [source]
 git = "https://github.com/KhronosGroup/Vulkan-Tools"
 rev = "7e75f4d389799129b79f90d1401f15f511796dbd"
 [build]
 template = "custom"
-dependencies = [
-    "libwayland",
-    "libx11",
-]
 script = """
 COOKBOOK_CONFIGURE="cmake"
 COOKBOOK_CONFIGURE_FLAGS=(
