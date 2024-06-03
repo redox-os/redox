@@ -1,0 +1,8 @@
+#TODO Not compiled or tested
+[source]
+tar = "https://download.savannah.gnu.org/releases/lzip/tarlz/tarlz-0.25.tar.lz"
+[build]
+template = "configure"
+dependencies = [
+    "lzlib",
+]
