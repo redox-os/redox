@@ -430,6 +430,7 @@ ubuntu()
 		libtool \
 		llvm \
 		lua5.4 \
+		lzip \
 		m4 \
 		make \
 		meson \

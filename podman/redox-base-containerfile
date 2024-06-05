@@ -51,6 +51,7 @@ RUN useradd --create-home --no-log-init --uid _UID_ poduser \
         xdg-utils \
         zip \
         unzip \
+        lzip \
         llvm \
         clang \
         perl \
