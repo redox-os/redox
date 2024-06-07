@@ -1,7 +1,7 @@
 GIT=https://gitlab.redox-os.org/redox-os/webrender.git
 GIT_UPSTREAM=https://github.com/servo/webrender.git
 BRANCH=redox
-BUILD_DEPENDS=(freetype2 libpng llvm mesa zlib)
+BUILD_DEPENDS=(freetype2 libpng llvm18 mesa zlib)
 
 function recipe_build {
     sysroot="$(realpath ../sysroot)"
