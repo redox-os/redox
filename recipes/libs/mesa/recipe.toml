@@ -7,7 +7,7 @@ branch = "redox-24.0"
 template = "custom"
 dependencies = [
     "expat",
-    "llvm",
+    "llvm18",
     "zlib",
 ]
 script = """
