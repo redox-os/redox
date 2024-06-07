@@ -9,7 +9,7 @@ BUILD_DEPENDS=(
     liborbital
     libpng
     libvorbis
-    llvm
+    llvm18
     mesa mesa-glu
     pcre
     pixman

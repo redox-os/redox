@@ -1,6 +1,6 @@
 GIT=https://gitlab.redox-os.org/redox-os/glium.git
 GIT_UPSTREAM=https://github.com/glium/glium.git
-BUILD_DEPENDS=(llvm mesa zlib)
+BUILD_DEPENDS=(llvm18 mesa zlib)
 BRANCH=redox
 CARGOFLAGS="--example teapot"
 

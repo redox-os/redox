@@ -10,7 +10,7 @@ patches = [
 template = "custom"
 dependencies = [
     "liborbital",
-    "llvm",
+    "llvm18",
     "mesa",
     "sdl2",
     "zlib",

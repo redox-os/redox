@@ -1,6 +1,6 @@
 VERSION=2.0.15
 TAR=https://www.libsdl.org/projects/SDL_ttf/release/SDL2_ttf-$VERSION.tar.gz
-BUILD_DEPENDS=(sdl2 liborbital llvm mesa freetype2 libpng zlib)
+BUILD_DEPENDS=(sdl2 liborbital llvm18 mesa freetype2 libpng zlib)
 
 function recipe_version {
     echo "$VERSION"

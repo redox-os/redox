@@ -9,7 +9,7 @@ dependencies = [
     "libogg",
     "liborbital",
     "libvorbis",
-    "llvm",
+    "llvm18",
     "mesa",
     "sdl2",
     "sdl2-mixer",

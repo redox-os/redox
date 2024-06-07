@@ -1,4 +1,4 @@
-BUILD_DEPENDS=(sdl2-image sdl2-mixer sdl2-ttf sdl2 liborbital llvm mesa freetype2 libjpeg libpng libogg libvorbis zlib)
+BUILD_DEPENDS=(sdl2-image sdl2-mixer sdl2-ttf sdl2 liborbital llvm18 mesa freetype2 libjpeg libpng libogg libvorbis zlib)
 
 function recipe_version {
     printf "1.0.0"
