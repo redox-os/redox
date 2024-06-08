@@ -6,3 +6,6 @@ template = "custom"
 script = """
 cookbook_cargo_packages openpgp-ca openpgp-ca-restd
 """
+dependencies = [
+    "openssl1",
+]
