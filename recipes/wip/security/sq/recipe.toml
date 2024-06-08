@@ -3,3 +3,6 @@
 git = "https://gitlab.com/sequoia-pgp/sequoia-sq"
 [build]
 template = "cargo"
+dependencies = [
+    "openssl1",
+]
