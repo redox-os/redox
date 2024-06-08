@@ -1,4 +1,4 @@
-#TODO Not compiled or tested
+#TODO linking error (after cargo update)
 [source]
 git = "https://github.com/pwnwriter/kanha"
 [build]

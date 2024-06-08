@@ -1,4 +1,4 @@
-#TODO Not compiled or tested
+#TODO libc and nix crate errors (after cargo update)
 [source]
 git = "https://github.com/tailhook/vagga"
 [build]
