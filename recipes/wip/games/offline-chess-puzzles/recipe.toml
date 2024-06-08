@@ -1,4 +1,4 @@
-#TODO Not compiled or tested
+#TODO iced_winit crate error
 [source]
 git = "https://github.com/brianch/offline-chess-puzzles"
 [build]
