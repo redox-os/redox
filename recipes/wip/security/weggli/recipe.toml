@@ -1,4 +1,4 @@
-#TODO Not compiled or tested
+#TODO source code error
 [source]
 git = "https://github.com/weggli-rs/weggli"
 [build]
