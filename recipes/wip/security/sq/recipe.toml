@@ -1,8 +1,9 @@
-#TODO Not compiled or tested
+#TODO make libnettle work
 [source]
 git = "https://gitlab.com/sequoia-pgp/sequoia-sq"
 [build]
 template = "cargo"
 dependencies = [
     "openssl1",
+    "libnettle",
 ]
