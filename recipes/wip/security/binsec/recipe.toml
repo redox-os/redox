@@ -1,4 +1,4 @@
-#TODO Not compiled or tested
+#TODO yara-sys crate error (after cargo update)
 [source]
 git = "https://github.com/ex0dus-0x/binsec"
 [build]

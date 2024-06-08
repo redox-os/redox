@@ -1,4 +1,4 @@
-#TODO Not compiled or tested
+#TODO make the libpcsclite dependency work
 [source]
 git = "https://gitlab.com/openpgp-ca/openpgp-ca"
 [build]
@@ -8,4 +8,5 @@ cookbook_cargo_packages openpgp-ca openpgp-ca-restd
 """
 dependencies = [
     "openssl1",
+    "libpcsclite",
 ]
