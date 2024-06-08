@@ -1,0 +1,11 @@
+#TODO not compiled or tested
+[source]
+git = "https://git.meli-email.org/meli/meli"
+[build]
+template = "custom"
+dependencies = [
+    "sqlite3",
+]
+script = """
+cookbook_cargo_packages meli
+"""

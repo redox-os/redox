@@ -1,0 +1,9 @@
+#TODO not compiled or tested
+[source]
+git = "https://github.com/Nazariglez/notan"
+[build]
+template = "custom"
+script = """
+cookbook_cargo_examples renderer_cube draw_path_flower \
+game_pong game_of_life
+"""
