@@ -1,4 +1,4 @@
-#TODO libmacchina crate error (after cargo update)
+#TODO if-addrs crate error
 [source]
 git = "https://github.com/Macchina-CLI/macchina"
 [build]
