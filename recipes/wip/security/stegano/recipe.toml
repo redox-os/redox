@@ -1,4 +1,4 @@
-#TODO Not compiled or tested
+#TODO require a command to move the binary
 [source]
 git = "https://github.com/steganogram/stegano-rs"
 [build]

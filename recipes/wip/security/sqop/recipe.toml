@@ -1,5 +1,8 @@
-#TODO Not compiled or tested
+#TODO make libnettle work
 [source]
 git = "https://gitlab.com/sequoia-pgp/sequoia-sop"
 [build]
 template = "cargo"
+dependencies = [
+    "libnettle",
+]
