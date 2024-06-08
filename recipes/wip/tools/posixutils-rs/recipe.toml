@@ -1,0 +1,9 @@
+#TODO not compiled or tested
+[source]
+git = "https://github.com/rustcoreutils/posixutils-rs"
+[build]
+template = "custom"
+script = """
+cookbook_cargo_packages calc datetime dev display file \
+fs misc pathnames plib process screen sys text tree users xform
+"""
