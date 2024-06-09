@@ -90,8 +90,19 @@ else
 endif
 
 export RUST_GDB=gdb-multiarch # Necessary when debugging for another architecture than the host
+GDB_KERNEL_FILE=cookbook/recipes/core/kernel/target/$(TARGET)/build/kernel.sym
 gdb: FORCE
-	gdb cookbook/recipes/core/kernel/target/$(TARGET)/build/kernel.sym --eval-command="target remote localhost:1234"
+	rust-gdb $(GDB_KERNEL_FILE) --eval-command="target remote :1234"
+
+# This target allows debugging a userspace application without requiring gdbserver running inside
+# the VM. Because gdb doesn't know when the userspace application is scheduled by the kernel and as
+# it stops the entire VM rather than just the userspace application that the user wants to debug,
+# connecting to a gdbserver running inside the VM is highly encouraged when possible. This target
+# should only be used when the application to debug runs early during boot before the network stack
+# has started or you need to debug the interaction between the application and the kernel.
+# tl;dr: DO NOT USE THIS TARGET UNLESS YOU HAVE TO
+gdb-userspace: FORCE
+	rust-gdb $(GDB_APP_FILE) --eval-command="add-symbol-file $(GDB_KERNEL_FILE) 0x$(shell readelf -S $(GDB_KERNEL_FILE) | grep .text | cut -c43-58)" --eval-command="target remote :1234"
 
 # An empty target
 FORCE:
