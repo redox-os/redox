@@ -2,7 +2,11 @@
 [source]
 tar = "https://www.cairographics.org/releases/cairomm-1.18.0.tar.xz"
 [build]
-template = "configure"
+template = "custom"
 dependencies = [
     "cairo",
 ]
+script = """
+./autogen.sh
+cookbook_configure
+"""
