@@ -1,6 +1,6 @@
 #TODO not compiled or tested
 [source]
-tar = "https://mosh.org/mosh-1.4.0.tar.gz"
+tar = "https://github.com/mobile-shell/mosh/releases/download/mosh-1.4.0/mosh-1.4.0.tar.gz"
 [build]
 template = "custom"
 dependencies = [
