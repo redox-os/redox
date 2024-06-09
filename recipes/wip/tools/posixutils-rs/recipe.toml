@@ -4,29 +4,30 @@ git = "https://github.com/rustcoreutils/posixutils-rs"
 [build]
 template = "custom"
 script = """
-cookbook_cargo
+cookbook_cargo --bin calc datetime dev display file \
+fs misc pathnames plib process screen sys text tree users xform
 
-BIN=(
-    calc
-    datetime
-    dev
-    display
-    file
-    fs
-    misc
-    pathnames
-    plib
-    process
-    screen
-    sys
-    text
-    tree
-    users
-    xform
-)
+#BIN=(
+#    calc
+#    datetime
+#    dev
+#    display
+#    file
+#    fs
+#    misc
+#    pathnames
+#    plib
+#    process
+#    screen
+#    sys
+#    text
+#    tree
+#    users
+#    xform
+#)
 
-for bin in "${BINS[@]}"
-do
-  ln -sv coreutils "${COOKBOOK_STAGE}/usr/bin/$bin"
-done
+#for bin in "${BINS[@]}"
+#do
+#  ln -sv coreutils "${COOKBOOK_STAGE}/usr/bin/$bin"
+#done
 """
