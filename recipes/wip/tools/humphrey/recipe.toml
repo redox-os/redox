@@ -4,7 +4,7 @@ git = "https://github.com/w-henderson/Humphrey"
 [build]
 template = "custom"
 script = """
-binary=humphrey_server
+binary=humphrey
 "${COOKBOOK_CARGO}" build \
             --manifest-path "${COOKBOOK_SOURCE}/Cargo.toml" \
             --bin "${binary}" \
