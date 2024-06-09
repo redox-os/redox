@@ -1,4 +1,4 @@
-#TODO not compiled or tested
+#TODO the git repository contents aren't copied to the "build" folder
 [source]
 git = "https://github.com/wolfSSL/wolfssl"
 rev = "37884f864d6fd9b04f44677cb04da15d0c9d6526"

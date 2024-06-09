@@ -1,4 +1,4 @@
-#TODO not compiled or tested
+#TODO patch the GNU Autotools configuration to recognize Redox
 [source]
 tar = "https://www.cairographics.org/releases/cairomm-1.15.5.tar.gz"
 [build]

@@ -1,4 +1,4 @@
-#TODO not compiled or tested
+#TODO the tarball contents aren't copied to the "build" folder
 [source]
 tar = "https://www.cairographics.org/releases/cairomm-1.18.0.tar.xz"
 [build]
