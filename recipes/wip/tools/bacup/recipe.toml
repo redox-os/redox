@@ -1,4 +1,4 @@
-#TODO Not compiled or tested
+#TODO tokio-tar crate error
 #TODO create a service
 [source]
 git = "https://github.com/galeone/bacup"

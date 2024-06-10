@@ -1,4 +1,5 @@
-#TODO Not compiled or tested
+#TODO compiled but not tested (after cargo update)
+#TODO add a command to properly move the executable
 [source]
 git = "https://github.com/r-zenine/sam"
 [build]
