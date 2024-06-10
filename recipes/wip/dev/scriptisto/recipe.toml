@@ -1,4 +1,4 @@
-#TODO Not compiled or tested
+#TODO users crate error
 [source]
 git = "https://github.com/igor-petruk/scriptisto"
 [build]
