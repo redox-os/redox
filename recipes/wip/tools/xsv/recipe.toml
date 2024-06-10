@@ -1,4 +1,4 @@
-#TODO Not compiled or tested
+#TODO update the redox_syscall version on the dependency tree
 [source]
 git = "https://github.com/BurntSushi/xsv"
 [build]
