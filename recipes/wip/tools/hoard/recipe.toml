@@ -1,4 +1,4 @@
-#TODO Not compiled or tested
+#TODO aws-lc-sys crate error
 [source]
 git = "https://github.com/Hyde46/hoard"
 [build]

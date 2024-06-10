@@ -1,4 +1,4 @@
-#TODO Not compiled or tested
+#TODO jemalloc-sys crate error
 [source]
 git = "https://github.com/vincev/dply-rs"
 [build]
