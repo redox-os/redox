@@ -1,5 +1,8 @@
-#TODO Not compiled or tested
+#TODO Not compiled or tested (after cargo update)
 [source]
 git = "https://github.com/brianyu28/dispatch"
 [build]
 template = "cargo"
+dependencies = [
+    "openssl1",
+]
