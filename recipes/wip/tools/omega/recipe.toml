@@ -1,4 +1,4 @@
-#TODO Not compiled or tested
+#TODO missing headers
 [source]
 git = "https://github.com/nwrenger/omega"
 [build]
