@@ -3,6 +3,9 @@
 git = "https://github.com/encounter/objdiff"
 [build]
 template = "custom"
+dependencies = [
+    "openssl1",
+]
 script = """
 cookbook_cargo_packages objdiff-gui objdiff-cli
 """
