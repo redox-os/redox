@@ -1,5 +1,8 @@
-#TODO Not compiled or tested
+#TODO make zstd work
 [source]
 git = "https://github.com/iopsystems/rpc-perf"
 [build]
 template = "cargo"
+dependencies = [
+    "zstd",
+]
