@@ -1,4 +1,4 @@
-#TODO Not compiled or tested (after cargo update)
+#TODO compiled but not tested (after cargo update)
 [source]
 git = "https://github.com/brianyu28/dispatch"
 [build]
