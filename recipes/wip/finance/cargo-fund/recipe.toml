@@ -3,3 +3,6 @@
 git = "https://github.com/acfoltzer/cargo-fund"
 [build]
 template = "cargo"
+dependencies = [
+    "openssl1",
+]
