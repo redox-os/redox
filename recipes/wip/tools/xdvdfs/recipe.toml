@@ -1,4 +1,4 @@
-#TODO Not compiled or tested
+#TODO require a command to move the executable to a proper folder
 [source]
 git = "https://github.com/antangelo/xdvdfs"
 [build]

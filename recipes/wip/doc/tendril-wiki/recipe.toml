@@ -1,4 +1,4 @@
-#TODO Not compiled or tested
+#TODO require a patch to update the ring crate
 [source]
 git = "https://github.com/jamestthompson3/tendril-wiki"
 [build]
