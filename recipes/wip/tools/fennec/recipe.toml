@@ -1,4 +1,4 @@
-#TODO Not compiled or tested
+#TODO update ring version (after cargo update)
 [source]
 git = "https://github.com/AbdulRhmanAlfaifi/Fennec"
 [build]
