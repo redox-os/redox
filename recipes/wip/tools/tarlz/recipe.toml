@@ -2,7 +2,11 @@
 [source]
 tar = "https://download.savannah.gnu.org/releases/lzip/tarlz/tarlz-0.25.tar.lz"
 [build]
-template = "configure"
+template = "custom"
 dependencies = [
     "lzlib",
 ]
+script = """
+rsync -av --delete "${COOKBOOK_SOURCE}/"
+cookbook_configure
+"""
