@@ -1,4 +1,4 @@
-#TODO Not compiled or tested
+#TODO add a command to move the executable to a propeer folder
 [source]
 git = "https://github.com/robertknight/ocrs"
 [build]
