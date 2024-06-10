@@ -3,3 +3,6 @@
 git = "https://github.com/Hyde46/hoard"
 [build]
 template = "cargo"
+dependencies = [
+    "openssl1",
+]
