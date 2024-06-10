@@ -1,4 +1,4 @@
-#TODO Not compiled or tested
+#TODO nix crate error (after cargo update)
 [source]
 git = "https://github.com/kamui-fin/rfetch"
 [build]
