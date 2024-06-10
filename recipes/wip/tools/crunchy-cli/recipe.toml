@@ -1,4 +1,4 @@
-#TODO Not compiled or tested
+#TODO fs2 crate error
 [source]
 git = "https://github.com/crunchy-labs/crunchy-cli"
 [build]
