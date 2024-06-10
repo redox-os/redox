@@ -1,4 +1,4 @@
-#TODO Not compiled or tested
+#TODO record-query crate error
 [source]
 git = "https://github.com/dflemstr/rq"
 [build]
