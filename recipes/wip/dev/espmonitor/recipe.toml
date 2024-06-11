@@ -1,4 +1,4 @@
-#TODO Not compiled or tested
+#TODO termios crate error
 [source]
 git = "https://github.com/esp-rs/espmonitor"
 [build]

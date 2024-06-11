@@ -1,4 +1,4 @@
-#TODO Not compiled or tested
+#TODO require the rust-src rustc-dev llvm-tools-preview components
 [source]
 git = "https://github.com/formal-land/coq-of-rust"
 [build]
