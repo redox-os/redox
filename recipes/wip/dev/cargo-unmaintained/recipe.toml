@@ -3,3 +3,6 @@
 git = "https://github.com/trailofbits/cargo-unmaintained"
 [build]
 template = "cargo"
+dependencies = [
+    "openssl1",
+]
