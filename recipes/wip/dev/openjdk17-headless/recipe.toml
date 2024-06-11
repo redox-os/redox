@@ -1,5 +1,5 @@
 #TODO build instructions - https://github.com/openjdk/jdk17u/blob/master/doc/building.md
-#TODO not compiled or tested
+#TODO add supported autoconf options
 [source]
 git = "https://github.com/openjdk/jdk17u"
 rev = "b78a848cc7ae5787d9ec9ea0ce843cd63b06efec"
@@ -9,6 +9,7 @@ dependencies = [
     "fontconfig",
 ]
 script = """
+chmod a+x configure
 COOKBOOK_CONFIGURE_FLAGS+=(
     --enable-headless-only=yes
 )

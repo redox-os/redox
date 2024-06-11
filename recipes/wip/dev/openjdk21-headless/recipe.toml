@@ -9,6 +9,7 @@ dependencies = [
     "fontconfig",
 ]
 script = """
+chmod a+x configure
 COOKBOOK_CONFIGURE_FLAGS+=(
     --enable-headless-only=yes
 )
