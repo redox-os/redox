@@ -1,4 +1,4 @@
-#TODO Not compiled or tested
+#TODO openssl-sys crate error
 [source]
 git = "https://github.com/crate-ci/cargo-release"
 [build]
