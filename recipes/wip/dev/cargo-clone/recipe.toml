@@ -1,4 +1,4 @@
-#TODO Not compiled or tested
+#TODO cargo-util crate error
 [source]
 git = "https://github.com/JanLikar/cargo-clone"
 [build]
