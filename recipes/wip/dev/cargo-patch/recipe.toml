@@ -3,3 +3,6 @@
 git = "https://github.com/itmettkeDE/cargo-patch"
 [build]
 template = "cargo"
+dependencies = [
+    "openssl1",
+]
