@@ -3,3 +3,6 @@
 git = "https://github.com/josueBarretogit/get_blessed_rs"
 [build]
 template = "cargo"
+dependencies = [
+    "openssl1",
+]

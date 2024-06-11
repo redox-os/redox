@@ -1,4 +1,4 @@
-#TODO Not compiled or tested
+#TODO libloading crate error
 [source]
 git = "https://github.com/dfinity/sdk"
 [build]

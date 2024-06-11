@@ -1,4 +1,4 @@
-#TODO Not compiled or tested
+#TODO add a command to properly move the binary
 [source]
 git = "https://github.com/serokell/deploy-rs"
 [build]
