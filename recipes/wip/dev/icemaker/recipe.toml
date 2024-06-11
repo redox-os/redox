@@ -1,4 +1,4 @@
-#TODO Not compiled or tested
+#TODO tree-sitter-rust error
 [source]
 git = "https://github.com/matthiaskrgr/icemaker"
 [build]
