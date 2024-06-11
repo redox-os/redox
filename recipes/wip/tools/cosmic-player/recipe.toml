@@ -6,7 +6,7 @@ branch = "master"
 dependencies = [
     "ffmpeg6",
     "liborbital",
-    "llvm",
+    "llvm18",
     "mesa",
     "sdl2",
     "zlib",

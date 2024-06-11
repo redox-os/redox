@@ -10,7 +10,7 @@ dependencies = [
     "dbus",
     "dspy",
     "enchant",
-    "llvm",
+    "llvm18",
     "gdk-pixbuf",
     "glib",
     "gobject-introspection",

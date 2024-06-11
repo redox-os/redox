@@ -7,7 +7,7 @@ dependencies = [
     "curl",
     "libiconv",
     "liborbital",
-    "llvm",
+    "llvm18",
     "mesa",
     "nghttp2",
     "openssl1",

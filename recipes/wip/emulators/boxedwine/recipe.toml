@@ -6,7 +6,7 @@ template = "custom"
 dependencies = [
     "curl",
     "liborbital",
-    "llvm",
+    "llvm18",
     "mesa",
     "mesa-glu",
     "nghttp2",

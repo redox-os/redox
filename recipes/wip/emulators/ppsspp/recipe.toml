@@ -5,7 +5,7 @@ git = "https://github.com/jackpot51/ppsspp"
 template = "custom"
 dependencies = [
     "liborbital",
-    "llvm",
+    "llvm18",
     "mesa",
     "mesa-glu",
     "sdl2",

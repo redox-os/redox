@@ -6,7 +6,7 @@ rev = "f32d5d3df7e3c6a873d1b113ef3b707b016b3a69"
 template = "cargo"
 dependencies = [
     "ffmpeg6",
-    "llvm",
+    "llvm18",
     "openssl1",
     "opencv4",
 ]
