@@ -3,3 +3,6 @@
 git = "https://github.com/est31/cargo-udeps"
 [build]
 template = "cargo"
+dependencies = [
+    "openssl1",
+]
