@@ -3,3 +3,6 @@
 git = "https://github.com/bytecodealliance/cargo-component"
 [build]
 template = "cargo"
+dependencies = [
+    "openssl1",
+]
