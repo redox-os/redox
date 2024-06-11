@@ -1,4 +1,4 @@
-#TODO Not compiled or tested
+#TODO libc error
 [source]
 git = "https://seed.radicle.xyz/z3gqcJUoA1n9HaHKufZs5FCSGazv5.git"
 [build]
