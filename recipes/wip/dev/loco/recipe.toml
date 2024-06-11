@@ -3,3 +3,15 @@
 git = "https://github.com/loco-rs/loco"
 [build]
 template = "custom"
+script = """
+binary=loco-rs
+"${COOKBOOK_CARGO}" build \
+            --manifest-path "${COOKBOOK_SOURCE}/Cargo.toml" \
+            --package "${binary}" \
+            --release
+            --cli
+        mkdir -pv "${COOKBOOK_STAGE}/usr/bin"
+        cp -v \
+            "target/${TARGET}/release/${binary}" \
+            "${COOKBOOK_STAGE}/usr/bin/${binary}"
+"""
