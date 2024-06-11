@@ -1,4 +1,4 @@
-#TODO a script for a Cargo package with a flag
+#TODO camino crate error
 [source]
 git = "https://github.com/loco-rs/loco"
 [build]
