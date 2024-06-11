@@ -6,7 +6,7 @@ upstream = "https://github.com/curl/curl.git"
 [build]
 template = "custom"
 dependencies = [
-    "libpsl",
+    #TODO: git fails to build when this is a dependency: "libpsl",
     "nghttp2",
     "openssl1",
     "zlib"
@@ -31,6 +31,7 @@ COOKBOOK_CONFIGURE_FLAGS=(
     --with-nghttp2="${COOKBOOK_SYSROOT}"
     --with-ssl="${COOKBOOK_SYSROOT}"
     --with-zlib="${COOKBOOK_SYSROOT}"
+    --without-libpsl
 )
 cookbook_configure
 """
