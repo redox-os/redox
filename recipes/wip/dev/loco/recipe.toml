@@ -1,17 +1,5 @@
-#TODO not compiled or tested
+#TODO a script for a Cargo package with a flag
 [source]
 git = "https://github.com/loco-rs/loco"
 [build]
 template = "custom"
-script = """
-binary=loco-rs
-"${COOKBOOK_CARGO}" build \
-            --manifest-path "${COOKBOOK_SOURCE}/Cargo.toml" \
-            --bin "${binary}" \
-            --release
-            --cli
-        mkdir -pv "${COOKBOOK_STAGE}/usr/bin"
-        cp -v \
-            "target/${TARGET}/release/${binary}" \
-            "${COOKBOOK_STAGE}/usr/bin/${binary}"
-"""
