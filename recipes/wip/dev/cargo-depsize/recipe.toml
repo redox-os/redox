@@ -3,3 +3,6 @@
 git = "https://github.com/Alfex4936/cargo-depsize"
 [build]
 template = "cargo"
+dependencies = [
+    "openssl1",
+]
