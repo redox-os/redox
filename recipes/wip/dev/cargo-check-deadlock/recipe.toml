@@ -1,4 +1,4 @@
-#TODO Not compiled or tested
+#TODO require the components rust-src rustc-dev llvm-tools-preview to be installed
 [source]
 git = "https://github.com/hlisdero/cargo-check-deadlock"
 [build]
