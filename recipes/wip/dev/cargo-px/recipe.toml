@@ -1,4 +1,4 @@
-#TODO Not compiled or tested
+#TODO ahash crate error
 [source]
 git = "https://github.com/LukeMathWalker/cargo-px"
 [build]
