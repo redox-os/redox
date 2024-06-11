@@ -3,3 +3,6 @@
 git = "https://github.com/camchenry/boon"
 [build]
 template = "cargo"
+dependencies = [
+    "openssl1",
+]
