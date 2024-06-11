@@ -3,3 +3,6 @@
 git = "https://github.com/qtfkwk/cargo-list"
 [build]
 template = "cargo"
+dependencies = [
+    "openssl1",
+]
