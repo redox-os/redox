@@ -5,6 +5,7 @@ git = "https://github.com/trailofbits/necessist"
 template = "custom"
 dependencies = [
     "sqlite3",
+    "openssl1",
 ]
 script = """
 cookbook_cargo_packages necessist
