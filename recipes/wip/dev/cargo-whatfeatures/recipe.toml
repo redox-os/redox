@@ -3,6 +3,9 @@
 git = "https://github.com/museun/cargo-whatfeatures"
 [build]
 template = "custom"
+dependencies = [
+    "openssl1",
+]
 script = """
 cookbook_cargo --features rustls
 """
