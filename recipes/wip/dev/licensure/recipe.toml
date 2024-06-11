@@ -3,3 +3,6 @@
 git = "https://github.com/chasinglogic/licensure"
 [build]
 template = "cargo"
+dependencies = [
+    "openssl1",
+]
