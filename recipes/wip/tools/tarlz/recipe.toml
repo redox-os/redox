@@ -7,6 +7,5 @@ dependencies = [
     "lzlib",
 ]
 script = """
-rsync -av --delete "${COOKBOOK_SOURCE}/"
 cookbook_configure
 """

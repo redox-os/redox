@@ -7,7 +7,6 @@ dependencies = [
     "cairo",
 ]
 script = """
-rsync -av --delete "${COOKBOOK_SOURCE}/"
 ./autogen.sh
 cookbook_configure
 """
