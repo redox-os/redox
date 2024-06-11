@@ -6,7 +6,7 @@ upstream = "https://github.com/servo/pathfinder.git"
 [build]
 template = "custom"
 dependencies = [
-    "llvm",
+    "llvm18",
     "mesa",
     "zlib",
 ]
