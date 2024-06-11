@@ -4,5 +4,5 @@ git = "https://github.com/formal-land/coq-of-rust"
 [build]
 template = "custom"
 script = """
-cookbook_cargo_packages lib cli
+cookbook_cargo_packages coq_of_rust_cli coq_of_rust_lib
 """
