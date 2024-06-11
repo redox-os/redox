@@ -3,3 +3,6 @@
 git = "https://github.com/d-e-s-o/cargo-http-registry"
 [build]
 template = "cargo"
+dependencies = [
+    "openssl1",
+]

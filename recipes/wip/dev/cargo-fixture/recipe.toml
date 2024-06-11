@@ -1,4 +1,4 @@
-#TODO Not compiled or tested
+#TODO async-io and rustix crates error
 [source]
 git = "https://github.com/vojtechkral/cargo-fixture"
 [build]
