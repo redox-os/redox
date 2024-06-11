@@ -3,3 +3,6 @@
 git = "https://github.com/ehuss/cargo-clone-crate"
 [build]
 template = "cargo"
+dependencies = [
+    "openssl1",
+]
