@@ -1,4 +1,4 @@
-#TODO Not compiled or tested
+#TODO make gtk4 work
 [source]
 tar = "https://gitlab.com/schmiddi-on-mobile/pipeline/-/package_files/114831818/download"
 [build]
