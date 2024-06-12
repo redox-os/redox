@@ -1,7 +1,6 @@
 #TODO compiled but not tested
 [source]
 git = "https://github.com/yamafaktory/jql"
-rev = "af2768b279f203a58651d386f0167b229919f1c4"
 [build]
 template = "custom"
 script = """

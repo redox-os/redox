@@ -1,6 +1,5 @@
 #TODO move to proper category
 [source]
 git = "https://github.com/swanandx/lemmeknow"
-rev = "f0ec298fb16e17b4c4c87c20b500e7ec1f7cd451"
 [build]
 template = "cargo"

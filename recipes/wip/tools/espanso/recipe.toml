@@ -1,7 +1,6 @@
 #TODO missing script for building, see https://espanso.org/docs/install/linux/#wayland-compile
 [source]
 git = "https://github.com/espanso/espanso"
-rev = "b421bcf73fa13506938d62425459d6c16c6a8d0a"
 [build]
 template = "custom"
 dependencies = [

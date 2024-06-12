@@ -1,6 +1,5 @@
 #TODO compiled but not tested
 [source]
 git = "https://github.com/ztroop/dead-ringer"
-rev = "c35398134a1bc3c44c1ddf24749b4a7643306870"
 [build]
 template = "cargo"
