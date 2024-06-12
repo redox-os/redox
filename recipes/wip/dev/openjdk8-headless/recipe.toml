@@ -1,6 +1,5 @@
 #TODO build instructions - https://github.com/openjdk/jdk8u/blob/master/doc/building.md
-#TODO not compiled or tested
-#TODO build it in headless mode
+#TODO require the headless option
 [source]
 git = "https://github.com/openjdk/jdk8u"
 rev = "9c9d6b267c41e4c713cacc41befb66007cdb2601"

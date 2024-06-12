@@ -1,5 +1,5 @@
 #TODO build instructions - https://github.com/openjdk/jdk21u/blob/master/doc/building.md
-#TODO not compiled or tested
+#TODO can't find the configure script
 [source]
 git = "https://github.com/openjdk/jdk21u"
 rev = "060c4f7589e7f13febd402f4dac3320f4c032b08"
