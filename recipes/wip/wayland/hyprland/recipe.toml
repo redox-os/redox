@@ -1,7 +1,6 @@
 #TODO missing CMake configuration, see https://wiki.hyprland.org/Getting-Started/Installation/#cmake-recommended
 [source]
 git = "https://github.com/hyprwm/Hyprland"
-rev = "9afdd61adeaf413afbe853dbc5fdf6853c8bde21"
 [build]
 template = "custom"
 dependencies = [

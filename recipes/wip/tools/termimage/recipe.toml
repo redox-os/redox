@@ -1,6 +1,5 @@
 #TODO move to the proper category
 [source]
 git = "https://github.com/nabijaczleweli/termimage"
-rev = "6156416a61fc5bfe78bdbda71e7f11f77a9adf9e"
 [build]
 template = "cargo"

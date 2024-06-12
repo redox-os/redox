@@ -1,6 +1,5 @@
 #TODO move to proper category
 [source]
 git = "https://github.com/mfontanini/presenterm"
-rev = "284db812aa876d43f3a7d7e8b96f75c72a9945fa"
 [build]
 template = "cargo"

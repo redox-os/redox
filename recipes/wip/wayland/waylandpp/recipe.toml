@@ -1,6 +1,5 @@
 #TODO missing script for CMake, see https://github.com/NilsBrause/waylandpp#building
 [source]
 git = "https://github.com/NilsBrause/waylandpp"
-rev = "4321ed5c7b4bffa41b8a2a13dc7f3ece1191f4f3"
 [build]
 template = "custom"

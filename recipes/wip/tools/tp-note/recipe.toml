@@ -1,7 +1,6 @@
 #TODO port to Orbital
 [source]
 git = "https://gitlab.com/getreu/tp-note"
-rev = "1a8241211382efafb37961888aebc0065d56a95e"
 [build]
 template = "custom"
 script = """

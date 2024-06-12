@@ -1,7 +1,6 @@
 #TODO compiled but not tested
 [source]
 git = "https://github.com/str4d/rage"
-rev = "e6180f1a2004008873b8e8d40110995ecec416c4"
 [build]
 template = "custom"
 script = """

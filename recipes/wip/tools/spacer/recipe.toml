@@ -1,6 +1,5 @@
 #TODO move to proper category
 [source]
 git = "https://github.com/samwho/spacer"
-rev = "9c63225e9b93e1aa8b63e64c180ffd05b7dd4b02"
 [build]
 template = "cargo"
