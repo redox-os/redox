@@ -1,7 +1,6 @@
 #TODO missing script to properly move the binary
 [source]
 git = "https://github.com/spenserblack/gengo"
-rev = "272e794ff895149152f942a9b71ceb39711a4fb9"
 [build]
 template = "custom"
 script = """

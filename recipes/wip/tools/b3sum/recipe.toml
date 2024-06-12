@@ -1,4 +1,4 @@
-#TODO probably wrong script
+#TODO compiled but not tested
 [source]
 git = "https://github.com/BLAKE3-team/BLAKE3"
 [build]

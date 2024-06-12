@@ -1,7 +1,6 @@
 #TODO make the mimalloc dependency work
 [source]
 git = "https://github.com/jhspetersson/fselect"
-rev = "94849313ee4f76752287c6887cb4b03972f0e748"
 [build]
 template = "cargo"
 dependencies = [
