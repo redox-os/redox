@@ -1,4 +1,4 @@
-#TODO Not compiled or tested
+#TODO make gtk3 work
 [source]
 git = "https://github.com/Lea-fish/Leafish"
 [build]

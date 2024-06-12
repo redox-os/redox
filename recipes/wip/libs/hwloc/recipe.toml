@@ -1,4 +1,4 @@
-#TODO Not compiled or tested
+#TODO make libevdev work
 [source]
 tar = "https://download.open-mpi.org/release/hwloc/v2.9/hwloc-2.9.3.tar.bz2"
 [build]

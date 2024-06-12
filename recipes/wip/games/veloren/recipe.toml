@@ -1,4 +1,4 @@
-#TODO Not compiled or tested yet
+#TODO make all dependencies work
 [source]
 git = "https://github.com/veloren/veloren"
 [build]

@@ -1,4 +1,4 @@
-#TODO probably wrong script
+#TODO make gtk4 work
 [source]
 tar = "https://gitlab.gnome.org/otrocodigo/gspell/-/archive/1.11.1/gspell-1.11.1.tar.bz2"
 [build]

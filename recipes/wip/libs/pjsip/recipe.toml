@@ -1,4 +1,4 @@
-#TODO Not compiled or tested
+#TODO make libvpx work
 # customization - https://docs.pjsip.org/en/latest/get-started/posix/build_instructions.html
 [source]
 git = "https://github.com/pjsip/pjproject"
