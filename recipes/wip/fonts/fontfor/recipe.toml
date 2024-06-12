@@ -1,6 +1,5 @@
 #TODO compiled but not tested
 [source]
 git = "https://github.com/7sDream/fontfor"
-rev = "b0d868dc5f955b58b3a5ba6c97156f4060e7474b"
 [build]
 template = "cargo"

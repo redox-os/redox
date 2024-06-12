@@ -1,13 +1,9 @@
 #TODO probably wrong script
 [source]
 git = "https://github.com/BLAKE3-team/BLAKE3"
-rev = "5aa53f07f7188a569cadfc5daf1522972d9a9630"
 [build]
 template = "custom"
 script = """
-"${COOKBOOK_CARGO}" install \
-        --path "${COOKBOOK_SOURCE}/b3sum" \
-        --root "${COOKBOOK_STAGE}" \
-        --locked \
-        --no-track
+COOKBOOK_SOURCE="${COOKBOOK_SOURCE}/b3sum"
+cookbook_cargo
 """

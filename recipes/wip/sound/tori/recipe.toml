@@ -1,7 +1,6 @@
 #TODO make dependencies work
 [source]
 git = "https://github.com/LeoRiether/tori"
-rev = "422e5bbb1477b6fdd3a56e0db1b3553ce362e153"
 [build]
 template = "cargo"
 dependencies = [

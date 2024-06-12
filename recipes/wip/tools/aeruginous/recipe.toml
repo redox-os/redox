@@ -1,6 +1,5 @@
 #TODO compiled but not tested
 [source]
 git = "https://github.com/kevinmatthes/aeruginous-rs"
-rev = "a129a3ff2d97cc288db816d3a263991094aecbc9"
 [build]
 template = "cargo"
