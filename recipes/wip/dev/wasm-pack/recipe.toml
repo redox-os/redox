@@ -1,4 +1,4 @@
-#TODO Not compiled or tested
+#TODO fs4 crate error
 [source]
 git = "https://github.com/rustwasm/wasm-pack"
 [build]

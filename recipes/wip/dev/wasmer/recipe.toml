@@ -2,4 +2,7 @@
 [source]
 git = "https://github.com/wasmerio/wasmer"
 [build]
-template = "cargo"
+template = "custom"
+script = """
+cookbook_cargo_packages wasmer-cli
+"""
