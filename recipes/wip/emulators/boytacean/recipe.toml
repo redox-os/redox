@@ -1,7 +1,6 @@
 #TODO Not compiled or tested
 [source]
 git = "https://github.com/joamag/boytacean"
-rev = "1ef4a9d1689319722dff73dec4a824a7d4289f5d"
 [build]
 template = "cargo"
 dependencies = [

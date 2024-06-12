@@ -1,7 +1,6 @@
 #TODO make zig work
 [source]
 git = "https://github.com/rust-cross/cargo-zigbuild"
-rev = "52be7dd2359cfbca8f1d0c1ae36b4f7bae64bafc"
 [build]
 template = "cargo"
 dependencies = [

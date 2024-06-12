@@ -1,7 +1,6 @@
 #TODO make libxkbcommon work
 [source]
 git = "https://github.com/slint-ui/cargo-ui"
-rev = "230652da8e9d91f109d5e4be3a5831452243ebc0"
 [build]
 template = "custom"
 dependencies = [

@@ -1,7 +1,6 @@
 #TODO compiled but not tested
 [source]
 git = "https://github.com/sigmaSd/IRust"
-rev = "6f9dbaf9387b39019a44dfe5ef5397e6bb8d2a1a"
 [build]
 template = "custom"
 script = """
