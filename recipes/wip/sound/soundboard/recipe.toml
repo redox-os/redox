@@ -1,11 +1,12 @@
-#TODO Not compiled or tested
+#TODO Not compiled or tested (after cargo update)
 [source]
 git = "https://github.com/gamebooster/soundboard"
 [build]
 template = "custom"
+dependencies = [
+    "glib",
+    "openssl1",
+]
 script = """
 cookbook_cargo --features full
 """
-dependencies = [
-    "glib",
-]

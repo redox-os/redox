@@ -1,4 +1,4 @@
-#TODO Not compiled or tested
+#TODO make gtk4 work
 [source]
 git = "https://github.com/martin-olivier/airgorah"
 [build]
