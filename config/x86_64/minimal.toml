@@ -1,6 +1,6 @@
 # Minimal configuration
 
-include = ["../server-minimal.toml"]
+include = ["../minimal.toml"]
 
 # Override the default settings here
 
