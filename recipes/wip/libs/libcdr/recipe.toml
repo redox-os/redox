@@ -1,4 +1,4 @@
-#TODO Not compiled or tested
+#TODO make all dependencies work
 [source]
 tar = "https://dev-www.libreoffice.org/src/libcdr/libcdr-0.1.7.tar.xz"
 [build]

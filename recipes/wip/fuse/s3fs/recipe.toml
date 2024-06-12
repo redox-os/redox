@@ -1,4 +1,4 @@
-#TODO Not compiled or tested
+#TODO make libfuse2 work
 # build instructions - https://github.com/s3fs-fuse/s3fs-fuse/blob/master/COMPILATION.md
 [source]
 git = "https://github.com/s3fs-fuse/s3fs-fuse"

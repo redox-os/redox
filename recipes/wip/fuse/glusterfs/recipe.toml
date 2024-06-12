@@ -1,4 +1,4 @@
-#TODO Not compiled or tested
+#TODO make all dependencies work
 #TODO probably missing dependencies, see https://docs.gluster.org/en/latest/Developer-guide/Building-GlusterFS/#build-requirements
 # customization - https://docs.gluster.org/en/latest/Developer-guide/Building-GlusterFS/#configuring-for-building
 [source]
