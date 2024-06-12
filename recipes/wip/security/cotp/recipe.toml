@@ -1,7 +1,6 @@
 #TODO make dependencies work
 [source]
 git = "https://github.com/replydev/cotp"
-rev = "ac3c11dda7b66c0c70a4106b769b5db53becc558"
 [build]
 template = "cargo"
 dependencies = [

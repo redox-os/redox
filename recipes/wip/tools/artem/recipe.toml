@@ -1,7 +1,6 @@
 #TODO openssl-sys crate error
 [source]
 git = "https://github.com/FineFindus/artem"
-rev = "fcb2424155febea1c2763652f1e87199f1e0e0eb"
 [build]
 template = "custom"
 dependencies = [

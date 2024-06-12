@@ -1,7 +1,6 @@
 #TODO Make nmap work
 [source]
 git = "https://github.com/RustScan/RustScan"
-rev = "bd32f4ead4edd662633c1dd1f569132352ed9f04"
 [build]
 template = "cargo"
 dependencies = [

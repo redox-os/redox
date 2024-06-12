@@ -1,7 +1,6 @@
 #TODO make the libpcap dependency work
 [source]
 git = "https://github.com/GyulyVGC/sniffnet"
-rev = "4d24bab70a6195ed9a6aac0326720ecb34154e68"
 [build]
 template = "cargo"
 dependencies = [

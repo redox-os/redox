@@ -1,6 +1,5 @@
 #TODO compiled but not tested
 [source]
 git = "https://github.com/ajeetdsouza/zoxide"
-rev = "1bfcdfacf22fe22ff05ad2813aac7c0d14dfba36"
 [build]
 template = "cargo"
