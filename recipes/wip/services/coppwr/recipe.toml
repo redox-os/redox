@@ -1,4 +1,4 @@
-#TODO Not compiled or tested
+#TODO make pipewire work
 [source]
 git = "https://github.com/dimtpap/coppwr"
 rev = "f4e664b860b89801ec60eee479802f00af3cfdfc"
