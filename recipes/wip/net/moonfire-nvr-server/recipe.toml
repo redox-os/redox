@@ -8,5 +8,5 @@ dependencies = [
 ]
 script = """
 cd "${COOKBOOK_SOURCE}/server"
-cookbook_cargo
+cookbook_cargo_packages moonfire-nvr
 """
