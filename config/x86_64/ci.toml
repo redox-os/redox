@@ -28,6 +28,7 @@ coreutils = {}
 cosmic-edit = {}
 cosmic-files = {}
 cosmic-icons = {}
+cosmic-term = {}
 cosmic-text = {}
 cpal = {}
 curl = {}
