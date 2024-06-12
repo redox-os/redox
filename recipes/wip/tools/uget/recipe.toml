@@ -1,4 +1,4 @@
-#TODO Not compiled or tested
+#TODO make gtk3 work
 [source]
 tar = "https://sourceforge.net/projects/urlget/files/uget%20%28stable%29/2.2.3/uget-2.2.3-1.tar.gz/download"
 [build]

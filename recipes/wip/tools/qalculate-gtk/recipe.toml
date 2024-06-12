@@ -1,4 +1,4 @@
-#TODO Not compiled or tested
+#TODO make gtk3 work
 [source]
 tar = "https://github.com/Qalculate/qalculate-gtk/releases/download/v4.9.0/qalculate-gtk-4.9.0.tar.gz"
 [build]

@@ -1,4 +1,4 @@
-#TODO Not compiled or tested
+#TODO update the redox_syscall crate version
 [source]
 git = "https://seed.radicle.xyz/z39mP9rQAaGmERfUMPULfPUi473tY.git"
 [build]
