@@ -1,4 +1,4 @@
-#TODO Not compiled or tested
+#TODO make dependencies work
 [source]
 tar = "https://bitcoincore.org/bin/bitcoin-core-27.0/bitcoin-27.0.tar.gz"
 [build]
