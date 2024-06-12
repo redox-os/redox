@@ -7,7 +7,6 @@ dependencies = [
     "sqlite3",
 ]
 script = """
-rsync -av --delete "${COOKBOOK_SOURCE}/" ./
 cd "${COOKBOOK_SOURCE}/server"
-cookbook_cargo
+cookbook_cargo_packages moonfire-nvr
 """
