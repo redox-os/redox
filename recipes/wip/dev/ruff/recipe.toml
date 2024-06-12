@@ -1,7 +1,6 @@
 #TODO tikv-jemalloc-sys crate error
 [source]
 git = "https://github.com/charliermarsh/ruff"
-rev = "0263f2715eba81aee471e3dd5a50ea5f9426cbb1"
 [build]
 template = "custom"
 script = """

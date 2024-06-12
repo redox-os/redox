@@ -1,7 +1,6 @@
 #TODO openssl-sys crate error
 [source]
 git = "https://github.com/mitsuhiko/rye"
-rev = "c003223d5db575276d3ef52d31590580f3b1e97f"
 [build]
 template = "custom"
 dependencies = [

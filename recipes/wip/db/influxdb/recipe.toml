@@ -2,6 +2,5 @@
 #TODO configure the CLI and service
 [source]
 git = "https://github.com/influxdata/influxdb"
-rev = "ed645d9216af16b49f8c6a49aee84341ea168180"
 [build]
 template = "cargo"

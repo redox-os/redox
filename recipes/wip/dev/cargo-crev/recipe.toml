@@ -1,4 +1,4 @@
-#TODO index-guix crate error
+#TODO openssl-sys crate error
 [source]
 git = "https://github.com/crev-dev/cargo-crev"
 [build]

@@ -1,6 +1,5 @@
 #TODO "No suitable wgpu::Adapter found" error on execution
 [source]
 git = "https://github.com/sharkdp/binocle"
-rev = "f7e1bfe28938b5e289e8b353bf592aa3c26ca71f"
 [build]
 template = "cargo"
