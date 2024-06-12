@@ -1,4 +1,4 @@
-#TODO Not compiled or tested
+#TODO make all dependencies work
 [source]
 git = "https://github.com/matt-kimball/allocscope"
 [build]
