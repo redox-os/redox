@@ -4,5 +4,5 @@ git = "https://github.com/tiffany352/rink-rs"
 [build]
 template = "custom"
 script = """
-cookbook_cargo_packages cli
+cookbook_cargo_packages rink
 """
