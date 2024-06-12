@@ -1,7 +1,6 @@
 #TODO make dbus work
 [source]
 git = "https://github.com/veeso/termscp"
-rev = "ef8dbb6305fd1573446a254b9be759a1f13724af"
 [build]
 template = "custom"
 dependencies = [

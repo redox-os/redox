@@ -2,7 +2,6 @@
 #TODO missing script to properly move the binary
 [source]
 git = "https://github.com/typst/typst"
-rev = "70ca0d257bb4ba927f63260e20443f244e0bb58c"
 [build]
 template = "custom"
 script = """

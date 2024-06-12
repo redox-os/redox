@@ -1,6 +1,5 @@
 #TODO compiled but not tested
 [source]
 git = "https://github.com/quantumsheep/sshs"
-rev = "116cb8d0b360e8bb47acfdb3398702f89d866b12"
 [build]
 template = "cargo"

@@ -1,6 +1,5 @@
 #TODO working but don't exit
 [source]
 git = "https://github.com/shssoichiro/oxipng"
-rev = "e1db84fd9745f3320c08b883e4942cd5b30b98a6"
 [build]
 template = "cargo"

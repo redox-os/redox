@@ -1,7 +1,6 @@
 #TODO make the smartmontools dependency work
 [source]
 git = "https://github.com/alttch/shd"
-rev = "81fd46a7b1b2423fb9a3e3223b5b5dac79e4eda5"
 [build]
 template = "cargo"
 dependencies = [

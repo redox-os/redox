@@ -1,7 +1,6 @@
 #TODO Need to make libxkbcommon work
 [source]
 git = "https://github.com/raphamorim/rio"
-rev = "ddd99a767b2c17bbf9aa8a00f6107acc488a04e8"
 [build]
 template = "cargo"
 dependencies = [

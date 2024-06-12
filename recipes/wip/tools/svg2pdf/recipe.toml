@@ -2,7 +2,6 @@
 #TODO missing script to properly move the binary
 [source]
 git = "https://github.com/typst/svg2pdf"
-rev = "7d13eab7f01a9ab1577cfb348eead05726658c53"
 [build]
 template = "custom"
 script = """

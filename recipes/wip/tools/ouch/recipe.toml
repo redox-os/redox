@@ -1,7 +1,6 @@
 #TODO compilation error
 [source]
 git = "https://github.com/ouch-org/ouch"
-rev = "796a03a41d1412dbd0f1cf973ca88c59a4614cc8"
 [build]
 template = "cargo"
 dependencies = [

@@ -1,7 +1,6 @@
-#TODO Make GTK4 work
+#TODO Make gtk4 work
 [source]
 git = "https://github.com/philn/glide"
-rev = "fc86c0e8672e0713b26edae8c6388b85d5d05177"
 [build]
 template = "cargo"
 dependencies = [

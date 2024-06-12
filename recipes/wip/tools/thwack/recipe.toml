@@ -1,6 +1,5 @@
 #TODO port to Orbital
 [source]
 git = "https://github.com/yykamei/thwack"
-rev = "6763a2a9da03ffb746580c69f8d77161e5f6ba4e"
 [build]
 template = "cargo"
