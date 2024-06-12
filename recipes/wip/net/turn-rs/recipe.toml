@@ -4,5 +4,5 @@ git = "https://github.com/mycrl/turn-rs"
 [build]
 template = "custom"
 script = """
-cookbook_cargo_packages cli turn-server
+cookbook_cargo_packages turn-cli turn-server
 """
