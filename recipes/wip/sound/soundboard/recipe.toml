@@ -1,4 +1,5 @@
-#TODO Not compiled or tested (after cargo update)
+#TODO can't find the glib dependency (after cargo update)
+#TODO update the ring crate version
 [source]
 git = "https://github.com/gamebooster/soundboard"
 [build]

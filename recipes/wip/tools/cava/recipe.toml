@@ -1,4 +1,4 @@
-#TODO Not compiled or tested
+#TODO make the fftw dependency work
 [source]
 git = "https://github.com/karlstav/cava"
 rev = "81211e9e16302312ee4322a99840c110bce0e13d"

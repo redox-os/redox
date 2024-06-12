@@ -1,6 +1,5 @@
 #TODO Not compiled or tested
 [source]
 git = "https://github.com/sumoduduk/terminusdm"
-rev = "ed95a51bec282238e73d4215f4d97e6c7356e415"
 [build]
 template = "cargo"
