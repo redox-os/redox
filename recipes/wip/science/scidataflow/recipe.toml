@@ -3,3 +3,6 @@
 git = "https://github.com/vsbuffalo/scidataflow"
 [build]
 template = "cargo"
+dependencies = [
+    "openssl1",
+]
