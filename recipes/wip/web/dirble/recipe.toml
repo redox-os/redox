@@ -3,3 +3,6 @@
 git = "https://github.com/Isona/dirble"
 [build]
 template = "cargo"
+dependencies = [
+    "openssl1",
+]

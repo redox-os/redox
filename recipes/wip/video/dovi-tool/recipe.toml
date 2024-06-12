@@ -1,4 +1,4 @@
-#TODO Not compiled or tested
+#TODO yeslogic-fontconfig-sys crate error
 [source]
 git = "https://github.com/quietvoid/dovi_tool"
 [build]
