@@ -1,4 +1,4 @@
-#TODO Not compiled or tested
+#TODO libc error
 [source]
 git = "https://github.com/mozilla/sccache"
 [build]
