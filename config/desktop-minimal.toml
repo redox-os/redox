@@ -1,6 +1,6 @@
 # Default desktop configuration
 
-include = ["server-minimal.toml"]
+include = ["minimal-net.toml"]
 
 # General settings
 [general]
