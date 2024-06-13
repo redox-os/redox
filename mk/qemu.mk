@@ -38,6 +38,7 @@ else ifeq ($(ARCH),aarch64)
 	QEMU_MEM?=2048
 	ifeq ($(BOARD),raspi3bp)
 		FIRMWARE=$(BUILD)/raspi3bp_uboot.rom
+		disk?=sdcard
 	else ifeq ($(efi),yes)
 		FIRMWARE=/usr/share/AAVMF/AAVMF_CODE.fd
 	else
@@ -127,6 +128,31 @@ else ifeq ($(vga),virtio)
 	QEMUFLAGS+=-vga virtio
 endif
 
+disk?=ahci
+ifeq ($(disk),ahci)
+	QEMUFLAGS+= \
+		-drive file=$(DISK),format=raw \
+		-drive file=$(BUILD)/extra.img,format=raw
+else ifeq ($(disk),nvme)
+	QEMUFLAGS+= \
+		-drive file=$(DISK),format=raw,if=none,id=drv0 -device nvme,drive=drv0,serial=NVME_SERIAL \
+		-drive file=$(BUILD)/extra.img,format=raw,if=none,id=drv1 -device nvme,drive=drv1,serial=NVME_EXTRA
+else ifeq ($(disk),usb)
+	QEMUFLAGS+= \
+		-drive if=none,id=usbstick,format=raw,file=$(DISK) \
+		-device usb-storage,drive=usbstick
+else ifeq ($(disk),virtio)
+	QEMUFLAGS+= \
+		-drive file=$(DISK),format=raw,if=virtio \
+		-drive file=$(BUILD)/extra.img,format=raw,if=virtio
+else ifeq ($(disk),cdrom)
+	QEMUFLAGS+= \
+		-boot d -cdrom $(DISK) \
+		-drive file=$(BUILD)/extra.img,format=raw
+else ifeq ($(disk),sdcard)
+	QEMUFLAGS+=-drive file=$(DISK),if=sd,format=raw
+endif
+
 ifeq ($(gdb),yes)
 	QEMUFLAGS+=-d cpu_reset -s -S
 endif
@@ -158,40 +184,9 @@ Please install the qemu-efi-aarch64 package or use efi=no to download U-Boot ins
 	&& exit 1
 
 qemu: $(DISK) $(FIRMWARE) $(BUILD)/extra.img
-	$(QEMU) $(QEMUFLAGS) \
-		-drive file=$(DISK),format=raw \
-		-drive file=$(BUILD)/extra.img,format=raw
+	$(QEMU) $(QEMUFLAGS)
 
-qemu_no_build: $(FIRMWARE) $(BUILD)/extra.img
-	$(QEMU) $(QEMUFLAGS) \
-		-drive file=$(DISK),format=raw \
-		-drive file=$(BUILD)/extra.img,format=raw
-
-qemu_cdrom: $(DISK) $(FIRMWARE) $(BUILD)/extra.img
-	$(QEMU) $(QEMUFLAGS) \
-		-boot d -cdrom $(DISK) \
-		-drive file=$(BUILD)/extra.img,format=raw
-
-qemu_cdrom_no_build: $(FIRMWARE) $(BUILD)/extra.img
-	$(QEMU) $(QEMUFLAGS) \
-		-boot d -cdrom $(DISK) \
-		-drive file=$(BUILD)/extra.img,format=raw
-
-qemu_nvme: $(DISK) $(FIRMWARE) $(BUILD)/extra.img
-	$(QEMU) $(QEMUFLAGS) \
-		-drive file=$(DISK),format=raw,if=none,id=drv0 -device nvme,drive=drv0,serial=NVME_SERIAL \
-		-drive file=$(BUILD)/extra.img,format=raw,if=none,id=drv1 -device nvme,drive=drv1,serial=NVME_EXTRA
-
-qemu_nvme_no_build: $(FIRMWARE) $(BUILD)/extra.img
-	$(QEMU) $(QEMUFLAGS) \
-		-drive file=$(DISK),format=raw,if=none,id=drv0 -device nvme,drive=drv0,serial=NVME_SERIAL \
-		-drive file=$(BUILD)/extra.img,format=raw,if=none,id=drv1 -device nvme,drive=drv1,serial=NVME_EXTRA
-
-qemu_usb: $(DISK) $(FIRMWARE)
-	$(QEMU) $(QEMUFLAGS) \
-		-drive if=none,id=usbstick,format=raw,file=$(DISK) \
-		-device usb-storage,drive=usbstick
-
+# You probably want to use disk=no when using the *_extra targets
 qemu_extra: $(FIRMWARE) $(BUILD)/extra.img
 	$(QEMU) $(QEMUFLAGS) \
 		-drive file=$(BUILD)/extra.img,format=raw
@@ -204,4 +199,4 @@ qemu_nvme_extra: $(FIRMWARE) $(BUILD)/extra.img
 qemu_raspi: $(FIRMWARE) $(DISK)
 	$(QEMU) -M raspi3b -smp 4,cores=1 \
 		-kernel $(FIRMWARE) \
-		-serial stdio -display none -sd $(DISK)
+		-serial stdio -display none
