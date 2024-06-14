@@ -41,10 +41,10 @@ redox
 [[files]]
 path = "/usr/lib/os-release"
 data = """
-PRETTY_NAME="Redox OS 0.8.0"
+PRETTY_NAME="Redox OS 0.9.0"
 NAME="Redox OS"
-VERSION_ID="0.8.0"
-VERSION="0.8.0"
+VERSION_ID="0.9.0"
+VERSION="0.9.0"
 ID="redox-os"
 
 HOME_URL="https://redox-os.org/"
