@@ -530,7 +530,8 @@ fedora()
 	fi
 
 	# Use rpm -q <package> to check if it's already installed
-	PKGS=$(for pkg in file \
+	PKGS=$(for pkg in @development-tools \
+	file \
 	autoconf \
 	vim \
 	bison \
@@ -583,7 +584,8 @@ fedora()
 	doxygen \
 	ant \
 	protobuf-compiler \
-	zstd ; do rpm -q $pkg > /dev/null || echo $pkg; done)
+	zstd \
+	lzip ; do rpm -q $pkg > /dev/null || echo $pkg; done)
 	# If the list of packages is not empty, install missing
 	COUNT=$(echo $PKGS | wc -w)
 	if [ $COUNT -ne 0 ]; then
