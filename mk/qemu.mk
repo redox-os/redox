@@ -128,8 +128,10 @@ else ifeq ($(vga),virtio)
 	QEMUFLAGS+=-vga virtio
 endif
 
-disk?=ahci
-ifeq ($(disk),ahci)
+disk?=ata
+ifeq ($(disk),ata)
+	# For i386, ata will use ided
+	# For aarch64 and x86_64, ata will use ahcid
 	QEMUFLAGS+= \
 		-drive file=$(DISK),format=raw \
 		-drive file=$(BUILD)/extra.img,format=raw
