@@ -1,4 +1,4 @@
-#TODO x11rb crate error
+#TODO port to orbital
 [source]
 git = "https://github.com/oleiade/motus"
 [build]

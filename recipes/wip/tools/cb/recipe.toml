@@ -1,5 +1,5 @@
-#TODO missing script for "make", see https://github.com/yaa110/cb#build-manually
-#TODO add the X11 libraries
+#TODO figure out how to build this, see https://github.com/yaa110/cb#build-manually
+#TODO port to orbital
 [source]
 git = "https://github.com/yaa110/cb"
 [build]

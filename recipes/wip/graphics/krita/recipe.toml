@@ -1,4 +1,5 @@
 #TODO probably wrong script, see https://docs.krita.org/en/untranslatable_pages/building_krita.html#building-on-linux
+#TODO port to orbital
 #TODO maybe missing dependencies
 [source]
 tar = "https://download.kde.org/stable/krita/5.2.1/krita-5.2.1.tar.gz"
@@ -19,7 +20,6 @@ dependencies = [
     "libwebp",
     "qt5-base",
     "qt5-svg",
-    "qt5-x11extras",
     "zlib",
     "libmypaint",
     "boost",
@@ -41,7 +41,6 @@ dependencies = [
     "openexr",
     "openjpeg",
     "sdl2",
-    "libxcb",
     "libxi",
     "zlib",
     "libeigen",

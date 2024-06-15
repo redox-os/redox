@@ -1,4 +1,5 @@
 #TODO missing script for Meson, see https://github.com/Novum/vkQuake#linux-1
+#TODO port to orbital?
 [source]
 git = "https://github.com/Novum/vkQuake"
 [build]
@@ -7,6 +8,5 @@ dependencies = [
     "sdl2",
     "libvulkan",
     "libvorbis",
-    "libx11",
     "libmad",
 ]

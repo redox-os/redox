@@ -1,4 +1,5 @@
 #TODO missing script for "make", see https://github.com/kondrak/vkQuake2#linux
+#TODO port to orbital
 [source]
 git = "https://github.com/kondrak/vkQuake2"
 rev = "bdd39b142fbadf581fd9d904968a83fb9b4a929a"
@@ -6,6 +7,4 @@ rev = "bdd39b142fbadf581fd9d904968a83fb9b4a929a"
 template = "custom"
 dependencies = [
     "mesa",
-    "libx11",
-    "libxcb",
 ]

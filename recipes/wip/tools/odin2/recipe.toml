@@ -1,4 +1,5 @@
 #TODO missing script for CMake, see https://github.com/TheWaveWarden/odin2#all-platforms
+#TODO port to orbital
 [source]
 git = "https://github.com/TheWaveWarden/odin2"
 [build]
@@ -6,6 +7,5 @@ template = "custom"
 dependencies = [
     "mesa",
     "curl",
-    "libx11",
     "webkitgtk3",
 ]
