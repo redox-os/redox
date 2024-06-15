@@ -1,9 +1,15 @@
-#TODO probably wrong script, see https://wezfurlong.org/wezterm/install/source.html
-#TODO Require Wayland
+#TODO port to orbital
+#TODO maybe missing dependencies, see https://github.com/wez/wezterm/blob/main/get-deps#L142
 [source]
 git = "https://github.com/wez/wezterm"
 [build]
 template = "custom"
+dependencies = [
+    "mesa",
+    "fontconfig",
+    "openssl1",
+    "libxkbcommon",
+]
 script = """
 ./get-deps
 cookbook_cargo_packages wezterm
