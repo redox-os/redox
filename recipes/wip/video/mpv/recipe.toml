@@ -1,4 +1,5 @@
 #TODO missing script for Meson (use system libraries), see https://github.com/mpv-player/mpv#compilation
+#TODO port to orbital
 #TODO missing dependencies
 [source]
 git = "https://github.com/mpv-player/mpv"
@@ -12,6 +13,5 @@ dependencies = [
     "libiconv",
     "zlib",
     "mesa",
-    "libx11",
     "pulseaudio",
 ]

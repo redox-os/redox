@@ -1,4 +1,4 @@
-#TODO port to redox
+#TODO port to orbital
 #TODO build instructions - https://github.com/H-M-H/Weylus#building
 [source]
 git = "https://github.com/H-M-H/Weylus"
@@ -8,18 +8,6 @@ dependencies = [
     "pango",
     "gstreamer",
     "dbus",
-    "libx11",
-    "libxext",
-    "libxft",
-    "libxinerama",
-    "libxcursor",
-    "libxi",
-    "libxv",
-    "libxfixes",
-    "libxtst",
-    "libxrender",
-    "libxrandr",
-    "libxcomposite",
 ]
 script = """
 cookbook_cargo_packages weylus
