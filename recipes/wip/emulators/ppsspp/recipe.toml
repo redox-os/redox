@@ -1,3 +1,4 @@
+#TODO make glew work
 [source]
 git = "https://github.com/jackpot51/ppsspp"
 
@@ -10,6 +11,7 @@ dependencies = [
     "mesa-glu",
     "sdl2",
     "zlib",
+    "glew",
 ]
 script = """
 COOKBOOK_CONFIGURE="cmake"

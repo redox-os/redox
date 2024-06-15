@@ -1,5 +1,6 @@
 #TODO probably wrong script, see https://github.com/dolphin-emu/dolphin/wiki/Building-for-Linux
 #TODO probably missing dependencies
+#TODO make all dependencies work
 [source]
 git = "https://github.com/dolphin-emu/dolphin"
 [build]

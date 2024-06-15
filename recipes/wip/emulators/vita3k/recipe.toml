@@ -1,4 +1,5 @@
 #TODO probalby wrong script, see https://github.com/Vita3K/Vita3K/blob/master/building.md#linux
+#TODO make gtk3 work
 [source]
 git = "https://github.com/Vita3K/Vita3K"
 [build]

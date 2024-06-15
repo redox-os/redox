@@ -1,5 +1,6 @@
 #TODO probably wrong script, see https://docs.darlinghq.org/build-instructions.html#building-and-installing
 #TODO require Git LFS installed on host
+#TODO port to orbital?
 [source]
 git = "https://github.com/darlinghq/darling"
 [build]

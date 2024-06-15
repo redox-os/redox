@@ -1,5 +1,5 @@
 #TODO probably missing dependencies, see https://docs.gtk.org/gtk3/building.html#dependencies
-#TODO port to Orbital
+#TODO port to orbital
 [source]
 tar = "https://download.gnome.org/sources/gtk+/3.24/gtk%2B-3.24.37.tar.xz"
 [build]
@@ -14,6 +14,5 @@ dependencies = [
     "gobject-introspection",
     "shared-mime-info",
     "graphene",
-    "libwayland",
     "gstreamer",
 ]

@@ -1,4 +1,5 @@
 #TODO missing script for CMake, see https://github.com/devmiyax/yabause/blob/master/yabause/README.LIN#L77
+#TODO make gtk2 work
 [source]
 git = "https://github.com/devmiyax/yabause"
 [build]

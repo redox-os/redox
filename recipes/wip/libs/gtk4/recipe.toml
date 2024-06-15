@@ -1,5 +1,5 @@
 #TODO missing script for Meson, see https://docs.gtk.org/gtk4/building.html
-#TODO port to Orbital
+#TODO port to orbital
 [source]
 tar = "https://download.gnome.org/sources/gtk/4.11/gtk-4.11.2.tar.xz"
 [build]
@@ -14,7 +14,6 @@ dependencies = [
     "gobject-introspection",
     "shared-mime-info",
     "graphene",
-    "libwayland",
     "libxkbcommon",
     "gstreamer",
 ]

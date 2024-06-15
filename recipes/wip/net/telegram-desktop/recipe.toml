@@ -1,10 +1,10 @@
 #TODO probably wrong script, lacking build instructions
+#TODO port to orbital
 [source]
 tar = "https://github.com/telegramdesktop/tdesktop/releases/download/v4.11.6/tdesktop-4.11.6-full.tar.gz"
 [build]
 template = "custom"
 dependencies = [
-    "qt6-wayland",
     "qt6-svg",
     "qt6-imageformats",
     "fontconfig",

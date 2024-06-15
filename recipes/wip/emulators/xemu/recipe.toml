@@ -1,4 +1,5 @@
 #TODO probably wrong template, see https://xemu.app/docs/dev/building-from-source/#linux
+#TODO make all dependencies work
 #TODO maybe require patches on submodules
 [source]
 tar = "https://github.com/xemu-project/xemu/releases/download/v0.7.117/src.tar.gz"
