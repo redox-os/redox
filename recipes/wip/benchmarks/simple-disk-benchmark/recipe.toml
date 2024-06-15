@@ -1,0 +1,5 @@
+#TODO not compiled or tested
+[source]
+git = "https://github.com/schwa/simple-disk-benchmark-rs"
+[build]
+template = "cargo"
