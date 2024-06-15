@@ -1,4 +1,5 @@
 #TODO missing script for building, see https://espanso.org/docs/install/linux/#wayland-compile
+#TODO port to orbital?
 [source]
 git = "https://github.com/espanso/espanso"
 [build]

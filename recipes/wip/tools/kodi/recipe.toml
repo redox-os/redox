@@ -1,4 +1,5 @@
 #TODO probably wrong script, see https://github.com/xbmc/xbmc/blob/master/docs/README.Linux.md#4-build-kodi
+#TODO port to orbital
 #TODO maybe missing dependencies, see https://archlinux.org/packages/extra/x86_64/kodi/
 [source]
 git = "https://github.com/xbmc/xbmc"

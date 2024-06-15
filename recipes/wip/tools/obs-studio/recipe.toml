@@ -1,4 +1,5 @@
 #TODO missing script for CMake, see https://github.com/obsproject/obs-studio/wiki/Building-OBS-Studio
+#TODO make all dependencies work
 #TODO maybe missing dependencies
 [source]
 git = "https://github.com/obsproject/obs-studio"
@@ -19,11 +20,9 @@ dependencies = [
     "x264",
     "curl",
     "mbedtls",
-    "libwayland",
     "libva",
     "qt5-base",
     "qt5-svg",
-    "qt5-x11extras",
     "eudev",
     "pciutils",
     "libqrcodegenc",

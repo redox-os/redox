@@ -1,4 +1,5 @@
 #TODO probably wrong template, see https://firefox-source-docs.mozilla.org/setup/linux_build.html#build
+#TODO make all dependencies work
 [source]
 tar = "https://ftp.mozilla.org/pub/firefox/releases/115.4.0esr/linux-x86_64/en-US/firefox-115.4.0esr.tar.bz2"
 [build]

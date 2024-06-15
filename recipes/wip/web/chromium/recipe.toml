@@ -1,6 +1,6 @@
 #TODO missing script for building, see https://chromium.googlesource.com/chromium/src/+/main/docs/linux/build_instructions.md
+#TODO port to orbital
 #TODO probably missing dependencies
-#TODO require Wayland
 [source]
 tar = "https://commondatastorage.googleapis.com/chromium-browser-official/chromium-119.0.6045.123.tar.xz"
 [build]

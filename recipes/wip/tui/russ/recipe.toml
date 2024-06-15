@@ -1,4 +1,4 @@
-#TODO require Wayland (after cargo update)
+#TODO port to orbital (after cargo update)
 [source]
 git = "https://github.com/ckampfe/russ"
 [build]

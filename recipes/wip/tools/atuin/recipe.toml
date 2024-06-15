@@ -1,4 +1,4 @@
-#TODO require Wayland
+#TODO port to orbital
 [source]
 git = "https://github.com/ellie/atuin"
 [build]
