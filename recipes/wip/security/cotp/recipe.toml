@@ -1,11 +1,8 @@
-#TODO make dependencies work
+#TODO port to orbital
 [source]
 git = "https://github.com/replydev/cotp"
 [build]
 template = "cargo"
 dependencies = [
-    "libxcb",
-    "libx11",
-    "libxfixes",
     "libxkbcommon",
 ]

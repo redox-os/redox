@@ -1,5 +1,5 @@
-#TODO missing script for CMake, see https://github.com/patriciogonzalezvivo/glslViewer/wiki/Compile-on-linux#3-compile
-#TODO determine the X11 libraries
+#TODO missing script for cmake, see https://github.com/patriciogonzalezvivo/glslViewer/wiki/Compile-on-linux#3-compile
+#TODO port to orbital
 [source]
 git = "https://github.com/patriciogonzalezvivo/glslViewer"
 rev = "7eb6254cb4cedf03f1c78653f90905fe0c3b48fb"

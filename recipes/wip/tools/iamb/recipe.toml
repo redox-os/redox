@@ -1,4 +1,4 @@
-#TODO x11rb crate error (after a patch on ring)
+#TODO port to orbital (after a patch on ring)
 [source]
 git = "https://github.com/ulyssa/iamb"
 [build]
