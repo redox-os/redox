@@ -3,3 +3,6 @@
 git = "https://github.com/weiteck/turdle"
 [build]
 template = "cargo"
+dependencies = [
+    "openssl1",
+]
