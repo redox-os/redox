@@ -1,4 +1,5 @@
 #TODO missing script for building, see https://github.com/xenia-project/xenia/blob/master/docs/building.md#linux
+#TODO make all dependencies work
 [source]
 git = "https://github.com/xenia-project/xenia"
 [build]
@@ -10,6 +11,5 @@ dependencies = [
     "lz4",
     "libunwind",
     "libpthread-stubs",
-    "libx11",
     "libvulkan",
 ]

@@ -1,4 +1,5 @@
 #TODO missing script for CMake and Ninja, see https://trac.webkit.org/wiki/BuildingGtk#BuildingWebKitGTKfromareleasetarball
+#TODO port to orbital
 #TODO missing dependencies, see https://archlinux.org/packages/extra/x86_64/webkitgtk-6.0/
 [source]
 tar = "https://webkitgtk.org/releases/webkitgtk-2.42.2.tar.xz"
@@ -19,7 +20,6 @@ dependencies = [
     "libpng",
     "libwebp",
     "libxml2",
-    "libwayland",
     "zlib",
     "sqlite3",
 ]

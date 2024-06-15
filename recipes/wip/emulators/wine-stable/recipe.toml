@@ -1,4 +1,5 @@
-#TODO make dependencies work
+#TODO make all dependencies work
+#TODO does it use gtk3 for winecfg?
 [source]
 tar = "https://dl.winehq.org/wine/source/9.0/wine-9.0.tar.xz"
 [build]
@@ -12,6 +13,5 @@ dependencies = [
     "gstreamer",
     "sdl2",
     "eudev",
-    "libx11",
     "libvulkan",
 ]

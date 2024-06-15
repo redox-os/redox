@@ -1,4 +1,5 @@
 #TODO missing script for Meson, see https://gitlab.freedesktop.org/libdecor/libdecor#build-install
+#TODO port to orbital
 [source]
 tar = "https://gitlab.freedesktop.org/libdecor/libdecor/uploads/ee5ef0f2c3a4743e8501a855d61cb397/libdecor-0.1.1.tar.xz"
 [build]
@@ -6,6 +7,5 @@ template = "custom"
 dependencies = [
     "cairo",
     "pango",
-    "libwayland",
     "dbus",
 ]

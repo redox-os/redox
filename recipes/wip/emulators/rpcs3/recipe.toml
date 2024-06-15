@@ -1,4 +1,5 @@
 #TODO probably wrong script, see https://github.com/RPCS3/rpcs3/blob/master/BUILDING.md#linux-1
+#TODO make all dependencies work
 # customization - https://wiki.rpcs3.net/index.php?title=Help:Building_RPCS3#CMake_Build_Options
 [source]
 git = "https://github.com/RPCS3/rpcs3"

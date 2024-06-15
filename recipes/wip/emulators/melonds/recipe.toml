@@ -1,4 +1,5 @@
 #TODO missing script for CMake, see https://github.com/melonDS-emu/melonDS#linux
+#TODO make all dependencies work
 [source]
 git = "https://github.com/melonDS-emu/melonDS"
 rev = "430de6b2702bb93faa8c2004aff3fbd084db4a1e"

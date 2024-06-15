@@ -1,6 +1,7 @@
 #TODO probably wrong script, see https://github.com/PCSX2/pcsx2/wiki/10-Building-on-Linux
 #TODO probably need patches on submodules
 #TODO determine dependencies - https://aur.archlinux.org/packages/pcsx2-git
+#TODO make all dependencies work
 [source]
 git = "https://github.com/PCSX2/pcsx2.git"
 [build]
@@ -11,7 +12,6 @@ dependencies = [
     "libpng",
     "qt6-base",
     "qt6-svg",
-    "qt6-wayland",
     "mesa",
     "libaio",
     "harfbuzz",
@@ -22,7 +22,6 @@ dependencies = [
     "zlib",
     "libxml2",
     "ffmpeg6",
-    "libwayland",
 ]
 script = """
     COOKBOOK_CONFIGURE="cmake"

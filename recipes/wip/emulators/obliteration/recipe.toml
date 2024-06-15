@@ -1,5 +1,6 @@
 #TODO missing script for CMake, see https://github.com/obhq/obliteration#configure-build-system
 #TODO probably missing dependencies
+#TODO make qt6 work
 [source]
 git = "https://github.com/obhq/obliteration"
 [build]
