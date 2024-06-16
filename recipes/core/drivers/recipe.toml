@@ -33,7 +33,7 @@ case "${TARGET}" in
 esac
 
 #Build each driver in the list
-mkdir -pv "${COOKBOOK_STAGE}/bin"
+mkdir -pv "${COOKBOOK_STAGE}/usr/bin" "${COOKBOOK_STAGE}/usr/lib/drivers"
 export CARGO_PROFILE_RELEASE_OPT_LEVEL=s
 export CARGO_PROFILE_RELEASE_PANIC=abort
 "${COOKBOOK_CARGO}" build --release \
@@ -41,15 +41,12 @@ export CARGO_PROFILE_RELEASE_PANIC=abort
     $(for bin in "${BINS[@]}"; do echo "-p" "${bin}"; done)
 for bin in "${BINS[@]}"
 do
-    cp -v "target/${TARGET}/release/${bin}" "${COOKBOOK_STAGE}/bin"
+    if [[ "${bin}" == "pcid" ]]; then
+        cp -v "target/${TARGET}/release/${bin}" "${COOKBOOK_STAGE}/usr/bin"
+    else
+        cp -v "target/${TARGET}/release/${bin}" "${COOKBOOK_STAGE}/usr/lib/drivers"
+    fi
 done
-
-mkdir -pv "${COOKBOOK_STAGE}/bin"
-${FIND} "target/${TARGET}/release" \
-    -maxdepth 1 \
-    -executable \
-    -type f \
-    -exec cp -v {} "${COOKBOOK_STAGE}/bin/" ';'
 
 mkdir -pv "${COOKBOOK_STAGE}/etc/pcid"
 cp -v "${COOKBOOK_SOURCE}/initfs.toml" "${COOKBOOK_STAGE}/etc/pcid/initfs.toml"

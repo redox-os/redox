@@ -52,7 +52,7 @@ case "${TARGET}" in
         ;;
 esac
 
-mkdir -pv "${COOKBOOK_STAGE}/bin"
+mkdir -pv "${COOKBOOK_STAGE}/bin" "${COOKBOOK_STAGE}/lib/drivers"
 export CARGO_PROFILE_RELEASE_OPT_LEVEL=s
 export CARGO_PROFILE_RELEASE_PANIC=abort
 "${COOKBOOK_CARGO}" build --release \
@@ -60,7 +60,14 @@ export CARGO_PROFILE_RELEASE_PANIC=abort
     $(for bin in "${BINS[@]}"; do echo "-p" "${bin}"; done)
 for bin in "${BINS[@]}"
 do
-    cp -v "target/${TARGET}/release/${bin}" "${COOKBOOK_STAGE}/bin"
+    case "${bin}" in
+      pcid | fbcond | inputd | vesad | lived | ps2d | acpid)
+        cp -v "target/${TARGET}/release/${bin}" "${COOKBOOK_STAGE}/bin"
+        ;;
+      *)
+        cp -v "target/${TARGET}/release/${bin}" "${COOKBOOK_STAGE}/lib/drivers"
+        ;;
+    esac
 done
 
 mkdir -pv "${COOKBOOK_STAGE}/etc/pcid"
