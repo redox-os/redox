@@ -4,7 +4,7 @@ git = "https://gitlab.redox-os.org/redox-os/bootstrap.git"
 [build]
 template = "custom"
 script = """
-ARCH="$(echo "${TARGET}" | cut -d - -f1)"
+ARCH="$(echo "${GNU_TARGET}" | cut -d - -f1)"
 cargo \
     -Zbuild-std=core,alloc,compiler_builtins \
     -Zbuild-std-features=compiler-builtins-mem rustc \
@@ -15,7 +15,7 @@ cargo \
     -- \
     --emit link="${COOKBOOK_BUILD}/${TARGET}/release/libbootstrap.a"
 mkdir -v "${COOKBOOK_STAGE}/boot"
-"${TARGET}-ld" \
+"${GNU_TARGET}-ld" \
     -o "${COOKBOOK_STAGE}/boot/bootstrap" \
     --gc-sections \
     -T "${COOKBOOK_SOURCE}/src/${ARCH}.ld" \

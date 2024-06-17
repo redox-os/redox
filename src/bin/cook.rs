@@ -597,7 +597,7 @@ function cookbook_cargo_packages {
 # configure template
 COOKBOOK_CONFIGURE="${COOKBOOK_SOURCE}/configure"
 COOKBOOK_CONFIGURE_FLAGS=(
-    --host="${TARGET}"
+    --host="${GNU_TARGET}"
     --prefix=""
     --disable-shared
     --enable-static
@@ -615,12 +615,12 @@ function cookbook_configure {
 # Strip binaries
 if [ -d "${COOKBOOK_STAGE}/bin" ] && [ -z "${COOKBOOK_NOSTRIP}" ]
 then
-    find "${COOKBOOK_STAGE}/bin" -type f -exec "${TARGET}-strip" -v {} ';'
+    find "${COOKBOOK_STAGE}/bin" -type f -exec "${GNU_TARGET}-strip" -v {} ';'
 fi
 
 if [ -d "${COOKBOOK_STAGE}/usr/bin" ] && [ -z "${COOKBOOK_NOSTRIP}" ]
 then
-    find "${COOKBOOK_STAGE}/usr/bin" -type f -exec "${TARGET}-strip" -v {} ';'
+    find "${COOKBOOK_STAGE}/usr/bin" -type f -exec "${GNU_TARGET}-strip" -v {} ';'
 fi
 
 # Remove libtool files
