@@ -1,0 +1,9 @@
+#TODO not compiled or tested
+[source]
+git = "https://github.com/gosub-browser/gosub-engine"
+[build]
+template = "custom"
+script = """
+cookbook_cargo --bin gosub-parser css3-parser renderer \
+style-parser
+"""
