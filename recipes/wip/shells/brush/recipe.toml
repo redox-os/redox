@@ -1,4 +1,4 @@
-#TODO not compiled or tested
+#TODO redox is not supported by the procfs crate
 [source]
 git = "https://github.com/reubeno/brush"
 [build]
