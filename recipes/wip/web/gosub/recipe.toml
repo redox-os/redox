@@ -1,18 +1,9 @@
-#TODO not compiled or tested
+#TODO discover how to build the bins
 [source]
 git = "https://github.com/gosub-browser/gosub-engine"
 [build]
 template = "custom"
 script = """
-cookbook_cargo --bin gosub_engine
-BINS=(
-    gosub-parser
-    css3-parser
-    renderer
-    style-parser
-)
-for bin in "${BINS[@]}"
-do
-  ln -sv gosub_engine "${COOKBOOK_STAGE}/usr/bin/$bin"
-done
+cookbook_cargo --bin gosub-parser css3-parser renderer \
+style-parser
 """
