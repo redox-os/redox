@@ -1,4 +1,4 @@
-#TODO libc crate error - RUSAGE_SELF
+#TODO "free(): invalid pointer" error
 [source]
 git = "https://github.com/xiph/rav1e"
 [build]
