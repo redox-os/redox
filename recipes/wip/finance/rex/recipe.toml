@@ -1,4 +1,4 @@
-#TODO rex-tui crate error (after cargo update)
+#TODO compiled but not tested
 [source]
 git = "https://github.com/TheRustyPickle/Rex"
 [build]

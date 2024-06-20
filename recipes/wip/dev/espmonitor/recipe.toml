@@ -1,4 +1,4 @@
-#TODO termios crate error
+#TODO termios crate error (after cargo update)
 [source]
 git = "https://github.com/esp-rs/espmonitor"
 [build]
