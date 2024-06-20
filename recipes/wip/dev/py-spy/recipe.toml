@@ -1,4 +1,4 @@
-#TODO proc-maps crate error
+#TODO ahash crate error
 [source]
 git = "https://github.com/benfred/py-spy"
 [build]

@@ -1,4 +1,4 @@
-#TODO value-bag crate error
+#TODO ahash crate error
 [source]
 git = "https://github.com/tanakh/meru"
 [build]

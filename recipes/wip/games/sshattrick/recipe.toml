@@ -1,4 +1,4 @@
-#TODO curve25519-dalek crate error
+#TODO compiled but not tested
 [source]
 git = "https://github.com/ricott1/sshattrick"
 [build]
