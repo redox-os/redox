@@ -1,4 +1,4 @@
-#TODO xdg-home crate error
+#TODO nix crate error
 [source]
 git = "https://github.com/watchexec/cargo-watch"
 [build]

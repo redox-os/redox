@@ -1,4 +1,4 @@
-#TODO pyo3-ffi crate error
+#TODO source code error
 [source]
 git = "https://github.com/keszybz/add-determinism"
 [build]

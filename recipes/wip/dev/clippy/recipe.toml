@@ -1,4 +1,4 @@
-#TODO serde crate error
+#TODO camino crate error
 [source]
 git = "https://github.com/rust-lang/rust-clippy"
 [build]
