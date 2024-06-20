@@ -1,4 +1,4 @@
-#TODO sys-info crate error
+#TODO camino crate error
 [source]
 git = "https://github.com/tversteeg/emplace"
 [build]

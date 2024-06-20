@@ -1,4 +1,4 @@
-#TODO camino and target crate error
+#TODO camino crate error
 [source]
 git = "https://github.com/casey/just"
 [build]
