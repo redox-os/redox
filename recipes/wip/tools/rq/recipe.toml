@@ -1,4 +1,4 @@
-#TODO record-query crate error
+#TODO record-query crate error (after cargo update)
 [source]
 git = "https://github.com/dflemstr/rq"
 [build]

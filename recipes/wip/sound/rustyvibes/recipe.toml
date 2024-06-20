@@ -1,4 +1,4 @@
-#TODO slice-deque crate error
+#TODO rdev crate error
 [source]
 git = "https://github.com/KunalBagaria/rustyvibes"
 [build]

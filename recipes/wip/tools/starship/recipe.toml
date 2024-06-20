@@ -1,4 +1,4 @@
-#TODO xdg-home crate error
+#TODO systemstat crate error
 #TODO nix::unistd::User
 [source]
 git = "https://github.com/starship/starship"

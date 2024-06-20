@@ -1,4 +1,4 @@
-#TODO xdg-home crate error
+#TODO ahash crate error
 [source]
 git = "https://github.com/pkulak/matui"
 [build]
