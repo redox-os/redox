@@ -1,4 +1,5 @@
-#TODO synd-term crate error
+#TODO compiled but not tested
+#TODO add a command to properly move the executable
 [source]
 git = "https://github.com/ymgyt/syndicationd"
 [build]
