@@ -1,0 +1,5 @@
+#TODO not compiled or tested
+[source]
+git = "https://github.com/http-server-rs/http-server"
+[build]
+template = "cargo"
