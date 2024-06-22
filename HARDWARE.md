@@ -34,9 +34,9 @@ This document tracks the current hardware compatibility of Redox.
 This section cover things to consider.
 
 - ACPI support is incomplete (some things are hardcoded on the kernel)
-- USB support is incomplete (desktops are generally not recommended)
+- Only USB input devices are supported
 - Wi-Fi is not supported
-- GPU drivers aren't supported (only VESA and GOP)
+- GPU drivers aren't supported (only VESA and UEFI GOP)
 - Automatic operating system discovery on boot loader is not implemented (remember this before installing Redox)
 
 ## Template
