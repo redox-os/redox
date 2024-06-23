@@ -1,0 +1,19 @@
+#TODO missing script for CMake, see https://github.com/darktable-org/darktable?tab=readme-ov-file#linux
+# dependencies - https://github.com/darktable-org/darktable?tab=readme-ov-file#dependencies
+[source]
+tar = "https://github.com/darktable-org/darktable/releases/download/release-4.8.0/darktable-4.8.0.tar.xz"
+[build]
+template = "custom"
+dependencies = [
+    "gtk3",
+    "glib",
+    "sqlite3",
+    "gexiv2",
+    "liblensfun",
+    "liblcms",
+    "libpugixml",
+    "libavif",
+    "libheif",
+    "libwebp",
+    "libgphoto2",
+]
