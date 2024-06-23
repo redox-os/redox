@@ -1,0 +1,5 @@
+#TODO require the Noto Color Emoji font, see https://fonts.google.com/noto/specimen/Noto+Color+Emoji
+[source]
+git = "https://github.com/SergioRibera/Simplemoji"
+[build]
+template = "cargo"
