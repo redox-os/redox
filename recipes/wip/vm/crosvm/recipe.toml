@@ -1,0 +1,18 @@
+#TODO port to redox
+#TODO maybe missing dependencies
+#TODO required host dependencies - https://github.com/google/crosvm/blob/main/tools/install-deps
+# feature flags - https://crosvm.dev/doc/crosvm/#feature-flags
+# how to use - https://crosvm.dev/book/running_crosvm/example_usage.html
+# examples - https://github.com/google/crosvm/tree/main/tools/examples
+[source]
+git = "https://chromium.googlesource.com/crosvm/crosvm"
+[build]
+template = "cargo"
+dependencies = [
+    "ffmpeg6",
+    "libcap",
+    "dbus",
+    "libepoxy",
+    "glib",
+    "libslirp",
+]
