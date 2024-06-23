@@ -1,0 +1,10 @@
+#TODO not compiled or tested
+[source]
+git = "https://github.com/DioxusLabs/dioxus"
+[build]
+template = "custom"
+script = """
+cookbook_cargo_examples calculator clock counters \
+file_explorer hello_world multiwindow popup window_event \
+window_zoom
+"""
