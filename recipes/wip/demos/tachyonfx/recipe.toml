@@ -1,0 +1,8 @@
+#TODO not compiled or tested
+[source]
+git = "https://github.com/junkdog/tachyonfx"
+[build]
+template = "custom"
+script = """
+cookbook_cargo_examples basic-effects open-window tweens
+"""
