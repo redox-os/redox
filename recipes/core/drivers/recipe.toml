@@ -41,7 +41,7 @@ export CARGO_PROFILE_RELEASE_PANIC=abort
     $(for bin in "${BINS[@]}"; do echo "-p" "${bin}"; done)
 for bin in "${BINS[@]}"
 do
-    if [[ "${bin}" == "pcid" ]]; then
+    if [[ "${bin}" == "inputd" || "${bin}" == "pcid" ]]; then
         cp -v "target/${TARGET}/release/${bin}" "${COOKBOOK_STAGE}/usr/bin"
     else
         cp -v "target/${TARGET}/release/${bin}" "${COOKBOOK_STAGE}/usr/lib/drivers"
