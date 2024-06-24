@@ -1,0 +1,10 @@
+#TODO missing script for CMake, see https://github.com/lensfun/lensfun?tab=readme-ov-file#build-instructions
+[source]
+git = "https://github.com/lensfun/lensfun"
+rev = "35b19fb38e7250ea646709ef9e528d54a6a79648"
+[build]
+template = "custom"
+dependencies = [
+    "glib",
+    "libpng",
+]
