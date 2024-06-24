@@ -1,0 +1,9 @@
+#TODO not compiled or tested
+[source]
+git = "https://github.com/dimforge/rapier"
+[build]
+template = "custom"
+script = """
+cookbook_cargo_packages rapier-examples-2d rapier-examples-3d \
+rapier-examples-3d-f64
+"""
