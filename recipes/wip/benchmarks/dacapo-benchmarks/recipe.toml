@@ -1,6 +1,6 @@
-#TODO missing script for "ant", see https://github.com/dacapobench/dacapobench#building
+#TODO missing data type to download the Java bytecode
+# download link - https://download.dacapobench.org/chopin/dacapo-23.11-chopin.zip
 [source]
-git = "https://github.com/dacapobench/dacapobench"
-rev = "fd292e92f8c40495a6ca05ff3b8a77c6c4265606"
+
 [build]
 template = "custom"
