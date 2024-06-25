@@ -1,0 +1,13 @@
+#TODO not compiled or tested
+[source]
+tar = "https://github.com/tmux/tmux/releases/download/3.4/tmux-3.4.tar.gz"
+[build]
+template = "custom"
+dependencies = [
+    "ncurses",
+    "libevent",
+]
+script = """
+export CPPFLAGS="-I${COOKBOOK_SYSROOT}/include/ncurses"
+cookbook_configure
+"""
