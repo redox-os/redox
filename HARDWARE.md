@@ -154,7 +154,31 @@ Image date - 2022-11-23
 - Fails assert in `src/os/bios/mod.rs:77` after selecting resolution
 ```
 
+### BEELINK
+
+- **BEELINK U59**
+
+```
+Status - Broken
+Redox version - 0.8.x 
+Variant - server
+Image date - 30-05-2024
+
+- Aborts after panic in xhcid
+```
+
 ### ASUS
+
+- **ASUS PN41**
+
+```
+Status - Broken
+Redox version - 0.8.x 
+Variant - server
+Image date - 30-05-2024
+
+- Aborts after panic in xhcid
+```
 
 - **ASUS X554L**
 
