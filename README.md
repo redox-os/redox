@@ -14,6 +14,7 @@ from the [redox](https://gitlab.redox-os.org/redox-os/redox) repository.
 [![MIT licensed](https://img.shields.io/badge/license-MIT-blue.svg)](./LICENSE)
 
 - [Recipe Categories](#recipe-categories)
+- [Search Recipes](#search-recipes)
 - [Package Policy](#package-policy)
     - [Cross-Compilation](#cross-compilation)
     - [Library Linking](#library-linking)
@@ -34,9 +35,10 @@ The categories inside the `recipes` folder.
 - `dev` - Programs used for development and programming languages, like compilers and dependency managers
 - `doc` - Programs used for documentation
 - `emulators` - Console emulators or compatibility layers
+- `fonts` - Fonts and programs for fonts
 - `games` - Any kind of game
 - `graphics` - Programs used for graphics processing or production
-- `gui` - Graphical interfaces
+- `gui` - Orbital
 - `icons` - Icon packs
 - `libs` - Software with functions for other softwares, like OpenSSL
 - `math` - Programs used for calculations
@@ -50,6 +52,10 @@ The categories inside the `recipes` folder.
 - `video` - Programs used for video playback, processing and production
 - `web` - World Wide Web browsers and tools
 - `wip` - Software that needs porting or incomplete recipes
+
+### Search Recipes
+
+Click in the button named "Find file" on the top of this repository to search for recipe names.
 
 ### Package Policy
 
