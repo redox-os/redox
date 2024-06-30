@@ -1,0 +1,10 @@
+#TODO not compiled or tested
+[source]
+git = "https://github.com/slint-ui/slint"
+[build]
+template = "custom"
+script = """
+cookbook_cargo_examples gallery energy-monitor carousel \
+memory imagefilter plotter opengl_underlay opengl_texture \
+ffmpeg maps virtual_keyboard 7guis
+"""
