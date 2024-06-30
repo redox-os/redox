@@ -1,4 +1,4 @@
-#TODO missing script for CMake, see https://dev.opencascade.org/doc/overview/html/build_upgrade__building_occt.html
+#TODO maybe incomplete script, see https://dev.opencascade.org/doc/overview/html/build_upgrade__building_occt.html
 #TODO missing dependencies, see https://dev.opencascade.org/doc/overview/html/build_upgrade_building_3rdparty.html#build_3rdparty_linux
 [source]
 tar = "https://github.com/Open-Cascade-SAS/OCCT/archive/refs/tags/V7_8_0.tar.gz"
@@ -9,3 +9,18 @@ dependencies = [
     "tcl",
     "tk",
 ]
+script = """
+COOKBOOK_CONFIGURE="cmake"
+COOKBOOK_CONFIGURE_FLAGS=(
+    -DCMAKE_BUILD_TYPE=Release
+    -DCMAKE_CROSSCOMPILING=True
+    -DCMAKE_EXE_LINKER_FLAGS="-static"
+    -DCMAKE_INSTALL_PREFIX="/"
+    -DCMAKE_PREFIX_PATH="${COOKBOOK_SYSROOT}"
+    -DCMAKE_SYSTEM_NAME=Generic
+    -DCMAKE_SYSTEM_PROCESSOR="$(echo "${TARGET}" | cut -d - -f1)"
+    -DCMAKE_VERBOSE_MAKEFILE=On
+"${COOKBOOK_SOURCE}"
+)
+cookbook_configure
+"""
