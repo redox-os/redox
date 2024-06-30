@@ -1,0 +1,5 @@
+#TODO not compiled or tested
+[source]
+git = "https://github.com/Futsch1/image-sieve"
+[build]
+template = "cargo"
