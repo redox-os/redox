@@ -1,6 +1,21 @@
-#TODO missing script for CMake, read https://github.com/unicorn-engine/unicorn/blob/master/docs/COMPILE.md
+#TODO maybe incomplete script, read https://github.com/unicorn-engine/unicorn/blob/master/docs/COMPILE.md
 [source]
 git = "https://github.com/unicorn-engine/unicorn"
 rev = "e9c1c17f6df8f8f5da85ee80ad527452db5870ce"
 [build]
 template = "custom"
+script = """
+COOKBOOK_CONFIGURE="cmake"
+COOKBOOK_CONFIGURE_FLAGS=(
+    -DCMAKE_BUILD_TYPE=Release
+    -DCMAKE_CROSSCOMPILING=True
+    -DCMAKE_EXE_LINKER_FLAGS="-static"
+    -DCMAKE_INSTALL_PREFIX="/"
+    -DCMAKE_PREFIX_PATH="${COOKBOOK_SYSROOT}"
+    -DCMAKE_SYSTEM_NAME=Generic
+    -DCMAKE_SYSTEM_PROCESSOR="$(echo "${TARGET}" | cut -d - -f1)"
+    -DCMAKE_VERBOSE_MAKEFILE=On
+"${COOKBOOK_SOURCE}"
+)
+cookbook_configure
+"""

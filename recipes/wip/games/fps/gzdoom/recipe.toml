@@ -1,4 +1,4 @@
-#TODO missing script for CMake, see https://zdoom.org/wiki/Compile_GZDoom_on_Linux
+#TODO maybe incomplete script, see https://zdoom.org/wiki/Compile_GZDoom_on_Linux
 [source]
 git = "https://github.com/ZDoom/gzdoom"
 rev = "6ce809efe2902e43ceaa7031b875225d3a0367de"
@@ -11,3 +11,18 @@ dependencies = [
     "openal",
     "zmusic",
 ]
+script = """
+COOKBOOK_CONFIGURE="cmake"
+COOKBOOK_CONFIGURE_FLAGS=(
+    -DCMAKE_BUILD_TYPE=Release
+    -DCMAKE_CROSSCOMPILING=True
+    -DCMAKE_EXE_LINKER_FLAGS="-static"
+    -DCMAKE_INSTALL_PREFIX="/"
+    -DCMAKE_PREFIX_PATH="${COOKBOOK_SYSROOT}"
+    -DCMAKE_SYSTEM_NAME=Generic
+    -DCMAKE_SYSTEM_PROCESSOR="$(echo "${TARGET}" | cut -d - -f1)"
+    -DCMAKE_VERBOSE_MAKEFILE=On
+"${COOKBOOK_SOURCE}"
+)
+cookbook_configure
+"""
