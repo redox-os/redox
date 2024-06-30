@@ -1,0 +1,11 @@
+#TODO require a custom script to move the final openshot folder to /usr/share
+#TODO create a program shortcut to the src/launch.py file, see https://github.com/OpenShot/openshot-qt#launch
+[source]
+git = "https://github.com/OpenShot/openshot-qt"
+rev = "47e8755c71390ba862cfcfdfe9ae109f31718867"
+[build]
+template = "custom"
+dependencies = [
+    "libopenshot-video",
+    "libopenshot-audio",
+]

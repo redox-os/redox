@@ -1,0 +1,19 @@
+#TODO missing script for CMake
+#TODO determine dependencies - https://github.com/OpenShot/libopenshot/wiki/Linux-Build-Instructions
+[source]
+git = "https://github.com/OpenShot/libopenshot"
+rev = "3170768e0ccbaad5b2a4696e84dd649738ec1a1b"
+[build]
+template = "custom"
+dependencies = [
+    "libopenshot-audio",
+    "ffmpeg6",
+    "qt5-base",
+    "qt5-svg",
+    "qt5-multimedia",
+    "libzmq",
+    "opencv4",
+    "protobuf",
+    "babl",
+    "imagemagick",
+]

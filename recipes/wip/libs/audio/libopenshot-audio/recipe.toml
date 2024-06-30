@@ -1,0 +1,7 @@
+#TODO missing script for CMake
+#TODO determine dependencies
+[source]
+git = "https://github.com/OpenShot/libopenshot-audio"
+rev = "98f08a6d4a90f3644b6c2c68efb2cbd86c75d87a"
+[build]
+template = "custom"
