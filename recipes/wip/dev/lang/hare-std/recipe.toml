@@ -1,5 +1,0 @@
-#TODO missing script for building, see https://harelang.org/installation/
-[source]
-git = "https://git.sr.ht/~sircmpwn/hare"
-[build]
-template = "custom"

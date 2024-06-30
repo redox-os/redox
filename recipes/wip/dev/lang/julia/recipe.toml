@@ -1,6 +1,0 @@
-#TODO missing script for "make"
-# using the full tarball with dependencies included
-[source]
-tar = "https://github.com/JuliaLang/julia/releases/download/v1.9.4/julia-1.9.4-full.tar.gz"
-[build]
-template = "custom"
