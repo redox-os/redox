@@ -1,5 +1,20 @@
-#TODO missing script for CMake, see https://github.com/gnuradio/volk#building-on-most-x86-32-bit-and-64-bit-platforms
+#TODO maybe incomplete script, see https://github.com/gnuradio/volk#building-on-most-x86-32-bit-and-64-bit-platforms
 [source]
 tar = "https://www.libvolk.org/releases/volk-3.0.0.tar.gz"
 [build]
 template = "custom"
+script = """
+COOKBOOK_CONFIGURE="cmake"
+COOKBOOK_CONFIGURE_FLAGS=(
+    -DCMAKE_BUILD_TYPE=Release
+    -DCMAKE_CROSSCOMPILING=True
+    -DCMAKE_EXE_LINKER_FLAGS="-static"
+    -DCMAKE_INSTALL_PREFIX="/"
+    -DCMAKE_PREFIX_PATH="${COOKBOOK_SYSROOT}"
+    -DCMAKE_SYSTEM_NAME=Generic
+    -DCMAKE_SYSTEM_PROCESSOR="$(echo "${TARGET}" | cut -d - -f1)"
+    -DCMAKE_VERBOSE_MAKEFILE=On
+"${COOKBOOK_SOURCE}"
+)
+cookbook_configure
+"""

@@ -1,4 +1,4 @@
-#TODO missing script for CMake and Ninja, see https://trac.webkit.org/wiki/BuildingGtk#BuildingWebKitGTKfromareleasetarball
+#TODO missing script for Ninja, see https://trac.webkit.org/wiki/BuildingGtk#BuildingWebKitGTKfromareleasetarball
 #TODO port to orbital
 #TODO missing dependencies, see https://archlinux.org/packages/extra/x86_64/webkitgtk-6.0/
 [source]
@@ -23,3 +23,18 @@ dependencies = [
     "zlib",
     "sqlite3",
 ]
+script = """
+COOKBOOK_CONFIGURE="cmake"
+COOKBOOK_CONFIGURE_FLAGS=(
+    -DCMAKE_BUILD_TYPE=Release
+    -DCMAKE_CROSSCOMPILING=True
+    -DCMAKE_EXE_LINKER_FLAGS="-static"
+    -DCMAKE_INSTALL_PREFIX="/"
+    -DCMAKE_PREFIX_PATH="${COOKBOOK_SYSROOT}"
+    -DCMAKE_SYSTEM_NAME=Generic
+    -DCMAKE_SYSTEM_PROCESSOR="$(echo "${TARGET}" | cut -d - -f1)"
+    -DCMAKE_VERBOSE_MAKEFILE=On
+"${COOKBOOK_SOURCE}"
+)
+cookbook_configure
+"""

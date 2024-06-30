@@ -1,4 +1,4 @@
-#TODO missing script for CMake, see https://git.libssh.org/projects/libssh.git/tree/INSTALL#n36
+#TODO maybe incomplete script, see https://git.libssh.org/projects/libssh.git/tree/INSTALL#n36
 [source]
 tar = "https://www.libssh.org/files/0.10/libssh-0.10.6.tar.xz"
 [build]
@@ -7,3 +7,18 @@ dependencies = [
     "zlib",
     "openssl1",
 ]
+script = """
+COOKBOOK_CONFIGURE="cmake"
+COOKBOOK_CONFIGURE_FLAGS=(
+    -DCMAKE_BUILD_TYPE=Release
+    -DCMAKE_CROSSCOMPILING=True
+    -DCMAKE_EXE_LINKER_FLAGS="-static"
+    -DCMAKE_INSTALL_PREFIX="/"
+    -DCMAKE_PREFIX_PATH="${COOKBOOK_SYSROOT}"
+    -DCMAKE_SYSTEM_NAME=Generic
+    -DCMAKE_SYSTEM_PROCESSOR="$(echo "${TARGET}" | cut -d - -f1)"
+    -DCMAKE_VERBOSE_MAKEFILE=On
+"${COOKBOOK_SOURCE}"
+)
+cookbook_configure
+"""

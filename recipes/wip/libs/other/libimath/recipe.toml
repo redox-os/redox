@@ -1,6 +1,21 @@
-#TODO missing script for CMake, see https://imath.readthedocs.io/en/latest/install.html#linux-macos
+#TODO maybe incomplete script, see https://imath.readthedocs.io/en/latest/install.html#linux-macos
 [source]
 git = "https://github.com/AcademySoftwareFoundation/Imath"
 rev = "d690a3fcff4e877ead5ae56c7e964595ade8a35e"
 [build]
 template = "custom"
+script = """
+COOKBOOK_CONFIGURE="cmake"
+COOKBOOK_CONFIGURE_FLAGS=(
+    -DCMAKE_BUILD_TYPE=Release
+    -DCMAKE_CROSSCOMPILING=True
+    -DCMAKE_EXE_LINKER_FLAGS="-static"
+    -DCMAKE_INSTALL_PREFIX="/"
+    -DCMAKE_PREFIX_PATH="${COOKBOOK_SYSROOT}"
+    -DCMAKE_SYSTEM_NAME=Generic
+    -DCMAKE_SYSTEM_PROCESSOR="$(echo "${TARGET}" | cut -d - -f1)"
+    -DCMAKE_VERBOSE_MAKEFILE=On
+"${COOKBOOK_SOURCE}"
+)
+cookbook_configure
+"""

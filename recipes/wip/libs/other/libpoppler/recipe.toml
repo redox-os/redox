@@ -1,6 +1,21 @@
-#TODO missing script for CMake, see https://gitlab.freedesktop.org/poppler/poppler/-/blob/master/INSTALL?ref_type=heads
+#TODO maybe incomplete script, see https://gitlab.freedesktop.org/poppler/poppler/-/blob/master/INSTALL?ref_type=heads
 #TODO needs encoding data - https://poppler.freedesktop.org/poppler-data-0.4.12.tar.gz
 [source]
 tar = "https://poppler.freedesktop.org/poppler-23.12.0.tar.xz"
 [build]
 template = "custom"
+script = """
+COOKBOOK_CONFIGURE="cmake"
+COOKBOOK_CONFIGURE_FLAGS=(
+    -DCMAKE_BUILD_TYPE=Release
+    -DCMAKE_CROSSCOMPILING=True
+    -DCMAKE_EXE_LINKER_FLAGS="-static"
+    -DCMAKE_INSTALL_PREFIX="/"
+    -DCMAKE_PREFIX_PATH="${COOKBOOK_SYSROOT}"
+    -DCMAKE_SYSTEM_NAME=Generic
+    -DCMAKE_SYSTEM_PROCESSOR="$(echo "${TARGET}" | cut -d - -f1)"
+    -DCMAKE_VERBOSE_MAKEFILE=On
+"${COOKBOOK_SOURCE}"
+)
+cookbook_configure
+"""
