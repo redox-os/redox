@@ -1,5 +1,0 @@
-#TODO missing script for building, see https://github.com/austral/austral/#building-without-nix
-[source]
-git = "https://github.com/austral/austral"
-[build]
-template = "custom"

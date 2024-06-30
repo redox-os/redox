@@ -1,5 +1,0 @@
-#TODO configuration problem, can't recognize the Redox triple
-[source]
-git = "https://git.sr.ht/~sircmpwn/harec"
-[build]
-template = "configure"
