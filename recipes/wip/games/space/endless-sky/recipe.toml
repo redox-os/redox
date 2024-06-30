@@ -1,4 +1,4 @@
-#TODO missing script for CMake, see https://github.com/endless-sky/endless-sky/blob/master/docs/readme-cmake.md#building-the-game
+#TODO maybe incomplete script, see https://github.com/endless-sky/endless-sky/blob/master/docs/readme-cmake.md#building-the-game
 [source]
 git = "https://github.com/endless-sky/endless-sky"
 rev = "95e72950e1554392666fa41bb18c978868aa6611"
@@ -14,3 +14,18 @@ dependencies = [
     "libmad",
     "libuuid",
 ]
+script = """
+COOKBOOK_CONFIGURE="cmake"
+COOKBOOK_CONFIGURE_FLAGS=(
+    -DCMAKE_BUILD_TYPE=Release
+    -DCMAKE_CROSSCOMPILING=True
+    -DCMAKE_EXE_LINKER_FLAGS="-static"
+    -DCMAKE_INSTALL_PREFIX="/"
+    -DCMAKE_PREFIX_PATH="${COOKBOOK_SYSROOT}"
+    -DCMAKE_SYSTEM_NAME=Generic
+    -DCMAKE_SYSTEM_PROCESSOR="$(echo "${TARGET}" | cut -d - -f1)"
+    -DCMAKE_VERBOSE_MAKEFILE=On
+"${COOKBOOK_SOURCE}"
+)
+cookbook_configure
+"""

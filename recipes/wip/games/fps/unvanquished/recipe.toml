@@ -1,4 +1,4 @@
-#TODO missing script for CMake, see https://github.com/DaemonEngine/Daemon#build-instructions
+#TODO maybe incomplete script, see https://github.com/DaemonEngine/Daemon#build-instructions
 # data files - https://github.com/Unvanquished/Unvanquished#downloading-the-games-assets
 [source]
 git = "https://github.com/DaemonEngine/Daemon"
@@ -21,3 +21,18 @@ dependencies = [
     "opus",
     "opusfile",
 ]
+script = """
+COOKBOOK_CONFIGURE="cmake"
+COOKBOOK_CONFIGURE_FLAGS=(
+    -DCMAKE_BUILD_TYPE=Release
+    -DCMAKE_CROSSCOMPILING=True
+    -DCMAKE_EXE_LINKER_FLAGS="-static"
+    -DCMAKE_INSTALL_PREFIX="/"
+    -DCMAKE_PREFIX_PATH="${COOKBOOK_SYSROOT}"
+    -DCMAKE_SYSTEM_NAME=Generic
+    -DCMAKE_SYSTEM_PROCESSOR="$(echo "${TARGET}" | cut -d - -f1)"
+    -DCMAKE_VERBOSE_MAKEFILE=On
+"${COOKBOOK_SOURCE}"
+)
+cookbook_configure
+"""

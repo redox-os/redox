@@ -1,4 +1,4 @@
-#TODO missing script for CMake, see https://git.dcmtk.org/?p=dcmtk.git;a=blob;f=INSTALL;h=97087f9a05e65040264d90027912c736958e67f3;hb=HEAD#l667
+#TODO maybe incomplete script, see https://git.dcmtk.org/?p=dcmtk.git;a=blob;f=INSTALL;h=97087f9a05e65040264d90027912c736958e67f3;hb=HEAD#l667
 [source]
 tar = "https://dicom.offis.de/download/dcmtk/dcmtk367/dcmtk-3.6.7.tar.gz"
 [build]
@@ -12,3 +12,18 @@ dependencies = [
     "zlib",
     "openjpeg",
 ]
+script = """
+COOKBOOK_CONFIGURE="cmake"
+COOKBOOK_CONFIGURE_FLAGS=(
+    -DCMAKE_BUILD_TYPE=Release
+    -DCMAKE_CROSSCOMPILING=True
+    -DCMAKE_EXE_LINKER_FLAGS="-static"
+    -DCMAKE_INSTALL_PREFIX="/"
+    -DCMAKE_PREFIX_PATH="${COOKBOOK_SYSROOT}"
+    -DCMAKE_SYSTEM_NAME=Generic
+    -DCMAKE_SYSTEM_PROCESSOR="$(echo "${TARGET}" | cut -d - -f1)"
+    -DCMAKE_VERBOSE_MAKEFILE=On
+"${COOKBOOK_SOURCE}"
+)
+cookbook_configure
+"""
