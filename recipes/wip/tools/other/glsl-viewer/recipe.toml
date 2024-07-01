@@ -1,4 +1,4 @@
-#TODO missing script for cmake, see https://github.com/patriciogonzalezvivo/glslViewer/wiki/Compile-on-linux#3-compile
+#TODO maybe incomplete script, see https://github.com/patriciogonzalezvivo/glslViewer/wiki/Compile-on-linux#3-compile
 #TODO port to orbital
 [source]
 git = "https://github.com/patriciogonzalezvivo/glslViewer"
@@ -14,4 +14,17 @@ dependencies = [
 ]
 script = """
 export CPPFLAGS="-I${COOKBOOK_SYSROOT}/include/ncurses"
+COOKBOOK_CONFIGURE="cmake"
+COOKBOOK_CONFIGURE_FLAGS=(
+    -DCMAKE_BUILD_TYPE=Release
+    -DCMAKE_CROSSCOMPILING=True
+    -DCMAKE_EXE_LINKER_FLAGS="-static"
+    -DCMAKE_INSTALL_PREFIX="/"
+    -DCMAKE_PREFIX_PATH="${COOKBOOK_SYSROOT}"
+    -DCMAKE_SYSTEM_NAME=Generic
+    -DCMAKE_SYSTEM_PROCESSOR="$(echo "${TARGET}" | cut -d - -f1)"
+    -DCMAKE_VERBOSE_MAKEFILE=On
+"${COOKBOOK_SOURCE}"
+)
+cookbook_configure
 """
