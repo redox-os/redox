@@ -1,9 +1,16 @@
-#TODO discover how to build the bins
+#TODO not compiled or tested
 [source]
 git = "https://github.com/gosub-browser/gosub-engine"
 [build]
 template = "custom"
 script = """
-cookbook_cargo --bin gosub-parser css3-parser renderer \
-style-parser
+binary=renderer
+"${COOKBOOK_CARGO}" build \
+            --manifest-path "${COOKBOOK_SOURCE}/Cargo.toml" \
+            --bin "${binary}" \
+            --release
+        mkdir -pv "${COOKBOOK_STAGE}/usr/bin"
+        cp -v \
+            "target/${TARGET}/release/${binary}" \
+            "${COOKBOOK_STAGE}/usr/bin/${binary}"
 """
