@@ -1,4 +1,4 @@
-#TODO missing script for CMake, see https://github.com/darktable-org/darktable?tab=readme-ov-file#linux
+#TODO maybe incomplete script, see https://github.com/darktable-org/darktable?tab=readme-ov-file#linux
 # dependencies - https://github.com/darktable-org/darktable?tab=readme-ov-file#dependencies
 [source]
 tar = "https://github.com/darktable-org/darktable/releases/download/release-4.8.0/darktable-4.8.0.tar.xz"
@@ -17,3 +17,18 @@ dependencies = [
     "libwebp",
     "libgphoto2",
 ]
+script = """
+COOKBOOK_CONFIGURE="cmake"
+COOKBOOK_CONFIGURE_FLAGS=(
+    -DCMAKE_BUILD_TYPE=Release
+    -DCMAKE_CROSSCOMPILING=True
+    -DCMAKE_EXE_LINKER_FLAGS="-static"
+    -DCMAKE_INSTALL_PREFIX="/"
+    -DCMAKE_PREFIX_PATH="${COOKBOOK_SYSROOT}"
+    -DCMAKE_SYSTEM_NAME=Generic
+    -DCMAKE_SYSTEM_PROCESSOR="$(echo "${TARGET}" | cut -d - -f1)"
+    -DCMAKE_VERBOSE_MAKEFILE=On
+"${COOKBOOK_SOURCE}"
+)
+cookbook_configure
+"""
