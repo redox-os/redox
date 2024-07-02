@@ -1,3 +1,4 @@
+#TODO discover how to test it, lacking a guide
 #TODO compiled but not tested (after a patch on the "open" crate)
 [source]
 git = "https://github.com/TheWaWaR/simple-http-server"
