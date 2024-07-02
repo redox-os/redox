@@ -1,0 +1,12 @@
+#TODO missing script for Meson, see https://gitlab.gnome.org/GNOME/file-roller#building-locally
+#TODO the "libportal" dependency is for Flatpak, maybe it's optional - https://gitlab.gnome.org/GNOME/file-roller#dependencies
+[source]
+tar = "https://download.gnome.org/sources/file-roller/44/file-roller-44.3.tar.xz"
+[build]
+template = "custom"
+dependencies = [
+    "glib",
+    "gtk3,"
+    "libhandy",
+    "libarchive",
+]
