@@ -1,0 +1,11 @@
+#TODO missing script for Meson, see https://gitlab.gnome.org/GNOME/libhandy#building
+#TODO determine dependencies
+[source]
+git = "https://gitlab.gnome.org/GNOME/libhandy"
+rev = "9b0071408ce86a3ef843806fddd723a85f6f2416"
+[build]
+template = "custom"
+dependencies = [
+    "glib",
+    "gtk3",
+]
