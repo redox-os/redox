@@ -21,7 +21,7 @@ Redox _is not_ just a kernel, it's a **full-featured operating system**, providi
 
 - [Book](https://doc.redox-os.org/book/)
 - [Contribute](CONTRIBUTING.md)
-- [Hardware Compatibility](HARDWARE.md)
+- [Hardware Compatibility](https://doc.redox-os.org/book/ch01-09-hardware-support.html)
 - Run Redox in a [Virtual Machine](https://doc.redox-os.org/book/ch02-01-running-vm.html) or on [Real Hardware](https://doc.redox-os.org/book/ch02-02-real-hardware.html)
 - [Trying Out Redox](https://doc.redox-os.org/book/ch02-04-trying-out-redox.html)
 - [Building Redox](https://doc.redox-os.org/book/ch02-05-building-redox.html)
@@ -53,11 +53,10 @@ Some of the key repositories on the Redox GitLab:
 
 See [Redox in Action](https://www.redox-os.org/screens/) for photos and videos.
 
-<img alt="Redox" height="150" src="https://gitlab.redox-os.org/redox-os/assets/raw/master/screenshots/Senza%20titolo.jpeg">
-<img alt="Redox" height="150" src="https://gitlab.redox-os.org/redox-os/assets/raw/master/screenshots/redox running.jpeg">
-<img alt="Redox" height="150" src="https://gitlab.redox-os.org/redox-os/assets/raw/master/screenshots/IMG_1460.PNG">
+<img alt="Redox" height="150" src="https://gitlab.redox-os.org/redox-os/website/-/raw/master/static/img/screenshot/orbital-visual.png">
+<img alt="Redox" height="150" src="https://gitlab.redox-os.org/redox-os/website/-/raw/master/static/img/screenshot/cosmic-programs.png">
+<img alt="Redox" height="150" src="https://gitlab.redox-os.org/redox-os/website/-/raw/master/static/img/screenshot/cosmic-term-screenfetch.png">
 
-<img alt="Redox" height="150" src="https://gitlab.redox-os.org/redox-os/assets/raw/master/screenshots/Sodium_v2.PNG">
+<img alt="Redox" height="150" src="https://gitlab.redox-os.org/redox-os/website/-/raw/master/static/img/screenshot/cosmic-edit-redox.png">
+<img alt="Redox" height="150" src="https://gitlab.redox-os.org/redox-os/website/-/raw/master/static/img/screenshot/image-viewer.png">
 <img alt="Redox" height="150" src="https://gitlab.redox-os.org/redox-os/assets/raw/master/screenshots/Boot.png">
-<img alt="Redox" height="150" src="https://gitlab.redox-os.org/redox-os/assets/raw/master/screenshots/IMG_1459.PNG">
-
