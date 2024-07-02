@@ -1,4 +1,4 @@
-#TODO open crate error
+#TODO compiled but not tested (after a patch on the "open" crate)
 [source]
 git = "https://github.com/TheWaWaR/simple-http-server"
 [build]
