@@ -5,7 +5,7 @@ branch = "master"
 [build]
 template = "custom"
 script = """
-cookbook_cargo --no-default-features
+cookbook_cargo --no-default-features --features winit
 mkdir -pv "${COOKBOOK_STAGE}/ui/apps"
 cp -v "${COOKBOOK_RECIPE}/manifest" "${COOKBOOK_STAGE}/ui/apps/20_cosmic-files"
 """
