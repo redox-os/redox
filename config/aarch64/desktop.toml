@@ -14,18 +14,11 @@ cosmic-edit = {}
 cosmic-icons = {}
 cosmic-files = {}
 cosmic-term = {}
-drivers = {}
 orbdata = {}
 orbital = {}
 orbutils = {}
 pop-icon-theme = {}
 shared-mime-info = {}
-
-[[files]]
-path = "/usr/lib/init.d/00_drivers"
-data = """
-pcid /etc/pcid.d/
-"""
 
 [[files]]
 path = "/usr/lib/init.d/20_orbital"
