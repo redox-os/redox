@@ -38,7 +38,13 @@ pub enum SourceRecipe {
 pub enum BuildKind {
     /// Will build and install using cargo
     #[serde(rename = "cargo")]
-    Cargo,
+    Cargo {
+        #[serde(default)]
+        package_path: Option<String>,
+
+        #[serde(default)]
+        cargoflags: String,
+    },
     /// Will build and install using configure and make
     #[serde(rename = "configure")]
     Configure,
