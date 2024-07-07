@@ -9,19 +9,12 @@ filesystem_size = 128
 
 # Package settings
 [packages]
-drivers = {}
 orbdata = {}
 orbital = {}
 orbterm = {}
 orbutils-background = {}
 orbutils-launcher = {}
 orbutils-orblogin = {}
-
-[[files]]
-path = "/usr/lib/init.d/00_drivers"
-data = """
-pcid /etc/pcid.d/
-"""
 
 [[files]]
 path = "/usr/lib/init.d/20_orbital"

@@ -11,6 +11,7 @@ prompt = false
 [packages]
 bootloader = {}
 bootstrap = {}
+drivers = {}
 escalated = {}
 initfs = {}
 ipcd = {}
@@ -29,6 +30,12 @@ mkdir -m a=rwxt /tmp
 ipcd
 ptyd
 escalated
+"""
+
+[[files]]
+path = "/usr/lib/init.d/00_drivers"
+data = """
+pcid /etc/pcid.d/
 """
 
 [[files]]
