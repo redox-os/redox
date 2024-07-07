@@ -1,0 +1,8 @@
+#TODO not compiled or tested
+[source]
+git = "https://github.com/radumarias/rencfs"
+[build]
+template = "cargo"
+dependencies = [
+    "libfuse3",
+]
