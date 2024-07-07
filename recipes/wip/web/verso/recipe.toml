@@ -1,0 +1,18 @@
+#TODO not compiled or tested
+[source]
+git = "https://github.com/versotile-org/verso"
+[build]
+template = "cargo"
+dependencies = [
+    "freetype2",
+    "gettext",
+    "glib",
+    "gstreamer",
+    "harfbuzz",
+    "libffi",
+    "libiconv",
+    "libpng",
+    "openssl1",
+    "pcre",
+    "zlib",
+]
