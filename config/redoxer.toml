@@ -6,7 +6,6 @@ include = ["net.toml"]
 [packages]
 bash = {}
 ca-certificates = {}
-coreutils = {}
 extrautils = {}
 findutils = {}
 gcc13 = {}

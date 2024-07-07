@@ -12,7 +12,6 @@ filesystem_size = 512
 bash = {}
 ca-certificates = {}
 contain = {}
-coreutils = {}
 curl = {}
 diffutils = {}
 extrautils = {}
