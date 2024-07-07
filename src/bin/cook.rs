@@ -466,7 +466,7 @@ fi
 COOKBOOK_CARGO="${COOKBOOK_REDOXER}"
 function cookbook_cargo {
     "${COOKBOOK_CARGO}" install \
-        --path "${COOKBOOK_SOURCE}" \
+        --path "${COOKBOOK_SOURCE}/${PACKAGE_PATH}" \
         --root "${COOKBOOK_STAGE}/usr" \
         --locked \
         --no-track \
@@ -480,7 +480,7 @@ function cookbook_cargo_examples {
     for example in "$@"
     do
         "${COOKBOOK_CARGO}" build \
-            --manifest-path "${COOKBOOK_SOURCE}/Cargo.toml" \
+            --manifest-path "${COOKBOOK_SOURCE}/${PACKAGE_PATH}/Cargo.toml" \
             --example "${example}" \
             ${build_flags}
         mkdir -pv "${COOKBOOK_STAGE}/usr/bin"
@@ -496,7 +496,7 @@ function cookbook_cargo_packages {
     for package in "$@"
     do
         "${COOKBOOK_CARGO}" build \
-            --manifest-path "${COOKBOOK_SOURCE}/Cargo.toml" \
+            --manifest-path "${COOKBOOK_SOURCE}/${PACKAGE_PATH}/Cargo.toml" \
             --package "${package}" \
             ${build_flags}
         mkdir -pv "${COOKBOOK_STAGE}/usr/bin"
@@ -560,9 +560,11 @@ done
         //TODO: configurable target
         //TODO: Add more configurability, convert scripts to Rust?
         let script = match &build.kind {
-            BuildKind::Cargo => "cookbook_cargo",
-            BuildKind::Configure => "cookbook_configure",
-            BuildKind::Custom { script } => script
+            BuildKind::Cargo { package_path, cargoflags } => {
+                format!("PACKAGE_PATH={} cookbook_cargo {cargoflags}", package_path.as_deref().unwrap_or("."))
+            }
+            BuildKind::Configure => "cookbook_configure".to_owned(),
+            BuildKind::Custom { script } => script.clone(),
         };
 
         let command = {
