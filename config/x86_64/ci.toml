@@ -93,6 +93,7 @@ libjpeg = {}
 libogg = {}
 liborbital = {}
 libpng = {}
+libretro-super = {}
 libsodium = {}
 libvorbis = {}
 libxml2 = {}
