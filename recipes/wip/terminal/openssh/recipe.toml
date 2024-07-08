@@ -1,0 +1,13 @@
+#TODO update the patch to match the current version
+#TODO does the patch is still needed?
+[source]
+tar = "https://cdn.openbsd.org/pub/OpenBSD/OpenSSH/portable/openssh-9.8p1.tar.gz"
+patches = [
+    "redox.patch",
+]
+[build]
+template = "configure"
+dependencies = [
+    "openssl1",
+    "zlib",
+]

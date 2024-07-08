@@ -1,0 +1,24 @@
+#TODO incomplete script
+#TODO does the patch is still needed?
+#TODO update the patch to match the current version
+[source]
+tar = "https://www.cpan.org/src/5.0/perl-5.40.0.tar.gz"
+patches = [
+    "perl.patch",
+]
+[build]
+template = "custom"
+script = """
+curl -L -O --time-cond perl-cross-1.5.3.tar.gz https://github.com/arsv/perl-cross/releases/download/1.5.3/perl-cross-1.5.3.tar.gz
+tar --strip-components=1 -xvf perl-cross-1.5.3.tar.gz
+wget -O cnf/config.sub "https://gitlab.redox-os.org/redox-os/gnu-config/-/raw/master/config.sub?inline=false"
+sysroot="$($HOST-gcc -print-sysroot)" # does it is still needed?
+sed -i "s/^#define Netdb_name_t.*/#define Netdb_name_t const char*/" config.h # XXX
+sed -i 's/#define Strerror(e).*$/#define Strerror(e) strerror(e)/' config.h #
+echo "#define HAS_VPRINTF" >> config.h
+COOKBOOK_CONFIGURE_FLAGS+=(
+    --disable-mod=Sys-Syslog,Time-HiRes
+    --with-libs='m'
+)
+cookbook_configure
+"""
