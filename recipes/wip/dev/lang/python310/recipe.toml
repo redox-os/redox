@@ -1,5 +1,14 @@
-#TODO configuration error
+#TODO not compiled or tested
 [source]
 tar = "https://www.python.org/ftp/python/3.10.13/Python-3.10.13.tar.xz"
 [build]
-template = "configure"
+template = "custom"
+dependencies = [
+    "openssl1",
+]
+script = """
+COOKBOOK_CONFIGURE_FLAGS+=(
+    --disable-ipv6
+)
+cookbook_configure
+"""

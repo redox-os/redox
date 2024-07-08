@@ -1,0 +1,24 @@
+#TODO not compiled or tested
+# if the script is wrong, read this - https://github.com/servo/servo#release-build
+# advanced build instructions - https://github.com/servo/servo/wiki/Building#manual-build-setup
+[source]
+git = "https://github.com/servo/servo"
+#git = "https://gitlab.redox-os.org/redox-os/servo"
+[build]
+template = "custom"
+dependencies = [
+    "freetype2",
+    "gettext",
+    "glib",
+    "gstreamer",
+    "harfbuzz",
+    "libffi",
+    "libiconv",
+    "libpng",
+    "openssl1",
+    "pcre",
+    "zlib",
+]
+script = """
+cookbook_cargo_packages servoshell
+"""
