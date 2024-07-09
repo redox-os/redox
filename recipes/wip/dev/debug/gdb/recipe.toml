@@ -1,4 +1,4 @@
-#TODO compiled but not tested
+#TODO port to redox
 [source]
 tar = "https://ftp.gnu.org/gnu/gdb/gdb-15.1.tar.xz"
 [build]
