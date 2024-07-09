@@ -1,3 +1,7 @@
+# This script setup the Redox build system
+# It install Rustup, the recipe dependencies for cross-compilation
+# and download the build system configuration files
+
 #!/usr/bin/env bash
 
 set -e

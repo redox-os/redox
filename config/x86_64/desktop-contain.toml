@@ -1,4 +1,4 @@
-# Default desktop configuration using contain
+# Desktop configuration using the Contain sandbox
 
 include = ["../desktop.toml"]
 

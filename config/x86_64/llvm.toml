@@ -1,3 +1,3 @@
-# Config for creating llvm-config script
+# Configuration to create "llvm-config" script
 
 include = ["../llvm.toml"]

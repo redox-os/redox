@@ -1,3 +1,5 @@
+# Configuration file for the Rust/GCC cross-compilers and relibc
+
 PREFIX=prefix/$(TARGET)
 
 PREFIX_INSTALL=$(PREFIX)/relibc-install

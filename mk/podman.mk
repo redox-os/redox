@@ -1,6 +1,4 @@
-##############################################
-# podman.mk - Use Podman to build components #
-##############################################
+# Configuration file of the Podman commands
 
 # Configuration variables for running make in Podman
 ## Tag the podman image $IMAGE_TAG

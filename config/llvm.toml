@@ -1,4 +1,4 @@
-# Default desktop configuration
+# # Configuration to create "llvm-config" script
 
 include = ["base.toml"]
 

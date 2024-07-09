@@ -1,3 +1,6 @@
+# This script allow the user to copy a Rust backtrace from Redox
+# and retrieve the symbols
+
 #!/usr/bin/env bash
 
 usage()

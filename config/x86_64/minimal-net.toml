@@ -1,4 +1,4 @@
-# Minimal configuration
+# Minimal network configuration
 
 include = ["../minimal-net.toml"]
 

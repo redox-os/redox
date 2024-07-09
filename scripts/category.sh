@@ -1,3 +1,5 @@
+# This script run the recipe command options on some Cookbook category
+
 #!/usr/bin/env bash
 
 if [ -z "$1" ] || [ -z "$2" ]

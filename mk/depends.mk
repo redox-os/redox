@@ -1,4 +1,4 @@
-# Dependencies
+# Configuration file for the build system dependencies
 
 # Don't check for Rust/Cargo if you will be using Podman
 ifneq ($(PODMAN_BUILD),1)

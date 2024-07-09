@@ -1,4 +1,4 @@
-# Configuration for redoxer GUI image
+# Configuration for the Redoxer GUI image
 
 include = ["redoxer.toml"]
 

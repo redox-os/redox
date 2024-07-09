@@ -1,4 +1,4 @@
-# Configuration for using resist
+# Configuration to run the "resist" tests
 
 include = ["net.toml"]
 
