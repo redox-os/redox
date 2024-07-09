@@ -1,4 +1,4 @@
-# Jeremy's configuration
+# Configuration for Jeremy Soller
 
 include = ["../desktop.toml"]
 

@@ -1,7 +1,8 @@
-# Configuration and variables
+# This file contains the build system commands configuration
+# and environment variables
 include mk/config.mk
 
-# Dependencies
+# Build system dependencies
 include mk/depends.mk
 
 all: $(BUILD)/harddrive.img

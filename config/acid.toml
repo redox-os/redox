@@ -1,4 +1,4 @@
-# Configuration for using acid
+# Configuration to run the "acid" tests
 
 include = ["base.toml"]
 

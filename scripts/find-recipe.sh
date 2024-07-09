@@ -1,3 +1,5 @@
+# This script show all files installed by a recipe
+
 #!/usr/bin/env bash
 
 # Ensure arch and config are set as desired, we use these to find the build dir

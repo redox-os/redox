@@ -1,4 +1,4 @@
-# Default desktop configuration
+# Minimal desktop configuration
 
 include = ["minimal-net.toml"]
 

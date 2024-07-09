@@ -1,6 +1,6 @@
-#!/usr/bin/env bash
+# This script show the contents of the "stage" and "sysroot" folders in some recipe
 
-# Show the contents of the stage and sysroot folders in some recipe
+#!/usr/bin/env bash
 
 if [ -z "$*" ]
 then

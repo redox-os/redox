@@ -1,3 +1,6 @@
+# This script show the package size of the recipes ("stage.pkgar" and "stage.tar.gz")
+# It must be used by package maintainers to enforce the library linking size policy
+
 #!/usr/bin/env bash
 
 if [ $# = 0 ]

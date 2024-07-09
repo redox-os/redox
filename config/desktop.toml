@@ -1,4 +1,4 @@
-# Default desktop configuration
+# Default build system configuration
 
 include = ["server.toml"]
 
