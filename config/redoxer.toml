@@ -1,4 +1,4 @@
-# Configuration for redoxer image
+# Configuration for the Redoxer image
 
 include = ["net.toml"]
 

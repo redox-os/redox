@@ -1,3 +1,7 @@
+# This script create a list with:
+# "recipe-name = {} #TODO"
+# For quick testing of WIP recipes
+
 #!/usr/bin/env bash
 
 # Given a string, find recipe.toml files containing that string.

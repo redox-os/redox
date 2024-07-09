@@ -1,3 +1,5 @@
+# Configuration file with the commands configuration of the Redox image
+
 $(BUILD)/harddrive.img: $(FSTOOLS_TAG) $(REPO_TAG)
 	mkdir -p $(BUILD)
 	rm -rf $@  $@.partial

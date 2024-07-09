@@ -1,4 +1,4 @@
-# Default server configuration
+# Server configuration
 
 include = ["net.toml"]
 

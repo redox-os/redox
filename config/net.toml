@@ -1,4 +1,4 @@
-# Net configuration: includes the base configuration and adds files required
+# Network configuration: includes the base configuration and adds files required
 # for networking
 
 include = ["base.toml"]

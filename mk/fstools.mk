@@ -1,3 +1,5 @@
+# Configuration file for redox-installer, Cookbook and RedoxFS FUSE
+
 fstools: $(FSTOOLS_TAG)
 
 $(FSTOOLS_TAG): cookbook installer redoxfs $(CONTAINER_TAG)

@@ -1,3 +1,5 @@
+# Configuration file to setup the Docker container of Redox
+
 FROM rustlang/rust:nightly
 
 ENV IMAGE_NAME=redox-os-docker
