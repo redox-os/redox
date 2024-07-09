@@ -1,4 +1,4 @@
-# Configuration for development, includes cargo and rustc
+# Configuration for development
 
 include = ["../dev.toml"]
 

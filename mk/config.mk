@@ -1,3 +1,5 @@
+# Configuration file of the build system environment variables
+
 -include .config
 
 HOST_ARCH?=$(shell uname -m)

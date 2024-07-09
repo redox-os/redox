@@ -1,3 +1,5 @@
+# Configuration file for VirtualBox, it creates a VirtualBox virtual machine
+
 virtualbox: $(BUILD)/harddrive.img
 	echo "Delete VM"
 	-$(VBM) unregistervm Redox --delete; \

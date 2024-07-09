@@ -1,3 +1,5 @@
+# Configuration file to install the recipe dependencies inside the Podman container
+
 FROM debian:bookworm-20240513-slim
 
 # _UID_ must be replaced with the user's uid on host
