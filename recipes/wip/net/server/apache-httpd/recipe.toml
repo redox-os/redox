@@ -1,6 +1,6 @@
-#apache-httpd
+#TODO compiles but requires setgroups syscall at startup
 [source]
-tar="https://dlcdn.apache.org/httpd/httpd-2.4.58.tar.bz2"
+tar="https://dlcdn.apache.org/httpd/httpd-2.4.61.tar.bz2"
 patches = [
     "redox.patch",
 ]
