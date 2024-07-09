@@ -10,6 +10,7 @@ ac_cv_working_getaddrinfo=no
 apr_cv_process_shared_works=yes
 apr_cv_mutex_robust_shared=yes
 apr_cv_tcp_nodelay_with_cork=no
+apr_cv_epoll=yes
 )
 cookbook_configure
 """
