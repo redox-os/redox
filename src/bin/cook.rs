@@ -162,6 +162,25 @@ fn run_command_stdin(mut command: process::Command, stdin_data: &[u8]) -> Result
 fn fetch(recipe_dir: &Path, source: &Option<SourceRecipe>) -> Result<PathBuf, String> {
     let source_dir = recipe_dir.join("source");
     match source {
+        Some(SourceRecipe::SameAs { same_as }) => {
+            if ! source_dir.is_symlink() {
+                if source_dir.is_dir() {
+                    return Err(format!(
+                        "'{dir}' is a directory, but recipe indicated a symlink. \n\
+                        try removing '{dir}' if you haven't made any changes that would be lost",
+                        dir=source_dir.display(),
+                    ));
+                }
+                let original = Path::new(same_as).join("source");
+                std::os::unix::fs::symlink(&original, &source_dir).map_err(|err| format!(
+                    "failed to symlink '{}' to '{}': {}\n{:?}",
+                    original.display(),
+                    source_dir.display(),
+                    err,
+                    err
+                ))?;
+            }
+        }
         Some(SourceRecipe::Git { git, upstream, branch, rev }) => {
             //TODO: use libgit?
             if ! source_dir.is_dir() {
