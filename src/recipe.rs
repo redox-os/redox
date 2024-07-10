@@ -4,6 +4,14 @@ use serde::{Deserialize, Serialize};
 #[derive(Debug, Deserialize, PartialEq, Serialize)]
 #[serde(untagged)]
 pub enum SourceRecipe {
+    /// Reuse the source directory of another package
+    ///
+    /// This is useful when a single source repo contains multiple projects which each have their
+    /// own recipe to build them.
+    SameAs {
+        /// Relative path to the package for which to reuse the source dir
+        same_as: String,
+    },
     /// A git repository source
     Git {
         /// The URL for the git repository, such as https://gitlab.redox-os.org/redox-os/ion.git

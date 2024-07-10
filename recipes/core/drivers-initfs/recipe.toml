@@ -1,5 +1,5 @@
 [source]
-git = "https://gitlab.redox-os.org/redox-os/drivers.git"
+same_as = "../drivers"
 
 [build]
 template = "custom"
