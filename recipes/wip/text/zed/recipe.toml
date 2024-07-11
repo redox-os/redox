@@ -1,0 +1,20 @@
+#TODO not compiled or tested
+#TODO maybe missing dependencies, see https://github.com/zed-industries/zed/blob/main/script/linux#L15
+# build instructions - https://zed.dev/docs/development/linux
+[source]
+git = "https://github.com/zed-industries/zed"
+[build]
+template = "custom"
+dependencies = [
+    "fontconfig",
+    "libxkbcommon",
+    "openssl1",
+    "zstd",
+    "libgit2",
+    "sqlite3",
+]
+script = """
+cookbook_cargo_packages cli zed
+mv "${COOKBOOK_STAGE}/usr/bin/cli" "${COOKBOOK_STAGE}/usr/bin/zed-cli"
+mv "${COOKBOOK_STAGE}/usr/bin/zed" "${COOKBOOK_STAGE}/usr/bin/zed-editor"
+"""
