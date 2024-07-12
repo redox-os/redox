@@ -1,0 +1,9 @@
+#TODO not compiled or tested
+[source]
+git = "https://github.com/cristicbz/rust-doom"
+[build]
+template = "custom"
+script = """
+cookbook_cargo
+mv "${COOKBOOK_STAGE}/usr/bin/rs_doom" "${COOKBOOK_STAGE}/usr/bin/doom-rs"
+"""

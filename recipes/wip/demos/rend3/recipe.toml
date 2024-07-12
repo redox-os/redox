@@ -1,0 +1,8 @@
+#TODO not compiled or tested
+[source]
+git = "https://github.com/BVE-Reborn/rend3"
+[build]
+template = "custom"
+script = """
+cookbook_cargo_packages rend3-examples-package
+"""
