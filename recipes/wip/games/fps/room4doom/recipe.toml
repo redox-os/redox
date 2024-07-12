@@ -1,0 +1,12 @@
+#TODO not compiled or tested
+[source]
+git = "https://github.com/flukejones/room4doom"
+[build]
+template = "custom"
+dependencies = [
+    "sdl2",
+    "sdl2-mixer
+]
+script = """
+cookbook_cargo_packages room4doom
+"""

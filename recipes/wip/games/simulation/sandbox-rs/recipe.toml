@@ -1,0 +1,5 @@
+#TODO not compiled or tested
+[source]
+git = "https://github.com/JMS55/sandbox"
+[build]
+template = "cargo"
