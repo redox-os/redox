@@ -9,5 +9,8 @@ dependencies = [
 ]
 script = """
 export CPPFLAGS="-I${COOKBOOK_SYSROOT}/include/ncurses"
+COOKBOOK_CONFIGURE_FLAGS+=(
+    --disable-unicode
+)
 cookbook_configure
 """
