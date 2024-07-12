@@ -130,22 +130,22 @@ symlink = true
 ## Device file symlinks
 [[files]]
 path = "/dev/null"
-data = "null:"
+data = "/scheme/null"
 symlink = true
 
 [[files]]
 path = "/dev/random"
-data = "rand:"
+data = "/scheme/rand"
 symlink = true
 
 [[files]]
 path = "/dev/urandom"
-data = "rand:"
+data = "/scheme/rand"
 symlink = true
 
 [[files]]
 path = "/dev/zero"
-data = "zero:"
+data = "/scheme/zero"
 symlink = true
 
 [[files]]
