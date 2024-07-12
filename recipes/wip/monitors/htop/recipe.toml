@@ -1,0 +1,13 @@
+#TODO port to redox
+# build instructions - https://github.com/htop-dev/htop#build-instructions
+[source]
+tar = "https://github.com/htop-dev/htop/releases/download/3.3.0/htop-3.3.0.tar.xz"
+[build]
+template = "custom"
+dependencies = [
+    "ncurses",
+]
+script = """
+export CPPFLAGS="-I${COOKBOOK_SYSROOT}/include/ncurses"
+cookbook_configure
+"""
