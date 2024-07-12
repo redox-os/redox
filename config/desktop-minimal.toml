@@ -5,7 +5,7 @@ include = ["minimal-net.toml"]
 # General settings
 [general]
 # Filesystem size in MiB
-filesystem_size = 128
+filesystem_size = 256
 
 # Package settings
 [packages]
