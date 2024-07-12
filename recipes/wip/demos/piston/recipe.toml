@@ -1,0 +1,8 @@
+#TODO not compiled or tested
+[source]
+git = "https://github.com/pistondevelopers/piston-examples"
+[build]
+template = "custom"
+script = """
+cookbook_cargo_examples cube hello_world image multi_window shapes snake sprite
+"""

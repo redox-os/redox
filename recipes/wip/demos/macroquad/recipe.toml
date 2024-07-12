@@ -1,0 +1,8 @@
+#TODO not compiled or tested
+[source]
+git = "https://github.com/not-fl3/macroquad"
+[build]
+template = "custom"
+script = """
+cookbook_cargo_examples 3d basic_shapes camera chess ferris first_person particles_example platformer shadertoy snake text ui
+"""

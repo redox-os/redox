@@ -1,0 +1,8 @@
+#TODO not compiled or tested
+[source]
+git = "https://github.com/FyroxEngine/Fyrox"
+[build]
+template = "custom"
+script = """
+cookbook_cargo_examples 2d
+"""

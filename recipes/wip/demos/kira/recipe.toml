@@ -1,0 +1,8 @@
+#TODO not compiled or tested
+[source]
+git = "https://github.com/tesselode/kira-examples"
+[build]
+template = "custom"
+script = """
+cookbook_cargo_packages dynamic-music ghost-noise metronome score-counter spatial-audio simple-sound-playback
+"""
