@@ -1,0 +1,8 @@
+#TODO not compiled or tested
+[source]
+git = "https://github.com/ggez/ggez"
+[build]
+template = "custom"
+script = """
+cookbook_cargo_examples 02_hello_world 04_snake cube hello_canvas input_test shader shadows sounds text vertex_shader
+"""

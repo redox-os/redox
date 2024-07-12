@@ -1,0 +1,8 @@
+#TODO not compiled or tested
+[source]
+git = "https://github.com/Jondolf/avian"
+[build]
+template = "custom"
+script = """
+cookbook_cargo_examples chain_2d many_shapes ray_caster chain_3d cubes
+"""
