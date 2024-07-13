@@ -1,0 +1,8 @@
+#TODO not compiled or tested
+[source]
+git = "https://github.com/asny/three-d"
+[build]
+template = "custom"
+script = """
+cookbook_cargo_examples animation environment fireworks fog forest image instanced_shapes lighting lights logo mandelbrot multiwindow pbr shapes shapes2d sprites statues terrain texture triangle
+"""

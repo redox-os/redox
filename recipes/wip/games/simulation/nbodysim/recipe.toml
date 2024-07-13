@@ -1,0 +1,10 @@
+#TODO not compiled or tested
+[source]
+git = "https://github.com/timokoesters/nbodysim"
+[build]
+template = "custom"
+script = """
+mkdir -pv "${COOKBOOK_STAGE}"/usr/share/nbodysim
+cp -rv "${COOKBOOK_SOURCE}"/examples/* "${COOKBOOK_STAGE}"/usr/share/nbodysim
+cookbook_cargo
+"""
