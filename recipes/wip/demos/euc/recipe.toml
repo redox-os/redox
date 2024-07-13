@@ -1,0 +1,8 @@
+#TODO not compiled or tested
+[source]
+git = "https://github.com/zesterer/euc"
+[build]
+template = "custom"
+script = """
+cookbook_cargo_examples spinning_cube teapot texture_mapping triangle wireframes
+"""

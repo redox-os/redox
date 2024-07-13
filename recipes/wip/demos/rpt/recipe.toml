@@ -1,0 +1,8 @@
+#TODO not compiled or tested
+[source]
+git = "https://github.com/ekzhang/rpt"
+[build]
+template = "custom"
+script = """
+cookbook_cargo_examples basic cylinder fractal_spheres fractal_teapots glass marbles metal rustacean sphere spheres teapot
+"""
