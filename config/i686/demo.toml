@@ -1,27 +1,4 @@
 # Configuration for demonstration
-##############################################################################
-#                          Redox Demo Configuration                          #
-#                                                                            #
-# This file defines the setup of the Redox Demo system.                      #
-#                                                                            #
-# The "[packages]" section specifies what packages are installed in the      #
-# filesystem prior to booting the system. During build, these packages must  #
-# have a recipe defined in the config folder (see the Redox Book,            #
-# Chapter 5.1). The first group of packages is mandatory for the system to   #
-# function, although some items can be removed for special builds,           #
-# e.g. The Orbital GUI is not required for a headless server.                #
-#                                                                            #
-# Items in the "Developer Tools" and "Games" section are optional. You can   #
-# add your own programs here.                                                #
-#                                                                            #
-# The "[users]" section creates user id's and passwords. Each user will have #
-# a home directory at boot.                                                  #
-#                                                                            #
-# The "[[files]]" section contains files needed by the system. If you need   #
-# create a file, e.g. a config file for a program you are adding, you can do #
-# it here.                                                                   #
-#                                                                            #
-##############################################################################
 
 include = ["../desktop.toml"]
 
