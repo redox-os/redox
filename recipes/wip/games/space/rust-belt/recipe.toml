@@ -1,0 +1,9 @@
+#TODO not compiled or tested
+[source]
+git = "https://github.com/johnthagen/rust-belt"
+[build]
+template = "cargo"
+dependencies = [
+    "sdl2",
+    "sdl2-mixer",
+]
