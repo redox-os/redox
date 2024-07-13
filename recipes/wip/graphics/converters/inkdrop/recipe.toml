@@ -1,0 +1,8 @@
+#TODO not compiled or tested
+[source]
+git = "https://github.com/matze/inkdrop"
+[build]
+template = "custom"
+script = """
+cookbook_cargo_packages inkdrop-cli gcode-converter
+"""

@@ -1,0 +1,15 @@
+#TODO not compiled or tested
+[source]
+git = "https://github.com/lukexor/pix-engine"
+[build]
+template = "custom"
+dependencies = [
+    "sdl2",
+    "sdl2-image",
+    "sdl2-mixer",
+    "sdl2-ttf",
+    "sdl-gfx",
+]
+script = """
+cookbook_cargo_examples maze 2d_raycasting 3d_raycasting asteroids colors fluid_simulation gui hello_world image light matrix shapes textures tree windows
+"""
