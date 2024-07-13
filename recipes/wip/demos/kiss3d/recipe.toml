@@ -1,0 +1,8 @@
+#TODO not compiled or tested
+[source]
+git = "https://github.com/sebcrozet/kiss3d"
+[build]
+template = "custom"
+script = """
+cookbook_cargo_examples camera cube lines multi_windows planar_lines points post_processing primitives primitives2d procedural rectangle screenshot stereo text texturing ui window
+"""

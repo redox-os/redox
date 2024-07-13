@@ -1,0 +1,9 @@
+#TODO not compiled or tested
+[source]
+git = "https://github.com/fintelia/terra"
+[build]
+template = "cargo"
+dependencies = [
+    "openssl1",
+    "mesa",
+]

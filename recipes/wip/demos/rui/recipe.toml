@@ -1,0 +1,8 @@
+#TODO not compiled or tested
+[source]
+git = "https://github.com/audulus/rui"
+[build]
+template = "custom"
+script = """
+cookbook_cargo_examples action background basic calc canvas counter counter2 font_size gallery list menu shapes slider text_editor toggle
+"""
