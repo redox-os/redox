@@ -1,0 +1,8 @@
+#TODO not compiled or tested
+[source]
+git = "https://github.com/gfx-rs/wgpu"
+[build]
+template = "custom"
+script = """
+cookbook_cargo_packages naga-cli
+"""
