@@ -1,0 +1,8 @@
+#TODO not compiled or tested
+[source]
+git = "https://github.com/QuantumBadger/Speedy2D"
+[build]
+template = "custom"
+script = """
+cookbook_cargo_examples animation hello_world moving_text
+"""
