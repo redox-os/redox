@@ -1,0 +1,8 @@
+#TODO not compiled or tested
+[source]
+git = "https://github.com/colored-rs/colored"
+[build]
+template = "custom"
+script = """
+cookbook_cargo_examples control custom_colors dynamic_colors most_simple nested_colors
+"""

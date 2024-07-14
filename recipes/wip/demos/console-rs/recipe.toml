@@ -1,0 +1,8 @@
+#TODO not compiled or tested
+[source]
+git = "https://github.com/console-rs/console"
+[build]
+template = "custom"
+script = """
+cookbook_cargo_examples colors colors256 cursor_at keyboard term
+"""
