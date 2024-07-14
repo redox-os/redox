@@ -1,0 +1,10 @@
+#TODO not compiled or tested
+[source]
+git = "https://github.com/Tencent/tquic"
+[build]
+template = "custom"
+script = """
+cookbook_cargo_packages tquic_tools
+mv "${COOKBOOK_STAGE}/usr/bin/tquic_server" "${COOKBOOK_STAGE}/usr/bin/tquic-server"
+mv "${COOKBOOK_STAGE}/usr/bin/tquic_client" "${COOKBOOK_STAGE}/usr/bin/tquic-client"
+"""
