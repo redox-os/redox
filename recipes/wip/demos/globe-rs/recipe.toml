@@ -1,0 +1,9 @@
+#TODO not compiled or tested
+[source]
+git = "https://github.com/adamsky/globe"
+[build]
+template = "custom"
+script = """
+cookbook_cargo_packages globe-cli
+mv "${COOKBOOK_STAGE}/usr/bin/globe" "${COOKBOOK_STAGE}/usr/bin/globe-rs"
+"""
