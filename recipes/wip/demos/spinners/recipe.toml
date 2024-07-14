@@ -1,0 +1,8 @@
+#TODO not compiled or tested
+[source]
+git = "https://github.com/FGRibreau/spinners"
+[build]
+template = "custom"
+script = """
+cookbook_cargo_examples cycle simple stop_persist stop_symbol timer
+"""
