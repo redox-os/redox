@@ -1,0 +1,8 @@
+#TODO port to orbital
+[source]
+git = "https://github.com/cea-sec/sanzu"
+[build]
+template = "custom"
+script = """
+cookbook_cargo_packages sanzu
+"""
