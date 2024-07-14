@@ -1,0 +1,8 @@
+#TODO not compiled or tested
+[source]
+git = "https://github.com/ttytm/wthrr-the-weathercrab"
+[build]
+template = "cargo"
+dependencies = [
+    "openssl1",
+]
