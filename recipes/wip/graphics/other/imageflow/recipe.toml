@@ -1,0 +1,13 @@
+#TODO not compiled or tested
+[source]
+git = "https://github.com/imazen/imageflow"
+[build]
+template = "custom"
+dependencies = [
+    "openssl1",
+    "libpng",
+]
+script = """
+cookbook_cargo_packages imageflow_tool_lib
+mv "${COOKBOOK_STAGE}/usr/bin/imageflow_tool" "${COOKBOOK_STAGE}/usr/bin/imageflow-tool"
+"""
