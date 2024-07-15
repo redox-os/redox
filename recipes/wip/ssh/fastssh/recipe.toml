@@ -1,0 +1,5 @@
+#TODO not compiled or tested
+[source]
+git = "https://github.com/Julien-R44/fast-ssh"
+[build]
+template = "cargo"
