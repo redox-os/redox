@@ -2,4 +2,7 @@
 [source]
 git = "https://github.com/almindor/texel"
 [build]
-template = "cargo"
+template = "custom"
+script = """
+cookbook_cargo --no-default-features --features ion
+"""
