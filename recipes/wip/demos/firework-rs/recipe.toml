@@ -1,0 +1,9 @@
+#TODO not compiled or tested
+[source]
+git = "https://github.com/Wayoung7/firework-rs"
+[build]
+template = "custom"
+script = """
+cookbook_cargo_packages firework-rs
+cookbook_cargo_examples fountain heart vortex
+"""
