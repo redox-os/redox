@@ -1,0 +1,8 @@
+#TODO not compiled or tested
+[source]
+git = "https://github.com/ivanceras/svgbob"
+[build]
+template = "custom"
+script = """
+cookbook_cargo_packages svgbob_cli
+"""
