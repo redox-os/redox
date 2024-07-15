@@ -1,5 +1,5 @@
 #TODO missing script for "make", see https://github.com/nigels-com/glew#linux-and-mac
-#TODO Mesa EGL is supported, verify if X11 is still required
+#TODO add the GLEW_OSMESA flag to enable the Mesa off-screen rendering
 [source]
 git = "https://github.com/nigels-com/glew"
 rev = "9fb23c3e61cbd2d581e33ff7d8579b572b38ee26"
