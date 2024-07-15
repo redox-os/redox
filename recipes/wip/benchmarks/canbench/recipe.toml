@@ -1,8 +1,0 @@
-#TODO compiled but not tested
-[source]
-git = "https://github.com/dfinity/canbench"
-[build]
-template = "custom"
-script = """
-cookbook_cargo_packages canbench
-"""
