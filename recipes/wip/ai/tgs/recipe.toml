@@ -1,0 +1,8 @@
+#TODO not compiled or tested
+[source]
+git = "https://github.com/warpy-ai/tgs"
+[build]
+template = "cargo"
+dependencies = [
+    "libtorch",
+]
