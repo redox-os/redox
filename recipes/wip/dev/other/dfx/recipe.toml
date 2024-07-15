@@ -1,8 +1,0 @@
-#TODO libloading crate error
-[source]
-git = "https://github.com/dfinity/sdk"
-[build]
-template = "custom"
-script = """
-cookbook_cargo_packages dfx
-"""
