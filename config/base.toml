@@ -175,10 +175,12 @@ uid = 0
 gid = 0
 name = "root"
 home = "/root"
+shell = "/usr/bin/ion"
 
 [users.user]
 # Password is unset
 password = ""
+shell = "/usr/bin/ion"
 
 # Group settings
 [groups.sudo]
