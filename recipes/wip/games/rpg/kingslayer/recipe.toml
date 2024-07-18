@@ -6,4 +6,5 @@ template = "custom"
 script = """
 mkdir -pv "${COOKBOOK_STAGE}"/usr/share/kingslayer
 cp -rv "${COOKBOOK_SOURCE}"/worlds/* "${COOKBOOK_STAGE}"/usr/share/kingslayer
+cookbook_cargo
 """
