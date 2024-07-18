@@ -1,4 +1,4 @@
-#TODO missing dependencies, see https://github.com/Kl4rry/simp#system-dependencies
+#TODO not compiled or tested
 [source]
 git = "https://github.com/Kl4rry/simp"
 [build]
