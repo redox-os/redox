@@ -1,0 +1,9 @@
+#TODO not compiled or tested
+[source]
+git = "https://github.com/Zaechus/kingslayer"
+[build]
+template = "custom"
+script = """
+mkdir -pv "${COOKBOOK_STAGE}"/usr/share/kingslayer
+cp -rv "${COOKBOOK_SOURCE}"/worlds/* "${COOKBOOK_STAGE}"/usr/share/kingslayer
+"""

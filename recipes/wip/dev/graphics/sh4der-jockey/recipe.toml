@@ -1,0 +1,5 @@
+#TODO not compiled or tested
+[source]
+git = "https://github.com/slerpyyy/sh4der-jockey"
+[build]
+template = "cargo"
