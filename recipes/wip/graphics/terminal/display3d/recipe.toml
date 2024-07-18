@@ -1,0 +1,10 @@
+#TODO not compiled or tested
+[source]
+git = "https://github.com/redpenguinyt/display3d"
+[build]
+template = "custom"
+script = """
+mkdir -pv "${COOKBOOK_STAGE}"/usr/share/display3d
+cp -rv "${COOKBOOK_SOURCE}"/resources/* "${COOKBOOK_STAGE}"/usr/share/display3d
+cookbook_cargo
+"""
