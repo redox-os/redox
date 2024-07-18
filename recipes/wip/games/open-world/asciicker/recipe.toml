@@ -1,0 +1,7 @@
+#TODO determine how to build this
+# it seems to have a sdl2 frontend
+[source]
+git = "https://github.com/msokalski/asciicker"
+rev = "8ff75d0c5a8d2745a8ad6a8a841dd31a46e81635"
+[build]
+template = "custom"
