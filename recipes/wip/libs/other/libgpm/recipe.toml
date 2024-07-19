@@ -1,5 +1,5 @@
-#TODO missing script for building
+#TODO not compiled or tested
 [source]
 tar = "https://www.nico.schottelius.org/software/gpm/archives/gpm-1.20.7.tar.bz2"
 [build]
-template = "custom"
+template = "configure"
