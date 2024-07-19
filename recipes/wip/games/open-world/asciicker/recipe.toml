@@ -1,7 +1,14 @@
-#TODO determine how to build this
-# it seems to have a sdl2 frontend
+#TODO missing script for gnu make
+#TODO build the game, term and server
+#TODO build the terminal and sdl2 frontends
+# makeflags: -DSERVER -DGAME -DUSE_SDL2 -DPURE_TERM -DUSE_GPM
 [source]
 git = "https://github.com/msokalski/asciicker"
 rev = "8ff75d0c5a8d2745a8ad6a8a841dd31a46e81635"
 [build]
 template = "custom"
+dependencies = [
+    "mesa",
+    "sdl2",
+    "libgpm",
+]
