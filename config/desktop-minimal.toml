@@ -21,3 +21,11 @@ path = "/usr/lib/init.d/20_orbital"
 data = """
 orbital orblogin launcher
 """
+
+# Override console config to not switch to VT 2
+[[files]]
+path = "/usr/lib/init.d/30_console"
+data = """
+getty 2
+getty debug: -J
+"""
