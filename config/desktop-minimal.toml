@@ -19,7 +19,9 @@ orbutils-orblogin = {}
 [[files]]
 path = "/usr/lib/init.d/20_orbital"
 data = """
+export VT 3
 orbital orblogin launcher
+unset VT
 """
 
 # Override console config to not switch to VT 2
