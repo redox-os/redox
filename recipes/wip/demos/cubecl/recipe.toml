@@ -1,0 +1,18 @@
+#TODO not compiled or tested
+[source]
+git = "https://github.com/tracel-ai/cubecl"
+[build]
+template = "custom"
+script = """
+package=gelu
+"${COOKBOOK_CARGO}" build \
+            --manifest-path "${COOKBOOK_SOURCE}/Cargo.toml" \
+            --package "${package}" \
+            --release
+            --no-default-features
+            --wgpu
+        mkdir -pv "${COOKBOOK_STAGE}/usr/bin"
+        cp -v \
+            "target/${TARGET}/release/${package}" \
+            "${COOKBOOK_STAGE}/usr/bin/${package}"
+"""
