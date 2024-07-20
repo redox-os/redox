@@ -5,23 +5,101 @@ include = ["desktop.toml"]
 # General settings
 [general]
 # Filesystem size in MiB
-filesystem_size = 2048
+filesystem_size = 20000
 # Do not prompt if settings are not defined
 prompt = false
 
 # Package settings
 [packages]
+acid = {}
+autoconf = {}
+automake = {}
 cargo = {}
 crates-io-index = {}
+exampled = {}
 gcc13 = {}
+gdbserver = {}
 gnu-binutils = {}
+gnu-grep = {}
 gnu-make = {}
+libffi = {}
+libgmp = {}
+libiconv = {}
+libjpeg = {}
+libogg = {}
+liborbital = {}
+libpng = {}
+libsodium = {}
+libvorbis = {}
+libxml2 = {}
+llvm18 = {}
+lua54 = {}
+mesa = {}
+mesa-glu = {}
+nasm = {}
+ncurses = {}
+nghttp2 = {}
+openssl1 = {}
+orbclient = {}
+patch = {}
+pcre = {}
+pkg-config = {}
+resist = {}
+ripgrep = {}
 rust = {}
+sdl-gfx = {}
+sdl1 = {}
+sdl1-image = {}
+sdl1-mixer = {}
+sdl1-ttf = {}
+sdl2 = {}
+sdl2-gears = {}
+sdl2-image = {}
+sdl2-mixer = {}
+sdl2-ttf = {}
+sed = {}
+strace = {}
+terminfo = {}
+xz = {}
+zlib = {}
 
 [[files]]
-path = "/home/user/example.rs"
+path = "/home/user/test.rs"
 data = """
 fn main() {
     println!("Hello, Redox!");
 }
+"""
+
+[[files]]
+path = "/home/user/test.c"
+data = """
+#include <stdio.h>
+
+int main(void) {
+	printf("Hello, Redox!\n");
+}
+"""
+
+[[files]]
+path = "/home/user/test.cpp"
+data = """
+#include <iostream>
+
+int main()
+{
+   std::cout << "Hello, Redox!" << std::endl;
+}
+"""
+
+[[files]]
+path = "/home/user/test.py"
+data = """
+print("Hello, Redox!")
+"""
+
+[[files]]
+path = "/home/user/test.lua"
+data = """
+print("Hello, Redox!")
 """
