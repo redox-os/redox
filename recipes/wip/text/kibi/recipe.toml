@@ -1,5 +1,10 @@
-#TODO move to proper category
+#TODO promote
 [source]
 git = "https://github.com/ilai-deutel/kibi"
 [build]
-template = "cargo"
+template = "custom"
+script = """
+mkdir -pv "${COOKBOOK_STAGE}"/usr/share/kibi
+cp -rv "${COOKBOOK_SOURCE}"/syntax.d "${COOKBOOK_STAGE}"/usr/share/kibi
+cookbook_cargo
+"""

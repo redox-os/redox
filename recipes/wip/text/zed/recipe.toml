@@ -1,5 +1,6 @@
 #TODO not compiled or tested
 #TODO maybe missing dependencies, see https://github.com/zed-industries/zed/blob/main/script/linux#L15
+#TODO build the gui ("zed" package) once we have gpu drivers to render vulkan at decent fps
 # build instructions - https://zed.dev/docs/development/linux
 [source]
 git = "https://github.com/zed-industries/zed"
@@ -14,7 +15,7 @@ dependencies = [
     "sqlite3",
 ]
 script = """
-cookbook_cargo_packages cli zed
+cookbook_cargo_packages cli
 mv "${COOKBOOK_STAGE}/usr/bin/cli" "${COOKBOOK_STAGE}/usr/bin/zed-cli"
-mv "${COOKBOOK_STAGE}/usr/bin/zed" "${COOKBOOK_STAGE}/usr/bin/zed-editor"
+#mv "${COOKBOOK_STAGE}/usr/bin/zed" "${COOKBOOK_STAGE}/usr/bin/zed-editor"
 """
