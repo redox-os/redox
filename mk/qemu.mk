@@ -5,7 +5,7 @@ QEMUFLAGS=-d guest_errors -name "Redox OS $(ARCH)"
 
 ifeq ($(ARCH),i686)
 	audio?=ac97
-	efi=no
+	uefi=no
 	QEMU_ARCH=i386
 	QEMU_MACHINE?=pc
 	QEMU_CPU?=pentium2
@@ -22,7 +22,7 @@ else ifeq ($(ARCH),x86_64)
 	QEMU_CPU?=core2duo
 	QEMU_SMP?=4
 	QEMU_MEM?=2048
-	ifeq ($(efi),yes)
+	ifeq ($(uefi),yes)
 		FIRMWARE=/usr/share/OVMF/OVMF_CODE.fd
 	endif
 	ifneq ($(usb),no)
@@ -31,7 +31,7 @@ else ifeq ($(ARCH),x86_64)
 else ifeq ($(ARCH),aarch64)
 	# Default to UEFI as U-Boot doesn't set up a framebuffer for us and we don't yet support
 	# setting up a framebuffer ourself.
-	efi?=yes
+	uefi?=yes
 	live=yes
 	QEMU_ARCH=aarch64
 	QEMU_MACHINE=virt
@@ -41,12 +41,12 @@ else ifeq ($(ARCH),aarch64)
 	ifeq ($(BOARD),raspi3bp)
 		FIRMWARE=$(BUILD)/raspi3bp_uboot.rom
 		disk?=sdcard
-	else ifeq ($(efi),yes)
+	else ifeq ($(uefi),yes)
 		FIRMWARE=/usr/share/AAVMF/AAVMF_CODE.fd
 	else
 		FIRMWARE=$(BUILD)/qemu_uboot.rom
 	endif
-	ifneq ($(vga),no)
+	ifneq ($(gpu),no)
 		QEMUFLAGS+=-device ramfb
 	endif
 	ifneq ($(usb),no)
@@ -122,11 +122,11 @@ else
 	endif
 endif
 
-ifeq ($(vga),no)
+ifeq ($(gpu),no)
 	QEMUFLAGS+=-nographic -vga none
-else ifeq ($(vga),multi)
+else ifeq ($(gpu),multi)
 	QEMUFLAGS+=-display sdl -vga std -device secondary-vga
-else ifeq ($(vga),virtio)
+else ifeq ($(gpu),virtio)
 	QEMUFLAGS+=-vga virtio
 endif
 
