@@ -1,4 +1,3 @@
-#TODO not compiled or tested
 [source]
 tar = "https://ftp.gnu.org/gnu/wget/wget-1.21.4.tar.gz"
 [build]
