@@ -26,7 +26,6 @@ pkgutils = {}
 redoxfs = {}
 relibc = {}
 resist = {}
-terminfo = {}
 userutils = {}
 
 [[files]]
