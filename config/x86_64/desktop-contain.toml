@@ -18,7 +18,9 @@ include = ["../desktop.toml"]
 path = "/usr/lib/init.d/20_orbital"
 data = """
 audiod
+export VT 3
 orbital contain_orblogin launcher
+unset VT
 """
 
 # Override console init to use contain
