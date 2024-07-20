@@ -20,16 +20,14 @@ findutils = {}
 git = {}
 installer = {}
 ion = {}
-nano = {}
+kibi = {}
 netdb = {}
 pkgutils = {}
 redoxfs = {}
 relibc = {}
 resist = {}
-smith = {}
 terminfo = {}
 userutils = {}
-vim = {}
 
 [[files]]
 path = "/usr/lib/init.d/30_console"
