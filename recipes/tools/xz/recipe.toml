@@ -1,5 +1,5 @@
 [source]
-git = "https://git.tukaani.org/xz.git"
+git = "https://github.com/tukaani-project/xz"
 # v5.2.5
 rev = "2327a461e1afce862c22269b80d3517801103c1b"
 
