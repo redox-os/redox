@@ -10,8 +10,8 @@ unset FRAMEBUFFER_ADDR FRAMEBUFFER_VIRT FRAMEBUFFER_WIDTH FRAMEBUFFER_HEIGHT FRA
 fbcond 1 2
 logd /scheme/debug /scheme/fbcon/1
 stdio /scheme/log
-ps2d us
 ramfs logging
+ps2d us
 acpid
 pcid /scheme/initfs/etc/pcid/initfs.toml
 lived
