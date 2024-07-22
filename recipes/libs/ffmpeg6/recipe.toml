@@ -30,4 +30,6 @@ COOKBOOK_CONFIGURE_FLAGS=(
     --enable-decoder=png
 )
 cookbook_configure
+mkdir -pv "${COOKBOOK_STAGE}/ui/apps"
+cp -v "${COOKBOOK_RECIPE}/manifest" "${COOKBOOK_STAGE}/ui/apps/ffplay"
 """
