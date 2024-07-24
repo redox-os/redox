@@ -12,9 +12,9 @@ We follow the [Rust Code Of Conduct](https://www.rust-lang.org/policies/code-of-
 
 In general, your contributions to Redox are governed by the [MIT License](https://en.wikipedia.org/wiki/MIT_License). Each project repository has a `LICENSE` file that provides the license terms for that project.
 
-Please review the LICENSE for the project you are contributing to.
+Please review the `LICENSE` file for the project you are contributing to.
 
-On [this](https://doc.redox-os.org/book/ch01-02-philosophy.html) page we explain why we use the MIT license.
+[This](https://doc.redox-os.org/book/ch01-02-philosophy.html) page we explain why we use the MIT license.
 
 ## Chat
 
@@ -22,46 +22,58 @@ Join us on [Matrix Chat](https://doc.redox-os.org/book/ch13-01-chat.html) to dis
 
 ## Important Places to Contribute
 
-(Before starting to contribute you **must** read the [FAQ](https://www.redox-os.org/faq/) and the [Redox Book](https://doc.redox-os.org/book/))
+(Before starting to contribute you **must** read the [Website FAQ](https://www.redox-os.org/faq/) and the [Redox Book](https://doc.redox-os.org/book/))
 
-You can contribute to the Redox documentation and code on these repositories:
+You can contribute to the Redox documentation and code on the following repositories:
 
 (The order is based on difficulty, easy things first)
 
 - [Website](https://gitlab.redox-os.org/redox-os/website)
 - [Book](https://gitlab.redox-os.org/redox-os/book) - High-level documentation
 - [Build System Configuration](https://gitlab.redox-os.org/redox-os/redox) - Our main repository
-- [Cookbook](https://gitlab.redox-os.org/redox-os/cookbook) - Ports system
-- [Orbital](https://gitlab.redox-os.org/redox-os/orbital) - Display server and window manager
-- [Package Manager](https://gitlab.redox-os.org/redox-os/pkgutils)
+- [Cookbook](https://gitlab.redox-os.org/redox-os/cookbook) - Software Ports System
+- [Orbital](https://gitlab.redox-os.org/redox-os/orbital) - Display Server and Window Manager
+- [pkgutils](https://gitlab.redox-os.org/redox-os/pkgutils) - Package Manager
+- [resist](https://gitlab.redox-os.org/redox-os/resist) - Redox System Interface Specifications and Tests (also has POSIX tests)
+- [acid](https://gitlab.redox-os.org/redox-os/acid) - Redox Test Suite
 - [relibc](https://gitlab.redox-os.org/redox-os/relibc) - Redox C Library
-- [Drivers](https://gitlab.redox-os.org/redox-os/drivers) - Device daemons
+- [libredox](https://gitlab.redox-os.org/redox-os/libredox) - Redox System Library
+- [netstack](https://gitlab.redox-os.org/redox-os/netstack) - Network Stack
+- [Bootloader](https://gitlab.redox-os.org/redox-os/bootloader)
+- [Drivers](https://gitlab.redox-os.org/redox-os/drivers) - Device Drivers
 - [Kernel](https://gitlab.redox-os.org/redox-os/kernel)
+
+To see all Redox repositories open [this](https://gitlab.redox-os.org/redox-os) link.
 
 ### Skill Levels
 
-If you aren't fluent in Rust:
+If you don't know programming:
 
 - Write documentation
 - Use and test Redox, fill issues for bugs or needed features (please verify the repository issues before)
+
+If you don't know how to code in Rust, but know in other programming languages:
+
 - Web development on the website (we don't accept JavaScript code)
 - Write unit tests (may require minimal knowledge of Rust)
+- Port programs to Redox
 
-If you are fluent in Rust, but not operating system Development:
+If you know how to code in Rust, but don't know operating system development:
 
-- Improve the Orbital display server and window manager.
-- Port programs written in Rust to Redox (in most cases you need to port crates, be aware of missing functions on relibc, porting without these functions will make patches dirty)
-- Improve the program compatibility in relibc
-- Improve the package manager
 - Improve the [Ion](https://gitlab.redox-os.org/redox-os/ion) shell
+- Improve the Orbital display server and window manager.
+- Port Rust programs to Redox (in most cases you need to port crates, be aware of missing functions on relibc, porting without these functions will make patches dirty)
+- Improve the package manager
+- Improve the program compatibility in relibc
 
-If you are fluent in Rust, and have experience with operating system development:
+If you know how to code in Rust, and have experience with operating system development:
 
-- Familiarize yourself with the repository and code
-- Grep for `TODO`, `FIXME`, `BUG`, `UNOPTIMIZED`, `REWRITEME`, `DOCME`, and `PRETTYFYME` and fix the code you find
+- Familiarize yourself with the repository layout and code
+- Search for `TODO`, `FIXME`, `BUG`, `UNOPTIMIZED`, `REWRITEME`, `DOCME`, and `PRETTYFYME` and fix the code you find
 - Update old code to remove warnings
 - Improve and optimize code, especially in the kernel
-- Write device drivers
+- Improve or write device drivers
+- Improve Redox's automated testing suite and continuous integration testing processes
 
 For those who want to contribute to the Redox GUI, our GUI strategy has recently changed.
 
