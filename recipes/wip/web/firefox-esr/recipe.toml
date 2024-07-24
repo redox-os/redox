@@ -1,9 +1,12 @@
-#TODO probably wrong template, see https://firefox-source-docs.mozilla.org/setup/linux_build.html#build
+#TODO finish the script with cross-compilaiton variables, see https://firefox-source-docs.mozilla.org/setup/linux_build.html
 #TODO make all dependencies work
+# some libraries are bundled, maybe some need to use the redox recipes
+# dependencies - https://packages.gentoo.org/packages/www-client/firefox/dependencies
+# feature flags reference - https://wiki.gentoo.org/wiki/Firefox#USE_flags
 [source]
-tar = "https://ftp.mozilla.org/pub/firefox/releases/115.4.0esr/linux-x86_64/en-US/firefox-115.4.0esr.tar.bz2"
+tar = "https://ftp.mozilla.org/pub/firefox/releases/115.13.0esr/source/firefox-115.13.0esr.source.tar.xz"
 [build]
-template = "configure"
+template = "custom"
 dependencies = [
     "fontconfig",
     "atk",
@@ -19,6 +22,11 @@ dependencies = [
     "nss-nspr",
     "startup-notification",
     "zlib",
-    "libvpx",
     "ffmpeg6",
+    "expat",
+    "libepoxy",
+    "pipewire",
 ]
+script = """
+export MOZCONFIG="${COOKBOOK_RECIPE}/mozconfig"
+"""
