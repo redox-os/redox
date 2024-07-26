@@ -1,0 +1,12 @@
+#TODO not compiled or tested
+[source]
+git = "https://github.com/webtorrent/webtorrent-cli"
+rev = "298ae70a7baeb1bfc836abe2821baf78b50c3af1"
+[build]
+template = "custom"
+script = """
+mkdir -pv "${COOKBOOK_STAGE}"/usr/share/webtorrent-cli
+mkdir -pv "${COOKBOOK_STAGE}"/usr/bin
+cp -rv "${COOKBOOK_SOURCE}"/* "${COOKBOOK_STAGE}"/usr/share/webtorrent-cli
+echo "cd /usr/share/webtorrent-cli \n npm run" > "${COOKBOOK_STAGE}"/usr/bin/webtorrent-cli
+"""
