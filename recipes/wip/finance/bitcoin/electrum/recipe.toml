@@ -7,5 +7,6 @@ script = """
 mkdir -pv "${COOKBOOK_STAGE}"/usr/share/electrum
 mkdir -pv "${COOKBOOK_STAGE}"/usr/bin
 cp -rv "${COOKBOOK_SOURCE}"/* "${COOKBOOK_STAGE}"/usr/share/electrum
-echo "python3 /usr/share/electrum/run_electrum" > "${COOKBOOK_STAGE}"/usr/bin/electrum
+echo "#!/usr/bin/env sh \n python3 /usr/share/electrum/run_electrum" > "${COOKBOOK_STAGE}"/usr/bin/electrum
+chmod a+x "${COOKBOOK_STAGE}"/usr/bin/electrum
 """
