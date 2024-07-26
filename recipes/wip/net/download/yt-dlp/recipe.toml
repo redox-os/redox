@@ -1,0 +1,13 @@
+#TODO not compiled or tested
+# dependencies - https://github.com/yt-dlp/yt-dlp#dependencies
+[source]
+git = "https://github.com/yt-dlp/yt-dlp"
+[build]
+template = "custom"
+script = """
+mkdir -pv "${COOKBOOK_STAGE}"/usr/share/yt-dlp
+mkdir -pv "${COOKBOOK_STAGE}"/usr/bin
+cp -rv "${COOKBOOK_SOURCE}"/* "${COOKBOOK_STAGE}"/usr/share/yt-dlp
+echo "/usr/share/yt-dlp/yt-dlp.sh" > "${COOKBOOK_STAGE}"/usr/bin/yt-dlp
+chmod a+x "${COOKBOOK_STAGE}"/usr/share/yt-dlp/yt-dlp.sh
+"""

@@ -1,0 +1,11 @@
+# runtime dependencies - https://electrum.org/#download
+[source]
+tar = "https://download.electrum.org/4.5.5/Electrum-4.5.5.tar.gz"
+[build]
+template = "custom"
+script = """
+mkdir -pv "${COOKBOOK_STAGE}"/usr/share/electrum
+mkdir -pv "${COOKBOOK_STAGE}"/usr/bin
+cp -rv "${COOKBOOK_SOURCE}"/* "${COOKBOOK_STAGE}"/usr/share/electrum
+echo "python3 /usr/share/electrum/run_electrum" > "${COOKBOOK_STAGE}"/usr/bin/electrum
+"""
