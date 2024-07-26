@@ -7,5 +7,6 @@ wget https://github.com/Anuken/Mindustry/releases/download/v146/Mindustry.jar
 mkdir -pv "${COOKBOOK_STAGE}"/usr/share/mindustry
 mkdir -pv "${COOKBOOK_STAGE}"/usr/bin
 cp -rv "${COOKBOOK_SOURCE}"/Mindustry.jar "${COOKBOOK_STAGE}"/usr/share/mindustry
-echo "java -jar /usr/share/mindustry/Mindustry.jar" > "${COOKBOOK_STAGE}"/usr/bin/mindustry
+echo "#!/usr/bin/env sh \n java -jar /usr/share/mindustry/Mindustry.jar" > "${COOKBOOK_STAGE}"/usr/bin/mindustry
+chmod a+x "${COOKBOOK_STAGE}"/usr/bin/mindustry
 """
