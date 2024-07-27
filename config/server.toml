@@ -33,7 +33,7 @@ path = "/usr/lib/init.d/30_console"
 data = """
 inputd -A 2
 getty 2
-getty debug: -J
+getty /scheme/debug/no-preserve -J
 """
 
 [[files]]
