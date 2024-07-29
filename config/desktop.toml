@@ -5,7 +5,7 @@ include = ["server.toml"]
 # General settings
 [general]
 # Filesystem size in MiB
-filesystem_size = 576
+filesystem_size = 1024
 
 # Package settings
 [packages]
@@ -15,6 +15,7 @@ cosmic-icons = {}
 cosmic-files = {}
 cosmic-term = {}
 dejavu = {}
+ffmpeg6 = {}
 installer-gui = {}
 netsurf = {}
 orbdata = {}
