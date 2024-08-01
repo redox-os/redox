@@ -28,7 +28,7 @@ unset VT
 path = "/usr/lib/init.d/30_console"
 data = """
 getty --contain 2
-getty --contain debug: -J
+getty --contain /scheme/debug/no-preserve -J
 """
 
 [[files]]

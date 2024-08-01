@@ -19,5 +19,5 @@ userutils = {}
 path = "/usr/lib/init.d/30_console"
 data = """
 getty 2
-getty debug: -J
+getty /scheme/debug/no-preserve -J
 """
