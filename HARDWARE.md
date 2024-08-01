@@ -12,6 +12,7 @@ This document tracks the current hardware compatibility of Redox.
     - [ASUS](#asus)
     - [Lenovo](#lenovo)
     - [Toshiba](#toshiba)
+    - [Framework](#framework)
     - [Custom](#custom)
 - [i686](#i686)
     - [Dell](#dell-1)
@@ -247,6 +248,21 @@ Image date - 11-11-2022
 - Correct video mode not offered, this is a firmware issue
 - Boots to desktop
 - No ethernet driver
+```
+
+### Framework
+
+- **Framework 13 AMD**
+
+```
+Status - Broken
+Redox version - 0.8.x
+Variant - desktop
+Image date - 25-07-2024
+
+- Attempted booting using UEFI (live USB)
+- Screen resolution selection worked
+- After loading from USB, went to a black screen
 ```
 
 ### Custom
