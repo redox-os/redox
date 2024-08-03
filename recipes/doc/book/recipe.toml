@@ -4,7 +4,7 @@ git = "https://gitlab.redox-os.org/redox-os/book.git"
 [build]
 template = "custom"
 script = """
-dir="${COOKBOOK_STAGE}/share/book"
+dir="${COOKBOOK_STAGE}/usr/share/book"
 mkdir -pv "${dir}"
 mdbook build --dest-dir "${dir}" "${COOKBOOK_SOURCE}"
 """
