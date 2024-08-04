@@ -109,6 +109,7 @@ These TODOs improve the packagers cooperation and understanding.
 - `probably wrong script, see insert-the-link-for-build-instructions-here` - It means that you don't know if your script will work.
 - `probably wrong template, see insert-the-link-for-build-instructions-here` - It means that you don't know if the Cookbook template will work.
 - `probably missing dependencies, see insert-the-link-for-required-dependencies-here` - It means that you don't know if the required dependencies are satisfied.
+- `promote` - It means that the recipe is working and should be moved to the equivalent category at `cookbook/recipes`
 
 Other TODOs are specific and won't be covered on this list.
 
