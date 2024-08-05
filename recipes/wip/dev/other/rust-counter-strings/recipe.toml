@@ -1,4 +1,4 @@
-#TODO move to proper category
+#TODO promote
 [source]
 git = "https://github.com/thomaschaplin/rust-counter-strings"
 [build]

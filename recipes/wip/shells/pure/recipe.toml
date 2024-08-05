@@ -1,4 +1,4 @@
-#TODO move to proper category
+#TODO promote
 [source]
 git = "https://github.com/sindresorhus/pure"
 rev = "87e6f5dd4c793f6d980532205aaefe196780606f"
