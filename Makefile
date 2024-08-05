@@ -25,7 +25,7 @@ image:
 rebuild:
 	-$(FUMOUNT) $(BUILD)/filesystem/ || true
 	-$(FUMOUNT) /tmp/redox_installer/ || true
-	rm -rf $(BUILD)
+	rm -rf $(BUILD)/repo.tag $(BUILD)/harddrive.img $(BUILD)/livedisk.iso
 	$(MAKE) all
 
 clean: $(CONTAINER_TAG)
