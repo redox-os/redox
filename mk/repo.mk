@@ -20,8 +20,9 @@ else
 	cd cookbook && \
 	./repo.sh $(REPO_NONSTOP) "$${PACKAGES}"
 	mkdir -p $(BUILD)
-	# make sure fetch.tag is newer than the things repo modifies
-	touch $<
+	# make sure fstools.tag and fetch.tag are newer than the things repo modifies
+	touch $(FSTOOLS_TAG)
+	touch $(BUILD)/fetch.tag
 	touch $@
 endif
 
