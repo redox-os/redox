@@ -1,0 +1,22 @@
+#TODO incomplete script
+# build instructions - https://github.com/upscayl/upscayl-ncnn/blob/master/README.md
+[source]
+git = "https://github.com/upscayl/upscayl-ncnn"
+rev = "22774bc42e2bc3c785b5b585d213d960b1348ad5"
+[build]
+template = "custom"
+script = """
+COOKBOOK_CONFIGURE="cmake"
+COOKBOOK_CONFIGURE_FLAGS=(
+    -DCMAKE_BUILD_TYPE=Release
+    -DCMAKE_CROSSCOMPILING=True
+    -DCMAKE_EXE_LINKER_FLAGS="-static"
+    -DCMAKE_INSTALL_PREFIX="/"
+    -DCMAKE_PREFIX_PATH="${COOKBOOK_SYSROOT}"
+    -DCMAKE_SYSTEM_NAME=Generic
+    -DCMAKE_SYSTEM_PROCESSOR="$(echo "${TARGET}" | cut -d - -f1)"
+    -DCMAKE_VERBOSE_MAKEFILE=On
+"${COOKBOOK_SOURCE}"
+)
+cookbook_configure
+"""
