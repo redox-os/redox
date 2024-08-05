@@ -1,0 +1,9 @@
+#TODO not compiled or tested
+[source]
+tar = "https://ftp.gnu.org/gnu/libidn/libidn2-2.3.7.tar.gz"
+[build]
+template = "configure"
+dependencies = [
+    "libunistring",
+    "libiconv",
+]
