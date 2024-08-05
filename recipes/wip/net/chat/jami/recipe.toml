@@ -1,0 +1,39 @@
+#TODO missing cross-compilation variables
+# build instructions - https://git.jami.net/savoirfairelinux/jami-client-qt/-/blob/master/INSTALL.md
+# dependencies - https://docs.jami.net/en_US/build/dependencies.html
+[source]
+git = "https://git.jami.net/savoirfairelinux/jami-client-qt"
+rev = "91475c3a3f316b1b674a8fbe453f9d0dd7ef444e"
+[build]
+template = "custom"
+dependencies = [
+    "ffmpeg6",
+    "boost",
+    "expat",
+    "gnutls3",
+    "libopus",
+    "pcre",
+    "pulseaudio",
+    "openssl1",
+    "speex",
+    "speexdsp",
+    "libuuid",
+    "libfmt",
+    "libarchive",
+    "libgit2",
+    "libnettle",
+    "zlib",
+    "libnotify",
+    "libqrencode",
+    "qt6-base",
+    "qt6-declarative",
+    "qt6-graphicaleffects",
+    "qt6-multimedia",
+    "qt6-networkauth",
+    "qt6-svg",
+    "qt6-tools",
+    "qt6-webengine",
+]
+script = """
+./build.py --install
+"""

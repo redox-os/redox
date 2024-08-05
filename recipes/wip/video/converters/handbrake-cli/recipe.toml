@@ -1,0 +1,35 @@
+#TODO not compiled or tested
+# build instructions - https://handbrake.fr/docs/en/1.7.0/developer/build-linux.html
+# dependencies - https://handbrake.fr/docs/en/1.7.0/developer/install-dependencies-ubuntu.html
+[source]
+tar = "https://handbrake.fr/rotation.php?file=HandBrake-1.8.1-source.tar.bz2"
+[build]
+template = "custom"
+dependencies = [
+    "libflac",
+    "fontconfig",
+    "freetype2",
+    "fribidi",
+    "harfbuzz",
+    "jansson",
+    "lame",
+    "libass",
+    "libiconv",
+    "libjpeg-turbo",
+    "libogg",
+    "libsamplerate",
+    "libtheora",
+    "libvorbis",
+    "libvpx",
+    "x264",
+    "libxml2",
+    "xz",
+    "libopus",
+    "speex",
+]
+script = """
+COOKBOOK_CONFIGURE_FLAGS+=(
+    --disable-gtk
+)
+cookbook_configure
+"""
