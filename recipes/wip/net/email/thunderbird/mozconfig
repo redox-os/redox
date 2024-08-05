@@ -1,6 +1,8 @@
 ac_add_options --enable-project=comm/mail
 ac_add_options --prefix="{COOKBOOK_STAGE}/usr"
 ac_add_options --enable-release
+ac_add_options --target="{TARGET}"
+ac_add_options --enable-bootstrap
 ac_add_options --disable-jack
 ac_add_options --disable-crashreporter
 ac_add_options --disable-updater
