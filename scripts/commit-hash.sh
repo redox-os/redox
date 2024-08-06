@@ -1,6 +1,6 @@
-# This script show the current Git branch and commit of the recipe source
-
 #!/usr/bin/env bash
+
+# This script show the current Git branch and commit of the recipe source
 
 if [ $# -ne 1 ]
 then
