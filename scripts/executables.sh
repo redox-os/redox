@@ -4,7 +4,7 @@
 
 usage() {
     echo "List executable names to find duplicates"
-    echo "Usage: $0 [-h] [-a] [-A | -6] [recipes]"
+    echo "Usage: $0 [-h] [-a] [-arm64 | -i686] [recipes]"
     echo "Default architecture is x86_64, -arm64 is aarch64, -i686 is i686"
     echo "Only duplicates are listed unless -a is specified"
     echo "-h is this message"
