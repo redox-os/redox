@@ -1,10 +1,8 @@
 #!/usr/bin/env bash
 
-# This script print the location of recipes
-
-cd cookbook
+FIND_RECIPE="find cookbook/recipes -maxdepth 4 -name"
 
 for recipe in $*
 do
-    target/release/find_recipe "$recipe"
+    ${FIND_RECIPE} "${recipe}"
 done
