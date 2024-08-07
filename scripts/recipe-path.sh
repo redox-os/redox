@@ -2,9 +2,9 @@
 
 # This script print the location of recipes
 
-FIND_RECIPE="find cookbook/recipes -maxdepth 4 -name"
+cd cookbook
 
 for recipe in $*
 do
-    ${FIND_RECIPE} "${recipe}"
+    target/release/find_recipe "$recipe"
 done
