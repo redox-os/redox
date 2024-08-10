@@ -1,6 +1,6 @@
 [source]
 git = "https://github.com/pop-os/cosmic-icons.git"
-
+rev = "f93dcdfa1060c2cf3f8cf0b56b0338292edcafa5"
 [build]
 template = "custom"
 script = """

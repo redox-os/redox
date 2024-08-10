@@ -1,7 +1,7 @@
 [source]
 git = "https://github.com/pop-os/cosmic-term.git"
 branch = "master"
-
+rev = "be808b56cf24d03fc99cf44b0885078a81a16523"
 [build]
 template = "custom"
 script = """
