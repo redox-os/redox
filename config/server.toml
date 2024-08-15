@@ -26,7 +26,6 @@ pkgutils = {}
 redoxfs = {}
 relibc = {}
 resist = {}
-simple-http-server = {}
 userutils = {}
 
 [[files]]
