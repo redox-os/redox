@@ -1,6 +1,6 @@
-# This script create and copy the Redox bootable image to an Ventoy-formatted device
-
 #!/usr/bin/env bash
+
+# This script create and copy the Redox bootable image to an Ventoy-formatted device
 
 set -e
 

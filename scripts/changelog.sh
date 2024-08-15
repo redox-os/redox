@@ -1,6 +1,6 @@
-# This script show the changelog of all Redox components
-
 #!/usr/bin/env bash
+
+# This script show the changelog of all Redox components
 
 set -e
 
