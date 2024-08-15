@@ -145,6 +145,10 @@ Please follow our [Git style](https://doc.redox-os.org/book/ch12-04-creating-pro
 
 ## GitLab
 
+### Identity
+
+Once your GitLab account is created, you should add your Matrix or Discord username (the name after the `@` symbol) on the "About" section of your profile, that way we recognize you properly.
+
 ### Issues
 
 To know how to create issues on the Redox GitLab, read [this](https://doc.redox-os.org/book/ch12-05-filing-issues.html) page.
