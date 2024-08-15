@@ -149,6 +149,10 @@ Please follow our [Git style](https://doc.redox-os.org/book/ch12-04-creating-pro
 
 To know how to create issues on the Redox GitLab, read [this](https://doc.redox-os.org/book/ch12-05-filing-issues.html) page.
 
+Once you create an issue don't forget to post the link on the Dev or Support rooms of the chat, because the GitLab email notifications have distractions (service messages or spam) and most developers don't left their GitLab pages open to receive desktop notifications from the web browser (which require a custom setting to receive issue notifications).
+
+By doing this you help us to pay attention to your issues and avoid them to be accidentally forgotten.
+
 ### Pull Requests
 
 Please follow [our process](https://doc.redox-os.org/book/ch12-04-creating-proper-pull-requests.html) for creating proper pull requests.
