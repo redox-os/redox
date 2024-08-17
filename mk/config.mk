@@ -26,7 +26,7 @@ FILESYSTEM_CONFIG?=config/$(ARCH)/$(BOARD)/$(CONFIG_NAME).toml
 endif
 HOST_CARGO=env -u RUSTUP_TOOLCHAIN -u CC -u TARGET cargo
 ## Filesystem size in MB (default comes from filesystem_size in the FILESYSTEM_CONFIG)
-FILESYSTEM_SIZE?=$(shell $(HOST_CARGO) run --release --manifest-path installer/Cargo.toml -- --filesystem-size -c $(FILESYSTEM_CONFIG))
+## FILESYSTEM_SIZE?=$(shell $(HOST_CARGO) run --release --manifest-path installer/Cargo.toml -- --filesystem-size -c $(FILESYSTEM_CONFIG))
 ## Flags to pass to redoxfs-mkfs. Add --encrypt to set up disk encryption
 REDOXFS_MKFS_FLAGS?=
 ## Set to 1 to enable Podman build, any other value will disable it
@@ -80,14 +80,17 @@ export RUST_COMPILER_RT_ROOT=$(ROOT)/rust/src/llvm-project/compiler-rt
 export TARGET=$(ARCH)-unknown-redox
 BUILD=build/$(ARCH)/$(CONFIG_NAME)
 INSTALLER=installer/target/release/redox_installer
+INSTALLER_OPTS=
+LIST_PACKAGES=installer/target/release/list_packages
+LIST_PACKAGES_OPTS=
 ifeq ($(REPO_BINARY),0)
-INSTALLER+=--cookbook=cookbook
-REPO_TAG=$(BUILD)/repo.tag
+INSTALLER_OPTS+=--cookbook=cookbook
 else
-INSTALLER+=--cookbook=cookbook --repo-binary
-REPO_TAG=$(BUILD)/repo.tag
+INSTALLER_OPTS+=--cookbook=cookbook --repo-binary
+LIST_PACKAGES_OPTS+=--repo-binary
 endif
 
+REPO_TAG=$(BUILD)/repo.tag
 FSTOOLS_TAG=build/fstools.tag
 export BOARD
 

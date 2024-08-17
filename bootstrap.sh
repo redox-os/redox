@@ -986,6 +986,10 @@ boot()
 	echo "Well it looks like you are ready to go!"
 	echo "---------------------------------------"
 	statusCheck
+	echo
+	echo "** Be sure to update your path to include Rust - run the following command: **"
+	echo 'source $HOME/.cargo/env'
+	echo
 	echo "Run the following commands to build Redox:"
 	echo "cd redox"
 	MAKE="make"
