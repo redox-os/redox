@@ -501,6 +501,67 @@ cargoInstall() {
 	fi
 }
 
+
+####################################################################################
+# This function takes care of everything associated to rust, and the version manager
+# That controls it, it can install rustup and uninstall multirust as well as making
+# sure that the correct version of rustc is selected by rustup
+# @params:	$1 install non-interactively, boolean
+####################################################################################
+rustInstall() {
+	noninteractive=$1
+	# Check to see if multirust is installed, we don't want it messing with rustup
+	# In the future we can probably remove this but I believe it's good to have for now
+	if [ -e /usr/local/lib/rustlib/uninstall.sh ] ; then
+		echo "It appears that multirust is installed on your system."
+		echo "This tool has been deprecated by the maintainer, and will cause issues."
+		echo "This script can remove multirust from your system if you wish."
+		printf "Uninstall multirust (y/N):"
+		read multirust
+		if echo "$multirust" | grep -iq "^y" ;then
+			sudo /usr/local/lib/rustlib/uninstall.sh
+		else
+			echo "Please manually uninstall multirust and any other versions of rust, then re-run bootstrap."
+			exit 1
+		fi
+	fi
+	# If rustup is not installed we should offer to install it for them
+	if [ -z "$(which rustup)" ]; then
+        rustup_options="--default-toolchain stable"
+		echo "You do not have rustup installed."
+		if [ "$noninteractive" = true ]; then
+		   rustup="y"
+		   rustup_options+=" -y"
+		else
+			echo "We HIGHLY recommend using rustup."
+			echo "Would you like to install it now?"
+			echo "*WARNING* this involves a 'curl | sh' style command"
+			printf "(y/N): "
+			read rustup
+		fi
+		if echo "$rustup" | grep -iq "^y" ;then
+			#install rustup
+			curl https://sh.rustup.rs -sSf | sh -s -- $rustup_options
+			# You have to add the rustup variables to the $PATH
+			echo "export PATH=\"\$HOME/.cargo/bin:\$PATH\"" >> ~/.bashrc
+			# source the variables so that we can execute rustup commands in the current shell
+			source ~/.cargo/env
+		else
+			echo "Rustup will not be installed!"
+		fi
+	fi
+	#
+	if [ -z "$(which rustc)" ]; then
+		echo "Rust is not installed"
+		echo "Please either run the script again, accepting rustup install"
+		echo "or install rustc stable manually (not recommended) via:"
+		echo "\#curl -sSf https://static.rust-lang.org/rustup.sh | sh -s -- --channel=stable"
+		exit 1
+	else
+		echo "Your Rust install looks good!"
+	fi
+}
+
 ####################################################################
 # This function gets the current build status from travis and prints
 # a message to the user
@@ -551,6 +612,10 @@ boot()
 	echo "---------------------------------------"
 	statusCheck
 	echo "The file redox/.config was created with PODMAN_BUILD=1."
+	echo
+	echo "** Be sure to update your path to include Rust - run the following command: **"
+	echo 'source $HOME/.cargo/env'
+	echo
 	echo "Run the following commands to build redox using Podman:"
 	echo
 	echo "cd redox"
@@ -597,6 +662,8 @@ do
 done
 
 banner
+
+rustInstall "$noninteractive"
 
 if [ "$update" == "true" ]; then
 	git pull upstream master
