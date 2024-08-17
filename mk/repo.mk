@@ -4,19 +4,19 @@ $(BUILD)/fetch.tag: prefix $(FSTOOLS_TAG) $(FILESYSTEM_CONFIG) $(CONTAINER_TAG)
 ifeq ($(PODMAN_BUILD),1)
 	$(PODMAN_RUN) $(MAKE) $@
 else
-	PACKAGES="$$($(INSTALLER) --list-packages -c $(FILESYSTEM_CONFIG))" && \
+	PACKAGES="$$($(LIST_PACKAGES) $(LIST_PACKAGES_OPTS) -c $(FILESYSTEM_CONFIG))" && \
 	cd cookbook && \
 	./fetch.sh "$${PACKAGES}"
 	mkdir -p $(BUILD)
 	touch $@
 endif
 
-$(BUILD)/repo.tag: $(BUILD)/fetch.tag $(FSTOOLS_TAG) $(CONTAINER_TAG)
+$(REPO_TAG): $(BUILD)/fetch.tag $(FSTOOLS_TAG) $(CONTAINER_TAG)
 ifeq ($(PODMAN_BUILD),1)
 	$(PODMAN_RUN) $(MAKE) $@
 else
 	export PATH="$(PREFIX_PATH):$$PATH" && \
-	PACKAGES="$$($(INSTALLER) --list-packages -c $(FILESYSTEM_CONFIG))" && \
+	PACKAGES="$$($(LIST_PACKAGES) $(LIST_PACKAGES_OPTS) -c $(FILESYSTEM_CONFIG))" && \
 	cd cookbook && \
 	./repo.sh $(REPO_NONSTOP) "$${PACKAGES}"
 	mkdir -p $(BUILD)
