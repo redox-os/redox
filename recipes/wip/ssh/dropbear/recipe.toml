@@ -1,0 +1,5 @@
+#TODO missing gnu make script, see https://github.com/mkj/dropbear/blob/master/INSTALL.md
+[source]
+tar = "https://matt.ucc.asn.au/dropbear/releases/dropbear-2024.85.tar.bz2"
+[build]
+template = "custom"
