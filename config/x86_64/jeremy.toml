@@ -10,7 +10,7 @@ filesystem_size = 8192
 # Package settings
 [packages]
 # apps
-boxedwine = {}
+#boxedwine = {} # not building
 cosmic-term = {}
 cosmic-text = {}
 periodictable = {}
@@ -39,12 +39,12 @@ cairodemo = {}
 cpal = {}
 gears = {}
 glutin = {}
-hematite = {}
+#hematite = {} # not building
 iced = {}
 libcosmic = {}
 orbclient = {}
 osdemo = {} # does not show anything
-pathfinder = {}
+#pathfinder = {} # not building
 procedural-wallpapers-rs = {}
 rodioplay = {}
 rust-cairo = {}
@@ -65,7 +65,7 @@ nasm = {}
 patch = {}
 pkg-config = {}
 rust = {}
-rustpython = {}
+#rustpython = {} # not building
 
 # games
 devilutionx = {}
