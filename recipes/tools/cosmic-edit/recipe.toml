@@ -1,7 +1,7 @@
 [source]
 git = "https://github.com/pop-os/cosmic-edit.git"
 branch = "master"
-rev = "df5d10936c5a1cc16e231b92221eae7c73ed9da4"
+
 [build]
 template = "custom"
 script = """
