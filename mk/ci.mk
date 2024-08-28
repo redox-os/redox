@@ -14,7 +14,7 @@ ci-img: FORCE
 	cd $(IMG_DIR) && sha256sum -b * > SHA256SUM
 
 # The name of the target must match the name of the filesystem config file
-desktop server demo: FORCE
+server desktop demo: FORCE
 	rm -f "build/$(ARCH)/$@/harddrive.img" "build/$(ARCH)/$@/livedisk.iso"
 	$(MAKE) CONFIG_NAME=$@ build/$(ARCH)/$@/harddrive.img build/$(ARCH)/$@/livedisk.iso
 	cp "build/$(ARCH)/$@/harddrive.img" "$(IMG_DIR)/redox_$(@)$(IMG_SEPARATOR)$(IMG_TAG)_harddrive.img"
