@@ -35,7 +35,7 @@ img:
         cargo binstall --no-confirm --version 1.16.0 just &&
         cargo binstall --no-confirm --version 0.26.0 cbindgen &&
         cargo build --manifest-path installer/Cargo.toml --release &&
-        make ci-img IMG_TAG=$CI_COMMIT_REF_NAME REPO_BINARY=1
+        make ci-img IMG_TAG=$CI_COMMIT_REF_NAME
     artifacts:
         paths:
          - build/img/
