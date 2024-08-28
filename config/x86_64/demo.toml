@@ -21,7 +21,6 @@ git = {}
 gnu-grep = {}
 ripgrep = {}
 sodium = {}
-vim = {}
 
 # Games
 dosbox = {}
