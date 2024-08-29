@@ -14,7 +14,6 @@ This repository is the **Build System** for Redox OS. Redox is under active deve
 
 Redox _is not_ just a kernel, it's a **full-featured operating system**, providing components (file system, display manager, core utilities, etc.) that together make up a functional and convenient operating system. Redox uses the COSMIC desktop apps, and provides source code compatibility with many Rust, Linux and BSD programs.
 
-[![Downloads](https://img.shields.io/github/downloads/redox-os/redox/total.svg)](https://gitlab.redox-os.org/redox-os/redox/tags)
 [![MIT licensed](https://img.shields.io/badge/license-MIT-blue.svg)](./LICENSE)
 
 ## More Links
