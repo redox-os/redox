@@ -2,7 +2,11 @@
 /prefix/
 .config
 **/my_*
+# Local settings folder for Jetbrains products (RustRover, IntelliJ, CLion)
 */.idea
+# Local settings folder for Visual Studio Professional
 */.vs
+# Local settings folder for vscode
 */.vscode
+# Local settings folder for the devcontainer extension that most IDEs support.
 */.devcontainer
