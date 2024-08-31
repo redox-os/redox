@@ -1,0 +1,10 @@
+#TODO very basic makefiles are tested to work but needs more testing
+[source]
+tar = "http://ftp.gnu.org/gnu/make/make-4.4.tar.gz"
+patches = [
+    "redox.patch"
+]
+
+[build]
+template = "configure"
+
