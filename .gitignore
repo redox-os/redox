@@ -2,3 +2,7 @@
 /prefix/
 .config
 **/my_*
+*/.idea
+*/.vs
+*/.vscode
+*/.devcontainer
