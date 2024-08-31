@@ -22,11 +22,9 @@ Join us on [Matrix Chat](https://doc.redox-os.org/book/ch13-01-chat.html) to dis
 
 ## Important Places to Contribute
 
-(Before starting to contribute you **must** read the [Website FAQ](https://www.redox-os.org/faq/) and the [Redox Book](https://doc.redox-os.org/book/))
+Before starting to contribute, we recommend reading the [Website FAQ](https://www.redox-os.org/faq/) and the [Redox Book](https://doc.redox-os.org/book/).
 
-You can contribute to the Redox documentation and code on the following repositories:
-
-(The order is based on difficulty, easy things first)
+You can contribute to the Redox documentation and code on the following repositories (non-exhaustive, easiest first):
 
 - [Website](https://gitlab.redox-os.org/redox-os/website)
 - [Book](https://gitlab.redox-os.org/redox-os/book) - High-level documentation
@@ -50,30 +48,34 @@ To see all Redox repositories open [this](https://gitlab.redox-os.org/redox-os) 
 If you don't know programming:
 
 - Write documentation
-- Use and test Redox, fill issues for bugs or needed features (please verify the repository issues before)
+- Use and test Redox, and file issues for bugs or needed features (please check for duplicates first etc.)
 
-If you don't know how to code in Rust, but know in other programming languages:
+If you don't know how to code in Rust, but know other programming languages:
 
 - Web development on the website (we don't accept JavaScript code)
 - Write unit tests (may require minimal knowledge of Rust)
+- Port C/C++ programs to Redox (read the `TODO`s of the recipes on [this](https://gitlab.redox-os.org/redox-os/cookbook/-/tree/master/recipes/wip?ref_type=heads) category)
 - Port programs to Redox
 
 If you know how to code in Rust, but don't know operating system development:
 
-- Improve the [Ion](https://gitlab.redox-os.org/redox-os/ion) shell
-- Improve the Orbital display server and window manager.
-- Port Rust programs to Redox (in most cases you need to port crates, be aware of missing functions on relibc, porting without these functions will make patches dirty)
-- Improve the package manager
-- Improve the program compatibility in relibc
+- Look for issues labeled "good first issue", "easy", and/or "help wanted", e.g. [this GitLab filter](https://gitlab.redox-os.org/groups/redox-os/-/issues/?sort=updated_desc&state=opened&or%5Blabel_name%5D%5B%5D=good%20first%20issue&or%5Blabel_name%5D%5B%5D=Easy&or%5Blabel_name%5D%5B%5D=easy&or%5Blabel_name%5D%5B%5D=help%20wanted&first_page_size=20]). Worth noting the skill level varies between projects, but a large subset of these should be approachable by contributors familiar with regular Rust/Unix application programming.
+- Improve the package manager, or other meta-tools like `redoxer` or `installer`
+- Improve the [Ion](https://gitlab.redox-os.org/redox-os/ion) shell, or other high-level or mid-level projects
+- Port Rust programs to Redox, possibly including dependencies, and C library extensions if necessary (also look for issues with the `port` label)
+- Improve program compatibility in relibc by e.g. implementing missing APIs
 
-If you know how to code in Rust, and have experience with operating system development:
+If you know how to code in Rust, and have experience with systems software/OS development:
 
-- Familiarize yourself with the repository layout and code
-- Search for `TODO`, `FIXME`, `BUG`, `UNOPTIMIZED`, `REWRITEME`, `DOCME`, and `PRETTYFYME` and fix the code you find
+- Familiarize yourself with the repository layout, code, and build system
 - Update old code to remove warnings
-- Improve and optimize code, especially in the kernel
-- Improve or write device drivers
+- Search for `TODO`, `FIXME`, `BUG`, `UNOPTIMIZED`, `REWRITEME`, `DOCME`, and `PRETTYFYME` and fix the code you find
+- Look in general for issues with the following labels: `critical`, `help wanted`, `feature`, `enhancement`, `bug` or `port`
+- Improve internal libraries and abstractions, e.g. `libredox`, `redox-scheme`, `redox-event` etc.
+- Help upstream Redox-specific functionality to the Rust ecosystem
 - Improve Redox's automated testing suite and continuous integration testing processes
+- Improve, profile, and optimize code, especially in the kernel, filesystem, and network stack
+- Improve or write device drivers
 
 For those who want to contribute to the Redox GUI, our GUI strategy has recently changed.
 
@@ -84,6 +86,10 @@ For those who want to contribute to the Redox GUI, our GUI strategy has recently
 ## Tracking Issues Index
 
 We use an index to track the development priorities, you can find them on [this](https://gitlab.redox-os.org/redox-os/redox/-/issues/1384) page.
+
+## RFCs
+
+For more significant changes that affect Redox's architecture, we use the [Request for Comments](https://gitlab.redox-os.org/redox-os/rfcs) repository.
 
 ## Build System
 
