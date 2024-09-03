@@ -13,7 +13,6 @@ cargo rustc \
 	--release \
 	-Z build-std=core,alloc \
 	-- \
-	-C soft-float \
 	-C link-arg=-T -Clink-arg="${COOKBOOK_SOURCE}/linkers/${ARCH}.ld" \
 	-C link-arg=-z -Clink-arg=max-page-size=0x1000 \
 	--emit link="${PWD}/kernel.all"
