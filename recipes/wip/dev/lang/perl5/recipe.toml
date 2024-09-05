@@ -6,6 +6,9 @@
 tar = "https://www.cpan.org/src/5.0/perl-5.40.0.tar.gz"
 [build]
 template = "custom"
+dependencies = [
+    "relibc"
+]
 script = """
 rsync -av --delete "${COOKBOOK_SOURCE}/" ./ #move it to the top of the script after debugging - BP
 curl -L -O --time-cond perl-cross-1.6.tar.gz https://github.com/arsv/perl-cross/releases/download/1.6/perl-cross-1.6.tar.gz
@@ -13,28 +16,16 @@ tar --strip-components=1 -xvf perl-cross-1.6.tar.gz
 wget -O ./cnf/config.sub "https://gitlab.redox-os.org/redox-os/gnu-config/-/raw/master/config.sub?inline=false"
 #Note: since perl-cross can run only inside the source-tree (out-of-tree is bugged) it's easier to do everything in the build directory
 COOKBOOK_CONFIGURE=${COOKBOOK_BUILD}/configure
-#Note: non-standard configure, familiar flags can have different meaning!
-COOKBOOK_CONFIGURE_FLAGS=(
---host-cc=gcc
---host-cpp=g++
---target=x86_64-unknown-redox
---prefix=
---sysroot=${COOKBOOK_SYSROOT}
-    --disable-mod=Sys-Syslog,Time-HiRes
-    #--with-libs='m'
-)
 cp ${COOKBOOK_RECIPE}/configure_tool.sh ${COOKBOOK_BUILD}/cnf/configure_tool.sh
 cp ${COOKBOOK_RECIPE}/redox ${COOKBOOK_BUILD}/cnf/hints/redox
 mkdir ${COOKBOOK_SYSROOT}/usr
-cp -r /mnt/c/commd/redox/redox/prefix/x86_64-unknown-redox/relibc-install/x86_64-unknown-redox/include ${COOKBOOK_SYSROOT}/usr
+ln -s "${COOKBOOK_SYSROOT}/include" "${COOKBOOK_SYSROOT}/usr/include"
+#Note: non-standard configure, familiar flags can have different meaning!
 ./configure --host-cc=gcc --host-cpp=g++ --target=x86_64-unknown-redox --sysroot=${COOKBOOK_SYSROOT} --disable-mod=Sys-Syslog
 sed -i "s/^#define Netdb_name_t.*/#define Netdb_name_t const char*/" config.h
-#OSNAME sed -i 's/^#define OSNAME.*/#define OSNAME "redox"/' config.h
 sed -i "s/^# HAS_NANOSLEEP.*/#define HAS_NANOSLEEP/" config.h
 sed -i "s|^/.#define I_GRP.*|#define I_GRP|" config.h
 echo "#define HAS_GROUP" >> config.h
-#sed -i 's/#define Strerror(e).*$/#define Strerror(e) strerror(e)/' config.h
-#echo "#define HAS_VPRINTF" >> config.h
 make -j4
 make install DESTDIR="${COOKBOOK_STAGE}"
 pushd .
