@@ -8,6 +8,6 @@ script = """
 mkdir -pv "${COOKBOOK_STAGE}"/usr/share/webtorrent-cli
 mkdir -pv "${COOKBOOK_STAGE}"/usr/bin
 cp -rv "${COOKBOOK_SOURCE}"/* "${COOKBOOK_STAGE}"/usr/share/webtorrent-cli
-echo "#!/usr/bin/env sh \n cd /usr/share/webtorrent-cli \n npm run" > "${COOKBOOK_STAGE}"/usr/bin/webtorrent-cli
+echo "#!/usr/bin/env sh \n cd /usr/share/webtorrent-cli \n npx webtorrent-cli" > "${COOKBOOK_STAGE}"/usr/bin/webtorrent-cli
 chmod a+x "${COOKBOOK_STAGE}"/usr/bin/webtorrent-cli
 """
