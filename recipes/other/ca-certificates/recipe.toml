@@ -4,11 +4,6 @@ git = "https://gitlab.redox-os.org/redox-os/ca-certificates.git"
 [build]
 template = "custom"
 script = """
-curl \
-    -o certdata.txt \
-    --time-cond certdata.txt \
-    https://hg.mozilla.org/releases/mozilla-release/raw-file/default/security/nss/lib/ckfw/builtins/certdata.txt
-"${COOKBOOK_SOURCE}/make-ca.sh" -D "${COOKBOOK_BUILD}"
 mkdir -pv "${COOKBOOK_STAGE}/ssl"
-cp -rv "${COOKBOOK_BUILD}/etc/ssl/certs" "${COOKBOOK_STAGE}/ssl/certs"
+cp -rv "${COOKBOOK_SOURCE}/certs" "${COOKBOOK_STAGE}/ssl/certs"
 """
