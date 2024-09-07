@@ -1,3 +1,4 @@
+#TODO: remove --without-mixer when it no longer crashes on x86_64
 VERSION=2.5.0
 TAR=https://downloads.sourceforge.net/project/prboom/prboom%20stable/$VERSION/prboom-$VERSION.tar.gz
 BUILD_DEPENDS=(sdl1 liborbital sdl1-mixer libogg libvorbis)
@@ -21,6 +22,7 @@ function recipe_build {
         --disable-i386-asm \
         --disable-gl \
         --disable-sdltest \
+        --without-mixer \
         --without-net \
         --with-sdl-prefix="$sysroot" \
         ac_cv_lib_SDL_mixer_Mix_OpenAudio=yes
