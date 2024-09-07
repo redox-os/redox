@@ -6,7 +6,7 @@
 
 
 [source]
-git = "git@github.com:risinglightdb/sqllogictest-rs.git"
+git = "https://github.com/risinglightdb/sqllogictest-rs.git"
 rev = "985748550bb8657260dac9da0fe3ebffd3cf4f28" # 0.21.0
 [build]
 template = "custom"
