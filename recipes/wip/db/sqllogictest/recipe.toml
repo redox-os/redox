@@ -1,0 +1,25 @@
+#TODO Works, but not reliably
+#TODO Raises the following warnings.
+#setsockopt(16, 6, 1, 0x7fffffff4adc, 4) - unknown option
+#setsockopt(16, 1, 9, 0x7fffffff4ad0, 4) - unknown option
+#setsockopt(16, 6, 1, 0x7fffffff4ad4, 4) - unknown option
+
+
+[source]
+git = "git@github.com:risinglightdb/sqllogictest-rs.git"
+rev = "985748550bb8657260dac9da0fe3ebffd3cf4f28" # 0.21.0
+[build]
+template = "custom"
+# Necessary deviation from
+script = """
+package=sqllogictest-bin
+recipe="$(basename "${COOKBOOK_RECIPE}")"
+"${COOKBOOK_CARGO}" build \
+    --manifest-path "${COOKBOOK_SOURCE}/Cargo.toml" \
+    --package "${package}" \
+    --release
+mkdir -pv "${COOKBOOK_STAGE}/usr/bin"
+cp -v \
+    "target/${TARGET}/release/${recipe}" \
+    "${COOKBOOK_STAGE}/usr/bin/${recipe}"
+"""
