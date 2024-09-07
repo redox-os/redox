@@ -12,6 +12,7 @@ This document tracks the current hardware compatibility of Redox.
     - [ASUS](#asus)
     - [Lenovo](#lenovo)
     - [Toshiba](#toshiba)
+    - [Framework](#framework)
     - [Custom](#custom)
 - [i686](#i686)
     - [Dell](#dell-1)
@@ -247,6 +248,20 @@ Image date - 11-11-2022
 - Correct video mode not offered, this is a firmware issue
 - Boots to desktop
 - No ethernet driver
+```
+
+### Framework
+
+- **Framework Laptop 16 (AMD Ryzen 7040 Series)**
+
+```
+Status - Broken
+Redox version - 0.9.0
+Variant - demo, server
+Image date - 07-09-2024
+
+- Bootloader loaded using UEFI
+- Black screen and unresponsive after the bootloader and resolution selection
 ```
 
 ### Custom
