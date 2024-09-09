@@ -1,6 +1,6 @@
-# Alternative script for the build system Makefiles
-
 #!/usr/bin/env bash
+
+# Alternative script for the build system Makefiles
 
 ###########################################################################
 #                                                                         #
