@@ -16,7 +16,7 @@ $(error nasm not found, install from your package manager)
 endif
 
 ifeq ($(shell which just),)
-$(error just not found, install from crates.io or from your package manager)
+$(error 'just' not found, install from crates.io or from your package manager)
 endif
 
 CARGO_CONFIG_VERSION=0.1.1
