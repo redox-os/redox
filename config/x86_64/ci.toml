@@ -200,6 +200,7 @@ syobonaction = {}
 terminfo = {}
 #termplay = {} # backtrace cannot find link.h
 timidity = {}
+tokei = {}
 ttf-hack = {}
 userutils = {}
 uutils = {}
