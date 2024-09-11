@@ -12,6 +12,11 @@ pub enum SourceRecipe {
         /// Relative path to the package for which to reuse the source dir
         same_as: String,
     },
+    /// Path source
+    Path {
+        /// The path to the source
+        path: String,
+    },
     /// A git repository source
     Git {
         /// The URL for the git repository, such as https://gitlab.redox-os.org/redox-os/ion.git
@@ -58,9 +63,7 @@ pub enum BuildKind {
     Configure,
     /// Will build and install using custom commands
     #[serde(rename = "custom")]
-    Custom {
-        script: String,
-    },
+    Custom { script: String },
 }
 
 #[derive(Debug, Deserialize, PartialEq, Serialize)]
@@ -89,14 +92,14 @@ pub struct Recipe {
     pub package: PackageRecipe,
 }
 
-
 #[cfg(test)]
 mod tests {
     #[test]
     fn git_cargo_recipe() {
-        use crate::recipe::{Recipe, SourceRecipe, BuildKind, BuildRecipe, PackageRecipe};
+        use crate::recipe::{BuildKind, BuildRecipe, PackageRecipe, Recipe, SourceRecipe};
 
-        let recipe: Recipe = toml::from_str(r#"
+        let recipe: Recipe = toml::from_str(
+            r#"
             [source]
             git = "https://gitlab.redox-os.org/redox-os/acid.git"
             branch = "master"
@@ -104,30 +107,39 @@ mod tests {
 
             [build]
             template = "cargo"
-        "#).unwrap();
+        "#,
+        )
+        .unwrap();
 
-        assert_eq!(recipe, Recipe {
-            source: Some(SourceRecipe::Git {
-                git: "https://gitlab.redox-os.org/redox-os/acid.git".to_string(),
-                upstream: None,
-                branch: Some("master".to_string()),
-                rev: Some("06344744d3d55a5ac9a62a6059cb363d40699bbc".to_string()),
-            }),
-            build: BuildRecipe {
-                kind: BuildKind::Cargo,
-                dependencies: Vec::new(),
-            },
-            package: PackageRecipe {
-                dependencies: Vec::new(),
-            },
-        });
+        assert_eq!(
+            recipe,
+            Recipe {
+                source: Some(SourceRecipe::Git {
+                    git: "https://gitlab.redox-os.org/redox-os/acid.git".to_string(),
+                    upstream: None,
+                    branch: Some("master".to_string()),
+                    rev: Some("06344744d3d55a5ac9a62a6059cb363d40699bbc".to_string()),
+                }),
+                build: BuildRecipe {
+                    kind: BuildKind::Cargo {
+                        package_path: None,
+                        cargoflags: String::new(),
+                    },
+                    dependencies: Vec::new(),
+                },
+                package: PackageRecipe {
+                    dependencies: Vec::new(),
+                },
+            }
+        );
     }
 
     #[test]
     fn tar_custom_recipe() {
-        use crate::recipe::{Recipe, SourceRecipe, BuildKind, BuildRecipe, PackageRecipe};
+        use crate::recipe::{BuildKind, BuildRecipe, PackageRecipe, Recipe, SourceRecipe};
 
-        let recipe: Recipe = toml::from_str(r#"
+        let recipe: Recipe = toml::from_str(
+            r#"
             [source]
             tar = "http://downloads.xiph.org/releases/ogg/libogg-1.3.3.tar.xz"
             sha256 = "8220c0e4082fa26c07b10bfe31f641d2e33ebe1d1bb0b20221b7016bc8b78a3a"
@@ -135,24 +147,32 @@ mod tests {
             [build]
             template = "custom"
             script = "make"
-        "#).unwrap();
+        "#,
+        )
+        .unwrap();
 
-        assert_eq!(recipe, Recipe {
-            source: Some(SourceRecipe::Tar {
-                tar: "http://downloads.xiph.org/releases/ogg/libogg-1.3.3.tar.xz".to_string(),
-                blake3: Some("8220c0e4082fa26c07b10bfe31f641d2e33ebe1d1bb0b20221b7016bc8b78a3a".to_string()),
-                patches: Vec::new(),
-                script: None,
-            }),
-            build: BuildRecipe {
-                kind: BuildKind::Custom {
-                    script: "make".to_string()
+        assert_eq!(
+            recipe,
+            Recipe {
+                source: Some(SourceRecipe::Tar {
+                    tar: "http://downloads.xiph.org/releases/ogg/libogg-1.3.3.tar.xz".to_string(),
+                    blake3: Some(
+                        "8220c0e4082fa26c07b10bfe31f641d2e33ebe1d1bb0b20221b7016bc8b78a3a"
+                            .to_string()
+                    ),
+                    patches: Vec::new(),
+                    script: None,
+                }),
+                build: BuildRecipe {
+                    kind: BuildKind::Custom {
+                        script: "make".to_string()
+                    },
+                    dependencies: Vec::new(),
                 },
-                dependencies: Vec::new(),
-            },
-            package: PackageRecipe {
-                dependencies: Vec::new(),
-            },
-        });
+                package: PackageRecipe {
+                    dependencies: Vec::new(),
+                },
+            }
+        );
     }
 }
