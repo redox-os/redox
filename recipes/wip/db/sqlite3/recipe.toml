@@ -1,5 +1,9 @@
-#TODO compiled but not tested
 #TODO incomplete port
+#TODO Complied, works for basic use cases. pthread mutexes compiled in, but not working.
+#TODO Calls triggering mutexes yield the following errors:
+#relibc getrlimit(7, 0x7ffffffffc38): not implemented
+#relibc getgroups(65536, 0x14920): not implemented
+#Runtime error near line 1: disk I/O error (10)
 [source]
 tar = "https://www.sqlite.org/2024/sqlite-autoconf-3450000.tar.gz"
 #blake3 = "44bc75a40d32afa71cffe149f766857c3cc41dea261b1e4645fde5f73f4c9268"
