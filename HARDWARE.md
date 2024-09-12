@@ -37,7 +37,7 @@ Image date - day-month-year
 - Additional details goes here as items
 ```
 
-|Instruction Set Architecture|Brand       |Model                            |Status     |Redox Version|Variant     |Image Date|Firmware Booting                                   |Boots To                                                                    |Hardware                                                                    |
+|Instruction Set Architecture|Brand       |Model                            |Status     |Redox Version|Variant     |Image Date|Firmware Booting                                   |Boots To                                                                    |Report                                                                    |
 |----------------------------|------------|---------------------------------|-----------|-------------|------------|----------|---------------------------------------------------|----------------------------------------------------------------------------|----------------------------------------------------------------------------|
 |x86-64                      |System76    |Galago Pro (galp5)               |Recommended|0.8.0        |Desktop     |2022.11.11|UEFI                                               |Desktop                                                                     |                                                                            |
 |x86-64                      |System76    |Lemur Pro (lemp9)                |Recommended|0.8.0        |Desktop     |2022.11.11|UEFI                                               |Desktop                                                                     |                                                                            |
