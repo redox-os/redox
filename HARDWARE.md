@@ -4,7 +4,7 @@ This document tracks the current hardware compatibility of Redox.
 
 - [Status](#status)
 - [General](#general)
-- [Template](#template)
+- [Hardware](#hardware)
 
 ## Status
 
@@ -22,20 +22,7 @@ This section cover things to consider.
 - GPU drivers aren't supported (only VESA and UEFI GOP)
 - Automatic operating system discovery on boot loader is not implemented (remember this before installing Redox)
 
-## Template
-
-You will use this template to insert your computer.
-
-- **Computer model**
-
-```
-Status - (Broken, Booting or Recommended)
-Redox version - 0.0.0
-Variant - (server-minimal, desktop-minimal, server, desktop, demo, dev or customized)
-Image date - day-month-year
-
-- Additional details goes here as items
-```
+## Hardware
 
 |Instruction Set Architecture|Brand       |Model                            |Status     |Redox Version|Variant     |Image Date|Firmware Booting                                   |Boots To                                                                    |Report                                                                    |
 |----------------------------|------------|---------------------------------|-----------|-------------|------------|----------|---------------------------------------------------|----------------------------------------------------------------------------|----------------------------------------------------------------------------|
