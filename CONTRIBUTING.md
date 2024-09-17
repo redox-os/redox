@@ -4,6 +4,8 @@
 
 This document will outline the basics of where to start if you wish to contribute to the project. There are many ways to help us out and and we appreciate all of them. We look forward to **your contribution!**
 
+**Please read this document until the end**
+
 ## Code Of Conduct
 
 We follow the [Rust Code Of Conduct](https://www.rust-lang.org/policies/code-of-conduct).
@@ -124,6 +126,10 @@ You can read how to use the Cookbook recipe system to port applications on [this
 ## Libraries and APIs
 
 You can read [this](https://doc.redox-os.org/book/ch09-06-libraries-apis.html) page to learn about the libraries and APIs used in Redox.
+
+## Visual Studio Code (VS Code) Configuration
+
+To learn how to configure your VS Code to do Redox development please read the information below [this](https://doc.redox-os.org/book/ch09-02-coding-and-building.html#visual-studio-code-configuration) section.
 
 ## Development Tips
 
