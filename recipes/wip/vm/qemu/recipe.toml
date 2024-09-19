@@ -7,13 +7,18 @@ dependencies = [
     "curl",
     "gettext",
     "glib",
+    "libffi",
     "libiconv",
+    "liborbital",
     "libpng",
+    "llvm18",
+    "mesa",
     "nghttp2",
     "openssl1",
     "pcre",
     "pixman",
     "sdl2",
+    "sdl2-image",
     "zlib",
 ]
 script = """
