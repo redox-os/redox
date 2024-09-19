@@ -1,13 +1,11 @@
-#TODO update the patch to match the current qemu version
 [source]
-tar = "https://download.qemu.org/qemu-9.0.1.tar.xz"
-patches = [
-    "redox.patch",
-]
+git = "https://github.com/jackpot51/qemu.git"
+
 [build]
-template = "configure"
+template = "custom"
 dependencies = [
     "curl",
+    "gettext",
     "glib",
     "libiconv",
     "libpng",
@@ -16,3 +14,13 @@ dependencies = [
     "sdl2",
     "zlib",
 ]
+script = """
+COOKBOOK_CONFIGURE_FLAGS=(
+    --host="${TARGET}"
+    --prefix="/usr"
+    --cross-prefix="${TARGET}"
+    --static
+    --disable-tpm
+)
+cookbook_configure
+"""
