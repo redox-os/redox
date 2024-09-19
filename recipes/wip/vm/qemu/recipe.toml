@@ -9,6 +9,8 @@ dependencies = [
     "glib",
     "libiconv",
     "libpng",
+    "nghttp2",
+    "openssl1",
     "pcre",
     "pixman",
     "sdl2",
