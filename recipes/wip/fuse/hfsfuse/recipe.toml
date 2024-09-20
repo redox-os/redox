@@ -1,0 +1,8 @@
+#TODO missing script for gnu make, see https://github.com/0x09/hfsfuse#building
+[source]
+tar = "https://github.com/0x09/hfsfuse/releases/download/0.242/hfsfuse-0.242.tar.gz"
+[build]
+template = "custom"
+dependencies = [
+    "libfuse3",
+]
