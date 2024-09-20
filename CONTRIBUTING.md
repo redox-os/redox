@@ -100,11 +100,11 @@ To download the build system use the following commands:
 (You need to have [curl](https://curl.se/) installed on your system)
 
 ```sh
-curl -sf https://gitlab.redox-os.org/redox-os/redox/raw/master/bootstrap.sh -o bootstrap.sh
+curl -sf https://gitlab.redox-os.org/redox-os/redox/raw/master/podman_bootstrap.sh -o podman_bootstrap.sh
 ```
 
 ```sh
-time bash -e bootstrap.sh
+time bash -e podman_bootstrap.sh
 ```
 
 To start the compilation of the default recipes run the command below:
