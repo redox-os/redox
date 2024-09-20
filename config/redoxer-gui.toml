@@ -13,5 +13,7 @@ path = "/usr/lib/init.d/30_redoxer"
 data = """
 echo
 echo ## running redoxer in orbital ##
+export VT 3
 orbital redoxerd
+unset VT
 """
