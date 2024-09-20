@@ -979,6 +979,8 @@ boot()
 {
 	echo "Cloning gitlab repo..."
 	git clone https://gitlab.redox-os.org/redox-os/redox.git --origin upstream --recursive
+	echo "Creating .config with PODMAN_BUILD=0"
+	echo 'PODMAN_BUILD?=0' > redox/.config
 	echo "Cleaning up..."
 	rm bootstrap.sh
 	echo
