@@ -1,0 +1,9 @@
+#TODO not compiled or tested
+[source]
+git = "https://github.com/JasonFerrara/jmtpfs"
+[build]
+template = "configure"
+dependencies = [
+    "libmtp",
+    "libmagic",
+]
