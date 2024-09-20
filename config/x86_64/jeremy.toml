@@ -65,7 +65,7 @@ nasm = {}
 patch = {}
 pkg-config = {}
 rust = {}
-#rustpython = {} # not building
+rustpython = {}
 
 # games
 devilutionx = {}
