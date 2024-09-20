@@ -28,6 +28,7 @@ COOKBOOK_CONFIGURE_FLAGS=(
     --prefix="/usr"
     --cross-prefix="${TARGET}"
     --static
+    --disable-coroutine-pool
     --disable-tpm
 )
 case "${TARGET}" in
