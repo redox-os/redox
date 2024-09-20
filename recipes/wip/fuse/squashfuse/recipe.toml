@@ -1,0 +1,12 @@
+#TODO missing dependencies
+[source]
+tar = "https://github.com/vasi/squashfuse/releases/download/0.5.2/squashfuse-0.5.2.tar.gz"
+[build]
+template = "configure"
+dependencies = [
+    "libfuse3",
+    "zlib",
+    "liblzma",
+    "lz4",
+    "zstd",
+]

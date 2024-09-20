@@ -1,0 +1,10 @@
+#TODO not compiled or tested
+[source]
+git = "https://codeberg.org/gumbo-parser/gumbo-parser"
+rev = "23af2f7c5a9da7e7ea42fcc2c573df52e4a3a5be"
+[build]
+template = "custom"
+script = """
+./autogen.sh
+cookbook_configure
+"""
