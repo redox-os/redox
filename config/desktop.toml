@@ -21,7 +21,7 @@ orbdata = {}
 orbital = {}
 orbutils = {}
 pop-icon-theme = {}
-#rustpython = {} # issues with new Rust nightly
+rustpython = {}
 shared-mime-info = {}
 
 [[files]]
