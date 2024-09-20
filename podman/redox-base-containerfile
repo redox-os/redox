@@ -10,55 +10,61 @@ RUN useradd --create-home --no-log-init --uid _UID_ poduser \
     && apt-get update \
     && apt-get install -y --no-install-recommends \        
         appstream \
-        autoconf \
-        automake \
-        autopoint \
-        bison \
-        build-essential \
-        ca-certificates \
-        cmake \
-        curl \
-        file \
-        flex \
-        fuse3 \
-        genisoimage \
-        git \
-        gperf \
+		ant \
+		autoconf \
+		automake \
+		autopoint \
+		bison \
+		build-essential \
+		clang \
+		cmake \
+		curl \
+		dos2unix \
+		doxygen \
+		file \
+		flex \
+		fuse3 \
+		g++ \
+		genisoimage \
+		git \
+		gperf \
+		intltool \
         libc6-dev-i386 \
-        libexpat-dev \
-        libfuse-dev \
+		libexpat-dev \
+		libfuse-dev \
         libfuse3-dev \
-        libgmp-dev \
-        libhtml-parser-perl \
-        libtool \
         libfontconfig1-dev \
-        libpng-dev \
-        libjpeg-dev \
-        libsdl2-ttf-dev \
-        libsdl1.2-dev \
-        m4 \
-        nasm \
-        pkg-config \
-        po4a \
+		libgmp-dev \
+		libhtml-parser-perl \
+		libjpeg-dev \
+		libmpfr-dev \
+		libpng-dev \
+		libsdl1.2-dev \
+		libsdl2-ttf-dev \
+		libtool \
+		llvm \
+		lua5.4 \
+		lzip \
+		m4 \
+		make \
+		meson \
+		nasm \
+		ninja-build \
+		patch \
+		perl \
+		pkg-config \
+		po4a \
+		protobuf-compiler \
+		python3 \
+		python3-mako \
+		rsync \
+		scons \
         syslinux-utils \
-        texinfo \
-        ninja-build \
-        meson \
-        python3-mako \
-        xxd \
-        rsync \
-        wget \
-        python3 \
-        make \
-        xdg-utils \
-        zip \
-        unzip \
-        lzip \
-        llvm \
-        clang \
-        perl \
-        doxygen \
-        ant \
-        protobuf-compiler \
-        intltool
+		texinfo \
+		unzip \
+		wget \
+		xdg-utils \
+		xxd \
+		zip \
+		zstd
 
