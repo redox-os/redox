@@ -98,7 +98,10 @@ osx_macports()
     echo "Installing missing packages..."
 
     install_macports_pkg "git"
-
+	install_macports_pkg "gmake"
+	install_macports_pkg "curl"
+	install_macports_pkg "osxfuse"
+	install_macports_pkg "podman"
 
 	if [ "$1" == "qemu" ]; then
         install_macports_pkg "qemu" "qemu-system-x86_64"
@@ -109,8 +112,6 @@ osx_macports()
 	   exit 1
 	fi
 
-    install_macports_pkg "osxfuse"
-	install_macports_pkg "podman"
 }
 
 ###############################################################################
@@ -126,7 +127,12 @@ osx_homebrew()
     echo "Installing missing packages..."
 
     install_brew_pkg "git"
-
+	install_brew_pkg "make"
+	install_brew_pkg "curl"
+	install_brew_pkg "osxfuse"
+	install_brew_pkg "fuse-overlayfs"
+	install_brew_pkg "slirp4netns"
+	install_brew_pkg "podman"
 
 	if [ "$1" == "qemu" ]; then
         install_brew_pkg "qemu" "qemu-system-x86_64"
@@ -137,8 +143,6 @@ osx_homebrew()
 	   exit 1
 	fi
 
-    install_brew_pkg "make"
-	install_brew_pkg "podman"
 }
 
 ###############################################################################
@@ -153,6 +157,10 @@ freebsd()
     echo "Installing missing packages..."
 
     install_freebsd_pkg "git"
+    install_freebsd_pkg "gmake"
+	install_freebsd_pkg "curl"
+	install_freebsd_pkg "fusefs-libs3"
+    install_freebsd_pkg "podman"
 
 
 	if [ "$1" == "qemu" ]; then
@@ -164,8 +172,6 @@ freebsd()
 	   exit 1
 	fi
 
-    install_freebsd_pkg "gmake"
-    install_freebsd_pkg "podman"
     set +x
 }
 
@@ -178,7 +184,7 @@ archLinux()
 {
 
 	echo "Detected Arch Linux"
-	packages="git podman fuse"
+	packages="git make curl fuse3 fuse-overlayfs slirp4netns podman"
 	if [ "$1" == "qemu" ]; then
 		packages="$packages qemu"
 	elif [ "$1" == "virtualbox" ]; then
@@ -212,7 +218,7 @@ ubuntu()
 	sudo "$2" update
 	echo "Installing required packages..."
 	sudo "$2" install \
-		podman curl git make libfuse-dev
+		podman curl git make fuse fuse-overlayfs slirp4netns
 	if [ "$1" == "qemu" ]; then
 		if [ -z "$(which qemu-system-x86_64)" ]; then
 			echo "Installing QEMU..."
@@ -254,7 +260,7 @@ fedora()
 	echo "Detected Fedora"
 	if [ -z "$(which git)" ]; then
 		echo "Installing git..."
-		sudo dnf install git-all
+		sudo dnf install git-all curl make podman fuse3 fuse-overlayfs slirp4netns
 	fi
 
 	if [ "$1" == "qemu" ]; then
@@ -297,8 +303,12 @@ suse()
 	echo "Detected SUSE Linux"
 
 	packages=(
+		"git"
+		"curl"
 		"make"
-		"fuse-devel"
+		"fuse"
+		"fuse-overlayfs"
+		"slirp4netns"
 		"podman"
 	)
 
