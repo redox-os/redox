@@ -11,6 +11,7 @@ extrautils = {}
 findutils = {}
 gcc13 = {}
 gnu-binutils = {}
+ion = {}
 netdb = {}
 pkgutils = {}
 redoxerd = {}
