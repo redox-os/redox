@@ -30,5 +30,20 @@ COOKBOOK_CONFIGURE_FLAGS=(
     --static
     --disable-tpm
 )
+case "${TARGET}" in
+    aarch64-unknown-redox)
+        COOKBOOK_CONFIGURE_FLAGS+=(--target-list=aarch64-softmmu)
+        ;;
+    i686-unknown-redox)
+        COOKBOOK_CONFIGURE_FLAGS+=(--target-list=i386-softmmu)
+        ;;
+    x86_64-unknown-redox)
+        COOKBOOK_CONFIGURE_FLAGS+=(--target-list=x86_64-softmmu)
+        ;;
+    *)
+        echo "unsupported target ${TARGET}"
+        exit 1
+        ;;
+esac
 cookbook_configure
 """
