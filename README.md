@@ -6,7 +6,7 @@
 This repository is the **Build System** for Redox OS. Redox is under active development by a vibrant community. Key links:
 
 - [The **main website** for Redox OS](https://www.redox-os.org).
-- [The Redox Book](https://doc.redox-os.org/book/) and [Build Instructions](https://doc.redox-os.org/book/ch02-05-building-redox.html).
+- [The Redox Book](https://doc.redox-os.org/book/) and [Build Instructions](https://doc.redox-os.org/book/building-redox.html).
 - [Redox Chat and Support](https://matrix.to/#/#redox-join:matrix.org).
 - [Patreon](https://www.patreon.com/redox_os), [Donate](https://redox-os.org/donate/) and [Merch](https://redox-os.creator-spring.com/).
 - Scroll down for a list of key Redox components and their repos.
@@ -21,13 +21,13 @@ Redox _is not_ just a kernel, it's a **full-featured operating system**, providi
 
 - [Book](https://doc.redox-os.org/book/)
 - [Contribute](CONTRIBUTING.md)
-- [Hardware Compatibility](https://doc.redox-os.org/book/ch01-09-hardware-support.html)
-- Run Redox in a [Virtual Machine](https://doc.redox-os.org/book/ch02-01-running-vm.html) or on [Real Hardware](https://doc.redox-os.org/book/ch02-02-real-hardware.html)
-- [Trying Out Redox](https://doc.redox-os.org/book/ch02-04-trying-out-redox.html)
-- [Building Redox](https://doc.redox-os.org/book/ch02-05-building-redox.html)
-- [Build System Documentation](https://doc.redox-os.org/book/ch08-06-build-system-reference.html)
-- [Developer FAQ](https://doc.redox-os.org/book/ch09-07-developer-faq.html)
-- [Chat/Discussions/Help](https://doc.redox-os.org/book/ch13-01-chat.html)
+- [Hardware Compatibility](https://doc.redox-os.org/book/hardware-support.html)
+- Run Redox in a [Virtual Machine](https://doc.redox-os.org/book/running-vm.html) or on [Real Hardware](https://doc.redox-os.org/book/ch02-02-real-hardware.html)
+- [Trying Out Redox](https://doc.redox-os.org/book/trying-out-redox.html)
+- [Building Redox](https://doc.redox-os.org/book/building-redox.html)
+- [Build System Documentation](https://doc.redox-os.org/book/build-system-reference.html)
+- [Developer FAQ](https://doc.redox-os.org/book/developer-faq.html)
+- [Chat/Discussions/Help](https://doc.redox-os.org/book/chat.html)
 
 ## Ecosystem
 
