@@ -30,7 +30,7 @@ HOST_CARGO=env -u RUSTUP_TOOLCHAIN -u CC -u TARGET cargo
 ## Flags to pass to redoxfs-mkfs. Add --encrypt to set up disk encryption
 REDOXFS_MKFS_FLAGS?=
 ## Set to 1 to enable Podman build, any other value will disable it
-PODMAN_BUILD?=0
+PODMAN_BUILD?=1
 ## The containerfile to use for the Podman base image
 CONTAINERFILE?=podman/redox-base-containerfile
 
