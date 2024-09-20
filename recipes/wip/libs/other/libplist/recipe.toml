@@ -1,0 +1,11 @@
+#TODO not compiled or tested
+[source]
+tar = "https://github.com/libimobiledevice/libplist/releases/download/2.6.0/libplist-2.6.0.tar.bz2"
+[build]
+template = "custom"
+script = """
+COOKBOOK_CONFIGURE_FLAGS+=(
+    --without-cython
+)
+cookbook_configure
+"""
