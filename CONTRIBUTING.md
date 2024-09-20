@@ -16,11 +16,11 @@ In general, your contributions to Redox are governed by the [MIT License](https:
 
 Please review the `LICENSE` file for the project you are contributing to.
 
-[This](https://doc.redox-os.org/book/ch01-02-philosophy.html) page we explain why we use the MIT license.
+[This](https://doc.redox-os.org/book/philosophy.html) page we explain why we use the MIT license.
 
 ## Chat
 
-Join us on [Matrix Chat](https://doc.redox-os.org/book/ch13-01-chat.html) to discuss issues or ask questions.
+Join us on [Matrix Chat](https://doc.redox-os.org/book/chat.html) to discuss issues or ask questions.
 
 ## Important Places to Contribute
 
@@ -113,37 +113,37 @@ To start the compilation of the default recipes run the command below:
 make all
 ```
 
-You can find the build system organization and commands on [this](https://doc.redox-os.org/book/ch08-06-build-system-reference.html) page.
+You can find the build system organization and commands on [this](https://doc.redox-os.org/book/build-system-reference.html) page.
 
 ## Developer FAQ
 
-You can see the most common questions and problems on [this](https://doc.redox-os.org/book/ch09-07-developer-faq.html) page.
+You can see the most common questions and problems on [this](https://doc.redox-os.org/book/developer-faq.html) page.
 
 ## Porting Software
 
-You can read how to use the Cookbook recipe system to port applications on [this](https://doc.redox-os.org/book/ch09-03-porting-applications.html) page.
+You can read how to use the Cookbook recipe system to port applications on [this](https://doc.redox-os.org/book/porting-applications.html) page.
 
 ## Libraries and APIs
 
-You can read [this](https://doc.redox-os.org/book/ch09-06-libraries-apis.html) page to learn about the libraries and APIs used in Redox.
+You can read [this](https://doc.redox-os.org/book/libraries-apis.html) page to learn about the libraries and APIs used in Redox.
 
 ## Visual Studio Code (VS Code) Configuration
 
-To learn how to configure your VS Code to do Redox development please read the information below [this](https://doc.redox-os.org/book/ch09-02-coding-and-building.html#visual-studio-code-configuration) section.
+To learn how to configure your VS Code to do Redox development please read the information below [this](https://doc.redox-os.org/book/coding-and-building.html#visual-studio-code-configuration) section.
 
 ## Development Tips
 
-You can find important tips on [this](https://doc.redox-os.org/book/ch09-02-coding-and-building.html#development-tips) section.
+You can find important tips on [this](https://doc.redox-os.org/book/coding-and-building.html#development-tips) section.
 
 ## References
 
-We maintain a list of wikis, articles and videos to learn Rust, OS development and computer science on [this](https://doc.redox-os.org/book/ch09-08-references.html) page.
+We maintain a list of wikis, articles and videos to learn Rust, OS development and computer science on [this](https://doc.redox-os.org/book/references.html) page.
 
 If you are skilled there's a possibility that they could improve your knowledge in some way.
 
 ## Best Practices and Guidelines
 
-You can read the best practices and guidelines on [this](https://doc.redox-os.org/book/ch11-00-best-practices.html) chapter.
+You can read the best practices and guidelines on [this](https://doc.redox-os.org/book/best-practices.html) chapter.
 
 ## Style Guidelines
 
@@ -153,7 +153,7 @@ Since **Rust** is a relatively small and new language compared to others like C 
 
 ### Git
 
-Please follow our [Git style](https://doc.redox-os.org/book/ch12-04-creating-proper-pull-requests.html) for pull requests.
+Please follow our [Git style](https://doc.redox-os.org/book/creating-proper-pull-requests.html) for pull requests.
 
 ## GitLab
 
@@ -163,7 +163,7 @@ Once your GitLab account is created, you should add your Matrix or Discord usern
 
 ### Issues
 
-To know how to create issues on the Redox GitLab, read [this](https://doc.redox-os.org/book/ch12-05-filing-issues.html) page.
+To know how to create issues on the Redox GitLab, read [this](https://doc.redox-os.org/book/filing-issues.html) page.
 
 Once you create an issue don't forget to post the link on the Dev or Support rooms of the chat, because the GitLab email notifications have distractions (service messages or spam) and most developers don't left their GitLab pages open to receive desktop notifications from the web browser (which require a custom setting to receive issue notifications).
 
@@ -171,7 +171,7 @@ By doing this you help us to pay attention to your issues and avoid them to be a
 
 ### Pull Requests
 
-Please follow [our process](https://doc.redox-os.org/book/ch12-04-creating-proper-pull-requests.html) for creating proper pull requests.
+Please follow [our process](https://doc.redox-os.org/book/creating-proper-pull-requests.html) for creating proper pull requests.
 
 ## Other Ways to Contribute
 
@@ -184,7 +184,7 @@ If you're a good designer, whether it's 2D graphics, 3D graphics, interfaces, we
 - [Redox backgrounds](https://gitlab.redox-os.org/redox-os/backgrounds) - You can send your wallpapers on this repository.
 - [Redox assets](https://gitlab.redox-os.org/redox-os/assets) - You can send your logos, icons and themes on this repository.
 
-If you have questions about the graphic design, ask us on the [Chat](https://doc.redox-os.org/book/ch13-01-chat.html).
+If you have questions about the graphic design, ask us on the [Chat](https://doc.redox-os.org/book/chat.html).
 
 ### Donate to Redox
 
