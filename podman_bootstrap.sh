@@ -260,7 +260,7 @@ fedora()
 	echo "Detected Fedora"
 	if [ -z "$(which git)" ]; then
 		echo "Installing git..."
-		sudo dnf install git-all curl make podman fuse3 fuse-overlayfs slirp4netns
+		sudo dnf install git-all
 	fi
 
 	if [ "$1" == "qemu" ]; then
@@ -284,7 +284,7 @@ fedora()
 	fi
 		
 	# Use rpm -q <package> to check if it's already installed
-	PKGS=$(for pkg in podman; do rpm -q $pkg > /dev/null || echo $pkg; done)
+	PKGS=$(for pkg in podman curl make fuse3 fuse-overlayfs slirp4netns; do rpm -q $pkg > /dev/null || echo $pkg; done)
 	# If the list of packages is not empty, install missing
 	COUNT=$(echo $PKGS | wc -w)
 	if [ $COUNT -ne 0 ]; then
