@@ -197,7 +197,7 @@ Image date - 11-11-2022
 - **ASUS ROG g55vw**
 
 ```
-Satus - Booting
+Status - Booting
 Redox version - 0.8.0
 Variant - desktop
 Image date - 11-11-2023
@@ -268,7 +268,19 @@ Image date - 07-09-2024
 
 If you have a customized computer, put it here.
 
+- **ASUS PRIME B350M-E**
 
+```
+Status - Booting
+Redox version - 0.9.0
+Variant - desktop
+Image date - 20-09-2024
+
+- UEFI Firmware: 6203
+- Boot: UEFI, Secure Boot Off/OtherOS, USB 2.0 Flash
+- PS/2 Keyboard: Partial
+- PS/2 Mouse: Broken
+```
 
 ## i686
 
