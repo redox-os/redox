@@ -1,4 +1,4 @@
-export PATH /scheme/initfs/bin
+export PATH /bin
 export RUST_BACKTRACE 1
 nulld
 zerod
@@ -13,11 +13,12 @@ stdio /scheme/log
 ramfs logging
 ps2d us
 acpid
-pcid /scheme/initfs/etc/pcid/initfs.toml
+pcid /etc/pcid/initfs.toml
 lived
 unset DISK_LIVE_ADDR DISK_LIVE_SIZE
 redoxfs --uuid $REDOXFS_UUID file $REDOXFS_BLOCK
 unset REDOXFS_UUID REDOXFS_BLOCK REDOXFS_PASSWORD_ADDR REDOXFS_PASSWORD_SIZE
+set-default-scheme file
 cd /
 export PATH /usr/bin
 run.d /usr/lib/init.d /etc/init.d
