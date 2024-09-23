@@ -31,7 +31,6 @@ RUN useradd --create-home --no-log-init --uid _UID_ poduser \
 		intltool \
         libc6-dev-i386 \
 		libexpat-dev \
-		libfuse-dev \
         libfuse3-dev \
         libfontconfig1-dev \
 		libgmp-dev \
