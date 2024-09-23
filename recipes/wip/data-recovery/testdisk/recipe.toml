@@ -1,0 +1,14 @@
+#TODO not compiled or tested
+# build instructions - https://www.cgsecurity.org/wiki/TestDisk_Compilation
+# add optional libraries to expand the features - https://www.cgsecurity.org/wiki/TestDisk_Compilation#Libraries
+[source]
+tar = "https://www.cgsecurity.org/testdisk-7.2.tar.bz2"
+[build]
+template = "custom"
+dependencies = [
+    "ncurses",
+]
+script = """
+export CPPFLAGS="-I${COOKBOOK_SYSROOT}/include/ncurses"
+cookbook_configure
+"""
