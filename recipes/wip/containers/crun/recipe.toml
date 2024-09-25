@@ -1,0 +1,5 @@
+#TODO disable systemd and SELinux
+[source]
+tar = "https://github.com/containers/crun/releases/download/1.17/crun-1.17.tar.gz"
+[build]
+template = "configure"

@@ -1,0 +1,8 @@
+#TODO require cgroups
+[source]
+git = "https://github.com/containers/youki"
+[build]
+template = "custom"
+script = """
+cookbook_cargo_packages youki
+"""
