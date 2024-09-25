@@ -49,6 +49,7 @@ RUN useradd --create-home --no-log-init --uid _UID_ poduser \
 		meson \
 		nasm \
 		ninja-build \
+		openssh \
 		patch \
 		perl \
 		pkg-config \
