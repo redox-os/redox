@@ -41,6 +41,7 @@ RUN useradd --create-home --no-log-init --uid _UID_ poduser \
 		libsdl1.2-dev \
 		libsdl2-ttf-dev \
 		libtool \
+		libtool-bin \
 		llvm \
 		lua5.4 \
 		lzip \
@@ -49,7 +50,7 @@ RUN useradd --create-home --no-log-init --uid _UID_ poduser \
 		meson \
 		nasm \
 		ninja-build \
-		openssh \
+		ssh \
 		patch \
 		perl \
 		pkg-config \
