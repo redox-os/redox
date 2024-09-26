@@ -4,16 +4,15 @@ git = "https://gitlab.redox-os.org/redox-os/bootloader.git"
 [build]
 template = "custom"
 script = """
-rsync -av --delete "${COOKBOOK_SOURCE}/" ./
-
+OUTDIR="${COOKBOOK_BUILD}"
 mkdir -v "${COOKBOOK_STAGE}/boot"
 
 function bootloader {
     export TARGET="$1"
     src="$2"
     dst="$3"
-    "${COOKBOOK_MAKE}" -j "${COOKBOOK_MAKE_JOBS}" "build/${TARGET}/${src}"
-    cp -v "build/${TARGET}/${src}" "${COOKBOOK_STAGE}/boot/${dst}"
+    "${COOKBOOK_MAKE}" -j "${COOKBOOK_MAKE_JOBS}" -f "${COOKBOOK_SOURCE}/Makefile" -C "${OUTDIR}" "${OUTDIR}/${src}"
+    cp -v "${OUTDIR}/${src}" "${COOKBOOK_STAGE}/boot/${dst}"
 }
 
 ARCH="$(echo "${TARGET}" | cut -d - -f1)"
