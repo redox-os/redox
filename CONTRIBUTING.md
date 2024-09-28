@@ -85,9 +85,14 @@ For those who want to contribute to the Redox GUI, our GUI strategy has recently
 - Redox is in the process of adopting other Rust-written GUI toolkits, such as [Iced](https://iced.rs) and [Slint](https://slint-ui.com/). Please check out those projects if this is your area of interest.
 - OrbTk is in maintenance mode, and its developers have moved to other projects such as the ones below. There is currently no Redox-specific GUI development underway.
 
-## Tracking Issues Index
+## Priorities
 
-We use an index to track the development priorities, you can find them on [this](https://gitlab.redox-os.org/redox-os/redox/-/issues/1384) page.
+You can use the following GitLab label filters to know our development priorities on the moment:
+
+- [Critical](https://gitlab.redox-os.org/redox-os/redox/-/issues/?sort=created_date&state=opened&label_name%5B%5D=critical&first_page_size=20)
+- [High-priority](https://gitlab.redox-os.org/redox-os/redox/-/issues/?sort=created_date&state=opened&label_name%5B%5D=high-priority&first_page_size=20)
+- [Medium-priority](https://gitlab.redox-os.org/redox-os/redox/-/issues/?sort=created_date&state=opened&label_name%5B%5D=medium-priority&first_page_size=20)
+- [Low-priority](https://gitlab.redox-os.org/redox-os/redox/-/issues/?sort=created_date&state=opened&label_name%5B%5D=medium-priority&first_page_size=20)
 
 ## RFCs
 
