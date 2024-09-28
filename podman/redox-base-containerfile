@@ -28,6 +28,7 @@ RUN useradd --create-home --no-log-init --uid _UID_ poduser \
 		genisoimage \
 		git \
 		gperf \
+        expect \
 		intltool \
         libc6-dev-i386 \
 		libexpat-dev \
