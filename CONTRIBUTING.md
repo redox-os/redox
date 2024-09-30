@@ -92,7 +92,7 @@ You can use the following GitLab label filters to know our development prioritie
 - [Critical](https://gitlab.redox-os.org/redox-os/redox/-/issues/?sort=created_date&state=opened&label_name%5B%5D=critical&first_page_size=20)
 - [High-priority](https://gitlab.redox-os.org/redox-os/redox/-/issues/?sort=created_date&state=opened&label_name%5B%5D=high-priority&first_page_size=20)
 - [Medium-priority](https://gitlab.redox-os.org/redox-os/redox/-/issues/?sort=created_date&state=opened&label_name%5B%5D=medium-priority&first_page_size=20)
-- [Low-priority](https://gitlab.redox-os.org/redox-os/redox/-/issues/?sort=created_date&state=opened&label_name%5B%5D=medium-priority&first_page_size=20)
+- [Low-priority](https://gitlab.redox-os.org/redox-os/redox/-/issues/?sort=created_date&state=opened&label_name%5B%5D=low-priority&first_page_size=20)
 
 ## RFCs
 
