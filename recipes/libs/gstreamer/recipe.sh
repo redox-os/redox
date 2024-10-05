@@ -53,6 +53,7 @@ function recipe_build {
 	    -Dprefix=/ \
 	    -Dlibdir=lib \
         -Dbenchmarks=disabled \
+        -Dcoretracers=disabled \
         -Dexamples=disabled \
         -Dtests=disabled
 	ninja -C _build -v
