@@ -52,6 +52,30 @@ else ifeq ($(ARCH),aarch64)
 	ifneq ($(usb),no)
 		QEMUFLAGS+=-device qemu-xhci -device usb-kbd -device usb-tablet
 	endif
+else ifeq ($(ARCH),riscv64gc)
+	live=no
+	efi=yes
+	audio=no
+	vga=no # virtio-gpu-pci
+	net=bridge
+	QEMU_ARCH=riscv64
+	# QEMU_MACHINE=virt  for ACPI mode instead of DTB
+	QEMU_MACHINE=virt,acpi=off
+#	QEMU_MACHINE:=${QEMU_MACHINE},aclint=on
+#	QEMU_MACHINE:=${QEMU_MACHINE},aia=aplic
+#	QEMU_MACHINE:=${QEMU_MACHINE},aia=aplic-imsic
+	QEMU_SMP?=4
+	QEMU_MEM?=2048
+	QEMU_CPU=max
+	disk?=nvme
+	PFLASH0=/usr/share/qemu-efi-riscv64/RISCV_VIRT_CODE.fd
+	PFLASH1=/usr/share/qemu-efi-riscv64/RISCV_VIRT_VARS.fd
+	ifneq ($(vga),no)
+		QEMUFLAGS+=-device ramfb
+	endif
+	ifneq ($(usb),no)
+		QEMUFLAGS+=-device qemu-xhci -device usb-kbd -device usb-tablet
+	endif
 else
 $(error Unsupported ARCH for QEMU "$(ARCH)"))
 endif
@@ -128,19 +152,22 @@ else ifeq ($(gpu),multi)
 	QEMUFLAGS+=-display sdl -vga std -device secondary-vga
 else ifeq ($(gpu),virtio)
 	QEMUFLAGS+=-vga virtio
+else ifeq ($(vga),virtio-gpu-pci)
+	QEMUFLAGS+= -vga virtio-gpu-pci
 endif
 
+EXTRA_DISK=$(BUILD)/extra.img
 disk?=ata
 ifeq ($(disk),ata)
 	# For i386, ata will use ided
 	# For aarch64 and x86_64, ata will use ahcid
 	QEMUFLAGS+= \
 		-drive file=$(DISK),format=raw \
-		-drive file=$(BUILD)/extra.img,format=raw
+		-drive file=$(EXTRA_DISK),format=raw
 else ifeq ($(disk),nvme)
 	QEMUFLAGS+= \
 		-drive file=$(DISK),format=raw,if=none,id=drv0 -device nvme,drive=drv0,serial=NVME_SERIAL \
-		-drive file=$(BUILD)/extra.img,format=raw,if=none,id=drv1 -device nvme,drive=drv1,serial=NVME_EXTRA
+		-drive file=$(EXTRA_DISK),format=raw,if=none,id=drv1 -device nvme,drive=drv1,serial=NVME_EXTRA
 else ifeq ($(disk),usb)
 	QEMUFLAGS+= \
 		-drive if=none,id=usbstick,format=raw,file=$(DISK) \
@@ -148,11 +175,12 @@ else ifeq ($(disk),usb)
 else ifeq ($(disk),virtio)
 	QEMUFLAGS+= \
 		-drive file=$(DISK),format=raw,if=virtio \
-		-drive file=$(BUILD)/extra.img,format=raw,if=virtio
+		-drive file=$(EXTRA_DISK),format=raw,if=virtio
 else ifeq ($(disk),cdrom)
 	QEMUFLAGS+= \
 		-boot d -cdrom $(DISK) \
-		-drive file=$(BUILD)/extra.img,format=raw
+		-drive file=$(EXTRA_DISK),format=raw
+
 else ifeq ($(disk),sdcard)
 	QEMUFLAGS+=-drive file=$(DISK),if=sd,format=raw
 endif
@@ -173,7 +201,37 @@ ifeq ($(UNAME),Darwin)
 	QEMUFLAGS+=-cpu $(QEMU_CPU)
 endif
 
-$(BUILD)/extra.img:
+ifneq ($(PFLASH0),)
+	QEMUFLAGS+=-drive if=pflash,format=raw,unit=0,file=$(PFLASH0),readonly=on
+endif
+
+ifneq ($(PFLASH1),)
+	QEMUFLAGS+=-drive if=pflash,format=raw,unit=1,file=$(BUILD)/fw_vars.bin
+endif
+
+.PHONY: qemu-deps
+
+qemu-deps: $(DISK)
+
+ifeq ($(disk),usb)
+else ifeq ($(disk),sdcard)
+else
+qemu-deps: $(EXTRA_DISK)
+endif
+
+qemu-deps:$(FIRMWARE)
+
+qemu-deps: $(PFLASH0)
+
+ifneq ($(PFLASH1),)
+qemu-deps: $(BUILD)/fw_vars.bin
+
+.PRECIOUS: $(BUILD)/fw_vars.bin
+$(BUILD)/fw_vars.bin: $(PFLASH1)
+	cp "$<" "$@"
+endif
+
+$(EXTRA_DISK):
 	truncate -s 1g $@
 
 $(BUILD)/raspi3bp_uboot.rom:
@@ -187,20 +245,25 @@ $(BUILD)/qemu_uboot.rom:
 Please install the qemu-efi-aarch64 package or use efi=no to download U-Boot instead.\n" \
 	&& exit 1
 
-qemu: $(DISK) $(FIRMWARE) $(BUILD)/extra.img
+/usr/share/qemu-efi-riscv64/RISCV_VIRT_CODE.fd /usr/share/qemu-efi-riscv64/RISCV_VIRT_VARS.fd:
+	echo "\n\n\nMissing $@ UEFI firmware file.\n\
+Please install the qemu-efi-riscv64 package.\n"
+	&& exit 1
+
+qemu: qemu-deps
 	$(QEMU) $(QEMUFLAGS)
 
 # You probably want to use disk=no when using the *_extra targets
-qemu_extra: $(FIRMWARE) $(BUILD)/extra.img
+qemu_extra: qemu-deps
 	$(QEMU) $(QEMUFLAGS) \
-		-drive file=$(BUILD)/extra.img,format=raw
+		-drive file=$(EXTRA_DISK),format=raw
 
-qemu_nvme_extra: $(FIRMWARE) $(BUILD)/extra.img
+qemu_nvme_extra: qemu-deps
 	$(QEMU) $(QEMUFLAGS) \
-		-drive file=$(BUILD)/extra.img,format=raw,if=none,id=drv1 -device nvme,drive=drv1,serial=NVME_EXTRA
+		-drive file=$(EXTRA_DISK),format=raw,if=none,id=drv1 -device nvme,drive=drv1,serial=NVME_EXTRA
 
 #additional steps for $(DISK) are required!!!
-qemu_raspi: $(FIRMWARE) $(DISK)
+qemu_raspi: qemu-deps
 	$(QEMU) -M raspi3b -smp 4,cores=1 \
 		-kernel $(FIRMWARE) \
 		-serial stdio -display none

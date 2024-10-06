@@ -78,6 +78,11 @@ export RUST_COMPILER_RT_ROOT=$(ROOT)/rust/src/llvm-project/compiler-rt
 
 ## Userspace variables
 export TARGET=$(ARCH)-unknown-redox
+ifeq ($(ARCH),riscv64gc)
+	export GNU_TARGET=riscv64-unknown-redox
+else
+	export GNU_TARGET=$(TARGET)
+endif
 BUILD=build/$(ARCH)/$(CONFIG_NAME)
 INSTALLER=installer/target/release/redox_installer
 INSTALLER_OPTS=
@@ -95,23 +100,22 @@ FSTOOLS_TAG=build/fstools.tag
 export BOARD
 
 ## Cross compiler variables
-AR=$(TARGET)-gcc-ar
-AS=$(TARGET)-as
-CC=$(TARGET)-gcc
-CXX=$(TARGET)-g++
-LD=$(TARGET)-ld
-NM=$(TARGET)-gcc-nm
-OBJCOPY=$(TARGET)-objcopy
-OBJDUMP=$(TARGET)-objdump
-RANLIB=$(TARGET)-gcc-ranlib
-READELF=$(TARGET)-readelf
-STRIP=$(TARGET)-strip
+AR=$(GNU_TARGET)-gcc-ar
+AS=$(GNU_TARGET)-as
+CC=$(GNU_TARGET)-gcc
+CXX=$(GNU_TARGET)-g++
+LD=$(GNU_TARGET)-ld
+NM=$(GNU_TARGET)-gcc-nm
+OBJCOPY=$(GNU_TARGET)-objcopy
+OBJDUMP=$(GNU_TARGET)-objdump
+RANLIB=$(GNU_TARGET)-gcc-ranlib
+READELF=$(GNU_TARGET)-readelf
+STRIP=$(GNU_TARGET)-strip
 
 ## Rust cross compile variables
-export AR_$(subst -,_,$(TARGET))=$(TARGET)-ar
-export CC_$(subst -,_,$(TARGET))=$(TARGET)-gcc
-export CXX_$(subst -,_,$(TARGET))=$(TARGET)-g++
-
+export AR_$(subst -,_,$(TARGET)):=$(AR)
+export CC_$(subst -,_,$(TARGET)):=$(CC)
+export CXX_$(subst -,_,$(TARGET)):=$(CXX)
 
 ## If Podman is being used, a container is required
 ifeq ($(PODMAN_BUILD),1)
