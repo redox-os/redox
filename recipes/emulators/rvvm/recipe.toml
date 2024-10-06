@@ -1,0 +1,36 @@
+[source]
+git = "https://github.com/LekKit/RVVM.git"
+upstream = "https://github.com/LekKit/RVVM"
+
+[build]
+template = "custom"
+
+# SDL2 is tough to link statically, use SDL1 for now
+dependencies = [
+    "sdl1",
+    "liborbital",
+]
+
+script = """
+
+export BUILDDIR="${COOKBOOK_BUILD}"
+export DESTDIR="${COOKBOOK_STAGE}"
+
+# Redox currently doesn't support dynamic library loading
+export LDFLAGS="$(pkg-config --libs sdl)"
+
+# Networking is currently broken on Redox (missing setsockopt?)
+export USE_NET=0
+
+# Use SDL1
+export USE_SDL=1
+
+# Building a shared library is currently broken on Redox
+export USE_LIB=0
+
+export OS=Redox
+
+# Let's goo
+"${COOKBOOK_MAKE}" install -C "${COOKBOOK_SOURCE}"
+
+"""
