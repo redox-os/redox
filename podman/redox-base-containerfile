@@ -68,5 +68,5 @@ RUN useradd --create-home --no-log-init --uid _UID_ poduser \
 		xdg-utils \
 		xxd \
 		zip \
+		zlib1g-dev \
 		zstd
-
