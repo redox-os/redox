@@ -13,6 +13,7 @@ This document tracks the current hardware compatibility of Redox.
     - [Lenovo](#lenovo)
     - [Toshiba](#toshiba)
     - [Framework](#framework)
+    - [Schenker / XMG](#schenker--xmg)
     - [Custom](#custom)
 - [i686](#i686)
     - [Dell](#dell-1)
