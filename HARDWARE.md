@@ -276,6 +276,20 @@ Image date - 07-09-2024
 - Black screen and unresponsive after the bootloader and resolution selection
 ```
 
+### Schenker / XMG
+
+- XMG APEX 17 (M21)
+
+```
+Status - Broken
+Redox version - 0.9.0
+Variant - demo
+Image date - 07-09-2024 (release) and 30-09-2024 (daily)
+
+- Freezes after a series of errors (release)
+- Really slow during boot, then panics (daily)
+```
+
 ### Custom
 
 If you have a customized computer, put it here.
