@@ -13,6 +13,7 @@ This document tracks the current hardware compatibility of Redox.
     - [Lenovo](#lenovo)
     - [Toshiba](#toshiba)
     - [Framework](#framework)
+    - [Schenker / XMG](#schenker--xmg)
     - [Custom](#custom)
 - [i686](#i686)
     - [Dell](#dell-1)
@@ -234,6 +235,19 @@ Image date - 11-11-2022
 - Bootloader panics in alloc_zeroed_page_aligned
 ```
 
+- **Lenovo ThinkPad Yoga 260 Laptop - Type 20FE**
+
+```
+Status - Booting
+Redox version - 0.9.0
+Variant - demo
+Image date - 07-09-2024
+
+- Booted using UEFI
+- Boots to desktop
+- No audio
+```
+
 ### Toshiba
 
 - **Toshiba Satellite L500**
@@ -262,6 +276,20 @@ Image date - 07-09-2024
 
 - Bootloader loaded using UEFI
 - Black screen and unresponsive after the bootloader and resolution selection
+```
+
+### Schenker / XMG
+
+- XMG APEX 17 (M21)
+
+```
+Status - Broken
+Redox version - 0.9.0
+Variant - demo, server
+Image date - 07-09-2024 (release) and 30-09-2024 (daily)
+
+- Freezes after a series of errors (release build)
+- Really slow during boot, then aborts (daily build)
 ```
 
 ### Custom
