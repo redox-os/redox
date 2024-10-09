@@ -23,6 +23,7 @@ COOKBOOK_CONFIGURE_FLAGS=(
     --arch="${ARCH}"
     --cross_prefix="${TARGET}-"
     --prefix=/
+    --disable-doc
     --disable-network
     --enable-sdl2
     --enable-zlib
