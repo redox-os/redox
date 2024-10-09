@@ -1,5 +1,57 @@
 #TODO missing script for Meson, see https://github.com/xkbcommon/libxkbcommon#building
 [source]
-tar = "https://xkbcommon.org/download/libxkbcommon-1.5.0.tar.xz"
+tar = "https://xkbcommon.org/download/libxkbcommon-1.7.0.tar.xz"
+b3sum = "5001ca0b8562feeef2010bf16c05657e3875fda3ed5fdedbf48b9135e5cdfcbc"
+
 [build]
 template = "custom"
+dependencies = [
+    "libxml2",
+    "xz",
+    "zlib",
+]
+script = """
+# TODO: Fix this annoying shite
+echo "[binaries]" > cross_file.txt
+echo "c = '${CC}'" >> cross_file.txt
+echo "cpp = '${CXX}'" >> cross_file.txt
+echo "ar = '${AR}'" >> cross_file.txt
+echo "strip = '${STRIP}'" >> cross_file.txt
+echo "pkgconfig = '${TARGET}-pkg-config'" >> cross_file.txt
+
+echo "[host_machine]" >> cross_file.txt
+echo "system = 'redox'" >> cross_file.txt
+echo "cpu_family = '$(echo "${TARGET}" | cut -d - -f1)'" >> cross_file.txt
+echo "cpu = '$(echo "${TARGET}" | cut -d - -f1)'" >> cross_file.txt
+echo "endian = 'little'" >> cross_file.txt
+
+echo "[paths]" >> cross_file.txt
+echo "prefix = '${COOKBOOK_SYSROOT}'" >> cross_file.txt
+echo "libdir = 'lib'" >> cross_file.txt
+echo "bindir = 'bin'" >> cross_file.txt
+
+unset AR
+unset AS
+unset CC
+unset CXX
+unset LD
+unset NM
+unset OBJCOPY
+unset OBJDUMP
+unset PKG_CONFIG
+unset RANLIB
+unset READELF
+unset STRIP
+
+meson setup "${COOKBOOK_SOURCE}" _build \
+	--cross-file cross_file.txt \
+	--buildtype release \
+	--strip \
+	-Ddefault_library=static \
+	-Dprefix=/ \
+	-Dlibdir=lib \
+    -Denable-wayland=false \
+    -Denable-x11=false
+ninja -C _build -v
+DESTDIR="${COOKBOOK_STAGE}" ninja -C _build -v install
+"""
