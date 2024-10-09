@@ -285,11 +285,11 @@ Image date - 07-09-2024
 ```
 Status - Broken
 Redox version - 0.9.0
-Variant - demo
+Variant - demo, server
 Image date - 07-09-2024 (release) and 30-09-2024 (daily)
 
-- Freezes after a series of errors (release)
-- Really slow during boot, then aborts (daily)
+- Freezes after a series of errors (release build)
+- Really slow during boot, then aborts (daily build)
 ```
 
 ### Custom
