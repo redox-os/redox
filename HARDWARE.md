@@ -234,6 +234,18 @@ Image date - 11-11-2022
 - Bootloader panics in alloc_zeroed_page_aligned
 ```
 
+- **Lenovo ThinkPad Yoga 260 Laptop - Type 20FE**
+
+```
+Status - Booting
+Redox version - 0.9.0
+Variant - demo
+Image date - 07-09-2024
+
+- No audio
+
+```
+
 ### Toshiba
 
 - **Toshiba Satellite L500**
