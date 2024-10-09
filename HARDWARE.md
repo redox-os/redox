@@ -246,7 +246,6 @@ Image date - 07-09-2024
 - Booted using UEFI
 - Boots to desktop
 - No audio
-
 ```
 
 ### Toshiba
