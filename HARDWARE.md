@@ -242,6 +242,8 @@ Redox version - 0.9.0
 Variant - demo
 Image date - 07-09-2024
 
+- Booted using UEFI
+- Boots to desktop
 - No audio
 
 ```
@@ -287,7 +289,7 @@ Variant - demo
 Image date - 07-09-2024 (release) and 30-09-2024 (daily)
 
 - Freezes after a series of errors (release)
-- Really slow during boot, then panics (daily)
+- Really slow during boot, then aborts (daily)
 ```
 
 ### Custom
