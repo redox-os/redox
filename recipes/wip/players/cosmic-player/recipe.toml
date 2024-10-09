@@ -4,17 +4,22 @@ branch = "master"
 
 [build]
 dependencies = [
-    "ffmpeg6",
+    "gettext",
+    "glib",
+    "gstreamer",
+    "gstreamer-plugins-base",
+    "libffi",
+    "libiconv",
     "liborbital",
+    "libxkbcommon",
     "llvm18",
     "mesa",
-    "sdl2",
+    "pcre",
     "zlib",
 ]
 template = "custom"
 script = """
-unset CC
-cookbook_cargo --no-default-features --features static --verbose
+cookbook_carg
 mkdir -pv "${COOKBOOK_STAGE}/ui/apps"
 cp -v "${COOKBOOK_RECIPE}/manifest" "${COOKBOOK_STAGE}/ui/apps/cosmic-player"
 """
