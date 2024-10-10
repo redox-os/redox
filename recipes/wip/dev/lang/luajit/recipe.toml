@@ -1,5 +1,25 @@
-#TODO missing script for "make", see https://luajit.org/install.html
+#TODO remove -DLUAJIT_SECURITY_MCODE=0
 [source]
-tar = "https://luajit.org/download/LuaJIT-2.1.0-beta3.tar.gz"
+# LuaJIT is only available as a rolling release
+git = "https://luajit.org/git/luajit.git"
+rev = "2090842410e0ba6f81fad310a77bf5432488249a"
+
 [build]
 template = "custom"
+script = """
+rsync -av --delete "${COOKBOOK_SOURCE}/" ./
+
+# Cookbook doesn't apply patches to git repositiories (so we do it manually)
+# The patch is applied so that LUAJIT_OS is set to LUAJIT_OS_POSIX without
+# redefinition warnings
+git apply "${COOKBOOK_RECIPE}/redox.patch"
+
+${COOKBOOK_MAKE} -j ${COOKBOOK_MAKE_JOBS} install \
+  PREFIX="${COOKBOOK_STAGE}" \
+  BUILDMODE='static' \
+  TARGET_SYS='Redox' \
+  XCFLAGS='-DLUAJIT_SECURITY_MCODE=0' \
+  CROSS="${TARGET}-"
+
+cd "${COOKBOOK_STAGE}"/bin && ln -s luajit-2.1.* luajit
+"""
