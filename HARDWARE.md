@@ -72,6 +72,7 @@ You will use this template to insert your computer on the table.
 | ASUS | Eee PC 900 | 0.8.0 | 11-11-2022 | desktop | i686 | BIOS | Boots to Orbital, No ethernet driver, Correct video mode not offered (firmware issue) |
 | Toshiba | Satellite L500 | 0.8.0 | 11-11-2022 | desktop | x86-64 | BIOS | Boots to Orbital, No ethernet driver, Correct video mode not offered (firmware issue) |
 | Raspberry Pi | 3 Model B+ | 0.8.0 | Unknown | server | ARM64 | U-Boot | Boots to UART serial console (pl011) |
+| Lenovo | ThinkPad Yoga 260 Laptop - Type 20FE | 0.9.0 | 07-09-2024 | demo | x86-64 | UEFI | Boots to Orbital, No audio |
 
 ## Broken
 
@@ -85,3 +86,4 @@ You will use this template to insert your computer on the table.
 | Framework | Laptop 16 (AMD Ryzen 7040 Series) | 0.9.0 | 07-09-2024 | server, demo | x86-64 | UEFI | Black screen and unresponsive after the bootloader and resolution selection |
 | Toshiba | Satellite L500 | 0.8.0 | 11-11-2022 | desktop | i686 | BIOS | Correct video mode not offered (firmware issue), Panics on `phys_to_virt overflow`, probably having invalid mappings for 32-bit |
 | Panasonic | Toughbook CF-18 | 0.8.0 | 11-11-2022 | desktop | i686 | BIOS | Hangs after PIT initialization |
+| XMG (Schenker) | Apex 17 (M21) | 0.9.0 | 30-09-2024 | demo, server | x86-64 | UEFI | After selecting resolution, (release) repeats `...::interrupt::irq::ERROR -- Local apic internal error: ESR=0x40` a few times before it freezes; (daily) really slowly prints statements from `...::rmm::INFO` before it abruptly aborts |
