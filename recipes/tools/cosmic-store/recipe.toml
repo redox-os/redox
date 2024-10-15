@@ -1,0 +1,15 @@
+[source]
+git = "https://github.com/pop-os/cosmic-store.git"
+branch = "master"
+
+[build]
+template = "custom"
+dependencies = [
+    "gettext",
+    "openssl1",
+]
+script = """
+export GETTEXT_DIR="${COOKBOOK_SYSROOT}"
+export GETTEXT_STATIC=1
+cookbook_cargo --no-default-features
+"""
