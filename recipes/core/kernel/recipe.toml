@@ -5,7 +5,7 @@ git = "https://gitlab.redox-os.org/redox-os/kernel.git"
 template = "custom"
 script = """
 export RUST_TARGET_PATH="${COOKBOOK_SOURCE}/targets"
-ARCH="$(echo "${TARGET}" | cut -d - -f1)"
+ARCH="$(echo "${GNU_TARGET}" | cut -d - -f1)"
 cargo rustc \
 	--bin kernel \
 	--manifest-path "${COOKBOOK_SOURCE}/Cargo.toml" \
@@ -16,11 +16,11 @@ cargo rustc \
 	-C link-arg=-T -Clink-arg="${COOKBOOK_SOURCE}/linkers/${ARCH}.ld" \
 	-C link-arg=-z -Clink-arg=max-page-size=0x1000 \
 	--emit link="${PWD}/kernel.all"
-"${TARGET}-objcopy" \
+"${GNU_TARGET}-objcopy" \
 	--only-keep-debug \
 	kernel.all \
 	kernel.sym
-"${TARGET}-objcopy" \
+"${GNU_TARGET}-objcopy" \
 	--strip-debug \
 	kernel.all \
 	kernel

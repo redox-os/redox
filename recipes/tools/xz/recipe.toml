@@ -9,7 +9,7 @@ script = """
 (cd ${COOKBOOK_SOURCE} && ./autogen.sh)
 export CFLAGS="-static"
 COOKBOOK_CONFIGURE_FLAGS=(
-    --host="${TARGET}"
+    --host="${GNU_TARGET}"
     --prefix=""
     --disable-lzmadec
     --disable-lzmainfo
