@@ -8,6 +8,9 @@ then
 fi
 ARCH="${TARGET%%-*}"
 HOST="$TARGET"
+if [ x"${HOST}" == x"riscv64gc-unknown-redox" ] ; then
+	HOST="riscv64-unknown-redox"
+fi
 
 # Automatic variables
 ROOT="$(cd `dirname "$0"` && pwd)"
