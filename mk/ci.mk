@@ -28,7 +28,7 @@ ci-pkg: prefix FORCE
 	PACKAGES="$$($(INSTALLER) --list-packages -c config/$(ARCH)/ci.toml)" && \
 	cd cookbook && \
 	./fetch.sh "$${PACKAGES}" && \
-	./repo.sh $(REPO_NONSTOP) "$${PACKAGES}"
+	./repo.sh --appstream $(REPO_NONSTOP) "$${PACKAGES}"
 
 # CI toolchain
 ci-toolchain: FORCE
