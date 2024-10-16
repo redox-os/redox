@@ -4,6 +4,5 @@ git = "https://gitlab.redox-os.org/redox-os/orbdata.git"
 [build]
 template = "custom"
 script = """
-mkdir -pv "${COOKBOOK_STAGE}/ui"
-cp -rv "${COOKBOOK_SOURCE}/"* "${COOKBOOK_STAGE}/ui"
+cp -rv "${COOKBOOK_SOURCE}/"* "${COOKBOOK_STAGE}/"
 """
