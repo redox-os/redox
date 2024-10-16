@@ -20,21 +20,6 @@ else
     SHASUM="shasum -a 256"
 fi
 
-if [ ! "$(uname -s)" = "Redox" ]
-then
-function docgen {
-    CC=cc AR=ar RANLIB=ranlib cargo run --release --manifest-path "$ROOT/docgen/Cargo.toml" --bin docgen -- "$@"
-}
-
-function pkg {
-    CC=cc AR=ar RANLIB=ranlib cargo run --release --manifest-path "$ROOT/pkgutils/Cargo.toml" --bin pkg -- "$@"
-}
-
-function pkgar {
-    CC=cc AR=ar RANLIB=ranlib cargo run --release --manifest-path "$ROOT/pkgar/Cargo.toml" --bin pkgar -- "$@"
-}
-fi
-
 function usage {
     echo "cook.sh $1 <op>" >&2
     echo "  dist" >&2

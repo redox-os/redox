@@ -54,3 +54,18 @@ fi
 
 export FIND
 export STAT
+
+if [ ! "$(uname -s)" = "Redox" ]
+then
+function docgen {
+    CC=cc AR=ar RANLIB=ranlib cargo run --release --manifest-path "$ROOT/docgen/Cargo.toml" --bin docgen -- "$@"
+}
+ 
+function pkg {
+    CC=cc AR=ar RANLIB=ranlib cargo run --release --manifest-path "$ROOT/pkgutils/Cargo.toml" --bin pkg -- "$@"
+}
+
+function pkgar {
+    CC=cc AR=ar RANLIB=ranlib cargo run --release --manifest-path "$ROOT/pkgar/Cargo.toml" --bin pkgar -- "$@"
+}
+fi
