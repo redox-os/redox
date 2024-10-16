@@ -27,12 +27,5 @@ function recipe_clean {
 function recipe_stage {
     dest="$(realpath $1)"
     "$REDOX_MAKE" DESTDIR="$dest" install
-
-    mkdir -pv "$1/ui/apps"
-    cp -v "${COOKBOOK_RECIPE}/manifest" "$1/ui/apps/schismtracker"
-
-    mkdir -pv "$1/ui/icons/apps"
-    cp -v "icons/schism-icon-64.png" "$1/ui/icons/apps/schismtracker.png"
-
     skip=1
 }
