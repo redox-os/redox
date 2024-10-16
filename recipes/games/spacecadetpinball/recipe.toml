@@ -29,12 +29,4 @@ COOKBOOK_CONFIGURE_FLAGS=(
     "${COOKBOOK_SOURCE}"
 )
 cookbook_configure
-
-mkdir -pv "${COOKBOOK_STAGE}/ui/apps"
-cat > "${COOKBOOK_STAGE}"/ui/apps/spacecadetpinball <<EOF
-name=Space Cadet Pinball
-category=Games
-binary=/usr/bin/SpaceCadetPinball
-icon=/usr/share/icons/hicolor/128x128/apps/SpaceCadetPinball.png
-EOF
 """
