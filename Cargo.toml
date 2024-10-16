@@ -29,8 +29,3 @@ serde = { version = "=1.0.197", features = ["derive"] }
 termion = "4"
 toml = "0.8"
 walkdir = "2.3.1"
-
-
-[patch.crates-io]
-redox_installer = { git = "https://gitlab.redox-os.org/redox-os/installer.git" }
-ring = { git = "https://gitlab.redox-os.org/redox-os/ring.git", branch = "redox-unix-0.13.5" }
