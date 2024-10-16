@@ -4,9 +4,26 @@ branch = "master"
 
 [build]
 template = "custom"
+dependencies = [
+    "gettext",
+    "libiconv",
+]
 script = """
-cookbook_cargo --no-default-features --features winit
-mkdir -pv "${COOKBOOK_STAGE}/ui/apps"
+export GETTEXT_DIR="${COOKBOOK_SYSROOT}"
+export GETTEXT_STATIC=1
+# Hack to link libiconv, which gettext-sys does not link
+"${COOKBOOK_CARGO}" rustc \
+    --manifest-path "${COOKBOOK_SOURCE}/Cargo.toml" \
+    --release \
+    --bin cosmic-files \
+    --no-default-features \
+    --features desktop,winit \
+    -- \
+    -L "${COOKBOOK_SYSROOT}/lib" \
+    -C link-arg="-liconv"
+mkdir -pv "${COOKBOOK_STAGE}/usr/bin/"
+cp -v "target/${TARGET}/release/cosmic-files" "${COOKBOOK_STAGE}/usr/bin/"
+mkdir -pv "${COOKBOOK_STAGE}/ui/apps/"
 cp -v "${COOKBOOK_RECIPE}/manifest" "${COOKBOOK_STAGE}/ui/apps/20_cosmic-files"
 #TODO: install with just?
 APPID="com.system76.CosmicFiles"
