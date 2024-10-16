@@ -15,6 +15,7 @@ cosmic-icons = {}
 cosmic-files = {}
 cosmic-term = {}
 dejavu = {}
+hicolor-icon-theme = {}
 installer-gui = {}
 netsurf = {}
 orbdata = {}

@@ -71,6 +71,7 @@ gnu-make = {}
 #gstreamer = {} # conflict with thread local errno
 harfbuzz = {}
 #hematite = {} # needs crate patches for redox-unix
+hicolor-icon-theme = {}
 init = {}
 initfs = {}
 installer = {}

@@ -19,6 +19,7 @@ drivers = {}
 escalated = {}
 extrautils = {}
 findutils = {}
+hicolor-icon-theme = {}
 initfs = {}
 installer = {}
 installer-gui = {}
