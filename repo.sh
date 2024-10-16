@@ -4,10 +4,14 @@ shopt -s nullglob
 
 source config.sh
 
+APPSTREAM="0"
 recipes=""
 for arg in "${@:1}"
 do
-    if [ "$arg" == "--debug" ]
+    if [ "$arg" == "--appstream" ]
+    then
+        APPSTREAM="1"
+    elif [ "$arg" == "--debug" ]
     then
         DEBUG=--debug
     elif [ "$arg" == "--nonstop" ]
@@ -115,6 +119,8 @@ done
 
 mkdir -p "$REPO"
 
+APPSTREAM_SOURCES=()
+
 for recipe in $recipes
 do
     recipe_path=`target/release/find_recipe $recipe`
@@ -133,7 +139,33 @@ do
         echo -e "\033[01;38;5;155mrepo - publishing $recipe\033[0m" >&2
         cp -v "${COOKBOOK_STAGE}.pkgar" "$REPO/$recipe.pkgar"
     fi
+
+    if [ -e "${COOKBOOK_STAGE}/usr/share/metainfo" ]
+    then
+        APPSTREAM_SOURCES+=("${COOKBOOK_STAGE}")
+    fi
 done
+
+if [ "${APPSTREAM}" == "1" ]
+then
+    echo -e "\033[01;38;5;155mrepo - generating appstream data\033[0m" >&2
+
+    APPSTREAM_ROOT="$ROOT/build/${TARGET}/appstream"
+    APPSTREAM_PKG="$REPO/appstream.pkgar"
+    rm -rf "${APPSTREAM_ROOT}" "${APPSTREAM_PKG}"
+    mkdir -p "${APPSTREAM_ROOT}"
+    if [ -n "${APPSTREAM_SOURCES}" ]
+    then
+        appstreamcli compose \
+            --origin=pkgar \
+            --result-root="${APPSTREAM_ROOT}" \
+            "${APPSTREAM_SOURCES[@]}"
+    fi
+    pkgar create \
+        --archive "${APPSTREAM_PKG}" \
+        --skey "${ROOT}/build/id_ed25519.toml" \
+        "${APPSTREAM_ROOT}"
+fi
 
 echo -e "\033[01;38;5;155mrepo - generating repo.toml\033[0m" >&2
 
