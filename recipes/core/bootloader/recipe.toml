@@ -25,7 +25,7 @@ then
 fi
 
 # Build UEFI bootloader for supported architectures
-if [ "${ARCH}" == "aarch64" -o "${ARCH}" == "x86_64" ]
+if [ "${ARCH}" == "aarch64" -o "${ARCH}" == "x86_64" -o "${ARCH}" == "riscv64gc" ]
 then
     bootloader "${ARCH}-unknown-uefi" bootloader.efi bootloader.efi
     bootloader "${ARCH}-unknown-uefi" bootloader-live.efi bootloader-live.efi
