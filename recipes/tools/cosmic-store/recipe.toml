@@ -11,5 +11,13 @@ dependencies = [
 script = """
 export GETTEXT_DIR="${COOKBOOK_SYSROOT}"
 export GETTEXT_STATIC=1
-cookbook_cargo --no-default-features
+cookbook_cargo --no-default-features --features pkgar
+#TODO: install with just?
+APPID="com.system76.CosmicStore"
+mkdir -pv "${COOKBOOK_STAGE}/usr/share/applications/"
+cp -v "${COOKBOOK_SOURCE}/res/${APPID}.desktop" "${COOKBOOK_STAGE}/usr/share/applications/"
+mkdir -pv "${COOKBOOK_STAGE}/usr/share/metainfo/"
+cp -v "${COOKBOOK_SOURCE}/res/${APPID}.metainfo.xml" "${COOKBOOK_STAGE}/usr/share/metainfo/"
+mkdir -pv "${COOKBOOK_STAGE}/usr/share/icons/"
+cp -rv "${COOKBOOK_SOURCE}/res/icons/hicolor/" "${COOKBOOK_STAGE}/usr/share/icons/"
 """
