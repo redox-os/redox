@@ -1,0 +1,3 @@
+name=Quake shareware
+category=Games
+binary=/usr/games/quakespasm -basedir /use/share/games/quake/

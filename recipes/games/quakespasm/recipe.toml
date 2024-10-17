@@ -1,0 +1,48 @@
+# TODO: Promote
+
+# Version: 0.96.3
+# Version date: 31-July-2024 
+
+[source]
+git = "https://github.com/sezero/quakespasm"
+rev = "cc32abe09ed417ce3be10af300d2dc2f686349ba"
+patches = ["redox.patch"]
+
+[build]
+template = "custom"
+dependencies = [
+  "llvm18",
+  "libiconv",
+  "libogg",
+  "liborbital",
+  "libvorbis",
+  "mesa",
+  # "sdl1",
+  "sdl2",
+  "zlib",
+]
+script = """
+# Skip configuring because QuakeSpasm uses a custom build system
+COOKBOOK_CONFIGURE="true"
+COOKBOOK_CONFIGURE_FLAGS=""
+
+# Ensure the build system is aware of Redox
+# The build system uses sdl-config for Unix, but SDL recommends using pkg-config
+export HOST_OS="redox"
+export PKG_CONFIG="${TARGET}-pkg-config"
+
+# Config options for the Makefile. Set as necessary (see Makefile).
+# MP3 is disabled because libmad doesn't compile at the moment
+# Other options weren't tested, but SDL and SDL2 both compile fine
+export USE_SDL2=1
+export USE_CODEC_MP3=0
+export DO_USERDIRS=1
+
+# Source is in Quake/ and icons are in Misc/
+rsync -av --delete "${COOKBOOK_SOURCE}/Quake/" "${COOKBOOK_SOURCE}/Misc" ./
+
+# According to frantic grepping, the Redox build system doesn't apply patches to git
+git apply "${COOKBOOK_RECIPE}/redox.patch"
+
+cookbook_configure
+"""
