@@ -418,6 +418,7 @@ fn build(
     recipe_dir: &Path,
     source_dir: &Path,
     target_dir: &Path,
+    name: &str,
     build: &BuildRecipe,
 ) -> Result<PathBuf, String> {
     let mut dep_pkgars = vec![];
@@ -613,26 +614,22 @@ function cookbook_configure {
 
         let post_script = r#"# Common post script
 # Strip binaries
-if [ -d "${COOKBOOK_STAGE}/bin" ] && [ -z "${COOKBOOK_NOSTRIP}" ]
-then
-    find "${COOKBOOK_STAGE}/bin" -type f -exec "${GNU_TARGET}-strip" -v {} ';'
-fi
-
-if [ -d "${COOKBOOK_STAGE}/usr/bin" ] && [ -z "${COOKBOOK_NOSTRIP}" ]
-then
-    find "${COOKBOOK_STAGE}/usr/bin" -type f -exec "${GNU_TARGET}-strip" -v {} ';'
-fi
+for dir in "${COOKBOOK_STAGE}/bin" "${COOKBOOK_STAGE}/usr/bin" 
+do
+    if [ -d "${dir}" ] && [ -z "${COOKBOOK_NOSTRIP}" ]
+    then
+        find "${dir}" -type f -exec "${GNU_TARGET}-strip" -v {} ';'
+    fi
+done
 
 # Remove libtool files
-if [ -d "${COOKBOOK_STAGE}/lib" ]
-then
-    find "${COOKBOOK_STAGE}/lib" -type f -name '*.la' -exec rm -fv {} ';'
-fi
-
-if [ -d "${COOKBOOK_STAGE}/usr/lib" ]
-then
-    find "${COOKBOOK_STAGE}/usr/lib" -type f -name '*.la' -exec rm -fv {} ';'
-fi
+for dir in "${COOKBOOK_STAGE}/lib" "${COOKBOOK_STAGE}/usr/lib" 
+do
+    if [ -d "${dir}" ]
+    then
+        find "${dir}" -type f -name '*.la' -exec rm -fv {} ';'
+    fi
+done
 
 # Remove cargo install files
 for file in .crates.toml .crates2.json
@@ -640,6 +637,15 @@ do
     if [ -f "${COOKBOOK_STAGE}/${file}" ]
     then
         rm -v "${COOKBOOK_STAGE}/${file}"
+    fi
+done
+
+# Add pkgname to appstream metadata
+for dir in "${COOKBOOK_STAGE}/share/metainfo" "${COOKBOOK_STAGE}/usr/share/metainfo"
+do
+    if [ -d "${dir}" ]
+    then
+        find "${dir}" -type f -name '*.xml' -exec sed -i 's|</component>|<pkgname>'"${COOKBOOK_NAME}"'</pkgname></component>|g' {} ';'
     fi
 done
 "#;
@@ -678,6 +684,7 @@ done
             command.arg("bash").arg("-ex");
             command.current_dir(&cookbook_build);
             command.env("COOKBOOK_BUILD", &cookbook_build);
+            command.env("COOKBOOK_NAME", name);
             command.env("COOKBOOK_RECIPE", &cookbook_recipe);
             command.env("COOKBOOK_REDOXER", &cookbook_redoxer);
             command.env("COOKBOOK_ROOT", &cookbook_root);
@@ -701,6 +708,7 @@ fn package(
     _recipe_dir: &Path,
     stage_dir: &Path,
     target_dir: &Path,
+    _name: &str,
     _package: &PackageRecipe,
 ) -> Result<PathBuf, String> {
     //TODO: metadata like dependencies, name, and version
@@ -746,7 +754,7 @@ fn package(
     Ok(package_file)
 }
 
-fn cook(recipe_dir: &Path, recipe: &Recipe, fetch_only: bool) -> Result<(), String> {
+fn cook(recipe_dir: &Path, name: &str, recipe: &Recipe, fetch_only: bool) -> Result<(), String> {
     let source_dir =
         fetch(recipe_dir, &recipe.source).map_err(|err| format!("failed to fetch: {}", err))?;
 
@@ -763,10 +771,10 @@ fn cook(recipe_dir: &Path, recipe: &Recipe, fetch_only: bool) -> Result<(), Stri
         create_dir(&target_dir)?;
     }
 
-    let stage_dir = build(recipe_dir, &source_dir, &target_dir, &recipe.build)
+    let stage_dir = build(recipe_dir, &source_dir, &target_dir, name, &recipe.build)
         .map_err(|err| format!("failed to build: {}", err))?;
 
-    let _package_file = package(recipe_dir, &stage_dir, &target_dir, &recipe.package)
+    let _package_file = package(recipe_dir, &stage_dir, &target_dir, name, &recipe.package)
         .map_err(|err| format!("failed to package: {}", err))?;
 
     Ok(())
@@ -890,7 +898,7 @@ fn main() {
             }
             Ok(())
         } else {
-            cook(&recipe.dir, &recipe.recipe, fetch_only)
+            cook(&recipe.dir, &recipe.name, &recipe.recipe, fetch_only)
         };
 
         match res {
