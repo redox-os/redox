@@ -708,8 +708,8 @@ fn package(
     _recipe_dir: &Path,
     stage_dir: &Path,
     target_dir: &Path,
-    _name: &str,
-    _package: &PackageRecipe,
+    name: &str,
+    package: &PackageRecipe,
 ) -> Result<PathBuf, String> {
     //TODO: metadata like dependencies, name, and version
 
@@ -749,6 +749,25 @@ fn package(
             stage_dir.to_str().unwrap(),
         )
         .map_err(|err| format!("failed to create pkgar archive: {:?}", err))?;
+
+        //TODO: share struct with pkgutils?
+        #[derive(serde::Serialize)]
+        struct StageToml {
+            name: String,
+            version: String,
+            target: String,
+            depends: Vec<String>,
+        }
+        let stage_toml = toml::to_string(&StageToml {
+            name: name.into(),
+            version: "TODO".into(),
+            target: env::var("TARGET")
+                .map_err(|err| format!("failed to read TARGET: {:?}", err))?,
+            depends: package.dependencies.clone(),
+        })
+        .map_err(|err| format!("failed to serialize stage.toml: {:?}", err))?;
+        fs::write(target_dir.join("stage.toml"), stage_toml)
+            .map_err(|err| format!("failed to write stage.toml: {:?}", err))?;
     }
 
     Ok(package_file)
