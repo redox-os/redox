@@ -4,9 +4,11 @@ use std::process::exit;
 // use clap::Parser;
 
 fn main() {
-    let print_short = std::env::args().nth(1).map_or(false, |a| a == "-s" || a == "--short");
+    let print_short = std::env::args()
+        .nth(1)
+        .map_or(false, |a| a == "-s" || a == "--short");
 
-    let result = list_recipes( Path::new("recipes"), Default::default());
+    let result = list_recipes(Path::new("recipes"), Default::default());
 
     match result {
         Ok(result) => {

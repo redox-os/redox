@@ -40,24 +40,6 @@ do
     if [ -e "${COOKBOOK_RECIPE}/recipe.toml" ]
     then
         target/release/cook "$recipe"
-
-        if [ ! -f "${COOKBOOK_STAGE}.tar.gz" ]
-        then
-            echo -e "\033[01;38;5;155mrepo - legacy packaging $recipe\033[0m" >&2
-            ./cook.sh "$recipe" tar $DEBUG
-        else
-            TIME_PKG="$($STAT -c "%Y" "${COOKBOOK_STAGE}.pkgar")"
-            TIME_STAGE="$($STAT -c "%Y" "${COOKBOOK_STAGE}.tar.gz")"
-            if [ "$TIME_PKG" -gt "$TIME_STAGE" ]
-            then
-                echo -e "\033[01;38;5;155mrepo - legacy repackaging $recipe\033[0m" >&2
-                ./cook.sh "$recipe" untar tar $DEBUG
-            fi
-        fi
-
-        # Match pkgar and tar time
-        touch -c -r "${COOKBOOK_STAGE}.tar.gz" "${COOKBOOK_STAGE}.pkgar"
-
         continue
     fi
 
@@ -85,34 +67,20 @@ do
         fi
     fi
 
-    if [ ! -f "${COOKBOOK_STAGE}.tar.gz" ]
+    if [ ! -f "${COOKBOOK_STAGE}.pkgar" ]
     then
         echo -e "\033[01;38;5;155mrepo - building $recipe\033[0m" >&2
-        ./cook.sh "$recipe" build stage tar $DEBUG
+        ./cook.sh "$recipe" build stage pkg $DEBUG
     else
         TIME_BUILD="$($FIND "${COOKBOOK_BUILD}" -type f -not -path '*/.git*' -printf "%Ts\n" | sort -nr | head -n 1)"
-        TIME_STAGE="$($STAT -c "%Y" "${COOKBOOK_STAGE}.tar.gz")"
+        TIME_STAGE="$($STAT -c "%Y" "${COOKBOOK_STAGE}.pkgar")"
         TIME_RECIPE="$($FIND "${COOKBOOK_RECIPE}"/{recipe.sh,*.patch} -printf '%Ts\n' | sort -nr | head -n 1)"
         if [ "$TIME_BUILD" -gt "$TIME_STAGE" -o "$TIME_RECIPE" -gt "$TIME_STAGE" ]
         then
             echo -e "\033[01;38;5;155mrepo - rebuilding $recipe\033[0m" >&2
-            ./cook.sh "$recipe" untar unstage build stage tar $DEBUG
+            ./cook.sh "$recipe" untar unstage build stage pkg $DEBUG
         else
             echo -e "\033[01;38;5;155mrepo - $recipe up to date\033[0m" >&2
-        fi
-    fi
-
-    if [ ! -f "${COOKBOOK_STAGE}.pkgar" ]
-    then
-        echo -e "\033[01;38;5;155mrepo - packaging $recipe\033[0m" >&2
-        ./cook.sh "$recipe" pkg $DEBUG
-    else
-        TIME_STAGE="$($STAT -c "%Y" "${COOKBOOK_STAGE}.tar.gz")"
-        TIME_PKG="$($STAT -c "%Y" "${COOKBOOK_STAGE}.pkgar")"
-        if [ "$TIME_STAGE" -gt "$TIME_PKG" ]
-        then
-            echo -e "\033[01;38;5;155mrepo - repackaging $recipe\033[0m" >&2
-            ./cook.sh "$recipe" unpkg pkg $DEBUG
         fi
     fi
 done
@@ -128,16 +96,11 @@ do
     TARGET_DIR="${COOKBOOK_RECIPE}/target/${TARGET}"
     COOKBOOK_STAGE="${TARGET_DIR}/stage"
 
-    if [ "${COOKBOOK_STAGE}.tar.gz" -nt "$REPO/$recipe.tar.gz" ]
-    then
-        echo -e "\033[01;38;5;155mrepo - publishing $recipe\033[0m" >&2
-        ./cook.sh $recipe publish
-    fi
-
     if [ "${COOKBOOK_STAGE}.pkgar" -nt "$REPO/$recipe.pkgar" ]
     then
         echo -e "\033[01;38;5;155mrepo - publishing $recipe\033[0m" >&2
         cp -v "${COOKBOOK_STAGE}.pkgar" "$REPO/$recipe.pkgar"
+        cp -v "${COOKBOOK_STAGE}.toml" "$REPO/$recipe.toml"
     fi
 
     if [ -e "${COOKBOOK_STAGE}/usr/share/metainfo" ]

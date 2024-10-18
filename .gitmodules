@@ -6,7 +6,3 @@
 	path = pkgar
 	url = https://gitlab.redox-os.org/redox-os/pkgar.git
 	branch = master
-[submodule "pkgutils"]
-	path = pkgutils
-	url = https://gitlab.redox-os.org/redox-os/pkgutils.git
-	branch = master

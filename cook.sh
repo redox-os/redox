@@ -32,12 +32,8 @@ function usage {
     echo "  unpkg" >&2
     echo "  prepare" >&2
     echo "  unprepare" >&2
-    echo "  publish" >&2
-    echo "  unpublish" >&2
     echo "  stage" >&2
     echo "  unstage" >&2
-    echo "  tar" >&2
-    echo "  untar" >&2
     echo "  version" >&2
 }
 
@@ -52,12 +48,10 @@ function op {
             op $1 prepare
             op $1 build
             op $1 stage
-            op $1 tar
             op $1 pkg
             ;;
         distclean)
             op $1 unpkg
-            op $1 untar
             op $1 unstage
             op $1 unprepare
             ;;
@@ -295,11 +289,8 @@ function op {
                 --archive "${COOKBOOK_STAGE}.pkgar" \
                 --skey "${ROOT}/build/id_ed25519.toml" \
                 "${COOKBOOK_STAGE}"
-            ;;
-        unpkg)
-            rm -fv "${COOKBOOK_STAGE}.pkgar"
-            ;;
-        tar)
+
+            # Generate stage.toml
             echo "name = \"$1\"" > "${COOKBOOK_STAGE}.toml"
             echo "version = \"$(op $1 version)\"" >> "${COOKBOOK_STAGE}.toml"
             echo "target = \"$TARGET\"" >> "${COOKBOOK_STAGE}.toml"
@@ -314,33 +305,9 @@ function op {
             else
                 echo "depends = []" >> "${COOKBOOK_STAGE}.toml"
             fi
-
-            rm -rf "${COOKBOOK_STAGE}/pkg"
-            mkdir -p "${COOKBOOK_STAGE}/pkg"
-
-            pushd "${COOKBOOK_STAGE}" > /dev/null
-            find -L . -type f | cut -d / -f 2- | sort | while read file
-            do
-                $SHASUM "$file" >> "pkg/$1.sha256sums"
-            done
-            popd > /dev/null
-
-            cp -v "${COOKBOOK_STAGE}.toml" "${COOKBOOK_STAGE}/pkg/$1.toml"
-            pushd "$(dirname "${COOKBOOK_STAGE}")" > /dev/null
-                pkg --target="$TARGET" create "$(basename "${COOKBOOK_STAGE}")"
-            popd > /dev/null
             ;;
-        untar)
-            rm -rfv "${COOKBOOK_STAGE}.tar.gz" "${COOKBOOK_STAGE}.sig" "${COOKBOOK_STAGE}.toml"
-            ;;
-        publish)
-            mkdir -p "$REPO"
-            cp -v "${COOKBOOK_STAGE}.tar.gz" "$REPO/$1.tar.gz"
-            cp -v "${COOKBOOK_STAGE}.sig" "$REPO/$1.sig"
-            cp -v "${COOKBOOK_STAGE}.toml" "$REPO/$1.toml"
-            ;;
-        unpublish)
-            rm -rfv "$REPO/$1.tar.gz" "$REPO/$1.sig" "$REPO/$1.toml"
+        unpkg)
+            rm -fv "${COOKBOOK_STAGE}.pkgar" "${COOKBOOK_STAGE}.toml"
             ;;
         *)
             usage $1

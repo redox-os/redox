@@ -1,6 +1,6 @@
 pub use pbr::ProgressBar;
 
-use std::io::{Read, Write, Result};
+use std::io::{Read, Result, Write};
 
 pub struct ProgressBarRead<'p, 'r, P: Write + 'p, R: Read + 'r> {
     pb: &'p mut ProgressBar<P>,
@@ -9,10 +9,7 @@ pub struct ProgressBarRead<'p, 'r, P: Write + 'p, R: Read + 'r> {
 
 impl<'p, 'r, P: Write, R: Read> ProgressBarRead<'p, 'r, P, R> {
     pub fn new(pb: &'p mut ProgressBar<P>, r: &'r mut R) -> ProgressBarRead<'p, 'r, P, R> {
-        ProgressBarRead {
-            pb,
-            r
-        }
+        ProgressBarRead { pb, r }
     }
 }
 
