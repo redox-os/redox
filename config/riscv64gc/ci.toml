@@ -1,0 +1,48 @@
+# The Redox build server configuration
+
+# General settings
+[general]
+# Do not prompt if settings are not defined
+prompt = false
+
+# Package settings
+[packages]
+audiod = {}
+bootloader = {}
+bootstrap = {}
+ca-certificates = {}
+contain = {}
+coreutils = {}
+dash = {}
+diffutils = {}
+drivers = {}
+escalated = {}
+extrautils = {}
+findutils = {}
+hicolor-icon-theme = {}
+initfs = {}
+installer = {}
+installer-gui = {}
+ion = {}
+ipcd = {}
+kernel = {}
+nano = {}
+netdb = {}
+netstack = {}
+netsurf = {}
+netutils = {}
+orbdata = {}
+orbital = {}
+orbterm = {}
+orbutils = {}
+pkgutils = {}
+ptyd = {}
+redoxfs = {}
+relibc = {}
+resist = {}
+smith = {}
+userutils = {}
+uutils = {}
+vim = {}
+
+#TODO: Add more packages
