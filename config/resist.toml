@@ -39,7 +39,3 @@ resist /share/resist/posix/base.toml
 resist /share/resist/posix/shell.toml
 shutdown
 """
-
-[[files]]
-path = "/etc/pkg.d/50_redox"
-data = "https://static.redox-os.org/pkg"

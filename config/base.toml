@@ -65,6 +65,10 @@ path = "/etc/os-release"
 data = "../usr/lib/os-release"
 symlink = true
 
+[[files]]
+path = "/etc/pkg.d/50_redox"
+data = "https://static.redox-os.org/pkg"
+
 ## Symlinks for usrmerge
 [[files]]
 path = "/usr"
