@@ -23,6 +23,8 @@ server desktop demo: FORCE
 # CI packaging target
 ci-pkg: prefix FORCE
 	$(HOST_CARGO) build --manifest-path cookbook/Cargo.toml --release
+	$(HOST_CARGO) build --manifest-path cookbook/docgen/Cargo.toml --release
+	$(HOST_CARGO) build --manifest-path cookbook/pkgar/Cargo.toml --release
 	$(HOST_CARGO) build --manifest-path installer/Cargo.toml --release
 	export PATH="$(PREFIX_PATH):$$PATH" && \
 	PACKAGES="$$($(INSTALLER) --list-packages -c config/$(ARCH)/ci.toml)" && \

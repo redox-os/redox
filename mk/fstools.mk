@@ -8,6 +8,8 @@ ifeq ($(PODMAN_BUILD),1)
 	$(PODMAN_RUN) $(MAKE) $@
 else
 	$(HOST_CARGO) build --manifest-path cookbook/Cargo.toml --release
+	$(HOST_CARGO) build --manifest-path cookbook/docgen/Cargo.toml --release
+	$(HOST_CARGO) build --manifest-path cookbook/pkgar/Cargo.toml --release
 	$(HOST_CARGO) build --bin list_packages --manifest-path installer/Cargo.toml --release
 	$(HOST_CARGO) build --manifest-path redoxfs/Cargo.toml --release --bin redoxfs --bin redoxfs-mkfs
 	mkdir -p build
@@ -22,6 +24,8 @@ ifeq ($(PODMAN_BUILD),1)
 	$(PODMAN_RUN) $(MAKE) $@
 else
 	$(HOST_CARGO) clean --manifest-path cookbook/Cargo.toml
+	$(HOST_CARGO) clean --manifest-path cookbook/docgen/Cargo.toml
+	$(HOST_CARGO) clean --manifest-path cookbook/pkgar/Cargo.toml
 	$(HOST_CARGO) clean --manifest-path installer/Cargo.toml
 	$(HOST_CARGO) clean --manifest-path redoxfs/Cargo.toml
 	rm -f $(FSTOOLS_TAG)
