@@ -35,7 +35,3 @@ inputd -A 2
 getty 2
 getty /scheme/debug/no-preserve -J
 """
-
-[[files]]
-path = "/etc/pkg.d/50_redox"
-data = "https://static.redox-os.org/pkg"

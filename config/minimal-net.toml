@@ -27,6 +27,3 @@ getty 2
 getty /scheme/debug -J
 """
 
-[[files]]
-path = "/etc/pkg.d/50_redox"
-data = "https://static.redox-os.org/pkg"

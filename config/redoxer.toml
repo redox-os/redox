@@ -48,7 +48,3 @@ echo
 echo ## running redoxer ##
 redoxerd
 """
-
-[[files]]
-path = "/etc/pkg.d/50_redox"
-data = "https://static.redox-os.org/pkg"
