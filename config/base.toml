@@ -40,9 +40,7 @@ pcid /etc/pcid.d/
 
 [[files]]
 path = "/etc/hostname"
-data = """
-redox
-"""
+data = "redox"
 
 # https://www.freedesktop.org/software/systemd/man/latest/os-release.html
 [[files]]
