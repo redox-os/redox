@@ -1,14 +1,45 @@
-#TODO not compiled or tested
+#TODO Fix dynamic loading of C modules
+#TODO Fix openssl dependency
+#TODO Add additional dependencies (readline, ncurses, etc.)
 [source]
 tar = "https://www.python.org/ftp/python/3.10.13/Python-3.10.13.tar.xz"
+patches = [
+  'redox.patch'
+]
+
 [build]
 template = "custom"
-dependencies = [
-    "openssl1",
-]
+dependencies = []
 script = """
+# Python cross-compilation requires the same Python version on the build machine
+BUILDMACH_TARGET="$(gcc -dumpmachine)"
+BUILDMACH_BUILD="${COOKBOOK_RECIPE}/target/${BUILDMACH_TARGET}/build"
+BUILDMACH_STAGE="${COOKBOOK_RECIPE}/target/${BUILDMACH_TARGET}/stage"
+
+# If this is a fresh build then we also rebuild the build machine version
+# (Cookbook clean does not remove it so we have to do it manually)
+if [ -z "$(ls -A .)" ]; then
+  rm -rf "${BUILDMACH_BUILD}" "${BUILDMACH_STAGE}"
+fi
+
+mkdir -p "${BUILDMACH_BUILD}"
+mkdir -p "${BUILDMACH_STAGE}"
+
+cd "${BUILDMACH_BUILD}"
+# Use env that does not use the Redox build tools
+env -i PATH="$PATH" CC=gcc "${COOKBOOK_SOURCE}/configure"
+env -i PATH="$PATH" CC=gcc "${COOKBOOK_MAKE}" -j "${COOKBOOK_MAKE_JOBS}"
+"${COOKBOOK_MAKE}" install DESTDIR="${BUILDMACH_STAGE}"
+cd -
+
+export PATH="${BUILDMACH_STAGE}/usr/local/bin:${PATH}"
+
+# --enable-optimizations for release build
 COOKBOOK_CONFIGURE_FLAGS+=(
     --disable-ipv6
+    --build="${ARCH}"
+    ac_cv_file__dev_ptmx=no
+    ac_cv_file__dev_ptc=no
 )
 cookbook_configure
 """
