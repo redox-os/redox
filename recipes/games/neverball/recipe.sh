@@ -10,7 +10,7 @@ function recipe_version {
 function recipe_build {
     set -x
     env -i \
-        LDFLAGS="-static" \
+        LDFLAGS="-static -ljpeg -lpng16 -lz" \
         PATH="/usr/bin:/bin" \
         PKG_CONFIG="pkg-config" \
     "$REDOX_MAKE" -j"$($NPROC)" ENABLE_FS=stdio mapc sols
