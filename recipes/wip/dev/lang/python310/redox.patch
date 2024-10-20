@@ -1,0 +1,90 @@
+diff -ur source-orig/configure source/configure
+--- source-orig/configure	2023-08-24 13:46:25.000000000 +0100
++++ source/configure	2024-10-17 16:50:09.377036649 +0100
+@@ -3347,6 +3347,9 @@
+ 	*-*-vxworks*)
+ 	    ac_sys_system=VxWorks
+ 	    ;;
++	*-*-redox*)
++		ac_sys_system=Redox
++		;;
+ 	*)
+ 		# for now, limit cross builds to known configurations
+ 		MACHDEP="unknown"
+@@ -3371,6 +3374,7 @@
+     case $MACHDEP in
+ 	aix*) MACHDEP="aix";;
+ 	linux*) MACHDEP="linux";;
++	redox*) MACHDEP="redox";;
+ 	cygwin*) MACHDEP="cygwin";;
+ 	darwin*) MACHDEP="darwin";;
+ 	'')	MACHDEP="unknown";;
+@@ -3382,7 +3386,7 @@
+ 
+ if test "$cross_compiling" = yes; then
+ 	case "$host" in
+-	*-*-linux*)
++	*-*-linux*|*-*-redox*)
+ 		case "$host_cpu" in
+ 		arm*)
+ 			_host_cpu=arm
+@@ -5989,7 +5993,7 @@
+ 	      PY3LIBRARY=libpython3.so
+ 	  fi
+           ;;
+-    Linux*|GNU*|NetBSD*|FreeBSD*|DragonFly*|OpenBSD*|VxWorks*)
++    Linux*|GNU*|NetBSD*|FreeBSD*|DragonFly*|OpenBSD*|VxWorks*|Redox*)
+ 	  LDLIBRARY='libpython$(LDVERSION).so'
+ 	  BLDLIBRARY='-L. -lpython$(LDVERSION)'
+ 	  RUNSHARED=LD_LIBRARY_PATH=`pwd`${LD_LIBRARY_PATH:+:${LD_LIBRARY_PATH}}
+@@ -9787,7 +9791,7 @@
+ 			BLDSHARED="$LDSHARED"
+ 		fi
+ 		;;
+-	Linux*|GNU*|QNX*|VxWorks*)
++	Linux*|GNU*|QNX*|VxWorks*|Redox*)
+ 		LDSHARED='$(CC) -shared'
+ 		LDCXXSHARED='$(CXX) -shared';;
+ 	FreeBSD*)
+@@ -9856,7 +9860,7 @@
+ 		 else CCSHARED="+z";
+ 		 fi;;
+ 	Linux-android*) ;;
+-	Linux*|GNU*) CCSHARED="-fPIC";;
++	Linux*|GNU*|Redox*) CCSHARED="-fPIC";;
+ 	FreeBSD*|NetBSD*|OpenBSD*|DragonFly*) CCSHARED="-fPIC";;
+ 	OpenUNIX*|UnixWare*)
+ 		if test "$GCC" = "yes"
+@@ -9886,7 +9890,7 @@
+ 	    LINKFORSHARED="-Wl,-E -Wl,+s";;
+ #	    LINKFORSHARED="-Wl,-E -Wl,+s -Wl,+b\$(BINLIBDEST)/lib-dynload";;
+ 	Linux-android*) LINKFORSHARED="-pie -Xlinker -export-dynamic";;
+-	Linux*|GNU*) LINKFORSHARED="-Xlinker -export-dynamic";;
++	Linux*|GNU*|Redox*) LINKFORSHARED="-Xlinker -export-dynamic";;
+ 	# -u libsys_s pulls in all symbols in libsys
+ 	Darwin/*)
+ 		LINKFORSHARED="$extra_undefs -framework CoreFoundation"
+diff -ur source-orig/Include/pyport.h source/Include/pyport.h
+--- source-orig/Include/pyport.h	2023-08-24 13:46:25.000000000 +0100
++++ source/Include/pyport.h	2024-10-17 17:34:54.514295923 +0100
+@@ -843,7 +843,7 @@
+ #  error "Py_TRACE_REFS ABI is not compatible with release and debug ABI"
+ #endif
+ 
+-#if defined(__ANDROID__) || defined(__VXWORKS__)
++#if defined(__ANDROID__) || defined(__VXWORKS__) || defined(__redox__)
+    // Use UTF-8 as the locale encoding, ignore the LC_CTYPE locale.
+    // See _Py_GetLocaleEncoding(), PyUnicode_DecodeLocale()
+    // and PyUnicode_EncodeLocale().
+diff -ur source-orig/Modules/timemodule.c source/Modules/timemodule.c
+--- source-orig/Modules/timemodule.c	2023-08-24 13:46:25.000000000 +0100
++++ source/Modules/timemodule.c	2024-10-17 17:38:08.481699567 +0100
+@@ -1453,7 +1453,7 @@
+     return 0;
+ }
+ 
+-#elif defined(HAVE_CLOCK_GETTIME) && defined(CLOCK_PROCESS_CPUTIME_ID)
++#elif defined(HAVE_CLOCK_GETTIME) && defined(CLOCK_PROCESS_CPUTIME_ID) && defined(CLOCK_THREAD_CPUTIME_ID)
+ #define HAVE_THREAD_TIME
+ 
+ #if defined(__APPLE__) && defined(__has_attribute) && __has_attribute(availability)
