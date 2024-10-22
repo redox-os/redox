@@ -1,6 +1,6 @@
 [source]
-git = "https://github.com/uutils/coreutils"
-rev = "9d82fa3b9abd3d359afae0b6b9eb2a22b93b9a1c"
+git = "https://gitlab.redox-os.org/andrey.turkin/uutils.git"
+branch = "cc-fix"
 
 [build]
 template = "custom"
