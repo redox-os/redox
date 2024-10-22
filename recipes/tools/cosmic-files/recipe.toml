@@ -17,7 +17,7 @@ export GETTEXT_STATIC=1
     --release \
     --bin cosmic-files \
     --no-default-features \
-    --features desktop,winit \
+    --features desktop \
     -- \
     -L "${COOKBOOK_SYSROOT}/lib" \
     -C link-arg="-liconv"
