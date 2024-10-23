@@ -1,0 +1,23 @@
+[source]
+git = "https://github.com/pop-os/cosmic-settings.git"
+branch = "master"
+
+[build]
+template = "custom"
+dependencies = [
+    "gettext",
+]
+script = """
+export GETTEXT_DIR="${COOKBOOK_SYSROOT}"
+export GETTEXT_STATIC=1
+PACKAGE_PATH="cosmic-settings"
+cookbook_cargo --no-default-features
+#TODO: install with just?
+APPID="com.system76.CosmicSettings"
+mkdir -pv "${COOKBOOK_STAGE}/usr/share/applications/"
+sed 's/Categories=COSMIC/Categories=Settings/' "${COOKBOOK_SOURCE}/resources/${APPID}.desktop" > "${COOKBOOK_STAGE}/usr/share/applications/${APPID}.desktop"
+mkdir -pv "${COOKBOOK_STAGE}/usr/share/metainfo/"
+cp -v "${COOKBOOK_SOURCE}/resources/${APPID}.metainfo.xml" "${COOKBOOK_STAGE}/usr/share/metainfo/"
+mkdir -pv "${COOKBOOK_STAGE}/usr/share/icons/"
+cp -rv "${COOKBOOK_SOURCE}/resources/icons/" "${COOKBOOK_STAGE}/usr/share/icons/hicolor/"
+"""
