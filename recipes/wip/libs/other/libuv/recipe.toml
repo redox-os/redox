@@ -1,5 +1,0 @@
-#TODO missing script for building
-[source]
-tar = "https://dist.libuv.org/dist/v1.45.0/libuv-v1.45.0.tar.gz"
-[build]
-template = "custom"
