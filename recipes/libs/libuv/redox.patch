@@ -1,0 +1,139 @@
+diff -ruwN a/CMakeLists.txt b/CMakeLists.txt
+--- a/CMakeLists.txt	2023-05-19 13:21:01.000000000 +0200
++++ b/CMakeLists.txt	2024-10-23 18:01:06.574850622 +0200
+@@ -1,3 +1,4 @@
++set (CMAKE_CXX_STANDARD 99)
+ cmake_minimum_required(VERSION 3.4)
+ 
+ if(POLICY CMP0091)
+diff -ruwN a/src/unix/core.c b/src/unix/core.c
+--- a/src/unix/core.c	2023-05-19 13:21:01.000000000 +0200
++++ b/src/unix/core.c	2024-10-23 18:01:06.575850644 +0200
+@@ -97,6 +97,10 @@
+ # include <sanitizer/linux_syscall_hooks.h>
+ #endif
+ 
++#if defined(__redox__)
++#define MSG_CMSG_CLOEXEC  0x40000000 //linux specific flag
++#endif
++
+ static void uv__run_pending(uv_loop_t* loop);
+ 
+ /* Verify that uv_buf_t is ABI-compatible with struct iovec. */
+@@ -709,7 +713,8 @@
+     defined(__FreeBSD__)   || \
+     defined(__NetBSD__)    || \
+     defined(__OpenBSD__)   || \
+-    defined(__linux__)
++    defined(__linux__)     || \
++    defined(__redox__)
+   ssize_t rc;
+   rc = recvmsg(fd, msg, flags | MSG_CMSG_CLOEXEC);
+   if (rc == -1)
+diff -ruwN a/src/unix/fs.c b/src/unix/fs.c
+--- a/src/unix/fs.c	2023-05-19 13:21:01.000000000 +0200
++++ b/src/unix/fs.c	2024-10-23 18:01:06.579850732 +0200
+@@ -87,7 +87,8 @@
+       defined(__MVS__)    || \
+       defined(__NetBSD__) || \
+       defined(__HAIKU__)  || \
+-      defined(__QNX__)
++      defined(__QNX__)    || \
++      defined(__redox__)
+ # include <sys/statvfs.h>
+ #else
+ # include <sys/statfs.h>
+@@ -648,13 +649,13 @@
+     defined(__MVS__)    || \
+     defined(__NetBSD__) || \
+     defined(__HAIKU__)  || \
+-    defined(__QNX__)
++    defined(__QNX__)    || \
++    defined(__redox__)
+   struct statvfs buf;
+ 
+   if (0 != statvfs(req->path, &buf))
+ #else
+   struct statfs buf;
+-
+   if (0 != statfs(req->path, &buf))
+ #endif /* defined(__sun) */
+     return -1;
+@@ -670,7 +671,8 @@
+     defined(__OpenBSD__)  || \
+     defined(__NetBSD__)   || \
+     defined(__HAIKU__)    || \
+-    defined(__QNX__)
++    defined(__QNX__)      || \
++    defined(__redox__)
+   stat_fs->f_type = 0;  /* f_type is not supported. */
+ #else
+   stat_fs->f_type = buf.f_type;
+diff -ruwN a/src/unix/stream.c b/src/unix/stream.c
+--- a/src/unix/stream.c	2023-05-19 13:21:01.000000000 +0200
++++ b/src/unix/stream.c	2024-10-23 18:01:06.580850754 +0200
+@@ -29,7 +29,14 @@
+ #include <errno.h>
+ 
+ #include <sys/types.h>
++#if defined(__redox__)
++#define _GNU_SOURCE
++#include <stdint.h>
+ #include <sys/socket.h>
++#include <netinet/in.h>
++#else
++#include <sys/socket.h>
++#endif
+ #include <sys/uio.h>
+ #include <sys/un.h>
+ #include <unistd.h>
+@@ -39,6 +46,7 @@
+ # include <sys/event.h>
+ # include <sys/time.h>
+ # include <sys/select.h>
++#endif
+ 
+ /* Forward declaration */
+ typedef struct uv__stream_select_s uv__stream_select_t;
+@@ -58,7 +66,6 @@
+   fd_set* swrite;
+   size_t swrite_sz;
+ };
+-#endif /* defined(__APPLE__) */
+ 
+ union uv__cmsg {
+   struct cmsghdr hdr;
+diff -ruwN a/src/unix/udp.c b/src/unix/udp.c
+--- a/src/unix/udp.c	2023-05-19 13:21:01.000000000 +0200
++++ b/src/unix/udp.c	2024-10-23 18:08:23.796492449 +0200
+@@ -31,6 +31,12 @@
+ #include <xti.h>
+ #endif
+ #include <sys/un.h>
++#if defined(__redox__)
++#include <netinet/in.h>
++#include <netinet/ip.h>
++#include <sys/socket.h>
++#include <arpa/inet.h>
++#endif
+ 
+ #if defined(IPV6_JOIN_GROUP) && !defined(IPV6_ADD_MEMBERSHIP)
+ # define IPV6_ADD_MEMBERSHIP IPV6_JOIN_GROUP
+@@ -937,7 +943,16 @@
+   return 0;
+ }
+ 
+-
++#if defined(__redox__)
++// Define the types
++typedef uint64_t ULONG; // equivalent to Rust's u64
++
++typedef struct group_source_req {
++    ULONG gsr_interface;
++    struct sockaddr_storage gsr_group; // Use the struct keyword here
++    struct sockaddr_storage gsr_source; // Use the struct keyword here
++} GROUP_SOURCE_REQ, *PGROUP_SOURCE_REQ;
++#endif
+ static int uv__udp_set_source_membership6(uv_udp_t* handle,
+                                           const struct sockaddr_in6* multicast_addr,
+                                           const char* interface_addr,
