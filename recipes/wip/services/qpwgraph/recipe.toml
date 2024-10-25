@@ -1,0 +1,26 @@
+#TODO maybe wrong script
+# build instructions - https://gitlab.freedesktop.org/rncbc/qpwgraph#building
+[source]
+git = "https://gitlab.freedesktop.org/rncbc/qpwgraph"
+rev = "9fead6eff8c5831d66f618b2e8e195c94d5c22e6"
+[build]
+template = "custom"
+dependencies = [
+    "qt6-base",
+    "pipewire",
+]
+script = """
+COOKBOOK_CONFIGURE="cmake"
+COOKBOOK_CONFIGURE_FLAGS=(
+    -DCMAKE_BUILD_TYPE=Release
+    -DCMAKE_CROSSCOMPILING=True
+    -DCMAKE_EXE_LINKER_FLAGS="-static"
+    -DCMAKE_INSTALL_PREFIX="/"
+    -DCMAKE_PREFIX_PATH="${COOKBOOK_SYSROOT}"
+    -DCMAKE_SYSTEM_NAME=Generic
+    -DCMAKE_SYSTEM_PROCESSOR="$(echo "${TARGET}" | cut -d - -f1)"
+    -DCMAKE_VERBOSE_MAKEFILE=On
+"${COOKBOOK_SOURCE}"
+)
+cookbook_configure
+"""
