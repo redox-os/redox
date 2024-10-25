@@ -1,0 +1,8 @@
+#TODO not compiled or tested
+[source]
+git = "https://github.com/visioncortex/vtracer"
+[build]
+template = "custom"
+script = """
+cookbook_cargo_packages vtracer
+"""
