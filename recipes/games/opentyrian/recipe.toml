@@ -1,0 +1,50 @@
+# Version date: 02-August-2024
+#
+# Notes:
+# As Tyrian is an ancient, sprite based game, the code isn't updated
+# super frequently. So instead of just pinning the version to the last
+# official release in 2022, I'm pulling from main because it's unlikely
+# anything will break. The last two commits were small fixes, one in 2023
+# and one in 2024.
+
+[source]
+git = "https://github.com/opentyrian/opentyrian"
+patches = [ "redox.patch" ]
+
+[build]
+template = "custom"
+dependencies = [
+    "llvm18",
+    "liborbital",
+    "mesa",
+    "sdl2",
+    "zlib",
+    # "sdl2-net"
+]
+script = """
+# Build system is only a standalone Makefile
+COOKBOOK_CONFIGURE="true"
+COOKBOOK_CONFIGURE_FLAGS=""
+
+# See Makefile for variables to override
+export PKG_CONFIG="${TARGET}-pkg-config"
+ASSETSDIR="${COOKBOOK_STAGE}/usr/share/games/tyrian"
+export WITH_NETWORK=false
+export REDOX_OVERRIDE=true
+export prefix="/usr"
+export bindir="${prefix}/games"
+export icondir="/ui/icons/apps"
+export gamesdir="${prefix}/share/games"
+
+# Prepare the sources and download Tyrian (freeware)
+rsync -av --delete "${COOKBOOK_SOURCE}/" "${COOKBOOK_RECIPE}/tyrian21.zip.sha" ./
+mkdir -p "${ASSETSDIR}"
+curl -OL https://camanis.net/tyrian/tyrian21.zip
+sha256sum -c tyrian21.zip.sha
+unzip -jd "${ASSETSDIR}" tyrian21.zip
+
+# The build system doesn't automatically apply patches to cloned repositories
+git apply "${COOKBOOK_RECIPE}/redox.patch"
+
+cookbook_configure
+"""
