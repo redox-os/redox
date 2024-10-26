@@ -1,0 +1,42 @@
+#TODO incomplete script
+#TODO missing dependencies - https://github.com/mixxxdj/mixxx/blob/main/tools/debian_buildenv.sh
+# build instructions - https://github.com/mixxxdj/mixxx/wiki/Compiling%20on%20Linux
+[source]
+git = "https://github.com/mixxxdj/mixxx"
+branch = "2.4"
+[build]
+template = "custom"
+dependencies = [
+    "fftw",
+    "libflac",
+    "mesa",
+    "libhidapi",
+    "libmad",
+    "libopus",
+    "libopusfile",
+    "protobuf",
+    "qt6-base",
+    "qt6-svg",
+    "qt6-declarative",
+    "qt6-3d",
+    "librubberband",
+    "libsndfile",
+    "sqlite3",
+    "openssl1",
+    "portaudio",
+]
+script = """
+COOKBOOK_CONFIGURE="cmake"
+COOKBOOK_CONFIGURE_FLAGS=(
+    -DCMAKE_BUILD_TYPE=Release
+    -DCMAKE_CROSSCOMPILING=True
+    -DCMAKE_EXE_LINKER_FLAGS="-static"
+    -DCMAKE_INSTALL_PREFIX="/"
+    -DCMAKE_PREFIX_PATH="${COOKBOOK_SYSROOT}"
+    -DCMAKE_SYSTEM_NAME=Generic
+    -DCMAKE_SYSTEM_PROCESSOR="$(echo "${TARGET}" | cut -d - -f1)"
+    -DCMAKE_VERBOSE_MAKEFILE=On
+"${COOKBOOK_SOURCE}"
+)
+cookbook_configure
+"""

@@ -1,0 +1,12 @@
+#TODO missing script for meson
+# build instructions - https://gitlab.gnome.org/World/AudioSharing#building-it-manually
+[source]
+git = "https://gitlab.gnome.org/World/AudioSharing"
+[build]
+template = "custom"
+dependencies = [
+    "gtk4",
+    "glib",
+    "libadwaita",
+    "gstreamer",
+]
