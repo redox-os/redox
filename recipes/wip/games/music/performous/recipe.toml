@@ -1,0 +1,41 @@
+#TODO maybe incomplete script
+# build instructions - https://github.com/performous/performous/wiki/Building-and-installing-from-source#build-and-install
+# dependencies - https://github.com/performous/performous/wiki/Building-and-installing-from-source#installing-build-dependencies
+[source]
+git = "https://github.com/performous/performous"
+branch = "1.3.1"
+[build]
+template = "custom"
+dependencies = [
+    "openblas",
+    "fftw",
+    "libicu",
+    "libepoxy",
+    "sdl2",
+    "freetype2",
+    "pango",
+    "librsvg",
+    "libxml2",
+    "ffmpeg6",
+    "libjpeg",
+    "portaudio",
+    "boost",
+    "nlohmann-json",
+    "aubio",
+    "libfmt",
+]
+script = """
+COOKBOOK_CONFIGURE="cmake"
+COOKBOOK_CONFIGURE_FLAGS=(
+    -DCMAKE_BUILD_TYPE=Release
+    -DCMAKE_CROSSCOMPILING=True
+    -DCMAKE_EXE_LINKER_FLAGS="-static"
+    -DCMAKE_INSTALL_PREFIX="/"
+    -DCMAKE_PREFIX_PATH="${COOKBOOK_SYSROOT}"
+    -DCMAKE_SYSTEM_NAME=Generic
+    -DCMAKE_SYSTEM_PROCESSOR="$(echo "${TARGET}" | cut -d - -f1)"
+    -DCMAKE_VERBOSE_MAKEFILE=On
+"${COOKBOOK_SOURCE}"
+)
+cookbook_configure
+"""
