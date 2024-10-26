@@ -1,0 +1,10 @@
+#TODO maybe incomplete script
+#TODO determine the dependencies
+[source]
+git = "https://codeberg.org/JakobDev/jdPixelUpscaler"
+rev = "05eb4f3a4a9d24b6d818522483d88caa6b201e2e"
+[build]
+template = "custom"
+dependencies = [
+    "qt6-base",
+]
