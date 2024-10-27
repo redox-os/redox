@@ -1,0 +1,14 @@
+#TODO not compiled or tested
+[source]
+git = "https://git.dec05eba.com/gpu-screen-recorder-gtk"
+rev = "7fb7608b720068d3c114330e8d274b04ef310cf2"
+[build]
+template = "custom"
+dependencies = [
+    "gtk3",
+    "libx11",
+]
+[package]
+dependencies = [
+    "gpu-screen-recorder",
+]
