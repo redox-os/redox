@@ -1,0 +1,23 @@
+#TODO maybe incomplete script
+#TODO missing dependencies? - https://github.com/mkiol/Jupii#libraries
+[source]
+git = "https://github.com/mkiol/Jupii"
+rev = "ed80ca0ea29081a2bff038faf4884e3acabb14b7"
+[build]
+template = "custom"
+script = """
+COOKBOOK_CONFIGURE="cmake"
+COOKBOOK_CONFIGURE_FLAGS=(
+    -DCMAKE_BUILD_TYPE=Release
+    -DCMAKE_CROSSCOMPILING=True
+    -DCMAKE_EXE_LINKER_FLAGS="-static"
+    -DCMAKE_INSTALL_PREFIX="/"
+    -DCMAKE_PREFIX_PATH="${COOKBOOK_SYSROOT}"
+    -DCMAKE_SYSTEM_NAME=Generic
+    -DCMAKE_SYSTEM_PROCESSOR="$(echo "${TARGET}" | cut -d - -f1)"
+    -DCMAKE_VERBOSE_MAKEFILE=On
+    -DWITH_DESKTOP=ON
+"${COOKBOOK_SOURCE}"
+)
+cookbook_configure
+"""

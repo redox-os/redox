@@ -1,0 +1,20 @@
+#TODO missing script for meson
+[source]
+git = "https://git.dec05eba.com/gpu-screen-recorder"
+rev = "422f214283ba50649acca4d9b5a9778d313fe05b"
+[build]
+template = "custom"
+dependencies = [
+    "mesa",
+    "libvulkan",
+    "ffmpeg6",
+    "libx11",
+    "libxcomposite",
+    "libxrandr",
+    "libxfixes",
+    "libxdamage",
+    "pulseaudio",
+    "libva",
+    "libcap",
+    "libwayland",
+]
