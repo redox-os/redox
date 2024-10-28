@@ -1,0 +1,12 @@
+#TODO missing script for meson
+[source]
+git = "https://github.com/SeaDve/Mousai"
+[build]
+template = "custom"
+dependencies = [
+    "glib",
+    "gtk4",
+    "libadwaita",
+    "gstreamer",
+    "libsoup",
+]

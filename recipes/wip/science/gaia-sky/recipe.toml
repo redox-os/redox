@@ -1,0 +1,12 @@
+#TODO not compiled or tested
+[source]
+tar = "https://gaia.ari.uni-heidelberg.de/gaiasky/releases/latest/gaiasky-3.6.4-2.3bfeec0f9.tar.gz"
+[build]
+template = "custom"
+script = """
+mkdir -pv "${COOKBOOK_STAGE}"/usr/share/gaia-sky
+mkdir -pv "${COOKBOOK_STAGE}"/usr/bin
+cp -rv "${COOKBOOK_SOURCE}"/* "${COOKBOOK_STAGE}"/usr/share/gaia-sky
+echo "#!/usr/bin/env bash \n /usr/share/gaia-sky" > "${COOKBOOK_STAGE}"/usr/bin/gaia-sky
+chmod a+x "${COOKBOOK_STAGE}"/usr/bin/gaia-sky
+"""
