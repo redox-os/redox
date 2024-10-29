@@ -1,0 +1,27 @@
+[source]
+git = "https://github.com/luvit/luv.git"
+[build]
+template = "custom"
+dependencies = [
+    "lua54",
+    "libuv",
+    "lua-compat-5.3"
+]
+script = """
+COOKBOOK_CONFIGURE="cmake"
+COOKBOOK_CONFIGURE_FLAGS=(
+    -DBUILD_MODULE=OFF
+    -DBUILD_STATIC_LIBS=ON
+    -DWITH_SHARED_LIBUV=ON
+    -DWITH_LUA_ENGINE=Lua
+    -DLUA_BUILD_TYPE=System
+    -DLUA_COMPAT53_DIR="${COOKBOOK_SYSROOT}/bin"
+    -DCMAKE_BUILD_TYPE=RelWithDebInfo
+    -DLIBUV_LIBRARIES="${COOKBOOK_SYSROOT}/usr/lib/libuv.a"
+    -DLIBUV_INCLUDE_DIR="${COOKBOOK_SYSROOT}/usr/include"
+    -DLUA_INCLUDE_DIR="${COOKBOOK_SYSROOT}/include"
+    -DLUV_INCLUDE_DIR="${COOKBOOK_SYSROOT}/include"
+"${COOKBOOK_SOURCE}"
+)
+cookbook_configure
+"""
