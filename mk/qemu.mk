@@ -34,7 +34,7 @@ else ifeq ($(ARCH),aarch64)
 	uefi?=yes
 	live=yes
 	QEMU_ARCH=aarch64
-	QEMU_MACHINE=virt
+	QEMU_MACHINE?=virt
 	QEMU_CPU=max
 	QEMU_SMP?=1
 	QEMU_MEM?=2048
