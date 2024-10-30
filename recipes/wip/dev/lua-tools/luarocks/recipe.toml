@@ -1,6 +1,0 @@
-#TODO not compiled or tested
-# build instructions - https://github.com/luarocks/luarocks/wiki/Installation-instructions-for-Unix
-[source]
-tar = "https://luarocks.org/releases/luarocks-3.11.1.tar.gz"
-[build]
-template = "configure"
