@@ -1,10 +1,27 @@
-#TODO missing script for "make", see https://github.com/nigels-com/glew#linux-and-mac
-#TODO add the GLEW_OSMESA flag to enable the Mesa off-screen rendering
+# TODO Needs testing, but it compiles now
+
 [source]
 git = "https://github.com/nigels-com/glew"
-rev = "9fb23c3e61cbd2d581e33ff7d8579b572b38ee26"
+# rev = "9fb23c3e61cbd2d581e33ff7d8579b572b38ee26"
+
 [build]
 template = "custom"
-dependencies = [
-    "mesa",
-]
+dependencies = ["mesa", "mesa-glu"]
+script = """
+# Build system is a standalone Makefile
+COOKBOOK_CONFIGURE="true"
+COOKBOOK_CONFIGURE_FLAGS=""
+
+# See Makefile for variables to override
+export GLEW_PREFIX="/usr"
+export GLEW_DEST="/usr"
+export GLEW_OSMESA
+export PYTHON="python3"
+
+rsync -av --delete "${COOKBOOK_SOURCE}/" ./
+
+# The auto directory needs to be built first and can't be built in parallel
+# because the Makefile creates files (using Perl and Python!!) that are needed later
+"${COOKBOOK_MAKE}" -C "${COOKBOOK_BUILD}/auto"
+cookbook_configure
+"""
