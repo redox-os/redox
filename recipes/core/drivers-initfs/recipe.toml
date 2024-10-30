@@ -5,12 +5,13 @@ same_as = "../drivers"
 template = "custom"
 script = """
 BINS=(
+    acpid
     fbcond
     inputd
+    lived
     nvmed
     pcid
     vesad
-    lived
 )
 
 virt_bins()
@@ -43,7 +44,6 @@ case "${TARGET}" in
         ;;
     x86_64-unknown-redox)
         x86_common_bins
-        BINS+=(acpid)
         ;;
     aarch64-unknown-redox)
         aarch64_bins

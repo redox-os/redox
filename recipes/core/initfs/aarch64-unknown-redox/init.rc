@@ -11,6 +11,7 @@ fbcond 1 2
 logd /scheme/debug /scheme/fbcon/1
 stdio /scheme/log
 ramfs logging
+acpid
 pcid /etc/pcid/initfs.toml
 lived
 unset DISK_LIVE_ADDR DISK_LIVE_SIZE
