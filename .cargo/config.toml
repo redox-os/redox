@@ -13,3 +13,6 @@ rustflags = []
 [target.riscv64gc-unknown-redox]
 linker = "riscv64-unknown-redox-gcc"
 rustflags = []
+
+[env]
+CFLAGS_riscv64gc_unknown_redox="-march=rv64gc -mabi=lp64d"
