@@ -27,6 +27,7 @@ RUN useradd --create-home --no-log-init --uid _UID_ poduser \
 		g++ \
 		genisoimage \
 		git \
+		git-lfs \
 		gperf \
         expect \
 		intltool \
