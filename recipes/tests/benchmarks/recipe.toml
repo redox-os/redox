@@ -1,0 +1,9 @@
+[source]
+git = "https://gitlab.redox-os.org/redox-os/benchmarks"
+
+[build]
+template = "custom"
+script = """
+mkdir -pv "${COOKBOOK_STAGE}"/usr/share/benchmarks
+cp -rv "${COOKBOOK_SOURCE}"/* "${COOKBOOK_STAGE}"/usr/share/benchmarks
+"""
