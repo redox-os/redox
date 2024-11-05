@@ -1,9 +1,0 @@
-#TODO Not compiled or tested
-[source]
-git = "https://github.com/leachim6/hello-world"
-[build]
-template = "custom"
-script = """
-mkdir -pv "${COOKBOOK_STAGE}"/usr/share/hello-world
-cp -rv "${COOKBOOK_SOURCE}"/[#,a-z] "${COOKBOOK_STAGE}"/usr/share/hello-world
-"""
