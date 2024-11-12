@@ -43,7 +43,7 @@ You can contribute to the Redox documentation and code on the following reposito
 - [Drivers](https://gitlab.redox-os.org/redox-os/drivers) - Device Drivers
 - [Kernel](https://gitlab.redox-os.org/redox-os/kernel)
 
-To see all Redox repositories open [this](https://gitlab.redox-os.org/redox-os) link.
+To see all Redox repositories open the [redox-os group](https://gitlab.redox-os.org/redox-os).
 
 ### Skill Levels
 
@@ -56,7 +56,7 @@ If you don't know how to code in Rust, but know other programming languages:
 
 - Web development on the website (we don't accept JavaScript code)
 - Write unit tests (may require minimal knowledge of Rust)
-- Port C/C++ programs to Redox (read the `TODO`s of the recipes on [this](https://gitlab.redox-os.org/redox-os/cookbook/-/tree/master/recipes/wip?ref_type=heads) category)
+- Port C/C++ programs to Redox (read the `TODO`s of the recipes on the [WIP category](https://gitlab.redox-os.org/redox-os/cookbook/-/tree/master/recipes/wip?ref_type=heads))
 - Port programs to Redox
 
 If you know how to code in Rust, but don't know operating system development:
@@ -81,7 +81,7 @@ If you know how to code in Rust, and have experience with systems software/OS de
 
 For those who want to contribute to the Redox GUI, our GUI strategy has recently changed.
 
-- We are improving the [Orbital](https://gitlab.redox-os.org/redox-os/orbital) display server and window manager, you can read more about it on [this](https://gitlab.redox-os.org/redox-os/redox/-/issues/1430) tracking issue.
+- We are improving the [Orbital](https://gitlab.redox-os.org/redox-os/orbital) display server and window manager, you can read more about it on [this tracking issue](https://gitlab.redox-os.org/redox-os/redox/-/issues/1430).
 - Redox is in the process of adopting other Rust-written GUI toolkits, such as [Iced](https://iced.rs) and [Slint](https://slint-ui.com/). Please check out those projects if this is your area of interest.
 - OrbTk is in maintenance mode, and its developers have moved to other projects such as the ones below. There is currently no Redox-specific GUI development underway.
 
@@ -118,37 +118,37 @@ To start the compilation of the default recipes run the command below:
 make all
 ```
 
-You can find the build system organization and commands on [this](https://doc.redox-os.org/book/build-system-reference.html) page.
+You can find the build system organization and commands on the [Build System](https://doc.redox-os.org/book/build-system-reference.html) page.
 
 ## Developer FAQ
 
-You can see the most common questions and problems on [this](https://doc.redox-os.org/book/developer-faq.html) page.
+You can see the most common questions and problems on the [Developer FAQ](https://doc.redox-os.org/book/developer-faq.html) page.
 
 ## Porting Software
 
-You can read how to use the Cookbook recipe system to port applications on [this](https://doc.redox-os.org/book/porting-applications.html) page.
+You can read how to use the Cookbook recipe system to port applications on the [Porting Applications using Recipes](https://doc.redox-os.org/book/porting-applications.html) page.
 
 ## Libraries and APIs
 
-You can read [this](https://doc.redox-os.org/book/libraries-apis.html) page to learn about the libraries and APIs used in Redox.
+You can read the [Libraries and APIs](https://doc.redox-os.org/book/libraries-apis.html) page to learn about the libraries and APIs used in Redox.
 
 ## Visual Studio Code (VS Code) Configuration
 
-To learn how to configure your VS Code to do Redox development please read the information below [this](https://doc.redox-os.org/book/coding-and-building.html#visual-studio-code-configuration) section.
+To learn how to configure your VS Code to do Redox development please read the information below the [Visual Studio Code Configuration](https://doc.redox-os.org/book/coding-and-building.html#visual-studio-code-configuration) section.
 
 ## Development Tips
 
-You can find important tips on [this](https://doc.redox-os.org/book/coding-and-building.html#development-tips) section.
+You can find important tips on the [Development Tips](https://doc.redox-os.org/book/coding-and-building.html#development-tips) section.
 
 ## References
 
-We maintain a list of wikis, articles and videos to learn Rust, OS development and computer science on [this](https://doc.redox-os.org/book/references.html) page.
+We maintain a list of wikis, articles and videos to learn Rust, OS development and computer science on the [References](https://doc.redox-os.org/book/references.html) page.
 
 If you are skilled there's a possibility that they could improve your knowledge in some way.
 
 ## Best Practices and Guidelines
 
-You can read the best practices and guidelines on [this](https://doc.redox-os.org/book/best-practices.html) chapter.
+You can read the best practices and guidelines on the [Best practices and guidelines](https://doc.redox-os.org/book/best-practices.html) chapter.
 
 ## Style Guidelines
 
@@ -168,7 +168,7 @@ Once your GitLab account is created, you should add your Matrix or Discord usern
 
 ### Issues
 
-To know how to create issues on the Redox GitLab, read [this](https://doc.redox-os.org/book/filing-issues.html) page.
+To know how to create issues on the Redox GitLab, read the [Filing Issues](https://doc.redox-os.org/book/filing-issues.html) page.
 
 Once you create an issue don't forget to post the link on the Dev or Support rooms of the chat, because the GitLab email notifications have distractions (service messages or spam) and most developers don't left their GitLab pages open to receive desktop notifications from the web browser (which require a custom setting to receive issue notifications).
 
@@ -193,4 +193,4 @@ If you have questions about the graphic design, ask us on the [Chat](https://doc
 
 ### Donate to Redox
 
-If you are interested in donating to the Redox OS Nonprofit, you can find instructions [here](https://www.redox-os.org/donate/).
+If you are interested in donating to the Redox OS Nonprofit, you can find instructions on the [Donate](https://www.redox-os.org/donate/) page.

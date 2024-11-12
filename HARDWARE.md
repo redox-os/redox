@@ -23,7 +23,7 @@ These reports helps us to fix the problems above.
 
 ## What if my computer is customized?
 
-You can use the "Custom" word on the "Vendor" and "Model" categories, we also recommend to add your `pciutils` log on [this](https://gitlab.redox-os.org/redox-os/drivers/-/blob/master/COMMUNITY-HW.md?ref_type=heads) document to help us with probable porting.
+You can use the "Custom" word on the "Vendor" and "Model" categories, we also recommend to add your `pciutils` log on [this document link](https://gitlab.redox-os.org/redox-os/drivers/-/blob/master/COMMUNITY-HW.md?ref_type=heads) to help us with probable porting.
 
 ## Status
 
