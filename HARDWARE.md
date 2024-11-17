@@ -74,6 +74,7 @@ You will use this template to insert your computer on the table.
 | Raspberry Pi | 3 Model B+ | 0.8.0 | Unknown | server | ARM64 | U-Boot | Boots to UART serial console (pl011) |
 | Lenovo | ThinkPad Yoga 260 Laptop - Type 20FE | 0.9.0 | 07-09-2024 | demo | x86-64 | UEFI | Boots to Orbital, No audio |
 | Lenovo | ThinkPad P14s | 0.9.0 | 17-11-2024 | demo | x86-64 | UEFI | Boots to Orbital, keyboard works, no mouse support|
+| Lenovo | Yoga S730-13IWL | 0.9.0 | 09-11-2024 | desktop | x86-64 | UEFI | Boots to Orbital, No trackpad or USB mouse input support |
 
 ## Broken
 
@@ -88,3 +89,5 @@ You will use this template to insert your computer on the table.
 | Toshiba | Satellite L500 | 0.8.0 | 11-11-2022 | desktop | i686 | BIOS | Correct video mode not offered (firmware issue), Panics on `phys_to_virt overflow`, probably having invalid mappings for 32-bit |
 | Panasonic | Toughbook CF-18 | 0.8.0 | 11-11-2022 | desktop | i686 | BIOS | Hangs after PIT initialization |
 | XMG (Schenker) | Apex 17 (M21) | 0.9.0 | 30-09-2024 | demo, server | x86-64 | UEFI | After selecting resolution, (release) repeats `...::interrupt::irq::ERROR -- Local apic internal error: ESR=0x40` a few times before it freezes; (daily) really slowly prints statements from `...::rmm::INFO` before it abruptly aborts |
+| HP | Compaq nc6120 | 0.9.0 | 2024-11-08 | desktop, server | i686 | BIOS | Unloads into memory at a rate slower than 1MB/s after selecting resolution. When unloading is complete the logger initializes and crashes after kernel::acpi, some information about APIC is printed. Boot logs do not progress after this point. |
+
