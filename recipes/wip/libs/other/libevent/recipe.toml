@@ -1,6 +1,10 @@
-#TODO probably wrong script, see https://github.com/libevent/libevent#cmake-unix
+#TODO compiles, not tested
 [source]
 tar = "https://github.com/libevent/libevent/releases/download/release-2.1.12-stable/libevent-2.1.12-stable.tar.gz"
+patches = [
+    "redox.patch"
+]
+
 [build]
 template = "custom"
 dependencies = [
@@ -11,13 +15,17 @@ COOKBOOK_CONFIGURE="cmake"
 COOKBOOK_CONFIGURE_FLAGS=(
     -DCMAKE_BUILD_TYPE=Release
     -DCMAKE_CROSSCOMPILING=True
-    -DCMAKE_EXE_LINKER_FLAGS="-static"
-    -DCMAKE_INSTALL_PREFIX="/"
+    -DCMAKE_INSTALL_PREFIX="${COOKBOOK_STAGE}/"
     -DCMAKE_PREFIX_PATH="${COOKBOOK_SYSROOT}"
     -DCMAKE_SYSTEM_NAME=Generic
     -DCMAKE_SYSTEM_PROCESSOR="$(echo "${TARGET}" | cut -d - -f1)"
     -DCMAKE_VERBOSE_MAKEFILE=On
+    -DEVENT__LIBRARY_TYPE=STATIC
 "${COOKBOOK_SOURCE}"
 )
-cookbook_configure
+
+# Can't call `cookbook_configure` because it sets DESTDIR (which causes an error)
+"${COOKBOOK_CONFIGURE}" "${COOKBOOK_CONFIGURE_FLAGS[@]}"
+"${COOKBOOK_MAKE}" -j "${COOKBOOK_MAKE_JOBS}"
+"${COOKBOOK_MAKE}" install
 """
