@@ -1,0 +1,32 @@
+[source]
+tar = "https://github.com/AlisterT/openjazz/archive/refs/tags/20240919.tar.gz"
+blake3 = "c419066dd7bf50510c5ef0746fc47450ab8f5a17a0010a1bc0ad67d0e63538da"
+
+[build]
+template = "custom"
+dependencies = [
+    "liborbital",
+    "libiconv",
+    "sdl1",
+    "zlib",
+]
+script = """
+export CFLAGS="${CFLAGS} -I${COOKBOOK_SYSROOT}/include"
+export CXXFLAGS="${CXXFLAGS} -I${COOKBOOK_SYSROOT}/include"
+
+COOKBOOK_CONFIGURE="cmake"
+COOKBOOK_CONFIGURE_FLAGS=(
+    -DCMAKE_BUILD_TYPE=Release
+    -DCMAKE_CROSSCOMPILING=ON
+    -DCMAKE_CXX_COMPILER="${TARGET}-g++"
+    -DCMAKE_C_COMPILER="${TARGET}-gcc"
+    -DCMAKE_INSTALL_PREFIX="/"
+    -DCMAKE_VERBOSE_MAKEFILE=ON
+    -DLEGACY_SDL=ON
+    -DSDL_LIBRARY="-lSDL -lorbital"
+    -DNETWORK=ON
+    "${COOKBOOK_SOURCE}"
+)
+
+cookbook_configure
+"""
