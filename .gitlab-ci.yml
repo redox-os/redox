@@ -1,0 +1,42 @@
+# The GitLab Continuous Integration configuration
+image: "ubuntu:22.04"
+
+variables:
+  GIT_STRATEGY: "clone"
+  GIT_SUBMODULE_STRATEGY: "recursive"
+
+before_script:
+ # Disable the wget progress bar
+ - echo 'show-progress = off' >> ~/.wgetrc
+ - |
+    export DEBIAN_FRONTEND=noninteractive
+    apt-get update -qq &&
+    apt-get install -qq \
+        bison \
+        build-essential \
+        curl \
+        flex \
+        fuse3 \
+        git \
+        libfuse-dev \
+        nasm \
+        pkg-config \
+        texinfo \
+        wget \
+        zstd &&
+    curl https://sh.rustup.rs -sSf | sh -s -- -y --default-toolchain none
+
+img:
+    script:
+     - |
+        source "$HOME/.cargo/env" &&
+        curl -L --proto '=https' --tlsv1.2 -sSf https://raw.githubusercontent.com/cargo-bins/cargo-binstall/main/install-from-binstall-release.sh | bash &&
+        cargo binstall --no-confirm --version 0.1.1 cargo-config &&
+        cargo binstall --no-confirm --version 1.16.0 just &&
+        cargo binstall --no-confirm --version 0.27.0 cbindgen &&
+        cargo build --manifest-path installer/Cargo.toml --release &&
+        PODMAN_BUILD=0 REPO_BINARY=1 make ci-img IMG_TAG=$CI_COMMIT_REF_NAME
+    artifacts:
+        paths:
+         - build/img/
+        expire_in: 1 week
