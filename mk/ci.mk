@@ -9,7 +9,7 @@ IMG_DIR?=build/img/$(ARCH)
 ci-img: FORCE
 	rm -rf $(IMG_DIR)
 	mkdir -p $(IMG_DIR)
-	$(MAKE) demo desktop server
+	$(MAKE) server desktop demo
 	cd $(IMG_DIR) && zstd --rm *
 	cd $(IMG_DIR) && sha256sum -b * > SHA256SUM
 
