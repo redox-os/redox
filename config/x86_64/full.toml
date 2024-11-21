@@ -1,0 +1,9 @@
+include = [ "../base.toml", "ci.toml" ]
+
+# General settings
+[general]
+filesystem_size = 8192
+
+# Package settings
+[packages]
+# example = {}
