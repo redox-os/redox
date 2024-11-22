@@ -1,4 +1,4 @@
-#TODO compiled but not tested (after cargo update)
+#TODO compiled but not tested
 [source]
 git = "https://github.com/BurntSushi/cargo-benchcmp"
 [build]
