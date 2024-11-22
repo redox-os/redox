@@ -3,6 +3,9 @@
 git = "https://github.com/skytable/skytable"
 [build]
 template = "custom"
+dependencies = [
+    "openssl1",
+]
 script = """
 cookbook_cargo_packages skysh skyd
 """
