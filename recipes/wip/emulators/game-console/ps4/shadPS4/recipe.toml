@@ -1,0 +1,36 @@
+#TODO maybe incomplete script for cmake
+#TODO missing dependencies
+# build instructions - https://github.com/shadps4-emu/shadPS4/blob/main/documents/building-linux.md
+[source]
+git = "https://github.com/shadps4-emu/shadPS4"
+[build]
+template = "custom"
+dependencies = [
+    "pulseaudio",
+    "openal",
+    "openssl1",
+    "libedit",
+    "eudev",
+    "libevdev",
+    "sdl2",
+    "sndio",
+    "qt6-base",
+    "qt6-multimedia",
+    "libvulkan",
+]
+script = """
+COOKBOOK_CONFIGURE="cmake"
+COOKBOOK_CONFIGURE_FLAGS=(
+    -DCMAKE_BUILD_TYPE=Release
+    -DCMAKE_CROSSCOMPILING=True
+    -DCMAKE_EXE_LINKER_FLAGS="-static"
+    -DCMAKE_INSTALL_PREFIX="/"
+    -DCMAKE_PREFIX_PATH="${COOKBOOK_SYSROOT}"
+    -DCMAKE_SYSTEM_NAME=Generic
+    -DCMAKE_SYSTEM_PROCESSOR="$(echo "${TARGET}" | cut -d - -f1)"
+    -DCMAKE_VERBOSE_MAKEFILE=On
+    -DENABLE_QT_GUI=ON
+"${COOKBOOK_SOURCE}"
+)
+cookbook_configure
+"""
