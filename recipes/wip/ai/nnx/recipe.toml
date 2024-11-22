@@ -3,6 +3,9 @@
 git = "https://github.com/webonnx/wonnx"
 [build]
 template = "custom"
+dependencies = [
+    "openssl1",
+]
 script = """
 cookbook_cargo_packages wonnx-cli
 """
