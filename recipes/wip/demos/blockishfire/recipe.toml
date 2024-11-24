@@ -1,4 +1,4 @@
-#TODO not compiled or tested
+#TODO outdated redox_syscall crate (cargo update don't fix it)
 [source]
 git = "https://github.com/yazgoo/blockishfire"
 [build]

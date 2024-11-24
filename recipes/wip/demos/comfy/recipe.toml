@@ -4,5 +4,5 @@ git = "https://github.com/darthdeus/comfy"
 [build]
 template = "custom"
 script = """
-cookbook_cargo_examples animated_shapes animated_sprites animated_text bloom circle colors egui fragment-shader lighting music physics shapes single_particle sprite text
+cookbook_cargo_examples animated_shapes animated_sprites animated_text bloom circle colors egui fragment-shader lighting music shapes single_particle sprite text
 """
