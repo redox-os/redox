@@ -1,4 +1,4 @@
-#TODO not compiled or tested
+#TODO fontique crate error
 [source]
 git = "https://github.com/DioxusLabs/blitz"
 [build]
