@@ -6,7 +6,7 @@ This repository contains the system source code and packages inside the `recipes
 
 - A recipe can be a software port or system package (they use `pkgar` or `tar.gz` formats).
 
-**Read [this](https://doc.redox-os.org/book/ch09-03-porting-applications.html) page before porting programs to Redox**
+**Read [this](https://doc.redox-os.org/book/porting-applications.html) page before porting programs to Redox**
 
 In order for this repository to be useful, it must be set up with an environment
 from the [redox](https://gitlab.redox-os.org/redox-os/redox) repository.
@@ -63,7 +63,7 @@ Before sending your recipe to upstream (to become a public package), you must fo
 
 #### Cross-Compilation
 
-- All recipes must use our cross-compilers, a Cookbook [template](https://doc.redox-os.org/book/ch09-03-porting-applications.html#templates) does this automatically but it's not always possible, study the build system of your program or library to find these options or patch the configuration files.
+- All recipes must use our cross-compilers, a Cookbook [template](https://doc.redox-os.org/book/porting-applications.html#templates) does this automatically but it's not always possible, study the build system of your program or library to find these options or patch the configuration files.
 - Don't hardcode the CPU architecture on the recipe script (this would break the multi-arch support).
 
 #### Tarballs
@@ -81,12 +81,12 @@ Before sending your recipe to upstream (to become a public package), you must fo
 
 #### Checksum
 
-- If your recipe download a tarball, you will need to create a BLAKE3 hash for it. You can learn how to do it [here](https://doc.redox-os.org/book/ch09-03-porting-applications.html#create-a-blake3-hash-for-your-recipee).
+- If your recipe download a tarball, you will need to create a BLAKE3 hash for it. You can learn how to do it [here](https://doc.redox-os.org/book/porting-applications.html#create-a-blake3-hash-for-your-recipe).
 
 #### License
 
 - Don't package programs or libraries lacking a license.
-- Verify if the program has some license violation, in case of doubt ask us on the [chat](https://doc.redox-os.org/book/ch13-01-chat.html).
+- Verify if the program has some license violation, in case of doubt ask us on the [chat](https://doc.redox-os.org/book/chat.html).
 - Non-free programs and assets should go to a subcategory of the `nonfree` category and be approved per license.
 
 ### Testing Area
