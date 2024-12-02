@@ -32,6 +32,7 @@ ifeq ($(PODMAN_BUILD),1)
 	$(PODMAN_RUN) $(MAKE) $@
 else
 	export PATH="$(PREFIX_PATH):$$PATH" && \
+	export COOKBOOK_HOST_SYSROOT="$(ROOT)/$(PREFIX_INSTALL)" && \
 	cd cookbook && \
 	./clean.sh $*
 endif
@@ -42,6 +43,7 @@ ifeq ($(PODMAN_BUILD),1)
 	$(PODMAN_RUN) $(MAKE) $@
 else
 	export PATH="$(PREFIX_PATH):$$PATH" && \
+	export COOKBOOK_HOST_SYSROOT="$(ROOT)/$(PREFIX_INSTALL)" && \
 	cd cookbook && \
 	./fetch.sh $*
 endif
@@ -52,6 +54,7 @@ ifeq ($(PODMAN_BUILD),1)
 	$(PODMAN_RUN) $(MAKE) $@
 else
 	export PATH="$(PREFIX_PATH):$$PATH" && \
+	export COOKBOOK_HOST_SYSROOT="$(ROOT)/$(PREFIX_INSTALL)" && \
 	cd cookbook && \
 	./repo.sh $*
 endif
@@ -62,6 +65,7 @@ ifeq ($(PODMAN_BUILD),1)
 	$(PODMAN_RUN) $(MAKE) $@
 else
 	export PATH="$(PREFIX_PATH):$$PATH" && \
+	export COOKBOOK_HOST_SYSROOT="$(ROOT)/$(PREFIX_INSTALL)" && \
 	cd cookbook && \
 	./unfetch.sh $*
 endif
