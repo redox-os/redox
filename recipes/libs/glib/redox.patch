@@ -1,6 +1,6 @@
 diff -ruwN source/configure.ac source-new/configure.ac
---- source/configure.ac	2018-12-23 06:10:41.000000000 -0700
-+++ source-new/configure.ac	2019-01-05 10:59:22.924421938 -0700
+--- source/configure.ac	2018-12-23 08:10:41.000000000 -0500
++++ source-new/configure.ac	2024-11-28 00:42:10.691094238 -0500
 @@ -981,7 +981,7 @@
                                                            [int qclass = C_IN;])],
                                           [AC_MSG_RESULT([yes])
@@ -20,8 +20,8 @@ diff -ruwN source/configure.ac source-new/configure.ac
    AC_CHECK_FUNC(socket, :, AC_CHECK_LIB(socket, socket,
  				        [NETWORK_LIBS="-lsocket $NETWORK_LIBS"],
 diff -ruwN source/gio/glocalfileinfo.c source-new/gio/glocalfileinfo.c
---- source/gio/glocalfileinfo.c	2018-12-23 06:10:41.000000000 -0700
-+++ source-new/gio/glocalfileinfo.c	2019-01-05 14:18:02.435425946 -0700
+--- source/gio/glocalfileinfo.c	2018-12-23 08:10:41.000000000 -0500
++++ source-new/gio/glocalfileinfo.c	2024-11-28 00:42:10.691094238 -0500
 @@ -1217,11 +1217,13 @@
  lookup_gid_name (gid_t gid)
  {
@@ -53,9 +53,9 @@ diff -ruwN source/gio/glocalfileinfo.c source-new/gio/glocalfileinfo.c
    
    g_hash_table_replace (gid_cache, GINT_TO_POINTER (gid), name);
 diff -ruwN source/gio/gnetworking.h.in source-new/gio/gnetworking.h.in
---- source/gio/gnetworking.h.in	2018-12-23 06:10:41.000000000 -0700
-+++ source-new/gio/gnetworking.h.in	2019-01-13 10:46:34.304980440 -0700
-@@ -41,13 +41,19 @@
+--- source/gio/gnetworking.h.in	2018-12-23 08:10:41.000000000 -0500
++++ source-new/gio/gnetworking.h.in	2024-11-28 01:04:12.972229810 -0500
+@@ -41,13 +41,17 @@
  #include <netdb.h>
  #include <netinet/in.h>
  #include <netinet/tcp.h>
@@ -64,9 +64,7 @@ diff -ruwN source/gio/gnetworking.h.in source-new/gio/gnetworking.h.in
 +#endif
  #include <sys/socket.h>
  #include <sys/un.h>
-+#if !defined(__redox__)
  #include <net/if.h>
-+#endif
  
  #include <arpa/inet.h>
 +#if !defined(__redox__)
@@ -76,8 +74,8 @@ diff -ruwN source/gio/gnetworking.h.in source-new/gio/gnetworking.h.in
  
  #ifndef T_SRV
 diff -ruwN source/gio/gsocket.c source-new/gio/gsocket.c
---- source/gio/gsocket.c	2018-12-23 06:10:41.000000000 -0700
-+++ source-new/gio/gsocket.c	2019-01-05 13:34:30.178211038 -0700
+--- source/gio/gsocket.c	2018-12-23 08:10:41.000000000 -0500
++++ source-new/gio/gsocket.c	2024-11-28 00:42:10.691094238 -0500
 @@ -1539,6 +1539,7 @@
  
    g_return_val_if_fail (G_IS_SOCKET (socket), 0);
@@ -252,8 +250,8 @@ diff -ruwN source/gio/gsocket.c source-new/gio/gsocket.c
  }
 -
 diff -ruwN source/gio/gthreadedresolver.c source-new/gio/gthreadedresolver.c
---- source/gio/gthreadedresolver.c	2018-12-23 06:10:41.000000000 -0700
-+++ source-new/gio/gthreadedresolver.c	2019-01-13 10:47:33.441032953 -0700
+--- source/gio/gthreadedresolver.c	2018-12-23 08:10:41.000000000 -0500
++++ source-new/gio/gthreadedresolver.c	2024-11-28 00:42:10.694427677 -0500
 @@ -289,6 +289,12 @@
                        gpointer       task_data,
                        GCancellable  *cancellable)
@@ -306,8 +304,8 @@ diff -ruwN source/gio/gthreadedresolver.c source-new/gio/gthreadedresolver.c
  
  static GList *
 diff -ruwN source/gio/gunixfdmessage.c source-new/gio/gunixfdmessage.c
---- source/gio/gunixfdmessage.c	2018-12-23 06:10:41.000000000 -0700
-+++ source-new/gio/gunixfdmessage.c	2019-01-05 14:22:53.097587821 -0700
+--- source/gio/gunixfdmessage.c	2018-12-23 08:10:41.000000000 -0500
++++ source-new/gio/gunixfdmessage.c	2024-11-28 00:42:10.694427677 -0500
 @@ -53,6 +53,10 @@
  #include "gnetworking.h"
  #include "gioerror.h"
@@ -320,8 +318,8 @@ diff -ruwN source/gio/gunixfdmessage.c source-new/gio/gunixfdmessage.c
  {
    GUnixFDList *list;
 diff -ruwN source/gio/gunixmounts.c source-new/gio/gunixmounts.c
---- source/gio/gunixmounts.c	2018-12-23 06:10:41.000000000 -0700
-+++ source-new/gio/gunixmounts.c	2019-01-05 14:25:31.846709810 -0700
+--- source/gio/gunixmounts.c	2018-12-23 08:10:41.000000000 -0500
++++ source-new/gio/gunixmounts.c	2024-11-28 00:42:10.694427677 -0500
 @@ -949,6 +949,21 @@
    return return_list;
  }
@@ -354,8 +352,8 @@ diff -ruwN source/gio/gunixmounts.c source-new/gio/gunixmounts.c
  _g_get_unix_mount_points (void)
  {
 diff -ruwN source/glib/gthread-posix.c source-new/glib/gthread-posix.c
---- source/glib/gthread-posix.c	2018-12-23 06:10:41.000000000 -0700
-+++ source-new/glib/gthread-posix.c	2019-01-05 11:40:57.454759289 -0700
+--- source/glib/gthread-posix.c	2018-12-23 08:10:41.000000000 -0500
++++ source-new/glib/gthread-posix.c	2024-11-28 00:42:10.694427677 -0500
 @@ -660,6 +660,7 @@
  #elif defined (HAVE_PTHREAD_CONDATTR_SETCLOCK) && defined (CLOCK_MONOTONIC)
    if G_UNLIKELY ((status = pthread_condattr_setclock (&attr, CLOCK_MONOTONIC)) != 0)
