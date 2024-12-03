@@ -13,6 +13,7 @@ dependencies = [
 script = """
 export CFLAGS="${CFLAGS} -I${COOKBOOK_SYSROOT}/include"
 export CXXFLAGS="${CXXFLAGS} -I${COOKBOOK_SYSROOT}/include"
+export DATAPATH="/usr/share/games/openjazz/"
 
 COOKBOOK_CONFIGURE="cmake"
 COOKBOOK_CONFIGURE_FLAGS=(
@@ -29,4 +30,15 @@ COOKBOOK_CONFIGURE_FLAGS=(
 )
 
 cookbook_configure
+
+ASSETS_DIR="${COOKBOOK_STAGE}${DATAPATH}"
+INSTALL_DIR="${COOKBOOK_STAGE}/usr/games"
+ICON_DIR="${COOKBOOK_STAGE}/ui/icons/apps"
+MAN_ROOT="${COOKBOOK_STAGE}/usr/share/man"
+mkdir -p "${ASSETS_DIR}" "${INSTALL_DIR}" "${ICON_DIR}" "${MAN_ROOT}"
+
+cp -v "${COOKBOOK_SOURCE}/res/unix/OpenJazz.png" "${ICON_DIR}"
+# TODO: Man pages need to be compiled
+# cp -v "${COOKBOOK_SOURCE}/res/unix/OpenJazz.6" "${MAN_ROOT}/man6"
+mv OpenJazz "${INSTALL_DIR}"
 """
