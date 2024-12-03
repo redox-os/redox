@@ -1,15 +1,16 @@
 [source]
-tar = "https://www.lua.org/ftp/lua-5.4.4.tar.gz"
-blake3 = "ca54489393cd38e35d295a9c35dbf0da5336a66ddb7b2213eed6c2f3039f53b1"
+tar = "https://lua.org/ftp/lua-5.4.7.tar.gz"
+blake3 = "e51c2f347e3185479d5ff95cae8ac77511db486853269443c56bedaa0a6ae629"
 
 [build]
 template = "custom"
 script = """
 rsync -av --delete "${COOKBOOK_SOURCE}/" ./
-"${COOKBOOK_MAKE}" -j"${COOKBOOK_MAKE_JOBS}" \
+"${COOKBOOK_MAKE}" -j"${COOKBOOK_MAKE_JOBS}" posix \
     AR="${TARGET}-ar rcu" \
     CC="${TARGET}-gcc -std=gnu99" \
     RANLIB="${TARGET}-ranlib" \
-    SYSLDFLAGS="-static" \
-    install INSTALL_TOP="${COOKBOOK_STAGE}"
+    SYSLDFLAGS="-static"
+
+"${COOKBOOK_MAKE}" install INSTALL_TOP="${COOKBOOK_STAGE}"
 """
