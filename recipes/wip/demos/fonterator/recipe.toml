@@ -1,8 +1,8 @@
-#TODO not compiled or tested
+#TODO write a script that can use multiple examples and the "monospace-font" flag
 [source]
 git = "https://github.com/ardaku/fonterator"
 [build]
 template = "custom"
 script = """
-cookbook_cargo_examples directions image raster
+cookbook_cargo_examples main directions image raster
 """
