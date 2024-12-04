@@ -1,4 +1,4 @@
-#TODO not compiled or tested
+#TODO compiled but not tested
 [source]
 git = "https://github.com/Lichtso/contrast_renderer"
 [build]
