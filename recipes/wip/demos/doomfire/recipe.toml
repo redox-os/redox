@@ -4,5 +4,5 @@ git = "https://github.com/r-marques/doomfire"
 [build]
 template = "custom"
 script = """
-cookbook_cargo_packages doomfire-minifb
+cookbook_cargo_examples doomfire-minifb
 """
