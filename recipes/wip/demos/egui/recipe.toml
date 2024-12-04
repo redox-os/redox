@@ -4,5 +4,5 @@ git = "https://github.com/emilk/egui"
 [build]
 template = "custom"
 script = """
-cookbook_cargo_examples hello_world_simple
+cookbook_cargo_packages hello_world
 """
