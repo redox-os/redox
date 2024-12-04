@@ -1,4 +1,4 @@
-#TODO not compiled or tested
+#TODO hot-lib-reloader crate error
 [source]
 git = "https://github.com/polymonster/hotline"
 [build]

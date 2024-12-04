@@ -1,8 +1,0 @@
-#TODO not compiled or tested
-[source]
-git = "https://github.com/leptos-rs/leptos"
-[build]
-template = "custom"
-script = """
-cookbook_cargo_examples counter
-"""
