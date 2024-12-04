@@ -8,10 +8,16 @@ CONTAINER_WORKDIR?=/mnt/redox
 ## Podman Home Directory
 PODMAN_HOME?=$(ROOT)/build/podman
 ## Podman command with its many arguments
+
+### If seccomp is enabled in kernel, turn off seccomp confinement
+ifneq ($(shell cat /proc/config.gz | gunzip  | grep CONFIG_SECCOMP=y),)
+	PODMAN_SECOPT=--security-opt seccomp=unconfined
+endif
+
 PODMAN_VOLUMES?=--volume $(ROOT):$(CONTAINER_WORKDIR):Z --volume $(PODMAN_HOME):/home:Z
 PODMAN_ENV?=--env PATH=/home/poduser/.cargo/bin:/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin --env PODMAN_BUILD=0
 PODMAN_CONFIG?=--env ARCH=$(ARCH) --env CONFIG_NAME=$(CONFIG_NAME) --env FILESYSTEM_CONFIG=$(FILESYSTEM_CONFIG)
-PODMAN_OPTIONS?=--rm --workdir $(CONTAINER_WORKDIR) --userns keep-id --user `id -u` --interactive --tty --env TERM=$(TERM)
+PODMAN_OPTIONS?=--rm $(PODMAN_SECOPT) --workdir $(CONTAINER_WORKDIR) --userns keep-id --user `id -u` --interactive --tty --env TERM=$(TERM)
 PODMAN_RUN?=podman run $(PODMAN_OPTIONS) $(PODMAN_VOLUMES) $(PODMAN_ENV) $(PODMAN_CONFIG) $(IMAGE_TAG)
 
 container_shell: build/container.tag
@@ -52,7 +58,7 @@ ifeq ($(PODMAN_BUILD),1)
 	-podman image rm --force $(IMAGE_TAG) || true
 	mkdir -p $(PODMAN_HOME)
 	@echo "Building Podman image. This may take some time."
-	sed s/_UID_/`id -u`/ $(CONTAINERFILE) | podman build --file - $(PODMAN_VOLUMES) --tag $(IMAGE_TAG)
+	sed s/_UID_/`id -u`/ $(CONTAINERFILE) | podman build $(PODMAN_SECOPT) --file - $(PODMAN_VOLUMES) --tag $(IMAGE_TAG)
 	@echo "Mapping Podman user space. Please wait."
 	$(PODMAN_RUN) bash -e podman/rustinstall.sh
 	mkdir -p build
