@@ -4,5 +4,18 @@ git = "https://github.com/ardaku/fonterator"
 [build]
 template = "custom"
 script = """
-cookbook_cargo_examples main directions image raster
+recipe="$(basename "${COOKBOOK_RECIPE}")"
+examples="main directions image raster"
+for example in "${examples}"
+    do
+        "${COOKBOOK_CARGO}" build \
+            --manifest-path "${COOKBOOK_SOURCE}/${PACKAGE_PATH}/Cargo.toml" \
+            --example "${example}" \
+            --release \
+           --features "monospace-font"
+        mkdir -pv "${COOKBOOK_STAGE}/usr/bin"
+        cp -v \
+            "target/${TARGET}/${build_type}/examples/${example}" \
+            "${COOKBOOK_STAGE}/usr/bin/${recipe}_${example}"
+    done
 """
