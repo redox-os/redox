@@ -1,4 +1,4 @@
-#TODO not compiled or tested
+#TODO can't find the fontconfig files
 [source]
 git = "https://github.com/SamiPerttu/fundsp"
 [build]
