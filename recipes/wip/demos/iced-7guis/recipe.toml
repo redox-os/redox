@@ -1,4 +1,4 @@
-#TODO not compiled or tested
+#TODO require rustc 1.80.1
 [source]
 git = "https://github.com/dcampbell24/iced_7guis"
 [build]
