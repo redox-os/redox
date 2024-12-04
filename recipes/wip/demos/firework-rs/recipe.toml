@@ -4,6 +4,14 @@ git = "https://github.com/Wayoung7/firework-rs"
 [build]
 template = "custom"
 script = """
-cookbook_cargo_packages firework-rs
+package=firework-rs
+"${COOKBOOK_CARGO}" build \
+            --manifest-path "${COOKBOOK_SOURCE}/Cargo.toml" \
+            --package "${package}" \
+            --release
+        mkdir -pv "${COOKBOOK_STAGE}/usr/bin"
+        cp -v \
+            "target/${TARGET}/release/${package}" \
+            "${COOKBOOK_STAGE}/usr/bin/${package}"
 cookbook_cargo_examples fountain heart vortex
 """
