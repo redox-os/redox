@@ -4,5 +4,5 @@ git = "https://github.com/ardaku/fonterator"
 [build]
 template = "custom"
 script = """
-cookbook_cargo_examples main directions image raster
+cookbook_cargo_examples directions image raster
 """
