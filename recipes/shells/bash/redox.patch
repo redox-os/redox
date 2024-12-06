@@ -1,6 +1,6 @@
 diff -ruwN bash-5.2.15/bashline.c source/bashline.c
---- bash-5.2.15/bashline.c	2022-04-17 16:37:12.000000000 -0600
-+++ source/bashline.c	2023-09-09 09:07:14.698070413 -0600
+--- bash-5.2.15/bashline.c	2022-04-17 15:37:12.000000000 -0700
++++ source/bashline.c	2024-12-05 16:04:07.566380980 -0800
 @@ -2645,7 +2645,7 @@
       const char *text;
       int state;
@@ -11,8 +11,8 @@ diff -ruwN bash-5.2.15/bashline.c source/bashline.c
  #else
    static char *gname = (char *)NULL;
 diff -ruwN bash-5.2.15/builtins/ulimit.def source/builtins/ulimit.def
---- bash-5.2.15/builtins/ulimit.def	2021-11-05 07:19:53.000000000 -0600
-+++ source/builtins/ulimit.def	2023-09-09 09:07:14.698070413 -0600
+--- bash-5.2.15/builtins/ulimit.def	2021-11-05 06:19:53.000000000 -0700
++++ source/builtins/ulimit.def	2024-12-05 16:04:07.567380980 -0800
 @@ -609,7 +609,7 @@
        }
    else
@@ -23,8 +23,8 @@ diff -ruwN bash-5.2.15/builtins/ulimit.def source/builtins/ulimit.def
  	return -1;
  #  if defined (HPUX9)
 diff -ruwN bash-5.2.15/config-top.h source/config-top.h
---- bash-5.2.15/config-top.h	2021-11-05 07:11:12.000000000 -0600
-+++ source/config-top.h	2023-09-09 09:07:14.698070413 -0600
+--- bash-5.2.15/config-top.h	2021-11-05 06:11:12.000000000 -0700
++++ source/config-top.h	2024-12-06 01:06:18.324586528 -0800
 @@ -63,24 +63,24 @@
  /* The default value of the PATH variable. */
  #ifndef DEFAULT_PATH_VALUE
@@ -54,9 +54,16 @@ diff -ruwN bash-5.2.15/config-top.h source/config-top.h
  #endif
  
  /* Default primary and secondary prompt strings. */
+@@ -199,3 +199,6 @@
+ /* Undefine or define to 0 if you don't want to allow associative array
+    assignment using a compound list of key-value pairs. */
+ #define ASSOC_KVPAIR_ASSIGNMENT 1
++
++/* Don't check for a valid inode number when pattern matching on Redox */
++#define BROKEN_DIRENT_D_INO 1
 diff -ruwN bash-5.2.15/configure source/configure
---- bash-5.2.15/configure	2022-09-23 08:13:22.000000000 -0600
-+++ source/configure	2023-09-09 09:07:14.702070414 -0600
+--- bash-5.2.15/configure	2022-09-23 07:13:22.000000000 -0700
++++ source/configure	2024-12-05 16:06:32.812286102 -0800
 @@ -3298,6 +3298,7 @@
  *-nsk*)		opt_bash_malloc=no ;;	# HP NonStop
  *-haiku*)	opt_bash_malloc=no ;;	# Haiku OS
@@ -66,8 +73,8 @@ diff -ruwN bash-5.2.15/configure source/configure
  
  # memory scrambling on free()
 diff -ruwN bash-5.2.15/configure.ac source/configure.ac
---- bash-5.2.15/configure.ac	2022-09-23 08:12:27.000000000 -0600
-+++ source/configure.ac	2023-09-09 09:07:14.702070414 -0600
+--- bash-5.2.15/configure.ac	2022-09-23 07:12:27.000000000 -0700
++++ source/configure.ac	2024-12-05 16:04:07.571380977 -0800
 @@ -92,6 +92,7 @@
  *-nsk*)		opt_bash_malloc=no ;;	# HP NonStop
  *-haiku*)	opt_bash_malloc=no ;;	# Haiku OS
@@ -77,8 +84,8 @@ diff -ruwN bash-5.2.15/configure.ac source/configure.ac
  
  # memory scrambling on free()
 diff -ruwN bash-5.2.15/execute_cmd.c source/execute_cmd.c
---- bash-5.2.15/execute_cmd.c	2022-12-13 10:09:02.000000000 -0700
-+++ source/execute_cmd.c	2023-09-09 09:07:14.702070414 -0600
+--- bash-5.2.15/execute_cmd.c	2022-12-13 09:09:02.000000000 -0800
++++ source/execute_cmd.c	2024-12-05 16:04:07.573380976 -0800
 @@ -1379,11 +1379,11 @@
    nullcmd = (command == 0) || (command->type == cm_simple && command->value.Simple->words == 0 && command->value.Simple->redirects == 0);
    if (posixly_correct && nullcmd)
@@ -94,8 +101,8 @@ diff -ruwN bash-5.2.15/execute_cmd.c source/execute_cmd.c
        tbefore = shell_start_time;
  #endif
 diff -ruwN bash-5.2.15/general.c source/general.c
---- bash-5.2.15/general.c	2022-11-23 15:10:12.000000000 -0700
-+++ source/general.c	2023-09-09 09:07:14.702070414 -0600
+--- bash-5.2.15/general.c	2022-11-23 14:10:12.000000000 -0800
++++ source/general.c	2024-12-05 16:04:07.574380975 -0800
 @@ -589,6 +589,7 @@
  void
  check_dev_tty ()
@@ -126,8 +133,8 @@ diff -ruwN bash-5.2.15/general.c source/general.c
  
    *p_index = i;
 diff -ruwN bash-5.2.15/include/posixwait.h source/include/posixwait.h
---- bash-5.2.15/include/posixwait.h	2019-03-29 11:25:52.000000000 -0600
-+++ source/include/posixwait.h	2023-09-09 09:07:14.702070414 -0600
+--- bash-5.2.15/include/posixwait.h	2019-03-29 10:25:52.000000000 -0700
++++ source/include/posixwait.h	2024-12-05 16:04:07.574380975 -0800
 @@ -34,7 +34,7 @@
  
  /* How to get the status of a job.  For Posix, this is just an
@@ -147,8 +154,8 @@ diff -ruwN bash-5.2.15/include/posixwait.h source/include/posixwait.h
  #  if !defined (WSTOPSIG)
  #    define WSTOPSIG(s)       ((s) >> 8)
 diff -ruwN bash-5.2.15/lib/readline/input.c source/lib/readline/input.c
---- bash-5.2.15/lib/readline/input.c	2022-04-08 13:43:24.000000000 -0600
-+++ source/lib/readline/input.c	2023-09-09 09:07:14.702070414 -0600
+--- bash-5.2.15/lib/readline/input.c	2022-04-08 12:43:24.000000000 -0700
++++ source/lib/readline/input.c	2024-12-05 16:04:07.575380974 -0800
 @@ -805,7 +805,7 @@
    int result;
    unsigned char c;
@@ -159,8 +166,8 @@ diff -ruwN bash-5.2.15/lib/readline/input.c source/lib/readline/input.c
    fd_set readfds;
  #endif
 diff -ruwN bash-5.2.15/lib/readline/terminal.c source/lib/readline/terminal.c
---- bash-5.2.15/lib/readline/terminal.c	2022-04-05 08:44:17.000000000 -0600
-+++ source/lib/readline/terminal.c	2023-09-09 09:09:03.162131539 -0600
+--- bash-5.2.15/lib/readline/terminal.c	2022-04-05 07:44:17.000000000 -0700
++++ source/lib/readline/terminal.c	2024-12-05 16:04:07.575380974 -0800
 @@ -102,7 +102,7 @@
  
  static int tcap_initialized;
@@ -171,8 +178,8 @@ diff -ruwN bash-5.2.15/lib/readline/terminal.c source/lib/readline/terminal.c
  extern 
  #  endif /* __EMX__ || NEED_EXTERN_PC */
 diff -ruwN bash-5.2.15/lib/sh/getcwd.c source/lib/sh/getcwd.c
---- bash-5.2.15/lib/sh/getcwd.c	2012-03-10 08:48:50.000000000 -0700
-+++ source/lib/sh/getcwd.c	2023-09-09 09:07:14.702070414 -0600
+--- bash-5.2.15/lib/sh/getcwd.c	2012-03-10 07:48:50.000000000 -0800
++++ source/lib/sh/getcwd.c	2024-12-05 16:04:07.575380974 -0800
 @@ -20,7 +20,7 @@
  
  #include <config.h>
@@ -183,8 +190,8 @@ diff -ruwN bash-5.2.15/lib/sh/getcwd.c source/lib/sh/getcwd.c
  #if !defined (__GNUC__) && !defined (HAVE_ALLOCA_H) && defined (_AIX)
    #pragma alloca
 diff -ruwN bash-5.2.15/lib/sh/input_avail.c source/lib/sh/input_avail.c
---- bash-5.2.15/lib/sh/input_avail.c	2021-05-24 09:16:33.000000000 -0600
-+++ source/lib/sh/input_avail.c	2023-09-09 09:07:14.702070414 -0600
+--- bash-5.2.15/lib/sh/input_avail.c	2021-05-24 08:16:33.000000000 -0700
++++ source/lib/sh/input_avail.c	2024-12-05 16:04:07.576380974 -0800
 @@ -33,7 +33,7 @@
  #  include <sys/file.h>
  #endif /* HAVE_SYS_FILE_H */
@@ -195,8 +202,8 @@ diff -ruwN bash-5.2.15/lib/sh/input_avail.c source/lib/sh/input_avail.c
  #endif
  
 diff -ruwN bash-5.2.15/lib/sh/strtoimax.c source/lib/sh/strtoimax.c
---- bash-5.2.15/lib/sh/strtoimax.c	2021-09-10 08:32:35.000000000 -0600
-+++ source/lib/sh/strtoimax.c	2023-09-09 09:10:21.618185121 -0600
+--- bash-5.2.15/lib/sh/strtoimax.c	2021-09-10 07:32:35.000000000 -0700
++++ source/lib/sh/strtoimax.c	2024-12-05 16:04:07.576380974 -0800
 @@ -55,6 +55,8 @@
  extern long long strtoll PARAMS((const char *, char **, int));
  #endif
@@ -216,8 +223,8 @@ diff -ruwN bash-5.2.15/lib/sh/strtoimax.c source/lib/sh/strtoimax.c
  # include <stdio.h>
  int
 diff -ruwN bash-5.2.15/parse.y source/parse.y
---- bash-5.2.15/parse.y	2022-12-13 10:09:02.000000000 -0700
-+++ source/parse.y	2023-09-09 09:07:14.706070416 -0600
+--- bash-5.2.15/parse.y	2022-12-13 09:09:02.000000000 -0800
++++ source/parse.y	2024-12-05 16:04:07.577380973 -0800
 @@ -2625,6 +2625,7 @@
        parser_state |= PST_ENDALIAS;
        /* We need to do this to make sure last_shell_getc_is_singlebyte returns
@@ -235,8 +242,8 @@ diff -ruwN bash-5.2.15/parse.y source/parse.y
      }
  #endif
 diff -ruwN bash-5.2.15/y.tab.c source/y.tab.c
---- bash-5.2.15/y.tab.c	2022-12-13 10:09:02.000000000 -0700
-+++ source/y.tab.c	2023-09-09 09:07:14.706070416 -0600
+--- bash-5.2.15/y.tab.c	2022-12-13 09:09:02.000000000 -0800
++++ source/y.tab.c	2024-12-05 16:04:07.579380972 -0800
 @@ -4936,6 +4936,7 @@
        parser_state |= PST_ENDALIAS;
        /* We need to do this to make sure last_shell_getc_is_singlebyte returns
