@@ -1,0 +1,6 @@
+#TODO write a gnu make target for redox, see: https://github.com/dyne/cjit#build-from-source
+[source]
+git = "https://github.com/dyne/cjit"
+rev = "9a4321e64ea1af10e9e3c63de45af80b36846cda"
+[build]
+template = "custom"
