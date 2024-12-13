@@ -1,6 +1,0 @@
-#TODO missing script for "make", see https://github.com/lz4/lz4#installation
-[source]
-git = "https://github.com/lz4/lz4"
-rev = "5ff839680134437dbf4678f3d0c7b371d84f4964"
-[build]
-template = "custom"
