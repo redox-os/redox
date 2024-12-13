@@ -1,0 +1,18 @@
+[source]
+tar = "https://github.com/lz4/lz4/releases/download/v1.10.0/lz4-1.10.0.tar.gz"
+blake3 = "3e69fd475e7852e17594985528b5232afeba7d3d56cfebe2e89071768b2ab36a"
+patches = ["redox.patch"]
+
+[build]
+template = "custom"
+script = """
+rsync -av --delete "${COOKBOOK_SOURCE}/" ./
+
+# No configure provided
+COOKBOOK_CONFIGURE="true"
+COOKBOOK_CONFIGURE_FLAGS=""
+
+export CPPFLAGS="${CPPFLAGS} -D_REDOX"
+
+cookbook_configure 
+"""
