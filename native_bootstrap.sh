@@ -423,7 +423,7 @@ ubuntu()
 		gperf \
 		intltool \
 		libexpat-dev \
-		libfuse-dev \
+		libfuse3-dev \
 		libgmp-dev \
 		libhtml-parser-perl \
 		libjpeg-dev \
