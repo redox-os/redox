@@ -23,6 +23,9 @@ before_script:
         pkg-config \
         texinfo \
         wget \
+        help2man \
+        autoconf \
+        automake \
         zstd &&
     curl https://sh.rustup.rs -sSf | sh -s -- -y --default-toolchain none
 

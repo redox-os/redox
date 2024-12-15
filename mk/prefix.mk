@@ -1,12 +1,13 @@
-# Configuration file for the Rust/GCC cross-compilers and relibc
+# Configuration file for the Rust/GCC cross-compilers, relibc and libtool
 
 PREFIX=prefix/$(TARGET)
 
-PREFIX_INSTALL=$(PREFIX)/relibc-install
+PREFIX_INSTALL=$(PREFIX)/sysroot/
 PREFIX_PATH=$(ROOT)/$(PREFIX_INSTALL)/bin
 
 BINUTILS_BRANCH=redox-2.43.1
 GCC_BRANCH=redox-13.2.0
+LIBTOOL_VERSION=2.5.4
 
 export PREFIX_RUSTFLAGS=-L $(ROOT)/$(PREFIX_INSTALL)/$(TARGET)/lib
 export RUSTUP_TOOLCHAIN=$(ROOT)/$(PREFIX_INSTALL)
@@ -21,7 +22,11 @@ else
 	GCC_ARCH?=
 endif
 
-prefix: $(PREFIX_INSTALL)
+# TODO(andypython): Upstream libtool patches to remove the need to locally build libtool.
+# Cannot be CI built, i.e. be a part of relibc-install.tar.gz, as the prefix has to be correctly
+# set while building. Otherwise aclocal will not be able to find libtool's files. Furthermore, doing
+# so would break non-podman builds (not sure if they are still supported though).
+prefix: $(PREFIX)/sysroot
 
 PREFIX_STRIP=\
 	mkdir -p bin libexec "$(GCC_TARGET)/bin" && \
@@ -65,6 +70,51 @@ $(PREFIX)/relibc-install.tar.gz: $(PREFIX)/relibc-install
 		--directory="$<" \
 		.
 
+$(PREFIX)/libtool:
+	rm -rf "$@.partial" "$@"
+	mkdir -p "$@.partial"
+
+	git clone \
+		--recurse-submodules \
+		"https://gitlab.redox-os.org/andypython/libtool/" \
+		--branch "v$(LIBTOOL_VERSION)-redox" \
+		--depth 1 \
+		"$@.partial"
+
+	touch "$@.partial"
+	mv "$@.partial" "$@"
+
+$(PREFIX)/libtool-build: $(PREFIX)/libtool $(CONTAINER_TAG)
+ifeq ($(PODMAN_BUILD),1)
+	$(PODMAN_RUN) $(MAKE) $@
+else
+	mkdir -p "$@.partial"
+	cd "$(PREFIX)/libtool" && \
+		./bootstrap \
+			--skip-po \
+			--skip-git \
+			--force \
+			--gnulib-srcdir=./gnulib
+	cd "$@.partial" && \
+	"$(ROOT)/$</configure" \
+		--target="$(TARGET)" \
+		--prefix=$(abspath $(PREFIX)/sysroot) \
+		&& \
+	$(MAKE) -j `$(NPROC)`
+	touch "$@.partial"
+	mv "$@.partial" "$@"
+endif
+
+$(PREFIX)/sysroot: $(PREFIX)/relibc-install $(PREFIX)/libtool-build $(CONTAINER_TAG)
+ifeq ($(PODMAN_BUILD),1)
+	$(PODMAN_RUN) $(MAKE) $@
+else
+	cp -r "$(PREFIX)/relibc-install/" "$@"
+	cd "$(PREFIX)/libtool-build" && \
+		$(MAKE) install -j `$(NPROC)`
+	cd "$@" && $(PREFIX_STRIP)
+endif
+
 ifeq ($(PREFIX_BINARY),1)
 
 $(PREFIX)/rust-install.tar.gz:
@@ -83,13 +133,14 @@ $(PREFIX)/rust-install: $(PREFIX)/rust-install.tar.gz
 else
 
 $(ROOT)/rust/configure:
-	git submodule update --init --recursive --checkout rust
+	git submodule update --progress --init --recursive --checkout rust
 
 PREFIX_BASE_INSTALL=$(PREFIX)/rust-freestanding-install
 PREFIX_FREESTANDING_INSTALL=$(PREFIX)/gcc-freestanding-install
 
 PREFIX_BASE_PATH=$(ROOT)/$(PREFIX_BASE_INSTALL)/bin
 PREFIX_FREESTANDING_PATH=$(ROOT)/$(PREFIX_FREESTANDING_INSTALL)/bin
+
 
 $(PREFIX)/binutils-$(BINUTILS_BRANCH).tar.bz2:
 	mkdir -p "$(@D)"
