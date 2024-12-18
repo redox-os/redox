@@ -1,12 +1,10 @@
 [source]
-git = "https://github.com/tukaani-project/xz"
-# v5.2.5
-rev = "2327a461e1afce862c22269b80d3517801103c1b"
+tar = "https://github.com/tukaani-project/xz/releases/download/v5.2.13/xz-5.2.13.tar.gz"
+blake3 = "edc6350542e8cb7188a878135e5b9bd592d687e5b47451ca1c89d51cc4bc6b53"
 
 [build]
 template = "custom"
 script = """
-(cd ${COOKBOOK_SOURCE} && ./autogen.sh)
 export CFLAGS="-static"
 COOKBOOK_CONFIGURE_FLAGS=(
     --host="${GNU_TARGET}"
