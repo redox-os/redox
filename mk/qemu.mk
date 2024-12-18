@@ -32,25 +32,35 @@ else ifeq ($(ARCH),aarch64)
 	# Default to UEFI as U-Boot doesn't set up a framebuffer for us and we don't yet support
 	# setting up a framebuffer ourself.
 	uefi?=yes
-	live=yes
+	live?=yes
 	QEMU_ARCH=aarch64
 	QEMU_MACHINE?=virt
 	QEMU_CPU=max
 	QEMU_SMP?=1
 	QEMU_MEM?=2048
 	ifeq ($(BOARD),raspi3bp)
-		FIRMWARE=$(BUILD)/raspi3bp_uboot.rom
+		QEMU_KERNEL=$(BUILD)/raspi3bp_uboot.rom
 		disk?=sdcard
-	else ifeq ($(uefi),yes)
-		FIRMWARE=/usr/share/AAVMF/AAVMF_CODE.fd
+		QEMU_MACHINE:=raspi3b
+		QEMU_SMP:=4
+		QEMU_MEM:=1024
+		net:=usb-net
+		audio:=no
+		ifneq ($(usb),no)
+			QEMUFLAGS+=-usb -device usb-kbd -device usb-tablet
+		endif
 	else
-		FIRMWARE=$(BUILD)/qemu_uboot.rom
-	endif
-	ifneq ($(gpu),no)
-		QEMUFLAGS+=-device ramfb
-	endif
-	ifneq ($(usb),no)
-		QEMUFLAGS+=-device qemu-xhci -device usb-kbd -device usb-tablet
+		ifeq ($(uefi),yes)
+			FIRMWARE=/usr/share/AAVMF/AAVMF_CODE.fd
+		else
+			FIRMWARE=$(BUILD)/qemu_uboot.rom
+		endif
+		ifneq ($(gpu),no)
+			QEMUFLAGS+=-device ramfb
+		endif
+		ifneq ($(usb),no)
+			QEMUFLAGS+=-device qemu-xhci -device usb-kbd -device usb-tablet
+		endif
 	endif
 else ifeq ($(ARCH),riscv64gc)
 	live=no
@@ -92,6 +102,10 @@ ifneq ($(FIRMWARE),)
 	QEMUFLAGS+=-bios $(FIRMWARE)
 endif
 
+ifneq ($(QEMU_KERNEL),)
+	QEMUFLAGS+=-kernel $(QEMU_KERNEL)
+endif
+
 ifeq ($(live),yes)
 	DISK=$(BUILD)/livedisk.iso
 else
@@ -123,26 +137,25 @@ endif
 
 ifeq ($(net),no)
 	QEMUFLAGS+=-net none
-else ifeq ($(net),rtl8139)
-	# RTL8139
-	QEMUFLAGS+=-netdev user,id=net0 -device rtl8139,netdev=net0 \
-				-object filter-dump,id=f1,netdev=net0,file=$(BUILD)/network.pcap
-else ifeq ($(net),virtio)
-	# virtio-net
-	QEMUFLAGS+=-netdev user,id=net0 -device virtio-net,netdev=net0 \
-				-object filter-dump,id=f1,netdev=net0,file=$(BUILD)/network.pcap
 else
-	ifneq ($(bridge),)
-		QEMUFLAGS+=-netdev bridge,br=$(bridge),id=net0 -device e1000,netdev=net0,id=nic0
+	ifeq ($(net),rtl8139) # RTL8139
+		QEMUFLAGS+=-device rtl8139,netdev=net0
+	else ifeq ($(net),virtio) # virtio-net
+		QEMUFLAGS+=-device virtio-net,netdev=net0
+	else ifeq ($(net),usb-net)
+		QEMUFLAGS+=-device usb-net,netdev=net0
 	else
-	    ifeq ($(net),redir)
-			# port 8080 and 8083 - webservers
-			# port 64126 - our gdbserver implementation
-			QEMUFLAGS+=-netdev user,id=net0,hostfwd=tcp::8080-:8080,hostfwd=tcp::8083-:8083,hostfwd=tcp::64126-:64126 -device e1000,netdev=net0,id=nic0
-		else
-			QEMUFLAGS+=-netdev user,id=net0 -device e1000,netdev=net0 \
-						-object filter-dump,id=f1,netdev=net0,file=$(BUILD)/network.pcap
-		endif
+		QEMUFLAGS+=-device e1000,netdev=net0,id=nic0
+	endif
+
+	ifneq ($(bridge),)
+		QEMUFLAGS+=-netdev bridge,br=$(bridge),id=net0
+	else ifeq ($(net),redir)
+		# port 8080 and 8083 - webservers
+		# port 64126 - our gdbserver implementation
+		QEMUFLAGS+=-netdev user,id=net0,hostfwd=tcp::8080-:8080,hostfwd=tcp::8083-:8083,hostfwd=tcp::64126-:64126
+	else
+		QEMUFLAGS+=-netdev user,id=net0 -object filter-dump,id=f1,netdev=net0,file=$(BUILD)/network.pcap
 	endif
 endif
 
@@ -220,6 +233,8 @@ qemu-deps: $(EXTRA_DISK)
 endif
 
 qemu-deps:$(FIRMWARE)
+
+qemu-deps:$(QEMU_KERNEL)
 
 qemu-deps: $(PFLASH0)
 
