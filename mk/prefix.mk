@@ -78,7 +78,7 @@ $(PREFIX)/libtool:
 		--recurse-submodules \
 		"https://gitlab.redox-os.org/andypython/libtool/" \
 		--branch "v$(LIBTOOL_VERSION)-redox" \
-		--depth 1 \
+		--depth 2 \
 		"$@.partial"
 
 	touch "$@.partial"
@@ -89,18 +89,17 @@ ifeq ($(PODMAN_BUILD),1)
 	$(PODMAN_RUN) $(MAKE) $@
 else
 	mkdir -p "$@.partial"
-	cd "$(PREFIX)/libtool" && \
+	cd "$@.partial" && \
+		cp -rp $(abspath $(PREFIX)/libtool)/. ./ && \
 		./bootstrap \
 			--skip-po \
-			--skip-git \
 			--force \
-			--gnulib-srcdir=./gnulib
-	cd "$@.partial" && \
-	"$(ROOT)/$</configure" \
-		--target="$(TARGET)" \
-		--prefix=$(abspath $(PREFIX)/sysroot) \
-		&& \
-	$(MAKE) -j `$(NPROC)`
+			--gnulib-srcdir=./gnulib && \
+		"$(ROOT)/$</configure" \
+			--target="$(TARGET)" \
+			--prefix=$(abspath $(PREFIX)/sysroot) && \
+		$(MAKE) -j `$(NPROC)`
+
 	touch "$@.partial"
 	mv "$@.partial" "$@"
 endif
