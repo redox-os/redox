@@ -9,7 +9,7 @@ RUN useradd --create-home --no-log-init --uid _UID_ poduser \
     && chown -R root:root /home \
     && apt-get update \
     && apt-get install -y --no-install-recommends \        
-        appstream \
+		appstream \
 		ant \
 		autoconf \
 		automake \
@@ -29,12 +29,12 @@ RUN useradd --create-home --no-log-init --uid _UID_ poduser \
 		git \
 		git-lfs \
 		gperf \
-        expect \
+		expect \
 		intltool \
-        libc6-dev-i386 \
+		libc6-dev-i386 \
 		libexpat-dev \
-        libfuse3-dev \
-        libfontconfig1-dev \
+		libfuse3-dev \
+		libfontconfig1-dev \
 		libgmp-dev \
 		libhtml-parser-perl \
 		libjpeg-dev \
@@ -42,6 +42,7 @@ RUN useradd --create-home --no-log-init --uid _UID_ poduser \
 		libpng-dev \
 		libsdl1.2-dev \
 		libsdl2-ttf-dev \
+		libtool \
 		llvm \
 		lua5.4 \
 		lzip \
@@ -60,7 +61,7 @@ RUN useradd --create-home --no-log-init --uid _UID_ poduser \
 		python3-mako \
 		rsync \
 		scons \
-        syslinux-utils \
+		syslinux-utils \
 		texinfo \
 		unzip \
 		wget \
@@ -69,4 +70,4 @@ RUN useradd --create-home --no-log-init --uid _UID_ poduser \
 		zip \
 		zlib1g-dev \
 		zstd \
-    	help2man \
+		help2man \
