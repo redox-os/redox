@@ -89,12 +89,13 @@ ifeq ($(PODMAN_BUILD),1)
 	$(PODMAN_RUN) $(MAKE) $@
 else
 	mkdir -p "$@.partial"
-	cd "$@.partial" && \
-		cp -rp $(abspath $(PREFIX)/libtool)/. ./ && \
+	cd "$<" && \
 		./bootstrap \
 			--skip-po \
 			--force \
-			--gnulib-srcdir=./gnulib && \
+			--gnulib-srcdir=./gnulib
+	cd "$@.partial" && \
+		cp -rp $(abspath $<)/. ./ && \
 		"$(ROOT)/$</configure" \
 			--target="$(TARGET)" \
 			--prefix=$(abspath $(PREFIX)/sysroot) && \
