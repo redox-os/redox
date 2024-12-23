@@ -14,7 +14,9 @@ dependencies = [
 script = """
 rsync -av --delete "${COOKBOOK_SOURCE}/" ./
 wget -O config.sub "https://gitlab.redox-os.org/redox-os/gnu-config/-/raw/master/config.sub?inline=false"
-autoreconf -i
+# FIXME(andypython): dynamically compile
+DYNAMIC_INIT
+autotools_recursive_regenerate
 COOKBOOK_CONFIGURE="./configure"
 COOKBOOK_CONFIGURE_FLAGS=(
     --build="$(cc -dumpmachine)"
