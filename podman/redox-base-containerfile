@@ -42,7 +42,6 @@ RUN useradd --create-home --no-log-init --uid _UID_ poduser \
 		libpng-dev \
 		libsdl1.2-dev \
 		libsdl2-ttf-dev \
-		libtool \
 		llvm \
 		lua5.4 \
 		lzip \
