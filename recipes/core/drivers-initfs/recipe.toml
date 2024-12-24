@@ -6,6 +6,7 @@ template = "custom"
 script = """
 BINS=(
     acpid
+    fbbootlogd
     fbcond
     inputd
     lived
@@ -61,7 +62,7 @@ export CARGO_PROFILE_RELEASE_PANIC=abort
 for bin in "${BINS[@]}"
 do
     case "${bin}" in
-      pcid | fbcond | inputd | vesad | lived | ps2d | acpid | bcm2835-sdhcid)
+      pcid | fbbootlogd | fbcond | inputd | vesad | lived | ps2d | acpid | bcm2835-sdhcid)
         cp -v "target/${TARGET}/release/${bin}" "${COOKBOOK_STAGE}/bin"
         ;;
       *)
