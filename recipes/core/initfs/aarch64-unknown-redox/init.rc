@@ -7,8 +7,9 @@ inputd
 vesad G G G
 unset FRAMEBUFFER_ADDR FRAMEBUFFER_VIRT FRAMEBUFFER_WIDTH FRAMEBUFFER_HEIGHT FRAMEBUFFER_STRIDE
 #TODO: unset FRAMEBUFFER1 and beyond?
-fbcond 1 2
-logd /scheme/debug /scheme/fbcon/1
+fbbootlogd
+fbcond 2
+logd /scheme/debug /scheme/fbbootlog
 stdio /scheme/log
 ramfs logging
 acpid
