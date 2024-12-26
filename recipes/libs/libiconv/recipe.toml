@@ -4,11 +4,27 @@ blake3 = "b736af4e8245ae9f1618ef226a3bf2a998334b745520565cf413c0a7d54b6924"
 patches = [
     "01_redox.patch"
 ]
+script = """
+DYNAMIC_INIT
+cp ${COOKBOOK_HOST_SYSROOT}/share/aclocal/libtool.m4 ./m4/
+cp ${COOKBOOK_HOST_SYSROOT}/share/aclocal/libtool.m4 ./libcharset/m4/
+cp -fp ${COOKBOOK_HOST_SYSROOT}/share/libtool/build-aux/ltmain.sh ./build-aux/
+cp -fp ${COOKBOOK_HOST_SYSROOT}/share/libtool/build-aux/ltmain.sh ./libcharset/build-aux/
+cp ${COOKBOOK_HOST_SYSROOT}/share/aclocal/ltversion.m4 ./m4/
+cp ${COOKBOOK_HOST_SYSROOT}/share/aclocal/ltversion.m4 ./libcharset/m4/
+
+autotools_recursive_regenerate -I$(realpath ./m4) -I$(realpath ./srcm4)
+"""
 
 [build]
 template = "custom"
 script = """
+DYNAMIC_INIT
 COOKBOOK_CONFIGURE_FLAGS+=(
+    --host="${GNU_TARGET}"
+    --prefix=""
+    --enable-shared
+    --enable-static
     ac_cv_have_decl_program_invocation_name=no
 )
 cookbook_configure
