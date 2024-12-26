@@ -1,5 +1,19 @@
+# GNU Multiple Precision Arithmetic Library (GMP) is a free and open source
+# library for arbitrary-precision arithmetic, operating on signed integers,
+# rational numbers, and floating-point numbers.
+
 [source]
 tar = "https://gmplib.org/download/gmp/gmp-6.2.1.tar.xz"
 blake3 = "52cecfbbe286820d1f8bc118769008acb6451bd074fe6dea9e868d54b2ada855"
+script = """
+DYNAMIC_INIT
+autotools_recursive_regenerate
+"""
+
 [build]
-template = "configure"
+template = "custom"
+script = """
+DYNAMIC_INIT
+cookbook_configure
+"""
+
