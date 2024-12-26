@@ -1,0 +1,40 @@
+[source]
+tar = "https://ftp.gnu.org/gnu/binutils/binutils-2.43.1.tar.xz"
+patches = ["01_build_fix.patch"]
+script = """
+DYNAMIC_INIT
+
+COOKBOOK_AUTORECONF=autoreconf2.69 autotools_recursive_regenerate -I"$(realpath ./config)"
+cp -fpv ${COOKBOOK_HOST_SYSROOT}/share/libtool/build-aux/{config.sub,config.guess,install-sh} libiberty/
+"""
+
+[build]
+template = "custom"
+dependencies = [
+  "expat",
+  "libgmp",
+  "libmpfr",
+  "zlib",
+]
+script = """
+DYNAMIC_INIT
+
+COOKBOOK_CONFIGURE_FLAGS+=(
+    --target="${GNU_TARGET}"
+    --disable-werror
+    --disable-dependency-tracking
+    --disable-nls
+    --enable-colored-disassembly
+    --enable-gdb
+    --with-system-zlib
+    --with-multilib
+    --with-interwork
+    --with-pic
+)
+
+cookbook_configure
+"""
+
+[package]
+dependencies = ["zlib"]
+
