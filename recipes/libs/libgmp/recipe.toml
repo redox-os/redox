@@ -3,8 +3,8 @@
 # rational numbers, and floating-point numbers.
 
 [source]
-tar = "https://gmplib.org/download/gmp/gmp-6.2.1.tar.xz"
-blake3 = "52cecfbbe286820d1f8bc118769008acb6451bd074fe6dea9e868d54b2ada855"
+tar = "https://gmplib.org/download/gmp/gmp-6.3.0.tar.xz"
+blake3 = "fffe4996713928ae19331c8ef39129e46d3bf5b7182820656fd4639435cd83a4"
 script = """
 DYNAMIC_INIT
 autotools_recursive_regenerate
