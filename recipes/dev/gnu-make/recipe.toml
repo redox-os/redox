@@ -4,6 +4,16 @@ tar = "http://ftp.gnu.org/gnu/make/make-4.4.tar.gz"
 patches = [
     "redox.patch"
 ]
+script = """
+DYNAMIC_INIT
+autotools_recursive_regenerate
+"""
 
 [build]
-template = "configure"
+template = "custom"
+script = """
+DYNAMIC_INIT
+cp -rp "$COOKBOOK_SOURCE/." ./
+cookbook_configure
+"""
+
