@@ -1,6 +1,6 @@
 [source]
-tar = "https://ftp.gnu.org/pub/gnu/libiconv/libiconv-1.15.tar.gz"
-blake3 = "b736af4e8245ae9f1618ef226a3bf2a998334b745520565cf413c0a7d54b6924"
+tar = "https://ftp.gnu.org/pub/gnu/libiconv/libiconv-1.17.tar.gz"
+blake3 = "820b3b9fd3e2181bfb95475f01e9a3451e6d751e4f8c98ebcdcca1d8aa720f7f"
 patches = [
     "01_redox.patch"
 ]
