@@ -1,7 +1,7 @@
 VERSION=2.13.1
 TAR=https://www.kernel.org/pub/software/scm/git/git-$VERSION.tar.xz
 BUILD_DEPENDS=(zlib curl openssl1 expat nghttp2)
-DEPENDS="ca-certificates"
+DEPENDS="ca-certificates nghttp2"
 
 MAKEFLAGS=(
     NEEDS_SSL_WITH_CURL=1
@@ -24,7 +24,7 @@ function recipe_version {
 
 function recipe_build {
     sysroot="$(realpath ../sysroot)"
-    export LDFLAGS="-L$sysroot/lib -static"
+    export LDFLAGS="-L$sysroot/lib"
     export CPPFLAGS="-I$sysroot/include"
     export CURL_CONFIG="$sysroot/bin/curl-config"
     ./configure \
