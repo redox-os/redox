@@ -205,11 +205,12 @@ else
 		--program-prefix="$(GNU_TARGET)-" \
 		--prefix="" \
 		--disable-nls \
+		--disable-shared \
 		--enable-languages=c,c++ \
 		--without-headers \
 		&& \
-	$(MAKE) -j `$(NPROC)` all-gcc && \
-	$(MAKE) -j `$(NPROC)` install-gcc DESTDIR="$(ROOT)/$@.partial"
+	$(MAKE) -j `$(NPROC)` all-gcc all-target-libgcc && \
+	$(MAKE) -j `$(NPROC)` install-gcc install-target-libgcc DESTDIR="$(ROOT)/$@.partial"
 	rm -rf "$<-freestanding-build"
 	cd "$@.partial" && $(PREFIX_STRIP)
 	touch "$@.partial"
