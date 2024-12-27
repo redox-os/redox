@@ -11,12 +11,13 @@ dependencies = [
     "zlib",
 ]
 script = """
+DYNAMIC_INIT
 #TODO: do this in cook instead
 unset AR AS CC CXX LD NM OBJCOPY OBJDUMP RANLIB READELF STRIP
 
 export CFLAGS="-I${COOKBOOK_SYSROOT}/include -DHAVE_PTHREAD=1"
 export CPPFLAGS="-I${COOKBOOK_SYSROOT}/include -DHAVE_PTHREAD=1"
-export LDFLAGS="-L${COOKBOOK_SYSROOT}/lib --static"
+export LDFLAGS="-L${COOKBOOK_SYSROOT}/lib"
 export LLVM_CONFIG="${TARGET}-llvm-config"
 
 # TODO: Fix this annoying shite
@@ -46,18 +47,23 @@ meson "${COOKBOOK_SOURCE}" . \
     --cross-file cross_file.txt \
     --buildtype release \
     --strip \
-    -Ddefault_library=static \
+    -Ddefault_library=shared \
     -Dglx=disabled \
     -Dllvm=enabled \
+    -Dshared-llvm=enabled \
     -Dosmesa=true \
     -Dplatforms= \
     -Dshader-cache=disabled \
-    -Dshared-llvm=disabled \
     -Dshared-glapi=disabled
-ninja -v
+ninja -j${COOKBOOK_MAKE_JOBS}
 DESTDIR="${COOKBOOK_STAGE}" ninja install
-
-# Hack to add LLVM libs
-#TODO: only add necessary LLVM libs, not all of them
-sed -i "s/ -lOSMesa / -lOSMesa $("${TARGET}-llvm-config" --libs) -lstdc++ /" "${COOKBOOK_STAGE}/lib/pkgconfig/osmesa.pc"
 """
+
+[package]
+dependencies = [
+  "libgcc", 
+  "zlib", 
+  "llvm18", 
+  "expat"
+]
+
