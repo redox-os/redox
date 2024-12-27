@@ -9,18 +9,33 @@ dependencies = [
     "zlib"
 ]
 script = """
-COOKBOOK_CONFIGURE="cmake"
+DYNAMIC_INIT
+
+cat > CMakeToolchain-x86_64.cmake <<EOF
+set(CMAKE_SYSTEM_NAME UnixPaths)
+set(CMAKE_FIND_ROOT_PATH ${COOKBOOK_SYSROOT})
+set(CMAKE_C_COMPILER ${TARGET}-gcc)
+set(CMAKE_CXX_COMPILER ${TARGET}-g++)
+set(CMAKE_FIND_ROOT_PATH_MODE_PROGRAM NEVER)
+set(CMAKE_FIND_ROOT_PATH_MODE_LIBRARY ONLY)
+set(CMAKE_FIND_ROOT_PATH_MODE_INCLUDE ONLY)
+set(CMAKE_SHARED_LIBRARY_SONAME_C_FLAG "-Wl,-soname,")
+set(CMAKE_PLATFORM_USES_PATH_WHEN_NO_SONAME 1)
+EOF
+
+COOKBOOK_MAKE="ninja"
 COOKBOOK_CONFIGURE_FLAGS=(
+    -GNinja
+    -DCMAKE_TOOLCHAIN_FILE=./CMakeToolchain-x86_64.cmake
     -DCMAKE_AR="$(which "${TARGET}-ar")"
     -DCMAKE_BUILD_TYPE=Release
     -DCMAKE_CROSSCOMPILING=True
     -DCMAKE_CXX_FLAGS="--std=gnu++11"
-    -DCMAKE_EXE_LINKER_FLAGS="-static"
     -DCMAKE_RANLIB="$(which "${TARGET}-ranlib")"
     -DCMAKE_INSTALL_PREFIX="/"
     -DCMAKE_INSTALL_INCLUDEDIR="include"
     -DCMAKE_INSTALL_OLDINCLUDEDIR="/include"
-    -DCMAKE_SYSTEM_NAME=Generic
+    -DLLVM_LINK_LLVM_DYLIB=On
     -DCROSS_TOOLCHAIN_FLAGS_NATIVE="-DCMAKE_TOOLCHAIN_FILE=$(realpath "${COOKBOOK_RECIPE}/native.cmake")"
     -DLLVM_BUILD_BENCHMARKS=Off
     -DLLVM_BUILD_EXAMPLES=Off
@@ -48,17 +63,25 @@ COOKBOOK_CONFIGURE_FLAGS=(
     -DLLVM_TOOL_LTO_BUILD=Off
     -DLLVM_TOOLS_INSTALL_DIR=bin
     -DLLVM_UTILS_INSTALL_DIR=bin
-    -DPYTHON_EXECUTABLE="/usr/bin/python2"
     -DUNIX=1
     -DZLIB_LIBRARY=-lz
     -DZLIB_INCLUDE_DIR="${COOKBOOK_SYSROOT}/include"
+    -DLLVM_ENABLE_PROJECTS="llvm"
     -Wno-dev
     "${COOKBOOK_SOURCE}/llvm"
 )
 set -x
-cookbook_configure
+cmake "${COOKBOOK_CONFIGURE_FLAGS[@]}"
+ninja -j"${COOKBOOK_MAKE_JOBS}"
+DESTDIR="${COOKBOOK_STAGE}" ninja install -j"${COOKBOOK_MAKE_JOBS}"
 mv -vT "${COOKBOOK_STAGE}"/usr/include "${COOKBOOK_STAGE}/include"
 mv -vT "${COOKBOOK_STAGE}"/usr/share "${COOKBOOK_STAGE}/share"
 rmdir -v "${COOKBOOK_STAGE}"/usr
 set +x
 """
+
+[package]
+dependencies = [
+  "zlib"
+]
+
