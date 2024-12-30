@@ -1,5 +1,38 @@
-#TODO missing script for building, see https://github.com/boostorg/wiki/wiki/Getting-Started%3A-Overview#installing-boost
+# TODO:
+# * Some libraries require openat or have deps that require openat
+# * wchar.h needs some work before Boost is usable
+
 [source]
-tar = "https://boostorg.jfrog.io/artifactory/main/release/1.83.0/source/boost_1_83_0.tar.bz2"
+tar = "https://archives.boost.io/release/1.87.0/source/boost_1_87_0.tar.gz"
+blake3 = "9c6eb6bb7866aeb595e14279fcc5a5c7f2279dd41e946e14e2c3d5c1fb8358d3"
+
 [build]
 template = "custom"
+dependencies = [
+    # "libicu",
+    # "liblzma",
+    # "bzip2",
+    # "zlib",
+    # "zstd",
+]
+script = """
+export CFLAGS="${CFLAGS} -I${COOKBOOK_SYSROOT}/include"
+export CPPFLAGS="${CPPFLAGS} ${CFLAGS}"
+export LDFLAGS="-L${COOKBOOK_SYSROOT}/lib --static"
+
+BOOST_ROOT="${COOKBOOK_STAGE}/usr"
+mkdir -p "${BOOST_ROOT}"
+
+pushd "${COOKBOOK_SOURCE}"
+
+# Help the bootstrap tool detect our cross compilers
+# See: https://www.boost.org/build/doc/html/bbv2/overview/configuration.html
+# I'm not entirely sure which directory to place it in, so I put the conf in both
+echo "using gcc : : ${TARGET}-gcc ;" >| user-config.jam
+cp -v user-config.jam tools/build/src/
+
+./bootstrap.sh --prefix="${BOOST_ROOT}" --with-toolset=gcc
+./b2 -d2 install
+
+popd
+"""
