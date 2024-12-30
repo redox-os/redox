@@ -6,5 +6,10 @@ patches = [
 ]
 
 [build]
-template = "configure"
-
+template = "custom"
+script = """
+COOKBOOK_CONFIGURE_FLAGS+=(
+    make_cv_sys_gnu_glob=yes
+)
+cookbook_configure
+"""
