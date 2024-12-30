@@ -1,0 +1,35 @@
+[source]
+tar = "https://github.com/mupen64plus/mupen64plus-core/releases/download/2.6.0/mupen64plus-core-src-2.6.0.tar.gz"
+blake3 = "faef6f557b32165adf5ad7f12a22f1dfda98893f59cbf910b697a86e610652a9"
+
+[build]
+template = "custom"
+dependencies = [
+    "freetype2",
+    "liborbital",
+    "libpng",
+    "llvm18",
+    "mesa",
+    "mesa-glu",
+    "sdl2",
+    "zlib",
+]
+script = """
+rsync -av --delete "${COOKBOOK_SOURCE}/" ./
+#TODO: support Redox in UNAME
+"${COOKBOOK_MAKE}" \
+    CROSS_COMPILE="${TARGET}-" \
+    GLES_LIB="" \
+    GL_CFLAGS="$("${TARGET}-pkg-config" --cflags osmesa)" \
+    GL_LDLIBS="$("${TARGET}-pkg-config" --libs osmesa)" \
+    HOST_CPU="${TARGET%%-*}" \
+    SDL_CFLAGS="$("${TARGET}-pkg-config" --cflags sdl2)" \
+    SDL_LDFLAGS="$("${TARGET}-pkg-config" --libs sdl2)" \
+    UNAME=Linux \
+    USE_GLES=1 \
+    V=1 \
+    VULKAN=0 \
+    -C projects/unix \
+    -j "${COOKBOOK_MAKE_JOBS}" \
+    all
+"""
