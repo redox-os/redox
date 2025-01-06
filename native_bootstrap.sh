@@ -847,7 +847,7 @@ usage()
 	echo "------------------------"
 	echo "|Redox bootstrap script|"
 	echo "------------------------"
-	echo "Usage: ./bootstrap.sh"
+	echo "Usage: ./native_bootstrap.sh"
 	echo "OPTIONS:"
 	echo
 	echo "   -h,--help      Show this prompt"
@@ -864,7 +864,7 @@ usage()
 	echo "                  package managers are supported."
 	echo "EXAMPLES:"
 	echo
-	echo "./bootstrap.sh -e qemu"
+	echo "./native_bootstrap.sh -e qemu"
 	exit
 }
 
@@ -983,7 +983,7 @@ boot()
 	echo "Creating .config with PODMAN_BUILD=0"
 	echo 'PODMAN_BUILD?=0' > redox/.config
 	echo "Cleaning up..."
-	rm bootstrap.sh
+	rm native_bootstrap.sh
 	echo
 	echo "---------------------------------------"
 	echo "Well it looks like you are ready to go!"
