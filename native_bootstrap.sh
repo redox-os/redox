@@ -421,6 +421,7 @@ ubuntu()
 		genisoimage \
 		git \
 		gperf \
+		help2man \
 		intltool \
 		libexpat-dev \
 		libfuse3-dev \
