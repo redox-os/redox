@@ -1,0 +1,47 @@
+diff -ruwN openal-soft-1.24.1/common/alstring.cpp source/common/alstring.cpp
+--- openal-soft-1.24.1/common/alstring.cpp	2024-11-27 20:21:16.000000000 -0700
++++ source/common/alstring.cpp	2025-01-09 09:35:50.263542017 -0700
+@@ -40,8 +40,8 @@
+     auto ch1end = ch1 + std::min(str0.size(), str1.size());
+     while(ch1 != ch1end)
+     {
+-        const auto u0 = std::towupper(Traits::to_int_type(*ch0));
+-        const auto u1 = std::towupper(Traits::to_int_type(*ch1));
++        const auto u0 = towupper(Traits::to_int_type(*ch0));
++        const auto u1 = towupper(Traits::to_int_type(*ch1));
+         if(const auto diff = static_cast<int>(u0-u1)) return diff;
+         ++ch0; ++ch1;
+     }
+diff -ruwN openal-soft-1.24.1/common/althreads.h source/common/althreads.h
+--- openal-soft-1.24.1/common/althreads.h	2024-11-27 20:21:16.000000000 -0700
++++ source/common/althreads.h	2025-01-09 09:31:58.064326293 -0700
+@@ -9,7 +9,7 @@
+ #define WIN32_LEAN_AND_MEAN
+ #include <windows.h>
+ 
+-#elif defined(__APPLE__)
++#elif defined(__APPLE__) || defined(__redox__)
+ 
+ #include <pthread.h>
+ 
+@@ -79,7 +79,7 @@
+     [[nodiscard]]
+     auto get() const noexcept -> T { return from_ptr(TlsGetValue(mTss)); }
+ 
+-#elif defined(__APPLE__)
++#elif defined(__APPLE__) || defined(__redox__)
+ 
+     pthread_key_t mTss{};
+ 
+diff -ruwN openal-soft-1.24.1/core/helpers.cpp source/core/helpers.cpp
+--- openal-soft-1.24.1/core/helpers.cpp	2024-11-27 20:21:16.000000000 -0700
++++ source/core/helpers.cpp	2025-01-09 09:36:47.992595649 -0700
+@@ -372,7 +372,7 @@
+ bool SetRTPriorityPthread(int prio [[maybe_unused]])
+ {
+     int err{ENOTSUP};
+-#if defined(HAVE_PTHREAD_SETSCHEDPARAM) && !defined(__OpenBSD__)
++#if defined(HAVE_PTHREAD_SETSCHEDPARAM) && !defined(__OpenBSD__) && !defined(__redox__)
+     /* Get the min and max priority for SCHED_RR. Limit the max priority to
+      * half, for now, to ensure the thread can't take the highest priority and
+      * go rogue.
