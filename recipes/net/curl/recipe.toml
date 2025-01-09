@@ -29,7 +29,7 @@ COOKBOOK_CONFIGURE_FLAGS=(
     --disable-tftp
     --disable-threaded-resolver
     --enable-static
-    --with-ca-path=/ssl/certs
+    --with-ca-path=/etc/ssl/certs
     --with-nghttp2="${COOKBOOK_SYSROOT}"
     --with-ssl="${COOKBOOK_SYSROOT}"
     --with-zlib="${COOKBOOK_SYSROOT}"

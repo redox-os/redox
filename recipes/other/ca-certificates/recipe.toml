@@ -4,6 +4,8 @@ git = "https://gitlab.redox-os.org/redox-os/ca-certificates.git"
 [build]
 template = "custom"
 script = """
-mkdir -pv "${COOKBOOK_STAGE}/ssl"
-cp -rv "${COOKBOOK_SOURCE}/certs" "${COOKBOOK_STAGE}/ssl/certs"
+mkdir -pv "${COOKBOOK_STAGE}/etc/ssl"
+cp -rv "${COOKBOOK_SOURCE}/certs" "${COOKBOOK_STAGE}/etc/ssl/certs"
+#TODO: remove deprecated location after all recipes are fixed
+ln -s etc/ssl "${COOKBOOK_STAGE}/ssl"
 """
