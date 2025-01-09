@@ -1,0 +1,79 @@
+[source]
+tar = "https://github.com/love2d/love/archive/refs/tags/11.5.tar.gz"
+blake3 = "1fe441b04af1c0aa12b5d12f274fd892e6f307bcc882888c3a1ec048294a25c7"
+patches = [
+    "redox.patch"
+]
+
+[build]
+template = "custom"
+dependencies = [
+    "freetype2",
+    "libmodplug1",
+    "libogg",
+    "liborbital",
+    "libpng",
+    "libtheora",
+    "libvorbis",
+    "llvm18",
+    "luajit",
+    "openal",
+    "mesa",
+    "mpg123",
+    "sdl2",
+    "zlib",
+]
+script = """
+export CFLAGS="${CFLAGS} -I${COOKBOOK_SYSROOT}/include -I${COOKBOOK_SYSROOT}/include/SDL2"
+export CXXFLAGS="${CXXFLAGS} -I${COOKBOOK_SYSROOT}/include -I${COOKBOOK_SYSROOT}/include/SDL2"
+
+cat > redox.cmake <<EOF
+# the name of the target operating system
+set(CMAKE_SYSTEM_NAME Generic)
+set(CMAKE_SYSTEM_PROCESSOR "${TARGET%%-*}")
+
+# which compilers to use for C and C++
+set(CMAKE_C_COMPILER "${TARGET}-gcc")
+set(CMAKE_CXX_COMPILER "${TARGET}-g++")
+
+# where is the target environment located
+set(CMAKE_FIND_ROOT_PATH "${COOKBOOK_SYSROOT}")
+
+# adjust the default behavior of the FIND_XXX() commands:
+# search programs in the host environment
+set(CMAKE_FIND_ROOT_PATH_MODE_PROGRAM NEVER)
+
+# search headers, libraries, and packages in the target environment
+set(CMAKE_FIND_ROOT_PATH_MODE_INCLUDE ONLY)
+set(CMAKE_FIND_ROOT_PATH_MODE_LIBRARY ONLY)
+set(CMAKE_FIND_ROOT_PATH_MODE_PACKAGE ONLY)
+EOF
+
+LIBS=(
+    $("${TARGET}-pkg-config" --libs libpng16)
+    $("${TARGET}-pkg-config" --libs vorbis)
+    -lSDL2
+    -lorbital
+    $("${TARGET}-pkg-config" --libs osmesa)
+    -lstdc++
+)
+
+COOKBOOK_CONFIGURE="cmake"
+COOKBOOK_CONFIGURE_FLAGS=(
+    -DCMAKE_BUILD_TYPE=Release
+    -DCMAKE_INSTALL_PREFIX="/usr"
+    -DCMAKE_PREFIX_PATH="${COOKBOOK_SYSROOT}"
+    -DCMAKE_TOOLCHAIN_FILE=redox.cmake
+    -DCMAKE_VERBOSE_MAKEFILE=ON
+    -DOPENGL_opengl_LIBRARY="/dev/null"
+    -DOPENGL_glx_LIBRARY="/dev/null"
+    #TODO: This is a hack to add more libraries
+    -DCMAKE_CXX_STANDARD_LIBRARIES="${LIBS[*]}"
+    "${COOKBOOK_SOURCE}"
+)
+"${COOKBOOK_CONFIGURE}" "${COOKBOOK_CONFIGURE_FLAGS[@]}"
+"${COOKBOOK_MAKE}" -j "${COOKBOOK_MAKE_JOBS}"
+# make install not possible, just copy love
+mkdir -pv "${COOKBOOK_STAGE}/usr/bin"
+cp -v love "${COOKBOOK_STAGE}/usr/bin/love"
+"""
