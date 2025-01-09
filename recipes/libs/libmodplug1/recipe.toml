@@ -1,0 +1,9 @@
+[source]
+tar = "https://pilotfiber.dl.sourceforge.net/project/modplug-xmms/libmodplug/0.8.9.0/libmodplug-0.8.9.0.tar.gz"
+blake3 = "01d71f7fe4e1abeb848db02b74c70ab2fd51e824f5ea7e9e18631571a76c3592"
+script = """
+wget -O config.sub "https://gitlab.redox-os.org/redox-os/gnu-config/-/raw/master/config.sub?inline=false"
+"""
+
+[build]
+template = "configure"
