@@ -1,0 +1,38 @@
+diff --git a/src/common/config.h b/src/common/config.h
+index 5679849c..2188d8e5 100644
+--- a/src/common/config.h
++++ b/src/common/config.h
+@@ -48,7 +48,7 @@
+ #		define LOVE_MACOSX 1
+ #	endif
+ #endif
+-#if defined(__FreeBSD__) || defined(__NetBSD__) || defined(__OpenBSD__)
++#if defined(__FreeBSD__) || defined(__NetBSD__) || defined(__OpenBSD__) || defined (__redox__)
+ // I know it's not linux, but it seems most "linux-only" code is bsd-compatible
+ #	define LOVE_LINUX 1
+ #endif
+diff --git a/src/libraries/luasocket/libluasocket/compat.c b/src/libraries/luasocket/libluasocket/compat.c
+index c2d99cb2..d887d5e1 100644
+--- a/src/libraries/luasocket/libluasocket/compat.c
++++ b/src/libraries/luasocket/libluasocket/compat.c
+@@ -1,6 +1,6 @@
+ #include "compat.h"
+ 
+-#if LUA_VERSION_NUM==501
++#if LUA_VERSION_NUM==501 && !defined(__redox__)
+ /*
+ ** Adapted from Lua 5.2
+ */
+diff --git a/src/libraries/luasocket/libluasocket/compat.h b/src/libraries/luasocket/libluasocket/compat.h
+index 7bf8010e..5ae2853f 100644
+--- a/src/libraries/luasocket/libluasocket/compat.h
++++ b/src/libraries/luasocket/libluasocket/compat.h
+@@ -4,7 +4,7 @@
+ #include "lua.h"
+ #include "lauxlib.h"
+ 
+-#if LUA_VERSION_NUM==501
++#if LUA_VERSION_NUM==501 && !defined(__redox__)
+ void luaL_setfuncs (lua_State *L, const luaL_Reg *l, int nup);
+ #endif
+ 
