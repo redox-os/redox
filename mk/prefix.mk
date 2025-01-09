@@ -168,6 +168,7 @@ else
 		--program-prefix="$(GNU_TARGET)-" \
 		--prefix="" \
 		--disable-werror \
+		--enable-default-hash-style=gnu \
 		&& \
 	$(MAKE) -j `$(NPROC)` all && \
 	$(MAKE) -j `$(NPROC)` install DESTDIR="$(ROOT)/$@.partial"
@@ -207,6 +208,7 @@ else
 		--disable-nls \
 		--enable-languages=c,c++ \
 		--without-headers \
+		--with-linker-hash-style=gnu \
 		&& \
 	$(MAKE) -j `$(NPROC)` all-gcc && \
 	$(MAKE) -j `$(NPROC)` install-gcc DESTDIR="$(ROOT)/$@.partial"
@@ -296,6 +298,7 @@ else
 		--enable-languages=c,c++ \
 		--enable-shared \
 		--enable-threads=posix \
+		--with-linker-hash-style=gnu \
 		&& \
 	$(MAKE) -j `$(NPROC)` all-gcc all-target-libgcc all-target-libstdc++-v3 && \
 	$(MAKE) -j `$(NPROC)` install-gcc install-target-libgcc install-target-libstdc++-v3 DESTDIR="$(ROOT)/$@.partial"
