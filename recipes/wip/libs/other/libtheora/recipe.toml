@@ -1,6 +1,10 @@
 #TODO the redox target is not supported on the configure script
 [source]
 tar = "http://downloads.xiph.org/releases/theora/libtheora-1.1.1.tar.bz2"
+script = """
+wget -O config.sub "https://gitlab.redox-os.org/redox-os/gnu-config/-/raw/master/config.sub?inline=false"
+"""
+
 [build]
 template = "configure"
 dependencies = [
