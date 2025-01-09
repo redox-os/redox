@@ -1,3 +1,15 @@
+diff -ruwN openal-soft-1.24.1/CMakeLists.txt source/CMakeLists.txt
+--- openal-soft-1.24.1/CMakeLists.txt	2024-11-27 20:21:16.000000000 -0700
++++ source/CMakeLists.txt	2025-01-09 14:35:09.422985283 -0700
+@@ -1200,7 +1200,7 @@
+         set(HAVE_SDL2 1)
+         set(ALC_OBJS  ${ALC_OBJS} alc/backends/sdl2.cpp alc/backends/sdl2.h)
+         set(BACKENDS  "${BACKENDS} SDL2,")
+-        set(EXTRA_LIBS ${EXTRA_LIBS} SDL2::SDL2)
++        set(EXTRA_LIBS ${EXTRA_LIBS} ${SDL2_LIBRARIES})
+     else()
+         message(STATUS "Could NOT find SDL2")
+     endif()
 diff -ruwN openal-soft-1.24.1/common/alstring.cpp source/common/alstring.cpp
 --- openal-soft-1.24.1/common/alstring.cpp	2024-11-27 20:21:16.000000000 -0700
 +++ source/common/alstring.cpp	2025-01-09 09:35:50.263542017 -0700
