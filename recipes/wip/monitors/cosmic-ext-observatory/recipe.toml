@@ -10,6 +10,6 @@ mkdir -pv "${COOKBOOK_STAGE}"/usr/share/metainfo
 mkdir -pv "${COOKBOOK_STAGE}"/usr/share/icons
 cp -rv "${COOKBOOK_SOURCE}"/observatory/res/app.desktop "${COOKBOOK_STAGE}"/usr/share/applications/io.github.cosmic_utils.observatory.desktop
 cp -rv "${COOKBOOK_SOURCE}"/observatory/res/metainfo.xml "${COOKBOOK_STAGE}"/usr/share/metainfo/io.github.cosmic_utils.observatory.metainfo.xml
-cp -rv "${COOKBOOK_SOURCE}"/observatory/res/icons/hicolor "${COOKBOOK_STAGE}"/usr/share/icons
+cp -rv "${COOKBOOK_SOURCE}"/observatory/res/icons/hicolor/scalable/apps/icon.svg "${COOKBOOK_STAGE}"/usr/share/icons/hicolor/scalable/apps/io.github.cosmic_utils.observatory.svg
 cookbook_cargo_packages observatory
 """

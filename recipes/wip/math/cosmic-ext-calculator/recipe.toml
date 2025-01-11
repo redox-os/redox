@@ -10,6 +10,6 @@ mkdir -pv "${COOKBOOK_STAGE}"/usr/share/metainfo
 mkdir -pv "${COOKBOOK_STAGE}"/usr/share/icons
 cp -rv "${COOKBOOK_SOURCE}"/res/app.desktop "${COOKBOOK_STAGE}"/usr/share/applications/dev.edfloreshz.Calculator.desktop
 cp -rv "${COOKBOOK_SOURCE}"/res/metainfo.xml "${COOKBOOK_STAGE}"/usr/share/metainfo/dev.edfloreshz.Calculator.metainfo.xml
-cp -rv "${COOKBOOK_SOURCE}"/res/icons/hicolor "${COOKBOOK_STAGE}"/usr/share/icons
+cp -rv "${COOKBOOK_SOURCE}"/res/icons/hicolor/scalable/apps/icon.svg "${COOKBOOK_STAGE}"/usr/share/icons/hicolor/scalable/apps/dev.edfloreshz.Calculator.svg
 cookbook_cargo
 """
