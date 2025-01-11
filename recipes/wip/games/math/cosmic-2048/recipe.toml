@@ -1,5 +1,0 @@
-#TODO not compiled or tested
-[source]
-git = "https://github.com/Kartonrealista/cosmic-ext-2048"
-[build]
-template = "cargo"
