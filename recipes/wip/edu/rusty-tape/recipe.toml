@@ -1,0 +1,10 @@
+#TODO not compiled or tested
+[source]
+git = "https://github.com/Kkobarii/Rusty-Tape"
+[build]
+template = "custom"
+script = """
+mkdir -pv "${COOKBOOK_STAGE}"/usr/share/rusty-tape
+cp -rv "${COOKBOOK_SOURCE}"/data/* "${COOKBOOK_STAGE}"/usr/share/rusty-tape
+cookbook_cargo
+"""

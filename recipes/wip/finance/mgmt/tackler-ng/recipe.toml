@@ -1,0 +1,10 @@
+#TODO not compiled or tested
+[source]
+git = "https://github.com/e257-fi/tackler-ng"
+[build]
+template = "custom"
+script = """
+mkdir -pv "${COOKBOOK_STAGE}"/usr/share/tackler-ng/examples
+cp -rv "${COOKBOOK_SOURCE}"/examples/* "${COOKBOOK_STAGE}"/usr/share/tackler-ng/examples
+cookbook_cargo_packages tackler
+"""
