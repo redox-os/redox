@@ -9,7 +9,7 @@
 [submodule "rust"]
 	path = rust
 	url = https://gitlab.redox-os.org/redox-os/rust.git
-	branch = redox-2024-05-11
+	branch = redox-2025-01-12
 	update = none
 [submodule "redoxfs"]
 	path = redoxfs
