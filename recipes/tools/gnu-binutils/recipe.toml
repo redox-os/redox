@@ -20,21 +20,28 @@ script = """
 DYNAMIC_INIT
 
 COOKBOOK_CONFIGURE_FLAGS+=(
-    --target="${GNU_TARGET}"
-    --disable-werror
-    --disable-dependency-tracking
-    --disable-nls
-    --enable-colored-disassembly
-    --enable-gdb
-    --with-system-zlib
-    --with-multilib
-    --with-interwork
-    --with-pic
+  --target="${GNU_TARGET}"
+  --disable-werror
+  --disable-dependency-tracking
+  --disable-nls
+  --enable-colored-disassembly
+  --enable-gdb
+  --with-system-zlib
+  --with-multilib
+  --with-interwork
+  --with-pic
+  --with-expat
 )
 
 cookbook_configure
 """
 
 [package]
-dependencies = ["zlib"]
+dependencies = [
+  "libgcc", 
+  "expat",
+  "libgmp",
+  "libmpfr",
+  "zlib",
+]
 
