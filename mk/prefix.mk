@@ -136,12 +136,8 @@ else
 $(ROOT)/rust/configure:
 	git submodule update --progress --init --recursive --checkout rust
 
-PREFIX_BASE_INSTALL=$(PREFIX)/rust-freestanding-install
 PREFIX_FREESTANDING_INSTALL=$(PREFIX)/gcc-freestanding-install
-
-PREFIX_BASE_PATH=$(ROOT)/$(PREFIX_BASE_INSTALL)/bin
 PREFIX_FREESTANDING_PATH=$(ROOT)/$(PREFIX_FREESTANDING_INSTALL)/bin
-
 
 $(PREFIX)/binutils-$(BINUTILS_BRANCH).tar.bz2:
 	mkdir -p "$(@D)"
@@ -220,37 +216,6 @@ else
 	mv "$@.partial" "$@"
 endif
 
-$(PREFIX)/rust-freestanding-install: $(ROOT)/rust/configure | $(PREFIX)/binutils-install $(CONTAINER_TAG)
-ifeq ($(PODMAN_BUILD),1)
-	$(PODMAN_RUN) $(MAKE) $@
-else
-	rm -rf "$(PREFIX)/rust-freestanding-build" "$@.partial" "$@"
-	mkdir -p "$(PREFIX)/rust-freestanding-build"
-	cp -r "$(PREFIX)/binutils-install" "$@.partial"
-	cd "$(PREFIX)/rust-freestanding-build" && \
-	export PATH="$(ROOT)/$@.partial/bin:$$PATH" && \
-	"$<" \
-		--prefix="/" \
-		--disable-docs \
-		--disable-download-ci-llvm \
-		--enable-cargo-native-static \
-		--enable-extended \
-		--enable-lld \
-		--enable-llvm-static-stdcpp \
-		--set 'llvm.targets=AArch64;X86;RISCV' \
-		--set 'llvm.experimental-targets=' \
-		--tools=cargo,src \
-		&& \
-	$(MAKE) -j `$(NPROC)` && \
-	$(MAKE) -j `$(NPROC)` install DESTDIR="$(ROOT)/$@.partial"
-	rm -rf "$(PREFIX)/rust-freestanding-build"
-	mkdir -p "$@.partial/lib/rustlib/$(HOST_TARGET)/bin"
-	mkdir -p "$@.partial/lib/rustlib/$(HOST_TARGET)/lib"
-	cd "$@.partial" && $(PREFIX_STRIP)
-	touch "$@.partial"
-	mv "$@.partial" "$@"
-endif
-
 $(PREFIX)/relibc-freestanding: $(ROOT)/relibc
 	mkdir -p "$(@D)"
 	rm -rf "$@.partial" "$@"
@@ -259,19 +224,19 @@ $(PREFIX)/relibc-freestanding: $(ROOT)/relibc
 	mv "$@.partial" "$@"
 
 
-$(PREFIX)/relibc-freestanding-install: $(PREFIX)/relibc-freestanding | $(PREFIX_BASE_INSTALL) $(PREFIX_FREESTANDING_INSTALL) $(CONTAINER_TAG)
+$(PREFIX)/relibc-freestanding-install: $(PREFIX)/relibc-freestanding | $(PREFIX_FREESTANDING_INSTALL) $(CONTAINER_TAG)
 ifeq ($(PODMAN_BUILD),1)
 	$(PODMAN_RUN) $(MAKE) $@
 else
 	rm -rf "$@.partial" "$@"
 	mkdir -p "$@.partial"
 	cd "$<" && \
-	export PATH="$(PREFIX_BASE_PATH):$(PREFIX_FREESTANDING_PATH):$$PATH" && \
+	export PATH="$(PREFIX_FREESTANDING_PATH):$$PATH" && \
 	export CARGO="env -u CARGO -u RUSTUP_TOOLCHAIN cargo" && \
 	export CC_$(subst -,_,$(TARGET))="$(GNU_TARGET)-gcc -isystem $(ROOT)/$@.partial/$(GNU_TARGET)/include" && \
 	$(MAKE) clean && \
-	$(MAKE) -j `$(NPROC)` all && \
-	$(MAKE) -j `$(NPROC)` install DESTDIR="$(ROOT)/$@.partial/$(GNU_TARGET)"
+	$(MAKE) -j 1 all && \
+	$(MAKE) -j 1 install DESTDIR="$(ROOT)/$@.partial/$(GNU_TARGET)"
 	cd "$@.partial" && $(PREFIX_STRIP)
 	touch "$@.partial"
 	mv "$@.partial" "$@"
@@ -283,7 +248,7 @@ ifeq ($(PODMAN_BUILD),1)
 else
 	rm -rf "$<-build" "$@.partial" "$@"
 	mkdir -p "$<-build"
-	cp -r "$(PREFIX_BASE_INSTALL)" "$@.partial"
+	cp -r "$(PREFIX)/binutils-install" "$@.partial"
 	cd "$<-build" && \
 	export PATH="$(ROOT)/$@.partial/bin:$$PATH" && \
 	"$(ROOT)/$</configure" \
