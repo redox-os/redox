@@ -1,0 +1,14 @@
+#TODO not compiled or tested
+[source]
+git = "https://github.com/Kartonrealista/cosmic-ext-2048"
+[build]
+template = "custom"
+script = """
+mkdir -pv "${COOKBOOK_STAGE}"/usr/share/applications
+mkdir -pv "${COOKBOOK_STAGE}"/usr/share/metainfo
+mkdir -pv "${COOKBOOK_STAGE}"/usr/share/icons
+cp -rv "${COOKBOOK_SOURCE}"/res/io.github.Kartonrealista.cosmic-ext-2048.desktop "${COOKBOOK_STAGE}"/usr/share/applications
+cp -rv "${COOKBOOK_SOURCE}"/res/io.github.Kartonrealista.cosmic-ext-2048.metainfo.xml "${COOKBOOK_STAGE}"/usr/share/metainfo
+cp -rv "${COOKBOOK_SOURCE}"/res/icons/hicolor "${COOKBOOK_STAGE}"/usr/share/icons
+cookbook_cargo
+"""
