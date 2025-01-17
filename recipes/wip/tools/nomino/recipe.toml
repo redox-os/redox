@@ -1,0 +1,5 @@
+#TODO not compiled or tested
+[source]
+git = "https://github.com/yaa110/nomino"
+[build]
+template = "cargo"
