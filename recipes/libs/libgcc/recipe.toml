@@ -1,0 +1,11 @@
+[source]
+path = "../prefix/x86_64-unknown-redox/sysroot"
+
+[build]
+template = "custom"
+script = """
+mkdir -p "${COOKBOOK_STAGE}/lib"
+cp -vr ${COOKBOOK_HOST_SYSROOT}/lib/gcc ${COOKBOOK_STAGE}/lib/
+cp -vr ${COOKBOOK_HOST_SYSROOT}/${TARGET}/lib/. ${COOKBOOK_STAGE}/lib/
+rm ${COOKBOOK_STAGE}/lib/{crt0.o,crt1.o,crti.o,crtn.o,libc.a,libc.so.6,ld64.so.1}
+"""

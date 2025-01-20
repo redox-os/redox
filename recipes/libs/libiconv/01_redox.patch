@@ -1,7 +1,7 @@
-diff -ruw source/srclib/getprogname.c source-new/srclib/getprogname.c
---- source/srclib/getprogname.c	2017-01-01 16:02:21.000000000 -0700
-+++ source-new/srclib/getprogname.c	2018-12-29 08:08:09.138286508 -0700
-@@ -43,6 +43,14 @@
+diff '--color=auto' -ur source/srclib/getprogname.c source-new/srclib/getprogname.c
+--- source/srclib/getprogname.c	2022-01-04 19:33:29.000000000 +1100
++++ source-new/srclib/getprogname.c	2024-11-24 00:42:48.384997609 +1100
+@@ -28,6 +28,14 @@
  # include <string.h>
  #endif
  
@@ -13,13 +13,13 @@ diff -ruw source/srclib/getprogname.c source-new/srclib/getprogname.c
 +# include <limits.h>
 +#endif
 +
- #include "dirname.h"
- 
- #ifndef HAVE_GETPROGNAME             /* not Mac OS X, FreeBSD, NetBSD, OpenBSD >= 5.4, Cygwin */
-@@ -143,6 +151,17 @@
-       free (buf.ps_pathptr);
+ #ifdef __MVS__
+ # ifndef _OPEN_SYS
+ #  define _OPEN_SYS
+@@ -287,6 +295,17 @@
+       close (fd);
      }
-   return p;
+   return "?";
 +# elif defined(__redox__)
 +  char filename[PATH_MAX];
 +  int fd = open ("sys:exe", O_RDONLY);

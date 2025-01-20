@@ -1,9 +1,16 @@
 [source]
-tar = "https://github.com/nghttp2/nghttp2/releases/download/v1.62.1/nghttp2-1.62.1.tar.xz"
-blake3 = "77b1c0fed8e97db0aa7d6e1a5ed16e5a053093ed0006b7c747dca290d694f3af"
+tar = "https://github.com/nghttp2/nghttp2/releases/download/v1.64.0/nghttp2-1.64.0.tar.xz"
+blake3 = "1bbc08de4816769d800c42f501a00c1ba3f5efa1b76e1f65d2e5bdf3aa30354d"
+script = """
+DYNAMIC_INIT
+autotools_recursive_regenerate
+"""
+
 [build]
 template = "custom"
 script = """
+DYNAMIC_INIT
+
 COOKBOOK_CONFIGURE_FLAGS+=(
     --enable-lib-only
 )
