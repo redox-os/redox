@@ -20,7 +20,7 @@ autotools_recursive_regenerate -I$(realpath ./m4) -I$(realpath ./srcm4)
 template = "custom"
 script = """
 DYNAMIC_INIT
-COOKBOOK_CONFIGURE_FLAGS+=(
+COOKBOOK_CONFIGURE_FLAGS=(
     --host="${GNU_TARGET}"
     --prefix=""
     --enable-shared
