@@ -181,6 +181,7 @@ function DYNAMIC_INIT {
 
   # TODO: check paths for spaces
   export LDFLAGS="-L${COOKBOOK_SYSROOT}/lib"
+  export RUSTFLAGS="-C target-feature=-crt-static"
 
   COOKBOOK_AUTORECONF="autoreconf"
   autotools_recursive_regenerate() {
@@ -634,28 +635,6 @@ function cookbook_configure {
     "${COOKBOOK_MAKE}" -j "${COOKBOOK_MAKE_JOBS}"
     "${COOKBOOK_MAKE}" install DESTDIR="${COOKBOOK_STAGE}"
 }
-
-function DYNAMIC_INIT {
-  echo "WARN: Program is being compiled dynamically." 
-
-  COOKBOOK_CONFIGURE_FLAGS=(
-    --host="${GNU_TARGET}"
-    --prefix=""
-    --enable-shared
-    --disable-static
-  )
-
-  # TODO: check paths for spaces
-  export LDFLAGS="-L${COOKBOOK_SYSROOT}/lib"
-
-  autotools_recursive_regenerate() {
-    for f in $(find . -name configure.ac -o -name configure.in -type f | sort); do
-      echo "* autotools regenerate in '$(dirname $f)'..."
-      ( cd "$(dirname "$f")" && autoreconf -fvi "$@" -I${COOKBOOK_HOST_SYSROOT}/share/aclocal )
-    done
-  }
-}
-
 "#;
 
         let post_script = r#"# Common post script
