@@ -1,0 +1,65 @@
+[source]
+tar = "https://gitlab.redox-os.org/redox-os/gcc/-/archive/redox-13.2.0/gcc-redox-13.2.0.tar.gz"
+
+[build]
+template = "custom"
+dependencies = [
+    "libgmp",
+    "libmpfr",
+    "mpc",
+    "zlib"
+]
+script = """
+DYNAMIC_INIT
+
+mkdir -p "${COOKBOOK_SYSROOT}/usr"
+ln -sf "${COOKBOOK_SYSROOT}/include" "${COOKBOOK_SYSROOT}/usr/include"
+ln -sf "${COOKBOOK_SYSROOT}/lib" "${COOKBOOK_SYSROOT}/usr/lib"
+
+pushd $COOKBOOK_SOURCE
+COOKBOOK_AUTORECONF=autoreconf2.69 autotools_recursive_regenerate -I"$(realpath ./config)"
+cp -fpv $COOKBOOK_HOST_SYSROOT/share/libtool/build-aux/{config.sub,config.guess,install-sh} libiberty/
+popd # pushd $COOKBOOK_SOURCE
+
+COOKBOOK_CONFIGURE_FLAGS=(
+    --host="${GNU_TARGET}"
+    --target="${GNU_TARGET}"
+    --prefix=/
+    --enable-shared
+    --disable-static
+    --with-sysroot=/
+    --with-build-sysroot="${COOKBOOK_SYSROOT}"
+    --enable-languages=c,c++,lto
+    --enable-initfini-array
+    --disable-multilib
+    --with-system-zlib
+    --enable-host-shared
+    --with-bugurl="https://gitlab.redox-os.org/redox-os/gcc/-/issues"
+)
+
+if [[ -n "$COOKBOOK_PREFER_STATIC" ]]; then
+  COOKBOOK_CONFIGURE_FLAGS+=(
+    --enable-static
+    --disable-shared
+  )
+else
+  COOKBOOK_CONFIGURE_FLAGS+=(
+    --enable-shared
+    --disable-static
+  )
+fi
+
+"${COOKBOOK_CONFIGURE}" "${COOKBOOK_CONFIGURE_FLAGS[@]}"
+"${COOKBOOK_MAKE}" -j "${COOKBOOK_MAKE_JOBS}" all-gcc
+"${COOKBOOK_MAKE}" install-gcc DESTDIR="${COOKBOOK_STAGE}"
+ln -s "gcc" "${COOKBOOK_STAGE}/bin/cc"
+"""
+
+[package]
+dependencies = [
+    "libgcc",
+    "libgmp",
+    "libmpfr",
+    "mpc",
+    "zlib"
+]

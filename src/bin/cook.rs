@@ -168,6 +168,35 @@ fn run_command_stdin(mut command: process::Command, stdin_data: &[u8]) -> Result
     Ok(())
 }
 
+static SHARED_PRESCRIPT: &str = r#"
+function DYNAMIC_INIT {
+  COOKBOOK_AUTORECONF="autoreconf"
+  autotools_recursive_regenerate() {
+    for f in $(find . -name configure.ac -o -name configure.in -type f | sort); do
+      echo "* autotools regen in '$(dirname $f)'..."
+      ( cd "$(dirname "$f")" && "${COOKBOOK_AUTORECONF}" -fvi "$@" -I${COOKBOOK_HOST_SYSROOT}/share/aclocal )
+    done
+  }
+
+  if [[ -n "$COOKBOOK_PREFER_STATIC" ]]; then
+    return
+  fi
+
+  echo "WARN: Program is being compiled dynamically."
+
+  COOKBOOK_CONFIGURE_FLAGS=(
+    --host="${GNU_TARGET}"
+    --prefix=""
+    --enable-shared
+    --disable-static
+  )
+
+  # TODO: check paths for spaces
+  export LDFLAGS="-L${COOKBOOK_SYSROOT}/lib"
+  export RUSTFLAGS="-C target-feature=-crt-static"
+}
+"#;
+
 fn fetch(recipe_dir: &Path, source: &Option<SourceRecipe>) -> Result<PathBuf, String> {
     let source_dir = recipe_dir.join("source");
     match source {
@@ -392,7 +421,7 @@ fi"#,
                     let mut command = Command::new("bash");
                     command.arg("-ex");
                     command.current_dir(&source_dir_tmp);
-                    run_command_stdin(command, script.as_bytes())?;
+                    run_command_stdin(command, format!("{SHARED_PRESCRIPT}\n{script}").as_bytes())?;
                 }
 
                 // Move source.tmp to source atomically
@@ -610,28 +639,6 @@ function cookbook_configure {
     "${COOKBOOK_MAKE}" -j "${COOKBOOK_MAKE_JOBS}"
     "${COOKBOOK_MAKE}" install DESTDIR="${COOKBOOK_STAGE}"
 }
-
-function DYNAMIC_INIT {
-  echo "WARN: Program is being compiled dynamically." 
-
-  COOKBOOK_CONFIGURE_FLAGS=(
-    --host="${GNU_TARGET}"
-    --prefix=""
-    --enable-shared
-    --disable-static
-  )
-
-  # TODO: check paths for spaces
-  export LDFLAGS="-L${COOKBOOK_SYSROOT}/lib"
-
-  autotools_recursive_regenerate() {
-    for f in $(find . -name configure.ac -o -name configure.in -type f | sort); do
-      echo "* autotools regenerate in '$(dirname $f)'..."
-      ( cd "$(dirname "$f")" && autoreconf -fvi "$@" -I${COOKBOOK_HOST_SYSROOT}/share/aclocal )
-    done
-  }
-}
-
 "#;
 
         let post_script = r#"# Common post script
@@ -716,7 +723,7 @@ done
             command
         };
 
-        let full_script = format!("{}\n{}\n{}", pre_script, script, post_script);
+        let full_script = format!("{}\n{}\n{}\n{}", pre_script, SHARED_PRESCRIPT, script, post_script);
         run_command_stdin(command, full_script.as_bytes())?;
 
         // Move stage.tmp to stage atomically
