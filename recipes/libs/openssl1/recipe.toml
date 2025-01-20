@@ -5,15 +5,18 @@ branch = "redox-v1"
 [build]
 template = "custom"
 script = """
+DYNAMIC_INIT
 ARCH="${TARGET%%-*}"
 COOKBOOK_CONFIGURE="${COOKBOOK_SOURCE}/Configure"
 COOKBOOK_CONFIGURE_FLAGS=(
-    no-shared
+    shared
     no-dgram
     "redox-${ARCH}"
     --prefix="/"
 )
 export CC="${TARGET}-gcc"
-cookbook_configure
+"${COOKBOOK_CONFIGURE}" "${COOKBOOK_CONFIGURE_FLAGS[@]}"
+"${COOKBOOK_MAKE}" -j"${COOKBOOK_MAKE_JOBS}"
+"${COOKBOOK_MAKE}" install DESTDIR="${COOKBOOK_STAGE}"
 rm -rfv "${COOKBOOK_STAGE}/"{share,ssl}
 """
