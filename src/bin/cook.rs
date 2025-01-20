@@ -170,6 +170,18 @@ fn run_command_stdin(mut command: process::Command, stdin_data: &[u8]) -> Result
 
 static SHARED_PRESCRIPT: &str = r#"
 function DYNAMIC_INIT {
+  COOKBOOK_AUTORECONF="autoreconf"
+  autotools_recursive_regenerate() {
+    for f in $(find . -name configure.ac -o -name configure.in -type f | sort); do
+      echo "* autotools regen in '$(dirname $f)'..."
+      ( cd "$(dirname "$f")" && "${COOKBOOK_AUTORECONF}" -fvi "$@" -I${COOKBOOK_HOST_SYSROOT}/share/aclocal )
+    done
+  }
+
+  if [[ -n "$COOKBOOK_PREFER_STATIC" ]]; then
+    return
+  fi
+
   echo "WARN: Program is being compiled dynamically."
 
   COOKBOOK_CONFIGURE_FLAGS=(
@@ -182,14 +194,6 @@ function DYNAMIC_INIT {
   # TODO: check paths for spaces
   export LDFLAGS="-L${COOKBOOK_SYSROOT}/lib"
   export RUSTFLAGS="-C target-feature=-crt-static"
-
-  COOKBOOK_AUTORECONF="autoreconf"
-  autotools_recursive_regenerate() {
-    for f in $(find . -name configure.ac -o -name configure.in -type f | sort); do
-      echo "* autotools regen in '$(dirname $f)'..."
-      ( cd "$(dirname "$f")" && "${COOKBOOK_AUTORECONF}" -fvi "$@" -I${COOKBOOK_HOST_SYSROOT}/share/aclocal )
-    done
-  }
 }
 "#;
 
