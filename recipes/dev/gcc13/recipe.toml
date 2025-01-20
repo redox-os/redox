@@ -37,6 +37,18 @@ COOKBOOK_CONFIGURE_FLAGS=(
     --with-bugurl="https://gitlab.redox-os.org/redox-os/gcc/-/issues"
 )
 
+if [[ -n "$COOKBOOK_PREFER_STATIC" ]]; then
+  COOKBOOK_CONFIGURE_FLAGS+=(
+    --enable-static
+    --disable-shared
+  )
+else
+  COOKBOOK_CONFIGURE_FLAGS+=(
+    --enable-shared
+    --disable-static
+  )
+fi
+
 "${COOKBOOK_CONFIGURE}" "${COOKBOOK_CONFIGURE_FLAGS[@]}"
 "${COOKBOOK_MAKE}" -j "${COOKBOOK_MAKE_JOBS}" all-gcc
 "${COOKBOOK_MAKE}" install-gcc DESTDIR="${COOKBOOK_STAGE}"
