@@ -11,6 +11,12 @@ use std::{
 use termion::{color, style};
 use walkdir::{DirEntry, WalkDir};
 
+fn should_build_shared() -> bool {
+    use std::sync::OnceLock;
+    static YES: OnceLock<bool> = OnceLock::new();
+    *YES.get_or_init(|| env::var("COOKBOOK_PREFER_STATIC").expect("COOKBOOK_PREFER_STATIC").is_empty())
+}
+
 fn remove_all(path: &Path) -> Result<(), String> {
     if path.is_dir() {
         fs::remove_dir_all(path)
@@ -639,6 +645,38 @@ function cookbook_configure {
     "${COOKBOOK_MAKE}" -j "${COOKBOOK_MAKE_JOBS}"
     "${COOKBOOK_MAKE}" install DESTDIR="${COOKBOOK_STAGE}"
 }
+
+function cookbook_cmake {
+    cat > CMakeToolchain-x86_64.cmake <<EOF
+    set(CMAKE_SYSTEM_NAME UnixPaths)
+    set(CMAKE_FIND_ROOT_PATH ${COOKBOOK_SYSROOT})
+    set(CMAKE_C_COMPILER ${TARGET}-gcc)
+    set(CMAKE_CXX_COMPILER ${TARGET}-g++)
+    set(CMAKE_FIND_ROOT_PATH_MODE_PROGRAM NEVER)
+    set(CMAKE_FIND_ROOT_PATH_MODE_LIBRARY ONLY)
+    set(CMAKE_FIND_ROOT_PATH_MODE_INCLUDE ONLY)
+    set(CMAKE_SHARED_LIBRARY_SONAME_C_FLAG "-Wl,-soname,")
+    set(CMAKE_PLATFORM_USES_PATH_WHEN_NO_SONAME 1)
+EOF
+
+    cmake "${COOKBOOK_SOURCE}" \
+        -DCMAKE_TOOLCHAIN_FILE=./CMakeToolchain-x86_64.cmake
+        -DCMAKE_INSTALL_PREFIX="." \
+        -DCMAKE_INSTALL_LIBDIR=lib \
+        -DCMAKE_INSTALL_SBINDIR=bin \
+        -DCMAKE_INSTALL_INCLUDEDIR="include" \
+        -DCMAKE_INSTALL_OLDINCLUDEDIR="/include" \
+        -DCMAKE_BUILD_TYPE=Release \
+        -DBUILD_SHARED_LIBS=True \
+        -DENABLE_STATIC=False \
+        -GNinja \
+        -Wno-dev \
+        "${COOKBOOK_CMAKE_FLAGS[@]}"
+    
+    ninja -j"${COOKBOOK_MAKE_JOBS}"
+    DESTDIR="${COOKBOOK_STAGE}" ninja install -j"${COOKBOOK_MAKE_JOBS}"
+}
+
 "#;
 
         let post_script = r#"# Common post script
@@ -787,12 +825,17 @@ fn package(
             target: String,
             depends: Vec<String>,
         }
+        let depends = if should_build_shared() {
+            package.dependencies.iter().chain(package.shared_deps.iter()).cloned().collect()
+        } else {
+            package.dependencies.clone()
+        };
         let stage_toml = toml::to_string(&StageToml {
             name: name.into(),
             version: "TODO".into(),
             target: env::var("TARGET")
                 .map_err(|err| format!("failed to read TARGET: {:?}", err))?,
-            depends: package.dependencies.clone(),
+            depends
         })
         .map_err(|err| format!("failed to serialize stage.toml: {:?}", err))?;
         fs::write(target_dir.join("stage.toml"), stage_toml)

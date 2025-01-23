@@ -17,3 +17,5 @@ cp -rp "$COOKBOOK_SOURCE/." ./
 cookbook_configure
 """
 
+[package]
+shared-deps = ["libgcc"]
