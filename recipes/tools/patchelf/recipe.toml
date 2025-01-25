@@ -1,9 +1,6 @@
-#TODO very basic makefiles are tested to work but needs more testing
 [source]
-tar = "http://ftp.gnu.org/gnu/make/make-4.4.tar.gz"
-patches = [
-    "redox.patch"
-]
+tar = "https://github.com/NixOS/patchelf/releases/download/0.18.0/patchelf-0.18.0.tar.bz2"
+blake3 = "f843b32bdf3ee8a1f465e92d3fef34f30c48ccef9c112fdb793e2e7f2ae7283a"
 script = """
 DYNAMIC_INIT
 autotools_recursive_regenerate
@@ -13,9 +10,9 @@ autotools_recursive_regenerate
 template = "custom"
 script = """
 DYNAMIC_INIT
-cp -rp "$COOKBOOK_SOURCE/." ./
 cookbook_configure
 """
 
 [package]
 shared-deps = ["libgcc"]
+

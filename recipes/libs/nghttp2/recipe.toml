@@ -16,3 +16,6 @@ COOKBOOK_CONFIGURE_FLAGS+=(
 )
 cookbook_configure
 """
+
+[package]
+shared-deps = ["libgcc"]

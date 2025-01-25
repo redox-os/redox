@@ -37,11 +37,10 @@ cookbook_configure
 """
 
 [package]
-dependencies = [
+shared-deps = [
   "libgcc", 
   "expat",
   "libgmp",
   "libmpfr",
   "zlib",
 ]
-
