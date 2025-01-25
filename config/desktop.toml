@@ -24,6 +24,7 @@ orbutils = {}
 pop-icon-theme = {}
 # rustpython = {} #TODO ensure RustPython builds with our toolchain
 shared-mime-info = {}
+patchelf = {}
 
 [[files]]
 path = "/usr/lib/init.d/20_orbital"
