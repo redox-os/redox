@@ -38,3 +38,6 @@ else
 fi
 cookbook_configure
 """
+
+[package]
+shared-deps = ["libgcc"]

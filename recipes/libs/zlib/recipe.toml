@@ -11,3 +11,5 @@ script = """
     "${COOKBOOK_MAKE}" install DESTDIR="${COOKBOOK_STAGE}"
 """
 
+[package]
+shared-deps = ["libgcc"]

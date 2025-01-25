@@ -78,6 +78,8 @@ pub struct BuildRecipe {
 pub struct PackageRecipe {
     #[serde(default)]
     pub dependencies: Vec<String>,
+    #[serde(rename = "shared-deps", default)]
+    pub shared_deps: Vec<String>,
 }
 
 /// Everything required to build a Redox package
@@ -129,6 +131,7 @@ mod tests {
                 },
                 package: PackageRecipe {
                     dependencies: Vec::new(),
+                    shared_deps: Vec::new(),
                 },
             }
         );
@@ -171,6 +174,7 @@ mod tests {
                 },
                 package: PackageRecipe {
                     dependencies: Vec::new(),
+                    shared_deps: Vec::new(),
                 },
             }
         );

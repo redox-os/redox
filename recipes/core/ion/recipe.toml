@@ -2,4 +2,11 @@
 git = "https://gitlab.redox-os.org/redox-os/ion.git"
 
 [build]
-template = "cargo"
+template = "custom"
+script = """
+DYNAMIC_INIT
+cookbook_cargo
+"""
+
+[package]
+shared-deps = ["libgcc"]
