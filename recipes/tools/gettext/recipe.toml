@@ -1,6 +1,8 @@
+# GNU gettext utilities are a set of tools that provides a framework to help
+# other GNU packages produce multi-lingual messages.
 [source]
-tar = "https://ftp.gnu.org/pub/gnu/gettext/gettext-0.21.1.tar.gz"
-blake3 = "0d0af5a79978fbeac4641ee64480943650af99f70467353e7c3068ffd5523acd"
+tar = "https://ftp.gnu.org/pub/gnu/gettext/gettext-0.22.5.tar.gz"
+blake3 = "cb3f3a34da7ce1a92746df81f5b78c5d53841973a24eb80ab76537263d380ec0"
 patches = [
     "redox.patch"
 ]
