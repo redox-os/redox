@@ -5,7 +5,14 @@ patches = [
     "redox.patch"
 ]
 script = """
+DYNAMIC_INIT
 wget -O build-aux/config.sub "https://gitlab.redox-os.org/redox-os/gnu-config/-/raw/master/config.sub?inline=false"
+( cd gettext-runtime/libasprintf && autoreconf -fvi -I${COOKBOOK_HOST_SYSROOT}/share/aclocal )
+( cd gettext-runtime/intl && autoreconf -fvi -I${COOKBOOK_HOST_SYSROOT}/share/aclocal )
+( cd gettext-runtime && autoreconf -fvi -I${COOKBOOK_HOST_SYSROOT}/share/aclocal )
+( cd gettext-tools && autoreconf -fvi -I${COOKBOOK_HOST_SYSROOT}/share/aclocal )
+( cd libtextstyle && autoreconf -fvi -I${COOKBOOK_HOST_SYSROOT}/share/aclocal )
+autoreconf -fvi -I${COOKBOOK_HOST_SYSROOT}/share/aclocal
 """
 
 [build]
@@ -14,9 +21,10 @@ dependencies = [
     "libiconv"
 ]
 script = """
+DYNAMIC_INIT
 COOKBOOK_CONFIGURE_FLAGS+=(
-    --disable-shared
     --enable-static
+    --enable-shared
     ac_cv_have_decl_program_invocation_name=no
     gt_cv_locale_fr=false
     gt_cv_locale_fr_utf8=false
@@ -26,3 +34,10 @@ COOKBOOK_CONFIGURE_FLAGS+=(
 )
 cookbook_configure
 """
+
+[package]
+shared-deps = [
+  "libgcc",
+  "libiconv"
+]
+
