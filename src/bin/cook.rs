@@ -1,5 +1,5 @@
 use cookbook::blake3::blake3_progress;
-use cookbook::recipe::{BuildKind, BuildRecipe, PackageRecipe, Recipe, SourceRecipe};
+use cookbook::recipe::{BuildKind, PackageRecipe, Recipe, SourceRecipe};
 use cookbook::recipe_find::recipe_find;
 use std::{
     env, fs,
@@ -454,10 +454,10 @@ fn build(
     source_dir: &Path,
     target_dir: &Path,
     name: &str,
-    build: &BuildRecipe,
+    recipe: &Recipe,
 ) -> Result<PathBuf, String> {
     let mut dep_pkgars = vec![];
-    for dependency in build.dependencies.iter() {
+    for dependency in recipe.dependencies_iter() {
         //TODO: sanitize name
         let dependency_dir = recipe_find(dependency, Path::new("recipes"))?;
         if dependency_dir.is_none() {
@@ -720,7 +720,7 @@ done
         //TODO: better integration with redoxer (library instead of binary)
         //TODO: configurable target
         //TODO: Add more configurability, convert scripts to Rust?
-        let script = match &build.kind {
+        let script = match &recipe.build.kind {
             BuildKind::Cargo {
                 package_path,
                 cargoflags,
@@ -862,7 +862,7 @@ fn cook(recipe_dir: &Path, name: &str, recipe: &Recipe, fetch_only: bool) -> Res
         create_dir(&target_dir)?;
     }
 
-    let stage_dir = build(recipe_dir, &source_dir, &target_dir, name, &recipe.build)
+    let stage_dir = build(recipe_dir, &source_dir, &target_dir, name, &recipe)
         .map_err(|err| format!("failed to build: {}", err))?;
 
     let _package_file = package(recipe_dir, &stage_dir, &target_dir, name, &recipe.package)
@@ -925,7 +925,7 @@ impl CookRecipe {
             let recipe = Self::new(name.clone())?;
 
             let dependencies =
-                Self::new_recursive(&recipe.recipe.build.dependencies, recursion - 1).map_err(
+                Self::new_recursive(&recipe.recipe.dependencies(), recursion - 1).map_err(
                     |err| format!("{}: failed on loading build dependencies:\n{}", name, err),
                 )?;
 
