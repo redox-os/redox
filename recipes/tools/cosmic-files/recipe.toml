@@ -9,8 +9,11 @@ dependencies = [
     "libiconv",
 ]
 script = """
+DYNAMIC_INIT
+if [[ -n "$COOKBOOK_PREFER_STATIC" ]]; then
+  export GETTEXT_STATIC=1
+fi
 export GETTEXT_DIR="${COOKBOOK_SYSROOT}"
-export GETTEXT_STATIC=1
 # Hack to link libiconv, which gettext-sys does not link
 "${COOKBOOK_CARGO}" rustc \
     --manifest-path "${COOKBOOK_SOURCE}/Cargo.toml" \
@@ -34,3 +37,11 @@ cp -v "${COOKBOOK_SOURCE}/res/${APPID}.metainfo.xml" "${COOKBOOK_STAGE}/usr/shar
 mkdir -pv "${COOKBOOK_STAGE}/usr/share/icons/"
 cp -rv "${COOKBOOK_SOURCE}/res/icons/hicolor/" "${COOKBOOK_STAGE}/usr/share/icons/"
 """
+
+[package]
+dependencies = [
+  "libgcc",
+  "gettext",
+  "libiconv"
+]
+
