@@ -94,6 +94,18 @@ pub struct Recipe {
     pub package: PackageRecipe,
 }
 
+impl Recipe {
+    #[inline]
+    pub fn dependencies_iter(&self) -> impl Iterator<Item = &String> {
+        self.build.dependencies.iter().chain(self.package.shared_deps.iter())
+    }
+
+    #[inline]
+    pub fn dependencies(&self) -> Vec<String> {
+        self.dependencies_iter().cloned().collect::<Vec<_>>()
+    }
+}
+
 #[cfg(test)]
 mod tests {
     #[test]
