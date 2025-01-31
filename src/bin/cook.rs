@@ -783,9 +783,10 @@ fn package(
     stage_dir: &Path,
     target_dir: &Path,
     name: &str,
-    package: &PackageRecipe,
+    recipe: &Recipe,
 ) -> Result<PathBuf, String> {
     //TODO: metadata like dependencies, name, and version
+    let package = &recipe.package;
 
     let secret_path = "build/id_ed25519.toml";
     let public_path = "build/id_ed25519.pub.toml";
@@ -833,12 +834,7 @@ fn package(
             depends: Vec<String>,
         }
         let depends = if should_build_shared() {
-            package
-                .dependencies
-                .iter()
-                .chain(package.shared_deps.iter())
-                .cloned()
-                .collect()
+            recipe.runtime_dependencies()
         } else {
             package.dependencies.clone()
         };
@@ -877,7 +873,7 @@ fn cook(recipe_dir: &Path, name: &str, recipe: &Recipe, fetch_only: bool) -> Res
     let stage_dir = build(recipe_dir, &source_dir, &target_dir, name, &recipe)
         .map_err(|err| format!("failed to build: {}", err))?;
 
-    let _package_file = package(recipe_dir, &stage_dir, &target_dir, name, &recipe.package)
+    let _package_file = package(recipe_dir, &stage_dir, &target_dir, name, &recipe)
         .map_err(|err| format!("failed to package: {}", err))?;
 
     Ok(())
