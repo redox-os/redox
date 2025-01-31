@@ -11,7 +11,7 @@ function recipe_version {
 function recipe_build {
     export TARGET="framebuffer"
     export CFLAGS="-I${COOKBOOK_SYSROOT}/include -I${PWD}/inst-${TARGET}/include"
-    export LDFLAGS="-L${COOKBOOK_SYSROOT}/lib -L${PWD}/inst-${TARGET}/lib -static -Wl,--allow-multiple-definition -Wl,-Bstatic"
+    export LDFLAGS="-L${COOKBOOK_SYSROOT}/lib -L${PWD}/inst-${TARGET}/lib -Wl,--allow-multiple-definition"
     # nghttp2 is not linked for some reason
     export LDFLAGS="${LDFLAGS} -lcurl -lnghttp2"
     "$REDOX_MAKE" PREFIX=/usr V=1 -j"$($NPROC)"
