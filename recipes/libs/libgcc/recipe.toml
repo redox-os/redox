@@ -1,6 +1,3 @@
-[source]
-path = "../prefix/x86_64-unknown-redox/sysroot"
-
 [build]
 template = "custom"
 script = """
