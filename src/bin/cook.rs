@@ -1,5 +1,5 @@
 use cookbook::blake3::blake3_progress;
-use cookbook::recipe::{BuildKind, PackageRecipe, Recipe, SourceRecipe};
+use cookbook::recipe::{BuildKind, CookRecipe, PackageRecipe, Recipe, SourceRecipe};
 use cookbook::recipe_find::recipe_find;
 use std::{
     env, fs,
@@ -14,7 +14,11 @@ use walkdir::{DirEntry, WalkDir};
 fn should_build_shared() -> bool {
     use std::sync::OnceLock;
     static YES: OnceLock<bool> = OnceLock::new();
-    *YES.get_or_init(|| env::var("COOKBOOK_PREFER_STATIC").expect("COOKBOOK_PREFER_STATIC").is_empty())
+    *YES.get_or_init(|| {
+        env::var("COOKBOOK_PREFER_STATIC")
+            .expect("COOKBOOK_PREFER_STATIC")
+            .is_empty()
+    })
 }
 
 fn remove_all(path: &Path) -> Result<(), String> {
@@ -761,7 +765,10 @@ done
             command
         };
 
-        let full_script = format!("{}\n{}\n{}\n{}", pre_script, SHARED_PRESCRIPT, script, post_script);
+        let full_script = format!(
+            "{}\n{}\n{}\n{}",
+            pre_script, SHARED_PRESCRIPT, script, post_script
+        );
         run_command_stdin(command, full_script.as_bytes())?;
 
         // Move stage.tmp to stage atomically
@@ -826,7 +833,12 @@ fn package(
             depends: Vec<String>,
         }
         let depends = if should_build_shared() {
-            package.dependencies.iter().chain(package.shared_deps.iter()).cloned().collect()
+            package
+                .dependencies
+                .iter()
+                .chain(package.shared_deps.iter())
+                .cloned()
+                .collect()
         } else {
             package.dependencies.clone()
         };
@@ -835,7 +847,7 @@ fn package(
             version: "TODO".into(),
             target: env::var("TARGET")
                 .map_err(|err| format!("failed to read TARGET: {:?}", err))?,
-            depends
+            depends,
         })
         .map_err(|err| format!("failed to serialize stage.toml: {:?}", err))?;
         fs::write(target_dir.join("stage.toml"), stage_toml)
@@ -871,75 +883,6 @@ fn cook(recipe_dir: &Path, name: &str, recipe: &Recipe, fetch_only: bool) -> Res
     Ok(())
 }
 
-pub struct CookRecipe {
-    name: String,
-    dir: PathBuf,
-    recipe: Recipe,
-}
-
-impl CookRecipe {
-    pub fn new(name: String) -> Result<Self, String> {
-        //TODO: sanitize recipe name?
-        let dir = recipe_find(&name, Path::new("recipes"))?;
-        if dir.is_none() {
-            return Err(format!("failed to find recipe directory '{}'", name));
-        }
-        let dir = dir.unwrap();
-        let file = dir.join("recipe.toml");
-        if !file.is_file() {
-            return Err(format!("failed to find recipe file '{}'", file.display()));
-        }
-
-        let toml = fs::read_to_string(&file).map_err(|err| {
-            format!(
-                "failed to read recipe file '{}': {}\n{:#?}",
-                file.display(),
-                err,
-                err
-            )
-        })?;
-
-        let recipe: Recipe = toml::from_str(&toml).map_err(|err| {
-            format!(
-                "failed to parse recipe file '{}': {}\n{:#?}",
-                file.display(),
-                err,
-                err
-            )
-        })?;
-
-        Ok(Self { name, dir, recipe })
-    }
-
-    //TODO: make this more efficient, smarter, and not return duplicates
-    pub fn new_recursive(names: &[String], recursion: usize) -> Result<Vec<Self>, String> {
-        if recursion == 0 {
-            return Err(format!(
-                "recursion limit while processing build dependencies: {:#?}",
-                names
-            ));
-        }
-
-        let mut recipes = Vec::new();
-        for name in names {
-            let recipe = Self::new(name.clone())?;
-
-            let dependencies =
-                Self::new_recursive(&recipe.recipe.dependencies(), recursion - 1).map_err(
-                    |err| format!("{}: failed on loading build dependencies:\n{}", name, err),
-                )?;
-
-            for dependency in dependencies {
-                recipes.push(dependency);
-            }
-
-            recipes.push(recipe);
-        }
-
-        Ok(recipes)
-    }
-}
-
 fn main() {
     let mut matching = true;
     let mut dry_run = false;
@@ -956,7 +899,7 @@ fn main() {
         }
     }
 
-    let recipes = match CookRecipe::new_recursive(&recipe_names, 16) {
+    let recipes = match CookRecipe::new_recursive(&recipe_names, 16, false) {
         Ok(ok) => ok,
         Err(err) => {
             eprintln!(
