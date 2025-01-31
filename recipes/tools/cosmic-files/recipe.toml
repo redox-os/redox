@@ -39,7 +39,7 @@ cp -rv "${COOKBOOK_SOURCE}/res/icons/hicolor/" "${COOKBOOK_STAGE}/usr/share/icon
 """
 
 [package]
-dependencies = [
+shared-deps = [
   "libgcc",
   "gettext",
   "libiconv"
