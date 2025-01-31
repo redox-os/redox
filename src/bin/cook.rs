@@ -228,14 +228,17 @@ fn fetch(recipe_dir: &Path, source: &Option<SourceRecipe>) -> Result<PathBuf, St
             }
         }
         Some(SourceRecipe::Path { path }) => {
-            copy_dir_all(path, &source_dir).map_err(|e| {
-                format!(
-                    "Couldn't copy source from {} to {}: {}",
-                    path,
-                    source_dir.display(),
-                    e
-                )
-            })?;
+            if modified_dir(Path::new(path))? > modified_dir(&source_dir)? {
+                eprintln!("[DEBUG]: {} is newer than {}", path, source_dir.display());
+                copy_dir_all(path, &source_dir).map_err(|e| {
+                    format!(
+                        "Couldn't copy source from {} to {}: {}",
+                        path,
+                        source_dir.display(),
+                        e
+                    )
+                })?;
+            }
         }
         Some(SourceRecipe::Git {
             git,
