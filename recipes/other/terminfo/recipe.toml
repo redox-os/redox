@@ -1,0 +1,11 @@
+[source]
+git = "https://github.com/sajattack/terminfo"
+branch = "master"
+
+[build]
+template = "custom"
+script = """
+mkdir -p ${COOKBOOK_STAGE}/share
+cp -r ${COOKBOOK_SOURCE}/. ${COOKBOOK_STAGE}/share/
+"""
+
