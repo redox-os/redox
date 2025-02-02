@@ -228,7 +228,7 @@ fn fetch(recipe_dir: &Path, source: &Option<SourceRecipe>) -> Result<PathBuf, St
             }
         }
         Some(SourceRecipe::Path { path }) => {
-            if modified_dir(Path::new(path))? > modified_dir(&source_dir)? {
+            if !source_dir.is_dir() || modified_dir(Path::new(path))? > modified_dir(&source_dir)? {
                 eprintln!("[DEBUG]: {} is newer than {}", path, source_dir.display());
                 copy_dir_all(path, &source_dir).map_err(|e| {
                     format!(
