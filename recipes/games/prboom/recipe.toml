@@ -1,0 +1,35 @@
+#TODO: remove --without-mixer when it no longer crashes on x86_64
+[source]
+tar = "https://downloads.sourceforge.net/project/prboom/prboom%20stable/2.5.0/prboom-2.5.0.tar.gz"
+blake3 = "24c1b9b5aa15fd73e59162055f2c6d8faa82759b76ddfca9828cd2a5c8dc6b2a"
+script = """
+DYNAMIC_INIT
+autotools_recursive_regenerate
+wget -O autotools/config.sub "https://gitlab.redox-os.org/redox-os/gnu-config/-/raw/master/config.sub?inline=false"
+"""
+
+[build]
+template = "custom"
+dependencies = [
+  "sdl1",
+  "liborbital", 
+  "sdl1-mixer",
+  "libogg",
+  "libvorbis"
+]
+script = """
+export CFLAGS="-static"
+export MIXER_LIBS="-lSDL_mixer -lvorbisfile -lvorbis -logg"
+COOKBOOK_CONFIGURE_FLAGS+=(
+  --disable-cpu-opt
+  --disable-i386-asm
+  --disable-gl
+  --disable-sdltest
+  --without-mixer
+  --without-net
+  --with-sdl-prefix="${COOKBOOK_SYSROOT}"
+  ac_cv_lib_SDL_mixer_Mix_OpenAudio=yes
+)
+cookbook_configure
+"""
+
