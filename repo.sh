@@ -27,6 +27,9 @@ then
     recipes="$(target/release/list_recipes)"
 fi
 
+# All $recipes that are in the new TOML format.
+toml_recipes=""
+
 for recipe in $recipes
 do
     recipe_path=`target/release/find_recipe $recipe`
@@ -39,6 +42,7 @@ do
 
     if [ -e "${COOKBOOK_RECIPE}/recipe.toml" ]
     then
+        toml_recipes+=" $recipe"
         target/release/cook "$recipe"
         continue
     fi
@@ -88,6 +92,16 @@ done
 mkdir -p "$REPO"
 
 APPSTREAM_SOURCES=()
+
+# Currently, we only support runtime dependencies for recipes in the new TOML
+# format. Runtime dependencies include both `[package.dependencies]` and
+# [`package.shared_deps`].
+# 
+# The following adds the package dependencies of the recipes to the repo as
+# well.
+#
+# TODO(?): All of this script can be moved into `cook.rs`.
+recipes="$recipes $(target/release/runtime_deps_of $toml_recipes)"
 
 for recipe in $recipes
 do
