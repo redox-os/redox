@@ -1,4 +1,11 @@
+use std::{
+    fs,
+    path::{Path, PathBuf},
+};
+
 use serde::{Deserialize, Serialize};
+
+use crate::recipe_find::recipe_find;
 
 /// Specifies how to download the source for a recipe
 #[derive(Debug, Deserialize, PartialEq, Serialize)]
@@ -97,12 +104,108 @@ pub struct Recipe {
 impl Recipe {
     #[inline]
     pub fn dependencies_iter(&self) -> impl Iterator<Item = &String> {
-        self.build.dependencies.iter().chain(self.package.shared_deps.iter())
+        self.build
+            .dependencies
+            .iter()
+            .chain(self.package.shared_deps.iter())
     }
 
+    /// `[build.dependencies] + [package.shared_deps]`
     #[inline]
     pub fn dependencies(&self) -> Vec<String> {
         self.dependencies_iter().cloned().collect::<Vec<_>>()
+    }
+
+    /// `[package.dependencies] + [package.shared_deps]`
+    #[inline]
+    pub fn runtime_dependencies(&self) -> Vec<String> {
+        self.package
+            .dependencies
+            .iter()
+            .chain(self.package.shared_deps.iter())
+            .cloned()
+            .collect::<Vec<_>>()
+    }
+}
+
+pub struct CookRecipe {
+    pub name: String,
+    pub dir: PathBuf,
+    pub recipe: Recipe,
+}
+
+impl CookRecipe {
+    pub fn new(name: String) -> Result<Self, String> {
+        //TODO: sanitize recipe name?
+        let dir = recipe_find(&name, Path::new("recipes"))?;
+        if dir.is_none() {
+            return Err(format!("failed to find recipe directory '{}'", name));
+        }
+        let dir = dir.unwrap();
+        let file = dir.join("recipe.toml");
+        if !file.is_file() {
+            return Err(format!("failed to find recipe file '{}'", file.display()));
+        }
+
+        let toml = fs::read_to_string(&file).map_err(|err| {
+            format!(
+                "failed to read recipe file '{}': {}\n{:#?}",
+                file.display(),
+                err,
+                err
+            )
+        })?;
+
+        let recipe: Recipe = toml::from_str(&toml).map_err(|err| {
+            format!(
+                "failed to parse recipe file '{}': {}\n{:#?}",
+                file.display(),
+                err,
+                err
+            )
+        })?;
+
+        Ok(Self { name, dir, recipe })
+    }
+
+    //TODO: make this more efficient, smarter, and not return duplicates
+    pub fn new_recursive(
+        names: &[String],
+        recursion: usize,
+        runtime_deps_only: bool,
+    ) -> Result<Vec<Self>, String> {
+        if recursion == 0 {
+            return Err(format!(
+                "recursion limit while processing build dependencies: {:#?}",
+                names
+            ));
+        }
+
+        let mut recipes = Vec::new();
+        for name in names {
+            let recipe = Self::new(name.clone())?;
+            let all_deps = recipe.recipe.dependencies();
+            let runtime_deps = recipe.recipe.runtime_dependencies();
+
+            let dependencies = Self::new_recursive(
+                if runtime_deps_only {
+                    &runtime_deps
+                } else {
+                    &all_deps
+                },
+                recursion - 1,
+                runtime_deps_only,
+            )
+            .map_err(|err| format!("{}: failed on loading build dependencies:\n{}", name, err))?;
+
+            for dependency in dependencies {
+                recipes.push(dependency);
+            }
+
+            recipes.push(recipe);
+        }
+
+        Ok(recipes)
     }
 }
 
