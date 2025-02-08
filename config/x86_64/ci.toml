@@ -138,6 +138,7 @@ osdemo = {}
 #pango = {} # undefined references to std::__throw_system_error(int)
 #pastel = {} # needs crate patches for redox-unix
 patch = {}
+patchelf = {}
 #pathfinder = {} # servo-fontconfig
 #pciids = {}
 pcre = {}
