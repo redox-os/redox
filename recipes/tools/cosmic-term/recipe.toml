@@ -5,6 +5,7 @@ branch = "master"
 [build]
 template = "custom"
 script = """
+DYNAMIC_INIT
 cookbook_cargo --no-default-features
 mkdir -pv "${COOKBOOK_STAGE}/ui/apps"
 cp -v "${COOKBOOK_RECIPE}/manifest" "${COOKBOOK_STAGE}/ui/apps/10_cosmic-term"
