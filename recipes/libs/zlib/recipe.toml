@@ -1,14 +1,16 @@
 [source]
 tar = "https://www.zlib.net/fossils/zlib-1.3.tar.gz"
 blake3 = "ec1abc6f672a7a6ee6f49ba544cc9529f73121b478310473be44fee22a140ebf"
+
 [build]
 template = "custom"
 script = """
-    DYNAMIC_INIT
-    # See https://stackoverflow.com/questions/21396988/zlib-build-not-configuring-properly-with-cross-compiler-ignores-ar.
-    CHOST="${TARGET}" "${COOKBOOK_CONFIGURE}" --prefix=""
-    "${COOKBOOK_MAKE}" -j "$(nproc)"
-    "${COOKBOOK_MAKE}" install DESTDIR="${COOKBOOK_STAGE}"
+DYNAMIC_INIT
+# See https://stackoverflow.com/questions/21396988/zlib-build-not-configuring-properly-with-cross-compiler-ignores-ar.
+CHOST="${TARGET}" "${COOKBOOK_CONFIGURE}" --prefix=""
+"${COOKBOOK_MAKE}" -j "$(nproc)"
+"${COOKBOOK_MAKE}" install DESTDIR="${COOKBOOK_STAGE}"
+patchelf --set-soname 'libz.so.1.3' "${COOKBOOK_STAGE}/lib/libz.so.1.3"
 """
 
 [package]
