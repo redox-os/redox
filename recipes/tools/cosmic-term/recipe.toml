@@ -5,6 +5,7 @@ branch = "master"
 [build]
 template = "custom"
 script = """
+DYNAMIC_INIT
 cookbook_cargo --no-default-features
 mkdir -pv "${COOKBOOK_STAGE}/ui/apps"
 cp -v "${COOKBOOK_RECIPE}/manifest" "${COOKBOOK_STAGE}/ui/apps/10_cosmic-term"
@@ -17,3 +18,9 @@ cp -v "${COOKBOOK_SOURCE}/res/${APPID}.metainfo.xml" "${COOKBOOK_STAGE}/usr/shar
 mkdir -pv "${COOKBOOK_STAGE}/usr/share/icons/"
 cp -rv "${COOKBOOK_SOURCE}/res/icons/hicolor/" "${COOKBOOK_STAGE}/usr/share/icons/"
 """
+
+[package]
+shared-deps = [
+  "libgcc"
+]
+
