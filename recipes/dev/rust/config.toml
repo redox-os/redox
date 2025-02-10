@@ -1,6 +1,6 @@
 [llvm]
 download-ci-llvm = false
-static-libstdcpp = true
+static-libstdcpp = false 
 
 [build]
 host = ["x86_64-unknown-redox"]
@@ -26,4 +26,4 @@ ar = "x86_64-unknown-redox-ar"
 linker = "x86_64-unknown-redox-gcc"
 # Nasty path, please fix
 llvm-config = "../../../../bin/x86_64-unknown-redox-llvm-config"
-crt-static = true
+crt-static = false
