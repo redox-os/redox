@@ -13,6 +13,7 @@ dependencies = [
     "zlib",
 ]
 script = """
+DYNAMIC_INIT
 export LIBSSH2_SYS_USE_PKG_CONFIG=1
 export LIBZ_SYS_STATIC=1
 export DEP_NGHTTP2_ROOT="${COOKBOOK_SYSROOT}"
@@ -29,3 +30,14 @@ export DEP_Z_ROOT="${COOKBOOK_SYSROOT}"
 mkdir -pv "${COOKBOOK_STAGE}/bin"
 cp -v "target/${TARGET}/release/cargo" "${COOKBOOK_STAGE}/bin/cargo"
 """
+
+[package]
+shared-deps = [
+    "libgcc",
+    "curl",
+    "libssh2",
+    "nghttp2",
+    "openssl1",
+    "zlib",
+]
+
