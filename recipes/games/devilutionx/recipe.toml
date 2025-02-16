@@ -1,19 +1,35 @@
 [source]
-tar = "https://github.com/diasurgical/devilutionX/archive/refs/tags/1.5.1.tar.gz"
-blake3 = "8425152bf50a692573d17ba85a8445734a564a372eba2190223bf0aa04f31d86"
+tar = "https://github.com/diasurgical/devilutionX/archive/refs/tags/1.5.4.tar.gz"
+blake3 = "d4a61ff3a7c69d86a29158918aad48ab9c4866c6a22a3e8da5feadbb7d23b3ca"
 
 [build]
 template = "custom"
-dependencies = [
-    "libiconv",
-    "liborbital",
-    "sdl1",
-]
+dependencies = ["libiconv", "liborbital", "sdl1"]
 script = """
-export CFLAGS="${CFLAGS} -I${COOKBOOK_SYSROOT}/include"
-export CXXFLAGS="${CXXFLAGS} -I${COOKBOOK_SYSROOT}/include"
+DYNAMIC_INIT
+
+# export CFLAGS="${CFLAGS} -I${COOKBOOK_SYSROOT}/include"
+# export CXXFLAGS="${CXXFLAGS} -I${COOKBOOK_SYSROOT}/include"
+# export LDFLAGS="${LDFLAGS} -L${COOKBOOK_SYSROOT}/lib"
+
 COOKBOOK_CONFIGURE="cmake"
-COOKBOOK_CONFIGURE_FLAGS=(
+
+if [[ -n "${COOKBOOK_PREFER_STATIC}" ]]; then
+    COOKBOOK_CONFIGURE_FLAGS=(
+        -DDEVILUTIONX_STATIC_BZIP2=ON
+        -DDEVILUTIONX_STATIC_ZLIB=ON
+        -DDEVILUTIONX_SYSTEM_BZIP2=OFF
+        -DDEVILUTIONX_SYSTEM_ZLIB=OFF
+    )
+else
+    COOKBOOK_CONFIGURE_FLAGS=(
+        -DDEVILUTIONX_SYSTEM_BZIP2=ON
+        -DDEVILUTIONX_SYSTEM_ZLIB=ON
+        -DCMAKE_PREFIX_PATH="${COOKBOOK_SYSROOT}"
+    )
+fi
+
+COOKBOOK_CONFIGURE_FLAGS+=(
     -DCMAKE_BUILD_TYPE=Release
     -DCMAKE_CROSSCOMPILING=ON
     -DCMAKE_CXX_COMPILER="${TARGET}-g++"
@@ -21,10 +37,6 @@ COOKBOOK_CONFIGURE_FLAGS=(
     -DCMAKE_INSTALL_PREFIX="/"
     -DCMAKE_VERBOSE_MAKEFILE=ON
     -DBUILD_TESTING=OFF
-    -DDEVILUTIONX_STATIC_BZIP2=ON
-    -DDEVILUTIONX_STATIC_ZLIB=ON
-    -DDEVILUTIONX_SYSTEM_BZIP2=OFF
-    -DDEVILUTIONX_SYSTEM_ZLIB=OFF
     -DNONET=ON
     -DUSE_SDL1=ON
     -DSDL_LIBRARY="-lSDL -lorbital"
@@ -34,3 +46,6 @@ cookbook_configure
 mkdir -v "${COOKBOOK_STAGE}/bin"
 cp -v devilutionx "${COOKBOOK_STAGE}/bin"
 """
+
+[package]
+shared-deps = ["bzip2", "libgcc", "libiconv", "liborbital", "sdl1", "zlib"]
