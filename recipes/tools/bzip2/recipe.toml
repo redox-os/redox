@@ -5,19 +5,35 @@ blake3 = "97af3f520629c65fe41292f77e6ca798fe594d7987bfb2aebe7c6fcdc7ab5ed2"
 [build]
 template = "custom"
 script = """
+DYNAMIC_INIT
+
+# This installs the static library regardless of config options
+# The static lib is preferred according to the README because it's faster
 rsync -av --delete "${COOKBOOK_SOURCE}/" ./
 "${COOKBOOK_MAKE}" -j"${COOKBOOK_MAKE_JOBS}" \
     AR="${TARGET}-ar" \
     CC="${TARGET}-gcc" \
-    LDFLAGS="-static" \
-    PREFIX=/ \
+    PREFIX="${COOKBOOK_STAGE}" \
     RANLIB="${TARGET}-ranlib" \
-    libbz2.a \
-    bzip2
-mkdir -pv "${COOKBOOK_STAGE}/bin"
-cp -v bzip2 "${COOKBOOK_STAGE}/bin"
-mkdir -pv "${COOKBOOK_STAGE}/include"
-cp -v bzlib.h "${COOKBOOK_STAGE}/include"
-mkdir -pv "${COOKBOOK_STAGE}/lib"
-cp -v libbz2.a "${COOKBOOK_STAGE}/lib"
+    install
+
+# However, distros distribute libbz2 as well so we'll support it too
+if ! [[ -n "${COOKBOOK_PREFER_STATIC}" ]]; then
+    # Linking the lib fails if we don't rebuild the objects from earlier
+    "${COOKBOOK_MAKE}" clean
+
+    # This DOES NOT build/clobber the binaries already built above
+    "${COOKBOOK_MAKE}" -f Makefile-libbz2_so \
+        -j"${COOKBOOK_MAKE_JOBS}" \
+        AR="${TARGET}-ar" \
+        CC="${TARGET}-gcc" \
+        PREFIX="${COOKBOOK_STAGE}" \
+        RANLIB="${TARGET}-ranlib"
+
+    cp -v libbz2.so.1.0.8 "${COOKBOOK_STAGE}/lib"
+    cp -v libbz2.so.1.0 "${COOKBOOK_STAGE}/lib"
+fi
 """
+
+[package]
+shared-deps = ["libgcc"]
