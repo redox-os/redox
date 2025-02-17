@@ -34,7 +34,12 @@
       };
       inherit (pkgs) lib;
 
-      rust-bin = pkgs.rust-bin.fromRustupToolchainFile ./rust-toolchain.toml;
+      rust-bin =
+        pkgs.rust-bin.nightly."2025-01-12".default.override
+        {
+          extensions = ["rust-analyzer" "rust-src"];
+          targets = ["x86_64-unknown-redox"];
+        };
       craneLib = (inputs.crane.mkLib pkgs).overrideToolchain rust-bin;
 
       # Podman config taken from https://nixos.wiki/wiki/Podman and https://gist.github.com/adisbladis/187204cb772800489ee3dac4acdd9947
