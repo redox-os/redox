@@ -1,14 +1,33 @@
 [source]
-tar = "https://github.com/glennrp/libpng/archive/v1.6.39.tar.gz"
-blake3 = "02513cc5d15ac79c4c402f2ae623425f4f80bdbbf15ebc95430fb8ccfc987996"
+tar = "https://github.com/pnggroup/libpng/archive/refs/tags/v1.6.46.tar.gz"
+blake3 = "36f4bbb48c70975116b00ab0cff577931b96f703b2774ac3b33131d001419435"
 script = """
+DYNAMIC_INIT
 chmod +w config.sub
 wget -O config.sub "https://gitlab.redox-os.org/redox-os/gnu-config/-/raw/master/config.sub?inline=false"
+autotools_recursive_regenerate
 """
 
-
 [build]
-template = "configure"
-dependencies = [
-    "zlib"
-]
+template = "custom"
+dependencies = ["zlib"]
+script = """
+DYNAMIC_INIT
+
+if [[ -n "${COOKBOOK_PREFER_STATIC}" ]]; then
+    COOKBOOK_CONFIGURE_FLAGS+=(
+        --enable-static
+        --disable-shared
+    )
+else
+    COOKBOOK_CONFIGURE_FLAGS+=(
+        --enable-shared
+        --enable-static
+    )
+fi
+
+cookbook_configure
+"""
+
+[package]
+shared_deps = ["libgcc", "zlib"]
