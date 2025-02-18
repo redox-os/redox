@@ -196,7 +196,7 @@ function DYNAMIC_INIT {
 
   COOKBOOK_CONFIGURE_FLAGS=(
     --host="${GNU_TARGET}"
-    --prefix=""
+    --prefix="/usr"
     --enable-shared
     --disable-static
   )
