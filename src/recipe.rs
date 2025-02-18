@@ -36,6 +36,11 @@ pub enum SourceRecipe {
         /// The optional revision of the git repository to use for builds. Please specify for
         /// reproducible builds
         rev: Option<String>,
+        /// A list of patch files to apply to the source
+        #[serde(default)]
+        patches: Vec<String>,
+        /// Optional script to run to prepare the source
+        script: Option<String>,
     },
     /// A tar file source
     Tar {
@@ -236,6 +241,8 @@ mod tests {
                     upstream: None,
                     branch: Some("master".to_string()),
                     rev: Some("06344744d3d55a5ac9a62a6059cb363d40699bbc".to_string()),
+                    patches: Vec::new(),
+                    script: None,
                 }),
                 build: BuildRecipe {
                     kind: BuildKind::Cargo {
