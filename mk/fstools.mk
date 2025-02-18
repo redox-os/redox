@@ -16,6 +16,9 @@ else
 	touch $@
 endif
 
+$(INSTALLER): CC = 
+$(INSTALLER): TARGET = $(HOST_TARGET)
+$(INSTALLER): RUSTUP_TOOLCHAIN = 
 $(INSTALLER): installer
 	$(HOST_CARGO) build --bin redox_installer --manifest-path installer/Cargo.toml --release
 
