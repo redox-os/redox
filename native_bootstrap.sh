@@ -150,6 +150,7 @@ osx_macports()
 	install_macports_pkg "p5-html-parser"
 	install_macports_pkg "doxygen"
 	install_macports_pkg "gpatch"
+	install_macports_pkg "patchelf"
 	install_macports_pkg "automake"
 	install_macports_pkg "scons"
 	install_macports_pkg "gmake"
@@ -219,6 +220,7 @@ osx_homebrew()
 	install_brew_pkg "llvm"
 	install_brew_pkg "doxygen"
 	install_brew_pkg "gpatch"
+	install_brew_pkg "patchelf"
 	install_brew_pkg "automake"
 	install_brew_pkg "scons"
 	install_brew_pkg "lua"
@@ -290,6 +292,7 @@ freebsd()
 	install_freebsd_pkg "llvm"
 	install_freebsd_pkg "doxygen"
 	install_freebsd_pkg "patch"
+	install_freebsd_pkg "patchelf"
 	install_freebsd_pkg "automake"
 	install_freebsd_pkg "scons"
 	install_freebsd_pkg "lua54"
@@ -328,6 +331,7 @@ archLinux()
 	curl \
 	file \
 	patch \
+	patchelf \
 	automake \
 	scons \
 	waf \
@@ -442,6 +446,7 @@ ubuntu()
 		nasm \
 		ninja-build \
 		patch \
+		patchelf \
 		perl \
 		pkg-config \
 		po4a \
@@ -570,6 +575,7 @@ fedora()
 	gcc-c++ \
 	openssl \
 	patch \
+	patchelf \
 	automake \
 	perl-Pod-Html \
 	perl-FindBin \
@@ -636,6 +642,7 @@ suse()
 		"perl-HTML-Parser"
 		"m4"
 		"patch"
+		"patchelf"
 		"scons"
 		"pkgconf"
 		"syslinux-utils"
@@ -832,6 +839,7 @@ solus()
 	libtool-devel \
 	po4a \
 	patch \
+	patchelf \
 	bison \
 	flex \
 	gperf \
