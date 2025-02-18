@@ -249,6 +249,8 @@ fn fetch(recipe_dir: &Path, source: &Option<SourceRecipe>) -> Result<PathBuf, St
             upstream,
             branch,
             rev,
+            patches,
+            script,
         }) => {
             //TODO: use libgit?
             if !source_dir.is_dir() {
@@ -326,6 +328,14 @@ fi"#,
                 run_command(command)?;
             }
 
+            if !patches.is_empty() || script.is_some() {
+                // Hard reset
+                let mut command = Command::new("git");
+                command.arg("-C").arg(&source_dir);
+                command.arg("reset").arg("--hard");
+                run_command(command)?;
+            }
+
             // Sync submodules URL
             let mut command = Command::new("git");
             command.arg("-C").arg(&source_dir);
@@ -341,6 +351,41 @@ fi"#,
                 .arg("--init")
                 .arg("--recursive");
             run_command(command)?;
+
+            // Apply patches
+            for patch_name in patches {
+                let patch_file = recipe_dir.join(patch_name);
+                if !patch_file.is_file() {
+                    return Err(format!(
+                        "failed to find patch file '{}'",
+                        patch_file.display()
+                    ));
+                }
+
+                let patch = fs::read_to_string(&patch_file).map_err(|err| {
+                    format!(
+                        "failed to read patch file '{}': {}\n{:#?}",
+                        patch_file.display(),
+                        err,
+                        err
+                    )
+                })?;
+
+                let mut command = Command::new("patch");
+                command.arg("--forward");
+                command.arg("--batch");
+                command.arg("--directory").arg(&source_dir);
+                command.arg("--strip=1");
+                run_command_stdin(command, patch.as_bytes())?;
+            }
+
+            // Run source script
+            if let Some(script) = script {
+                let mut command = Command::new("bash");
+                command.arg("-ex");
+                command.current_dir(&source_dir);
+                run_command_stdin(command, format!("{SHARED_PRESCRIPT}\n{script}").as_bytes())?;
+            }
         }
         Some(SourceRecipe::Tar {
             tar,
