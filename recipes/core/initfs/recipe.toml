@@ -4,14 +4,10 @@ git = "https://gitlab.redox-os.org/redox-os/redox-initfs.git"
 [build]
 template = "custom"
 dependencies = [
+  "base-initfs",
   "bootstrap",
   "drivers-initfs",
-  "init",
-  "logd",
-  "ramfs",
-  "randd",
   "redoxfs",
-  "zerod",
 ]
 script = """
 INITFS_RM_BINS='redoxfs-ar redoxfs-mkfs'

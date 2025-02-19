@@ -1,0 +1,21 @@
+[source]
+same_as = "../base"
+
+[build]
+template = "custom"
+script = """
+mkdir -pv "${COOKBOOK_STAGE}/usr/bin"
+for package in init logd ramfs randd zerod; do
+    "${COOKBOOK_CARGO}" build \
+        --manifest-path "${COOKBOOK_SOURCE}/${package}/Cargo.toml" \
+        ${build_flags}
+    cp -v \
+        "target/${TARGET}/${build_type}/${package}" \
+        "${COOKBOOK_STAGE}/usr/bin/${package}"
+done
+
+# TODO: symlinks aren't supported by redox-initfs
+#ln -sv zerod "${COOKBOOK_STAGE}/usr/bin/nulld"
+
+cp "${COOKBOOK_STAGE}/usr/bin/zerod" "${COOKBOOK_STAGE}/usr/bin/nulld"
+"""
