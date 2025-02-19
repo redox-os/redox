@@ -1,0 +1,16 @@
+[source]
+git = "https://luajit.org/git/luajit.git"
+rev = "a4f56a459a588ae768801074b46ba0adcfb49eb1"
+patches = ["redox.patch"]
+[build]
+template = "custom"
+script = """
+DYNAMIC_INIT
+
+rsync -av --delete "${COOKBOOK_SOURCE}/" ./
+
+${COOKBOOK_MAKE} -j ${COOKBOOK_MAKE_JOBS} install \
+  PREFIX="${COOKBOOK_STAGE}" \
+  TARGET_SYS='Redox' \
+  CROSS="${TARGET}-"
+"""
