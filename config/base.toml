@@ -17,6 +17,7 @@ initfs = {}
 ipcd = {}
 kernel = {}
 ptyd = {}
+relibc = {}
 uutils = {}
 
 ## Configuration files
