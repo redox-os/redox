@@ -97,7 +97,6 @@ libsodium = {}
 libvorbis = {}
 libxml2 = {}
 llvm18 = {}
-logd = {}
 #lua54 = {} # did not build
 #mdp = {} # ncursesw
 mednafen = {}
