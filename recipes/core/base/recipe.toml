@@ -1,8 +1,16 @@
-[source]
-git = "https://gitlab.redox-os.org/redox-os/base.git"
+#[source]
+#git = "https://gitlab.redox-os.org/redox-os/base.git"
 
 [build]
 template = "custom"
 script = """
-# FIXME(bjorn3) fill in
+mkdir -pv "${COOKBOOK_STAGE}/usr/bin"
+for package in ipcd ptyd; do
+    "${COOKBOOK_CARGO}" build \
+        --manifest-path "${COOKBOOK_SOURCE}/${package}/Cargo.toml" \
+        ${build_flags}
+    cp -v \
+        "target/${TARGET}/${build_type}/${package}" \
+        "${COOKBOOK_STAGE}/usr/bin/${package}"
+done
 """
