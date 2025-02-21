@@ -1,5 +1,0 @@
-[source]
-git = "https://gitlab.redox-os.org/redox-os/ptyd.git"
-
-[build]
-template = "cargo"
