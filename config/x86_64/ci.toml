@@ -75,7 +75,6 @@ gnu-make = {}
 #harfbuzz = {} # depends on glib which does not build
 #hematite = {} # needs crate patches for redox-unix
 hicolor-icon-theme = {}
-init = {}
 initfs = {}
 installer = {}
 installer-gui = {}

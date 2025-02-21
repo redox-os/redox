@@ -72,7 +72,6 @@ gnu-make = {}
 harfbuzz = {}
 #hematite = {} # needs crate patches for redox-unix
 hicolor-icon-theme = {}
-init = {}
 initfs = {}
 installer = {}
 installer-gui = {}
