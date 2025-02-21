@@ -93,7 +93,6 @@ libsodium = {}
 libvorbis = {}
 libxml2 = {}
 llvm18 = {}
-logd = {}
 lua54 = {}
 #mdp = {} # ncursesw
 mesa = {}
