@@ -56,6 +56,11 @@ fn copy_dir_all(src: impl AsRef<Path>, dst: impl AsRef<Path>) -> io::Result<()> 
     Ok(())
 }
 
+fn symlink(original: impl AsRef<Path>, link: impl AsRef<Path>) -> Result<(), String> {
+    std::os::unix::fs::symlink(&original, &link)
+        .map_err(|err| format!("failed to symlink '{}' to '{}': {}\n{:?}", original.as_ref().display(), link.as_ref().display(), err, err))
+}
+
 fn modified(path: &Path) -> Result<SystemTime, String> {
     let metadata = fs::metadata(path).map_err(|err| {
         format!(
@@ -550,10 +555,18 @@ fn build(
         let sysroot_dir_tmp = target_dir.join("sysroot.tmp");
         create_dir_clean(&sysroot_dir_tmp)?;
 
-        // Make sure sysroot/include exists
-        create_dir(&sysroot_dir_tmp.join("include"))?;
-        // Make sure sysroot/lib exists
-        create_dir(&sysroot_dir_tmp.join("lib"))?;
+        // Make sure sysroot/usr exists
+        create_dir(&sysroot_dir_tmp.join("usr"))?;
+        for folder in &["bin", "include", "lib", "share"] {
+            // Make sure sysroot/usr/$folder exists
+            create_dir(&sysroot_dir_tmp.join("usr").join(folder))?;
+
+            // Link sysroot/$folder sysroot/usr/$folder
+            symlink(
+                Path::new("usr").join(folder),
+                &sysroot_dir_tmp.join(folder),
+            )?;
+        }
 
         for archive_path in dep_pkgars {
             let public_path = "build/id_ed25519.pub.toml";
