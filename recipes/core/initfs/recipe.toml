@@ -24,13 +24,13 @@ elif [ -e ${COOKBOOK_RECIPE}/${TARGET}/init.rc ]; then
     cp "${COOKBOOK_RECIPE}/${TARGET}/init.rc" "${COOKBOOK_BUILD}/initfs/etc/init.rc"
 fi
 
-# Move /usr/bin files to /bin
-mkdir -p "${COOKBOOK_BUILD}/initfs/bin"
-if [ -d "${COOKBOOK_BUILD}/initfs/usr/bin" ]
-then
-    mv "${COOKBOOK_BUILD}/initfs/usr/bin/"* "${COOKBOOK_BUILD}/initfs/bin"
-    rmdir "${COOKBOOK_BUILD}/initfs/usr/bin"
-fi
+# Move /usr folders to / and remove links
+for folder in bin lib include share
+do
+    rm "${COOKBOOK_BUILD}/initfs/${folder}"
+    mv "${COOKBOOK_BUILD}/initfs/usr/${folder}" "${COOKBOOK_BUILD}/initfs/${folder}"
+done
+rmdir "${COOKBOOK_BUILD}/initfs/usr"
 
 for bin in ${INITFS_RM_BINS}; do
   rm -f "${COOKBOOK_BUILD}/initfs/bin/$bin"
