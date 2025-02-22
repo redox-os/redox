@@ -41,14 +41,15 @@ cp -v "${COOKBOOK_RECIPE}/manifest" "$COOKBOOK_STAGE/ui/apps/00_netsurf"
 [package]
 shared-deps = [
     # XXX: currently only the following are dynamically linked
-    "libgcc",
-    "relibc",
     "curl",
-    "nghttp2",
+    "libgcc",
     "libiconv",
-    "zlib",
-    "openssl1",
     "liborbital",
+    "libpng",
+    "nghttp2",
+    "openssl1",
+    "relibc",
+    "zlib",
 ]
 dependencies = [
     "ca-certificates",
