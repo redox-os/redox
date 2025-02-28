@@ -6,7 +6,6 @@
 [source]
 git = "https://github.com/sezero/quakespasm"
 rev = "cc32abe09ed417ce3be10af300d2dc2f686349ba"
-patches = ["redox.patch"]
 
 [build]
 template = "custom"
