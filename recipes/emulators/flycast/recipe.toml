@@ -15,8 +15,9 @@ dependencies = [
     "zlib",
 ]
 script = """
-export CFLAGS="${CFLAGS} -I${COOKBOOK_SYSROOT}/include -I${COOKBOOK_SYSROOT}/include/SDL2"
-export CXXFLAGS="${CXXFLAGS} -D_GLIBCXX_USE_C99_MATH_TR1=1 -I${COOKBOOK_SYSROOT}/include -I${COOKBOOK_SYSROOT}/include/SDL2"
+DYNAMIC_INIT
+export CFLAGS="${CFLAGS} -I${COOKBOOK_SYSROOT}/usr/include -I${COOKBOOK_SYSROOT}/usr/include/SDL2"
+export CXXFLAGS="${CXXFLAGS} -D_GLIBCXX_USE_C99_MATH_TR1=1 -I${COOKBOOK_SYSROOT}/usr/include -I${COOKBOOK_SYSROOT}/usr/include/SDL2"
 #TODO: don't use this
 export SDL_LIBS="-lSDL2 -lorbital $("${TARGET}-pkg-config" --libs osmesa) -lstdc++"
 #TODO: don't add curl
@@ -26,7 +27,7 @@ COOKBOOK_CONFIGURE_FLAGS=(
     -DCMAKE_VERBOSE_MAKEFILE=On
     -DCMAKE_CROSSCOMPILING=True
     -DCMAKE_BUILD_TYPE=RelWithDebInfo
-    -DCMAKE_INSTALL_PREFIX="/"
+    -DCMAKE_INSTALL_PREFIX="/usr"
     -DCMAKE_SYSTEM_NAME=Generic
     -DCMAKE_SYSTEM_PROCESSOR="$(echo "${TARGET}" | cut -d - -f1)"
     -DREDOX=1
@@ -54,6 +55,13 @@ COOKBOOK_CONFIGURE_FLAGS=(
     "${COOKBOOK_SOURCE}"
 )
 cookbook_configure
-mv "${COOKBOOK_STAGE}/usr/"* "${COOKBOOK_STAGE}"
-rmdir "${COOKBOOK_STAGE}/usr"
 """
+
+[package]
+shared-deps = [
+    "curl",
+    "libgcc",
+    "nghttp2",
+    "openssl1",
+    "zlib",
+]
