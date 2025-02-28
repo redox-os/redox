@@ -699,7 +699,7 @@ function cookbook_cargo_packages {
 COOKBOOK_CONFIGURE="${COOKBOOK_SOURCE}/configure"
 COOKBOOK_CONFIGURE_FLAGS=(
     --host="${GNU_TARGET}"
-    --prefix=""
+    --prefix="/usr"
     --disable-shared
     --enable-static
 )
