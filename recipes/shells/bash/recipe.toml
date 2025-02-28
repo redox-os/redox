@@ -17,8 +17,9 @@ COOKBOOK_CONFIGURE_FLAGS+=(
     bash_cv_func_sigsetjmp=no
     bash_cv_getenv_redef=no
     --disable-multibyte # TODO: add more multibyte functions and remove this
+    --enable-static-link # This ensures loadables are not built, which will fail
 )
 COOKBOOK_MAKE_JOBS=1 # workaround for parallel make bugs
 cookbook_configure
-ln -s "bash" "${COOKBOOK_STAGE}/bin/sh"
+ln -s "bash" "${COOKBOOK_STAGE}/usr/bin/sh"
 """
