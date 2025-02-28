@@ -1,0 +1,48 @@
+[source]
+tar = "https://www.kernel.org/pub/software/scm/git/git-2.13.1.tar.xz"
+blake3 = "bc78271bffd60c5b8b938d8c08fd74dc2de8d21fbaf8f8e0e3155436d9263f17"
+patches = ["git.patch"]
+
+[build]
+dependencies=[
+    "curl",
+    "expat",
+    "nghttp2",
+    "openssl1",
+    "zlib"
+]
+template = "custom"
+script = """
+rsync -av --delete "${COOKBOOK_SOURCE}/" ./
+
+MAKEFLAGS=(
+    NEEDS_SSL_WITH_CURL=1
+    NEEDS_CRYPTO_WITH_SSL=1
+    NO_IPV6=1
+    NO_PREAD=1
+    NO_MMAP=1
+    NO_SETITIMER=1
+    NO_UNIX_SOCKETS=1
+    NEEDS_LIBICONV=
+    NEEDS_LIBRT=
+    BLK_SHA1=1
+    V=1
+)
+export LDFLAGS="-L${COOKBOOK_SYSROOT}/usr/lib"
+export CPPFLAGS="-I${COOKBOOK_SYSROOT}/usr/include"
+export CURL_CONFIG="${COOKBOOK_SYSROOT}/usr/bin/curl-config"
+./configure \
+    --host="${GNU_TARGET}" \
+    --prefix=/usr \
+    ac_cv_fread_reads_directories=yes \
+    ac_cv_snprintf_returns_bogus=yes \
+    ac_cv_lib_curl_curl_global_init=yes
+"${COOKBOOK_MAKE}" "${MAKEFLAGS[@]}" -j"${COOKBOOK_MAKE_JOBS}"
+"${COOKBOOK_MAKE}" DESTDIR="${COOKBOOK_STAGE}" "${MAKEFLAGS[@]}" install
+"""
+
+[package]
+dependencies = [
+    "ca-certificates",
+    "nghttp2"
+]
