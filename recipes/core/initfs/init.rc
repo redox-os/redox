@@ -14,7 +14,8 @@ stdio /scheme/log
 ramfs logging
 ps2d us
 acpid
-pcid /etc/pcid/initfs.toml
+pcid
+pcid-spawner /etc/pcid/initfs.toml
 lived
 unset DISK_LIVE_ADDR DISK_LIVE_SIZE
 redoxfs --uuid $REDOXFS_UUID file $REDOXFS_BLOCK
