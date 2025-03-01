@@ -43,8 +43,5 @@ curl -OL https://camanis.net/tyrian/tyrian21.zip
 sha256sum -c tyrian21.zip.sha
 unzip -jd "${ASSETSDIR}" tyrian21.zip
 
-# The build system doesn't automatically apply patches to cloned repositories
-git apply "${COOKBOOK_RECIPE}/redox.patch"
-
 cookbook_configure
 """
