@@ -17,7 +17,7 @@ COOKBOOK_CONFIGURE_FLAGS=(
     -DCMAKE_CXX_FLAGS="--std=gnu++11"
     -DCMAKE_EXE_LINKER_FLAGS="-static"
     -DCMAKE_RANLIB="$(which "${TARGET}-ranlib")"
-    -DCMAKE_INSTALL_PREFIX="/"
+    -DCMAKE_INSTALL_PREFIX="/usr"
     -DCMAKE_INSTALL_INCLUDEDIR="include"
     -DCMAKE_INSTALL_OLDINCLUDEDIR="/include"
     -DCMAKE_SYSTEM_NAME=Generic
@@ -35,7 +35,6 @@ COOKBOOK_CONFIGURE_FLAGS=(
     -DLLVM_INCLUDE_EXAMPLES=Off
     -DLLVM_INCLUDE_TESTS=Off
     -DLLVM_INCLUDE_UTILS=Off
-    -DLLVM_OPTIMIZED_TABLEGEN=On
     -DLLVM_TARGET_ARCH="$(echo "${TARGET}" | cut -d - -f1)"
     -DLLVM_TARGETS_TO_BUILD=X86 # TODO: get from TARGET
     -DLLVM_TOOL_LLVM_COV_BUILD=Off
@@ -53,12 +52,14 @@ COOKBOOK_CONFIGURE_FLAGS=(
     -DZLIB_LIBRARY=-lz
     -DZLIB_INCLUDE_DIR="${COOKBOOK_SYSROOT}/include"
     -Wno-dev
-    "${COOKBOOK_SOURCE}/llvm"
 )
+LLVM_TABLEGEN="$(which llvm-tblgen-18 || true)"
+if [ -n "${LLVM_TABLEGEN}" ]
+then
+    COOKBOOK_CONFIGURE_FLAGS+=(-DLLVM_TABLEGEN="${LLVM_TABLEGEN}")
+fi
+COOKBOOK_CONFIGURE_FLAGS+=("${COOKBOOK_SOURCE}/llvm")
 set -x
 cookbook_configure
-mv -vT "${COOKBOOK_STAGE}"/usr/include "${COOKBOOK_STAGE}/include"
-mv -vT "${COOKBOOK_STAGE}"/usr/share "${COOKBOOK_STAGE}/share"
-rmdir -v "${COOKBOOK_STAGE}"/usr
 set +x
 """
