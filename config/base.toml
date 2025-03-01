@@ -35,7 +35,7 @@ escalated
 [[files]]
 path = "/usr/lib/init.d/00_drivers"
 data = """
-pcid /etc/pcid.d/
+pcid-spawner /etc/pcid.d/
 """
 
 [[files]]
