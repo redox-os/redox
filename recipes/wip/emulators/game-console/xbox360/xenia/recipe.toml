@@ -1,7 +1,7 @@
-#TODO missing script for building, see https://github.com/xenia-project/xenia/blob/master/docs/building.md#linux
+#TODO missing script for building, see https://github.com/xenia-canary/xenia-canary/blob/canary_experimental/docs/building.md#linux
 #TODO make all dependencies work
 [source]
-git = "https://github.com/xenia-project/xenia"
+git = "https://github.com/xenia-canary/xenia-canary"
 [build]
 template = "custom"
 dependencies = [
