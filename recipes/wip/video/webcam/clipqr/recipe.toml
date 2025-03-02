@@ -1,0 +1,8 @@
+#TODO missing script for go
+#TODO determine dependencies
+# build instructions - https://gitlab.com/imatt-foss/clipqr#build
+[source]
+git = "https://gitlab.com/imatt-foss/clipqr"
+rev = "400a98c302aead3f2b1b81ec6dc45d654c8bf209"
+[build]
+template = "custom"
