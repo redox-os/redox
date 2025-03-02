@@ -133,6 +133,14 @@ function op {
                 rm -rf "${COOKBOOK_SYSROOT}"
                 mkdir "${COOKBOOK_SYSROOT}"
 
+                # usrmerge
+                mkdir "${COOKBOOK_SYSROOT}/usr"
+                for folder in bin include lib share
+                do
+                    mkdir "${COOKBOOK_SYSROOT}/usr/${folder}"
+                    ln -s "usr/${folder}" "${COOKBOOK_SYSROOT}/${folder}"
+                done
+
                 if [ ${#BUILD_DEPENDS} -gt 0 ]
                 then
                     pushd $ROOT
