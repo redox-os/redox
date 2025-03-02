@@ -1,0 +1,7 @@
+#TODO missing script for gradlew
+#TODO determine the dependencies
+[source]
+git = "https://github.com/hamza-algohary/Coulomb"
+rev = "6617d4817dd153ae5e5645d427cdb746c146ccee"
+[build]
+template = "custom"

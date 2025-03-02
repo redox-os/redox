@@ -1,0 +1,9 @@
+#TODO not compiled or tested
+[source]
+git = "https://github.com/bragefuglseth/keypunch"
+[build]
+template = "cargo"
+dependencies = [
+    "gtk4",
+    "libadwaita",
+]
