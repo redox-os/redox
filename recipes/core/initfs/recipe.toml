@@ -12,6 +12,7 @@ dependencies = [
 script = """
 INITFS_RM_BINS='redoxfs-ar redoxfs-mkfs'
 
+rm -r "${COOKBOOK_BUILD}/initfs"
 mkdir -p "${COOKBOOK_BUILD}/initfs/etc"
 
 cp -r "${COOKBOOK_SYSROOT}/"* "${COOKBOOK_BUILD}/initfs"
