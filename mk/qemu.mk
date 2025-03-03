@@ -162,7 +162,7 @@ endif
 ifeq ($(gpu),no)
 	QEMUFLAGS+=-nographic -vga none
 else ifeq ($(gpu),multi)
-	QEMUFLAGS+=-display sdl -vga std -device secondary-vga
+	QEMUFLAGS+=-display sdl -vga none -device virtio-gpu,max_outputs=2
 else ifeq ($(gpu),virtio)
 	QEMUFLAGS+=-vga virtio
 else ifeq ($(vga),virtio-gpu-pci)
