@@ -4,7 +4,7 @@ nulld
 zerod
 randd
 inputd
-vesad G G G
+vesad
 unset FRAMEBUFFER_ADDR FRAMEBUFFER_VIRT FRAMEBUFFER_WIDTH FRAMEBUFFER_HEIGHT FRAMEBUFFER_STRIDE
 #TODO: unset FRAMEBUFFER1 and beyond?
 fbbootlogd
