@@ -24,6 +24,7 @@ dependencies = [
     "zlib",
 ]
 script = """
+DYNAMIC_INIT
 export CFLAGS="${CFLAGS} -I${COOKBOOK_SYSROOT}/include -I${COOKBOOK_SYSROOT}/include/SDL2"
 export CXXFLAGS="${CXXFLAGS} -I${COOKBOOK_SYSROOT}/include -I${COOKBOOK_SYSROOT}/include/SDL2"
 
@@ -77,3 +78,12 @@ COOKBOOK_CONFIGURE_FLAGS=(
 mkdir -pv "${COOKBOOK_STAGE}/usr/bin"
 cp -v love "${COOKBOOK_STAGE}/usr/bin/love"
 """
+
+[package]
+shared-deps = [
+    "libgcc",
+    "liborbital",
+    "libpng",
+    "luajit",
+    "zlib",
+]
