@@ -4,7 +4,7 @@ tar = "https://github.com/libsndfile/libsndfile/releases/download/1.2.0/libsndfi
 [build]
 template = "configure"
 dependencies = [
-    "libflac",
+    #TODO "libflac",
     "libogg",
     "libvorbis",
 ]
