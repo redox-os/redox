@@ -9,6 +9,7 @@ dependencies = [
     "openssl1",
 ]
 script = """
+DYNAMIC_INIT
 export GETTEXT_DIR="${COOKBOOK_SYSROOT}"
 export GETTEXT_STATIC=1
 cookbook_cargo --no-default-features --features desktop,pkgar
@@ -21,3 +22,9 @@ cp -v "${COOKBOOK_SOURCE}/res/${APPID}.metainfo.xml" "${COOKBOOK_STAGE}/usr/shar
 mkdir -pv "${COOKBOOK_STAGE}/usr/share/icons/"
 cp -rv "${COOKBOOK_SOURCE}/res/icons/hicolor/" "${COOKBOOK_STAGE}/usr/share/icons/"
 """
+
+[package]
+shared-deps = [
+    "libgcc",
+    "openssl1",
+]
