@@ -2,7 +2,7 @@
 [source]
 tar = "https://openal-soft.org/openal-releases/openal-soft-1.24.1.tar.bz2"
 blake3 = "8aeaa8307d3e14331ad20761c537ffebe70975cb7c3343e8d5c0c0ed7bc16eab"
-patch = [
+patches = [
     "redox.patch"
 ]
 
