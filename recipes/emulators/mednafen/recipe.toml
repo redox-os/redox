@@ -17,9 +17,17 @@ dependencies = [
     "zlib",
 ]
 script = """
+DYNAMIC_INIT
 export SDL_LIBS="-lSDL2 -lorbital $("${TARGET}-pkg-config" --libs osmesa) -lstdc++"
 COOKBOOK_CONFIGURE_FLAGS+=(
     --without-libflac
 )
 cookbook_configure
 """
+
+[package]
+shared-deps = [
+    "liborbital",
+    "libiconv",
+    "libgcc",
+]
