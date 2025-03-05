@@ -39,6 +39,7 @@ export CURL_CONFIG="${COOKBOOK_SYSROOT}/usr/bin/curl-config"
     ac_cv_lib_curl_curl_global_init=yes
 "${COOKBOOK_MAKE}" "${MAKEFLAGS[@]}" -j"${COOKBOOK_MAKE_JOBS}"
 "${COOKBOOK_MAKE}" DESTDIR="${COOKBOOK_STAGE}" "${MAKEFLAGS[@]}" install
+rm -rf "${COOKBOOK_STAGE}/usr/share/man"
 """
 
 [package]
