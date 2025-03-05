@@ -12,6 +12,7 @@ acid = {}
 audiod = {}
 autoconf = {}
 automake = {}
+base = {}
 bash = {}
 binutils = {}
 bootloader = {}
