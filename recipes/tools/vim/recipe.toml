@@ -1,0 +1,26 @@
+[source]
+tar = "https://github.com/vim/vim/archive/refs/tags/v8.2.5172.tar.gz"
+blake3 = "28a58578a6655e2e45078331569d6e6c96ed05189acda34c2a784581bf614cd2"
+patch = ["vim.patch"]
+
+[build]
+dependencies = ["ncurses"]
+template = "custom"
+script = """
+export vim_cv_toupper_broken=no
+export vim_cv_tgetent=zero
+export vim_cv_terminfo=yes
+export vim_cv_tty_group=world
+export vim_cv_getcwd_broken=no
+export vim_cv_stat_ignores_slash=yes
+export vim_cv_memmove_handles_overlap=yes
+export SRCDIR="${COOKBOOK_SOURCE}/src"
+
+COOKBOOK_CONFIGURE_FLAGS+=(
+    --with-tlib=ncurses
+)
+
+pushd "${SRCDIR}"
+cookbook_configure
+popd
+"""
