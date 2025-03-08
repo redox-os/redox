@@ -267,7 +267,7 @@ mod tests {
             r#"
             [source]
             tar = "http://downloads.xiph.org/releases/ogg/libogg-1.3.3.tar.xz"
-            sha256 = "8220c0e4082fa26c07b10bfe31f641d2e33ebe1d1bb0b20221b7016bc8b78a3a"
+            blake3 = "8220c0e4082fa26c07b10bfe31f641d2e33ebe1d1bb0b20221b7016bc8b78a3a"
 
             [build]
             template = "custom"
