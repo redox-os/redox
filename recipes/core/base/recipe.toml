@@ -13,4 +13,13 @@ for package in ipcd ptyd; do
         "target/${TARGET}/${build_type}/${package}" \
         "${COOKBOOK_STAGE}/usr/bin/${package}"
 done
+
+"${COOKBOOK_CARGO}" build \
+    --manifest-path "${COOKBOOK_SOURCE}/netstack/Cargo.toml" \
+    ${build_flags}
+for bin in smolnetd dnsd; do
+    cp -v \
+        "target/${TARGET}/${build_type}/${bin}" \
+        "${COOKBOOK_STAGE}/usr/bin/${bin}"
+done
 """
