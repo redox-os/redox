@@ -187,7 +187,7 @@ archLinux()
 {
 
 	echo "Detected Arch Linux"
-	packages="git make curl fuse3 fuse-overlayfs slirp4netns podman gdb"
+	packages="git make curl fuse3 fuse-overlayfs slirp4netns podman gdb wget"
 	if [ "$1" == "qemu" ]; then
 		packages="$packages qemu"
 	elif [ "$1" == "virtualbox" ]; then
