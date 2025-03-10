@@ -40,5 +40,7 @@ cookbook_configure
 
 [package]
 dependencies = [
+    "openssl1",
+    "zlib",
     "ca-certificates"
 ]
