@@ -19,10 +19,11 @@ cp -r "${COOKBOOK_SYSROOT}/"* "${COOKBOOK_BUILD}/initfs"
 
 # TODO: Move init.rc to another recipe, perhaps initfs-misc? Then it can be installed as a regular dependency.
 cp "${COOKBOOK_RECIPE}/init.rc" "${COOKBOOK_BUILD}/initfs/etc/init.rc"
-if [ -e ${COOKBOOK_RECIPE}/${TARGET}/init.rc.${BOARD} ]; then
-    cp "${COOKBOOK_RECIPE}/${TARGET}/init.rc.${BOARD}" "${COOKBOOK_BUILD}/initfs/etc/init.rc"
-elif [ -e ${COOKBOOK_RECIPE}/${TARGET}/init.rc ]; then
-    cp "${COOKBOOK_RECIPE}/${TARGET}/init.rc" "${COOKBOOK_BUILD}/initfs/etc/init.rc"
+cp "${COOKBOOK_RECIPE}/init_drivers.rc" "${COOKBOOK_BUILD}/initfs/etc/init_drivers.rc"
+if [ -e ${COOKBOOK_RECIPE}/${TARGET}/init_drivers.rc.${BOARD} ]; then
+    cp "${COOKBOOK_RECIPE}/${TARGET}/init_drivers.rc.${BOARD}" "${COOKBOOK_BUILD}/initfs/etc/init_drivers.rc"
+elif [ -e ${COOKBOOK_RECIPE}/${TARGET}/init_drivers.rc ]; then
+    cp "${COOKBOOK_RECIPE}/${TARGET}/init_drivers.rc" "${COOKBOOK_BUILD}/initfs/etc/init_drivers.rc"
 fi
 
 # Move /usr folders to / and remove links

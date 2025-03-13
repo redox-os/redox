@@ -1,8 +1,12 @@
+# Various daemons that relibc needs to function as well as a bunch of env vars
+# that should be set for every program.
 export PATH /bin
 export RUST_BACKTRACE 1
 nulld
 zerod
 randd
+
+# Logging and graphics infrastructure
 inputd
 vesad
 unset FRAMEBUFFER_ADDR FRAMEBUFFER_VIRT FRAMEBUFFER_WIDTH FRAMEBUFFER_HEIGHT FRAMEBUFFER_STRIDE
@@ -12,14 +16,17 @@ fbcond 2
 logd /scheme/debug /scheme/fbbootlog
 stdio /scheme/log
 ramfs logging
-ps2d us
-acpid
-pcid
-pcid-spawner /etc/pcid/initfs.toml
+
+# Drivers
+run /scheme/initfs/etc/init_drivers.rc
+
+# Mount rootfs
 lived
 unset DISK_LIVE_ADDR DISK_LIVE_SIZE
 redoxfs --uuid $REDOXFS_UUID file $REDOXFS_BLOCK
 unset REDOXFS_UUID REDOXFS_BLOCK REDOXFS_PASSWORD_ADDR REDOXFS_PASSWORD_SIZE
+
+# Exit initfs
 set-default-scheme file
 cd /
 export PATH /usr/bin
