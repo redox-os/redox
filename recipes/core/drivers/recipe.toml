@@ -27,7 +27,7 @@ BINS=(
 # depending on the target architecture
 case "${TARGET}" in
     i686-unknown-redox | x86_64-unknown-redox)
-        BINS+=(ac97d bgad pcspkrd sb16d vboxd)
+        BINS+=(ac97d bgad sb16d vboxd)
         ;;
     *)
         ;;
