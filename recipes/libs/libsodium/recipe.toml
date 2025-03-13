@@ -1,9 +1,6 @@
 [source]
 tar = "https://github.com/jedisct1/libsodium/archive/1.0.16.tar.gz"
 blake3 = "2482633f872c173f9a42e6badb44c3efb042e783e664fdf8b1046babfa2405e7"
-patches = [
-    "random.patch"
-]
 script = "./autogen.sh"
 
 [build]
