@@ -1,8 +1,8 @@
+#!/usr/bin/env bash
+
 # This script setup the Redox build system with Podman
 # It install the Podman dependencies, Rustup, recipes dependencies for cross-compilation
 # and download the build system configuration files
-
-#!/usr/bin/env bash
 
 set -e
 
