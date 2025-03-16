@@ -119,21 +119,3 @@ diff -ruwN a/src/unix/udp.c b/src/unix/udp.c
  
  #if defined(IPV6_JOIN_GROUP) && !defined(IPV6_ADD_MEMBERSHIP)
  # define IPV6_ADD_MEMBERSHIP IPV6_JOIN_GROUP
-@@ -937,7 +943,16 @@
-   return 0;
- }
- 
--
-+#if defined(__redox__)
-+// Define the types
-+typedef uint64_t ULONG; // equivalent to Rust's u64
-+
-+typedef struct group_source_req {
-+    ULONG gsr_interface;
-+    struct sockaddr_storage gsr_group; // Use the struct keyword here
-+    struct sockaddr_storage gsr_source; // Use the struct keyword here
-+} GROUP_SOURCE_REQ, *PGROUP_SOURCE_REQ;
-+#endif
- static int uv__udp_set_source_membership6(uv_udp_t* handle,
-                                           const struct sockaddr_in6* multicast_addr,
-                                           const char* interface_addr,
