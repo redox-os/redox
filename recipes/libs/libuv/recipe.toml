@@ -1,6 +1,8 @@
 [source]
 tar = "https://dist.libuv.org/dist/v1.45.0/libuv-v1.45.0.tar.gz"
+blake3 = "b78eaba37bfa5fea75accc6d70c67358a4d0b6bb2dfb79b9bb17cb5478cdf797"
 patches = ["redox.patch"]
+
 [build]
 template = "custom"
 script = """
