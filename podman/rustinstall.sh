@@ -1,7 +1,7 @@
+#/usr/bin/env bash
+
 # This script install the Rust toolchain and the build system dependencies
 # in Podman after the image has been built
-
-#/usr/bin/env bash
 
 curl https://sh.rustup.rs -sSf | sh -s -- -y --default-toolchain stable
 cargo +stable install --force --version 0.1.1 cargo-config
