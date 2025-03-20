@@ -1,6 +1,6 @@
 [source]
-tar = "https://www.mpfr.org/mpfr-current/mpfr-4.2.1.tar.xz"
-blake3 = "f428023b8f7569fc1178faf63265ecb6cab4505fc3fce5d8c46af70db848a334"
+tar = "https://www.mpfr.org/mpfr-4.2.1/mpfr-4.2.1.tar.xz"
+blake3 = "11d59d061ef8db588650bc7dc5172594a6e5aad013994801c6f63011a62b191d"
 script = """
 DYNAMIC_INIT
 autotools_recursive_regenerate
