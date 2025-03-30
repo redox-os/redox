@@ -5,7 +5,7 @@ git = "https://gitlab.redox-os.org/redox-os/base.git"
 template = "custom"
 script = """
 mkdir -pv "${COOKBOOK_STAGE}/usr/bin"
-for package in ipcd ptyd; do
+for package in audiod ipcd ptyd; do
     "${COOKBOOK_CARGO}" build \
         --manifest-path "${COOKBOOK_SOURCE}/${package}/Cargo.toml" \
         ${build_flags}
