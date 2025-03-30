@@ -2,6 +2,7 @@
 # that should be set for every program.
 export PATH /bin
 export RUST_BACKTRACE 1
+rtcd
 nulld
 zerod
 randd
