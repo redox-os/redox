@@ -13,6 +13,7 @@ BINS=(
     nvmed
     pcid
     pcid-spawner
+    rtcd
     vesad
 )
 
@@ -63,7 +64,7 @@ export CARGO_PROFILE_RELEASE_PANIC=abort
 for bin in "${BINS[@]}"
 do
     case "${bin}" in
-      pcid | pcid-spawner | fbbootlogd | fbcond | inputd | vesad | lived | ps2d | acpid | bcm2835-sdhcid)
+      pcid | pcid-spawner | fbbootlogd | fbcond | inputd | vesad | lived | ps2d | acpid | bcm2835-sdhcid | rtcd)
         cp -v "target/${TARGET}/release/${bin}" "${COOKBOOK_STAGE}/bin"
         ;;
       *)
