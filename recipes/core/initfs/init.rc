@@ -21,6 +21,7 @@ ramfs logging
 
 # Drivers
 run /scheme/initfs/etc/init_drivers.rc
+unset RSDP_ADDR RSDP_SIZE
 
 # Mount rootfs
 lived
