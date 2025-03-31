@@ -9,7 +9,6 @@ prompt = false
 [packages]
 acid = {}
 #atk = {} # depends on glib which does not build
-audiod = {}
 autoconf = {}
 automake = {}
 base = {}

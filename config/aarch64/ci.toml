@@ -9,7 +9,6 @@ prompt = false
 [packages]
 acid = {}
 atk = {}
-audiod = {}
 autoconf = {}
 automake = {}
 bash = {}
