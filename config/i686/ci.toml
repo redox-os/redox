@@ -7,7 +7,6 @@ prompt = false
 
 # Package settings
 [packages]
-audiod = {}
 bootloader = {}
 bootstrap = {}
 ca-certificates = {}
