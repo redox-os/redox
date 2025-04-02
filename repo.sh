@@ -91,7 +91,7 @@ done
 
 mkdir -p "$REPO"
 
-APPSTREAM_SOURCES=()
+declare -A APPSTREAM_SOURCES
 
 # Currently, we only support runtime dependencies for recipes in the new TOML
 # format. Runtime dependencies include both `[package.dependencies]` and
@@ -119,7 +119,7 @@ do
 
     if [ -e "${COOKBOOK_STAGE}/usr/share/metainfo" ]
     then
-        APPSTREAM_SOURCES+=("${COOKBOOK_STAGE}")
+        APPSTREAM_SOURCES["$recipe"]="${COOKBOOK_STAGE}"
     fi
 done
 
@@ -131,7 +131,7 @@ then
     APPSTREAM_PKG="$REPO/appstream.pkgar"
     rm -rf "${APPSTREAM_ROOT}" "${APPSTREAM_PKG}"
     mkdir -p "${APPSTREAM_ROOT}"
-    if [ -n "${APPSTREAM_SOURCES}" ]
+    if [ "${#APPSTREAM_SOURCES[@]}" -ne 0 ]
     then
         appstreamcli compose \
             --origin=pkgar \
