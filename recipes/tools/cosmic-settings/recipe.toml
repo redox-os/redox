@@ -6,12 +6,25 @@ branch = "master"
 template = "custom"
 dependencies = [
     "gettext",
+    "libiconv",
 ]
 script = """
+DYNAMIC_INIT
+if [[ -n "$COOKBOOK_PREFER_STATIC" ]]; then
+  export GETTEXT_STATIC=1
+fi
 export GETTEXT_DIR="${COOKBOOK_SYSROOT}"
-export GETTEXT_STATIC=1
-PACKAGE_PATH="cosmic-settings"
-cookbook_cargo --no-default-features
+# Hack to link libiconv, which gettext-sys does not link
+"${COOKBOOK_CARGO}" rustc \
+    --manifest-path "${COOKBOOK_SOURCE}/cosmic-settings/Cargo.toml" \
+    --release \
+    --bin cosmic-settings \
+    --no-default-features \
+    -- \
+    -L "${COOKBOOK_SYSROOT}/lib" \
+    -C link-arg="-liconv"
+mkdir -pv "${COOKBOOK_STAGE}/usr/bin/"
+cp -v "target/${TARGET}/release/cosmic-settings" "${COOKBOOK_STAGE}/usr/bin/"
 #TODO: install with just?
 APPID="com.system76.CosmicSettings"
 mkdir -pv "${COOKBOOK_STAGE}/usr/share/applications/"
@@ -23,3 +36,11 @@ cp -rv "${COOKBOOK_SOURCE}/resources/default_schema/" "${COOKBOOK_STAGE}/usr/sha
 mkdir -pv "${COOKBOOK_STAGE}/usr/share/icons/"
 cp -rv "${COOKBOOK_SOURCE}/resources/icons/" "${COOKBOOK_STAGE}/usr/share/icons/hicolor/"
 """
+
+[package]
+shared-deps = [
+  "libgcc",
+  "gettext",
+  "libiconv"
+]
+
