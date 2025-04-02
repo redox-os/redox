@@ -31,7 +31,7 @@ neverball = {}
 prboom = {}
 redox-games = {}
 sopwith = {}
-syobonaction = {}
+# syobonaction = {} # linking errors
 
 # Demos
 acid = {}
