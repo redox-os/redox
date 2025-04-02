@@ -109,7 +109,6 @@ nasm = {}
 ncurses = {}
 #ncursesw = {} # mkstemp configure hang
 netdb = {}
-netstack = {}
 netsurf = {}
 netutils = {}
 neverball = {}
