@@ -7,17 +7,19 @@ nulld
 zerod
 randd
 
-# Logging and graphics infrastructure
+# Logging
+logd /scheme/debug
+stdio /scheme/log
+ramfs logging
+
+# Graphics infrastructure
 inputd
 vesad
 unset FRAMEBUFFER_ADDR FRAMEBUFFER_VIRT FRAMEBUFFER_WIDTH FRAMEBUFFER_HEIGHT FRAMEBUFFER_STRIDE
 #TODO: unset FRAMEBUFFER1 and beyond?
 fbbootlogd
-logd /scheme/debug /scheme/fbbootlog
-stdio /scheme/log
 inputd -A 1
 fbcond 2
-ramfs logging
 
 # Drivers
 run /scheme/initfs/etc/init_drivers.rc
