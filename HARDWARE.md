@@ -51,6 +51,7 @@ You will use this template to insert your computer on the table.
 
 ## Recommended
 
+<<<<<<< HEAD
 | **Vendor** | **Model** | **Redox Version** | **Image Date** | **Variant** | **CPU Architecture** | **Motherboard Firmware** | **Report** |
 |------------|-----------|-------------------|----------------|-------------|----------------------|--------------------------|------------|
 | System76 | Galago Pro (galp5) | 0.8.0 | 11-11-2022 | desktop | x86-64 | UEFI | Boots to Orbital |
@@ -59,34 +60,59 @@ You will use this template to insert your computer on the table.
 
 ## Booting
 
+| **Vendor**   | **Model**                            | **Redox Version** | **Image Date** | **Variant** | **CPU Architecture** | **Motherboard Firmware** | **Report**                                                                            |
+| ------------ | ------------------------------------ | ----------------- | -------------- | ----------- | -------------------- | ------------------------ | ------------------------------------------------------------------------------------- |
+| System76     | Oryx Pro (oryp10)                    | 0.8.0             | 11-11-2022     | desktop     | x86-64               | UEFI                     | Boots to Orbital, No touchpad support, though it should be working                    |
+| System76     | Pangolin (pang12)                    | 0.8.0             | 11-11-2022     | desktop     | x86-64               | UEFI                     | Boots to Orbital, No touchpad support, requires I2C HID                               |
+| Dell         | XPS 13 (9350)                        | 0.8.0             | 11-11-2022     | desktop     | x86-64               | BIOS, UEFI               | Boots to Orbital, NVMe driver livelocks                                               |
+| Dell         | XPS 13 (9350)                        | 0.8.0             | 11-11-2022     | desktop     | i686                 | BIOS                     | Boots to Orbital, NVMe driver livelocks                                               |
+| HP           | Dev One                              | 0.8.0             | 11-11-2022     | desktop     | x86-64               | UEFI                     | Boots to Orbital, No touchpad support, requires I2C HID                               |
+| ASUS         | X554L                                | 0.8.0             | 11-11-2022     | desktop     | x86-64               | BIOS                     | Boots to Orbital, No audio, HDA driver cannot find output pins                        |
+| ASUS         | ROG g55vw                            | 0.8.0             | 11-11-2023     | desktop     | x86-64               | BIOS                     | Boots to Orbital, UEFI panic in SETUP                                                 |
+| ASUS         | PRIME B350M-E (custom)               | 0.9.0             | 20-09-2024     | desktop     | x86-64               | UEFI                     | Partial support for the PS/2 keyboard, PS/2 mouse is broken                           |
+| ASUS         | Eee PC 900                           | 0.8.0             | 11-11-2022     | desktop     | i686                 | BIOS                     | Boots to Orbital, No ethernet driver, Correct video mode not offered (firmware issue) |
+| Toshiba      | Satellite L500                       | 0.8.0             | 11-11-2022     | desktop     | x86-64               | BIOS                     | Boots to Orbital, No ethernet driver, Correct video mode not offered (firmware issue) |
+| Raspberry Pi | 3 Model B+                           | 0.8.0             | Unknown        | server      | ARM64                | U-Boot                   | Boots to UART serial console (pl011)                                                  |
+| Lenovo       | ThinkPad Yoga 260 Laptop - Type 20FE | 0.9.0             | 07-09-2024     | demo        | x86-64               | UEFI                     | Boots to Orbital, No audio                                                            |
+| Lenovo       | Yoga S730-13IWL                      | 0.9.0             | 09-11-2024     | desktop     | x86-64               | UEFI                     | Boots to Orbital, No trackpad or USB mouse input support                              |
+
+=======
 | **Vendor** | **Model** | **Redox Version** | **Image Date** | **Variant** | **CPU Architecture** | **Motherboard Firmware** | **Report** |
-|------------|-----------|-------------------|----------------|-------------|----------------------|--------------------------|------------|
-| System76 | Oryx Pro (oryp10) | 0.8.0 | 11-11-2022 | desktop | x86-64 | UEFI | Boots to Orbital, No touchpad support, though it should be working |
-| System76 | Pangolin (pang12) | 0.8.0 | 11-11-2022 | desktop | x86-64 | UEFI | Boots to Orbital, No touchpad support, requires I2C HID |
-| Dell | XPS 13 (9350) | 0.8.0 | 11-11-2022 | desktop | x86-64 | BIOS, UEFI | Boots to Orbital, NVMe driver livelocks |
-| Dell | XPS 13 (9350) | 0.8.0 | 11-11-2022 | desktop | i686 | BIOS | Boots to Orbital, NVMe driver livelocks |
-| HP | Dev One | 0.8.0 | 11-11-2022 | desktop | x86-64 | UEFI | Boots to Orbital, No touchpad support, requires I2C HID |
-| ASUS | X554L | 0.8.0 | 11-11-2022 | desktop | x86-64 | BIOS | Boots to Orbital, No audio, HDA driver cannot find output pins |
-| ASUS | ROG g55vw | 0.8.0 | 11-11-2023 | desktop | x86-64 | BIOS | Boots to Orbital, UEFI panic in SETUP |
-| ASUS | PRIME B350M-E (custom) | 0.9.0 | 20-09-2024 | desktop | x86-64 | UEFI | Partial support for the PS/2 keyboard, PS/2 mouse is broken |
-| ASUS | Eee PC 900 | 0.8.0 | 11-11-2022 | desktop | i686 | BIOS | Boots to Orbital, No ethernet driver, Correct video mode not offered (firmware issue) |
-| Toshiba | Satellite L500 | 0.8.0 | 11-11-2022 | desktop | x86-64 | BIOS | Boots to Orbital, No ethernet driver, Correct video mode not offered (firmware issue) |
-| Raspberry Pi | 3 Model B+ | 0.8.0 | Unknown | server | ARM64 | U-Boot | Boots to UART serial console (pl011) |
-| Lenovo | ThinkPad Yoga 260 Laptop - Type 20FE | 0.9.0 | 07-09-2024 | demo | x86-64 | UEFI | Boots to Orbital, No audio |
-| Lenovo | Yoga S730-13IWL | 0.9.0 | 09-11-2024 | desktop | x86-64 | UEFI | Boots to Orbital, No trackpad or USB mouse input support |
+| ---------- | ------------------ | ----------------- | -------------- | ----------- | -------------------- | ------------------------ | ---------------- |
+| System76 | Galago Pro (galp5) | 0.8.0 | 11-11-2022 | desktop | x86-64 | UEFI | Boots to Orbital |
+| System76 | Lemur Pro (lemp9) | 0.8.0 | 11-11-2022 | desktop | x86-64 | UEFI | Boots to Orbital |
+| Lenovo | IdeaPad Y510P | 0.8.0 | 11-11-2022 | desktop | x86-64 | BIOS, UEFI | Boots to Orbital |
+
+## Booting
+
+| **Vendor**   | **Model**                            | **Redox Version** | **Image Date** | **Variant** | **CPU Architecture** | **Motherboard Firmware** | **Report**                                                                            |
+| ------------ | ------------------------------------ | ----------------- | -------------- | ----------- | -------------------- | ------------------------ | ------------------------------------------------------------------------------------- |
+| System76     | Oryx Pro (oryp10)                    | 0.8.0             | 11-11-2022     | desktop     | x86-64               | UEFI                     | Boots to Orbital, No touchpad support, though it should be working                    |
+| System76     | Pangolin (pang12)                    | 0.8.0             | 11-11-2022     | desktop     | x86-64               | UEFI                     | Boots to Orbital, No touchpad support, requires I2C HID                               |
+| Dell         | XPS 13 (9350)                        | 0.8.0             | 11-11-2022     | desktop     | x86-64               | BIOS, UEFI               | Boots to Orbital, NVMe driver livelocks                                               |
+| Dell         | XPS 13 (9350)                        | 0.8.0             | 11-11-2022     | desktop     | i686                 | BIOS                     | Boots to Orbital, NVMe driver livelocks                                               |
+| HP           | Dev One                              | 0.8.0             | 11-11-2022     | desktop     | x86-64               | UEFI                     | Boots to Orbital, No touchpad support, requires I2C HID                               |
+| ASUS         | X554L                                | 0.8.0             | 11-11-2022     | desktop     | x86-64               | BIOS                     | Boots to Orbital, No audio, HDA driver cannot find output pins                        |
+| ASUS         | ROG g55vw                            | 0.8.0             | 11-11-2023     | desktop     | x86-64               | BIOS                     | Boots to Orbital, UEFI panic in SETUP                                                 |
+| ASUS         | PRIME B350M-E (custom)               | 0.9.0             | 20-09-2024     | desktop     | x86-64               | UEFI                     | Partial support for the PS/2 keyboard, PS/2 mouse is broken                           |
+| ASUS         | Eee PC 900                           | 0.8.0             | 11-11-2022     | desktop     | i686                 | BIOS                     | Boots to Orbital, No ethernet driver, Correct video mode not offered (firmware issue) |
+| Toshiba      | Satellite L500                       | 0.8.0             | 11-11-2022     | desktop     | x86-64               | BIOS                     | Boots to Orbital, No ethernet driver, Correct video mode not offered (firmware issue) |
+| Raspberry Pi | 3 Model B+                           | 0.8.0             | Unknown        | server      | ARM64                | U-Boot                   | Boots to UART serial console (pl011)                                                  |
+| Lenovo       | ThinkPad Yoga 260 Laptop - Type 20FE | 0.9.0             | 07-09-2024     | demo        | x86-64               | UEFI                     | Boots to Orbital, No audio                                                            |
+| Lenovo       | Yoga S730-13IWL                      | 0.9.0             | 09-11-2024     | desktop     | x86-64               | UEFI                     | Boots to Orbital, No trackpad or USB mouse input support                              |
+| Dell         | Latitude 7420                        | 0.9.0             | 07-09-2024     | desktop     | x86-64               | UEFI                     | Boots to Orbital, No USB input device support                                         |
 
 ## Broken
 
-| **Vendor** | **Model** | **Redox Version** | **Image Date** | **Variant** | **CPU Architecture** | **Motherboard Firmware** | **Report** |
-|------------|-----------|-------------------|----------------|-------------|----------------------|--------------------------|------------|
-| HP | EliteBook 2570p | 0.8.0 | 23-11-2022 | demo | x86-64 | BIOS (CSM mode?) | Gets to resolution selection, Fails assert in `src/os/bios/mod.rs:77` after selecting resolution |
-| BEELINK | U59 | 0.8.0 | 30-05-2024 | server | x86-64 | Unknown | Aborts after panic in xhcid |
-| ASUS | PN41 | 0.8.0 | 30-05-2024 | server | x86-64 | Unknown | Aborts after panic in xhcid |
-| Lenovo | G570 | 0.8.0 | 11-11-2022 | desktop | x86-64 | BIOS | Bootloader panics in `alloc_zeroed_page_aligned`, Correct video mode not offered (firmware issue) |
-| Lenovo | IdeaPad Y510P | 0.8.0 | 11-11-2022 | desktop | i686 | BIOS | Panics on `phys_to_virt overflow`, probably having invalid mappings for 32-bit |
-| Framework | Laptop 16 (AMD Ryzen 7040 Series) | 0.9.0 | 07-09-2024 | server, demo | x86-64 | UEFI | Black screen and unresponsive after the bootloader and resolution selection |
-| Toshiba | Satellite L500 | 0.8.0 | 11-11-2022 | desktop | i686 | BIOS | Correct video mode not offered (firmware issue), Panics on `phys_to_virt overflow`, probably having invalid mappings for 32-bit |
-| Panasonic | Toughbook CF-18 | 0.8.0 | 11-11-2022 | desktop | i686 | BIOS | Hangs after PIT initialization |
-| XMG (Schenker) | Apex 17 (M21) | 0.9.0 | 30-09-2024 | demo, server | x86-64 | UEFI | After selecting resolution, (release) repeats `...::interrupt::irq::ERROR -- Local apic internal error: ESR=0x40` a few times before it freezes; (daily) really slowly prints statements from `...::rmm::INFO` before it abruptly aborts |
-| HP | Compaq nc6120 | 0.9.0 | 2024-11-08 | desktop, server | i686 | BIOS | Unloads into memory at a rate slower than 1MB/s after selecting resolution. When unloading is complete the logger initializes and crashes after kernel::acpi, some information about APIC is printed. Boot logs do not progress after this point. |
-
+| **Vendor**     | **Model**                         | **Redox Version** | **Image Date** | **Variant**     | **CPU Architecture** | **Motherboard Firmware** | **Report**                                                                                                                                                                                                                                        |
+| -------------- | --------------------------------- | ----------------- | -------------- | --------------- | -------------------- | ------------------------ | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| HP             | EliteBook 2570p                   | 0.8.0             | 23-11-2022     | demo            | x86-64               | BIOS (CSM mode?)         | Gets to resolution selection, Fails assert in `src/os/bios/mod.rs:77` after selecting resolution                                                                                                                                                  |
+| BEELINK        | U59                               | 0.8.0             | 30-05-2024     | server          | x86-64               | Unknown                  | Aborts after panic in xhcid                                                                                                                                                                                                                       |
+| ASUS           | PN41                              | 0.8.0             | 30-05-2024     | server          | x86-64               | Unknown                  | Aborts after panic in xhcid                                                                                                                                                                                                                       |
+| Lenovo         | G570                              | 0.8.0             | 11-11-2022     | desktop         | x86-64               | BIOS                     | Bootloader panics in `alloc_zeroed_page_aligned`, Correct video mode not offered (firmware issue)                                                                                                                                                 |
+| Lenovo         | IdeaPad Y510P                     | 0.8.0             | 11-11-2022     | desktop         | i686                 | BIOS                     | Panics on `phys_to_virt overflow`, probably having invalid mappings for 32-bit                                                                                                                                                                    |
+| Framework      | Laptop 16 (AMD Ryzen 7040 Series) | 0.9.0             | 07-09-2024     | server, demo    | x86-64               | UEFI                     | Black screen and unresponsive after the bootloader and resolution selection                                                                                                                                                                       |
+| Toshiba        | Satellite L500                    | 0.8.0             | 11-11-2022     | desktop         | i686                 | BIOS                     | Correct video mode not offered (firmware issue), Panics on `phys_to_virt overflow`, probably having invalid mappings for 32-bit                                                                                                                   |
+| Panasonic      | Toughbook CF-18                   | 0.8.0             | 11-11-2022     | desktop         | i686                 | BIOS                     | Hangs after PIT initialization                                                                                                                                                                                                                    |
+| XMG (Schenker) | Apex 17 (M21)                     | 0.9.0             | 30-09-2024     | demo, server    | x86-64               | UEFI                     | After selecting resolution, (release) repeats `...::interrupt::irq::ERROR -- Local apic internal error: ESR=0x40` a few times before it freezes; (daily) really slowly prints statements from `...::rmm::INFO` before it abruptly aborts          |
+| HP             | Compaq nc6120                     | 0.9.0             | 2024-11-08     | desktop, server | i686                 | BIOS                     | Unloads into memory at a rate slower than 1MB/s after selecting resolution. When unloading is complete the logger initializes and crashes after kernel::acpi, some information about APIC is printed. Boot logs do not progress after this point. |
