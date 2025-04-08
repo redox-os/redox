@@ -2,6 +2,6 @@
 git = "https://gitlab.redox-os.org/redox-os/escalated.git"
 # Escalated is not backwards compatible wrt relibc versions, so we pin it here
 # so it's updated together with the other main submodules.
-rev = "92eed68f"
+rev = "8ffd7d3c"
 [build]
 template = "cargo"
