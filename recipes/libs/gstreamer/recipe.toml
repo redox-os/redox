@@ -1,24 +1,37 @@
 [source]
-tar = "https://gstreamer.freedesktop.org/src/gstreamer/gstreamer-1.20.6.tar.xz"
-blake3 = "d96a7fd8bb9bec309bc40ccafdbac3bd4d11d06a9be41c38337cea02deaea95d"
-patches = [
-	"redox.patch"
-]
+tar = "https://gitlab.freedesktop.org/gstreamer/gstreamer/-/archive/1.24.12/gstreamer-1.24.12.tar.gz"
+blake3 = "181daf73050f7472ec656e7461b7f67028d6002c1133870576033a32e43a364f"
+patches = ["redox.patch"]
 
 [build]
 template = "custom"
 dependencies = [
+    "cairo",
+    "expat",
+    "ffmpeg6",
+    "freetype2",
+    "fontconfig",
 	"gettext",
-	"glib",
-	"libffi",
+    "glib",
+    "harfbuzz",
+    "libffi",
 	"libiconv",
-	"pcre",
+    "libjpeg",
+    "libogg",
+    "libpng",
+    "libvorbis",
+    "libxml2",
+    #TODO "pango",
+    "pcre",
+    "pixman",
 	"zlib"
 ]
 script = """
+DYNAMIC_INIT
+
 export GLIB_GENMARSHAL="$(which glib-genmarshal)"
 export GLIB_MKENUMS="$(which glib-mkenums)"
-export LDFLAGS="-static"
+export LDFLAGS="-L${COOKBOOK_SYSROOT}/lib"
 
 # TODO: Fix this annoying shite
 echo "[binaries]" > cross_file.txt
@@ -26,7 +39,7 @@ echo "c = '${CC}'" >> cross_file.txt
 echo "cpp = '${CXX}'" >> cross_file.txt
 echo "ar = '${AR}'" >> cross_file.txt
 echo "strip = '${STRIP}'" >> cross_file.txt
-echo "pkgconfig = '${TARGET}-pkg-config'" >> cross_file.txt
+echo "pkg-config = '${TARGET}-pkg-config'" >> cross_file.txt
 
 echo "[host_machine]" >> cross_file.txt
 echo "system = 'redox'" >> cross_file.txt
@@ -52,17 +65,16 @@ unset RANLIB
 unset READELF
 unset STRIP
 
-meson setup "${COOKBOOK_SOURCE}" _build \
+meson \
+    setup \
+    "${COOKBOOK_SOURCE}" \
+    _build \
 	--cross-file cross_file.txt \
 	--buildtype release \
 	--strip \
-	-Ddefault_library=static \
 	-Dprefix=/ \
 	-Dlibdir=lib \
-	-Dbenchmarks=disabled \
-	-Dcoretracers=disabled \
-	-Dexamples=disabled \
-	-Dtests=disabled
+    -Dauto_features=disabled
 ninja -C _build -v
 DESTDIR="${COOKBOOK_STAGE}" ninja -C _build -v install
 """

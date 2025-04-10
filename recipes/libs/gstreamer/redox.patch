@@ -1,57 +1,19 @@
-diff -ruwN source/gst/gstpoll.c source-new/gst/gstpoll.c
---- source/gst/gstpoll.c	2023-02-23 11:23:11.000000000 -0700
-+++ source-new/gst/gstpoll.c	2023-05-19 13:22:32.365660597 -0600
-@@ -85,6 +85,10 @@
- #include <sys/socket.h>
- #endif
- 
-+#if defined(__redox__)
-+#include <sys/select.h>
-+#endif
-+
- #ifdef G_OS_WIN32
- #  ifndef EWOULDBLOCK
- #  define EWOULDBLOCK EAGAIN    /* This is just to placate gcc */
-@@ -689,7 +693,9 @@
-   {
-     gint control_sock[2];
- 
-+#if !defined(__redox__)
-     if (socketpair (PF_UNIX, SOCK_STREAM, 0, control_sock) < 0)
-+#endif
-       goto no_socket_pair;
- 
-     nset->control_read_fd.fd = control_sock[0];
-diff -ruwN source/libs/gst/check/libcheck/meson.build source-new/libs/gst/check/libcheck/meson.build
---- source/libs/gst/check/libcheck/meson.build	2023-02-23 11:23:11.000000000 -0700
-+++ source-new/libs/gst/check/libcheck/meson.build	2023-05-19 13:26:51.285620215 -0600
-@@ -40,13 +40,13 @@
+diff -ruwN gstreamer-1.20.7/subprojects/gst-plugins-base/gst-libs/gst/tag/meson.build source/subprojects/gst-plugins-base/gst-libs/gst/tag/meson.build
+--- gstreamer-1.20.7/subprojects/gst-plugins-base/gst-libs/gst/tag/meson.build	2023-07-26 09:18:38.000000000 -0600
++++ source/subprojects/gst-plugins-base/gst-libs/gst/tag/meson.build	2025-04-10 17:19:26.509676357 -0600
+@@ -135,10 +135,10 @@
+     install: false)
  endif
  
- # FIXME: check that timer_create, timer_settime, timer_delete are in rt_lib
--if not rt_lib.found()
-+#if not rt_lib.found()
-   libcheck_files += files(
-     'libcompat/timer_create.c',
-     'libcompat/timer_settime.c',
-     'libcompat/timer_delete.c'
-   )
--endif
-+#endif
+-executable('mklicensestables', 'mklicensestables.c',
+-  c_args : gst_plugins_base_args,
+-  include_directories: [configinc],
+-  dependencies : [tag_dep, gst_base_dep],
+-  install : false)
++#executable('mklicensestables', 'mklicensestables.c',
++#  c_args : gst_plugins_base_args,
++#  include_directories: [configinc],
++#  dependencies : [tag_dep, gst_base_dep],
++#  install : false)
  
- configure_file(input : 'check.h.in',
-   output : 'check.h',
-diff -ruwN source/plugins/elements/gstfilesink.c source-new/plugins/elements/gstfilesink.c
---- source/plugins/elements/gstfilesink.c	2023-02-23 11:23:11.000000000 -0700
-+++ source-new/plugins/elements/gstfilesink.c	2023-05-19 13:23:26.885652108 -0600
-@@ -148,8 +148,10 @@
-   else
-     g_assert_not_reached ();
- 
-+#if !defined(__redox__)
-   if (o_sync)
-     flags |= O_SYNC;
-+#endif
- 
-   fd = open (filename, flags, 0666);
- 
+ gst_tag_dir = meson.current_source_dir()
