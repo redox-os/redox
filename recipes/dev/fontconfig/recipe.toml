@@ -17,6 +17,7 @@ dependencies = [
 	"zlib",
 ]
 script = """
+DYNAMIC_INIT
 COOKBOOK_CONFIGURE_FLAGS+=(
     --disable-docs \
     ac_cv_func_XML_SetDoctypeDeclHandler=yes
