@@ -1,6 +1,7 @@
 [source]
-tar = "https://github.com/harfbuzz/harfbuzz/releases/download/7.3.0/harfbuzz-7.3.0.tar.xz"
-blake3 = "6572676ffef55bd37bacdd33052bedfb07333b659371495a2a26b9825ce685c0"
+tar = "https://github.com/harfbuzz/harfbuzz/releases/download/11.0.1/harfbuzz-11.0.1.tar.xz"
+blake3 = "51f0edaaf2e9b7a7176d3252f15d03d409ef7ad35f77b050c407de89f85b77c5"
+
 [build]
 template = "custom"
 dependencies = [
@@ -13,11 +14,51 @@ dependencies = [
     "zlib"
 ]
 script = """
-COOKBOOK_CONFIGURE_FLAGS+=(
-    --with-glib=yes
-    --with-freetype=yes
-    --with-icu=no
-    ac_cv_func_sincosf=no
-)
-cookbook_configure
+DYNAMIC_INIT
+
+# TODO: Fix this annoying shite
+echo "[binaries]" > cross_file.txt
+echo "c = '${CC}'" >> cross_file.txt
+echo "cpp = '${CXX}'" >> cross_file.txt
+echo "ar = '${AR}'" >> cross_file.txt
+echo "strip = '${STRIP}'" >> cross_file.txt
+echo "pkg-config = '${TARGET}-pkg-config'" >> cross_file.txt
+
+echo "[host_machine]" >> cross_file.txt
+echo "system = 'redox'" >> cross_file.txt
+echo "cpu_family = '$(echo "${TARGET}" | cut -d - -f1)'" >> cross_file.txt
+echo "cpu = '$(echo "${TARGET}" | cut -d - -f1)'" >> cross_file.txt
+echo "endian = 'little'" >> cross_file.txt
+
+echo "[paths]" >> cross_file.txt
+echo "prefix = '${COOKBOOK_SYSROOT}'" >> cross_file.txt
+echo "libdir = 'lib'" >> cross_file.txt
+echo "bindir = 'bin'" >> cross_file.txt
+
+unset AR
+unset AS
+unset CC
+unset CXX
+unset LD
+unset NM
+unset OBJCOPY
+unset OBJDUMP
+unset PKG_CONFIG
+unset RANLIB
+unset READELF
+unset STRIP
+
+meson \
+    setup \
+    "${COOKBOOK_SOURCE}" \
+    _build \
+	--cross-file cross_file.txt \
+	--buildtype release \
+	--strip \
+	-Dprefix=/usr \
+	-Dlibdir=lib \
+    -Ddocs=disabled \
+    -Dtests=disabled
+ninja -C _build -v
+DESTDIR="${COOKBOOK_STAGE}" ninja -C _build -v install
 """
