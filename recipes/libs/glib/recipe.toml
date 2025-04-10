@@ -1,6 +1,6 @@
 [source]
-tar = "https://download.gnome.org/sources/glib/2.59/glib-2.59.0.tar.xz"
-blake3 = "4b10f071bad767bbed9dc3ca742aac4de1f5746c03d515908e7dad4ea8334cbf"
+tar = "https://download.gnome.org/sources/glib/2.82/glib-2.82.5.tar.xz"
+blake3 = "9f5b4a12c6f328b167e81f457319f199acbaa02a63107d698ee9953193740b5f"
 patches = [
     "redox.patch"
 ]
@@ -15,13 +15,54 @@ dependencies = [
     "zlib",
 ]
 script = """
-"${COOKBOOK_SOURCE}/autogen.sh" \
-    "${COOKBOOK_CONFIGURE_FLAGS[@]}" \
-    glib_cv_stack_grows=no \
-    glib_cv_uscore=no
+DYNAMIC_INIT
 
-sed -i 's/#define HAVE_SYS_RESOURCE_H 1/#undef HAVE_SYS_RESOURCE_H/' config.h
+#TODO: do this in cook instead
+unset AR AS CC CXX LD NM OBJCOPY OBJDUMP RANLIB READELF STRIP
 
-COOKBOOK_CONFIGURE="true"
-cookbook_configure
+#export CFLAGS="-I${COOKBOOK_SYSROOT}/include"
+#export CPPFLAGS="-I${COOKBOOK_SYSROOT}/include"
+#export LDFLAGS="-L${COOKBOOK_SYSROOT}/lib --static"
+
+# TODO: Fix this annoying shite
+echo "[binaries]" > cross_file.txt
+echo "c = '${TARGET}-gcc'" >> cross_file.txt
+echo "cpp = '${TARGET}-g++'" >> cross_file.txt
+echo "ar = '${TARGET}-ar'" >> cross_file.txt
+echo "strip = '${TARGET}-strip'" >> cross_file.txt
+echo "pkg-config = '${TARGET}-pkg-config'" >> cross_file.txt
+
+echo "[host_machine]" >> cross_file.txt
+echo "system = 'redox'" >> cross_file.txt
+echo "cpu_family = '$(echo "${TARGET}" | cut -d - -f1)'" >> cross_file.txt
+echo "cpu = '$(echo "${TARGET}" | cut -d - -f1)'" >> cross_file.txt
+echo "endian = 'little'" >> cross_file.txt
+
+echo "[paths]" >> cross_file.txt
+echo "prefix = '/usr'" >> cross_file.txt
+echo "libdir = 'lib'" >> cross_file.txt
+echo "bindir = 'bin'" >> cross_file.txt
+
+echo "[properties]" >> cross_file.txt
+echo "needs_exe_wrapper = true" >> cross_file.txt
+
+meson \
+    setup \
+    "${COOKBOOK_SOURCE}" \
+    . \
+    --cross-file cross_file.txt \
+    --buildtype release \
+    --strip \
+    -Ddefault_library=shared \
+    -Dxattr=false
+ninja -v
+DESTDIR="${COOKBOOK_STAGE}" ninja install
 """
+
+#TODO: shared deps
+[package]
+shared-deps = [
+    "libffi",
+    "libgcc",
+    "libiconv",
+]
