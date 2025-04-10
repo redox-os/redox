@@ -74,6 +74,8 @@ You will use this template to insert your computer on the table.
 | Raspberry Pi | 3 Model B+ | 0.8.0 | Unknown | server | ARM64 | U-Boot | Boots to UART serial console (pl011) |
 | Lenovo | ThinkPad Yoga 260 Laptop - Type 20FE | 0.9.0 | 07-09-2024 | demo | x86-64 | UEFI | Boots to Orbital, No audio |
 | Lenovo | Yoga S730-13IWL | 0.9.0 | 09-11-2024 | desktop | x86-64 | UEFI | Boots to Orbital, No trackpad or USB mouse input support |
+| Samsung | Series 3 (NP350V5C) | 0.9.0 | 04-08-2025 | desktop | x86-64 | UEFI | Boots to Orbital, touchpad works, usb does not work, can connect to the Internet through LAN. Wrong maximum display resolution 1024x768 |
+| Asus | Vivobook 15 OLED (M1503Q) | 0.9.0 | 04-08-2025 | desktop | x86-64 | UEFI | Boots to Orbital, touchpad and usb do not work, cannot connect to the internet, right maximum display resolution 2880x1620 |
 
 ## Broken
 
