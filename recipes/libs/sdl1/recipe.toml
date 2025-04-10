@@ -9,10 +9,10 @@ dependencies = [
 script = """
 COOKBOOK_CONFIGURE_FLAGS+=(
     --disable-loadso
-    --disable-pthread-sem
     --disable-pulseaudio
     --disable-video-x11
     --enable-clock_gettime
+    --enable-pthread-sem
     --enable-redoxaudio
     --enable-video-orbital
 )
