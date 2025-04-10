@@ -23,11 +23,11 @@ dependencies = [
     "zlib",
 ]
 script = """
+DYNAMIC_INIT
 COOKBOOK_CONFIGURE_FLAGS=(
     --host="${TARGET}"
     --prefix="/usr"
     --cross-prefix="${TARGET}"
-    --static
     --disable-coroutine-pool
     --disable-tpm
 )
