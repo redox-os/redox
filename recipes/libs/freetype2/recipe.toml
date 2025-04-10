@@ -1,9 +1,14 @@
 [source]
-tar = "https://download.savannah.gnu.org/releases/freetype/freetype-2.12.1.tar.xz"
-blake3 = "c4a1d8438ca4e93bb8cb9f8e70e95cd16acdc5a9f0fba496e43911175f55affd"
+tar = "https://download.savannah.gnu.org/releases/freetype/freetype-2.13.3.tar.xz"
+blake3 = "07a01894ccdb584943ce817b57341a8595ce9a92bfaa77c602ec4757dfabd5e2"
+
 [build]
-template = "configure"
 dependencies = [
     "libpng",
     "zlib"
 ]
+template = "custom"
+script = """
+DYNAMIC_INIT
+cookbook_configure
+"""
