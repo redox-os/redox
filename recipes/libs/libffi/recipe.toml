@@ -1,9 +1,36 @@
 [source]
-tar = "https://sourceware.org/pub/libffi/libffi-3.2.1.tar.gz"
-blake3 = "a00597a8bd26304977d7c180135e91969a175a5108bd0024a03eb0636e6cb0bf"
-patches = [
-    "redox.patch"
-]
+tar = "https://github.com/libffi/libffi/releases/download/v3.4.5/libffi-3.4.5.tar.gz"
+blake3 = "f9a2cfe1d2ac8d211c18c99f9cfafe5537925101bfb92c2d44d844680dd82264"
+script = """
+DYNAMIC_INIT
+cp ${COOKBOOK_HOST_SYSROOT}/share/aclocal/libtool.m4 ./m4/
+cp -fp ${COOKBOOK_HOST_SYSROOT}/share/libtool/build-aux/ltmain.sh ./
+cp ${COOKBOOK_HOST_SYSROOT}/share/aclocal/ltversion.m4 ./m4/
+
+autotools_recursive_regenerate -I$(realpath ./m4)
+"""
 
 [build]
-template = "configure"
+template = "custom"
+script = """
+DYNAMIC_INIT
+COOKBOOK_CONFIGURE_FLAGS=(
+    --host="${GNU_TARGET}"
+    --prefix=""
+)
+if [[ -n "$COOKBOOK_PREFER_STATIC" ]]; then
+  COOKBOOK_CONFIGURE_FLAGS+=(
+    --enable-static
+    --disable-shared
+  )
+else
+  COOKBOOK_CONFIGURE_FLAGS+=(
+    --enable-shared
+    --enable-static
+  )
+fi
+cookbook_configure
+"""
+
+[package]
+shared-deps = ["libgcc"]
