@@ -12,4 +12,15 @@ dependencies = [
     "libiconv",
     "pcre",
 ]
-template = "configure"
+template = "custom"
+script = """
+DYNAMIC_INIT
+cookbook_configure
+"""
+
+[package]
+shared-deps = [
+    "gettext",
+    "glib",
+    "libiconv",
+]
