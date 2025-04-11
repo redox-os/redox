@@ -42,12 +42,6 @@ HOST_ENV=(
 "${HOST_ENV[@]}" "${COOKBOOK_MAKE}" -j "${COOKBOOK_MAKE_JOBS}"
 popd
 COOKBOOK_CONFIGURE_FLAGS+=(
-    --disable-extras
-    --disable-icu-config
-    --disable-renaming
-    --disable-samples
-    --disable-tools
-    --disable-tools
     --with-cross-build="${COOKBOOK_BUILD}/host"
     icu_cv_host_frag=mh-linux
 )
