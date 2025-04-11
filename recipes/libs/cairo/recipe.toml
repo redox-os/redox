@@ -18,6 +18,7 @@ dependencies = [
 ]
 template = "custom"
 script = """
+DYNAMIC_INIT
 export CFLAGS="-DCAIRO_NO_MUTEX=1"
 COOKBOOK_CONFIGURE_FLAGS+=(
     --enable-xlib=no
