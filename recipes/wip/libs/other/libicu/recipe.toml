@@ -1,5 +1,48 @@
-#TODO missing script for building
 [source]
-tar = "https://github.com/unicode-org/icu/releases/download/release-74-1/icu4c-74_1-src.tgz"
+tar = "https://github.com/unicode-org/icu/releases/download/release-77-1/icu4c-77_1-src.tgz"
+blake3 = "8f51c4e4c6577b61d02921e800ddb0a2d4778addf7717eef4c5bb0e8a5582c3a"
+patches = ["redox.patch"]
+
 [build]
 template = "custom"
+script = """
+COOKBOOK_CONFIGURE="${COOKBOOK_SOURCE}/source/configure"
+mkdir -p host
+pushd host
+#TODO: easier way to build for host?
+HOST_ENV=(
+    env
+    --unset=AR
+    --unset=AS
+    --unset=CC
+    --unset=CFLAGS
+    --unset=CPPFLAGS
+    --unset=CXX
+    --unset=GNU_TARGET
+    --unset=LD
+    --unset=LDFLAGS
+    --unset=NM
+    --unset=OBJCOPY
+    --unset=OBJDUMP
+    --unset=PKG_CONFIG
+    --unset=PKG_CONFIG_ALLOW_CROSS
+    --unset=PKG_CONFIG_FOR_BUILD
+    --unset=PKG_CONFIG_LIBDIR
+    --unset=PKG_CONFIG_PATH
+    --unset=PKG_CONFIG_SYSROOT_DIR
+    --unset=PREFIX_RUSTFLAGS
+    --unset=RANLIB
+    --unset=READELF
+    --unset=STRIP
+    --unset=TARGET
+)
+"${HOST_ENV[@]}" printenv | sort
+"${HOST_ENV[@]}" "${COOKBOOK_CONFIGURE}"
+"${HOST_ENV[@]}" "${COOKBOOK_MAKE}" -j "${COOKBOOK_MAKE_JOBS}"
+popd
+COOKBOOK_CONFIGURE_FLAGS+=(
+    --with-cross-build="${COOKBOOK_BUILD}/host"
+    icu_cv_host_frag=mh-linux
+)
+cookbook_configure
+"""
