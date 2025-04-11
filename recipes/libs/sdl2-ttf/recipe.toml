@@ -1,6 +1,6 @@
 [source]
 tar = "https://www.libsdl.org/projects/SDL_ttf/release/SDL2_ttf-2.0.15.tar.gz"
-blake3 = ""
+blake3 = "9814a07f33a3501b414f0fc7fa962e7d7ffc56748406f3798b7698b8d7e7fe12"
 script = """
 ./autogen.sh
 """
