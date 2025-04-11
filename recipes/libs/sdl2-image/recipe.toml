@@ -13,15 +13,15 @@ dependencies = [
     "zlib",
 ]
 script = """
+DYNAMIC_INIT
 export SDL_LIBS="-lSDL2 -lorbital $("${TARGET}-pkg-config" --libs osmesa) -lstdc++"
 COOKBOOK_CONFIGURE_FLAGS=(
-    --prefix=/
+    --prefix=/usr
     --host="${TARGET}"
-    --disable-shared
     --disable-sdltest
+    --enable-shared
     --enable-png
     --enable-jpg
 )
-set -x
 cookbook_configure
 """
