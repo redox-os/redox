@@ -4,13 +4,15 @@ blake3 = "d4a61ff3a7c69d86a29158918aad48ab9c4866c6a22a3e8da5feadbb7d23b3ca"
 
 [build]
 template = "custom"
-dependencies = ["libiconv", "liborbital", "sdl1"]
+dependencies = [
+    "bzip2",
+    "libiconv",
+    "liborbital",
+    "sdl1",
+    "zlib",
+]
 script = """
 DYNAMIC_INIT
-
-# export CFLAGS="${CFLAGS} -I${COOKBOOK_SYSROOT}/include"
-# export CXXFLAGS="${CXXFLAGS} -I${COOKBOOK_SYSROOT}/include"
-# export LDFLAGS="${LDFLAGS} -L${COOKBOOK_SYSROOT}/lib"
 
 COOKBOOK_CONFIGURE="cmake"
 
