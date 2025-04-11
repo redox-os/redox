@@ -4,6 +4,7 @@ git = "https://gitlab.redox-os.org/redox-os/liborbital.git"
 [build]
 template = "custom"
 script = """
+DYNAMIC_INIT
 rsync -av --delete "${COOKBOOK_SOURCE}/" ./
 "${COOKBOOK_CARGO}" build --release
 "${COOKBOOK_MAKE}" install HOST="${TARGET}" DESTDIR="${COOKBOOK_STAGE}"
