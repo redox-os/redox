@@ -4,18 +4,33 @@ branch = "master"
 
 [build]
 dependencies = [
+    "ffmpeg6",
     "gettext",
     "glib",
     "gstreamer",
-    "gstreamer-plugins-base",
     "libffi",
     "libiconv",
-    "pcre",
     "zlib",
 ]
 template = "custom"
 script = """
-cookbook_cargo --no-default-features
+DYNAMIC_INIT
+cargo rustc \
+    --target "${TARGET}" \
+    --release \
+    --manifest-path "${COOKBOOK_SOURCE}/Cargo.toml" \
+    --no-default-features \
+    --verbose \
+    -- \
+    -C link-args="-lgmodule-2.0 -lffi -lz"
 mkdir -pv "${COOKBOOK_STAGE}/ui/apps"
 cp -v "${COOKBOOK_RECIPE}/manifest" "${COOKBOOK_STAGE}/ui/apps/cosmic-player"
+#TODO: install with just?
+APPID="com.system76.CosmicPlayer"
+mkdir -pv "${COOKBOOK_STAGE}/usr/share/applications/"
+cp -v "${COOKBOOK_SOURCE}/res/${APPID}.desktop" "${COOKBOOK_STAGE}/usr/share/applications/"
+mkdir -pv "${COOKBOOK_STAGE}/usr/share/metainfo/"
+cp -v "${COOKBOOK_SOURCE}/res/${APPID}.metainfo.xml" "${COOKBOOK_STAGE}/usr/share/metainfo/"
+mkdir -pv "${COOKBOOK_STAGE}/usr/share/icons/"
+cp -rv "${COOKBOOK_SOURCE}/res/icons/hicolor/" "${COOKBOOK_STAGE}/usr/share/icons/"
 """
