@@ -6,6 +6,7 @@ patches = ["redox.patch"]
 [build]
 template = "custom"
 script = """
+DYNAMIC_INIT
 COOKBOOK_CONFIGURE="${COOKBOOK_SOURCE}/source/configure"
 mkdir -p host
 pushd host
