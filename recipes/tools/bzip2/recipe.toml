@@ -34,6 +34,3 @@ if ! [[ -n "${COOKBOOK_PREFER_STATIC}" ]]; then
     cp -v libbz2.so.1.0 "${COOKBOOK_STAGE}/lib"
 fi
 """
-
-[package]
-shared-deps = ["libgcc"]

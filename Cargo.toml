@@ -21,8 +21,10 @@ path = "src/lib.rs"
 
 [dependencies]
 blake3 = "=1.5.3" # 1.5.4 is incompatible with blake3 0.3 dependency from pkgar
+object = { version = "0.36", features = ["build_core"] }
 pbr = "1.0.2"
 pkgar = { path = "pkgar/pkgar" }
+pkgar-core = { path = "pkgar/pkgar-core" }
 pkgar-keys = { path = "pkgar/pkgar-keys" }
 redoxer = "0.2"
 serde = { version = "=1.0.197", features = ["derive"] }

@@ -36,11 +36,3 @@ cp -rv "${COOKBOOK_SOURCE}/resources/default_schema/" "${COOKBOOK_STAGE}/usr/sha
 mkdir -pv "${COOKBOOK_STAGE}/usr/share/icons/"
 cp -rv "${COOKBOOK_SOURCE}/resources/icons/" "${COOKBOOK_STAGE}/usr/share/icons/hicolor/"
 """
-
-[package]
-shared-deps = [
-  "libgcc",
-  "gettext",
-  "libiconv"
-]
-

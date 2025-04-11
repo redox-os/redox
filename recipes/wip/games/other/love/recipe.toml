@@ -78,12 +78,3 @@ COOKBOOK_CONFIGURE_FLAGS=(
 mkdir -pv "${COOKBOOK_STAGE}/usr/bin"
 cp -v love "${COOKBOOK_STAGE}/usr/bin/love"
 """
-
-[package]
-shared-deps = [
-    "libgcc",
-    "liborbital",
-    "libpng",
-    "luajit",
-    "zlib",
-]

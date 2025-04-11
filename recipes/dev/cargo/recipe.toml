@@ -30,14 +30,3 @@ export DEP_Z_ROOT="${COOKBOOK_SYSROOT}"
 mkdir -pv "${COOKBOOK_STAGE}/bin"
 cp -v "target/${TARGET}/release/cargo" "${COOKBOOK_STAGE}/bin/cargo"
 """
-
-[package]
-shared-deps = [
-    "curl",
-    "libgcc",
-    "libssh2",
-    "nghttp2",
-    "openssl1",
-    "zlib",
-]
-

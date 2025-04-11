@@ -2,24 +2,16 @@ use cookbook::blake3::blake3_progress;
 use cookbook::recipe::{BuildKind, CookRecipe, PackageRecipe, Recipe, SourceRecipe};
 use cookbook::recipe_find::recipe_find;
 use std::{
+    collections::BTreeSet,
     env, fs,
     io::{self, Write},
     path::{Path, PathBuf},
     process::{self, Command, Stdio},
+    str,
     time::SystemTime,
 };
 use termion::{color, style};
 use walkdir::{DirEntry, WalkDir};
-
-fn should_build_shared() -> bool {
-    use std::sync::OnceLock;
-    static YES: OnceLock<bool> = OnceLock::new();
-    *YES.get_or_init(|| {
-        env::var("COOKBOOK_PREFER_STATIC")
-            .expect("COOKBOOK_PREFER_STATIC")
-            .is_empty()
-    })
-}
 
 fn remove_all(path: &Path) -> Result<(), String> {
     if path.is_dir() {
@@ -57,8 +49,15 @@ fn copy_dir_all(src: impl AsRef<Path>, dst: impl AsRef<Path>) -> io::Result<()> 
 }
 
 fn symlink(original: impl AsRef<Path>, link: impl AsRef<Path>) -> Result<(), String> {
-    std::os::unix::fs::symlink(&original, &link)
-        .map_err(|err| format!("failed to symlink '{}' to '{}': {}\n{:?}", original.as_ref().display(), link.as_ref().display(), err, err))
+    std::os::unix::fs::symlink(&original, &link).map_err(|err| {
+        format!(
+            "failed to symlink '{}' to '{}': {}\n{:?}",
+            original.as_ref().display(),
+            link.as_ref().display(),
+            err,
+            err
+        )
+    })
 }
 
 fn modified(path: &Path) -> Result<SystemTime, String> {
@@ -506,33 +505,126 @@ fi"#,
     Ok(source_dir)
 }
 
+fn auto_deps(stage_dir: &Path, dep_pkgars: &BTreeSet<(String, PathBuf)>) -> BTreeSet<String> {
+    let mut paths = BTreeSet::new();
+    for dir in &[stage_dir.join("usr/bin"), stage_dir.join("usr/lib")] {
+        let Ok(read_dir) = fs::read_dir(&dir) else {
+            continue;
+        };
+        for entry_res in read_dir {
+            let Ok(entry) = entry_res else { continue };
+            let Ok(file_type) = entry.file_type() else {
+                continue;
+            };
+            if file_type.is_file() {
+                paths.insert(entry.path());
+            }
+        }
+    }
+
+    let mut needed = BTreeSet::new();
+    for path in paths {
+        let Ok(file) = fs::File::open(&path) else {
+            continue;
+        };
+        let read_cache = object::ReadCache::new(file);
+        let Ok(object) = object::build::elf::Builder::read(&read_cache) else {
+            continue;
+        };
+        let Some(dynamic_data) = object.dynamic_data() else {
+            continue;
+        };
+        for dynamic in dynamic_data {
+            let object::build::elf::Dynamic::String { tag, val } = dynamic else {
+                continue;
+            };
+            if *tag == object::elf::DT_NEEDED {
+                let Ok(name) = str::from_utf8(val) else {
+                    continue;
+                };
+                if let Ok(relative_path) = path.strip_prefix(stage_dir) {
+                    eprintln!("DEBUG: {} needs {}", relative_path.display(), name);
+                }
+                needed.insert(name.to_string());
+            }
+        }
+    }
+
+    let mut missing = needed.clone();
+    // relibc and friends will always be installed
+    for preinstalled in &[
+        "libc.so.6",
+        "libgcc_s.so.1",
+        "libstdc++.so.6",
+    ] {
+        missing.remove(*preinstalled);
+    }
+
+    let mut deps = BTreeSet::new();
+    if let Ok(key_file) = pkgar_keys::PublicKeyFile::open("build/id_ed25519.pub.toml") {
+        for (dep, archive_path) in dep_pkgars.iter() {
+            let Ok(mut package) = pkgar::PackageFile::new(archive_path, &key_file.pkey) else {
+                continue;
+            };
+            let Ok(entries) = pkgar_core::PackageSrc::read_entries(&mut package) else {
+                continue;
+            };
+            for entry in entries {
+                let Ok(entry_path) = pkgar::ext::EntryExt::check_path(&entry) else {
+                    continue;
+                };
+                for prefix in &["lib", "usr/lib"] {
+                    let Ok(child_path) = entry_path.strip_prefix(prefix) else {
+                        continue;
+                    };
+                    let Some(child_name) = child_path.to_str() else {
+                        continue;
+                    };
+                    if needed.contains(child_name) {
+                        eprintln!("DEBUG: {} provides {}", dep, child_name);
+                        deps.insert(dep.clone());
+                        missing.remove(child_name);
+                    }
+                }
+            }
+        }
+    }
+
+    for name in missing {
+        eprintln!("WARN: {} missing", name);
+    }
+
+    deps
+}
+
 fn build(
     recipe_dir: &Path,
     source_dir: &Path,
     target_dir: &Path,
     name: &str,
     recipe: &Recipe,
-) -> Result<PathBuf, String> {
-    let mut dep_pkgars = vec![];
-    for dependency in recipe.dependencies_iter() {
+) -> Result<(PathBuf, BTreeSet<String>), String> {
+    let mut dep_pkgars = BTreeSet::new();
+    for dependency in recipe.build.dependencies.iter() {
         //TODO: sanitize name
         let dependency_dir = recipe_find(dependency, Path::new("recipes"))?;
         if dependency_dir.is_none() {
             return Err(format!("failed to find recipe directory '{}'", dependency));
         }
-        dep_pkgars.push(
+        dep_pkgars.insert((
+            dependency.to_string(),
             dependency_dir
                 .unwrap()
                 .join("target")
                 .join(redoxer::target())
                 .join("stage.pkgar"),
-        );
+        ));
     }
 
     let source_modified = modified_dir_ignore_git(source_dir)?;
     let deps_modified = dep_pkgars
         .iter()
-        .map(|pkgar| modified(pkgar))
+        .map(|(_dep, pkgar)| modified(pkgar))
         .max()
         .unwrap_or(Ok(SystemTime::UNIX_EPOCH))?;
 
@@ -562,13 +654,10 @@ fn build(
             create_dir(&sysroot_dir_tmp.join("usr").join(folder))?;
 
             // Link sysroot/$folder sysroot/usr/$folder
-            symlink(
-                Path::new("usr").join(folder),
-                &sysroot_dir_tmp.join(folder),
-            )?;
+            symlink(Path::new("usr").join(folder), &sysroot_dir_tmp.join(folder))?;
         }
 
-        for archive_path in dep_pkgars {
+        for (_dep, archive_path) in &dep_pkgars {
             let public_path = "build/id_ed25519.pub.toml";
             pkgar::extract(
                 public_path,
@@ -836,7 +925,10 @@ done
         rename(&stage_dir_tmp, &stage_dir)?;
     }
 
-    Ok(stage_dir)
+    // Calculate automatic dependencies
+    let auto_deps = auto_deps(&stage_dir, &dep_pkgars);
+
+    Ok((stage_dir, auto_deps))
 }
 
 fn package(
@@ -845,6 +937,7 @@ fn package(
     target_dir: &Path,
     name: &str,
     recipe: &Recipe,
+    auto_deps: &BTreeSet<String>,
 ) -> Result<PathBuf, String> {
     //TODO: metadata like dependencies, name, and version
     let package = &recipe.package;
@@ -894,11 +987,12 @@ fn package(
             target: String,
             depends: Vec<String>,
         }
-        let depends = if should_build_shared() {
-            recipe.runtime_dependencies()
-        } else {
-            package.dependencies.clone()
-        };
+        let mut depends = package.dependencies.clone();
+        for dep in auto_deps.iter() {
+            if !depends.contains(dep) {
+                depends.push(dep.clone());
+            }
+        }
         let stage_toml = toml::to_string(&StageToml {
             name: name.into(),
             version: "TODO".into(),
@@ -931,11 +1025,18 @@ fn cook(recipe_dir: &Path, name: &str, recipe: &Recipe, fetch_only: bool) -> Res
         create_dir(&target_dir)?;
     }
 
-    let stage_dir = build(recipe_dir, &source_dir, &target_dir, name, &recipe)
+    let (stage_dir, auto_deps) = build(recipe_dir, &source_dir, &target_dir, name, &recipe)
         .map_err(|err| format!("failed to build: {}", err))?;
 
-    let _package_file = package(recipe_dir, &stage_dir, &target_dir, name, &recipe)
-        .map_err(|err| format!("failed to package: {}", err))?;
+    let _package_file = package(
+        recipe_dir,
+        &stage_dir,
+        &target_dir,
+        name,
+        &recipe,
+        &auto_deps,
+    )
+    .map_err(|err| format!("failed to package: {}", err))?;
 
     Ok(())
 }
@@ -956,7 +1057,7 @@ fn main() {
         }
     }
 
-    let recipes = match CookRecipe::new_recursive(&recipe_names, 16, false) {
+    let recipes = match CookRecipe::new_recursive(&recipe_names, 16) {
         Ok(ok) => ok,
         Err(err) => {
             eprintln!(
