@@ -7,6 +7,3 @@ script = """
 DYNAMIC_INIT
 cookbook_cargo
 """
-
-[package]
-shared-deps = ["libgcc"]

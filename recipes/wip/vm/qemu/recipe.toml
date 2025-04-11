@@ -48,17 +48,3 @@ case "${TARGET}" in
 esac
 cookbook_configure
 """
-
-[package]
-shared-deps = [
-    "gettext",
-    "glib",
-    "libffi",
-    "libgcc",
-    "libiconv",
-    "liborbital",
-    "libpng",
-    "nghttp2",
-    "openssl1",
-    "zlib",
-]

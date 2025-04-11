@@ -58,11 +58,3 @@ meson \
 ninja -v
 DESTDIR="${COOKBOOK_STAGE}" ninja install
 """
-
-#TODO: shared deps
-[package]
-shared-deps = [
-    "libffi",
-    "libgcc",
-    "libiconv",
-]

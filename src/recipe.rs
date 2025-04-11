@@ -90,8 +90,6 @@ pub struct BuildRecipe {
 pub struct PackageRecipe {
     #[serde(default)]
     pub dependencies: Vec<String>,
-    #[serde(rename = "shared-deps", default)]
-    pub shared_deps: Vec<String>,
 }
 
 /// Everything required to build a Redox package
@@ -106,33 +104,7 @@ pub struct Recipe {
     pub package: PackageRecipe,
 }
 
-impl Recipe {
-    #[inline]
-    pub fn dependencies_iter(&self) -> impl Iterator<Item = &String> {
-        self.build
-            .dependencies
-            .iter()
-            .chain(self.package.shared_deps.iter())
-    }
-
-    /// `[build.dependencies] + [package.shared_deps]`
-    #[inline]
-    pub fn dependencies(&self) -> Vec<String> {
-        self.dependencies_iter().cloned().collect::<Vec<_>>()
-    }
-
-    /// `[package.dependencies] + [package.shared_deps]`
-    #[inline]
-    pub fn runtime_dependencies(&self) -> Vec<String> {
-        self.package
-            .dependencies
-            .iter()
-            .chain(self.package.shared_deps.iter())
-            .cloned()
-            .collect::<Vec<_>>()
-    }
-}
-
+#[derive(Debug, PartialEq)]
 pub struct CookRecipe {
     pub name: String,
     pub dir: PathBuf,
@@ -173,12 +145,7 @@ impl CookRecipe {
         Ok(Self { name, dir, recipe })
     }
 
-    //TODO: make this more efficient, smarter, and not return duplicates
-    pub fn new_recursive(
-        names: &[String],
-        recursion: usize,
-        runtime_deps_only: bool,
-    ) -> Result<Vec<Self>, String> {
+    pub fn new_recursive(names: &[String], recursion: usize) -> Result<Vec<Self>, String> {
         if recursion == 0 {
             return Err(format!(
                 "recursion limit while processing build dependencies: {:#?}",
@@ -189,25 +156,21 @@ impl CookRecipe {
         let mut recipes = Vec::new();
         for name in names {
             let recipe = Self::new(name.clone())?;
-            let all_deps = recipe.recipe.dependencies();
-            let runtime_deps = recipe.recipe.runtime_dependencies();
 
-            let dependencies = Self::new_recursive(
-                if runtime_deps_only {
-                    &runtime_deps
-                } else {
-                    &all_deps
-                },
-                recursion - 1,
-                runtime_deps_only,
-            )
-            .map_err(|err| format!("{}: failed on loading build dependencies:\n{}", name, err))?;
+            let dependencies =
+                Self::new_recursive(&recipe.recipe.build.dependencies, recursion - 1).map_err(
+                    |err| format!("{}: failed on loading build dependencies:\n{}", name, err),
+                )?;
 
             for dependency in dependencies {
-                recipes.push(dependency);
+                if !recipes.contains(&dependency) {
+                    recipes.push(dependency);
+                }
             }
 
-            recipes.push(recipe);
+            if !recipes.contains(&recipe) {
+                recipes.push(recipe);
+            }
         }
 
         Ok(recipes)

@@ -46,6 +46,3 @@ cookbook_configure
 mkdir -v "${COOKBOOK_STAGE}/bin"
 cp -v devilutionx "${COOKBOOK_STAGE}/bin"
 """
-
-[package]
-shared-deps = ["bzip2", "libgcc", "libiconv", "liborbital", "sdl1", "zlib"]

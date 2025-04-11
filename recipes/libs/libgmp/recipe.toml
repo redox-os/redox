@@ -16,6 +16,3 @@ script = """
 DYNAMIC_INIT
 cookbook_configure
 """
-
-[package]
-shared-deps = ["libgcc"]
