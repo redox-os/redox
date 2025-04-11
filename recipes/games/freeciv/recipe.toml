@@ -1,0 +1,51 @@
+[source]
+tar = "https://files.freeciv.org/stable/freeciv-3.1.4.tar.xz"
+blake3 = "212630af5e50fb72662ca62a71cdd57318d0cf309b53e46377dd24c8199923a4"
+
+[build]
+dependencies = [
+    "curl",
+    "freetype2",
+    "libiconv",
+    "libicu",
+    "liborbital",
+    "libjpeg",
+    "libpng",
+    "llvm18",
+    "openssl1",
+    "mesa",
+    "nghttp2",
+    "sdl2",
+    "sdl2-gfx",
+    "sdl2-image",
+    "sdl2-ttf",
+    "zlib",
+]
+template = "custom"
+script = """
+DYNAMIC_INIT
+export SDL2_LIBS="\
+    -lSDL2_gfx \
+    -lSDL2_image \
+    -lSDL2_ttf \
+    -lSDL2 \
+    -lorbital \
+    $("${PKG_CONFIG}" --libs osmesa) \
+    -ljpeg \
+    -lpng \
+    -lz \
+    -lstdc++ \
+"
+COOKBOOK_CONFIGURE_FLAGS+=(
+    --disable-server
+    --enable-fcdb=no
+    --enable-fcmp=no
+    --enable-ipv6=no
+    --enable-client=sdl2
+    ac_cv_lib_SDL2_gfx_rotozoomSurface=yes
+    ac_cv_lib_SDL2_image_IMG_Load=yes
+    ac_cv_lib_SDL2_ttf_TTF_OpenFont=yes
+)
+export V=1
+cookbook_configure
+"""
