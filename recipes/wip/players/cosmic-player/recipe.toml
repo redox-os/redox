@@ -3,6 +3,7 @@ git = "https://github.com/pop-os/cosmic-player.git"
 branch = "master"
 
 [build]
+template = "custom"
 dependencies = [
     "ffmpeg6",
     "gettext",
@@ -12,18 +13,18 @@ dependencies = [
     "libiconv",
     "zlib",
 ]
-template = "custom"
 script = """
 DYNAMIC_INIT
-cargo rustc \
-    --target "${TARGET}" \
-    --release \
+"${COOKBOOK_CARGO}" rustc \
     --manifest-path "${COOKBOOK_SOURCE}/Cargo.toml" \
+    --release \
+    --bin cosmic-player \
     --no-default-features \
-    --verbose \
     -- \
     -C link-args="-lgmodule-2.0 -lffi -lz"
-mkdir -pv "${COOKBOOK_STAGE}/ui/apps"
+mkdir -pv "${COOKBOOK_STAGE}/usr/bin/"
+cp -v "target/${TARGET}/release/cosmic-player" "${COOKBOOK_STAGE}/usr/bin/"
+mkdir -pv "${COOKBOOK_STAGE}/ui/apps/"
 cp -v "${COOKBOOK_RECIPE}/manifest" "${COOKBOOK_STAGE}/ui/apps/cosmic-player"
 #TODO: install with just?
 APPID="com.system76.CosmicPlayer"
@@ -34,3 +35,15 @@ cp -v "${COOKBOOK_SOURCE}/res/${APPID}.metainfo.xml" "${COOKBOOK_STAGE}/usr/shar
 mkdir -pv "${COOKBOOK_STAGE}/usr/share/icons/"
 cp -rv "${COOKBOOK_SOURCE}/res/icons/hicolor/" "${COOKBOOK_STAGE}/usr/share/icons/"
 """
+
+[package]
+shared-deps = [
+  "libgcc",
+  "gettext",
+  "glib",
+  "gstreamer",
+  "libffi",
+  "libiconv",
+  "zlib",
+]
+
