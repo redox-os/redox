@@ -22,5 +22,7 @@ COOKBOOK_CONFIGURE_FLAGS+=(
     --disable-docs \
     ac_cv_func_XML_SetDoctypeDeclHandler=yes
 )
+export V=1
+export LIBS="-lpng -lz"
 cookbook_configure
 """
