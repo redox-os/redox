@@ -24,6 +24,7 @@ dependencies = [
 template = "custom"
 script = """
 DYNAMIC_INIT
+export ICU_LIBS="-licuuc -licudata -lstdc++"
 export SDL2_LIBS="\
     -lSDL2_gfx \
     -lSDL2_image \
@@ -34,7 +35,6 @@ export SDL2_LIBS="\
     -ljpeg \
     -lpng \
     -lz \
-    -lstdc++ \
 "
 COOKBOOK_CONFIGURE_FLAGS+=(
     --disable-server
