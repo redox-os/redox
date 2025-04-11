@@ -1,0 +1,26 @@
+[source]
+tar = "http://www.ferzkopp.net/Software/SDL2_gfx/SDL2_gfx-1.0.4.tar.gz"
+blake3 = "2e9bd2dc0f004349b51418f33219ebf5cd69f25ed0ba660373652a662cbb857c"
+script = """
+wget -O config.sub "https://gitlab.redox-os.org/redox-os/gnu-config/-/raw/master/config.sub?inline=false"
+"""
+
+[build]
+dependencies = [
+    "freetype2",
+    "liborbital",
+    "libpng",
+    "llvm18",
+    "mesa",
+    "sdl2",
+    "zlib",
+]
+template = "custom"
+script = """
+DYNAMIC_INIT
+export SDL_LIBS="-lSDL2 -lorbital $("${PKG_CONFIG}" --libs osmesa) -lpng -lz -lm -lpthread -lstdc++"
+COOKBOOK_CONFIGURE_FLAGS+=(
+    --disable-sdltest
+)
+cookbook_configure
+"""
