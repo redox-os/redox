@@ -107,6 +107,9 @@ do
         cp -v "${COOKBOOK_STAGE}.toml" "$REPO/$recipe.toml"
     fi
 
+    #TODO: PUBLISH DEPENDENCIES (RECURSIVELY)
+    #grep '^depends = ' "$REPO/$recipe.toml | cut -d '[' -f2 | cut -d ']' -f1 | tr -d ','
+
     if [ -e "${COOKBOOK_STAGE}/usr/share/metainfo" ]
     then
         APPSTREAM_SOURCES["$recipe"]="${COOKBOOK_STAGE}"
