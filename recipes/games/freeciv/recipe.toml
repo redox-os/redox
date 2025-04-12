@@ -37,7 +37,6 @@ export SDL2_LIBS="\
     -lz \
 "
 COOKBOOK_CONFIGURE_FLAGS+=(
-    --disable-server
     --enable-fcdb=no
     --enable-fcmp=no
     --enable-ipv6=no
