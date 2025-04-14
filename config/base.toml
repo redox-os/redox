@@ -30,6 +30,7 @@ mkdir -m a=rwxt /tmp
 ipcd
 ptyd
 escalated
+sudo --daemon
 """
 
 [[files]]
