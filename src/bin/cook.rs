@@ -1,4 +1,5 @@
 use cookbook::blake3::blake3_progress;
+use cookbook::package::StageToml;
 use cookbook::recipe::{BuildKind, CookRecipe, PackageRecipe, Recipe, SourceRecipe};
 use cookbook::recipe_find::recipe_find;
 use std::{
@@ -552,11 +553,7 @@ fn auto_deps(stage_dir: &Path, dep_pkgars: &BTreeSet<(String, PathBuf)>) -> BTre
 
     let mut missing = needed.clone();
     // relibc and friends will always be installed
-    for preinstalled in &[
-        "libc.so.6",
-        "libgcc_s.so.1",
-        "libstdc++.so.6",
-    ] {
+    for preinstalled in &["libc.so.6", "libgcc_s.so.1", "libstdc++.so.6"] {
         missing.remove(*preinstalled);
     }
 
@@ -979,14 +976,6 @@ fn package(
         )
         .map_err(|err| format!("failed to create pkgar archive: {:?}", err))?;
 
-        //TODO: share struct with pkgutils?
-        #[derive(serde::Serialize)]
-        struct StageToml {
-            name: String,
-            version: String,
-            target: String,
-            depends: Vec<String>,
-        }
         let mut depends = package.dependencies.clone();
         for dep in auto_deps.iter() {
             if !depends.contains(dep) {
