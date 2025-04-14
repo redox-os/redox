@@ -76,7 +76,7 @@ You will use this template to insert your computer on the table.
 | Lenovo | Yoga S730-13IWL | 0.9.0 | 09-11-2024 | desktop | x86-64 | UEFI | Boots to Orbital, No trackpad or USB mouse input support |
 | Samsung | Series 3 (NP350V5C) | 0.9.0 | 04-08-2025 | desktop | x86-64 | UEFI | Boots to Orbital, touchpad works, usb does not work, can connect to the Internet through LAN. Wrong maximum display resolution 1024x768 |
 | Asus | Vivobook 15 OLED (M1503Q) | 0.9.0 | 04-08-2025 | desktop | x86-64 | UEFI | Boots to Orbital, touchpad and usb do not work, cannot connect to the internet, right maximum display resolution 2880x1620 |
-
+| HP | EliteBook Folio 9480M | 0.9.0 | 04-11-2025 | desktop | x86-64 | UEFI | Boots to Orbital, touchpad and usb work, cannot connect to the Internet, install failed, right maximum display resolution 1600x900
 ## Broken
 
 | **Vendor** | **Model** | **Redox Version** | **Image Date** | **Variant** | **CPU Architecture** | **Motherboard Firmware** | **Report** |
