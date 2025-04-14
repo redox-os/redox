@@ -8,6 +8,5 @@ cookbook_cargo
 cp -rv "${COOKBOOK_SOURCE}/res" "${COOKBOOK_STAGE}/etc"
 ln -s id "${COOKBOOK_STAGE}/usr/bin/whoami"
 chmod +s "${COOKBOOK_STAGE}/usr/bin/passwd"
-chmod +s "${COOKBOOK_STAGE}/usr/bin/sudo"
 chmod +s "${COOKBOOK_STAGE}/usr/bin/su"
 """
