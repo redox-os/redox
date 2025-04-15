@@ -1,0 +1,8 @@
+#TODO not compiled or tested
+[source]
+git = "https://github.com/mediar-ai/uniOCR"
+[build]
+template = "custom"
+script = """
+cookbook_cargo_examples basic batch_processing
+"""
