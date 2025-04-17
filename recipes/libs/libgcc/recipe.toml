@@ -3,6 +3,6 @@ template = "custom"
 script = """
 mkdir -p "${COOKBOOK_STAGE}/lib"
 cp -vr ${COOKBOOK_HOST_SYSROOT}/lib/gcc ${COOKBOOK_STAGE}/lib/
-cp -vr ${COOKBOOK_HOST_SYSROOT}/${TARGET}/lib/. ${COOKBOOK_STAGE}/lib/
-rm ${COOKBOOK_STAGE}/lib/{crt0.o,crt1.o,crti.o,crtn.o,libc.a,libc.so.6,ld64.so.1}
+cp -vr ${COOKBOOK_HOST_SYSROOT}/${GNU_TARGET}/lib/. ${COOKBOOK_STAGE}/lib/
+rm -f ${COOKBOOK_STAGE}/lib/{crt0.o,crt1.o,crti.o,crtn.o,libc.a,libc.so.6,libc.so.1,ld.so.1,ld64.so.1}
 """
