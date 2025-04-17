@@ -16,6 +16,7 @@ drivers = {}
 escalated = {}
 initfs = {}
 kernel = {}
+libgcc = {}
 relibc = {}
 uutils = {}
 
