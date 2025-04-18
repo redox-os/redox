@@ -39,7 +39,6 @@ else
 	$(HOST_CARGO) build --manifest-path installer/Cargo.toml --release
 	export PATH="$(PREFIX_PATH):$$PATH" && \
 	export COOKBOOK_HOST_SYSROOT="$(ROOT)/$(PREFIX_INSTALL)" && \
-	export COOKBOOK_PREFER_STATIC="$(PREFER_STATIC)" && \
 	PACKAGES="$$($(INSTALLER) --list-packages -c config/$(ARCH)/ci.toml)" && \
 	cd cookbook && \
 	./fetch.sh "$${PACKAGES}" && \
