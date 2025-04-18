@@ -1,6 +1,6 @@
 # Configuration file to install the recipe dependencies inside the Podman container
 
-FROM debian:bookworm-20240513-slim
+FROM debian:stable-backports
 
 # _UID_ must be replaced with the user's uid on host
 # podman root is mapped to your user id on host during build,
@@ -8,7 +8,7 @@ FROM debian:bookworm-20240513-slim
 RUN useradd --create-home --no-log-init --uid _UID_ poduser \
     && chown -R root:root /home \
     && apt-get update \
-    && apt-get install -y --no-install-recommends \        
+    && apt-get install -y --no-install-recommends -t stable-backports \
 		appstream \
 		ant \
 		autoconf \
