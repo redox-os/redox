@@ -18,19 +18,17 @@ rsync -av --delete "${COOKBOOK_SOURCE}/" ./
     install
 
 # However, distros distribute libbz2 as well so we'll support it too
-if ! [[ -n "${COOKBOOK_PREFER_STATIC}" ]]; then
-    # Linking the lib fails if we don't rebuild the objects from earlier
-    "${COOKBOOK_MAKE}" clean
+# Linking the lib fails if we don't rebuild the objects from earlier
+"${COOKBOOK_MAKE}" clean
 
-    # This DOES NOT build/clobber the binaries already built above
-    "${COOKBOOK_MAKE}" -f Makefile-libbz2_so \
-        -j"${COOKBOOK_MAKE_JOBS}" \
-        AR="${TARGET}-ar" \
-        CC="${TARGET}-gcc" \
-        PREFIX="${COOKBOOK_STAGE}" \
-        RANLIB="${TARGET}-ranlib"
+# This DOES NOT build/clobber the binaries already built above
+"${COOKBOOK_MAKE}" -f Makefile-libbz2_so \
+    -j"${COOKBOOK_MAKE_JOBS}" \
+    AR="${TARGET}-ar" \
+    CC="${TARGET}-gcc" \
+    PREFIX="${COOKBOOK_STAGE}" \
+    RANLIB="${TARGET}-ranlib"
 
-    cp -v libbz2.so.1.0.8 "${COOKBOOK_STAGE}/lib"
-    cp -v libbz2.so.1.0 "${COOKBOOK_STAGE}/lib"
-fi
+cp -v libbz2.so.1.0.8 "${COOKBOOK_STAGE}/lib"
+cp -v libbz2.so.1.0 "${COOKBOOK_STAGE}/lib"
 """

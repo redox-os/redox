@@ -16,18 +16,9 @@ script = """
 DYNAMIC_INIT
 COOKBOOK_CONFIGURE_FLAGS=(
     --host="${GNU_TARGET}"
-    --prefix=""
-)
-if [[ -n "$COOKBOOK_PREFER_STATIC" ]]; then
-  COOKBOOK_CONFIGURE_FLAGS+=(
-    --enable-static
-    --disable-shared
-  )
-else
-  COOKBOOK_CONFIGURE_FLAGS+=(
+    --prefix="/usr"
     --enable-shared
     --enable-static
-  )
-fi
+)
 cookbook_configure
 """

@@ -13,19 +13,6 @@ template = "custom"
 dependencies = ["zlib"]
 script = """
 DYNAMIC_INIT
-
-if [[ -n "${COOKBOOK_PREFER_STATIC}" ]]; then
-    COOKBOOK_CONFIGURE_FLAGS+=(
-        --enable-static
-        --disable-shared
-    )
-else
-    COOKBOOK_CONFIGURE_FLAGS+=(
-        --enable-shared
-        --enable-static
-    )
-fi
-
 cookbook_configure
 """
 

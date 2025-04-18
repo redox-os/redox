@@ -193,11 +193,7 @@ function DYNAMIC_INIT {
     done
   }
 
-  if [[ -n "$COOKBOOK_PREFER_STATIC" ]]; then
-    return
-  fi
-
-  echo "WARN: Program is being compiled dynamically."
+  echo "DEBUG: Program is being compiled dynamically."
 
   COOKBOOK_CONFIGURE_FLAGS=(
     --host="${GNU_TARGET}"
@@ -209,6 +205,7 @@ function DYNAMIC_INIT {
   # TODO: check paths for spaces
   export LDFLAGS="-L${COOKBOOK_SYSROOT}/lib"
   export RUSTFLAGS="-C target-feature=-crt-static"
+  export COOKBOOK_DYNAMIC=1
 }
 "#;
 
