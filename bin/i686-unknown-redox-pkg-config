@@ -4,9 +4,9 @@ export PKG_CONFIG_SYSROOT_DIR="${COOKBOOK_SYSROOT}"
 export PKG_CONFIG_LIBDIR="${PKG_CONFIG_SYSROOT_DIR}/lib/pkgconfig"
 export PKG_CONFIG_PATH="${PKG_CONFIG_SYSROOT_DIR}/share/pkgconfig"
 
-if [ -n "${COOKBOOK_PREFER_STATIC}" ]
+if [ -n "${COOKBOOK_DYNAMIC}" ]
 then
-    exec pkg-config --static "$@"
-else
     exec pkg-config "$@"
+else
+    exec pkg-config --static "$@"
 fi

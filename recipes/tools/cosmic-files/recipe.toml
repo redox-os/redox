@@ -10,9 +10,6 @@ dependencies = [
 ]
 script = """
 DYNAMIC_INIT
-if [[ -n "$COOKBOOK_PREFER_STATIC" ]]; then
-  export GETTEXT_STATIC=1
-fi
 export GETTEXT_DIR="${COOKBOOK_SYSROOT}"
 # Hack to link libiconv, which gettext-sys does not link
 "${COOKBOOK_CARGO}" rustc \
