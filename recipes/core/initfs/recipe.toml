@@ -5,7 +5,6 @@ git = "https://gitlab.redox-os.org/redox-os/redox-initfs.git"
 template = "custom"
 dependencies = [
   "base-initfs",
-  "bootstrap",
   "drivers-initfs",
   "redoxfs",
 ]
