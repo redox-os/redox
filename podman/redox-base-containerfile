@@ -10,6 +10,7 @@ RUN useradd --create-home --no-log-init --uid _UID_ poduser \
     && apt-get update \
     && apt-get install -y --no-install-recommends -t stable-backports \
 		appstream \
+		appstream-compose \
 		ant \
 		autoconf \
 		automake \
