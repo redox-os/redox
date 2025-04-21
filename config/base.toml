@@ -13,7 +13,6 @@ base = {}
 bootloader = {}
 bootstrap = {}
 drivers = {}
-escalated = {}
 initfs = {}
 kernel = {}
 libgcc = {}
@@ -30,7 +29,6 @@ mkdir -m a=rwxt /tmp
 
 ipcd
 ptyd
-escalated
 sudo --daemon
 """
 
