@@ -50,6 +50,7 @@ meson \
 	--cross-file cross_file.txt \
 	--buildtype release \
 	--strip \
+    -Ddefault_library=both \
 	-Dprefix=/usr \
 	-Dlibdir=lib
 ninja -C _build -v
