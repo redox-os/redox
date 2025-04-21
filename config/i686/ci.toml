@@ -9,7 +9,6 @@ prompt = false
 [packages]
 base = {}
 bootloader = {}
-bootstrap = {}
 ca-certificates = {}
 contain = {}
 coreutils = {}
