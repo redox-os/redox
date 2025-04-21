@@ -42,12 +42,3 @@ COOKBOOK_CONFIGURE_FLAGS=(
 "${COOKBOOK_MAKE}" install-gcc DESTDIR="${COOKBOOK_STAGE}"
 ln -s "gcc" "${COOKBOOK_STAGE}/bin/cc"
 """
-
-[package]
-dependencies = [
-    "libgcc",
-    "libgmp",
-    "libmpfr",
-    "mpc",
-    "zlib"
-]
