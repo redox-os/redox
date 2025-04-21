@@ -38,6 +38,6 @@ resist = {}
 smith = {}
 userutils = {}
 uutils = {}
-vim = {}
+#vim = {} # conflicting types
 
 #TODO: Add more packages
