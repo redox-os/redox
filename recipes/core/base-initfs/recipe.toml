@@ -18,4 +18,22 @@ done
 #ln -sv zerod "${COOKBOOK_STAGE}/usr/bin/nulld"
 
 cp "${COOKBOOK_STAGE}/usr/bin/zerod" "${COOKBOOK_STAGE}/usr/bin/nulld"
+
+ARCH="$(echo "${GNU_TARGET}" | cut -d - -f1)"
+cargo \
+    -Zbuild-std=core,alloc,compiler_builtins \
+    -Zbuild-std-features=compiler-builtins-mem rustc \
+    --target "${TARGET}" \
+    --manifest-path "${COOKBOOK_SOURCE}/bootstrap/Cargo.toml" \
+    --release \
+    --target-dir "${COOKBOOK_BUILD}" \
+    -- \
+    --emit link="${COOKBOOK_BUILD}/${TARGET}/release/libbootstrap.a"
+mkdir -v "${COOKBOOK_STAGE}/boot"
+"${GNU_TARGET}-ld" \
+    -o "${COOKBOOK_STAGE}/boot/bootstrap" \
+    --gc-sections \
+    -T "${COOKBOOK_SOURCE}/bootstrap/src/${ARCH}.ld" \
+    -z max-page-size=4096 \
+    "${COOKBOOK_BUILD}/${TARGET}/release/libbootstrap.a"
 """
