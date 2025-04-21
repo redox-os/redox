@@ -15,7 +15,6 @@ base = {}
 bash = {}
 binutils = {}
 bootloader = {}
-bootstrap = {}
 ca-certificates = {}
 cairo = {}
 #cairodemo = {} # linking errors
