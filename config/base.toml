@@ -11,7 +11,6 @@ prompt = false
 [packages]
 base = {}
 bootloader = {}
-bootstrap = {}
 drivers = {}
 initfs = {}
 kernel = {}
