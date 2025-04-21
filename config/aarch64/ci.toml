@@ -37,7 +37,7 @@ drivers = {}
 drivers-initfs = {}
 duktape = {}
 eduke32 = {}
-exampled = {}
+#exampled = {} # needs to use libredox
 expat = {}
 extrautils = {}
 #fal
