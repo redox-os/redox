@@ -16,7 +16,6 @@ coreutils = {}
 dash = {}
 diffutils = {}
 drivers = {}
-escalated = {}
 extrautils = {}
 findutils = {}
 hicolor-icon-theme = {}

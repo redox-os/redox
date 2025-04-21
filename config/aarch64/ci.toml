@@ -37,7 +37,6 @@ drivers = {}
 drivers-initfs = {}
 duktape = {}
 eduke32 = {}
-escalated = {}
 exampled = {}
 expat = {}
 extrautils = {}
