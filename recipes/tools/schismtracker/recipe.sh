@@ -14,7 +14,7 @@ function recipe_build {
     export LDFLAGS="-L$sysroot/lib -static"
     export SDL_CONFIG="$sysroot/bin/sdl-config"
     autoreconf -i
-    ./configure --build=${BUILD} --host=${HOST} --prefix=''
+    ./configure --build=${BUILD} --host=${HOST} --prefix='' --with-sdl-prefix="$sysroot"
     "$REDOX_MAKE" -j"$($NPROC)"
     skip=1
 }
