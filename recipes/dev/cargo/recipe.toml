@@ -27,6 +27,6 @@ export DEP_Z_ROOT="${COOKBOOK_SYSROOT}"
     -- \
     -L "${COOKBOOK_SYSROOT}/lib" \
     -C link-arg="-lnghttp2"
-mkdir -pv "${COOKBOOK_STAGE}/bin"
-cp -v "target/${TARGET}/release/cargo" "${COOKBOOK_STAGE}/bin/cargo"
+mkdir -pv "${COOKBOOK_STAGE}/usr/bin"
+cp -v "target/${TARGET}/release/cargo" "${COOKBOOK_STAGE}/usr/bin/cargo"
 """
