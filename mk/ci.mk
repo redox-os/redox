@@ -16,7 +16,9 @@ ci-img: FORCE
 # The name of the target must match the name of the filesystem config file
 server desktop demo: FORCE
 	rm -f "build/$(ARCH)/$@/harddrive.img" "build/$(ARCH)/$@/livedisk.iso"
-	$(MAKE) CONFIG_NAME=$@ build/$(ARCH)/$@/harddrive.img build/$(ARCH)/$@/livedisk.iso
+	$(MAKE) CONFIG_NAME=$@ build/$(ARCH)/$@/repo.tag
+	$(MAKE) CONFIG_NAME=$@ build/$(ARCH)/$@/harddrive.img
+	$(MAKE) CONFIG_NAME=$@ build/$(ARCH)/$@/livedisk.iso
 	cp "build/$(ARCH)/$@/harddrive.img" "$(IMG_DIR)/redox_$(@)$(IMG_SEPARATOR)$(IMG_TAG)_harddrive.img"
 	cp "build/$(ARCH)/$@/livedisk.iso" "$(IMG_DIR)/redox_$(@)$(IMG_SEPARATOR)$(IMG_TAG)_livedisk.iso"
 
