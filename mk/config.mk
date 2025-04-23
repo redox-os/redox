@@ -84,11 +84,12 @@ else
 	export GNU_TARGET=$(TARGET)
 endif
 BUILD=build/$(ARCH)/$(CONFIG_NAME)
-FSTOOLS_PATH=build/fstools/bin
-INSTALLER=$(FSTOOLS_PATH)/redox_installer
+INSTALLER=build/fstools/redox_installer
 INSTALLER_OPTS=
-LIST_PACKAGES=$(FSTOOLS_PATH)/list_packages
+LIST_PACKAGES=installer/target/release/list_packages
 LIST_PACKAGES_OPTS=
+REDOXFS=build/fstools/bin/redoxfs
+REDOXFS_MKFS=build/fstools/bin/redoxfs-mkfs
 ifeq ($(REPO_BINARY),0)
 INSTALLER_OPTS+=--cookbook=cookbook
 else

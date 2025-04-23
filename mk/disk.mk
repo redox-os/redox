@@ -34,9 +34,9 @@ $(BUILD)/filesystem.img: $(FSTOOLS_TAG) $(REPO_TAG)
 	FILESYSTEM_SIZE=$(shell $(INSTALLER) --filesystem-size -c $(FILESYSTEM_CONFIG)); \
 	fi && \
 	truncate -s "$$FILESYSTEM_SIZE"m $@.partial
-	$(FSTOOLS_PATH)/redoxfs-mkfs $(REDOXFS_MKFS_FLAGS) $@.partial
+	$(REDOXFS_MKFS) $(REDOXFS_MKFS_FLAGS) $@.partial
 	mkdir -p $(BUILD)/filesystem/
-	$(FSTOOLS_PATH)/redoxfs $@.partial $(BUILD)/filesystem/
+	$(REDOXFS) $@.partial $(BUILD)/filesystem/
 	sleep 1
 	pgrep redoxfs
 	umask 002 && $(INSTALLER) $(INSTALLER_OPTS) -c $(FILESYSTEM_CONFIG) $(BUILD)/filesystem/
@@ -47,13 +47,13 @@ $(BUILD)/filesystem.img: $(FSTOOLS_TAG) $(REPO_TAG)
 
 mount: $(FSTOOLS_TAG) FORCE
 	mkdir -p $(BUILD)/filesystem/
-	$(FSTOOLS_PATH)/redoxfs $(BUILD)/harddrive.img $(BUILD)/filesystem/
+	$(REDOXFS) $(BUILD)/harddrive.img $(BUILD)/filesystem/
 	sleep 2
 	pgrep redoxfs
 
 mount_extra: $(FSTOOLS_TAG) FORCE
 	mkdir -p $(BUILD)/filesystem/
-	$(FSTOOLS_PATH)/redoxfs $(BUILD)/extra.img $(BUILD)/filesystem/
+	$(REDOXFS) $(BUILD)/extra.img $(BUILD)/filesystem/
 	sleep 2
 	pgrep redoxfs
 
