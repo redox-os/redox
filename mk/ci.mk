@@ -17,6 +17,7 @@ ci-img: FORCE
 server desktop demo: FORCE
 	rm -f "build/$(ARCH)/$@/harddrive.img" "build/$(ARCH)/$@/livedisk.iso"
 	$(MAKE) CONFIG_NAME=$@ build/$(ARCH)/$@/harddrive.img build/$(ARCH)/$@/livedisk.iso
+	mkdir -p $(IMG_DIR)
 	cp "build/$(ARCH)/$@/harddrive.img" "$(IMG_DIR)/redox_$(@)$(IMG_SEPARATOR)$(IMG_TAG)_harddrive.img"
 	cp "build/$(ARCH)/$@/livedisk.iso" "$(IMG_DIR)/redox_$(@)$(IMG_SEPARATOR)$(IMG_TAG)_livedisk.iso"
 
