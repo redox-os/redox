@@ -7,29 +7,24 @@ $(FSTOOLS_TAG): cookbook installer redoxfs $(CONTAINER_TAG)
 ifeq ($(PODMAN_BUILD),1)
 	$(PODMAN_RUN) $(MAKE) $@
 else
+	rm -rf build/fstools
+	mkdir -p build/fstools
 	$(HOST_CARGO) build --manifest-path cookbook/Cargo.toml --release
-	$(HOST_CARGO) build --manifest-path cookbook/docgen/Cargo.toml --release
 	$(HOST_CARGO) build --manifest-path cookbook/pkgar/Cargo.toml --release
-	$(HOST_CARGO) build --bin list_packages --manifest-path installer/Cargo.toml --release
-	$(HOST_CARGO) build --manifest-path redoxfs/Cargo.toml --release --bin redoxfs --bin redoxfs-mkfs
+	$(HOST_CARGO) install --root build/fstools --path installer --bin list_packages --bin redox_installer
+	$(HOST_CARGO) install --root build/fstools --path redoxfs --bin redoxfs --bin redoxfs-mkfs
 	mkdir -p build
 	touch $@
 endif
-
-$(INSTALLER): CC = 
-$(INSTALLER): TARGET = $(HOST_TARGET)
-$(INSTALLER): RUSTUP_TOOLCHAIN = 
-$(INSTALLER): installer
-	$(HOST_CARGO) build --bin redox_installer --manifest-path installer/Cargo.toml --release
 
 fstools_clean: FORCE $(CONTAINER_TAG)
 ifeq ($(PODMAN_BUILD),1)
 	$(PODMAN_RUN) $(MAKE) $@
 else
 	$(HOST_CARGO) clean --manifest-path cookbook/Cargo.toml
-	$(HOST_CARGO) clean --manifest-path cookbook/docgen/Cargo.toml
 	$(HOST_CARGO) clean --manifest-path cookbook/pkgar/Cargo.toml
 	$(HOST_CARGO) clean --manifest-path installer/Cargo.toml
 	$(HOST_CARGO) clean --manifest-path redoxfs/Cargo.toml
+	rm -rf build/fstools
 	rm -f $(FSTOOLS_TAG)
 endif
