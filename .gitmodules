@@ -1,7 +1,3 @@
-[submodule "docgen"]
-	path = docgen
-	url = https://gitlab.redox-os.org/redox-os/docgen.git
-	branch = master
 [submodule "pkgar"]
 	path = pkgar
 	url = https://gitlab.redox-os.org/redox-os/pkgar.git
