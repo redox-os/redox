@@ -283,8 +283,6 @@ function op {
                 else
                     echo "$(tput bold)Warning$(tput sgr0): Recipe does not have any binaries" >&2
                 fi
-
-                docgen "$source" "$stage/ref"
             fi
             popd > /dev/null
             ;;

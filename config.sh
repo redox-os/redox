@@ -60,10 +60,6 @@ export STAT
 
 if [ ! "$(uname -s)" = "Redox" ]
 then
-function docgen {
-    "$ROOT/docgen/target/release/docgen" "$@"
-}
-
 function pkgar {
     "$ROOT/pkgar/target/release/pkgar" "$@"
 }
