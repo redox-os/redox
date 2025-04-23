@@ -7,26 +7,18 @@ IMG_DIR?=build/img/$(ARCH)
 # CI image target - build desktop, server and demo images
 # To leave out the build tag, set both IMG_TAG and IMG_SEPARATOR to null
 ci-img: FORCE
-ifeq ($(PODMAN_BUILD),1)
-	$(PODMAN_RUN) $(MAKE) $@
-else
 	rm -rf $(IMG_DIR)
 	mkdir -p $(IMG_DIR)
 	$(MAKE) server desktop demo
 	cd $(IMG_DIR) && zstd --rm *
 	cd $(IMG_DIR) && sha256sum -b * > SHA256SUM
-endif
 
 # The name of the target must match the name of the filesystem config file
 server desktop demo: FORCE
-ifeq ($(PODMAN_BUILD),1)
-	$(PODMAN_RUN) $(MAKE) $@
-else
 	rm -f "build/$(ARCH)/$@/harddrive.img" "build/$(ARCH)/$@/livedisk.iso"
 	$(MAKE) CONFIG_NAME=$@ build/$(ARCH)/$@/harddrive.img build/$(ARCH)/$@/livedisk.iso
 	cp "build/$(ARCH)/$@/harddrive.img" "$(IMG_DIR)/redox_$(@)$(IMG_SEPARATOR)$(IMG_TAG)_harddrive.img"
 	cp "build/$(ARCH)/$@/livedisk.iso" "$(IMG_DIR)/redox_$(@)$(IMG_SEPARATOR)$(IMG_TAG)_livedisk.iso"
-endif
 
 # CI packaging target
 ci-pkg: prefix FORCE
