@@ -110,10 +110,10 @@ ifeq ($(PODMAN_BUILD),1)
 	$(PODMAN_RUN) $(MAKE) $@
 else
 	cp -r "$(PREFIX)/relibc-install/" "$@"
-	touch "$@"
 	cd "$(PREFIX)/libtool-build" && \
 		$(MAKE) install -j `$(NPROC)`
 	cd "$@" && $(PREFIX_STRIP)
+	touch "$@"
 endif
 
 ifeq ($(PREFIX_BINARY),1)
