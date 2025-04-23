@@ -10,9 +10,9 @@ prompt = false
 
 [packages]
 base = {}
+base-initfs = {}
 bootloader = {}
 drivers = {}
-initfs = {}
 kernel = {}
 libgcc = {}
 relibc = {}
