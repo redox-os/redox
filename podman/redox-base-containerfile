@@ -16,6 +16,7 @@ RUN useradd --create-home --no-log-init --uid _UID_ poduser \
 		automake \
 		autopoint \
 		bison \
+		bsdextrautils \
 		build-essential \
 		clang \
 		cmake \
@@ -59,6 +60,7 @@ RUN useradd --create-home --no-log-init --uid _UID_ poduser \
 		protobuf-compiler \
 		python3 \
 		python3-mako \
+		python3-venv \
 		rsync \
 		scons \
 		syslinux-utils \
