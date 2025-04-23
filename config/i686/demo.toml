@@ -5,7 +5,7 @@ include = ["../desktop.toml"]
 # General settings
 [general]
 # Filesystem size in MiB
-filesystem_size = 640
+filesystem_size = 768
 
 # Package settings
 [packages]
