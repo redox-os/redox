@@ -4,17 +4,17 @@ IMG_TAG?=$(shell git describe --tags)
 IMG_SEPARATOR?=_
 IMG_DIR?=build/img/$(ARCH)
 
-# CI image target - build desktop, server and demo images
+# CI image target - build standard images
 # To leave out the build tag, set both IMG_TAG and IMG_SEPARATOR to null
 ci-img: FORCE
 	rm -rf $(IMG_DIR)
 	mkdir -p $(IMG_DIR)
-	$(MAKE) server desktop demo
+	$(MAKE) minimal minimal-net server desktop demo
 	cd $(IMG_DIR) && zstd --rm *
 	cd $(IMG_DIR) && sha256sum -b * > SHA256SUM
 
 # The name of the target must match the name of the filesystem config file
-server desktop demo: FORCE
+minimal minimal-net server desktop demo: FORCE
 	rm -f "build/$(ARCH)/$@/harddrive.img" "build/$(ARCH)/$@/livedisk.iso"
 	$(MAKE) CONFIG_NAME=$@ build/$(ARCH)/$@/harddrive.img build/$(ARCH)/$@/livedisk.iso
 	mkdir -p $(IMG_DIR)
