@@ -22,7 +22,7 @@ server desktop demo: FORCE
 	cp "build/$(ARCH)/$@/livedisk.iso" "$(IMG_DIR)/redox_$(@)$(IMG_SEPARATOR)$(IMG_TAG)_livedisk.iso"
 
 # CI packaging target
-ci-pkg: prefix FORCE
+ci-pkg: prefix $(FSTOOLS_TAG) $(CONTAINER_TAG) FORCE
 ifeq ($(PODMAN_BUILD),1)
 	$(PODMAN_RUN) $(MAKE) $@
 else
