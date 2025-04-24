@@ -27,7 +27,6 @@ ifeq ($(PODMAN_BUILD),1)
 	$(PODMAN_RUN) $(MAKE) $@
 else
 	$(HOST_CARGO) build --manifest-path cookbook/Cargo.toml --release
-	$(HOST_CARGO) build --manifest-path cookbook/docgen/Cargo.toml --release
 	$(HOST_CARGO) build --manifest-path cookbook/pkgar/Cargo.toml --release
 	$(HOST_CARGO) build --manifest-path installer/Cargo.toml --release
 	export PATH="$(PREFIX_PATH):$$PATH" && \
