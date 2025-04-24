@@ -1,37 +1,14 @@
 # Server configuration
 
-#TODO: use ../server.toml when git builds
-include = ["../net.toml"]
+include = ["../server.toml"]
+
+# Override the default settings here
 
 # General settings
 [general]
 # Filesystem size in MiB
-filesystem_size = 512
+# filesystem_size = 1024
 
 # Package settings
 [packages]
-bash = {}
-ca-certificates = {}
-contain = {}
-coreutils = {}
-curl = {}
-diffutils = {}
-extrautils = {}
-findutils = {}
-#git = {} # fails to detect endianness
-installer = {}
-ion = {}
-kibi = {}
-netdb = {}
-pkgutils = {}
-redoxfs = {}
-resist = {}
-userutils = {}
-
-[[files]]
-path = "/usr/lib/init.d/30_console"
-data = """
-inputd -A 2
-getty 2
-getty /scheme/debug/no-preserve -J
-"""
+# example = {}
