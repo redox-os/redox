@@ -15,6 +15,7 @@ bootloader = {}
 drivers = {}
 kernel = {}
 libgcc = {}
+libstdcxx = {}
 relibc = {}
 uutils = {}
 
