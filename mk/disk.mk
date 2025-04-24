@@ -1,6 +1,6 @@
 # Configuration file with the commands configuration of the Redox image
 
-$(BUILD)/harddrive.img: $(FSTOOLS_TAG) $(REPO_TAG)
+$(BUILD)/harddrive.img: $(HOST_FSTOOLS) $(REPO_TAG)
 	mkdir -p $(BUILD)
 	rm -rf $@  $@.partial
 	-$(FUMOUNT) /tmp/redox_installer || true
@@ -12,7 +12,7 @@ $(BUILD)/harddrive.img: $(FSTOOLS_TAG) $(REPO_TAG)
 	umask 002 && $(INSTALLER) $(INSTALLER_OPTS) -c $(FILESYSTEM_CONFIG) $@.partial
 	mv $@.partial $@
 
-$(BUILD)/livedisk.iso: $(FSTOOLS_TAG) $(REPO_TAG)
+$(BUILD)/livedisk.iso: $(HOST_FSTOOLS) $(REPO_TAG)
 	mkdir -p $(BUILD)
 	rm -rf $@  $@.partial
 	-$(FUMOUNT) /tmp/redox_installer || true
@@ -24,7 +24,7 @@ $(BUILD)/livedisk.iso: $(FSTOOLS_TAG) $(REPO_TAG)
 	umask 002 && $(INSTALLER) $(INSTALLER_OPTS) -c $(FILESYSTEM_CONFIG) --live $@.partial
 	mv $@.partial $@
 
-$(BUILD)/filesystem.img: $(FSTOOLS_TAG) $(REPO_TAG)
+$(BUILD)/filesystem.img: $(HOST_FSTOOLS) $(REPO_TAG)
 	mkdir -p $(BUILD)
 	-$(FUMOUNT) $(BUILD)/filesystem/ || true
 	rm -rf $@  $@.partial $(BUILD)/filesystem/
@@ -45,13 +45,13 @@ $(BUILD)/filesystem.img: $(FSTOOLS_TAG) $(REPO_TAG)
 	rm -rf $(BUILD)/filesystem/
 	mv $@.partial $@
 
-mount: $(FSTOOLS_TAG) FORCE
+mount: $(HOST_FSTOOLS) FORCE
 	mkdir -p $(BUILD)/filesystem/
 	$(REDOXFS) $(BUILD)/harddrive.img $(BUILD)/filesystem/
 	sleep 2
 	pgrep redoxfs
 
-mount_extra: $(FSTOOLS_TAG) FORCE
+mount_extra: $(HOST_FSTOOLS) FORCE
 	mkdir -p $(BUILD)/filesystem/
 	$(REDOXFS) $(BUILD)/extra.img $(BUILD)/filesystem/
 	sleep 2
