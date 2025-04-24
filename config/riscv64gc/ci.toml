@@ -23,7 +23,7 @@ installer = {}
 #installer-gui = {} # redox_syscall 0.4 not working on riscv64gc?
 ion = {}
 kernel = {}
-nano = {}
+#nano = {} # error compiling ncurses
 netdb = {}
 netsurf = {}
 netutils = {}
@@ -38,6 +38,6 @@ resist = {}
 smith = {}
 userutils = {}
 uutils = {}
-vim = {}
+#vim = {} # error compiling ncurses
 
 #TODO: Add more packages
