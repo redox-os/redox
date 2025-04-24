@@ -1,6 +1,17 @@
-diff -ruwN source/compat/terminal.c source-new/compat/terminal.c
---- source/compat/terminal.c	2017-06-04 19:08:11.000000000 -0600
-+++ source-new/compat/terminal.c	2019-07-21 19:45:59.473213941 -0600
+diff -ruwN git-2.13.1/compat/bswap.h source/compat/bswap.h
+--- git-2.13.1/compat/bswap.h	2017-06-04 19:08:11.000000000 -0600
++++ source/compat/bswap.h	2025-04-24 11:20:06.475749424 -0600
+@@ -1,3 +1,7 @@
++#if defined(__redox__)
++#include <machine/endian.h>
++#endif
++
+ /*
+  * Let's make sure we always have a sane definition for ntohl()/htonl().
+  * Some libraries define those as a function call, just to perform byte
+diff -ruwN git-2.13.1/compat/terminal.c source/compat/terminal.c
+--- git-2.13.1/compat/terminal.c	2017-06-04 19:08:11.000000000 -0600
++++ source/compat/terminal.c	2025-04-18 10:00:11.318697446 -0600
 @@ -137,6 +137,18 @@
  	return buf.buf;
  }
@@ -20,9 +31,9 @@ diff -ruwN source/compat/terminal.c source-new/compat/terminal.c
  #else
  
  char *git_terminal_prompt(const char *prompt, int echo)
-diff -ruwN source/configure source-new/configure
---- source/configure	2017-06-04 19:08:11.000000000 -0600
-+++ source-new/configure	2019-07-21 19:45:59.473213941 -0600
+diff -ruwN git-2.13.1/configure source/configure
+--- git-2.13.1/configure	2017-06-04 19:08:11.000000000 -0600
++++ source/configure	2025-04-18 10:00:11.318697446 -0600
 @@ -6156,7 +6156,7 @@
  ac_res=$ac_cv_search_getaddrinfo
  if test "$ac_res" != no; then :
@@ -32,9 +43,9 @@ diff -ruwN source/configure source-new/configure
  else
    NO_IPV6=YesPlease
  fi
-diff -ruwN source/daemon.c source-new/daemon.c
---- source/daemon.c	2017-06-04 19:08:11.000000000 -0600
-+++ source-new/daemon.c	2019-07-21 19:45:59.477213914 -0600
+diff -ruwN git-2.13.1/daemon.c source/daemon.c
+--- git-2.13.1/daemon.c	2017-06-04 19:08:11.000000000 -0600
++++ source/daemon.c	2025-04-18 10:00:11.319697447 -0600
 @@ -71,13 +71,21 @@
  	return hi->ip_address.buf;
  }
@@ -96,9 +107,9 @@ diff -ruwN source/daemon.c source-new/daemon.c
  		/* avoid splitting a message in the middle */
  		setvbuf(stderr, NULL, _IOFBF, 4096);
  
-diff -ruwN source/git-compat-util.h source-new/git-compat-util.h
---- source/git-compat-util.h	2017-06-04 19:08:11.000000000 -0600
-+++ source-new/git-compat-util.h	2019-07-23 17:32:11.157702041 -0600
+diff -ruwN git-2.13.1/git-compat-util.h source/git-compat-util.h
+--- git-2.13.1/git-compat-util.h	2017-06-04 19:08:11.000000000 -0600
++++ source/git-compat-util.h	2025-04-18 10:00:11.319697447 -0600
 @@ -1,6 +1,18 @@
  #ifndef GIT_COMPAT_UTIL_H
  #define GIT_COMPAT_UTIL_H
@@ -195,9 +206,9 @@ diff -ruwN source/git-compat-util.h source-new/git-compat-util.h
  }
  #define offset_1st_component git_offset_1st_component
  #endif
-diff -ruwN source/Makefile source-new/Makefile
---- source/Makefile	2017-06-04 19:08:11.000000000 -0600
-+++ source-new/Makefile	2019-07-21 19:45:59.477213914 -0600
+diff -ruwN git-2.13.1/Makefile source/Makefile
+--- git-2.13.1/Makefile	2017-06-04 19:08:11.000000000 -0600
++++ source/Makefile	2025-04-18 10:00:11.319697447 -0600
 @@ -979,7 +979,7 @@
  BUILTIN_OBJS += builtin/write-tree.o
  
@@ -246,9 +257,9 @@ diff -ruwN source/Makefile source-new/Makefile
  		ln -s "git-remote-http$X" "$$execdir/$$p" 2>/dev/null || \
  		cp "$$execdir/git-remote-http$X" "$$execdir/$$p" || exit; \
  	done && \
-diff -ruwN source/run-command.c source-new/run-command.c
---- source/run-command.c	2017-06-04 19:08:11.000000000 -0600
-+++ source-new/run-command.c	2019-07-21 19:45:59.477213914 -0600
+diff -ruwN git-2.13.1/run-command.c source/run-command.c
+--- git-2.13.1/run-command.c	2017-06-04 19:08:11.000000000 -0600
++++ source/run-command.c	2025-04-18 10:00:11.320697447 -0600
 @@ -120,9 +120,9 @@
  #ifndef GIT_WINDOWS_NATIVE
  static inline void dup_devnull(int to)
@@ -270,9 +281,9 @@ diff -ruwN source/run-command.c source-new/run-command.c
  
  		strbuf_reset(&buf);
  
-diff -ruwN source/setup.c source-new/setup.c
---- source/setup.c	2017-06-04 19:08:11.000000000 -0600
-+++ source-new/setup.c	2019-07-21 19:45:59.477213914 -0600
+diff -ruwN git-2.13.1/setup.c source/setup.c
+--- git-2.13.1/setup.c	2017-06-04 19:08:11.000000000 -0600
++++ source/setup.c	2025-04-18 10:00:11.320697447 -0600
 @@ -1146,11 +1146,11 @@
  /* if any standard file descriptor is missing open it to /dev/null */
  void sanitize_stdfds(void)
