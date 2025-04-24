@@ -51,7 +51,7 @@ mount: $(HOST_FSTOOLS) FORCE
 	sleep 2
 	pgrep redoxfs
 
-mount_extra: $(HOSST_FSTOOLS) FORCE
+mount_extra: $(HOST_FSTOOLS) FORCE
 	mkdir -p $(BUILD)/filesystem/
 	$(REDOXFS) $(BUILD)/extra.img $(BUILD)/filesystem/
 	sleep 2
