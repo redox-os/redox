@@ -1,0 +1,35 @@
+# Minimal network configuration
+
+include = ["../minimal-net.toml"]
+
+# Override the default settings here
+
+# General settings
+[general]
+# Filesystem size in MiB
+filesystem_size = 256
+
+# Package settings
+[packages]
+orbdata = {}
+orbital = {}
+orbterm = {}
+orbutils-background = {}
+orbutils-launcher = {}
+orbutils-orblogin = {}
+
+[[files]]
+path = "/usr/lib/init.d/20_orbital"
+data = """
+export VT 3
+orbital orblogin launcher
+unset VT
+"""
+
+# Override console config to not switch to VT 2
+[[files]]
+path = "/usr/lib/init.d/30_console"
+data = """
+getty 2
+getty /scheme/debug/no-preserve -J
+"""
