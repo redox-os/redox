@@ -84,7 +84,7 @@ else
 	export GNU_TARGET=$(TARGET)
 endif
 BUILD=build/$(ARCH)/$(CONFIG_NAME)
-INSTALLER=build/fstools/redox_installer
+INSTALLER=build/fstools/bin/redox_installer
 INSTALLER_OPTS=
 LIST_PACKAGES=installer/target/release/list_packages
 LIST_PACKAGES_OPTS=
