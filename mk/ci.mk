@@ -31,7 +31,7 @@ else
 	$(HOST_CARGO) build --manifest-path installer/Cargo.toml --release
 	export PATH="$(PREFIX_PATH):$$PATH" && \
 	export COOKBOOK_HOST_SYSROOT="$(ROOT)/$(PREFIX_INSTALL)" && \
-	PACKAGES="$$($(INSTALLER) --list-packages -c config/$(ARCH)/ci.toml)" && \
+	PACKAGES="$$($(LIST_PACKAGES) $(LIST_PACKAGES_OPTS) -c config/$(ARCH)/ci.toml)" && \
 	cd cookbook && \
 	./fetch.sh "$${PACKAGES}" && \
 	./repo.sh $(REPO_NONSTOP) "$${PACKAGES}"
