@@ -5,7 +5,7 @@ include = ["base.toml"]
 # General settings
 [general]
 # Filesystem size in MiB
-filesystem_size = 128
+filesystem_size = 160
 
 # Package settings
 [packages]
