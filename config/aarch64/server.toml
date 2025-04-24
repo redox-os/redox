@@ -1,14 +1,37 @@
 # Server configuration
 
-include = ["../server.toml"]
-
-# Override the default settings here
+#TODO: use ../server.toml when git builds
+include = ["../net.toml"]
 
 # General settings
 [general]
 # Filesystem size in MiB
-# filesystem_size = 1024
+filesystem_size = 512
 
 # Package settings
 [packages]
-# example = {}
+bash = {}
+ca-certificates = {}
+contain = {}
+coreutils = {}
+curl = {}
+diffutils = {}
+extrautils = {}
+findutils = {}
+git = {}
+installer = {}
+ion = {}
+kibi = {}
+netdb = {}
+pkgutils = {}
+redoxfs = {}
+resist = {}
+userutils = {}
+
+[[files]]
+path = "/usr/lib/init.d/30_console"
+data = """
+inputd -A 2
+getty 2
+getty /scheme/debug/no-preserve -J
+"""
