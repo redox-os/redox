@@ -8,6 +8,7 @@ prompt = false
 # Package settings
 [packages]
 base = {}
+base-initfs = {}
 bootloader = {}
 ca-certificates = {}
 contain = {}
@@ -18,7 +19,6 @@ drivers = {}
 extrautils = {}
 findutils = {}
 hicolor-icon-theme = {}
-initfs = {}
 installer = {}
 installer-gui = {}
 ion = {}
