@@ -7,6 +7,7 @@ template = "custom"
 script = """
 COOKBOOK_CONFIGURE_FLAGS+=(
     --disable-db-install
+    --disable-stripping
     --without-ada
     --without-cxx-binding
     --without-tests
