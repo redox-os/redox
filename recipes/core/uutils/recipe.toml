@@ -7,6 +7,9 @@ script = """
 cookbook_cargo --no-default-features --features feat_os_unix_redox --bin coreutils
 
 BINS=(
+    '['
+    b2sum
+    b3sum
     base32
     base64
     basename
@@ -21,6 +24,7 @@ BINS=(
     date
     dd
     #df not working, use redox coreutils
+    dir
     dircolors
     dirname
     du
@@ -34,13 +38,14 @@ BINS=(
     fold
     hashsum
     head
-    #install need gid2grp
     join
     link
     ln
     ls
+    md5sum
     mkdir
     mktemp
+    more
     mv
     nl
     numfmt
@@ -53,10 +58,21 @@ BINS=(
     pwd
     readlink
     realpath
-    relpath
     rm
     rmdir
     seq
+    sha1sum
+    sha224sum
+    sha256sum
+    sha3-224sum
+    sha3-256sum
+    sha3-384sum
+    sha3-512sum
+    sha384sum
+    sha3sum
+    sha512sum
+    shake128sum
+    shake256sum
     shred
     shuf
     sleep
@@ -68,13 +84,17 @@ BINS=(
     tail
     tee
     test
+    touch
     tr
     true
     truncate
     tsort
     unexpand
     uniq
+    unlink
+    vdir
     wc
+    yes
 )
 
 for bin in "${BINS[@]}"
