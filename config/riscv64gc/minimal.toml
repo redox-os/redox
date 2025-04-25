@@ -7,7 +7,7 @@ include = ["../minimal.toml"]
 # General settings
 [general]
 # Filesystem size in MiB
-filesystem_size = 128
+# filesystem_size = 1024
 
 # Package settings
 [packages]
