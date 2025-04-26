@@ -40,7 +40,7 @@ else
 endif
 	-$(FUMOUNT) $(BUILD)/filesystem/ || true
 	-$(FUMOUNT) /tmp/redox_installer/ || true
-	rm -rf $(BUILD)
+	rm -rf $(BUILD) $(PREFIX)
 
 distclean: $(CONTAINER_TAG)
 ifeq ($(PODMAN_BUILD),1)
