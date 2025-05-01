@@ -8,7 +8,7 @@ template = "custom"
 dependencies = [
     "cairo",
     "expat",
-    "ffmpeg6",
+    #TODO: "ffmpeg6",
     "freetype2",
     "fontconfig",
 	"gettext",
@@ -33,5 +33,14 @@ export GLIB_GENMARSHAL="$(which glib-genmarshal)"
 export GLIB_MKENUMS="$(which glib-mkenums)"
 
 cookbook_meson \
-    -Dauto_features=disabled
+    -Ddevtools=disabled \
+    -Dexamples=disabled \
+    -Dlibav=disabled \
+    -Dlibnice=disabled \
+    -Dorc=disabled \
+    -Dtests=disabled \
+    -Dtools=disabled \
+    -Dgstreamer:check=disabled \
+    -Dgstreamer:coretracers=disabled \
+    -Dgst-plugins-bad:shm=disabled
 """
