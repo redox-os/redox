@@ -794,6 +794,8 @@ function cookbook_configure {
     "${COOKBOOK_MAKE}" install DESTDIR="${COOKBOOK_STAGE}"
 }
 
+COOKBOOK_CMAKE="cmake"
+COOKBOOK_NINJA="ninja"
 function cookbook_cmake {
     cat > CMakeToolchain-x86_64.cmake <<EOF
     set(CMAKE_SYSTEM_NAME UnixPaths)
@@ -807,7 +809,7 @@ function cookbook_cmake {
     set(CMAKE_PLATFORM_USES_PATH_WHEN_NO_SONAME 1)
 EOF
 
-    cmake "${COOKBOOK_SOURCE}" \
+    "${COOKBOOK_CMAKE}" "${COOKBOOK_SOURCE}" \
         -DCMAKE_TOOLCHAIN_FILE=./CMakeToolchain-x86_64.cmake
         -DCMAKE_INSTALL_PREFIX="." \
         -DCMAKE_INSTALL_LIBDIR=lib \
@@ -821,8 +823,57 @@ EOF
         -Wno-dev \
         "${COOKBOOK_CMAKE_FLAGS[@]}"
     
-    ninja -j"${COOKBOOK_MAKE_JOBS}"
-    DESTDIR="${COOKBOOK_STAGE}" ninja install -j"${COOKBOOK_MAKE_JOBS}"
+    "${COOKBOOK_NINJA}" -j"${COOKBOOK_MAKE_JOBS}"
+    DESTDIR="${COOKBOOK_STAGE}" "${COOKBOOK_NINJA}" install -j"${COOKBOOK_MAKE_JOBS}"
+}
+
+COOKBOOK_MESON="meson"
+COOKBOOK_MESON_FLAGS=(
+    --buildtype release
+    --wrap-mode nofallback
+    --strip
+    -Dprefix=/usr
+)
+function cookbook_meson {
+    echo "[binaries]" > cross_file.txt
+    echo "c = '${CC}'" >> cross_file.txt
+    echo "cpp = '${CXX}'" >> cross_file.txt
+    echo "ar = '${AR}'" >> cross_file.txt
+    echo "strip = '${STRIP}'" >> cross_file.txt
+    echo "pkg-config = '${PKG_CONFIG}'" >> cross_file.txt
+    echo "llvm-config = '${TARGET}-llvm-config'" >> cross_file.txt
+
+    echo "[host_machine]" >> cross_file.txt
+    echo "system = 'redox'" >> cross_file.txt
+    echo "cpu_family = '$(echo "${TARGET}" | cut -d - -f1)'" >> cross_file.txt
+    echo "cpu = '$(echo "${TARGET}" | cut -d - -f1)'" >> cross_file.txt
+    echo "endian = 'little'" >> cross_file.txt
+
+    echo "[properties]" >> cross_file.txt
+    echo "needs_exe_wrapper = true" >> cross_file.txt
+    echo "sys_root = '${COOKBOOK_SYSROOT}'" >> cross_file.txt
+
+    unset AR
+    unset AS
+    unset CC
+    unset CXX
+    unset LD
+    unset NM
+    unset OBJCOPY
+    unset OBJDUMP
+    unset PKG_CONFIG
+    unset RANLIB
+    unset READELF
+    unset STRIP
+
+    "${COOKBOOK_MESON}" setup \
+        "${COOKBOOK_SOURCE}" \
+        . \
+        --cross-file cross_file.txt \
+        "${COOKBOOK_MESON_FLAGS[@]}" \
+        "$@"
+    "${COOKBOOK_NINJA}" -j"${COOKBOOK_MAKE_JOBS}"
+    DESTDIR="${COOKBOOK_STAGE}" "${COOKBOOK_NINJA}" install -j"${COOKBOOK_MAKE_JOBS}"
 }
 
 "#;
