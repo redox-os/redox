@@ -16,7 +16,7 @@ dependencies = [
     "mesa",
     "nghttp2",
     "openssl1",
-    "pcre",
+    "pcre2",
     "pixman",
     "sdl2",
     "sdl2-image",
