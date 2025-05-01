@@ -10,7 +10,7 @@ dependencies = [
     "glib",
     "libiconv",
     "libpng",
-    "pcre",
+    "pcre2",
     "zlib"
 ]
 script = """
