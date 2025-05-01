@@ -11,50 +11,12 @@ dependencies = [
     "gettext",
     "libffi",
     "libiconv",
-    "pcre",
+    "pcre2",
     "zlib",
 ]
 script = """
 DYNAMIC_INIT
-
-#TODO: do this in cook instead
-unset AR AS CC CXX LD NM OBJCOPY OBJDUMP RANLIB READELF STRIP
-
-#export CFLAGS="-I${COOKBOOK_SYSROOT}/include"
-#export CPPFLAGS="-I${COOKBOOK_SYSROOT}/include"
-#export LDFLAGS="-L${COOKBOOK_SYSROOT}/lib --static"
-
-# TODO: Fix this annoying shite
-echo "[binaries]" > cross_file.txt
-echo "c = '${TARGET}-gcc'" >> cross_file.txt
-echo "cpp = '${TARGET}-g++'" >> cross_file.txt
-echo "ar = '${TARGET}-ar'" >> cross_file.txt
-echo "strip = '${TARGET}-strip'" >> cross_file.txt
-echo "pkg-config = '${TARGET}-pkg-config'" >> cross_file.txt
-
-echo "[host_machine]" >> cross_file.txt
-echo "system = 'redox'" >> cross_file.txt
-echo "cpu_family = '$(echo "${TARGET}" | cut -d - -f1)'" >> cross_file.txt
-echo "cpu = '$(echo "${TARGET}" | cut -d - -f1)'" >> cross_file.txt
-echo "endian = 'little'" >> cross_file.txt
-
-echo "[paths]" >> cross_file.txt
-echo "prefix = '/usr'" >> cross_file.txt
-echo "libdir = 'lib'" >> cross_file.txt
-echo "bindir = 'bin'" >> cross_file.txt
-
-echo "[properties]" >> cross_file.txt
-echo "needs_exe_wrapper = true" >> cross_file.txt
-
-meson \
-    setup \
-    "${COOKBOOK_SOURCE}" \
-    . \
-    --cross-file cross_file.txt \
-    --buildtype release \
-    --strip \
+cookbook_meson \
     -Ddefault_library=shared \
     -Dxattr=false
-ninja -v
-DESTDIR="${COOKBOOK_STAGE}" ninja install
 """
