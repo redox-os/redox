@@ -10,10 +10,11 @@ dependencies = [
     "gettext",
     "glib",
     "libiconv",
-    "pcre",
+    "pcre2",
 ]
 template = "custom"
 script = """
 DYNAMIC_INIT
+export LIBS="-lpcre2-8"
 cookbook_configure
 """
