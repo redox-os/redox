@@ -5,7 +5,8 @@ patches = [
 	"redox.patch"
 ]
 script = """
-wget -O config.sub "https://gitlab.redox-os.org/redox-os/gnu-config/-/raw/master/config.sub?inline=false"
+DYNAMIC_INIT
+autotools_recursive_regenerate
 """
 
 [build]
