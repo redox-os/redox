@@ -4,6 +4,20 @@ blake3 = "8220c0e4082fa26c07b10bfe31f641d2e33ebe1d1bb0b20221b7016bc8b78a3a"
 patches = [
     "redox.patch"
 ]
+script = """
+DYNAMIC_INIT
+autotools_recursive_regenerate
+"""
 
 [build]
-template = "configure"
+template = "custom"
+script = """
+DYNAMIC_INIT
+COOKBOOK_CONFIGURE_FLAGS=(
+    --host="${GNU_TARGET}"
+    --prefix="/usr"
+    --enable-shared
+    --enable-static
+)
+cookbook_configure
+"""
