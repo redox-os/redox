@@ -1,6 +1,11 @@
 [source]
 tar = "https://download.gnome.org/sources/libxml2/2.11/libxml2-2.11.3.tar.xz"
 blake3 = "0653d3750576299c4cb88740942165671b576ff93019f3d669b3f37136225ab7"
+script = """
+DYNAMIC_INIT
+autotools_recursive_regenerate
+"""
+
 [build]
 template = "custom"
 dependencies = [
@@ -8,7 +13,12 @@ dependencies = [
     "zlib"
 ]
 script = """
-COOKBOOK_CONFIGURE_FLAGS+=(
+DYNAMIC_INIT
+COOKBOOK_CONFIGURE_FLAGS=(
+    --host="${GNU_TARGET}"
+    --prefix="/usr"
+    --enable-shared
+    --enable-static
     --without-python
 )
 cookbook_configure
