@@ -1,12 +1,14 @@
-diff -ruwN source/configure source-new/configure
---- source/configure	2015-10-12 13:14:13.000000000 -0600
-+++ source-new/configure	2019-07-16 17:31:27.949906081 -0600
-@@ -19323,7 +19323,7 @@
- fi
+diff -ruwN pango-1.56.3/meson.build source/meson.build
+--- pango-1.56.3/meson.build	2025-03-16 05:45:47.000000000 -0600
++++ source/meson.build	2025-05-01 13:51:05.834742120 -0600
+@@ -551,8 +551,8 @@
+ pango_inc = include_directories('pango')
  
- # Setup GLIB_MKENUMS to use glib-mkenums even if GLib is uninstalled.
--GLIB_MKENUMS=`$PKG_CONFIG --variable=glib_mkenums glib-2.0`
-+#GLIB_MKENUMS=`$PKG_CONFIG --variable=glib_mkenums glib-2.0`
- 
- 
- #
+ subdir('pango')
+-subdir('utils')
+-subdir('tools')
++#TODO: fails to build on Redox: subdir('utils')
++#TODO: fails to build on Redox: subdir('tools')
+ subdir('docs')
+ if get_option('build-testsuite')
+   subdir('tests')
