@@ -1,6 +1,6 @@
 [source]
-tar = "https://www.freedesktop.org/software/fontconfig/release/fontconfig-2.14.2.tar.xz"
-blake3 = "dc342745b8e19ecda458464a9df7cf1266d0af759b230d07f43964b34ca86581"
+tar = "https://www.freedesktop.org/software/fontconfig/release/fontconfig-2.16.0.tar.xz"
+blake3 = "5c95d48f5b9150f4a06d8acac12c25edaac956007df95a3bf527df02a5908f0e"
 patches = [
 	"redox.patch"
 ]
