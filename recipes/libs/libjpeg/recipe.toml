@@ -1,5 +1,20 @@
 [source]
 tar = "https://ijg.org/files/jpegsrc.v9e.tar.gz"
 blake3 = "f0d6072e15de609397cbd8428758d7054dd921dc448018111e3822b17bcbcc5d"
+script = """
+DYNAMIC_INIT
+autotools_recursive_regenerate
+"""
+
 [build]
-template = "configure"
+template = "custom"
+script = """
+DYNAMIC_INIT
+COOKBOOK_CONFIGURE_FLAGS=(
+    --host="${GNU_TARGET}"
+    --prefix="/usr"
+    --enable-shared
+    --enable-static
+)
+cookbook_configure
+"""
