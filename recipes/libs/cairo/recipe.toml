@@ -1,11 +1,6 @@
 [source]
-tar = "https://www.cairographics.org/releases/cairo-1.16.0.tar.xz"
-blake3 = "33e88a21de1fa52405f3952647b3bfd21d5d9d394e1abbc9ddb050a8ca09e35a"
-script = """
-#Workaround to disable the not redox compatible tests
-printf "all:\n\ninstall:\n" > ./test/Makefile.in
-printf "all:\n\ninstall:\n" > ./perf/Makefile.in
-"""
+tar = "https://www.cairographics.org/releases/cairo-1.18.4.tar.xz"
+blake3 = "b9fa14e02f85ec4e72396c62236c98502d04dbbdf8daf01ab9557a1c7aa7106e"
 
 [build]
 dependencies = [
@@ -19,11 +14,10 @@ dependencies = [
 template = "custom"
 script = """
 DYNAMIC_INIT
-export CFLAGS="-DCAIRO_NO_MUTEX=1"
-COOKBOOK_CONFIGURE_FLAGS+=(
-    --enable-xlib=no
-    --enable-script=no
-    --enable-interpreter=no
-)
-cookbook_configure
+#TODO: fix mutex implementation
+#TODO: why are math defines missing?
+#TODO: why is -lexpat not automatic?
+cookbook_meson \
+    -Dc_args="-DCAIRO_NO_MUTEX=1 -DM_SQRT2=1.41421356237309504880 -DM_LN2=0.69314718055994530942 -lexpat" \
+    -Dtests=disabled
 """
