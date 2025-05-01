@@ -12,4 +12,15 @@ msgfmt --xml \
     -d "${COOKBOOK_SOURCE}/po" \
     -o "${COOKBOOK_STAGE}/usr/share/mime/packages/freedesktop.org.xml"
 update-mime-database -V "${COOKBOOK_STAGE}/usr/share/mime"
+mkdir -p "${COOKBOOK_STAGE}/usr/share/pkgconfig"
+cat > "${COOKBOOK_STAGE}/usr/share/pkgconfig/shared-mime-info.pc" <<EOF
+prefix=/usr
+
+Name: shared-mime-info
+Description: Freedesktop common MIME database
+Version: 2.4
+Requires:
+Libs:
+Cflags:
+EOF
 """
