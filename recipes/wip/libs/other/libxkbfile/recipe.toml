@@ -1,8 +1,0 @@
-#TODO missing kbproto package
-[source]
-tar = "https://www.x.org/releases/individual/lib/libxkbfile-1.1.2.tar.xz"
-[build]
-template = "configure"
-dependencies =[
-    "libx11",
-]
