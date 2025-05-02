@@ -1,0 +1,12 @@
+[source]
+git = "https://gitlab.freedesktop.org/xorg/xserver.git"
+
+[build]
+dependencies = [
+    "libx11",
+]
+template = "custom"
+script = """
+DYNAMIC_INIT
+cookbook_meson
+"""
