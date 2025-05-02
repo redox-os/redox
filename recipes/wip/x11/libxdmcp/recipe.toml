@@ -1,0 +1,17 @@
+[source]
+tar = "https://www.x.org/releases/individual/lib/libXdmcp-1.1.5.tar.xz"
+blake3 = "d93c5ceb04019228ee6f034c4d10826025a7ae756d7b2f884fc2f768577173ba"
+script = """
+DYNAMIC_INIT
+autotools_recursive_regenerate
+"""
+
+[build]
+dependencies = [
+    "x11proto"
+]
+template = "custom"
+script = """
+DYNAMIC_INIT
+cookbook_configure
+"""
