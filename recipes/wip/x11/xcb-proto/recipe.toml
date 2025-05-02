@@ -3,8 +3,4 @@ tar = "https://xorg.freedesktop.org/archive/individual/proto/xcb-proto-1.17.0.ta
 blake3 = "68187400fded667f60b4b020d0fc37fa489ae0de33169fe7b07fcbaf88e7a3f9"
 
 [build]
-template = "custom"
-script = """
-DYNAMIC_INIT
-cookbook_configure
-"""
+template = "configure"
