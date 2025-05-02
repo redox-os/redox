@@ -789,7 +789,7 @@ COOKBOOK_CONFIGURE_FLAGS=(
 COOKBOOK_MAKE="make"
 COOKBOOK_MAKE_JOBS="$(nproc)"
 function cookbook_configure {
-    "${COOKBOOK_CONFIGURE}" "${COOKBOOK_CONFIGURE_FLAGS[@]}"
+    "${COOKBOOK_CONFIGURE}" "${COOKBOOK_CONFIGURE_FLAGS[@]}" "$@"
     "${COOKBOOK_MAKE}" -j "${COOKBOOK_MAKE_JOBS}"
     "${COOKBOOK_MAKE}" install DESTDIR="${COOKBOOK_STAGE}"
 }
@@ -821,7 +821,8 @@ EOF
         -DENABLE_STATIC=False \
         -GNinja \
         -Wno-dev \
-        "${COOKBOOK_CMAKE_FLAGS[@]}"
+        "${COOKBOOK_CMAKE_FLAGS[@]}" \
+        "$@"
     
     "${COOKBOOK_NINJA}" -j"${COOKBOOK_MAKE_JOBS}"
     DESTDIR="${COOKBOOK_STAGE}" "${COOKBOOK_NINJA}" install -j"${COOKBOOK_MAKE_JOBS}"
