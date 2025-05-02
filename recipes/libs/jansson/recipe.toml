@@ -1,6 +1,14 @@
 [source]
 tar = "https://github.com/akheron/jansson/releases/download/v2.10/jansson-2.10.tar.gz"
 blake3 = "3c74f374a6c7ac5e323f72d87e49e5309ca922ca26cfe4992873b31f28776624"
+script = """
+DYNAMIC_INIT
+autotools_recursive_regenerate
+"""
 
 [build]
-template = "configure"
+template = "custom"
+script = """
+DYNAMIC_INIT
+cookbook_configure
+"""
