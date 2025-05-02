@@ -1,5 +1,7 @@
-#TODO compiled but not tested
 [source]
-tar = "https://www.x.org/releases/individual/proto/xorgproto-2023.2.tar.xz"
+tar = "https://www.x.org/releases/individual/proto/xorgproto-2024.1.tar.xz"
+blake3 = "fad667bb04e16dca5e816969f2641bb075929cd73564114cc1aabd87d1975dd3"
+patches = ["redox.patch"]
+
 [build]
 template = "configure"
