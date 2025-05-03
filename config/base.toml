@@ -67,7 +67,7 @@ symlink = true
 path = "/etc/pkg.d/50_redox"
 data = "https://static.redox-os.org/pkg"
 
-## Symlinks for usrmerge
+## /usr and symlinks for usrmerge
 [[files]]
 path = "/usr"
 data = ""
@@ -123,6 +123,43 @@ mode = 0o755
 path = "/share"
 data = "usr/share"
 symlink = true
+
+## /var
+[[files]]
+path = "/var"
+data = ""
+directory = true
+mode = 0o755
+
+[[files]]
+path = "/var/cache"
+data = ""
+directory = true
+mode = 0o755
+
+[[files]]
+path = "/var/lib"
+data = ""
+directory = true
+mode = 0o755
+
+[[files]]
+path = "/var/lock"
+data = ""
+directory = true
+mode = 0o1777
+
+[[files]]
+path = "/var/log"
+data = ""
+directory = true
+mode = 0o755
+
+[[files]]
+path = "/var/tmp"
+data = ""
+directory = true
+mode = 0o1777
 
 ## Device file symlinks
 [[files]]
