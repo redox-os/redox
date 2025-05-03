@@ -9,10 +9,11 @@ RUN useradd --create-home --no-log-init --uid _UID_ poduser \
     && chown -R root:root /home \
     && apt-get update \
     && apt-get install -y --no-install-recommends -t stable-backports \
+		ant \
 		appstream \
 		appstream-compose \
-		ant \
 		autoconf \
+		autoconf2.69 \
 		automake \
 		autopoint \
 		bison \
@@ -23,6 +24,7 @@ RUN useradd --create-home --no-log-init --uid _UID_ poduser \
 		curl \
 		dos2unix \
 		doxygen \
+		expect \
 		file \
 		flex \
 		fuse3 \
@@ -31,12 +33,12 @@ RUN useradd --create-home --no-log-init --uid _UID_ poduser \
 		git \
 		git-lfs \
 		gperf \
-		expect \
+		help2man \
 		intltool \
 		libc6-dev-i386 \
 		libexpat-dev \
-		libfuse3-dev \
 		libfontconfig1-dev \
+		libfuse3-dev \
 		libgmp-dev \
 		libhtml-parser-perl \
 		libjpeg-dev \
@@ -53,8 +55,8 @@ RUN useradd --create-home --no-log-init --uid _UID_ poduser \
 		meson \
 		nasm \
 		ninja-build \
-		ssh \
 		patch \
+		patchelf \
 		perl \
 		pkg-config \
 		po4a \
@@ -64,15 +66,15 @@ RUN useradd --create-home --no-log-init --uid _UID_ poduser \
 		python3-venv \
 		rsync \
 		scons \
+		ssh \
 		syslinux-utils \
 		texinfo \
 		unzip \
 		wget \
 		xdg-utils \
+		xfonts-utils \
+		xutils-dev \
 		xxd \
 		zip \
 		zlib1g-dev \
-		zstd \
-		help2man \
-		autoconf2.69 \
-    	patchelf
+		zstd
