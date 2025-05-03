@@ -1,12 +1,39 @@
 [source]
-git = "https://gitlab.freedesktop.org/xorg/xserver.git"
+tar = "https://www.x.org/releases/individual/xserver/xorg-server-21.1.16.tar.xz"
+blake3 = "b47c68a0a8bc5b69143d95440fbf75c17245ba8bc2c28a8d9619d8c6890dca58"
 
 [build]
 dependencies = [
+    "font-util",
+    "freetype2",
+    "libfontenc",
+    "libpng",
+    "libpthread-stubs",
+    #TODO: used for secure-rpc, needs syslog: "libtirpc",
     "libx11",
+    "libxau",
+    "libxcb",
+    "libxcvt",
+    "libxdmcp",
+    "libxfont2",
+    "libxkbfile",
+    "openssl1",
+    "pixman",
+    "x11proto",
+    "xtrans",
+    "zlib",
 ]
 template = "custom"
 script = """
 DYNAMIC_INIT
-cookbook_meson
+cookbook_meson \
+    -Dglamor=false \
+    -Dglx=false \
+    -Dint10=false \
+    -Dpciaccess=false \
+    -Dsecure-rpc=false \
+    -Dudev=false \
+    -Dudev_kms=false \
+    -Dvgahw=false \
+    -Dxvfb=false
 """

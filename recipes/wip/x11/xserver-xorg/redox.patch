@@ -1,0 +1,106 @@
+diff -ruwN xorg-server-21.1.16/hw/xfree86/common/xf86Xinput.c source/hw/xfree86/common/xf86Xinput.c
+--- xorg-server-21.1.16/hw/xfree86/common/xf86Xinput.c	2025-02-25 11:56:05.000000000 -0700
++++ source/hw/xfree86/common/xf86Xinput.c	2025-05-02 21:02:40.793658883 -0600
+@@ -860,8 +860,10 @@
+     if (stat(path, &st) == -1)
+         return;
+ 
++    /*TODO
+     *maj = major(st.st_rdev);
+     *min = minor(st.st_rdev);
++    */
+ }
+ 
+ static inline InputDriverPtr
+diff -ruwN xorg-server-21.1.16/hw/xfree86/loader/meson.build source/hw/xfree86/loader/meson.build
+--- xorg-server-21.1.16/hw/xfree86/loader/meson.build	2025-02-25 11:56:05.000000000 -0700
++++ source/hw/xfree86/loader/meson.build	2025-05-02 21:04:23.471556735 -0600
+@@ -10,7 +10,7 @@
+     c_args: xorg_c_args,
+ )
+ 
+-xorg_symbol_test = executable('xorg_symbol_test',
+-    'symbol-test.c',
+-    dependencies: dl_dep,
+-)
++# xorg_symbol_test = executable('xorg_symbol_test',
++#     'symbol-test.c',
++#     dependencies: dl_dep,
++# )
+diff -ruwN xorg-server-21.1.16/hw/xfree86/meson.build source/hw/xfree86/meson.build
+--- xorg-server-21.1.16/hw/xfree86/meson.build	2025-02-25 11:56:05.000000000 -0700
++++ source/hw/xfree86/meson.build	2025-05-03 07:41:18.150897775 -0600
+@@ -171,13 +171,13 @@
+     )
+ endif
+ 
+-executable('gtf',
+-    'utils/gtf/gtf.c',
+-    include_directories: [inc, xorg_inc],
+-    dependencies: xorg_deps,
+-    c_args: xorg_c_args,
+-    install: true,
+-)
++# executable('gtf',
++#     'utils/gtf/gtf.c',
++#     include_directories: [inc, xorg_inc],
++#     dependencies: xorg_deps,
++#     c_args: xorg_c_args,
++#     install: true,
++# )
+ 
+ # For symbol presence testing only
+ xorgserver_lib = shared_library(
+diff -ruwN xorg-server-21.1.16/hw/xfree86/os-support/shared/sigio.c source/hw/xfree86/os-support/shared/sigio.c
+--- xorg-server-21.1.16/hw/xfree86/os-support/shared/sigio.c	2025-02-25 11:56:05.000000000 -0700
++++ source/hw/xfree86/os-support/shared/sigio.c	2025-05-02 21:18:55.324285513 -0600
+@@ -196,11 +196,12 @@
+                         fd, strerror(errno));
+             }
+             else {
++                /*TODO
+                 if (fcntl(fd, F_SETOWN, getpid()) == -1) {
+                     xf86Msg(X_WARNING, "fcntl(%d, F_SETOWN): %s\n",
+                             fd, strerror(errno));
+                 }
+-                else {
++                else*/{
+                     installed = TRUE;
+                 }
+             }
+diff -ruwN xorg-server-21.1.16/hw/xfree86/os-support/xf86_OSlib.h source/hw/xfree86/os-support/xf86_OSlib.h
+--- xorg-server-21.1.16/hw/xfree86/os-support/xf86_OSlib.h	2025-02-25 11:56:05.000000000 -0700
++++ source/hw/xfree86/os-support/xf86_OSlib.h	2025-05-02 20:59:02.771895236 -0600
+@@ -176,7 +176,7 @@
+ /**************************************************************************/
+ /* Linux or Glibc-based system                                            */
+ /**************************************************************************/
+-#if defined(__linux__) || defined(__GLIBC__) || defined(__CYGWIN__)
++#if defined(__linux__) || defined(__GLIBC__) || defined(__CYGWIN__) || defined(__redox__)
+ #include <sys/ioctl.h>
+ #include <signal.h>
+ #include <stdlib.h>
+diff -ruwN xorg-server-21.1.16/meson.build source/meson.build
+--- xorg-server-21.1.16/meson.build	2025-02-25 11:56:05.000000000 -0700
++++ source/meson.build	2025-05-03 07:37:30.195677585 -0600
+@@ -753,7 +753,7 @@
+ subdir('hw')
+ 
+ if host_machine.system() != 'windows'
+-    subdir('test')
++  #subdir('test')
+ endif
+ 
+ install_man(configure_file(
+diff -ruwN xorg-server-21.1.16/os/access.c source/os/access.c
+--- xorg-server-21.1.16/os/access.c	2025-02-25 11:56:05.000000000 -0700
++++ source/os/access.c	2025-05-02 17:32:45.822594681 -0600
+@@ -120,7 +120,7 @@
+ #include <sys/un.h>
+ #endif
+ 
+-#if defined(SVR4) ||  (defined(SYSV) && defined(__i386__)) || defined(__GNU__)
++#if defined(SVR4) ||  (defined(SYSV) && defined(__i386__)) || defined(__GNU__) || defined(__redox__)
+ #include <sys/utsname.h>
+ #endif
+ #if defined(SYSV) &&  defined(__i386__)
