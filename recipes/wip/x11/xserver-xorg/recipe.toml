@@ -1,6 +1,7 @@
 [source]
 tar = "https://www.x.org/releases/individual/xserver/xorg-server-21.1.16.tar.xz"
 blake3 = "b47c68a0a8bc5b69143d95440fbf75c17245ba8bc2c28a8d9619d8c6890dca58"
+patches = ["redox.patch"]
 
 [build]
 dependencies = [
