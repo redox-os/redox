@@ -8,7 +8,15 @@ autotools_recursive_regenerate
 
 [build]
 dependencies = [
+    "libice",
+    "libpthread-stubs",
+    "libsm",
     "libx11",
+    "libxau",
+    "libxcb",
+    "libxext",
+    "libxmu",
+    "libxpm",
     "libxt",
     "x11proto",
 ]
