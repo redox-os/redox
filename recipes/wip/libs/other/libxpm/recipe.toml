@@ -1,9 +1,0 @@
-#TODO directory error
-[source]
-tar = "https://www.x.org/releases/individual/lib/libXpm-3.5.17.tar.xz"
-[build]
-template = "configure"
-dependencies = [
-    "libx11",
-    "x11proto",
-]
