@@ -1,5 +1,0 @@
-#TODO missing xorg-macros package
-[source]
-tar = "https://www.x.org/releases/individual/lib/libXrender-0.9.11.tar.xz"
-[build]
-template = "configure"
