@@ -7,7 +7,12 @@ dependencies = [
 	"expat",
 	"freetype2",
 	"fontconfig",
+    "gettext",
+    "glib",
+    "libffi",
+    "libiconv",
 	"libpng",
+    "pcre2",
 	"pixman",
 	"zlib",
 ]
