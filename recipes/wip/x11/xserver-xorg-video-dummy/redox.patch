@@ -1,0 +1,189 @@
+diff -ruwN xf86-video-dummy-0.4.1/src/dummy_driver.c source/src/dummy_driver.c
+--- xf86-video-dummy-0.4.1/src/dummy_driver.c	2023-05-07 14:27:44.000000000 -0600
++++ source/src/dummy_driver.c	2025-05-04 14:35:07.315812927 -0600
+@@ -52,6 +52,8 @@
+ static void     DUMMYLeaveVT(VT_FUNC_ARGS_DECL);
+ static Bool     DUMMYCloseScreen(CLOSE_SCREEN_ARGS_DECL);
+ static Bool     DUMMYCreateWindow(WindowPtr pWin);
++static void     DUMMYCopyWindow(WindowPtr pWin, DDXPointRec ptOldOrg, RegionPtr prgnSrc);
++static void     DUMMYPaintWindow(WindowPtr pWin, RegionPtr prgn, int what);
+ static void     DUMMYFreeScreen(FREE_SCREEN_ARGS_DECL);
+ static ModeStatus DUMMYValidMode(SCRN_ARG_TYPE arg, DisplayModePtr mode,
+                                  Bool verbose, int flags);
+@@ -776,7 +778,6 @@
+     DUMMYPtr dPtr;
+     int ret;
+     VisualPtr visual;
+-    void *pixels;
+ 
+     /*
+      * we need to get the ScrnInfoRec for this screen, so let's allocate
+@@ -786,9 +787,20 @@
+     dPtr = DUMMYPTR(pScrn);
+     DUMMYScrn = pScrn;
+ 
++    if (pScrn->bitsPerPixel != 32) {
++        printf("unsupported BPP %d\n", pScrn->bitsPerPixel);
++        return FALSE;
++    }
+ 
+-    if (!(pixels = malloc(pScrn->videoRam * 1024)))
++    printf(
++        "orb_window_new %d, %d\n",
++        pScrn->virtualX, pScrn->virtualY
++    );
++    dPtr->orb_window = orb_window_new(-1, -1, pScrn->virtualX, pScrn->virtualY, "X11");
++    if (!dPtr->orb_window) {
++        printf("failed to open orbital window\n");
+ 	return FALSE;
++    }
+ 
+     /*
+      * Reset visual list.
+@@ -800,12 +812,10 @@
+     if (!miSetVisualTypes(pScrn->depth,
+                           miGetDefaultVisualMask(pScrn->depth),
+                           pScrn->rgbBits, pScrn->defaultVisual)) {
+-        free(pixels);
+         return FALSE;
+     }
+ 
+     if (!miSetPixmapDepths ()) {
+-        free(pixels);
+         return FALSE;
+     }
+ 
+@@ -813,7 +823,7 @@
+      * Call the framebuffer layer's ScreenInit function, and fill in other
+      * pScreen fields.
+      */
+-    ret = fbScreenInit(pScreen, pixels,
++    ret = fbScreenInit(pScreen, orb_window_data(dPtr->orb_window),
+ 			    pScrn->virtualX, pScrn->virtualY,
+ 			    pScrn->xDpi, pScrn->yDpi,
+ 			    pScrn->displayWidth, pScrn->bitsPerPixel);
+@@ -947,6 +957,14 @@
+     dPtr->CreateWindow = pScreen->CreateWindow;
+     pScreen->CreateWindow = DUMMYCreateWindow;
+ 
++    /* Wrap the current CopyWindow function */
++    dPtr->CopyWindow = pScreen->CopyWindow;
++    pScreen->CopyWindow = DUMMYCopyWindow;
++
++    /* Wrap the current PaintWindow function */
++    dPtr->PaintWindow = pScreen->PaintWindow;
++    pScreen->PaintWindow = DUMMYPaintWindow;
++
+     /* Report any unused options (only for the first generation) */
+     if (serverGeneration == 1) {
+ 	xf86ShowUnusedOptions(pScrn->scrnIndex, pScrn->options);
+@@ -975,7 +993,10 @@
+     ScrnInfoPtr pScrn = xf86ScreenToScrn(pScreen);
+     DUMMYPtr dPtr = DUMMYPTR(pScrn);
+ 
+-    free(pScreen->GetScreenPixmap(pScreen)->devPrivate.ptr);
++    if (dPtr->orb_window) {
++        orb_window_destroy(dPtr->orb_window);
++        dPtr->orb_window = NULL;
++    }
+ 
+     if (dPtr->CursorInfo)
+ 	xf86DestroyCursorInfoRec(dPtr->CursorInfo);
+@@ -1009,6 +1030,14 @@
+ Atom VFB_PROP  = 0;
+ #define  VFB_PROP_NAME  "VFB_IDENT"
+ 
++static void DUMMYSync(DUMMYPtr dPtr) {
++    //TODO: send damage?
++    if (dPtr->orb_window) {
++        printf("SYNC\n");
++        orb_window_sync(dPtr->orb_window);
++    }
++}
++
+ static Bool
+ DUMMYCreateWindow(WindowPtr pWin)
+ {
+@@ -1018,10 +1047,13 @@
+     int ret;
+ 
+     pScreen->CreateWindow = dPtr->CreateWindow;
++    printf("CreateWindow %p\n", pWin);
+     ret = pScreen->CreateWindow(pWin);
+     dPtr->CreateWindow = pScreen->CreateWindow;
+     pScreen->CreateWindow = DUMMYCreateWindow;
+ 
++    DUMMYSync(dPtr);
++
+     if(ret != TRUE)
+ 	return(ret);
+ 	
+@@ -1046,6 +1078,38 @@
+     return TRUE;
+ }
+ 
++static void
++DUMMYCopyWindow(WindowPtr pWin, DDXPointRec ptOldOrg, RegionPtr prgnSrc)
++{
++    ScreenPtr pScreen = pWin->drawable.pScreen;
++    DUMMYPtr dPtr = DUMMYPTR(DUMMYScrn);
++    WindowPtr pWinRoot;
++
++    pScreen->CopyWindow = dPtr->CopyWindow;
++    printf("CopyWindow %p\n", pWin);
++    pScreen->CopyWindow(pWin, ptOldOrg, prgnSrc);
++    dPtr->CopyWindow = pScreen->CopyWindow;
++    pScreen->CopyWindow = DUMMYCopyWindow;
++
++    DUMMYSync(dPtr);
++}
++
++static void
++DUMMYPaintWindow(WindowPtr pWin, RegionPtr prgn, int what)
++{
++    ScreenPtr pScreen = pWin->drawable.pScreen;
++    DUMMYPtr dPtr = DUMMYPTR(DUMMYScrn);
++    WindowPtr pWinRoot;
++
++    pScreen->PaintWindow = dPtr->PaintWindow;
++    printf("PaintWindow %p, (%d, %d), \n", pWin);
++    pScreen->PaintWindow(pWin, prgn, what);
++    dPtr->PaintWindow = pScreen->PaintWindow;
++    pScreen->PaintWindow = DUMMYPaintWindow;
++
++    DUMMYSync(dPtr);
++}
++
+ #ifndef HW_SKIP_CONSOLE
+ #define HW_SKIP_CONSOLE 4
+ #endif
+diff -ruwN xf86-video-dummy-0.4.1/src/dummy.h source/src/dummy.h
+--- xf86-video-dummy-0.4.1/src/dummy.h	2023-05-07 14:27:44.000000000 -0600
++++ source/src/dummy.h	2025-05-04 13:00:17.506799256 -0600
+@@ -13,6 +13,8 @@
+ 
+ #include "compat-api.h"
+ 
++#include <orbital.h>
++
+ #define DUMMY_MAX_SCREENS 16
+ 
+ /* Supported chipsets */
+@@ -53,6 +55,8 @@
+ 
+     dummy_colors colors[1024];
+     Bool        (*CreateWindow)(WindowPtr) ;     /* wrapped CreateWindow */
++    void        (*CopyWindow)(WindowPtr, DDXPointRec, RegionPtr) ;     /* wrapped CopyWindow */
++    void        (*PaintWindow)(WindowPtr, RegionPtr, int) ;     /* wrapped PaintWindow */
+     Bool prop;
+     /* XRANDR support begin */
+     int num_screens;
+@@ -60,6 +64,8 @@
+     struct _xf86Output *paOutputs[DUMMY_MAX_SCREENS];
+     int connected_outputs;
+     /* XRANDR support end */
++
++    void *orb_window;
+ } DUMMYRec, *DUMMYPtr;
+ 
+ /* The privates of the DUMMY driver */
