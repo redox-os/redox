@@ -1,0 +1,19 @@
+[source]
+tar = "https://www.x.org/releases/individual/lib/libXaw-1.0.16.tar.xz"
+blake3 = "f2a3b4955508dc7a576ad473119562b724f7936d312c85c79cb32f614c60f0c5"
+script = """
+DYNAMIC_INIT
+autotools_recursive_regenerate
+"""
+
+[build]
+dependencies = [
+    "libx11",
+    "libxt",
+    "x11proto",
+]
+template = "custom"
+script = """
+DYNAMIC_INIT
+cookbook_configure
+"""
