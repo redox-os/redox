@@ -1,6 +1,6 @@
 diff -ruwN xorg-server-21.1.16/hw/xfree86/common/xf86Xinput.c source/hw/xfree86/common/xf86Xinput.c
 --- xorg-server-21.1.16/hw/xfree86/common/xf86Xinput.c	2025-02-25 11:56:05.000000000 -0700
-+++ source/hw/xfree86/common/xf86Xinput.c	2025-05-02 21:02:40.793658883 -0600
++++ source/hw/xfree86/common/xf86Xinput.c	2025-05-03 11:28:37.266757877 -0600
 @@ -860,8 +860,10 @@
      if (stat(path, &st) == -1)
          return;
@@ -14,7 +14,7 @@ diff -ruwN xorg-server-21.1.16/hw/xfree86/common/xf86Xinput.c source/hw/xfree86/
  static inline InputDriverPtr
 diff -ruwN xorg-server-21.1.16/hw/xfree86/loader/meson.build source/hw/xfree86/loader/meson.build
 --- xorg-server-21.1.16/hw/xfree86/loader/meson.build	2025-02-25 11:56:05.000000000 -0700
-+++ source/hw/xfree86/loader/meson.build	2025-05-02 21:04:23.471556735 -0600
++++ source/hw/xfree86/loader/meson.build	2025-05-03 11:28:37.267757875 -0600
 @@ -10,7 +10,7 @@
      c_args: xorg_c_args,
  )
@@ -29,7 +29,7 @@ diff -ruwN xorg-server-21.1.16/hw/xfree86/loader/meson.build source/hw/xfree86/l
 +# )
 diff -ruwN xorg-server-21.1.16/hw/xfree86/meson.build source/hw/xfree86/meson.build
 --- xorg-server-21.1.16/hw/xfree86/meson.build	2025-02-25 11:56:05.000000000 -0700
-+++ source/hw/xfree86/meson.build	2025-05-03 07:41:18.150897775 -0600
++++ source/hw/xfree86/meson.build	2025-05-03 11:28:37.267757875 -0600
 @@ -171,13 +171,13 @@
      )
  endif
@@ -53,7 +53,7 @@ diff -ruwN xorg-server-21.1.16/hw/xfree86/meson.build source/hw/xfree86/meson.bu
  xorgserver_lib = shared_library(
 diff -ruwN xorg-server-21.1.16/hw/xfree86/os-support/shared/sigio.c source/hw/xfree86/os-support/shared/sigio.c
 --- xorg-server-21.1.16/hw/xfree86/os-support/shared/sigio.c	2025-02-25 11:56:05.000000000 -0700
-+++ source/hw/xfree86/os-support/shared/sigio.c	2025-05-02 21:18:55.324285513 -0600
++++ source/hw/xfree86/os-support/shared/sigio.c	2025-05-03 11:28:37.267757875 -0600
 @@ -196,11 +196,12 @@
                          fd, strerror(errno));
              }
@@ -70,7 +70,7 @@ diff -ruwN xorg-server-21.1.16/hw/xfree86/os-support/shared/sigio.c source/hw/xf
              }
 diff -ruwN xorg-server-21.1.16/hw/xfree86/os-support/xf86_OSlib.h source/hw/xfree86/os-support/xf86_OSlib.h
 --- xorg-server-21.1.16/hw/xfree86/os-support/xf86_OSlib.h	2025-02-25 11:56:05.000000000 -0700
-+++ source/hw/xfree86/os-support/xf86_OSlib.h	2025-05-02 20:59:02.771895236 -0600
++++ source/hw/xfree86/os-support/xf86_OSlib.h	2025-05-03 11:28:37.267757875 -0600
 @@ -176,7 +176,7 @@
  /**************************************************************************/
  /* Linux or Glibc-based system                                            */
@@ -80,9 +80,21 @@ diff -ruwN xorg-server-21.1.16/hw/xfree86/os-support/xf86_OSlib.h source/hw/xfre
  #include <sys/ioctl.h>
  #include <signal.h>
  #include <stdlib.h>
+diff -ruwN xorg-server-21.1.16/include/meson.build source/include/meson.build
+--- xorg-server-21.1.16/include/meson.build	2025-02-25 11:56:05.000000000 -0700
++++ source/include/meson.build	2025-05-04 09:23:52.822312510 -0600
+@@ -190,7 +190,7 @@
+ conf_data.set('LISTEN_LOCAL', get_option('listen_local'))
+ 
+ if cc.has_header_symbol('sys/socket.h', 'SCM_RIGHTS')
+-  conf_data.set('XTRANS_SEND_FDS', '1')
++  #TODO conf_data.set('XTRANS_SEND_FDS', '1')
+ endif
+ 
+ if conf_data.get('HAVE_GETPEEREID').to_int() == 0 and conf_data.get('HAVE_GETPEERUCRED').to_int() == 0
 diff -ruwN xorg-server-21.1.16/meson.build source/meson.build
 --- xorg-server-21.1.16/meson.build	2025-02-25 11:56:05.000000000 -0700
-+++ source/meson.build	2025-05-03 07:37:30.195677585 -0600
++++ source/meson.build	2025-05-03 11:28:37.267757875 -0600
 @@ -753,7 +753,7 @@
  subdir('hw')
  
@@ -94,7 +106,7 @@ diff -ruwN xorg-server-21.1.16/meson.build source/meson.build
  install_man(configure_file(
 diff -ruwN xorg-server-21.1.16/os/access.c source/os/access.c
 --- xorg-server-21.1.16/os/access.c	2025-02-25 11:56:05.000000000 -0700
-+++ source/os/access.c	2025-05-02 17:32:45.822594681 -0600
++++ source/os/access.c	2025-05-03 11:28:37.267757875 -0600
 @@ -120,7 +120,7 @@
  #include <sys/un.h>
  #endif

@@ -16,5 +16,5 @@ dependencies = [
 template = "custom"
 script = """
 DYNAMIC_INIT
-cookbook_configure
+cookbook_configure ac_cv_search_sendmsg=no
 """
