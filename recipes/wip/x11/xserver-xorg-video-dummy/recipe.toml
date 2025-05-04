@@ -1,0 +1,46 @@
+[source]
+tar = "https://www.x.org/releases/individual/driver/xf86-video-dummy-0.4.1.tar.xz"
+blake3 = "9b49296f62bf4d22345d87fc01f2a5571f941457c19d21c8800f8f6d2e64ae67"
+script = """
+DYNAMIC_INIT
+autotools_recursive_regenerate
+"""
+
+[build]
+dependencies = [
+    "pixman",
+    "x11proto",
+    "xserver-xorg",
+]
+template = "custom"
+script = """
+DYNAMIC_INIT
+cookbook_configure
+
+mkdir -p "${COOKBOOK_STAGE}/usr/share/X11/xorg.conf.d"
+cat > "${COOKBOOK_STAGE}/usr/share/X11/xorg.conf.d/dummy.conf" <<EOF
+Section "Device"
+    Identifier  "Configured Video Device"
+    Driver      "dummy"
+    VideoRam 256000
+EndSection
+
+Section "Monitor"
+    Identifier  "Configured Monitor"
+    HorizSync 5.0 - 1000.0
+    VertRefresh 5.0 - 200.0
+    ModeLine "1920x1080" 148.50 1920 2448 2492 2640 1080 1084 1089 1125 +Hsync +Vsync
+EndSection
+
+Section "Screen"
+    Identifier  "Default Screen"
+    Monitor     "Configured Monitor"
+    Device      "Configured Video Device"
+    DefaultDepth 24
+    SubSection "Display"
+    Depth 24
+    Modes "1920x1080" "1280x800" "1024x768" "1920x1080" "1440x900"
+    EndSubSection
+EndSection
+EOF
+"""
