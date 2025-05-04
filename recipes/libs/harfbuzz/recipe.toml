@@ -8,6 +8,7 @@ dependencies = [
     "freetype2",
     "gettext",
     "glib",
+    "libffi",
     "libiconv",
     "libpng",
     "pcre2",
