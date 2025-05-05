@@ -1,0 +1,18 @@
+[source]
+# meson support not in latest release
+git = "https://github.com/NVIDIA/libglvnd.git"
+
+[build]
+dependencies = [
+    "libpthread-stubs",
+    "libx11",
+    "libxau",
+    "libxcb",
+    "libxext",
+    "x11proto",
+]
+template = "custom"
+script = """
+DYNAMIC_INIT
+cookbook_meson
+"""
