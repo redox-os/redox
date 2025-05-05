@@ -11,7 +11,7 @@ dependencies = [
     "libiconv",
     "libjpeg",
     "libpng",
-    "pcre",
+    "pcre2",
     "shared-mime-info",
     "zlib",
 ]
