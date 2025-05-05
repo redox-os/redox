@@ -1,0 +1,3 @@
+# X11 configuration
+
+include = ["../x11.toml"]
