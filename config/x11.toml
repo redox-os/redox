@@ -1,0 +1,37 @@
+# X11 configuration
+
+include = ["desktop.toml"]
+
+# Override the default settings here
+
+# General settings
+[general]
+# Filesystem size in MiB
+filesystem_size = 2048
+
+# Package settings
+[packages]
+gtk3 = {}
+mesa-x11 = {}
+mesa-demos-x11 = {}
+twm = {}
+xeyes = {}
+xinit = {}
+xkbcomp = {}
+xkbutils = {}
+xkeyboard-config = {}
+xserver-xorg = {}
+xserver-xorg-video-dummy = {}
+
+[[files]]
+path = "/usr/lib/init.d/20_xenv"
+data = """
+export DISPLAY :0
+"""
+
+[[files]]
+path = "/usr/lib/init.d/40_x"
+data = """
+X :0 -verbose 6
+"""
+
