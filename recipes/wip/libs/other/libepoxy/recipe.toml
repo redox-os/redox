@@ -6,14 +6,12 @@ patches = ["redox.patch"]
 [build]
 template = "custom"
 dependencies = [
-    "liborbital",
     "libpthread-stubs",
     "libx11",
     "libxau",
     "libxcb",
     "llvm18",
-    "mesa",
-    "mesa-glu",
+    "mesa-x11",
     "x11proto",
     "zlib",
 ]
