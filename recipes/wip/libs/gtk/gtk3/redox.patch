@@ -1,0 +1,42 @@
+diff -ruwN gtk+-3.24.43/gtk/a11y/gtkaccessibility.c source/gtk/a11y/gtkaccessibility.c
+--- gtk+-3.24.43/gtk/a11y/gtkaccessibility.c	2024-07-10 11:03:14.000000000 -0600
++++ source/gtk/a11y/gtkaccessibility.c	2025-05-04 19:46:06.985224833 -0600
+@@ -37,7 +37,7 @@
+ #include <gtk/gtktogglebutton.h>
+ #include <gtk/gtkaccessible.h>
+ 
+-#ifdef GDK_WINDOWING_X11
++#if defined(GDK_WINDOWING_X11) && !defined(__redox__)
+ #include <atk-bridge.h>
+ #endif
+ 
+@@ -254,7 +254,7 @@
+         }
+     }
+ 
+-#ifdef GDK_WINDOWING_X11
++#if defined(GDK_WINDOWING_X11) && !defined(__redox__)
+   /*
+    * If the focus widget is a GtkSocket without a plug
+    * then ignore the focus notification as the embedded
+@@ -986,7 +986,7 @@
+   _gtk_accessibility_override_atk_util ();
+   do_window_event_initialization ();
+ 
+-#ifdef GDK_WINDOWING_X11
++#if defined(GDK_WINDOWING_X11) && !defined(__redox__)
+   atk_bridge_adaptor_init (NULL, NULL);
+ #endif
+ 
+diff -ruwN gtk+-3.24.43/meson.build source/meson.build
+--- gtk+-3.24.43/meson.build	2024-07-10 11:03:14.000000000 -0600
++++ source/meson.build	2025-05-04 18:36:13.187091118 -0600
+@@ -565,7 +565,7 @@
+   xfixes_dep     = dependency('xfixes', required: false)
+   xcomposite_dep = dependency('xcomposite', required: false)
+   fontconfig_dep = dependency('fontconfig', fallback: ['fontconfig', 'fontconfig_dep'])
+-  atkbridge_dep  = dependency('atk-bridge-2.0', version: at_spi2_atk_req)
++  #TODO atkbridge_dep  = dependency('atk-bridge-2.0', version: at_spi2_atk_req)
+ 
+   backend_immodules += ['xim']
+ 

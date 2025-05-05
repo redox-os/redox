@@ -1,18 +1,49 @@
-#TODO probably missing dependencies, see https://docs.gtk.org/gtk3/building.html#dependencies
 #TODO port to orbital
 [source]
-tar = "https://download.gnome.org/sources/gtk+/3.24/gtk%2B-3.24.37.tar.xz"
+tar = "https://download.gnome.org/sources/gtk+/3.24/gtk%2B-3.24.43.tar.xz"
+blake3 = "5feab2bad81e6b5906895f70ddce6227cf96a6a14b16af0ef72c79991a48ddf4"
+patches = ["redox.patch"]
+
 [build]
-template = "configure"
 dependencies = [
-    "glib",
-    "gdk-pixbuf",
-    "pango",
-    "cairo",
-    "libepoxy",
     "atk",
-    "gobject-introspection",
+    "cairo",
+    "expat",
+    "fontconfig",
+    "freetype2",
+    "fribidi",
+    "gdk-pixbuf",
+    "gettext",
+    "glib",
+    #TODO "gobject-introspection",
+    "harfbuzz",
+    "libepoxy",
+    "libffi",
+    "libiconv",
+    "libjpeg",
+    "libpng",
+    "libpthread-stubs",
+    "libx11",
+    "libxau",
+    "libxcb",
+    "libxext",
+    "libxfixes",
+    "libxi",
+    "libxrandr",
+    "libxrender",
+    "pango",
+    "pcre2",
+    "pixman",
     "shared-mime-info",
-    "graphene",
-    "gstreamer",
+    "x11proto",
+    "zlib",
 ]
+template = "custom"
+script = """
+DYNAMIC_INIT
+#TODO: why are libs not automatically detected?
+cookbook_meson \
+    -Dc_args="-DM_SQRT2=1.41421356237309504880 -lXext -lX11 -lxcb -lXau" \
+    -Dintrospection=false \
+    -Dwayland_backend=false
+"""
