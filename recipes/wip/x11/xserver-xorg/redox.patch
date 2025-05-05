@@ -82,7 +82,16 @@ diff -ruwN xorg-server-21.1.16/hw/xfree86/os-support/xf86_OSlib.h source/hw/xfre
  #include <stdlib.h>
 diff -ruwN xorg-server-21.1.16/include/meson.build source/include/meson.build
 --- xorg-server-21.1.16/include/meson.build	2025-02-25 11:56:05.000000000 -0700
-+++ source/include/meson.build	2025-05-04 09:23:52.822312510 -0600
++++ source/include/meson.build	2025-05-05 16:18:09.751286404 -0600
+@@ -162,7 +162,7 @@
+ conf_data.set('HAVE_PORT_CREATE', cc.has_function('port_create') ? '1' : false)
+ conf_data.set('HAVE_REALLOCARRAY', cc.has_function('reallocarray', dependencies: libbsd_dep) ? '1' : false)
+ conf_data.set('HAVE_SETEUID', cc.has_function('seteuid') ? '1' : false)
+-conf_data.set('HAVE_SETITIMER', cc.has_function('setitimer') ? '1' : false)
++conf_data.set('HAVE_SETITIMER', false)
+ conf_data.set('HAVE_SHMCTL64', cc.has_function('shmctl64') ? '1' : false)
+ conf_data.set('HAVE_SIGACTION', cc.has_function('sigaction') ? '1' : false)
+ conf_data.set('HAVE_SIGPROCMASK', cc.has_function('sigprocmask') ? '1' : false)
 @@ -190,7 +190,7 @@
  conf_data.set('LISTEN_LOCAL', get_option('listen_local'))
  
