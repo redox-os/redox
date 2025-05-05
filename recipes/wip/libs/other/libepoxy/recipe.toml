@@ -21,6 +21,6 @@ script = """
 DYNAMIC_INIT
 cookbook_meson \
     -Degl=no \
-    -Dglx=no \
+    -Dglx=yes \
     -Dtests=false
 """
