@@ -843,6 +843,8 @@ function cookbook_meson {
     echo "strip = '${STRIP}'" >> cross_file.txt
     echo "pkg-config = '${PKG_CONFIG}'" >> cross_file.txt
     echo "llvm-config = '${TARGET}-llvm-config'" >> cross_file.txt
+    echo "glib-compile-resources = 'glib-compile-resources'" >> cross_file.txt
+    echo "glib-compile-schemas = 'glib-compile-schemas'" >> cross_file.txt
 
     echo "[host_machine]" >> cross_file.txt
     echo "system = 'redox'" >> cross_file.txt
