@@ -1,0 +1,24 @@
+[source]
+same_as = "../mesa"
+
+[build]
+template = "custom"
+dependencies = [
+    "expat",
+    "libpthread-stubs",
+    "libx11",
+    "libxau",
+    "libxcb",
+    "libxext",
+    "llvm18-shared",
+    "x11proto",
+    "zlib",
+]
+script = """
+DYNAMIC_INIT
+cookbook_meson \
+    -Dglx=xlib \
+    -Dllvm=enabled \
+    -Dplatforms=x11 \
+    -Dshader-cache=disabled
+"""
