@@ -1,7 +1,5 @@
 [source]
-git = "https://gitlab.redox-os.org/redox-os/llvm-project.git"
-upstream = "https://github.com/rust-lang/llvm-project.git"
-branch = "redox-2024-05-11"
+same_as = "../llvm18"
 
 [build]
 template = "custom"
@@ -79,9 +77,3 @@ mv -vT "${COOKBOOK_STAGE}"/usr/share "${COOKBOOK_STAGE}/share"
 rmdir -v "${COOKBOOK_STAGE}"/usr
 set +x
 """
-
-[package]
-dependencies = [
-  "zlib"
-]
-
