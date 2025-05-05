@@ -1,5 +1,5 @@
 [source]
-same_as = "../mesa"
+same_as = "../../../libs/mesa"
 
 [build]
 template = "custom"
