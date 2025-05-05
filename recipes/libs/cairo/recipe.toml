@@ -1,6 +1,7 @@
 [source]
 tar = "https://www.cairographics.org/releases/cairo-1.18.4.tar.xz"
 blake3 = "b9fa14e02f85ec4e72396c62236c98502d04dbbdf8daf01ab9557a1c7aa7106e"
+patches = ["redox.patch"]
 
 [build]
 dependencies = [
@@ -12,8 +13,14 @@ dependencies = [
     "libffi",
     "libiconv",
 	"libpng",
+    "libpthread-stubs",
+    "libx11",
+    "libxau",
+    "libxcb",
+    "libxext",
     "pcre2",
 	"pixman",
+    "x11proto",
 	"zlib",
 ]
 template = "custom"
@@ -24,5 +31,6 @@ DYNAMIC_INIT
 #TODO: why is -lexpat not automatic?
 cookbook_meson \
     -Dc_args="-DCAIRO_NO_MUTEX=1 -DM_SQRT2=1.41421356237309504880 -DM_LN2=0.69314718055994530942 -lexpat" \
+    -Dxlib-xcb=enabled \
     -Dtests=disabled
 """
