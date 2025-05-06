@@ -21,7 +21,7 @@ export LIBS="-lorbital"
 cookbook_configure
 
 mkdir -p "${COOKBOOK_STAGE}/usr/share/X11/xorg.conf.d"
-cat > "${COOKBOOK_STAGE}/usr/share/X11/xorg.conf.d/dummy.conf" <<EOF
+cat > "${COOKBOOK_STAGE}/usr/share/X11/xorg.conf.d/orbital.conf" <<EOF
 Section "Device"
     Identifier  "Configured Video Device"
     Driver      "dummy"
@@ -42,7 +42,7 @@ Section "Screen"
     DefaultDepth 24
     SubSection "Display"
     Depth 24
-    Modes "1920x1080" "1280x800" "1024x768" "1920x1080" "1440x900"
+    Modes "1920x1080"
     EndSubSection
 EndSection
 EOF
