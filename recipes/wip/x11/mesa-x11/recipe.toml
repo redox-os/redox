@@ -5,6 +5,7 @@ same_as = "../../../libs/mesa"
 template = "custom"
 dependencies = [
     "expat",
+    "libglvnd",
     "libpthread-stubs",
     "libx11",
     "libxau",
@@ -17,6 +18,7 @@ dependencies = [
 script = """
 DYNAMIC_INIT
 cookbook_meson \
+    -Dglvnd=true \
     -Dglx=xlib \
     -Dllvm=enabled \
     -Dplatforms=x11 \
