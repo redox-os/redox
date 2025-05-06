@@ -15,6 +15,7 @@ gtk3 = {}
 mesa-x11 = {}
 mesa-demos-x11 = {}
 twm = {}
+xev = {}
 xeyes = {}
 xinit = {}
 xkbcomp = {}
@@ -22,6 +23,7 @@ xkbutils = {}
 xkeyboard-config = {}
 xserver-xorg = {}
 xserver-xorg-video-dummy = {}
+xterm = {}
 
 [[files]]
 path = "/usr/lib/init.d/20_xenv"
@@ -32,6 +34,20 @@ export DISPLAY :0
 [[files]]
 path = "/usr/lib/init.d/40_x"
 data = """
-X :0 -verbose 6
+bash /usr/bin/orbital-x11
 """
 
+[[files]]
+path = "/usr/bin/orbital-x11"
+data = """
+#!/usr/bin/env bash
+
+set -ex
+
+X "${DISPLAY}" -verbose 6 &
+sleep 1
+twm &
+xeyes &
+xev &
+xterm &
+"""
