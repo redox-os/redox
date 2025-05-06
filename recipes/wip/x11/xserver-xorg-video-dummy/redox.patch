@@ -1,16 +1,89 @@
 diff -ruwN xf86-video-dummy-0.4.1/src/dummy_driver.c source/src/dummy_driver.c
 --- xf86-video-dummy-0.4.1/src/dummy_driver.c	2023-05-07 14:27:44.000000000 -0600
-+++ source/src/dummy_driver.c	2025-05-04 14:35:07.315812927 -0600
-@@ -52,6 +52,8 @@
++++ source/src/dummy_driver.c	2025-05-05 17:23:44.770853907 -0600
+@@ -39,6 +39,7 @@
+ /* These need to be checked */
+ #include <X11/X.h>
+ #include <X11/Xproto.h>
++#include <X11/keysym.h>
+ #include "scrnintstr.h"
+ #include "servermd.h"
+ 
+@@ -51,6 +52,8 @@
+ static Bool     DUMMYEnterVT(VT_FUNC_ARGS_DECL);
  static void     DUMMYLeaveVT(VT_FUNC_ARGS_DECL);
  static Bool     DUMMYCloseScreen(CLOSE_SCREEN_ARGS_DECL);
++static void     DUMMYBlockHandler(ScreenPtr pScreen, void *timeout);
++static void     DUMMYWakeupHandler(ScreenPtr pScreen, int result);
  static Bool     DUMMYCreateWindow(WindowPtr pWin);
-+static void     DUMMYCopyWindow(WindowPtr pWin, DDXPointRec ptOldOrg, RegionPtr prgnSrc);
-+static void     DUMMYPaintWindow(WindowPtr pWin, RegionPtr prgn, int what);
  static void     DUMMYFreeScreen(FREE_SCREEN_ARGS_DECL);
  static ModeStatus DUMMYValidMode(SCRN_ARG_TYPE arg, DisplayModePtr mode,
-                                  Bool verbose, int flags);
-@@ -776,7 +778,6 @@
+@@ -768,6 +771,64 @@
+ 
+ static ScrnInfoPtr DUMMYScrn; /* static-globalize it */
+ 
++static void DUMMYOrbitalEvent(int fd, int ready, void *data) {
++    DUMMYPtr dPtr = (DUMMYPtr)data;
++    if (!dPtr->orb_window) {
++        return;
++    }
++
++    void *event_iter = orb_window_events(dPtr->orb_window);
++    if (!event_iter) {
++        return;
++    }
++
++    bool running = true;
++    while (running) {
++        OrbEventOption event = orb_events_next(event_iter);
++        if (event.tag == OrbEventOption_None) {
++            break;
++        }
++        //TODO: handle more events
++        switch (event.tag) {
++            case OrbEventOption_Key:
++                if (inputInfo.keyboard) {
++                    if (event.key.scancode > 0) {
++                        //TODO: more advanced key mapping?
++                        xf86PostKeyEvent(inputInfo.keyboard, event.key.scancode + 8, event.key.pressed);
++                    }
++                }
++                break;
++            case OrbEventOption_Mouse:
++                if (inputInfo.pointer) {
++                    xf86PostMotionEvent(inputInfo.pointer, 1, 0, 2, event.mouse.x, event.mouse.y);
++                }
++                break;
++            case OrbEventOption_MouseRelative:
++                if (inputInfo.pointer) {
++                    if (event.mouse_relative.dx || event.mouse_relative.dy) {
++                        xf86PostMotionEvent(inputInfo.pointer, 0, 0, 2, event.mouse_relative.dx, event.mouse_relative.dy);
++                    }
++                }
++                break;
++            case OrbEventOption_Button:
++                if (inputInfo.pointer) {
++                    xf86PostButtonEvent(inputInfo.pointer, 0, 1, event.button.left, 0, 0);
++                    xf86PostButtonEvent(inputInfo.pointer, 0, 2, event.button.middle, 0, 0);
++                    xf86PostButtonEvent(inputInfo.pointer, 0, 3, event.button.right, 0, 0);
++                }
++                break;
++            case OrbEventOption_None:
++                running = false;
++                break;
++            default:
++                //printf("unknown orbital event %d: %d, %d\n", event.unknown.code, event.unknown.a, event.unknown.b);
++                break;
++        }
++    }
++
++    orb_events_destroy(event_iter);
++}
++
+ /* Mandatory */
+ static Bool
+ DUMMYScreenInit(SCREEN_INIT_ARGS_DECL)
+@@ -776,7 +837,6 @@
      DUMMYPtr dPtr;
      int ret;
      VisualPtr visual;
@@ -18,7 +91,7 @@ diff -ruwN xf86-video-dummy-0.4.1/src/dummy_driver.c source/src/dummy_driver.c
  
      /*
       * we need to get the ScrnInfoRec for this screen, so let's allocate
-@@ -786,9 +787,20 @@
+@@ -786,9 +846,22 @@
      dPtr = DUMMYPTR(pScrn);
      DUMMYScrn = pScrn;
  
@@ -32,15 +105,17 @@ diff -ruwN xf86-video-dummy-0.4.1/src/dummy_driver.c source/src/dummy_driver.c
 +        "orb_window_new %d, %d\n",
 +        pScrn->virtualX, pScrn->virtualY
 +    );
-+    dPtr->orb_window = orb_window_new(-1, -1, pScrn->virtualX, pScrn->virtualY, "X11");
++    dPtr->orb_window = orb_window_new_flags(-1, -1, pScrn->virtualX, pScrn->virtualY, "X11", ORB_WINDOW_ASYNC);
 +    if (!dPtr->orb_window) {
 +        printf("failed to open orbital window\n");
  	return FALSE;
 +    }
++
++    SetNotifyFd(orb_window_fd(dPtr->orb_window), DUMMYOrbitalEvent, X_NOTIFY_READ, dPtr);
  
      /*
       * Reset visual list.
-@@ -800,12 +812,10 @@
+@@ -800,12 +873,10 @@
      if (!miSetVisualTypes(pScrn->depth,
                            miGetDefaultVisualMask(pScrn->depth),
                            pScrn->rgbBits, pScrn->defaultVisual)) {
@@ -53,7 +128,7 @@ diff -ruwN xf86-video-dummy-0.4.1/src/dummy_driver.c source/src/dummy_driver.c
          return FALSE;
      }
  
-@@ -813,7 +823,7 @@
+@@ -813,7 +884,7 @@
       * Call the framebuffer layer's ScreenInit function, and fill in other
       * pScreen fields.
       */
@@ -62,123 +137,122 @@ diff -ruwN xf86-video-dummy-0.4.1/src/dummy_driver.c source/src/dummy_driver.c
  			    pScrn->virtualX, pScrn->virtualY,
  			    pScrn->xDpi, pScrn->yDpi,
  			    pScrn->displayWidth, pScrn->bitsPerPixel);
-@@ -947,6 +957,14 @@
+@@ -938,11 +1009,18 @@
+ 
+     pScreen->SaveScreen = DUMMYSaveScreen;
+ 
+-    
+     /* Wrap the current CloseScreen function */
+     dPtr->CloseScreen = pScreen->CloseScreen;
+     pScreen->CloseScreen = DUMMYCloseScreen;
+ 
++    /* Wrap the current BlockHandler function */
++    dPtr->BlockHandler = pScreen->BlockHandler;
++    pScreen->BlockHandler = DUMMYBlockHandler;
++
++    /* Wrap the current WakeupHandler function */
++    dPtr->WakeupHandler = pScreen->WakeupHandler;
++    pScreen->WakeupHandler = DUMMYWakeupHandler;
++
+     /* Wrap the current CreateWindow function */
      dPtr->CreateWindow = pScreen->CreateWindow;
      pScreen->CreateWindow = DUMMYCreateWindow;
+@@ -959,6 +1037,7 @@
+ Bool
+ DUMMYSwitchMode(SWITCH_MODE_ARGS_DECL)
+ {
++    printf("SwitchMode\n");
+     return TRUE;
+ }
  
-+    /* Wrap the current CopyWindow function */
-+    dPtr->CopyWindow = pScreen->CopyWindow;
-+    pScreen->CopyWindow = DUMMYCopyWindow;
-+
-+    /* Wrap the current PaintWindow function */
-+    dPtr->PaintWindow = pScreen->PaintWindow;
-+    pScreen->PaintWindow = DUMMYPaintWindow;
-+
-     /* Report any unused options (only for the first generation) */
-     if (serverGeneration == 1) {
- 	xf86ShowUnusedOptions(pScrn->scrnIndex, pScrn->options);
-@@ -975,7 +993,10 @@
+@@ -966,6 +1045,7 @@
+ void
+ DUMMYAdjustFrame(ADJUST_FRAME_ARGS_DECL)
+ {
++    printf("AdjustFrame\n");
+ }
+ 
+ /* Mandatory */
+@@ -975,7 +1055,13 @@
      ScrnInfoPtr pScrn = xf86ScreenToScrn(pScreen);
      DUMMYPtr dPtr = DUMMYPTR(pScrn);
  
 -    free(pScreen->GetScreenPixmap(pScreen)->devPrivate.ptr);
 +    if (dPtr->orb_window) {
++        RemoveNotifyFd(orb_window_fd(dPtr->orb_window));
++
++        printf("orb_window_destroy %p\n", dPtr->orb_window);
 +        orb_window_destroy(dPtr->orb_window);
 +        dPtr->orb_window = NULL;
 +    }
  
      if (dPtr->CursorInfo)
  	xf86DestroyCursorInfoRec(dPtr->CursorInfo);
-@@ -1009,6 +1030,14 @@
+@@ -1009,6 +1095,32 @@
  Atom VFB_PROP  = 0;
  #define  VFB_PROP_NAME  "VFB_IDENT"
  
-+static void DUMMYSync(DUMMYPtr dPtr) {
-+    //TODO: send damage?
++static void DUMMYBlockHandler(ScreenPtr pScreen, void *timeout) {
++    DUMMYPtr dPtr = DUMMYPTR(DUMMYScrn);
++
++    //printf("BlockHandler %p %p\n", pScreen, timeout);
++    pScreen->BlockHandler = dPtr->BlockHandler;
++    pScreen->BlockHandler(pScreen, timeout);
++    dPtr->BlockHandler = pScreen->BlockHandler;
++    pScreen->BlockHandler = DUMMYBlockHandler;
++
 +    if (dPtr->orb_window) {
-+        printf("SYNC\n");
++        //printf("orb_window_sync %p\n", dPtr->orb_window);
++        //TODO: make syncs less frequent
 +        orb_window_sync(dPtr->orb_window);
 +    }
++}
++
++static void DUMMYWakeupHandler(ScreenPtr pScreen, int result) {
++    DUMMYPtr dPtr = DUMMYPTR(DUMMYScrn);
++
++    //printf("WakeupHandler %p %d\n", pScreen, result);
++    pScreen->WakeupHandler = dPtr->WakeupHandler;
++    pScreen->WakeupHandler(pScreen, result);
++    dPtr->WakeupHandler = pScreen->WakeupHandler;
++    pScreen->WakeupHandler = DUMMYWakeupHandler;
 +}
 +
  static Bool
  DUMMYCreateWindow(WindowPtr pWin)
  {
-@@ -1018,10 +1047,13 @@
-     int ret;
- 
-     pScreen->CreateWindow = dPtr->CreateWindow;
-+    printf("CreateWindow %p\n", pWin);
-     ret = pScreen->CreateWindow(pWin);
-     dPtr->CreateWindow = pScreen->CreateWindow;
-     pScreen->CreateWindow = DUMMYCreateWindow;
- 
-+    DUMMYSync(dPtr);
-+
-     if(ret != TRUE)
- 	return(ret);
- 	
-@@ -1046,6 +1078,38 @@
-     return TRUE;
- }
- 
-+static void
-+DUMMYCopyWindow(WindowPtr pWin, DDXPointRec ptOldOrg, RegionPtr prgnSrc)
-+{
-+    ScreenPtr pScreen = pWin->drawable.pScreen;
-+    DUMMYPtr dPtr = DUMMYPTR(DUMMYScrn);
-+    WindowPtr pWinRoot;
-+
-+    pScreen->CopyWindow = dPtr->CopyWindow;
-+    printf("CopyWindow %p\n", pWin);
-+    pScreen->CopyWindow(pWin, ptOldOrg, prgnSrc);
-+    dPtr->CopyWindow = pScreen->CopyWindow;
-+    pScreen->CopyWindow = DUMMYCopyWindow;
-+
-+    DUMMYSync(dPtr);
-+}
-+
-+static void
-+DUMMYPaintWindow(WindowPtr pWin, RegionPtr prgn, int what)
-+{
-+    ScreenPtr pScreen = pWin->drawable.pScreen;
-+    DUMMYPtr dPtr = DUMMYPTR(DUMMYScrn);
-+    WindowPtr pWinRoot;
-+
-+    pScreen->PaintWindow = dPtr->PaintWindow;
-+    printf("PaintWindow %p, (%d, %d), \n", pWin);
-+    pScreen->PaintWindow(pWin, prgn, what);
-+    dPtr->PaintWindow = pScreen->PaintWindow;
-+    pScreen->PaintWindow = DUMMYPaintWindow;
-+
-+    DUMMYSync(dPtr);
-+}
-+
- #ifndef HW_SKIP_CONSOLE
- #define HW_SKIP_CONSOLE 4
- #endif
 diff -ruwN xf86-video-dummy-0.4.1/src/dummy.h source/src/dummy.h
 --- xf86-video-dummy-0.4.1/src/dummy.h	2023-05-07 14:27:44.000000000 -0600
-+++ source/src/dummy.h	2025-05-04 13:00:17.506799256 -0600
-@@ -13,6 +13,8 @@
++++ source/src/dummy.h	2025-05-05 15:57:13.611157665 -0600
+@@ -4,6 +4,7 @@
+ #include "xf86_OSproc.h"
+ 
+ #include "xf86Cursor.h"
++#include "xf86Xinput.h"
+ 
+ #ifdef XvExtension
+ #include "xf86xv.h"
+@@ -13,7 +14,9 @@
  
  #include "compat-api.h"
  
+-#define DUMMY_MAX_SCREENS 16
 +#include <orbital.h>
 +
- #define DUMMY_MAX_SCREENS 16
++#define DUMMY_MAX_SCREENS 1
  
  /* Supported chipsets */
-@@ -53,6 +55,8 @@
+ typedef enum {
+@@ -52,6 +55,8 @@
+     int cursorFG, cursorBG;
  
      dummy_colors colors[1024];
++    void        (*BlockHandler)(ScreenPtr, void*) ;     /* wrapped BlockHandler */
++    void        (*WakeupHandler)(ScreenPtr, int) ;     /* wrapped WakeupHandler */
      Bool        (*CreateWindow)(WindowPtr) ;     /* wrapped CreateWindow */
-+    void        (*CopyWindow)(WindowPtr, DDXPointRec, RegionPtr) ;     /* wrapped CopyWindow */
-+    void        (*PaintWindow)(WindowPtr, RegionPtr, int) ;     /* wrapped PaintWindow */
      Bool prop;
      /* XRANDR support begin */
-     int num_screens;
-@@ -60,6 +64,8 @@
+@@ -60,6 +65,8 @@
      struct _xf86Output *paOutputs[DUMMY_MAX_SCREENS];
      int connected_outputs;
      /* XRANDR support end */
