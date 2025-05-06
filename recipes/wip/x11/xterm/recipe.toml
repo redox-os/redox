@@ -1,0 +1,39 @@
+[source]
+tar = "https://invisible-island.net/archives/xterm/xterm-398.tgz"
+blake3 = "c42112586b2c231681db9327df9d797953469e3b7cb2abe93b8f3f821597d528"
+patches = ["redox.patch"]
+
+[build]
+dependencies = [
+    "expat",
+    "fontconfig",
+    "freetype2",
+    "libice",
+    "libpng",
+    "libpthread-stubs",
+    "libsm",
+    "libx11",
+    "libxau",
+    "libxaw",
+    "libxcb",
+    "libxext",
+    "libxft",
+    "libxmu",
+    "libxpm",
+    "libxrender",
+    "libxt",
+    "ncurses",
+    "pcre2",
+    "x11proto",
+    "zlib",
+]
+template = "custom"
+script = """
+DYNAMIC_INIT
+export CFLAGS="-I${COOKBOOK_SYSROOT}/usr/include/freetype2"
+#TODO: why are LIBS not automatic?
+export LIBS="-lXaw7 -lXmu -lXpm -lXt -lSM -lICE -lXft -lfreetype -lfontconfig -lXrender -lXext -lX11 -lxcb -lXau -lpcre2-8 -lexpat -lpng -lz"
+cookbook_configure \
+    --with-pcre2 \
+    cf_cv_func_setitimer=no
+"""

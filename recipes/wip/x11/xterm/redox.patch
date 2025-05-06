@@ -1,0 +1,58 @@
+diff -ruwN xterm-398/main.c source/main.c
+--- xterm-398/main.c	2025-03-08 06:03:19.000000000 -0700
++++ source/main.c	2025-05-05 20:51:10.249419667 -0600
+@@ -162,6 +162,10 @@
+ #define USE_POSIX_SIGNALS
+ #endif
+ 
++#ifndef XTABS
++#define XTABS 0x01800
++#endif
++
+ #if defined(SYSV) && !defined(SVR4) && !defined(ISC22) && !defined(ISC30)
+ /* older SYSV systems cannot ignore SIGHUP.
+    Shell hangs, or you get extra shells, or something like that */
+@@ -185,6 +189,10 @@
+ #define WTMP
+ #endif
+ 
++#ifdef __redox__
++#define USE_SYSV_PGRP
++#endif
++
+ #ifdef __SCO__
+ #ifndef _SVID3
+ #define _SVID3
+diff -ruwN xterm-398/xterm.h source/xterm.h
+--- xterm-398/xterm.h	2025-04-08 01:36:09.000000000 -0600
++++ source/xterm.h	2025-05-05 20:10:18.830478495 -0600
+@@ -80,7 +80,7 @@
+ #define HAVE_PUTENV 1
+ #endif
+ 
+-#if defined(CSRG_BASED) || defined(__GNU__) || defined(__minix)
++#if defined(CSRG_BASED) || defined(__GNU__) || defined(__minix) || defined(__redox__)
+ #define USE_POSIX_TERMIOS 1
+ #endif
+ 
+@@ -208,7 +208,7 @@
+ #define HAVE_PTY_H
+ #endif
+ 
+-#if !defined(USG) && !defined(__minix)
++#if !defined(USG) && !defined(__minix) && !defined(__redox__)
+ #define HAVE_SETITIMER 1
+ #else
+ #define HAVE_SETITIMER 0
+diff -ruwN xterm-398/xterm_io.h source/xterm_io.h
+--- xterm-398/xterm_io.h	2024-09-30 02:03:20.000000000 -0600
++++ source/xterm_io.h	2025-05-05 20:14:21.528656084 -0600
+@@ -57,7 +57,7 @@
+ #define USE_SYSV_TERMIO
+ #endif
+ 
+-#if defined(__DragonFly__) || defined(__FreeBSD__) || defined(__NetBSD__) || defined(__OpenBSD__) || defined(__INTERIX) || defined(__APPLE__) || defined(__UNIXWARE__) || defined(__hpux)
++#if defined(__DragonFly__) || defined(__FreeBSD__) || defined(__NetBSD__) || defined(__OpenBSD__) || defined(__INTERIX) || defined(__APPLE__) || defined(__UNIXWARE__) || defined(__hpux) || defined(__redox__)
+ #ifndef USE_POSIX_TERMIOS
+ #define USE_POSIX_TERMIOS
+ #endif
