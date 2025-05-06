@@ -1,3 +1,17 @@
+diff -ruwN xorg-server-21.1.16/glx/meson.build source/glx/meson.build
+--- xorg-server-21.1.16/glx/meson.build	2025-02-25 11:56:05.000000000 -0700
++++ source/glx/meson.build	2025-05-06 15:13:57.516784717 -0600
+@@ -13,8 +13,8 @@
+     'glxcmds.c',
+     'glxcmdsswap.c',
+     'glxext.c',
+-    'glxdriswrast.c',
+-    'glxdricommon.c',
++    #'glxdriswrast.c',
++    #'glxdricommon.c',
+     'glxscreens.c',
+     'render2.c',
+     'render2swap.c',
 diff -ruwN xorg-server-21.1.16/hw/xfree86/common/xf86Xinput.c source/hw/xfree86/common/xf86Xinput.c
 --- xorg-server-21.1.16/hw/xfree86/common/xf86Xinput.c	2025-02-25 11:56:05.000000000 -0700
 +++ source/hw/xfree86/common/xf86Xinput.c	2025-05-03 11:28:37.266757877 -0600
@@ -82,7 +96,16 @@ diff -ruwN xorg-server-21.1.16/hw/xfree86/os-support/xf86_OSlib.h source/hw/xfre
  #include <stdlib.h>
 diff -ruwN xorg-server-21.1.16/include/meson.build source/include/meson.build
 --- xorg-server-21.1.16/include/meson.build	2025-02-25 11:56:05.000000000 -0700
-+++ source/include/meson.build	2025-05-05 16:18:09.751286404 -0600
++++ source/include/meson.build	2025-05-06 15:10:29.262525728 -0600
+@@ -6,7 +6,7 @@
+ # convert to the old-style 1.x.y version scheme used up to 1.20.x for backwards compatibility
+ release = 1 * 10000000 + major * 100000 + minor * 1000 + patch
+ 
+-dri_dep = dependency('dri', required: build_glx)
++dri_dep = dependency('dri', required: false)
+ 
+ conf_data = configuration_data()
+ conf_data.set('_DIX_CONFIG_H_', '1')
 @@ -162,7 +162,7 @@
  conf_data.set('HAVE_PORT_CREATE', cc.has_function('port_create') ? '1' : false)
  conf_data.set('HAVE_REALLOCARRAY', cc.has_function('reallocarray', dependencies: libbsd_dep) ? '1' : false)
@@ -101,6 +124,15 @@ diff -ruwN xorg-server-21.1.16/include/meson.build source/include/meson.build
  endif
  
  if conf_data.get('HAVE_GETPEEREID').to_int() == 0 and conf_data.get('HAVE_GETPEERUCRED').to_int() == 0
+@@ -212,7 +212,7 @@
+ conf_data.set('DRI2', build_dri2 ? '1' : false)
+ conf_data.set('DRI3', build_dri3 ? '1' : false)
+ if build_glx
+-    conf_data.set_quoted('DRI_DRIVER_PATH', dri_dep.get_pkgconfig_variable('dridriverdir'))
++    #conf_data.set_quoted('DRI_DRIVER_PATH', dri_dep.get_pkgconfig_variable('dridriverdir'))
+ endif
+ conf_data.set('HAS_SHM', build_mitshm ? '1' : false)
+ conf_data.set('MITSHM', build_mitshm ? '1' : false)
 diff -ruwN xorg-server-21.1.16/meson.build source/meson.build
 --- xorg-server-21.1.16/meson.build	2025-02-25 11:56:05.000000000 -0700
 +++ source/meson.build	2025-05-03 11:28:37.267757875 -0600

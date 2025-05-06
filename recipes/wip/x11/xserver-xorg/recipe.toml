@@ -16,8 +16,10 @@ dependencies = [
     "libxcb",
     "libxcvt",
     "libxdmcp",
+    "libxext",
     "libxfont2",
     "libxkbfile",
+    "mesa-x11",
     "openssl1",
     "pixman",
     "x11proto",
@@ -29,7 +31,6 @@ script = """
 DYNAMIC_INIT
 cookbook_meson \
     -Dglamor=false \
-    -Dglx=false \
     -Dint10=false \
     -Dpciaccess=false \
     -Dsecure-rpc=false \
