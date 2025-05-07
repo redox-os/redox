@@ -12,7 +12,7 @@ filesystem_size = 2048
 # Package settings
 [packages]
 gtk3 = {}
-llvm18-shared = {}
+llvm18 = {}
 mesa-x11 = {}
 mesa-demos-x11 = {}
 twm = {}
