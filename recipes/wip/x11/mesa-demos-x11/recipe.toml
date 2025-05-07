@@ -12,7 +12,7 @@ dependencies = [
     "libxcb",
     "libxext",
     "libxxf86vm",
-    "llvm18-shared",
+    "llvm18",
     "mesa-x11",
     "mesa-glu-x11",
     "x11proto",
