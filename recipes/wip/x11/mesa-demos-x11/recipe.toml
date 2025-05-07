@@ -11,6 +11,7 @@ dependencies = [
     "libxau",
     "libxcb",
     "libxext",
+    "libxxf86vm",
     "llvm18-shared",
     "mesa-x11",
     "mesa-glu-x11",

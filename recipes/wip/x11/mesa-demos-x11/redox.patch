@@ -1,3 +1,4 @@
+diff -ruwN mesa-demos-9.0.0/meson.build source/meson.build
 --- mesa-demos-9.0.0/meson.build	2023-03-22 06:13:43.000000000 -0600
 +++ source/meson.build	2025-05-06 15:58:57.523274337 -0600
 @@ -99,7 +99,7 @@
