@@ -76,7 +76,7 @@ $(PREFIX)/libtool:
 
 	git clone \
 		--recurse-submodules \
-		"https://gitlab.redox-os.org/andypython/libtool/" \
+		"https://gitlab.redox-os.org/redox-os/libtool/" \
 		--branch "v$(LIBTOOL_VERSION)-redox" \
 		--depth 2 \
 		"$@.partial"
