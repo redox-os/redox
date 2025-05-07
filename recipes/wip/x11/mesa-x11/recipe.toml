@@ -10,6 +10,8 @@ dependencies = [
     "libxau",
     "libxcb",
     "libxext",
+    "libxfixes",
+    "libxxf86vm",
     "llvm18-shared",
     "x11proto",
     "zlib",
@@ -17,7 +19,9 @@ dependencies = [
 script = """
 DYNAMIC_INIT
 cookbook_meson \
-    -Dglx=xlib \
+    -Ddri-drivers-path=/usr/lib/dri \
+    -Degl=disabled \
+    -Dglx=dri \
     -Dllvm=enabled \
     -Dplatforms=x11 \
     -Dshader-cache=disabled
