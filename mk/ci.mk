@@ -38,7 +38,7 @@ else
 endif
 
 # CI toolchain
-ci-toolchain: FORCE
+ci-toolchain: $(CONTAINER_TAG) FORCE
 ifeq ($(PODMAN_BUILD),1)
 	$(PODMAN_RUN) $(MAKE) $@
 else
