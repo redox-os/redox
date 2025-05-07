@@ -12,7 +12,7 @@ dependencies = [
     "libxext",
     "libxfixes",
     "libxxf86vm",
-    "llvm18-shared",
+    "llvm18",
     "x11proto",
     "zlib",
 ]

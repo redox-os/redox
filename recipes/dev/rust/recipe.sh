@@ -1,6 +1,6 @@
 GIT=https://gitlab.redox-os.org/redox-os/rust.git
 BRANCH=redox-2024-05-11
-BUILD_DEPENDS=(llvm18-shared zlib)
+BUILD_DEPENDS=(llvm18 zlib)
 DEPENDS="gcc13 cargo"
 PREPARE_COPY=0
 
