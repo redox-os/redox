@@ -45,11 +45,8 @@ data = """
 
 set -ex
 
-export LD_DEBUG=all
 X "${DISPLAY}" -verbose 6 &
 sleep 1
 twm &
-xeyes &
-xev &
 xterm &
 """
