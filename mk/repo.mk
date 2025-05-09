@@ -29,6 +29,17 @@ else
 	touch $@
 endif
 
+# Find recipe
+find.%: $(FSTOOLS_TAG) FORCE
+ifeq ($(PODMAN_BUILD),1)
+	$(PODMAN_RUN) $(MAKE) $@
+else
+	export PATH="$(PREFIX_PATH):$$PATH" && \
+	export COOKBOOK_HOST_SYSROOT="$(ROOT)/$(PREFIX_INSTALL)" && \
+	cd cookbook && \
+	target/release/find_recipe $*
+endif
+
 # Invoke clean.sh for a single target
 c.%: $(FSTOOLS_TAG) FORCE
 ifeq ($(PODMAN_BUILD),1)
@@ -87,6 +98,6 @@ uc.%: $(FSTOOLS_TAG) FORCE
 	$(MAKE) u.$*
 	$(MAKE) c.$*
 
-ucf.%: (FSTOOLS_TAG) FORCE
+ucf.%: $(FSTOOLS_TAG) FORCE
 	$(MAKE) uc.$*
 	$(MAKE) f.$*
