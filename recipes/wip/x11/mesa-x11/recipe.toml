@@ -18,11 +18,10 @@ dependencies = [
 ]
 script = """
 DYNAMIC_INIT
-#TODO: use glx=dri
 cookbook_meson \
     -Ddri-drivers-path=/usr/lib/dri \
     -Degl=disabled \
-    -Dglx=xlib \
+    -Dglx=dri \
     -Dllvm=enabled \
     -Dplatforms=x11 \
     -Dshader-cache=disabled
