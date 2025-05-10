@@ -124,6 +124,12 @@ path = "/share"
 data = "usr/share"
 symlink = true
 
+## legacy orbital font directory
+[[files]]
+path = "/ui/fonts"
+data = "usr/share/fonts"
+symlink = true
+
 ## /var
 [[files]]
 path = "/var"
