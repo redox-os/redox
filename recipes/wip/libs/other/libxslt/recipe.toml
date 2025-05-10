@@ -1,5 +1,20 @@
-#TODO require Python 3.10
 [source]
-tar = "https://download.gnome.org/sources/libxslt/1.1/libxslt-1.1.38.tar.xz"
+tar = "https://download.gnome.org/sources/libxslt/1.1/libxslt-1.1.43.tar.xz"
+blake3 = "6c529acc02344fe48377810debadaee8eb0511a5553a8b7bea685d5282ab00cb"
+script = """
+DYNAMIC_INIT
+autotools_recursive_regenerate
+"""
+
 [build]
-template = "configure"
+dependencies = [
+    "libxml2",
+    "xz",
+    "zlib",
+]
+template = "custom"
+script = """
+DYNAMIC_INIT
+export CFLAGS="-llzma -lz"
+cookbook_configure --without-python
+"""
