@@ -10,6 +10,7 @@ dependencies = [
     "glib",
     "libffi",
     "libiconv",
+    "libicu",
     "libpng",
     "pcre2",
     "zlib"
