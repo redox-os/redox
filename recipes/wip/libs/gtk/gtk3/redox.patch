@@ -30,7 +30,7 @@ diff -ruwN gtk+-3.24.43/gtk/a11y/gtkaccessibility.c source/gtk/a11y/gtkaccessibi
  
 diff -ruwN gtk+-3.24.43/meson.build source/meson.build
 --- gtk+-3.24.43/meson.build	2024-07-10 11:03:14.000000000 -0600
-+++ source/meson.build	2025-05-04 18:36:13.187091118 -0600
++++ source/meson.build	2025-05-10 13:39:34.329344669 -0600
 @@ -565,7 +565,7 @@
    xfixes_dep     = dependency('xfixes', required: false)
    xcomposite_dep = dependency('xcomposite', required: false)
@@ -40,3 +40,12 @@ diff -ruwN gtk+-3.24.43/meson.build source/meson.build
  
    backend_immodules += ['xim']
  
+@@ -584,7 +584,7 @@
+     x11_pkgs += ['xdamage']
+   endif
+ 
+-  atk_pkgs += ['atk-bridge-2.0']
++  #atk_pkgs += ['atk-bridge-2.0']
+ 
+   cdata.set('HAVE_XDAMAGE', xdamage_dep.found() ? 1 : false)
+   cdata.set('HAVE_XCURSOR', xcursor_dep.found() ? 1 : false)
