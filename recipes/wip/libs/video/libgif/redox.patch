@@ -1,0 +1,12 @@
+diff -ruwN giflib-5.2.1/Makefile source/Makefile
+--- giflib-5.2.1/Makefile	2019-06-24 10:08:57.000000000 -0600
++++ source/Makefile	2025-05-10 13:15:44.301303744 -0600
+@@ -14,7 +14,7 @@
+ TAR = tar
+ INSTALL = install
+ 
+-PREFIX = /usr/local
++PREFIX = /usr
+ BINDIR = $(PREFIX)/bin
+ INCDIR = $(PREFIX)/include
+ LIBDIR = $(PREFIX)/lib
