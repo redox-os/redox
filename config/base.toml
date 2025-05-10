@@ -126,8 +126,8 @@ symlink = true
 
 ## legacy orbital font directory
 [[files]]
-path = "/ui/fonts"
-data = "usr/share/fonts"
+path = "/usr/share/fonts"
+data = "../../ui/fonts"
 symlink = true
 
 ## /var
