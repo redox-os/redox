@@ -1,5 +1,24 @@
-#TODO compilation error
 [source]
-tar = "https://www.gnupg.org/ftp/gcrypt/libgpg-error/libgpg-error-1.47.tar.bz2"
+tar = "https://gnupg.org/ftp/gcrypt/libgpg-error/libgpg-error-1.55.tar.bz2"
+blake3 = "6c363dd8c6bcf2601dd5ff3b11fa2f699baa2aae40de2acd92461af0fd8178f0"
+script = """
+DYNAMIC_INIT
+autotools_recursive_regenerate
+"""
+
 [build]
-template = "configure"
+template = "custom"
+script = """
+DYNAMIC_INIT
+#TODO: this modifies the source
+env \
+    LOCK_ABI_VERSION=1 \
+    host="${TARGET}" \
+    ac_ext=c \
+    ac_objext=o \
+    AWK="$(which awk)" \
+    "${COOKBOOK_SOURCE}/src/gen-lock-obj.sh" \
+    > \
+    "${COOKBOOK_SOURCE}/src/syscfg/lock-obj-pub.${TARGET}.h"
+cookbook_configure --enable-threads=posix
+"""
