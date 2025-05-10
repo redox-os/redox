@@ -33,6 +33,7 @@ RUN useradd --create-home --no-log-init --uid _UID_ poduser \
 		git \
 		git-lfs \
 		gperf \
+		gtk-doc-tools \
 		help2man \
 		intltool \
 		libc6-dev-i386 \
@@ -68,6 +69,7 @@ RUN useradd --create-home --no-log-init --uid _UID_ poduser \
 		python3-mako \
 		python3-venv \
 		rsync \
+		ruby \
 		scons \
 		ssh \
 		syslinux-utils \
