@@ -1,5 +1,24 @@
-#TODO missing script for Meson, lacking build instructions
 [source]
-tar = "https://download.gnome.org/sources/libsoup/3.4/libsoup-3.4.4.tar.xz"
+tar = "https://download.gnome.org/sources/libsoup/3.6/libsoup-3.6.5.tar.xz"
+blake3 = "9e5214dfb310ac1bbf8ceb85724f2c79a1d5c94382f306080a6cdea47230e960"
+
 [build]
+dependencies = [
+    "gettext",
+    "glib",
+    "libffi",
+    "libiconv",
+    "libpsl",
+    "nghttp2",
+    "pcre2",
+    "sqlite3",
+    "zlib",
+]
 template = "custom"
+script = """
+DYNAMIC_INIT
+cookbook_meson \
+    -Dsysprof=disabled \
+    -Dtests=false \
+    -Dtls_check=false
+"""
