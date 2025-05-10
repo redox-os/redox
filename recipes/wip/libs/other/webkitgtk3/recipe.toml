@@ -2,39 +2,59 @@
 #TODO port to orbital
 #TODO missing dependencies, see https://archlinux.org/packages/extra/x86_64/webkitgtk-6.0/
 [source]
-tar = "https://webkitgtk.org/releases/webkitgtk-2.42.2.tar.xz"
+tar = "https://webkitgtk.org/releases/webkitgtk-2.49.1.tar.xz"
+blake3 = "7f04acb2f909ad334fc623afb297ebca1d5a5005bda1682946fb37e044e45ecb"
+
 [build]
 template = "custom"
 dependencies = [
-    "gtk3",
+    "atk",
     "cairo",
+    "expat",
     "fontconfig",
     "freetype2",
+    "fribidi",
+    "gettext",
+    "gdk-pixbuf",
     "glib",
     "gstreamer",
+    "gtk3",
     "harfbuzz",
-    "libavif",
-    "mesa",
+    #TODO: "libavif",
     "libepoxy",
+    "libffi",
+    "libicu",
+    "libiconv",
     "libgcrypt",
+    "libjpeg",
     "libpng",
+    "libpthread-stubs",
+    "libtasn1",
     "libwebp",
+    "libx11",
+    "libxau",
+    "libxext",
+    "libxcb",
+    "libxfixes",
+    "libxi",
+    "libxrandr",
+    "libxrender",
     "libxml2",
-    "zlib",
+    "mesa-x11",
+    "pango",
+    "pcre2",
+    "pixman",
+    "shared-mime-info",
     "sqlite3",
+    "x11proto",
+    "xextproto",
+    "zlib",
 ]
 script = """
-COOKBOOK_CONFIGURE="cmake"
-COOKBOOK_CONFIGURE_FLAGS=(
-    -DCMAKE_BUILD_TYPE=Release
-    -DCMAKE_CROSSCOMPILING=True
-    -DCMAKE_EXE_LINKER_FLAGS="-static"
-    -DCMAKE_INSTALL_PREFIX="/"
-    -DCMAKE_PREFIX_PATH="${COOKBOOK_SYSROOT}"
-    -DCMAKE_SYSTEM_NAME=Generic
-    -DCMAKE_SYSTEM_PROCESSOR="$(echo "${TARGET}" | cut -d - -f1)"
-    -DCMAKE_VERBOSE_MAKEFILE=On
-"${COOKBOOK_SOURCE}"
-)
-cookbook_configure
+DYNAMIC_INIT
+cookbook_cmake \
+    -DPORT=GTK \
+    -DLibGcrypt_GpgError_LIBRARY=lgcrypt \
+    -DLibGcrypt_GpgError_INCLUDE_DIR="${COOKBOOK_SYSROOT}/usr/include" \
+    -DUSE_GTK4=OFF
 """
