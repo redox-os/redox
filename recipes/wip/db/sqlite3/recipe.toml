@@ -5,11 +5,16 @@
 #relibc getgroups(65536, 0x14920): not implemented
 #Runtime error near line 1: disk I/O error (10)
 [source]
-tar = "https://www.sqlite.org/2024/sqlite-autoconf-3450000.tar.gz"
-#blake3 = "44bc75a40d32afa71cffe149f766857c3cc41dea261b1e4645fde5f73f4c9268"
+tar = "https://sqlite.org/2025/sqlite-autoconf-3490200.tar.gz"
+blake3 = "96e071dc4f964311882334e927f017d8383915b1b140adcf308957dff213aa8c"
+script = """
+DYNAMIC_INIT
+autotools_recursive_regenerate
+"""
+
 [build]
 template = "custom"
 script = """
-export CPPFLAGS="${CPPFLAGS} -D__minux=1 -DSQLITE_DEFAULT_UNIX_VFS='\\"unix-none\\"'"
+DYNAMIC_INIT
 cookbook_configure
 """
