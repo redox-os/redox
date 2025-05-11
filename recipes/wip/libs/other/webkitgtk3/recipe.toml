@@ -4,6 +4,7 @@
 [source]
 tar = "https://webkitgtk.org/releases/webkitgtk-2.49.1.tar.xz"
 blake3 = "7f04acb2f909ad334fc623afb297ebca1d5a5005bda1682946fb37e044e45ecb"
+patches = ["redox.patch"]
 
 [build]
 template = "custom"
@@ -14,33 +15,37 @@ dependencies = [
     "fontconfig",
     "freetype2",
     "fribidi",
-    "gettext",
     "gdk-pixbuf",
+    "gettext",
     "glib",
     "gstreamer",
     "gtk3",
     "harfbuzz",
-    #TODO: "libavif",
     "libepoxy",
     "libffi",
-    "libicu",
-    "libiconv",
     "libgcrypt",
-    "libjpeg",
+    "libgpg-error",
+    "libiconv",
+    "libicu",
+    "libjpeg-turbo",
     "libpng",
+    "libpsl",
     "libpthread-stubs",
+    "libsoup",
     "libtasn1",
     "libwebp",
     "libx11",
     "libxau",
-    "libxext",
     "libxcb",
+    "libxext",
     "libxfixes",
     "libxi",
+    "libxml2",
     "libxrandr",
     "libxrender",
-    "libxml2",
+    "libxslt",
     "mesa-x11",
+    "nghttp2",
     "pango",
     "pcre2",
     "pixman",
@@ -48,13 +53,32 @@ dependencies = [
     "sqlite3",
     "x11proto",
     "xextproto",
+    "xz",
     "zlib",
 ]
 script = """
 DYNAMIC_INIT
+#TODO: enable more features
 cookbook_cmake \
+    -DCMAKE_CXX_STANDARD_LIBRARIES="-lintl -lgmodule-2.0 -lpsl -lnghttp2 -lffi -liconv -lpcre2-8" \
+    -DENABLE_GAMEPAD=OFF \
+    -DENABLE_INTROSPECTION=OFF \
+    -DENABLE_JOURNALD_LOG=OFF \
+    -DENABLE_SPEECH_SYNTHESIS=OFF \
+    -DENABLE_SPELLCHECK=OFF \
     -DPORT=GTK \
-    -DLibGcrypt_GpgError_LIBRARY=lgcrypt \
-    -DLibGcrypt_GpgError_INCLUDE_DIR="${COOKBOOK_SYSROOT}/usr/include" \
-    -DUSE_GTK4=OFF
+    -DUNIX=1 \
+    -DUSE_AVIF=OFF \
+    -DUSE_GSTREAMER_GL=OFF \
+    -DUSE_GTK4=OFF \
+    -DUSE_JPEGXL=OFF \
+    -DUSE_LCMS=OFF \
+    -DUSE_LIBBACKTRACE=OFF \
+    -DUSE_LIBDRM=OFF \
+    -DUSE_LIBHYPHEN=OFF \
+    -DUSE_LIBSECRET=OFF \
+    -DUSE_SKIA=OFF \
+    -DUSE_SYSPROF_CAPTURE=OFF \
+    -DUSE_SYSTEM_SYSPROF_CAPTURE=OFF \
+    -DUSE_WOFF2=OFF
 """
