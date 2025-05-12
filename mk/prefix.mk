@@ -82,6 +82,7 @@ $(PREFIX)/libtool:
 		"$@.partial"
 
 	touch "$@.partial"
+	echo $(LIBTOOL_VERSION) > $@.partial/.tarball-version
 	mv "$@.partial" "$@"
 
 $(PREFIX)/libtool-build: $(PREFIX)/libtool $(CONTAINER_TAG)
@@ -89,11 +90,13 @@ ifeq ($(PODMAN_BUILD),1)
 	$(PODMAN_RUN) $(MAKE) $@
 else
 	mkdir -p "$@.partial"
+	PATH="$(ROOT)/$(PREFIX)/rust-install/bin:$$PATH" && \
 	cd "$<" && \
 		./bootstrap \
 			--skip-po \
 			--force \
 			--gnulib-srcdir=./gnulib
+	PATH="$(ROOT)/$(PREFIX)/rust-install/bin:$$PATH" && \
 	cd "$@.partial" && \
 		cp -rp $(abspath $<)/. ./ && \
 		"$(ROOT)/$</configure" \
@@ -110,6 +113,7 @@ ifeq ($(PODMAN_BUILD),1)
 	$(PODMAN_RUN) $(MAKE) $@
 else
 	cp -r "$(PREFIX)/relibc-install/" "$@"
+	PATH="$(ROOT)/$(PREFIX)/rust-install/bin:$$PATH" && \
 	cd "$(PREFIX)/libtool-build" && \
 		$(MAKE) install -j `$(NPROC)`
 	cd "$@" && $(PREFIX_STRIP)
