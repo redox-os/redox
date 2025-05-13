@@ -203,6 +203,20 @@ diff -ruwN webkitgtk-2.49.1/Source/ThirdParty/ANGLE/src/common/platform.h source
  #    define ANGLE_PLATFORM_POSIX 1
  #else
  #    error Unsupported platform.
+diff -ruwN webkitgtk-2.49.1/Source/ThirdParty/ANGLE/src/common/system_utils.h source/Source/ThirdParty/ANGLE/src/common/system_utils.h
+--- webkitgtk-2.49.1/Source/ThirdParty/ANGLE/src/common/system_utils.h	2025-05-13 10:04:29.634120979 -0600
++++ source/Source/ThirdParty/ANGLE/src/common/system_utils.h	2025-05-13 10:29:39.241586171 -0600
+@@ -256,7 +256,9 @@
+ }
+ #endif
+ 
+-void SetCurrentThreadName(const char *name);
++#if !defined(__redox__)
++void SetCurrentThreadName(const char *name)
++#endif
+ }  // namespace angle
+ 
+ #endif  // COMMON_SYSTEM_UTILS_H_
 diff -ruwN webkitgtk-2.49.1/Source/ThirdParty/ANGLE/src/common/system_utils_posix.cpp source/Source/ThirdParty/ANGLE/src/common/system_utils_posix.cpp
 --- webkitgtk-2.49.1/Source/ThirdParty/ANGLE/src/common/system_utils_posix.cpp	2024-05-30 05:59:22.953676200 -0600
 +++ source/Source/ThirdParty/ANGLE/src/common/system_utils_posix.cpp	2025-05-10 20:28:38.268901621 -0600
@@ -218,6 +232,19 @@ diff -ruwN webkitgtk-2.49.1/Source/ThirdParty/ANGLE/src/common/system_utils_posi
  namespace angle
  {
  
+diff -ruwN webkitgtk-2.49.1/Source/ThirdParty/ANGLE/src/common/WorkerThread.cpp source/Source/ThirdParty/ANGLE/src/common/WorkerThread.cpp
+--- webkitgtk-2.49.1/Source/ThirdParty/ANGLE/src/common/WorkerThread.cpp	2024-06-25 02:04:37.142420000 -0600
++++ source/Source/ThirdParty/ANGLE/src/common/WorkerThread.cpp	2025-05-13 10:31:32.029891938 -0600
+@@ -165,7 +165,9 @@
+ 
+ void AsyncWorkerPool::threadLoop()
+ {
++#if !defined(__redox__)
+     angle::SetCurrentThreadName("ANGLE-Worker");
++#endif
+ 
+     while (true)
+     {
 diff -ruwN webkitgtk-2.49.1/Source/ThirdParty/ANGLE/src/libANGLE/Display.cpp source/Source/ThirdParty/ANGLE/src/libANGLE/Display.cpp
 --- webkitgtk-2.49.1/Source/ThirdParty/ANGLE/src/libANGLE/Display.cpp	2025-02-05 02:14:42.678567400 -0700
 +++ source/Source/ThirdParty/ANGLE/src/libANGLE/Display.cpp	2025-05-10 20:42:33.040029309 -0600
@@ -239,6 +266,32 @@ diff -ruwN webkitgtk-2.49.1/Source/ThirdParty/ANGLE/src/libANGLE/Display.cpp sou
  #        if defined(ANGLE_USE_GBM)
              if (platformType == 0)
              {
+diff -ruwN webkitgtk-2.49.1/Source/ThirdParty/ANGLE/src/libANGLE/renderer/vulkan/CLCommandQueueVk.cpp source/Source/ThirdParty/ANGLE/src/libANGLE/renderer/vulkan/CLCommandQueueVk.cpp
+--- webkitgtk-2.49.1/Source/ThirdParty/ANGLE/src/libANGLE/renderer/vulkan/CLCommandQueueVk.cpp	2025-02-17 05:59:58.575796600 -0700
++++ source/Source/ThirdParty/ANGLE/src/libANGLE/renderer/vulkan/CLCommandQueueVk.cpp	2025-05-13 10:30:15.002645630 -0600
+@@ -142,7 +142,9 @@
+ 
+ angle::Result DispatchWorkThread::finishLoop()
+ {
++#if !defined(__redox__)
+     angle::SetCurrentThreadName("ANGLE-CL-CQD");
++#endif
+ 
+     while (true)
+     {
+diff -ruwN webkitgtk-2.49.1/Source/ThirdParty/ANGLE/src/libANGLE/renderer/vulkan/CommandQueue.cpp source/Source/ThirdParty/ANGLE/src/libANGLE/renderer/vulkan/CommandQueue.cpp
+--- webkitgtk-2.49.1/Source/ThirdParty/ANGLE/src/libANGLE/renderer/vulkan/CommandQueue.cpp	2025-02-05 02:14:42.690567300 -0700
++++ source/Source/ThirdParty/ANGLE/src/libANGLE/renderer/vulkan/CommandQueue.cpp	2025-05-13 10:30:05.421614993 -0600
+@@ -378,7 +378,9 @@
+ 
+ void CleanUpThread::processTasks()
+ {
++#if !defined(__redox__)
+     angle::SetCurrentThreadName("ANGLE-GC");
++#endif
+ 
+     while (true)
+     {
 diff -ruwN webkitgtk-2.49.1/Source/ThirdParty/ANGLE/src/libGLESv2.gni source/Source/ThirdParty/ANGLE/src/libGLESv2.gni
 --- webkitgtk-2.49.1/Source/ThirdParty/ANGLE/src/libGLESv2.gni	2025-02-17 05:59:58.587796200 -0700
 +++ source/Source/ThirdParty/ANGLE/src/libGLESv2.gni	2025-05-10 20:36:18.426498466 -0600
