@@ -28,6 +28,18 @@ diff -ruwN gtk+-3.24.43/gtk/a11y/gtkaccessibility.c source/gtk/a11y/gtkaccessibi
    atk_bridge_adaptor_init (NULL, NULL);
  #endif
  
+diff -ruwN gtk+-3.24.43/gtk/gtkmain.c source/gtk/gtkmain.c
+--- gtk+-3.24.43/gtk/gtkmain.c	2024-07-10 11:03:14.000000000 -0600
++++ source/gtk/gtkmain.c	2025-05-13 17:04:00.340216840 -0600
+@@ -355,7 +355,7 @@
+ check_setugid (void)
+ {
+ /* this isn't at all relevant on MS Windows and doesn't compile ... --hb */
+-#ifndef G_OS_WIN32
++#if !defined(G_OS_WIN32) && !defined(__redox__)
+   uid_t ruid, euid, suid; /* Real, effective and saved user ID's */
+   gid_t rgid, egid, sgid; /* Real, effective and saved group ID's */
+   
 diff -ruwN gtk+-3.24.43/meson.build source/meson.build
 --- gtk+-3.24.43/meson.build	2024-07-10 11:03:14.000000000 -0600
 +++ source/meson.build	2025-05-10 13:39:34.329344669 -0600
