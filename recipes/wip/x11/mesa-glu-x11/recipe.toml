@@ -9,6 +9,8 @@ dependencies = [
     "libxau",
     "libxcb",
     "libxext",
+    "libxfixes",
+    "libxxf86vm",
     "mesa-x11",
     "x11proto",
 ]
