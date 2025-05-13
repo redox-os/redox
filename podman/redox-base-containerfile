@@ -74,6 +74,7 @@ RUN useradd --create-home --no-log-init --uid _UID_ poduser \
 		ssh \
 		syslinux-utils \
 		texinfo \
+		unifdef \
 		unzip \
 		wget \
 		xdg-utils \
