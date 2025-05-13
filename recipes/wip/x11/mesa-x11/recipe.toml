@@ -20,7 +20,7 @@ script = """
 DYNAMIC_INIT
 cookbook_meson \
     -Ddri-drivers-path=/usr/lib/dri \
-    -Degl=disabled \
+    -Degl=enabled \
     -Dglx=dri \
     -Dllvm=enabled \
     -Dplatforms=x11 \

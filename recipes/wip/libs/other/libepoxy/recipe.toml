@@ -10,6 +10,9 @@ dependencies = [
     "libx11",
     "libxau",
     "libxcb",
+    "libxext",
+    "libxfixes",
+    "libxxf86vm",
     "llvm18",
     "mesa-x11",
     "x11proto",
@@ -18,7 +21,7 @@ dependencies = [
 script = """
 DYNAMIC_INIT
 cookbook_meson \
-    -Degl=no \
+    -Degl=yes \
     -Dglx=yes \
     -Dtests=false
 """
