@@ -59,9 +59,61 @@ dependencies = [
 ]
 script = """
 DYNAMIC_INIT
+#TODO: why are these not automatic?
+LIBS=(
+    $("${TARGET}-pkg-config" --libs epoxy)
+    $("${TARGET}-pkg-config" --libs expat)
+    $("${TARGET}-pkg-config" --libs fontconfig)
+    $("${TARGET}-pkg-config" --libs freetype2)
+    $("${TARGET}-pkg-config" --libs fribidi)
+    $("${TARGET}-pkg-config" --libs gdk-3.0)
+    $("${TARGET}-pkg-config" --libs gdk-pixbuf-2.0)
+    $("${TARGET}-pkg-config" --libs gpg-error)
+    $("${TARGET}-pkg-config" --libs gstreamer-1.0)
+    $("${TARGET}-pkg-config" --libs gstreamer-allocators-1.0)
+    $("${TARGET}-pkg-config" --libs gstreamer-app-1.0)
+    $("${TARGET}-pkg-config" --libs gstreamer-audio-1.0)
+    $("${TARGET}-pkg-config" --libs gstreamer-base-1.0)
+    $("${TARGET}-pkg-config" --libs gstreamer-fft-1.0)
+    $("${TARGET}-pkg-config" --libs gstreamer-pbutils-1.0)
+    $("${TARGET}-pkg-config" --libs gstreamer-tag-1.0)
+    $("${TARGET}-pkg-config" --libs gstreamer-transcoder-1.0)
+    $("${TARGET}-pkg-config" --libs gstreamer-video-1.0)
+    $("${TARGET}-pkg-config" --libs gtk+-3.0)
+    $("${TARGET}-pkg-config" --libs harfbuzz-icu)
+    $("${TARGET}-pkg-config" --libs libffi)
+    $("${TARGET}-pkg-config" --libs libgcrypt)
+    $("${TARGET}-pkg-config" --libs libjpeg)
+    $("${TARGET}-pkg-config" --libs liblzma)
+    $("${TARGET}-pkg-config" --libs libnghttp2)
+    $("${TARGET}-pkg-config" --libs libpcre2-8)
+    $("${TARGET}-pkg-config" --libs libpng)
+    $("${TARGET}-pkg-config" --libs libpsl)
+    $("${TARGET}-pkg-config" --libs libsharpyuv)
+    $("${TARGET}-pkg-config" --libs libsoup-3.0)
+    $("${TARGET}-pkg-config" --libs libtasn1)
+    $("${TARGET}-pkg-config" --libs libwebp)
+    $("${TARGET}-pkg-config" --libs libwebpdemux)
+    $("${TARGET}-pkg-config" --libs libxml2)
+    $("${TARGET}-pkg-config" --libs libxslt)
+    $("${TARGET}-pkg-config" --libs pango)
+    $("${TARGET}-pkg-config" --libs pangofc)
+    $("${TARGET}-pkg-config" --libs pangoft2)
+    $("${TARGET}-pkg-config" --libs pixman-1)
+    $("${TARGET}-pkg-config" --libs x11)
+    $("${TARGET}-pkg-config" --libs x11-xcb)
+    $("${TARGET}-pkg-config" --libs xau)
+    $("${TARGET}-pkg-config" --libs xcb)
+    $("${TARGET}-pkg-config" --libs xcb-render)
+    $("${TARGET}-pkg-config" --libs xext)
+    $("${TARGET}-pkg-config" --libs xfixes)
+    $("${TARGET}-pkg-config" --libs xi)
+    $("${TARGET}-pkg-config" --libs xrandr)
+    $("${TARGET}-pkg-config" --libs xrender)
+)
 #TODO: enable more features
 cookbook_cmake \
-    -DCMAKE_CXX_STANDARD_LIBRARIES="-lintl -lgmodule-2.0 -lpsl -lnghttp2 -lffi -liconv -lpcre2-8" \
+    -DCMAKE_CXX_STANDARD_LIBRARIES="${LIBS[*]}" \
     -DENABLE_GAMEPAD=OFF \
     -DENABLE_INTROSPECTION=OFF \
     -DENABLE_JOURNALD_LOG=OFF \
