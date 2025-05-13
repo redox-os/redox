@@ -44,6 +44,7 @@ dependencies = [
     "libxrandr",
     "libxrender",
     "libxslt",
+    "libxxf86vm",
     "mesa-x11",
     "nghttp2",
     "pango",
@@ -79,6 +80,7 @@ cookbook_cmake \
     -DUSE_LIBSECRET=OFF \
     -DUSE_SKIA=OFF \
     -DUSE_SYSPROF_CAPTURE=OFF \
+    -DUSE_SYSTEM_MALLOC=ON \
     -DUSE_SYSTEM_SYSPROF_CAPTURE=OFF \
     -DUSE_WOFF2=OFF
 """

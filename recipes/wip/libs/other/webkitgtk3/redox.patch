@@ -1,15 +1,24 @@
-diff -ruwN webkitgtk-2.49.1/Source/bmalloc/bmalloc/AvailableMemory.cpp source/Source/bmalloc/bmalloc/AvailableMemory.cpp
---- webkitgtk-2.49.1/Source/bmalloc/bmalloc/AvailableMemory.cpp	2023-09-18 01:56:46.719077300 -0600
-+++ source/Source/bmalloc/bmalloc/AvailableMemory.cpp	2025-05-10 19:08:48.967816054 -0600
-@@ -166,7 +166,7 @@
-     if (!sysinfo(&info))
-         return info.totalram * info.mem_unit;
-     return availableMemoryGuess;
--#elif BOS(UNIX)
-+#elif BOS(UNIX) && !defined(__redox__)
-     long pages = sysconf(_SC_PHYS_PAGES);
-     long pageSize = sysconf(_SC_PAGE_SIZE);
-     if (pages == -1 || pageSize == -1)
+diff -ruwN webkitgtk-2.49.1/Source/bmalloc/bmalloc/BPlatform.h source/Source/bmalloc/bmalloc/BPlatform.h
+--- webkitgtk-2.49.1/Source/bmalloc/bmalloc/BPlatform.h	2025-03-28 00:18:28.347204000 -0600
++++ source/Source/bmalloc/bmalloc/BPlatform.h	2025-05-12 20:54:40.104051612 -0600
+@@ -40,7 +40,7 @@
+ #define BOS_DARWIN 1
+ #endif
+ 
+-#if defined(__unix) || defined(__unix__)
++#if defined(__unix) || defined(__unix__) || defined(__redox__)
+ #define BOS_UNIX 1
+ #endif
+ 
+@@ -339,7 +339,7 @@
+ 
+ /* BENABLE(LIBPAS) is enabling libpas build. But this does not mean we use libpas for bmalloc replacement. */
+ #if !defined(BENABLE_LIBPAS)
+-#if BCPU(ADDRESS64) && (BOS(DARWIN) || (BOS(LINUX) && (BCPU(X86_64) || BCPU(ARM64))) || BPLATFORM(PLAYSTATION))
++#if BCPU(ADDRESS64) && (BOS(DARWIN) || (BOS(LINUX) && (BCPU(X86_64) || BCPU(ARM64))) || BPLATFORM(PLAYSTATION)) || defined(__redox__)
+ #define BENABLE_LIBPAS 1
+ #ifndef PAS_BMALLOC
+ #define PAS_BMALLOC 1
 diff -ruwN webkitgtk-2.49.1/Source/JavaScriptCore/heap/BlockDirectory.cpp source/Source/JavaScriptCore/heap/BlockDirectory.cpp
 --- webkitgtk-2.49.1/Source/JavaScriptCore/heap/BlockDirectory.cpp	2025-03-20 11:07:59.015023500 -0600
 +++ source/Source/JavaScriptCore/heap/BlockDirectory.cpp	2025-05-10 21:38:36.889325942 -0600
@@ -48,6 +57,18 @@ Binary files webkitgtk-2.49.1/Source/JavaScriptCore/inspector/scripts/codegen/__
 Binary files webkitgtk-2.49.1/Source/JavaScriptCore/inspector/scripts/codegen/__pycache__/models.cpython-311.pyc and source/Source/JavaScriptCore/inspector/scripts/codegen/__pycache__/models.cpython-311.pyc differ
 Binary files webkitgtk-2.49.1/Source/JavaScriptCore/inspector/scripts/codegen/__pycache__/objc_generator.cpython-311.pyc and source/Source/JavaScriptCore/inspector/scripts/codegen/__pycache__/objc_generator.cpython-311.pyc differ
 Binary files webkitgtk-2.49.1/Source/JavaScriptCore/inspector/scripts/codegen/__pycache__/objc_generator_templates.cpython-311.pyc and source/Source/JavaScriptCore/inspector/scripts/codegen/__pycache__/objc_generator_templates.cpython-311.pyc differ
+diff -ruwN webkitgtk-2.49.1/Source/JavaScriptCore/jsc.cpp source/Source/JavaScriptCore/jsc.cpp
+--- webkitgtk-2.49.1/Source/JavaScriptCore/jsc.cpp	2025-03-21 05:07:10.820055200 -0600
++++ source/Source/JavaScriptCore/jsc.cpp	2025-05-12 21:27:55.789300618 -0600
+@@ -208,6 +208,8 @@
+         for (;;) {
+ #if OS(WINDOWS)
+             Sleep(1000);
++#elif defined(__redox__)
++            //TODO
+ #else
+             pause();
+ #endif
 diff -ruwN webkitgtk-2.49.1/Source/JavaScriptCore/runtime/JSCBytecodeCacheVersion.cpp source/Source/JavaScriptCore/runtime/JSCBytecodeCacheVersion.cpp
 --- webkitgtk-2.49.1/Source/JavaScriptCore/runtime/JSCBytecodeCacheVersion.cpp	2025-03-20 11:07:59.015023500 -0600
 +++ source/Source/JavaScriptCore/runtime/JSCBytecodeCacheVersion.cpp	2025-05-11 08:15:28.272811727 -0600
@@ -71,61 +92,66 @@ diff -ruwN webkitgtk-2.49.1/Source/JavaScriptCore/runtime/JSCBytecodeCacheVersio
              if (!dladdr(jsFunctionAddr, &info))
 diff -ruwN webkitgtk-2.49.1/Source/JavaScriptCore/runtime/MachineContext.h source/Source/JavaScriptCore/runtime/MachineContext.h
 --- webkitgtk-2.49.1/Source/JavaScriptCore/runtime/MachineContext.h	2025-03-20 11:07:59.015023500 -0600
-+++ source/Source/JavaScriptCore/runtime/MachineContext.h	2025-05-11 08:58:07.039826666 -0600
-@@ -188,7 +188,7 @@
++++ source/Source/JavaScriptCore/runtime/MachineContext.h	2025-05-12 20:27:42.492098710 -0600
+@@ -158,7 +158,7 @@
+ {
+ #if OS(DARWIN)
+     return stackPointerImpl(machineContext->__ss);
+-#elif OS(HAIKU)
++#elif OS(HAIKU) || defined(__redox__)
+ #if CPU(X86_64)
+     return reinterpret_cast<void*&>(machineContext.rsp);
+ #else
+@@ -287,7 +287,7 @@
+ {
+ #if OS(DARWIN)
+     return framePointerImpl(machineContext->__ss);
+-#elif OS(HAIKU)
++#elif OS(HAIKU) || defined(__redox__)
+ #if CPU(X86_64)
+     return reinterpret_cast<void*&>(machineContext.rbp);
+ #else
+@@ -455,7 +455,7 @@
+ {
+ #if OS(DARWIN)
+     return instructionPointerImpl(machineContext->__ss);
+-#elif OS(HAIKU)
++#elif OS(HAIKU) || defined(__redox__)
+ #if CPU(X86_64)
+     return reinterpret_cast<void*&>((uintptr_t&) machineContext.rip);
+ #else
+@@ -649,7 +649,7 @@
+ {
+ #if OS(DARWIN)
+     return argumentPointer<1>(machineContext->__ss);
+-#elif OS(HAIKU)
++#elif OS(HAIKU) || defined(__redox__)
+ #if CPU(X86_64)
+     return reinterpret_cast<void*&>((uintptr_t&) machineContext.rsi);
+ #else
+@@ -760,6 +760,13 @@
  #error Unknown Architecture
  #endif
  
--#elif OS(FUCHSIA) || OS(LINUX) || OS(HURD)
-+#elif OS(FUCHSIA) || OS(LINUX) || OS(HURD) || defined(__redox__)
- 
- #if CPU(X86_64)
-     return reinterpret_cast<void*&>((uintptr_t&) machineContext.gregs[REG_RSP]);
-@@ -317,7 +317,7 @@
- #error Unknown Architecture
++#elif defined(__redox__)
++#if CPU(X86_64)
++    return reinterpret_cast<void*>((uintptr_t) machineContext.rbx);
++#else
++#error Unknown Architecture
++#endif
++
+ #else
+ #error Need a way to get the frame pointer for another thread on this platform
  #endif
- 
--#elif OS(FUCHSIA) || OS(LINUX) || OS(HURD)
-+#elif OS(FUCHSIA) || OS(LINUX) || OS(HURD) || defined(__redox__)
- 
- // The following sequence depends on glibc's sys/ucontext.h.
+@@ -834,7 +841,7 @@
+     // LLInt uses regT4 as PC.
+ #if OS(DARWIN)
+     return llintInstructionPointer(machineContext->__ss);
+-#elif OS(HAIKU)
++#elif OS(HAIKU) || defined(__redox__)
  #if CPU(X86_64)
-@@ -485,7 +485,7 @@
- #error Unknown Architecture
- #endif
- 
--#elif OS(FUCHSIA) || OS(LINUX) || OS(HURD)
-+#elif OS(FUCHSIA) || OS(LINUX) || OS(HURD) || defined(__redox__)
- 
- // The following sequence depends on glibc's sys/ucontext.h.
- #if CPU(X86_64)
-@@ -679,7 +679,7 @@
- #error Unknown Architecture
- #endif
- 
--#elif OS(FUCHSIA) || OS(LINUX) || OS(HURD)
-+#elif OS(FUCHSIA) || OS(LINUX) || OS(HURD) || defined(__redox__)
- 
- // The following sequence depends on glibc's sys/ucontext.h.
- #if CPU(X86_64)
-@@ -736,7 +736,7 @@
- #error Unknown Architecture
- #endif
- 
--#elif OS(FUCHSIA) || OS(LINUX) || OS(HURD)
-+#elif OS(FUCHSIA) || OS(LINUX) || OS(HURD) || defined(__redox__)
- 
- // The following sequence depends on glibc's sys/ucontext.h.
- #if CPU(X86_64)
-@@ -864,7 +864,7 @@
- #error Unknown Architecture
- #endif
- 
--#elif OS(FUCHSIA) || OS(LINUX) || OS(HURD)
-+#elif OS(FUCHSIA) || OS(LINUX) || OS(HURD) || defined(__redox__)
- 
- // The following sequence depends on glibc's sys/ucontext.h.
- #if CPU(X86_64)
+     return reinterpret_cast<void*&>((uintptr_t&) machineContext.r8);
+ #else
 Binary files webkitgtk-2.49.1/Source/JavaScriptCore/wasm/__pycache__/generateWasm.cpython-311.pyc and source/Source/JavaScriptCore/wasm/__pycache__/generateWasm.cpython-311.pyc differ
 Binary files webkitgtk-2.49.1/Source/JavaScriptCore/yarr/__pycache__/hasher.cpython-311.pyc and source/Source/JavaScriptCore/yarr/__pycache__/hasher.cpython-311.pyc differ
 diff -ruwN webkitgtk-2.49.1/Source/ThirdParty/ANGLE/GLESv2.cmake source/Source/ThirdParty/ANGLE/GLESv2.cmake
@@ -249,6 +275,20 @@ diff -ruwN webkitgtk-2.49.1/Source/ThirdParty/skia/src/ports/SkMemory_malloc.cpp
          completeSize = malloc_usable_size(addr);
          SkASSERT(completeSize >= size);
      #elif defined(SK_BUILD_FOR_WIN)
+diff -ruwN webkitgtk-2.49.1/Source/WebCore/page/Page.cpp source/Source/WebCore/page/Page.cpp
+--- webkitgtk-2.49.1/Source/WebCore/page/Page.cpp	2025-04-01 01:53:09.527295000 -0600
++++ source/Source/WebCore/page/Page.cpp	2025-05-12 21:46:50.795767586 -0600
+@@ -536,8 +536,10 @@
+     if (RefPtr scrollingCoordinator = m_scrollingCoordinator)
+         scrollingCoordinator->pageDestroyed();
+ 
++#if ENABLE(RESOURCE_USAGE)
+     if (RefPtr resourceUsageOverlay = m_resourceUsageOverlay)
+         resourceUsageOverlay->detachFromPage();
++#endif
+ 
+     checkedBackForward()->close();
+     if (!isUtilityPage())
 diff -ruwN webkitgtk-2.49.1/Source/WebCore/PlatformGTK.cmake source/Source/WebCore/PlatformGTK.cmake
 --- webkitgtk-2.49.1/Source/WebCore/PlatformGTK.cmake	2024-12-16 02:07:48.162613200 -0700
 +++ source/Source/WebCore/PlatformGTK.cmake	2025-05-10 19:05:57.526658690 -0600
@@ -274,6 +314,18 @@ diff -ruwN webkitgtk-2.49.1/Source/WebCore/PlatformGTK.cmake source/Source/WebCo
      ${GIO_UNIX_INCLUDE_DIRS}
      ${GLIB_INCLUDE_DIRS}
      ${LIBSECRET_INCLUDE_DIRS}
+diff -ruwN webkitgtk-2.49.1/Source/WebKit/Platform/IPC/unix/ConnectionUnix.cpp source/Source/WebKit/Platform/IPC/unix/ConnectionUnix.cpp
+--- webkitgtk-2.49.1/Source/WebKit/Platform/IPC/unix/ConnectionUnix.cpp	2025-03-31 03:35:43.461813700 -0600
++++ source/Source/WebKit/Platform/IPC/unix/ConnectionUnix.cpp	2025-05-13 09:38:21.678926942 -0600
+@@ -48,7 +48,7 @@
+ #include <wtf/glib/GUniquePtr.h>
+ #endif
+ 
+-#if OS(DARWIN)
++#if OS(DARWIN) || defined(__redox__)
+ #define MSG_NOSIGNAL 0
+ #endif
+ 
 diff -ruwN webkitgtk-2.49.1/Source/WebKit/PlatformGTK.cmake source/Source/WebKit/PlatformGTK.cmake
 --- webkitgtk-2.49.1/Source/WebKit/PlatformGTK.cmake	2025-03-05 03:09:47.273706000 -0700
 +++ source/Source/WebKit/PlatformGTK.cmake	2025-05-10 18:54:43.437475299 -0600
@@ -285,6 +337,10 @@ diff -ruwN webkitgtk-2.49.1/Source/WebKit/PlatformGTK.cmake source/Source/WebKit
      ${GIO_UNIX_INCLUDE_DIRS}
      ${GLIB_INCLUDE_DIRS}
      ${GSTREAMER_INCLUDE_DIRS}
+Binary files webkitgtk-2.49.1/Source/WebKit/Scripts/webkit/__pycache__/__init__.cpython-311.pyc and source/Source/WebKit/Scripts/webkit/__pycache__/__init__.cpython-311.pyc differ
+Binary files webkitgtk-2.49.1/Source/WebKit/Scripts/webkit/__pycache__/messages.cpython-311.pyc and source/Source/WebKit/Scripts/webkit/__pycache__/messages.cpython-311.pyc differ
+Binary files webkitgtk-2.49.1/Source/WebKit/Scripts/webkit/__pycache__/model.cpython-311.pyc and source/Source/WebKit/Scripts/webkit/__pycache__/model.cpython-311.pyc differ
+Binary files webkitgtk-2.49.1/Source/WebKit/Scripts/webkit/__pycache__/parser.cpython-311.pyc and source/Source/WebKit/Scripts/webkit/__pycache__/parser.cpython-311.pyc differ
 diff -ruwN webkitgtk-2.49.1/Source/WTF/wtf/glib/FileSystemGlib.cpp source/Source/WTF/wtf/glib/FileSystemGlib.cpp
 --- webkitgtk-2.49.1/Source/WTF/wtf/glib/FileSystemGlib.cpp	2024-12-16 02:07:48.134613800 -0700
 +++ source/Source/WTF/wtf/glib/FileSystemGlib.cpp	2025-05-10 20:14:04.266843426 -0600
@@ -393,16 +449,26 @@ diff -ruwN webkitgtk-2.49.1/Source/WTF/wtf/posix/ThreadingPOSIX.cpp source/Sourc
      int policy;
 diff -ruwN webkitgtk-2.49.1/Source/WTF/wtf/RAMSize.cpp source/Source/WTF/wtf/RAMSize.cpp
 --- webkitgtk-2.49.1/Source/WTF/wtf/RAMSize.cpp	2024-10-01 01:40:32.303785300 -0600
-+++ source/Source/WTF/wtf/RAMSize.cpp	2025-05-10 19:09:18.889830704 -0600
-@@ -64,7 +64,7 @@
++++ source/Source/WTF/wtf/RAMSize.cpp	2025-05-12 21:08:59.548628775 -0600
+@@ -46,7 +46,7 @@
+ 
+ namespace WTF {
+ 
+-#if OS(WINDOWS)
++#if OS(WINDOWS) || defined(__redox__)
+ static constexpr size_t ramSizeGuess = 512 * MB;
+ #endif
+ 
+@@ -64,6 +64,9 @@
      struct sysinfo si;
      sysinfo(&si);
      return si.totalram * si.mem_unit;
--#elif OS(UNIX) || OS(HAIKU)
-+#elif (OS(UNIX) && !defined(__redox__)) || OS(HAIKU)
++#elif defined(__redox__)
++    //TODO: implement using /scheme/mem
++    return ramSizeGuess;
+ #elif OS(UNIX) || OS(HAIKU)
      long pages = sysconf(_SC_PHYS_PAGES);
      long pageSize = sysconf(_SC_PAGE_SIZE);
-     return pages * pageSize;
 diff -ruwN webkitgtk-2.49.1/Source/WTF/wtf/StackBounds.cpp source/Source/WTF/wtf/StackBounds.cpp
 --- webkitgtk-2.49.1/Source/WTF/wtf/StackBounds.cpp	2025-03-18 02:33:00.063181400 -0600
 +++ source/Source/WTF/wtf/StackBounds.cpp	2025-05-10 19:16:43.976048337 -0600
