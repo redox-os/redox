@@ -21,4 +21,5 @@ cookbook_meson \
     -Dsysprof=disabled \
     -Dtests=false \
     -Dtls_check=false
+patchelf --replace-needed "${COOKBOOK_SYSROOT}/usr/lib/libsqlite3.so" "libsqlite3.so" "${COOKBOOK_STAGE}/usr/lib/libsoup-3.0.so"
 """
