@@ -29,6 +29,7 @@ rsync -av --delete "${COOKBOOK_SOURCE}/" ./
     PREFIX="${COOKBOOK_STAGE}" \
     RANLIB="${TARGET}-ranlib"
 
-cp -v libbz2.so.1.0.8 "${COOKBOOK_STAGE}/lib"
-cp -v libbz2.so.1.0 "${COOKBOOK_STAGE}/lib"
+cp -av libbz2.so* "${COOKBOOK_STAGE}/lib"
+ln -sr "${COOKBOOK_STAGE}/lib/libbz2.so.1.0" "${COOKBOOK_STAGE}/lib/libbz2.so.1"
+ln -sr "${COOKBOOK_STAGE}/lib/libbz2.so.1.0" "${COOKBOOK_STAGE}/lib/libbz2.so"
 """
