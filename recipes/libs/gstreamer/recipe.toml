@@ -6,25 +6,55 @@ patches = ["redox.patch"]
 [build]
 template = "custom"
 dependencies = [
+    "bzip2",
     "cairo",
+    "curl",
     "expat",
     #TODO: "ffmpeg6",
-    "freetype2",
     "fontconfig",
-	"gettext",
+    "freetype2",
+    "fribidi",
+    "gdk-pixbuf",
+    "gettext",
     "glib",
     "harfbuzz",
+    "libass",
     "libffi",
-	"libiconv",
+    "libgmp",
+    "libiconv",
+    "libicu",
     "libjpeg",
+    "libmodplug1",
+    "libnettle",
     "libogg",
     "libpng",
+    "libpsl",
+    "libpthread-stubs",
+    "libsndfile",
+    "libsoup",
     "libvorbis",
+    "libwebp",
+    "libx11",
+    "libxau",
+    "libxcb",
+    #TODO: "libxdamage",
+    "libxext",
+    "libxfixes",
+    "libxi",
     "libxml2",
-    #TODO "pango",
+    "libxxf86vm",
+    "mesa-x11",
+    "nghttp2",
+    #TODO: "openal",
+    "openssl1",
+    "pango",
     "pcre2",
     "pixman",
-	"zlib"
+    "sqlite3",
+    "x11proto",
+    "xextproto",
+    "xz",
+    "zlib",
 ]
 script = """
 DYNAMIC_INIT
@@ -33,14 +63,17 @@ export GLIB_GENMARSHAL="$(which glib-genmarshal)"
 export GLIB_MKENUMS="$(which glib-mkenums)"
 
 cookbook_meson \
+    -Dc_args="-DM_LN2=0.69314718055994530942" \
     -Ddevtools=disabled \
     -Dexamples=disabled \
     -Dlibav=disabled \
     -Dlibnice=disabled \
     -Dorc=disabled \
     -Dtests=disabled \
-    -Dtools=disabled \
+    -Dtools=enabled \
     -Dgstreamer:check=disabled \
     -Dgstreamer:coretracers=disabled \
-    -Dgst-plugins-bad:shm=disabled
+    -Dgst-plugins-bad:shm=disabled \
+    -Dgst-plugins-base:xshm=disabled \
+    -Dgst-plugins-good:ximagesrc-xshm=disabled
 """
