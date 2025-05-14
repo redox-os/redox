@@ -25,9 +25,9 @@ COOKBOOK_CONFIGURE_FLAGS=(
     --disable-ftp
     --disable-ipv6
     --disable-ntlm-wb
-    --disable-shared
     --disable-tftp
     --disable-threaded-resolver
+    --enable-shared
     --enable-static
     --with-ca-path=/etc/ssl/certs
     --with-nghttp2="${COOKBOOK_SYSROOT}"
@@ -40,7 +40,5 @@ cookbook_configure
 
 [package]
 dependencies = [
-    "openssl1",
-    "zlib",
     "ca-certificates"
 ]
