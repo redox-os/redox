@@ -1,15 +1,25 @@
-#TODO can't detect fontconfig
 [source]
-tar = "https://github.com/libass/libass/releases/download/0.17.1/libass-0.17.1.tar.xz"
+tar = "https://github.com/libass/libass/releases/download/0.17.3/libass-0.17.3.tar.xz"
+blake3 = "bfbcc2a97193eb5c2a6c54d07c508d42ff62387a8a9d8b3959d15b6115bca8b6"
+script = """
+DYNAMIC_INIT
+autotools_recursive_regenerate
+"""
+
 [build]
-template = "configure"
 dependencies = [
-    "freetype2",
-    "zlib",
-    "libpng",
-    "fribidi",
-    "harfbuzz",
-    "glib",
-    "pcre",
+    "expat",
     "fontconfig",
+    "freetype2",
+    "fribidi",
+    "glib",
+    "harfbuzz",
+    "libpng",
+    "pcre2",
+    "zlib",
 ]
+template = "custom"
+script = """
+DYNAMIC_INIT
+cookbook_configure --disable-asm
+"""
