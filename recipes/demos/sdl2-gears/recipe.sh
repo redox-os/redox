@@ -16,7 +16,7 @@ function recipe_prepare {
 function recipe_build {
     sysroot="$(realpath ../sysroot)"
     set -x
-    "${CXX}" -O2 -I "$sysroot/include" -L "$sysroot/lib" gears.c -o sdl2_gears -static -lSDL2_image -lSDL2_mixer -lSDL2_ttf -lSDL2 -lorbital $("${PKG_CONFIG}" --libs osmesa) -lfreetype -lpng -ljpeg -lvorbisfile -lvorbis -logg -lz
+    "${CXX}" -O2 -I "$sysroot/include" -L "$sysroot/lib" gears.c -o sdl2_gears -dynamic -lSDL2_image -lSDL2_mixer -lSDL2_ttf -lSDL2 -lorbital $("${PKG_CONFIG}" --libs osmesa) -lfreetype -lpng -ljpeg -lvorbisfile -lvorbis -logg -lz
     set +x
     skip=1
 }
