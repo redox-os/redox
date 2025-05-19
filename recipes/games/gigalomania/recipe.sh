@@ -11,7 +11,7 @@ function recipe_version {
 function recipe_build {
     export CPPHOST=${HOST}-g++
     sysroot="$(realpath ../sysroot)"
-    export LDFLAGS="-L$sysroot/lib --static"
+    export LDFLAGS="-L$sysroot/lib -rdynamic"
     export CPPFLAGS="-I$sysroot/include"
     "$REDOX_MAKE" all -j"$($NPROC)"
     skip=1
