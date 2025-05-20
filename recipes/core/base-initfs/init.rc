@@ -21,13 +21,16 @@ fbbootlogd
 inputd -A 1
 fbcond 2
 
+# Live disk
+# Note: Needs to start before drivers to ensure it gets priority when redoxfs searches for disks
+lived
+unset DISK_LIVE_ADDR DISK_LIVE_SIZE
+
 # Drivers
 run /scheme/initfs/etc/init_drivers.rc
 unset RSDP_ADDR RSDP_SIZE
 
 # Mount rootfs
-lived
-unset DISK_LIVE_ADDR DISK_LIVE_SIZE
 redoxfs --uuid $REDOXFS_UUID file $REDOXFS_BLOCK
 unset REDOXFS_UUID REDOXFS_BLOCK REDOXFS_PASSWORD_ADDR REDOXFS_PASSWORD_SIZE
 
