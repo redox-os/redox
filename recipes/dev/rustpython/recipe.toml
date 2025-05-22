@@ -1,6 +1,5 @@
 [source]
 git = "https://github.com/RustPython/RustPython"
-branch = "redox-release"
 
 [build]
 dependencies = [
@@ -9,6 +8,8 @@ dependencies = [
 ]
 template = "custom"
 script = """
+DYNAMIC_INIT
+
 (cd "${COOKBOOK_SOURCE}" && bash scripts/redox/uncomment-cargo.sh && cargo update)
 export BUILDTIME_RUSTPYTHONPATH=/lib/rustpython
 export OPENSSL_DIR="${COOKBOOK_SYSROOT}"
