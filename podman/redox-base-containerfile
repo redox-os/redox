@@ -59,7 +59,6 @@ RUN useradd --create-home --no-log-init --uid ${UID} --gid ${GID} poduser \
 		m4 \
 		make \
 		meson \
-		mold \
 		nasm \
 		ninja-build \
 		patch \
