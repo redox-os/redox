@@ -2,10 +2,14 @@
 
 FROM debian:stable-backports
 
-# _UID_ must be replaced with the user's uid on host
+ARG UID
+ARG GID
+
+ARG ARCH
+
 # podman root is mapped to your user id on host during build,
 # poduser is mapped to your user id during podman run
-RUN useradd --create-home --no-log-init --uid _UID_ poduser \
+RUN useradd --create-home --no-log-init --uid ${UID} --gid ${GID} poduser \
     && chown -R root:root /home \
     && apt-get update \
     && apt-get install -y --no-install-recommends -t stable-backports \
@@ -36,7 +40,6 @@ RUN useradd --create-home --no-log-init --uid _UID_ poduser \
 		gtk-doc-tools \
 		help2man \
 		intltool \
-		libc6-dev-i386 \
 		libexpat-dev \
 		libfontconfig1-dev \
 		libfuse3-dev \
@@ -72,7 +75,6 @@ RUN useradd --create-home --no-log-init --uid _UID_ poduser \
 		ruby \
 		scons \
 		ssh \
-		syslinux-utils \
 		texinfo \
 		unifdef \
 		unzip \
@@ -84,4 +86,10 @@ RUN useradd --create-home --no-log-init --uid _UID_ poduser \
 		xxd \
 		zip \
 		zlib1g-dev \
-		zstd
+		zstd \
+&& \
+if [ "${ARCH}" = "x86_64" ] || [ "${ARCH}" = "amd64" ] || [ "${ARCH}" = "i386" ]; then \
+    apt-get install -y --no-install-recommends -t stable-backports \
+    libc6-dev-i386 \
+    syslinux-utils ; \
+fi

@@ -5,6 +5,10 @@
 IMAGE_TAG?=redox-base
 ## Working Directory in Podman
 CONTAINER_WORKDIR?=/mnt/redox
+## User id in host system
+HOST_UID:=$(shell id -u)
+## Group id in host system
+HOST_GID:=$(shell id -g)
 
 ## Flag passed to the Podman volumes. :Z can be used only with SELinux
 USE_SELINUX=1
@@ -17,11 +21,37 @@ endif
 ## Podman Home Directory
 PODMAN_HOME?=$(ROOT)/build/podman
 ## Podman command with its many arguments
-PODMAN_VOLUMES?=--volume $(ROOT):$(CONTAINER_WORKDIR)$(PODMAN_VOLUME_FLAG) --volume $(PODMAN_HOME):/home$(PODMAN_VOLUME_FLAG)
-PODMAN_ENV?=--env PATH=/home/poduser/.cargo/bin:/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin --env PODMAN_BUILD=0
-PODMAN_CONFIG?=--env ARCH=$(ARCH) --env BOARD=$(BOARD) --env CONFIG_NAME=$(CONFIG_NAME) --env FILESYSTEM_CONFIG=$(FILESYSTEM_CONFIG)
-PODMAN_OPTIONS?=--rm --workdir $(CONTAINER_WORKDIR) --userns keep-id --user `id -u` --interactive --tty --env TERM=$(TERM)
-PODMAN_RUN?=podman run $(PODMAN_OPTIONS) $(PODMAN_VOLUMES) $(PODMAN_ENV) $(PODMAN_CONFIG) $(IMAGE_TAG)
+PODMAN_VOLUMES?=\
+    --volume $(ROOT):$(CONTAINER_WORKDIR)$(PODMAN_VOLUME_FLAG) \
+    --volume $(PODMAN_HOME):/home/poduser$(PODMAN_VOLUME_FLAG)
+PODMAN_ENV?=\
+	--env PATH=/home/poduser/.cargo/bin:/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin \
+	--env PODMAN_BUILD=0
+PODMAN_CONFIG?=\
+	--env ARCH=$(ARCH) \
+	--env BOARD=$(BOARD) \
+	--env CONFIG_NAME=$(CONFIG_NAME) \
+	--env FILESYSTEM_CONFIG=$(FILESYSTEM_CONFIG)
+PODMAN_OPTIONS?=\
+	--rm \
+	--workdir $(CONTAINER_WORKDIR) \
+	--userns keep-id \
+	--user $(HOST_UID):$(HOST_GID) \
+	--group-add $(HOST_GID) \
+	--tty \
+	--interactive \
+	--env TERM=$(TERM)
+PODMAN_BUILD_ARGS?=\
+	--progress=plain \
+    --build-arg UID=$(HOST_UID) \
+    --build-arg GID=$(HOST_GID) \
+    --build-arg ARCH=$(ARCH)
+PODMAN_RUN?=podman run \
+      $(PODMAN_OPTIONS) \
+      $(PODMAN_VOLUMES) \
+      $(PODMAN_ENV) \
+      $(PODMAN_CONFIG) \
+      $(IMAGE_TAG)
 
 container_shell: build/container.tag
 ifeq ($(PODMAN_BUILD),1)
@@ -61,7 +91,7 @@ ifeq ($(PODMAN_BUILD),1)
 	-podman image rm --force $(IMAGE_TAG) || true
 	mkdir -p $(PODMAN_HOME)
 	@echo "Building Podman image. This may take some time."
-	sed s/_UID_/`id -u`/ $(CONTAINERFILE) | podman build --file - $(PODMAN_VOLUMES) --tag $(IMAGE_TAG)
+	podman build --file $(CONTAINERFILE) $(PODMAN_BUILD_ARGS) --tag $(IMAGE_TAG)
 	@echo "Mapping Podman user space. Please wait."
 	$(PODMAN_RUN) bash -e podman/rustinstall.sh
 	mkdir -p build
