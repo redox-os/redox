@@ -1,0 +1,8 @@
+#TODO not compiled or tested
+[source]
+git = "https://github.com/j-g00da/mousefood"
+[build]
+template = "custom"
+script = """
+cookbook_cargo_examples simulator
+"""

@@ -1,0 +1,25 @@
+#TODO not compiled or tested
+#TODO enable the udev-backend flag once wayland and eudev is working
+[source]
+git = "https://github.com/nferhat/fht-compositor"
+[build]
+template = "custom"
+dependencies = [
+    "libwayland",
+    "libxkbcommon",
+    "mesa",
+]
+script = """
+mkdir -pv "${COOKBOOK_STAGE}"/usr/share/wayland-sessions
+cp -rv "${COOKBOOK_SOURCE}"/res/fht-compositor.desktop "${COOKBOOK_STAGE}"/usr/share/wayland-sessions
+package=fht-compositor
+"${COOKBOOK_CARGO}" build \
+            --manifest-path "${COOKBOOK_SOURCE}/Cargo.toml" \
+            --package "${package}" \
+            --release
+            --winit-backend
+        mkdir -pv "${COOKBOOK_STAGE}/usr/bin"
+        cp -v \
+            "target/${TARGET}/release/${package}" \
+            "${COOKBOOK_STAGE}/usr/bin/${package}"
+"""
