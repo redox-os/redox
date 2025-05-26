@@ -1,0 +1,6 @@
+#TODO not compiled or tested
+#TODO use the "dbgo" profile
+[source]
+git = "https://github.com/al13n321/nnd"
+[build]
+template = "cargo"
