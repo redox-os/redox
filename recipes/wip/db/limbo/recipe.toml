@@ -1,0 +1,8 @@
+#TODO not compiled or tested
+[source]
+git = "https://github.com/tursodatabase/limbo"
+[build]
+template = "custom"
+script = """
+cookbook_cargo_packages limbo_cli
+"""
