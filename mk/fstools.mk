@@ -6,6 +6,7 @@ fstools: $(FSTOOLS_TAG)
 $(FSTOOLS_TAG): cookbook installer $(CONTAINER_TAG)
 ifeq ($(PODMAN_BUILD),1)
 	$(PODMAN_RUN) $(MAKE) $@
+	$(PODMAN_RUN) make $@
 else
 	$(HOST_CARGO) build --manifest-path cookbook/Cargo.toml --release
 	$(HOST_CARGO) build --manifest-path cookbook/pkgar/Cargo.toml --release
@@ -26,6 +27,7 @@ $(HOST_FSTOOLS): installer redoxfs
 fstools_clean: FORCE $(CONTAINER_TAG)
 ifeq ($(PODMAN_BUILD),1)
 	$(PODMAN_RUN) $(MAKE) $@
+	$(PODMAN_RUN) make $@
 else
 	$(HOST_CARGO) clean --manifest-path cookbook/Cargo.toml
 	$(HOST_CARGO) clean --manifest-path cookbook/pkgar/Cargo.toml
