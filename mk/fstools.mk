@@ -5,7 +5,6 @@ fstools: $(FSTOOLS_TAG)
 # These tools run inside Podman if it is used, or on the host if Podman is not used
 $(FSTOOLS_TAG): cookbook installer $(CONTAINER_TAG)
 ifeq ($(PODMAN_BUILD),1)
-	$(PODMAN_RUN) $(MAKE) $@
 	$(PODMAN_RUN) make $@
 else
 	$(HOST_CARGO) build --manifest-path cookbook/Cargo.toml --release
@@ -26,7 +25,6 @@ $(HOST_FSTOOLS): installer redoxfs
 
 fstools_clean: FORCE $(CONTAINER_TAG)
 ifeq ($(PODMAN_BUILD),1)
-	$(PODMAN_RUN) $(MAKE) $@
 	$(PODMAN_RUN) make $@
 else
 	$(HOST_CARGO) clean --manifest-path cookbook/Cargo.toml
