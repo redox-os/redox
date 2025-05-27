@@ -1,5 +1,5 @@
 #TODO not compiled or tested
-#TODO enable the udev-backend flag once wayland and eudev is working
+#TODO enable the "opt" profile once wayland and eudev is working
 [source]
 git = "https://github.com/nferhat/fht-compositor"
 [build]
