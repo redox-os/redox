@@ -5,9 +5,8 @@ FROM debian:stable-backports
 # _UID_ must be replaced with the user's uid on host
 # podman root is mapped to your user id on host during build,
 # poduser is mapped to your user id during podman run
-RUN apt-get update
-
-RUN apt-get install -y --no-install-recommends -t stable-backports \
+RUN apt-get update \
+	&& apt-get install -y --no-install-recommends -t stable-backports \
 		ant \
 		appstream \
 		appstream-compose \
@@ -81,7 +80,6 @@ RUN apt-get install -y --no-install-recommends -t stable-backports \
 		xxd \
 		zip \
 		zlib1g-dev \
-		zstd
-
-RUN if [ "$(dpkg --print-architecture)" = "amd64" ]; then \
-    apt-get install -y --no-install-recommends libc6-dev-i386 syslinux-utils;
+		zstd; \
+	if [ "$(dpkg --print-architecture)" = "amd64" ]; then \
+    	apt-get install -y --no-install-recommends libc6-dev-i386 syslinux-utils; fi
