@@ -70,20 +70,18 @@ $(PREFIX)/relibc-install.tar.gz: $(PREFIX)/relibc-install
 		--directory="$<" \
 		.
 
-$(PREFIX)/libtool:
+$(PREFIX)/libtool: $(PREFIX)/libtool.tar.gz
 	rm -rf "$@.partial" "$@"
 	mkdir -p "$@.partial"
-
-	git clone \
-		--recurse-submodules \
-		"https://gitlab.redox-os.org/redox-os/libtool/" \
-		--branch "v$(LIBTOOL_VERSION)-redox" \
-		--depth 2 \
-		"$@.partial"
-
+	tar --extract --file "$<" --directory "$@.partial" --strip-components=1
 	touch "$@.partial"
 	echo $(LIBTOOL_VERSION) > $@.partial/.tarball-version
 	mv "$@.partial" "$@"
+
+$(PREFIX)/libtool.tar.gz:
+	mkdir -p "$(@D)"
+	wget -O $@.partial "https://gitlab.redox-os.org/redox-os/libtool/-/archive/v$(LIBTOOL_VERSION)-redox/libtool-v$(LIBTOOL_VERSION)-redox.tar.gz"
+	mv $@.partial $@
 
 $(PREFIX)/libtool-build: $(PREFIX)/libtool $(CONTAINER_TAG)
 ifeq ($(PODMAN_BUILD),1)
@@ -98,7 +96,7 @@ else
 			--gnulib-srcdir=./gnulib
 	PATH="$(ROOT)/$(PREFIX)/rust-install/bin:$$PATH" && \
 	cd "$@.partial" && \
-		cp -rp $(abspath $<)/. ./ && \
+		cp -r $(abspath $<)/. ./ && \
 		"$(ROOT)/$</configure" \
 			--target="$(TARGET)" \
 			--prefix=$(abspath $(PREFIX)/sysroot) && \
