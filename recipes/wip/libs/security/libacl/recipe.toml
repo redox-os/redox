@@ -1,0 +1,5 @@
+#TODO not compiled or tested
+[source]
+tar = "https://download.savannah.nongnu.org/releases/acl/acl-2.3.2.tar.xz"
+[build]
+template = "configure"
