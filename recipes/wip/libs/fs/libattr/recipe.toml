@@ -1,0 +1,5 @@
+#TODO not compiled or tested
+[source]
+tar = "https://download.savannah.nongnu.org/releases/attr/attr-2.5.2.tar.xz"
+[build]
+template = "configure"

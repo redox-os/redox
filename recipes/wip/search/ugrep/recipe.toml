@@ -1,0 +1,7 @@
+#TODO not compiled or tested
+#TODO maybe wrong template
+[source]
+git = "https://github.com/Genivia/ugrep"
+rev = "7ddb6d9690e70bc426da5fed3e1031973823fc69"
+[build]
+template = "configure"

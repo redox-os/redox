@@ -1,0 +1,14 @@
+#TODO missing script for pip
+# build instructions - https://borgbackup.readthedocs.io/en/stable/installation.html#source-install
+[source]
+tar = "https://github.com/borgbackup/borg/releases/download/1.4.1/borgbackup-1.4.1.tar.gz"
+[build]
+template = "custom"
+dependencies = [
+    "openssl1",
+    "libacl",
+    "libattr",
+    "xxhash",
+    "lz4",
+    "zstd",
+]
