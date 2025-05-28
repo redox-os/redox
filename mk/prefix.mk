@@ -70,7 +70,7 @@ $(PREFIX)/relibc-install.tar.gz: $(PREFIX)/relibc-install
 		--directory="$<" \
 		.
 
-$(PREFIX)/libtool:
+$(PREFIX)/libtool: $(PREFIX)/libtool.tar.gz
 	rm -rf "$@.partial" "$@"
 	mkdir -p "$@.partial"
 
@@ -100,7 +100,7 @@ else
 			--gnulib-srcdir=./gnulib
 	PATH="$(ROOT)/$(PREFIX)/rust-install/bin:$$PATH" && \
 	cd "$@.partial" && \
-		cp -rp $(abspath $<)/. ./ && \
+		cp -r $(abspath $<)/. ./ && \
 		"$(ROOT)/$</configure" \
 			--target="$(TARGET)" \
 			--prefix=$(abspath $(PREFIX)/sysroot) && \
