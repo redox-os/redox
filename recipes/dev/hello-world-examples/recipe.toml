@@ -1,4 +1,3 @@
-#TODO Not compiled or tested
 [source]
 git = "https://github.com/leachim6/hello-world"
 [build]
