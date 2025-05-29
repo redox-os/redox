@@ -1,8 +1,9 @@
 #TODO not compiled or tested
+#TODO move to the "graphics" category
 [source]
 git = "https://github.com/nical/lyon"
 [build]
 template = "custom"
 script = """
-cookbook_cargo_examples svg-rendering-example
+cookbook_cargo_packages lyon_cli wgpu-example svg-rendering-example
 """
