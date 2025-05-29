@@ -4,5 +4,5 @@ git = "https://github.com/baad-c0de/mage-core"
 [build]
 template = "custom"
 script = """
-cookbook_cargo_examples basic font3 hello
+cookbook_cargo_examples basic hello
 """
