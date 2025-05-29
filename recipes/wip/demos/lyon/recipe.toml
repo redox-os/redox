@@ -4,5 +4,5 @@ git = "https://github.com/nical/lyon"
 [build]
 template = "custom"
 script = """
-cookbook_cargo_examples wgpu-example
+cookbook_cargo_examples svg-rendering-example
 """
