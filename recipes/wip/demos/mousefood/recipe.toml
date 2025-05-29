@@ -4,5 +4,17 @@ git = "https://github.com/j-g00da/mousefood"
 [build]
 template = "custom"
 script = """
-cookbook_cargo_examples simulator
+recipe="$(basename "${COOKBOOK_RECIPE}")"
+    for example in simulator
+    do
+        "${COOKBOOK_CARGO}" build \
+            --manifest-path "${COOKBOOK_SOURCE}/${PACKAGE_PATH}/Cargo.toml" \
+            --example "${example}" \
+            --release \
+            --simulator
+        mkdir -pv "${COOKBOOK_STAGE}/usr/bin"
+        cp -v \
+            "target/${TARGET}/${build_type}/examples/${example}" \
+            "${COOKBOOK_STAGE}/usr/bin/${recipe}_${example}"
+    done
 """
