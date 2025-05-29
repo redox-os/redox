@@ -1,4 +1,4 @@
-#TODO not compiled or tested
+#TODO compilation error
 # build instructions - https://www.cgsecurity.org/wiki/TestDisk_Compilation
 # add optional libraries to expand the features - https://www.cgsecurity.org/wiki/TestDisk_Compilation#Libraries
 [source]
