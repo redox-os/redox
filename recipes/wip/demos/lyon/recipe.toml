@@ -1,4 +1,5 @@
-#TODO not compiled or tested
+#TODO compiled but not tested
+#TODO fix the packaging
 #TODO move to the "graphics" category
 [source]
 git = "https://github.com/nical/lyon"
