@@ -134,7 +134,16 @@ $(PREFIX)/rust-install.tar.gz:
 $(PREFIX)/rust-install: $(PREFIX)/rust-install.tar.gz
 	rm -rf "$@.partial" "$@"
 	mkdir -p "$@.partial"
-	tar --extract --file "$<" --directory "$@.partial" --strip-components=1
+
+	git clone \
+		--recurse-submodules \
+		"https://gitlab.redox-os.org/redox-os/libtool/" \
+		--branch "v$(LIBTOOL_VERSION)-redox" \
+		--depth 2 \
+		"$@.partial"
+
+	# rootless podman problem
+	chmod -R u+w $@.partial
 	touch "$@.partial"
 	mv "$@.partial" "$@"
 
