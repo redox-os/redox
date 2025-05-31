@@ -31,7 +31,7 @@ else
 endif
 
 container_su: FORCE
-	podman run $(PODMAN_VOLUMES) --interactive --tty $(IMAGE_TAG) bash
+	podman exec --user=0 --latest --interactive --tty bash
 
 container_clean: FORCE
 	rm -f build/container.tag
