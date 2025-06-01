@@ -1,0 +1,8 @@
+#TODO not compiled or tested
+[source]
+git = "https://github.com/gold-silver-copper/soft_ratatui"
+[build]
+template = "custom"
+script = """
+cookbook_cargo_packages egui_example
+"""
