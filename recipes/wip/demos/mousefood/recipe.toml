@@ -11,7 +11,7 @@ recipe="$(basename "${COOKBOOK_RECIPE}")"
             --manifest-path "${COOKBOOK_SOURCE}/${PACKAGE_PATH}/Cargo.toml" \
             --example "${example}" \
             --release \
-            --simulator
+            --features=simulator
         mkdir -pv "${COOKBOOK_STAGE}/usr/bin"
         cp -v \
             "target/${TARGET}/${build_type}/examples/${example}" \
