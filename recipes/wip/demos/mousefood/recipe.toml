@@ -1,8 +1,12 @@
 #TODO not compiled or tested
+#TODO maybe need a patch to use the sdl2 dependency from redox
 [source]
 git = "https://github.com/j-g00da/mousefood"
 [build]
 template = "custom"
+dependencies = [
+    "sdl2",
+]
 script = """
 recipe="$(basename "${COOKBOOK_RECIPE}")"
     for example in simulator
