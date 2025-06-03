@@ -75,11 +75,12 @@ $(PREFIX)/libtool:
 	mkdir -p "$@.partial"
 
 	git clone \
-		--recurse-submodules \
 		"https://gitlab.redox-os.org/redox-os/libtool/" \
 		--branch "v$(LIBTOOL_VERSION)-redox" \
-		--depth 2 \
+		--filter=tree:0 \
 		"$@.partial"
+	git -C "$@.partial" submodule update \
+		 --filter=tree:0 --init --recursive
 
 	touch "$@.partial"
 	echo $(LIBTOOL_VERSION) > $@.partial/.tarball-version
