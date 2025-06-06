@@ -3,15 +3,12 @@
 [source]
 git = "https://github.com/s3fs-fuse/s3fs-fuse"
 rev = "5371cd1468c84423729c334ac997f9621b797e9f"
+script = "./autogen.sh"
 [build]
-template = "custom"
+template = "configure"
 dependencies = [
     "libfuse2",
     "curl",
     "libxml2",
     "openssl1",
 ]
-script = """
-./autogen.sh
-cookbook_configure
-"""
