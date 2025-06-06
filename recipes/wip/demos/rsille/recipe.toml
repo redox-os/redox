@@ -4,5 +4,18 @@ git = "https://github.com/nidhoggfgg/rsille"
 [build]
 template = "custom"
 script = """
-cookbook_cargo_examples anime-mix obj-mix cube cube-colorful imgille
+cookbook_cargo_examples anime-mix obj-mix cube cube-colorful
+recipe="$(basename "${COOKBOOK_RECIPE}")"
+    for example in imgille
+    do
+        "${COOKBOOK_CARGO}" build \
+            --manifest-path "${COOKBOOK_SOURCE}/${PACKAGE_PATH}/Cargo.toml" \
+            --example "${example}" \
+            --release \
+            --features=img
+        mkdir -pv "${COOKBOOK_STAGE}/usr/bin"
+        cp -v \
+            "target/${TARGET}/${build_type}/examples/${example}" \
+            "${COOKBOOK_STAGE}/usr/bin/${recipe}_${example}"
+    done
 """
