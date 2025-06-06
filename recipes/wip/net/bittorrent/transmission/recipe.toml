@@ -1,15 +1,11 @@
-#TODO probably wrong script, see https://github.com/transmission/transmission#building-a-transmission-release-from-the-command-line
+#TODO probably wrong script, see https://github.com/transmission/transmission/blob/main/docs/Building-Transmission.md#on-unix
 [source]
-tar = "https://github.com/transmission/transmission/releases/download/4.0.4/transmission-4.0.4.tar.xz"
+tar = "https://github.com/transmission/transmission/releases/download/4.0.6/transmission-4.0.6.tar.xz"
 [build]
 template = "custom"
 dependencies = [
     "openssl1",
-    "gtk3",
-    "glib",
     "curl",
-    "libevent",
-    "miniupnpc",
 ]
 script = """
 COOKBOOK_CONFIGURE="cmake"
