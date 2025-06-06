@@ -1,4 +1,4 @@
-#TODO not compiled or tested
+#TODO device_query crate error
 [source]
 git = "https://github.com/lemunozm/ruscii"
 [build]
