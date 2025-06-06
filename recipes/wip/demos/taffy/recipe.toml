@@ -5,5 +5,4 @@ git = "https://github.com/DioxusLabs/taffy"
 template = "custom"
 script = """
 cookbook_cargo_examples basic
-cookbook_cargo_packages cosmic-text-example
 """
