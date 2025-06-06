@@ -2,12 +2,6 @@
 [source]
 git = "https://github.com/vapoursynth/vapoursynth"
 rev = "3157049549a0940359b37004aeeeebd8f1db665e"
+script = "./autogen.sh"
 [build]
-template = "custom"
-dependencies = [
-    "library1",
-]
-script = """
-./autogen.sh
-cookbook_configure
-"""
+template = "configure"

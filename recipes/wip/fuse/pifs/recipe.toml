@@ -2,12 +2,9 @@
 #TODO probably wrong script, see https://github.com/philipl/pifs#readme
 [source]
 git = "https://github.com/philipl/pifs"
+script = "./autogen.sh"
 [build]
-template = "custom"
+template = "configure"
 dependencies = [
     "libfuse2",
 ]
-script = """
-./autogen.sh
-cookbook_configure
-"""

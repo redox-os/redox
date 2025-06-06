@@ -4,9 +4,7 @@
 [source]
 git = "https://github.com/johang/btfs"
 rev = "2b372f4596df3ff97e3b39d58b144a7cbfff012a"
-script = """
-autoreconf -i
-"""
+script = "autoreconf -i"
 [build]
 template = "configure"
 dependencies = [
