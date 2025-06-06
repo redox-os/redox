@@ -1,8 +1,6 @@
-#TODO not compiled or tested
+#TODO the "egui_example" package is missing on the root Cargo.toml
 [source]
 git = "https://github.com/gold-silver-copper/soft_ratatui"
 [build]
-template = "custom"
-script = """
-cookbook_cargo_packages egui_example
-"""
+template = "cargo"
+package_path = "egui_colors_example"
