@@ -17,7 +17,6 @@ from the [redox](https://gitlab.redox-os.org/redox-os/redox) repository.
 - [Search Recipes](#search-recipes)
 - [Package Policy](#package-policy)
     - [Cross-Compilation](#cross-compilation)
-    - [Library Linking](#library-linking)
     - [ABI stability](#abi-stability)
     - [Checksum](#checksum)
     - [License](#license)
@@ -69,11 +68,6 @@ Before sending your recipe to upstream (to become a public package), you must fo
 #### Tarballs
 
 - Don't use the auto-generated tarballs from GitHub, they aren't static and don't verify the archive integrity.
-
-#### Library Linking
-
-- Keep the static linking of libraries to reduce the launch time and improve security.
-- If your package is bigger than 50MB, dynamic link big libraries until your package is equal or less than 50MB (to reduce the RAM usage).
 
 #### ABI stability
 
