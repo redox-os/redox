@@ -1,8 +1,11 @@
-#TODO not compiled or tested
+#TODO make libwayland work
 [source]
 git = "https://github.com/Smithay/smithay"
 [build]
 template = "custom"
+dependencies = [
+    "libwayland",
+]
 script = """
 cookbook_cargo_packages smallvil
 """
