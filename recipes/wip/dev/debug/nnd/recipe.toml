@@ -1,4 +1,4 @@
-#TODO not compiled or tested
+#TODO nnd crate error
 [source]
 git = "https://github.com/al13n321/nnd"
 [build]
