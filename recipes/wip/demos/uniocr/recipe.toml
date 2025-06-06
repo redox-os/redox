@@ -3,6 +3,9 @@
 git = "https://github.com/mediar-ai/uniOCR"
 [build]
 template = "custom"
+dependencies = [
+    "openssl1",
+]
 script = """
 cookbook_cargo_examples basic batch_processing
 """
