@@ -1,4 +1,4 @@
-#TODO the "egui_example" package is missing on the root Cargo.toml
+#TODO glutin crate error
 [source]
 git = "https://github.com/gold-silver-copper/soft_ratatui"
 [build]
