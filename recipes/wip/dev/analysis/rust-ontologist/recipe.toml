@@ -1,4 +1,4 @@
-#TODO not compiled or tested
+#TODO fix the nonsense "multipipe package not found" error
 [source]
 git = "https://github.com/lava-xyz/rust-ontologist"
 [build]
