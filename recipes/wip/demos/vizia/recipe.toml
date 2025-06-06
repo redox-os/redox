@@ -1,8 +1,11 @@
-#TODO not compiled or tested
+#TODO make libwayland work
 [source]
 git = "https://github.com/vizia/vizia"
 [build]
 template = "custom"
+dependencies = [
+    "libwayland",
+]
 script = """
 cookbook_cargo_examples animation dragdrop number input timers
 """
