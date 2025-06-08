@@ -1,17 +1,53 @@
-#TODO make all dependencies work
-#TODO does it use gtk3 for winecfg?
+#TODO port to redox
+#build instructions: https://gitlab.winehq.org/wine/wine/-/wikis/Building-Wine
 [source]
 tar = "https://dl.winehq.org/wine/source/10.0/wine-10.0.tar.xz"
 [build]
-template = "configure"
+template = "custom"
 dependencies = [
-    "dbus",
     "fontconfig",
     "freetype2",
-    "gnutls",
-    "libunwind",
+    "gnutls3",
     "gstreamer",
     "sdl2",
-    "eudev",
-    "libvulkan",
+    "mesa",
+    "libx11",
+    "libxcomposite",
+    "libxcursor",
+    "libxi",
+    "libxfixes",
+    "librandr",
+    "libxrender",
+    "libxext",
+    "libxkbcommon",
+    "libxkbregistry",
 ]
+script = """
+COOKBOOK_CONFIGURE_FLAGS+=(
+    --enable-win64
+	--disable-kerberos
+	--disable-tests
+	--without-capi
+	--without-coreaudio
+	--without-dbus
+	--without-gettext
+    --without-gettextpo
+	--without-gphoto
+	--without-gssapi
+	--without-inotify
+	--without-krb5
+	--without-netapi
+	--without-opencl
+	--without-osmesa
+	--without-pcap
+	--without-pcsclite
+	--with-pthread
+	--without-pulse
+	--without-sane
+	--with-sdl
+	--without-udev
+	--without-unwind
+	--without-usb
+)
+cookbook_configure
+"""
