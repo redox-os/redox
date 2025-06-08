@@ -1,4 +1,5 @@
-#TODO not compiled or tested
+#TODO compilation error
+#TODO need to install the bindgen-cli build tool from cargo: cargo install --force --locked bindgen-cli
 [source]
 git = "https://github.com/DioxusLabs/dioxus"
 [build]
