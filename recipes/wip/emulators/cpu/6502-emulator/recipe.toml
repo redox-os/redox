@@ -1,4 +1,4 @@
-#TODO not compiled or tested
+#TODO ahash crate error (probably outdated)
 [source]
 git = "https://github.com/ArchUsr64/6502_emulator"
 [build]
