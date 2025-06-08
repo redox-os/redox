@@ -1,4 +1,4 @@
-#TODO Not compiled or tested
+#TODO don't fetch private submodules
 [source]
 git = "https://github.com/henrikpersson/potatis"
 [build]
