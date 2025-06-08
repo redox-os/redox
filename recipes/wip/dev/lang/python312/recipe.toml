@@ -1,4 +1,4 @@
-#TODO not compiled or tested
+#TODO finish it based on the python310 recipe
 [source]
 tar = "https://www.python.org/ftp/python/3.12.0/Python-3.12.0.tar.xz"
 [build]
