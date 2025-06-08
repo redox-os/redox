@@ -1,4 +1,4 @@
-#TODO not compiled or tested
+#TODO mac_address crate error
 [source]
 git = "https://github.com/martinvonz/jj"
 [build]
