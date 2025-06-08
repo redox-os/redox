@@ -3,12 +3,9 @@
 # build instructions - https://github.com/rui314/mold#how-to-build
 [source]
 git = "https://github.com/rui314/mold"
-rev = "cf1c02d097fc57113b7f9fabf1bc15f810b8b27c"
+rev = "b53197300b5bf9f02daccae536f65dda2d1431c5"
 [build]
 template = "custom"
-dependencies = [
-    "library1",
-]
 script = """
 COOKBOOK_CONFIGURE="cmake"
 COOKBOOK_CONFIGURE_FLAGS=(
