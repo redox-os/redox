@@ -1,0 +1,59 @@
+#TODO not compiled or tested
+# build instructions: https://github.com/AndreRH/hangover/blob/master/docs/COMPILE.md
+[source]
+git = "https://github.com/AndreRH/hangover"
+rev = "8a3cdfb0b2092d10fa782319fc02648724554205"
+[build]
+template = "custom"
+dependencies = [
+    "fontconfig",
+    "freetype2",
+    "gnutls3",
+    "gstreamer",
+    "sdl2",
+    "libvulkan",
+    "mesa",
+    "libx11",
+    "libxcomposite",
+    "libxcursor",
+    "libxi",
+    "libxfixes",
+    "librandr",
+    "libxrender",
+    "libxext",
+    "libxkbcommon",
+    "libxkbregistry",
+]
+script = """
+mkdir -p "${COOKBOOK_BUILD}"/wine/build
+cd "${COOKBOOK_BUILD}"/wine/build
+COOKBOOK_CONFIGURE_FLAGS+=(
+    --enable-win64
+    --with-mingw
+    --enable-archs=x86_64,i386,arm
+	--disable-kerberos
+	--disable-tests
+	--without-capi
+	--without-coreaudio
+	--without-dbus
+	--without-gettext
+    --without-gettextpo
+	--without-gphoto
+	--without-gssapi
+	--without-inotify
+	--without-krb5
+	--without-netapi
+	--without-opencl
+	--without-osmesa
+	--without-pcap
+	--without-pcsclite
+	--with-pthread
+	--without-pulse
+	--without-sane
+	--with-sdl
+	--without-udev
+	--without-unwind
+	--without-usb
+)
+cookbook_configure
+"""
