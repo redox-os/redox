@@ -175,6 +175,37 @@ impl CookRecipe {
 
         Ok(recipes)
     }
+
+    pub fn get_package_deps_recursive(names: &[String], recursion: usize) -> Result<Vec<String>, String> {
+        if recursion == 0 {
+            return Err(format!(
+                "recursion limit while processing package dependencies: {:#?}",
+                names
+            ));
+        }
+
+        let mut recipes = Vec::new();
+        for name in names {
+            let recipe = Self::new(name.clone())?;
+
+            let dependencies =
+                Self::get_package_deps_recursive(&recipe.recipe.package.dependencies, recursion - 1).map_err(
+                    |err| format!("{}: failed on loading package dependencies:\n{}", name, err),
+                )?;
+
+            for dependency in dependencies {
+                if !recipes.contains(&dependency) {
+                    recipes.push(dependency);
+                }
+            }
+
+            if !recipes.contains(&name) {
+                recipes.push(name.clone());
+            }
+        }
+
+        Ok(recipes)
+    }
 }
 
 #[cfg(test)]
@@ -216,7 +247,6 @@ mod tests {
                 },
                 package: PackageRecipe {
                     dependencies: Vec::new(),
-                    shared_deps: Vec::new(),
                 },
             }
         );
@@ -259,7 +289,6 @@ mod tests {
                 },
                 package: PackageRecipe {
                     dependencies: Vec::new(),
-                    shared_deps: Vec::new(),
                 },
             }
         );
