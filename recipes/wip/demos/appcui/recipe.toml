@@ -1,0 +1,8 @@
+#TODO not compiled or tested
+[source]
+git = "https://github.com/gdt050579/AppCUI-rs"
+[build]
+template = "custom"
+script = """
+cookbook_cargo_packages examples
+"""
