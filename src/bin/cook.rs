@@ -1090,16 +1090,35 @@ fn main() {
     let mut matching = true;
     let mut dry_run = false;
     let mut fetch_only = false;
+    let mut with_package_deps = false;
     let mut quiet = false;
     let mut recipe_names = Vec::new();
     for arg in env::args().skip(1) {
         match arg.as_str() {
             "--" if matching => matching = false,
             "-d" | "--dry-run" if matching => dry_run = true,
+            "--with-package-deps" if matching => with_package_deps = true,
             "--fetch-only" if matching => fetch_only = true,
             "-q" | "--quiet" if matching => quiet = true,
             _ => recipe_names.push(arg),
         }
+    }
+
+    if with_package_deps {
+        recipe_names = match CookRecipe::get_package_deps_recursive(&recipe_names, 16) {
+            Ok(ok) => ok,
+            Err(err) => {
+                eprintln!(
+                    "{}{}cook - error:{}{} {}",
+                    style::Bold,
+                    color::Fg(color::AnsiValue(196)),
+                    color::Fg(color::Reset),
+                    style::Reset,
+                    err,
+                );
+                process::exit(1);
+            }
+        };
     }
 
     let recipes = match CookRecipe::new_recursive(&recipe_names, 16) {
