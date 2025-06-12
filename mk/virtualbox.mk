@@ -31,7 +31,7 @@ virtualbox: $(BUILD)/harddrive.img
 	$(VBM) modifyvm Redox --usb off # on
 	$(VBM) modifyvm Redox --keyboard ps2
 	$(VBM) modifyvm Redox --mouse ps2
-	$(VBM) modifyvm Redox --audio $(VB_AUDIO)
+	$(VBM) modifyvm Redox --audio-driver $(VB_AUDIO)
 	$(VBM) modifyvm Redox --audiocontroller hda
 	$(VBM) modifyvm Redox --audioout on
 	$(VBM) modifyvm Redox --nestedpaging on
