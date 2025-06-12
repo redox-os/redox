@@ -1,0 +1,32 @@
+[source]
+tar = "https://github.com/fragglet/sdl-sopwith/releases/download/sdl-sopwith-1.8.4/sopwith-1.8.4.tar.gz"
+blake3 = "44e1404a9c4bea257d7778d2a4b1512231603a74b0a7b18eac5d18f36730ed3e"
+
+[build]
+template = "custom"
+dependencies = [
+    "sdl1",
+    "liborbital",
+    "libiconv",
+]
+script = """
+export CFLAGS="-I${COOKBOOK_SYSROOT}/include -I${COOKBOOK_SYSROOT}/include/SDL"
+export LDFLAGS="-L${COOKBOOK_SYSROOT}/lib -static"
+export LIBS="-lSDL -lorbital" # TODO: Uses sdl-config instead of pkg-config
+
+# For some reason, cook_configure breaks spectacularly on this
+# We will just copy instead
+rsync -av --delete "${COOKBOOK_SOURCE}/" ./
+
+wget -O autotools/config.sub "https://gitlab.redox-os.org/redox-os/gnu-config/-/raw/master/config.sub?inline=false"
+
+./configure \\
+    --build="$(gcc -dumpmachine)" \\
+    --host="${TARGET}" \\
+    --prefix="" \\
+    --with-sdl-prefix="${COOKBOOK_SYSROOT}"
+
+make -j"$(nproc)"
+
+make DESTDIR="${COOKBOOK_STAGE}" install
+"""

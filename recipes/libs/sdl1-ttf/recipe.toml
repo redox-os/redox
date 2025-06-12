@@ -1,0 +1,32 @@
+[source]
+tar = "https://www.libsdl.org/projects/SDL_ttf/release/SDL_ttf-2.0.11.tar.gz"
+blake3 = "a684e57553e43b55ab28b064d1d5d44b8749299f259da31a62d671fc1d5505ee"
+patches = ["redox.patch"]
+script = """
+./autogen.sh
+"""
+
+[build]
+template = "custom"
+dependencies = [
+    "sdl1",
+    "liborbital",
+    "freetype2",
+    "libpng",
+    "zlib",
+]
+script = """
+export CFLAGS="-I${COOKBOOK_SYSROOT}/include -I${COOKBOOK_SYSROOT}/include/freetype2"
+export LDFLAGS="-L${COOKBOOK_SYSROOT}/lib"
+
+COOKBOOK_CONFIGURE_FLAGS=(
+    --prefix=/
+    --build="$(gcc -dumpmachine)"
+    --host="${TARGET}"
+    --disable-shared
+)
+
+cookbook_configure
+
+rm -f "${COOKBOOK_STAGE}/lib/"*.la
+"""
