@@ -1,0 +1,5 @@
+#!ipxe
+
+kernel bootloader-live.efi
+initrd redox-live.img
+boot
