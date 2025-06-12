@@ -1,0 +1,17 @@
+[source]
+tar = "https://ftp.gnu.org/gnu/grep/grep-3.1.tar.xz"
+blake3 = "46b6e24dfa1b0f309f4eae3c450d612396c8faa6510b53a55f629e4f4c70b4a3"
+patches = ["grep.patch"]
+
+[build]
+template = "custom"
+script = """
+COOKBOOK_CONFIGURE_FLAGS+=(
+    --prefix=/
+)
+cookbook_configure
+
+"${TARGET}-strip" "${COOKBOOK_STAGE}/bin/grep"
+
+rm -rf "${COOKBOOK_STAGE}"/{lib,share}
+"""

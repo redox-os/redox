@@ -1,0 +1,15 @@
+[source]
+tar = "https://www.etalabs.net/releases/libc-bench-20110206.tar.gz"
+blake3 = "64093102f29faa76da455f55a7b4be25b6d74d5c3d6fe88dbbc38aaae185182f"
+patches = ["redox.patch"]
+
+[build]
+template = "custom"
+script = """
+rsync -av --delete "${COOKBOOK_SOURCE}/" ./
+
+"${COOKBOOK_MAKE}" -j"$(${NPROC})"
+
+mkdir -pv "${COOKBOOK_STAGE}/usr/bin"
+cp -v "libc-bench" "${COOKBOOK_STAGE}/usr/bin"
+"""

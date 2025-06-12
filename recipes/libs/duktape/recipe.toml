@@ -1,0 +1,16 @@
+[source]
+tar = "https://duktape.org/duktape-2.7.0.tar.xz"
+blake3 = "b0a17da888847bc9c73624ae3ba7f858ec327a9bbce9d287aee6a2489e518448"
+
+[build]
+template = "custom"
+script = """
+rsync -av --delete "${COOKBOOK_SOURCE}/" ./
+
+sed -i "s/= gcc/= ${TARGET}-gcc/g" Makefile.cmdline
+
+"${COOKBOOK_MAKE}" -f Makefile.cmdline -j"$($NPROC)"
+
+mkdir -pv "${COOKBOOK_STAGE}/usr/bin"
+cp ./duk "${COOKBOOK_STAGE}/usr/bin/duk"
+"""
