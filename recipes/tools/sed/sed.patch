@@ -1,36 +1,11 @@
-diff -ru source/lib/getprogname.c source-new/lib/getprogname.c
---- source/lib/getprogname.c	2017-01-16 21:36:00.000000000 -0800
-+++ source-new/lib/getprogname.c	2017-07-13 16:13:35.966956860 -0700
-@@ -43,13 +43,11 @@
- # include <string.h>
- #endif
- 
--#ifdef __sgi
- # include <string.h>
- # include <unistd.h>
- # include <stdio.h>
- # include <fcntl.h>
--# include <sys/procfs.h>
--#endif
-+# include <limits.h>
- 
- #include "dirname.h"
- 
-@@ -178,7 +176,16 @@
-     }
-   return NULL;
- # else
--#  error "getprogname module not ported to this OS"
-+  char filename[PATH_MAX];
-+  int fd = open ("sys:exe", O_RDONLY);
-+  if (fd > 0) {
-+    int len = read(fd, filename, PATH_MAX-1);
-+    if (len > 0) {
-+       filename[len] = '\0';
-+       return strdup(filename);
-+    }
-+  }
-+  return NULL;
- # endif
- }
- 
+diff -ruN sed-4.4/sed/mbcs.c source/sed/mbcs.c
+--- sed-4.4/sed/mbcs.c	2017-01-01 03:17:10.000000000 -0800
++++ source/sed/mbcs.c	2025-06-06 04:36:30.129312397 -0700
+@@ -38,6 +38,7 @@
+ int
+ is_mb_char (int ch, mbstate_t *cur_stat)
+ {
++  return 0; // FIXME: Implement mbrtowc in relibc, then remove this line
+   const char c = ch ;
+   const int mb_pending = !mbsinit (cur_stat);
+   const int result = mbrtowc (NULL, &c, 1, cur_stat);
