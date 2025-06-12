@@ -1,20 +1,7 @@
-[source]
-tar = "https://ijg.org/files/jpegsrc.v9f.tar.gz"
-blake3 = "ffd81637231d3ab2008d092d16af3bd3bd695fb0e284bc9de64d06e3ed431824"
-script = """
-DYNAMIC_INIT
-autotools_recursive_regenerate
-"""
-
+# libjpeg is now provided by libjpeg-turbo
 [build]
 template = "custom"
-script = """
-DYNAMIC_INIT
-COOKBOOK_CONFIGURE_FLAGS=(
-    --host="${GNU_TARGET}"
-    --prefix="/usr"
-    --enable-shared
-    --enable-static
-)
-cookbook_configure
-"""
+script = ""
+
+[package]
+dependencies = ["libjpeg-turbo"]
