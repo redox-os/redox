@@ -1,0 +1,43 @@
+[source]
+git = "https://github.com/OpenTTD/OpenTTD.git"
+branch = "release/1.8"
+patches = ["redox.patch"]
+
+[build]
+template = "custom"
+dependencies = [
+    "freetype2",
+    "liborbital",
+    "libpng",
+    "sdl1",
+    "xz",
+    "zlib",
+]
+script = """
+rsync -av --delete "${COOKBOOK_SOURCE}/" ./
+
+# Unsure if the bundle dir is necessary
+# Or why the installation differs
+# Could be unnecessary
+./configure \\
+    --build="$(gcc -dumpmachine)" \\
+    --host="${TARGET}" \\
+    --prefix="" \\
+    --enable-static \\
+    --without-liblzo2 \\
+    --disable-network \\
+    --without-threads
+
+make VERBOSE=1 -j"$(nproc)"
+
+dest="${COOKBOOK_STAGE}"
+bundledir="$dest/bundle"
+
+make VERBOSE=1 ROOT_DIR="./" BUNDLE_DIR="$bundledir" INSTALL_DIR="$dest/usr" install
+rm -rf "$bundledir"
+
+if [ -d "${COOKBOOK_STAGE}/usr/bin" ]
+then
+    find "${COOKBOOK_STAGE}/usr/bin" -type f -exec "${TARGET}-strip" -v {} ';'
+fi
+"""

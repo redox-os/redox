@@ -1,0 +1,9 @@
+[source]
+git = "https://gitlab.redox-os.org/redox-os/openttd-opensfx.git"
+
+[build]
+template = "custom"
+script = """
+mkdir -pv "${COOKBOOK_STAGE}/share/games/openttd/baseset/opensfx"
+cp -Rv "${COOKBOOK_SOURCE}"/* "${COOKBOOK_STAGE}/share/games/openttd/baseset/opensfx"
+"""
