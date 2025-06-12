@@ -13,6 +13,12 @@ live:
 	rm -f $(BUILD)/livedisk.iso
 	$(MAKE) $(BUILD)/livedisk.iso
 
+netboot:
+	-$(FUMOUNT) $(BUILD)/filesystem/ || true
+	-$(FUMOUNT) /tmp/redox_installer/ || true
+	rm -rf $(BUILD)/livedisk.iso $(BUILD)/tftproot
+	$(MAKE) $(BUILD)/tftproot
+
 popsicle: $(BUILD)/livedisk.iso
 	popsicle-gtk $(BUILD)/livedisk.iso
 
