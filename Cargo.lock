@@ -334,6 +334,26 @@ source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "5ce89b21cab1437276d2650d57e971f9d548a2d9037cc231abdc0562b97498ce"
 
 [[package]]
+name = "bytemuck"
+version = "1.23.1"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "5c76a5792e44e4abe34d3abf15636779261d45a7450612059293d1d2cfc63422"
+dependencies = [
+ "bytemuck_derive",
+]
+
+[[package]]
+name = "bytemuck_derive"
+version = "1.9.3"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "7ecc273b49b3205b83d648f0690daa588925572cc5063745bfe547fe7ec8e1a1"
+dependencies = [
+ "proc-macro2",
+ "quote",
+ "syn",
+]
+
+[[package]]
 name = "byteorder"
 version = "1.5.0"
 source = "registry+https://github.com/rust-lang/crates.io-index"
@@ -1517,15 +1537,15 @@ dependencies = [
 
 [[package]]
 name = "pkgar"
-version = "0.1.16"
+version = "0.1.17"
 dependencies = [
+ "anyhow",
  "blake3 0.3.8",
+ "bytemuck",
  "clap",
- "error-chain",
- "pkgar-core 0.1.16",
- "pkgar-keys 0.1.16",
- "plain",
- "user-error",
+ "pkgar-core 0.1.17",
+ "pkgar-keys 0.1.17",
+ "thiserror 2.0.11",
 ]
 
 [[package]]
@@ -1542,12 +1562,12 @@ dependencies = [
 
 [[package]]
 name = "pkgar-core"
-version = "0.1.16"
+version = "0.1.17"
 dependencies = [
  "bitflags 1.3.2",
  "blake3 0.3.8",
+ "bytemuck",
  "dryoc",
- "plain",
 ]
 
 [[package]]
@@ -1571,19 +1591,19 @@ dependencies = [
 
 [[package]]
 name = "pkgar-keys"
-version = "0.1.16"
+version = "0.1.17"
 dependencies = [
+ "anyhow",
  "clap",
  "dirs 3.0.2",
- "error-chain",
  "hex",
  "lazy_static",
- "pkgar-core 0.1.16",
+ "pkgar-core 0.1.17",
  "seckey",
  "serde",
  "termion",
+ "thiserror 2.0.11",
  "toml 0.8.19",
- "user-error",
 ]
 
 [[package]]
@@ -1788,9 +1808,9 @@ dependencies = [
  "blake3 1.5.3",
  "object",
  "pbr",
- "pkgar 0.1.16",
- "pkgar-core 0.1.16",
- "pkgar-keys 0.1.16",
+ "pkgar 0.1.17",
+ "pkgar-core 0.1.17",
+ "pkgar-keys 0.1.17",
  "redoxer",
  "serde",
  "termion",
@@ -2570,7 +2590,7 @@ version = "1.6.3"
 source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "97fee6b57c6a41524a810daee9286c02d7752c4253064d0b05472833a438f675"
 dependencies = [
- "cfg-if 0.1.10",
+ "cfg-if 1.0.0",
  "static_assertions",
 ]
 
