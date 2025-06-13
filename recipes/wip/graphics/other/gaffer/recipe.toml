@@ -16,7 +16,7 @@ dependencies = [
     "llvm18",
     "lz4",
     "libffi",
-    "libjpeg-turbo",
+    "libjpeg",
     "libpng",
     "libtiff",
     "openexr",

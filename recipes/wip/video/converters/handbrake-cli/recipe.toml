@@ -15,7 +15,7 @@ dependencies = [
     "lame",
     "libass",
     "libiconv",
-    "libjpeg-turbo",
+    "libjpeg",
     "libogg",
     "libsamplerate",
     "libtheora",

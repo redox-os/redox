@@ -23,7 +23,7 @@ dependencies = [
     "glib",
     "gtk3",
     "harfbuzz",
-    "libjpeg-turbo",
+    "libjpeg",
     "pango",
     "libpng",
     "librsvg",

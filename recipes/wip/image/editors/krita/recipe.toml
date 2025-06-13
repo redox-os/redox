@@ -24,7 +24,7 @@ dependencies = [
     "libmypaint",
     "boost",
     "libheif",
-    "libjpeg-turbo",
+    "libjpeg",
     "libjxl",
     "kf5-extra-cmake-modules",
     "kf5-completion",
