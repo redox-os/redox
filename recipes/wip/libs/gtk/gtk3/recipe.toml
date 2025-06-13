@@ -20,7 +20,7 @@ dependencies = [
     "libepoxy",
     "libffi",
     "libiconv",
-    "libjpeg-turbo",
+    "libjpeg",
     "libpng",
     "libpthread-stubs",
     "libx11",

@@ -6,7 +6,7 @@ tar = "https://apache.org/dyn/closer.lua/guacamole/1.5.5/source/guacamole-server
 template = "configure"
 dependencies = [
     "cairo",
-    "libjpeg-turbo",
+    "libjpeg",
     "libpng",
     "libuuid",
     "libssh2",

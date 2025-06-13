@@ -27,7 +27,7 @@ dependencies = [
     "libgpg-error",
     "libiconv",
     "libicu",
-    "libjpeg-turbo",
+    "libjpeg",
     "libpng",
     "libpsl",
     "libpthread-stubs",
@@ -138,4 +138,6 @@ cookbook_cmake \
     -DUSE_WOFF2=OFF
 patchelf --replace-needed "${COOKBOOK_SYSROOT}/usr/lib/libsqlite3.so" "libsqlite3.so" "${COOKBOOK_STAGE}/usr/lib/libwebkit2gtk-4.1.so"
 patchelf --replace-needed "${COOKBOOK_SYSROOT}/usr/lib/libsqlite3.so" "libsqlite3.so" "${COOKBOOK_STAGE}/usr/libexec/webkit2gtk-4.1/MiniBrowser"
+mkdir -p "${COOKBOOK_STAGE}/usr/bin"
+ln -sr "${COOKBOOK_STAGE}/usr/libexec/webkit2gtk-4.1/MiniBrowser" "${COOKBOOK_STAGE}/usr/bin/MiniBrowser"
 """

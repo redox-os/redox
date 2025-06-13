@@ -19,7 +19,7 @@ dependencies = [
     "libhyphen",
     "libxml2",
     "libxslt",
-    "libjpeg-turbo",
+    "libjpeg",
     "libpng",
     "zlib",
     "glib",

@@ -38,7 +38,7 @@ dependencies = [
     "libcdr",
     "libgsl",
     "libgspell-gtk3",
-    "libjpeg-turbo",
+    "libjpeg",
     "liblcms",
     "liblapack",
 ]

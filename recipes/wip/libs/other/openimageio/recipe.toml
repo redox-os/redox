@@ -8,7 +8,7 @@ template = "custom"
 dependencies = [
     "imath",
     "libtiff",
-    "libjpeg-turbo",
+    "libjpeg",
     "openexr",
     "libfmt",
     #"libpng",
