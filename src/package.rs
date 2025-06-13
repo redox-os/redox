@@ -1,4 +1,4 @@
-use std::{env, fs, path::Path};
+use std::{env, fs};
 
 use crate::recipe_find::recipe_find;
 
@@ -14,7 +14,7 @@ pub struct StageToml {
 impl StageToml {
     pub fn new(name: String) -> Result<Self, String> {
         //TODO: sanitize recipe name?
-        let dir = recipe_find(&name, Path::new("recipes"))?;
+        let dir = recipe_find(&name);
         if dir.is_none() {
             return Err(format!("failed to find recipe directory '{}'", name));
         }

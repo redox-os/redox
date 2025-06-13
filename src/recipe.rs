@@ -1,6 +1,6 @@
 use std::{
     fs,
-    path::{Path, PathBuf},
+    path::PathBuf,
 };
 
 use serde::{Deserialize, Serialize};
@@ -114,7 +114,7 @@ pub struct CookRecipe {
 impl CookRecipe {
     pub fn new(name: String) -> Result<Self, String> {
         //TODO: sanitize recipe name?
-        let dir = recipe_find(&name, Path::new("recipes"))?;
+        let dir = recipe_find(&name);
         if dir.is_none() {
             return Err(format!("failed to find recipe directory '{}'", name));
         }
