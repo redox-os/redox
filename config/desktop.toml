@@ -29,6 +29,7 @@ patchelf = {}
 path = "/usr/lib/init.d/20_orbital"
 data = """
 audiod
+export BROWSER /bin/netsurf-fb
 export VT 3
 orbital orblogin launcher
 unset VT
