@@ -1,6 +1,6 @@
 use cookbook::blake3::blake3_progress;
 use cookbook::package::StageToml;
-use cookbook::recipe::{BuildKind, CookRecipe, PackageRecipe, Recipe, SourceRecipe};
+use cookbook::recipe::{BuildKind, CookRecipe, Recipe, SourceRecipe};
 use cookbook::recipe_find::recipe_find;
 use std::{
     collections::BTreeSet,
@@ -601,7 +601,7 @@ fn build(
     let mut dep_pkgars = BTreeSet::new();
     for dependency in recipe.build.dependencies.iter() {
         //TODO: sanitize name
-        let dependency_dir = recipe_find(dependency, Path::new("recipes"))?;
+        let dependency_dir = recipe_find(dependency);
         if dependency_dir.is_none() {
             return Err(format!("failed to find recipe directory '{}'", dependency));
         }

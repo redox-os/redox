@@ -1,78 +1,38 @@
+use std::collections::HashMap;
 use std::ffi::OsStr;
-use std::fs::{self};
-use std::path::{Path, PathBuf};
+use std::path::PathBuf;
+use std::sync::LazyLock;
 
-pub fn recipe_find(recipe: &str, dir: &Path) -> Result<Option<PathBuf>, String> {
-    let mut recipe_path = None;
-    if !dir.is_dir() {
-        return Ok(None);
-    }
-    for entry in fs::read_dir(dir).map_err(|e| e.to_string())? {
-        let entry = entry.map_err(|e| e.to_string())?;
-        if entry.file_name() == OsStr::new("recipe.sh")
-            || entry.file_name() == OsStr::new("recipe.toml")
-        {
-            // println!("recipe is {:?}", dir.file_name());
-            if dir.file_name().unwrap() != OsStr::new(recipe) {
-                return Ok(None);
-            } else {
-                return Ok(Some(dir.to_path_buf()));
+static RECIPE_PATHS: LazyLock<HashMap<String, PathBuf>> = LazyLock::new(|| {
+    let mut recipe_paths = HashMap::new();
+    for entry_res in ignore::Walk::new("recipes") {
+        let entry = entry_res.unwrap();
+        if entry.file_name() == OsStr::new("recipe.sh") || entry.file_name() == OsStr::new("recipe.toml") {
+            let recipe_file = entry.path();
+            let Some(recipe_dir) = recipe_file.parent() else { continue };
+            let Some(recipe_name) = recipe_dir.file_name().and_then(|x| x.to_str()) else { continue };
+            if let Some(other_dir) = recipe_paths.insert(recipe_name.to_string(), recipe_dir.to_path_buf()) {
+                panic!(
+                    "recipe {} has two or more entries {:?}, {:?}",
+                    recipe_name,
+                    other_dir,
+                    recipe_dir
+                );
             }
         }
     }
+    recipe_paths
+});
 
-    for entry in fs::read_dir(dir).map_err(|e| e.to_string())? {
-        let entry = entry.map_err(|e| e.to_string())?;
-        if !entry.file_type().map_err(|e| e.to_string())?.is_dir() {
-            continue;
-        }
-        let found = recipe_find(recipe, entry.path().as_path())?;
-        if found.is_none() {
-            continue;
-        }
-        if recipe_path.is_none() {
-            recipe_path = found;
-        } else {
-            return Err(format!(
-                "recipe {} has two or more entries {}, {}",
-                recipe,
-                recipe_path.unwrap().display(),
-                found.unwrap().display()
-            ));
-        }
-    }
-
-    Ok(recipe_path)
+pub fn recipe_find(recipe: &str) -> Option<PathBuf> {
+    RECIPE_PATHS.get(recipe).cloned()
 }
 
-pub fn list_recipes(dir: &Path, prefix: PathBuf) -> Result<Vec<PathBuf>, String> {
+pub fn list_recipes(prefix: PathBuf) -> Vec<PathBuf> {
     let mut recipes = Vec::<PathBuf>::new();
-    if !dir.is_dir() {
-        return Ok(recipes);
-    }
-    for entry in fs::read_dir(dir).map_err(|e| e.to_string())? {
-        let entry = entry.map_err(|e| e.to_string())?;
-        if entry.file_name() == OsStr::new("recipe.sh")
-            || entry.file_name() == OsStr::new("recipe.toml")
-        {
-            recipes.push(prefix);
-            return Ok(recipes);
-        }
-    }
-
-    for entry in fs::read_dir(dir).map_err(|e| e.to_string())? {
-        let entry = entry.map_err(|e| e.to_string())?;
-        if !entry.file_type().map_err(|e| e.to_string())?.is_dir() {
-            continue;
-        }
-        let name = entry.file_name();
-        let Some(name) = name.to_str() else {
-            eprintln!("invalid UTF-8 for entry {entry:?}");
-            continue;
-        };
-        let mut found = list_recipes(entry.path().as_path(), prefix.join(name))?;
-        recipes.append(&mut found);
+    for (_name, path) in RECIPE_PATHS.iter() {
+        recipes.push(prefix.join(path));
     }
     recipes.sort();
-    Ok(recipes)
+    recipes
 }

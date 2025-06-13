@@ -1,6 +1,5 @@
 use cookbook::recipe_find::recipe_find;
 use std::env::args;
-use std::path::Path;
 use std::process::exit;
 // use clap::Parser;
 
@@ -12,15 +11,15 @@ fn main() {
         usage();
         exit(2);
     }
-    let result = recipe_find(&args().last().unwrap(), Path::new("recipes"));
-    if result.is_err() {
-        eprintln!("{}", result.err().unwrap());
-        exit(2);
-    } else if result.as_ref().unwrap().is_none() {
-        eprintln!("recipe {} not found", &args().last().unwrap());
+    let recipe_name = &args().last().unwrap();
+    match recipe_find(recipe_name) {
+        Some(path) => {
+            println!("{}", path.display());
+            exit(0);
+        },
+        None => {
+        eprintln!("recipe {} not found", recipe_name);
         exit(1);
-    } else {
-        println!("{}", result.unwrap().unwrap().display());
-        exit(0);
+        }
     }
 }
