@@ -52,7 +52,7 @@ diff -ruwN neverball-1.6.0/Makefile source/Makefile
  
 -OGG_LIBS := -lvorbisfile
 -TTF_LIBS := -lSDL2_ttf
-+OGG_LIBS := $(shell $(PKG_CONFIG) vorbisfile --libs)
++OGG_LIBS := $(shell $(PKG_CONFIG) ogg vorbis vorbisfile --libs)
 +TTF_LIBS := $(shell $(PKG_CONFIG) SDL2_ttf --libs) -lfreetype
  
  ALL_LIBS := $(HMD_LIBS) $(TILT_LIBS) $(INTL_LIBS) $(TTF_LIBS) \

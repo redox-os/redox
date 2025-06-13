@@ -1,0 +1,54 @@
+[source]
+tar = "https://neverball.org/neverball-1.6.0.tar.gz"
+blake3 = "74f3b68595f475e89fd2ca8b5fc349837ff36fbbe141f321dfc232dbf8fccf51"
+patches = ["redox.patch"]
+
+[build]
+dependencies = [
+    "freetype2",
+    "libjpeg",
+    "libogg",
+    "liborbital",
+    "libpng",
+    "libvorbis",
+    "llvm18",
+    "mesa",
+    "sdl2",
+    "sdl2-ttf",
+    "zlib",
+]
+template = "custom"
+script = """
+DYNAMIC_INIT
+
+rsync -av --delete "${COOKBOOK_SOURCE}/" ./
+
+env -i \
+    LDFLAGS="-static -ljpeg -lpng16 -lz" \
+    PATH="/usr/bin:/bin" \
+    PKG_CONFIG="pkg-config" \
+"${COOKBOOK_MAKE}" -j"${COOKBOOK_MAKE_JOBS}" ENABLE_FS=stdio mapc sols
+
+export LDFLAGS="-L${COOKBOOK_SYSROOT}/lib -z noexecstack"
+"${COOKBOOK_MAKE}" -j"${COOKBOOK_MAKE_JOBS}" ENABLE_FS=stdio ENABLE_NLS=0 clean-src
+"${COOKBOOK_MAKE}" -j"${COOKBOOK_MAKE_JOBS}" ENABLE_FS=stdio ENABLE_NLS=0 neverball neverputt
+
+# Create install directories
+mkdir -pv "${COOKBOOK_STAGE}/usr/games/neverball" "${COOKBOOK_STAGE}/ui/apps" "${COOKBOOK_STAGE}/ui/icons/apps"
+
+# Copy assets
+cp -rv data "${COOKBOOK_STAGE}/usr/games/neverball"
+
+# For each game
+for bin in neverball neverputt
+do
+    # Install binary
+    "${STRIP}" -v "${bin}" -o "${COOKBOOK_STAGE}/usr/games/neverball/${bin}"
+
+    # Install manifest
+    cp -v "${COOKBOOK_RECIPE}/manifest-${bin}" "${COOKBOOK_STAGE}/ui/apps/${bin}"
+
+    # Install icon
+    cp -v "dist/${bin}_64.png" "${COOKBOOK_STAGE}/ui/icons/apps/${bin}.png"
+done
+"""
