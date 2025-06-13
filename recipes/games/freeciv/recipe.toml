@@ -24,6 +24,8 @@ dependencies = [
 template = "custom"
 script = """
 DYNAMIC_INIT
+export CURL_LIBS="-lcurl -lnghttp2 -lssl -lcrypto"
+export CURL_MIME_API_LIBS="${CURL_LIBS}"
 export ICU_LIBS="-licuuc -licudata -lstdc++"
 export SDL2_LIBS="\
     -lSDL2_gfx \
