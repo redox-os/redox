@@ -100,7 +100,6 @@ osx_macports()
     install_macports_pkg "git"
 	install_macports_pkg "gmake"
 	install_macports_pkg "curl"
-	install_macports_pkg "osxfuse"
 	install_macports_pkg "podman"
 	install_macports_pkg "gdb +multiarch"
 
@@ -130,7 +129,6 @@ osx_homebrew()
     install_brew_pkg "git"
 	install_brew_pkg "make"
 	install_brew_pkg "curl"
-	install_brew_pkg "osxfuse"
 	install_brew_pkg "fuse-overlayfs"
 	install_brew_pkg "slirp4netns"
 	install_brew_pkg "podman"
