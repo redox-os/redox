@@ -1,0 +1,9 @@
+#TODO not compiled or tested
+[source]
+git = "https://github.com/orhun/ratzilla"
+[build]
+template = "custom"
+script = """
+cookbook_cargo_packages animations canvas-stress-test canvas-waves \
+colors-rgb demo demo2 minimal pong text-area user-input website world-map
+"""
