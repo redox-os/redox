@@ -18,7 +18,7 @@ dependencies = [
     "gdk-pixbuf",
     "gettext",
     "glib",
-    "gstreamer",
+    #TODO "gstreamer",
     "gtk3",
     "harfbuzz",
     "libepoxy",
@@ -69,16 +69,16 @@ LIBS=(
     $("${TARGET}-pkg-config" --libs gdk-3.0)
     $("${TARGET}-pkg-config" --libs gdk-pixbuf-2.0)
     $("${TARGET}-pkg-config" --libs gpg-error)
-    $("${TARGET}-pkg-config" --libs gstreamer-1.0)
-    $("${TARGET}-pkg-config" --libs gstreamer-allocators-1.0)
-    $("${TARGET}-pkg-config" --libs gstreamer-app-1.0)
-    $("${TARGET}-pkg-config" --libs gstreamer-audio-1.0)
-    $("${TARGET}-pkg-config" --libs gstreamer-base-1.0)
-    $("${TARGET}-pkg-config" --libs gstreamer-fft-1.0)
-    $("${TARGET}-pkg-config" --libs gstreamer-pbutils-1.0)
-    $("${TARGET}-pkg-config" --libs gstreamer-tag-1.0)
-    $("${TARGET}-pkg-config" --libs gstreamer-transcoder-1.0)
-    $("${TARGET}-pkg-config" --libs gstreamer-video-1.0)
+    #$("${TARGET}-pkg-config" --libs gstreamer-1.0)
+    #$("${TARGET}-pkg-config" --libs gstreamer-allocators-1.0)
+    #$("${TARGET}-pkg-config" --libs gstreamer-app-1.0)
+    #$("${TARGET}-pkg-config" --libs gstreamer-audio-1.0)
+    #$("${TARGET}-pkg-config" --libs gstreamer-base-1.0)
+    #$("${TARGET}-pkg-config" --libs gstreamer-fft-1.0)
+    #$("${TARGET}-pkg-config" --libs gstreamer-pbutils-1.0)
+    #$("${TARGET}-pkg-config" --libs gstreamer-tag-1.0)
+    #$("${TARGET}-pkg-config" --libs gstreamer-transcoder-1.0)
+    #$("${TARGET}-pkg-config" --libs gstreamer-video-1.0)
     $("${TARGET}-pkg-config" --libs gtk+-3.0)
     $("${TARGET}-pkg-config" --libs harfbuzz-icu)
     $("${TARGET}-pkg-config" --libs libffi)
@@ -117,9 +117,13 @@ cookbook_cmake \
     -DCMAKE_CXX_STANDARD_LIBRARIES="${LIBS[*]}" \
     -DENABLE_GAMEPAD=OFF \
     -DENABLE_INTROSPECTION=OFF \
+    -DENABLE_MEDIA_STREAM=OFF \
     -DENABLE_JOURNALD_LOG=OFF \
     -DENABLE_SPEECH_SYNTHESIS=OFF \
     -DENABLE_SPELLCHECK=OFF \
+    -DENABLE_WEB_AUDIO=OFF \
+    -DENABLE_WEB_CODECS=OFF \
+    -DENABLE_VIDEO=OFF \
     -DPORT=GTK \
     -DUNIX=1 \
     -DUSE_AVIF=OFF \

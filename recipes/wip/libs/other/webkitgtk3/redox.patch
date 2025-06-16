@@ -204,7 +204,7 @@ diff -ruwN webkitgtk-2.49.1/Source/ThirdParty/ANGLE/src/common/platform.h source
  #else
  #    error Unsupported platform.
 diff -ruwN webkitgtk-2.49.1/Source/ThirdParty/ANGLE/src/common/system_utils.h source/Source/ThirdParty/ANGLE/src/common/system_utils.h
---- webkitgtk-2.49.1/Source/ThirdParty/ANGLE/src/common/system_utils.h	2025-05-13 10:04:29.634120979 -0600
+--- webkitgtk-2.49.1/Source/ThirdParty/ANGLE/src/common/system_utils.h	2024-05-30 05:59:22.953676200 -0600
 +++ source/Source/ThirdParty/ANGLE/src/common/system_utils.h	2025-05-13 10:29:39.241586171 -0600
 @@ -256,7 +256,9 @@
  }
@@ -330,7 +330,7 @@ diff -ruwN webkitgtk-2.49.1/Source/ThirdParty/skia/src/ports/SkMemory_malloc.cpp
      #elif defined(SK_BUILD_FOR_WIN)
 diff -ruwN webkitgtk-2.49.1/Source/WebCore/page/Page.cpp source/Source/WebCore/page/Page.cpp
 --- webkitgtk-2.49.1/Source/WebCore/page/Page.cpp	2025-04-01 01:53:09.527295000 -0600
-+++ source/Source/WebCore/page/Page.cpp	2025-05-12 21:46:50.795767586 -0600
++++ source/Source/WebCore/page/Page.cpp	2025-06-14 18:21:41.320992545 -0600
 @@ -536,8 +536,10 @@
      if (RefPtr scrollingCoordinator = m_scrollingCoordinator)
          scrollingCoordinator->pageDestroyed();
@@ -342,6 +342,18 @@ diff -ruwN webkitgtk-2.49.1/Source/WebCore/page/Page.cpp source/Source/WebCore/p
  
      checkedBackForward()->close();
      if (!isUtilityPage())
+@@ -2981,9 +2983,11 @@
+         return;
+ 
+     m_shouldSuppressHDR = shouldSuppressHDR;
++    #if ENABLE(VIDEO)
+     forEachDocument([](auto& document) {
+         document.shouldSuppressHDRDidChange();
+     });
++    #endif
+ }
+ 
+ #if ENABLE(MEDIA_STREAM)
 diff -ruwN webkitgtk-2.49.1/Source/WebCore/PlatformGTK.cmake source/Source/WebCore/PlatformGTK.cmake
 --- webkitgtk-2.49.1/Source/WebCore/PlatformGTK.cmake	2024-12-16 02:07:48.162613200 -0700
 +++ source/Source/WebCore/PlatformGTK.cmake	2025-05-10 19:05:57.526658690 -0600
@@ -369,8 +381,8 @@ diff -ruwN webkitgtk-2.49.1/Source/WebCore/PlatformGTK.cmake source/Source/WebCo
      ${LIBSECRET_INCLUDE_DIRS}
 diff -ruwN webkitgtk-2.49.1/Source/WebKit/Platform/IPC/unix/ConnectionUnix.cpp source/Source/WebKit/Platform/IPC/unix/ConnectionUnix.cpp
 --- webkitgtk-2.49.1/Source/WebKit/Platform/IPC/unix/ConnectionUnix.cpp	2025-03-31 03:35:43.461813700 -0600
-+++ source/Source/WebKit/Platform/IPC/unix/ConnectionUnix.cpp	2025-05-13 09:38:21.678926942 -0600
-@@ -48,7 +48,7 @@
++++ source/Source/WebKit/Platform/IPC/unix/ConnectionUnix.cpp	2025-06-15 20:53:04.313171066 -0600
+@@ -48,13 +48,13 @@
  #include <wtf/glib/GUniquePtr.h>
  #endif
  
@@ -379,6 +391,13 @@ diff -ruwN webkitgtk-2.49.1/Source/WebKit/Platform/IPC/unix/ConnectionUnix.cpp s
  #define MSG_NOSIGNAL 0
  #endif
  
+ // Although it's available on Darwin, SOCK_SEQPACKET seems to work differently
+ // than in traditional Unix so fallback to STREAM on that platform.
+-#if defined(SOCK_SEQPACKET) && !OS(DARWIN)
++#if defined(SOCK_SEQPACKET) && !OS(DARWIN) && !defined(__redox__)
+ #define SOCKET_TYPE SOCK_SEQPACKET
+ #else
+ #if USE(GLIB)
 diff -ruwN webkitgtk-2.49.1/Source/WebKit/PlatformGTK.cmake source/Source/WebKit/PlatformGTK.cmake
 --- webkitgtk-2.49.1/Source/WebKit/PlatformGTK.cmake	2025-03-05 03:09:47.273706000 -0700
 +++ source/Source/WebKit/PlatformGTK.cmake	2025-05-10 18:54:43.437475299 -0600
