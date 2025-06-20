@@ -1,0 +1,11 @@
+#TODO not compiled or tested
+[source]
+git = "https://github.com/Nakadra/sphere-runtime"
+[build]
+template = "custom"
+script = """
+cookbook_cargo
+mkdir -pv "${COOKBOOK_STAGE}/usr/share/sphere"
+cp -rv "${COOKBOOK_SOURCE}/*.sphere" "${COOKBOOK_STAGE}/usr/share/sphere"
+echo "entrypoint = "echo 'Hello, from my first Sphere!'"" > "${COOKBOOK_STAGE}/usr/share/sphere/hello.sphere"
+"""
