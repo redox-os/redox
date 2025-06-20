@@ -2,5 +2,5 @@
 template = "custom"
 script = """
 mkdir -pv "${COOKBOOK_STAGE}/home/user"
-cp -rv "${COOKBOOK_SOURCE}/*" "${COOKBOOK_STAGE}/home/user"
+cp -rv "${COOKBOOK_SOURCE}"/* "${COOKBOOK_STAGE}/home/user"
 """
