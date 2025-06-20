@@ -1,0 +1,9 @@
+#TODO not compiled or tested
+#TODO require the mold liker to be installed
+[source]
+git = "https://github.com/tweedegolf/nea"
+[build]
+template = "custom"
+script = """
+cookbook_cargo_packages nea
+"""
