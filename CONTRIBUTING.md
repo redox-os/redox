@@ -51,8 +51,8 @@ To see all Redox repositories open the [redox-os group](https://gitlab.redox-os.
 
 If you don't know programming:
 
-- Test the [Redox images](https://static.redox-os.org/img/) on your computer and add the report on the [Hardware Compatibility](https://gitlab.redox-os.org/redox-os/redox/-/blob/master/HARDWARE.md) list
-- Monitor and warn developers if the [Redox images](https://static.redox-os.org/img/) are outdated
+- Test the [daily images](https://static.redox-os.org/img/) on your computer and add the report on the [Hardware Compatibility](https://gitlab.redox-os.org/redox-os/redox/-/blob/master/HARDWARE.md) list
+- Monitor and warn developers if the [daily images](https://static.redox-os.org/img/) are outdated
 - Use and test Redox, and file issues for bugs or needed features (please check for duplicates first)
 - Fix and write documentation
 - Find or fix typos in configuration
