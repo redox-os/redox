@@ -1,6 +1,9 @@
 # Configuration file with the commands configuration of the Redox image
 
 $(BUILD)/harddrive.img: $(HOST_FSTOOLS) $(REPO_TAG)
+ifeq ($(PODMAN_BUILD),1)
+	$(PODMAN_RUN) make $@
+else
 	mkdir -p $(BUILD)
 	rm -rf $@  $@.partial
 	-$(FUMOUNT) /tmp/redox_installer || true
@@ -11,8 +14,12 @@ $(BUILD)/harddrive.img: $(HOST_FSTOOLS) $(REPO_TAG)
 	truncate -s "$$FILESYSTEM_SIZE"m $@.partial
 	umask 002 && $(INSTALLER) $(INSTALLER_OPTS) -c $(FILESYSTEM_CONFIG) $@.partial
 	mv $@.partial $@
+endif
 
 $(BUILD)/livedisk.iso: $(HOST_FSTOOLS) $(REPO_TAG)
+ifeq ($(PODMAN_BUILD),1)
+	$(PODMAN_RUN) make $@
+else
 	mkdir -p $(BUILD)
 	rm -rf $@  $@.partial
 	-$(FUMOUNT) /tmp/redox_installer || true
@@ -23,6 +30,7 @@ $(BUILD)/livedisk.iso: $(HOST_FSTOOLS) $(REPO_TAG)
 	truncate -s "$$FILESYSTEM_SIZE"m $@.partial
 	umask 002 && $(INSTALLER) $(INSTALLER_OPTS) -c $(FILESYSTEM_CONFIG) --write-bootloader="$(BUILD)/bootloader-live.efi" --live $@.partial
 	mv $@.partial $@
+endif
 
 $(BUILD)/tftproot: $(HOST_FSTOOLS) $(REPO_TAG) $(BUILD)/livedisk.iso
 	rm -r $(BUILD)/tftproot || true
@@ -32,6 +40,9 @@ $(BUILD)/tftproot: $(HOST_FSTOOLS) $(REPO_TAG) $(BUILD)/livedisk.iso
 	cp redox.ipxe $(BUILD)/tftproot/redox.ipxe
 
 $(BUILD)/filesystem.img: $(HOST_FSTOOLS) $(REPO_TAG)
+ifeq ($(PODMAN_BUILD),1)
+	$(PODMAN_RUN) make $@
+else
 	mkdir -p $(BUILD)
 	-$(FUMOUNT) $(BUILD)/filesystem/ || true
 	rm -rf $@  $@.partial $(BUILD)/filesystem/
@@ -51,6 +62,7 @@ $(BUILD)/filesystem.img: $(HOST_FSTOOLS) $(REPO_TAG)
 	-$(FUMOUNT) $(BUILD)/filesystem/ || true
 	rm -rf $(BUILD)/filesystem/
 	mv $@.partial $@
+endif
 
 mount: $(HOST_FSTOOLS) FORCE
 	mkdir -p $(BUILD)/filesystem/
