@@ -23,6 +23,7 @@ installer = {}
 installer-gui = {}
 ion = {}
 kernel = {}
+libgcc = {}
 nano = {}
 netdb = {}
 netsurf = {}

@@ -84,6 +84,7 @@ kibi = {}
 lci = {}
 libc-bench = {}
 libffi = {}
+libgcc = {}
 libgmp = {}
 libiconv = {}
 libjpeg = {}
