@@ -108,7 +108,7 @@ ifneq ($(QEMU_KERNEL),)
 endif
 
 ifeq ($(live),yes)
-	DISK=$(BUILD)/livedisk.iso
+	DISK=$(BUILD)/redox-live.iso
 else
 	DISK=$(BUILD)/harddrive.img
 endif
