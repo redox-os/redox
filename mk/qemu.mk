@@ -151,7 +151,7 @@ else
 
 	EXTRANETARGS=
 	ifeq ($(netboot),yes)
-		EXTRANETARGS+=,tftp=$(BUILD)/tftproot,bootfile=redox.ipxe
+		EXTRANETARGS+=,tftp=$(BUILD),bootfile=redox.ipxe
 	endif
 
 	ifneq ($(bridge),)
@@ -241,10 +241,6 @@ endif
 qemu-deps:$(FIRMWARE)
 
 qemu-deps:$(QEMU_KERNEL)
-
-ifeq ($(netboot),yes)
-qemu-deps: $(BUILD)/tftproot
-endif
 
 qemu-deps: $(PFLASH0)
 
