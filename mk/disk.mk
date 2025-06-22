@@ -28,7 +28,7 @@ $(BUILD)/tftproot: $(HOST_FSTOOLS) $(REPO_TAG) $(BUILD)/livedisk.iso
 	rm -r $(BUILD)/tftproot || true
 	mkdir $(BUILD)/tftproot
 	cp $(BUILD)/bootloader-live.efi $(BUILD)/tftproot/bootloader-live.efi
-	ln -s ../livedisk.iso $(BUILD)/tftproot/redox-live.img
+	ln -s ../livedisk.iso $(BUILD)/tftproot/redox-live.iso
 	cp redox.ipxe $(BUILD)/tftproot/redox.ipxe
 
 $(BUILD)/filesystem.img: $(HOST_FSTOOLS) $(REPO_TAG)
