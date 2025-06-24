@@ -36,7 +36,7 @@ else ifeq ($(ARCH),x86_64)
 		endif
 	endif
 	ifneq ($(usb),no)
-		QEMUFLAGS+=-usb -device usb-kbd -device usb-tablet
+		QEMUFLAGS+=-device nec-usb-xhci,id=xhci
 	endif
 else ifeq ($(ARCH),aarch64)
 	# Default to UEFI as U-Boot doesn't set up a framebuffer for us and we don't yet support
