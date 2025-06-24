@@ -86,7 +86,7 @@ $(PREFIX)/libtool:
 	echo $(LIBTOOL_VERSION) > $@.partial/.tarball-version
 	mv "$@.partial" "$@"
 
-$(PREFIX)/libtool-build: $(PREFIX)/libtool $(CONTAINER_TAG)
+$(PREFIX)/libtool-build: $(PREFIX)/libtool $(PREFIX)/rust-install
 ifeq ($(PODMAN_BUILD),1)
 	$(PODMAN_RUN) $(MAKE) $@
 else
