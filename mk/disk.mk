@@ -31,6 +31,7 @@ else
 	umask 002 && $(INSTALLER) $(INSTALLER_OPTS) -c $(FILESYSTEM_CONFIG) --write-bootloader="$(BUILD)/bootloader-live.efi" --live $@.partial
 	mv $@.partial $@
 	cp redox.ipxe $(BUILD)/redox.ipxe
+endif
 
 $(BUILD)/filesystem.img: $(HOST_FSTOOLS) $(REPO_TAG)
 ifeq ($(PODMAN_BUILD),1)
