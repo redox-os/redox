@@ -1,5 +1,5 @@
 #!ipxe
 
 kernel bootloader-live.efi
-initrd redox-live.img
+initrd http://${next-server}:8080/redox-live.iso
 boot
