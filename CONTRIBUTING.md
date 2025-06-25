@@ -20,7 +20,7 @@ Please review the `LICENSE` file for the project you are contributing to.
 
 ## Chat
 
-Join us on [Matrix Chat](https://doc.redox-os.org/book/chat.html) to discuss issues or ask questions.
+You can join in our chat platforms to discuss development, issues or ask questions.
 
 ### [Matrix](https://matrix.to/#/#redox-join:matrix.org)
 
