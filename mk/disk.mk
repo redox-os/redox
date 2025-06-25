@@ -16,7 +16,7 @@ else
 	mv $@.partial $@
 endif
 
-$(BUILD)/livedisk.iso: $(HOST_FSTOOLS) $(REPO_TAG) redox.ipxe
+$(BUILD)/redox-live.iso: $(HOST_FSTOOLS) $(REPO_TAG) redox.ipxe
 ifeq ($(PODMAN_BUILD),1)
 	$(PODMAN_RUN) make $@
 else
