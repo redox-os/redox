@@ -23,6 +23,7 @@ installer = {}
 installer-gui = {}
 ion = {}
 kernel = {}
+libgcc = {}
 #nano = {} # error compiling ncurses
 netdb = {}
 #netsurf = {} # error building openssl1

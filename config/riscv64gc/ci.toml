@@ -23,6 +23,7 @@ installer = {}
 #installer-gui = {} # redox_syscall 0.4 not working on riscv64gc?
 ion = {}
 kernel = {}
+libgcc = {}
 #nano = {} # error compiling ncurses
 netdb = {}
 #netsurf = {} # error compiling nghttp2
