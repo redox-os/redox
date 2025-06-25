@@ -12,7 +12,7 @@ $(BUILD)/harddrive.img: $(HOST_FSTOOLS) $(REPO_TAG)
 	umask 002 && $(INSTALLER) $(INSTALLER_OPTS) -c $(FILESYSTEM_CONFIG) $@.partial
 	mv $@.partial $@
 
-$(BUILD)/livedisk.iso: $(HOST_FSTOOLS) $(REPO_TAG)
+$(BUILD)/redox-live.iso: $(HOST_FSTOOLS) $(REPO_TAG) redox.ipxe
 	mkdir -p $(BUILD)
 	rm -rf $@  $@.partial
 	-$(FUMOUNT) /tmp/redox_installer || true
@@ -23,13 +23,7 @@ $(BUILD)/livedisk.iso: $(HOST_FSTOOLS) $(REPO_TAG)
 	truncate -s "$$FILESYSTEM_SIZE"m $@.partial
 	umask 002 && $(INSTALLER) $(INSTALLER_OPTS) -c $(FILESYSTEM_CONFIG) --write-bootloader="$(BUILD)/bootloader-live.efi" --live $@.partial
 	mv $@.partial $@
-
-$(BUILD)/tftproot: $(HOST_FSTOOLS) $(REPO_TAG) $(BUILD)/livedisk.iso
-	rm -r $(BUILD)/tftproot || true
-	mkdir $(BUILD)/tftproot
-	cp $(BUILD)/bootloader-live.efi $(BUILD)/tftproot/bootloader-live.efi
-	ln -s ../livedisk.iso $(BUILD)/tftproot/redox-live.img
-	cp redox.ipxe $(BUILD)/tftproot/redox.ipxe
+	cp redox.ipxe $(BUILD)/redox.ipxe
 
 $(BUILD)/filesystem.img: $(HOST_FSTOOLS) $(REPO_TAG)
 	mkdir -p $(BUILD)

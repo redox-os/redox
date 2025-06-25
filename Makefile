@@ -10,28 +10,22 @@ all: $(BUILD)/harddrive.img
 live:
 	-$(FUMOUNT) $(BUILD)/filesystem/ || true
 	-$(FUMOUNT) /tmp/redox_installer/ || true
-	rm -f $(BUILD)/livedisk.iso
-	$(MAKE) $(BUILD)/livedisk.iso
+	rm -f $(BUILD)/redox-live.iso
+	$(MAKE) $(BUILD)/redox-live.iso
 
-netboot:
-	-$(FUMOUNT) $(BUILD)/filesystem/ || true
-	-$(FUMOUNT) /tmp/redox_installer/ || true
-	rm -rf $(BUILD)/livedisk.iso $(BUILD)/tftproot
-	$(MAKE) $(BUILD)/tftproot
-
-popsicle: $(BUILD)/livedisk.iso
-	popsicle-gtk $(BUILD)/livedisk.iso
+popsicle: $(BUILD)/redox-live.iso
+	popsicle-gtk $(BUILD)/redox-live.iso
 
 image:
 	-$(FUMOUNT) $(BUILD)/filesystem/ || true
 	-$(FUMOUNT) /tmp/redox_installer/ || true
-	rm -f $(BUILD)/harddrive.img $(BUILD)/livedisk.iso
+	rm -f $(BUILD)/harddrive.img $(BUILD)/redox-live.iso
 	$(MAKE) all
 
 rebuild:
 	-$(FUMOUNT) $(BUILD)/filesystem/ || true
 	-$(FUMOUNT) /tmp/redox_installer/ || true
-	rm -rf $(BUILD)/repo.tag $(BUILD)/harddrive.img $(BUILD)/livedisk.iso
+	rm -rf $(BUILD)/repo.tag $(BUILD)/harddrive.img $(BUILD)/redox-live.iso
 	$(MAKE) all
 
 clean: $(CONTAINER_TAG)
