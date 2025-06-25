@@ -1,0 +1,31 @@
+# TODO:
+# 1. The CJK and runes fonts don't load.
+# 2. On a button press two characters are read in instead of one.
+# 3. Backspace does not work.
+# 4. The command line prompt prints 'deprecated: legacy path "time:4" used by /usr/games/hnefatafl-client'.
+# 5. TcpStream.shutdown(): shutdown call failed: Os { code: 38, kind: Unsupported, message: "Function not implemented" }
+
+[source]
+git = "https://github.com/dcampbell24/hnefatafl"
+
+[build]
+template = "custom"
+script = """
+"${COOKBOOK_CARGO}" build \
+    --manifest-path "${COOKBOOK_SOURCE}/${PACKAGE_PATH}/Cargo.toml" \
+    --example hnefatafl-client \
+    --release \
+    --no-default-features
+
+mkdir -pv "${COOKBOOK_STAGE}/usr/bin"
+cp -v \
+    "target/${TARGET}/release/examples/hnefatafl-client" \
+    "${COOKBOOK_STAGE}/usr/bin/hnefatafl-client"
+
+mkdir -pv "${COOKBOOK_STAGE}"/usr/games
+mkdir -pv "${COOKBOOK_STAGE}"/ui/apps
+mkdir -pv "${COOKBOOK_STAGE}"/ui/icons/apps
+cp -rv "${COOKBOOK_SOURCE}"/icons/king_256x256.png "${COOKBOOK_STAGE}"/ui/icons/apps/hnefatafl-king_256x256.png
+cp -rv "${COOKBOOK_SOURCE}"/packages/redox/manifest "${COOKBOOK_STAGE}"/ui/apps/hnefatafl-client
+mv "${COOKBOOK_STAGE}"/usr/bin/hnefatafl-client "${COOKBOOK_STAGE}"/usr/games/hnefatafl-client
+"""
