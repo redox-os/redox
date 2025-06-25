@@ -20,7 +20,76 @@ Please review the `LICENSE` file for the project you are contributing to.
 
 ## Chat
 
-Join us on [Matrix Chat](https://doc.redox-os.org/book/chat.html) to discuss issues or ask questions.
+You can join in our chat platforms to discuss development, issues or ask questions.
+
+### [Matrix](https://matrix.to/#/#redox-join:matrix.org)
+
+Matrix is the official way to talk with Redox OS team and community (these rooms are English-only, we don't accept other languages because we don't understand them).
+
+Matrix has several different clients. [Element](https://element.io/) is a commonly used choice, it works on web browsers, Linux, MacOSX, Windows, Android and iOS.
+
+If you have problems with Element, try [Fractal](https://gitlab.gnome.org/World/fractal).
+
+- Join the [Join Requests](https://matrix.to/#/#redox-join:matrix.org) room and send a message requesting for an invite to the Redox Matrix space (the purpose of this is to avoid spam and bots).
+- #redox-join:matrix.org (Use this Matrix room address if you don't want to use the external Matrix link)
+
+(We recommend that you leave the "Join Requests" room after your entry on Redox space)
+
+If you want to have a big discussion in our rooms, you should use a Element thread, it's more organized and easy to keep track if more discussions happen on the same room.
+
+You cand find more information on the [Chat](https://doc.redox-os.org/book/chat.html) page.
+
+### [Discord](https://discord.gg/JfggvrHGDY)
+
+We have a Discord server as an alternative for Matrix, open the #join-requests channel and send a message requesting to be a member (the purpose of this is to avoid spam and bots)
+
+The Matrix messages are sent to Discord and vice-versa using a bot, but sometimes some Discord messages aren't sent to Matrix (if this happens to you join in our Matrix space above)
+
+## [GitLab](https://gitlab.redox-os.org/redox-os/redox)
+
+A slightly more formal way of communication with fellow Redox developers, but a little less quick and convenient like the chat. Submit an issue when you run into problems compiling or testing. Issues can also be used if you would like to discuss a certain topic: be it features, code style, code inconsistencies, minor changes and fixes, etc.
+
+If you want to create an account, read the [Signing in to GitLab](https://doc.redox-os.org/book/signing-in-to-gitlab.html) page.
+
+Once you create an issue don't forget to post the link on the Dev or Support rooms of the chat, because the GitLab email notifications have distractions (service messages or spam) and most developers don't left their GitLab pages open to receive desktop notifications from the web browser (which require a custom setting to receive issue notifications).
+
+By doing this you help us to pay attention to your issues and avoid them to be accidentally forgotten.
+
+If you have ready MRs (merge requests) you must send the links in the [MRs](https://matrix.to/#/#redox-mrs:matrix.org) room. To join this room, you will need to request an invite in the [Join Requests](https://matrix.to/#/#redox-join:matrix.org) room.
+
+By sending a message in the room, your MR will not be forgotten or accumulate conflicts.
+
+## Best Practices and Guidelines
+
+You can read the best practices and guidelines on the [Best practices and guidelines](https://doc.redox-os.org/book/best-practices.html) chapter.
+
+## Style Guidelines
+
+### Rust
+
+Since **Rust** is a relatively small and new language compared to others like C and C++, there's really only one standard. Just follow the official Rust standards for formatting, and maybe run `rustfmt` on your changes, until we setup the CI system to do it automatically.
+
+### Git
+
+Please follow our [Git style](https://doc.redox-os.org/book/creating-proper-pull-requests.html) for pull requests.
+
+## GitLab
+
+### Identity
+
+Once your GitLab account is created, you should add your Matrix or Discord username (the name after the `@` symbol) on the "About" section of your profile, that way we recognize you properly.
+
+### Issues
+
+To know how to create issues on the Redox GitLab, read the [Filing Issues](https://doc.redox-os.org/book/filing-issues.html) page.
+
+Once you create an issue don't forget to post the link on the Dev or Support rooms of the chat, because the GitLab email notifications have distractions (service messages or spam) and most developers don't left their GitLab pages open to receive desktop notifications from the web browser (which require a custom setting to receive issue notifications).
+
+By doing this you help us to pay attention to your issues and avoid them to be accidentally forgotten.
+
+### Pull Requests
+
+Please follow [our process](https://doc.redox-os.org/book/creating-proper-pull-requests.html) for creating proper pull requests.
 
 ## Important Places to Contribute
 
@@ -40,7 +109,9 @@ You can contribute to the Redox documentation and code on the following reposito
 - [libredox](https://gitlab.redox-os.org/redox-os/libredox) - Redox System Library
 - [netstack](https://gitlab.redox-os.org/redox-os/netstack) - Network Stack
 - [Bootloader](https://gitlab.redox-os.org/redox-os/bootloader)
+- [RedoxFS](https://gitlab.redox-os.org/redox-os/redoxfs) - Default filesystem
 - [Drivers](https://gitlab.redox-os.org/redox-os/drivers) - Device Drivers
+- [Base](https://gitlab.redox-os.org/redox-os/base) - Essential system daemons
 - [Kernel](https://gitlab.redox-os.org/redox-os/kernel)
 
 To see all Redox repositories open the [redox-os group](https://gitlab.redox-os.org/redox-os).
@@ -49,8 +120,11 @@ To see all Redox repositories open the [redox-os group](https://gitlab.redox-os.
 
 If you don't know programming:
 
-- Write documentation
-- Use and test Redox, and file issues for bugs or needed features (please check for duplicates first etc.)
+- Test the [daily images](https://static.redox-os.org/img/) on your computer and add the report on the [Hardware Compatibility](https://gitlab.redox-os.org/redox-os/redox/-/blob/master/HARDWARE.md) list
+- Monitor and warn developers if the [daily images](https://static.redox-os.org/img/) are outdated
+- Use and test Redox, and file issues for bugs or needed features (please check for duplicates first)
+- Fix and write documentation
+- Find or fix typos in configuration
 
 If you don't know how to code in Rust, but know other programming languages:
 
@@ -151,38 +225,6 @@ You can find important tips on the [Development Tips](https://doc.redox-os.org/b
 We maintain a list of wikis, articles and videos to learn Rust, OS development and computer science on the [References](https://doc.redox-os.org/book/references.html) page.
 
 If you are skilled there's a possibility that they could improve your knowledge in some way.
-
-## Best Practices and Guidelines
-
-You can read the best practices and guidelines on the [Best practices and guidelines](https://doc.redox-os.org/book/best-practices.html) chapter.
-
-## Style Guidelines
-
-### Rust
-
-Since **Rust** is a relatively small and new language compared to others like C and C++, there's really only one standard. Just follow the official Rust standards for formatting, and maybe run `rustfmt` on your changes, until we setup the CI system to do it automatically.
-
-### Git
-
-Please follow our [Git style](https://doc.redox-os.org/book/creating-proper-pull-requests.html) for pull requests.
-
-## GitLab
-
-### Identity
-
-Once your GitLab account is created, you should add your Matrix or Discord username (the name after the `@` symbol) on the "About" section of your profile, that way we recognize you properly.
-
-### Issues
-
-To know how to create issues on the Redox GitLab, read the [Filing Issues](https://doc.redox-os.org/book/filing-issues.html) page.
-
-Once you create an issue don't forget to post the link on the Dev or Support rooms of the chat, because the GitLab email notifications have distractions (service messages or spam) and most developers don't left their GitLab pages open to receive desktop notifications from the web browser (which require a custom setting to receive issue notifications).
-
-By doing this you help us to pay attention to your issues and avoid them to be accidentally forgotten.
-
-### Pull Requests
-
-Please follow [our process](https://doc.redox-os.org/book/creating-proper-pull-requests.html) for creating proper pull requests.
 
 ## Other Ways to Contribute
 

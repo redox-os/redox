@@ -76,6 +76,7 @@ $(PREFIX)/libtool:
 	
 	git clone \
 		--recurse-submodules \
+		--shallow-submodules \
 		"https://gitlab.redox-os.org/redox-os/libtool/" \
 		--branch "v$(LIBTOOL_VERSION)-redox" \
 		--depth 2 \
@@ -87,7 +88,7 @@ $(PREFIX)/libtool:
 	echo $(LIBTOOL_VERSION) > $@.partial/.tarball-version
 	mv "$@.partial" "$@"
 
-$(PREFIX)/libtool-build: $(PREFIX)/libtool $(CONTAINER_TAG)
+$(PREFIX)/libtool-build: $(PREFIX)/libtool $(PREFIX)/rust-install
 ifeq ($(PODMAN_BUILD),1)
 	$(PODMAN_RUN) make $@
 else

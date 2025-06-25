@@ -2,6 +2,7 @@
 
 QEMU=SDL_VIDEO_X11_DGAMOUSE=0 qemu-system-$(QEMU_ARCH)
 QEMUFLAGS=-d guest_errors -name "Redox OS $(ARCH)"
+netboot?=no
 
 ifeq ($(ARCH),i686)
 	audio?=ac97
@@ -107,7 +108,7 @@ ifneq ($(QEMU_KERNEL),)
 endif
 
 ifeq ($(live),yes)
-	DISK=$(BUILD)/livedisk.iso
+	DISK=$(BUILD)/redox-live.iso
 else
 	DISK=$(BUILD)/harddrive.img
 endif
@@ -148,14 +149,19 @@ else
 		QEMUFLAGS+=-device e1000,netdev=net0,id=nic0
 	endif
 
+	EXTRANETARGS=
+	ifeq ($(netboot),yes)
+		EXTRANETARGS+=,tftp=$(BUILD),bootfile=redox.ipxe
+	endif
+
 	ifneq ($(bridge),)
 		QEMUFLAGS+=-netdev bridge,br=$(bridge),id=net0
 	else ifeq ($(net),redir)
 		# port 8080 and 8083 - webservers
 		# port 64126 - our gdbserver implementation
-		QEMUFLAGS+=-netdev user,id=net0,hostfwd=tcp::8080-:8080,hostfwd=tcp::8083-:8083,hostfwd=tcp::64126-:64126
+		QEMUFLAGS+=-netdev user,id=net0,hostfwd=tcp::8080-:8080,hostfwd=tcp::8083-:8083,hostfwd=tcp::64126-:64126$(EXTRANETARGS)
 	else
-		QEMUFLAGS+=-netdev user,id=net0 -object filter-dump,id=f1,netdev=net0,file=$(BUILD)/network.pcap
+		QEMUFLAGS+=-netdev user,id=net0$(EXTRANETARGS) -object filter-dump,id=f1,netdev=net0,file=$(BUILD)/network.pcap
 	endif
 endif
 

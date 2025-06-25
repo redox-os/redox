@@ -10,13 +10,22 @@ then
     exit 1
 fi
 
-set -x
-
 action="${1#-}"
+
+recipe_list=""
+first=1
 
 for recipe in `find cookbook/recipes/"$2" -name "recipe.*"`
 do
     recipe_folder=`dirname "$recipe"`
     recipe_name=`basename "$recipe_folder"`
-    make "$action"."$recipe_name"
+    if [ "$first" -eq 1 ]; then
+        recipe_list="$recipe_name"
+        first=0
+    else
+        recipe_list="$recipe_list,$recipe_name"
+    fi
 done
+
+set -x
+make "$action"l."$recipe_list"

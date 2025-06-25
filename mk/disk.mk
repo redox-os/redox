@@ -16,7 +16,7 @@ else
 	mv $@.partial $@
 endif
 
-$(BUILD)/livedisk.iso: $(HOST_FSTOOLS) $(REPO_TAG)
+$(BUILD)/livedisk.iso: $(HOST_FSTOOLS) $(REPO_TAG) redox.ipxe
 ifeq ($(PODMAN_BUILD),1)
 	$(PODMAN_RUN) make $@
 else
@@ -28,9 +28,9 @@ else
 	FILESYSTEM_SIZE=$(shell $(INSTALLER) --filesystem-size -c $(FILESYSTEM_CONFIG)); \
 	fi && \
 	truncate -s "$$FILESYSTEM_SIZE"m $@.partial
-	umask 002 && $(INSTALLER) $(INSTALLER_OPTS) -c $(FILESYSTEM_CONFIG) --live $@.partial
+	umask 002 && $(INSTALLER) $(INSTALLER_OPTS) -c $(FILESYSTEM_CONFIG) --write-bootloader="$(BUILD)/bootloader-live.efi" --live $@.partial
 	mv $@.partial $@
-endif
+	cp redox.ipxe $(BUILD)/redox.ipxe
 
 $(BUILD)/filesystem.img: $(HOST_FSTOOLS) $(REPO_TAG)
 ifeq ($(PODMAN_BUILD),1)
