@@ -2,7 +2,7 @@
 
 $(BUILD)/fetch.tag: prefix $(FSTOOLS_TAG) $(FILESYSTEM_CONFIG) $(CONTAINER_TAG)
 ifeq ($(PODMAN_BUILD),1)
-	$(PODMAN_RUN) $(MAKE) $@
+	$(PODMAN_RUN) make $@
 else
 	export PATH="$(PREFIX_PATH):$$PATH" && \
 	PACKAGES="$$($(LIST_PACKAGES) $(LIST_PACKAGES_OPTS) -c $(FILESYSTEM_CONFIG))" && \
@@ -15,7 +15,7 @@ endif
 
 $(REPO_TAG): $(BUILD)/fetch.tag $(FSTOOLS_TAG) $(CONTAINER_TAG)
 ifeq ($(PODMAN_BUILD),1)
-	$(PODMAN_RUN) $(MAKE) $@
+	$(PODMAN_RUN) make $@
 else
 	export PATH="$(PREFIX_PATH):$$PATH" && \
 	export COOKBOOK_HOST_SYSROOT="$(ROOT)/$(PREFIX_INSTALL)" && \
@@ -32,7 +32,7 @@ endif
 # Find recipe
 find.%: $(FSTOOLS_TAG) FORCE
 ifeq ($(PODMAN_BUILD),1)
-	$(PODMAN_RUN) $(MAKE) $@
+	$(PODMAN_RUN) make $@
 else
 	export PATH="$(PREFIX_PATH):$$PATH" && \
 	export COOKBOOK_HOST_SYSROOT="$(ROOT)/$(PREFIX_INSTALL)" && \
@@ -43,7 +43,7 @@ endif
 # Invoke clean.sh for a single target
 c.%: $(FSTOOLS_TAG) FORCE
 ifeq ($(PODMAN_BUILD),1)
-	$(PODMAN_RUN) $(MAKE) $@
+	$(PODMAN_RUN) make $@
 else
 	export PATH="$(PREFIX_PATH):$$PATH" && \
 	export COOKBOOK_HOST_SYSROOT="$(ROOT)/$(PREFIX_INSTALL)" && \
@@ -64,7 +64,7 @@ endif
 # Invoke fetch.sh for a single target
 f.%: $(FSTOOLS_TAG) FORCE
 ifeq ($(PODMAN_BUILD),1)
-	$(PODMAN_RUN) $(MAKE) $@
+	$(PODMAN_RUN) make $@
 else
 	export PATH="$(PREFIX_PATH):$$PATH" && \
 	export COOKBOOK_HOST_SYSROOT="$(ROOT)/$(PREFIX_INSTALL)" && \
@@ -83,7 +83,7 @@ endif
 # Invoke repo.sh for a single target
 r.%: $(FSTOOLS_TAG) FORCE
 ifeq ($(PODMAN_BUILD),1)
-	$(PODMAN_RUN) $(MAKE) $@
+	$(PODMAN_RUN) make $@
 else
 	export PATH="$(PREFIX_PATH):$$PATH" && \
 	export COOKBOOK_HOST_SYSROOT="$(ROOT)/$(PREFIX_INSTALL)" && \
@@ -102,7 +102,7 @@ endif
 # Invoke unfetch.sh for a single target
 u.%: $(FSTOOLS_TAG) FORCE
 ifeq ($(PODMAN_BUILD),1)
-	$(PODMAN_RUN) $(MAKE) $@
+	$(PODMAN_RUN) make $@
 else
 	export PATH="$(PREFIX_PATH):$$PATH" && \
 	export COOKBOOK_HOST_SYSROOT="$(ROOT)/$(PREFIX_INSTALL)" && \
