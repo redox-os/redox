@@ -24,6 +24,7 @@ installer-gui = {}
 ion = {}
 kernel = {}
 libgcc = {}
+libstdcxx = {}
 nano = {}
 netdb = {}
 netsurf = {}

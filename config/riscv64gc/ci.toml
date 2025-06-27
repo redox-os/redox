@@ -24,6 +24,7 @@ installer = {}
 ion = {}
 kernel = {}
 libgcc = {}
+libstdcxx = {}
 #nano = {} # error compiling ncurses
 netdb = {}
 #netsurf = {} # error compiling nghttp2
