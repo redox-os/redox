@@ -91,6 +91,7 @@ libjpeg = {}
 libogg = {}
 liborbital = {}
 libpng = {}
+libstdcxx = {}
 #libsodium = {} # failing to fetch
 libvorbis = {}
 libxml2 = {}
