@@ -21,7 +21,7 @@ orbdata = {}
 orbital = {}
 orbutils = {}
 pop-icon-theme = {}
-rustpython = {}
+#rustpython = {} # not compiling with our rust version
 shared-mime-info = {}
 patchelf = {}
 
