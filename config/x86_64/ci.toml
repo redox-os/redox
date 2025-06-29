@@ -94,6 +94,7 @@ libpng = {}
 libstdcxx = {}
 #libsodium = {} # failing to fetch
 libvorbis = {}
+libxkbcommon = {}
 libxml2 = {}
 llvm18 = {}
 #lua54 = {} # did not build
