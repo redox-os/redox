@@ -1,6 +1,8 @@
 [source]
 tar = "https://dev.yorhel.nl/download/ncdu-1.13.tar.gz"
 blake3 = "f6d771e78c87202a051e3357820be3c63ea895ff4f07edf14c6f21fb18afceed"
+
+[package]
 dependencies = ["terminfo"]
 
 [build]
