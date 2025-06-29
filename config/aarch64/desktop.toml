@@ -1,29 +1,15 @@
 # Default build system configuration
 
-include = ["../minimal.toml"]
+include = ["../desktop.toml"]
+
+# Override the default settings here
 
 # General settings
 [general]
 # Filesystem size in MiB
-filesystem_size = 512
+# filesystem_size = 1024
 
 # Package settings
 [packages]
-cosmic-edit = {}
-cosmic-icons = {}
-cosmic-files = {}
-cosmic-term = {}
-orbdata = {}
-orbital = {}
-orbutils = {}
-pop-icon-theme = {}
-shared-mime-info = {}
-
-[[files]]
-path = "/usr/lib/init.d/20_orbital"
-data = """
-audiod
-export VT 3
-orbital orblogin launcher
-unset VT
-"""
+# example = {}
+rustpython = "ignore" # not tested
