@@ -24,7 +24,15 @@ else ifeq ($(ARCH),x86_64)
 	QEMU_SMP?=4
 	QEMU_MEM?=2048
 	ifeq ($(uefi),yes)
-		FIRMWARE=/usr/share/OVMF/OVMF_CODE.fd
+		FIRMWARE=$(firstword \
+			$(wildcard /usr/share/OVMF/OVMF_CODE.fd) \
+		)
+		ifeq ($(FIRMWARE),)
+			PFLASH0=$(firstword \
+				$(wildcard /usr/share/qemu/edk2-x86_64-code.fd) \
+				$(wildcard /opt/homebrew/opt/qemu/share/qemu/edk2s-x86_64-code.fd) \
+			)
+		endif
 	endif
 	ifneq ($(usb),no)
 		QEMUFLAGS+=-device nec-usb-xhci,id=xhci
@@ -52,7 +60,15 @@ else ifeq ($(ARCH),aarch64)
 		endif
 	else
 		ifeq ($(uefi),yes)
-			FIRMWARE=/usr/share/AAVMF/AAVMF_CODE.fd
+			FIRMWARE=$(firstword \
+				$(wildcard /usr/share/AAVMF/AAVMF_CODE.fd) \
+			)
+			ifeq ($(FIRMWARE),)
+				PFLASH0=$(firstword \
+					$(wildcard /usr/share/qemu/edk2-aarch64-code.fd) \
+					$(wildcard /opt/homebrew/opt/qemu/share/qemu/edk2-aarch64-code.fd) \
+				)
+			endif
 		else
 			FIRMWARE=$(BUILD)/qemu_uboot.rom
 		endif
@@ -79,8 +95,16 @@ else ifeq ($(ARCH),riscv64gc)
 	QEMU_MEM?=2048
 	QEMU_CPU=max
 	disk?=nvme
-	PFLASH0=/usr/share/qemu-efi-riscv64/RISCV_VIRT_CODE.fd
-	PFLASH1=/usr/share/qemu-efi-riscv64/RISCV_VIRT_VARS.fd
+	PFLASH0=$(firstword \
+		$(wildcard /usr/share/qemu-efi-riscv64/RISCV_VIRT_CODE.fd) \
+		$(wildcard /usr/share/qemu/edk2-riscv-code.fd) \
+		$(wildcard /opt/homebrew/opt/qemu/share/qemu/edk2-riscv-code.fd) \
+	)
+	PFLASH1=$(firstword \
+		$(wildcard /usr/share/qemu-efi-riscv64/RISCV_VIRT_VARS.fd) \
+		$(wildcard /usr/share/qemu/edk2-riscv-vars.fd) \
+		$(wildcard /opt/homebrew/opt/qemu/share/qemu/edk2-riscv-vars.fd) \
+	)
 	ifneq ($(vga),no)
 		QEMUFLAGS+=-device ramfb
 	endif
@@ -260,16 +284,6 @@ $(BUILD)/raspi3bp_uboot.rom:
 
 $(BUILD)/qemu_uboot.rom:
 	wget -O $@ https://gitlab.redox-os.org/Ivan/redox_firmware/-/raw/main/platform/qemu/qemu_arm64/u-boot-qemu-arm64.bin
-
-/usr/share/AAVMF/AAVMF_CODE.fd:
-	echo "\n\n\nMissing /usr/share/AAVMF/AAVMF_CODE.fd UEFI firmware file.\n\
-Please install the qemu-efi-aarch64 package or use efi=no to download U-Boot instead.\n" \
-	&& exit 1
-
-/usr/share/qemu-efi-riscv64/RISCV_VIRT_CODE.fd /usr/share/qemu-efi-riscv64/RISCV_VIRT_VARS.fd:
-	echo "\n\n\nMissing $@ UEFI firmware file.\n\
-Please install the qemu-efi-riscv64 package.\n"
-	&& exit 1
 
 qemu: qemu-deps
 	$(QEMU) $(QEMUFLAGS)
