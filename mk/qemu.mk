@@ -23,7 +23,6 @@ else ifeq ($(ARCH),x86_64)
 	QEMU_CPU?=core2duo
 	QEMU_SMP?=4
 	QEMU_MEM?=2048
-	uefi?=yes
 	ifeq ($(uefi),yes)
 		FIRMWARE=$(firstword \
 			$(wildcard /usr/share/OVMF/OVMF_CODE.fd) \
