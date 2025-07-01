@@ -1853,6 +1853,7 @@ dependencies = [
  "pkgar-keys 0.1.17",
  "redoxer",
  "serde",
+ "tempfile",
  "termion",
  "toml 0.8.19",
  "walkdir",
