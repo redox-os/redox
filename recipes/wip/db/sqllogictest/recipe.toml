@@ -9,16 +9,6 @@
 git = "https://github.com/risinglightdb/sqllogictest-rs.git"
 [build]
 template = "custom"
-# Necessary deviation from
 script = """
-package=sqllogictest-bin
-recipe="$(basename "${COOKBOOK_RECIPE}")"
-"${COOKBOOK_CARGO}" build \
-    --manifest-path "${COOKBOOK_SOURCE}/Cargo.toml" \
-    --package "${package}" \
-    --release
-mkdir -pv "${COOKBOOK_STAGE}/usr/bin"
-cp -v \
-    "target/${TARGET}/release/${recipe}" \
-    "${COOKBOOK_STAGE}/usr/bin/${recipe}"
+cookbook_cargo_packages sqllogictest-bin
 """
