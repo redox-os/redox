@@ -40,134 +40,84 @@ else
 	target/release/find_recipe $*
 endif
 
-# Invoke clean.sh for a single target
+comma := ,
+
+# Invoke clean.sh for one or more targets separated by comma
 c.%: $(FSTOOLS_TAG) FORCE
 ifeq ($(PODMAN_BUILD),1)
 	$(PODMAN_RUN) $(MAKE) $@
 else
-	export PATH="$(PREFIX_PATH):$$PATH" && \
-	export COOKBOOK_HOST_SYSROOT="$(ROOT)/$(PREFIX_INSTALL)" && \
-	cd cookbook && \
-	./clean.sh $*
+	@if echo "$*" | grep -q ','; then \
+		$(MAKE) $(foreach f,$(subst $(comma), ,$*),c.$(f)); \
+	else \
+		export PATH="$(PREFIX_PATH):$$PATH" && \
+		export COOKBOOK_HOST_SYSROOT="$(ROOT)/$(PREFIX_INSTALL)" && \
+		cd cookbook && \
+		./clean.sh $*; \
+	fi
 endif
 
-comma := ,
-
-# Invoke clean.sh for multiple targets
-cl.%: $(FSTOOLS_TAG) FORCE
-ifeq ($(PODMAN_BUILD),1)
-	$(PODMAN_RUN) $(MAKE) $@
-else
-	$(MAKE) $(foreach target,$(subst $(comma), ,$*),c.$(target))
-endif
-
-# Invoke fetch.sh for a single target
+# Invoke fetch.sh for one or more targets separated by comma
 f.%: $(FSTOOLS_TAG) FORCE
 ifeq ($(PODMAN_BUILD),1)
 	$(PODMAN_RUN) $(MAKE) $@
 else
-	export PATH="$(PREFIX_PATH):$$PATH" && \
-	export COOKBOOK_HOST_SYSROOT="$(ROOT)/$(PREFIX_INSTALL)" && \
-	cd cookbook && \
-	./fetch.sh $*
+	@if echo "$*" | grep -q ','; then \
+		$(MAKE) $(foreach f,$(subst $(comma), ,$*),f.$(f)); \
+	else \
+		export PATH="$(PREFIX_PATH):$$PATH" && \
+		export COOKBOOK_HOST_SYSROOT="$(ROOT)/$(PREFIX_INSTALL)" && \
+		cd cookbook && \
+		./fetch.sh $*; \
+	fi
 endif
 
-# Invoke fetch.sh for multiple targets
-fl.%: $(FSTOOLS_TAG) FORCE
-ifeq ($(PODMAN_BUILD),1)
-	$(PODMAN_RUN) $(MAKE) $@
-else
-	$(MAKE) $(foreach target,$(subst $(comma), ,$*),f.$(target))
-endif
-
-# Invoke repo.sh for a single target
+# Invoke repo.sh for one or more targets separated by comma
 r.%: $(FSTOOLS_TAG) FORCE
 ifeq ($(PODMAN_BUILD),1)
 	$(PODMAN_RUN) $(MAKE) $@
 else
-	export PATH="$(PREFIX_PATH):$$PATH" && \
-	export COOKBOOK_HOST_SYSROOT="$(ROOT)/$(PREFIX_INSTALL)" && \
-	cd cookbook && \
-	./repo.sh $*
+	@if echo "$*" | grep -q ','; then \
+		$(MAKE) $(foreach f,$(subst $(comma), ,$*),r.$(f)); \
+	else \
+		export PATH="$(PREFIX_PATH):$$PATH" && \
+		export COOKBOOK_HOST_SYSROOT="$(ROOT)/$(PREFIX_INSTALL)" && \
+		cd cookbook && \
+		./repo.sh $*; \
+	fi
 endif
 
-# Invoke repo.sh for multiple targets
-rl.%: $(FSTOOLS_TAG) FORCE
-ifeq ($(PODMAN_BUILD),1)
-	$(PODMAN_RUN) $(MAKE) $@
-else
-	$(MAKE) $(foreach target,$(subst $(comma), ,$*),r.$(target))
-endif
-
-# Invoke unfetch.sh for a single target
+# Invoke unfetch.sh for one or more targets separated by comma
 u.%: $(FSTOOLS_TAG) FORCE
 ifeq ($(PODMAN_BUILD),1)
 	$(PODMAN_RUN) $(MAKE) $@
 else
-	export PATH="$(PREFIX_PATH):$$PATH" && \
-	export COOKBOOK_HOST_SYSROOT="$(ROOT)/$(PREFIX_INSTALL)" && \
-	cd cookbook && \
-	./unfetch.sh $*
+	@if echo "$*" | grep -q ','; then \
+		$(MAKE) $(foreach f,$(subst $(comma), ,$*),u.$(f)); \
+	else \
+		export PATH="$(PREFIX_PATH):$$PATH" && \
+		export COOKBOOK_HOST_SYSROOT="$(ROOT)/$(PREFIX_INSTALL)" && \
+		cd cookbook && \
+		./unfetch.sh $*; \
+	fi
 endif
 
-# Invoke unfetch.sh for multiple targets
-ul.%: $(FSTOOLS_TAG) FORCE
-ifeq ($(PODMAN_BUILD),1)
-	$(PODMAN_RUN) $(MAKE) $@
-else
-	$(MAKE) $(foreach target,$(subst $(comma), ,$*),u.$(target))
-endif
-
-# Invoke clean.sh, and repo.sh for a single target
+# Invoke clean.sh, and repo.sh for one of more targets separated by comma
 cr.%: $(FSTOOLS_TAG) FORCE
 	$(MAKE) c.$*
 	$(MAKE) r.$*
 
-# Invoke clean.sh and repo.sh for multiple targets
-crl.%: $(FSTOOLS_TAG) FORCE
-ifeq ($(PODMAN_BUILD),1)
-	$(PODMAN_RUN) $(MAKE) $@
-else
-	$(MAKE) $(foreach target,$(subst $(comma), ,$*),c.$(target))
-	$(MAKE) $(foreach target,$(subst $(comma), ,$*),r.$(target))
-endif
-
-# Invoke unfetch.sh, clean.sh, and repo.sh for a single target
+# Invoke unfetch.sh, clean.sh, and repo.sh for one or more targets separated by comma
 ucr.%: $(FSTOOLS_TAG) FORCE
 	$(MAKE) u.$*
 	$(MAKE) cr.$*
 
-# Invoke unfetch.sh, clean.sh and repo.sh for multiple targets
-ucrl.%: $(FSTOOLS_TAG) FORCE
-ifeq ($(PODMAN_BUILD),1)
-	$(PODMAN_RUN) $(MAKE) $@
-else
-	$(MAKE) $(foreach target,$(subst $(comma), ,$*),u.$(target))
-	$(MAKE) $(foreach target,$(subst $(comma), ,$*),cr.$(target))
-endif
-
+# Invoke unfetch.sh and clean.sh for one or more targets separated by comma
 uc.%: $(FSTOOLS_TAG) FORCE
 	$(MAKE) u.$*
 	$(MAKE) c.$*
 
-# Invoke unfetch.sh and clean.sh for multiple targets
-ucl.%: $(FSTOOLS_TAG) FORCE
-ifeq ($(PODMAN_BUILD),1)
-	$(PODMAN_RUN) $(MAKE) $@
-else
-	$(MAKE) $(foreach target,$(subst $(comma), ,$*),u.$(target))
-	$(MAKE) $(foreach target,$(subst $(comma), ,$*),c.$(target))
-endif
-
+# Invoke unfetch, clean.sh and fetch.sh for one or more targets separated by comma
 ucf.%: $(FSTOOLS_TAG) FORCE
 	$(MAKE) uc.$*
 	$(MAKE) f.$*
-
-# Invoke unfetch, clean.sh and fetch.sh for multiple targets
-ucfl.%: $(FSTOOLS_TAG) FORCE
-ifeq ($(PODMAN_BUILD),1)
-	$(PODMAN_RUN) $(MAKE) $@
-else
-	$(MAKE) $(foreach target,$(subst $(comma), ,$*),uc.$(target))
-	$(MAKE) $(foreach target,$(subst $(comma), ,$*),f.$(target))
-endif
