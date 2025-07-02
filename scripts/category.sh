@@ -28,4 +28,4 @@ do
 done
 
 set -x
-make "$action"l."$recipe_list"
+make "$action"."$recipe_list"
