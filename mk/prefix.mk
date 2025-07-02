@@ -90,6 +90,7 @@ $(PREFIX)/libtool-build: $(PREFIX)/libtool $(PREFIX)/rust-install
 ifeq ($(PODMAN_BUILD),1)
 	$(PODMAN_RUN) $(MAKE) $@
 else
+	rm -rf "$@.partial" "$@"
 	mkdir -p "$@.partial"
 	PATH="$(ROOT)/$(PREFIX)/rust-install/bin:$$PATH" && \
 	cd "$<" && \
