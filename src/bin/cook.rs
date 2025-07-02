@@ -2,6 +2,7 @@ use cookbook::blake3::blake3_progress;
 use cookbook::package::StageToml;
 use cookbook::recipe::{BuildKind, CookRecipe, Recipe, SourceRecipe};
 use cookbook::recipe_find::recipe_find;
+use std::collections::VecDeque;
 use std::{
     collections::BTreeSet,
     env, fs,
@@ -505,7 +506,32 @@ fi"#,
 
 fn auto_deps(stage_dir: &Path, dep_pkgars: &BTreeSet<(String, PathBuf)>) -> BTreeSet<String> {
     let mut paths = BTreeSet::new();
-    for dir in &[stage_dir.join("usr/bin"), stage_dir.join("usr/lib")] {
+    let mut visited = BTreeSet::new();
+    // Base directories may need to be updated for packages that place binaries in odd locations.
+    let mut walk = VecDeque::from([
+        stage_dir.join("libexec"),
+        stage_dir.join("usr/bin"),
+        stage_dir.join("usr/games"),
+        stage_dir.join("usr/lib"),
+    ]);
+
+    // Recursively (DFS) walk each directory to ensure nested libs and bins are checked.
+    while let Some(dir) = walk.pop_front() {
+        let Ok(dir) = dir.canonicalize() else {
+            continue;
+        };
+        if visited.contains(&dir) {
+            #[cfg(debug_assertions)]
+            eprintln!("DEBUG: auto_deps => Skipping `{dir:?}` (already visited)");
+            continue;
+        }
+        assert!(
+            visited.insert(dir.clone()),
+            "Directory `{:?}` should not be in visited\nVisited: {:#?}",
+            dir,
+            visited
+        );
+
         let Ok(read_dir) = fs::read_dir(&dir) else {
             continue;
         };
@@ -516,6 +542,8 @@ fn auto_deps(stage_dir: &Path, dep_pkgars: &BTreeSet<(String, PathBuf)>) -> BTre
             };
             if file_type.is_file() {
                 paths.insert(entry.path());
+            } else if file_type.is_dir() {
+                walk.push_front(entry.path());
             }
         }
     }
@@ -1183,5 +1211,34 @@ fn main() {
                 process::exit(1);
             }
         }
+    }
+}
+
+#[cfg(test)]
+mod tests {
+    use std::os::unix;
+
+    use super::auto_deps;
+
+    #[test]
+    fn file_system_loop_no_infinite_loop() {
+        // Hierarchy with an infinite loop
+        let temp = tempfile::tempdir().unwrap();
+        let root = temp.path();
+        let dir = root.join("loop");
+        unix::fs::symlink(root, &dir).expect("Linking {dir:?} to {root:?}");
+
+        // Sanity check that we have a loop
+        assert_eq!(
+            root.canonicalize().unwrap(),
+            dir.canonicalize().unwrap(),
+            "Expected a loop where {dir:?} points to {root:?}"
+        );
+
+        let entries = auto_deps(root, &Default::default());
+        assert!(
+            entries.is_empty(),
+            "auto_deps shouldn't have yielded any libraries"
+        );
     }
 }
