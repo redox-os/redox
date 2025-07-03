@@ -104,20 +104,36 @@ endif
 
 # Invoke clean.sh, and repo.sh for one of more targets separated by comma
 cr.%: $(FSTOOLS_TAG) FORCE
+ifeq ($(PODMAN_BUILD),1)
+	$(PODMAN_RUN) $(MAKE) $@
+else
 	$(MAKE) c.$*
 	$(MAKE) r.$*
+endif
 
 # Invoke unfetch.sh, clean.sh, and repo.sh for one or more targets separated by comma
 ucr.%: $(FSTOOLS_TAG) FORCE
+ifeq ($(PODMAN_BUILD),1)
+	$(PODMAN_RUN) $(MAKE) $@
+else
 	$(MAKE) u.$*
 	$(MAKE) cr.$*
+endif
 
 # Invoke unfetch.sh and clean.sh for one or more targets separated by comma
 uc.%: $(FSTOOLS_TAG) FORCE
+ifeq ($(PODMAN_BUILD),1)
+	$(PODMAN_RUN) $(MAKE) $@
+else
 	$(MAKE) u.$*
 	$(MAKE) c.$*
+endif
 
 # Invoke unfetch, clean.sh and fetch.sh for one or more targets separated by comma
 ucf.%: $(FSTOOLS_TAG) FORCE
+ifeq ($(PODMAN_BUILD),1)
+	$(PODMAN_RUN) $(MAKE) $@
+else
 	$(MAKE) uc.$*
 	$(MAKE) f.$*
+endif
