@@ -1,0 +1,8 @@
+#TODO not compiled or tested
+[source]
+git = "https://github.com/maxomatic458/lantun"
+[build]
+template = "custom"
+script = """
+cookbook_cargo_packages lantun-cli
+"""
