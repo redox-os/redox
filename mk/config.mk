@@ -32,7 +32,8 @@ REDOXFS_MKFS_FLAGS?=
 ## Set to 1 to enable Podman build, any other value will disable it
 PODMAN_BUILD?=1
 ## Enable sccache to speed up cargo builds
-SSCACHE_BUILD?=1
+## only do this by default if this is inside podman
+SSCACHE_BUILD?=$(PODMAN_BUILD)
 ## The containerfile to use for the Podman base image
 CONTAINERFILE?=podman/redox-base-containerfile
 
@@ -43,17 +44,16 @@ export REDOX_MAKE=make
 ifneq ($(PODMAN_BUILD),1)
 HOST_TARGET := $(shell env -u RUSTUP_TOOLCHAIN rustc -vV | grep host | cut -d: -f2 | tr -d " ")
 ifneq ($(HOST_TARGET),x86_64-unknown-linux-gnu)
-	$(info The binary prefix is only built for x86_64 Linux hosts)
+    $(info The binary prefix is only built for x86_64 Linux hosts)
 	PREFIX_BINARY=0
+endif
 endif
 
 ifeq ($(SSCACHE_BUILD),1)
 ifeq (,$(shell command -v sccache))
-	$(info sccache not found in PATH)
+    $(info sccache not found in PATH)
 	SSCACHE_BUILD=0
 endif
-endif
-
 endif
 
 UNAME := $(shell uname)
