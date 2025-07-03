@@ -369,7 +369,8 @@ then
         do
             op "$recipe_name" "$i"
         done
-    else
+    elif [ "$IGNORE_ERROR" != "1" ]
+    then
         echo "cook.sh: recipe '$recipe_name' at not found" >&2
         exit 1
     fi
