@@ -9,7 +9,7 @@ recipe="$(basename "${COOKBOOK_RECIPE}")"
 colors-rgb demo demo2 minimal pong text-area user-input website world-map
     do
         "${COOKBOOK_CARGO}" build \
-            --manifest-path "${COOKBOOK_SOURCE}/examples/${PACKAGE_PATH}/Cargo.toml" \
+            --manifest-path "${COOKBOOK_SOURCE}/examples/${package}/Cargo.toml" \
             --package "${package}" \
             --release
         mkdir -pv "${COOKBOOK_STAGE}/usr/bin"
