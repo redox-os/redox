@@ -3,6 +3,9 @@
 git = "https://github.com/Nakadra/sphere-runtime"
 [build]
 template = "custom"
+dependencies = [
+    "openssl1",
+]
 script = """
 cookbook_cargo
 mkdir -pv "${COOKBOOK_STAGE}/usr/share/sphere"
