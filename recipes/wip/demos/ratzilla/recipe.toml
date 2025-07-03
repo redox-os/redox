@@ -4,6 +4,17 @@ git = "https://github.com/orhun/ratzilla"
 [build]
 template = "custom"
 script = """
-cookbook_cargo_packages animations canvas-stress-test canvas-waves \
+recipe="$(basename "${COOKBOOK_RECIPE}")"
+    for package in animations canvas-stress-test canvas-waves \
 colors-rgb demo demo2 minimal pong text-area user-input website world-map
+    do
+        "${COOKBOOK_CARGO}" build \
+            --manifest-path "${COOKBOOK_SOURCE}/examples/${PACKAGE_PATH}/Cargo.toml" \
+            --package "${package}" \
+            --release \
+        mkdir -pv "${COOKBOOK_STAGE}/usr/bin"
+        cp -v \
+            "target/${TARGET}/${build_type}/examples/${package}" \
+            "${COOKBOOK_STAGE}/usr/bin/${recipe}_${package}"
+    done
 """
