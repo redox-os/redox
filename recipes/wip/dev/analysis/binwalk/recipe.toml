@@ -5,5 +5,5 @@ git = "https://github.com/ReFirmLabs/binwalk"
 template = "cargo"
 dependencies = [
     "fontconfig",
-    "liblzma",
+    "xz",
 ]
