@@ -31,6 +31,8 @@ HOST_CARGO=env -u RUSTUP_TOOLCHAIN -u CC -u TARGET cargo
 REDOXFS_MKFS_FLAGS?=
 ## Set to 1 to enable Podman build, any other value will disable it
 PODMAN_BUILD?=1
+## Enable sccache to speed up cargo builds
+SSCACHE_BUILD?=1
 ## The containerfile to use for the Podman base image
 CONTAINERFILE?=podman/redox-base-containerfile
 
@@ -41,9 +43,17 @@ export REDOX_MAKE=make
 ifneq ($(PODMAN_BUILD),1)
 HOST_TARGET := $(shell env -u RUSTUP_TOOLCHAIN rustc -vV | grep host | cut -d: -f2 | tr -d " ")
 ifneq ($(HOST_TARGET),x86_64-unknown-linux-gnu)
-	# The binary prefix is only built for x86_64 Linux hosts
+	$(info The binary prefix is only built for x86_64 Linux hosts)
 	PREFIX_BINARY=0
 endif
+
+ifeq ($(SSCACHE_BUILD),1)
+ifeq (,$(shell command -v sccache))
+	$(info sccache not found in PATH)
+	SSCACHE_BUILD=0
+endif
+endif
+
 endif
 
 UNAME := $(shell uname)
@@ -111,6 +121,13 @@ OBJDUMP=$(GNU_TARGET)-objdump
 RANLIB=$(GNU_TARGET)-gcc-ranlib
 READELF=$(GNU_TARGET)-readelf
 STRIP=$(GNU_TARGET)-strip
+
+ifeq ($(SSCACHE_BUILD),1)
+	CC_WRAPPER:=sccache
+	CC=$(CC_WRAPPER) $(GNU_TARGET)-gcc
+	CXX=$(CC_WRAPPER) $(GNU_TARGET)-g++
+	export RUSTC_WRAPPER:=$(CC_WRAPPER)
+endif
 
 ## Rust cross compile variables
 export AR_$(subst -,_,$(TARGET)):=$(AR)
