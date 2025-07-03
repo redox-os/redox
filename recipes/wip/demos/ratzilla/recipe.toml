@@ -11,7 +11,7 @@ colors-rgb demo demo2 minimal pong text-area user-input website world-map
         "${COOKBOOK_CARGO}" build \
             --manifest-path "${COOKBOOK_SOURCE}/examples/${PACKAGE_PATH}/Cargo.toml" \
             --package "${package}" \
-            --release \
+            --release
         mkdir -pv "${COOKBOOK_STAGE}/usr/bin"
         cp -v \
             "target/${TARGET}/${build_type}/examples/${package}" \
