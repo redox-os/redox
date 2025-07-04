@@ -1,4 +1,4 @@
-#TODO not compiled or tested
+#TODO can't find the attr/error_context.h file
 [source]
 tar = "https://download.savannah.nongnu.org/releases/acl/acl-2.3.2.tar.xz"
 [build]
