@@ -30,6 +30,12 @@ export RANLIB="${HOST}-gcc-ranlib"
 export READELF="${HOST}-readelf"
 export STRIP="${HOST}-strip"
 
+if [ -n "${RUSTC_WRAPPER}" ]
+then
+    export CC="${RUSTC_WRAPPER} ${CC}"
+    export CXX="${RUSTC_WRAPPER} ${CXX}"
+fi
+
 BUILD="$(cc -dumpmachine)"
 
 export PKG_CONFIG_FOR_BUILD="pkg-config"

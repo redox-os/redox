@@ -8,7 +8,7 @@ script = """
 rsync -av --delete "${COOKBOOK_SOURCE}/" ./
 "${COOKBOOK_MAKE}" -j"${COOKBOOK_MAKE_JOBS}" posix \
     AR="${TARGET}-ar rcu" \
-    CC="${TARGET}-gcc -std=gnu99" \
+    CC="${RUSTC_WRAPPER} ${TARGET}-gcc -std=gnu99" \
     RANLIB="${TARGET}-ranlib" \
     SYSLDFLAGS="-static"
 
