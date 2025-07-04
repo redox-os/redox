@@ -33,7 +33,7 @@ REDOXFS_MKFS_FLAGS?=
 PODMAN_BUILD?=1
 ## Enable sccache to speed up cargo builds
 ## only do this by default if this is inside podman
-SSCACHE_BUILD?=$(PODMAN_BUILD)
+SSCACHE_BUILD?=$(shell [ -f /run/.containerenv ] && echo 1 || echo 0)
 ## The containerfile to use for the Podman base image
 CONTAINERFILE?=podman/redox-base-containerfile
 
