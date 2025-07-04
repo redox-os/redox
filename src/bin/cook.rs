@@ -1,8 +1,9 @@
 use cookbook::blake3::blake3_progress;
-use cookbook::package::StageToml;
 use cookbook::recipe::{BuildKind, CookRecipe, Recipe, SourceRecipe};
-use cookbook::recipe_find::recipe_find;
+use pkg::package::Package;
+use pkg::{recipes, PackageName};
 use std::collections::VecDeque;
+use std::convert::TryInto;
 use std::{
     collections::BTreeSet,
     env, fs,
@@ -14,6 +15,8 @@ use std::{
 };
 use termion::{color, style};
 use walkdir::{DirEntry, WalkDir};
+
+use cookbook::WALK_DEPTH;
 
 fn remove_all(path: &Path) -> Result<(), String> {
     if path.is_dir() {
@@ -504,7 +507,10 @@ fi"#,
     Ok(source_dir)
 }
 
-fn auto_deps(stage_dir: &Path, dep_pkgars: &BTreeSet<(String, PathBuf)>) -> BTreeSet<String> {
+fn auto_deps(
+    stage_dir: &Path,
+    dep_pkgars: &BTreeSet<(PackageName, PathBuf)>,
+) -> BTreeSet<PackageName> {
     let mut paths = BTreeSet::new();
     let mut visited = BTreeSet::new();
     // Base directories may need to be updated for packages that place binaries in odd locations.
@@ -571,7 +577,12 @@ fn auto_deps(stage_dir: &Path, dep_pkgars: &BTreeSet<(String, PathBuf)>) -> BTre
                 if let Ok(relative_path) = path.strip_prefix(stage_dir) {
                     eprintln!("DEBUG: {} needs {}", relative_path.display(), name);
                 }
-                needed.insert(name.to_string());
+                if let Ok(name) = PackageName::new(name) {
+                    needed.insert(name);
+                } else {
+                    // AFAICT this shouldn't ever happen.
+                    eprintln!("ERROR: `{name}` is an invalid package name; please report");
+                }
             }
         }
     }
@@ -623,18 +634,17 @@ fn build(
     recipe_dir: &Path,
     source_dir: &Path,
     target_dir: &Path,
-    name: &str,
+    name: &PackageName,
     recipe: &Recipe,
-) -> Result<(PathBuf, BTreeSet<String>), String> {
+) -> Result<(PathBuf, BTreeSet<PackageName>), String> {
     let mut dep_pkgars = BTreeSet::new();
     for dependency in recipe.build.dependencies.iter() {
-        //TODO: sanitize name
-        let dependency_dir = recipe_find(dependency);
+        let dependency_dir = recipes::find(dependency.as_str());
         if dependency_dir.is_none() {
             return Err(format!("failed to find recipe directory '{}'", dependency));
         }
         dep_pkgars.insert((
-            dependency.to_string(),
+            dependency.clone(),
             dependency_dir
                 .unwrap()
                 .join("target")
@@ -992,7 +1002,7 @@ done
             command.arg("bash").arg("-ex");
             command.current_dir(&cookbook_build);
             command.env("COOKBOOK_BUILD", &cookbook_build);
-            command.env("COOKBOOK_NAME", name);
+            command.env("COOKBOOK_NAME", name.as_str());
             command.env("COOKBOOK_RECIPE", &cookbook_recipe);
             command.env("COOKBOOK_REDOXER", &cookbook_redoxer);
             command.env("COOKBOOK_ROOT", &cookbook_root);
@@ -1022,9 +1032,9 @@ fn package(
     _recipe_dir: &Path,
     stage_dir: &Path,
     target_dir: &Path,
-    name: &str,
+    name: &PackageName,
     recipe: &Recipe,
-    auto_deps: &BTreeSet<String>,
+    auto_deps: &BTreeSet<PackageName>,
 ) -> Result<PathBuf, String> {
     //TODO: metadata like dependencies, name, and version
     let package = &recipe.package;
@@ -1072,8 +1082,8 @@ fn package(
                 depends.push(dep.clone());
             }
         }
-        let stage_toml = toml::to_string(&StageToml {
-            name: name.into(),
+        let stage_toml = toml::to_string(&Package {
+            name: name.clone(),
             version: "TODO".into(),
             target: env::var("TARGET")
                 .map_err(|err| format!("failed to read TARGET: {:?}", err))?,
@@ -1087,7 +1097,12 @@ fn package(
     Ok(package_file)
 }
 
-fn cook(recipe_dir: &Path, name: &str, recipe: &Recipe, fetch_only: bool) -> Result<(), String> {
+fn cook(
+    recipe_dir: &Path,
+    name: &PackageName,
+    recipe: &Recipe,
+    fetch_only: bool,
+) -> Result<(), String> {
     let source_dir =
         fetch(recipe_dir, &recipe.source).map_err(|err| format!("failed to fetch: {}", err))?;
 
@@ -1104,7 +1119,7 @@ fn cook(recipe_dir: &Path, name: &str, recipe: &Recipe, fetch_only: bool) -> Res
         create_dir(&target_dir)?;
     }
 
-    let (stage_dir, auto_deps) = build(recipe_dir, &source_dir, &target_dir, name, &recipe)
+    let (stage_dir, auto_deps) = build(recipe_dir, &source_dir, &target_dir, name, recipe)
         .map_err(|err| format!("failed to build: {}", err))?;
 
     let _package_file = package(
@@ -1112,7 +1127,7 @@ fn cook(recipe_dir: &Path, name: &str, recipe: &Recipe, fetch_only: bool) -> Res
         &stage_dir,
         &target_dir,
         name,
-        &recipe,
+        recipe,
         &auto_deps,
     )
     .map_err(|err| format!("failed to package: {}", err))?;
@@ -1134,12 +1149,12 @@ fn main() {
             "--with-package-deps" if matching => with_package_deps = true,
             "--fetch-only" if matching => fetch_only = true,
             "-q" | "--quiet" if matching => quiet = true,
-            _ => recipe_names.push(arg),
+            _ => recipe_names.push(arg.try_into().expect("Invalid package name")),
         }
     }
 
     if with_package_deps {
-        recipe_names = match CookRecipe::get_package_deps_recursive(&recipe_names, 16) {
+        recipe_names = match CookRecipe::get_package_deps_recursive(&recipe_names, WALK_DEPTH) {
             Ok(ok) => ok,
             Err(err) => {
                 eprintln!(
@@ -1155,7 +1170,7 @@ fn main() {
         };
     }
 
-    let recipes = match CookRecipe::new_recursive(&recipe_names, 16) {
+    let recipes = match CookRecipe::new_recursive(&recipe_names, WALK_DEPTH) {
         Ok(ok) => ok,
         Err(err) => {
             eprintln!(
