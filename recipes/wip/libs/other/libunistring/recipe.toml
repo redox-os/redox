@@ -1,4 +1,4 @@
-#TODO compilation error
+#TODO port the fseterr function
 [source]
 tar = "https://ftp.gnu.org/gnu/libunistring/libunistring-1.1.tar.gz"
 [build]
