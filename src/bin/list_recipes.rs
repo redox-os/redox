@@ -1,13 +1,13 @@
-use cookbook::recipe_find::list_recipes;
 use std::process::exit;
-// use clap::Parser;
+
+use pkg::recipes;
 
 fn main() {
     let print_short = std::env::args()
         .nth(1)
         .map_or(false, |a| a == "-s" || a == "--short");
 
-    let result = list_recipes(Default::default());
+    let result = recipes::list("");
     if result.is_empty() {
         eprintln!("recipes not found");
         exit(1);
