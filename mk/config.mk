@@ -33,7 +33,7 @@ REDOXFS_MKFS_FLAGS?=
 PODMAN_BUILD?=1
 ## Enable sccache to speed up cargo builds
 ## only do this by default if this is inside podman
-SSCACHE_BUILD?=$(shell [ -f /run/.containerenv ] && echo 1 || echo 0)
+SCCACHE_BUILD?=$(shell [ -f /run/.containerenv ] && echo 1 || echo 0)
 ## The containerfile to use for the Podman base image
 CONTAINERFILE?=podman/redox-base-containerfile
 
@@ -49,10 +49,10 @@ ifneq ($(HOST_TARGET),x86_64-unknown-linux-gnu)
 endif
 endif
 
-ifeq ($(SSCACHE_BUILD),1)
+ifeq ($(SCCACHE_BUILD),1)
 ifeq (,$(shell command -v sccache))
     $(info sccache not found in PATH)
-	SSCACHE_BUILD=0
+	SCCACHE_BUILD=0
 endif
 endif
 
@@ -122,7 +122,7 @@ RANLIB=$(GNU_TARGET)-gcc-ranlib
 READELF=$(GNU_TARGET)-readelf
 STRIP=$(GNU_TARGET)-strip
 
-ifeq ($(SSCACHE_BUILD),1)
+ifeq ($(SCCACHE_BUILD),1)
 	CC_WRAPPER:=sccache
 	CC=$(CC_WRAPPER) $(GNU_TARGET)-gcc
 	CXX=$(CC_WRAPPER) $(GNU_TARGET)-g++
