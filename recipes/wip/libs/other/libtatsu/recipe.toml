@@ -1,4 +1,4 @@
-#TODO not compiled or tested
+#TODO compiled but not tested
 [source]
 tar = "https://github.com/libimobiledevice/libtatsu/releases/download/1.0.3/libtatsu-1.0.3.tar.bz2"
 [build]
