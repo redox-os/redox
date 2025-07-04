@@ -14,7 +14,7 @@ COOKBOOK_CONFIGURE_FLAGS=(
     "redox-${ARCH}"
     --prefix="/"
 )
-export CC="${TARGET}-gcc"
+export CC="${RUSTC_WRAPPER} ${TARGET}-gcc"
 "${COOKBOOK_CONFIGURE}" "${COOKBOOK_CONFIGURE_FLAGS[@]}"
 "${COOKBOOK_MAKE}" -j"${COOKBOOK_MAKE_JOBS}"
 "${COOKBOOK_MAKE}" install_sw install_ssldirs DESTDIR="${COOKBOOK_STAGE}"

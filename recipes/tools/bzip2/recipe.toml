@@ -12,7 +12,7 @@ DYNAMIC_INIT
 rsync -av --delete "${COOKBOOK_SOURCE}/" ./
 "${COOKBOOK_MAKE}" -j"${COOKBOOK_MAKE_JOBS}" \
     AR="${TARGET}-ar" \
-    CC="${TARGET}-gcc" \
+    CC="${RUSTC_WRAPPER} ${TARGET}-gcc" \
     PREFIX="${COOKBOOK_STAGE}" \
     RANLIB="${TARGET}-ranlib" \
     install
@@ -25,7 +25,7 @@ rsync -av --delete "${COOKBOOK_SOURCE}/" ./
 "${COOKBOOK_MAKE}" -f Makefile-libbz2_so \
     -j"${COOKBOOK_MAKE_JOBS}" \
     AR="${TARGET}-ar" \
-    CC="${TARGET}-gcc" \
+    CC="${RUSTC_WRAPPER} ${TARGET}-gcc" \
     PREFIX="${COOKBOOK_STAGE}" \
     RANLIB="${TARGET}-ranlib"
 
