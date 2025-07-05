@@ -1,12 +1,14 @@
-use cookbook::package::StageToml;
 use std::{env::args, process::ExitCode};
 
-/// Same as `cookbook/src/bin/cook.rs`.
-const DEP_DEPTH: usize = 16;
+use pkg::package::Package;
+
+use cookbook::WALK_DEPTH;
 
 fn main() -> ExitCode {
     let names = args().skip(1).collect::<Vec<String>>();
-    let packages = StageToml::new_recursive(&names, DEP_DEPTH).expect("package not found");
+    // TODO: Ugly vec
+    let names: Vec<&str> = names.iter().map(|s| s.as_str()).collect();
+    let packages = Package::new_recursive(&names, WALK_DEPTH).expect("package not found");
 
     for package in packages {
         println!("{}", package.name);

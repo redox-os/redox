@@ -1,6 +1,7 @@
 pub mod blake3;
-pub mod package;
 pub mod recipe;
-pub mod recipe_find;
 
 mod progress_bar;
+
+/// Default for maximum number of levels to descend down dependencies tree.
+pub const WALK_DEPTH: usize = 16;

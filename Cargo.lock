@@ -1831,6 +1831,22 @@ dependencies = [
 ]
 
 [[package]]
+name = "redox-pkg"
+version = "0.2.5"
+dependencies = [
+ "anyhow",
+ "ignore",
+ "pkgar 0.1.15",
+ "pkgar-core 0.1.15",
+ "pkgar-keys 0.1.15",
+ "reqwest",
+ "serde",
+ "serde_derive",
+ "thiserror 1.0.69",
+ "toml 0.8.19",
+]
+
+[[package]]
 name = "redox-scheme"
 version = "0.2.4"
 source = "registry+https://github.com/rust-lang/crates.io-index"
@@ -1851,6 +1867,7 @@ dependencies = [
  "pkgar 0.1.17",
  "pkgar-core 0.1.17",
  "pkgar-keys 0.1.17",
+ "redox-pkg 0.2.5",
  "redoxer",
  "serde",
  "tempfile",
@@ -1876,7 +1893,7 @@ dependencies = [
  "pkgar-core 0.1.15",
  "pkgar-keys 0.1.15",
  "rand",
- "redox-pkg",
+ "redox-pkg 0.2.4",
  "redox_liner",
  "redox_syscall",
  "redoxfs",
