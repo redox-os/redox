@@ -123,10 +123,10 @@ READELF=$(GNU_TARGET)-readelf
 STRIP=$(GNU_TARGET)-strip
 
 ifeq ($(SCCACHE_BUILD),1)
-	CC_WRAPPER:=sccache
+	export CC_WRAPPER:=sccache
+	export RUSTC_WRAPPER:=$(CC_WRAPPER)
 	CC=$(CC_WRAPPER) $(GNU_TARGET)-gcc
 	CXX=$(CC_WRAPPER) $(GNU_TARGET)-g++
-	export RUSTC_WRAPPER:=$(CC_WRAPPER)
 endif
 
 ## Rust cross compile variables
