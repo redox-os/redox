@@ -5,21 +5,27 @@ patches = ["redox.patch"]
 
 [build]
 dependencies = [
-    "sdl1",
-    "sdl1-mixer",
-    "liborbital",
-    "libiconv",
-    "libogg",
-    "libvorbis",
+  "sdl1",
+  "sdl1-mixer",
+  "liborbital",
+  "libiconv",
+  "libogg",
+  "libvorbis",
 ]
 template = "custom"
 script = """
+DYNAMIC_INIT
+
 # Copy source to build directory
 rsync -av --delete "${COOKBOOK_SOURCE}/" ./
 
 export CFLAGS="-I${COOKBOOK_SYSROOT}/include -I${COOKBOOK_SYSROOT}/include/SDL"
-export LDFLAGS="-L${COOKBOOK_SYSROOT}/lib -static"
 export SDLCONFIG="${COOKBOOK_SYSROOT}/bin/sdl-config --prefix=${COOKBOOK_SYSROOT}"
+
+export LDFLAGS="-L${COOKBOOK_SYSROOT}/lib"
+if [[ -n "${COOKBOOK_PREFER_STATIC}" ]]; then
+    LDFLAGS+=" -static"
+fi
 
 PLATFORM=REDOX "${COOKBOOK_MAKE}" -j"$($NPROC)"
 
