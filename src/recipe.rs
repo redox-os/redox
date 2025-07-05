@@ -1,11 +1,7 @@
-use std::{
-    fs,
-    path::PathBuf,
-};
+use std::{convert::TryInto, fs, path::PathBuf};
 
+use pkg::{recipes, PackageName};
 use serde::{Deserialize, Serialize};
-
-use crate::recipe_find::recipe_find;
 
 /// Specifies how to download the source for a recipe
 #[derive(Debug, Deserialize, PartialEq, Serialize)]
@@ -83,19 +79,19 @@ pub struct BuildRecipe {
     #[serde(flatten)]
     pub kind: BuildKind,
     #[serde(default)]
-    pub dependencies: Vec<String>,
+    pub dependencies: Vec<PackageName>,
 }
 
 #[derive(Debug, Default, Deserialize, PartialEq, Serialize)]
 pub struct PackageRecipe {
     #[serde(default)]
-    pub dependencies: Vec<String>,
+    pub dependencies: Vec<PackageName>,
 }
 
 /// Everything required to build a Redox package
 #[derive(Debug, Deserialize, PartialEq, Serialize)]
 pub struct Recipe {
-    /// Specifies how to donload the source for this recipe
+    /// Specifies how to download the source for this recipe
     pub source: Option<SourceRecipe>,
     /// Specifies how to build this recipe
     pub build: BuildRecipe,
@@ -106,15 +102,17 @@ pub struct Recipe {
 
 #[derive(Debug, PartialEq)]
 pub struct CookRecipe {
-    pub name: String,
+    pub name: PackageName,
     pub dir: PathBuf,
     pub recipe: Recipe,
 }
 
 impl CookRecipe {
-    pub fn new(name: String) -> Result<Self, String> {
-        //TODO: sanitize recipe name?
-        let dir = recipe_find(&name);
+    pub fn new(name: &str) -> Result<Self, String> {
+        let name: PackageName = name
+            .try_into()
+            .map_err(|e| format!("Invalid package name: {e}"))?;
+        let dir = recipes::find(name.as_str());
         if dir.is_none() {
             return Err(format!("failed to find recipe directory '{}'", name));
         }
@@ -142,10 +140,11 @@ impl CookRecipe {
             )
         })?;
 
+        let dir = dir.to_path_buf();
         Ok(Self { name, dir, recipe })
     }
 
-    pub fn new_recursive(names: &[String], recursion: usize) -> Result<Vec<Self>, String> {
+    pub fn new_recursive(names: &[PackageName], recursion: usize) -> Result<Vec<Self>, String> {
         if recursion == 0 {
             return Err(format!(
                 "recursion limit while processing build dependencies: {:#?}",
@@ -155,7 +154,7 @@ impl CookRecipe {
 
         let mut recipes = Vec::new();
         for name in names {
-            let recipe = Self::new(name.clone())?;
+            let recipe = Self::new(name.as_str())?;
 
             let dependencies =
                 Self::new_recursive(&recipe.recipe.build.dependencies, recursion - 1).map_err(
@@ -176,7 +175,10 @@ impl CookRecipe {
         Ok(recipes)
     }
 
-    pub fn get_package_deps_recursive(names: &[String], recursion: usize) -> Result<Vec<String>, String> {
+    pub fn get_package_deps_recursive(
+        names: &[PackageName],
+        recursion: usize,
+    ) -> Result<Vec<PackageName>, String> {
         if recursion == 0 {
             return Err(format!(
                 "recursion limit while processing package dependencies: {:#?}",
@@ -184,14 +186,15 @@ impl CookRecipe {
             ));
         }
 
-        let mut recipes = Vec::new();
+        let mut recipes: Vec<PackageName> = Vec::new();
         for name in names {
-            let recipe = Self::new(name.clone())?;
+            let recipe = Self::new(name.as_str())?;
 
-            let dependencies =
-                Self::get_package_deps_recursive(&recipe.recipe.package.dependencies, recursion - 1).map_err(
-                    |err| format!("{}: failed on loading package dependencies:\n{}", name, err),
-                )?;
+            let dependencies = Self::get_package_deps_recursive(
+                &recipe.recipe.package.dependencies,
+                recursion - 1,
+            )
+            .map_err(|err| format!("{}: failed on loading package dependencies:\n{}", name, err))?;
 
             for dependency in dependencies {
                 if !recipes.contains(&dependency) {
@@ -199,7 +202,7 @@ impl CookRecipe {
                 }
             }
 
-            if !recipes.contains(&name) {
+            if !recipes.contains(name) {
                 recipes.push(name.clone());
             }
         }
