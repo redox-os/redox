@@ -878,8 +878,6 @@ function cookbook_meson {
     echo "[binaries]" > cross_file.txt
     echo "c = [$(printf "'%s', " $CC | sed 's/, $//')]"  >> cross_file.txt
     echo "cpp = [$(printf "'%s', " $CXX | sed 's/, $//')]" >> cross_file.txt
-    echo "c = '${CC}'" >> cross_file.txt
-    echo "cpp = '${CXX}'" >> cross_file.txt
     echo "ar = '${AR}'" >> cross_file.txt
     echo "strip = '${STRIP}'" >> cross_file.txt
     echo "pkg-config = '${PKG_CONFIG}'" >> cross_file.txt
