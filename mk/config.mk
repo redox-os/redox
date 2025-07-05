@@ -18,6 +18,9 @@ CONFIG_NAME?=desktop
 ## Ignore errors when building the repo, attempt to build every package
 ## REPO_NONSTOP?=--nonstop
 REPO_NONSTOP?=
+## Do not update source repos, attempt to build in offline condition
+## REPO_OFFLINE?=--offline
+REPO_OFFLINE?=
 ## Select filesystem config
 ifeq ($(BOARD),)
 FILESYSTEM_CONFIG?=config/$(ARCH)/$(CONFIG_NAME).toml
