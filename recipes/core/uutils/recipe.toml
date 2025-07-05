@@ -1,3 +1,4 @@
+# TODO Fix coreutils i18n/l10n behavior on Redox
 [source]
 git = "https://github.com/uutils/coreutils"
 rev = "18b963ed6f612ac30ebca92426280cf4c1451f6a"
