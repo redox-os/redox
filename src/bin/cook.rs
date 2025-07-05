@@ -841,9 +841,10 @@ set(CMAKE_SYSTEM_NAME UnixPaths)
 set(CMAKE_SYSTEM_PROCESSOR $(echo "${TARGET}" | cut -d - -f1))
 EOF
 
-    if [ -n "$RUSTC_WRAPPER" ]; then
-        echo "set(CMAKE_C_COMPILER_LAUNCHER ${RUSTC_WRAPPER})" >> cross_file.cmake
-        echo "set(CMAKE_CXX_COMPILER_LAUNCHER ${RUSTC_WRAPPER})" >> cross_file.cmake
+    if [ -n "$CC_WRAPPER" ]
+    then
+        echo "set(CMAKE_C_COMPILER_LAUNCHER ${CC_WRAPPER})" >> cross_file.cmake
+        echo "set(CMAKE_CXX_COMPILER_LAUNCHER ${CC_WRAPPER})" >> cross_file.cmake
     fi
 
     "${COOKBOOK_CMAKE}" "${COOKBOOK_SOURCE}" \
