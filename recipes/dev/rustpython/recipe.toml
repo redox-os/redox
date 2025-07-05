@@ -1,5 +1,8 @@
 [source]
 git = "https://github.com/RustPython/RustPython"
+# requires https://github.com/rust-lang/rust/pull/137319
+# since https://github.com/RustPython/RustPython/pull/5858
+rev = "e41d7f523a74c36b9f360d992ce0a9eb7e604c2b"
 
 [build]
 dependencies = [
