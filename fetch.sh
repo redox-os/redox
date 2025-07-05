@@ -3,11 +3,23 @@ set -e
 
 source config.sh
 
-if [ $# = 0 ]
+recipes=""
+for arg in "${@:1}"
+do
+    if [ "$arg" == "--nonstop" ]
+    then
+        set +e
+    elif [ "$arg" == "--offline" ]
+    then
+        export COOKBOOK_OFFLINE="1"
+    else
+        recipes+=" $arg"
+    fi
+done
+
+if [ "$recipes" == "" ]
 then
     recipes="$(target/release/list_recipes)"
-else
-    recipes="$@"
 fi
 
 for recipe_path in $recipes

@@ -17,6 +17,9 @@ do
     elif [ "$arg" == "--nonstop" ]
     then
         set +e
+    elif [ "$arg" == "--offline" ]
+    then
+        export COOKBOOK_OFFLINE="1"
     else
         recipes+=" $arg"
     fi

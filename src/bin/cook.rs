@@ -213,6 +213,25 @@ function DYNAMIC_INIT {
 }
 "#;
 
+fn fetch_offline(recipe_dir: &Path, source: &Option<SourceRecipe>) -> Result<PathBuf, String> {
+    let source_dir = recipe_dir.join("source");
+    match source {
+        Some(SourceRecipe::SameAs { same_as: _ }) | Some(SourceRecipe::Path { path: _ }) | None => {
+            return fetch(recipe_dir, source);
+        }
+        Some(SourceRecipe::Git { git: _, upstream: _, branch: _, rev: _, patches: _, script: _ }) | Some(SourceRecipe::Tar { tar: _, blake3: _, patches: _, script: _ }) => {
+            if !source_dir.is_dir() {
+                return Err(format!(
+                    "'{dir}' is not exist and unable to continue in offline mode",
+                    dir = source_dir.display(),
+                ));
+            }
+        }
+    }
+
+    Ok(source_dir)
+}
+
 fn fetch(recipe_dir: &Path, source: &Option<SourceRecipe>) -> Result<PathBuf, String> {
     let source_dir = recipe_dir.join("source");
     match source {
@@ -1103,8 +1122,11 @@ fn cook(
     recipe: &Recipe,
     fetch_only: bool,
 ) -> Result<(), String> {
-    let source_dir =
-        fetch(recipe_dir, &recipe.source).map_err(|err| format!("failed to fetch: {}", err))?;
+    let is_offline = env::var("COOKBOOK_OFFLINE").unwrap_or("".to_string()) == "1";
+    let source_dir = match is_offline {
+        true => fetch_offline(recipe_dir, &recipe.source),
+        false => fetch(recipe_dir, &recipe.source),
+    }.map_err(|err| format!("failed to fetch: {}", err))?;
 
     if fetch_only {
         return Ok(());
