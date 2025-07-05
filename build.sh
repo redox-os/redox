@@ -43,7 +43,7 @@ usage()
 }
 
 if [ "$1" == "-h" ] || [ "$1" == "--help" ]; then
-	usage
+    usage
     exit
 fi
 
@@ -55,17 +55,17 @@ FILESYSTEM_CONFIG=""
 
 while getopts ":c:f:a:dhXA6" opt
 do
-	case "$opt" in
-   		a) ARCH="$OPTARG";;
-		c) CONFIG_NAME="$OPTARG";;
-		f) FILESYSTEM_CONFIG="$OPTARG";;
+    case "$opt" in
+        a) ARCH="$OPTARG";;
+        c) CONFIG_NAME="$OPTARG";;
+        f) FILESYSTEM_CONFIG="$OPTARG";;
         X) ARCH="x86_64";;
         A) ARCH="aarch64";;
         6) ARCH="i686";;
-		h) usage;;
-		\?) echo "Unknown option -$OPTARG, try -h for help"; exit;;
+        h) usage;;
+        \?) echo "Unknown option -$OPTARG, try -h for help"; exit;;
         :) echo "-$OPTARG requires a value"; exit;;
-	esac
+    esac
 done
 shift $((OPTIND -1))
 
