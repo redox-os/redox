@@ -920,6 +920,11 @@ function cookbook_meson {
     echo "cpu = '$(echo "${TARGET}" | cut -d - -f1)'" >> cross_file.txt
     echo "endian = 'little'" >> cross_file.txt
 
+    echo "[paths]" >> cross_file.txt
+    echo "prefix = '/usr'" >> cross_file.txt
+    echo "libdir = 'lib'" >> cross_file.txt
+    echo "bindir = 'bin'" >> cross_file.txt
+
     echo "[properties]" >> cross_file.txt
     echo "needs_exe_wrapper = true" >> cross_file.txt
     echo "sys_root = '${COOKBOOK_SYSROOT}'" >> cross_file.txt
