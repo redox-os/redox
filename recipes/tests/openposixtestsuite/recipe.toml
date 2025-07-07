@@ -6,7 +6,6 @@ branch = "redox"
 template = "custom"
 script = """
 rsync -av --delete "${COOKBOOK_SOURCE}/" ./
-# "${COOKBOOK_MAKE}" -j "${COOKBOOK_MAKE_JOBS}" build-tests
 mkdir -pv "${COOKBOOK_STAGE}/share/openposixtests"
 rsync -av --delete . "${COOKBOOK_STAGE}/share/openposixtestsuite"
 """
