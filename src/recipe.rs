@@ -1,7 +1,10 @@
 use std::{convert::TryInto, fs, path::PathBuf};
 
-use pkg::{recipes, PackageName};
-use serde::{Deserialize, Serialize};
+use pkg::{package::PackageError, recipes, PackageName};
+use serde::{
+    de::{value::Error as DeError, Error as DeErrorT},
+    Deserialize, Serialize,
+};
 
 /// Specifies how to download the source for a recipe
 #[derive(Debug, Deserialize, PartialEq, Serialize)]
@@ -108,48 +111,33 @@ pub struct CookRecipe {
 }
 
 impl CookRecipe {
-    pub fn new(name: &str) -> Result<Self, String> {
-        let name: PackageName = name
-            .try_into()
-            .map_err(|e| format!("Invalid package name: {e}"))?;
-        let dir = recipes::find(name.as_str());
-        if dir.is_none() {
-            return Err(format!("failed to find recipe directory '{}'", name));
-        }
-        let dir = dir.unwrap();
+    pub fn new(
+        name: impl TryInto<PackageName, Error = PackageError>,
+    ) -> Result<Self, PackageError> {
+        let name: PackageName = name.try_into()?;
+        let dir = recipes::find(name.as_str())
+            .ok_or_else(|| PackageError::PackageNotFound(name.clone()))?;
         let file = dir.join("recipe.toml");
         if !file.is_file() {
-            return Err(format!("failed to find recipe file '{}'", file.display()));
+            return Err(PackageError::FileMissing(file));
         }
 
-        let toml = fs::read_to_string(&file).map_err(|err| {
-            format!(
-                "failed to read recipe file '{}': {}\n{:#?}",
-                file.display(),
-                err,
-                err
-            )
-        })?;
+        let toml = fs::read_to_string(&file)
+            .map_err(|err| PackageError::Parse(DeError::custom(err), Some(file.clone())))?;
 
-        let recipe: Recipe = toml::from_str(&toml).map_err(|err| {
-            format!(
-                "failed to parse recipe file '{}': {}\n{:#?}",
-                file.display(),
-                err,
-                err
-            )
-        })?;
+        let recipe: Recipe = toml::from_str(&toml)
+            .map_err(|err| PackageError::Parse(DeError::custom(err), Some(file)))?;
 
         let dir = dir.to_path_buf();
         Ok(Self { name, dir, recipe })
     }
 
-    pub fn new_recursive(names: &[PackageName], recursion: usize) -> Result<Vec<Self>, String> {
+    pub fn new_recursive(
+        names: &[PackageName],
+        recursion: usize,
+    ) -> Result<Vec<Self>, PackageError> {
         if recursion == 0 {
-            return Err(format!(
-                "recursion limit while processing build dependencies: {:#?}",
-                names
-            ));
+            return Err(PackageError::Recursion(Default::default()));
         }
 
         let mut recipes = Vec::new();
@@ -158,7 +146,10 @@ impl CookRecipe {
 
             let dependencies =
                 Self::new_recursive(&recipe.recipe.build.dependencies, recursion - 1).map_err(
-                    |err| format!("{}: failed on loading build dependencies:\n{}", name, err),
+                    |mut err| {
+                        err.append_recursion(name);
+                        err
+                    },
                 )?;
 
             for dependency in dependencies {
@@ -178,12 +169,9 @@ impl CookRecipe {
     pub fn get_package_deps_recursive(
         names: &[PackageName],
         recursion: usize,
-    ) -> Result<Vec<PackageName>, String> {
+    ) -> Result<Vec<PackageName>, PackageError> {
         if recursion == 0 {
-            return Err(format!(
-                "recursion limit while processing package dependencies: {:#?}",
-                names
-            ));
+            return Err(PackageError::Recursion(Default::default()));
         }
 
         let mut recipes: Vec<PackageName> = Vec::new();
@@ -194,7 +182,10 @@ impl CookRecipe {
                 &recipe.recipe.package.dependencies,
                 recursion - 1,
             )
-            .map_err(|err| format!("{}: failed on loading package dependencies:\n{}", name, err))?;
+            .map_err(|mut err| {
+                err.append_recursion(name);
+                err
+            })?;
 
             for dependency in dependencies {
                 if !recipes.contains(&dependency) {
