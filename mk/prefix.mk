@@ -114,6 +114,7 @@ $(PREFIX)/sysroot: $(PREFIX)/relibc-install $(PREFIX)/libtool-build $(CONTAINER_
 ifeq ($(PODMAN_BUILD),1)
 	$(PODMAN_RUN) $(MAKE) $@
 else
+	rm -rf "$@"
 	cp -r "$(PREFIX)/relibc-install/" "$@"
 	PATH="$(ROOT)/$(PREFIX)/rust-install/bin:$$PATH" && \
 	cd "$(PREFIX)/libtool-build" && \
