@@ -8,7 +8,7 @@ use pkg::{
 use cookbook::WALK_DEPTH;
 
 fn main() -> Result<(), PackageError> {
-    let names: Vec<_> = args()
+    let names: Vec<PackageName> = args()
         .skip(1)
         .map(PackageName::new)
         .collect::<Result<_, _>>()?;
