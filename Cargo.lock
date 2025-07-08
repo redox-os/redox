@@ -1833,6 +1833,7 @@ dependencies = [
 [[package]]
 name = "redox-pkg"
 version = "0.2.7"
+source = "git+https://gitlab.redox-os.org/redox-os/pkgutils#436c97a0df26bfce24e33a5a86a21218aca7591f"
 dependencies = [
  "anyhow",
  "ignore",
