@@ -1,18 +1,22 @@
-use std::{env::args, process::ExitCode};
+use std::env::args;
 
-use pkg::package::Package;
+use pkg::{
+    package::{Package, PackageError},
+    PackageName,
+};
 
 use cookbook::WALK_DEPTH;
 
-fn main() -> ExitCode {
-    let names = args().skip(1).collect::<Vec<String>>();
-    // TODO: Ugly vec
-    let names: Vec<&str> = names.iter().map(|s| s.as_str()).collect();
-    let packages = Package::new_recursive(&names, WALK_DEPTH).expect("package not found");
+fn main() -> Result<(), PackageError> {
+    let names: Vec<_> = args()
+        .skip(1)
+        .map(PackageName::new)
+        .collect::<Result<_, _>>()?;
 
+    let packages = Package::new_recursive(&names, WALK_DEPTH)?;
     for package in packages {
         println!("{}", package.name);
     }
 
-    ExitCode::SUCCESS
+    Ok(())
 }
