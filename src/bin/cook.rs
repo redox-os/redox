@@ -219,7 +219,20 @@ fn fetch_offline(recipe_dir: &Path, source: &Option<SourceRecipe>) -> Result<Pat
         Some(SourceRecipe::SameAs { same_as: _ }) | Some(SourceRecipe::Path { path: _ }) | None => {
             return fetch(recipe_dir, source);
         }
-        Some(SourceRecipe::Git { git: _, upstream: _, branch: _, rev: _, patches: _, script: _ }) | Some(SourceRecipe::Tar { tar: _, blake3: _, patches: _, script: _ }) => {
+        Some(SourceRecipe::Git {
+            git: _,
+            upstream: _,
+            branch: _,
+            rev: _,
+            patches: _,
+            script: _,
+        })
+        | Some(SourceRecipe::Tar {
+            tar: _,
+            blake3: _,
+            patches: _,
+            script: _,
+        }) => {
             if !source_dir.is_dir() {
                 return Err(format!(
                     "'{dir}' is not exist and unable to continue in offline mode",
@@ -596,12 +609,7 @@ fn auto_deps(
                 if let Ok(relative_path) = path.strip_prefix(stage_dir) {
                     eprintln!("DEBUG: {} needs {}", relative_path.display(), name);
                 }
-                if let Ok(name) = PackageName::new(name) {
-                    needed.insert(name);
-                } else {
-                    // AFAICT this shouldn't ever happen.
-                    eprintln!("ERROR: `{name}` is an invalid package name; please report");
-                }
+                needed.insert(name.to_string());
             }
         }
     }
@@ -1131,7 +1139,8 @@ fn cook(
     let source_dir = match is_offline {
         true => fetch_offline(recipe_dir, &recipe.source),
         false => fetch(recipe_dir, &recipe.source),
-    }.map_err(|err| format!("failed to fetch: {}", err))?;
+    }
+    .map_err(|err| format!("failed to fetch: {}", err))?;
 
     if fetch_only {
         return Ok(());

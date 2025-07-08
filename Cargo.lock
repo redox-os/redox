@@ -1832,7 +1832,7 @@ dependencies = [
 
 [[package]]
 name = "redox-pkg"
-version = "0.2.5"
+version = "0.2.7"
 dependencies = [
  "anyhow",
  "ignore",
@@ -1867,7 +1867,7 @@ dependencies = [
  "pkgar 0.1.17",
  "pkgar-core 0.1.17",
  "pkgar-keys 0.1.17",
- "redox-pkg 0.2.5",
+ "redox-pkg 0.2.7",
  "redoxer",
  "serde",
  "tempfile",
