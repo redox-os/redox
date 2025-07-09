@@ -1,0 +1,26 @@
+image: "rust:latest"
+
+stages:
+  - lint
+  - test
+
+variables:
+  GIT_SUBMODULE_STRATEGY: "recursive"
+
+workflow:
+  rules:
+    - if: '$CI_COMMIT_BRANCH == "master"'
+    - if: '$CI_MERGE_REQUEST_TARGET_BRANCH_NAME == "master"'
+
+fmt:
+  stage: lint
+  script:
+    - rustup component add rustfmt
+    - cargo fmt -- --check
+
+cargo-test:
+  stage: test
+  script:
+    # TODO: we should omit fuse from cargo install chains
+    - apt update && apt install -y fuse3 libfuse3-dev
+    - cargo test --locked
