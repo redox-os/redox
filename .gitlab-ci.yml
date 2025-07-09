@@ -1,0 +1,21 @@
+image: "rust:latest"
+
+stages:
+  - lint
+  - test
+
+workflow:
+  rules:
+    - if: '$CI_COMMIT_BRANCH == "master"'
+    - if: '$CI_MERGE_REQUEST_TARGET_BRANCH_NAME == "master"'
+
+fmt:
+  stage: lint
+  script:
+    - rustup component add rustfmt
+    - cargo fmt -- --check
+
+cargo-test:
+  stage: test
+  script:
+    - cargo test --locked
