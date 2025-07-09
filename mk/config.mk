@@ -16,8 +16,9 @@ REPO_BINARY?=0
 ## Name of the configuration to include in the image name e.g. desktop or server
 CONFIG_NAME?=desktop
 ## Ignore errors when building the repo, attempt to build every package
-## REPO_NONSTOP?=--nonstop
-REPO_NONSTOP?=
+REPO_NONSTOP?=0
+## Do not update source repos, attempt to build in offline condition
+REPO_OFFLINE?=0
 ## Select filesystem config
 ifeq ($(BOARD),)
 FILESYSTEM_CONFIG?=config/$(ARCH)/$(CONFIG_NAME).toml
@@ -54,6 +55,17 @@ ifeq (,$(shell command -v sccache))
     $(info sccache not found in PATH)
 	SCCACHE_BUILD=0
 endif
+endif
+
+ifeq ($(REPO_NONSTOP),1)
+	REPO_NONSTOP=--nonstop
+else ifeq ($(REPO_NONSTOP),0)
+	REPO_NONSTOP=
+endif
+ifeq ($(REPO_OFFLINE),1)
+	REPO_OFFLINE=--offline
+else ifeq ($(REPO_OFFLINE),0)
+	REPO_OFFLINE=
 endif
 
 UNAME := $(shell uname)
