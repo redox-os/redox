@@ -22,5 +22,5 @@ cargo-test:
   stage: test
   script:
     # TODO: we should omit fuse from cargo install chains
-    - apt update && apt fuse3 libfuse3-dev
+    - apt update && apt install fuse3 libfuse3-dev
     - cargo test --locked
