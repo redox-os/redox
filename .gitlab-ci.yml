@@ -4,6 +4,9 @@ stages:
   - lint
   - test
 
+variables:
+  GIT_SUBMODULE_STRATEGY: "recursive"
+
 workflow:
   rules:
     - if: '$CI_COMMIT_BRANCH == "master"'
