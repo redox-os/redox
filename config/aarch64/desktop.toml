@@ -12,4 +12,3 @@ include = ["../desktop.toml"]
 # Package settings
 [packages]
 # example = {}
-rustpython = "ignore" # not tested
