@@ -13,7 +13,6 @@ coreutils = {}
 extrautils = {}
 ion = {}
 smith = {}
-userutils = {}
 
 [[files]]
 path = "/usr/lib/init.d/30_console"

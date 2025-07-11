@@ -25,7 +25,6 @@ netdb = {}
 pkgutils = {}
 redoxfs = {}
 resist = {}
-userutils = {}
 
 [[files]]
 path = "/usr/lib/init.d/30_console"

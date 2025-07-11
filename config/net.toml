@@ -12,7 +12,6 @@ netutils = {}
 path = "/usr/lib/init.d/10_net"
 data = """
 smolnetd
-dnsd
 dhcpd -b
 """
 

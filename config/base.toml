@@ -17,6 +17,7 @@ kernel = {}
 libgcc = {}
 libstdcxx = {}
 relibc = {}
+userutils = {}
 uutils = {}
 
 ## Configuration files
