@@ -12,10 +12,13 @@ filesystem_size = 2048
 # Package settings
 [packages]
 gtk3 = {}
+libnettle = {}
 llvm18 = {}
 mesa-x11 = {}
 mesa-demos-x11 = {}
+sqlite3 = {}
 twm = {}
+webkitgtk3 = {}
 xev = {}
 xeyes = {}
 xinit = {}
