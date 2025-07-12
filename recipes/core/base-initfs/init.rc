@@ -8,7 +8,7 @@ zerod
 randd
 
 # Logging
-logd /scheme/debug
+logd
 stdio /scheme/log
 ramfs logging
 
