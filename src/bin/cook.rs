@@ -226,6 +226,7 @@ fn fetch_offline(recipe_dir: &Path, source: &Option<SourceRecipe>) -> Result<Pat
             rev: _,
             patches: _,
             script: _,
+            shallow_clone: _,
         })
         | Some(SourceRecipe::Tar {
             tar: _,
@@ -289,8 +290,10 @@ fn fetch(recipe_dir: &Path, source: &Option<SourceRecipe>) -> Result<PathBuf, St
             rev,
             patches,
             script,
+            shallow_clone,
         }) => {
             //TODO: use libgit?
+            let shallow_clone = *shallow_clone == Some(true);
             if !source_dir.is_dir() {
                 // Create source.tmp
                 let source_dir_tmp = recipe_dir.join("source.tmp");
@@ -302,12 +305,15 @@ fn fetch(recipe_dir: &Path, source: &Option<SourceRecipe>) -> Result<PathBuf, St
                 if let Some(branch) = branch {
                     command.arg("--branch").arg(branch);
                 }
+                if shallow_clone {
+                    command.arg("--depth").arg("1").arg("--shallow-submodules");
+                }
                 command.arg(&source_dir_tmp);
                 run_command(command)?;
 
                 // Move source.tmp to source atomically
                 rename(&source_dir_tmp, &source_dir)?;
-            } else {
+            } else if !shallow_clone {
                 // Don't let this code reset the origin for the cookbook repo
                 let source_git_dir = source_dir.join(".git");
                 if !source_git_dir.is_dir() {
@@ -343,7 +349,7 @@ fn fetch(recipe_dir: &Path, source: &Option<SourceRecipe>) -> Result<PathBuf, St
                 command.arg("-C").arg(&source_dir);
                 command.arg("checkout").arg(rev);
                 run_command(command)?;
-            } else {
+            } else if !shallow_clone {
                 //TODO: complicated stuff to check and reset branch to origin
                 let mut command = Command::new("bash");
                 command.arg("-c").arg(
@@ -374,21 +380,23 @@ fi"#,
                 run_command(command)?;
             }
 
-            // Sync submodules URL
-            let mut command = Command::new("git");
-            command.arg("-C").arg(&source_dir);
-            command.arg("submodule").arg("sync").arg("--recursive");
-            run_command(command)?;
+            if !shallow_clone {
+                // Sync submodules URL
+                let mut command = Command::new("git");
+                command.arg("-C").arg(&source_dir);
+                command.arg("submodule").arg("sync").arg("--recursive");
+                run_command(command)?;
 
-            // Update submodules
-            let mut command = Command::new("git");
-            command.arg("-C").arg(&source_dir);
-            command
-                .arg("submodule")
-                .arg("update")
-                .arg("--init")
-                .arg("--recursive");
-            run_command(command)?;
+                // Update submodules
+                let mut command = Command::new("git");
+                command.arg("-C").arg(&source_dir);
+                command
+                    .arg("submodule")
+                    .arg("update")
+                    .arg("--init")
+                    .arg("--recursive");
+                run_command(command)?;
+            }
 
             // Apply patches
             for patch_name in patches {

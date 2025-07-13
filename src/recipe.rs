@@ -35,6 +35,9 @@ pub enum SourceRecipe {
         /// The optional revision of the git repository to use for builds. Please specify for
         /// reproducible builds
         rev: Option<String>,
+        /// The optional config to run as shallow fetch. Only use this for heavy git like "rust"
+        /// This will disable recipe autofetching because of its cost on git server
+        shallow_clone: Option<bool>,
         /// A list of patch files to apply to the source
         #[serde(default)]
         patches: Vec<String>,
@@ -231,6 +234,7 @@ mod tests {
                     rev: Some("06344744d3d55a5ac9a62a6059cb363d40699bbc".to_string()),
                     patches: Vec::new(),
                     script: None,
+                    shallow_clone: None,
                 }),
                 build: BuildRecipe {
                     kind: BuildKind::Cargo {
