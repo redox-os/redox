@@ -61,6 +61,12 @@ img:
     name: alpine/git:latest
     entrypoint: [""] # force an empty entrypoint
   script:
+    - |
+      if [ -z "$CI_PUSH_TOKEN" ]; then
+        echo "Error: CI_PUSH_TOKEN CI/CD variable is not set."
+        echo "Please configure CI_PUSH_TOKEN in your project's CI/CD settings -> Variables."
+        exit 1
+      fi
     - git config user.email $GITLAB_USER_EMAIL
     - git config user.name "$GITLAB_USER_NAME (CI)"
     - git submodule update --remote $SUBMODULE_DIR
@@ -71,7 +77,7 @@ img:
         echo "Changes detected for $SUBMODULE_DIR submodule. Committing and pushing..."
         git add $SUBMODULE_DIR
         git commit -m "CI: Update $SUBMODULE_DIR submodule to latest $CI_COMMIT_BRANCH"
-        git push origin HEAD
+        git push https://:${CI_PUSH_TOKEN}@${CI_SERVER_HOST}/${CI_PROJECT_PATH}.git HEAD:$CI_COMMIT_BRANCH
         echo "Pushed! View the branch at: ${CI_SERVER_URL}/${CI_PROJECT_NAMESPACE}/${CI_PROJECT_NAME}/-/tree/${CI_COMMIT_BRANCH}"
       fi
 
