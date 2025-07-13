@@ -5,41 +5,92 @@ variables:
   GIT_STRATEGY: "clone"
   GIT_SUBMODULE_STRATEGY: "recursive"
 
-before_script:
- # Disable the wget progress bar
- - echo 'show-progress = off' >> ~/.wgetrc
- - |
-    export DEBIAN_FRONTEND=noninteractive
-    apt-get update -qq &&
-    apt-get install -qq \
-        bison \
-        build-essential \
-        curl \
-        flex \
-        fuse3 \
-        git \
-        libfuse-dev \
-        nasm \
-        pkg-config \
-        texinfo \
-        wget \
-        help2man \
-        autoconf \
-        automake \
-        zstd &&
-    curl https://sh.rustup.rs -sSf | sh -s -- -y --default-toolchain none
+stages:
+  - test
+  - retag
 
 img:
-    script:
-     - |
-        source "$HOME/.cargo/env" &&
-        curl -L --proto '=https' --tlsv1.2 -sSf https://raw.githubusercontent.com/cargo-bins/cargo-binstall/main/install-from-binstall-release.sh | bash &&
-        cargo binstall --no-confirm --version 0.1.1 cargo-config &&
-        cargo binstall --no-confirm --version 1.16.0 just &&
-        cargo binstall --no-confirm --version 0.27.0 cbindgen &&
-        cargo build --manifest-path installer/Cargo.toml --release &&
-        PODMAN_BUILD=0 REPO_BINARY=1 make ci-img IMG_TAG=$CI_COMMIT_REF_NAME
-    artifacts:
-        paths:
-         - build/img/
-        expire_in: 1 week
+  stage: test
+  rules:
+    - if: '$CI_COMMIT_BRANCH == "master" && $CI_PROJECT_NAMESPACE == "redox-os"'
+    - if: '$CI_MERGE_REQUEST_TARGET_BRANCH_NAME == "master"'
+  before_script:
+    # Disable the wget progress bar
+    - echo 'show-progress = off' >> ~/.wgetrc
+    - |
+      export DEBIAN_FRONTEND=noninteractive
+      apt-get update -qq &&
+      apt-get install -qq \
+          bison \
+          build-essential \
+          curl \
+          flex \
+          fuse3 \
+          git \
+          libfuse-dev \
+          nasm \
+          pkg-config \
+          texinfo \
+          wget \
+          help2man \
+          autoconf \
+          automake \
+          zstd &&
+      curl https://sh.rustup.rs -sSf | sh -s -- -y --default-toolchain none
+  script:
+    - |
+      source "$HOME/.cargo/env" &&
+      curl -L --proto '=https' --tlsv1.2 -sSf https://raw.githubusercontent.com/cargo-bins/cargo-binstall/main/install-from-binstall-release.sh | bash &&
+      cargo binstall --no-confirm --version 0.1.1 cargo-config &&
+      cargo binstall --no-confirm --version 1.16.0 just &&
+      cargo binstall --no-confirm --version 0.27.0 cbindgen &&
+      cargo build --manifest-path installer/Cargo.toml --release &&
+      PODMAN_BUILD=0 REPO_BINARY=1 make ci-img IMG_TAG=$CI_COMMIT_REF_NAME
+  artifacts:
+    paths:
+      - build/img/
+    expire_in: 1 week
+
+.update-submodule:
+  stage: retag
+  rules:
+    - if: '$CI_PIPELINE_SOURCE == "push"'
+      when: manual
+    - when: never
+  image:
+    name: alpine/git:latest
+    entrypoint: [""] # force an empty entrypoint
+  script:
+    - git config user.email $GITLAB_USER_EMAIL
+    - git config user.name "$GITLAB_USER_NAME (CI)"
+    - git submodule update --remote $SUBMODULE_DIR
+    - |
+      if git diff --quiet $SUBMODULE_DIR; then
+        echo "No changes detected for $SUBMODULE_DIR submodule. Exiting."
+      else
+        echo "Changes detected for $SUBMODULE_DIR submodule. Committing and pushing..."
+        git add $SUBMODULE_DIR
+        git commit -m "CI: Update $SUBMODULE_DIR submodule to latest $CI_COMMIT_BRANCH"
+        git push origin HEAD
+        echo "Pushed! View the branch at: ${CI_SERVER_URL}/${CI_PROJECT_NAMESPACE}/${CI_PROJECT_NAME}/-/tree/${CI_COMMIT_BRANCH}"
+      fi
+
+update_cookbook:
+  extends: .update-submodule
+  variables:
+    SUBMODULE_DIR: cookbook
+
+update_installer:
+  extends: .update-submodule
+  variables:
+    SUBMODULE_DIR: installer
+
+update_redoxfs:
+  extends: .update-submodule
+  variables:
+    SUBMODULE_DIR: redoxfs
+
+update_relibc:
+  extends: .update-submodule
+  variables:
+    SUBMODULE_DIR: relibc
