@@ -1,0 +1,11 @@
+[source]
+git = "https://github.com/TheWaWaR/simple-http-server"
+[build]
+template = "custom"
+dependencies = [
+    "openssl1",
+]
+script = """
+DYNAMIC_INIT
+cookbook_cargo
+"""
