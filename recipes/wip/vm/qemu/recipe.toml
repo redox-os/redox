@@ -1,5 +1,6 @@
 [source]
 git = "https://github.com/jackpot51/qemu.git"
+shallow_clone = true
 
 [build]
 template = "custom"
