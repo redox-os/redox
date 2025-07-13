@@ -4,6 +4,7 @@ blake3 = "2482633f872c173f9a42e6badb44c3efb042e783e664fdf8b1046babfa2405e7"
 script = """
 DYNAMIC_INIT
 autotools_recursive_regenerate
+wget -O build-aux/config.sub "https://gitlab.redox-os.org/redox-os/gnu-config/-/raw/master/config.sub?inline=false"
 """
 
 [build]
