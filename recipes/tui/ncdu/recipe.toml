@@ -1,6 +1,6 @@
 [source]
-tar = "https://dev.yorhel.nl/download/ncdu-1.13.tar.gz"
-blake3 = "f6d771e78c87202a051e3357820be3c63ea895ff4f07edf14c6f21fb18afceed"
+tar = "https://dev.yorhel.nl/download/ncdu-1.22.tar.gz"
+blake3 = "b7838c03ded7207a328a26c840ec3d62d3be6bbf7269a70ea3430c6cbf065960"
 
 [package]
 dependencies = ["terminfo"]
@@ -9,14 +9,6 @@ dependencies = ["terminfo"]
 template = "custom"
 dependencies = ["ncurses"]
 script = """
-rsync -av --delete --exclude='.git' "${COOKBOOK_SOURCE}/" ./
-export CPPFLAGS="-I${COOKBOOK_SYSROOT}/include -I${COOKBOOK_SYSROOT}/include/ncurses"
-export LDFLAGS="-L${COOKBOOK_SYSROOT}/lib -static"
-./configure \
-    --build=${BUILD} \
-    --host="${TARGET}" \
-    --prefix=/
-"${COOKBOOK_MAKE}" -j"$(${NPROC})"
-
-"${COOKBOOK_MAKE}" DESTDIR="${COOKBOOK_STAGE}" install
+DYNAMIC_INIT
+cookbook_configure
 """
