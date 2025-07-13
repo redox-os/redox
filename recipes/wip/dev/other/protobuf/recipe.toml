@@ -1,20 +1,20 @@
-#TODO maybe incomplete script, see https://github.com/protocolbuffers/protobuf/blob/main/cmake/README.md
+#TODO: Compilation error (relibc issues?)
+# Also see https://github.com/protocolbuffers/protobuf/blob/main/cmake/README.md
 [source]
-tar = "https://github.com/protocolbuffers/protobuf/releases/download/v25.1/protobuf-25.1.tar.gz"
+git = "https://github.com/protocolbuffers/protobuf"
+# Latest release: v31.1
+rev = "74211c0dfc2777318ab53c2cd2c317a2ef9012de"
+shallow_clone = true
+
 [build]
 template = "custom"
+dependencies = [
+    "zlib",
+]
 script = """
-COOKBOOK_CONFIGURE="cmake"
-COOKBOOK_CONFIGURE_FLAGS=(
-    -DCMAKE_BUILD_TYPE=Release
-    -DCMAKE_CROSSCOMPILING=True
-    -DCMAKE_EXE_LINKER_FLAGS="-static"
-    -DCMAKE_INSTALL_PREFIX="/"
-    -DCMAKE_PREFIX_PATH="${COOKBOOK_SYSROOT}"
-    -DCMAKE_SYSTEM_NAME=Generic
-    -DCMAKE_SYSTEM_PROCESSOR="$(echo "${TARGET}" | cut -d - -f1)"
-    -DCMAKE_VERBOSE_MAKEFILE=On
-"${COOKBOOK_SOURCE}"
+DYNAMIC_INIT
+COOKBOOK_CMAKE_FLAGS=(
+    -Dprotobuf_BUILD_TESTS=OFF
 )
-cookbook_configure
+cookbook_cmake
 """
