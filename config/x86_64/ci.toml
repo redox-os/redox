@@ -117,6 +117,7 @@ neverball = {}
 #newlibtest = {} # obsolete
 nghttp2 = {}
 #nushell = {} # needs cargo update
+onefetch = {}
 openjazz = {}
 openssl1 = {}
 openttd = {}
