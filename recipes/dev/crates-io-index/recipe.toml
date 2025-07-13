@@ -1,5 +1,6 @@
 [source]
 git = "https://github.com/rust-lang/crates.io-index.git"
+shallow_clone = true
 
 [build]
 template = "custom"
