@@ -1,7 +1,8 @@
 #TODO probably wrong script, lacking build instructions
 [source]
 git = "https://github.com/opencv/opencv"
-branch = "4.8.0
+rev = "49486f61fb25722cbcf586b7f4320921d46fb38e"
+
 [build]
 template = "custom"
 script = """
