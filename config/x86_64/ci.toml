@@ -97,6 +97,7 @@ libvorbis = {}
 libxkbcommon = {}
 libxml2 = {}
 llvm18 = {}
+lsd = {}
 lua54 = {}
 #mdp = {} # gcc hangs
 mednafen = {}
