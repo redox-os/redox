@@ -559,6 +559,7 @@ fn auto_deps(
         stage_dir.join("usr/bin"),
         stage_dir.join("usr/games"),
         stage_dir.join("usr/lib"),
+        stage_dir.join("usr/libexec"),
     ]);
 
     // Recursively (DFS) walk each directory to ensure nested libs and bins are checked.
