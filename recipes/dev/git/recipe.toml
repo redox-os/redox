@@ -14,7 +14,7 @@ dependencies=[
 template = "custom"
 script = """
 rsync -av --delete "${COOKBOOK_SOURCE}/" ./
-
+DYNAMIC_INIT
 MAKEFLAGS=(
     NEEDS_SSL_WITH_CURL=1
     NEEDS_CRYPTO_WITH_SSL=1
