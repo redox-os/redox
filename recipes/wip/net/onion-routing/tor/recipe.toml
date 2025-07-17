@@ -5,6 +5,6 @@ tar = "https://dist.torproject.org/tor-0.4.8.9.tar.gz"
 template = "configure"
 dependencies = [
     "libevent",
-    "openssl1"
+    "openssl1",
     "zlib",
 ]

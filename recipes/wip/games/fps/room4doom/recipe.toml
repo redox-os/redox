@@ -5,7 +5,7 @@ git = "https://github.com/flukejones/room4doom"
 template = "custom"
 dependencies = [
     "sdl2",
-    "sdl2-mixer
+    "sdl2-mixer"
 ]
 script = """
 cookbook_cargo_packages room4doom

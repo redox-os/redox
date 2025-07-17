@@ -6,7 +6,7 @@ tar = "https://download.gnome.org/sources/file-roller/44/file-roller-44.3.tar.xz
 template = "custom"
 dependencies = [
     "glib",
-    "gtk3,"
+    "gtk3",
     "libhandy",
     "libarchive",
 ]
