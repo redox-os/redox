@@ -1,0 +1,532 @@
+diff -ruwN source/src/cmd/dist/build.go source-new/src/cmd/dist/build.go
+--- source/src/cmd/dist/build.go	2025-07-03 04:47:15.000000000 +0700
++++ source-new/src/cmd/dist/build.go	2025-07-20 22:44:22.522527140 +0700
+@@ -94,6 +94,7 @@
+ 	"wasip1",
+ 	"linux",
+ 	"android",
++	"redox",
+ 	"solaris",
+ 	"freebsd",
+ 	"nacl", // keep;
+@@ -764,7 +765,7 @@
+ 			elem = "go_bootstrap"
+ 		}
+ 		link = []string{pathf("%s/link", tooldir)}
+-		if goos == "android" {
++		if goos == "android" || goos == "redox" {
+ 			link = append(link, "-buildmode=pie")
+ 		}
+ 		if goldflags != "" {
+@@ -1020,7 +1021,7 @@
+ 	if symabis != "" {
+ 		compile = append(compile, "-symabis", symabis)
+ 	}
+-	if goos == "android" {
++	if goos == "android" || goos == "redox" {
+ 		compile = append(compile, "-shared")
+ 	}
+ 
+@@ -1084,6 +1085,7 @@
+ 	"linux":     true,
+ 	"netbsd":    true,
+ 	"openbsd":   true,
++	"redox":     true,
+ 	"solaris":   true,
+ }
+ 
+@@ -1093,7 +1095,7 @@
+ 	case "gc", "cmd_go_bootstrap", "go1.1":
+ 		return true
+ 	case "linux":
+-		return goos == "linux" || goos == "android"
++		return goos == "linux" || goos == "android" || goos == "redox"
+ 	case "solaris":
+ 		return goos == "solaris" || goos == "illumos"
+ 	case "darwin":
+@@ -1118,7 +1120,7 @@
+ 	name := filepath.Base(file)
+ 	excluded := func(list []string, ok string) bool {
+ 		for _, x := range list {
+-			if x == ok || (ok == "android" && x == "linux") || (ok == "illumos" && x == "solaris") || (ok == "ios" && x == "darwin") {
++			if x == ok || (ok == "android" && x == "linux") || (ok == "redox" && x == "linux") || (ok == "illumos" && x == "solaris") || (ok == "ios" && x == "darwin") {
+ 				continue
+ 			}
+ 			i := strings.Index(name, x)
+@@ -1794,6 +1796,10 @@
+ 	"android/amd64":   true,
+ 	"android/arm":     true,
+ 	"android/arm64":   true,
++	"redox/386":       true,
++	"redox/amd64":     true,
++	"redox/arm64":     true,
++	"redox/riscv64":   true,
+ 	"ios/arm64":       true,
+ 	"ios/amd64":       true,
+ 	"js/wasm":         false,
+diff -ruwN source/src/cmd/go/go_test.go source-new/src/cmd/go/go_test.go
+--- source/src/cmd/go/go_test.go	2025-07-03 04:47:15.000000000 +0700
++++ source-new/src/cmd/go/go_test.go	2025-07-20 23:14:12.602481300 +0700
+@@ -2081,7 +2081,7 @@
+ 	tg.run(args...)
+ 
+ 	switch runtime.GOOS {
+-	case "linux", "android", "freebsd":
++	case "linux", "android", "redox", "freebsd":
+ 		f, err := elf.Open(obj)
+ 		if err != nil {
+ 			t.Fatal(err)
+diff -ruwN source/src/cmd/go/internal/modindex/build.go source-new/src/cmd/go/internal/modindex/build.go
+--- source/src/cmd/go/internal/modindex/build.go	2025-07-03 04:47:15.000000000 +0700
++++ source-new/src/cmd/go/internal/modindex/build.go	2025-07-20 23:27:26.452458389 +0700
+@@ -873,6 +873,9 @@
+ 	if ctxt.GOOS == "android" && name == "linux" {
+ 		return true
+ 	}
++	if ctxt.GOOS == "redox" && name == "linux" {
++		return true
++	}
+ 	if ctxt.GOOS == "illumos" && name == "solaris" {
+ 		return true
+ 	}
+diff -ruwN source/src/cmd/go/internal/work/exec.go source-new/src/cmd/go/internal/work/exec.go
+--- source/src/cmd/go/internal/work/exec.go	2025-07-03 04:47:15.000000000 +0700
++++ source-new/src/cmd/go/internal/work/exec.go	2025-07-20 23:28:05.892457627 +0700
+@@ -3056,7 +3056,7 @@
+ 	dynobj := objdir + "_cgo_.o"
+ 
+ 	ldflags := cgoLDFLAGS
+-	if (cfg.Goarch == "arm" && cfg.Goos == "linux") || cfg.Goos == "android" {
++	if (cfg.Goarch == "arm" && cfg.Goos == "linux") || (cfg.Goarch == "arm" && cfg.Goos == "redox") || cfg.Goos == "android" {
+ 		if !slices.Contains(ldflags, "-no-pie") {
+ 			// we need to use -pie for Linux/ARM to get accurate imported sym (added in https://golang.org/cl/5989058)
+ 			// this seems to be outdated, but we don't want to break existing builds depending on this (Issue 45940)
+diff -ruwN source/src/cmd/go/internal/work/init.go source-new/src/cmd/go/internal/work/init.go
+--- source/src/cmd/go/internal/work/init.go	2025-07-03 04:47:15.000000000 +0700
++++ source-new/src/cmd/go/internal/work/init.go	2025-07-20 23:14:04.102481503 +0700
+@@ -220,7 +220,7 @@
+ 			codegenArg = "-fPIC"
+ 		} else {
+ 			switch cfg.Goos {
+-			case "linux", "android", "freebsd":
++			case "linux", "android", "redox", "freebsd":
+ 				codegenArg = "-shared"
+ 			case "windows":
+ 				// Do not add usual .exe suffix to the .dll file.
+diff -ruwN source/src/cmd/internal/objabi/head.go source-new/src/cmd/internal/objabi/head.go
+--- source/src/cmd/internal/objabi/head.go	2025-07-03 04:47:15.000000000 +0700
++++ source-new/src/cmd/internal/objabi/head.go	2025-07-20 23:13:51.872481802 +0700
+@@ -63,7 +63,7 @@
+ 		*h = Hfreebsd
+ 	case "js":
+ 		*h = Hjs
+-	case "linux", "android":
++	case "linux", "android", "redox":
+ 		*h = Hlinux
+ 	case "netbsd":
+ 		*h = Hnetbsd
+diff -ruwN source/src/cmd/vendor/golang.org/x/telemetry/internal/telemetry/dir.go source-new/src/cmd/vendor/golang.org/x/telemetry/internal/telemetry/dir.go
+--- source/src/cmd/vendor/golang.org/x/telemetry/internal/telemetry/dir.go	2025-07-03 04:47:15.000000000 +0700
++++ source-new/src/cmd/vendor/golang.org/x/telemetry/internal/telemetry/dir.go	2025-07-20 23:29:12.692455838 +0700
+@@ -155,6 +155,7 @@
+ 	runtime.GOOS == "openbsd" || // #60614
+ 	runtime.GOOS == "solaris" || // #60968 #60970
+ 	runtime.GOOS == "android" || // #60967
++	runtime.GOOS == "redox" || // plz no
+ 	runtime.GOOS == "illumos" || // #65544
+ 	// These platforms fundamentally can't be supported:
+ 	runtime.GOOS == "js" || // #60971
+diff -ruwN source/src/go/build/build.go source-new/src/go/build/build.go
+--- source/src/go/build/build.go	2025-07-03 04:47:15.000000000 +0700
++++ source-new/src/go/build/build.go	2025-07-20 22:44:22.522527140 +0700
+@@ -1971,6 +1971,9 @@
+ 	if ctxt.GOOS == "android" && name == "linux" {
+ 		return true
+ 	}
++	if ctxt.GOOS == "redox" && name == "linux" {
++		return true
++	}
+ 	if ctxt.GOOS == "illumos" && name == "solaris" {
+ 		return true
+ 	}
+diff -ruwN source/src/internal/goos/gengoos.go source-new/src/internal/goos/gengoos.go
+--- source/src/internal/goos/gengoos.go	2025-07-03 04:47:15.000000000 +0700
++++ source-new/src/internal/goos/gengoos.go	2025-07-20 22:44:22.522527140 +0700
+@@ -43,6 +43,7 @@
+ 		var tags []string
+ 		if target == "linux" {
+ 			tags = append(tags, "!android") // must explicitly exclude android for linux
++			tags = append(tags, "!redox") // must explicitly exclude redox for linux
+ 		}
+ 		if target == "solaris" {
+ 			tags = append(tags, "!illumos") // must explicitly exclude illumos for solaris
+diff -ruwN source/src/internal/goos/zgoos_aix.go source-new/src/internal/goos/zgoos_aix.go
+--- source/src/internal/goos/zgoos_aix.go	2025-07-03 04:47:15.000000000 +0700
++++ source-new/src/internal/goos/zgoos_aix.go	2025-07-20 22:44:22.532527140 +0700
+@@ -20,6 +20,7 @@
+ const IsNetbsd = 0
+ const IsOpenbsd = 0
+ const IsPlan9 = 0
++const IsRedox = 0
+ const IsSolaris = 0
+ const IsWasip1 = 0
+ const IsWindows = 0
+diff -ruwN source/src/internal/goos/zgoos_android.go source-new/src/internal/goos/zgoos_android.go
+--- source/src/internal/goos/zgoos_android.go	2025-07-03 04:47:15.000000000 +0700
++++ source-new/src/internal/goos/zgoos_android.go	2025-07-20 22:44:22.532527140 +0700
+@@ -20,6 +20,7 @@
+ const IsNetbsd = 0
+ const IsOpenbsd = 0
+ const IsPlan9 = 0
++const IsRedox = 0
+ const IsSolaris = 0
+ const IsWasip1 = 0
+ const IsWindows = 0
+diff -ruwN source/src/internal/goos/zgoos_darwin.go source-new/src/internal/goos/zgoos_darwin.go
+--- source/src/internal/goos/zgoos_darwin.go	2025-07-03 04:47:15.000000000 +0700
++++ source-new/src/internal/goos/zgoos_darwin.go	2025-07-20 22:44:22.532527140 +0700
+@@ -20,6 +20,7 @@
+ const IsNetbsd = 0
+ const IsOpenbsd = 0
+ const IsPlan9 = 0
++const IsRedox = 0
+ const IsSolaris = 0
+ const IsWasip1 = 0
+ const IsWindows = 0
+diff -ruwN source/src/internal/goos/zgoos_dragonfly.go source-new/src/internal/goos/zgoos_dragonfly.go
+--- source/src/internal/goos/zgoos_dragonfly.go	2025-07-03 04:47:15.000000000 +0700
++++ source-new/src/internal/goos/zgoos_dragonfly.go	2025-07-20 22:44:22.532527140 +0700
+@@ -20,6 +20,7 @@
+ const IsNetbsd = 0
+ const IsOpenbsd = 0
+ const IsPlan9 = 0
++const IsRedox = 0
+ const IsSolaris = 0
+ const IsWasip1 = 0
+ const IsWindows = 0
+diff -ruwN source/src/internal/goos/zgoos_freebsd.go source-new/src/internal/goos/zgoos_freebsd.go
+--- source/src/internal/goos/zgoos_freebsd.go	2025-07-03 04:47:15.000000000 +0700
++++ source-new/src/internal/goos/zgoos_freebsd.go	2025-07-20 22:44:22.532527140 +0700
+@@ -20,6 +20,7 @@
+ const IsNetbsd = 0
+ const IsOpenbsd = 0
+ const IsPlan9 = 0
++const IsRedox = 0
+ const IsSolaris = 0
+ const IsWasip1 = 0
+ const IsWindows = 0
+diff -ruwN source/src/internal/goos/zgoos_hurd.go source-new/src/internal/goos/zgoos_hurd.go
+--- source/src/internal/goos/zgoos_hurd.go	2025-07-03 04:47:15.000000000 +0700
++++ source-new/src/internal/goos/zgoos_hurd.go	2025-07-20 22:44:22.532527140 +0700
+@@ -20,6 +20,7 @@
+ const IsNetbsd = 0
+ const IsOpenbsd = 0
+ const IsPlan9 = 0
++const IsRedox = 0
+ const IsSolaris = 0
+ const IsWasip1 = 0
+ const IsWindows = 0
+diff -ruwN source/src/internal/goos/zgoos_illumos.go source-new/src/internal/goos/zgoos_illumos.go
+--- source/src/internal/goos/zgoos_illumos.go	2025-07-03 04:47:15.000000000 +0700
++++ source-new/src/internal/goos/zgoos_illumos.go	2025-07-20 22:44:22.532527140 +0700
+@@ -20,6 +20,7 @@
+ const IsNetbsd = 0
+ const IsOpenbsd = 0
+ const IsPlan9 = 0
++const IsRedox = 0
+ const IsSolaris = 0
+ const IsWasip1 = 0
+ const IsWindows = 0
+diff -ruwN source/src/internal/goos/zgoos_ios.go source-new/src/internal/goos/zgoos_ios.go
+--- source/src/internal/goos/zgoos_ios.go	2025-07-03 04:47:15.000000000 +0700
++++ source-new/src/internal/goos/zgoos_ios.go	2025-07-20 22:44:22.532527140 +0700
+@@ -20,6 +20,7 @@
+ const IsNetbsd = 0
+ const IsOpenbsd = 0
+ const IsPlan9 = 0
++const IsRedox = 0
+ const IsSolaris = 0
+ const IsWasip1 = 0
+ const IsWindows = 0
+diff -ruwN source/src/internal/goos/zgoos_js.go source-new/src/internal/goos/zgoos_js.go
+--- source/src/internal/goos/zgoos_js.go	2025-07-03 04:47:15.000000000 +0700
++++ source-new/src/internal/goos/zgoos_js.go	2025-07-20 22:44:22.532527140 +0700
+@@ -20,6 +20,7 @@
+ const IsNetbsd = 0
+ const IsOpenbsd = 0
+ const IsPlan9 = 0
++const IsRedox = 0
+ const IsSolaris = 0
+ const IsWasip1 = 0
+ const IsWindows = 0
+diff -ruwN source/src/internal/goos/zgoos_linux.go source-new/src/internal/goos/zgoos_linux.go
+--- source/src/internal/goos/zgoos_linux.go	2025-07-03 04:47:15.000000000 +0700
++++ source-new/src/internal/goos/zgoos_linux.go	2025-07-20 22:44:22.532527140 +0700
+@@ -1,6 +1,6 @@
+ // Code generated by gengoos.go using 'go generate'. DO NOT EDIT.
+ 
+-//go:build !android && linux
++//go:build !android && !redox && linux
+ 
+ package goos
+ 
+@@ -20,6 +20,7 @@
+ const IsNetbsd = 0
+ const IsOpenbsd = 0
+ const IsPlan9 = 0
++const IsRedox = 0
+ const IsSolaris = 0
+ const IsWasip1 = 0
+ const IsWindows = 0
+diff -ruwN source/src/internal/goos/zgoos_netbsd.go source-new/src/internal/goos/zgoos_netbsd.go
+--- source/src/internal/goos/zgoos_netbsd.go	2025-07-03 04:47:15.000000000 +0700
++++ source-new/src/internal/goos/zgoos_netbsd.go	2025-07-20 22:44:22.532527140 +0700
+@@ -20,6 +20,7 @@
+ const IsNetbsd = 1
+ const IsOpenbsd = 0
+ const IsPlan9 = 0
++const IsRedox = 0
+ const IsSolaris = 0
+ const IsWasip1 = 0
+ const IsWindows = 0
+diff -ruwN source/src/internal/goos/zgoos_openbsd.go source-new/src/internal/goos/zgoos_openbsd.go
+--- source/src/internal/goos/zgoos_openbsd.go	2025-07-03 04:47:15.000000000 +0700
++++ source-new/src/internal/goos/zgoos_openbsd.go	2025-07-20 22:44:22.532527140 +0700
+@@ -20,6 +20,7 @@
+ const IsNetbsd = 0
+ const IsOpenbsd = 1
+ const IsPlan9 = 0
++const IsRedox = 0
+ const IsSolaris = 0
+ const IsWasip1 = 0
+ const IsWindows = 0
+diff -ruwN source/src/internal/goos/zgoos_plan9.go source-new/src/internal/goos/zgoos_plan9.go
+--- source/src/internal/goos/zgoos_plan9.go	2025-07-03 04:47:15.000000000 +0700
++++ source-new/src/internal/goos/zgoos_plan9.go	2025-07-20 22:44:22.532527140 +0700
+@@ -20,6 +20,7 @@
+ const IsNetbsd = 0
+ const IsOpenbsd = 0
+ const IsPlan9 = 1
++const IsRedox = 0
+ const IsSolaris = 0
+ const IsWasip1 = 0
+ const IsWindows = 0
+diff -ruwN source/src/internal/goos/zgoos_redox.go source-new/src/internal/goos/zgoos_redox.go
+--- source/src/internal/goos/zgoos_redox.go	1970-01-01 07:00:00.000000000 +0700
++++ source-new/src/internal/goos/zgoos_redox.go	2025-07-20 22:44:22.532527140 +0700
+@@ -0,0 +1,27 @@
++// Code generated by gengoos.go using 'go generate'. DO NOT EDIT.
++
++//go:build redox
++
++package goos
++
++const GOOS = `redox`
++
++const IsAix = 0
++const IsAndroid = 0
++const IsDarwin = 0
++const IsDragonfly = 0
++const IsFreebsd = 0
++const IsHurd = 0
++const IsIllumos = 0
++const IsIos = 0
++const IsJs = 0
++const IsLinux = 0
++const IsNacl = 0
++const IsNetbsd = 0
++const IsOpenbsd = 0
++const IsPlan9 = 0
++const IsRedox = 1
++const IsSolaris = 0
++const IsWasip1 = 0
++const IsWindows = 0
++const IsZos = 0
+diff -ruwN source/src/internal/goos/zgoos_solaris.go source-new/src/internal/goos/zgoos_solaris.go
+--- source/src/internal/goos/zgoos_solaris.go	2025-07-03 04:47:15.000000000 +0700
++++ source-new/src/internal/goos/zgoos_solaris.go	2025-07-20 22:44:22.532527140 +0700
+@@ -20,6 +20,7 @@
+ const IsNetbsd = 0
+ const IsOpenbsd = 0
+ const IsPlan9 = 0
++const IsRedox = 0
+ const IsSolaris = 1
+ const IsWasip1 = 0
+ const IsWindows = 0
+diff -ruwN source/src/internal/goos/zgoos_wasip1.go source-new/src/internal/goos/zgoos_wasip1.go
+--- source/src/internal/goos/zgoos_wasip1.go	2025-07-03 04:47:15.000000000 +0700
++++ source-new/src/internal/goos/zgoos_wasip1.go	2025-07-20 22:44:22.532527140 +0700
+@@ -20,6 +20,7 @@
+ const IsNetbsd = 0
+ const IsOpenbsd = 0
+ const IsPlan9 = 0
++const IsRedox = 0
+ const IsSolaris = 0
+ const IsWasip1 = 1
+ const IsWindows = 0
+diff -ruwN source/src/internal/goos/zgoos_windows.go source-new/src/internal/goos/zgoos_windows.go
+--- source/src/internal/goos/zgoos_windows.go	2025-07-03 04:47:15.000000000 +0700
++++ source-new/src/internal/goos/zgoos_windows.go	2025-07-20 22:44:22.532527140 +0700
+@@ -20,6 +20,7 @@
+ const IsNetbsd = 0
+ const IsOpenbsd = 0
+ const IsPlan9 = 0
++const IsRedox = 0
+ const IsSolaris = 0
+ const IsWasip1 = 0
+ const IsWindows = 1
+diff -ruwN source/src/internal/goos/zgoos_zos.go source-new/src/internal/goos/zgoos_zos.go
+--- source/src/internal/goos/zgoos_zos.go	2025-07-03 04:47:15.000000000 +0700
++++ source-new/src/internal/goos/zgoos_zos.go	2025-07-20 22:44:22.532527140 +0700
+@@ -20,6 +20,7 @@
+ const IsNetbsd = 0
+ const IsOpenbsd = 0
+ const IsPlan9 = 0
++const IsRedox = 0
+ const IsSolaris = 0
+ const IsWasip1 = 0
+ const IsWindows = 0
+diff -ruwN source/src/internal/platform/supported.go source-new/src/internal/platform/supported.go
+--- source/src/internal/platform/supported.go	2025-07-03 04:47:15.000000000 +0700
++++ source-new/src/internal/platform/supported.go	2025-07-20 22:44:22.532527140 +0700
+@@ -209,7 +209,7 @@
+ 	case "plugin":
+ 		switch platform {
+ 		case "linux/amd64", "linux/arm", "linux/arm64", "linux/386", "linux/loong64", "linux/s390x", "linux/ppc64le",
+-			"android/amd64", "android/386",
++			"android/amd64", "android/386", "redox/amd64", "redox/386",
+ 			"darwin/amd64", "darwin/arm64",
+ 			"freebsd/amd64":
+ 			return true
+@@ -237,7 +237,7 @@
+ // so force the caller to pass that in to centralize that choice.
+ func DefaultPIE(goos, goarch string, isRace bool) bool {
+ 	switch goos {
+-	case "android", "ios":
++	case "android", "ios", "redox":
+ 		return true
+ 	case "windows":
+ 		if isRace {
+diff -ruwN source/src/internal/platform/zosarch.go source-new/src/internal/platform/zosarch.go
+--- source/src/internal/platform/zosarch.go	2025-07-03 04:47:15.000000000 +0700
++++ source-new/src/internal/platform/zosarch.go	2025-07-20 22:44:22.532527140 +0700
+@@ -13,6 +13,9 @@
+ 	{"android", "amd64"},
+ 	{"android", "arm"},
+ 	{"android", "arm64"},
++	{"redox", "386"},
++	{"redox", "amd64"},
++	{"redox", "arm64"},
+ 	{"darwin", "amd64"},
+ 	{"darwin", "arm64"},
+ 	{"dragonfly", "amd64"},
+@@ -67,6 +70,9 @@
+ 	{"android", "amd64"}:   {CgoSupported: true},
+ 	{"android", "arm"}:     {CgoSupported: true},
+ 	{"android", "arm64"}:   {CgoSupported: true},
++	{"redox", "386"}:       {CgoSupported: true},
++	{"redox", "amd64"}:     {CgoSupported: true},
++	{"redox", "arm64"}:     {CgoSupported: true},
+ 	{"darwin", "amd64"}:    {CgoSupported: true, FirstClass: true},
+ 	{"darwin", "arm64"}:    {CgoSupported: true, FirstClass: true},
+ 	{"dragonfly", "amd64"}: {CgoSupported: true},
+diff -ruwN source/src/internal/poll/sendfile_unix.go source-new/src/internal/poll/sendfile_unix.go
+--- source/src/internal/poll/sendfile_unix.go	2025-07-03 04:47:15.000000000 +0700
++++ source-new/src/internal/poll/sendfile_unix.go	2025-07-20 23:20:57.622471583 +0700
+@@ -28,7 +28,7 @@
+ // has not modified the source or destination,
+ // and the caller should perform the copy using a fallback implementation.
+ func SendFile(dstFD *FD, src int, size int64) (n int64, err error, handled bool) {
+-	if goos := runtime.GOOS; goos == "linux" || goos == "android" {
++	if goos := runtime.GOOS; goos == "linux" || goos == "android" || goos == "redox" {
+ 		// Linux's sendfile doesn't require any setup:
+ 		// It sends from the current position of the source file and
+ 		// updates the position of the source after sending.
+diff -ruwN source/src/internal/syslist/syslist.go source-new/src/internal/syslist/syslist.go
+--- source/src/internal/syslist/syslist.go	2025-07-03 04:47:15.000000000 +0700
++++ source-new/src/internal/syslist/syslist.go	2025-07-20 22:44:22.532527140 +0700
+@@ -29,6 +29,7 @@
+ 	"netbsd":    true,
+ 	"openbsd":   true,
+ 	"plan9":     true,
++	"redox":     true,
+ 	"solaris":   true,
+ 	"wasip1":    true,
+ 	"windows":   true,
+@@ -50,6 +51,7 @@
+ 	"linux":     true,
+ 	"netbsd":    true,
+ 	"openbsd":   true,
++	"redox":     true,
+ 	"solaris":   true,
+ }
+ 
+diff -ruwN source/src/runtime/cgo/cgo.go source-new/src/runtime/cgo/cgo.go
+--- source/src/runtime/cgo/cgo.go	2025-07-03 04:47:15.000000000 +0700
++++ source-new/src/runtime/cgo/cgo.go	2025-07-20 22:44:22.532527140 +0700
+@@ -16,7 +16,8 @@
+ #cgo dragonfly LDFLAGS: -lpthread
+ #cgo freebsd LDFLAGS: -lpthread
+ #cgo android LDFLAGS: -llog
+-#cgo !android,linux LDFLAGS: -lpthread
++#cgo redox LDFLAGS: -llog
++#cgo !android,!redox,linux LDFLAGS: -lpthread
+ #cgo netbsd LDFLAGS: -lpthread
+ #cgo openbsd LDFLAGS: -lpthread
+ #cgo aix LDFLAGS: -Wl,-berok
+diff -ruwN source/src/runtime/pprof/pprof_rusage.go source-new/src/runtime/pprof/pprof_rusage.go
+--- source/src/runtime/pprof/pprof_rusage.go	2025-07-03 04:47:15.000000000 +0700
++++ source-new/src/runtime/pprof/pprof_rusage.go	2025-07-20 22:49:29.702520564 +0700
+@@ -17,7 +17,7 @@
+ func addMaxRSS(w io.Writer) {
+ 	var rssToBytes uintptr
+ 	switch runtime.GOOS {
+-	case "aix", "android", "dragonfly", "freebsd", "linux", "netbsd", "openbsd":
++	case "aix", "android", "redox", "dragonfly", "freebsd", "linux", "netbsd", "openbsd":
+ 		rssToBytes = 1024
+ 	case "darwin", "ios":
+ 		rssToBytes = 1
+diff -ruwN source/src/runtime/pprof/proto_test.go source-new/src/runtime/pprof/proto_test.go
+--- source/src/runtime/pprof/proto_test.go	2025-07-03 04:47:15.000000000 +0700
++++ source-new/src/runtime/pprof/proto_test.go	2025-07-20 22:49:40.452520165 +0700
+@@ -83,7 +83,7 @@
+ // to use in test profiles.
+ func testPCs(t *testing.T) (addr1, addr2 uint64, map1, map2 *profile.Mapping) {
+ 	switch runtime.GOOS {
+-	case "linux", "android", "netbsd":
++	case "linux", "android", "redox", "netbsd":
+ 		// Figure out two addresses from /proc/self/maps.
+ 		mmap, err := os.ReadFile("/proc/self/maps")
+ 		if err != nil {
+diff -ruwN source/src/runtime/race/internal/amd64v1/doc.go source-new/src/runtime/race/internal/amd64v1/doc.go
+--- source/src/runtime/race/internal/amd64v1/doc.go	2025-07-03 04:47:15.000000000 +0700
++++ source-new/src/runtime/race/internal/amd64v1/doc.go	2025-07-20 22:55:01.602514355 +0700
+@@ -5,6 +5,6 @@
+ // This package holds the race detector .syso for
+ // amd64 architectures with GOAMD64<v3.
+ 
+-//go:build amd64 && ((linux && !amd64.v3) || darwin || freebsd || netbsd || openbsd || windows)
++//go:build amd64 && ((linux && !amd64.v3) || redox || darwin || freebsd || netbsd || openbsd || windows)
+ 
+ package amd64v1
+diff -ruwN source/src/runtime/signal_unix.go source-new/src/runtime/signal_unix.go
+--- source/src/runtime/signal_unix.go	2025-07-03 04:47:15.000000000 +0700
++++ source-new/src/runtime/signal_unix.go	2025-07-20 22:48:39.392522349 +0700
+@@ -162,7 +162,7 @@
+ 		}
+ 	}
+ 
+-	if (GOOS == "linux" || GOOS == "android") && !iscgo && sig == sigPerThreadSyscall {
++	if (GOOS == "linux" || GOOS == "android" || GOOS == "linux") && !iscgo && sig == sigPerThreadSyscall {
+ 		// sigPerThreadSyscall is the same signal used by glibc for
+ 		// per-thread syscalls on Linux. We use it for the same purpose
+ 		// in non-cgo binaries.
+@@ -673,7 +673,7 @@
+ 		return
+ 	}
+ 
+-	if (GOOS == "linux" || GOOS == "android") && sig == sigPerThreadSyscall {
++	if (GOOS == "linux" || GOOS == "android" || GOOS == "redox") && sig == sigPerThreadSyscall {
+ 		// sigPerThreadSyscall is the same signal used by glibc for
+ 		// per-thread syscalls on Linux. We use it for the same purpose
+ 		// in non-cgo binaries. Since this signal is not _SigNotify,
