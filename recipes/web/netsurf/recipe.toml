@@ -1,6 +1,6 @@
 [source]
-tar = "https://download.netsurf-browser.org/netsurf/releases/source-full/netsurf-all-3.10.tar.gz"
-blake3 = "d0f3b4dabf536a39059b156d2ec4633c6f7b71208466e09a3c1ca2a319a44b61"
+tar = "https://download.netsurf-browser.org/netsurf/releases/source-full/netsurf-all-3.11.tar.gz"
+blake3 = "cd406668a9ed5712efac1a8685125b83626690b73bbc6cb5de82ef00e3f65087"
 patches = [
     "./01_redox.patch"
 ]

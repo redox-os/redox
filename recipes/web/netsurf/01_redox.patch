@@ -1,6 +1,42 @@
+diff -ruwN source/Makefile source-new/Makefile
+--- source/Makefile	2023-12-28 07:57:05.071795200 +0700
++++ source-new/Makefile	2025-07-20 11:58:36.652747547 +0700
+@@ -110,7 +110,7 @@
+ 
+ # prefixed install macro for each host sub target
+ define do_build_prefix_install
+-	$(MAKE) install --directory=$1 HOST=$(BUILD) PREFIX=$(TMP_PREFIX) Q=$(Q) DESTDIR=
++	$(MAKE) install --directory=$1 HOST=$(BUILD) PREFIX=$(TMP_PREFIX) Q=$(Q) DESTDIR= CC=cc LDFLAGS=
+ 
+ endef
+ 
+diff -ruwN source/buildsystem/makefiles/Makefile.tools source-new/buildsystem/makefiles/Makefile.tools
+--- source/buildsystem/makefiles/Makefile.tools	2023-12-28 07:57:21.479359900 +0700
++++ source-new/buildsystem/makefiles/Makefile.tools	2025-07-20 11:58:36.662747547 +0700
+@@ -135,7 +135,7 @@
+   endif
+ 
+   # Search the path for the compiler
+-  toolpath_ := $(shell /bin/which $(CC__))
++  toolpath_ := $(shell which $(CC__))
+   ifeq ($(toolpath_),)
+     toolpath_ := /opt/netsurf/$(HOST)/cross/bin/
+     CC__  := $(toolpath_)$(HOST)-gcc
+diff -ruwN source/buildsystem/makefiles/Makefile.top source-new/buildsystem/makefiles/Makefile.top
+--- source/buildsystem/makefiles/Makefile.top	2023-12-28 07:57:21.479359900 +0700
++++ source-new/buildsystem/makefiles/Makefile.top	2025-07-20 11:58:36.662747547 +0700
+@@ -462,7 +462,7 @@
+ 
+   define build_c
+     ifeq ($$(findstring $$(BUILDDIR)/$2,$$(BUILDFILES)),)
+-      $$(BUILDDIR)/$2: $$(BUILDDIR)/stamp $1
++      $$(BUILDDIR)/$2: $$(BUILDDIR)/stamp $1 | $$(PRE_TARGETS)
+ 	$$(VQ)$$(ECHO) $$(ECHOFLAGS) " COMPILE: $1"
+ 	$$(Q)$$(CC) -MMD -MP $$($3) -o $$@ -c $1
+ 
 diff -ruwN source/libnsfb/Makefile source-new/libnsfb/Makefile
---- source/libnsfb/Makefile	2020-05-24 15:35:21.000000000 -0600
-+++ source-new/libnsfb/Makefile	2023-03-03 19:29:10.674915797 -0700
+--- source/libnsfb/Makefile	2023-12-28 07:57:22.311338000 +0700
++++ source-new/libnsfb/Makefile	2025-07-20 11:58:36.652747547 +0700
 @@ -43,10 +43,10 @@
  NSFB_XCB_PKG_NAMES := xcb xcb-icccm xcb-image xcb-keysyms xcb-atom
  
@@ -16,8 +52,8 @@ diff -ruwN source/libnsfb/Makefile source-new/libnsfb/Makefile
  # Flags and setup for each support library
  ifeq ($(NSFB_SDL_AVAILABLE),yes)
 diff -ruwN source/libnsfb/src/plot.h source-new/libnsfb/src/plot.h
---- source/libnsfb/src/plot.h	2020-05-24 15:35:21.000000000 -0600
-+++ source-new/libnsfb/src/plot.h	2023-03-03 19:29:10.674915797 -0700
+--- source/libnsfb/src/plot.h	2023-12-28 07:57:22.315338000 +0700
++++ source-new/libnsfb/src/plot.h	2025-07-20 11:58:36.652747547 +0700
 @@ -46,7 +46,7 @@
          #error "Endian determination failed"
      #endif
@@ -27,21 +63,9 @@ diff -ruwN source/libnsfb/src/plot.h source-new/libnsfb/src/plot.h
      #if defined(__BYTE_ORDER__)
          #if __BYTE_ORDER__ == __ORDER_BIG_ENDIAN__
              #define NSFB_BE_BYTE_ORDER
-diff -ruwN source/Makefile source-new/Makefile
---- source/Makefile	2020-05-24 15:34:42.000000000 -0600
-+++ source-new/Makefile	2023-03-03 19:34:34.411016536 -0700
-@@ -110,7 +110,7 @@
- 
- # prefixed install macro for each host sub target
- define do_build_prefix_install
--	$(MAKE) install --directory=$1 HOST=$(BUILD) PREFIX=$(TMP_PREFIX) Q=$(Q) DESTDIR=
-+	$(MAKE) install --directory=$1 HOST=$(BUILD) PREFIX=$(TMP_PREFIX) Q=$(Q) DESTDIR= CC=cc LDFLAGS=
- 
- endef
- 
 diff -ruwN source/netsurf/Makefile.config source-new/netsurf/Makefile.config
---- source/netsurf/Makefile.config	1969-12-31 17:00:00.000000000 -0700
-+++ source-new/netsurf/Makefile.config	2023-03-03 19:29:10.674915797 -0700
+--- source/netsurf/Makefile.config	1970-01-01 07:00:00.000000000 +0700
++++ source-new/netsurf/Makefile.config	2025-07-20 11:58:36.652747547 +0700
 @@ -0,0 +1,28 @@
 +override NETSURF_HOMEPAGE := "https://www.redox-os.org/"
 +override NETSURF_FB_FRONTEND := sdl
@@ -71,9 +95,21 @@ diff -ruwN source/netsurf/Makefile.config source-new/netsurf/Makefile.config
 +override NETSURF_FB_FONT_MONOSPACE_BOLD := Mono/Fira/Bold.ttf
 +override NETSURF_FB_FONT_CURSIVE := Sans/Fira/Regular.ttf
 +override NETSURF_FB_FONT_FANTASY := Sans/Fira/Regular.ttf
+diff -ruwN source/netsurf/frontends/framebuffer/Makefile source-new/netsurf/frontends/framebuffer/Makefile
+--- source/netsurf/frontends/framebuffer/Makefile	2023-12-28 07:57:22.987320000 +0700
++++ source-new/netsurf/frontends/framebuffer/Makefile	2025-07-20 11:58:36.662747547 +0700
+@@ -200,7 +200,7 @@
+ install-framebuffer:
+ 	$(VQ)echo " INSTALL: $(DESTDIR)/$(PREFIX)"
+ 	$(Q)$(INSTALL) -d $(DESTDIR)/$(NETSURF_FRAMEBUFFER_BIN)
+-	$(Q)$(INSTALL) -T $(EXETARGET) $(DESTDIR)/$(NETSURF_FRAMEBUFFER_BIN)/netsurf-fb
++	$(Q)$(INSTALL) $(EXETARGET) $(DESTDIR)/$(NETSURF_FRAMEBUFFER_BIN)/netsurf-fb
+ 	$(Q)$(INSTALL) -d $(DESTDIR)/$(NETSURF_FRAMEBUFFER_RESOURCES)
+ 	$(Q)for F in $(NETSURF_FRAMEBUFFER_RESOURCE_LIST); do $(INSTALL) -m 644 $(FRONTEND_RESOURCES_DIR)/$$F $(DESTDIR)/$(NETSURF_FRAMEBUFFER_RESOURCES); done
+ 	$(Q)$(INSTALL) -m 644 -T $(MESSAGES_TARGET)/en/Messages $(DESTDIR)/$(NETSURF_FRAMEBUFFER_RESOURCES)/Messages
 diff -ruwN source/netsurf/utils/config.h source-new/netsurf/utils/config.h
---- source/netsurf/utils/config.h	2020-05-24 15:35:23.000000000 -0600
-+++ source-new/netsurf/utils/config.h	2023-03-03 19:29:10.674915797 -0700
+--- source/netsurf/utils/config.h	2023-12-28 07:57:23.095317100 +0700
++++ source-new/netsurf/utils/config.h	2025-07-20 12:12:51.782724549 +0700
 @@ -63,7 +63,8 @@
       defined(__BEOS__) ||     \
       defined(__amigaos4__) || \
@@ -84,39 +120,21 @@ diff -ruwN source/netsurf/utils/config.h source-new/netsurf/utils/config.h
  #undef HAVE_STRPTIME
  #undef HAVE_STRFTIME
  #else
- diff -ruwN source/buildsystem/makefiles/Makefile.tools source-new/buildsystem/makefiles/Makefile.tools
---- source/buildsystem/makefiles/Makefile.tools    2023-04-15 08:48:37.000000000 +0100
-+++ source-new/buildsystem/makefiles/Makefile.tools    2023-04-15 08:48:37.000000000 +0100
-@@ -135,7 +135,7 @@
-   endif
-
-   # Search the path for the compiler
--  toolpath_ := $(shell /bin/which $(CC__))
-+  toolpath_ := $(shell which $(CC__))
-   ifeq ($(toolpath_),)
-     toolpath_ := /opt/netsurf/$(HOST)/cross/bin/
-     CC__  := $(toolpath_)$(HOST)-gcc
-diff -ruwN source/netsurf/frontends/framebuffer/Makefile source-new/netsurf/frontends/framebuffer/Makefile 
---- source/netsurf/frontends/framebuffer/Makefile   2020-05-24 22:35:23.000000000 +0100
-+++ source-new/netsurf/frontends/framebuffer/Makefile   2023-04-15 09:09:18.000000000 +0100
-@@ -222,7 +222,7 @@
- install-framebuffer:
- 	$(VQ)echo " INSTALL: $(DESTDIR)/$(PREFIX)"
- 	$(Q)$(INSTALL) -d $(DESTDIR)/$(NETSURF_FRAMEBUFFER_BIN)
--	$(Q)$(INSTALL) -T $(EXETARGET) $(DESTDIR)/$(NETSURF_FRAMEBUFFER_BIN)/netsurf-fb
-+	$(Q)$(INSTALL) $(EXETARGET) $(DESTDIR)/$(NETSURF_FRAMEBUFFER_BIN)/netsurf-fb
- 	$(Q)$(INSTALL) -d $(DESTDIR)/$(NETSURF_FRAMEBUFFER_RESOURCES)
- 	$(Q)for F in $(NETSURF_FRAMEBUFFER_RESOURCE_LIST); do $(INSTALL) -m 644 $(FRONTEND_RESOURCES_DIR)/$$F $(DESTDIR)/$(NETSURF_FRAMEBUFFER_RESOURCES); done
- 	$(Q)$(RM) $(DESTDIR)/$(NETSURF_FRAMEBUFFER_RESOURCES)/Messages
-diff -ruwN source/buildsystem/makefiles/Makefile.top source-new/buildsystem/makefiles/Makefile.top
---- source/buildsystem/makefiles/Makefile.top	2020-05-24 22:35:19.000000000 +0100
-+++ source-new/buildsystem/makefiles/Makefile.top	2023-04-18 18:50:10.000000000 +0100
-@@ -444,7 +444,7 @@
-
-   define build_c
-     ifeq ($$(findstring $$(BUILDDIR)/$2,$$(BUILDFILES)),)
--      $$(BUILDDIR)/$2: $$(BUILDDIR)/stamp $1
-+      $$(BUILDDIR)/$2: $$(BUILDDIR)/stamp $1 | $$(PRE_TARGETS)
- 	$$(VQ)$$(ECHO) $$(ECHOFLAGS) " COMPILE: $1"
- 	$$(Q)$$(CC) -MMD -MP $$($3) -o $$@ -c $1
-
+@@ -136,7 +137,7 @@
+ #endif
+ 
+ #define HAVE_MMAP
+-#if (defined(_WIN32) || defined(__riscos__) || defined(__HAIKU__) || defined(__BEOS__) || defined(__amigaos4__) || defined(__AMIGA__) || defined(__MINT__))
++#if (defined(_WIN32) || defined(__riscos__) || defined(__HAIKU__) || defined(__BEOS__) || defined(__amigaos4__) || defined(__AMIGA__) || defined(__MINT__) || defined(__redox__))
+ #undef HAVE_MMAP
+ #endif
+ 
+@@ -149,7 +150,7 @@
+ #define HAVE_DIRFD
+ #define HAVE_UNLINKAT
+ #define HAVE_FSTATAT
+-#if (defined(_WIN32) || defined(__riscos__) || defined(__HAIKU__) || defined(__BEOS__) || defined(__amigaos4__) || defined(__AMIGA__) || defined(__MINT__))
++#if (defined(_WIN32) || defined(__riscos__) || defined(__HAIKU__) || defined(__BEOS__) || defined(__amigaos4__) || defined(__AMIGA__) || defined(__MINT__) || defined(__redox__))
+ #undef HAVE_DIRFD
+ #undef HAVE_UNLINKAT
+ #undef HAVE_FSTATAT
