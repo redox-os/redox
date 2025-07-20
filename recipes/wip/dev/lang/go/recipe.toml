@@ -1,6 +1,49 @@
-#TODO missing script for building, see https://go.dev/doc/install/source
-#TODO use the Go frontend from GCC or build the official compiler?
+#TODO: Relibc linking errors
 [source]
-tar = "https://go.dev/dl/go1.21.5.src.tar.gz"
+tar = "https://go.dev/dl/go1.24.5.src.tar.gz"
+patches = [
+   "01_redox.patch"
+]
+
 [build]
 template = "custom"
+script = """
+export PATH=$HOME/go/bin:$PATH
+
+rm -rf $HOME/.cache/go-build
+export GOPATH=${COOKBOOK_BUILD}/gopath
+if ! command -v go &> /dev/null; then 
+   GO_TARBALL=go1.24.5.linux-$( [ "$(uname -m)" = "aarch64" ] && echo "arm64" || echo "amd64" ).tar.gz
+   GO_DOWNLOAD_URL="https://dl.google.com/go/${GO_TARBALL}"
+   echo "Installing Go..."
+   wget -q --show-progress "${GO_DOWNLOAD_URL}"
+   tar -C "$HOME" -xzf "${GO_TARBALL}"
+fi
+
+# Go does not support out-of-tree builds :(
+rsync -a --delete "${COOKBOOK_SOURCE}/" ./
+
+export GOOS=redox
+case "${TARGET}" in
+    x86-unknown-redox)
+        export GOARCH=386
+        ;;
+    x86_64-unknown-redox)
+        export GOARCH=amd64
+        ;;
+    aarch64-unknown-redox)
+        export GOARCH=arm64
+        ;;
+esac
+
+export GOROOT_FINAL=${COOKBOOK_STAGE}
+export CGO_ENABLED=1
+export CC_FOR_TARGET="${CC}"
+export CXX_FOR_TARGET="${CXX}"
+# Don't poison the runtime tools (host -> host)
+unset AR AS CC CXX LD LDFLAGS NM OBJCOPY OBJDUMP RANLIB READELF STRIP
+cd ./src
+bash ./make.bash -v
+bash run.bash --no-rebuild
+"$GOTOOLDIR/dist" banner  # print build info
+"""
