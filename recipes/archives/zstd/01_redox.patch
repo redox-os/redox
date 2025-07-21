@@ -1,0 +1,15 @@
+diff -ruwN source/programs/platform.h source-new/programs/platform.h
+--- source/programs/platform.h	2025-02-19 07:04:24.000000000 +0700
++++ source-new/programs/platform.h	2025-07-21 22:52:07.716447723 +0700
+@@ -109,6 +109,11 @@
+ #endif   /* PLATFORM_POSIX_VERSION */
+ 
+ 
++#if defined(__redox__)
++/* TODO: AT_FDCWD && utimensat must be defined to conform _POSIX_VERSION */
++#   define PLATFORM_POSIX_VERSION 1
++#endif
++
+ #if PLATFORM_POSIX_VERSION > 1
+    /* glibc < 2.26 may not expose struct timespec def without this.
+     * See issue #1920. */
