@@ -530,3 +530,16 @@ diff -ruwN source/src/runtime/signal_unix.go source-new/src/runtime/signal_unix.
  		// sigPerThreadSyscall is the same signal used by glibc for
  		// per-thread syscalls on Linux. We use it for the same purpose
  		// in non-cgo binaries. Since this signal is not _SigNotify,
+diff -ruwN source/src/os/user/cgo_lookup_unix.go source-new/src/os/user/cgo_lookup_unix.go
+--- source/src/os/user/cgo_lookup_unix.go	2025-07-03 04:47:15.000000000 +0700
++++ source-new/src/os/user/cgo_lookup_unix.go	2025-07-21 07:26:57.799950678 +0700
+@@ -194,7 +194,7 @@
+ // Because we can't use cgo in tests:
+ func structPasswdForNegativeTest() _C_struct_passwd {
+ 	sp := _C_struct_passwd{}
+-	*_C_pw_uidp(&sp) = 1<<32 - 2
+-	*_C_pw_gidp(&sp) = 1<<32 - 3
++	*_C_pw_uidp(&sp) = 1<<31 - 2
++	*_C_pw_gidp(&sp) = 1<<31 - 3
+ 	return sp
+ }
