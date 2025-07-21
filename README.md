@@ -16,10 +16,6 @@ from the [redox](https://gitlab.redox-os.org/redox-os/redox) repository.
 - [Recipe Categories](#recipe-categories)
 - [Search Recipes](#search-recipes)
 - [Package Policy](#package-policy)
-    - [Cross-Compilation](#cross-compilation)
-    - [ABI stability](#abi-stability)
-    - [Checksum](#checksum)
-    - [License](#license)
 - [Testing Area](#testing-area)
     - [Suggestions for TODOs](#suggestions-for-todos)
 - [Repository Layout](#repository-layout)
@@ -59,6 +55,10 @@ Click in the button named "Find file" on the top of this repository to search fo
 ### Package Policy
 
 Before sending your recipe to upstream (to become a public package), you must follow these rules:
+
+#### Naming
+
+- The recipe name can't have dots, backslashes, and NULs
 
 #### Cross-Compilation
 
