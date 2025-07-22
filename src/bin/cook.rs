@@ -208,8 +208,13 @@ function DYNAMIC_INIT {
 
   # TODO: check paths for spaces
   export LDFLAGS="-L${COOKBOOK_SYSROOT}/lib"
+  export LDFLAGS="-Wl,-rpath-link,${COOKBOOK_SYSROOT}/lib $LDFLAGS"
   export RUSTFLAGS="-C target-feature=-crt-static"
   export COOKBOOK_DYNAMIC=1
+}
+
+function GNU_CONFIG_GET {
+  wget -O "$1" "https://gitlab.redox-os.org/redox-os/gnu-config/-/raw/master/config.sub?inline=false"
 }
 "#;
 
