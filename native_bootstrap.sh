@@ -16,6 +16,71 @@ banner()
     echo "|------------------------------------------|"
 }
 
+###############################################################################
+# This function takes care of installing all dependencies for building Redox on
+# Redox
+# @params:	$1 the emulator to install
+# 		$2 install non-interactively, boolean
+#		$3 the package manager to use
+###############################################################################
+redox()
+{
+    noninteractive=$2
+    package_manager=$3
+    echo "Detected Redox OS"
+    echo "Updating system..."
+    sudo $package_manager update
+
+    if [ $package_manager == "pkg" ]; then
+        if [ "$noninteractive" = true ]; then
+            install_command+="pkg install"
+        else
+            install_command="pkg install"
+        fi
+    else
+        install_command="$package_manager install"
+    fi
+
+    echo "Installing required packages..."
+    pkgs="\
+    rust \
+    cargo \
+    gcc \
+    gnu-make \
+    qemu \
+    bison \
+    cmake \
+    wget \
+    file \
+    flex \
+    gperf \
+    expat \
+    libgmp \
+    libpng \
+    libjpeg \
+    sdl \
+    sdl2-ttf \
+    html-parser-perl \
+    libtool \
+    m4 \
+    nasm \
+    patch \
+    automake \
+    autoconf \
+    scons \
+    pkg-config \
+    po4a \
+    texinfo \
+    ninja-build \
+    meson \
+    python310 \
+    python3-mako \
+    xdg-utils \
+    vim \
+    perl \
+    doxygen"
+}
+
 ############################################################################
 # This function takes care of installing a dependency via package manager of
 # choice for building Redox on BSDs (macOS, FreeBSD, etc.).
@@ -1068,6 +1133,12 @@ if [ "Darwin" == "$(uname -s)" ]; then
 else
     # Here we will use package managers to determine which operating system the user is using.
 
+    # Redox OS
+    elif hash 2>/dev/null pkg; then
+        redox "$emulator"
+    # FreeBSD
+    elif hash 2>/dev/null pkg; then
+        freebsd "$emulator"
     # SUSE and derivatives
     if hash 2>/dev/null zypper; then
         suse "$emulator"
@@ -1086,9 +1157,6 @@ else
     # Arch Linux
     elif hash 2>/dev/null pacman; then
         archLinux "$emulator" "$noninteractive"
-    # FreeBSD
-    elif hash 2>/dev/null pkg; then
-        freebsd "$emulator"
     # Unsupported platform
     else
         printf "\e[31;1mFatal error: \e[0;31mUnsupported platform, please open an issue\e[0m\n"
