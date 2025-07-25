@@ -13,7 +13,6 @@ dependencies = [
 ]
 script = """
 DYNAMIC_INIT
-HOST_STRIP=$STRIP
 # Linker flags for stage2 compiler (host -> target)
 export LDFLAGS_x86_64_unknown_redox="${LDFLAGS}" # LLVM
 export CARGO_TARGET_X86_64_UNKNOWN_REDOX_RUSTFLAGS="\
@@ -28,7 +27,6 @@ python3 "${COOKBOOK_SOURCE}/x.py" install \
 
 mkdir -p "${COOKBOOK_STAGE}"/usr
 rsync -av --delete "${COOKBOOK_BUILD}"/install/* "${COOKBOOK_STAGE}"/usr/
-"${HOST_STRIP}" -v "${COOKBOOK_STAGE}/usr/bin/rustc"
 # TODO: rustdoc
 """
 
