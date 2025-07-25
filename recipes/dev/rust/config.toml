@@ -1,6 +1,4 @@
 [llvm]
-# TODO: LLVM is only compiled for stage1,
-# it should be possible to enable this
 download-ci-llvm = false
 static-libstdcpp = false
 targets = "X86"
