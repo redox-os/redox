@@ -21,6 +21,8 @@ dependencies = [
   "zlib",
 ]
 script = """
+DYNAMIC_INIT
+
 # Skip configuring because QuakeSpasm uses a custom build system
 COOKBOOK_CONFIGURE="true"
 COOKBOOK_CONFIGURE_FLAGS=""
@@ -36,6 +38,10 @@ export PKG_CONFIG="${TARGET}-pkg-config"
 export USE_SDL2=1
 export USE_CODEC_MP3=0
 export DO_USERDIRS=1
+
+if ! [[ -n "${COOKBOOK_PREFER_STATIC}" ]]; then
+    LDFLAGS+=" -lstdc++"
+fi
 
 # Source is in Quake/ and icons are in Misc/
 rsync -av --delete "${COOKBOOK_SOURCE}/Quake/" "${COOKBOOK_SOURCE}/Misc" ./
