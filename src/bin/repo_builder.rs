@@ -46,9 +46,11 @@ fn main() -> Result<(), Box<dyn std::error::Error>> {
         let toml_src = stage_dir.with_extension("toml");
         let toml_dst = repo_path.join(format!("{}.toml", recipe));
 
-        if is_newer(&pkgar_src, &pkgar_dst) {
+        if is_newer(&toml_src, &toml_dst) {
             eprintln!("\x1b[01;38;5;155mrepo - publishing {}\x1b[0m", recipe);
-            fs::copy(&pkgar_src, &pkgar_dst)?;
+            if fs::exists(&pkgar_src)? {
+                fs::copy(&pkgar_src, &pkgar_dst)?;
+            }
             fs::copy(&toml_src, &toml_dst)?;
         }
 

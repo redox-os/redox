@@ -1029,6 +1029,7 @@ done
             }
             BuildKind::Configure => "cookbook_configure".to_owned(),
             BuildKind::Custom { script } => script.clone(),
+            BuildKind::None => "".to_owned(),
         };
 
         let command = {
@@ -1075,16 +1076,12 @@ done
 }
 
 fn package(
-    _recipe_dir: &Path,
     stage_dir: &Path,
     target_dir: &Path,
     name: &PackageName,
     recipe: &Recipe,
     auto_deps: &BTreeSet<PackageName>,
 ) -> Result<PathBuf, String> {
-    //TODO: metadata like dependencies, name, and version
-    let package = &recipe.package;
-
     let secret_path = "build/id_ed25519.toml";
     let public_path = "build/id_ed25519.pub.toml";
     if !Path::new(secret_path).is_file() || !Path::new(public_path).is_file() {
@@ -1122,25 +1119,53 @@ fn package(
         )
         .map_err(|err| format!("failed to create pkgar archive: {:?}", err))?;
 
-        let mut depends = package.dependencies.clone();
-        for dep in auto_deps.iter() {
-            if !depends.contains(dep) {
-                depends.push(dep.clone());
-            }
-        }
-        let stage_toml = toml::to_string(&Package {
-            name: name.clone(),
-            version: "TODO".into(),
-            target: env::var("TARGET")
-                .map_err(|err| format!("failed to read TARGET: {:?}", err))?,
-            depends,
-        })
-        .map_err(|err| format!("failed to serialize stage.toml: {:?}", err))?;
-        fs::write(target_dir.join("stage.toml"), stage_toml)
-            .map_err(|err| format!("failed to write stage.toml: {:?}", err))?;
+        package_toml(target_dir, name, recipe, auto_deps)?;
     }
 
     Ok(package_file)
+}
+
+fn package_toml(
+    target_dir: &Path,
+    name: &PackageName,
+    recipe: &Recipe,
+    auto_deps: &BTreeSet<PackageName>,
+) -> Result<(), String> {
+    let mut depends = recipe.package.dependencies.clone();
+    for dep in auto_deps.iter() {
+        if !depends.contains(dep) {
+            depends.push(dep.clone());
+        }
+    }
+    let stage_toml = toml::to_string(&Package {
+        name: name.clone(),
+        version: "TODO".into(),
+        target: env::var("TARGET").map_err(|err| format!("failed to read TARGET: {:?}", err))?,
+        depends,
+    })
+    .map_err(|err| format!("failed to serialize stage.toml: {:?}", err))?;
+    fs::write(target_dir.join("stage.toml"), stage_toml)
+        .map_err(|err| format!("failed to write stage.toml: {:?}", err))?;
+
+    return Ok(());
+}
+
+fn cook_meta(
+    recipe_dir: &Path,
+    name: &PackageName,
+    recipe: &Recipe,
+    fetch_only: bool,
+) -> Result<(), String> {
+    if fetch_only {
+        return Ok(());
+    }
+
+    let target_dir = create_target_dir(recipe_dir)?;
+    let empty_deps = BTreeSet::new();
+    let _package_file = package_toml(&target_dir, name, recipe, &empty_deps)
+        .map_err(|err| format!("failed to package: {}", err))?;
+
+    Ok(())
 }
 
 fn cook(
@@ -1149,6 +1174,10 @@ fn cook(
     recipe: &Recipe,
     fetch_only: bool,
 ) -> Result<(), String> {
+    if recipe.build.kind == BuildKind::None {
+        return cook_meta(recipe_dir, name, recipe, fetch_only);
+    }
+
     let is_offline = env::var("COOKBOOK_OFFLINE").unwrap_or("".to_string()) == "1";
     let source_dir = match is_offline {
         true => fetch_offline(recipe_dir, &recipe.source),
@@ -1160,6 +1189,18 @@ fn cook(
         return Ok(());
     }
 
+    let target_dir = create_target_dir(recipe_dir)?;
+
+    let (stage_dir, auto_deps) = build(recipe_dir, &source_dir, &target_dir, name, recipe)
+        .map_err(|err| format!("failed to build: {}", err))?;
+
+    let _package_file = package(&stage_dir, &target_dir, name, recipe, &auto_deps)
+        .map_err(|err| format!("failed to package: {}", err))?;
+
+    Ok(())
+}
+
+fn create_target_dir(recipe_dir: &Path) -> Result<PathBuf, String> {
     let target_parent_dir = recipe_dir.join("target");
     if !target_parent_dir.is_dir() {
         create_dir(&target_parent_dir)?;
@@ -1168,21 +1209,7 @@ fn cook(
     if !target_dir.is_dir() {
         create_dir(&target_dir)?;
     }
-
-    let (stage_dir, auto_deps) = build(recipe_dir, &source_dir, &target_dir, name, recipe)
-        .map_err(|err| format!("failed to build: {}", err))?;
-
-    let _package_file = package(
-        recipe_dir,
-        &stage_dir,
-        &target_dir,
-        name,
-        recipe,
-        &auto_deps,
-    )
-    .map_err(|err| format!("failed to package: {}", err))?;
-
-    Ok(())
+    Ok(target_dir)
 }
 
 fn main() {
