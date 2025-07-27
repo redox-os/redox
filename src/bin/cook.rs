@@ -1139,7 +1139,7 @@ fn package_toml(
     }
     let stage_toml = toml::to_string(&Package {
         name: name.clone(),
-        version: "TODO".into(),
+        version: package_version(recipe),
         target: env::var("TARGET").map_err(|err| format!("failed to read TARGET: {:?}", err))?,
         depends,
     })
@@ -1148,6 +1148,14 @@ fn package_toml(
         .map_err(|err| format!("failed to write stage.toml: {:?}", err))?;
 
     return Ok(());
+}
+
+fn package_version(recipe: &Recipe) -> Option<String> {
+    if recipe.build.kind == BuildKind::None {
+        None
+    } else {
+        Some("TODO".into())
+    }
 }
 
 fn cook_meta(
