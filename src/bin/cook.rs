@@ -1150,11 +1150,11 @@ fn package_toml(
     return Ok(());
 }
 
-fn package_version(recipe: &Recipe) -> Option<String> {
+fn package_version(recipe: &Recipe) -> String {
     if recipe.build.kind == BuildKind::None {
-        None
+        ""
     } else {
-        Some("TODO".into())
+        "TODO"
     }
 }
 
