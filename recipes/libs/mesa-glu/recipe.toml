@@ -1,11 +1,12 @@
 [source]
-tar = "https://archive.mesa3d.org/glu/glu-9.0.1.tar.xz"
-blake3 = "461543526cd681bc8fa91a1ece9519188c64ce7ad130a71213bdd0867e0884c9"
+tar = "https://archive.mesa3d.org/glu/glu-9.0.3.tar.xz"
+blake3 = "beed1665ed983540e7502289ec50c7e66d840820af3e9ef21c9c4a7e9686ab9f"
 
 [build]
-dependencies = ["mesa"]
+dependencies = ["mesa", "zlib"]
 template = "custom"
 script = """
-COOKBOOK_CONFIGURE_FLAGS+=(--enable-osmesa)
-cookbook_configure
+DYNAMIC_INIT
+
+cookbook_meson -Dgl_provider=osmesa
 """
