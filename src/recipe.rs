@@ -63,6 +63,9 @@ pub enum SourceRecipe {
 #[derive(Debug, Deserialize, PartialEq, Serialize)]
 #[serde(tag = "template")]
 pub enum BuildKind {
+    /// Will not build (for meta packages)
+    #[serde(rename = "none")]
+    None,
     /// Will build and install using cargo
     #[serde(rename = "cargo")]
     Cargo {
@@ -80,9 +83,15 @@ pub enum BuildKind {
     Custom { script: String },
 }
 
-#[derive(Debug, Deserialize, PartialEq, Serialize)]
+impl Default for BuildKind {
+    fn default() -> Self {
+        BuildKind::None
+    }
+}
+
+#[derive(Debug, Default, Deserialize, PartialEq, Serialize)]
 pub struct BuildRecipe {
-    #[serde(flatten)]
+    #[serde(flatten, default)]
     pub kind: BuildKind,
     #[serde(default)]
     pub dependencies: Vec<PackageName>,
@@ -100,6 +109,7 @@ pub struct Recipe {
     /// Specifies how to download the source for this recipe
     pub source: Option<SourceRecipe>,
     /// Specifies how to build this recipe
+    #[serde(default)]
     pub build: BuildRecipe,
     /// Specifies how to package this recipe
     #[serde(default)]
@@ -207,6 +217,8 @@ impl CookRecipe {
 
 #[cfg(test)]
 mod tests {
+    use pkg::PackageName;
+
     #[test]
     fn git_cargo_recipe() {
         use crate::recipe::{BuildKind, BuildRecipe, PackageRecipe, Recipe, SourceRecipe};
@@ -287,6 +299,35 @@ mod tests {
                 },
                 package: PackageRecipe {
                     dependencies: Vec::new(),
+                },
+            }
+        );
+    }
+
+    #[test]
+    fn meta_recipe() {
+        use crate::recipe::{BuildKind, BuildRecipe, PackageRecipe, Recipe};
+
+        let recipe: Recipe = toml::from_str(
+            r#"
+            [package]
+            dependencies = [
+                "gcc13",
+            ]
+        "#,
+        )
+        .unwrap();
+
+        assert_eq!(
+            recipe,
+            Recipe {
+                source: None,
+                build: BuildRecipe {
+                    kind: BuildKind::None,
+                    dependencies: Vec::new(),
+                },
+                package: PackageRecipe {
+                    dependencies: vec![PackageName::new("gcc13").unwrap()],
                 },
             }
         );
