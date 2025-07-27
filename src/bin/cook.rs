@@ -1152,9 +1152,9 @@ fn package_toml(
 
 fn package_version(recipe: &Recipe) -> String {
     if recipe.build.kind == BuildKind::None {
-        ""
+        "".into()
     } else {
-        "TODO"
+        "TODO".into()
     }
 }
 
