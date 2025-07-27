@@ -11,19 +11,29 @@ dependencies = [
     "zlib",
 ]
 script = """
-export CFLAGS="-I${COOKBOOK_SYSROOT}/include -DHAVE_PTHREAD=1"
-export CPPFLAGS="-I${COOKBOOK_SYSROOT}/include -DHAVE_PTHREAD=1"
-export LDFLAGS="-L${COOKBOOK_SYSROOT}/lib --static"
+DYNAMIC_INIT
+
+export CFLAGS+="-I${COOKBOOK_SYSROOT}/include -DHAVE_PTHREAD=1"
+export CPPFLAGS+="-I${COOKBOOK_SYSROOT}/include -DHAVE_PTHREAD=1"
 export LLVM_CONFIG="${TARGET}-llvm-config"
 
+if [[ -n "${COOKBOOK_PREFER_STATIC}" ]]; then
+    export LDFLAGS+=" --static"
+    export DEFAULTLIB="static"
+    export LLVMSHARED="disabled"
+else
+    export DEFAULTLIB="shared"
+    export LLVMSHARED="enabled"
+fi
+
 COOKBOOK_MESON_FLAGS=(
-    -Ddefault_library=static
+    -Ddefault_library="${DEFAULTLIB}"
     -Dglx=disabled
     -Dllvm=enabled
     -Dosmesa=true
     -Dplatforms=
     -Dshader-cache=disabled
-    -Dshared-llvm=disabled
+    -Dshared-llvm="${LLVMSHARED}"
     -Dshared-glapi=disabled
 )
 
