@@ -46,10 +46,6 @@ img:
       cargo binstall --no-confirm --version 0.27.0 cbindgen &&
       cargo build --manifest-path installer/Cargo.toml --release &&
       PODMAN_BUILD=0 REPO_BINARY=1 make ci-img IMG_TAG=$CI_COMMIT_REF_NAME
-  artifacts:
-    paths:
-      - build/img/
-    expire_in: 1 week
 
 .update-submodule:
   stage: retag
