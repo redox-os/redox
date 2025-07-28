@@ -24,12 +24,12 @@ DYNAMIC_INIT
 rsync -av --delete "${COOKBOOK_SOURCE}/" ./
 
 env -i \
-    LDFLAGS="-static -ljpeg -lpng16 -lz" \
+    LDFLAGS="-ljpeg -lpng16 -lz -lstdc++" \
     PATH="/usr/bin:/bin" \
     PKG_CONFIG="pkg-config" \
 "${COOKBOOK_MAKE}" -j"${COOKBOOK_MAKE_JOBS}" ENABLE_FS=stdio mapc sols
 
-export LDFLAGS="-L${COOKBOOK_SYSROOT}/lib -z noexecstack"
+export LDFLAGS+="-L${COOKBOOK_SYSROOT}/lib -z noexecstack"
 "${COOKBOOK_MAKE}" -j"${COOKBOOK_MAKE_JOBS}" ENABLE_FS=stdio ENABLE_NLS=0 clean-src
 "${COOKBOOK_MAKE}" -j"${COOKBOOK_MAKE_JOBS}" ENABLE_FS=stdio ENABLE_NLS=0 neverball neverputt
 
