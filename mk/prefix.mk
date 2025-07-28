@@ -71,6 +71,9 @@ $(PREFIX)/relibc-install.tar.gz: $(PREFIX)/relibc-install
 		.
 
 $(PREFIX)/libtool:
+ifeq ($(PODMAN_BUILD),1)
+	$(PODMAN_RUN) make $@
+else
 	rm -rf "$@.partial" "$@"
 	mkdir -p "$@.partial"
 
@@ -82,11 +85,10 @@ $(PREFIX)/libtool:
 		--depth 2 \
 		"$@.partial"
 
-	# rootless podman problem
-	chmod -R u+w $@.partial
 	touch "$@.partial"
 	echo $(LIBTOOL_VERSION) > $@.partial/.tarball-version
 	mv "$@.partial" "$@"
+endif
 
 $(PREFIX)/libtool-build: $(PREFIX)/libtool $(PREFIX)/rust-install
 ifeq ($(PODMAN_BUILD),1)
