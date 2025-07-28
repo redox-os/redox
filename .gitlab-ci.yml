@@ -52,6 +52,7 @@ img:
   rules:
     - if: '$CI_PIPELINE_SOURCE == "push"'
       when: manual
+      allow_failure: true
     - when: never
   image:
     name: alpine/git:latest
