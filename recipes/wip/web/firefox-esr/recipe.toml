@@ -28,5 +28,6 @@ dependencies = [
     "pipewire",
 ]
 script = """
+DYNAMIC_INIT
 export MOZCONFIG="${COOKBOOK_RECIPE}/mozconfig"
 """
