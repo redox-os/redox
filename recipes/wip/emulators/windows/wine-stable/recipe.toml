@@ -10,7 +10,7 @@ dependencies = [
     "gnutls3",
     "gstreamer",
     "sdl2",
-    "mesa",
+    "mesa-x11",
     "libx11",
     "libxcomposite",
     "libxcursor",
@@ -23,6 +23,7 @@ dependencies = [
     "libxkbregistry",
 ]
 script = """
+DYNAMIC_INIT
 COOKBOOK_CONFIGURE_FLAGS+=(
     --enable-win64
 	--disable-kerberos

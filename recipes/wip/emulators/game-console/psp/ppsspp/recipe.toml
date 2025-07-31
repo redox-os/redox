@@ -1,4 +1,4 @@
-#TODO make glew work
+#TODO not compiled or tested yet
 [source]
 git = "https://github.com/jackpot51/ppsspp"
 
@@ -14,13 +14,15 @@ dependencies = [
     "glew",
 ]
 script = """
+DYNAMIC_INIT
 COOKBOOK_CONFIGURE="cmake"
 COOKBOOK_CONFIGURE_FLAGS=(
     -DCMAKE_BUILD_TYPE=Release
     -DCMAKE_CROSSCOMPILING=True
+    -DCMAKE_CXX_COMPILER="${TARGET}-g++"
+    -DCMAKE_C_COMPILER="${TARGET}-gcc"
     -DCMAKE_C_FLAGS="-I${COOKBOOK_SYSROOT}/include -I${COOKBOOK_SYSROOT}/include/SDL2"
     -DCMAKE_CXX_FLAGS="-I${COOKBOOK_SYSROOT}/include -I${COOKBOOK_SYSROOT}/include/SDL2"
-    -DCMAKE_EXE_LINKER_FLAGS="-L${COOKBOOK_SYSROOT}/lib -static"
     -DCMAKE_INSTALL_PREFIX="/"
     -DCMAKE_PREFIX_PATH="${COOKBOOK_SYSROOT}"
     -DCMAKE_SYSTEM_NAME=Generic
