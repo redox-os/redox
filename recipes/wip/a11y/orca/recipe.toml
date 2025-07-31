@@ -1,0 +1,15 @@
+#TODO not compiled or tested
+# dependencies: https://gitlab.gnome.org/GNOME/orca/#dependencies
+[source]
+tar = "https://download.gnome.org/sources/orca/48/orca-48.6.tar.xz"
+[build]
+template = "custom"
+dependencies = [
+    "atk",
+    "at-spi2-core",
+    "gtk3",
+]
+script = """
+DYNAMIC_INIT
+cookbook_meson
+"""

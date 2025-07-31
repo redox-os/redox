@@ -1,5 +1,4 @@
 #TODO missing script for SCons, see https://docs.godotengine.org/en/stable/contributing/development/compiling/compiling_for_linuxbsd.html
-#TODO port to orbital
 #TODO missing dependencies
 [source]
 tar = "https://github.com/godotengine/godot/releases/download/4.1.3-stable/godot-4.1.3-stable.tar.xz"
