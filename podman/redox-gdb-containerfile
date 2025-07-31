@@ -1,0 +1,15 @@
+FROM debian:stable-backports
+
+RUN apt-get update \
+    && apt-get install -y --no-install-recommends -t stable-backports \
+        python3 \
+        python3-pip \
+        gdb \
+        curl \
+    && rm -rf /var/lib/apt/lists/*
+
+RUN pip3 install gdbgui --break-system-packages
+
+EXPOSE 5000
+
+ENTRYPOINT [ "gdbgui", "--remote", "--port", "5000" ]
