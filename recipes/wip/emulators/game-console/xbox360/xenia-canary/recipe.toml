@@ -7,7 +7,7 @@ template = "custom"
 dependencies = [
     "gtk3",
     "sdl2",
-    "mesa",
+    "mesa-x11",
     "lz4",
     "libunwind",
     "libpthread-stubs",

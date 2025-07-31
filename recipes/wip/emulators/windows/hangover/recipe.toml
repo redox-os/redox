@@ -11,7 +11,7 @@ dependencies = [
     "gnutls3",
     "gstreamer",
     "sdl2",
-    "mesa",
+    "mesa-x11",
     "libx11",
     "libxcomposite",
     "libxcursor",
@@ -24,6 +24,7 @@ dependencies = [
     "libxkbregistry",
 ]
 script = """
+DYNAMIC_INIT
 mkdir -p "${COOKBOOK_BUILD}"/wine/build
 cd "${COOKBOOK_BUILD}"/wine/build
 COOKBOOK_CONFIGURE_FLAGS+=(
