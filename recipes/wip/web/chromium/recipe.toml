@@ -32,3 +32,6 @@ dependencies = [
     "pango",
     "java21",
 ]
+script = """
+DYNAMIC_INIT
+"""

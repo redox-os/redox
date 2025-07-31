@@ -6,5 +6,5 @@ rev = "bdd39b142fbadf581fd9d904968a83fb9b4a929a"
 [build]
 template = "custom"
 dependencies = [
-    "mesa",
+    "mesa-x11",
 ]

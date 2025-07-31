@@ -1,10 +1,11 @@
+# build instructions: https://developer.gimp.org/core/setup/build/3.0/INSTALL
 #TODO make dependencies work
 [source]
-tar = "https://download.gimp.org/gimp/v2.10/gimp-2.10.36.tar.bz2"
+tar = "https://download.gimp.org/gimp/v3.0/gimp-3.0.4.tar.xz"
 [build]
-template = "configure"
+template = "custom"
 dependencies = [
-    "gtk2",
+    "gtk3",
     "gobject-introspection",
     "glib",
     "cairo",
@@ -25,3 +26,7 @@ dependencies = [
     "bzip2",
     "zlib",
 ]
+script = """
+DYNAMIC_INIT
+cookbook_configure
+"""
