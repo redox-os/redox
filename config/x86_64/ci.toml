@@ -7,6 +7,17 @@ prompt = false
 
 # Package settings
 [packages]
+
+# Meta-packages below
+
+dev-essential = {}
+dev-redox = {}
+redox-tests = {}
+x11-minimal = {}
+x11-full = {}
+
+# Normal packages below
+
 acid = {}
 #atk = {} # depends on glib which does not build
 autoconf = {}
