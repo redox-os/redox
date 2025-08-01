@@ -137,3 +137,24 @@ else
 	$(MAKE) uc.$*
 	$(MAKE) f.$*
 endif
+
+
+export DEBUG_BIN?=
+
+# Debug a recipe with gdbgui inside podman, for example: debug.drivers-initfs DEBUG_BIN=pcid
+# Please set REPO_DEBUG=1 to your .config to enable debug symbols and run `make cr.recipe rebuild`
+# Also, before opening gdbgui at http://localhost:5000, start qemu with `make qemu gdb=yes`
+# Experimental and may not work if ARCH is different with what podman is running
+debug.%: $(FSTOOLS_TAG) FORCE
+	@cd cookbook/$(shell make find.$* | grep ^recipes) && \
+		export RECIPE_STAGE=target/$(TARGET)/stage && \
+		export BIN_PATH=$$(find $$RECIPE_STAGE -type f -name "$(DEBUG_BIN)" -or -type f -name "$*") && \
+		file $$BIN_PATH 2> /dev/null || ( echo "Binary is not found, please set DEBUG_BIN" && exit 1 ) && \
+		echo "Opening gdbgui for debugging $* with binary '$$BIN_PATH'" && echo "----------" && \
+		podman build -t redox-kernel-debug - < $(ROOT)/podman/redox-gdb-containerfile > /dev/null && \
+		podman run --rm -p 5000:5000 -it --name redox-gdb \
+		-v "./$$BIN_PATH:/binary" \
+		-v "./source:/source" -w "/source" \
+		redox-kernel-debug --gdb-cmd "gdb -ex 'set confirm off' \
+			-ex 'add-symbol-file /binary' \
+			-ex 'target remote host.containers.internal:1234'"
