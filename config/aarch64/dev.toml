@@ -1,4 +1,4 @@
-# Configuration for non-Redox development
+# Configuration for development
 
 include = ["../dev.toml"]
 
