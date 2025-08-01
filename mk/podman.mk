@@ -75,6 +75,7 @@ KERNEL_PATH := cookbook/recipes/core/kernel
 KERNEL_PATH_SOURCE := $(ROOT)/$(KERNEL_PATH)/source
 KERNEL_PATH_TARGET := $(ROOT)/$(KERNEL_PATH)/target/$(TARGET)
 
+# TODO: make this work using `make debug.kernel` and remove this
 kernel_debugger:
 	@echo "Building and running gdbgui container..."
 	podman build -t redox-kernel-debug - < $(ROOT)/podman/redox-gdb-containerfile
