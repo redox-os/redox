@@ -1,0 +1,8 @@
+[package]
+dependencies = [
+    "xinit",
+    "xkbcomp",
+    "xkeyboard-config",
+    "xserver-xorg",
+    "xserver-xorg-video-dummy",
+]
