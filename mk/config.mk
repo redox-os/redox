@@ -19,6 +19,8 @@ CONFIG_NAME?=desktop
 REPO_NONSTOP?=0
 ## Do not update source repos, attempt to build in offline condition
 REPO_OFFLINE?=0
+## Do not strip debug info for local build
+REPO_DEBUG?=0
 ## Select filesystem config
 ifeq ($(BOARD),)
 FILESYSTEM_CONFIG?=config/$(ARCH)/$(CONFIG_NAME).toml
@@ -66,6 +68,10 @@ ifeq ($(REPO_OFFLINE),1)
 	REPO_OFFLINE=--offline
 else ifeq ($(REPO_OFFLINE),0)
 	REPO_OFFLINE=
+endif
+ifeq ($(REPO_DEBUG),1)
+	export COOKBOOK_NOSTRIP=true
+	export COOKBOOK_DEBUG=true
 endif
 
 UNAME := $(shell uname)
