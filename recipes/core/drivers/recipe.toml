@@ -37,15 +37,15 @@ esac
 mkdir -pv "${COOKBOOK_STAGE}/usr/bin" "${COOKBOOK_STAGE}/usr/lib/drivers"
 export CARGO_PROFILE_RELEASE_OPT_LEVEL=s
 export CARGO_PROFILE_RELEASE_PANIC=abort
-"${COOKBOOK_CARGO}" build --release \
+"${COOKBOOK_CARGO}" build ${build_flags} \
     --manifest-path "${COOKBOOK_SOURCE}/Cargo.toml" \
     $(for bin in "${BINS[@]}"; do echo "-p" "${bin}"; done)
 for bin in "${BINS[@]}"
 do
     if [[ "${bin}" == "inputd" || "${bin}" == "pcid" || "${bin}" == "pcid-spawner" ]]; then
-        cp -v "target/${TARGET}/release/${bin}" "${COOKBOOK_STAGE}/usr/bin"
+        cp -v "target/${TARGET}/${build_type}/${bin}" "${COOKBOOK_STAGE}/usr/bin"
     else
-        cp -v "target/${TARGET}/release/${bin}" "${COOKBOOK_STAGE}/usr/lib/drivers"
+        cp -v "target/${TARGET}/${build_type}/${bin}" "${COOKBOOK_STAGE}/usr/lib/drivers"
     fi
 done
 
