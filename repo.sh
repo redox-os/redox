@@ -5,6 +5,7 @@ shopt -s nullglob
 source config.sh
 
 APPSTREAM="0"
+COOK_OPT=""
 recipes=""
 for arg in "${@:1}"
 do
@@ -14,6 +15,9 @@ do
     elif [ "$arg" == "--debug" ]
     then
         DEBUG=--debug
+    elif [ "$arg" == "--with-package-deps" ]
+    then
+        COOK_OPT=--with-package-deps
     elif [ "$arg" == "--nonstop" ]
     then
         set +e
@@ -46,7 +50,7 @@ do
     if [ -e "${COOKBOOK_RECIPE}/recipe.toml" ]
     then
         toml_recipes+=" $recipe"
-        target/release/cook "$recipe"
+        target/release/cook $COOK_OPT "$recipe"
         continue
     fi
 
@@ -98,7 +102,7 @@ declare -A APPSTREAM_SOURCES
 
 # Currently, we only support runtime dependencies for recipes in the new TOML
 # format. Runtime dependencies include both `[package.dependencies]` and
-# [`package.shared_deps`].
+# dynamically linked packages discovered by auto_deps.
 # 
 # The following adds the package dependencies of the recipes to the repo as
 # well.
