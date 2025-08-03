@@ -1,0 +1,18 @@
+[source]
+git = "https://gitlab.com/sortix/os-test"
+
+[build]
+template = "custom"
+script = """
+rsync -av --delete "${COOKBOOK_SOURCE}/" ./
+mkdir -pv "${COOKBOOK_STAGE}/share/os-test"
+rsync -av --delete . "${COOKBOOK_STAGE}/share/os-test"
+"""
+
+[package]
+dependencies = [
+    "gnu-binutils",
+    "gnu-make",
+    "gcc13",
+    "libarchive"
+]
