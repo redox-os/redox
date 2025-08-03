@@ -1,4 +1,4 @@
-#TODO: Relibc linking errors
+#TODO: Can build, but emits Linux binaries instead (read the asm6.go patches)
 [source]
 tar = "https://go.dev/dl/go1.24.5.src.tar.gz"
 patches = [
@@ -12,7 +12,7 @@ export PATH=$HOME/go/bin:$PATH
 
 rm -rf $HOME/.cache/go-build
 export GOPATH=${COOKBOOK_BUILD}/gopath
-if ! command -v go &> /dev/null; then 
+if ! command -v go &> /dev/null; then
    GO_TARBALL=go1.24.5.linux-$( [ "$(uname -m)" = "aarch64" ] && echo "arm64" || echo "amd64" ).tar.gz
    GO_DOWNLOAD_URL="https://dl.google.com/go/${GO_TARBALL}"
    echo "Installing Go..."
@@ -23,27 +23,33 @@ fi
 # Go does not support out-of-tree builds :(
 rsync -a --delete "${COOKBOOK_SOURCE}/" ./
 
-export GOOS=redox
+export GOHOSTOS=redox
 case "${TARGET}" in
     x86-unknown-redox)
-        export GOARCH=386
+        export GOHOSTARCH=386
         ;;
     x86_64-unknown-redox)
-        export GOARCH=amd64
+        export GOHOSTARCH=amd64
         ;;
     aarch64-unknown-redox)
-        export GOARCH=arm64
+        export GOHOSTARCH=arm64
+        ;;
+    riscv64-unknown-redox)
+# TODO: Patches for this ARCH is not complete
+        export GOHOSTARCH=riscv64
         ;;
 esac
 
-export GOROOT_FINAL=${COOKBOOK_STAGE}
+export GOOS=${GOHOSTOS}
+export GOARCH=${GOHOSTARCH}
+
 export CGO_ENABLED=1
-export CC_FOR_TARGET="${CC}"
-export CXX_FOR_TARGET="${CXX}"
+export CC_FOR_redox_${GOHOSTARCH}="${CC}"
+export CXX_FOR_redox_${GOHOSTARCH}="${CXX}"
 # Don't poison the runtime tools (host -> host)
 unset AR AS CC CXX LD LDFLAGS NM OBJCOPY OBJDUMP RANLIB READELF STRIP
-cd ./src
-bash ./make.bash -v
-bash run.bash --no-rebuild
-"$GOTOOLDIR/dist" banner  # print build info
+(cd ./src && bash ./make.bash -v --no-banner)
+
+mkdir -p ${COOKBOOK_STAGE}/bin
+rsync -a --delete "bin/redox_${GOHOSTARCH}/" ${COOKBOOK_STAGE}/bin
 """
