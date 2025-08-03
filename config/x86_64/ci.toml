@@ -13,8 +13,8 @@ prompt = false
 dev-essential = {}
 dev-redox = {}
 redox-tests = {}
-x11-minimal = {}
-x11-full = {}
+#x11-minimal = { # needs all dependencies added below
+#x11-full = {} # needs all dependencies added below
 
 # Normal packages below
 
