@@ -1,0 +1,83 @@
+diff -ruwN source/build.zig source-new/build.zig
+--- source/build.zig	2025-05-23 11:31:41
++++ source-new/build.zig	2025-08-04 17:06:57
+@@ -802,7 +802,7 @@
+                 try addCxxKnownPath(b, cfg, exe, b.fmt("libstdc++.{s}", .{lib_suffix}), null, need_cpp_includes);
+                 try addCxxKnownPath(b, cfg, exe, b.fmt("libgcc_eh.{s}", .{lib_suffix}), null, need_cpp_includes);
+             },
+-            .haiku => {
++            .haiku, .redox => {
+                 try addCxxKnownPath(b, cfg, exe, b.fmt("libstdc++.{s}", .{lib_suffix}), null, need_cpp_includes);
+             },
+             else => {},
+diff -ruwN source/lib/std/Target.zig source-new/lib/std/Target.zig
+--- source/lib/std/Target.zig	2025-05-23 11:31:41
++++ source-new/lib/std/Target.zig	2025-08-04 16:59:08
+@@ -29,6 +29,7 @@
+         hurd,
+         linux,
+         plan9,
++        redox,
+         rtems,
+         serenity,
+         zos,
+@@ -904,6 +905,7 @@
+             .fuchsia,
+             .hermit,
+             .plan9,
++            .redox,
+             .serenity,
+             .zos,
+             .dragonfly,
+@@ -2435,6 +2437,16 @@
+                 else
+                     "/usr",
+             }) else none,
++
++            .redox => switch (cpu.arch) {
++                .x86,
++                => init("/usr/lib/ld.so.1"),
++                .aarch64,
++                .riscv64,
++                .x86_64,
++                => init("/usr/lib/ld64.so.1"),
++                else => none,
++            },
+ 
+             .freebsd => switch (cpu.arch) {
+                 .arm,
+diff -ruwN source/test/llvm_targets.zig source-new/test/llvm_targets.zig
+--- source/test/llvm_targets.zig	2025-05-23 11:31:41
++++ source-new/test/llvm_targets.zig	2025-08-04 17:02:56
+@@ -20,6 +20,7 @@
+     .{ .cpu_arch = .aarch64, .os_tag = .macos, .abi = .none },
+     .{ .cpu_arch = .aarch64, .os_tag = .netbsd, .abi = .none },
+     .{ .cpu_arch = .aarch64, .os_tag = .openbsd, .abi = .none },
++    .{ .cpu_arch = .aarch64, .os_tag = .redox, .abi = .none },
+     .{ .cpu_arch = .aarch64, .os_tag = .rtems, .abi = .none },
+     .{ .cpu_arch = .aarch64, .os_tag = .serenity, .abi = .none },
+     .{ .cpu_arch = .aarch64, .os_tag = .tvos, .abi = .none },
+@@ -238,6 +239,7 @@
+     .{ .cpu_arch = .riscv64, .os_tag = .linux, .abi = .none },
+     .{ .cpu_arch = .riscv64, .os_tag = .netbsd, .abi = .none },
+     .{ .cpu_arch = .riscv64, .os_tag = .openbsd, .abi = .none },
++    .{ .cpu_arch = .riscv64, .os_tag = .redox, .abi = .none },
+     .{ .cpu_arch = .riscv64, .os_tag = .rtems, .abi = .none },
+     .{ .cpu_arch = .riscv64, .os_tag = .serenity, .abi = .none },
+     // .{ .cpu_arch = .riscv64, .os_tag = .uefi, .abi = .none },
+@@ -325,6 +327,7 @@
+     .{ .cpu_arch = .x86, .os_tag = .linux, .abi = .none },
+     .{ .cpu_arch = .x86, .os_tag = .netbsd, .abi = .none },
+     .{ .cpu_arch = .x86, .os_tag = .openbsd, .abi = .none },
++    .{ .cpu_arch = .x86, .os_tag = .redox, .abi = .none },
+     .{ .cpu_arch = .x86, .os_tag = .rtems, .abi = .none },
+     .{ .cpu_arch = .x86, .os_tag = .solaris, .abi = .none },
+     .{ .cpu_arch = .x86, .os_tag = .uefi, .abi = .none },
+@@ -361,6 +364,7 @@
+     .{ .cpu_arch = .x86_64, .os_tag = .macos, .abi = .none },
+     .{ .cpu_arch = .x86_64, .os_tag = .netbsd, .abi = .none },
+     .{ .cpu_arch = .x86_64, .os_tag = .openbsd, .abi = .none },
++    .{ .cpu_arch = .x86_64, .os_tag = .redox, .abi = .none },
+     .{ .cpu_arch = .x86_64, .os_tag = .rtems, .abi = .none },
+     .{ .cpu_arch = .x86_64, .os_tag = .serenity, .abi = .none },
+     .{ .cpu_arch = .x86_64, .os_tag = .solaris, .abi = .none },
