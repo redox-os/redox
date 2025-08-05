@@ -1,22 +1,45 @@
+diff -ruwN source/src/configure.ac source-new/src/configure.ac
+--- source/src/configure.ac	2024-10-29 04:05:26.000000000 +0700
++++ source-new/src/configure.ac	2025-08-06 03:15:52.796303989 +0700
+@@ -3759,7 +3759,7 @@
+ dnl Check for functions in one big call, to reduce the size of configure.
+ dnl Can only be used for functions that do not require any include.
+ AC_CHECK_FUNCS(fchdir fchown fchmod fsync getcwd getpseudotty \
+-	getpwent getpwnam getpwuid getrlimit gettimeofday localtime_r lstat \
++	getpwent getpwnam getpwuid gettimeofday localtime_r lstat \
+ 	memset mkdtemp nanosleep opendir putenv qsort readlink select setenv \
+ 	getpgid setpgid setsid sigaltstack sigstack sigset sigsetjmp sigaction \
+ 	sigprocmask sigvec strcasecmp strcoll strerror strftime stricmp strncasecmp \
+diff -ruwN source/src/feature.h source-new/src/feature.h
+--- source/src/feature.h	2024-10-29 04:05:26.000000000 +0700
++++ source-new/src/feature.h	2025-08-06 03:16:27.596296730 +0700
+@@ -272,6 +272,7 @@
+  */
+ #if defined(FEAT_NORMAL) \
+ 	&& defined(FEAT_EVAL) \
++	&& !defined (__redox__)  /* disable setitimer */ \
+ 	&& ((defined(HAVE_GETTIMEOFDAY) && defined(HAVE_SYS_TIME_H) \
+ 		&& (!defined(MACOS_X) || defined(HAVE_DISPATCH_DISPATCH_H))) \
+ 	    || defined(MSWIN))
 diff -ruwN source/src/libvterm/include/vterm.h source-new/src/libvterm/include/vterm.h
---- source/src/libvterm/include/vterm.h	2019-12-04 14:09:41.000000000 -0700
-+++ source-new/src/libvterm/include/vterm.h	2023-09-09 19:06:56.211783900 -0600
-@@ -15,9 +15,11 @@
- #define TRUE 1
+--- source/src/libvterm/include/vterm.h	2024-10-29 04:05:26.000000000 +0700
++++ source-new/src/libvterm/include/vterm.h	2025-08-06 03:15:02.506316769 +0700
+@@ -17,9 +17,11 @@
  #define FALSE 0
  
+ // VIM: from stdint.h
 +#if !defined (__redox__)
- // from stdint.h
  typedef unsigned char		uint8_t;
+ typedef unsigned short		uint16_t;
  typedef unsigned int		uint32_t;
 +#endif
  
- typedef struct VTerm VTerm;
- typedef struct VTermState VTermState;
+ // VIM: define max screen cols and rows
+ #define VTERM_MAX_COLS 1000
 diff -ruwN source/src/memfile.c source-new/src/memfile.c
---- source/src/memfile.c	2019-12-04 13:51:25.000000000 -0700
-+++ source-new/src/memfile.c	2023-09-09 19:06:08.999846625 -0600
-@@ -610,6 +610,8 @@
+--- source/src/memfile.c	2024-10-29 04:05:26.000000000 +0700
++++ source-new/src/memfile.c	2025-08-06 03:15:36.896308173 +0700
+@@ -599,6 +599,8 @@
  	    // No sync() on Stratus VOS
  # if defined(__OPENNT) || defined(__TANDEM) || defined(__VOS__)
  	    fflush(NULL);
@@ -25,3 +48,19 @@ diff -ruwN source/src/memfile.c source-new/src/memfile.c
  # else
  	    sync();
  # endif
+diff -ruwN source/src/auto/configure source-new/src/auto/configure
+--- source/src/auto/configure	2024-10-29 04:05:26.000000000 +0700
++++ source-new/src/auto/configure	2025-08-06 03:56:11.765660165 +0700
+@@ -13358,12 +13358,6 @@
+   printf "%s\n" "#define HAVE_GETPWUID 1" >>confdefs.h
+ 
+ fi
+-ac_fn_c_check_func "$LINENO" "getrlimit" "ac_cv_func_getrlimit"
+-if test "x$ac_cv_func_getrlimit" = xyes
+-then :
+-  printf "%s\n" "#define HAVE_GETRLIMIT 1" >>confdefs.h
+-
+-fi
+ ac_fn_c_check_func "$LINENO" "gettimeofday" "ac_cv_func_gettimeofday"
+ if test "x$ac_cv_func_gettimeofday" = xyes
+ then :
