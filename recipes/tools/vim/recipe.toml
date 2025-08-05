@@ -1,7 +1,7 @@
 [source]
-tar = "https://github.com/vim/vim/archive/refs/tags/v8.2.5172.tar.gz"
-blake3 = "28a58578a6655e2e45078331569d6e6c96ed05189acda34c2a784581bf614cd2"
-patch = ["vim.patch"]
+tar = "https://github.com/vim/vim/archive/refs/tags/v9.1.0821.tar.gz"
+blake3 = "d1f5802ceb047b09143f1764bf4016f084cf7e6c026c7047919264c9f262a5dd"
+patches = ["vim.patch"]
 
 [build]
 dependencies = ["ncurses"]
