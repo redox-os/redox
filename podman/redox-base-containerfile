@@ -2,13 +2,8 @@
 
 FROM debian:stable-backports
 
-# _UID_ must be replaced with the user's uid on host
-# podman root is mapped to your user id on host during build,
-# poduser is mapped to your user id during podman run
-RUN useradd --create-home --no-log-init --uid _UID_ poduser \
-    && chown -R root:root /home \
-    && apt-get update \
-    && apt-get install -y --no-install-recommends -t stable-backports \
+RUN apt-get update \
+	&& apt-get install -y --no-install-recommends -t stable-backports \
 		ant \
 		appstream \
 		appstream-compose \
@@ -36,7 +31,6 @@ RUN useradd --create-home --no-log-init --uid _UID_ poduser \
 		gtk-doc-tools \
 		help2man \
 		intltool \
-		libc6-dev-i386 \
 		libexpat-dev \
 		libfontconfig1-dev \
 		libfuse3-dev \
@@ -72,7 +66,6 @@ RUN useradd --create-home --no-log-init --uid _UID_ poduser \
 		ruby \
 		scons \
 		ssh \
-		syslinux-utils \
 		texinfo \
 		unifdef \
 		unzip \
@@ -84,4 +77,6 @@ RUN useradd --create-home --no-log-init --uid _UID_ poduser \
 		xxd \
 		zip \
 		zlib1g-dev \
-		zstd
+		zstd; \
+	if [ "$(dpkg --print-architecture)" = "amd64" ]; then \
+    	apt-get install -y --no-install-recommends libc6-dev-i386 syslinux-utils; fi
