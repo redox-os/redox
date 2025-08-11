@@ -21,7 +21,7 @@ else
 	export COOKBOOK_HOST_SYSROOT="$(ROOT)/$(PREFIX_INSTALL)" && \
 	PACKAGES="$$($(LIST_PACKAGES) $(LIST_PACKAGES_OPTS) -c $(FILESYSTEM_CONFIG))" && \
 	cd cookbook && \
-	./repo.sh $(REPO_NONSTOP) $(REPO_OFFLINE) "$${PACKAGES}"
+	./repo.sh $(REPO_NONSTOP) $(REPO_OFFLINE) --with-package-deps "$${PACKAGES}"
 	mkdir -p $(BUILD)
 	# make sure fstools.tag and fetch.tag are newer than the things repo modifies
 	touch $(FSTOOLS_TAG)
