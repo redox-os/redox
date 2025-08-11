@@ -1,0 +1,54 @@
+diff --color -ruwN source/configure.ac source-new/configure.ac
+--- source/configure.ac	2022-05-15 01:59:21.000000000 +0700
++++ source-new/configure.ac	2025-08-06 02:08:48.797381523 +0700
+@@ -1311,7 +1311,7 @@
+ 	       setuid seteuid setreuid setresuid setsid \
+ 	       setgid setegid setregid setresgid \
+ 	       memcpy memmove strstr strerror strtoul \
+-	       getrlimit getrusage \
++	       getrusage \
+ 	       setlocale \
+ 	       isblank iswblank \
+ 	       uname \
+diff --color -ruwN source/Src/builtin.c source-new/Src/builtin.c
+--- source/Src/builtin.c	2022-05-15 01:59:21.000000000 +0700
++++ source-new/Src/builtin.c	2025-08-06 02:41:57.266846385 +0700
+@@ -7160,16 +7160,7 @@
+     long clktck = get_clktck();
+ 
+     /* get time accounting information */
+-    if (times(&buf) == -1)
+-	return 1;
+-    pttime(buf.tms_utime);	/* user time */
+-    putchar(' ');
+-    pttime(buf.tms_stime);	/* system time */
+-    putchar('\n');
+-    pttime(buf.tms_cutime);	/* user time, children */
+-    putchar(' ');
+-    pttime(buf.tms_cstime);	/* system time, children */
+-    putchar('\n');
++	// Somehow times() is not linking correctly
+     return 0;
+ }
+ 
+diff --color -ruwN source/Src/Builtins/rlimits.c source-new/Src/Builtins/rlimits.c
+--- source/Src/Builtins/rlimits.c	2022-05-15 01:59:21.000000000 +0700
++++ source-new/Src/Builtins/rlimits.c	2025-08-06 02:24:09.457135439 +0700
+@@ -892,7 +892,7 @@
+ int
+ boot_(UNUSED(Module m))
+ {
+-    set_resinfo();
++//  set_resinfo();
+     return 0;
+ }
+ 
+@@ -900,7 +900,7 @@
+ int
+ cleanup_(Module m)
+ {
+-    free_resinfo();
++//  free_resinfo();
+     return setfeatureenables(m, &module_features, NULL);
+ }
+ 
