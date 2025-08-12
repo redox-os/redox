@@ -1,21 +1,47 @@
-#TODO maybe incomplete script, see https://gitlab.freedesktop.org/poppler/poppler/-/blob/master/INSTALL?ref_type=heads
 #TODO needs encoding data - https://poppler.freedesktop.org/poppler-data-0.4.12.tar.gz
 [source]
-tar = "https://poppler.freedesktop.org/poppler-23.12.0.tar.xz"
+tar = "https://poppler.freedesktop.org/poppler-25.08.0.tar.xz"
+blake3 = "0732ef20594d084ae3c24cb75079a2be347df78acac80fdcbd6149b8dce197d4"
+script = """
+DYNAMIC_INIT
+autotools_recursive_regenerate
+"""
+
 [build]
 template = "custom"
+dependencies = [
+    "cairo",
+    "curl",
+    "expat",
+    "fontconfig",
+    "freetype2",
+    "gettext",
+    "glib",
+    "libffi",
+    "libiconv",
+    "libjpeg",
+    "libpng",
+    "libx11",
+    "libxau",
+    "libxcb",
+    "nghttp2",
+    "openssl1",
+    "pcre2",
+    "pixman",
+    #TODO: compile dylib "libtiff",
+    "zlib",
+]
 script = """
-COOKBOOK_CONFIGURE="cmake"
-COOKBOOK_CONFIGURE_FLAGS=(
-    -DCMAKE_BUILD_TYPE=Release
-    -DCMAKE_CROSSCOMPILING=True
-    -DCMAKE_EXE_LINKER_FLAGS="-static"
-    -DCMAKE_INSTALL_PREFIX="/"
-    -DCMAKE_PREFIX_PATH="${COOKBOOK_SYSROOT}"
-    -DCMAKE_SYSTEM_NAME=Generic
-    -DCMAKE_SYSTEM_PROCESSOR="$(echo "${TARGET}" | cut -d - -f1)"
-    -DCMAKE_VERBOSE_MAKEFILE=On
-"${COOKBOOK_SOURCE}"
-)
-cookbook_configure
+DYNAMIC_INIT
+cookbook_cmake \
+    -DCMAKE_C_FLAGS="-I${COOKBOOK_SYSROOT}/include" \
+    -DCMAKE_CXX_FLAGS="-I${COOKBOOK_SYSROOT}/include" \
+    -DENABLE_BOOST=OFF \
+    -DENABLE_GPGME=OFF \
+    -DENABLE_LCMS=OFF \
+    -DENABLE_LIBOPENJPEG=none \
+    -DENABLE_LIBTIFF=OFF \
+    -DENABLE_QT5=OFF \
+    -DENABLE_QT6=OFF \
+    -DENABLE_NSS3=OFF
 """
