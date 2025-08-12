@@ -12,5 +12,5 @@ fi
 
 for recipe_path in $recipes
 do
-    IGNORE_ERROR=1 ./cook.sh "$recipe_path" distclean
+    ./cook.sh "$recipe_path" distclean
 done
