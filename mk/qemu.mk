@@ -25,6 +25,7 @@ else ifeq ($(ARCH),x86_64)
 	QEMU_MEM?=2048
 	ifeq ($(uefi),yes)
 		FIRMWARE=$(firstword \
+			$(wildcard /usr/share/ovmf/OVMF.fd) \
 			$(wildcard /usr/share/OVMF/OVMF_CODE.fd) \
 		)
 		ifeq ($(FIRMWARE),)
@@ -176,6 +177,7 @@ else
 	EXTRANETARGS=
 	ifeq ($(netboot),yes)
 		EXTRANETARGS+=,tftp=$(BUILD),bootfile=redox.ipxe
+		QEMUFLAGS+=-kernel /usr/lib/ipxe/ipxe-amd64.efi
 	endif
 
 	ifneq ($(bridge),)
