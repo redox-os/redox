@@ -12,7 +12,9 @@ filesystem_size = 256
 orbdata = {}
 orbital = {}
 orbterm = {}
-orbutils = {}
+orbutils-background = {}
+orbutils-launcher = {}
+orbutils-orblogin = {}
 
 [[files]]
 path = "/usr/lib/init.d/20_orbital"
