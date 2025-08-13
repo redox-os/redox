@@ -4,8 +4,25 @@ branch = "master"
 
 [build]
 template = "custom"
+dependencies = [
+    "expat",
+    "fontconfig",
+    "freetype2",
+    "libpng",
+    "zlib",
+]
 script = """
-cookbook_cargo --no-default-features
+DYNAMIC_INIT
+"${COOKBOOK_CARGO}" rustc \
+    --manifest-path "${COOKBOOK_SOURCE}/Cargo.toml" \
+    --release \
+    --bin cosmic-reader \
+    --no-default-features \
+    --features mupdf \
+    -- \
+    -C link-args="-lpng -lexpat"
+mkdir -pv "${COOKBOOK_STAGE}/usr/bin/"
+cp -v "target/${TARGET}/release/cosmic-reader" "${COOKBOOK_STAGE}/usr/bin/"
 mkdir -pv "${COOKBOOK_STAGE}/ui/apps"
 cp -v "${COOKBOOK_RECIPE}/manifest" "${COOKBOOK_STAGE}/ui/apps/40_cosmic-reader"
 """
