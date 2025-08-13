@@ -325,7 +325,7 @@ if [ -n "$1" ]
 then
     if (echo "$1" | grep '.*/.*' >/dev/null); then
         recipe_name=$(basename "$1")
-        recipe_path="recipes/$1"
+        recipe_path="$1"
     else
         recipe_name="$1"
         recipe_path=`target/release/find_recipe $recipe_name`
