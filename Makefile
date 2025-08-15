@@ -30,7 +30,7 @@ rebuild:
 
 clean: $(CONTAINER_TAG)
 ifeq ($(PODMAN_BUILD),1)
-	$(PODMAN_RUN) $(MAKE) $@
+	$(PODMAN_RUN) make $@
 else
 	cd cookbook && ./clean.sh
 	-rm -rf cookbook/repo
@@ -43,7 +43,7 @@ endif
 
 distclean: $(CONTAINER_TAG)
 ifeq ($(PODMAN_BUILD),1)
-	$(PODMAN_RUN) $(MAKE) $@
+	$(PODMAN_RUN) make $@
 else
 	$(MAKE) clean
 	cd cookbook && ./unfetch.sh
@@ -82,7 +82,7 @@ include mk/ci.mk
 
 env: prefix FORCE $(CONTAINER_TAG)
 ifeq ($(PODMAN_BUILD),1)
-	$(PODMAN_RUN) $(MAKE) $@
+	$(PODMAN_RUN) make $@
 else
 	export PATH="$(PREFIX_PATH):$$PATH" && \
 	bash
