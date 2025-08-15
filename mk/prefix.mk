@@ -44,7 +44,7 @@ $(PREFIX)/relibc: $(ROOT)/relibc
 
 $(PREFIX)/relibc-install: $(PREFIX)/relibc | $(PREFIX)/rust-install $(CONTAINER_TAG)
 ifeq ($(PODMAN_BUILD),1)
-	$(PODMAN_RUN) $(MAKE) $@
+	$(PODMAN_RUN) make $@
 else
 	rm -rf "$@.partial" "$@"
 	cp -r "$(PREFIX)/rust-install" "$@.partial"
@@ -88,7 +88,7 @@ $(PREFIX)/libtool:
 
 $(PREFIX)/libtool-build: $(PREFIX)/libtool $(PREFIX)/rust-install
 ifeq ($(PODMAN_BUILD),1)
-	$(PODMAN_RUN) $(MAKE) $@
+	$(PODMAN_RUN) make $@
 else
 	rm -rf "$@.partial" "$@"
 	mkdir -p "$@.partial"
@@ -112,7 +112,7 @@ endif
 
 $(PREFIX)/sysroot: $(PREFIX)/relibc-install $(PREFIX)/libtool-build $(CONTAINER_TAG)
 ifeq ($(PODMAN_BUILD),1)
-	$(PODMAN_RUN) $(MAKE) $@
+	$(PODMAN_RUN) make $@
 else
 	rm -rf "$@"
 	cp -r "$(PREFIX)/relibc-install/" "$@"
@@ -161,7 +161,7 @@ $(PREFIX)/binutils: $(PREFIX)/binutils-$(BINUTILS_BRANCH).tar.bz2
 
 $(PREFIX)/binutils-install: $(PREFIX)/binutils $(CONTAINER_TAG)
 ifeq ($(PODMAN_BUILD),1)
-	$(PODMAN_RUN) $(MAKE) $@
+	$(PODMAN_RUN) make $@
 else
 	rm -rf "$<-build" "$@.partial" "$@"
 	mkdir -p "$<-build" "$@.partial"
@@ -197,7 +197,7 @@ $(PREFIX)/gcc: $(PREFIX)/gcc-$(GCC_BRANCH).tar.bz2
 
 $(PREFIX)/gcc-freestanding-install: $(PREFIX)/gcc | $(PREFIX)/binutils-install $(CONTAINER_TAG)
 ifeq ($(PODMAN_BUILD),1)
-	$(PODMAN_RUN) $(MAKE) $@
+	$(PODMAN_RUN) make $@
 else
 	rm -rf "$<-freestanding-build" "$@.partial" "$@"
 	mkdir -p "$<-freestanding-build"
@@ -233,7 +233,7 @@ $(PREFIX)/relibc-freestanding: $(ROOT)/relibc
 
 $(PREFIX)/relibc-freestanding-install: $(PREFIX)/relibc-freestanding | $(PREFIX_FREESTANDING_INSTALL) $(CONTAINER_TAG)
 ifeq ($(PODMAN_BUILD),1)
-	$(PODMAN_RUN) $(MAKE) $@
+	$(PODMAN_RUN) make $@
 else
 	rm -rf "$@.partial" "$@"
 	mkdir -p "$@.partial"
@@ -252,7 +252,7 @@ endif
 
 $(PREFIX)/gcc-install: $(PREFIX)/gcc | $(PREFIX)/relibc-freestanding-install $(CONTAINER_TAG)
 ifeq ($(PODMAN_BUILD),1)
-	$(PODMAN_RUN) $(MAKE) $@
+	$(PODMAN_RUN) make $@
 else
 	rm -rf "$<-build" "$@.partial" "$@"
 	mkdir -p "$<-build"
@@ -294,7 +294,7 @@ $(PREFIX)/gcc-install.tar.gz: $(PREFIX)/gcc-install
 
 $(PREFIX)/rust-install: $(ROOT)/rust/configure | $(PREFIX)/gcc-install $(PREFIX)/relibc-freestanding-install $(CONTAINER_TAG)
 ifeq ($(PODMAN_BUILD),1)
-	$(PODMAN_RUN) $(MAKE) $@
+	$(PODMAN_RUN) make $@
 else
 	rm -rf "$(PREFIX)/rust-build" "$@.partial" "$@"
 	mkdir -p "$(PREFIX)/rust-build"
