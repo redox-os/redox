@@ -24,7 +24,7 @@ minimal minimal-net server desktop demo: FORCE
 # CI packaging target
 ci-pkg: prefix $(FSTOOLS_TAG) $(CONTAINER_TAG) FORCE
 ifeq ($(PODMAN_BUILD),1)
-	$(PODMAN_RUN) $(MAKE) $@
+	$(PODMAN_RUN) make $@
 else
 	$(HOST_CARGO) build --manifest-path cookbook/Cargo.toml --release
 	$(HOST_CARGO) build --manifest-path cookbook/pkgar/Cargo.toml --release
@@ -40,7 +40,7 @@ endif
 # CI toolchain
 ci-toolchain: $(CONTAINER_TAG) FORCE
 ifeq ($(PODMAN_BUILD),1)
-	$(PODMAN_RUN) $(MAKE) $@
+	$(PODMAN_RUN) make $@
 else
 	$(MAKE) PREFIX_BINARY=0 \
 		"prefix/$(TARGET)/gcc-install.tar.gz" \
