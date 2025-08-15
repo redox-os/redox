@@ -13,5 +13,5 @@ dependencies = [
     "gnu-binutils",
     "gnu-make",
     "gcc13",
-    "libarchive"
+    "libarchive",
 ]
