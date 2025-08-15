@@ -2,7 +2,7 @@
 
 $(BUILD)/fetch.tag: prefix $(FSTOOLS_TAG) $(FILESYSTEM_CONFIG) $(CONTAINER_TAG)
 ifeq ($(PODMAN_BUILD),1)
-	$(PODMAN_RUN) $(MAKE) $@
+	$(PODMAN_RUN) make $@
 else
 	export PATH="$(PREFIX_PATH):$$PATH" && \
 	PACKAGES="$$($(LIST_PACKAGES) $(LIST_PACKAGES_OPTS) -c $(FILESYSTEM_CONFIG))" && \
@@ -15,7 +15,7 @@ endif
 
 $(REPO_TAG): $(BUILD)/fetch.tag $(FSTOOLS_TAG) $(CONTAINER_TAG)
 ifeq ($(PODMAN_BUILD),1)
-	$(PODMAN_RUN) $(MAKE) $@
+	$(PODMAN_RUN) make $@
 else
 	export PATH="$(PREFIX_PATH):$$PATH" && \
 	export COOKBOOK_HOST_SYSROOT="$(ROOT)/$(PREFIX_INSTALL)" && \
@@ -32,7 +32,7 @@ endif
 # Find recipe
 find.%: $(FSTOOLS_TAG) FORCE
 ifeq ($(PODMAN_BUILD),1)
-	$(PODMAN_RUN) $(MAKE) $@
+	$(PODMAN_RUN) make $@
 else
 	export PATH="$(PREFIX_PATH):$$PATH" && \
 	export COOKBOOK_HOST_SYSROOT="$(ROOT)/$(PREFIX_INSTALL)" && \
@@ -45,7 +45,7 @@ comma := ,
 # Invoke clean.sh for one or more targets separated by comma
 c.%: $(FSTOOLS_TAG) FORCE
 ifeq ($(PODMAN_BUILD),1)
-	$(PODMAN_RUN) $(MAKE) $@
+	$(PODMAN_RUN) make $@
 else
 	@if echo "$*" | grep -q ','; then \
 		$(MAKE) $(foreach f,$(subst $(comma), ,$*),c.$(f)); \
@@ -60,7 +60,7 @@ endif
 # Invoke fetch.sh for one or more targets separated by comma
 f.%: $(FSTOOLS_TAG) FORCE
 ifeq ($(PODMAN_BUILD),1)
-	$(PODMAN_RUN) $(MAKE) $@
+	$(PODMAN_RUN) make $@
 else
 	@if echo "$*" | grep -q ','; then \
 		$(MAKE) $(foreach f,$(subst $(comma), ,$*),f.$(f)); \
@@ -75,7 +75,7 @@ endif
 # Invoke repo.sh for one or more targets separated by comma
 r.%: $(FSTOOLS_TAG) FORCE
 ifeq ($(PODMAN_BUILD),1)
-	$(PODMAN_RUN) $(MAKE) $@
+	$(PODMAN_RUN) make $@
 else
 	@if echo "$*" | grep -q ','; then \
 		$(MAKE) $(foreach f,$(subst $(comma), ,$*),r.$(f)); \
@@ -90,7 +90,7 @@ endif
 # Invoke unfetch.sh for one or more targets separated by comma
 u.%: $(FSTOOLS_TAG) FORCE
 ifeq ($(PODMAN_BUILD),1)
-	$(PODMAN_RUN) $(MAKE) $@
+	$(PODMAN_RUN) make $@
 else
 	@if echo "$*" | grep -q ','; then \
 		$(MAKE) $(foreach f,$(subst $(comma), ,$*),u.$(f)); \
@@ -105,7 +105,7 @@ endif
 # Invoke clean.sh, and repo.sh for one of more targets separated by comma
 cr.%: $(FSTOOLS_TAG) FORCE
 ifeq ($(PODMAN_BUILD),1)
-	$(PODMAN_RUN) $(MAKE) $@
+	$(PODMAN_RUN) make $@
 else
 	$(MAKE) c.$*
 	$(MAKE) r.$*
@@ -114,7 +114,7 @@ endif
 # Invoke unfetch.sh, clean.sh, and repo.sh for one or more targets separated by comma
 ucr.%: $(FSTOOLS_TAG) FORCE
 ifeq ($(PODMAN_BUILD),1)
-	$(PODMAN_RUN) $(MAKE) $@
+	$(PODMAN_RUN) make $@
 else
 	$(MAKE) u.$*
 	$(MAKE) cr.$*
@@ -123,7 +123,7 @@ endif
 # Invoke unfetch.sh and clean.sh for one or more targets separated by comma
 uc.%: $(FSTOOLS_TAG) FORCE
 ifeq ($(PODMAN_BUILD),1)
-	$(PODMAN_RUN) $(MAKE) $@
+	$(PODMAN_RUN) make $@
 else
 	$(MAKE) u.$*
 	$(MAKE) c.$*
@@ -132,7 +132,7 @@ endif
 # Invoke unfetch, clean.sh and fetch.sh for one or more targets separated by comma
 ucf.%: $(FSTOOLS_TAG) FORCE
 ifeq ($(PODMAN_BUILD),1)
-	$(PODMAN_RUN) $(MAKE) $@
+	$(PODMAN_RUN) make $@
 else
 	$(MAKE) uc.$*
 	$(MAKE) f.$*
