@@ -1,6 +1,6 @@
 # Configuration file to install the recipe dependencies inside the Podman container
 
-FROM debian:stable-backports
+FROM debian:trixie
 
 # _UID_ must be replaced with the user's uid on host
 # podman root is mapped to your user id on host during build,
@@ -8,7 +8,7 @@ FROM debian:stable-backports
 RUN useradd --create-home --no-log-init --uid _UID_ poduser \
     && chown -R root:root /home \
     && apt-get update \
-    && apt-get install -y --no-install-recommends -t stable-backports \
+    && apt-get install -y --no-install-recommends \
 		ant \
 		appstream \
 		appstream-compose \
