@@ -124,6 +124,17 @@ ifneq ($(ARCH),$(HOST_ARCH))
 	kvm?=no
 endif
 
+# wsl2: run qemu on windows instead
+ifeq ($(QEMU_ON_WINDOWS),1)
+	QEMU:=$(QEMU).exe
+	WINDOWS_DISK=/mnt/c/ProgramData/redox.qcow2
+	disk=windows
+	net=windows
+	QEMU_MACHINE=pc
+	FIRMWARE=
+	QEMU_KERNEL=
+endif
+
 ifneq ($(FIRMWARE),)
 	QEMUFLAGS+=-bios $(FIRMWARE)
 endif
@@ -186,6 +197,8 @@ else
 		# port 8080 and 8083 - webservers
 		# port 64126 - our gdbserver implementation
 		QEMUFLAGS+=-netdev user,id=net0,hostfwd=tcp::8080-:8080,hostfwd=tcp::8083-:8083,hostfwd=tcp::64126-:64126$(EXTRANETARGS)
+	else ifeq ($(net),windows)
+		QEMUFLAGS+=-netdev user,id=net0$(EXTRANETARGS)
 	else
 		QEMUFLAGS+=-netdev user,id=net0$(EXTRANETARGS) -object filter-dump,id=f1,netdev=net0,file=$(BUILD)/network.pcap
 	endif
@@ -228,6 +241,9 @@ else ifeq ($(disk),cdrom)
 
 else ifeq ($(disk),sdcard)
 	QEMUFLAGS+=-drive file=$(DISK),if=sd,format=raw
+else ifeq ($(disk),windows)
+	QEMUFLAGS+= \
+		-drive file="$(shell wslpath -w $(WINDOWS_DISK))",if=virtio
 endif
 
 ifeq ($(gdb),yes)
@@ -236,7 +252,11 @@ endif
 
 ifeq ($(UNAME),Linux)
 	ifneq ($(kvm),no)
-		QEMUFLAGS+=-enable-kvm -cpu host
+		ifeq ($(QEMU_ON_WINDOWS),1)
+			QEMUFLAGS+=-accel whpx,kernel-irqchip=off -cpu Haswell,-tsc
+		else
+			QEMUFLAGS+=-enable-kvm -cpu host
+		endif
 	else
 		QEMUFLAGS+=-cpu $(QEMU_CPU)
 	endif
@@ -260,6 +280,8 @@ qemu-deps: $(DISK)
 
 ifeq ($(disk),usb)
 else ifeq ($(disk),sdcard)
+else ifeq ($(disk),windows)
+qemu-deps: $(WINDOWS_DISK)
 else
 qemu-deps: $(EXTRA_DISK)
 endif
@@ -280,6 +302,11 @@ endif
 
 $(EXTRA_DISK):
 	truncate -s 1g $@
+
+$(WINDOWS_DISK): $(BUILD)/harddrive.img
+	rm -f $@
+	mkdir -p $(shell dirname $@)
+	qemu-img.exe convert -f raw -O qcow2 "\$(shell wslpath -w $<)" "$(shell wslpath -w $@)"
 
 $(BUILD)/raspi3bp_uboot.rom:
 	wget -O $@ https://gitlab.redox-os.org/Ivan/redox_firmware/-/raw/main/platform/raspberry_pi/rpi3/u-boot-rpi-3-b-plus.bin
