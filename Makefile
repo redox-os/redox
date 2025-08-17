@@ -34,9 +34,8 @@ ifeq ($(PODMAN_BUILD),1)
 else
 	cd cookbook && ./clean.sh
 	-rm -rf cookbook/repo
-	cargo clean --manifest-path installer/Cargo.toml
-	cargo clean --manifest-path redoxfs/Cargo.toml
-	cargo clean --manifest-path relibc/Cargo.toml
+	$(MAKE) fstools_clean
+	$(HOST_CARGO) clean --manifest-path relibc/Cargo.toml
 endif
 	-$(FUMOUNT) $(BUILD)/filesystem/ || true
 	-$(FUMOUNT) /tmp/redox_installer/ || true

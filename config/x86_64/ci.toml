@@ -7,6 +7,17 @@ prompt = false
 
 # Package settings
 [packages]
+
+# Meta-packages below
+
+dev-essential = {}
+dev-redox = {}
+redox-tests = {}
+#x11-minimal = { # needs all dependencies added below
+#x11-full = {} # needs all dependencies added below
+
+# Normal packages below
+
 acid = {}
 #atk = {} # depends on glib which does not build
 autoconf = {}
@@ -130,9 +141,9 @@ orbdata = {}
 orbital = {}
 orbterm = {}
 orbutils = {}
-#orbutils-background = {} # needs recipe update
-#orbutils-launcher = {} # needs recipe update
-#orbutils-orblogin = {} # needs recipe update
+orbutils-background = {}
+orbutils-launcher = {}
+orbutils-orblogin = {}
 osdemo = {}
 #pango = {} # undefined references to std::__throw_system_error(int)
 #pastel = {} # needs crate patches for redox-unix

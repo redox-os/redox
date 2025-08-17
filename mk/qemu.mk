@@ -25,6 +25,7 @@ else ifeq ($(ARCH),x86_64)
 	QEMU_MEM?=2048
 	ifeq ($(uefi),yes)
 		FIRMWARE=$(firstword \
+			$(wildcard /usr/share/ovmf/OVMF.fd) \
 			$(wildcard /usr/share/OVMF/OVMF_CODE.fd) \
 		)
 		ifeq ($(FIRMWARE),)
@@ -78,6 +79,11 @@ else ifeq ($(ARCH),aarch64)
 		ifneq ($(usb),no)
 			QEMUFLAGS+=-device qemu-xhci -device usb-kbd -device usb-tablet
 		endif
+	endif
+
+	# Default to using HVF when host is MacOS Silicon
+	ifeq ($(HOST_ARCH),arm64)
+		kvm?=yes
 	endif
 else ifeq ($(ARCH),riscv64gc)
 	live=no
@@ -176,6 +182,7 @@ else
 	EXTRANETARGS=
 	ifeq ($(netboot),yes)
 		EXTRANETARGS+=,tftp=$(BUILD),bootfile=redox.ipxe
+		QEMUFLAGS+=-kernel /usr/lib/ipxe/ipxe-amd64.efi
 	endif
 
 	ifneq ($(bridge),)
@@ -241,7 +248,11 @@ ifeq ($(UNAME),Linux)
 endif
 
 ifeq ($(UNAME),Darwin)
-	QEMUFLAGS+=-cpu $(QEMU_CPU)
+    ifneq ($(kvm),no)
+        QEMUFLAGS+=-accel hvf -cpu max
+    else
+        QEMUFLAGS+=-cpu $(QEMU_CPU)
+    endif
 endif
 
 ifneq ($(PFLASH0),)

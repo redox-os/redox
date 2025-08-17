@@ -70,3 +70,18 @@ ifeq ($(PODMAN_BUILD),1)
 else
 	@echo PODMAN_BUILD=$(PODMAN_BUILD), container not required.
 endif
+
+KERNEL_PATH := cookbook/recipes/core/kernel
+KERNEL_PATH_SOURCE := $(ROOT)/$(KERNEL_PATH)/source
+KERNEL_PATH_TARGET := $(ROOT)/$(KERNEL_PATH)/target/$(TARGET)
+
+# TODO: make this work using `make debug.kernel` and remove this
+kernel_debugger:
+	@echo "Building and running gdbgui container..."
+	podman build -t redox-kernel-debug - < $(ROOT)/podman/redox-gdb-containerfile
+	podman run --rm -p 5000:5000 -it --name redox-gdb \
+		-v "$(KERNEL_PATH_TARGET)/build/kernel.sym:/kernel.sym" \
+		-v "$(KERNEL_PATH_SOURCE)/src:/src" \
+		redox-kernel-debug --gdb-cmd "gdb -ex 'set confirm off' \
+			-ex 'add-symbol-file /kernel.sym' \
+			-ex 'target remote host.containers.internal:1234'"

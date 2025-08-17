@@ -45,7 +45,8 @@ img:
       cargo binstall --no-confirm --version 1.16.0 just &&
       cargo binstall --no-confirm --version 0.27.0 cbindgen &&
       cargo build --manifest-path installer/Cargo.toml --release &&
-      PODMAN_BUILD=0 REPO_BINARY=1 make ci-img IMG_TAG=$CI_COMMIT_REF_NAME
+      PODMAN_BUILD=0 REPO_BINARY=1 make ci-img IMG_TAG=$CI_COMMIT_REF_NAME &&
+      ([ $CI_MERGE_REQUEST_TARGET_BRANCH_NAME == "master" ] && rm -rf build/img/* || true)
   artifacts:
     paths:
       - build/img/
@@ -56,6 +57,7 @@ img:
   rules:
     - if: '$CI_PIPELINE_SOURCE == "push"'
       when: manual
+      allow_failure: true
     - when: never
   image:
     name: alpine/git:latest
