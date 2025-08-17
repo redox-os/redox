@@ -40,10 +40,7 @@ img:
   script:
     - |
       source "$HOME/.cargo/env" &&
-      curl -L --proto '=https' --tlsv1.2 -sSf https://raw.githubusercontent.com/cargo-bins/cargo-binstall/main/install-from-binstall-release.sh | bash &&
-      cargo binstall --no-confirm --version 0.1.1 cargo-config &&
-      cargo binstall --no-confirm --version 1.16.0 just &&
-      cargo binstall --no-confirm --version 0.27.0 cbindgen &&
+      bash podman/rustinstall.sh &&
       cargo build --manifest-path installer/Cargo.toml --release &&
       PODMAN_BUILD=0 REPO_BINARY=1 make ci-img IMG_TAG=$CI_COMMIT_REF_NAME &&
       ([ $CI_MERGE_REQUEST_TARGET_BRANCH_NAME == "master" ] && rm -rf build/img/* || true)
