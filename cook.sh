@@ -288,6 +288,7 @@ function op {
             ;;
         unstage)
             rm -rfv "${COOKBOOK_STAGE}"
+            rm -fv "${TARGET_DIR}/auto_deps.toml"
             ;;
         pkg)
             pkgar \
