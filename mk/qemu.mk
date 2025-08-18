@@ -132,12 +132,13 @@ endif
 # wsl2: run qemu on windows instead
 ifeq ($(QEMU_ON_WINDOWS),1)
 	QEMU:=$(QEMU).exe
-	WINDOWS_DISK=/mnt/c/ProgramData/redox.qcow2
+	WINDOWS_DISK=/mnt/c/ProgramData/redox.img
 	disk=windows
 	net=windows
 	QEMU_MACHINE=pc
 	FIRMWARE=
 	QEMU_KERNEL=
+	QEMUFLAGS+=-device usb-tablet
 endif
 
 ifneq ($(FIRMWARE),)
@@ -248,7 +249,7 @@ else ifeq ($(disk),sdcard)
 	QEMUFLAGS+=-drive file=$(DISK),if=sd,format=raw
 else ifeq ($(disk),windows)
 	QEMUFLAGS+= \
-		-drive file="$(shell wslpath -w $(WINDOWS_DISK))",if=virtio
+		-drive file="$(shell wslpath -w $(WINDOWS_DISK))",format=raw,if=virtio
 endif
 
 ifeq ($(gdb),yes)
@@ -258,7 +259,7 @@ endif
 ifeq ($(UNAME),Linux)
 	ifneq ($(kvm),no)
 		ifeq ($(QEMU_ON_WINDOWS),1)
-			QEMUFLAGS+=-accel whpx,kernel-irqchip=off -cpu Haswell,-tsc
+			QEMUFLAGS+=-accel whpx,kernel-irqchip=off -cpu Broadwell,x2apic=off
 		else
 			QEMUFLAGS+=-enable-kvm -cpu host
 		endif
@@ -315,7 +316,7 @@ $(EXTRA_DISK):
 $(WINDOWS_DISK): $(BUILD)/harddrive.img
 	rm -f $@
 	mkdir -p $(shell dirname $@)
-	qemu-img.exe convert -f raw -O qcow2 "\$(shell wslpath -w $<)" "$(shell wslpath -w $@)"
+	cp "$<" "$@"
 
 $(BUILD)/raspi3bp_uboot.rom:
 	wget -O $@ https://gitlab.redox-os.org/Ivan/redox_firmware/-/raw/main/platform/raspberry_pi/rpi3/u-boot-rpi-3-b-plus.bin
