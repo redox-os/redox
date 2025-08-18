@@ -244,12 +244,10 @@ else ifeq ($(disk),cdrom)
 	QEMUFLAGS+= \
 		-boot d -cdrom $(DISK) \
 		-drive file=$(EXTRA_DISK),format=raw
-
 else ifeq ($(disk),sdcard)
 	QEMUFLAGS+=-drive file=$(DISK),if=sd,format=raw
 else ifeq ($(disk),windows)
-	QEMUFLAGS+= \
-		-drive file="$(shell wslpath -w $(WINDOWS_DISK))",format=raw,if=virtio
+	QEMUFLAGS+=-drive file="$(shell wslpath -w $(WINDOWS_DISK))",format=raw,if=virtio
 endif
 
 ifeq ($(gdb),yes)
