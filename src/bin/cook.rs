@@ -1084,6 +1084,7 @@ done
         rename(&stage_dir_tmp, &stage_dir)?;
     }
 
+    // Calculate automatic dependencies
     let auto_deps_path = target_dir.join("auto_deps.toml");
 
     if auto_deps_path.is_file() && modified(&auto_deps_path)? < modified(&stage_dir)? {
