@@ -80,6 +80,11 @@ else ifeq ($(ARCH),aarch64)
 			QEMUFLAGS+=-device qemu-xhci -device usb-kbd -device usb-tablet
 		endif
 	endif
+
+	# Default to using HVF when host is MacOS Silicon
+	ifeq ($(HOST_ARCH),arm64)
+		kvm?=yes
+	endif
 else ifeq ($(ARCH),riscv64gc)
 	live=no
 	efi=yes
@@ -263,7 +268,11 @@ ifeq ($(UNAME),Linux)
 endif
 
 ifeq ($(UNAME),Darwin)
-	QEMUFLAGS+=-cpu $(QEMU_CPU)
+    ifneq ($(kvm),no)
+        QEMUFLAGS+=-accel hvf -cpu max
+    else
+        QEMUFLAGS+=-cpu $(QEMU_CPU)
+    endif
 endif
 
 ifneq ($(PFLASH0),)
