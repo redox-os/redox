@@ -1014,6 +1014,17 @@ do
 done
 "#;
 
+        let flags_fn = |name, flags: &Vec<String>| {
+            format!(
+                "{name}+=(\n{}\n)\n",
+                flags
+                    .iter()
+                    .map(|s| format!("  \"{s}\""))
+                    .collect::<Vec<String>>()
+                    .join("\n")
+            )
+        };
+
         //TODO: better integration with redoxer (library instead of binary)
         //TODO: configurable target
         //TODO: Add more configurability, convert scripts to Rust?
@@ -1027,7 +1038,18 @@ done
                     package_path.as_deref().unwrap_or(".")
                 )
             }
-            BuildKind::Configure => "cookbook_configure".to_owned(),
+            BuildKind::Configure { configureflags } => format!(
+                "DYNAMIC_INIT\n{}cookbook_configure",
+                flags_fn("COOKBOOK_CONFIGURE_FLAGS", configureflags),
+            ),
+            BuildKind::Cmake { cmakeflags } => format!(
+                "DYNAMIC_INIT\n{}cookbook_cmake",
+                flags_fn("COOKBOOK_CMAKE_FLAGS", cmakeflags),
+            ),
+            BuildKind::Meson { mesonflags } => format!(
+                "DYNAMIC_INIT\n{}cookbook_meson",
+                flags_fn("COOKBOOK_MESON_FLAGS", mesonflags),
+            ),
             BuildKind::Custom { script } => script.clone(),
             BuildKind::None => "".to_owned(),
         };

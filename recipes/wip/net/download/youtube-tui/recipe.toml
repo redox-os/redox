@@ -2,10 +2,8 @@
 [source]
 git = "https://github.com/Siriusmart/youtube-tui"
 [build]
-template = "custom"
+template = "cargo"
+cargoflags = "--no-default-features"
 dependencies = [
     "openssl1",
 ]
-script = """
-cookbook_cargo --no-default-features
-"""
