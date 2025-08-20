@@ -1,4 +1,4 @@
-use std::{convert::TryInto, fs, path::PathBuf};
+use std::{collections::BTreeSet, convert::TryInto, fs, path::PathBuf};
 
 use pkg::{package::PackageError, recipes, PackageName};
 use serde::{
@@ -213,6 +213,11 @@ impl CookRecipe {
 
         Ok(recipes)
     }
+}
+
+#[derive(Serialize, Deserialize)]
+pub struct AutoDeps {
+    pub packages: BTreeSet<PackageName>,
 }
 
 #[cfg(test)]

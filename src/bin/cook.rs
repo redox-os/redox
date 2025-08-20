@@ -1,7 +1,8 @@
 use cookbook::blake3::blake3_progress;
-use cookbook::recipe::{BuildKind, CookRecipe, Recipe, SourceRecipe};
+use cookbook::recipe::{AutoDeps, BuildKind, CookRecipe, Recipe, SourceRecipe};
 use pkg::package::Package;
 use pkg::{recipes, PackageName};
+use serde::Serialize;
 use std::collections::VecDeque;
 use std::convert::TryInto;
 use std::{
@@ -184,6 +185,20 @@ fn run_command_stdin(mut command: process::Command, stdin_data: &[u8]) -> Result
         ));
     }
 
+    Ok(())
+}
+
+fn serialize_and_write<T: Serialize>(file_path: &Path, content: &T) -> Result<(), String> {
+    let toml_content = toml::to_string(content).map_err(|err| {
+        format!(
+            "Failed to serialize content for '{}': {}",
+            file_path.display(),
+            err
+        )
+    })?;
+
+    fs::write(file_path, toml_content)
+        .map_err(|err| format!("Failed to write to file '{}': {}", file_path.display(), err))?;
     Ok(())
 }
 
@@ -704,16 +719,16 @@ fn build(
     let sysroot_dir = target_dir.join("sysroot");
     // Rebuild sysroot if source is newer
     //TODO: rebuild on recipe changes
-    if sysroot_dir.is_dir()
-        && (modified_dir(&sysroot_dir)? < source_modified
-            || modified_dir(&sysroot_dir)? < deps_modified)
-    {
-        eprintln!(
-            "DEBUG: '{}' newer than '{}'",
-            source_dir.display(),
-            sysroot_dir.display()
-        );
-        remove_all(&sysroot_dir)?;
+    if sysroot_dir.is_dir() {
+        let sysroot_modified = modified_dir(&sysroot_dir)?;
+        if sysroot_modified < source_modified || sysroot_modified < deps_modified {
+            eprintln!(
+                "DEBUG: '{}' newer than '{}'",
+                source_dir.display(),
+                sysroot_dir.display()
+            );
+            remove_all(&sysroot_dir)?;
+        }
     }
     if !sysroot_dir.is_dir() {
         // Create sysroot.tmp
@@ -754,16 +769,16 @@ fn build(
     let stage_dir = target_dir.join("stage");
     // Rebuild stage if source is newer
     //TODO: rebuild on recipe changes
-    if stage_dir.is_dir()
-        && (modified_dir(&stage_dir)? < source_modified
-            || modified_dir(&stage_dir)? < deps_modified)
-    {
-        eprintln!(
-            "DEBUG: '{}' newer than '{}'",
-            source_dir.display(),
-            stage_dir.display()
-        );
-        remove_all(&stage_dir)?;
+    if stage_dir.is_dir() {
+        let stage_modified = modified_dir(&stage_dir)?;
+        if stage_modified < source_modified || stage_modified < deps_modified {
+            eprintln!(
+                "DEBUG: '{}' newer than '{}'",
+                source_dir.display(),
+                stage_dir.display()
+            );
+            remove_all(&stage_dir)?;
+        }
     }
 
     if !stage_dir.is_dir() {
@@ -1070,7 +1085,24 @@ done
     }
 
     // Calculate automatic dependencies
-    let auto_deps = auto_deps(&stage_dir, &dep_pkgars);
+    let auto_deps_path = target_dir.join("auto_deps.toml");
+
+    if auto_deps_path.is_file() && modified(&auto_deps_path)? < modified(&stage_dir)? {
+        remove_all(&auto_deps_path)?
+    }
+
+    let auto_deps = if auto_deps_path.exists() {
+        let toml_content =
+            fs::read_to_string(&auto_deps_path).map_err(|_| "failed to read cached auto_deps")?;
+        let wrapper: AutoDeps =
+            toml::from_str(&toml_content).map_err(|_| "failed to deserialize cached auto_deps")?;
+        wrapper.packages
+    } else {
+        let packages = auto_deps(&stage_dir, &dep_pkgars);
+        let wrapper = AutoDeps { packages };
+        serialize_and_write(&auto_deps_path, &wrapper)?;
+        wrapper.packages
+    };
 
     Ok((stage_dir, auto_deps))
 }
@@ -1137,15 +1169,14 @@ fn package_toml(
             depends.push(dep.clone());
         }
     }
-    let stage_toml = toml::to_string(&Package {
+    let package = Package {
         name: name.clone(),
         version: package_version(recipe),
         target: env::var("TARGET").map_err(|err| format!("failed to read TARGET: {:?}", err))?,
         depends,
-    })
-    .map_err(|err| format!("failed to serialize stage.toml: {:?}", err))?;
-    fs::write(target_dir.join("stage.toml"), stage_toml)
-        .map_err(|err| format!("failed to write stage.toml: {:?}", err))?;
+    };
+
+    serialize_and_write(&target_dir.join("stage.toml"), &package)?;
 
     return Ok(());
 }
