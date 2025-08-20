@@ -15,12 +15,10 @@ dependencies = [
     "shared-mime-info",
     "zlib",
 ]
-template = "custom"
-script = """
-DYNAMIC_INIT
-cookbook_meson \
-    -Dbuiltin_loaders=all \
-    -Dgir=false \
-    -Dinstalled_tests=false \
-    -Dx11=false
-"""
+template = "meson"
+mesonflags = [
+    "-Dbuiltin_loaders=all",
+    "-Dgir=false",
+    "-Dinstalled_tests=false",
+    "-Dx11=false",
+]
