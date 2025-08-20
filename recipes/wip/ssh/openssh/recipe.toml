@@ -1,13 +1,20 @@
-#TODO update the patch to match the current version
-#TODO does the patch is still needed?
+#TODO compiled but not tested
+#TODO lack of utmpx.h and resolv.h, expect dns not working
+#TODO maybe actually implement utmpx.h in relibc?
 [source]
 tar = "https://cdn.openbsd.org/pub/OpenBSD/OpenSSH/portable/openssh-9.8p1.tar.gz"
 patches = [
     "redox.patch",
 ]
 [build]
-template = "configure"
+template = "custom"
 dependencies = [
     "openssl1",
     "zlib",
 ]
+script = """
+DYNAMIC_INIT
+cookbook_configure
+mv "${COOKBOOK_STAGE}"/usr/sbin/sshd "${COOKBOOK_STAGE}"/usr/bin/sshd
+rmdir "${COOKBOOK_STAGE}"/usr/sbin
+"""
