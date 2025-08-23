@@ -16,12 +16,12 @@ dependencies = [
     "libpng",
 ]
 script = """
-export LDFLAGS="-static"
+DYNAMIC_INIT
 
-COOKBOOK_CONFIGURE="${COOKBOOK_SOURCE}/configure"
+export LDFLAGS+=" -lorbital"
 COOKBOOK_CONFIGURE_FLAGS=(
     --host="${TARGET}"
-    --prefix=""
+    --prefix="/usr"
     --with-sdl-prefix="${COOKBOOK_SYSROOT}"
     --with-freetype2-prefix="${COOKBOOK_SYSROOT}"
     --with-png-prefix="${COOKBOOK_SYSROOT}"

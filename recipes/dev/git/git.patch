@@ -152,7 +152,7 @@ diff -ruwN git-2.13.1/git-compat-util.h source/git-compat-util.h
 +
 +#ifndef DEV_NULL
 +#if defined(__redox__)
-+#define DEV_NULL "null:"
++#define DEV_NULL "/scheme/null"
 +#else
 +#define DEV_NULL "/dev/null"
 +#endif
