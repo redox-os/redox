@@ -14,13 +14,14 @@ dependencies = [
 ]
 template = "custom"
 script = """
+DYNAMIC_INIT
 export CFLAGS="-I${COOKBOOK_SYSROOT}/include/SDL"
 export CPPFLAGS="-I${COOKBOOK_SYSROOT}/include/SDL"
-export LDFLAGS="-L${COOKBOOK_SYSROOT}/lib -static"
+export LDFLAGS+=" -lorbital"
 COOKBOOK_CONFIGURE_FLAGS+=(
     --disable-opengl
     --disable-sdltest
-    --with-sdl-prefix="${COOKBOOK_SYSROOT}"
+    --with-sdl
 )
 cookbook_configure
 
