@@ -5,6 +5,7 @@ blake3 = "0d1c9fdf53c0ca4bd66ba707d49a079d2dd6f5a960cdec74a56e29952c4ffe73"
 [build]
 template = "custom"
 script = """
+DYNAMIC_INIT
 COOKBOOK_CONFIGURE_FLAGS+=(
     --disable-db-install
     --disable-stripping

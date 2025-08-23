@@ -3,7 +3,7 @@ tar = "https://downloads.scummvm.org/frs/scummvm/2.0.0/scummvm-2.0.0.tar.xz"
 blake3 = "02e6791fd43ad3cb4238c07d23350ca1459a0f692689e585dba1d46648f64327"
 patches = ["redox.patch"]
 script = """
-wget -O config.sub "https://gitlab.redox-os.org/redox-os/gnu-config/-/raw/master/config.sub?inline=false"
+GNU_CONFIG_GET config.sub
 """
 
 [build]

@@ -28,6 +28,5 @@ COOKBOOK_CONFIGURE_FLAGS=(
     --disable-music-midi
     --disable-music-mod
 )
-set -x
 cookbook_configure
 """

@@ -6,18 +6,9 @@ patches = [
 ]
 script = """
 DYNAMIC_INIT
+GNU_CONFIG_GET config.sub
 autotools_recursive_regenerate
 """
 
 [build]
-template = "custom"
-script = """
-DYNAMIC_INIT
-COOKBOOK_CONFIGURE_FLAGS=(
-    --host="${GNU_TARGET}"
-    --prefix="/usr"
-    --enable-shared
-    --enable-static
-)
-cookbook_configure
-"""
+template = "configure"

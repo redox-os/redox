@@ -2,6 +2,7 @@
 git = "https://gitlab.redox-os.org/redox-os/llvm-project.git"
 upstream = "https://github.com/rust-lang/llvm-project.git"
 branch = "redox-2024-05-11"
+shallow_clone = true
 
 [build]
 template = "custom"
