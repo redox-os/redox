@@ -11,6 +11,7 @@ dependencies = [
     "zlib"
 ]
 script = """
+DYNAMIC_INIT
 EXAMPLES=(
     window
 )
@@ -21,9 +22,7 @@ do
         --release \
         --manifest-path "${COOKBOOK_SOURCE}/glutin_examples/Cargo.toml" \
         --example "${example}" \
-        -- \
-        -L "${COOKBOK_SYSROOT}/lib" \
-        -C link-args="-Wl,-Bstatic $("${TARGET}-pkg-config" --libs osmesa) -lz -lstdc++ -lc -lgcc"
+        -- -C link-args="$LDFLAGS $("${TARGET}-pkg-config" --libs osmesa) -lz -lstdc++ -lc -lgcc"
     mkdir -pv "${COOKBOOK_STAGE}/bin"
     cp -v "target/${TARGET}/release/examples/${example}" "${COOKBOOK_STAGE}/bin/glutin_${example}"
 done

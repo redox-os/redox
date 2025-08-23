@@ -6,7 +6,7 @@ dependencies = [
     "ncurses",
 ]
 script = """
-export CPPFLAGS="-I${COOKBOOK_SYSROOT}/include/ncurses"
+DYNAMIC_INIT
 cookbook_configure
 """
 

@@ -3,7 +3,7 @@ tar = "https://invisible-island.net/archives/vttest/vttest-20140305.tgz"
 blake3 = "b515b9a5e1f1498ed99e1a1c172fbcfdf2b7a214e185bd2005cc994407ded89e"
 patches = ["redox.patch"]
 script = """
-wget -O config.sub "https://gitlab.redox-os.org/redox-os/gnu-config/-/raw/master/config.sub?inline=false"
+GNU_CONFIG_GET config.sub
 """
 
 [build]

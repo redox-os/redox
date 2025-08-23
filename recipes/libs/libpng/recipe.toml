@@ -4,7 +4,7 @@ blake3 = "36f4bbb48c70975116b00ab0cff577931b96f703b2774ac3b33131d001419435"
 script = """
 DYNAMIC_INIT
 chmod +w config.sub
-wget -O config.sub "https://gitlab.redox-os.org/redox-os/gnu-config/-/raw/master/config.sub?inline=false"
+GNU_CONFIG_GET config.sub
 autotools_recursive_regenerate
 """
 
