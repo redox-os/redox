@@ -18,6 +18,7 @@ dependencies = [
 script = """
 DYNAMIC_INIT
 
+export LDFLAGS="$LDFLAGS -lSDL2 -lorbital -lOSMesa -lstdc++"
 ARCH="${TARGET%%-*}"
 COOKBOOK_CONFIGURE_FLAGS=(
     --enable-cross-compile

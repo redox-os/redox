@@ -31,8 +31,6 @@ case "${TARGET}" in
         ;;
 esac
 
-export LDFLAGS="-Wl,-rpath-link,${COOKBOOK_SYSROOT}/lib $LDFLAGS"
-
 COOKBOOK_CMAKE_FLAGS=(
     -DCMAKE_CXX_FLAGS="--std=gnu++11"
     -DBUILD_SHARED_LIBS=False
@@ -68,7 +66,5 @@ COOKBOOK_CMAKE_FLAGS=(
     -DLLVM_ENABLE_PROJECTS="llvm"
 )
 
-set -x
 cookbook_cmake "${COOKBOOK_SOURCE}/llvm"
-set +x
 """
