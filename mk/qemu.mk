@@ -22,6 +22,7 @@ ifeq ($(ARCH),i686)
 	endif
 else ifeq ($(ARCH),x86_64)
 	gpu?=vga
+	uefi?=yes
 	VGA_SUPPORTED=yes
 	QEMU_ARCH=x86_64
 	QEMU_MACHINE?=q35
@@ -90,7 +91,6 @@ else ifeq ($(ARCH),aarch64)
 	endif
 else ifeq ($(ARCH),riscv64gc)
 	live=no
-	efi=yes
 	audio=no
 	gpu?=ramfb
 	net=bridge
@@ -272,6 +272,9 @@ endif
 
 ifeq ($(gdb),yes)
 	QEMUFLAGS+=-d cpu_reset -s -S
+else ifeq ($(gdb),nonblock)
+	# Allow attaching gdb, but don't block for it
+	QEMUFLAGS+=-d cpu_reset -s
 endif
 
 ifeq ($(UNAME),Linux)
