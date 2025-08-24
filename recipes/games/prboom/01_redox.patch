@@ -1,15 +1,3 @@
-diff -burpN source-original/configure.ac source/configure.ac
---- source-original/configure.ac	2008-11-09 12:12:37.000000000 -0700
-+++ source/configure.ac	2024-09-07 10:06:36.540104562 -0600
-@@ -85,8 +85,6 @@ if test "$cross_compiling" != "yes"; the
- fi
- 
- dnl --- Header files, typedefs, structures
--AC_TYPE_UID_T
--AC_TYPE_SIZE_T
- AC_DECL_SYS_SIGLIST
- AC_HEADER_SYS_WAIT
- AC_CHECK_HEADERS(unistd.h asm/byteorder.h sched.h)
 diff -burpN source-original/src/m_misc.c source/src/m_misc.c
 --- source-original/src/m_misc.c	2008-11-09 10:13:04.000000000 -0700
 +++ source/src/m_misc.c	2024-09-07 10:09:06.890301682 -0600
