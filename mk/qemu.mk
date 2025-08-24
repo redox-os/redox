@@ -3,10 +3,13 @@
 QEMU=SDL_VIDEO_X11_DGAMOUSE=0 qemu-system-$(QEMU_ARCH)
 QEMUFLAGS=-d guest_errors -name "Redox OS $(ARCH)"
 netboot?=no
+VGA_SUPPORTED=no
 
 ifeq ($(ARCH),i686)
 	audio?=ac97
+	gpu?=vga
 	uefi=no
+	VGA_SUPPORTED=yes
 	QEMU_ARCH=i386
 	QEMU_MACHINE?=pc
 	QEMU_CPU?=pentium2
@@ -18,6 +21,8 @@ ifeq ($(ARCH),i686)
 		kvm?=yes
 	endif
 else ifeq ($(ARCH),x86_64)
+	gpu?=vga
+	VGA_SUPPORTED=yes
 	QEMU_ARCH=x86_64
 	QEMU_MACHINE?=q35
 	QEMU_CPU?=core2duo
@@ -43,6 +48,7 @@ else ifeq ($(ARCH),aarch64)
 	# setting up a framebuffer ourself.
 	uefi?=yes
 	live?=yes
+	gpu?=ramfb
 	QEMU_ARCH=aarch64
 	QEMU_MACHINE?=virt
 	QEMU_CPU=max
@@ -73,9 +79,6 @@ else ifeq ($(ARCH),aarch64)
 		else
 			FIRMWARE=$(BUILD)/qemu_uboot.rom
 		endif
-		ifneq ($(gpu),no)
-			QEMUFLAGS+=-device ramfb
-		endif
 		ifneq ($(usb),no)
 			QEMUFLAGS+=-device qemu-xhci -device usb-kbd -device usb-tablet
 		endif
@@ -84,7 +87,7 @@ else ifeq ($(ARCH),riscv64gc)
 	live=no
 	efi=yes
 	audio=no
-	vga=no # virtio-gpu-pci
+	gpu?=ramfb
 	net=bridge
 	QEMU_ARCH=riscv64
 	# QEMU_MACHINE=virt  for ACPI mode instead of DTB
@@ -106,9 +109,6 @@ else ifeq ($(ARCH),riscv64gc)
 		$(wildcard /usr/share/qemu/edk2-riscv-vars.fd) \
 		$(wildcard /opt/homebrew/opt/qemu/share/qemu/edk2-riscv-vars.fd) \
 	)
-	ifneq ($(vga),no)
-		QEMUFLAGS+=-device ramfb
-	endif
 	ifneq ($(usb),no)
 		QEMUFLAGS+=-device qemu-xhci -device usb-kbd -device usb-tablet
 	endif
@@ -193,12 +193,32 @@ endif
 
 ifeq ($(gpu),no)
 	QEMUFLAGS+=-nographic -vga none
+else ifeq ($(gpu),vga)
+	ifeq ($(VGA_SUPPORTED),yes)
+		QEMUFLAGS+=-vga std
+	else
+		QEMUFLAGS+=-vga none -device secondary-vga
+	endif
+else ifeq ($(gpu),ramfb)
+	QEMUFLAGS+=-vga none -device ramfb
 else ifeq ($(gpu),multi)
-	QEMUFLAGS+=-display sdl -vga none -device virtio-gpu,max_outputs=2
+	ifeq ($(VGA_SUPPORTED),yes)
+		QEMUFLAGS+=-display sdl -vga none -device virtio-vga,max_outputs=2
+	else
+		QEMUFLAGS+=-display sdl -vga none -device virtio-gpu,max_outputs=2
+	endif
 else ifeq ($(gpu),virtio)
-	QEMUFLAGS+=-vga virtio
-else ifeq ($(vga),virtio-gpu-pci)
-	QEMUFLAGS+= -vga virtio-gpu-pci
+	ifeq ($(VGA_SUPPORTED),yes)
+		QEMUFLAGS+=-vga none -device virtio-vga
+	else
+		QEMUFLAGS+=-vga none -device virtio-gpu
+	endif
+else ifeq ($(gpu),virtio-gl)
+	ifeq ($(VGA_SUPPORTED),yes)
+		QEMUFLAGS+=-display gtk,gl=on -vga none -device virtio-vga-gl
+	else
+		QEMUFLAGS+=-display gtk,gl=on -vga none -device virtio-gpu-gl
+	endif
 endif
 
 EXTRA_DISK=$(BUILD)/extra.img
