@@ -22,6 +22,7 @@ ifeq ($(ARCH),i686)
 	endif
 else ifeq ($(ARCH),x86_64)
 	gpu?=vga
+	uefi?=yes
 	VGA_SUPPORTED=yes
 	QEMU_ARCH=x86_64
 	QEMU_MACHINE?=q35
@@ -90,7 +91,6 @@ else ifeq ($(ARCH),aarch64)
 	endif
 else ifeq ($(ARCH),riscv64gc)
 	live=no
-	efi=yes
 	audio=no
 	gpu?=ramfb
 	net=bridge
