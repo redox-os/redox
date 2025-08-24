@@ -13,26 +13,20 @@ dependencies = [
 ]
 script = """
 rsync -av --delete "${COOKBOOK_SOURCE}/" ./
-wget -O config.sub "https://gitlab.redox-os.org/redox-os/gnu-config/-/raw/master/config.sub?inline=false"
-# FIXME(andypython): dynamically compile
+GNU_CONFIG_GET config.sub
 DYNAMIC_INIT
 autotools_recursive_regenerate
 COOKBOOK_CONFIGURE="./configure"
-COOKBOOK_CONFIGURE_FLAGS=(
-    --build="$(cc -dumpmachine)"
-    --host="${TARGET}"
-    --prefix=""
+COOKBOOK_CONFIGURE_FLAGS+=(
     --disable-ftp
     --disable-ipv6
     --disable-ntlm-wb
     --disable-tftp
     --disable-threaded-resolver
-    --enable-shared
-    --enable-static
     --with-ca-path=/etc/ssl/certs
-    --with-nghttp2="${COOKBOOK_SYSROOT}"
-    --with-ssl="${COOKBOOK_SYSROOT}"
-    --with-zlib="${COOKBOOK_SYSROOT}"
+    --with-nghttp2
+    --with-ssl
+    --with-zlib
     --without-libpsl
 )
 cookbook_configure
