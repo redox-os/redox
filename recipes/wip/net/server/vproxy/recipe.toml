@@ -1,0 +1,5 @@
+#TODO not compiled or tested
+[source]
+git = "https://github.com/0x676e67/vproxy"
+[build]
+template = "cargo"
