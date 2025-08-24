@@ -39,7 +39,7 @@ acid = {}
 orbclient = {}
 pixelcannon = {}
 rodioplay = {}
-gears = {}
+# gears = {} # sccache issue
 
 # MIDI
 freepats = {}
