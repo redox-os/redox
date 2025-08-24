@@ -101,7 +101,7 @@ gdb: FORCE
 # has started or you need to debug the interaction between the application and the kernel.
 # tl;dr: DO NOT USE THIS TARGET UNLESS YOU HAVE TO
 gdb-userspace: FORCE
-	rust-gdb $(GDB_APP_FILE) --eval-command="add-symbol-file $(GDB_KERNEL_FILE) 0x$(shell readelf -S $(GDB_KERNEL_FILE) | grep .text | cut -c43-58)" --eval-command="target remote :1234"
+	rust-gdb $(GDB_APP_FILE) --eval-command="add-symbol-file $(GDB_KERNEL_FILE)" --eval-command="target remote :1234"
 
 # An empty target
 FORCE:
