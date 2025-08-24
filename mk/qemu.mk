@@ -272,6 +272,9 @@ endif
 
 ifeq ($(gdb),yes)
 	QEMUFLAGS+=-d cpu_reset -s -S
+else ifeq ($(gdb),nonblock)
+	# Allow attaching gdb, but don't block for it
+	QEMUFLAGS+=-d cpu_reset -s
 endif
 
 ifeq ($(UNAME),Linux)
