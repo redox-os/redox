@@ -3,10 +3,13 @@
 QEMU=SDL_VIDEO_X11_DGAMOUSE=0 qemu-system-$(QEMU_ARCH)
 QEMUFLAGS=-d guest_errors -name "Redox OS $(ARCH)"
 netboot?=no
+VGA_SUPPORTED=no
 
 ifeq ($(ARCH),i686)
 	audio?=ac97
+	gpu?=vga
 	uefi=no
+	VGA_SUPPORTED=yes
 	QEMU_ARCH=i386
 	QEMU_MACHINE?=pc
 	QEMU_CPU?=pentium2
@@ -18,6 +21,9 @@ ifeq ($(ARCH),i686)
 		kvm?=yes
 	endif
 else ifeq ($(ARCH),x86_64)
+	gpu?=vga
+	uefi?=yes
+	VGA_SUPPORTED=yes
 	QEMU_ARCH=x86_64
 	QEMU_MACHINE?=q35
 	QEMU_CPU?=core2duo
@@ -43,6 +49,7 @@ else ifeq ($(ARCH),aarch64)
 	# setting up a framebuffer ourself.
 	uefi?=yes
 	live?=yes
+	gpu?=ramfb
 	QEMU_ARCH=aarch64
 	QEMU_MACHINE?=virt
 	QEMU_CPU=max
@@ -73,9 +80,6 @@ else ifeq ($(ARCH),aarch64)
 		else
 			FIRMWARE=$(BUILD)/qemu_uboot.rom
 		endif
-		ifneq ($(gpu),no)
-			QEMUFLAGS+=-device ramfb
-		endif
 		ifneq ($(usb),no)
 			QEMUFLAGS+=-device qemu-xhci -device usb-kbd -device usb-tablet
 		endif
@@ -87,9 +91,8 @@ else ifeq ($(ARCH),aarch64)
 	endif
 else ifeq ($(ARCH),riscv64gc)
 	live=no
-	efi=yes
 	audio=no
-	vga=no # virtio-gpu-pci
+	gpu?=ramfb
 	net=bridge
 	QEMU_ARCH=riscv64
 	# QEMU_MACHINE=virt  for ACPI mode instead of DTB
@@ -111,9 +114,6 @@ else ifeq ($(ARCH),riscv64gc)
 		$(wildcard /usr/share/qemu/edk2-riscv-vars.fd) \
 		$(wildcard /opt/homebrew/opt/qemu/share/qemu/edk2-riscv-vars.fd) \
 	)
-	ifneq ($(vga),no)
-		QEMUFLAGS+=-device ramfb
-	endif
 	ifneq ($(usb),no)
 		QEMUFLAGS+=-device qemu-xhci -device usb-kbd -device usb-tablet
 	endif
@@ -127,6 +127,18 @@ QEMUFLAGS+=-smp $(QEMU_SMP) -m $(QEMU_MEM)
 # (unless overridden above or by environment)
 ifneq ($(ARCH),$(HOST_ARCH))
 	kvm?=no
+endif
+
+# wsl2: run qemu on windows instead
+ifeq ($(QEMU_ON_WINDOWS),1)
+	QEMU:=$(QEMU).exe
+	WINDOWS_DISK=/mnt/c/ProgramData/redox.img
+	disk=windows
+	net=windows
+	QEMU_MACHINE=pc
+	FIRMWARE=
+	QEMU_KERNEL=
+	QEMUFLAGS+=-device usb-tablet
 endif
 
 ifneq ($(FIRMWARE),)
@@ -191,6 +203,8 @@ else
 		# port 8080 and 8083 - webservers
 		# port 64126 - our gdbserver implementation
 		QEMUFLAGS+=-netdev user,id=net0,hostfwd=tcp::8080-:8080,hostfwd=tcp::8083-:8083,hostfwd=tcp::64126-:64126$(EXTRANETARGS)
+	else ifeq ($(net),windows)
+		QEMUFLAGS+=-netdev user,id=net0$(EXTRANETARGS)
 	else
 		QEMUFLAGS+=-netdev user,id=net0$(EXTRANETARGS) -object filter-dump,id=f1,netdev=net0,file=$(BUILD)/network.pcap
 	endif
@@ -198,12 +212,32 @@ endif
 
 ifeq ($(gpu),no)
 	QEMUFLAGS+=-nographic -vga none
+else ifeq ($(gpu),vga)
+	ifeq ($(VGA_SUPPORTED),yes)
+		QEMUFLAGS+=-vga std
+	else
+		QEMUFLAGS+=-vga none -device secondary-vga
+	endif
+else ifeq ($(gpu),ramfb)
+	QEMUFLAGS+=-vga none -device ramfb
 else ifeq ($(gpu),multi)
-	QEMUFLAGS+=-display sdl -vga none -device virtio-gpu,max_outputs=2
+	ifeq ($(VGA_SUPPORTED),yes)
+		QEMUFLAGS+=-display sdl -vga none -device virtio-vga,max_outputs=2
+	else
+		QEMUFLAGS+=-display sdl -vga none -device virtio-gpu,max_outputs=2
+	endif
 else ifeq ($(gpu),virtio)
-	QEMUFLAGS+=-vga virtio
-else ifeq ($(vga),virtio-gpu-pci)
-	QEMUFLAGS+= -vga virtio-gpu-pci
+	ifeq ($(VGA_SUPPORTED),yes)
+		QEMUFLAGS+=-vga none -device virtio-vga
+	else
+		QEMUFLAGS+=-vga none -device virtio-gpu
+	endif
+else ifeq ($(gpu),virtio-gl)
+	ifeq ($(VGA_SUPPORTED),yes)
+		QEMUFLAGS+=-display gtk,gl=on -vga none -device virtio-vga-gl
+	else
+		QEMUFLAGS+=-display gtk,gl=on -vga none -device virtio-gpu-gl
+	endif
 endif
 
 EXTRA_DISK=$(BUILD)/extra.img
@@ -230,18 +264,26 @@ else ifeq ($(disk),cdrom)
 	QEMUFLAGS+= \
 		-boot d -cdrom $(DISK) \
 		-drive file=$(EXTRA_DISK),format=raw
-
 else ifeq ($(disk),sdcard)
 	QEMUFLAGS+=-drive file=$(DISK),if=sd,format=raw
+else ifeq ($(disk),windows)
+	QEMUFLAGS+=-drive file="$(shell wslpath -w $(WINDOWS_DISK))",format=raw,if=virtio
 endif
 
 ifeq ($(gdb),yes)
 	QEMUFLAGS+=-d cpu_reset -s -S
+else ifeq ($(gdb),nonblock)
+	# Allow attaching gdb, but don't block for it
+	QEMUFLAGS+=-d cpu_reset -s
 endif
 
 ifeq ($(UNAME),Linux)
 	ifneq ($(kvm),no)
-		QEMUFLAGS+=-enable-kvm -cpu host
+		ifeq ($(QEMU_ON_WINDOWS),1)
+			QEMUFLAGS+=-accel whpx,kernel-irqchip=off -cpu Broadwell,x2apic=off
+		else
+			QEMUFLAGS+=-enable-kvm -cpu host
+		endif
 	else
 		QEMUFLAGS+=-cpu $(QEMU_CPU)
 	endif
@@ -269,6 +311,8 @@ qemu-deps: $(DISK)
 
 ifeq ($(disk),usb)
 else ifeq ($(disk),sdcard)
+else ifeq ($(disk),windows)
+qemu-deps: $(WINDOWS_DISK)
 else
 qemu-deps: $(EXTRA_DISK)
 endif
@@ -289,6 +333,11 @@ endif
 
 $(EXTRA_DISK):
 	truncate -s 1g $@
+
+$(WINDOWS_DISK): $(BUILD)/harddrive.img
+	rm -f $@
+	mkdir -p $(shell dirname $@)
+	cp "$<" "$@"
 
 $(BUILD)/raspi3bp_uboot.rom:
 	wget -O $@ https://gitlab.redox-os.org/Ivan/redox_firmware/-/raw/main/platform/raspberry_pi/rpi3/u-boot-rpi-3-b-plus.bin
