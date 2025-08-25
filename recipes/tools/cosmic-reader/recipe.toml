@@ -13,14 +13,17 @@ dependencies = [
 ]
 script = """
 DYNAMIC_INIT
+export BINDGEN_EXTRA_CLANG_ARGS="--sysroot=${COOKBOOK_HOST_SYSROOT}/${GNU_TARGET} -I${COOKBOOK_HOST_SYSROOT}/${GNU_TARGET}/include"
 "${COOKBOOK_CARGO}" rustc \
     --manifest-path "${COOKBOOK_SOURCE}/Cargo.toml" \
     --release \
     --bin cosmic-reader \
     --no-default-features \
     --features mupdf \
+    --verbose \
     -- \
-    -C link-args="-lpng -lexpat"
+    -C link-args="-lpng -lexpat" \
+    --verbose
 mkdir -pv "${COOKBOOK_STAGE}/usr/bin/"
 cp -v "target/${TARGET}/release/cosmic-reader" "${COOKBOOK_STAGE}/usr/bin/"
 mkdir -pv "${COOKBOOK_STAGE}/ui/apps"
