@@ -1,0 +1,13 @@
+# Configuration for demonstration
+
+include = ["demo.toml"]
+
+# General settings
+[general]
+# Filesystem size in MiB
+filesystem_size = 1536
+
+# Package settings
+[packages]
+cosmic-reader = {}
+rustconf2025 = {}
