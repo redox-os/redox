@@ -16,12 +16,16 @@ endif
 
 ## The installer and redoxfs run on the host, even when using Podman build
 $(HOST_FSTOOLS): installer redoxfs
+ifeq ($(PODMAN_BUILD),1)
+	$(PODMAN_RUN) make $@
+else
 	rm -rf $@ $@.partial
 	mkdir -p $@.partial
 	$(HOST_CARGO) install --root $@.partial --path installer --bin redox_installer
 	$(HOST_CARGO) install --root $@.partial --path redoxfs --bin redoxfs --bin redoxfs-mkfs
 	mv $@.partial $@
 	touch $@
+endif
 
 fstools_clean: FORCE $(CONTAINER_TAG)
 ifeq ($(PODMAN_BUILD),1)
