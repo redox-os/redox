@@ -33,5 +33,5 @@ cp -v "${COOKBOOK_SOURCE}/res/${APPID}.desktop" "${COOKBOOK_STAGE}/usr/share/app
 mkdir -pv "${COOKBOOK_STAGE}/usr/share/thumbnailers/"
 cp -v "${COOKBOOK_SOURCE}/res/${APPID}.thumbnailer" "${COOKBOOK_STAGE}/usr/share/thumbnailers/"
 mkdir -pv "${COOKBOOK_STAGE}/usr/share/icons/"
-#TODO cp -rv "${COOKBOOK_SOURCE}/res/icons/hicolor/" "${COOKBOOK_STAGE}/usr/share/icons/"
+cp -rv "${COOKBOOK_SOURCE}/res/icons/hicolor/" "${COOKBOOK_STAGE}/usr/share/icons/"
 """
