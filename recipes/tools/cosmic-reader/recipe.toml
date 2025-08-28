@@ -20,12 +20,18 @@ export BINDGEN_EXTRA_CLANG_ARGS="--sysroot=${COOKBOOK_HOST_SYSROOT}/${GNU_TARGET
     --bin cosmic-reader \
     --no-default-features \
     --features mupdf \
-    --verbose \
     -- \
-    -C link-args="-lpng -lexpat" \
-    --verbose
+    -C link-args="-lpng -lexpat"
 mkdir -pv "${COOKBOOK_STAGE}/usr/bin/"
 cp -v "target/${TARGET}/release/cosmic-reader" "${COOKBOOK_STAGE}/usr/bin/"
 mkdir -pv "${COOKBOOK_STAGE}/ui/apps"
 cp -v "${COOKBOOK_RECIPE}/manifest" "${COOKBOOK_STAGE}/ui/apps/40_cosmic-reader"
+#TODO: install with just?
+APPID="com.system76.CosmicReader"
+mkdir -pv "${COOKBOOK_STAGE}/usr/share/applications/"
+cp -v "${COOKBOOK_SOURCE}/res/${APPID}.desktop" "${COOKBOOK_STAGE}/usr/share/applications/"
+mkdir -pv "${COOKBOOK_STAGE}/usr/share/thumbnailers/"
+cp -v "${COOKBOOK_SOURCE}/res/${APPID}.thumbnailer" "${COOKBOOK_STAGE}/usr/share/thumbnailers/"
+mkdir -pv "${COOKBOOK_STAGE}/usr/share/icons/"
+#TODO cp -rv "${COOKBOOK_SOURCE}/res/icons/hicolor/" "${COOKBOOK_STAGE}/usr/share/icons/"
 """
