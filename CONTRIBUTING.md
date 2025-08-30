@@ -81,11 +81,13 @@ Once your GitLab account is created, you should add your Matrix or Discord usern
 
 ### Issues
 
-To know how to create issues on the Redox GitLab, read the [Filing Issues](https://doc.redox-os.org/book/filing-issues.html) page.
+We use issues to organize and track our current and pending work, to know how to create issues on the Redox GitLab read the [Filing Issues](https://doc.redox-os.org/book/filing-issues.html) page.
 
 Once you create an issue don't forget to post the link on the Dev or Support rooms of the chat, because the GitLab email notifications have distractions (service messages or spam) and most developers don't left their GitLab pages open to receive desktop notifications from the web browser (which require a custom setting to receive issue notifications).
 
 By doing this you help us to pay attention to your issues and avoid them to be accidentally forgotten.
+
+You can see all issues on [this](https://gitlab.redox-os.org/groups/redox-os/-/issues) link.
 
 ### Pull Requests
 
