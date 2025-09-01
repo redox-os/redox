@@ -965,6 +965,9 @@ function cookbook_meson {
     echo "[properties]" >> cross_file.txt
     echo "needs_exe_wrapper = true" >> cross_file.txt
     echo "sys_root = '${COOKBOOK_SYSROOT}'" >> cross_file.txt
+    echo "c_args = [$(printf "'%s', " $CFLAGS | sed 's/, $//')]" >> cross_file.txt
+    echo "cpp_args = [$(printf "'%s', " $CPPFLAGS | sed 's/, $//')]" >> cross_file.txt
+    echo "c_link_args = [$(printf "'%s', " $LDFLAGS | sed 's/, $//')]" >> cross_file.txt
 
     unset AR
     unset AS

@@ -62,8 +62,8 @@ DYNAMIC_INIT
 export GLIB_GENMARSHAL="$(which glib-genmarshal)"
 export GLIB_MKENUMS="$(which glib-mkenums)"
 
+CFLAGS="${CFLAGS} -DM_LN2=0.69314718055994530942"
 cookbook_meson \
-    -Dc_args="-DM_LN2=0.69314718055994530942" \
     -Ddevtools=disabled \
     -Dexamples=disabled \
     -Dlibav=disabled \
