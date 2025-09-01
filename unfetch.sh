@@ -10,7 +10,16 @@ else
     recipes="$@"
 fi
 
-for recipe_path in $recipes
+for recipe in $recipes
 do
-    ./cook.sh "$recipe_path" unfetch
+    if (echo "$recipe" | grep '.*/.*' >/dev/null); then
+        recipe_name=$(basename "$recipe")
+        recipe_path="$recipe"
+    else
+        recipe_name="$recipe"
+        recipe_path=`target/release/find_recipe $recipe`
+    fi
+
+    rm -rfv "$recipe_path"/source "$recipe_path"/source.tar
 done
+
