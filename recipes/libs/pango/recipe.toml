@@ -33,9 +33,7 @@ dependencies = [
 template = "custom"
 script = """
 DYNAMIC_INIT
-#TODO: why are these libs not automatic?
 cookbook_meson \
-    -Dc_args="-lfontconfig -lexpat -lpixman-1 -lpng -lz -lcairo" \
     -Dbuild-examples=false \
     -Dbuild-testsuite=false
 """
