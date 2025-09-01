@@ -13,8 +13,8 @@ dependencies = [
 script = """
 DYNAMIC_INIT
 
-export CFLAGS+="-I${COOKBOOK_SYSROOT}/include -DHAVE_PTHREAD=1"
-export CPPFLAGS+="-I${COOKBOOK_SYSROOT}/include -DHAVE_PTHREAD=1"
+export CFLAGS+=" -DHAVE_PTHREAD=1"
+export CPPFLAGS+=" -DHAVE_PTHREAD=1"
 export LLVM_CONFIG="${TARGET}-llvm-config"
 
 if [[ -n "${COOKBOOK_PREFER_STATIC}" ]]; then
