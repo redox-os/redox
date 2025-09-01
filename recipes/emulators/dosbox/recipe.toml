@@ -21,7 +21,7 @@ export LDFLAGS+=" -lorbital"
 COOKBOOK_CONFIGURE_FLAGS+=(
     --disable-opengl
     --disable-sdltest
-    --with-sdl
+    --with-sdl-prefix="${COOKBOOK_SYSROOT}"
 )
 cookbook_configure
 
