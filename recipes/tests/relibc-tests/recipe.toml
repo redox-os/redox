@@ -8,7 +8,7 @@ script = """
 rsync -av --delete "${COOKBOOK_SOURCE}/" ./
 pushd tests
 export CARGO_TEST="${COOKBOOK_CARGO}"
-export NATIVE_RELIBC=1
+export NATIVE_RELIBC=0 # set 0 to link against relibc
 "${COOKBOOK_MAKE}" -j "${COOKBOOK_MAKE_JOBS}" all bins_verify/relibc-tests
 popd
 mkdir -pv "${COOKBOOK_STAGE}/share/relibc"
