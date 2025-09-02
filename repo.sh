@@ -20,7 +20,7 @@ do
         COOK_OPT+=" --nonstop"
     elif [ "$arg" == "--offline" ]
     then
-        export COOKBOOK_OFFLINE="1"
+        COOK_OPT+=" --offline"
     else
         recipes+=" $arg"
     fi

@@ -1237,12 +1237,12 @@ fn cook(
     name: &PackageName,
     recipe: &Recipe,
     fetch_only: bool,
+    is_offline: bool,
 ) -> Result<(), String> {
     if recipe.build.kind == BuildKind::None {
         return cook_meta(recipe_dir, name, recipe, fetch_only);
     }
 
-    let is_offline = env::var("COOKBOOK_OFFLINE").unwrap_or("".to_string()) == "1";
     let source_dir = match is_offline {
         true => fetch_offline(recipe_dir, &recipe.source),
         false => fetch(recipe_dir, &recipe.source),
@@ -1283,6 +1283,7 @@ fn main() {
     let mut with_package_deps = false;
     let mut quiet = false;
     let mut nonstop = false;
+    let mut is_offline = false;
     let mut recipe_names = Vec::new();
     for arg in env::args().skip(1) {
         match arg.as_str() {
@@ -1292,6 +1293,7 @@ fn main() {
             "--fetch-only" if matching => fetch_only = true,
             "-q" | "--quiet" if matching => quiet = true,
             "--nonstop" => nonstop = true,
+            "--offline" => is_offline = true,
             _ => recipe_names.push(arg.try_into().expect("Invalid package name")),
         }
     }
@@ -1346,7 +1348,13 @@ fn main() {
             }
             Ok(())
         } else {
-            cook(&recipe.dir, &recipe.name, &recipe.recipe, fetch_only)
+            cook(
+                &recipe.dir,
+                &recipe.name,
+                &recipe.recipe,
+                fetch_only,
+                is_offline,
+            )
         };
 
         match res {
