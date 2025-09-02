@@ -21,14 +21,5 @@ do
     fi
 
     echo -e "\033[01;38;5;215mcook - clean $recipe_name\033[0m"
-
-    if [ -d "$ROOT/$recipe_path" ]
-    then
-        COOKBOOK_RECIPE="${ROOT}/$recipe_path"
-        TARGET_DIR="${ROOT}/$recipe_path/target/${TARGET}"
-
-        rm -rf "${TARGET_DIR}"
-    else
-        echo "clean.sh: recipe '$recipe_name' not found" >&2
-    fi
+    rm -rf "${ROOT}/$recipe_path/target/${TARGET}"
 done
