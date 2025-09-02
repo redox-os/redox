@@ -36,20 +36,11 @@ fi
 
 for recipe in $recipes
 do
-    recipe_path=`target/release/find_recipe $recipe`
-    COOKBOOK_RECIPE="$recipe_path"
-    TARGET_DIR="${COOKBOOK_RECIPE}/target/${TARGET}"
-    COOKBOOK_BUILD="${TARGET_DIR}/build"
-    COOKBOOK_STAGE="${TARGET_DIR}/stage"
-    COOKBOOK_SOURCE="${COOKBOOK_RECIPE}/source"
-    COOKBOOK_SYSROOT="${TARGET_DIR}/sysroot"
-
     target/release/cook $COOK_OPT "$recipe"
 done
 
-mkdir -p "$REPO"
-
-declare -A APPSTREAM_SOURCES
+repo="$ROOT/repo/$TARGET"
+mkdir -p "$repo"
 
 # Runtime dependencies include both `[package.dependencies]` and dynamically
 # linked packages discovered by auto_deps.
@@ -58,4 +49,4 @@ declare -A APPSTREAM_SOURCES
 # well.
 recipes="$recipes $(target/release/pkg_deps $recipes)"
 
-target/release/repo_builder "$REPO" $recipes
+target/release/repo_builder "$repo" $recipes
