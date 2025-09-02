@@ -5,7 +5,7 @@ ifeq ($(PODMAN_BUILD),1)
 	$(PODMAN_RUN) make $@
 else
 	export PATH="$(PREFIX_PATH):$$PATH" && \
-	PACKAGES="$$($(LIST_PACKAGES) $(LIST_PACKAGES_OPTS) -c $(FILESYSTEM_CONFIG))" && \
+	PACKAGES="$$($(LIST_PACKAGES) $(LIST_PACKAGES_OPTS) --short -c $(FILESYSTEM_CONFIG))" && \
 	export COOKBOOK_HOST_SYSROOT="$(ROOT)/$(PREFIX_INSTALL)" && \
 	cd cookbook && \
 	./fetch.sh $(REPO_NONSTOP) $(REPO_OFFLINE) "$${PACKAGES}"
@@ -19,7 +19,7 @@ ifeq ($(PODMAN_BUILD),1)
 else
 	export PATH="$(PREFIX_PATH):$$PATH" && \
 	export COOKBOOK_HOST_SYSROOT="$(ROOT)/$(PREFIX_INSTALL)" && \
-	PACKAGES="$$($(LIST_PACKAGES) $(LIST_PACKAGES_OPTS) -c $(FILESYSTEM_CONFIG))" && \
+	PACKAGES="$$($(LIST_PACKAGES) $(LIST_PACKAGES_OPTS) --short -c $(FILESYSTEM_CONFIG))" && \
 	cd cookbook && \
 	./repo.sh $(REPO_NONSTOP) $(REPO_OFFLINE) --with-package-deps "$${PACKAGES}"
 	mkdir -p $(BUILD)
