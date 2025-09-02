@@ -1,6 +1,6 @@
 # Configuration for Jeremy Soller
 
-include = ["../desktop.toml"]
+include = ["../demo.toml"]
 
 # General settings
 [general]
@@ -17,29 +17,20 @@ cosmic-reader = {}
 cosmic-store = {}
 cosmic-term = {}
 cosmic-text = {}
-periodictable = {}
-pixelcannon = {}
 qemu = {}
 schismtracker = {}
-sodium = {}
 
 # cli
-acid = {}
 cleye = {}
-curl = {}
 ffmpeg6 = {}
-git = {}
-gnu-grep = {}
 lua54 = {}
 nano = {}
 #nushell = {}
 perg = {}
 #relibc-tests = {}
-ripgrep = {}
 russh = {}
 sed = {}
 shellharden = {}
-vim = {}
 xz = {}
 
 # demos
@@ -51,11 +42,9 @@ glutin = {}
 #hematite = {} # not building
 iced = {}
 libcosmic = {}
-orbclient = {}
 osdemo = {} # does not show anything
 #pathfinder = {} # not building
 procedural-wallpapers-rs = {}
-rodioplay = {}
 #rust-cairo = {}
 #rust-cairo-demo = {}
 sdl2-gears = {}
@@ -78,44 +67,35 @@ pkg-config = {}
 
 # games
 devilutionx = {}
-dosbox = {}
 eduke32 = {}
 flycast = {}
 freeciv = {}
-freedoom = {}
 gigalomania = {}
 love = {}
 mednafen = {}
 mgba = {}
-neverball = {}
 openjazz = {}
 openjk = {}
 openttd = {}
 openttd-opengfx = {}
 openttd-openmsx = {}
 openttd-opensfx = {}
-prboom = {}
 quakespasm = {}
-redox-games = {}
 #retroarch = {} # need to package cores
 rs-nes = {} # need game for testing
 rust64 = {} # need roms
 rustual-boy = {} # need game for testing
 scummvm = {} # need game for testing
 sm64ex = {}
-sopwith = {}
 spacecadetpinball = {}
 #syobonaction = {}
 #vice = {} # broken on new toolchain
 #vvvvvv = {} # cannot find -lgcc_s
 
 # stuff
-freepats = {}
 generaluser-gs = {}
-intel-one-mono = {}
 jeremy = {}
 libc-bench = {}
 noto-color-emoji = {}
-terminfo = {}
 timidity = {}
 ttf-hack = {}
