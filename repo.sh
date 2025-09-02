@@ -29,11 +29,6 @@ do
     fi
 done
 
-if [ "$recipes" == "" ]
-then
-    recipes="$(target/release/list_recipes)"
-fi
-
 for recipe in $recipes
 do
     target/release/cook $COOK_OPT "$recipe"
