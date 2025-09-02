@@ -12,15 +12,12 @@ do
     if [ "$arg" == "--appstream" ]
     then
         APPSTREAM="1"
-    elif [ "$arg" == "--debug" ]
-    then
-        DEBUG=--debug
     elif [ "$arg" == "--with-package-deps" ]
     then
-        COOK_OPT=--with-package-deps
+        COOK_OPT+=" --with-package-deps"
     elif [ "$arg" == "--nonstop" ]
     then
-        set +e
+        COOK_OPT+=" --nonstop"
     elif [ "$arg" == "--offline" ]
     then
         export COOKBOOK_OFFLINE="1"
@@ -29,10 +26,7 @@ do
     fi
 done
 
-for recipe in $recipes
-do
-    target/release/cook $COOK_OPT "$recipe"
-done
+target/release/cook $COOK_OPT $recipes
 
 repo="$ROOT/repo/$TARGET"
 mkdir -p "$repo"
