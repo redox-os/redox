@@ -928,7 +928,7 @@ EOF
         -Wno-dev \
         "${COOKBOOK_CMAKE_FLAGS[@]}" \
         "$@"
-    
+
     "${COOKBOOK_NINJA}" -j"${COOKBOOK_MAKE_JOBS}"
     DESTDIR="${COOKBOOK_STAGE}" "${COOKBOOK_NINJA}" install -j"${COOKBOOK_MAKE_JOBS}"
 }
@@ -996,7 +996,7 @@ function cookbook_meson {
 
         let post_script = r#"# Common post script
 # Strip binaries
-for dir in "${COOKBOOK_STAGE}/bin" "${COOKBOOK_STAGE}/usr/bin" 
+for dir in "${COOKBOOK_STAGE}/bin" "${COOKBOOK_STAGE}/usr/bin"
 do
     if [ -d "${dir}" ] && [ -z "${COOKBOOK_NOSTRIP}" ]
     then
@@ -1005,7 +1005,7 @@ do
 done
 
 # Remove libtool files
-for dir in "${COOKBOOK_STAGE}/lib" "${COOKBOOK_STAGE}/usr/lib" 
+for dir in "${COOKBOOK_STAGE}/lib" "${COOKBOOK_STAGE}/usr/lib"
 do
     if [ -d "${dir}" ]
     then
@@ -1282,6 +1282,7 @@ fn main() {
     let mut fetch_only = false;
     let mut with_package_deps = false;
     let mut quiet = false;
+    let mut nonstop = false;
     let mut recipe_names = Vec::new();
     for arg in env::args().skip(1) {
         match arg.as_str() {
@@ -1290,6 +1291,7 @@ fn main() {
             "--with-package-deps" if matching => with_package_deps = true,
             "--fetch-only" if matching => fetch_only = true,
             "-q" | "--quiet" if matching => quiet = true,
+            "--nonstop" => nonstop = true,
             _ => recipe_names.push(arg.try_into().expect("Invalid package name")),
         }
     }
@@ -1370,7 +1372,9 @@ fn main() {
                     style::Reset,
                     err,
                 );
-                process::exit(1);
+                if !nonstop {
+                    process::exit(1);
+                }
             }
         }
     }

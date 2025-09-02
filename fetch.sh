@@ -6,10 +6,7 @@ source config.sh
 recipes=""
 for arg in "${@:1}"
 do
-    if [ "$arg" == "--nonstop" ]
-    then
-        set +e
-    elif [ "$arg" == "--offline" ]
+    if [ "$arg" == "--offline" ]
     then
         export COOKBOOK_OFFLINE="1"
     else
@@ -17,7 +14,4 @@ do
     fi
 done
 
-for recipe_name in $recipes
-do
-    target/release/cook --fetch-only "$recipe_name"
-done
+target/release/cook --fetch-only $recipes
