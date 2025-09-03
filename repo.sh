@@ -31,11 +31,4 @@ target/release/cook $COOK_OPT $recipes
 repo="$ROOT/repo/$TARGET"
 mkdir -p "$repo"
 
-# Runtime dependencies include both `[package.dependencies]` and dynamically
-# linked packages discovered by auto_deps.
-#
-# The following adds the package dependencies of the recipes to the repo as
-# well.
-recipes="$recipes $(target/release/pkg_deps $recipes)"
-
 target/release/repo_builder "$repo" $recipes
