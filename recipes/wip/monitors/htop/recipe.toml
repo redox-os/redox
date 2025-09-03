@@ -1,18 +1,22 @@
-#TODO compilation error
-#TODO port to redox
-#TODO make ncursesw work
-# build instructions - https://github.com/htop-dev/htop#build-instructions
+#TODO "unsupported architecture"
 [source]
-tar = "https://github.com/htop-dev/htop/releases/download/3.3.0/htop-3.3.0.tar.xz"
+git = "https://github.com/willnode/htop"
+branch = "redox"
+script = """
+DYNAMIC_INIT
+autotools_recursive_regenerate
+"""
+
 [build]
-template = "custom"
+template = "configure"
+configureflags = [
+    "--disable-unicode",
+]
 dependencies = [
     "ncurses",
 ]
-script = """
-export CPPFLAGS="-I${COOKBOOK_SYSROOT}/include/ncurses"
-COOKBOOK_CONFIGURE_FLAGS+=(
-    --disable-unicode
-)
-cookbook_configure
-"""
+
+[package]
+dependencies = [
+    "terminfo"
+]
