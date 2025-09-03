@@ -1,0 +1,9 @@
+[source]
+tar = "https://github.com/tree-sitter/tree-sitter/archive/refs/tags/v0.25.8.tar.gz"
+
+[build]
+template = "custom"
+script = """
+DYNAMIC_INIT
+PACKAGE_PATH=cli cookbook_cargo
+"""

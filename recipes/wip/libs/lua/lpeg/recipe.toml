@@ -1,0 +1,14 @@
+[source]
+tar = "https://www.inf.puc-rio.br/~roberto/lpeg/lpeg-1.1.0.tar.gz"
+
+[build]
+template = "custom"
+dependencies = [
+    "lua54",
+]
+script = """
+rsync -av --delete "${COOKBOOK_SOURCE}/" ./
+make linux
+mkdir -p ${COOKBOOK_STAGE}/usr/lib
+cp *.so ${COOKBOOK_STAGE}/usr/lib
+"""
