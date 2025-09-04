@@ -1,16 +1,21 @@
-#TODO see https://github.com/ziglang/zig/wiki/Building-Zig-From-Source
+#TODO requires openat functions and posix_getdents to compile
 [source]
-tar = "https://ziglang.org/download/0.14.1/zig-0.14.1.tar.xz"
-patches = [
-    "01_redox.patch"
-]
+git = "https://github.com/willnode/zig"
+branch = "zig-0.15-redox"
 
 [build]
-dependencies = [
-    "llvm18" # need lld
-]
 template = "custom"
 script = """
 DYNAMIC_INIT
-cookbook_cmake
+rsync -av --delete "${COOKBOOK_SOURCE}"/* ./
+export ZIG_BOOTSTRAP_CFLAGS="$CFLAGS"
+export ZIG_BOOTSTRAP_LDFLAGS="$LDFLAGS"
+export ZIG_BOOTSTRAP_TARGET_CC="${TARGET}-gcc"
+export ZIG_HOST_TARGET_TRIPLE="${TARGET%%-*}-redox"
+unset AR AS CC CXX LD LDFLAGS NM OBJCOPY OBJDUMP RANLIB READELF RUSTFLAGS STRIP
+cc bootstrap.c -o ./bootstrap
+./bootstrap
+
+mkdir -pv "${COOKBOOK_STAGE}/usr/bin"
+cp -v "zig2" "${COOKBOOK_STAGE}/usr/bin/zig"
 """
