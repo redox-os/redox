@@ -111,7 +111,7 @@ else
 	fi
 endif
 	@if [ -f $(MOUNTED_TAG) ]; then \
-		$(MAKE) unmount; && rm -f $(MOUNTED_TAG); \
+		$(MAKE) unmount && rm -f $(MOUNTED_TAG); \
 	else echo "Not unmounting by ourself, don't forget to do it"; \
 	fi
 
