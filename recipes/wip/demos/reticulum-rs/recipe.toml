@@ -1,0 +1,9 @@
+#TODO not compiled or tested
+# the protobuf compiler needs to be installed
+[source]
+git = "https://github.com/BeechatNetworkSystemsLtd/Reticulum-rs"
+[build]
+template = "custom"
+script = """
+cookbook_cargo_examples tcp_client kaonic_client
+"""
