@@ -32,10 +32,5 @@ do
         recipe_path=`target/release/find_recipe $recipe_name`
     fi
 
-    if [ -e "$recipe_path/recipe.toml" ]
-    then
-        target/release/cook --fetch-only "$recipe_name"
-    else
-        ./cook.sh "$recipe_name" fetch
-    fi
+    target/release/cook --fetch-only "$recipe_name"
 done
