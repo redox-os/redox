@@ -14,7 +14,7 @@ diff -ruwN source/configure source-new/configure
  printf "%s\n" "#define NEED_SETPGRP 1" >>confdefs.h
 diff -ruwN source/defines.h source-new/defines.h
 --- source/defines.h	2024-07-01 11:36:28.000000000 +0700
-+++ source-new/defines.h	2025-09-06 21:22:46.327552147 +0700
++++ source-new/defines.h	2025-09-07 01:35:40.209700338 +0700
 @@ -52,6 +52,18 @@
  #define IPPORT_RESERVED 0
  #endif
@@ -63,11 +63,6 @@ diff -ruwN source/defines.h source-new/defines.h
  /* Define this to be the path of the xauth program. */
  #ifdef XAUTH_PATH
  #define _PATH_XAUTH XAUTH_PATH
-@@ -943,3 +957,4 @@
- # define USE_SNTRUP761X25519 1
- #endif
- #endif /* _DEFINES_H */
-+
 diff -ruwN source/hostfile.c source-new/hostfile.c
 --- source/hostfile.c	2024-07-01 11:36:28.000000000 +0700
 +++ source-new/hostfile.c	2025-09-06 21:09:36.555438339 +0700
@@ -106,13 +101,12 @@ diff -ruwN source/loginrec.h source-new/loginrec.h
  
 diff -ruwN source/misc.c source-new/misc.c
 --- source/misc.c	2024-07-01 11:36:28.000000000 +0700
-+++ source-new/misc.c	2025-09-06 21:09:36.556438304 +0700
-@@ -2843,7 +2843,7 @@
++++ source-new/misc.c	2025-09-07 01:21:42.201992304 +0700
+@@ -2843,7 +2843,6 @@
  			error("%s: dup2: %s", tag, strerror(errno));
  			_exit(1);
  		}
 -		closefrom(STDERR_FILENO + 1);
-+		// closefrom(STDERR_FILENO + 1);
  
  		if (geteuid() == 0 &&
  		    initgroups(pw->pw_name, pw->pw_gid) == -1) {
@@ -430,48 +424,25 @@ diff -ruwN source/openbsd-compat/utmpx.h source-new/openbsd-compat/utmpx.h
 +#endif /* __redox__ */
 +#endif /* _COMPAT_UTMPX_H */
 \ No newline at end of file
-diff -ruwN source/pathnames.h source-new/pathnames.h
---- source/pathnames.h	2024-07-01 11:36:28.000000000 +0700
-+++ source-new/pathnames.h	2025-09-06 21:09:36.557438268 +0700
-@@ -12,7 +12,7 @@
-  * called by a name other than "ssh" or "Secure Shell".
-  */
- 
--#define ETCDIR				"/etc"
-+#define ETCDIR				"/usr/etc"
- 
- #ifndef SSHDIR
- #define SSHDIR				ETCDIR "/ssh"
-@@ -166,7 +166,7 @@
- 
- /* chroot directory for unprivileged user when UsePrivilegeSeparation=yes */
- #ifndef _PATH_PRIVSEP_CHROOT_DIR
--#define _PATH_PRIVSEP_CHROOT_DIR	"/var/empty"
-+#define _PATH_PRIVSEP_CHROOT_DIR	"/usr/var/empty"
- #endif
- 
- /* for passwd change */
 diff -ruwN source/readconf.c source-new/readconf.c
 --- source/readconf.c	2024-07-01 11:36:28.000000000 +0700
-+++ source-new/readconf.c	2025-09-06 21:09:36.558438233 +0700
-@@ -554,7 +554,7 @@
++++ source-new/readconf.c	2025-09-07 01:21:42.201992304 +0700
+@@ -554,7 +554,6 @@
  
  		if (stdfd_devnull(1, 1, 0) == -1)
  			fatal_f("stdfd_devnull failed");
 -		closefrom(STDERR_FILENO + 1);
-+		// closefrom(STDERR_FILENO + 1);
  
  		argv[0] = shell;
  		argv[1] = "-c";
 diff -ruwN source/readpass.c source-new/readpass.c
 --- source/readpass.c	2024-07-01 11:36:28.000000000 +0700
-+++ source-new/readpass.c	2025-09-06 21:09:36.558438233 +0700
-@@ -278,7 +278,7 @@
++++ source-new/readpass.c	2025-09-07 01:21:42.201992304 +0700
+@@ -278,7 +278,6 @@
  	if (pid == 0) {
  		if (stdfd_devnull(1, 1, 0) == -1)
  			fatal_f("stdfd_devnull failed");
 -		closefrom(STDERR_FILENO + 1);
-+		// closefrom(STDERR_FILENO + 1);
  		setenv("SSH_ASKPASS_PROMPT", "none", 1); /* hint to UI */
  		execlp(askpass, askpass, prompt, (char *)NULL);
  		error_f("exec(%s): %s", askpass, strerror(errno));
@@ -490,51 +461,20 @@ diff -ruwN source/regress/netcat.c source-new/regress/netcat.c
  #define HTTP_PROXY_PORT	"3128"
 diff -ruwN source/servconf.c source-new/servconf.c
 --- source/servconf.c	2024-07-01 11:36:28.000000000 +0700
-+++ source-new/servconf.c	2025-09-06 21:10:09.947261502 +0700
-@@ -315,6 +315,7 @@
- 		    _PATH_HOST_XMSS_KEY_FILE, 0);
- #endif /* WITH_XMSS */
- 	}
-+
- 	/* No certificates by default */
- 	if (options->num_ports == 0)
- 		options->ports[options->num_ports++] = SSH_DEFAULT_PORT;
-@@ -390,6 +391,7 @@
- 		options->permit_user_env = 0;
- 		options->permit_user_env_allowlist = NULL;
- 	}
-+
- 	if (options->compression == -1)
- #ifdef WITH_ZLIB
- 		options->compression = COMP_DELAYED;
-@@ -463,6 +465,7 @@
- 		    &options->num_authkeys_files,
- 		    _PATH_SSH_USER_PERMITTED_KEYS2);
- 	}
-+
- 	if (options->permit_tun == -1)
- 		options->permit_tun = SSH_TUNMODE_NO;
- 	if (options->ip_qos_interactive == -1)
-@@ -529,6 +532,7 @@
- 
- 	CLEAR_ON_NONE_ARRAY(channel_timeouts, num_channel_timeouts, "none");
- 	CLEAR_ON_NONE_ARRAY(auth_methods, num_auth_methods, "any");
-+
- #undef CLEAR_ON_NONE
- #undef CLEAR_ON_NONE_ARRAY
- }
-@@ -857,7 +861,7 @@
++++ source-new/servconf.c	2025-09-07 01:38:08.219942429 +0700
+@@ -857,7 +857,8 @@
  	hints.ai_socktype = SOCK_STREAM;
  	hints.ai_flags = (addr == NULL) ? AI_PASSIVE : 0;
  	snprintf(strport, sizeof strport, "%d", port);
 -	if ((gaierr = getaddrinfo(addr, strport, &hints, &aitop)) != 0)
++	// redox don't accept addr == NULL yet
 +	if ((gaierr = getaddrinfo("0.0.0.0", strport, &hints, &aitop)) != 0)
  		fatal("bad addr or host: %s (%s)",
  		    addr ? addr : "<NULL>",
  		    ssh_gai_strerror(gaierr));
 diff -ruwN source/session.c source-new/session.c
 --- source/session.c	2024-07-01 11:36:28.000000000 +0700
-+++ source-new/session.c	2025-09-07 00:41:01.350663705 +0700
++++ source-new/session.c	2025-09-07 01:22:43.637928015 +0700
 @@ -1365,10 +1365,12 @@
  			exit(1);
  		}
@@ -548,21 +488,19 @@ diff -ruwN source/session.c source-new/session.c
  		endgrent();
  #endif
  
-@@ -1490,7 +1492,7 @@
+@@ -1490,7 +1492,6 @@
  	 * initgroups, because at least on Solaris 2.3 it leaves file
  	 * descriptors open.
  	 */
 -	closefrom(STDERR_FILENO + 1);
-+	// closefrom(STDERR_FILENO + 1);
  }
  
  /*
-@@ -1624,7 +1626,7 @@
+@@ -1624,7 +1625,6 @@
  			exit(1);
  	}
  
 -	closefrom(STDERR_FILENO + 1);
-+	// closefrom(STDERR_FILENO + 1);
  
  	do_rc_files(ssh, s, shell);
  
@@ -581,37 +519,30 @@ diff -ruwN source/sshbuf-misc.c source-new/sshbuf-misc.c
  
 diff -ruwN source/ssh.c source-new/ssh.c
 --- source/ssh.c	2024-07-01 11:36:28.000000000 +0700
-+++ source-new/ssh.c	2025-09-06 21:09:36.559438198 +0700
-@@ -689,7 +689,7 @@
++++ source-new/ssh.c	2025-09-07 01:22:43.638928030 +0700
+@@ -689,7 +689,6 @@
  	 * Discard other fds that are hanging around. These can cause problem
  	 * with backgrounded ssh processes started by ControlPersist.
  	 */
 -	closefrom(STDERR_FILENO + 1);
-+	// closefrom(STDERR_FILENO + 1);
  
  	__progname = ssh_get_progname(av[0]);
  
 diff -ruwN source/sshconnect2.c source-new/sshconnect2.c
 --- source/sshconnect2.c	2024-07-01 11:36:28.000000000 +0700
-+++ source-new/sshconnect2.c	2025-09-06 21:09:36.560438163 +0700
-@@ -2057,7 +2057,7 @@
++++ source-new/sshconnect2.c	2025-09-07 01:22:58.683157171 +0700
+@@ -2057,7 +2057,6 @@
  		sock = STDERR_FILENO + 1;
  		if (fcntl(sock, F_SETFD, 0) == -1) /* keep the socket on exec */
  			debug3_f("fcntl F_SETFD: %s", strerror(errno));
 -		closefrom(sock + 1);
-+		// closefrom(sock + 1);
  
  		debug3_f("[child] pid=%ld, exec %s",
  		    (long)getpid(), _PATH_SSH_KEY_SIGN);
 diff -ruwN source/sshd.c source-new/sshd.c
 --- source/sshd.c	2024-07-01 11:36:28.000000000 +0700
-+++ source-new/sshd.c	2025-09-06 22:33:56.902184198 +0700
-@@ -1217,12 +1217,11 @@
- 	compat_init_setproctitle(ac, av);
- 	av = saved_argv;
- #endif
--
- 	if (geteuid() == 0 && setgroups(0, NULL) == -1)
++++ source-new/sshd.c	2025-09-07 01:39:34.681252169 +0700
+@@ -1222,7 +1222,7 @@
  		debug("setgroups(): %.200s", strerror(errno));
  
  	/* Ensure that fds 0, 1 and 2 are open or directed to /dev/null */
@@ -620,45 +551,14 @@ diff -ruwN source/sshd.c source-new/sshd.c
  
  	/* Initialize configuration options to their default values. */
  	initialize_server_options(&options);
-@@ -1342,9 +1341,9 @@
- 		}
- 	}
+@@ -1344,7 +1344,6 @@
  	if (!test_flag && !do_dump_cfg && !path_absolute(av[0]))
--		fatal("sshd requires execution with an absolute path");
-+		fatal("sshd requires execution with an absolutez path");
+ 		fatal("sshd requires execution with an absolute path");
  
 -	closefrom(STDERR_FILENO + 1);
-+	// closefrom(STDERR_FILENO + 1);
  
  	/* Reserve fds we'll need later for reexec things */
  	if ((devnull = open(_PATH_DEVNULL, O_RDWR)) == -1)
-@@ -1427,16 +1426,16 @@
- 	 * daemonisation in the presence of Match blocks, but this catches
- 	 * and warns for trivial misconfigurations that could break login.
- 	 */
--	if (options.num_auth_methods != 0) {
--		for (i = 0; i < options.num_auth_methods; i++) {
--			if (auth2_methods_valid(options.auth_methods[i],
--			    1) == 0)
--				break;
--		}
--		if (i >= options.num_auth_methods)
--			fatal("AuthenticationMethods cannot be satisfied by "
--			    "enabled authentication methods");
--	}
-+	// if (options.num_auth_methods != 0) {
-+	// 	for (i = 0; i < options.num_auth_methods; i++) {
-+	// 		if (auth2_methods_valid(options.auth_methods[i],
-+	// 		    1) == 0)
-+	// 			break;
-+	// 	}
-+	// 	if (i >= options.num_auth_methods)
-+	// 		fatal("AuthenticationMethods cannot be satisfied by "
-+	// 		    "enabled authentication methods");
-+	// }
- 
- 	/* Check that there are no remaining arguments. */
- 	if (optind < ac) {
 @@ -1482,13 +1481,13 @@
  			    options.host_key_files[i]);
  			key->sk_flags &= ~SSH_SK_USER_PRESENCE_REQD;
@@ -735,25 +635,23 @@ diff -ruwN source/sshkey.c source-new/sshkey.c
  #include <util.h>
 diff -ruwN source/ssh-sk-client.c source-new/ssh-sk-client.c
 --- source/ssh-sk-client.c	2024-07-01 11:36:28.000000000 +0700
-+++ source-new/ssh-sk-client.c	2025-09-06 21:09:36.569437846 +0700
-@@ -91,7 +91,7 @@
++++ source-new/ssh-sk-client.c	2025-09-07 01:21:42.201992304 +0700
+@@ -91,7 +91,6 @@
  		}
  		close(pair[0]);
  		close(pair[1]);
 -		closefrom(STDERR_FILENO + 1);
-+		// closefrom(STDERR_FILENO + 1);
  		debug_f("starting %s %s", helper,
  		    verbosity == NULL ? "" : verbosity);
  		execlp(helper, helper, verbosity, (char *)NULL);
 diff -ruwN source/ssh-sk-helper.c source-new/ssh-sk-helper.c
 --- source/ssh-sk-helper.c	2024-07-01 11:36:28.000000000 +0700
-+++ source-new/ssh-sk-helper.c	2025-09-06 21:09:36.570437810 +0700
-@@ -303,7 +303,7 @@
++++ source-new/ssh-sk-helper.c	2025-09-07 01:22:43.638928030 +0700
+@@ -303,7 +303,6 @@
  	 * Rearrange our file descriptors a little; we don't trust the
  	 * providers not to fiddle with stdin/out.
  	 */
 -	closefrom(STDERR_FILENO + 1);
-+	// closefrom(STDERR_FILENO + 1);
  	if ((in = dup(STDIN_FILENO)) == -1 || (out = dup(STDOUT_FILENO)) == -1)
  		fatal("%s: dup: %s", __progname, strerror(errno));
  	close(STDIN_FILENO);
