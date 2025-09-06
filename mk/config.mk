@@ -109,6 +109,7 @@ else
 	export GNU_TARGET=$(TARGET)
 endif
 BUILD=build/$(ARCH)/$(CONFIG_NAME)
+MOUNT_DIR=$(BUILD)/filesystem
 HOST_FSTOOLS=build/fstools
 INSTALLER=$(HOST_FSTOOLS)/bin/redox_installer
 INSTALLER_OPTS=
