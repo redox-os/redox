@@ -22,17 +22,16 @@ COOKBOOK_CONFIGURE_FLAGS+=(
 cookbook_configure
 mv "${COOKBOOK_STAGE}"/usr/sbin/sshd "${COOKBOOK_STAGE}"/usr/bin/sshd
 rmdir "${COOKBOOK_STAGE}"/usr/sbin
+mv "${COOKBOOK_STAGE}"/usr/etc "${COOKBOOK_STAGE}"/etc
 
 # Extracted from `make host-key-force`
 # TODO: Very insecure! but there's no postscript yet
-ssh-keygen -t dsa -f "${COOKBOOK_STAGE}"/usr/etc/ssh_host_dsa_key -N ""
-ssh-keygen -t rsa -f "${COOKBOOK_STAGE}"/usr/etc/ssh_host_rsa_key -N ""
-ssh-keygen -t ed25519 -f "${COOKBOOK_STAGE}"/usr/etc/ssh_host_ed25519_key -N ""
-ssh-keygen -t ecdsa -f "${COOKBOOK_STAGE}"/usr/etc/ssh_host_ecdsa_key -N ""
+ssh-keygen -t dsa -f "${COOKBOOK_STAGE}"/etc/ssh_host_dsa_key -N ""
+ssh-keygen -t rsa -f "${COOKBOOK_STAGE}"/etc/ssh_host_rsa_key -N ""
+ssh-keygen -t ed25519 -f "${COOKBOOK_STAGE}"/etc/ssh_host_ed25519_key -N ""
+ssh-keygen -t ecdsa -f "${COOKBOOK_STAGE}"/etc/ssh_host_ecdsa_key -N ""
 
-# The config can be found here, not /etc
-CONFIG_FILE="${COOKBOOK_STAGE}"/usr/etc/sshd_config
-sed -i "s/#LogLevel INFO/LogLevel DEBUG3/g" "${CONFIG_FILE}"
+CONFIG_FILE="${COOKBOOK_STAGE}"/etc/sshd_config
 
 # ipv6 is not working yet
 sed -i "s/#AddressFamily any/AddressFamily inet/g" "${CONFIG_FILE}"
