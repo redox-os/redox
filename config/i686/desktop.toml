@@ -12,3 +12,4 @@ include = ["../desktop.toml"]
 # Package settings
 [packages]
 # example = {}
+rustpython = "ignore" # https://github.com/Alexhuszagh/rust-lexical/issues/218
