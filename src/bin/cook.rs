@@ -203,29 +203,66 @@ fn serialize_and_write<T: Serialize>(file_path: &Path, content: &T) -> Result<()
 }
 
 static SHARED_PRESCRIPT: &str = r#"
+# Build dynamically
 function DYNAMIC_INIT {
-  COOKBOOK_AUTORECONF="autoreconf"
-  autotools_recursive_regenerate() {
-    for f in $(find . -name configure.ac -o -name configure.in -type f | sort); do
-      echo "* autotools regen in '$(dirname $f)'..."
-      ( cd "$(dirname "$f")" && "${COOKBOOK_AUTORECONF}" -fvi "$@" -I${COOKBOOK_HOST_SYSROOT}/share/aclocal )
-    done
-  }
+    COOKBOOK_AUTORECONF="autoreconf"
+    autotools_recursive_regenerate() {
+        for f in $(find . -name configure.ac -o -name configure.in -type f | sort); do
+            echo "* autotools regen in '$(dirname $f)'..."
+            ( cd "$(dirname "$f")" && "${COOKBOOK_AUTORECONF}" -fvi "$@" -I${COOKBOOK_HOST_SYSROOT}/share/aclocal )
+        done
+    }
 
-  echo "DEBUG: Program is being compiled dynamically."
+    if [ "${TARGET}" != "x86_64-unknown-redox" ]
+    then
+        echo "WARN: ${TARGET} does not support dynamic linking." >&2
+        return
+    fi
 
-  COOKBOOK_CONFIGURE_FLAGS=(
-    --host="${GNU_TARGET}"
-    --prefix="/usr"
-    --enable-shared
-    --disable-static
-  )
+    echo "DEBUG: Program is being compiled dynamically."
 
-  # TODO: check paths for spaces
-  export LDFLAGS="-L${COOKBOOK_SYSROOT}/lib"
-  export LDFLAGS="-Wl,-rpath-link,${COOKBOOK_SYSROOT}/lib $LDFLAGS"
-  export RUSTFLAGS="-C target-feature=-crt-static"
-  export COOKBOOK_DYNAMIC=1
+    COOKBOOK_CONFIGURE_FLAGS=(
+        --host="${GNU_TARGET}"
+        --prefix="/usr"
+        --enable-shared
+        --disable-static
+    )
+
+    COOKBOOK_MESON_FLAGS=(
+        --buildtype release
+        --wrap-mode nofallback
+        --strip
+        -Ddefault_library=shared
+        -Dprefix=/usr
+    )
+
+    # TODO: check paths for spaces
+    export LDFLAGS="-L${COOKBOOK_SYSROOT}/lib"
+    export LDFLAGS="-Wl,-rpath-link,${COOKBOOK_SYSROOT}/lib $LDFLAGS"
+    export RUSTFLAGS="-C target-feature=-crt-static"
+    export COOKBOOK_DYNAMIC=1
+}
+
+# Build both dynamically and statically
+function DYNAMIC_STATIC_INIT {
+    DYNAMIC_INIT
+    if [ "${COOKBOOK_DYNAMIC}" == "1" ]
+    then
+        COOKBOOK_CONFIGURE_FLAGS=(
+            --host="${GNU_TARGET}"
+            --prefix="/usr"
+            --enable-shared
+            --enable-static
+        )
+
+        COOKBOOK_MESON_FLAGS=(
+            --buildtype release
+            --wrap-mode nofallback
+            --strip
+            -Ddefault_library=both
+            -Dprefix=/usr
+        )
+    fi
 }
 
 function GNU_CONFIG_GET {
@@ -938,6 +975,7 @@ COOKBOOK_MESON_FLAGS=(
     --buildtype release
     --wrap-mode nofallback
     --strip
+    -Ddefault_library=static
     -Dprefix=/usr
 )
 function cookbook_meson {

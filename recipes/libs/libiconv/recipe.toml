@@ -19,12 +19,8 @@ autotools_recursive_regenerate -I$(realpath ./m4) -I$(realpath ./srcm4)
 [build]
 template = "custom"
 script = """
-DYNAMIC_INIT
-COOKBOOK_CONFIGURE_FLAGS=(
-    --host="${GNU_TARGET}"
-    --prefix="/usr"
-    --enable-shared
-    --enable-static
+DYNAMIC_STATIC_INIT
+COOKBOOK_CONFIGURE_FLAGS+=(
     ac_cv_have_decl_program_invocation_name=no
 )
 cookbook_configure

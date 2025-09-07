@@ -9,16 +9,12 @@ autotools_recursive_regenerate
 [build]
 template = "custom"
 script = """
-DYNAMIC_INIT
-COOKBOOK_CONFIGURE_FLAGS=(
-    --host="${GNU_TARGET}"
-    --prefix="/usr"
+DYNAMIC_STATIC_INIT
+COOKBOOK_CONFIGURE_FLAGS+=(
     --disable-lzmadec
     --disable-lzmainfo
     --disable-xz
     --disable-xzdec
-    --enable-shared=yes
-    --enable-static=yes
     --enable-threads=no
 )
 cookbook_configure
