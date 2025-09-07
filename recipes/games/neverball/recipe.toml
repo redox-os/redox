@@ -29,7 +29,6 @@ env -i \
     PKG_CONFIG="pkg-config" \
 "${COOKBOOK_MAKE}" -j"${COOKBOOK_MAKE_JOBS}" ENABLE_FS=stdio mapc sols
 
-export LDFLAGS+="-L${COOKBOOK_SYSROOT}/lib -z noexecstack"
 "${COOKBOOK_MAKE}" -j"${COOKBOOK_MAKE_JOBS}" ENABLE_FS=stdio ENABLE_NLS=0 clean-src
 "${COOKBOOK_MAKE}" -j"${COOKBOOK_MAKE_JOBS}" ENABLE_FS=stdio ENABLE_NLS=0 neverball neverputt
 

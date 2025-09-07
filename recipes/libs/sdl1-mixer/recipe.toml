@@ -15,6 +15,7 @@ dependencies = [
 ]
 template = "custom"
 script = """
+DYNAMIC_INIT
 export LIBS="-lvorbis -logg"
 COOKBOOK_CONFIGURE_FLAGS+=(
     --enable-music-ogg

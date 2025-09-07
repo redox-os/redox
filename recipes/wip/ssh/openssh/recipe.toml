@@ -1,13 +1,42 @@
-#TODO update the patch to match the current version
-#TODO does the patch is still needed?
+#TODO lack of resolv.h, expect dns not working
+#TODO lack of utmpx.h, expect no way to track login in sshd
+#TODO lack of an equivalent to shadow.h, expect sshd password not working
+#TODO lack of openssl support, use only ssh-keygen from redox
 [source]
 tar = "https://cdn.openbsd.org/pub/OpenBSD/OpenSSH/portable/openssh-9.8p1.tar.gz"
 patches = [
     "redox.patch",
 ]
 [build]
-template = "configure"
+template = "custom"
 dependencies = [
-    "openssl1",
     "zlib",
 ]
+script = """
+DYNAMIC_INIT
+COOKBOOK_CONFIGURE_FLAGS+=(
+    --disable-strip
+# requires openssl 1.1.1, result in libcrypto error otherwise
+    --without-openssl
+    --sysconfdir=/etc/ssh
+)
+cookbook_configure
+mv "${COOKBOOK_STAGE}"/usr/sbin/sshd "${COOKBOOK_STAGE}"/usr/bin/sshd
+rmdir "${COOKBOOK_STAGE}"/usr/sbin
+
+# Extracted from `make host-key-force`
+# TODO: Very insecure! but there's no postscript yet
+ssh-keygen -t dsa -f "${COOKBOOK_STAGE}"/etc/ssh/ssh_host_dsa_key -N ""
+ssh-keygen -t rsa -f "${COOKBOOK_STAGE}"/etc/ssh/ssh_host_rsa_key -N ""
+ssh-keygen -t ed25519 -f "${COOKBOOK_STAGE}"/etc/ssh/ssh_host_ed25519_key -N ""
+ssh-keygen -t ecdsa -f "${COOKBOOK_STAGE}"/etc/ssh/ssh_host_ecdsa_key -N ""
+
+CONFIG_FILE="${COOKBOOK_STAGE}"/etc/ssh/sshd_config
+
+# ipv6 is not working yet
+sed -i "s/#AddressFamily any/AddressFamily inet/g" "${CONFIG_FILE}"
+# hardcoded to 0.0.0.0 in patches
+sed -i "s/#ListenAddress 0.0.0.0/ListenAddress 0.0.0.0/g" "${CONFIG_FILE}"
+# will never work
+sed -i "s/#PasswordAuthentication yes/PasswordAuthentication no/g" "${CONFIG_FILE}"
+"""

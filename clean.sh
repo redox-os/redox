@@ -5,12 +5,15 @@ source config.sh
 
 if [ $# = 0 ]
 then
-    recipes="$(target/release/list_recipes)"
+    recipes="$(target/release/list_recipes --short)"
 else
     recipes="$@"
 fi
 
-for recipe_path in $recipes
+for recipe_name in $recipes
 do
-    IGNORE_ERROR=1 ./cook.sh "$recipe_path" distclean
+    recipe_path=`target/release/find_recipe $recipe_name`
+
+    echo -e "\033[01;38;5;215mcook - clean $recipe_name\033[0m"
+    rm -rf "${ROOT}/$recipe_path/target/${TARGET}"
 done
