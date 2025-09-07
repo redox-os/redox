@@ -18,20 +18,20 @@ COOKBOOK_CONFIGURE_FLAGS+=(
     --disable-strip
 # requires openssl 1.1.1, result in libcrypto error otherwise
     --without-openssl
+    --sysconfdir=/etc/ssh
 )
 cookbook_configure
 mv "${COOKBOOK_STAGE}"/usr/sbin/sshd "${COOKBOOK_STAGE}"/usr/bin/sshd
 rmdir "${COOKBOOK_STAGE}"/usr/sbin
-mv "${COOKBOOK_STAGE}"/usr/etc "${COOKBOOK_STAGE}"/etc
 
 # Extracted from `make host-key-force`
 # TODO: Very insecure! but there's no postscript yet
-ssh-keygen -t dsa -f "${COOKBOOK_STAGE}"/etc/ssh_host_dsa_key -N ""
-ssh-keygen -t rsa -f "${COOKBOOK_STAGE}"/etc/ssh_host_rsa_key -N ""
-ssh-keygen -t ed25519 -f "${COOKBOOK_STAGE}"/etc/ssh_host_ed25519_key -N ""
-ssh-keygen -t ecdsa -f "${COOKBOOK_STAGE}"/etc/ssh_host_ecdsa_key -N ""
+ssh-keygen -t dsa -f "${COOKBOOK_STAGE}"/etc/ssh/ssh_host_dsa_key -N ""
+ssh-keygen -t rsa -f "${COOKBOOK_STAGE}"/etc/ssh/ssh_host_rsa_key -N ""
+ssh-keygen -t ed25519 -f "${COOKBOOK_STAGE}"/etc/ssh/ssh_host_ed25519_key -N ""
+ssh-keygen -t ecdsa -f "${COOKBOOK_STAGE}"/etc/ssh/ssh_host_ecdsa_key -N ""
 
-CONFIG_FILE="${COOKBOOK_STAGE}"/etc/sshd_config
+CONFIG_FILE="${COOKBOOK_STAGE}"/etc/ssh/sshd_config
 
 # ipv6 is not working yet
 sed -i "s/#AddressFamily any/AddressFamily inet/g" "${CONFIG_FILE}"
