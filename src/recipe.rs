@@ -1,4 +1,4 @@
-use std::{convert::TryInto, fs, path::PathBuf};
+use std::{collections::BTreeSet, convert::TryInto, fs, path::PathBuf};
 
 use pkg::{package::PackageError, recipes, PackageName};
 use serde::{
@@ -71,13 +71,27 @@ pub enum BuildKind {
     Cargo {
         #[serde(default)]
         package_path: Option<String>,
-
         #[serde(default)]
         cargoflags: String,
     },
     /// Will build and install using configure and make
     #[serde(rename = "configure")]
-    Configure,
+    Configure {
+        #[serde(default)]
+        configureflags: Vec<String>,
+    },
+    /// Will build and install using cmake
+    #[serde(rename = "cmake")]
+    Cmake {
+        #[serde(default)]
+        cmakeflags: Vec<String>,
+    },
+    /// Will build and install using meson
+    #[serde(rename = "meson")]
+    Meson {
+        #[serde(default)]
+        mesonflags: Vec<String>,
+    },
     /// Will build and install using custom commands
     #[serde(rename = "custom")]
     Custom { script: String },
@@ -213,6 +227,11 @@ impl CookRecipe {
 
         Ok(recipes)
     }
+}
+
+#[derive(Serialize, Deserialize)]
+pub struct AutoDeps {
+    pub packages: BTreeSet<PackageName>,
 }
 
 #[cfg(test)]

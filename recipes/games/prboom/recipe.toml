@@ -27,6 +27,8 @@ COOKBOOK_CONFIGURE_FLAGS+=(
   --without-net
   --with-sdl-prefix="${COOKBOOK_SYSROOT}"
   ac_cv_lib_SDL_mixer_Mix_OpenAudio=yes
+  ac_cv_type_gid_t=yes
+  ac_cv_type_uid_t=yes
 )
 cookbook_configure
 """

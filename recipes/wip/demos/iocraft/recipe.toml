@@ -1,0 +1,10 @@
+#TODO not compiled or tested
+[source]
+git = "https://github.com/ccbrown/iocraft"
+[build]
+template = "custom"
+script = """
+cookbook_cargo_examples borders calculator counter \
+fullscreen hello_world overlap progress_bar scrolling \
+table use_input use_output weather
+"""

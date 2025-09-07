@@ -4,7 +4,7 @@ blake3 = "8bc50ffdba20579fb3080a0dca32cb939c8a3c19259aed026482c6ac069b0007"
 patches = ["01_redox.patch"]
 script = """
 ./autogen.sh
-wget -O config.sub "https://gitlab.redox-os.org/redox-os/gnu-config/-/raw/master/config.sub?inline=false"
+GNU_CONFIG_GET config.sub
 """
 
 [build]
@@ -14,9 +14,10 @@ dependencies = [
 ]
 template = "custom"
 script = """
+DYNAMIC_INIT
 export CFLAGS="-I${COOKBOOK_SYSROOT}/include/SDL"
 export CPPFLAGS="-I${COOKBOOK_SYSROOT}/include/SDL"
-export LDFLAGS="-L${COOKBOOK_SYSROOT}/lib -static"
+export LDFLAGS+=" -lorbital"
 COOKBOOK_CONFIGURE_FLAGS+=(
     --disable-opengl
     --disable-sdltest

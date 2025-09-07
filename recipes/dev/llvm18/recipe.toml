@@ -2,6 +2,7 @@
 git = "https://gitlab.redox-os.org/redox-os/llvm-project.git"
 upstream = "https://github.com/rust-lang/llvm-project.git"
 branch = "redox-2024-05-11"
+shallow_clone = true
 
 [build]
 template = "custom"
@@ -29,8 +30,6 @@ case "${TARGET}" in
         LLVM_TARGETS_TO_BUILD="host"
         ;;
 esac
-
-export LDFLAGS="-Wl,-rpath-link,${COOKBOOK_SYSROOT}/lib $LDFLAGS"
 
 COOKBOOK_CMAKE_FLAGS=(
     -DCMAKE_CXX_FLAGS="--std=gnu++11"
@@ -67,7 +66,5 @@ COOKBOOK_CMAKE_FLAGS=(
     -DLLVM_ENABLE_PROJECTS="llvm"
 )
 
-set -x
 cookbook_cmake "${COOKBOOK_SOURCE}/llvm"
-set +x
 """

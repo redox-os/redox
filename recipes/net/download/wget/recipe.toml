@@ -1,13 +1,10 @@
 [source]
 tar = "https://ftp.gnu.org/gnu/wget/wget-1.21.4.tar.gz"
 [build]
-template = "custom"
 dependencies = [
     "openssl1",
 ]
-script = """
-COOKBOOK_CONFIGURE_FLAGS+=(
-    --with-ssl=openssl
-)
-cookbook_configure
-"""
+template = "configure"
+configureflags = [
+    "--with-ssl=openssl"
+]

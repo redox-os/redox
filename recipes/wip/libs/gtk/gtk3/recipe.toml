@@ -43,9 +43,8 @@ dependencies = [
 template = "custom"
 script = """
 DYNAMIC_INIT
-#TODO: why are libs not automatically detected?
+CFLAGS="${CFLAGS} -DM_SQRT2=1.41421356237309504880"
 cookbook_meson \
-    -Dc_args="-DM_SQRT2=1.41421356237309504880 -lXext -lX11 -lxcb -lXau" \
     -Dintrospection=false \
     -Dwayland_backend=false
 """

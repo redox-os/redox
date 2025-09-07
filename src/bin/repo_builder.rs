@@ -1,4 +1,5 @@
-use pkg::recipes;
+use cookbook::WALK_DEPTH;
+use pkg::{recipes, Package, PackageName};
 use std::collections::{BTreeMap, HashMap};
 use std::env;
 use std::fs::{self, File};
@@ -24,8 +25,20 @@ fn main() -> Result<(), Box<dyn std::error::Error>> {
     let repo_dir = args
         .next()
         .expect("Usage: repo_builder <REPO_DIR> <recipe1> <recipe2> ...");
-    let recipe_list: Vec<String> = args.collect();
     let repo_path = Path::new(&repo_dir);
+
+    // Runtime dependencies include both `[package.dependencies]` and dynamically
+    // linked packages discovered by auto_deps.
+    //
+    // The following adds the package dependencies of the recipes to the repo as
+    // well.
+    let recipe_list = Package::new_recursive(
+        &args.map(PackageName::new).collect::<Result<Vec<_>, _>>()?,
+        WALK_DEPTH,
+    )?
+    .into_iter()
+    .map(|pkg| pkg.name.as_str().to_owned())
+    .collect::<Vec<_>>();
 
     let mut appstream_sources: HashMap<String, PathBuf> = HashMap::new();
     let mut packages: BTreeMap<String, String> = BTreeMap::new();
