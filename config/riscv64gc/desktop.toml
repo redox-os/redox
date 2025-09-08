@@ -12,3 +12,4 @@ include = ["../desktop.toml"]
 # Package settings
 [packages]
 # example = {}
+netsurf = "ignore" # liborbital fails to link in due to mismatching float ABI
