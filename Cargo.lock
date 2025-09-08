@@ -1538,6 +1538,8 @@ checksum = "7edddbd0b52d732b21ad9a5fab5c704c14cd949e5e9a1ec5929a24fded1b904c"
 [[package]]
 name = "pkgar"
 version = "0.1.18"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "db98a45d3bdaf7dceeee5716f3eec9af0e67deec64eec9e717536b89de323c22"
 dependencies = [
  "anyhow",
  "blake3 0.3.8",
@@ -1550,27 +1552,15 @@ dependencies = [
 
 [[package]]
 name = "pkgar"
-version = "0.1.18"
-source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "db98a45d3bdaf7dceeee5716f3eec9af0e67deec64eec9e717536b89de323c22"
+version = "0.1.19"
 dependencies = [
  "anyhow",
  "blake3 0.3.8",
  "bytemuck",
  "clap",
- "pkgar-core 0.1.18 (registry+https://github.com/rust-lang/crates.io-index)",
- "pkgar-keys 0.1.18 (registry+https://github.com/rust-lang/crates.io-index)",
+ "pkgar-core 0.1.19",
+ "pkgar-keys 0.1.19",
  "thiserror 2.0.12",
-]
-
-[[package]]
-name = "pkgar-core"
-version = "0.1.18"
-dependencies = [
- "bitflags 1.3.2",
- "blake3 0.3.8",
- "bytemuck",
- "dryoc",
 ]
 
 [[package]]
@@ -1586,8 +1576,20 @@ dependencies = [
 ]
 
 [[package]]
+name = "pkgar-core"
+version = "0.1.19"
+dependencies = [
+ "bitflags 1.3.2",
+ "blake3 0.3.8",
+ "bytemuck",
+ "dryoc",
+]
+
+[[package]]
 name = "pkgar-keys"
 version = "0.1.18"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "4494325c5c408d718d1df657cceeadc2102f02e7c9298343ce230f557f13e80c"
 dependencies = [
  "anyhow",
  "clap",
@@ -1604,16 +1606,14 @@ dependencies = [
 
 [[package]]
 name = "pkgar-keys"
-version = "0.1.18"
-source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "4494325c5c408d718d1df657cceeadc2102f02e7c9298343ce230f557f13e80c"
+version = "0.1.19"
 dependencies = [
  "anyhow",
  "clap",
  "dirs 3.0.2",
  "hex",
  "lazy_static",
- "pkgar-core 0.1.18 (registry+https://github.com/rust-lang/crates.io-index)",
+ "pkgar-core 0.1.19",
  "seckey",
  "serde",
  "termion",
@@ -1838,9 +1838,9 @@ checksum = "70f49b2c29ae3c72ff3a8dbc1c5eefba9093a8c5ceaa8ca5292833816fe931e2"
 dependencies = [
  "anyhow",
  "indicatif",
- "pkgar 0.1.18 (registry+https://github.com/rust-lang/crates.io-index)",
- "pkgar-core 0.1.18 (registry+https://github.com/rust-lang/crates.io-index)",
- "pkgar-keys 0.1.18 (registry+https://github.com/rust-lang/crates.io-index)",
+ "pkgar 0.1.18",
+ "pkgar-core 0.1.18",
+ "pkgar-keys 0.1.18",
  "reqwest",
  "serde",
  "serde_derive",
@@ -1850,14 +1850,14 @@ dependencies = [
 
 [[package]]
 name = "redox-pkg"
-version = "0.2.7"
-source = "git+https://gitlab.redox-os.org/redox-os/pkgutils#436c97a0df26bfce24e33a5a86a21218aca7591f"
+version = "0.2.8"
+source = "git+https://gitlab.redox-os.org/redox-os/pkgutils#ea2641126c8b38d7b8997c5c7ebec74999fc9578"
 dependencies = [
  "anyhow",
  "ignore",
- "pkgar 0.1.18 (registry+https://github.com/rust-lang/crates.io-index)",
- "pkgar-core 0.1.18 (registry+https://github.com/rust-lang/crates.io-index)",
- "pkgar-keys 0.1.18 (registry+https://github.com/rust-lang/crates.io-index)",
+ "pkgar 0.1.18",
+ "pkgar-core 0.1.18",
+ "pkgar-keys 0.1.18",
  "reqwest",
  "serde",
  "serde_derive",
@@ -1883,10 +1883,10 @@ dependencies = [
  "ignore",
  "object",
  "pbr",
- "pkgar 0.1.18",
- "pkgar-core 0.1.18",
- "pkgar-keys 0.1.18",
- "redox-pkg 0.2.7",
+ "pkgar 0.1.19",
+ "pkgar-core 0.1.19",
+ "pkgar-keys 0.1.19",
+ "redox-pkg 0.2.8",
  "redoxer",
  "serde",
  "tempfile",
@@ -1908,9 +1908,9 @@ dependencies = [
  "fscommon",
  "gpt",
  "libc",
- "pkgar 0.1.18 (registry+https://github.com/rust-lang/crates.io-index)",
- "pkgar-core 0.1.18 (registry+https://github.com/rust-lang/crates.io-index)",
- "pkgar-keys 0.1.18 (registry+https://github.com/rust-lang/crates.io-index)",
+ "pkgar 0.1.18",
+ "pkgar-core 0.1.18",
+ "pkgar-keys 0.1.18",
  "rand 0.8.5",
  "redox-pkg 0.2.5",
  "redox_liner",
@@ -2923,7 +2923,7 @@ version = "0.1.9"
 source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "cf221c93e13a30d793f7645a0e7762c55d169dbb0a49671918a2319d289b10bb"
 dependencies = [
- "windows-sys 0.59.0",
+ "windows-sys 0.48.0",
 ]
 
 [[package]]
