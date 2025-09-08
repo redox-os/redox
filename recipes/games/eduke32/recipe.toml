@@ -23,7 +23,7 @@ export CFLAGS="-I${COOKBOOK_SYSROOT}/include -I${COOKBOOK_SYSROOT}/include/SDL"
 export SDLCONFIG="${COOKBOOK_SYSROOT}/bin/sdl-config --prefix=${COOKBOOK_SYSROOT}"
 
 export LDFLAGS="-L${COOKBOOK_SYSROOT}/lib"
-if [[ -n "${COOKBOOK_PREFER_STATIC}" ]]; then
+if [ "${COOKBOOK_DYNAMIC}" != "1" ]; then
     LDFLAGS+=" -static"
 fi
 
