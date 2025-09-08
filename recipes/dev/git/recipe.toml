@@ -28,8 +28,6 @@ MAKEFLAGS=(
     BLK_SHA1=1
     V=1
 )
-export LDFLAGS="-L${COOKBOOK_SYSROOT}/usr/lib"
-export CPPFLAGS="-I${COOKBOOK_SYSROOT}/usr/include"
 export CURL_CONFIG="${COOKBOOK_SYSROOT}/usr/bin/curl-config"
 ./configure \
     --host="${GNU_TARGET}" \

@@ -22,8 +22,6 @@ dependencies = [
 script = """
 DYNAMIC_INIT
 
-export LDFLAGS="-Wl,-rpath-link,${COOKBOOK_SYSROOT}/lib $LDFLAGS"
-
 COOKBOOK_CMAKE_FLAGS+=(
     -DBUILD_TESTING=Off
     -DCMAKE_USE_SYSTEM_BZIP2=On

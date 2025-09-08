@@ -14,8 +14,7 @@ dependencies = [
     "libiconv",
 ]
 script = """
-export CFLAGS="-I${COOKBOOK_SYSROOT}/include -I${COOKBOOK_SYSROOT}/include/SDL"
-export LDFLAGS="-L${COOKBOOK_SYSROOT}/lib -static"
+export CFLAGS="${CFLAGS} -I${COOKBOOK_SYSROOT}/include/SDL"
 export SDL_CONFIG="${COOKBOOK_SYSROOT}/bin/sdl-config"
 
 COOKBOOK_CONFIGURE_FLAGS=(

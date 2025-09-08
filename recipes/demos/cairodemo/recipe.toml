@@ -13,8 +13,6 @@ dependencies = [
 ]
 template = "custom"
 script = """
-export LDFLAGS="-L${COOKBOOK_SYSROOT}/lib"
-export CPPFLAGS="-I${COOKBOOK_SYSROOT}/include"
 "${CXX}" \
     $("${PKG_CONFIG}" --cflags cairo) \
     "${COOKBOOK_RECIPE}/cairodemo.c" \

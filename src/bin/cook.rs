@@ -243,8 +243,7 @@ function DYNAMIC_INIT {
     )
 
     # TODO: check paths for spaces
-    export LDFLAGS="-L${COOKBOOK_SYSROOT}/lib"
-    export LDFLAGS="-Wl,-rpath-link,${COOKBOOK_SYSROOT}/lib $LDFLAGS"
+    export LDFLAGS="-Wl,-rpath-link,${COOKBOOK_SYSROOT}/lib -L${COOKBOOK_SYSROOT}/lib"
     export RUSTFLAGS="-C target-feature=-crt-static"
     export COOKBOOK_DYNAMIC=1
 }
