@@ -1,4 +1,4 @@
-#TODO: Can be built, but ends in breakpoint trap
+#TODO compiling, not tested further
 [source]
 git = "https://github.com/willnode/go"
 branch = "go-1.25-redox"
