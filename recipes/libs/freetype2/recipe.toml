@@ -9,6 +9,6 @@ dependencies = [
     "zlib"
 ]
 script = """
-DYNAMIC_INIT
-cookbook_meson -Ddefault_library=both
+DYNAMIC_STATIC_INIT
+cookbook_meson
 """
