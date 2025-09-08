@@ -1,20 +1,22 @@
-#TODO probably wrong script, see https://github.com/ziglang/zig/wiki/Building-Zig-From-Source
+#TODO compiling, not tested further
 [source]
-tar = "https://ziglang.org/download/0.10.1/zig-0.10.1.tar.xz"
+git = "https://github.com/willnode/zig"
+branch = "zig-0.15-redox"
+
 [build]
 template = "custom"
 script = """
-COOKBOOK_CONFIGURE="cmake"
-COOKBOOK_CONFIGURE_FLAGS=(
-    -DCMAKE_BUILD_TYPE=Release
-    -DCMAKE_CROSSCOMPILING=True
-    -DCMAKE_EXE_LINKER_FLAGS="-static"
-    -DCMAKE_INSTALL_PREFIX="/"
-    -DCMAKE_PREFIX_PATH="${COOKBOOK_SYSROOT}"
-    -DCMAKE_SYSTEM_NAME=Generic
-    -DCMAKE_SYSTEM_PROCESSOR="$(echo "${TARGET}" | cut -d - -f1)"
-    -DCMAKE_VERBOSE_MAKEFILE=On
-"${COOKBOOK_SOURCE}"
-)
-cookbook_configure
+DYNAMIC_INIT
+rsync -av --delete "${COOKBOOK_SOURCE}"/* ./
+
+export ZIG_HOST_TARGET_CFLAGS="$CFLAGS"
+export ZIG_HOST_TARGET_LDFLAGS="$LDFLAGS"
+export ZIG_HOST_TARGET_CC="${TARGET}-gcc"
+export ZIG_HOST_TARGET_TRIPLE="${TARGET%%-*}-redox"
+unset AR AS CC CXX LD LDFLAGS NM OBJCOPY OBJDUMP RANLIB READELF RUSTFLAGS STRIP
+cc bootstrap.c -o ./bootstrap
+./bootstrap
+
+mkdir -p "${COOKBOOK_STAGE}"/usr/bin
+cp ./zig2 "${COOKBOOK_STAGE}"/usr/bin/zig
 """
