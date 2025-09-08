@@ -1850,8 +1850,8 @@ dependencies = [
 
 [[package]]
 name = "redox-pkg"
-version = "0.2.7"
-source = "git+https://gitlab.redox-os.org/redox-os/pkgutils#436c97a0df26bfce24e33a5a86a21218aca7591f"
+version = "0.2.8"
+source = "git+https://gitlab.redox-os.org/redox-os/pkgutils#ea2641126c8b38d7b8997c5c7ebec74999fc9578"
 dependencies = [
  "anyhow",
  "ignore",
@@ -1886,7 +1886,7 @@ dependencies = [
  "pkgar 0.1.19",
  "pkgar-core 0.1.19",
  "pkgar-keys 0.1.19",
- "redox-pkg 0.2.7",
+ "redox-pkg 0.2.8",
  "redoxer",
  "serde",
  "tempfile",
@@ -2923,7 +2923,7 @@ version = "0.1.9"
 source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "cf221c93e13a30d793f7645a0e7762c55d169dbb0a49671918a2319d289b10bb"
 dependencies = [
- "windows-sys 0.59.0",
+ "windows-sys 0.48.0",
 ]
 
 [[package]]
