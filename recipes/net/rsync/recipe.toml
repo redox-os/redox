@@ -1,0 +1,12 @@
+[source]
+tar = "https://download.samba.org/pub/rsync/src/rsync-3.4.1.tar.gz"
+patches = ["redox.patch"]
+
+[build]
+template = "configure"
+dependencies = [
+    "zstd",
+    "lz4",
+    "openssl1",
+    "xxhash",
+]
