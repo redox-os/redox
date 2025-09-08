@@ -38,7 +38,7 @@ export bindir="${prefix}/games"
 export icondir="/ui/icons/apps"
 export gamesdir="${prefix}/share/games"
 
-if ! [[ -n "${COOKBOOK_PREFER_STATIC}" ]]; then
+if [ "${COOKBOOK_DYNAMIC}" == "1" ]; then
     LDFLAGS+=" -lstdc++"
 fi
 

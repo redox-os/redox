@@ -13,7 +13,7 @@ dependencies = [
 ]
 script = """
 DYNAMIC_INIT
-COOKBOOK_CMAKE_FLAGS=(
+COOKBOOK_CMAKE_FLAGS+=(
     -Dprotobuf_BUILD_TESTS=OFF
 )
 cookbook_cmake

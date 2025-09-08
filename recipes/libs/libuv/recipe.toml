@@ -8,7 +8,7 @@ template = "custom"
 script = """
 DYNAMIC_INIT
 
-COOKBOOK_CMAKE_FLAGS=(
+COOKBOOK_CMAKE_FLAGS+=(
     -DBUILD_TESTING=Off
 )
 cookbook_cmake

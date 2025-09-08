@@ -228,6 +228,12 @@ function DYNAMIC_INIT {
         --disable-static
     )
 
+    COOKBOOK_CMAKE_FLAGS=(
+        -DBUILD_SHARED_LIBS=True
+        -DENABLE_SHARED=True
+        -DENABLE_STATIC=False
+    )
+
     COOKBOOK_MESON_FLAGS=(
         --buildtype release
         --wrap-mode nofallback
@@ -253,6 +259,12 @@ function DYNAMIC_STATIC_INIT {
             --prefix="/usr"
             --enable-shared
             --enable-static
+        )
+
+        COOKBOOK_CMAKE_FLAGS=(
+            -DBUILD_SHARED_LIBS=True
+            -DENABLE_SHARED=True
+            -DENABLE_STATIC=True
         )
 
         COOKBOOK_MESON_FLAGS=(
@@ -927,6 +939,11 @@ function cookbook_configure {
 
 COOKBOOK_CMAKE="cmake"
 COOKBOOK_NINJA="ninja"
+COOKBOOK_CMAKE_FLAGS=(
+    -DBUILD_SHARED_LIBS=False
+    -DENABLE_SHARED=False
+    -DENABLE_STATIC=True
+)
 function cookbook_cmake {
     cat > cross_file.cmake <<EOF
 set(CMAKE_AR ${TARGET}-ar)
@@ -959,8 +976,6 @@ EOF
         -DCMAKE_INSTALL_PREFIX=/usr \
         -DCMAKE_INSTALL_SBINDIR=bin \
         -DCMAKE_TOOLCHAIN_FILE=cross_file.cmake \
-        -DBUILD_SHARED_LIBS=True \
-        -DENABLE_STATIC=False \
         -GNinja \
         -Wno-dev \
         "${COOKBOOK_CMAKE_FLAGS[@]}" \
