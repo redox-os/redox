@@ -12,7 +12,7 @@ dependencies = [
 ]
 script = """
 DYNAMIC_INIT
-export LDFLAGS="$LDFLAGS -lorbital -lOSMesa -lstdc++"
+export LDFLAGS="${LDFLAGS} -lorbital -lOSMesa -lstdc++"
 COOKBOOK_CONFIGURE_FLAGS+=(
     --disable-pulseaudio
     --disable-video-x11

@@ -27,8 +27,8 @@ DYNAMIC_INIT
 rsync -av --delete "${COOKBOOK_SOURCE}/" ./
 
 export TARGET="framebuffer"
-export CFLAGS="-I${COOKBOOK_SYSROOT}/include -I${PWD}/inst-${TARGET}/include"
-export LDFLAGS="-L${COOKBOOK_SYSROOT}/lib -L${PWD}/inst-${TARGET}/lib -Wl,--allow-multiple-definition -Wl,-rpath-link,${COOKBOOK_SYSROOT}/lib"
+export CFLAGS="${CFLAGS} -I${PWD}/inst-${TARGET}/include"
+export LDFLAGS="${LDFLAGS} -L${COOKBOOK_SYSROOT}/lib -L${PWD}/inst-${TARGET}/lib -Wl,--allow-multiple-definition -Wl,-rpath-link,${COOKBOOK_SYSROOT}/lib"
 # nghttp2 is not linked for some reason
 export LDFLAGS="${LDFLAGS} -lcurl -lnghttp2"
 

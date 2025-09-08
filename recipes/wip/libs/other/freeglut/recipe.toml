@@ -9,11 +9,6 @@ dependencies = [
 ]
 template = "custom"
 script = """
-export CFLAGS="-I${COOKBOOK_SYSROOT}/include"
-export CPPFLAGS="-I${COOKBOOK_SYSROOT}/include"
-export CXXFLAGS="-I${COOKBOOK_SYSROOT}/include"
-export LDFLAGS="-L${COOKBOOK_SYSROOT}/lib"
-
 cat > redox.cmake <<EOF
 # the name of the target operating system
 set(CMAKE_SYSTEM_NAME Generic)
