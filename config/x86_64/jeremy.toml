@@ -1,6 +1,6 @@
 # Configuration for Jeremy Soller
 
-include = ["../demo.toml"]
+include = ["demo.toml"]
 
 # General settings
 [general]
