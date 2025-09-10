@@ -16,8 +16,8 @@ dependencies = [
 ]
 script = """
 DYNAMIC_INIT
-export CFLAGS="${CFLAGS} -I${COOKBOOK_SYSROOT}/usr/include -I${COOKBOOK_SYSROOT}/usr/include/SDL2"
-export CXXFLAGS="${CXXFLAGS} -D_GLIBCXX_USE_C99_MATH_TR1=1 -I${COOKBOOK_SYSROOT}/usr/include -I${COOKBOOK_SYSROOT}/usr/include/SDL2"
+export CFLAGS="${CFLAGS} -I${COOKBOOK_SYSROOT}/usr/include/SDL2"
+export CXXFLAGS="${CXXFLAGS} -D_GLIBCXX_USE_C99_MATH_TR1=1 -I${COOKBOOK_SYSROOT}/usr/include/SDL2"
 #TODO: don't use this
 export SDL_LIBS="-lSDL2 -lorbital $("${TARGET}-pkg-config" --libs osmesa) -lstdc++"
 #TODO: don't add curl

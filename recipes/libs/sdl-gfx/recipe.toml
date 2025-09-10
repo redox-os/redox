@@ -14,9 +14,6 @@ dependencies = [
     "libiconv",
 ]
 script = """
-export CFLAGS="-I${COOKBOOK_SYSROOT}/include"
-export LDFLAGS="-L${COOKBOOK_SYSROOT}/lib"
-
 COOKBOOK_CONFIGURE_FLAGS=(
     --prefix=/
     --build="$(gcc -dumpmachine)"

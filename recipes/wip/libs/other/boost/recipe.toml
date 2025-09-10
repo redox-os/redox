@@ -16,10 +16,6 @@ dependencies = [
     # "zstd",
 ]
 script = """
-export CFLAGS="${CFLAGS} -I${COOKBOOK_SYSROOT}/include"
-export CPPFLAGS="${CPPFLAGS} ${CFLAGS}"
-export LDFLAGS="-L${COOKBOOK_SYSROOT}/lib --static"
-
 BOOST_ROOT="${COOKBOOK_STAGE}/usr"
 mkdir -p "${BOOST_ROOT}"
 

@@ -23,10 +23,8 @@ dependencies = [
     "libiconv"
 ]
 script = """
-DYNAMIC_INIT
+DYNAMIC_STATIC_INIT
 COOKBOOK_CONFIGURE_FLAGS+=(
-    --enable-static
-    --enable-shared
     ac_cv_have_decl_program_invocation_name=no
     gt_cv_locale_fr=false
     gt_cv_locale_fr_utf8=false

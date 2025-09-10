@@ -203,29 +203,77 @@ fn serialize_and_write<T: Serialize>(file_path: &Path, content: &T) -> Result<()
 }
 
 static SHARED_PRESCRIPT: &str = r#"
+# Build dynamically
 function DYNAMIC_INIT {
-  COOKBOOK_AUTORECONF="autoreconf"
-  autotools_recursive_regenerate() {
-    for f in $(find . -name configure.ac -o -name configure.in -type f | sort); do
-      echo "* autotools regen in '$(dirname $f)'..."
-      ( cd "$(dirname "$f")" && "${COOKBOOK_AUTORECONF}" -fvi "$@" -I${COOKBOOK_HOST_SYSROOT}/share/aclocal )
-    done
-  }
+    COOKBOOK_AUTORECONF="autoreconf"
+    autotools_recursive_regenerate() {
+        for f in $(find . -name configure.ac -o -name configure.in -type f | sort); do
+            echo "* autotools regen in '$(dirname $f)'..."
+            ( cd "$(dirname "$f")" && "${COOKBOOK_AUTORECONF}" -fvi "$@" -I${COOKBOOK_HOST_SYSROOT}/share/aclocal )
+        done
+    }
 
-  echo "DEBUG: Program is being compiled dynamically."
+    if [ "${TARGET}" != "x86_64-unknown-redox" ]
+    then
+        echo "WARN: ${TARGET} does not support dynamic linking." >&2
+        return
+    fi
 
-  COOKBOOK_CONFIGURE_FLAGS=(
-    --host="${GNU_TARGET}"
-    --prefix="/usr"
-    --enable-shared
-    --disable-static
-  )
+    echo "DEBUG: Program is being compiled dynamically."
 
-  # TODO: check paths for spaces
-  export LDFLAGS="-L${COOKBOOK_SYSROOT}/lib"
-  export LDFLAGS="-Wl,-rpath-link,${COOKBOOK_SYSROOT}/lib $LDFLAGS"
-  export RUSTFLAGS="-C target-feature=-crt-static"
-  export COOKBOOK_DYNAMIC=1
+    COOKBOOK_CONFIGURE_FLAGS=(
+        --host="${GNU_TARGET}"
+        --prefix="/usr"
+        --enable-shared
+        --disable-static
+    )
+
+    COOKBOOK_CMAKE_FLAGS=(
+        -DBUILD_SHARED_LIBS=True
+        -DENABLE_SHARED=True
+        -DENABLE_STATIC=False
+    )
+
+    COOKBOOK_MESON_FLAGS=(
+        --buildtype release
+        --wrap-mode nofallback
+        --strip
+        -Ddefault_library=shared
+        -Dprefix=/usr
+    )
+
+    # TODO: check paths for spaces
+    export LDFLAGS="-Wl,-rpath-link,${COOKBOOK_SYSROOT}/lib -L${COOKBOOK_SYSROOT}/lib"
+    export RUSTFLAGS="-C target-feature=-crt-static"
+    export COOKBOOK_DYNAMIC=1
+}
+
+# Build both dynamically and statically
+function DYNAMIC_STATIC_INIT {
+    DYNAMIC_INIT
+    if [ "${COOKBOOK_DYNAMIC}" == "1" ]
+    then
+        COOKBOOK_CONFIGURE_FLAGS=(
+            --host="${GNU_TARGET}"
+            --prefix="/usr"
+            --enable-shared
+            --enable-static
+        )
+
+        COOKBOOK_CMAKE_FLAGS=(
+            -DBUILD_SHARED_LIBS=True
+            -DENABLE_SHARED=True
+            -DENABLE_STATIC=True
+        )
+
+        COOKBOOK_MESON_FLAGS=(
+            --buildtype release
+            --wrap-mode nofallback
+            --strip
+            -Ddefault_library=both
+            -Dprefix=/usr
+        )
+    fi
 }
 
 function GNU_CONFIG_GET {
@@ -890,24 +938,29 @@ function cookbook_configure {
 
 COOKBOOK_CMAKE="cmake"
 COOKBOOK_NINJA="ninja"
+COOKBOOK_CMAKE_FLAGS=(
+    -DBUILD_SHARED_LIBS=False
+    -DENABLE_SHARED=False
+    -DENABLE_STATIC=True
+)
 function cookbook_cmake {
     cat > cross_file.cmake <<EOF
-set(CMAKE_AR ${TARGET}-ar)
-set(CMAKE_CXX_COMPILER ${TARGET}-g++)
-set(CMAKE_C_COMPILER ${TARGET}-gcc)
+set(CMAKE_AR ${GNU_TARGET}-ar)
+set(CMAKE_CXX_COMPILER ${GNU_TARGET}-g++)
+set(CMAKE_C_COMPILER ${GNU_TARGET}-gcc)
 set(CMAKE_FIND_ROOT_PATH ${COOKBOOK_SYSROOT})
 set(CMAKE_FIND_ROOT_PATH_MODE_INCLUDE ONLY)
 set(CMAKE_FIND_ROOT_PATH_MODE_LIBRARY ONLY)
 set(CMAKE_FIND_ROOT_PATH_MODE_PROGRAM NEVER)
 set(CMAKE_PLATFORM_USES_PATH_WHEN_NO_SONAME 1)
 set(CMAKE_PREFIX_PATH, ${COOKBOOK_SYSROOT})
-set(CMAKE_RANLIB ${TARGET}-ranlib)
+set(CMAKE_RANLIB ${GNU_TARGET}-ranlib)
 set(CMAKE_SHARED_LIBRARY_SONAME_C_FLAG "-Wl,-soname,")
 set(CMAKE_SYSTEM_NAME UnixPaths)
 set(CMAKE_SYSTEM_PROCESSOR $(echo "${TARGET}" | cut -d - -f1))
 EOF
 
-    if [ -n "$CC_WRAPPER" ]
+    if [ -n "${CC_WRAPPER}" ]
     then
         echo "set(CMAKE_C_COMPILER_LAUNCHER ${CC_WRAPPER})" >> cross_file.cmake
         echo "set(CMAKE_CXX_COMPILER_LAUNCHER ${CC_WRAPPER})" >> cross_file.cmake
@@ -922,13 +975,11 @@ EOF
         -DCMAKE_INSTALL_PREFIX=/usr \
         -DCMAKE_INSTALL_SBINDIR=bin \
         -DCMAKE_TOOLCHAIN_FILE=cross_file.cmake \
-        -DBUILD_SHARED_LIBS=True \
-        -DENABLE_STATIC=False \
         -GNinja \
         -Wno-dev \
         "${COOKBOOK_CMAKE_FLAGS[@]}" \
         "$@"
-    
+
     "${COOKBOOK_NINJA}" -j"${COOKBOOK_MAKE_JOBS}"
     DESTDIR="${COOKBOOK_STAGE}" "${COOKBOOK_NINJA}" install -j"${COOKBOOK_MAKE_JOBS}"
 }
@@ -938,6 +989,7 @@ COOKBOOK_MESON_FLAGS=(
     --buildtype release
     --wrap-mode nofallback
     --strip
+    -Ddefault_library=static
     -Dprefix=/usr
 )
 function cookbook_meson {
@@ -996,7 +1048,7 @@ function cookbook_meson {
 
         let post_script = r#"# Common post script
 # Strip binaries
-for dir in "${COOKBOOK_STAGE}/bin" "${COOKBOOK_STAGE}/usr/bin" 
+for dir in "${COOKBOOK_STAGE}/bin" "${COOKBOOK_STAGE}/usr/bin"
 do
     if [ -d "${dir}" ] && [ -z "${COOKBOOK_NOSTRIP}" ]
     then
@@ -1005,7 +1057,7 @@ do
 done
 
 # Remove libtool files
-for dir in "${COOKBOOK_STAGE}/lib" "${COOKBOOK_STAGE}/usr/lib" 
+for dir in "${COOKBOOK_STAGE}/lib" "${COOKBOOK_STAGE}/usr/lib"
 do
     if [ -d "${dir}" ]
     then
@@ -1237,12 +1289,12 @@ fn cook(
     name: &PackageName,
     recipe: &Recipe,
     fetch_only: bool,
+    is_offline: bool,
 ) -> Result<(), String> {
     if recipe.build.kind == BuildKind::None {
         return cook_meta(recipe_dir, name, recipe, fetch_only);
     }
 
-    let is_offline = env::var("COOKBOOK_OFFLINE").unwrap_or("".to_string()) == "1";
     let source_dir = match is_offline {
         true => fetch_offline(recipe_dir, &recipe.source),
         false => fetch(recipe_dir, &recipe.source),
@@ -1282,6 +1334,8 @@ fn main() {
     let mut fetch_only = false;
     let mut with_package_deps = false;
     let mut quiet = false;
+    let mut nonstop = false;
+    let mut is_offline = false;
     let mut recipe_names = Vec::new();
     for arg in env::args().skip(1) {
         match arg.as_str() {
@@ -1290,6 +1344,8 @@ fn main() {
             "--with-package-deps" if matching => with_package_deps = true,
             "--fetch-only" if matching => fetch_only = true,
             "-q" | "--quiet" if matching => quiet = true,
+            "--nonstop" => nonstop = true,
+            "--offline" => is_offline = true,
             _ => recipe_names.push(arg.try_into().expect("Invalid package name")),
         }
     }
@@ -1344,7 +1400,13 @@ fn main() {
             }
             Ok(())
         } else {
-            cook(&recipe.dir, &recipe.name, &recipe.recipe, fetch_only)
+            cook(
+                &recipe.dir,
+                &recipe.name,
+                &recipe.recipe,
+                fetch_only,
+                is_offline,
+            )
         };
 
         match res {
@@ -1370,7 +1432,9 @@ fn main() {
                     style::Reset,
                     err,
                 );
-                process::exit(1);
+                if !nonstop {
+                    process::exit(1);
+                }
             }
         }
     }
