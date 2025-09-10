@@ -39,7 +39,7 @@ export USE_SDL2=1
 export USE_CODEC_MP3=0
 export DO_USERDIRS=1
 
-if ! [[ -n "${COOKBOOK_PREFER_STATIC}" ]]; then
+if [ "${COOKBOOK_DYNAMIC}" == "1" ]; then
     LDFLAGS+=" -lstdc++"
 fi
 

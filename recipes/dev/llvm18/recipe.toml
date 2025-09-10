@@ -31,7 +31,7 @@ case "${TARGET}" in
         ;;
 esac
 
-COOKBOOK_CMAKE_FLAGS=(
+COOKBOOK_CMAKE_FLAGS+=(
     -DCMAKE_CXX_FLAGS="--std=gnu++11"
     -DBUILD_SHARED_LIBS=False
     -DLLVM_LINK_LLVM_DYLIB=On

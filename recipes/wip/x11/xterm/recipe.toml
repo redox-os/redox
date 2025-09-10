@@ -30,7 +30,7 @@ dependencies = [
 template = "custom"
 script = """
 DYNAMIC_INIT
-export CFLAGS="-I${COOKBOOK_SYSROOT}/usr/include/freetype2"
+export CFLAGS="${CFLAGS} -I${COOKBOOK_SYSROOT}/usr/include/freetype2"
 #TODO: why are LIBS not automatic?
 export LIBS="-lXaw7 -lXmu -lXpm -lXt -lSM -lICE -lXft -lfreetype -lfontconfig -lXrender -lXext -lX11 -lxcb -lXau -lpcre2-8 -lexpat -lpng -lz"
 cookbook_configure \

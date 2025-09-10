@@ -6,6 +6,6 @@ blake3 = "3efc14da55c56fc0a6a50f109d9e1ee8a91f5ae7dd17a21d3aebe04a65f3ee96"
 [build]
 template = "custom"
 script = """
-DYNAMIC_INIT
+DYNAMIC_STATIC_INIT
 cookbook_cmake
 """

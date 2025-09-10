@@ -15,8 +15,8 @@ dependencies = [
 template = "custom"
 script = """
 DYNAMIC_INIT
-export CFLAGS="-I${COOKBOOK_SYSROOT}/include/SDL"
-export CPPFLAGS="-I${COOKBOOK_SYSROOT}/include/SDL"
+export CFLAGS="${CFLAGS} -I${COOKBOOK_SYSROOT}/include/SDL"
+export CPPFLAGS="${CPPFLAGS} -I${COOKBOOK_SYSROOT}/include/SDL"
 export LDFLAGS+=" -lorbital"
 COOKBOOK_CONFIGURE_FLAGS+=(
     --disable-opengl

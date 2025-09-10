@@ -11,8 +11,6 @@ dependencies = [
 ]
 script = """
 rsync -av --delete --exclude='.git' "${COOKBOOK_SOURCE}/" ./
-export CPPFLAGS="-I${COOKBOOK_SYSROOT}/include"
-export LDFLAGS="-L${COOKBOOK_SYSROOT}/lib -static"
 "${COOKBOOK_MAKE}" -j"$(${NPROC})"
 
 mkdir -pv "${COOKBOOK_STAGE}/bin"
