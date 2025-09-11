@@ -1,27 +1,17 @@
-#TODO not compiled or tested
+# WIP: Builds, runs, but hangs on waitpid
+
 [source]
 git = "https://github.com/fish-shell/fish-shell"
+rev = "54e8ad7e90a8213c01ba58de0640223bee6846d6"
+patches = ["redox.patch"]
+
 [build]
 template = "custom"
-dependencies = [
-    "ncurses",
-    "gettext",
-    "pcre",
-]
+dependencies = ["gettext", "ncurses", "pcre"]
 script = """
-export CPPFLAGS="-I${COOKBOOK_SYSROOT}/include/ncurses"
-cookbook_cargo
-#COOKBOOK_CONFIGURE="cmake"
-#COOKBOOK_CONFIGURE_FLAGS=(
-#    -DCMAKE_BUILD_TYPE=Release
-#    -DCMAKE_CROSSCOMPILING=True
-#    -DCMAKE_EXE_LINKER_FLAGS="-static"
-#    -DCMAKE_INSTALL_PREFIX="/"
-#    -DCMAKE_PREFIX_PATH="${COOKBOOK_SYSROOT}"
-#    -DCMAKE_SYSTEM_NAME=Generic
-#    -DCMAKE_SYSTEM_PROCESSOR="$(echo "${TARGET}" | cut -d - -f1)"
-#    -DCMAKE_VERBOSE_MAKEFILE=On
-#"${COOKBOOK_SOURCE}"
-#)
-#cookbook_configure
+DYNAMIC_INIT
+
+# The only default enabled feature is building the man pages.
+# However, that requires sphinx so it can just be enabled later.
+cookbook_cargo --no-default-features
 """
