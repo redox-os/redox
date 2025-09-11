@@ -5,7 +5,7 @@ ifeq ($(PODMAN_BUILD),1)
 	$(PODMAN_RUN) make $@
 else
 	export PATH="$(PREFIX_PATH):$$PATH" && \
-	PACKAGES="$$($(LIST_PACKAGES) $(LIST_PACKAGES_OPTS) -c $(FILESYSTEM_CONFIG))" && \
+	PACKAGES="$$($(LIST_PACKAGES) $(LIST_PACKAGES_OPTS) --short -c $(FILESYSTEM_CONFIG))" && \
 	export COOKBOOK_HOST_SYSROOT="$(ROOT)/$(PREFIX_INSTALL)" && \
 	cd cookbook && \
 	./fetch.sh $(REPO_NONSTOP) $(REPO_OFFLINE) "$${PACKAGES}"
@@ -19,7 +19,7 @@ ifeq ($(PODMAN_BUILD),1)
 else
 	export PATH="$(PREFIX_PATH):$$PATH" && \
 	export COOKBOOK_HOST_SYSROOT="$(ROOT)/$(PREFIX_INSTALL)" && \
-	PACKAGES="$$($(LIST_PACKAGES) $(LIST_PACKAGES_OPTS) -c $(FILESYSTEM_CONFIG))" && \
+	PACKAGES="$$($(LIST_PACKAGES) $(LIST_PACKAGES_OPTS) --short -c $(FILESYSTEM_CONFIG))" && \
 	cd cookbook && \
 	./repo.sh $(REPO_NONSTOP) $(REPO_OFFLINE) --with-package-deps "$${PACKAGES}"
 	mkdir -p $(BUILD)
@@ -86,6 +86,34 @@ else
 		./repo.sh $*; \
 	fi
 endif
+
+MOUNTED_TAG=$(MOUNT_DIR)~
+
+# Push compiled package into existing image
+# DO NOT RUN THIS WHILE QEMU ALIVE, THE DISK MIGHT CORRUPT IN DOING SO
+p.%: $(FSTOOLS_TAG) FORCE
+	@rm -f $(MOUNTED_TAG)
+	@if [ ! -d "$(MOUNT_DIR)" ]; then \
+		$(MAKE) mount; \
+		touch $(MOUNTED_TAG); \
+	fi
+ifeq ($(PODMAN_BUILD),1)
+	$(PODMAN_RUN) make $@
+else
+	@if echo "$*" | grep -q ','; then \
+		$(MAKE) $(foreach f,$(subst $(comma), ,$*),p.$(f)); \
+	else \
+		export RECIPE_PATH=cookbook/$(shell make find.$* | grep ^recipes) && \
+		export RECIPE_STAGE=$$RECIPE_PATH/target/$(TARGET)/stage.pkgar && \
+		./cookbook/pkgar/target/release/pkgar extract $(MOUNT_DIR)/ --archive $$RECIPE_STAGE \
+			--pkey ./cookbook/build/id_ed25519.pub.toml && \
+		echo "extracted $$RECIPE_PATH"; \
+	fi
+endif
+	@if [ -f $(MOUNTED_TAG) ]; then \
+		$(MAKE) unmount && rm -f $(MOUNTED_TAG); \
+	else echo "Not unmounting by ourself, don't forget to do it"; \
+	fi
 
 # Invoke unfetch.sh for one or more targets separated by comma
 u.%: $(FSTOOLS_TAG) FORCE

@@ -11,7 +11,7 @@ filesystem_size = 512
 [packages]
 bash = {}
 ca-certificates = {}
-contain = {}
+#contain = {} # needs to update dependencies
 coreutils = {}
 curl = {}
 diffutils = {}

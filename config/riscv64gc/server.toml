@@ -1,6 +1,6 @@
-# Minimal network configuration
+# Server configuration
 
-include = ["../minimal-net.toml"]
+include = ["../server.toml"]
 
 # Override the default settings here
 

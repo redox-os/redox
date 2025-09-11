@@ -81,11 +81,13 @@ Once your GitLab account is created, you should add your Matrix or Discord usern
 
 ### Issues
 
-To know how to create issues on the Redox GitLab, read the [Filing Issues](https://doc.redox-os.org/book/filing-issues.html) page.
+We use issues to organize and track our current and pending work, to know how to create issues on the Redox GitLab read the [Filing Issues](https://doc.redox-os.org/book/filing-issues.html) page.
 
 Once you create an issue don't forget to post the link on the Dev or Support rooms of the chat, because the GitLab email notifications have distractions (service messages or spam) and most developers don't left their GitLab pages open to receive desktop notifications from the web browser (which require a custom setting to receive issue notifications).
 
 By doing this you help us to pay attention to your issues and avoid them to be accidentally forgotten.
+
+You can see all issues on [this](https://gitlab.redox-os.org/groups/redox-os/-/issues) link.
 
 ### Pull Requests
 
@@ -135,7 +137,9 @@ If you don't know how to code in Rust, but know other programming languages:
 
 If you know how to code in Rust, but don't know operating system development:
 
-- Look for issues labeled "good first issue", "easy", and/or "help wanted", e.g. [this GitLab filter](https://gitlab.redox-os.org/groups/redox-os/-/issues/?sort=updated_desc&state=opened&or%5Blabel_name%5D%5B%5D=good%20first%20issue&or%5Blabel_name%5D%5B%5D=Easy&or%5Blabel_name%5D%5B%5D=easy&or%5Blabel_name%5D%5B%5D=help%20wanted&first_page_size=20]). Worth noting the skill level varies between projects, but a large subset of these should be approachable by contributors familiar with regular Rust/Unix application programming.
+- See the [easy](https://gitlab.redox-os.org/groups/redox-os/-/issues/?label_name[]=easy) issues
+- See the "[good first issue](https://gitlab.redox-os.org/groups/redox-os/-/issues/?label_name[]=good%20first%20issue)" issues
+- See the [help wanted](https://gitlab.redox-os.org/groups/redox-os/-/issues/?label_name[]=help%20wanted) issues (it's worth noting the skill level varies between projects, but a large subset of these should be approachable by contributors familiar with regular Rust/Unix application programming)
 - Improve the package manager, or other meta-tools like `redoxer` or `installer`
 - Improve the [Ion](https://gitlab.redox-os.org/redox-os/ion) shell, or other high-level or mid-level projects
 - Port Rust programs to Redox, possibly including dependencies, and C library extensions if necessary (also look for issues with the `port` label)
@@ -163,10 +167,10 @@ For those who want to contribute to the Redox GUI, our GUI strategy has recently
 
 You can use the following GitLab label filters to know our development priorities on the moment:
 
-- [Critical](https://gitlab.redox-os.org/redox-os/redox/-/issues/?sort=created_date&state=opened&label_name%5B%5D=critical&first_page_size=20)
-- [High-priority](https://gitlab.redox-os.org/redox-os/redox/-/issues/?sort=created_date&state=opened&label_name%5B%5D=high-priority&first_page_size=20)
-- [Medium-priority](https://gitlab.redox-os.org/redox-os/redox/-/issues/?sort=created_date&state=opened&label_name%5B%5D=medium-priority&first_page_size=20)
-- [Low-priority](https://gitlab.redox-os.org/redox-os/redox/-/issues/?sort=created_date&state=opened&label_name%5B%5D=low-priority&first_page_size=20)
+- [Critical](https://gitlab.redox-os.org/groups/redox-os/-/issues/?label_name[]=critical)
+- [High-priority](https://gitlab.redox-os.org/groups/redox-os/-/issues/?label_name[]=high-priority)
+- [Medium-priority](https://gitlab.redox-os.org/groups/redox-os/-/issues/?label_name[]=medium-priority)
+- [Low-priority](https://gitlab.redox-os.org/groups/redox-os/-/issues/?label_name[]=low-priority)
 
 ## RFCs
 

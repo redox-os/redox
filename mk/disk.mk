@@ -38,8 +38,8 @@ ifeq ($(PODMAN_BUILD),1)
 	$(PODMAN_RUN) make $@
 else
 	mkdir -p $(BUILD)
-	-$(FUMOUNT) $(BUILD)/filesystem/ || true
-	rm -rf $@  $@.partial $(BUILD)/filesystem/
+	-$(FUMOUNT) $(MOUNT_DIR) || true
+	rm -rf $@  $@.partial $(MOUNT_DIR)
 	-$(FUMOUNT) /tmp/redox_installer || true
 	FILESYSTEM_SIZE=$(FILESYSTEM_SIZE) && \
 	if [ -z "$$FILESYSTEM_SIZE" ] ; then \
@@ -47,31 +47,31 @@ else
 	fi && \
 	truncate -s "$$FILESYSTEM_SIZE"m $@.partial
 	$(REDOXFS_MKFS) $(REDOXFS_MKFS_FLAGS) $@.partial
-	mkdir -p $(BUILD)/filesystem/
-	$(REDOXFS) $@.partial $(BUILD)/filesystem/
+	mkdir -p $(MOUNT_DIR)
+	$(REDOXFS) $@.partial $(MOUNT_DIR)
 	sleep 1
 	pgrep redoxfs
-	umask 002 && $(INSTALLER) $(INSTALLER_OPTS) -c $(FILESYSTEM_CONFIG) $(BUILD)/filesystem/
+	umask 002 && $(INSTALLER) $(INSTALLER_OPTS) -c $(FILESYSTEM_CONFIG) $(MOUNT_DIR)
 	sync
-	-$(FUMOUNT) $(BUILD)/filesystem/ || true
-	rm -rf $(BUILD)/filesystem/
+	-$(FUMOUNT) $(MOUNT_DIR) || true
+	rm -rf $(MOUNT_DIR)
 	mv $@.partial $@
 endif
 
 mount: $(HOST_FSTOOLS) FORCE
-	mkdir -p $(BUILD)/filesystem/
-	$(REDOXFS) $(BUILD)/harddrive.img $(BUILD)/filesystem/
+	mkdir -p $(MOUNT_DIR)
+	$(REDOXFS) $(BUILD)/harddrive.img $(MOUNT_DIR)
 	sleep 2
 	pgrep redoxfs
 
 mount_extra: $(HOST_FSTOOLS) FORCE
-	mkdir -p $(BUILD)/filesystem/
-	$(REDOXFS) $(BUILD)/extra.img $(BUILD)/filesystem/
+	mkdir -p $(MOUNT_DIR)
+	$(REDOXFS) $(BUILD)/extra.img $(MOUNT_DIR)
 	sleep 2
 	pgrep redoxfs
 
 unmount: FORCE
 	sync
-	-$(FUMOUNT) $(BUILD)/filesystem/ || true
-	rm -rf $(BUILD)/filesystem/
+	-$(FUMOUNT) $(MOUNT_DIR) || true
+	rm -rf $(MOUNT_DIR)
 	-$(FUMOUNT) /tmp/redox_installer || true

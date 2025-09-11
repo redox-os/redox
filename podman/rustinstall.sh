@@ -3,7 +3,7 @@
 # This script install the Rust toolchain and the build system dependencies
 # in Podman after the image has been built
 
-curl https://sh.rustup.rs -sSf | sh -s -- -y --default-toolchain stable
+curl https://sh.rustup.rs -sSf | sh -s -- -y --default-toolchain stable --profile minimal
 
 curl -sSLf https://raw.githubusercontent.com/cargo-bins/cargo-binstall/main/install-from-binstall-release.sh | bash
 cargo +stable binstall --no-confirm --force --version 0.10.0 sccache
