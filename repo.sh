@@ -26,9 +26,9 @@ do
     fi
 done
 
-target/release/cook $COOK_OPT $recipes
+cook $COOK_OPT $recipes
 
 repo="$ROOT/repo/$TARGET"
 mkdir -p "$repo"
 
-target/release/repo_builder "$repo" $recipes
+repo_builder "$repo" $recipes

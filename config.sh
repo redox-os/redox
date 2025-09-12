@@ -6,6 +6,11 @@ if [ -z "${TARGET}" ]
 then
     export TARGET=x86_64-unknown-redox
 fi
+if [ $(uname -s) = 'Redox' ]
+then
+    export IS_REDOX="1"
+fi
+
 ARCH="${TARGET%%-*}"
 HOST="$TARGET"
 if [ x"${HOST}" == x"riscv64gc-unknown-redox" ] ; then
@@ -14,7 +19,6 @@ fi
 
 # Automatic variables
 ROOT="$(cd `dirname "$0"` && pwd)"
-export PATH="${ROOT}/bin:$PATH"
 
 export AR="${HOST}-gcc-ar"
 export AS="${HOST}-as"
@@ -48,9 +52,21 @@ fi
 
 export FIND
 
-if [ ! "$(uname -s)" = "Redox" ]
+if [ -z "${IS_REDOX}" ]
 then
 function pkgar {
     "$ROOT/pkgar/target/release/pkgar" "$@"
+}
+function cook {
+    "$ROOT/target/release/cook" "$@"
+}
+function repo_builder {
+    "$ROOT/target/release/repo_builder" "$@"
+}
+function list_recipes {
+    "$ROOT/target/release/list_recipes" "$@"
+}
+function find_recipe {
+    "$ROOT/target/release/find_recipe" "$@"
 }
 fi
