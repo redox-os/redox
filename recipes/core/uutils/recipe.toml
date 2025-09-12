@@ -41,6 +41,7 @@ BINS=(
     hashsum
     head
     join
+    install
     link
     ln
     ls
