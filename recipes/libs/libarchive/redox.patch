@@ -1,0 +1,13 @@
+diff -ruwN source/configure source-new/configure
+--- source/configure	2022-12-09 20:38:47.000000000 +0700
++++ source-new/configure	2025-09-14 17:17:50.138530195 +0700
+@@ -19039,7 +19039,8 @@
+ ac_fn_c_check_func "$LINENO" "fstatat" "ac_cv_func_fstatat"
+ if test "x$ac_cv_func_fstatat" = xyes
+ then :
+-  printf "%s\n" "#define HAVE_FSTATAT 1" >>confdefs.h
++#  When fstatat works, remove this patch
++#  printf "%s\n" "#define HAVE_FSTATAT 1" >>confdefs.h
+ 
+ fi
+ ac_fn_c_check_func "$LINENO" "fstatfs" "ac_cv_func_fstatfs"
