@@ -40,3 +40,8 @@ ln -s "gcc" "${COOKBOOK_STAGE}/usr/bin/cc"
 # Avoid conflict with libgcc & libstdcxx
 rm -f "${COOKBOOK_STAGE}"/usr/lib/libgcc_s.so* "${COOKBOOK_STAGE}"/usr/lib/libstdc++.so*
 """
+
+[package]
+dependencies = [
+    "gnu-binutils"
+]
