@@ -410,35 +410,46 @@ ubuntu()
     echo "Installing required packages..."
     pkgs="\
     ant \
+    appstream \
+    appstream-compose \
     autoconf \
+    autoconf2.69 \
     automake \
     autopoint \
     bison \
+    bsdextrautils \
     build-essential \
     clang \
     cmake \
     curl \
     dos2unix \
     doxygen \
+    expect \
     file \
     flex \
     fuse3 \
     g++ \
     genisoimage \
     git \
+    git-lfs \
     gperf \
+    gtk-doc-tools \
     help2man \
     intltool \
+    libc6-dev-i386 \
     libexpat-dev \
+    libfontconfig1-dev \
     libfuse3-dev \
+    libgdk-pixbuf2.0-bin \
+    libglib2.0-dev-bin \
     libgmp-dev \
     libhtml-parser-perl \
     libjpeg-dev \
     libmpfr-dev \
+    libparse-yapp-perl \
     libpng-dev \
     libsdl1.2-dev \
     libsdl2-ttf-dev \
-    libtool \
     llvm \
     lua5.4 \
     lzip \
@@ -454,15 +465,25 @@ ubuntu()
     po4a \
     protobuf-compiler \
     python3 \
+    python3-dev \
     python3-mako \
+    python3-venv \
     rsync \
+    ruby \
     scons \
+    ssh \
+    syslinux-utils \
     texinfo \
+    unifdef \
     unzip \
     wget \
     xdg-utils \
+    xfonts-utils \
+    xorg-dev \
+    xutils-dev \
     xxd \
     zip \
+    zlib1g-dev \
     zstd \
     gdb-multiarch"
     # Not availible for at least ARM hosts
@@ -1096,8 +1117,8 @@ else
 fi
 
 cargoInstall cargo-config 0.1.1
-cargoInstall just 1.16.0
-cargoInstall cbindgen 0.27.0
+cargoInstall just 1.42.4
+cargoInstall cbindgen 0.29.0
 
 if [ "$dependenciesonly" = false ]; then
     boot
