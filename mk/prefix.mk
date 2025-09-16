@@ -5,9 +5,12 @@ PREFIX=prefix/$(TARGET)
 PREFIX_INSTALL=$(PREFIX)/sysroot/
 PREFIX_PATH=$(ROOT)/$(PREFIX_INSTALL)/bin
 
+GNU_HOST=$(HOST_ARCH)-unknown-linux-gnu
 BINUTILS_BRANCH=redox-2.43.1
 GCC_BRANCH=redox-13.2.0
 LIBTOOL_VERSION=2.5.4
+# nightly a day after 1.89 release
+UPSTREAM_RUSTC_VERSION="2025-08-09"
 
 export PREFIX_RUSTFLAGS=-L $(ROOT)/$(PREFIX_INSTALL)/$(TARGET)/lib
 export RUSTUP_TOOLCHAIN=$(ROOT)/$(PREFIX_INSTALL)
@@ -123,7 +126,53 @@ else
 	touch "$@"
 endif
 
-ifeq ($(PREFIX_BINARY),1)
+# -----------------------------------------------------
+ifeq ($(EXPERIMENTAL_PREFIX_USE_UPSTREAM_RUST_COMPILER),1)
+
+$(PREFIX)/gcc-install.tar.gz:
+	mkdir -p "$(@D)"
+	wget -cO $@.partial "https://static.redox-os.org/toolchain/$(TARGET)/gcc-install.tar.gz"
+	mv $@.partial $@
+
+$(PREFIX)/rustc-install.tar.xz:
+	mkdir -p "$(@D)"
+	wget -O $@.partial "https://static.rust-lang.org/dist/$(UPSTREAM_RUSTC_VERSION)/rustc-nightly-$(GNU_HOST).tar.xz"
+	mv $@.partial $@
+
+$(PREFIX)/cargo-install.tar.xz:
+	mkdir -p "$(@D)"
+	wget -O $@.partial "https://static.rust-lang.org/dist/$(UPSTREAM_RUSTC_VERSION)/cargo-nightly-$(GNU_HOST).tar.xz"
+	mv $@.partial $@
+
+$(PREFIX)/rust-std-host-install.tar.xz:
+	mkdir -p "$(@D)"
+	wget -O $@.partial "https://static.rust-lang.org/dist/$(UPSTREAM_RUSTC_VERSION)/rust-std-nightly-$(GNU_HOST).tar.xz"
+	mv $@.partial $@
+
+$(PREFIX)/rust-std-target-install.tar.xz:
+	mkdir -p "$(@D)"
+	wget -O $@.partial "https://static.rust-lang.org/dist/$(UPSTREAM_RUSTC_VERSION)/rust-std-nightly-$(GNU_TARGET).tar.xz"
+	mv $@.partial $@
+
+$(PREFIX)/rust-src-install.tar.xz:
+	mkdir -p "$(@D)"
+	wget -O $@.partial "https://static.rust-lang.org/dist/$(UPSTREAM_RUSTC_VERSION)/rust-src-nightly.tar.xz"
+	mv $@.partial $@
+
+$(PREFIX)/rust-install: $(PREFIX)/gcc-install.tar.gz $(PREFIX)/rustc-install.tar.xz $(PREFIX)/cargo-install.tar.xz $(PREFIX)/rust-std-host-install.tar.xz $(PREFIX)/rust-std-target-install.tar.xz $(PREFIX)/rust-src-install.tar.xz
+	rm -rf "$@.partial" "$@"
+	mkdir -p "$@.partial"
+	tar --extract --file "$(PREFIX)/gcc-install.tar.gz" -C "$@.partial" || true
+	tar --extract --file "$(PREFIX)/rustc-install.tar.xz" -C "$@.partial" rustc-nightly-$(GNU_HOST)/rustc/ --strip-components=2
+	tar --extract --file "$(PREFIX)/cargo-install.tar.xz" --directory "$@.partial" cargo-nightly-$(GNU_HOST)/cargo/ --strip-components=2
+	tar --extract --file "$(PREFIX)/rust-std-host-install.tar.xz" --directory "$@.partial" rust-std-nightly-$(GNU_HOST)/rust-std-$(GNU_HOST)/ --strip-components=2
+	tar --extract --file "$(PREFIX)/rust-std-target-install.tar.xz" --directory "$@.partial" rust-std-nightly-$(GNU_TARGET)/rust-std-$(GNU_TARGET)/ --strip-components=2
+	tar --extract --file "$(PREFIX)/rust-src-install.tar.xz" --directory "$@.partial" rust-src-nightly/rust-src/ --strip-components=2
+	touch "$@.partial"
+	mv "$@.partial" "$@"
+
+# ---------------------------------------------------
+else ifeq ($(PREFIX_BINARY),1)
 
 $(PREFIX)/rust-install.tar.gz:
 	mkdir -p "$(@D)"
@@ -138,6 +187,7 @@ $(PREFIX)/rust-install: $(PREFIX)/rust-install.tar.gz
 	touch "$@.partial"
 	mv "$@.partial" "$@"
 
+# ---------------------------------------------------
 else
 
 $(ROOT)/rust/configure:
