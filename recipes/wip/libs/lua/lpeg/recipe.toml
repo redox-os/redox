@@ -9,6 +9,7 @@ dependencies = [
 script = """
 rsync -av --delete "${COOKBOOK_SOURCE}/" ./
 make linux CC="${CC} -I${COOKBOOK_SYSROOT}/include/luajit-2.1"
-mkdir -p ${COOKBOOK_STAGE}/usr/lib
-cp *.so ${COOKBOOK_STAGE}/usr/lib
+mkdir -p ${COOKBOOK_STAGE}/usr/lib/pkgconfig
+cp lpeg.so ${COOKBOOK_STAGE}/usr/lib/liblpeg.so.1
+ln -s "liblpeg.so.1" ${COOKBOOK_STAGE}/usr/lib/liblpeg.so
 """
