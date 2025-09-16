@@ -3,11 +3,21 @@
 tar = "https://github.com/neovim/neovim/archive/refs/tags/v0.11.3.tar.gz"
 
 [build]
-template = "cmake"
+template = "custom"
 dependencies = [
-    "lua54",
+    "luajit",
     "libiconv",
     "libuv",
     "luv",
     "lpeg",
+    "tree-sitter",
+    "gettext",
+    "unibilium",
+    "utf8proc",
 ]
+script = """
+DYNAMIC_INIT
+cookbook_cmake \
+  -DUSE_BUNDLED=1 \
+  -DLUA_GEN_PRG=luajit
+"""

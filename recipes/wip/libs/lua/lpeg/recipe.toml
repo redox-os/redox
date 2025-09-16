@@ -4,11 +4,11 @@ tar = "https://www.inf.puc-rio.br/~roberto/lpeg/lpeg-1.1.0.tar.gz"
 [build]
 template = "custom"
 dependencies = [
-    "lua54",
+    "luajit",
 ]
 script = """
 rsync -av --delete "${COOKBOOK_SOURCE}/" ./
-make linux
+make linux CC="${CC} -I${COOKBOOK_SYSROOT}/include/luajit-2.1"
 mkdir -p ${COOKBOOK_STAGE}/usr/lib
 cp *.so ${COOKBOOK_STAGE}/usr/lib
 """
