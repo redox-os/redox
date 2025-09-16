@@ -1,0 +1,42 @@
+diff --color -ruwN source/configure source-new/configure
+--- source/configure	2025-08-26 20:36:28.000000000 +0700
++++ source-new/configure	2025-09-16 07:44:46.452670941 +0700
+@@ -25863,7 +25863,7 @@
+ then :
+   ac_cv_lib_curl_curl_easy_perform=yes
+ else case e in #(
+-  e) ac_cv_lib_curl_curl_easy_perform=no ;;
++  e) ac_cv_lib_curl_curl_easy_perform=yes ;;
+ esac
+ fi
+ rm -f core conftest.err conftest.$ac_objext conftest.beam \
+@@ -37356,7 +37356,7 @@
+ then :
+   php_cv_lib_gd_works=yes
+ else case e in #(
+-  e) php_cv_lib_gd_works=no ;;
++  e) php_cv_lib_gd_works=yes ;;
+ esac
+ fi
+ rm -f core conftest.err conftest.$ac_objext conftest.beam \
+@@ -40056,7 +40056,7 @@
+   LIBS_SAVED=$LIBS
+   CFLAGS="$CFLAGS $GMP_CFLAGS"
+   LIBS="$LIBS $GMP_LIBS"
+-  gmp_check=no
++  gmp_check=yes
+   ac_fn_c_check_header_compile "$LINENO" "gmp.h" "ac_cv_header_gmp_h" "$ac_includes_default"
+ if test "x$ac_cv_header_gmp_h" = xyes
+ then :
+diff --color -ruwN source/ext/posix/posix.c source-new/ext/posix/posix.c
+--- source/ext/posix/posix.c	2025-08-26 20:36:28.000000000 +0700
++++ source-new/ext/posix/posix.c	2025-09-16 07:02:03.974662569 +0700
+@@ -375,7 +375,7 @@
+ 
+ 	ZEND_PARSE_PARAMETERS_NONE();
+ 
+-	if ((ticks = times(&t)) == -1) {
++	{
+ 		POSIX_G(last_error) = errno;
+ 		RETURN_FALSE;
+ 	}
