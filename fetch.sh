@@ -3,4 +3,4 @@ set -e
 
 source config.sh
 
-target/release/cook --fetch-only ${@:1}
+cook --fetch-only ${@:1}

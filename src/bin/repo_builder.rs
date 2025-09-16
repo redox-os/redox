@@ -59,6 +59,11 @@ fn main() -> Result<(), Box<dyn std::error::Error>> {
         let toml_src = stage_dir.with_extension("toml");
         let toml_dst = repo_path.join(format!("{}.toml", recipe));
 
+        if !fs::exists(&toml_src)? {
+            eprintln!("recipe {} is missing stage.toml", recipe);
+            continue;
+        }
+
         if is_newer(&toml_src, &toml_dst) {
             eprintln!("\x1b[01;38;5;155mrepo - publishing {}\x1b[0m", recipe);
             if fs::exists(&pkgar_src)? {

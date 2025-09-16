@@ -1,0 +1,60 @@
+#TODO fix readline and openssl
+[source]
+tar = "https://www.php.net/distributions/php-8.4.12.tar.xz"
+patches = [
+    "redox.patch"
+]
+
+[build]
+template = "custom"
+dependencies = [
+    "curl",
+    "libffi",
+    "libgmp",
+    "libavif",
+    "libjpeg",
+#    "libedit",
+    "libonig",
+    "libpng",
+    "libwebp",
+    "libxml2",
+    "libzip",
+#    "ncurses",
+    "nghttp2",
+    "openssl1",
+    "pcre",
+#    "readline",
+    "sqlite3",
+    "xz",
+    "zlib",
+]
+script = """
+DYNAMIC_INIT
+# extension stuff
+export CURL_LIBS="-lcurl -lnghttp2 -lssl -lcrypto"
+#export READLINE_DIR="${COOKBOOK_SYSROOT}/usr"
+COOKBOOK_CONFIGURE_FLAGS+=(
+    --without-iconv
+    --disable-phar
+    --disable-opcache
+    --enable-gd
+    --with-curl
+    --with-gmp
+    --with-jpeg
+    --with-webp
+    --with-avif
+    --with-ffi
+    --with-intl
+    --with-mbstring
+#    --with-libedit
+#    --with-readline
+#    --with-openssl
+    --with-zip
+)
+
+"${COOKBOOK_CONFIGURE}" "${COOKBOOK_CONFIGURE_FLAGS[@]}" "$@"
+"${COOKBOOK_MAKE}" -j "${COOKBOOK_MAKE_JOBS}"
+"${COOKBOOK_MAKE}" install \
+    INSTALL_ROOT="${COOKBOOK_STAGE}" \
+    datarootdir=/usr/share localstatedir=/var
+"""

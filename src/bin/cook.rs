@@ -17,7 +17,7 @@ use std::{
 use termion::{color, style};
 use walkdir::{DirEntry, WalkDir};
 
-use cookbook::WALK_DEPTH;
+use cookbook::{is_redox, WALK_DEPTH};
 
 fn remove_all(path: &Path) -> Result<(), String> {
     if path.is_dir() {
@@ -417,8 +417,9 @@ fn fetch(recipe_dir: &Path, source: &Option<SourceRecipe>) -> Result<PathBuf, St
                 command.arg("-C").arg(&source_dir);
                 command.arg("checkout").arg(rev);
                 run_command(command)?;
-            } else if !shallow_clone {
+            } else if !shallow_clone && !is_redox() {
                 //TODO: complicated stuff to check and reset branch to origin
+                //TODO: redox can't undestand this (got exit status 1)
                 let mut command = Command::new("bash");
                 command.arg("-c").arg(
                     r#"
@@ -556,9 +557,14 @@ fi"#,
                 // Extract tar to source.tmp
                 //TODO: use tar crate (how to deal with compression?)
                 let mut command = Command::new("tar");
-                command.arg("--extract");
-                command.arg("--verbose");
-                command.arg("--file").arg(&source_tar);
+                if is_redox() {
+                    command.arg("xvf");
+                } else {
+                    command.arg("--extract");
+                    command.arg("--verbose");
+                    command.arg("--file");
+                }
+                command.arg(&source_tar);
                 command.arg("--directory").arg(&source_dir_tmp);
                 command.arg("--strip-components").arg("1");
                 run_command(command)?;
@@ -843,7 +849,10 @@ fn build(
 
         let pre_script = r#"# Common pre script
 # Add cookbook bins to path
+if [ -z "${IS_REDOX}" ]
+then
 export PATH="${COOKBOOK_ROOT}/bin:${PATH}"
+fi
 
 # This puts cargo build artifacts in the build directory
 export CARGO_TARGET_DIR="${COOKBOOK_BUILD}/target"
@@ -929,7 +938,12 @@ COOKBOOK_CONFIGURE_FLAGS=(
     --enable-static
 )
 COOKBOOK_MAKE="make"
+if [ -z "${IS_REDOX}" ]
+then
 COOKBOOK_MAKE_JOBS="$(nproc)"
+else
+COOKBOOK_MAKE_JOBS="1"
+fi
 function cookbook_configure {
     "${COOKBOOK_CONFIGURE}" "${COOKBOOK_CONFIGURE_FLAGS[@]}" "$@"
     "${COOKBOOK_MAKE}" -j "${COOKBOOK_MAKE_JOBS}"
@@ -1128,22 +1142,29 @@ done
             //TODO: remove unwraps
             let cookbook_build = build_dir.canonicalize().unwrap();
             let cookbook_recipe = recipe_dir.canonicalize().unwrap();
-            let cookbook_redoxer = Path::new("target/release/cookbook_redoxer")
-                .canonicalize()
-                .unwrap();
             let cookbook_root = Path::new(".").canonicalize().unwrap();
             let cookbook_stage = stage_dir_tmp.canonicalize().unwrap();
             let cookbook_source = source_dir.canonicalize().unwrap();
             let cookbook_sysroot = sysroot_dir.canonicalize().unwrap();
 
-            let mut command = Command::new(&cookbook_redoxer);
-            command.arg("env");
-            command.arg("bash").arg("-ex");
+            let mut command = if is_redox() {
+                let mut command = Command::new("bash");
+                command.arg("-ex");
+                command.env("COOKBOOK_REDOXER", "cargo");
+                command
+            } else {
+                let cookbook_redoxer = Path::new("target/release/cookbook_redoxer")
+                    .canonicalize()
+                    .unwrap();
+                let mut command = Command::new(&cookbook_redoxer);
+                command.arg("env").arg("bash").arg("-ex");
+                command.env("COOKBOOK_REDOXER", &cookbook_redoxer);
+                command
+            };
             command.current_dir(&cookbook_build);
             command.env("COOKBOOK_BUILD", &cookbook_build);
             command.env("COOKBOOK_NAME", name.as_str());
             command.env("COOKBOOK_RECIPE", &cookbook_recipe);
-            command.env("COOKBOOK_REDOXER", &cookbook_redoxer);
             command.env("COOKBOOK_ROOT", &cookbook_root);
             command.env("COOKBOOK_STAGE", &cookbook_stage);
             command.env("COOKBOOK_SOURCE", &cookbook_source);
