@@ -14,4 +14,5 @@ dependencies = [
     "gnu-make",
     "gcc13",
     "libarchive",
+    "sed",
 ]
