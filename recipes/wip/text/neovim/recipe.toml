@@ -1,6 +1,9 @@
 #TODO mostly work, kinda slow, can't quit (signal issues?)
 [source]
 tar = "https://github.com/neovim/neovim/archive/refs/tags/v0.11.3.tar.gz"
+patches = [
+  "redox.patch"
+]
 
 [build]
 template = "custom"
