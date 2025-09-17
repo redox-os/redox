@@ -10,6 +10,7 @@ ARCH="${TARGET%%-*}"
 COOKBOOK_CONFIGURE="${COOKBOOK_SOURCE}/Configure"
 COOKBOOK_CONFIGURE_FLAGS=(
     shared
+#   threads   # needs ucontext.h
     no-dgram
     "redox-${ARCH}"
     --prefix="/"
