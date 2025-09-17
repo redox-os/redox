@@ -1,14 +1,36 @@
-#TODO finish it based on the python310 recipe
+#TODO works without pip, probably it requires openssl
 [source]
 tar = "https://www.python.org/ftp/python/3.12.0/Python-3.12.0.tar.xz"
+patches = [
+    "redox.patch"
+]
+
 [build]
 template = "custom"
 dependencies = [
-    "openssl1",
+#    "openssl1", requires 1.1.1
+#    "ncurses",
+    "ncursesw",
+#    "readline", unable to link
+    "zlib",
+    "xz"
 ]
 script = """
-COOKBOOK_CONFIGURE_FLAGS+=(
+DYNAMIC_INIT
+export PYTHONDONTWRITEBYTECODE=1
+ARCH="${TARGET%%-*}"
+
+COOKBOOK_CONFIGURE_FLAGS=(
+    --prefix=/usr
     --disable-ipv6
+    --host=${GNU_TARGET}
+    --build=$ARCH
+    --with-build-python
+#   --with-openssl="${COOKBOOK_SYSROOT}/usr"
+    --with-ensurepip=install
+    ac_cv_file__dev_ptmx=no
+    ac_cv_file__dev_ptc=no
 )
+
 cookbook_configure
 """
