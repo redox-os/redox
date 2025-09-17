@@ -18,6 +18,7 @@ dependencies = [
 script = """
 DYNAMIC_INIT
 export PYTHONDONTWRITEBYTECODE=1
+ARCH="${TARGET%%-*}"
 
 # Python cross-compilation requires the same Python version on the build machine
 BUILDMACH_TARGET="$(gcc -dumpmachine)"
@@ -46,8 +47,8 @@ COOKBOOK_CONFIGURE_FLAGS=(
     --prefix=/usr
     --disable-ipv6
     --host=${GNU_TARGET}
-    --build=x86_64
-    --with-openssl="${COOKBOOK_SYSROOT}/usr"
+    --build=$ARCH
+#   --with-openssl="${COOKBOOK_SYSROOT}/usr"
     --with-ensurepip=install
     ac_cv_file__dev_ptmx=no
     ac_cv_file__dev_ptc=no
