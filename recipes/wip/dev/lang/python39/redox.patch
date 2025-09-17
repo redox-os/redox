@@ -1,7 +1,7 @@
-diff -ur source-orig/configure source/configure
---- source-orig/configure	2023-08-24 13:46:25.000000000 +0100
-+++ source/configure	2024-10-17 16:50:09.377036649 +0100
-@@ -3347,6 +3347,9 @@
+diff -ruwN source/configure source-new/configure
+--- source/configure	2021-11-16 00:43:00.000000000 +0700
++++ source-new/configure	2025-09-17 21:31:19.787497963 +0700
+@@ -3307,6 +3307,9 @@
  	*-*-vxworks*)
  	    ac_sys_system=VxWorks
  	    ;;
@@ -11,7 +11,7 @@ diff -ur source-orig/configure source/configure
  	*)
  		# for now, limit cross builds to known configurations
  		MACHDEP="unknown"
-@@ -3371,6 +3374,7 @@
+@@ -3331,6 +3334,7 @@
      case $MACHDEP in
  	aix*) MACHDEP="aix";;
  	linux*) MACHDEP="linux";;
@@ -19,7 +19,7 @@ diff -ur source-orig/configure source/configure
  	cygwin*) MACHDEP="cygwin";;
  	darwin*) MACHDEP="darwin";;
  	'')	MACHDEP="unknown";;
-@@ -3382,7 +3386,7 @@
+@@ -3342,7 +3346,7 @@
  
  if test "$cross_compiling" = yes; then
  	case "$host" in
@@ -28,16 +28,16 @@ diff -ur source-orig/configure source/configure
  		case "$host_cpu" in
  		arm*)
  			_host_cpu=arm
-@@ -5989,7 +5993,7 @@
+@@ -5951,7 +5955,7 @@
  	      PY3LIBRARY=libpython3.so
  	  fi
            ;;
--    Linux*|GNU*|NetBSD*|FreeBSD*|DragonFly*|OpenBSD*|VxWorks*)
-+    Linux*|GNU*|NetBSD*|FreeBSD*|DragonFly*|OpenBSD*|VxWorks*|Redox*)
+-    Linux*|GNU*|NetBSD*|FreeBSD*|DragonFly*|OpenBSD*)
++    Linux*|GNU*|NetBSD*|FreeBSD*|DragonFly*|OpenBSD*|Redox*)
  	  LDLIBRARY='libpython$(LDVERSION).so'
  	  BLDLIBRARY='-L. -lpython$(LDVERSION)'
  	  RUNSHARED=LD_LIBRARY_PATH=`pwd`${LD_LIBRARY_PATH:+:${LD_LIBRARY_PATH}}
-@@ -9787,7 +9791,7 @@
+@@ -9551,7 +9555,7 @@
  			BLDSHARED="$LDSHARED"
  		fi
  		;;
@@ -46,7 +46,7 @@ diff -ur source-orig/configure source/configure
  		LDSHARED='$(CC) -shared'
  		LDCXXSHARED='$(CXX) -shared';;
  	FreeBSD*)
-@@ -9856,7 +9860,7 @@
+@@ -9620,7 +9624,7 @@
  		 else CCSHARED="+z";
  		 fi;;
  	Linux-android*) ;;
@@ -55,7 +55,7 @@ diff -ur source-orig/configure source/configure
  	FreeBSD*|NetBSD*|OpenBSD*|DragonFly*) CCSHARED="-fPIC";;
  	OpenUNIX*|UnixWare*)
  		if test "$GCC" = "yes"
-@@ -9886,7 +9890,7 @@
+@@ -9650,7 +9654,7 @@
  	    LINKFORSHARED="-Wl,-E -Wl,+s";;
  #	    LINKFORSHARED="-Wl,-E -Wl,+s -Wl,+b\$(BINLIBDEST)/lib-dynload";;
  	Linux-android*) LINKFORSHARED="-pie -Xlinker -export-dynamic";;
@@ -64,22 +64,22 @@ diff -ur source-orig/configure source/configure
  	# -u libsys_s pulls in all symbols in libsys
  	Darwin/*)
  		LINKFORSHARED="$extra_undefs -framework CoreFoundation"
-diff -ur source-orig/Include/pyport.h source/Include/pyport.h
---- source-orig/Include/pyport.h	2023-08-24 13:46:25.000000000 +0100
-+++ source/Include/pyport.h	2024-10-17 17:34:54.514295923 +0100
-@@ -843,7 +843,7 @@
+diff -ruwN source/Include/pyport.h source-new/Include/pyport.h
+--- source/Include/pyport.h	2021-11-16 00:43:00.000000000 +0700
++++ source-new/Include/pyport.h	2025-09-17 21:31:56.613084352 +0700
+@@ -838,7 +838,7 @@
  #  error "Py_TRACE_REFS ABI is not compatible with release and debug ABI"
  #endif
  
 -#if defined(__ANDROID__) || defined(__VXWORKS__)
 +#if defined(__ANDROID__) || defined(__VXWORKS__) || defined(__redox__)
-    // Use UTF-8 as the locale encoding, ignore the LC_CTYPE locale.
-    // See _Py_GetLocaleEncoding(), PyUnicode_DecodeLocale()
-    // and PyUnicode_EncodeLocale().
-diff -ur source-orig/Modules/timemodule.c source/Modules/timemodule.c
---- source-orig/Modules/timemodule.c	2023-08-24 13:46:25.000000000 +0100
-+++ source/Modules/timemodule.c	2024-10-17 17:38:08.481699567 +0100
-@@ -1453,7 +1453,7 @@
+    /* Ignore the locale encoding: force UTF-8 */
+ #  define _Py_FORCE_UTF8_LOCALE
+ #endif
+diff -ruwN source/Modules/timemodule.c source-new/Modules/timemodule.c
+--- source/Modules/timemodule.c	2021-11-16 00:43:00.000000000 +0700
++++ source-new/Modules/timemodule.c	2025-09-17 21:30:18.552349106 +0700
+@@ -1416,7 +1416,7 @@
      return 0;
  }
  

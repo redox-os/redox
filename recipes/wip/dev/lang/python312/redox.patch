@@ -1,0 +1,204 @@
+diff -ruwN source/configure source-new/configure
+--- source/configure	2025-02-04 21:38:38.000000000 +0700
++++ source-new/configure	2025-09-17 20:20:00.088297027 +0700
+@@ -4283,6 +4283,9 @@
+ 	*-*-wasi)
+ 	    ac_sys_system=WASI
+ 	    ;;
++	*-*-redox*)
++		ac_sys_system=Redox
++		;;
+ 	*)
+ 		# for now, limit cross builds to known configurations
+ 		MACHDEP="unknown"
+@@ -4307,6 +4310,7 @@
+     case $MACHDEP in
+ 	aix*) MACHDEP="aix";;
+ 	linux*) MACHDEP="linux";;
++	redox*) MACHDEP="redox";;
+ 	cygwin*) MACHDEP="cygwin";;
+ 	darwin*) MACHDEP="darwin";;
+ 	'')	MACHDEP="unknown";;
+@@ -4327,7 +4331,7 @@
+ 
+ if test "$cross_compiling" = yes; then
+ 	case "$host" in
+-	*-*-linux*)
++	*-*-linux*|*-*-redox*)
+ 		case "$host_cpu" in
+ 		arm*)
+ 			_host_cpu=arm
+@@ -6762,6 +6766,7 @@
+ #undef cris
+ #undef fr30
+ #undef linux
++#undef redox
+ #undef hppa
+ #undef hpux
+ #undef i386
+@@ -6907,6 +6912,18 @@
+ # endif
+ #elif defined(__gnu_hurd__)
+         i386-gnu
++#elif defined(__redox__)
++# if defined(__x86_64__)
++        x86_64-redox
++# elif defined(__i386__)
++        i386-redox
++# elif defined(__aarch64__)
++        aarch64-redox
++# elif defined(__riscv)
++        riscv64-redox
++# else
++#   error unknown platform triplet
++# endif
+ #elif defined(__APPLE__)
+         darwin
+ #elif defined(__VXWORKS__)
+@@ -7507,7 +7524,7 @@
+ 	      PY3LIBRARY=libpython3.so
+ 	  fi
+           ;;
+-    Linux*|GNU*|NetBSD*|FreeBSD*|DragonFly*|OpenBSD*|VxWorks*)
++    Linux*|GNU*|NetBSD*|FreeBSD*|DragonFly*|OpenBSD*|VxWorks*|Redox*)
+ 	  LDLIBRARY='libpython$(LDVERSION).so'
+ 	  BLDLIBRARY='-L. -lpython$(LDVERSION)'
+ 	  RUNSHARED=LD_LIBRARY_PATH=`pwd`${LD_LIBRARY_PATH:+:${LD_LIBRARY_PATH}}
+@@ -12815,7 +12832,7 @@
+ 	Emscripten*|WASI*)
+ 		LDSHARED='$(CC) -shared'
+ 		LDCXXSHARED='$(CXX) -shared';;
+-	Linux*|GNU*|QNX*|VxWorks*|Haiku*)
++	Linux*|GNU*|QNX*|VxWorks*|Haiku*|Redox*)
+ 		LDSHARED='$(CC) -shared'
+ 		LDCXXSHARED='$(CXX) -shared';;
+ 	FreeBSD*)
+@@ -12901,7 +12918,7 @@
+ 		 else CCSHARED="+z";
+ 		 fi;;
+ 	Linux-android*) ;;
+-	Linux*|GNU*) CCSHARED="-fPIC";;
++	Linux*|GNU*|Redox*) CCSHARED="-fPIC";;
+ 	Emscripten*|WASI*)
+ 		if test "x$enable_wasm_dynamic_linking" = xyes
+ then :
+@@ -12939,7 +12956,7 @@
+ 	    LINKFORSHARED="-Wl,-E -Wl,+s";;
+ #	    LINKFORSHARED="-Wl,-E -Wl,+s -Wl,+b\$(BINLIBDEST)/lib-dynload";;
+ 	Linux-android*) LINKFORSHARED="-pie -Xlinker -export-dynamic";;
+-	Linux*|GNU*) LINKFORSHARED="-Xlinker -export-dynamic";;
++	Linux*|GNU*|Redox*) LINKFORSHARED="-Xlinker -export-dynamic";;
+ 	# -u libsys_s pulls in all symbols in libsys
+ 	Darwin/*)
+ 		LINKFORSHARED="$extra_undefs -framework CoreFoundation"
+diff -ruwN source/Include/pyport.h source-new/Include/pyport.h
+--- source/Include/pyport.h	2025-02-04 21:38:38.000000000 +0700
++++ source-new/Include/pyport.h	2025-09-08 00:58:51.645114412 +0700
+@@ -684,7 +684,7 @@
+ #  error "Py_TRACE_REFS ABI is not compatible with release and debug ABI"
+ #endif
+ 
+-#if defined(__ANDROID__) || defined(__VXWORKS__)
++#if defined(__ANDROID__) || defined(__VXWORKS__) || defined(__redox__)
+    // Use UTF-8 as the locale encoding, ignore the LC_CTYPE locale.
+    // See _Py_GetLocaleEncoding(), PyUnicode_DecodeLocale()
+    // and PyUnicode_EncodeLocale().
+diff -ruwN source/Modules/_cryptmodule.c source-new/Modules/_cryptmodule.c
+--- source/Modules/_cryptmodule.c	2025-02-04 21:38:38.000000000 +0700
++++ source-new/Modules/_cryptmodule.c	2025-09-08 01:08:47.321046272 +0700
+@@ -38,13 +38,7 @@
+ /*[clinic end generated code: output=0512284a03d2803c input=0e8edec9c364352b]*/
+ {
+     char *crypt_result;
+-#ifdef HAVE_CRYPT_R
+-    struct crypt_data data;
+-    memset(&data, 0, sizeof(data));
+-    crypt_result = crypt_r(word, salt, &data);
+-#else
+     crypt_result = crypt(word, salt);
+-#endif
+     if (crypt_result == NULL) {
+         return PyErr_SetFromErrno(PyExc_OSError);
+     }
+diff -ruwN source/Modules/posixmodule.c source-new/Modules/posixmodule.c
+--- source/Modules/posixmodule.c	2025-02-04 21:38:38.000000000 +0700
++++ source-new/Modules/posixmodule.c	2025-09-08 01:06:48.400701428 +0700
+@@ -2695,8 +2695,7 @@
+ #ifdef HAVE_FSTATAT
+     if ((dir_fd != DEFAULT_DIR_FD) || !follow_symlinks) {
+         if (HAVE_FSTATAT_RUNTIME) {
+-            result = fstatat(dir_fd, path->narrow, &st,
+-                         follow_symlinks ? 0 : AT_SYMLINK_NOFOLLOW);
++            result = fstatat(dir_fd, path->narrow, &st, 0);
+ 
+         } else {
+             fstatat_unavailable = 1;
+@@ -3186,8 +3185,6 @@
+ 
+         if (HAVE_FACCESSAT_RUNTIME) {
+             int flags = 0;
+-            if (!follow_symlinks)
+-                flags |= AT_SYMLINK_NOFOLLOW;
+             if (effective_ids)
+                 flags |= AT_EACCESS;
+             result = faccessat(dir_fd, path->narrow, mode, flags);
+@@ -3472,8 +3469,7 @@
+              * support dir_fd and follow_symlinks=False.  (Hopefully.)
+              * Until then, we need to be careful what exception we raise.
+              */
+-            result = fchmodat(dir_fd, path->narrow, mode,
+-                              follow_symlinks ? 0 : AT_SYMLINK_NOFOLLOW);
++            result = fchmodat(dir_fd, path->narrow, mode, 0);
+             /*
+              * But wait!  We can't throw the exception without allowing threads,
+              * and we can't do that in this nested scope.  (Macro trickery, sigh.)
+@@ -3850,8 +3846,7 @@
+ #ifdef HAVE_FCHOWNAT
+     if ((dir_fd != DEFAULT_DIR_FD) || (!follow_symlinks)) {
+       if (HAVE_FCHOWNAT_RUNTIME) {
+-        result = fchownat(dir_fd, path->narrow, uid, gid,
+-                          follow_symlinks ? 0 : AT_SYMLINK_NOFOLLOW);
++        result = fchownat(dir_fd, path->narrow, uid, gid, 0);
+       } else {
+          fchownat_unsupported = 1;
+       }
+@@ -14727,8 +14722,7 @@
+ #ifdef HAVE_FSTATAT
+       if (HAVE_FSTATAT_RUNTIME) {
+         Py_BEGIN_ALLOW_THREADS
+-        result = fstatat(self->dir_fd, path, &st,
+-                         follow_symlinks ? 0 : AT_SYMLINK_NOFOLLOW);
++        result = fstatat(self->dir_fd, path, &st, 0);
+         Py_END_ALLOW_THREADS
+       } else
+ 
+diff -ruwN source/Modules/resource.c source-new/Modules/resource.c
+--- source/Modules/resource.c	2025-02-04 21:38:38.000000000 +0700
++++ source-new/Modules/resource.c	2025-09-08 01:10:18.427310454 +0700
+@@ -216,7 +216,7 @@
+ {
+     struct rlimit rl;
+ 
+-    if (resource < 0 || resource >= RLIM_NLIMITS) {
++    if (resource < 0 || resource >= RLIMIT_NLIMITS) {
+         PyErr_SetString(PyExc_ValueError,
+                         "invalid resource specified");
+         return NULL;
+@@ -244,7 +244,7 @@
+ {
+     struct rlimit rl;
+ 
+-    if (resource < 0 || resource >= RLIM_NLIMITS) {
++    if (resource < 0 || resource >= RLIMIT_NLIMITS) {
+         PyErr_SetString(PyExc_ValueError,
+                         "invalid resource specified");
+         return NULL;
+@@ -292,7 +292,7 @@
+     struct rlimit old_limit, new_limit;
+     int retval;
+ 
+-    if (resource < 0 || resource >= RLIM_NLIMITS) {
++    if (resource < 0 || resource >= RLIMIT_NLIMITS) {
+         PyErr_SetString(PyExc_ValueError,
+                         "invalid resource specified");
+         return NULL;
