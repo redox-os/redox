@@ -18,12 +18,13 @@ dependencies = [
 script = """
 DYNAMIC_INIT
 export PYTHONDONTWRITEBYTECODE=1
+ARCH="${TARGET%%-*}"
 
 COOKBOOK_CONFIGURE_FLAGS=(
     --prefix=/usr
     --disable-ipv6
     --host=${GNU_TARGET}
-    --build=x86_64
+    --build=$ARCH
     --with-build-python
 #   --with-openssl="${COOKBOOK_SYSROOT}/usr"
     --with-ensurepip=install
