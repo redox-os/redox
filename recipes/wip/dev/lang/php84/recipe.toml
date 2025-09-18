@@ -1,4 +1,4 @@
-#TODO fix readline and openssl
+#TODO fix openssl
 [source]
 tar = "https://www.php.net/distributions/php-8.4.12.tar.xz"
 patches = [
@@ -13,30 +13,36 @@ dependencies = [
     "libgmp",
     "libavif",
     "libjpeg",
-#    "libedit",
+    "libedit",
     "libonig",
     "libpng",
     "libwebp",
     "libxml2",
+    "libiconv",
     "libzip",
-#    "ncurses",
+    "ncurses",
     "nghttp2",
     "openssl1",
     "pcre",
-#    "readline",
+    "readline",
     "sqlite3",
     "xz",
     "zlib",
 ]
 script = """
 DYNAMIC_INIT
-# extension stuff
+export SUFFIX="84"
+
 export CURL_LIBS="-lcurl -lnghttp2 -lssl -lcrypto"
-#export READLINE_DIR="${COOKBOOK_SYSROOT}/usr"
 COOKBOOK_CONFIGURE_FLAGS+=(
-    --without-iconv
-    --disable-phar
+    --program-suffix=${SUFFIX}
+    --sysconfdir=/etc
+    --with-config-file-path=/etc
+    --with-config-file-scan-dir=/etc/conf.d
+    --with-iconv="${COOKBOOK_SYSROOT}/usr"
+    --disable-phar # doesn't work cross compiling
     --disable-opcache
+#    --enable-fpm  # need times function
     --enable-gd
     --with-curl
     --with-gmp
@@ -46,9 +52,9 @@ COOKBOOK_CONFIGURE_FLAGS+=(
     --with-ffi
     --with-intl
     --with-mbstring
-#    --with-libedit
-#    --with-readline
-#    --with-openssl
+    --with-libedit
+    --with-readline
+#    --with-openssl # need 1.1.1
     --with-zip
 )
 
@@ -57,4 +63,8 @@ COOKBOOK_CONFIGURE_FLAGS+=(
 "${COOKBOOK_MAKE}" install \
     INSTALL_ROOT="${COOKBOOK_STAGE}" \
     datarootdir=/usr/share localstatedir=/var
+
+for bin in "php-cgi" "php-config" "php" "phpdbg" "phpize"; do
+  ln -s "$bin$SUFFIX" ${COOKBOOK_STAGE}/usr/bin/$bin
+done
 """
