@@ -894,7 +894,7 @@ function cookbook_cargo {
         --locked \
         --no-track \
         ${install_flags} \
-        "$@"
+         -j "${COOKBOOK_MAKE_JOBS}" "$@"
 }
 
 # helper for installing binaries that are cargo examples
@@ -905,7 +905,7 @@ function cookbook_cargo_examples {
         "${COOKBOOK_CARGO}" build \
             --manifest-path "${COOKBOOK_SOURCE}/${PACKAGE_PATH}/Cargo.toml" \
             --example "${example}" \
-            ${build_flags}
+            ${build_flags} -j "${COOKBOOK_MAKE_JOBS}"
         mkdir -pv "${COOKBOOK_STAGE}/usr/bin"
         cp -v \
             "target/${TARGET}/${build_type}/examples/${example}" \
@@ -921,7 +921,7 @@ function cookbook_cargo_packages {
         "${COOKBOOK_CARGO}" build \
             --manifest-path "${COOKBOOK_SOURCE}/${PACKAGE_PATH}/Cargo.toml" \
             --package "${package}" \
-            ${build_flags}
+            ${build_flags} -j "${COOKBOOK_MAKE_JOBS}"
         mkdir -pv "${COOKBOOK_STAGE}/usr/bin"
         cp -v \
             "target/${TARGET}/${build_type}/${package}" \
@@ -938,12 +938,17 @@ COOKBOOK_CONFIGURE_FLAGS=(
     --enable-static
 )
 COOKBOOK_MAKE="make"
+
+if [ -z "${COOKBOOK_MAKE_JOBS}" ]
+then
 if [ -z "${IS_REDOX}" ]
 then
 COOKBOOK_MAKE_JOBS="$(nproc)"
 else
 COOKBOOK_MAKE_JOBS="1"
 fi
+fi
+
 function cookbook_configure {
     "${COOKBOOK_CONFIGURE}" "${COOKBOOK_CONFIGURE_FLAGS[@]}" "$@"
     "${COOKBOOK_MAKE}" -j "${COOKBOOK_MAKE_JOBS}"
