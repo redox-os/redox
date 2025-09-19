@@ -9,6 +9,8 @@ filesystem_size = 4000
 
 # Package settings
 [packages]
+rustpython = "ignore" # https://github.com/Alexhuszagh/rust-lexical/issues/218
+
 # apps
 cosmic-text = {}
 pixelcannon = {}
