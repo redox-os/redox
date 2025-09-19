@@ -1,11 +1,19 @@
 [source]
-git = "https://gitlab.redox-os.org/rw_van/openposixtestsuite.git"
+git = "https://gitlab.redox-os.org/redox-os/openposixtestsuite.git"
 branch = "redox"
 
 [build]
 template = "custom"
 script = """
-rsync -av --delete "${COOKBOOK_SOURCE}/" ./
-mkdir -pv "${COOKBOOK_STAGE}/share/openposixtests"
-rsync -av --delete . "${COOKBOOK_STAGE}/share/openposixtestsuite"
+mkdir -pv "${COOKBOOK_STAGE}/share/openposixtestsuite"
+cp -rv "${COOKBOOK_SOURCE}"/* "${COOKBOOK_STAGE}/share/openposixtestsuite"
 """
+
+[package]
+dependencies = [
+    "gcc13",
+    "gnu-binutils",
+    "gnu-make",
+    "sed",
+]
+
