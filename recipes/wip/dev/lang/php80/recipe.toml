@@ -1,6 +1,6 @@
-#TODO fix openssl
+#TODO promote
 [source]
-tar = "https://www.php.net/distributions/php-8.4.12.tar.xz"
+tar = "https://www.php.net/distributions/php-8.0.30.tar.xz"
 patches = [
     "redox.patch"
 ]
@@ -34,9 +34,11 @@ dependencies = [
 ]
 script = """
 DYNAMIC_INIT
-export SUFFIX="84"
+export SUFFIX="80"
 
+# extension stuff
 export CURL_LIBS="-lcurl -lnghttp2 -lssl -lcrypto"
+export CXXFLAGS="-std=c++17"
 COOKBOOK_CONFIGURE_FLAGS+=(
     --program-suffix=${SUFFIX}
     --sysconfdir=/etc
@@ -58,7 +60,7 @@ COOKBOOK_CONFIGURE_FLAGS+=(
     --with-avif
     --with-ffi
     --with-libedit
-#    --with-openssl # need 1.1.1
+    --with-openssl
     --with-sodium
     --with-zip
 )
