@@ -1,17 +1,21 @@
 #TODO Fix dynamic loading of C modules
-#TODO Fix openssl dependency
-#TODO Add additional dependencies (readline, ncurses, etc.)
 [source]
 tar = "https://www.python.org/ftp/python/3.9.9/Python-3.9.9.tar.xz"
 patches = [
-#  'redox.patch'
+  'redox.patch'
 ]
 
 [build]
 template = "custom"
 dependencies = [
-#    "openssl1", needs threading / ucontext.h
+    "bzip2",
+    "libffi",
+    "libuuid",
+    "ncurses",
     "ncursesw",
+    "openssl1",
+    "readline",
+    "sqlite3",
     "zlib",
     "xz"
 ]
@@ -45,10 +49,10 @@ export PATH="${BUILDMACH_STAGE}/usr/local/bin:${PATH}"
 
 COOKBOOK_CONFIGURE_FLAGS=(
     --prefix=/usr
+    --enable-shared
     --disable-ipv6
     --host=${GNU_TARGET}
     --build=$ARCH
-#   --with-openssl="${COOKBOOK_SYSROOT}/usr"
     --with-ensurepip=install
     ac_cv_file__dev_ptmx=no
     ac_cv_file__dev_ptc=no
