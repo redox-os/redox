@@ -459,19 +459,6 @@ diff -ruwN source/regress/netcat.c source-new/regress/netcat.c
  
  #define SOCKS_PORT	"1080"
  #define HTTP_PROXY_PORT	"3128"
-diff -ruwN source/servconf.c source-new/servconf.c
---- source/servconf.c	2024-07-01 11:36:28.000000000 +0700
-+++ source-new/servconf.c	2025-09-07 01:38:08.219942429 +0700
-@@ -857,7 +857,8 @@
- 	hints.ai_socktype = SOCK_STREAM;
- 	hints.ai_flags = (addr == NULL) ? AI_PASSIVE : 0;
- 	snprintf(strport, sizeof strport, "%d", port);
--	if ((gaierr = getaddrinfo(addr, strport, &hints, &aitop)) != 0)
-+	// redox don't accept addr == NULL yet
-+	if ((gaierr = getaddrinfo("0.0.0.0", strport, &hints, &aitop)) != 0)
- 		fatal("bad addr or host: %s (%s)",
- 		    addr ? addr : "<NULL>",
- 		    ssh_gai_strerror(gaierr));
 diff -ruwN source/session.c source-new/session.c
 --- source/session.c	2024-07-01 11:36:28.000000000 +0700
 +++ source-new/session.c	2025-09-07 01:22:43.637928015 +0700
