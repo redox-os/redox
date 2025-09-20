@@ -1,4 +1,4 @@
-#TODO works without pip, probably it requires openssl
+#TODO works without pip
 [source]
 tar = "https://www.python.org/ftp/python/3.12.0/Python-3.12.0.tar.xz"
 patches = [
@@ -11,7 +11,7 @@ dependencies = [
     "bzip2",
     "libffi",
     "libuuid",
-#    "openssl1", requires 1.1.1
+    "openssl3",
     "ncurses",
     "ncursesw",
     "readline",
