@@ -169,11 +169,12 @@ endif
 
 export DEBUG_BIN?=
 
-# Debug a recipe with gdbgui inside podman, for example: debug.drivers-initfs DEBUG_BIN=pcid
-# Please set REPO_DEBUG=1 to your .config to enable debug symbols and run `make cr.recipe rebuild`
-# Also, before opening gdbgui at http://localhost:5000, start qemu with `make qemu gdb=yes`
-# Experimental and may not work if ARCH is different with what podman is running
+# Debug a statically linked program with gdbgui, for example: debug.drivers-initfs DEBUG_BIN=pcid
+# Enable debug symbols with `REPO_DEBUG=1 make cr.recipe rebuild`, make sure `file` outputs "debug_info, not stripped"
+# Open http://localhost:5000/dashboard, start QEMU with `make qemu kvm=no QEMU_SMP=1 gdb=yes` before opening a session
+# Experimental, may not work if ARCH is different with what host is running
 debug.%: $(FSTOOLS_TAG) FORCE
+ifeq ($(PODMAN_BUILD),1)
 	@cd cookbook/$(shell make find.$* | grep ^recipes) && \
 		export RECIPE_STAGE=target/$(TARGET)/stage && \
 		export BIN_PATH=$$(find $$RECIPE_STAGE -type f -name "$(DEBUG_BIN)" -or -type f -name "$*") && \
@@ -186,3 +187,13 @@ debug.%: $(FSTOOLS_TAG) FORCE
 		redox-kernel-debug --gdb-cmd "gdb -ex 'set confirm off' \
 			-ex 'add-symbol-file /binary' \
 			-ex 'target remote host.containers.internal:1234'"
+else
+	@cd cookbook/$(shell make find.$* | grep ^recipes) && \
+		export RECIPE_STAGE=target/$(TARGET)/stage && \
+		export BIN_PATH=$$(find $$RECIPE_STAGE -type f -name "$(DEBUG_BIN)" -or -type f -name "$*") && \
+		file $$BIN_PATH 2> /dev/null || ( echo "Binary is not found, please set DEBUG_BIN" && exit 1 ) && \
+		echo "Opening gdbgui for debugging $* with binary '$$BIN_PATH'" && echo "----------" && \
+		gdbgui.pex --gdb-cmd "gdb -ex 'set confirm off' \
+			-ex 'add-symbol-file $$BIN_PATH' \
+			-ex 'target remote localhost:1234'"
+endif
