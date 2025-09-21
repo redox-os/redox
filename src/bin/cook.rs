@@ -883,6 +883,8 @@ then
     install_flags=--debug
     build_flags=
     build_type=debug
+    export CFLAGS="${CFLAGS} -g"
+    export CPPFLAGS="${CPPFLAGS} -g"
 fi
 
 # cargo template
