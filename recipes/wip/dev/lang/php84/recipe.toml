@@ -1,4 +1,4 @@
-#TODO fix openssl
+#TODO promote
 [source]
 tar = "https://www.php.net/distributions/php-8.4.12.tar.xz"
 patches = [
@@ -27,6 +27,7 @@ dependencies = [
     "ncurses",
     "nghttp2",
     "openssl1",
+    "openssl3", # put this after openssl1
     "pcre",
     "sqlite3",
     "xz",
@@ -58,7 +59,7 @@ COOKBOOK_CONFIGURE_FLAGS+=(
     --with-avif
     --with-ffi
     --with-libedit
-#    --with-openssl # need 1.1.1
+    --with-openssl
     --with-sodium
     --with-zip
 )

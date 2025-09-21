@@ -1,7 +1,5 @@
 #TODO lack of resolv.h, expect dns not working
 #TODO lack of utmpx.h, expect no way to track login in sshd
-#TODO lack of an equivalent to shadow.h, expect sshd password not working
-#TODO lack of openssl support, use only ssh-keygen from redox
 [source]
 tar = "https://cdn.openbsd.org/pub/OpenBSD/OpenSSH/portable/openssh-9.8p1.tar.gz"
 patches = [
@@ -10,14 +8,13 @@ patches = [
 [build]
 template = "custom"
 dependencies = [
+    "openssl3",
     "zlib",
 ]
 script = """
 DYNAMIC_INIT
 COOKBOOK_CONFIGURE_FLAGS+=(
     --disable-strip
-# requires openssl 1.1.1, result in libcrypto error otherwise
-    --without-openssl
     --sysconfdir=/etc/ssh
 )
 cookbook_configure
@@ -35,8 +32,4 @@ CONFIG_FILE="${COOKBOOK_STAGE}"/etc/ssh/sshd_config
 
 # ipv6 is not working yet
 sed -i "s/#AddressFamily any/AddressFamily inet/g" "${CONFIG_FILE}"
-# hardcoded to 0.0.0.0 in patches
-sed -i "s/#ListenAddress 0.0.0.0/ListenAddress 0.0.0.0/g" "${CONFIG_FILE}"
-# will never work
-sed -i "s/#PasswordAuthentication yes/PasswordAuthentication no/g" "${CONFIG_FILE}"
 """
