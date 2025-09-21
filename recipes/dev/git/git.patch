@@ -1,6 +1,6 @@
-diff -ruwN source/compat/bswap.h source-new/compat/bswap.h
---- source/compat/bswap.h	2017-06-05 08:08:11.000000000 +0700
-+++ source-new/compat/bswap.h	2025-09-01 04:41:10.337224520 +0700
+diff -ruwN git-2.13.1/compat/bswap.h source/compat/bswap.h
+--- git-2.13.1/compat/bswap.h	2017-06-04 19:08:11.000000000 -0600
++++ source/compat/bswap.h	2025-04-24 11:20:06.475749424 -0600
 @@ -1,3 +1,7 @@
 +#if defined(__redox__)
 +#include <machine/endian.h>
@@ -9,9 +9,9 @@ diff -ruwN source/compat/bswap.h source-new/compat/bswap.h
  /*
   * Let's make sure we always have a sane definition for ntohl()/htonl().
   * Some libraries define those as a function call, just to perform byte
-diff -ruwN source/compat/terminal.c source-new/compat/terminal.c
---- source/compat/terminal.c	2017-06-05 08:08:11.000000000 +0700
-+++ source-new/compat/terminal.c	2025-09-01 04:41:10.337224520 +0700
+diff -ruwN git-2.13.1/compat/terminal.c source/compat/terminal.c
+--- git-2.13.1/compat/terminal.c	2017-06-04 19:08:11.000000000 -0600
++++ source/compat/terminal.c	2025-04-18 10:00:11.318697446 -0600
 @@ -137,6 +137,18 @@
  	return buf.buf;
  }
@@ -31,9 +31,9 @@ diff -ruwN source/compat/terminal.c source-new/compat/terminal.c
  #else
  
  char *git_terminal_prompt(const char *prompt, int echo)
-diff -ruwN source/configure source-new/configure
---- source/configure	2017-06-05 08:08:11.000000000 +0700
-+++ source-new/configure	2025-09-01 04:41:10.338224544 +0700
+diff -ruwN git-2.13.1/configure source/configure
+--- git-2.13.1/configure	2017-06-04 19:08:11.000000000 -0600
++++ source/configure	2025-04-18 10:00:11.318697446 -0600
 @@ -6156,7 +6156,7 @@
  ac_res=$ac_cv_search_getaddrinfo
  if test "$ac_res" != no; then :
@@ -43,10 +43,33 @@ diff -ruwN source/configure source-new/configure
  else
    NO_IPV6=YesPlease
  fi
-diff -ruwN source/daemon.c source-new/daemon.c
---- source/daemon.c	2017-06-05 08:08:11.000000000 +0700
-+++ source-new/daemon.c	2025-09-19 22:14:42.743240085 +0700
-@@ -888,8 +888,12 @@
+diff -ruwN git-2.13.1/daemon.c source/daemon.c
+--- git-2.13.1/daemon.c	2017-06-04 19:08:11.000000000 -0600
++++ source/daemon.c	2025-04-18 10:00:11.319697447 -0600
+@@ -71,13 +71,21 @@
+ 	return hi->ip_address.buf;
+ }
+ 
++#if defined(__redox__)
++#define LOG_ERR 0
++#define LOG_INFO 1
++#endif
++
+ static void logreport(int priority, const char *err, va_list params)
+ {
++#if !defined(__redox__)
+ 	if (log_syslog) {
+ 		char buf[1024];
+ 		vsnprintf(buf, sizeof(buf), err, params);
+ 		syslog(priority, "%s", buf);
+-	} else {
++	} else
++#endif
++	{
+ 		/*
+ 		 * Since stderr is set to buffered mode, the
+ 		 * logging of different processes will not overlap
+@@ -888,8 +896,12 @@
  
  	if (!reuseaddr)
  		return 0;
@@ -59,9 +82,34 @@ diff -ruwN source/daemon.c source-new/daemon.c
  }
  
  struct socketlist {
-diff -ruwN source/git-compat-util.h source-new/git-compat-util.h
---- source/git-compat-util.h	2017-06-05 08:08:11.000000000 +0700
-+++ source-new/git-compat-util.h	2025-09-19 22:09:29.361246446 +0700
+@@ -1174,11 +1186,7 @@
+ 	if (!group_name)
+ 		c.gid = c.pass->pw_gid;
+ 	else {
+-		struct group *group = getgrnam(group_name);
+-		if (!group)
+ 			die("group not found - %s", group_name);
+-
+-		c.gid = group->gr_gid;
+ 	}
+ 
+ 	return &c;
+@@ -1348,10 +1356,12 @@
+ 		usage(daemon_usage);
+ 	}
+ 
++#if !defined(__redox__)
+ 	if (log_syslog) {
+ 		openlog("git-daemon", LOG_PID, LOG_DAEMON);
+ 		set_die_routine(daemon_die);
+ 	} else
++#endif
+ 		/* avoid splitting a message in the middle */
+ 		setvbuf(stderr, NULL, _IOFBF, 4096);
+ 
+diff -ruwN git-2.13.1/git-compat-util.h source/git-compat-util.h
+--- git-2.13.1/git-compat-util.h	2017-06-04 19:08:11.000000000 -0600
++++ source/git-compat-util.h	2025-04-18 10:00:11.319697447 -0600
 @@ -1,6 +1,18 @@
  #ifndef GIT_COMPAT_UTIL_H
  #define GIT_COMPAT_UTIL_H
@@ -96,9 +144,9 @@ diff -ruwN source/git-compat-util.h source-new/git-compat-util.h
  #ifdef HAVE_PATHS_H
  #include <paths.h>
  #endif
-diff -ruwN source/Makefile source-new/Makefile
---- source/Makefile	2017-06-05 08:08:11.000000000 +0700
-+++ source-new/Makefile	2025-09-01 04:41:10.339224568 +0700
+diff -ruwN git-2.13.1/Makefile source/Makefile
+--- git-2.13.1/Makefile	2017-06-05 08:08:11.000000000 +0700
++++ source/Makefile	2025-09-01 04:41:10.339224568 +0700
 @@ -979,7 +979,7 @@
  BUILTIN_OBJS += builtin/write-tree.o
  
@@ -147,9 +195,9 @@ diff -ruwN source/Makefile source-new/Makefile
  		ln -s "git-remote-http$X" "$$execdir/$$p" 2>/dev/null || \
  		cp "$$execdir/git-remote-http$X" "$$execdir/$$p" || exit; \
  	done && \
-diff -ruwN source/run-command.c source-new/run-command.c
---- source/run-command.c	2017-06-05 08:08:11.000000000 +0700
-+++ source-new/run-command.c	2025-09-19 22:08:26.892232334 +0700
+diff -ruwN git-2.13.1/run-command.c source/run-command.c
+--- git-2.13.1/run-command.c	2017-06-04 19:08:11.000000000 -0600
++++ source/run-command.c	2025-04-18 10:00:11.320697447 -0600
 @@ -120,9 +120,9 @@
  #ifndef GIT_WINDOWS_NATIVE
  static inline void dup_devnull(int to)
@@ -162,9 +210,9 @@ diff -ruwN source/run-command.c source-new/run-command.c
  	if (dup2(fd, to) < 0)
  		die_errno(_("dup2(%d,%d) failed"), fd, to);
  	close(fd);
-diff -ruwN source/setup.c source-new/setup.c
---- source/setup.c	2017-06-05 08:08:11.000000000 +0700
-+++ source-new/setup.c	2025-09-01 04:41:10.339224568 +0700
+diff -ruwN git-2.13.1/setup.c source/setup.c
+--- git-2.13.1/setup.c	2017-06-05 08:08:11.000000000 +0700
++++ source/setup.c	2025-09-01 04:41:10.339224568 +0700
 @@ -1146,11 +1146,11 @@
  /* if any standard file descriptor is missing open it to /dev/null */
  void sanitize_stdfds(void)
