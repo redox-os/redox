@@ -72,6 +72,9 @@ endif
 ifeq ($(REPO_DEBUG),1)
 	export COOKBOOK_NOSTRIP=true
 	export COOKBOOK_DEBUG=true
+#TODO: https://gitlab.redox-os.org/redox-os/relibc/-/issues/226
+#	export PROFILE=debug
+#	export RUSTCFLAGS="-Cdebuginfo=2"
 endif
 
 UNAME := $(shell uname)
