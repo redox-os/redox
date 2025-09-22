@@ -10,6 +10,7 @@ template = "custom"
 dependencies = [
     "openssl3",
     "zlib",
+    "zstd",
 ]
 script = """
 DYNAMIC_INIT
