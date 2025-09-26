@@ -41,7 +41,7 @@ rsync -a bin/redox_${GOARCH}/* "${COOKBOOK_STAGE}"/usr/lib/golang/bin/
 rsync -a lib/* "${COOKBOOK_STAGE}"/usr/lib/golang/lib/
 rsync -a misc/* "${COOKBOOK_STAGE}"/usr/lib/golang/misc/
 rsync -a pkg/include/* "${COOKBOOK_STAGE}"/usr/lib/golang/pkg/include/
-rsync -a pkg/tool/redox_${GOARCH}/* "${COOKBOOK_STAGE}"/usr/lib/golang/pkg/tool/
+rsync -a pkg/tool/redox_${GOARCH} "${COOKBOOK_STAGE}"/usr/lib/golang/pkg/tool/
 rsync -a src/* "${COOKBOOK_STAGE}"/usr/lib/golang/src/
 cat go.env > "${COOKBOOK_STAGE}"/usr/lib/golang/go.env
 ln -s "../lib/golang/bin/go" "${COOKBOOK_STAGE}"/usr/bin/go
