@@ -3,6 +3,7 @@ git = "https://gitlab.redox-os.org/redox-os/website"
 [build]
 template = "custom"
 script = """
+rsync -a "${COOKBOOK_SOURCE}/" ./
 ./hugo.sh
 mkdir -pv "${COOKBOOK_STAGE}"/usr/share/website
 cp -rv "${COOKBOOK_BUILD}"/build/public/* "${COOKBOOK_STAGE}"/usr/share/website

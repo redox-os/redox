@@ -1,4 +1,4 @@
-#TODO Compiling, got some C issues on init
+#TODO FastCGI not working
 [source]
 tar = "https://nginx.org/download/nginx-1.28.0.tar.gz"
 patches = [
@@ -56,5 +56,9 @@ unset AR AS CC CXX LD LDFLAGS NM OBJCOPY OBJDUMP RANLIB READELF RUSTFLAGS STRIP
 
 cookbook_configure
 
-mkdir -p "$COOKBOOK_STAGE"/var/lib/nginx/{body,proxy,fastcgi,uwsgi,scgi}
+mkdir -p "$COOKBOOK_STAGE"/var/lib/nginx/{body,proxy,fastcgi,uwsgi,scgi} \
+ "$COOKBOOK_STAGE"/var/log/nginx/
+#TODO: pkgar don't track empty directories
+touch "$COOKBOOK_STAGE"/var/lib/nginx/{body,proxy,fastcgi,uwsgi,scgi}/.tmp \
+ "$COOKBOOK_STAGE"/var/log/nginx/.tmp
 """
