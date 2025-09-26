@@ -1,0 +1,41 @@
+# Configuration for server stack demonstration
+
+include = ["../server.toml"]
+
+# General settings
+[general]
+# Filesystem size in MiB
+filesystem_size = 2048
+
+# Package settings
+[packages]
+# Daemons
+openssh = {}
+nginx = {}
+
+# Backends
+php84 = {}
+luajit = {}
+python312 = {}
+# go = {}
+# zig = {}
+
+# Tools
+nano = {}
+neovim = {}
+rsync = {}
+vim = {}
+sqlite3 = {}
+# tmux = {}
+# htop = {}
+
+# Content
+website = {}
+
+[users.nobody]
+password = ""
+shell = "/usr/bin/ion" #TODO: nologin?
+
+[users.nginx]
+password = ""
+shell = "/usr/bin/ion" #TODO: nologin?
