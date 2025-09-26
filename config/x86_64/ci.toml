@@ -35,6 +35,7 @@ cairo = {}
 cargo = {}
 cleye = {}
 #cmatrix = {} # needs ncursesw now
+composer = {}
 contain = {}
 coreutils = {}
 cosmic-edit = {}
