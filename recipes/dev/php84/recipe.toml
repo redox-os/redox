@@ -1,4 +1,3 @@
-#TODO promote
 [source]
 tar = "https://www.php.net/distributions/php-8.4.12.tar.xz"
 patches = [
@@ -32,6 +31,7 @@ dependencies = [
     "sqlite3",
     "xz",
     "zlib",
+    "zstd",
 ]
 script = """
 DYNAMIC_INIT
@@ -40,14 +40,14 @@ export SUFFIX="84"
 export CURL_LIBS="-lcurl -lnghttp2 -lssl -lcrypto"
 COOKBOOK_CONFIGURE_FLAGS+=(
     --program-suffix=${SUFFIX}
-    --sysconfdir=/etc
+    --sysconfdir=/etc/php/$SUFFIX
     --with-config-file-path=/etc/php/$SUFFIX
     --with-config-file-scan-dir=/etc/php/$SUFFIX/conf.d
     --with-iconv="${COOKBOOK_SYSROOT}/usr"
     --disable-opcache
     --enable-bcmath
     --enable-calendar
-#    --enable-fpm  # need times function
+    --enable-fpm  # need times function
     --enable-gd
     --enable-intl
     --enable-mbstring
@@ -70,9 +70,11 @@ COOKBOOK_CONFIGURE_FLAGS+=(
     INSTALL_ROOT="${COOKBOOK_STAGE}" \
     datarootdir=/usr/share localstatedir=/var
 
-for bin in "php-cgi" "php-config" "php" "phpdbg" "phpize"; do
+mv ${COOKBOOK_STAGE}/usr/sbin/* ${COOKBOOK_STAGE}/usr/bin/
+for bin in "php-cgi" "php-config" "php" "phpdbg" "phpize" "php-fpm"; do
   ln -s "$bin$SUFFIX" ${COOKBOOK_STAGE}/usr/bin/$bin
 done
+rm ${COOKBOOK_STAGE}/usr/bin/phar$SUFFIX
 mkdir -p ${COOKBOOK_STAGE}/etc/php/$SUFFIX/conf.d
 cp ${COOKBOOK_SOURCE}/php.ini* ${COOKBOOK_STAGE}/etc/php/$SUFFIX/
 """

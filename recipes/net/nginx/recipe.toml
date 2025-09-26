@@ -56,5 +56,9 @@ unset AR AS CC CXX LD LDFLAGS NM OBJCOPY OBJDUMP RANLIB READELF RUSTFLAGS STRIP
 
 cookbook_configure
 
-mkdir -p "$COOKBOOK_STAGE"/var/lib/nginx/{body,proxy,fastcgi,uwsgi,scgi}
+mkdir -p "$COOKBOOK_STAGE"/var/lib/nginx/{body,proxy,fastcgi,uwsgi,scgi} \
+ "$COOKBOOK_STAGE"/var/log/nginx/
+#TODO: pkgar don't track empty directories
+touch "$COOKBOOK_STAGE"/var/lib/nginx/{body,proxy,fastcgi,uwsgi,scgi}/.tmp \
+ "$COOKBOOK_STAGE"/var/log/nginx/.tmp
 """

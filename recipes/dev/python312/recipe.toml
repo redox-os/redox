@@ -1,4 +1,3 @@
-#TODO works without pip
 [source]
 tar = "https://www.python.org/ftp/python/3.12.0/Python-3.12.0.tar.xz"
 patches = [
@@ -17,12 +16,17 @@ dependencies = [
     "readline",
     "sqlite3",
     "zlib",
-    "xz"
+    "xz",
+    "zstd",
 ]
 script = """
 DYNAMIC_INIT
 export PYTHONDONTWRITEBYTECODE=1
 ARCH="${TARGET%%-*}"
+
+# Packages are considerably larger because of this issue
+# https://gitlab.redox-os.org/redox-os/relibc/-/issues/227
+export MODULE_BUILDTYPE=static
 
 COOKBOOK_CONFIGURE_FLAGS=(
     --prefix=/usr
@@ -32,6 +36,7 @@ COOKBOOK_CONFIGURE_FLAGS=(
     --build=$ARCH
     --with-build-python
     --with-ensurepip=install
+    --disable-test-modules
     ac_cv_file__dev_ptmx=no
     ac_cv_file__dev_ptc=no
 )
