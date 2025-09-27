@@ -172,6 +172,12 @@ You can use the following GitLab label filters to know our development prioritie
 - [Medium-priority](https://gitlab.redox-os.org/groups/redox-os/-/issues/?label_name[]=medium-priority)
 - [Low-priority](https://gitlab.redox-os.org/groups/redox-os/-/issues/?label_name[]=low-priority)
 
+## Roadmap
+
+We use tracking issues for the goals in our roadmap, you can see them in the filter below:
+
+- [Tracking issues](https://gitlab.redox-os.org/groups/redox-os/-/issues/?label_name[]=tracking%20issue)
+
 ## RFCs
 
 For more significant changes that affect Redox's architecture, we use the [Request for Comments](https://gitlab.redox-os.org/redox-os/rfcs) repository.
