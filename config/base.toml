@@ -163,6 +163,12 @@ directory = true
 mode = 0o755
 
 [[files]]
+path = "/var/run"
+data = ""
+directory = true
+mode = 0o755
+
+[[files]]
 path = "/var/tmp"
 data = ""
 directory = true
