@@ -160,13 +160,12 @@ fn main() -> Result<(), Box<dyn std::error::Error>> {
         let content = fs::read_to_string(&path)?;
         let parsed: Value = toml::from_str(&content)?;
 
-        if let Some(version_val) = parsed.get("version") {
-            let version_str = version_val.to_string(); // includes quotes
-            let package_name = path.file_stem().unwrap().to_string_lossy().to_string();
-            packages.insert(package_name, version_str);
-        } else {
-            eprintln!("Warning: no [version] found in {:?}", path);
-        }
+        let version_str = parsed
+            .get("version")
+            .unwrap_or(&Value::String("".to_string()))
+            .to_string(); // includes quotes
+        let package_name = path.file_stem().unwrap().to_string_lossy().to_string();
+        packages.insert(package_name, version_str);
     }
 
     // FIXME: Use proper TOML serializer
