@@ -34,7 +34,7 @@ COOKBOOK_CONFIGURE_FLAGS=(
     --disable-ipv6
     --host=${GNU_TARGET}
     --build=$ARCH
-    --with-build-python=python3
+    --with-build-python
     --with-ensurepip=install
     --disable-test-modules
     ac_cv_file__dev_ptmx=no
