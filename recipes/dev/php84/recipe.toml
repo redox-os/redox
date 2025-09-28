@@ -74,7 +74,7 @@ mv ${COOKBOOK_STAGE}/usr/sbin/* ${COOKBOOK_STAGE}/usr/bin/
 for bin in "php-cgi" "php-config" "php" "phpdbg" "phpize" "php-fpm"; do
   ln -s "$bin$SUFFIX" ${COOKBOOK_STAGE}/usr/bin/$bin
 done
-rm ${COOKBOOK_STAGE}/usr/bin/phar$SUFFIX
+unlink ${COOKBOOK_STAGE}/usr/bin/phar$SUFFIX
 mkdir -p ${COOKBOOK_STAGE}/etc/php/$SUFFIX/conf.d
 cp ${COOKBOOK_SOURCE}/php.ini* ${COOKBOOK_STAGE}/etc/php/$SUFFIX/
 """
