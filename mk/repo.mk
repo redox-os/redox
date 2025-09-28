@@ -190,6 +190,7 @@ ucrp.%: $(FSTOOLS_TAG) FORCE
 ifeq ($(PODMAN_BUILD),1)
 	$(PODMAN_RUN) make $@
 else
+	$(MAKE) u.$*
 	$(MAKE) c.$*
 	$(MAKE) r.$*
 	$(MAKE) p.$*
