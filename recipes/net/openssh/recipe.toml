@@ -23,11 +23,11 @@ mv "${COOKBOOK_STAGE}"/usr/sbin/sshd "${COOKBOOK_STAGE}"/usr/bin/sshd
 rmdir "${COOKBOOK_STAGE}"/usr/sbin
 
 # Extracted from `make host-key-force`
-# TODO: Very insecure! but there's no postscript yet
-ssh-keygen -t dsa -f "${COOKBOOK_STAGE}"/etc/ssh/ssh_host_dsa_key -N ""
-ssh-keygen -t rsa -f "${COOKBOOK_STAGE}"/etc/ssh/ssh_host_rsa_key -N ""
-ssh-keygen -t ed25519 -f "${COOKBOOK_STAGE}"/etc/ssh/ssh_host_ed25519_key -N ""
-ssh-keygen -t ecdsa -f "${COOKBOOK_STAGE}"/etc/ssh/ssh_host_ecdsa_key -N ""
+# TODO: Postscript to generate this
+# ssh-keygen -t dsa -f "${COOKBOOK_STAGE}"/etc/ssh/ssh_host_dsa_key -N ""
+# ssh-keygen -t rsa -f "${COOKBOOK_STAGE}"/etc/ssh/ssh_host_rsa_key -N ""
+# ssh-keygen -t ed25519 -f "${COOKBOOK_STAGE}"/etc/ssh/ssh_host_ed25519_key -N ""
+# ssh-keygen -t ecdsa -f "${COOKBOOK_STAGE}"/etc/ssh/ssh_host_ecdsa_key -N ""
 
 CONFIG_FILE="${COOKBOOK_STAGE}"/etc/ssh/sshd_config
 
