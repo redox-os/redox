@@ -746,7 +746,11 @@ fn build(
     target_dir: &Path,
     name: &PackageName,
     recipe: &Recipe,
+    check_source: bool,
 ) -> Result<(PathBuf, BTreeSet<PackageName>), String> {
+    let sysroot_dir = target_dir.join("sysroot");
+    let stage_dir = target_dir.join("stage");
+
     let mut dep_pkgars = BTreeSet::new();
     for dependency in recipe.build.dependencies.iter() {
         let dependency_dir = recipes::find(dependency.as_str());
@@ -763,6 +767,11 @@ fn build(
         ));
     }
 
+    if stage_dir.exists() && !check_source {
+        let auto_deps = build_auto_deps(target_dir, &stage_dir, dep_pkgars)?;
+        return Ok((stage_dir, auto_deps));
+    }
+
     let source_modified = modified_dir_ignore_git(source_dir)?;
     let deps_modified = dep_pkgars
         .iter()
@@ -770,7 +779,6 @@ fn build(
         .max()
         .unwrap_or(Ok(SystemTime::UNIX_EPOCH))?;
 
-    let sysroot_dir = target_dir.join("sysroot");
     // Rebuild sysroot if source is newer
     //TODO: rebuild on recipe changes
     if sysroot_dir.is_dir() {
@@ -820,7 +828,6 @@ fn build(
         rename(&sysroot_dir_tmp, &sysroot_dir)?;
     }
 
-    let stage_dir = target_dir.join("stage");
     // Rebuild stage if source is newer
     //TODO: rebuild on recipe changes
     if stage_dir.is_dir() {
@@ -1189,10 +1196,19 @@ done
         rename(&stage_dir_tmp, &stage_dir)?;
     }
 
-    // Calculate automatic dependencies
-    let auto_deps_path = target_dir.join("auto_deps.toml");
+    let auto_deps = build_auto_deps(target_dir, &stage_dir, dep_pkgars)?;
 
-    if auto_deps_path.is_file() && modified(&auto_deps_path)? < modified(&stage_dir)? {
+    Ok((stage_dir, auto_deps))
+}
+
+/// Calculate automatic dependencies
+fn build_auto_deps(
+    target_dir: &Path,
+    stage_dir: &PathBuf,
+    dep_pkgars: BTreeSet<(PackageName, PathBuf)>,
+) -> Result<BTreeSet<PackageName>, String> {
+    let auto_deps_path = target_dir.join("auto_deps.toml");
+    if auto_deps_path.is_file() && modified(&auto_deps_path)? < modified(stage_dir)? {
         remove_all(&auto_deps_path)?
     }
 
@@ -1203,13 +1219,12 @@ done
             toml::from_str(&toml_content).map_err(|_| "failed to deserialize cached auto_deps")?;
         wrapper.packages
     } else {
-        let packages = auto_deps(&stage_dir, &dep_pkgars);
+        let packages = auto_deps(stage_dir, &dep_pkgars);
         let wrapper = AutoDeps { packages };
         serialize_and_write(&auto_deps_path, &wrapper)?;
         wrapper.packages
     };
-
-    Ok((stage_dir, auto_deps))
+    Ok(auto_deps)
 }
 
 fn package(
@@ -1316,6 +1331,7 @@ fn cook(
     recipe_dir: &Path,
     name: &PackageName,
     recipe: &Recipe,
+    is_deps: bool,
     fetch_only: bool,
     is_offline: bool,
 ) -> Result<(), String> {
@@ -1335,8 +1351,9 @@ fn cook(
 
     let target_dir = create_target_dir(recipe_dir)?;
 
-    let (stage_dir, auto_deps) = build(recipe_dir, &source_dir, &target_dir, name, recipe)
-        .map_err(|err| format!("failed to build: {}", err))?;
+    let (stage_dir, auto_deps) =
+        build(recipe_dir, &source_dir, &target_dir, name, recipe, !is_deps)
+            .map_err(|err| format!("failed to build: {}", err))?;
 
     let _package_file = package(&stage_dir, &target_dir, name, recipe, &auto_deps)
         .map_err(|err| format!("failed to package: {}", err))?;
@@ -1395,7 +1412,7 @@ fn main() {
         };
     }
 
-    let recipes = match CookRecipe::new_recursive(&recipe_names, WALK_DEPTH) {
+    let recipes = match CookRecipe::get_build_deps_recursive(&recipe_names) {
         Ok(ok) => ok,
         Err(err) => {
             eprintln!(
@@ -1432,6 +1449,7 @@ fn main() {
                 &recipe.dir,
                 &recipe.name,
                 &recipe.recipe,
+                recipe.is_deps,
                 fetch_only,
                 is_offline,
             )

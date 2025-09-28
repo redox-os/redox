@@ -6,6 +6,8 @@ use serde::{
     Deserialize, Serialize,
 };
 
+use crate::WALK_DEPTH;
+
 /// Specifies how to download the source for a recipe
 #[derive(Debug, Deserialize, PartialEq, Serialize)]
 #[serde(untagged)]
@@ -135,6 +137,8 @@ pub struct CookRecipe {
     pub name: PackageName,
     pub dir: PathBuf,
     pub recipe: Recipe,
+    /// If true, the source will not be checked for freshness
+    pub is_deps: bool,
 }
 
 impl CookRecipe {
@@ -156,7 +160,12 @@ impl CookRecipe {
             .map_err(|err| PackageError::Parse(DeError::custom(err), Some(file)))?;
 
         let dir = dir.to_path_buf();
-        Ok(Self { name, dir, recipe })
+        Ok(Self {
+            name,
+            dir,
+            recipe,
+            is_deps: false,
+        })
     }
 
     pub fn new_recursive(
@@ -191,6 +200,16 @@ impl CookRecipe {
         }
 
         Ok(recipes)
+    }
+
+    pub fn get_build_deps_recursive(names: &[PackageName]) -> Result<Vec<Self>, PackageError> {
+        let mut packages = Self::new_recursive(names, WALK_DEPTH)?;
+
+        for package in packages.iter_mut() {
+            package.is_deps = !names.contains(&package.name);
+        }
+
+        Ok(packages)
     }
 
     pub fn get_package_deps_recursive(
