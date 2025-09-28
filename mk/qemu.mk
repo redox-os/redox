@@ -200,9 +200,13 @@ else
 	ifneq ($(bridge),)
 		QEMUFLAGS+=-netdev bridge,br=$(bridge),id=net0
 	else ifeq ($(net),redir)
-		# port 8080 and 8083 - webservers
+		# port 8022 - ssh
+		# port 8080-8083 - webservers
 		# port 64126 - our gdbserver implementation
-		QEMUFLAGS+=-netdev user,id=net0,hostfwd=tcp::8080-:8080,hostfwd=tcp::8083-:8083,hostfwd=tcp::64126-:64126$(EXTRANETARGS)
+		FWD_PORTS := 8081 8082 8083 64126
+		FWD_FLAGS := hostfwd=tcp::8022-:22,hostfwd=tcp::8080-:80
+		FWD_FLAGS2 := $(foreach p,$(FWD_PORTS),,hostfwd=tcp::$(p)-:$(p))
+		QEMUFLAGS += -netdev user,id=net0,$(FWD_FLAGS)$(subst $(eval ) ,,$(FWD_FLAGS2))$(EXTRANETARGS)
 	else ifeq ($(net),windows)
 		QEMUFLAGS+=-netdev user,id=net0$(EXTRANETARGS)
 	else
