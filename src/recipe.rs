@@ -6,6 +6,8 @@ use serde::{
     Deserialize, Serialize,
 };
 
+use crate::WALK_DEPTH;
+
 /// Specifies how to download the source for a recipe
 #[derive(Debug, Deserialize, PartialEq, Serialize)]
 #[serde(untagged)]
@@ -186,9 +188,8 @@ impl CookRecipe {
                     },
                 )?;
 
-            for mut dependency in dependencies {
+            for dependency in dependencies {
                 if !recipes.contains(&dependency) {
-                    dependency.is_deps = true;
                     recipes.push(dependency);
                 }
             }
@@ -199,6 +200,18 @@ impl CookRecipe {
         }
 
         Ok(recipes)
+    }
+
+    pub fn get_build_deps_recursive(
+        names: &[PackageName],
+    ) -> Result<Vec<Self>, PackageError> {
+        let mut packages = Self::new_recursive(names, WALK_DEPTH)?;
+
+        for package in packages.iter_mut() {
+            package.is_deps = !names.contains(&package.name);
+        }
+
+        Ok(packages)
     }
 
     pub fn get_package_deps_recursive(
