@@ -21,6 +21,42 @@ dependencies = [
 ]
 script = """
 DYNAMIC_INIT
+
+# Build host python3
+mkdir -p host
+pushd host
+#TODO: easier way to build for host?
+HOST_ENV=(
+    env
+    --unset=AR
+    --unset=AS
+    --unset=CC
+    --unset=CFLAGS
+    --unset=CPPFLAGS
+    --unset=CXX
+    --unset=GNU_TARGET
+    --unset=LD
+    --unset=LDFLAGS
+    --unset=NM
+    --unset=OBJCOPY
+    --unset=OBJDUMP
+    --unset=PKG_CONFIG
+    --unset=PKG_CONFIG_ALLOW_CROSS
+    --unset=PKG_CONFIG_FOR_BUILD
+    --unset=PKG_CONFIG_LIBDIR
+    --unset=PKG_CONFIG_PATH
+    --unset=PKG_CONFIG_SYSROOT_DIR
+    --unset=PREFIX_RUSTFLAGS
+    --unset=RANLIB
+    --unset=READELF
+    --unset=STRIP
+    --unset=TARGET
+)
+"${HOST_ENV[@]}" "${COOKBOOK_CONFIGURE}" --prefix="${PWD}/usr"
+"${HOST_ENV[@]}" "${COOKBOOK_MAKE}" -j"${COOKBOOK_MAKE_JOBS}"
+"${HOST_ENV[@]}" "${COOKBOOK_MAKE}" altinstall
+popd
+
 export PYTHONDONTWRITEBYTECODE=1
 ARCH="${TARGET%%-*}"
 
@@ -33,8 +69,8 @@ COOKBOOK_CONFIGURE_FLAGS=(
     --enable-shared
     --disable-ipv6
     --host=${GNU_TARGET}
-    --build=$ARCH
-    --with-build-python
+    --build="$ARCH"
+    --with-build-python="${PWD}/host/usr/bin/python3.12"
     --with-ensurepip=install
     --disable-test-modules
     ac_cv_file__dev_ptmx=no
