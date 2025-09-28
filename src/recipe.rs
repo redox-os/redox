@@ -135,6 +135,8 @@ pub struct CookRecipe {
     pub name: PackageName,
     pub dir: PathBuf,
     pub recipe: Recipe,
+    /// If true, the source will not be checked for freshness
+    pub is_deps: bool,
 }
 
 impl CookRecipe {
@@ -156,7 +158,12 @@ impl CookRecipe {
             .map_err(|err| PackageError::Parse(DeError::custom(err), Some(file)))?;
 
         let dir = dir.to_path_buf();
-        Ok(Self { name, dir, recipe })
+        Ok(Self {
+            name,
+            dir,
+            recipe,
+            is_deps: false,
+        })
     }
 
     pub fn new_recursive(
@@ -179,8 +186,9 @@ impl CookRecipe {
                     },
                 )?;
 
-            for dependency in dependencies {
+            for mut dependency in dependencies {
                 if !recipes.contains(&dependency) {
+                    dependency.is_deps = true;
                     recipes.push(dependency);
                 }
             }
