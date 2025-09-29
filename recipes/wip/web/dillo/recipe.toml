@@ -1,0 +1,15 @@
+#TODO not compiled or tested
+# build instructions: https://github.com/dillo-browser/dillo/blob/master/doc/install.md
+[source]
+tar = "https://github.com/dillo-browser/dillo/releases/download/v3.2.0/dillo-3.2.0.tar.bz2"
+[build]
+template = "configure"
+dependencies = [
+    "fltk",
+    "openssl3",
+    "zlib",
+    "libpng",
+    "libjpeg",
+    "libwebp",
+    "libbrotli",
+]
