@@ -5,7 +5,7 @@ tar = "https://github.com/dillo-browser/dillo/releases/download/v3.2.0/dillo-3.2
 [build]
 template = "configure"
 dependencies = [
-    "fltk",
+    "fltk13",
     "openssl3",
     "zlib",
     "libpng",
