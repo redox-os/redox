@@ -1,6 +1,9 @@
 [source]
 git = "https://gitlab.redox-os.org/njskalski/servo.git"
 branch = "redox_mods"
+script = """
+cp ../.servobuild ./
+"""
 
 [build]
 template = "custom"
@@ -13,6 +16,8 @@ dependencies = [
     "libffi",
     "libiconv",
     "libx11",
+    "libxcursor",
+    "libxkbcommon-x11",
     "libxcb",
     "libpng",
     "openssl1",
@@ -26,49 +31,31 @@ dependencies = [
     "libpthread-stubs",
     "fontconfig",
     "expat",
-    "relibc",
-    "gcc13",
 ]
 script = """
-cp "${COOKBOOK_RECIPE}/.servobuild" "${COOKBOOK_SOURCE}/.servobuild"
-
-# Add wrapper to PATH
-export PATH="${COOKBOOK_RECIPE}:${PATH}"
-export TARGET=${TARGET}
-
-# Force cargo to use the correct build target
-export CARGO_BUILD_TARGET=${TARGET}
+DYNAMIC_INIT
 
 # jemalloc specific configuration
 export JEMALLOC_SYS_WITH_LG_PAGE=16
-export TARGET_CC=${TARGET}-gcc
-export TARGET_CXX=${TARGET}-g++
-export TARGET_AR=${TARGET}-ar
+export TARGET_CC="$CC"
+export TARGET_CXX="$CXX"
+export TARGET_AR="$AR"
 
-export PKG_CONFIG_ALLOW_CROSS=1
-
-# this /usr/share/pkgconfig comes from x11proto, that stages pc files in wrong dir.
-export PKG_CONFIG_PATH="${COOKBOOK_SYSROOT}/lib/pkgconfig"
-#:${COOKBOOK_SYSROOT}/usr/lib/pkgconfig:${COOKBOOK_SYSROOT}/usr/share/pkgconfig"
-export PKG_CONFIG_LIBDIR="${COOKBOOK_SYSROOT}/lib/pkgconfig"
-#:${COOKBOOK_SYSROOT}/usr/lib/pkgconfig"
-export PKG_CONFIG_SYSROOT_DIR="${COOKBOOK_SYSROOT}"
-
-export RUSTFLAGS="-C target-feature=-crt-static -C link-args=-lpng -C link-args=-lxcb -C link-args=-lexpat -C link-args=-lgcc_s -C link-args=-lz -C link-args=-lXau -C link-args=-no-pie"
-
-rsync -a --delete "${COOKBOOK_SOURCE}/" ./
-
-
-# I'm tired trying figure out why multiple pkgconfig paths are ignored by cargo building stuff
+export PKG_CONFIG_PATH_x86_64_unknown_redox="${COOKBOOK_SYSROOT}/lib/pkgconfig"
+export PKG_CONFIG_SYSROOT_DIR_x86_64_unknown_redox="${COOKBOOK_SYSROOT}/lib/pkgconfig"
 rsync -a -v ${COOKBOOK_SYSROOT}/usr/share/pkgconfig/*.pc ${COOKBOOK_SYSROOT}/lib/pkgconfig/
-rsync -a -v ${COOKBOOK_SYSROOT}/usr/lib/pkgconfig/*.pc ${COOKBOOK_SYSROOT}/lib/pkgconfig/
 
-echo "listing ${COOKBOOK_SYSROOT}/lib/pkgconfig"
-ls -al ${COOKBOOK_SYSROOT}/lib/pkgconfig
+export RUSTFLAGS="$RUSTFLAGS -L native=${COOKBOOK_SYSROOT}/lib"
 
-# -j 1 to lock down "which crate fails", because cargo tree -i doesn't work for gaol
-cargo build --target ${TARGET} --release
+#TODO: mozjs-sys/build.rs fork links to hardcoded /home/andrzej/.redoxer instead of prefix toolchain, plus wrongly added -nostdinc/-nostdinc++, here's the workaround
+PREFIX_INCLUDE=$(realpath "$COOKBOOK_ROOT/../prefix/$TARGET/sysroot/x86_64-unknown-redox/include")
+export CLANGFLAGS="-I $PREFIX_INCLUDE -I $PREFIX_INCLUDE/c++/13.2.0 -I $PREFIX_INCLUDE/c++/13.2.0/$TARGET -I $PREFIX_INCLUDE/c++/13.2.0/backward"
 
-mkdir -pv "${COOKBOOK_STAGE}/usr/servo"
-cp -r -v "target/${TARGET}/release/servo" "${COOKBOOK_STAGE}/usr/servo"
+PACKAGE_PATH="ports/servoshell" cookbook_cargo
 """
+
+# [package]
+# dependencies = [
+#     "libxcursor",
+#     "libxkbcommon-x11",
+# ]
