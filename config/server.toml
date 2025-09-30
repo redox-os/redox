@@ -21,10 +21,8 @@ git = {}
 installer = {}
 ion = {}
 kibi = {}
-netdb = {}
 pkgutils = {}
 redoxfs = {}
-resist = {}
 
 [[files]]
 path = "/usr/lib/init.d/30_console"

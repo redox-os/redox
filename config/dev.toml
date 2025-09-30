@@ -14,7 +14,7 @@ prompt = false
 dev-redox = {}
 
 [[files]]
-path = "/home/user/test.rs"
+path = "/home/user/hello-redox/test.rs"
 data = """
 fn main() {
     println!("Hello, Redox!");
@@ -22,7 +22,7 @@ fn main() {
 """
 
 [[files]]
-path = "/home/user/test.c"
+path = "/home/user/hello-redox/test.c"
 data = """
 #include <stdio.h>
 
@@ -32,7 +32,7 @@ int main(void) {
 """
 
 [[files]]
-path = "/home/user/test.cpp"
+path = "/home/user/hello-redox/test.cpp"
 data = """
 #include <iostream>
 
@@ -43,13 +43,29 @@ int main()
 """
 
 [[files]]
-path = "/home/user/test.py"
+path = "/home/user/hello-redox/test.py"
 data = """
 print("Hello, Redox!")
 """
 
 [[files]]
-path = "/home/user/test.lua"
+path = "/home/user/hello-redox/test.lua"
 data = """
 print("Hello, Redox!")
+"""
+
+[[files]]
+path = "/home/user/hello-redox/test.js"
+data = """
+console.log("Hello Redox");
+"""
+
+[[files]]
+path = "/home/user/hello-redox/test.java"
+data = """
+public class Java {
+	public static void main(String[] args) {
+		System.out.println("Hello Redox");
+	}
+}
 """
