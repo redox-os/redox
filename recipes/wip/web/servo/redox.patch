@@ -1,0 +1,2692 @@
+diff --git a/Cargo.lock b/Cargo.lock
+index f2081c3fd34..bb300865c60 100644
+--- a/Cargo.lock
++++ b/Cargo.lock
+@@ -18,96 +18,6 @@ version = "0.1.10"
+ source = "registry+https://github.com/rust-lang/crates.io-index"
+ checksum = "366ffbaa4442f4684d91e2cd7c5ea7c4ed8add41959a31447066e279e432b618"
+ 
+-[[package]]
+-name = "accesskit"
+-version = "0.19.0"
+-source = "registry+https://github.com/rust-lang/crates.io-index"
+-checksum = "e25ae84c0260bdf5df07796d7cc4882460de26a2b406ec0e6c42461a723b271b"
+-
+-[[package]]
+-name = "accesskit_atspi_common"
+-version = "0.12.0"
+-source = "registry+https://github.com/rust-lang/crates.io-index"
+-checksum = "29bd41de2e54451a8ca0dd95ebf45b54d349d29ebceb7f20be264eee14e3d477"
+-dependencies = [
+- "accesskit",
+- "accesskit_consumer",
+- "atspi-common",
+- "serde",
+- "thiserror 1.0.69",
+- "zvariant",
+-]
+-
+-[[package]]
+-name = "accesskit_consumer"
+-version = "0.28.0"
+-source = "registry+https://github.com/rust-lang/crates.io-index"
+-checksum = "8bfae7c152994a31dc7d99b8eeac7784a919f71d1b306f4b83217e110fd3824c"
+-dependencies = [
+- "accesskit",
+- "hashbrown",
+-]
+-
+-[[package]]
+-name = "accesskit_macos"
+-version = "0.20.0"
+-source = "registry+https://github.com/rust-lang/crates.io-index"
+-checksum = "692dd318ff8a7a0ffda67271c4bd10cf32249656f4e49390db0b26ca92b095f2"
+-dependencies = [
+- "accesskit",
+- "accesskit_consumer",
+- "hashbrown",
+- "objc2 0.5.2",
+- "objc2-app-kit 0.2.2",
+- "objc2-foundation 0.2.2",
+-]
+-
+-[[package]]
+-name = "accesskit_unix"
+-version = "0.15.0"
+-source = "registry+https://github.com/rust-lang/crates.io-index"
+-checksum = "c5f7474c36606d0fe4f438291d667bae7042ea2760f506650ad2366926358fc8"
+-dependencies = [
+- "accesskit",
+- "accesskit_atspi_common",
+- "async-channel",
+- "async-executor",
+- "async-task",
+- "atspi",
+- "futures-lite",
+- "futures-util",
+- "serde",
+- "zbus",
+-]
+-
+-[[package]]
+-name = "accesskit_windows"
+-version = "0.27.0"
+-source = "registry+https://github.com/rust-lang/crates.io-index"
+-checksum = "70a042b62c9c05bf7b616f015515c17d2813f3ba89978d6f4fc369735d60700a"
+-dependencies = [
+- "accesskit",
+- "accesskit_consumer",
+- "hashbrown",
+- "static_assertions",
+- "windows 0.61.3",
+- "windows-core 0.61.2",
+-]
+-
+-[[package]]
+-name = "accesskit_winit"
+-version = "0.27.0"
+-source = "registry+https://github.com/rust-lang/crates.io-index"
+-checksum = "5c1f0d3d13113d8857542a4f8d1a1c24d1dc1527b77aee8426127f4901588708"
+-dependencies = [
+- "accesskit",
+- "accesskit_macos",
+- "accesskit_unix",
+- "accesskit_windows",
+- "raw-window-handle",
+- "winit",
+-]
+-
+ [[package]]
+ name = "accountable-refcell"
+ version = "0.2.2"
+@@ -183,7 +93,6 @@ source = "registry+https://github.com/rust-lang/crates.io-index"
+ checksum = "5a15f179cd60c4584b8a8c596927aadc462e27f2ca70c04e0071964a73ba7a75"
+ dependencies = [
+  "cfg-if",
+- "getrandom 0.3.3",
+  "once_cell",
+  "version_check",
+  "zerocopy",
+@@ -418,30 +327,6 @@ dependencies = [
+  "libloading",
+ ]
+ 
+-[[package]]
+-name = "async-broadcast"
+-version = "0.7.2"
+-source = "registry+https://github.com/rust-lang/crates.io-index"
+-checksum = "435a87a52755b8f27fcf321ac4f04b2802e337c8c4872923137471ec39c37532"
+-dependencies = [
+- "event-listener",
+- "event-listener-strategy",
+- "futures-core",
+- "pin-project-lite",
+-]
+-
+-[[package]]
+-name = "async-channel"
+-version = "2.5.0"
+-source = "registry+https://github.com/rust-lang/crates.io-index"
+-checksum = "924ed96dd52d1b75e9c1a3e6275715fd320f5f9439fb5a4a11fa51f4221158d2"
+-dependencies = [
+- "concurrent-queue",
+- "event-listener-strategy",
+- "futures-core",
+- "pin-project-lite",
+-]
+-
+ [[package]]
+ name = "async-compression"
+ version = "0.4.27"
+@@ -456,68 +341,6 @@ dependencies = [
+  "tokio",
+ ]
+ 
+-[[package]]
+-name = "async-executor"
+-version = "1.13.2"
+-source = "registry+https://github.com/rust-lang/crates.io-index"
+-checksum = "bb812ffb58524bdd10860d7d974e2f01cc0950c2438a74ee5ec2e2280c6c4ffa"
+-dependencies = [
+- "async-task",
+- "concurrent-queue",
+- "fastrand",
+- "futures-lite",
+- "pin-project-lite",
+- "slab",
+-]
+-
+-[[package]]
+-name = "async-io"
+-version = "2.4.1"
+-source = "registry+https://github.com/rust-lang/crates.io-index"
+-checksum = "1237c0ae75a0f3765f58910ff9cdd0a12eeb39ab2f4c7de23262f337f0aacbb3"
+-dependencies = [
+- "async-lock",
+- "cfg-if",
+- "concurrent-queue",
+- "futures-io",
+- "futures-lite",
+- "parking",
+- "polling",
+- "rustix 1.0.8",
+- "slab",
+- "tracing",
+- "windows-sys 0.59.0",
+-]
+-
+-[[package]]
+-name = "async-lock"
+-version = "3.4.1"
+-source = "registry+https://github.com/rust-lang/crates.io-index"
+-checksum = "5fd03604047cee9b6ce9de9f70c6cd540a0520c813cbd49bae61f33ab80ed1dc"
+-dependencies = [
+- "event-listener",
+- "event-listener-strategy",
+- "pin-project-lite",
+-]
+-
+-[[package]]
+-name = "async-process"
+-version = "2.4.0"
+-source = "registry+https://github.com/rust-lang/crates.io-index"
+-checksum = "65daa13722ad51e6ab1a1b9c01299142bc75135b337923cfa10e79bbbd669f00"
+-dependencies = [
+- "async-channel",
+- "async-io",
+- "async-lock",
+- "async-signal",
+- "async-task",
+- "blocking",
+- "cfg-if",
+- "event-listener",
+- "futures-lite",
+- "rustix 1.0.8",
+-]
+-
+ [[package]]
+ name = "async-recursion"
+ version = "1.1.1"
+@@ -529,41 +352,6 @@ dependencies = [
+  "syn",
+ ]
+ 
+-[[package]]
+-name = "async-signal"
+-version = "0.2.11"
+-source = "registry+https://github.com/rust-lang/crates.io-index"
+-checksum = "d7605a4e50d4b06df3898d5a70bf5fde51ed9059b0434b73105193bc27acce0d"
+-dependencies = [
+- "async-io",
+- "async-lock",
+- "atomic-waker",
+- "cfg-if",
+- "futures-core",
+- "futures-io",
+- "rustix 1.0.8",
+- "signal-hook-registry",
+- "slab",
+- "windows-sys 0.59.0",
+-]
+-
+-[[package]]
+-name = "async-task"
+-version = "4.7.1"
+-source = "registry+https://github.com/rust-lang/crates.io-index"
+-checksum = "8b75356056920673b02621b35afd0f7dda9306d03c79a30f5c56c44cf256e3de"
+-
+-[[package]]
+-name = "async-trait"
+-version = "0.1.89"
+-source = "registry+https://github.com/rust-lang/crates.io-index"
+-checksum = "9035ad2d096bed7955a320ee7e2230574d28fd3c3a0f186cbea1ff3c7eed5dbb"
+-dependencies = [
+- "proc-macro2",
+- "quote",
+- "syn",
+-]
+-
+ [[package]]
+ name = "async-tungstenite"
+ version = "0.29.1"
+@@ -596,56 +384,6 @@ version = "0.1.13"
+ source = "registry+https://github.com/rust-lang/crates.io-index"
+ checksum = "41e67cd8309bbd06cd603a9e693a784ac2e5d1e955f11286e355089fcab3047c"
+ 
+-[[package]]
+-name = "atspi"
+-version = "0.25.0"
+-source = "registry+https://github.com/rust-lang/crates.io-index"
+-checksum = "c83247582e7508838caf5f316c00791eee0e15c0bf743e6880585b867e16815c"
+-dependencies = [
+- "atspi-common",
+- "atspi-connection",
+- "atspi-proxies",
+-]
+-
+-[[package]]
+-name = "atspi-common"
+-version = "0.9.0"
+-source = "registry+https://github.com/rust-lang/crates.io-index"
+-checksum = "33dfc05e7cdf90988a197803bf24f5788f94f7c94a69efa95683e8ffe76cfdfb"
+-dependencies = [
+- "enumflags2",
+- "serde",
+- "static_assertions",
+- "zbus",
+- "zbus-lockstep",
+- "zbus-lockstep-macros",
+- "zbus_names",
+- "zvariant",
+-]
+-
+-[[package]]
+-name = "atspi-connection"
+-version = "0.9.0"
+-source = "registry+https://github.com/rust-lang/crates.io-index"
+-checksum = "4193d51303d8332304056ae0004714256b46b6635a5c556109b319c0d3784938"
+-dependencies = [
+- "atspi-common",
+- "atspi-proxies",
+- "futures-lite",
+- "zbus",
+-]
+-
+-[[package]]
+-name = "atspi-proxies"
+-version = "0.9.0"
+-source = "registry+https://github.com/rust-lang/crates.io-index"
+-checksum = "d2eebcb9e7e76f26d0bcfd6f0295e1cd1e6f33bedbc5698a971db8dc43d7751c"
+-dependencies = [
+- "atspi-common",
+- "serde",
+- "zbus",
+-]
+-
+ [[package]]
+ name = "autocfg"
+ version = "1.5.0"
+@@ -655,8 +393,7 @@ checksum = "c08606f8c3cbf4ce6ec8e28fb0014a2c086708fe954eaa885384a6165172e7e8"
+ [[package]]
+ name = "aws-lc-rs"
+ version = "1.13.3"
+-source = "registry+https://github.com/rust-lang/crates.io-index"
+-checksum = "5c953fe1ba023e6b7730c0d4b031d06f267f23a46167dcbd40316644b10a17ba"
++source = "git+https://gitlab.redox-os.org/njskalski/aws-lc-rs.git?branch=redox_mods#0fa71de67b9b0e1574ff754ce05fa6b93934fc09"
+ dependencies = [
+  "aws-lc-sys",
+  "zeroize",
+@@ -665,10 +402,9 @@ dependencies = [
+ [[package]]
+ name = "aws-lc-sys"
+ version = "0.30.0"
+-source = "registry+https://github.com/rust-lang/crates.io-index"
+-checksum = "dbfd150b5dbdb988bcc8fb1fe787eb6b7ee6180ca24da683b61ea5405f3d43ff"
++source = "git+https://gitlab.redox-os.org/njskalski/aws-lc-rs.git?branch=redox_mods#0fa71de67b9b0e1574ff754ce05fa6b93934fc09"
+ dependencies = [
+- "bindgen 0.69.5",
++ "bindgen 0.72.0",
+  "cc",
+  "cmake",
+  "dunce",
+@@ -756,37 +492,34 @@ dependencies = [
+ 
+ [[package]]
+ name = "bindgen"
+-version = "0.69.5"
++version = "0.71.1"
+ source = "registry+https://github.com/rust-lang/crates.io-index"
+-checksum = "271383c67ccabffb7381723dea0672a673f292304fcb45c01cc648c7a8d58088"
++checksum = "5f58bf3d7db68cfbac37cfc485a8d711e87e064c3d0fe0435b92f7a407f9d6b3"
+ dependencies = [
+  "bitflags 2.9.1",
+  "cexpr",
+  "clang-sys",
+  "itertools 0.10.5",
+- "lazy_static",
+- "lazycell",
+- "log",
+- "prettyplease",
+  "proc-macro2",
+  "quote",
+  "regex",
+- "rustc-hash 1.1.0",
++ "rustc-hash 2.1.1",
+  "shlex",
+  "syn",
+- "which",
+ ]
+ 
+ [[package]]
+ name = "bindgen"
+-version = "0.71.1"
++version = "0.72.0"
+ source = "registry+https://github.com/rust-lang/crates.io-index"
+-checksum = "5f58bf3d7db68cfbac37cfc485a8d711e87e064c3d0fe0435b92f7a407f9d6b3"
++checksum = "4f72209734318d0b619a5e0f5129918b848c416e122a3c4ce054e03cb87b726f"
+ dependencies = [
+  "bitflags 2.9.1",
+  "cexpr",
+  "clang-sys",
+  "itertools 0.10.5",
++ "log",
++ "prettyplease",
+  "proc-macro2",
+  "quote",
+  "regex",
+@@ -864,19 +597,6 @@ dependencies = [
+  "objc2 0.5.2",
+ ]
+ 
+-[[package]]
+-name = "blocking"
+-version = "1.6.2"
+-source = "registry+https://github.com/rust-lang/crates.io-index"
+-checksum = "e83f8d02be6967315521be875afa792a316e28d57b5a2d401897e2a7921b7f21"
+-dependencies = [
+- "async-channel",
+- "async-task",
+- "futures-io",
+- "futures-lite",
+- "piper",
+-]
+-
+ [[package]]
+ name = "bluetooth"
+ version = "0.0.1"
+@@ -927,7 +647,7 @@ version = "0.1.3"
+ source = "registry+https://github.com/rust-lang/crates.io-index"
+ checksum = "9c150fd617830fd121919bbd500a784507e8af1bae744efcf587591c65c375d4"
+ dependencies = [
+- "hex 0.3.2",
++ "hex",
+ ]
+ 
+ [[package]]
+@@ -937,7 +657,7 @@ source = "registry+https://github.com/rust-lang/crates.io-index"
+ checksum = "f6dae8337ff67fe8ead29a28a0115605753e6a5205d4b6017e9f42f198c3c50a"
+ dependencies = [
+  "dbus",
+- "hex 0.3.2",
++ "hex",
+ ]
+ 
+ [[package]]
+@@ -1291,36 +1011,6 @@ dependencies = [
+  "cc",
+ ]
+ 
+-[[package]]
+-name = "cocoa"
+-version = "0.25.0"
+-source = "registry+https://github.com/rust-lang/crates.io-index"
+-checksum = "f6140449f97a6e97f9511815c5632d84c8aacf8ac271ad77c559218161a1373c"
+-dependencies = [
+- "bitflags 1.3.2",
+- "block",
+- "cocoa-foundation",
+- "core-foundation 0.9.4",
+- "core-graphics",
+- "foreign-types 0.5.0",
+- "libc",
+- "objc",
+-]
+-
+-[[package]]
+-name = "cocoa-foundation"
+-version = "0.1.2"
+-source = "registry+https://github.com/rust-lang/crates.io-index"
+-checksum = "8c6234cbb2e4c785b456c0644748b1ac416dd045799740356f8363dfe00c93f7"
+-dependencies = [
+- "bitflags 1.3.2",
+- "block",
+- "core-foundation 0.9.4",
+- "core-graphics-types",
+- "libc",
+- "objc",
+-]
+-
+ [[package]]
+ name = "codespan-reporting"
+ version = "0.12.0"
+@@ -1588,7 +1278,7 @@ dependencies = [
+  "bitflags 1.3.2",
+  "core-foundation 0.9.4",
+  "core-graphics-types",
+- "foreign-types 0.5.0",
++ "foreign-types",
+  "libc",
+ ]
+ 
+@@ -1611,7 +1301,7 @@ checksum = "c9d2790b5c08465d49f8dc05c8bcae9fea467855947db39b0f8145c091aaced5"
+ dependencies = [
+  "core-foundation 0.9.4",
+  "core-graphics",
+- "foreign-types 0.5.0",
++ "foreign-types",
+  "libc",
+ ]
+ 
+@@ -2081,9 +1771,8 @@ checksum = "75b325c5dbd37f80359721ad39aca5a29fb04c89279657cffdda8736d0c0b9d2"
+ 
+ [[package]]
+ name = "dpi"
+-version = "0.1.2"
+-source = "registry+https://github.com/rust-lang/crates.io-index"
+-checksum = "d8b14ccef22fc6f5a8f4d7d768562a182c04ce9a3b3157b91390b52ddfdf1a76"
++version = "0.1.1"
++source = "git+https://gitlab.redox-os.org/njskalski/winit.git?branch=redox_mods2#9e2e0273792b9c1feaf4492b1ab43f8ed2715ad6"
+ 
+ [[package]]
+ name = "dtoa"
+@@ -2137,9 +1826,9 @@ dependencies = [
+ 
+ [[package]]
+ name = "ecolor"
+-version = "0.32.1"
++version = "0.32.2"
+ source = "registry+https://github.com/rust-lang/crates.io-index"
+-checksum = "b6a7fc3172c2ef56966b2ce4f84177e159804c40b9a84de8861558ce4a59f422"
++checksum = "ebb57dec02e4cca6d70d02e29865f7e52dbd471383f4c3444dda7ee78d467360"
+ dependencies = [
+  "bytemuck",
+  "emath",
+@@ -2147,11 +1836,10 @@ dependencies = [
+ 
+ [[package]]
+ name = "egui"
+-version = "0.32.1"
++version = "0.32.2"
+ source = "registry+https://github.com/rust-lang/crates.io-index"
+-checksum = "49e2be082f77715496b4a39fdc6f5dc7491fefe2833111781b8697ea6ee919a7"
++checksum = "40df1115b8b0f3d4f1f9134a26287fd3d0e067fc18f879b8c9641aedf3eecef7"
+ dependencies = [
+- "accesskit",
+  "ahash",
+  "bitflags 2.9.1",
+  "emath",
+@@ -2178,11 +1866,10 @@ dependencies = [
+ 
+ [[package]]
+ name = "egui-winit"
+-version = "0.32.1"
++version = "0.32.2"
+ source = "registry+https://github.com/rust-lang/crates.io-index"
+-checksum = "fe6d8b0f8d6de4d43e794e343f03bacc3908aada931f0ed6fd7041871388a590"
++checksum = "1abd8326d2be6d0e945dcfe8acd2c07d64be4c977c5e1115f902dc9cd3ff7bf5"
+ dependencies = [
+- "accesskit_winit",
+  "ahash",
+  "arboard",
+  "bytemuck",
+@@ -2197,21 +1884,19 @@ dependencies = [
+ 
+ [[package]]
+ name = "egui_glow"
+-version = "0.32.1"
++version = "0.32.2"
+ source = "registry+https://github.com/rust-lang/crates.io-index"
+-checksum = "0ab645760288e42eab70283a5cccf44509a6f43b554351855d3c73594bfe3c23"
++checksum = "7baca67871a8b808e2eb0849282f56149673b6842702306860916bf2dd83fca1"
+ dependencies = [
+  "ahash",
+  "bytemuck",
+  "egui",
+- "egui-winit",
+  "glow",
+  "log",
+  "memoffset",
+  "profiling",
+  "wasm-bindgen",
+  "web-sys",
+- "winit",
+ ]
+ 
+ [[package]]
+@@ -2222,9 +1907,9 @@ checksum = "48c757948c5ede0e46177b7add2e67155f70e33c07fea8284df6576da70b3719"
+ 
+ [[package]]
+ name = "emath"
+-version = "0.32.1"
++version = "0.32.2"
+ source = "registry+https://github.com/rust-lang/crates.io-index"
+-checksum = "935df67dc48fdeef132f2f7ada156ddc79e021344dd42c17f066b956bb88dde3"
++checksum = "b5c95b6d5571099bfa0ae9f4fdaef2c239bccb01d55339a082070259dc6f3b05"
+ dependencies = [
+  "bytemuck",
+ ]
+@@ -2285,33 +1970,6 @@ dependencies = [
+  "cfg-if",
+ ]
+ 
+-[[package]]
+-name = "endi"
+-version = "1.1.0"
+-source = "registry+https://github.com/rust-lang/crates.io-index"
+-checksum = "a3d8a32ae18130a3c84dd492d4215c3d913c3b07c6b63c2eb3eb7ff1101ab7bf"
+-
+-[[package]]
+-name = "enumflags2"
+-version = "0.7.12"
+-source = "registry+https://github.com/rust-lang/crates.io-index"
+-checksum = "1027f7680c853e056ebcec683615fb6fbbc07dbaa13b4d5d9442b146ded4ecef"
+-dependencies = [
+- "enumflags2_derive",
+- "serde",
+-]
+-
+-[[package]]
+-name = "enumflags2_derive"
+-version = "0.7.12"
+-source = "registry+https://github.com/rust-lang/crates.io-index"
+-checksum = "67c78a4d8fdf9953a5c9d458f9efe940fd97a0cab0941c075a813ac594733827"
+-dependencies = [
+- "proc-macro2",
+- "quote",
+- "syn",
+-]
+-
+ [[package]]
+ name = "env_filter"
+ version = "0.1.3"
+@@ -2347,9 +2005,9 @@ dependencies = [
+ 
+ [[package]]
+ name = "epaint"
+-version = "0.32.1"
++version = "0.32.2"
+ source = "registry+https://github.com/rust-lang/crates.io-index"
+-checksum = "b66fc0a5a9d322917de9bd3ac7d426ca8aa3127fbf1e76fae5b6b25e051e06a3"
++checksum = "695fd7b458f31fe515d6a308f46b2936cae9316dc40c960a7ee31ce3a97866b9"
+ dependencies = [
+  "ab_glyph",
+  "ahash",
+@@ -2365,9 +2023,9 @@ dependencies = [
+ 
+ [[package]]
+ name = "epaint_default_fonts"
+-version = "0.32.1"
++version = "0.32.2"
+ source = "registry+https://github.com/rust-lang/crates.io-index"
+-checksum = "4f6cf8ce0fb817000aa24f5e630bda904a353536bd430b83ebc1dceee95b4a3a"
++checksum = "bbc9f86ce3eaf9b7fc7179a578af21a6a5cd2d4fd21965564e82a2d009a7dab0"
+ 
+ [[package]]
+ name = "equivalent"
+@@ -2382,7 +2040,7 @@ source = "registry+https://github.com/rust-lang/crates.io-index"
+ checksum = "778e2ac28f6c47af28e4907f13ffd1e1ddbd400980a9abd7c8df189bf578a5ad"
+ dependencies = [
+  "libc",
+- "windows-sys 0.52.0",
++ "windows-sys 0.59.0",
+ ]
+ 
+ [[package]]
+@@ -2412,27 +2070,6 @@ dependencies = [
+  "serde",
+ ]
+ 
+-[[package]]
+-name = "event-listener"
+-version = "5.4.1"
+-source = "registry+https://github.com/rust-lang/crates.io-index"
+-checksum = "e13b66accf52311f30a0db42147dadea9850cb48cd070028831ae5f5d4b856ab"
+-dependencies = [
+- "concurrent-queue",
+- "parking",
+- "pin-project-lite",
+-]
+-
+-[[package]]
+-name = "event-listener-strategy"
+-version = "0.5.4"
+-source = "registry+https://github.com/rust-lang/crates.io-index"
+-checksum = "8be9f3dfaaffdae2972880079a491a1a8bb7cbed0b8dd7a347f668b4150a3b93"
+-dependencies = [
+- "event-listener",
+- "pin-project-lite",
+-]
+-
+ [[package]]
+ name = "exr"
+ version = "1.73.0"
+@@ -2687,15 +2324,6 @@ dependencies = [
+  "cc",
+ ]
+ 
+-[[package]]
+-name = "foreign-types"
+-version = "0.3.2"
+-source = "registry+https://github.com/rust-lang/crates.io-index"
+-checksum = "f6f339eb8adc052cd2ca78910fda869aefa38d22d5cb648e6485e4d3fc06f3b1"
+-dependencies = [
+- "foreign-types-shared 0.1.1",
+-]
+-
+ [[package]]
+ name = "foreign-types"
+ version = "0.5.0"
+@@ -2703,7 +2331,7 @@ source = "registry+https://github.com/rust-lang/crates.io-index"
+ checksum = "d737d9aa519fb7b749cbc3b962edcf310a8dd1f4b67c91c4f83975dbdd17d965"
+ dependencies = [
+  "foreign-types-macros",
+- "foreign-types-shared 0.3.1",
++ "foreign-types-shared",
+ ]
+ 
+ [[package]]
+@@ -2717,12 +2345,6 @@ dependencies = [
+  "syn",
+ ]
+ 
+-[[package]]
+-name = "foreign-types-shared"
+-version = "0.1.1"
+-source = "registry+https://github.com/rust-lang/crates.io-index"
+-checksum = "00b0228411908ca8685dba7fc2cdd70ec9990a6e753e89b6ac91a84c40fbaf4b"
+-
+ [[package]]
+ name = "foreign-types-shared"
+ version = "0.3.1"
+@@ -2846,19 +2468,6 @@ version = "0.3.31"
+ source = "registry+https://github.com/rust-lang/crates.io-index"
+ checksum = "9e5c1b78ca4aae1ac06c48a526a655760685149f0d465d21f37abfe57ce075c6"
+ 
+-[[package]]
+-name = "futures-lite"
+-version = "2.6.1"
+-source = "registry+https://github.com/rust-lang/crates.io-index"
+-checksum = "f78e10609fe0e0b3f4157ffab1876319b5b0db102a2c60dc4626306dc46b44ad"
+-dependencies = [
+- "fastrand",
+- "futures-core",
+- "futures-io",
+- "parking",
+- "pin-project-lite",
+-]
+-
+ [[package]]
+ name = "futures-macro"
+ version = "0.3.31"
+@@ -2932,12 +2541,12 @@ dependencies = [
+ 
+ [[package]]
+ name = "gethostname"
+-version = "0.4.3"
++version = "1.0.2"
+ source = "registry+https://github.com/rust-lang/crates.io-index"
+-checksum = "0176e0459c2e4a1fe232f984bca6890e681076abb9934f6cea7c326f3fc47818"
++checksum = "fc257fdb4038301ce4b9cd1b3b51704509692bb3ff716a410cbd07925d9dae55"
+ dependencies = [
+- "libc",
+- "windows-targets 0.48.5",
++ "rustix 1.0.8",
++ "windows-targets 0.52.6",
+ ]
+ 
+ [[package]]
+@@ -3042,7 +2651,7 @@ dependencies = [
+  "gobject-sys",
+  "libc",
+  "system-deps",
+- "windows-sys 0.52.0",
++ "windows-sys 0.59.0",
+ ]
+ 
+ [[package]]
+@@ -3127,15 +2736,6 @@ dependencies = [
+  "web-sys",
+ ]
+ 
+-[[package]]
+-name = "glslopt"
+-version = "0.1.11"
+-source = "registry+https://github.com/rust-lang/crates.io-index"
+-checksum = "913662ae8335df058d56e00f11340b20fa82e03e0276587797ef325ab01e50d4"
+-dependencies = [
+- "cc",
+-]
+-
+ [[package]]
+ name = "glutin_wgl_sys"
+ version = "0.6.1"
+@@ -3590,7 +3190,7 @@ dependencies = [
+  "cc",
+  "core-graphics",
+  "core-text",
+- "foreign-types 0.5.0",
++ "foreign-types",
+  "freetype-sys",
+  "pkg-config",
+  "winapi",
+@@ -3687,12 +3287,6 @@ version = "0.3.2"
+ source = "registry+https://github.com/rust-lang/crates.io-index"
+ checksum = "805026a5d0141ffc30abb3be3173848ad46a1b1664fe632428479619a3644d77"
+ 
+-[[package]]
+-name = "hex"
+-version = "0.4.3"
+-source = "registry+https://github.com/rust-lang/crates.io-index"
+-checksum = "7f24254aa9a54b5c858eaee2f5bccdb46aaf0e486a595ed5fd8f86ba55232a70"
+-
+ [[package]]
+ name = "hexf-parse"
+ version = "0.2.1"
+@@ -3735,15 +3329,6 @@ version = "0.1.6"
+ source = "registry+https://github.com/rust-lang/crates.io-index"
+ checksum = "164f0e3568306af8b47c191406743476d9383e49d717960288cdb3469f9b7f54"
+ 
+-[[package]]
+-name = "home"
+-version = "0.5.11"
+-source = "registry+https://github.com/rust-lang/crates.io-index"
+-checksum = "589533453244b0995c858700322199b2becb13b627df2851f64a2775d024abcf"
+-dependencies = [
+- "windows-sys 0.59.0",
+-]
+-
+ [[package]]
+ name = "html5ever"
+ version = "0.35.0"
+@@ -4486,18 +4071,6 @@ dependencies = [
+  "mach2",
+ ]
+ 
+-[[package]]
+-name = "io-surface"
+-version = "0.15.1"
+-source = "registry+https://github.com/rust-lang/crates.io-index"
+-checksum = "861c6093cbc05599e66436aedf380bb0a23cec2180738393d3a340b80dd135ef"
+-dependencies = [
+- "cgl",
+- "core-foundation 0.9.4",
+- "leaky-cow",
+- "libc",
+-]
+-
+ [[package]]
+ name = "io-uring"
+ version = "0.7.9"
+@@ -4512,8 +4085,7 @@ dependencies = [
+ [[package]]
+ name = "ipc-channel"
+ version = "0.20.1"
+-source = "registry+https://github.com/rust-lang/crates.io-index"
+-checksum = "1700f6b8b9f00cdd675f32fbb3a5be882213140dfe045805273221ca266c43f8"
++source = "git+https://gitlab.redox-os.org/njskalski/ipc-channel.git?branch=redox_mods#bfcd8a88eb56706dbc61c24a53aa5b30640b3f95"
+ dependencies = [
+  "bincode",
+  "crossbeam-channel",
+@@ -4524,7 +4096,7 @@ dependencies = [
+  "serde",
+  "tempfile",
+  "uuid",
+- "windows 0.58.0",
++ "windows 0.61.3",
+ ]
+ 
+ [[package]]
+@@ -4535,7 +4107,7 @@ checksum = "e04d7f318608d35d4b61ddd75cbdaee86b023ebe2bd5a66ee0915f0bf93095a9"
+ dependencies = [
+  "hermit-abi",
+  "libc",
+- "windows-sys 0.52.0",
++ "windows-sys 0.59.0",
+ ]
+ 
+ [[package]]
+@@ -4790,27 +4362,6 @@ version = "1.5.0"
+ source = "registry+https://github.com/rust-lang/crates.io-index"
+ checksum = "bbd2bcb4c963f2ddae06a2efc7e9f3591312473c50c6685e1f298068316e66fe"
+ 
+-[[package]]
+-name = "lazycell"
+-version = "1.3.0"
+-source = "registry+https://github.com/rust-lang/crates.io-index"
+-checksum = "830d08ce1d1d941e6b30645f1a0eb5643013d835ce3779a5fc208261dbe10f55"
+-
+-[[package]]
+-name = "leak"
+-version = "0.1.2"
+-source = "registry+https://github.com/rust-lang/crates.io-index"
+-checksum = "bd100e01f1154f2908dfa7d02219aeab25d0b9c7fa955164192e3245255a0c73"
+-
+-[[package]]
+-name = "leaky-cow"
+-version = "0.1.1"
+-source = "registry+https://github.com/rust-lang/crates.io-index"
+-checksum = "40a8225d44241fd324a8af2806ba635fc7c8a7e9a7de4d5cf3ef54e71f5926fc"
+-dependencies = [
+- "leak",
+-]
+-
+ [[package]]
+ name = "lebe"
+ version = "0.5.2"
+@@ -5130,20 +4681,6 @@ dependencies = [
+  "autocfg",
+ ]
+ 
+-[[package]]
+-name = "metal"
+-version = "0.24.0"
+-source = "registry+https://github.com/rust-lang/crates.io-index"
+-checksum = "de11355d1f6781482d027a3b4d4de7825dcedb197bf573e0596d00008402d060"
+-dependencies = [
+- "bitflags 1.3.2",
+- "block",
+- "core-graphics-types",
+- "foreign-types 0.3.2",
+- "log",
+- "objc",
+-]
+-
+ [[package]]
+ name = "metal"
+ version = "0.31.0"
+@@ -5153,7 +4690,7 @@ dependencies = [
+  "bitflags 2.9.1",
+  "block",
+  "core-graphics-types",
+- "foreign-types 0.5.0",
++ "foreign-types",
+  "log",
+  "objc",
+  "paste",
+@@ -5220,8 +4757,7 @@ dependencies = [
+ [[package]]
+ name = "mozangle"
+ version = "0.5.3"
+-source = "registry+https://github.com/rust-lang/crates.io-index"
+-checksum = "0ab823731ea6297e7280dade983df955d1a8209d2deb44f505932b8873168992"
++source = "git+https://gitlab.redox-os.org/njskalski/mozangle.git?branch=redox_mods#fc58d9c521c3b9ed72ea56908daae91b119db1ad"
+ dependencies = [
+  "bindgen 0.71.1",
+  "cc",
+@@ -5233,7 +4769,7 @@ dependencies = [
+ [[package]]
+ name = "mozjs"
+ version = "0.14.1"
+-source = "git+https://github.com/servo/mozjs#e0a4ee47e686f581faefb201a6fd73bd4dcd67f0"
++source = "git+https://gitlab.redox-os.org/njskalski/mozjs.git?rev=b9c2983764fb0f8f35210d3e1da9526a9980ce78#b9c2983764fb0f8f35210d3e1da9526a9980ce78"
+ dependencies = [
+  "bindgen 0.71.1",
+  "cc",
+@@ -5245,8 +4781,8 @@ dependencies = [
+ 
+ [[package]]
+ name = "mozjs_sys"
+-version = "0.137.0-2"
+-source = "git+https://github.com/servo/mozjs#e0a4ee47e686f581faefb201a6fd73bd4dcd67f0"
++version = "0.137.0-3"
++source = "git+https://gitlab.redox-os.org/njskalski/mozjs.git?rev=b9c2983764fb0f8f35210d3e1da9526a9980ce78#b9c2983764fb0f8f35210d3e1da9526a9980ce78"
+ dependencies = [
+  "bindgen 0.71.1",
+  "cc",
+@@ -5519,7 +5055,6 @@ dependencies = [
+  "cfg-if",
+  "cfg_aliases",
+  "libc",
+- "memoffset",
+ ]
+ 
+ [[package]]
+@@ -5672,7 +5207,6 @@ source = "registry+https://github.com/rust-lang/crates.io-index"
+ checksum = "915b1b472bc21c53464d6c8461c9d3af805ba1ef837e1cac254428f4a77177b1"
+ dependencies = [
+  "malloc_buf",
+- "objc_exception",
+ ]
+ 
+ [[package]]
+@@ -5724,7 +5258,7 @@ dependencies = [
+  "objc2-core-data",
+  "objc2-core-image",
+  "objc2-foundation 0.2.2",
+- "objc2-quartz-core",
++ "objc2-quartz-core 0.2.2",
+ ]
+ 
+ [[package]]
+@@ -5735,7 +5269,9 @@ checksum = "e6f29f568bec459b0ddff777cec4fe3fd8666d82d5a40ebd0ff7e66134f89bcc"
+ dependencies = [
+  "bitflags 2.9.1",
+  "objc2 0.6.1",
++ "objc2-core-foundation",
+  "objc2-foundation 0.3.1",
++ "objc2-quartz-core 0.3.1",
+ ]
+ 
+ [[package]]
+@@ -5785,6 +5321,16 @@ dependencies = [
+  "objc2 0.6.1",
+ ]
+ 
++[[package]]
++name = "objc2-core-graphics"
++version = "0.3.1"
++source = "registry+https://github.com/rust-lang/crates.io-index"
++checksum = "989c6c68c13021b5c2d6b71456ebb0f9dc78d752e86a98da7c716f4f9470f5a4"
++dependencies = [
++ "bitflags 2.9.1",
++ "objc2-core-foundation",
++]
++
+ [[package]]
+ name = "objc2-core-image"
+ version = "0.2.2"
+@@ -5794,7 +5340,7 @@ dependencies = [
+  "block2",
+  "objc2 0.5.2",
+  "objc2-foundation 0.2.2",
+- "objc2-metal",
++ "objc2-metal 0.2.2",
+ ]
+ 
+ [[package]]
+@@ -5809,6 +5355,17 @@ dependencies = [
+  "objc2-foundation 0.2.2",
+ ]
+ 
++[[package]]
++name = "objc2-core-video"
++version = "0.3.1"
++source = "registry+https://github.com/rust-lang/crates.io-index"
++checksum = "1989c3e76c7e978cab0ba9e6f4961cd00ed14ca21121444cc26877403bfb6303"
++dependencies = [
++ "bitflags 2.9.1",
++ "objc2-core-foundation",
++ "objc2-core-graphics",
++]
++
+ [[package]]
+ name = "objc2-encode"
+ version = "4.1.0"
+@@ -5849,6 +5406,18 @@ dependencies = [
+  "objc2-core-foundation",
+ ]
+ 
++[[package]]
++name = "objc2-io-surface"
++version = "0.3.1"
++source = "registry+https://github.com/rust-lang/crates.io-index"
++checksum = "7282e9ac92529fa3457ce90ebb15f4ecbc383e8338060960760fa2cf75420c3c"
++dependencies = [
++ "bitflags 2.9.1",
++ "libc",
++ "objc2 0.6.1",
++ "objc2-core-foundation",
++]
++
+ [[package]]
+ name = "objc2-link-presentation"
+ version = "0.2.2"
+@@ -5873,6 +5442,17 @@ dependencies = [
+  "objc2-foundation 0.2.2",
+ ]
+ 
++[[package]]
++name = "objc2-metal"
++version = "0.3.1"
++source = "registry+https://github.com/rust-lang/crates.io-index"
++checksum = "7f246c183239540aab1782457b35ab2040d4259175bd1d0c58e46ada7b47a874"
++dependencies = [
++ "bitflags 2.9.1",
++ "objc2 0.6.1",
++ "objc2-foundation 0.3.1",
++]
++
+ [[package]]
+ name = "objc2-quartz-core"
+ version = "0.2.2"
+@@ -5883,7 +5463,19 @@ dependencies = [
+  "block2",
+  "objc2 0.5.2",
+  "objc2-foundation 0.2.2",
+- "objc2-metal",
++ "objc2-metal 0.2.2",
++]
++
++[[package]]
++name = "objc2-quartz-core"
++version = "0.3.1"
++source = "registry+https://github.com/rust-lang/crates.io-index"
++checksum = "90ffb6a0cd5f182dc964334388560b12a57f7b74b3e2dec5e2722aa2dfb2ccd5"
++dependencies = [
++ "bitflags 2.9.1",
++ "objc2 0.6.1",
++ "objc2-core-foundation",
++ "objc2-foundation 0.3.1",
+ ]
+ 
+ [[package]]
+@@ -5911,7 +5503,7 @@ dependencies = [
+  "objc2-core-location",
+  "objc2-foundation 0.2.2",
+  "objc2-link-presentation",
+- "objc2-quartz-core",
++ "objc2-quartz-core 0.2.2",
+  "objc2-symbols",
+  "objc2-uniform-type-identifiers",
+  "objc2-user-notifications",
+@@ -5941,15 +5533,6 @@ dependencies = [
+  "objc2-foundation 0.2.2",
+ ]
+ 
+-[[package]]
+-name = "objc_exception"
+-version = "0.1.2"
+-source = "registry+https://github.com/rust-lang/crates.io-index"
+-checksum = "ad970fb455818ad6cba4c122ad012fae53ae8b4795f86378bce65e4f6bab2ca4"
+-dependencies = [
+- "cc",
+-]
+-
+ [[package]]
+ name = "objc_id"
+ version = "0.1.1"
+@@ -6107,15 +5690,6 @@ dependencies = [
+  "paste",
+ ]
+ 
+-[[package]]
+-name = "orbclient"
+-version = "0.3.48"
+-source = "registry+https://github.com/rust-lang/crates.io-index"
+-checksum = "ba0b26cec2e24f08ed8bb31519a9333140a6599b867dac464bb150bdb796fd43"
+-dependencies = [
+- "libredox",
+-]
+-
+ [[package]]
+ name = "ordered-float"
+ version = "4.6.0"
+@@ -6125,16 +5699,6 @@ dependencies = [
+  "num-traits",
+ ]
+ 
+-[[package]]
+-name = "ordered-stream"
+-version = "0.2.0"
+-source = "registry+https://github.com/rust-lang/crates.io-index"
+-checksum = "9aa2b01e1d916879f73a53d01d1d6cee68adbb31d6d9177a8cfce093cced1d50"
+-dependencies = [
+- "futures-core",
+- "pin-project-lite",
+-]
+-
+ [[package]]
+ name = "ordermap"
+ version = "0.3.5"
+@@ -6156,12 +5720,6 @@ dependencies = [
+  "ttf-parser",
+ ]
+ 
+-[[package]]
+-name = "parking"
+-version = "2.2.1"
+-source = "registry+https://github.com/rust-lang/crates.io-index"
+-checksum = "f38d5652c16fde515bb1ecef450ab0f6a219d619a7274976324d5e377f7dceba"
+-
+ [[package]]
+ name = "parking_lot"
+ version = "0.12.4"
+@@ -6213,7 +5771,7 @@ dependencies = [
+ [[package]]
+ name = "peek-poke"
+ version = "0.3.0"
+-source = "git+https://github.com/servo/webrender?branch=0.67#15318d6627e91ec19fc0a44a7434b08673413140"
++source = "git+https://gitlab.redox-os.org/njskalski/webrender.git?branch=redox_mods#a649cc9985e700dc9fd3430e38b835cc038af71b"
+ dependencies = [
+  "euclid",
+  "peek-poke-derive",
+@@ -6222,7 +5780,7 @@ dependencies = [
+ [[package]]
+ name = "peek-poke-derive"
+ version = "0.3.0"
+-source = "git+https://github.com/servo/webrender?branch=0.67#15318d6627e91ec19fc0a44a7434b08673413140"
++source = "git+https://gitlab.redox-os.org/njskalski/webrender.git?branch=redox_mods#a649cc9985e700dc9fd3430e38b835cc038af71b"
+ dependencies = [
+  "proc-macro2",
+  "quote",
+@@ -6348,17 +5906,6 @@ version = "0.1.0"
+ source = "registry+https://github.com/rust-lang/crates.io-index"
+ checksum = "8b870d8c151b6f2fb93e84a13146138f05d02ed11c7e7c54f8826aaaf7c9f184"
+ 
+-[[package]]
+-name = "piper"
+-version = "0.2.4"
+-source = "registry+https://github.com/rust-lang/crates.io-index"
+-checksum = "96c8c490f422ef9a4efd2cb5b42b76c8613d7e7dfc1caf667b8a3350a5acc066"
+-dependencies = [
+- "atomic-waker",
+- "fastrand",
+- "futures-io",
+-]
+-
+ [[package]]
+ name = "pixels"
+ version = "0.0.1"
+@@ -6626,16 +6173,6 @@ version = "2.0.1"
+ source = "registry+https://github.com/rust-lang/crates.io-index"
+ checksum = "a993555f31e5a609f617c12db6250dedcac1b0a85076912c436e6fc9b2c8e6a3"
+ 
+-[[package]]
+-name = "quick-xml"
+-version = "0.36.2"
+-source = "registry+https://github.com/rust-lang/crates.io-index"
+-checksum = "f7649a7b4df05aed9ea7ec6f628c67c9953a43869b8bc50929569b2999d443fe"
+-dependencies = [
+- "memchr",
+- "serde",
+-]
+-
+ [[package]]
+ name = "quick-xml"
+ version = "0.37.5"
+@@ -7004,7 +6541,7 @@ dependencies = [
+  "errno",
+  "libc",
+  "linux-raw-sys 0.4.15",
+- "windows-sys 0.52.0",
++ "windows-sys 0.59.0",
+ ]
+ 
+ [[package]]
+@@ -7017,7 +6554,7 @@ dependencies = [
+  "errno",
+  "libc",
+  "linux-raw-sys 0.9.4",
+- "windows-sys 0.52.0",
++ "windows-sys 0.59.0",
+ ]
+ 
+ [[package]]
+@@ -7314,19 +6851,6 @@ dependencies = [
+  "webxr-api",
+ ]
+ 
+-[[package]]
+-name = "sctk-adwaita"
+-version = "0.10.1"
+-source = "registry+https://github.com/rust-lang/crates.io-index"
+-checksum = "b6277f0217056f77f1d8f49f2950ac6c278c0d607c45f5ee99328d792ede24ec"
+-dependencies = [
+- "ab_glyph",
+- "log",
+- "memmap2",
+- "smithay-client-toolkit",
+- "tiny-skia",
+-]
+-
+ [[package]]
+ name = "sea-query"
+ version = "0.32.7"
+@@ -7418,17 +6942,6 @@ dependencies = [
+  "serde",
+ ]
+ 
+-[[package]]
+-name = "serde_repr"
+-version = "0.1.20"
+-source = "registry+https://github.com/rust-lang/crates.io-index"
+-checksum = "175ee3e80ae9982737ca543e96133087cbd9a485eecc3bc4de9c1a37b47ea59c"
+-dependencies = [
+- "proc-macro2",
+- "quote",
+- "syn",
+-]
+-
+ [[package]]
+ name = "serde_spanned"
+ version = "0.6.9"
+@@ -7459,19 +6972,6 @@ dependencies = [
+  "serde",
+ ]
+ 
+-[[package]]
+-name = "servo-display-link"
+-version = "0.2.0"
+-source = "registry+https://github.com/rust-lang/crates.io-index"
+-checksum = "d1060be2a0bbc35e712ec35ae98119b8def1071a5f2edbe392fd4c899bc2a5f4"
+-dependencies = [
+- "foreign-types 0.3.2",
+- "objc",
+- "objc-foundation",
+- "thiserror 1.0.69",
+- "time-point",
+-]
+-
+ [[package]]
+ name = "servo-media"
+ version = "0.1.0"
+@@ -7766,7 +7266,6 @@ dependencies = [
+ name = "servoshell"
+ version = "0.0.1"
+ dependencies = [
+- "accesskit_winit",
+  "android_logger",
+  "backtrace",
+  "cc",
+@@ -7873,15 +7372,6 @@ dependencies = [
+  "libc",
+ ]
+ 
+-[[package]]
+-name = "signal-hook-registry"
+-version = "1.4.6"
+-source = "registry+https://github.com/rust-lang/crates.io-index"
+-checksum = "b2a4719bff48cee6b39d12c020eeb490953ad2443b7055bd0b21fca26bd8c28b"
+-dependencies = [
+- "libc",
+-]
+-
+ [[package]]
+ name = "signpost"
+ version = "0.1.0"
+@@ -8263,31 +7753,32 @@ checksum = "13c2bddecc57b384dee18652358fb23172facb8a2c51ccc10d74c157bdea3292"
+ 
+ [[package]]
+ name = "surfman"
+-version = "0.9.8"
+-source = "git+https://github.com/servo/surfman?rev=f7688b4585f9e0b5d4bf8ee8e4a91e82349610b1#f7688b4585f9e0b5d4bf8ee8e4a91e82349610b1"
++version = "0.10.0"
++source = "git+https://gitlab.redox-os.org/njskalski/surfman.git?branch=redox_mods#4236949c96b4453adbe36a21a316449e413a6a21"
+ dependencies = [
+  "bitflags 2.9.1",
+  "cfg_aliases",
+  "cgl",
+- "cocoa",
+- "core-foundation 0.9.4",
+- "core-graphics",
+  "euclid",
+  "fnv",
+  "gl_generator",
+  "glow",
+- "io-surface",
+  "libc",
+  "log",
+  "mach2",
+- "metal 0.24.0",
+- "objc",
++ "objc2 0.6.1",
++ "objc2-app-kit 0.3.1",
++ "objc2-core-foundation",
++ "objc2-core-video",
++ "objc2-foundation 0.3.1",
++ "objc2-io-surface",
++ "objc2-metal 0.3.1",
++ "objc2-quartz-core 0.3.1",
+  "raw-window-handle",
+- "servo-display-link",
+- "wayland-sys 0.30.1",
++ "wayland-sys",
+  "winapi",
+  "wio",
+- "x11",
++ "x11-dl",
+ ]
+ 
+ [[package]]
+@@ -8411,7 +7902,7 @@ dependencies = [
+  "getrandom 0.3.3",
+  "once_cell",
+  "rustix 1.0.8",
+- "windows-sys 0.52.0",
++ "windows-sys 0.59.0",
+ ]
+ 
+ [[package]]
+@@ -8514,8 +8005,7 @@ dependencies = [
+ [[package]]
+ name = "tikv-jemalloc-sys"
+ version = "0.6.0+5.3.0-1-ge13ca993e8ccb9ba9847cc330696e02839f328f7"
+-source = "registry+https://github.com/rust-lang/crates.io-index"
+-checksum = "cd3c60906412afa9c2b5b5a48ca6a5abe5736aec9eb48ad05037a677e52e4e2d"
++source = "git+https://gitlab.redox-os.org/njskalski/jemallocator.git?branch=redox_mods#8728022a37329295f6754323579765ccd7c73c4d"
+ dependencies = [
+  "cc",
+  "libc",
+@@ -8524,8 +8014,7 @@ dependencies = [
+ [[package]]
+ name = "tikv-jemallocator"
+ version = "0.6.0"
+-source = "registry+https://github.com/rust-lang/crates.io-index"
+-checksum = "4cec5ff18518d81584f477e9bfdf957f5bb0979b0bac3af4ca30b5b3ae2d2865"
++source = "git+https://gitlab.redox-os.org/njskalski/jemallocator.git?branch=redox_mods#8728022a37329295f6754323579765ccd7c73c4d"
+ dependencies = [
+  "libc",
+  "tikv-jemalloc-sys",
+@@ -8564,12 +8053,6 @@ dependencies = [
+  "time-core",
+ ]
+ 
+-[[package]]
+-name = "time-point"
+-version = "0.1.1"
+-source = "registry+https://github.com/rust-lang/crates.io-index"
+-checksum = "06535c958d6abe68dc4b4ef9e6845f758fc42fe463d0093d0aca40254f03fb14"
+-
+ [[package]]
+ name = "timers"
+ version = "0.0.1"
+@@ -8928,17 +8411,6 @@ version = "1.18.0"
+ source = "registry+https://github.com/rust-lang/crates.io-index"
+ checksum = "1dccffe3ce07af9386bfd29e80c0ab1a8205a2fc34e4bcd40364df902cfa8f3f"
+ 
+-[[package]]
+-name = "uds_windows"
+-version = "1.1.0"
+-source = "registry+https://github.com/rust-lang/crates.io-index"
+-checksum = "89daebc3e6fd160ac4aa9fc8b3bf71e1f74fbf92367ae71fb83a037e8bf164b9"
+-dependencies = [
+- "memoffset",
+- "tempfile",
+- "winapi",
+-]
+-
+ [[package]]
+ name = "uluru"
+ version = "3.1.0"
+@@ -9396,7 +8868,7 @@ dependencies = [
+  "rustix 1.0.8",
+  "scoped-tls",
+  "smallvec",
+- "wayland-sys 0.31.7",
++ "wayland-sys",
+ ]
+ 
+ [[package]]
+@@ -9445,19 +8917,6 @@ dependencies = [
+  "wayland-scanner",
+ ]
+ 
+-[[package]]
+-name = "wayland-protocols-plasma"
+-version = "0.3.9"
+-source = "registry+https://github.com/rust-lang/crates.io-index"
+-checksum = "a07a14257c077ab3279987c4f8bb987851bf57081b93710381daea94f2c2c032"
+-dependencies = [
+- "bitflags 2.9.1",
+- "wayland-backend",
+- "wayland-client",
+- "wayland-protocols",
+- "wayland-scanner",
+-]
+-
+ [[package]]
+ name = "wayland-protocols-wlr"
+ version = "0.3.9"
+@@ -9478,22 +8937,10 @@ source = "registry+https://github.com/rust-lang/crates.io-index"
+ checksum = "54cb1e9dc49da91950bdfd8b848c49330536d9d1fb03d4bfec8cae50caa50ae3"
+ dependencies = [
+  "proc-macro2",
+- "quick-xml 0.37.5",
++ "quick-xml",
+  "quote",
+ ]
+ 
+-[[package]]
+-name = "wayland-sys"
+-version = "0.30.1"
+-source = "registry+https://github.com/rust-lang/crates.io-index"
+-checksum = "96b2a02ac608e07132978689a6f9bf4214949c85998c247abadd4f4129b1aa06"
+-dependencies = [
+- "dlib",
+- "lazy_static",
+- "log",
+- "pkg-config",
+-]
+-
+ [[package]]
+ name = "wayland-sys"
+ version = "0.31.7"
+@@ -9667,7 +9114,7 @@ dependencies = [
+ [[package]]
+ name = "webrender"
+ version = "0.66.0"
+-source = "git+https://github.com/servo/webrender?branch=0.67#15318d6627e91ec19fc0a44a7434b08673413140"
++source = "git+https://gitlab.redox-os.org/njskalski/webrender.git?branch=redox_mods#a649cc9985e700dc9fd3430e38b835cc038af71b"
+ dependencies = [
+  "allocator-api2",
+  "bincode",
+@@ -9679,7 +9126,6 @@ dependencies = [
+  "euclid",
+  "fxhash",
+  "gleam",
+- "glslopt",
+  "lazy_static",
+  "log",
+  "malloc_size_of_derive",
+@@ -9702,7 +9148,7 @@ dependencies = [
+ [[package]]
+ name = "webrender_api"
+ version = "0.66.0"
+-source = "git+https://github.com/servo/webrender?branch=0.67#15318d6627e91ec19fc0a44a7434b08673413140"
++source = "git+https://gitlab.redox-os.org/njskalski/webrender.git?branch=redox_mods#a649cc9985e700dc9fd3430e38b835cc038af71b"
+ dependencies = [
+  "app_units",
+  "bitflags 2.9.1",
+@@ -9723,7 +9169,7 @@ dependencies = [
+ [[package]]
+ name = "webrender_build"
+ version = "0.0.2"
+-source = "git+https://github.com/servo/webrender?branch=0.67#15318d6627e91ec19fc0a44a7434b08673413140"
++source = "git+https://gitlab.redox-os.org/njskalski/webrender.git?branch=redox_mods#a649cc9985e700dc9fd3430e38b835cc038af71b"
+ dependencies = [
+  "bitflags 2.9.1",
+  "lazy_static",
+@@ -9877,7 +9323,7 @@ dependencies = [
+  "libc",
+  "libloading",
+  "log",
+- "metal 0.31.0",
++ "metal",
+  "naga",
+  "ndk-sys 0.5.0+25.2.9519653",
+  "objc",
+@@ -9912,18 +9358,6 @@ dependencies = [
+  "web-sys",
+ ]
+ 
+-[[package]]
+-name = "which"
+-version = "4.4.2"
+-source = "registry+https://github.com/rust-lang/crates.io-index"
+-checksum = "87ba24419a2078cd2b0f2ede2691b6c66d8e47836da3b6db8265ebad47afbfc7"
+-dependencies = [
+- "either",
+- "home",
+- "once_cell",
+- "rustix 0.38.44",
+-]
+-
+ [[package]]
+ name = "winapi"
+ version = "0.3.9"
+@@ -10347,10 +9781,8 @@ checksum = "589f6da84c646204747d1270a2a5661ea66ed1cced2631d546fdfb155959f9ec"
+ [[package]]
+ name = "winit"
+ version = "0.30.12"
+-source = "registry+https://github.com/rust-lang/crates.io-index"
+-checksum = "c66d4b9ed69c4009f6321f762d6e61ad8a2389cd431b97cb1e146812e9e6c732"
++source = "git+https://gitlab.redox-os.org/njskalski/winit.git?branch=redox_mods2#9e2e0273792b9c1feaf4492b1ab43f8ed2715ad6"
+ dependencies = [
+- "ahash",
+  "android-activity",
+  "atomic-waker",
+  "bitflags 2.9.1",
+@@ -10365,29 +9797,21 @@ dependencies = [
+  "dpi",
+  "js-sys",
+  "libc",
+- "memmap2",
+  "ndk",
+  "objc2 0.5.2",
+  "objc2-app-kit 0.2.2",
+  "objc2-foundation 0.2.2",
+  "objc2-ui-kit",
+- "orbclient",
+  "percent-encoding",
+  "pin-project",
+  "raw-window-handle",
+  "redox_syscall 0.4.1",
+  "rustix 0.38.44",
+- "sctk-adwaita",
+- "smithay-client-toolkit",
+  "smol_str",
+  "tracing",
+  "unicode-segmentation",
+  "wasm-bindgen",
+  "wasm-bindgen-futures",
+- "wayland-backend",
+- "wayland-client",
+- "wayland-protocols",
+- "wayland-protocols-plasma",
+  "web-sys",
+  "web-time",
+  "windows-sys 0.52.0",
+@@ -10435,7 +9859,7 @@ dependencies = [
+ [[package]]
+ name = "wr_glyph_rasterizer"
+ version = "0.1.0"
+-source = "git+https://github.com/servo/webrender?branch=0.67#15318d6627e91ec19fc0a44a7434b08673413140"
++source = "git+https://gitlab.redox-os.org/njskalski/webrender.git?branch=redox_mods#a649cc9985e700dc9fd3430e38b835cc038af71b"
+ dependencies = [
+  "core-foundation 0.9.4",
+  "core-graphics",
+@@ -10460,7 +9884,7 @@ dependencies = [
+ [[package]]
+ name = "wr_malloc_size_of"
+ version = "0.2.0"
+-source = "git+https://github.com/servo/webrender?branch=0.67#15318d6627e91ec19fc0a44a7434b08673413140"
++source = "git+https://gitlab.redox-os.org/njskalski/webrender.git?branch=redox_mods#a649cc9985e700dc9fd3430e38b835cc038af71b"
+ dependencies = [
+  "app_units",
+  "euclid",
+@@ -10481,16 +9905,6 @@ dependencies = [
+  "either",
+ ]
+ 
+-[[package]]
+-name = "x11"
+-version = "2.21.0"
+-source = "registry+https://github.com/rust-lang/crates.io-index"
+-checksum = "502da5464ccd04011667b11c435cb992822c2c0dbde1770c988480d312a0db2e"
+-dependencies = [
+- "libc",
+- "pkg-config",
+-]
+-
+ [[package]]
+ name = "x11-dl"
+ version = "2.21.0"
+@@ -10505,23 +9919,21 @@ dependencies = [
+ [[package]]
+ name = "x11rb"
+ version = "0.13.1"
+-source = "registry+https://github.com/rust-lang/crates.io-index"
+-checksum = "5d91ffca73ee7f68ce055750bf9f6eca0780b8c85eff9bc046a3b0da41755e12"
++source = "git+https://gitlab.redox-os.org/njskalski/x11rb.git?branch=redox_mods#3195258c70608340a191c0356bd42b443cf866d8"
+ dependencies = [
+  "as-raw-xcb-connection",
+  "gethostname",
+  "libc",
+  "libloading",
+  "once_cell",
+- "rustix 0.38.44",
++ "rustix 1.0.8",
+  "x11rb-protocol",
+ ]
+ 
+ [[package]]
+ name = "x11rb-protocol"
+ version = "0.13.1"
+-source = "registry+https://github.com/rust-lang/crates.io-index"
+-checksum = "ec107c4503ea0b4a98ef47356329af139c0a4f7750e621cf2973cd3385ebcb3d"
++source = "git+https://gitlab.redox-os.org/njskalski/x11rb.git?branch=redox_mods#3195258c70608340a191c0356bd42b443cf866d8"
+ 
+ [[package]]
+ name = "xattr"
+@@ -10632,103 +10044,6 @@ dependencies = [
+  "synstructure",
+ ]
+ 
+-[[package]]
+-name = "zbus"
+-version = "5.9.0"
+-source = "registry+https://github.com/rust-lang/crates.io-index"
+-checksum = "4bb4f9a464286d42851d18a605f7193b8febaf5b0919d71c6399b7b26e5b0aad"
+-dependencies = [
+- "async-broadcast",
+- "async-executor",
+- "async-io",
+- "async-lock",
+- "async-process",
+- "async-recursion",
+- "async-task",
+- "async-trait",
+- "blocking",
+- "enumflags2",
+- "event-listener",
+- "futures-core",
+- "futures-lite",
+- "hex 0.4.3",
+- "nix 0.30.1",
+- "ordered-stream",
+- "serde",
+- "serde_repr",
+- "tracing",
+- "uds_windows",
+- "windows-sys 0.59.0",
+- "winnow",
+- "zbus_macros",
+- "zbus_names",
+- "zvariant",
+-]
+-
+-[[package]]
+-name = "zbus-lockstep"
+-version = "0.5.1"
+-source = "registry+https://github.com/rust-lang/crates.io-index"
+-checksum = "29e96e38ded30eeab90b6ba88cb888d70aef4e7489b6cd212c5e5b5ec38045b6"
+-dependencies = [
+- "zbus_xml",
+- "zvariant",
+-]
+-
+-[[package]]
+-name = "zbus-lockstep-macros"
+-version = "0.5.1"
+-source = "registry+https://github.com/rust-lang/crates.io-index"
+-checksum = "dc6821851fa840b708b4cbbaf6241868cabc85a2dc22f426361b0292bfc0b836"
+-dependencies = [
+- "proc-macro2",
+- "quote",
+- "syn",
+- "zbus-lockstep",
+- "zbus_xml",
+- "zvariant",
+-]
+-
+-[[package]]
+-name = "zbus_macros"
+-version = "5.9.0"
+-source = "registry+https://github.com/rust-lang/crates.io-index"
+-checksum = "ef9859f68ee0c4ee2e8cde84737c78e3f4c54f946f2a38645d0d4c7a95327659"
+-dependencies = [
+- "proc-macro-crate",
+- "proc-macro2",
+- "quote",
+- "syn",
+- "zbus_names",
+- "zvariant",
+- "zvariant_utils",
+-]
+-
+-[[package]]
+-name = "zbus_names"
+-version = "4.2.0"
+-source = "registry+https://github.com/rust-lang/crates.io-index"
+-checksum = "7be68e64bf6ce8db94f63e72f0c7eb9a60d733f7e0499e628dfab0f84d6bcb97"
+-dependencies = [
+- "serde",
+- "static_assertions",
+- "winnow",
+- "zvariant",
+-]
+-
+-[[package]]
+-name = "zbus_xml"
+-version = "5.0.2"
+-source = "registry+https://github.com/rust-lang/crates.io-index"
+-checksum = "589e9a02bfafb9754bb2340a9e3b38f389772684c63d9637e76b1870377bec29"
+-dependencies = [
+- "quick-xml 0.36.2",
+- "serde",
+- "static_assertions",
+- "zbus_names",
+- "zvariant",
+-]
+-
+ [[package]]
+ name = "zerocopy"
+ version = "0.8.26"
+@@ -10832,44 +10147,3 @@ checksum = "fc1f7e205ce79eb2da3cd71c5f55f3589785cb7c79f6a03d1c8d1491bda5d089"
+ dependencies = [
+  "zune-core",
+ ]
+-
+-[[package]]
+-name = "zvariant"
+-version = "5.6.0"
+-source = "registry+https://github.com/rust-lang/crates.io-index"
+-checksum = "d91b3680bb339216abd84714172b5138a4edac677e641ef17e1d8cb1b3ca6e6f"
+-dependencies = [
+- "endi",
+- "enumflags2",
+- "serde",
+- "winnow",
+- "zvariant_derive",
+- "zvariant_utils",
+-]
+-
+-[[package]]
+-name = "zvariant_derive"
+-version = "5.6.0"
+-source = "registry+https://github.com/rust-lang/crates.io-index"
+-checksum = "3a8c68501be459a8dbfffbe5d792acdd23b4959940fc87785fb013b32edbc208"
+-dependencies = [
+- "proc-macro-crate",
+- "proc-macro2",
+- "quote",
+- "syn",
+- "zvariant_utils",
+-]
+-
+-[[package]]
+-name = "zvariant_utils"
+-version = "3.2.0"
+-source = "registry+https://github.com/rust-lang/crates.io-index"
+-checksum = "e16edfee43e5d7b553b77872d99bc36afdda75c223ca7ad5e3fbecd82ca5fc34"
+-dependencies = [
+- "proc-macro2",
+- "quote",
+- "serde",
+- "static_assertions",
+- "syn",
+- "winnow",
+-]
+diff --git a/Cargo.toml b/Cargo.toml
+index 2dcb622934f..014eb5c0085 100644
+--- a/Cargo.toml
++++ b/Cargo.toml
+@@ -55,14 +55,14 @@ ctr = "0.9.2"
+ darling = { version = "0.20", default-features = false }
+ data-url = "0.3"
+ devtools_traits = { path = "components/shared/devtools" }
+-dpi = "0.1"
++dpi = "0.1.1"
+ embedder_traits = { path = "components/shared/embedder" }
+ encoding_rs = "0.8"
+ env_logger = "0.11"
+ euclid = "0.22"
+ fnv = "1.0"
+ fonts_traits = { path = "components/shared/fonts" }
+-freetype-sys = "0.20"
++freetype-sys = { version ="0.20.1", default-features = false}
+ fxhash = "0.2"
+ getopts = "0.2.11"
+ gleam = "0.15"
+@@ -91,7 +91,7 @@ imsz = "0.2"
+ indexmap = { version = "2.10.0", features = ["std"] }
+ ipc-channel = "0.20"
+ itertools = "0.14"
+-js = { package = "mozjs", git = "https://github.com/servo/mozjs" }
++js = { package = "mozjs", git = "https://gitlab.redox-os.org/willnode/mozjs.git", branch = "redox_mods" }
+ keyboard-types = { version = "0.8.1", features = ["serde", "webdriver"] }
+ kurbo = { version = "0.11.3", features = ["euclid"] }
+ layout_api = { path = "components/shared/layout" }
+@@ -151,7 +151,7 @@ stylo_config = { git = "https://github.com/servo/stylo", branch = "2025-08-01" }
+ stylo_dom = { git = "https://github.com/servo/stylo", branch = "2025-08-01" }
+ stylo_malloc_size_of = { git = "https://github.com/servo/stylo", branch = "2025-08-01" }
+ stylo_traits = { git = "https://github.com/servo/stylo", branch = "2025-08-01" }
+-surfman = { git = "https://github.com/servo/surfman", rev = "f7688b4585f9e0b5d4bf8ee8e4a91e82349610b1", features = ["chains"] }
++surfman = { git = "https://gitlab.redox-os.org/njskalski/surfman.git", branch = "redox_mods", features = ["sm-x11"] }
+ syn = { version = "2", default-features = false, features = ["clone-impls", "derive", "parsing"] }
+ synstructure = "0.13"
+ taffy = { version = "0.9", default-features = false, features = ["calc", "detailed_layout_info", "grid", "std"] }
+@@ -178,14 +178,14 @@ vello_cpu = { git = "https://github.com/linebender/vello", rev = "b0e2e598ac62c7
+ webdriver = "0.53.0"
+ webgpu_traits = { path = "components/shared/webgpu" }
+ webpki-roots = "1.0"
+-webrender = { git = "https://github.com/servo/webrender", branch = "0.67", features = ["capture"] }
+-webrender_api = { git = "https://github.com/servo/webrender", branch = "0.67" }
++webrender = { git = "https://gitlab.redox-os.org/njskalski/webrender.git", branch = "redox_mods" }
++webrender_api = { git = "https://gitlab.redox-os.org/njskalski/webrender.git", branch = "redox_mods" }
+ webxr-api = { path = "components/shared/webxr" }
+ wgpu-core = "25"
+ wgpu-types = "25"
+ winapi = "0.3"
+ windows-sys = "0.59"
+-winit = "0.30.12"
++winit = { git = "https://gitlab.redox-os.org/njskalski/winit.git", branch = "redox_mods2"}
+ wio = "0.2"
+ wr_malloc_size_of = { git = "https://github.com/servo/webrender", branch = "0.67" }
+ xi-unicode = "0.3.0"
+@@ -222,6 +222,21 @@ lto = "thin"
+ codegen-units = 1
+ 
+ [patch.crates-io]
++ipc-channel = { git = "https://gitlab.redox-os.org/njskalski/ipc-channel.git", branch="redox_mods" }
++servo_malloc_size_of = { path = "./components/malloc_size_of" }
++wr_malloc_size_of = { git = "https://gitlab.redox-os.org/njskalski/webrender.git", branch = "redox_mods"}
++tikv-jemalloc-sys = { version = "0.6.0", git = "https://gitlab.redox-os.org/njskalski/jemallocator.git", branch = "redox_mods" }
++tikv-jemallocator = { version = "0.6.0", git = "https://gitlab.redox-os.org/njskalski/jemallocator.git", branch = "redox_mods" }
++mozangle = { git = "https://gitlab.redox-os.org/willnode/mozangle.git", branch = "redox_mods"}
++# gaol = { git = "https://gitlab.redox-os.org/njskalski/gaol.git", branch = "redox_mods" }
++aws-lc-rs = { git = "https://gitlab.redox-os.org/njskalski/aws-lc-rs.git", branch = "redox_mods" }
++# mozjs_sys = { git = "https://gitlab.redox-os.org/njskalski/mozjs.git", rev = "e2ee9c77148c3af4f11fdff9a2cbd7e449d48d33"}
++# mozjs = { git = "https://gitlab.redox-os.org/njskalski/mozjs.git", branch = "redox_mods"}
++x11rb = { git = "https://gitlab.redox-os.org/njskalski/x11rb.git", branch = "redox_mods"}
++libz-sys = { git = "https://github.com/rust-lang/libz-sys.git", branch = "main"}
++winit = { git = "https://gitlab.redox-os.org/njskalski/winit.git", branch = "redox_mods2"}
++dpi = { git = "https://gitlab.redox-os.org/njskalski/winit.git", branch = "redox_mods2"}
++# freetype-sys = { git = "https://github.com/PistonDevelopers/freetype-sys.git", branch = "master" }
+ # If you need to temporarily test Servo with a local fork of some upstream
+ # crate, add that here. Use the form:
+ #
+@@ -250,7 +265,7 @@ codegen-units = 1
+ #
+ # [patch."https://github.com/servo/webrender"]
+ # webrender = { path = "../webrender/webrender" }
+-# webrender_api = { path = "../webrender/webrender_api" }
++# webrender_api = { git = "https://gitlab.redox-os.org/njskalski/webrender.git", branch = "redox_mods" } = { path = "../webrender/webrender_api = { git = "https://gitlab.redox-os.org/njskalski/webrender.git", branch = "redox_mods" }" }
+ # wr_malloc_size_of = { path = "../webrender/wr_malloc_size_of" }
+ #
+ # Or for another Git dependency:
+diff --git a/components/canvas/Cargo.toml b/components/canvas/Cargo.toml
+index ef0c84977f2..4edb129dd97 100644
+--- a/components/canvas/Cargo.toml
++++ b/components/canvas/Cargo.toml
+@@ -38,7 +38,7 @@ raqote = { version = "0.8.5", optional = true }
+ servo_arc = { workspace = true }
+ stylo = { workspace = true }
+ unicode-script = { workspace = true }
+-webrender_api = { workspace = true }
++webrender_api = { git = "https://gitlab.redox-os.org/njskalski/webrender.git", branch = "redox_mods" }
+ servo_config = { path = "../config" }
+ vello = { workspace = true, optional = true }
+ vello_cpu = { workspace = true, optional = true }
+diff --git a/components/compositing/Cargo.toml b/components/compositing/Cargo.toml
+index d5792b858db..38132ba0f2c 100644
+--- a/components/compositing/Cargo.toml
++++ b/components/compositing/Cargo.toml
+@@ -44,10 +44,10 @@ servo-tracing = { workspace = true }
+ stylo_traits = { workspace = true }
+ timers = { path = "../timers" }
+ tracing = { workspace = true, optional = true }
+-webrender = { workspace = true }
+-webrender_api = { workspace = true }
++webrender = { git = "https://gitlab.redox-os.org/njskalski/webrender.git", branch = "redox_mods" }
++webrender_api = { git = "https://gitlab.redox-os.org/njskalski/webrender.git", branch = "redox_mods" }
+ webxr = { path = "../webxr", optional = true }
+-wr_malloc_size_of = { workspace = true }
++wr_malloc_size_of = { git = "https://gitlab.redox-os.org/njskalski/webrender.git", branch = "redox_mods" }
+ 
+ [dev-dependencies]
+ surfman = { workspace = true }
+diff --git a/components/constellation/Cargo.toml b/components/constellation/Cargo.toml
+index a982bcbfe73..cb519367edd 100644
+--- a/components/constellation/Cargo.toml
++++ b/components/constellation/Cargo.toml
+@@ -58,10 +58,10 @@ stylo_traits = { workspace = true }
+ tracing = { workspace = true, optional = true }
+ webgpu = { path = "../webgpu" }
+ webgpu_traits = { workspace = true }
+-webrender = { workspace = true }
+-webrender_api = { workspace = true }
++webrender = { git = "https://gitlab.redox-os.org/njskalski/webrender.git", branch = "redox_mods", features = ["capture"] }
++webrender_api = { git = "https://gitlab.redox-os.org/njskalski/webrender.git", branch = "redox_mods" }
+ webxr-api = { workspace = true, features = ["ipc"] }
+ servo-tracing = { workspace = true }
+ 
+-[target.'cfg(any(target_os="macos", all(not(target_os = "windows"), not(target_os = "ios"), not(target_os="android"), not(target_env="ohos"), not(target_arch="arm"), not(target_arch="aarch64"))))'.dependencies]
++[target.'cfg(any(target_os="macos", all(not(target_os = "windows"), not(target_os = "ios"), not(target_os="android"), not(target_os="redox"), not(target_env="ohos"), not(target_arch="arm"), not(target_arch="aarch64"))))'.dependencies]
+ gaol = "0.2.1"
+diff --git a/components/constellation/sandboxing.rs b/components/constellation/sandboxing.rs
+index 02a6f4ed6f6..81dae2503e8 100644
+--- a/components/constellation/sandboxing.rs
++++ b/components/constellation/sandboxing.rs
+@@ -11,6 +11,7 @@ use std::{env, process};
+         not(target_os = "windows"),
+         not(target_os = "ios"),
+         not(target_os = "android"),
++        not(target_os = "redox"),
+         not(target_env = "ohos"),
+         not(target_arch = "arm"),
+         not(target_arch = "aarch64")
+@@ -99,7 +100,8 @@ pub fn content_process_sandbox_profile() -> Profile {
+     not(target_os = "android"),
+     not(target_env = "ohos"),
+     not(target_arch = "arm"),
+-    not(target_arch = "aarch64")
++    not(target_arch = "aarch64"),
++    not(target_os = "redox"),
+ ))]
+ pub fn content_process_sandbox_profile() -> Profile {
+     use std::path::PathBuf;
+@@ -128,6 +130,7 @@ pub fn content_process_sandbox_profile() -> Profile {
+     target_os = "windows",
+     target_os = "ios",
+     target_os = "android",
++    target_os = "redox",
+     target_env = "ohos",
+     target_arch = "arm",
+ 
+@@ -175,7 +178,8 @@ pub fn spawn_multiprocess(content: UnprivilegedContent) -> Result<Process, Error
+     not(target_os = "android"),
+     not(target_env = "ohos"),
+     not(target_arch = "arm"),
+-    not(target_arch = "aarch64")
++    not(target_arch = "aarch64"),
++    not(target_os = "redox"),
+ ))]
+ pub fn spawn_multiprocess(content: UnprivilegedContent) -> Result<Process, Error> {
+     use gaol::sandbox::{self, Sandbox, SandboxMethods};
+@@ -243,6 +247,12 @@ pub fn spawn_multiprocess(_content: UnprivilegedContent) -> Result<Process, Erro
+     process::exit(1);
+ }
+ 
++#[cfg(target_os = "redox")]
++pub fn spawn_multiprocess(_content: UnprivilegedContent) -> Result<Process, Error> {
++    log::error!("Multiprocess is not supported on Redox.");
++    process::exit(1);
++}
++
+ fn setup_common<C: CommandMethods>(command: &mut C, token: String) {
+     C::arg(command, "--content-process");
+     C::arg(command, token);
+diff --git a/components/fonts/Cargo.toml b/components/fonts/Cargo.toml
+index e4c27ca6c6f..acf5335e922 100644
+--- a/components/fonts/Cargo.toml
++++ b/components/fonts/Cargo.toml
+@@ -53,7 +53,7 @@ tracing = { workspace = true, optional = true }
+ unicode-properties = { workspace = true }
+ unicode-script = { workspace = true }
+ url = { workspace = true }
+-webrender_api = { workspace = true }
++webrender_api = { git = "https://gitlab.redox-os.org/njskalski/webrender.git", branch = "redox_mods" }
+ servo-tracing = { workspace = true }
+ 
+ [target.'cfg(target_os = "macos")'.dependencies]
+@@ -62,11 +62,11 @@ core-foundation = "0.9"
+ core-graphics = "0.23"
+ core-text = "20.1"
+ 
+-[target.'cfg(any(target_os = "linux", target_os = "android"))'.dependencies]
++[target.'cfg(any(target_os = "linux", target_os = "android", target_os = "redox"))'.dependencies]
+ freetype-sys = { workspace = true }
+ servo_allocator = { path = "../allocator" }
+ 
+-[target.'cfg(all(target_os = "linux", not(target_env = "ohos")))'.dependencies]
++[target.'cfg(all(any(target_os = "linux", target_os = "redox"), not(target_env = "ohos")))'.dependencies]
+ fontconfig_sys = { package = "yeslogic-fontconfig-sys", version = "6" }
+ 
+ [target.'cfg(target_os = "android")'.dependencies]
+diff --git a/components/fonts/font.rs b/components/fonts/font.rs
+index 751aeecdba7..1b62cba5851 100644
+--- a/components/fonts/font.rs
++++ b/components/fonts/font.rs
+@@ -947,7 +947,7 @@ pub struct FontBaseline {
+ /// let mapped_weight = apply_font_config_to_style_mapping(&mapping, weight as f64);
+ /// ```
+ #[cfg(all(
+-    any(target_os = "linux", target_os = "macos"),
++    any(target_os = "linux", target_os = "macos", target_os="redox"),
+     not(target_env = "ohos")
+ ))]
+ pub(crate) fn map_platform_values_to_style_values(mapping: &[(f64, f64)], value: f64) -> f64 {
+diff --git a/components/fonts/platform/freetype/mod.rs b/components/fonts/platform/freetype/mod.rs
+index feea468008e..24f59a276d4 100644
+--- a/components/fonts/platform/freetype/mod.rs
++++ b/components/fonts/platform/freetype/mod.rs
+@@ -16,7 +16,7 @@ use webrender_api::NativeFontHandle;
+ pub mod font;
+ mod freetype_face;
+ 
+-#[cfg(all(target_os = "linux", not(target_env = "ohos"), not(ohos_mock)))]
++#[cfg(all(any(target_os = "linux", target_os = "redox"), not(target_env = "ohos"), not(ohos_mock)))]
+ pub mod font_list;
+ 
+ #[cfg(target_os = "android")]
+diff --git a/components/fonts/platform/mod.rs b/components/fonts/platform/mod.rs
+index 2c77d17d5d5..3138343feb2 100644
+--- a/components/fonts/platform/mod.rs
++++ b/components/fonts/platform/mod.rs
+@@ -3,25 +3,25 @@
+  * file, You can obtain one at https://mozilla.org/MPL/2.0/. */
+ 
+ #[cfg(all(
+-    any(target_os = "linux", target_os = "macos"),
++    any(target_os = "linux", target_os = "macos", target_os="redox"),
+     not(target_os = "android"),
+     not(target_env = "ohos")
+ ))]
+ use base::text::{UnicodeBlock, UnicodeBlockMethod};
+ #[cfg(all(
+-    any(target_os = "linux", target_os = "macos"),
++    any(target_os = "linux", target_os = "macos", target_os="redox"),
+     not(target_os = "android"),
+     not(target_env = "ohos")
+ ))]
+ use unicode_script::Script;
+ 
+ #[cfg(all(
+-    any(target_os = "linux", target_os = "macos"),
++    any(target_os = "linux", target_os = "macos", target_os="redox"),
+     not(target_os = "android"),
+     not(target_env = "ohos")
+ ))]
+ use crate::FallbackFontSelectionOptions;
+-#[cfg(any(target_os = "linux", target_os = "android"))]
++#[cfg(any(target_os = "linux", target_os = "android", target_os="redox"))]
+ pub use crate::platform::freetype::{LocalFontIdentifier, font, font_list};
+ #[cfg(target_os = "macos")]
+ pub use crate::platform::macos::{
+@@ -30,7 +30,7 @@ pub use crate::platform::macos::{
+ #[cfg(target_os = "windows")]
+ pub use crate::platform::windows::{font, font_list, font_list::LocalFontIdentifier};
+ 
+-#[cfg(any(target_os = "linux", target_os = "android"))]
++#[cfg(any(target_os = "linux", target_os = "android", target_os="redox"))]
+ pub mod freetype;
+ 
+ #[cfg(target_os = "macos")]
+@@ -47,7 +47,7 @@ mod windows {
+ }
+ 
+ #[cfg(all(
+-    any(target_os = "linux", target_os = "macos"),
++    any(target_os = "linux", target_os = "macos", target_os="redox"),
+     not(target_os = "android"),
+     not(target_env = "ohos")
+ ))]
+diff --git a/components/geometry/Cargo.toml b/components/geometry/Cargo.toml
+index 8634bc1d18c..a4115f6bf90 100644
+--- a/components/geometry/Cargo.toml
++++ b/components/geometry/Cargo.toml
+@@ -16,5 +16,5 @@ app_units = { workspace = true }
+ euclid = { workspace = true }
+ malloc_size_of = { workspace = true }
+ malloc_size_of_derive = { workspace = true }
+-webrender = { workspace = true }
+-webrender_api = { workspace = true }
++webrender = { git = "https://gitlab.redox-os.org/njskalski/webrender.git", branch = "redox_mods" }
++webrender_api = { git = "https://gitlab.redox-os.org/njskalski/webrender.git", branch = "redox_mods" }
+diff --git a/components/layout/Cargo.toml b/components/layout/Cargo.toml
+index 139f2ce3dba..0196a3f15e0 100644
+--- a/components/layout/Cargo.toml
++++ b/components/layout/Cargo.toml
+@@ -62,7 +62,7 @@ tracing = { workspace = true, optional = true }
+ unicode-bidi = { workspace = true }
+ unicode-script = { workspace = true }
+ url = { workspace = true }
+-webrender_api = { workspace = true }
++webrender_api = { git = "https://gitlab.redox-os.org/njskalski/webrender.git", branch = "redox_mods" }
+ xi-unicode = { workspace = true }
+ servo-tracing = { workspace = true }
+ 
+diff --git a/components/malloc_size_of/Cargo.toml b/components/malloc_size_of/Cargo.toml
+index 6e5e45a4e35..8de32d2c798 100644
+--- a/components/malloc_size_of/Cargo.toml
++++ b/components/malloc_size_of/Cargo.toml
+@@ -39,5 +39,5 @@ unicode-script = { workspace = true }
+ url = { workspace = true }
+ urlpattern = { workspace = true }
+ uuid = { workspace = true }
+-webrender_api = { workspace = true }
+-wr_malloc_size_of = { workspace = true }
++webrender_api = { git = "https://gitlab.redox-os.org/njskalski/webrender.git", branch = "redox_mods" }
++wr_malloc_size_of = { git = "https://gitlab.redox-os.org/njskalski/webrender.git", branch = "redox_mods"}
+diff --git a/components/media/Cargo.toml b/components/media/Cargo.toml
+index cf51080ec7a..effa64922f8 100644
+--- a/components/media/Cargo.toml
++++ b/components/media/Cargo.toml
+@@ -20,4 +20,4 @@ log = { workspace = true }
+ serde = { workspace = true }
+ servo-media = { workspace = true }
+ servo_config = { path = "../config" }
+-webrender_api = { workspace = true }
++webrender_api = { git = "https://gitlab.redox-os.org/njskalski/webrender.git", branch = "redox_mods" }
+diff --git a/components/net/Cargo.toml b/components/net/Cargo.toml
+index 7556a1bf81f..38252d09b54 100644
+--- a/components/net/Cargo.toml
++++ b/components/net/Cargo.toml
+@@ -77,8 +77,7 @@ tungstenite = { workspace = true }
+ url = { workspace = true }
+ uuid = { workspace = true }
+ webpki-roots = { workspace = true }
+-webrender_api = { workspace = true }
+-
++webrender_api = { git = "https://gitlab.redox-os.org/njskalski/webrender.git", branch = "redox_mods" }
+ [dev-dependencies]
+ embedder_traits = { workspace = true, features = ["baked-default-resources"] }
+ flate2 = "1"
+diff --git a/components/pixels/Cargo.toml b/components/pixels/Cargo.toml
+index 9ba20db80c0..fe33d20b88b 100644
+--- a/components/pixels/Cargo.toml
++++ b/components/pixels/Cargo.toml
+@@ -19,8 +19,7 @@ log = { workspace = true }
+ malloc_size_of = { workspace = true }
+ malloc_size_of_derive = { workspace = true }
+ serde = { workspace = true, features = ["derive"] }
+-webrender_api = { workspace = true }
+-
++webrender_api = { git = "https://gitlab.redox-os.org/njskalski/webrender.git", branch = "redox_mods" }
+ [dev-dependencies]
+ criterion = { version = "0.5", features = ["html_reports"] }
+ 
+diff --git a/components/script/Cargo.toml b/components/script/Cargo.toml
+index 51e81f6c085..fb85b1ea6b1 100644
+--- a/components/script/Cargo.toml
++++ b/components/script/Cargo.toml
+@@ -136,7 +136,7 @@ utf-8 = "0.7"
+ uuid = { workspace = true, features = ["serde"] }
+ webdriver = { workspace = true }
+ webgpu_traits = { workspace = true }
+-webrender_api = { workspace = true }
++webrender_api = { git = "https://gitlab.redox-os.org/njskalski/webrender.git", branch = "redox_mods" }
+ webxr-api = { workspace = true, features = ["ipc"], optional = true }
+ wgpu-core = { workspace = true }
+ wgpu-types = { workspace = true }
+diff --git a/components/script/dom/navigatorinfo.rs b/components/script/dom/navigatorinfo.rs
+index f3e6ddc109b..ee83d327df9 100644
+--- a/components/script/dom/navigatorinfo.rs
++++ b/components/script/dom/navigatorinfo.rs
+@@ -46,7 +46,7 @@ pub(crate) fn Platform() -> DOMString {
+ }
+ 
+ #[allow(non_snake_case)]
+-#[cfg(any(target_os = "android", target_os = "linux"))]
++#[cfg(any(target_os = "android", target_os = "linux", target_os = "redox"))]
+ pub(crate) fn Platform() -> DOMString {
+     DOMString::from("Linux")
+ }
+diff --git a/components/script_bindings/build.rs b/components/script_bindings/build.rs
+index c28f900f6ce..2445c2ec9e4 100644
+--- a/components/script_bindings/build.rs
++++ b/components/script_bindings/build.rs
+@@ -86,12 +86,12 @@ impl phf_shared::PhfHash for Bytes<'_> {
+ ///
+ /// Note: This function should be kept in sync with the version in `components/script/build.rs`
+ fn find_python() -> Command {
+-    let mut command = Command::new("uv");
+-    command.args(["run", "--no-project", "python"]);
++    let mut command = Command::new("python3");
++    // command.args(["run", "--no-project", "python"]);
+ 
+     if command.output().is_ok_and(|out| out.status.success()) {
+         return command;
+     }
+ 
+-    panic!("Can't find python (tried `{command:?}`)! Is uv installed and in PATH?")
++    panic!("Can't find python (tried `{command:?}`)!")
+ }
+diff --git a/components/servo/Cargo.toml b/components/servo/Cargo.toml
+index 2c1f75dca13..03bb5596dc1 100644
+--- a/components/servo/Cargo.toml
++++ b/components/servo/Cargo.toml
+@@ -25,7 +25,7 @@ default = ["clipboard", "raqote"]
+ clipboard = ["dep:arboard"]
+ crown = ["script/crown"]
+ debugmozjs = ["script/debugmozjs"]
+-background_hang_monitor = ["background_hang_monitor/sampler"]
++# background_hang_monitor = ["background_hang_monitor/sampler"]
+ jitspew = ["script/jitspew"]
+ js_backtrace = ["script/js_backtrace"]
+ media-gstreamer = ["servo-media-gstreamer", "gstreamer"]
+@@ -117,8 +117,8 @@ surfman = { workspace = true }
+ tracing = { workspace = true, optional = true }
+ url = { workspace = true }
+ webgpu = { path = "../webgpu" }
+-webrender = { workspace = true }
+-webrender_api = { workspace = true }
++webrender = { git = "https://gitlab.redox-os.org/njskalski/webrender.git", branch = "redox_mods", features = ["capture"] }
++webrender_api = { git = "https://gitlab.redox-os.org/njskalski/webrender.git", branch = "redox_mods" }
+ webxr-api = { workspace = true, optional = true }
+ 
+ [target.'cfg(any(target_os = "android", target_env = "ohos"))'.dependencies]
+@@ -128,7 +128,7 @@ webxr = { path = "../webxr", optional = true }
+ arboard = { workspace = true, optional = true }
+ webxr = { path = "../webxr", features = ["ipc", "glwindow", "headless"] }
+ 
+-[target.'cfg(all(not(target_os = "windows"), not(target_os = "ios"), not(target_os = "android"), not(target_env = "ohos"), not(target_arch = "arm"), not(target_arch = "aarch64")))'.dependencies]
++[target.'cfg(all(not(target_os = "windows"), not(target_os = "ios"), not(target_os = "android"), not(target_env = "ohos"), not(target_arch = "arm"), not(target_arch = "aarch64"), not(target_os = "redox")))'.dependencies]
+ gaol = "0.2.1"
+ 
+ [target.'cfg(target_os = "windows")'.dependencies]
+diff --git a/components/servo/lib.rs b/components/servo/lib.rs
+index 37ce2019c7a..35e64e30c0d 100644
+--- a/components/servo/lib.rs
++++ b/components/servo/lib.rs
+@@ -77,6 +77,7 @@ use fonts::SystemFontService;
+     not(target_arch = "arm"),
+     not(target_arch = "aarch64"),
+     not(target_env = "ohos"),
++    not(target_os = "redox"),
+ ))]
+ use gaol::sandbox::{ChildSandbox, ChildSandboxMethods};
+ pub use gleam::gl;
+@@ -1305,6 +1306,7 @@ pub fn run_content_process(token: String) {
+     not(target_arch = "arm"),
+     not(target_arch = "aarch64"),
+     not(target_env = "ohos"),
++    not(target_os = "redox"),
+ ))]
+ fn create_sandbox() {
+     ChildSandbox::new(content_process_sandbox_profile())
+@@ -1319,6 +1321,7 @@ fn create_sandbox() {
+     target_arch = "arm",
+     target_arch = "aarch64",
+     target_env = "ohos",
++    target_os = "redox",
+ ))]
+ fn create_sandbox() {
+     panic!("Sandboxing is not supported on Windows, iOS, ARM targets and android.");
+diff --git a/components/shared/base/Cargo.toml b/components/shared/base/Cargo.toml
+index b293fa0faf3..eead0fb12e3 100644
+--- a/components/shared/base/Cargo.toml
++++ b/components/shared/base/Cargo.toml
+@@ -21,8 +21,7 @@ malloc_size_of_derive = { workspace = true }
+ parking_lot = { workspace = true }
+ serde = { workspace = true }
+ time = { workspace = true }
+-webrender_api = { workspace = true }
+-
++webrender_api = { git = "https://gitlab.redox-os.org/njskalski/webrender.git", branch = "redox_mods" }
+ [target.'cfg(any(target_os = "macos", target_os = "ios"))'.dependencies]
+ mach2 = { workspace = true }
+ 
+diff --git a/components/shared/canvas/Cargo.toml b/components/shared/canvas/Cargo.toml
+index 36711c0f83a..474c7722812 100644
+--- a/components/shared/canvas/Cargo.toml
++++ b/components/shared/canvas/Cargo.toml
+@@ -28,5 +28,5 @@ serde = { workspace = true }
+ servo_config = { path = "../../config" }
+ strum = { workspace = true }
+ stylo = { workspace = true }
+-webrender_api = { workspace = true }
++webrender_api = { git = "https://gitlab.redox-os.org/njskalski/webrender.git", branch = "redox_mods" }
+ webxr-api = { workspace = true, features = ["ipc"] }
+diff --git a/components/shared/compositing/Cargo.toml b/components/shared/compositing/Cargo.toml
+index 11ac6223766..21d7943060e 100644
+--- a/components/shared/compositing/Cargo.toml
++++ b/components/shared/compositing/Cargo.toml
+@@ -19,7 +19,7 @@ base = { workspace = true }
+ bincode = { workspace = true }
+ bitflags = { workspace = true }
+ crossbeam-channel = { workspace = true }
+-dpi = { version = "0.1" }
++dpi = { version = "0.1.1" }
+ embedder_traits = { workspace = true }
+ euclid = { workspace = true }
+ gleam = { workspace = true }
+@@ -38,4 +38,4 @@ strum_macros = { workspace = true }
+ stylo = { workspace = true }
+ stylo_traits = { workspace = true }
+ surfman = { workspace = true, features = ["sm-x11"] }
+-webrender_api = { workspace = true }
++webrender_api = { git = "https://gitlab.redox-os.org/njskalski/webrender.git", branch = "redox_mods" }
+diff --git a/components/shared/compositing/rendering_context.rs b/components/shared/compositing/rendering_context.rs
+index 0596210430b..c85c84618ae 100644
+--- a/components/shared/compositing/rendering_context.rs
++++ b/components/shared/compositing/rendering_context.rs
+@@ -105,7 +105,12 @@ impl Drop for SurfmanRenderingContext {
+ 
+ impl SurfmanRenderingContext {
+     fn new(connection: &Connection, adapter: &Adapter) -> Result<Self, Error> {
++        eprintln!("  SurfmanRenderingContext::new - Starting");
++        eprintln!("    GL API: {:?}", connection.gl_api());
++        
++        eprintln!("    Creating device...");
+         let mut device = connection.create_device(adapter)?;
++        eprintln!("    Device created");
+ 
+         let flags = ContextAttributeFlags::ALPHA |
+             ContextAttributeFlags::DEPTH |
+@@ -115,9 +120,16 @@ impl SurfmanRenderingContext {
+             GLApi::GLES => surfman::GLVersion { major: 3, minor: 0 },
+             GLApi::GL => surfman::GLVersion { major: 3, minor: 2 },
+         };
++        eprintln!("    GL Version requested: {}.{}", version.major, version.minor);
++        
++        eprintln!("    Creating context descriptor...");
+         let context_descriptor =
+             device.create_context_descriptor(&ContextAttributes { flags, version })?;
++        eprintln!("    Context descriptor created");
++        
++        eprintln!("    Creating context...");
+         let context = device.create_context(&context_descriptor, None)?;
++        eprintln!("    Context created");
+ 
+         #[allow(unsafe_code)]
+         let gleam_gl = {
+@@ -392,20 +404,41 @@ impl WindowRenderingContext {
+         window_handle: WindowHandle,
+         size: PhysicalSize<u32>,
+     ) -> Result<Self, Error> {
++        eprintln!("WindowRenderingContext::new - Starting creation");
++        eprintln!("  Size: {}x{}", size.width, size.height);
++        
++        eprintln!("  Creating connection from display_handle...");
+         let connection = Connection::from_display_handle(display_handle)?;
++        eprintln!("  Connection created successfully");
++        
++        eprintln!("  Creating adapter...");
+         let adapter = connection.create_adapter()?;
++        eprintln!("  Adapter created successfully");
++        
++        eprintln!("  Creating SurfmanRenderingContext...");
+         let surfman_context = SurfmanRenderingContext::new(&connection, &adapter)?;
++        eprintln!("  SurfmanRenderingContext created successfully");
+ 
++        eprintln!("  Creating native widget from window handle...");
+         let native_widget = connection
+             .create_native_widget_from_window_handle(
+                 window_handle,
+                 Size2D::new(size.width as i32, size.height as i32),
+             )
+             .expect("Failed to create native widget");
++        eprintln!("  Native widget created successfully");
+ 
++        eprintln!("  Creating surface...");
+         let surface = surfman_context.create_surface(SurfaceType::Widget { native_widget })?;
++        eprintln!("  Surface created successfully");
++        
++        eprintln!("  Binding surface...");
+         surfman_context.bind_surface(surface)?;
++        eprintln!("  Surface bound successfully");
++        
++        eprintln!("  Making context current...");
+         surfman_context.make_current()?;
++        eprintln!("  Context made current successfully");
+ 
+         Ok(Self {
+             size: Cell::new(size),
+diff --git a/components/shared/constellation/Cargo.toml b/components/shared/constellation/Cargo.toml
+index 7a1132ecd63..954c002d7f9 100644
+--- a/components/shared/constellation/Cargo.toml
++++ b/components/shared/constellation/Cargo.toml
+@@ -37,5 +37,5 @@ strum_macros = { workspace = true }
+ stylo_traits = { workspace = true }
+ uuid = { workspace = true }
+ webgpu_traits = { workspace = true }
+-webrender_api = { workspace = true }
++webrender_api = { git = "https://gitlab.redox-os.org/njskalski/webrender.git", branch = "redox_mods" }
+ wgpu-core = { workspace = true, optional = true }
+diff --git a/components/shared/embedder/Cargo.toml b/components/shared/embedder/Cargo.toml
+index 2ff427a4057..bc611d67da4 100644
+--- a/components/shared/embedder/Cargo.toml
++++ b/components/shared/embedder/Cargo.toml
+@@ -38,5 +38,5 @@ stylo = { workspace = true }
+ url = { workspace = true }
+ uuid = { workspace = true }
+ webdriver = { workspace = true }
+-webrender_api = { workspace = true }
++webrender_api = { git = "https://gitlab.redox-os.org/njskalski/webrender.git", branch = "redox_mods" }
+ servo_geometry = { path = "../../geometry" }
+diff --git a/components/shared/layout/Cargo.toml b/components/shared/layout/Cargo.toml
+index ae5d005d103..b24976e9da6 100644
+--- a/components/shared/layout/Cargo.toml
++++ b/components/shared/layout/Cargo.toml
+@@ -41,4 +41,4 @@ servo_arc = { workspace = true }
+ servo_url = { path = "../../url" }
+ stylo_traits = { workspace = true }
+ stylo = { workspace = true }
+-webrender_api = { workspace = true }
++webrender_api = { git = "https://gitlab.redox-os.org/njskalski/webrender.git", branch = "redox_mods" }
+diff --git a/components/shared/net/Cargo.toml b/components/shared/net/Cargo.toml
+index 044b2658c4e..0a36fc291ca 100644
+--- a/components/shared/net/Cargo.toml
++++ b/components/shared/net/Cargo.toml
+@@ -41,7 +41,6 @@ servo_rand = { path = "../../rand" }
+ servo_url = { path = "../../url" }
+ url = { workspace = true }
+ uuid = { workspace = true }
+-webrender_api = { workspace = true }
+-
++webrender_api = { git = "https://gitlab.redox-os.org/njskalski/webrender.git", branch = "redox_mods" }
+ [dev-dependencies]
+ embedder_traits = { workspace = true, features = ["baked-default-resources"] }
+diff --git a/components/shared/script/Cargo.toml b/components/shared/script/Cargo.toml
+index 69438867cc0..e65648a60b5 100644
+--- a/components/shared/script/Cargo.toml
++++ b/components/shared/script/Cargo.toml
+@@ -41,5 +41,5 @@ strum_macros = { workspace = true }
+ stylo_atoms = { workspace = true }
+ stylo_traits = { workspace = true }
+ webgpu_traits = { workspace = true, optional = true }
+-webrender_api = { workspace = true }
++webrender_api = { git = "https://gitlab.redox-os.org/njskalski/webrender.git", branch = "redox_mods" }
+ webxr-api = { workspace = true, features = ["ipc"] }
+diff --git a/components/shared/webgpu/Cargo.toml b/components/shared/webgpu/Cargo.toml
+index 5fb042dfb78..d41af6398d7 100644
+--- a/components/shared/webgpu/Cargo.toml
++++ b/components/shared/webgpu/Cargo.toml
+@@ -18,6 +18,6 @@ ipc-channel = { workspace = true }
+ malloc_size_of = { workspace = true }
+ pixels = { path = "../../pixels" }
+ serde = { workspace = true }
+-webrender_api = { workspace = true }
++webrender_api = { git = "https://gitlab.redox-os.org/njskalski/webrender.git", branch = "redox_mods" }
+ wgpu-core = { workspace = true, features = ["serde", "wgsl"] }
+ wgpu-types = { workspace = true }
+diff --git a/components/webgl/Cargo.toml b/components/webgl/Cargo.toml
+index 46fe7381959..017cf68eba7 100644
+--- a/components/webgl/Cargo.toml
++++ b/components/webgl/Cargo.toml
+@@ -30,7 +30,7 @@ itertools = { workspace = true }
+ log = { workspace = true }
+ pixels = { path = "../pixels" }
+ surfman = { workspace = true }
+-webrender = { workspace = true }
+-webrender_api = { workspace = true }
++webrender = { git = "https://gitlab.redox-os.org/njskalski/webrender.git", branch = "redox_mods", features = ["capture"] }
++webrender_api = { git = "https://gitlab.redox-os.org/njskalski/webrender.git", branch = "redox_mods" }
+ webxr = { path = "../webxr", features = ["ipc"], optional = true }
+ webxr-api = { workspace = true, features = ["ipc"], optional = true }
+diff --git a/components/webgpu/Cargo.toml b/components/webgpu/Cargo.toml
+index a2119f4c83c..308ab3772fb 100644
+--- a/components/webgpu/Cargo.toml
++++ b/components/webgpu/Cargo.toml
+@@ -22,7 +22,7 @@ pixels = { path = "../pixels" }
+ serde = { workspace = true, features = ["serde_derive"] }
+ servo_config = { path = "../config" }
+ webgpu_traits = { workspace = true }
+-webrender_api = { workspace = true }
++webrender_api = { git = "https://gitlab.redox-os.org/njskalski/webrender.git", branch = "redox_mods" }
+ wgpu-core = { workspace = true, features = ["serde", "wgsl"] }
+ wgpu-types = { workspace = true }
+ 
+diff --git a/ports/servoshell/Cargo.toml b/ports/servoshell/Cargo.toml
+index 06304184929..fb77b7099b0 100644
+--- a/ports/servoshell/Cargo.toml
++++ b/ports/servoshell/Cargo.toml
+@@ -37,7 +37,8 @@ ProductName = "Servo"
+ [features]
+ crown = ["libservo/crown"]
+ debugmozjs = ["libservo/debugmozjs"]
+-default = ["max_log_level", "webgpu", "webxr"]
++# cutting , "webxr" for redox
++default = ["max_log_level", "webgpu"]
+ jitspew = ["libservo/jitspew"]
+ js_backtrace = ["libservo/js_backtrace"]
+ max_log_level = ["log/release_max_level_info"]
+@@ -68,7 +69,8 @@ image = { workspace = true }
+ ipc-channel = { workspace = true }
+ keyboard-types = { workspace = true }
+ libc = { workspace = true }
+-libservo = { path = "../../components/servo", features = ["background_hang_monitor", "bluetooth", "testbinding"] }
++# removed "background_hang_monitor",
++libservo = { path = "../../components/servo", features = [ "bluetooth", "testbinding"] }
+ log = { workspace = true }
+ mime_guess = { workspace = true }
+ raw-window-handle = { workspace = true }
+@@ -108,13 +110,32 @@ nix = { workspace = true, features = ["fs"] }
+ serde_json = { workspace = true }
+ surfman = { workspace = true, features = ["sm-angle-default"] }
+ 
+-[target.'cfg(not(any(target_os = "android", target_env = "ohos")))'.dependencies]
+-accesskit_winit = "0.27"
++# I removed the problematic dependencies from everywhere even though they should not be pulled for redox. The thing is that cargo is still complaining about them, even
++# though they should be ignored.
++[target.'cfg(not(any(target_os = "android", target_env = "ohos", target_os = "redox")))'.dependencies]
++# accesskit_winit = "0.27"
+ dirs = "6.0"
+-egui = { version = "0.32.1", features = ["accesskit"] }
++# egui = { version = "0.32.1", features = ["accesskit"] }
++# egui-file-dialog = "0.11.0"
++# egui-winit = { version = "0.32.1", default-features = false, features = ["accesskit", "clipboard", "wayland"] }
++# egui_glow = { version = "0.32.1", features = ["winit"] }
++gilrs = "0.11.0"
++# glow = "0.16.0"
++headers = { workspace = true }
++net = { path = "../../components/net" }
++net_traits = { workspace = true }
++serde_json = { workspace = true }
++# For optional feature servo_allocator/use-system-allocator
++servo_allocator = { path = "../../components/allocator" }
++surfman = { workspace = true, features = ["sm-raw-window-handle-06", "sm-x11"] }
++winit = { workspace = true }
++
++[target.'cfg(target_os = "redox")'.dependencies]
++dirs = "6.0"
++egui = { version = "0.32.1", default-features = false }
+ egui-file-dialog = "0.11.0"
+-egui-winit = { version = "0.32.1", default-features = false, features = ["accesskit", "clipboard", "wayland"] }
+-egui_glow = { version = "0.32.1", features = ["winit"] }
++egui-winit = { version = "0.32.1", default-features = false, features = ["clipboard"] } #<-here
++egui_glow = { version = "0.32.1", default-features = false, features = [] }
+ gilrs = "0.11.0"
+ glow = "0.16.0"
+ headers = { workspace = true }
+diff --git a/ports/servoshell/desktop/app.rs b/ports/servoshell/desktop/app.rs
+index 08c943b2829..61d20de8bc3 100644
+--- a/ports/servoshell/desktop/app.rs
++++ b/ports/servoshell/desktop/app.rs
+@@ -766,18 +766,18 @@ impl ApplicationHandler<AppEvent> for App {
+     }
+ 
+     fn user_event(&mut self, event_loop: &ActiveEventLoop, event: AppEvent) {
+-        if let AppEvent::Accessibility(ref event) = event {
+-            let Some(ref mut minibrowser) = self.minibrowser else {
+-                return;
+-            };
+-            if !minibrowser.handle_accesskit_event(&event.window_event) {
+-                return;
+-            }
+-            if let Some(window) = self.windows.get(&event.window_id) {
+-                window.winit_window().unwrap().request_redraw();
+-            }
+-            return;
+-        }
++        // if let AppEvent::Accessibility(ref event) = event {
++        //     let Some(ref mut minibrowser) = self.minibrowser else {
++        //         return;
++        //     };
++        //     if !minibrowser.handle_accesskit_event(&event.window_event) {
++        //         return;
++        //     }
++        //     if let Some(window) = self.windows.get(&event.window_id) {
++        //         window.winit_window().unwrap().request_redraw();
++        //     }
++        //     return;
++        // }
+ 
+         let now = Instant::now();
+         let event = winit::event::Event::UserEvent(event);
+diff --git a/ports/servoshell/desktop/egui_glue.rs b/ports/servoshell/desktop/egui_glue.rs
+index 797ea3c5a91..d658563edc1 100644
+--- a/ports/servoshell/desktop/egui_glue.rs
++++ b/ports/servoshell/desktop/egui_glue.rs
+@@ -81,7 +81,7 @@ impl EguiGlow {
+             None,
+         );
+         let window = window.winit_window().unwrap();
+-        egui_winit.init_accesskit(event_loop, window, event_loop_proxy);
++        // egui_winit.init_accesskit(event_loop, window, event_loop_proxy);
+         window.set_visible(true);
+         Self {
+             egui_winit,
+diff --git a/ports/servoshell/desktop/events_loop.rs b/ports/servoshell/desktop/events_loop.rs
+index 4137001e4eb..b24757b9ad2 100644
+--- a/ports/servoshell/desktop/events_loop.rs
++++ b/ports/servoshell/desktop/events_loop.rs
+@@ -22,14 +22,14 @@ pub type EventLoopProxy = winit::event_loop::EventLoopProxy<AppEvent>;
+ pub enum AppEvent {
+     /// Another process or thread has kicked the OS event loop with EventLoopWaker.
+     Waker,
+-    Accessibility(accesskit_winit::Event),
++    // Accessibility(accesskit_winit::Event),
+ }
+ 
+-impl From<accesskit_winit::Event> for AppEvent {
+-    fn from(event: accesskit_winit::Event) -> AppEvent {
+-        AppEvent::Accessibility(event)
+-    }
+-}
++// impl From<accesskit_winit::Event> for AppEvent {
++//     fn from(event: accesskit_winit::Event) -> AppEvent {
++//         AppEvent::Accessibility(event)
++//     }
++// }
+ 
+ /// The real or fake OS event loop.
+ #[allow(dead_code)]
+diff --git a/ports/servoshell/desktop/headed_window.rs b/ports/servoshell/desktop/headed_window.rs
+index eef657f2062..7054a201792 100644
+--- a/ports/servoshell/desktop/headed_window.rs
++++ b/ports/servoshell/desktop/headed_window.rs
+@@ -144,10 +144,24 @@ impl Window {
+         let window_handle = winit_window
+             .window_handle()
+             .expect("could not get window handle from window");
+-        let window_rendering_context = Rc::new(
+-            WindowRenderingContext::new(display_handle, window_handle, inner_size)
+-                .expect("Could not create RenderingContext for Window"),
+-        );
++
++        eprintln!("headed_window: Creating WindowRenderingContext...");
++        eprintln!("  DISPLAY env var: {:?}", std::env::var("DISPLAY"));
++        eprintln!("  Display handle obtained: {:?}", display_handle);
++        eprintln!("  Window handle obtained: {:?}", window_handle);
++        eprintln!("  Inner size: {}x{}", inner_size.width, inner_size.height);
++
++        let window_rendering_context = match WindowRenderingContext::new(display_handle, window_handle, inner_size) {
++            Ok(context) => {
++                eprintln!("  WindowRenderingContext created successfully!");
++                Rc::new(context)
++            },
++            Err(e) => {
++                eprintln!("  Failed to create WindowRenderingContext!");
++                eprintln!("  Error: {:?}", e);
++                panic!("Could not create RenderingContext for Window: {:?}", e);
++            }
++        };
+ 
+         // Setup for GL accelerated media handling. This is only active on certain Linux platforms
+         // and Windows.
+diff --git a/ports/servoshell/desktop/headless_window.rs b/ports/servoshell/desktop/headless_window.rs
+index e17e09a5218..24beb102919 100644
+--- a/ports/servoshell/desktop/headless_window.rs
++++ b/ports/servoshell/desktop/headless_window.rs
+@@ -179,7 +179,7 @@ impl WindowPortsMethods for Window {
+         // notification (such as from the display manager) that it has changed size, so we
+         // must notify the compositor here.
+         webview.move_resize(self.screen_size.to_f32().into());
+-        webview.resize(PhysicalSize::new(
++        webview.resize(PhysicalSize::<u32>::new(
+             self.screen_size.width as u32,
+             self.screen_size.height as u32,
+         ));
+diff --git a/ports/servoshell/desktop/minibrowser.rs b/ports/servoshell/desktop/minibrowser.rs
+index 460e639c15b..3146f73d213 100644
+--- a/ports/servoshell/desktop/minibrowser.rs
++++ b/ports/servoshell/desktop/minibrowser.rs
+@@ -522,23 +522,23 @@ impl Minibrowser {
+             self.update_status_text(state)
+     }
+ 
+-    /// Returns true if a redraw is required after handling the provided event.
+-    pub(crate) fn handle_accesskit_event(&mut self, event: &accesskit_winit::WindowEvent) -> bool {
+-        match event {
+-            accesskit_winit::WindowEvent::InitialTreeRequested => {
+-                self.context.egui_ctx.enable_accesskit();
+-                true
+-            },
+-            accesskit_winit::WindowEvent::ActionRequested(req) => {
+-                self.context
+-                    .egui_winit
+-                    .on_accesskit_action_request(req.clone());
+-                true
+-            },
+-            accesskit_winit::WindowEvent::AccessibilityDeactivated => {
+-                self.context.egui_ctx.disable_accesskit();
+-                false
+-            },
+-        }
+-    }
++    // Returns true if a redraw is required after handling the provided event.
++    // pub(crate) fn handle_accesskit_event(&mut self, event: &accesskit_winit::WindowEvent) -> bool {
++    //     match event {
++    //         accesskit_winit::WindowEvent::InitialTreeRequested => {
++    //             self.context.egui_ctx.enable_accesskit();
++    //             true
++    //         },
++    //         accesskit_winit::WindowEvent::ActionRequested(req) => {
++    //             self.context
++    //                 .egui_winit
++    //                 .on_accesskit_action_request(req.clone());
++    //             true
++    //         },
++    //         accesskit_winit::WindowEvent::AccessibilityDeactivated => {
++    //             self.context.egui_ctx.disable_accesskit();
++    //             false
++    //         },
++    //     }
++    // }
+ }
+diff --git a/ports/servoshell/desktop/tracing.rs b/ports/servoshell/desktop/tracing.rs
+index b1f0b1d742e..046b016a2e2 100644
+--- a/ports/servoshell/desktop/tracing.rs
++++ b/ports/servoshell/desktop/tracing.rs
+@@ -52,7 +52,7 @@ mod from_winit {
+                 Self::WindowEvent { event, .. } => event.log_target(),
+                 Self::DeviceEvent { .. } => target!("DeviceEvent"),
+                 Self::UserEvent(AppEvent::Waker) => target!("UserEvent(Waker)"),
+-                Self::UserEvent(AppEvent::Accessibility(..)) => target!("UserEvent(Accessibility)"),
++                // Self::UserEvent(AppEvent::Accessibility(..)) => target!("UserEvent(Accessibility)"),
+                 Self::Suspended => target!("Suspended"),
+                 Self::Resumed => target!("Resumed"),
+                 Self::AboutToWait => target!("AboutToWait"),
