@@ -1,6 +1,9 @@
 [source]
 git = "https://gitlab.redox-os.org/njskalski/servo.git"
-branch = "redox_mods"
+rev = "25fea1e086c46d611cf87db439430994e4f56cd5"
+patches = [
+    "redox.patch"
+]
 script = """
 cp ../.servobuild ./
 """
@@ -9,11 +12,13 @@ cp ../.servobuild ./
 template = "custom"
 dependencies = [
     "freetype2",
+    "expat",
     "gettext",
     "glib",
     "gstreamer",
     "harfbuzz",
     "libffi",
+    "libpng",
     "libiconv",
     "libx11",
     "libxcursor",
@@ -47,9 +52,12 @@ rsync -a -v ${COOKBOOK_SYSROOT}/usr/share/pkgconfig/*.pc ${COOKBOOK_SYSROOT}/lib
 
 export RUSTFLAGS="$RUSTFLAGS -L native=${COOKBOOK_SYSROOT}/lib"
 
-#TODO: mozjs-sys/build.rs fork links to hardcoded /home/andrzej/.redoxer instead of prefix toolchain, plus wrongly added -nostdinc/-nostdinc++, here's the workaround
+#TODO: mozjs-sys and mozangle uses clang, it won't know our prefix C libraries, so here's the workaround
 PREFIX_INCLUDE=$(realpath "$COOKBOOK_ROOT/../prefix/$TARGET/sysroot/x86_64-unknown-redox/include")
-export CLANGFLAGS="-I $PREFIX_INCLUDE -I $PREFIX_INCLUDE/c++/13.2.0 -I $PREFIX_INCLUDE/c++/13.2.0/$TARGET -I $PREFIX_INCLUDE/c++/13.2.0/backward"
+export CLANGFLAGS="-I $PREFIX_INCLUDE/c++/13.2.0 -I $PREFIX_INCLUDE/c++/13.2.0/$TARGET -I $PREFIX_INCLUDE/c++/13.2.0/backward -I $PREFIX_INCLUDE"
+
+#Mozjs specifics
+export CARGO_MAKEFLAGS="-j $COOKBOOK_MAKE_JOBS"
 
 PACKAGE_PATH="ports/servoshell" cookbook_cargo
 """
