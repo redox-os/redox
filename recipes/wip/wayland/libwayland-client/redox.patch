@@ -1,0 +1,205 @@
+diff -ruwN source/meson.build source-new/meson.build
+--- source/meson.build	2025-07-06 19:11:26.000000000 +0700
++++ source-new/meson.build	2025-10-01 06:32:51.610361685 +0700
+@@ -80,8 +80,6 @@
+ 	ffi_dep = dependency('libffi')
+ 
+ 	decls = [
+-		{ 'header': 'sys/signalfd.h', 'symbol': 'SFD_CLOEXEC' },
+-		{ 'header': 'sys/timerfd.h', 'symbol': 'TFD_CLOEXEC' },
+ 		{ 'header': 'time.h', 'symbol': 'CLOCK_MONOTONIC' },
+ 	]
+ 
+diff -ruwN source/src/connection.c source-new/src/connection.c
+--- source/src/connection.c	2025-07-06 19:11:26.000000000 +0700
++++ source-new/src/connection.c	2025-10-01 07:10:17.676073568 +0700
+@@ -490,7 +490,7 @@
+ 
+ 		do {
+ 			len = sendmsg(connection->fd, &msg,
+-				      MSG_NOSIGNAL | MSG_DONTWAIT);
++				      MSG_DONTWAIT);
+ 		} while (len == -1 && errno == EINTR);
+ 
+ 		if (len == -1)
+@@ -1506,9 +1506,9 @@
+ 	char *buffer;
+ 	size_t buffer_length;
+ 
+-	f = open_memstream(&buffer, &buffer_length);
+-	if (f == NULL)
+-		return;
++	// f = open_memstream(&buffer, &buffer_length);
++	// if (f == NULL)
++	// 	return;
+ 
+ 	clock_gettime(CLOCK_REALTIME, &tp);
+ 	time = (tp.tv_sec * 1000000L) + (tp.tv_nsec / 1000);
+diff -ruwN source/src/event-loop.c source-new/src/event-loop.c
+--- source/src/event-loop.c	2025-07-06 19:11:26.000000000 +0700
++++ source-new/src/event-loop.c	2025-10-01 07:07:26.992243929 +0700
+@@ -35,8 +35,8 @@
+ #include <sys/socket.h>
+ #include <sys/un.h>
+ #include <sys/epoll.h>
+-#include <sys/signalfd.h>
+-#include <sys/timerfd.h>
++// #include <sys/signalfd.h>
++// #include <sys/timerfd.h>
+ #include <unistd.h>
+ #include "timespec-util.h"
+ #include "wayland-util.h"
+@@ -259,24 +259,13 @@
+ 
+ static int
+ set_timer(int timerfd, struct timespec deadline) {
+-	struct itimerspec its;
+-
+-	its.it_interval.tv_sec = 0;
+-	its.it_interval.tv_nsec = 0;
+-	its.it_value = deadline;
+-	return timerfd_settime(timerfd, TFD_TIMER_ABSTIME, &its, NULL);
++	return 0;
+ }
+ 
+ static int
+ clear_timer(int timerfd)
+ {
+-	struct itimerspec its;
+-
+-	its.it_interval.tv_sec = 0;
+-	its.it_interval.tv_nsec = 0;
+-	its.it_value.tv_sec = 0;
+-	its.it_value.tv_nsec = 0;
+-	return timerfd_settime(timerfd, 0, &its, NULL);
++	return 0;
+ }
+ 
+ static void
+@@ -307,7 +296,7 @@
+ wl_timer_heap_ensure_timerfd(struct wl_timer_heap *timers)
+ {
+ 	struct epoll_event ep;
+-	int timer_fd;
++	int timer_fd = 0;
+ 
+ 	if (timers->base.fd != -1)
+ 		return 0;
+@@ -316,17 +305,6 @@
+ 	ep.events = EPOLLIN;
+ 	ep.data.ptr = timers;
+ 
+-	timer_fd = timerfd_create(CLOCK_MONOTONIC,
+-				  TFD_CLOEXEC | TFD_NONBLOCK);
+-	if (timer_fd < 0)
+-		return -1;
+-
+-	if (epoll_ctl(timers->base.loop->epoll_fd,
+-		      EPOLL_CTL_ADD, timer_fd, &ep) < 0) {
+-		close(timer_fd);
+-		return -1;
+-	}
+-
+ 	timers->base.fd = timer_fd;
+ 	return 0;
+ }
+@@ -677,11 +655,12 @@
+ {
+ 	struct wl_event_source_signal *signal_source =
+ 		(struct wl_event_source_signal *) source;
+-	struct signalfd_siginfo signal_info;
++	/*struct signalfd_siginfo signal_info;
+ 	int len;
+ 
+ 	len = read(source->fd, &signal_info, sizeof signal_info);
+ 	if (!(len == -1 && errno == EAGAIN) && len != sizeof signal_info)
++	*/
+ 		/* Is there anything we can do here?  Will this ever happen? */
+ 		wl_log("signalfd read error: %s\n", strerror(errno));
+ 
+@@ -730,7 +709,7 @@
+ 
+ 	sigemptyset(&mask);
+ 	sigaddset(&mask, signal_number);
+-	source->base.fd = signalfd(-1, &mask, SFD_CLOEXEC | SFD_NONBLOCK);
++	// source->base.fd = signalfd(-1, &mask, SFD_CLOEXEC | SFD_NONBLOCK);
+ 	sigprocmask(SIG_BLOCK, &mask, NULL);
+ 
+ 	source->func = func;
+diff -ruwN source/src/meson.build source-new/src/meson.build
+--- source/src/meson.build	2025-07-06 19:11:26.000000000 +0700
++++ source-new/src/meson.build	2025-10-01 07:03:52.591689534 +0700
+@@ -81,8 +81,7 @@
+ endif
+ 
+ if meson.is_cross_build() or not get_option('scanner')
+-	scanner_dep = dependency('wayland-scanner', native: true, version: meson.project_version())
+-	wayland_scanner_for_build = find_program(scanner_dep.get_variable(pkgconfig: 'wayland_scanner'))
++	wayland_scanner_for_build = find_program('wayland-scanner', native: true)
+ else
+ 	wayland_scanner_for_build = wayland_scanner
+ endif
+diff -ruwN source/src/wayland-client.c source-new/src/wayland-client.c
+--- source/src/wayland-client.c	2025-07-06 19:11:26.000000000 +0700
++++ source-new/src/wayland-client.c	2025-10-01 07:10:48.899322239 +0700
+@@ -1997,14 +1997,6 @@
+ 
+ 	pfd[0].fd = display->fd;
+ 	pfd[0].events = events;
+-	do {
+-		if (timeout) {
+-			clock_gettime(CLOCK_MONOTONIC, &now);
+-			timespec_sub_saturate(&result, &deadline, &now);
+-			remaining_timeout = &result;
+-		}
+-		ret = ppoll(pfd, 1, remaining_timeout, NULL);
+-	} while (ret == -1 && errno == EINTR);
+ 
+ 	return ret;
+ }
+diff -ruwN source/src/wayland-os.c source-new/src/wayland-os.c
+--- source/src/wayland-os.c	2025-07-06 19:11:26.000000000 +0700
++++ source-new/src/wayland-os.c	2025-10-01 07:09:01.188805546 +0700
+@@ -134,7 +134,7 @@
+ {
+ 	int newfd;
+ 
+-	newfd = wl_fcntl(fd, F_DUPFD_CLOEXEC, minfd);
++	newfd = wl_fcntl(fd, FD_CLOEXEC, minfd);
+ 	if (newfd >= 0)
+ 		return newfd;
+ 	if (errno != EINVAL)
+@@ -189,7 +189,7 @@
+ #else
+ 	ssize_t len;
+ 
+-	len = wl_recvmsg(sockfd, msg, flags | MSG_CMSG_CLOEXEC);
++	len = wl_recvmsg(sockfd, msg, flags);
+ 	if (len >= 0)
+ 		return len;
+ 	if (errno != EINVAL)
+diff -ruwN source/src/wayland-server.c source-new/src/wayland-server.c
+--- source/src/wayland-server.c	2025-07-06 19:11:26.000000000 +0700
++++ source-new/src/wayland-server.c	2025-10-01 07:09:51.131179157 +0700
+@@ -39,7 +39,7 @@
+ #include <dlfcn.h>
+ #include <sys/time.h>
+ #include <fcntl.h>
+-#include <sys/eventfd.h>
++// #include <sys/eventfd.h>
+ #include <sys/file.h>
+ #include <sys/stat.h>
+ 
+@@ -1206,9 +1206,9 @@
+ 		return NULL;
+ 	}
+ 
+-	display->terminate_efd = eventfd(0, EFD_CLOEXEC | EFD_NONBLOCK);
+-	if (display->terminate_efd < 0)
+-		goto err_eventfd;
++	// display->terminate_efd = eventfd(0, EFD_CLOEXEC | EFD_NONBLOCK);
++	// if (display->terminate_efd < 0)
++	// 	goto err_eventfd;
+ 
+ 	display->term_source = wl_event_loop_add_fd(display->loop,
+ 						    display->terminate_efd,
