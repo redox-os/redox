@@ -1,5 +1,5 @@
 [source]
-git = "https://gitlab.redox-os.org/njskalski/servo.git"
+git = "github.com/servo/servo.git"
 rev = "25fea1e086c46d611cf87db439430994e4f56cd5"
 patches = [
     "redox.patch"
@@ -21,8 +21,6 @@ dependencies = [
     "libpng",
     "libiconv",
     "libx11",
-    "libxcursor",
-    "libxkbcommon-x11",
     "libxcb",
     "libpng",
     "openssl1",
@@ -62,8 +60,8 @@ export CARGO_MAKEFLAGS="-j $COOKBOOK_MAKE_JOBS" CCACHE="sccache"
 PACKAGE_PATH="ports/servoshell" cookbook_cargo
 """
 
-# [package]
-# dependencies = [
-#     "libxcursor",
-#     "libxkbcommon-x11",
-# ]
+[package]
+dependencies = [
+    "libxcursor",
+    "libxkbcommon-x11",
+]
