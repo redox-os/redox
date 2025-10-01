@@ -1,0 +1,6 @@
+# TODO: Port sys/ioccom.h just like BSD?
+[source]
+tar = "https://gitlab.freedesktop.org/mesa/libdrm/-/archive/libdrm-2.4.125/libdrm-libdrm-2.4.125.tar.gz"
+
+[build]
+template = "meson"
