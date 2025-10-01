@@ -1,10 +1,38 @@
-#TODO missing script for Meson, see https://wayland.freedesktop.org/xserver.html#heading_toc_j_3
+#TODO wayland-client, fix linux/input, wayland-scanner shim
 [source]
-tar = "https://www.x.org/releases/individual/xserver/xwayland-23.2.4.tar.xz"
+tar = "https://www.x.org/releases/individual/xserver/xwayland-24.1.8.tar.xz"
+patches = [
+    "redox.patch"
+]
 [build]
-template = "custom"
+template = "meson"
 dependencies = [
+    "libpthread-stubs",
     "libepoxy",
-    "libxtrans",
     "libxkbfile",
+    "libxfont2",
+    "libffi",
+    "libpng",
+    "pixman",
+    "xorgproto",
+    "xtrans",
+    "libxau",
+    "libx11",
+    "libxcb",
+    "openssl1",
+    "freetype2", 
+    "libwayland-client",
+    "libfontenc", 
+    "wayland-protocols",
+    "zlib",
+    "libxcvt",
+    "libxdmcp",
+    "libxshmfence",
+]
+mesonflags = [
+    "-Ddrm=false",
+    "-Dglamor=false",
+    "-Dglx=false",
+    "-Dsecure-rpc=false",
+    "-Dmitshm=false"
 ]
