@@ -21,7 +21,7 @@ dependencies = [
     "libxcb",
     "openssl1",
     "freetype2", 
-    "libwayland-client",
+    "libwayland",
     "libfontenc", 
     "wayland-protocols",
     "zlib",
