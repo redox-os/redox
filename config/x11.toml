@@ -35,6 +35,7 @@ data = """
 export DISPLAY :0
 export G_MESSAGES_DEBUG all
 export LD_DEBUG all
+export WEBKIT_DEBUG all
 glib-compile-schemas /usr/share/glib-2.0/schemas/
 """
 
