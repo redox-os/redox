@@ -1,6 +1,6 @@
 pub mod blake3;
-pub mod recipe;
 pub mod config;
+pub mod recipe;
 
 mod progress_bar;
 

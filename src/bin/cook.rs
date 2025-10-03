@@ -370,7 +370,10 @@ fn fetch(recipe_dir: &Path, source: &Option<SourceRecipe>) -> Result<PathBuf, St
 
                 // Clone the repository to source.tmp
                 let mut command = Command::new("git");
-                command.arg("clone").arg("--recursive").arg(translate_mirror(git));
+                command
+                    .arg("clone")
+                    .arg("--recursive")
+                    .arg(translate_mirror(git));
                 if let Some(branch) = branch {
                     command.arg("--branch").arg(branch);
                 }
