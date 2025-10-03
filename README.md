@@ -9,10 +9,11 @@ This repository contains the system source code and packages inside the `recipes
 **Read [this](https://doc.redox-os.org/book/porting-applications.html) page before porting programs to Redox**
 
 In order for this repository to be useful, it must be set up with an environment
-from the [redox](https://gitlab.redox-os.org/redox-os/redox) repository.
+from the [redox](https://gitlab.redox-os.org/redox-os/redox) repository or inside Redox OS with `cookbook` package.
 
 [![MIT licensed](https://img.shields.io/badge/license-MIT-blue.svg)](./LICENSE)
 
+- [Cookbook Config](#cookbook-config)
 - [Recipe Categories](#recipe-categories)
 - [Search Recipes](#search-recipes)
 - [Package Policy](#package-policy)
@@ -20,6 +21,21 @@ from the [redox](https://gitlab.redox-os.org/redox-os/redox) repository.
     - [Suggestions for TODOs](#suggestions-for-todos)
 - [Repository Layout](#repository-layout)
 - [TODO](#todo)
+
+### Cookbook Config
+
+Cookbook has special config to avoid repetitive args, place this file into `cookbook.toml` (in this cookbook directory, not redox build system) and configure it necessarily.
+
+```toml
+# Configuration file
+# This is a configuration file to avoid repetitively spelling command args.
+# At the moment only mirrors here implemented but in future it will be expanded when scripts are rusted
+
+[[mirrors]]
+# https://www.gnu.org/prep/ftp.en.html
+"ftp.gnu.com" = "example.com/gnu"
+"github.com/foo/bar" = "github.com/baz/bar" 
+```
 
 ### Recipe Categories
 
