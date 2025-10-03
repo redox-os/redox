@@ -1,4 +1,5 @@
 use cookbook::blake3::blake3_progress;
+use cookbook::config::{init_config, translate_mirror};
 use cookbook::recipe::{AutoDeps, BuildKind, CookRecipe, Recipe, SourceRecipe};
 use pkg::package::Package;
 use pkg::{recipes, PackageName};
@@ -369,7 +370,10 @@ fn fetch(recipe_dir: &Path, source: &Option<SourceRecipe>) -> Result<PathBuf, St
 
                 // Clone the repository to source.tmp
                 let mut command = Command::new("git");
-                command.arg("clone").arg("--recursive").arg(git);
+                command
+                    .arg("clone")
+                    .arg("--recursive")
+                    .arg(translate_mirror(git));
                 if let Some(branch) = branch {
                     command.arg("--branch").arg(branch);
                 }
@@ -516,7 +520,7 @@ fi"#,
                     let source_tar_tmp = recipe_dir.join("source.tar.tmp");
 
                     let mut command = Command::new("wget");
-                    command.arg(tar);
+                    command.arg(translate_mirror(tar));
                     command.arg("--continue").arg("-O").arg(&source_tar_tmp);
                     run_command(command)?;
 
@@ -1374,6 +1378,7 @@ fn create_target_dir(recipe_dir: &Path) -> Result<PathBuf, String> {
 }
 
 fn main() {
+    init_config();
     let mut matching = true;
     let mut dry_run = false;
     let mut fetch_only = false;
