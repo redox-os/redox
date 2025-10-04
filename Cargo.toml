@@ -18,6 +18,7 @@ path = "src/bin/cookbook_redoxer.rs"
 [lib]
 name = "cookbook"
 path = "src/lib.rs"
+doctest = false
 
 [dependencies]
 blake3 = "=1.5.3" # 1.5.4 is incompatible with blake3 0.3 dependency from pkgar

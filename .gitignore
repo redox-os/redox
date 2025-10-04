@@ -1,5 +1,6 @@
 /build
 /repo
+/cookbook.toml
 source
 source.tmp
 source-new
