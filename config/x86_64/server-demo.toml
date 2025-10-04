@@ -1,0 +1,199 @@
+# Configuration for server stack demonstration
+
+include = ["../server.toml"]
+
+# General settings
+[general]
+# Filesystem size in MiB
+filesystem_size = 4096
+
+# Package settings
+[packages]
+# Daemons
+openssh = {}
+nginx = {}
+
+# Backends
+php84 = {}
+composer = {}
+luajit = {}
+python312 = {}
+# go = {}
+# zig = {}
+
+# Tools
+nano = {}
+neovim = {}
+rsync = {}
+vim = {}
+sqlite3 = {}
+# tmux = {}
+# htop = {}
+
+# Content
+website = {}
+
+[[files]]
+path = "/home/user/public_html/index.php"
+data = """
+<?php
+
+echo "Hello from PHP on Redox!";
+"""
+
+[[files]]
+path = "/home/user/public_html/phpinfo.php"
+data = """
+<?php phpinfo();
+"""
+
+
+[[files]]
+path = "/home/user/public_html/README"
+data = """
+This is a demonstration into PHP server.
+
+At the moment to run composer you have to run it like:
+> php /bin/composer install
+"""
+
+[[files]]
+postinstall = true
+data = ""
+path = "/etc/nginx/conf.d"
+directory = true
+
+[[files]]
+postinstall = true
+path = "/etc/nginx/nginx.conf"
+data = """
+user nginx;
+worker_processes auto;
+error_log /var/log/nginx/error.log;
+pid /var/run/nginx.pid;
+
+events {
+    worker_connections 1024;
+}
+http {
+    log_format main '$remote_addr - $remote_user [$time_local] "$request" '
+                    '$status $body_bytes_sent "$http_referer" '
+                    '"$http_user_agent" "$http_x_forwarded_for"';
+    access_log /var/log/nginx/access.log main;
+
+    include       mime.types;
+    include       fastcgi.conf;
+    default_type  application/octet-stream;
+
+    include /etc/nginx/conf.d/*.conf;
+}
+"""
+
+[[files]]
+postinstall = true
+path = "/etc/nginx/conf.d/localhost.conf"
+data = """
+server {
+    listen       80;
+    server_name  localhost;
+    root   /usr/share/website;
+
+    location / {
+        index  index.html index.htm;
+    }
+}
+"""
+
+[[files]]
+postinstall = true
+path = "/etc/nginx/conf.d/php-www.conf"
+data = """
+server {
+    listen 8081;
+    server_name localhost;
+    root /home/user/public_html;
+
+    index index.php index.html index.htm;
+
+    location / {
+        try_files $uri $uri/ =404;
+    }
+
+    location ~ \\.php$ {
+        include fastcgi_params;
+        fastcgi_pass 127.0.0.1:9000;
+        fastcgi_index index.php;
+        fastcgi_param SCRIPT_FILENAME $document_root$fastcgi_script_name;
+    }
+}
+"""
+
+[[files]]
+postinstall = true
+path = "/etc/php/84/php-fpm.conf"
+data = """
+
+include=/etc/php/84/php-fpm.d/*.conf
+"""
+
+[[files]]
+postinstall = true
+path = "/etc/php/84/php-fpm.d/www.conf"
+data = """
+[www]
+user = user
+group = user
+listen = 127.0.0.1:9000
+pm = static
+pm.max_children = 1
+"""
+
+[[files]]
+postinstall = true
+path = "/etc/ssh/sshd_config"
+data = """
+Port 22
+AddressFamily inet
+AuthorizedKeysFile	.ssh/authorized_keys
+PermitRootLogin yes
+PasswordAuthentication yes
+PermitEmptyPasswords yes
+Subsystem	sftp	/usr/libexec/sftp-server
+"""
+
+[users.nobody]
+password = ""
+shell = "/usr/bin/ion" #TODO: nologin?
+
+[users.nginx]
+password = ""
+shell = "/usr/bin/ion" #TODO: nologin?
+
+[[files]]
+path = "/home/user/server.sh"
+data = """
+#!/usr/bin/env bash
+
+/bin/sshd -D &
+nginx -g "daemon off;" &
+php-fpm --nodaemonize &
+"""
+
+[[files]]
+path = "/home/user/Welcome.txt"
+data = """
+##############################################################################
+# Welcome to Redox Server Demo!
+#
+# This is a quick demonstration of Redox used as server stack.
+# At the moment we support SSH, NGINX, Python, PHP. There's more to come
+#
+# This server demo is insecure by design, we encourage you to get familiar into
+# basics of server security if you wish to use this as a production server.
+#
+# To start the daemon, run
+# > sudo bash server.sh
+#
+# The server will start port 22 (ssh), 80 (static web) and 8080 (php)
+##############################################################################
+"""
