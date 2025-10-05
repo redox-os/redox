@@ -8,7 +8,7 @@ patches = [
 ]
 script = """
 DYNAMIC_INIT
-wget -O build-aux/config.sub "https://gitlab.redox-os.org/redox-os/gnu-config/-/raw/master/config.sub?inline=false"
+GNU_CONFIG_GET build-aux/config.sub
 ( cd gettext-runtime/libasprintf && autoreconf -fvi -I${COOKBOOK_HOST_SYSROOT}/share/aclocal )
 ( cd gettext-runtime/intl && autoreconf -fvi -I${COOKBOOK_HOST_SYSROOT}/share/aclocal )
 ( cd gettext-runtime && autoreconf -fvi -I${COOKBOOK_HOST_SYSROOT}/share/aclocal )

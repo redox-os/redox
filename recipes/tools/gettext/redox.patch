@@ -32,3 +32,15 @@ diff -ruwN source/gettext-tools/gnulib-lib/spawni.c source-new/gettext-tools/gnu
  # endif
  # define local_seteuid(id) seteuid (id)
  # define local_setegid(id) setegid (id)
+diff -ruwN source/gettext-tools/Makefile.am source-new/gettext-tools/Makefile.am
+--- source/gettext-tools/Makefile.am	2023-09-19 03:08:31.000000000 +0700
++++ source-new/gettext-tools/Makefile.am	2025-10-05 12:39:33.287595871 +0700
+@@ -19,7 +19,7 @@
+ AUTOMAKE_OPTIONS = 1.5 gnu no-dependencies
+ ACLOCAL_AMFLAGS = -I m4 -I ../gettext-runtime/m4 -I ../m4 -I gnulib-m4 -I libgrep/gnulib-m4 -I libgettextpo/gnulib-m4
+ 
+-SUBDIRS = gnulib-lib libgrep src libgettextpo po its projects styles emacs misc man m4 tests system-tests gnulib-tests examples doc
++SUBDIRS = gnulib-lib libgrep src libgettextpo po its projects styles emacs misc man m4
+ 
+ EXTRA_DIST = misc/DISCLAIM
+ MOSTLYCLEANFILES = core *.stackdump
