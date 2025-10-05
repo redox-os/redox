@@ -202,11 +202,16 @@ impl CookRecipe {
         Ok(recipes)
     }
 
-    pub fn get_build_deps_recursive(names: &[PackageName]) -> Result<Vec<Self>, PackageError> {
+    pub fn get_build_deps_recursive(
+        names: &[PackageName],
+        mark_is_deps: bool,
+    ) -> Result<Vec<Self>, PackageError> {
         let mut packages = Self::new_recursive(names, WALK_DEPTH)?;
 
-        for package in packages.iter_mut() {
-            package.is_deps = !names.contains(&package.name);
+        if mark_is_deps {
+            for package in packages.iter_mut() {
+                package.is_deps = !names.contains(&package.name);
+            }
         }
 
         Ok(packages)
