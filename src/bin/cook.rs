@@ -1417,7 +1417,7 @@ fn main() {
         };
     }
 
-    let recipes = match CookRecipe::get_build_deps_recursive(&recipe_names) {
+    let recipes = match CookRecipe::get_build_deps_recursive(&recipe_names, !with_package_deps) {
         Ok(ok) => ok,
         Err(err) => {
             eprintln!(
