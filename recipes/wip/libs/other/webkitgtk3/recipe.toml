@@ -59,6 +59,8 @@ dependencies = [
 ]
 script = """
 DYNAMIC_INIT
+export WEBKIT_USE_SCCACHE=1
+
 #TODO: why are these not automatic?
 LIBS=(
     $("${TARGET}-pkg-config" --libs epoxy)
