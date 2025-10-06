@@ -4,7 +4,7 @@
 git = "https://invent.kde.org/kdevelop/kdevelop"
 rev = "3021daeb5d62bc7a7a7dec4bcc23e19d3bfdaadd"
 [build]
-template = "custom"
+template = "cmake"
 dependencies = [
     "apr",
     "apr-util",
