@@ -30,6 +30,7 @@ pkgar-core = { path = "pkgar/pkgar-core" }
 pkgar-keys = { path = "pkgar/pkgar-keys" }
 redox-pkg = { git = "https://gitlab.redox-os.org/redox-os/pkgutils" }
 redoxer = "0.2"
+regex = "1.11"
 serde = { version = "=1.0.197", features = ["derive"] }
 termion = "4"
 toml = "0.8"
