@@ -7,14 +7,10 @@ rev = "74211c0dfc2777318ab53c2cd2c317a2ef9012de"
 shallow_clone = true
 
 [build]
-template = "custom"
+template = "cmake"
+cmakeflags = [
+    "-Dprotobuf_BUILD_TESTS=OFF"
+]
 dependencies = [
     "zlib",
 ]
-script = """
-DYNAMIC_INIT
-COOKBOOK_CMAKE_FLAGS+=(
-    -Dprotobuf_BUILD_TESTS=OFF
-)
-cookbook_cmake
-"""
