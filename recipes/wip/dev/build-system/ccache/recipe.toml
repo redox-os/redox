@@ -1,4 +1,4 @@
-#TODO maybe incomplete script
+#TODO not compiled or tested
 #TODO missing dependencies - https://github.com/ccache/ccache/blob/master/doc/INSTALL.md#dependencies
 # build instructions - https://github.com/ccache/ccache/blob/master/doc/INSTALL.md
 [source]

@@ -1,5 +1,6 @@
-#TODO maybe incomplete script, see https://dev-docs.kicad.org/en/build/linux/
+#TODO not compiled or tested
 #TODO maybe missing dependencies, see https://dev-docs.kicad.org/en/build/getting-started/
+# build instructions: https://dev-docs.kicad.org/en/build/linux/
 [source]
 git = "https://gitlab.com/kicad/code/kicad"
 rev = "942661fc10e172febf9d9990de2471d4b1020618"

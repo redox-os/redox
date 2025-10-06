@@ -1,4 +1,5 @@
-#TODO maybe incomplete script, see https://github.com/vgvassilev/cling#building-from-source
+#TODO not compiled or tested
+# build instructions: https://github.com/vgvassilev/cling#building-from-source
 [source]
 git = "https://github.com/vgvassilev/cling"
 rev = "ab81cdcc61f26dfd6a31fb141f1f4b335f6922be"

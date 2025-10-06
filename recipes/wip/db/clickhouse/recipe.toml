@@ -1,4 +1,5 @@
-#TODO maybe incomplete script, see https://clickhouse.com/docs/en/development/build#how-to-build-clickhouse-on-any-linux
+#TODO not compiled or tested
+# build instructions: https://clickhouse.com/docs/en/development/build#how-to-build-clickhouse-on-any-linux
 #TODO probably disable some submodules to use our recipes
 [source]
 tar = "https://github.com/ClickHouse/ClickHouse"
