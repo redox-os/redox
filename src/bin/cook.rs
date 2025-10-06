@@ -1308,6 +1308,14 @@ fn package_toml(
 fn package_version(recipe: &Recipe) -> String {
     if recipe.build.kind == BuildKind::None {
         "".into()
+    } else if let Some(v) = &recipe.package.version {
+        v.to_string()
+    } else if let Some(r) = &recipe.source {
+        if let Some(m) = r.guess_version() {
+            m
+        } else {
+            "TODO".into()
+        }
     } else {
         "TODO".into()
     }

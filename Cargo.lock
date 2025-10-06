@@ -1888,6 +1888,7 @@ dependencies = [
  "pkgar-keys 0.1.19",
  "redox-pkg 0.2.8",
  "redoxer",
+ "regex",
  "serde",
  "tempfile",
  "termion",

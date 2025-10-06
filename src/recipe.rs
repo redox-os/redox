@@ -1,6 +1,7 @@
 use std::{collections::BTreeSet, convert::TryInto, fs, path::PathBuf};
 
 use pkg::{package::PackageError, recipes, PackageName};
+use regex::Regex;
 use serde::{
     de::{value::Error as DeError, Error as DeErrorT},
     Deserialize, Serialize,
@@ -61,6 +62,26 @@ pub enum SourceRecipe {
     },
 }
 
+impl SourceRecipe {
+    pub fn guess_version(&self) -> Option<String> {
+        match self {
+            SourceRecipe::Tar {
+                tar,
+                blake3: _,
+                patches: _,
+                script: _,
+            } => {
+                let re = Regex::new(r"\d+\.\d+\.\d+").unwrap();
+                if let Some(arm) = re.captures(&tar) {
+                    return Some(arm.get(0).unwrap().as_str().to_string());
+                }
+                None
+            }
+            _ => None,
+        }
+    }
+}
+
 /// Specifies how to build a recipe
 #[derive(Debug, Deserialize, PartialEq, Serialize)]
 #[serde(tag = "template")]
@@ -117,6 +138,8 @@ pub struct BuildRecipe {
 pub struct PackageRecipe {
     #[serde(default)]
     pub dependencies: Vec<PackageName>,
+    #[serde(default)]
+    pub version: Option<String>,
 }
 
 /// Everything required to build a Redox package
@@ -298,9 +321,7 @@ mod tests {
                     },
                     dependencies: Vec::new(),
                 },
-                package: PackageRecipe {
-                    dependencies: Vec::new(),
-                },
+                package: PackageRecipe::default(),
             }
         );
     }
@@ -340,11 +361,12 @@ mod tests {
                     },
                     dependencies: Vec::new(),
                 },
-                package: PackageRecipe {
-                    dependencies: Vec::new(),
-                },
+                package: PackageRecipe::default(),
             }
         );
+
+        let source = recipe.source.unwrap();
+        assert_eq!(source.guess_version(), Some("1.3.3".to_string()));
     }
 
     #[test]
@@ -371,6 +393,7 @@ mod tests {
                 },
                 package: PackageRecipe {
                     dependencies: vec![PackageName::new("gcc13").unwrap()],
+                    version: None,
                 },
             }
         );
