@@ -1,4 +1,5 @@
-#TODO probably wrong script, see https://github.com/google/googletest/blob/main/googletest/README.md
+#TODO not compiled or tested
+# build instructions: https://github.com/google/googletest/blob/main/googletest/README.md
 [source]
 git = "https://github.com/google/googletest"
 rev = "f8d7d77c06936315286eb55f8de22cd23c188571"
