@@ -5,6 +5,7 @@ include = ["base.toml"]
 
 # Package settings
 [packages]
+netdb = {}
 netutils = {}
 
 ## Network init
