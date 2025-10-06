@@ -1,10 +1,22 @@
-#TODO finish script, see https://github.com/RPCS3/rpcs3/blob/master/BUILDING.md#linux-1
+#TODO not compiled or tested yet
 #TODO missing dependencies
+# build instructions: https://github.com/RPCS3/rpcs3/blob/master/BUILDING.md#linux-1
 # customization - https://wiki.rpcs3.net/index.php?title=Help:Building_RPCS3#CMake_Build_Options
 [source]
 git = "https://github.com/RPCS3/rpcs3"
 [build]
-template = "custom"
+template = "cmake"
+cmakeflags = [
+    "-DUSE_NATIVE_INSTRUCTIONS=OFF",
+    "-DWITH_LLVM=OFF",
+    "-DUSE_ALSA=OFF",
+    "-DUSE_PULSE=OFF",
+    "-DUSE_LIBEVDEV=OFF",
+    "-DUSE_DISCORD_RPC=OFF",
+    "-DBUILD_LLVM_SUBMODULE=OFF",
+    "-DUSE_SYSTEM_FFMPEG=ON",
+    "-DUSE_VULKAN=OFF",
+]
 dependencies = [
     "mesa-x11",
     "qt6-base",
@@ -22,25 +34,3 @@ dependencies = [
     "pulseaudio",
     "ffmpeg6",
 ]
-script = """
-DYNAMIC_INIT
-    COOKBOOK_CONFIGURE="cmake"
-    COOKBOOK_CONFIGURE_FLAGS=(
-	-DCMAKE_BUILD_TYPE=Release
-	-DCMAKE_CROSSCOMPILING=True
-    -DCMAKE_CXX_COMPILER="${TARGET}-g++"
-    -DCMAKE_C_COMPILER="${TARGET}-gcc"
-	-DCMAKE_INSTALL_PREFIX="/"
-    -DUSE_NATIVE_INSTRUCTIONS=OFF
-    -DWITH_LLVM=OFF
-    -DUSE_ALSA=OFF
-    -DUSE_PULSE=OFF
-    -DUSE_LIBEVDEV=OFF
-    -DUSE_DISCORD_RPC=OFF
-    -DBUILD_LLVM_SUBMODULE=OFF
-    -DUSE_SYSTEM_FFMPEG=ON
-    -DUSE_VULKAN=OFF
-"${COOKBOOK_SOURCE}"
-)
-cookbook_configure
-"""

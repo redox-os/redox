@@ -1,27 +1,5 @@
-#TODO maybe incomplete script, see https://github.com/obhq/obliteration#configure-build-system
-#TODO probably missing dependencies
-#TODO make qt6 work
+#TODO missing script, see: https://github.com/obhq/obliteration/blob/main/docs/building.md
 [source]
 git = "https://github.com/obhq/obliteration"
 [build]
 template = "custom"
-dependencies = [
-    "qt6-base",
-]
-script = """
-DYNAMIC_INIT
-COOKBOOK_CONFIGURE="cmake"
-COOKBOOK_CONFIGURE_FLAGS=(
-    -DCMAKE_BUILD_TYPE=Release
-    -DCMAKE_CROSSCOMPILING=True
-    -DCMAKE_CXX_COMPILER="${TARGET}-g++"
-    -DCMAKE_C_COMPILER="${TARGET}-gcc"
-    -DCMAKE_INSTALL_PREFIX="/"
-    -DCMAKE_PREFIX_PATH="${COOKBOOK_SYSROOT}"
-    -DCMAKE_SYSTEM_NAME=Generic
-    -DCMAKE_SYSTEM_PROCESSOR="$(echo "${TARGET}" | cut -d - -f1)"
-    -DCMAKE_VERBOSE_MAKEFILE=On
-"${COOKBOOK_SOURCE}"
-)
-cookbook_configure
-"""
