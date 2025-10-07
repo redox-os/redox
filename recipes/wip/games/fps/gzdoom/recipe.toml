@@ -3,7 +3,7 @@
 git = "https://github.com/ZDoom/gzdoom"
 rev = "6ce809efe2902e43ceaa7031b875225d3a0367de"
 [build]
-template = "custom"
+template = "cmake"
 dependencies = [
     "sdl2",
     "mesa",
@@ -11,20 +11,3 @@ dependencies = [
     "openal",
     "zmusic",
 ]
-script = """
-DYNAMIC_INIT
-COOKBOOK_CONFIGURE="cmake"
-COOKBOOK_CONFIGURE_FLAGS=(
-    -DCMAKE_BUILD_TYPE=Release
-    -DCMAKE_CROSSCOMPILING=True
-    -DCMAKE_CXX_COMPILER="${TARGET}-g++"
-    -DCMAKE_C_COMPILER="${TARGET}-gcc"
-    -DCMAKE_INSTALL_PREFIX="/"
-    -DCMAKE_PREFIX_PATH="${COOKBOOK_SYSROOT}"
-    -DCMAKE_SYSTEM_NAME=Generic
-    -DCMAKE_SYSTEM_PROCESSOR="$(echo "${TARGET}" | cut -d - -f1)"
-    -DCMAKE_VERBOSE_MAKEFILE=On
-"${COOKBOOK_SOURCE}"
-)
-cookbook_configure
-"""
