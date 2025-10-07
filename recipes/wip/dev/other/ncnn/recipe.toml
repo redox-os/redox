@@ -1,4 +1,5 @@
-#TODO maybe incomplete script, see https://github.com/Tencent/ncnn/wiki/how-to-build#build-for-linux
+#TODO not compiled or tested
+# build instructions: https://github.com/Tencent/ncnn/wiki/how-to-build#build-for-linux
 [source]
 git = "https://github.com/Tencent/ncnn"
 [build]

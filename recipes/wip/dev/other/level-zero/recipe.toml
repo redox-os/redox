@@ -1,4 +1,5 @@
-#TODO maybe incomplete script, see https://github.com/oneapi-src/level-zero#building-and-installing
+#TODO not compiled or tested
+# build instructions: https://github.com/oneapi-src/level-zero#building-and-installing
 [source]
 git = "https://github.com/oneapi-src/level-zero"
 rev = "ea5be99d8d34480447ab1e3c7efc30d6f179b123"

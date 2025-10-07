@@ -1,4 +1,5 @@
-#TODO maybe incomplete script, see https://gitlab.com/xonotic/netradiant#advanced-compilation
+#TODO not compiled or tested
+# build instructions: https://gitlab.com/xonotic/netradiant#advanced-compilation
 [source]
 git = "https://gitlab.com/xonotic/netradiant"
 [build]

@@ -1,4 +1,5 @@
-#TODO Probably wrong script, see https://github.com/google/shaderc#getting-and-building-shaderc
+#TODO not compiled or tested
+# build instructions: https://github.com/google/shaderc#getting-and-building-shaderc
 [source]
 git = "https://github.com/google/shaderc"
 rev = "3882b16417077aa8eaa7b5775920e7ba4b8a224d"
