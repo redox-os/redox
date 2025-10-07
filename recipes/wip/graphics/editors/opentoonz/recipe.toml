@@ -1,10 +1,11 @@
-#TODO probably wrong script, see https://github.com/opentoonz/opentoonz/blob/master/doc/how_to_build_linux.md
+#TODO not compiled or tested
 #TODO missing dependencies
+# build instructions: https://github.com/opentoonz/opentoonz/blob/master/doc/how_to_build_linux.md
 [source]
 git = "https://github.com/opentoonz/opentoonz"
 rev = "dd4cb36142ebf65a2aa74ff8575002863d3e17fc"
 [build]
-template = "custom"
+template = "cmake"
 dependencies = [
     "boost",
     "qt5-base",
@@ -13,18 +14,3 @@ dependencies = [
     "libmypaint",
     "opencv4",
 ]
-script = """
-COOKBOOK_CONFIGURE="cmake"
-COOKBOOK_CONFIGURE_FLAGS=(
-    -DCMAKE_BUILD_TYPE=Release
-    -DCMAKE_CROSSCOMPILING=True
-    -DCMAKE_EXE_LINKER_FLAGS="-static"
-    -DCMAKE_INSTALL_PREFIX="/"
-    -DCMAKE_PREFIX_PATH="${COOKBOOK_SYSROOT}"
-    -DCMAKE_SYSTEM_NAME=Generic
-    -DCMAKE_SYSTEM_PROCESSOR="$(echo "${TARGET}" | cut -d - -f1)"
-    -DCMAKE_VERBOSE_MAKEFILE=On
-"${COOKBOOK_SOURCE}"
-)
-cookbook_configure
-"""
