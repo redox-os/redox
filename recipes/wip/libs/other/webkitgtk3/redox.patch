@@ -1,6 +1,6 @@
-diff -ruwN webkitgtk-2.49.1/Source/bmalloc/bmalloc/BPlatform.h source/Source/bmalloc/bmalloc/BPlatform.h
---- webkitgtk-2.49.1/Source/bmalloc/bmalloc/BPlatform.h	2025-03-28 00:18:28.347204000 -0600
-+++ source/Source/bmalloc/bmalloc/BPlatform.h	2025-05-12 20:54:40.104051612 -0600
+diff -ruwN source/Source/bmalloc/bmalloc/BPlatform.h source-new/Source/bmalloc/bmalloc/BPlatform.h
+--- source/Source/bmalloc/bmalloc/BPlatform.h	2025-03-28 13:18:28.347204000 +0700
++++ source-new/Source/bmalloc/bmalloc/BPlatform.h	2025-10-07 20:55:41.123161164 +0700
 @@ -40,7 +40,7 @@
  #define BOS_DARWIN 1
  #endif
@@ -19,9 +19,121 @@ diff -ruwN webkitgtk-2.49.1/Source/bmalloc/bmalloc/BPlatform.h source/Source/bma
  #define BENABLE_LIBPAS 1
  #ifndef PAS_BMALLOC
  #define PAS_BMALLOC 1
-diff -ruwN webkitgtk-2.49.1/Source/JavaScriptCore/heap/BlockDirectory.cpp source/Source/JavaScriptCore/heap/BlockDirectory.cpp
---- webkitgtk-2.49.1/Source/JavaScriptCore/heap/BlockDirectory.cpp	2025-03-20 11:07:59.015023500 -0600
-+++ source/Source/JavaScriptCore/heap/BlockDirectory.cpp	2025-05-10 21:38:36.889325942 -0600
+diff -ruwN source/Source/bmalloc/libpas/src/libpas/pas_committed_pages_vector.c source-new/Source/bmalloc/libpas/src/libpas/pas_committed_pages_vector.c
+--- source/Source/bmalloc/libpas/src/libpas/pas_committed_pages_vector.c	2023-09-18 14:56:46.731077000 +0700
++++ source-new/Source/bmalloc/libpas/src/libpas/pas_committed_pages_vector.c	2025-10-07 22:23:20.298893452 +0700
+@@ -57,6 +57,8 @@
+ 
+ #if PAS_OS(LINUX)
+     PAS_SYSCALL(mincore(object, size, (unsigned char*)vector->raw_data));
++#elif PAS_OS(REDOX)
++    // no op
+ #else
+     PAS_SYSCALL(mincore(object, size, vector->raw_data));
+ #endif
+diff -ruwN source/Source/bmalloc/libpas/src/libpas/pas_committed_pages_vector.h source-new/Source/bmalloc/libpas/src/libpas/pas_committed_pages_vector.h
+--- source/Source/bmalloc/libpas/src/libpas/pas_committed_pages_vector.h	2023-09-18 14:56:46.731077000 +0700
++++ source-new/Source/bmalloc/libpas/src/libpas/pas_committed_pages_vector.h	2025-10-07 22:23:29.232045934 +0700
+@@ -56,6 +56,8 @@
+     PAS_ASSERT(page_index < vector->size);
+ #if PAS_OS(LINUX)
+     return vector->raw_data[page_index];
++#elif PAS_OS(REDOX)
++    return true; // redox don't have swap yet
+ #else
+     return vector->raw_data[page_index] & (MINCORE_REFERENCED |
+                                            MINCORE_REFERENCED_OTHER |
+diff -ruwN source/Source/bmalloc/libpas/src/libpas/pas_monotonic_time.c source-new/Source/bmalloc/libpas/src/libpas/pas_monotonic_time.c
+--- source/Source/bmalloc/libpas/src/libpas/pas_monotonic_time.c	2023-09-18 14:56:46.743076800 +0700
++++ source-new/Source/bmalloc/libpas/src/libpas/pas_monotonic_time.c	2025-10-07 22:23:50.202403881 +0700
+@@ -89,6 +89,15 @@
+     return ts.tv_sec * 1000u * 1000u * 1000u + ts.tv_nsec;
+ }
+ 
++
++#elif PAS_OS(REDOX)
++
++uint64_t pas_get_current_monotonic_time_nanoseconds(void)
++{
++    struct timespec ts;
++    clock_gettime(CLOCK_MONOTONIC, &ts);
++    return (uint64_t)ts.tv_sec * 1000000000 + (uint64_t)ts.tv_nsec;
++}
+ #endif
+ 
+ #endif /* LIBPAS_ENABLED */
+diff -ruwN source/Source/bmalloc/libpas/src/libpas/pas_page_malloc.c source-new/Source/bmalloc/libpas/src/libpas/pas_page_malloc.c
+--- source/Source/bmalloc/libpas/src/libpas/pas_page_malloc.c	2024-12-20 17:10:23.123508500 +0700
++++ source-new/Source/bmalloc/libpas/src/libpas/pas_page_malloc.c	2025-10-07 22:26:27.358086406 +0700
+@@ -228,6 +228,8 @@
+     PAS_SYSCALL(madvise(ptr, size, MADV_DODUMP));
+ #elif PAS_PLATFORM(PLAYSTATION)
+     // We don't need to call madvise to map page.
++#elif PAS_OS(REDOX)
++    // madvise not implemented
+ #elif PAS_OS(FREEBSD)
+     PAS_SYSCALL(madvise(ptr, size, MADV_NORMAL));
+ #endif
+@@ -276,6 +278,8 @@
+ #elif PAS_OS(LINUX)
+     PAS_SYSCALL(madvise(ptr, size, MADV_DONTNEED));
+     PAS_SYSCALL(madvise(ptr, size, MADV_DONTDUMP));
++#elif PAS_OS(REDOX)
++    // madvise not implemented
+ #else
+     PAS_SYSCALL(madvise(ptr, size, MADV_DONTNEED));
+ #endif
+diff -ruwN source/Source/bmalloc/libpas/src/libpas/pas_platform.h source-new/Source/bmalloc/libpas/src/libpas/pas_platform.h
+--- source/Source/bmalloc/libpas/src/libpas/pas_platform.h	2024-11-07 21:16:41.458338300 +0700
++++ source-new/Source/bmalloc/libpas/src/libpas/pas_platform.h	2025-10-07 22:22:50.849390772 +0700
+@@ -132,6 +132,10 @@
+ #define PAS_OS_LINUX 1
+ #endif
+ 
++#ifdef __redox__
++#define PAS_OS_REDOX 1
++#endif
++
+ #if defined(__FreeBSD__) || defined(__DragonFly__) || defined(__FreeBSD_kernel__)
+ #define PAS_OS_FREEBSD 1
+ #endif
+diff -ruwN source/Source/bmalloc/libpas/src/libpas/pas_probabilistic_guard_malloc_allocator.c source-new/Source/bmalloc/libpas/src/libpas/pas_probabilistic_guard_malloc_allocator.c
+--- source/Source/bmalloc/libpas/src/libpas/pas_probabilistic_guard_malloc_allocator.c	2025-03-27 13:32:32.679094000 +0700
++++ source-new/Source/bmalloc/libpas/src/libpas/pas_probabilistic_guard_malloc_allocator.c	2025-10-07 22:27:40.764339395 +0700
+@@ -165,16 +165,6 @@
+     mprotect_res = mprotect((void*)upper_guard, upper_guard_size, PROT_NONE);
+     PAS_ASSERT(!mprotect_res);
+ 
+-    /*
+-     * ensure physical addresses are released
+-     * TODO: investigate using MADV_FREE_REUSABLE instead
+-     */
+-    int madvise_res = madvise((void*)upper_guard, upper_guard_size, MADV_FREE);
+-    PAS_ASSERT(!madvise_res);
+-
+-    madvise_res = madvise((void*)lower_guard, lower_guard_size, MADV_FREE);
+-    PAS_ASSERT(!madvise_res);
+-
+     PAS_PROFILE(PGM_ALLOCATE, heap_config, key);
+ 
+     /* create struct to hold hash map value */
+@@ -231,13 +221,6 @@
+     int mprotect_res = mprotect((void*)value->start_of_data_pages, value->size_of_data_pages, PROT_NONE);
+     PAS_ASSERT(!mprotect_res);
+ 
+-    /*
+-     * ensure physical addresses are released
+-     * TODO: investigate using MADV_FREE_REUSABLE instead
+-     */
+-    int madvise_res = madvise((void*)value->start_of_data_pages, value->size_of_data_pages, MADV_FREE);
+-    PAS_ASSERT(!madvise_res);
+-
+     free_wasted_mem  += value->mem_to_waste;
+     free_virtual_mem += value->size_of_allocated_pages;
+ 
+diff -ruwN source/Source/JavaScriptCore/heap/BlockDirectory.cpp source-new/Source/JavaScriptCore/heap/BlockDirectory.cpp
+--- source/Source/JavaScriptCore/heap/BlockDirectory.cpp	2025-03-21 00:07:59.015023500 +0700
++++ source-new/Source/JavaScriptCore/heap/BlockDirectory.cpp	2025-09-09 09:08:03.419985553 +0700
 @@ -68,7 +68,7 @@
      // FIXME: We should figure out a solution for Windows and PlayStation.
      // QNX doesn't have mincore(), though the information can be had. But since all mapped
@@ -31,35 +143,9 @@ diff -ruwN webkitgtk-2.49.1/Source/JavaScriptCore/heap/BlockDirectory.cpp source
      size_t pageSize = WTF::pageSize();
      ASSERT(!(MarkedBlock::blockSize % pageSize));
      auto numberOfPagesInMarkedBlock = MarkedBlock::blockSize / pageSize;
-Binary files webkitgtk-2.49.1/Source/JavaScriptCore/inspector/scripts/codegen/__pycache__/cpp_generator.cpython-311.pyc and source/Source/JavaScriptCore/inspector/scripts/codegen/__pycache__/cpp_generator.cpython-311.pyc differ
-Binary files webkitgtk-2.49.1/Source/JavaScriptCore/inspector/scripts/codegen/__pycache__/cpp_generator_templates.cpython-311.pyc and source/Source/JavaScriptCore/inspector/scripts/codegen/__pycache__/cpp_generator_templates.cpython-311.pyc differ
-Binary files webkitgtk-2.49.1/Source/JavaScriptCore/inspector/scripts/codegen/__pycache__/generate_cpp_alternate_backend_dispatcher_header.cpython-311.pyc and source/Source/JavaScriptCore/inspector/scripts/codegen/__pycache__/generate_cpp_alternate_backend_dispatcher_header.cpython-311.pyc differ
-Binary files webkitgtk-2.49.1/Source/JavaScriptCore/inspector/scripts/codegen/__pycache__/generate_cpp_backend_dispatcher_header.cpython-311.pyc and source/Source/JavaScriptCore/inspector/scripts/codegen/__pycache__/generate_cpp_backend_dispatcher_header.cpython-311.pyc differ
-Binary files webkitgtk-2.49.1/Source/JavaScriptCore/inspector/scripts/codegen/__pycache__/generate_cpp_backend_dispatcher_implementation.cpython-311.pyc and source/Source/JavaScriptCore/inspector/scripts/codegen/__pycache__/generate_cpp_backend_dispatcher_implementation.cpython-311.pyc differ
-Binary files webkitgtk-2.49.1/Source/JavaScriptCore/inspector/scripts/codegen/__pycache__/generate_cpp_frontend_dispatcher_header.cpython-311.pyc and source/Source/JavaScriptCore/inspector/scripts/codegen/__pycache__/generate_cpp_frontend_dispatcher_header.cpython-311.pyc differ
-Binary files webkitgtk-2.49.1/Source/JavaScriptCore/inspector/scripts/codegen/__pycache__/generate_cpp_frontend_dispatcher_implementation.cpython-311.pyc and source/Source/JavaScriptCore/inspector/scripts/codegen/__pycache__/generate_cpp_frontend_dispatcher_implementation.cpython-311.pyc differ
-Binary files webkitgtk-2.49.1/Source/JavaScriptCore/inspector/scripts/codegen/__pycache__/generate_cpp_protocol_types_header.cpython-311.pyc and source/Source/JavaScriptCore/inspector/scripts/codegen/__pycache__/generate_cpp_protocol_types_header.cpython-311.pyc differ
-Binary files webkitgtk-2.49.1/Source/JavaScriptCore/inspector/scripts/codegen/__pycache__/generate_cpp_protocol_types_implementation.cpython-311.pyc and source/Source/JavaScriptCore/inspector/scripts/codegen/__pycache__/generate_cpp_protocol_types_implementation.cpython-311.pyc differ
-Binary files webkitgtk-2.49.1/Source/JavaScriptCore/inspector/scripts/codegen/__pycache__/generate_js_backend_commands.cpython-311.pyc and source/Source/JavaScriptCore/inspector/scripts/codegen/__pycache__/generate_js_backend_commands.cpython-311.pyc differ
-Binary files webkitgtk-2.49.1/Source/JavaScriptCore/inspector/scripts/codegen/__pycache__/generate_objc_backend_dispatcher_header.cpython-311.pyc and source/Source/JavaScriptCore/inspector/scripts/codegen/__pycache__/generate_objc_backend_dispatcher_header.cpython-311.pyc differ
-Binary files webkitgtk-2.49.1/Source/JavaScriptCore/inspector/scripts/codegen/__pycache__/generate_objc_backend_dispatcher_implementation.cpython-311.pyc and source/Source/JavaScriptCore/inspector/scripts/codegen/__pycache__/generate_objc_backend_dispatcher_implementation.cpython-311.pyc differ
-Binary files webkitgtk-2.49.1/Source/JavaScriptCore/inspector/scripts/codegen/__pycache__/generate_objc_configuration_header.cpython-311.pyc and source/Source/JavaScriptCore/inspector/scripts/codegen/__pycache__/generate_objc_configuration_header.cpython-311.pyc differ
-Binary files webkitgtk-2.49.1/Source/JavaScriptCore/inspector/scripts/codegen/__pycache__/generate_objc_configuration_implementation.cpython-311.pyc and source/Source/JavaScriptCore/inspector/scripts/codegen/__pycache__/generate_objc_configuration_implementation.cpython-311.pyc differ
-Binary files webkitgtk-2.49.1/Source/JavaScriptCore/inspector/scripts/codegen/__pycache__/generate_objc_frontend_dispatcher_implementation.cpython-311.pyc and source/Source/JavaScriptCore/inspector/scripts/codegen/__pycache__/generate_objc_frontend_dispatcher_implementation.cpython-311.pyc differ
-Binary files webkitgtk-2.49.1/Source/JavaScriptCore/inspector/scripts/codegen/__pycache__/generate_objc_header.cpython-311.pyc and source/Source/JavaScriptCore/inspector/scripts/codegen/__pycache__/generate_objc_header.cpython-311.pyc differ
-Binary files webkitgtk-2.49.1/Source/JavaScriptCore/inspector/scripts/codegen/__pycache__/generate_objc_internal_header.cpython-311.pyc and source/Source/JavaScriptCore/inspector/scripts/codegen/__pycache__/generate_objc_internal_header.cpython-311.pyc differ
-Binary files webkitgtk-2.49.1/Source/JavaScriptCore/inspector/scripts/codegen/__pycache__/generate_objc_protocol_type_conversions_header.cpython-311.pyc and source/Source/JavaScriptCore/inspector/scripts/codegen/__pycache__/generate_objc_protocol_type_conversions_header.cpython-311.pyc differ
-Binary files webkitgtk-2.49.1/Source/JavaScriptCore/inspector/scripts/codegen/__pycache__/generate_objc_protocol_type_conversions_implementation.cpython-311.pyc and source/Source/JavaScriptCore/inspector/scripts/codegen/__pycache__/generate_objc_protocol_type_conversions_implementation.cpython-311.pyc differ
-Binary files webkitgtk-2.49.1/Source/JavaScriptCore/inspector/scripts/codegen/__pycache__/generate_objc_protocol_types_implementation.cpython-311.pyc and source/Source/JavaScriptCore/inspector/scripts/codegen/__pycache__/generate_objc_protocol_types_implementation.cpython-311.pyc differ
-Binary files webkitgtk-2.49.1/Source/JavaScriptCore/inspector/scripts/codegen/__pycache__/generator.cpython-311.pyc and source/Source/JavaScriptCore/inspector/scripts/codegen/__pycache__/generator.cpython-311.pyc differ
-Binary files webkitgtk-2.49.1/Source/JavaScriptCore/inspector/scripts/codegen/__pycache__/generator_templates.cpython-311.pyc and source/Source/JavaScriptCore/inspector/scripts/codegen/__pycache__/generator_templates.cpython-311.pyc differ
-Binary files webkitgtk-2.49.1/Source/JavaScriptCore/inspector/scripts/codegen/__pycache__/__init__.cpython-311.pyc and source/Source/JavaScriptCore/inspector/scripts/codegen/__pycache__/__init__.cpython-311.pyc differ
-Binary files webkitgtk-2.49.1/Source/JavaScriptCore/inspector/scripts/codegen/__pycache__/models.cpython-311.pyc and source/Source/JavaScriptCore/inspector/scripts/codegen/__pycache__/models.cpython-311.pyc differ
-Binary files webkitgtk-2.49.1/Source/JavaScriptCore/inspector/scripts/codegen/__pycache__/objc_generator.cpython-311.pyc and source/Source/JavaScriptCore/inspector/scripts/codegen/__pycache__/objc_generator.cpython-311.pyc differ
-Binary files webkitgtk-2.49.1/Source/JavaScriptCore/inspector/scripts/codegen/__pycache__/objc_generator_templates.cpython-311.pyc and source/Source/JavaScriptCore/inspector/scripts/codegen/__pycache__/objc_generator_templates.cpython-311.pyc differ
-diff -ruwN webkitgtk-2.49.1/Source/JavaScriptCore/jsc.cpp source/Source/JavaScriptCore/jsc.cpp
---- webkitgtk-2.49.1/Source/JavaScriptCore/jsc.cpp	2025-03-21 05:07:10.820055200 -0600
-+++ source/Source/JavaScriptCore/jsc.cpp	2025-05-12 21:27:55.789300618 -0600
+diff -ruwN source/Source/JavaScriptCore/jsc.cpp source-new/Source/JavaScriptCore/jsc.cpp
+--- source/Source/JavaScriptCore/jsc.cpp	2025-03-21 18:07:10.820055200 +0700
++++ source-new/Source/JavaScriptCore/jsc.cpp	2025-09-09 09:08:03.446985840 +0700
 @@ -208,6 +208,8 @@
          for (;;) {
  #if OS(WINDOWS)
@@ -69,9 +155,9 @@ diff -ruwN webkitgtk-2.49.1/Source/JavaScriptCore/jsc.cpp source/Source/JavaScri
  #else
              pause();
  #endif
-diff -ruwN webkitgtk-2.49.1/Source/JavaScriptCore/runtime/JSCBytecodeCacheVersion.cpp source/Source/JavaScriptCore/runtime/JSCBytecodeCacheVersion.cpp
---- webkitgtk-2.49.1/Source/JavaScriptCore/runtime/JSCBytecodeCacheVersion.cpp	2025-03-20 11:07:59.015023500 -0600
-+++ source/Source/JavaScriptCore/runtime/JSCBytecodeCacheVersion.cpp	2025-05-11 08:15:28.272811727 -0600
+diff -ruwN source/Source/JavaScriptCore/runtime/JSCBytecodeCacheVersion.cpp source-new/Source/JavaScriptCore/runtime/JSCBytecodeCacheVersion.cpp
+--- source/Source/JavaScriptCore/runtime/JSCBytecodeCacheVersion.cpp	2025-03-21 00:07:59.015023500 +0700
++++ source-new/Source/JavaScriptCore/runtime/JSCBytecodeCacheVersion.cpp	2025-09-09 09:08:03.446985840 +0700
 @@ -37,7 +37,7 @@
  #include <mach-o/dyld.h>
  #include <uuid/uuid.h>
@@ -90,9 +176,9 @@ diff -ruwN webkitgtk-2.49.1/Source/JavaScriptCore/runtime/JSCBytecodeCacheVersio
          auto result = ([&] -> std::optional<uint32_t> {
              Dl_info info { };
              if (!dladdr(jsFunctionAddr, &info))
-diff -ruwN webkitgtk-2.49.1/Source/JavaScriptCore/runtime/MachineContext.h source/Source/JavaScriptCore/runtime/MachineContext.h
---- webkitgtk-2.49.1/Source/JavaScriptCore/runtime/MachineContext.h	2025-03-20 11:07:59.015023500 -0600
-+++ source/Source/JavaScriptCore/runtime/MachineContext.h	2025-05-12 20:27:42.492098710 -0600
+diff -ruwN source/Source/JavaScriptCore/runtime/MachineContext.h source-new/Source/JavaScriptCore/runtime/MachineContext.h
+--- source/Source/JavaScriptCore/runtime/MachineContext.h	2025-03-21 00:07:59.015023500 +0700
++++ source-new/Source/JavaScriptCore/runtime/MachineContext.h	2025-09-09 09:08:03.473986127 +0700
 @@ -158,7 +158,7 @@
  {
  #if OS(DARWIN)
@@ -152,11 +238,9 @@ diff -ruwN webkitgtk-2.49.1/Source/JavaScriptCore/runtime/MachineContext.h sourc
  #if CPU(X86_64)
      return reinterpret_cast<void*&>((uintptr_t&) machineContext.r8);
  #else
-Binary files webkitgtk-2.49.1/Source/JavaScriptCore/wasm/__pycache__/generateWasm.cpython-311.pyc and source/Source/JavaScriptCore/wasm/__pycache__/generateWasm.cpython-311.pyc differ
-Binary files webkitgtk-2.49.1/Source/JavaScriptCore/yarr/__pycache__/hasher.cpython-311.pyc and source/Source/JavaScriptCore/yarr/__pycache__/hasher.cpython-311.pyc differ
-diff -ruwN webkitgtk-2.49.1/Source/ThirdParty/ANGLE/GLESv2.cmake source/Source/ThirdParty/ANGLE/GLESv2.cmake
---- webkitgtk-2.49.1/Source/ThirdParty/ANGLE/GLESv2.cmake	2025-02-17 05:59:58.567796700 -0700
-+++ source/Source/ThirdParty/ANGLE/GLESv2.cmake	2025-05-10 20:36:08.275484081 -0600
+diff -ruwN source/Source/ThirdParty/ANGLE/GLESv2.cmake source-new/Source/ThirdParty/ANGLE/GLESv2.cmake
+--- source/Source/ThirdParty/ANGLE/GLESv2.cmake	2025-02-17 19:59:58.567796700 +0700
++++ source-new/Source/ThirdParty/ANGLE/GLESv2.cmake	2025-09-09 09:08:03.495986361 +0700
 @@ -120,7 +120,7 @@
  
  if(is_linux OR is_chromeos OR is_android OR is_fuchsia)
@@ -166,18 +250,18 @@ diff -ruwN webkitgtk-2.49.1/Source/ThirdParty/ANGLE/GLESv2.cmake source/Source/T
          "src/common/system_utils_posix.cpp"
      )
  endif()
-diff -ruwN webkitgtk-2.49.1/Source/ThirdParty/ANGLE/PlatformGTK.cmake source/Source/ThirdParty/ANGLE/PlatformGTK.cmake
---- webkitgtk-2.49.1/Source/ThirdParty/ANGLE/PlatformGTK.cmake	2023-10-21 01:33:32.730009300 -0600
-+++ source/Source/ThirdParty/ANGLE/PlatformGTK.cmake	2025-05-10 20:22:26.792451858 -0600
+diff -ruwN source/Source/ThirdParty/ANGLE/PlatformGTK.cmake source-new/Source/ThirdParty/ANGLE/PlatformGTK.cmake
+--- source/Source/ThirdParty/ANGLE/PlatformGTK.cmake	2023-10-21 14:33:32.730009300 +0700
++++ source-new/Source/ThirdParty/ANGLE/PlatformGTK.cmake	2025-09-09 09:08:03.500986415 +0700
 @@ -1,4 +1,4 @@
 -list(APPEND ANGLE_DEFINITIONS ANGLE_PLATFORM_LINUX EGL_NO_PLATFORM_SPECIFIC_TYPES USE_SYSTEM_EGL)
 +list(APPEND ANGLE_DEFINITIONS ANGLE_PLATFORM_POSIX EGL_NO_PLATFORM_SPECIFIC_TYPES USE_SYSTEM_EGL)
  include(linux.cmake)
  
  if (USE_OPENGL)
-diff -ruwN webkitgtk-2.49.1/Source/ThirdParty/ANGLE/src/common/log_utils.h source/Source/ThirdParty/ANGLE/src/common/log_utils.h
---- webkitgtk-2.49.1/Source/ThirdParty/ANGLE/src/common/log_utils.h	2025-02-17 05:59:58.571796700 -0700
-+++ source/Source/ThirdParty/ANGLE/src/common/log_utils.h	2025-05-10 20:10:39.639595675 -0600
+diff -ruwN source/Source/ThirdParty/ANGLE/src/common/log_utils.h source-new/Source/ThirdParty/ANGLE/src/common/log_utils.h
+--- source/Source/ThirdParty/ANGLE/src/common/log_utils.h	2025-02-17 19:59:58.571796700 +0700
++++ source-new/Source/ThirdParty/ANGLE/src/common/log_utils.h	2025-09-09 09:08:03.501986425 +0700
 @@ -136,10 +136,12 @@
          return FmtHexAutoSized(os, fmt.mValue, fmt.mPrefix, "0x", '0');
      }
@@ -191,9 +275,9 @@ diff -ruwN webkitgtk-2.49.1/Source/ThirdParty/ANGLE/src/common/log_utils.h sourc
  };
  
  }  // namespace priv
-diff -ruwN webkitgtk-2.49.1/Source/ThirdParty/ANGLE/src/common/platform.h source/Source/ThirdParty/ANGLE/src/common/platform.h
---- webkitgtk-2.49.1/Source/ThirdParty/ANGLE/src/common/platform.h	2024-09-03 00:28:47.067031900 -0600
-+++ source/Source/ThirdParty/ANGLE/src/common/platform.h	2025-05-10 20:07:40.561378854 -0600
+diff -ruwN source/Source/ThirdParty/ANGLE/src/common/platform.h source-new/Source/ThirdParty/ANGLE/src/common/platform.h
+--- source/Source/ThirdParty/ANGLE/src/common/platform.h	2024-09-03 13:28:47.067031900 +0700
++++ source-new/Source/ThirdParty/ANGLE/src/common/platform.h	2025-09-09 09:08:03.518986606 +0700
 @@ -28,7 +28,7 @@
  #    define ANGLE_PLATFORM_POSIX 1
  #elif defined(__FreeBSD__) || defined(__OpenBSD__) || defined(__NetBSD__) ||              \
@@ -203,9 +287,9 @@ diff -ruwN webkitgtk-2.49.1/Source/ThirdParty/ANGLE/src/common/platform.h source
  #    define ANGLE_PLATFORM_POSIX 1
  #else
  #    error Unsupported platform.
-diff -ruwN webkitgtk-2.49.1/Source/ThirdParty/ANGLE/src/common/system_utils.h source/Source/ThirdParty/ANGLE/src/common/system_utils.h
---- webkitgtk-2.49.1/Source/ThirdParty/ANGLE/src/common/system_utils.h	2024-05-30 05:59:22.953676200 -0600
-+++ source/Source/ThirdParty/ANGLE/src/common/system_utils.h	2025-05-13 10:29:39.241586171 -0600
+diff -ruwN source/Source/ThirdParty/ANGLE/src/common/system_utils.h source-new/Source/ThirdParty/ANGLE/src/common/system_utils.h
+--- source/Source/ThirdParty/ANGLE/src/common/system_utils.h	2024-05-30 18:59:22.953676200 +0700
++++ source-new/Source/ThirdParty/ANGLE/src/common/system_utils.h	2025-09-09 09:08:03.536986798 +0700
 @@ -256,7 +256,9 @@
  }
  #endif
@@ -217,9 +301,9 @@ diff -ruwN webkitgtk-2.49.1/Source/ThirdParty/ANGLE/src/common/system_utils.h so
  }  // namespace angle
  
  #endif  // COMMON_SYSTEM_UTILS_H_
-diff -ruwN webkitgtk-2.49.1/Source/ThirdParty/ANGLE/src/common/system_utils_posix.cpp source/Source/ThirdParty/ANGLE/src/common/system_utils_posix.cpp
---- webkitgtk-2.49.1/Source/ThirdParty/ANGLE/src/common/system_utils_posix.cpp	2024-05-30 05:59:22.953676200 -0600
-+++ source/Source/ThirdParty/ANGLE/src/common/system_utils_posix.cpp	2025-05-10 20:28:38.268901621 -0600
+diff -ruwN source/Source/ThirdParty/ANGLE/src/common/system_utils_posix.cpp source-new/Source/ThirdParty/ANGLE/src/common/system_utils_posix.cpp
+--- source/Source/ThirdParty/ANGLE/src/common/system_utils_posix.cpp	2024-05-30 18:59:22.953676200 +0700
++++ source-new/Source/ThirdParty/ANGLE/src/common/system_utils_posix.cpp	2025-09-09 09:08:03.539986830 +0700
 @@ -33,6 +33,11 @@
  #    include <sys/resource.h>
  #endif
@@ -232,9 +316,9 @@ diff -ruwN webkitgtk-2.49.1/Source/ThirdParty/ANGLE/src/common/system_utils_posi
  namespace angle
  {
  
-diff -ruwN webkitgtk-2.49.1/Source/ThirdParty/ANGLE/src/common/WorkerThread.cpp source/Source/ThirdParty/ANGLE/src/common/WorkerThread.cpp
---- webkitgtk-2.49.1/Source/ThirdParty/ANGLE/src/common/WorkerThread.cpp	2024-06-25 02:04:37.142420000 -0600
-+++ source/Source/ThirdParty/ANGLE/src/common/WorkerThread.cpp	2025-05-13 10:31:32.029891938 -0600
+diff -ruwN source/Source/ThirdParty/ANGLE/src/common/WorkerThread.cpp source-new/Source/ThirdParty/ANGLE/src/common/WorkerThread.cpp
+--- source/Source/ThirdParty/ANGLE/src/common/WorkerThread.cpp	2024-06-25 15:04:37.142420000 +0700
++++ source-new/Source/ThirdParty/ANGLE/src/common/WorkerThread.cpp	2025-09-09 09:08:03.557987021 +0700
 @@ -165,7 +165,9 @@
  
  void AsyncWorkerPool::threadLoop()
@@ -245,9 +329,9 @@ diff -ruwN webkitgtk-2.49.1/Source/ThirdParty/ANGLE/src/common/WorkerThread.cpp 
  
      while (true)
      {
-diff -ruwN webkitgtk-2.49.1/Source/ThirdParty/ANGLE/src/libANGLE/Display.cpp source/Source/ThirdParty/ANGLE/src/libANGLE/Display.cpp
---- webkitgtk-2.49.1/Source/ThirdParty/ANGLE/src/libANGLE/Display.cpp	2025-02-05 02:14:42.678567400 -0700
-+++ source/Source/ThirdParty/ANGLE/src/libANGLE/Display.cpp	2025-05-10 20:42:33.040029309 -0600
+diff -ruwN source/Source/ThirdParty/ANGLE/src/libANGLE/Display.cpp source-new/Source/ThirdParty/ANGLE/src/libANGLE/Display.cpp
+--- source/Source/ThirdParty/ANGLE/src/libANGLE/Display.cpp	2025-02-05 16:14:42.678567400 +0700
++++ source-new/Source/ThirdParty/ANGLE/src/libANGLE/Display.cpp	2025-09-09 09:08:03.577987234 +0700
 @@ -58,7 +58,7 @@
  #        include "libANGLE/renderer/gl/wgl/DisplayWGL.h"
  #    elif ANGLE_ENABLE_CGL
@@ -266,9 +350,9 @@ diff -ruwN webkitgtk-2.49.1/Source/ThirdParty/ANGLE/src/libANGLE/Display.cpp sou
  #        if defined(ANGLE_USE_GBM)
              if (platformType == 0)
              {
-diff -ruwN webkitgtk-2.49.1/Source/ThirdParty/ANGLE/src/libANGLE/renderer/vulkan/CLCommandQueueVk.cpp source/Source/ThirdParty/ANGLE/src/libANGLE/renderer/vulkan/CLCommandQueueVk.cpp
---- webkitgtk-2.49.1/Source/ThirdParty/ANGLE/src/libANGLE/renderer/vulkan/CLCommandQueueVk.cpp	2025-02-17 05:59:58.575796600 -0700
-+++ source/Source/ThirdParty/ANGLE/src/libANGLE/renderer/vulkan/CLCommandQueueVk.cpp	2025-05-13 10:30:15.002645630 -0600
+diff -ruwN source/Source/ThirdParty/ANGLE/src/libANGLE/renderer/vulkan/CLCommandQueueVk.cpp source-new/Source/ThirdParty/ANGLE/src/libANGLE/renderer/vulkan/CLCommandQueueVk.cpp
+--- source/Source/ThirdParty/ANGLE/src/libANGLE/renderer/vulkan/CLCommandQueueVk.cpp	2025-02-17 19:59:58.575796600 +0700
++++ source-new/Source/ThirdParty/ANGLE/src/libANGLE/renderer/vulkan/CLCommandQueueVk.cpp	2025-09-09 09:08:03.578987245 +0700
 @@ -142,7 +142,9 @@
  
  angle::Result DispatchWorkThread::finishLoop()
@@ -279,9 +363,9 @@ diff -ruwN webkitgtk-2.49.1/Source/ThirdParty/ANGLE/src/libANGLE/renderer/vulkan
  
      while (true)
      {
-diff -ruwN webkitgtk-2.49.1/Source/ThirdParty/ANGLE/src/libANGLE/renderer/vulkan/CommandQueue.cpp source/Source/ThirdParty/ANGLE/src/libANGLE/renderer/vulkan/CommandQueue.cpp
---- webkitgtk-2.49.1/Source/ThirdParty/ANGLE/src/libANGLE/renderer/vulkan/CommandQueue.cpp	2025-02-05 02:14:42.690567300 -0700
-+++ source/Source/ThirdParty/ANGLE/src/libANGLE/renderer/vulkan/CommandQueue.cpp	2025-05-13 10:30:05.421614993 -0600
+diff -ruwN source/Source/ThirdParty/ANGLE/src/libANGLE/renderer/vulkan/CommandQueue.cpp source-new/Source/ThirdParty/ANGLE/src/libANGLE/renderer/vulkan/CommandQueue.cpp
+--- source/Source/ThirdParty/ANGLE/src/libANGLE/renderer/vulkan/CommandQueue.cpp	2025-02-05 16:14:42.690567300 +0700
++++ source-new/Source/ThirdParty/ANGLE/src/libANGLE/renderer/vulkan/CommandQueue.cpp	2025-09-09 09:08:03.578987245 +0700
 @@ -378,7 +378,9 @@
  
  void CleanUpThread::processTasks()
@@ -292,9 +376,9 @@ diff -ruwN webkitgtk-2.49.1/Source/ThirdParty/ANGLE/src/libANGLE/renderer/vulkan
  
      while (true)
      {
-diff -ruwN webkitgtk-2.49.1/Source/ThirdParty/ANGLE/src/libGLESv2.gni source/Source/ThirdParty/ANGLE/src/libGLESv2.gni
---- webkitgtk-2.49.1/Source/ThirdParty/ANGLE/src/libGLESv2.gni	2025-02-17 05:59:58.587796200 -0700
-+++ source/Source/ThirdParty/ANGLE/src/libGLESv2.gni	2025-05-10 20:36:18.426498466 -0600
+diff -ruwN source/Source/ThirdParty/ANGLE/src/libGLESv2.gni source-new/Source/ThirdParty/ANGLE/src/libGLESv2.gni
+--- source/Source/ThirdParty/ANGLE/src/libGLESv2.gni	2025-02-17 19:59:58.587796200 +0700
++++ source-new/Source/ThirdParty/ANGLE/src/libGLESv2.gni	2025-09-09 09:08:03.578987245 +0700
 @@ -115,7 +115,7 @@
  
  if (is_linux || is_chromeos || is_android || is_fuchsia) {
@@ -304,9 +388,9 @@ diff -ruwN webkitgtk-2.49.1/Source/ThirdParty/ANGLE/src/libGLESv2.gni source/Sou
      "src/common/system_utils_posix.cpp",
    ]
  }
-diff -ruwN webkitgtk-2.49.1/Source/ThirdParty/skia/src/gpu/ganesh/GrAutoLocaleSetter.h source/Source/ThirdParty/skia/src/gpu/ganesh/GrAutoLocaleSetter.h
---- webkitgtk-2.49.1/Source/ThirdParty/skia/src/gpu/ganesh/GrAutoLocaleSetter.h	2024-08-14 02:56:17.506453500 -0600
-+++ source/Source/ThirdParty/skia/src/gpu/ganesh/GrAutoLocaleSetter.h	2025-05-10 21:10:41.689374796 -0600
+diff -ruwN source/Source/ThirdParty/skia/src/gpu/ganesh/GrAutoLocaleSetter.h source-new/Source/ThirdParty/skia/src/gpu/ganesh/GrAutoLocaleSetter.h
+--- source/Source/ThirdParty/skia/src/gpu/ganesh/GrAutoLocaleSetter.h	2024-08-14 15:56:17.506453500 +0700
++++ source-new/Source/ThirdParty/skia/src/gpu/ganesh/GrAutoLocaleSetter.h	2025-09-09 09:08:03.579987255 +0700
 @@ -27,7 +27,7 @@
  #define HAVE_XLOCALE 0
  #endif
@@ -316,9 +400,9 @@ diff -ruwN webkitgtk-2.49.1/Source/ThirdParty/skia/src/gpu/ganesh/GrAutoLocaleSe
  #define HAVE_LOCALE_T 0
  #else
  #define HAVE_LOCALE_T 1
-diff -ruwN webkitgtk-2.49.1/Source/ThirdParty/skia/src/ports/SkMemory_malloc.cpp source/Source/ThirdParty/skia/src/ports/SkMemory_malloc.cpp
---- webkitgtk-2.49.1/Source/ThirdParty/skia/src/ports/SkMemory_malloc.cpp	2024-05-30 05:59:23.965655000 -0600
-+++ source/Source/ThirdParty/skia/src/ports/SkMemory_malloc.cpp	2025-05-10 21:14:33.304664836 -0600
+diff -ruwN source/Source/ThirdParty/skia/src/ports/SkMemory_malloc.cpp source-new/Source/ThirdParty/skia/src/ports/SkMemory_malloc.cpp
+--- source/Source/ThirdParty/skia/src/ports/SkMemory_malloc.cpp	2024-05-30 18:59:23.965655000 +0700
++++ source-new/Source/ThirdParty/skia/src/ports/SkMemory_malloc.cpp	2025-09-09 09:08:03.579987255 +0700
 @@ -126,7 +126,7 @@
      #elif defined(SK_BUILD_FOR_ANDROID) && __ANDROID_API__ >= 17
          completeSize = malloc_usable_size(addr);
@@ -328,9 +412,9 @@ diff -ruwN webkitgtk-2.49.1/Source/ThirdParty/skia/src/ports/SkMemory_malloc.cpp
          completeSize = malloc_usable_size(addr);
          SkASSERT(completeSize >= size);
      #elif defined(SK_BUILD_FOR_WIN)
-diff -ruwN webkitgtk-2.49.1/Source/WebCore/page/Page.cpp source/Source/WebCore/page/Page.cpp
---- webkitgtk-2.49.1/Source/WebCore/page/Page.cpp	2025-04-01 01:53:09.527295000 -0600
-+++ source/Source/WebCore/page/Page.cpp	2025-06-14 18:21:41.320992545 -0600
+diff -ruwN source/Source/WebCore/page/Page.cpp source-new/Source/WebCore/page/Page.cpp
+--- source/Source/WebCore/page/Page.cpp	2025-04-01 14:53:09.527295000 +0700
++++ source-new/Source/WebCore/page/Page.cpp	2025-09-09 09:08:03.580987266 +0700
 @@ -536,8 +536,10 @@
      if (RefPtr scrollingCoordinator = m_scrollingCoordinator)
          scrollingCoordinator->pageDestroyed();
@@ -354,9 +438,9 @@ diff -ruwN webkitgtk-2.49.1/Source/WebCore/page/Page.cpp source/Source/WebCore/p
  }
  
  #if ENABLE(MEDIA_STREAM)
-diff -ruwN webkitgtk-2.49.1/Source/WebCore/PlatformGTK.cmake source/Source/WebCore/PlatformGTK.cmake
---- webkitgtk-2.49.1/Source/WebCore/PlatformGTK.cmake	2024-12-16 02:07:48.162613200 -0700
-+++ source/Source/WebCore/PlatformGTK.cmake	2025-05-10 19:05:57.526658690 -0600
+diff -ruwN source/Source/WebCore/PlatformGTK.cmake source-new/Source/WebCore/PlatformGTK.cmake
+--- source/Source/WebCore/PlatformGTK.cmake	2024-12-16 16:07:48.162613200 +0700
++++ source-new/Source/WebCore/PlatformGTK.cmake	2025-09-09 09:08:03.580987266 +0700
 @@ -75,21 +75,18 @@
  )
  
@@ -379,9 +463,9 @@ diff -ruwN webkitgtk-2.49.1/Source/WebCore/PlatformGTK.cmake source/Source/WebCo
      ${GIO_UNIX_INCLUDE_DIRS}
      ${GLIB_INCLUDE_DIRS}
      ${LIBSECRET_INCLUDE_DIRS}
-diff -ruwN webkitgtk-2.49.1/Source/WebKit/Platform/IPC/unix/ConnectionUnix.cpp source/Source/WebKit/Platform/IPC/unix/ConnectionUnix.cpp
---- webkitgtk-2.49.1/Source/WebKit/Platform/IPC/unix/ConnectionUnix.cpp	2025-03-31 03:35:43.461813700 -0600
-+++ source/Source/WebKit/Platform/IPC/unix/ConnectionUnix.cpp	2025-06-15 20:53:04.313171066 -0600
+diff -ruwN source/Source/WebKit/Platform/IPC/unix/ConnectionUnix.cpp source-new/Source/WebKit/Platform/IPC/unix/ConnectionUnix.cpp
+--- source/Source/WebKit/Platform/IPC/unix/ConnectionUnix.cpp	2025-03-31 16:35:43.461813700 +0700
++++ source-new/Source/WebKit/Platform/IPC/unix/ConnectionUnix.cpp	2025-09-09 09:08:03.591987383 +0700
 @@ -48,13 +48,13 @@
  #include <wtf/glib/GUniquePtr.h>
  #endif
@@ -398,9 +482,9 @@ diff -ruwN webkitgtk-2.49.1/Source/WebKit/Platform/IPC/unix/ConnectionUnix.cpp s
  #define SOCKET_TYPE SOCK_SEQPACKET
  #else
  #if USE(GLIB)
-diff -ruwN webkitgtk-2.49.1/Source/WebKit/PlatformGTK.cmake source/Source/WebKit/PlatformGTK.cmake
---- webkitgtk-2.49.1/Source/WebKit/PlatformGTK.cmake	2025-03-05 03:09:47.273706000 -0700
-+++ source/Source/WebKit/PlatformGTK.cmake	2025-05-10 18:54:43.437475299 -0600
+diff -ruwN source/Source/WebKit/PlatformGTK.cmake source-new/Source/WebKit/PlatformGTK.cmake
+--- source/Source/WebKit/PlatformGTK.cmake	2025-03-05 17:09:47.273706000 +0700
++++ source-new/Source/WebKit/PlatformGTK.cmake	2025-09-09 09:08:03.644987947 +0700
 @@ -313,7 +313,6 @@
  )
  
@@ -409,13 +493,9 @@ diff -ruwN webkitgtk-2.49.1/Source/WebKit/PlatformGTK.cmake source/Source/WebKit
      ${GIO_UNIX_INCLUDE_DIRS}
      ${GLIB_INCLUDE_DIRS}
      ${GSTREAMER_INCLUDE_DIRS}
-Binary files webkitgtk-2.49.1/Source/WebKit/Scripts/webkit/__pycache__/__init__.cpython-311.pyc and source/Source/WebKit/Scripts/webkit/__pycache__/__init__.cpython-311.pyc differ
-Binary files webkitgtk-2.49.1/Source/WebKit/Scripts/webkit/__pycache__/messages.cpython-311.pyc and source/Source/WebKit/Scripts/webkit/__pycache__/messages.cpython-311.pyc differ
-Binary files webkitgtk-2.49.1/Source/WebKit/Scripts/webkit/__pycache__/model.cpython-311.pyc and source/Source/WebKit/Scripts/webkit/__pycache__/model.cpython-311.pyc differ
-Binary files webkitgtk-2.49.1/Source/WebKit/Scripts/webkit/__pycache__/parser.cpython-311.pyc and source/Source/WebKit/Scripts/webkit/__pycache__/parser.cpython-311.pyc differ
-diff -ruwN webkitgtk-2.49.1/Source/WTF/wtf/glib/FileSystemGlib.cpp source/Source/WTF/wtf/glib/FileSystemGlib.cpp
---- webkitgtk-2.49.1/Source/WTF/wtf/glib/FileSystemGlib.cpp	2024-12-16 02:07:48.134613800 -0700
-+++ source/Source/WTF/wtf/glib/FileSystemGlib.cpp	2025-05-10 20:14:04.266843426 -0600
+diff -ruwN source/Source/WTF/wtf/glib/FileSystemGlib.cpp source-new/Source/WTF/wtf/glib/FileSystemGlib.cpp
+--- source/Source/WTF/wtf/glib/FileSystemGlib.cpp	2024-12-16 16:07:48.134613800 +0700
++++ source-new/Source/WTF/wtf/glib/FileSystemGlib.cpp	2025-09-09 09:08:03.644987947 +0700
 @@ -70,7 +70,7 @@
      return CString({ readLinkBuffer, static_cast<size_t>(result) });
  WTF_ALLOW_UNSAFE_BUFFER_USAGE_END
@@ -425,9 +505,9 @@ diff -ruwN webkitgtk-2.49.1/Source/WTF/wtf/glib/FileSystemGlib.cpp source/Source
  CString currentExecutablePath()
  {
      return { };
-diff -ruwN webkitgtk-2.49.1/Source/WTF/wtf/InlineASM.h source/Source/WTF/wtf/InlineASM.h
---- webkitgtk-2.49.1/Source/WTF/wtf/InlineASM.h	2024-09-23 04:54:44.750106000 -0600
-+++ source/Source/WTF/wtf/InlineASM.h	2025-05-10 21:34:44.313517406 -0600
+diff -ruwN source/Source/WTF/wtf/InlineASM.h source-new/Source/WTF/wtf/InlineASM.h
+--- source/Source/WTF/wtf/InlineASM.h	2024-09-23 17:54:44.750106000 +0700
++++ source-new/Source/WTF/wtf/InlineASM.h	2025-09-09 09:08:03.667988192 +0700
 @@ -89,7 +89,8 @@
      || OS(HURD)                \
      || OS(NETBSD)              \
@@ -438,9 +518,9 @@ diff -ruwN webkitgtk-2.49.1/Source/WTF/wtf/InlineASM.h source/Source/WTF/wtf/Inl
      // GNU as-compatible syntax.
  #define LOCAL_LABEL_STRING(name) ".L" #name
  #endif
-diff -ruwN webkitgtk-2.49.1/Source/WTF/wtf/PlatformHave.h source/Source/WTF/wtf/PlatformHave.h
---- webkitgtk-2.49.1/Source/WTF/wtf/PlatformHave.h	2025-04-02 06:09:45.800669000 -0600
-+++ source/Source/WTF/wtf/PlatformHave.h	2025-05-11 08:45:52.150157369 -0600
+diff -ruwN source/Source/WTF/wtf/PlatformHave.h source-new/Source/WTF/wtf/PlatformHave.h
+--- source/Source/WTF/wtf/PlatformHave.h	2025-04-02 19:09:45.800669000 +0700
++++ source-new/Source/WTF/wtf/PlatformHave.h	2025-09-09 09:08:03.707988617 +0700
 @@ -231,7 +231,7 @@
  #define HAVE_MACH_MEMORY_ENTRY 1
  #endif
@@ -450,9 +530,9 @@ diff -ruwN webkitgtk-2.49.1/Source/WTF/wtf/PlatformHave.h source/Source/WTF/wtf/
  #define HAVE_MACHINE_CONTEXT 1
  #endif
  
-diff -ruwN webkitgtk-2.49.1/Source/WTF/wtf/PlatformOS.h source/Source/WTF/wtf/PlatformOS.h
---- webkitgtk-2.49.1/Source/WTF/wtf/PlatformOS.h	2025-04-02 23:49:09.282701700 -0600
-+++ source/Source/WTF/wtf/PlatformOS.h	2025-05-10 21:44:33.694803473 -0600
+diff -ruwN source/Source/WTF/wtf/PlatformOS.h source-new/Source/WTF/wtf/PlatformOS.h
+--- source/Source/WTF/wtf/PlatformOS.h	2025-04-03 12:49:09.282701700 +0700
++++ source-new/Source/WTF/wtf/PlatformOS.h	2025-09-09 09:08:03.709988639 +0700
 @@ -143,7 +143,8 @@
      || OS(OPENBSD)          \
      || defined(unix)        \
@@ -463,9 +543,9 @@ diff -ruwN webkitgtk-2.49.1/Source/WTF/wtf/PlatformOS.h source/Source/WTF/wtf/Pl
  #define WTF_OS_UNIX 1
  #endif
  
-diff -ruwN webkitgtk-2.49.1/Source/WTF/wtf/PlatformRegisters.h source/Source/WTF/wtf/PlatformRegisters.h
---- webkitgtk-2.49.1/Source/WTF/wtf/PlatformRegisters.h	2024-11-20 06:56:01.847236400 -0700
-+++ source/Source/WTF/wtf/PlatformRegisters.h	2025-05-10 19:12:14.761916702 -0600
+diff -ruwN source/Source/WTF/wtf/PlatformRegisters.h source-new/Source/WTF/wtf/PlatformRegisters.h
+--- source/Source/WTF/wtf/PlatformRegisters.h	2024-11-20 20:56:01.847236400 +0700
++++ source-new/Source/WTF/wtf/PlatformRegisters.h	2025-09-09 09:08:03.723988787 +0700
 @@ -39,6 +39,8 @@
  typedef ucontext_t mcontext_t;
  #elif OS(QNX)
@@ -475,9 +555,9 @@ diff -ruwN webkitgtk-2.49.1/Source/WTF/wtf/PlatformRegisters.h source/Source/WTF
  #else
  #include <sys/ucontext.h>
  #endif
-diff -ruwN webkitgtk-2.49.1/Source/WTF/wtf/posix/CPUTimePOSIX.cpp source/Source/WTF/wtf/posix/CPUTimePOSIX.cpp
---- webkitgtk-2.49.1/Source/WTF/wtf/posix/CPUTimePOSIX.cpp	2023-09-18 01:56:45.363115500 -0600
-+++ source/Source/WTF/wtf/posix/CPUTimePOSIX.cpp	2025-05-10 19:30:23.676993788 -0600
+diff -ruwN source/Source/WTF/wtf/posix/CPUTimePOSIX.cpp source-new/Source/WTF/wtf/posix/CPUTimePOSIX.cpp
+--- source/Source/WTF/wtf/posix/CPUTimePOSIX.cpp	2023-09-18 14:56:45.363115500 +0700
++++ source-new/Source/WTF/wtf/posix/CPUTimePOSIX.cpp	2025-09-09 09:08:03.727988830 +0700
 @@ -47,10 +47,14 @@
  
  Seconds CPUTime::forCurrentThread()
@@ -493,9 +573,9 @@ diff -ruwN webkitgtk-2.49.1/Source/WTF/wtf/posix/CPUTimePOSIX.cpp source/Source/
  }
  
  }
-diff -ruwN webkitgtk-2.49.1/Source/WTF/wtf/posix/FileHandlePOSIX.cpp source/Source/WTF/wtf/posix/FileHandlePOSIX.cpp
---- webkitgtk-2.49.1/Source/WTF/wtf/posix/FileHandlePOSIX.cpp	2025-03-21 05:07:10.828055100 -0600
-+++ source/Source/WTF/wtf/posix/FileHandlePOSIX.cpp	2025-05-10 19:26:54.845585962 -0600
+diff -ruwN source/Source/WTF/wtf/posix/FileHandlePOSIX.cpp source-new/Source/WTF/wtf/posix/FileHandlePOSIX.cpp
+--- source/Source/WTF/wtf/posix/FileHandlePOSIX.cpp	2025-03-21 18:07:10.828055100 +0700
++++ source-new/Source/WTF/wtf/posix/FileHandlePOSIX.cpp	2025-09-09 09:08:03.757989149 +0700
 @@ -39,6 +39,10 @@
  #include <wtf/MallocSpan.h>
  #include <wtf/MappedFileData.h>
@@ -507,9 +587,9 @@ diff -ruwN webkitgtk-2.49.1/Source/WTF/wtf/posix/FileHandlePOSIX.cpp source/Sour
  namespace WTF::FileSystemImpl {
  
  std::optional<uint64_t> FileHandle::read(std::span<uint8_t> data)
-diff -ruwN webkitgtk-2.49.1/Source/WTF/wtf/posix/ThreadingPOSIX.cpp source/Source/WTF/wtf/posix/ThreadingPOSIX.cpp
---- webkitgtk-2.49.1/Source/WTF/wtf/posix/ThreadingPOSIX.cpp	2025-03-05 03:09:47.149706400 -0700
-+++ source/Source/WTF/wtf/posix/ThreadingPOSIX.cpp	2025-05-10 19:19:09.728119543 -0600
+diff -ruwN source/Source/WTF/wtf/posix/ThreadingPOSIX.cpp source-new/Source/WTF/wtf/posix/ThreadingPOSIX.cpp
+--- source/Source/WTF/wtf/posix/ThreadingPOSIX.cpp	2025-03-05 17:09:47.149706400 +0700
++++ source-new/Source/WTF/wtf/posix/ThreadingPOSIX.cpp	2025-09-09 09:08:03.762989203 +0700
 @@ -356,7 +356,7 @@
  
  void Thread::changePriority(int delta)
@@ -519,37 +599,3 @@ diff -ruwN webkitgtk-2.49.1/Source/WTF/wtf/posix/ThreadingPOSIX.cpp source/Sourc
      Locker locker { m_mutex };
  
      int policy;
-diff -ruwN webkitgtk-2.49.1/Source/WTF/wtf/RAMSize.cpp source/Source/WTF/wtf/RAMSize.cpp
---- webkitgtk-2.49.1/Source/WTF/wtf/RAMSize.cpp	2024-10-01 01:40:32.303785300 -0600
-+++ source/Source/WTF/wtf/RAMSize.cpp	2025-05-12 21:08:59.548628775 -0600
-@@ -46,7 +46,7 @@
- 
- namespace WTF {
- 
--#if OS(WINDOWS)
-+#if OS(WINDOWS) || defined(__redox__)
- static constexpr size_t ramSizeGuess = 512 * MB;
- #endif
- 
-@@ -64,6 +64,9 @@
-     struct sysinfo si;
-     sysinfo(&si);
-     return si.totalram * si.mem_unit;
-+#elif defined(__redox__)
-+    //TODO: implement using /scheme/mem
-+    return ramSizeGuess;
- #elif OS(UNIX) || OS(HAIKU)
-     long pages = sysconf(_SC_PHYS_PAGES);
-     long pageSize = sysconf(_SC_PAGE_SIZE);
-diff -ruwN webkitgtk-2.49.1/Source/WTF/wtf/StackBounds.cpp source/Source/WTF/wtf/StackBounds.cpp
---- webkitgtk-2.49.1/Source/WTF/wtf/StackBounds.cpp	2025-03-18 02:33:00.063181400 -0600
-+++ source/Source/WTF/wtf/StackBounds.cpp	2025-05-10 19:16:43.976048337 -0600
-@@ -120,6 +120,8 @@
- #if HAVE(PTHREAD_NP_H) || OS(NETBSD)
-     // e.g. on FreeBSD 5.4, neundorf@kde.org
-     pthread_attr_get_np(thread, &sattr);
-+#elif defined(__redox__)
-+    //TODO
- #else
-     // FIXME: this function is non-portable; other POSIX systems may have different np alternatives
-     pthread_getattr_np(thread, &sattr);
