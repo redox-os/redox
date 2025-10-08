@@ -1,10 +1,10 @@
-#TODO probably wrong script, see https://docs.krita.org/en/untranslatable_pages/building_krita.html#building-on-linux
-#TODO port to orbital
-#TODO maybe missing dependencies
+#TODO not compiled or tested
+# build instructions: https://docs.krita.org/en/untranslatable_pages/building_krita.html#building-on-linux
+# maybe missing dependencies
 [source]
 tar = "https://download.kde.org/stable/krita/5.2.1/krita-5.2.1.tar.gz"
 [build]
-template = "custom"
+template = "cmake"
 dependencies = [
     "gexiv2",
     "ffmpeg6",
@@ -51,20 +51,3 @@ dependencies = [
     "libxsimd",
     "libxtl",
 ]
-script = """
-DYNAMIC_INIT
-COOKBOOK_CONFIGURE="cmake"
-COOKBOOK_CONFIGURE_FLAGS=(
-    -DCMAKE_BUILD_TYPE=Release
-    -DCMAKE_CROSSCOMPILING=True
-    -DCMAKE_CXX_COMPILER="${TARGET}-g++"
-    -DCMAKE_C_COMPILER="${TARGET}-gcc"
-    -DCMAKE_INSTALL_PREFIX="/"
-    -DCMAKE_PREFIX_PATH="${COOKBOOK_SYSROOT}"
-    -DCMAKE_SYSTEM_NAME=Generic
-    -DCMAKE_SYSTEM_PROCESSOR="$(echo "${TARGET}" | cut -d - -f1)"
-    -DCMAKE_VERBOSE_MAKEFILE=On
-"${COOKBOOK_SOURCE}"
-)
-cookbook_configure
-"""
