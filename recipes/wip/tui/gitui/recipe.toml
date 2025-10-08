@@ -1,13 +1,14 @@
-#TODO openssl-sys crate error
+#TODO: Page fault
 [source]
 git = "https://github.com/extrawurst/gitui"
+
 [build]
 template = "custom"
 dependencies = [
     "openssl1",
 ]
 script = """
-export OPENSSL_DIR="${COOKBOOK_SYSROOT}"
-export OPENSSL_STATIC="true"
+DYNAMIC_INIT
+export OPENSSL_NO_VENDOR=1
 cookbook_cargo
 """
