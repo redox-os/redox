@@ -750,6 +750,7 @@ fn build(
     target_dir: &Path,
     name: &PackageName,
     recipe: &Recipe,
+    offline_mode: bool,
     check_source: bool,
 ) -> Result<(PathBuf, BTreeSet<PackageName>), String> {
     let sysroot_dir = target_dir.join("sysroot");
@@ -889,6 +890,7 @@ export PKG_CONFIG_SYSROOT_DIR="${COOKBOOK_SYSROOT}"
 build_type=release
 install_flags=
 build_flags=--release
+offline_flags=
 if [ ! -z "${COOKBOOK_DEBUG}" ]
 then
     install_flags=--debug
@@ -896,6 +898,11 @@ then
     build_type=debug
     export CFLAGS="${CFLAGS} -g"
     export CPPFLAGS="${CPPFLAGS} -g"
+fi
+
+if [ ! -z "${COOKBOOK_OFFLINE}" ]
+then
+offline_flags=--offline
 fi
 
 # cargo template
@@ -907,6 +914,7 @@ function cookbook_cargo {
         --locked \
         --no-track \
         ${install_flags} \
+        ${offline_flags} \
          -j "${COOKBOOK_MAKE_JOBS}" "$@"
 }
 
@@ -918,7 +926,7 @@ function cookbook_cargo_examples {
         "${COOKBOOK_CARGO}" build \
             --manifest-path "${COOKBOOK_SOURCE}/${PACKAGE_PATH}/Cargo.toml" \
             --example "${example}" \
-            ${build_flags} -j "${COOKBOOK_MAKE_JOBS}"
+            ${build_flags} ${offline_flags} -j "${COOKBOOK_MAKE_JOBS}"
         mkdir -pv "${COOKBOOK_STAGE}/usr/bin"
         cp -v \
             "target/${TARGET}/${build_type}/examples/${example}" \
@@ -934,7 +942,7 @@ function cookbook_cargo_packages {
         "${COOKBOOK_CARGO}" build \
             --manifest-path "${COOKBOOK_SOURCE}/${PACKAGE_PATH}/Cargo.toml" \
             --package "${package}" \
-            ${build_flags} -j "${COOKBOOK_MAKE_JOBS}"
+            ${build_flags} ${offline_flags} -j "${COOKBOOK_MAKE_JOBS}"
         mkdir -pv "${COOKBOOK_STAGE}/usr/bin"
         cp -v \
             "target/${TARGET}/${build_type}/${package}" \
@@ -1187,6 +1195,9 @@ done
             command.env("COOKBOOK_STAGE", &cookbook_stage);
             command.env("COOKBOOK_SOURCE", &cookbook_source);
             command.env("COOKBOOK_SYSROOT", &cookbook_sysroot);
+            if offline_mode {
+                command.env("COOKBOOK_OFFLINE", "1");
+            }
             command
         };
 
@@ -1363,9 +1374,16 @@ fn cook(
 
     let target_dir = create_target_dir(recipe_dir)?;
 
-    let (stage_dir, auto_deps) =
-        build(recipe_dir, &source_dir, &target_dir, name, recipe, !is_deps)
-            .map_err(|err| format!("failed to build: {}", err))?;
+    let (stage_dir, auto_deps) = build(
+        recipe_dir,
+        &source_dir,
+        &target_dir,
+        name,
+        recipe,
+        is_offline,
+        !is_deps,
+    )
+    .map_err(|err| format!("failed to build: {}", err))?;
 
     let _package_file = package(&stage_dir, &target_dir, name, recipe, &auto_deps)
         .map_err(|err| format!("failed to package: {}", err))?;
