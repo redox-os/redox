@@ -19,6 +19,7 @@ intel-one-mono = {}
 curl = {}
 git = {}
 gnu-grep = {}
+htop = {}
 ripgrep = {}
 sodium = {}
 terminfo = {}
