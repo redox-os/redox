@@ -1,0 +1,6 @@
+[source]
+git = "https://github.com/c-ares/c-ares"
+rev = "d3a507e920e7af18a5efb7f9f1d8044ed4750013" # 1.34.5
+
+[build]
+template = "cmake"
