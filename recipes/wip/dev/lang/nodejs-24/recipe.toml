@@ -1,22 +1,23 @@
-#TODO depedencies needed
+#TODO requires stdc++20
 [source]
-tar = "https://nodejs.org/dist/v24.5.0/node-v24.5.0.tar.gz"
+tar = "https://nodejs.org/dist/v24.5.0/node-v24.9.0.tar.xz"
+blake3 = "c710713c9144dc2dfadaef1d180b295d85edd9945513017fc700af68eb08a251"
 patches = ["01_redox.patch"]
 
 [build]
 template = "custom"
-depedencies = [
+dependencies = [
 #   "ada",
     "libbrotli",
-#   "cares",
+    "c-ares",
     "libuv",
-#   "ngtcp2",
+    "ngtcp2",
     "nghttp2",
 #   "http-parser",
-#   "nghttp3",
+    "nghttp3",
     "openssl1",
     "simdjson",
-#   "simdutf",
+    "simdutf",
     "sqlite3",
 #   "uvwasi",
     "zlib",
@@ -24,6 +25,7 @@ depedencies = [
 ]
 script = """
 DYNAMIC_INIT
+rsync -av --delete "${COOKBOOK_SOURCE}/" ./
 
 case "${TARGET}" in
     x86-unknown-redox)
@@ -41,12 +43,21 @@ COOKBOOK_CONFIGURE_FLAGS=(
   --prefix=${COOKBOOK_STAGE}
   --dest-cpu=${NODE_CPU}
   --dest-os=redox
+  --shared-cares
   --shared-libuv
+  --shared-ngtcp2
   --shared-nghttp2
+  --shared-nghttp3
   --shared-openssl
+  --shared-simdjson
+  --shared-simdutf
   --shared-zlib
   --shared-zstd
   --cross-compiling
+  --without-sqlite
+  --without-inspector
+  --without-intl
 )
+COOKBOOK_CONFIGURE="./configure"
 cookbook_configure
 """

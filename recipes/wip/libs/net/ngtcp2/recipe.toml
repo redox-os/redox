@@ -1,0 +1,14 @@
+#TODO Maybe need openssl 1.1.1
+[source]
+git = "https://github.com/ngtcp2/ngtcp2"
+rev = "e9fe10e0e8b3ce646fa88b4217864f29b4e013d9" # 1.14.0
+
+[build]
+template = "custom"
+script = """
+DYNAMIC_INIT
+COOKBOOK_CMAKE_FLAGS+=(
+    -DENABLE_OPENSSL=OFF
+)
+cookbook_cmake
+"""
