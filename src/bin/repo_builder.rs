@@ -1,5 +1,5 @@
 use cookbook::WALK_DEPTH;
-use pkg::{recipes, Package, PackageName};
+use pkg::{Package, PackageName, recipes};
 use std::collections::{BTreeMap, HashMap};
 use std::env;
 use std::fs::{self, File};
