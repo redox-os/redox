@@ -250,6 +250,7 @@ pub fn fetch(recipe_dir: &Path, source: &Option<SourceRecipe>) -> Result<PathBuf
                                 "The downloaded tar blake3 '{source_tar_blake3}' is not equal to blake3 in recipe.toml"
                             ));
                         } else {
+                            eprintln!("DEBUG: source tar blake3 is different and need redownload");
                             remove_all(&source_tar)?;
                         }
                         true
