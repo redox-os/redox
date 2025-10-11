@@ -1,6 +1,6 @@
 # Configuration file for redox-installer, Cookbook and RedoxFS FUSE
 
-fstools: $(FSTOOLS_TAG)
+fstools: $(FSTOOLS_TAG) $(HOST_FSTOOLS)
 
 # These tools run inside Podman if it is used, or on the host if Podman is not used
 $(FSTOOLS_TAG): cookbook installer $(CONTAINER_TAG)
