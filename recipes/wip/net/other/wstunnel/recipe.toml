@@ -1,0 +1,8 @@
+#TODO not compiled or tested
+[source]
+git = "https://github.com/erebe/wstunnel"
+[build]
+template = "custom"
+script = """
+cookbook_cargo_packages wstunnel-cli
+"""
