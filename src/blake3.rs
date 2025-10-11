@@ -21,3 +21,11 @@ pub fn blake3_progress<P: AsRef<Path>>(path: P) -> Result<String> {
 
     Ok(res)
 }
+
+pub fn blake3_silent<P: AsRef<Path>>(path: P) -> Result<String> {
+    let mut f = fs::File::open(&path)?;
+
+    let hash = Hasher::new().update_reader(&mut f)?.finalize();
+    let res = format!("{}", hash.to_hex());
+    Ok(res)
+}
