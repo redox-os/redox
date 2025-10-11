@@ -56,7 +56,7 @@ pub fn fetch_offline(recipe_dir: &Path, source: &Option<SourceRecipe>) -> Result
                 if source_tar.exists() {
                     if let Some(blake3) = blake3 {
                         if source_tar_blake3 != *blake3 {
-                            return Err(format!("The downloaded tar blake3 is not match and unable to continue in offline mode."));
+                            return Err(format!("The downloaded tar blake3 '{source_tar_blake3}' is not equal to blake3 in recipe.toml."));
                         }
                         fetch_extract_tar(source_tar, &source_dir)?;
                         fetch_apply_patches(recipe_dir, patches, script, &source_dir)?;
@@ -220,9 +220,6 @@ pub fn fetch(recipe_dir: &Path, source: &Option<SourceRecipe>) -> Result<PathBuf
             let source_tar = recipe_dir.join("source.tar");
             let mut tar_updated = false;
             while {
-                if tar_updated {
-                    return Err(format!("The downloaded tar blake3 is not match"));
-                }
                 if !source_tar.is_file() {
                     tar_updated = true;
                     //TODO: replace wget
@@ -241,7 +238,13 @@ pub fn fetch(recipe_dir: &Path, source: &Option<SourceRecipe>) -> Result<PathBuf
                 let source_tar_blake3 = get_blake3(&source_tar)?;
                 if let Some(blake3) = blake3 {
                     if source_tar_blake3 != *blake3 {
-                        remove_all(&source_tar)?;
+                        if tar_updated {
+                            return Err(format!(
+                                "The downloaded tar blake3 '{source_tar_blake3}' is not equal to blake3 in recipe.toml"
+                            ));
+                        } else {
+                            remove_all(&source_tar)?;
+                        }
                         true
                     } else {
                         false
