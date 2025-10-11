@@ -268,6 +268,7 @@ pub fn fetch(recipe_dir: &Path, source: &Option<SourceRecipe>) -> Result<PathBuf
             } {}
             if source_dir.is_dir() {
                 if tar_updated || fetch_is_patches_newer(recipe_dir, patches, &source_dir)? {
+                    eprintln!("DEBUG: source tar or patches is newer than the source directory");
                     remove_all(&source_dir)?
                 }
             }
