@@ -1,10 +1,10 @@
 use std::{collections::BTreeSet, convert::TryInto, fs, path::PathBuf};
 
-use pkg::{package::PackageError, recipes, PackageName};
+use pkg::{PackageName, package::PackageError, recipes};
 use regex::Regex;
 use serde::{
-    de::{value::Error as DeError, Error as DeErrorT},
     Deserialize, Serialize,
+    de::{Error as DeErrorT, value::Error as DeError},
 };
 
 use crate::WALK_DEPTH;
