@@ -1,0 +1,20 @@
+#TODO not compiled or tested
+# build instructions: https://librepcb.org/docs/installation/build-from-sources/
+# commented out optional dependencies
+[source]
+git = "https://github.com/LibrePCB/LibrePCB"
+rev = "77db4fda7f5df5d058bfc5d2fae3072bb30c8402"
+[build]
+template = "cmake"
+cmakeflags = [
+    "-DUSE_GLU=0",
+    "-DUSE_OPENCASCADE=0",
+]
+dependencies = [
+    "qt6-base",
+    "qt6-imageformats",
+    "openssl3",
+    "zlib",
+    #"opencascade",
+    #"mesa-glu",
+]
