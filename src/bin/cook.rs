@@ -4,7 +4,7 @@ use cookbook::cook::fs::*;
 use cookbook::cook::script::SHARED_PRESCRIPT;
 use cookbook::recipe::{AutoDeps, BuildKind, CookRecipe, Recipe};
 use pkg::package::Package;
-use pkg::{recipes, PackageName};
+use pkg::{PackageName, recipes};
 use std::collections::VecDeque;
 use std::convert::TryInto;
 use std::{
@@ -17,7 +17,7 @@ use std::{
 };
 use termion::{color, style};
 
-use cookbook::{is_redox, WALK_DEPTH};
+use cookbook::{WALK_DEPTH, is_redox};
 
 fn auto_deps(
     stage_dir: &Path,

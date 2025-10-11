@@ -56,7 +56,9 @@ pub fn fetch_offline(recipe_dir: &Path, source: &Option<SourceRecipe>) -> Result
                 if source_tar.exists() {
                     if let Some(blake3) = blake3 {
                         if source_tar_blake3 != *blake3 {
-                            return Err(format!("The downloaded tar blake3 '{source_tar_blake3}' is not equal to blake3 in recipe.toml."));
+                            return Err(format!(
+                                "The downloaded tar blake3 '{source_tar_blake3}' is not equal to blake3 in recipe.toml."
+                            ));
                         }
                         fetch_extract_tar(source_tar, &source_dir)?;
                         fetch_apply_patches(recipe_dir, patches, script, &source_dir)?;
