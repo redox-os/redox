@@ -2,7 +2,7 @@
 name = "redox_cookbook"
 version = "0.1.0"
 authors = ["Jeremy Soller <jackpot51@gmail.com>"]
-edition = "2018"
+edition = "2024"
 default-run = "cook"
 
 # See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
@@ -28,7 +28,7 @@ pbr = "1.0.2"
 pkgar = { path = "pkgar/pkgar" }
 pkgar-core = { path = "pkgar/pkgar-core" }
 pkgar-keys = { path = "pkgar/pkgar-keys" }
-redox-pkg = { git = "https://gitlab.redox-os.org/redox-os/pkgutils" }
+redox-pkg = "0.2.8"
 redoxer = "0.2"
 regex = "1.11"
 serde = { version = "=1.0.197", features = ["derive"] }
