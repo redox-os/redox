@@ -10,9 +10,15 @@ pub struct CookbookConfig {
 static CONFIG: OnceLock<CookbookConfig> = OnceLock::new();
 
 pub fn init_config() {
-    let config: CookbookConfig = {
-        let toml_content = fs::read_to_string("cookbook.toml").unwrap_or("".to_owned());
-        toml::from_str(&toml_content).unwrap_or(CookbookConfig::default())
+    let config: CookbookConfig = if fs::exists("cookbook.toml").unwrap_or(false) {
+        let toml_content = fs::read_to_string("cookbook.toml")
+            .map_err(|e| format!("Unable to read config: {:?}", e))
+            .unwrap();
+        toml::from_str(&toml_content)
+            .map_err(|e| format!("Unable to parse config: {:?}", e))
+            .unwrap()
+    } else {
+        CookbookConfig::default()
     };
 
     CONFIG.set(config).expect("config is initialized twice");
@@ -57,16 +63,13 @@ mod tests {
     use super::*;
 
     fn setup_test_config() {
-        let mut mirrors = HashMap::new();
-        mirrors.insert("ftp.gnu.com".to_string(), "example.com/gnu".to_string());
-        mirrors.insert(
-            "github.com/foo/bar".to_string(),
-            "github.com/baz/bar".to_string(),
-        );
-        mirrors.insert("github.com/a".to_string(), "github.com/b".to_string());
-
-        let app_config = CookbookConfig { mirrors };
-
+        let app_config = toml::from_str(
+            "[mirrors]\n\
+            \"ftp.gnu.org/gnu\" = \"example.com/gnu\"\n\
+            \"github.com/foo/bar\" = \"github.com/baz/bar\"\n\
+            \"github.com/a\" = \"github.com/b\"\n",
+        )
+        .expect("Unable to parse test config");
         // This will be called for each test. If the config is already set,
         // it will do nothing, which is fine as all tests use the same config.
         let _ = CONFIG.set(app_config);
@@ -75,7 +78,7 @@ mod tests {
     #[test]
     fn test_exact_match() {
         setup_test_config();
-        assert_eq!(translate_mirror("ftp.gnu.com"), "example.com/gnu");
+        assert_eq!(translate_mirror("ftp.gnu.org/gnu"), "example.com/gnu");
         assert_eq!(translate_mirror("github.com/foo/bar"), "github.com/baz/bar");
     }
 
@@ -87,8 +90,8 @@ mod tests {
             "https://github.com/b/c"
         );
         assert_eq!(
-            translate_mirror("https://ftp.gnu.com/path/to/file"),
-            "https://example.com/gnu/path/to/file"
+            translate_mirror("https://ftp.gnu.org/gnu/bash/bash-5.2.15.tar.gz"),
+            "https://example.com/gnu/bash/bash-5.2.15.tar.gz"
         );
     }
 

@@ -31,9 +31,9 @@ Cookbook has special config to avoid repetitive args, place this file into `cook
 # This is a configuration file to avoid repetitively spelling command args.
 # At the moment only mirrors here implemented but in future it will be expanded when scripts are rusted
 
-[[mirrors]]
-# https://www.gnu.org/prep/ftp.en.html
-"ftp.gnu.com" = "example.com/gnu"
+[mirrors]
+# see list of GNU FTP mirrors at https://www.gnu.org/prep/ftp.en.html
+"ftp.gnu.org/gnu" = "example.com/gnu"
 "github.com/foo/bar" = "github.com/baz/bar" 
 ```
 
