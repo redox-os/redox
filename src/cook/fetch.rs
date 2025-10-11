@@ -3,13 +3,18 @@ use crate::cook::fs::*;
 use crate::cook::script::*;
 use crate::is_redox;
 use crate::recipe::Recipe;
-use crate::{blake3::blake3_progress, recipe::SourceRecipe};
+use crate::{blake3, recipe::SourceRecipe};
 use std::fs;
 use std::path::{Path, PathBuf};
 use std::process::Command;
 
-pub(crate) fn get_blake3(path: &PathBuf) -> Result<String, String> {
-    blake3_progress(&path).map_err(|err| {
+pub(crate) fn get_blake3(path: &PathBuf, show_progress: bool) -> Result<String, String> {
+    if show_progress {
+        blake3::blake3_progress(&path)
+    } else {
+        blake3::blake3_silent(&path)
+    }
+    .map_err(|err| {
         format!(
             "failed to calculate blake3 of '{}': {}\n{:?}",
             path.display(),
@@ -52,7 +57,7 @@ pub fn fetch_offline(recipe_dir: &Path, source: &Option<SourceRecipe>) -> Result
         }) => {
             if !source_dir.is_dir() {
                 let source_tar = recipe_dir.join("source.tar");
-                let source_tar_blake3 = get_blake3(&source_tar)?;
+                let source_tar_blake3 = get_blake3(&source_tar, true)?;
                 if source_tar.exists() {
                     if let Some(blake3) = blake3 {
                         if source_tar_blake3 != *blake3 {
@@ -237,7 +242,7 @@ pub fn fetch(recipe_dir: &Path, source: &Option<SourceRecipe>) -> Result<PathBuf
                         rename(&source_tar_tmp, &source_tar)?;
                     }
                 }
-                let source_tar_blake3 = get_blake3(&source_tar)?;
+                let source_tar_blake3 = get_blake3(&source_tar, tar_updated)?;
                 if let Some(blake3) = blake3 {
                     if source_tar_blake3 != *blake3 {
                         if tar_updated {
