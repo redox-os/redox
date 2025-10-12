@@ -27,6 +27,7 @@ base-initfs = {}
 bash = {}
 binutils = {}
 bootloader = {}
+bottom = {}
 bzip2 = {}
 ca-certificates = {}
 cairo = {}
