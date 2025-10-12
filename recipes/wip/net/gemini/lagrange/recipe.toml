@@ -1,9 +1,13 @@
-#TODO probably wrong script, see https://github.com/skyjake/lagrange#how-to-compile
+#TODO not compiled or tested
+# build instructions: https://github.com/skyjake/lagrange#how-to-compile
 #TODO mpg123 dependency broken
 [source]
-tar = "https://git.skyjake.fi/gemini/lagrange/releases/download/v1.17.4/lagrange-1.17.4.tar.gz"
+tar = "https://git.skyjake.fi/gemini/lagrange/releases/download/v1.19.3/lagrange-1.19.3.tar.gz"
 [build]
-template = "custom"
+template = "cmake"
+cmakeflags = [
+    "-DENABLE_MPG123=OFF"
+]
 dependencies = [
     "sdl2",
     "openssl1",
@@ -12,20 +16,5 @@ dependencies = [
     "pcre",
     "fribidi",
     "libunistring",
+    #"mpg123",
 ]
-script = """
-    COOKBOOK_CONFIGURE="cmake"
-    COOKBOOK_CONFIGURE_FLAGS=(
-	-DCMAKE_BUILD_TYPE=Release
-	-DCMAKE_CROSSCOMPILING=True
-	-DCMAKE_EXE_LINKER_FLAGS="-static"
-	-DCMAKE_INSTALL_PREFIX="/"
-    -DCMAKE_PREFIX_PATH="${COOKBOOK_SYSROOT}"
-    -DCMAKE_SYSTEM_NAME=Generic
-    -DCMAKE_SYSTEM_PROCESSOR="$(echo "${TARGET}" | cut -d - -f1)"
-    -DCMAKE_VERBOSE_MAKEFILE=On
-    -DENABLE_MPG123=OFF
-"${COOKBOOK_SOURCE}"
-)
-cookbook_configure
-"""
