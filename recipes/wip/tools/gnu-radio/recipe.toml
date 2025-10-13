@@ -1,10 +1,11 @@
-#TODO maybe incomplete script, see https://wiki.gnuradio.org/index.php?title=LinuxInstall#For_GNU_Radio_3.10,_3.9,_and_Main_Branch
-#TODO probably missing dependencies, see https://wiki.gnuradio.org/index.php?title=UbuntuInstall#Install_Dependencies
+#TODO not compiled or tested
+# build instructions: https://wiki.gnuradio.org/index.php?title=LinuxInstall#For_GNU_Radio_3.10,_3.9,_and_Main_Branch
+# probably missing dependencies, see https://wiki.gnuradio.org/index.php?title=UbuntuInstall#Install_Dependencies
 [source]
 git = "https://github.com/gnuradio/gnuradio"
 rev = "bd928539d9eaa73736f8381cd2e60953a0eb8cb8"
 [build]
-template = "custom"
+template = "cmake"
 dependencies = [
     "volk",
     "boost",
@@ -15,18 +16,3 @@ dependencies = [
     "libusb",
     "libevdev",
 ]
-script = """
-COOKBOOK_CONFIGURE="cmake"
-COOKBOOK_CONFIGURE_FLAGS=(
-    -DCMAKE_BUILD_TYPE=Release
-    -DCMAKE_CROSSCOMPILING=True
-    -DCMAKE_EXE_LINKER_FLAGS="-static"
-    -DCMAKE_INSTALL_PREFIX="/"
-    -DCMAKE_PREFIX_PATH="${COOKBOOK_SYSROOT}"
-    -DCMAKE_SYSTEM_NAME=Generic
-    -DCMAKE_SYSTEM_PROCESSOR="$(echo "${TARGET}" | cut -d - -f1)"
-    -DCMAKE_VERBOSE_MAKEFILE=On
-"${COOKBOOK_SOURCE}"
-)
-cookbook_configure
-"""
