@@ -1,8 +1,8 @@
-#TODO missing script for Meson
+#TODO not compiled or tested
 [source]
 tar = "https://download.gnome.org/sources/libnotify/0.8/libnotify-0.8.3.tar.xz"
 [build]
-template = "custom"
+template = "meson"
 dependencies = [
     "gtk3",
     "gdk-pixbuf",
