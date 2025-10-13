@@ -1,8 +1,8 @@
-#TODO missing script for meson
+#TODO not compiled or tested
 [source]
 git = "https://github.com/SeaDve/Mousai"
 [build]
-template = "custom"
+template = "meson"
 dependencies = [
     "glib",
     "gtk4",
