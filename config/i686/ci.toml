@@ -41,6 +41,7 @@ redoxfs = {}
 relibc = {}
 resist = {}
 smith = {}
+terminfo = {}
 userutils = {}
 uutils = {}
 #vim = {} # conflicting types

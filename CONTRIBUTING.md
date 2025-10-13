@@ -165,12 +165,18 @@ For those who want to contribute to the Redox GUI, our GUI strategy has recently
 
 ## Priorities
 
-You can use the following GitLab label filters to know our development priorities on the moment:
+You can use the following GitLab issue label filters to know our development priorities on the moment:
 
 - [Critical](https://gitlab.redox-os.org/groups/redox-os/-/issues/?label_name[]=critical)
 - [High-priority](https://gitlab.redox-os.org/groups/redox-os/-/issues/?label_name[]=high-priority)
 - [Medium-priority](https://gitlab.redox-os.org/groups/redox-os/-/issues/?label_name[]=medium-priority)
 - [Low-priority](https://gitlab.redox-os.org/groups/redox-os/-/issues/?label_name[]=low-priority)
+
+## Roadmap
+
+We use tracking issues for the goals in our roadmap, you can see them in the filter below:
+
+- [Tracking issues](https://gitlab.redox-os.org/groups/redox-os/-/issues/?label_name[]=tracking%20issue)
 
 ## RFCs
 
