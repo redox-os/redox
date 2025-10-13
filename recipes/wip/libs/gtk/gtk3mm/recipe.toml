@@ -1,12 +1,13 @@
-#TODO missing script for Meson, see https://gnome.pages.gitlab.gnome.org/gtkmm-documentation/sec-install-unix-and-linux.html
+#TODO not compiled or tested
+# build instructions: https://gnome.pages.gitlab.gnome.org/gtkmm-documentation/sec-install-unix-and-linux.html
 [source]
 tar = "https://download.gnome.org/sources/gtkmm/3.24/gtkmm-3.24.8.tar.xz"
 [build]
-template = "custom"
+template = "meson"
 dependencies = [
     "libsigc++",
     "gtk3",
     "glibmm",
-    "cairomm-1_0+",
+    "cairomm10+",
     "pangomm",
 ]
