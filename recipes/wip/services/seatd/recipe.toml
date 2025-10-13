@@ -1,6 +1,7 @@
-#TODO missing script for Meson, lacking build instructions
+#TODO not compiled or tested
+# lacking build instructions
 [source]
 git = "https://git.sr.ht/~kennylevinsen/seatd"
 rev = "3e9ef69f14f630a719dd464f3c90a7932f1c8296"
 [build]
-template = "custom"
+template = "meson"
