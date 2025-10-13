@@ -1,9 +1,10 @@
-#TODO missing script for Meson, see https://wayland.freedesktop.org/libinput/doc/latest/building.html#building
+#TODO not compiled or tested
+# build instructions: https://wayland.freedesktop.org/libinput/doc/latest/building.html#building
 [source]
 git = "https://gitlab.freedesktop.org/libinput/libinput"
 rev = "1680f2fbaa63a91739012c6b57988ab1918ea0b7"
 [build]
-template = "custom"
+template = "meson"
 dependencies = [
     "eudev",
     "libevdev",

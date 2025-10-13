@@ -1,8 +1,9 @@
-#TODO missing script for Meson, see https://gitlab.gnome.org/GNOME/libdex#building
+#TODO not compiled or tested
+# build instructions: https://gitlab.gnome.org/GNOME/libdex#building
 [source]
 tar = "https://download.gnome.org/sources/libdex/0.4/libdex-0.4.1.tar.xz"
 [build]
-template = "custom"
+template = "meson"
 dependencies = [
     "glib",
 ]

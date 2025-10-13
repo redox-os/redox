@@ -1,5 +1,6 @@
-#TODO missing script for Meson, see https://gitlab.gnome.org/GNOME/libadwaita#building
+#TODO not compiled or tested
+# build instructions: https://gitlab.gnome.org/GNOME/libadwaita#building
 [source]
 tar = "https://download.gnome.org/sources/libadwaita/1.4/libadwaita-1.4.0.tar.xz"
 [build]
-template = "custom"
+template = "meson"
