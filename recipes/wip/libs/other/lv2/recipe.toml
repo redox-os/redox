@@ -1,5 +1,6 @@
-#TODO missing script for Meson, see https://gitlab.com/lv2/lv2/-/blob/master/INSTALL.md
+#TODO not compiled or tested
+# build instructions: https://gitlab.com/lv2/lv2/-/blob/master/INSTALL.md
 [source]
 tar = "https://lv2plug.in/spec/lv2-1.18.10.tar.xz"
 [build]
-template = "custom"
+template = "meson"
