@@ -1,5 +1,6 @@
-#TODO missing script for Meson, see https://github.com/ebassi/graphene#installation
+#TODO not compiled or tested
+# build instructions: https://github.com/ebassi/graphene#installation
 [source]
 tar = "https://download.gnome.org/sources/graphene/1.10/graphene-1.10.8.tar.xz"
 [build]
-template = "custom"
+template = "meson"
