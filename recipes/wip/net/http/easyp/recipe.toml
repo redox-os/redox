@@ -1,0 +1,6 @@
+#TODO not compiled or tested
+#TODO determine how to configure this part of the deployment script: https://github.com/gmatht/easyp/blob/main/deploy.sh#L39
+[source]
+git = "https://github.com/gmatht/easyp-crate"
+[build]
+template = "custom"
