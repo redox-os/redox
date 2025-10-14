@@ -1,6 +1,16 @@
-#TODO missing script for Meson, see https://gitlab.gnome.org/GNOME/cheese
-#TODO maybe need GStreamer as dependency
+#TODO not compiled or tested
+# lacking build instructions: https://gitlab.gnome.org/GNOME/cheese/-/blob/master/meson.build
+# missing dependencies
 [source]
 tar = "https://download.gnome.org/sources/cheese/44/cheese-44.1.tar.xz"
 [build]
-template = "custom"
+template = "meson"
+mesonflags = [
+    "-Dgtk_doc=false"
+]
+dependencies = [
+    "gtk3",
+    "glib",
+    "gdk-pixbuf",
+    "gstreamer",
+]

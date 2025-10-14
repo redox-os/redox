@@ -34,5 +34,5 @@ mesonflags = [
     "-Dglamor=false",
     "-Dglx=false",
     "-Dsecure-rpc=false",
-    "-Dmitshm=false"
+    "-Dmitshm=false",
 ]
