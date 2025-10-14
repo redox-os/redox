@@ -1,4 +1,0 @@
-[source]
-tar = "https://www.x.org/archive/individual/proto/xorgproto-2024.1.tar.xz"
-[build]
-template = "meson"
