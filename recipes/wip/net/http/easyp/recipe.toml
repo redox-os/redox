@@ -4,3 +4,6 @@
 git = "https://github.com/gmatht/easyp-crate"
 [build]
 template = "custom"
+script = """
+cookbook_cargo
+"""
