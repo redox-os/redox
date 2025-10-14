@@ -1,11 +1,14 @@
-#TODO missing script for meson
-#TODO missing dependencies
-# build instructions - https://gitlab.com/mission-center-devs/mission-center#building---native
+#TODO not compiled or tested
+# build instructions: https://gitlab.com/mission-center-devs/mission-center#building---native
+#TODO patch to disable libgbm
 [source]
 git = "https://gitlab.com/mission-center-devs/mission-center"
 [build]
-template = "custom"
+template = "meson"
 dependencies = [
     "gtk4",
     "libadwaita",
+    "eudev",
+    "libdrm",
+    "dbus",
 ]
