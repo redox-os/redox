@@ -1,4 +1,4 @@
-#TODO missing dependencies, see https://archlinux.org/packages/extra/x86_64/webkitgtk-6.0/
+#TODO runtime hangs
 [source]
 tar = "https://webkitgtk.org/releases/webkitgtk-2.49.1.tar.xz"
 blake3 = "7f04acb2f909ad334fc623afb297ebca1d5a5005bda1682946fb37e044e45ecb"
