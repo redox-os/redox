@@ -13,13 +13,13 @@ This document tracks the current hardware compatibility of Redox.
 
 ## Why hardware reports are needed?
 
-Each computer model have different hardware interface/firmware implementations and devices, which can cause the following problems:
+Each computer model have different hardware interfaces, firmware implementations and devices, which can cause the following problems:
 
 - Boot bugs
 - Lack of device support
 - Performance degradation
 
-These reports helps us to fix the problems above.
+These reports helps us to fix the problems above, your report may help to fix many computers affected by the same bugs.
 
 ## What if my computer is customized?
 

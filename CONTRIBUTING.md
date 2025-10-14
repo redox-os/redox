@@ -124,26 +124,26 @@ If you don't know programming:
 
 - Test the [daily images](https://static.redox-os.org/img/) on your computer and add the report on the [Hardware Compatibility](https://gitlab.redox-os.org/redox-os/redox/-/blob/master/HARDWARE.md) list
 - Monitor and warn developers if the [daily images](https://static.redox-os.org/img/) are outdated
-- Use and test Redox, and file issues for bugs or needed features (please check for duplicates first)
+- Use/test Redox and create issues for bugs or needed features (please check for duplicates first)
 - Fix and write documentation
 - Find or fix typos in configuration
 
-If you don't know how to code in Rust, but know other programming languages:
+If you don't know how to code in Rust but know other programming languages:
 
-- Web development on the website (we don't accept JavaScript code)
+- Web development on the website (we only accept minimal JavaScript code to preserve performance)
 - Write unit tests (may require minimal knowledge of Rust)
-- Port C/C++ programs to Redox (read the `TODO`s of the recipes on the [WIP category](https://gitlab.redox-os.org/redox-os/cookbook/-/tree/master/recipes/wip?ref_type=heads))
+- Port C/C++ programs to Redox (read the `TODO`s of the recipes on the [WIP category](https://gitlab.redox-os.org/redox-os/cookbook/-/tree/master/recipes/wip))
 - Port programs to Redox
 
-If you know how to code in Rust, but don't know operating system development:
+If you know how to code in Rust but don't know operating system development:
 
 - See the [easy](https://gitlab.redox-os.org/groups/redox-os/-/issues/?label_name[]=easy) issues
 - See the "[good first issue](https://gitlab.redox-os.org/groups/redox-os/-/issues/?label_name[]=good%20first%20issue)" issues
 - See the [help wanted](https://gitlab.redox-os.org/groups/redox-os/-/issues/?label_name[]=help%20wanted) issues (it's worth noting the skill level varies between projects, but a large subset of these should be approachable by contributors familiar with regular Rust/Unix application programming)
-- Improve the package manager, or other meta-tools like `redoxer` or `installer`
+- Improve the package manager, or build system tooling like `redoxer` or `installer`
 - Improve the [Ion](https://gitlab.redox-os.org/redox-os/ion) shell, or other high-level or mid-level projects
-- Port Rust programs to Redox, possibly including dependencies, and C library extensions if necessary (also look for issues with the `port` label)
-- Improve program compatibility in relibc by e.g. implementing missing APIs
+- Port Rust programs (also look for issues with the `port` label)
+- Improve application compatibility in relibc by e.g. implementing missing POSIX/Linux functions
 
 If you know how to code in Rust, and have experience with systems software/OS development:
 
@@ -157,10 +157,9 @@ If you know how to code in Rust, and have experience with systems software/OS de
 - Improve, profile, and optimize code, especially in the kernel, filesystem, and network stack
 - Improve or write device drivers
 
-For those who want to contribute to the Redox GUI, our GUI strategy has recently changed.
+For those who want to contribute to the Redox GUI, our GUI strategy has changed.
 
 - We are improving the [Orbital](https://gitlab.redox-os.org/redox-os/orbital) display server and window manager, you can read more about it on [this tracking issue](https://gitlab.redox-os.org/redox-os/redox/-/issues/1430).
-- Redox is in the process of adopting other Rust-written GUI toolkits, such as [Iced](https://iced.rs) and [Slint](https://slint-ui.com/). Please check out those projects if this is your area of interest.
 - OrbTk is in maintenance mode, and its developers have moved to other projects such as the ones below. There is currently no Redox-specific GUI development underway.
 
 ## Priorities
@@ -234,7 +233,7 @@ You can find important tips on the [Development Tips](https://doc.redox-os.org/b
 
 We maintain a list of wikis, articles and videos to learn Rust, OS development and computer science on the [References](https://doc.redox-os.org/book/references.html) page.
 
-If you are skilled there's a possibility that they could improve your knowledge in some way.
+If you are skilled/experienced there's still a possibility that they could improve your knowledge in some way.
 
 ## Other Ways to Contribute
 
