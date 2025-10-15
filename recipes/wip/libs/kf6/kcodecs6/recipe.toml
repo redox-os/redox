@@ -1,0 +1,5 @@
+#TODO not compiled or tested
+[source]
+tar = "https://download.kde.org/stable/frameworks/6.19/kcodecs-6.19.0.tar.xz"
+[build]
+template = "cmake"
