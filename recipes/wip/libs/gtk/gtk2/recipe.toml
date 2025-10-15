@@ -1,10 +1,11 @@
-#TODO probably missing dependencies
-#TODO port to orbital
+#TODO not compiled or tested
+# build instructions: https://gitlab.gnome.org/GNOME/gtk/-/blob/gtk-2-24/INSTALL.in
 [source]
 tar = "https://download.gnome.org/sources/gtk%2B/2.24/gtk%2B-2.24.33.tar.xz"
 [build]
 template = "configure"
 dependencies = [
+    "atk",
     "glib",
     "pango",
     "gdk-pixbuf",
