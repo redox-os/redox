@@ -1,0 +1,5 @@
+#TODO not compiled or tested
+[source]
+tar = "http://0pointer.de/lennart/projects/libcanberra/libcanberra-0.30.tar.xz"
+[build]
+template = "configure"
