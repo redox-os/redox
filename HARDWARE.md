@@ -19,7 +19,7 @@ Each computer model have different hardware interfaces, firmware implementations
 - Lack of device support
 - Performance degradation
 
-These reports helps us to fix the problems above, your report may help to fix many computers affected by the same bugs.
+These reports helps us to fix the problems above, your report may help to fix many computers affected by the same bugs or missing drivers.
 
 ## What if my computer is customized?
 
