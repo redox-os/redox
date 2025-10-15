@@ -1,6 +1,6 @@
 #TODO not compiled or tested yet
 # build instructions: https://github.com/hrydgard/ppsspp/wiki/Build-instructions
-#git = "https://github.com/jackpot51/ppsspp" # wip port to orbital
+#git = "https://github.com/jackpot51/ppsspp" # wip orbital port
 [source]
 git = "https://github.com/hrydgard/ppsspp"
 [build]

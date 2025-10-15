@@ -1,4 +1,4 @@
-#TODO port to orbital
+#TODO promote
 [source]
 tar = "https://download.gnome.org/sources/gtk+/3.24/gtk%2B-3.24.43.tar.xz"
 blake3 = "5feab2bad81e6b5906895f70ddce6227cf96a6a14b16af0ef72c79991a48ddf4"
