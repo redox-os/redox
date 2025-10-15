@@ -1,0 +1,5 @@
+#TODO not compiled or tested
+[source]
+tar = "https://download.gnome.org/sources/gnome-video-effects/0.6/gnome-video-effects-0.6.0.tar.xz"
+[build]
+template = "meson"
