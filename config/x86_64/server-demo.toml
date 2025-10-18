@@ -12,6 +12,7 @@ filesystem_size = 4096
 # Daemons
 openssh = {}
 nginx = {}
+rustysd = {}
 
 # Backends
 php84 = {}
@@ -28,10 +29,81 @@ rsync = {}
 vim = {}
 sqlite3 = {}
 # tmux = {}
-# htop = {}
+htop = {}
 
 # Content
 website = {}
+
+
+[[files]]
+# Undocumented usage of rsdctl, pointing to notifications dir
+path = "/usr/lib/init.d/19_rustyd"
+data = """
+export RSDCTL_ADDR /var/run/rustysd/control.socket
+"""
+
+[[files]]
+path = "/usr/lib/init.d/98_keygen_sh"
+data = """
+bash /root/keygen.sh
+"""
+
+[[files]]
+path = "/usr/lib/init.d/99_rustysd"
+data = """
+rustysd --conf /etc/rustysd
+"""
+
+[[files]]
+path = "/etc/rustysd/system/network-online.target"
+data = """
+[Unit]
+Description=The target after networks has online
+
+[Install]
+WantedBy=default.target
+"""
+
+[[files]]
+path = "/etc/rustysd/system/multi-user.target"
+data = """
+[Unit]
+Description=The target after user administrations has online
+
+[Install]
+WantedBy=default.target
+"""
+
+[[files]]
+path = "/etc/rustysd/system/nginx.service"
+data = """
+[Unit]
+Description=The nginx HTTP and reverse proxy server
+After=network-online.target
+Wants=network-online.target
+
+[Service]
+Type=simple
+ExecStart=/usr/bin/nginx
+TimeoutStopSec=5
+"""
+
+
+[[files]]
+path = "/etc/rustysd/system/ssh.service"
+data = """
+[Unit]
+Description=OpenBSD Secure Shell server
+After=network-online.target
+
+[Service]
+Type=notify
+ExecStart=/usr/bin/sshd
+TimeoutStopSec=5
+
+[Install]
+WantedBy=multi-user.target
+"""
 
 [[files]]
 path = "/home/user/public_html/index.php"
@@ -170,13 +242,16 @@ password = ""
 shell = "/usr/bin/ion" #TODO: nologin?
 
 [[files]]
-path = "/home/user/server.sh"
+path = "/root/keygen.sh"
 data = """
 #!/usr/bin/env bash
 
-/bin/sshd -D &
-nginx -g "daemon off;" &
-php-fpm --nodaemonize &
+if [ ! -f /etc/ssh/ssh_host_dsa_key ]; then
+ssh-keygen -t dsa -f /etc/ssh/ssh_host_dsa_key -N ""
+ssh-keygen -t rsa -f /etc/ssh/ssh_host_rsa_key -N ""
+ssh-keygen -t ed25519 -f /etc/ssh/ssh_host_ed25519_key -N ""
+ssh-keygen -t ecdsa -f /etc/ssh/ssh_host_ecdsa_key -N ""
+fi
 """
 
 [[files]]
@@ -191,8 +266,10 @@ data = """
 # This server demo is insecure by design, we encourage you to get familiar into
 # basics of server security if you wish to use this as a production server.
 #
-# To start the daemon, run
-# > sudo bash server.sh
+# To start the server daemon (should already started), run
+# > sudo rustysd --conf /etc/rustysd
+#
+# You can check daemons status using systemctl (alias to rsdctl from rustysd)
 #
 # The server will start port 22 (ssh), 80 (static web) and 8080 (php)
 ##############################################################################
