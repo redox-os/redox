@@ -80,12 +80,14 @@ data = """
 [Unit]
 Description=The nginx HTTP and reverse proxy server
 After=network-online.target
-Wants=network-online.target
 
 [Service]
-Type=simple
+Type=notify
 ExecStart=/usr/bin/nginx
 TimeoutStopSec=5
+
+[Install]
+WantedBy=multi-user.target
 """
 
 
@@ -255,6 +257,16 @@ fi
 """
 
 [[files]]
+path = "/home/user/server.sh"
+data = """
+#!/usr/bin/env bash
+
+/bin/sshd -D &
+nginx -g "daemon off;" &
+php-fpm --nodaemonize &
+"""
+
+[[files]]
 path = "/home/user/Welcome.txt"
 data = """
 ##############################################################################
@@ -266,10 +278,11 @@ data = """
 # This server demo is insecure by design, we encourage you to get familiar into
 # basics of server security if you wish to use this as a production server.
 #
-# To start the server daemon (should already started), run
-# > sudo rustysd --conf /etc/rustysd
+# To start the daemon, run
+# > sudo bash server.sh
 #
-# You can check daemons status using systemctl (alias to rsdctl from rustysd)
+# A WIP port of rustysd is available, you can try start it manually
+# > sudo rustysd --conf /etc/rustysd
 #
 # The server will start port 22 (ssh), 80 (static web) and 8080 (php)
 ##############################################################################
