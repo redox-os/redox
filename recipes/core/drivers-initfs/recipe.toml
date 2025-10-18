@@ -8,6 +8,7 @@ BINS=(
     acpid
     fbbootlogd
     fbcond
+    hwd
     inputd
     lived
     nvmed
@@ -64,7 +65,7 @@ export CARGO_PROFILE_RELEASE_PANIC=abort
 for bin in "${BINS[@]}"
 do
     case "${bin}" in
-      pcid | pcid-spawner | fbbootlogd | fbcond | inputd | vesad | lived | ps2d | acpid | bcm2835-sdhcid | rtcd)
+      pcid | pcid-spawner | fbbootlogd | fbcond | inputd | vesad | lived | ps2d | acpid | bcm2835-sdhcid | rtcd | hwd)
         cp -v "target/${TARGET}/${build_type}/${bin}" "${COOKBOOK_STAGE}/bin"
         ;;
       *)
