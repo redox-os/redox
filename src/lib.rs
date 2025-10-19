@@ -8,12 +8,9 @@ mod progress_bar;
 /// Default for maximum number of levels to descend down dependencies tree.
 pub const WALK_DEPTH: usize = 16;
 
-#[cfg(target_os = "redox")]
-pub fn is_redox() -> bool {
-    true
-}
+/// Default remote package source, for recipes with build type = "remote"
+pub const REMOTE_PKG_SOURCE: &str = "https://static.redox-os.org/pkg";
 
-#[cfg(not(target_os = "redox"))]
 pub fn is_redox() -> bool {
-    false
+    cfg!(target_os = "redox")
 }
