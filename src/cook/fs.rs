@@ -2,11 +2,13 @@ use serde::Serialize;
 use std::{
     fs,
     io::{self, Write},
-    path::Path,
-    process::{self, Stdio},
+    path::{Path, PathBuf},
+    process::{self, Command, Stdio},
     time::SystemTime,
 };
 use walkdir::{DirEntry, WalkDir};
+
+use crate::config::translate_mirror;
 
 //TODO: pub(crate) for all of these functions
 
@@ -190,5 +192,27 @@ pub fn serialize_and_write<T: Serialize>(file_path: &Path, content: &T) -> Resul
 
     fs::write(file_path, toml_content)
         .map_err(|err| format!("Failed to write to file '{}': {}", file_path.display(), err))?;
+    Ok(())
+}
+
+pub fn offline_check_exists(path: &PathBuf) -> Result<(), String> {
+    if !path.exists() {
+        return Err(format!(
+            "'{path}' is not exist and unable to continue in offline mode",
+            path = path.display(),
+        ))?;
+    }
+    Ok(())
+}
+
+pub fn download_wget(url: &str, dest: &PathBuf) -> Result<(), String> {
+    if !dest.is_file() {
+        let dest_tmp = PathBuf::from(format!("{}.tmp", dest.display()));
+        let mut command = Command::new("wget");
+        command.arg(translate_mirror(url));
+        command.arg("--continue").arg("-O").arg(&dest_tmp);
+        run_command(command)?;
+        rename(&dest_tmp, &dest)?;
+    }
     Ok(())
 }

@@ -1,4 +1,5 @@
 use cookbook::config::init_config;
+use cookbook::cook::build::build_remote;
 use cookbook::cook::fetch::*;
 use cookbook::cook::fs::*;
 use cookbook::cook::script::SHARED_PRESCRIPT;
@@ -555,6 +556,7 @@ done
                 flags_fn("COOKBOOK_MESON_FLAGS", mesonflags),
             ),
             BuildKind::Custom { script } => script.clone(),
+            BuildKind::Remote => return build_remote(target_dir, name, offline_mode),
             BuildKind::None => "".to_owned(),
         };
 
