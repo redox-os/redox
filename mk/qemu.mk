@@ -364,5 +364,7 @@ qemu_nvme_extra: qemu-deps
 #additional steps for $(DISK) are required!!!
 qemu_raspi: qemu-deps
 	$(QEMU) -M raspi3b -smp 4,cores=1 \
-		-kernel $(FIRMWARE) \
-		-serial stdio -display none
+ 		-kernel $(QEMU_KERNEL) \
+		-serial stdio -display none \
+	        -sd build/aarch64/minimal/harddrive.img \
+
