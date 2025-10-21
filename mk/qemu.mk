@@ -57,6 +57,7 @@ else ifeq ($(ARCH),aarch64)
 	QEMU_MEM?=2048
 	ifeq ($(BOARD),raspi3bp)
 		QEMU_KERNEL=$(BUILD)/raspi3bp_uboot.rom
+		SD_IMG=$(BUILD)/harddrive.img
 		disk?=sdcard
 		QEMU_MACHINE:=raspi3b
 		QEMU_SMP:=4
@@ -364,5 +365,7 @@ qemu_nvme_extra: qemu-deps
 #additional steps for $(DISK) are required!!!
 qemu_raspi: qemu-deps
 	$(QEMU) -M raspi3b -smp 4,cores=1 \
-		-kernel $(FIRMWARE) \
-		-serial stdio -display none
+ 		-kernel $(QEMU_KERNEL) \
+		-serial stdio -display none \
+	        -sd $(SD_IMG) \
+
