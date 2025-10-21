@@ -20,12 +20,12 @@ fi
 
 if [ -z "${ARCH}" ]
 then
-    export ARCH=x86_64
+    export ARCH="$(uname -m)"
 fi
 
 if [ -z "${CONFIG_NAME}" ]
 then
-    export CONFIG_NAME=demo
+    export CONFIG_NAME=desktop
 fi
 
 IMAGE="build/${ARCH}/${CONFIG_NAME}/filesystem.img"
