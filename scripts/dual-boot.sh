@@ -30,6 +30,7 @@ fi
 
 IMAGE="build/${ARCH}/${CONFIG_NAME}/filesystem.img"
 set -x
+rm -f "${IMAGE}"
 make "${IMAGE}"
 sudo popsicle "${IMAGE}" "${DISK}"
 set +x
