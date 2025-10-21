@@ -128,7 +128,7 @@ ifeq ($(PREFIX_BINARY),1)
 $(PREFIX)/rust-install.tar.gz:
 	mkdir -p "$(@D)"
 	#TODO: figure out why rust-install.tar.gz is missing /lib/rustlib/$(HOST_TARGET)/lib
-	wget -O $@.partial "https://static.redox-os.org/toolchain/$(TARGET)/relibc-install.tar.gz"
+	wget -O $@.partial "https://static.redox-os.org/toolchain/$(HOST_TARGET)/$(TARGET)/relibc-install.tar.gz"
 	mv $@.partial $@
 
 $(PREFIX)/rust-install: $(PREFIX)/rust-install.tar.gz
