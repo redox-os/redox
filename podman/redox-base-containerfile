@@ -36,7 +36,6 @@ RUN useradd --create-home --no-log-init --uid _UID_ poduser \
         gtk-doc-tools \
         help2man \
         intltool \
-        libc6-dev-i386 \
         libexpat-dev \
         libfontconfig1-dev \
         libfuse3-dev \
@@ -72,7 +71,6 @@ RUN useradd --create-home --no-log-init --uid _UID_ poduser \
         ruby \
         scons \
         ssh \
-        syslinux-utils \
         texinfo \
         unifdef \
         unzip \
@@ -84,4 +82,9 @@ RUN useradd --create-home --no-log-init --uid _UID_ poduser \
         xxd \
         zip \
         zlib1g-dev \
-        zstd
+        zstd \
+    && if [ "$(uname -m)" = "x86_64" ]; then \
+         apt-get install -y --no-install-recommends \
+            libc6-dev-i386 \
+            syslinux-utils \
+    ; fi
