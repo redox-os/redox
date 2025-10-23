@@ -21,12 +21,8 @@ mkdir -p "${COOKBOOK_SYSROOT}/usr"
 ln -sf "${COOKBOOK_SYSROOT}/include" "${COOKBOOK_SYSROOT}/usr/include"
 ln -sf "${COOKBOOK_SYSROOT}/lib" "${COOKBOOK_SYSROOT}/usr/lib"
 
-COOKBOOK_CONFIGURE_FLAGS=(
-    --host="${GNU_TARGET}"
+COOKBOOK_CONFIGURE_FLAGS+=(
     --target="${GNU_TARGET}"
-    --prefix=/
-    --enable-shared
-    --disable-static
     --with-sysroot=/
     --with-build-sysroot="${COOKBOOK_SYSROOT}"
     --enable-languages=c,c++,lto
@@ -40,9 +36,12 @@ COOKBOOK_CONFIGURE_FLAGS=(
 "${COOKBOOK_CONFIGURE}" "${COOKBOOK_CONFIGURE_FLAGS[@]}"
 "${COOKBOOK_MAKE}" -j "${COOKBOOK_MAKE_JOBS}" all-gcc all-target-libgcc all-target-libstdc++-v3
 "${COOKBOOK_MAKE}" install-gcc install-target-libgcc install-target-libstdc++-v3 DESTDIR="${COOKBOOK_STAGE}"
-ln -s "gcc" "${COOKBOOK_STAGE}/bin/cc"
-mkdir -p "${COOKBOOK_STAGE}/usr/libexec"
-ln -s "/libexec/gcc" "${COOKBOOK_STAGE}/usr/libexec/gcc"
+ln -s "gcc" "${COOKBOOK_STAGE}/usr/bin/cc"
 # Avoid conflict with libgcc & libstdcxx
-rm -f "${COOKBOOK_STAGE}"/lib/libgcc_s.so* "${COOKBOOK_STAGE}"/lib/libstdc++.so*
+rm -f "${COOKBOOK_STAGE}"/usr/lib/libgcc_s.so* "${COOKBOOK_STAGE}"/usr/lib/libstdc++.so*
 """
+
+[package]
+dependencies = [
+    "gnu-binutils"
+]

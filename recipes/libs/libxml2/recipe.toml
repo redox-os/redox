@@ -13,12 +13,8 @@ dependencies = [
     "zlib"
 ]
 script = """
-DYNAMIC_INIT
-COOKBOOK_CONFIGURE_FLAGS=(
-    --host="${GNU_TARGET}"
-    --prefix="/usr"
-    --enable-shared
-    --enable-static
+DYNAMIC_STATIC_INIT
+COOKBOOK_CONFIGURE_FLAGS+=(
     --without-python
 )
 cookbook_configure

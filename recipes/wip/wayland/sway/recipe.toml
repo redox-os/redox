@@ -1,8 +1,9 @@
-#TODO missing script for Meson, see https://github.com/swaywm/sway#compiling-from-source
+#TODO not compiled or tested
+# build instructions: https://github.com/swaywm/sway#compiling-from-source
 [source]
 tar = "https://github.com/swaywm/sway/releases/download/1.8.1/sway-1.8.1.tar.gz"
 [build]
-template = "custom"
+template = "meson"
 dependencies = [
     "wlroots",
     "libwayland",

@@ -1,4 +1,5 @@
-use pkg::recipes;
+use cookbook::WALK_DEPTH;
+use pkg::{Package, PackageName, recipes};
 use std::collections::{BTreeMap, HashMap};
 use std::env;
 use std::fs::{self, File};
@@ -24,8 +25,20 @@ fn main() -> Result<(), Box<dyn std::error::Error>> {
     let repo_dir = args
         .next()
         .expect("Usage: repo_builder <REPO_DIR> <recipe1> <recipe2> ...");
-    let recipe_list: Vec<String> = args.collect();
     let repo_path = Path::new(&repo_dir);
+
+    // Runtime dependencies include both `[package.dependencies]` and dynamically
+    // linked packages discovered by auto_deps.
+    //
+    // The following adds the package dependencies of the recipes to the repo as
+    // well.
+    let recipe_list = Package::new_recursive(
+        &args.map(PackageName::new).collect::<Result<Vec<_>, _>>()?,
+        WALK_DEPTH,
+    )?
+    .into_iter()
+    .map(|pkg| pkg.name.as_str().to_owned())
+    .collect::<Vec<_>>();
 
     let mut appstream_sources: HashMap<String, PathBuf> = HashMap::new();
     let mut packages: BTreeMap<String, String> = BTreeMap::new();
@@ -45,6 +58,11 @@ fn main() -> Result<(), Box<dyn std::error::Error>> {
         let pkgar_dst = repo_path.join(format!("{}.pkgar", recipe));
         let toml_src = stage_dir.with_extension("toml");
         let toml_dst = repo_path.join(format!("{}.toml", recipe));
+
+        if !fs::exists(&toml_src)? {
+            eprintln!("recipe {} is missing stage.toml", recipe);
+            continue;
+        }
 
         if is_newer(&toml_src, &toml_dst) {
             eprintln!("\x1b[01;38;5;155mrepo - publishing {}\x1b[0m", recipe);
@@ -142,13 +160,12 @@ fn main() -> Result<(), Box<dyn std::error::Error>> {
         let content = fs::read_to_string(&path)?;
         let parsed: Value = toml::from_str(&content)?;
 
-        if let Some(version_val) = parsed.get("version") {
-            let version_str = version_val.to_string(); // includes quotes
-            let package_name = path.file_stem().unwrap().to_string_lossy().to_string();
-            packages.insert(package_name, version_str);
-        } else {
-            eprintln!("Warning: no [version] found in {:?}", path);
-        }
+        let version_str = parsed
+            .get("version")
+            .unwrap_or(&Value::String("".to_string()))
+            .to_string(); // includes quotes
+        let package_name = path.file_stem().unwrap().to_string_lossy().to_string();
+        packages.insert(package_name, version_str);
     }
 
     // FIXME: Use proper TOML serializer

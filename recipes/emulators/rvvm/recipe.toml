@@ -17,7 +17,7 @@ export BUILDDIR="${COOKBOOK_BUILD}"
 export DESTDIR="${COOKBOOK_STAGE}"
 
 # Redox currently doesn't support dynamic library loading
-export LDFLAGS="$(pkg-config --libs sdl)"
+export LDFLAGS="${LDFLAGS} $(pkg-config --libs sdl)"
 
 # Networking is currently broken on Redox (missing setsockopt?)
 export USE_NET=0

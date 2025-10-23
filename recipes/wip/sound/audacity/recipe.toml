@@ -1,26 +1,11 @@
-#TODO maybe incomplete script, see https://github.com/audacity/audacity/blob/master/BUILDING.md
-#TODO use the GTK2 or wxWidgets frontend?
-#TODO probably need audio server patching
+#TODO not compiled or tested
+# build instructions: https://github.com/audacity/audacity/blob/master/BUILDING.md
+# use the GTK2 or wxWidgets frontend?
 [source]
-tar = "https://github.com/audacity/audacity/releases/download/Audacity-3.5.1/audacity-sources-3.5.1.tar.gz"
+tar = "https://github.com/audacity/audacity/releases/download/Audacity-3.7.5/audacity-sources-3.7.5.tar.gz"
 [build]
-template = "custom"
+template = "cmake"
 dependencies = [
     "gtk2",
     "libuuid",
 ]
-script = """
-COOKBOOK_CONFIGURE="cmake"
-COOKBOOK_CONFIGURE_FLAGS=(
-    -DCMAKE_BUILD_TYPE=Release
-    -DCMAKE_CROSSCOMPILING=True
-    -DCMAKE_EXE_LINKER_FLAGS="-static"
-    -DCMAKE_INSTALL_PREFIX="/"
-    -DCMAKE_PREFIX_PATH="${COOKBOOK_SYSROOT}"
-    -DCMAKE_SYSTEM_NAME=Generic
-    -DCMAKE_SYSTEM_PROCESSOR="$(echo "${TARGET}" | cut -d - -f1)"
-    -DCMAKE_VERBOSE_MAKEFILE=On
-"${COOKBOOK_SOURCE}"
-)
-cookbook_configure
-"""

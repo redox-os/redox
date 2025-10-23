@@ -1,0 +1,5 @@
+#TODO not compiled or tested
+[source]
+git = "https://gitlab.com/cyberactivity/tyr"
+[build]
+template = "cargo"

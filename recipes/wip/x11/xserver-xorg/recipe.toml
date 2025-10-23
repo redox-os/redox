@@ -39,5 +39,6 @@ cookbook_meson \
     -Dudev=false \
     -Dudev_kms=false \
     -Dvgahw=false \
+    -Dxres=false \
     -Dxvfb=false
 """

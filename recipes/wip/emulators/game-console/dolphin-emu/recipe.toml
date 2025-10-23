@@ -1,0 +1,20 @@
+#TODO not compiled or tested yet
+# build instructions: https://github.com/dolphin-emu/dolphin/wiki/Building-for-Linux
+#TODO probably missing dependencies
+[source]
+git = "https://github.com/dolphin-emu/dolphin"
+[build]
+template = "cmake"
+dependencies = [
+    "ffmpeg6",
+    "libevdev",
+    "libusb",
+    "pango",
+    "cairo",
+    "qt6-base",
+    "qt6-svg",
+    "mesa-x11",
+    "curl",
+    "libvulkan",
+    "openal",
+]

@@ -1,28 +1,16 @@
-#TODO probably wrong script, see https://github.com/LibVNC/libvncserver#how-to-build
+#TODO not compiled or tested
+# build instructions: https://github.com/LibVNC/libvncserver#how-to-build
 [source]
 git = "https://github.com/LibVNC/libvncserver"
 rev = "10e9eb75f73e973725dc75c373de5d89807af028"
 [build]
-template = "custom"
+template = "cmake"
+cmakeflags = [
+    "-DWITH_OPENSSL=ON",
+    "-DWITH_GCRYPT=OFF",
+]
 dependencies = [
     "openssl1",
     "ffmpeg6",
     "libssh2",
 ]
-script = """
-COOKBOOK_CONFIGURE="cmake"
-COOKBOOK_CONFIGURE_FLAGS=(
-    -DCMAKE_BUILD_TYPE=Release
-    -DCMAKE_CROSSCOMPILING=True
-    -DCMAKE_EXE_LINKER_FLAGS="-static"
-    -DCMAKE_INSTALL_PREFIX="/"
-    -DCMAKE_PREFIX_PATH="${COOKBOOK_SYSROOT}"
-    -DCMAKE_SYSTEM_NAME=Generic
-    -DCMAKE_SYSTEM_PROCESSOR="$(echo "${TARGET}" | cut -d - -f1)"
-    -DCMAKE_VERBOSE_MAKEFILE=On
-    -DWITH_OPENSSL=ON
-    -DWITH_GCRYPT=OFF
-"${COOKBOOK_SOURCE}"
-)
-cookbook_configure
-"""

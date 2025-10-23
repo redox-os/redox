@@ -10,8 +10,7 @@ dependencies = [
     "libiconv",
 ]
 script = """
-export CFLAGS="-I${COOKBOOK_SYSROOT}/include -I${COOKBOOK_SYSROOT}/include/SDL"
-export LDFLAGS="-L${COOKBOOK_SYSROOT}/lib -static"
+export CFLAGS="${CFLAGS} -I${COOKBOOK_SYSROOT}/include/SDL"
 export LIBS="-lSDL -lorbital" # TODO: Uses sdl-config instead of pkg-config
 
 # For some reason, cook_configure breaks spectacularly on this

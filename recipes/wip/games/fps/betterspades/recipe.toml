@@ -1,9 +1,10 @@
+#TODO not compiled or tested
 #TODO probably missing dependencies, see https://github.com/xtreme8000/BetterSpades#build-requirements
-#TODO probably wrong script, see https://github.com/xtreme8000/BetterSpades#linux
+# build instructions: https://github.com/xtreme8000/BetterSpades#linux
 [source]
 git = "https://github.com/xtreme8000/BetterSpades"
 [build]
-template = "custom"
+template = "cmake"
 dependencies = [
     "glfw3",
     "openal",
@@ -12,18 +13,3 @@ dependencies = [
     "glew",
     "mesa",
 ]
-script = """
-COOKBOOK_CONFIGURE="cmake"
-COOKBOOK_CONFIGURE_FLAGS=(
-    -DCMAKE_BUILD_TYPE=Release
-    -DCMAKE_CROSSCOMPILING=True
-    -DCMAKE_EXE_LINKER_FLAGS="-static"
-    -DCMAKE_INSTALL_PREFIX="/"
-    -DCMAKE_PREFIX_PATH="${COOKBOOK_SYSROOT}"
-    -DCMAKE_SYSTEM_NAME=Generic
-    -DCMAKE_SYSTEM_PROCESSOR="$(echo "${TARGET}" | cut -d - -f1)"
-    -DCMAKE_VERBOSE_MAKEFILE=On
-"${COOKBOOK_SOURCE}"
-)
-cookbook_configure
-"""

@@ -1,4 +1,4 @@
-#TODO port to Orbital
+#TODO not compiled or tested
 [source]
 tar = "https://github.com/freeglut/freeglut/releases/download/v3.4.0/freeglut-3.4.0.tar.gz"
 #blake3 = "08c8874d6ddad5be4860813865d4d4e2a84c294da0f3cf82a29e43920806b0da"
@@ -9,11 +9,7 @@ dependencies = [
 ]
 template = "custom"
 script = """
-export CFLAGS="-I${COOKBOOK_SYSROOT}/include"
-export CPPFLAGS="-I${COOKBOOK_SYSROOT}/include"
-export CXXFLAGS="-I${COOKBOOK_SYSROOT}/include"
-export LDFLAGS="-L${COOKBOOK_SYSROOT}/lib"
-
+DYNAMIC_INIT
 cat > redox.cmake <<EOF
 # the name of the target operating system
 set(CMAKE_SYSTEM_NAME Generic)
@@ -36,14 +32,9 @@ set(CMAKE_FIND_ROOT_PATH_MODE_LIBRARY ONLY)
 set(CMAKE_FIND_ROOT_PATH_MODE_PACKAGE ONLY)
 EOF
 
-COOKBOOK_CONFIGURE=cmake
-COOKBOOK_CONFIGURE_FLAGS=(
-    -DCMAKE_BUILD_TYPE=Release
-    -DCMAKE_INSTALL_PREFIX=/
+COOKBOOK_CMAKE_FLAGS+=(
     -DCMAKE_TOOLCHAIN_FILE=redox.cmake
-    -DCMAKE_VERBOSE_MAKEFILE=On
     -DFREEGLUT_GLES=0
-    "${COOKBOOK_SOURCE}"
 )
-cookbook_configure
+cookbook_cmake
 """

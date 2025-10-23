@@ -1,5 +1,6 @@
-#TODO missing script for Meson, see https://gitlab.gnome.org/GNOME/gexiv2/-/blob/master/INSTALLING?ref_type=heads
+#TODO not compiled or tested
+# build instructions: https://gitlab.gnome.org/GNOME/gexiv2/-/blob/master/INSTALLING?ref_type=heads
 [source]
 tar = "https://download.gnome.org/sources/gexiv2/0.14/gexiv2-0.14.2.tar.xz"
 [build]
-template = "custom"
+template = "meson"

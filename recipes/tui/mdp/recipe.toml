@@ -10,8 +10,7 @@ dependencies = [
 script = """
 rsync -av --delete --exclude='.git' "${COOKBOOK_SOURCE}/" ./
 
-export CFLAGS="-I${COOKBOOK_SYSROOT}/include -I${COOKBOOK_SYSROOT}/include/ncursesw"
-export LDFLAGS="-L${COOKBOOK_SYSROOT}/lib"
+export CFLAGS="${CFLAGS} -I${COOKBOOK_SYSROOT}/include/ncursesw"
 
 "${COOKBOOK_MAKE}" -j"$(${NPROC})"
 

@@ -1,0 +1,14 @@
+#TODO missing dependencies
+[source]
+git = "https://codeberg.org/edestcroix/Recordbox"
+[build]
+template = "custom"
+dependencies = [
+    "sqlite3",
+    "gtk4",
+    "glib",
+    "libadwaita",
+    "liblcms",
+    "gstreamer",
+]
+script = "DYNAMIC_INIT cookbook_cargo"

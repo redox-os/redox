@@ -1,6 +1,4 @@
-#TODO missing script for Ninja, see https://trac.webkit.org/wiki/BuildingGtk#BuildingWebKitGTKfromareleasetarball
-#TODO port to orbital
-#TODO missing dependencies, see https://archlinux.org/packages/extra/x86_64/webkitgtk-6.0/
+#TODO runtime hangs
 [source]
 tar = "https://webkitgtk.org/releases/webkitgtk-2.49.1.tar.xz"
 blake3 = "7f04acb2f909ad334fc623afb297ebca1d5a5005bda1682946fb37e044e45ecb"
@@ -22,6 +20,7 @@ dependencies = [
     "gtk3",
     "harfbuzz",
     "libepoxy",
+    "libatomic",
     "libffi",
     "libgcrypt",
     "libgpg-error",
@@ -59,87 +58,41 @@ dependencies = [
 ]
 script = """
 DYNAMIC_INIT
-#TODO: why are these not automatic?
-LIBS=(
-    $("${TARGET}-pkg-config" --libs epoxy)
-    $("${TARGET}-pkg-config" --libs expat)
-    $("${TARGET}-pkg-config" --libs fontconfig)
-    $("${TARGET}-pkg-config" --libs freetype2)
-    $("${TARGET}-pkg-config" --libs fribidi)
-    $("${TARGET}-pkg-config" --libs gdk-3.0)
-    $("${TARGET}-pkg-config" --libs gdk-pixbuf-2.0)
-    $("${TARGET}-pkg-config" --libs gpg-error)
-    #$("${TARGET}-pkg-config" --libs gstreamer-1.0)
-    #$("${TARGET}-pkg-config" --libs gstreamer-allocators-1.0)
-    #$("${TARGET}-pkg-config" --libs gstreamer-app-1.0)
-    #$("${TARGET}-pkg-config" --libs gstreamer-audio-1.0)
-    #$("${TARGET}-pkg-config" --libs gstreamer-base-1.0)
-    #$("${TARGET}-pkg-config" --libs gstreamer-fft-1.0)
-    #$("${TARGET}-pkg-config" --libs gstreamer-pbutils-1.0)
-    #$("${TARGET}-pkg-config" --libs gstreamer-tag-1.0)
-    #$("${TARGET}-pkg-config" --libs gstreamer-transcoder-1.0)
-    #$("${TARGET}-pkg-config" --libs gstreamer-video-1.0)
-    $("${TARGET}-pkg-config" --libs gtk+-3.0)
-    $("${TARGET}-pkg-config" --libs harfbuzz-icu)
-    $("${TARGET}-pkg-config" --libs libffi)
-    $("${TARGET}-pkg-config" --libs libgcrypt)
-    $("${TARGET}-pkg-config" --libs libjpeg)
-    $("${TARGET}-pkg-config" --libs liblzma)
-    $("${TARGET}-pkg-config" --libs libnghttp2)
-    $("${TARGET}-pkg-config" --libs libpcre2-8)
-    $("${TARGET}-pkg-config" --libs libpng)
-    $("${TARGET}-pkg-config" --libs libpsl)
-    $("${TARGET}-pkg-config" --libs libsharpyuv)
-    $("${TARGET}-pkg-config" --libs libsoup-3.0)
-    $("${TARGET}-pkg-config" --libs libtasn1)
-    $("${TARGET}-pkg-config" --libs libwebp)
-    $("${TARGET}-pkg-config" --libs libwebpdemux)
-    $("${TARGET}-pkg-config" --libs libxml2)
-    $("${TARGET}-pkg-config" --libs libxslt)
-    $("${TARGET}-pkg-config" --libs pango)
-    $("${TARGET}-pkg-config" --libs pangofc)
-    $("${TARGET}-pkg-config" --libs pangoft2)
-    $("${TARGET}-pkg-config" --libs pixman-1)
-    $("${TARGET}-pkg-config" --libs sqlite3)
-    $("${TARGET}-pkg-config" --libs x11)
-    $("${TARGET}-pkg-config" --libs x11-xcb)
-    $("${TARGET}-pkg-config" --libs xau)
-    $("${TARGET}-pkg-config" --libs xcb)
-    $("${TARGET}-pkg-config" --libs xcb-render)
-    $("${TARGET}-pkg-config" --libs xext)
-    $("${TARGET}-pkg-config" --libs xfixes)
-    $("${TARGET}-pkg-config" --libs xi)
-    $("${TARGET}-pkg-config" --libs xrandr)
-    $("${TARGET}-pkg-config" --libs xrender)
-)
+export WEBKIT_USE_SCCACHE=1
+export PYTHONDONTWRITEBYTECODE=1
 #TODO: enable more features
-cookbook_cmake \
-    -DCMAKE_CXX_STANDARD_LIBRARIES="${LIBS[*]}" \
-    -DENABLE_GAMEPAD=OFF \
-    -DENABLE_INTROSPECTION=OFF \
-    -DENABLE_MEDIA_STREAM=OFF \
-    -DENABLE_JOURNALD_LOG=OFF \
-    -DENABLE_SPEECH_SYNTHESIS=OFF \
-    -DENABLE_SPELLCHECK=OFF \
-    -DENABLE_WEB_AUDIO=OFF \
-    -DENABLE_WEB_CODECS=OFF \
-    -DENABLE_VIDEO=OFF \
-    -DPORT=GTK \
-    -DUNIX=1 \
-    -DUSE_AVIF=OFF \
-    -DUSE_GSTREAMER_GL=OFF \
-    -DUSE_GTK4=OFF \
-    -DUSE_JPEGXL=OFF \
-    -DUSE_LCMS=OFF \
-    -DUSE_LIBBACKTRACE=OFF \
-    -DUSE_LIBDRM=OFF \
-    -DUSE_LIBHYPHEN=OFF \
-    -DUSE_LIBSECRET=OFF \
-    -DUSE_SKIA=OFF \
-    -DUSE_SYSPROF_CAPTURE=OFF \
-    -DUSE_SYSTEM_MALLOC=ON \
-    -DUSE_SYSTEM_SYSPROF_CAPTURE=OFF \
+COOKBOOK_CMAKE_FLAGS+=(
+    -DENABLE_ASSERTS=ON
+    -DENABLE_GAMEPAD=OFF
+    -DENABLE_INTROSPECTION=OFF
+    -DENABLE_MEDIA_STREAM=OFF
+    -DENABLE_JOURNALD_LOG=OFF
+    -DENABLE_RELEASE_LOG=ON
+    -DENABLE_SPEECH_SYNTHESIS=OFF
+    -DENABLE_SPELLCHECK=OFF
+    -DENABLE_WEB_AUDIO=OFF
+    -DENABLE_WEB_CODECS=OFF
+    -DENABLE_VIDEO=OFF
+    -DPORT=GTK
+    -DUNIX=1
+    -DUSE_AVIF=OFF
+    -DUSE_GSTREAMER_GL=OFF
+    -DUSE_GTK4=OFF
+    -DUSE_JPEGXL=OFF
+    -DUSE_LCMS=OFF
+    -DUSE_LIBBACKTRACE=OFF
+    -DUSE_LIBDRM=OFF
+    -DUSE_LIBHYPHEN=OFF
+    -DUSE_LIBSECRET=OFF
+    -DUSE_SKIA=OFF
+    -DUSE_SYSPROF_CAPTURE=OFF
+    -DUSE_SYSTEM_MALLOC=OFF
+    -DUSE_SYSTEM_SYSPROF_CAPTURE=OFF
     -DUSE_WOFF2=OFF
+)
+
+cookbook_cmake
+
 patchelf --replace-needed "${COOKBOOK_SYSROOT}/usr/lib/libsqlite3.so" "libsqlite3.so" "${COOKBOOK_STAGE}/usr/lib/libwebkit2gtk-4.1.so"
 patchelf --replace-needed "${COOKBOOK_SYSROOT}/usr/lib/libsqlite3.so" "libsqlite3.so" "${COOKBOOK_STAGE}/usr/libexec/webkit2gtk-4.1/MiniBrowser"
 mkdir -p "${COOKBOOK_STAGE}/usr/bin"

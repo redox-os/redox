@@ -1,0 +1,13 @@
+#TODO not compiled or tested
+# build instructions: https://github.com/webcamoid/webcamoid/wiki/Raw-build-and-install
+[source]
+git = "https://github.com/webcamoid/webcamoid"
+rev = "171b91e378c9bfbd4c425415322971e4e8872108"
+[build]
+template = "cmake"
+dependencies = [
+    "qt5-base",
+    "qt5-declarative",
+    "qt5-quickcontrols2",
+    "qt5-svg",
+]

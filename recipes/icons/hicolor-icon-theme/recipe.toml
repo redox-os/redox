@@ -4,6 +4,6 @@ git = "https://gitlab.freedesktop.org/xdg/default-icon-theme.git"
 [build]
 template = "custom"
 script = """
-meson setup -Dprefix=/usr . "${COOKBOOK_SOURCE}"
+meson setup --reconfigure -Dprefix=/usr . "${COOKBOOK_SOURCE}"
 env DESTDIR="${COOKBOOK_STAGE}" meson install
 """

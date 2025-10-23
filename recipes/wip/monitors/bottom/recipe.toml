@@ -1,5 +1,6 @@
-#TODO starship-battery crate compilation error
+#TODO missing data
 [source]
-git = "https://github.com/ClementTsang/bottom"
+git = "https://github.com/jackpot51/bottom"
+
 [build]
 template = "cargo"

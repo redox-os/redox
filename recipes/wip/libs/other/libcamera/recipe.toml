@@ -1,8 +1,9 @@
-#TODO missing script for Meson, see https://libcamera.org/getting-started.html
+#TODO not compiled or tested
+# build instructions: https://libcamera.org/getting-started.html
 [source]
 git = "https://git.libcamera.org/libcamera/libcamera"
 [build]
-template = "custom"
+template = "meson"
 dependencies = [
     "libyaml",
     "libevdev",

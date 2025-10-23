@@ -21,8 +21,6 @@ DYNAMIC_INIT
 rsync -av --delete "${COOKBOOK_SOURCE}/" ./
 
 export CPPHOST="${TARGET}-g++"
-export LDFLAGS="-L${COOKBOOK_SYSROOT}/lib"
-export CPPFLAGS="-I${COOKBOOK_SYSROOT}/include"
 
 "${REDOX_MAKE}" all -j"$(${NPROC})"
 

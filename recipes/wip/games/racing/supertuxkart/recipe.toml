@@ -1,8 +1,13 @@
-#TODO probably wrong script, see https://github.com/supertuxkart/stk-code/blob/master/INSTALL.md#compiling
+#TODO not compiled or tested
+# build instructions: https://github.com/supertuxkart/stk-code/blob/master/INSTALL.md#compiling
 [source]
 tar = "https://github.com/supertuxkart/stk-code/releases/download/1.4/SuperTuxKart-1.4-src.tar.xz"
 [build]
-template = "custom"
+template = "cmake"
+cmakeflags = [
+    "-DNO_SHADERC=ON",
+    "-DBUILD_RECORDER=OFF",
+]
 dependencies = [
     "openal",
     "libogg",
@@ -16,20 +21,3 @@ dependencies = [
     "libjpeg",
     "sdl2",
 ]
-script = """
-    COOKBOOK_CONFIGURE="cmake"
-    COOKBOOK_CONFIGURE_FLAGS=(
-	-DCMAKE_BUILD_TYPE=Release
-	-DCMAKE_CROSSCOMPILING=True
-	-DCMAKE_EXE_LINKER_FLAGS="-static"
-	-DCMAKE_INSTALL_PREFIX="/"
-    -DCMAKE_PREFIX_PATH="${COOKBOOK_SYSROOT}"
-    -DCMAKE_SYSTEM_NAME=Generic
-    -DCMAKE_SYSTEM_PROCESSOR="$(echo "${TARGET}" | cut -d - -f1)"
-    -DCMAKE_VERBOSE_MAKEFILE=On
-    -DNO_SHADERC=on
-    -DBUILD_RECORDER=off
-"${COOKBOOK_SOURCE}"
-)
-cookbook_configure
-"""

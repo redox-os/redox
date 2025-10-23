@@ -1,24 +1,7 @@
-#TODO compilation error
-#TODO maybe incomplete script
+#TODO not compiled or tested
 # build instructions - https://github.com/rui314/mold#how-to-build
 [source]
 git = "https://github.com/rui314/mold"
 rev = "b53197300b5bf9f02daccae536f65dda2d1431c5"
 [build]
-template = "custom"
-script = """
-COOKBOOK_CONFIGURE="cmake"
-COOKBOOK_CONFIGURE_FLAGS=(
-    -DCMAKE_BUILD_TYPE=Release
-    -DCMAKE_CROSSCOMPILING=True
-    -DCMAKE_EXE_LINKER_FLAGS="-static"
-    -DCMAKE_INSTALL_PREFIX="/"
-    -DCMAKE_PREFIX_PATH="${COOKBOOK_SYSROOT}"
-    -DCMAKE_SYSTEM_NAME=Generic
-    -DCMAKE_SYSTEM_PROCESSOR="$(echo "${TARGET}" | cut -d - -f1)"
-    -DCMAKE_VERBOSE_MAKEFILE=On
-    -DCMAKE_CXX_COMPILER=c++
-"${COOKBOOK_SOURCE}"
-)
-cookbook_configure
-"""
+template = "cmake"

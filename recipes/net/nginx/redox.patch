@@ -1,0 +1,85 @@
+diff -ruwN source/auto/feature source-new/auto/feature
+--- source/auto/feature	2025-04-23 18:48:54.000000000 +0700
++++ source-new/auto/feature	2025-09-16 02:44:58.617532926 +0700
+@@ -53,7 +53,7 @@
+ 
+         yes)
+             # /bin/sh is used to intercept "Killed" or "Abort trap" messages
+-            if /bin/sh -c $NGX_AUTOTEST >> $NGX_AUTOCONF_ERR 2>&1; then
++            #if /bin/sh -c $NGX_AUTOTEST >> $NGX_AUTOCONF_ERR 2>&1; then
+                 echo " found"
+                 ngx_found=yes
+ 
+@@ -61,9 +61,9 @@
+                     have=$ngx_have_feature . auto/have
+                 fi
+ 
+-            else
+-                echo " found but is not working"
+-            fi
++            #else
++            #    echo " found but is not working"
++            #fi
+         ;;
+ 
+         value)
+diff -ruwN source/auto/types/sizeof source-new/auto/types/sizeof
+--- source/auto/types/sizeof	2025-04-23 18:48:54.000000000 +0700
++++ source-new/auto/types/sizeof	2025-09-16 02:44:58.618532943 +0700
+@@ -33,7 +33,7 @@
+ END
+ 
+ 
+-ngx_test="$CC $CC_TEST_FLAGS $CC_AUX_FLAGS \
++ngx_test="gcc $CC_TEST_FLAGS $CC_AUX_FLAGS \
+           -o $NGX_AUTOTEST $NGX_AUTOTEST.c $NGX_LD_OPT $ngx_feature_libs"
+ 
+ eval "$ngx_test >> $NGX_AUTOCONF_ERR 2>&1"
+diff -ruwN source/auto/types/typedef source-new/auto/types/typedef
+--- source/auto/types/typedef	2025-04-23 18:48:54.000000000 +0700
++++ source-new/auto/types/typedef	2025-09-16 02:44:58.618532943 +0700
+@@ -34,7 +34,7 @@
+ 
+ END
+ 
+-    ngx_test="$CC $CC_TEST_FLAGS $CC_AUX_FLAGS \
++    ngx_test="gcc $CC_TEST_FLAGS $CC_AUX_FLAGS \
+               -o $NGX_AUTOTEST $NGX_AUTOTEST.c $NGX_LD_OPT $ngx_feature_libs"
+ 
+     eval "$ngx_test >> $NGX_AUTOCONF_ERR 2>&1"
+diff -ruwN source/src/os/unix/ngx_process.c source-new/src/os/unix/ngx_process.c
+--- source/src/os/unix/ngx_process.c	2025-04-23 18:48:54.000000000 +0700
++++ source-new/src/os/unix/ngx_process.c	2025-09-16 02:44:58.618532943 +0700
+@@ -143,6 +143,7 @@
+         }
+ 
+         on = 1;
++        /*
+         if (ioctl(ngx_processes[s].channel[0], FIOASYNC, &on) == -1) {
+             ngx_log_error(NGX_LOG_ALERT, cycle->log, ngx_errno,
+                           "ioctl(FIOASYNC) failed while spawning \"%s\"", name);
+@@ -156,6 +157,7 @@
+             ngx_close_channel(ngx_processes[s].channel, cycle->log);
+             return NGX_INVALID_PID;
+         }
++        */
+ 
+         if (fcntl(ngx_processes[s].channel[0], F_SETFD, FD_CLOEXEC) == -1) {
+             ngx_log_error(NGX_LOG_ALERT, cycle->log, ngx_errno,
+diff -ruwN source/src/os/unix/ngx_process_cycle.c source-new/src/os/unix/ngx_process_cycle.c
+--- source/src/os/unix/ngx_process_cycle.c	2025-04-23 18:48:54.000000000 +0700
++++ source-new/src/os/unix/ngx_process_cycle.c	2025-09-27 02:17:21.509383985 +0700
+@@ -804,11 +804,13 @@
+             exit(2);
+         }
+ 
++        /*
+         if (initgroups(ccf->username, ccf->group) == -1) {
+             ngx_log_error(NGX_LOG_EMERG, cycle->log, ngx_errno,
+                           "initgroups(%s, %d) failed",
+                           ccf->username, ccf->group);
+         }
++        */
+ 
+ #if (NGX_HAVE_PR_SET_KEEPCAPS && NGX_HAVE_CAPABILITIES)
+         if (ccf->transparent && ccf->user) {

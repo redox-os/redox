@@ -82,7 +82,7 @@ diff -ruwN xorg-server-21.1.16/hw/xfree86/os-support/xf86_OSlib.h source/hw/xfre
  #include <stdlib.h>
 diff -ruwN xorg-server-21.1.16/include/meson.build source/include/meson.build
 --- xorg-server-21.1.16/include/meson.build	2025-02-25 11:56:05.000000000 -0700
-+++ source/include/meson.build	2025-05-06 18:15:08.036215875 -0600
++++ source/include/meson.build	2025-09-15 08:40:00.484333455 -0600
 @@ -162,7 +162,7 @@
  conf_data.set('HAVE_PORT_CREATE', cc.has_function('port_create') ? '1' : false)
  conf_data.set('HAVE_REALLOCARRAY', cc.has_function('reallocarray', dependencies: libbsd_dep) ? '1' : false)
@@ -92,7 +92,7 @@ diff -ruwN xorg-server-21.1.16/include/meson.build source/include/meson.build
  conf_data.set('HAVE_SHMCTL64', cc.has_function('shmctl64') ? '1' : false)
  conf_data.set('HAVE_SIGACTION', cc.has_function('sigaction') ? '1' : false)
  conf_data.set('HAVE_SIGPROCMASK', cc.has_function('sigprocmask') ? '1' : false)
-@@ -190,7 +190,7 @@
+@@ -190,14 +190,14 @@
  conf_data.set('LISTEN_LOCAL', get_option('listen_local'))
  
  if cc.has_header_symbol('sys/socket.h', 'SCM_RIGHTS')
@@ -100,7 +100,18 @@ diff -ruwN xorg-server-21.1.16/include/meson.build source/include/meson.build
 +  #TODO conf_data.set('XTRANS_SEND_FDS', '1')
  endif
  
- if conf_data.get('HAVE_GETPEEREID').to_int() == 0 and conf_data.get('HAVE_GETPEERUCRED').to_int() == 0
+-if conf_data.get('HAVE_GETPEEREID').to_int() == 0 and conf_data.get('HAVE_GETPEERUCRED').to_int() == 0
+-    if not cc.has_header_symbol('sys/socket.h', 'SO_PEERCRED')
++#if conf_data.get('HAVE_GETPEEREID').to_int() == 0 and conf_data.get('HAVE_GETPEERUCRED').to_int() == 0
++    #if not cc.has_header_symbol('sys/socket.h', 'SO_PEERCRED')
+         conf_data.set('NO_LOCAL_CLIENT_CRED', 1)
+-    endif
+-endif
++    #endif
++#endif
+ 
+ conf_data.set('TCPCONN', '1')
+ conf_data.set('UNIXCONN', host_machine.system() != 'windows' ? '1' : false)
 @@ -212,7 +212,7 @@
  conf_data.set('DRI2', build_dri2 ? '1' : false)
  conf_data.set('DRI3', build_dri3 ? '1' : false)

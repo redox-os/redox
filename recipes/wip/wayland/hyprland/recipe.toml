@@ -1,6 +1,8 @@
-#TODO missing CMake configuration, see https://wiki.hyprland.org/Getting-Started/Installation/#cmake-recommended
+#TODO not compiled or tested
+# build instructions: https://wiki.hyprland.org/Getting-Started/Installation/#cmake-recommended
 [source]
 git = "https://github.com/hyprwm/Hyprland"
+rev = "ed936430216e7aa5f6f53d22eff713f8e9ed69ac"
 [build]
 template = "custom"
 dependencies = [
@@ -18,6 +20,8 @@ dependencies = [
     "libxfixes",
 ]
 script = """
+DYNAMIC_INIT
+cookbook_cmake
 mkdir -pv "${COOKBOOK_STAGE}"/usr/share/wayland-sessions
 cp -rv "${COOKBOOK_SOURCE}"/example/hyprland.desktop "${COOKBOOK_STAGE}"/usr/share/wayland-sessions
 """

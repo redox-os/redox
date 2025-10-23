@@ -1,0 +1,17 @@
+#TODO not compiled or tested yet
+# build instructions: https://github.com/melonDS-emu/melonDS#linux
+[source]
+git = "https://github.com/melonDS-emu/melonDS"
+rev = "430de6b2702bb93faa8c2004aff3fbd084db4a1e"
+[build]
+template = "cmake"
+dependencies = [
+    "curl",
+    "libpcap",
+    "sdl2",
+    "qt5-base",
+    "qt5-multimedia",
+    "libslirp",
+    "libarchive",
+    "zstd",
+]

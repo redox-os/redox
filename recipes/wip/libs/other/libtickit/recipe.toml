@@ -1,5 +1,15 @@
 #TODO missing script for building, see https://github.com/leonerd/libtickit
 [source]
-tar = "https://www.leonerd.org.uk/code/libtickit/libtickit-0.4.3.tar.gz"
+tar = "https://www.leonerd.org.uk/code/libtickit/libtickit-0.4.5.tar.gz"
 [build]
 template = "custom"
+dependencies = [
+    "ncursesw"
+]
+script = """
+DYNAMIC_INIT
+rsync -av --delete "${COOKBOOK_SOURCE}/" ./
+
+"${COOKBOOK_MAKE}" -j "${COOKBOOK_MAKE_JOBS}"
+"${COOKBOOK_MAKE}" install-inc install-lib DESTDIR="${COOKBOOK_STAGE}"
+"""

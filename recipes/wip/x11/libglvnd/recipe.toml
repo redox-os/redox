@@ -11,8 +11,4 @@ dependencies = [
     "libxext",
     "x11proto",
 ]
-template = "custom"
-script = """
-DYNAMIC_INIT
-cookbook_meson
-"""
+template = "meson"

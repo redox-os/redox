@@ -1,5 +1,14 @@
-#TODO finish libtool setup
+#TODO can build, not tested
 [source]
-tar = "https://ftpmirror.gnu.org/libtool/libtool-2.5.4.tar.gz"
+git = "https://gitlab.redox-os.org/redox-os/libtool"
+branch = "v2.5.4-redox"
+shallow_clone = true
+script = """
+./bootstrap \
+    --skip-po \
+    --force \
+    --gnulib-srcdir=./gnulib
+"""
+
 [build]
 template = "configure"
