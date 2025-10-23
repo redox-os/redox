@@ -10,7 +10,7 @@ use cookbook::recipe::{BuildKind, CookRecipe, Recipe};
 use pkg::PackageName;
 
 use cookbook::config::init_config;
-use cookbook::cook::build::build;
+use cookbook::cook::cook_build::build;
 use termion::{color, style};
 
 fn cook_meta(
