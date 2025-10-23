@@ -1,8 +1,9 @@
-use std::error::Error;
-use std::fmt::format;
+use std::collections::BTreeSet;
 use std::path::{Path, PathBuf};
-use std::process;
+use std::process::{self, Command};
 use std::{env, fs};
+
+use anyhow::{Context, anyhow};
 
 // A repo manager, to replace repo.sh
 
@@ -30,7 +31,7 @@ const REPO_HELP_STR: &str = r#"
         -q, --quiet                surpress build logs unless error
 "#;
 
-struct Config {
+struct CliConfig {
     cookbook_dir: PathBuf,
     repo_dir: PathBuf,
     sysroot_dir: PathBuf,
@@ -41,10 +42,10 @@ struct Config {
     quiet: bool,
 }
 
-impl Config {
+impl CliConfig {
     fn new() -> Result<Self, std::io::Error> {
         let current_dir = env::current_dir()?;
-        Ok(Config {
+        Ok(CliConfig {
             cookbook_dir: current_dir.join("recipes"),
             repo_dir: current_dir.join("repo"),
             sysroot_dir: if cfg!(target_os = "redox") {
@@ -61,17 +62,21 @@ impl Config {
     }
 }
 
-fn main() -> Result<(), Box<dyn Error>> {
+fn main() {
+    main_inner().unwrap();
+}
+
+fn main_inner() -> anyhow::Result<()> {
     let args: Vec<String> = env::args().skip(1).collect();
 
     if args.is_empty() || args.contains(&"--help".to_string()) || args.contains(&"-h".to_string()) {
         println!("{}", REPO_HELP_STR);
-        return Ok(());
+        process::exit(1);
     }
 
-    let mut config = Config::new()?;
+    let mut config = CliConfig::new()?;
     let mut command: Option<String> = None;
-    let mut recipe_paths: Vec<Path> = Vec::new();
+    let mut recipe_paths: BTreeSet<PathBuf> = BTreeSet::new();
 
     for arg in args {
         if arg.starts_with("--") {
@@ -79,7 +84,7 @@ fn main() -> Result<(), Box<dyn Error>> {
                 match key {
                     "--cookbook" => config.cookbook_dir = PathBuf::from(value),
                     "--repo" => config.repo_dir = PathBuf::from(value),
-                    "--sysroot" => config.sysroot_dir = Some(PathBuf::from(value)),
+                    "--sysroot" => config.sysroot_dir = PathBuf::from(value),
                     _ => {
                         eprintln!("Error: Unknown flag with value: {}", arg);
                         process::exit(1);
@@ -111,21 +116,21 @@ fn main() -> Result<(), Box<dyn Error>> {
             command = Some(arg);
         } else {
             // Subsequent non-flag arguments are recipe names
-            if Some(path) = pkg::recipes::find(arg) {
-                recipe_paths.push(path);
+            if let Some(path) = pkg::recipes::find(&arg) {
+                recipe_paths.insert(path.to_owned());
             } else {
-                return Err(format!("Error: recipe not found '{arg}'"));
+                panic!("Error: recipe not found '{arg}'");
             }
         }
     }
 
-    let command = command.ok_or("Error: No command specified.")?;
+    let command = command.ok_or("Error: No command specified.").unwrap();
 
     if !config.all && recipe_paths.is_empty() {
-        return Err("Error: No recipe names provided and --all flag was not used.".into());
+        panic!("Error: No recipe names provided and --all flag was not used.");
     }
     if config.all && !recipe_paths.is_empty() {
-        return Err("Error: Cannot specify recipe names when using the --all flag.".into());
+        panic!("Error: Cannot specify recipe names when using the --all flag.");
     }
 
     if config.all {
@@ -154,7 +159,7 @@ fn main() -> Result<(), Box<dyn Error>> {
     Ok(())
 }
 
-fn handle_fetch(recipe_path: &Path, config: &Config) -> Result<(), String> {
+fn handle_fetch(recipe_path: &Path, config: &CliConfig) -> anyhow::Result<()> {
     let mut cmd = Command::new("cook");
     cmd.arg("--fetch-only");
     if config.with_package_deps {
@@ -167,20 +172,18 @@ fn handle_fetch(recipe_path: &Path, config: &Config) -> Result<(), String> {
         cmd.arg("--quiet");
     }
     cmd.arg(recipe_path);
-    let status = cmd
-        .status()
-        .map_err(|e| format!("Failed to execute cook command: {}", e))?;
+    let status = cmd.status().context("Failed to execute cook command")?;
     if !status.success() && !config.nonstop {
-        return Err(format!(
+        return Err(anyhow!(
             "Cook command failed for recipe '{}' with exit code: {}",
-            recipe_name,
+            recipe_path.display(),
             status.code().unwrap_or(1)
         ));
     }
     Ok(())
 }
 
-fn handle_cook(recipe_path: &Path, config: &Config) -> Result<(), String> {
+fn handle_cook(recipe_path: &Path, config: &CliConfig) -> anyhow::Result<()> {
     let mut cmd = Command::new("cook");
     cmd.arg(recipe_path);
     if config.with_package_deps {
@@ -192,51 +195,43 @@ fn handle_cook(recipe_path: &Path, config: &Config) -> Result<(), String> {
     if config.quiet {
         cmd.arg("--quiet");
     }
-    let status = cmd
-        .status()
-        .map_err(|e| format!("Failed to execute cook command: {}", e))?;
+    let status = cmd.status().context("Failed to execute cook command")?;
     if !status.success() && !config.nonstop {
-        return Err(format!(
+        return Err(anyhow!(
             "Cook command failed for recipe '{}' with exit code: {}",
-            recipe_name,
+            recipe_path.display(),
             status.code().unwrap_or(1)
         ));
     }
     Ok(())
 }
 
-fn handle_unfetch(recipe_path: &Path, config: &Config) -> Result<(), String> {
+fn handle_unfetch(recipe_path: &Path, _config: &CliConfig) -> anyhow::Result<()> {
     let dir = recipe_path.join("source");
     if dir.exists() {
-        fs::remove_dir_all(dir)
-            .map_err(|err| format!("failed to delete '{}': {:?}", recipe_path, errF))?;
+        fs::remove_dir_all(dir).context(format!("failed to delete {}", recipe_path.display()))?;
     }
     Ok(())
 }
 
-fn handle_clean(recipe_path: &Path, config: &Config) -> Result<(), String> {
+fn handle_clean(recipe_path: &Path, _config: &CliConfig) -> anyhow::Result<()> {
     let dir = recipe_path.join("target");
     if dir.exists() {
-        fs::remove_dir_all(dir)
-            .map_err(|err| format!("failed to delete '{}': {:?}", recipe_path, errF))?;
+        fs::remove_dir_all(dir).context(format!("failed to delete {}", recipe_path.display()))?;
     }
     Ok(())
 }
 
-fn handle_push(recipe_path: &Path, config: &Config) -> Result<(), String> {
+fn handle_push(recipe_path: &Path, config: &CliConfig) -> anyhow::Result<()> {
     let public_path = "build/id_ed25519.pub.toml";
     pkgar::extract(
         public_path,
         config.sysroot_dir.as_path(),
-        sysroot_dir_tmp.to_str().unwrap(),
+        config.sysroot_dir.to_str().unwrap(),
     )
-    .map_err(|err| {
-        format!(
-            "failed to install '{}' in '{}': {:?}",
-            archive_path.display(),
-            config.sysroot_dir.display(),
-            err
-        )
-    })?;
-    Ok(())
+    .context(format!(
+        "failed to install '{}' in '{}'",
+        recipe_path.display(),
+        config.sysroot_dir.display(),
+    ))
 }
