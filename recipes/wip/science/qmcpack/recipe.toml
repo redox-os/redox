@@ -1,10 +1,11 @@
-#TODO maybe incomplete script, see https://qmcpack.readthedocs.io/en/develop/installation.html#building-with-cmake
-#TODO probably missing dependencies
+#TODO not compiled or tested
+# build instructions: https://qmcpack.readthedocs.io/en/develop/installation.html#building-with-cmake
+# probably missing dependencies
 [source]
 git = "https://github.com/QMCPACK/qmcpack"
 rev = "9d0d968139fc33f71dbf9159f526dd7b47f10a3b"
 [build]
-template = "custom"
+template = "cmake"
 dependencies = [
     "openmpi",
     "openblas",
@@ -13,18 +14,3 @@ dependencies = [
     "boost",
     "fftw",
 ]
-script = """
-COOKBOOK_CONFIGURE="cmake"
-COOKBOOK_CONFIGURE_FLAGS=(
-    -DCMAKE_BUILD_TYPE=Release
-    -DCMAKE_CROSSCOMPILING=True
-    -DCMAKE_EXE_LINKER_FLAGS="-static"
-    -DCMAKE_INSTALL_PREFIX="/"
-    -DCMAKE_PREFIX_PATH="${COOKBOOK_SYSROOT}"
-    -DCMAKE_SYSTEM_NAME=Generic
-    -DCMAKE_SYSTEM_PROCESSOR="$(echo "${TARGET}" | cut -d - -f1)"
-    -DCMAKE_VERBOSE_MAKEFILE=On
-"${COOKBOOK_SOURCE}"
-)
-cookbook_configure
-"""

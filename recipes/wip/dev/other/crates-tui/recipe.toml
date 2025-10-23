@@ -1,4 +1,4 @@
-#TODO port to the Orbital clipboard
+#TODO not compiled or tested
 [source]
 git = "https://github.com/ratatui-org/crates-tui"
 [build]

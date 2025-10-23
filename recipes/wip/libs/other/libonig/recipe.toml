@@ -1,0 +1,10 @@
+[source]
+git = "https://github.com/kkos/oniguruma"
+rev = "f95747b462de672b6f8dbdeb478245ddf061ca53"
+script = """
+DYNAMIC_INIT
+autotools_recursive_regenerate
+"""
+
+[build]
+template = "configure"

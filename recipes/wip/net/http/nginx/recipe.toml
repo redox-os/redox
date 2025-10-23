@@ -1,5 +1,0 @@
-#TODO Compilation error
-[source]
-tar = "https://nginx.org/download/nginx-1.26.0.tar.gz"
-[build]
-template = "configure"

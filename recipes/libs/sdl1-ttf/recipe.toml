@@ -16,8 +16,7 @@ dependencies = [
     "zlib",
 ]
 script = """
-export CFLAGS="-I${COOKBOOK_SYSROOT}/include -I${COOKBOOK_SYSROOT}/include/freetype2"
-export LDFLAGS="-L${COOKBOOK_SYSROOT}/lib"
+export CFLAGS="${CFLAGS} -I${COOKBOOK_SYSROOT}/include/freetype2"
 
 COOKBOOK_CONFIGURE_FLAGS=(
     --prefix=/

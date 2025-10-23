@@ -1,0 +1,144 @@
+diff '--color=auto' -ruwN source/Cargo.toml source-new/Cargo.toml
+--- source/Cargo.toml	2025-09-11 01:59:14.785564526 -0400
++++ source-new/Cargo.toml	2025-09-11 01:59:45.885553436 -0400
+@@ -35,12 +35,12 @@
+ 
+ bitflags = "2.5.0"
+ errno = "0.3.0"
+-libc = "0.2"
++libc = { git = "https://github.com/rust-lang/libc", rev = "b31ee9b22f99354f2ca00c68d038d6f377c8b8a4", features = ["extra_traits"] }
+ # lru pulls in hashbrown by default, which uses a faster (though less DoS resistant) hashing algo.
+ # disabling default features uses the stdlib instead, but it doubles the time to rewrite the history
+ # files as of 22 April 2024.
+ lru = "0.13.0"
+-nix = { version = "0.30.1", default-features = false, features = [
++nix = { git = "https://github.com/joshuamegnauth54/nix", branch = "redox-fish-no-merge", default-features = false, features = [
+     "event",
+     "inotify",
+     "resource",
+diff '--color=auto' -ruwN source/src/exec.rs source-new/src/exec.rs
+--- source/src/exec.rs	2025-09-11 01:59:14.596625190 -0400
++++ source-new/src/exec.rs	2025-09-11 02:00:00.315286369 -0400
+@@ -33,7 +33,6 @@
+ use crate::nix::{getpid, isatty};
+ use crate::null_terminated_array::OwningNullTerminatedArray;
+ use crate::parser::{Block, BlockId, BlockType, EvalRes, Parser};
+-#[cfg(FISH_USE_POSIX_SPAWN)]
+ use crate::proc::Pid;
+ use crate::proc::{
+     hup_jobs, is_interactive_session, jobs_requiring_warning_on_exit, no_exec,
+@@ -390,7 +389,7 @@
+ ) -> ! {
+     // This function never returns, so we take certain liberties with constness.
+ 
+-    unsafe { libc::execve(actual_cmd.as_ptr(), argv.get(), envv.get()) };
++    unsafe { libc::execve(actual_cmd.as_ptr(), argv.get().cast(), envv.get().cast()) };
+     let err = errno();
+ 
+     // The shebang wasn't introduced until UNIX Seventh Edition, so if
+@@ -413,7 +412,11 @@
+             // not what we would pass as argv0.
+             argv2[1] = actual_cmd.as_ptr();
+             unsafe {
+-                libc::execve(_PATH_BSHELL.load(Ordering::Relaxed), &argv2[0], envv.get());
++                libc::execve(
++                    _PATH_BSHELL.load(Ordering::Relaxed),
++                    argv2.as_ptr().cast(),
++                    envv.get().cast(),
++                );
+             }
+         }
+     }
+diff '--color=auto' -ruwN source/src/fork_exec/postfork.rs source-new/src/fork_exec/postfork.rs
+--- source/src/fork_exec/postfork.rs	2025-09-11 01:59:14.828576001 -0400
++++ source-new/src/fork_exec/postfork.rs	2025-09-11 02:00:00.319001235 -0400
+@@ -339,7 +339,9 @@
+                             "', which is not an executable command."
+                         );
+                     }
+-                } else if md.unwrap().mode() & u32::from(libc::S_IFMT) == u32::from(libc::S_IFDIR) {
++                } else if md.unwrap().mode() & u32::try_from(libc::S_IFMT).unwrap()
++                    == u32::try_from(libc::S_IFDIR).unwrap()
++                {
+                     FLOG_SAFE!(
+                         exec,
+                         "Failed to execute process '",
+diff '--color=auto' -ruwN source/src/input_common.rs source-new/src/input_common.rs
+--- source/src/input_common.rs	2025-09-11 01:59:14.828576001 -0400
++++ source-new/src/input_common.rs	2025-09-11 02:00:00.316042380 -0400
+@@ -589,7 +589,9 @@
+     // pselect expects timeouts in nanoseconds.
+     const NSEC_PER_MSEC: u64 = 1000 * 1000;
+     const NSEC_PER_SEC: u64 = NSEC_PER_MSEC * 1000;
++    #[cfg(not(target_os = "redox"))]
+     let wait_nsec: u64 = (timeout.as_millis() as u64) * NSEC_PER_MSEC;
++    #[cfg(not(target_os = "redox"))]
+     let timeout = libc::timespec {
+         tv_sec: (wait_nsec / NSEC_PER_SEC).try_into().unwrap(),
+         tv_nsec: (wait_nsec % NSEC_PER_SEC).try_into().unwrap(),
+@@ -605,6 +607,7 @@
+         libc::FD_SET(in_fd, &mut fdset);
+     }
+ 
++    #[cfg(not(target_os = "redox"))]
+     let res = unsafe {
+         libc::pselect(
+             in_fd + 1,
+@@ -616,6 +619,31 @@
+         )
+     };
+ 
++    #[cfg(target_os = "redox")]
++    let res = unsafe {
++        //HACK: pselect does this atomically
++        let mut saved = MaybeUninit::uninit();
++        let mut saved = {
++            libc::sigfillset(saved.as_mut_ptr());
++            saved.assume_init()
++        };
++        libc::sigprocmask(libc::SIG_SETMASK, &sigs, &mut saved);
++        let mut timeout = libc::timeval {
++            tv_sec: timeout.as_secs() as _,
++            tv_usec: timeout.subsec_micros() as _,
++        };
++        let res = libc::select(
++            in_fd + 1,
++            &mut fdset,
++            ptr::null_mut(),
++            ptr::null_mut(),
++            &raw mut timeout,
++        );
++        libc::sigprocmask(libc::SIG_SETMASK, &saved, ptr::null_mut());
++
++        res
++    };
++
+     // Prevent signal starvation on WSL causing the `torn_escapes.py` test to fail
+     if is_windows_subsystem_for_linux(WSL::V1) {
+         // Merely querying the current thread's sigmask is sufficient to deliver a pending signal
+diff '--color=auto' -ruwN source/src/libc.c source-new/src/libc.c
+--- source/src/libc.c	2025-09-11 01:59:14.599514890 -0400
++++ source-new/src/libc.c	2025-09-11 02:00:00.304589636 -0400
+@@ -4,7 +4,7 @@
+ #include <stdint.h>
+ #include <stdio.h>
+ #include <stdlib.h>     // MB_CUR_MAX
+-#include <sys/mount.h>  // MNT_LOCAL
++/* #include <sys/mount.h>  // MNT_LOCAL */
+ #include <sys/resource.h>
+ #include <sys/statvfs.h>  // ST_LOCAL
+ #include <unistd.h>       // _CS_PATH, _PC_CASE_SENSITIVE
+diff '--color=auto' -ruwN source/src/path.rs source-new/src/path.rs
+--- source/src/path.rs	2025-09-11 01:59:14.600515157 -0400
++++ source-new/src/path.rs	2025-09-11 02:00:00.317047039 -0400
+@@ -738,7 +738,9 @@
+             crate::libc::ST_LOCAL(),
+             &narrow,
+         );
+-        #[cfg(not(target_os = "netbsd"))]
++        #[cfg(target_os = "redox")]
++        let remoteness = DirRemoteness::unknown;
++        #[cfg(not(target_os = "redox"))]
+         let remoteness = remoteness_via_statfs(
+             libc::statfs,
+             |stat: &libc::statfs| stat.f_flags,

@@ -24,7 +24,6 @@ fbcond 2
 # Live disk
 # Note: Needs to start before drivers to ensure it gets priority when redoxfs searches for disks
 lived
-unset DISK_LIVE_ADDR DISK_LIVE_SIZE
 
 # Drivers
 run /scheme/initfs/etc/init_drivers.rc

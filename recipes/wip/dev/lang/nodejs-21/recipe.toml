@@ -1,0 +1,49 @@
+#TODO page fault
+[source]
+tar = "https://nodejs.org/dist/v21.7.3/node-v21.7.3.tar.xz"
+blake3 = "95a56db4f9729b2f8384ab58ccb2ec0c41da05991f7400ef97bd76748d77870b"
+patches = ["redox.patch"]
+
+[build]
+template = "custom"
+dependencies = [
+    "libbrotli",
+    "c-ares",
+    "libuv",
+    "ngtcp2",
+    "nghttp2",
+    "nghttp3",
+    "openssl3",
+    "sqlite3",
+    "zlib",
+    "zstd",
+]
+script = """
+DYNAMIC_INIT
+export PYTHONDONTWRITEBYTECODE=1
+export CC_host="$CC_WRAPPER gcc" CXX_host="$CC_WRAPPER g++"
+
+rsync -av --delete "${COOKBOOK_SOURCE}/" ./
+
+case "${TARGET}" in
+    x86-unknown-redox)     export NODE_CPU=x32;;
+    x86_64-unknown-redox)  export NODE_CPU=x64;;
+    aarch64-unknown-redox) export NODE_CPU=arm64;;
+esac
+
+COOKBOOK_CONFIGURE_FLAGS=(
+  --prefix=/usr
+  --dest-cpu=${NODE_CPU}
+  --dest-os=redox
+  --shared-cares
+  --shared-libuv
+  --shared-ngtcp2
+  --shared-nghttp2
+  --shared-nghttp3
+  --shared-openssl
+  --shared-zlib
+  --cross-compiling
+)
+COOKBOOK_CONFIGURE="./configure"
+cookbook_configure
+"""

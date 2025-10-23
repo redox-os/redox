@@ -1,4 +1,3 @@
-#TODO probably wrong script, see https://openal-soft.org/#installing
 [source]
 tar = "https://openal-soft.org/openal-releases/openal-soft-1.24.1.tar.bz2"
 blake3 = "8aeaa8307d3e14331ad20761c537ffebe70975cb7c3343e8d5c0c0ed7bc16eab"
@@ -17,46 +16,22 @@ dependencies = [
     "zlib",
 ]
 script = """
-export CFLAGS="${CFLAGS} -I${COOKBOOK_SYSROOT}/include -I${COOKBOOK_SYSROOT}/include/SDL2"
-export CXXFLAGS="${CXXFLAGS} -I${COOKBOOK_SYSROOT}/include -I${COOKBOOK_SYSROOT}/include/SDL2"
-
-cat > redox.cmake <<EOF
-# the name of the target operating system
-set(CMAKE_SYSTEM_NAME Generic)
-set(CMAKE_SYSTEM_PROCESSOR "${TARGET%%-*}")
-
-# which compilers to use for C and C++
-set(CMAKE_C_COMPILER "${TARGET}-gcc")
-set(CMAKE_CXX_COMPILER "${TARGET}-g++")
-
-# where is the target environment located
-set(CMAKE_FIND_ROOT_PATH "${COOKBOOK_SYSROOT}")
-
-# adjust the default behavior of the FIND_XXX() commands:
-# search programs in the host environment
-set(CMAKE_FIND_ROOT_PATH_MODE_PROGRAM NEVER)
-
-# search headers, libraries, and packages in the target environment
-set(CMAKE_FIND_ROOT_PATH_MODE_INCLUDE ONLY)
-set(CMAKE_FIND_ROOT_PATH_MODE_LIBRARY ONLY)
-set(CMAKE_FIND_ROOT_PATH_MODE_PACKAGE ONLY)
-EOF
-
-COOKBOOK_CONFIGURE="cmake"
-COOKBOOK_CONFIGURE_FLAGS=(
-    -DCMAKE_BUILD_TYPE=Release
-    -DCMAKE_INSTALL_PREFIX="/usr"
-    -DCMAKE_PREFIX_PATH="${COOKBOOK_SYSROOT}"
-    -DCMAKE_TOOLCHAIN_FILE=redox.cmake
-    -DCMAKE_VERBOSE_MAKEFILE=ON
+DYNAMIC_INIT
+export CFLAGS="${CFLAGS} -I${COOKBOOK_SYSROOT}/include/SDL2"
+export CXXFLAGS="${CXXFLAGS} -I${COOKBOOK_SYSROOT}/include/SDL2"
+COOKBOOK_CMAKE_FLAGS+=(
     -DALSOFT_EXAMPLES=OFF
     -DALSOFT_INSTALL_EXAMPLES=OFF
     -DALSOFT_INSTALL_UTILS=OFF
     -DALSOFT_UTILS=OFF
-    -DLIBTYPE=STATIC
     -DALSOFT_BACKEND_SDL2=ON
     -DALSOFT_REQUIRE_SDL2=ON
-    "${COOKBOOK_SOURCE}"
 )
-cookbook_configure
+if [ "${COOKBOOK_DYNAMIC}" == "1" ]
+then
+    COOKBOOK_CMAKE_FLAGS+=(-DLIBTYPE=SHARED)
+else
+    COOKBOOK_CMAKE_FLAGS+=(-DLIBTYPE=STATIC)
+fi
+cookbook_cmake
 """

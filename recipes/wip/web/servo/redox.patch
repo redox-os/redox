@@ -1,0 +1,955 @@
+diff --git a/Cargo.toml b/Cargo.toml
+index 2dcb622934f..0d5f41924c0 100644
+--- a/Cargo.toml
++++ b/Cargo.toml
+@@ -55,14 +55,14 @@ ctr = "0.9.2"
+ darling = { version = "0.20", default-features = false }
+ data-url = "0.3"
+ devtools_traits = { path = "components/shared/devtools" }
+-dpi = "0.1"
++dpi = { git = "https://gitlab.redox-os.org/njskalski/winit.git", branch = "redox_mods2"}
+ embedder_traits = { path = "components/shared/embedder" }
+ encoding_rs = "0.8"
+ env_logger = "0.11"
+ euclid = "0.22"
+ fnv = "1.0"
+ fonts_traits = { path = "components/shared/fonts" }
+-freetype-sys = "0.20"
++freetype-sys = { version ="0.20.1", default-features = false}
+ fxhash = "0.2"
+ getopts = "0.2.11"
+ gleam = "0.15"
+@@ -91,7 +91,7 @@ imsz = "0.2"
+ indexmap = { version = "2.10.0", features = ["std"] }
+ ipc-channel = "0.20"
+ itertools = "0.14"
+-js = { package = "mozjs", git = "https://github.com/servo/mozjs" }
++js = { package = "mozjs", git = "https://gitlab.redox-os.org/willnode/mozjs.git", branch = "redox_mods" }
+ keyboard-types = { version = "0.8.1", features = ["serde", "webdriver"] }
+ kurbo = { version = "0.11.3", features = ["euclid"] }
+ layout_api = { path = "components/shared/layout" }
+@@ -151,7 +151,7 @@ stylo_config = { git = "https://github.com/servo/stylo", branch = "2025-08-01" }
+ stylo_dom = { git = "https://github.com/servo/stylo", branch = "2025-08-01" }
+ stylo_malloc_size_of = { git = "https://github.com/servo/stylo", branch = "2025-08-01" }
+ stylo_traits = { git = "https://github.com/servo/stylo", branch = "2025-08-01" }
+-surfman = { git = "https://github.com/servo/surfman", rev = "f7688b4585f9e0b5d4bf8ee8e4a91e82349610b1", features = ["chains"] }
++surfman = { git = "https://gitlab.redox-os.org/njskalski/surfman.git", branch = "redox_mods", features = ["sm-x11"] }
+ syn = { version = "2", default-features = false, features = ["clone-impls", "derive", "parsing"] }
+ synstructure = "0.13"
+ taffy = { version = "0.9", default-features = false, features = ["calc", "detailed_layout_info", "grid", "std"] }
+@@ -178,14 +178,14 @@ vello_cpu = { git = "https://github.com/linebender/vello", rev = "b0e2e598ac62c7
+ webdriver = "0.53.0"
+ webgpu_traits = { path = "components/shared/webgpu" }
+ webpki-roots = "1.0"
+-webrender = { git = "https://github.com/servo/webrender", branch = "0.67", features = ["capture"] }
+-webrender_api = { git = "https://github.com/servo/webrender", branch = "0.67" }
++webrender = { git = "https://gitlab.redox-os.org/njskalski/webrender.git", branch = "redox_mods" }
++webrender_api = { git = "https://gitlab.redox-os.org/njskalski/webrender.git", branch = "redox_mods" }
+ webxr-api = { path = "components/shared/webxr" }
+ wgpu-core = "25"
+ wgpu-types = "25"
+ winapi = "0.3"
+ windows-sys = "0.59"
+-winit = "0.30.12"
++winit = { git = "https://gitlab.redox-os.org/njskalski/winit.git", branch = "redox_mods2"}
+ wio = "0.2"
+ wr_malloc_size_of = { git = "https://github.com/servo/webrender", branch = "0.67" }
+ xi-unicode = "0.3.0"
+@@ -222,6 +222,20 @@ lto = "thin"
+ codegen-units = 1
+ 
+ [patch.crates-io]
++ipc-channel = { git = "https://gitlab.redox-os.org/njskalski/ipc-channel.git", branch="redox_mods" }
++servo_malloc_size_of = { path = "./components/malloc_size_of" }
++wr_malloc_size_of = { git = "https://gitlab.redox-os.org/njskalski/webrender.git", branch = "redox_mods"}
++tikv-jemalloc-sys = { version = "0.6.0", git = "https://gitlab.redox-os.org/njskalski/jemallocator.git", branch = "redox_mods" }
++tikv-jemallocator = { version = "0.6.0", git = "https://gitlab.redox-os.org/njskalski/jemallocator.git", branch = "redox_mods" }
++mozangle = { git = "https://gitlab.redox-os.org/willnode/mozangle.git", branch = "redox_mods"}
++# gaol = { git = "https://gitlab.redox-os.org/njskalski/gaol.git", branch = "redox_mods" }
++aws-lc-rs = { git = "https://gitlab.redox-os.org/njskalski/aws-lc-rs.git", branch = "redox_mods" }
++# mozjs_sys = { git = "https://gitlab.redox-os.org/njskalski/mozjs.git", rev = "e2ee9c77148c3af4f11fdff9a2cbd7e449d48d33"}
++# mozjs = { git = "https://gitlab.redox-os.org/njskalski/mozjs.git", branch = "redox_mods"}
++x11rb = { git = "https://gitlab.redox-os.org/njskalski/x11rb.git", branch = "redox_mods"}
++libz-sys = { git = "https://github.com/willnode/libz-sys.git", branch = "servo"}
++winit = { git = "https://gitlab.redox-os.org/njskalski/winit.git", branch = "redox_mods2"}
++# freetype-sys = { git = "https://github.com/PistonDevelopers/freetype-sys.git", branch = "master" }
+ # If you need to temporarily test Servo with a local fork of some upstream
+ # crate, add that here. Use the form:
+ #
+@@ -250,7 +264,7 @@ codegen-units = 1
+ #
+ # [patch."https://github.com/servo/webrender"]
+ # webrender = { path = "../webrender/webrender" }
+-# webrender_api = { path = "../webrender/webrender_api" }
++# webrender_api = { git = "https://gitlab.redox-os.org/njskalski/webrender.git", branch = "redox_mods" } = { path = "../webrender/webrender_api = { git = "https://gitlab.redox-os.org/njskalski/webrender.git", branch = "redox_mods" }" }
+ # wr_malloc_size_of = { path = "../webrender/wr_malloc_size_of" }
+ #
+ # Or for another Git dependency:
+diff --git a/components/canvas/Cargo.toml b/components/canvas/Cargo.toml
+index ef0c84977f2..4edb129dd97 100644
+--- a/components/canvas/Cargo.toml
++++ b/components/canvas/Cargo.toml
+@@ -38,7 +38,7 @@ raqote = { version = "0.8.5", optional = true }
+ servo_arc = { workspace = true }
+ stylo = { workspace = true }
+ unicode-script = { workspace = true }
+-webrender_api = { workspace = true }
++webrender_api = { git = "https://gitlab.redox-os.org/njskalski/webrender.git", branch = "redox_mods" }
+ servo_config = { path = "../config" }
+ vello = { workspace = true, optional = true }
+ vello_cpu = { workspace = true, optional = true }
+diff --git a/components/compositing/Cargo.toml b/components/compositing/Cargo.toml
+index d5792b858db..38132ba0f2c 100644
+--- a/components/compositing/Cargo.toml
++++ b/components/compositing/Cargo.toml
+@@ -44,10 +44,10 @@ servo-tracing = { workspace = true }
+ stylo_traits = { workspace = true }
+ timers = { path = "../timers" }
+ tracing = { workspace = true, optional = true }
+-webrender = { workspace = true }
+-webrender_api = { workspace = true }
++webrender = { git = "https://gitlab.redox-os.org/njskalski/webrender.git", branch = "redox_mods" }
++webrender_api = { git = "https://gitlab.redox-os.org/njskalski/webrender.git", branch = "redox_mods" }
+ webxr = { path = "../webxr", optional = true }
+-wr_malloc_size_of = { workspace = true }
++wr_malloc_size_of = { git = "https://gitlab.redox-os.org/njskalski/webrender.git", branch = "redox_mods" }
+ 
+ [dev-dependencies]
+ surfman = { workspace = true }
+diff --git a/components/constellation/Cargo.toml b/components/constellation/Cargo.toml
+index a982bcbfe73..cb519367edd 100644
+--- a/components/constellation/Cargo.toml
++++ b/components/constellation/Cargo.toml
+@@ -58,10 +58,10 @@ stylo_traits = { workspace = true }
+ tracing = { workspace = true, optional = true }
+ webgpu = { path = "../webgpu" }
+ webgpu_traits = { workspace = true }
+-webrender = { workspace = true }
+-webrender_api = { workspace = true }
++webrender = { git = "https://gitlab.redox-os.org/njskalski/webrender.git", branch = "redox_mods", features = ["capture"] }
++webrender_api = { git = "https://gitlab.redox-os.org/njskalski/webrender.git", branch = "redox_mods" }
+ webxr-api = { workspace = true, features = ["ipc"] }
+ servo-tracing = { workspace = true }
+ 
+-[target.'cfg(any(target_os="macos", all(not(target_os = "windows"), not(target_os = "ios"), not(target_os="android"), not(target_env="ohos"), not(target_arch="arm"), not(target_arch="aarch64"))))'.dependencies]
++[target.'cfg(any(target_os="macos", all(not(target_os = "windows"), not(target_os = "ios"), not(target_os="android"), not(target_os="redox"), not(target_env="ohos"), not(target_arch="arm"), not(target_arch="aarch64"))))'.dependencies]
+ gaol = "0.2.1"
+diff --git a/components/constellation/sandboxing.rs b/components/constellation/sandboxing.rs
+index 02a6f4ed6f6..81dae2503e8 100644
+--- a/components/constellation/sandboxing.rs
++++ b/components/constellation/sandboxing.rs
+@@ -11,6 +11,7 @@ use std::{env, process};
+         not(target_os = "windows"),
+         not(target_os = "ios"),
+         not(target_os = "android"),
++        not(target_os = "redox"),
+         not(target_env = "ohos"),
+         not(target_arch = "arm"),
+         not(target_arch = "aarch64")
+@@ -99,7 +100,8 @@ pub fn content_process_sandbox_profile() -> Profile {
+     not(target_os = "android"),
+     not(target_env = "ohos"),
+     not(target_arch = "arm"),
+-    not(target_arch = "aarch64")
++    not(target_arch = "aarch64"),
++    not(target_os = "redox"),
+ ))]
+ pub fn content_process_sandbox_profile() -> Profile {
+     use std::path::PathBuf;
+@@ -128,6 +130,7 @@ pub fn content_process_sandbox_profile() -> Profile {
+     target_os = "windows",
+     target_os = "ios",
+     target_os = "android",
++    target_os = "redox",
+     target_env = "ohos",
+     target_arch = "arm",
+ 
+@@ -175,7 +178,8 @@ pub fn spawn_multiprocess(content: UnprivilegedContent) -> Result<Process, Error
+     not(target_os = "android"),
+     not(target_env = "ohos"),
+     not(target_arch = "arm"),
+-    not(target_arch = "aarch64")
++    not(target_arch = "aarch64"),
++    not(target_os = "redox"),
+ ))]
+ pub fn spawn_multiprocess(content: UnprivilegedContent) -> Result<Process, Error> {
+     use gaol::sandbox::{self, Sandbox, SandboxMethods};
+@@ -243,6 +247,12 @@ pub fn spawn_multiprocess(_content: UnprivilegedContent) -> Result<Process, Erro
+     process::exit(1);
+ }
+ 
++#[cfg(target_os = "redox")]
++pub fn spawn_multiprocess(_content: UnprivilegedContent) -> Result<Process, Error> {
++    log::error!("Multiprocess is not supported on Redox.");
++    process::exit(1);
++}
++
+ fn setup_common<C: CommandMethods>(command: &mut C, token: String) {
+     C::arg(command, "--content-process");
+     C::arg(command, token);
+diff --git a/components/fonts/Cargo.toml b/components/fonts/Cargo.toml
+index e4c27ca6c6f..acf5335e922 100644
+--- a/components/fonts/Cargo.toml
++++ b/components/fonts/Cargo.toml
+@@ -53,7 +53,7 @@ tracing = { workspace = true, optional = true }
+ unicode-properties = { workspace = true }
+ unicode-script = { workspace = true }
+ url = { workspace = true }
+-webrender_api = { workspace = true }
++webrender_api = { git = "https://gitlab.redox-os.org/njskalski/webrender.git", branch = "redox_mods" }
+ servo-tracing = { workspace = true }
+ 
+ [target.'cfg(target_os = "macos")'.dependencies]
+@@ -62,11 +62,11 @@ core-foundation = "0.9"
+ core-graphics = "0.23"
+ core-text = "20.1"
+ 
+-[target.'cfg(any(target_os = "linux", target_os = "android"))'.dependencies]
++[target.'cfg(any(target_os = "linux", target_os = "android", target_os = "redox"))'.dependencies]
+ freetype-sys = { workspace = true }
+ servo_allocator = { path = "../allocator" }
+ 
+-[target.'cfg(all(target_os = "linux", not(target_env = "ohos")))'.dependencies]
++[target.'cfg(all(any(target_os = "linux", target_os = "redox"), not(target_env = "ohos")))'.dependencies]
+ fontconfig_sys = { package = "yeslogic-fontconfig-sys", version = "6" }
+ 
+ [target.'cfg(target_os = "android")'.dependencies]
+diff --git a/components/fonts/font.rs b/components/fonts/font.rs
+index 751aeecdba7..1b62cba5851 100644
+--- a/components/fonts/font.rs
++++ b/components/fonts/font.rs
+@@ -947,7 +947,7 @@ pub struct FontBaseline {
+ /// let mapped_weight = apply_font_config_to_style_mapping(&mapping, weight as f64);
+ /// ```
+ #[cfg(all(
+-    any(target_os = "linux", target_os = "macos"),
++    any(target_os = "linux", target_os = "macos", target_os="redox"),
+     not(target_env = "ohos")
+ ))]
+ pub(crate) fn map_platform_values_to_style_values(mapping: &[(f64, f64)], value: f64) -> f64 {
+diff --git a/components/fonts/platform/freetype/mod.rs b/components/fonts/platform/freetype/mod.rs
+index feea468008e..24f59a276d4 100644
+--- a/components/fonts/platform/freetype/mod.rs
++++ b/components/fonts/platform/freetype/mod.rs
+@@ -16,7 +16,7 @@ use webrender_api::NativeFontHandle;
+ pub mod font;
+ mod freetype_face;
+ 
+-#[cfg(all(target_os = "linux", not(target_env = "ohos"), not(ohos_mock)))]
++#[cfg(all(any(target_os = "linux", target_os = "redox"), not(target_env = "ohos"), not(ohos_mock)))]
+ pub mod font_list;
+ 
+ #[cfg(target_os = "android")]
+diff --git a/components/fonts/platform/mod.rs b/components/fonts/platform/mod.rs
+index 2c77d17d5d5..3138343feb2 100644
+--- a/components/fonts/platform/mod.rs
++++ b/components/fonts/platform/mod.rs
+@@ -3,25 +3,25 @@
+  * file, You can obtain one at https://mozilla.org/MPL/2.0/. */
+ 
+ #[cfg(all(
+-    any(target_os = "linux", target_os = "macos"),
++    any(target_os = "linux", target_os = "macos", target_os="redox"),
+     not(target_os = "android"),
+     not(target_env = "ohos")
+ ))]
+ use base::text::{UnicodeBlock, UnicodeBlockMethod};
+ #[cfg(all(
+-    any(target_os = "linux", target_os = "macos"),
++    any(target_os = "linux", target_os = "macos", target_os="redox"),
+     not(target_os = "android"),
+     not(target_env = "ohos")
+ ))]
+ use unicode_script::Script;
+ 
+ #[cfg(all(
+-    any(target_os = "linux", target_os = "macos"),
++    any(target_os = "linux", target_os = "macos", target_os="redox"),
+     not(target_os = "android"),
+     not(target_env = "ohos")
+ ))]
+ use crate::FallbackFontSelectionOptions;
+-#[cfg(any(target_os = "linux", target_os = "android"))]
++#[cfg(any(target_os = "linux", target_os = "android", target_os="redox"))]
+ pub use crate::platform::freetype::{LocalFontIdentifier, font, font_list};
+ #[cfg(target_os = "macos")]
+ pub use crate::platform::macos::{
+@@ -30,7 +30,7 @@ pub use crate::platform::macos::{
+ #[cfg(target_os = "windows")]
+ pub use crate::platform::windows::{font, font_list, font_list::LocalFontIdentifier};
+ 
+-#[cfg(any(target_os = "linux", target_os = "android"))]
++#[cfg(any(target_os = "linux", target_os = "android", target_os="redox"))]
+ pub mod freetype;
+ 
+ #[cfg(target_os = "macos")]
+@@ -47,7 +47,7 @@ mod windows {
+ }
+ 
+ #[cfg(all(
+-    any(target_os = "linux", target_os = "macos"),
++    any(target_os = "linux", target_os = "macos", target_os="redox"),
+     not(target_os = "android"),
+     not(target_env = "ohos")
+ ))]
+diff --git a/components/geometry/Cargo.toml b/components/geometry/Cargo.toml
+index 8634bc1d18c..a4115f6bf90 100644
+--- a/components/geometry/Cargo.toml
++++ b/components/geometry/Cargo.toml
+@@ -16,5 +16,5 @@ app_units = { workspace = true }
+ euclid = { workspace = true }
+ malloc_size_of = { workspace = true }
+ malloc_size_of_derive = { workspace = true }
+-webrender = { workspace = true }
+-webrender_api = { workspace = true }
++webrender = { git = "https://gitlab.redox-os.org/njskalski/webrender.git", branch = "redox_mods" }
++webrender_api = { git = "https://gitlab.redox-os.org/njskalski/webrender.git", branch = "redox_mods" }
+diff --git a/components/layout/Cargo.toml b/components/layout/Cargo.toml
+index 139f2ce3dba..0196a3f15e0 100644
+--- a/components/layout/Cargo.toml
++++ b/components/layout/Cargo.toml
+@@ -62,7 +62,7 @@ tracing = { workspace = true, optional = true }
+ unicode-bidi = { workspace = true }
+ unicode-script = { workspace = true }
+ url = { workspace = true }
+-webrender_api = { workspace = true }
++webrender_api = { git = "https://gitlab.redox-os.org/njskalski/webrender.git", branch = "redox_mods" }
+ xi-unicode = { workspace = true }
+ servo-tracing = { workspace = true }
+ 
+diff --git a/components/malloc_size_of/Cargo.toml b/components/malloc_size_of/Cargo.toml
+index 6e5e45a4e35..8de32d2c798 100644
+--- a/components/malloc_size_of/Cargo.toml
++++ b/components/malloc_size_of/Cargo.toml
+@@ -39,5 +39,5 @@ unicode-script = { workspace = true }
+ url = { workspace = true }
+ urlpattern = { workspace = true }
+ uuid = { workspace = true }
+-webrender_api = { workspace = true }
+-wr_malloc_size_of = { workspace = true }
++webrender_api = { git = "https://gitlab.redox-os.org/njskalski/webrender.git", branch = "redox_mods" }
++wr_malloc_size_of = { git = "https://gitlab.redox-os.org/njskalski/webrender.git", branch = "redox_mods"}
+diff --git a/components/media/Cargo.toml b/components/media/Cargo.toml
+index cf51080ec7a..effa64922f8 100644
+--- a/components/media/Cargo.toml
++++ b/components/media/Cargo.toml
+@@ -20,4 +20,4 @@ log = { workspace = true }
+ serde = { workspace = true }
+ servo-media = { workspace = true }
+ servo_config = { path = "../config" }
+-webrender_api = { workspace = true }
++webrender_api = { git = "https://gitlab.redox-os.org/njskalski/webrender.git", branch = "redox_mods" }
+diff --git a/components/net/Cargo.toml b/components/net/Cargo.toml
+index 7556a1bf81f..38252d09b54 100644
+--- a/components/net/Cargo.toml
++++ b/components/net/Cargo.toml
+@@ -77,8 +77,7 @@ tungstenite = { workspace = true }
+ url = { workspace = true }
+ uuid = { workspace = true }
+ webpki-roots = { workspace = true }
+-webrender_api = { workspace = true }
+-
++webrender_api = { git = "https://gitlab.redox-os.org/njskalski/webrender.git", branch = "redox_mods" }
+ [dev-dependencies]
+ embedder_traits = { workspace = true, features = ["baked-default-resources"] }
+ flate2 = "1"
+diff --git a/components/pixels/Cargo.toml b/components/pixels/Cargo.toml
+index 9ba20db80c0..fe33d20b88b 100644
+--- a/components/pixels/Cargo.toml
++++ b/components/pixels/Cargo.toml
+@@ -19,8 +19,7 @@ log = { workspace = true }
+ malloc_size_of = { workspace = true }
+ malloc_size_of_derive = { workspace = true }
+ serde = { workspace = true, features = ["derive"] }
+-webrender_api = { workspace = true }
+-
++webrender_api = { git = "https://gitlab.redox-os.org/njskalski/webrender.git", branch = "redox_mods" }
+ [dev-dependencies]
+ criterion = { version = "0.5", features = ["html_reports"] }
+ 
+diff --git a/components/script/Cargo.toml b/components/script/Cargo.toml
+index 51e81f6c085..fb85b1ea6b1 100644
+--- a/components/script/Cargo.toml
++++ b/components/script/Cargo.toml
+@@ -136,7 +136,7 @@ utf-8 = "0.7"
+ uuid = { workspace = true, features = ["serde"] }
+ webdriver = { workspace = true }
+ webgpu_traits = { workspace = true }
+-webrender_api = { workspace = true }
++webrender_api = { git = "https://gitlab.redox-os.org/njskalski/webrender.git", branch = "redox_mods" }
+ webxr-api = { workspace = true, features = ["ipc"], optional = true }
+ wgpu-core = { workspace = true }
+ wgpu-types = { workspace = true }
+diff --git a/components/script/dom/navigatorinfo.rs b/components/script/dom/navigatorinfo.rs
+index f3e6ddc109b..ee83d327df9 100644
+--- a/components/script/dom/navigatorinfo.rs
++++ b/components/script/dom/navigatorinfo.rs
+@@ -46,7 +46,7 @@ pub(crate) fn Platform() -> DOMString {
+ }
+ 
+ #[allow(non_snake_case)]
+-#[cfg(any(target_os = "android", target_os = "linux"))]
++#[cfg(any(target_os = "android", target_os = "linux", target_os = "redox"))]
+ pub(crate) fn Platform() -> DOMString {
+     DOMString::from("Linux")
+ }
+diff --git a/components/script_bindings/build.rs b/components/script_bindings/build.rs
+index c28f900f6ce..2445c2ec9e4 100644
+--- a/components/script_bindings/build.rs
++++ b/components/script_bindings/build.rs
+@@ -86,12 +86,12 @@ impl phf_shared::PhfHash for Bytes<'_> {
+ ///
+ /// Note: This function should be kept in sync with the version in `components/script/build.rs`
+ fn find_python() -> Command {
+-    let mut command = Command::new("uv");
+-    command.args(["run", "--no-project", "python"]);
++    let mut command = Command::new("python3");
++    // command.args(["run", "--no-project", "python"]);
+ 
+     if command.output().is_ok_and(|out| out.status.success()) {
+         return command;
+     }
+ 
+-    panic!("Can't find python (tried `{command:?}`)! Is uv installed and in PATH?")
++    panic!("Can't find python (tried `{command:?}`)!")
+ }
+diff --git a/components/servo/Cargo.toml b/components/servo/Cargo.toml
+index 2c1f75dca13..03bb5596dc1 100644
+--- a/components/servo/Cargo.toml
++++ b/components/servo/Cargo.toml
+@@ -25,7 +25,7 @@ default = ["clipboard", "raqote"]
+ clipboard = ["dep:arboard"]
+ crown = ["script/crown"]
+ debugmozjs = ["script/debugmozjs"]
+-background_hang_monitor = ["background_hang_monitor/sampler"]
++# background_hang_monitor = ["background_hang_monitor/sampler"]
+ jitspew = ["script/jitspew"]
+ js_backtrace = ["script/js_backtrace"]
+ media-gstreamer = ["servo-media-gstreamer", "gstreamer"]
+@@ -117,8 +117,8 @@ surfman = { workspace = true }
+ tracing = { workspace = true, optional = true }
+ url = { workspace = true }
+ webgpu = { path = "../webgpu" }
+-webrender = { workspace = true }
+-webrender_api = { workspace = true }
++webrender = { git = "https://gitlab.redox-os.org/njskalski/webrender.git", branch = "redox_mods", features = ["capture"] }
++webrender_api = { git = "https://gitlab.redox-os.org/njskalski/webrender.git", branch = "redox_mods" }
+ webxr-api = { workspace = true, optional = true }
+ 
+ [target.'cfg(any(target_os = "android", target_env = "ohos"))'.dependencies]
+@@ -128,7 +128,7 @@ webxr = { path = "../webxr", optional = true }
+ arboard = { workspace = true, optional = true }
+ webxr = { path = "../webxr", features = ["ipc", "glwindow", "headless"] }
+ 
+-[target.'cfg(all(not(target_os = "windows"), not(target_os = "ios"), not(target_os = "android"), not(target_env = "ohos"), not(target_arch = "arm"), not(target_arch = "aarch64")))'.dependencies]
++[target.'cfg(all(not(target_os = "windows"), not(target_os = "ios"), not(target_os = "android"), not(target_env = "ohos"), not(target_arch = "arm"), not(target_arch = "aarch64"), not(target_os = "redox")))'.dependencies]
+ gaol = "0.2.1"
+ 
+ [target.'cfg(target_os = "windows")'.dependencies]
+diff --git a/components/servo/lib.rs b/components/servo/lib.rs
+index 37ce2019c7a..35e64e30c0d 100644
+--- a/components/servo/lib.rs
++++ b/components/servo/lib.rs
+@@ -77,6 +77,7 @@ use fonts::SystemFontService;
+     not(target_arch = "arm"),
+     not(target_arch = "aarch64"),
+     not(target_env = "ohos"),
++    not(target_os = "redox"),
+ ))]
+ use gaol::sandbox::{ChildSandbox, ChildSandboxMethods};
+ pub use gleam::gl;
+@@ -1305,6 +1306,7 @@ pub fn run_content_process(token: String) {
+     not(target_arch = "arm"),
+     not(target_arch = "aarch64"),
+     not(target_env = "ohos"),
++    not(target_os = "redox"),
+ ))]
+ fn create_sandbox() {
+     ChildSandbox::new(content_process_sandbox_profile())
+@@ -1319,6 +1321,7 @@ fn create_sandbox() {
+     target_arch = "arm",
+     target_arch = "aarch64",
+     target_env = "ohos",
++    target_os = "redox",
+ ))]
+ fn create_sandbox() {
+     panic!("Sandboxing is not supported on Windows, iOS, ARM targets and android.");
+diff --git a/components/shared/base/Cargo.toml b/components/shared/base/Cargo.toml
+index b293fa0faf3..eead0fb12e3 100644
+--- a/components/shared/base/Cargo.toml
++++ b/components/shared/base/Cargo.toml
+@@ -21,8 +21,7 @@ malloc_size_of_derive = { workspace = true }
+ parking_lot = { workspace = true }
+ serde = { workspace = true }
+ time = { workspace = true }
+-webrender_api = { workspace = true }
+-
++webrender_api = { git = "https://gitlab.redox-os.org/njskalski/webrender.git", branch = "redox_mods" }
+ [target.'cfg(any(target_os = "macos", target_os = "ios"))'.dependencies]
+ mach2 = { workspace = true }
+ 
+diff --git a/components/shared/canvas/Cargo.toml b/components/shared/canvas/Cargo.toml
+index 36711c0f83a..474c7722812 100644
+--- a/components/shared/canvas/Cargo.toml
++++ b/components/shared/canvas/Cargo.toml
+@@ -28,5 +28,5 @@ serde = { workspace = true }
+ servo_config = { path = "../../config" }
+ strum = { workspace = true }
+ stylo = { workspace = true }
+-webrender_api = { workspace = true }
++webrender_api = { git = "https://gitlab.redox-os.org/njskalski/webrender.git", branch = "redox_mods" }
+ webxr-api = { workspace = true, features = ["ipc"] }
+diff --git a/components/shared/compositing/Cargo.toml b/components/shared/compositing/Cargo.toml
+index 11ac6223766..98fe1417013 100644
+--- a/components/shared/compositing/Cargo.toml
++++ b/components/shared/compositing/Cargo.toml
+@@ -19,7 +19,7 @@ base = { workspace = true }
+ bincode = { workspace = true }
+ bitflags = { workspace = true }
+ crossbeam-channel = { workspace = true }
+-dpi = { version = "0.1" }
++dpi = { workspace = true }
+ embedder_traits = { workspace = true }
+ euclid = { workspace = true }
+ gleam = { workspace = true }
+@@ -38,4 +38,4 @@ strum_macros = { workspace = true }
+ stylo = { workspace = true }
+ stylo_traits = { workspace = true }
+ surfman = { workspace = true, features = ["sm-x11"] }
+-webrender_api = { workspace = true }
++webrender_api = { git = "https://gitlab.redox-os.org/njskalski/webrender.git", branch = "redox_mods" }
+diff --git a/components/shared/compositing/rendering_context.rs b/components/shared/compositing/rendering_context.rs
+index 0596210430b..c85c84618ae 100644
+--- a/components/shared/compositing/rendering_context.rs
++++ b/components/shared/compositing/rendering_context.rs
+@@ -105,7 +105,12 @@ impl Drop for SurfmanRenderingContext {
+ 
+ impl SurfmanRenderingContext {
+     fn new(connection: &Connection, adapter: &Adapter) -> Result<Self, Error> {
++        eprintln!("  SurfmanRenderingContext::new - Starting");
++        eprintln!("    GL API: {:?}", connection.gl_api());
++        
++        eprintln!("    Creating device...");
+         let mut device = connection.create_device(adapter)?;
++        eprintln!("    Device created");
+ 
+         let flags = ContextAttributeFlags::ALPHA |
+             ContextAttributeFlags::DEPTH |
+@@ -115,9 +120,16 @@ impl SurfmanRenderingContext {
+             GLApi::GLES => surfman::GLVersion { major: 3, minor: 0 },
+             GLApi::GL => surfman::GLVersion { major: 3, minor: 2 },
+         };
++        eprintln!("    GL Version requested: {}.{}", version.major, version.minor);
++        
++        eprintln!("    Creating context descriptor...");
+         let context_descriptor =
+             device.create_context_descriptor(&ContextAttributes { flags, version })?;
++        eprintln!("    Context descriptor created");
++        
++        eprintln!("    Creating context...");
+         let context = device.create_context(&context_descriptor, None)?;
++        eprintln!("    Context created");
+ 
+         #[allow(unsafe_code)]
+         let gleam_gl = {
+@@ -392,20 +404,41 @@ impl WindowRenderingContext {
+         window_handle: WindowHandle,
+         size: PhysicalSize<u32>,
+     ) -> Result<Self, Error> {
++        eprintln!("WindowRenderingContext::new - Starting creation");
++        eprintln!("  Size: {}x{}", size.width, size.height);
++        
++        eprintln!("  Creating connection from display_handle...");
+         let connection = Connection::from_display_handle(display_handle)?;
++        eprintln!("  Connection created successfully");
++        
++        eprintln!("  Creating adapter...");
+         let adapter = connection.create_adapter()?;
++        eprintln!("  Adapter created successfully");
++        
++        eprintln!("  Creating SurfmanRenderingContext...");
+         let surfman_context = SurfmanRenderingContext::new(&connection, &adapter)?;
++        eprintln!("  SurfmanRenderingContext created successfully");
+ 
++        eprintln!("  Creating native widget from window handle...");
+         let native_widget = connection
+             .create_native_widget_from_window_handle(
+                 window_handle,
+                 Size2D::new(size.width as i32, size.height as i32),
+             )
+             .expect("Failed to create native widget");
++        eprintln!("  Native widget created successfully");
+ 
++        eprintln!("  Creating surface...");
+         let surface = surfman_context.create_surface(SurfaceType::Widget { native_widget })?;
++        eprintln!("  Surface created successfully");
++        
++        eprintln!("  Binding surface...");
+         surfman_context.bind_surface(surface)?;
++        eprintln!("  Surface bound successfully");
++        
++        eprintln!("  Making context current...");
+         surfman_context.make_current()?;
++        eprintln!("  Context made current successfully");
+ 
+         Ok(Self {
+             size: Cell::new(size),
+diff --git a/components/shared/constellation/Cargo.toml b/components/shared/constellation/Cargo.toml
+index 7a1132ecd63..954c002d7f9 100644
+--- a/components/shared/constellation/Cargo.toml
++++ b/components/shared/constellation/Cargo.toml
+@@ -37,5 +37,5 @@ strum_macros = { workspace = true }
+ stylo_traits = { workspace = true }
+ uuid = { workspace = true }
+ webgpu_traits = { workspace = true }
+-webrender_api = { workspace = true }
++webrender_api = { git = "https://gitlab.redox-os.org/njskalski/webrender.git", branch = "redox_mods" }
+ wgpu-core = { workspace = true, optional = true }
+diff --git a/components/shared/embedder/Cargo.toml b/components/shared/embedder/Cargo.toml
+index 2ff427a4057..bc611d67da4 100644
+--- a/components/shared/embedder/Cargo.toml
++++ b/components/shared/embedder/Cargo.toml
+@@ -38,5 +38,5 @@ stylo = { workspace = true }
+ url = { workspace = true }
+ uuid = { workspace = true }
+ webdriver = { workspace = true }
+-webrender_api = { workspace = true }
++webrender_api = { git = "https://gitlab.redox-os.org/njskalski/webrender.git", branch = "redox_mods" }
+ servo_geometry = { path = "../../geometry" }
+diff --git a/components/shared/layout/Cargo.toml b/components/shared/layout/Cargo.toml
+index ae5d005d103..b24976e9da6 100644
+--- a/components/shared/layout/Cargo.toml
++++ b/components/shared/layout/Cargo.toml
+@@ -41,4 +41,4 @@ servo_arc = { workspace = true }
+ servo_url = { path = "../../url" }
+ stylo_traits = { workspace = true }
+ stylo = { workspace = true }
+-webrender_api = { workspace = true }
++webrender_api = { git = "https://gitlab.redox-os.org/njskalski/webrender.git", branch = "redox_mods" }
+diff --git a/components/shared/net/Cargo.toml b/components/shared/net/Cargo.toml
+index 044b2658c4e..0a36fc291ca 100644
+--- a/components/shared/net/Cargo.toml
++++ b/components/shared/net/Cargo.toml
+@@ -41,7 +41,6 @@ servo_rand = { path = "../../rand" }
+ servo_url = { path = "../../url" }
+ url = { workspace = true }
+ uuid = { workspace = true }
+-webrender_api = { workspace = true }
+-
++webrender_api = { git = "https://gitlab.redox-os.org/njskalski/webrender.git", branch = "redox_mods" }
+ [dev-dependencies]
+ embedder_traits = { workspace = true, features = ["baked-default-resources"] }
+diff --git a/components/shared/script/Cargo.toml b/components/shared/script/Cargo.toml
+index 69438867cc0..e65648a60b5 100644
+--- a/components/shared/script/Cargo.toml
++++ b/components/shared/script/Cargo.toml
+@@ -41,5 +41,5 @@ strum_macros = { workspace = true }
+ stylo_atoms = { workspace = true }
+ stylo_traits = { workspace = true }
+ webgpu_traits = { workspace = true, optional = true }
+-webrender_api = { workspace = true }
++webrender_api = { git = "https://gitlab.redox-os.org/njskalski/webrender.git", branch = "redox_mods" }
+ webxr-api = { workspace = true, features = ["ipc"] }
+diff --git a/components/shared/webgpu/Cargo.toml b/components/shared/webgpu/Cargo.toml
+index 5fb042dfb78..d41af6398d7 100644
+--- a/components/shared/webgpu/Cargo.toml
++++ b/components/shared/webgpu/Cargo.toml
+@@ -18,6 +18,6 @@ ipc-channel = { workspace = true }
+ malloc_size_of = { workspace = true }
+ pixels = { path = "../../pixels" }
+ serde = { workspace = true }
+-webrender_api = { workspace = true }
++webrender_api = { git = "https://gitlab.redox-os.org/njskalski/webrender.git", branch = "redox_mods" }
+ wgpu-core = { workspace = true, features = ["serde", "wgsl"] }
+ wgpu-types = { workspace = true }
+diff --git a/components/webgl/Cargo.toml b/components/webgl/Cargo.toml
+index 46fe7381959..017cf68eba7 100644
+--- a/components/webgl/Cargo.toml
++++ b/components/webgl/Cargo.toml
+@@ -30,7 +30,7 @@ itertools = { workspace = true }
+ log = { workspace = true }
+ pixels = { path = "../pixels" }
+ surfman = { workspace = true }
+-webrender = { workspace = true }
+-webrender_api = { workspace = true }
++webrender = { git = "https://gitlab.redox-os.org/njskalski/webrender.git", branch = "redox_mods", features = ["capture"] }
++webrender_api = { git = "https://gitlab.redox-os.org/njskalski/webrender.git", branch = "redox_mods" }
+ webxr = { path = "../webxr", features = ["ipc"], optional = true }
+ webxr-api = { workspace = true, features = ["ipc"], optional = true }
+diff --git a/components/webgpu/Cargo.toml b/components/webgpu/Cargo.toml
+index a2119f4c83c..308ab3772fb 100644
+--- a/components/webgpu/Cargo.toml
++++ b/components/webgpu/Cargo.toml
+@@ -22,7 +22,7 @@ pixels = { path = "../pixels" }
+ serde = { workspace = true, features = ["serde_derive"] }
+ servo_config = { path = "../config" }
+ webgpu_traits = { workspace = true }
+-webrender_api = { workspace = true }
++webrender_api = { git = "https://gitlab.redox-os.org/njskalski/webrender.git", branch = "redox_mods" }
+ wgpu-core = { workspace = true, features = ["serde", "wgsl"] }
+ wgpu-types = { workspace = true }
+ 
+diff --git a/ports/servoshell/Cargo.toml b/ports/servoshell/Cargo.toml
+index 06304184929..fb77b7099b0 100644
+--- a/ports/servoshell/Cargo.toml
++++ b/ports/servoshell/Cargo.toml
+@@ -37,7 +37,8 @@ ProductName = "Servo"
+ [features]
+ crown = ["libservo/crown"]
+ debugmozjs = ["libservo/debugmozjs"]
+-default = ["max_log_level", "webgpu", "webxr"]
++# cutting , "webxr" for redox
++default = ["max_log_level", "webgpu"]
+ jitspew = ["libservo/jitspew"]
+ js_backtrace = ["libservo/js_backtrace"]
+ max_log_level = ["log/release_max_level_info"]
+@@ -68,7 +69,8 @@ image = { workspace = true }
+ ipc-channel = { workspace = true }
+ keyboard-types = { workspace = true }
+ libc = { workspace = true }
+-libservo = { path = "../../components/servo", features = ["background_hang_monitor", "bluetooth", "testbinding"] }
++# removed "background_hang_monitor",
++libservo = { path = "../../components/servo", features = [ "bluetooth", "testbinding"] }
+ log = { workspace = true }
+ mime_guess = { workspace = true }
+ raw-window-handle = { workspace = true }
+@@ -108,13 +110,32 @@ nix = { workspace = true, features = ["fs"] }
+ serde_json = { workspace = true }
+ surfman = { workspace = true, features = ["sm-angle-default"] }
+ 
+-[target.'cfg(not(any(target_os = "android", target_env = "ohos")))'.dependencies]
+-accesskit_winit = "0.27"
++# I removed the problematic dependencies from everywhere even though they should not be pulled for redox. The thing is that cargo is still complaining about them, even
++# though they should be ignored.
++[target.'cfg(not(any(target_os = "android", target_env = "ohos", target_os = "redox")))'.dependencies]
++# accesskit_winit = "0.27"
+ dirs = "6.0"
+-egui = { version = "0.32.1", features = ["accesskit"] }
++# egui = { version = "0.32.1", features = ["accesskit"] }
++# egui-file-dialog = "0.11.0"
++# egui-winit = { version = "0.32.1", default-features = false, features = ["accesskit", "clipboard", "wayland"] }
++# egui_glow = { version = "0.32.1", features = ["winit"] }
++gilrs = "0.11.0"
++# glow = "0.16.0"
++headers = { workspace = true }
++net = { path = "../../components/net" }
++net_traits = { workspace = true }
++serde_json = { workspace = true }
++# For optional feature servo_allocator/use-system-allocator
++servo_allocator = { path = "../../components/allocator" }
++surfman = { workspace = true, features = ["sm-raw-window-handle-06", "sm-x11"] }
++winit = { workspace = true }
++
++[target.'cfg(target_os = "redox")'.dependencies]
++dirs = "6.0"
++egui = { version = "0.32.1", default-features = false }
+ egui-file-dialog = "0.11.0"
+-egui-winit = { version = "0.32.1", default-features = false, features = ["accesskit", "clipboard", "wayland"] }
+-egui_glow = { version = "0.32.1", features = ["winit"] }
++egui-winit = { version = "0.32.1", default-features = false, features = ["clipboard"] } #<-here
++egui_glow = { version = "0.32.1", default-features = false, features = [] }
+ gilrs = "0.11.0"
+ glow = "0.16.0"
+ headers = { workspace = true }
+diff --git a/ports/servoshell/desktop/app.rs b/ports/servoshell/desktop/app.rs
+index 08c943b2829..61d20de8bc3 100644
+--- a/ports/servoshell/desktop/app.rs
++++ b/ports/servoshell/desktop/app.rs
+@@ -766,18 +766,18 @@ impl ApplicationHandler<AppEvent> for App {
+     }
+ 
+     fn user_event(&mut self, event_loop: &ActiveEventLoop, event: AppEvent) {
+-        if let AppEvent::Accessibility(ref event) = event {
+-            let Some(ref mut minibrowser) = self.minibrowser else {
+-                return;
+-            };
+-            if !minibrowser.handle_accesskit_event(&event.window_event) {
+-                return;
+-            }
+-            if let Some(window) = self.windows.get(&event.window_id) {
+-                window.winit_window().unwrap().request_redraw();
+-            }
+-            return;
+-        }
++        // if let AppEvent::Accessibility(ref event) = event {
++        //     let Some(ref mut minibrowser) = self.minibrowser else {
++        //         return;
++        //     };
++        //     if !minibrowser.handle_accesskit_event(&event.window_event) {
++        //         return;
++        //     }
++        //     if let Some(window) = self.windows.get(&event.window_id) {
++        //         window.winit_window().unwrap().request_redraw();
++        //     }
++        //     return;
++        // }
+ 
+         let now = Instant::now();
+         let event = winit::event::Event::UserEvent(event);
+diff --git a/ports/servoshell/desktop/egui_glue.rs b/ports/servoshell/desktop/egui_glue.rs
+index 797ea3c5a91..d658563edc1 100644
+--- a/ports/servoshell/desktop/egui_glue.rs
++++ b/ports/servoshell/desktop/egui_glue.rs
+@@ -81,7 +81,7 @@ impl EguiGlow {
+             None,
+         );
+         let window = window.winit_window().unwrap();
+-        egui_winit.init_accesskit(event_loop, window, event_loop_proxy);
++        // egui_winit.init_accesskit(event_loop, window, event_loop_proxy);
+         window.set_visible(true);
+         Self {
+             egui_winit,
+diff --git a/ports/servoshell/desktop/events_loop.rs b/ports/servoshell/desktop/events_loop.rs
+index 4137001e4eb..b24757b9ad2 100644
+--- a/ports/servoshell/desktop/events_loop.rs
++++ b/ports/servoshell/desktop/events_loop.rs
+@@ -22,14 +22,14 @@ pub type EventLoopProxy = winit::event_loop::EventLoopProxy<AppEvent>;
+ pub enum AppEvent {
+     /// Another process or thread has kicked the OS event loop with EventLoopWaker.
+     Waker,
+-    Accessibility(accesskit_winit::Event),
++    // Accessibility(accesskit_winit::Event),
+ }
+ 
+-impl From<accesskit_winit::Event> for AppEvent {
+-    fn from(event: accesskit_winit::Event) -> AppEvent {
+-        AppEvent::Accessibility(event)
+-    }
+-}
++// impl From<accesskit_winit::Event> for AppEvent {
++//     fn from(event: accesskit_winit::Event) -> AppEvent {
++//         AppEvent::Accessibility(event)
++//     }
++// }
+ 
+ /// The real or fake OS event loop.
+ #[allow(dead_code)]
+diff --git a/ports/servoshell/desktop/headed_window.rs b/ports/servoshell/desktop/headed_window.rs
+index eef657f2062..7054a201792 100644
+--- a/ports/servoshell/desktop/headed_window.rs
++++ b/ports/servoshell/desktop/headed_window.rs
+@@ -144,10 +144,24 @@ impl Window {
+         let window_handle = winit_window
+             .window_handle()
+             .expect("could not get window handle from window");
+-        let window_rendering_context = Rc::new(
+-            WindowRenderingContext::new(display_handle, window_handle, inner_size)
+-                .expect("Could not create RenderingContext for Window"),
+-        );
++
++        eprintln!("headed_window: Creating WindowRenderingContext...");
++        eprintln!("  DISPLAY env var: {:?}", std::env::var("DISPLAY"));
++        eprintln!("  Display handle obtained: {:?}", display_handle);
++        eprintln!("  Window handle obtained: {:?}", window_handle);
++        eprintln!("  Inner size: {}x{}", inner_size.width, inner_size.height);
++
++        let window_rendering_context = match WindowRenderingContext::new(display_handle, window_handle, inner_size) {
++            Ok(context) => {
++                eprintln!("  WindowRenderingContext created successfully!");
++                Rc::new(context)
++            },
++            Err(e) => {
++                eprintln!("  Failed to create WindowRenderingContext!");
++                eprintln!("  Error: {:?}", e);
++                panic!("Could not create RenderingContext for Window: {:?}", e);
++            }
++        };
+ 
+         // Setup for GL accelerated media handling. This is only active on certain Linux platforms
+         // and Windows.
+diff --git a/ports/servoshell/desktop/headless_window.rs b/ports/servoshell/desktop/headless_window.rs
+index e17e09a5218..24beb102919 100644
+--- a/ports/servoshell/desktop/headless_window.rs
++++ b/ports/servoshell/desktop/headless_window.rs
+@@ -179,7 +179,7 @@ impl WindowPortsMethods for Window {
+         // notification (such as from the display manager) that it has changed size, so we
+         // must notify the compositor here.
+         webview.move_resize(self.screen_size.to_f32().into());
+-        webview.resize(PhysicalSize::new(
++        webview.resize(PhysicalSize::<u32>::new(
+             self.screen_size.width as u32,
+             self.screen_size.height as u32,
+         ));
+diff --git a/ports/servoshell/desktop/minibrowser.rs b/ports/servoshell/desktop/minibrowser.rs
+index 460e639c15b..3146f73d213 100644
+--- a/ports/servoshell/desktop/minibrowser.rs
++++ b/ports/servoshell/desktop/minibrowser.rs
+@@ -522,23 +522,23 @@ impl Minibrowser {
+             self.update_status_text(state)
+     }
+ 
+-    /// Returns true if a redraw is required after handling the provided event.
+-    pub(crate) fn handle_accesskit_event(&mut self, event: &accesskit_winit::WindowEvent) -> bool {
+-        match event {
+-            accesskit_winit::WindowEvent::InitialTreeRequested => {
+-                self.context.egui_ctx.enable_accesskit();
+-                true
+-            },
+-            accesskit_winit::WindowEvent::ActionRequested(req) => {
+-                self.context
+-                    .egui_winit
+-                    .on_accesskit_action_request(req.clone());
+-                true
+-            },
+-            accesskit_winit::WindowEvent::AccessibilityDeactivated => {
+-                self.context.egui_ctx.disable_accesskit();
+-                false
+-            },
+-        }
+-    }
++    // Returns true if a redraw is required after handling the provided event.
++    // pub(crate) fn handle_accesskit_event(&mut self, event: &accesskit_winit::WindowEvent) -> bool {
++    //     match event {
++    //         accesskit_winit::WindowEvent::InitialTreeRequested => {
++    //             self.context.egui_ctx.enable_accesskit();
++    //             true
++    //         },
++    //         accesskit_winit::WindowEvent::ActionRequested(req) => {
++    //             self.context
++    //                 .egui_winit
++    //                 .on_accesskit_action_request(req.clone());
++    //             true
++    //         },
++    //         accesskit_winit::WindowEvent::AccessibilityDeactivated => {
++    //             self.context.egui_ctx.disable_accesskit();
++    //             false
++    //         },
++    //     }
++    // }
+ }
+diff --git a/ports/servoshell/desktop/tracing.rs b/ports/servoshell/desktop/tracing.rs
+index b1f0b1d742e..046b016a2e2 100644
+--- a/ports/servoshell/desktop/tracing.rs
++++ b/ports/servoshell/desktop/tracing.rs
+@@ -52,7 +52,7 @@ mod from_winit {
+                 Self::WindowEvent { event, .. } => event.log_target(),
+                 Self::DeviceEvent { .. } => target!("DeviceEvent"),
+                 Self::UserEvent(AppEvent::Waker) => target!("UserEvent(Waker)"),
+-                Self::UserEvent(AppEvent::Accessibility(..)) => target!("UserEvent(Accessibility)"),
++                // Self::UserEvent(AppEvent::Accessibility(..)) => target!("UserEvent(Accessibility)"),
+                 Self::Suspended => target!("Suspended"),
+                 Self::Resumed => target!("Resumed"),
+                 Self::AboutToWait => target!("AboutToWait"),
+diff --git a/rust-toolchain.toml b/rust-toolchain.toml
+deleted file mode 100644
+index 09d8bc760c6..00000000000
+--- a/rust-toolchain.toml
++++ /dev/null
+@@ -1,17 +0,0 @@
+-[toolchain]
+-# Be sure to update the 'rust-overlay' module's url in shell.nix to point to a
+-# commit which supports the required rustc version and also update the version
+-# in support/crown/rust-toolchain.toml when bumping this!
+-channel = "1.85.0"
+-
+-components = [
+-    "clippy",
+-    # For support/crown
+-    "llvm-tools",
+-    # For support/crown
+-    "rustc-dev",
+-    "rustfmt",
+-    "rustc-dev",
+-    # For rust-analyzer
+-    "rust-src",
+-]

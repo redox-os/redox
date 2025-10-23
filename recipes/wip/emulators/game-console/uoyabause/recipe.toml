@@ -1,0 +1,13 @@
+#TODO not compiled or tested yet
+# build instructions: https://github.com/devmiyax/yabause/blob/master/yabause/README.LIN#L77
+#TODO make gtk2 work
+[source]
+git = "https://github.com/devmiyax/yabause"
+[build]
+template = "cmake"
+dependencies = [
+    "gtk2",
+    "sdl2",
+    "mesa",
+    "gtkglext",
+]

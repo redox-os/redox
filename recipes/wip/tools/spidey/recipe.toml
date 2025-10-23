@@ -1,5 +1,9 @@
-#TODO needs to determine the build method (Cargo or Meson)
+#TODO not compiled or tested
 [source]
 git = "https://github.com/kdwk/Spidey"
 [build]
-template = "custom"
+template = "meson"
+dependencies = [
+    "gtk4",
+    "glib",
+]

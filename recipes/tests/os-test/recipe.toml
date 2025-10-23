@@ -1,3 +1,4 @@
+# TODO remove gnu-grep when extrautils grep supports grep -E
 [source]
 git = "https://gitlab.com/sortix/os-test"
 
@@ -10,8 +11,10 @@ cp -rv "${COOKBOOK_SOURCE}"/* "${COOKBOOK_STAGE}/share/os-test"
 
 [package]
 dependencies = [
-    "gnu-binutils",
-    "gnu-make",
     "gcc13",
+    "gnu-binutils",
+    "gnu-grep",
+    "gnu-make",
     "libarchive",
+    "sed",
 ]

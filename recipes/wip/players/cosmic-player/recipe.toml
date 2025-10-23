@@ -22,7 +22,7 @@ DYNAMIC_INIT
     --bin cosmic-player \
     --no-default-features \
     -- \
-    -C link-args="-lgmodule-2.0 -lffi -lpcre2-8 -lz"
+    -C link-args="-lgmodule-2.0 -lffi -liconv -lpcre2-8 -lz"
 mkdir -pv "${COOKBOOK_STAGE}/usr/bin/"
 cp -v "target/${TARGET}/release/cosmic-player" "${COOKBOOK_STAGE}/usr/bin/"
 mkdir -pv "${COOKBOOK_STAGE}/ui/apps/"

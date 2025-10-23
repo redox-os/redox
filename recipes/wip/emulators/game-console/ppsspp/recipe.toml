@@ -1,0 +1,34 @@
+#TODO not compiled or tested yet
+# build instructions: https://github.com/hrydgard/ppsspp/wiki/Build-instructions
+#git = "https://github.com/jackpot51/ppsspp" # wip orbital port
+[source]
+git = "https://github.com/hrydgard/ppsspp"
+[build]
+template = "cmake"
+cmakeflags = [
+    -DCMAKE_C_FLAGS="-I${COOKBOOK_SYSROOT}/include -I${COOKBOOK_SYSROOT}/include/SDL2"
+    -DCMAKE_CXX_FLAGS="-I${COOKBOOK_SYSROOT}/include -I${COOKBOOK_SYSROOT}/include/SDL2"
+    -DOPENGL_opengl_LIBRARY="/dev/null"
+    -DOPENGL_glx_LIBRARY="/dev/null"
+    -DUSE_DISCORD=OFF
+    -DUSE_FFMPEG=OFF
+    -DUSE_MINIUPNPC=OFF
+    -DUSE_SYSTEM_LIBSDL2=ON
+    -DUSING_EGL=OFF
+    -DUSING_FBDEV=OFF
+    -DUSING_GLES2=OFF
+    -DUSING_X11_VULKAN=OFF
+    -DUNIX=ON
+]
+dependencies = [
+    #"liborbital",
+    "llvm18",
+    "mesa",
+    "mesa-glu",
+    "sdl2",
+    "sdl2-ttf",
+    "zlib",
+    "glew",
+    "fontconfig",
+    "curl",
+]

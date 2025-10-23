@@ -1,16 +1,14 @@
 #TODO not compiled or tested
-# build instructions - https://github.com/flxzt/rnote/blob/main/BUILDING.md#build-with-meson
+# build instructions: https://github.com/flxzt/rnote/blob/main/BUILDING.md#build-with-meson
 [source]
 git = "https://github.com/flxzt/rnote"
 [build]
-template = "custom"
+template = "meson"
 dependencies = [
+    "gtk4",
     "glib",
     "libadwaita",
-    "glib",
     "libalsa",
     "libpoppler",
+    "appstream",
 ]
-script = """
-cookbook_cargo_packages rnote
-"""

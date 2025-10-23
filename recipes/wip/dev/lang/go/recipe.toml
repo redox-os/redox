@@ -1,4 +1,4 @@
-#TODO: Can be built, but ends in breakpoint trap
+#TODO compiling, not tested further
 [source]
 git = "https://github.com/willnode/go"
 branch = "go-1.25-redox"
@@ -9,7 +9,6 @@ template = "custom"
 script = """
 export PATH=$HOME/go/bin:$PATH
 
-rm -rf $HOME/.cache/go-build
 export GOPATH=${COOKBOOK_BUILD}/gopath
 if ! command -v go &> /dev/null; then
    GO_TARBALL=go1.24.6.linux-$( [ "$(uname -m)" = "aarch64" ] && echo "arm64" || echo "amd64" ).tar.gz
@@ -33,8 +32,18 @@ esac
 export CGO_ENABLED=1
 export CC=x86_64-unknown-redox-gcc
 export CCX=x86_64-unknown-redox-g++
+echo "go1.25" > VERSION # to set -trimpath
 (cd ./src && bash ./make.bash)
 
-mkdir -p ${COOKBOOK_STAGE}/bin
-rsync -a --delete "bin/redox_${GOARCH}/" ${COOKBOOK_STAGE}/bin
+mkdir -p "${COOKBOOK_STAGE}"/usr/bin \
+    "${COOKBOOK_STAGE}"/usr/lib/golang/{bin,lib,misc,pkg/include,pkg/tool,src}
+rsync -a bin/redox_${GOARCH}/* "${COOKBOOK_STAGE}"/usr/lib/golang/bin/
+rsync -a lib/* "${COOKBOOK_STAGE}"/usr/lib/golang/lib/
+rsync -a misc/* "${COOKBOOK_STAGE}"/usr/lib/golang/misc/
+rsync -a pkg/include/* "${COOKBOOK_STAGE}"/usr/lib/golang/pkg/include/
+rsync -a pkg/tool/redox_${GOARCH} "${COOKBOOK_STAGE}"/usr/lib/golang/pkg/tool/
+rsync -a src/* "${COOKBOOK_STAGE}"/usr/lib/golang/src/
+cat go.env > "${COOKBOOK_STAGE}"/usr/lib/golang/go.env
+ln -s "../lib/golang/bin/go" "${COOKBOOK_STAGE}"/usr/bin/go
+ln -s "../lib/golang/bin/gofmt" "${COOKBOOK_STAGE}"/usr/bin/gofmt
 """

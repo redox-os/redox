@@ -1,10 +1,11 @@
-#TODO missing script for building, see https://kdevelop.org/build-it/
+#TODO not compiled or tested
 #TODO probably missing dependencies, see https://packages.debian.org/source/trixie/kdevelop
+# build instructions: https://kdevelop.org/build-it/
 [source]
 git = "https://invent.kde.org/kdevelop/kdevelop"
 rev = "3021daeb5d62bc7a7a7dec4bcc23e19d3bfdaadd"
 [build]
-template = "custom"
+template = "cmake"
 dependencies = [
     "apr",
     "apr-util",

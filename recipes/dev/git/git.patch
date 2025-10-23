@@ -129,27 +129,10 @@ diff -ruwN git-2.13.1/git-compat-util.h source/git-compat-util.h
  #define _FILE_OFFSET_BITS 64
  
  
-@@ -179,7 +191,9 @@
- #include <assert.h>
- #include <regex.h>
- #include <utime.h>
-+#if !defined(__redox__)
- #include <syslog.h>
-+#endif
- #ifndef NO_SYS_POLL_H
- #include <sys/poll.h>
- #else
-@@ -320,8 +334,20 @@
- #endif
- 
- #ifndef PATH_SEP
-+#if defined(__redox__)
-+#define PATH_SEP ';'
-+#else
+@@ -323,6 +335,14 @@
  #define PATH_SEP ':'
  #endif
-+#endif
-+
+ 
 +#ifndef DEV_NULL
 +#if defined(__redox__)
 +#define DEV_NULL "/scheme/null"
@@ -157,58 +140,13 @@ diff -ruwN git-2.13.1/git-compat-util.h source/git-compat-util.h
 +#define DEV_NULL "/dev/null"
 +#endif
 +#endif
- 
++
  #ifdef HAVE_PATHS_H
  #include <paths.h>
-@@ -333,6 +359,16 @@
- #ifndef has_dos_drive_prefix
- static inline int git_has_dos_drive_prefix(const char *path)
- {
-+#if defined(__redox__)
-+	char * pos = (char *)path;
-+	char c;
-+	while (c = *pos) {
-+		pos++;
-+		if (c == ':') {
-+			return pos - path;
-+		}
-+	}
-+#endif
- 	return 0;
- }
- #define has_dos_drive_prefix git_has_dos_drive_prefix
-@@ -341,7 +377,13 @@
- #ifndef skip_dos_drive_prefix
- static inline int git_skip_dos_drive_prefix(char **path)
- {
-+#if defined(__redox__)
-+	int ret = has_dos_drive_prefix(*path);
-+	*path += ret;
-+	return ret;
-+#else
- 	return 0;
-+#endif
- }
- #define skip_dos_drive_prefix git_skip_dos_drive_prefix
- #endif
-@@ -357,7 +399,14 @@
- #ifndef offset_1st_component
- static inline int git_offset_1st_component(const char *path)
- {
-+#if defined(__redox__)
-+	char * pos = (char *)path;
-+	skip_dos_drive_prefix(&pos);
-+	pos += is_dir_sep(*pos);
-+	return pos - path;
-+#else
- 	return is_dir_sep(path[0]);
-+#endif
- }
- #define offset_1st_component git_offset_1st_component
  #endif
 diff -ruwN git-2.13.1/Makefile source/Makefile
---- git-2.13.1/Makefile	2017-06-04 19:08:11.000000000 -0600
-+++ source/Makefile	2025-04-18 10:00:11.319697447 -0600
+--- git-2.13.1/Makefile	2017-06-05 08:08:11.000000000 +0700
++++ source/Makefile	2025-09-01 04:41:10.339224568 +0700
 @@ -979,7 +979,7 @@
  BUILTIN_OBJS += builtin/write-tree.o
  
@@ -272,18 +210,9 @@ diff -ruwN git-2.13.1/run-command.c source/run-command.c
  	if (dup2(fd, to) < 0)
  		die_errno(_("dup2(%d,%d) failed"), fd, to);
  	close(fd);
-@@ -138,7 +138,7 @@
- 		return NULL;
- 
- 	while (1) {
--		const char *end = strchrnul(p, ':');
-+		const char *end = strchrnul(p, PATH_SEP);
- 
- 		strbuf_reset(&buf);
- 
 diff -ruwN git-2.13.1/setup.c source/setup.c
---- git-2.13.1/setup.c	2017-06-04 19:08:11.000000000 -0600
-+++ source/setup.c	2025-04-18 10:00:11.320697447 -0600
+--- git-2.13.1/setup.c	2017-06-05 08:08:11.000000000 +0700
++++ source/setup.c	2025-09-01 04:41:10.339224568 +0700
 @@ -1146,11 +1146,11 @@
  /* if any standard file descriptor is missing open it to /dev/null */
  void sanitize_stdfds(void)

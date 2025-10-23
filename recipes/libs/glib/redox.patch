@@ -1,6 +1,20 @@
+diff -ruwN '--exclude=subprojects' glib-2.82.5/gio/glocalfile.c source/gio/glocalfile.c
+--- glib-2.82.5/gio/glocalfile.c	2025-02-20 06:08:16.000000000 -0700
++++ source/gio/glocalfile.c	2025-09-08 15:00:09.240010601 -0600
+@@ -77,6 +77,10 @@
+ 
+ #include "glib-private.h"
+ 
++#if defined(__redox__)
++#undef AT_FDCWD
++#endif
++
+ #ifdef G_OS_WIN32
+ #include <windows.h>
+ #include <io.h>
 diff -ruwN '--exclude=subprojects' glib-2.82.5/gio/gnetworking.h.in source/gio/gnetworking.h.in
 --- glib-2.82.5/gio/gnetworking.h.in	2025-02-20 06:08:16.000000000 -0700
-+++ source/gio/gnetworking.h.in	2025-04-10 14:12:46.307891418 -0600
++++ source/gio/gnetworking.h.in	2025-04-21 14:36:14.671018625 -0600
 @@ -40,13 +40,17 @@
  #include <netdb.h>
  #include <netinet/in.h>
@@ -19,9 +33,42 @@ diff -ruwN '--exclude=subprojects' glib-2.82.5/gio/gnetworking.h.in source/gio/g
  @NAMESER_COMPAT_INCLUDE@
  
  #ifndef __GI_SCANNER__
+diff -ruwN '--exclude=subprojects' glib-2.82.5/gio/gsocket.c source/gio/gsocket.c
+--- glib-2.82.5/gio/gsocket.c	2025-02-20 06:08:16.000000000 -0700
++++ source/gio/gsocket.c	2025-06-16 09:52:49.595949295 -0600
+@@ -487,6 +487,7 @@
+   if (!g_socket_get_option (socket, SOL_SOCKET, SO_TYPE, &value, NULL))
+     {
+       errsv = get_socket_errno ();
++      fprintf(stderr, "%s:%d\n", __FILE__, __LINE__);
+       goto err;
+     }
+ 
+@@ -513,6 +514,7 @@
+   if (getsockname (fd, &address.sa, &addrlen) != 0)
+     {
+       errsv = get_socket_errno ();
++      fprintf(stderr, "%s:%d\n", __FILE__, __LINE__);
+       goto err;
+     }
+ 
+@@ -531,11 +533,13 @@
+       if (!g_socket_get_option (socket, SOL_SOCKET, SO_DOMAIN, &family, NULL))
+ 	{
+ 	  errsv = get_socket_errno ();
++      fprintf(stderr, "%s:%d\n", __FILE__, __LINE__);
+ 	  goto err;
+ 	}
+ #else
+       /* This will translate to G_IO_ERROR_FAILED on either unix or windows */
+       errsv = -1;
++      fprintf(stderr, "%s:%d\n", __FILE__, __LINE__);
+       goto err;
+ #endif
+     }
 diff -ruwN '--exclude=subprojects' glib-2.82.5/gio/gthreadedresolver.c source/gio/gthreadedresolver.c
 --- glib-2.82.5/gio/gthreadedresolver.c	2025-02-20 06:08:16.000000000 -0700
-+++ source/gio/gthreadedresolver.c	2025-04-10 15:19:32.649611384 -0600
++++ source/gio/gthreadedresolver.c	2025-04-21 14:36:14.672018626 -0600
 @@ -579,8 +579,26 @@
    return g_task_propagate_pointer (G_TASK (result), error);
  }
@@ -64,7 +111,7 @@ diff -ruwN '--exclude=subprojects' glib-2.82.5/gio/gthreadedresolver.c source/gi
        len = res_query (rrname, C_IN, rrtype, answer->data, answer->len);
 diff -ruwN '--exclude=subprojects' glib-2.82.5/gio/gunixmounts.c source/gio/gunixmounts.c
 --- glib-2.82.5/gio/gunixmounts.c	2025-02-20 06:08:16.000000000 -0700
-+++ source/gio/gunixmounts.c	2025-04-10 14:57:29.342807607 -0600
++++ source/gio/gunixmounts.c	2025-04-21 14:36:14.672018626 -0600
 @@ -1135,6 +1135,37 @@
    return NULL;
  }
@@ -134,7 +181,7 @@ diff -ruwN '--exclude=subprojects' glib-2.82.5/gio/gunixmounts.c source/gio/guni
  }
 diff -ruwN '--exclude=subprojects' glib-2.82.5/gio/meson.build source/gio/meson.build
 --- glib-2.82.5/gio/meson.build	2025-02-20 06:08:16.000000000 -0700
-+++ source/gio/meson.build	2025-04-10 14:06:57.909467382 -0600
++++ source/gio/meson.build	2025-04-21 14:36:14.672018626 -0600
 @@ -18,7 +18,7 @@
  
  gnetworking_h_nameser_compat_include = ''
@@ -155,7 +202,7 @@ diff -ruwN '--exclude=subprojects' glib-2.82.5/gio/meson.build source/gio/meson.
                        int main (int argc, char ** argv) {
 diff -ruwN '--exclude=subprojects' glib-2.82.5/gio/xdgmime/xdgmimecache.c source/gio/xdgmime/xdgmimecache.c
 --- glib-2.82.5/gio/xdgmime/xdgmimecache.c	2025-02-20 06:08:16.000000000 -0700
-+++ source/gio/xdgmime/xdgmimecache.c	2025-04-10 14:11:44.020815595 -0600
++++ source/gio/xdgmime/xdgmimecache.c	2025-04-21 14:36:14.673018628 -0600
 @@ -22,7 +22,7 @@
  #include <fnmatch.h>
  #include <assert.h>

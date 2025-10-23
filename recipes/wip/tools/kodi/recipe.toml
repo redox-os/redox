@@ -1,11 +1,15 @@
-#TODO probably wrong script, see https://github.com/xbmc/xbmc/blob/master/docs/README.Linux.md#4-build-kodi
-#TODO port to orbital
-#TODO maybe missing dependencies, see https://archlinux.org/packages/extra/x86_64/kodi/
+#TODO not compiled or tested
+# build instructions: https://github.com/xbmc/xbmc/blob/master/docs/README.Linux.md#4-build-kodi
+# maybe missing dependencies, see https://archlinux.org/packages/extra/x86_64/kodi/
 [source]
 git = "https://github.com/xbmc/xbmc"
 rev = "5f418d0b133535c6675154688ac7144e34f4d436"
 [build]
-template = "custom"
+template = "cmake"
+cmakeflags = [
+    "-DCORE_PLATFORM_NAME=wayland",
+    "-DAPP_RENDER_SYSTEM=gl",
+]
 dependencies = [
     "libass",
     "libbluray",
@@ -40,20 +44,3 @@ dependencies = [
     "libxslt",
     "pipewire",
 ]
-script = """
-COOKBOOK_CONFIGURE="cmake"
-COOKBOOK_CONFIGURE_FLAGS=(
-    -DCMAKE_BUILD_TYPE=Release
-    -DCMAKE_CROSSCOMPILING=True
-    -DCMAKE_EXE_LINKER_FLAGS="-static"
-    -DCMAKE_INSTALL_PREFIX="/"
-    -DCMAKE_PREFIX_PATH="${COOKBOOK_SYSROOT}"
-    -DCMAKE_SYSTEM_NAME=Generic
-    -DCMAKE_SYSTEM_PROCESSOR="$(echo "${TARGET}" | cut -d - -f1)"
-    -DCMAKE_VERBOSE_MAKEFILE=On
-    -DCORE_PLATFORM_NAME=wayland
-    -DAPP_RENDER_SYSTEM=gl
-"${COOKBOOK_SOURCE}"
-)
-cookbook_configure
-"""

@@ -1,4 +1,4 @@
 ps2d us
-acpid
+hwd
 pcid
 pcid-spawner /etc/pcid/initfs.toml

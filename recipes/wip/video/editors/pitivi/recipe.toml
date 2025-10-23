@@ -1,8 +1,9 @@
-#TODO missing script for Meson, lacking build instructions
+#TODO not compiled or tested
+# lacking build instructions
 [source]
 tar = "https://download.gnome.org/sources/pitivi/2023/pitivi-2023.03.tar.xz"
 [build]
-template = "custom"
+template = "meson"
 dependencies = [
     "gtk3",
     "gstreamer",

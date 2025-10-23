@@ -1,5 +1,6 @@
-#TODO missing script for Meson, lacking build instructions
+#TODO not compiled or tested
+# lacking build instructions
 [source]
 tar = "https://download.gnome.org/sources/libpanel/1.4/libpanel-1.4.0.tar.xz"
 [build]
-template = "custom"
+template = "meson"
