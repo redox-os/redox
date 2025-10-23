@@ -37,13 +37,12 @@ fn cook(
     recipe: &Recipe,
     is_deps: bool,
     fetch_only: bool,
-    build_only: bool,
     is_offline: bool,
 ) -> Result<(), String> {
     if recipe.build.kind == BuildKind::None {
         return cook_meta(recipe_dir, name, recipe, fetch_only);
     }
-    let source_dir = match is_offline || build_only {
+    let source_dir = match is_offline {
         true => fetch_offline(recipe_dir, &recipe.source),
         false => fetch(recipe_dir, &recipe.source),
     }
@@ -151,7 +150,6 @@ fn main() {
                 &recipe.recipe,
                 recipe.is_deps,
                 fetch_only,
-                false,
                 is_offline,
             )
         };
