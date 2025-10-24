@@ -3,7 +3,7 @@ name = "redox_cookbook"
 version = "0.1.0"
 authors = ["Jeremy Soller <jackpot51@gmail.com>"]
 edition = "2024"
-default-run = "cook"
+default-run = "repo"
 
 # See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
 
@@ -23,7 +23,6 @@ doctest = false
 [dependencies]
 anyhow = "1"
 blake3 = "=1.5.3" # 1.5.4 is incompatible with blake3 0.3 dependency from pkgar
-ctrlc = { version = "3.5.0", features = ["termination"] }
 ignore = "0.4"
 object = { version = "0.36", features = ["build_core"] }
 pbr = "1.0.2"
