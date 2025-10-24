@@ -1,7 +1,10 @@
+use std::io::stdout;
 use std::path::PathBuf;
-use std::process;
 use std::str::FromStr;
+use std::sync::mpsc;
+use std::time::Duration;
 use std::{env, fs};
+use std::{process, thread};
 
 use anyhow::{Context, anyhow, bail};
 use cookbook::WALK_DEPTH;
@@ -13,6 +16,12 @@ use cookbook::cook::package::package;
 use cookbook::recipe::CookRecipe;
 use pkg::PackageName;
 use pkg::package::PackageError;
+use ratatui::Terminal;
+use ratatui::layout::{Constraint, Direction, Layout};
+use ratatui::prelude::TermionBackend;
+use ratatui::style::{Color, Style};
+use ratatui::widgets::{Block, Borders, List, ListItem, Paragraph};
+use termion::screen::{ToAlternateScreen, ToMainScreen};
 
 // A repo manager, to replace repo.sh
 
@@ -25,6 +34,7 @@ const REPO_HELP_STR: &str = r#"
         unfetch   delete recipe sources
         clean     delete recipe artifacts
         push      extract package into sysroot
+        tree      show tree of recipe packages
     
     common flags:
         --cookbook=<cookbook_dir>  the "recipes" folder, default to $PWD/recipes
@@ -40,6 +50,7 @@ const REPO_HELP_STR: &str = r#"
         -q, --quiet                surpress build logs unless error
 "#;
 
+#[derive(Clone)]
 struct CliConfig {
     cookbook_dir: PathBuf,
     repo_dir: PathBuf,
@@ -56,6 +67,7 @@ enum CliCommand {
     Unfetch,
     Clean,
     Push,
+    Tree,
 }
 
 impl FromStr for CliCommand {
@@ -68,6 +80,7 @@ impl FromStr for CliCommand {
             "unfetch" => Ok(CliCommand::Unfetch),
             "clean" => Ok(CliCommand::Clean),
             "push" => Ok(CliCommand::Push),
+            "tree" => Ok(CliCommand::Tree),
             _ => Err(anyhow!("Unknown command '{}'", s)),
         }
     }
@@ -81,6 +94,7 @@ impl ToString for CliCommand {
             CliCommand::Unfetch => "unfetch".to_string(),
             CliCommand::Clean => "clean".to_string(),
             CliCommand::Push => "push".to_string(),
+            CliCommand::Tree => "tree".to_string(),
         }
     }
 }
@@ -119,13 +133,24 @@ fn main_inner() -> anyhow::Result<()> {
 
     let (config, command, recipe_names) = parse_args(args)?;
 
+    if command == CliCommand::Cook && config.cook.tui {
+        run_tui_cook(config, recipe_names)?;
+        return Ok(());
+    }
+
     for recipe in &recipe_names {
         match command {
-            CliCommand::Fetch => handle_cook(recipe, &config, true, recipe.is_deps)?,
-            CliCommand::Cook => handle_cook(recipe, &config, false, recipe.is_deps)?,
+            CliCommand::Fetch => {
+                handle_fetch(recipe, &config)?;
+            }
+            CliCommand::Cook => {
+                let source_dir = handle_fetch(recipe, &config)?;
+                handle_cook(recipe, &config, source_dir, recipe.is_deps)?
+            }
             CliCommand::Unfetch => handle_clean(recipe, &config, true, true)?,
             CliCommand::Clean => handle_clean(recipe, &config, false, true)?,
             CliCommand::Push => handle_push(recipe, &config)?,
+            CliCommand::Tree => todo!("tree command is WIP"),
         }
     }
 
@@ -187,6 +212,7 @@ fn parse_args(args: Vec<String>) -> anyhow::Result<(CliConfig, CliCommand, Vec<C
         if command == CliCommand::Cook
             || command == CliCommand::Fetch
             || command == CliCommand::Push
+            || command == CliCommand::Tree
         {
             // because read_recipe is false below
             // some recipes on wip folders are invalid anyway
@@ -215,12 +241,7 @@ fn parse_args(args: Vec<String>) -> anyhow::Result<(CliConfig, CliCommand, Vec<C
     Ok((config, command, recipes))
 }
 
-fn handle_cook(
-    recipe: &CookRecipe,
-    config: &CliConfig,
-    fetch_only: bool,
-    is_deps: bool,
-) -> anyhow::Result<()> {
+fn handle_fetch(recipe: &CookRecipe, config: &CliConfig) -> anyhow::Result<PathBuf> {
     let recipe_dir = &recipe.dir;
     let source_dir = match config.cook.offline {
         true => fetch_offline(recipe_dir, &recipe.recipe),
@@ -228,10 +249,16 @@ fn handle_cook(
     }
     .map_err(|e| anyhow!(e))?;
 
-    if fetch_only {
-        return Ok(());
-    }
+    Ok(source_dir)
+}
 
+fn handle_cook(
+    recipe: &CookRecipe,
+    config: &CliConfig,
+    source_dir: PathBuf,
+    is_deps: bool,
+) -> anyhow::Result<()> {
+    let recipe_dir = &recipe.dir;
     let target_dir = create_target_dir(recipe_dir).map_err(|e| anyhow!(e))?;
 
     let (stage_dir, auto_deps) = build(
@@ -287,4 +314,225 @@ fn handle_push(recipe: &CookRecipe, config: &CliConfig) -> anyhow::Result<()> {
         archive_path.display(),
         config.sysroot_dir.display(),
     ))
+}
+
+#[derive(Debug, Clone, PartialEq)]
+enum RecipeStatus {
+    Pending,
+    Fetching,
+    Fetched,
+    Cooking,
+    Done,
+    Failed(String),
+}
+
+#[derive(Debug, Clone)]
+enum StatusUpdate {
+    StartFetch(PackageName),
+    Fetched(PackageName),
+    FailFetch(PackageName, String),
+    StartCook(PackageName),
+    Cooked(PackageName),
+    FailCook(PackageName, String),
+}
+
+struct TuiApp {
+    recipes: Vec<(CookRecipe, RecipeStatus)>,
+    fetch_queue: Vec<PackageName>,
+    cook_queue: Vec<PackageName>,
+    done: Vec<PackageName>,
+    failed: Vec<PackageName>,
+}
+
+impl TuiApp {
+    fn new(recipes: Vec<CookRecipe>) -> Self {
+        let recipe_names = recipes.iter().map(|r| r.name.clone()).collect();
+        Self {
+            recipes: recipes
+                .into_iter()
+                .map(|r| (r, RecipeStatus::Pending))
+                .collect(),
+            fetch_queue: recipe_names,
+            cook_queue: Vec::new(),
+            done: Vec::new(),
+            failed: Vec::new(),
+        }
+    }
+
+    // Update the state based on a message from a worker thread
+    fn update_status(&mut self, update: StatusUpdate) {
+        let (name, new_status) = match update {
+            StatusUpdate::StartFetch(name) => (name, RecipeStatus::Fetching),
+            StatusUpdate::Fetched(name) => (name, RecipeStatus::Fetched),
+            StatusUpdate::FailFetch(name, err) => (name, RecipeStatus::Failed(err)),
+            StatusUpdate::StartCook(name) => (name, RecipeStatus::Cooking),
+            StatusUpdate::Cooked(name) => (name, RecipeStatus::Done),
+            StatusUpdate::FailCook(name, err) => (name, RecipeStatus::Failed(err)),
+        };
+
+        if let Some((_, status)) = self.recipes.iter_mut().find(|(r, _)| r.name == name) {
+            *status = new_status;
+        }
+
+        // Re-compute the queues for display
+        self.fetch_queue = self
+            .recipes
+            .iter()
+            .filter(|(_, s)| *s == RecipeStatus::Pending || *s == RecipeStatus::Fetching)
+            .map(|(r, _)| r.name.clone())
+            .collect();
+        self.cook_queue = self
+            .recipes
+            .iter()
+            .filter(|(_, s)| *s == RecipeStatus::Fetched || *s == RecipeStatus::Cooking)
+            .map(|(r, _)| r.name.clone())
+            .collect();
+        self.done = self
+            .recipes
+            .iter()
+            .filter(|(_, s)| *s == RecipeStatus::Done)
+            .map(|(r, _)| r.name.clone())
+            .collect();
+        self.failed = self
+            .recipes
+            .iter()
+            .filter(|(_, s)| matches!(s, RecipeStatus::Failed(_)))
+            .map(|(r, _)| r.name.clone())
+            .collect();
+    }
+}
+
+fn run_tui_cook(config: CliConfig, recipes: Vec<CookRecipe>) -> anyhow::Result<()> {
+    let (work_tx, work_rx) = mpsc::channel::<(CookRecipe, PathBuf)>();
+    let (status_tx, status_rx) = mpsc::channel::<StatusUpdate>();
+
+    // ---- Cooker Thread ----
+    let cooker_config = config.clone();
+    let cooker_status_tx = status_tx.clone();
+    let cooker_handle = thread::spawn(move || {
+        for (recipe, source_dir) in work_rx {
+            let name = recipe.name.clone();
+            let is_deps = recipe.is_deps;
+            cooker_status_tx
+                .send(StatusUpdate::StartCook(name.clone()))
+                .unwrap();
+
+            match handle_cook(&recipe, &cooker_config, source_dir, is_deps) {
+                Ok(_) => cooker_status_tx.send(StatusUpdate::Cooked(name)).unwrap(),
+                Err(e) => cooker_status_tx
+                    .send(StatusUpdate::FailCook(name, e.to_string()))
+                    .unwrap(),
+            }
+        }
+    });
+
+    // ---- Fetcher Thread ----
+    let fetcher_config = config.clone();
+    let fetcher_handle = thread::spawn(move || {
+        for recipe in recipes {
+            let name = recipe.name.clone();
+            status_tx
+                .send(StatusUpdate::StartFetch(name.clone()))
+                .unwrap();
+
+            match handle_fetch(&recipe, &fetcher_config) {
+                Ok(source_dir) => {
+                    status_tx.send(StatusUpdate::Fetched(name)).unwrap();
+                    if work_tx.send((recipe, source_dir)).is_err() {
+                        // Cooker thread died
+                        break;
+                    }
+                }
+                Err(e) => status_tx
+                    .send(StatusUpdate::FailFetch(name, e.to_string()))
+                    .unwrap(),
+            }
+        }
+    });
+
+    print!("{}", ToAlternateScreen);
+    // enable_raw_mode()?;
+    let mut terminal = Terminal::new(TermionBackend::new(stdout()))?;
+    terminal.clear()?;
+
+    let mut app = TuiApp::new(Vec::new());
+    let total_recipes = app.recipes.len();
+    let mut running = true;
+
+    while running {
+        terminal.draw(|f| {
+            let chunks = Layout::default()
+                .direction(Direction::Horizontal)
+                .constraints([Constraint::Percentage(50), Constraint::Percentage(50)].as_ref())
+                .split(f.area());
+
+            // Left Pane
+            let fetch_items: Vec<ListItem> = app
+                .recipes
+                .iter()
+                .filter(|(_, s)| *s == RecipeStatus::Pending || *s == RecipeStatus::Fetching)
+                .map(|(r, s)| {
+                    let style = if *s == RecipeStatus::Fetching {
+                        Style::default().fg(Color::Yellow)
+                    } else {
+                        Style::default()
+                    };
+                    ListItem::new(r.name.as_str()).style(style)
+                })
+                .collect();
+            let fetch_list = List::new(fetch_items)
+                .block(Block::default().title("Fetch Queue").borders(Borders::ALL));
+            f.render_widget(fetch_list, chunks[0]);
+
+            // Right Pane
+            let cook_items: Vec<ListItem> = app
+                .recipes
+                .iter()
+                .filter(|(_, s)| {
+                    *s == RecipeStatus::Fetched
+                        || *s == RecipeStatus::Cooking
+                        || *s == RecipeStatus::Done
+                        || matches!(s, RecipeStatus::Failed(_))
+                })
+                .map(|(r, s)| {
+                    let style = match s {
+                        RecipeStatus::Fetched => Style::default().fg(Color::Cyan),
+                        RecipeStatus::Cooking => Style::default().fg(Color::Yellow),
+                        RecipeStatus::Done => Style::default().fg(Color::Green),
+                        RecipeStatus::Failed(_) => Style::default().fg(Color::Red),
+                        _ => Style::default(),
+                    };
+                    ListItem::new(r.name.as_str()).style(style)
+                })
+                .collect();
+            let cook_list = List::new(cook_items)
+                .block(Block::default().title("Cook Queue").borders(Borders::ALL));
+            f.render_widget(cook_list, chunks[1]);
+
+            let footer = Paragraph::new(format!(
+                "Done: {}/{} | Failed: {}",
+                app.done.len(),
+                total_recipes,
+                app.failed.len()
+            ));
+            f.render_widget(footer, f.area());
+        })?;
+
+        while let Ok(update) = status_rx.try_recv() {
+            app.update_status(update);
+        }
+
+        if fetcher_handle.is_finished() && cooker_handle.is_finished() {
+            thread::sleep(Duration::from_secs(5));
+            running = false;
+        }
+    }
+
+    // disable_raw_mode()?;
+    print!("{}", ToMainScreen);
+
+    fetcher_handle.join().unwrap();
+    cooker_handle.join().unwrap();
+
+    Ok(())
 }
