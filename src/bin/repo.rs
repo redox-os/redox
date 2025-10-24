@@ -1,8 +1,9 @@
-use std::collections::HashMap;
-use std::io::{BufRead, BufReader, PipeReader, stdout};
+use std::collections::{HashMap, VecDeque};
+use std::io::{BufRead, BufReader, PipeReader, Write, stderr, stdin, stdout};
 use std::path::PathBuf;
+use std::process::Command;
 use std::str::FromStr;
-use std::sync::atomic::{AtomicBool, Ordering};
+use std::sync::atomic::{AtomicBool, AtomicU32, Ordering};
 use std::sync::{Arc, mpsc};
 use std::time::Duration;
 use std::{env, fs};
@@ -22,11 +23,13 @@ use ratatui::Terminal;
 use ratatui::layout::{Constraint, Direction, Layout, Position, Rect};
 use ratatui::prelude::TermionBackend;
 use ratatui::style::{Color, Style};
-use ratatui::widgets::{Block, Borders, List, ListItem, Paragraph, Wrap};
+use ratatui::text::{Line, Span};
+use ratatui::widgets::{Block, Borders, Clear, List, ListItem, Paragraph, Wrap};
 use termion::event::{Event, Key, MouseEvent};
-use termion::input::{MouseTerminal, TermRead};
-use termion::raw::RawTerminal;
-use termion::screen::{AlternateScreen, ToAlternateScreen, ToMainScreen};
+use termion::input::TermRead;
+use termion::raw::IntoRawMode;
+use termion::screen::IntoAlternateScreen;
+use termion::{color, style};
 
 // A repo manager, to replace repo.sh
 
@@ -125,7 +128,10 @@ impl CliConfig {
 
 fn main() {
     init_config();
-    main_inner().unwrap();
+    if let Err(e) = main_inner() {
+        eprintln!("{:?}", e);
+        process::exit(1);
+    };
 }
 
 fn main_inner() -> anyhow::Result<()> {
@@ -139,7 +145,19 @@ fn main_inner() -> anyhow::Result<()> {
     let (config, command, recipe_names) = parse_args(args)?;
 
     if command == CliCommand::Cook && config.cook.tui {
-        run_tui_cook(config, recipe_names)?;
+        if let Some(e) = run_tui_cook(config, recipe_names)? {
+            let _ = stderr().write(e.as_bytes());
+            let _ = stderr().write(b"\n\n");
+            return Err(anyhow!("Execution has failed"));
+        } else {
+            eprintln!(
+                "{}{}cook - successful{}{}",
+                style::Bold,
+                color::Fg(color::AnsiValue(215)),
+                color::Fg(color::Reset),
+                style::Reset,
+            );
+        }
         return Ok(());
     }
 
@@ -343,27 +361,32 @@ enum RecipeStatus {
 #[derive(Debug, Clone)]
 enum StatusUpdate {
     StartFetch(PackageName),
-    Fetched(PackageName),
-    FailFetch(PackageName, String),
+    Fetched(CookRecipe),
+    FailFetch(CookRecipe, String),
     StartCook(PackageName),
-    CookLog(PackageName, String),
-    Cooked(PackageName),
-    FailCook(PackageName, String),
+    Cooked(CookRecipe),
+    FailCook(CookRecipe, String),
+    PushLog(PackageName, String),
     FetchThreadFinished,
     CookThreadFinished,
 }
 
+#[derive(PartialEq)]
+enum JobType {
+    Fetch,
+    Cook,
+}
+
 struct TuiApp {
     recipes: Vec<(CookRecipe, RecipeStatus)>,
-    fetch_queue: Vec<PackageName>,
-    cook_queue: Vec<PackageName>,
+    fetch_queue: VecDeque<CookRecipe>,
+    cook_queue: VecDeque<CookRecipe>,
     done: Vec<PackageName>,
-    failed: Vec<PackageName>,
     active_fetch: Option<PackageName>,
     active_cook: Option<PackageName>,
     logs: HashMap<PackageName, Vec<String>>,
     log_scroll: u16,
-    log_view_cook: bool,
+    log_view_job: JobType,
     auto_scroll: bool,
     fetch_scroll: u16,
     cook_scroll: u16,
@@ -372,26 +395,27 @@ struct TuiApp {
     fetch_panel_rect: Option<Rect>,
     cook_panel_rect: Option<Rect>,
     log_panel_rect: Option<Rect>,
+    prompt: Option<FailurePrompt>,
+    dump_logs_on_exit: Option<String>,
 }
 
 impl TuiApp {
     fn new(recipes: Vec<CookRecipe>) -> Self {
-        let recipe_names = recipes.iter().map(|r| r.name.clone()).collect();
         Self {
             recipes: recipes
-                .into_iter()
+                .iter()
+                .cloned()
                 .map(|r| (r, RecipeStatus::Pending))
                 .collect(),
-            fetch_queue: recipe_names,
-            cook_queue: Vec::new(),
+            fetch_queue: recipes.iter().cloned().map(|r| r.clone()).collect(),
+            cook_queue: VecDeque::new(),
             done: Vec::new(),
-            failed: Vec::new(),
             active_fetch: None,
             active_cook: None,
             logs: HashMap::new(),
             log_scroll: 0,
             auto_scroll: true,
-            log_view_cook: false,
+            log_view_job: JobType::Fetch,
             fetch_scroll: 0,
             cook_scroll: 0,
             fetch_complete: false,
@@ -399,6 +423,8 @@ impl TuiApp {
             fetch_panel_rect: None,
             cook_panel_rect: None,
             log_panel_rect: None,
+            prompt: None,
+            dump_logs_on_exit: None,
         }
     }
 
@@ -412,14 +438,17 @@ impl TuiApp {
                 self.auto_scroll = true;
                 (name.clone(), RecipeStatus::Fetching)
             }
-            StatusUpdate::Fetched(name) => (name, RecipeStatus::Fetched),
-            StatusUpdate::FailFetch(name, err) => (name, RecipeStatus::Failed(err)),
+            StatusUpdate::Fetched(recipe) => (recipe.name.clone(), RecipeStatus::Fetched),
+            StatusUpdate::FailFetch(recipe, err) => {
+                self.prompt = Some(FailurePrompt::new(recipe.clone(), err.clone()));
+                (recipe.name.clone(), RecipeStatus::Failed(err))
+            }
             StatusUpdate::StartCook(name) => {
                 self.active_cook = Some(name.clone());
                 self.logs.insert(name.clone(), Vec::new());
                 (name.clone(), RecipeStatus::Cooking)
             }
-            StatusUpdate::CookLog(name, line) => {
+            StatusUpdate::PushLog(name, line) => {
                 self.logs.entry(name.clone()).or_default().push(line);
                 // No status change, just return the current state
                 if let Some((_, status)) = self.recipes.iter().find(|(r, _)| r.name == name) {
@@ -428,23 +457,21 @@ impl TuiApp {
                     return; // Should not happen
                 }
             }
-            StatusUpdate::Cooked(name) => {
-                if self.active_cook.as_ref() == Some(&name) {
+            StatusUpdate::Cooked(recipe) => {
+                if self.active_cook.as_ref() == Some(&recipe.name) {
                     self.active_cook = None;
                 }
                 self.auto_scroll = true;
-                (name.clone(), RecipeStatus::Done)
+                (recipe.name.clone(), RecipeStatus::Done)
             }
-            StatusUpdate::FailCook(name, err) => {
-                if self.active_cook.as_ref() == Some(&name) {
-                    self.active_cook = None;
-                }
-                self.auto_scroll = false;
-                (name.clone(), RecipeStatus::Failed(err))
+            StatusUpdate::FailCook(recipe, err) => {
+                self.prompt = Some(FailurePrompt::new(recipe.clone(), err.clone()));
+
+                (recipe.name.clone(), RecipeStatus::Failed(err))
             }
             StatusUpdate::FetchThreadFinished => {
                 self.fetch_complete = true;
-                self.log_view_cook = true;
+                self.log_view_job = JobType::Cook;
                 return;
             }
             StatusUpdate::CookThreadFinished => {
@@ -461,14 +488,14 @@ impl TuiApp {
         self.fetch_queue = self
             .recipes
             .iter()
-            .filter(|(_, s)| *s == RecipeStatus::Pending || *s == RecipeStatus::Fetching)
-            .map(|(r, _)| r.name.clone())
+            .filter(|(_, s)| *s == RecipeStatus::Pending)
+            .map(|(r, _)| r.clone())
             .collect();
         self.cook_queue = self
             .recipes
             .iter()
-            .filter(|(_, s)| *s == RecipeStatus::Fetched || *s == RecipeStatus::Cooking)
-            .map(|(r, _)| r.name.clone())
+            .filter(|(_, s)| *s == RecipeStatus::Fetched)
+            .map(|(r, _)| (r.clone()))
             .collect();
         self.done = self
             .recipes
@@ -476,24 +503,22 @@ impl TuiApp {
             .filter(|(_, s)| *s == RecipeStatus::Done)
             .map(|(r, _)| r.name.clone())
             .collect();
-        self.failed = self
-            .recipes
-            .iter()
-            .filter(|(_, s)| matches!(s, RecipeStatus::Failed(_)))
-            .map(|(r, _)| r.name.clone())
-            .collect();
     }
 }
 
-fn run_tui_cook(config: CliConfig, recipes: Vec<CookRecipe>) -> anyhow::Result<()> {
+fn run_tui_cook(config: CliConfig, recipes: Vec<CookRecipe>) -> anyhow::Result<Option<String>> {
     let (work_tx, work_rx) = mpsc::channel::<(CookRecipe, PathBuf)>();
     let (status_tx, status_rx) = mpsc::channel::<StatusUpdate>();
+
+    let running = Arc::new(AtomicBool::new(true));
+    let prompting = Arc::new(AtomicU32::new(0));
 
     // ---- Cooker Thread ----
     let cooker_config = config.clone();
     let cooker_status_tx = status_tx.clone();
+    let cooker_prompting = prompting.clone();
     let cooker_handle = thread::spawn(move || {
-        for (recipe, source_dir) in work_rx {
+        'done: for (recipe, source_dir) in work_rx {
             let name = recipe.name.clone();
             let is_deps = recipe.is_deps;
             cooker_status_tx
@@ -501,11 +526,51 @@ fn run_tui_cook(config: CliConfig, recipes: Vec<CookRecipe>) -> anyhow::Result<(
                 .unwrap();
             let (mut stdout_writer, mut stderr_writer) = setup_logger(&cooker_status_tx, &name);
             let logger = Some((&mut stdout_writer, &mut stderr_writer));
-            match handle_cook(&recipe, &cooker_config, source_dir, is_deps, &logger) {
-                Ok(_) => cooker_status_tx.send(StatusUpdate::Cooked(name)).unwrap(),
-                Err(e) => cooker_status_tx
-                    .send(StatusUpdate::FailCook(name, e.to_string()))
-                    .unwrap(),
+            'again: loop {
+                match handle_cook(
+                    &recipe,
+                    &cooker_config,
+                    source_dir.clone(),
+                    is_deps,
+                    &logger,
+                ) {
+                    Ok(()) => {
+                        cooker_status_tx
+                            .send(StatusUpdate::Cooked(recipe))
+                            .unwrap_or_default();
+                        break;
+                    }
+                    Err(e) => {
+                        cooker_status_tx
+                            .send(StatusUpdate::FailCook(recipe.clone(), e.to_string()))
+                            .unwrap_or_default();
+                        if !cooker_config.cook.nonstop {
+                            while cooker_prompting.load(Ordering::SeqCst) != 0 {
+                                thread::sleep(Duration::from_millis(101)); // wait other prompt
+                            }
+                            cooker_prompting.swap(1, Ordering::SeqCst);
+                            'wait: loop {
+                                match cooker_prompting.load(Ordering::SeqCst) {
+                                    0 => break 'again,
+                                    1 => thread::sleep(Duration::from_millis(101)),
+                                    2 => {
+                                        cooker_prompting.swap(0, Ordering::SeqCst);
+                                        break 'wait;
+                                    } // retry
+                                    3 => {
+                                        cooker_prompting.swap(0, Ordering::SeqCst);
+                                        break 'again;
+                                    } // skip
+                                    4 => {
+                                        cooker_prompting.swap(0, Ordering::SeqCst);
+                                        break 'done;
+                                    } // done
+                                    _ => unreachable!(),
+                                }
+                            }
+                        }
+                    }
+                }
             }
         }
         cooker_status_tx
@@ -513,11 +578,17 @@ fn run_tui_cook(config: CliConfig, recipes: Vec<CookRecipe>) -> anyhow::Result<(
             .unwrap_or_default();
     });
 
+    let mstdin = stdin();
+    let mstdout = stdout()
+        .into_raw_mode()
+        .unwrap()
+        .into_alternate_screen()
+        .unwrap();
+
     // ----- Input Thread -----
     let (input_tx, input_rx) = mpsc::channel::<Event>();
     let _input_handle = thread::spawn(move || {
-        let stdin = std::io::stdin();
-        for evt in stdin.events() {
+        for evt in mstdin.events() {
             if let Ok(evt) = evt {
                 if input_tx.send(evt).is_err() {
                     return;
@@ -528,28 +599,62 @@ fn run_tui_cook(config: CliConfig, recipes: Vec<CookRecipe>) -> anyhow::Result<(
 
     // ---- Fetcher Thread ----
     let fetcher_recipes = recipes.clone();
+    let fetcher_status_tx = status_tx.clone();
     let fetcher_config = config.clone();
+    let fetcher_prompting = prompting.clone();
     let fetcher_handle = thread::spawn(move || {
-        for recipe in fetcher_recipes {
+        'done: for recipe in fetcher_recipes {
             let name = recipe.name.clone();
-            status_tx
+            fetcher_status_tx
                 .send(StatusUpdate::StartFetch(name.clone()))
                 .unwrap();
 
-            let (mut stdout_writer, mut stderr_writer) = setup_logger(&status_tx, &name);
+            let (mut stdout_writer, mut stderr_writer) = setup_logger(&fetcher_status_tx, &name);
             let logger = Some((&mut stdout_writer, &mut stderr_writer));
 
-            match handle_fetch(&recipe, &fetcher_config, &logger) {
-                Ok(source_dir) => {
-                    status_tx.send(StatusUpdate::Fetched(name)).unwrap();
-                    if work_tx.send((recipe.clone(), source_dir)).is_err() {
-                        // Cooker thread died
+            'again: loop {
+                match handle_fetch(&recipe, &fetcher_config, &logger) {
+                    Ok(source_dir) => {
+                        fetcher_status_tx
+                            .send(StatusUpdate::Fetched(recipe.clone()))
+                            .unwrap();
+                        if work_tx.send((recipe.clone(), source_dir)).is_err() {
+                            // Cooker thread died
+                            break 'done;
+                        }
                         break;
                     }
+                    Err(e) => {
+                        fetcher_status_tx
+                            .send(StatusUpdate::FailFetch(recipe.clone(), e.to_string()))
+                            .unwrap_or_default();
+                        if !fetcher_config.cook.nonstop {
+                            while fetcher_prompting.load(Ordering::SeqCst) != 0 {
+                                thread::sleep(Duration::from_millis(101)); // wait other prompt
+                            }
+                            fetcher_prompting.swap(1, Ordering::SeqCst);
+                            'wait: loop {
+                                match fetcher_prompting.load(Ordering::SeqCst) {
+                                    0 => break 'again,
+                                    1 => thread::sleep(Duration::from_millis(101)),
+                                    2 => {
+                                        fetcher_prompting.swap(0, Ordering::SeqCst);
+                                        break 'wait;
+                                    } // retry
+                                    3 => {
+                                        fetcher_prompting.swap(0, Ordering::SeqCst);
+                                        break 'again;
+                                    } // skip
+                                    4 => {
+                                        fetcher_prompting.swap(0, Ordering::SeqCst);
+                                        break 'done;
+                                    } // done
+                                    _ => unreachable!(),
+                                }
+                            }
+                        }
+                    }
                 }
-                Err(e) => status_tx
-                    .send(StatusUpdate::FailFetch(name, e.to_string()))
-                    .unwrap(),
             }
         }
         status_tx
@@ -557,28 +662,19 @@ fn run_tui_cook(config: CliConfig, recipes: Vec<CookRecipe>) -> anyhow::Result<(
             .unwrap_or_default();
     });
 
-    print!("{}", ToAlternateScreen);
     let mut terminal = Terminal::new(TermionBackend::new(stdout()))?;
     terminal.clear()?;
 
     let mut app = TuiApp::new(recipes);
-    // let total_recipes = app.recipes.len();
-    let running = Arc::new(AtomicBool::new(true));
 
-    ctrlc::set_handler(move || {
-        print!("{}", ToMainScreen);
-        process::exit(1);
-    })
-    .context("Error setting Ctrl-C handler")?;
-
-    while running.load(Ordering::Relaxed) {
+    while running.load(Ordering::SeqCst) {
         terminal.draw(|f| {
             let mut constraints = Vec::new();
             if !app.fetch_complete {
                 constraints.push(Constraint::Length(30));
             }
             constraints.push(Constraint::Length(30));
-            constraints.push(Constraint::Min(20)); // Log panel always exists
+            constraints.push(Constraint::Min(20));
             let chunks = Layout::default()
                 .direction(Direction::Horizontal)
                 .constraints(constraints)
@@ -633,7 +729,7 @@ fn run_tui_cook(config: CliConfig, recipes: Vec<CookRecipe>) -> anyhow::Result<(
             );
             f.render_widget(cook_list, chunks[if app.fetch_complete { 0 } else { 1 }]);
 
-            let active_name = if app.log_view_cook {
+            let active_name = if app.log_view_job == JobType::Cook {
                 &app.active_cook
             } else {
                 &app.active_fetch
@@ -667,8 +763,9 @@ fn run_tui_cook(config: CliConfig, recipes: Vec<CookRecipe>) -> anyhow::Result<(
                 }
             } else {
                 if total_log_lines > log_pane_height {
-                    if app.log_scroll > total_log_lines - log_pane_height {
+                    if app.log_scroll >= total_log_lines - log_pane_height {
                         app.log_scroll = total_log_lines - log_pane_height;
+                        app.auto_scroll = true;
                     }
                 } else {
                     app.log_scroll = 0;
@@ -685,66 +782,21 @@ fn run_tui_cook(config: CliConfig, recipes: Vec<CookRecipe>) -> anyhow::Result<(
                 chunks[if app.fetch_complete { 1 } else { 2 }],
             );
 
+            if let Some(prompt) = &app.prompt {
+                draw_prompt(f, prompt);
+            }
+
             while let Ok(event) = input_rx.try_recv() {
-                match event {
-                    Event::Key(key) => match key {
-                        Key::Char('\t') => {
-                            app.log_view_cook = !app.log_view_cook;
+                if app.prompt.is_some() {
+                    if let Some(res) = handle_prompt_input(event, &mut app, &running) {
+                        prompting.swap(res as u32, Ordering::SeqCst);
+                        if res == PromptOption::Exit {
+                            app.dump_logs_on_exit = Some(log_text.join("\n"))
                         }
-                        Key::Char('1') => {
-                            app.log_view_cook = false;
-                        }
-                        Key::Char('2') => {
-                            app.log_view_cook = true;
-                        }
-                        Key::Up => {
-                            app.auto_scroll = false;
-                            app.log_scroll = app.log_scroll.saturating_sub(1);
-                        }
-                        Key::Down => {
-                            app.auto_scroll = false;
-                            app.log_scroll = app.log_scroll.saturating_add(1);
-                        }
-                        _ => {}
-                    },
-
-                    Event::Mouse(mouse_event) => {
-                        match mouse_event {
-                            MouseEvent::Press(termion::event::MouseButton::WheelUp, x, y) => {
-                                // termion is 1-based, ratatui rects are 0-based
-                                let pos = Position {
-                                    x: x.saturating_sub(1),
-                                    y: y.saturating_sub(1),
-                                };
-
-                                if app.fetch_panel_rect.map_or(false, |r| r.contains(pos)) {
-                                    app.fetch_scroll = app.fetch_scroll.saturating_sub(1);
-                                } else if app.cook_panel_rect.map_or(false, |r| r.contains(pos)) {
-                                    app.cook_scroll = app.cook_scroll.saturating_sub(1);
-                                } else if app.log_panel_rect.map_or(false, |r| r.contains(pos)) {
-                                    app.auto_scroll = false;
-                                    app.log_scroll = app.log_scroll.saturating_sub(1);
-                                }
-                            }
-                            MouseEvent::Press(termion::event::MouseButton::WheelDown, x, y) => {
-                                let pos = Position {
-                                    x: x.saturating_sub(1),
-                                    y: y.saturating_sub(1),
-                                };
-
-                                if app.fetch_panel_rect.map_or(false, |r| r.contains(pos)) {
-                                    app.fetch_scroll = app.fetch_scroll.saturating_add(1);
-                                } else if app.cook_panel_rect.map_or(false, |r| r.contains(pos)) {
-                                    app.cook_scroll = app.cook_scroll.saturating_add(1);
-                                } else if app.log_panel_rect.map_or(false, |r| r.contains(pos)) {
-                                    app.auto_scroll = false;
-                                    app.log_scroll = app.log_scroll.saturating_add(1);
-                                }
-                            }
-                            _ => {}
-                        }
+                        app.prompt = None;
                     }
-                    _ => {}
+                } else {
+                    handle_main_event(&mut app, event);
                 }
             }
         })?;
@@ -753,19 +805,194 @@ fn run_tui_cook(config: CliConfig, recipes: Vec<CookRecipe>) -> anyhow::Result<(
             app.update_status(update);
         }
 
-        if fetcher_handle.is_finished() && cooker_handle.is_finished() {
-            thread::sleep(Duration::from_secs(5));
+        if app.cook_complete {
             running.swap(false, Ordering::SeqCst);
         }
     }
 
-    // disable_raw_mode()?;
-    print!("{}", ToMainScreen);
+    drop(mstdout);
+    let _ = stdout().flush();
 
     fetcher_handle.join().unwrap();
     cooker_handle.join().unwrap();
 
-    Ok(())
+    Ok(app.dump_logs_on_exit)
+}
+
+fn handle_main_event(app: &mut TuiApp, event: Event) {
+    match event {
+        Event::Key(key) => match key {
+            Key::Char('1') => {
+                app.log_view_job = JobType::Fetch;
+            }
+            Key::Char('2') => {
+                app.log_view_job = JobType::Cook;
+            }
+            Key::Char('c') => {
+                // as compilers still running, we use this way to stop it
+                let pid = std::process::id();
+                Command::new("pkill")
+                    .arg("-9")
+                    .arg("-P")
+                    .arg(pid.to_string())
+                    .spawn()
+                    .expect("unable to spawn pkill");
+            }
+            Key::Up => {
+                app.auto_scroll = false;
+                app.log_scroll = app.log_scroll.saturating_sub(1);
+            }
+            Key::Down => {
+                app.auto_scroll = false;
+                app.log_scroll = app.log_scroll.saturating_add(1);
+            }
+            Key::PageUp => {
+                app.auto_scroll = false;
+                app.log_scroll = app.log_scroll.saturating_sub(20);
+            }
+            Key::PageDown => {
+                app.auto_scroll = false;
+                app.log_scroll = app.log_scroll.saturating_add(20);
+            }
+            Key::End => {
+                app.auto_scroll = true;
+            }
+            Key::Home => {
+                app.auto_scroll = false;
+                app.log_scroll = 0;
+            }
+            _ => {}
+        },
+
+        Event::Mouse(mouse_event) => {
+            match mouse_event {
+                MouseEvent::Press(termion::event::MouseButton::WheelUp, x, y) => {
+                    // termion is 1-based, ratatui rects are 0-based
+                    let pos = Position {
+                        x: x.saturating_sub(1),
+                        y: y.saturating_sub(1),
+                    };
+
+                    if app.fetch_panel_rect.map_or(false, |r| r.contains(pos)) {
+                        app.fetch_scroll = app.fetch_scroll.saturating_sub(1);
+                    } else if app.cook_panel_rect.map_or(false, |r| r.contains(pos)) {
+                        app.cook_scroll = app.cook_scroll.saturating_sub(1);
+                    } else if app.log_panel_rect.map_or(false, |r| r.contains(pos)) {
+                        app.auto_scroll = false;
+                        app.log_scroll = app.log_scroll.saturating_sub(1);
+                    }
+                }
+                MouseEvent::Press(termion::event::MouseButton::WheelDown, x, y) => {
+                    let pos = Position {
+                        x: x.saturating_sub(1),
+                        y: y.saturating_sub(1),
+                    };
+
+                    if app.fetch_panel_rect.map_or(false, |r| r.contains(pos)) {
+                        app.fetch_scroll = app.fetch_scroll.saturating_add(1);
+                    } else if app.cook_panel_rect.map_or(false, |r| r.contains(pos)) {
+                        app.cook_scroll = app.cook_scroll.saturating_add(1);
+                    } else if app.log_panel_rect.map_or(false, |r| r.contains(pos)) {
+                        app.auto_scroll = false;
+                        app.log_scroll = app.log_scroll.saturating_add(1);
+                    }
+                }
+                _ => {}
+            }
+        }
+        _ => {}
+    }
+}
+
+fn handle_prompt_input(
+    event: Event,
+    app: &mut TuiApp,
+    running: &Arc<AtomicBool>,
+) -> Option<PromptOption> {
+    if let Some(prompt) = &mut app.prompt {
+        match event {
+            Event::Key(key) => match key {
+                Key::Char('q') | Key::Ctrl('c') | Key::Esc => {
+                    // Treat as "Exit"
+                    running.store(false, Ordering::SeqCst);
+                    return Some(PromptOption::Exit);
+                }
+                Key::Left | Key::BackTab => prompt.prev(),
+                Key::Right | Key::Char('\t') => prompt.next(),
+                Key::Char('\n') => {
+                    let prompt = app.prompt.take().unwrap();
+                    if prompt.selected == PromptOption::Exit {
+                        running.store(false, Ordering::SeqCst);
+                    }
+                    return Some(prompt.selected);
+                }
+                _ => {}
+            },
+            _ => {} // Ignore mouse events
+        }
+    }
+    None
+}
+
+fn draw_prompt(f: &mut ratatui::Frame, prompt: &FailurePrompt) {
+    let title = format!(" FAILURE in {} ", prompt.recipe.name);
+    let mut error_text = prompt.error.clone();
+    if error_text.len() > 100 {
+        error_text = error_text[0..100].to_string() + "..";
+    }
+
+    // Style for options
+    let retry_style = if prompt.selected == PromptOption::Retry {
+        Style::default().bg(Color::White).fg(Color::Black)
+    } else {
+        Style::default()
+    };
+    let skip_style = if prompt.selected == PromptOption::Skip {
+        Style::default().bg(Color::White).fg(Color::Black)
+    } else {
+        Style::default()
+    };
+    let exit_style = if prompt.selected == PromptOption::Exit {
+        Style::default().bg(Color::White).fg(Color::Black)
+    } else {
+        Style::default()
+    };
+
+    let text = vec![
+        Line::from(error_text).style(Style::default().fg(Color::Yellow)),
+        Line::from(""),
+        Line::from(vec![
+            Span::styled(" [Retry] ", retry_style),
+            Span::raw("   "),
+            Span::styled(" [Skip] ", skip_style),
+            Span::raw("   "),
+            Span::styled(" [Exit] ", exit_style),
+        ]),
+    ];
+
+    let block = Block::default()
+        .title(Span::styled(
+            title,
+            Style::default().fg(Color::White).bg(Color::Red),
+        ))
+        .borders(Borders::ALL)
+        .border_style(Style::default().fg(Color::Red));
+
+    let paragraph = Paragraph::new(text)
+        .block(block)
+        .alignment(ratatui::layout::Alignment::Center)
+        .wrap(Wrap { trim: true });
+
+    let area = f.area();
+    let popup_area = Rect {
+        x: area.width / 4,
+        y: area.height / 3,
+        width: area.width / 2,
+        height: 10,
+    };
+
+    f.render_widget(Clear, popup_area); // Clear the background
+    f.render_widget(paragraph, popup_area);
 }
 
 fn spawn_log_reader(
@@ -778,7 +1005,7 @@ fn spawn_log_reader(
         for line in reader.lines() {
             let line_str = line.unwrap_or_else(|e| format!("[IO Error] {}", e));
             if status_tx
-                .send(StatusUpdate::CookLog(package_name.clone(), line_str))
+                .send(StatusUpdate::PushLog(package_name.clone(), line_str))
                 .is_err()
             {
                 // TUI thread hung up
@@ -789,12 +1016,52 @@ fn spawn_log_reader(
 }
 
 fn setup_logger(
-    cooker_status_tx: &mpsc::Sender<StatusUpdate>,
+    status_tx: &mpsc::Sender<StatusUpdate>,
     name: &PackageName,
 ) -> (std::io::PipeWriter, std::io::PipeWriter) {
     let (stdout_reader, stdout_writer) = std::io::pipe().expect("Failed to create stdout pipe");
     let (stderr_reader, stderr_writer) = std::io::pipe().expect("Failed to create stderr pipe");
-    spawn_log_reader(stdout_reader, name.clone(), cooker_status_tx.clone());
-    spawn_log_reader(stderr_reader, name.clone(), cooker_status_tx.clone());
+    spawn_log_reader(stdout_reader, name.clone(), status_tx.clone());
+    spawn_log_reader(stderr_reader, name.clone(), status_tx.clone());
     (stdout_writer, stderr_writer)
+}
+
+#[derive(PartialEq, Clone, Copy)]
+#[repr(u32)]
+enum PromptOption {
+    Retry = 2,
+    Skip,
+    Exit,
+}
+
+struct FailurePrompt {
+    recipe: CookRecipe,
+    error: String,
+    selected: PromptOption,
+}
+
+impl FailurePrompt {
+    fn new(recipe: CookRecipe, error: String) -> Self {
+        Self {
+            recipe,
+            error,
+            selected: PromptOption::Exit,
+        }
+    }
+
+    fn next(&mut self) {
+        self.selected = match self.selected {
+            PromptOption::Retry => PromptOption::Skip,
+            PromptOption::Skip => PromptOption::Exit,
+            PromptOption::Exit => PromptOption::Retry,
+        }
+    }
+
+    fn prev(&mut self) {
+        self.selected = match self.selected {
+            PromptOption::Retry => PromptOption::Exit,
+            PromptOption::Skip => PromptOption::Retry,
+            PromptOption::Exit => PromptOption::Skip,
+        }
+    }
 }

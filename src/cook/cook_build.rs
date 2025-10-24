@@ -21,9 +21,25 @@ use crate::is_redox;
 
 use crate::REMOTE_PKG_SOURCE;
 
+macro_rules! log_warn {
+    ($logger:expr, $($arg:tt)+) => {
+        use std::io::Write;
+
+        if $logger.is_some() {
+           let _ = $logger.as_ref().unwrap().1.try_clone().unwrap().write(
+                        format!($($arg)+)
+                            .as_bytes(),
+                    );
+        } else {
+            eprintln!($($arg)+);
+        }
+    };
+}
+
 fn auto_deps(
     stage_dir: &Path,
     dep_pkgars: &BTreeSet<(PackageName, PathBuf)>,
+    logger: &Stdout,
 ) -> BTreeSet<PackageName> {
     let mut paths = BTreeSet::new();
     let mut visited = BTreeSet::new();
@@ -43,7 +59,10 @@ fn auto_deps(
         };
         if visited.contains(&dir) {
             #[cfg(debug_assertions)]
-            eprintln!("DEBUG: auto_deps => Skipping `{dir:?}` (already visited)");
+            log_warn!(
+                logger,
+                "DEBUG: auto_deps => Skipping `{dir:?}` (already visited)"
+            );
             continue;
         }
         assert!(
@@ -90,7 +109,7 @@ fn auto_deps(
                     continue;
                 };
                 if let Ok(relative_path) = path.strip_prefix(stage_dir) {
-                    eprintln!("DEBUG: {} needs {}", relative_path.display(), name);
+                    log_warn!(logger, "DEBUG: {} needs {}", relative_path.display(), name);
                 }
                 needed.insert(name.to_string());
             }
@@ -124,7 +143,7 @@ fn auto_deps(
                         continue;
                     };
                     if needed.contains(child_name) {
-                        eprintln!("DEBUG: {} provides {}", dep, child_name);
+                        log_warn!(logger, "DEBUG: {} provides {}", dep, child_name);
                         deps.insert(dep.clone());
                         missing.remove(child_name);
                     }
@@ -134,7 +153,7 @@ fn auto_deps(
     }
 
     for name in missing {
-        eprintln!("WARN: {} missing", name);
+        log_warn!(logger, "WARN: {} missing", name);
     }
 
     deps
@@ -174,7 +193,7 @@ pub fn build(
     }
 
     if stage_dir.exists() && !check_source {
-        let auto_deps = build_auto_deps(target_dir, &stage_dir, dep_pkgars)?;
+        let auto_deps = build_auto_deps(target_dir, &stage_dir, dep_pkgars, logger)?;
         return Ok((stage_dir, auto_deps));
     }
 
@@ -190,7 +209,8 @@ pub fn build(
     if sysroot_dir.is_dir() {
         let sysroot_modified = modified_dir(&sysroot_dir)?;
         if sysroot_modified < source_modified || sysroot_modified < deps_modified {
-            eprintln!(
+            log_warn!(
+                logger,
                 "DEBUG: '{}' newer than '{}'",
                 source_dir.display(),
                 sysroot_dir.display()
@@ -239,7 +259,8 @@ pub fn build(
     if stage_dir.is_dir() {
         let stage_modified = modified_dir(&stage_dir)?;
         if stage_modified < source_modified || stage_modified < deps_modified {
-            eprintln!(
+            log_warn!(
+                logger,
                 "DEBUG: '{}' newer than '{}'",
                 source_dir.display(),
                 stage_dir.display()
@@ -318,7 +339,7 @@ pub fn build(
             } else {
                 let cookbook_redoxer = Path::new("target/release/cookbook_redoxer")
                     .canonicalize()
-                    .unwrap();
+                    .unwrap_or(PathBuf::from("/bin/false"));
                 let mut command = Command::new(&cookbook_redoxer);
                 command.arg("env").arg("bash").arg("-ex");
                 command.env("COOKBOOK_REDOXER", &cookbook_redoxer);
@@ -348,7 +369,7 @@ pub fn build(
         rename(&stage_dir_tmp, &stage_dir)?;
     }
 
-    let auto_deps = build_auto_deps(target_dir, &stage_dir, dep_pkgars)?;
+    let auto_deps = build_auto_deps(target_dir, &stage_dir, dep_pkgars, logger)?;
 
     Ok((stage_dir, auto_deps))
 }
@@ -358,6 +379,7 @@ fn build_auto_deps(
     target_dir: &Path,
     stage_dir: &PathBuf,
     dep_pkgars: BTreeSet<(PackageName, PathBuf)>,
+    logger: &Stdout,
 ) -> Result<BTreeSet<PackageName>, String> {
     let auto_deps_path = target_dir.join("auto_deps.toml");
     if auto_deps_path.is_file() && modified(&auto_deps_path)? < modified(stage_dir)? {
@@ -371,7 +393,7 @@ fn build_auto_deps(
             toml::from_str(&toml_content).map_err(|_| "failed to deserialize cached auto_deps")?;
         wrapper.packages
     } else {
-        let packages = auto_deps(stage_dir, &dep_pkgars);
+        let packages = auto_deps(stage_dir, &dep_pkgars, logger);
         let wrapper = AutoDeps { packages };
         serialize_and_write(&auto_deps_path, &wrapper)?;
         wrapper.packages
@@ -475,7 +497,7 @@ mod tests {
             "Expected a loop where {dir:?} points to {root:?}"
         );
 
-        let entries = auto_deps(root, &Default::default());
+        let entries = auto_deps(root, &Default::default(), &None);
         assert!(
             entries.is_empty(),
             "auto_deps shouldn't have yielded any libraries"

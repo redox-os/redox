@@ -76,7 +76,7 @@ pub fn fetch_offline(
         }) => {
             if !source_dir.is_dir() {
                 let source_tar = recipe_dir.join("source.tar");
-                let source_tar_blake3 = get_blake3(&source_tar, true)?;
+                let source_tar_blake3 = get_blake3(&source_tar, true && logger.is_none())?;
                 if source_tar.exists() {
                     if let Some(blake3) = blake3 {
                         if source_tar_blake3 != *blake3 {
@@ -257,7 +257,7 @@ pub fn fetch(recipe_dir: &Path, recipe: &Recipe, logger: &Stdout) -> Result<Path
                     tar_updated = true;
                     download_wget(&tar, &source_tar, logger)?;
                 }
-                let source_tar_blake3 = get_blake3(&source_tar, tar_updated)?;
+                let source_tar_blake3 = get_blake3(&source_tar, tar_updated && logger.is_none())?;
                 if let Some(blake3) = blake3 {
                     if source_tar_blake3 != *blake3 {
                         if tar_updated {
