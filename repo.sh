@@ -18,15 +18,12 @@ do
     elif [ "$arg" == "--nonstop" ]
     then
         COOK_OPT+=" --nonstop"
-    elif [ "$arg" == "--offline" ]
-    then
-        COOK_OPT+=" --offline"
     else
         recipes+=" $arg"
     fi
 done
 
-cook $COOK_OPT $recipes
+repo cook $COOK_OPT $recipes
 
 repo="$ROOT/repo/$TARGET"
 mkdir -p "$repo"

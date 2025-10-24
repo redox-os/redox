@@ -60,6 +60,9 @@ function pkgar {
 function cook {
     "$ROOT/target/release/cook" "$@"
 }
+function repo {
+    "$ROOT/target/release/repo" "$@"
+}
 function repo_builder {
     "$ROOT/target/release/repo_builder" "$@"
 }
