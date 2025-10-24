@@ -1,7 +1,7 @@
 use serde::Serialize;
 use std::{
     fs,
-    io::{self, Write},
+    io::{self, PipeWriter, Write},
     path::{Path, PathBuf},
     process::{self, Command, Stdio},
     time::SystemTime,
@@ -146,7 +146,25 @@ pub fn rename(src: &Path, dst: &Path) -> Result<(), String> {
     })
 }
 
-pub fn run_command(mut command: process::Command) -> Result<(), String> {
+pub type Stdout<'a> = Option<(&'a mut PipeWriter, &'a mut PipeWriter)>;
+
+fn pipe_to_cmd(command: &mut Command, stdout_pipe: &Stdout) -> Result<(), String> {
+    Ok(if let Some((stdout, stderr)) = stdout_pipe {
+        command.stdout::<PipeWriter>(
+            stdout
+                .try_clone()
+                .map_err(|e| format!("unable to clone stdout fd: {:?}", e))?,
+        );
+        command.stderr(
+            stderr
+                .try_clone()
+                .map_err(|e| format!("unable to clone stderr fd: {:?}", e))?,
+        );
+    })
+}
+
+pub fn run_command(mut command: process::Command, stdout_pipe: &Stdout) -> Result<(), String> {
+    pipe_to_cmd(&mut command, stdout_pipe)?;
     let status = command
         .status()
         .map_err(|err| format!("failed to run {:?}: {}\n{:#?}", command, err, err))?;
@@ -161,8 +179,13 @@ pub fn run_command(mut command: process::Command) -> Result<(), String> {
     Ok(())
 }
 
-pub fn run_command_stdin(mut command: process::Command, stdin_data: &[u8]) -> Result<(), String> {
+pub fn run_command_stdin(
+    mut command: process::Command,
+    stdin_data: &[u8],
+    stdout_pipe: &Stdout,
+) -> Result<(), String> {
     command.stdin(Stdio::piped());
+    pipe_to_cmd(&mut command, stdout_pipe)?;
 
     let mut child = command
         .spawn()
@@ -217,13 +240,13 @@ pub fn offline_check_exists(path: &PathBuf) -> Result<(), String> {
     Ok(())
 }
 
-pub fn download_wget(url: &str, dest: &PathBuf) -> Result<(), String> {
+pub fn download_wget(url: &str, dest: &PathBuf, logger: &Stdout) -> Result<(), String> {
     if !dest.is_file() {
         let dest_tmp = PathBuf::from(format!("{}.tmp", dest.display()));
         let mut command = Command::new("wget");
         command.arg(translate_mirror(url));
         command.arg("--continue").arg("-O").arg(&dest_tmp);
-        run_command(command)?;
+        run_command(command, logger)?;
         rename(&dest_tmp, &dest)?;
     }
     Ok(())
