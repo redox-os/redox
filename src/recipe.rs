@@ -207,7 +207,7 @@ impl CookRecipe {
 
     pub fn from_path(dir: &Path, read_recipe: bool) -> Result<Self, PackageError> {
         let file = dir.join("recipe.toml");
-        let name: PackageName = file.file_name().unwrap().try_into()?;
+        let name: PackageName = dir.file_name().unwrap().try_into()?;
         let recipe = if read_recipe {
             Recipe::new(&file)?
         } else {
