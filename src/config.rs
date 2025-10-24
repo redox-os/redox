@@ -3,6 +3,7 @@ use std::{collections::HashMap, env, fs, str::FromStr, sync::OnceLock};
 use serde::{Deserialize, Serialize};
 
 #[derive(Debug, Default, Clone, Deserialize, PartialEq, Serialize)]
+#[serde(default)]
 pub struct CookConfigOpt {
     /// whether to run offline
     pub offline: Option<bool>,
@@ -41,6 +42,7 @@ impl From<CookConfigOpt> for CookConfig {
 }
 
 #[derive(Debug, Default, Deserialize, PartialEq, Serialize)]
+#[serde(default)]
 pub struct CookbookConfig {
     #[serde(rename = "cook")]
     cook_opt: CookConfigOpt,
@@ -153,6 +155,17 @@ mod tests {
         // This will be called for each test. If the config is already set,
         // it will do nothing, which is fine as all tests use the same config.
         let _ = CONFIG.set(app_config);
+    }
+
+    #[test]
+    fn test_parse_cook() {
+        let app_config: CookbookConfig = toml::from_str(
+            "[cook]\n\
+            offline = true\n",
+        )
+        .expect("Unable to parse test config");
+        assert_eq!(app_config.cook_opt.offline, Some(true));
+        assert_eq!(app_config.cook_opt.jobs, None);
     }
 
     #[test]
