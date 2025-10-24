@@ -15,7 +15,7 @@ use serde::{
 use crate::WALK_DEPTH;
 
 /// Specifies how to download the source for a recipe
-#[derive(Debug, Deserialize, PartialEq, Serialize)]
+#[derive(Debug, Clone, Deserialize, PartialEq, Serialize)]
 #[serde(untagged)]
 pub enum SourceRecipe {
     /// Reuse the source directory of another package
@@ -88,7 +88,7 @@ impl SourceRecipe {
 }
 
 /// Specifies how to build a recipe
-#[derive(Debug, Deserialize, PartialEq, Serialize)]
+#[derive(Debug, Clone, Deserialize, PartialEq, Serialize)]
 #[serde(tag = "template")]
 pub enum BuildKind {
     /// Will not build (for meta packages)
@@ -134,7 +134,7 @@ impl Default for BuildKind {
     }
 }
 
-#[derive(Debug, Default, Deserialize, PartialEq, Serialize)]
+#[derive(Debug, Clone, Default, Deserialize, PartialEq, Serialize)]
 pub struct BuildRecipe {
     #[serde(flatten, default)]
     pub kind: BuildKind,
@@ -142,7 +142,7 @@ pub struct BuildRecipe {
     pub dependencies: Vec<PackageName>,
 }
 
-#[derive(Debug, Default, Deserialize, PartialEq, Serialize)]
+#[derive(Debug, Clone, Default, Deserialize, PartialEq, Serialize)]
 pub struct PackageRecipe {
     #[serde(default)]
     pub dependencies: Vec<PackageName>,
@@ -151,7 +151,7 @@ pub struct PackageRecipe {
 }
 
 /// Everything required to build a Redox package
-#[derive(Debug, Default, Deserialize, PartialEq, Serialize)]
+#[derive(Debug, Clone, Default, Deserialize, PartialEq, Serialize)]
 pub struct Recipe {
     /// Specifies how to download the source for this recipe
     pub source: Option<SourceRecipe>,
@@ -175,7 +175,7 @@ impl Recipe {
         Ok(recipe)
     }
 }
-#[derive(Debug, PartialEq)]
+#[derive(Debug, Clone, PartialEq)]
 pub struct CookRecipe {
     pub name: PackageName,
     pub dir: PathBuf,

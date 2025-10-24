@@ -148,6 +148,7 @@ pub fn build(
     recipe: &Recipe,
     offline_mode: bool,
     check_source: bool,
+    logger: &Stdout,
 ) -> Result<(PathBuf, BTreeSet<PackageName>), String> {
     let sysroot_dir = target_dir.join("sysroot");
     let stage_dir = target_dir.join("stage");
@@ -296,7 +297,7 @@ pub fn build(
                 flags_fn("COOKBOOK_MESON_FLAGS", mesonflags),
             ),
             BuildKind::Custom { script } => script.clone(),
-            BuildKind::Remote => return build_remote(target_dir, name, offline_mode),
+            BuildKind::Remote => return build_remote(target_dir, name, offline_mode, logger),
             BuildKind::None => "".to_owned(),
         };
 
@@ -341,7 +342,7 @@ pub fn build(
             "{}\n{}\n{}\n{}",
             BUILD_PRESCRIPT, SHARED_PRESCRIPT, script, BUILD_POSTSCRIPT
         );
-        run_command_stdin(command, full_script.as_bytes())?;
+        run_command_stdin(command, full_script.as_bytes(), logger)?;
 
         // Move stage.tmp to stage atomically
         rename(&stage_dir_tmp, &stage_dir)?;
@@ -389,6 +390,7 @@ pub fn build_remote(
     target_dir: &Path,
     name: &PackageName,
     offline_mode: bool,
+    logger: &Stdout,
 ) -> Result<(PathBuf, BTreeSet<PackageName>), String> {
     // download straight from remote source then declare pkg dependencies as autodeps dependency
     let stage_dir = target_dir.join("stage");
@@ -398,9 +400,9 @@ pub fn build_remote(
     let source_pubkey = target_dir.join("id_ed25519.pub.toml");
 
     if !offline_mode {
-        download_wget(&get_remote_url(name, "pkgar"), &source_pkgar)?;
-        download_wget(&get_remote_url(name, "toml"), &source_toml)?;
-        download_wget(&get_pubkey_url(), &source_pubkey)?;
+        download_wget(&get_remote_url(name, "pkgar"), &source_pkgar, logger)?;
+        download_wget(&get_remote_url(name, "toml"), &source_toml, logger)?;
+        download_wget(&get_pubkey_url(), &source_pubkey, logger)?;
     } else {
         offline_check_exists(&source_pkgar)?;
         offline_check_exists(&source_toml)?;

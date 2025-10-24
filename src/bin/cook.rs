@@ -21,8 +21,8 @@ fn cook(
     is_offline: bool,
 ) -> Result<(), String> {
     let source_dir = match is_offline {
-        true => fetch_offline(recipe_dir, recipe),
-        false => fetch(recipe_dir, recipe),
+        true => fetch_offline(recipe_dir, recipe, &None),
+        false => fetch(recipe_dir, recipe, &None),
     }
     .map_err(|err| format!("failed to fetch: {}", err))?;
 
@@ -40,6 +40,7 @@ fn cook(
         recipe,
         is_offline,
         !is_deps,
+        &None,
     )
     .map_err(|err| format!("failed to build: {}", err))?;
 

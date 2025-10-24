@@ -1,4 +1,5 @@
-use std::io::stdout;
+use std::collections::HashMap;
+use std::io::{BufRead, BufReader, PipeReader, stdout};
 use std::path::PathBuf;
 use std::str::FromStr;
 use std::sync::mpsc;
@@ -11,7 +12,7 @@ use cookbook::WALK_DEPTH;
 use cookbook::config::{CookConfig, get_config, init_config};
 use cookbook::cook::cook_build::build;
 use cookbook::cook::fetch::{fetch, fetch_offline};
-use cookbook::cook::fs::create_target_dir;
+use cookbook::cook::fs::{Stdout, create_target_dir};
 use cookbook::cook::package::package;
 use cookbook::recipe::CookRecipe;
 use pkg::PackageName;
@@ -20,7 +21,7 @@ use ratatui::Terminal;
 use ratatui::layout::{Constraint, Direction, Layout};
 use ratatui::prelude::TermionBackend;
 use ratatui::style::{Color, Style};
-use ratatui::widgets::{Block, Borders, List, ListItem, Paragraph};
+use ratatui::widgets::{Block, Borders, List, ListItem, Paragraph, Wrap};
 use termion::screen::{ToAlternateScreen, ToMainScreen};
 
 // A repo manager, to replace repo.sh
@@ -141,11 +142,11 @@ fn main_inner() -> anyhow::Result<()> {
     for recipe in &recipe_names {
         match command {
             CliCommand::Fetch => {
-                handle_fetch(recipe, &config)?;
+                handle_fetch(recipe, &config, &None)?;
             }
             CliCommand::Cook => {
-                let source_dir = handle_fetch(recipe, &config)?;
-                handle_cook(recipe, &config, source_dir, recipe.is_deps)?
+                let source_dir = handle_fetch(recipe, &config, &None)?;
+                handle_cook(recipe, &config, source_dir, recipe.is_deps, &None)?
             }
             CliCommand::Unfetch => handle_clean(recipe, &config, true, true)?,
             CliCommand::Clean => handle_clean(recipe, &config, false, true)?,
@@ -241,11 +242,15 @@ fn parse_args(args: Vec<String>) -> anyhow::Result<(CliConfig, CliCommand, Vec<C
     Ok((config, command, recipes))
 }
 
-fn handle_fetch(recipe: &CookRecipe, config: &CliConfig) -> anyhow::Result<PathBuf> {
+fn handle_fetch(
+    recipe: &CookRecipe,
+    config: &CliConfig,
+    logger: &Stdout,
+) -> anyhow::Result<PathBuf> {
     let recipe_dir = &recipe.dir;
     let source_dir = match config.cook.offline {
-        true => fetch_offline(recipe_dir, &recipe.recipe),
-        false => fetch(recipe_dir, &recipe.recipe),
+        true => fetch_offline(recipe_dir, &recipe.recipe, logger),
+        false => fetch(recipe_dir, &recipe.recipe, logger),
     }
     .map_err(|e| anyhow!(e))?;
 
@@ -257,10 +262,10 @@ fn handle_cook(
     config: &CliConfig,
     source_dir: PathBuf,
     is_deps: bool,
+    logger: &Stdout,
 ) -> anyhow::Result<()> {
     let recipe_dir = &recipe.dir;
     let target_dir = create_target_dir(recipe_dir).map_err(|e| anyhow!(e))?;
-
     let (stage_dir, auto_deps) = build(
         recipe_dir,
         &source_dir,
@@ -269,6 +274,7 @@ fn handle_cook(
         &recipe.recipe,
         config.cook.offline,
         !is_deps,
+        logger,
     )
     .map_err(|err| anyhow!("failed to build: {}", err))?;
 
@@ -332,6 +338,7 @@ enum StatusUpdate {
     Fetched(PackageName),
     FailFetch(PackageName, String),
     StartCook(PackageName),
+    CookLog(PackageName, String),
     Cooked(PackageName),
     FailCook(PackageName, String),
 }
@@ -342,6 +349,9 @@ struct TuiApp {
     cook_queue: Vec<PackageName>,
     done: Vec<PackageName>,
     failed: Vec<PackageName>,
+    active_fetch: Option<PackageName>,
+    active_cook: Option<PackageName>,
+    logs: HashMap<PackageName, Vec<String>>,
 }
 
 impl TuiApp {
@@ -356,16 +366,36 @@ impl TuiApp {
             cook_queue: Vec::new(),
             done: Vec::new(),
             failed: Vec::new(),
+            active_fetch: None,
+            active_cook: None,
+            logs: HashMap::new(),
         }
     }
 
     // Update the state based on a message from a worker thread
     fn update_status(&mut self, update: StatusUpdate) {
         let (name, new_status) = match update {
-            StatusUpdate::StartFetch(name) => (name, RecipeStatus::Fetching),
+            StatusUpdate::StartFetch(name) => {
+                self.active_fetch = Some(name.clone());
+                self.logs.insert(name.clone(), Vec::new()); // Clear old logs
+                (name.clone(), RecipeStatus::Fetching)
+            }
             StatusUpdate::Fetched(name) => (name, RecipeStatus::Fetched),
             StatusUpdate::FailFetch(name, err) => (name, RecipeStatus::Failed(err)),
-            StatusUpdate::StartCook(name) => (name, RecipeStatus::Cooking),
+            StatusUpdate::StartCook(name) => {
+                self.active_cook = Some(name.clone()); // Set active cook
+                self.logs.insert(name.clone(), Vec::new()); // Clear old logs
+                (name.clone(), RecipeStatus::Cooking)
+            }
+            StatusUpdate::CookLog(name, line) => {
+                self.logs.entry(name.clone()).or_default().push(line);
+                // No status change, just return the current state
+                if let Some((_, status)) = self.recipes.iter().find(|(r, _)| r.name == name) {
+                    (name, status.clone())
+                } else {
+                    return; // Should not happen
+                }
+            }
             StatusUpdate::Cooked(name) => (name, RecipeStatus::Done),
             StatusUpdate::FailCook(name, err) => (name, RecipeStatus::Failed(err)),
         };
@@ -402,6 +432,26 @@ impl TuiApp {
     }
 }
 
+fn spawn_log_reader(
+    mut pipe_reader: PipeReader,
+    package_name: PackageName,
+    status_tx: mpsc::Sender<StatusUpdate>,
+) {
+    thread::spawn(move || {
+        let reader = BufReader::new(&mut pipe_reader);
+        for line in reader.lines() {
+            let line_str = line.unwrap_or_else(|e| format!("[IO Error] {}", e));
+            if status_tx
+                .send(StatusUpdate::CookLog(package_name.clone(), line_str))
+                .is_err()
+            {
+                // TUI thread hung up
+                break;
+            }
+        }
+    });
+}
+
 fn run_tui_cook(config: CliConfig, recipes: Vec<CookRecipe>) -> anyhow::Result<()> {
     let (work_tx, work_rx) = mpsc::channel::<(CookRecipe, PathBuf)>();
     let (status_tx, status_rx) = mpsc::channel::<StatusUpdate>();
@@ -416,8 +466,9 @@ fn run_tui_cook(config: CliConfig, recipes: Vec<CookRecipe>) -> anyhow::Result<(
             cooker_status_tx
                 .send(StatusUpdate::StartCook(name.clone()))
                 .unwrap();
-
-            match handle_cook(&recipe, &cooker_config, source_dir, is_deps) {
+            let (mut stdout_writer, mut stderr_writer) = setup_logger(&cooker_status_tx, &name);
+            let logger = Some((&mut stdout_writer, &mut stderr_writer));
+            match handle_cook(&recipe, &cooker_config, source_dir, is_deps, &logger) {
                 Ok(_) => cooker_status_tx.send(StatusUpdate::Cooked(name)).unwrap(),
                 Err(e) => cooker_status_tx
                     .send(StatusUpdate::FailCook(name, e.to_string()))
@@ -427,18 +478,22 @@ fn run_tui_cook(config: CliConfig, recipes: Vec<CookRecipe>) -> anyhow::Result<(
     });
 
     // ---- Fetcher Thread ----
+    let fetcher_recipes = recipes.clone();
     let fetcher_config = config.clone();
     let fetcher_handle = thread::spawn(move || {
-        for recipe in recipes {
+        for recipe in fetcher_recipes {
             let name = recipe.name.clone();
             status_tx
                 .send(StatusUpdate::StartFetch(name.clone()))
                 .unwrap();
 
-            match handle_fetch(&recipe, &fetcher_config) {
+            let (mut stdout_writer, mut stderr_writer) = setup_logger(&status_tx, &name);
+            let logger = Some((&mut stdout_writer, &mut stderr_writer));
+
+            match handle_fetch(&recipe, &fetcher_config, &logger) {
                 Ok(source_dir) => {
                     status_tx.send(StatusUpdate::Fetched(name)).unwrap();
-                    if work_tx.send((recipe, source_dir)).is_err() {
+                    if work_tx.send((recipe.clone(), source_dir)).is_err() {
                         // Cooker thread died
                         break;
                     }
@@ -455,15 +510,22 @@ fn run_tui_cook(config: CliConfig, recipes: Vec<CookRecipe>) -> anyhow::Result<(
     let mut terminal = Terminal::new(TermionBackend::new(stdout()))?;
     terminal.clear()?;
 
-    let mut app = TuiApp::new(Vec::new());
-    let total_recipes = app.recipes.len();
+    let mut app = TuiApp::new(recipes);
+    // let total_recipes = app.recipes.len();
     let mut running = true;
 
     while running {
         terminal.draw(|f| {
             let chunks = Layout::default()
                 .direction(Direction::Horizontal)
-                .constraints([Constraint::Percentage(50), Constraint::Percentage(50)].as_ref())
+                .constraints(
+                    [
+                        Constraint::Percentage(20),
+                        Constraint::Percentage(20),
+                        Constraint::Percentage(60),
+                    ]
+                    .as_ref(),
+                )
                 .split(f.area());
 
             // Left Pane
@@ -509,13 +571,34 @@ fn run_tui_cook(config: CliConfig, recipes: Vec<CookRecipe>) -> anyhow::Result<(
                 .block(Block::default().title("Cook Queue").borders(Borders::ALL));
             f.render_widget(cook_list, chunks[1]);
 
-            let footer = Paragraph::new(format!(
-                "Done: {}/{} | Failed: {}",
-                app.done.len(),
-                total_recipes,
-                app.failed.len()
-            ));
-            f.render_widget(footer, f.area());
+            let log_title = if let Some(active_name) = &app.active_cook {
+                format!("Build Log: {}", active_name.as_str())
+            } else {
+                "Build Log".to_string()
+            };
+
+            let log_text: Vec<String> = if let Some(active_name) = &app.active_cook {
+                app.logs
+                    .get(active_name)
+                    .cloned()
+                    .unwrap_or_else(|| vec!["Waiting for logs...".to_string()])
+            } else {
+                vec!["No active cook job.".to_string()]
+            };
+
+            let log_paragraph = Paragraph::new(log_text.join("\n"))
+                .block(Block::default().title(log_title).borders(Borders::ALL))
+                .wrap(Wrap { trim: false });
+
+            f.render_widget(log_paragraph, chunks[2]);
+
+            // let footer = Paragraph::new(format!(
+            //     "Done: {}/{} | Failed: {}",
+            //     app.done.len(),
+            //     total_recipes,
+            //     app.failed.len()
+            // ));
+            // f.render_widget(footer, f.area());
         })?;
 
         while let Ok(update) = status_rx.try_recv() {
@@ -535,4 +618,15 @@ fn run_tui_cook(config: CliConfig, recipes: Vec<CookRecipe>) -> anyhow::Result<(
     cooker_handle.join().unwrap();
 
     Ok(())
+}
+
+fn setup_logger(
+    cooker_status_tx: &mpsc::Sender<StatusUpdate>,
+    name: &PackageName,
+) -> (std::io::PipeWriter, std::io::PipeWriter) {
+    let (stdout_reader, stdout_writer) = std::io::pipe().expect("Failed to create stdout pipe");
+    let (stderr_reader, stderr_writer) = std::io::pipe().expect("Failed to create stderr pipe");
+    spawn_log_reader(stdout_reader, name.clone(), cooker_status_tx.clone());
+    spawn_log_reader(stderr_reader, name.clone(), cooker_status_tx.clone());
+    (stdout_writer, stderr_writer)
 }
