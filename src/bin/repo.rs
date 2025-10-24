@@ -1,9 +1,18 @@
-use std::collections::BTreeSet;
-use std::path::{Path, PathBuf};
-use std::process::{self, Command};
+use std::path::PathBuf;
+use std::process;
+use std::str::FromStr;
 use std::{env, fs};
 
-use anyhow::{Context, anyhow};
+use anyhow::{Context, anyhow, bail};
+use cookbook::WALK_DEPTH;
+use cookbook::config::{CookConfig, get_config, init_config};
+use cookbook::cook::cook_build::build;
+use cookbook::cook::fetch::{fetch, fetch_offline};
+use cookbook::cook::fs::create_target_dir;
+use cookbook::cook::package::package;
+use cookbook::recipe::CookRecipe;
+use pkg::PackageName;
+use pkg::package::PackageError;
 
 // A repo manager, to replace repo.sh
 
@@ -36,16 +45,51 @@ struct CliConfig {
     repo_dir: PathBuf,
     sysroot_dir: PathBuf,
     with_package_deps: bool,
-    offline: bool,
-    nonstop: bool,
     all: bool,
-    quiet: bool,
+    cook: CookConfig,
+}
+
+#[derive(PartialEq)]
+enum CliCommand {
+    Fetch,
+    Cook,
+    Unfetch,
+    Clean,
+    Push,
+}
+
+impl FromStr for CliCommand {
+    type Err = anyhow::Error;
+
+    fn from_str(s: &str) -> Result<Self, Self::Err> {
+        match s {
+            "fetch" => Ok(CliCommand::Fetch),
+            "cook" => Ok(CliCommand::Cook),
+            "unfetch" => Ok(CliCommand::Unfetch),
+            "clean" => Ok(CliCommand::Clean),
+            "push" => Ok(CliCommand::Push),
+            _ => Err(anyhow!("Unknown command '{}'", s)),
+        }
+    }
+}
+
+impl ToString for CliCommand {
+    fn to_string(&self) -> String {
+        match self {
+            CliCommand::Fetch => "fetch".to_string(),
+            CliCommand::Cook => "cook".to_string(),
+            CliCommand::Unfetch => "unfetch".to_string(),
+            CliCommand::Clean => "clean".to_string(),
+            CliCommand::Push => "push".to_string(),
+        }
+    }
 }
 
 impl CliConfig {
     fn new() -> Result<Self, std::io::Error> {
         let current_dir = env::current_dir()?;
         Ok(CliConfig {
+            //FIXME: This config is unused as redox-pkg harcoded this to $PWD/recipes
             cookbook_dir: current_dir.join("recipes"),
             repo_dir: current_dir.join("repo"),
             sysroot_dir: if cfg!(target_os = "redox") {
@@ -54,15 +98,14 @@ impl CliConfig {
                 current_dir.join("sysroot")
             },
             with_package_deps: false,
-            offline: false,
-            nonstop: false,
+            cook: get_config().cook.clone(),
             all: false,
-            quiet: false,
         })
     }
 }
 
 fn main() {
+    init_config();
     main_inner().unwrap();
 }
 
@@ -74,10 +117,29 @@ fn main_inner() -> anyhow::Result<()> {
         process::exit(1);
     }
 
+    let (config, command, recipe_names) = parse_args(args)?;
+
+    for recipe in &recipe_names {
+        match command {
+            CliCommand::Fetch => handle_cook(recipe, &config, true, recipe.is_deps)?,
+            CliCommand::Cook => handle_cook(recipe, &config, false, recipe.is_deps)?,
+            CliCommand::Unfetch => handle_clean(recipe, &config, true, true)?,
+            CliCommand::Clean => handle_clean(recipe, &config, false, true)?,
+            CliCommand::Push => handle_push(recipe, &config)?,
+        }
+    }
+
+    println!(
+        "\nCommand '{}' completed for all specified recipes.",
+        command.to_string(),
+    );
+    Ok(())
+}
+
+fn parse_args(args: Vec<String>) -> anyhow::Result<(CliConfig, CliCommand, Vec<CookRecipe>)> {
     let mut config = CliConfig::new()?;
     let mut command: Option<String> = None;
-    let mut recipe_paths: BTreeSet<PathBuf> = BTreeSet::new();
-
+    let mut recipe_names: Vec<PackageName> = Vec::new();
     for arg in args {
         if arg.starts_with("--") {
             if let Some((key, value)) = arg.split_once('=') {
@@ -93,10 +155,7 @@ fn main_inner() -> anyhow::Result<()> {
             } else {
                 match arg.as_str() {
                     "--with-package-deps" => config.with_package_deps = true,
-                    "--offline" => config.offline = true,
-                    "--nonstop" => config.nonstop = true,
                     "--all" => config.all = true,
-                    "--quiet" => config.quiet = true,
                     _ => {
                         eprintln!("Error: Unknown flag: {}", arg);
                         process::exit(1);
@@ -105,7 +164,6 @@ fn main_inner() -> anyhow::Result<()> {
             }
         } else if arg.starts_with('-') {
             match arg.as_str() {
-                "-q" => config.quiet = true,
                 _ => {
                     eprintln!("Error: Unknown flag: {}", arg);
                     process::exit(1);
@@ -116,122 +174,117 @@ fn main_inner() -> anyhow::Result<()> {
             command = Some(arg);
         } else {
             // Subsequent non-flag arguments are recipe names
-            if let Some(path) = pkg::recipes::find(&arg) {
-                recipe_paths.insert(path.to_owned());
-            } else {
-                panic!("Error: recipe not found '{arg}'");
-            }
+            recipe_names.push(arg.try_into().context("Invalid package name")?);
         }
     }
 
-    let command = command.ok_or("Error: No command specified.").unwrap();
-
-    if !config.all && recipe_paths.is_empty() {
-        panic!("Error: No recipe names provided and --all flag was not used.");
-    }
-    if config.all && !recipe_paths.is_empty() {
-        panic!("Error: Cannot specify recipe names when using the --all flag.");
-    }
-
-    if config.all {
-        recipe_paths = pkg::recipes::list("");
-    }
-
-    for recipe_path in &recipe_paths {
-        match command.as_str() {
-            "fetch" => handle_fetch(recipe_path, &config)?,
-            "cook" => handle_cook(recipe_path, &config)?,
-            "unfetch" => handle_unfetch(recipe_path, &config)?,
-            "clean" => handle_clean(recipe_path, &config)?,
-            "push" => handle_push(recipe_path, &config)?,
-            _ => {
-                eprintln!("Error: Unknown command '{}'\n", command);
-                println!("{}", REPO_HELP_STR);
-                process::exit(1);
-            }
+    let command = command.ok_or(anyhow!("Error: No command specified."))?;
+    let command: CliCommand = str::parse(&command)?;
+    let recipes = if config.all {
+        if !recipe_names.is_empty() {
+            bail!("Cannot specify recipe names when using the --all flag.");
         }
+        if command == CliCommand::Cook
+            || command == CliCommand::Fetch
+            || command == CliCommand::Push
+        {
+            // because read_recipe is false below
+            // some recipes on wip folders are invalid anyway
+            bail!(
+                "Refusing to run an unrealistic command to {} all recipes",
+                command.to_string()
+            );
+        }
+
+        pkg::recipes::list("")
+            .iter()
+            .map(|f| CookRecipe::from_path(f, false))
+            .collect::<Result<Vec<CookRecipe>, PackageError>>()?
+    } else {
+        if recipe_names.is_empty() {
+            bail!("Error: No recipe names provided and --all flag was not used.");
+        }
+        if config.with_package_deps {
+            recipe_names = CookRecipe::get_package_deps_recursive(&recipe_names, WALK_DEPTH)
+                .context("failed get package deps")?;
+        }
+
+        CookRecipe::get_build_deps_recursive(&recipe_names, !config.with_package_deps)?
+    };
+
+    Ok((config, command, recipes))
+}
+
+fn handle_cook(
+    recipe: &CookRecipe,
+    config: &CliConfig,
+    fetch_only: bool,
+    is_deps: bool,
+) -> anyhow::Result<()> {
+    let recipe_dir = &recipe.dir;
+    let source_dir = match config.cook.offline {
+        true => fetch_offline(recipe_dir, &recipe.recipe),
+        false => fetch(recipe_dir, &recipe.recipe),
+    }
+    .map_err(|e| anyhow!(e))?;
+
+    if fetch_only {
+        return Ok(());
     }
 
-    println!(
-        "\nCommand '{}' completed for all specified recipes.",
-        command
-    );
+    let target_dir = create_target_dir(recipe_dir).map_err(|e| anyhow!(e))?;
+
+    let (stage_dir, auto_deps) = build(
+        recipe_dir,
+        &source_dir,
+        &target_dir,
+        &recipe.name,
+        &recipe.recipe,
+        config.cook.offline,
+        !is_deps,
+    )
+    .map_err(|err| anyhow!("failed to build: {}", err))?;
+
+    package(
+        &stage_dir,
+        &target_dir,
+        &recipe.name,
+        &recipe.recipe,
+        &auto_deps,
+    )
+    .map_err(|err| anyhow!("failed to package: {}", err))?;
+
     Ok(())
 }
 
-fn handle_fetch(recipe_path: &Path, config: &CliConfig) -> anyhow::Result<()> {
-    let mut cmd = Command::new("cook");
-    cmd.arg("--fetch-only");
-    if config.with_package_deps {
-        cmd.arg("--with-package-deps");
+fn handle_clean(
+    recipe: &CookRecipe,
+    _config: &CliConfig,
+    source: bool,
+    target: bool,
+) -> anyhow::Result<()> {
+    let dir = recipe.dir.join("target");
+    if dir.exists() && target {
+        fs::remove_dir_all(&dir).context(format!("failed to delete {}", dir.display()))?;
     }
-    if config.offline {
-        cmd.arg("--offline");
-    }
-    if config.quiet {
-        cmd.arg("--quiet");
-    }
-    cmd.arg(recipe_path);
-    let status = cmd.status().context("Failed to execute cook command")?;
-    if !status.success() && !config.nonstop {
-        return Err(anyhow!(
-            "Cook command failed for recipe '{}' with exit code: {}",
-            recipe_path.display(),
-            status.code().unwrap_or(1)
-        ));
+    let dir = recipe.dir.join("source");
+    if dir.exists() && source {
+        fs::remove_dir_all(&dir).context(format!("failed to delete {}", dir.display()))?;
     }
     Ok(())
 }
 
-fn handle_cook(recipe_path: &Path, config: &CliConfig) -> anyhow::Result<()> {
-    let mut cmd = Command::new("cook");
-    cmd.arg(recipe_path);
-    if config.with_package_deps {
-        cmd.arg("--with-package-deps");
-    }
-    if config.offline {
-        cmd.arg("--offline");
-    }
-    if config.quiet {
-        cmd.arg("--quiet");
-    }
-    let status = cmd.status().context("Failed to execute cook command")?;
-    if !status.success() && !config.nonstop {
-        return Err(anyhow!(
-            "Cook command failed for recipe '{}' with exit code: {}",
-            recipe_path.display(),
-            status.code().unwrap_or(1)
-        ));
-    }
-    Ok(())
-}
-
-fn handle_unfetch(recipe_path: &Path, _config: &CliConfig) -> anyhow::Result<()> {
-    let dir = recipe_path.join("source");
-    if dir.exists() {
-        fs::remove_dir_all(dir).context(format!("failed to delete {}", recipe_path.display()))?;
-    }
-    Ok(())
-}
-
-fn handle_clean(recipe_path: &Path, _config: &CliConfig) -> anyhow::Result<()> {
-    let dir = recipe_path.join("target");
-    if dir.exists() {
-        fs::remove_dir_all(dir).context(format!("failed to delete {}", recipe_path.display()))?;
-    }
-    Ok(())
-}
-
-fn handle_push(recipe_path: &Path, config: &CliConfig) -> anyhow::Result<()> {
+fn handle_push(recipe: &CookRecipe, config: &CliConfig) -> anyhow::Result<()> {
     let public_path = "build/id_ed25519.pub.toml";
+    let archive_path = config.repo_dir.join(recipe.name.as_str());
     pkgar::extract(
         public_path,
-        config.sysroot_dir.as_path(),
+        archive_path.as_path(),
         config.sysroot_dir.to_str().unwrap(),
     )
     .context(format!(
         "failed to install '{}' in '{}'",
-        recipe_path.display(),
+        archive_path.display(),
         config.sysroot_dir.display(),
     ))
 }

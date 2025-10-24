@@ -1,4 +1,9 @@
-use std::{collections::BTreeSet, convert::TryInto, fs, path::PathBuf};
+use std::{
+    collections::BTreeSet,
+    convert::TryInto,
+    fs,
+    path::{Path, PathBuf},
+};
 
 use pkg::{PackageName, package::PackageError, recipes};
 use regex::Regex;
@@ -146,7 +151,7 @@ pub struct PackageRecipe {
 }
 
 /// Everything required to build a Redox package
-#[derive(Debug, Deserialize, PartialEq, Serialize)]
+#[derive(Debug, Default, Deserialize, PartialEq, Serialize)]
 pub struct Recipe {
     /// Specifies how to download the source for this recipe
     pub source: Option<SourceRecipe>,
@@ -158,6 +163,18 @@ pub struct Recipe {
     pub package: PackageRecipe,
 }
 
+impl Recipe {
+    pub fn new(file: &PathBuf) -> Result<Recipe, PackageError> {
+        if !file.is_file() {
+            return Err(PackageError::FileMissing(file.clone()));
+        }
+        let toml = fs::read_to_string(&file)
+            .map_err(|err| PackageError::Parse(DeError::custom(err), Some(file.clone())))?;
+        let recipe: Recipe = toml::from_str(&toml)
+            .map_err(|err| PackageError::Parse(DeError::custom(err), Some(file.clone())))?;
+        Ok(recipe)
+    }
+}
 #[derive(Debug, PartialEq)]
 pub struct CookRecipe {
     pub name: PackageName,
@@ -168,30 +185,36 @@ pub struct CookRecipe {
 }
 
 impl CookRecipe {
-    pub fn new(
-        name: impl TryInto<PackageName, Error = PackageError>,
-    ) -> Result<Self, PackageError> {
-        let name: PackageName = name.try_into()?;
-        let dir = recipes::find(name.as_str())
-            .ok_or_else(|| PackageError::PackageNotFound(name.clone()))?;
-        let file = dir.join("recipe.toml");
-        if !file.is_file() {
-            return Err(PackageError::FileMissing(file));
-        }
-
-        let toml = fs::read_to_string(&file)
-            .map_err(|err| PackageError::Parse(DeError::custom(err), Some(file.clone())))?;
-
-        let recipe: Recipe = toml::from_str(&toml)
-            .map_err(|err| PackageError::Parse(DeError::custom(err), Some(file)))?;
-
-        let dir = dir.to_path_buf();
+    pub fn new(name: PackageName, dir: PathBuf, recipe: Recipe) -> Result<Self, PackageError> {
         Ok(Self {
             name,
             dir,
             recipe,
             is_deps: false,
         })
+    }
+
+    pub fn from_name(
+        name: impl TryInto<PackageName, Error = PackageError>,
+    ) -> Result<Self, PackageError> {
+        let name: PackageName = name.try_into()?;
+        let dir = recipes::find(name.as_str())
+            .ok_or_else(|| PackageError::PackageNotFound(name.clone()))?;
+        let file = dir.join("recipe.toml");
+        let recipe = Recipe::new(&file)?;
+        Self::new(name, dir.to_path_buf(), recipe)
+    }
+
+    pub fn from_path(dir: &Path, read_recipe: bool) -> Result<Self, PackageError> {
+        let file = dir.join("recipe.toml");
+        let name: PackageName = file.file_name().unwrap().try_into()?;
+        let recipe = if read_recipe {
+            Recipe::new(&file)?
+        } else {
+            // clean/unfetch don't need to read recipe
+            Recipe::default()
+        };
+        Self::new(name, dir.to_path_buf(), recipe)
     }
 
     pub fn new_recursive(
@@ -204,7 +227,7 @@ impl CookRecipe {
 
         let mut recipes = Vec::new();
         for name in names {
-            let recipe = Self::new(name.as_str())?;
+            let recipe = Self::from_name(name.as_str())?;
 
             let dependencies =
                 Self::new_recursive(&recipe.recipe.build.dependencies, recursion - 1).map_err(
@@ -253,7 +276,7 @@ impl CookRecipe {
 
         let mut recipes: Vec<PackageName> = Vec::new();
         for name in names {
-            let recipe = Self::new(name.as_str())?;
+            let recipe = Self::from_name(name.as_str())?;
 
             let dependencies = Self::get_package_deps_recursive(
                 &recipe.recipe.package.dependencies,

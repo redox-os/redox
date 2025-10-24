@@ -26,6 +26,9 @@ fn main() -> Result<(), Box<dyn std::error::Error>> {
         .next()
         .expect("Usage: repo_builder <REPO_DIR> <recipe1> <recipe2> ...");
     let repo_path = Path::new(&repo_dir);
+    if !repo_path.is_dir() {
+        fs::create_dir_all(repo_path)?;
+    }
 
     // Runtime dependencies include both `[package.dependencies]` and dynamically
     // linked packages discovered by auto_deps.
