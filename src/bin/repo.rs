@@ -363,6 +363,7 @@ struct TuiApp {
     active_cook: Option<PackageName>,
     logs: HashMap<PackageName, Vec<String>>,
     log_scroll: u16,
+    log_view_cook: bool,
     auto_scroll: bool,
     fetch_scroll: u16,
     cook_scroll: u16,
@@ -390,6 +391,7 @@ impl TuiApp {
             logs: HashMap::new(),
             log_scroll: 0,
             auto_scroll: true,
+            log_view_cook: false,
             fetch_scroll: 0,
             cook_scroll: 0,
             fetch_complete: false,
@@ -442,6 +444,7 @@ impl TuiApp {
             }
             StatusUpdate::FetchThreadFinished => {
                 self.fetch_complete = true;
+                self.log_view_cook = true;
                 return;
             }
             StatusUpdate::CookThreadFinished => {
@@ -548,10 +551,10 @@ fn run_tui_cook(config: CliConfig, recipes: Vec<CookRecipe>) -> anyhow::Result<(
                     .send(StatusUpdate::FailFetch(name, e.to_string()))
                     .unwrap(),
             }
-            status_tx
-                .send(StatusUpdate::FetchThreadFinished)
-                .unwrap_or_default();
         }
+        status_tx
+            .send(StatusUpdate::FetchThreadFinished)
+            .unwrap_or_default();
     });
 
     print!("{}", ToAlternateScreen);
@@ -561,10 +564,10 @@ fn run_tui_cook(config: CliConfig, recipes: Vec<CookRecipe>) -> anyhow::Result<(
     let mut app = TuiApp::new(recipes);
     // let total_recipes = app.recipes.len();
     let running = Arc::new(AtomicBool::new(true));
-    let r = running.clone();
 
     ctrlc::set_handler(move || {
-        r.store(false, Ordering::SeqCst);
+        print!("{}", ToMainScreen);
+        process::exit(1);
     })
     .context("Error setting Ctrl-C handler")?;
 
@@ -595,8 +598,11 @@ fn run_tui_cook(config: CliConfig, recipes: Vec<CookRecipe>) -> anyhow::Result<(
                     ListItem::new(r.name.as_str()).style(style)
                 })
                 .collect();
-            let fetch_list = List::new(fetch_items)
-                .block(Block::default().title("Fetch Queue").borders(Borders::ALL));
+            let fetch_list = List::new(fetch_items).block(
+                Block::default()
+                    .title("Fetch Queue [1]")
+                    .borders(Borders::ALL),
+            );
             f.render_widget(fetch_list, chunks[0]);
 
             // Right Pane
@@ -620,26 +626,37 @@ fn run_tui_cook(config: CliConfig, recipes: Vec<CookRecipe>) -> anyhow::Result<(
                     ListItem::new(r.name.as_str()).style(style)
                 })
                 .collect();
-            let cook_list = List::new(cook_items)
-                .block(Block::default().title("Cook Queue").borders(Borders::ALL));
-            f.render_widget(cook_list, chunks[1]);
+            let cook_list = List::new(cook_items).block(
+                Block::default()
+                    .title("Cook Queue [2]")
+                    .borders(Borders::ALL),
+            );
+            f.render_widget(cook_list, chunks[if app.fetch_complete { 0 } else { 1 }]);
 
-            let log_title = if let Some(active_name) = &app.active_cook {
+            let active_name = if app.log_view_cook {
+                &app.active_cook
+            } else {
+                &app.active_fetch
+            };
+
+            let log_title = if let Some(active_name) = active_name {
                 format!("Build Log: {}", active_name.as_str())
             } else {
                 "Build Log".to_string()
             };
 
-            let log_text: Vec<String> = if let Some(active_name) = &app.active_cook {
+            let log_text: Vec<String> = if let Some(active_name) = active_name {
                 app.logs
                     .get(active_name)
                     .cloned()
                     .unwrap_or_else(|| vec!["Waiting for logs...".to_string()])
             } else {
-                vec!["No active cook job.".to_string()]
+                vec!["No active job.".to_string()]
             };
 
-            let log_pane_height = chunks[2].height.saturating_sub(2);
+            let log_pane_height = chunks[if app.fetch_complete { 1 } else { 2 }]
+                .height
+                .saturating_sub(2);
             let total_log_lines = log_text.len() as u16;
 
             if app.auto_scroll {
@@ -663,11 +680,23 @@ fn run_tui_cook(config: CliConfig, recipes: Vec<CookRecipe>) -> anyhow::Result<(
                 .wrap(Wrap { trim: false })
                 .scroll((app.log_scroll, 0));
 
-            f.render_widget(log_paragraph, chunks[2]);
+            f.render_widget(
+                log_paragraph,
+                chunks[if app.fetch_complete { 1 } else { 2 }],
+            );
 
             while let Ok(event) = input_rx.try_recv() {
                 match event {
                     Event::Key(key) => match key {
+                        Key::Char('\t') => {
+                            app.log_view_cook = !app.log_view_cook;
+                        }
+                        Key::Char('1') => {
+                            app.log_view_cook = false;
+                        }
+                        Key::Char('2') => {
+                            app.log_view_cook = true;
+                        }
                         Key::Up => {
                             app.auto_scroll = false;
                             app.log_scroll = app.log_scroll.saturating_sub(1);
