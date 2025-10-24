@@ -1,16 +1,58 @@
-use std::{collections::HashMap, fs, sync::OnceLock};
+use std::{collections::HashMap, env, fs, str::FromStr, sync::OnceLock};
 
 use serde::{Deserialize, Serialize};
 
+#[derive(Debug, Default, Clone, Deserialize, PartialEq, Serialize)]
+pub struct CookConfigOpt {
+    /// whether to run offline
+    pub offline: Option<bool>,
+    /// whether to set jobs number instead of from nproc
+    pub jobs: Option<usize>,
+    /// whether to use TUI to allow parallel build
+    /// default value is yes if "CI" env unset and STDIN is open.
+    pub tui: Option<bool>,
+    /// whether to ignore build errors
+    pub nonstop: Option<bool>,
+    /// whether to not capture build output,
+    /// default is true if "tui" is false.
+    /// build failure still be printed anyway
+    pub verbose: Option<bool>,
+}
+
+#[derive(Debug, Default, Clone, Deserialize, PartialEq, Serialize)]
+pub struct CookConfig {
+    pub offline: bool,
+    pub jobs: usize,
+    pub tui: bool,
+    pub nonstop: bool,
+    pub verbose: bool,
+}
+
+impl From<CookConfigOpt> for CookConfig {
+    fn from(value: CookConfigOpt) -> Self {
+        CookConfig {
+            offline: value.offline.unwrap(),
+            jobs: value.jobs.unwrap(),
+            tui: value.tui.unwrap(),
+            nonstop: value.nonstop.unwrap(),
+            verbose: value.verbose.unwrap(),
+        }
+    }
+}
+
 #[derive(Debug, Default, Deserialize, PartialEq, Serialize)]
 pub struct CookbookConfig {
+    #[serde(rename = "cook")]
+    cook_opt: CookConfigOpt,
+    #[serde(skip)]
+    pub cook: CookConfig,
     pub mirrors: HashMap<String, String>,
 }
 
 static CONFIG: OnceLock<CookbookConfig> = OnceLock::new();
 
 pub fn init_config() {
-    let config: CookbookConfig = if fs::exists("cookbook.toml").unwrap_or(false) {
+    let mut config: CookbookConfig = if fs::exists("cookbook.toml").unwrap_or(false) {
         let toml_content = fs::read_to_string("cookbook.toml")
             .map_err(|e| format!("Unable to read config: {:?}", e))
             .unwrap();
@@ -21,7 +63,45 @@ pub fn init_config() {
         CookbookConfig::default()
     };
 
+    if config.cook_opt.tui.is_none() {
+        config.cook_opt.tui = Some(!env::var("CI").is_ok_and(|s| !s.is_empty()));
+    }
+    if config.cook_opt.jobs.is_none() {
+        config.cook_opt.jobs = Some(extract_env(
+            "COOKBOOK_MAKE_JOBS",
+            std::thread::available_parallelism()
+                .map(|f| usize::from(f))
+                .unwrap_or(1),
+        ));
+    }
+    if config.cook_opt.offline.is_none() {
+        config.cook_opt.offline = Some(extract_env("COOKBOOK_OFFLINE", false));
+    }
+    if config.cook_opt.verbose.is_none() {
+        config.cook_opt.verbose = Some(extract_env(
+            "COOKBOOK_VERBOSE",
+            !config.cook_opt.tui.unwrap(),
+        ));
+    }
+    if config.cook_opt.nonstop.is_none() {
+        config.cook_opt.nonstop = Some(extract_env("COOKBOOK_NONSTOP", false));
+    }
+
+    config.cook = CookConfig::from(config.cook_opt.clone());
+
     CONFIG.set(config).expect("config is initialized twice");
+}
+
+fn extract_env<T: FromStr>(key: &str, default: T) -> T {
+    if let Ok(e) = env::var(&key) {
+        str::parse(&e).unwrap_or(default)
+    } else {
+        default
+    }
+}
+
+pub fn get_config() -> &'static CookbookConfig {
+    return CONFIG.get().expect("Configuration is not initialized");
 }
 
 pub fn translate_mirror(original_url: &str) -> String {

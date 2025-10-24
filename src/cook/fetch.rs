@@ -2,6 +2,7 @@ use crate::config::translate_mirror;
 use crate::cook::fs::*;
 use crate::cook::script::*;
 use crate::is_redox;
+use crate::recipe::BuildKind;
 use crate::recipe::Recipe;
 use crate::{blake3, recipe::SourceRecipe};
 use std::fs;
@@ -24,14 +25,18 @@ pub(crate) fn get_blake3(path: &PathBuf, show_progress: bool) -> Result<String, 
     })
 }
 
-pub fn fetch_offline(recipe_dir: &Path, source: &Option<SourceRecipe>) -> Result<PathBuf, String> {
+pub fn fetch_offline(recipe_dir: &Path, recipe: &Recipe) -> Result<PathBuf, String> {
     let source_dir = recipe_dir.join("source");
-    match source {
+    if recipe.build.kind == BuildKind::None || recipe.build.kind == BuildKind::Remote {
+        // the build function doesn't need source dir exists
+        return Ok(source_dir);
+    }
+    match &recipe.source {
         Some(SourceRecipe::Path { path: _ }) | None => {
-            return fetch(recipe_dir, source);
+            return fetch(recipe_dir, recipe);
         }
         Some(SourceRecipe::SameAs { same_as: _ }) => {
-            return fetch(recipe_dir, source);
+            return fetch(recipe_dir, recipe);
         }
         Some(SourceRecipe::Git {
             git: _,
@@ -79,17 +84,22 @@ pub fn fetch_offline(recipe_dir: &Path, source: &Option<SourceRecipe>) -> Result
     Ok(source_dir)
 }
 
-pub fn fetch(recipe_dir: &Path, source: &Option<SourceRecipe>) -> Result<PathBuf, String> {
+pub fn fetch(recipe_dir: &Path, recipe: &Recipe) -> Result<PathBuf, String> {
     let source_dir = recipe_dir.join("source");
-    match source {
+    if recipe.build.kind == BuildKind::None || recipe.build.kind == BuildKind::Remote {
+        // the build function doesn't need source dir exists
+        return Ok(source_dir);
+    }
+    match &recipe.source {
         Some(SourceRecipe::SameAs { same_as }) => {
-            let (canon_dir, recipe) = fetch_resolve_canon(recipe_dir, same_as)?;
+            let (canon_dir, recipe) = fetch_resolve_canon(recipe_dir, &same_as)?;
             // recursively fetch
-            fetch(&canon_dir, &recipe.source)?;
-            fetch_make_symlink(&source_dir, same_as)?;
+            fetch(&canon_dir, &recipe)?;
+            fetch_make_symlink(&source_dir, &same_as)?;
         }
         Some(SourceRecipe::Path { path }) => {
-            if !source_dir.is_dir() || modified_dir(Path::new(path))? > modified_dir(&source_dir)? {
+            if !source_dir.is_dir() || modified_dir(Path::new(&path))? > modified_dir(&source_dir)?
+            {
                 eprintln!("[DEBUG]: {} is newer than {}", path, source_dir.display());
                 copy_dir_all(path, &source_dir).map_err(|e| {
                     format!(
@@ -122,7 +132,7 @@ pub fn fetch(recipe_dir: &Path, source: &Option<SourceRecipe>) -> Result<PathBuf
                 command
                     .arg("clone")
                     .arg("--recursive")
-                    .arg(translate_mirror(git));
+                    .arg(translate_mirror(&git));
                 if let Some(branch) = branch {
                     command.arg("--branch").arg(branch);
                 }
@@ -268,7 +278,6 @@ pub fn fetch(recipe_dir: &Path, source: &Option<SourceRecipe>) -> Result<PathBuf
         // Local Sources
         None => {
             if !source_dir.is_dir() {
-                //TODO: Don't print if build template is none or remote
                 eprintln!(
                     "WARNING: Recipe without source section expected source dir at '{}'",
                     source_dir.display(),

@@ -1,8 +1,4 @@
-use std::{
-    collections::BTreeSet,
-    env,
-    path::{Path, PathBuf},
-};
+use std::{collections::BTreeSet, env, path::Path};
 
 use pkg::{Package, PackageName};
 
@@ -17,7 +13,13 @@ pub fn package(
     name: &PackageName,
     recipe: &Recipe,
     auto_deps: &BTreeSet<PackageName>,
-) -> Result<PathBuf, String> {
+) -> Result<(), String> {
+    if recipe.build.kind == BuildKind::None {
+        // metapackages don't have stage dir
+        package_toml(target_dir, name, recipe, auto_deps)?;
+        return Ok(());
+    }
+
     let secret_path = "build/id_ed25519.toml";
     let public_path = "build/id_ed25519.pub.toml";
     if !Path::new(secret_path).is_file() || !Path::new(public_path).is_file() {
@@ -58,7 +60,7 @@ pub fn package(
         package_toml(target_dir, name, recipe, auto_deps)?;
     }
 
-    Ok(package_file)
+    Ok(())
 }
 
 pub fn package_toml(
@@ -80,7 +82,8 @@ pub fn package_toml(
         depends,
     };
 
-    serialize_and_write(&target_dir.join("stage.toml"), &package)?;
+    let toml_path = &target_dir.join("stage.toml");
+    serialize_and_write(&toml_path, &package)?;
 
     return Ok(());
 }

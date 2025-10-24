@@ -151,6 +151,10 @@ pub fn build(
 ) -> Result<(PathBuf, BTreeSet<PackageName>), String> {
     let sysroot_dir = target_dir.join("sysroot");
     let stage_dir = target_dir.join("stage");
+    if recipe.build.kind == BuildKind::None {
+        // metapackages don't need to do anything here
+        return Ok((stage_dir, BTreeSet::new()));
+    }
 
     let mut dep_pkgars = BTreeSet::new();
     for dependency in recipe.build.dependencies.iter() {
