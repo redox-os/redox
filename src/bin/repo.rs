@@ -504,7 +504,7 @@ impl TuiApp {
             .recipes
             .iter()
             .filter(|(_, s)| *s == RecipeStatus::Fetched)
-            .map(|(r, _)| (r.clone()))
+            .map(|(r, _)| r.clone())
             .collect();
         self.done = self
             .recipes
