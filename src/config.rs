@@ -14,8 +14,7 @@ pub struct CookConfigOpt {
     pub tui: Option<bool>,
     /// whether to ignore build errors
     pub nonstop: Option<bool>,
-    /// whether to not capture build output,
-    /// default is true if "tui" is false.
+    /// whether to print success recipes info and warnings
     /// build failure still be printed anyway
     pub verbose: Option<bool>,
 }
@@ -80,10 +79,7 @@ pub fn init_config() {
         config.cook_opt.offline = Some(extract_env("COOKBOOK_OFFLINE", false));
     }
     if config.cook_opt.verbose.is_none() {
-        config.cook_opt.verbose = Some(extract_env(
-            "COOKBOOK_VERBOSE",
-            !config.cook_opt.tui.unwrap(),
-        ));
+        config.cook_opt.verbose = Some(extract_env("COOKBOOK_VERBOSE", true));
     }
     if config.cook_opt.nonstop.is_none() {
         config.cook_opt.nonstop = Some(extract_env("COOKBOOK_NONSTOP", false));

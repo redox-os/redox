@@ -5,7 +5,7 @@ use std::process::Command;
 use std::str::FromStr;
 use std::sync::atomic::{AtomicBool, AtomicU32, Ordering};
 use std::sync::{Arc, mpsc};
-use std::time::Duration;
+use std::time::{Duration, Instant};
 use std::{cmp, env, fs};
 use std::{process, thread};
 
@@ -52,6 +52,7 @@ const REPO_HELP_STR: &str = r#"
             For Redox, defaults to "/", else default to $PWD/sysroot
         --with-package-deps        include package deps
         --all                      apply to all recipes in <cookbook_dir>
+        --category=<category>      apply to all recipes in <cookbook_dir>/<category>
 
     cook env and their defaults:
         CI=                        set to any value to disable TUI
@@ -66,6 +67,7 @@ struct CliConfig {
     cookbook_dir: PathBuf,
     repo_dir: PathBuf,
     sysroot_dir: PathBuf,
+    category: Option<PathBuf>,
     with_package_deps: bool,
     all: bool,
     cook: CookConfig,
@@ -126,6 +128,7 @@ impl CliConfig {
             //FIXME: This config is unused as redox-pkg harcoded this to $PWD/recipes
             cookbook_dir: current_dir.join("recipes"),
             repo_dir: current_dir.join("repo"),
+            category: None,
             sysroot_dir: if cfg!(target_os = "redox") {
                 PathBuf::from("/")
             } else {
@@ -180,21 +183,24 @@ fn main_inner() -> anyhow::Result<()> {
         return Ok(());
     }
 
+    let verbose = config.cook.verbose;
     for recipe in &recipe_names {
         match repo_inner(&config, &command, recipe) {
             Ok(_) => {
-                eprintln!(
-                    "{}{}{} {} - successful{}{}",
-                    style::Bold,
-                    color::Fg(color::AnsiValue(46)),
-                    command.to_string(),
-                    recipe.name.as_str(),
-                    color::Fg(color::Reset),
-                    style::Reset,
-                );
+                if verbose {
+                    eprintln!(
+                        "{}{}{} {} - successful{}{}",
+                        style::Bold,
+                        color::Fg(color::AnsiValue(46)),
+                        command.to_string(),
+                        recipe.name.as_str(),
+                        color::Fg(color::Reset),
+                        style::Reset,
+                    );
+                }
             }
             Err(e) => {
-                if config.cook.nonstop {
+                if config.cook.nonstop && verbose {
                     eprintln!("{:?}", e);
                 }
                 eprintln!(
@@ -213,11 +219,13 @@ fn main_inner() -> anyhow::Result<()> {
         }
     }
 
-    println!(
-        "\nCommand '{}' completed for {} recipes.",
-        command.to_string(),
-        recipe_names.len()
-    );
+    if verbose {
+        println!(
+            "\nCommand '{}' completed for {} recipes.",
+            command.to_string(),
+            recipe_names.len()
+        );
+    }
     Ok(())
 }
 
@@ -253,6 +261,7 @@ fn parse_args(args: Vec<String>) -> anyhow::Result<(CliConfig, CliCommand, Vec<C
                     "--cookbook" => config.cookbook_dir = PathBuf::from(value),
                     "--repo" => config.repo_dir = PathBuf::from(value),
                     "--sysroot" => config.sysroot_dir = PathBuf::from(value),
+                    "--category" => config.category = Some(PathBuf::from(value)),
                     _ => {
                         eprintln!("Error: Unknown flag with value: {}", arg);
                         process::exit(1);
@@ -284,25 +293,38 @@ fn parse_args(args: Vec<String>) -> anyhow::Result<(CliConfig, CliCommand, Vec<C
         }
     }
 
+    if let Some(c) = config.category {
+        // need to prefix by cookbook dir
+        config.category = Some(PathBuf::from("recipes").join(c));
+    }
+
     let command = command.ok_or(anyhow!("Error: No command specified."))?;
     let command: CliCommand = str::parse(&command)?;
-    let recipes = if config.all {
+    let recipes = if config.all || config.category.is_some() {
         if !recipe_names.is_empty() {
-            bail!("Cannot specify recipe names when using the --all flag.");
+            bail!("Do not specify recipe names when using the --all or --category flag.");
         }
-        if command != CliCommand::Clean && command != CliCommand::Unfetch {
-            // because read_recipe is false below
+        if config.all && config.category.is_some() {
+            bail!("Do not specify both --all and --category flag.");
+        }
+        if config.all && command != CliCommand::Clean && command != CliCommand::Unfetch {
+            // because read_recipe is false by logic below
             // some recipes on wip folders are invalid anyway
             bail!(
                 "Refusing to run an unrealistic command to {} all recipes",
                 command.to_string()
             );
         }
-
-        pkg::recipes::list("")
-            .iter()
-            .map(|f| CookRecipe::from_path(f, false))
-            .collect::<Result<Vec<CookRecipe>, PackageError>>()?
+        match &config.category {
+            None => pkg::recipes::list(""),
+            Some(prefix) => pkg::recipes::list("")
+                .into_iter()
+                .filter(|p| p.starts_with(prefix))
+                .collect(),
+        }
+        .iter()
+        .map(|f| CookRecipe::from_path(f, !config.all))
+        .collect::<Result<Vec<CookRecipe>, PackageError>>()?
     } else {
         if recipe_names.is_empty() {
             bail!("Error: No recipe names provided and --all flag was not used.");
@@ -592,6 +614,7 @@ fn run_tui_cook(
 
     let running = Arc::new(AtomicBool::new(true));
     let prompting = Arc::new(AtomicU32::new(0));
+    const TICK_RATE: Duration = Duration::from_millis(100);
 
     // ---- Cooker Thread ----
     let cooker_config = config.clone();
@@ -747,13 +770,20 @@ fn run_tui_cook(
 
     let mut app = TuiApp::new(recipes);
 
+    let spinner = ['-', '\\', '|', '/'];
+    let mut spinner_i = 0;
+
     while running.load(Ordering::SeqCst) {
+        let frame_start = Instant::now();
         terminal.draw(|f| {
+            spinner_i = (spinner_i + 1) % spinner.len();
+            let spin = spinner[spinner_i];
+
             let mut constraints = Vec::new();
             if !app.fetch_complete {
-                constraints.push(Constraint::Length(20));
+                constraints.push(Constraint::Length(22));
             }
-            constraints.push(Constraint::Length(20));
+            constraints.push(Constraint::Length(22));
             constraints.push(Constraint::Min(20));
             let chunks = Layout::default()
                 .direction(Direction::Horizontal)
@@ -771,7 +801,13 @@ fn run_tui_cook(
                     } else {
                         Style::default()
                     };
-                    ListItem::new(r.name.as_str()).style(style)
+                    let icon = match s {
+                        RecipeStatus::Pending => ' ',
+                        RecipeStatus::Fetching => spin,
+                        _ => '?',
+                    };
+
+                    ListItem::new(format!("{icon} {}", r.name)).style(style)
                 })
                 .collect();
             let fetch_list = List::new(fetch_items).block(
@@ -799,7 +835,14 @@ fn run_tui_cook(
                         RecipeStatus::Failed(_) => Style::default().fg(Color::Red),
                         _ => Style::default(),
                     };
-                    ListItem::new(r.name.as_str()).style(style)
+                    let icon = match s {
+                        RecipeStatus::Fetched => ' ',
+                        RecipeStatus::Cooking => spin,
+                        RecipeStatus::Done => ' ',
+                        RecipeStatus::Failed(_) => 'X',
+                        _ => '?',
+                    };
+                    ListItem::new(format!("{icon} {}", r.name)).style(style)
                 })
                 .collect();
             let cook_list = List::new(cook_items).block(
@@ -813,12 +856,12 @@ fn run_tui_cook(
 
             let log_title = if let Some(active_name) = active_name {
                 format!(
-                    "{} Log: {}",
+                    " {} Log: {} ",
                     app.log_view_job.to_string(),
                     active_name.as_str()
                 )
             } else {
-                format!("{} Log", app.log_view_job.to_string())
+                format!(" {} Log ", app.log_view_job.to_string())
             };
 
             let mut enable_auto_scroll = false;
@@ -861,10 +904,14 @@ fn run_tui_cook(
             };
 
             let instruct = format!(
-                "Keys: [c] Stop [PageUp/Down] Scroll {}",
+                " Keys: [c] Stop [PageUp/Down] Scroll{}{} ",
+                match app.auto_scroll {
+                    true => "",
+                    false => " [End] Follow log trails",
+                },
                 match (&app.log_view_job, app.fetch_complete) {
-                    (JobType::Fetch, _) => "[2] View Cook Log",
-                    (JobType::Cook, false) => "[1] View Fetch Log",
+                    (JobType::Fetch, _) => " [2] View Cook Log",
+                    (JobType::Cook, false) => " [1] View Fetch Log",
                     (JobType::Cook, true) => "",
                 }
             );
@@ -914,6 +961,10 @@ fn run_tui_cook(
 
         if app.cook_complete {
             running.swap(false, Ordering::SeqCst);
+        }
+
+        if let Some(sleep_duration) = TICK_RATE.checked_sub(frame_start.elapsed()) {
+            thread::sleep(sleep_duration);
         }
     }
 
@@ -1054,7 +1105,11 @@ fn handle_prompt_input<'a>(
 fn draw_prompt(f: &mut ratatui::Frame, prompt: &FailurePrompt) {
     let title = format!(" FAILURE in {} ", prompt.recipe.name);
     let mut error_text = prompt.error.clone();
-    if error_text.len() > 100 {
+    if error_text.len() > 200 {
+        error_text = error_text[0..100].to_string()
+            + ".."
+            + &error_text[(error_text.len() - 100)..(error_text.len() - 1)];
+    } else if error_text.len() > 100 {
         error_text = error_text[0..100].to_string() + "..";
     }
 
@@ -1079,11 +1134,11 @@ fn draw_prompt(f: &mut ratatui::Frame, prompt: &FailurePrompt) {
         Line::from(error_text).style(Style::default().fg(Color::Yellow)),
         Line::from(""),
         Line::from(vec![
-            Span::styled(" [Retry] ", retry_style),
-            Span::raw("   "),
             Span::styled(" [Skip] ", skip_style),
             Span::raw("   "),
             Span::styled(" [Exit] ", exit_style),
+            Span::raw("   "),
+            Span::styled(" [Retry] ", retry_style),
         ]),
     ];
 
