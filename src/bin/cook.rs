@@ -44,7 +44,7 @@ fn cook(
     )
     .map_err(|err| format!("failed to build: {}", err))?;
 
-    package(&stage_dir, &target_dir, name, recipe, &auto_deps)
+    package(&stage_dir, &target_dir, name, recipe, &auto_deps, &None)
         .map_err(|err| format!("failed to package: {}", err))?;
 
     Ok(())

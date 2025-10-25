@@ -7,12 +7,28 @@ use crate::{
     recipe::{BuildKind, Recipe},
 };
 
+macro_rules! log_warn {
+    ($logger:expr, $($arg:tt)+) => {
+        use std::io::Write;
+
+        if $logger.is_some() {
+           let _ = $logger.as_ref().unwrap().1.try_clone().unwrap().write(
+                        format!($($arg)+)
+                            .as_bytes(),
+                    );
+        } else {
+            eprintln!($($arg)+);
+        }
+    };
+}
+
 pub fn package(
     stage_dir: &Path,
     target_dir: &Path,
     name: &PackageName,
     recipe: &Recipe,
     auto_deps: &BTreeSet<PackageName>,
+    logger: &Stdout,
 ) -> Result<(), String> {
     if recipe.build.kind == BuildKind::None {
         // metapackages don't have stage dir
@@ -42,7 +58,8 @@ pub fn package(
     if package_file.is_file() {
         let stage_modified = modified_dir(stage_dir)?;
         if modified(&package_file)? < stage_modified {
-            eprintln!(
+            log_warn!(
+                logger,
                 "DEBUG: '{}' newer than '{}'",
                 stage_dir.display(),
                 package_file.display()
