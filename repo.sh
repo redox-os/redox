@@ -16,6 +16,9 @@ do
         COOK_OPT+=" --with-package-deps"
     elif [ "$arg" == "--nonstop" ]
     then
+        COOK_OPT+=" --nonstop"
+    elif [ "$arg" == "--offline" ]
+    then
         export COOKBOOK_OFFLINE=true
     else
         recipes+=" $arg"
@@ -24,4 +27,4 @@ done
 
 repo cook $COOK_OPT $recipes
 
-repo_builder "$repo" $recipes
+repo_builder "$ROOT/repo/$TARGET" $recipes
