@@ -6,7 +6,7 @@ use std::str::FromStr;
 use std::sync::atomic::{AtomicBool, AtomicU32, Ordering};
 use std::sync::{Arc, mpsc};
 use std::time::Duration;
-use std::{env, fs};
+use std::{cmp, env, fs};
 use std::{process, thread};
 
 use anyhow::{Context, anyhow, bail};
@@ -145,15 +145,23 @@ fn main_inner() -> anyhow::Result<()> {
     let (config, command, recipe_names) = parse_args(args)?;
 
     if command == CliCommand::Cook && config.cook.tui {
-        if let Some(e) = run_tui_cook(config, recipe_names)? {
+        if let Some((name, e)) = run_tui_cook(config, recipe_names)? {
             let _ = stderr().write(e.as_bytes());
             let _ = stderr().write(b"\n\n");
+            eprintln!(
+                "{}{}cook - failed at {}{}{}",
+                style::Bold,
+                color::Fg(color::AnsiValue(196)),
+                name.as_str(),
+                color::Fg(color::Reset),
+                style::Reset,
+            );
             return Err(anyhow!("Execution has failed"));
         } else {
             eprintln!(
                 "{}{}cook - successful{}{}",
                 style::Bold,
-                color::Fg(color::AnsiValue(215)),
+                color::Fg(color::AnsiValue(46)),
                 color::Fg(color::Reset),
                 style::Reset,
             );
@@ -274,7 +282,7 @@ fn handle_fetch(
         true => fetch_offline(recipe_dir, &recipe.recipe, logger),
         false => fetch(recipe_dir, &recipe.recipe, logger),
     }
-    .map_err(|e| anyhow!(e))?;
+    .map_err(|e| anyhow!("failed to fetch: {:?}", e))?;
 
     Ok(source_dir)
 }
@@ -298,7 +306,7 @@ fn handle_cook(
         !is_deps,
         logger,
     )
-    .map_err(|err| anyhow!("failed to build: {}", err))?;
+    .map_err(|err| anyhow!("failed to build: {:?}", err))?;
 
     package(
         &stage_dir,
@@ -307,7 +315,7 @@ fn handle_cook(
         &recipe.recipe,
         &auto_deps,
     )
-    .map_err(|err| anyhow!("failed to package: {}", err))?;
+    .map_err(|err| anyhow!("failed to package: {:?}", err))?;
 
     Ok(())
 }
@@ -385,18 +393,18 @@ struct TuiApp {
     active_fetch: Option<PackageName>,
     active_cook: Option<PackageName>,
     logs: HashMap<PackageName, Vec<String>>,
-    log_scroll: u16,
+    log_scroll: usize,
     log_view_job: JobType,
     auto_scroll: bool,
-    fetch_scroll: u16,
-    cook_scroll: u16,
+    fetch_scroll: usize,
+    cook_scroll: usize,
     fetch_complete: bool,
     cook_complete: bool,
     fetch_panel_rect: Option<Rect>,
     cook_panel_rect: Option<Rect>,
     log_panel_rect: Option<Rect>,
     prompt: Option<FailurePrompt>,
-    dump_logs_on_exit: Option<String>,
+    dump_logs_on_exit: Option<(PackageName, String)>,
 }
 
 impl TuiApp {
@@ -506,7 +514,10 @@ impl TuiApp {
     }
 }
 
-fn run_tui_cook(config: CliConfig, recipes: Vec<CookRecipe>) -> anyhow::Result<Option<String>> {
+fn run_tui_cook(
+    config: CliConfig,
+    recipes: Vec<CookRecipe>,
+) -> anyhow::Result<Option<(PackageName, String)>> {
     let (work_tx, work_rx) = mpsc::channel::<(CookRecipe, PathBuf)>();
     let (status_tx, status_rx) = mpsc::channel::<StatusUpdate>();
 
@@ -729,11 +740,7 @@ fn run_tui_cook(config: CliConfig, recipes: Vec<CookRecipe>) -> anyhow::Result<O
             );
             f.render_widget(cook_list, chunks[if app.fetch_complete { 0 } else { 1 }]);
 
-            let active_name = if app.log_view_job == JobType::Cook {
-                &app.active_cook
-            } else {
-                &app.active_fetch
-            };
+            let (active_name, log_text) = get_active_log(&app);
 
             let log_title = if let Some(active_name) = active_name {
                 format!("Build Log: {}", active_name.as_str())
@@ -741,62 +748,75 @@ fn run_tui_cook(config: CliConfig, recipes: Vec<CookRecipe>) -> anyhow::Result<O
                 "Build Log".to_string()
             };
 
-            let log_text: Vec<String> = if let Some(active_name) = active_name {
-                app.logs
-                    .get(active_name)
-                    .cloned()
-                    .unwrap_or_else(|| vec!["Waiting for logs...".to_string()])
-            } else {
-                vec!["No active job.".to_string()]
-            };
+            let mut enable_auto_scroll = false;
 
-            let log_pane_height = chunks[if app.fetch_complete { 1 } else { 2 }]
-                .height
-                .saturating_sub(2);
-            let total_log_lines = log_text.len() as u16;
+            let log_lines: Vec<Line> = if let Some(log_text) = log_text
+                && log_text.len() > 0
+            {
+                let log_pane_height = chunks[if app.fetch_complete { 1 } else { 2 }]
+                    .height
+                    .saturating_sub(2) as usize;
+                let total_log_lines = log_text.len() as usize;
 
-            if app.auto_scroll {
-                if total_log_lines > log_pane_height {
-                    app.log_scroll = total_log_lines - log_pane_height;
-                } else {
-                    app.log_scroll = 0;
-                }
-            } else {
-                if total_log_lines > log_pane_height {
-                    if app.log_scroll >= total_log_lines - log_pane_height {
-                        app.log_scroll = total_log_lines - log_pane_height;
-                        app.auto_scroll = true;
+                let start = if app.auto_scroll {
+                    if total_log_lines > log_pane_height {
+                        total_log_lines - log_pane_height
+                    } else {
+                        0
                     }
                 } else {
-                    app.log_scroll = 0;
-                }
-            }
+                    if total_log_lines > log_pane_height {
+                        if app.log_scroll >= total_log_lines - log_pane_height {
+                            enable_auto_scroll = true;
+                            total_log_lines - log_pane_height
+                        } else {
+                            app.log_scroll
+                        }
+                    } else {
+                        0
+                    }
+                };
 
-            let log_paragraph = Paragraph::new(log_text.join("\n"))
+                let end = cmp::min(log_pane_height + start, total_log_lines - 1);
+
+                log_text[start..end]
+                    .iter()
+                    .map(|s| Line::from(s.clone()))
+                    .collect()
+            } else {
+                vec![Line::from("No logs yet")]
+            };
+
+            let log_paragraph = Paragraph::new(log_lines)
                 .block(Block::default().title(log_title).borders(Borders::ALL))
-                .wrap(Wrap { trim: false })
-                .scroll((app.log_scroll, 0));
+                .wrap(Wrap { trim: false });
 
             f.render_widget(
                 log_paragraph,
                 chunks[if app.fetch_complete { 1 } else { 2 }],
             );
-
             if let Some(prompt) = &app.prompt {
                 draw_prompt(f, prompt);
             }
+            if enable_auto_scroll {
+                app.auto_scroll = true;
+            }
 
             while let Ok(event) = input_rx.try_recv() {
-                if app.prompt.is_some() {
-                    if let Some(res) = handle_prompt_input(event, &mut app, &running) {
-                        prompting.swap(res as u32, Ordering::SeqCst);
-                        if res == PromptOption::Exit {
-                            app.dump_logs_on_exit = Some(log_text.join("\n"))
+                if let Some((app, res)) = handle_prompt_input(&event, &mut app) {
+                    prompting.swap(res as u32, Ordering::SeqCst);
+                    if res == PromptOption::Exit {
+                        let (name, log) = get_active_log(&app);
+                        if let Some(name) = name
+                            && let Some(log) = log
+                        {
+                            app.dump_logs_on_exit = Some((name.to_owned(), log.join("\n")));
                         }
-                        app.prompt = None;
+                        running.store(false, Ordering::SeqCst);
                     }
+                    app.prompt = None;
                 } else {
-                    handle_main_event(&mut app, event);
+                    handle_main_event(&mut app, &event);
                 }
             }
         })?;
@@ -819,7 +839,22 @@ fn run_tui_cook(config: CliConfig, recipes: Vec<CookRecipe>) -> anyhow::Result<O
     Ok(app.dump_logs_on_exit)
 }
 
-fn handle_main_event(app: &mut TuiApp, event: Event) {
+fn get_active_log(app: &TuiApp) -> (Option<PackageName>, Option<&Vec<String>>) {
+    let active_name = if app.log_view_job == JobType::Cook {
+        app.active_cook.clone()
+    } else {
+        app.active_fetch.clone()
+    };
+
+    let log_text = if let Some(active_name) = &active_name {
+        app.logs.get(active_name)
+    } else {
+        None
+    };
+    (active_name, log_text)
+}
+
+fn handle_main_event(app: &mut TuiApp, event: &Event) {
     match event {
         Event::Key(key) => match key {
             Key::Char('1') => {
@@ -904,27 +939,22 @@ fn handle_main_event(app: &mut TuiApp, event: Event) {
     }
 }
 
-fn handle_prompt_input(
-    event: Event,
-    app: &mut TuiApp,
-    running: &Arc<AtomicBool>,
-) -> Option<PromptOption> {
+fn handle_prompt_input<'a>(
+    event: &Event,
+    app: &'a mut TuiApp,
+) -> Option<(&'a mut TuiApp, PromptOption)> {
     if let Some(prompt) = &mut app.prompt {
         match event {
             Event::Key(key) => match key {
                 Key::Char('q') | Key::Ctrl('c') | Key::Esc => {
                     // Treat as "Exit"
-                    running.store(false, Ordering::SeqCst);
-                    return Some(PromptOption::Exit);
+                    return Some((app, PromptOption::Exit));
                 }
                 Key::Left | Key::BackTab => prompt.prev(),
                 Key::Right | Key::Char('\t') => prompt.next(),
                 Key::Char('\n') => {
                     let prompt = app.prompt.take().unwrap();
-                    if prompt.selected == PromptOption::Exit {
-                        running.store(false, Ordering::SeqCst);
-                    }
-                    return Some(prompt.selected);
+                    return Some((app, prompt.selected));
                 }
                 _ => {}
             },
