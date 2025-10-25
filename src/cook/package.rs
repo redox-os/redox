@@ -36,6 +36,7 @@ pub fn package(
     }
 
     let package_file = target_dir.join("stage.pkgar");
+    let package_meta = target_dir.join("stage.toml");
     // Rebuild package if stage is newer
     //TODO: rebuild on recipe changes
     if package_file.is_file() {
@@ -47,6 +48,7 @@ pub fn package(
                 package_file.display()
             );
             remove_all(&package_file)?;
+            remove_all(&package_meta)?;
         }
     }
     if !package_file.is_file() {
@@ -56,7 +58,9 @@ pub fn package(
             stage_dir.to_str().unwrap(),
         )
         .map_err(|err| format!("failed to create pkgar archive: {:?}", err))?;
+    }
 
+    if !package_meta.is_file() {
         package_toml(target_dir, name, recipe, auto_deps)?;
     }
 
