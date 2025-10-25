@@ -314,6 +314,7 @@ fn handle_cook(
         &recipe.name,
         &recipe.recipe,
         &auto_deps,
+        logger,
     )
     .map_err(|err| anyhow!("failed to package: {:?}", err))?;
 
