@@ -42,6 +42,7 @@ const REPO_HELP_STR: &str = r#"
         unfetch   delete recipe sources
         clean     delete recipe artifacts
         push      extract package into sysroot
+        find      find path of recipe packages
         tree      show tree of recipe packages
     
     common flags:
@@ -49,13 +50,15 @@ const REPO_HELP_STR: &str = r#"
         --repo=<repo_dir>          the "repo" folder, default to $PWD/repo
         --sysroot=<sysroot_dir>    the "root" folder used for "push" command
             For Redox, defaults to "/", else default to $PWD/sysroot
-    
-    cook flags:
         --with-package-deps        include package deps
-        --offline                  prefer to not use network
-        --nonstop                  keep running even a recipe build failed
         --all                      apply to all recipes in <cookbook_dir>
-        -q, --quiet                surpress build logs unless error
+
+    cook env and their defaults:
+        CI=                        set to any value to disable TUI
+        COOKBOOK_OFFLINE=false     prevent internet access if possible
+        COOKBOOK_NONSTOP=false     pkeep running even a recipe build failed
+        COOKBOOK_VERBOSE=true      print success/error on each recipe
+        COOKBOOK_MAKE_JOBS=        override build jobs count from nproc
 "#;
 
 #[derive(Clone)]
@@ -76,6 +79,13 @@ enum CliCommand {
     Clean,
     Push,
     Tree,
+    Find,
+}
+
+impl CliCommand {
+    pub fn is_informational(&self) -> bool {
+        *self == CliCommand::Tree || *self == CliCommand::Find
+    }
 }
 
 impl FromStr for CliCommand {
@@ -89,7 +99,8 @@ impl FromStr for CliCommand {
             "clean" => Ok(CliCommand::Clean),
             "push" => Ok(CliCommand::Push),
             "tree" => Ok(CliCommand::Tree),
-            _ => Err(anyhow!("Unknown command '{}'", s)),
+            "find" => Ok(CliCommand::Find),
+            _ => Err(anyhow!("Unknown command '{}'\n{}\n", s, REPO_HELP_STR)),
         }
     }
 }
@@ -103,6 +114,7 @@ impl ToString for CliCommand {
             CliCommand::Clean => "clean".to_string(),
             CliCommand::Push => "push".to_string(),
             CliCommand::Tree => "tree".to_string(),
+            CliCommand::Find => "find".to_string(),
         }
     }
 }
@@ -143,7 +155,6 @@ fn main_inner() -> anyhow::Result<()> {
     }
 
     let (config, command, recipe_names) = parse_args(args)?;
-
     if command == CliCommand::Cook && config.cook.tui {
         if let Some((name, e)) = run_tui_cook(config, recipe_names)? {
             let _ = stderr().write(e.as_bytes());
@@ -170,26 +181,65 @@ fn main_inner() -> anyhow::Result<()> {
     }
 
     for recipe in &recipe_names {
-        match command {
-            CliCommand::Fetch => {
-                handle_fetch(recipe, &config, &None)?;
+        match repo_inner(&config, &command, recipe) {
+            Ok(_) => {
+                eprintln!(
+                    "{}{}{} {} - successful{}{}",
+                    style::Bold,
+                    color::Fg(color::AnsiValue(46)),
+                    command.to_string(),
+                    recipe.name.as_str(),
+                    color::Fg(color::Reset),
+                    style::Reset,
+                );
             }
-            CliCommand::Cook => {
-                let source_dir = handle_fetch(recipe, &config, &None)?;
-                handle_cook(recipe, &config, source_dir, recipe.is_deps, &None)?
+            Err(e) => {
+                if config.cook.nonstop {
+                    eprintln!("{:?}", e);
+                }
+                eprintln!(
+                    "{}{}{} {} - failed {}{}",
+                    style::Bold,
+                    color::Fg(color::AnsiValue(196)),
+                    command.to_string(),
+                    recipe.name.as_str(),
+                    color::Fg(color::Reset),
+                    style::Reset,
+                );
+                if !config.cook.nonstop {
+                    return Err(e);
+                }
             }
-            CliCommand::Unfetch => handle_clean(recipe, &config, true, true)?,
-            CliCommand::Clean => handle_clean(recipe, &config, false, true)?,
-            CliCommand::Push => handle_push(recipe, &config)?,
-            CliCommand::Tree => todo!("tree command is WIP"),
         }
     }
 
     println!(
-        "\nCommand '{}' completed for all specified recipes.",
+        "\nCommand '{}' completed for {} recipes.",
         command.to_string(),
+        recipe_names.len()
     );
     Ok(())
+}
+
+fn repo_inner(
+    config: &CliConfig,
+    command: &CliCommand,
+    recipe: &CookRecipe,
+) -> Result<(), anyhow::Error> {
+    Ok(match *command {
+        CliCommand::Fetch => {
+            handle_fetch(recipe, config, &None)?;
+        }
+        CliCommand::Cook => {
+            let source_dir = handle_fetch(recipe, config, &None)?;
+            handle_cook(recipe, config, source_dir, recipe.is_deps, &None)?
+        }
+        CliCommand::Unfetch => handle_clean(recipe, config, true, true)?,
+        CliCommand::Clean => handle_clean(recipe, config, false, true)?,
+        CliCommand::Push => handle_push(recipe, config)?,
+        CliCommand::Tree => todo!("tree command is WIP"),
+        CliCommand::Find => println!("{}", recipe.dir.display()),
+    })
 }
 
 fn parse_args(args: Vec<String>) -> anyhow::Result<(CliConfig, CliCommand, Vec<CookRecipe>)> {
@@ -240,11 +290,7 @@ fn parse_args(args: Vec<String>) -> anyhow::Result<(CliConfig, CliCommand, Vec<C
         if !recipe_names.is_empty() {
             bail!("Cannot specify recipe names when using the --all flag.");
         }
-        if command == CliCommand::Cook
-            || command == CliCommand::Fetch
-            || command == CliCommand::Push
-            || command == CliCommand::Tree
-        {
+        if command != CliCommand::Clean && command != CliCommand::Unfetch {
             // because read_recipe is false below
             // some recipes on wip folders are invalid anyway
             bail!(
@@ -266,8 +312,20 @@ fn parse_args(args: Vec<String>) -> anyhow::Result<(CliConfig, CliCommand, Vec<C
                 .context("failed get package deps")?;
         }
 
-        CookRecipe::get_build_deps_recursive(&recipe_names, !config.with_package_deps)?
+        if !command.is_informational() {
+            CookRecipe::get_build_deps_recursive(&recipe_names, !config.with_package_deps)?
+        } else {
+            recipe_names
+                .iter()
+                .map(|f| CookRecipe::from_name(f.as_str()).unwrap())
+                .collect()
+        }
     };
+
+    if command.is_informational() {
+        // avoid extra data that clobber stdout
+        config.cook.verbose = false;
+    }
 
     Ok((config, command, recipes))
 }
@@ -384,6 +442,16 @@ enum StatusUpdate {
 enum JobType {
     Fetch,
     Cook,
+}
+
+impl ToString for JobType {
+    fn to_string(&self) -> String {
+        match self {
+            JobType::Fetch => "Fetch",
+            JobType::Cook => "Cook",
+        }
+        .to_string()
+    }
 }
 
 struct TuiApp {
@@ -683,9 +751,9 @@ fn run_tui_cook(
         terminal.draw(|f| {
             let mut constraints = Vec::new();
             if !app.fetch_complete {
-                constraints.push(Constraint::Length(30));
+                constraints.push(Constraint::Length(20));
             }
-            constraints.push(Constraint::Length(30));
+            constraints.push(Constraint::Length(20));
             constraints.push(Constraint::Min(20));
             let chunks = Layout::default()
                 .direction(Direction::Horizontal)
@@ -744,9 +812,13 @@ fn run_tui_cook(
             let (active_name, log_text) = get_active_log(&app);
 
             let log_title = if let Some(active_name) = active_name {
-                format!("Build Log: {}", active_name.as_str())
+                format!(
+                    "{} Log: {}",
+                    app.log_view_job.to_string(),
+                    active_name.as_str()
+                )
             } else {
-                "Build Log".to_string()
+                format!("{} Log", app.log_view_job.to_string())
             };
 
             let mut enable_auto_scroll = false;
@@ -788,8 +860,22 @@ fn run_tui_cook(
                 vec![Line::from("No logs yet")]
             };
 
+            let instruct = format!(
+                "Keys: [c] Stop [PageUp/Down] Scroll {}",
+                match (&app.log_view_job, app.fetch_complete) {
+                    (JobType::Fetch, _) => "[2] View Cook Log",
+                    (JobType::Cook, false) => "[1] View Fetch Log",
+                    (JobType::Cook, true) => "",
+                }
+            );
+
             let log_paragraph = Paragraph::new(log_lines)
-                .block(Block::default().title(log_title).borders(Borders::ALL))
+                .block(
+                    Block::default()
+                        .title(log_title)
+                        .title_bottom(instruct)
+                        .borders(Borders::ALL),
+                )
                 .wrap(Wrap { trim: false });
 
             f.render_widget(
