@@ -77,6 +77,8 @@ You will use this template to insert your computer on the table.
 | Samsung | Series 3 (NP350V5C) | 0.9.0 | 04-08-2025 | desktop | x86-64 | UEFI | Boots to Orbital, touchpad works, usb does not work, can connect to the Internet through LAN. Wrong maximum display resolution 1024x768 |
 | Asus | Vivobook 15 OLED (M1503Q) | 0.9.0 | 04-08-2025 | desktop | x86-64 | UEFI | Boots to Orbital, touchpad and usb do not work, cannot connect to the internet, right maximum display resolution 2880x1620 |
 | HP | EliteBook Folio 9480M | 0.9.0 | 04-11-2025 | desktop | x86-64 | UEFI | Boots to Orbital, touchpad and usb work, cannot connect to the Internet, install failed, right maximum display resolution 1600x900
+| Acer | A315-32-C9CQ | 0.9.0 | 13-10-2025 | demo | x86_64 | UEFI | Boots to orbital, touchpad and keyboard work. Doesn't detect any ethernet interfaces. No audio.
+
 ## Broken
 
 | **Vendor** | **Model** | **Redox Version** | **Image Date** | **Variant** | **CPU Architecture** | **Motherboard Firmware** | **Report** |
@@ -91,4 +93,5 @@ You will use this template to insert your computer on the table.
 | Panasonic | Toughbook CF-18 | 0.8.0 | 11-11-2022 | desktop | i686 | BIOS | Hangs after PIT initialization |
 | XMG (Schenker) | Apex 17 (M21) | 0.9.0 | 30-09-2024 | demo, server | x86-64 | UEFI | After selecting resolution, (release) repeats `...::interrupt::irq::ERROR -- Local apic internal error: ESR=0x40` a few times before it freezes; (daily) really slowly prints statements from `...::rmm::INFO` before it abruptly aborts |
 | HP | Compaq nc6120 | 0.9.0 | 2024-11-08 | desktop, server | i686 | BIOS | Unloads into memory at a rate slower than 1MB/s after selecting resolution. When unloading is complete the logger initializes and crashes after kernel::acpi, some information about APIC is printed. Boot logs do not progress after this point. |
+| Starfive | Visionfive2 | 0.9.0 | 13-10-2025 | desktop | RISCV | UEFI (modified firmware that supports UEFI boot) | Stuck in the bootloader?                                                                                                                                              
 
