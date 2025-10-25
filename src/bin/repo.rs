@@ -24,7 +24,7 @@ use ratatui::layout::{Constraint, Direction, Layout, Position, Rect};
 use ratatui::prelude::TermionBackend;
 use ratatui::style::{Color, Style};
 use ratatui::text::{Line, Span};
-use ratatui::widgets::{Block, Borders, Clear, List, ListItem, Paragraph, Wrap};
+use ratatui::widgets::{Block, Borders, Clear, List, ListItem, ListState, Paragraph, Wrap};
 use termion::event::{Event, Key, MouseEvent};
 use termion::input::TermRead;
 use termion::raw::IntoRawMode;
@@ -489,6 +489,8 @@ struct TuiApp {
     auto_scroll: bool,
     fetch_scroll: usize,
     cook_scroll: usize,
+    cook_auto_scroll: bool,
+    cook_list_state: ListState,
     fetch_complete: bool,
     cook_complete: bool,
     fetch_panel_rect: Option<Rect>,
@@ -517,6 +519,8 @@ impl TuiApp {
             log_view_job: JobType::Fetch,
             fetch_scroll: 0,
             cook_scroll: 0,
+            cook_auto_scroll: true,
+            cook_list_state: ListState::default(),
             fetch_complete: false,
             cook_complete: false,
             fetch_panel_rect: None,
@@ -789,6 +793,7 @@ fn run_tui_cook(
                 .direction(Direction::Horizontal)
                 .constraints(constraints)
                 .split(f.area());
+            let panel_height = chunks[0].height.saturating_sub(2) as usize;
 
             // Left Pane
             let fetch_items: Vec<ListItem> = app
@@ -845,12 +850,46 @@ fn run_tui_cook(
                     ListItem::new(format!("{icon} {}", r.name)).style(style)
                 })
                 .collect();
+            let total_items = cook_items.len();
+            if app.cook_auto_scroll {
+                let cooking_index = app
+                    .recipes
+                    .iter()
+                    .filter(|(_, s)| {
+                        *s == RecipeStatus::Fetched
+                            || *s == RecipeStatus::Cooking
+                            || *s == RecipeStatus::Done
+                            || matches!(s, RecipeStatus::Failed(_))
+                    })
+                    .position(|(_r, s)| *s == RecipeStatus::Cooking);
+
+                if let Some(index) = cooking_index {
+                    app.cook_list_state.select(Some(index));
+                    let index_u16 = index;
+                    let center_offset = panel_height / 2;
+                    let new_offset = index_u16.saturating_sub(center_offset) as usize;
+
+                    *app.cook_list_state.offset_mut() = new_offset;
+                }
+            } else {
+                app.cook_list_state.select(None);
+                if total_items > 0 {
+                    let max_offset = total_items.saturating_sub(panel_height as usize);
+                    if *app.cook_list_state.offset_mut() > max_offset {
+                        *app.cook_list_state.offset_mut() = max_offset;
+                    }
+                } else {
+                    *app.cook_list_state.offset_mut() = 0;
+                }
+            }
+            let cook_items: Vec<ListItem> = cook_items[app.cook_scroll..].into();
+            let cook_chunk = chunks[if app.fetch_complete { 0 } else { 1 }];
             let cook_list = List::new(cook_items).block(
                 Block::default()
                     .title("Cook Queue [2]")
                     .borders(Borders::ALL),
             );
-            f.render_widget(cook_list, chunks[if app.fetch_complete { 0 } else { 1 }]);
+            f.render_stateful_widget(cook_list, cook_chunk, &mut app.cook_list_state);
 
             let (active_name, log_text) = get_active_log(&app);
 
@@ -865,26 +904,26 @@ fn run_tui_cook(
             };
 
             let mut enable_auto_scroll = false;
+            let mut intended_scroll_pos = 0usize;
 
             let log_lines: Vec<Line> = if let Some(log_text) = log_text
                 && log_text.len() > 0
             {
-                let log_pane_height = chunks[if app.fetch_complete { 1 } else { 2 }]
-                    .height
-                    .saturating_sub(2) as usize;
                 let total_log_lines = log_text.len() as usize;
 
                 let start = if app.auto_scroll {
-                    if total_log_lines > log_pane_height {
-                        total_log_lines - log_pane_height
+                    if total_log_lines > panel_height {
+                        intended_scroll_pos = total_log_lines - panel_height;
+                        total_log_lines - panel_height
                     } else {
                         0
                     }
                 } else {
-                    if total_log_lines > log_pane_height {
-                        if app.log_scroll >= total_log_lines - log_pane_height {
+                    if total_log_lines > panel_height {
+                        if app.log_scroll >= total_log_lines - panel_height {
                             enable_auto_scroll = true;
-                            total_log_lines - log_pane_height
+                            intended_scroll_pos = total_log_lines - panel_height;
+                            total_log_lines - panel_height
                         } else {
                             app.log_scroll
                         }
@@ -893,7 +932,7 @@ fn run_tui_cook(
                     }
                 };
 
-                let end = cmp::min(log_pane_height + start, total_log_lines - 1);
+                let end = cmp::min(panel_height + start, total_log_lines - 1);
 
                 log_text[start..end]
                     .iter()
@@ -934,6 +973,9 @@ fn run_tui_cook(
             }
             if enable_auto_scroll {
                 app.auto_scroll = true;
+            }
+            if intended_scroll_pos > 0 {
+                app.log_scroll = intended_scroll_pos;
             }
 
             while let Ok(event) = input_rx.try_recv() {
@@ -1037,6 +1079,7 @@ fn handle_main_event(app: &mut TuiApp, event: &Event) {
             _ => {}
         },
 
+        //FIXME: This does nothing, it seems ratatui handles this itself magically
         Event::Mouse(mouse_event) => {
             match mouse_event {
                 MouseEvent::Press(termion::event::MouseButton::WheelUp, x, y) => {
@@ -1050,6 +1093,7 @@ fn handle_main_event(app: &mut TuiApp, event: &Event) {
                         app.fetch_scroll = app.fetch_scroll.saturating_sub(1);
                     } else if app.cook_panel_rect.map_or(false, |r| r.contains(pos)) {
                         app.cook_scroll = app.cook_scroll.saturating_sub(1);
+                        app.cook_auto_scroll = false;
                     } else if app.log_panel_rect.map_or(false, |r| r.contains(pos)) {
                         app.auto_scroll = false;
                         app.log_scroll = app.log_scroll.saturating_sub(1);
@@ -1065,6 +1109,7 @@ fn handle_main_event(app: &mut TuiApp, event: &Event) {
                         app.fetch_scroll = app.fetch_scroll.saturating_add(1);
                     } else if app.cook_panel_rect.map_or(false, |r| r.contains(pos)) {
                         app.cook_scroll = app.cook_scroll.saturating_add(1);
+                        app.cook_auto_scroll = false;
                     } else if app.log_panel_rect.map_or(false, |r| r.contains(pos)) {
                         app.auto_scroll = false;
                         app.log_scroll = app.log_scroll.saturating_add(1);
