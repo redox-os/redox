@@ -1,5 +1,6 @@
 #!/usr/bin/env bash
 set -e
 
-source config.sh
+source `dirname "$0"`/config.sh
 
+# Intentionally empty to allow fetch and cook running in parallel

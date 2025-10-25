@@ -1,7 +1,7 @@
 #!/usr/bin/env bash
 set -e
 
-source config.sh
+source `dirname "$0"`/config.sh
 
 if [ $# = 0 ]
 then

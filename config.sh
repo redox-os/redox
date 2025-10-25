@@ -17,8 +17,11 @@ if [ x"${HOST}" == x"riscv64gc-unknown-redox" ] ; then
 	HOST="riscv64-unknown-redox"
 fi
 
+# Cookbook requires correct CWD to work
+cd `dirname "$0"`
+
 # Automatic variables
-ROOT="$(cd `dirname "$0"` && pwd)"
+ROOT=`pwd`
 
 export AR="${HOST}-gcc-ar"
 export AS="${HOST}-as"
