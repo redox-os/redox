@@ -1,3 +1,21 @@
+use ansi_to_tui::IntoText;
+use anyhow::{Context, anyhow, bail};
+use cookbook::WALK_DEPTH;
+use cookbook::config::{CookConfig, get_config, init_config};
+use cookbook::cook::cook_build::build;
+use cookbook::cook::fetch::{fetch, fetch_offline};
+use cookbook::cook::fs::create_target_dir;
+use cookbook::cook::package::package;
+use cookbook::cook::pty::{PtyOut, UnixSlavePty, setup_pty};
+use cookbook::recipe::CookRecipe;
+use pkg::PackageName;
+use pkg::package::PackageError;
+use ratatui::Terminal;
+use ratatui::layout::{Constraint, Direction, Layout, Position, Rect};
+use ratatui::prelude::TermionBackend;
+use ratatui::style::{Color, Style};
+use ratatui::text::{Line, Span, Text};
+use ratatui::widgets::{Block, Borders, Clear, List, ListItem, ListState, Paragraph, Wrap};
 use std::collections::{HashMap, VecDeque};
 use std::io::{BufRead, BufReader, Read, Write, stderr, stdin, stdout};
 use std::path::PathBuf;
@@ -8,24 +26,6 @@ use std::sync::{Arc, mpsc};
 use std::time::{Duration, Instant};
 use std::{cmp, env, fs};
 use std::{process, thread};
-
-use anyhow::{Context, anyhow, bail};
-use cookbook::WALK_DEPTH;
-use cookbook::config::{CookConfig, get_config, init_config};
-use cookbook::cook::cook_build::build;
-use cookbook::cook::fetch::{fetch, fetch_offline};
-use cookbook::cook::fs::create_target_dir;
-use cookbook::cook::package::package;
-use cookbook::cook::pty::{setup_pty, PtyOut, UnixSlavePty};
-use cookbook::recipe::CookRecipe;
-use pkg::PackageName;
-use pkg::package::PackageError;
-use ratatui::Terminal;
-use ratatui::layout::{Constraint, Direction, Layout, Position, Rect};
-use ratatui::prelude::TermionBackend;
-use ratatui::style::{Color, Style};
-use ratatui::text::{Line, Span};
-use ratatui::widgets::{Block, Borders, Clear, List, ListItem, ListState, Paragraph, Wrap};
 use termion::event::{Event, Key, MouseEvent};
 use termion::input::TermRead;
 use termion::raw::IntoRawMode;
@@ -937,7 +937,17 @@ fn run_tui_cook(
 
                 log_text[start..end]
                     .iter()
-                    .map(|s| Line::from(s.clone()))
+                    .map(|s| {
+                        let text_with_colors = s
+                            .into_text()
+                            .unwrap_or_else(|_| Text::raw("--unrenderable line--"));
+
+                        text_with_colors
+                            .lines
+                            .into_iter()
+                            .next()
+                            .unwrap_or_else(|| Line::raw("--unrenderable line--"))
+                    })
                     .collect()
             } else {
                 vec![Line::from("No logs yet")]

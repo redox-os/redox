@@ -39,6 +39,7 @@ termion = "4"
 toml = "0.8"
 walkdir = "2.3.1"
 filedescriptor = "0.8.3"
+ansi-to-tui = "7.0.0"
 
 [dependencies.ratatui]
 version = "0.29.0"
