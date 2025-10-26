@@ -1,6 +1,6 @@
 # Configuration file to install the recipe dependencies inside the Podman container
 
-FROM debian:trixie
+FROM docker.io/library/debian:trixie
 
 # _UID_ must be replaced with the user's uid on host
 # podman root is mapped to your user id on host during build,
