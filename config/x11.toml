@@ -12,6 +12,7 @@ filesystem_size = 2048
 # Package settings
 [packages]
 gtk3 = {}
+htop = {}
 libnettle = {}
 llvm18 = {}
 mesa-x11 = {}

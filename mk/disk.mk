@@ -58,6 +58,12 @@ mount_extra: $(HOST_FSTOOLS) FORCE
 	sleep 2
 	pgrep redoxfs
 
+mount_live: $(HOST_FSTOOLS) FORCE
+	mkdir -p $(MOUNT_DIR)
+	$(REDOXFS) $(BUILD)/redox-live.iso $(MOUNT_DIR)
+	sleep 2
+	pgrep redoxfs
+
 unmount: FORCE
 	sync
 	-$(FUMOUNT) $(MOUNT_DIR) || true

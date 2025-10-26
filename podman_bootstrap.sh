@@ -280,7 +280,7 @@ fedora()
     fi
 
     # Use rpm -q <package> to check if it's already installed
-    PKGS=$(for pkg in podman curl make fuse3 fuse-overlayfs slirp4netns gdb; do rpm -q $pkg > /dev/null || echo $pkg; done)
+    PKGS=$(for pkg in podman curl make fuse3 fuse3-devel fuse-overlayfs slirp4netns gdb; do rpm -q $pkg > /dev/null || echo $pkg; done)
     # If the list of packages is not empty, install missing
     COUNT=$(echo $PKGS | wc -w)
     if [ $COUNT -ne 0 ]; then

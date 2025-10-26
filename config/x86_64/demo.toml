@@ -16,9 +16,11 @@ periodictable = {}
 intel-one-mono = {}
 
 # Shell Apps
+bottom = {}
 curl = {}
 git = {}
 gnu-grep = {}
+htop = {}
 ripgrep = {}
 sodium = {}
 terminfo = {}
