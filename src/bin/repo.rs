@@ -1,5 +1,5 @@
 use std::collections::{HashMap, VecDeque};
-use std::io::{BufRead, BufReader, PipeReader, Write, stderr, stdin, stdout};
+use std::io::{BufRead, BufReader, Read, Write, stderr, stdin, stdout};
 use std::path::PathBuf;
 use std::process::Command;
 use std::str::FromStr;
@@ -14,8 +14,9 @@ use cookbook::WALK_DEPTH;
 use cookbook::config::{CookConfig, get_config, init_config};
 use cookbook::cook::cook_build::build;
 use cookbook::cook::fetch::{fetch, fetch_offline};
-use cookbook::cook::fs::{Stdout, create_target_dir};
+use cookbook::cook::fs::create_target_dir;
 use cookbook::cook::package::package;
+use cookbook::cook::pty::{setup_pty, PtyOut, UnixSlavePty};
 use cookbook::recipe::CookRecipe;
 use pkg::PackageName;
 use pkg::package::PackageError;
@@ -355,7 +356,7 @@ fn parse_args(args: Vec<String>) -> anyhow::Result<(CliConfig, CliCommand, Vec<C
 fn handle_fetch(
     recipe: &CookRecipe,
     config: &CliConfig,
-    logger: &Stdout,
+    logger: &PtyOut,
 ) -> anyhow::Result<PathBuf> {
     let recipe_dir = &recipe.dir;
     let source_dir = match config.cook.offline {
@@ -372,7 +373,7 @@ fn handle_cook(
     config: &CliConfig,
     source_dir: PathBuf,
     is_deps: bool,
-    logger: &Stdout,
+    logger: &PtyOut,
 ) -> anyhow::Result<()> {
     let recipe_dir = &recipe.dir;
     let target_dir = create_target_dir(recipe_dir).map_err(|e| anyhow!(e))?;
@@ -1212,13 +1213,15 @@ fn draw_prompt(f: &mut ratatui::Frame, prompt: &FailurePrompt) {
     f.render_widget(paragraph, popup_area);
 }
 
-fn spawn_log_reader(
-    mut pipe_reader: PipeReader,
+fn spawn_log_reader<R>(
+    mut reader: R,
     package_name: PackageName,
     status_tx: mpsc::Sender<StatusUpdate>,
-) {
+) where
+    R: Read + Send + 'static,
+{
     thread::spawn(move || {
-        let reader = BufReader::new(&mut pipe_reader);
+        let reader = BufReader::new(&mut reader);
         for line in reader.lines() {
             let line_str = line.unwrap_or_else(|e| format!("[IO Error] {}", e));
             if status_tx
@@ -1235,12 +1238,12 @@ fn spawn_log_reader(
 fn setup_logger(
     status_tx: &mpsc::Sender<StatusUpdate>,
     name: &PackageName,
-) -> (std::io::PipeWriter, std::io::PipeWriter) {
-    let (stdout_reader, stdout_writer) = std::io::pipe().expect("Failed to create stdout pipe");
-    let (stderr_reader, stderr_writer) = std::io::pipe().expect("Failed to create stderr pipe");
-    spawn_log_reader(stdout_reader, name.clone(), status_tx.clone());
-    spawn_log_reader(stderr_reader, name.clone(), status_tx.clone());
-    (stdout_writer, stderr_writer)
+) -> (UnixSlavePty, std::io::PipeWriter) {
+    let (pty_reader, log_reader, pipes) = setup_pty();
+
+    spawn_log_reader(pty_reader, name.clone(), status_tx.clone());
+    spawn_log_reader(log_reader, name.clone(), status_tx.clone());
+    pipes
 }
 
 #[derive(PartialEq, Clone, Copy)]

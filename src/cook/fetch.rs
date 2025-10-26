@@ -1,5 +1,6 @@
 use crate::config::translate_mirror;
 use crate::cook::fs::*;
+use crate::cook::pty::PtyOut;
 use crate::cook::script::*;
 use crate::is_redox;
 use crate::recipe::BuildKind;
@@ -43,7 +44,7 @@ pub(crate) fn get_blake3(path: &PathBuf, show_progress: bool) -> Result<String, 
 pub fn fetch_offline(
     recipe_dir: &Path,
     recipe: &Recipe,
-    logger: &Stdout,
+    logger: &PtyOut,
 ) -> Result<PathBuf, String> {
     let source_dir = recipe_dir.join("source");
     if recipe.build.kind == BuildKind::None || recipe.build.kind == BuildKind::Remote {
@@ -103,7 +104,7 @@ pub fn fetch_offline(
     Ok(source_dir)
 }
 
-pub fn fetch(recipe_dir: &Path, recipe: &Recipe, logger: &Stdout) -> Result<PathBuf, String> {
+pub fn fetch(recipe_dir: &Path, recipe: &Recipe, logger: &PtyOut) -> Result<PathBuf, String> {
     let source_dir = recipe_dir.join("source");
     if recipe.build.kind == BuildKind::None || recipe.build.kind == BuildKind::Remote {
         // the build function doesn't need source dir exists
@@ -374,7 +375,7 @@ pub(crate) fn fetch_resolve_canon(
 pub(crate) fn fetch_extract_tar(
     source_tar: PathBuf,
     source_dir_tmp: &PathBuf,
-    logger: &Stdout,
+    logger: &PtyOut,
 ) -> Result<(), String> {
     let mut command = Command::new("tar");
     if is_redox() {
@@ -420,7 +421,7 @@ pub(crate) fn fetch_apply_patches(
     patches: &Vec<String>,
     script: &Option<String>,
     source_dir_tmp: &PathBuf,
-    logger: &Stdout,
+    logger: &PtyOut,
 ) -> Result<(), String> {
     for patch_name in patches {
         let patch_file = recipe_dir.join(patch_name);

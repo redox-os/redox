@@ -3,24 +3,10 @@ use std::{collections::BTreeSet, env, path::Path};
 use pkg::{Package, PackageName};
 
 use crate::{
-    cook::fs::*,
+    cook::{fs::*, pty::PtyOut},
+    log_to_pty,
     recipe::{BuildKind, Recipe},
 };
-
-macro_rules! log_warn {
-    ($logger:expr, $($arg:tt)+) => {
-        use std::io::Write;
-
-        if $logger.is_some() {
-           let _ = $logger.as_ref().unwrap().1.try_clone().unwrap().write(
-                        format!($($arg)+)
-                            .as_bytes(),
-                    );
-        } else {
-            eprintln!($($arg)+);
-        }
-    };
-}
 
 pub fn package(
     stage_dir: &Path,
@@ -28,7 +14,7 @@ pub fn package(
     name: &PackageName,
     recipe: &Recipe,
     auto_deps: &BTreeSet<PackageName>,
-    logger: &Stdout,
+    logger: &PtyOut,
 ) -> Result<(), String> {
     if recipe.build.kind == BuildKind::None {
         // metapackages don't have stage dir
@@ -58,7 +44,7 @@ pub fn package(
     if package_file.is_file() {
         let stage_modified = modified_dir(stage_dir)?;
         if modified(&package_file)? < stage_modified {
-            log_warn!(
+            log_to_pty!(
                 logger,
                 "DEBUG: '{}' newer than '{}'",
                 stage_dir.display(),
