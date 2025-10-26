@@ -286,7 +286,7 @@ impl PtyFd {
         // them) and won't work in the usual way anyway.
         // In practice these are None, but it seems best to be move them
         // out in case the behavior of Command changes in the future.
-        child.stdin.take();
+        // child.stdin.take();
         child.stdout.take();
         child.stderr.take();
 
