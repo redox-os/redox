@@ -938,10 +938,10 @@ fn run_tui_cook(
                 log_text[start..end]
                     .iter()
                     .map(|s| {
-                        let text_with_colors = s
+                        let line_to_render = s.rsplit('\r').next().unwrap_or(s);
+                        let text_with_colors = line_to_render
                             .into_text()
                             .unwrap_or_else(|_| Text::raw("--unrenderable line--"));
-
                         text_with_colors
                             .lines
                             .into_iter()
