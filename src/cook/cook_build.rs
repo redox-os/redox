@@ -3,6 +3,7 @@ use pkg::{Package, PackageName};
 use redoxer::target;
 
 use crate::cook::fs::*;
+use crate::cook::pty::PtyOut;
 use crate::cook::script::*;
 use crate::recipe::AutoDeps;
 use crate::recipe::BuildKind;
@@ -39,7 +40,7 @@ macro_rules! log_warn {
 fn auto_deps(
     stage_dir: &Path,
     dep_pkgars: &BTreeSet<(PackageName, PathBuf)>,
-    logger: &Stdout,
+    logger: &PtyOut,
 ) -> BTreeSet<PackageName> {
     let mut paths = BTreeSet::new();
     let mut visited = BTreeSet::new();
@@ -167,7 +168,7 @@ pub fn build(
     recipe: &Recipe,
     offline_mode: bool,
     check_source: bool,
-    logger: &Stdout,
+    logger: &PtyOut,
 ) -> Result<(PathBuf, BTreeSet<PackageName>), String> {
     let sysroot_dir = target_dir.join("sysroot");
     let stage_dir = target_dir.join("stage");
@@ -379,7 +380,7 @@ fn build_auto_deps(
     target_dir: &Path,
     stage_dir: &PathBuf,
     dep_pkgars: BTreeSet<(PackageName, PathBuf)>,
-    logger: &Stdout,
+    logger: &PtyOut,
 ) -> Result<BTreeSet<PackageName>, String> {
     let auto_deps_path = target_dir.join("auto_deps.toml");
     if auto_deps_path.is_file() && modified(&auto_deps_path)? < modified(stage_dir)? {
@@ -412,7 +413,7 @@ pub fn build_remote(
     target_dir: &Path,
     name: &PackageName,
     offline_mode: bool,
-    logger: &Stdout,
+    logger: &PtyOut,
 ) -> Result<(PathBuf, BTreeSet<PackageName>), String> {
     // download straight from remote source then declare pkg dependencies as autodeps dependency
     let stage_dir = target_dir.join("stage");

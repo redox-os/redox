@@ -8,7 +8,10 @@ use std::{
 };
 use walkdir::{DirEntry, WalkDir};
 
-use crate::config::translate_mirror;
+use crate::{
+    config::translate_mirror,
+    cook::pty::{PtyOut, spawn_to_pipe},
+};
 
 //TODO: pub(crate) for all of these functions
 
@@ -146,27 +149,10 @@ pub fn rename(src: &Path, dst: &Path) -> Result<(), String> {
     })
 }
 
-pub type Stdout<'a> = Option<(&'a mut PipeWriter, &'a mut PipeWriter)>;
-
-fn pipe_to_cmd(command: &mut Command, stdout_pipe: &Stdout) -> Result<(), String> {
-    Ok(if let Some((stdout, stderr)) = stdout_pipe {
-        command.stdout::<PipeWriter>(
-            stdout
-                .try_clone()
-                .map_err(|e| format!("unable to clone stdout fd: {:?}", e))?,
-        );
-        command.stderr(
-            stderr
-                .try_clone()
-                .map_err(|e| format!("unable to clone stderr fd: {:?}", e))?,
-        );
-    })
-}
-
-pub fn run_command(mut command: process::Command, stdout_pipe: &Stdout) -> Result<(), String> {
-    pipe_to_cmd(&mut command, stdout_pipe)?;
-    let status = command
-        .status()
+pub fn run_command(mut command: process::Command, stdout_pipe: &PtyOut) -> Result<(), String> {
+    let status = spawn_to_pipe(&mut command, stdout_pipe)
+        .map_err(|err| format!("failed to run {:?}: {}\n{:#?}", command, err, err))?
+        .wait()
         .map_err(|err| format!("failed to run {:?}: {}\n{:#?}", command, err, err))?;
 
     if !status.success() {
@@ -182,13 +168,10 @@ pub fn run_command(mut command: process::Command, stdout_pipe: &Stdout) -> Resul
 pub fn run_command_stdin(
     mut command: process::Command,
     stdin_data: &[u8],
-    stdout_pipe: &Stdout,
+    stdout_pipe: &PtyOut,
 ) -> Result<(), String> {
     command.stdin(Stdio::piped());
-    pipe_to_cmd(&mut command, stdout_pipe)?;
-
-    let mut child = command
-        .spawn()
+    let mut child = spawn_to_pipe(&mut command, stdout_pipe)
         .map_err(|err| format!("failed to spawn {:?}: {}\n{:#?}", command, err, err))?;
 
     if let Some(ref mut stdin) = child.stdin {
@@ -240,7 +223,7 @@ pub fn offline_check_exists(path: &PathBuf) -> Result<(), String> {
     Ok(())
 }
 
-pub fn download_wget(url: &str, dest: &PathBuf, logger: &Stdout) -> Result<(), String> {
+pub fn download_wget(url: &str, dest: &PathBuf, logger: &PtyOut) -> Result<(), String> {
     if !dest.is_file() {
         let dest_tmp = PathBuf::from(format!("{}.tmp", dest.display()));
         let mut command = Command::new("wget");
