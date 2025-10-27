@@ -1,7 +1,7 @@
 use serde::Serialize;
 use std::{
     fs,
-    io::{self, PipeWriter, Write},
+    io::{self, Write},
     path::{Path, PathBuf},
     process::{self, Command, Stdio},
     time::SystemTime,

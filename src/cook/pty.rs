@@ -1,15 +1,10 @@
 use anyhow::{Error, bail};
 use filedescriptor::FileDescriptor;
 use libc::{self, winsize};
-use portable_pty::PtySize;
-use std::cell::RefCell;
-use std::ffi::OsStr;
-use std::io::{Read, Write};
+use std::io::Read;
 use std::os::fd::FromRawFd;
-use std::os::unix::ffi::OsStrExt;
 use std::os::unix::io::AsRawFd;
 use std::os::unix::process::CommandExt;
-use std::path::PathBuf;
 use std::process::Child;
 use std::{io, mem, ptr};
 use std::{
@@ -77,6 +72,32 @@ pub fn spawn_to_pipe(command: &mut Command, stdout_pipe: &PtyOut) -> Result<Chil
 #[derive(Default)]
 pub struct UnixPtySystem {}
 
+/// Represents the size of the visible display area in the pty
+#[derive(Debug, Clone, Copy, PartialEq, Eq)]
+pub struct PtySize {
+    /// The number of lines of text
+    pub rows: u16,
+    /// The number of columns of text
+    pub cols: u16,
+    /// The width of a cell in pixels.  Note that some systems never
+    /// fill this value and ignore it.
+    pub pixel_width: u16,
+    /// The height of a cell in pixels.  Note that some systems never
+    /// fill this value and ignore it.
+    pub pixel_height: u16,
+}
+
+impl Default for PtySize {
+    fn default() -> Self {
+        PtySize {
+            rows: 24,
+            cols: 80,
+            pixel_width: 0,
+            pixel_height: 0,
+        }
+    }
+}
+
 fn openpty(size: PtySize) -> anyhow::Result<(UnixMasterPty, UnixSlavePty)> {
     let mut master: RawFd = -1;
     let mut slave: RawFd = -1;
@@ -104,12 +125,8 @@ fn openpty(size: PtySize) -> anyhow::Result<(UnixMasterPty, UnixSlavePty)> {
         bail!("failed to openpty: {:?}", io::Error::last_os_error());
     }
 
-    let tty_name = tty_name(slave);
-
     let master = UnixMasterPty {
         fd: PtyFd(unsafe { FileDescriptor::from_raw_fd(master) }),
-        took_writer: RefCell::new(false),
-        tty_name,
     };
     let slave = UnixSlavePty {
         fd: PtyFd(unsafe { FileDescriptor::from_raw_fd(slave) }),
@@ -167,33 +184,6 @@ impl Read for PtyFd {
             }
             x => x,
         }
-    }
-}
-
-fn tty_name(fd: RawFd) -> Option<PathBuf> {
-    let mut buf = vec![0 as std::ffi::c_char; 128];
-
-    loop {
-        let res = unsafe { libc::ttyname_r(fd, buf.as_mut_ptr(), buf.len()) };
-
-        if res == libc::ERANGE {
-            if buf.len() > 64 * 1024 {
-                // on macOS, if the buf is "too big", ttyname_r can
-                // return ERANGE, even though that is supposed to
-                // indicate buf is "too small".
-                return None;
-            }
-            buf.resize(buf.len() * 2, 0 as std::ffi::c_char);
-            continue;
-        }
-
-        return if res == 0 {
-            let cstr = unsafe { std::ffi::CStr::from_ptr(buf.as_ptr()) };
-            let osstr = OsStr::from_bytes(cstr.to_bytes());
-            Some(PathBuf::from(osstr))
-        } else {
-            None
-        };
     }
 }
 
@@ -298,8 +288,6 @@ impl PtyFd {
 /// The file descriptor will be closed when the Pty is dropped.
 pub struct UnixMasterPty {
     fd: PtyFd,
-    took_writer: RefCell<bool>,
-    tty_name: Option<PathBuf>,
 }
 
 /// Represents the slave end of a pty.
@@ -334,10 +322,12 @@ impl UnixSlavePty {
 }
 
 impl UnixMasterPty {
+    #[allow(unused)]
     fn resize(&self, size: PtySize) -> Result<(), Error> {
         self.fd.resize(size)
     }
 
+    #[allow(unused)]
     fn get_size(&self) -> Result<PtySize, Error> {
         self.fd.get_size()
     }
@@ -345,59 +335,5 @@ impl UnixMasterPty {
     fn try_clone_reader(&self) -> Result<Box<dyn Read + Send>, Error> {
         let fd = PtyFd(self.fd.try_clone()?);
         Ok(Box::new(fd))
-    }
-
-    fn take_writer(&self) -> Result<Box<dyn Write + Send>, Error> {
-        if *self.took_writer.borrow() {
-            anyhow::bail!("cannot take writer more than once");
-        }
-        *self.took_writer.borrow_mut() = true;
-        let fd = PtyFd(self.fd.try_clone()?);
-        Ok(Box::new(UnixMasterWriter { fd }))
-    }
-
-    fn as_raw_fd(&self) -> Option<RawFd> {
-        Some(self.fd.0.as_raw_fd())
-    }
-
-    fn tty_name(&self) -> Option<PathBuf> {
-        self.tty_name.clone()
-    }
-
-    fn process_group_leader(&self) -> Option<libc::pid_t> {
-        match unsafe { libc::tcgetpgrp(self.fd.0.as_raw_fd()) } {
-            pid if pid > 0 => Some(pid),
-            _ => None,
-        }
-    }
-}
-
-/// Represents the master end of a pty.
-/// EOT will be sent, and then the file descriptor will be closed when
-/// the Pty is dropped.
-struct UnixMasterWriter {
-    fd: PtyFd,
-}
-
-impl Drop for UnixMasterWriter {
-    fn drop(&mut self) {
-        let mut t: libc::termios = unsafe { std::mem::MaybeUninit::zeroed().assume_init() };
-        if unsafe { libc::tcgetattr(self.fd.0.as_raw_fd(), &mut t) } == 0 {
-            // EOF is only interpreted after a newline, so if it is set,
-            // we send a newline followed by EOF.
-            let eot = t.c_cc[libc::VEOF];
-            if eot != 0 {
-                let _ = self.fd.0.write_all(&[b'\n', eot]);
-            }
-        }
-    }
-}
-
-impl Write for UnixMasterWriter {
-    fn write(&mut self, buf: &[u8]) -> Result<usize, io::Error> {
-        self.fd.write(buf)
-    }
-    fn flush(&mut self) -> Result<(), io::Error> {
-        self.fd.flush()
     }
 }
