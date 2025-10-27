@@ -1,0 +1,10 @@
+#TODO not compiled or tested
+# lacking build instructions
+[source]
+git = "https://github.com/DynamoRIO/drmemory"
+rev = "release_2.6.0"
+[build]
+template = "cmake"
+dependencies = [
+    "libunwind",
+]
