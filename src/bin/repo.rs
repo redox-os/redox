@@ -16,8 +16,9 @@ use ratatui::prelude::TermionBackend;
 use ratatui::style::{Color, Style};
 use ratatui::text::{Line, Span, Text};
 use ratatui::widgets::{Block, Borders, Clear, List, ListItem, ListState, Paragraph, Wrap};
+use std::borrow::Cow;
 use std::collections::{HashMap, VecDeque};
-use std::io::{BufRead, BufReader, Read, Write, stderr, stdin, stdout};
+use std::io::{Read, Write, stderr, stdin, stdout};
 use std::path::PathBuf;
 use std::process::Command;
 use std::str::FromStr;
@@ -456,7 +457,7 @@ enum StatusUpdate {
     StartCook(PackageName),
     Cooked(CookRecipe),
     FailCook(CookRecipe, String),
-    PushLog(PackageName, String),
+    PushLog(PackageName, Vec<u8>),
     FetchThreadFinished,
     CookThreadFinished,
 }
@@ -485,6 +486,7 @@ struct TuiApp {
     active_fetch: Option<PackageName>,
     active_cook: Option<PackageName>,
     logs: HashMap<PackageName, Vec<String>>,
+    log_byte_buffer: HashMap<PackageName, Vec<u8>>,
     log_scroll: usize,
     log_view_job: JobType,
     auto_scroll: bool,
@@ -515,6 +517,7 @@ impl TuiApp {
             active_fetch: None,
             active_cook: None,
             logs: HashMap::new(),
+            log_byte_buffer: HashMap::new(),
             log_scroll: 0,
             auto_scroll: true,
             log_view_job: JobType::Fetch,
@@ -538,6 +541,7 @@ impl TuiApp {
             StatusUpdate::StartFetch(name) => {
                 self.active_fetch = Some(name.clone());
                 self.logs.insert(name.clone(), Vec::new());
+                self.log_byte_buffer.insert(name.clone(), Vec::new());
                 self.log_scroll = 0;
                 self.auto_scroll = true;
                 (name.clone(), RecipeStatus::Fetching)
@@ -550,16 +554,21 @@ impl TuiApp {
             StatusUpdate::StartCook(name) => {
                 self.active_cook = Some(name.clone());
                 self.logs.insert(name.clone(), Vec::new());
+                self.log_byte_buffer.insert(name.clone(), Vec::new());
                 (name.clone(), RecipeStatus::Cooking)
             }
-            StatusUpdate::PushLog(name, line) => {
-                self.logs.entry(name.clone()).or_default().push(line);
-                // No status change, just return the current state
-                if let Some((_, status)) = self.recipes.iter().find(|(r, _)| r.name == name) {
-                    (name, status.clone())
-                } else {
-                    return; // Should not happen
+            StatusUpdate::PushLog(name, chunk) => {
+                let buffer = self.log_byte_buffer.entry(name.clone()).or_default();
+                buffer.extend_from_slice(&chunk);
+                let log_list = self.logs.entry(name.clone()).or_default();
+                while let Some(newline_pos) = buffer.iter().position(|&b| b == b'\n') {
+                    let line_bytes = buffer.drain(..=newline_pos).collect::<Vec<u8>>();
+                    let line_str = String::from_utf8_lossy(&line_bytes).into_owned();
+                    let line_str_pos = line_str.trim_end();
+                    let line_str = line_str_pos.rsplit('\r').next().unwrap_or(&line_str_pos);
+                    log_list.push(line_str.to_owned());
                 }
+                return;
             }
             StatusUpdate::Cooked(recipe) => {
                 if self.active_cook.as_ref() == Some(&recipe.name) {
@@ -570,7 +579,6 @@ impl TuiApp {
             }
             StatusUpdate::FailCook(recipe, err) => {
                 self.prompt = Some(FailurePrompt::new(recipe.clone(), err.clone()));
-
                 (recipe.name.clone(), RecipeStatus::Failed(err))
             }
             StatusUpdate::FetchThreadFinished => {
@@ -892,8 +900,7 @@ fn run_tui_cook(
             );
             f.render_stateful_widget(cook_list, cook_chunk, &mut app.cook_list_state);
 
-            let (active_name, log_text) = get_active_log(&app);
-
+            let (active_name, log_text, log_line) = get_active_log(&app);
             let log_title = if let Some(active_name) = active_name {
                 format!(
                     " {} Log: {} ",
@@ -907,8 +914,8 @@ fn run_tui_cook(
             let mut enable_auto_scroll = false;
             let mut intended_scroll_pos = 0usize;
 
-            let log_lines: Vec<Line> = if let Some(log_text) = log_text
-                && log_text.len() > 0
+            let mut log_lines: Vec<Line> = if let Some(log_text) = log_text
+                && !log_text.is_empty()
             {
                 let total_log_lines = log_text.len() as usize;
 
@@ -938,8 +945,7 @@ fn run_tui_cook(
                 log_text[start..end]
                     .iter()
                     .map(|s| {
-                        let line_to_render = s.rsplit('\r').next().unwrap_or(s);
-                        let text_with_colors = line_to_render
+                        let text_with_colors = s
                             .into_text()
                             .unwrap_or_else(|_| Text::raw("--unrenderable line--"));
                         text_with_colors
@@ -952,6 +958,18 @@ fn run_tui_cook(
             } else {
                 vec![Line::from("No logs yet")]
             };
+
+            if let Some(buffer) = log_line
+                && !buffer.is_empty()
+            {
+                let text_with_colors = handle_cr(&buffer)
+                    .into_text()
+                    .unwrap_or_else(|_| Text::raw("--unrenderable line--"));
+
+                if let Some(line) = text_with_colors.lines.into_iter().next() {
+                    log_lines.push(line);
+                }
+            }
 
             let instruct = format!(
                 " Keys: [c] Stop [PageUp/Down] Scroll{}{} ",
@@ -993,11 +1011,16 @@ fn run_tui_cook(
                 if let Some((app, res)) = handle_prompt_input(&event, &mut app) {
                     prompting.swap(res as u32, Ordering::SeqCst);
                     if res == PromptOption::Exit {
-                        let (name, log) = get_active_log(&app);
+                        let (name, log, line) = get_active_log(&app);
                         if let Some(name) = name
                             && let Some(log) = log
                         {
-                            app.dump_logs_on_exit = Some((name.to_owned(), log.join("\n")));
+                            let mut logs = log.join("\n");
+                            if let Some(line) = line {
+                                logs.push_str("\n");
+                                logs.push_str(handle_cr(&line));
+                            }
+                            app.dump_logs_on_exit = Some((name.to_owned(), logs));
                         }
                         running.store(false, Ordering::SeqCst);
                     }
@@ -1030,19 +1053,36 @@ fn run_tui_cook(
     Ok(app.dump_logs_on_exit)
 }
 
-fn get_active_log(app: &TuiApp) -> (Option<PackageName>, Option<&Vec<String>>) {
+fn handle_cr<'a>(buffer: &'a Cow<'_, str>) -> &'a str {
+    let st = buffer.trim_end();
+    st.rsplit('\r').next().unwrap_or(&st)
+}
+
+fn get_active_log(
+    app: &TuiApp,
+) -> (
+    Option<PackageName>,
+    Option<&Vec<String>>,
+    Option<Cow<'_, str>>,
+) {
     let active_name = if app.log_view_job == JobType::Cook {
         app.active_cook.clone()
     } else {
         app.active_fetch.clone()
     };
-
     let log_text = if let Some(active_name) = &active_name {
         app.logs.get(active_name)
     } else {
         None
     };
-    (active_name, log_text)
+    let log_line = if let Some(active_name) = &active_name
+        && let Some(b) = app.log_byte_buffer.get(active_name)
+    {
+        Some(String::from_utf8_lossy(b))
+    } else {
+        None
+    };
+    (active_name, log_text, log_line)
 }
 
 fn handle_main_event(app: &mut TuiApp, event: &Event) {
@@ -1231,11 +1271,15 @@ fn spawn_log_reader<R>(
     R: Read + Send + 'static,
 {
     thread::spawn(move || {
-        let reader = BufReader::new(&mut reader);
-        for line in reader.lines() {
-            let line_str = line.unwrap_or_else(|e| format!("[IO Error] {}", e));
+        let mut buffer = [0; 1024];
+        loop {
+            let buf = match reader.read(&mut buffer) {
+                Ok(0) => break,
+                Ok(n) => buffer[..n].to_vec(),
+                Err(e) => format!("[IO Error] {}", e).into_bytes(),
+            };
             if status_tx
-                .send(StatusUpdate::PushLog(package_name.clone(), line_str))
+                .send(StatusUpdate::PushLog(package_name.clone(), buf))
                 .is_err()
             {
                 // TUI thread hung up
