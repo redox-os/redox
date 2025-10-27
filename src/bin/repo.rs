@@ -16,6 +16,7 @@ use ratatui::prelude::TermionBackend;
 use ratatui::style::{Color, Style};
 use ratatui::text::{Line, Span, Text};
 use ratatui::widgets::{Block, Borders, Clear, List, ListItem, ListState, Paragraph, Wrap};
+use redoxer::target;
 use std::borrow::Cow;
 use std::collections::{HashMap, VecDeque};
 use std::io::{Read, Write, stderr, stdin, stdout};
@@ -269,6 +270,9 @@ fn parse_args(args: Vec<String>) -> anyhow::Result<(CliConfig, CliCommand, Vec<C
                         process::exit(1);
                     }
                 }
+            } else if arg.starts_with("--category-") {
+                // to workaround make command limit we provide this option
+                config.category = Some(PathBuf::from(arg[("--category-").len()..].to_owned()));
             } else {
                 match arg.as_str() {
                     "--with-package-deps" => config.with_package_deps = true,
@@ -336,7 +340,7 @@ fn parse_args(args: Vec<String>) -> anyhow::Result<(CliConfig, CliCommand, Vec<C
                 .context("failed get package deps")?;
         }
 
-        if !command.is_informational() {
+        if !command.is_informational() && command != CliCommand::Push {
             CookRecipe::get_build_deps_recursive(&recipe_names, !config.with_package_deps)?
         } else {
             recipe_names
@@ -422,7 +426,10 @@ fn handle_clean(
 
 fn handle_push(recipe: &CookRecipe, config: &CliConfig) -> anyhow::Result<()> {
     let public_path = "build/id_ed25519.pub.toml";
-    let archive_path = config.repo_dir.join(recipe.name.as_str());
+    let archive_path = config
+        .repo_dir
+        .join(target())
+        .join(format!("{}.pkgar", recipe.name));
     pkgar::extract(
         public_path,
         archive_path.as_path(),
