@@ -91,6 +91,9 @@ impl CliCommand {
     pub fn is_informational(&self) -> bool {
         *self == CliCommand::Tree || *self == CliCommand::Find
     }
+    pub fn is_building(&self) -> bool {
+        *self == CliCommand::Fetch || *self == CliCommand::Cook
+    }
 }
 
 impl FromStr for CliCommand {
@@ -340,7 +343,7 @@ fn parse_args(args: Vec<String>) -> anyhow::Result<(CliConfig, CliCommand, Vec<C
                 .context("failed get package deps")?;
         }
 
-        if !command.is_informational() && command != CliCommand::Push {
+        if command.is_building() {
             CookRecipe::get_build_deps_recursive(&recipe_names, !config.with_package_deps)?
         } else {
             recipe_names
