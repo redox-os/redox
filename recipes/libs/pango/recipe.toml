@@ -21,6 +21,7 @@ dependencies = [
     "libxau",
     "libxcb",
     "libxext",
+    "libxft",
     "libxrender",
     "pcre",
     "pcre2",
