@@ -17,6 +17,7 @@ libnettle = {}
 llvm18 = {}
 mesa-x11 = {}
 mesa-demos-x11 = {}
+servo = {}
 sqlite3 = {}
 twm = {}
 webkitgtk3 = {}
@@ -27,7 +28,7 @@ xkbcomp = {}
 xkbutils = {}
 xkeyboard-config = {}
 xserver-xorg = {}
-xserver-xorg-video-dummy = {}
+xserver-xorg-video-orbital = {}
 xterm = {}
 
 [[files]]
