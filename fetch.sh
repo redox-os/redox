@@ -1,6 +1,6 @@
 #!/usr/bin/env bash
 set -e
 
-source config.sh
+source `dirname "$0"`/config.sh
 
-cook --fetch-only ${@:1}
+# Intentionally empty to allow fetch and cook running in parallel

@@ -1,35 +1,16 @@
-use std::collections::BTreeSet;
 use std::path::Path;
 use std::{env, process};
 
 use cookbook::WALK_DEPTH;
 use cookbook::cook::fetch::{fetch, fetch_offline};
 use cookbook::cook::fs::create_target_dir;
-use cookbook::cook::package::{package, package_toml};
-use cookbook::recipe::{BuildKind, CookRecipe, Recipe};
+use cookbook::cook::package::package;
+use cookbook::recipe::{CookRecipe, Recipe};
 use pkg::PackageName;
 
 use cookbook::config::init_config;
 use cookbook::cook::cook_build::build;
 use termion::{color, style};
-
-fn cook_meta(
-    recipe_dir: &Path,
-    name: &PackageName,
-    recipe: &Recipe,
-    fetch_only: bool,
-) -> Result<(), String> {
-    if fetch_only {
-        return Ok(());
-    }
-
-    let target_dir = create_target_dir(recipe_dir)?;
-    let empty_deps = BTreeSet::new();
-    let _package_file = package_toml(&target_dir, name, recipe, &empty_deps)
-        .map_err(|err| format!("failed to package: {}", err))?;
-
-    Ok(())
-}
 
 fn cook(
     recipe_dir: &Path,
@@ -39,12 +20,9 @@ fn cook(
     fetch_only: bool,
     is_offline: bool,
 ) -> Result<(), String> {
-    if recipe.build.kind == BuildKind::None {
-        return cook_meta(recipe_dir, name, recipe, fetch_only);
-    }
     let source_dir = match is_offline {
-        true => fetch_offline(recipe_dir, &recipe.source),
-        false => fetch(recipe_dir, &recipe.source),
+        true => fetch_offline(recipe_dir, recipe, &None),
+        false => fetch(recipe_dir, recipe, &None),
     }
     .map_err(|err| format!("failed to fetch: {}", err))?;
 
@@ -62,10 +40,11 @@ fn cook(
         recipe,
         is_offline,
         !is_deps,
+        &None,
     )
     .map_err(|err| format!("failed to build: {}", err))?;
 
-    let _package_file = package(&stage_dir, &target_dir, name, recipe, &auto_deps)
+    package(&stage_dir, &target_dir, name, recipe, &auto_deps, &None)
         .map_err(|err| format!("failed to package: {}", err))?;
 
     Ok(())

@@ -8,7 +8,10 @@ use std::{
 };
 use walkdir::{DirEntry, WalkDir};
 
-use crate::config::translate_mirror;
+use crate::{
+    config::translate_mirror,
+    cook::pty::{PtyOut, spawn_to_pipe},
+};
 
 //TODO: pub(crate) for all of these functions
 
@@ -146,9 +149,10 @@ pub fn rename(src: &Path, dst: &Path) -> Result<(), String> {
     })
 }
 
-pub fn run_command(mut command: process::Command) -> Result<(), String> {
-    let status = command
-        .status()
+pub fn run_command(mut command: process::Command, stdout_pipe: &PtyOut) -> Result<(), String> {
+    let status = spawn_to_pipe(&mut command, stdout_pipe)
+        .map_err(|err| format!("failed to run {:?}: {}\n{:#?}", command, err, err))?
+        .wait()
         .map_err(|err| format!("failed to run {:?}: {}\n{:#?}", command, err, err))?;
 
     if !status.success() {
@@ -161,11 +165,13 @@ pub fn run_command(mut command: process::Command) -> Result<(), String> {
     Ok(())
 }
 
-pub fn run_command_stdin(mut command: process::Command, stdin_data: &[u8]) -> Result<(), String> {
+pub fn run_command_stdin(
+    mut command: process::Command,
+    stdin_data: &[u8],
+    stdout_pipe: &PtyOut,
+) -> Result<(), String> {
     command.stdin(Stdio::piped());
-
-    let mut child = command
-        .spawn()
+    let mut child = spawn_to_pipe(&mut command, stdout_pipe)
         .map_err(|err| format!("failed to spawn {:?}: {}\n{:#?}", command, err, err))?;
 
     if let Some(ref mut stdin) = child.stdin {
@@ -217,13 +223,13 @@ pub fn offline_check_exists(path: &PathBuf) -> Result<(), String> {
     Ok(())
 }
 
-pub fn download_wget(url: &str, dest: &PathBuf) -> Result<(), String> {
+pub fn download_wget(url: &str, dest: &PathBuf, logger: &PtyOut) -> Result<(), String> {
     if !dest.is_file() {
         let dest_tmp = PathBuf::from(format!("{}.tmp", dest.display()));
         let mut command = Command::new("wget");
         command.arg(translate_mirror(url));
         command.arg("--continue").arg("-O").arg(&dest_tmp);
-        run_command(command)?;
+        run_command(command, logger)?;
         rename(&dest_tmp, &dest)?;
     }
     Ok(())
