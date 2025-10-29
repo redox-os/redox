@@ -1,6 +1,6 @@
-diff -ruwN xorg-server-21.1.16/hw/xfree86/common/xf86Xinput.c source/hw/xfree86/common/xf86Xinput.c
---- xorg-server-21.1.16/hw/xfree86/common/xf86Xinput.c	2025-02-25 11:56:05.000000000 -0700
-+++ source/hw/xfree86/common/xf86Xinput.c	2025-05-03 11:28:37.266757877 -0600
+diff -ruwN source/hw/xfree86/common/xf86Xinput.c source-new/hw/xfree86/common/xf86Xinput.c
+--- source/hw/xfree86/common/xf86Xinput.c	2025-02-26 01:56:05.000000000 +0700
++++ source-new/hw/xfree86/common/xf86Xinput.c	2025-10-28 06:15:47.428141477 +0700
 @@ -860,8 +860,10 @@
      if (stat(path, &st) == -1)
          return;
@@ -12,9 +12,9 @@ diff -ruwN xorg-server-21.1.16/hw/xfree86/common/xf86Xinput.c source/hw/xfree86/
  }
  
  static inline InputDriverPtr
-diff -ruwN xorg-server-21.1.16/hw/xfree86/loader/meson.build source/hw/xfree86/loader/meson.build
---- xorg-server-21.1.16/hw/xfree86/loader/meson.build	2025-02-25 11:56:05.000000000 -0700
-+++ source/hw/xfree86/loader/meson.build	2025-05-03 11:28:37.267757875 -0600
+diff -ruwN source/hw/xfree86/loader/meson.build source-new/hw/xfree86/loader/meson.build
+--- source/hw/xfree86/loader/meson.build	2025-02-26 01:56:05.000000000 +0700
++++ source-new/hw/xfree86/loader/meson.build	2025-10-28 06:15:47.428567423 +0700
 @@ -10,7 +10,7 @@
      c_args: xorg_c_args,
  )
@@ -27,9 +27,9 @@ diff -ruwN xorg-server-21.1.16/hw/xfree86/loader/meson.build source/hw/xfree86/l
 +#     'symbol-test.c',
 +#     dependencies: dl_dep,
 +# )
-diff -ruwN xorg-server-21.1.16/hw/xfree86/meson.build source/hw/xfree86/meson.build
---- xorg-server-21.1.16/hw/xfree86/meson.build	2025-02-25 11:56:05.000000000 -0700
-+++ source/hw/xfree86/meson.build	2025-05-03 11:28:37.267757875 -0600
+diff -ruwN source/hw/xfree86/meson.build source-new/hw/xfree86/meson.build
+--- source/hw/xfree86/meson.build	2025-02-26 01:56:05.000000000 +0700
++++ source-new/hw/xfree86/meson.build	2025-10-28 06:15:47.428791657 +0700
 @@ -171,13 +171,13 @@
      )
  endif
@@ -51,9 +51,9 @@ diff -ruwN xorg-server-21.1.16/hw/xfree86/meson.build source/hw/xfree86/meson.bu
  
  # For symbol presence testing only
  xorgserver_lib = shared_library(
-diff -ruwN xorg-server-21.1.16/hw/xfree86/os-support/shared/sigio.c source/hw/xfree86/os-support/shared/sigio.c
---- xorg-server-21.1.16/hw/xfree86/os-support/shared/sigio.c	2025-02-25 11:56:05.000000000 -0700
-+++ source/hw/xfree86/os-support/shared/sigio.c	2025-05-03 11:28:37.267757875 -0600
+diff -ruwN source/hw/xfree86/os-support/shared/sigio.c source-new/hw/xfree86/os-support/shared/sigio.c
+--- source/hw/xfree86/os-support/shared/sigio.c	2025-02-26 01:56:05.000000000 +0700
++++ source-new/hw/xfree86/os-support/shared/sigio.c	2025-10-28 06:15:47.429003549 +0700
 @@ -196,11 +196,12 @@
                          fd, strerror(errno));
              }
@@ -68,9 +68,9 @@ diff -ruwN xorg-server-21.1.16/hw/xfree86/os-support/shared/sigio.c source/hw/xf
                      installed = TRUE;
                  }
              }
-diff -ruwN xorg-server-21.1.16/hw/xfree86/os-support/xf86_OSlib.h source/hw/xfree86/os-support/xf86_OSlib.h
---- xorg-server-21.1.16/hw/xfree86/os-support/xf86_OSlib.h	2025-02-25 11:56:05.000000000 -0700
-+++ source/hw/xfree86/os-support/xf86_OSlib.h	2025-05-03 11:28:37.267757875 -0600
+diff -ruwN source/hw/xfree86/os-support/xf86_OSlib.h source-new/hw/xfree86/os-support/xf86_OSlib.h
+--- source/hw/xfree86/os-support/xf86_OSlib.h	2025-02-26 01:56:05.000000000 +0700
++++ source-new/hw/xfree86/os-support/xf86_OSlib.h	2025-10-28 06:15:47.429244885 +0700
 @@ -176,7 +176,7 @@
  /**************************************************************************/
  /* Linux or Glibc-based system                                            */
@@ -80,9 +80,51 @@ diff -ruwN xorg-server-21.1.16/hw/xfree86/os-support/xf86_OSlib.h source/hw/xfre
  #include <sys/ioctl.h>
  #include <signal.h>
  #include <stdlib.h>
-diff -ruwN xorg-server-21.1.16/include/meson.build source/include/meson.build
---- xorg-server-21.1.16/include/meson.build	2025-02-25 11:56:05.000000000 -0700
-+++ source/include/meson.build	2025-09-15 08:40:00.484333455 -0600
+diff -ruwN source/include/dix.h source-new/include/dix.h
+--- source/include/dix.h	2025-02-26 01:56:05.000000000 +0700
++++ source-new/include/dix.h	2025-10-29 14:34:52.026472055 +0700
+@@ -55,6 +55,7 @@
+ #include "geext.h"
+ #include "events.h"
+ #include <X11/extensions/XI.h>
++#include <stdio.h>
+ 
+ #define EARLIER -1
+ #define SAMETIME 0
+@@ -69,14 +70,28 @@
+ 
+ #define REQUEST_SIZE_MATCH(req)                                         \
+     do {                                                                \
+-        if ((sizeof(req) >> 2) != client->req_len)                      \
++        if ((sizeof(req) >> 2) != client->req_len) { \
++            fprintf(stderr, \
++                    "REQUEST_SIZE_MATCH failed in %s:%d: " \
++                    "Expected len %lu, got %d\n", \
++                    __FILE__, __LINE__, \
++                    (unsigned long)(sizeof(req) >> 2), \
++                    client->req_len); \
+             return(BadLength);                                          \
++        } \
+     } while (0)
+ 
+ #define REQUEST_AT_LEAST_SIZE(req)                                      \
+     do {                                                                \
+-        if ((sizeof(req) >> 2) > client->req_len)                       \
++        if ((sizeof(req) >> 2) > client->req_len) { \
++            fprintf(stderr, \
++                    "REQUEST_AT_LEAST_SIZE failed in %s:%d: " \
++                    "Expected len %lu, got %d\n", \
++                    __FILE__, __LINE__, \
++                    (unsigned long)(sizeof(req) >> 2), \
++                    client->req_len); \
+             return(BadLength);                                          \
++        } \
+     } while (0)
+ 
+ #define REQUEST_AT_LEAST_EXTRA_SIZE(req, extra)                         \
+diff -ruwN source/include/meson.build source-new/include/meson.build
+--- source/include/meson.build	2025-02-26 01:56:05.000000000 +0700
++++ source-new/include/meson.build	2025-10-28 06:15:47.429576623 +0700
 @@ -162,7 +162,7 @@
  conf_data.set('HAVE_PORT_CREATE', cc.has_function('port_create') ? '1' : false)
  conf_data.set('HAVE_REALLOCARRAY', cc.has_function('reallocarray', dependencies: libbsd_dep) ? '1' : false)
@@ -121,9 +163,9 @@ diff -ruwN xorg-server-21.1.16/include/meson.build source/include/meson.build
  endif
  conf_data.set('HAS_SHM', build_mitshm ? '1' : false)
  conf_data.set('MITSHM', build_mitshm ? '1' : false)
-diff -ruwN xorg-server-21.1.16/meson.build source/meson.build
---- xorg-server-21.1.16/meson.build	2025-02-25 11:56:05.000000000 -0700
-+++ source/meson.build	2025-05-03 11:28:37.267757875 -0600
+diff -ruwN source/meson.build source-new/meson.build
+--- source/meson.build	2025-02-26 01:56:05.000000000 +0700
++++ source-new/meson.build	2025-10-28 06:15:47.429860210 +0700
 @@ -753,7 +753,7 @@
  subdir('hw')
  
@@ -133,9 +175,9 @@ diff -ruwN xorg-server-21.1.16/meson.build source/meson.build
  endif
  
  install_man(configure_file(
-diff -ruwN xorg-server-21.1.16/os/access.c source/os/access.c
---- xorg-server-21.1.16/os/access.c	2025-02-25 11:56:05.000000000 -0700
-+++ source/os/access.c	2025-05-03 11:28:37.267757875 -0600
+diff -ruwN source/os/access.c source-new/os/access.c
+--- source/os/access.c	2025-02-26 01:56:05.000000000 +0700
++++ source-new/os/access.c	2025-10-28 06:15:47.430186258 +0700
 @@ -120,7 +120,7 @@
  #include <sys/un.h>
  #endif
@@ -145,3 +187,16 @@ diff -ruwN xorg-server-21.1.16/os/access.c source/os/access.c
  #include <sys/utsname.h>
  #endif
  #if defined(SYSV) &&  defined(__i386__)
+diff -ruwN source/Xext/bigreq.c source-new/Xext/bigreq.c
+--- source/Xext/bigreq.c	2025-02-26 01:56:05.000000000 +0700
++++ source-new/Xext/bigreq.c	2025-10-29 14:35:38.059611562 +0700
+@@ -51,7 +51,8 @@
+     }
+     if (stuff->brReqType != X_BigReqEnable)
+         return BadRequest;
+-    REQUEST_SIZE_MATCH(xBigReqEnableReq);
++    // libxkbcommon sends incorrect size
++    REQUEST_AT_LEAST_SIZE(xBigReqEnableReq);
+     client->big_requests = TRUE;
+     rep = (xBigReqEnableReply) {
+         .type = X_Reply,

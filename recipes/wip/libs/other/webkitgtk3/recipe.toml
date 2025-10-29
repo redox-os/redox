@@ -31,6 +31,7 @@ dependencies = [
     "libpsl",
     "libpthread-stubs",
     "libsoup",
+    "libstdcxx-v3",
     "libtasn1",
     "libwebp",
     "libx11",
@@ -89,6 +90,17 @@ COOKBOOK_CMAKE_FLAGS+=(
     -DUSE_SYSTEM_MALLOC=OFF
     -DUSE_SYSTEM_SYSPROF_CAPTURE=OFF
     -DUSE_WOFF2=OFF
+    #TODO: remove these when runtime hangs solved
+    -DENABLE_JIT=OFF
+    -DENABLE_DFG_JIT=OFF
+    -DENABLE_FTL_JIT=OFF
+    -DENABLE_OPENGL=OFF
+    -DENABLE_WEBGL=OFF
+    -DENABLE_XSLT=OFF
+    -DENABLE_GEOLOCATION=OFF
+    -DENABLE_WEBDRIVER=OFF
+    -DENABLE_BUBBLEWRAP_SANDBOX=OFF
+    -DUSE_LCMS=OFF
 )
 
 cookbook_cmake
