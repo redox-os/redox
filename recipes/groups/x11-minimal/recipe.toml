@@ -4,5 +4,5 @@ dependencies = [
     "xkbcomp",
     "xkeyboard-config",
     "xserver-xorg",
-    "xserver-xorg-video-dummy",
+    "xserver-xorg-video-orbital",
 ]
