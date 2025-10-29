@@ -20,7 +20,7 @@ mesa-demos-x11 = {}
 servo = {}
 sqlite3 = {}
 twm = {}
-webkitgtk3 = {}
+#webkitgtk3 = {} # takes a long time to build
 xev = {}
 xeyes = {}
 xinit = {}
@@ -32,7 +32,7 @@ xserver-xorg-video-orbital = {}
 xterm = {}
 
 [[files]]
-path = "/usr/lib/init.d/20_xenv"
+path = "/usr/lib/init.d/10_xenv"
 data = """
 export DISPLAY :0
 export G_MESSAGES_DEBUG all
@@ -41,19 +41,58 @@ export WEBKIT_DEBUG all
 glib-compile-schemas /usr/share/glib-2.0/schemas/
 """
 
+# Overridden to launch X instead of orblogin
 [[files]]
-path = "/usr/lib/init.d/40_x"
+path = "/usr/lib/init.d/20_orbital"
 data = """
-bash /usr/bin/orbital-x11
+audiod
+export BROWSER /bin/netsurf-fb
+export VT 3
+orbital orbital-x11
+unset BROWSER
+unset VT
 """
 
 [[files]]
 path = "/usr/bin/orbital-x11"
+mode = 0o755
 data = """
 #!/usr/bin/env bash
 
 set -ex
 
+# Generate config file
+WIDTH="$((0x$(grep FRAMEBUFFER_WIDTH /scheme/sys/env | cut -d '=' -f 2)))"
+HEIGHT="$((0x$(grep FRAMEBUFFER_HEIGHT /scheme/sys/env | cut -d '=' -f 2)))"
+mkdir -p /usr/share/X11/xorg.conf.d
+cat > /usr/share/X11/xorg.conf.d/orbital.conf <<EOF
+Section "Device"
+    Identifier  "Configured Video Device"
+    Driver      "dummy"
+    VideoRam 256000
+EndSection
+
+Section "Monitor"
+    Identifier  "Configured Monitor"
+    HorizSync 5.0 - 1000.0
+    VertRefresh 5.0 - 200.0
+    $(cvt "${WIDTH}" "${HEIGHT}")
+EndSection
+
+Section "Screen"
+    Identifier  "Default Screen"
+    Monitor     "Configured Monitor"
+    Device      "Configured Video Device"
+    DefaultDepth 24
+    SubSection "Display"
+    Depth 24
+    Modes "${WIDTH}x${HEIGHT}"
+    EndSubSection
+EndSection
+EOF
+
+# Launch X11, twm, and xterm on display 0
+export DISPLAY=":0"
 X "${DISPLAY}" -verbose 6 &
 sleep 1
 twm &
