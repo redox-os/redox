@@ -1,5 +1,5 @@
 [source]
-git = "github.com/servo/servo.git"
+git = "https://github.com/servo/servo.git"
 rev = "25fea1e086c46d611cf87db439430994e4f56cd5"
 patches = [
     "redox.patch"
@@ -23,6 +23,7 @@ dependencies = [
     "libx11",
     "libxcb",
     "libpng",
+    "libstdcxx-v3",
     "openssl1",
     "pcre",
     "zlib",
@@ -44,6 +45,7 @@ export TARGET_CC="$CC"
 export TARGET_CXX="$CXX"
 export TARGET_AR="$AR"
 
+# pkg-config crate can only recognize one path to pkgconfig
 export PKG_CONFIG_PATH_x86_64_unknown_redox="${COOKBOOK_SYSROOT}/lib/pkgconfig"
 export PKG_CONFIG_SYSROOT_DIR_x86_64_unknown_redox="${COOKBOOK_SYSROOT}/lib/pkgconfig"
 rsync -a -v ${COOKBOOK_SYSROOT}/usr/share/pkgconfig/*.pc ${COOKBOOK_SYSROOT}/lib/pkgconfig/
@@ -51,13 +53,19 @@ rsync -a -v ${COOKBOOK_SYSROOT}/usr/share/pkgconfig/*.pc ${COOKBOOK_SYSROOT}/lib
 export RUSTFLAGS="$RUSTFLAGS -L native=${COOKBOOK_SYSROOT}/lib -C link-arg=-Wl,-rpath-link,${COOKBOOK_SYSROOT}/lib"
 
 #TODO: mozjs-sys and mozangle uses clang, it won't know our prefix C libraries, so here's the workaround
-PREFIX_INCLUDE=$(realpath "$COOKBOOK_ROOT/../prefix/$TARGET/sysroot/x86_64-unknown-redox/include")
+PREFIX_INCLUDE="$COOKBOOK_HOST_SYSROOT/$TARGET/include"
 export CLANGFLAGS="-I $PREFIX_INCLUDE/c++/13.2.0 -I $PREFIX_INCLUDE/c++/13.2.0/$TARGET -I $PREFIX_INCLUDE/c++/13.2.0/backward -I $PREFIX_INCLUDE"
 
 #Mozjs specifics
 export CARGO_MAKEFLAGS="-j $COOKBOOK_MAKE_JOBS" CCACHE="sccache"
 
 PACKAGE_PATH="ports/servoshell" cookbook_cargo
+
+# resources packaging
+mkdir -p ${COOKBOOK_STAGE}/usr/lib/servo/bin
+mv ${COOKBOOK_STAGE}/usr/bin/servo ${COOKBOOK_STAGE}/usr/lib/servo/bin/
+ln -s ../lib/servo/bin/servo ${COOKBOOK_STAGE}/usr/bin/servo
+rsync -a -v ${COOKBOOK_SOURCE}/resources ${COOKBOOK_STAGE}/usr/lib/servo/
 """
 
 [package]
