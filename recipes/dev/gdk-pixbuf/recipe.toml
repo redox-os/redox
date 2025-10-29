@@ -1,6 +1,6 @@
 [source]
-tar = "https://ftp.gnome.org/pub/gnome/sources/gdk-pixbuf/2.38/gdk-pixbuf-2.38.1.tar.xz"
-blake3 = "131cf94d458bf353e42993714477e746fe3f1e4d39cb4acd4c82a5d5e341679b"
+tar = "https://ftp.gnome.org/pub/gnome/sources/gdk-pixbuf/2.44/gdk-pixbuf-2.44.4.tar.xz"
+blake3 = "94db7bebffbd6be84a1b58a05771e411e9f7c16b06d73fcedaf0e6c0e552be9c"
 patches = ["redox.patch"]
 
 [build]
@@ -18,7 +18,6 @@ dependencies = [
 template = "meson"
 mesonflags = [
     "-Dbuiltin_loaders=all",
-    "-Dgir=false",
     "-Dinstalled_tests=false",
-    "-Dx11=false",
+    "-Dman=false",
 ]
