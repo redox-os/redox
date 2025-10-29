@@ -1,0 +1,12 @@
+#TODO: needs mkfifo in nix crate
+[source]
+git = "https://github.com/leftwm/leftwm"
+
+[build]
+dependencies = []
+template = "custom"
+script = """
+DYNAMIC_INIT
+COOKBOOK_SOURCE="${COOKBOOK_SOURCE}/leftwm"
+cookbook_cargo
+"""
