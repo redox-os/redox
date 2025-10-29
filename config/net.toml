@@ -20,7 +20,7 @@ dhcpd -b
 [[files]]
 path = "/etc/net/dns"
 data = """
-208.67.222.222
+9.9.9.9
 """
 
 [[files]]
