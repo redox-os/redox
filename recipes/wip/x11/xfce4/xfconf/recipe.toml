@@ -1,0 +1,18 @@
+[source]
+tar = "https://archive.xfce.org/src/xfce/xfconf/4.21/xfconf-4.21.0.tar.xz"
+blake3 = "588bc6768775221a50d8cdd8480854a360b1343193115b639daf225aa34b97d7"
+
+[build]
+dependencies = [
+    "gettext",
+    "glib",
+    "libffi",
+    "libiconv",
+    "libxfce4util",
+    "pcre2",
+    "zlib",
+]
+template = "meson"
+mesonflags = [
+    "-Dintrospection=false",
+]
