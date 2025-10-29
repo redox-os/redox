@@ -1,60 +1,36 @@
 # Configuration file for recipe commands
 
-$(BUILD)/fetch.tag: prefix $(FSTOOLS_TAG) $(FILESYSTEM_CONFIG) $(CONTAINER_TAG)
+$(REPO_TAG): $(FSTOOLS_TAG) $(CONTAINER_TAG)
 ifeq ($(PODMAN_BUILD),1)
 	$(PODMAN_RUN) make $@
 else
 	export PATH="$(PREFIX_PATH):$$PATH" && \
-	PACKAGES="$$($(LIST_PACKAGES) $(LIST_PACKAGES_OPTS) --short -c $(FILESYSTEM_CONFIG))" && \
 	export COOKBOOK_HOST_SYSROOT="$(ROOT)/$(PREFIX_INSTALL)" && \
-	cd cookbook && \
-	./fetch.sh $(REPO_NONSTOP) $(REPO_OFFLINE) "$${PACKAGES}"
+	PACKAGES="$$($(LIST_PACKAGES) $(LIST_PACKAGES_OPTS) --short -c $(FILESYSTEM_CONFIG))" && \
+	./cookbook/repo.sh $(REPO_NONSTOP) $(REPO_OFFLINE) --with-package-deps "$${PACKAGES}"
 	mkdir -p $(BUILD)
+	# make sure fstools.tag are newer than the things repo modifies
+	touch $(FSTOOLS_TAG)
 	touch $@
 endif
 
-$(REPO_TAG): $(BUILD)/fetch.tag $(FSTOOLS_TAG) $(CONTAINER_TAG)
-ifeq ($(PODMAN_BUILD),1)
-	$(PODMAN_RUN) make $@
-else
-	export PATH="$(PREFIX_PATH):$$PATH" && \
-	export COOKBOOK_HOST_SYSROOT="$(ROOT)/$(PREFIX_INSTALL)" && \
-	PACKAGES="$$($(LIST_PACKAGES) $(LIST_PACKAGES_OPTS) --short -c $(FILESYSTEM_CONFIG))" && \
-	cd cookbook && \
-	./repo.sh $(REPO_NONSTOP) $(REPO_OFFLINE) --with-package-deps "$${PACKAGES}"
-	mkdir -p $(BUILD)
-	# make sure fstools.tag and fetch.tag are newer than the things repo modifies
-	touch $(FSTOOLS_TAG)
-	touch $(BUILD)/fetch.tag
-	touch $@
-endif
+
+comma := ,
 
 # Find recipe
 find.%: $(FSTOOLS_TAG) FORCE
 ifeq ($(PODMAN_BUILD),1)
 	$(PODMAN_RUN) make $@
 else
-	export PATH="$(PREFIX_PATH):$$PATH" && \
-	export COOKBOOK_HOST_SYSROOT="$(ROOT)/$(PREFIX_INSTALL)" && \
-	cd cookbook && \
-	target/release/find_recipe $*
+	@cd ./cookbook && ./target/release/repo find $(foreach f,$(subst $(comma), ,$*),$(f))
 endif
-
-comma := ,
 
 # Invoke clean.sh for one or more targets separated by comma
 c.%: $(FSTOOLS_TAG) FORCE
 ifeq ($(PODMAN_BUILD),1)
 	$(PODMAN_RUN) make $@
 else
-	@if echo "$*" | grep -q ','; then \
-		$(MAKE) $(foreach f,$(subst $(comma), ,$*),c.$(f)); \
-	else \
-		export PATH="$(PREFIX_PATH):$$PATH" && \
-		export COOKBOOK_HOST_SYSROOT="$(ROOT)/$(PREFIX_INSTALL)" && \
-		cd cookbook && \
-		./clean.sh $*; \
-	fi
+	cd ./cookbook && ./target/release/repo clean $(foreach f,$(subst $(comma), ,$*),$(f))
 endif
 
 # Invoke fetch.sh for one or more targets separated by comma
@@ -62,14 +38,9 @@ f.%: $(FSTOOLS_TAG) FORCE
 ifeq ($(PODMAN_BUILD),1)
 	$(PODMAN_RUN) make $@
 else
-	@if echo "$*" | grep -q ','; then \
-		$(MAKE) $(foreach f,$(subst $(comma), ,$*),f.$(f)); \
-	else \
-		export PATH="$(PREFIX_PATH):$$PATH" && \
-		export COOKBOOK_HOST_SYSROOT="$(ROOT)/$(PREFIX_INSTALL)" && \
-		cd cookbook && \
-		./fetch.sh $*; \
-	fi
+	export PATH="$(PREFIX_PATH):$$PATH" && \
+	export COOKBOOK_HOST_SYSROOT="$(ROOT)/$(PREFIX_INSTALL)" && \
+	cd ./cookbook && ./target/release/repo fetch $(foreach f,$(subst $(comma), ,$*),$(f))
 endif
 
 # Invoke repo.sh for one or more targets separated by comma
@@ -77,14 +48,9 @@ r.%: $(FSTOOLS_TAG) FORCE
 ifeq ($(PODMAN_BUILD),1)
 	$(PODMAN_RUN) make $@
 else
-	@if echo "$*" | grep -q ','; then \
-		$(MAKE) $(foreach f,$(subst $(comma), ,$*),r.$(f)); \
-	else \
-		export PATH="$(PREFIX_PATH):$$PATH" && \
-		export COOKBOOK_HOST_SYSROOT="$(ROOT)/$(PREFIX_INSTALL)" && \
-		cd cookbook && \
-		./repo.sh $*; \
-	fi
+	export PATH="$(PREFIX_PATH):$$PATH" && \
+	export COOKBOOK_HOST_SYSROOT="$(ROOT)/$(PREFIX_INSTALL)" && \
+	./cookbook/repo.sh $(REPO_OFFLINE) $(foreach f,$(subst $(comma), ,$*),$(f))
 endif
 
 MOUNTED_TAG=$(MOUNT_DIR)~
@@ -100,34 +66,23 @@ p.%: $(FSTOOLS_TAG) FORCE
 ifeq ($(PODMAN_BUILD),1)
 	$(PODMAN_RUN) make $@
 else
-	@if echo "$*" | grep -q ','; then \
-		$(MAKE) $(foreach f,$(subst $(comma), ,$*),p.$(f)); \
-	else \
-		export RECIPE_PATH=cookbook/$(shell make find.$* | grep ^recipes) && \
-		export RECIPE_STAGE=$$RECIPE_PATH/target/$(TARGET)/stage.pkgar && \
-		./cookbook/pkgar/target/release/pkgar extract $(MOUNT_DIR)/ --archive $$RECIPE_STAGE \
-			--pkey ./cookbook/build/id_ed25519.pub.toml && \
-		echo "extracted $$RECIPE_PATH"; \
-	fi
+	cd ./cookbook && ./target/release/repo push $(foreach f,$(subst $(comma), ,$*),$(f)) "--sysroot=../$(MOUNT_DIR)"
 endif
 	@if [ -f $(MOUNTED_TAG) ]; then \
 		$(MAKE) unmount && rm -f $(MOUNTED_TAG); \
 	else echo "Not unmounting by ourself, don't forget to do it"; \
 	fi
 
+# Push compiled package with their package dependencies
+pp.%: $(FSTOOLS_TAG) FORCE
+	$(MAKE) p.$*,--with-package-deps
+
 # Invoke unfetch.sh for one or more targets separated by comma
 u.%: $(FSTOOLS_TAG) FORCE
 ifeq ($(PODMAN_BUILD),1)
 	$(PODMAN_RUN) make $@
 else
-	@if echo "$*" | grep -q ','; then \
-		$(MAKE) $(foreach f,$(subst $(comma), ,$*),u.$(f)); \
-	else \
-		export PATH="$(PREFIX_PATH):$$PATH" && \
-		export COOKBOOK_HOST_SYSROOT="$(ROOT)/$(PREFIX_INSTALL)" && \
-		cd cookbook && \
-		./unfetch.sh $*; \
-	fi
+	cd ./cookbook && ./target/release/repo unfetch $(foreach f,$(subst $(comma), ,$*),$(f))
 endif
 
 # Invoke clean.sh, and repo.sh for one of more targets separated by comma

@@ -32,7 +32,7 @@ clean: $(CONTAINER_TAG)
 ifeq ($(PODMAN_BUILD),1)
 	$(PODMAN_RUN) make $@
 else
-	cd cookbook && ./clean.sh
+	$(MAKE) c,--all
 	-rm -rf cookbook/repo
 	$(MAKE) fstools_clean
 	$(HOST_CARGO) clean --manifest-path relibc/Cargo.toml
@@ -45,8 +45,8 @@ distclean: $(CONTAINER_TAG)
 ifeq ($(PODMAN_BUILD),1)
 	$(PODMAN_RUN) make $@
 else
+	$(MAKE) u,--all
 	$(MAKE) clean
-	cd cookbook && ./unfetch.sh
 endif
 
 pull:
