@@ -1,19 +1,13 @@
 #!/usr/bin/env bash
 set -e
 
-source config.sh
+source `dirname "$0"`/config.sh
 
 if [ $# = 0 ]
 then
-    recipes="$(list_recipes --short)"
+    recipes="--all"
 else
     recipes="$@"
 fi
 
-for recipe_name in $recipes
-do
-    recipe_path=`find_recipe $recipe_name`
-
-    echo -e "\033[01;38;5;215mcook - clean $recipe_name\033[0m"
-    rm -rf "${ROOT}/$recipe_path/target/${TARGET}"
-done
+repo clean $recipes

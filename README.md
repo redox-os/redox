@@ -29,7 +29,16 @@ Cookbook has special config to avoid repetitive args, place this file into `cook
 ```toml
 # Configuration file
 # This is a configuration file to avoid repetitively spelling command args.
-# At the moment only mirrors here implemented but in future it will be expanded when scripts are rusted
+# At the moment this configures mirror and cook configuration
+
+# These options has defaults set below
+# These options has higher priority than env
+#[cook]
+#jobs = <nproc>
+#nonstop = false
+#offline = false
+#tui = true
+#verbose = true
 
 [mirrors]
 # see list of GNU FTP mirrors at https://www.gnu.org/prep/ftp.en.html

@@ -1,12 +1,29 @@
 use crate::config::translate_mirror;
 use crate::cook::fs::*;
+use crate::cook::pty::PtyOut;
 use crate::cook::script::*;
 use crate::is_redox;
+use crate::recipe::BuildKind;
 use crate::recipe::Recipe;
 use crate::{blake3, recipe::SourceRecipe};
 use std::fs;
 use std::path::{Path, PathBuf};
 use std::process::Command;
+
+macro_rules! log_warn {
+    ($logger:expr, $($arg:tt)+) => {
+        use std::io::Write;
+
+        if $logger.is_some() {
+           let _ = $logger.as_ref().unwrap().1.try_clone().unwrap().write(
+                        format!($($arg)+)
+                            .as_bytes(),
+                    );
+        } else {
+            eprintln!($($arg)+);
+        }
+    };
+}
 
 pub(crate) fn get_blake3(path: &PathBuf, show_progress: bool) -> Result<String, String> {
     if show_progress {
@@ -24,14 +41,22 @@ pub(crate) fn get_blake3(path: &PathBuf, show_progress: bool) -> Result<String, 
     })
 }
 
-pub fn fetch_offline(recipe_dir: &Path, source: &Option<SourceRecipe>) -> Result<PathBuf, String> {
+pub fn fetch_offline(
+    recipe_dir: &Path,
+    recipe: &Recipe,
+    logger: &PtyOut,
+) -> Result<PathBuf, String> {
     let source_dir = recipe_dir.join("source");
-    match source {
+    if recipe.build.kind == BuildKind::None || recipe.build.kind == BuildKind::Remote {
+        // the build function doesn't need source dir exists
+        return Ok(source_dir);
+    }
+    match &recipe.source {
         Some(SourceRecipe::Path { path: _ }) | None => {
-            return fetch(recipe_dir, source);
+            return fetch(recipe_dir, recipe, logger);
         }
         Some(SourceRecipe::SameAs { same_as: _ }) => {
-            return fetch(recipe_dir, source);
+            return fetch(recipe_dir, recipe, logger);
         }
         Some(SourceRecipe::Git {
             git: _,
@@ -52,7 +77,7 @@ pub fn fetch_offline(recipe_dir: &Path, source: &Option<SourceRecipe>) -> Result
         }) => {
             if !source_dir.is_dir() {
                 let source_tar = recipe_dir.join("source.tar");
-                let source_tar_blake3 = get_blake3(&source_tar, true)?;
+                let source_tar_blake3 = get_blake3(&source_tar, true && logger.is_none())?;
                 if source_tar.exists() {
                     if let Some(blake3) = blake3 {
                         if source_tar_blake3 != *blake3 {
@@ -60,8 +85,8 @@ pub fn fetch_offline(recipe_dir: &Path, source: &Option<SourceRecipe>) -> Result
                                 "The downloaded tar blake3 '{source_tar_blake3}' is not equal to blake3 in recipe.toml."
                             ));
                         }
-                        fetch_extract_tar(source_tar, &source_dir)?;
-                        fetch_apply_patches(recipe_dir, patches, script, &source_dir)?;
+                        fetch_extract_tar(source_tar, &source_dir, logger)?;
+                        fetch_apply_patches(recipe_dir, patches, script, &source_dir, logger)?;
                     } else {
                         // need to trust this tar file
                         return Err(format!(
@@ -79,18 +104,28 @@ pub fn fetch_offline(recipe_dir: &Path, source: &Option<SourceRecipe>) -> Result
     Ok(source_dir)
 }
 
-pub fn fetch(recipe_dir: &Path, source: &Option<SourceRecipe>) -> Result<PathBuf, String> {
+pub fn fetch(recipe_dir: &Path, recipe: &Recipe, logger: &PtyOut) -> Result<PathBuf, String> {
     let source_dir = recipe_dir.join("source");
-    match source {
+    if recipe.build.kind == BuildKind::None || recipe.build.kind == BuildKind::Remote {
+        // the build function doesn't need source dir exists
+        return Ok(source_dir);
+    }
+    match &recipe.source {
         Some(SourceRecipe::SameAs { same_as }) => {
-            let (canon_dir, recipe) = fetch_resolve_canon(recipe_dir, same_as)?;
+            let (canon_dir, recipe) = fetch_resolve_canon(recipe_dir, &same_as)?;
             // recursively fetch
-            fetch(&canon_dir, &recipe.source)?;
-            fetch_make_symlink(&source_dir, same_as)?;
+            fetch(&canon_dir, &recipe, logger)?;
+            fetch_make_symlink(&source_dir, &same_as)?;
         }
         Some(SourceRecipe::Path { path }) => {
-            if !source_dir.is_dir() || modified_dir(Path::new(path))? > modified_dir(&source_dir)? {
-                eprintln!("[DEBUG]: {} is newer than {}", path, source_dir.display());
+            if !source_dir.is_dir() || modified_dir(Path::new(&path))? > modified_dir(&source_dir)?
+            {
+                log_warn!(
+                    logger,
+                    "[DEBUG]: {} is newer than {}",
+                    path,
+                    source_dir.display()
+                );
                 copy_dir_all(path, &source_dir).map_err(|e| {
                     format!(
                         "Couldn't copy source from {} to {}: {}",
@@ -122,7 +157,7 @@ pub fn fetch(recipe_dir: &Path, source: &Option<SourceRecipe>) -> Result<PathBuf
                 command
                     .arg("clone")
                     .arg("--recursive")
-                    .arg(translate_mirror(git));
+                    .arg(translate_mirror(&git));
                 if let Some(branch) = branch {
                     command.arg("--branch").arg(branch);
                 }
@@ -130,7 +165,7 @@ pub fn fetch(recipe_dir: &Path, source: &Option<SourceRecipe>) -> Result<PathBuf
                     command.arg("--depth").arg("1").arg("--shallow-submodules");
                 }
                 command.arg(&source_dir_tmp);
-                run_command(command)?;
+                run_command(command, logger)?;
 
                 // Move source.tmp to source atomically
                 rename(&source_dir_tmp, &source_dir)?;
@@ -148,13 +183,13 @@ pub fn fetch(recipe_dir: &Path, source: &Option<SourceRecipe>) -> Result<PathBuf
                 let mut command = Command::new("git");
                 command.arg("-C").arg(&source_dir);
                 command.arg("remote").arg("set-url").arg("origin").arg(git);
-                run_command(command)?;
+                run_command(command, logger)?;
 
                 // Fetch origin
                 let mut command = Command::new("git");
                 command.arg("-C").arg(&source_dir);
                 command.arg("fetch").arg("origin");
-                run_command(command)?;
+                run_command(command, logger)?;
             }
 
             if let Some(_upstream) = upstream {
@@ -169,7 +204,7 @@ pub fn fetch(recipe_dir: &Path, source: &Option<SourceRecipe>) -> Result<PathBuf
                 let mut command = Command::new("git");
                 command.arg("-C").arg(&source_dir);
                 command.arg("checkout").arg(rev);
-                run_command(command)?;
+                run_command(command, logger)?;
             } else if !shallow_clone && !is_redox() {
                 //TODO: complicated stuff to check and reset branch to origin
                 //TODO: redox can't undestand this (got exit status 1)
@@ -179,7 +214,7 @@ pub fn fetch(recipe_dir: &Path, source: &Option<SourceRecipe>) -> Result<PathBuf
                     command.env("BRANCH", branch);
                 }
                 command.current_dir(&source_dir);
-                run_command(command)?;
+                run_command(command, logger)?;
             }
 
             if !patches.is_empty() || script.is_some() {
@@ -187,7 +222,7 @@ pub fn fetch(recipe_dir: &Path, source: &Option<SourceRecipe>) -> Result<PathBuf
                 let mut command = Command::new("git");
                 command.arg("-C").arg(&source_dir);
                 command.arg("reset").arg("--hard");
-                run_command(command)?;
+                run_command(command, logger)?;
             }
 
             if !shallow_clone {
@@ -195,7 +230,7 @@ pub fn fetch(recipe_dir: &Path, source: &Option<SourceRecipe>) -> Result<PathBuf
                 let mut command = Command::new("git");
                 command.arg("-C").arg(&source_dir);
                 command.arg("submodule").arg("sync").arg("--recursive");
-                run_command(command)?;
+                run_command(command, logger)?;
 
                 // Update submodules
                 let mut command = Command::new("git");
@@ -205,10 +240,10 @@ pub fn fetch(recipe_dir: &Path, source: &Option<SourceRecipe>) -> Result<PathBuf
                     .arg("update")
                     .arg("--init")
                     .arg("--recursive");
-                run_command(command)?;
+                run_command(command, logger)?;
             }
 
-            fetch_apply_patches(recipe_dir, patches, script, &source_dir)?;
+            fetch_apply_patches(recipe_dir, patches, script, &source_dir, logger)?;
         }
         Some(SourceRecipe::Tar {
             tar,
@@ -221,9 +256,9 @@ pub fn fetch(recipe_dir: &Path, source: &Option<SourceRecipe>) -> Result<PathBuf
             while {
                 if !source_tar.is_file() {
                     tar_updated = true;
-                    download_wget(&tar, &source_tar)?;
+                    download_wget(&tar, &source_tar, logger)?;
                 }
-                let source_tar_blake3 = get_blake3(&source_tar, tar_updated)?;
+                let source_tar_blake3 = get_blake3(&source_tar, tar_updated && logger.is_none())?;
                 if let Some(blake3) = blake3 {
                     if source_tar_blake3 != *blake3 {
                         if tar_updated {
@@ -231,7 +266,10 @@ pub fn fetch(recipe_dir: &Path, source: &Option<SourceRecipe>) -> Result<PathBuf
                                 "The downloaded tar blake3 '{source_tar_blake3}' is not equal to blake3 in recipe.toml"
                             ));
                         } else {
-                            eprintln!("DEBUG: source tar blake3 is different and need redownload");
+                            log_warn!(
+                                logger,
+                                "DEBUG: source tar blake3 is different and need redownload"
+                            );
                             remove_all(&source_tar)?;
                         }
                         true
@@ -240,7 +278,8 @@ pub fn fetch(recipe_dir: &Path, source: &Option<SourceRecipe>) -> Result<PathBuf
                     }
                 } else {
                     //TODO: set blake3 hash on the recipe with something like "cook fix"
-                    eprintln!(
+                    log_warn!(
+                        logger,
                         "WARNING: set blake3 for '{}' to '{}'",
                         source_tar.display(),
                         source_tar_blake3
@@ -250,7 +289,10 @@ pub fn fetch(recipe_dir: &Path, source: &Option<SourceRecipe>) -> Result<PathBuf
             } {}
             if source_dir.is_dir() {
                 if tar_updated || fetch_is_patches_newer(recipe_dir, patches, &source_dir)? {
-                    eprintln!("DEBUG: source tar or patches is newer than the source directory");
+                    log_warn!(
+                        logger,
+                        "DEBUG: source tar or patches is newer than the source directory"
+                    );
                     remove_all(&source_dir)?
                 }
             }
@@ -258,8 +300,8 @@ pub fn fetch(recipe_dir: &Path, source: &Option<SourceRecipe>) -> Result<PathBuf
                 // Create source.tmp
                 let source_dir_tmp = recipe_dir.join("source.tmp");
                 create_dir_clean(&source_dir_tmp)?;
-                fetch_extract_tar(source_tar, &source_dir_tmp)?;
-                fetch_apply_patches(recipe_dir, patches, script, &source_dir_tmp)?;
+                fetch_extract_tar(source_tar, &source_dir_tmp, logger)?;
+                fetch_apply_patches(recipe_dir, patches, script, &source_dir_tmp, logger)?;
 
                 // Move source.tmp to source atomically
                 rename(&source_dir_tmp, &source_dir)?;
@@ -268,8 +310,8 @@ pub fn fetch(recipe_dir: &Path, source: &Option<SourceRecipe>) -> Result<PathBuf
         // Local Sources
         None => {
             if !source_dir.is_dir() {
-                //TODO: Don't print if build template is none or remote
-                eprintln!(
+                log_warn!(
+                    logger,
                     "WARNING: Recipe without source section expected source dir at '{}'",
                     source_dir.display(),
                 );
@@ -333,6 +375,7 @@ pub(crate) fn fetch_resolve_canon(
 pub(crate) fn fetch_extract_tar(
     source_tar: PathBuf,
     source_dir_tmp: &PathBuf,
+    logger: &PtyOut,
 ) -> Result<(), String> {
     let mut command = Command::new("tar");
     if is_redox() {
@@ -345,7 +388,7 @@ pub(crate) fn fetch_extract_tar(
     command.arg(&source_tar);
     command.arg("--directory").arg(source_dir_tmp);
     command.arg("--strip-components").arg("1");
-    run_command(command)?;
+    run_command(command, logger)?;
     Ok(())
 }
 
@@ -378,6 +421,7 @@ pub(crate) fn fetch_apply_patches(
     patches: &Vec<String>,
     script: &Option<String>,
     source_dir_tmp: &PathBuf,
+    logger: &PtyOut,
 ) -> Result<(), String> {
     for patch_name in patches {
         let patch_file = recipe_dir.join(patch_name);
@@ -400,12 +444,16 @@ pub(crate) fn fetch_apply_patches(
         let mut command = Command::new("patch");
         command.arg("--directory").arg(source_dir_tmp);
         command.arg("--strip=1");
-        run_command_stdin(command, patch.as_bytes())?;
+        run_command_stdin(command, patch.as_bytes(), logger)?;
     }
     Ok(if let Some(script) = script {
         let mut command = Command::new("bash");
         command.arg("-ex");
         command.current_dir(source_dir_tmp);
-        run_command_stdin(command, format!("{SHARED_PRESCRIPT}\n{script}").as_bytes())?;
+        run_command_stdin(
+            command,
+            format!("{SHARED_PRESCRIPT}\n{script}").as_bytes(),
+            logger,
+        )?;
     })
 }

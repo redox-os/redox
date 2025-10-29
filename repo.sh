@@ -1,8 +1,7 @@
 #!/usr/bin/env bash
 set -e
-shopt -s nullglob
 
-source config.sh
+source `dirname "$0"`/config.sh
 
 APPSTREAM="0"
 COOK_OPT=""
@@ -20,15 +19,12 @@ do
         COOK_OPT+=" --nonstop"
     elif [ "$arg" == "--offline" ]
     then
-        COOK_OPT+=" --offline"
+        export COOKBOOK_OFFLINE=true
     else
         recipes+=" $arg"
     fi
 done
 
-cook $COOK_OPT $recipes
+repo cook $COOK_OPT $recipes
 
-repo="$ROOT/repo/$TARGET"
-mkdir -p "$repo"
-
-repo_builder "$repo" $recipes
+repo_builder "$ROOT/repo/$TARGET" $recipes

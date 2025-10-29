@@ -3,6 +3,7 @@ use pkg::{Package, PackageName};
 use redoxer::target;
 
 use crate::cook::fs::*;
+use crate::cook::pty::PtyOut;
 use crate::cook::script::*;
 use crate::recipe::AutoDeps;
 use crate::recipe::BuildKind;
@@ -21,9 +22,25 @@ use crate::is_redox;
 
 use crate::REMOTE_PKG_SOURCE;
 
+macro_rules! log_warn {
+    ($logger:expr, $($arg:tt)+) => {
+        use std::io::Write;
+
+        if $logger.is_some() {
+           let _ = $logger.as_ref().unwrap().1.try_clone().unwrap().write(
+                        format!($($arg)+)
+                            .as_bytes(),
+                    );
+        } else {
+            eprintln!($($arg)+);
+        }
+    };
+}
+
 fn auto_deps(
     stage_dir: &Path,
     dep_pkgars: &BTreeSet<(PackageName, PathBuf)>,
+    logger: &PtyOut,
 ) -> BTreeSet<PackageName> {
     let mut paths = BTreeSet::new();
     let mut visited = BTreeSet::new();
@@ -43,7 +60,10 @@ fn auto_deps(
         };
         if visited.contains(&dir) {
             #[cfg(debug_assertions)]
-            eprintln!("DEBUG: auto_deps => Skipping `{dir:?}` (already visited)");
+            log_warn!(
+                logger,
+                "DEBUG: auto_deps => Skipping `{dir:?}` (already visited)"
+            );
             continue;
         }
         assert!(
@@ -90,7 +110,7 @@ fn auto_deps(
                     continue;
                 };
                 if let Ok(relative_path) = path.strip_prefix(stage_dir) {
-                    eprintln!("DEBUG: {} needs {}", relative_path.display(), name);
+                    log_warn!(logger, "DEBUG: {} needs {}", relative_path.display(), name);
                 }
                 needed.insert(name.to_string());
             }
@@ -124,7 +144,7 @@ fn auto_deps(
                         continue;
                     };
                     if needed.contains(child_name) {
-                        eprintln!("DEBUG: {} provides {}", dep, child_name);
+                        log_warn!(logger, "DEBUG: {} provides {}", dep, child_name);
                         deps.insert(dep.clone());
                         missing.remove(child_name);
                     }
@@ -134,7 +154,7 @@ fn auto_deps(
     }
 
     for name in missing {
-        eprintln!("WARN: {} missing", name);
+        log_warn!(logger, "WARN: {} missing", name);
     }
 
     deps
@@ -148,9 +168,14 @@ pub fn build(
     recipe: &Recipe,
     offline_mode: bool,
     check_source: bool,
+    logger: &PtyOut,
 ) -> Result<(PathBuf, BTreeSet<PackageName>), String> {
     let sysroot_dir = target_dir.join("sysroot");
     let stage_dir = target_dir.join("stage");
+    if recipe.build.kind == BuildKind::None {
+        // metapackages don't need to do anything here
+        return Ok((stage_dir, BTreeSet::new()));
+    }
 
     let mut dep_pkgars = BTreeSet::new();
     for dependency in recipe.build.dependencies.iter() {
@@ -169,7 +194,7 @@ pub fn build(
     }
 
     if stage_dir.exists() && !check_source {
-        let auto_deps = build_auto_deps(target_dir, &stage_dir, dep_pkgars)?;
+        let auto_deps = build_auto_deps(target_dir, &stage_dir, dep_pkgars, logger)?;
         return Ok((stage_dir, auto_deps));
     }
 
@@ -185,7 +210,8 @@ pub fn build(
     if sysroot_dir.is_dir() {
         let sysroot_modified = modified_dir(&sysroot_dir)?;
         if sysroot_modified < source_modified || sysroot_modified < deps_modified {
-            eprintln!(
+            log_warn!(
+                logger,
                 "DEBUG: '{}' newer than '{}'",
                 source_dir.display(),
                 sysroot_dir.display()
@@ -234,7 +260,8 @@ pub fn build(
     if stage_dir.is_dir() {
         let stage_modified = modified_dir(&stage_dir)?;
         if stage_modified < source_modified || stage_modified < deps_modified {
-            eprintln!(
+            log_warn!(
+                logger,
                 "DEBUG: '{}' newer than '{}'",
                 source_dir.display(),
                 stage_dir.display()
@@ -292,7 +319,7 @@ pub fn build(
                 flags_fn("COOKBOOK_MESON_FLAGS", mesonflags),
             ),
             BuildKind::Custom { script } => script.clone(),
-            BuildKind::Remote => return build_remote(target_dir, name, offline_mode),
+            BuildKind::Remote => return build_remote(target_dir, name, offline_mode, logger),
             BuildKind::None => "".to_owned(),
         };
 
@@ -313,7 +340,7 @@ pub fn build(
             } else {
                 let cookbook_redoxer = Path::new("target/release/cookbook_redoxer")
                     .canonicalize()
-                    .unwrap();
+                    .unwrap_or(PathBuf::from("/bin/false"));
                 let mut command = Command::new(&cookbook_redoxer);
                 command.arg("env").arg("bash").arg("-ex");
                 command.env("COOKBOOK_REDOXER", &cookbook_redoxer);
@@ -337,13 +364,13 @@ pub fn build(
             "{}\n{}\n{}\n{}",
             BUILD_PRESCRIPT, SHARED_PRESCRIPT, script, BUILD_POSTSCRIPT
         );
-        run_command_stdin(command, full_script.as_bytes())?;
+        run_command_stdin(command, full_script.as_bytes(), logger)?;
 
         // Move stage.tmp to stage atomically
         rename(&stage_dir_tmp, &stage_dir)?;
     }
 
-    let auto_deps = build_auto_deps(target_dir, &stage_dir, dep_pkgars)?;
+    let auto_deps = build_auto_deps(target_dir, &stage_dir, dep_pkgars, logger)?;
 
     Ok((stage_dir, auto_deps))
 }
@@ -353,6 +380,7 @@ fn build_auto_deps(
     target_dir: &Path,
     stage_dir: &PathBuf,
     dep_pkgars: BTreeSet<(PackageName, PathBuf)>,
+    logger: &PtyOut,
 ) -> Result<BTreeSet<PackageName>, String> {
     let auto_deps_path = target_dir.join("auto_deps.toml");
     if auto_deps_path.is_file() && modified(&auto_deps_path)? < modified(stage_dir)? {
@@ -366,7 +394,7 @@ fn build_auto_deps(
             toml::from_str(&toml_content).map_err(|_| "failed to deserialize cached auto_deps")?;
         wrapper.packages
     } else {
-        let packages = auto_deps(stage_dir, &dep_pkgars);
+        let packages = auto_deps(stage_dir, &dep_pkgars, logger);
         let wrapper = AutoDeps { packages };
         serialize_and_write(&auto_deps_path, &wrapper)?;
         wrapper.packages
@@ -385,6 +413,7 @@ pub fn build_remote(
     target_dir: &Path,
     name: &PackageName,
     offline_mode: bool,
+    logger: &PtyOut,
 ) -> Result<(PathBuf, BTreeSet<PackageName>), String> {
     // download straight from remote source then declare pkg dependencies as autodeps dependency
     let stage_dir = target_dir.join("stage");
@@ -394,9 +423,9 @@ pub fn build_remote(
     let source_pubkey = target_dir.join("id_ed25519.pub.toml");
 
     if !offline_mode {
-        download_wget(&get_remote_url(name, "pkgar"), &source_pkgar)?;
-        download_wget(&get_remote_url(name, "toml"), &source_toml)?;
-        download_wget(&get_pubkey_url(), &source_pubkey)?;
+        download_wget(&get_remote_url(name, "pkgar"), &source_pkgar, logger)?;
+        download_wget(&get_remote_url(name, "toml"), &source_toml, logger)?;
+        download_wget(&get_pubkey_url(), &source_pubkey, logger)?;
     } else {
         offline_check_exists(&source_pkgar)?;
         offline_check_exists(&source_toml)?;
@@ -469,7 +498,7 @@ mod tests {
             "Expected a loop where {dir:?} points to {root:?}"
         );
 
-        let entries = auto_deps(root, &Default::default());
+        let entries = auto_deps(root, &Default::default(), &None);
         assert!(
             entries.is_empty(),
             "auto_deps shouldn't have yielded any libraries"

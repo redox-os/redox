@@ -1,13 +1,10 @@
-use std::{
-    collections::BTreeSet,
-    env,
-    path::{Path, PathBuf},
-};
+use std::{collections::BTreeSet, env, path::Path};
 
 use pkg::{Package, PackageName};
 
 use crate::{
-    cook::fs::*,
+    cook::{fs::*, pty::PtyOut},
+    log_to_pty,
     recipe::{BuildKind, Recipe},
 };
 
@@ -17,7 +14,14 @@ pub fn package(
     name: &PackageName,
     recipe: &Recipe,
     auto_deps: &BTreeSet<PackageName>,
-) -> Result<PathBuf, String> {
+    logger: &PtyOut,
+) -> Result<(), String> {
+    if recipe.build.kind == BuildKind::None {
+        // metapackages don't have stage dir
+        package_toml(target_dir, name, recipe, auto_deps)?;
+        return Ok(());
+    }
+
     let secret_path = "build/id_ed25519.toml";
     let public_path = "build/id_ed25519.pub.toml";
     if !Path::new(secret_path).is_file() || !Path::new(public_path).is_file() {
@@ -34,17 +38,20 @@ pub fn package(
     }
 
     let package_file = target_dir.join("stage.pkgar");
+    let package_meta = target_dir.join("stage.toml");
     // Rebuild package if stage is newer
     //TODO: rebuild on recipe changes
     if package_file.is_file() {
         let stage_modified = modified_dir(stage_dir)?;
         if modified(&package_file)? < stage_modified {
-            eprintln!(
+            log_to_pty!(
+                logger,
                 "DEBUG: '{}' newer than '{}'",
                 stage_dir.display(),
                 package_file.display()
             );
             remove_all(&package_file)?;
+            remove_all(&package_meta)?;
         }
     }
     if !package_file.is_file() {
@@ -54,11 +61,13 @@ pub fn package(
             stage_dir.to_str().unwrap(),
         )
         .map_err(|err| format!("failed to create pkgar archive: {:?}", err))?;
+    }
 
+    if !package_meta.is_file() {
         package_toml(target_dir, name, recipe, auto_deps)?;
     }
 
-    Ok(package_file)
+    Ok(())
 }
 
 pub fn package_toml(
@@ -80,7 +89,8 @@ pub fn package_toml(
         depends,
     };
 
-    serialize_and_write(&target_dir.join("stage.toml"), &package)?;
+    let toml_path = &target_dir.join("stage.toml");
+    serialize_and_write(&toml_path, &package)?;
 
     return Ok(());
 }
