@@ -1,6 +1,6 @@
-diff -ruwN xf86-video-dummy-0.4.1/src/dummy_driver.c source/src/dummy_driver.c
---- xf86-video-dummy-0.4.1/src/dummy_driver.c	2023-05-07 14:27:44.000000000 -0600
-+++ source/src/dummy_driver.c	2025-05-09 20:45:55.420661223 -0600
+diff -ruwN source-old/src/dummy_driver.c source/src/dummy_driver.c
+--- source-old/src/dummy_driver.c	2023-05-07 14:27:44.000000000 -0600
++++ source/src/dummy_driver.c	2025-10-29 11:13:11.863430241 -0600
 @@ -39,6 +39,7 @@
  /* These need to be checked */
  #include <X11/X.h>
@@ -137,7 +137,7 @@ diff -ruwN xf86-video-dummy-0.4.1/src/dummy_driver.c source/src/dummy_driver.c
 +        "orb_window_new %d, %d\n",
 +        pScrn->virtualX, pScrn->virtualY
 +    );
-+    dPtr->orb_window = orb_window_new_flags(-1, -1, pScrn->virtualX, pScrn->virtualY, "X11", ORB_WINDOW_ASYNC);
++    dPtr->orb_window = orb_window_new_flags(-1, -1, pScrn->virtualX, pScrn->virtualY, "X11", ORB_WINDOW_ASYNC | ORB_WINDOW_BORDERLESS);
 +    if (!dPtr->orb_window) {
 +        printf("failed to open orbital window\n");
  	return FALSE;
@@ -251,9 +251,9 @@ diff -ruwN xf86-video-dummy-0.4.1/src/dummy_driver.c source/src/dummy_driver.c
  static Bool
  DUMMYCreateWindow(WindowPtr pWin)
  {
-diff -ruwN xf86-video-dummy-0.4.1/src/dummy.h source/src/dummy.h
---- xf86-video-dummy-0.4.1/src/dummy.h	2023-05-07 14:27:44.000000000 -0600
-+++ source/src/dummy.h	2025-05-09 20:41:33.547464718 -0600
+diff -ruwN source-old/src/dummy.h source/src/dummy.h
+--- source-old/src/dummy.h	2023-05-07 14:27:44.000000000 -0600
++++ source/src/dummy.h	2025-10-29 10:11:23.172517830 -0600
 @@ -4,6 +4,7 @@
  #include "xf86_OSproc.h"
  
