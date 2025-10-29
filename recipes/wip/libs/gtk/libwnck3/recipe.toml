@@ -1,0 +1,45 @@
+[source]
+tar = "https://download.gnome.org/sources/libwnck/3.36/libwnck-3.36.0.tar.xz"
+blake3 = "5a7913968932c38bcb04dbb6410b1fc00dc653a600ab7a4899ee75bd5581323d"
+
+[build]
+dependencies = [
+    "atk",
+    "cairo",
+    "expat",
+    "fontconfig",
+    "freetype2",
+    "fribidi",
+    "gdk-pixbuf",
+    "gettext",
+    "glib",
+    "gtk3",
+    "harfbuzz",
+    "libepoxy",
+    "libffi",
+    "libiconv",
+    "libjpeg",
+    "libpng",
+    "libpthread-stubs",
+    "libx11",
+    "libxau",
+    "libxcb",
+    "libxext",
+    "libxfixes",
+    "libxft",
+    "libxi",
+    "libxrandr",
+    "libxrender",
+    "libxxf86vm",
+    "mesa-x11",
+    "pango",
+    "pcre2",
+    "pixman",
+    "shared-mime-info",
+    "x11proto",
+    "zlib",
+]
+template = "meson"
+mesonflags = [
+    "-Dintrospection=disabled",
+]
