@@ -1,6 +1,6 @@
 [source]
-tar = "https://openal-soft.org/openal-releases/openal-soft-1.24.1.tar.bz2"
-blake3 = "8aeaa8307d3e14331ad20761c537ffebe70975cb7c3343e8d5c0c0ed7bc16eab"
+tar = "https://github.com/kcat/openal-soft/archive/refs/tags/1.24.1.tar.gz"
+blake3 = "da65f839d4cee560371d08fc977f90757f964f49b14655b1d8d43f779c90a815"
 patches = [
     "redox.patch"
 ]
