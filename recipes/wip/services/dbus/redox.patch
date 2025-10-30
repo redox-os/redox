@@ -1,12 +1,27 @@
 diff -ruwN source-old/dbus/dbus-sysdeps-unix.c source/dbus/dbus-sysdeps-unix.c
 --- source-old/dbus/dbus-sysdeps-unix.c	2025-02-27 09:29:06.000000000 -0700
-+++ source/dbus/dbus-sysdeps-unix.c	2025-10-30 10:32:21.000125207 -0600
-@@ -4981,7 +4981,7 @@
++++ source/dbus/dbus-sysdeps-unix.c	2025-10-30 10:39:53.344885840 -0600
+@@ -4962,6 +4962,11 @@
+ void
+ _dbus_close_all (void)
+ {
++#if defined(__redox__)
++  fprintf(stderr, "ignoring _dbus_close_all until relibc internal FDs are in upper fd table\n");
++  return;
++#endif
++
+ #ifdef HAVE_CLOSE_RANGE
+   if (close_range (3, INT_MAX, 0) == 0)
+     return;
+@@ -4981,6 +4986,11 @@
  void
  _dbus_fd_set_all_close_on_exec (void)
  {
--#if defined(HAVE_CLOSE_RANGE) && defined(CLOSE_RANGE_CLOEXEC)
-+#if defined(HAVE_CLOSE_RANGE) && defined(CLOSE_RANGE_CLOEXEC) && !defined(__redox__)
++#if defined(__redox__)
++  fprintf(stderr, "ignoring _dbus_fd_set_all_close_on_exec until relibc internal FDs are in upper fd table\n");
++  return;
++#endif
++
+ #if defined(HAVE_CLOSE_RANGE) && defined(CLOSE_RANGE_CLOEXEC)
    if (close_range (3, INT_MAX, CLOSE_RANGE_CLOEXEC) == 0)
      return;
- #endif
