@@ -1,0 +1,12 @@
+#TODO not compiled or tested
+#TODO missing dependencies
+# build instructions: https://github.com/alperakcan/fuse-ext2#building
+[source]
+git = "https://github.com/alperakcan/fuse-ext2"
+rev = "ae35afb9ab08d87c66c1e021df792b3a7c4308b0"
+script = "./autogen.sh"
+[build]
+template = "configure"
+dependencies = [
+    "libfuse2",
+]
