@@ -1,15 +1,40 @@
 #TODO not compiled or tested
 # build instructions: https://github.com/swaywm/sway#compiling-from-source
 [source]
-tar = "https://github.com/swaywm/sway/releases/download/1.8.1/sway-1.8.1.tar.gz"
+tar = "https://github.com/swaywm/sway/releases/download/1.9/sway-1.9.tar.gz"
+blake3 = "6ae892f82daedef76d26e32c64ebd09cc454ae71f416d2179a512f7764138268"
+
 [build]
 template = "meson"
 dependencies = [
-    "wlroots",
-    "libwayland",
-    "pcre",
-    "json-c",
-    "pango",
     "cairo",
+    "expat",
+    "fontconfig",
+    "freetype2",
+    "fribidi",
     "gdk-pixbuf",
+    "glib",
+    "harfbuzz",
+    "json-c",
+    "libdrm",
+    "libffi",
+    "libjpeg",
+    "libpng",
+    "libpthread-stubs",
+    "libwayland",
+    "libx11",
+    "libxau",
+    "libxcb",
+    "libxext",
+    "libxft",
+    "libxkbcommon",
+    "libxrender",
+    "pango",
+    "pcre2",
+    "pixman",
+    "shared-mime-info",
+    "wayland-protocols",
+    "wlroots",
+    "x11proto",
+    "zlib",
 ]
