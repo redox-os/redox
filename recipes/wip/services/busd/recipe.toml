@@ -1,5 +1,6 @@
 #TODO not compiled or tested
 [source]
-git = "https://github.com/dbus2/busd"
+git = "https://github.com/jackpot51/busd"
+
 [build]
 template = "cargo"
