@@ -2,13 +2,31 @@
 # build instructions: https://gitlab.freedesktop.org/wlroots/wlroots#building
 [source]
 tar = "https://gitlab.freedesktop.org/wlroots/wlroots/-/releases/0.17.0/downloads/wlroots-0.17.0.tar.gz"
+blake3 = "f119e53d1f1dd5c8d4c348b0ebc2a780cf4174d158995356a087b26c3bc7d222"
+patches = ["redox.patch"]
+
 [build]
 template = "meson"
 dependencies = [
+    "cairo",
+    "expat",
+    "freetype2",
+    "fontconfig",
+    "libdrm",
+    "libffi",
+    "libpng",
+    "libpthread-stubs",
     "libwayland",
+    "libx11",
+    "libxau",
     "libxcb",
-    "libinput",
+    "libxext",
+    "libxfixes",
     "libxkbcommon",
+    "libxxf86vm",
+    "mesa-x11",
     "pixman",
-    "seatd",
+    "wayland-protocols",
+    "x11proto",
+    "zlib",
 ]
