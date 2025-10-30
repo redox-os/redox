@@ -11,6 +11,7 @@ filesystem_size = 2048
 
 # Package settings
 [packages]
+feh = {}
 gtk3 = {}
 htop = {}
 libnettle = {}
@@ -97,4 +98,5 @@ X "${DISPLAY}" -verbose 6 &
 sleep 1
 twm &
 xterm &
+feh --bg-max --no-fehbg --randomize /ui/background.jpg &
 """
