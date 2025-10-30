@@ -1,0 +1,7 @@
+#TODO not compiled or tested
+#TODO determine dependencies
+# build instructions: https://github.com/rkd77/elinks/blob/master/INSTALL
+[source]
+tar = "https://github.com/rkd77/elinks/releases/download/v0.18.0/elinks-0.18.0.tar.xz"
+[build]
+template = "meson"
