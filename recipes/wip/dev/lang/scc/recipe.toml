@@ -1,0 +1,9 @@
+#TODO missing script for gnu make
+# build instructions: https://git.simple-cc.org/scc/file/README.html
+[source]
+git = "https://git.simple-cc.org/scc/"
+rev = "1ed0ff0000999561feee336c289252faf2502a7e"
+[build]
+template = "custom"
+[package]
+dependencies = ["qbe"]
