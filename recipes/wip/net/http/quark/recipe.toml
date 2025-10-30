@@ -1,0 +1,6 @@
+#TODO missing script for gnu make
+[source]
+git = "https://git.suckless.org/quark"
+rev = "5ad0df91757fbc577ffceeca633725e962da345d.html"
+[build]
+template = "custom"

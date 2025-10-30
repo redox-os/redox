@@ -1,0 +1,8 @@
+#TODO not compiled or tested
+[source]
+tar = "https://github.com/tjko/jpegoptim/releases/download/v1.5.6/jpegoptim-1.5.6.tar.gz"
+[build]
+template = "configure"
+dependencies = [
+    "libjpeg",
+]
