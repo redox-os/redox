@@ -1,0 +1,12 @@
+diff -ruwN source-old/dbus/dbus-sysdeps-unix.c source/dbus/dbus-sysdeps-unix.c
+--- source-old/dbus/dbus-sysdeps-unix.c	2025-02-27 09:29:06.000000000 -0700
++++ source/dbus/dbus-sysdeps-unix.c	2025-10-30 10:32:21.000125207 -0600
+@@ -4981,7 +4981,7 @@
+ void
+ _dbus_fd_set_all_close_on_exec (void)
+ {
+-#if defined(HAVE_CLOSE_RANGE) && defined(CLOSE_RANGE_CLOEXEC)
++#if defined(HAVE_CLOSE_RANGE) && defined(CLOSE_RANGE_CLOEXEC) && !defined(__redox__)
+   if (close_range (3, INT_MAX, CLOSE_RANGE_CLOEXEC) == 0)
+     return;
+ #endif
