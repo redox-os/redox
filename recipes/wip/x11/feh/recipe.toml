@@ -15,6 +15,7 @@ dependencies = [
     "libxcb",
     "libx11",
     "libxext",
+    "libxinerama",
     "libxt",
     "x11proto",
     "zlib",
@@ -25,6 +26,6 @@ DYNAMIC_INIT
 rsync -a --delete "${COOKBOOK_SOURCE}/" ./
 export LDLIBS="$("${PKG_CONFIG}" --libs freetype2 imlib2 libpng x11)"
 export PREFIX="/usr"
-"${COOKBOOK_MAKE}" curl=0 verscmp=0 xinerama=0
+"${COOKBOOK_MAKE}" curl=0 verscmp=0
 install -Dm0755 src/feh "${COOKBOOK_STAGE}/usr/bin/feh"
 """
