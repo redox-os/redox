@@ -1,4 +1,3 @@
-#TODO: imlib2 needs sys/ipc.h and sys/shm.h for X11 feature
 [source]
 tar = "https://feh.finalrewind.org/feh-3.11.2.tar.bz2"
 blake3 = "b9d704e0b37d99068cbc76d2b73c3b6ef673612060d7cfef0f5a3e8886255276"
@@ -15,6 +14,7 @@ dependencies = [
     "libxau",
     "libxcb",
     "libx11",
+    "libxext",
     "libxt",
     "x11proto",
     "zlib",
@@ -26,4 +26,5 @@ rsync -a --delete "${COOKBOOK_SOURCE}/" ./
 export LDLIBS="$("${PKG_CONFIG}" --libs freetype2 imlib2 libpng x11)"
 export PREFIX="/usr"
 "${COOKBOOK_MAKE}" curl=0 verscmp=0 xinerama=0
+install -Dm0755 src/feh "${COOKBOOK_STAGE}/usr/bin/feh"
 """
