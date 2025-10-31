@@ -5,3 +5,4 @@ pub mod fs;
 pub mod package;
 pub mod pty;
 pub mod script;
+pub mod tree;

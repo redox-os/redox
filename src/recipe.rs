@@ -180,7 +180,7 @@ pub struct CookRecipe {
     pub name: PackageName,
     pub dir: PathBuf,
     pub recipe: Recipe,
-    /// If true, the source will not be checked for freshness
+    /// If false, it's listed on install config
     pub is_deps: bool,
 }
 
