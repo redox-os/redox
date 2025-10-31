@@ -1494,9 +1494,9 @@ checksum = "1171693293099992e19cddea4e8b849964e9846f4acee11b3948bcc337be8776"
 
 [[package]]
 name = "libredox"
-version = "0.1.4"
+version = "0.1.10"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "1580801010e535496706ba011c15f8532df6b42297d2e471fec38ceadd8c0638"
+checksum = "416f7e718bdb06000964960ffa43b4335ad4012ae8b99060261aa4a8088d5ccb"
 dependencies = [
  "bitflags 2.9.1",
  "libc",
@@ -1535,6 +1535,12 @@ name = "lru-slab"
 version = "0.1.2"
 source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "112b39cec0b298b6c1999fee3e31427f74f676e4cb9879ed1a121b43661a4154"
+
+[[package]]
+name = "lz4_flex"
+version = "0.11.5"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "08ab2867e3eeeca90e844d1940eab391c9dc5228783db2ed999acbc0a9ed375a"
 
 [[package]]
 name = "memchr"
@@ -2078,9 +2084,9 @@ dependencies = [
 
 [[package]]
 name = "redox-scheme"
-version = "0.6.2"
+version = "0.7.0"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "2c00025a04f76fdcf72c15f10c7a12d9f2fdde93e539be9a57d5d632c4158a9e"
+checksum = "4da6a0251965958189cdfd5ebb66f99754db4aa165394300aa2b958525d94b64"
 dependencies = [
  "libredox",
  "redox_syscall",
@@ -2104,6 +2110,7 @@ dependencies = [
  "portable-pty",
  "ratatui",
  "redox-pkg",
+ "redox_installer",
  "redoxer",
  "regex",
  "serde",
@@ -2115,9 +2122,9 @@ dependencies = [
 
 [[package]]
 name = "redox_installer"
-version = "0.2.34"
+version = "0.2.37"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "0895f18dfc8825af0b8c52d687b9eca499c9a53a6c37a248b8ffc5369b2e481f"
+checksum = "86b0e2e9b588faacd83ff68ce0f4dcd7a47e7477ff3405c63c79712bcd550931"
 dependencies = [
  "anyhow",
  "arg_parser",
@@ -2126,6 +2133,7 @@ dependencies = [
  "fscommon",
  "gpt",
  "libc",
+ "libredox",
  "pkgar 0.1.18",
  "pkgar-core 0.1.18",
  "pkgar-keys 0.1.18",
@@ -2157,9 +2165,9 @@ dependencies = [
 
 [[package]]
 name = "redox_syscall"
-version = "0.5.13"
+version = "0.5.18"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "0d04b7d0ee6b4a0207a0a7adb104d23ecb0b47d6beae7152d0fa34b692b29fd6"
+checksum = "ed2bf2547551a7053d6fdfafda3f938979645c44812fbfcda098faae3f1a362d"
 dependencies = [
  "bitflags 2.9.1",
 ]
@@ -2194,9 +2202,9 @@ dependencies = [
 
 [[package]]
 name = "redoxer"
-version = "0.2.54"
+version = "0.2.55"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "ead20eb76f54e16ecc3e678daca948d49497588a777148ac60d99a67dab8a2b0"
+checksum = "ee006e9945ef5ad5b9d877465b5bbf94f37d37aa2d0765c8bcb7a6cd401775b6"
 dependencies = [
  "dirs 6.0.0",
  "proc-mounts",
@@ -2209,13 +2217,14 @@ dependencies = [
 
 [[package]]
 name = "redoxfs"
-version = "0.7.0"
+version = "0.8.0"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "c03016c4a1366227740e6ee755e492c7b45656bbc43728980c7764c4ddcde73d"
+checksum = "063eedabd74ddf71810e72aae1c73f3485ffc7b1e757d9466b9099046c05d7be"
 dependencies = [
  "aes",
  "argon2",
  "base64ct",
+ "bitflags 2.9.1",
  "endian-num",
  "env_logger",
  "fuser",
@@ -2223,6 +2232,7 @@ dependencies = [
  "libc",
  "libredox",
  "log",
+ "lz4_flex",
  "range-tree",
  "redox-path",
  "redox-scheme",
