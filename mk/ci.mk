@@ -29,12 +29,9 @@ else
 	$(HOST_CARGO) build --manifest-path cookbook/Cargo.toml --release
 	$(HOST_CARGO) build --manifest-path cookbook/pkgar/Cargo.toml --release
 	$(HOST_CARGO) build --manifest-path installer/Cargo.toml --release
-	export PATH="$(PREFIX_PATH):$$PATH" && \
-	export COOKBOOK_HOST_SYSROOT="$(ROOT)/$(PREFIX_INSTALL)" && \
+	export CI=1 PATH="$(PREFIX_PATH):$$PATH" COOKBOOK_HOST_SYSROOT="$(ROOT)/$(PREFIX_INSTALL)" && \
 	PACKAGES="$$($(LIST_PACKAGES) $(LIST_PACKAGES_OPTS) --short -c config/$(ARCH)/ci.toml)" && \
-	cd cookbook && \
-	./fetch.sh "$${PACKAGES}" && \
-	./repo.sh $(REPO_NONSTOP) "$${PACKAGES}"
+	./cookbook/repo.sh $(REPO_NONSTOP) --with-package-deps "--filesystem=../config/$(ARCH)/ci.toml"
 endif
 
 # CI toolchain
