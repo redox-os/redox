@@ -1,6 +1,6 @@
 # Configuration file for recipe commands
 
-$(REPO_TAG): $(FSTOOLS_TAG) $(CONTAINER_TAG)
+$(REPO_TAG): prefix $(FILESYSTEM_CONFIG) $(FSTOOLS_TAG) $(CONTAINER_TAG)
 ifeq ($(PODMAN_BUILD),1)
 	$(PODMAN_RUN) make $@
 else
