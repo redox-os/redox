@@ -215,7 +215,9 @@ You can see the most common questions and problems on the [Developer FAQ](https:
 
 ## Porting Software
 
-You can read how to use the Cookbook recipe system to port applications on the [Porting Applications using Recipes](https://doc.redox-os.org/book/porting-applications.html) page.
+You can read how to use the Cookbook recipe system to port applications on the [Application Porting](https://doc.redox-os.org/book/porting-applications.html) page.
+
+**Always verify if a recipe for your program or library already exist before porting to not break the build system with a recipe duplication or waste time.**
 
 ## Libraries and APIs
 
