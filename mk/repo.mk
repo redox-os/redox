@@ -6,18 +6,24 @@ ifeq ($(PODMAN_BUILD),1)
 else
 	export PATH="$(PREFIX_PATH):$$PATH" && \
 	export COOKBOOK_HOST_SYSROOT="$(ROOT)/$(PREFIX_INSTALL)" && \
-	PACKAGES="$$($(LIST_PACKAGES) $(LIST_PACKAGES_OPTS) --short -c $(FILESYSTEM_CONFIG))" && \
-	./cookbook/repo.sh $(REPO_NONSTOP) $(REPO_OFFLINE) --with-package-deps "$${PACKAGES}"
+	./cookbook/repo.sh $(REPO_NONSTOP) $(REPO_OFFLINE) --with-package-deps "--filesystem=../$(FILESYSTEM_CONFIG)"
 	mkdir -p $(BUILD)
 	# make sure fstools.tag are newer than the things repo modifies
 	touch $(FSTOOLS_TAG)
 	touch $@
 endif
 
-
 comma := ,
 
-# Find recipe
+# List all recipes in a tree fashion specified by the filesystem config
+tree: $(FSTOOLS_TAG) $(CONTAINER_TAG)
+ifeq ($(PODMAN_BUILD),1)
+	$(PODMAN_RUN) make $@
+else
+	@cd ./cookbook && ./target/release/repo tree --with-package-deps "--filesystem=../$(FILESYSTEM_CONFIG)"
+endif
+
+# Find recipe for one or more targets separated by comma
 find.%: $(FSTOOLS_TAG) FORCE
 ifeq ($(PODMAN_BUILD),1)
 	$(PODMAN_RUN) make $@
@@ -25,7 +31,7 @@ else
 	@cd ./cookbook && ./target/release/repo find $(foreach f,$(subst $(comma), ,$*),$(f))
 endif
 
-# Invoke clean.sh for one or more targets separated by comma
+# Invoke clean for one or more targets separated by comma
 c.%: $(FSTOOLS_TAG) FORCE
 ifeq ($(PODMAN_BUILD),1)
 	$(PODMAN_RUN) make $@
@@ -33,7 +39,7 @@ else
 	cd ./cookbook && ./target/release/repo clean $(foreach f,$(subst $(comma), ,$*),$(f))
 endif
 
-# Invoke fetch.sh for one or more targets separated by comma
+# Invoke fetch for one or more targets separated by comma
 f.%: $(FSTOOLS_TAG) FORCE
 ifeq ($(PODMAN_BUILD),1)
 	$(PODMAN_RUN) make $@
@@ -77,7 +83,24 @@ endif
 pp.%: $(FSTOOLS_TAG) FORCE
 	$(MAKE) p.$*,--with-package-deps
 
-# Invoke unfetch.sh for one or more targets separated by comma
+# Push all recipes specified by the filesystem config
+push: $(FSTOOLS_TAG) FORCE
+	@rm -f $(MOUNTED_TAG)
+	@if [ ! -d "$(MOUNT_DIR)" ]; then \
+		$(MAKE) mount; \
+		touch $(MOUNTED_TAG); \
+	fi
+ifeq ($(PODMAN_BUILD),1)
+	$(PODMAN_RUN) make $@
+else
+	cd ./cookbook && ./target/release/repo push --with-package-deps "--filesystem=../$(FILESYSTEM_CONFIG)" "--sysroot=../$(MOUNT_DIR)"
+endif
+	@if [ -f $(MOUNTED_TAG) ]; then \
+		$(MAKE) unmount && rm -f $(MOUNTED_TAG); \
+	else echo "Not unmounting by ourself, don't forget to do it"; \
+	fi
+
+# Invoke unfetch for one or more targets separated by comma
 u.%: $(FSTOOLS_TAG) FORCE
 ifeq ($(PODMAN_BUILD),1)
 	$(PODMAN_RUN) make $@
