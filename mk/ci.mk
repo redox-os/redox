@@ -9,12 +9,12 @@ IMG_DIR?=build/img/$(ARCH)
 ci-img: FORCE
 	rm -rf $(IMG_DIR)
 	mkdir -p $(IMG_DIR)
-	$(MAKE) minimal minimal-net server desktop demo
+	$(MAKE) server desktop demo
 	cd $(IMG_DIR) && zstd --rm *
 	cd $(IMG_DIR) && sha256sum -b * > SHA256SUM
 
 # The name of the target must match the name of the filesystem config file
-minimal minimal-net server desktop demo: FORCE
+server desktop demo: FORCE
 	rm -f "build/$(ARCH)/$@/harddrive.img" "build/$(ARCH)/$@/redox-live.iso"
 	$(MAKE) CONFIG_NAME=$@ build/$(ARCH)/$@/harddrive.img build/$(ARCH)/$@/redox-live.iso
 	mkdir -p $(IMG_DIR)
