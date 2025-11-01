@@ -4,7 +4,7 @@ use cookbook::WALK_DEPTH;
 use cookbook::config::{CookConfig, get_config, init_config};
 use cookbook::cook::cook_build::build;
 use cookbook::cook::fetch::{fetch, fetch_offline};
-use cookbook::cook::fs::create_target_dir;
+use cookbook::cook::fs::{create_target_dir, run_command};
 use cookbook::cook::package::package;
 use cookbook::cook::pty::{PtyOut, UnixSlavePty, setup_pty};
 use cookbook::cook::tree::{display_tree_entry, format_size};
@@ -173,7 +173,7 @@ fn main_inner() -> anyhow::Result<()> {
 
     let (config, command, recipe_names) = parse_args(args)?;
     if command == CliCommand::Cook && config.cook.tui {
-        if let Some((name, e)) = run_tui_cook(config, recipe_names)? {
+        if let Some((name, e)) = run_tui_cook(config.clone(), recipe_names.clone())? {
             let _ = stderr().write(e.as_bytes());
             let _ = stderr().write(b"\n\n");
             eprintln!(
@@ -194,7 +194,7 @@ fn main_inner() -> anyhow::Result<()> {
                 style::Reset,
             );
         }
-        return Ok(());
+        return publish_packages(&recipe_names, &config.repo_dir);
     }
     if command == CliCommand::Tree {
         return handle_tree(&recipe_names, &config);
@@ -236,6 +236,10 @@ fn main_inner() -> anyhow::Result<()> {
         }
     }
 
+    if command == CliCommand::Cook {
+        return publish_packages(&recipe_names, &config.repo_dir);
+    }
+
     if verbose {
         println!(
             "\nCommand '{}' completed for {} recipes.",
@@ -265,6 +269,22 @@ fn repo_inner(
         CliCommand::Tree => unreachable!(),
         CliCommand::Find => println!("{}", recipe.dir.display()),
     })
+}
+
+fn publish_packages(recipe_names: &Vec<CookRecipe>, repo_path: &PathBuf) -> anyhow::Result<()> {
+    let repo_bin = env::current_exe()?.parent().unwrap().join("repo_builder");
+    let mut command = Command::new(repo_bin);
+    command
+        .arg(repo_path)
+        .args(recipe_names.iter().filter_map(|n| {
+            if !n.is_deps {
+                Some(n.name.as_str())
+            } else {
+                None
+            }
+        }));
+
+    run_command(command, &None).map_err(|e| anyhow!(e))
 }
 
 fn parse_args(args: Vec<String>) -> anyhow::Result<(CliConfig, CliCommand, Vec<CookRecipe>)> {

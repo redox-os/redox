@@ -1,3 +1,4 @@
+use anyhow::anyhow;
 use cookbook::WALK_DEPTH;
 use pkg::{Package, PackageName, recipes};
 use std::collections::{BTreeMap, HashMap};
@@ -25,6 +26,11 @@ fn main() -> Result<(), Box<dyn std::error::Error>> {
     let repo_dir = args
         .next()
         .expect("Usage: repo_builder <REPO_DIR> <recipe1> <recipe2> ...");
+    Ok(publish_packages(args.collect(), repo_dir)?)
+}
+
+// TODO: Make this callable from repo bin
+fn publish_packages(recipe_list: Vec<String>, repo_dir: String) -> anyhow::Result<()> {
     let repo_path = Path::new(&repo_dir);
     if !repo_path.is_dir() {
         fs::create_dir_all(repo_path)?;
@@ -36,7 +42,10 @@ fn main() -> Result<(), Box<dyn std::error::Error>> {
     // The following adds the package dependencies of the recipes to the repo as
     // well.
     let recipe_list = Package::new_recursive(
-        &args.map(PackageName::new).collect::<Result<Vec<_>, _>>()?,
+        &recipe_list
+            .iter()
+            .map(PackageName::new)
+            .collect::<Result<Vec<_>, _>>()?,
         WALK_DEPTH,
     )?
     .into_iter()
@@ -111,7 +120,7 @@ fn main() -> Result<(), Box<dyn std::error::Error>> {
                 .status()?
                 .success()
                 .then_some(())
-                .ok_or("appstreamcli failed")?;
+                .ok_or(anyhow!("appstreamcli failed"))?;
 
             Command::new("pkgar")
                 .arg("create")
@@ -123,7 +132,7 @@ fn main() -> Result<(), Box<dyn std::error::Error>> {
                 .status()?
                 .success()
                 .then_some(())
-                .ok_or("pkgar create failed")?;
+                .ok_or(anyhow!("pkgar create failed"))?;
         }
     }
 
