@@ -99,7 +99,7 @@ fn publish_packages(recipe_list: Vec<String>, repo_dir: String) -> anyhow::Resul
             .join("build")
             .join(&target)
             .join("appstream");
-        let appstream_pkg = repo_path.join("appstream.pkgar");
+        let appstream_pkg = repo_path.join("repo-appstream.pkgar");
 
         fs::remove_dir_all(&appstream_root).ok();
         fs::remove_file(&appstream_pkg).ok();
