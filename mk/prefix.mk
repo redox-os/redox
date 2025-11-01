@@ -241,7 +241,6 @@ else
 	export PATH="$(PREFIX_FREESTANDING_PATH):$$PATH" && \
 	export CARGO="env -u CARGO -u RUSTUP_TOOLCHAIN cargo" && \
 	export CC_$(subst -,_,$(TARGET))="$(GNU_TARGET)-gcc -isystem $(ROOT)/$@.partial/$(GNU_TARGET)/include" && \
-	export RUST_TARGET_PATH="$(ROOT)/targets" && \
 	$(MAKE) clean && \
 	$(MAKE) -j 1 all && \
 	$(MAKE) -j 1 install DESTDIR="$(ROOT)/$@.partial/$(GNU_TARGET)"
