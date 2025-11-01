@@ -36,6 +36,7 @@ RUN useradd --create-home --no-log-init --uid _UID_ poduser \
         gtk-doc-tools \
         help2man \
         intltool \
+        libaudiofile-dev \
         libexpat-dev \
         libfontconfig1-dev \
         libfuse3-dev \
