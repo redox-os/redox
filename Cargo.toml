@@ -32,7 +32,7 @@ pkgar-core = { path = "pkgar/pkgar-core" }
 pkgar-keys = { path = "pkgar/pkgar-keys" }
 portable-pty = "0.9.0"
 redox-pkg = "0.2.8"
-redoxer = "0.2"
+redoxer = "0.2.56"
 regex = "1.11"
 serde = { version = "=1.0.197", features = ["derive"] }
 termion = "4"
