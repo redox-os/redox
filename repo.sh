@@ -3,14 +3,13 @@ set -e
 
 source `dirname "$0"`/config.sh
 
-APPSTREAM="0"
 COOK_OPT=""
 recipes=""
 for arg in "${@:1}"
 do
     if [[ "$arg" == "--appstream" ]]
     then
-        APPSTREAM="1"
+        export APPSTREAM="1"
     elif [[ "$arg" == "--offline" ]]
     then
         export COOKBOOK_OFFLINE=true
