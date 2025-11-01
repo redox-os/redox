@@ -18,7 +18,7 @@ function bootloader {
 ARCH="$(echo "${TARGET}" | cut -d - -f1)"
 
 # Build BIOS bootloader for supported architectures
-if [ "${ARCH}" == "i686" -o "${ARCH}" == "x86_64" ]
+if [ "${ARCH}" == "i586" -o "${ARCH}" == "i686" -o "${ARCH}" == "x86_64" ]
 then
     bootloader "x86-unknown-none" bootloader.bin bootloader.bios
     bootloader "x86-unknown-none" bootloader-live.bin bootloader-live.bios
