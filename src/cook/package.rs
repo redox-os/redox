@@ -1,4 +1,4 @@
-use std::{collections::BTreeSet, env, path::Path};
+use std::{collections::BTreeSet, path::Path};
 
 use pkg::{Package, PackageName};
 
@@ -85,7 +85,7 @@ pub fn package_toml(
     let package = Package {
         name: name.clone(),
         version: package_version(recipe),
-        target: env::var("TARGET").map_err(|err| format!("failed to read TARGET: {:?}", err))?,
+        target: redoxer::target().to_string(),
         depends,
     };
 
