@@ -31,7 +31,7 @@ else
 	$(HOST_CARGO) build --manifest-path installer/Cargo.toml --release
 	export CI=1 PATH="$(PREFIX_PATH):$$PATH" COOKBOOK_HOST_SYSROOT="$(ROOT)/$(PREFIX_INSTALL)" && \
 	PACKAGES="$$($(LIST_PACKAGES) $(LIST_PACKAGES_OPTS) --short -c config/$(ARCH)/ci.toml)" && \
-	./cookbook/repo.sh $(REPO_NONSTOP) --with-package-deps "--filesystem=../config/$(ARCH)/ci.toml"
+	./cookbook/repo.sh $(REPO_APPSTREAM) $(REPO_NONSTOP) --with-package-deps "--filesystem=../config/$(ARCH)/ci.toml"
 endif
 
 # CI toolchain
