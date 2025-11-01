@@ -123,17 +123,11 @@ fn publish_packages(recipe_list: Vec<String>, repo_dir: String) -> anyhow::Resul
                 .then_some(())
                 .ok_or(anyhow!("appstreamcli failed"))?;
 
-            Command::new("pkgar")
-                .arg("create")
-                .arg("--archive")
-                .arg(&appstream_pkg)
-                .arg("--skey")
-                .arg(format!("{}/build/id_ed25519.toml", root))
-                .arg(&appstream_root)
-                .status()?
-                .success()
-                .then_some(())
-                .ok_or(anyhow!("pkgar create failed"))?;
+            pkgar::create(
+                format!("{}/build/id_ed25519.toml", root),
+                &appstream_pkg,
+                &appstream_root
+            )?;
         }
     }
 
