@@ -16,8 +16,10 @@ endif
 
 ## Podman Home Directory
 PODMAN_HOME?=$(ROOT)/build/podman
+## Podman downloaded repo binaries cache
+PODMAN_PKG_TMP?=$(ROOT)/build/$(ARCH)/pkg-download
 ## Podman command with its many arguments
-PODMAN_VOLUMES?=--volume $(ROOT):$(CONTAINER_WORKDIR)$(PODMAN_VOLUME_FLAG) --volume $(PODMAN_HOME):/home$(PODMAN_VOLUME_FLAG)
+PODMAN_VOLUMES?=--volume $(ROOT):$(CONTAINER_WORKDIR)$(PODMAN_VOLUME_FLAG) --volume $(PODMAN_HOME):/home$(PODMAN_VOLUME_FLAG) --volume $(PODMAN_PKG_TMP):/tmp/pkg_download$(PODMAN_VOLUME_FLAG)
 PODMAN_ENV?=--env PATH=/home/poduser/.cargo/bin:/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin --env PODMAN_BUILD=0
 PODMAN_CONFIG?=--env ARCH=$(ARCH) --env BOARD=$(BOARD) --env CONFIG_NAME=$(CONFIG_NAME) --env FILESYSTEM_CONFIG=$(FILESYSTEM_CONFIG)
 PODMAN_OPTIONS?=--rm --workdir $(CONTAINER_WORKDIR) --userns keep-id --user `id -u` --interactive --tty --env TERM=$(TERM)
@@ -25,6 +27,8 @@ PODMAN_RUN?=podman run $(PODMAN_OPTIONS) $(PODMAN_VOLUMES) $(PODMAN_ENV) $(PODMA
 
 container_shell: build/container.tag
 ifeq ($(PODMAN_BUILD),1)
+# TODO: how to ensure to do this anytime when $(PODMAN_RUN) is invoked?
+	mkdir -p $(PODMAN_PKG_TMP) && touch $(PODMAN_PKG_TMP)/prefer_cache
 	podman run $(PODMAN_VOLUMES) $(PODMAN_OPTIONS) $(PODMAN_ENV) --tty $(IMAGE_TAG) bash
 else
 	@echo PODMAN_BUILD=$(PODMAN_BUILD), please set it to 1 in mk/config.mk
@@ -59,7 +63,8 @@ ifeq ($(PODMAN_BUILD),1)
 	@echo "If podman_home dir cannot be removed, remove with \"sudo rm\"."
 	-rm -rf $(PODMAN_HOME) || true
 	-podman image rm --force $(IMAGE_TAG) || true
-	mkdir -p $(PODMAN_HOME)
+	mkdir -p $(PODMAN_HOME) $(PODMAN_PKG_TMP)
+	touch $(PODMAN_PKG_TMP)/prefer_cache
 	@echo "Building Podman image. This may take some time."
 	sed s/_UID_/`id -u`/ $(CONTAINERFILE) | podman build --file - $(PODMAN_VOLUMES) --tag $(IMAGE_TAG)
 	@echo "Mapping Podman user space. Please wait."
