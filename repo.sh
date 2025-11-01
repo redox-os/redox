@@ -23,5 +23,3 @@ do
 done
 
 repo cook $COOK_OPT $recipes
-
-repo_builder "$ROOT/repo/$TARGET" $recipes
