@@ -116,7 +116,8 @@ ifeq ($(ARCH),riscv64gc)
 	export TARGET=riscv64gc-unknown-redox
 	export GNU_TARGET=riscv64-unknown-redox
 else ifeq ($(ARCH),i686)
-	export TARGET=i686-unknown-redox # FIXME change to i586 before the next prefix rebuild
+# FIXME change TARGET to i586 before the next prefix rebuild
+	export TARGET=i686-unknown-redox
 	export GNU_TARGET=i686-unknown-redox
 else
 	export TARGET=$(ARCH)-unknown-redox
