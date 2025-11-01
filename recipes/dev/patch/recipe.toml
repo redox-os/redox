@@ -4,6 +4,7 @@ blake3 = "d46d14c12aa4ea51e356bf92091c368fd871e1d770b94bc29027886737aecd5f"
 patches = [
     "01_no_rlimit.patch",
     "02_no_chown.patch",
+    "03_renameat2.patch",
 ]
 script = """
 wget -O build-aux/config.sub "https://gitlab.redox-os.org/redox-os/gnu-config/-/raw/master/config.sub?inline=false"
