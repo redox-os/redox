@@ -54,8 +54,6 @@ pull:
 	git submodule sync --recursive
 	git submodule update --recursive --init
 
-fetch: $(BUILD)/fetch.tag
-
 repo: $(BUILD)/repo.tag
 
 # Podman build recipes and vars

@@ -112,11 +112,15 @@ ROOT=$(CURDIR)
 export RUST_COMPILER_RT_ROOT=$(ROOT)/rust/src/llvm-project/compiler-rt
 
 ## Userspace variables
-export TARGET=$(ARCH)-unknown-redox
 ifeq ($(ARCH),riscv64gc)
+	export TARGET=riscv64gc-unknown-redox
 	export GNU_TARGET=riscv64-unknown-redox
+else ifeq ($(ARCH),i686)
+	export TARGET=i686-unknown-redox # FIXME change to i586 before the next prefix rebuild
+	export GNU_TARGET=i686-unknown-redox
 else
-	export GNU_TARGET=$(TARGET)
+	export TARGET=$(ARCH)-unknown-redox
+	export GNU_TARGET=$(ARCH)-unknown-redox
 endif
 BUILD=build/$(ARCH)/$(CONFIG_NAME)
 MOUNT_DIR=$(BUILD)/filesystem
