@@ -25,13 +25,13 @@ PODMAN_RUN?=podman run $(PODMAN_OPTIONS) $(PODMAN_VOLUMES) $(PODMAN_ENV) $(PODMA
 
 container_shell: build/container.tag
 ifeq ($(PODMAN_BUILD),1)
-	podman run $(PODMAN_VOLUMES) $(PODMAN_OPTIONS) $(PODMAN_ENV) --tty $(IMAGE_TAG) bash
+	podman run $(PODMAN_VOLUMES) $(PODMAN_OPTIONS) $(PODMAN_ENV) $(IMAGE_TAG) bash
 else
 	@echo PODMAN_BUILD=$(PODMAN_BUILD), please set it to 1 in mk/config.mk
 endif
 
 container_su: FORCE
-	podman exec --user=0 --latest --interactive --tty bash
+	podman run $(PODMAN_VOLUMES) $(PODMAN_OPTIONS) --user 0 $(PODMAN_ENV) $(IMAGE_TAG) bash
 
 container_clean: FORCE
 	rm -f build/container.tag
