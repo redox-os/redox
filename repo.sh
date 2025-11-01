@@ -8,23 +8,18 @@ COOK_OPT=""
 recipes=""
 for arg in "${@:1}"
 do
-    if [ "$arg" == "--appstream" ]
+    if [[ "$arg" == "--appstream" ]]
     then
         APPSTREAM="1"
-    elif [ "$arg" == "--with-package-deps" ]
-    then
-        COOK_OPT+=" --with-package-deps"
-    elif [ "$arg" == "--nonstop" ]
-    then
-        COOK_OPT+=" --nonstop"
-    elif [ "$arg" == "--offline" ]
+    elif [[ "$arg" == "--offline" ]]
     then
         export COOKBOOK_OFFLINE=true
+    elif [[ $arg == "--*" ]]
+    then
+        COOK_OPT+=" ${arg}"
     else
         recipes+=" $arg"
     fi
 done
 
 repo cook $COOK_OPT $recipes
-
-repo_builder "$ROOT/repo/$TARGET" $recipes
