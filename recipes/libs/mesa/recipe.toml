@@ -7,15 +7,18 @@ branch = "redox-24.0"
 template = "custom"
 dependencies = [
     "expat",
+    "libdrm",
+    "liborbital",
     "llvm18",
     "zlib",
 ]
 script = """
 DYNAMIC_INIT
 
-export CFLAGS+=" -DHAVE_PTHREAD=1"
-export CPPFLAGS+=" -DHAVE_PTHREAD=1"
+#TODO: Should be CPPFLAGS but cookbook_meson isn't reading it
+export CFLAGS+=" -DHAVE_PTHREAD=1 -I${COOKBOOK_SYSROOT}/include/libdrm"
 export LLVM_CONFIG="${TARGET}-llvm-config"
+export LDFLAGS+=" -lorbital"
 
 if [ "${COOKBOOK_DYNAMIC}" == "1" ]; then
     COOKBOOK_MESON_FLAGS+=(-Dshared-llvm=enabled)
@@ -24,12 +27,13 @@ else
 fi
 
 cookbook_meson \
+    -Ddri-drivers-path=/usr/lib/dri \
+    -Degl=enabled \
     -Dglx=disabled \
     -Dllvm=enabled \
     -Dosmesa=true \
-    -Dplatforms= \
-    -Dshader-cache=disabled \
-    -Dshared-glapi=disabled
+    -Dplatforms=redox \
+    -Dshader-cache=disabled
 
 # Hack to add LLVM libs
 #TODO: only add necessary LLVM libs, not all of them
