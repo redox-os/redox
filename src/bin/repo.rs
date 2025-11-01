@@ -275,7 +275,7 @@ fn publish_packages(recipe_names: &Vec<CookRecipe>, repo_path: &PathBuf) -> anyh
     let repo_bin = env::current_exe()?.parent().unwrap().join("repo_builder");
     let mut command = Command::new(repo_bin);
     command
-        .arg(repo_path)
+        .arg(repo_path.join(redoxer::target()))
         .args(recipe_names.iter().filter_map(|n| {
             if !n.is_deps {
                 Some(n.name.as_str())
