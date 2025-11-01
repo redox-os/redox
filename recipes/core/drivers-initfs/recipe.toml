@@ -43,7 +43,7 @@ aarch64_bins()
 }
 
 case "${TARGET}" in
-    i686-unknown-redox)
+    i586-unknown-redox | i686-unknown-redox)
         x86_common_bins
         ;;
     x86_64-unknown-redox)
