@@ -110,6 +110,7 @@ fn publish_packages(recipe_list: Vec<String>, repo_dir: String) -> anyhow::Resul
             compose_cmd
                 .arg("compose")
                 .arg("--origin=pkgar")
+                .arg("--print-report=full")
                 .arg(format!("--result-root={}", appstream_root.display()));
 
             for (_recipe, source_path) in &appstream_sources {
