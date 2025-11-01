@@ -48,6 +48,7 @@ RUN useradd --create-home --no-log-init --uid _UID_ poduser \
         libmpfr-dev \
         libparse-yapp-perl \
         libpng-dev \
+        librsvg2-common \
         libsdl1.2-dev \
         libsdl2-ttf-dev \
         llvm \
