@@ -6,7 +6,7 @@ ifeq ($(PODMAN_BUILD),1)
 else
 	export PATH="$(PREFIX_PATH):$$PATH" && \
 	export COOKBOOK_HOST_SYSROOT="$(ROOT)/$(PREFIX_INSTALL)" && \
-	./cookbook/repo.sh $(REPO_NONSTOP) $(REPO_OFFLINE) --with-package-deps "--filesystem=../$(FILESYSTEM_CONFIG)"
+	./cookbook/repo.sh $(REPO_APPSTREAM) $(REPO_NONSTOP) $(REPO_OFFLINE) --with-package-deps "--filesystem=../$(FILESYSTEM_CONFIG)"
 	mkdir -p $(BUILD)
 	# make sure fstools.tag are newer than the things repo modifies
 	touch $(FSTOOLS_TAG)
@@ -145,13 +145,10 @@ else
 endif
 
 # Invoke repo.sh and push for one of more targets separated by comma
+# Don't use podman here, as the p target cannot mount inside podman
 rp.%: $(FSTOOLS_TAG) FORCE
-ifeq ($(PODMAN_BUILD),1)
-	$(PODMAN_RUN) make $@
-else
 	$(MAKE) r.$*
 	$(MAKE) p.$*
-endif
 
 # Invoke clean.sh, repo.sh and push for one of more targets separated by comma
 crp.%: $(FSTOOLS_TAG) FORCE
