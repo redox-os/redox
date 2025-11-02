@@ -84,6 +84,14 @@ pub fn init_config() {
     if config.cook_opt.nonstop.is_none() {
         config.cook_opt.nonstop = Some(extract_env("COOKBOOK_NONSTOP", false));
     }
+    if config.mirrors.len() == 0 {
+        // The GNU FTP mirror below is automatically inserted for convenience
+        // You can choose other mirrors by setting it on cookbook.toml
+        config.mirrors.insert(
+            "ftp.gnu.org/gnu".to_string(),
+            "mirrors.ocf.berkeley.edu/gnu".to_string(),
+        );
+    }
 
     config.cook = CookConfig::from(config.cook_opt.clone());
 
