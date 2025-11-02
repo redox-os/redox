@@ -41,9 +41,10 @@ Cookbook has special config to avoid repetitive args, place this file into `cook
 #verbose = true
 
 [mirrors]
+# The uncommented option below is the default if [mirrors] is not set
 # see list of GNU FTP mirrors at https://www.gnu.org/prep/ftp.en.html
-"ftp.gnu.org/gnu" = "example.com/gnu"
-"github.com/foo/bar" = "github.com/baz/bar" 
+"ftp.gnu.org/gnu" = "mirrors.ocf.berkeley.edu/gnu"
+# "github.com/foo/bar" = "github.com/baz/bar" 
 ```
 
 ### Recipe Categories
