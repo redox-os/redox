@@ -9,4 +9,3 @@ curl -sSLf https://raw.githubusercontent.com/cargo-bins/cargo-binstall/main/inst
 cargo +stable binstall --no-confirm --force --version 0.10.0 sccache
 cargo +stable binstall --no-confirm --force --version 1.42.4 just
 cargo +stable binstall --no-confirm --force --version 0.29.0 cbindgen
-cargo +stable install --force --version 0.1.1 cargo-config # TODO: Remove

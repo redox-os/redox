@@ -1116,7 +1116,6 @@ else
     fi
 fi
 
-cargoInstall cargo-config 0.1.1
 cargoInstall just 1.42.4
 cargoInstall cbindgen 0.29.0
 
