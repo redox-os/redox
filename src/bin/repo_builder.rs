@@ -126,7 +126,7 @@ fn publish_packages(recipe_list: Vec<String>, repo_dir: String) -> anyhow::Resul
             pkgar::create(
                 format!("{}/build/id_ed25519.toml", root),
                 &appstream_pkg,
-                &appstream_root
+                &appstream_root,
             )?;
         }
     }
