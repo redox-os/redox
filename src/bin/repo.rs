@@ -1,6 +1,5 @@
 use ansi_to_tui::IntoText;
 use anyhow::{Context, anyhow, bail};
-use cookbook::WALK_DEPTH;
 use cookbook::config::{CookConfig, get_config, init_config};
 use cookbook::cook::cook_build::build;
 use cookbook::cook::fetch::{fetch, fetch_offline};
@@ -399,7 +398,7 @@ fn parse_args(args: Vec<String>) -> anyhow::Result<(CliConfig, CliCommand, Vec<C
             }
         }
         if config.with_package_deps {
-            recipe_names = CookRecipe::get_package_deps_recursive(&recipe_names, WALK_DEPTH)
+            recipe_names = CookRecipe::get_package_deps_recursive(&recipe_names, true)
                 .context("failed get package deps")?;
         }
 
