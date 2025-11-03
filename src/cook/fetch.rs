@@ -3,27 +3,13 @@ use crate::cook::fs::*;
 use crate::cook::pty::PtyOut;
 use crate::cook::script::*;
 use crate::is_redox;
+use crate::log_to_pty;
 use crate::recipe::BuildKind;
 use crate::recipe::Recipe;
 use crate::{blake3, recipe::SourceRecipe};
 use std::fs;
 use std::path::{Path, PathBuf};
 use std::process::Command;
-
-macro_rules! log_warn {
-    ($logger:expr, $($arg:tt)+) => {
-        use std::io::Write;
-
-        if $logger.is_some() {
-           let _ = $logger.as_ref().unwrap().1.try_clone().unwrap().write(
-                        format!($($arg)+)
-                            .as_bytes(),
-                    );
-        } else {
-            eprintln!($($arg)+);
-        }
-    };
-}
 
 pub(crate) fn get_blake3(path: &PathBuf, show_progress: bool) -> Result<String, String> {
     if show_progress {
@@ -120,7 +106,7 @@ pub fn fetch(recipe_dir: &Path, recipe: &Recipe, logger: &PtyOut) -> Result<Path
         Some(SourceRecipe::Path { path }) => {
             if !source_dir.is_dir() || modified_dir(Path::new(&path))? > modified_dir(&source_dir)?
             {
-                log_warn!(
+                log_to_pty!(
                     logger,
                     "[DEBUG]: {} is newer than {}",
                     path,
@@ -266,7 +252,7 @@ pub fn fetch(recipe_dir: &Path, recipe: &Recipe, logger: &PtyOut) -> Result<Path
                                 "The downloaded tar blake3 '{source_tar_blake3}' is not equal to blake3 in recipe.toml"
                             ));
                         } else {
-                            log_warn!(
+                            log_to_pty!(
                                 logger,
                                 "DEBUG: source tar blake3 is different and need redownload"
                             );
@@ -278,7 +264,7 @@ pub fn fetch(recipe_dir: &Path, recipe: &Recipe, logger: &PtyOut) -> Result<Path
                     }
                 } else {
                     //TODO: set blake3 hash on the recipe with something like "cook fix"
-                    log_warn!(
+                    log_to_pty!(
                         logger,
                         "WARNING: set blake3 for '{}' to '{}'",
                         source_tar.display(),
@@ -289,7 +275,7 @@ pub fn fetch(recipe_dir: &Path, recipe: &Recipe, logger: &PtyOut) -> Result<Path
             } {}
             if source_dir.is_dir() {
                 if tar_updated || fetch_is_patches_newer(recipe_dir, patches, &source_dir)? {
-                    log_warn!(
+                    log_to_pty!(
                         logger,
                         "DEBUG: source tar or patches is newer than the source directory"
                     );
@@ -310,7 +296,7 @@ pub fn fetch(recipe_dir: &Path, recipe: &Recipe, logger: &PtyOut) -> Result<Path
         // Local Sources
         None => {
             if !source_dir.is_dir() {
-                log_warn!(
+                log_to_pty!(
                     logger,
                     "WARNING: Recipe without source section expected source dir at '{}'",
                     source_dir.display(),

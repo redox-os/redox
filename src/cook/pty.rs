@@ -1,11 +1,12 @@
 use anyhow::{Error, bail};
 use filedescriptor::FileDescriptor;
 use libc::{self, winsize};
-use std::io::Read;
+use std::io::{Read, Write};
 use std::os::fd::FromRawFd;
 use std::os::unix::io::AsRawFd;
 use std::os::unix::process::CommandExt;
 use std::process::Child;
+use std::time::Duration;
 use std::{io, mem, ptr};
 use std::{
     io::{PipeReader, PipeWriter},
@@ -17,10 +18,9 @@ pub use std::os::unix::io::RawFd;
 #[macro_export]
 macro_rules! log_to_pty {
     ($logger:expr, $($arg:tt)+) => {
-        use std::io::Write;
-
         if $logger.is_some() {
-           let _ = $logger.as_ref().unwrap().1.try_clone().unwrap().write(
+            use std::io::Write;
+            let _ = $logger.as_ref().unwrap().1.try_clone().unwrap().write(
                         format!($($arg)+)
                             .as_bytes(),
                     );
@@ -55,6 +55,17 @@ pub fn setup_pty() -> (
     let (log_reader, log_writer) = std::io::pipe().expect("Failed to create log pipe");
     let pipes = (pair.slave, log_writer);
     (pty_reader, log_reader, pipes)
+}
+
+pub fn flush_pty(logger: &mut PtyOut) {
+    let Some((pty, file)) = logger else {
+        return;
+    };
+    // Not sure if flush actually working
+    let _ = pty.flush();
+    std::thread::sleep(Duration::from_millis(100));
+    let _ = file.flush();
+    std::thread::sleep(Duration::from_millis(100));
 }
 
 pub fn spawn_to_pipe(command: &mut Command, stdout_pipe: &PtyOut) -> Result<Child, Error> {
@@ -282,6 +293,10 @@ impl PtyFd {
 
         Ok(child)
     }
+
+    fn flush(&mut self) -> std::io::Result<()> {
+        self.0.flush()
+    }
 }
 
 /// Represents the master end of a pty.
@@ -318,6 +333,9 @@ fn cloexec(fd: RawFd) -> Result<(), Error> {
 impl UnixSlavePty {
     fn spawn_command(&self, builder: &mut Command) -> Result<std::process::Child, Error> {
         Ok(self.fd.spawn_command(builder)?)
+    }
+    fn flush(&mut self) -> Result<(), anyhow::Error> {
+        Ok(self.fd.flush()?)
     }
 }
 
