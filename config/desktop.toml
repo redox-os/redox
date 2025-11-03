@@ -10,20 +10,21 @@ filesystem_size = 650
 # Package settings
 [packages]
 cosmic-edit = {}
-cosmic-icons = {}
 cosmic-files = {}
+cosmic-icons = {}
 cosmic-term = {}
 dejavu = {}
+freefont = {}
 hicolor-icon-theme = {}
 installer-gui = {}
 netsurf = {}
 orbdata = {}
 orbital = {}
 orbutils = {}
+patchelf = {}
 pop-icon-theme = {}
 rustpython = {}
 shared-mime-info = {}
-patchelf = {}
 
 [[files]]
 path = "/usr/lib/init.d/20_orbital"
