@@ -1,3 +1,4 @@
+use pkg::package::PackageError;
 use pkg::recipes;
 use pkg::{Package, PackageName};
 use redoxer::target;
@@ -5,9 +6,9 @@ use redoxer::target;
 use crate::cook::fs::*;
 use crate::cook::pty::PtyOut;
 use crate::cook::script::*;
-use crate::recipe::AutoDeps;
 use crate::recipe::BuildKind;
 use crate::recipe::Recipe;
+use crate::recipe::{AutoDeps, CookRecipe};
 use std::collections::VecDeque;
 use std::{
     collections::BTreeSet,
@@ -37,7 +38,7 @@ macro_rules! log_warn {
     };
 }
 
-fn auto_deps(
+fn auto_deps_from_dynamic_linking(
     stage_dir: &Path,
     dep_pkgars: &BTreeSet<(PackageName, PathBuf)>,
     logger: &PtyOut,
@@ -158,6 +159,20 @@ fn auto_deps(
     }
 
     deps
+}
+
+fn auto_deps_from_static_package_deps(
+    build_dep_pkgars: &BTreeSet<(PackageName, PathBuf)>,
+    dynamic_dep_pkgars: &BTreeSet<PackageName>,
+) -> Result<BTreeSet<PackageName>, PackageError> {
+    let static_dep_pkgars: Vec<PackageName> = build_dep_pkgars
+        .iter()
+        .map(|x| x.0.clone())
+        .filter(|x| !dynamic_dep_pkgars.contains(x))
+        .collect();
+    let pkgs = CookRecipe::get_package_deps_recursive(&static_dep_pkgars, false)?;
+
+    Ok(pkgs.into_iter().collect())
 }
 
 pub fn build(
@@ -394,8 +409,13 @@ fn build_auto_deps(
             toml::from_str(&toml_content).map_err(|_| "failed to deserialize cached auto_deps")?;
         wrapper.packages
     } else {
-        let packages = auto_deps(stage_dir, &dep_pkgars, logger);
-        let wrapper = AutoDeps { packages };
+        let mut packages1 = auto_deps_from_dynamic_linking(stage_dir, &dep_pkgars, logger);
+        let packages2 =
+            auto_deps_from_static_package_deps(&dep_pkgars, &packages1).unwrap_or_default();
+        packages1.extend(packages2);
+        let wrapper = AutoDeps {
+            packages: packages1,
+        };
         serialize_and_write(&auto_deps_path, &wrapper)?;
         wrapper.packages
     };
@@ -481,7 +501,7 @@ pub fn build_remote(
 mod tests {
     use std::os::unix;
 
-    use super::auto_deps;
+    use super::auto_deps_from_dynamic_linking;
 
     #[test]
     fn file_system_loop_no_infinite_loop() {
@@ -498,7 +518,7 @@ mod tests {
             "Expected a loop where {dir:?} points to {root:?}"
         );
 
-        let entries = auto_deps(root, &Default::default(), &None);
+        let entries = auto_deps_from_dynamic_linking(root, &Default::default(), &None);
         assert!(
             entries.is_empty(),
             "auto_deps shouldn't have yielded any libraries"

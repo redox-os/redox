@@ -1,7 +1,6 @@
 use std::path::Path;
 use std::{env, process};
 
-use cookbook::WALK_DEPTH;
 use cookbook::cook::fetch::{fetch, fetch_offline};
 use cookbook::cook::fs::create_target_dir;
 use cookbook::cook::package::package;
@@ -74,7 +73,7 @@ fn main() {
     }
 
     if with_package_deps {
-        recipe_names = match CookRecipe::get_package_deps_recursive(&recipe_names, WALK_DEPTH) {
+        recipe_names = match CookRecipe::get_package_deps_recursive(&recipe_names, true) {
             Ok(ok) => ok,
             Err(err) => {
                 eprintln!(
