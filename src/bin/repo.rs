@@ -730,7 +730,10 @@ impl TuiApp {
         let (Some(logs), line) = self.get_recipe_log(recipe_name) else {
             return Ok(());
         };
-        fs::write(log_path, join_logs(logs, line))?;
+        let str = strip_ansi_escapes::strip_str(join_logs(logs, line));
+        if !str.trim_end().is_empty() {
+            fs::write(log_path, str)?;
+        }
         return Ok(());
     }
 
@@ -770,7 +773,7 @@ impl TuiApp {
                 return;
             }
             StatusUpdate::FlushLog(name, path) => {
-                // TODO: This blocks the TUI for a moment, maybe open separate thread?
+                // TODO: This blocks the TUI, maybe open separate thread?
                 // FIXME: handle error here?
                 let _ = self.write_log(&name, &path);
                 return;
