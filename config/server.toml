@@ -10,6 +10,7 @@ filesystem_size = 512
 # Package settings
 [packages]
 bash = {}
+bottom = {}
 ca-certificates = {}
 #contain = {} # needs to update dependencies
 coreutils = {}
