@@ -7,6 +7,7 @@ use cookbook::cook::fs::{create_target_dir, run_command};
 use cookbook::cook::package::package;
 use cookbook::cook::pty::{PtyOut, UnixSlavePty, setup_pty};
 use cookbook::cook::tree::{display_tree_entry, format_size};
+use cookbook::log_to_pty;
 use cookbook::recipe::{BuildKind, CookRecipe};
 use pkg::PackageName;
 use pkg::package::PackageError;
@@ -859,6 +860,9 @@ fn run_tui_cook(
                     &logger,
                 );
                 if let Some(log_path) = cooker_config.logs_dir.as_ref() {
+                    if let Err(err_ctx) = &handler {
+                        log_to_pty!(&logger, "{:?}", err_ctx)
+                    }
                     let log_path = log_path.join(format!("{}.log", name.as_str()));
                     cooker_status_tx
                         .send(StatusUpdate::FlushLog(name.clone(), log_path))
@@ -949,6 +953,9 @@ fn run_tui_cook(
                     // successful fetch log usually not that helpful
                     && handler.is_err()
                 {
+                    if let Err(err_ctx) = &handler {
+                        log_to_pty!(&logger, "{:?}", err_ctx)
+                    }
                     let log_path = log_path.join(format!("{}.log", name.as_str()));
                     fetcher_status_tx
                         .send(StatusUpdate::FlushLog(name.clone(), log_path))
