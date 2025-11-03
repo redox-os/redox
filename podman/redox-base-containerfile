@@ -53,6 +53,7 @@ RUN useradd --create-home --no-log-init --uid _UID_ poduser \
         libsdl2-ttf-dev \
         llvm \
         lua5.4 \
+        luajit \
         lzip \
         m4 \
         make \
