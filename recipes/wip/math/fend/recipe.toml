@@ -1,8 +1,13 @@
 #TODO compiled but not tested
 [source]
 git = "https://github.com/printfn/fend"
+
 [build]
+dependencies = [
+    "openssl1",
+]
 template = "custom"
 script = """
+DYNAMIC_INIT
 cookbook_cargo_packages fend
 """
