@@ -72,6 +72,7 @@ struct CliConfig {
     cookbook_dir: PathBuf,
     repo_dir: PathBuf,
     sysroot_dir: PathBuf,
+    logs_dir: Option<PathBuf>,
     category: Option<PathBuf>,
     filesystem: Option<redox_installer::Config>,
     with_package_deps: bool,
@@ -140,6 +141,12 @@ impl CliConfig {
             //FIXME: This config is unused as redox-pkg harcoded this to $PWD/recipes
             cookbook_dir: current_dir.join("recipes"),
             repo_dir: current_dir.join("repo"),
+            // build dir here is hardcoded in repo_builder as well
+            logs_dir: if get_config().cook.tui_logs {
+                Some(current_dir.join("build/logs"))
+            } else {
+                None
+            },
             category: None,
             sysroot_dir: if cfg!(target_os = "redox") {
                 PathBuf::from("/")
@@ -341,6 +348,9 @@ fn parse_args(args: Vec<String>) -> anyhow::Result<(CliConfig, CliCommand, Vec<C
     if let Some(c) = config.category {
         // need to prefix by cookbook dir
         config.category = Some(PathBuf::from("recipes").join(c));
+    }
+    if let Some(c) = config.logs_dir.as_ref() {
+        fs::create_dir_all(c).map_err(|e| anyhow!(e))?;
     }
 
     let command = command.ok_or(anyhow!("Error: No command specified."))?;
@@ -599,6 +609,7 @@ enum StatusUpdate {
     Cooked(CookRecipe),
     FailCook(CookRecipe, String),
     PushLog(PackageName, Vec<u8>),
+    FlushLog(PackageName, PathBuf),
     FetchThreadFinished,
     CookThreadFinished,
 }
@@ -676,6 +687,52 @@ impl TuiApp {
         }
     }
 
+    pub fn get_active_name(&self) -> Option<PackageName> {
+        if self.log_view_job == JobType::Cook {
+            self.active_cook.clone()
+        } else {
+            self.active_fetch.clone()
+        }
+    }
+
+    pub fn get_active_log(
+        &self,
+    ) -> (
+        Option<PackageName>,
+        Option<&Vec<String>>,
+        Option<Cow<'_, str>>,
+    ) {
+        let active_name = self.get_active_name();
+        let (log_text, log_line) = if let Some(active_name) = active_name.as_ref() {
+            self.get_recipe_log(active_name)
+        } else {
+            (None, None)
+        };
+
+        (active_name, log_text, log_line)
+    }
+
+    pub fn get_recipe_log(
+        &self,
+        recipe_name: &PackageName,
+    ) -> (Option<&Vec<String>>, Option<Cow<'_, str>>) {
+        let log_text = self.logs.get(recipe_name);
+        let log_line = if let Some(b) = self.log_byte_buffer.get(recipe_name) {
+            Some(String::from_utf8_lossy(b))
+        } else {
+            None
+        };
+        (log_text, log_line)
+    }
+
+    pub fn write_log(&self, recipe_name: &PackageName, log_path: &PathBuf) -> anyhow::Result<()> {
+        let (Some(logs), line) = self.get_recipe_log(recipe_name) else {
+            return Ok(());
+        };
+        fs::write(log_path, join_logs(logs, line))?;
+        return Ok(());
+    }
+
     // Update the state based on a message from a worker thread
     fn update_status(&mut self, update: StatusUpdate) {
         let (name, new_status) = match update {
@@ -709,6 +766,12 @@ impl TuiApp {
                     let line_str = line_str_pos.rsplit('\r').next().unwrap_or(&line_str_pos);
                     log_list.push(line_str.to_owned());
                 }
+                return;
+            }
+            StatusUpdate::FlushLog(name, path) => {
+                // TODO: This blocks the TUI for a moment, maybe open separate thread?
+                // FIXME: handle error here?
+                let _ = self.write_log(&name, &path);
                 return;
             }
             StatusUpdate::Cooked(recipe) => {
@@ -784,13 +847,20 @@ fn run_tui_cook(
             let (mut stdout_writer, mut stderr_writer) = setup_logger(&cooker_status_tx, &name);
             let logger = Some((&mut stdout_writer, &mut stderr_writer));
             'again: loop {
-                match handle_cook(
+                let handler = handle_cook(
                     &recipe,
                     &cooker_config,
                     source_dir.clone(),
                     is_deps,
                     &logger,
-                ) {
+                );
+                if let Some(log_path) = cooker_config.logs_dir.as_ref() {
+                    let log_path = log_path.join(name.as_str());
+                    cooker_status_tx
+                        .send(StatusUpdate::FlushLog(name.clone(), log_path))
+                        .unwrap_or_default();
+                }
+                match handler {
                     Ok(()) => {
                         cooker_status_tx
                             .send(StatusUpdate::Cooked(recipe))
@@ -870,7 +940,14 @@ fn run_tui_cook(
             let logger = Some((&mut stdout_writer, &mut stderr_writer));
 
             'again: loop {
-                match handle_fetch(&recipe, &fetcher_config, &logger) {
+                let handler = handle_fetch(&recipe, &fetcher_config, &logger);
+                if let Some(log_path) = fetcher_config.logs_dir.as_ref() {
+                    let log_path = log_path.join(name.as_str());
+                    fetcher_status_tx
+                        .send(StatusUpdate::FlushLog(name.clone(), log_path))
+                        .unwrap_or_default();
+                }
+                match handler {
                     Ok(source_dir) => {
                         fetcher_status_tx
                             .send(StatusUpdate::Fetched(recipe.clone()))
@@ -1041,7 +1118,7 @@ fn run_tui_cook(
             );
             f.render_stateful_widget(cook_list, cook_chunk, &mut app.cook_list_state);
 
-            let (active_name, log_text, log_line) = get_active_log(&app);
+            let (active_name, log_text, log_line) = app.get_active_log();
             let log_title = if let Some(active_name) = active_name {
                 format!(
                     " {} Log: {} ",
@@ -1152,16 +1229,11 @@ fn run_tui_cook(
                 if let Some((app, res)) = handle_prompt_input(&event, &mut app) {
                     prompting.swap(res as u32, Ordering::SeqCst);
                     if res == PromptOption::Exit {
-                        let (name, log, line) = get_active_log(&app);
+                        let (name, log, line) = app.get_active_log();
                         if let Some(name) = name
                             && let Some(log) = log
                         {
-                            let mut logs = log.join("\n");
-                            if let Some(line) = line {
-                                logs.push_str("\n");
-                                logs.push_str(handle_cr(&line));
-                            }
-                            app.dump_logs_on_exit = Some((name.to_owned(), logs));
+                            app.dump_logs_on_exit = Some((name.to_owned(), join_logs(log, line)));
                         }
                         running.store(false, Ordering::SeqCst);
                     }
@@ -1194,36 +1266,18 @@ fn run_tui_cook(
     Ok(app.dump_logs_on_exit)
 }
 
+fn join_logs(log: &Vec<String>, line: Option<Cow<'_, str>>) -> String {
+    let mut logs = log.join("\n");
+    if let Some(line) = line {
+        logs.push_str("\n");
+        logs.push_str(handle_cr(&line));
+    }
+    logs
+}
+
 fn handle_cr<'a>(buffer: &'a Cow<'_, str>) -> &'a str {
     let st = buffer.trim_end();
     st.rsplit('\r').next().unwrap_or(&st)
-}
-
-fn get_active_log(
-    app: &TuiApp,
-) -> (
-    Option<PackageName>,
-    Option<&Vec<String>>,
-    Option<Cow<'_, str>>,
-) {
-    let active_name = if app.log_view_job == JobType::Cook {
-        app.active_cook.clone()
-    } else {
-        app.active_fetch.clone()
-    };
-    let log_text = if let Some(active_name) = &active_name {
-        app.logs.get(active_name)
-    } else {
-        None
-    };
-    let log_line = if let Some(active_name) = &active_name
-        && let Some(b) = app.log_byte_buffer.get(active_name)
-    {
-        Some(String::from_utf8_lossy(b))
-    } else {
-        None
-    };
-    (active_name, log_text, log_line)
 }
 
 fn handle_main_event(app: &mut TuiApp, event: &Event) {

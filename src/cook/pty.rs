@@ -17,10 +17,9 @@ pub use std::os::unix::io::RawFd;
 #[macro_export]
 macro_rules! log_to_pty {
     ($logger:expr, $($arg:tt)+) => {
-        use std::io::Write;
-
         if $logger.is_some() {
-           let _ = $logger.as_ref().unwrap().1.try_clone().unwrap().write(
+            use std::io::Write;
+            let _ = $logger.as_ref().unwrap().1.try_clone().unwrap().write(
                         format!($($arg)+)
                             .as_bytes(),
                     );
