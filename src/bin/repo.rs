@@ -6,6 +6,7 @@ use cookbook::cook::fetch::{fetch, fetch_offline};
 use cookbook::cook::fs::{create_target_dir, run_command};
 use cookbook::cook::package::package;
 use cookbook::cook::pty::{PtyOut, UnixSlavePty, flush_pty, setup_pty};
+use cookbook::cook::script::KILL_ALL_PID;
 use cookbook::cook::tree::{display_tree_entry, format_size};
 use cookbook::log_to_pty;
 use cookbook::recipe::{BuildKind, CookRecipe};
@@ -861,7 +862,7 @@ fn run_tui_cook(
                 );
                 if let Some(log_path) = cooker_config.logs_dir.as_ref() {
                     if let Err(err_ctx) = &handler {
-                        log_to_pty!(&logger, "{:?}", err_ctx)
+                        log_to_pty!(&logger, "\n{:?}", err_ctx)
                     }
                     flush_pty(&mut logger);
                     let log_path = log_path.join(format!("{}.log", name.as_str()));
@@ -955,7 +956,7 @@ fn run_tui_cook(
                     && handler.is_err()
                 {
                     if let Err(err_ctx) = &handler {
-                        log_to_pty!(&logger, "{:?}", err_ctx)
+                        log_to_pty!(&logger, "\n{:?}", err_ctx)
                     }
                     flush_pty(&mut logger);
                     let log_path = log_path.join(format!("{}.log", name.as_str()));
@@ -1308,12 +1309,11 @@ fn handle_main_event(app: &mut TuiApp, event: &Event) {
             Key::Char('c') => {
                 // as compilers still running, we use this way to stop it
                 let pid = std::process::id();
-                Command::new("pkill")
-                    .arg("-9")
-                    .arg("-P")
-                    .arg(pid.to_string())
+                Command::new("bash")
+                    .arg("-c")
+                    .arg(KILL_ALL_PID.replace("$PID", &pid.to_string()))
                     .spawn()
-                    .expect("unable to spawn pkill");
+                    .expect("unable to spawn kill");
             }
             Key::Up => {
                 app.auto_scroll = false;
