@@ -25,7 +25,7 @@ uutils = {}
 path = "/usr/lib/init.d/00_base"
 data = """
 # clear and recreate tmpdir with 0o1777 permission
-rm -r /tmp
+rm -rf /tmp
 mkdir -m a=rwxt /tmp
 
 ipcd
