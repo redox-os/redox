@@ -349,7 +349,8 @@ fn parse_args(args: Vec<String>) -> anyhow::Result<(CliConfig, CliCommand, Vec<C
         // need to prefix by cookbook dir
         config.category = Some(PathBuf::from("recipes").join(c));
     }
-    if let Some(c) = config.logs_dir.as_ref() {
+    if let Some(c) = config.logs_dir.as_mut() {
+        *c = c.join(redoxer::target());
         fs::create_dir_all(c).map_err(|e| anyhow!(e))?;
     }
 
