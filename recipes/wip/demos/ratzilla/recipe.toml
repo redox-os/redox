@@ -10,7 +10,7 @@ function build_from_dir {
     dir_name=$2
     "${COOKBOOK_CARGO}" build \
             --manifest-path "${COOKBOOK_SOURCE}/examples/${dir_name}/Cargo.toml" \
-            "${build_flags}"
+            ${build_flags}
         mkdir -pv "${COOKBOOK_STAGE}/usr/bin"
         cp -v \
             "target/${TARGET}/${build_type}/${prog_name}" \
