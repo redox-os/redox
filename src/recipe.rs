@@ -219,6 +219,11 @@ impl CookRecipe {
 
     pub fn new_recursive(
         names: &[PackageName],
+        recurse_build_deps: bool,
+        recurse_package_deps: bool,
+        collect_build_deps: bool,
+        collect_package_deps: bool,
+        collect_self: bool,
         recursion: usize,
     ) -> Result<Vec<Self>, PackageError> {
         if recursion == 0 {
@@ -229,21 +234,51 @@ impl CookRecipe {
         for name in names {
             let recipe = Self::from_name(name.as_str())?;
 
-            let dependencies =
-                Self::new_recursive(&recipe.recipe.build.dependencies, recursion - 1).map_err(
-                    |mut err| {
-                        err.append_recursion(name);
-                        err
-                    },
-                )?;
+            if recurse_build_deps {
+                let dependencies = Self::new_recursive(
+                    &recipe.recipe.build.dependencies,
+                    recurse_build_deps,
+                    recurse_package_deps,
+                    collect_build_deps,
+                    collect_package_deps,
+                    collect_build_deps,
+                    recursion - 1,
+                )
+                .map_err(|mut err| {
+                    err.append_recursion(name);
+                    err
+                })?;
 
-            for dependency in dependencies {
-                if !recipes.contains(&dependency) {
-                    recipes.push(dependency);
+                for dependency in dependencies {
+                    if !recipes.contains(&dependency) {
+                        recipes.push(dependency);
+                    }
                 }
             }
 
-            if !recipes.contains(&recipe) {
+            if recurse_package_deps {
+                let dependencies = Self::new_recursive(
+                    &recipe.recipe.package.dependencies,
+                    recurse_build_deps,
+                    recurse_package_deps,
+                    collect_build_deps,
+                    collect_package_deps,
+                    collect_package_deps,
+                    recursion - 1,
+                )
+                .map_err(|mut err| {
+                    err.append_recursion(name);
+                    err
+                })?;
+
+                for dependency in dependencies {
+                    if !recipes.contains(&dependency) {
+                        recipes.push(dependency);
+                    }
+                }
+            }
+
+            if collect_self && !recipes.contains(&recipe) {
                 recipes.push(recipe);
             }
         }
@@ -255,7 +290,7 @@ impl CookRecipe {
         names: &[PackageName],
         mark_is_deps: bool,
     ) -> Result<Vec<Self>, PackageError> {
-        let mut packages = Self::new_recursive(names, WALK_DEPTH)?;
+        let mut packages = Self::new_recursive(names, true, false, true, false, true, WALK_DEPTH)?;
 
         if mark_is_deps {
             for package in packages.iter_mut() {
@@ -268,37 +303,13 @@ impl CookRecipe {
 
     pub fn get_package_deps_recursive(
         names: &[PackageName],
-        recursion: usize,
+        include_names: bool,
     ) -> Result<Vec<PackageName>, PackageError> {
-        if recursion == 0 {
-            return Err(PackageError::Recursion(Default::default()));
-        }
+        // recurse_build_deps == true here as libraries (build deps) can have runtime files (package deps)
+        let packages =
+            Self::new_recursive(names, true, true, false, true, include_names, WALK_DEPTH)?;
 
-        let mut recipes: Vec<PackageName> = Vec::new();
-        for name in names {
-            let recipe = Self::from_name(name.as_str())?;
-
-            let dependencies = Self::get_package_deps_recursive(
-                &recipe.recipe.package.dependencies,
-                recursion - 1,
-            )
-            .map_err(|mut err| {
-                err.append_recursion(name);
-                err
-            })?;
-
-            for dependency in dependencies {
-                if !recipes.contains(&dependency) {
-                    recipes.push(dependency);
-                }
-            }
-
-            if !recipes.contains(name) {
-                recipes.push(name.clone());
-            }
-        }
-
-        Ok(recipes)
+        Ok(packages.into_iter().map(|p| p.name).collect())
     }
 }
 
