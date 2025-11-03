@@ -351,3 +351,19 @@ if [ "$(git rev-parse HEAD)" != "$(git rev-parse $ORIGIN_BRANCH)" ]
 then
     git checkout -B "$(echo "$ORIGIN_BRANCH" | cut -d / -f 2-)" "$ORIGIN_BRANCH"
 fi"#;
+
+pub static KILL_ALL_PID: &str = r#"
+THISPID=$$
+CHILDREN=$(ps -o pid= --ppid $PID | grep -v $THISPID);
+
+ALL_DESCENDANTS='';
+
+while [ -n "$CHILDREN" ]; do
+    ALL_DESCENDANTS="$ALL_DESCENDANTS $CHILDREN";
+    CHILDREN=$(ps -o pid= --ppid $(echo $CHILDREN) | tr '\n' ' ');
+done;
+
+if [ -n "$ALL_DESCENDANTS" ]; then
+    kill -9 $ALL_DESCENDANTS;
+fi
+"#;

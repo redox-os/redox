@@ -19,24 +19,9 @@ use std::{
     time::SystemTime,
 };
 
-use crate::is_redox;
+use crate::{is_redox, log_to_pty};
 
 use crate::REMOTE_PKG_SOURCE;
-
-macro_rules! log_warn {
-    ($logger:expr, $($arg:tt)+) => {
-        use std::io::Write;
-
-        if $logger.is_some() {
-           let _ = $logger.as_ref().unwrap().1.try_clone().unwrap().write(
-                        format!($($arg)+)
-                            .as_bytes(),
-                    );
-        } else {
-            eprintln!($($arg)+);
-        }
-    };
-}
 
 fn auto_deps_from_dynamic_linking(
     stage_dir: &Path,
@@ -61,7 +46,7 @@ fn auto_deps_from_dynamic_linking(
         };
         if visited.contains(&dir) {
             #[cfg(debug_assertions)]
-            log_warn!(
+            log_to_pty!(
                 logger,
                 "DEBUG: auto_deps => Skipping `{dir:?}` (already visited)"
             );
@@ -111,7 +96,7 @@ fn auto_deps_from_dynamic_linking(
                     continue;
                 };
                 if let Ok(relative_path) = path.strip_prefix(stage_dir) {
-                    log_warn!(logger, "DEBUG: {} needs {}", relative_path.display(), name);
+                    log_to_pty!(logger, "DEBUG: {} needs {}", relative_path.display(), name);
                 }
                 needed.insert(name.to_string());
             }
@@ -145,7 +130,7 @@ fn auto_deps_from_dynamic_linking(
                         continue;
                     };
                     if needed.contains(child_name) {
-                        log_warn!(logger, "DEBUG: {} provides {}", dep, child_name);
+                        log_to_pty!(logger, "DEBUG: {} provides {}", dep, child_name);
                         deps.insert(dep.clone());
                         missing.remove(child_name);
                     }
@@ -155,7 +140,7 @@ fn auto_deps_from_dynamic_linking(
     }
 
     for name in missing {
-        log_warn!(logger, "WARN: {} missing", name);
+        log_to_pty!(logger, "WARN: {} missing", name);
     }
 
     deps
@@ -225,7 +210,7 @@ pub fn build(
     if sysroot_dir.is_dir() {
         let sysroot_modified = modified_dir(&sysroot_dir)?;
         if sysroot_modified < source_modified || sysroot_modified < deps_modified {
-            log_warn!(
+            log_to_pty!(
                 logger,
                 "DEBUG: '{}' newer than '{}'",
                 source_dir.display(),
@@ -275,7 +260,7 @@ pub fn build(
     if stage_dir.is_dir() {
         let stage_modified = modified_dir(&stage_dir)?;
         if stage_modified < source_modified || stage_modified < deps_modified {
-            log_warn!(
+            log_to_pty!(
                 logger,
                 "DEBUG: '{}' newer than '{}'",
                 source_dir.display(),
