@@ -5,7 +5,7 @@ use cookbook::cook::cook_build::build;
 use cookbook::cook::fetch::{fetch, fetch_offline};
 use cookbook::cook::fs::{create_target_dir, run_command};
 use cookbook::cook::package::package;
-use cookbook::cook::pty::{PtyOut, UnixSlavePty, setup_pty};
+use cookbook::cook::pty::{PtyOut, UnixSlavePty, flush_pty, setup_pty};
 use cookbook::cook::tree::{display_tree_entry, format_size};
 use cookbook::log_to_pty;
 use cookbook::recipe::{BuildKind, CookRecipe};
@@ -850,7 +850,7 @@ fn run_tui_cook(
                 .send(StatusUpdate::StartCook(name.clone()))
                 .unwrap();
             let (mut stdout_writer, mut stderr_writer) = setup_logger(&cooker_status_tx, &name);
-            let logger = Some((&mut stdout_writer, &mut stderr_writer));
+            let mut logger = Some((&mut stdout_writer, &mut stderr_writer));
             'again: loop {
                 let handler = handle_cook(
                     &recipe,
@@ -863,6 +863,7 @@ fn run_tui_cook(
                     if let Err(err_ctx) = &handler {
                         log_to_pty!(&logger, "{:?}", err_ctx)
                     }
+                    flush_pty(&mut logger);
                     let log_path = log_path.join(format!("{}.log", name.as_str()));
                     cooker_status_tx
                         .send(StatusUpdate::FlushLog(name.clone(), log_path))
@@ -945,7 +946,7 @@ fn run_tui_cook(
                 .unwrap();
 
             let (mut stdout_writer, mut stderr_writer) = setup_logger(&fetcher_status_tx, &name);
-            let logger = Some((&mut stdout_writer, &mut stderr_writer));
+            let mut logger = Some((&mut stdout_writer, &mut stderr_writer));
 
             'again: loop {
                 let handler = handle_fetch(&recipe, &fetcher_config, &logger);
@@ -956,6 +957,7 @@ fn run_tui_cook(
                     if let Err(err_ctx) = &handler {
                         log_to_pty!(&logger, "{:?}", err_ctx)
                     }
+                    flush_pty(&mut logger);
                     let log_path = log_path.join(format!("{}.log", name.as_str()));
                     fetcher_status_tx
                         .send(StatusUpdate::FlushLog(name.clone(), log_path))
