@@ -859,7 +859,7 @@ fn run_tui_cook(
                     &logger,
                 );
                 if let Some(log_path) = cooker_config.logs_dir.as_ref() {
-                    let log_path = log_path.join(name.as_str());
+                    let log_path = log_path.join(format!("{}.log", name.as_str()));
                     cooker_status_tx
                         .send(StatusUpdate::FlushLog(name.clone(), log_path))
                         .unwrap_or_default();
@@ -945,7 +945,10 @@ fn run_tui_cook(
 
             'again: loop {
                 let handler = handle_fetch(&recipe, &fetcher_config, &logger);
-                if let Some(log_path) = fetcher_config.logs_dir.as_ref() {
+                if let Some(log_path) = fetcher_config.logs_dir.as_ref()
+                    // successful fetch log usually not that helpful
+                    && handler.is_err()
+                {
                     let log_path = log_path.join(format!("{}.log", name.as_str()));
                     fetcher_status_tx
                         .send(StatusUpdate::FlushLog(name.clone(), log_path))
