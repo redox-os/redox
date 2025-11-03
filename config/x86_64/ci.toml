@@ -64,6 +64,7 @@ findutils = {}
 fontconfig = {}
 #freeciv = {}
 freedoom = {}
+freefont = {}
 #freeglut = {}
 freepats = {}
 freetype2 = {}
