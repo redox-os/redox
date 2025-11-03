@@ -6,6 +6,7 @@ use std::os::fd::FromRawFd;
 use std::os::unix::io::AsRawFd;
 use std::os::unix::process::CommandExt;
 use std::process::Child;
+use std::time::Duration;
 use std::{io, mem, ptr};
 use std::{
     io::{PipeReader, PipeWriter},
@@ -60,8 +61,11 @@ pub fn flush_pty(logger: &mut PtyOut) {
     let Some((pty, file)) = logger else {
         return;
     };
+    // Not sure if flush actually working
     let _ = pty.flush();
+    std::thread::sleep(Duration::from_millis(100));
     let _ = file.flush();
+    std::thread::sleep(Duration::from_millis(100));
 }
 
 pub fn spawn_to_pipe(command: &mut Command, stdout_pipe: &PtyOut) -> Result<Child, Error> {
@@ -289,6 +293,10 @@ impl PtyFd {
 
         Ok(child)
     }
+
+    fn flush(&mut self) -> std::io::Result<()> {
+        self.0.flush()
+    }
 }
 
 /// Represents the master end of a pty.
@@ -326,8 +334,8 @@ impl UnixSlavePty {
     fn spawn_command(&self, builder: &mut Command) -> Result<std::process::Child, Error> {
         Ok(self.fd.spawn_command(builder)?)
     }
-    fn flush(&self) -> Result<(), anyhow::Error> {
-        Ok(self.fd.as_file()?.flush()?)
+    fn flush(&mut self) -> Result<(), anyhow::Error> {
+        Ok(self.fd.flush()?)
     }
 }
 
