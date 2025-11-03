@@ -108,7 +108,6 @@ export PKG_CONFIG_SYSROOT_DIR="${COOKBOOK_SYSROOT}"
 build_type=release
 install_flags=
 build_flags=--release
-offline_flags=
 if [ ! -z "${COOKBOOK_DEBUG}" ]
 then
     install_flags=--debug
@@ -120,7 +119,8 @@ fi
 
 if [ ! -z "${COOKBOOK_OFFLINE}" ]
 then
-offline_flags=--offline
+build_flags+=" --offline"
+install_flags+=" --offline"
 fi
 
 # cargo template
@@ -132,7 +132,6 @@ function cookbook_cargo {
         --locked \
         --no-track \
         ${install_flags} \
-        ${offline_flags} \
          -j "${COOKBOOK_MAKE_JOBS}" "$@"
 }
 
@@ -144,7 +143,7 @@ function cookbook_cargo_examples {
         "${COOKBOOK_CARGO}" build \
             --manifest-path "${COOKBOOK_SOURCE}/${PACKAGE_PATH}/Cargo.toml" \
             --example "${example}" \
-            ${build_flags} ${offline_flags} -j "${COOKBOOK_MAKE_JOBS}"
+            ${build_flags} -j "${COOKBOOK_MAKE_JOBS}"
         mkdir -pv "${COOKBOOK_STAGE}/usr/bin"
         cp -v \
             "target/${TARGET}/${build_type}/examples/${example}" \
@@ -160,7 +159,7 @@ function cookbook_cargo_packages {
         "${COOKBOOK_CARGO}" build \
             --manifest-path "${COOKBOOK_SOURCE}/${PACKAGE_PATH}/Cargo.toml" \
             --package "${package}" \
-            ${build_flags} ${offline_flags} -j "${COOKBOOK_MAKE_JOBS}"
+            ${build_flags} -j "${COOKBOOK_MAKE_JOBS}"
         mkdir -pv "${COOKBOOK_STAGE}/usr/bin"
         cp -v \
             "target/${TARGET}/${build_type}/${package}" \
