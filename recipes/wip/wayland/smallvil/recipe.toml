@@ -4,8 +4,10 @@ git = "https://github.com/Smithay/smithay"
 [build]
 template = "custom"
 dependencies = [
+    "libffi",
     "libwayland",
 ]
 script = """
+DYNAMIC_INIT
 cookbook_cargo_packages smallvil
 """
