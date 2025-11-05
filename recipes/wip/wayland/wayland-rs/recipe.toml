@@ -1,6 +1,6 @@
 #TODO make libwayland work
 [source]
-git = "https://github.com/jackpot51/smithay"
+git = "https://github.com/jackpot51/wayland-rs"
 branch = "redox"
 
 [build]
@@ -8,10 +8,9 @@ template = "custom"
 dependencies = [
     "libffi",
     "libwayland",
-    "libxkbcommon",
 ]
 script = """
 DYNAMIC_INIT
 export RUSTFLAGS="${RUSTFLAGS} -lffi"
-cookbook_cargo_packages smallvil
+cookbook_cargo_examples simple_window
 """
