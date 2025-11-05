@@ -18,10 +18,10 @@ libnettle = {}
 llvm18 = {}
 mesa-x11 = {}
 mesa-demos-x11 = {}
-servo = {}
+#servo = {}
 sqlite3 = {}
 twm = {}
-#webkitgtk3 = {} # takes a long time to build
+#webkitgtk3 = {}
 xev = {}
 xeyes = {}
 xinit = {}
@@ -96,7 +96,7 @@ EOF
 export DISPLAY=":0"
 X "${DISPLAY}" -verbose 6 &
 sleep 1
+feh --bg-max --no-fehbg --randomize /ui/background.jpg &
 twm &
 xterm &
-feh --bg-max --no-fehbg --randomize /ui/background.jpg &
 """
