@@ -1,6 +1,6 @@
 [source]
 git = "https://github.com/servo/servo.git"
-rev = "25fea1e086c46d611cf87db439430994e4f56cd5"
+rev = "721214fbe44bf11b968e5e076e5b0af5b5663447"
 patches = [
     "redox.patch"
 ]
@@ -12,27 +12,10 @@ cp ../.servobuild ./
 template = "custom"
 dependencies = [
     "freetype2",
-    "expat",
-    "gettext",
-    "glib",
-    "gstreamer",
-    "harfbuzz",
-    "libffi",
-    "libpng",
-    "libiconv",
-    "libx11",
-    "libxcb",
     "libpng",
     "libstdcxx-v3",
-    "openssl1",
-    "pcre",
     "zlib",
-    "x11proto",
-    "x11proto-kb",
-    "xcb-proto",
-    "xextproto",
-    "libxau",
-    "libpthread-stubs",
+    "mesa",
     "fontconfig",
     "expat",
 ]
@@ -48,7 +31,7 @@ export TARGET_AR="$AR"
 # pkg-config crate can only recognize one path to pkgconfig
 export PKG_CONFIG_PATH_x86_64_unknown_redox="${COOKBOOK_SYSROOT}/lib/pkgconfig"
 export PKG_CONFIG_SYSROOT_DIR_x86_64_unknown_redox="${COOKBOOK_SYSROOT}/lib/pkgconfig"
-rsync -a -v ${COOKBOOK_SYSROOT}/usr/share/pkgconfig/*.pc ${COOKBOOK_SYSROOT}/lib/pkgconfig/
+# rsync -a -v ${COOKBOOK_SYSROOT}/usr/share/pkgconfig/*.pc ${COOKBOOK_SYSROOT}/lib/pkgconfig/
 
 export RUSTFLAGS="$RUSTFLAGS -L native=${COOKBOOK_SYSROOT}/lib -C link-arg=-Wl,-rpath-link,${COOKBOOK_SYSROOT}/lib"
 
@@ -70,6 +53,5 @@ rsync -a -v ${COOKBOOK_SOURCE}/resources ${COOKBOOK_STAGE}/usr/lib/servo/
 
 [package]
 dependencies = [
-    "libxcursor",
-    "libxkbcommon-x11",
+    "mesa"
 ]
