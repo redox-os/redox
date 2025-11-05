@@ -1,26 +1,22 @@
 [source]
-git = "https://github.com/servo/servo.git"
-rev = "721214fbe44bf11b968e5e076e5b0af5b5663447"
-patches = [
-    "redox.patch"
-]
-script = """
-cp ../.servobuild ./
-"""
+git = "https://gitlab.redox-os.org/redox-os/servo.git"
+branch = "redox"
 
 [build]
 template = "custom"
 dependencies = [
+    "expat",
+    "fontconfig",
     "freetype2",
     "libpng",
     "libstdcxx-v3",
-    "zlib",
     "mesa",
-    "fontconfig",
-    "expat",
+    "zlib",
 ]
 script = """
 DYNAMIC_INIT
+
+cp -v "${COOKBOOK_RECIPE}/.servobuild" "${COOKBOOK_SOURCE}/.servobuild"
 
 # jemalloc specific configuration
 export JEMALLOC_SYS_WITH_LG_PAGE=16
