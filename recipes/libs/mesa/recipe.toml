@@ -35,7 +35,8 @@ cookbook_meson \
     -Dplatforms=redox \
     -Dshader-cache=disabled
 
-# Hack to add LLVM libs
-#TODO: only add necessary LLVM libs, not all of them
-sed -i "s/ -lOSMesa / -lOSMesa $("${LLVM_CONFIG}" --libs) -lstdc++ /" "${COOKBOOK_STAGE}/usr/lib/pkgconfig/osmesa.pc"
+# Hack to add LLVM libs, the list can be seen from meson log and check for matches $("${LLVM_CONFIG}" --libs)
+LLVMLIBS="-lLLVMBitReader -lLLVMCore -lLLVMExecutionEngine -lLLVMInstCombine -lLLVMMCDisassembler" 
+LLVMLIBS+=" -lLLVMMCJIT -lLLVMScalarOpts -lLLVMTransformUtils -lLLVMCoroutines -lLLVMLTO"
+sed -i "s/ -lOSMesa / -lOSMesa ${LLVMLIBS} -lstdc++ /" "${COOKBOOK_STAGE}/usr/lib/pkgconfig/osmesa.pc"
 """

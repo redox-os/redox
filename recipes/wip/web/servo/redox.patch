@@ -1,5 +1,5 @@
 diff --git a/Cargo.toml b/Cargo.toml
-index 8589f4c8078..5f64981206c 100644
+index 8589f4c8078..2773d79f447 100644
 --- a/Cargo.toml
 +++ b/Cargo.toml
 @@ -31,7 +31,7 @@ arboard = "3"
@@ -11,21 +11,21 @@ index 8589f4c8078..5f64981206c 100644
  background_hang_monitor_api = { path = "components/shared/background_hang_monitor" }
  backtrace = "0.3"
  base = { path = "components/shared/base" }
-@@ -88,7 +88,7 @@ imsz = "0.2"
+@@ -86,7 +86,7 @@ icu_segmenter = "1.5.0"
+ image = { version = "0.25", default-features = false, features = ["avif", "rayon", "bmp", "gif", "ico", "jpeg", "png", "webp"] }
+ imsz = "0.2"
  indexmap = { version = "2.11.4", features = ["std"] }
- ipc-channel = "0.20.2"
+-ipc-channel = "0.20.2"
++ipc-channel = { version = "0.20.2", features = ["force-inprocess"] }
  itertools = "0.14"
--js = { package = "mozjs", git = "https://github.com/servo/mozjs" }
-+js = { package = "mozjs", path = "/home/willnode/mozjs/mozjs" }
+ js = { package = "mozjs", git = "https://github.com/servo/mozjs" }
  keyboard-types = { version = "0.8.3", features = ["serde", "webdriver"] }
- kurbo = { version = "0.11.3", features = ["euclid"] }
- layout_api = { path = "components/shared/layout" }
 @@ -148,7 +148,7 @@ stylo_config = { git = "https://github.com/servo/stylo", branch = "2025-10-01" }
  stylo_dom = { git = "https://github.com/servo/stylo", branch = "2025-10-01" }
  stylo_malloc_size_of = { git = "https://github.com/servo/stylo", branch = "2025-10-01" }
  stylo_traits = { git = "https://github.com/servo/stylo", branch = "2025-10-01" }
 -surfman = { version = "0.10.0", features = ["chains"] }
-+surfman = { path = "/home/willnode/surfman", features = ["chains"] }
++surfman = { git = "https://github.com/willnode/surfman", branch = "redox-orbital", features = ["chains"] }
  syn = { version = "2", default-features = false, features = ["clone-impls", "derive", "parsing"] }
  synstructure = "0.13"
  taffy = { version = "0.9", default-features = false, features = ["calc", "detailed_layout_info", "grid", "std"] }
@@ -50,11 +50,13 @@ index 8589f4c8078..5f64981206c 100644
  xi-unicode = "0.3.0"
  xml5ever = "0.35"
  xpath = { path = "components/xpath" }
-@@ -232,6 +232,18 @@ lto = "thin"
+@@ -232,6 +232,20 @@ lto = "thin"
  codegen-units = 1
  
  [patch.crates-io]
++# requires socketpair SOCK_SEQPACKET to support multiprocess (try remove force-inprocess feature)
 +ipc-channel = { git = "https://github.com/willnode/ipc-channel.git", branch="redox" }
++orbclient = { git = "https://gitlab.redox-os.org/redox-os/orbclient" }
 +#servo_malloc_size_of = { path = "./components/malloc_size_of" }
 +tikv-jemalloc-sys = { version = "0.6.0", git = "https://gitlab.redox-os.org/njskalski/jemallocator.git", branch = "redox_mods" }
 +tikv-jemallocator = { version = "0.6.0", git = "https://gitlab.redox-os.org/njskalski/jemallocator.git", branch = "redox_mods" }
@@ -69,7 +71,7 @@ index 8589f4c8078..5f64981206c 100644
  # If you need to temporarily test Servo with a local fork of some upstream
  # crate, add that here. Use the form:
  #
-@@ -260,7 +272,7 @@ codegen-units = 1
+@@ -260,7 +274,7 @@ codegen-units = 1
  #
  # [patch."https://github.com/servo/webrender"]
  # webrender = { path = "../webrender/webrender" }
@@ -78,6 +80,19 @@ index 8589f4c8078..5f64981206c 100644
  # wr_malloc_size_of = { path = "../webrender/wr_malloc_size_of" }
  #
  # Or for another Git dependency:
+diff --git a/components/background_hang_monitor/Cargo.toml b/components/background_hang_monitor/Cargo.toml
+index f08648d3eb9..a6272f8ffb5 100644
+--- a/components/background_hang_monitor/Cargo.toml
++++ b/components/background_hang_monitor/Cargo.toml
+@@ -18,7 +18,7 @@ background_hang_monitor_api = { workspace = true }
+ backtrace = { workspace = true }
+ base = { workspace = true }
+ crossbeam-channel = { workspace = true }
+-ipc-channel = { workspace = true }
++ipc-channel = { workspace = true, features = ["force-inprocess"] }
+ libc = { workspace = true }
+ log = { workspace = true }
+ rustc-demangle = { version = "0.1", optional = true }
 diff --git a/components/constellation/Cargo.toml b/components/constellation/Cargo.toml
 index 5974dd08eea..74e43604b00 100644
 --- a/components/constellation/Cargo.toml
@@ -230,18 +245,22 @@ index 9ba20db80c0..efd49741a7b 100644
  criterion = { version = "0.5", features = ["html_reports"] }
  
 diff --git a/components/script/dom/navigatorinfo.rs b/components/script/dom/navigatorinfo.rs
-index f3e6ddc109b..ee83d327df9 100644
+index f3e6ddc109b..6b539f120c9 100644
 --- a/components/script/dom/navigatorinfo.rs
 +++ b/components/script/dom/navigatorinfo.rs
-@@ -46,7 +46,7 @@ pub(crate) fn Platform() -> DOMString {
- }
- 
- #[allow(non_snake_case)]
--#[cfg(any(target_os = "android", target_os = "linux"))]
-+#[cfg(any(target_os = "android", target_os = "linux", target_os = "redox"))]
- pub(crate) fn Platform() -> DOMString {
+@@ -51,6 +51,12 @@ pub(crate) fn Platform() -> DOMString {
      DOMString::from("Linux")
  }
+ 
++#[allow(non_snake_case)]
++#[cfg(target_os = "redox")]
++pub(crate) fn Platform() -> DOMString {
++    DOMString::from("Redox")
++}
++
+ #[allow(non_snake_case)]
+ #[cfg(target_os = "macos")]
+ pub(crate) fn Platform() -> DOMString {
 diff --git a/components/script_bindings/build.rs b/components/script_bindings/build.rs
 index c28f900f6ce..2445c2ec9e4 100644
 --- a/components/script_bindings/build.rs
