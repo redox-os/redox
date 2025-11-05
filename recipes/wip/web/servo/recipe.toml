@@ -50,3 +50,8 @@ mv ${COOKBOOK_STAGE}/usr/bin/servo ${COOKBOOK_STAGE}/usr/lib/servo/bin/
 ln -s ../lib/servo/bin/servo ${COOKBOOK_STAGE}/usr/bin/servo
 rsync -a -v ${COOKBOOK_SOURCE}/resources ${COOKBOOK_STAGE}/usr/lib/servo/
 """
+
+[package]
+dependencies = [
+    "mesa"
+]
