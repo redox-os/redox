@@ -13,13 +13,22 @@ filesystem_size = 4096
 [packages]
 mesa = {}
 smallvil = {}
+wayland-rs = {}
 xkeyboard-config = {}
+
+[[files]]
+path = "/usr/lib/init.d/10_wayland_env"
+data = """
+export XDG_RUNTIME_DIR /run/user/0
+mkdir -p $XDG_RUNTIME_DIR
+export WAYLAND_DISPLAY wayland-1
+"""
 
 [[files]]
 path = "/usr/lib/init.d/30_wayland"
 mode = 0o755
 data = """
-export XDG_RUNTIME_DIR /run/user/0
-mkdir -p $XDG_RUNTIME_DIR
 env LD_DEBUG=all smallvil_smallvil
+sleep 2
+wayland-rs_simple_window
 """
