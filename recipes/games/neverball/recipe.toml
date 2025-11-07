@@ -5,7 +5,9 @@ patches = ["redox.patch"]
 
 [build]
 dependencies = [
+    "expat",
     "freetype2",
+    "libdrm",
     "libjpeg",
     "libogg",
     "liborbital",
