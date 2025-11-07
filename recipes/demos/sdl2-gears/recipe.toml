@@ -4,16 +4,7 @@ dependencies = [
     "sdl2-image",
     "sdl2-mixer",
     "sdl2-ttf",
-    "sdl2",
-    "liborbital",
     "llvm18",
-    "mesa",
-    "freetype2",
-    "libjpeg",
-    "libpng",
-    "libogg",
-    "libvorbis",
-    "zlib"
 ]
 script = """
 DYNAMIC_INIT
