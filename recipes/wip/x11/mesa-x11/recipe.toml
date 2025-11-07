@@ -5,12 +5,15 @@ same_as = "../../../libs/mesa"
 template = "custom"
 dependencies = [
     "expat",
+    "libdrm",
     "libpthread-stubs",
     "libx11",
     "libxau",
     "libxcb",
     "libxext",
     "libxfixes",
+    "libxrandr",
+    "libxshmfence",
     "libxxf86vm",
     "llvm18",
     "x11proto",
