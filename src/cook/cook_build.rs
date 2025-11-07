@@ -148,7 +148,7 @@ fn auto_deps_from_dynamic_linking(
 fn auto_deps_from_static_package_deps(
     build_dep_pkgars: &BTreeSet<(PackageName, PathBuf)>,
     dynamic_dep_pkgars: &BTreeSet<PackageName>,
-) -> Result<(BTreeSet<PackageName>, Vec<PackageName>), PackageError> {
+) -> Result<BTreeSet<PackageName>, PackageError> {
     let static_dep_pkgars: Vec<PackageName> = build_dep_pkgars
         .iter()
         .map(|x| x.0.clone())
@@ -156,7 +156,7 @@ fn auto_deps_from_static_package_deps(
         .collect();
     let pkgs = CookRecipe::get_package_deps_recursive(&static_dep_pkgars, false)?;
 
-    Ok((pkgs.into_iter().collect(), static_dep_pkgars))
+    Ok(pkgs.into_iter().collect())
 }
 
 pub fn build(
@@ -394,25 +394,9 @@ fn build_auto_deps(
     } else {
         let mut dynamic_deps = auto_deps_from_dynamic_linking(stage_dir, &dep_pkgars, logger);
         dep_pkgars.retain(|x| recipe.build.dependencies.contains(&x.0));
-        let (package_deps, static_deps) =
+        let package_deps =
             auto_deps_from_static_package_deps(&dep_pkgars, &dynamic_deps).unwrap_or_default();
         dynamic_deps.extend(package_deps);
-
-        // if auto_deps working, all build deps should be linked as auto_deps, otherwise:
-        // 1. it's weakly linked, which should be mentioned as package deps
-        // 2. it's not our direct ELF dependencies, which should be removed from build deps
-        // 3. only needed for build purpose, which should be moved to dev build deps
-        if dynamic_deps.len() > 0 && static_deps.len() > 0 {
-            for dep in &static_deps {
-                if !recipe.package.dependencies.contains(dep) {
-                    log_to_pty!(
-                        logger,
-                        "WARNING: build deps {} is not linked in auto_deps",
-                        dep.as_str()
-                    );
-                }
-            }
-        }
 
         let wrapper = AutoDeps {
             packages: dynamic_deps,

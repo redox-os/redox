@@ -6,7 +6,6 @@ branch = "master"
 template = "custom"
 dependencies = [
     "gettext",
-    "libiconv",
     "libxkbcommon",
 ]
 script = """
