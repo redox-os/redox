@@ -89,20 +89,21 @@ fn main() {
         };
     }
 
-    let recipes = match CookRecipe::get_build_deps_recursive(&recipe_names, !with_package_deps) {
-        Ok(ok) => ok,
-        Err(err) => {
-            eprintln!(
-                "{}{}cook - error:{}{} {}",
-                style::Bold,
-                color::Fg(color::AnsiValue(196)),
-                color::Fg(color::Reset),
-                style::Reset,
-                err,
-            );
-            process::exit(1);
-        }
-    };
+    let recipes =
+        match CookRecipe::get_build_deps_recursive(&recipe_names, true, !with_package_deps) {
+            Ok(ok) => ok,
+            Err(err) => {
+                eprintln!(
+                    "{}{}cook - error:{}{} {}",
+                    style::Bold,
+                    color::Fg(color::AnsiValue(196)),
+                    color::Fg(color::Reset),
+                    style::Reset,
+                    err,
+                );
+                process::exit(1);
+            }
+        };
 
     for recipe in recipes {
         if !quiet {
