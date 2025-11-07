@@ -1,5 +1,4 @@
 use pkg::package::PackageError;
-use pkg::recipes;
 use pkg::{Package, PackageName};
 use redoxer::target;
 
@@ -178,15 +177,13 @@ pub fn build(
     }
 
     let mut dep_pkgars = BTreeSet::new();
-    for dependency in recipe.build.dependencies.iter() {
-        let dependency_dir = recipes::find(dependency.as_str());
-        if dependency_dir.is_none() {
-            return Err(format!("failed to find recipe directory '{}'", dependency));
-        }
+    let build_deps = CookRecipe::get_build_deps_recursive(&recipe.build.dependencies, false, false)
+        .map_err(|e| format!("{:?}", e))?;
+    for dependency in build_deps.iter() {
         dep_pkgars.insert((
-            dependency.clone(),
-            dependency_dir
-                .unwrap()
+            dependency.name.clone(),
+            dependency
+                .dir
                 .join("target")
                 .join(redoxer::target())
                 .join("stage.pkgar"),
@@ -194,7 +191,7 @@ pub fn build(
     }
 
     if stage_dir.exists() && !check_source {
-        let auto_deps = build_auto_deps(target_dir, &stage_dir, dep_pkgars, logger)?;
+        let auto_deps = build_auto_deps(recipe, target_dir, &stage_dir, dep_pkgars, logger)?;
         return Ok((stage_dir, auto_deps));
     }
 
@@ -370,16 +367,17 @@ pub fn build(
         rename(&stage_dir_tmp, &stage_dir)?;
     }
 
-    let auto_deps = build_auto_deps(target_dir, &stage_dir, dep_pkgars, logger)?;
+    let auto_deps = build_auto_deps(recipe, target_dir, &stage_dir, dep_pkgars, logger)?;
 
     Ok((stage_dir, auto_deps))
 }
 
 /// Calculate automatic dependencies
 fn build_auto_deps(
+    recipe: &Recipe,
     target_dir: &Path,
     stage_dir: &PathBuf,
-    dep_pkgars: BTreeSet<(PackageName, PathBuf)>,
+    mut dep_pkgars: BTreeSet<(PackageName, PathBuf)>,
     logger: &PtyOut,
 ) -> Result<BTreeSet<PackageName>, String> {
     let auto_deps_path = target_dir.join("auto_deps.toml");
@@ -394,12 +392,14 @@ fn build_auto_deps(
             toml::from_str(&toml_content).map_err(|_| "failed to deserialize cached auto_deps")?;
         wrapper.packages
     } else {
-        let mut packages1 = auto_deps_from_dynamic_linking(stage_dir, &dep_pkgars, logger);
-        let packages2 =
-            auto_deps_from_static_package_deps(&dep_pkgars, &packages1).unwrap_or_default();
-        packages1.extend(packages2);
+        let mut dynamic_deps = auto_deps_from_dynamic_linking(stage_dir, &dep_pkgars, logger);
+        dep_pkgars.retain(|x| recipe.build.dependencies.contains(&x.0));
+        let package_deps =
+            auto_deps_from_static_package_deps(&dep_pkgars, &dynamic_deps).unwrap_or_default();
+        dynamic_deps.extend(package_deps);
+
         let wrapper = AutoDeps {
-            packages: packages1,
+            packages: dynamic_deps,
         };
         serialize_and_write(&auto_deps_path, &wrapper)?;
         wrapper.packages

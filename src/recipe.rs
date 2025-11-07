@@ -140,6 +140,8 @@ pub struct BuildRecipe {
     pub kind: BuildKind,
     #[serde(default)]
     pub dependencies: Vec<PackageName>,
+    #[serde(default, rename = "dev-dependencies")]
+    pub dev_dependencies: Vec<PackageName>,
 }
 
 #[derive(Debug, Clone, Default, Deserialize, PartialEq, Serialize)]
@@ -163,6 +165,28 @@ pub struct Recipe {
     pub package: PackageRecipe,
 }
 
+impl BuildRecipe {
+    pub fn new(kind: BuildKind) -> Self {
+        let mut build = Self::default();
+        build.kind = kind;
+        build
+    }
+
+    pub fn set_as_remote(&mut self) {
+        self.kind = BuildKind::Remote;
+        self.dev_dependencies = Vec::new();
+    }
+}
+
+#[derive(Debug, Clone, PartialEq)]
+pub struct CookRecipe {
+    pub name: PackageName,
+    pub dir: PathBuf,
+    pub recipe: Recipe,
+    /// If false, it's listed on install config
+    pub is_deps: bool,
+}
+
 impl Recipe {
     pub fn new(file: &PathBuf) -> Result<Recipe, PackageError> {
         if !file.is_file() {
@@ -174,14 +198,6 @@ impl Recipe {
             .map_err(|err| PackageError::Parse(DeError::custom(err), Some(file.clone())))?;
         Ok(recipe)
     }
-}
-#[derive(Debug, Clone, PartialEq)]
-pub struct CookRecipe {
-    pub name: PackageName,
-    pub dir: PathBuf,
-    pub recipe: Recipe,
-    /// If false, it's listed on install config
-    pub is_deps: bool,
 }
 
 impl CookRecipe {
@@ -220,6 +236,7 @@ impl CookRecipe {
     pub fn new_recursive(
         names: &[PackageName],
         recurse_build_deps: bool,
+        recurse_dev_build_deps: bool,
         recurse_package_deps: bool,
         collect_build_deps: bool,
         collect_package_deps: bool,
@@ -238,6 +255,30 @@ impl CookRecipe {
                 let dependencies = Self::new_recursive(
                     &recipe.recipe.build.dependencies,
                     recurse_build_deps,
+                    recurse_dev_build_deps,
+                    recurse_package_deps,
+                    collect_build_deps,
+                    collect_package_deps,
+                    collect_build_deps,
+                    recursion - 1,
+                )
+                .map_err(|mut err| {
+                    err.append_recursion(name);
+                    err
+                })?;
+
+                for dependency in dependencies {
+                    if !recipes.contains(&dependency) {
+                        recipes.push(dependency);
+                    }
+                }
+            }
+
+            if recurse_dev_build_deps {
+                let dependencies = Self::new_recursive(
+                    &recipe.recipe.build.dev_dependencies,
+                    recurse_build_deps,
+                    recurse_dev_build_deps,
                     recurse_package_deps,
                     collect_build_deps,
                     collect_package_deps,
@@ -260,6 +301,7 @@ impl CookRecipe {
                 let dependencies = Self::new_recursive(
                     &recipe.recipe.package.dependencies,
                     recurse_build_deps,
+                    recurse_dev_build_deps,
                     recurse_package_deps,
                     collect_build_deps,
                     collect_package_deps,
@@ -288,9 +330,19 @@ impl CookRecipe {
 
     pub fn get_build_deps_recursive(
         names: &[PackageName],
+        include_dev: bool,
         mark_is_deps: bool,
     ) -> Result<Vec<Self>, PackageError> {
-        let mut packages = Self::new_recursive(names, true, false, true, false, true, WALK_DEPTH)?;
+        let mut packages = Self::new_recursive(
+            names,
+            true,
+            include_dev,
+            false,
+            true,
+            false,
+            true,
+            WALK_DEPTH,
+        )?;
 
         if mark_is_deps {
             for package in packages.iter_mut() {
@@ -306,8 +358,16 @@ impl CookRecipe {
         include_names: bool,
     ) -> Result<Vec<PackageName>, PackageError> {
         // recurse_build_deps == true here as libraries (build deps) can have runtime files (package deps)
-        let packages =
-            Self::new_recursive(names, true, true, false, true, include_names, WALK_DEPTH)?;
+        let packages = Self::new_recursive(
+            names,
+            true,
+            false,
+            true,
+            false,
+            true,
+            include_names,
+            WALK_DEPTH,
+        )?;
 
         Ok(packages.into_iter().map(|p| p.name).collect())
     }
@@ -351,13 +411,10 @@ mod tests {
                     script: None,
                     shallow_clone: None,
                 }),
-                build: BuildRecipe {
-                    kind: BuildKind::Cargo {
-                        package_path: None,
-                        cargoflags: String::new(),
-                    },
-                    dependencies: Vec::new(),
-                },
+                build: BuildRecipe::new(BuildKind::Cargo {
+                    package_path: None,
+                    cargoflags: String::new(),
+                }),
                 package: PackageRecipe::default(),
             }
         );
@@ -392,12 +449,9 @@ mod tests {
                     patches: Vec::new(),
                     script: None,
                 }),
-                build: BuildRecipe {
-                    kind: BuildKind::Custom {
-                        script: "make".to_string()
-                    },
-                    dependencies: Vec::new(),
-                },
+                build: BuildRecipe::new(BuildKind::Custom {
+                    script: "make".to_string()
+                }),
                 package: PackageRecipe::default(),
             }
         );
@@ -424,10 +478,7 @@ mod tests {
             recipe,
             Recipe {
                 source: None,
-                build: BuildRecipe {
-                    kind: BuildKind::None,
-                    dependencies: Vec::new(),
-                },
+                build: BuildRecipe::new(BuildKind::None),
                 package: PackageRecipe {
                     dependencies: vec![PackageName::new("gcc13").unwrap()],
                     version: None,
