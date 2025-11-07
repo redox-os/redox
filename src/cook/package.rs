@@ -44,12 +44,7 @@ pub fn package(
     if package_file.is_file() {
         let stage_modified = modified_dir(stage_dir)?;
         if modified(&package_file)? < stage_modified {
-            log_to_pty!(
-                logger,
-                "DEBUG: '{}' newer than '{}'",
-                stage_dir.display(),
-                package_file.display()
-            );
+            log_to_pty!(logger, "DEBUG: updating '{}'", package_file.display());
             remove_all(&package_file)?;
             remove_all(&package_meta)?;
         }

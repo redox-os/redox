@@ -12,12 +12,11 @@ pub struct CookConfigOpt {
     /// whether to use TUI to allow parallel build
     /// default value is yes if "CI" env unset and STDIN is open.
     pub tui: Option<bool>,
-    /// whether to write logs to build/logs dir
-    /// only usable when tui is used
-    pub tui_logs: Option<bool>,
+    /// whether to write logs to build/logs dir, default true on TUI
+    pub logs: Option<bool>,
     /// whether to ignore build errors
     pub nonstop: Option<bool>,
-    /// whether to print success recipes info and warnings
+    /// whether to print verbose logs to certain commands
     /// build failure still be printed anyway
     pub verbose: Option<bool>,
 }
@@ -27,7 +26,7 @@ pub struct CookConfig {
     pub offline: bool,
     pub jobs: usize,
     pub tui: bool,
-    pub tui_logs: bool,
+    pub logs: bool,
     pub nonstop: bool,
     pub verbose: bool,
 }
@@ -38,7 +37,7 @@ impl From<CookConfigOpt> for CookConfig {
             offline: value.offline.unwrap(),
             jobs: value.jobs.unwrap(),
             tui: value.tui.unwrap(),
-            tui_logs: value.tui_logs.unwrap(),
+            logs: value.logs.unwrap(),
             nonstop: value.nonstop.unwrap(),
             verbose: value.verbose.unwrap(),
         }
@@ -80,8 +79,8 @@ pub fn init_config() {
                 .unwrap_or(1),
         ));
     }
-    if config.cook_opt.tui_logs.is_none() {
-        config.cook_opt.tui_logs = config.cook_opt.tui;
+    if config.cook_opt.logs.is_none() {
+        config.cook_opt.logs = Some(extract_env("COOKBOOK_LOGS", config.cook_opt.tui.unwrap()));
     }
     if config.cook_opt.offline.is_none() {
         config.cook_opt.offline = Some(extract_env("COOKBOOK_OFFLINE", false));
