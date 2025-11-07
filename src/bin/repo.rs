@@ -63,6 +63,7 @@ const REPO_HELP_STR: &str = r#"
 
     cook env and their defaults:
         CI=                        set to any value to disable TUI
+        COOKBOOK_LOGS=             whether to capture build logs (default is !CI)
         COOKBOOK_OFFLINE=false     prevent internet access if possible
         COOKBOOK_NONSTOP=false     pkeep running even a recipe build failed
         COOKBOOK_VERBOSE=true      print success/error on each recipe
@@ -144,7 +145,7 @@ impl CliConfig {
             cookbook_dir: current_dir.join("recipes"),
             repo_dir: current_dir.join("repo"),
             // build dir here is hardcoded in repo_builder as well
-            logs_dir: if get_config().cook.tui_logs {
+            logs_dir: if get_config().cook.logs {
                 Some(current_dir.join("build/logs"))
             } else {
                 None
@@ -212,17 +213,15 @@ fn main_inner() -> anyhow::Result<()> {
     for recipe in &recipe_names {
         match repo_inner(&config, &command, recipe) {
             Ok(_) => {
-                if verbose {
-                    eprintln!(
-                        "{}{}{} {} - successful{}{}",
-                        style::Bold,
-                        color::Fg(color::AnsiValue(46)),
-                        command.to_string(),
-                        recipe.name.as_str(),
-                        color::Fg(color::Reset),
-                        style::Reset,
-                    );
-                }
+                eprintln!(
+                    "{}{}{} {} - successful{}{}",
+                    style::Bold,
+                    color::Fg(color::AnsiValue(46)),
+                    command.to_string(),
+                    recipe.name.as_str(),
+                    color::Fg(color::Reset),
+                    style::Reset,
+                );
             }
             Err(e) => {
                 if config.cook.nonstop && verbose {
@@ -264,12 +263,48 @@ fn repo_inner(
     recipe: &CookRecipe,
 ) -> Result<(), anyhow::Error> {
     Ok(match *command {
-        CliCommand::Fetch => {
-            handle_fetch(recipe, config, &None)?;
-        }
-        CliCommand::Cook => {
-            let source_dir = handle_fetch(recipe, config, &None)?;
-            handle_cook(recipe, config, source_dir, recipe.is_deps, &None)?
+        CliCommand::Fetch | CliCommand::Cook => {
+            let repo_inner_fn = move |logger: &PtyOut| -> Result<(), anyhow::Error> {
+                let source_dir = handle_fetch(recipe, config, logger)?;
+                if *command == CliCommand::Cook {
+                    handle_cook(recipe, config, source_dir, recipe.is_deps, logger)?;
+                }
+                Ok(())
+            };
+            let Some(log_path) = &config.logs_dir else {
+                return repo_inner_fn(&None);
+            };
+
+            let (status_tx, status_rx) = mpsc::channel::<StatusUpdate>();
+            let (mut stdout_writer, mut stderr_writer) = setup_logger(&status_tx, &recipe.name);
+            let mut app = TuiApp::new(vec![recipe.clone()]);
+            app.dump_logs_anyway = true;
+            let th = thread::spawn(move || {
+                while let Ok(update) = status_rx.recv() {
+                    let mut should_break = false;
+                    if let StatusUpdate::FlushLog(_p, _q) = &update {
+                        should_break = true;
+                    }
+                    app.update_status(update);
+                    if should_break {
+                        break;
+                    }
+                }
+            });
+            let mut logger = Some((&mut stdout_writer, &mut stderr_writer));
+            let result = repo_inner_fn(&logger);
+            if let Err(err_ctx) = &result {
+                log_to_pty!(&logger, "\n{:?}", err_ctx)
+            }
+            // successful fetch is not that useful to log
+            if *command == CliCommand::Cook || result.is_err() {
+                flush_pty(&mut logger);
+                let log_path = log_path.join(format!("{}.log", recipe.name.as_str()));
+                status_tx
+                    .send(StatusUpdate::FlushLog(recipe.name.clone(), log_path))
+                    .unwrap_or_default();
+            }
+            let _ = th.join();
         }
         CliCommand::Unfetch => handle_clean(recipe, config, true, true)?,
         CliCommand::Clean => handle_clean(recipe, config, false, true)?,
@@ -598,7 +633,7 @@ enum RecipeStatus {
     Failed(String),
 }
 
-#[derive(Debug, Clone)]
+#[derive(Debug, Clone, PartialEq)]
 enum StatusUpdate {
     StartFetch(PackageName),
     Fetched(CookRecipe),
@@ -650,6 +685,7 @@ struct TuiApp {
     cook_panel_rect: Option<Rect>,
     log_panel_rect: Option<Rect>,
     prompt: Option<FailurePrompt>,
+    dump_logs_anyway: bool,
     dump_logs_on_exit: Option<(PackageName, String)>,
 }
 
@@ -681,6 +717,7 @@ impl TuiApp {
             cook_panel_rect: None,
             log_panel_rect: None,
             prompt: None,
+            dump_logs_anyway: false,
             dump_logs_on_exit: None,
         }
     }
@@ -759,6 +796,9 @@ impl TuiApp {
             StatusUpdate::PushLog(name, chunk) => {
                 let buffer = self.log_byte_buffer.entry(name.clone()).or_default();
                 buffer.extend_from_slice(&chunk);
+                if self.dump_logs_anyway {
+                    let _ = std::io::stdout().write_all(&chunk);
+                }
                 let log_list = self.logs.entry(name.clone()).or_default();
                 while let Some(newline_pos) = buffer.iter().position(|&b| b == b'\n') {
                     let line_bytes = buffer.drain(..=newline_pos).collect::<Vec<u8>>();
@@ -842,12 +882,12 @@ fn run_tui_cook(
         'done: for (recipe, source_dir) in work_rx {
             let name = recipe.name.clone();
             let is_deps = recipe.is_deps;
-            cooker_status_tx
-                .send(StatusUpdate::StartCook(name.clone()))
-                .unwrap();
             let (mut stdout_writer, mut stderr_writer) = setup_logger(&cooker_status_tx, &name);
             let mut logger = Some((&mut stdout_writer, &mut stderr_writer));
             'again: loop {
+                cooker_status_tx
+                    .send(StatusUpdate::StartCook(name.clone()))
+                    .unwrap();
                 let handler = handle_cook(
                     &recipe,
                     &cooker_config,
@@ -937,14 +977,12 @@ fn run_tui_cook(
     let fetcher_handle = thread::spawn(move || {
         'done: for recipe in fetcher_recipes {
             let name = recipe.name.clone();
-            fetcher_status_tx
-                .send(StatusUpdate::StartFetch(name.clone()))
-                .unwrap();
-
             let (mut stdout_writer, mut stderr_writer) = setup_logger(&fetcher_status_tx, &name);
             let mut logger = Some((&mut stdout_writer, &mut stderr_writer));
-
             'again: loop {
+                fetcher_status_tx
+                    .send(StatusUpdate::StartFetch(name.clone()))
+                    .unwrap();
                 let handler = handle_fetch(&recipe, &fetcher_config, &logger);
                 if let Some(log_path) = fetcher_config.logs_dir.as_ref()
                     // successful fetch log usually not that helpful
