@@ -9,7 +9,7 @@ use cookbook::cook::pty::{PtyOut, UnixSlavePty, flush_pty, setup_pty};
 use cookbook::cook::script::KILL_ALL_PID;
 use cookbook::cook::tree::{display_tree_entry, format_size};
 use cookbook::log_to_pty;
-use cookbook::recipe::{BuildKind, CookRecipe};
+use cookbook::recipe::CookRecipe;
 use pkg::PackageName;
 use pkg::package::PackageError;
 use ratatui::Terminal;
@@ -418,6 +418,7 @@ fn parse_args(args: Vec<String>) -> anyhow::Result<(CliConfig, CliCommand, Vec<C
         if command.is_building() {
             CookRecipe::get_build_deps_recursive(
                 &recipe_names,
+                true,
                 // In CliCommand::Cook, is_deps==true will make it skip checking source
                 command == CliCommand::Tree || !config.with_package_deps,
             )?
@@ -441,10 +442,7 @@ fn parse_args(args: Vec<String>) -> anyhow::Result<(CliConfig, CliCommand, Vec<C
                     // should not gone here, but if it does, then some deps need it
                     PackageConfig::Build(rule) if rule == "binary" || rule == "ignore" => {
                         recipe.recipe.source = None;
-                        recipe.recipe.build = cookbook::recipe::BuildRecipe {
-                            kind: BuildKind::Remote,
-                            dependencies: Vec::new(),
-                        };
+                        recipe.recipe.build.set_as_remote();
                     }
                     PackageConfig::Build(rule) => {
                         return Err(anyhow!(
@@ -458,10 +456,7 @@ fn parse_args(args: Vec<String>) -> anyhow::Result<(CliConfig, CliCommand, Vec<C
                         if conf.general.repo_binary == Some(true) {
                             // same reason as Build("binary")
                             recipe.recipe.source = None;
-                            recipe.recipe.build = cookbook::recipe::BuildRecipe {
-                                kind: BuildKind::Remote,
-                                dependencies: Vec::new(),
-                            };
+                            recipe.recipe.build.set_as_remote();
                         }
                     }
                 }

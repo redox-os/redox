@@ -1,5 +1,4 @@
 use pkg::package::PackageError;
-use pkg::recipes;
 use pkg::{Package, PackageName};
 use redoxer::target;
 
@@ -149,7 +148,7 @@ fn auto_deps_from_dynamic_linking(
 fn auto_deps_from_static_package_deps(
     build_dep_pkgars: &BTreeSet<(PackageName, PathBuf)>,
     dynamic_dep_pkgars: &BTreeSet<PackageName>,
-) -> Result<BTreeSet<PackageName>, PackageError> {
+) -> Result<(BTreeSet<PackageName>, Vec<PackageName>), PackageError> {
     let static_dep_pkgars: Vec<PackageName> = build_dep_pkgars
         .iter()
         .map(|x| x.0.clone())
@@ -157,7 +156,7 @@ fn auto_deps_from_static_package_deps(
         .collect();
     let pkgs = CookRecipe::get_package_deps_recursive(&static_dep_pkgars, false)?;
 
-    Ok(pkgs.into_iter().collect())
+    Ok((pkgs.into_iter().collect(), static_dep_pkgars))
 }
 
 pub fn build(
@@ -178,15 +177,13 @@ pub fn build(
     }
 
     let mut dep_pkgars = BTreeSet::new();
-    for dependency in recipe.build.dependencies.iter() {
-        let dependency_dir = recipes::find(dependency.as_str());
-        if dependency_dir.is_none() {
-            return Err(format!("failed to find recipe directory '{}'", dependency));
-        }
+    let build_deps = CookRecipe::get_build_deps_recursive(&recipe.build.dependencies, false, false)
+        .map_err(|e| format!("{:?}", e))?;
+    for dependency in build_deps.iter() {
         dep_pkgars.insert((
-            dependency.clone(),
-            dependency_dir
-                .unwrap()
+            dependency.name.clone(),
+            dependency
+                .dir
                 .join("target")
                 .join(redoxer::target())
                 .join("stage.pkgar"),
@@ -194,7 +191,7 @@ pub fn build(
     }
 
     if stage_dir.exists() && !check_source {
-        let auto_deps = build_auto_deps(target_dir, &stage_dir, dep_pkgars, logger)?;
+        let auto_deps = build_auto_deps(recipe, target_dir, &stage_dir, dep_pkgars, logger)?;
         return Ok((stage_dir, auto_deps));
     }
 
@@ -370,13 +367,14 @@ pub fn build(
         rename(&stage_dir_tmp, &stage_dir)?;
     }
 
-    let auto_deps = build_auto_deps(target_dir, &stage_dir, dep_pkgars, logger)?;
+    let auto_deps = build_auto_deps(recipe, target_dir, &stage_dir, dep_pkgars, logger)?;
 
     Ok((stage_dir, auto_deps))
 }
 
 /// Calculate automatic dependencies
 fn build_auto_deps(
+    recipe: &Recipe,
     target_dir: &Path,
     stage_dir: &PathBuf,
     dep_pkgars: BTreeSet<(PackageName, PathBuf)>,
@@ -394,12 +392,29 @@ fn build_auto_deps(
             toml::from_str(&toml_content).map_err(|_| "failed to deserialize cached auto_deps")?;
         wrapper.packages
     } else {
-        let mut packages1 = auto_deps_from_dynamic_linking(stage_dir, &dep_pkgars, logger);
-        let packages2 =
-            auto_deps_from_static_package_deps(&dep_pkgars, &packages1).unwrap_or_default();
-        packages1.extend(packages2);
+        let mut dynamic_deps = auto_deps_from_dynamic_linking(stage_dir, &dep_pkgars, logger);
+        let (package_deps, static_deps) =
+            auto_deps_from_static_package_deps(&dep_pkgars, &dynamic_deps).unwrap_or_default();
+        dynamic_deps.extend(package_deps);
+
+        // if auto_deps working, all build deps should be linked as auto_deps, otherwise:
+        // 1. it's weakly linked, which should be mentioned as package deps
+        // 2. it's not our direct ELF dependencies, which should be removed from build deps
+        // 3. only needed for build purpose, which should be moved to dev build deps
+        if dynamic_deps.len() > 0 && static_deps.len() > 0 {
+            for dep in &static_deps {
+                if !recipe.package.dependencies.contains(dep) {
+                    log_to_pty!(
+                        &logger,
+                        "WARNING: build deps {} is not linked in auto_deps",
+                        dep.as_str()
+                    );
+                }
+            }
+        }
+
         let wrapper = AutoDeps {
-            packages: packages1,
+            packages: dynamic_deps,
         };
         serialize_and_write(&auto_deps_path, &wrapper)?;
         wrapper.packages
