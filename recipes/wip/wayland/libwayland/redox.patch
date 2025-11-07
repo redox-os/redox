@@ -1,6 +1,6 @@
-diff -ruwN source/meson.build source-new/meson.build
---- source/meson.build	2025-07-06 19:11:26.000000000 +0700
-+++ source-new/meson.build	2025-10-01 06:32:51.610361685 +0700
+diff -ruwN source-old/meson.build source/meson.build
+--- source-old/meson.build	2025-07-06 06:11:26.000000000 -0600
++++ source/meson.build	2025-10-30 15:52:33.121727009 -0600
 @@ -80,8 +80,6 @@
  	ffi_dep = dependency('libffi')
  
@@ -10,9 +10,9 @@ diff -ruwN source/meson.build source-new/meson.build
  		{ 'header': 'time.h', 'symbol': 'CLOCK_MONOTONIC' },
  	]
  
-diff -ruwN source/src/connection.c source-new/src/connection.c
---- source/src/connection.c	2025-07-06 19:11:26.000000000 +0700
-+++ source-new/src/connection.c	2025-10-01 07:10:17.676073568 +0700
+diff -ruwN source-old/src/connection.c source/src/connection.c
+--- source-old/src/connection.c	2025-07-06 06:11:26.000000000 -0600
++++ source/src/connection.c	2025-11-07 12:47:54.026013068 -0700
 @@ -490,7 +490,7 @@
  
  		do {
@@ -22,22 +22,20 @@ diff -ruwN source/src/connection.c source-new/src/connection.c
  		} while (len == -1 && errno == EINTR);
  
  		if (len == -1)
-@@ -1506,9 +1506,9 @@
+@@ -1506,8 +1506,10 @@
  	char *buffer;
  	size_t buffer_length;
  
--	f = open_memstream(&buffer, &buffer_length);
--	if (f == NULL)
--		return;
-+	// f = open_memstream(&buffer, &buffer_length);
-+	// if (f == NULL)
-+	// 	return;
++#if !defined(__redox__)
+ 	f = open_memstream(&buffer, &buffer_length);
+ 	if (f == NULL)
++#endif
+ 		return;
  
  	clock_gettime(CLOCK_REALTIME, &tp);
- 	time = (tp.tv_sec * 1000000L) + (tp.tv_nsec / 1000);
-diff -ruwN source/src/event-loop.c source-new/src/event-loop.c
---- source/src/event-loop.c	2025-07-06 19:11:26.000000000 +0700
-+++ source-new/src/event-loop.c	2025-10-01 07:07:26.992243929 +0700
+diff -ruwN source-old/src/event-loop.c source/src/event-loop.c
+--- source-old/src/event-loop.c	2025-07-06 06:11:26.000000000 -0600
++++ source/src/event-loop.c	2025-10-30 15:52:33.122087045 -0600
 @@ -35,8 +35,8 @@
  #include <sys/socket.h>
  #include <sys/un.h>
@@ -126,9 +124,9 @@ diff -ruwN source/src/event-loop.c source-new/src/event-loop.c
  	sigprocmask(SIG_BLOCK, &mask, NULL);
  
  	source->func = func;
-diff -ruwN source/src/meson.build source-new/src/meson.build
---- source/src/meson.build	2025-07-06 19:11:26.000000000 +0700
-+++ source-new/src/meson.build	2025-10-01 07:03:52.591689534 +0700
+diff -ruwN source-old/src/meson.build source/src/meson.build
+--- source-old/src/meson.build	2025-07-06 06:11:26.000000000 -0600
++++ source/src/meson.build	2025-10-30 15:52:33.122245753 -0600
 @@ -81,8 +81,7 @@
  endif
  
@@ -139,9 +137,9 @@ diff -ruwN source/src/meson.build source-new/src/meson.build
  else
  	wayland_scanner_for_build = wayland_scanner
  endif
-diff -ruwN source/src/wayland-client.c source-new/src/wayland-client.c
---- source/src/wayland-client.c	2025-07-06 19:11:26.000000000 +0700
-+++ source-new/src/wayland-client.c	2025-10-01 07:10:48.899322239 +0700
+diff -ruwN source-old/src/wayland-client.c source/src/wayland-client.c
+--- source-old/src/wayland-client.c	2025-07-06 06:11:26.000000000 -0600
++++ source/src/wayland-client.c	2025-10-30 15:52:33.122416784 -0600
 @@ -1997,14 +1997,6 @@
  
  	pfd[0].fd = display->fd;
@@ -157,19 +155,24 @@ diff -ruwN source/src/wayland-client.c source-new/src/wayland-client.c
  
  	return ret;
  }
-diff -ruwN source/src/wayland-os.c source-new/src/wayland-os.c
---- source/src/wayland-os.c	2025-07-06 19:11:26.000000000 +0700
-+++ source-new/src/wayland-os.c	2025-10-01 07:09:01.188805546 +0700
-@@ -134,7 +134,7 @@
+diff -ruwN source-old/src/wayland-os.c source/src/wayland-os.c
+--- source-old/src/wayland-os.c	2025-07-06 06:11:26.000000000 -0600
++++ source/src/wayland-os.c	2025-11-07 12:49:06.505330114 -0700
+@@ -134,11 +134,13 @@
  {
  	int newfd;
  
--	newfd = wl_fcntl(fd, F_DUPFD_CLOEXEC, minfd);
-+	newfd = wl_fcntl(fd, FD_CLOEXEC, minfd);
++#if defined(F_DUPFD_CLOEXEC)
+ 	newfd = wl_fcntl(fd, F_DUPFD_CLOEXEC, minfd);
  	if (newfd >= 0)
  		return newfd;
  	if (errno != EINVAL)
-@@ -189,7 +189,7 @@
+ 		return -1;
++#endif
+ 
+ 	newfd = wl_fcntl(fd, F_DUPFD, minfd);
+ 	return set_cloexec_or_close(newfd);
+@@ -189,7 +191,7 @@
  #else
  	ssize_t len;
  
@@ -178,9 +181,9 @@ diff -ruwN source/src/wayland-os.c source-new/src/wayland-os.c
  	if (len >= 0)
  		return len;
  	if (errno != EINVAL)
-diff -ruwN source/src/wayland-server.c source-new/src/wayland-server.c
---- source/src/wayland-server.c	2025-07-06 19:11:26.000000000 +0700
-+++ source-new/src/wayland-server.c	2025-10-01 07:09:51.131179157 +0700
+diff -ruwN source-old/src/wayland-server.c source/src/wayland-server.c
+--- source-old/src/wayland-server.c	2025-07-06 06:11:26.000000000 -0600
++++ source/src/wayland-server.c	2025-10-30 15:52:33.122838226 -0600
 @@ -39,7 +39,7 @@
  #include <dlfcn.h>
  #include <sys/time.h>
