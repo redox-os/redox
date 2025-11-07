@@ -405,7 +405,7 @@ fn build_auto_deps(
             for dep in &static_deps {
                 if !recipe.package.dependencies.contains(dep) {
                     log_to_pty!(
-                        &logger,
+                        logger,
                         "WARNING: build deps {} is not linked in auto_deps",
                         dep.as_str()
                     );
