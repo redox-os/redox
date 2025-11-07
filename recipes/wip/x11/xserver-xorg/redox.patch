@@ -1,6 +1,6 @@
-diff -ruwN source/hw/xfree86/common/xf86Xinput.c source-new/hw/xfree86/common/xf86Xinput.c
---- source/hw/xfree86/common/xf86Xinput.c	2025-02-26 01:56:05.000000000 +0700
-+++ source-new/hw/xfree86/common/xf86Xinput.c	2025-10-28 06:15:47.428141477 +0700
+diff -ruwN source-old/hw/xfree86/common/xf86Xinput.c source/hw/xfree86/common/xf86Xinput.c
+--- source-old/hw/xfree86/common/xf86Xinput.c	2025-02-25 11:56:05.000000000 -0700
++++ source/hw/xfree86/common/xf86Xinput.c	2025-11-07 14:37:53.041095608 -0700
 @@ -860,8 +860,10 @@
      if (stat(path, &st) == -1)
          return;
@@ -12,9 +12,24 @@ diff -ruwN source/hw/xfree86/common/xf86Xinput.c source-new/hw/xfree86/common/xf
  }
  
  static inline InputDriverPtr
-diff -ruwN source/hw/xfree86/loader/meson.build source-new/hw/xfree86/loader/meson.build
---- source/hw/xfree86/loader/meson.build	2025-02-26 01:56:05.000000000 +0700
-+++ source-new/hw/xfree86/loader/meson.build	2025-10-28 06:15:47.428567423 +0700
+diff -ruwN source-old/hw/xfree86/drivers/modesetting/meson.build source/hw/xfree86/drivers/modesetting/meson.build
+--- source-old/hw/xfree86/drivers/modesetting/meson.build	2025-02-25 11:56:05.000000000 -0700
++++ source/hw/xfree86/drivers/modesetting/meson.build	2025-11-07 14:37:53.041947517 -0700
+@@ -42,7 +42,7 @@
+     configuration: manpage_config,
+ ))
+ 
+-test('modesetting symbol test',
+-    xorg_symbol_test,
+-    args: symbol_test_args,
+-)
++# test('modesetting symbol test',
++#     xorg_symbol_test,
++#     args: symbol_test_args,
++# )
+diff -ruwN source-old/hw/xfree86/loader/meson.build source/hw/xfree86/loader/meson.build
+--- source-old/hw/xfree86/loader/meson.build	2025-02-25 11:56:05.000000000 -0700
++++ source/hw/xfree86/loader/meson.build	2025-11-07 14:37:53.042100945 -0700
 @@ -10,7 +10,7 @@
      c_args: xorg_c_args,
  )
@@ -27,9 +42,9 @@ diff -ruwN source/hw/xfree86/loader/meson.build source-new/hw/xfree86/loader/mes
 +#     'symbol-test.c',
 +#     dependencies: dl_dep,
 +# )
-diff -ruwN source/hw/xfree86/meson.build source-new/hw/xfree86/meson.build
---- source/hw/xfree86/meson.build	2025-02-26 01:56:05.000000000 +0700
-+++ source-new/hw/xfree86/meson.build	2025-10-28 06:15:47.428791657 +0700
+diff -ruwN source-old/hw/xfree86/meson.build source/hw/xfree86/meson.build
+--- source-old/hw/xfree86/meson.build	2025-02-25 11:56:05.000000000 -0700
++++ source/hw/xfree86/meson.build	2025-11-07 14:37:53.042256958 -0700
 @@ -171,13 +171,13 @@
      )
  endif
@@ -51,9 +66,9 @@ diff -ruwN source/hw/xfree86/meson.build source-new/hw/xfree86/meson.build
  
  # For symbol presence testing only
  xorgserver_lib = shared_library(
-diff -ruwN source/hw/xfree86/os-support/shared/sigio.c source-new/hw/xfree86/os-support/shared/sigio.c
---- source/hw/xfree86/os-support/shared/sigio.c	2025-02-26 01:56:05.000000000 +0700
-+++ source-new/hw/xfree86/os-support/shared/sigio.c	2025-10-28 06:15:47.429003549 +0700
+diff -ruwN source-old/hw/xfree86/os-support/shared/sigio.c source/hw/xfree86/os-support/shared/sigio.c
+--- source-old/hw/xfree86/os-support/shared/sigio.c	2025-02-25 11:56:05.000000000 -0700
++++ source/hw/xfree86/os-support/shared/sigio.c	2025-11-07 14:37:53.042429782 -0700
 @@ -196,11 +196,12 @@
                          fd, strerror(errno));
              }
@@ -68,9 +83,9 @@ diff -ruwN source/hw/xfree86/os-support/shared/sigio.c source-new/hw/xfree86/os-
                      installed = TRUE;
                  }
              }
-diff -ruwN source/hw/xfree86/os-support/xf86_OSlib.h source-new/hw/xfree86/os-support/xf86_OSlib.h
---- source/hw/xfree86/os-support/xf86_OSlib.h	2025-02-26 01:56:05.000000000 +0700
-+++ source-new/hw/xfree86/os-support/xf86_OSlib.h	2025-10-28 06:15:47.429244885 +0700
+diff -ruwN source-old/hw/xfree86/os-support/xf86_OSlib.h source/hw/xfree86/os-support/xf86_OSlib.h
+--- source-old/hw/xfree86/os-support/xf86_OSlib.h	2025-02-25 11:56:05.000000000 -0700
++++ source/hw/xfree86/os-support/xf86_OSlib.h	2025-11-07 14:37:53.042605933 -0700
 @@ -176,7 +176,7 @@
  /**************************************************************************/
  /* Linux or Glibc-based system                                            */
@@ -80,9 +95,9 @@ diff -ruwN source/hw/xfree86/os-support/xf86_OSlib.h source-new/hw/xfree86/os-su
  #include <sys/ioctl.h>
  #include <signal.h>
  #include <stdlib.h>
-diff -ruwN source/include/dix.h source-new/include/dix.h
---- source/include/dix.h	2025-02-26 01:56:05.000000000 +0700
-+++ source-new/include/dix.h	2025-10-29 14:34:52.026472055 +0700
+diff -ruwN source-old/include/dix.h source/include/dix.h
+--- source-old/include/dix.h	2025-02-25 11:56:05.000000000 -0700
++++ source/include/dix.h	2025-11-07 14:37:53.042862204 -0700
 @@ -55,6 +55,7 @@
  #include "geext.h"
  #include "events.h"
@@ -122,9 +137,9 @@ diff -ruwN source/include/dix.h source-new/include/dix.h
      } while (0)
  
  #define REQUEST_AT_LEAST_EXTRA_SIZE(req, extra)                         \
-diff -ruwN source/include/meson.build source-new/include/meson.build
---- source/include/meson.build	2025-02-26 01:56:05.000000000 +0700
-+++ source-new/include/meson.build	2025-10-28 06:15:47.429576623 +0700
+diff -ruwN source-old/include/meson.build source/include/meson.build
+--- source-old/include/meson.build	2025-02-25 11:56:05.000000000 -0700
++++ source/include/meson.build	2025-11-07 14:37:53.043095171 -0700
 @@ -162,7 +162,7 @@
  conf_data.set('HAVE_PORT_CREATE', cc.has_function('port_create') ? '1' : false)
  conf_data.set('HAVE_REALLOCARRAY', cc.has_function('reallocarray', dependencies: libbsd_dep) ? '1' : false)
@@ -163,9 +178,18 @@ diff -ruwN source/include/meson.build source-new/include/meson.build
  endif
  conf_data.set('HAS_SHM', build_mitshm ? '1' : false)
  conf_data.set('MITSHM', build_mitshm ? '1' : false)
-diff -ruwN source/meson.build source-new/meson.build
---- source/meson.build	2025-02-26 01:56:05.000000000 +0700
-+++ source-new/meson.build	2025-10-28 06:15:47.429860210 +0700
+diff -ruwN source-old/meson.build source/meson.build
+--- source-old/meson.build	2025-11-07 14:39:22.420574991 -0700
++++ source/meson.build	2025-11-07 14:37:53.043279226 -0700
+@@ -439,7 +439,7 @@
+     error('DRI requested, but LIBDRM not found')
+ endif
+ 
+-build_modesetting = libdrm_dep.found() and dri2proto_dep.found()
++build_modesetting = false #TODO: libdrm_dep.found() and dri2proto_dep.found()
+ 
+ build_vgahw = false
+ if get_option('vgahw') == 'auto'
 @@ -753,7 +753,7 @@
  subdir('hw')
  
@@ -175,9 +199,9 @@ diff -ruwN source/meson.build source-new/meson.build
  endif
  
  install_man(configure_file(
-diff -ruwN source/os/access.c source-new/os/access.c
---- source/os/access.c	2025-02-26 01:56:05.000000000 +0700
-+++ source-new/os/access.c	2025-10-28 06:15:47.430186258 +0700
+diff -ruwN source-old/os/access.c source/os/access.c
+--- source-old/os/access.c	2025-02-25 11:56:05.000000000 -0700
++++ source/os/access.c	2025-11-07 14:37:53.043632189 -0700
 @@ -120,7 +120,7 @@
  #include <sys/un.h>
  #endif
@@ -187,9 +211,9 @@ diff -ruwN source/os/access.c source-new/os/access.c
  #include <sys/utsname.h>
  #endif
  #if defined(SYSV) &&  defined(__i386__)
-diff -ruwN source/Xext/bigreq.c source-new/Xext/bigreq.c
---- source/Xext/bigreq.c	2025-02-26 01:56:05.000000000 +0700
-+++ source-new/Xext/bigreq.c	2025-10-29 14:35:38.059611562 +0700
+diff -ruwN source-old/Xext/bigreq.c source/Xext/bigreq.c
+--- source-old/Xext/bigreq.c	2025-02-25 11:56:05.000000000 -0700
++++ source/Xext/bigreq.c	2025-11-07 14:37:53.043862040 -0700
 @@ -51,7 +51,8 @@
      }
      if (stuff->brReqType != X_BigReqEnable)
