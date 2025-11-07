@@ -19,7 +19,7 @@ $(HOST_FSTOOLS): installer redoxfs
 	rm -rf $@ $@.partial
 	mkdir -p $@.partial
 	$(HOST_CARGO) install --root $@.partial --path installer --bin redox_installer
-	$(HOST_CARGO) install --root $@.partial --path redoxfs --bin redoxfs --bin redoxfs-mkfs
+	$(HOST_CARGO) install --root $@.partial --path redoxfs --bin redoxfs --bin redoxfs-mkfs --bin redoxfs-resize
 	mv $@.partial $@
 	touch $@
 
