@@ -29,6 +29,7 @@ fn auto_deps_from_dynamic_linking(
 ) -> BTreeSet<PackageName> {
     let mut paths = BTreeSet::new();
     let mut visited = BTreeSet::new();
+    let verbose = crate::config::get_config().cook.verbose;
     // Base directories may need to be updated for packages that place binaries in odd locations.
     let mut walk = VecDeque::from([
         stage_dir.join("libexec"),
@@ -95,7 +96,9 @@ fn auto_deps_from_dynamic_linking(
                     continue;
                 };
                 if let Ok(relative_path) = path.strip_prefix(stage_dir) {
-                    log_to_pty!(logger, "DEBUG: {} needs {}", relative_path.display(), name);
+                    if verbose {
+                        log_to_pty!(logger, "DEBUG: {} needs {}", relative_path.display(), name);
+                    }
                 }
                 needed.insert(name.to_string());
             }
@@ -129,7 +132,9 @@ fn auto_deps_from_dynamic_linking(
                         continue;
                     };
                     if needed.contains(child_name) {
-                        log_to_pty!(logger, "DEBUG: {} provides {}", dep, child_name);
+                        if verbose {
+                            log_to_pty!(logger, "DEBUG: {} provides {}", dep, child_name);
+                        }
                         deps.insert(dep.clone());
                         missing.remove(child_name);
                     }
@@ -138,8 +143,10 @@ fn auto_deps_from_dynamic_linking(
         }
     }
 
-    for name in missing {
-        log_to_pty!(logger, "WARN: {} missing", name);
+    if verbose {
+        for name in missing {
+            log_to_pty!(logger, "INFO: {} missing", name);
+        }
     }
 
     deps
@@ -171,6 +178,8 @@ pub fn build(
 ) -> Result<(PathBuf, BTreeSet<PackageName>), String> {
     let sysroot_dir = target_dir.join("sysroot");
     let stage_dir = target_dir.join("stage");
+    let cli_verbose = crate::config::get_config().cook.verbose;
+    let cli_jobs = crate::config::get_config().cook.jobs;
     if recipe.build.kind == BuildKind::None {
         // metapackages don't need to do anything here
         return Ok((stage_dir, BTreeSet::new()));
@@ -207,12 +216,7 @@ pub fn build(
     if sysroot_dir.is_dir() {
         let sysroot_modified = modified_dir(&sysroot_dir)?;
         if sysroot_modified < source_modified || sysroot_modified < deps_modified {
-            log_to_pty!(
-                logger,
-                "DEBUG: '{}' newer than '{}'",
-                source_dir.display(),
-                sysroot_dir.display()
-            );
+            log_to_pty!(logger, "DEBUG: updating '{}'", sysroot_dir.display());
             remove_all(&sysroot_dir)?;
         }
     }
@@ -257,12 +261,7 @@ pub fn build(
     if stage_dir.is_dir() {
         let stage_modified = modified_dir(&stage_dir)?;
         if stage_modified < source_modified || stage_modified < deps_modified {
-            log_to_pty!(
-                logger,
-                "DEBUG: '{}' newer than '{}'",
-                source_dir.display(),
-                stage_dir.display()
-            );
+            log_to_pty!(logger, "DEBUG: updating '{}'", stage_dir.display());
             remove_all(&stage_dir)?;
         }
     }
@@ -328,10 +327,10 @@ pub fn build(
             let cookbook_stage = stage_dir_tmp.canonicalize().unwrap();
             let cookbook_source = source_dir.canonicalize().unwrap();
             let cookbook_sysroot = sysroot_dir.canonicalize().unwrap();
-
+            let bash_args = if cli_verbose { "-ex" } else { "-e" };
             let mut command = if is_redox() {
                 let mut command = Command::new("bash");
-                command.arg("-ex");
+                command.arg(bash_args);
                 command.env("COOKBOOK_REDOXER", "cargo");
                 command
             } else {
@@ -339,7 +338,7 @@ pub fn build(
                     .canonicalize()
                     .unwrap_or(PathBuf::from("/bin/false"));
                 let mut command = Command::new(&cookbook_redoxer);
-                command.arg("env").arg("bash").arg("-ex");
+                command.arg("env").arg("bash").arg(bash_args);
                 command.env("COOKBOOK_REDOXER", &cookbook_redoxer);
                 command
             };
@@ -351,6 +350,10 @@ pub fn build(
             command.env("COOKBOOK_STAGE", &cookbook_stage);
             command.env("COOKBOOK_SOURCE", &cookbook_source);
             command.env("COOKBOOK_SYSROOT", &cookbook_sysroot);
+            command.env("COOKBOOK_MAKE_JOBS", cli_jobs.to_string());
+            if cli_verbose {
+                command.env("COOKBOOK_VERBOSE", "1");
+            }
             if offline_mode {
                 command.env("COOKBOOK_OFFLINE", "1");
             }

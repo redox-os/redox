@@ -11,11 +11,11 @@ function DYNAMIC_INIT {
 
     if [ "${TARGET}" != "x86_64-unknown-redox" ]
     then
-        echo "WARN: ${TARGET} does not support dynamic linking." >&2
+        [ -z "${COOKBOOK_VERBOSE}" ] || echo "WARN: ${TARGET} does not support dynamic linking." >&2
         return
     fi
 
-    echo "DEBUG: Program is being compiled dynamically."
+    [ -z "${COOKBOOK_VERBOSE}" ] || echo "DEBUG: Program is being compiled dynamically."
 
     COOKBOOK_CONFIGURE_FLAGS=(
         --host="${GNU_TARGET}"

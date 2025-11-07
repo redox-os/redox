@@ -364,11 +364,14 @@ pub(crate) fn fetch_extract_tar(
     logger: &PtyOut,
 ) -> Result<(), String> {
     let mut command = Command::new("tar");
+    let verbose = crate::config::get_config().cook.verbose;
     if is_redox() {
-        command.arg("xvf");
+        command.arg(if verbose { "xvf" } else { "xf" });
     } else {
         command.arg("--extract");
-        command.arg("--verbose");
+        if verbose {
+            command.arg("--verbose");
+        }
         command.arg("--file");
     }
     command.arg(&source_tar);
