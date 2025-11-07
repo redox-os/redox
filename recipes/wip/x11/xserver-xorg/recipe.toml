@@ -32,6 +32,7 @@ template = "custom"
 script = """
 DYNAMIC_INIT
 cookbook_meson \
+    -Ddri1=false \
     -Dglamor=false \
     -Dint10=false \
     -Dpciaccess=false \
