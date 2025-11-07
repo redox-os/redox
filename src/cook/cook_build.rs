@@ -377,7 +377,7 @@ fn build_auto_deps(
     recipe: &Recipe,
     target_dir: &Path,
     stage_dir: &PathBuf,
-    dep_pkgars: BTreeSet<(PackageName, PathBuf)>,
+    mut dep_pkgars: BTreeSet<(PackageName, PathBuf)>,
     logger: &PtyOut,
 ) -> Result<BTreeSet<PackageName>, String> {
     let auto_deps_path = target_dir.join("auto_deps.toml");
@@ -393,6 +393,7 @@ fn build_auto_deps(
         wrapper.packages
     } else {
         let mut dynamic_deps = auto_deps_from_dynamic_linking(stage_dir, &dep_pkgars, logger);
+        dep_pkgars.retain(|x| recipe.build.dependencies.contains(&x.0));
         let (package_deps, static_deps) =
             auto_deps_from_static_package_deps(&dep_pkgars, &dynamic_deps).unwrap_or_default();
         dynamic_deps.extend(package_deps);
