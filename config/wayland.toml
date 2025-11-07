@@ -13,7 +13,9 @@ filesystem_size = 4096
 [packages]
 mesa = {}
 smallvil = {}
+softbuffer-wayland = {}
 wayland-rs = {}
+winit-wayland = {}
 xkeyboard-config = {}
 
 [[files]]
@@ -25,10 +27,22 @@ export WAYLAND_DISPLAY wayland-1
 """
 
 [[files]]
-path = "/usr/lib/init.d/30_wayland"
+path = "/usr/lib/init.d/40_wayland"
+data = """
+orbital-wayland
+"""
+
+[[files]]
+path = "/usr/bin/orbital-wayland"
 mode = 0o755
 data = """
-env LD_DEBUG=all smallvil_smallvil
+#!/usr/bin/env bash
+
+export LD_DEBUG=all
+export RUST_LOG=debug
+smallvil_smallvil &
 sleep 2
-wayland-rs_simple_window
+softbuffer-wayland_animation &
+#wayland-rs_simple_window &
+#winit-wayland_window &
 """
