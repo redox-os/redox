@@ -1,6 +1,6 @@
 diff -ruwN source-old/gio/gcredentialsprivate.h source/gio/gcredentialsprivate.h
 --- source-old/gio/gcredentialsprivate.h	2025-02-20 06:08:16.000000000 -0700
-+++ source/gio/gcredentialsprivate.h	2025-11-07 15:25:50.600847134 -0700
++++ source/gio/gcredentialsprivate.h	2025-11-07 15:26:45.587855360 -0700
 @@ -104,7 +104,7 @@
   */
  #undef G_CREDENTIALS_HAS_PID
@@ -12,7 +12,7 @@ diff -ruwN source-old/gio/gcredentialsprivate.h source/gio/gcredentialsprivate.h
  #define G_CREDENTIALS_NATIVE_TYPE G_CREDENTIALS_TYPE_LINUX_UCRED
 diff -ruwN source-old/gio/glocalfile.c source/gio/glocalfile.c
 --- source-old/gio/glocalfile.c	2025-02-20 06:08:16.000000000 -0700
-+++ source/gio/glocalfile.c	2025-11-07 15:23:11.472066975 -0700
++++ source/gio/glocalfile.c	2025-11-07 15:26:45.592150212 -0700
 @@ -77,6 +77,10 @@
  
  #include "glib-private.h"
@@ -26,7 +26,7 @@ diff -ruwN source-old/gio/glocalfile.c source/gio/glocalfile.c
  #include <io.h>
 diff -ruwN source-old/gio/gnetworking.h.in source/gio/gnetworking.h.in
 --- source-old/gio/gnetworking.h.in	2025-02-20 06:08:16.000000000 -0700
-+++ source/gio/gnetworking.h.in	2025-11-07 15:23:11.472335068 -0700
++++ source/gio/gnetworking.h.in	2025-11-07 15:26:45.592531678 -0700
 @@ -40,13 +40,17 @@
  #include <netdb.h>
  #include <netinet/in.h>
@@ -47,7 +47,7 @@ diff -ruwN source-old/gio/gnetworking.h.in source/gio/gnetworking.h.in
  #ifndef __GI_SCANNER__
 diff -ruwN source-old/gio/gthreadedresolver.c source/gio/gthreadedresolver.c
 --- source-old/gio/gthreadedresolver.c	2025-02-20 06:08:16.000000000 -0700
-+++ source/gio/gthreadedresolver.c	2025-11-07 15:23:11.472497183 -0700
++++ source/gio/gthreadedresolver.c	2025-11-07 15:26:45.592812736 -0700
 @@ -579,8 +579,26 @@
    return g_task_propagate_pointer (G_TASK (result), error);
  }
@@ -88,9 +88,39 @@ diff -ruwN source-old/gio/gthreadedresolver.c source/gio/gthreadedresolver.c
        len = res_nquery (&res, rrname, C_IN, rrtype, answer->data, answer->len);
  #else
        len = res_query (rrname, C_IN, rrtype, answer->data, answer->len);
+diff -ruwN source-old/gio/gunixconnection.c source/gio/gunixconnection.c
+--- source-old/gio/gunixconnection.c	2025-02-20 06:08:16.000000000 -0700
++++ source/gio/gunixconnection.c	2025-11-07 15:41:56.572549299 -0700
+@@ -496,7 +496,7 @@
+   GSocket *socket;
+   gint n;
+   gssize num_bytes_read;
+-#ifdef __linux__
++#if defined(__linux__) || defined(__redox__)
+   gboolean turn_off_so_passcreds;
+ #endif
+ 
+@@ -512,7 +512,7 @@
+    * already. We also need to turn it off when we're done.  See
+    * #617483 for more discussion.
+    */
+-#ifdef __linux__
++#if defined(__linux__) || defined(__redox__)
+   {
+     gint opt_val;
+ 
+@@ -626,7 +626,7 @@
+ 
+  out:
+ 
+-#ifdef __linux__
++#if defined(__linux__) || defined(__redox__)
+   if (turn_off_so_passcreds)
+     {
+       if (!g_socket_set_option (socket,
 diff -ruwN source-old/gio/gunixmounts.c source/gio/gunixmounts.c
 --- source-old/gio/gunixmounts.c	2025-02-20 06:08:16.000000000 -0700
-+++ source/gio/gunixmounts.c	2025-11-07 15:23:11.472785674 -0700
++++ source/gio/gunixmounts.c	2025-11-07 15:26:45.593497732 -0700
 @@ -1135,6 +1135,37 @@
    return NULL;
  }
@@ -160,7 +190,7 @@ diff -ruwN source-old/gio/gunixmounts.c source/gio/gunixmounts.c
  }
 diff -ruwN source-old/gio/meson.build source/gio/meson.build
 --- source-old/gio/meson.build	2025-02-20 06:08:16.000000000 -0700
-+++ source/gio/meson.build	2025-11-07 15:23:11.473092821 -0700
++++ source/gio/meson.build	2025-11-07 15:26:45.594120270 -0700
 @@ -18,7 +18,7 @@
  
  gnetworking_h_nameser_compat_include = ''
@@ -181,7 +211,7 @@ diff -ruwN source-old/gio/meson.build source/gio/meson.build
                        int main (int argc, char ** argv) {
 diff -ruwN source-old/gio/xdgmime/xdgmimecache.c source/gio/xdgmime/xdgmimecache.c
 --- source-old/gio/xdgmime/xdgmimecache.c	2025-02-20 06:08:16.000000000 -0700
-+++ source/gio/xdgmime/xdgmimecache.c	2025-11-07 15:23:11.473286865 -0700
++++ source/gio/xdgmime/xdgmimecache.c	2025-11-07 15:26:45.594369348 -0700
 @@ -22,7 +22,7 @@
  #include <fnmatch.h>
  #include <assert.h>
