@@ -10,5 +10,5 @@ template = "custom"
 script = """
 DYNAMIC_INIT
 export RUSTFLAGS="${RUSTFLAGS} -lffi"
-cookbook_cargo_examples application child_window control_flow dnd ime pump_events window
+cookbook_cargo_examples child_window control_flow pump_events window
 """
