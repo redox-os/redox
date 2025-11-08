@@ -1,12 +1,20 @@
 use std::{
     collections::{HashMap, HashSet},
     fs::read_to_string,
+    path::PathBuf,
 };
 
 use anyhow::{Context, anyhow};
 use pkg::{Package, PackageName};
 
 use crate::{cook::fs::create_target_dir, recipe::CookRecipe};
+
+pub enum WalkTreeEntry<'a> {
+    Built(&'a PathBuf, u64),
+    NotBuilt,
+    Deduped,
+    Missing,
+}
 
 pub fn display_tree_entry(
     package_name: &PackageName,
@@ -16,17 +24,31 @@ pub fn display_tree_entry(
     visited: &mut HashSet<PackageName>,
     total_size: &mut u64,
 ) -> anyhow::Result<()> {
-    let line_prefix = if is_last { "└── " } else { "├── " };
-    let child_prefix = if is_last { "    " } else { "│   " };
+    walk_tree_entry(
+        package_name,
+        recipe_map,
+        prefix,
+        is_last,
+        visited,
+        total_size,
+        display_pkg_fn,
+    )
+}
 
+pub fn walk_tree_entry(
+    package_name: &PackageName,
+    recipe_map: &HashMap<&PackageName, &CookRecipe>,
+    prefix: &str,
+    is_last: bool,
+    visited: &mut HashSet<PackageName>,
+    total_size: &mut u64,
+    op: fn(&PackageName, &str, bool, &WalkTreeEntry) -> anyhow::Result<()>,
+) -> anyhow::Result<()> {
     let cook_recipe = match recipe_map.get(package_name) {
         Some(r) => r,
         None => {
             // TODO: This is a dependency, but it's not in recipe list
-            println!(
-                "{}{}{} (dependency info missing)",
-                prefix, line_prefix, package_name
-            );
+            op(package_name, prefix, is_last, &WalkTreeEntry::Missing)?;
             return Ok(());
         }
     };
@@ -40,23 +62,22 @@ pub fn display_tree_entry(
         .join("stage.toml");
 
     let deduped = visited.contains(package_name);
-    let (size_str, pkg_size) = match (std::fs::metadata(&pkg_path), deduped) {
-        (_, true) => ("".to_string(), 0),
-        (Ok(meta), _) => {
-            let size = meta.len();
-            (format!("[{}]", format_size(size)), size)
-        }
-        (Err(_), _) => ("(not built)".to_string(), 0),
+    let entry = match (std::fs::metadata(&pkg_path), deduped) {
+        (_, true) => WalkTreeEntry::Deduped,
+        (Ok(meta), _) => WalkTreeEntry::Built(&pkg_path, meta.len()),
+        (Err(_), _) => WalkTreeEntry::NotBuilt,
     };
 
-    println!("{}{}{} {}", prefix, line_prefix, package_name, size_str);
+    op(package_name, prefix, is_last, &entry)?;
 
     if deduped {
         return Ok(());
     }
 
     visited.insert(package_name.clone());
-    *total_size += pkg_size;
+    if let WalkTreeEntry::Built(_p, pkg_size) = &entry {
+        *total_size += pkg_size;
+    }
     let pkg_meta: Package;
 
     let mut all_deps_set: HashSet<&PackageName> = HashSet::new();
@@ -75,17 +96,36 @@ pub fn display_tree_entry(
 
     let sorted_deps: Vec<&PackageName> = all_deps_set.into_iter().collect();
     let deps_count = sorted_deps.len();
+    let child_prefix = if is_last { "    " } else { "│   " };
     for (i, dep_name) in sorted_deps.iter().enumerate() {
-        display_tree_entry(
+        walk_tree_entry(
             dep_name,
             recipe_map,
             &format!("{}{}", prefix, child_prefix),
             i == deps_count - 1,
             visited,
             total_size,
+            op,
         )?;
     }
 
+    Ok(())
+}
+
+pub fn display_pkg_fn(
+    package_name: &PackageName,
+    prefix: &str,
+    is_last: bool,
+    entry: &WalkTreeEntry,
+) -> anyhow::Result<()> {
+    let size_str = match entry {
+        WalkTreeEntry::Built(_path_buf, size) => format!("[{}]", format_size(*size)),
+        WalkTreeEntry::NotBuilt => "(not built)".to_string(),
+        WalkTreeEntry::Deduped => "".to_string(),
+        WalkTreeEntry::Missing => "(dependency info missing)".to_string(),
+    };
+    let line_prefix = if is_last { "└── " } else { "├── " };
+    println!("{}{}{} {}", prefix, line_prefix, package_name, size_str);
     Ok(())
 }
 
