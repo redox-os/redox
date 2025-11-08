@@ -13,6 +13,9 @@ do
     elif [[ "$arg" == "--offline" ]]
     then
         export COOKBOOK_OFFLINE=true
+    elif [[ "$arg" == "--nonstop" ]]
+    then
+        export COOKBOOK_NONSTOP=true
     elif [[ $arg == "--*" ]]
     then
         COOK_OPT+=" ${arg}"
