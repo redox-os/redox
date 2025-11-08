@@ -7,7 +7,7 @@ use cookbook::cook::fs::{create_target_dir, run_command};
 use cookbook::cook::package::package;
 use cookbook::cook::pty::{PtyOut, UnixSlavePty, flush_pty, setup_pty};
 use cookbook::cook::script::KILL_ALL_PID;
-use cookbook::cook::tree::{display_tree_entry, format_size};
+use cookbook::cook::tree::{WalkTreeEntry, display_tree_entry, format_size, walk_tree_entry};
 use cookbook::log_to_pty;
 use cookbook::recipe::CookRecipe;
 use pkg::PackageName;
@@ -27,7 +27,7 @@ use std::path::PathBuf;
 use std::process::Command;
 use std::str::FromStr;
 use std::sync::atomic::{AtomicBool, AtomicU32, Ordering};
-use std::sync::{Arc, mpsc};
+use std::sync::{Arc, OnceLock, mpsc};
 use std::time::{Duration, Instant};
 use std::{cmp, env, fs};
 use std::{process, thread};
@@ -185,57 +185,31 @@ fn main_inner() -> anyhow::Result<()> {
         if let Some((name, e)) = run_tui_cook(config.clone(), recipe_names.clone())? {
             let _ = stderr().write(e.as_bytes());
             let _ = stderr().write(b"\n\n");
-            eprintln!(
-                "{}{}cook - failed at {}{}{}",
-                style::Bold,
-                color::Fg(color::AnsiValue(196)),
-                name.as_str(),
-                color::Fg(color::Reset),
-                style::Reset,
-            );
+            print_failed(&command, &name);
             return Err(anyhow!("Execution has failed"));
         } else {
-            eprintln!(
-                "{}{}cook - successful{}{}",
-                style::Bold,
-                color::Fg(color::AnsiValue(46)),
-                color::Fg(color::Reset),
-                style::Reset,
-            );
+            print_success(&command, None);
         }
         return publish_packages(&recipe_names, &config.repo_dir);
     }
     if command == CliCommand::Tree {
         return handle_tree(&recipe_names, &config);
     }
+    if command == CliCommand::Push {
+        return handle_push(&recipe_names, &config);
+    }
 
     let verbose = config.cook.verbose;
     for recipe in &recipe_names {
         match repo_inner(&config, &command, recipe) {
             Ok(_) => {
-                eprintln!(
-                    "{}{}{} {} - successful{}{}",
-                    style::Bold,
-                    color::Fg(color::AnsiValue(46)),
-                    command.to_string(),
-                    recipe.name.as_str(),
-                    color::Fg(color::Reset),
-                    style::Reset,
-                );
+                print_success(&command, Some(&recipe.name));
             }
             Err(e) => {
                 if config.cook.nonstop && verbose {
                     eprintln!("{:?}", e);
                 }
-                eprintln!(
-                    "{}{}{} {} - failed {}{}",
-                    style::Bold,
-                    color::Fg(color::AnsiValue(196)),
-                    command.to_string(),
-                    recipe.name.as_str(),
-                    color::Fg(color::Reset),
-                    style::Reset,
-                );
+                print_failed(&command, &recipe.name);
                 if !config.cook.nonstop {
                     return Err(e);
                 }
@@ -255,6 +229,41 @@ fn main_inner() -> anyhow::Result<()> {
         );
     }
     Ok(())
+}
+
+fn print_failed(command: &CliCommand, recipe: &PackageName) {
+    eprintln!(
+        "{}{}{} {} - failed {}{}",
+        style::Bold,
+        color::Fg(color::AnsiValue(196)),
+        command.to_string(),
+        recipe.as_str(),
+        color::Fg(color::Reset),
+        style::Reset,
+    );
+}
+
+fn print_success(command: &CliCommand, recipe: Option<&PackageName>) {
+    if let Some(recipe) = recipe {
+        eprintln!(
+            "{}{}{} {} - successful{}{}",
+            style::Bold,
+            color::Fg(color::AnsiValue(46)),
+            command.to_string(),
+            recipe.as_str(),
+            color::Fg(color::Reset),
+            style::Reset,
+        );
+    } else {
+        eprintln!(
+            "{}{}{} - successful{}{}",
+            style::Bold,
+            color::Fg(color::AnsiValue(46)),
+            command.to_string(),
+            color::Fg(color::Reset),
+            style::Reset,
+        );
+    }
 }
 
 fn repo_inner(
@@ -308,7 +317,7 @@ fn repo_inner(
         }
         CliCommand::Unfetch => handle_clean(recipe, config, true, true)?,
         CliCommand::Clean => handle_clean(recipe, config, false, true)?,
-        CliCommand::Push => handle_push(recipe, config)?,
+        CliCommand::Push => unreachable!(),
         CliCommand::Tree => unreachable!(),
         CliCommand::Find => println!("{}", recipe.dir.display()),
     })
@@ -445,12 +454,11 @@ fn parse_args(args: Vec<String>) -> anyhow::Result<(CliConfig, CliCommand, Vec<C
                 );
             }
         }
-        if config.with_package_deps {
-            recipe_names = CookRecipe::get_package_deps_recursive(&recipe_names, true)
-                .context("failed get package deps")?;
-        }
-
         if command.is_building() {
+            if config.with_package_deps {
+                recipe_names = CookRecipe::get_package_deps_recursive(&recipe_names, true)
+                    .context("failed get package deps")?;
+            }
             CookRecipe::get_build_deps_recursive(
                 &recipe_names,
                 true,
@@ -573,35 +581,102 @@ fn handle_clean(
     Ok(())
 }
 
-fn handle_push(recipe: &CookRecipe, config: &CliConfig) -> anyhow::Result<()> {
-    let public_path = "build/id_ed25519.pub.toml";
-    let archive_path = config
-        .repo_dir
-        .join(target())
-        .join(format!("{}.pkgar", recipe.name));
-    pkgar::extract(
-        public_path,
-        archive_path.as_path(),
-        config.sysroot_dir.to_str().unwrap(),
-    )
-    .context(format!(
-        "failed to install '{}' in '{}'",
-        archive_path.display(),
-        config.sysroot_dir.display(),
-    ))
+static PUSH_SYSROOT_DIR: OnceLock<PathBuf> = OnceLock::new();
+fn handle_push(recipes: &Vec<CookRecipe>, config: &CliConfig) -> anyhow::Result<()> {
+    let recipe_map: HashMap<&PackageName, &CookRecipe> =
+        recipes.iter().map(|r| (&r.name, r)).collect();
+    let mut total_size: u64 = 0;
+    let mut visited: HashSet<PackageName> = HashSet::new();
+    let num_roots = recipes.len();
+    PUSH_SYSROOT_DIR.set(config.sysroot_dir.clone()).unwrap();
+    let handle_push_inner = move |package_name: &PackageName,
+                                  _prefix: &str,
+                                  _is_last: bool,
+                                  entry: &WalkTreeEntry|
+          -> anyhow::Result<()> {
+        let public_path = "build/id_ed25519.pub.toml";
+        let r = match entry {
+            WalkTreeEntry::Built(archive_path, _) => {
+                let sysroot_dir = PUSH_SYSROOT_DIR.get().unwrap();
+                pkgar::extract(public_path, archive_path.as_path(), sysroot_dir).context(format!(
+                    "failed to install '{}' in '{}'",
+                    archive_path.display(),
+                    sysroot_dir.display(),
+                ))
+            }
+            WalkTreeEntry::NotBuilt => Err(anyhow!(
+                "Package {} has not been built",
+                package_name.as_str()
+            )),
+            WalkTreeEntry::Deduped | WalkTreeEntry::Missing => {
+                return Ok(());
+            }
+        };
+        match r {
+            Ok(()) => {
+                print_success(&CliCommand::Push, Some(package_name));
+                Ok(())
+            }
+            Err(e) => {
+                print_failed(&CliCommand::Push, package_name);
+                if get_config().cook.nonstop {
+                    Ok(())
+                } else {
+                    Err(e)
+                }
+            }
+        }
+    };
+    if config.with_package_deps {
+        for (i, root) in recipes.iter().enumerate() {
+            walk_tree_entry(
+                &root.name,
+                &recipe_map,
+                "",
+                i == num_roots - 1,
+                &mut visited,
+                &mut total_size,
+                handle_push_inner,
+            )?;
+        }
+    } else {
+        for (i, root) in recipes.iter().enumerate() {
+            let archive_path = config
+                .repo_dir
+                .join(target())
+                .join(format!("{}.pkgar", root.name));
+            let metadata = std::fs::metadata(&archive_path);
+            handle_push_inner(
+                &root.name,
+                "",
+                i == num_roots - 1,
+                &match metadata {
+                    Ok(m) => WalkTreeEntry::Built(&archive_path, m.len()),
+                    Err(_) => WalkTreeEntry::NotBuilt,
+                },
+            )?;
+        }
+    }
+
+    if config.cook.verbose {
+        println!("");
+        println!(
+            "Pushed {} of {} packages",
+            format_size(total_size),
+            visited.len()
+        );
+    }
+
+    Ok(())
 }
 
 fn handle_tree(recipes: &Vec<CookRecipe>, _config: &CliConfig) -> anyhow::Result<()> {
     let recipe_map: HashMap<&PackageName, &CookRecipe> =
         recipes.iter().map(|r| (&r.name, r)).collect();
-
     let mut total_size: u64 = 0;
     let mut visited: HashSet<PackageName> = HashSet::new();
-
     let roots: Vec<&CookRecipe> = recipes.iter().filter(|r| !r.is_deps).collect();
-
     let num_roots = roots.len();
-
     for (i, root) in roots.iter().enumerate() {
         display_tree_entry(
             &root.name,
@@ -614,7 +689,11 @@ fn handle_tree(recipes: &Vec<CookRecipe>, _config: &CliConfig) -> anyhow::Result
     }
 
     println!("");
-    println!("Estimated image size: {}", format_size(total_size));
+    println!(
+        "Estimated image size: {} of {} packages",
+        format_size(total_size),
+        visited.len()
+    );
 
     Ok(())
 }
