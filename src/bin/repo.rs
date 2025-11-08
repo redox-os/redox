@@ -99,7 +99,10 @@ impl CliCommand {
         *self == CliCommand::Tree || *self == CliCommand::Find
     }
     pub fn is_building(&self) -> bool {
-        *self == CliCommand::Fetch || *self == CliCommand::Cook || *self == CliCommand::Tree
+        *self == CliCommand::Fetch || *self == CliCommand::Cook
+    }
+    pub fn is_pushing(&self) -> bool {
+        *self == CliCommand::Push || *self == CliCommand::Tree
     }
     pub fn is_cleaning(&self) -> bool {
         *self == CliCommand::Clean || *self == CliCommand::Unfetch
@@ -454,7 +457,7 @@ fn parse_args(args: Vec<String>) -> anyhow::Result<(CliConfig, CliCommand, Vec<C
                 );
             }
         }
-        if command.is_building() {
+        if command.is_building() || (command.is_pushing() && config.with_package_deps) {
             if config.with_package_deps {
                 recipe_names = CookRecipe::get_package_deps_recursive(&recipe_names, true)
                     .context("failed get package deps")?;
@@ -587,7 +590,8 @@ fn handle_push(recipes: &Vec<CookRecipe>, config: &CliConfig) -> anyhow::Result<
         recipes.iter().map(|r| (&r.name, r)).collect();
     let mut total_size: u64 = 0;
     let mut visited: HashSet<PackageName> = HashSet::new();
-    let num_roots = recipes.len();
+    let roots: Vec<&CookRecipe> = recipes.iter().filter(|r| !r.is_deps).collect();
+    let num_roots = roots.len();
     PUSH_SYSROOT_DIR.set(config.sysroot_dir.clone()).unwrap();
     let handle_push_inner = move |package_name: &PackageName,
                                   _prefix: &str,
@@ -628,7 +632,7 @@ fn handle_push(recipes: &Vec<CookRecipe>, config: &CliConfig) -> anyhow::Result<
         }
     };
     if config.with_package_deps {
-        for (i, root) in recipes.iter().enumerate() {
+        for (i, root) in roots.iter().enumerate() {
             walk_tree_entry(
                 &root.name,
                 &recipe_map,
@@ -640,7 +644,7 @@ fn handle_push(recipes: &Vec<CookRecipe>, config: &CliConfig) -> anyhow::Result<
             )?;
         }
     } else {
-        for (i, root) in recipes.iter().enumerate() {
+        for (i, root) in roots.iter().enumerate() {
             let archive_path = config
                 .repo_dir
                 .join(target())
