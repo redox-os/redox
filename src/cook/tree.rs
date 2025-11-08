@@ -54,12 +54,9 @@ pub fn walk_tree_entry(
     };
 
     let package_dir = &cook_recipe.dir;
-    let pkg_path = create_target_dir(package_dir)
-        .map_err(|e| anyhow!(e))?
-        .join("stage.pkgar");
-    let pkg_toml = create_target_dir(package_dir)
-        .map_err(|e| anyhow!(e))?
-        .join("stage.toml");
+    let target_dir = create_target_dir(package_dir).map_err(|e| anyhow!(e))?;
+    let pkg_path = target_dir.join("stage.pkgar");
+    let pkg_toml = target_dir.join("stage.toml");
 
     let deduped = visited.contains(package_name);
     let entry = match (std::fs::metadata(&pkg_path), deduped) {
