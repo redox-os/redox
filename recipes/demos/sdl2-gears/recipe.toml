@@ -4,17 +4,14 @@ dependencies = [
     "sdl2-image",
     "sdl2-mixer",
     "sdl2-ttf",
-    "llvm18",
 ]
 script = """
 DYNAMIC_INIT
-cp "${COOKBOOK_SOURCE}/../gears.c" ./gears.c
-rsync -av --delete --exclude='.git' "${COOKBOOK_SOURCE}/../assets" ./assets
-${CXX} -O2 -I "${COOKBOOK_SYSROOT}/include" $LDFLAGS gears.c -o sdl2_gears \
-    -dynamic -lSDL2_image -lSDL2_mixer -lSDL2_ttf -lSDL2 -lorbital \
-    $("${PKG_CONFIG}" --libs osmesa) -lfreetype -lpng -ljpeg -lvorbisfile -lvorbis -logg -lz
-rm -rf "${COOKBOOK_STAGE}/usr/games/sdl2_gears"
-mkdir -pv "${COOKBOOK_STAGE}/usr/games/sdl2_gears"
-cp -v "sdl2_gears" "${COOKBOOK_STAGE}/usr/games/sdl2_gears/sdl2_gears"
-cp -rv "assets" "${COOKBOOK_STAGE}/usr/games/sdl2_gears/assets"
+mkdir -p "${COOKBOOK_STAGE}/usr/games/sdl2_gears"
+${CXX} -O2 -I "${COOKBOOK_SYSROOT}/include" $LDFLAGS ${COOKBOOK_RECIPE}/gears.c \
+    -o sdl2_gears -dynamic \
+    -lSDL2_image -lSDL2_mixer -lSDL2_ttf $("${PKG_CONFIG}" --libs osmesa) \
+    -lSDL2 -lorbital -lfreetype -lpng -ljpeg -lvorbisfile -lvorbis -logg -lz
+cp -rv "${COOKBOOK_RECIPE}/assets" "${COOKBOOK_STAGE}/usr/games/sdl2_gears/"
+cp -v sdl2_gears "${COOKBOOK_STAGE}/usr/games/sdl2_gears/"
 """
