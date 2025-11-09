@@ -294,7 +294,7 @@ fn repo_inner(
             let th = thread::spawn(move || {
                 while let Ok(update) = status_rx.recv() {
                     let mut should_break = false;
-                    if let StatusUpdate::FlushLog(_p, _q) = &update {
+                    if update == StatusUpdate::CookThreadFinished {
                         should_break = true;
                     }
                     app.update_status(update);
@@ -316,6 +316,9 @@ fn repo_inner(
                     .send(StatusUpdate::FlushLog(recipe.name.clone(), log_path))
                     .unwrap_or_default();
             }
+            status_tx
+                .send(StatusUpdate::CookThreadFinished)
+                .unwrap_or_default();
             let _ = th.join();
         }
         CliCommand::Unfetch => handle_clean(recipe, config, true, true)?,
