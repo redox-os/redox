@@ -1,12 +1,15 @@
-#TODO not compiled or tested
+#TODO requires ifaddrs.h
 # build instructions: https://github.com/supertuxkart/stk-code/blob/master/INSTALL.md#compiling
 [source]
-tar = "https://github.com/supertuxkart/stk-code/releases/download/1.4/SuperTuxKart-1.4-src.tar.xz"
+tar = "https://github.com/supertuxkart/stk-code/releases/download/1.5/SuperTuxKart-1.5-src.tar.gz"
 [build]
 template = "cmake"
 cmakeflags = [
     "-DNO_SHADERC=ON",
+    "-DUSE_WIIUSE=OFF",
+    "-DUSE_DNS_C=ON",
     "-DBUILD_RECORDER=OFF",
+    "-DPTHREAD_LIBRARY=/dev/null"
 ]
 dependencies = [
     "openal",

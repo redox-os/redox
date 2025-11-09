@@ -10,8 +10,6 @@ dependencies = [
     "libpng",
     "libjpeg",
     "sdl2",
-    "mesa",
-    "mesa-glu",
     "openal",
     "libvorbis",
 ]
