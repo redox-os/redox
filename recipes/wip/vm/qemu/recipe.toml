@@ -13,6 +13,7 @@ dependencies = [
     "libjpeg",
     "liborbital",
     "libpng",
+    "libstdcxx",
     "llvm18",
     "mesa",
     "nghttp2",
@@ -30,6 +31,7 @@ COOKBOOK_CONFIGURE_FLAGS=(
     --prefix="/usr"
     --cross-prefix="${TARGET}"
     --disable-coroutine-pool
+    --disable-dbus-display
     --disable-tpm
 )
 case "${TARGET}" in
