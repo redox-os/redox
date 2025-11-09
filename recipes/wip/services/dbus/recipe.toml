@@ -19,4 +19,5 @@ mesonflags = [
     #TODO: why does this require Linux?
     "-Depoll=disabled",
     "-Dx11_autolaunch=enabled",
+    "-Dverbose_mode=true",
 ]
