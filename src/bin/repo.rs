@@ -293,14 +293,10 @@ fn repo_inner(
             app.dump_logs_anyway = true;
             let th = thread::spawn(move || {
                 while let Ok(update) = status_rx.recv() {
-                    let mut should_break = false;
                     if update == StatusUpdate::CookThreadFinished {
-                        should_break = true;
-                    }
-                    app.update_status(update);
-                    if should_break {
                         break;
                     }
+                    app.update_status(update);
                 }
             });
             let mut logger = Some((&mut stdout_writer, &mut stderr_writer));
