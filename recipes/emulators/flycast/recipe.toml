@@ -55,6 +55,6 @@ COOKBOOK_CONFIGURE_FLAGS=(
     "${COOKBOOK_SOURCE}"
 )
 cookbook_configure
-# Fix for appstream generation
-mv "${COOKBOOK_STAGE}/usr/share/metainfo/org.flycast.Flycast.metainfo.xml" "${COOKBOOK_STAGE}/usr/share/metainfo/flycast.metainfo.xml"
+# appstream generation broken
+rm -rf "${COOKBOOK_STAGE}/usr/share/metainfo"
 """
