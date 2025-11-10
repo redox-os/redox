@@ -132,13 +132,13 @@ else
 endif
 BUILD=build/$(ARCH)/$(CONFIG_NAME)
 MOUNT_DIR=$(BUILD)/filesystem
-HOST_FSTOOLS=build/fstools
-INSTALLER=$(HOST_FSTOOLS)/bin/redox_installer
+FSTOOLS=build/fstools
+INSTALLER=$(FSTOOLS)/bin/redox_installer
+REDOXFS=$(FSTOOLS)/bin/redoxfs
+REDOXFS_MKFS=$(FSTOOLS)/bin/redoxfs-mkfs
 INSTALLER_OPTS=
 LIST_PACKAGES=installer/target/release/list_packages
 LIST_PACKAGES_OPTS=
-REDOXFS=$(HOST_FSTOOLS)/bin/redoxfs
-REDOXFS_MKFS=$(HOST_FSTOOLS)/bin/redoxfs-mkfs
 ifeq ($(REPO_BINARY),0)
 INSTALLER_OPTS+=--cookbook=cookbook
 else
