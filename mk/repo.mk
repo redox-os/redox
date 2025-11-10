@@ -72,7 +72,8 @@ p.%: $(FSTOOLS_TAG) FORCE
 ifeq ($(PODMAN_BUILD),1)
 	$(PODMAN_RUN) make $@
 else
-	cd ./cookbook && ./target/release/repo push $(foreach f,$(subst $(comma), ,$*),$(f)) "--sysroot=../$(MOUNT_DIR)"
+	$(if $(findstring nonstop,$(REPO_NONSTOP)),export COOKBOOK_NONSTOP=true && ,) cd ./cookbook && \
+	./target/release/repo push $(foreach f,$(subst $(comma), ,$*),$(f)) "--sysroot=../$(MOUNT_DIR)"
 endif
 	@if [ -f $(MOUNTED_TAG) ]; then \
 		$(MAKE) unmount && rm -f $(MOUNTED_TAG); \
