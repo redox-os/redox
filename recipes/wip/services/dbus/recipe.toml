@@ -17,7 +17,7 @@ dependencies = [
 template = "meson"
 mesonflags = [
     #TODO: why does this require Linux?
-    "-Depoll=disabled",
+    "-Depoll=enabled",
     "-Dx11_autolaunch=enabled",
     "-Dverbose_mode=true",
 ]
