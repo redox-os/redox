@@ -1,7 +1,13 @@
 #TODO port to redox
 #build instructions: https://gitlab.winehq.org/wine/wine/-/wikis/Building-Wine
 [source]
-tar = "https://dl.winehq.org/wine/source/10.0/wine-10.0.tar.xz"
+tar = "http://dl.winehq.org/wine/source/10.x/wine-10.18.tar.xz"
+blake3 = "0517c4200935456fbc22b152a19c5fd0d027d2b06c511968a5533101e1274f54"
+script = """
+DYNAMIC_INIT
+autotools_recursive_regenerate
+"""
+
 [build]
 template = "custom"
 dependencies = [
@@ -11,19 +17,54 @@ dependencies = [
     "gstreamer",
     "sdl2",
     "mesa-x11",
+    "libstdcxx",
     "libx11",
     "libxcomposite",
     "libxcursor",
     "libxi",
     "libxfixes",
-    "librandr",
+    "libxrandr",
     "libxrender",
     "libxext",
     "libxkbcommon",
-    "libxkbregistry",
+    #"libxkbregistry",
 ]
 script = """
 DYNAMIC_INIT
+
+mkdir -p wine-tools
+pushd wine-tools
+#TODO: easier way to build for host?
+HOST_ENV=(
+    env
+    --unset=AR
+    --unset=AS
+    --unset=CC
+    --unset=CFLAGS
+    --unset=CPPFLAGS
+    --unset=CXX
+    --unset=GNU_TARGET
+    --unset=LD
+    --unset=LDFLAGS
+    --unset=NM
+    --unset=OBJCOPY
+    --unset=OBJDUMP
+    --unset=PKG_CONFIG
+    --unset=PKG_CONFIG_ALLOW_CROSS
+    --unset=PKG_CONFIG_FOR_BUILD
+    --unset=PKG_CONFIG_LIBDIR
+    --unset=PKG_CONFIG_PATH
+    --unset=PKG_CONFIG_SYSROOT_DIR
+    --unset=PREFIX_RUSTFLAGS
+    --unset=RANLIB
+    --unset=READELF
+    --unset=STRIP
+    --unset=TARGET
+)
+"${HOST_ENV[@]}" "${COOKBOOK_CONFIGURE}" --enable-win64
+"${HOST_ENV[@]}" "${COOKBOOK_MAKE}" -j "${COOKBOOK_MAKE_JOBS}" __tooldeps__
+popd
+
 COOKBOOK_CONFIGURE_FLAGS+=(
     --enable-win64
 	--disable-kerberos
@@ -49,6 +90,7 @@ COOKBOOK_CONFIGURE_FLAGS+=(
 	--without-udev
 	--without-unwind
 	--without-usb
+    --with-wine-tools=wine-tools
 )
 cookbook_configure
 """
