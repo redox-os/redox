@@ -1,8 +1,8 @@
 [source]
-tar = "https://download.gnome.org/sources/glib/2.82/glib-2.82.5.tar.xz"
-blake3 = "9f5b4a12c6f328b167e81f457319f199acbaa02a63107d698ee9953193740b5f"
+tar = "https://download.gnome.org/sources/glib/2.87/glib-2.87.0.tar.xz"
+blake3 = "26b77ae24bc02f85d1c6742fe601167b056085f117cda70da7b805cefa6195e9"
 patches = [
-    "redox.patch"
+    "redox.patch",
 ]
 
 [build]
