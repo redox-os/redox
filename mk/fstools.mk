@@ -25,14 +25,10 @@ else
 	touch $@
 endif
 
-fstools_clean: FORCE $(CONTAINER_TAG)
-ifeq ($(PODMAN_BUILD),1)
-	$(PODMAN_RUN) make $@
-else
-	$(HOST_CARGO) clean --manifest-path cookbook/Cargo.toml
-	$(HOST_CARGO) clean --manifest-path cookbook/pkgar/Cargo.toml
-	$(HOST_CARGO) clean --manifest-path installer/Cargo.toml
-	$(HOST_CARGO) clean --manifest-path redoxfs/Cargo.toml
+fstools_clean: FORCE
+	rm -rf cookbook/target
+	rm -rf cookbook/pkgar/target
+	rm -rf installer/target
+	rm -rf redoxfs/target
 	rm -rf $(FSTOOLS)
 	rm -f $(FSTOOLS_TAG)
-endif

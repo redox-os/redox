@@ -28,26 +28,34 @@ rebuild:
 	rm -rf $(BUILD)/repo.tag $(BUILD)/harddrive.img $(BUILD)/redox-live.iso
 	$(MAKE) all
 
-clean: $(CONTAINER_TAG)
+clean:
 ifeq ($(PODMAN_BUILD),1)
+ifneq ("$(wildcard $(CONTAINER_TAG))","")
 	$(PODMAN_RUN) make $@
+else
+	$(info will not run cookbook clean as container is not built)
+endif
 else
 	$(MAKE) c.--all
-	-rm -rf cookbook/repo
-	$(MAKE) fstools_clean
-	$(HOST_CARGO) clean --manifest-path relibc/Cargo.toml
-endif
 	-$(FUMOUNT) $(BUILD)/filesystem/ || true
 	-$(FUMOUNT) /tmp/redox_installer/ || true
+endif
+	rm -rf cookbook/repo
+	rm -rf relibc/target
 	rm -rf $(BUILD) $(PREFIX)
+	$(MAKE) fstools_clean
 
-distclean: $(CONTAINER_TAG)
+distclean:
 ifeq ($(PODMAN_BUILD),1)
+ifneq ("$(wildcard $(CONTAINER_TAG))","")
 	$(PODMAN_RUN) make $@
 else
-	$(MAKE) u.--all
-	$(MAKE) clean
+	$(info will not run cookbook unfetch as container is not built)
 endif
+else
+	$(MAKE) u.--all
+endif
+	$(MAKE) clean
 
 pull:
 	git pull
