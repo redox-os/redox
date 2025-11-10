@@ -71,6 +71,9 @@ $(PREFIX)/relibc-install.tar.gz: $(PREFIX)/relibc-install
 		.
 
 $(PREFIX)/libtool:
+ifeq ($(PODMAN_BUILD),1)
+	$(PODMAN_RUN) make $@
+else
 	rm -rf "$@.partial" "$@"
 	mkdir -p "$@.partial"
 
@@ -85,6 +88,7 @@ $(PREFIX)/libtool:
 	touch "$@.partial"
 	echo $(LIBTOOL_VERSION) > $@.partial/.tarball-version
 	mv "$@.partial" "$@"
+endif
 
 $(PREFIX)/libtool-build: $(PREFIX)/libtool $(PREFIX)/rust-install
 ifeq ($(PODMAN_BUILD),1)
@@ -100,7 +104,7 @@ else
 			--gnulib-srcdir=./gnulib
 	PATH="$(ROOT)/$(PREFIX)/rust-install/bin:$$PATH" && \
 	cd "$@.partial" && \
-		cp -rp $(abspath $<)/. ./ && \
+		cp -r $(abspath $<)/. ./ && \
 		"$(ROOT)/$</configure" \
 			--target="$(TARGET)" \
 			--prefix=$(abspath $(PREFIX)/sysroot) && \
