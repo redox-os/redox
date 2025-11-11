@@ -28,22 +28,29 @@ rebuild:
 	rm -rf $(BUILD)/repo.tag $(BUILD)/harddrive.img $(BUILD)/redox-live.iso
 	$(MAKE) all
 
+# To tell that it's not safe
+# to execute the cookbook binary
+NOT_ON_PODMAN?=0
+
 clean:
 ifeq ($(PODMAN_BUILD),1)
 ifneq ("$(wildcard $(CONTAINER_TAG))","")
 	$(PODMAN_RUN) make $@
 else
 	$(info will not run cookbook clean as container is not built)
-endif
+	$(MAKE) clean PODMAN_BUILD=0 NOT_ON_PODMAN=1
+endif # CONTAINER_TAG
 else
+ifneq ($(NOT_ON_PODMAN),1)
 	$(MAKE) c.--all
 	-$(FUMOUNT) $(BUILD)/filesystem/ || true
 	-$(FUMOUNT) /tmp/redox_installer/ || true
-endif
+endif # NOT_ON_PODMAN
 	rm -rf cookbook/repo
 	rm -rf relibc/target
 	rm -rf $(BUILD) $(PREFIX)
 	$(MAKE) fstools_clean
+endif # PODMAN_BUILD
 
 distclean:
 ifeq ($(PODMAN_BUILD),1)
@@ -51,11 +58,14 @@ ifneq ("$(wildcard $(CONTAINER_TAG))","")
 	$(PODMAN_RUN) make $@
 else
 	$(info will not run cookbook unfetch as container is not built)
-endif
+	$(MAKE) distclean PODMAN_BUILD=0 NOT_ON_PODMAN=1
+endif # CONTAINER_TAG
 else
+ifneq ($(NOT_ON_PODMAN),1)
 	$(MAKE) u.--all
-endif
-	$(MAKE) clean
+endif # NOT_ON_PODMAN
+	$(MAKE) clean NOT_ON_PODMAN=1
+endif # PODMAN_BUILD
 
 pull:
 	git pull
