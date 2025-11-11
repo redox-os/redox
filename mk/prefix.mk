@@ -70,7 +70,7 @@ $(PREFIX)/relibc-install.tar.gz: $(PREFIX)/relibc-install
 		--directory="$<" \
 		.
 
-$(PREFIX)/libtool:
+$(PREFIX)/libtool: | $(CONTAINER_TAG)
 ifeq ($(PODMAN_BUILD),1)
 	$(PODMAN_RUN) make $@
 else
@@ -90,7 +90,7 @@ else
 	mv "$@.partial" "$@"
 endif
 
-$(PREFIX)/libtool-build: $(PREFIX)/libtool $(PREFIX)/rust-install
+$(PREFIX)/libtool-build: $(PREFIX)/libtool $(PREFIX)/rust-install $(CONTAINER_TAG)
 ifeq ($(PODMAN_BUILD),1)
 	$(PODMAN_RUN) make $@
 else
@@ -129,7 +129,7 @@ endif
 
 ifeq ($(PREFIX_BINARY),1)
 
-$(PREFIX)/rust-install.tar.gz:
+$(PREFIX)/rust-install.tar.gz: | $(CONTAINER_TAG)
 ifeq ($(PODMAN_BUILD),1)
 	$(PODMAN_RUN) make $@
 else
@@ -139,7 +139,7 @@ else
 	mv $@.partial $@
 endif
 
-$(PREFIX)/rust-install: $(PREFIX)/rust-install.tar.gz
+$(PREFIX)/rust-install: $(PREFIX)/rust-install.tar.gz $(CONTAINER_TAG)
 ifeq ($(PODMAN_BUILD),1)
 	$(PODMAN_RUN) make $@
 else
