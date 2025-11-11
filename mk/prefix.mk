@@ -130,17 +130,25 @@ endif
 ifeq ($(PREFIX_BINARY),1)
 
 $(PREFIX)/rust-install.tar.gz:
+ifeq ($(PODMAN_BUILD),1)
+	$(PODMAN_RUN) make $@
+else
 	mkdir -p "$(@D)"
 	#TODO: figure out why rust-install.tar.gz is missing /lib/rustlib/$(HOST_TARGET)/lib
 	wget -O $@.partial "https://static.redox-os.org/toolchain/$(HOST_TARGET)/$(TARGET)/relibc-install.tar.gz"
 	mv $@.partial $@
+endif
 
 $(PREFIX)/rust-install: $(PREFIX)/rust-install.tar.gz
+ifeq ($(PODMAN_BUILD),1)
+	$(PODMAN_RUN) make $@
+else
 	rm -rf "$@.partial" "$@"
 	mkdir -p "$@.partial"
 	tar --extract --file "$<" --directory "$@.partial" --strip-components=1
 	touch "$@.partial"
 	mv "$@.partial" "$@"
+endif
 
 else
 

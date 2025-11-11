@@ -1,7 +1,7 @@
 #!/usr/bin/env bash
 
 # This script setup the Redox build system with Podman
-# It install the Podman dependencies, Rustup, recipes dependencies for cross-compilation
+# It install the Podman dependencies for cross-compilation
 # and download the build system configuration files
 
 set -e
@@ -100,7 +100,6 @@ osx_macports()
     install_macports_pkg "git"
     install_macports_pkg "gmake"
     install_macports_pkg "curl"
-    install_macports_pkg "osxfuse"
     install_macports_pkg "podman"
     install_macports_pkg "gdb +multiarch"
 
@@ -129,8 +128,6 @@ osx_homebrew()
     install_brew_pkg "git"
     install_brew_pkg "make"
     install_brew_pkg "curl"
-    install_brew_pkg "osxfuse"
-    install_brew_pkg "fuse-overlayfs"
     install_brew_pkg "slirp4netns"
     install_brew_pkg "podman"
     install_brew_pkg "gdb"
@@ -159,7 +156,6 @@ freebsd()
     install_freebsd_pkg "git"
     install_freebsd_pkg "gmake"
     install_freebsd_pkg "curl"
-    install_freebsd_pkg "fusefs-libs3"
     install_freebsd_pkg "podman"
     install_freebsd_pkg "gdb"
 
@@ -486,7 +482,6 @@ usage()
     echo "   -h,--help      Show this prompt"
     echo "   -u [branch]    Update git repo and update rust"
     echo "                  If blank defaults to master"
-    echo "   -s             Check the status of the current travis build"
     echo "   -e [emulator]  Install specific emulator, virtualbox or qemu"
     echo "   -p [package    Choose an Ubuntu package manager, apt-fast or"
     echo "       manager]   aptitude"
@@ -495,111 +490,6 @@ usage()
     echo
     echo "./podman_bootstrap.sh -e qemu"
     exit
-}
-
-#############################################################
-# Looks for and installs a cargo-managed binary or subcommand
-#############################################################
-cargoInstall()
-{
-    if [[ "`cargo install --list`" != *"$1 v$2"* ]]; then
-        cargo install --force --version "$2" "$1"
-    else
-        echo "You have $1 version $2 installed already!"
-    fi
-}
-
-#############################################################################
-# This function takes care of everything associated to rust, and the version
-# manager that controls it, it can install rustup and uninstall multirust as
-# well as making sure that the correct version of rustc is selected by rustup
-# @params:	$1 install non-interactively, boolean
-#############################################################################
-rustInstall()
-{
-    noninteractive=$1
-    # Check to see if multirust is installed, we don't want it messing with rustup
-    # In the future we can probably remove this but I believe it's good to have for now
-    if [ -e /usr/local/lib/rustlib/uninstall.sh ] ; then
-        echo "It appears that multirust is installed on your system."
-        echo "This tool has been deprecated by the maintainer, and will cause issues."
-        echo "This script can remove multirust from your system if you wish."
-        printf "Uninstall multirust (y/N):"
-        read multirust
-        if echo "$multirust" | grep -iq "^y" ;then
-            sudo /usr/local/lib/rustlib/uninstall.sh
-        else
-            echo "Please manually uninstall multirust and any other versions of rust, then re-run bootstrap."
-            exit 1
-        fi
-    fi
-    # If rustup is not installed we should offer to install it for them
-    if [ -z "$(which rustup)" ]; then
-        rustup_options="--default-toolchain stable"
-        echo "You do not have rustup installed."
-        if [ "$noninteractive" = true ]; then
-            rustup="y"
-            rustup_options+=" -y"
-        else
-            echo "We HIGHLY recommend using rustup."
-            echo "Would you like to install it now?"
-            echo "*WARNING* this involves a 'curl | sh' style command"
-            printf "(y/N): "
-            read rustup
-        fi
-        if echo "$rustup" | grep -iq "^y" ;then
-            #install rustup
-            curl https://sh.rustup.rs -sSf | sh -s -- $rustup_options
-            # You have to add the rustup variables to the $PATH
-            echo "export PATH=\"\$HOME/.cargo/bin:\$PATH\"" >> ~/.bashrc
-            # source the variables so that we can execute rustup commands in the current shell
-            source ~/.cargo/env
-        else
-            echo "Rustup will not be installed!"
-        fi
-    fi
-    if [ -z "$(which rustc)" ]; then
-        echo "Rust is not installed"
-        echo "Please either run the script again, accepting rustup install"
-        echo "or install rustc stable manually (not recommended) via:"
-        echo "\#curl -sSf https://static.rust-lang.org/rustup.sh | sh -s -- --channel=stable"
-        exit 1
-    else
-        echo "Your Rust install looks good!"
-    fi
-}
-
-####################################################################
-# This function gets the current build status from travis and prints
-# a message to the user
-####################################################################
-statusCheck()
-{
-    for i in $(echo "$(curl -sf https://api.travis-ci.org/repositories/redox-os/redox.json)" | tr "," "\n")
-    do
-        if echo "$i" | grep -iq "last_build_status" ;then
-            if echo "$i" | grep -iq "0" ;then
-                echo
-                echo "********************************************"
-                echo "Travis reports that the last build succeeded!"
-                echo "Looks like you are good to go!"
-                echo "********************************************"
-            elif echo "$i" | grep -iq "null" ;then
-                echo
-                echo "******************************************************************"
-                echo "The Travis build did not finish, this is an error with its config."
-                echo "I cannot reliably determine whether the build is succeeding or not."
-                echo "Consider checking for and maybe opening an issue on gitlab"
-                echo "******************************************************************"
-            else
-                echo
-                echo "**************************************************"
-                echo "Travis reports that the last build *FAILED* :("
-                echo "Might want to check out the issues before building"
-                echo "**************************************************"
-            fi
-        fi
-    done
 }
 
 ###########################################################################
@@ -618,22 +508,19 @@ boot()
     echo "---------------------------------------"
     echo "Well it looks like you are ready to go!"
     echo "---------------------------------------"
-    statusCheck
     echo "The file redox/.config was created with PODMAN_BUILD=1."
+    echo "If you need a much quicker installation, run: "
+    echo "  echo REPO_BINARY=1 >> redox/.config"
     echo
-    echo "** Be sure to update your path to include Rust - run the following command: **"
-    echo 'source $HOME/.cargo/env'
-    echo
-    echo "Run the following commands to build redox using Podman:"
+    echo "Run the following commands to build Redox using Podman:"
     echo
     echo "cd redox"
     MAKE="make"
     if [[ "$(uname)" == "FreeBSD" ]]; then
         MAKE="gmake"
-        echo "kldload fuse.ko # This loads the kernel module for FUSE"
     fi
     echo "$MAKE all"
-    echo "$MAKE virtualbox or qemu"
+    echo "$MAKE $emulator"
     echo
     echo "      Good luck!"
 
@@ -645,10 +532,6 @@ if [ "$1" == "-h" ] || [ "$1" == "--help" ]; then
 elif [ "$1" == "-u" ]; then
     git pull upstream master
     git submodule update --recursive --init
-    rustup update nightly
-    exit
-elif [ "$1" == "-s" ]; then
-    statusCheck
     exit
 fi
 
@@ -664,14 +547,11 @@ do
         d) dependenciesonly=true;;
         u) update=true;;
         h) usage;;
-        s) statusCheck && exit;;
         \?) echo "I don't know what to do with that option, try -h for help"; exit 1;;
     esac
 done
 
 banner
-
-rustInstall "$noninteractive"
 
 if [ "$update" == "true" ]; then
     git pull upstream master
