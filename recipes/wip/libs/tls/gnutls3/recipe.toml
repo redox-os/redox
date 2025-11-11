@@ -1,17 +1,19 @@
-#TODO: needs sendmsg
 [source]
 tar = "https://www.gnupg.org/ftp/gcrypt/gnutls/v3.7/gnutls-3.7.10.tar.xz"
 blake3 = "edcd8a505867226722ae50e0e9bb2bf57a1f38b5674a3028e26f69d2d61957e6"
 script = """
 DYNAMIC_INIT
-#TODO autotools_recursive_regenerate
+autotools_recursive_regenerate
 """
 
 [build]
 template = "custom"
 dependencies = [
+    "libbrotli",
     "libgmp",
     "libnettle",
+    "zlib",
+    "zstd",
 ]
 script = """
 DYNAMIC_INIT
@@ -19,6 +21,7 @@ COOKBOOK_CONFIGURE_FLAGS+=(
     --with-included-libtasn1
     --with-included-unistring
     --without-p11-kit
+    gl_cv_func_malloc_posix=no
     gl_cv_socket_ipv6=no
 )
 cookbook_configure
