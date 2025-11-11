@@ -2,12 +2,7 @@
 
 FROM docker.io/library/debian:trixie
 
-# _UID_ must be replaced with the user's uid on host
-# podman root is mapped to your user id on host during build,
-# poduser is mapped to your user id during podman run
-RUN useradd --create-home --no-log-init --uid _UID_ poduser \
-    && chown -R root:root /home \
-    && apt-get update \
+RUN apt-get update \
     && apt-get install -y --no-install-recommends \
         ant \
         appstream \
