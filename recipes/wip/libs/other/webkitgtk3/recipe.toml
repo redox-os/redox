@@ -110,3 +110,6 @@ patchelf --replace-needed "${COOKBOOK_SYSROOT}/usr/lib/libsqlite3.so" "libsqlite
 mkdir -p "${COOKBOOK_STAGE}/usr/bin"
 ln -sr "${COOKBOOK_STAGE}/usr/libexec/webkit2gtk-4.1/MiniBrowser" "${COOKBOOK_STAGE}/usr/bin/MiniBrowser"
 """
+
+[package]
+dependencies = ["glib-networking"]
