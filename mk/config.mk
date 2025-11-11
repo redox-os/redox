@@ -46,6 +46,7 @@ CONTAINERFILE?=podman/redox-base-containerfile
 export NPROC=nproc
 export REDOX_MAKE=make
 
+ifeq ($(PODMAN_BUILD),1)
 HOST_TARGET := $(shell env -u RUSTUP_TOOLCHAIN rustc -vV | grep host | cut -d: -f2 | tr -d " ")
 # x86_64 linux hosts have all toolchains
 ifneq ($(HOST_TARGET),x86_64-unknown-linux-gnu)
@@ -59,6 +60,7 @@ ifneq ($(HOST_TARGET),x86_64-unknown-linux-gnu)
 		$(info The $(ARCH) binary prefix is only built for x86_64 Linux hosts)
 		PREFIX_BINARY=0
 	endif
+endif
 endif
 
 ifeq ($(SCCACHE_BUILD),1)
