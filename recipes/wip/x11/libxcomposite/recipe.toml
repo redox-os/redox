@@ -1,9 +1,19 @@
 #TODO make dependencies work
 [source]
 tar = "https://www.x.org/releases/individual/lib/libXcomposite-0.4.6.tar.xz"
+script = """
+DYNAMIC_INIT
+autotools_recursive_regenerate
+"""
+
 [build]
-template = "configure"
+template = "custom"
 dependencies = [
     "libx11",
+    "libxfixes",
     "x11proto",
 ]
+script = """
+DYNAMIC_INIT
+cookbook_configure
+"""
