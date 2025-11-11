@@ -70,7 +70,10 @@ $(PREFIX)/relibc-install.tar.gz: $(PREFIX)/relibc-install
 		--directory="$<" \
 		.
 
-$(PREFIX)/libtool:
+$(PREFIX)/libtool: | $(CONTAINER_TAG)
+ifeq ($(PODMAN_BUILD),1)
+	$(PODMAN_RUN) make $@
+else
 	rm -rf "$@.partial" "$@"
 	mkdir -p "$@.partial"
 
@@ -85,8 +88,9 @@ $(PREFIX)/libtool:
 	touch "$@.partial"
 	echo $(LIBTOOL_VERSION) > $@.partial/.tarball-version
 	mv "$@.partial" "$@"
+endif
 
-$(PREFIX)/libtool-build: $(PREFIX)/libtool $(PREFIX)/rust-install
+$(PREFIX)/libtool-build: $(PREFIX)/libtool $(PREFIX)/rust-install $(CONTAINER_TAG)
 ifeq ($(PODMAN_BUILD),1)
 	$(PODMAN_RUN) make $@
 else
@@ -100,7 +104,7 @@ else
 			--gnulib-srcdir=./gnulib
 	PATH="$(ROOT)/$(PREFIX)/rust-install/bin:$$PATH" && \
 	cd "$@.partial" && \
-		cp -rp $(abspath $<)/. ./ && \
+		cp -r $(abspath $<)/. ./ && \
 		"$(ROOT)/$</configure" \
 			--target="$(TARGET)" \
 			--prefix=$(abspath $(PREFIX)/sysroot) && \
@@ -125,18 +129,26 @@ endif
 
 ifeq ($(PREFIX_BINARY),1)
 
-$(PREFIX)/rust-install.tar.gz:
+$(PREFIX)/rust-install.tar.gz: | $(CONTAINER_TAG)
+ifeq ($(PODMAN_BUILD),1)
+	$(PODMAN_RUN) make $@
+else
 	mkdir -p "$(@D)"
 	#TODO: figure out why rust-install.tar.gz is missing /lib/rustlib/$(HOST_TARGET)/lib
 	wget -O $@.partial "https://static.redox-os.org/toolchain/$(HOST_TARGET)/$(TARGET)/relibc-install.tar.gz"
 	mv $@.partial $@
+endif
 
-$(PREFIX)/rust-install: $(PREFIX)/rust-install.tar.gz
+$(PREFIX)/rust-install: $(PREFIX)/rust-install.tar.gz $(CONTAINER_TAG)
+ifeq ($(PODMAN_BUILD),1)
+	$(PODMAN_RUN) make $@
+else
 	rm -rf "$@.partial" "$@"
 	mkdir -p "$@.partial"
 	tar --extract --file "$<" --directory "$@.partial" --strip-components=1
 	touch "$@.partial"
 	mv "$@.partial" "$@"
+endif
 
 else
 
