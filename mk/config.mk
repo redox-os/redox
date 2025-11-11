@@ -46,6 +46,7 @@ CONTAINERFILE?=podman/redox-base-containerfile
 export NPROC=nproc
 export REDOX_MAKE=make
 
+ifneq ($(PODMAN_BUILD),1)
 HOST_TARGET := $(shell env -u RUSTUP_TOOLCHAIN rustc -vV | grep host | cut -d: -f2 | tr -d " ")
 # x86_64 linux hosts have all toolchains
 ifneq ($(HOST_TARGET),x86_64-unknown-linux-gnu)
@@ -59,6 +60,7 @@ ifneq ($(HOST_TARGET),x86_64-unknown-linux-gnu)
 		$(info The $(ARCH) binary prefix is only built for x86_64 Linux hosts)
 		PREFIX_BINARY=0
 	endif
+endif
 endif
 
 ifeq ($(SCCACHE_BUILD),1)
@@ -132,13 +134,13 @@ else
 endif
 BUILD=build/$(ARCH)/$(CONFIG_NAME)
 MOUNT_DIR=$(BUILD)/filesystem
-HOST_FSTOOLS=build/fstools
-INSTALLER=$(HOST_FSTOOLS)/bin/redox_installer
+FSTOOLS=build/fstools
+INSTALLER=$(FSTOOLS)/bin/redox_installer
+REDOXFS=$(FSTOOLS)/bin/redoxfs
+REDOXFS_MKFS=$(FSTOOLS)/bin/redoxfs-mkfs
 INSTALLER_OPTS=
 LIST_PACKAGES=installer/target/release/list_packages
 LIST_PACKAGES_OPTS=
-REDOXFS=$(HOST_FSTOOLS)/bin/redoxfs
-REDOXFS_MKFS=$(HOST_FSTOOLS)/bin/redoxfs-mkfs
 ifeq ($(REPO_BINARY),0)
 INSTALLER_OPTS+=--cookbook=cookbook
 else
