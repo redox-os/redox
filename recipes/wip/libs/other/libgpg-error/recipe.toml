@@ -10,15 +10,29 @@ autotools_recursive_regenerate
 template = "custom"
 script = """
 DYNAMIC_INIT
-#TODO: this modifies the source
-env \
-    LOCK_ABI_VERSION=1 \
-    host="${TARGET}" \
-    ac_ext=c \
-    ac_objext=o \
-    AWK="$(which awk)" \
-    "${COOKBOOK_SOURCE}/src/gen-lock-obj.sh" \
-    > \
-    "${COOKBOOK_SOURCE}/src/syscfg/lock-obj-pub.${TARGET}.h"
+
+cat > "${COOKBOOK_SOURCE}/src/syscfg/lock-obj-pub.${TARGET}.h" << EOF
+## lock-obj-pub.x86_64-unknown-redox.h
+## File created by gen-lock-obj.sh - DO NOT EDIT
+## To be included by mkheader into gpg-error.h
+
+typedef struct
+{
+  long _vers;
+  union {
+    volatile char _priv[12];
+    long _x_align;
+    long *_xp_align;
+  } u;
+} gpgrt_lock_t;
+
+#define GPGRT_LOCK_INITIALIZER {1,{{}}}
+##
+## Local Variables:
+## mode: c
+## buffer-read-only: t
+## End:
+##
+EOF
 cookbook_configure --enable-threads=posix
 """
