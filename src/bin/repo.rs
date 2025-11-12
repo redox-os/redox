@@ -1013,6 +1013,9 @@ fn run_tui_cook(
                             .send(StatusUpdate::FailCook(recipe.clone(), e.to_string()))
                             .unwrap_or_default();
                         if cooker_config.cook.nonstop {
+                            if cooker_prompting.load(Ordering::SeqCst) == 4 {
+                                break 'done;
+                            }
                             break;
                         }
                         while cooker_prompting.load(Ordering::SeqCst) != 0 {
@@ -1110,6 +1113,9 @@ fn run_tui_cook(
                             .send(StatusUpdate::FailFetch(recipe.clone(), e.to_string()))
                             .unwrap_or_default();
                         if fetcher_config.cook.nonstop {
+                            if fetcher_prompting.load(Ordering::SeqCst) == 4 {
+                                break 'done;
+                            }
                             break;
                         }
                         while fetcher_prompting.load(Ordering::SeqCst) != 0 {
@@ -1363,8 +1369,11 @@ fn run_tui_cook(
                 log_paragraph,
                 chunks[if app.fetch_complete { 1 } else { 2 }],
             );
-            if let Some(prompt) = &app.prompt {
-                draw_prompt(f, prompt);
+            if let Some(prompt) = &mut app.prompt {
+                if config.cook.nonstop && prompt.selected == PromptOption::Retry {
+                    prompt.selected = PromptOption::Skip;
+                }
+                draw_prompt(f, prompt, config.cook.nonstop);
             }
             if enable_auto_scroll {
                 app.auto_scroll = true;
@@ -1384,8 +1393,9 @@ fn run_tui_cook(
                             app.dump_logs_on_exit = Some((name.to_owned(), join_logs(log, line)));
                         }
                         running.store(false, Ordering::SeqCst);
+                    } else {
+                        app.prompt = None;
                     }
-                    app.prompt = None;
                 } else {
                     handle_main_event(&mut app, &event);
                 }
@@ -1407,6 +1417,10 @@ fn run_tui_cook(
 
     drop(mstdout);
     let _ = stdout().flush();
+
+    if config.cook.nonstop && app.prompt.is_some_and(|f| f.selected == PromptOption::Exit) {
+        kill_everything();
+    }
 
     fetcher_handle.join().unwrap();
     cooker_handle.join().unwrap();
@@ -1439,12 +1453,7 @@ fn handle_main_event(app: &mut TuiApp, event: &Event) {
             }
             Key::Char('c') => {
                 // as compilers still running, we use this way to stop it
-                let pid = std::process::id();
-                Command::new("bash")
-                    .arg("-c")
-                    .arg(KILL_ALL_PID.replace("$PID", &pid.to_string()))
-                    .spawn()
-                    .expect("unable to spawn kill");
+                kill_everything();
             }
             Key::Up => {
                 app.auto_scroll = false;
@@ -1515,6 +1524,15 @@ fn handle_main_event(app: &mut TuiApp, event: &Event) {
     }
 }
 
+fn kill_everything() {
+    let pid = std::process::id();
+    Command::new("bash")
+        .arg("-c")
+        .arg(KILL_ALL_PID.replace("$PID", &pid.to_string()))
+        .spawn()
+        .expect("unable to spawn kill");
+}
+
 fn handle_prompt_input<'a>(
     event: &Event,
     app: &'a mut TuiApp,
@@ -1540,8 +1558,12 @@ fn handle_prompt_input<'a>(
     None
 }
 
-fn draw_prompt(f: &mut ratatui::Frame, prompt: &FailurePrompt) {
-    let title = format!(" FAILURE in {} ", prompt.recipe.name);
+fn draw_prompt(f: &mut ratatui::Frame, prompt: &FailurePrompt, is_nonstop: bool) {
+    let title = format!(
+        " FAILURE in {} {}",
+        prompt.recipe.name,
+        if is_nonstop { "(skipped) " } else { "" }
+    );
     let mut error_text = prompt.error.clone();
     if error_text.len() > 200 {
         error_text = error_text[0..100].to_string()
@@ -1568,16 +1590,21 @@ fn draw_prompt(f: &mut ratatui::Frame, prompt: &FailurePrompt) {
         Style::default()
     };
 
+    let mut buttons = vec![
+        Span::styled(" [Skip] ", skip_style),
+        Span::raw("   "),
+        Span::styled(" [Exit] ", exit_style),
+    ];
+
+    if !is_nonstop {
+        buttons.push(Span::raw("   "));
+        buttons.push(Span::styled(" [Retry] ", retry_style));
+    }
+
     let text = vec![
         Line::from(error_text).style(Style::default().fg(Color::Yellow)),
         Line::from(""),
-        Line::from(vec![
-            Span::styled(" [Skip] ", skip_style),
-            Span::raw("   "),
-            Span::styled(" [Exit] ", exit_style),
-            Span::raw("   "),
-            Span::styled(" [Retry] ", retry_style),
-        ]),
+        Line::from(buttons),
     ];
 
     let block = Block::default()
