@@ -369,6 +369,7 @@ pub(crate) fn fetch_extract_tar(
         command.arg(if verbose { "xvf" } else { "xf" });
     } else {
         command.arg("--extract");
+        command.arg("--no-same-owner");
         if verbose {
             command.arg("--verbose");
         }
