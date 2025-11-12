@@ -1012,29 +1012,30 @@ fn run_tui_cook(
                         cooker_status_tx
                             .send(StatusUpdate::FailCook(recipe.clone(), e.to_string()))
                             .unwrap_or_default();
-                        if !cooker_config.cook.nonstop {
-                            while cooker_prompting.load(Ordering::SeqCst) != 0 {
-                                thread::sleep(Duration::from_millis(101)); // wait other prompt
-                            }
-                            cooker_prompting.swap(1, Ordering::SeqCst);
-                            'wait: loop {
-                                match cooker_prompting.load(Ordering::SeqCst) {
-                                    0 => break 'again,
-                                    1 => thread::sleep(Duration::from_millis(101)),
-                                    2 => {
-                                        cooker_prompting.swap(0, Ordering::SeqCst);
-                                        break 'wait;
-                                    } // retry
-                                    3 => {
-                                        cooker_prompting.swap(0, Ordering::SeqCst);
-                                        break 'again;
-                                    } // skip
-                                    4 => {
-                                        cooker_prompting.swap(0, Ordering::SeqCst);
-                                        break 'done;
-                                    } // done
-                                    _ => unreachable!(),
-                                }
+                        if cooker_config.cook.nonstop {
+                            break;
+                        }
+                        while cooker_prompting.load(Ordering::SeqCst) != 0 {
+                            thread::sleep(Duration::from_millis(101)); // wait other prompt
+                        }
+                        cooker_prompting.swap(1, Ordering::SeqCst);
+                        'wait: loop {
+                            match cooker_prompting.load(Ordering::SeqCst) {
+                                0 => break 'again,
+                                1 => thread::sleep(Duration::from_millis(101)),
+                                2 => {
+                                    cooker_prompting.swap(0, Ordering::SeqCst);
+                                    break 'wait;
+                                } // retry
+                                3 => {
+                                    cooker_prompting.swap(0, Ordering::SeqCst);
+                                    break 'again;
+                                } // skip
+                                4 => {
+                                    cooker_prompting.swap(0, Ordering::SeqCst);
+                                    break 'done;
+                                } // done
+                                _ => unreachable!(),
                             }
                         }
                     }
@@ -1108,29 +1109,30 @@ fn run_tui_cook(
                         fetcher_status_tx
                             .send(StatusUpdate::FailFetch(recipe.clone(), e.to_string()))
                             .unwrap_or_default();
-                        if !fetcher_config.cook.nonstop {
-                            while fetcher_prompting.load(Ordering::SeqCst) != 0 {
-                                thread::sleep(Duration::from_millis(101)); // wait other prompt
-                            }
-                            fetcher_prompting.swap(1, Ordering::SeqCst);
-                            'wait: loop {
-                                match fetcher_prompting.load(Ordering::SeqCst) {
-                                    0 => break 'again,
-                                    1 => thread::sleep(Duration::from_millis(101)),
-                                    2 => {
-                                        fetcher_prompting.swap(0, Ordering::SeqCst);
-                                        break 'wait;
-                                    } // retry
-                                    3 => {
-                                        fetcher_prompting.swap(0, Ordering::SeqCst);
-                                        break 'again;
-                                    } // skip
-                                    4 => {
-                                        fetcher_prompting.swap(0, Ordering::SeqCst);
-                                        break 'done;
-                                    } // done
-                                    _ => unreachable!(),
-                                }
+                        if fetcher_config.cook.nonstop {
+                            break;
+                        }
+                        while fetcher_prompting.load(Ordering::SeqCst) != 0 {
+                            thread::sleep(Duration::from_millis(101)); // wait other prompt
+                        }
+                        fetcher_prompting.swap(1, Ordering::SeqCst);
+                        'wait: loop {
+                            match fetcher_prompting.load(Ordering::SeqCst) {
+                                0 => break 'again,
+                                1 => thread::sleep(Duration::from_millis(101)),
+                                2 => {
+                                    fetcher_prompting.swap(0, Ordering::SeqCst);
+                                    break 'wait;
+                                } // retry
+                                3 => {
+                                    fetcher_prompting.swap(0, Ordering::SeqCst);
+                                    break 'again;
+                                } // skip
+                                4 => {
+                                    fetcher_prompting.swap(0, Ordering::SeqCst);
+                                    break 'done;
+                                } // done
+                                _ => unreachable!(),
                             }
                         }
                     }
