@@ -1,9 +1,13 @@
-#TODO port to Orbital
+#TODO not compiled or tested
 [source]
 git = "https://github.com/AmmarAbouZor/tui-journal"
 [build]
-template = "cargo"
+template = "custom"
 dependencies = [
-    "openssl1",
+    "openssl3",
     "sqlite3",
 ]
+script = """
+DYNAMIC_INIT
+cookbook_cargo
+"""

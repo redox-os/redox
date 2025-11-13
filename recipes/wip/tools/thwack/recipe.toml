@@ -1,4 +1,4 @@
-#TODO port to Orbital
+#TODO not compiled or tested
 [source]
 git = "https://github.com/yykamei/thwack"
 [build]
