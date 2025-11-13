@@ -64,21 +64,21 @@ MOUNTED_TAG=$(MOUNT_DIR)~
 # Push compiled package into existing image
 # DO NOT RUN THIS WHILE QEMU ALIVE, THE DISK MIGHT CORRUPT IN DOING SO
 p.%: $(FSTOOLS_TAG) FORCE
+ifeq ($(PODMAN_BUILD),1)
+	$(PODMAN_RUN) make $@
+else
 	@rm -f $(MOUNTED_TAG)
 	@if [ ! -d "$(MOUNT_DIR)" ]; then \
 		$(MAKE) mount; \
 		touch $(MOUNTED_TAG); \
 	fi
-ifeq ($(PODMAN_BUILD),1)
-	$(PODMAN_RUN) make $@
-else
 	$(if $(findstring nonstop,$(REPO_NONSTOP)),export COOKBOOK_NONSTOP=true && ,) cd ./cookbook && \
 	./target/release/repo push $(foreach f,$(subst $(comma), ,$*),$(f)) "--sysroot=../$(MOUNT_DIR)"
-endif
 	@if [ -f $(MOUNTED_TAG) ]; then \
 		$(MAKE) unmount && rm -f $(MOUNTED_TAG); \
 	else echo "Not unmounting by ourself, don't forget to do it"; \
 	fi
+endif
 
 # Push compiled package with their package dependencies
 pp.%: $(FSTOOLS_TAG) FORCE
@@ -86,20 +86,20 @@ pp.%: $(FSTOOLS_TAG) FORCE
 
 # Push all recipes specified by the filesystem config
 push: $(FSTOOLS_TAG) FORCE
+ifeq ($(PODMAN_BUILD),1)
+	$(PODMAN_RUN) make $@
+else
 	@rm -f $(MOUNTED_TAG)
 	@if [ ! -d "$(MOUNT_DIR)" ]; then \
 		$(MAKE) mount; \
 		touch $(MOUNTED_TAG); \
 	fi
-ifeq ($(PODMAN_BUILD),1)
-	$(PODMAN_RUN) make $@
-else
 	cd ./cookbook && ./target/release/repo push --with-package-deps "--filesystem=../$(FILESYSTEM_CONFIG)" "--sysroot=../$(MOUNT_DIR)"
-endif
 	@if [ -f $(MOUNTED_TAG) ]; then \
 		$(MAKE) unmount && rm -f $(MOUNTED_TAG); \
 	else echo "Not unmounting by ourself, don't forget to do it"; \
 	fi
+endif
 
 # Invoke unfetch for one or more targets separated by comma
 u.%: $(FSTOOLS_TAG) FORCE
