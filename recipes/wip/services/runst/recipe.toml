@@ -1,9 +1,13 @@
-#TODO port to Orbital
+#TODO not compiled or tested
 [source]
 git = "https://github.com/orhun/runst"
 [build]
-template = "cargo"
+template = "custom"
 dependencies = [
     "glib",
     "pango",
 ]
+script = """
+DYNAMIC_INIT
+cookbook_cargo
+"""
