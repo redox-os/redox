@@ -654,7 +654,11 @@ fn handle_push(recipes: &Vec<CookRecipe>, config: &CliConfig) -> anyhow::Result<
                 "",
                 i == num_roots - 1,
                 &match metadata {
-                    Ok(m) => WalkTreeEntry::Built(&archive_path, m.len()),
+                    Ok(m) => {
+                        total_size += m.len();
+                        visited.insert(root.name.clone());
+                        WalkTreeEntry::Built(&archive_path, m.len())
+                    }
                     Err(_) => WalkTreeEntry::NotBuilt,
                 },
             )?;
@@ -664,9 +668,14 @@ fn handle_push(recipes: &Vec<CookRecipe>, config: &CliConfig) -> anyhow::Result<
     if config.cook.verbose {
         println!("");
         println!(
-            "Pushed {} of {} packages",
+            "Pushed {} of {} {}",
             format_size(total_size),
-            visited.len()
+            visited.len(),
+            if visited.len() == 1 {
+                "package"
+            } else {
+                "packages"
+            },
         );
     }
 
@@ -693,9 +702,14 @@ fn handle_tree(recipes: &Vec<CookRecipe>, _config: &CliConfig) -> anyhow::Result
 
     println!("");
     println!(
-        "Estimated image size: {} of {} packages",
+        "Estimated image size: {} of {} {}",
         format_size(total_size),
-        visited.len()
+        visited.len(),
+        if visited.len() == 1 {
+            "package"
+        } else {
+            "packages"
+        },
     );
 
     Ok(())
