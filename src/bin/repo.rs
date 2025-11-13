@@ -654,7 +654,11 @@ fn handle_push(recipes: &Vec<CookRecipe>, config: &CliConfig) -> anyhow::Result<
                 "",
                 i == num_roots - 1,
                 &match metadata {
-                    Ok(m) => WalkTreeEntry::Built(&archive_path, m.len()),
+                    Ok(m) => {
+                        total_size += m.len();
+                        visited.insert(root.name.clone());
+                        WalkTreeEntry::Built(&archive_path, m.len())
+                    }
                     Err(_) => WalkTreeEntry::NotBuilt,
                 },
             )?;
