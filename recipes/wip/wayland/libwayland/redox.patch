@@ -1,6 +1,6 @@
 diff -ruwN source-old/meson.build source/meson.build
 --- source-old/meson.build	2025-07-06 06:11:26.000000000 -0600
-+++ source/meson.build	2025-10-30 15:52:33.121727009 -0600
++++ source/meson.build	2025-11-12 15:20:45.527284903 -0700
 @@ -80,8 +80,6 @@
  	ffi_dep = dependency('libffi')
  
@@ -12,7 +12,7 @@ diff -ruwN source-old/meson.build source/meson.build
  
 diff -ruwN source-old/src/connection.c source/src/connection.c
 --- source-old/src/connection.c	2025-07-06 06:11:26.000000000 -0600
-+++ source/src/connection.c	2025-11-07 12:47:54.026013068 -0700
++++ source/src/connection.c	2025-11-12 15:20:45.527473808 -0700
 @@ -490,7 +490,7 @@
  
  		do {
@@ -35,7 +35,7 @@ diff -ruwN source-old/src/connection.c source/src/connection.c
  	clock_gettime(CLOCK_REALTIME, &tp);
 diff -ruwN source-old/src/event-loop.c source/src/event-loop.c
 --- source-old/src/event-loop.c	2025-07-06 06:11:26.000000000 -0600
-+++ source/src/event-loop.c	2025-10-30 15:52:33.122087045 -0600
++++ source/src/event-loop.c	2025-11-12 15:20:45.527668103 -0700
 @@ -35,8 +35,8 @@
  #include <sys/socket.h>
  #include <sys/un.h>
@@ -126,7 +126,7 @@ diff -ruwN source-old/src/event-loop.c source/src/event-loop.c
  	source->func = func;
 diff -ruwN source-old/src/meson.build source/src/meson.build
 --- source-old/src/meson.build	2025-07-06 06:11:26.000000000 -0600
-+++ source/src/meson.build	2025-10-30 15:52:33.122245753 -0600
++++ source/src/meson.build	2025-11-12 15:20:45.527835808 -0700
 @@ -81,8 +81,7 @@
  endif
  
@@ -137,27 +137,9 @@ diff -ruwN source-old/src/meson.build source/src/meson.build
  else
  	wayland_scanner_for_build = wayland_scanner
  endif
-diff -ruwN source-old/src/wayland-client.c source/src/wayland-client.c
---- source-old/src/wayland-client.c	2025-07-06 06:11:26.000000000 -0600
-+++ source/src/wayland-client.c	2025-10-30 15:52:33.122416784 -0600
-@@ -1997,14 +1997,6 @@
- 
- 	pfd[0].fd = display->fd;
- 	pfd[0].events = events;
--	do {
--		if (timeout) {
--			clock_gettime(CLOCK_MONOTONIC, &now);
--			timespec_sub_saturate(&result, &deadline, &now);
--			remaining_timeout = &result;
--		}
--		ret = ppoll(pfd, 1, remaining_timeout, NULL);
--	} while (ret == -1 && errno == EINTR);
- 
- 	return ret;
- }
 diff -ruwN source-old/src/wayland-os.c source/src/wayland-os.c
 --- source-old/src/wayland-os.c	2025-07-06 06:11:26.000000000 -0600
-+++ source/src/wayland-os.c	2025-11-07 12:49:06.505330114 -0700
++++ source/src/wayland-os.c	2025-11-12 15:20:45.528252861 -0700
 @@ -134,11 +134,13 @@
  {
  	int newfd;
@@ -183,7 +165,7 @@ diff -ruwN source-old/src/wayland-os.c source/src/wayland-os.c
  	if (errno != EINVAL)
 diff -ruwN source-old/src/wayland-server.c source/src/wayland-server.c
 --- source-old/src/wayland-server.c	2025-07-06 06:11:26.000000000 -0600
-+++ source/src/wayland-server.c	2025-10-30 15:52:33.122838226 -0600
++++ source/src/wayland-server.c	2025-11-12 15:20:45.528426727 -0700
 @@ -39,7 +39,7 @@
  #include <dlfcn.h>
  #include <sys/time.h>
