@@ -1,6 +1,28 @@
+diff -ruwN source-old/cursor/os-compatibility.c source/cursor/os-compatibility.c
+--- source-old/cursor/os-compatibility.c	2025-07-06 06:11:26.000000000 -0600
++++ source/cursor/os-compatibility.c	2025-11-13 13:00:31.354126754 -0700
+@@ -79,12 +79,18 @@
+ #ifdef HAVE_MKOSTEMP
+ 	fd = mkostemp(tmpname, O_CLOEXEC);
+ 	if (fd >= 0)
++		fprintf(stderr, "ignoring unlink of %s\n", tmpname);
++	/*TODO: keep node around after unlink
+ 		unlink(tmpname);
++	*/
+ #else
+ 	fd = mkstemp(tmpname);
+ 	if (fd >= 0) {
+ 		fd = set_cloexec_or_close(fd);
++		fprintf(stderr, "ignoring unlink of %s\n", tmpname);
++		/*TODO: keep node around after unlink
+ 		unlink(tmpname);
++		*/
+ 	}
+ #endif
+ 
 diff -ruwN source-old/meson.build source/meson.build
 --- source-old/meson.build	2025-07-06 06:11:26.000000000 -0600
-+++ source/meson.build	2025-11-12 15:20:45.527284903 -0700
++++ source/meson.build	2025-11-13 12:08:42.512612558 -0700
 @@ -80,8 +80,6 @@
  	ffi_dep = dependency('libffi')
  
@@ -12,7 +34,7 @@ diff -ruwN source-old/meson.build source/meson.build
  
 diff -ruwN source-old/src/connection.c source/src/connection.c
 --- source-old/src/connection.c	2025-07-06 06:11:26.000000000 -0600
-+++ source/src/connection.c	2025-11-12 15:20:45.527473808 -0700
++++ source/src/connection.c	2025-11-13 12:08:42.512796844 -0700
 @@ -490,7 +490,7 @@
  
  		do {
@@ -35,7 +57,7 @@ diff -ruwN source-old/src/connection.c source/src/connection.c
  	clock_gettime(CLOCK_REALTIME, &tp);
 diff -ruwN source-old/src/event-loop.c source/src/event-loop.c
 --- source-old/src/event-loop.c	2025-07-06 06:11:26.000000000 -0600
-+++ source/src/event-loop.c	2025-11-12 15:20:45.527668103 -0700
++++ source/src/event-loop.c	2025-11-13 12:08:42.513005175 -0700
 @@ -35,8 +35,8 @@
  #include <sys/socket.h>
  #include <sys/un.h>
@@ -126,7 +148,7 @@ diff -ruwN source-old/src/event-loop.c source/src/event-loop.c
  	source->func = func;
 diff -ruwN source-old/src/meson.build source/src/meson.build
 --- source-old/src/meson.build	2025-07-06 06:11:26.000000000 -0600
-+++ source/src/meson.build	2025-11-12 15:20:45.527835808 -0700
++++ source/src/meson.build	2025-11-13 12:08:42.513181686 -0700
 @@ -81,8 +81,7 @@
  endif
  
@@ -139,7 +161,7 @@ diff -ruwN source-old/src/meson.build source/src/meson.build
  endif
 diff -ruwN source-old/src/wayland-os.c source/src/wayland-os.c
 --- source-old/src/wayland-os.c	2025-07-06 06:11:26.000000000 -0600
-+++ source/src/wayland-os.c	2025-11-12 15:20:45.528252861 -0700
++++ source/src/wayland-os.c	2025-11-13 12:08:42.513310047 -0700
 @@ -134,11 +134,13 @@
  {
  	int newfd;
@@ -165,7 +187,7 @@ diff -ruwN source-old/src/wayland-os.c source/src/wayland-os.c
  	if (errno != EINVAL)
 diff -ruwN source-old/src/wayland-server.c source/src/wayland-server.c
 --- source-old/src/wayland-server.c	2025-07-06 06:11:26.000000000 -0600
-+++ source/src/wayland-server.c	2025-11-12 15:20:45.528426727 -0700
++++ source/src/wayland-server.c	2025-11-13 12:08:42.513500955 -0700
 @@ -39,7 +39,7 @@
  #include <dlfcn.h>
  #include <sys/time.h>
