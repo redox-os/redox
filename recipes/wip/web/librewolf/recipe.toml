@@ -1,8 +1,8 @@
-#TODO missing script for mach: https://firefox-source-docs.mozilla.org/setup/linux_build.html
+#TODO missing script for mach: https://codeberg.org/librewolf/source#librewolf-build-instructions
 # dependencies: https://packages.gentoo.org/packages/www-client/firefox/dependencies
 # feature flags: https://wiki.gentoo.org/wiki/Firefox#USE_flags
 [source]
-tar = "https://ftp.mozilla.org/pub/firefox/releases/115.13.0esr/source/firefox-115.13.0esr.source.tar.xz"
+tar = "https://gitlab.com/api/v4/projects/32320088/packages/generic/librewolf-source/144.0.2-1/librewolf-144.0.2-1.source.tar.gz"
 [build]
 template = "custom"
 dependencies = [
