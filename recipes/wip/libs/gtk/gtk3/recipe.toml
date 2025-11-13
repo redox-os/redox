@@ -23,8 +23,10 @@ dependencies = [
     "libjpeg",
     "libpng",
     "libpthread-stubs",
+    "libwayland",
     "libx11",
     "libxau",
+    "libxkbcommon",
     "libxcb",
     "libxext",
     "libxfixes",
@@ -37,6 +39,7 @@ dependencies = [
     "pcre2",
     "pixman",
     "shared-mime-info",
+    "wayland-protocols",
     "x11proto",
     "zlib",
 ]
@@ -45,6 +48,5 @@ script = """
 DYNAMIC_INIT
 CFLAGS="${CFLAGS} -DM_SQRT2=1.41421356237309504880"
 cookbook_meson \
-    -Dintrospection=false \
-    -Dwayland_backend=false
+    -Dintrospection=false
 """
