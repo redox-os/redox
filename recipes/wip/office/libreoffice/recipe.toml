@@ -1,16 +1,15 @@
-#TODO missing dependencies, see https://wiki.documentfoundation.org/Development/BuildingOnLinux#Build_dependencies
-#TODO port to orbital
+#TODO determine minimum dependencies
+# dependencies reference: https://wiki.documentfoundation.org/Development/BuildingOnLinux#Build_dependencies
 [source]
-tar = "https://download.documentfoundation.org/libreoffice/src/7.6.2/libreoffice-7.6.2.1.tar.xz?idx=1"
+tar = "https://download.documentfoundation.org/libreoffice/src/25.8.2/libreoffice-25.8.2.2.tar.xz"
 [build]
 template = "configure"
-dependencies = [
-    "kerberos5",
-    "python37",
-    "qt5-base",
-    "gtk3",
-    "nss",
-    "fontconfig",
-    "gstreamer",
-    "libcups",
-]
+#dependencies = [
+#    "kerberos5",
+#    "qt5-base",
+#    "gtk3",
+#    "nss",
+#    "fontconfig",
+#    "gstreamer",
+#    "libcups",
+#]
