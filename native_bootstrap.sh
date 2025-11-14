@@ -619,6 +619,7 @@ fedora()
     protobuf-compiler \
     zstd \
     lzip \
+    help2man \
     gdb ; do rpm -q $pkg > /dev/null || echo $pkg; done)
     # If the list of packages is not empty, install missing
     COUNT=$(echo $PKGS | wc -w)
