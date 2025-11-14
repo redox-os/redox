@@ -1006,35 +1006,44 @@ fn run_tui_cook(
                         cooker_status_tx
                             .send(StatusUpdate::Cooked(recipe))
                             .unwrap_or_default();
+                        if cooker_config.cook.nonstop
+                            && cooker_prompting.load(Ordering::SeqCst) == 4
+                        {
+                            break 'done;
+                        }
                         break;
                     }
                     Err(e) => {
                         cooker_status_tx
                             .send(StatusUpdate::FailCook(recipe.clone(), e.to_string()))
                             .unwrap_or_default();
-                        if !cooker_config.cook.nonstop {
-                            while cooker_prompting.load(Ordering::SeqCst) != 0 {
-                                thread::sleep(Duration::from_millis(101)); // wait other prompt
+                        if cooker_config.cook.nonstop {
+                            if cooker_prompting.load(Ordering::SeqCst) == 4 {
+                                break 'done;
                             }
-                            cooker_prompting.swap(1, Ordering::SeqCst);
-                            'wait: loop {
-                                match cooker_prompting.load(Ordering::SeqCst) {
-                                    0 => break 'again,
-                                    1 => thread::sleep(Duration::from_millis(101)),
-                                    2 => {
-                                        cooker_prompting.swap(0, Ordering::SeqCst);
-                                        break 'wait;
-                                    } // retry
-                                    3 => {
-                                        cooker_prompting.swap(0, Ordering::SeqCst);
-                                        break 'again;
-                                    } // skip
-                                    4 => {
-                                        cooker_prompting.swap(0, Ordering::SeqCst);
-                                        break 'done;
-                                    } // done
-                                    _ => unreachable!(),
-                                }
+                            break;
+                        }
+                        while cooker_prompting.load(Ordering::SeqCst) != 0 {
+                            thread::sleep(Duration::from_millis(101)); // wait other prompt
+                        }
+                        cooker_prompting.swap(1, Ordering::SeqCst);
+                        'wait: loop {
+                            match cooker_prompting.load(Ordering::SeqCst) {
+                                0 => break 'again,
+                                1 => thread::sleep(Duration::from_millis(101)),
+                                2 => {
+                                    cooker_prompting.swap(0, Ordering::SeqCst);
+                                    break 'wait;
+                                } // retry
+                                3 => {
+                                    cooker_prompting.swap(0, Ordering::SeqCst);
+                                    break 'again;
+                                } // skip
+                                4 => {
+                                    cooker_prompting.swap(0, Ordering::SeqCst);
+                                    break 'done;
+                                } // done
+                                _ => unreachable!(),
                             }
                         }
                     }
@@ -1102,35 +1111,44 @@ fn run_tui_cook(
                             // Cooker thread died
                             break 'done;
                         }
+                        if fetcher_config.cook.nonstop
+                            && fetcher_prompting.load(Ordering::SeqCst) == 4
+                        {
+                            break 'done;
+                        }
                         break;
                     }
                     Err(e) => {
                         fetcher_status_tx
                             .send(StatusUpdate::FailFetch(recipe.clone(), e.to_string()))
                             .unwrap_or_default();
-                        if !fetcher_config.cook.nonstop {
-                            while fetcher_prompting.load(Ordering::SeqCst) != 0 {
-                                thread::sleep(Duration::from_millis(101)); // wait other prompt
+                        if fetcher_config.cook.nonstop {
+                            if fetcher_prompting.load(Ordering::SeqCst) == 4 {
+                                break 'done;
                             }
-                            fetcher_prompting.swap(1, Ordering::SeqCst);
-                            'wait: loop {
-                                match fetcher_prompting.load(Ordering::SeqCst) {
-                                    0 => break 'again,
-                                    1 => thread::sleep(Duration::from_millis(101)),
-                                    2 => {
-                                        fetcher_prompting.swap(0, Ordering::SeqCst);
-                                        break 'wait;
-                                    } // retry
-                                    3 => {
-                                        fetcher_prompting.swap(0, Ordering::SeqCst);
-                                        break 'again;
-                                    } // skip
-                                    4 => {
-                                        fetcher_prompting.swap(0, Ordering::SeqCst);
-                                        break 'done;
-                                    } // done
-                                    _ => unreachable!(),
-                                }
+                            break;
+                        }
+                        while fetcher_prompting.load(Ordering::SeqCst) != 0 {
+                            thread::sleep(Duration::from_millis(101)); // wait other prompt
+                        }
+                        fetcher_prompting.swap(1, Ordering::SeqCst);
+                        'wait: loop {
+                            match fetcher_prompting.load(Ordering::SeqCst) {
+                                0 => break 'again,
+                                1 => thread::sleep(Duration::from_millis(101)),
+                                2 => {
+                                    fetcher_prompting.swap(0, Ordering::SeqCst);
+                                    break 'wait;
+                                } // retry
+                                3 => {
+                                    fetcher_prompting.swap(0, Ordering::SeqCst);
+                                    break 'again;
+                                } // skip
+                                4 => {
+                                    fetcher_prompting.swap(0, Ordering::SeqCst);
+                                    break 'done;
+                                } // done
+                                _ => unreachable!(),
                             }
                         }
                     }
@@ -1361,8 +1379,11 @@ fn run_tui_cook(
                 log_paragraph,
                 chunks[if app.fetch_complete { 1 } else { 2 }],
             );
-            if let Some(prompt) = &app.prompt {
-                draw_prompt(f, prompt);
+            if let Some(prompt) = &mut app.prompt {
+                if config.cook.nonstop && prompt.selected == PromptOption::Retry {
+                    prompt.selected = PromptOption::Skip;
+                }
+                draw_prompt(f, prompt, config.cook.nonstop);
             }
             if enable_auto_scroll {
                 app.auto_scroll = true;
@@ -1375,6 +1396,7 @@ fn run_tui_cook(
                 if let Some((app, res)) = handle_prompt_input(&event, &mut app) {
                     prompting.swap(res as u32, Ordering::SeqCst);
                     if res == PromptOption::Exit {
+                        // TODO: This can be a different log with what prompted on nonstop mode
                         let (name, log, line) = app.get_active_log();
                         if let Some(name) = name
                             && let Some(log) = log
@@ -1405,6 +1427,10 @@ fn run_tui_cook(
 
     drop(mstdout);
     let _ = stdout().flush();
+
+    if config.cook.nonstop && app.dump_logs_on_exit.is_some() {
+        kill_everything();
+    }
 
     fetcher_handle.join().unwrap();
     cooker_handle.join().unwrap();
@@ -1437,12 +1463,7 @@ fn handle_main_event(app: &mut TuiApp, event: &Event) {
             }
             Key::Char('c') => {
                 // as compilers still running, we use this way to stop it
-                let pid = std::process::id();
-                Command::new("bash")
-                    .arg("-c")
-                    .arg(KILL_ALL_PID.replace("$PID", &pid.to_string()))
-                    .spawn()
-                    .expect("unable to spawn kill");
+                kill_everything();
             }
             Key::Up => {
                 app.auto_scroll = false;
@@ -1513,6 +1534,15 @@ fn handle_main_event(app: &mut TuiApp, event: &Event) {
     }
 }
 
+fn kill_everything() {
+    let pid = std::process::id();
+    Command::new("bash")
+        .arg("-c")
+        .arg(KILL_ALL_PID.replace("$PID", &pid.to_string()))
+        .spawn()
+        .expect("unable to spawn kill");
+}
+
 fn handle_prompt_input<'a>(
     event: &Event,
     app: &'a mut TuiApp,
@@ -1538,8 +1568,12 @@ fn handle_prompt_input<'a>(
     None
 }
 
-fn draw_prompt(f: &mut ratatui::Frame, prompt: &FailurePrompt) {
-    let title = format!(" FAILURE in {} ", prompt.recipe.name);
+fn draw_prompt(f: &mut ratatui::Frame, prompt: &FailurePrompt, is_nonstop: bool) {
+    let title = format!(
+        " FAILURE in {} {}",
+        prompt.recipe.name,
+        if is_nonstop { "(skipped) " } else { "" }
+    );
     let mut error_text = prompt.error.clone();
     if error_text.len() > 200 {
         error_text = error_text[0..100].to_string()
@@ -1566,16 +1600,21 @@ fn draw_prompt(f: &mut ratatui::Frame, prompt: &FailurePrompt) {
         Style::default()
     };
 
+    let mut buttons = vec![
+        Span::styled(" [Skip] ", skip_style),
+        Span::raw("   "),
+        Span::styled(" [Exit] ", exit_style),
+    ];
+
+    if !is_nonstop {
+        buttons.push(Span::raw("   "));
+        buttons.push(Span::styled(" [Retry] ", retry_style));
+    }
+
     let text = vec![
         Line::from(error_text).style(Style::default().fg(Color::Yellow)),
         Line::from(""),
-        Line::from(vec![
-            Span::styled(" [Skip] ", skip_style),
-            Span::raw("   "),
-            Span::styled(" [Exit] ", exit_style),
-            Span::raw("   "),
-            Span::styled(" [Retry] ", retry_style),
-        ]),
+        Line::from(buttons),
     ];
 
     let block = Block::default()
