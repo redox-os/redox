@@ -2,7 +2,7 @@
 
 This document tracks the current hardware compatibility of Redox.
 
-- [Why hardware reports are needed](#why-hardware-reports-are-needed)
+- [Why are hardware reports needed?](#why-are-hardware-reports-needed)
 - [What if my computer is customized?](#what-if-my-computer-is-customized)
 - [Status](#status)
 - [General](#general)
@@ -13,7 +13,7 @@ This document tracks the current hardware compatibility of Redox.
 - [Booting](#booting)
 - [Broken](#broken)
 
-## Why hardware reports are needed
+## Why are hardware reports needed?
 
 Each computer model has different hardware interfaces, firmware implementations, and devices, which can cause the following problems:
 
