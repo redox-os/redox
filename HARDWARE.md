@@ -29,9 +29,9 @@ You can use the "Custom" word on the "Vendor" and "Model" categories, we also re
 
 ## Status
 
-- **Recommended** - The system start with all features working.
-- **Booting** - The system boots with some issues.
-- **Broken** - The system can't boot.
+- **Recommended:** The system boots with all features working.
+- **Booting:** The system boots with some issues.
+- **Broken:** The system can't boot.
 
 ## General
 
@@ -67,7 +67,7 @@ assert!(row1 < row2); // row1 comes before row2, as "G" comes before "L"
 
 ## Recommended
 
-| **Vendor** | **Model** | **Redox Version** | **Image Date (ISO format)** | **Variant** | **CPU Architecture** | **Motherboard Firmware** | **Report** |
+| **Vendor** | **Model** | **Redox Version** | **Image Date ([ISO format](https://en.wikipedia.org/wiki/ISO_8601))** | **Variant** | **CPU Architecture** | **Motherboard Firmware** | **Report** |
 |------------|-----------|-------------------|----------------|-------------|----------------------|--------------------------|------------|
 | Lenovo | IdeaPad Y510P | 0.8.0 | 2022-11-11 | desktop | x86-64 | BIOS, UEFI | Boots to Orbital |
 | System76 | Galago Pro (galp5) | 0.8.0 | 2022-11-11 | desktop | x86-64 | UEFI | Boots to Orbital |
@@ -75,7 +75,7 @@ assert!(row1 < row2); // row1 comes before row2, as "G" comes before "L"
 
 ## Booting
 
-| **Vendor** | **Model** | **Redox Version** | **Image Date (ISO format)** | **Variant** | **CPU Architecture** | **Motherboard Firmware** | **Report** |
+| **Vendor** | **Model** | **Redox Version** | **Image Date ([ISO format](https://en.wikipedia.org/wiki/ISO_8601))** | **Variant** | **CPU Architecture** | **Motherboard Firmware** | **Report** |
 |------------|-----------|-------------------|----------------|-------------|----------------------|--------------------------|------------|
 | ASUS | Eee PC 900 | 0.8.0 | 2022-11-11 | desktop | i686 | BIOS | Boots to Orbital, No ethernet driver, Correct video mode not offered (firmware issue) |
 | ASUS | PRIME B350M-E (custom) | 0.9.0 | 2024-09-20 | desktop | x86-64 | UEFI | Partial support for the PS/2 keyboard, PS/2 mouse is broken |
@@ -89,14 +89,14 @@ assert!(row1 < row2); // row1 comes before row2, as "G" comes before "L"
 | Lenovo | ThinkPad Yoga 260 Laptop - Type 20FE | 0.9.0 | 2024-09-07 | demo | x86-64 | UEFI | Boots to Orbital, No audio |
 | Lenovo | Yoga S730-13IWL | 0.9.0 | 2024-11-09 | desktop | x86-64 | UEFI | Boots to Orbital, No trackpad or USB mouse input support |
 | Raspberry Pi | 3 Model B+ | 0.8.0 | Unknown | server | ARM64 | U-Boot | Boots to UART serial console (pl011) |
-| Samsung | Series 3 (NP350V5C) | 0.9.0 | 2025-08-04 | desktop | x86-64 | UEFI | Boots to Orbital, touchpad works, usb does not work, can connect to the Internet through LAN. Wrong maximum display resolution 1024x768 |
+| Samsung | Series 3 (NP350V5C) | 0.9.0 | 2025-08-04 | desktop | x86-64 | UEFI | Boots to Orbital, touchpad works, USB does not work, can connect to the Internet through LAN. Wrong maximum display resolution 1024x768 |
 | System76 | Oryx Pro (oryp10) | 0.8.0 | 2022-11-11 | desktop | x86-64 | UEFI | Boots to Orbital, No touchpad support, though it should be working |
 | System76 | Pangolin (pang12) | 0.8.0 | 2022-11-11 | desktop | x86-64 | UEFI | Boots to Orbital, No touchpad support, requires I2C HID |
-| Toshiba | Satellite L500 | 0.8.0 | 2022-11-11 | desktop | x86-64 | BIOS | Boots to Orbital, No ethernet driver, Correct video mode not offered (firmware issue) |
+| Toshiba | Satellite L500 | 0.8.0 | 2022-11-11 | desktop | x86-64 | BIOS | Boots to Orbital, No Ethernet driver, Correct video mode not offered (firmware issue) |
 
 ## Broken
 
-| **Vendor** | **Model** | **Redox Version** | **Image Date (ISO format)** | **Variant** | **CPU Architecture** | **Motherboard Firmware** | **Report** |
+| **Vendor** | **Model** | **Redox Version** | **Image Date ([ISO format](https://en.wikipedia.org/wiki/ISO_8601))** | **Variant** | **CPU Architecture** | **Motherboard Firmware** | **Report** |
 |------------|-----------|-------------------|----------------|-------------|----------------------|--------------------------|------------|
 | ASUS | PN41 | 0.8.0 | 2024-05-30 | server | x86-64 | Unknown | Aborts after panic in xhcid |
 | BEELINK | U59 | 0.8.0 | 2024-05-30 | server | x86-64 | Unknown | Aborts after panic in xhcid |
