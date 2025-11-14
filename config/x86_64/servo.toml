@@ -1,0 +1,54 @@
+# Default build system configuration
+
+include = ["../x11.toml"]
+
+# Override the default settings here
+
+# General settings
+[general]
+# Filesystem size in MiB
+filesystem_size = 15000
+
+# Package settings
+[packages]
+# example = {}
+servo = {}
+libxcursor = {}
+
+[[files]]
+path = "/usr/bin/orbital-x11"
+data = """
+#!/usr/bin/env bash
+
+set -ex
+
+export DISPLAY=:0
+echo "Starting X server on display ${DISPLAY}..."
+X "${DISPLAY}" -verbose 6 &
+X_PID=$!
+
+# Wait for X to be ready
+sleep 3
+
+# Check if X is running
+if ! kill -0 $X_PID 2>/dev/null; then
+    echo "X server failed to start!"
+    exit 1
+fi
+
+echo "Starting window manager..."
+twm &
+
+echo "Starting xterm..."
+xterm &
+#also, half of debug options in debug help do not exist any more.
+
+# Try to force X11 backend for Servo
+echo "Starting servo with X11 backend..."
+export WINIT_UNIX_BACKEND=x11
+export LD_DEBUG=all
+export RUST_LOG=trace
+export RUST_BACKTRACE=full
+export WEBRENDER_DEBUG=1
+DISPLAY=:0 /usr/servo/servo --debug disable-share-style-cache,dump-stacking-context-tree,dump-flow-tree,dump-rule-tree,dump-style-tree,gc-profile,profile-script-events,relayout-event,trace-layout,wr-stats &
+"""
