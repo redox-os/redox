@@ -1006,6 +1006,11 @@ fn run_tui_cook(
                         cooker_status_tx
                             .send(StatusUpdate::Cooked(recipe))
                             .unwrap_or_default();
+                        if cooker_config.cook.nonstop
+                            && cooker_prompting.load(Ordering::SeqCst) == 4
+                        {
+                            break 'done;
+                        }
                         break;
                     }
                     Err(e) => {
@@ -1104,6 +1109,11 @@ fn run_tui_cook(
                             .unwrap();
                         if work_tx.send((recipe.clone(), source_dir)).is_err() {
                             // Cooker thread died
+                            break 'done;
+                        }
+                        if fetcher_config.cook.nonstop
+                            && fetcher_prompting.load(Ordering::SeqCst) == 4
+                        {
                             break 'done;
                         }
                         break;
@@ -1386,6 +1396,7 @@ fn run_tui_cook(
                 if let Some((app, res)) = handle_prompt_input(&event, &mut app) {
                     prompting.swap(res as u32, Ordering::SeqCst);
                     if res == PromptOption::Exit {
+                        // TODO: This can be a different log with what prompted on nonstop mode
                         let (name, log, line) = app.get_active_log();
                         if let Some(name) = name
                             && let Some(log) = log
@@ -1393,9 +1404,8 @@ fn run_tui_cook(
                             app.dump_logs_on_exit = Some((name.to_owned(), join_logs(log, line)));
                         }
                         running.store(false, Ordering::SeqCst);
-                    } else {
-                        app.prompt = None;
                     }
+                    app.prompt = None;
                 } else {
                     handle_main_event(&mut app, &event);
                 }
@@ -1418,7 +1428,7 @@ fn run_tui_cook(
     drop(mstdout);
     let _ = stdout().flush();
 
-    if config.cook.nonstop && app.prompt.is_some_and(|f| f.selected == PromptOption::Exit) {
+    if config.cook.nonstop && app.dump_logs_on_exit.is_some() {
         kill_everything();
     }
 
