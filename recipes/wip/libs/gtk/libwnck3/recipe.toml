@@ -1,6 +1,6 @@
 [source]
-tar = "https://download.gnome.org/sources/libwnck/3.36/libwnck-3.36.0.tar.xz"
-blake3 = "5a7913968932c38bcb04dbb6410b1fc00dc653a600ab7a4899ee75bd5581323d"
+tar = "https://download.gnome.org/sources/libwnck/43/libwnck-43.3.tar.xz"
+blake3 = "711e508f062cc90c660b56f21c5fd237db156ea51fe364fb5e9e766556c2de42"
 
 [build]
 dependencies = [
