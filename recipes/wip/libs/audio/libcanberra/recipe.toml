@@ -1,5 +1,20 @@
-#TODO not compiled or tested
+#TODO no audio backend supported
 [source]
 tar = "http://0pointer.de/lennart/projects/libcanberra/libcanberra-0.30.tar.xz"
+blake3 = "ea02f4b5a00bfffce1d29ce73e1cf5351027208cbeb58bf9954e84ad120e6daa"
+script = """
+DYNAMIC_INIT
+autotools_recursive_regenerate
+"""
+
 [build]
-template = "configure"
+dependencies = [
+    "gtk3",
+    "libtool",
+    "libvorbis",
+]
+template = "custom"
+script = """
+DYNAMIC_INIT
+cookbook_configure
+"""
