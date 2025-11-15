@@ -11,6 +11,8 @@ dependencies = [
     "glib",
     "iso-codes",
     "libx11",
+    "libxi",
+    "libxkbfile",
     "libxml2",
 ]
 template = "custom"
