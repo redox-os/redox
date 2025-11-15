@@ -3,12 +3,15 @@
 git = "https://gitlab.redox-os.org/redox-os/libtool"
 branch = "v2.5.4-redox"
 shallow_clone = true
+
+[build]
+template = "custom"
 script = """
+rsync -av --delete "${COOKBOOK_SOURCE}/" ./
 ./bootstrap \
     --skip-po \
     --force \
     --gnulib-srcdir=./gnulib
+COOKBOOK_CONFIGURE="./configure"
+cookbook_configure
 """
-
-[build]
-template = "configure"
