@@ -1,0 +1,116 @@
+diff -ruwN source-old/bindings/CMakeLists.txt source/bindings/CMakeLists.txt
+--- source-old/bindings/CMakeLists.txt	2025-06-15 04:50:44.000000000 -0600
++++ source/bindings/CMakeLists.txt	2025-11-15 08:33:35.889512652 -0700
+@@ -1 +1 @@
+-add_subdirectory (vala)
++#TODO: valac: add_subdirectory (vala)
+diff -ruwN source-old/CMakeLists.txt source/CMakeLists.txt
+--- source-old/CMakeLists.txt	2025-06-15 04:50:44.000000000 -0600
++++ source/CMakeLists.txt	2025-11-15 08:33:53.996379724 -0700
+@@ -38,7 +38,7 @@
+ 
+ add_subdirectory (src)
+ add_subdirectory (bindings)
+-add_subdirectory (doc)
++#TODO: gi-docgen: add_subdirectory (doc)
+ 
+ if (ENABLE_TESTS)
+     include (CTest)
+diff -ruwN source-old/src/CMakeLists.txt source/src/CMakeLists.txt
+--- source-old/src/CMakeLists.txt	2025-06-15 04:50:44.000000000 -0600
++++ source/src/CMakeLists.txt	2025-11-15 08:32:53.644475333 -0700
+@@ -114,47 +114,49 @@
+ target_link_options ("ayatana-appindicator-glib" PRIVATE "LINKER:--version-script=${CMAKE_CURRENT_SOURCE_DIR}/ayatana-appindicator.symbols")
+ install (TARGETS "ayatana-appindicator-glib" LIBRARY DESTINATION "${CMAKE_INSTALL_FULL_LIBDIR}")
+ 
+-# AyatanaAppIndicatorGlib-2.0.gir
+-
+-find_package (GObjectIntrospection REQUIRED)
+-
+-add_custom_command (
+-    OUTPUT "${CMAKE_CURRENT_BINARY_DIR}/AyatanaAppIndicatorGlib-2.0.gir"
+-    DEPENDS "ayatana-appindicator-glib"
+-    WORKING_DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR}
+-    COMMAND
+-    ${INTROSPECTION_SCANNER}
+-    ayatana-appindicator.c ayatana-appindicator.h
+-    --add-include-path=${CMAKE_CURRENT_BINARY_DIR}
+-    --c-include=libayatana-appindicator-glib/ayatana-appindicator.h
+-    --symbol-prefix=app
+-    --identifier-prefix=App
+-    --namespace=AyatanaAppIndicatorGlib
+-    --nsversion=2.0
+-    --quiet
+-    --warn-all
+-    --include=Gio-2.0
+-    --include=GObject-2.0
+-    --library-path=${CMAKE_CURRENT_BINARY_DIR}
+-    --library="ayatana-appindicator-glib"
+-    --output "${CMAKE_CURRENT_BINARY_DIR}/AyatanaAppIndicatorGlib-2.0.gir"
+-)
+-
+-install (FILES "${CMAKE_CURRENT_BINARY_DIR}/AyatanaAppIndicatorGlib-2.0.gir" DESTINATION "${CMAKE_INSTALL_FULL_DATADIR}/gir-1.0")
+-
+-# AyatanaAppIndicatorGlib-2.0.typelib
+-
+-add_custom_command (
+-    OUTPUT "${CMAKE_CURRENT_BINARY_DIR}/AyatanaAppIndicatorGlib-2.0.typelib"
+-    DEPENDS "${CMAKE_CURRENT_BINARY_DIR}/AyatanaAppIndicatorGlib-2.0.gir"
+-    WORKING_DIRECTORY ${CMAKE_CURRENT_BINARY_DIR}
+-    COMMAND
+-    ${INTROSPECTION_COMPILER}
+-    --includedir=${CMAKE_CURRENT_BINARY_DIR}
+-    ${CMAKE_CURRENT_BINARY_DIR}/AyatanaAppIndicatorGlib-2.0.gir
+-    -o "${CMAKE_CURRENT_BINARY_DIR}/AyatanaAppIndicatorGlib-2.0.typelib"
+-)
+-
+-install (FILES "${CMAKE_CURRENT_BINARY_DIR}/AyatanaAppIndicatorGlib-2.0.typelib" DESTINATION "${CMAKE_INSTALL_FULL_LIBDIR}/girepository-1.0")
+-
+-add_custom_target ("src" ALL DEPENDS "${CMAKE_CURRENT_BINARY_DIR}/AyatanaAppIndicatorGlib-2.0.typelib")
++#TODO: gobject-introspection
++## AyatanaAppIndicatorGlib-2.0.gir
++#
++#find_package (GObjectIntrospection REQUIRED)
++#
++#add_custom_command (
++#    OUTPUT "${CMAKE_CURRENT_BINARY_DIR}/AyatanaAppIndicatorGlib-2.0.gir"
++#    DEPENDS "ayatana-appindicator-glib"
++#    WORKING_DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR}
++#    COMMAND
++#    ${INTROSPECTION_SCANNER}
++#    ayatana-appindicator.c ayatana-appindicator.h
++#    --add-include-path=${CMAKE_CURRENT_BINARY_DIR}
++#    --c-include=libayatana-appindicator-glib/ayatana-appindicator.h
++#    --symbol-prefix=app
++#    --identifier-prefix=App
++#    --namespace=AyatanaAppIndicatorGlib
++#    --nsversion=2.0
++#    --quiet
++#    --warn-all
++#    --include=Gio-2.0
++#    --include=GObject-2.0
++#    --library-path=${CMAKE_CURRENT_BINARY_DIR}
++#    --library="ayatana-appindicator-glib"
++#    --output "${CMAKE_CURRENT_BINARY_DIR}/AyatanaAppIndicatorGlib-2.0.gir"
++#)
++#
++#install (FILES "${CMAKE_CURRENT_BINARY_DIR}/AyatanaAppIndicatorGlib-2.0.gir" DESTINATION "${CMAKE_INSTALL_FULL_DATADIR}/gir-1.0")
++#
++## AyatanaAppIndicatorGlib-2.0.typelib
++#
++#add_custom_command (
++#    OUTPUT "${CMAKE_CURRENT_BINARY_DIR}/AyatanaAppIndicatorGlib-2.0.typelib"
++#    DEPENDS "${CMAKE_CURRENT_BINARY_DIR}/AyatanaAppIndicatorGlib-2.0.gir"
++#    WORKING_DIRECTORY ${CMAKE_CURRENT_BINARY_DIR}
++#    COMMAND
++#    ${INTROSPECTION_COMPILER}
++#    --includedir=${CMAKE_CURRENT_BINARY_DIR}
++#    ${CMAKE_CURRENT_BINARY_DIR}/AyatanaAppIndicatorGlib-2.0.gir
++#    -o "${CMAKE_CURRENT_BINARY_DIR}/AyatanaAppIndicatorGlib-2.0.typelib"
++#)
++#
++#install (FILES "${CMAKE_CURRENT_BINARY_DIR}/AyatanaAppIndicatorGlib-2.0.typelib" DESTINATION "${CMAKE_INSTALL_FULL_LIBDIR}/girepository-1.0")
++#
++#add_custom_target ("src" ALL DEPENDS "${CMAKE_CURRENT_BINARY_DIR}/AyatanaAppIndicatorGlib-2.0.typelib")
++#
+\ No newline at end of file
