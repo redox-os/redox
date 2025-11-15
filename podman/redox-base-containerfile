@@ -35,6 +35,7 @@ RUN apt-get update \
         intltool \
         itstool \
         libaudiofile-dev \
+        libdbus-glib-1-dev-bin \
         libexpat-dev \
         libfontconfig1-dev \
         libfuse3-dev \
