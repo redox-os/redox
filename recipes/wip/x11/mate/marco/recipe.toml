@@ -20,5 +20,6 @@ template = "meson"
 
 [package]
 dependencies = [
+    "mate-settings-daemon",
     "zenity",
 ]
