@@ -1,0 +1,17 @@
+[source]
+tar = "https://github.com/mate-desktop/mate-control-center/archive/refs/tags/v1.28.1.tar.gz"
+blake3 = "78ef68e12d0f5d68f62953999e55061a0ef911eceecd2dc66b9242f6b84c143b"
+patches = ["redox.patch"]
+
+[build]
+dependencies = [
+    "libmate-desktop-2",
+    "libmate-menu",
+    "libmatekbd",
+    "libxscrnsaver",
+    "marco",
+]
+template = "meson"
+mesonflags = [
+    "-Dlibappindicator=no",
+]
