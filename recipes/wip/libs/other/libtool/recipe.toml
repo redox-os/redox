@@ -7,6 +7,7 @@ shallow_clone = true
 [build]
 template = "custom"
 script = """
+DYNAMIC_INIT
 rsync -av --delete "${COOKBOOK_SOURCE}/" ./
 ./bootstrap \
     --skip-po \
