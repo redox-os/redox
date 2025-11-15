@@ -29,8 +29,10 @@ RUN apt-get update \
         git-lfs \
         gperf \
         gtk-doc-tools \
+        gtk-update-icon-cache \
         help2man \
         intltool \
+        itstool \
         libaudiofile-dev \
         libexpat-dev \
         libfontconfig1-dev \
@@ -46,6 +48,7 @@ RUN apt-get update \
         librsvg2-common \
         libsdl1.2-dev \
         libsdl2-ttf-dev \
+        libxml2-utils \
         llvm \
         lua5.4 \
         luajit \
