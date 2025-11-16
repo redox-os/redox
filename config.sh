@@ -15,8 +15,6 @@ ARCH="${TARGET%%-*}"
 HOST="$TARGET"
 if [ x"${HOST}" == x"riscv64gc-unknown-redox" ] ; then
 	HOST="riscv64-unknown-redox"
-elif [ x"${HOST}" == x"i586-unknown-redox" ] ; then
-	HOST="i686-unknown-redox"
 fi
 
 # Cookbook requires correct CWD to work
