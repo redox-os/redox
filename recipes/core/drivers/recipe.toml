@@ -26,7 +26,7 @@ BINS=(
 # Add additional drivers to the list to build, that are not in drivers-initfs
 # depending on the target architecture
 case "${TARGET}" in
-    i686-unknown-redox | x86_64-unknown-redox)
+    i586-unknown-redox | i686-unknown-redox | x86_64-unknown-redox)
         BINS+=(ac97d bgad sb16d vboxd)
         ;;
     *)
