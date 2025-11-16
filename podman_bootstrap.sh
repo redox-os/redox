@@ -128,7 +128,6 @@ osx_homebrew()
     install_brew_pkg "git"
     install_brew_pkg "make"
     install_brew_pkg "curl"
-    install_brew_pkg "slirp4netns"
     install_brew_pkg "podman"
     install_brew_pkg "gdb"
 
@@ -502,6 +501,10 @@ boot()
     git clone https://gitlab.redox-os.org/redox-os/redox.git --origin upstream --recursive
     echo "Creating .config with PODMAN_BUILD=1"
     echo 'PODMAN_BUILD?=1' > redox/.config
+    if [[ "$(uname -m)" == "arm64" ]]; then
+        echo "Appending .config with ARCH=aarch64"
+        echo 'ARCH=aarch64' >> redox/.config
+    fi
     echo "Cleaning up..."
     rm podman_bootstrap.sh
     echo
