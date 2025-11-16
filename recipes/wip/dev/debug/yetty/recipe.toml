@@ -1,0 +1,12 @@
+#TODO missing dependencies: https://github.com/aa55-dev/yeTTY#building
+[source]
+git = "https://github.com/aa55-dev/yeTTY"
+rev = "v0.1.3"
+[build]
+template = "cmake"
+dependencies = [
+    "qt6-base",
+    "qt6-multimedia",
+    "zstd",
+    "boost",
+]
