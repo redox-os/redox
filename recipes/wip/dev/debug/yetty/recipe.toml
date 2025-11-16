@@ -1,4 +1,4 @@
-#TODO missing dependencies: https://github.com/aa55-dev/yeTTY#building
+#TODO not compiled or tested
 [source]
 git = "https://github.com/aa55-dev/yeTTY"
 rev = "v0.1.3"
@@ -7,6 +7,9 @@ template = "cmake"
 dependencies = [
     "qt6-base",
     "qt6-multimedia",
+    "qt6-serialport",
     "zstd",
     "boost",
+    "libbacktrace",
+    "ktexteditor6",
 ]
