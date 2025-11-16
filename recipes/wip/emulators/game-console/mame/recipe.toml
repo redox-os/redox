@@ -1,8 +1,8 @@
-#TODO missing script for "make", see https://docs.mamedev.org/initialsetup/compilingmame.html
-#TODO make qt5 work
+#TODO missing script for gnu make: https://docs.mamedev.org/initialsetup/compilingmame.html
 [source]
 git = "https://github.com/mamedev/mame"
-rev = "ca50094e8d5467aed7a18c718cdff8903e1bfe27"
+rev = "mame0282"
+shallow_clone = true
 [build]
 template = "custom"
 dependencies = [

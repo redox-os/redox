@@ -1,6 +1,6 @@
 #TODO not compiled or tested
 #TODO determine dependencies
 [source]
-tar = "https://download.qt.io/official_releases/qt/6.6/6.6.1/submodules/qtbase-everywhere-src-6.6.1.tar.xz"
+tar = "https://download.qt.io/official_releases/qt/6.10/6.10.0/submodules/qtbase-everywhere-src-6.10.0.tar.xz"
 [build]
 template = "configure"

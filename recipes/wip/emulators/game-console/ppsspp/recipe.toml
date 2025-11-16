@@ -2,24 +2,9 @@
 # build instructions: https://github.com/hrydgard/ppsspp/wiki/Build-instructions
 #git = "https://github.com/jackpot51/ppsspp" # wip orbital port
 [source]
-git = "https://github.com/hrydgard/ppsspp"
+tar = "https://github.com/hrydgard/ppsspp/releases/download/v1.19.3/ppsspp-1.19.3.tar.xz"
 [build]
-template = "cmake"
-cmakeflags = [
-    -DCMAKE_C_FLAGS="-I${COOKBOOK_SYSROOT}/include -I${COOKBOOK_SYSROOT}/include/SDL2"
-    -DCMAKE_CXX_FLAGS="-I${COOKBOOK_SYSROOT}/include -I${COOKBOOK_SYSROOT}/include/SDL2"
-    -DOPENGL_opengl_LIBRARY="/dev/null"
-    -DOPENGL_glx_LIBRARY="/dev/null"
-    -DUSE_DISCORD=OFF
-    -DUSE_FFMPEG=OFF
-    -DUSE_MINIUPNPC=OFF
-    -DUSE_SYSTEM_LIBSDL2=ON
-    -DUSING_EGL=OFF
-    -DUSING_FBDEV=OFF
-    -DUSING_GLES2=OFF
-    -DUSING_X11_VULKAN=OFF
-    -DUNIX=ON
-]
+template = "custom"
 dependencies = [
     #"liborbital",
     "llvm18",
@@ -32,3 +17,22 @@ dependencies = [
     "fontconfig",
     "curl",
 ]
+script = """
+DYNAMIC_INIT
+COOKBOOK_CMAKE_FLAGS+=(
+    -DCMAKE_C_FLAGS="-I"${COOKBOOK_SYSROOT}/include" -I"${COOKBOOK_SYSROOT}/include/SDL2""
+    -DCMAKE_CXX_FLAGS="-I"${COOKBOOK_SYSROOT}/include" -I"${COOKBOOK_SYSROOT}/include/SDL2""
+    -DOPENGL_opengl_LIBRARY="/dev/null"
+    -DOPENGL_glx_LIBRARY="/dev/null"
+    -DUSE_DISCORD=OFF
+    -DUSE_FFMPEG=OFF
+    -DUSE_MINIUPNPC=OFF
+    -DUSE_SYSTEM_LIBSDL2=ON
+    -DUSING_EGL=OFF
+    -DUSING_FBDEV=OFF
+    -DUSING_GLES2=OFF
+    -DUSING_X11_VULKAN=OFF
+    -DUNIX=ON
+)
+cookbook_cmake
+"""
