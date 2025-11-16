@@ -12,10 +12,12 @@ usage()
 {
     echo "build.sh:      Invoke make for a particular architecture and configuration."
     echo "Usage:"
-    echo "./build.sh [-X | -A | -6 | -a ARCH] [-c CONFIG] [-f FILESYSTEM_CONFIG] TARGET..."
+    echo "./build.sh [-X | -A | -5 | -R | -a ARCH] [-c CONFIG] [-f FILESYSTEM_CONFIG] TARGET..."
     echo "    -X         Equivalent to -a x86_64."
     echo "    -A         Equivalent to -a aarch64."
-    echo "    -6         Equivalent to -a i686."
+    echo "    -5         Equivalent to -a i586."
+    echo "    -6         Equivalent to -a i586 (deprecated, use -5 instead)."
+    echo "    -R         Equivalent to -a riscv64gc."
     echo "    -a ARCH:   Processor Architecture. Normally one of x86_64, aarch64 or"
     echo "               i686. ARCH is not checked, so you can add a new architecture."
     echo "               Defaults to the directory containing the FILESYSTEM_CONFIG file,"
@@ -61,7 +63,9 @@ do
         f) FILESYSTEM_CONFIG="$OPTARG";;
         X) ARCH="x86_64";;
         A) ARCH="aarch64";;
-        6) ARCH="i686";;
+        R) ARCH="riscv64gc";;
+        5) ARCH="i586";;
+        6) ARCH="i586";;
         h) usage;;
         \?) echo "Unknown option -$OPTARG, try -h for help"; exit;;
         :) echo "-$OPTARG requires a value"; exit;;
@@ -75,8 +79,9 @@ if [ -z "$ARCH" ] && [ -n "$FILESYSTEM_CONFIG" ]; then
     case "$ARCH" in
         x86_64) : ;;
         aarch64) : ;;
-        i686) : ;;
-        \?) ARCH=""; echo "Unknown Architecture, please specify x86_64, aarch64 or i686";;
+        riscv64gc) : ;;
+        i586) : ;;
+        \?) ARCH=""; echo "Unknown Architecture, please specify x86_64, aarch64, risc64gc or i586";;
     esac
 fi
 
