@@ -2,6 +2,10 @@
 linker = "aarch64-unknown-redox-gcc"
 rustflags = []
 
+[target.i586-unknown-redox]
+linker = "i586-unknown-redox-gcc"
+rustflags = []
+
 [target.i686-unknown-redox]
 linker = "i686-unknown-redox-gcc"
 rustflags = []
