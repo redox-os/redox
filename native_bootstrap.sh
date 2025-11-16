@@ -70,8 +70,6 @@ install_freebsd_pkg()
 ##############################################################################
 osx()
 {
-    echo "Detected macOS!"
-
     if [ ! -z "$(which brew)" ]; then
         osx_homebrew $@
     elif [ ! -z "$(which port)" ]; then
@@ -1076,13 +1074,22 @@ done
 
 banner
 
-rustInstall "$noninteractive"
+if [ "Darwin" == "$(uname -s)" ]; then
+    echo "Detected macOS!"
+
+    echo "WARNING: Building Redox OS on MacOS is not recommended, please use podman_bootstrap.sh instead."
+    echo "WARNING: Our toolchain is not designed to work on MacOS and it relies on FUSE which requires kernel extensions."
+    echo "WARNING: If you want to continue anyway, please wait for 3 seconds or cancel this script now!"
+    sleep 3
+fi
 
 if [ "$update" == "true" ]; then
     git pull upstream master
     git submodule update --recursive --init
     exit
 fi
+
+rustInstall "$noninteractive"
 
 if [ "Darwin" == "$(uname -s)" ]; then
     osx "$emulator"
