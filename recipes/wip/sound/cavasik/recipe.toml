@@ -1,0 +1,12 @@
+#TODO not compiled or tested
+[source]
+git = "https://github.com/TheWisker/Cavasik"
+rev = "v3.2.0"
+[build]
+template = "meson"
+dependencies = [
+    "gtk4",
+    "libadwaita",
+]
+[package]
+dependencies = ["cava"]
