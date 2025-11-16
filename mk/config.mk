@@ -5,7 +5,7 @@
 HOST_ARCH?=$(shell uname -m)
 
 # Configuration
-## Architecture to build Redox for (aarch64, i686, or x86_64). Defaults to a host one
+## Architecture to build Redox for (aarch64, i586, or x86_64). Defaults to a host one
 ARCH?=$(HOST_ARCH)
 ## Sub-device type for aarch64 if needed
 BOARD?=
@@ -23,6 +23,10 @@ REPO_NONSTOP?=0
 REPO_OFFLINE?=0
 ## Do not strip debug info for local build
 REPO_DEBUG?=0
+## Old config value that need to be corrected
+ifeq ($(ARCH),i686)
+	ARCH=i586
+endif
 ## Select filesystem config
 ifeq ($(BOARD),)
 FILESYSTEM_CONFIG?=config/$(ARCH)/$(CONFIG_NAME).toml
@@ -124,10 +128,6 @@ export RUST_COMPILER_RT_ROOT=$(ROOT)/rust/src/llvm-project/compiler-rt
 ifeq ($(ARCH),riscv64gc)
 	export TARGET=riscv64gc-unknown-redox
 	export GNU_TARGET=riscv64-unknown-redox
-else ifeq ($(ARCH),i686)
-# FIXME change TARGET to i586 before the next prefix rebuild
-	export TARGET=i686-unknown-redox
-	export GNU_TARGET=i686-unknown-redox
 else
 	export TARGET=$(ARCH)-unknown-redox
 	export GNU_TARGET=$(ARCH)-unknown-redox
