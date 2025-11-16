@@ -1,0 +1,6 @@
+#TODO not compiled or tested
+[source]
+git = "https://github.com/ianlancetaylor/libbacktrace"
+rev = "b9e40069c0b47a722286b94eb5231f7f05c08713"
+[build]
+template = "configure"
