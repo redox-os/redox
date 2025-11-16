@@ -81,7 +81,7 @@ if [ -z "$ARCH" ] && [ -n "$FILESYSTEM_CONFIG" ]; then
         aarch64) : ;;
         riscv64gc) : ;;
         i586) : ;;
-        \?) ARCH=""; echo "Unknown Architecture, please specify x86_64, aarch64, risc64gc or i586";;
+        \?) ARCH=""; echo "Unknown Architecture, please specify x86_64, aarch64, riscv64gc or i586";;
     esac
 fi
 
