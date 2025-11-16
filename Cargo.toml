@@ -38,7 +38,7 @@ pkgar-core = { path = "pkgar/pkgar-core" }
 pkgar-keys = { path = "pkgar/pkgar-keys" }
 redox-pkg = "0.2.8"
 redox_installer = "0.2.37"
-redoxer = "0.2.56"
+redoxer = "0.2.57"
 regex = "1.11"
 serde = { version = "=1.0.197", features = ["derive"] }
 termion = "4"
