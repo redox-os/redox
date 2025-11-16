@@ -57,11 +57,11 @@ ifneq ($(HOST_TARGET),x86_64-unknown-linux-gnu)
 	ifeq ($(ARCH),aarch64)
 		# aarch64 linux hosts have aarch64 toolchain
 		ifneq ($(HOST_TARGET),aarch64-unknown-linux-gnu)
-			$(info The $(ARCH) binary prefix is only built for x86_64 and aarch64 Linux hosts)
+            $(info The $(ARCH) binary prefix is only built for x86_64 and aarch64 Linux hosts)
 			PREFIX_BINARY=0
 		endif
 	else
-		$(info The $(ARCH) binary prefix is only built for x86_64 Linux hosts)
+        $(info The $(ARCH) binary prefix is only built for x86_64 Linux hosts)
 		PREFIX_BINARY=0
 	endif
 endif
