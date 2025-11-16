@@ -1,6 +1,6 @@
 diff -ruwN source-old/dbus/dbus-pollable-set-epoll.c source/dbus/dbus-pollable-set-epoll.c
 --- source-old/dbus/dbus-pollable-set-epoll.c	2025-02-27 09:29:06.000000000 -0700
-+++ source/dbus/dbus-pollable-set-epoll.c	2025-11-10 10:21:36.940618496 -0700
++++ source/dbus/dbus-pollable-set-epoll.c	2025-11-14 17:50:42.043671507 -0700
 @@ -30,7 +30,7 @@
  #include <dbus/dbus-internals.h>
  #include <dbus/dbus-sysdeps.h>
@@ -10,38 +10,15 @@ diff -ruwN source-old/dbus/dbus-pollable-set-epoll.c source/dbus/dbus-pollable-s
  # error This file is for Linux epoll(4)
  #endif
  
-diff -ruwN source-old/dbus/dbus-sysdeps-unix.c source/dbus/dbus-sysdeps-unix.c
---- source-old/dbus/dbus-sysdeps-unix.c	2025-02-27 09:29:06.000000000 -0700
-+++ source/dbus/dbus-sysdeps-unix.c	2025-11-09 08:33:43.299893494 -0700
-@@ -2611,6 +2611,7 @@
-   if (client_fd.fd < 0 && (errno == ENOSYS || errno == EINVAL))
- #endif
-     {
-+      _dbus_verbose ("accept %d, %p, %p\n", listen_fd.fd, &addr, &addrlen);
-       client_fd.fd = accept (listen_fd.fd, &addr, &addrlen);
-     }
+diff -ruwN source-old/dbus/dbus-spawn-unix.c source/dbus/dbus-spawn-unix.c
+--- source-old/dbus/dbus-spawn-unix.c	2025-02-27 09:29:06.000000000 -0700
++++ source/dbus/dbus-spawn-unix.c	2025-11-15 07:42:03.360862350 -0700
+@@ -1326,7 +1326,7 @@
+   if (!make_pipe (child_err_report_pipe, error))
+     goto cleanup_and_fail;
  
-@@ -4962,6 +4963,11 @@
- void
- _dbus_close_all (void)
- {
-+#if defined(__redox__)
-+  fprintf(stderr, "ignoring _dbus_close_all until relibc internal FDs are in upper fd table\n");
-+  return;
-+#endif
-+
- #ifdef HAVE_CLOSE_RANGE
-   if (close_range (3, INT_MAX, 0) == 0)
-     return;
-@@ -4981,6 +4987,11 @@
- void
- _dbus_fd_set_all_close_on_exec (void)
- {
-+#if defined(__redox__)
-+  fprintf(stderr, "ignoring _dbus_fd_set_all_close_on_exec until relibc internal FDs are in upper fd table\n");
-+  return;
-+#endif
-+
- #if defined(HAVE_CLOSE_RANGE) && defined(CLOSE_RANGE_CLOEXEC)
-   if (close_range (3, INT_MAX, CLOSE_RANGE_CLOEXEC) == 0)
-     return;
+-  if (!_dbus_socketpair (&babysitter_pipe[0], &babysitter_pipe[1], TRUE, error))
++  if (!_dbus_socketpair (&babysitter_pipe[0], &babysitter_pipe[1], FALSE, error))
+     goto cleanup_and_fail;
+ 
+   /* Setting up the babysitter is only useful in the parent,
