@@ -1,26 +1,29 @@
-#TODO not compiled or tested yet
-# build instructions: https://github.com/PCSX2/pcsx2/wiki/10-Building-on-Linux
-#TODO probably need patches on submodules
-#TODO determine dependencies - https://aur.archlinux.org/packages/pcsx2-git
-#TODO make all dependencies work
+#TODO not compiled or tested
+# build instructions: https://pcsx2.net/docs/advanced/building#building-on-linux
 [source]
-git = "https://github.com/PCSX2/pcsx2.git"
+git = "https://github.com/PCSX2/pcsx2"
+rev = "2.4.x"
+shallow_clone = true
 [build]
 template = "cmake"
-dependencies = [
-    "sdl2",
-    "xz",
-    "libpng",
-    "qt6-base",
-    "qt6-svg",
-    "mesa-x11",
-    "libaio",
-    "harfbuzz",
-    "libpcap",
-    "pipewire",
-    "libsamplerate",
-    "soundtouch",
-    "zlib",
-    "libxml2",
-    "ffmpeg6",
+cmakeflags = [
+    "-DCMAKE_CXX_COMPILER_LAUNCHER=ccache",
+    "-DCMAKE_INTERPROCEDURAL_OPTIMIZATION=ON",
 ]
+# dependencies = [
+#     "sdl2",
+#     "xz",
+#     "libpng",
+#     "qt6-base",
+#     "qt6-svg",
+#     "mesa-x11",
+#     "libaio",
+#     "harfbuzz",
+#     "libpcap",
+#     "pipewire",
+#     "libsamplerate",
+#     "soundtouch",
+#     "zlib",
+#     "libxml2",
+#     "ffmpeg6",
+# ]
