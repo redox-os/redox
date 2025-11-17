@@ -2,10 +2,11 @@
 # build instructions: https://github.com/Vita3K/Vita3K/blob/master/building.md#linux
 [source]
 git = "https://github.com/Vita3K/Vita3K"
+shallow_clone = true
 [build]
 template = "cmake"
 dependencies = [
     "sdl2",
     "gtk3",
-    "openssl1",
+    "openssl3",
 ]

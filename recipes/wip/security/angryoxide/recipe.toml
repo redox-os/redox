@@ -1,5 +1,5 @@
-#TODO port to Orbital
-#TODO in case of errors, read https://github.com/Ragnt/AngryOxide#building-from-source
+#TODO not compiled or tested
+# build instructions: https://github.com/Ragnt/AngryOxide#building-from-source
 [source]
 git = "https://github.com/Ragnt/AngryOxide"
 [build]

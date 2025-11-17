@@ -1,8 +1,8 @@
 #TODO missing script for gnu make
-# build instructions - https://github.com/jvalcher/termfu#build-and-install
+# build instructions: https://github.com/jvalcher/termfu#installation
 [source]
 git = "https://github.com/jvalcher/termfu"
-rev = "71535f59142d145edcfe8995ca119ef377b2bc00"
+rev = "v0.2.2"
 [build]
 template = "custom"
 dependencies = [
@@ -10,8 +10,6 @@ dependencies = [
 ]
 [package]
 dependencies = [
-    "gnu-make",
-    "gcc13",
     "gdb",
     "python312",
 ]

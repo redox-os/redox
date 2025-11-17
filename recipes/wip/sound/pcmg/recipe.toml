@@ -1,6 +1,8 @@
-#TODO port to orbital
-#TODO require WebAssembly
+#TODO not compiled or tested
 [source]
 git = "https://github.com/JohnDowson/pcmg"
 [build]
-template = "cargo"
+template = "custom"
+script = """
+cookbook_cargo_packages pcmg
+"""

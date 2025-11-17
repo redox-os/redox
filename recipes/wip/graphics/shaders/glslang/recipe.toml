@@ -1,0 +1,8 @@
+#TODO not compiled or tested
+# build instructions: https://github.com/KhronosGroup/glslang#building-cmake
+[source]
+git = "https://github.com/KhronosGroup/glslang"
+rev = "16.0.0"
+shallow_clone = true
+[build]
+template = "cmake"

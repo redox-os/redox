@@ -1,7 +1,8 @@
 #TODO not compiled or tested
-# build instructions - https://github.com/jpd002/Play-#building-for-unix
+# build instructions: https://github.com/jpd002/Play-#building-for-unix
 [source]
 git = "https://github.com/jpd002/Play-"
+shallow_clone = true
 [build]
 template = "cmake"
 dependencies = [

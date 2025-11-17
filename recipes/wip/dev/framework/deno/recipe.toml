@@ -1,7 +1,8 @@
-#TODO v8 crate error (after cargo update -p tokio)
-#TODO Add static objects for the Redox target (doesn't exist on librusty_v8 upstream)
+#TODO v8 crate error
+#TODO lacking librusty_v8 crate binaries for redox
 [source]
 git = "https://github.com/denoland/deno"
+shallow_clone = true
 [build]
 template = "custom"
 script = """

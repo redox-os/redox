@@ -1,8 +1,13 @@
 #TODO make boost work
 [source]
 git = "https://github.com/hikari-no-yume/touchHLE"
+shallow_clone = true
 [build]
-template = "cargo"
+template = "custom"
 dependencies = [
     "boost",
 ]
+script = """
+DYNAMIC_INIT
+cookbook_cargo
+"""

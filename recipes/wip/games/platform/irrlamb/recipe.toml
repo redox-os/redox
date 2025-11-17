@@ -1,0 +1,15 @@
+#TODO not compiled or tested
+[source]
+tar = "https://gitlab.com/jazztickets/uploads/-/raw/main/irrlamb-1.0.7-d99c154-src.tar.gz"
+[build]
+template = "cmake"
+dependencies = [
+    "openal",
+    "libvorbis",
+    "libogg",
+    "libjpeg",
+    "libpng",
+    "freetype2",
+    "sqlite3",
+    "zlib",
+]
