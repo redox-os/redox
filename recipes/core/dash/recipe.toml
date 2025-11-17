@@ -5,6 +5,7 @@ branch = "redox"
 [build]
 template = "custom"
 script = """
+DYNAMIC_INIT
 rsync -av --delete "${COOKBOOK_SOURCE}/" ./
 ./autogen.sh
 ./configure \

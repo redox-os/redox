@@ -6,12 +6,10 @@ patches = ["grep.patch"]
 [build]
 template = "custom"
 script = """
+DYNAMIC_INIT
 COOKBOOK_CONFIGURE_FLAGS+=(
     --prefix=/
 )
 cookbook_configure
-
-"${TARGET}-strip" "${COOKBOOK_STAGE}/bin/grep"
-
 rm -rf "${COOKBOOK_STAGE}"/{lib,share}
 """

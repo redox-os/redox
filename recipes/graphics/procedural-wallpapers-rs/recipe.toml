@@ -2,8 +2,5 @@
 git = "https://github.com/lukas-kirschner/procedural-wallpapers-rs.git"
 
 [build]
-template = "custom"
-script = """
-COOKBOOK_SOURCE="${COOKBOOK_SOURCE}"/procedural_wallpapers
-cookbook_cargo
-"""
+template = "cargo"
+package_path = "procedural_wallpapers"

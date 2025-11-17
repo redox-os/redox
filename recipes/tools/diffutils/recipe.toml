@@ -9,7 +9,7 @@ autoreconf
 [build]
 template = "custom"
 script = """
-export LDFLAGS="-static"
+DYNAMIC_INIT
 COOKBOOK_CONFIGURE_FLAGS+=(
     gt_cv_locale_fr=false
     gt_cv_locale_fr_utf8=false

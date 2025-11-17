@@ -12,6 +12,7 @@ dependencies = [
     "zlib"
 ]
 script = """
+DYNAMIC_INIT
 rsync -av --delete "${COOKBOOK_SOURCE}/" ./
 GNU_CONFIG_GET config.sub
 DYNAMIC_INIT
