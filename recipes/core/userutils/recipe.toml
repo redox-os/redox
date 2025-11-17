@@ -4,6 +4,7 @@ git = "https://gitlab.redox-os.org/redox-os/userutils.git"
 [build]
 template = "custom"
 script = """
+DYNAMIC_INIT
 cookbook_cargo
 cp -rv "${COOKBOOK_SOURCE}/res" "${COOKBOOK_STAGE}/etc"
 ln -s id "${COOKBOOK_STAGE}/usr/bin/whoami"

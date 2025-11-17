@@ -2,8 +2,4 @@
 git = "https://gitlab.redox-os.org/redox-os/exampled.git"
 
 [build]
-template = "custom"
-script = """
-# Must be statically linked
-cookbook_cargo
-"""
+template = "cargo"

@@ -12,6 +12,7 @@ dependencies = [
     "readline",
 ]
 script = """
+DYNAMIC_INIT
 COOKBOOK_CONFIGURE_FLAGS+=(
     ac_cv_func_wcwidth=no # TODO: add more wc functions and remove this
     bash_cv_func_sigsetjmp=no

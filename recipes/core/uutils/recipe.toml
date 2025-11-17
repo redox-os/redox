@@ -5,6 +5,7 @@ git = "https://github.com/uutils/coreutils"
 [build]
 template = "custom"
 script = """
+DYNAMIC_INIT
 cookbook_cargo --no-default-features --features feat_os_unix_redox --bin coreutils
 
 BINS=(
