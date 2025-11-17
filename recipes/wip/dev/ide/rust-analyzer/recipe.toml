@@ -1,6 +1,7 @@
-#TODO require rustc 1.76 or newer
+#TODO not compiled or tested
 [source]
 git = "https://github.com/rust-lang/rust-analyzer"
+shallow_clone = true
 [build]
 template = "custom"
 script = """
