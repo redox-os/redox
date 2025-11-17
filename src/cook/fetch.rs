@@ -391,13 +391,13 @@ pub(crate) fn fetch_extract_tar(
 }
 
 pub(crate) fn fetch_cargo(
-    recipe_dir: &PathBuf,
+    source_dir: &PathBuf,
     package_path: Option<&String>,
     logger: &PtyOut,
 ) -> Result<(), String> {
-    let mut target_dir = recipe_dir.clone();
+    let mut source_dir = source_dir.clone();
     if let Some(package_path) = package_path {
-        target_dir = target_dir.join(package_path);
+        source_dir = source_dir.join(package_path);
     }
 
     let mut command = if is_redox() {
@@ -410,7 +410,7 @@ pub(crate) fn fetch_cargo(
     };
     command.arg("fetch");
     command.arg("--manifest-path");
-    command.arg(target_dir.join("Cargo.toml").into_os_string());
+    command.arg(source_dir.join("Cargo.toml").into_os_string());
     run_command(command, logger)?;
     Ok(())
 }
