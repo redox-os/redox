@@ -1,11 +1,13 @@
-#TODO make capnproto work
-#TODO probably wrong template, see https://github.com/rr-debugger/rr/wiki/Building-And-Installing
+#TODO not compiled or tested
+# build instructions: https://github.com/rr-debugger/rr/wiki/Building-And-Installing
 [source]
 git = "https://github.com/rr-debugger/rr"
-rev = "7cf5a12dba5aaeea9efc5ad97176b07b5614e350"
+rev = "5.9.0"
+shallow_clone = true
 [build]
-template = "configure"
+template = "cmake"
 dependencies = [
     "zlib",
     "capnproto",
+    "zstd",
 ]
