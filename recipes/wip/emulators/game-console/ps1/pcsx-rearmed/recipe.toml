@@ -1,5 +1,7 @@
-#TODO discover the dependencies, probably the same of PCSX
+#TODO not compiled or tested
+#TODO discover the minimum dependencies from autotools log
 [source]
 git = "https://github.com/notaz/pcsx_rearmed"
+rev = "913629046745fb5f5ce548fcb248f02cf5b9c079"
 [build]
 template = "configure"

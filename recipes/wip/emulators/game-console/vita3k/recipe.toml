@@ -7,5 +7,5 @@ template = "cmake"
 dependencies = [
     "sdl2",
     "gtk3",
-    "openssl1",
+    "openssl3",
 ]
