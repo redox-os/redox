@@ -5,10 +5,9 @@ rev = "v4.3.8"
 [build]
 template = "custom"
 script = """
-mkdir -pv "${COOKBOOK_STAGE}/usr/share/ssh-pilot"
-mkdir -pv "${COOKBOOK_STAGE}"/usr/bin
-cp -rv "${COOKBOOK_SOURCE}"/* "${COOKBOOK_STAGE}/usr/share/ssh-pilot"
-echo "#!/usr/bin/env sh \n python /usr/share/ssh-pilot/run.py" > "${COOKBOOK_STAGE}"/usr/bin/ssh-pilot
+mkdir -pv "${COOKBOOK_STAGE}"/usr/bin/ssh-pilot-dir
+cp -rv "${COOKBOOK_SOURCE}"/* "${COOKBOOK_STAGE}/usr/bin/ssh-pilot-dir"
+echo "#!/usr/bin/env sh \n python3 /usr/bin/ssh-pilot-dir/run.py" > "${COOKBOOK_STAGE}"/usr/bin/ssh-pilot
 chmod a+x "${COOKBOOK_STAGE}"/usr/bin/ssh-pilot
 """
 [package]

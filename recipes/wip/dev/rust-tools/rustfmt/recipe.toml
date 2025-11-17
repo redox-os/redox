@@ -1,5 +1,6 @@
 #TODO serde crate error (after cargo update)
 [source]
 git = "https://github.com/rust-lang/rustfmt"
+shallow_clone = true
 [build]
 template = "cargo"
