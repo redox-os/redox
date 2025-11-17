@@ -1,7 +1,9 @@
 #TODO not compiled or tested yet
 # build instructions: https://github.com/stenzek/duckstation#linux-1
 [source]
-tar = "https://github.com/stenzek/duckstation"
+git = "https://github.com/stenzek/duckstation"
+rev = "16e56d7824e15657be26e30030394d0668493635"
+shallow_clone = true
 [build]
 template = "cmake"
 dependencies = [

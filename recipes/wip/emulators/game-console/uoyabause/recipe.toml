@@ -3,6 +3,7 @@
 [source]
 git = "https://github.com/devmiyax/yabause"
 rev = "7d28bd54aa3188e90e4126ff9f7c27b945380488"
+shallow_clone = true
 [build]
 template = "cmake"
 dependencies = [

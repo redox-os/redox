@@ -3,6 +3,7 @@
 [source]
 git = "https://github.com/snes9xgit/snes9x"
 rev = "1.63"
+shallow_clone = true
 [build]
 template = "cmake"
 dependencies = [
