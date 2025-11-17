@@ -306,6 +306,14 @@ pub fn fetch(recipe_dir: &Path, recipe: &Recipe, logger: &PtyOut) -> Result<Path
         }
     }
 
+    if let BuildKind::Cargo {
+        package_path,
+        cargoflags: _,
+    } = &recipe.build.kind
+    {
+        fetch_cargo(&source_dir, package_path.as_ref(), logger)?;
+    }
+
     Ok(source_dir)
 }
 
@@ -378,6 +386,31 @@ pub(crate) fn fetch_extract_tar(
     command.arg(&source_tar);
     command.arg("--directory").arg(source_dir_tmp);
     command.arg("--strip-components").arg("1");
+    run_command(command, logger)?;
+    Ok(())
+}
+
+pub(crate) fn fetch_cargo(
+    source_dir: &PathBuf,
+    package_path: Option<&String>,
+    logger: &PtyOut,
+) -> Result<(), String> {
+    let mut source_dir = source_dir.clone();
+    if let Some(package_path) = package_path {
+        source_dir = source_dir.join(package_path);
+    }
+
+    let mut command = if is_redox() {
+        Command::new("cargo")
+    } else {
+        let cookbook_redoxer = Path::new("target/release/cookbook_redoxer")
+            .canonicalize()
+            .unwrap_or(PathBuf::from("/bin/false"));
+        Command::new(&cookbook_redoxer)
+    };
+    command.arg("fetch");
+    command.arg("--manifest-path");
+    command.arg(source_dir.join("Cargo.toml").into_os_string());
     run_command(command, logger)?;
     Ok(())
 }
