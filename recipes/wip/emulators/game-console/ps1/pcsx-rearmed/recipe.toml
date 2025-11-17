@@ -4,5 +4,6 @@
 [source]
 git = "https://github.com/notaz/pcsx_rearmed"
 rev = "r25"
+shallow_clone = true
 [build]
 template = "configure"
