@@ -1,5 +1,0 @@
-#TODO glutin crate error
-[source]
-git = "https://github.com/mvdnes/rboy"
-[build]
-template = "cargo"
