@@ -7,7 +7,7 @@ dependencies = [
     "libgmp",
     "libmpfr",
     "ncurses",
-    "readline"
+    "readline",
 ]
 script = """
 DYNAMIC_INIT

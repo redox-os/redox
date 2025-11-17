@@ -3,7 +3,8 @@
 # commented out optional dependencies
 [source]
 git = "https://github.com/LibrePCB/LibrePCB"
-rev = "77db4fda7f5df5d058bfc5d2fae3072bb30c8402"
+rev = "1.3.0"
+shallow_clone = true
 [build]
 template = "cmake"
 cmakeflags = [

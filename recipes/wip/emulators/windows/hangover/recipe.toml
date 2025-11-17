@@ -2,7 +2,8 @@
 # build instructions: https://github.com/AndreRH/hangover/blob/master/docs/COMPILE.md
 [source]
 git = "https://github.com/AndreRH/hangover"
-rev = "8a3cdfb0b2092d10fa782319fc02648724554205"
+rev = "hangover-10.18"
+shallow_clone = true
 [build]
 template = "custom"
 dependencies = [
@@ -12,25 +13,56 @@ dependencies = [
     "gstreamer",
     "sdl2",
     "mesa-x11",
+    "libstdcxx",
     "libx11",
     "libxcomposite",
     "libxcursor",
     "libxi",
     "libxfixes",
-    "librandr",
+    "libxrandr",
     "libxrender",
     "libxext",
     "libxkbcommon",
-    "libxkbregistry",
+    #"libxkbregistry",
 ]
 script = """
 DYNAMIC_INIT
-mkdir -p "${COOKBOOK_BUILD}"/wine/build
-cd "${COOKBOOK_BUILD}"/wine/build
+mkdir -p wine-tools
+pushd wine-tools
+#TODO: easier way to build for host?
+HOST_ENV=(
+    env
+    --unset=AR
+    --unset=AS
+    --unset=CC
+    --unset=CFLAGS
+    --unset=CPPFLAGS
+    --unset=CXX
+    --unset=GNU_TARGET
+    --unset=LD
+    --unset=LDFLAGS
+    --unset=NM
+    --unset=OBJCOPY
+    --unset=OBJDUMP
+    --unset=PKG_CONFIG
+    --unset=PKG_CONFIG_ALLOW_CROSS
+    --unset=PKG_CONFIG_FOR_BUILD
+    --unset=PKG_CONFIG_LIBDIR
+    --unset=PKG_CONFIG_PATH
+    --unset=PKG_CONFIG_SYSROOT_DIR
+    --unset=PREFIX_RUSTFLAGS
+    --unset=RANLIB
+    --unset=READELF
+    --unset=STRIP
+    --unset=TARGET
+)
+"${HOST_ENV[@]}" "${COOKBOOK_CONFIGURE}" --enable-win64
+"${HOST_ENV[@]}" "${COOKBOOK_MAKE}" -j "${COOKBOOK_MAKE_JOBS}" __tooldeps__
+popd
+
 COOKBOOK_CONFIGURE_FLAGS+=(
     --enable-win64
-    --with-mingw
-    --enable-archs=x86_64,i386,arm
+	--enable-archs=x86_64,i386,arm
 	--disable-kerberos
 	--disable-tests
 	--without-capi
@@ -54,6 +86,8 @@ COOKBOOK_CONFIGURE_FLAGS+=(
 	--without-udev
 	--without-unwind
 	--without-usb
+	--with-mingw
+    --with-wine-tools=wine-tools
 )
 cookbook_configure
 """

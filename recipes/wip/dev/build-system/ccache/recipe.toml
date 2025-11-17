@@ -1,6 +1,6 @@
 #TODO not compiled or tested
-#TODO missing dependencies - https://github.com/ccache/ccache/blob/master/doc/INSTALL.md#dependencies
-# build instructions - https://github.com/ccache/ccache/blob/master/doc/INSTALL.md
+#TODO missing dependencies: https://github.com/ccache/ccache/blob/master/doc/INSTALL.md#dependencies
+# build instructions: https://github.com/ccache/ccache/blob/master/doc/INSTALL.md
 [source]
 tar = "https://github.com/ccache/ccache/releases/download/v4.10.2/ccache-4.10.2.tar.gz"
 [build]

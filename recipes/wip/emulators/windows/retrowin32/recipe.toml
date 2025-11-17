@@ -7,6 +7,7 @@ dependencies = [
     "sdl2",
 ]
 script = """
+DYNAMIC_INIT
 package=retrowin32
 "${COOKBOOK_CARGO}" build \
             --manifest-path "${COOKBOOK_SOURCE}/Cargo.toml" \
