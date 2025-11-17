@@ -1,8 +1,12 @@
-#TODO make shaderc work
+#TODO not compiled or tested
 [source]
 git = "https://github.com/Amjad50/Trapezoid"
 [build]
-template = "cargo"
+template = "custom"
 dependencies = [
     "shaderc",
 ]
+script = """
+DYNAMIC_INIT
+cookbook_cargo
+"""

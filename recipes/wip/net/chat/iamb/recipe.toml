@@ -1,4 +1,4 @@
-#TODO port to orbital (after a patch on ring)
+#TODO not compiled or tested
 [source]
 git = "https://github.com/ulyssa/iamb"
 [build]

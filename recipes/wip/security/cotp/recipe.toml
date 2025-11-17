@@ -1,8 +1,12 @@
-#TODO port to orbital
+#TODO not compiled or tested
 [source]
 git = "https://github.com/replydev/cotp"
 [build]
-template = "cargo"
+template = "custom"
 dependencies = [
     "libxkbcommon",
 ]
+script = """
+DYNAMIC_INIT
+cookbook_cargo
+"""

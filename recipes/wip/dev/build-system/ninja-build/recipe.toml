@@ -2,6 +2,6 @@
 # build instructions: https://github.com/ninja-build/ninja#building-ninja-itself
 [source]
 git = "https://github.com/ninja-build/ninja"
-rev = "a524bf3f6bacd1b4ad85d719eed2737d8562f27a"
+rev = "v1.13.1"
 [build]
 template = "cmake"

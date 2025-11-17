@@ -1,5 +1,0 @@
-#TODO compilation error
-[source]
-git = "https://github.com/spieglt/nestur"
-[build]
-template = "cargo"

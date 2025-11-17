@@ -1,16 +1,30 @@
-#TODO port to orbital
-#TODO maybe missing dependencies, see https://github.com/wez/wezterm/blob/main/get-deps#L142
+#TODO not compiled or tested
+# build instructions: https://wezterm.org/install/source.html
+# dependencies reference: https://github.com/wez/wezterm/blob/main/get-deps#L149
 [source]
 git = "https://github.com/wez/wezterm"
+shallow_clone = true
 [build]
 template = "custom"
 dependencies = [
     "mesa",
     "fontconfig",
-    "openssl1",
+    "openssl3",
     "libxkbcommon",
+    "libx11",
+    "libxcb",
 ]
 script = """
-./get-deps
-cookbook_cargo_packages wezterm
+DYNAMIC_INIT
+package=wezterm
+"${COOKBOOK_CARGO}" build \
+            --manifest-path "${COOKBOOK_SOURCE}/Cargo.toml" \
+            --package "${package}" \
+            --release \
+            --no-default-features \
+            --features=vendored-fonts
+        mkdir -pv "${COOKBOOK_STAGE}/usr/bin"
+        cp -v \
+            "target/${TARGET}/release/${package}" \
+            "${COOKBOOK_STAGE}/usr/bin/${package}"
 """

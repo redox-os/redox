@@ -3,6 +3,7 @@
 [source]
 git = "https://github.com/DynamoRIO/drmemory"
 rev = "release_2.6.0"
+shallow_clone = true
 [build]
 template = "cmake"
 dependencies = [

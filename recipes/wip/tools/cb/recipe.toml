@@ -1,5 +1,4 @@
-#TODO figure out how to build this, see https://github.com/yaa110/cb#build-manually
-#TODO port to orbital
+#TODO discover how to cross-compile: https://github.com/yaa110/cb#build-manually
 [source]
 git = "https://github.com/yaa110/cb"
 [build]

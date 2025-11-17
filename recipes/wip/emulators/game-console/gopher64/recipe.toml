@@ -2,7 +2,11 @@
 [source]
 git = "https://github.com/gopher64/gopher64"
 [build]
-template = "cargo"
+template = "custom"
 dependencies = [
     "sdl2",
 ]
+script = """
+DYNAMIC_INIT
+cookbook_cargo
+"""

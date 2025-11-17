@@ -1,0 +1,17 @@
+#TODO not compiled or tested
+# lacking build instructions
+# build options: https://gitlab.gnome.org/GNOME/gnome-calculator/-/blob/main/meson_options.txt?ref_type=heads
+[source]
+tar = "https://download.gnome.org/sources/gnome-calculator/49/gnome-calculator-49.1.1.tar.xz"
+[build]
+template = "meson"
+mesonflags = [
+    "-Ddisable-introspection=true",
+    "-Ddoc=false",
+]
+#dependencies = [
+#    "glib",
+#    "libsoup",
+#    "mpc",
+#    "mpfr",
+#]

@@ -1,8 +1,8 @@
 #TODO not compiled or tested
 # build instructions: https://docs.darlinghq.org/build-instructions.html#building-and-installing
-#TODO require Git LFS installed on host
 [source]
 git = "https://github.com/darlinghq/darling"
+shallow_clone = true
 [build]
 template = "cmake"
 cmakeflags = [
@@ -14,12 +14,12 @@ dependencies = [
     "cairo",
     "mesa",
     "libtiff",
-    "freetype",
+    "freetype2",
     "libxml2",
     "fontconfig",
     "libbsd",
     "libgif",
     "ffmpeg6",
-    "openssl1",
+    "openssl3",
     "libxkbfile",
 ]

@@ -1,5 +1,7 @@
-#TODO port to orbital
+#TODO not compiled or tested
+# customization: https://codeberg.org/AeriaVelocity/sued#configuration
 [source]
-git = "https://github.com/That1M8Head/sued"
+git = "https://codeberg.org/AeriaVelocity/sued"
 [build]
 template = "cargo"
+cargoflags = "--features=repl,startup,history"

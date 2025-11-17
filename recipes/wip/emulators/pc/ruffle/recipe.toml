@@ -1,11 +1,14 @@
 #TODO camino crate error
+# build instructions: https://github.com/ruffle-rs/ruffle#building-from-source
 [source]
 git = "https://github.com/ruffle-rs/ruffle"
+shallow_clone = true
 [build]
 template = "custom"
 dependencies = [
-	"openssl1",
+	"openssl3",
 ]
 script = """
+DYNAMIC_INIT
 cookbook_cargo_packages ruffle_desktop
 """

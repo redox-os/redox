@@ -1,6 +1,6 @@
-#TODO port to orbital
+#TODO not compiled or tested
 [source]
-git = "https://github.com/ellie/atuin"
+git = "https://github.com/atuinsh/atuin"
 [build]
 template = "custom"
 script = """

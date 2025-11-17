@@ -1,8 +1,12 @@
-#TODO port to orbital
+#TODO not compiled or tested
 [source]
 git = "https://github.com/PThorpe92/CuTE"
 [build]
-template = "cargo"
+template = "custom"
 dependencies = [
-    "openssl1",
+    "openssl3",
 ]
+script = """
+DYNAMIC_INIT
+cookbook_cargo
+"""

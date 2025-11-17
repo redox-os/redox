@@ -1,5 +1,8 @@
-#TODO can't find the Cargo.toml
+#TODO not compiled or tested
 [source]
 git = "https://github.com/mstange/samply"
 [build]
-template = "cargo"
+template = "custom"
+script = """
+cookbook_cargo_packages samply
+"""

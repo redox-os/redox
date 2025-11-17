@@ -7,5 +7,6 @@ dependencies = [
     "sdl2",
 ]
 script = """
+DYNAMIC_INIT
 cookbook_cargo_packages rustzx
 """
