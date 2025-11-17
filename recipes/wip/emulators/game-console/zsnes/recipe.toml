@@ -1,4 +1,4 @@
-#TODO missing script for "make", see https://github.com/xyproto/zsnes#build
+#TODO missing script for gnu make: https://github.com/xyproto/zsnes#build
 [source]
 git = "https://github.com/xyproto/zsnes"
 [build]

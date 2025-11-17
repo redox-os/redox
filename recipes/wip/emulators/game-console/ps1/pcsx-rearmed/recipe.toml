@@ -1,7 +1,8 @@
 #TODO not compiled or tested
 #TODO discover the minimum dependencies from autotools log
+# build instructions: https://github.com/notaz/pcsx_rearmed/blob/master/readme.txt#L22
 [source]
 git = "https://github.com/notaz/pcsx_rearmed"
-rev = "913629046745fb5f5ce548fcb248f02cf5b9c079"
+rev = "r25"
 [build]
 template = "configure"
