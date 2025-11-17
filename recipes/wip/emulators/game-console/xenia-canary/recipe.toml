@@ -1,5 +1,4 @@
-#TODO missing script for building, see https://github.com/xenia-canary/xenia-canary/blob/canary_experimental/docs/building.md#linux
-#TODO make all dependencies work
+#TODO missing script: https://github.com/xenia-canary/xenia-canary/blob/canary_experimental/docs/building.md#linux
 [source]
 git = "https://github.com/xenia-canary/xenia-canary"
 [build]
