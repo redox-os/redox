@@ -11,7 +11,7 @@ cmakeflags = [
 dependencies = [
     "pulseaudio",
     "openal",
-    "openssl1",
+    "openssl3",
     "libedit",
     "eudev",
     "libevdev",

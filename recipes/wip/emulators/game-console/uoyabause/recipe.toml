@@ -1,8 +1,8 @@
 #TODO not compiled or tested yet
 # build instructions: https://github.com/devmiyax/yabause/blob/master/yabause/README.LIN#L77
-#TODO make gtk2 work
 [source]
 git = "https://github.com/devmiyax/yabause"
+rev = "7d28bd54aa3188e90e4126ff9f7c27b945380488"
 [build]
 template = "cmake"
 dependencies = [

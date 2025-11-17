@@ -20,8 +20,8 @@ dependencies = [
 script = """
 DYNAMIC_INIT
 COOKBOOK_CMAKE_FLAGS+=(
-    -DCMAKE_C_FLAGS="-I"${COOKBOOK_SYSROOT}/include" -I"${COOKBOOK_SYSROOT}/include/SDL2""
-    -DCMAKE_CXX_FLAGS="-I"${COOKBOOK_SYSROOT}/include" -I"${COOKBOOK_SYSROOT}/include/SDL2""
+    -DCMAKE_C_FLAGS="-I${COOKBOOK_SYSROOT}/include" -I${COOKBOOK_SYSROOT}/include/SDL2"
+    -DCMAKE_CXX_FLAGS="-I${COOKBOOK_SYSROOT}/include" -I${COOKBOOK_SYSROOT}/include/SDL2"
     -DOPENGL_opengl_LIBRARY="/dev/null"
     -DOPENGL_glx_LIBRARY="/dev/null"
     -DUSE_DISCORD=OFF

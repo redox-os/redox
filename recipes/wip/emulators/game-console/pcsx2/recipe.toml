@@ -2,7 +2,7 @@
 # build instructions: https://pcsx2.net/docs/advanced/building#building-on-linux
 [source]
 git = "https://github.com/PCSX2/pcsx2"
-rev = "2.4.x"
+branch = "2.4.x"
 shallow_clone = true
 [build]
 template = "cmake"

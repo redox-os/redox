@@ -1,6 +1,5 @@
 #TODO not compiled or tested yet
 # build instructions: https://github.com/stenzek/duckstation#linux-1
-#TODO make qt6 work
 [source]
 tar = "https://github.com/stenzek/duckstation"
 [build]
@@ -9,5 +8,5 @@ dependencies = [
     "sdl2",
     "qt6-base",
     "qt6-svg",
-    "qt6-tools",
+    #"qt6-tools",
 ]
