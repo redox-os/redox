@@ -4,6 +4,8 @@ git = "https://gitlab.redox-os.org/redox-os/periodictable.git"
 [build]
 template = "custom"
 script = """
+DYNAMIC_INIT
+cookbook_cargo
 mkdir -pv "${COOKBOOK_STAGE}/ui/apps"
 cp -v "${COOKBOOK_SOURCE}/pkg/manifest" "${COOKBOOK_STAGE}/ui/apps/periodictable"
 mkdir -pv "${COOKBOOK_STAGE}/ui/icons"

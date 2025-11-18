@@ -2,7 +2,16 @@
 git = "https://gitlab.redox-os.org/redox-os/extrautils.git"
 
 [build]
-template = "cargo"
+template = "custom"
 dependencies = [
     "xz"
 ]
+script = """
+DYNAMIC_INIT
+
+if [ "${COOKBOOK_DYNAMIC}" != "1" ]; then
+    install_flags+=" --features=static"
+fi
+
+cookbook_cargo
+"""
