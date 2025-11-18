@@ -298,7 +298,7 @@ pub fn build(
                 cargoflags,
             } => {
                 format!(
-                    "PACKAGE_PATH={} cookbook_cargo {cargoflags}",
+                    "DYNAMIC_INIT\nPACKAGE_PATH={} cookbook_cargo {cargoflags}",
                     package_path.as_deref().unwrap_or(".")
                 )
             }

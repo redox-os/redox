@@ -2,4 +2,8 @@
 git = "https://gitlab.redox-os.org/redox-os/profiled.git"
 
 [build]
-template = "cargo"
+template = "custom"
+script = """
+# Must be statically linked
+cookbook_cargo
+"""
