@@ -10,6 +10,6 @@ DYNAMIC_INIT
 rsync -av --delete "${COOKBOOK_SOURCE}/" ./
 export CPPFLAGS="${CPPFLAGS} -D_REDOX"
 
-${COOKBOOK_MAKE}
+${COOKBOOK_MAKE} prefix="/usr"
 ${COOKBOOK_MAKE} install DESTDIR="${COOKBOOK_STAGE}" prefix="/usr"
 """
