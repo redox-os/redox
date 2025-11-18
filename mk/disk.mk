@@ -58,14 +58,26 @@ else
 	mv $@.partial $@
 endif
 
+DAEMONIZE_MOUNT=0
+
 mount: $(HOST_FSTOOLS) FORCE
 ifeq ($(PODMAN_BUILD),1)
-	$(PODMAN_RUN) make $@
+	podman unshare mount --make-shared --bind $(ROOT) $(ROOT)
+	touch $(MOUNT_DIR).tag
+	$(PODMAN_RUN_DETACHED) make $@ DAEMONIZE_MOUNT=1
+	sleep 2
 else
 	mkdir -p $(MOUNT_DIR)
 	$(REDOXFS) $(BUILD)/harddrive.img $(MOUNT_DIR)
+ifeq ($(DAEMONIZE_MOUNT),1)
+	@while test -f $(MOUNT_DIR).tag; do \
+		sleep 1; \
+	done
+	make unmount
+else
 	sleep 2
 	pgrep redoxfs
+endif
 endif
 
 mount_extra: $(HOST_FSTOOLS) FORCE
@@ -90,7 +102,7 @@ endif
 
 unmount: FORCE
 ifeq ($(PODMAN_BUILD),1)
-	$(PODMAN_RUN) make $@
+	rm -f $(MOUNT_DIR).tag
 else
 	sync
 	-$(FUMOUNT) $(MOUNT_DIR) || true
