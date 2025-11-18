@@ -1,0 +1,20 @@
+[source]
+tar = "https://download.gnome.org/sources/vte/0.82/vte-0.82.1.tar.xz"
+blake3 = "2d16b6808c0eaa801d59ccabcae13e76ccd6229869dad1efe0524a4c83b53a87"
+patches = ["redox.patch"]
+
+[build]
+dependencies = [
+    "gnutls3",
+    "gtk3",
+    "lz4",
+    "simdutf",
+]
+template = "meson"
+mesonflags = [
+    "-Dgir=false",
+    "-Dgtk4=false",
+    "-Dvapi=false",
+    #TODO: package fast_float?
+    "--force-fallback-for=fast_float",
+]
