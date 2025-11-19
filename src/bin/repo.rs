@@ -60,6 +60,7 @@ const REPO_HELP_STR: &str = r#"
         --all                      apply to all recipes in <cookbook_dir>
         --category=<category>      apply to all recipes in <cookbook_dir>/<category>
         --filesystem=<filesystem>  override recipes config using installer file
+        --repo-binary              override recipes config to use repo_binary
 
     cook env and their defaults:
         CI=                        set to any value to disable TUI
@@ -345,6 +346,7 @@ fn parse_args(args: Vec<String>) -> anyhow::Result<(CliConfig, CliCommand, Vec<C
     let mut config = CliConfig::new()?;
     let mut command: Option<String> = None;
     let mut recipe_names: Vec<PackageName> = Vec::new();
+    let mut override_filesystem_repo_binary = false;
     for arg in args {
         if arg.starts_with("--") {
             if let Some((key, value)) = arg.split_once('=') {
@@ -369,6 +371,7 @@ fn parse_args(args: Vec<String>) -> anyhow::Result<(CliConfig, CliCommand, Vec<C
                 config.category = Some(PathBuf::from(arg[("--category-").len()..].to_owned()));
             } else {
                 match arg.as_str() {
+                    "--repo-binary" => override_filesystem_repo_binary = true,
                     "--with-package-deps" => config.with_package_deps = true,
                     "--all" => config.all = true,
                     _ => {
@@ -400,6 +403,11 @@ fn parse_args(args: Vec<String>) -> anyhow::Result<(CliConfig, CliCommand, Vec<C
     if let Some(c) = config.logs_dir.as_mut() {
         *c = c.join(redoxer::target());
         fs::create_dir_all(c).map_err(|e| anyhow!(e))?;
+    }
+    if override_filesystem_repo_binary {
+        if let Some(conf) = config.filesystem.as_mut() {
+            conf.general.repo_binary = Some(true);
+        }
     }
 
     let command = command.ok_or(anyhow!("Error: No command specified."))?;
