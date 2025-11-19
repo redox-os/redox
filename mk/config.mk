@@ -40,6 +40,8 @@ HOST_CARGO=env -u RUSTUP_TOOLCHAIN -u CC -u TARGET cargo
 REDOXFS_MKFS_FLAGS?=
 ## Set to 1 to enable Podman build, any other value will disable it
 PODMAN_BUILD?=1
+## Set to 1 to put filesystem tools inside podman, any other value will install it to host
+FSTOOLS_IN_PODMAN?=0
 ## Enable sccache to speed up cargo builds
 ## only do this by default if this is inside podman
 SCCACHE_BUILD?=$(shell [ -f /run/.containerenv ] && echo 1 || echo 0)
@@ -51,6 +53,7 @@ export NPROC=nproc
 export REDOX_MAKE=make
 
 ifneq ($(PODMAN_BUILD),1)
+FSTOOLS_IN_PODMAN=0
 HOST_TARGET := $(shell env -u RUSTUP_TOOLCHAIN rustc -vV | grep host | cut -d: -f2 | tr -d " ")
 # x86_64 linux hosts have all toolchains
 ifneq ($(HOST_TARGET),x86_64-unknown-linux-gnu)

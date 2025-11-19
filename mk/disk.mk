@@ -1,7 +1,7 @@
 # Configuration file with the commands configuration of the Redox image
 
-$(BUILD)/harddrive.img: $(HOST_FSTOOLS) $(REPO_TAG)
-ifeq ($(PODMAN_BUILD),1)
+$(BUILD)/harddrive.img: $(FSTOOLS) $(REPO_TAG)
+ifeq ($(FSTOOLS_IN_PODMAN),1)
 	$(PODMAN_RUN) make $@
 else
 	mkdir -p $(BUILD)
@@ -16,8 +16,8 @@ else
 	mv $@.partial $@
 endif
 
-$(BUILD)/redox-live.iso: $(HOST_FSTOOLS) $(REPO_TAG) redox.ipxe
-ifeq ($(PODMAN_BUILD),1)
+$(BUILD)/redox-live.iso: $(FSTOOLS) $(REPO_TAG) redox.ipxe
+ifeq ($(FSTOOLS_IN_PODMAN),1)
 	$(PODMAN_RUN) make $@
 else
 	mkdir -p $(BUILD)
@@ -33,8 +33,8 @@ else
 	cp redox.ipxe $(BUILD)/redox.ipxe
 endif
 
-$(BUILD)/filesystem.img: $(HOST_FSTOOLS) $(REPO_TAG)
-ifeq ($(PODMAN_BUILD),1)
+$(BUILD)/filesystem.img: $(FSTOOLS) $(REPO_TAG)
+ifeq ($(FSTOOLS_IN_PODMAN),1)
 	$(PODMAN_RUN) make $@
 else
 	mkdir -p $(BUILD)
@@ -58,8 +58,8 @@ else
 	mv $@.partial $@
 endif
 
-mount: $(HOST_FSTOOLS) FORCE
-ifeq ($(PODMAN_BUILD),1)
+mount: $(FSTOOLS) FORCE
+ifeq ($(FSTOOLS_IN_PODMAN),1)
 	$(PODMAN_RUN) make $@
 else
 	mkdir -p $(MOUNT_DIR)
@@ -68,8 +68,8 @@ else
 	pgrep redoxfs
 endif
 
-mount_extra: $(HOST_FSTOOLS) FORCE
-ifeq ($(PODMAN_BUILD),1)
+mount_extra: $(FSTOOLS) FORCE
+ifeq ($(FSTOOLS_IN_PODMAN),1)
 	$(PODMAN_RUN) make $@
 else
 	mkdir -p $(MOUNT_DIR)
@@ -78,8 +78,8 @@ else
 	pgrep redoxfs
 endif
 
-mount_live: $(HOST_FSTOOLS) FORCE
-ifeq ($(PODMAN_BUILD),1)
+mount_live: $(FSTOOLS) FORCE
+ifeq ($(FSTOOLS_IN_PODMAN),1)
 	$(PODMAN_RUN) make $@
 else
 	mkdir -p $(MOUNT_DIR)
@@ -89,7 +89,7 @@ else
 endif
 
 unmount: FORCE
-ifeq ($(PODMAN_BUILD),1)
+ifeq ($(FSTOOLS_IN_PODMAN),1)
 	$(PODMAN_RUN) make $@
 else
 	sync
