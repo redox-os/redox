@@ -66,5 +66,7 @@ COOKBOOK_CMAKE_FLAGS+=(
     -DLLVM_ENABLE_PROJECTS="llvm"
 )
 
+# Native tablegen build fails with too many jobs, limit to 16
+COOKBOOK_MAKE_JOBS="$(( ${COOKBOOK_MAKE_JOBS} > 16 ? 16 : ${COOKBOOK_MAKE_JOBS} ))"
 cookbook_cmake "${COOKBOOK_SOURCE}/llvm"
 """
