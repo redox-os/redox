@@ -1,6 +1,6 @@
 #!/usr/bin/env bash
 
-FIND_RECIPE="find cookbook/recipes -maxdepth 4 -name"
+FIND_RECIPE="find recipes -maxdepth 4 -name"
 
 for recipe in $*
 do

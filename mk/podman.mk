@@ -73,7 +73,7 @@ else
 	@echo PODMAN_BUILD=$(PODMAN_BUILD), container not required.
 endif
 
-KERNEL_PATH := cookbook/recipes/core/kernel
+KERNEL_PATH := recipes/core/kernel
 KERNEL_PATH_SOURCE := $(ROOT)/$(KERNEL_PATH)/source
 KERNEL_PATH_TARGET := $(ROOT)/$(KERNEL_PATH)/target/$(TARGET)
 

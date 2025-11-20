@@ -144,9 +144,9 @@ REDOXFS_MKFS=$(FSTOOLS)/bin/redoxfs-mkfs
 INSTALLER_OPTS=
 COOKBOOK_OPTS="--filesystem=../$(FILESYSTEM_CONFIG)"
 ifeq ($(REPO_BINARY),0)
-INSTALLER_OPTS+=--cookbook=cookbook
+INSTALLER_OPTS+=--cookbook=.
 else
-INSTALLER_OPTS+=--cookbook=cookbook --repo-binary
+INSTALLER_OPTS+=--cookbook=. --repo-binary
 COOKBOOK_OPTS+=" --repo-binary"
 endif
 

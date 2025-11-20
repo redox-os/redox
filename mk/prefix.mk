@@ -4,7 +4,7 @@ PREFIX=prefix/$(TARGET)
 
 PREFIX_INSTALL=$(PREFIX)/sysroot/
 PREFIX_PATH=$(ROOT)/$(PREFIX_INSTALL)/bin
-RELIBC_SOURCE=cookbook/recipes/core/relibc/source
+RELIBC_SOURCE=recipes/core/relibc/source
 
 BINUTILS_BRANCH=redox-2.43.1
 GCC_BRANCH=redox-13.2.0
@@ -37,7 +37,7 @@ PREFIX_STRIP=\
 		2> /dev/null
 
 $(RELIBC_SOURCE): $(FSTOOLS_TAG)
-	cd ./cookbook && ./target/release/repo fetch relibc
+	./target/release/repo fetch relibc
 	touch $(RELIBC_SOURCE)
 
 $(PREFIX)/relibc: $(RELIBC_SOURCE)
