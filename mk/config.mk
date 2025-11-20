@@ -139,12 +139,12 @@ INSTALLER=$(FSTOOLS)/bin/redox_installer
 REDOXFS=$(FSTOOLS)/bin/redoxfs
 REDOXFS_MKFS=$(FSTOOLS)/bin/redoxfs-mkfs
 INSTALLER_OPTS=
-LIST_PACKAGES_OPTS=
+COOKBOOK_OPTS=--with-package-deps "--filesystem=../$(FILESYSTEM_CONFIG)"
 ifeq ($(REPO_BINARY),0)
 INSTALLER_OPTS+=--cookbook=cookbook
 else
 INSTALLER_OPTS+=--cookbook=cookbook --repo-binary
-LIST_PACKAGES_OPTS+=--repo-binary
+COOKBOOK_OPTS+=" --repo-binary"
 endif
 
 REPO_TAG=$(BUILD)/repo.tag
