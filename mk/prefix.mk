@@ -4,6 +4,7 @@ PREFIX=prefix/$(TARGET)
 
 PREFIX_INSTALL=$(PREFIX)/sysroot/
 PREFIX_PATH=$(ROOT)/$(PREFIX_INSTALL)/bin
+RELIBC_SOURCE=cookbook/recipes/core/relibc/source
 
 BINUTILS_BRANCH=redox-2.43.1
 GCC_BRANCH=redox-13.2.0
@@ -35,7 +36,10 @@ PREFIX_STRIP=\
 		-exec strip --strip-unneeded {} ';' \
 		2> /dev/null
 
-$(PREFIX)/relibc: $(ROOT)/relibc
+$(RELIBC_SOURCE): $(FSTOOLS_TAG)
+	cd ./cookbook && ./target/release/repo fetch relibc
+
+$(PREFIX)/relibc: $(RELIBC_SOURCE)
 	mkdir -p "$(@D)"
 	rm -rf "$@.partial" "$@"
 	cp -r "$^" "$@.partial"
@@ -235,7 +239,7 @@ else
 	mv "$@.partial" "$@"
 endif
 
-$(PREFIX)/relibc-freestanding: $(ROOT)/relibc
+$(PREFIX)/relibc-freestanding: $(RELIBC_SOURCE)
 	mkdir -p "$(@D)"
 	rm -rf "$@.partial" "$@"
 	cp -r "$^" "$@.partial"
