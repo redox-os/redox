@@ -427,7 +427,7 @@ fn parse_args(args: Vec<String>) -> anyhow::Result<(CliConfig, CliCommand, Vec<C
                 .collect(),
         }
         .iter()
-        .map(|f| CookRecipe::from_path(f, !config.all))
+        .map(|f| CookRecipe::from_path(f, !command.is_cleaning()))
         .collect::<Result<Vec<CookRecipe>, PackageError>>()?
     } else {
         if recipe_names.is_empty() {
