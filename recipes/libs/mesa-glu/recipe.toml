@@ -1,0 +1,12 @@
+[source]
+tar = "https://archive.mesa3d.org/glu/glu-9.0.3.tar.xz"
+blake3 = "beed1665ed983540e7502289ec50c7e66d840820af3e9ef21c9c4a7e9686ab9f"
+
+[build]
+dependencies = ["mesa", "zlib"]
+template = "custom"
+script = """
+DYNAMIC_INIT
+
+cookbook_meson -Dgl_provider=osmesa
+"""

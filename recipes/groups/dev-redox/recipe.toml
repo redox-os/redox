@@ -1,0 +1,20 @@
+[package]
+dependencies = [
+    "dev-essential",
+    "redox-tests",
+    "exampled",
+    "gdbserver",
+    "libgmp",
+    "libiconv",
+    "liborbital",
+    "libsodium",
+    "libxml2",
+    "ncurses",
+    "nghttp2",
+    "openssl3",
+    "orbclient",
+    "pcre",
+    "terminfo",
+    "xz",
+    "zlib",
+]

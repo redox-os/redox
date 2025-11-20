@@ -1,0 +1,11 @@
+#TODO missing script for "make": https://github.com/mupen64plus/mupen64plus-core#2-building-from-source
+[source]
+tar = "https://github.com/mupen64plus/mupen64plus-core/releases/download/2.6.0/mupen64plus-bundle-src-2.6.0.tar.gz"
+[build]
+template = "custom"
+dependencies = [
+    "sdl2",
+    "libpng",
+    "freetype2",
+    "zlib",
+]

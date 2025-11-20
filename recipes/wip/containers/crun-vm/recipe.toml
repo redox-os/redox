@@ -1,0 +1,6 @@
+#TODO camino crate error
+# dependencies - https://github.com/containers/crun-vm/blob/main/docs/1-installing.md#from-source
+[source]
+git = "https://github.com/containers/crun-vm"
+[build]
+template = "cargo"

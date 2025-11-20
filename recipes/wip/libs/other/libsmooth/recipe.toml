@@ -1,0 +1,14 @@
+#TODO missing script for gnu make
+# build instructions - https://github.com/enzo1982/smooth/#installation
+[source]
+tar = "https://github.com/enzo1982/smooth/releases/download/v0.9.10/smooth-0.9.10.tar.gz"
+[build]
+template = "custom"
+dependencies = [
+    "bzip2",
+    "curl",
+    "fribidi",
+    "gtk3",
+    "libjpeg",
+    "libxml2",
+]

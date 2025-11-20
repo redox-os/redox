@@ -1,0 +1,7 @@
+#TODO not compiled or tested
+# build instructions: https://gitlab.com/libeigen/eigen/-/blob/master/INSTALL?ref_type=heads
+[source]
+git = "https://gitlab.com/libeigen/eigen"
+rev = "3147391d946bb4b6c68edd901f2add6ac1f31f8c"
+[build]
+template = "cmake"

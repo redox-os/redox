@@ -1,0 +1,10 @@
+#TODO not compiled or tested
+[source]
+tar = "https://github.com/libimobiledevice/ifuse/releases/download/1.1.4/ifuse-1.1.4.tar.bz2"
+[build]
+template = "configure"
+dependencies = [
+    "libfuse3",
+    "libplist",
+    "libimobiledevice",
+]

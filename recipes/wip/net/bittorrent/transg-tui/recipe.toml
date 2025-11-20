@@ -1,0 +1,8 @@
+#TODO not compiled or tested
+[source]
+git = "https://github.com/PanAeon/transg-tui"
+[build]
+template = "cargo"
+dependencies = [
+    "openssl1",
+]

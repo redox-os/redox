@@ -1,0 +1,8 @@
+#TODO compiled but not tested (after a camino crate patch)
+[source]
+git = "https://github.com/trailofbits/cargo-unmaintained"
+[build]
+template = "cargo"
+dependencies = [
+    "openssl1",
+]

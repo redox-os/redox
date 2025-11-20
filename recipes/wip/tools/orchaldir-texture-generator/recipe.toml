@@ -1,0 +1,8 @@
+#TODO Compiled but not tested
+[source]
+git = "https://github.com/Orchaldir/texture_generator"
+[build]
+template = "custom"
+script = """
+cookbook_cargo_packages texture_generator
+"""

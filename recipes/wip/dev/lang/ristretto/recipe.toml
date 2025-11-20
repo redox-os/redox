@@ -1,0 +1,8 @@
+#TODO require rustc 1.87 or newer
+[source]
+git = "https://github.com/theseus-rs/ristretto"
+[build]
+template = "custom"
+script = """
+cookbook_cargo_packages ristretto_cli
+"""

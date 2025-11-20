@@ -1,0 +1,6 @@
+#TODO libc crate error
+#TODO requires Linux PAM
+[source]
+git = "https://github.com/memorysafety/sudo-rs"
+[build]
+template = "cargo"

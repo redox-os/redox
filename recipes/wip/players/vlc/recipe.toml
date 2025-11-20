@@ -1,0 +1,48 @@
+#TODO port Qt4 or wxWidgets
+#TODO make dependencies work
+# customization - https://wiki.videolan.org/Configure/
+[source]
+tar = "https://get.videolan.org/vlc/3.0.20/vlc-3.0.20.tar.xz"
+[build]
+template = "configure"
+dependencies = [
+    "libvorbis",
+    "libogg",
+    "speex",
+    "libflac",
+    "libtheora",
+    "x264",
+    "liba52",
+    "libmpeg2",
+    "lame",
+    "ffmpeg6",
+    "libmad",
+    "libdca",
+    "twolame",
+    "musepack",
+    "libass",
+    "libzvbi",
+    "opus",
+    "libebml",
+    "libmatroska",
+    "libdvbpsi",
+    "libdvdcss",
+    "libdvdread",
+    "libdvdnav",
+    "libbluray",
+    "libgpg-error",
+    "libgcrypt",
+    "gnutls",
+    "libxml2",
+    "libvncserver",
+    "libpng",
+    "libjpeg",
+    "libiconv",
+    "gettext",
+    "zlib",
+    "freetype2",
+    "fribidi",
+    "fontconfig",
+    "taglib",
+    "wxwidgets-gtk3",
+]

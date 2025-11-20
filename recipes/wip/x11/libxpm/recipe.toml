@@ -1,0 +1,21 @@
+[source]
+tar = "https://www.x.org/releases/individual/lib/libXpm-3.5.17.tar.xz"
+blake3 = "0cc9bbdc6d9c9d6ce100249b7bb68bff4550de43ee31d815fd9b21c8d178cd9e"
+script = """
+DYNAMIC_INIT
+autotools_recursive_regenerate
+"""
+
+[build]
+dependencies = [
+    "libpthread-stubs",
+    "libx11",
+    "libxau",
+    "libxcb",
+    "x11proto",
+]
+template = "custom"
+script = """
+DYNAMIC_INIT
+cookbook_configure
+"""

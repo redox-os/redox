@@ -1,0 +1,16 @@
+#TODO not compiled or tested
+[source]
+git = "https://github.com/pipeseroni/pipes.sh"
+rev = "v1.3.0"
+[build]
+template = "custom"
+script = """
+mkdir -pv "${COOKBOOK_STAGE}"/usr/bin
+cp "${COOKBOOK_SOURCE}"/pipes.sh "${COOKBOOK_STAGE}"/usr/bin/pipes
+chmod a+x "${COOKBOOK_STAGE}"/usr/bin/pipes
+"""
+[package]
+dependencies = [
+    "bash",
+    "ncurses",
+]

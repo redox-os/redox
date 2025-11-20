@@ -1,0 +1,6 @@
+#TODO not compiled or tested
+# build instructions: https://astyle.sourceforge.net/install.html
+[source]
+tar = "https://sourceforge.net/projects/astyle/files/astyle/astyle%203.4/astyle-3.4.10.tar.bz2/download"
+[build]
+template = "cmake"

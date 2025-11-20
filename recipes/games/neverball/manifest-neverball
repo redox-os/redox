@@ -1,0 +1,4 @@
+name=Neverball
+category=Games
+binary=/usr/games/neverball/neverball
+icon=/ui/icons/apps/neverball.png

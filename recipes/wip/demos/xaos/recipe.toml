@@ -1,0 +1,10 @@
+#TODO missing script for QMake, see https://github.com/xaos-project/XaoS/wiki/Developer's-Guide#build-instructions-for-version-43
+[source]
+git = "https://github.com/xaos-project/XaoS"
+rev = "7f36177f32a23eea88911afb90878046912d7e2d"
+[build]
+template = "custom"
+dependencies = [
+    "qt6-base",
+    "mesa",
+]

@@ -102,7 +102,6 @@ You can contribute to the Redox documentation and code on the following reposito
 - [Website](https://gitlab.redox-os.org/redox-os/website)
 - [Book](https://gitlab.redox-os.org/redox-os/book) - High-level documentation
 - [Build System Configuration](https://gitlab.redox-os.org/redox-os/redox) - Our main repository
-- [Cookbook](https://gitlab.redox-os.org/redox-os/cookbook) - Software Ports System
 - [Orbital](https://gitlab.redox-os.org/redox-os/orbital) - Display Server and Window Manager
 - [pkgutils](https://gitlab.redox-os.org/redox-os/pkgutils) - Package Manager
 - [resist](https://gitlab.redox-os.org/redox-os/resist) - Redox System Interface Specifications and Tests (also has POSIX tests)
@@ -132,7 +131,7 @@ If you don't know how to code in Rust but know other programming languages:
 
 - Web development on the website (we only accept minimal JavaScript code to preserve performance)
 - Write unit tests (may require minimal knowledge of Rust)
-- Port C/C++ programs to Redox (read the `TODO`s of the recipes on the [WIP category](https://gitlab.redox-os.org/redox-os/cookbook/-/tree/master/recipes/wip))
+- Port C/C++ programs to Redox (read the `TODO`s of the recipes on the [WIP category](https://gitlab.redox-os.org/redox-os/redox/-/tree/master/recipes/wip))
 - Port programs to Redox
 
 If you know how to code in Rust but don't know operating system development:

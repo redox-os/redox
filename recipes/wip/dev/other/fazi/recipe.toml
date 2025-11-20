@@ -1,0 +1,8 @@
+#TODO library source code error
+[source]
+git = "https://github.com/landaire/fazi"
+[build]
+template = "custom"
+script = """
+cookbook_cargo_packages fazi
+"""

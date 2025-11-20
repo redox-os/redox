@@ -1,0 +1,9 @@
+#TODO not compiled or tested
+# build instructions: https://pwmt.org/projects/girara/installation/
+[source]
+tar = "https://pwmt.org/projects/girara/download/girara-0.4.5.tar.xz"
+[build]
+template = "meson"
+dependencies = [
+    "gtk3",
+]

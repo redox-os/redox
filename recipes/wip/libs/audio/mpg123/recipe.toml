@@ -1,0 +1,11 @@
+#TODO compilation error
+[source]
+tar = "https://mpg123.de/download/mpg123-1.33.2.tar.bz2"
+blake3 = "1e604dc14160a8852ef6b880643e3534f44e410af1fd5ba29a80ff960a54e834"
+script = """
+DYNAMIC_INIT
+autotools_recursive_regenerate
+"""
+
+[build]
+template = "configure"

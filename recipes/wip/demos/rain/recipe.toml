@@ -1,0 +1,8 @@
+#TODO compilation error
+[source]
+git = "https://github.com/saschagrunert/rain"
+[build]
+template = "custom"
+script = """
+cookbook_cargo_examples demo
+"""

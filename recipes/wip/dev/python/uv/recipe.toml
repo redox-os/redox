@@ -1,0 +1,11 @@
+#TODO fs2 crate error
+[source]
+git = "https://github.com/astral-sh/uv"
+[build]
+template = "custom"
+dependencies = [
+    "openssl1",
+]
+script = """
+cookbook_cargo_packages uv
+"""

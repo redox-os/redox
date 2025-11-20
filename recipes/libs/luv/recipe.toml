@@ -1,0 +1,17 @@
+[source]
+git = "https://github.com/luvit/luv.git"
+[build]
+template = "custom"
+dependencies = [
+    "libuv",
+    "luajit"
+]
+script = """
+DYNAMIC_INIT
+COOKBOOK_CMAKE_FLAGS+=(
+    -DWITH_LUA_ENGINE=Luajit
+    -DLUA_BUILD_TYPE=System
+    -DWITH_SHARED_LIBUV=On
+)
+cookbook_cmake
+"""

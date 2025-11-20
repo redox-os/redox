@@ -1,0 +1,19 @@
+#TODO not compiled or tested
+# launch instructions: https://github.com/OpenShot/openshot-qt#launch
+[source]
+git = "https://github.com/OpenShot/openshot-qt"
+rev = "v3.3.0"
+shallow_clone = true
+[build]
+template = "custom"
+script = """
+mkdir -pv "${COOKBOOK_STAGE}/usr/bin/openshot-qt"
+cp -rv "${COOKBOOK_SOURCE}"/src/* "${COOKBOOK_STAGE}/usr/bin/openshot-qt"
+echo "#!/usr/bin/env sh \n python3 /usr/bin/openshot-qt/src/launch.py" > "${COOKBOOK_STAGE}"/usr/bin/openshot
+chmod a+x "${COOKBOOK_STAGE}"/usr/bin/openshot
+"""
+[package]
+dependencies = [
+    "libopenshot",
+    "libopenshot-audio",
+]

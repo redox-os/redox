@@ -1,0 +1,24 @@
+#TODO missing dependencies
+# build instructions: https://wiki.mudlet.org/w/Compiling_Mudlet
+[source]
+git = "https://github.com/Mudlet/Mudlet"
+branch = "release-4.19"
+[build]
+template = "cmake"
+dependencies = [
+    "zlib",
+    "pcre2",
+    "libzip",
+    "hunspell",
+    "boost",
+    "libpulse",
+    "glib",
+    "mesa-glu",
+    "mesa",
+    "libpugixml",
+    "gstreamer",
+    "qt6-multimedia",
+    "qt6-tools",
+    "qt6-speech",
+    "zstd",
+]

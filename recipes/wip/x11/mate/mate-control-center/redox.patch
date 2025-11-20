@@ -1,0 +1,76 @@
+diff -ruwN source-old/capplets/display/meson.build source/capplets/display/meson.build
+--- source-old/capplets/display/meson.build	2024-05-22 13:44:05.000000000 -0600
++++ source/capplets/display/meson.build	2025-11-15 08:43:15.498757975 -0700
+@@ -49,12 +49,13 @@
+   install_dir: mcc_desktopdir
+ )
+ 
+-policy = 'org.mate.randr.policy'
+-
+-i18n.merge_file(
+-  input: policy + '.in',
+-  output: policy,
+-  po_dir: po_dir,
+-  install: true,
+-  install_dir: mcc_policydir,
+-)
++#TODO: fails to merge
++#policy = 'org.mate.randr.policy'
++#
++#i18n.merge_file(
++#  input: policy + '.in',
++#  output: policy,
++#  po_dir: po_dir,
++#  install: true,
++#  install_dir: mcc_policydir,
++#)
+diff -ruwN source-old/capplets/meson.build source/capplets/meson.build
+--- source-old/capplets/meson.build	2024-05-22 13:44:05.000000000 -0600
++++ source/capplets/meson.build	2025-11-15 08:20:38.584035658 -0700
+@@ -8,6 +8,6 @@
+ subdir('keyboard')
+ subdir('mouse')
+ subdir('network')
+-subdir('system-info')
+-subdir('time-admin')
++#subdir('system-info')
++#subdir('time-admin')
+ subdir('windows')
+diff -ruwN source-old/meson.build source/meson.build
+--- source-old/meson.build	2024-05-22 13:44:05.000000000 -0600
++++ source/meson.build	2025-11-15 08:42:11.646734896 -0700
+@@ -75,9 +75,9 @@
+ xcursor_dep = dependency('xcursor')
+ dconf_dep = dependency('dconf', version: '>= 0.13.4')
+ fontconfig_dep = dependency('fontconfig')
+-gtop_dep = dependency('libgtop-2.0')
+-udisks2_dep = dependency('udisks2')
+-polkit_dep = dependency('polkit-gobject-1')
++#gtop_dep = dependency('libgtop-2.0')
++#udisks2_dep = dependency('udisks2')
++#polkit_dep = dependency('polkit-gobject-1')
+ matekbd_dep = dependency('libmatekbd', version: '>=1.17.0')
+ matekbdui_dep = dependency('libmatekbdui', version: '>=1.17.0')
+ xklavier_dep = dependency('libxklavier', version: '>= 5.2')
+@@ -120,10 +120,10 @@
+   endif
+ else
+   appindicator = false
+-  ayatana = true
++  ayatana = false
+ endif
+ appindicator_dep = dependency('appindicator3-0.1', version: '>= 0.0.13', required: appindicator)
+-ayatana_dep = dependency('ayatana-appindicator3-0.1', version: '>= 0.0.13', required: ayatana)
++#ayatana_dep = dependency('ayatana-appindicator3-0.1', version: '>= 0.0.13', required: ayatana)
+ config_h.set('HAVE_UBUNTU_APPINDICATOR', appindicator)
+ gnome = import('gnome')
+ i18n = import('i18n')
+@@ -155,7 +155,7 @@
+ subdir('help')
+ subdir('font-viewer')
+ subdir('capplets')
+-subdir('typing-break')
++#subdir('typing-break')
+ subdir('shell')
+ 
+ gnome.post_install(

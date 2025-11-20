@@ -1,0 +1,5 @@
+#TODO compiled but not tested
+[source]
+git = "https://github.com/kevinmatthes/aeruginous-rs"
+[build]
+template = "cargo"

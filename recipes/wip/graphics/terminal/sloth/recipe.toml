@@ -1,0 +1,6 @@
+#TODO compilation error
+[source]
+git = "https://github.com/ecumene/rust-sloth"
+script = "rm Cargo.lock"
+[build]
+template = "cargo"

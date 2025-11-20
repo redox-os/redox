@@ -1,0 +1,17 @@
+#TODO not compiled or tested
+# build instructions: https://www.freedesktop.org/wiki/Software/PulseAudio/Documentation/Developer/PulseAudioFromGit/
+[source]
+tar = "https://freedesktop.org/software/pulseaudio/releases/pulseaudio-17.0.tar.xz"
+[build]
+template = "meson"
+mesonflags = [
+    "-Ddaemon=false"
+]
+dependencies = [
+    "libsndfile",
+    "libatomic-ops",
+    "speexdsp",
+    "libtool",
+    "json-c",
+    "gettext",
+]

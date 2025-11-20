@@ -1,0 +1,6 @@
+#TODO not compiled or tested
+# build instructions: https://manual.gromacs.org/current/install-guide/index.html
+[source]
+tar = "https://ftp.gromacs.org/gromacs/gromacs-2025.3.tar.gz"
+[build]
+template = "cmake"

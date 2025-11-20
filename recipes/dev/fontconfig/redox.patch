@@ -1,0 +1,33 @@
+diff -ruwN source/src/fccache.c source-new/src/fccache.c
+--- source/src/fccache.c	2019-06-10 05:36:37.000000000 -0600
++++ source-new/src/fccache.c	2019-10-02 19:48:10.459642095 -0600
+@@ -1526,7 +1526,7 @@
+ #if defined(_WIN32)
+ 	    if (_locking (fd, _LK_LOCK, 1) == -1)
+ 		goto bail;
+-#else
++#elif !defined(__redox__)
+ 	    struct flock fl;
+ 
+ 	    fl.l_type = F_WRLCK;
+@@ -1556,7 +1556,7 @@
+     {
+ #if defined(_WIN32)
+ 	_locking (fd, _LK_UNLCK, 1);
+-#else
++#elif !defined(__redox__)
+ 	struct flock fl;
+ 
+ 	fl.l_type = F_UNLCK;
+diff -ruwN source/src/fccharset.c source-new/src/fccharset.c
+--- source/src/fccharset.c	2018-06-05 04:36:38.000000000 -0600
++++ source-new/src/fccharset.c	2019-10-02 19:48:53.082862133 -0600
+@@ -600,7 +600,7 @@
+ static FcChar32
+ FcCharSetPopCount (FcChar32 c1)
+ {
+-#if __GNUC__ > 3 || (__GNUC__ == 3 && __GNUC_MINOR__ >= 4)
++#if !defined(__redox__) && (__GNUC__ > 3 || (__GNUC__ == 3 && __GNUC_MINOR__ >= 4))
+     return __builtin_popcount (c1);
+ #else
+     /* hackmem 169 */

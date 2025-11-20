@@ -1,0 +1,18 @@
+[source]
+tar = "https://www.x.org/releases/individual/lib/libXres-1.2.3.tar.xz"
+blake3 = "ed6e65e554fb812ddbec0667d749cb6c0488a964d7b12a7c4c2cadac1287088f"
+script = """
+DYNAMIC_INIT
+autotools_recursive_regenerate
+"""
+
+[build]
+dependencies = [
+    "libx11",
+    "libxext",
+]
+template = "custom"
+script = """
+DYNAMIC_INIT
+cookbook_configure --enable-malloc0returnsnull
+"""

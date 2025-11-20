@@ -1,0 +1,23 @@
+#TODO probably wrong template, see see https://firefox-source-docs.mozilla.org/setup/linux_build.html#build
+[source]
+tar = "https://dist.torproject.org/torbrowser/13.0.1/src-firefox-tor-browser-115.4.0esr-13.0-1-build2.tar.xz"
+[build]
+template = "configure"
+dependencies = [
+    "fontconfig",
+    "atk",
+    "cairo",
+    "dbus",
+    "libffi",
+    "freetype2",
+    "gdk-pixbuf",
+    "glib",
+    "gtk3",
+    "pango",
+    "sqlite3",
+    "nss-nspr",
+    "startup-notification",
+    "zlib",
+    "libvpx",
+    "ffmpeg6",
+]

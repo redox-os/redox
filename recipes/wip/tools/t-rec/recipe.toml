@@ -1,0 +1,12 @@
+#TODO not compiled or tested
+[source]
+git = "https://github.com/sassman/t-rec-rs"
+[build]
+template = "custom"
+dependencies = [
+    "imagemagick",
+]
+script = """
+DYNAMIC_INIT
+cookbook_cargo
+"""

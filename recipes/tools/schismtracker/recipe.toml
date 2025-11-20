@@ -1,0 +1,28 @@
+[source]
+tar = "https://github.com/schismtracker/schismtracker/archive/20181223.tar.gz"
+blake3 = "057e973f4f84cf898e2240d67c0e92f25086d8b9ffdc7e0c7ef81dd8dc81bc70"
+patches = ["redox.patch"]
+script = """
+autoreconf -i
+"""
+
+[build]
+template = "custom"
+dependencies = [
+    "sdl1",
+    "liborbital", 
+    "libiconv",
+]
+script = """
+export CFLAGS="${CFLAGS} -I${COOKBOOK_SYSROOT}/include/SDL"
+export SDL_CONFIG="${COOKBOOK_SYSROOT}/bin/sdl-config"
+
+COOKBOOK_CONFIGURE_FLAGS=(
+    --build="$(gcc -dumpmachine)"
+    --host="${TARGET}"
+    --prefix=""
+    --with-sdl-prefix="${COOKBOOK_SYSROOT}"
+)
+
+cookbook_configure
+"""

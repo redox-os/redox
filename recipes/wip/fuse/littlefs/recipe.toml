@@ -1,0 +1,9 @@
+#TODO missing script for gnu make
+[source]
+git = "https://github.com/littlefs-project/littlefs-fuse"
+rev = "v2.7.14"
+[build]
+template = "custom"
+dependencies = [
+    "libfuse3",
+]

@@ -1,0 +1,17 @@
+diff -ruwN gdk-pixbuf-2.38.1/gdk-pixbuf/meson.build source/gdk-pixbuf/meson.build
+--- gdk-pixbuf-2.38.1/gdk-pixbuf/meson.build	2019-02-28 09:22:57.000000000 -0700
++++ source/gdk-pixbuf/meson.build	2025-05-01 12:23:46.853375624 -0600
+@@ -290,9 +290,10 @@
+ endif
+ 
+ gdkpixbuf_bin = [
+-  [ 'gdk-pixbuf-csource' ],
+-  [ 'gdk-pixbuf-pixdata' ],
+-  [ 'gdk-pixbuf-query-loaders', [ 'queryloaders.c' ] ],
++# Broken compilation on Redox
++#  [ 'gdk-pixbuf-csource' ],
++#  [ 'gdk-pixbuf-pixdata' ],
++#  [ 'gdk-pixbuf-query-loaders', [ 'queryloaders.c' ] ],
+ ]
+ 
+ foreach bin: gdkpixbuf_bin

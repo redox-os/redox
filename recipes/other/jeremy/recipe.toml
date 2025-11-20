@@ -1,0 +1,11 @@
+# This is a private repository that sets up my user
+[source]
+git = "https://gitlab.redox-os.org/jackpot51/jeremy.git"
+
+[build]
+template = "custom"
+script = """
+mkdir -pv "${COOKBOOK_STAGE}/home"
+cp -rv "${COOKBOOK_SOURCE}" "${COOKBOOK_STAGE}/home/user"
+rm -rf "${COOKBOOK_STAGE}/home/user/.git"
+"""

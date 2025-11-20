@@ -1,0 +1,16 @@
+#TODO not compiled or tested
+# build instructions: https://github.com/snes9xgit/snes9x/wiki/Compiling
+[source]
+git = "https://github.com/snes9xgit/snes9x"
+rev = "1.63"
+shallow_clone = true
+[build]
+template = "cmake"
+dependencies = [
+    "sdl2",
+    "gtk3mm",
+    "libpng",
+    "zlib",
+    "libx11",
+    "libepoxy",
+]

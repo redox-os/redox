@@ -1,0 +1,9 @@
+#TODO add a command to properly move the executable
+#TODO compiled but not tested
+[source]
+git = "https://github.com/bmwill/diffy"
+[build]
+template = "custom"
+script = """
+cookbook_cargo_packages diffy
+"""

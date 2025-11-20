@@ -1,0 +1,18 @@
+[source]
+tar = "https://github.com/mgba-emu/mgba/archive/0.10.5.tar.gz"
+blake3 = "a1b9e797a5058f5264d276805aef5643b7ea460916e491a0098ba32d87f1519e"
+patches = ["redox.patch"]
+
+[build]
+dependencies = ["libiconv", "liborbital", "libpng", "pixman", "sdl1", "zlib"]
+template = "cmake"
+cmakeflags = [
+    "-DBUILD_QT=OFF",
+    "-DBUILD_SHARED=ON",
+    "-DBUILD_STATIC=OFF",
+    "-DUSE_SQLITE3=OFF",
+    "-DUSE_DEBUGGERS=OFF",
+    "-DBUILD_SDL=ON",
+    "-DSDL_VERSION=1.2",
+    "-DSDL_LIBRARY=-lSDL -lorbital",
+]

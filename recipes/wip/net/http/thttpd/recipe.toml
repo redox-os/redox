@@ -1,0 +1,6 @@
+#TODO not compiled or tested
+# build instructions: read the INSTALL file
+[source]
+tar = "https://acme.com/software/thttpd/thttpd-2.29.tar.gz"
+[build]
+template = "configure"

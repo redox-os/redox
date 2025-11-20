@@ -1,0 +1,9 @@
+#TODO openssl error
+[source]
+git = "https://github.com/Siriusmart/youtube-tui"
+[build]
+template = "cargo"
+cargoflags = "--no-default-features"
+dependencies = [
+    "openssl1",
+]

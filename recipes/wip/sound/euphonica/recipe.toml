@@ -1,0 +1,17 @@
+#TODO not compiled or tested
+# build instructions: https://github.com/htkhiem/euphonica#meson
+[source]
+git = "https://github.com/htkhiem/euphonica"
+[build]
+template = "custom"
+dependencies = [
+    "gtk4",
+    "libadwaita",
+    "sqlite3",
+]
+script = """
+DYNAMIC_INIT
+cookbook_cargo
+"""
+[package]
+dependencies = ["mpd"]

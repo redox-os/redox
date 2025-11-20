@@ -1,0 +1,7 @@
+#TODO not compiled or tested
+# build instructions: https://github.com/json-c/json-c#build-instructions--
+[source]
+git = "https://github.com/json-c/json-c"
+rev = "b4c371fa0cbc4dcbaccc359ce9e957a22988fb34"
+[build]
+template = "cmake"

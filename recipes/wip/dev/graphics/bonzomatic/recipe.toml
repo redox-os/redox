@@ -1,0 +1,12 @@
+#TODO not compiled or tested
+#TODO missing dependencies
+# build instructions - https://github.com/Gargaj/Bonzomatic#linux
+[source]
+git = "https://github.com/Gargaj/Bonzomatic"
+[build]
+template = "cmake"
+dependencies = [
+    "libx11",
+    "libalsa",
+    "mesa-glu",
+]

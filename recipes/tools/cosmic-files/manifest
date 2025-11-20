@@ -1,0 +1,5 @@
+name=COSMIC File Manager
+binary=/bin/cosmic-files
+icon=/ui/icons/apps/system-file-manager.png
+author=Jeremy Soller
+description=COSMIC File Manager

@@ -1,0 +1,18 @@
+#TODO missing script for mach: https://developer.palemoon.org/build/linux/
+[source]
+tar = "https://repo.palemoon.org/MoonchildProductions/Pale-Moon/archive/33.9.1_Release.tar.gz"
+[build]
+template = "custom"
+dependencies = [
+    "gtk3",
+    "glib",
+    "pango",
+    "dbus",
+    "mesa",
+    "libxt",
+    "openssl1",
+    "sqlite3",
+    "libpulse",
+    "libalsa",
+    "libx11",
+]

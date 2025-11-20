@@ -1,0 +1,16 @@
+#TODO make libwayland work
+[source]
+git = "https://github.com/jackpot51/wayland-rs"
+branch = "redox"
+
+[build]
+template = "custom"
+dependencies = [
+    "libffi",
+    "libwayland",
+]
+script = """
+DYNAMIC_INIT
+export RUSTFLAGS="${RUSTFLAGS} -lffi"
+cookbook_cargo_examples list_globals_no_dispatch list_globals simple_window
+"""

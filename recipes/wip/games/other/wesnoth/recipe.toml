@@ -1,0 +1,37 @@
+#TODO not compiled or tested
+[source]
+git = "https://github.com/wesnoth/wesnoth"
+branch = "1.14.6"
+[build]
+template = "cmake"
+cmakeflags = [
+    "-DCMAKE_TRY_COMPILE_TARGET_TYPE=DYNAMIC_LIBRARY",
+    "-DENABLE_SERVER=OFF",
+    "-DENABLE_TESTS=OFF"
+    "-DCRYPTO_LIBRARY=openssl",
+    "-DSDL2_LIBRARY=sdl2",
+    "-DSDL2_IMAGE_LIBRARY=SDL2_image",
+    "-DSDL2_MIXER_LIBRARY=SDL2_mixer",
+    "-DSDL2_TTF_LIBRARY=SDL2_ttf",
+    "-DVORBISFILE_INCLUDE_DIR=${COOKBOOK_SYSROOT}/include",
+    "-DVORBISFILE_LIBRARY=vorbisfile ..",
+]
+dependencies = [
+    "cairo",
+    "freetype2",
+    "glib",
+    "libjpeg",
+    "liborbital",
+    "libpng",
+    "libvorbis",
+    "llvm18",
+    "mesa",
+    "mesa-glu",
+    "pcre",
+    "pixman",
+    "sdl2",
+    "sdl2-image",
+    "sdl2-mixer",
+    "sdl2-ttf",
+    "zlib",
+]

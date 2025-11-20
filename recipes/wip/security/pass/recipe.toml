@@ -1,0 +1,6 @@
+#TODO missing script for gnu make: https://git.zx2c4.com/password-store/tree/INSTALL
+#TODO determine compile-time and run-time dependencies: https://git.zx2c4.com/password-store/tree/README#n15
+[source]
+tar = "https://git.zx2c4.com/password-store/snapshot/password-store-1.7.4.tar.xz"
+[build]
+template = "custom"

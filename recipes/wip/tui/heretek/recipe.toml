@@ -1,0 +1,5 @@
+#TODO not compiled or tested
+[source]
+git = "https://github.com/wcampbell0x2a/heretek"
+[build]
+template = "cargo"

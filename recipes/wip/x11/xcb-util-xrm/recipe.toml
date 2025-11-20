@@ -1,0 +1,18 @@
+[source]
+tar = "https://github.com/Airblader/xcb-util-xrm/releases/download/v1.3/xcb-util-xrm-1.3.tar.bz2"
+blake3 = "21cd9a005dde4982a452df156a16f4a61bd5299fb1a24dda2c9e8169e0654f38"
+script = """
+DYNAMIC_INIT
+autotools_recursive_regenerate
+"""
+
+[build]
+dependencies = [
+    "libx11",
+    "xcb-util",
+]
+template = "custom"
+script = """
+DYNAMIC_INIT
+cookbook_configure
+"""

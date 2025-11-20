@@ -1,0 +1,11 @@
+#TODO make the "less" dependency work
+[source]
+git = "https://github.com/dandavison/delta"
+[build]
+template = "custom"
+dependencies = [
+    "less",
+]
+script = """
+cookbook_cargo_packages git-delta
+"""

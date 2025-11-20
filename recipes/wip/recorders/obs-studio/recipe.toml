@@ -1,0 +1,32 @@
+#TODO not compiled or tested
+# build instructions: https://github.com/obsproject/obs-studio/wiki/Building-OBS-Studio
+# maybe missing dependencies
+[source]
+git = "https://github.com/obsproject/obs-studio"
+rev = "b45a73296f4f898e2ed455023020058075c30bab"
+[build]
+template = "cmake"
+dependencies = [
+    "boost",
+    "librsvg",
+    "dbus",
+    "fontconfig",
+    "freetype2",
+    "jansson",
+    "pipewire",
+    "mesa",
+    "speexdsp",
+    "ffmpeg6",
+    "x264",
+    "curl",
+    "mbedtls",
+    "libva",
+    "qt5-base",
+    "qt5-svg",
+    "eudev",
+    "pciutils",
+    "libqrcodegenc",
+    "librist",
+    "libsrt",
+    "libwebsocket++",
+]

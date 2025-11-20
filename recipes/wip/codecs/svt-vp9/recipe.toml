@@ -1,0 +1,6 @@
+#TODO not compiled or tested
+# build instructions: https://github.com/OpenVisualCloud/SVT-VP9#linux-operating-systems-64-bit
+[source]
+git = "https://github.com/OpenVisualCloud/SVT-VP9"
+[build]
+template = "cmake"

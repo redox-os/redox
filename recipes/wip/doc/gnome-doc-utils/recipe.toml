@@ -1,0 +1,5 @@
+#TODO probably wrong template
+[source]
+tar = "https://download.gnome.org/sources/gnome-doc-utils/0.20/gnome-doc-utils-0.20.10.tar.xz"
+[build]
+template = "configure"

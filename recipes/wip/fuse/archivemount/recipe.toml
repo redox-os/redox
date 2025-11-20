@@ -1,0 +1,10 @@
+#TODO not compiled or tested
+[source]
+git = "https://github.com/cybernoid/archivemount"
+rev = "78c306538065de9b14f48cfc2024f50f843d3b29"
+[build]
+template = "configure"
+dependencies = [
+    "libfuse2",
+    "libarchive",
+]

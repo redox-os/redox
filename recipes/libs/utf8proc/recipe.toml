@@ -1,0 +1,23 @@
+[source]
+tar = "https://github.com/JuliaStrings/utf8proc/archive/refs/tags/v2.10.0.tar.gz"
+blake3 = "6f675db5d1ae55ad0825351ba9c58a5b5c24c862f559cc7bfed1cb63c1185594"
+
+[build]
+template = "custom"
+script = """
+DYNAMIC_INIT
+COOKBOOK_CONFIGURE="cmake"
+COOKBOOK_CONFIGURE_FLAGS=(
+    -DCMAKE_BUILD_TYPE=Release
+    -DCMAKE_CROSSCOMPILING=True
+    -DCMAKE_CXX_COMPILER="${TARGET}-g++"
+    -DCMAKE_C_COMPILER="${TARGET}-gcc"
+    -DCMAKE_INSTALL_PREFIX="/"
+    -DCMAKE_PREFIX_PATH="${COOKBOOK_SYSROOT}"
+    -DCMAKE_SYSTEM_NAME=Generic
+    -DCMAKE_SYSTEM_PROCESSOR="$(echo "${TARGET}" | cut -d - -f1)"
+    -DCMAKE_VERBOSE_MAKEFILE=On
+"${COOKBOOK_SOURCE}"
+)
+cookbook_configure
+"""

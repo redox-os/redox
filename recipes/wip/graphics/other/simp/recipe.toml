@@ -1,0 +1,5 @@
+#TODO wayland-backend crate error
+[source]
+git = "https://github.com/Kl4rry/simp"
+[build]
+template = "cargo"

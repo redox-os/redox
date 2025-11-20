@@ -1,0 +1,10 @@
+#TODO not compiled or tested
+[source]
+git = "https://github.com/transformrs/trv"
+[build]
+template = "cargo"
+[package]
+dependencies = [
+    "ffmpeg6",
+    "typst",
+]

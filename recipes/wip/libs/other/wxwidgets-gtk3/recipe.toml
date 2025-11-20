@@ -1,0 +1,14 @@
+#TODO probably wrong script, see https://github.com/wxWidgets/wxWidgets/blob/master/docs/gtk/install.md
+[source]
+tar = "https://github.com/wxWidgets/wxWidgets/releases/download/v3.2.4/wxWidgets-3.2.4.tar.bz2"
+[build]
+template = "custom"
+dependencies = [
+    "gtk3",
+]
+script = """
+COOKBOOK_CONFIGURE_FLAGS+=(
+    --with-gtk
+)
+cookbook_configure
+"""

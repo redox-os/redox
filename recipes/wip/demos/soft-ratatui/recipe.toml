@@ -1,0 +1,6 @@
+#TODO glutin crate error
+[source]
+git = "https://github.com/gold-silver-copper/soft_ratatui"
+[build]
+template = "cargo"
+package_path = "egui_colors_example"

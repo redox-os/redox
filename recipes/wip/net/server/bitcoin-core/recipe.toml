@@ -1,0 +1,15 @@
+#TODO make dependencies work
+[source]
+tar = "https://bitcoincore.org/bin/bitcoin-core-27.0/bitcoin-27.0.tar.gz"
+[build]
+template = "custom"
+dependencies = [
+    "boost",
+    "libevent",
+]
+script = """
+COOKBOOK_CONFIGURE_FLAGS+=(
+    --disable-wallet
+)
+cookbook_configure
+"""

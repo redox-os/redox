@@ -1,0 +1,30 @@
+#TODO not compiled or tested
+# build instructions: https://github.com/yvt/openspades#on-unixes-from-source
+[source]
+git = "https://github.com/yvt/openspades"
+[build]
+template = "custom"
+dependencies = [
+	"glew",
+	"openssl1",
+	"sdl2",
+	"sdl2-image",
+	"freealut",
+	"freetype2",
+	"opus",
+	"opusfile",
+	"libjpeg",
+	"openal",
+    "curl",
+    "libxinerama",
+    "libxft",
+]
+script = """
+DYNAMIC_INIT
+COOKBOOK_CMAKE_FLAGS+=(
+    -DOPENSPADES_NONFREE_RESOURCES=OFF
+)
+cookbook_cmake
+wget https://github.com/DeathByDenim/openspades-free-pak/releases/download/latest/pak001-Free.pak \
+"${COOKBOOK_STAGE}"/usr/share/openspades/Resources
+"""

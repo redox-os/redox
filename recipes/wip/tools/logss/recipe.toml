@@ -1,0 +1,5 @@
+#TODO broken and don't exit
+[source]
+git = "https://github.com/todoesverso/logss"
+[build]
+template = "cargo"

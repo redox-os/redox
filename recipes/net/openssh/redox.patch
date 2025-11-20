@@ -1,0 +1,686 @@
+diff -ruwN source/configure source-new/configure
+--- source/configure	2024-07-01 11:36:28.000000000 +0700
++++ source-new/configure	2025-09-06 23:54:58.147442355 +0700
+@@ -12606,6 +12606,10 @@
+ printf "%s\n" "#define BROKEN_POLL 1" >>confdefs.h
+ 
+ 	;;
++*-*-redox)
++
++  # todo
++	;;
+ mips-sony-bsd|mips-sony-newsos4)
+ 
+ printf "%s\n" "#define NEED_SETPGRP 1" >>confdefs.h
+diff -ruwN source/defines.h source-new/defines.h
+--- source/defines.h	2024-07-01 11:36:28.000000000 +0700
++++ source-new/defines.h	2025-09-07 01:35:40.209700338 +0700
+@@ -52,6 +52,18 @@
+ #define IPPORT_RESERVED 0
+ #endif
+ 
++#ifndef IPPORT_RESERVED
++#define IPPORT_RESERVED 1024
++#endif
++
++#ifndef IN_LOOPBACKNET
++#define IN_LOOPBACKNET 127
++#endif
++
++#ifndef MAXDNAME
++#define MAXDNAME 256
++#endif
++
+ /*
+  * Definitions for IP type of service (ip_tos)
+  */
+@@ -454,19 +466,21 @@
+ # define _PATH_DEVNULL "/dev/null"
+ #endif
+ 
+-/* user may have set a different path */
+-#if defined(_PATH_MAILDIR) && defined(MAIL_DIRECTORY)
+-# undef _PATH_MAILDIR
+-#endif /* defined(_PATH_MAILDIR) && defined(MAIL_DIRECTORY) */
+-
+-#ifdef MAIL_DIRECTORY
+-# define _PATH_MAILDIR MAIL_DIRECTORY
++#ifndef _PATH_MAILDIR
++# define _PATH_MAILDIR "/var/mail"
+ #endif
+ 
+ #ifndef _PATH_NOLOGIN
+ # define _PATH_NOLOGIN "/etc/nologin"
+ #endif
+ 
++#ifndef ST_RDONLY
++#define ST_RDONLY	1
++#endif
++#ifndef ST_NOSUID
++#define ST_NOSUID	2
++#endif
++
+ /* Define this to be the path of the xauth program. */
+ #ifdef XAUTH_PATH
+ #define _PATH_XAUTH XAUTH_PATH
+diff -ruwN source/hostfile.c source-new/hostfile.c
+--- source/hostfile.c	2024-07-01 11:36:28.000000000 +0700
++++ source-new/hostfile.c	2025-09-06 21:09:36.555438339 +0700
+@@ -44,7 +44,9 @@
+ #include <netinet/in.h>
+ 
+ #include <errno.h>
++#ifndef __redox__
+ #include <resolv.h>
++#endif
+ #include <stdarg.h>
+ #include <stdio.h>
+ #include <stdlib.h>
+diff -ruwN source/loginrec.c source-new/loginrec.c
+--- source/loginrec.c	2024-07-01 11:36:28.000000000 +0700
++++ source-new/loginrec.c	2025-09-06 21:09:36.556438304 +0700
+@@ -1033,7 +1033,7 @@
+ 		return (0);
+ 	}
+ # else
+-	if (!utmpx_write_direct(li, &ut)) {
++	if (!utmpx_write_direct(li, &utx)) {
+ 		logit("%s: utmp_write_direct() failed", __func__);
+ 		return (0);
+ 	}
+diff -ruwN source/loginrec.h source-new/loginrec.h
+--- source/loginrec.h	2024-07-01 11:36:28.000000000 +0700
++++ source-new/loginrec.h	2025-09-06 21:09:36.556438304 +0700
+@@ -30,6 +30,7 @@
+  **/
+ 
+ #include "includes.h"
++#include "openbsd-compat/utmpx.h"
+ 
+ struct ssh;
+ 
+diff -ruwN source/misc.c source-new/misc.c
+--- source/misc.c	2024-07-01 11:36:28.000000000 +0700
++++ source-new/misc.c	2025-09-07 01:21:42.201992304 +0700
+@@ -2843,7 +2843,6 @@
+ 			error("%s: dup2: %s", tag, strerror(errno));
+ 			_exit(1);
+ 		}
+-		closefrom(STDERR_FILENO + 1);
+ 
+ 		if (geteuid() == 0 &&
+ 		    initgroups(pw->pw_name, pw->pw_gid) == -1) {
+diff -ruwN source/monitor.c source-new/monitor.c
+--- source/monitor.c	2024-07-01 11:36:28.000000000 +0700
++++ source-new/monitor.c	2025-09-07 00:46:23.435378053 +0700
+@@ -484,18 +484,19 @@
+ 		pfd[0].events = POLLIN;
+ 		pfd[1].fd = pmonitor->m_log_recvfd;
+ 		pfd[1].events = pfd[1].fd == -1 ? 0 : POLLIN;
+-		if (poll(pfd, pfd[1].fd == -1 ? 1 : 2, -1) == -1) {
++		// redox can't handle timeout -1 (the poll stuck)
++		if (poll(pfd, pfd[1].fd == -1 ? 1 : 2, 1000) == -1) {
+ 			if (errno == EINTR || errno == EAGAIN)
+ 				continue;
+ 			fatal_f("poll: %s", strerror(errno));
+ 		}
+ 		if (pfd[1].revents) {
++
+ 			/*
+ 			 * Drain all log messages before processing next
+ 			 * monitor request.
+ 			 */
+ 			monitor_read_log(pmonitor);
+-			continue;
+ 		}
+ 		if (pfd[0].revents)
+ 			break;  /* Continues below */
+@@ -1577,7 +1578,8 @@
+ 	res = pty_allocate(&s->ptyfd, &s->ttyfd, s->tty, sizeof(s->tty));
+ 	if (res == 0)
+ 		goto error;
+-	pty_setowner(authctxt->pw, s->tty);
++	// non sense in redox
++	// pty_setowner(authctxt->pw, s->tty);
+ 
+ 	if ((r = sshbuf_put_u32(m, 1)) != 0 ||
+ 	    (r = sshbuf_put_cstring(m, s->tty)) != 0)
+diff -ruwN source/openbsd-compat/bsd-statvfs.h source-new/openbsd-compat/bsd-statvfs.h
+--- source/openbsd-compat/bsd-statvfs.h	2024-07-01 11:36:28.000000000 +0700
++++ source-new/openbsd-compat/bsd-statvfs.h	2025-09-06 21:09:36.556438304 +0700
+@@ -37,13 +37,6 @@
+ typedef unsigned long fsfilcnt_t;
+ #endif
+ 
+-#ifndef ST_RDONLY
+-#define ST_RDONLY	1
+-#endif
+-#ifndef ST_NOSUID
+-#define ST_NOSUID	2
+-#endif
+-
+ 	/* as defined in IEEE Std 1003.1, 2004 Edition */
+ struct statvfs {
+ 	unsigned long f_bsize;	/* File system block size. */
+diff -ruwN source/openbsd-compat/getrrsetbyname.c source-new/openbsd-compat/getrrsetbyname.c
+--- source/openbsd-compat/getrrsetbyname.c	2024-07-01 11:36:28.000000000 +0700
++++ source-new/openbsd-compat/getrrsetbyname.c	2025-09-06 21:09:36.556438304 +0700
+@@ -67,6 +67,52 @@
+ #endif
+ #define _THREAD_PRIVATE(a,b,c) (c)
+ 
++#ifdef __redox__
++
++#include <sys/types.h>
++#include <stdint.h>
++
++/*
++ * Minimalist replacement for <resolv.h> for systems that lack it,
++ * such as Redox OS. This provides the basic structures needed by
++ * the OpenSSH compatibility layer.
++ */
++
++// Define necessary constants
++#define MAXNS           3   /* max # name servers we'll track */
++#define MAXDNSRCH       6   /* max # domains in search path */
++#define MAXRESOLVSORT   10  /* number of nets to sort on */
++#define MAXDNAME        256 /* max length of a domain name */
++
++/*
++ * A simplified, portable version of the resolver state structure.
++ * Glibc-specific fields, hooks, and complex unions have been removed.
++ */
++struct __res_state {
++    int   retrans;                /* retransmission time interval */
++    int   retry;                  /* number of times to retransmit */
++    unsigned long options;        /* option flags */
++    int   nscount;                /* number of name servers */
++    struct sockaddr_in nsaddr_list[MAXNS]; /* address of name servers */
++    unsigned short id;            /* current message id */
++    char *dnsrch[MAXDNSRCH + 1];  /* components of domain to search */
++    char  defdname[MAXDNAME];     /* default domain name */
++    
++    struct {
++        struct in_addr addr;
++        uint32_t       mask;
++    } sort_list[MAXRESOLVSORT];
++    
++    int   res_h_errno;            /* last error code for this context */
++    
++    // Simplified bitfields, removing glibc internals
++    unsigned ndots : 4;           /* threshold for initial abs. query */
++    unsigned nsort : 4;           /* number of elements in sort_list[] */
++};
++
++typedef struct __res_state *res_state;
++#endif /* __redox */
++
+ #ifndef HAVE__RES_EXTERN
+ struct __res_state _res;
+ #endif
+@@ -167,6 +213,24 @@
+ 	struct dns_rr		*next;
+ };
+ 
++#ifdef __redox__
++typedef struct {
++    uint16_t id;
++    uint8_t  rd : 1;
++    uint8_t  tc : 1;
++    uint8_t  aa : 1;
++    uint8_t  opcode : 4;
++    uint8_t  qr : 1;
++    uint8_t  rcode : 4;
++    uint8_t  z : 3;
++    uint8_t  ra : 1;
++    uint16_t qdcount;
++    uint16_t ancount;
++    uint16_t nscount;
++    uint16_t arcount;
++} HEADER;
++#endif
++
+ struct dns_response {
+ 	HEADER			header;
+ 	struct dns_query	*query;
+@@ -221,10 +285,10 @@
+ 	}
+ 
+ 	/* initialize resolver */
+-	if ((_resp->options & RES_INIT) == 0 && res_init() == -1) {
++	// if (res_init() == -1) {
+ 		result = ERRSET_FAIL;
+ 		goto fail;
+-	}
++	// }
+ 
+ #ifdef DEBUG
+ 	_resp->options |= RES_DEBUG;
+@@ -482,12 +546,12 @@
+ 			prev->next = curr;
+ 
+ 		/* name */
+-		length = dn_expand(answer, answer + size, *cp, name,
+-		    sizeof(name));
+-		if (length < 0) {
++		// length = dn_expand(answer, answer + size, *cp, name,
++		//     sizeof(name));
++		// if (length < 0) {
+ 			free_dns_query(head);
+ 			return (NULL);
+-		}
++		// }
+ 		curr->name = strdup(name);
+ 		if (curr->name == NULL) {
+ 			free_dns_query(head);
+@@ -542,12 +606,12 @@
+ 			prev->next = curr;
+ 
+ 		/* name */
+-		length = dn_expand(answer, answer + size, *cp, name,
+-		    sizeof(name));
+-		if (length < 0) {
++		// length = dn_expand(answer, answer + size, *cp, name,
++		//     sizeof(name));
++		// if (length < 0) {
+ 			free_dns_rr(head);
+ 			return (NULL);
+-		}
++		// }
+ 		curr->name = strdup(name);
+ 		if (curr->name == NULL) {
+ 			free_dns_rr(head);
+diff -ruwN source/openbsd-compat/getrrsetbyname.h source-new/openbsd-compat/getrrsetbyname.h
+--- source/openbsd-compat/getrrsetbyname.h	2024-07-01 11:36:28.000000000 +0700
++++ source-new/openbsd-compat/getrrsetbyname.h	2025-09-06 21:09:36.557438268 +0700
+@@ -54,9 +54,13 @@
+ 
+ #include <sys/types.h>
+ #include <netinet/in.h>
++#ifndef __redox__
+ #include <arpa/nameser.h>
++#endif
+ #include <netdb.h>
++#ifndef __redox__
+ #include <resolv.h>
++#endif
+ 
+ #ifndef HFIXEDSZ
+ #define HFIXEDSZ 12
+diff -ruwN source/openbsd-compat/inet_ntop.c source-new/openbsd-compat/inet_ntop.c
+--- source/openbsd-compat/inet_ntop.c	2024-07-01 11:36:28.000000000 +0700
++++ source-new/openbsd-compat/inet_ntop.c	2025-09-06 21:09:36.557438268 +0700
+@@ -26,7 +26,9 @@
+ #include <sys/socket.h>
+ #include <netinet/in.h>
+ #include <arpa/inet.h>
++#ifndef __redox__
+ #include <arpa/nameser.h>
++#endif
+ #include <string.h>
+ #include <errno.h>
+ #include <stdio.h>
+diff -ruwN source/openbsd-compat/openbsd-compat.h source-new/openbsd-compat/openbsd-compat.h
+--- source/openbsd-compat/openbsd-compat.h	2024-07-01 11:36:28.000000000 +0700
++++ source-new/openbsd-compat/openbsd-compat.h	2025-09-06 21:09:36.557438268 +0700
+@@ -36,6 +36,8 @@
+ 
+ #include <stddef.h>  /* for wchar_t */
+ 
++#include "getopt.h"
++
+ /* OpenBSD function replacements */
+ #include "base64.h"
+ #include "sigact.h"
+diff -ruwN source/openbsd-compat/utmpx.c source-new/openbsd-compat/utmpx.c
+--- source/openbsd-compat/utmpx.c	1970-01-01 07:00:00.000000000 +0700
++++ source-new/openbsd-compat/utmpx.c	2025-09-06 21:09:36.557438268 +0700
+@@ -0,0 +1,13 @@
++#include "utmpx.h"
++#include <stddef.h> // For NULL
++
++#ifdef __redox__
++
++void endutxent(void) { /* Do nothing */ }
++struct utmpx *getutxent(void) { return NULL; }
++struct utmpx *getutxid(const struct utmpx *ut) { return NULL; }
++struct utmpx *getutxline(const struct utmpx *ut) { return NULL; }
++struct utmpx *pututxline(const struct utmpx *ut) { return NULL; }
++void setutxent(void) { /* Do nothing */ }
++
++#endif
+\ No newline at end of file
+diff -ruwN source/openbsd-compat/utmpx.h source-new/openbsd-compat/utmpx.h
+--- source/openbsd-compat/utmpx.h	1970-01-01 07:00:00.000000000 +0700
++++ source-new/openbsd-compat/utmpx.h	2025-09-06 21:09:36.557438268 +0700
+@@ -0,0 +1,69 @@
++#ifndef _COMPAT_UTMPX_H
++#define _COMPAT_UTMPX_H
++#ifdef __redox__
++#include <sys/types.h>
++#include <sys/time.h>
++
++#ifdef __cplusplus
++extern "C" {
++#endif
++
++/*
++ * This header provides a POSIX-compliant definition of the utmpx structure
++ * and related functions for systems that lack a native <utmpx.h>, such as Redox OS.
++ */
++
++// Define standard sizes for character arrays, based on common practice (e.g., Linux)
++#define UT_LINESIZE   32
++#define UT_NAMESIZE   32
++#define UT_HOSTSIZE   256
++#define UT_IDSIZE     4
++
++/*
++ * The utmpx structure, containing user accounting information.
++ */
++struct utmpx {
++    char            ut_user[UT_NAMESIZE]; /* User login name */
++    char            ut_id[UT_IDSIZE];     /* Unspecified terminal id */
++    char            ut_line[UT_LINESIZE]; /* Device name of tty */
++    pid_t           ut_pid;               /* Process ID */
++    short           ut_type;              /* Type of entry */
++    struct timeval  ut_tv;                /* Time entry was made */
++    // Non-standard but very common fields, often needed for compatibility
++    char            ut_host[UT_HOSTSIZE]; /* Host name for remote login */
++    // Padding to align the structure, if necessary
++    char            __padding[16];
++};
++
++/*
++ * Symbolic constants for the ut_type field.
++ */
++#define EMPTY           0 /* No valid user accounting information */
++#define BOOT_TIME       1 /* Time of system boot */
++#define OLD_TIME        2 /* Time when system clock changed */
++#define NEW_TIME        3 /* Time after system clock changed */
++#define USER_PROCESS    4 /* A user process */
++#define INIT_PROCESS    5 /* A process spawned by the init process */
++#define LOGIN_PROCESS   6 /* The session leader of a logged-in user */
++#define DEAD_PROCESS    7 /* A session leader who has exited */
++
++/*
++ * Function prototypes for utmpx database manipulation.
++ *
++ * NOTE: These are stubs. Since Redox OS does not have a utmp/utmpx
++ * database, these functions won't have a real implementation. They
++ * are declared here to satisfy the linker.
++ */
++void          endutxent(void);
++struct utmpx *getutxent(void);
++struct utmpx *getutxid(const struct utmpx *);
++struct utmpx *getutxline(const struct utmpx *);
++struct utmpx *pututxline(const struct utmpx *);
++void          setutxent(void);
++
++#ifdef __cplusplus
++}
++#endif
++
++#endif /* __redox__ */
++#endif /* _COMPAT_UTMPX_H */
+\ No newline at end of file
+diff -ruwN source/readconf.c source-new/readconf.c
+--- source/readconf.c	2024-07-01 11:36:28.000000000 +0700
++++ source-new/readconf.c	2025-09-07 01:21:42.201992304 +0700
+@@ -554,7 +554,6 @@
+ 
+ 		if (stdfd_devnull(1, 1, 0) == -1)
+ 			fatal_f("stdfd_devnull failed");
+-		closefrom(STDERR_FILENO + 1);
+ 
+ 		argv[0] = shell;
+ 		argv[1] = "-c";
+diff -ruwN source/readpass.c source-new/readpass.c
+--- source/readpass.c	2024-07-01 11:36:28.000000000 +0700
++++ source-new/readpass.c	2025-09-07 01:21:42.201992304 +0700
+@@ -278,7 +278,6 @@
+ 	if (pid == 0) {
+ 		if (stdfd_devnull(1, 1, 0) == -1)
+ 			fatal_f("stdfd_devnull failed");
+-		closefrom(STDERR_FILENO + 1);
+ 		setenv("SSH_ASKPASS_PROMPT", "none", 1); /* hint to UI */
+ 		execlp(askpass, askpass, prompt, (char *)NULL);
+ 		error_f("exec(%s): %s", askpass, strerror(errno));
+diff -ruwN source/regress/netcat.c source-new/regress/netcat.c
+--- source/regress/netcat.c	2024-07-01 11:36:28.000000000 +0700
++++ source-new/regress/netcat.c	2025-09-06 21:09:36.558438233 +0700
+@@ -1384,7 +1384,9 @@
+ #include <stdlib.h>
+ #include <string.h>
+ #include <unistd.h>
++#ifndef __redox__
+ #include <resolv.h>
++#endif
+ 
+ #define SOCKS_PORT	"1080"
+ #define HTTP_PROXY_PORT	"3128"
+diff -ruwN source/session.c source-new/session.c
+--- source/session.c	2024-07-01 11:36:28.000000000 +0700
++++ source-new/session.c	2025-09-07 01:22:43.637928015 +0700
+@@ -1365,10 +1365,12 @@
+ 			exit(1);
+ 		}
+ 		/* Initialize the group list. */
++#ifndef __redox__
+ 		if (initgroups(pw->pw_name, pw->pw_gid) < 0) {
+ 			perror("initgroups");
+ 			exit(1);
+ 		}
++#endif
+ 		endgrent();
+ #endif
+ 
+@@ -1490,7 +1492,6 @@
+ 	 * initgroups, because at least on Solaris 2.3 it leaves file
+ 	 * descriptors open.
+ 	 */
+-	closefrom(STDERR_FILENO + 1);
+ }
+ 
+ /*
+@@ -1624,7 +1625,6 @@
+ 			exit(1);
+ 	}
+ 
+-	closefrom(STDERR_FILENO + 1);
+ 
+ 	do_rc_files(ssh, s, shell);
+ 
+diff -ruwN source/sshbuf-misc.c source-new/sshbuf-misc.c
+--- source/sshbuf-misc.c	2024-07-01 11:36:28.000000000 +0700
++++ source-new/sshbuf-misc.c	2025-09-06 21:09:36.559438198 +0700
+@@ -28,7 +28,9 @@
+ #include <stdio.h>
+ #include <limits.h>
+ #include <string.h>
++#ifndef __redox__
+ #include <resolv.h>
++#endif
+ #include <ctype.h>
+ #include <unistd.h>
+ 
+diff -ruwN source/ssh.c source-new/ssh.c
+--- source/ssh.c	2024-07-01 11:36:28.000000000 +0700
++++ source-new/ssh.c	2025-09-07 01:22:43.638928030 +0700
+@@ -689,7 +689,6 @@
+ 	 * Discard other fds that are hanging around. These can cause problem
+ 	 * with backgrounded ssh processes started by ControlPersist.
+ 	 */
+-	closefrom(STDERR_FILENO + 1);
+ 
+ 	__progname = ssh_get_progname(av[0]);
+ 
+diff -ruwN source/sshconnect2.c source-new/sshconnect2.c
+--- source/sshconnect2.c	2024-07-01 11:36:28.000000000 +0700
++++ source-new/sshconnect2.c	2025-09-07 01:22:58.683157171 +0700
+@@ -2057,7 +2057,6 @@
+ 		sock = STDERR_FILENO + 1;
+ 		if (fcntl(sock, F_SETFD, 0) == -1) /* keep the socket on exec */
+ 			debug3_f("fcntl F_SETFD: %s", strerror(errno));
+-		closefrom(sock + 1);
+ 
+ 		debug3_f("[child] pid=%ld, exec %s",
+ 		    (long)getpid(), _PATH_SSH_KEY_SIGN);
+diff -ruwN source/sshd.c source-new/sshd.c
+--- source/sshd.c	2024-07-01 11:36:28.000000000 +0700
++++ source-new/sshd.c	2025-09-07 01:39:34.681252169 +0700
+@@ -1222,7 +1222,7 @@
+ 		debug("setgroups(): %.200s", strerror(errno));
+ 
+ 	/* Ensure that fds 0, 1 and 2 are open or directed to /dev/null */
+-	sanitise_stdfd();
++	// sanitise_stdfd();
+ 
+ 	/* Initialize configuration options to their default values. */
+ 	initialize_server_options(&options);
+@@ -1344,7 +1344,6 @@
+ 	if (!test_flag && !do_dump_cfg && !path_absolute(av[0]))
+ 		fatal("sshd requires execution with an absolute path");
+ 
+-	closefrom(STDERR_FILENO + 1);
+ 
+ 	/* Reserve fds we'll need later for reexec things */
+ 	if ((devnull = open(_PATH_DEVNULL, O_RDWR)) == -1)
+@@ -1482,13 +1481,13 @@
+ 			    options.host_key_files[i]);
+ 			key->sk_flags &= ~SSH_SK_USER_PRESENCE_REQD;
+ 		}
+-		if (r == 0 && key != NULL &&
+-		    (r = sshkey_shield_private(key)) != 0) {
+-			do_log2_r(r, ll, "Unable to shield host key \"%s\"",
+-			    options.host_key_files[i]);
+-			sshkey_free(key);
+-			key = NULL;
+-		}
++		// if (r == 0 && key != NULL &&
++		//     (r = sshkey_shield_private(key)) != 0) {
++		// 	do_log2_r(r, ll, "Unable to shield host key \"%s\"",
++		// 	    options.host_key_files[i]);
++		// 	sshkey_free(key);
++		// 	key = NULL;
++		// }
+ 		if ((r = sshkey_load_public(options.host_key_files[i],
+ 		    &pubkey, NULL)) != 0 && r != SSH_ERR_SYSTEM_ERROR)
+ 			do_log2_r(r, ll, "Unable to load host key \"%s\"",
+@@ -1600,8 +1599,7 @@
+ 	}
+ 
+ 	/* Ensure privsep directory is correctly configured. */
+-	need_chroot = ((getuid() == 0 || geteuid() == 0) ||
+-	    options.kerberos_authentication);
++	need_chroot = 0;// ((getuid() == 0 || geteuid() == 0) || options.kerberos_authentication);
+ 	if ((getpwnam(SSH_PRIVSEP_USER)) == NULL && need_chroot) {
+ 		fatal("Privilege separation user %s does not exist",
+ 		    SSH_PRIVSEP_USER);
+@@ -1773,7 +1771,7 @@
+ 		close(startup_pipe);
+ 	}
+ 	log_redirect_stderr_to(NULL);
+-	closefrom(REEXEC_MIN_FREE_FD);
++	// closefrom(REEXEC_MIN_FREE_FD);
+ 
+ 	ssh_signal(SIGHUP, SIG_IGN); /* avoid reset to SIG_DFL */
+ 	execv(rexec_argv[0], rexec_argv);
+diff -ruwN source/sshd-session.c source-new/sshd-session.c
+--- source/sshd-session.c	2024-07-01 11:36:28.000000000 +0700
++++ source-new/sshd-session.c	2025-09-06 21:15:43.796191268 +0700
+@@ -1031,7 +1031,7 @@
+ 	if (!rexeced_flag)
+ 		fatal("sshd-session should not be executed directly");
+ 
+-	closefrom(REEXEC_MIN_FREE_FD);
++	// closefrom(REEXEC_MIN_FREE_FD);
+ 
+ 	seed_rng();
+ 
+@@ -1073,7 +1073,7 @@
+ 	options.timing_secret = timing_secret;
+ 
+ 	/* Store privilege separation user for later use if required. */
+-	privsep_chroot = (getuid() == 0 || geteuid() == 0);
++	privsep_chroot = 0;// (getuid() == 0 || geteuid() == 0);
+ 	if ((privsep_pw = getpwnam(SSH_PRIVSEP_USER)) == NULL) {
+ 		if (privsep_chroot || options.kerberos_authentication)
+ 			fatal("Privilege separation user %s does not exist",
+diff -ruwN source/sshkey.c source-new/sshkey.c
+--- source/sshkey.c	2024-07-01 11:36:28.000000000 +0700
++++ source-new/sshkey.c	2025-09-06 21:09:36.567437916 +0700
+@@ -43,7 +43,9 @@
+ #include <stdio.h>
+ #include <stdlib.h>
+ #include <string.h>
++#ifndef __redox__
+ #include <resolv.h>
++#endif
+ #include <time.h>
+ #ifdef HAVE_UTIL_H
+ #include <util.h>
+diff -ruwN source/ssh-sk-client.c source-new/ssh-sk-client.c
+--- source/ssh-sk-client.c	2024-07-01 11:36:28.000000000 +0700
++++ source-new/ssh-sk-client.c	2025-09-07 01:21:42.201992304 +0700
+@@ -91,7 +91,6 @@
+ 		}
+ 		close(pair[0]);
+ 		close(pair[1]);
+-		closefrom(STDERR_FILENO + 1);
+ 		debug_f("starting %s %s", helper,
+ 		    verbosity == NULL ? "" : verbosity);
+ 		execlp(helper, helper, verbosity, (char *)NULL);
+diff -ruwN source/ssh-sk-helper.c source-new/ssh-sk-helper.c
+--- source/ssh-sk-helper.c	2024-07-01 11:36:28.000000000 +0700
++++ source-new/ssh-sk-helper.c	2025-09-07 01:22:43.638928030 +0700
+@@ -303,7 +303,6 @@
+ 	 * Rearrange our file descriptors a little; we don't trust the
+ 	 * providers not to fiddle with stdin/out.
+ 	 */
+-	closefrom(STDERR_FILENO + 1);
+ 	if ((in = dup(STDIN_FILENO)) == -1 || (out = dup(STDOUT_FILENO)) == -1)
+ 		fatal("%s: dup: %s", __progname, strerror(errno));
+ 	close(STDIN_FILENO);
+diff -ruwN source/uidswap.c source-new/uidswap.c
+--- source/uidswap.c	2024-07-01 11:36:28.000000000 +0700
++++ source-new/uidswap.c	2025-09-07 00:01:52.531094834 +0700
+@@ -37,7 +37,7 @@
+  * POSIX saved uids or not.
+  */
+ 
+-#if defined(_POSIX_SAVED_IDS) && !defined(BROKEN_SAVED_UIDS)
++#if !defined(BROKEN_SAVED_UIDS)
+ /* Lets assume that posix saved ids also work with seteuid, even though that
+    is not part of the posix specification. */
+ #define SAVED_IDS_WORK_WITH_SETEUID
+@@ -83,6 +83,9 @@
+ 	privileged = 1;
+ 	temporarily_use_uid_effective = 1;
+ 
++	// getgroups broken in redox
++#ifndef __redox__
++
+ 	saved_egroupslen = getgroups(0, NULL);
+ 	if (saved_egroupslen == -1)
+ 		fatal("getgroups: %.100s", strerror(errno));
+@@ -119,6 +122,7 @@
+ 	/* Set the effective uid to the given (unprivileged) uid. */
+ 	if (setgroups(user_groupslen, user_groups) == -1)
+ 		fatal("setgroups: %.100s", strerror(errno));
++#endif
+ #ifndef SAVED_IDS_WORK_WITH_SETEUID
+ 	/* Propagate the privileged gid to all of our gids. */
+ 	if (setgid(getegid()) == -1)
+@@ -168,8 +172,11 @@
+ 		fatal("%s: setgid failed: %s", __func__, strerror(errno));
+ #endif /* SAVED_IDS_WORK_WITH_SETEUID */
+ 
++	// setgroups broken in redox
++#ifndef __redox__
+ 	if (setgroups(saved_egroupslen, saved_egroups) == -1)
+ 		fatal("setgroups: %.100s", strerror(errno));
++#endif
+ 	temporarily_use_uid_effective = 0;
+ }
+ 

@@ -1,0 +1,6 @@
+#TODO not compiled or tested
+# build instructions: https://github.com/ZDoom/ZMusic#readme
+[source]
+git = "https://github.com/ZDoom/ZMusic"
+[build]
+template = "cmake"

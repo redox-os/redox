@@ -1,0 +1,5 @@
+#TODO erg_compiler crate error
+[source]
+git = "https://github.com/mtshiba/pylyzer"
+[build]
+template = "cargo"

@@ -1,0 +1,26 @@
+[source]
+tar = "https://www.x.org/releases/individual/app/xev-1.2.6.tar.xz"
+blake3 = "883347a6db32fb4cf6bc97906ca1dacf1c67b7b84bd2abef9c6c5fc20abea647"
+script = """
+DYNAMIC_INIT
+autotools_recursive_regenerate
+"""
+
+[build]
+dependencies = [
+    "libpthread-stubs",
+    "libx11",
+    "libxau",
+    "libxcb",
+    "libxext",
+    "libxrandr",
+    "libxrender",
+    "x11proto",
+]
+template = "custom"
+script = """
+DYNAMIC_INIT
+#TODO: why are LIBS not automatic?
+export LIBS="-lXrender -lXext -lX11 -lxcb -lXau"
+cookbook_configure
+"""

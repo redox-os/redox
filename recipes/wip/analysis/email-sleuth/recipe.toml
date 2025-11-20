@@ -1,0 +1,5 @@
+#TODO openssl-sys crate error
+[source]
+git = "https://github.com/tokenizer-decode/email-sleuth"
+[build]
+template = "cargo"

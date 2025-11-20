@@ -1,0 +1,14 @@
+#TODO missing script for "make", see https://github.com/facebook/rocksdb/blob/main/INSTALL.md
+[source]
+git = "https://github.com/facebook/rocksdb"
+rev = "49ce8a1064dd1ad89117899839bf136365e49e79"
+[build]
+template = "custom"
+dependencies = [
+    "zlib",
+    "lz4",
+    "bzip2",
+    "zstd",
+    "snappy",
+    "gflags",
+]

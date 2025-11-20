@@ -1,0 +1,13 @@
+#TODO not compiled or tested
+#TODO determine minimum dependencies from cmake log
+# build instructions - https://github.com/azahar-emu/azahar/wiki/Building-From-Source#linux
+[source]
+git = "https://github.com/azahar-emu/azahar"
+rev = "2123.3"
+shallow_clone = true
+[build]
+template = "cmake"
+dependencies = [
+    "qt6-base",
+    "qt6-multimedia",
+]

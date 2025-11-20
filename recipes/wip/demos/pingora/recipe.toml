@@ -1,0 +1,8 @@
+#TODO jemalloc-sys crate error
+[source]
+git = "https://github.com/cloudflare/pingora"
+[build]
+template = "custom"
+script = """
+cookbook_cargo_examples server client
+"""

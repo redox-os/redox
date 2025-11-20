@@ -1,0 +1,6 @@
+#TODO configuration problem
+#TODO require the OCaml compiler on the host
+[source]
+tar = "https://github.com/ocaml/opam/releases/download/2.1.5/opam-full-2.1.5.tar.gz"
+[build]
+template = "configure"

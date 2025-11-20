@@ -1,0 +1,8 @@
+#TODO fs2 crate error
+[source]
+git = "https://github.com/crunchy-labs/crunchy-cli"
+[build]
+template = "cargo"
+dependencies = [
+    "openssl1",
+]

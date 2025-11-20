@@ -1,0 +1,7 @@
+#TODO not compiled or tested
+# build instructions: https://code.videolan.org/videolan/dav1d#compile
+[source]
+git = "https://code.videolan.org/videolan/dav1d"
+rev = "48035599cdd4e4415732e408c407e0c1cd1c7444"
+[build]
+template = "meson"

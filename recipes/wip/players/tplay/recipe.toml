@@ -1,0 +1,11 @@
+#TODO Make opencv4 work
+[source]
+git = "https://github.com/maxcurzi/tplay"
+[build]
+template = "cargo"
+dependencies = [
+    "ffmpeg6",
+    "llvm18",
+    "openssl1",
+    "opencv4",
+]

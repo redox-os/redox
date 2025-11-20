@@ -1,0 +1,28 @@
+[source]
+git = "https://gitlab.redox-os.org/redox-os/redox.git"
+
+[build]
+template = "custom"
+script = """
+cookbook_cargo
+
+mkdir -pv "${COOKBOOK_STAGE}/home/user/cookbook"
+cp -rv "${COOKBOOK_SOURCE}"/* "${COOKBOOK_STAGE}/home/user/cookbook"
+"""
+
+[package]
+dependencies = [
+    # TODO: When rust working, use this
+    # "dev-essential",
+    "autoconf",
+    "automake",
+    "gcc13",
+    "git",
+    "gnu-make",
+    "libtool",
+    "patch",
+    "pkg-config",
+    "pkgar",
+    "sed",
+    "wget",
+]

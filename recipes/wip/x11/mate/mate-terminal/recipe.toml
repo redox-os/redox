@@ -1,0 +1,12 @@
+[source]
+tar = "https://github.com/mate-desktop/mate-terminal/releases/download/v1.28.1/mate-terminal-1.28.1.tar.xz"
+blake3 = "5214a81a69cc18202fad9214e2dff671baf34a132a39c932214b234db113e16c"
+
+[build]
+dependencies = [
+    "dconf",
+    "gtk3",
+    "libstdcxx",
+    "vte",
+]
+template = "meson"

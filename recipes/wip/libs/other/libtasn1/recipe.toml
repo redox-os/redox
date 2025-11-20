@@ -1,0 +1,14 @@
+[source]
+tar = "https://ftp.gnu.org/gnu/libtasn1/libtasn1-4.20.0.tar.gz"
+blake3 = "374103da2b2ac47e18b57cb5d1d41f7e42f3725c269cf35fba8e4717f0c392b5"
+script = """
+DYNAMIC_INIT
+autotools_recursive_regenerate
+"""
+
+[build]
+template = "custom"
+script = """
+DYNAMIC_INIT
+cookbook_configure
+"""

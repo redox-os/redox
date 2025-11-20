@@ -1,0 +1,15 @@
+#TODO not compiled or tested
+# build instructions: https://github.com/gemrb/gemrb/blob/master/INSTALL
+[source]
+tar = "https://sourceforge.net/projects/gemrb/files/Releases//0.9.4/gemrb-0.9.4-sources.tar.gz"
+[build]
+template = "cmake"
+cmakeflags = [
+    "-DSDL_BACKEND=SDL2",
+]
+dependencies = [
+    "sdl2",
+    "sdl2-mixer",
+    "zlib",
+    "libiconv",
+]

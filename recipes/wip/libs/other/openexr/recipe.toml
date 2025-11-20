@@ -1,0 +1,11 @@
+#TODO not compiled or tested
+# build instructions: https://openexr.com/en/latest/install.html#linux-macos
+[source]
+git = "https://github.com/AcademySoftwareFoundation/openexr"
+rev = "737b2707a001e67f3812d86a639c3d037efe2ea8"
+[build]
+template = "cmake"
+dependencies = [
+    "libdeflate",
+    "libimath"
+]

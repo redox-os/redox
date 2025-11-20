@@ -1,0 +1,16 @@
+[source]
+git = "https://gitlab.redox-os.org/redox-os/rustual-boy.git"
+upstream = "https://github.com/emu-rs/rustual-boy.git"
+branch = "redox"
+
+[build]
+template = "custom"
+script = """
+COOKBOOK_SOURCE="${COOKBOOK_SOURCE}/rustual-boy-cli"
+cookbook_cargo
+"""
+
+[package]
+dependencies = [
+    "orbital",
+]

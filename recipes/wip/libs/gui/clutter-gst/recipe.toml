@@ -1,0 +1,12 @@
+#TODO not compiled or tested
+# build instructions: https://gitlab.gnome.org/Archive/clutter-gst/-/blob/master/INSTALL
+[source]
+tar = "https://download.gnome.org/sources/clutter-gst/3.0/clutter-gst-3.0.27.tar.xz"
+[build]
+template = "configure"
+dependencies = [
+    "glib",
+    "cogl",
+    "clutter",
+    "gstreamer",
+]

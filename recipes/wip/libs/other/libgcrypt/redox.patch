@@ -1,0 +1,20 @@
+--- libgcrypt-1.11.1/tests/stopwatch.h	2025-03-17 03:55:24.000000000 -0600
++++ source/tests/stopwatch.h	2025-05-10 08:42:52.113921935 -0600
+@@ -45,6 +45,8 @@
+                    &started_at.creation_time, &started_at.exit_time,
+                    &started_at.kernel_time, &started_at.user_time);
+   stopped_at = started_at;
++#elif defined(__redox__)
++  //TODO: times on redox
+ #else
+   struct tms tmp;
+ 
+@@ -60,6 +62,8 @@
+   GetProcessTimes (GetCurrentProcess (),
+                    &stopped_at.creation_time, &stopped_at.exit_time,
+                    &stopped_at.kernel_time, &stopped_at.user_time);
++#elif defined(__redox__)
++  //TODO: times on redox
+ #else
+   struct tms tmp;
+ 

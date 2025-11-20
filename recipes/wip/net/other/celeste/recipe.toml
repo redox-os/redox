@@ -1,0 +1,10 @@
+#TODO missing script for "just" and require Go, see https://github.com/hwittenborn/celeste/blob/develop/BUILDING.md
+[source]
+git = "https://github.com/hwittenborn/celeste"
+rev = "2ea8dc00ed001d045792e974b46264d920090606"
+[build]
+template = "custom"
+dependencies = [
+    "gtk4",
+    "libadwaita",
+]

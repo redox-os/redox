@@ -16,7 +16,7 @@ then
     exit 1
 fi
 
-cookbook_recipes="cookbook/recipes"
+cookbook_recipes="recipes"
 recipe_paths=$(grep -rl "$*" "$cookbook_recipes" --include recipe.toml)
 
 for recipe_path in $recipe_paths

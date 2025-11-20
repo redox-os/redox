@@ -1,0 +1,9 @@
+[source]
+git = "https://github.com/pop-os/winit.git"
+branch = "winit-0.29"
+
+[build]
+template = "custom"
+script = """
+cookbook_cargo_examples cursor_grab drag_window window window_debug
+"""

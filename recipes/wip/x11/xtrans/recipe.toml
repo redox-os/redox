@@ -1,0 +1,6 @@
+[source]
+tar = "https://xorg.freedesktop.org/archive/individual/lib/xtrans-1.6.0.tar.xz"
+blake3 = "18e5a2478425ec43370d7719bc4ee4f25d01ad7f580fcc3b5d91effa267cbaaa"
+
+[build]
+template = "configure"

@@ -1,0 +1,28 @@
+#TODO missing script for SCons, see https://github.com/gafferHQ/gaffer#building
+#TODO missing dependencies, see https://github.com/GafferHQ/dependencies
+[source]
+git = "https://github.com/GafferHQ/gaffer"
+rev = "9fe2e9c9025447913872d77c138a03eabcfa5df2"
+[build]
+template = "custom"
+dependencies = [
+    "inkscape",
+    "boost",
+    "embree",
+    "libfmt",
+    "freetype2",
+    "glew",
+    "imath",
+    "llvm18",
+    "lz4",
+    "libffi",
+    "libjpeg",
+    "libpng",
+    "libtiff",
+    "openexr",
+    "openimageio",
+    "openssl1",
+    "onetbb",
+    "zlib",
+    "qt5-full",
+]

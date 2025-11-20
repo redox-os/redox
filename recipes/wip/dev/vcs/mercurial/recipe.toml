@@ -1,0 +1,6 @@
+#TODO missing script for GNU Make, see https://wiki.mercurial-scm.org/UnixInstall
+#TODO require CPython header files
+[source]
+tar = "https://www.mercurial-scm.org/release/mercurial-6.6.2.tar.gz"
+[build]
+template = "custom"

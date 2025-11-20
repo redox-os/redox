@@ -1,0 +1,6 @@
+[source]
+tar = "https://github.com/lloyd/yajl/archive/refs/tags/2.1.0.tar.gz"
+blake3 = "25cbfe28df82d5699b8fa5db8b32797b34aff995c7ce35a5fb622cc68f90f0cb"
+
+[build]
+template = "cmake"

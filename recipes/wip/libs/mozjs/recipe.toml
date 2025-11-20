@@ -1,0 +1,40 @@
+#TODO "No suitable wgpu::Adapter found" error on execution
+[source]
+git = "https://gitlab.redox-os.org/njskalski/mozjs.git"
+branch = "redox_mods"
+[build]
+template = "custom"
+
+#these dependencies are copied from Servo recipe. Some of them may be redundant, but I needed to reproduce the build bug.
+dependencies = [
+    "freetype2",
+    "gettext",
+    "glib",
+    "gstreamer",
+    "harfbuzz",
+    "libffi",
+    "libiconv",
+    "libx11",
+    "libxcb",
+    "libpng",
+    "openssl1",
+    "pcre",
+    "zlib",
+
+    "x11proto",
+    "x11proto-kb",
+    "xcb-proto",
+    "xextproto",
+    "libxau",
+    "libpthread-stubs",
+    "fontconfig",
+    "expat",
+    "llvm18",
+    "gcc13",
+]
+
+script = """
+# Build the library crates
+"${COOKBOOK_REDOXER}" build --manifest-path "${COOKBOOK_SOURCE}/Cargo.toml" --workspace --release
+# Library crates don't need installation, they're used as dependencies
+"""

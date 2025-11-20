@@ -1,0 +1,9 @@
+#TODO promote
+[source]
+git = "https://github.com/AstroNvim/AstroNvim"
+[build]
+template = "custom"
+script = """
+mkdir -pv "${COOKBOOK_STAGE}"/home/user/.config/nvim
+cp -rv "${COOKBOOK_SOURCE}"/* "${COOKBOOK_STAGE}"/home/user/.config/nvim
+"""

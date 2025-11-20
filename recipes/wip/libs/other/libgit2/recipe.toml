@@ -1,0 +1,10 @@
+#TODO not compiled or tested
+# build instructions: https://github.com/libgit2/libgit2#building-libgit2---using-cmake
+[source]
+git = "https://github.com/libgit2/libgit2"
+rev = "a2bde63741977ca0f4ef7db2f609df320be67a08"
+[build]
+template = "cmake"
+dependencies = [
+    "openssl1",
+]

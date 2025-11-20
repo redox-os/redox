@@ -1,0 +1,63 @@
+[source]
+tar = "https://github.com/lxde/lxpanel/archive/refs/tags/0.11.1.tar.gz"
+blake3 = "5f94d410403499485d3abb6885407d6006e5029da538a1b882c670904ac616a5"
+script = """
+DYNAMIC_INIT
+mkdir -p m4
+autotools_recursive_regenerate
+"""
+
+[build]
+dependencies = [
+    "atk",
+    "cairo",
+    "expat",
+    "fontconfig",
+    "freetype2",
+    "fribidi",
+    "gdk-pixbuf",
+    "gettext",
+    "glib",
+    "gtk3",
+    "harfbuzz",
+    "keybinder3",
+    "libepoxy",
+    "libffi",
+    "libfm-gtk3",
+    "libiconv",
+    "libicu",
+    "libjpeg",
+    "libmenu-cache",
+    "libpng",
+    "libpthread-stubs",
+    "libwnck3",
+    "libx11",
+    "libxau",
+    "libxcb",
+    "libxext",
+    "libxfixes",
+    "libxft",
+    "libxi",
+    "libxrandr",
+    "libxrender",
+    "libxxf86vm",
+    "llvm18",
+    "mesa-x11",
+    "pango",
+    "pcre",
+    "pcre2",
+    "pixman",
+    "shared-mime-info",
+    "x11proto",
+    "xcb-proto",
+    "xextproto",
+    "xtrans",
+    "zlib",
+]
+template = "custom"
+script = """
+DYNAMIC_INIT
+rsync -av --delete "${COOKBOOK_SOURCE}/" ./
+COOKBOOK_CONFIGURE="./configure"
+cookbook_configure --enable-gtk3 --with-plugins=all,-cpu,-netstat,-netstatus,-weather
+"""

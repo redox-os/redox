@@ -1,0 +1,6 @@
+#TODO missing data type to download the Java bytecode
+# download link - https://download.dacapobench.org/chopin/dacapo-23.11-chopin.zip
+[source]
+
+[build]
+template = "custom"

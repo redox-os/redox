@@ -1,0 +1,14 @@
+#TODO not compiled or tested
+[source]
+git = "https://github.com/webtorrent/webtorrent-cli"
+rev = "v5.1.3"
+[build]
+template = "custom"
+script = """
+mkdir -pv "${COOKBOOK_STAGE}"/usr/bin/webtorrent-cli-dir
+cp -rv "${COOKBOOK_SOURCE}"/* "${COOKBOOK_STAGE}"/usr/bin/webtorrent-cli-dir
+echo "#!/usr/bin/env sh \n cd /usr/bin/webtorrent-cli-dir/webtorrent-cli \n npx webtorrent-cli" > "${COOKBOOK_STAGE}"/usr/bin/webtorrent-cli
+chmod a+x "${COOKBOOK_STAGE}"/usr/bin/webtorrent-cli
+"""
+[package]
+dependencies = ["nodejs24"]

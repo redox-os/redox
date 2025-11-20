@@ -1,0 +1,13 @@
+#TODO missing script for "make", see https://github.com/jordansissel/xdotool/#building--compiling
+[source]
+git = "https://github.com/jordansissel/xdotool"
+rev = "eb489de1b4fb3fd0cd935d68ae16ecd4c653ac7d"
+[build]
+template = "custom"
+dependencies = [
+    "libx11",
+    "libxi",
+    "libxinerama",
+    "libxkbcommon",
+    "libxtst",
+]

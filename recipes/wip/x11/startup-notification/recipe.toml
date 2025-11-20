@@ -1,0 +1,19 @@
+[source]
+tar = "http://www.freedesktop.org/software/startup-notification/releases/startup-notification-0.12.tar.gz"
+blake3 = "134131fdd210d2eaef76eda9826b4a832807aac231dba334f157751ed1d6da36"
+script = """
+DYNAMIC_INIT
+autotools_recursive_regenerate
+"""
+
+[build]
+dependencies = [
+    "libice",
+    "libx11",
+    "xcb-util",
+]
+template = "custom"
+script = """
+DYNAMIC_INIT
+cookbook_configure lf_cv_sane_realloc=yes
+"""

@@ -1,0 +1,5 @@
+#TODO compilation error
+[source]
+tar = "https://ftp.gnu.org/gnu/m4/m4-1.4.19.tar.xz"
+[build]
+template = "configure"

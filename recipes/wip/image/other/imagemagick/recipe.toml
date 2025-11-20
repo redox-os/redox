@@ -1,0 +1,5 @@
+#TODO compiled but not tested
+[source]
+tar = "https://imagemagick.org/archive/releases/ImageMagick-7.1.1-23.tar.xz"
+[build]
+template = "configure"

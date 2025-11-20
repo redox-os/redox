@@ -1,0 +1,8 @@
+#TODO make libfuse work
+#TODO probably missing dependencies
+# build instructions - https://github.com/MajenkoProjects/indexfs/blob/master/INSTALL
+[source]
+git = "https://github.com/MajenkoProjects/indexfs"
+script = "./autogen.sh"
+[build]
+template = "configure"

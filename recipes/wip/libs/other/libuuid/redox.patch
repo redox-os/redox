@@ -1,0 +1,54 @@
+diff -ruwN source/config.sub source-new/config.sub
+--- source/config.sub	2014-08-12 15:19:20.000000000 +0700
++++ source-new/config.sub	2025-09-19 21:11:57.907457211 +0700
+@@ -1376,7 +1376,7 @@
+ 	      | -os2* | -vos* | -palmos* | -uclinux* | -nucleus* \
+ 	      | -morphos* | -superux* | -rtmk* | -rtmk-nova* | -windiss* \
+ 	      | -powermax* | -dnix* | -nx6 | -nx7 | -sei* | -dragonfly* \
+-	      | -skyos* | -haiku* | -rdos* | -toppers* | -drops* | -es*)
++	      | -skyos* | -haiku* | -rdos* | -redox* | -toppers* | -drops* | -es*)
+ 	# Remember, each alternative MUST END IN *, to match a version number.
+ 		;;
+ 	-qnx*)
+diff -ruwN source/configure source-new/configure
+--- source/configure	2014-08-12 15:19:19.000000000 +0700
++++ source-new/configure	2025-09-19 21:20:30.460699979 +0700
+@@ -5312,7 +5312,7 @@
+   ;;
+ 
+ # This must be glibc/ELF.
+-linux* | k*bsd*-gnu | kopensolaris*-gnu)
++linux* | k*bsd*-gnu | kopensolaris*-gnu | redox*)
+   lt_cv_deplibs_check_method=pass_all
+   ;;
+ 
+@@ -8866,7 +8866,7 @@
+       archive_expsym_cmds='sed "s,^,_," $export_symbols >$output_objdir/$soname.expsym~$CC -shared $pic_flag $libobjs $deplibs $compiler_flags ${wl}-h,$soname ${wl}--retain-symbols-file,$output_objdir/$soname.expsym ${wl}--image-base,`expr ${RANDOM-$$} % 4096 / 2 \* 262144 + 1342177280` -o $lib'
+       ;;
+ 
+-    gnu* | linux* | tpf* | k*bsd*-gnu | kopensolaris*-gnu)
++    gnu* | linux* | tpf* | k*bsd*-gnu | kopensolaris*-gnu | redox*)
+       tmp_diet=no
+       if test "$host_os" = linux-dietlibc; then
+ 	case $cc_basename in
+@@ -10534,7 +10534,7 @@
+   ;;
+ 
+ # This must be glibc/ELF.
+-linux* | k*bsd*-gnu | kopensolaris*-gnu)
++linux* | k*bsd*-gnu | kopensolaris*-gnu | redox*)
+   version_type=linux # correct to gnu/linux during the next big refactor
+   need_lib_prefix=no
+   need_version=no
+diff -ruwN source/randutils.c source-new/randutils.c
+--- source/randutils.c	2014-08-12 15:07:18.000000000 +0700
++++ source-new/randutils.c	2025-09-19 21:11:57.907659403 +0700
+@@ -13,7 +13,7 @@
+ #include <string.h>
+ #include <sys/time.h>
+ 
+-#include <sys/syscall.h>
++// #include <sys/syscall.h>
+ 
+ #include "randutils.h"
+ 

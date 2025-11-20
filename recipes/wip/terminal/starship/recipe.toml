@@ -1,0 +1,6 @@
+#TODO systemstat crate error
+#TODO nix::unistd::User
+[source]
+git = "https://github.com/starship/starship"
+[build]
+template = "cargo"

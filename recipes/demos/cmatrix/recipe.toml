@@ -1,0 +1,30 @@
+[source]
+git = "https://github.com/abishekvashok/cmatrix"
+script = """
+autoreconf -i
+"""
+
+[build]
+template = "custom"
+dependencies = [
+    "ncursesw"
+]
+script = """
+export LIBS="-lncursesw"
+
+COOKBOOK_CONFIGURE_FLAGS+=(
+    --without-fonts
+)
+
+"${COOKBOOK_CONFIGURE}" "${COOKBOOK_CONFIGURE_FLAGS[@]}"
+
+sed -i -e 's|#define USE_TIOCSTI 1|/* #undef USE_TIOCSTI */|g' config.h
+
+"${COOKBOOK_MAKE}" -j "${COOKBOOK_MAKE_JOBS}"
+"${COOKBOOK_MAKE}" install DESTDIR="${COOKBOOK_STAGE}"
+"""
+
+[package]
+dependencies = [
+    "terminfo"
+]

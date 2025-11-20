@@ -1,0 +1,12 @@
+#TODO missing libc:: socket-related imports
+
+[source]
+git = "https://github.com/svenstaro/miniserve"
+
+[build]
+dependencies = [
+    "openssl1",
+    "zlib"
+]
+template = "cargo"
+

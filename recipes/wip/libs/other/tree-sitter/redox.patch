@@ -1,0 +1,45 @@
+diff --color -ruwN source/Cargo.toml source-new/Cargo.toml
+--- source/Cargo.toml	2025-07-14 01:32:42.000000000 +0700
++++ source-new/Cargo.toml	2025-09-16 11:37:28.820646655 +0700
+@@ -118,7 +118,7 @@
+ dialoguer = { version = "0.11.0", features = ["fuzzy-select"] }
+ etcetera = "0.8.0"
+ filetime = "0.2.25"
+-fs4 = "0.12.0"
++fs4 = { git = "https://github.com/al8n/fs4-rs" } # for redox support, still not published yet
+ git2 = "0.20.0"
+ glob = "0.3.2"
+ heck = "0.5.0"
+@@ -151,7 +151,7 @@
+ url = { version = "2.5.4", features = ["serde"] }
+ walkdir = "2.5.0"
+ wasmparser = "0.224.0"
+-webbrowser = "1.0.3"
++webbrowser = "1.0.5"
+ 
+ tree-sitter = { version = "0.25.1", path = "./lib" }
+ tree-sitter-generate = { version = "0.25.1", path = "./cli/generate" }
+diff --color -ruwN source/cli/src/fuzz/allocations.rs source-new/cli/src/fuzz/allocations.rs
+--- source/cli/src/fuzz/allocations.rs	2025-07-14 01:32:42.000000000 +0700
++++ source-new/cli/src/fuzz/allocations.rs	2025-09-16 11:39:56.112458323 +0700
+@@ -7,6 +7,7 @@
+     },
+ };
+ 
++#[cfg(not(target_os = "redox"))]
+ #[ctor::ctor]
+ unsafe fn initialize_allocation_recording() {
+     tree_sitter::set_allocator(
+diff --color -ruwN source/lib/src/portable/endian.h source-new/lib/src/portable/endian.h
+--- source/lib/src/portable/endian.h	2025-07-14 01:32:42.000000000 +0700
++++ source-new/lib/src/portable/endian.h	2025-09-16 11:27:12.315211556 +0700
+@@ -24,7 +24,8 @@
+     defined(__CYGWIN__) || \
+     defined(__MSYS__) || \
+     defined(__EMSCRIPTEN__) || \
+-    defined(__wasi__)
++    defined(__wasi__) || \
++    defined(__redox__)
+ 
+ #if defined(__NetBSD__)
+ #define _NETBSD_SOURCE 1

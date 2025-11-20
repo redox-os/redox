@@ -1,0 +1,8 @@
+[source]
+git = "https://gitlab.redox-os.org/redox-os/netdb.git"
+
+[build]
+template = "custom"
+script = """
+cp -rv "${COOKBOOK_SOURCE}/"* "${COOKBOOK_STAGE}"
+"""

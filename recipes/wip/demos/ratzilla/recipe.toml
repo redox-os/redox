@@ -1,0 +1,31 @@
+#TODO compiled but not tested
+[source]
+git = "https://github.com/orhun/ratzilla"
+[build]
+template = "custom"
+script = """
+recipe="$(basename "${COOKBOOK_RECIPE}")"
+function build_from_dir {
+    prog_name=$1
+    dir_name=$2
+    "${COOKBOOK_CARGO}" build \
+            --manifest-path "${COOKBOOK_SOURCE}/examples/${dir_name}/Cargo.toml" \
+            ${build_flags}
+        mkdir -pv "${COOKBOOK_STAGE}/usr/bin"
+        cp -v \
+            "target/${TARGET}/${build_type}/${prog_name}" \
+            "${COOKBOOK_STAGE}/usr/bin/${recipe}_${prog_name}"
+}
+build_from_dir animations animations
+build_from_dir canvas-stress-test canvas_stress_test
+build_from_dir canvas-waves canvas_waves
+build_from_dir color-rgb colors_rgb
+build_from_dir demo demo
+build_from_dir demo2 demo2
+build_from_dir minimal minimal
+build_from_dir pong pong
+build_from_dir text_area text_area
+build_from_dir user-input user_input
+build_from_dir website website
+build_from_dir world-map world_map
+"""

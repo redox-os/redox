@@ -1,0 +1,12 @@
+#TODO missing script for gnu make: https://github.com/google/mount-zip/blob/main/INSTALL.md
+[source]
+git = "https://github.com/google/mount-zip"
+rev = "v1.10"
+[build]
+template = "custom"
+dependencies = [
+    "libfuse3",
+    "libzip",
+    "libicu",
+    "boost",
+]

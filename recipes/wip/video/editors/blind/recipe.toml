@@ -1,0 +1,11 @@
+#TODO missing script for gnu make
+#TODO verify if ffmpeg and imagemagick are needed at compile-time or run-time
+[source]
+tar = "https://dl.suckless.org/tools/blind-1.1.tar.gz"
+[build]
+template = "custom"
+[package]
+dependencies = [
+    "ffmpeg6",
+    "imagemagick",
+]

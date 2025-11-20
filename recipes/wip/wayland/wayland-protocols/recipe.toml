@@ -1,0 +1,7 @@
+[source]
+tar = "https://gitlab.freedesktop.org/wayland/wayland-protocols/-/releases/1.32/downloads/wayland-protocols-1.32.tar.xz"
+[build]
+template = "meson"
+mesonflags = [
+    "-Dtests=false"
+]

@@ -1,0 +1,5 @@
+#TODO not compiled or tested
+[source]
+git = "https://github.com/algon-320/toyterm"
+[build]
+template = "cargo"

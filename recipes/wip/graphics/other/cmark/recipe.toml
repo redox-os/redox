@@ -1,0 +1,7 @@
+#TODO not compiled or tested
+# build instructions: https://github.com/commonmark/cmark#installing
+[source]
+git = "https://github.com/commonmark/cmark"
+rev = "5ba25ff40eba44c811f79ab6a792baf945b8307c"
+[build]
+template = "cmake"

@@ -1,0 +1,11 @@
+#TODO async-io crate error (after cargo update)
+[source]
+git = "https://github.com/lycheeverse/lychee"
+[build]
+template = "custom"
+dependencies = [
+    "openssl1",
+]
+script = """
+cookbook_cargo_packages lychee
+"""

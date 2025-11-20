@@ -1,0 +1,5 @@
+#TODO compiled but not tested
+[source]
+git = "https://github.com/SalOne22/rimage"
+[build]
+template = "cargo"

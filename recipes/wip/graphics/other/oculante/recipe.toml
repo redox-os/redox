@@ -1,0 +1,10 @@
+#TODO not compiled or tested
+[source]
+git = "https://github.com/woelper/oculante"
+[build]
+template = "cargo"
+dependencies = [
+    "gtk3",
+    "libxcb",
+    "libalsa",
+]

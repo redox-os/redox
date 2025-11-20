@@ -1,0 +1,24 @@
+diff -rupN source-original/configure source/configure
+--- source-original/configure	2018-03-04 11:13:59.000000000 +0100
++++ source/configure	2018-03-04 11:18:10.026033282 +0100
+@@ -5141,6 +5141,8 @@ case $target_os in
+         ;;
+     minix)
+         ;;
++    redox)
++        ;;
+     none)
+         ;;
+     *)
+diff -rupN source-original/fftools/ffmpeg.c source/fftools/ffmpeg.c
+--- source-original/fftools/ffmpeg.c	2018-03-04 11:13:59.000000000 +0100
++++ source/fftools/ffmpeg.c	2018-03-04 11:45:38.326394016 +0100
+@@ -91,7 +91,7 @@
+ 
+ #if HAVE_TERMIOS_H
+ #include <fcntl.h>
+-#include <sys/ioctl.h>
++//#include <sys/ioctl.h>
+ #include <sys/time.h>
+ #include <termios.h>
+ #elif HAVE_KBHIT

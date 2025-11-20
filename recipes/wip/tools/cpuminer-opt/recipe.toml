@@ -1,0 +1,13 @@
+#TODO maybe wrong template, see https://github.com/JayDDee/cpuminer-opt/wiki/Compiling-from-source
+#TODO fix jansson dependency
+[source]
+git = "https://github.com/JayDDee/cpuminer-opt"
+rev = "9d3a46c3551655f862db74a195e769fe86266903"
+[build]
+template = "configure"
+dependencies = [
+    "curl",
+    "jansson",
+    "libgmp",
+    "zlib",
+]

@@ -1,0 +1,26 @@
+[source]
+tar = "https://github.com/lxde/menu-cache/archive/refs/tags/1.1.1.tar.gz"
+blake3 = "6490180be8851c23beec69a507f7285b94491c0b7ef955f7bc217095efb091ae"
+script = """
+DYNAMIC_INIT
+mkdir -p m4
+autotools_recursive_regenerate
+sed -i 's|#include <sys/fcntl.h>|#include <fcntl.h>|g' libmenu-cache/menu-cache.c
+sed -i 's|#include <sys/fcntl.h>|#include <fcntl.h>|g' menu-cache-daemon/menu-cached.c
+"""
+
+[build]
+dependencies = [
+    "gettext",
+    "glib",
+    "libffi",
+    "libfm-extra",
+    "libiconv",
+    "pcre2",
+    "zlib",
+]
+template = "custom"
+script = """
+DYNAMIC_INIT
+cookbook_configure
+"""

@@ -1,0 +1,7 @@
+#TODO not compiled or tested
+# build instructions: https://github.com/andrewrk/libsoundio#building
+[source]
+git = "https://github.com/andrewrk/libsoundio"
+rev = "dc4f84339039ac518b6cd1c0e7683e88e25be470"
+[build]
+template = "cmake"

@@ -1,0 +1,24 @@
+#TODO make all dependencies work
+#TODO workaround the ALSA and JACK dependencies
+#TODO patch the install.sh to use the COOKBOOK_STAGE envivar
+#TODO expose the cross-compilation environment variables to the build scripts
+# build instructions - https://github.com/sonosaurus/sonobus/blob/main/linux/BUILDING.md
+[source]
+git = "https://github.com/sonosaurus/sonobus"
+[build]
+template = "custom"
+dependencies = [
+    "libopus",
+    "freetype2",
+    "curl",
+    "libx11",
+    "libxinerama",
+    "libxrandr",
+    "libxext",
+    "libxcursor",
+]
+script = """
+COOKBOOK_SOURCE="${COOKBOOK_SOURCE}/linux"
+./build.sh
+./install.sh
+"""

@@ -1,0 +1,17 @@
+#TODO Bash can't detect the "--all-features" flag on the script
+[source]
+git = "https://github.com/w-henderson/Humphrey"
+[build]
+template = "custom"
+script = """
+binary=humphrey
+"${COOKBOOK_CARGO}" build \
+            --manifest-path "${COOKBOOK_SOURCE}/Cargo.toml" \
+            --bin "${binary}" \
+            --release
+            --all-features
+        mkdir -pv "${COOKBOOK_STAGE}/usr/bin"
+        cp -v \
+            "target/${TARGET}/release/${binary}" \
+            "${COOKBOOK_STAGE}/usr/bin/${binary}"
+"""

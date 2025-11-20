@@ -5,7 +5,7 @@
 
 if [ $# = 0 ]
 then
-    find cookbook/recipes \( -name stage.pkgar -o -name stage.tar.gz \) -exec ls -hs {} \;
+    find recipes \( -name stage.pkgar -o -name stage.tar.gz \) -exec ls -hs {} \;
     exit 0
 fi
 
@@ -19,7 +19,7 @@ do
         exit 0
     fi
 
-    recipe_paths=$(find cookbook/recipes -name $recipe)
+    recipe_paths=$(find recipes -name $recipe)
     for recipe_path in $recipe_paths
     do
         if [ -f "$recipe_path/recipe.toml" ] || [ -f "$recipe_path/recipe.sh" ]

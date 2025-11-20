@@ -1,0 +1,23 @@
+[source]
+tar = "https://github.com/harfbuzz/harfbuzz/releases/download/11.0.1/harfbuzz-11.0.1.tar.xz"
+blake3 = "51f0edaaf2e9b7a7176d3252f15d03d409ef7ad35f77b050c407de89f85b77c5"
+
+[build]
+template = "custom"
+dependencies = [
+    "freetype2",
+    "gettext",
+    "glib",
+    "libffi",
+    "libiconv",
+    "libicu",
+    "libpng",
+    "pcre2",
+    "zlib"
+]
+script = """
+DYNAMIC_INIT
+cookbook_meson \
+    -Ddocs=disabled \
+    -Dtests=disabled
+"""

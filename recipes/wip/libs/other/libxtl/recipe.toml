@@ -1,0 +1,7 @@
+#TODO not compiled or tested
+# build instructions: https://github.com/xtensor-stack/xtl#install-from-sources
+[source]
+git = "https://github.com/xtensor-stack/xtl"
+rev = "c95f6c8b13ffb7f74f16d3fd6882668b79bd8412"
+[build]
+template = "cmake"

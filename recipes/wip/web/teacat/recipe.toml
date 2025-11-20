@@ -1,0 +1,10 @@
+#TODO not compiled or tested
+[source]
+git = "https://github.com/Ultrasquid9/TeaCat"
+[build]
+template = "custom"
+script = """
+mkdir -pv "${COOKBOOK_STAGE}"/usr/share/teacat
+cp -rv "${COOKBOOK_SOURCE}"/test.tcat "${COOKBOOK_STAGE}"/usr/share/teacat
+cookbook_cargo
+"""

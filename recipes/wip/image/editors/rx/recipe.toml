@@ -1,0 +1,6 @@
+#TODO compilation error
+[source]
+git = "https://github.com/cloudhead/rx"
+script = "rm Cargo.lock"
+[build]
+template = "cargo"

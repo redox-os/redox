@@ -11,8 +11,6 @@ usage() {
     exit
 }
 
-cd cookbook
-
 recipes=""
 
 target="x86_64-unknown-redox"

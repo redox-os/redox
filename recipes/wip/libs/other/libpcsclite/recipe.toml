@@ -1,0 +1,5 @@
+#TODO require POSIX threads support
+[source]
+tar = "https://pcsclite.apdu.fr/files/pcsc-lite-2.0.3.tar.bz2"
+[build]
+template = "configure"

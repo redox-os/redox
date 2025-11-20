@@ -1,0 +1,18 @@
+#TODO not compiled or tested
+#TODO determine minimum dependencies from the cmake log
+# build instructions: https://github.com/libsdl-org/SDL/blob/main/docs/README-cmake.md
+# dependencies: https://github.com/libsdl-org/SDL/blob/main/docs/README-linux.md
+[source]
+tar = "https://github.com/libsdl-org/SDL/releases/download/release-3.2.26/SDL3-3.2.26.tar.gz"
+[build]
+template = "cmake"
+cmakeflags = [
+    "-DSDL_SHARED=ON",
+    "-DSDL_STATIC=OFF",
+    "-DSDL_TESTS=OFF",
+    "-DSDL_DISABLE_INSTALL_DOCS=ON",
+]
+dependencies = [
+    "liborbital",
+    "mesa",
+]

@@ -1,0 +1,7 @@
+#TODO not compiled or tested
+#TODO determine minimum dependencies from meson log
+[source]
+git = "https://github.com/ZingyTomato/NetPeek"
+rev = "v0.2.4"
+[build]
+template = "meson"

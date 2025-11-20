@@ -1,0 +1,14 @@
+#TODO make libfuse2 work
+# build instructions - https://github.com/s3fs-fuse/s3fs-fuse/blob/master/COMPILATION.md
+[source]
+git = "https://github.com/s3fs-fuse/s3fs-fuse"
+rev = "5371cd1468c84423729c334ac997f9621b797e9f"
+script = "./autogen.sh"
+[build]
+template = "configure"
+dependencies = [
+    "libfuse2",
+    "curl",
+    "libxml2",
+    "openssl1",
+]

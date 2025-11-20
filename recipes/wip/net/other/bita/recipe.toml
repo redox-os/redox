@@ -1,0 +1,8 @@
+#TODO compilation error (after a cargo update and a patch on the ring and tokio crates)
+[source]
+git = "https://github.com/oll3/bita"
+[build]
+template = "custom"
+script = """
+cookbook_cargo --no-default-features --features rustls-tls
+"""

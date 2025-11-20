@@ -1,0 +1,14 @@
+[source]
+tar = "https://gitlab.freedesktop.org/mesa/libdrm/-/archive/libdrm-2.4.125/libdrm-libdrm-2.4.125.tar.gz"
+blake3 = "33e6448252639f4ff8a8cd30129b335c5d85356c1c93f8d77a79221003b14f66"
+patches = ["redox.patch"]
+
+[build]
+template = "meson"
+mesonflags = [
+    "-Damdgpu=disabled",
+    "-Dintel=disabled",
+    "-Dnouveau=disabled",
+    "-Dradeon=disabled",
+    "-Dvmwgfx=disabled",
+]

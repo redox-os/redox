@@ -1,0 +1,12 @@
+diff -ruwN mesa-demos-9.0.0/meson.build source/meson.build
+--- mesa-demos-9.0.0/meson.build	2023-03-22 06:13:43.000000000 -0600
++++ source/meson.build	2025-05-06 15:58:57.523274337 -0600
+@@ -99,7 +99,7 @@
+ endif
+ 
+ dep_glx = dependency('glx', required: false, disabler : true)
+-if not dep_glx.found() and host_machine.system() == 'darwin'
++if not dep_glx.found()
+   # xquartz doesn't have a glx.pc, but it does have the header. And all the
+   # symbols reside in libGL, so let's just use that.
+   if cc.check_header('GL/glx.h', dependencies: dep_x11)

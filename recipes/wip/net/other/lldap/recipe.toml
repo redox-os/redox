@@ -1,0 +1,8 @@
+#TODO program source code error (after cargo update and a patch on ring)
+[source]
+git = "https://github.com/lldap/lldap"
+[build]
+template = "custom"
+script = """
+cookbook_cargo_packages lldap
+"""

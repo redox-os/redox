@@ -1,0 +1,8 @@
+#TODO not compiled or tested
+[source]
+git = "https://github.com/domcyrus/rustnet"
+[build]
+template = "cargo"
+dependencies = [
+    "libpcap",
+]

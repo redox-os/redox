@@ -1,0 +1,10 @@
+#TODO make libfuse 2.x works
+#TODO probably wrong script, see https://github.com/philipl/pifs#readme
+[source]
+git = "https://github.com/philipl/pifs"
+script = "./autogen.sh"
+[build]
+template = "configure"
+dependencies = [
+    "libfuse2",
+]

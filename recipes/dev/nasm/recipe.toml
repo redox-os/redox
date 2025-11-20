@@ -1,0 +1,7 @@
+[source]
+#TODO: nasm.us is down: tar = "https://www.nasm.us/pub/nasm/releasebuilds/2.14.02/nasm-2.14.02.tar.gz"
+tar = "https://gstreamer.freedesktop.org/src/mirror/nasm-2.14.02.tar.xz"
+blake3 = "f66c0cc852c3b9e3321f57c33ef336e17a128bd3d854ee095aae7e6f64629f20"
+
+[build]
+template = "configure"

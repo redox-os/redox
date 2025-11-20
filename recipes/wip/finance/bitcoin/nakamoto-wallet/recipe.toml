@@ -1,0 +1,8 @@
+#TODO hidapi crate error - redox not supported (after cargo update)
+[source]
+git = "https://github.com/cloudhead/nakamoto"
+[build]
+template = "custom"
+script = """
+cookbook_cargo_packages nakamoto-wallet
+"""

@@ -1,0 +1,9 @@
+[package]
+dependencies = [
+    "x11-minimal",
+    "twm",
+    "xev",
+    "xeyes",
+    "xkbutils",
+    "xterm",
+]

@@ -1,0 +1,6 @@
+#TODO not compiled or tested
+# build instructions: https://taskwarrior.org/download/#quick-setup
+[source]
+tar = "https://github.com/GothenburgBitFactory/taskserver/releases/download/v1.1.0/taskd-1.1.0.tar.gz"
+[build]
+template = "cmake"

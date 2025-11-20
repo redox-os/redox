@@ -1,0 +1,5 @@
+#TODO get_if_addrs crate error
+[source]
+git = "https://github.com/gabrielmagno/crab-dlna"
+[build]
+template = "cargo"

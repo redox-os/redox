@@ -1,0 +1,11 @@
+#TODO not compiled or tested
+[source]
+git = "https://github.com/OkuBrowser/oku-fs"
+[build]
+template = "custom"
+dependencies = [
+    "libfuse3",
+]
+script = """
+cookbook_cargo --features fuse cli
+"""

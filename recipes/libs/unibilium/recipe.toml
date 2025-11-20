@@ -1,0 +1,15 @@
+[source]
+tar = "https://github.com/neovim/unibilium/archive/refs/tags/v2.1.2.tar.gz"
+blake3 = "856a7593a412942f4716bb55bfdd225f3ce92cb013b9d4a44693255f0570b1c7"
+script = """
+DYNAMIC_INIT
+autotools_recursive_regenerate
+"""
+
+[build]
+template = "custom"
+script = """
+DYNAMIC_INIT
+rsync -av --delete "${COOKBOOK_SOURCE}/" ./
+cookbook_configure
+"""

@@ -1,0 +1,14 @@
+#TODO: fails to link libcrypto.so
+[source]
+git = "https://github.com/jackpot51/pavao.git"
+
+[build]
+template = "custom"
+dependencies = [
+    "openssl1"
+]
+script = """
+DYNAMIC_INIT
+build_flags="${build_flags} --features vendored"
+cookbook_cargo_examples tree
+"""

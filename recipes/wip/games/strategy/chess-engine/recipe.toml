@@ -1,0 +1,9 @@
+#TODO maybe wrong script
+[source]
+git = "https://github.com/adam-mcdaniel/chess-engine"
+[build]
+template = "custom"
+script = """
+cookbook_cargo_packages chess-gui
+cookbook_cargo_examples terminal
+"""

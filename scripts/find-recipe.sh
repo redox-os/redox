@@ -26,7 +26,7 @@ do
 
     # Find all packages providing this file
     pkgs="$(
-        find cookbook/recipes/*"/target/${ARCH}-unknown-redox/stage/${path}" 2>/dev/null |
+        find recipes/*"/target/${ARCH}-unknown-redox/stage/${path}" 2>/dev/null |
         cut -d/ -f3 |
         tr '\n' ' ' |
         sort |

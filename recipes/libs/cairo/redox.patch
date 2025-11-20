@@ -1,0 +1,50 @@
+diff -ruwN cairo-1.18.4/meson.build source/meson.build
+--- cairo-1.18.4/meson.build	2025-03-08 05:35:35.000000000 -0700
++++ source/meson.build	2025-05-04 18:07:04.594213814 -0600
+@@ -440,13 +440,13 @@
+ if feature_conf.get('CAIRO_HAS_XCB_SURFACE', 0) == 1
+   xcbshm_dep = dependency('xcb-shm', required: get_option('xcb'))
+   if xcbshm_dep.found()
+-    feature_conf.set('CAIRO_HAS_XCB_SHM_FUNCTIONS', 1)
+-    deps += [xcbshm_dep]
+-    built_features += [{
+-      'name': 'cairo-xcb-shm',
+-      'description': 'XCB/SHM functions',
+-      'deps': [xcbshm_dep],
+-    }]
++    #feature_conf.set('CAIRO_HAS_XCB_SHM_FUNCTIONS', 1)
++    #deps += [xcbshm_dep]
++    #built_features += [{
++    #  'name': 'cairo-xcb-shm',
++    #  'description': 'XCB/SHM functions',
++    #  'deps': [xcbshm_dep],
++    #}]
+   endif
+ endif
+ 
+diff -ruwN cairo-1.18.4/perf/Makefile.in source/perf/Makefile.in
+--- cairo-1.18.4/perf/Makefile.in	1969-12-31 17:00:00.000000000 -0700
++++ source/perf/Makefile.in	2025-05-01 12:52:11.400963345 -0600
+@@ -0,0 +1,3 @@
++all:
++
++install:
+diff -ruwN cairo-1.18.4/src/cairo-ps-surface.c source/src/cairo-ps-surface.c
+--- cairo-1.18.4/src/cairo-ps-surface.c	2025-03-08 05:35:35.000000000 -0700
++++ source/src/cairo-ps-surface.c	2025-05-04 18:08:43.821264417 -0600
+@@ -102,7 +102,7 @@
+ #define DEBUG_FALLBACK(s)
+ #endif
+ 
+-#ifndef HAVE_CTIME_R
++#if !defined(HAVE_CTIME_R) && !defined(__redox__)
+ static char *ctime_r(const time_t *timep, char *buf)
+ {
+     (void)buf;
+diff -ruwN cairo-1.18.4/test/Makefile.in source/test/Makefile.in
+--- cairo-1.18.4/test/Makefile.in	1969-12-31 17:00:00.000000000 -0700
++++ source/test/Makefile.in	2025-05-01 12:52:11.400963345 -0600
+@@ -0,0 +1,3 @@
++all:
++
++install:

@@ -1,0 +1,14 @@
+#TODO Make GTK3 work
+[source]
+git = "https://github.com/pragha-music-player/pragha"
+[build]
+template = "configure"
+dependencies = [
+    "gtk3",
+    "glib",
+    "gstreamer",
+    "taglib",
+    "sqlite3",
+    "libpeas",
+    "totem-plparser",
+]

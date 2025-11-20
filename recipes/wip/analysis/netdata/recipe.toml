@@ -1,0 +1,11 @@
+#TODO not compiled or tested
+# build instructions: https://learn.netdata.cloud/docs/developer-and-contributor-corner/build-the-netdata-agent-yourself/compile-from-source-code#building-netdata
+[source]
+tar = "https://github.com/netdata/netdata/releases/download/v1.46.1/netdata-v1.46.1.tar.gz"
+[build]
+template = "cmake"
+dependencies = [
+    "zlib",
+    "libuv",
+    "libuuid",
+]

@@ -1,0 +1,6 @@
+#TODO not compiled or tested
+# build instructions: https://github.com/mltframework/mlt#readme
+[source]
+tar = "https://github.com/mltframework/mlt/releases/download/v7.22.0/mlt-7.22.0.tar.gz"
+[build]
+template = "cmake"

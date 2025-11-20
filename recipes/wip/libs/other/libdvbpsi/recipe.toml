@@ -1,0 +1,5 @@
+#TODO Compilation error
+[source]
+tar = "https://download.videolan.org/pub/libdvbpsi/1.3.3/libdvbpsi-1.3.3.tar.bz2"
+[build]
+template = "configure"

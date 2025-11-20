@@ -1,0 +1,26 @@
+[target.aarch64-unknown-redox]
+linker = "aarch64-unknown-redox-gcc"
+rustflags = []
+
+[target.i586-unknown-redox]
+linker = "i586-unknown-redox-gcc"
+rustflags = []
+
+[target.i686-unknown-redox]
+linker = "i686-unknown-redox-gcc"
+rustflags = []
+
+[target.x86_64-unknown-redox]
+linker = "x86_64-unknown-redox-gcc"
+rustflags = []
+
+[target.riscv64gc-unknown-redox]
+linker = "riscv64-unknown-redox-gcc"
+rustflags = []
+
+[env]
+CFLAGS_riscv64gc_unknown_redox="-march=rv64gc -mabi=lp64d"
+
+[target.x86_64-unknown-linux-gnu]
+linker = "x86_64-linux-gnu-gcc"
+rustflags = []

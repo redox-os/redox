@@ -1,0 +1,5 @@
+#TODO not compiled or tested
+[source]
+git = "https://github.com/morgverd/sms-server"
+[build]
+template = "cargo"

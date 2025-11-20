@@ -1,0 +1,18 @@
+#TODO missing fzf dependency: https://github.com/junegunn/fzf
+[source]
+git = "https://github.com/justchokingaround/jerry"
+[build]
+template = "custom"
+script = """
+mkdir -pv "${COOKBOOK_STAGE}"/usr/bin
+cp "${COOKBOOK_SOURCE}"/jerry.sh "${COOKBOOK_STAGE}"/usr/bin/jerry
+chmod a+x "${COOKBOOK_STAGE}"/usr/bin/jerry
+"""
+[package]
+dependencies = [
+    "gnu-grep",
+    "sed",
+    "curl",
+    #"fzf",
+    "mpv",
+]

@@ -1,0 +1,13 @@
+diff -ruwN source-old/src/sound/SwiftResampler.cpp source/src/sound/SwiftResampler.cpp
+--- source-old/src/sound/SwiftResampler.cpp	2022-01-18 14:16:23.000000000 -0700
++++ source/src/sound/SwiftResampler.cpp	2022-12-16 20:01:02.263159230 -0700
+@@ -608,6 +608,9 @@
+ 
+  if(hp_tc > 0)
+  {
++#ifndef M_E
++#define M_E 2.7182818284590452354
++#endif
+   double tdm = (pow(2.0 - pow(M_E, -1.0), 1.0 / (hp_tc * output_rate)) - 1.0);
+ 
+   //printf("%f\n", tdm);

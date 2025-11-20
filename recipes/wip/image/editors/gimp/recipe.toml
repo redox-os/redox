@@ -1,0 +1,36 @@
+#TODO not compiled or tested
+#TODO discover minimum dependencies from autotools log
+# build instructions: https://developer.gimp.org/core/setup/build/3.0/INSTALL
+# all build options: https://gitlab.gnome.org/GNOME/gimp/-/blob/master/meson_options.txt?ref_type=heads
+[source]
+tar = "https://download.gimp.org/gimp/v3.0/gimp-3.0.6.tar.xz"
+[build]
+template = "meson"
+mesonflags = [
+    "-Dcheck-update=no",
+    "-Dlibbacktrace=false",
+    "-Dlibunwind=false",
+    "-Dprint=false",
+]
+# dependencies = [
+#     "gtk3",
+#     "gobject-introspection",
+#     "glib",
+#     "cairo",
+#     "pango",
+#     "liblcms",
+#     "libmypaint",
+#     "gexiv2",
+#     "gegl",
+#     "babl",
+#     "librsvg",
+#     "libtiff",
+#     "libjpeg",
+#     "libpng",
+#     "fontconfig",
+#     "freetype2",
+#     "atk",
+#     "harfbuzz",
+#     "bzip2",
+#     "zlib",
+# ]

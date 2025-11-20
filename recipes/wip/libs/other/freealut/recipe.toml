@@ -1,0 +1,6 @@
+#TODO not compiled or tested
+# build instructions: https://github.com/vancegroup/freealut#building-freealut
+[source]
+git = "https://github.com/vancegroup/freealut"
+[build]
+template = "cmake"

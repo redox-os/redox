@@ -1,0 +1,11 @@
+#TODO not compiled or tested
+[source]
+git = "https://github.com/nacho/servo-gtk"
+[build]
+template = "custom"
+dependencies = [
+    "gtk4"
+]
+script = """
+cookbook_cargo_examples browser
+"""

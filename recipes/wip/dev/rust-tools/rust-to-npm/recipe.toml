@@ -1,0 +1,8 @@
+#TODO compiled but not tested (after cargo update)
+[source]
+git = "https://github.com/a11ywatch/rust-to-npm"
+[build]
+template = "custom"
+script = """
+cookbook_cargo_packages rust-to-npm-cli
+"""

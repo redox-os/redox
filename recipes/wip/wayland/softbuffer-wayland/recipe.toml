@@ -1,0 +1,14 @@
+[source]
+git = "https://github.com/jackpot51/softbuffer.git"
+branch = "redox-wayland"
+
+[build]
+dependencies = [
+    "libwayland"
+]
+template = "custom"
+script = """
+DYNAMIC_INIT
+export RUSTFLAGS="${RUSTFLAGS} -lffi"
+cookbook_cargo_examples animation rectangle winit
+"""

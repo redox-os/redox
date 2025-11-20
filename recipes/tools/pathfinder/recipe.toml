@@ -1,0 +1,23 @@
+[source]
+git = "https://gitlab.redox-os.org/redox-os/pathfinder.git"
+branch = "redox"
+upstream = "https://github.com/servo/pathfinder.git"
+
+[build]
+template = "custom"
+dependencies = [
+    "llvm18",
+    "mesa",
+    "zlib",
+]
+script = """
+cargo rustc \
+    --target "$TARGET" \
+    --release \
+    --manifest-path "${COOKBOOK_SOURCE}/examples/canvas_glutin_minimal/Cargo.toml" \
+    -- \
+    -L "${COOK_SYSROOT}/lib" \
+    -C link-args="-Wl,-Bstatic $("${TARGET}-pkg-config" --libs osmesa) -lz -lstdc++ -lc -lgcc"
+mkdir -pv "${COOKBOOK_STAGE}/bin"
+cp -v "target/${TARGET}/release/canvas_glutin_minimal" "${COOKBOOK_STAGE}/bin/pathfinder"
+"""

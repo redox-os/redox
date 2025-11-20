@@ -1,0 +1,6 @@
+#TODO not compiled or tested
+# build instructions: https://libvirt.org/compiling.html#configuring-the-project
+[source]
+tar = "https://download.libvirt.org/libvirt-10.7.0.tar.xz"
+[build]
+template = "meson"

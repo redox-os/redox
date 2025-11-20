@@ -1,0 +1,12 @@
+diff -ruwN xorgproto-2023.2/include/X11/Xos_r.h source/include/X11/Xos_r.h
+--- xorgproto-2023.2/include/X11/Xos_r.h	2023-06-16 01:32:38.000000000 -0600
++++ source/include/X11/Xos_r.h	2025-05-02 10:10:07.250524701 -0600
+@@ -318,7 +318,7 @@
+   (_Xos_processUnlock), \
+   (p).pwp )
+ 
+-#elif !defined(_POSIX_THREAD_SAFE_FUNCTIONS) && !defined(__APPLE__)
++#elif !defined(_POSIX_THREAD_SAFE_FUNCTIONS) && !defined(__APPLE__) && !defined(__redox__)
+ # define X_NEEDS_PWPARAMS
+ typedef struct {
+   struct passwd pws;

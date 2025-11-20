@@ -1,0 +1,10 @@
+#TODO missing script for waf, see https://github.com/FWGS/xash3d-fwgs#build-instructions
+[source]
+git = "https://github.com/FWGS/xash3d-fwgs"
+[build]
+template = "custom"
+dependencies = [
+    "sdl2",
+    "fontconfig",
+    "freetype2",
+]

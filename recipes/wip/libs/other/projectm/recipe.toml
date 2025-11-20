@@ -1,0 +1,11 @@
+#TODO not compiled or tested
+# build instructions: https://github.com/projectM-visualizer/projectm/wiki/Building-libprojectM#build-and-install-projectm
+[source]
+git = "https://github.com/projectM-visualizer/projectm"
+rev = "422af469731559c32c93e9513cebf2fe6c2fec78"
+[build]
+template = "cmake"
+dependencies = [
+    "mesa",
+    "qt5-base",
+]

@@ -1,0 +1,5 @@
+#TODO not compiled or tested
+[source]
+git = "https://github.com/jacek-kurlit/pik"
+[build]
+template = "cargo"

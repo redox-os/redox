@@ -1,0 +1,5 @@
+#TODO missing script for "make", see https://github.com/UoB-HPC/miniBUDE#building
+[source]
+git = "https://github.com/UoB-HPC/miniBUDE"
+[build]
+template = "custom"

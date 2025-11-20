@@ -1,0 +1,23 @@
+[source]
+tar = "https://github.com/mate-desktop/mate-panel/releases/download/v1.28.6/mate-panel-1.28.6.tar.xz"
+blake3 = "6411fa4da26be0032226395d50855bb6b1223f5b795f5e08f3999e9de92f2acd"
+script = """
+DYNAMIC_INIT
+#TODO autotools_recursive_regenerate
+"""
+
+[build]
+dependencies = [
+    "gtk3",
+    "libice",
+    "libmate-desktop-2",
+    "libmate-menu",
+    "libmateweather",
+    "libsm",
+    "libwnck3",
+]
+template = "custom"
+script = """
+DYNAMIC_INIT
+cookbook_configure
+"""

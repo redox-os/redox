@@ -1,0 +1,25 @@
+diff -ruwN source/rsync.h source-new/rsync.h
+--- source/rsync.h	2025-01-16 02:21:54.000000000 +0700
++++ source-new/rsync.h	2025-09-08 12:18:06.427647717 +0700
+@@ -483,6 +483,21 @@
+ #include <sys/sysmacros.h>
+ #endif
+ 
++#ifdef __redox__
++
++// no sys/sysmacros.h, probably no problem
++#include <sys/types.h>
++#define major(dev) (0)
++#define minor(dev) (0)
++#define makedev(maj, min) (0)
++
++// no openat yet
++#undef O_NOFOLLOW
++#undef O_DIRECTORY
++#undef AT_FDCWD
++
++#endif
++
+ #ifdef MAKEDEV_TAKES_3_ARGS
+ #define MAKEDEV(devmajor,devminor) makedev(0,devmajor,devminor)
+ #else

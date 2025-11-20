@@ -1,0 +1,15 @@
+#TODO determine minimum dependencies
+# dependencies reference: https://wiki.documentfoundation.org/Development/BuildingOnLinux#Build_dependencies
+[source]
+tar = "https://download.documentfoundation.org/libreoffice/src/25.8.2/libreoffice-25.8.2.2.tar.xz"
+[build]
+template = "configure"
+#dependencies = [
+#    "kerberos5",
+#    "qt5-base",
+#    "gtk3",
+#    "nss",
+#    "fontconfig",
+#    "gstreamer",
+#    "libcups",
+#]

@@ -1,0 +1,18 @@
+[source]
+git = "https://github.com/sajattack/terminfo"
+branch = "master"
+
+[build]
+template = "custom"
+script = """
+# only copy common TERM envar
+mkdir -p ${COOKBOOK_STAGE}/share/terminfo/{a,d,l,s,t,v,x}
+cp -r ${COOKBOOK_SOURCE}/tabset ${COOKBOOK_STAGE}/share/
+cp ${COOKBOOK_SOURCE}/terminfo/a/ansi{,-*} ${COOKBOOK_STAGE}/share/terminfo/a/
+cp ${COOKBOOK_SOURCE}/terminfo/d/dumb{,-*} ${COOKBOOK_STAGE}/share/terminfo/d/
+cp ${COOKBOOK_SOURCE}/terminfo/l/linux{,-*} ${COOKBOOK_STAGE}/share/terminfo/l/
+cp ${COOKBOOK_SOURCE}/terminfo/s/screen{,-*} ${COOKBOOK_STAGE}/share/terminfo/s/
+cp ${COOKBOOK_SOURCE}/terminfo/t/tmux{,-*} ${COOKBOOK_STAGE}/share/terminfo/t/
+cp ${COOKBOOK_SOURCE}/terminfo/v/vt100{,-*} ${COOKBOOK_STAGE}/share/terminfo/v/
+cp ${COOKBOOK_SOURCE}/terminfo/x/xterm{,-*} ${COOKBOOK_STAGE}/share/terminfo/x/
+"""

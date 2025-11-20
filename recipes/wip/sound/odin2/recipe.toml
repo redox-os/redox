@@ -1,0 +1,11 @@
+#TODO not compiled or tested
+# build instructions: https://github.com/TheWaveWarden/odin2#all-platforms
+[source]
+git = "https://github.com/TheWaveWarden/odin2"
+[build]
+template = "cmake"
+dependencies = [
+    "mesa",
+    "curl",
+    "webkitgtk3",
+]

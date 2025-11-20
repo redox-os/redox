@@ -1,0 +1,6 @@
+#TODO not compiled or tested
+# build instructions: https://github.com/gflags/gflags/blob/master/INSTALL.md#compiling-the-source-code-with-cmake
+[source]
+git = "https://github.com/gflags/gflags"
+[build]
+template = "cmake"

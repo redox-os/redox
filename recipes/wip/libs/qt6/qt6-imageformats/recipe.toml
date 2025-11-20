@@ -1,0 +1,5 @@
+#TODO not compiled or tested
+[source]
+tar = "https://download.qt.io/official_releases/qt/6.6/6.6.1/submodules/qtimageformats-everywhere-src-6.6.1.tar.xz"
+[build]
+template = "configure"

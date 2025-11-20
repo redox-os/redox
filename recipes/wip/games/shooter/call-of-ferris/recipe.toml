@@ -1,0 +1,5 @@
+#TODO camino crate error (after a cargo update)
+[source]
+git = "https://github.com/Andy-Python-Programmer/CallOfFerris"
+[build]
+template = "cargo"

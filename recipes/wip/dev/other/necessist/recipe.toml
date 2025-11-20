@@ -1,0 +1,12 @@
+#TODO camino crate error
+[source]
+git = "https://github.com/trailofbits/necessist"
+[build]
+template = "custom"
+dependencies = [
+    "sqlite3",
+    "openssl1",
+]
+script = """
+cookbook_cargo_packages necessist
+"""

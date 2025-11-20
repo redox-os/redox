@@ -1,0 +1,11 @@
+#TODO move to the "tools" category
+[source]
+git = "https://github.com/pystardust/ani-cli"
+rev = "4a77bca5d95ae755ab5ac129c2db2025feab217b"
+[build]
+template = "custom"
+script = """
+mkdir -pv "${COOKBOOK_STAGE}"/usr/bin
+cp "${COOKBOOK_SOURCE}"/ani-cli "${COOKBOOK_STAGE}"/usr/bin/ani-cli
+chmod a+x "${COOKBOOK_STAGE}"/usr/bin/ani-cli
+"""

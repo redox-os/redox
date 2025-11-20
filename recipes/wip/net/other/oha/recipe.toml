@@ -1,0 +1,8 @@
+#TODO jmalloc-sys crate error
+[source]
+git = "https://github.com/hatoo/oha"
+[build]
+template = "custom"
+script = """
+cookbook_cargo --no-default-features --features rustls
+"""

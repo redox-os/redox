@@ -1,0 +1,5 @@
+#TODO atty crate error (after cargo update)
+[source]
+git = "https://github.com/svartalf/rust-battop"
+[build]
+template = "cargo"

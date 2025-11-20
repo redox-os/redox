@@ -1,0 +1,5 @@
+#TODO require a patch on the mio crate
+[source]
+git = "https://github.com/jmacdonald/amp"
+[build]
+template = "cargo"

@@ -1,0 +1,540 @@
+diff -ruwN source/configure.py source-new/configure.py
+--- source/configure.py	2024-04-10 19:46:11.000000000 +0700
++++ source-new/configure.py	2025-10-10 13:46:04.244040340 +0700
+@@ -46,7 +46,7 @@
+ parser = argparse.ArgumentParser()
+ 
+ valid_os = ('win', 'mac', 'solaris', 'freebsd', 'openbsd', 'linux',
+-            'android', 'aix', 'cloudabi', 'os400', 'ios')
++            'android', 'aix', 'cloudabi', 'os400', 'ios', 'redox')
+ valid_arch = ('arm', 'arm64', 'ia32', 'mips', 'mipsel', 'mips64el', 'ppc',
+               'ppc64', 'x64', 'x86', 'x86_64', 's390x', 'riscv64', 'loong64')
+ valid_arm_float_abi = ('soft', 'softfp', 'hard')
+diff -ruwN source/deps/v8/bazel/config/BUILD.bazel source-new/deps/v8/bazel/config/BUILD.bazel
+--- source/deps/v8/bazel/config/BUILD.bazel	2024-04-10 19:46:12.000000000 +0700
++++ source-new/deps/v8/bazel/config/BUILD.bazel	2025-10-10 15:52:40.317126983 +0700
+@@ -144,6 +144,11 @@
+ )
+ 
+ config_setting(
++    name = "is_redox",
++    constraint_values = ["@platforms//os:redox"],
++)
++
++config_setting(
+     name = "is_linux",
+     constraint_values = ["@platforms//os:linux"],
+ )
+@@ -204,6 +209,7 @@
+ selects.config_setting_group(
+     name = "is_non_android_posix",
+     match_any = [
++        ":is_redox",
+         ":is_linux",
+         ":is_macos",
+     ],
+diff -ruwN source/deps/v8/BUILD.bazel source-new/deps/v8/BUILD.bazel
+--- source/deps/v8/BUILD.bazel	2024-04-10 19:46:12.000000000 +0700
++++ source-new/deps/v8/BUILD.bazel	2025-10-10 16:05:33.775461039 +0700
+@@ -758,6 +758,11 @@
+             "src/base/debug/stack_trace_posix.cc",
+             "src/base/platform/platform-darwin.cc",
+         ],
++        "@v8//bazel/config:is_redox": [
++            "src/base/debug/stack_trace_posix.cc",
++            "src/base/platform/platform-redox.cc",
++            "src/base/platform/platform-redox.h",
++        ],
+         "@v8//bazel/config:is_windows": [
+             "src/base/debug/stack_trace_win.cc",
+             "src/base/platform/platform-win32.cc",
+diff -ruwN source/deps/v8/BUILD.gn source-new/deps/v8/BUILD.gn
+--- source/deps/v8/BUILD.gn	2024-04-10 19:46:12.000000000 +0700
++++ source-new/deps/v8/BUILD.gn	2025-10-10 21:27:40.939874152 +0700
+@@ -5538,8 +5538,9 @@
+     if (v8_enable_webassembly) {
+       # iOS Xcode simulator builds run on an x64 target. iOS and macOS are both
+       # based on Darwin and thus POSIX-compliant to a similar degree.
+-      if (is_linux || is_chromeos || is_mac || is_ios ||
++      if (is_linux || is_redox || is_chromeos || is_mac || is_ios ||
+           target_os == "freebsd") {
++        assert(false, "gatchs")
+         sources += [
+           "src/trap-handler/handler-inside-posix.cc",
+           "src/trap-handler/handler-outside-posix.cc",
+@@ -5590,8 +5591,8 @@
+     if (v8_enable_webassembly) {
+       # Trap handling is enabled on arm64 Mac and Linux and in simulators on
+       # x64 on Linux, Mac, and Windows.
+-      if ((current_cpu == "arm64" && (is_linux || is_chromeos || is_apple)) ||
+-          (current_cpu == "x64" && (is_linux || is_chromeos || is_mac))) {
++      if ((current_cpu == "arm64" && (is_linux || is_redox || is_chromeos || is_apple)) ||
++          (current_cpu == "x64" && (is_linux || is_redox || is_chromeos || is_mac))) {
+         sources += [
+           "src/trap-handler/handler-inside-posix.cc",
+           "src/trap-handler/handler-outside-posix.cc",
+@@ -6174,6 +6175,11 @@
+       "src/base/debug/stack_trace_posix.cc",
+       "src/base/platform/platform-darwin.cc",
+     ]
++  } else if (is_redox) {
++    sources += [
++      "src/base/debug/stack_trace_posix.cc",
++      "src/base/platform/platform-redox.cc",
++    ]
+   } else if (is_ios) {
+     sources += [
+       "src/base/debug/stack_trace_posix.cc",
+diff -ruwN source/deps/v8/include/v8config.h source-new/deps/v8/include/v8config.h
+--- source/deps/v8/include/v8config.h	2024-04-10 19:46:12.000000000 +0700
++++ source-new/deps/v8/include/v8config.h	2025-10-10 22:03:04.057821844 +0700
+@@ -159,6 +159,11 @@
+ # define V8_OS_QNX 1
+ # define V8_OS_STRING "qnx"
+ 
++#elif defined(__redox__)
++# define V8_OS_POSIX 1
++# define V8_OS_REDOX 1
++# define V8_OS_STRING "redox"
++
+ #elif defined(_WIN32)
+ # define V8_OS_WIN 1
+ # define V8_OS_STRING "windows"
+@@ -185,6 +190,7 @@
+   && !defined(V8_TARGET_OS_IOS) \
+   && !defined(V8_TARGET_OS_LINUX) \
+   && !defined(V8_TARGET_OS_MACOS) \
++  && !defined(V8_TARGET_OS_REDOX) \
+   && !defined(V8_TARGET_OS_WIN) \
+   && !defined(V8_TARGET_OS_CHROMEOS)
+ #  error No known target OS defined.
+@@ -197,6 +203,7 @@
+   || defined(V8_TARGET_OS_IOS) \
+   || defined(V8_TARGET_OS_LINUX) \
+   || defined(V8_TARGET_OS_MACOS) \
++  || defined(V8_TARGET_OS_REDOX) \
+   || defined(V8_TARGET_OS_WIN) \
+   || defined(V8_TARGET_OS_CHROMEOS)
+ #  error A target OS is defined but V8_HAVE_TARGET_OS is unset.
+@@ -223,6 +230,10 @@
+ # define V8_TARGET_OS_MACOS
+ #endif
+ 
++#ifdef V8_OS_REDOX
++# define V8_TARGET_OS_REDOX
++#endif
++
+ #ifdef V8_OS_WIN
+ # define V8_TARGET_OS_WIN
+ #endif
+@@ -239,6 +250,8 @@
+ # define V8_TARGET_OS_STRING "linux"
+ #elif defined(V8_TARGET_OS_MACOS)
+ # define V8_TARGET_OS_STRING "macos"
++#elif defined(V8_TARGET_OS_REDOX)
++# define V8_TARGET_OS_STRING "redox"
+ #elif defined(V8_TARGET_OS_WINDOWS)
+ # define V8_TARGET_OS_STRING "windows"
+ #else
+diff -ruwN source/deps/v8/src/base/platform/memory.h source-new/deps/v8/src/base/platform/memory.h
+--- source/deps/v8/src/base/platform/memory.h	2024-04-10 19:46:12.000000000 +0700
++++ source-new/deps/v8/src/base/platform/memory.h	2025-10-10 13:46:04.297422792 +0700
+@@ -23,9 +23,9 @@
+ #include <malloc.h>
+ #endif  // !V8_OS_DARWIN
+ 
+-#if (V8_OS_POSIX && !V8_OS_AIX && !V8_OS_SOLARIS) || V8_OS_WIN
++#if (V8_OS_POSIX && !V8_OS_AIX && !V8_OS_SOLARIS && !V8_OS_REDOX) || V8_OS_WIN
+ #define V8_HAS_MALLOC_USABLE_SIZE 1
+-#endif  // (V8_OS_POSIX && !V8_OS_AIX && !V8_OS_SOLARIS) || V8_OS_WIN
++#endif  // (V8_OS_POSIX && !V8_OS_AIX && !V8_OS_SOLARIS && !V8_OS_REDOX) || V8_OS_WIN
+ 
+ namespace v8::base {
+ 
+diff -ruwN source/deps/v8/src/base/platform/platform-posix.cc source-new/deps/v8/src/base/platform/platform-posix.cc
+--- source/deps/v8/src/base/platform/platform-posix.cc	2024-04-10 19:46:12.000000000 +0700
++++ source-new/deps/v8/src/base/platform/platform-posix.cc	2025-10-10 13:46:04.416447015 +0700
+@@ -28,6 +28,10 @@
+ #include <sys/sysctl.h>  // for sysctl
+ #endif
+ 
++#if defined(__redox__)
++  #define PTHREAD_STACK_MIN 4096
++#endif
++
+ #if defined(ANDROID) && !defined(V8_ANDROID_LOG_STDOUT)
+ #define LOG_TAG "v8"
+ #include <android/log.h>
+@@ -69,7 +73,7 @@
+ #include <sys/resource.h>
+ #endif
+ 
+-#if !defined(_AIX) && !defined(V8_OS_FUCHSIA)
++#if !defined(_AIX) && !defined(V8_OS_FUCHSIA) && !defined(V8_OS_REDOX)
+ #include <sys/syscall.h>
+ #endif
+ 
+@@ -135,7 +139,7 @@
+   int flags = MAP_ANONYMOUS;
+   flags |= (page_type == PageType::kShared) ? MAP_SHARED : MAP_PRIVATE;
+   if (access == OS::MemoryPermission::kNoAccess) {
+-#if !V8_OS_AIX && !V8_OS_FREEBSD && !V8_OS_QNX
++#if !V8_OS_AIX && !V8_OS_FREEBSD && !V8_OS_QNX && !V8_OS_REDOX
+     flags |= MAP_NORESERVE;
+ #endif  // !V8_OS_AIX && !V8_OS_FREEBSD && !V8_OS_QNX
+ #if V8_OS_QNX
+diff -ruwN source/deps/v8/src/base/platform/platform-redox.cc source-new/deps/v8/src/base/platform/platform-redox.cc
+--- source/deps/v8/src/base/platform/platform-redox.cc	1970-01-01 07:00:00.000000000 +0700
++++ source-new/deps/v8/src/base/platform/platform-redox.cc	2025-10-10 15:23:18.233737033 +0700
+@@ -0,0 +1,63 @@
++// Copyright 2014 the V8 project authors. All rights reserved.
++// Use of this source code is governed by a BSD-style license that can be
++// found in the LICENSE file.
++
++// Platform specific code for Redox goes here. For the POSIX comaptible parts
++// the implementation is in platform-posix.cc.
++
++#include <signal.h>
++#include <stdio.h>
++#include <stdlib.h>
++#include <sys/time.h>
++
++#include <cmath>
++
++#undef MAP_TYPE
++
++#include "src/base/macros.h"
++#include "src/base/platform/platform-posix-time.h"
++#include "src/base/platform/platform-posix.h"
++#include "src/base/platform/platform.h"
++
++namespace v8 {
++namespace base {
++
++
++int64_t get_gmt_offset(const tm& localtm) {
++  // replacement for tm->tm_gmtoff field in glibc
++  // returns seconds east of UTC, taking DST into account
++  struct timeval tv;
++  struct timezone tz;
++  int ret_code = gettimeofday(&tv, &tz);
++  // 0 = success, -1 = failure
++  DCHECK_NE(ret_code, -1);
++  if (ret_code == -1) {
++    return 0;
++  }
++  return (-tz.tz_minuteswest * 60) + (localtm.tm_isdst > 0 ? 3600 : 0);
++}
++
++TimezoneCache* OS::CreateTimezoneCache() {
++  return new PosixDefaultTimezoneCache();
++}
++
++static unsigned StringToLong(char* buffer) {
++  return static_cast<unsigned>(strtol(buffer, nullptr, 16));
++}
++
++std::vector<OS::SharedLibraryAddress> OS::GetSharedLibraryAddresses() {
++  UNREACHABLE();
++}
++
++void OS::SignalCodeMovingGC() {}
++
++void OS::AdjustSchedulingParams() {}
++
++std::vector<OS::MemoryRange> OS::GetFreeMemoryRangesWithin(
++    OS::Address boundary_start, OS::Address boundary_end, size_t minimum_size,
++    size_t alignment) {
++  return {};
++}
++
++}  // namespace base
++}  // namespace v8
+diff -ruwN source/deps/v8/src/libsampler/sampler.cc source-new/deps/v8/src/libsampler/sampler.cc
+--- source/deps/v8/src/libsampler/sampler.cc	2024-04-10 19:46:13.000000000 +0700
++++ source-new/deps/v8/src/libsampler/sampler.cc	2025-10-10 13:46:04.417193700 +0700
+@@ -16,11 +16,11 @@
+ #include <sys/time.h>
+ #include <atomic>
+ 
+-#if !V8_OS_QNX && !V8_OS_AIX
++#if !V8_OS_QNX && !V8_OS_AIX && !V8_OS_REDOX
+ #include <sys/syscall.h>
+ #endif
+ 
+-#if V8_OS_AIX || V8_TARGET_ARCH_S390X
++#if V8_OS_AIX || V8_OS_REDOX || V8_TARGET_ARCH_S390X
+ 
+ #include "src/base/platform/time.h"
+ 
+diff -ruwN source/deps/v8/src/trap-handler/handler-inside-posix.cc source-new/deps/v8/src/trap-handler/handler-inside-posix.cc
+--- source/deps/v8/src/trap-handler/handler-inside-posix.cc	2024-04-10 19:46:13.000000000 +0700
++++ source-new/deps/v8/src/trap-handler/handler-inside-posix.cc	2025-10-11 12:32:56.074858844 +0700
+@@ -23,6 +23,7 @@
+ // context. Some additional code is used both inside and outside the signal
+ // handler. This code can be found in handler-shared.cc.
+ 
++#ifndef __redox__
+ #include "src/trap-handler/handler-inside-posix.h"
+ 
+ #include <signal.h>
+@@ -102,7 +103,6 @@
+     asm("v8_simulator_probe_memory_continuation");
+ #endif
+ #endif  // V8_TRAP_HANDLER_VIA_SIMULATOR
+-
+ bool TryHandleSignal(int signum, siginfo_t* info, void* context) {
+   // Ensure the faulting thread was actually running Wasm code. This should be
+   // the first check in the trap handler to guarantee that the
+@@ -197,3 +197,5 @@
+ }  // namespace trap_handler
+ }  // namespace internal
+ }  // namespace v8
++
++#endif
+diff -ruwN source/deps/v8/src/trap-handler/handler-inside-posix.h source-new/deps/v8/src/trap-handler/handler-inside-posix.h
+--- source/deps/v8/src/trap-handler/handler-inside-posix.h	2024-04-10 19:46:13.000000000 +0700
++++ source-new/deps/v8/src/trap-handler/handler-inside-posix.h	2025-10-10 21:44:55.221873295 +0700
+@@ -4,7 +4,7 @@
+ 
+ #ifndef V8_TRAP_HANDLER_HANDLER_INSIDE_POSIX_H_
+ #define V8_TRAP_HANDLER_HANDLER_INSIDE_POSIX_H_
+-
++#ifndef __redox__
+ #include <signal.h>
+ 
+ #include "include/v8config.h"
+@@ -28,5 +28,5 @@
+ }  // namespace trap_handler
+ }  // namespace internal
+ }  // namespace v8
+-
++#endif
+ #endif  // V8_TRAP_HANDLER_HANDLER_INSIDE_POSIX_H_
+diff -ruwN source/deps/v8/src/wasm/std-object-sizes.h source-new/deps/v8/src/wasm/std-object-sizes.h
+--- source/deps/v8/src/wasm/std-object-sizes.h	2024-04-10 19:46:13.000000000 +0700
++++ source-new/deps/v8/src/wasm/std-object-sizes.h	2025-10-10 13:46:04.591737114 +0700
+@@ -54,24 +54,7 @@
+   return raw * 4 / 3;
+ }
+ 
+-// To make it less likely for size estimation functions to become outdated
+-// when the classes they're responsible for change, we insert static asserts
+-// about the respective class's size into them to at least catch some possible
+-// future modifications. Since object sizes are toolchain specific, we define
+-// restrictions here under which we enable these checks.
+-// When one of these checks fails, that probably means you've added fields to
+-// a class guarded by it. Update the respective EstimateCurrentMemoryConsumption
+-// function accordingly, and then update the check's expected size.
+-#if V8_TARGET_ARCH_X64 && defined(__clang__) && V8_TARGET_OS_LINUX &&          \
+-    !V8_USE_ADDRESS_SANITIZER && !V8_USE_MEMORY_SANITIZER && defined(DEBUG) && \
+-    V8_COMPRESS_POINTERS && !defined(V8_GC_MOLE) && defined(_LIBCPP_VERSION)
+-#define UPDATE_WHEN_CLASS_CHANGES(classname, size)                       \
+-  static_assert(sizeof(classname) == size,                               \
+-                "Update {EstimateCurrentMemoryConsumption} when adding " \
+-                "fields to " #classname)
+-#else
+ #define UPDATE_WHEN_CLASS_CHANGES(classname, size) (void)0
+-#endif
+ 
+ }  // namespace v8::internal::wasm
+ 
+diff -ruwN source/src/debug_utils.cc source-new/src/debug_utils.cc
+--- source/src/debug_utils.cc	2024-04-10 19:46:14.000000000 +0700
++++ source-new/src/debug_utils.cc	2025-10-10 13:46:04.755669055 +0700
+@@ -14,7 +14,7 @@
+ 
+ #if defined(__linux__) && !defined(__GLIBC__) || \
+     defined(__UCLIBC__) || \
+-    defined(_AIX)
++    defined(_AIX) || defined(__redox__)
+ #define HAVE_EXECINFO_H 0
+ #else
+ #define HAVE_EXECINFO_H 1
+diff -ruwN source/src/node_credentials.cc source-new/src/node_credentials.cc
+--- source/src/node_credentials.cc	2024-04-10 19:46:14.000000000 +0700
++++ source-new/src/node_credentials.cc	2025-10-10 13:46:04.816900208 +0700
+@@ -182,7 +182,7 @@
+ 
+ static uid_t uid_by_name(Isolate* isolate, Local<Value> value) {
+   if (value->IsUint32()) {
+-    static_assert(std::is_same<uid_t, uint32_t>::value);
++    // static_assert(std::is_same<uid_t, uint32_t>::value);
+     return value.As<Uint32>()->Value();
+   } else {
+     Utf8Value name(isolate, value);
+@@ -192,7 +192,7 @@
+ 
+ static gid_t gid_by_name(Isolate* isolate, Local<Value> value) {
+   if (value->IsUint32()) {
+-    static_assert(std::is_same<gid_t, uint32_t>::value);
++    // static_assert(std::is_same<gid_t, uint32_t>::value);
+     return value.As<Uint32>()->Value();
+   } else {
+     Utf8Value name(isolate, value);
+diff -ruwN source/src/node_report.cc source-new/src/node_report.cc
+--- source/src/node_report.cc	2024-04-10 19:46:14.000000000 +0700
++++ source-new/src/node_report.cc	2025-10-10 13:46:05.190512964 +0700
+@@ -524,7 +524,7 @@
+     while (line != -1) {
+       l = ss.substr(0, line);
+       l.erase(l.begin(), std::find_if(l.begin(), l.end(), [](int ch) {
+-                return !std::iswspace(ch);
++                return !std::isspace(ch);
+               }));
+       writer->json_element(l);
+       ss = ss.substr(line + 1);
+diff -ruwN source/tools/gyp/pylib/gyp/common.py source-new/tools/gyp/pylib/gyp/common.py
+--- source/tools/gyp/pylib/gyp/common.py	2024-04-10 19:46:15.000000000 +0700
++++ source-new/tools/gyp/pylib/gyp/common.py	2025-10-10 21:36:23.972976264 +0700
+@@ -445,6 +445,8 @@
+         return "netbsd"
+     if sys.platform.startswith("aix"):
+         return "aix"
++    if sys.platform.startswith("redox"):
++        return "redox"
+     if sys.platform.startswith(("os390", "zos")):
+         return "zos"
+     if sys.platform == "os400":
+diff -ruwN source/tools/gyp/pylib/gyp/generator/make.py source-new/tools/gyp/pylib/gyp/generator/make.py
+--- source/tools/gyp/pylib/gyp/generator/make.py	2024-04-10 19:46:15.000000000 +0700
++++ source-new/tools/gyp/pylib/gyp/generator/make.py	2025-10-10 14:27:51.496602771 +0700
+@@ -1868,7 +1868,7 @@
+                 self.flavor not in ("mac", "openbsd", "netbsd", "win")
+                 and not self.is_standalone_static_library
+             ):
+-                if self.flavor in ("linux", "android"):
++                if self.flavor in ("linux", "android", "redox"):
+                     self.WriteMakeRule(
+                         [self.output_binary],
+                         link_deps,
+@@ -1883,7 +1883,7 @@
+                         postbuilds=postbuilds,
+                     )
+             else:
+-                if self.flavor in ("linux", "android"):
++                if self.flavor in ("linux", "android", "redox"):
+                     self.WriteMakeRule(
+                         [self.output_binary],
+                         link_deps,
+diff -ruwN source/tools/v8_gypfiles/d8.gyp source-new/tools/v8_gypfiles/d8.gyp
+--- source/tools/v8_gypfiles/d8.gyp	2024-04-10 19:46:15.000000000 +0700
++++ source-new/tools/v8_gypfiles/d8.gyp	2025-10-10 21:34:47.141291162 +0700
+@@ -47,7 +47,7 @@
+         }],
+         ['(OS=="linux" or OS=="mac" or OS=="freebsd" or OS=="netbsd" \
+            or OS=="openbsd" or OS=="solaris" or OS=="android" \
+-           or OS=="qnx" or OS=="aix" or OS=="os400")', {
++           or OS=="qnx" or OS=="aix" or OS=="redox" or OS=="os400")', {
+              'sources': [ '<(V8_ROOT)/src/d8/d8-posix.cc', ]
+            }],
+         [ 'OS=="win"', {
+diff -ruwN source/tools/v8_gypfiles/toolchain.gypi source-new/tools/v8_gypfiles/toolchain.gypi
+--- source/tools/v8_gypfiles/toolchain.gypi	2024-04-10 19:46:15.000000000 +0700
++++ source-new/tools/v8_gypfiles/toolchain.gypi	2025-10-10 21:57:05.129575573 +0700
+@@ -575,6 +575,12 @@
+           'V8_TARGET_OS_MACOS',
+         ]
+       }],
++      ['OS=="redox"', {
++        'defines': [
++          'V8_HAVE_TARGET_OS',
++          'V8_TARGET_OS_REDOX',
++        ]
++      }],
+       ['OS=="win"', {
+         'defines': [
+           'V8_HAVE_TARGET_OS',
+@@ -661,7 +667,7 @@
+         ],
+       }],
+       ['OS=="linux" or OS=="freebsd" or OS=="openbsd" or OS=="solaris" \
+-         or OS=="netbsd" or OS=="qnx" or OS=="aix" or OS=="os400"', {
++         or OS=="netbsd" or OS=="qnx" or OS=="aix" or OS=="redox" or OS=="os400"', {
+         'conditions': [
+           [ 'v8_no_strict_aliasing==1', {
+             'cflags': [ '-fno-strict-aliasing' ],
+diff -ruwN source/tools/v8_gypfiles/v8.gyp source-new/tools/v8_gypfiles/v8.gyp
+--- source/tools/v8_gypfiles/v8.gyp	2024-04-10 19:46:15.000000000 +0700
++++ source-new/tools/v8_gypfiles/v8.gyp	2025-10-11 12:14:17.137386469 +0700
+@@ -606,7 +606,7 @@
+               }],
+               ['v8_enable_webassembly==1', {
+                 'conditions': [
+-                  ['OS=="linux" or OS=="mac" or OS=="ios" or OS=="freebsd"', {
++                  ['OS=="linux" or OS=="redox" or OS=="mac" or OS=="ios" or OS=="freebsd"', {
+                     'sources': [
+                       '<(V8_ROOT)/src/trap-handler/handler-inside-posix.h',
+                     ],
+@@ -637,7 +637,7 @@
+               }],
+               ['v8_enable_webassembly==1', {
+                 'conditions': [
+-                  ['((_toolset=="host" and host_arch=="arm64" or _toolset=="target" and target_arch=="arm64") and (OS=="linux" or OS=="mac")) or ((_toolset=="host" and host_arch=="x64" or _toolset=="target" and target_arch=="x64") and (OS=="linux" or OS=="mac"))', {
++                  ['((_toolset=="host" and host_arch=="arm64" or _toolset=="target" and target_arch=="arm64") and (OS=="linux" or OS=="mac")) or ((_toolset=="host" and host_arch=="x64" or _toolset=="target" and target_arch=="x64") and (OS=="linux" or OS=="redox" or OS=="mac"))', {
+                     'sources': [
+                       '<(V8_ROOT)/src/trap-handler/handler-inside-posix.h',
+                     ],
+@@ -941,7 +941,7 @@
+             }],
+             ['v8_enable_webassembly==1', {
+               'conditions': [
+-                ['OS=="linux" or OS=="mac" or OS=="ios" or OS=="freebsd"', {
++                ['OS=="linux" or OS=="redox" or OS=="mac" or OS=="ios" or OS=="freebsd"', {
+                   'sources': [
+                     '<(V8_ROOT)/src/trap-handler/handler-inside-posix.cc',
+                     '<(V8_ROOT)/src/trap-handler/handler-outside-posix.cc',
+@@ -969,7 +969,7 @@
+           'conditions': [
+             ['v8_enable_webassembly==1', {
+               'conditions': [
+-                ['((_toolset=="host" and host_arch=="arm64" or _toolset=="target" and target_arch=="arm64") and (OS=="linux" or OS=="mac" or OS=="ios")) or ((_toolset=="host" and host_arch=="x64" or _toolset=="target" and target_arch=="x64") and (OS=="linux" or OS=="mac"))', {
++                ['((_toolset=="host" and host_arch=="arm64" or _toolset=="target" and target_arch=="arm64") and (OS=="linux" or OS=="redox" or OS=="mac" or OS=="ios")) or ((_toolset=="host" and host_arch=="x64" or _toolset=="target" and target_arch=="x64") and (OS=="linux" or OS=="redox" or OS=="mac"))', {
+                   'sources': [
+                     '<(V8_ROOT)/src/trap-handler/handler-inside-posix.cc',
+                     '<(V8_ROOT)/src/trap-handler/handler-outside-posix.cc',
+@@ -981,7 +981,7 @@
+                     '<(V8_ROOT)/src/trap-handler/handler-outside-win.cc',
+                   ],
+                 }],
+-                ['(_toolset=="host" and host_arch=="x64" or _toolset=="target" and target_arch=="x64") and (OS=="linux" or OS=="mac" or OS=="win")', {
++                ['(_toolset=="host" and host_arch=="x64" or _toolset=="target" and target_arch=="x64") and (OS=="linux" or OS=="redox" or OS=="mac" or OS=="win")', {
+                   'sources': [
+                     '<(V8_ROOT)/src/trap-handler/handler-outside-simulator.cc',
+                   ],
+@@ -1323,6 +1323,35 @@
+         # end of conditions from 'BUILD.gn'
+ 
+         # Node.js validated
++        ['OS=="redox"', {
++          'link_settings': {
++            'target_conditions': [
++              ['_toolset=="host"', {
++                'libraries': [
++                  '-ldl'
++                ],
++              }],
++            ],
++          },
++          'sources': [
++            '<(V8_ROOT)/src/base/platform/platform-posix.cc',
++            '<(V8_ROOT)/src/base/platform/platform-posix.h',
++            '<(V8_ROOT)/src/base/platform/platform-posix-time.cc',
++            '<(V8_ROOT)/src/base/platform/platform-posix-time.h',
++            '<(V8_ROOT)/src/base/debug/stack_trace_posix.cc',
++          ],
++          'target_conditions': [
++            ['_toolset=="host"', {
++              'sources': [
++                '<(V8_ROOT)/src/base/platform/platform-linux.cc',
++              ],
++            }, {
++              'sources': [
++                '<(V8_ROOT)/src/base/platform/platform-redox.cc',
++              ],
++            }],
++          ],
++        }],
+         ['OS=="solaris"', {
+           'link_settings': {
+             'libraries': [

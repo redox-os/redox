@@ -1,0 +1,9 @@
+[source]
+tar = "https://download.gnome.org/sources/zenity/3.44/zenity-3.44.5.tar.xz"
+blake3 = "de4c662bd33107e9247c23d248e4b1b51a68994b01ecefda77422e1007b11c1e"
+
+[build]
+dependencies = [
+    "gtk3",
+]
+template = "meson"

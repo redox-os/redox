@@ -1,0 +1,20 @@
+[source]
+tar = "https://storage.googleapis.com/downloads.webmproject.org/releases/webp/libwebp-1.5.0.tar.gz"
+blake3 = "8272270920a317b854b059e86c320dbdb5a2032937072bbfd5f3304d601a92cb"
+script = """
+DYNAMIC_INIT
+autotools_recursive_regenerate
+"""
+
+[build]
+dependencies = [
+    "libgif",
+    "libjpeg",
+    "libpng",
+    "libtiff",
+]
+template = "custom"
+script = """
+DYNAMIC_INIT
+cookbook_configure
+"""

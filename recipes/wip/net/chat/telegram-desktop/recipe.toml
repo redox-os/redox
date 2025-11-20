@@ -1,0 +1,23 @@
+#TODO not compiled or tested
+# lacking build instructions
+[source]
+tar = "https://github.com/telegramdesktop/tdesktop/releases/download/v6.2.3/tdesktop-6.2.3-full.tar.gz"
+[build]
+template = "cmake"
+dependencies = [
+    "qt6-svg",
+    "qt6-imageformats",
+    "fontconfig",
+    "freetype2",
+    "gobject-introspection",
+    "glib",
+    "expat",
+    "libuuid",
+    "libpng",
+    "zlib",
+    "libffi",
+    "libpcre",
+    "libbsd",
+    "libmd",
+    "libbrotli",
+]

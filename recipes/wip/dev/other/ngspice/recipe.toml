@@ -1,0 +1,15 @@
+#TODO maybe wrong script, see https://sourceforge.net/p/ngspice/ngspice/ci/master/tree/INSTALL
+#TODO maybe missing dependencies
+[source]
+tar = "https://sourceforge.net/projects/ngspice/files/ng-spice-rework/42/ngspice-42.tar.gz/download"
+[build]
+template = "custom"
+script = """
+cd release
+COOKBOOK_CONFIGURE_FLAGS+=(
+    --with-x
+    --with-readline=yes
+    --disable-debug
+)
+cookbook_configure
+"""

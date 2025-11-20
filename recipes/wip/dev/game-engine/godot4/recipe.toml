@@ -1,0 +1,6 @@
+#TODO missing script for scons: https://docs.godotengine.org/en/stable/contributing/development/compiling/compiling_for_linuxbsd.html
+#TODO discover minimum dependencies from scons log
+[source]
+tar = "https://github.com/godotengine/godot/releases/download/4.5.1-stable/godot-4.5.1-stable.tar.xz"
+[build]
+template = "custom"

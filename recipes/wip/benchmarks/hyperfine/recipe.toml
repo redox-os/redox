@@ -1,0 +1,5 @@
+#TODO libc::RUSAGE_CHILDREN
+[source]
+git = "https://github.com/sharkdp/hyperfine"
+[build]
+template = "cargo"

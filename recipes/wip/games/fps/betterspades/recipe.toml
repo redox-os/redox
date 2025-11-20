@@ -1,0 +1,15 @@
+#TODO not compiled or tested
+#TODO probably missing dependencies, see https://github.com/xtreme8000/BetterSpades#build-requirements
+# build instructions: https://github.com/xtreme8000/BetterSpades#linux
+[source]
+git = "https://github.com/xtreme8000/BetterSpades"
+[build]
+template = "cmake"
+dependencies = [
+    "glfw3",
+    "openal",
+    "libenet",
+    "libdeflate",
+    "glew",
+    "mesa",
+]

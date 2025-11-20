@@ -1,0 +1,25 @@
+#TODO not compiled or tested
+# build instructions - https://github.com/stepmania/stepmania/wiki/Compiling-StepMania-Linux
+# dependencies - https://github.com/stepmania/stepmania/wiki/Linux-Dependencies
+[source]
+git = "https://github.com/stepmania/stepmania"
+[build]
+template = "cmake"
+dependencies = [
+    "mesa",
+    "mesa-glu",
+    "glew",
+    "libx11",
+    "libxtst",
+    "libxrandr",
+    "libpng",
+    "libjpeg",
+    "zlib",
+    "bzip2",
+    "libogg",
+    "libvorbis",
+    "pulseaudio",
+    "libiberty",
+    "gtk3",
+    "libmad",
+]

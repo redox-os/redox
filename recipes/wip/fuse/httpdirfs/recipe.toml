@@ -1,0 +1,15 @@
+#TODO not compiled or tested
+# build instructions: https://github.com/fangfufu/httpdirfs#compilation
+[source]
+git = "https://github.com/fangfufu/httpdirfs"
+rev = "d91bb2b2789be8a0f72c7baddac63ffb78299ad9"
+[build]
+template = "meson"
+dependencies = [
+    "libfuse3",
+    "openssl1",
+    "curl",
+    "expat",
+    "libuuid",
+    "libgumbo",
+]

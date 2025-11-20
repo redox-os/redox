@@ -1,0 +1,11 @@
+#TODO camino crate error, require the WebAssembly target on Rustup.
+[source]
+git = "https://github.com/MoonZoon/MoonZoon"
+[build]
+template = "custom"
+dependencies = [
+    "openssl1",
+]
+script = """
+cookbook_cargo_packages mzoon
+"""

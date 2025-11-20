@@ -1,0 +1,10 @@
+[source]
+git = "https://gitlab.redox-os.org/redox-os/resist.git"
+
+[build]
+template = "custom"
+script = """
+cookbook_cargo
+mkdir -pv "${COOKBOOK_STAGE}/share/resist"
+cp -rv "${COOKBOOK_SOURCE}/"{posix,redox} "${COOKBOOK_STAGE}/share/resist"
+"""

@@ -1,0 +1,5 @@
+#TODO fs_at and libc crate errors (after cargo update)
+[source]
+git = "https://github.com/denisidoro/navi"
+[build]
+template = "cargo"

@@ -1,0 +1,17 @@
+#TODO determine build instructions: https://repo.palemoon.org/Basilisk-Dev/Basilisk/src/branch/master/build-scripts/linux/build_basilisk_subscripts/run_inside_docker.sh
+# dependencies: https://basilisk-browser.org/requirements.html
+[source]
+tar = "https://dl.basilisk-browser.org/basilisk-2025.10.10-source.tar.xz"
+[build]
+template = "custom"
+dependencies = [
+    "gtk3",
+    "glib",
+    "pango",
+    "dbus",
+    "libalsa",
+    "libxt",
+    "openssl3",
+    "sqlite3",
+    "libpulse",
+]

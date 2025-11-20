@@ -1,0 +1,15 @@
+--- source-old/lib/renameat2.c	2018-02-03 05:41:53.000000000 -0700
++++ source/lib/renameat2.c	2025-11-01 08:39:54.945513820 -0600
+@@ -70,6 +70,7 @@
+    Obey FLAGS when doing the renaming.  If FLAGS is zero, this
+    function is equivalent to renameat (FD1, SRC, FD2, DST).  */
+ 
++#if !defined(__redox__)
+ int
+ renameat2 (int fd1, char const *src, int fd2, char const *dst,
+            unsigned int flags)
+@@ -225,3 +226,4 @@
+ 
+ #endif /* !HAVE_RENAMEAT */
+ }
++#endif

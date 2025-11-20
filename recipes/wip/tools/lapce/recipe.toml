@@ -1,0 +1,5 @@
+#TODO openssl-sys crate error
+[source]
+git = "https://github.com/lapce/lapce"
+[build]
+template = "cargo"

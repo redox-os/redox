@@ -1,0 +1,16 @@
+[source]
+tar = "https://www.x.org/releases/individual/lib/libxshmfence-1.3.tar.gz"
+script = """
+DYNAMIC_INIT
+autotools_recursive_regenerate
+"""
+
+[build]
+dependencies = [
+    "x11proto",
+]
+template = "custom"
+script = """
+DYNAMIC_INIT
+cookbook_configure
+"""

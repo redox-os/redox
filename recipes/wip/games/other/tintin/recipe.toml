@@ -1,0 +1,10 @@
+#TODO not compiled or tested
+[source]
+tar = "https://github.com/scandum/tintin/releases/download/2.02.51/tintin-2.02.51.tar.gz"
+[build]
+template = "configure"
+dependencies = [
+    "zlib",
+    "pcre2",
+    #"gnutls3", # optional
+]

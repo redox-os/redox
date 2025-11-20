@@ -1,0 +1,12 @@
+#TODO not compiled or tested
+# build instructions: https://cutter.re/docs/building.html
+[source]
+tar = "https://github.com/rizinorg/cutter/releases/download/v2.3.4/Cutter-v2.3.4-src.tar.gz"
+[build]
+template = "cmake"
+dependencies = [
+    "libzip",
+    "zlib",
+    "qt5-base",
+    "qt5-svg",
+]

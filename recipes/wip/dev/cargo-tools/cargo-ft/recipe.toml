@@ -1,0 +1,5 @@
+#TODO camino crate error
+[source]
+git = "https://github.com/stormshield/cargo-ft"
+[build]
+template = "cargo"

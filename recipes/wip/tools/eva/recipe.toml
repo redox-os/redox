@@ -1,0 +1,5 @@
+#TODO rustyline crate error
+[source]
+git = "https://github.com/nerdypepper/eva"
+[build]
+template = "cargo"

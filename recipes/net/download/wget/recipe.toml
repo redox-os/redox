@@ -1,0 +1,10 @@
+[source]
+tar = "https://ftp.gnu.org/gnu/wget/wget-1.21.4.tar.gz"
+[build]
+dependencies = [
+    "openssl1",
+]
+template = "configure"
+configureflags = [
+    "--with-ssl=openssl"
+]

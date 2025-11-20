@@ -1,0 +1,10 @@
+[source]
+git = "https://gitlab.redox-os.org/redox-os/pkgutils.git"
+
+[build]
+template = "custom"
+script = """
+# Must be statically linked
+PACKAGE_PATH=pkg-cli
+cookbook_cargo
+"""

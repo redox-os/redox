@@ -1,0 +1,10 @@
+#TODO not compiled or tested
+# lacking build instructions
+[source]
+tar = "https://download.gnome.org/sources/clutter-gtk/1.8/clutter-gtk-1.8.4.tar.xz"
+[build]
+template = "meson"
+dependencies = [
+    "clutter",
+    "gtk3",
+]

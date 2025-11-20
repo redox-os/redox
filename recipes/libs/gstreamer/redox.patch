@@ -1,0 +1,19 @@
+diff -ruwN gstreamer-1.20.7/subprojects/gst-plugins-base/gst-libs/gst/tag/meson.build source/subprojects/gst-plugins-base/gst-libs/gst/tag/meson.build
+--- gstreamer-1.20.7/subprojects/gst-plugins-base/gst-libs/gst/tag/meson.build	2023-07-26 09:18:38.000000000 -0600
++++ source/subprojects/gst-plugins-base/gst-libs/gst/tag/meson.build	2025-04-10 17:19:26.509676357 -0600
+@@ -135,10 +135,10 @@
+     install: false)
+ endif
+ 
+-executable('mklicensestables', 'mklicensestables.c',
+-  c_args : gst_plugins_base_args,
+-  include_directories: [configinc],
+-  dependencies : [tag_dep, gst_base_dep],
+-  install : false)
++#executable('mklicensestables', 'mklicensestables.c',
++#  c_args : gst_plugins_base_args,
++#  include_directories: [configinc],
++#  dependencies : [tag_dep, gst_base_dep],
++#  install : false)
+ 
+ gst_tag_dir = meson.current_source_dir()

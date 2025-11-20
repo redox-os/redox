@@ -1,0 +1,26 @@
+#TODO Missing script for a make build system, see https://trac.wildfiregames.com/wiki/BuildInstructions#Linux
+#TODO The Atlas editor needs to be disabled with the build option "--disable-atlas" to avoid GTK3 dependency (WxWidgetsGTK)
+#TODO Maybe needs to run update-workspaces.sh before
+#TODO Require recipes for SpiderMonkey and libicu (Unicode)
+[source]
+tar = "https://releases.wildfiregames.com/0ad-0.0.26-alpha-unix-build.tar.xz"
+[build]
+template = "custom"
+dependencies = [
+    "boost",
+    "curl",
+    "libenet",
+    "libfmt",
+    "libgloox",
+    "libicu",
+    "libogg",
+    "libpng",
+    "libsodium",
+    "libvorbis",
+    "libxml2",
+    "miniupnpc",
+    "openal",
+    "sdl2",
+    "zlib",
+    "spidermonkey",
+]

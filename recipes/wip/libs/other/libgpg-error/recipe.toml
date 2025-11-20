@@ -1,0 +1,38 @@
+[source]
+tar = "https://gnupg.org/ftp/gcrypt/libgpg-error/libgpg-error-1.55.tar.bz2"
+blake3 = "6c363dd8c6bcf2601dd5ff3b11fa2f699baa2aae40de2acd92461af0fd8178f0"
+script = """
+DYNAMIC_INIT
+autotools_recursive_regenerate
+"""
+
+[build]
+template = "custom"
+script = """
+DYNAMIC_INIT
+
+cat > "${COOKBOOK_SOURCE}/src/syscfg/lock-obj-pub.${TARGET}.h" << EOF
+## lock-obj-pub.x86_64-unknown-redox.h
+## File created by gen-lock-obj.sh - DO NOT EDIT
+## To be included by mkheader into gpg-error.h
+
+typedef struct
+{
+  long _vers;
+  union {
+    volatile char _priv[12];
+    long _x_align;
+    long *_xp_align;
+  } u;
+} gpgrt_lock_t;
+
+#define GPGRT_LOCK_INITIALIZER {1,{{}}}
+##
+## Local Variables:
+## mode: c
+## buffer-read-only: t
+## End:
+##
+EOF
+cookbook_configure --enable-threads=posix
+"""

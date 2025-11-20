@@ -1,0 +1,5 @@
+#TODO nix crate error
+[source]
+git = "https://github.com/watchexec/cargo-watch"
+[build]
+template = "cargo"

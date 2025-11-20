@@ -1,0 +1,15 @@
+#TODO not compiled or tested
+# build instructions: https://github.com/ospray/ospray_studio#standard-cmake-build
+[source]
+git = "https://github.com/ospray/ospray_studio"
+rev = "d2c83a67c841f1329f47cf9648a56b3dacbcdcaa"
+[build]
+template = "cmake"
+dependencies = [
+    "ospray",
+    "onetbb",
+    "librkcommon",
+    "mesa",
+    "glfw",
+    "open-image-denoise",
+]

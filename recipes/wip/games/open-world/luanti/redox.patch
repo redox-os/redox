@@ -1,0 +1,273 @@
+diff --git a/irr/src/CGUIEditBox.cpp b/irr/src/CGUIEditBox.cpp
+index 5639a36a6..37a0b6151 100644
+--- a/irr/src/CGUIEditBox.cpp
++++ b/irr/src/CGUIEditBox.cpp
+@@ -464,10 +464,10 @@ void CGUIEditBox::processKeyLR(const SEvent::SKeyInput &input, s32 &new_mark_beg
+ 			new_pos = i;
+ 			if (std::abs(i - CursorPos) > 2) {
+ 				// End of word
+-				if (!std::iswspace(prev_c) && std::iswspace(c))
++				if (!::iswspace(prev_c) && ::iswspace(c))
+ 					break;
+ 				// End of a sentence.
+-				if (std::iswpunct(prev_c) && !std::iswpunct(c))
++				if (iswpunct(prev_c) && !iswpunct(c))
+ 					break;
+ 			}
+ 			prev_c = c;
+diff --git a/irr/src/CIrrDeviceSDL.cpp b/irr/src/CIrrDeviceSDL.cpp
+index a44213d7c..dbf3611b1 100644
+--- a/irr/src/CIrrDeviceSDL.cpp
++++ b/irr/src/CIrrDeviceSDL.cpp
+@@ -331,7 +331,9 @@ CIrrDeviceSDL::CIrrDeviceSDL(const SIrrlichtCreationParameters &param) :
+ 		// Minetest has its own code to synthesize mouse events from touch events,
+ 		// so we prevent SDL from doing it.
+ 		SDL_SetHint(SDL_HINT_TOUCH_MOUSE_EVENTS, "0");
++#ifdef SDL_HINT_MOUSE_TOUCH_EVENTS
+ 		SDL_SetHint(SDL_HINT_MOUSE_TOUCH_EVENTS, "0");
++#endif
+ 
+ #if defined(SDL_HINT_APP_NAME)
+ 		SDL_SetHint(SDL_HINT_APP_NAME, "Luanti");
+diff --git a/irr/src/CMakeLists.txt b/irr/src/CMakeLists.txt
+index b7360311a..b1c578726 100644
+--- a/irr/src/CMakeLists.txt
++++ b/irr/src/CMakeLists.txt
+@@ -232,7 +232,7 @@ if(USE_SDL2)
+ 		set(USE_SDL2_SHARED TRUE)
+ 	endif()
+ 	if(NOT ANDROID)
+-		find_package(SDL2 REQUIRED)
++		#find_package(SDL2 REQUIRED)
+ 	else()
+ 		# provided by AndroidLibs.cmake
+ 	endif()
+@@ -246,16 +246,16 @@ if(USE_SDL2)
+ #error\n\
+ #endif\n\
+ int main() {}" CHECK_SDL_VERSION)
+-	if(NOT CHECK_SDL_VERSION)
+-		message(FATAL_ERROR "SDL2 is too old, required is at least 2.0.10!")
+-	endif()
++	#if(NOT CHECK_SDL_VERSION)
++	#	message(FATAL_ERROR "SDL2 is too old, required is at least 2.0.10!")
++	#endif()
+ 
+ 	# ...no target either.
+-	if(NOT TARGET SDL2::SDL2)
+-		add_library(SDL2::SDL2 SHARED IMPORTED)
+-		set_target_properties(SDL2::SDL2 PROPERTIES
+-			IMPORTED_LOCATION "${SDL2_LIBRARIES}")
+-	endif()
++	#if(NOT TARGET SDL2::SDL2)
++	#	add_library(SDL2::SDL2 SHARED IMPORTED)
++	#	set_target_properties(SDL2::SDL2 PROPERTIES
++	#		IMPORTED_LOCATION "${SDL2_LIBRARIES}")
++	#endif()
+ endif()
+ 
+ # More special config
+@@ -583,8 +583,9 @@ target_link_libraries(IrrlichtMt PRIVATE
+ 	${ZLIB_LIBRARY}
+ 	${JPEG_LIBRARY}
+ 	${PNG_LIBRARY}
+-	"$<$<BOOL:${USE_SDL2_SHARED}>:SDL2::SDL2>"
+-	"$<$<BOOL:${USE_SDL2_STATIC}>:SDL2::SDL2-static>"
++	${SDL2_LIBRARIES}
++	#"$<$<BOOL:${USE_SDL2_SHARED}>:SDL2::SDL2>"
++	#"$<$<BOOL:${USE_SDL2_STATIC}>:SDL2::SDL2-static>"
+ 
+ 	"$<$<BOOL:${OPENGL_DIRECT_LINK}>:${OPENGL_LIBRARIES}>"
+ 	${EGL_LIBRARY}
+diff --git a/src/client/client.cpp b/src/client/client.cpp
+index b1dfa5993..aec96371c 100644
+--- a/src/client/client.cpp
++++ b/src/client/client.cpp
+@@ -1808,10 +1808,12 @@ void Client::showUpdateProgressTexture(void *args, u32 progress, u32 max_progres
+ 
+ 		if (do_draw) {
+ 			targs->last_time_ms = time_ms;
++#if !defined(__redox__)
+ 			std::wostringstream strm;
+ 			strm << targs->text_base << L" " << targs->last_percent << L"%...";
+ 			m_rendering_engine->draw_load_screen(strm.str(), targs->guienv, targs->tsrc, 0,
+ 				72 + (u16) ((18. / 100.) * (double) targs->last_percent));
++#endif
+ 		}
+ }
+ 
+diff --git a/src/porting.cpp b/src/porting.cpp
+index 711b65db6..32520eef9 100644
+--- a/src/porting.cpp
++++ b/src/porting.cpp
+@@ -25,7 +25,7 @@
+ #if !defined(_WIN32)
+ 	#include <unistd.h>
+ 	#include <sys/utsname.h>
+-	#if !defined(__ANDROID__)
++	#if !defined(__ANDROID__) && !defined(__redox__)
+ 		#include <spawn.h>
+ 	#endif
+ #endif
+@@ -883,7 +883,7 @@ static bool open_uri(const std::string &uri)
+ 	const char *argv[] = {"open", uri.c_str(), NULL};
+ 	return posix_spawnp(NULL, "open", NULL, NULL, (char**)argv,
+ 		(*_NSGetEnviron())) == 0;
+-#else
++#elif !defined(__redox__)
+ 	const char *argv[] = {"xdg-open", uri.c_str(), NULL};
+ 	return posix_spawnp(NULL, "xdg-open", NULL, NULL, (char**)argv, environ) == 0;
+ #endif
+diff --git a/src/porting.h b/src/porting.h
+index 1a4bb9e7b..cc252f3e1 100644
+--- a/src/porting.h
++++ b/src/porting.h
+@@ -162,6 +162,12 @@ inline void os_get_clock(struct timespec *ts)
+ # endif
+ 	struct timeval tv;
+ 	gettimeofday(&tv, NULL);
++#ifndef TIMEVAL_TO_TIMESPEC
++#define TIMEVAL_TO_TIMESPEC(tv, ts) ( \
++	(ts)->tv_sec = (tv)->tv_sec, \
++	(ts)->tv_nsec = (tv)->tv_usec * 1000, \
++	(void)0 )
++#endif
+ 	TIMEVAL_TO_TIMESPEC(&tv, ts);
+ #endif
+ }
+diff --git a/src/server.cpp b/src/server.cpp
+index 3c03e68a6..4825bcd62 100644
+--- a/src/server.cpp
++++ b/src/server.cpp
+@@ -245,10 +245,14 @@ void Server::ShutdownState::tick(float dtime, Server *server)
+ 
+ std::wstring Server::ShutdownState::getShutdownTimerMessage() const
+ {
++#if defined(__redox__)
++	return L"";
++#else
+ 	std::wstringstream ws;
+ 	ws << L"*** Server shutting down in "
+ 		<< duration_to_string(myround(m_timer)).c_str() << ".";
+ 	return ws.str();
++#endif
+ }
+ 
+ /*
+@@ -3180,11 +3184,15 @@ std::wstring Server::handleChat(const std::string &name,
+ 	if (player) {
+ 		switch (player->canSendChatMessage()) {
+ 		case RPLAYER_CHATRESULT_FLOODING: {
++#if defined(__redox__)
++			return L"";
++#else
+ 			std::wstringstream ws;
+ 			ws << L"You cannot send more messages. You are limited to "
+ 					<< g_settings->getFloat("chat_message_limit_per_10sec")
+ 					<< L" messages per 10 seconds.";
+ 			return ws.str();
++#endif
+ 		}
+ 		case RPLAYER_CHATRESULT_KICK:
+ 			DenyAccess(player->getPeerId(), SERVER_ACCESSDENIED_CUSTOM_STRING,
+diff --git a/src/threading/thread.cpp b/src/threading/thread.cpp
+index 679eaa113..59dc8cc63 100644
+--- a/src/threading/thread.cpp
++++ b/src/threading/thread.cpp
+@@ -332,7 +332,7 @@ bool Thread::setPriority(int prio)
+ 
+ 	return SetThreadPriority(win32_native_handle(), prio);
+ 
+-#else
++#elif !defined(__redox__)
+ 
+ 	struct sched_param sparam;
+ 	int policy;
+diff --git a/src/translation.cpp b/src/translation.cpp
+index 71469507d..ecb9d1b52 100644
+--- a/src/translation.cpp
++++ b/src/translation.cpp
+@@ -126,6 +126,7 @@ void Translations::loadTrTranslation(const std::string &data)
+ 		// '\n' may also be escaped by '@'.
+ 		// All other escapes are preserved.
+ 
++#if !defined(__redox__)
+ 		size_t i = 0;
+ 		std::wostringstream word1, word2;
+ 		while (i < wline.length() && wline[i] != L'=') {
+@@ -192,6 +193,7 @@ void Translations::loadTrTranslation(const std::string &data)
+ 		}
+ 
+ 		addTranslation(textdomain, word1.str(), word2.str());
++#endif
+ 	}
+ }
+ 
+@@ -341,12 +343,14 @@ void Translations::loadPoEntry(const std::wstring &basefilename, const GettextPl
+ 		addTranslation(textdomain, original, translated->second);
+ 	} else {
+ 		std::vector<std::wstring> translations;
++		#if !defined(__redox__)
+ 		for (int i = 0; ; i++) {
+ 			auto translated = entry.find(L"msgstr[" + std::to_wstring(i) + L"]");
+ 			if (translated == entry.end())
+ 				break;
+ 			translations.push_back(translated->second);
+ 		}
++		#endif
+ 		addPluralTranslation(textdomain, plural_form, original, translations);
+ 		addPluralTranslation(textdomain, plural_form, plural->second, translations);
+ 	}
+diff --git a/src/unittest/test_serialization.cpp b/src/unittest/test_serialization.cpp
+index 839a09060..9cbcc056d 100644
+--- a/src/unittest/test_serialization.cpp
++++ b/src/unittest/test_serialization.cpp
+@@ -61,15 +61,21 @@ template<size_t N> std::string mkstr(const char (&s)[N])
+ void TestSerialization::buildTestStrings()
+ {
+ 	std::ostringstream tmp_os;
++#if !defined(__redox__)
+ 	std::wostringstream tmp_os_w;
++#endif
+ 	std::ostringstream tmp_os_w_encoded;
+ 	for (int i = 0; i < 256; i++) {
+ 		tmp_os << (char)i;
++#if !defined(__redox__)
+ 		tmp_os_w << (wchar_t)i;
++#endif
+ 		tmp_os_w_encoded << (char)0 << (char)i;
+ 	}
+ 	teststring2 = tmp_os.str();
++#if !defined(__redox__)
+ 	teststring2_w = tmp_os_w.str();
++#endif
+ 	teststring2_w_encoded = tmp_os_w_encoded.str();
+ }
+ 
+diff --git a/src/util/string.cpp b/src/util/string.cpp
+index aeec51cb8..411bdc84a 100644
+--- a/src/util/string.cpp
++++ b/src/util/string.cpp
+@@ -721,7 +721,9 @@ static void translate_string(std::wstring_view s, Translations *translations,
+ 				continue;
+ 			}
+ 			output += L'@';
++			#if !defined (__redox__)
+ 			output += std::to_wstring(arg_number);
++			#endif
+ 			++arg_number;
+ 			std::wstring arg;
+ 			translate_all(s, i, translations, arg);
+diff --git a/src/util/string.h b/src/util/string.h
+index 78881a9a4..f5a6ed95a 100644
+--- a/src/util/string.h
++++ b/src/util/string.h
+@@ -325,7 +325,7 @@ inline bool my_isspace(const char c)
+ 
+ inline bool my_isspace(const wchar_t c)
+ {
+-	return std::iswspace(c);
++	return ::iswspace(c);
+ }
+ 
+ /**

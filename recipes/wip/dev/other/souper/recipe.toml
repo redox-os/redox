@@ -1,0 +1,6 @@
+#TODO not compiled or tested
+# build instructions: https://github.com/google/souper#building-souper
+[source]
+git = "https://github.com/google/souper"
+[build]
+template = "cmake"

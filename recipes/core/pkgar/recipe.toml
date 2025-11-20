@@ -1,0 +1,6 @@
+[source]
+git = "https://gitlab.redox-os.org/redox-os/pkgar.git"
+
+[build]
+template = "cargo"
+package_path = "pkgar"

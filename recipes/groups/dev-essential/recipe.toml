@@ -1,0 +1,21 @@
+[package]
+dependencies = [
+    "autoconf",
+    "automake",
+    "cargo",
+    "gcc13",
+    "llvm18",
+    "gnu-binutils",
+    "gnu-make",
+    "gnu-grep",
+    "ripgrep",
+    "libffi",
+    "rustpython",
+    "lua54",
+    "nasm",
+    "patch",
+    "pkg-config",
+    "rust",
+    "sed",
+    "strace",
+]

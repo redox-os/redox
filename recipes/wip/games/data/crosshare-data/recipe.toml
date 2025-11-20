@@ -1,0 +1,10 @@
+#TODO not compiled or tested
+[source]
+git = "https://github.com/crosshare-org/crosshare"
+shallow_clone = true
+[build]
+template = "custom"
+script = """
+mkdir -pv "${COOKBOOK_STAGE}/usr/share/crosshare-data"
+cp -rv "${COOKBOOK_SOURCE}"/app/__tests__/converter/puz/*.puz "${COOKBOOK_STAGE}/usr/share/crosshare-data"
+"""

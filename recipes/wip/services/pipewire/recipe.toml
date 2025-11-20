@@ -1,0 +1,7 @@
+#TODO not compiled or tested
+# build instructions: https://gitlab.freedesktop.org/pipewire/pipewire/-/blob/master/INSTALL.md
+[source]
+git = "https://gitlab.freedesktop.org/pipewire/pipewire"
+rev = "4debdcd40b055b3eaa83a8f4443aa990ea566bfe"
+[build]
+template = "meson"

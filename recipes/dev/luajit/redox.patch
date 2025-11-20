@@ -1,0 +1,31 @@
+diff --git a/src/Makefile b/src/Makefile
+index 3a6a4329..450e8fe6 100644
+--- a/src/Makefile
++++ b/src/Makefile
+@@ -351,6 +351,9 @@ else
+   ifeq (GNU/kFreeBSD,$(TARGET_SYS))
+     TARGET_XLIBS+= -ldl
+   endif
++  ifeq (Redox,$(TARGET_SYS))
++    TARGET_XCFLAGS+= -DLUAJIT_OS=LUAJIT_OS_POSIX
++  endif
+ endif
+ endif
+ endif
+@@ -367,12 +370,16 @@ ifneq ($(HOST_SYS),$(TARGET_SYS))
+   else
+   ifeq (iOS,$(TARGET_SYS))
+     HOST_XCFLAGS+= -DLUAJIT_OS=LUAJIT_OS_OSX -DTARGET_OS_IPHONE=1
++  else
++  ifeq (Redox,$(TARGET_SYS))
++    HOST_XCFLAGS+= -DLUAJIT_OS=LUAJIT_OS_POSIX
+   else
+     HOST_XCFLAGS+= -DLUAJIT_OS=LUAJIT_OS_OTHER
+   endif
+   endif
+   endif
+   endif
++  endif
+ endif
+ 
+ ifneq (,$(CCDEBUG))

@@ -1,0 +1,11 @@
+#TODO make dependencies work
+[source]
+tar = "https://dev-www.libreoffice.org/src/libvisio/libvisio-0.1.7.tar.xz"
+[build]
+template = "configure"
+dependencies = [
+    "boost",
+    "libicu",
+    "librevenge",
+    "libxml2",
+]

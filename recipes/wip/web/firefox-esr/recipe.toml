@@ -1,0 +1,31 @@
+#TODO missing script for mach: https://firefox-source-docs.mozilla.org/setup/linux_build.html
+# dependencies: https://packages.gentoo.org/packages/www-client/firefox/dependencies
+# feature flags: https://wiki.gentoo.org/wiki/Firefox#USE_flags
+[source]
+tar = "https://ftp.mozilla.org/pub/firefox/releases/115.13.0esr/source/firefox-115.13.0esr.source.tar.xz"
+[build]
+template = "custom"
+dependencies = [
+    "fontconfig",
+    "atk",
+    "cairo",
+    "dbus",
+    "libffi",
+    "freetype2",
+    "gdk-pixbuf",
+    "glib",
+    "gtk3",
+    "pango",
+    "sqlite3",
+    "nss-nspr",
+    "startup-notification",
+    "zlib",
+    "ffmpeg6",
+    "expat",
+    "libepoxy",
+    "pipewire",
+]
+script = """
+DYNAMIC_INIT
+export MOZCONFIG="${COOKBOOK_RECIPE}/mozconfig"
+"""

@@ -1,0 +1,8 @@
+#TODO missing dependencies, see https://github.com/animafps/teres/blob/main/CONTRIBUTING.md
+[source]
+git = "https://github.com/animafps/teres"
+[build]
+template = "cargo"
+dependencies = [
+    "ffmpeg6",
+]

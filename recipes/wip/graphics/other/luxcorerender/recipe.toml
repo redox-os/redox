@@ -1,0 +1,18 @@
+#TODO not compiled or tested
+# build instructions: https://wiki.luxcorerender.org/Compiling_LuxCore
+#TODO probably missing dependencies
+[source]
+git = "https://github.com/LuxCoreRender/LuxCore"
+rev = "c8f10e9ddf5171fa705782a3da3f48123f96a4cb"
+[build]
+template = "cmake"
+dependencies = [
+    "bzip2",
+    "libtiff",
+    "libpng",
+    "gtk3",
+    "boost",
+    "mesa",
+    "openimageio",
+    "openexr",
+]

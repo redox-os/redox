@@ -1,0 +1,20 @@
+#TODO not compiled or tested
+# build instructions: https://github.com/odamex/odamex#compilation-instructions
+[source]
+tar = "https://github.com/odamex/odamex/releases/download/11.2.0/odamex/odamex-src-11.2.0.tar.xz"
+[build]
+template = "cmake"
+cmakeflags = [
+    "-DBUILD_SERVER=0",
+    "-DBUILD_CLIENT=1",
+    "-DBUILD_LAUNCHER=1",
+]
+dependencies = [
+    "sdl2",
+    "sdl2-mixer",
+    "libpng",
+    "zlib",
+    "wxwidgets-gtk3",
+]
+[package]
+dependencies = ["deutex"]

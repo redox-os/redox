@@ -1,0 +1,5 @@
+#TODO ratatui crate error
+[source]
+git = "https://github.com/cpcloud/minesweep-rs"
+[build]
+template = "cargo"

@@ -1,0 +1,24 @@
+#TODO: Buggy, can't return after running commands
+[source]
+tar = "https://github.com/zsh-users/zsh/archive/refs/tags/zsh-5.9.tar.gz"
+blake3 = "a15b94fae03e87aba6fc6a27df3c98e610b85b0c7c0fc90248f07fdcb8816860"
+patches = [
+    "01_redox.patch"
+]
+script = """
+DYNAMIC_INIT
+autotools_recursive_regenerate
+"""
+
+[build]
+template = "custom"
+dependencies = [
+    "ncursesw",
+]
+script = """
+DYNAMIC_INIT
+
+"${COOKBOOK_CONFIGURE}" "${COOKBOOK_CONFIGURE_FLAGS[@]}"
+"${COOKBOOK_MAKE}" -j "${COOKBOOK_MAKE_JOBS}"
+"${COOKBOOK_MAKE}" install.bin install.modules install.fns DESTDIR="${COOKBOOK_STAGE}"
+"""

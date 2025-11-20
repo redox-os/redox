@@ -1,0 +1,58 @@
+[package]
+name = "redox_cookbook"
+version = "0.1.0"
+authors = ["Jeremy Soller <jackpot51@gmail.com>"]
+edition = "2024"
+default-run = "repo"
+
+# See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
+
+[[bin]]
+name = "cook"
+path = "src/bin/cook.rs"
+
+[[bin]]
+name = "cookbook_redoxer"
+path = "src/bin/cookbook_redoxer.rs"
+
+[lib]
+name = "cookbook"
+path = "src/lib.rs"
+doctest = false
+
+[features]
+#TODO: Actually make without tui feature works
+default = ["tui"]
+tui = ["ratatui", "ansi-to-tui", "filedescriptor", "strip-ansi-escapes"]
+
+[dependencies]
+anyhow = "1"
+# blake3 1.5.4 is incompatible with 0.3 dependency from pkgar
+blake3 = "=1.5.3"
+libc = "0.2"
+ignore = "0.4"
+object = { version = "0.36", features = ["build_core"] }
+pbr = "1.0.2"
+pkgar = { path = "pkgar/pkgar" }
+pkgar-core = { path = "pkgar/pkgar-core" }
+pkgar-keys = { path = "pkgar/pkgar-keys" }
+redox-pkg = "0.2.8"
+redox_installer = "0.2.37"
+redoxer = "0.2.60"
+regex = "1.11"
+serde = { version = "=1.0.197", features = ["derive"] }
+termion = "4"
+toml = "0.8"
+walkdir = "2.3.1"
+filedescriptor = { version = "0.8.3", optional = true }
+ansi-to-tui = { version = "7.0.0", optional = true }
+strip-ansi-escapes = { version = "0.2.1", optional = true }
+
+[dependencies.ratatui]
+version = "0.29.0"
+default-features = false
+features = ["termion"]
+optional = true
+
+[dev-dependencies]
+tempfile = "3"

@@ -1,0 +1,33 @@
+[source]
+git = "https://gitlab.redox-os.org/redox-os/bootloader.git"
+
+[build]
+template = "custom"
+script = """
+OUTDIR="${COOKBOOK_BUILD}"
+mkdir -v "${COOKBOOK_STAGE}/boot"
+
+function bootloader {
+    export TARGET="$1"
+    src="$2"
+    dst="$3"
+    "${COOKBOOK_MAKE}" -j "${COOKBOOK_MAKE_JOBS}" -f "${COOKBOOK_SOURCE}/Makefile" -C "${OUTDIR}" "${OUTDIR}/${src}"
+    cp -v "${OUTDIR}/${src}" "${COOKBOOK_STAGE}/boot/${dst}"
+}
+
+ARCH="$(echo "${TARGET}" | cut -d - -f1)"
+
+# Build BIOS bootloader for supported architectures
+if [ "${ARCH}" == "i586" -o "${ARCH}" == "i686" -o "${ARCH}" == "x86_64" ]
+then
+    bootloader "x86-unknown-none" bootloader.bin bootloader.bios
+    bootloader "x86-unknown-none" bootloader-live.bin bootloader-live.bios
+fi
+
+# Build UEFI bootloader for supported architectures
+if [ "${ARCH}" == "aarch64" -o "${ARCH}" == "x86_64" -o "${ARCH}" == "riscv64gc" ]
+then
+    bootloader "${ARCH}-unknown-uefi" bootloader.efi bootloader.efi
+    bootloader "${ARCH}-unknown-uefi" bootloader-live.efi bootloader-live.efi
+fi
+"""

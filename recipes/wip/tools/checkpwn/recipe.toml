@@ -1,0 +1,5 @@
+#TODO compiled but not tested (after patched ring crate)
+[source]
+git = "https://github.com/brycx/checkpwn"
+[build]
+template = "cargo"

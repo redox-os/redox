@@ -1,0 +1,55 @@
+diff -ruwN source/build-scripts/config.sub source-new/build-scripts/config.sub
+--- source/build-scripts/config.sub	2012-01-15 15:01:05.000000000 -0700
++++ source-new/build-scripts/config.sub	2022-11-20 12:23:50.849108724 -0700
+@@ -1276,7 +1276,7 @@
+ 	-gnu* | -bsd* | -mach* | -minix* | -genix* | -ultrix* | -irix* \
+ 	      | -*vms* | -sco* | -esix* | -isc* | -aix* | -cnk* | -sunos | -sunos[34]*\
+ 	      | -hpux* | -unos* | -osf* | -luna* | -dgux* | -solaris* | -sym* \
+-	      | -kopensolaris* \
++	      | -kopensolaris* | -redox* \
+ 	      | -amigaos* | -amigados* | -msdos* | -newsos* | -unicos* | -aof* \
+ 	      | -aos* | -aros* \
+ 	      | -nindy* | -vxsim* | -vxworks* | -ebmon* | -hms* | -mvs* \
+diff -ruwN source/Makefile.in source-new/Makefile.in
+--- source/Makefile.in	2012-01-15 15:01:04.000000000 -0700
++++ source-new/Makefile.in	2022-11-20 12:23:50.849108724 -0700
+@@ -66,10 +66,10 @@
+ 	$(LIBTOOL) --mode=link $(CC) -o $@ $(OBJECTS) $(VERSION_OBJECTS) $(LDFLAGS) $(EXTRA_LDFLAGS) $(LT_LDFLAGS)
+ 
+ $(objects)/playwave$(EXE): $(objects)/playwave.lo $(objects)/$(TARGET)
+-	$(LIBTOOL) --mode=link $(CC) -o $@ $(objects)/playwave.lo $(SDL_CFLAGS) $(SDL_LIBS) $(objects)/$(TARGET)
++	$(LIBTOOL) --mode=link $(CC) -o $@ $(objects)/playwave.lo $(SDL_CFLAGS) $(SDL_LIBS) $(objects)/$(TARGET) --static
+ 
+ $(objects)/playmus$(EXE): $(objects)/playmus.lo $(objects)/$(TARGET)
+-	$(LIBTOOL) --mode=link $(CC) -o $@ $(objects)/playmus.lo $(SDL_CFLAGS) $(SDL_LIBS) $(objects)/$(TARGET)
++	$(LIBTOOL) --mode=link $(CC) -o $@ $(objects)/playmus.lo $(SDL_CFLAGS) $(SDL_LIBS) $(objects)/$(TARGET) --static
+ 
+ install: all install-hdrs install-lib #install-bin
+ install-hdrs:
+diff -ruwN source/timidity/config.h source-new/timidity/config.h
+--- source/timidity/config.h	2012-01-15 15:01:05.000000000 -0700
++++ source-new/timidity/config.h	2022-11-20 12:26:04.067581857 -0700
+@@ -162,6 +162,7 @@
+    then specify the library directory in the configuration file. */
+ #define CONFIG_FILE	"timidity.cfg"
+ #define CONFIG_FILE_ETC "/etc/timidity.cfg"
++#define CONFIG_FILE_ETC_TIMIDITY_FREEPATS "/etc/timidity/freepats.cfg"
+ 
+ #if defined(__WIN32__) || defined(__OS2__)
+ #define DEFAULT_PATH	"C:\\TIMIDITY"
+diff -ruwN source/timidity/timidity.c source-new/timidity/timidity.c
+--- source/timidity/timidity.c	2012-01-15 15:01:05.000000000 -0700
++++ source-new/timidity/timidity.c	2022-11-20 12:26:42.248290658 -0700
+@@ -286,10 +286,12 @@
+   if (!env || read_config_file(env)<0) {
+     if (read_config_file(CONFIG_FILE)<0) {
+       if (read_config_file(CONFIG_FILE_ETC)<0) {
++        if (read_config_file(CONFIG_FILE_ETC_TIMIDITY_FREEPATS)<0) {
+         return(-1);
+       }
+     }
+   }
++  }
+ 
+   if (channels < 1 || channels == 3 || channels == 5 || channels > 6) return(-1);
+ 

@@ -1,0 +1,16 @@
+#TODO not compiled or tested
+# build instructions: https://github.com/LibVNC/libvncserver#how-to-build
+[source]
+git = "https://github.com/LibVNC/libvncserver"
+rev = "10e9eb75f73e973725dc75c373de5d89807af028"
+[build]
+template = "cmake"
+cmakeflags = [
+    "-DWITH_OPENSSL=ON",
+    "-DWITH_GCRYPT=OFF",
+]
+dependencies = [
+    "openssl1",
+    "ffmpeg6",
+    "libssh2",
+]
