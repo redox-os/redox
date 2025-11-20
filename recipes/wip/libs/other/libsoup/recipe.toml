@@ -18,6 +18,7 @@ template = "custom"
 script = """
 DYNAMIC_INIT
 cookbook_meson \
+    -Dintrospection=disabled \
     -Dsysprof=disabled \
     -Dtests=false \
     -Dtls_check=false
