@@ -73,7 +73,7 @@ else
 		touch $(MOUNTED_TAG); \
 	fi
 	$(if $(findstring nonstop,$(REPO_NONSTOP)),export COOKBOOK_NONSTOP=true && ,) \
-	./target/release/repo push $(foreach f,$(subst $(comma), ,$*),$(f)) "--sysroot=../$(MOUNT_DIR)"
+	./target/release/repo push $(foreach f,$(subst $(comma), ,$*),$(f)) "--sysroot=$(MOUNT_DIR)"
 	@if [ -f $(MOUNTED_TAG) ]; then \
 		$(MAKE) unmount && rm -f $(MOUNTED_TAG); \
 	else echo "Not unmounting by ourself, don't forget to do it"; \
@@ -95,7 +95,7 @@ else
 		touch $(MOUNTED_TAG); \
 	fi
 	$(if $(findstring nonstop,$(REPO_NONSTOP)),export COOKBOOK_NONSTOP=true && ,) \
-	./target/release/repo push $(COOKBOOK_OPTS) --with-package-deps "--sysroot=../$(MOUNT_DIR)"
+	./target/release/repo push $(COOKBOOK_OPTS) --with-package-deps "--sysroot=$(MOUNT_DIR)"
 	@if [ -f $(MOUNTED_TAG) ]; then \
 		$(MAKE) unmount && rm -f $(MOUNTED_TAG); \
 	else echo "Not unmounting by ourself, don't forget to do it"; \
