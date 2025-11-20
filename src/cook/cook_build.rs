@@ -204,7 +204,7 @@ pub fn build(
         return Ok((stage_dir, auto_deps));
     }
 
-    let source_modified = modified_dir_ignore_git(source_dir)?;
+    let source_modified = modified_dir_ignore_git(source_dir).unwrap_or(SystemTime::UNIX_EPOCH);
     let deps_modified = dep_pkgars
         .iter()
         .map(|(_dep, pkgar)| modified(pkgar))
@@ -220,7 +220,7 @@ pub fn build(
             remove_all(&sysroot_dir)?;
         }
     }
-    if !sysroot_dir.is_dir() {
+    if !sysroot_dir.is_dir() && recipe.build.kind != BuildKind::Remote {
         // Create sysroot.tmp
         let sysroot_dir_tmp = target_dir.join("sysroot.tmp");
         create_dir_clean(&sysroot_dir_tmp)?;
