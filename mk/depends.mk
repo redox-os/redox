@@ -12,6 +12,9 @@ endif
 
 endif
 
+# don’t check for compile tools, used internally when installing fstools on host
+ifneq ($(SKIP_CHECK_TOOLS),1)
+
 ifeq ($(shell which cbindgen),)
 $(error cbindgen not found, install from crates.io or from your package manager)
 endif
@@ -22,6 +25,8 @@ endif
 
 ifeq ($(shell which just),)
 $(error 'just' not found, install from crates.io or from your package manager)
+endif
+
 endif
 
 endif
