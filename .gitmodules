@@ -1,7 +1,3 @@
-[submodule "pkgar"]
-	path = pkgar
-	url = https://gitlab.redox-os.org/redox-os/pkgar.git
-	branch = master
 [submodule "rust"]
 	path = rust
 	url = https://gitlab.redox-os.org/redox-os/rust.git

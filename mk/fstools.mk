@@ -34,13 +34,11 @@ ifeq ($(PODMAN_BUILD),1)
 	$(PODMAN_RUN) make $@
 else
 	$(HOST_CARGO) build --manifest-path Cargo.toml --release
-	$(HOST_CARGO) build --manifest-path pkgar/Cargo.toml --release
 	touch $@
 endif
 
 fstools_clean: FORCE
 	rm -rf target
-	rm -rf pkgar/target
 	rm -rf $(FSTOOLS)
 	rm -rf $(FSTOOLS)-target
 	rm -f $(FSTOOLS_TAG)
