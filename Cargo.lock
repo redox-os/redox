@@ -1362,9 +1362,9 @@ dependencies = [
 
 [[package]]
 name = "indexmap"
-version = "2.12.0"
+version = "2.12.1"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "6717a8d2a5a929a1a2eb43a12812498ed141a0bcfb7e8f7844fbdbe4303bba9f"
+checksum = "0ad4bb2b565bca0645f4d68c5c9af97fba094e9791da685bf83cb5f3ce74acf2"
 dependencies = [
  "equivalent",
  "hashbrown 0.16.1",
@@ -1711,19 +1711,6 @@ checksum = "7edddbd0b52d732b21ad9a5fab5c704c14cd949e5e9a1ec5929a24fded1b904c"
 [[package]]
 name = "pkgar"
 version = "0.1.19"
-dependencies = [
- "anyhow",
- "blake3 0.3.8",
- "bytemuck",
- "clap",
- "pkgar-core 0.1.19",
- "pkgar-keys 0.1.19",
- "thiserror 2.0.17",
-]
-
-[[package]]
-name = "pkgar"
-version = "0.1.19"
 source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "dab99cb7a6d62ca2667eca54ffab93fc77e3f4d19e67a2dce7d65c22adaa7324"
 dependencies = [
@@ -1737,13 +1724,17 @@ dependencies = [
 ]
 
 [[package]]
-name = "pkgar-core"
+name = "pkgar"
 version = "0.1.19"
+source = "git+https://gitlab.redox-os.org/redox-os/pkgar.git#e265d32cc0bb149a9574d4500e5409cbb8b662d5"
 dependencies = [
- "bitflags 1.3.2",
+ "anyhow",
  "blake3 0.3.8",
  "bytemuck",
- "dryoc",
+ "clap",
+ "pkgar-core 0.1.19 (git+https://gitlab.redox-os.org/redox-os/pkgar.git)",
+ "pkgar-keys 0.1.19 (git+https://gitlab.redox-os.org/redox-os/pkgar.git)",
+ "thiserror 2.0.17",
 ]
 
 [[package]]
@@ -1759,20 +1750,14 @@ dependencies = [
 ]
 
 [[package]]
-name = "pkgar-keys"
+name = "pkgar-core"
 version = "0.1.19"
+source = "git+https://gitlab.redox-os.org/redox-os/pkgar.git#e265d32cc0bb149a9574d4500e5409cbb8b662d5"
 dependencies = [
- "anyhow",
- "clap",
- "dirs 3.0.2",
- "hex",
- "lazy_static",
- "pkgar-core 0.1.19",
- "seckey",
- "serde",
- "termion",
- "thiserror 2.0.17",
- "toml 0.8.23",
+ "bitflags 1.3.2",
+ "blake3 0.3.8",
+ "bytemuck",
+ "dryoc",
 ]
 
 [[package]]
@@ -1787,6 +1772,24 @@ dependencies = [
  "hex",
  "lazy_static",
  "pkgar-core 0.1.19 (registry+https://github.com/rust-lang/crates.io-index)",
+ "seckey",
+ "serde",
+ "termion",
+ "thiserror 2.0.17",
+ "toml 0.8.23",
+]
+
+[[package]]
+name = "pkgar-keys"
+version = "0.1.19"
+source = "git+https://gitlab.redox-os.org/redox-os/pkgar.git#e265d32cc0bb149a9574d4500e5409cbb8b662d5"
+dependencies = [
+ "anyhow",
+ "clap",
+ "dirs 6.0.0",
+ "hex",
+ "lazy_static",
+ "pkgar-core 0.1.19 (git+https://gitlab.redox-os.org/redox-os/pkgar.git)",
  "seckey",
  "serde",
  "termion",
@@ -2065,9 +2068,9 @@ dependencies = [
  "libc",
  "object",
  "pbr",
- "pkgar 0.1.19",
- "pkgar-core 0.1.19",
- "pkgar-keys 0.1.19",
+ "pkgar 0.1.19 (git+https://gitlab.redox-os.org/redox-os/pkgar.git)",
+ "pkgar-core 0.1.19 (git+https://gitlab.redox-os.org/redox-os/pkgar.git)",
+ "pkgar-keys 0.1.19 (git+https://gitlab.redox-os.org/redox-os/pkgar.git)",
  "ratatui",
  "redox-pkg",
  "redox_installer",

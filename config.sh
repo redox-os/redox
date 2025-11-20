@@ -57,22 +57,7 @@ export FIND
 
 if [ -z "${IS_REDOX}" ]
 then
-function pkgar {
-    "$ROOT/pkgar/target/release/pkgar" "$@"
-}
-function cook {
-    "$ROOT/target/release/cook" "$@"
-}
 function repo {
     "$ROOT/target/release/repo" "$@"
-}
-function repo_builder {
-    "$ROOT/target/release/repo_builder" "$@"
-}
-function list_recipes {
-    "$ROOT/target/release/list_recipes" "$@"
-}
-function find_recipe {
-    "$ROOT/target/release/find_recipe" "$@"
 }
 fi

@@ -33,9 +33,9 @@ libc = "0.2"
 ignore = "0.4"
 object = { version = "0.36", features = ["build_core"] }
 pbr = "1.0.2"
-pkgar = { path = "pkgar/pkgar" }
-pkgar-core = { path = "pkgar/pkgar-core" }
-pkgar-keys = { path = "pkgar/pkgar-keys" }
+pkgar = { git = "https://gitlab.redox-os.org/redox-os/pkgar.git" }
+pkgar-core = { git = "https://gitlab.redox-os.org/redox-os/pkgar.git" }
+pkgar-keys = { git = "https://gitlab.redox-os.org/redox-os/pkgar.git" }
 redox-pkg = "0.2.8"
 redox_installer = "0.2.37"
 redoxer = "0.2.60"
