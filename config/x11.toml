@@ -11,19 +11,23 @@ filesystem_size = 2048
 
 # Package settings
 [packages]
-feh = {}
+adwaita-icon-theme = {}
+caja = {}
+dbus = {}
 gtk3 = {}
-htop = {}
-libnettle = {}
-llvm18 = {}
-mesa-x11 = {}
+marco = {}
+mate-control-center = {}
+mate-icon-theme = {}
+mate-panel = {}
+mate-session-manager = {}
+mate-settings-daemon = {}
+mate-terminal = {}
 mesa-demos-x11 = {}
-#servo = {}
-sqlite3 = {}
-twm = {}
-#webkitgtk3 = {}
+webkitgtk3 = {}
 xev = {}
 xeyes = {}
+#xfce4-panel = {}
+#xfwm4 = {}
 xinit = {}
 xkbcomp = {}
 xkbutils = {}
@@ -31,14 +35,24 @@ xkeyboard-config = {}
 xserver-xorg = {}
 xserver-xorg-video-orbital = {}
 xterm = {}
+zenity = {}
+
+[[files]]
+path = "/usr/lib/init.d/10_dbus"
+data = """
+export DBUS_DEBUG_OUTPUT=1
+#export DBUS_VERBOSE=1
+#export G_DBUS_DEBUG=all
+mkdir -p /var/lib/dbus
+dbus-uuidgen --ensure
+mkdir -p /run/dbus
+dbus-daemon --system
+"""
 
 [[files]]
 path = "/usr/lib/init.d/10_xenv"
 data = """
 export DISPLAY :0
-export G_MESSAGES_DEBUG all
-export LD_DEBUG all
-export WEBKIT_DEBUG all
 glib-compile-schemas /usr/share/glib-2.0/schemas/
 """
 
@@ -92,11 +106,47 @@ Section "Screen"
 EndSection
 EOF
 
-# Launch X11, twm, and xterm on display 0
+# Launch X11 and session on display 0
 export DISPLAY=":0"
-X "${DISPLAY}" -verbose 6 &
+X "${DISPLAY}" &
 sleep 1
-feh --bg-max --no-fehbg --randomize /ui/background.jpg &
-twm &
-xterm &
+exec dbus-launch --exit-with-x11 orbital-x11-session
 """
+
+[[files]]
+path = "/usr/bin/orbital-x11-session"
+mode = 0o755
+data = """
+#!/usr/bin/env bash
+
+set -ex
+
+xterm&
+sleep 1
+mate-session&
+"""
+
+[[files]]
+path = "/usr/bin/browser"
+mode = 0o755
+data = """
+#!/usr/bin/env bash
+
+set -ex
+
+#export G_MAIN_POLL_DEBUG=1
+export G_MESSAGES_DEBUG=all
+#export GDK_DEBUG=all
+#export GTK_DEBUG=all
+export LD_DEBUG=all
+#export WEBKIT_DEBUG=all
+exec MiniBrowser --dark-mode --ignore-tls-errors "about:blank"
+"""
+
+[users.messagebus]
+uid = 100
+gid = 100
+name = "messagebus"
+home = "/nonexistent"
+shell = "/usr/bin/false"
+
