@@ -46,7 +46,7 @@ ifeq ($(PODMAN_BUILD),1)
 else
 	export PATH="$(PREFIX_PATH):$$PATH" && \
 	export COOKBOOK_HOST_SYSROOT="$(ROOT)/$(PREFIX_INSTALL)" && \
-	cd ./cookbook && ./target/release/repo fetch $(foreach f,$(subst $(comma), ,$*),$(f))
+	cd ./cookbook && ./target/release/repo fetch $(foreach f,$(subst $(comma), ,$*),$(f)) $(COOKBOOK_OPTS)
 endif
 
 # Invoke repo.sh for one or more targets separated by comma
