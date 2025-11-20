@@ -6,7 +6,7 @@ ifeq ($(PODMAN_BUILD),1)
 else
 	export PATH="$(PREFIX_PATH):$$PATH" && \
 	export COOKBOOK_HOST_SYSROOT="$(ROOT)/$(PREFIX_INSTALL)" && \
-	./cookbook/repo.sh $(REPO_APPSTREAM) $(REPO_NONSTOP) $(REPO_OFFLINE) --with-package-deps "--filesystem=../$(FILESYSTEM_CONFIG)"
+	./cookbook/repo.sh $(REPO_APPSTREAM) $(REPO_NONSTOP) $(REPO_OFFLINE) $(COOKBOOK_OPTS)
 	mkdir -p $(BUILD)
 	# make sure fstools.tag are newer than the things repo modifies
 	touch $(FSTOOLS_TAG)
@@ -20,7 +20,7 @@ tree: $(FSTOOLS_TAG) $(CONTAINER_TAG)
 ifeq ($(PODMAN_BUILD),1)
 	$(PODMAN_RUN) make $@
 else
-	@cd ./cookbook && ./target/release/repo tree --with-package-deps "--filesystem=../$(FILESYSTEM_CONFIG)"
+	@cd ./cookbook && ./target/release/repo tree $(COOKBOOK_OPTS)
 endif
 
 # Find recipe for one or more targets separated by comma
@@ -94,7 +94,7 @@ else
 		$(MAKE) mount; \
 		touch $(MOUNTED_TAG); \
 	fi
-	cd ./cookbook && ./target/release/repo push --with-package-deps "--filesystem=../$(FILESYSTEM_CONFIG)" "--sysroot=../$(MOUNT_DIR)"
+	cd ./cookbook && ./target/release/repo push $(COOKBOOK_OPTS) "--sysroot=../$(MOUNT_DIR)"
 	@if [ -f $(MOUNTED_TAG) ]; then \
 		$(MAKE) unmount && rm -f $(MOUNTED_TAG); \
 	else echo "Not unmounting by ourself, don't forget to do it"; \
