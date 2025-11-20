@@ -1,0 +1,5 @@
+#TODO compiled but not tested (after a patch on the ring crate)
+[source]
+git = "https://github.com/mufeedvh/binserve"
+[build]
+template = "cargo"

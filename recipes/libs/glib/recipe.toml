@@ -1,0 +1,22 @@
+[source]
+tar = "https://download.gnome.org/sources/glib/2.87/glib-2.87.0.tar.xz"
+blake3 = "26b77ae24bc02f85d1c6742fe601167b056085f117cda70da7b805cefa6195e9"
+patches = [
+    "redox.patch",
+]
+
+[build]
+template = "custom"
+dependencies = [
+    "gettext",
+    "libffi",
+    "libiconv",
+    "pcre2",
+    "zlib",
+]
+script = """
+DYNAMIC_INIT
+cookbook_meson \
+    -Ddefault_library=shared \
+    -Dxattr=false
+"""

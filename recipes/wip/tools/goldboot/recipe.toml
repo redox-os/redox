@@ -1,0 +1,8 @@
+#TODO use a data type that don't download the private git submodules
+[source]
+git = "https://github.com/fossable/goldboot"
+[build]
+template = "custom"
+script = """
+cookbook_cargo_packages goldboot
+"""

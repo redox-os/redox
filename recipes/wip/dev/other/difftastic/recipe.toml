@@ -1,0 +1,8 @@
+#TODO make mimalloc work
+[source]
+git = "https://github.com/Wilfred/difftastic"
+[build]
+template = "cargo"
+dependencies = [
+    "mimalloc",
+]

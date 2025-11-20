@@ -1,0 +1,18 @@
+#TODO not compiled or tested
+[source]
+git = "https://github.com/marc2332/freya"
+[build]
+template = "custom"
+dependencies = [
+    "openssl1",
+    "gtk3",
+]
+script = """
+cookbook_cargo_examples animated_position animated_tabs animation \
+button camera checkbox clock counter drag drag_drop dynamic_theme \
+file_explorer frameless_window gradient graph highlight image image_viewer \
+images_slideshow infinite_list input keyboard_navigation menu mouse_trace \
+opacity pointer popup position progress_bar radio render_canvas rotate scroll \
+selectable_text sequential_animation shader shader_editor shadow simple_editor \
+speedometer svg tab table text text_editors tic_tac_toe touch ui website window_size
+"""

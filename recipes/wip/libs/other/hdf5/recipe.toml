@@ -1,0 +1,9 @@
+#TODO in case of errors, see https://github.com/HDFGroup/hdf5/blob/develop/release_docs/INSTALL
+[source]
+tar = "https://github.com/HDFGroup/hdf5/releases/download/hdf5-1_14_3/hdf5-1_14_3.tar.gz"
+[build]
+template = "configure"
+dependencies = [
+    "zlib",
+    "openmpi",
+]

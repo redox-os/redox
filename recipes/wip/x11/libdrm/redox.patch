@@ -1,0 +1,80 @@
+diff -ruwN source-old/include/drm/drm.h source/include/drm/drm.h
+--- source-old/include/drm/drm.h	2025-06-08 06:27:53.000000000 -0600
++++ source/include/drm/drm.h	2025-10-30 17:17:33.654234959 -0600
+@@ -44,7 +44,11 @@
+ #else /* One of the BSDs */
+ 
+ #include <stdint.h>
++#if defined(__redox__)
++#include <sys/ioctl.h>
++#else
+ #include <sys/ioccom.h>
++#endif
+ #include <sys/types.h>
+ typedef int8_t   __s8;
+ typedef uint8_t  __u8;
+diff -ruwN source-old/xf86drm.c source/xf86drm.c
+--- source-old/xf86drm.c	2025-06-08 06:27:53.000000000 -0600
++++ source/xf86drm.c	2025-10-30 17:18:58.374958567 -0600
+@@ -57,6 +57,19 @@
+ #ifdef MAJOR_IN_SYSMACROS
+ #include <sys/sysmacros.h>
+ #endif
++#if defined(__redox__)
++// From musl sys/sysmacros.h
++#define major(x) \
++	((unsigned)( (((x)>>31>>1) & 0xfffff000) | (((x)>>8) & 0x00000fff) ))
++#define minor(x) \
++	((unsigned)( (((x)>>12) & 0xffffff00) | ((x) & 0x000000ff) ))
++
++#define makedev(x,y) ( \
++        (((x)&0xfffff000ULL) << 32) | \
++	(((x)&0x00000fffULL) << 8) | \
++        (((y)&0xffffff00ULL) << 12) | \
++	(((y)&0x000000ffULL)) )
++#endif
+ #if HAVE_SYS_SYSCTL_H
+ #include <sys/sysctl.h>
+ #endif
+@@ -304,9 +317,14 @@
+     char *modifier_name = NULL;
+     bool result = false;
+ 
++#if defined(__redox__)
++    fprintf(stderr, "open_memstream not available on Redox\n");
++    return NULL;
++#else
+     fp = open_memstream(&modifier_name, &size);
+     if (!fp)
+         return NULL;
++#endif
+ 
+     switch (type) {
+     case DRM_FORMAT_MOD_ARM_TYPE_AFBC:
+@@ -409,9 +427,14 @@
+     char *mod_amd = NULL;
+     size_t size = 0;
+ 
++#if defined(__redox__)
++    fprintf(stderr, "open_memstream not available on Redox\n");
++    return NULL;
++#else
+     fp = open_memstream(&mod_amd, &size);
+     if (!fp)
+         return NULL;
++#endif
+ 
+     switch (tile_version) {
+     case AMD_FMT_MOD_TILE_VER_GFX9:
+diff -ruwN source-old/xf86drm.h source/xf86drm.h
+--- source-old/xf86drm.h	2025-06-08 06:27:53.000000000 -0600
++++ source/xf86drm.h	2025-10-30 17:17:33.655115281 -0600
+@@ -47,7 +47,7 @@
+ #define DRM_MAX_MINOR   64 /* deprecated */
+ #endif
+ 
+-#if defined(__linux__)
++#if defined(__linux__) || defined(__redox__)
+ 
+ #define DRM_IOCTL_NR(n)		_IOC_NR(n)
+ #define DRM_IOC_VOID		_IOC_NONE

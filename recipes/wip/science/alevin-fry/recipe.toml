@@ -1,0 +1,5 @@
+#TODO compilation error
+[source]
+git = "https://github.com/COMBINE-lab/alevin-fry"
+[build]
+template = "cargo"

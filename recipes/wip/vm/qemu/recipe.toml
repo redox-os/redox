@@ -1,0 +1,53 @@
+[source]
+git = "https://github.com/jackpot51/qemu.git"
+shallow_clone = true
+
+[build]
+template = "custom"
+dependencies = [
+    "curl",
+    "gettext",
+    "glib",
+    "libffi",
+    "libiconv",
+    "libjpeg",
+    "liborbital",
+    "libpng",
+    "libstdcxx",
+    "llvm18",
+    "mesa",
+    "nghttp2",
+    "openssl1",
+    "pcre2",
+    "pixman",
+    "sdl2",
+    "sdl2-image",
+    "zlib",
+]
+script = """
+DYNAMIC_INIT
+COOKBOOK_CONFIGURE_FLAGS=(
+    --host="${TARGET}"
+    --prefix="/usr"
+    --cross-prefix="${TARGET}"
+    --disable-coroutine-pool
+    --disable-dbus-display
+    --disable-tpm
+)
+case "${TARGET}" in
+    aarch64-unknown-redox)
+        COOKBOOK_CONFIGURE_FLAGS+=(--target-list=aarch64-softmmu)
+        ;;
+    i586-unknown-redox | i686-unknown-redox)
+        COOKBOOK_CONFIGURE_FLAGS+=(--target-list=i386-softmmu)
+        ;;
+    x86_64-unknown-redox)
+        COOKBOOK_CONFIGURE_FLAGS+=(--target-list=x86_64-softmmu)
+        ;;
+    *)
+        echo "unsupported target ${TARGET}"
+        exit 1
+        ;;
+esac
+cookbook_configure
+"""

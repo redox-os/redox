@@ -1,0 +1,7 @@
+[source]
+tar = "https://download.gnome.org/sources/adwaita-icon-theme/49/adwaita-icon-theme-49.0.tar.xz"
+blake3 = "757eedf680c4ae564d887dd9eccfeab2d4101e0bdfdb10288a072ba4530fb0e5"
+patches = ["redox.patch"]
+
+[build]
+template = "meson"

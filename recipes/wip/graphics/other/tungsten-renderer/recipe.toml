@@ -1,0 +1,6 @@
+#TODO not compiled or tested
+# build instructions: https://github.com/tunabrain/tungsten#compilation
+[source]
+git = "https://github.com/tunabrain/tungsten"
+[build]
+template = "cmake"

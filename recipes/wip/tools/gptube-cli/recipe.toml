@@ -1,0 +1,5 @@
+#TODO Seems to search for yt-dlp, see https://github.com/ZmoleCristian/gptube-cli/blob/main/Makefile
+[source]
+git = "https://github.com/ZmoleCristian/gptube-cli"
+[build]
+template = "cargo"

@@ -1,0 +1,22 @@
+#TODO not compiled or tested yet
+#TODO discover minimum dependencies from cmake log
+# build instructions: https://github.com/dolphin-emu/dolphin/wiki/Building-for-Linux
+[source]
+git = "https://github.com/dolphin-emu/dolphin"
+rev = "71e15c2875f36458c8f29ee160f01606967bcd13"
+shallow_clone = true
+[build]
+template = "cmake"
+dependencies = [
+    #"ffmpeg6",
+    #"libevdev",
+    #"libusb",
+    #"pango",
+    #"cairo",
+    "qt6-base",
+    "qt6-svg",
+    #"mesa-x11",
+    #"curl",
+    #"libvulkan",
+    #"openal",
+]

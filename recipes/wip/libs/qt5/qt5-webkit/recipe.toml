@@ -1,0 +1,28 @@
+#TODO not compiled or tested
+# build instructions: https://github.com/qtwebkit/qtwebkit/wiki/Building-QtWebKit-on-Linux
+#TODO determine dependencies
+# probably wrong branch
+[source]
+git = "https://github.com/movableink/webkit"
+[build]
+template = "cmake"
+dependencies = [
+    "qt5-base",
+    "qt5-guiaddons",
+    "qt5-connectivity",
+    "qt5-networkauth",
+    "qt5-positioning",
+    "qt5-sensors",
+    "qt5-declarative",
+    "qt5-webchannel",
+    "sqlite3",
+    "libicu",
+    "libhyphen",
+    "libxml2",
+    "libxslt",
+    "libjpeg",
+    "libpng",
+    "zlib",
+    "glib",
+    "gstreamer",
+]

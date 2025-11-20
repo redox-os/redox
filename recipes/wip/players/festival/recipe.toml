@@ -1,0 +1,11 @@
+#TODO make D-Bus work
+[source]
+git = "https://github.com/hinto-janai/festival"
+[build]
+template = "custom"
+dependencies = [
+    "dbus",
+]
+script = """
+cookbook_cargo_packages festival-gui
+"""

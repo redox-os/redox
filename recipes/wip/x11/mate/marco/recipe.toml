@@ -1,0 +1,25 @@
+[source]
+tar = "https://github.com/mate-desktop/marco/releases/download/v1.29.1/marco-1.29.1.tar.xz"
+blake3 = "609db8d6da0ceffb67fd79a2d017be301f5cdbe441301ca5469530cdca4a7cf5"
+patches = ["redox.patch"]
+
+[build]
+dependencies = [
+    "gtk3",
+    "libcanberra",
+    "libice",
+    "libmate-desktop-2",
+    "libsm",
+    "libxcomposite",
+    "libxcursor",
+    "libxdamage",
+    "libxinerama",
+    "libxres",
+]
+template = "meson"
+
+[package]
+dependencies = [
+    "mate-settings-daemon",
+    "zenity",
+]

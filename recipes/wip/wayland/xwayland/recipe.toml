@@ -1,0 +1,38 @@
+#TODO wayland-client, fix linux/input, wayland-scanner shim
+[source]
+tar = "https://www.x.org/releases/individual/xserver/xwayland-24.1.8.tar.xz"
+patches = [
+    "redox.patch"
+]
+[build]
+template = "meson"
+dependencies = [
+    "libpthread-stubs",
+    "libepoxy",
+    "libxkbfile",
+    "libxfont2",
+    "libffi",
+    "libpng",
+    "pixman",
+    "x11proto",
+    "xtrans",
+    "libxau",
+    "libx11",
+    "libxcb",
+    "openssl1",
+    "freetype2", 
+    "libwayland",
+    "libfontenc", 
+    "wayland-protocols",
+    "zlib",
+    "libxcvt",
+    "libxdmcp",
+    "libxshmfence",
+]
+mesonflags = [
+    "-Ddrm=false",
+    "-Dglamor=false",
+    "-Dglx=false",
+    "-Dsecure-rpc=false",
+    "-Dmitshm=false",
+]

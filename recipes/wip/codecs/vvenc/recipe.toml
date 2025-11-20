@@ -1,0 +1,7 @@
+#TODO not compiled or tested
+# build instructions: https://github.com/fraunhoferhhi/vvenc/wiki/Build#build-using-plain-cmake
+[source]
+git = "https://github.com/fraunhoferhhi/vvenc"
+rev = "eea6fce28c8e822a0ece7a343a10fd5d6dd0e7bb"
+[build]
+template = "cmake"

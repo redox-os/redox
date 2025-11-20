@@ -1,0 +1,353 @@
+diff -ruwN source/CMakeLists.txt source-new/CMakeLists.txt
+--- source/CMakeLists.txt	2025-04-25 16:50:27.000000000 +0700
++++ source-new/CMakeLists.txt	2025-10-10 11:19:40.329762962 +0700
+@@ -1,3 +1,4 @@
++set (CMAKE_CXX_STANDARD 99)
+ cmake_minimum_required(VERSION 3.10)
+ 
+ if(POLICY CMP0091)
+@@ -323,6 +324,18 @@
+        src/unix/hurd.c)
+ endif()
+ 
++
++if(CMAKE_SYSTEM_NAME STREQUAL "UnixPaths") # Redox
++  list(APPEND uv_libraries dl)
++  list(APPEND uv_sources
++       src/unix/no-fsevents.c
++       src/unix/proctitle.c
++       src/unix/posix-hrtime.c
++       src/unix/posix-poll.c
++       src/unix/redox.c
++  )
++endif()
++
+ if(CMAKE_SYSTEM_NAME STREQUAL "Linux")
+   list(APPEND uv_defines _GNU_SOURCE _POSIX_C_SOURCE=200112)
+   list(APPEND uv_libraries dl rt)
+diff -ruwN source/include/uv/unix.h source-new/include/uv/unix.h
+--- source/include/uv/unix.h	2025-04-25 16:50:27.000000000 +0700
++++ source-new/include/uv/unix.h	2025-10-10 11:18:29.024386515 +0700
+@@ -66,6 +66,7 @@
+       defined(__MSYS__)   || \
+       defined(__HAIKU__)  || \
+       defined(__QNX__)    || \
++      defined(__redox__)  || \
+       defined(__GNU__)
+ # include "uv/posix.h"
+ #endif
+diff -ruwN source/src/unix/core.c source-new/src/unix/core.c
+--- source/src/unix/core.c	2025-04-25 16:50:27.000000000 +0700
++++ source-new/src/unix/core.c	2025-10-10 11:23:22.143824390 +0700
+@@ -110,6 +110,10 @@
+ # include <sanitizer/linux_syscall_hooks.h>
+ #endif
+ 
++#if defined(__redox__)
++#define MSG_CMSG_CLOEXEC  0x40000000 //linux specific flag
++#endif
++
+ static void uv__run_pending(uv_loop_t* loop);
+ 
+ /* Verify that uv_buf_t is ABI-compatible with struct iovec. */
+@@ -722,7 +726,8 @@
+     defined(__FreeBSD__)   || \
+     defined(__NetBSD__)    || \
+     defined(__OpenBSD__)   || \
+-    defined(__linux__)
++    defined(__linux__)     || \
++    defined(__redox__)
+   ssize_t rc;
+   rc = recvmsg(fd, msg, flags | MSG_CMSG_CLOEXEC);
+   if (rc == -1)
+@@ -1644,6 +1649,11 @@
+  * So the output parameter priority is actually the nice value.
+ */
+ int uv_thread_getpriority(uv_thread_t tid, int* priority) {
++#ifdef __redox__
++  if (priority == NULL)
++    return UV_EINVAL;
++  *priority = 0;
++#else
+   int r;
+   int policy;
+   struct sched_param param;
+@@ -1670,6 +1680,7 @@
+ #endif
+ 
+   *priority = param.sched_priority;
++#endif
+   return 0;
+ }
+ 
+@@ -1695,7 +1706,7 @@
+  * If the function fails, the return value is non-zero.
+ */
+ int uv_thread_setpriority(uv_thread_t tid, int priority) {
+-#if !defined(__GNU__)
++#if !defined(__GNU__) && !defined(__redox__)
+   int r;
+   int min;
+   int max;
+diff -ruwN source/src/unix/fs.c source-new/src/unix/fs.c
+--- source/src/unix/fs.c	2025-04-25 16:50:27.000000000 +0700
++++ source-new/src/unix/fs.c	2025-10-10 11:18:29.024993834 +0700
+@@ -77,7 +77,8 @@
+       defined(__MVS__)    || \
+       defined(__NetBSD__) || \
+       defined(__HAIKU__)  || \
+-      defined(__QNX__)
++      defined(__QNX__)    || \
++      defined(__redox__)
+ # include <sys/statvfs.h>
+ #else
+ # include <sys/statfs.h>
+@@ -683,13 +684,13 @@
+     defined(__MVS__)    || \
+     defined(__NetBSD__) || \
+     defined(__HAIKU__)  || \
+-    defined(__QNX__)
++    defined(__QNX__)    || \
++    defined(__redox__)
+   struct statvfs buf;
+ 
+   if (0 != statvfs(req->path, &buf))
+ #else
+   struct statfs buf;
+-
+   if (0 != statfs(req->path, &buf))
+ #endif /* defined(__sun) */
+     return -1;
+@@ -705,7 +706,8 @@
+     defined(__OpenBSD__)  || \
+     defined(__NetBSD__)   || \
+     defined(__HAIKU__)    || \
+-    defined(__QNX__)
++    defined(__QNX__)      || \
++    defined(__redox__)
+   stat_fs->f_type = 0;  /* f_type is not supported. */
+ #else
+   stat_fs->f_type = buf.f_type;
+diff -ruwN source/src/unix/proctitle.c source-new/src/unix/proctitle.c
+--- source/src/unix/proctitle.c	2025-04-25 16:50:27.000000000 +0700
++++ source-new/src/unix/proctitle.c	2025-10-10 11:18:29.025229760 +0700
+@@ -30,7 +30,13 @@
+   size_t cap;  /* Maximum capacity. Computed once in uv_setup_args(). */
+ };
+ 
++#if defined(__redox__)
++void uv__set_process_title(const char* title) {
++  // requires sys/prctl
++}
++#else
+ extern void uv__set_process_title(const char* title);
++#endif
+ 
+ static uv_mutex_t process_title_mutex;
+ static uv_once_t process_title_mutex_once = UV_ONCE_INIT;
+diff -ruwN source/src/unix/redox.c source-new/src/unix/redox.c
+--- source/src/unix/redox.c	1970-01-01 07:00:00.000000000 +0700
++++ source-new/src/unix/redox.c	2025-10-10 11:18:29.028345924 +0700
+@@ -0,0 +1,102 @@
++/* Copyright libuv contributors. All rights reserved.
++  *
++  * Permission is hereby granted, free of charge, to any person obtaining a copy
++  * of this software and associated documentation files (the "Software"), to
++  * deal in the Software without restriction, including without limitation the
++  * rights to use, copy, modify, merge, publish, distribute, sublicense, and/or
++  * sell copies of the Software, and to permit persons to whom the Software is
++  * furnished to do so, subject to the following conditions:
++  *
++  * The above copyright notice and this permission notice shall be included in
++  * all copies or substantial portions of the Software.
++  *
++  * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
++  * IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
++  * FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
++  * AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
++  * LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING
++  * FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS
++  * IN THE SOFTWARE.
++  */
++
++#include "uv.h"
++#include "internal.h"
++
++#include <errno.h> 
++#include <string.h>
++#include <stdio.h>
++
++static void
++get_mem_info(uint64_t* totalmem, uint64_t* freemem) {
++    *totalmem = 0;
++    *freemem = 0;
++}
++
++
++void uv_loadavg(double avg[3]) {
++  avg[0] = 0.0;
++  avg[1] = 0.0;
++  avg[2] = 0.0;
++}
++
++
++int uv_exepath(char* buffer, size_t* size) {
++  if (buffer == NULL || size == NULL || *size == 0) {
++    return UV_EINVAL;
++  }
++  FILE* fp = fopen("/scheme/sys/exe", "r");
++  if (fp == NULL) {
++    return -errno;
++  }
++  if (fgets(buffer, *size, fp) == NULL) {
++    fclose(fp);
++    return UV_EIO;
++  }
++  fclose(fp);
++  buffer[strcspn(buffer, "\r\n")] = '\0';
++  *size = strlen(buffer);
++  return 0;
++}
++
++int uv_interface_addresses(uv_interface_address_t** addresses, int* count) {
++  return 0;
++}
++
++
++uint64_t uv_get_free_memory(void) {
++    return 0;
++}
++
++
++uint64_t uv_get_total_memory(void) {
++  return 0;
++}
++
++
++uint64_t uv_get_constrained_memory(void) {
++  return 0;
++}
++
++
++uint64_t uv_get_available_memory(void) {
++  return uv_get_free_memory();
++}
++
++
++int uv_resident_set_memory(size_t* rss) {
++  return 0;
++}
++
++
++int uv_uptime(double* uptime) {
++  return 0;
++}
++
++
++int uv_cpu_info(uv_cpu_info_t** cpu_infos, int* count) {
++  return 0;
++}
++
++void uv_free_interface_addresses(uv_interface_address_t* addresses,
++    int count) {
++}
+diff -ruwN source/src/unix/stream.c source-new/src/unix/stream.c
+--- source/src/unix/stream.c	2025-04-25 16:50:27.000000000 +0700
++++ source-new/src/unix/stream.c	2025-10-10 11:18:29.028522718 +0700
+@@ -29,7 +29,14 @@
+ #include <errno.h>
+ 
+ #include <sys/types.h>
++#if defined(__redox__)
++#define _GNU_SOURCE
++#include <stdint.h>
+ #include <sys/socket.h>
++#include <netinet/in.h>
++#else
++#include <sys/socket.h>
++#endif
+ #include <sys/uio.h>
+ #include <sys/un.h>
+ #include <unistd.h>
+@@ -39,6 +46,7 @@
+ # include <sys/event.h>
+ # include <sys/time.h>
+ # include <sys/select.h>
++#endif
+ 
+ /* Forward declaration */
+ typedef struct uv__stream_select_s uv__stream_select_t;
+@@ -58,7 +66,6 @@
+   fd_set* swrite;
+   size_t swrite_sz;
+ };
+-#endif /* defined(__APPLE__) */
+ 
+ union uv__cmsg {
+   struct cmsghdr hdr;
+diff -ruwN source/src/unix/tcp.c source-new/src/unix/tcp.c
+--- source/src/unix/tcp.c	2025-04-25 16:50:27.000000000 +0700
++++ source-new/src/unix/tcp.c	2025-10-10 11:26:03.504101758 +0700
+@@ -31,7 +31,7 @@
+ #include <sys/socket.h>
+ 
+ /* ifaddrs is not implemented on AIX and IBM i PASE */
+-#if !defined(_AIX)
++#if !defined(_AIX) && !defined(__redox__)
+ #include <ifaddrs.h>
+ #endif
+ 
+@@ -228,7 +228,7 @@
+ static int uv__ipv6_link_local_scope_id(void) {
+   struct sockaddr_in6* a6;
+   int rv;
+-#if defined(_AIX)
++#if defined(_AIX) || defined(__redox__)
+   /* AIX & IBM i do not have ifaddrs
+    * so fallback to use uv_interface_addresses */
+   uv_interface_address_t* interfaces;
+@@ -268,7 +268,7 @@
+   }
+ 
+   freeifaddrs(ifa);
+-#endif /* defined(_AIX) */
++#endif /* defined(_AIX) || defined(__redox__) */
+ 
+   return rv;
+ }
+diff -ruwN source/src/unix/thread.c source-new/src/unix/thread.c
+--- source/src/unix/thread.c	2025-04-25 16:50:27.000000000 +0700
++++ source-new/src/unix/thread.c	2025-10-10 11:25:10.712328011 +0700
+@@ -897,7 +897,7 @@
+     abort();
+ }
+ 
+-#if defined(_AIX) || defined(__MVS__) || defined(__PASE__)
++#if defined(_AIX) || defined(__redox__) || defined(__MVS__) || defined(__PASE__)
+ int uv__thread_setname(const char* name) {
+   return UV_ENOSYS;
+ }
+@@ -937,6 +937,7 @@
+ 
+ #if (defined(__ANDROID_API__) && __ANDROID_API__ < 26) || \
+     defined(_AIX) || \
++    defined(__redox__) || \
+     defined(__MVS__) || \
+     defined(__PASE__)
+ int uv__thread_getname(uv_thread_t* tid, char* name, size_t size) {
+diff -ruwN source/src/unix/udp.c source-new/src/unix/udp.c
+--- source/src/unix/udp.c	2025-04-25 16:50:27.000000000 +0700
++++ source-new/src/unix/udp.c	2025-10-10 11:18:29.028778883 +0700
+@@ -31,6 +31,12 @@
+ #include <xti.h>
+ #endif
+ #include <sys/un.h>
++#if defined(__redox__)
++#include <netinet/in.h>
++#include <netinet/ip.h>
++#include <sys/socket.h>
++#include <arpa/inet.h>
++#endif
+ 
+ #if defined(IPV6_JOIN_GROUP) && !defined(IPV6_ADD_MEMBERSHIP)
+ # define IPV6_ADD_MEMBERSHIP IPV6_JOIN_GROUP

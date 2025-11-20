@@ -1,0 +1,21 @@
+#TODO probably wrong template, see https://github.com/fltk/fltk/blob/master/README.Unix.txt
+# commented out recipes are optional but recommended, needs to be determined
+[source]
+tar = "https://github.com/fltk/fltk/releases/download/release-1.3.11/fltk-1.3.11-source.tar.bz2"
+[build]
+template = "configure"
+dependencies = [
+    "mesa-glu",
+    "libx11",
+    "libxft",
+    "libxcursor",
+    #"freeglut",
+    #"cairo",
+    #"fontconfig",
+    #"glew",
+    #"libalsa",
+    #"libjpeg",
+    #"libpng",
+    #"libxinerama",
+    #"pango",
+]

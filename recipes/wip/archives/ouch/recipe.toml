@@ -1,0 +1,10 @@
+#TODO compilation error
+[source]
+git = "https://github.com/ouch-org/ouch"
+[build]
+template = "cargo"
+dependencies = [
+    "zlib",
+    "bzip2",
+    "xz",
+]

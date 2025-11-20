@@ -1,0 +1,16 @@
+diff -burpN source-original/src/m_misc.c source/src/m_misc.c
+--- source-original/src/m_misc.c	2008-11-09 10:13:04.000000000 -0700
++++ source/src/m_misc.c	2024-09-07 10:09:06.890301682 -0600
+@@ -954,6 +954,12 @@ void M_LoadDefaults (void)
+   // read the file in, overriding any set defaults
+ 
+   f = fopen (defaultfile, "r");
++#if defined(__redox__)
++  if (f) {
++      printf("disabling load of config file on redox\n");
++      f = NULL;
++  }
++#endif
+   if (f)
+     {
+     while (!feof(f))

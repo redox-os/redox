@@ -1,0 +1,8 @@
+#TODO compiled but not tested
+[source]
+git = "https://github.com/str4d/rage"
+[build]
+template = "custom"
+script = """
+cookbook_cargo_packages rage
+"""

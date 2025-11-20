@@ -1,0 +1,15 @@
+#TODO: langinfo.h
+[source]
+git = "https://gitlab.redox-os.org/redox-os/gawk.git"
+upstream = "https://git.savannah.gnu.org/git/gawk.git"
+branch = "redox"
+
+[build]
+template = "custom"
+script = """
+COOKBOOK_CONFIGURE_FLAGS+=(
+    ac_cv_func_gethostbyname=no
+    ac_cv_func_connect=no
+)
+cookbook_configure
+"""

@@ -1,0 +1,11 @@
+#TODO make dependencies work
+[source]
+tar = "https://github.com/aria2/aria2/releases/download/release-1.37.0/aria2-1.37.0.tar.xz"
+[build]
+template = "configure"
+dependencies = [
+    "openssl1",
+    "zlib",
+    "libxml2",
+    "libgcrypt",
+]

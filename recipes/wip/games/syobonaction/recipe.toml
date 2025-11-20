@@ -1,0 +1,26 @@
+[source]
+git = "https://github.com/angelXwind/OpenSyobonAction"
+patches = [
+    "01_redox.patch"
+]
+
+[build]
+template = "custom"
+dependencies = [
+    "sdl1-mixer",
+    "sdl1-image",
+    "sdl-gfx",
+    "sdl1-ttf",
+]
+script = """
+DYNAMIC_INIT
+export LDFLAGS="$LDFLAGS -lorbital"
+rsync -a --delete "${COOKBOOK_SOURCE}/" ./
+make
+mkdir -pv "${COOKBOOK_STAGE}/usr/bin"
+mkdir -pv "${COOKBOOK_STAGE}/usr/share/syobonaction"
+cp -Rv ./SyobonAction "${COOKBOOK_STAGE}/usr/bin/syobonaction"
+cp -Rv ./BGM "${COOKBOOK_STAGE}/usr/share/syobonaction"
+cp -Rv ./res "${COOKBOOK_STAGE}/usr/share/syobonaction"
+cp -Rv ./SE "${COOKBOOK_STAGE}/usr/share/syobonaction"
+"""

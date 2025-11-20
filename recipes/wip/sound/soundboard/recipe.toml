@@ -1,0 +1,13 @@
+#TODO can't find the glib dependency (after cargo update)
+#TODO update the ring crate version
+[source]
+git = "https://github.com/gamebooster/soundboard"
+[build]
+template = "custom"
+dependencies = [
+    "glib",
+    "openssl1",
+]
+script = """
+cookbook_cargo --features full
+"""

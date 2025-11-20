@@ -1,0 +1,5 @@
+#TODO missing script for Hadrian, see https://gitlab.haskell.org/ghc/ghc/-/wikis/building/hadrian
+[source]
+tar = "https://downloads.haskell.org/~ghc/9.8.1/ghc-9.8.1-src.tar.xz"
+[build]
+template = "custom"

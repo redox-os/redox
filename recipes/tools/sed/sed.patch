@@ -1,0 +1,11 @@
+diff -ruN sed-4.4/sed/mbcs.c source/sed/mbcs.c
+--- sed-4.4/sed/mbcs.c	2017-01-01 03:17:10.000000000 -0800
++++ source/sed/mbcs.c	2025-06-06 04:36:30.129312397 -0700
+@@ -38,6 +38,7 @@
+ int
+ is_mb_char (int ch, mbstate_t *cur_stat)
+ {
++  return 0; // FIXME: Implement mbrtowc in relibc, then remove this line
+   const char c = ch ;
+   const int mb_pending = !mbsinit (cur_stat);
+   const int result = mbrtowc (NULL, &c, 1, cur_stat);

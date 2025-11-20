@@ -1,0 +1,9 @@
+#TODO compiled but not tested
+#TODO add a command to properly move the executable
+[source]
+git = "https://github.com/korandoru/hawkeye"
+[build]
+template = "custom"
+script = """
+cookbook_cargo_packages hawkeye hawkeye-fmt
+"""

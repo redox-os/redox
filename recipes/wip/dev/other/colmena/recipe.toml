@@ -1,0 +1,5 @@
+#TODO sys-info crate error (after cargo update)
+[source]
+git = "https://github.com/zhaofengli/colmena"
+[build]
+template = "cargo"

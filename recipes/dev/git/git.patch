@@ -1,0 +1,240 @@
+diff -ruwN git-2.13.1/compat/bswap.h source/compat/bswap.h
+--- git-2.13.1/compat/bswap.h	2017-06-04 19:08:11.000000000 -0600
++++ source/compat/bswap.h	2025-04-24 11:20:06.475749424 -0600
+@@ -1,3 +1,7 @@
++#if defined(__redox__)
++#include <machine/endian.h>
++#endif
++
+ /*
+  * Let's make sure we always have a sane definition for ntohl()/htonl().
+  * Some libraries define those as a function call, just to perform byte
+diff -ruwN git-2.13.1/compat/terminal.c source/compat/terminal.c
+--- git-2.13.1/compat/terminal.c	2017-06-04 19:08:11.000000000 -0600
++++ source/compat/terminal.c	2025-04-18 10:00:11.318697446 -0600
+@@ -137,6 +137,18 @@
+ 	return buf.buf;
+ }
+ 
++#elif defined(__redox__)
++
++ssize_t __getline(char **lptr, size_t *n, FILE *fp);
++
++char *git_terminal_prompt(const char *prompt, int echo)
++{
++	char *line = NULL;
++	size_t n = 0;
++	__getline(&line, &n, stdin);
++	return line; // XXX leak
++}
++
+ #else
+ 
+ char *git_terminal_prompt(const char *prompt, int echo)
+diff -ruwN git-2.13.1/configure source/configure
+--- git-2.13.1/configure	2017-06-04 19:08:11.000000000 -0600
++++ source/configure	2025-04-18 10:00:11.318697446 -0600
+@@ -6156,7 +6156,7 @@
+ ac_res=$ac_cv_search_getaddrinfo
+ if test "$ac_res" != no; then :
+   test "$ac_res" = "none required" || LIBS="$ac_res $LIBS"
+-  NO_IPV6=
++  NO_IPV6=YesPlease
+ else
+   NO_IPV6=YesPlease
+ fi
+diff -ruwN git-2.13.1/daemon.c source/daemon.c
+--- git-2.13.1/daemon.c	2017-06-04 19:08:11.000000000 -0600
++++ source/daemon.c	2025-04-18 10:00:11.319697447 -0600
+@@ -71,13 +71,21 @@
+ 	return hi->ip_address.buf;
+ }
+ 
++#if defined(__redox__)
++#define LOG_ERR 0
++#define LOG_INFO 1
++#endif
++
+ static void logreport(int priority, const char *err, va_list params)
+ {
++#if !defined(__redox__)
+ 	if (log_syslog) {
+ 		char buf[1024];
+ 		vsnprintf(buf, sizeof(buf), err, params);
+ 		syslog(priority, "%s", buf);
+-	} else {
++	} else
++#endif
++	{
+ 		/*
+ 		 * Since stderr is set to buffered mode, the
+ 		 * logging of different processes will not overlap
+@@ -888,8 +896,12 @@
+ 
+ 	if (!reuseaddr)
+ 		return 0;
++#if defined(__redox__)
++        return 0;
++#else
+ 	return setsockopt(sockfd, SOL_SOCKET, SO_REUSEADDR,
+ 			  &on, sizeof(on));
++#endif
+ }
+ 
+ struct socketlist {
+@@ -1174,11 +1186,7 @@
+ 	if (!group_name)
+ 		c.gid = c.pass->pw_gid;
+ 	else {
+-		struct group *group = getgrnam(group_name);
+-		if (!group)
+ 			die("group not found - %s", group_name);
+-
+-		c.gid = group->gr_gid;
+ 	}
+ 
+ 	return &c;
+@@ -1348,10 +1356,12 @@
+ 		usage(daemon_usage);
+ 	}
+ 
++#if !defined(__redox__)
+ 	if (log_syslog) {
+ 		openlog("git-daemon", LOG_PID, LOG_DAEMON);
+ 		set_die_routine(daemon_die);
+ 	} else
++#endif
+ 		/* avoid splitting a message in the middle */
+ 		setvbuf(stderr, NULL, _IOFBF, 4096);
+ 
+diff -ruwN git-2.13.1/git-compat-util.h source/git-compat-util.h
+--- git-2.13.1/git-compat-util.h	2017-06-04 19:08:11.000000000 -0600
++++ source/git-compat-util.h	2025-04-18 10:00:11.319697447 -0600
+@@ -1,6 +1,18 @@
+ #ifndef GIT_COMPAT_UTIL_H
+ #define GIT_COMPAT_UTIL_H
+ 
++#ifndef SIG_DFL
++#define SIG_DFL ((void (*)(int))0)
++#endif
++
++#ifndef SIG_IGN
++#define SIG_IGN ((void (*)(int))1)
++#endif
++
++#ifndef SIG_ERR
++#define SIG_ERR ((void (*)(int))-1)
++#endif
++
+ #define _FILE_OFFSET_BITS 64
+ 
+ 
+@@ -323,6 +335,14 @@
+ #define PATH_SEP ':'
+ #endif
+ 
++#ifndef DEV_NULL
++#if defined(__redox__)
++#define DEV_NULL "/scheme/null"
++#else
++#define DEV_NULL "/dev/null"
++#endif
++#endif
++
+ #ifdef HAVE_PATHS_H
+ #include <paths.h>
+ #endif
+diff -ruwN git-2.13.1/Makefile source/Makefile
+--- git-2.13.1/Makefile	2017-06-05 08:08:11.000000000 +0700
++++ source/Makefile	2025-09-01 04:41:10.339224568 +0700
+@@ -979,7 +979,7 @@
+ BUILTIN_OBJS += builtin/write-tree.o
+ 
+ GITLIBS = common-main.o $(LIB_FILE) $(XDIFF_LIB)
+-EXTLIBS =
++EXTLIBS = -lnghttp2
+ 
+ GIT_USER_AGENT = git/$(GIT_VERSION)
+ 
+@@ -1802,7 +1802,6 @@
+ 
+ $(BUILT_INS): git$X
+ 	$(QUIET_BUILT_IN)$(RM) $@ && \
+-	ln $< $@ 2>/dev/null || \
+ 	ln -s $< $@ 2>/dev/null || \
+ 	cp $< $@
+ 
+@@ -2096,7 +2095,6 @@
+ 
+ $(REMOTE_CURL_ALIASES): $(REMOTE_CURL_PRIMARY)
+ 	$(QUIET_LNCP)$(RM) $@ && \
+-	ln $< $@ 2>/dev/null || \
+ 	ln -s $< $@ 2>/dev/null || \
+ 	cp $< $@
+ 
+@@ -2449,14 +2447,12 @@
+ 	for p in $(filter $(install_bindir_programs),$(BUILT_INS)); do \
+ 		$(RM) "$$bindir/$$p" && \
+ 		test -z "$(NO_INSTALL_HARDLINKS)" && \
+-		ln "$$bindir/git$X" "$$bindir/$$p" 2>/dev/null || \
+ 		ln -s "git$X" "$$bindir/$$p" 2>/dev/null || \
+ 		cp "$$bindir/git$X" "$$bindir/$$p" || exit; \
+ 	done && \
+ 	for p in $(BUILT_INS); do \
+ 		$(RM) "$$execdir/$$p" && \
+ 		test -z "$(NO_INSTALL_HARDLINKS)" && \
+-		ln "$$execdir/git$X" "$$execdir/$$p" 2>/dev/null || \
+ 		ln -s "git$X" "$$execdir/$$p" 2>/dev/null || \
+ 		cp "$$execdir/git$X" "$$execdir/$$p" || exit; \
+ 	done && \
+@@ -2464,7 +2460,6 @@
+ 	for p in $$remote_curl_aliases; do \
+ 		$(RM) "$$execdir/$$p" && \
+ 		test -z "$(NO_INSTALL_HARDLINKS)" && \
+-		ln "$$execdir/git-remote-http$X" "$$execdir/$$p" 2>/dev/null || \
+ 		ln -s "git-remote-http$X" "$$execdir/$$p" 2>/dev/null || \
+ 		cp "$$execdir/git-remote-http$X" "$$execdir/$$p" || exit; \
+ 	done && \
+diff -ruwN git-2.13.1/run-command.c source/run-command.c
+--- git-2.13.1/run-command.c	2017-06-04 19:08:11.000000000 -0600
++++ source/run-command.c	2025-04-18 10:00:11.320697447 -0600
+@@ -120,9 +120,9 @@
+ #ifndef GIT_WINDOWS_NATIVE
+ static inline void dup_devnull(int to)
+ {
+-	int fd = open("/dev/null", O_RDWR);
++	int fd = open(DEV_NULL, O_RDWR);
+ 	if (fd < 0)
+-		die_errno(_("open /dev/null failed"));
++		die_errno(_("open %s failed"), DEV_NULL);
+ 	if (dup2(fd, to) < 0)
+ 		die_errno(_("dup2(%d,%d) failed"), fd, to);
+ 	close(fd);
+diff -ruwN git-2.13.1/setup.c source/setup.c
+--- git-2.13.1/setup.c	2017-06-05 08:08:11.000000000 +0700
++++ source/setup.c	2025-09-01 04:41:10.339224568 +0700
+@@ -1146,11 +1146,11 @@
+ /* if any standard file descriptor is missing open it to /dev/null */
+ void sanitize_stdfds(void)
+ {
+-	int fd = open("/dev/null", O_RDWR, 0);
++	int fd = open(DEV_NULL, O_RDWR, 0);
+ 	while (fd != -1 && fd < 2)
+ 		fd = dup(fd);
+ 	if (fd == -1)
+-		die_errno("open /dev/null or dup failed");
++		die_errno("open %s or dup failed", DEV_NULL);
+ 	if (fd > 2)
+ 		close(fd);
+ }
+@@ -1169,8 +1169,10 @@
+ 		default:
+ 			exit(0);
+ 	}
++#if !defined(__redox__)
+ 	if (setsid() == -1)
+ 		die_errno("setsid failed");
++#endif
+ 	close(0);
+ 	close(1);
+ 	close(2);

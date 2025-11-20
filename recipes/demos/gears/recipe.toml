@@ -1,0 +1,18 @@
+[build]
+dependencies=[
+    "liborbital",
+    "llvm18",
+    "mesa",
+    "mesa-glu",
+    "zlib",
+]
+template = "custom"
+script = """
+DYNAMIC_INIT
+
+${CXX} -O2 -I "${COOKBOOK_SYSROOT}/usr/include" \
+    $LDFLAGS "${COOKBOOK_RECIPE}/gears.c" \
+    -o gears -lorbital $("${PKG_CONFIG}" --libs glu) -lz
+mkdir -pv "${COOKBOOK_STAGE}/usr/bin"
+cp -v "gears" "${COOKBOOK_STAGE}/usr/bin/gears"
+"""

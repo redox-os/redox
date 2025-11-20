@@ -1,0 +1,22 @@
+#TODO compiling, not tested further
+[source]
+git = "https://github.com/willnode/zig"
+branch = "zig-0.15-redox"
+
+[build]
+template = "custom"
+script = """
+DYNAMIC_INIT
+rsync -av --delete "${COOKBOOK_SOURCE}"/* ./
+
+export ZIG_HOST_TARGET_CFLAGS="$CFLAGS"
+export ZIG_HOST_TARGET_LDFLAGS="$LDFLAGS"
+export ZIG_HOST_TARGET_CC="${TARGET}-gcc"
+export ZIG_HOST_TARGET_TRIPLE="${TARGET%%-*}-redox"
+unset AR AS CC CXX LD LDFLAGS NM OBJCOPY OBJDUMP RANLIB READELF RUSTFLAGS STRIP
+cc bootstrap.c -o ./bootstrap
+./bootstrap
+
+mkdir -p "${COOKBOOK_STAGE}"/usr/bin
+cp ./zig2 "${COOKBOOK_STAGE}"/usr/bin/zig
+"""

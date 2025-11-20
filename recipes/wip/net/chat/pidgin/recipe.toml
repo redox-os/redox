@@ -1,0 +1,5 @@
+#TODO missing dependencies
+[source]
+tar = "https://sourceforge.net/projects/pidgin/files/Pidgin/2.14.12/pidgin-2.14.12.tar.bz2"
+[build]
+template = "configure"

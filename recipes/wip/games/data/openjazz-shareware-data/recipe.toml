@@ -1,0 +1,20 @@
+# TODO: Requires unrar-free in the build container
+
+[build]
+template = "custom"
+script = """
+ASSETS_DIR="${COOKBOOK_STAGE}/usr/share/games/openjazz/"
+APP_DIR="${COOKBOOK_STAGE}/ui/apps"
+
+curl -vJL https://archive.org/download/jazz-jackrabbit/Jazz%20Jackrabbit.rar -o jazzdemo.rar
+sha256sum -c "${COOKBOOK_RECIPE}/jazzdemo.rar.sha"
+
+unrar x -u jazzdemo.rar
+mkdir -p "${ASSETS_DIR}" "${APP_DIR}"
+unzip -uL Jazz/JAZZ.ZIP -d "${ASSETS_DIR}"
+
+cp -v manifest "${APP_DIR}/openjazz"
+"""
+
+[package]
+dependencies = [ "openjazz" ]

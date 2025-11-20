@@ -1,0 +1,24 @@
+diff -ruwN source-old/dbus/dbus-pollable-set-epoll.c source/dbus/dbus-pollable-set-epoll.c
+--- source-old/dbus/dbus-pollable-set-epoll.c	2025-02-27 09:29:06.000000000 -0700
++++ source/dbus/dbus-pollable-set-epoll.c	2025-11-14 17:50:42.043671507 -0700
+@@ -30,7 +30,7 @@
+ #include <dbus/dbus-internals.h>
+ #include <dbus/dbus-sysdeps.h>
+ 
+-#ifndef __linux__
++#if !defined(__linux__) && !defined(__redox__)
+ # error This file is for Linux epoll(4)
+ #endif
+ 
+diff -ruwN source-old/dbus/dbus-spawn-unix.c source/dbus/dbus-spawn-unix.c
+--- source-old/dbus/dbus-spawn-unix.c	2025-02-27 09:29:06.000000000 -0700
++++ source/dbus/dbus-spawn-unix.c	2025-11-15 07:42:03.360862350 -0700
+@@ -1326,7 +1326,7 @@
+   if (!make_pipe (child_err_report_pipe, error))
+     goto cleanup_and_fail;
+ 
+-  if (!_dbus_socketpair (&babysitter_pipe[0], &babysitter_pipe[1], TRUE, error))
++  if (!_dbus_socketpair (&babysitter_pipe[0], &babysitter_pipe[1], FALSE, error))
+     goto cleanup_and_fail;
+ 
+   /* Setting up the babysitter is only useful in the parent,

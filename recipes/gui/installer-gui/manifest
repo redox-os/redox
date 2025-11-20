@@ -1,0 +1,6 @@
+name=Redox Installer
+category=System
+binary=/usr/bin/redox_installer_gui
+icon=/usr/share/icons/Pop/48x48/apps/system-os-installer.svg
+author=Jeremy Soller
+description=GUI Installer for Redox

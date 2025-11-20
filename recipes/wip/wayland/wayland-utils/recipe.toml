@@ -1,0 +1,6 @@
+#TODO not compiled or tested
+# build instructions: https://gitlab.freedesktop.org/wayland/wayland-utils#building
+[source]
+tar = "https://gitlab.freedesktop.org/wayland/wayland-utils/-/releases/1.2.0/downloads/wayland-utils-1.2.0.tar.xz"
+[build]
+template = "meson"

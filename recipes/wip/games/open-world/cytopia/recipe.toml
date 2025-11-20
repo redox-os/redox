@@ -1,0 +1,18 @@
+#TODO not compiled or tested
+# build instructions: https://github.com/CytopiaTeam/Cytopia/wiki/Build-instructions
+[source]
+git = "https://github.com/CytopiaTeam/Cytopia"
+[build]
+template = "cmake"
+dependencies = [
+    "sdl2",
+    "sdl2-ttf",
+    "sdl2-image",
+    "openal",
+    "zlib",
+    "libogg",
+    "libvorbis",
+    "libpng",
+    "libnoise",
+    "imgui",
+]

@@ -1,0 +1,10 @@
+#TODO missing script for gnu make
+# build instructions - https://github.com/enzo1982/freac#compiling
+[source]
+tar = "https://github.com/enzo1982/freac/releases/download/v1.1.7/freac-1.1.7.tar.gz"
+[build]
+template = "custom"
+dependencies = [
+    "boca",
+    "libsmooth",
+]

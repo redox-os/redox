@@ -1,0 +1,6 @@
+#TODO not compiled or tested
+# if the x11 backend don't work read this: https://github.com/orhun/menyoki/blob/master/IMPLEMENTATION.md#implementing-for-other-platforms
+[source]
+git = "https://github.com/orhun/menyoki"
+[build]
+template = "cargo"

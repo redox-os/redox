@@ -1,0 +1,22 @@
+#TODO compilation error
+#TODO make dependencies work
+[source]
+tar = "https://ftp.gnu.org/gnu/emacs/emacs-29.1.tar.xz"
+[build]
+template = "custom"
+dependencies = [
+    "dbus",
+    "libgmp",
+    "libgpm",
+    "gnutls3",
+    "jansson",
+    "liblcms",
+    "sqlite3",
+    "libxml2",
+    "zlib",
+    "ncurses",
+]
+script = """
+export CPPFLAGS="-I${COOKBOOK_SYSROOT}/include/ncurses"
+cookbook_configure
+"""

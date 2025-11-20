@@ -1,0 +1,7 @@
+#TODO not compiled or tested
+# build instructions: https://github.com/google/snappy#building
+[source]
+git = "https://github.com/google/snappy"
+rev = "dc05e026488865bc69313a68bcc03ef2e4ea8e83"
+[build]
+template = "cmake"

@@ -1,0 +1,5 @@
+#TODO probably wrong template
+[source]
+tar = "https://download.gnome.org/sources/gnome-common/2.34/gnome-common-2.34.0.tar.gz"
+[build]
+template = "configure"

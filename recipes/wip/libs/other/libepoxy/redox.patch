@@ -1,0 +1,18 @@
+diff -ruwN libepoxy-1.5.10/src/dispatch_common.c source/src/dispatch_common.c
+--- libepoxy-1.5.10/src/dispatch_common.c	2022-02-17 05:56:12.000000000 -0700
++++ source/src/dispatch_common.c	2025-05-04 17:57:31.910921783 -0600
+@@ -264,13 +264,7 @@
+     long begin_count;
+ };
+ 
+-static struct api api = {
+-#ifndef _WIN32
+-    .mutex = PTHREAD_MUTEX_INITIALIZER,
+-#else
+-	0,
+-#endif
+-};
++static struct api api = {0};
+ 
+ static bool library_initialized;
+ 

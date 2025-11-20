@@ -1,0 +1,5 @@
+#TODO missing script for building, see https://github.com/ghc/hadrian
+[source]
+tar = "https://downloads.haskell.org/~ghc/9.8.1/hadrian-bootstrap-sources/hadrian-bootstrap-sources-9.6.2.tar.gz"
+[build]
+template = "custom"

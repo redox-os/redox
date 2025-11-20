@@ -1,0 +1,8 @@
+#TODO compilation error
+[source]
+git = "https://github.com/ast-grep/ast-grep"
+[build]
+template = "custom"
+script = """
+cookbook_cargo_packages ast-grep
+"""

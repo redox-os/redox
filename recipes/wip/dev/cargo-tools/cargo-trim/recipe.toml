@@ -1,0 +1,5 @@
+#TODO compilation error
+[source]
+git = "https://github.com/iamsauravsharma/cargo-trim"
+[build]
+template = "cargo"

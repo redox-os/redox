@@ -1,0 +1,18 @@
+[source]
+tar = "https://github.com/mate-desktop/libmatekbd/releases/download/v1.28.0/libmatekbd-1.28.0.tar.xz"
+blake3 = "d5dcf7a47522cc586b6c47e9bd731bbd6db43fcb6797b33b52c03e816d9caedd"
+script = """
+DYNAMIC_INIT
+autotools_recursive_regenerate
+"""
+
+[build]
+dependencies = [
+    "gtk3",
+    "libxklavier",
+]
+template = "custom"
+script = """
+DYNAMIC_INIT
+cookbook_configure
+"""

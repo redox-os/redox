@@ -1,0 +1,18 @@
+#TODO not compiled or tested
+[source]
+git = "https://gitlab.com/getreu/tp-note"
+[build]
+template = "custom"
+script = """
+package=tpnote
+"${COOKBOOK_CARGO}" build \
+            --manifest-path "${COOKBOOK_SOURCE}/Cargo.toml" \
+            --package "${package}" \
+            --release \
+            --no-default-features \
+            --features=lang-detection,renderer
+        mkdir -pv "${COOKBOOK_STAGE}/usr/bin"
+        cp -v \
+            "target/${TARGET}/release/${package}" \
+            "${COOKBOOK_STAGE}/usr/bin/${package}"
+"""

@@ -1,0 +1,8 @@
+#TODO missing script for building, see https://github.com/OpenRadioss/OpenRadioss/blob/main/HOWTO.md#building-on-linux
+[source]
+tar = "https://github.com/OpenRadioss/OpenRadioss"
+[build]
+template = "custom"
+dependencies = [
+    "openmpi",
+]

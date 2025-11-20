@@ -1,0 +1,14 @@
+diff -ruwN pango-1.56.3/meson.build source/meson.build
+--- pango-1.56.3/meson.build	2025-03-16 05:45:47.000000000 -0600
++++ source/meson.build	2025-05-01 13:51:05.834742120 -0600
+@@ -551,8 +551,8 @@
+ pango_inc = include_directories('pango')
+ 
+ subdir('pango')
+-subdir('utils')
+-subdir('tools')
++#TODO: fails to build on Redox: subdir('utils')
++#TODO: fails to build on Redox: subdir('tools')
+ subdir('docs')
+ if get_option('build-testsuite')
+   subdir('tests')

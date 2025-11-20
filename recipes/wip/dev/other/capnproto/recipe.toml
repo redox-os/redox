@@ -1,0 +1,5 @@
+#TODO compilation error
+[source]
+tar = "https://capnproto.org/capnproto-c++-1.0.1.1.tar.gz"
+[build]
+template = "configure"

@@ -1,0 +1,42 @@
+#TODO: launches but has segfaults at runtime
+[source]
+tar = "https://openbox.org/dist/openbox/openbox-3.6.1.tar.xz"
+blake3 = "6bf434e52e04a9cfcd67c11cb9105b93fe2055dca49f1bed2c105fd117e88ef4"
+script = """
+DYNAMIC_INIT
+autotools_recursive_regenerate
+"""
+
+[build]
+dependencies = [
+    "cairo",
+    "expat",
+    "fontconfig",
+    "freetype2",
+    "fribidi",
+    "gettext",
+    "glib",
+    "harfbuzz",
+    "libffi",
+    "libiconv",
+    "libpng",
+    "libpthread-stubs",
+    "libx11",
+    "libxau",
+    "libxcb",
+    "libxext",
+    "libxft",
+    "libxml2",
+    "libxrender",
+    "pango",
+    "pcre2",
+    "pixman",
+    "x11proto",
+    "xz",
+    "zlib",
+]
+template = "custom"
+script = """
+DYNAMIC_INIT
+cookbook_configure
+"""

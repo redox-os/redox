@@ -1,0 +1,15 @@
+#TODO not compiled or tested
+# build instructions: https://github.com/libjxl/libjxl/blob/main/BUILDING.md
+[source]
+git = "https://github.com/libjxl/libjxl"
+rev = "954b460768c08a147abf47689ad69b0e7beff65e"
+[build]
+template = "cmake"
+dependencies = [
+    "libbrotli",
+    "libjpeg",
+    "libgif",
+    "libpng",
+    "libwebp",
+    "openexr",
+]

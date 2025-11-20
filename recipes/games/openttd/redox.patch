@@ -1,0 +1,116 @@
+diff -ruw source/config.lib source-new/config.lib
+--- source/config.lib	2019-06-19 08:34:01.122040101 -0600
++++ source-new/config.lib	2019-06-27 16:41:18.749553078 -0600
+@@ -1458,7 +1458,8 @@
+ 			fi
+ 		fi
+ 
+-		has_rdynamic=`$1 -dumpspecs | grep rdynamic`
++		#TODO has_rdynamic=`$1 -dumpspecs | grep rdynamic`
++		has_rdynamic=""
+ 		if [ -n "$has_rdynamic" ]; then
+ 			# rdynamic is used to get useful stack traces from crash reports.
+ 			flags="$flags -rdynamic"
+@@ -1486,7 +1487,7 @@
+ 	# Special CXXFlags for HOST
+ 	CXXFLAGS="$CXXFLAGS"
+ 	# Libs to compile. In fact this is just LDFLAGS
+-	LIBS="-lstdc++"
++	LIBS="-lstdc++ -lSDL -lorbital"
+ 	# LDFLAGS used for HOST
+ 	LDFLAGS="$LDFLAGS"
+ 	# FEATURES for HOST (lto)
+diff -ruw source/src/music/extmidi.cpp source-new/src/music/extmidi.cpp
+--- source/src/music/extmidi.cpp	2019-06-19 08:34:01.278040813 -0600
++++ source-new/src/music/extmidi.cpp	2019-06-27 16:39:06.400266392 -0600
+@@ -115,7 +115,11 @@
+ 	switch (this->pid) {
+ 		case 0: {
+ 			close(0);
++#if defined(__redox__)
++			int d = open("null:", O_RDONLY);
++#else
+ 			int d = open("/dev/null", O_RDONLY);
++#endif
+ 			if (d != -1 && dup2(d, 1) != -1 && dup2(d, 2) != -1) {
+ 				execvp(this->params[0], this->params);
+ 			}
+diff -ruw source/src/os/unix/unix.cpp source-new/src/os/unix/unix.cpp
+--- source/src/os/unix/unix.cpp	2019-06-19 08:34:01.294040885 -0600
++++ source-new/src/os/unix/unix.cpp	2019-06-27 16:39:06.400266392 -0600
+@@ -69,12 +69,12 @@
+ 
+ bool FiosIsRoot(const char *path)
+ {
+-#if !defined(__MORPHOS__) && !defined(__AMIGAOS__)
++#if !defined(__redox__)
+ 	return path[1] == '\0';
+ #else
+-	/* On MorphOS or AmigaOS paths look like: "Volume:directory/subdirectory" */
++	/* On Redox paths look like: "scheme:/directory/subdirectory" */
+ 	const char *s = strchr(path, ':');
+-	return s != NULL && s[1] == '\0';
++	return (s != NULL) && (strlen(s) == 2) && (s[1] == '/') && (s[2] == '\0');
+ #endif
+ }
+ 
+@@ -106,10 +106,10 @@
+ {
+ 	char filename[MAX_PATH];
+ 	int res;
+-#if defined(__MORPHOS__) || defined(__AMIGAOS__)
+-	/* On MorphOS or AmigaOS paths look like: "Volume:directory/subdirectory" */
++#if defined(__redox__)
++	/* On Redox paths look like: "scheme:/directory/subdirectory" */
+ 	if (FiosIsRoot(path)) {
+-		res = seprintf(filename, lastof(filename), "%s:%s", path, ent->d_name);
++		res = seprintf(filename, lastof(filename), "%s%s", path, ent->d_name);
+ 	} else // XXX - only next line!
+ #else
+ 	assert(path[strlen(path) - 1] == PATHSEPCHAR);
+@@ -370,7 +370,7 @@
+ 	if (child_pid != 0) return;
+ 
+ 	const char *args[3];
+-	args[0] = "xdg-open";
++	args[0] = "netsurf-fb";
+ 	args[1] = url;
+ 	args[2] = NULL;
+ 	execvp(args[0], const_cast<char * const *>(args));
+diff -ruw source/src/rev.cpp.in source-new/src/rev.cpp.in
+--- source/src/rev.cpp.in	2019-06-19 08:34:01.298040904 -0600
++++ source-new/src/rev.cpp.in	2019-06-27 16:39:06.400266392 -0600
+@@ -57,7 +57,7 @@
+  * (compiling from sources without any version control software)
+  * and 2 is for modified revision.
+  */
+-const byte _openttd_revision_modified = !!MODIFIED!!;
++const byte _openttd_revision_modified = 2;
+ 
+ /**
+  * The NewGRF revision of OTTD:
+diff -ruw source/src/stdafx.h source-new/src/stdafx.h
+--- source/src/stdafx.h	2019-06-19 08:34:01.334041067 -0600
++++ source-new/src/stdafx.h	2019-06-27 16:39:06.400266392 -0600
+@@ -12,6 +12,9 @@
+ #ifndef STDAFX_H
+ #define STDAFX_H
+ 
++#include <strings.h>
++#include <alloca.h>
++
+ #if defined(__APPLE__)
+ 	#include "os/macosx/osx_stdafx.h"
+ #endif /* __APPLE__ */
+diff -ruw source/src/string.cpp source-new/src/string.cpp
+--- source/src/string.cpp	2019-06-19 08:34:01.334041067 -0600
++++ source-new/src/string.cpp	2019-06-27 16:39:06.400266392 -0600
+@@ -528,7 +528,7 @@
+ 	return length;
+ }
+ 
+-#ifdef DEFINE_STRCASESTR
++#if 0
+ char *strcasestr(const char *haystack, const char *needle)
+ {
+ 	size_t hay_len = strlen(haystack);

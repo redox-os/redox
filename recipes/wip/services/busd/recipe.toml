@@ -1,0 +1,6 @@
+#TODO not compiled or tested
+[source]
+git = "https://github.com/jackpot51/busd"
+
+[build]
+template = "cargo"

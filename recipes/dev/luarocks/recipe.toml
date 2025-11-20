@@ -1,0 +1,18 @@
+[source]
+git = "https://github.com/luarocks/luarocks.git"
+[build]
+template = "custom"
+dependencies = [
+"lua54"
+]
+script = """
+
+COOKBOOK_CONFIGURE_FLAGS=(
+    --sysconfdir=$COOKBOOK_SYSROOT
+    --with-lua-include=$COOKBOOK_SYSROOT/include
+    --with-lua-bin=$COOKBOOK_SYSROOT/bin
+    --with-lua-lib=$COOKBOOK_SYSROOT/lib
+)
+cd "${COOKBOOK_SOURCE}"
+cookbook_configure
+"""

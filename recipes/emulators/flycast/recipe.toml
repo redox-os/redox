@@ -1,0 +1,60 @@
+[source]
+git = "https://github.com/jackpot51/flycast.git"
+
+[build]
+template = "custom"
+dependencies = [
+    "curl",
+    "libiconv",
+    "liborbital",
+    "llvm18",
+    "mesa",
+    "nghttp2",
+    "openssl1",
+    "sdl2",
+    "zlib",
+]
+script = """
+DYNAMIC_INIT
+export CFLAGS="${CFLAGS} -I${COOKBOOK_SYSROOT}/usr/include/SDL2"
+export CXXFLAGS="${CXXFLAGS} -D_GLIBCXX_USE_C99_MATH_TR1=1 -I${COOKBOOK_SYSROOT}/usr/include/SDL2"
+#TODO: don't use this
+export SDL_LIBS="-lSDL2 -lorbital $("${TARGET}-pkg-config" --libs osmesa) -lstdc++"
+#TODO: don't add curl
+export SDL_LIBS="${SDL_LIBS} -lcurl -lnghttp2 -lssl -lcrypto"
+COOKBOOK_CONFIGURE="cmake"
+COOKBOOK_CONFIGURE_FLAGS=(
+    -DCMAKE_VERBOSE_MAKEFILE=On
+    -DCMAKE_CROSSCOMPILING=True
+    -DCMAKE_BUILD_TYPE=RelWithDebInfo
+    -DCMAKE_INSTALL_PREFIX="/usr"
+    -DCMAKE_SYSTEM_NAME=Generic
+    -DCMAKE_SYSTEM_PROCESSOR="$(echo "${TARGET}" | cut -d - -f1)"
+    -DREDOX=1
+    -DUNIX=1
+    -DUSE_HOST_LIBZIP=OFF
+    -DUSE_OPENMP=OFF
+    -DUSE_VULKAN=OFF
+    -DZLIB_LIBRARY="-lz"
+
+    # Hacks for cmake errors
+    -DHAVE___INT8_LIBZIP=False
+    -DHAVE___INT16_LIBZIP=False
+    -DHAVE___INT32_LIBZIP=False
+    -DHAVE___INT64_LIBZIP=False
+    -DHAVE_FICLONERANGE=False
+    -DHAVE_NULLABLE=False
+
+    # Hack for Threads
+    -DCMAKE_THREAD_LIBS_INIT="-lc"
+    -DCMAKE_HAVE_THREADS_LIBRARY=1
+    -DCMAKE_USE_WIN32_THREADS_INIT=0
+    -DCMAKE_USE_PTHREADS_INIT=1
+    -DTHREADS_PREFER_PTHREAD_FLAG=ON
+
+    "${COOKBOOK_SOURCE}"
+)
+cookbook_configure
+# appstream generation broken
+rm -rf "${COOKBOOK_STAGE}/usr/share/metainfo"
+"""

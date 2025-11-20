@@ -1,0 +1,104 @@
+diff -ruwN '--exclude=Makefile.in' source-old/src/lib/x11_grab.c source/src/lib/x11_grab.c
+--- source-old/src/lib/x11_grab.c	2024-12-24 07:45:18.000000000 -0700
++++ source/src/lib/x11_grab.c	2025-10-30 12:54:08.011156248 -0600
+@@ -4,8 +4,10 @@
+ #include <X11/Xutil.h>
+ #include <X11/extensions/shape.h>
+ #include <X11/extensions/XShm.h>
++#if !defined(__redox__)
+ #include <sys/ipc.h>
+ #include <sys/shm.h>
++#endif
+ 
+ #include "x11_grab.h"
+ #include "x11_ximage.h"
+diff -ruwN '--exclude=Makefile.in' source-old/src/lib/x11_rend.c source/src/lib/x11_rend.c
+--- source-old/src/lib/x11_rend.c	2025-04-06 07:16:45.000000000 -0600
++++ source/src/lib/x11_rend.c	2025-10-30 12:55:57.324410357 -0600
+@@ -474,20 +474,24 @@
+             gcm = XCreateGC(x11->dpy, m, GCGraphicsExposures, &gcv);
+         }
+         /* write the mask */
++#if !defined(__redox__)
+         if (shm)
+             /* write shm XImage */
+             XShmPutImage(x11->dpy, m, gcm, mxim, 0, 0, dx, dy, dw, dh, False);
+         /* write regular XImage */
+         else
++#endif
+             XPutImage(x11->dpy, m, gcm, mxim, 0, 0, dx, dy, dw, dh);
+     }
+ 
+     /* write the image */
++#if !defined(__redox__)
+     if (shm)
+         /* write shm XImage */
+         XShmPutImage(x11->dpy, w, gc, xim, 0, 0, dx, dy, dw, dh, False);
+     /* write regular XImage */
+     else
++#endif
+         XPutImage(x11->dpy, w, gc, xim, 0, 0, dx, dy, dw, dh);
+ 
+     /* free the XImage and put onto our free list */
+diff -ruwN '--exclude=Makefile.in' source-old/src/lib/x11_ximage.c source/src/lib/x11_ximage.c
+--- source-old/src/lib/x11_ximage.c	2024-01-02 06:11:28.000000000 -0700
++++ source/src/lib/x11_ximage.c	2025-10-30 12:57:02.128925585 -0600
+@@ -11,8 +11,10 @@
+ #include <xcb/shm.h>
+ #include <sys/mman.h>
+ #endif
++#if !defined(__redox__)
+ #include <sys/ipc.h>
+ #include <sys/shm.h>
++#endif
+ 
+ #include "x11_ximage.h"
+ 
+@@ -56,6 +58,7 @@
+     int             val;
+ 
+     /* if its there set x_does_shm flag */
++#if !defined(__redox__)
+     if (XShmQueryExtension(d))
+     {
+ #ifdef HAVE_X11_SHM_FD
+@@ -72,6 +75,7 @@
+     }
+     /* clear the flag - no shm at all */
+     else
++#endif
+     {
+         x_does_shm = 0;
+         return;
+@@ -121,6 +125,7 @@
+         return NULL;
+ 
+     /* try create an shm image */
++#if !defined(__redox__)
+     xim = XShmCreateImage(x11->dpy, x11->vis, depth, ZPixmap, NULL, si, w, h);
+     if (!xim)
+         return NULL;
+@@ -230,6 +235,7 @@
+             shmctl(si->shmid, IPC_RMID, 0);
+         }
+     }
++#endif
+ 
+     /* couldnt create SHM image ? */
+     /* destroy previous image */
+@@ -243,6 +249,7 @@
+                          XShmSegmentInfo *si)
+ {
+     XSync(x11->dpy, False);
++#if !defined(__redox__)
+     XShmDetach(x11->dpy, si);
+ #ifdef HAVE_X11_SHM_FD
+     if (x_does_shm_fd)
+@@ -255,6 +262,7 @@
+         shmdt(si->shmaddr);
+         shmctl(si->shmid, IPC_RMID, 0);
+     }
++#endif
+     XDestroyImage(xim);
+ }
+ 

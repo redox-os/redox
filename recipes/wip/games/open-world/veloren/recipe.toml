@@ -1,0 +1,17 @@
+#TODO quinn-udp crate error
+[source]
+git = "https://github.com/veloren/veloren"
+shallow = true
+[build]
+template = "cargo"
+package_path="client"
+dependencies = [
+    "glib",
+    "cairo",
+    "pango",
+    "atk",
+    "gdk-pixbuf",
+    "gtk3",
+    "eudev",
+    "mesa",
+]

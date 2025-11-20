@@ -1,0 +1,5 @@
+#TODO missing xorg-macros package
+[source]
+tar = "https://www.x.org/releases/individual/lib/libXv-1.0.12.tar.xz"
+[build]
+template = "configure"

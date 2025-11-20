@@ -1,0 +1,10 @@
+#TODO not compiled or tested
+# build instructions: https://github.com/Faster3ck/Converseen/blob/main/INSTALL.md#install-converseen-using-qt6
+[source]
+git = "https://github.com/Faster3ck/Converseen"
+rev = "9b2821b5ed6673a7abebbe4ee42f4718ab366485"
+[build]
+template = "cmake"
+dependencies = [
+    "qt6-base",
+]

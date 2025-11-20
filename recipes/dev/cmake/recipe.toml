@@ -1,0 +1,43 @@
+[source]
+tar = "https://github.com/Kitware/CMake/releases/download/v4.0.3/cmake-4.0.3.tar.gz"
+
+[build]
+template = "custom"
+dependencies = [
+    "bzip2",
+    # "cppdap",
+    "curl",
+    "expat",
+    # "form",
+    # "jsoncpp",
+    "libarchive",
+    # "liblzma",
+    # "librhash",
+    "libuv",
+    "nghttp2",
+    "openssl1",
+    "zlib",
+    "zstd",
+]
+script = """
+DYNAMIC_INIT
+
+COOKBOOK_CMAKE_FLAGS+=(
+    -DBUILD_TESTING=Off
+    -DCMAKE_USE_SYSTEM_BZIP2=On
+    -DCMAKE_USE_SYSTEM_CURL=On
+    -DCMAKE_USE_SYSTEM_EXPAT=On
+    -DCMAKE_USE_SYSTEM_LIBARCHIVE=On
+    -DCMAKE_USE_SYSTEM_LIBUV=On
+    -DCMAKE_USE_SYSTEM_NGHTTP2=On
+    -DCMAKE_USE_SYSTEM_ZLIB=On
+    -DCMAKE_USE_SYSTEM_ZSTD=On
+)
+cookbook_cmake
+set -x
+mv -vT "${COOKBOOK_STAGE}"/usr/bin "${COOKBOOK_STAGE}/bin"
+mv -vT "${COOKBOOK_STAGE}"/usr/share "${COOKBOOK_STAGE}/share"
+rm -rf "${COOKBOOK_STAGE}"/usr/doc
+rmdir -v "${COOKBOOK_STAGE}"/usr
+set +x
+"""

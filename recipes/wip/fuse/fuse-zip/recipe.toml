@@ -1,0 +1,10 @@
+#TODO missing script for gnu make: https://bitbucket.org/agalanin/fuse-zip/src/master/INSTALL
+[source]
+git = "https://bitbucket.org/agalanin/fuse-zip"
+rev = "0.7.2"
+[build]
+template = "custom"
+dependencies = [
+    "libfuse2",
+    "libzip",
+]

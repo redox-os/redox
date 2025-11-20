@@ -1,0 +1,27 @@
+[source]
+tar = "https://www.libsdl.org/projects/SDL_image/release/SDL2_image-2.0.4.tar.gz"
+
+[build]
+template = "custom"
+dependencies = [
+    "libjpeg",
+    "liborbital",
+    "libpng",
+    "llvm18",
+    "mesa",
+    "sdl2",
+    "zlib",
+]
+script = """
+DYNAMIC_INIT
+export SDL_LIBS="-lSDL2 -lorbital $("${TARGET}-pkg-config" --libs osmesa) -lstdc++"
+COOKBOOK_CONFIGURE_FLAGS=(
+    --prefix=/usr
+    --host="${TARGET}"
+    --disable-sdltest
+    --enable-shared
+    --enable-png
+    --enable-jpg
+)
+cookbook_configure
+"""

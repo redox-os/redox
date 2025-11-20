@@ -1,0 +1,9 @@
+#TODO outdated redox_syscall crate
+[source]
+git = "https://github.com/kpcyrd/sn0int"
+[build]
+template = "cargo"
+dependencies = [
+    "libsodium",
+    "sqlite3",
+]

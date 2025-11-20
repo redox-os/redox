@@ -1,0 +1,6 @@
+#TODO this recipe require this data type to download the Java bytecode - https://gitlab.redox-os.org/redox-os/cookbook/-/issues/190
+# download link - https://apache.org/dyn/closer.lua/guacamole/1.5.5/binary/guacamole-1.5.5.war?action=download
+[source]
+
+[build]
+template = "custom"

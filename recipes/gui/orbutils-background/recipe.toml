@@ -1,0 +1,12 @@
+[source]
+git = "https://gitlab.redox-os.org/redox-os/orbutils.git"
+
+[build]
+template = "cargo"
+package_path = "orbutils"
+cargoflags = "--bin background"
+
+[package]
+dependencies = [
+    "orbital"
+]

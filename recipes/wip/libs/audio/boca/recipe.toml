@@ -1,0 +1,14 @@
+#TODO missing script for gnu make
+# build instructions - https://github.com/enzo1982/boca/#installation
+[source]
+tar = "https://github.com/enzo1982/BoCA/releases/download/v1.0.7/boca-1.0.7.tar.gz"
+[build]
+template = "custom"
+dependencies = [
+    "libsmooth",
+    "pulseaudio",
+    "libcdio",
+    "libcdio-paranoia",
+    "expat",
+    "liburiparser",
+]

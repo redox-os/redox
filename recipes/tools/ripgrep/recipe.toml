@@ -1,0 +1,5 @@
+[source]
+git = "https://github.com/jackpot51/ripgrep.git"
+
+[build]
+template = "cargo"

@@ -1,0 +1,14 @@
+[source]
+tar = "https://dist.schmorp.de/libev/libev-4.33.tar.gz"
+blake3 = "d56e7f06baa52d5068b6184a307cf27c32f71b60e13d98ee6d4d9c1786393424"
+script = """
+DYNAMIC_INIT
+autotools_recursive_regenerate
+"""
+
+[build]
+template = "custom"
+script = """
+DYNAMIC_INIT
+cookbook_configure
+"""

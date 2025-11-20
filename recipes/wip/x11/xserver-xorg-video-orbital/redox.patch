@@ -1,0 +1,301 @@
+diff -ruwN source-old/src/dummy_driver.c source/src/dummy_driver.c
+--- source-old/src/dummy_driver.c	2023-05-07 14:27:44.000000000 -0600
++++ source/src/dummy_driver.c	2025-10-29 11:13:11.863430241 -0600
+@@ -39,6 +39,7 @@
+ /* These need to be checked */
+ #include <X11/X.h>
+ #include <X11/Xproto.h>
++#include <X11/keysym.h>
+ #include "scrnintstr.h"
+ #include "servermd.h"
+ 
+@@ -51,6 +52,7 @@
+ static Bool     DUMMYEnterVT(VT_FUNC_ARGS_DECL);
+ static void     DUMMYLeaveVT(VT_FUNC_ARGS_DECL);
+ static Bool     DUMMYCloseScreen(CLOSE_SCREEN_ARGS_DECL);
++static void     DUMMYBlockHandler(ScreenPtr pScreen, void *timeout);
+ static Bool     DUMMYCreateWindow(WindowPtr pWin);
+ static void     DUMMYFreeScreen(FREE_SCREEN_ARGS_DECL);
+ static ModeStatus DUMMYValidMode(SCRN_ARG_TYPE arg, DisplayModePtr mode,
+@@ -768,6 +770,97 @@
+ 
+ static ScrnInfoPtr DUMMYScrn; /* static-globalize it */
+ 
++static void DUMMYOrbitalEvent(int fd, int ready, void *data) {
++    DUMMYPtr dPtr = (DUMMYPtr)data;
++    if (!dPtr->orb_window) {
++        return;
++    }
++
++    void *event_iter = orb_window_events(dPtr->orb_window);
++    if (!event_iter) {
++        return;
++    }
++
++    bool running = true;
++    while (running) {
++        OrbEventOption event = orb_events_next(event_iter);
++        if (event.tag == OrbEventOption_None) {
++            break;
++        }
++        //TODO: handle more events
++        switch (event.tag) {
++            case OrbEventOption_Key:
++                if (inputInfo.keyboard) {
++                    if (event.key.scancode > 0) {
++                        //TODO: more advanced key mapping?
++                        xf86PostKeyEvent(inputInfo.keyboard, event.key.scancode + 8, event.key.pressed);
++                    }
++                }
++                break;
++            case OrbEventOption_Mouse:
++                if (inputInfo.pointer) {
++                    xf86PostMotionEvent(inputInfo.pointer, 1, 0, 2, event.mouse.x, event.mouse.y);
++                }
++                break;
++            case OrbEventOption_MouseRelative:
++                if (inputInfo.pointer) {
++                    if (event.mouse_relative.dx || event.mouse_relative.dy) {
++                        xf86PostMotionEvent(inputInfo.pointer, 0, 0, 2, event.mouse_relative.dx, event.mouse_relative.dy);
++                    }
++                }
++                break;
++            case OrbEventOption_Button:
++                if (inputInfo.pointer) {
++                    xf86PostButtonEvent(inputInfo.pointer, 0, 1, event.button.left, 0, 0);
++                    xf86PostButtonEvent(inputInfo.pointer, 0, 2, event.button.middle, 0, 0);
++                    xf86PostButtonEvent(inputInfo.pointer, 0, 3, event.button.right, 0, 0);
++                }
++                break;
++            case OrbEventOption_None:
++                running = false;
++                break;
++            default:
++                //printf("unknown orbital event %d: %d, %d\n", event.unknown.code, event.unknown.a, event.unknown.b);
++                break;
++        }
++    }
++
++    orb_events_destroy(event_iter);
++}
++
++static Bool
++CreateScreenResources(ScreenPtr pScreen)
++{
++    ScrnInfoPtr pScrn = xf86ScreenToScrn(pScreen);
++    DUMMYPtr dPtr = DUMMYPTR(pScrn);
++    PixmapPtr rootPixmap;
++    Bool ret;
++
++    pScreen->CreateScreenResources = dPtr->CreateScreenResources;
++    ret = pScreen->CreateScreenResources(pScreen);
++    pScreen->CreateScreenResources = CreateScreenResources;
++
++    if (!ret) {
++        return FALSE;
++    }
++
++    rootPixmap = pScreen->GetScreenPixmap(pScreen);
++
++    dPtr->damage = DamageCreate(NULL, NULL, DamageReportNone, TRUE,
++                                pScreen, rootPixmap);
++    if (dPtr->damage) {
++        DamageRegister(&rootPixmap->drawable, dPtr->damage);
++        xf86DrvMsg(pScrn->scrnIndex, X_INFO, "Damage tracking initialized\n");
++    }
++    else {
++        xf86DrvMsg(pScrn->scrnIndex, X_ERROR, "Failed to create screen damage record\n");
++        return FALSE;
++    }
++
++    return TRUE;
++}
++
++
+ /* Mandatory */
+ static Bool
+ DUMMYScreenInit(SCREEN_INIT_ARGS_DECL)
+@@ -776,7 +869,6 @@
+     DUMMYPtr dPtr;
+     int ret;
+     VisualPtr visual;
+-    void *pixels;
+ 
+     /*
+      * we need to get the ScrnInfoRec for this screen, so let's allocate
+@@ -786,9 +878,22 @@
+     dPtr = DUMMYPTR(pScrn);
+     DUMMYScrn = pScrn;
+ 
++    if (pScrn->bitsPerPixel != 32) {
++        printf("unsupported BPP %d\n", pScrn->bitsPerPixel);
++        return FALSE;
++    }
+ 
+-    if (!(pixels = malloc(pScrn->videoRam * 1024)))
++    printf(
++        "orb_window_new %d, %d\n",
++        pScrn->virtualX, pScrn->virtualY
++    );
++    dPtr->orb_window = orb_window_new_flags(-1, -1, pScrn->virtualX, pScrn->virtualY, "X11", ORB_WINDOW_ASYNC | ORB_WINDOW_BORDERLESS);
++    if (!dPtr->orb_window) {
++        printf("failed to open orbital window\n");
+ 	return FALSE;
++    }
++
++    SetNotifyFd(orb_window_fd(dPtr->orb_window), DUMMYOrbitalEvent, X_NOTIFY_READ, dPtr);
+ 
+     /*
+      * Reset visual list.
+@@ -800,12 +905,10 @@
+     if (!miSetVisualTypes(pScrn->depth,
+                           miGetDefaultVisualMask(pScrn->depth),
+                           pScrn->rgbBits, pScrn->defaultVisual)) {
+-        free(pixels);
+         return FALSE;
+     }
+ 
+     if (!miSetPixmapDepths ()) {
+-        free(pixels);
+         return FALSE;
+     }
+ 
+@@ -813,7 +916,7 @@
+      * Call the framebuffer layer's ScreenInit function, and fill in other
+      * pScreen fields.
+      */
+-    ret = fbScreenInit(pScreen, pixels,
++    ret = fbScreenInit(pScreen, orb_window_data(dPtr->orb_window),
+ 			    pScrn->virtualX, pScrn->virtualY,
+ 			    pScrn->xDpi, pScrn->yDpi,
+ 			    pScrn->displayWidth, pScrn->bitsPerPixel);
+@@ -838,6 +941,10 @@
+     /* must be after RGB ordering fixed */
+     fbPictureInit(pScreen, 0, 0);
+ 
++    /* Wrap the current CreateScreenResources function */
++    dPtr->CreateScreenResources = pScreen->CreateScreenResources;
++    pScreen->CreateScreenResources = CreateScreenResources;
++
+     xf86SetBlackWhitePixels(pScreen);
+ 
+     /* initialize XRANDR */
+@@ -943,6 +1050,10 @@
+     dPtr->CloseScreen = pScreen->CloseScreen;
+     pScreen->CloseScreen = DUMMYCloseScreen;
+ 
++    /* Wrap the current BlockHandler function */
++    dPtr->BlockHandler = pScreen->BlockHandler;
++    pScreen->BlockHandler = DUMMYBlockHandler;
++
+     /* Wrap the current CreateWindow function */
+     dPtr->CreateWindow = pScreen->CreateWindow;
+     pScreen->CreateWindow = DUMMYCreateWindow;
+@@ -975,11 +1086,26 @@
+     ScrnInfoPtr pScrn = xf86ScreenToScrn(pScreen);
+     DUMMYPtr dPtr = DUMMYPTR(pScrn);
+ 
+-    free(pScreen->GetScreenPixmap(pScreen)->devPrivate.ptr);
++    if (dPtr->damage) {
++        DamageUnregister(dPtr->damage);
++        DamageDestroy(dPtr->damage);
++        dPtr->damage = NULL;
++    }
++
++    if (dPtr->orb_window) {
++        RemoveNotifyFd(orb_window_fd(dPtr->orb_window));
++
++        printf("orb_window_destroy %p\n", dPtr->orb_window);
++        orb_window_destroy(dPtr->orb_window);
++        dPtr->orb_window = NULL;
++    }
+ 
+     if (dPtr->CursorInfo)
+ 	xf86DestroyCursorInfoRec(dPtr->CursorInfo);
+ 
++    pScreen->CreateScreenResources = dPtr->CreateScreenResources;
++    pScreen->BlockHandler = dPtr->BlockHandler;
++
+     pScrn->vtSema = FALSE;
+     pScreen->CloseScreen = dPtr->CloseScreen;
+     return (*pScreen->CloseScreen)(CLOSE_SCREEN_ARGS);
+@@ -1009,6 +1135,31 @@
+ Atom VFB_PROP  = 0;
+ #define  VFB_PROP_NAME  "VFB_IDENT"
+ 
++static void DUMMYBlockHandler(ScreenPtr pScreen, void *timeout) {
++    DUMMYPtr dPtr = DUMMYPTR(DUMMYScrn);
++
++    //printf("BlockHandler %p %p\n", pScreen, timeout);
++    pScreen->BlockHandler = dPtr->BlockHandler;
++    pScreen->BlockHandler(pScreen, timeout);
++    dPtr->BlockHandler = pScreen->BlockHandler;
++    pScreen->BlockHandler = DUMMYBlockHandler;
++
++    if (dPtr->damage) {
++        RegionPtr dirty = DamageRegion(dPtr->damage);
++        if (RegionNil(dirty)) {
++            // Do not sync if damage empty
++            return;
++        }
++        DamageEmpty(dPtr->damage);
++    }
++
++    if (dPtr->orb_window) {
++        //TODO: use damage region?
++        //printf("orb_window_sync %p\n", dPtr->orb_window);
++        orb_window_sync(dPtr->orb_window);
++    }
++}
++
+ static Bool
+ DUMMYCreateWindow(WindowPtr pWin)
+ {
+diff -ruwN source-old/src/dummy.h source/src/dummy.h
+--- source-old/src/dummy.h	2023-05-07 14:27:44.000000000 -0600
++++ source/src/dummy.h	2025-10-29 10:11:23.172517830 -0600
+@@ -4,6 +4,7 @@
+ #include "xf86_OSproc.h"
+ 
+ #include "xf86Cursor.h"
++#include "xf86Xinput.h"
+ 
+ #ifdef XvExtension
+ #include "xf86xv.h"
+@@ -13,7 +14,9 @@
+ 
+ #include "compat-api.h"
+ 
+-#define DUMMY_MAX_SCREENS 16
++#include <orbital.h>
++
++#define DUMMY_MAX_SCREENS 1
+ 
+ /* Supported chipsets */
+ typedef enum {
+@@ -44,6 +47,7 @@
+     OptionInfoPtr Options;
+     Bool swCursor;
+     /* proc pointer */
++    CreateScreenResourcesProcPtr CreateScreenResources;
+     CloseScreenProcPtr CloseScreen;
+     xf86CursorInfoPtr CursorInfo;
+ 
+@@ -52,6 +56,7 @@
+     int cursorFG, cursorBG;
+ 
+     dummy_colors colors[1024];
++    void        (*BlockHandler)(ScreenPtr, void*) ;     /* wrapped BlockHandler */
+     Bool        (*CreateWindow)(WindowPtr) ;     /* wrapped CreateWindow */
+     Bool prop;
+     /* XRANDR support begin */
+@@ -60,6 +65,9 @@
+     struct _xf86Output *paOutputs[DUMMY_MAX_SCREENS];
+     int connected_outputs;
+     /* XRANDR support end */
++
++    DamagePtr damage;
++    void *orb_window;
+ } DUMMYRec, *DUMMYPtr;
+ 
+ /* The privates of the DUMMY driver */

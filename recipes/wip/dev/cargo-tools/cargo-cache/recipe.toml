@@ -1,0 +1,5 @@
+#TODO camino crate error
+[source]
+git = "https://github.com/matthiaskrgr/cargo-cache"
+[build]
+template = "cargo"

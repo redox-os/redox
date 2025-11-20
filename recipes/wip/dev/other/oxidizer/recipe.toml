@@ -1,0 +1,5 @@
+#TODO rustc-serialize crate error
+[source]
+git = "https://github.com/ix/oxidizer"
+[build]
+template = "cargo"

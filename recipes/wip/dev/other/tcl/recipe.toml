@@ -1,0 +1,9 @@
+#TODO maybe wrong template, see https://www.tcl.tk/doc/howto/compile.html#unix
+[source]
+tar = "http://prdownloads.sourceforge.net/tcl/tcl8.6.13-src.tar.gz"
+[build]
+template = "custom"
+script = """
+cd unix
+cookbook_configure
+"""

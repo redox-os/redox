@@ -1,0 +1,8 @@
+#TODO make libtorch work
+[source]
+git = "https://github.com/warpy-ai/tgs"
+[build]
+template = "cargo"
+dependencies = [
+    "libtorch",
+]

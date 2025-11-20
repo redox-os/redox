@@ -1,0 +1,8 @@
+#TODO wait the fix of libgcrypt compilation
+[source]
+tar = "https://gnupg.org/ftp/gcrypt/gpgme/gpgme-1.20.0.tar.bz2"
+[build]
+template = "configure"
+dependencies = [
+    "libgcrypt",
+]

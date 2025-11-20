@@ -1,0 +1,5 @@
+#TODO update the redox_syscall crate version
+[source]
+git = "https://github.com/altsem/gitu"
+[build]
+template = "cargo"

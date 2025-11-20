@@ -1,0 +1,12 @@
+diff -ruwN source-old/meson.build source/meson.build
+--- source-old/meson.build	2025-09-22 16:03:46.000000000 -0600
++++ source/meson.build	2025-11-14 19:09:08.402564648 -0700
+@@ -294,7 +294,7 @@
+ endif
+ 
+ gdk_pixbuf_csource = find_program('gdk-pixbuf-csource')
+-zenity = find_program('zenity')
++#Added to package depends: zenity = find_program('zenity')
+ 
+ libxext = cc.find_library('Xext', required: false)
+ if build_xsync

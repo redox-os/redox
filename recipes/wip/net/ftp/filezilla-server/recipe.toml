@@ -1,0 +1,11 @@
+#TODO not compiled or tested
+# build intructions - https://wiki.filezilla-project.org/Client_Compile
+[source]
+tar = "https://dl2.cdn.filezilla-project.org/server/FileZilla_Server_1.8.2_src.tar.xz?h=05HQOZtMOkV85GW9u3rrsg&x=1722821856"
+[build]
+template = "configure"
+dependencies = [
+    "libfilezilla",
+    "gnutls3",
+    "libidn",
+]

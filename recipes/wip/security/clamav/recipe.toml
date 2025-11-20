@@ -1,0 +1,22 @@
+#TODO not compiled or tested
+# build instructions: https://docs.clamav.net/manual/Installing/Installing-from-source-Unix.html
+#TODO missing Sendmail Mail Filter API (Milter)
+[source]
+tar = "https://www.clamav.net/downloads/production/clamav-1.5.0.tar.gz"
+[build]
+template = "custom"
+dependencies = [
+    "curl",
+    "ncurses",
+    "bzip2",
+    "json-c",
+    "pcre",
+    "openssl1",
+    "libxml2",
+    "zlib",
+]
+script = """
+DYNAMIC_INIT
+export CPPFLAGS="-I${COOKBOOK_SYSROOT}/include/ncurses"
+cookbook_cmake
+"""

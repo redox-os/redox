@@ -1,0 +1,8 @@
+[source]
+git = "https://github.com/jackpot51/sysinfo"
+
+[build]
+template = "custom"
+script = """
+cookbook_cargo_examples simple
+"""

@@ -1,0 +1,18 @@
+[source]
+tar = "https://ftp.gnu.org/gnu/readline/readline-7.0.tar.gz"
+blake3 = "962483e201f36f05a5ccb507bb7330b4d4e4989fd52f41eb15ba65582ad02703"
+patches = [
+    "redox.patch"
+]
+
+[build]
+template = "custom"
+dependencies = [
+    "ncurses",
+]
+script = """
+DYNAMIC_INIT
+cookbook_configure
+ln -s "libhistory.so.7" "${COOKBOOK_STAGE}"/usr/lib/libhistory.so
+ln -s "libreadline.so.7" "${COOKBOOK_STAGE}"/usr/lib/libreadline.so
+"""

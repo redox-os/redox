@@ -1,0 +1,11 @@
+[source]
+tar = "https://github.com/vcrhonek/hwdata/archive/refs/tags/v0.400.tar.gz"
+blake3 = "d56a0863502e528025ddb84b0968a87a713365d91927c92bfe35842d47387e77"
+
+[build]
+template = "custom"
+script = """
+rsync -av --delete "${COOKBOOK_SOURCE}/" ./
+COOKBOOK_CONFIGURE="./configure"
+cookbook_configure
+"""

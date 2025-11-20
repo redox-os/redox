@@ -1,0 +1,5 @@
+#TODO ahash crate error
+[source]
+git = "https://github.com/sayanarijit/qrscan"
+[build]
+template = "cargo"

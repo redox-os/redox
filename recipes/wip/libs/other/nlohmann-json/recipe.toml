@@ -1,0 +1,5 @@
+#TODO missing script for installation, lacking a build system
+[source]
+tar = "https://github.com/nlohmann/json/releases/download/v3.11.2/json.tar.xz"
+[build]
+template = "custom"

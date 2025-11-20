@@ -1,0 +1,15 @@
+[source]
+tar = "https://www.inf.puc-rio.br/~roberto/lpeg/lpeg-1.1.0.tar.gz"
+
+[build]
+template = "custom"
+dependencies = [
+    "luajit",
+]
+script = """
+rsync -av --delete "${COOKBOOK_SOURCE}/" ./
+make linux CC="${CC} -I${COOKBOOK_SYSROOT}/include/luajit-2.1"
+mkdir -p ${COOKBOOK_STAGE}/usr/lib/pkgconfig
+cp lpeg.so ${COOKBOOK_STAGE}/usr/lib/liblpeg.so.1
+ln -s "liblpeg.so.1" ${COOKBOOK_STAGE}/usr/lib/liblpeg.so
+"""

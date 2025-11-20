@@ -1,0 +1,18 @@
+[build]
+template = "custom"
+dependencies = [
+    "liborbital",
+    "llvm18",
+    "mesa",
+    "mesa-glu",
+    "zlib"
+]
+script = """
+DYNAMIC_INIT
+
+cp "${COOKBOOK_SOURCE}/../osdemo.c" ./osdemo.c
+${CXX} -O2 -I "${COOKBOOK_SYSROOT}/include" $LDFLAGS osdemo.c -o osdemo \
+    -lorbital $("${PKG_CONFIG}" --libs glu) -lz
+mkdir -pv "${COOKBOOK_STAGE}/usr/bin"
+cp -v "osdemo" "${COOKBOOK_STAGE}/usr/bin/osdemo"
+"""

@@ -1,0 +1,14 @@
+[source]
+tar = "https://sourceforge.net/projects/giflib/files/giflib-5.2.2.tar.gz/download"
+blake3 = "025cd79ba2d524c24b33a3d2750c146c6823adf96e1dbcc380ca6210bc7058a8"
+patches = ["redox.patch"]
+
+[build]
+template = "custom"
+script = """
+DYNAMIC_INIT
+rsync -av --delete "${COOKBOOK_SOURCE}/" ./
+"${COOKBOOK_MAKE}" libgif.so libgif.a -j "${COOKBOOK_MAKE_JOBS}"
+"${COOKBOOK_MAKE}" install-include install-lib DESTDIR="${COOKBOOK_STAGE}"
+"""
+

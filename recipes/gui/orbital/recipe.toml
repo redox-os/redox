@@ -1,0 +1,10 @@
+[source]
+git = "https://gitlab.redox-os.org/redox-os/orbital.git"
+
+[build]
+template = "cargo"
+
+[package]
+dependencies = [
+    "orbdata"
+]

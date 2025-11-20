@@ -1,0 +1,10 @@
+#TODO not compiled or tested
+# build instructions: https://github.com/libfuse/sshfs#installation
+[source]
+tar = "https://github.com/libfuse/sshfs/releases/download/sshfs-3.7.3/sshfs-3.7.3.tar.xz"
+[build]
+template = "meson"
+dependencies = [
+    "libfuse3",
+    "glib",
+]

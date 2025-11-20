@@ -1,0 +1,6 @@
+#TODO not compiled or tested
+# build instructions: https://hg.sr.ht/~breakfastquay/rubberband/browse/COMPILING.md?rev=tip
+[source]
+tar = "https://breakfastquay.com/files/releases/rubberband-3.2.1.tar.bz2"
+[build]
+template = "meson"

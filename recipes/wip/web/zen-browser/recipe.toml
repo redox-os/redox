@@ -1,0 +1,8 @@
+#TODO missing script for npm
+# build instructions - https://docs.zen-browser.app/building
+#TODO analyze the dependencies
+[source]
+git = "https://github.com/zen-browser/desktop"
+branch = "stable"
+[build]
+template = "custom"

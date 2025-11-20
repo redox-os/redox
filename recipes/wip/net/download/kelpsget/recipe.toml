@@ -1,0 +1,9 @@
+#TODO not compiled or tested
+#TODO require transmission-daemon
+[source]
+git = "https://github.com/davimf721/KelpsGet"
+[build]
+template = "cargo"
+dependencies = [
+    "openssl1",
+]

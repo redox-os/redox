@@ -1,0 +1,14 @@
+#TODO not compiled or tested
+# build instructions: https://github.com/krupkat/xpano#development
+# linux script: https://github.com/krupkat/xpano/blob/main/misc/build/build-ubuntu-22.sh
+[source]
+git = "https://github.com/krupkat/xpano"
+rev = "5e626f66d2670a7f3fd04e805610ef98a506e401"
+[build]
+template = "cmake"
+dependencies = [
+    "gtk3",
+    "opencv4",
+    "sdl2",
+    "libspdlog",
+]

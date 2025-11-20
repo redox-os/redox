@@ -1,0 +1,9 @@
+[source]
+tar = "https://github.com/mate-desktop/mate-icon-theme/releases/download/v1.28.0/mate-icon-theme-1.28.0.tar.xz"
+blake3 = "7269335000874df593ac06d991f4f19cdda984cd2199166987acb3f3cbd474bc"
+
+[build]
+template = "configure"
+configureflags = [
+    "--disable-icon-mapping",
+]

@@ -1,0 +1,10 @@
+#TODO not compiled or tested
+# missing dependencies? - https://github.com/mkiol/Jupii#libraries
+[source]
+git = "https://github.com/mkiol/Jupii"
+rev = "ed80ca0ea29081a2bff038faf4884e3acabb14b7"
+[build]
+template = "cmake"
+cmakeflags = [
+    "-DWITH_DESKTOP=ON"
+]

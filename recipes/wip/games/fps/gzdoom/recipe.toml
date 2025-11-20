@@ -1,0 +1,13 @@
+#TODO maybe incomplete script, see https://zdoom.org/wiki/Compile_GZDoom_on_Linux
+[source]
+git = "https://github.com/ZDoom/gzdoom"
+rev = "6ce809efe2902e43ceaa7031b875225d3a0367de"
+[build]
+template = "cmake"
+dependencies = [
+    "sdl2",
+    "mesa",
+    "mesa-glu",
+    "openal",
+    "zmusic",
+]

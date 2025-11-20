@@ -1,0 +1,12 @@
+#TODO Not compiled or tested yet
+[source]
+git = "https://github.com/lukexor/tetanes"
+[build]
+template = "cargo"
+dependencies = [
+    "sdl2",
+    "sdl2-image",
+    "sdl2-mixer",
+    "sdl2-ttf",
+    "sdl2-gfx",
+]

@@ -1,0 +1,6 @@
+#TODO not compiled or tested
+# build instructions: https://github.com/cuberite/cuberite/blob/master/COMPILING.md#building-1
+[source]
+git = "https://github.com/cuberite/cuberite"
+[build]
+template = "cmake"

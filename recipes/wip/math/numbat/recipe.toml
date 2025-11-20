@@ -1,0 +1,9 @@
+#TODO compiled but not tested
+#TODO missing script to properly move the binary
+[source]
+git = "https://github.com/sharkdp/numbat"
+[build]
+template = "custom"
+script = """
+cookbook_cargo_packages numbat-cli
+"""
