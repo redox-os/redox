@@ -1,6 +1,6 @@
 [source]
 git = "https://gitlab.redox-os.org/redox-os/rust.git"
-branch = "redox-2025-01-12"
+branch = "redox-2025-10-03"
 # due to heavy git operation, this will only clone once and will not refetch
 # if you want to refetch or changing the branch, please run `make ucr.rust`
 shallow_clone = true
