@@ -176,6 +176,12 @@ impl BuildRecipe {
         self.kind = BuildKind::Remote;
         self.dev_dependencies = Vec::new();
     }
+
+    pub fn set_as_none(&mut self) {
+        self.kind = BuildKind::None;
+        self.dependencies = Vec::new();
+        self.dev_dependencies = Vec::new();
+    }
 }
 
 #[derive(Debug, Clone, PartialEq)]
