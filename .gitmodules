@@ -2,19 +2,11 @@
 	path = cookbook
 	url = https://gitlab.redox-os.org/redox-os/cookbook.git
 	branch = master
-[submodule "installer"]
-	path = installer
-	url = https://gitlab.redox-os.org/redox-os/installer.git
-	branch = master
 [submodule "rust"]
 	path = rust
 	url = https://gitlab.redox-os.org/redox-os/rust.git
 	branch = redox-2025-01-12
 	update = none
-[submodule "redoxfs"]
-	path = redoxfs
-	url = https://gitlab.redox-os.org/redox-os/redoxfs.git
-	branch = master
 [submodule "relibc"]
 	path = relibc
 	url = https://gitlab.redox-os.org/redox-os/relibc.git

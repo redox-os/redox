@@ -35,7 +35,7 @@ FILESYSTEM_CONFIG?=config/$(ARCH)/$(BOARD)/$(CONFIG_NAME).toml
 endif
 HOST_CARGO=env -u RUSTUP_TOOLCHAIN -u CC -u TARGET cargo
 ## Filesystem size in MB (default comes from filesystem_size in the FILESYSTEM_CONFIG)
-## FILESYSTEM_SIZE?=$(shell $(HOST_CARGO) run --release --manifest-path installer/Cargo.toml -- --filesystem-size -c $(FILESYSTEM_CONFIG))
+## FILESYSTEM_SIZE?=$(shell $(INSTALLER) --filesystem-size -c $(FILESYSTEM_CONFIG))
 ## Flags to pass to redoxfs-mkfs. Add --encrypt to set up disk encryption
 REDOXFS_MKFS_FLAGS?=
 ## Set to 1 to enable Podman build, any other value will disable it
