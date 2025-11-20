@@ -1,0 +1,17 @@
+#TODO not compiled or tested
+# build instructions: https://github.com/mpv-player/mpv#compilation
+#TODO missing dependencies
+[source]
+git = "https://github.com/mpv-player/mpv"
+rev = "e48ac7ce08462f5e33af6ef9deeac6fa87eef01e"
+[build]
+template = "meson"
+dependencies = [
+    "ffmpeg6",
+    "libass",
+    "libjpeg",
+    "libiconv",
+    "zlib",
+    "mesa",
+    "sdl2",
+]

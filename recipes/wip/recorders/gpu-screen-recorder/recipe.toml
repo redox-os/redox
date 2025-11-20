@@ -1,0 +1,20 @@
+#TODO not compiled or tested
+[source]
+git = "https://git.dec05eba.com/gpu-screen-recorder"
+rev = "422f214283ba50649acca4d9b5a9778d313fe05b"
+[build]
+template = "meson"
+dependencies = [
+    "mesa",
+    "libvulkan",
+    "ffmpeg6",
+    "libx11",
+    "libxcomposite",
+    "libxrandr",
+    "libxfixes",
+    "libxdamage",
+    "pulseaudio",
+    "libva",
+    "libcap",
+    "libwayland",
+]

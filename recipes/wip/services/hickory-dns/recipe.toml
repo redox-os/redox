@@ -1,0 +1,20 @@
+#TODO compiled but not tested
+[source]
+git = "https://github.com/hickory-dns/hickory-dns"
+[build]
+template = "custom"
+dependencies = [
+    "openssl1",
+]
+script = """
+binary=hickory-dns
+"${COOKBOOK_CARGO}" build \
+            --manifest-path "${COOKBOOK_SOURCE}/Cargo.toml" \
+            --bin "${binary}" \
+            --release
+            --all-features
+        mkdir -pv "${COOKBOOK_STAGE}/usr/bin"
+        cp -v \
+            "target/${TARGET}/release/${binary}" \
+            "${COOKBOOK_STAGE}/usr/bin/${binary}"
+"""

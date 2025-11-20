@@ -1,0 +1,11 @@
+#TODO promote
+[source]
+git = "https://github.com/Cyan4973/xxHash"
+rev = "bab7e27f4c6ae4efbb83dd99ae8a554423571635" # 0.8.3-dev (cmake support)
+[build]
+template = "custom"
+script = """
+DYNAMIC_INIT
+COOKBOOK_SOURCE="${COOKBOOK_SOURCE}"/build/cmake
+cookbook_cmake
+"""

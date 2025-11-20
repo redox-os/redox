@@ -1,0 +1,9 @@
+#TODO compiled but not tested (after cargo update)
+#TODO add a command to properly move the executable
+[source]
+git = "https://github.com/r-zenine/sam"
+[build]
+template = "custom"
+script = """
+cookbook_cargo_packages sam-cli
+"""

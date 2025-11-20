@@ -46,7 +46,7 @@ ifneq ($(NOT_ON_PODMAN),1)
 	-$(FUMOUNT) $(BUILD)/filesystem/ || true
 	-$(FUMOUNT) /tmp/redox_installer/ || true
 endif # NOT_ON_PODMAN
-	rm -rf cookbook/repo
+	rm -rf repo
 	rm -rf relibc/target
 	rm -rf $(BUILD) $(PREFIX)
 	$(MAKE) fstools_clean
@@ -105,7 +105,7 @@ else
 endif
 
 export RUST_GDB=gdb-multiarch # Necessary when debugging for another architecture than the host
-GDB_KERNEL_FILE=cookbook/recipes/core/kernel/target/$(TARGET)/build/kernel.sym
+GDB_KERNEL_FILE=recipes/core/kernel/target/$(TARGET)/build/kernel.sym
 gdb: FORCE
 	rust-gdb $(GDB_KERNEL_FILE) --eval-command="target remote :1234"
 

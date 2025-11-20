@@ -1,0 +1,30 @@
+#TODO mostly work, kinda slow, can't quit (signal issues?)
+[source]
+tar = "https://github.com/neovim/neovim/archive/refs/tags/v0.11.3.tar.gz"
+patches = [
+  "redox.patch"
+]
+
+[build]
+template = "custom"
+dependencies = [
+    "luajit",
+    "libiconv",
+    "libuv",
+    "luv",
+    "lpeg",
+    "tree-sitter",
+    "gettext",
+    "unibilium",
+    "utf8proc",
+]
+script = """
+DYNAMIC_INIT
+cookbook_cmake \
+  -DLUA_GEN_PRG=luajit
+
+# Lpeg is absolute path https://github.com/neovim/neovim/issues/23395
+patchelf --replace-needed \
+  "${COOKBOOK_SYSROOT}/usr/lib/liblpeg.so" \
+  'liblpeg.so.1' ${COOKBOOK_STAGE}/usr/bin/nvim
+"""

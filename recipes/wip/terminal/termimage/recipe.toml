@@ -1,0 +1,5 @@
+#TODO move to the proper category
+[source]
+git = "https://github.com/nabijaczleweli/termimage"
+[build]
+template = "cargo"

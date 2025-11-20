@@ -1,0 +1,12 @@
+#TODO cookbook_cargo function error
+[source]
+git = "https://github.com/scottlamb/moonfire-nvr"
+[build]
+template = "custom"
+dependencies = [
+    "sqlite3",
+]
+script = """
+cd "${COOKBOOK_SOURCE}/server"
+cookbook_cargo
+"""

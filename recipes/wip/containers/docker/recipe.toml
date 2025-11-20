@@ -1,0 +1,6 @@
+#TODO implement a Cookbook template for the Go programming language
+[source]
+git = "https://github.com/docker/cli"
+branch = "27.x"
+[build]
+template = "go"

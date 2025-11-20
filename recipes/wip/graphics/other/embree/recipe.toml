@@ -1,0 +1,11 @@
+#TODO not compiled or tested
+# build instructions: https://github.com/embree/embree#linux-and-macos
+[source]
+git = "https://github.com/embree/embree"
+rev = "be0accfd0b246e2b03355b8ee7710a22c1b49240"
+[build]
+template = "cmake"
+dependencies = [
+    "glfw",
+    "onetbb",
+]

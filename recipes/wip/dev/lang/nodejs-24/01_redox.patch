@@ -1,0 +1,12 @@
+diff -ruwN source/configure.py source-new/configure.py
+--- source/configure.py	2025-07-31 15:37:54.000000000 +0700
++++ source-new/configure.py	2025-08-03 00:37:51.836604059 +0700
+@@ -44,7 +44,7 @@
+ # parse our options
+ parser = argparse.ArgumentParser()
+ 
+-valid_os = ('win', 'mac', 'solaris', 'freebsd', 'openbsd', 'linux',
++valid_os = ('win', 'mac', 'solaris', 'freebsd', 'openbsd', 'linux', 'redox',
+             'android', 'aix', 'cloudabi', 'os400', 'ios', 'openharmony')
+ valid_arch = ('arm', 'arm64', 'ia32', 'mips', 'mipsel', 'mips64el',
+               'ppc64', 'x64', 'x86', 'x86_64', 's390x', 'riscv64', 'loong64')

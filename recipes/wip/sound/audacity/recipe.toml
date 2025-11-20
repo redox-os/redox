@@ -1,0 +1,11 @@
+#TODO not compiled or tested
+# build instructions: https://github.com/audacity/audacity/blob/master/BUILDING.md
+# use the GTK2 or wxWidgets frontend?
+[source]
+tar = "https://github.com/audacity/audacity/releases/download/Audacity-3.7.5/audacity-sources-3.7.5.tar.gz"
+[build]
+template = "cmake"
+dependencies = [
+    "gtk2",
+    "libuuid",
+]

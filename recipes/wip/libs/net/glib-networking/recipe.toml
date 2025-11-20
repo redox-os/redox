@@ -1,0 +1,18 @@
+[source]
+tar = "https://download.gnome.org/sources/glib-networking/2.80/glib-networking-2.80.1.tar.xz"
+blake3 = "114a3ea41ea33d8cd01a61381b49fbf60278212ddd88c65f70c26137217be3fd"
+patches = ["redox.patch"]
+
+[build]
+template = "custom"
+dependencies = [
+    "glib",
+    "gnutls3",
+]
+script = """
+DYNAMIC_INIT
+cookbook_meson \
+    -Ddefault_library=shared \
+    -Dgnome_proxy=disabled \
+    -Dlibproxy=disabled
+"""

@@ -1,0 +1,14 @@
+#TODO make libicu work
+[source]
+tar = "https://github.com/Qalculate/libqalculate/releases/download/v4.9.0/libqalculate-4.9.0.tar.gz"
+[build]
+template = "configure"
+dependencies = [
+    "libgmp",
+    "libmpfr",
+    "libxml2",
+    "readline",
+    "libiconv",
+    "libicu",
+    "curl",
+]

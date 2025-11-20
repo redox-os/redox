@@ -1,0 +1,4 @@
+[source]
+git = "https://github.com/XAMPPRocky/tokei.git"
+[build]
+template = "cargo"

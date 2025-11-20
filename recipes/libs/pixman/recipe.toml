@@ -1,0 +1,11 @@
+[source]
+tar = "https://www.cairographics.org/releases/pixman-0.46.0.tar.xz"
+blake3 = "379369245a0bbd13784bf550c87622964a6aba87edf598ffa137dc10201746e0"
+patches = ["redox.patch"]
+
+[build]
+template = "custom"
+script = """
+DYNAMIC_INIT
+cookbook_meson -Dtests=disabled
+"""

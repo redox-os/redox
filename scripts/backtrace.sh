@@ -54,19 +54,19 @@ then
 fi
 
 # if no command name is given, assume it's the same as the recipe name
-RECIPE_DIR="$(cd cookbook; target/release/find_recipe $RECIPE_NAME)"
+RECIPE_DIR="$(target/release/find_recipe $RECIPE_NAME)"
 if [ -z "$COMMAND" ]
 then
     COMMAND="$RECIPE_NAME"
 fi
 
 # look for the debug version of the command
-EXECUTABLE=cookbook/"$RECIPE_DIR"/target/"$ARCH"-unknown-redox/build/target/"$ARCH"-unknown-redox/debug/"$COMMAND"
+EXECUTABLE="$RECIPE_DIR"/target/"$ARCH"-unknown-redox/build/target/"$ARCH"-unknown-redox/debug/"$COMMAND"
 
 # try the release version next
 if [ ! -f "$EXECUTABLE" -o ! -z "$RELEASE" ]
 then
-    EXECUTABLE=cookbook/"$RECIPE_DIR"/target/"$ARCH"-unknown-redox/build/target/"$ARCH"-unknown-redox/release/"$COMMAND"
+    EXECUTABLE="$RECIPE_DIR"/target/"$ARCH"-unknown-redox/build/target/"$ARCH"-unknown-redox/release/"$COMMAND"
 fi
 
 if [ $# -ne 0 ]

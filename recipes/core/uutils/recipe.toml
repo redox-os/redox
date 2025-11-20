@@ -1,0 +1,107 @@
+# TODO Fix coreutils i18n/l10n behavior on Redox
+[source]
+git = "https://github.com/uutils/coreutils"
+
+[build]
+template = "custom"
+script = """
+DYNAMIC_INIT
+cookbook_cargo --no-default-features --features feat_os_unix_redox --bin coreutils
+
+BINS=(
+    '['
+    b2sum
+    b3sum
+    base32
+    base64
+    basename
+    basenc
+    cat
+    chmod
+    cksum
+    comm
+    cp
+    csplit
+    cut
+    date
+    dd
+    #df not working, use redox coreutils
+    dir
+    dircolors
+    dirname
+    du
+    echo
+    env
+    expand
+    expr
+    factor
+    false
+    fmt
+    fold
+    hashsum
+    head
+    join
+    install
+    link
+    ln
+    ls
+    md5sum
+    mkdir
+    mktemp
+    more
+    mv
+    nl
+    numfmt
+    od
+    paste
+    pr
+    printenv
+    printf
+    ptx
+    pwd
+    readlink
+    realpath
+    rm
+    rmdir
+    seq
+    sha1sum
+    sha224sum
+    sha256sum
+    sha3-224sum
+    sha3-256sum
+    sha3-384sum
+    sha3-512sum
+    sha384sum
+    sha3sum
+    sha512sum
+    shake128sum
+    shake256sum
+    shred
+    shuf
+    sleep
+    sort
+    split
+    stat
+    sum
+    tac
+    tail
+    tee
+    test
+    touch
+    tr
+    true
+    truncate
+    tsort
+    unexpand
+    uniq
+    unlink
+    vdir
+    wc
+    yes
+)
+
+for bin in "${BINS[@]}"
+do
+  ln -sv coreutils "${COOKBOOK_STAGE}/usr/bin/$bin"
+done
+"""

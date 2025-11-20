@@ -1,0 +1,9 @@
+#TODO compiled but not tested
+[source]
+git = "https://github.com/BLAKE3-team/BLAKE3"
+[build]
+template = "custom"
+script = """
+COOKBOOK_SOURCE="${COOKBOOK_SOURCE}/b3sum"
+cookbook_cargo
+"""

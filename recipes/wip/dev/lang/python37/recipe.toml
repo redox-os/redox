@@ -1,0 +1,23 @@
+#TODO not compiled or tested
+#TODO does the patch is still needed?
+#TODO maybe the script is wrong
+[source]
+tar = "https://www.python.org/ftp/python/3.7.17/Python-3.7.17.tar.xz"
+patches = [
+    "redox.patch",
+]
+[build]
+template = "custom"
+dependencies = [
+    "openssl1",
+]
+script = """
+cp ../config.site ./
+sed -i 's|#define HAVE_PTHREAD_KILL 1|/* #undef HAVE_PTHREAD_KILL */|g' pyconfig.h
+sed -i 's|#define HAVE_SCHED_SETSCHEDULER 1|/* #undef HAVE_SCHED_SETSCHEDULER */|g' pyconfig.h
+sed -i 's|#define HAVE_SYS_RESOURCE_H 1|/* #undef HAVE_SYS_RESOURCE_H */|g' pyconfig.h
+COOKBOOK_CONFIGURE_FLAGS+=(
+    --disable-ipv6
+)
+cookbook_configure
+"""

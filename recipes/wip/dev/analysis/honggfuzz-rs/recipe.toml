@@ -1,0 +1,10 @@
+#TODO not compiled or tested
+[source]
+git = "https://github.com/rust-fuzz/honggfuzz-rs"
+[build]
+template = "cargo"
+dependencies = [
+    "gnu-binutils",
+    "libunwind",
+    "xz",
+]

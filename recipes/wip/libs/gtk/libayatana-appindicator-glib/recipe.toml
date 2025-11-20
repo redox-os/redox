@@ -1,0 +1,10 @@
+[source]
+tar = "https://github.com/AyatanaIndicators/libayatana-appindicator-glib/archive/refs/tags/2.0.1.tar.gz"
+blake3 = "5c7e39f29b23cd5c14a6eacbe0c0bf16dfd28b9b013ec011421d5d6e5742ba2d"
+patches = ["redox.patch"]
+
+[build]
+dependencies = [
+    "glib",
+]
+template = "cmake"

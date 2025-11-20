@@ -1,0 +1,8 @@
+#TODO missing script for building, see https://gitlab.gnome.org/GNOME/vala#building-vala
+[source]
+tar = "https://download.gnome.org/sources/vala/0.56/vala-0.56.14.tar.xz"
+[build]
+template = "custom"
+dependencies = [
+    "glib",
+]

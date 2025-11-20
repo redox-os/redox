@@ -1,0 +1,226 @@
+diff -ruwN source-old/hw/xfree86/common/xf86Xinput.c source/hw/xfree86/common/xf86Xinput.c
+--- source-old/hw/xfree86/common/xf86Xinput.c	2025-02-25 11:56:05.000000000 -0700
++++ source/hw/xfree86/common/xf86Xinput.c	2025-11-07 14:37:53.041095608 -0700
+@@ -860,8 +860,10 @@
+     if (stat(path, &st) == -1)
+         return;
+ 
++    /*TODO
+     *maj = major(st.st_rdev);
+     *min = minor(st.st_rdev);
++    */
+ }
+ 
+ static inline InputDriverPtr
+diff -ruwN source-old/hw/xfree86/drivers/modesetting/meson.build source/hw/xfree86/drivers/modesetting/meson.build
+--- source-old/hw/xfree86/drivers/modesetting/meson.build	2025-02-25 11:56:05.000000000 -0700
++++ source/hw/xfree86/drivers/modesetting/meson.build	2025-11-07 14:37:53.041947517 -0700
+@@ -42,7 +42,7 @@
+     configuration: manpage_config,
+ ))
+ 
+-test('modesetting symbol test',
+-    xorg_symbol_test,
+-    args: symbol_test_args,
+-)
++# test('modesetting symbol test',
++#     xorg_symbol_test,
++#     args: symbol_test_args,
++# )
+diff -ruwN source-old/hw/xfree86/loader/meson.build source/hw/xfree86/loader/meson.build
+--- source-old/hw/xfree86/loader/meson.build	2025-02-25 11:56:05.000000000 -0700
++++ source/hw/xfree86/loader/meson.build	2025-11-07 14:37:53.042100945 -0700
+@@ -10,7 +10,7 @@
+     c_args: xorg_c_args,
+ )
+ 
+-xorg_symbol_test = executable('xorg_symbol_test',
+-    'symbol-test.c',
+-    dependencies: dl_dep,
+-)
++# xorg_symbol_test = executable('xorg_symbol_test',
++#     'symbol-test.c',
++#     dependencies: dl_dep,
++# )
+diff -ruwN source-old/hw/xfree86/meson.build source/hw/xfree86/meson.build
+--- source-old/hw/xfree86/meson.build	2025-02-25 11:56:05.000000000 -0700
++++ source/hw/xfree86/meson.build	2025-11-07 14:37:53.042256958 -0700
+@@ -171,13 +171,13 @@
+     )
+ endif
+ 
+-executable('gtf',
+-    'utils/gtf/gtf.c',
+-    include_directories: [inc, xorg_inc],
+-    dependencies: xorg_deps,
+-    c_args: xorg_c_args,
+-    install: true,
+-)
++# executable('gtf',
++#     'utils/gtf/gtf.c',
++#     include_directories: [inc, xorg_inc],
++#     dependencies: xorg_deps,
++#     c_args: xorg_c_args,
++#     install: true,
++# )
+ 
+ # For symbol presence testing only
+ xorgserver_lib = shared_library(
+diff -ruwN source-old/hw/xfree86/os-support/shared/sigio.c source/hw/xfree86/os-support/shared/sigio.c
+--- source-old/hw/xfree86/os-support/shared/sigio.c	2025-02-25 11:56:05.000000000 -0700
++++ source/hw/xfree86/os-support/shared/sigio.c	2025-11-07 14:37:53.042429782 -0700
+@@ -196,11 +196,12 @@
+                         fd, strerror(errno));
+             }
+             else {
++                /*TODO
+                 if (fcntl(fd, F_SETOWN, getpid()) == -1) {
+                     xf86Msg(X_WARNING, "fcntl(%d, F_SETOWN): %s\n",
+                             fd, strerror(errno));
+                 }
+-                else {
++                else*/{
+                     installed = TRUE;
+                 }
+             }
+diff -ruwN source-old/hw/xfree86/os-support/xf86_OSlib.h source/hw/xfree86/os-support/xf86_OSlib.h
+--- source-old/hw/xfree86/os-support/xf86_OSlib.h	2025-02-25 11:56:05.000000000 -0700
++++ source/hw/xfree86/os-support/xf86_OSlib.h	2025-11-07 14:37:53.042605933 -0700
+@@ -176,7 +176,7 @@
+ /**************************************************************************/
+ /* Linux or Glibc-based system                                            */
+ /**************************************************************************/
+-#if defined(__linux__) || defined(__GLIBC__) || defined(__CYGWIN__)
++#if defined(__linux__) || defined(__GLIBC__) || defined(__CYGWIN__) || defined(__redox__)
+ #include <sys/ioctl.h>
+ #include <signal.h>
+ #include <stdlib.h>
+diff -ruwN source-old/include/dix.h source/include/dix.h
+--- source-old/include/dix.h	2025-02-25 11:56:05.000000000 -0700
++++ source/include/dix.h	2025-11-07 14:37:53.042862204 -0700
+@@ -55,6 +55,7 @@
+ #include "geext.h"
+ #include "events.h"
+ #include <X11/extensions/XI.h>
++#include <stdio.h>
+ 
+ #define EARLIER -1
+ #define SAMETIME 0
+@@ -69,14 +70,28 @@
+ 
+ #define REQUEST_SIZE_MATCH(req)                                         \
+     do {                                                                \
+-        if ((sizeof(req) >> 2) != client->req_len)                      \
++        if ((sizeof(req) >> 2) != client->req_len) { \
++            fprintf(stderr, \
++                    "REQUEST_SIZE_MATCH failed in %s:%d: " \
++                    "Expected len %lu, got %d\n", \
++                    __FILE__, __LINE__, \
++                    (unsigned long)(sizeof(req) >> 2), \
++                    client->req_len); \
+             return(BadLength);                                          \
++        } \
+     } while (0)
+ 
+ #define REQUEST_AT_LEAST_SIZE(req)                                      \
+     do {                                                                \
+-        if ((sizeof(req) >> 2) > client->req_len)                       \
++        if ((sizeof(req) >> 2) > client->req_len) { \
++            fprintf(stderr, \
++                    "REQUEST_AT_LEAST_SIZE failed in %s:%d: " \
++                    "Expected len %lu, got %d\n", \
++                    __FILE__, __LINE__, \
++                    (unsigned long)(sizeof(req) >> 2), \
++                    client->req_len); \
+             return(BadLength);                                          \
++        } \
+     } while (0)
+ 
+ #define REQUEST_AT_LEAST_EXTRA_SIZE(req, extra)                         \
+diff -ruwN source-old/include/meson.build source/include/meson.build
+--- source-old/include/meson.build	2025-02-25 11:56:05.000000000 -0700
++++ source/include/meson.build	2025-11-07 14:37:53.043095171 -0700
+@@ -162,7 +162,7 @@
+ conf_data.set('HAVE_PORT_CREATE', cc.has_function('port_create') ? '1' : false)
+ conf_data.set('HAVE_REALLOCARRAY', cc.has_function('reallocarray', dependencies: libbsd_dep) ? '1' : false)
+ conf_data.set('HAVE_SETEUID', cc.has_function('seteuid') ? '1' : false)
+-conf_data.set('HAVE_SETITIMER', cc.has_function('setitimer') ? '1' : false)
++conf_data.set('HAVE_SETITIMER', false)
+ conf_data.set('HAVE_SHMCTL64', cc.has_function('shmctl64') ? '1' : false)
+ conf_data.set('HAVE_SIGACTION', cc.has_function('sigaction') ? '1' : false)
+ conf_data.set('HAVE_SIGPROCMASK', cc.has_function('sigprocmask') ? '1' : false)
+@@ -190,14 +190,14 @@
+ conf_data.set('LISTEN_LOCAL', get_option('listen_local'))
+ 
+ if cc.has_header_symbol('sys/socket.h', 'SCM_RIGHTS')
+-  conf_data.set('XTRANS_SEND_FDS', '1')
++  #TODO conf_data.set('XTRANS_SEND_FDS', '1')
+ endif
+ 
+-if conf_data.get('HAVE_GETPEEREID').to_int() == 0 and conf_data.get('HAVE_GETPEERUCRED').to_int() == 0
+-    if not cc.has_header_symbol('sys/socket.h', 'SO_PEERCRED')
++#if conf_data.get('HAVE_GETPEEREID').to_int() == 0 and conf_data.get('HAVE_GETPEERUCRED').to_int() == 0
++    #if not cc.has_header_symbol('sys/socket.h', 'SO_PEERCRED')
+         conf_data.set('NO_LOCAL_CLIENT_CRED', 1)
+-    endif
+-endif
++    #endif
++#endif
+ 
+ conf_data.set('TCPCONN', '1')
+ conf_data.set('UNIXCONN', host_machine.system() != 'windows' ? '1' : false)
+@@ -212,7 +212,7 @@
+ conf_data.set('DRI2', build_dri2 ? '1' : false)
+ conf_data.set('DRI3', build_dri3 ? '1' : false)
+ if build_glx
+-    conf_data.set_quoted('DRI_DRIVER_PATH', dri_dep.get_pkgconfig_variable('dridriverdir'))
++    conf_data.set_quoted('DRI_DRIVER_PATH', '/usr/lib/dri') 
+ endif
+ conf_data.set('HAS_SHM', build_mitshm ? '1' : false)
+ conf_data.set('MITSHM', build_mitshm ? '1' : false)
+diff -ruwN source-old/meson.build source/meson.build
+--- source-old/meson.build	2025-11-07 14:39:22.420574991 -0700
++++ source/meson.build	2025-11-07 14:37:53.043279226 -0700
+@@ -439,7 +439,7 @@
+     error('DRI requested, but LIBDRM not found')
+ endif
+ 
+-build_modesetting = libdrm_dep.found() and dri2proto_dep.found()
++build_modesetting = false #TODO: libdrm_dep.found() and dri2proto_dep.found()
+ 
+ build_vgahw = false
+ if get_option('vgahw') == 'auto'
+@@ -753,7 +753,7 @@
+ subdir('hw')
+ 
+ if host_machine.system() != 'windows'
+-    subdir('test')
++  #subdir('test')
+ endif
+ 
+ install_man(configure_file(
+diff -ruwN source-old/os/access.c source/os/access.c
+--- source-old/os/access.c	2025-02-25 11:56:05.000000000 -0700
++++ source/os/access.c	2025-11-07 14:37:53.043632189 -0700
+@@ -120,7 +120,7 @@
+ #include <sys/un.h>
+ #endif
+ 
+-#if defined(SVR4) ||  (defined(SYSV) && defined(__i386__)) || defined(__GNU__)
++#if defined(SVR4) ||  (defined(SYSV) && defined(__i386__)) || defined(__GNU__) || defined(__redox__)
+ #include <sys/utsname.h>
+ #endif
+ #if defined(SYSV) &&  defined(__i386__)
+diff -ruwN source-old/Xext/bigreq.c source/Xext/bigreq.c
+--- source-old/Xext/bigreq.c	2025-02-25 11:56:05.000000000 -0700
++++ source/Xext/bigreq.c	2025-11-07 14:37:53.043862040 -0700
+@@ -51,7 +51,8 @@
+     }
+     if (stuff->brReqType != X_BigReqEnable)
+         return BadRequest;
+-    REQUEST_SIZE_MATCH(xBigReqEnableReq);
++    // libxkbcommon sends incorrect size
++    REQUEST_AT_LEAST_SIZE(xBigReqEnableReq);
+     client->big_requests = TRUE;
+     rep = (xBigReqEnableReply) {
+         .type = X_Reply,

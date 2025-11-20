@@ -1,0 +1,43 @@
+diff -rupNw source-original/DxLib.cpp source/DxLib.cpp
+--- source-original/DxLib.cpp	2018-12-08 19:59:16.777579338 +0100
++++ source/DxLib.cpp	2018-12-08 02:13:39.541585079 +0100
+@@ -24,7 +24,7 @@ int DxLib_Init()
+ 	return -1;
+     }
+ 
+-    SDL_WM_SetCaption("Syobon Action (しょぼんのアクション)",
++    SDL_WM_SetCaption("Syobon Action",
+ 		      NULL);
+     SDL_ShowCursor(SDL_DISABLE);
+ 
+diff -rupNw source-original/main.cpp source/main.cpp
+--- source-original/main.cpp	2018-12-08 19:59:16.781579399 +0100
++++ source/main.cpp	2018-12-08 18:11:33.716589712 +0100
+@@ -1,9 +1,11 @@
+ #include "main.h"
++#include <unistd.h>
+ 
+ // プログラムは WinMain から始まります
+ //Changed to ansi c++ main()
+ int main(int argc, char *argv[])
+ {
++    chdir("file:/share/syobonaction/");
+     parseArgs(argc, argv);
+     if (DxLib_Init() == -1)
+ 	return 1;
+diff -rupNw source-original/Makefile source/Makefile
+--- source-original/Makefile	2018-12-08 19:59:16.777579338 +0100
++++ source/Makefile	2018-12-08 01:32:40.319685337 +0100
+@@ -1,8 +1,8 @@
+ SyobonAction:main.o loadg.o DxLib.o
+-	gcc main.o loadg.o DxLib.o -o SyobonAction `sdl-config --libs` -lSDL_gfx -lSDL_image -lSDL_mixer -lSDL_ttf
++	${CXX} ${LDFLAGS} main.o loadg.o DxLib.o -o SyobonAction `${SDL_CONFIG} --libs` -lSDL_gfx -lSDL_image -lSDL_mixer -lpng -ljpeg -lz -lSDL -lSDL_ttf -lfreetype -lvorbisfile -lvorbis -logg
+ main.o:main.cpp
+-	gcc -c main.cpp
++	${CXX} ${CPPFLAGS} `${SDL_CONFIG} --cflags` -c main.cpp
+ loadg.o:loadg.cpp
+-	gcc -c loadg.cpp
++	${CXX} ${CPPFLAGS} `${SDL_CONFIG} --cflags` -c loadg.cpp
+ DxLib.o:DxLib.cpp
+-	gcc -c DxLib.cpp
++	${CXX} ${CPPFLAGS} `${SDL_CONFIG} --cflags` -c DxLib.cpp

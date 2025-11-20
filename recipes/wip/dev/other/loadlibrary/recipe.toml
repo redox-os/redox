@@ -1,0 +1,8 @@
+#TODO missing script for "make", see https://github.com/taviso/loadlibrary#building
+[source]
+git = "https://github.com/taviso/loadlibrary"
+[build]
+template = "custom"
+dependencies = [
+    "readline",
+]

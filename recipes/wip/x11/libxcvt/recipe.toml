@@ -1,0 +1,14 @@
+[source]
+tar = "https://www.x.org/releases/individual/lib/libxcvt-0.1.3.tar.xz"
+blake3 = "a6c8f264a70a742d2634f53d19489b984c28df11cb5653042e8921f7596534bb"
+script = """
+DYNAMIC_INIT
+autotools_recursive_regenerate
+"""
+
+[build]
+template = "custom"
+script = """
+DYNAMIC_INIT
+cookbook_meson
+"""

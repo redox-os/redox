@@ -1,0 +1,6 @@
+#TODO maybe wrong template
+# build instructions - https://git.alsa-project.org/?p=alsa-lib.git;a=blob;f=INSTALL;h=a2427e072bcaf951addc3e1db1fccccf44f3b59b;hb=HEAD
+[source]
+tar = "http://www.alsa-project.org/files/pub/lib/alsa-lib-1.2.13.tar.bz2"
+[build]
+template = "configure"

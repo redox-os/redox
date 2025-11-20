@@ -1,0 +1,8 @@
+#TODO can't fetch the submodules because they need login
+[source]
+git = "https://github.com/oxc-project/oxc"
+[build]
+template = "custom"
+script = """
+cookbook_cargo_packages oxc
+"""

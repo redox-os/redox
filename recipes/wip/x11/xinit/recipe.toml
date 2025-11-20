@@ -1,0 +1,22 @@
+[source]
+tar = "https://www.x.org/releases/individual/app/xinit-1.4.4.tar.xz"
+blake3 = "fe988bbff7c4a950256540ad8a469fed1cdbe11439ba738b9714ee2de16f2a6c"
+script = """
+DYNAMIC_INIT
+autotools_recursive_regenerate
+"""
+
+[build]
+dependencies = [
+    "libpthread-stubs",
+    "libx11",
+    "libxau",
+    "libxcb",
+    "x11proto",
+]
+template = "custom"
+script = """
+DYNAMIC_INIT
+export LIBS="-lxcb -lXau"
+cookbook_configure
+"""

@@ -1,0 +1,10 @@
+#TODO not compiled or tested
+# build instructions: https://www.glfw.org/docs/latest/compile.html
+[source]
+git = "https://github.com/glfw/glfw"
+rev = "e2c92645460f680fd272fd2eed591efb2be7dc31"
+[build]
+template = "cmake"
+dependencies = [
+    "libxkbcommon",
+]

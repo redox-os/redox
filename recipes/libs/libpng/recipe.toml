@@ -1,0 +1,17 @@
+[source]
+tar = "https://github.com/pnggroup/libpng/archive/refs/tags/v1.6.46.tar.gz"
+blake3 = "36f4bbb48c70975116b00ab0cff577931b96f703b2774ac3b33131d001419435"
+script = """
+DYNAMIC_INIT
+chmod +w config.sub
+GNU_CONFIG_GET config.sub
+autotools_recursive_regenerate
+"""
+
+[build]
+template = "custom"
+dependencies = ["zlib"]
+script = """
+DYNAMIC_STATIC_INIT
+cookbook_configure
+"""

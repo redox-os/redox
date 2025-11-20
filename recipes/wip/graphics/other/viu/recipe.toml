@@ -1,0 +1,5 @@
+#TODO working but don't exit
+[source]
+git = "https://github.com/atanunq/viu"
+[build]
+template = "cargo"

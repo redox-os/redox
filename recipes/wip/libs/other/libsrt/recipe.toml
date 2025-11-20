@@ -1,0 +1,10 @@
+#TODO CMake error
+# build instructions: https://github.com/Haivision/srt/blob/master/docs/build/build-linux.md
+[source]
+git = "https://github.com/Haivision/srt"
+rev = "09f35c0f1743e23f514cb41444504a7faeacf89e"
+[build]
+template = "configure"
+dependencies = [
+    "openssl1",
+]

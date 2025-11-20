@@ -1,0 +1,11 @@
+#TODO not compiled or tested
+# build instructions: https://invent.kde.org/graphics/libkdcraw/-/blob/master/README?ref_type=heads
+[source]
+git = "https://invent.kde.org/graphics/libkdcraw"
+rev = "fbd01409c8009f403bccac6776fe4cfefa57d5bd"
+[build]
+template = "cmake"
+dependencies = [
+    "libraw",
+    "qt5-base",
+]

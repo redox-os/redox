@@ -1,0 +1,10 @@
+#TODO not compiled or tested
+# build instructions: https://github.com/OpenImageDenoise/oidn#compiling-on-linuxmacos
+[source]
+git = "https://github.com/OpenImageDenoise/oidn"
+[build]
+template = "cmake"
+dependencies = [
+    "ispc",
+    "onetbb",
+]

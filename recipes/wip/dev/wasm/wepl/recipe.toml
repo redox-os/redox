@@ -1,0 +1,5 @@
+#TODO fs-set-times crate error
+[source]
+git = "https://github.com/rylev/wepl"
+[build]
+template = "cargo"

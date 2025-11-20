@@ -1,0 +1,77 @@
+diff --git a/build-aux/config.sub b/build-aux/config.sub
+index 7ffe373..e2368e0 100755
+--- a/build-aux/config.sub
++++ b/build-aux/config.sub
+@@ -1393,7 +1393,7 @@ case $os in
+ 	      | -os2* | -vos* | -palmos* | -uclinux* | -nucleus* \
+ 	      | -morphos* | -superux* | -rtmk* | -rtmk-nova* | -windiss* \
+ 	      | -powermax* | -dnix* | -nx6 | -nx7 | -sei* | -dragonfly* \
+-	      | -skyos* | -haiku* | -rdos* | -toppers* | -drops* | -es* | -tirtos*)
++	      | -skyos* | -haiku* | -rdos* |  -redox* | -toppers* | -drops* | -es* | -tirtos*)
+ 	# Remember, each alternative MUST END IN *, to match a version number.
+ 		;;
+ 	-qnx*)
+diff --git a/tools/gdbmshell.c b/tools/gdbmshell.c
+index 22c4938..bf75dc8 100644
+--- a/tools/gdbmshell.c
++++ b/tools/gdbmshell.c
+@@ -2890,16 +2890,6 @@ struct timing
+   struct timeval sys;
+ };
+ 
+-void
+-timing_start (struct timing *t)
+-{
+-  struct rusage r;
+-  gettimeofday (&t->real, NULL);
+-  getrusage (RUSAGE_SELF, &r);
+-  t->user  = r.ru_utime;
+-  t->sys = r.ru_stime;
+-}
+-
+ static inline struct timeval
+ timeval_sub (struct timeval a, struct timeval b)
+ {
+@@ -2916,19 +2906,6 @@ timeval_sub (struct timeval a, struct timeval b)
+   return diff;
+ }
+ 
+-void
+-timing_stop (struct timing *t)
+-{	   
+-  struct rusage r;
+-  struct timeval now;
+-  
+-  gettimeofday (&now, NULL);
+-  getrusage (RUSAGE_SELF, &r);
+-  t->real = timeval_sub (now, t->real);
+-  t->user = timeval_sub (r.ru_utime, t->user);
+-  t->sys = timeval_sub (r.ru_stime, t->sys);
+-}
+-
+ static int
+ argsprep (struct command *cmd, struct gdbmarglist *arglist,
+ 	  struct command_param *param)
+@@ -3047,22 +3024,12 @@ run_command (struct command *cmd, struct gdbmarglist *arglist)
+ 	  else
+ 	    cenv.fp = stdout;
+ 	  
+-	  timing_start (&tm);
+ 	  rc = cmd->handler (&param, &cenv);
+-	  timing_stop (&tm);
+ 	  if (cmd->end)
+ 	    cmd->end (cenv.data);
+ 	  else if (cenv.data)
+ 	    free (cenv.data);
+ 
+-	  if (variable_is_true ("timing"))
+-	    {
+-	      fprintf (cenv.fp, "[%s r=%lu.%06lu u=%lu.%06lu s=%lu.%06lu]\n",
+-		       cmd->name,
+-		       tm.real.tv_sec, tm.real.tv_usec,
+-		       tm.user.tv_sec, tm.user.tv_usec,
+-		       tm.sys.tv_sec, tm.sys.tv_usec);
+-	    }
+ 	  
+ 	  if (pagfp)
+ 	    pclose (pagfp);

@@ -1,0 +1,19 @@
+[source]
+tar = "https://dbus.freedesktop.org/releases/dbus-glib/dbus-glib-0.114.tar.gz"
+blake3 = "a632fb16525a201dd159b9538c6009ec717403d580a3741cbf96fd6f9af2828b"
+script = """
+DYNAMIC_INIT
+autotools_recursive_regenerate
+"""
+
+[build]
+dependencies = [
+    "dbus",
+    "expat",
+    "glib",
+]
+template = "custom"
+script = """
+DYNAMIC_INIT
+cookbook_configure --with-dbus-binding-tool="$(which dbus-binding-tool)"
+"""

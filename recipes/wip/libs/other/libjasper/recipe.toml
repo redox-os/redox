@@ -1,0 +1,6 @@
+#TODO not compiled or tested
+# build instructions: https://github.com/jasper-software/jasper/blob/master/INSTALL.txt
+[source]
+tar = "https://github.com/jasper-software/jasper/releases/download/version-4.1.1/jasper-4.1.1.tar.gz"
+[build]
+template = "cmake"

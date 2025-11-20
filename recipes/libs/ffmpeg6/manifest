@@ -1,0 +1,15 @@
+name=ffplay
+binary=/usr/bin/ffplay
+accept=*.mp3
+accept=*.ogg
+accept=*.opus
+accept=*.m4a
+accept=*.flac
+accept=*.wav
+accept=*.mp4
+accept=*.mkv
+accept=*.webm
+accept=*.3gp
+accept=*.mov
+author=FFMPEG Developers
+description=FFMPEG Media Player

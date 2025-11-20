@@ -1,0 +1,8 @@
+#TODO not compiled or tested
+[source]
+git = "https://github.com/zee-editor/zee"
+[build]
+template = "custom"
+script = """
+cookbook_cargo_packages zee
+"""

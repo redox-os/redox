@@ -1,0 +1,8 @@
+#TODO make pipewire work
+[source]
+git = "https://github.com/dimtpap/coppwr"
+[build]
+template = "cargo"
+dependencies = [
+    "pipewire",
+]

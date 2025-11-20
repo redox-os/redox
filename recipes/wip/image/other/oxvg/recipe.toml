@@ -1,0 +1,8 @@
+#TODO not compiled or tested
+[source]
+git = "https://github.com/noahbald/oxvg"
+[build]
+template = "custom"
+script = """
+cookbook_cargo_packages oxvg
+"""

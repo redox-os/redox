@@ -1,0 +1,20 @@
+[source]
+git = "https://gitlab.redox-os.org/redox-os/sdl1.2.git"
+
+[build]
+template = "custom"
+dependencies = [
+    "liborbital"
+]
+script = """
+COOKBOOK_CONFIGURE_FLAGS+=(
+    --disable-loadso
+    --disable-pulseaudio
+    --disable-video-x11
+    --enable-clock_gettime
+    --enable-pthread-sem
+    --enable-redoxaudio
+    --enable-video-orbital
+)
+cookbook_configure
+"""

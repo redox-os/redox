@@ -1,0 +1,6 @@
+#TODO not compiled or tested
+#TODO determine dependencies
+[source]
+tar = "https://download.qt.io/official_releases/qt/5.15/5.15.11/submodules/qtbase-everywhere-opensource-src-5.15.11.tar.xz"
+[build]
+template = "configure"

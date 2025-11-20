@@ -1,0 +1,18 @@
+[source]
+tar = "http://downloads.xiph.org/releases/theora/libtheora-1.2.0.tar.gz"
+blake3 = "b2413d6a29669063c30679eb46e09bd55b47d51e1516282bd1f5a752a8ecae91"
+script = """
+DYNAMIC_INIT
+autotools_recursive_regenerate
+"""
+
+[build]
+template = "custom"
+dependencies = [
+    "libogg",
+    "libvorbis",
+]
+script = """
+DYNAMIC_INIT
+cookbook_configure
+"""

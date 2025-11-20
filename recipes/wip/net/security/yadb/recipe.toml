@@ -1,0 +1,5 @@
+#TODO not compiled or tested
+[source]
+git = "https://github.com/izya4ka/yadb"
+[build]
+template = "cargo"

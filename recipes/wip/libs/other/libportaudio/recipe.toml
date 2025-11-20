@@ -1,0 +1,7 @@
+#TODO compilation error
+#TODO require some Linux audio server
+[source]
+git = "https://github.com/PortAudio/portaudio"
+rev = "147dd722548358763a8b649b3e4b41dfffbcfbb6"
+[build]
+template = "configure"

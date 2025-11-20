@@ -1,0 +1,11 @@
+#TODO probably wrong script, see https://github.com/RastislavKish/clipshare#building
+[source]
+git = "https://github.com/RastislavKish/clipshare"
+[build]
+template = "custom"
+dependencies = [
+    "xdotool",
+]
+script = """
+cookbook_cargo_packages server
+"""

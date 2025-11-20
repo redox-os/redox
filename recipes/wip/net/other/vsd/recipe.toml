@@ -1,0 +1,11 @@
+#TODO Not compiled or tested
+[source]
+git = "https://github.com/clitic/vsd"
+[build]
+template = "custom"
+dependencies = [
+    "ffmpeg6",
+]
+script = """
+cookbook_cargo_packages vsd
+"""

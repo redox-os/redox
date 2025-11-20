@@ -1,0 +1,11 @@
+#TODO maybe missing dependencies, see https://github.com/Logicalshift/flowbetween/blob/master/user_interfaces/gtk_ui/Cargo.toml#L11
+[source]
+git = "https://github.com/Logicalshift/flowbetween"
+[build]
+template = "custom"
+dependencies = [
+    "gtk3",
+]
+script = """
+cookbook_cargo --features gtk
+"""

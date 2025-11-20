@@ -1,0 +1,40 @@
+[source]
+tar = "https://download.gnome.org/sources/pango/1.56/pango-1.56.3.tar.xz"
+blake3 = "78542feaaf007c1d648b94c4e9b6655ed7515d27ce434766aea99bef886c21ac"
+patches = ["redox.patch"]
+
+[build]
+dependencies = [
+    "cairo",
+    "expat",
+    "fontconfig",
+    "freetype2",
+    "fribidi",
+    "gettext",
+    "glib",
+    "harfbuzz",
+    "libffi",
+    "libiconv",
+    "libpng",
+    "libpthread-stubs",
+    "libx11",
+    "libxau",
+    "libxcb",
+    "libxext",
+    "libxft",
+    "libxrender",
+    "pcre",
+    "pcre2",
+    "pixman",
+    "x11proto",
+    "xcb-proto",
+    "xextproto",
+    "zlib",
+]
+template = "custom"
+script = """
+DYNAMIC_INIT
+cookbook_meson \
+    -Dbuild-examples=false \
+    -Dbuild-testsuite=false
+"""

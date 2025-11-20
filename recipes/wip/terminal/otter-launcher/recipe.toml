@@ -1,0 +1,10 @@
+#TODO not compiled or tested
+[source]
+git = "https://github.com/kuokuo123/otter-launcher"
+[build]
+template = "custom"
+script = """
+cookbook_cargo
+mkdir -pv "${COOKBOOK_STAGE}/usr/share/otter-launcher"
+cp -rv "${COOKBOOK_SOURCE}"/contrib/* "${COOKBOOK_STAGE}/usr/share/otter-launcher"
+"""

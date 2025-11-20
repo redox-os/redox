@@ -1,0 +1,7 @@
+#TODO: move to appropriate category
+[source]
+tar = "https://salsa.debian.org/iso-codes-team/iso-codes/-/archive/v4.19.0/iso-codes-v4.19.0.tar.gz"
+blake3 = "153cc1748c96c4c6e8a00566aa7d0a573ec45f84c9155afd162cfc7a0cd6314b"
+
+[build]
+template = "configure"

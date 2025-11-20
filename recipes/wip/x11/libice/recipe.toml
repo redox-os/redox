@@ -1,0 +1,18 @@
+[source]
+tar = "https://www.x.org/releases/individual/lib/libICE-1.1.2.tar.xz"
+blake3 = "3d1d41041e0a58799a5e9965fd258a4f6875143102644fbbc71061eb4c652577"
+script = """
+DYNAMIC_INIT
+autotools_recursive_regenerate
+"""
+
+[build]
+dependencies = [
+    "x11proto",
+    "xtrans",
+]
+template = "custom"
+script = """
+DYNAMIC_INIT
+cookbook_configure
+"""

@@ -1,0 +1,8 @@
+#TODO the ring crate needs to be updated
+[source]
+git = "https://github.com/ordinals/ord"
+[build]
+template = "cargo"
+dependencies = [
+    "openssl1",
+]

@@ -1,0 +1,5 @@
+#TODO can't find the sys/xattr.h file
+[source]
+tar = "https://download.savannah.nongnu.org/releases/attr/attr-2.5.2.tar.xz"
+[build]
+template = "configure"

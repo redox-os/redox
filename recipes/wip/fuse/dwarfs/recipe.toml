@@ -1,0 +1,18 @@
+#TODO not compiled or tested
+# build instructions: https://github.com/mhx/dwarfs#building
+#TODO missing dependencies, see https://github.com/mhx/dwarfs#dependencies
+[source]
+tar = "https://github.com/mhx/dwarfs/releases/download/v0.7.2/dwarfs-0.7.2.tar.xz"
+[build]
+template = "cmake"
+dependencies = [
+    "libfuse3",
+    "boost",
+    "libbrotli",
+    "libevent",
+    "openssl1",
+    "lz4",
+    "xz",
+    "libunwind",
+    "libfmt",
+]

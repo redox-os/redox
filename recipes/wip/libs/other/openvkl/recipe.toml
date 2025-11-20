@@ -1,0 +1,13 @@
+#TODO not compiled or tested
+# build instructions: https://github.com/openvkl/openvkl#building-open-vkl-from-source
+[source]
+git = "https://github.com/openvkl/openvkl"
+rev = "712bdb8035487606096d7af90a4c9bde5503515d"
+[build]
+template = "cmake"
+dependencies = [
+    "ispc",
+    "librkcommon",
+    "embree",
+    "level-zero",
+]

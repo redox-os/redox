@@ -1,0 +1,14 @@
+#TODO missing script for gnu make: https://docs.mamedev.org/initialsetup/compilingmame.html
+[source]
+git = "https://github.com/mamedev/mame"
+rev = "mame0282"
+shallow_clone = true
+[build]
+template = "custom"
+dependencies = [
+    "sdl2",
+    "sdl2-ttf",
+    "fontconfig",
+    "qt5-base",
+    "qt5-tools",
+]

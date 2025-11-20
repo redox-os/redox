@@ -1,0 +1,15 @@
+#TODO not compiled or tested
+# build instructions: https://xmrig.com/docs/miner/build/ubuntu
+# customization - https://xmrig.com/docs/miner/cmake-options
+[source]
+git = "https://github.com/xmrig/xmrig"
+rev = "8084ff37a5c8935c649a2e362da0fe570c79a2c2"
+[build]
+template = "cmake"
+#cmakeflags = [
+#    "-DOPENSSL_ROOT_DIR=${COOKBOOK_SYSROOT}" # test if the program need this
+#]
+dependencies = [
+    "openssl1",
+    "libuv",
+]

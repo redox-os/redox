@@ -1,0 +1,7 @@
+#TODO not compiled or tested
+# lacking build instructions
+[source]
+git = "https://invent.kde.org/sdk/libkomparediff2"
+rev = "ea9034ee3e4952862a937255bc6cc4ee392907f6"
+[build]
+template = "cmake"

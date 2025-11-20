@@ -1,0 +1,11 @@
+#TODO make nss work
+#TODO require Chromium building
+[source]
+git = "https://github.com/fathyb/carbonyl"
+[build]
+template = "cargo"
+dependencies = [
+    "nss",
+    "fontconfig",
+    "expat",
+]

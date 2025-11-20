@@ -1,0 +1,10 @@
+[source]
+tar = "https://www.x.org/releases/individual/lib/libXScrnSaver-1.2.5.tar.xz"
+blake3 = "1efbadb14238f8679abb5e56bc99765b96565ee992bbab86cee88248c57f6240"
+
+[build]
+dependencies = [
+    "libx11",
+    "libxext",
+]
+template = "meson"

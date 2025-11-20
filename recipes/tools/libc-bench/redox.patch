@@ -1,0 +1,42 @@
+diff -ruw source/Makefile source-new/Makefile
+--- source/Makefile	2011-01-31 00:13:00.000000000 -0700
++++ source-new/Makefile	2018-12-25 09:07:37.564520567 -0700
+@@ -4,7 +4,7 @@
+
+ CFLAGS = -Os
+ LDFLAGS = -static
+-LIBS = -lpthread -lrt -lpthread
++LIBS = -lpthread
+
+
+ all: libc-bench
+diff -ruw source/utf8.c source-new/utf8.c
+--- source/utf8.c	2011-01-24 20:08:38.000000000 -0700
++++ source-new/utf8.c	2018-12-25 08:52:35.893821291 -0700
+@@ -3,7 +3,7 @@
+ #include <string.h>
+ #include <wchar.h>
+ #include <locale.h>
+-#include <langinfo.h>
++//#include <langinfo.h>
+
+ size_t b_utf8_bigbuf(void *dummy)
+ {
+@@ -18,7 +18,7 @@
+ 	|| setlocale(LC_CTYPE, "en.UTF-8")
+ 	|| setlocale(LC_CTYPE, "de_DE-8")
+ 	|| setlocale(LC_CTYPE, "fr_FR-8");
+-	if (strcmp(nl_langinfo(CODESET), "UTF-8")) return -1;
++	//if (strcmp(nl_langinfo(CODESET), "UTF-8")) return -1;
+
+ 	buf = malloc(500000);
+ 	wbuf = malloc(500000*sizeof(wchar_t));
+@@ -56,7 +56,7 @@
+ 	|| setlocale(LC_CTYPE, "en.UTF-8")
+ 	|| setlocale(LC_CTYPE, "de_DE-8")
+ 	|| setlocale(LC_CTYPE, "fr_FR-8");
+-	if (strcmp(nl_langinfo(CODESET), "UTF-8")) return -1;
++	//if (strcmp(nl_langinfo(CODESET), "UTF-8")) return -1;
+
+ 	buf = malloc(500000);
+ 	l = 0;

@@ -1,0 +1,27 @@
+#TODO missing script for kbuild
+#TODO missing dependencies
+# build instructions:
+# https://www.virtualbox.org/wiki/Build_instructions
+# https://www.virtualbox.org/wiki/Linux%20build%20instructions
+# how to port - https://www.virtualbox.org/wiki/Porting_VirtualBox
+[source]
+tar = "https://download.virtualbox.org/virtualbox/7.0.20/VirtualBox-7.0.20.tar.bz2"
+[build]
+template = "custom"
+dependencies = [
+    "libcap",
+    "curl",
+    "libopus",
+    "pulseaudio",
+    "qt5-3d",
+    "qt5-x11extras",
+    "qt5-tools",
+    "sdl1",
+    "sdl2-ttf",
+    "openssl1",
+    "libvpx",
+    "libxml2",
+    "libxslt",
+    "zlib",
+    "mesa",
+]

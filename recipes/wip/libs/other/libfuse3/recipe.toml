@@ -1,0 +1,7 @@
+#TODO not compiled or tested
+# build instructions: https://github.com/libfuse/libfuse#installation
+#TODO require a redox daemon (userspace equivalent of the Linux kernel module)
+[source]
+tar = "https://github.com/libfuse/libfuse/releases/download/fuse-3.16.2/fuse-3.16.2.tar.gz"
+[build]
+template = "meson"

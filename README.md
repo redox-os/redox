@@ -46,8 +46,7 @@ Some of the key repositories on the Redox GitLab:
 | [netstack (network stack)](https://gitlab.redox-os.org/redox-os/netstack)                                   | **@jackpot51**
 | [pkgutils (current package manager)](https://gitlab.redox-os.org/redox-os/pkgutils)                         | **@jackpot51**
 | [Orbital (display server and window manager)](https://gitlab.redox-os.org/redox-os/orbital)                 | **@jackpot51**
-| This repo - the root of the Build System                                                                    | **@jackpot51**
-| [Cookbook (build system for system components and programs)](https://gitlab.redox-os.org/redox-os/cookbook) | **@jackpot51** **@hatred_45**
+| This repo - the root of the Build System                                                                    | **@jackpot51** **@hatred_45**
 | [Redoxer (tool for easy Redox development on Linux)](https://gitlab.redox-os.org/redox-os/redoxer)          | **@jackpot51**
 | [The Redox Book](https://gitlab.redox-os.org/redox-os/book)                                                 | **@jackpot51** **@hatred_45**
 | [Website](https://gitlab.redox-os.org/redox-os/website)                                                     | **@jackpot51** **@hatred_45**

@@ -1,0 +1,9 @@
+#TODO sys-info crate error
+#TODO require Nerd Fonts
+[source]
+git = "https://github.com/JosephLai241/nomad"
+[build]
+template = "cargo"
+dependencies = [
+    "openssl1",
+]

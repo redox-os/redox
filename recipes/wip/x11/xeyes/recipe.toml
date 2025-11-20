@@ -1,0 +1,31 @@
+[source]
+tar = "https://www.x.org/releases/individual/app/xeyes-1.3.0.tar.xz"
+blake3 = "33d7ce4847c73e6ebea0cc595b04de80482a657132d0f2235548328ede88b673"
+script = """
+DYNAMIC_INIT
+autotools_recursive_regenerate
+"""
+
+[build]
+dependencies = [
+    "libice",
+    "libpthread-stubs",
+    "libsm",
+    "libx11",
+    "libxau",
+    "libxcb",
+    "libxext",
+    "libxfixes",
+    "libxi",
+    "libxmu",
+    "libxrender",
+    "libxt",
+    "x11proto",
+]
+template = "custom"
+script = """
+DYNAMIC_INIT
+#TODO: why are LIBS not automatic?
+export LIBS="-lXext -lXmu -lXt -lSM -lICE -lX11 -lxcb -lXau"
+cookbook_configure --without-present
+"""

@@ -1,0 +1,5 @@
+#TODO rustc-serialize crate error (after an update on proc-macro2 and patch on ring)
+[source]
+git = "https://github.com/elfshaker/elfshaker"
+[build]
+template = "cargo"

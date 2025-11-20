@@ -1,0 +1,17 @@
+[source]
+tar = "https://archive.xfce.org/src/xfce/libxfce4util/4.20/libxfce4util-4.20.1.tar.bz2"
+blake3 = "d64d8c016e48fb21b4c76914b75e256670c5fe2bff4c3b54f76e56cf1a50cb8a"
+
+[build]
+dependencies = [
+    "gettext",
+    "glib",
+    "libffi",
+    "libiconv",
+    "pcre2",
+    "zlib",
+]
+template = "meson"
+mesonflags = [
+    "-Dintrospection=false",
+]

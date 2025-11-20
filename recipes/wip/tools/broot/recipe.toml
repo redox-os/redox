@@ -1,0 +1,5 @@
+#TODO nix crate compilation error
+[source]
+git = "https://github.com/Canop/broot"
+[build]
+template = "cargo"

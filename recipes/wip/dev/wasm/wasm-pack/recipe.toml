@@ -1,0 +1,5 @@
+#TODO fs4 crate error
+[source]
+git = "https://github.com/rustwasm/wasm-pack"
+[build]
+template = "cargo"

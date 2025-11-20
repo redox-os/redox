@@ -1,0 +1,5 @@
+#TODO promote
+[source]
+git = "https://github.com/rust-lang/mdBook"
+[build]
+template = "cargo"

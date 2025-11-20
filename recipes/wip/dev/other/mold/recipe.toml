@@ -1,0 +1,7 @@
+#TODO not compiled or tested
+# build instructions - https://github.com/rui314/mold#how-to-build
+[source]
+git = "https://github.com/rui314/mold"
+rev = "b53197300b5bf9f02daccae536f65dda2d1431c5"
+[build]
+template = "cmake"

@@ -1,0 +1,8 @@
+#TODO Promote
+[source]
+tar = "https://libzip.org/download/libzip-1.10.1.tar.gz"
+[build]
+template = "cmake"
+dependencies = [
+    "zlib",
+]

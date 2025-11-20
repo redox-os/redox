@@ -1,0 +1,21 @@
+#TODO not compiled or tested
+#TODO determine minimum dependencies from cmake log
+# build instructions: https://github.com/OpenShot/libopenshot/wiki/Linux-Build-Instructions
+[source]
+git = "https://github.com/OpenShot/libopenshot"
+rev = "v0.4.0"
+shallow_clone = true
+[build]
+template = "cmake"
+# dependencies = [
+#     "libopenshot-audio",
+#     "ffmpeg6",
+#     "qt5-base",
+#     "qt5-svg",
+#     "qt5-multimedia",
+#     "libzmq",
+#     "opencv4",
+#     "protobuf",
+#     "babl",
+#     "imagemagick",
+# ]

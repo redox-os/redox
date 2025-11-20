@@ -1,0 +1,4 @@
+name=Super Mario 64 EX
+category=Games
+binary=/bin/sm64
+icon=/ui/icons/apps/sm64ex.png

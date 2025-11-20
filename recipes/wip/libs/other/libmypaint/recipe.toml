@@ -1,0 +1,9 @@
+#TODO probably missing dependencies, see: https://github.com/mypaint/libmypaint/#dependencies
+[source]
+tar = "https://github.com/mypaint/libmypaint/releases/download/v1.6.0/libmypaint-1.6.0.tar.xz"
+[build]
+template = "configure"
+dependencies = [
+    "glib",
+    "gobject-introspection",
+]

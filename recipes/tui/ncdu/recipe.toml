@@ -1,0 +1,14 @@
+[source]
+tar = "https://dev.yorhel.nl/download/ncdu-1.22.tar.gz"
+blake3 = "b7838c03ded7207a328a26c840ec3d62d3be6bbf7269a70ea3430c6cbf065960"
+
+[package]
+dependencies = ["terminfo"]
+
+[build]
+template = "custom"
+dependencies = ["ncurses"]
+script = """
+DYNAMIC_INIT
+cookbook_configure
+"""
