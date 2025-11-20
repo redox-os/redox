@@ -1,0 +1,5 @@
+[source]
+git = "https://gitlab.redox-os.org/redox-os/coreutils.git"
+
+[build]
+template = "cargo"

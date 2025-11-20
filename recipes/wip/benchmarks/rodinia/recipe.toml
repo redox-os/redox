@@ -1,0 +1,5 @@
+#TODO missing script for building, lacking build instructions
+[source]
+tar = "http://www.cs.virginia.edu/~skadron/lava/Rodinia/Packages/rodinia_3.1.tar.bz2"
+[build]
+template = "custom"

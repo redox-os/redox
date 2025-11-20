@@ -1,0 +1,11 @@
+#TODO missing script for "make", see https://github.com/GreycLab/gmic-community/wiki/Building-from-Source
+[source]
+tar = "https://gmic.eu/files/source/gmic_3.3.2.tar.gz"
+[build]
+template = "custom"
+dependencies = [
+    "fftw",
+    "libpng",
+    "libjpeg",
+    "zlib",
+]

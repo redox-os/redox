@@ -1,0 +1,9 @@
+#TODO not compiled or tested
+# build instructions: https://github.com/steveire/grantlee#installation
+[source]
+tar = "https://github.com/steveire/grantlee/releases/download/v5.3.1/grantlee-5.3.1.tar.gz"
+[build]
+template = "cmake"
+dependencies = [
+    "qt5-base",
+]

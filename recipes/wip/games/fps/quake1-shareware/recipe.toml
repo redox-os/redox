@@ -1,0 +1,24 @@
+# TODO:
+# * Requires unarchivers
+
+[build]
+template = "custom"
+dependencies = ["lhasa", "unzrip"]
+script = """
+curl -O "https://github.com/Jason2Brownlee/QuakeOfficialArchive/raw/refs/heads/main/bin/quake106.zip"
+sha256sum -c quake106.zip.sha
+
+# The zip file contains a DOS installer which we don't need
+# The actual demo content is within another archive
+7z x quake106.zip
+
+# Actual game contents
+lha xv resource.1
+sha256sum -c pak0.pak.sha
+
+# Now, the ID1 folder contains PAK0, the demo file
+# Non-Windows/non-DOS systems expect the directory and file to be lowercased
+OUT_DIR = "${COOKBOOK_STAGE}/usr/share/games/quake/id1/"
+mkdir -p "${OUT_DIR}"
+cp -v ID1/PAK0.PAK "${OUT_DIR}/pak0.pak"
+"""

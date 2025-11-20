@@ -1,0 +1,6 @@
+#TODO configuration problem
+[source]
+git = "https://github.com/axboe/fio"
+rev = "624e263f6acb1563471a83601ce19dfb77ac5694"
+[build]
+template = "configure"

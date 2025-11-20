@@ -1,0 +1,27 @@
+[source]
+tar = "https://download.gnome.org/sources/libepoxy/1.5/libepoxy-1.5.10.tar.xz"
+blake3 = "0ccee9635115fe417cfc4bc33ffd160bf1e2852bd6c03816b4af771d59462f53"
+patches = ["redox.patch"]
+
+[build]
+template = "custom"
+dependencies = [
+    "libpthread-stubs",
+    "libx11",
+    "libxau",
+    "libxcb",
+    "libxext",
+    "libxfixes",
+    "libxxf86vm",
+    "llvm18",
+    "mesa-x11",
+    "x11proto",
+    "zlib",
+]
+script = """
+DYNAMIC_INIT
+cookbook_meson \
+    -Degl=yes \
+    -Dglx=yes \
+    -Dtests=false
+"""

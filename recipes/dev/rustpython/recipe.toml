@@ -1,0 +1,27 @@
+[source]
+git = "https://github.com/RustPython/RustPython"
+# requires https://github.com/rust-lang/rust/pull/137319
+# since https://github.com/RustPython/RustPython/pull/5858
+rev = "e41d7f523a74c36b9f360d992ce0a9eb7e604c2b"
+
+[build]
+dependencies = [
+  "openssl1",
+  "zlib",
+]
+template = "custom"
+script = """
+DYNAMIC_INIT
+
+export BUILDTIME_RUSTPYTHONPATH=/lib/rustpython
+export OPENSSL_DIR="${COOKBOOK_SYSROOT}"
+export ZLIB_STATIC=1
+cookbook_cargo --features ssl
+mkdir -p "${COOKBOOK_STAGE}/lib"
+rsync -aE \
+  --exclude 'test/' \
+  --exclude '__pycache__/' \
+  --exclude '*.pyc' \
+  --exclude '/README.md' \
+  "${COOKBOOK_SOURCE}"/Lib/ "${COOKBOOK_STAGE}/lib/rustpython"
+"""

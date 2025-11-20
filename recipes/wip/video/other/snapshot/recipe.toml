@@ -1,0 +1,11 @@
+#TODO maybe wrong template, see https://gitlab.gnome.org/GNOME/snapshot
+[source]
+tar = "https://download.gnome.org/sources/snapshot/45/snapshot-45.2.tar.xz"
+[build]
+template = "cargo"
+dependencies = [
+    "glib",
+    "gtk4",
+    "libadwaita",
+    "gstreamer",
+]

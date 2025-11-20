@@ -1,0 +1,12 @@
+diff -ruwN source/test/fence-image-self-test.c source-new/test/fence-image-self-test.c
+--- source/test/fence-image-self-test.c	2018-04-11 06:07:58.000000000 -0600
++++ source-new/test/fence-image-self-test.c	2019-01-06 15:29:38.878720123 -0700
+@@ -29,7 +29,7 @@
+ #include "utils.h"
+ 
+ 
+-#if FENCE_MALLOC_ACTIVE && defined (HAVE_SIGACTION)
++#if FENCE_MALLOC_ACTIVE && defined (HAVE_SIGACTION) && !defined(__redox__)
+ 
+ #include <stdlib.h>
+ #include <stdio.h>

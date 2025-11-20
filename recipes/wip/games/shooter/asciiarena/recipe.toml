@@ -1,0 +1,5 @@
+#TODO outdated mio crate
+[source]
+git = "https://github.com/lemunozm/asciiarena"
+[build]
+template = "cargo"

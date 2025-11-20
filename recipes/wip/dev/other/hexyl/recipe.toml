@@ -1,0 +1,5 @@
+#TODO promote
+[source]
+git = "https://github.com/sharkdp/hexyl"
+[build]
+template = "cargo"

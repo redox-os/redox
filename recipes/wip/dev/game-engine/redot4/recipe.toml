@@ -1,0 +1,6 @@
+#TODO missing script for scons: https://docs.redotengine.org/en/stable/contributing/development/compiling/compiling_for_linuxbsd
+#TODO discover minimum dependencies from scons log
+[source]
+tar = "https://github.com/Redot-Engine/redot-engine/releases/download/redot-4.3.1-stable/Redot-4.3.1-stable.tar.xz"
+[build]
+template = "custom"

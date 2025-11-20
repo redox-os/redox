@@ -1,0 +1,6 @@
+#TODO missing script to build the C implementation, see https://github.com/nayuki/QR-Code-generator/tree/master/c
+[source]
+git = "https://github.com/nayuki/QR-Code-generator"
+rev = "720f62bddb7226106071d4728c292cb1df519ceb"
+[build]
+template = "custom"

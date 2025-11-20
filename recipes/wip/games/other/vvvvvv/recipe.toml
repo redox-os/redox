@@ -1,0 +1,24 @@
+#TODO not compiled or tested
+[source]
+git = "https://github.com/xTibor/VVVVVV"
+upstream = "https://github.com/TerryCavanagh/VVVVVV"
+branch = "redox"
+script = "COOKBOOK_SOURCE=${COOKBOOK_SOURCE}/desktop_version"
+[build]
+template = "cmake"
+cmakeflags = [
+    "-DSDL2_INCLUDE_DIRS=${COOKBOOK_SYSROOT}/include/SDL2",
+    "-DSDL2_LIBRARIES="-lSDL2main -lSDL2_mixer -lSDL2 $(${TARGET}-pkg-config --libs glu) -lorbital -lz -lvorbisfile -lvorbis -logg" .",
+]
+dependencies = [
+    "sdl2-image",
+    "sdl2-mixer",
+    "sdl2",
+    "liborbital",
+    "llvm18",
+    "mesa",
+    "mesa-glu",
+    "zlib",
+    "libogg",
+    "libvorbis",
+]

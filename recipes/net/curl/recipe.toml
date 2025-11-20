@@ -1,0 +1,39 @@
+[source]
+git = "https://gitlab.redox-os.org/redox-os/curl.git"
+branch = "redox-8.6"
+upstream = "https://github.com/curl/curl.git"
+
+[build]
+template = "custom"
+dependencies = [
+    #TODO: git fails to build when this is a dependency: "libpsl",
+    "nghttp2",
+    "openssl1",
+    "zlib"
+]
+script = """
+DYNAMIC_INIT
+rsync -av --delete "${COOKBOOK_SOURCE}/" ./
+GNU_CONFIG_GET config.sub
+DYNAMIC_INIT
+autotools_recursive_regenerate
+COOKBOOK_CONFIGURE="./configure"
+COOKBOOK_CONFIGURE_FLAGS+=(
+    --disable-ftp
+    --disable-ipv6
+    --disable-ntlm-wb
+    --disable-tftp
+    --disable-threaded-resolver
+    --with-ca-path=/etc/ssl/certs
+    --with-nghttp2
+    --with-ssl
+    --with-zlib
+    --without-libpsl
+)
+cookbook_configure
+"""
+
+[package]
+dependencies = [
+    "ca-certificates"
+]

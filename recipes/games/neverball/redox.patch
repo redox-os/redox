@@ -1,0 +1,87 @@
+diff -ruwN neverball-1.6.0/Makefile source/Makefile
+--- neverball-1.6.0/Makefile	2014-05-21 07:21:43.000000000 -0600
++++ source/Makefile	2023-09-09 20:03:22.113348963 -0600
+@@ -38,11 +38,11 @@
+ ifeq ($(DEBUG),1)
+ 	CFLAGS   := -g
+ 	CXXFLAGS := -g
+-	CPPFLAGS :=
++	CPPFLAGS +=
+ else
+ 	CFLAGS   := -O2
+ 	CXXFLAGS := -O2
+-	CPPFLAGS := -DNDEBUG
++	CPPFLAGS += -DNDEBUG
+ endif
+ 
+ #------------------------------------------------------------------------------
+@@ -64,8 +64,8 @@
+ 
+ # Preprocessor...
+ 
+-SDL_CPPFLAGS := $(shell sdl2-config --cflags)
+-PNG_CPPFLAGS := $(shell libpng-config --cflags)
++SDL_CPPFLAGS := $(shell $(PKG_CONFIG) sdl2 --cflags)
++PNG_CPPFLAGS := $(shell $(PKG_CONFIG) libpng --cflags)
+ 
+ ALL_CPPFLAGS := $(SDL_CPPFLAGS) $(PNG_CPPFLAGS) -Ishare
+ 
+@@ -124,8 +124,8 @@
+ #------------------------------------------------------------------------------
+ # Libraries
+ 
+-SDL_LIBS := $(shell sdl2-config --libs)
+-PNG_LIBS := $(shell libpng-config --libs)
++SDL_LIBS := $(shell $(PKG_CONFIG) sdl2 --libs)
++PNG_LIBS := $(shell $(PKG_CONFIG) libpng --libs)
+ 
+ ifeq ($(ENABLE_FS),stdio)
+ FS_LIBS :=
+@@ -148,7 +148,7 @@
+ endif
+ endif
+ 
+-OGL_LIBS := -lGL
++OGL_LIBS := -lorbital $(shell $(PKG_CONFIG) osmesa --libs)
+ 
+ ifeq ($(PLATFORM),mingw)
+ 	ifneq ($(ENABLE_NLS),0)
+@@ -175,8 +175,8 @@
+ 	                                           /usr/local/lib))
+ endif
+ 
+-OGG_LIBS := -lvorbisfile
+-TTF_LIBS := -lSDL2_ttf
++OGG_LIBS := $(shell $(PKG_CONFIG) ogg vorbis vorbisfile --libs)
++TTF_LIBS := $(shell $(PKG_CONFIG) SDL2_ttf --libs) -lfreetype
+ 
+ ALL_LIBS := $(HMD_LIBS) $(TILT_LIBS) $(INTL_LIBS) $(TTF_LIBS) \
+ 	$(OGG_LIBS) $(SDL_LIBS) $(OGL_LIBS) $(BASE_LIBS)
+@@ -411,11 +411,11 @@
+ 
+ all : $(BALL_TARG) $(PUTT_TARG) $(MAPC_TARG) sols locales desktops
+ 
+-ifeq ($(ENABLE_HMD),libovr)
++#ifeq ($(ENABLE_HMD),libovr)
+ LINK := $(CXX) $(ALL_CXXFLAGS)
+-else
+-LINK := $(CC) $(ALL_CFLAGS)
+-endif
++#else
++#LINK := $(CC) $(ALL_CFLAGS)
++#endif
+ 
+ $(BALL_TARG) : $(BALL_OBJS)
+ 	$(LINK) -o $(BALL_TARG) $(BALL_OBJS) $(LDFLAGS) $(ALL_LIBS)
+diff -ruwN neverball-1.6.0/share/text.h source/share/text.h
+--- neverball-1.6.0/share/text.h	2014-05-21 07:21:43.000000000 -0600
++++ source/share/text.h	2023-09-09 20:02:10.117248865 -0600
+@@ -15,7 +15,7 @@
+ 
+ /*---------------------------------------------------------------------------*/
+ 
+-char text_input[MAXSTR];
++extern char text_input[MAXSTR];
+ 
+ void text_input_start(void (*cb)(int typing));
+ void text_input_stop(void);

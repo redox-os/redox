@@ -1,0 +1,16 @@
+#TODO: Compilation error (relibc issues?)
+# Also see https://github.com/protocolbuffers/protobuf/blob/main/cmake/README.md
+[source]
+git = "https://github.com/protocolbuffers/protobuf"
+# Latest release: v31.1
+rev = "74211c0dfc2777318ab53c2cd2c317a2ef9012de"
+shallow_clone = true
+
+[build]
+template = "cmake"
+cmakeflags = [
+    "-Dprotobuf_BUILD_TESTS=OFF"
+]
+dependencies = [
+    "zlib",
+]

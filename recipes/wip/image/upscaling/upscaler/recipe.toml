@@ -1,0 +1,11 @@
+#TODO not compiled or tested
+# build instructions: https://gitlab.gnome.org/World/Upscaler#meson
+[source]
+git = "https://gitlab.gnome.org/World/Upscaler"
+rev = "30c2a8411fac281ed548189a9fea45dc9efe5b68"
+[build]
+template = "meson"
+dependencies = [
+    "gtk4",
+    "libadwaita",
+]

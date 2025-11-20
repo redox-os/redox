@@ -1,0 +1,8 @@
+#TODO not compiled or tested
+# lacking build instructions
+[source]
+git = "https://github.com/opencv/opencv"
+rev = "49486f61fb25722cbcf586b7f4320921d46fb38e"
+
+[build]
+template = "cmake"

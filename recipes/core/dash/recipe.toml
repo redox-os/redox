@@ -1,0 +1,22 @@
+[source]
+git = "https://gitlab.redox-os.org/redox-os/dash.git"
+branch = "redox"
+
+[build]
+template = "custom"
+script = """
+DYNAMIC_INIT
+rsync -av --delete "${COOKBOOK_SOURCE}/" ./
+./autogen.sh
+./configure \
+    --host="${TARGET}" \
+    --prefix="" \
+    --enable-static \
+    cross_compiling=yes
+# See https://stackoverflow.com/questions/4247068/sed-command-with-i-option-failing-on-mac-but-works-on-linux.
+sed -i'' -e 's|#define HAVE_GETRLIMIT 1|/* #undef HAVE_GETRLIMIT */|g' config.h
+# Skip configure
+COOKBOOK_CONFIGURE="true"
+COOKBOOK_CONFIGURE_FLAGS=()
+cookbook_configure
+"""

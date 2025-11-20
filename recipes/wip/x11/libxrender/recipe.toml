@@ -1,0 +1,21 @@
+[source]
+tar = "https://www.x.org/releases/individual/lib/libXrender-0.9.12.tar.xz"
+blake3 = "900b431ad77835029a88fd0d874bbd0d748ff150b9e0c3841b3ce7a346cf396a"
+script = """
+DYNAMIC_INIT
+autotools_recursive_regenerate
+"""
+
+[build]
+dependencies = [
+    "libpthread-stubs",
+    "libx11",
+    "libxau",
+    "libxcb",
+    "x11proto",
+]
+template = "custom"
+script = """
+DYNAMIC_INIT
+cookbook_configure --enable-malloc0returnsnull
+"""

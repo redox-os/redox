@@ -1,0 +1,20 @@
+#TODO: Compiled, not tested further
+[source]
+git = "https://github.com/XProger/OpenLara"
+
+[build]
+template = "custom"
+dependencies = [
+    "sdl2",
+]
+script = """
+DYNAMIC_INIT
+SRC="${COOKBOOK_SOURCE}/src"
+mkdir -p "${COOKBOOK_STAGE}/usr/games/OpenLara"
+${CXX} "-I${COOKBOOK_SYSROOT}/include" "-I$SRC/" ${LDFLAGS} -DSDL2_GLES -D_GAPI_GLES2 -std=c++11 \
+  -O3 -fno-exceptions -fno-rtti -ffunction-sections -fdata-sections -Wl,--gc-sections -DNDEBUG -D__SDL2__ \
+  -dynamic -lSDL2 -lGLESv2 -lEGL $("${PKG_CONFIG}" --libs osmesa) -o OpenLara \
+  $SRC/platform/sdl2/main.cpp "$SRC/libs/stb_vorbis/stb_vorbis.c" "$SRC/libs/minimp3/minimp3.cpp" "$SRC/libs/tinf/tinflate.c"
+cp -rv "${COOKBOOK_RECIPE}/assets" "${COOKBOOK_STAGE}/usr/games/sdl2_gears/"
+cp OpenLara ${COOKBOOK_STAGE}/usr/games/OpenLara/OpenLara
+"""

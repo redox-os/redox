@@ -1,0 +1,5 @@
+#TODO figure out the installation script - https://github.com/phoronix-test-suite/phoronix-test-suite
+[source]
+tar = "https://phoronix-test-suite.com/releases/phoronix-test-suite-10.8.4.tar.gz"
+[build]
+template = "custom"

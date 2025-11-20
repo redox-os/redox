@@ -1,0 +1,5 @@
+#TODO the multipipe crate was removed from crates.io, wait this PR to be merged: https://github.com/lava-xyz/rust-ontologist/pull/7
+[source]
+git = "https://github.com/lava-xyz/rust-ontologist"
+[build]
+template = "cargo"

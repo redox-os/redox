@@ -1,0 +1,6 @@
+#TODO missing script for "make", see https://git.sr.ht/~shinyzenith/wayshot#compiling
+[source]
+git = "https://git.sr.ht/~shinyzenith/wayshot"
+rev = "d3cdd329fe8263d5eca2ff62635fcb6b6ae57645"
+[build]
+template = "custom"

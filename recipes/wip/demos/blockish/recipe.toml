@@ -1,0 +1,8 @@
+#TODO glutin crate error
+[source]
+git = "https://github.com/yazgoo/blockish"
+[build]
+template = "custom"
+script = """
+cookbook_cargo_examples euc gif tiny-skia
+"""

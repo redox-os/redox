@@ -1,0 +1,17 @@
+name=COSMIC Text Editor
+binary=/bin/cosmic-edit
+icon=/ui/icons/apps/accessories-text-editor.png
+accept=*.asm
+accept=*.conf
+accept=*.html
+accept=*.ion
+accept=*.list
+accept=*.lua
+accept=*.md
+accept=*.rc
+accept=*.rs
+accept=*.sh
+accept=*.toml
+accept=*.txt
+author=Jeremy Soller
+description=COSMIC Text Editor

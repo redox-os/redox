@@ -1,0 +1,8 @@
+#TODO not compiled or tested
+[source]
+git = "https://github.com/kaichaosun/rlt"
+[build]
+template = "custom"
+script = """
+cookbook_cargo_packages localtunnel localtunnel-client localtunnel-server
+"""

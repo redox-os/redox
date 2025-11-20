@@ -1,0 +1,11 @@
+#TODO make dbus work
+[source]
+git = "https://github.com/veeso/termscp"
+[build]
+template = "custom"
+dependencies = [
+    "dbus",
+]
+script = """
+cookbook_cargo --no-default-features
+"""

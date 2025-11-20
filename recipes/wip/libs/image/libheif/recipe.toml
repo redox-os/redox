@@ -1,0 +1,10 @@
+#TODO not compiled or tested
+# build instructions: https://github.com/strukturag/libheif#compiling
+[source]
+tar = "https://github.com/strukturag/libheif/releases/download/v1.17.5/libheif-1.17.5.tar.gz"
+[build]
+template = "cmake"
+dependencies = [
+    "x265",
+    "libde265",
+]

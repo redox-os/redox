@@ -1,0 +1,20 @@
+#TODO make gtk4 work
+[source]
+git = "https://github.com/gabm/Satty"
+[build]
+template = "custom"
+dependencies = [
+    "gtk4",
+    "libadwaita",
+    "cairo",
+    "glib",
+    "pango",
+    "gdk-pixbuf",
+]
+script = """
+mkdir -pv "${COOKBOOK_STAGE}"/usr/share/applications
+mkdir -pv "${COOKBOOK_STAGE}"/usr/share/icons/hicolor/scalable/apps
+cp -rv "${COOKBOOK_SOURCE}"/satty.desktop "${COOKBOOK_STAGE}"/usr/share/applications
+cp -rv "${COOKBOOK_SOURCE}"/assets/satty.svg "${COOKBOOK_STAGE}"/usr/share/icons/hicolor/scalable/apps
+cookbook_cargo_packages satty
+"""

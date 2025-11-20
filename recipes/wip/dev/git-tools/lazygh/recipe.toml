@@ -1,0 +1,5 @@
+#TODO x11rb and rustix crates error
+[source]
+git = "https://github.com/kmj-007/lazygh"
+[build]
+template = "cargo"

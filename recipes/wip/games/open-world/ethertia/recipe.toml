@@ -1,0 +1,5 @@
+#TODO webbrowser crate error
+[source]
+git = "https://github.com/Dreamtowards/Ethertum"
+[build]
+template = "cargo"

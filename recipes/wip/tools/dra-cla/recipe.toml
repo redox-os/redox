@@ -1,0 +1,10 @@
+#TODO promote
+[source]
+git = "https://github.com/CoolnsX/dra-cla"
+[build]
+template = "custom"
+script = """
+mkdir -pv "${COOKBOOK_STAGE}"/usr/bin
+cp "${COOKBOOK_SOURCE}"/dra-cla "${COOKBOOK_STAGE}"/usr/bin/dra-cla
+chmod a+x "${COOKBOOK_STAGE}"/usr/bin/dra-cla
+"""

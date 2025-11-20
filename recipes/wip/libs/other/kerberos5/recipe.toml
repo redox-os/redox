@@ -1,0 +1,5 @@
+#TODO missing script for building, lacking build instructions
+[source]
+tar = "https://kerberos.org/dist/krb5/1.21/krb5-1.21.2.tar.gz"
+[build]
+template = "custom"

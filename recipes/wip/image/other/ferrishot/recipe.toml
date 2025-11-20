@@ -1,0 +1,11 @@
+#TODO not compiled or tested
+[source]
+git = "https://github.com/nik-rev/ferrishot"
+[build]
+dependencies = [
+    "mesa",
+    "libx11",
+    "libwayland",
+    "libxcb",
+]
+template = "cargo"

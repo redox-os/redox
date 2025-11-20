@@ -1,0 +1,64 @@
+#TODO FastCGI not working
+[source]
+tar = "https://nginx.org/download/nginx-1.28.0.tar.gz"
+patches = [
+    "redox.patch"
+]
+
+[build]
+template = "custom"
+dependencies = [
+    "pcre",
+    "openssl1",
+    "zlib",
+]
+script = """
+DYNAMIC_INIT
+rsync -av --delete "${COOKBOOK_SOURCE}"/* ./
+ARCH="${TARGET%%-*}"
+COOKBOOK_CONFIGURE_FLAGS=(
+    --crossbuild=Redox:$ARCH
+    --with-cc="$CC"
+    --with-cc-opt="$CFLAGS"
+    --with-ld-opt="$LDFLAGS"
+    --sbin-path=/usr/bin/nginx 
+    --modules-path=/usr/lib/nginx/modules
+    --conf-path=/etc/nginx/nginx.conf
+    --error-log-path=/var/log/nginx/error.log
+    --http-log-path=/var/log/nginx/access.log 
+    --http-client-body-temp-path=/var/lib/nginx/body 
+    --http-proxy-temp-path=/var/lib/nginx/proxy 
+    --http-fastcgi-temp-path=/var/lib/nginx/fastcgi 
+    --http-uwsgi-temp-path=/var/lib/nginx/uwsgi 
+    --http-scgi-temp-path=/var/lib/nginx/scgi 
+    --pid-path=/var/run/nginx.pid
+    --lock-path=/var/lock/nginx.lock
+    --user=nginx
+    --group=nginx
+    --with-compat
+    --with-debug
+    --with-pcre
+    --with-pcre-jit
+    --with-stream
+    --with-stream_realip_module
+    --with-stream_ssl_module
+    --with-stream_ssl_preread_module
+    --with-threads
+    --with-http_ssl_module
+    --with-http_v2_module
+    --with-http_realip_module
+    --with-http_gzip_static_module
+    --with-http_stub_status_module
+    --with-http_addition_module
+)
+
+unset AR AS CC CXX LD LDFLAGS NM OBJCOPY OBJDUMP RANLIB READELF RUSTFLAGS STRIP
+
+cookbook_configure
+
+mkdir -p "$COOKBOOK_STAGE"/var/lib/nginx/{body,proxy,fastcgi,uwsgi,scgi} \
+ "$COOKBOOK_STAGE"/var/log/nginx/
+#TODO: pkgar don't track empty directories
+touch "$COOKBOOK_STAGE"/var/lib/nginx/{body,proxy,fastcgi,uwsgi,scgi}/.tmp \
+ "$COOKBOOK_STAGE"/var/log/nginx/.tmp
+"""

@@ -1,0 +1,12 @@
+#TODO not compiled or tested
+# build instructions: https://github.com/Novum/vkQuake#linux-1
+[source]
+git = "https://github.com/Novum/vkQuake"
+[build]
+template = "meson"
+dependencies = [
+    "sdl2",
+    "libvulkan",
+    "libvorbis",
+    "libmad",
+]

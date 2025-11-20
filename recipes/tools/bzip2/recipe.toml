@@ -1,0 +1,35 @@
+[source]
+tar = "https://sourceware.org/pub/bzip2/bzip2-1.0.8.tar.gz"
+blake3 = "97af3f520629c65fe41292f77e6ca798fe594d7987bfb2aebe7c6fcdc7ab5ed2"
+
+[build]
+template = "custom"
+script = """
+DYNAMIC_INIT
+
+# This installs the static library regardless of config options
+# The static lib is preferred according to the README because it's faster
+rsync -av --delete "${COOKBOOK_SOURCE}/" ./
+"${COOKBOOK_MAKE}" -j"${COOKBOOK_MAKE_JOBS}" \
+    AR="${TARGET}-ar" \
+    CC="${CC_WRAPPER} ${TARGET}-gcc" \
+    PREFIX="${COOKBOOK_STAGE}" \
+    RANLIB="${TARGET}-ranlib" \
+    install
+
+# However, distros distribute libbz2 as well so we'll support it too
+# Linking the lib fails if we don't rebuild the objects from earlier
+"${COOKBOOK_MAKE}" clean
+
+# This DOES NOT build/clobber the binaries already built above
+"${COOKBOOK_MAKE}" -f Makefile-libbz2_so \
+    -j"${COOKBOOK_MAKE_JOBS}" \
+    AR="${TARGET}-ar" \
+    CC="${CC_WRAPPER} ${TARGET}-gcc" \
+    PREFIX="${COOKBOOK_STAGE}" \
+    RANLIB="${TARGET}-ranlib"
+
+cp -av libbz2.so* "${COOKBOOK_STAGE}/lib"
+ln -sr "${COOKBOOK_STAGE}/lib/libbz2.so.1.0" "${COOKBOOK_STAGE}/lib/libbz2.so.1"
+ln -sr "${COOKBOOK_STAGE}/lib/libbz2.so.1.0" "${COOKBOOK_STAGE}/lib/libbz2.so"
+"""

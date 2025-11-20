@@ -1,0 +1,49 @@
+#TODO compiling, not tested further
+[source]
+git = "https://github.com/willnode/go"
+branch = "go-1.25-redox"
+shallow_clone = true
+
+[build]
+template = "custom"
+script = """
+export PATH=$HOME/go/bin:$PATH
+
+export GOPATH=${COOKBOOK_BUILD}/gopath
+if ! command -v go &> /dev/null; then
+   GO_TARBALL=go1.24.6.linux-$( [ "$(uname -m)" = "aarch64" ] && echo "arm64" || echo "amd64" ).tar.gz
+   GO_DOWNLOAD_URL="https://dl.google.com/go/${GO_TARBALL}"
+   echo "Installing Go..."
+   wget -q --show-progress "${GO_DOWNLOAD_URL}"
+   tar -C "$HOME" -xzf "${GO_TARBALL}"
+fi
+
+# Go does not support out-of-tree builds :(
+rsync -a --delete "${COOKBOOK_SOURCE}/" ./
+
+export GOOS=redox
+case "${TARGET}" in
+    x86-unknown-redox)     export GOARCH=386;;
+    x86_64-unknown-redox)  export GOARCH=amd64;;
+    aarch64-unknown-redox) export GOARCH=arm64;;
+    riscv64-unknown-redox) export GOARCH=riscv64;;
+esac
+
+export CGO_ENABLED=1
+export CC=x86_64-unknown-redox-gcc
+export CCX=x86_64-unknown-redox-g++
+echo "go1.25" > VERSION # to set -trimpath
+(cd ./src && bash ./make.bash)
+
+mkdir -p "${COOKBOOK_STAGE}"/usr/bin \
+    "${COOKBOOK_STAGE}"/usr/lib/golang/{bin,lib,misc,pkg/include,pkg/tool,src}
+rsync -a bin/redox_${GOARCH}/* "${COOKBOOK_STAGE}"/usr/lib/golang/bin/
+rsync -a lib/* "${COOKBOOK_STAGE}"/usr/lib/golang/lib/
+rsync -a misc/* "${COOKBOOK_STAGE}"/usr/lib/golang/misc/
+rsync -a pkg/include/* "${COOKBOOK_STAGE}"/usr/lib/golang/pkg/include/
+rsync -a pkg/tool/redox_${GOARCH} "${COOKBOOK_STAGE}"/usr/lib/golang/pkg/tool/
+rsync -a src/* "${COOKBOOK_STAGE}"/usr/lib/golang/src/
+cat go.env > "${COOKBOOK_STAGE}"/usr/lib/golang/go.env
+ln -s "../lib/golang/bin/go" "${COOKBOOK_STAGE}"/usr/bin/go
+ln -s "../lib/golang/bin/gofmt" "${COOKBOOK_STAGE}"/usr/bin/gofmt
+"""

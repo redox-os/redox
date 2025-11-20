@@ -1,0 +1,8 @@
+#TODO clearscreen crate error (after cargo update)
+[source]
+git = "https://github.com/ONdraid/reve"
+[build]
+template = "custom"
+script = """
+cookbook_cargo_packages reve-cli
+"""

@@ -1,0 +1,29 @@
+[source]
+tar = "https://www.freedesktop.org/software/fontconfig/release/fontconfig-2.16.0.tar.xz"
+blake3 = "5c95d48f5b9150f4a06d8acac12c25edaac956007df95a3bf527df02a5908f0e"
+patches = [
+	"redox.patch"
+]
+script = """
+DYNAMIC_INIT
+autotools_recursive_regenerate
+"""
+
+[build]
+template = "custom"
+dependencies = [
+	"expat",
+	"freetype2",
+	"libpng",
+	"zlib",
+]
+script = """
+DYNAMIC_INIT
+COOKBOOK_CONFIGURE_FLAGS+=(
+    --disable-docs \
+    ac_cv_func_XML_SetDoctypeDeclHandler=yes
+)
+export V=1
+export LIBS="-lpng -lz"
+cookbook_configure
+"""

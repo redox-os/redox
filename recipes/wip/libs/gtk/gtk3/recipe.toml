@@ -1,0 +1,52 @@
+#TODO promote
+[source]
+tar = "https://download.gnome.org/sources/gtk+/3.24/gtk%2B-3.24.43.tar.xz"
+blake3 = "5feab2bad81e6b5906895f70ddce6227cf96a6a14b16af0ef72c79991a48ddf4"
+patches = ["redox.patch"]
+
+[build]
+dependencies = [
+    "atk",
+    "cairo",
+    "expat",
+    "fontconfig",
+    "freetype2",
+    "fribidi",
+    "gdk-pixbuf",
+    "gettext",
+    "glib",
+    #TODO "gobject-introspection",
+    "harfbuzz",
+    "libepoxy",
+    "libffi",
+    "libiconv",
+    "libjpeg",
+    "libpng",
+    "libpthread-stubs",
+    "libwayland",
+    "libx11",
+    "libxau",
+    "libxkbcommon",
+    "libxcb",
+    "libxext",
+    "libxfixes",
+    "libxi",
+    "libxrandr",
+    "libxrender",
+    "libxxf86vm",
+    "mesa-x11",
+    "pango",
+    "pcre2",
+    "pixman",
+    "shared-mime-info",
+    "wayland-protocols",
+    "x11proto",
+    "zlib",
+]
+template = "custom"
+script = """
+DYNAMIC_INIT
+CFLAGS="${CFLAGS} -DM_SQRT2=1.41421356237309504880"
+cookbook_meson \
+    -Dintrospection=false
+"""

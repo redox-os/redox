@@ -1,0 +1,8 @@
+#TODO camino crate error
+[source]
+git = "https://github.com/anistark/feluda"
+[build]
+template = "cargo"
+dependencies = [
+    "openssl1",
+]

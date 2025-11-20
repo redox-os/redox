@@ -1,0 +1,11 @@
+#TODO not compiled or tested
+# build instructions: https://gitlab.freedesktop.org/rncbc/qpwgraph#building
+[source]
+git = "https://gitlab.freedesktop.org/rncbc/qpwgraph"
+rev = "9fead6eff8c5831d66f618b2e8e195c94d5c22e6"
+[build]
+template = "cmake"
+dependencies = [
+    "qt6-base",
+    "pipewire",
+]

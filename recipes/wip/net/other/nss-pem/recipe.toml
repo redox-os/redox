@@ -1,0 +1,6 @@
+#TODO not compiled or tested
+# build instructions: https://github.com/kdudka/nss-pem/blob/master/README
+[source]
+tar = "https://github.com/kdudka/nss-pem/releases/download/nss-pem-1.1.0/nss-pem-1.1.0.tar.xz"
+[build]
+template = "cmake"

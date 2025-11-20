@@ -1,0 +1,27 @@
+[source]
+git = "https://gitlab.redox-os.org/xTibor/SpaceCadetPinball.git"
+upstream = "https://github.com/k4zmu2a/SpaceCadetPinball.git"
+branch = "redox"
+
+[build]
+template = "custom"
+dependencies = [
+    "libogg",
+    "liborbital",
+    "libvorbis",
+    "llvm18",
+    "mesa",
+    "sdl2",
+    "sdl2-mixer",
+    "zlib",
+]
+script = """
+DYNAMIC_INIT
+COOKBOOK_CONFIGURE_FLAGS=(
+    -DSDL2_INCLUDE_DIR="${COOKBOOK_SYSROOT}/include/SDL2"
+    -DSDL2_LIBRARY="-lSDL2_mixer -lvorbisfile -lvorbis -logg -lSDL2 -lorbital $("${TARGET}-pkg-config" --libs osmesa)"
+    -DSDL2_MIXER_INCLUDE_DIR="${COOKBOOK_SYSROOT}/include/SDL2"
+    -DSDL2_MIXER_LIBRARY="SDL2_mixer"
+)
+cookbook_cmake
+"""

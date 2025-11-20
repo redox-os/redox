@@ -1,0 +1,8 @@
+#TODO openssl-sys crate error (after cargo update)
+[source]
+git = "https://github.com/moonrepo/moon"
+[build]
+template = "custom"
+script = """
+cookbook_cargo_packages moon_cli
+"""

@@ -1,0 +1,24 @@
+diff '--color=auto' -ur source/gprofng/libcollector/configure.ac source-new/gprofng/libcollector/configure.ac
+--- source/gprofng/libcollector/configure.ac	2024-08-17 09:00:00.000000000 +1000
++++ source-new/gprofng/libcollector/configure.ac	2024-12-04 15:59:58.407412951 +1100
+@@ -18,7 +18,7 @@
+ 
+ m4_include([../../bfd/version.m4])
+ AC_INIT([gprofng], [BFD_VERSION])
+-AC_CONFIG_MACRO_DIRS([../../config ../..])
++#AC_CONFIG_MACRO_DIRS([../../config ../..])
+ AC_CONFIG_AUX_DIR(../..)
+ AC_CANONICAL_TARGET
+ AM_INIT_AUTOMAKE
+diff '--color=auto' -ur source/libiberty/configure.ac source-new/libiberty/configure.ac
+--- source/libiberty/configure.ac	2024-08-17 09:00:00.000000000 +1000
++++ source-new/libiberty/configure.ac	2024-12-04 15:59:31.572203764 +1100
+@@ -37,7 +37,7 @@
+   libiberty_topdir="${srcdir}/.."
+ fi
+ AC_SUBST(libiberty_topdir)
+-AC_CONFIG_AUX_DIR($libiberty_topdir)
++AC_CONFIG_AUX_DIR([.])
+ 
+ dnl Very limited version of automake's enable-maintainer-mode
+ 

@@ -1,0 +1,5 @@
+#TODO fs_at and libc crates error
+[source]
+git = "https://github.com/trunk-rs/trunk"
+[build]
+template = "cargo"

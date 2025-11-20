@@ -1,0 +1,14 @@
+#TODO missing header files
+[source]
+tar = "https://github.com/mobile-shell/mosh/releases/download/mosh-1.4.0/mosh-1.4.0.tar.gz"
+[build]
+template = "custom"
+dependencies = [
+    "openssl1",
+    "ncurses",
+    "zlib",
+]
+script = """
+export CPPFLAGS="-I${COOKBOOK_SYSROOT}/include/ncurses"
+cookbook_configure
+"""

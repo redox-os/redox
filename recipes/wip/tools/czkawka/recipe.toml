@@ -1,0 +1,8 @@
+#TODO Compiled but not tested
+[source]
+git = "https://github.com/qarmin/czkawka"
+[build]
+template = "custom"
+script = """
+cookbook_cargo_packages czkawka_cli
+"""

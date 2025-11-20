@@ -1,0 +1,5 @@
+#TODO port to redox
+[source]
+tar = "https://tuxera.com/opensource/ntfs-3g_ntfsprogs-2022.10.3.tgz"
+[build]
+template = "configure"

@@ -1,0 +1,19 @@
+#TODO not compiled or tested
+# build instructions: https://gitlab.gnome.org/Archive/clutter#building-and-installation
+[source]
+tar = "https://download.gnome.org/sources/clutter/1.26/clutter-1.26.4.tar.xz"
+[build]
+template = "configure"
+dependencies = [
+    "glib",
+    "json-glib",
+    "atk",
+    "cairo",
+    "pango",
+    "cogl",
+    "libxcb",
+    "libxcomposite
+    "libxdamage",
+    "libxext",
+    "libxkbcommon",
+]

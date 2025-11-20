@@ -1,0 +1,7 @@
+#TODO not compiled or tested
+# build instructions: https://github.com/stevengj/nlopt#readme
+[source]
+git = "https://github.com/stevengj/nlopt"
+rev = "09b3c2a6da71cabcb98d2c8facc6b83d2321ed71"
+[build]
+template = "cmake"

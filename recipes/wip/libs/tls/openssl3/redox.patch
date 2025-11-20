@@ -1,0 +1,56 @@
+diff -ruwN source/apps/lib/apps.c source-new/apps/lib/apps.c
+--- source/apps/lib/apps.c	2025-09-16 19:05:33.000000000 +0700
++++ source-new/apps/lib/apps.c	2025-09-20 12:29:36.439917319 +0700
+@@ -2839,7 +2839,7 @@
+     return ret;
+ }
+ 
+-#elif defined(_SC_CLK_TCK)      /* by means of unistd.h */
++#elif defined(_SC_CLK_TCK) && !defined(__redox__)      /* by means of unistd.h */
+ # include <sys/times.h>
+ 
+ double app_tminterval(int stop, int usertime)
+diff -ruwN source/Configurations/10-main.conf source-new/Configurations/10-main.conf
+--- source/Configurations/10-main.conf	2025-09-16 19:05:33.000000000 +0700
++++ source-new/Configurations/10-main.conf	2025-09-20 13:13:14.569456910 +0700
+@@ -208,6 +208,40 @@
+         shared_extension => ".so",
+     },
+ 
++### Redox configurations
++    "redox-common" => {
++        inherit_from     => [ "BASE_unix" ],
++        cc               => "gcc",
++        thread_scheme    => "pthreads",
++        dso_scheme       => "dlfcn",
++        shared_target    => "linux-shared",
++        shared_cflag     => "-fPIC",
++        shared_ldflag    => sub { $disabled{pinshared} ? () : "-Wl,-znodelete" },
++        shared_extension => ".so.\$(SHLIB_VERSION_NUMBER)",
++    },
++    "redox-generic64" => {
++        inherit_from     => [ "redox-common" ],
++        bn_ops           => "SIXTY_FOUR_BIT_LONG RC4_CHAR",
++    },
++    "redox-aarch64" => {
++        inherit_from     => [ "redox-generic64" ],
++        perlasm_scheme   => "linux64",
++    },
++    "redox-i686" => {
++        inherit_from     => [ "redox-common" ],
++        bn_ops           => "BN_LLONG",
++        perlasm_scheme   => "elf",
++    },
++    "redox-riscv64gc" => {
++        inherit_from     => [ "redox-generic64" ],
++        perlasm_scheme   => "linux64",
++    },
++    "redox-x86_64" => {
++        inherit_from     => [ "redox-generic64" ],
++        perlasm_scheme   => "elf",
++    },
++
++
+ #### Solaris configurations
+     "solaris-common" => {
+         inherit_from     => [ "BASE_unix" ],

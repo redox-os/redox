@@ -1,0 +1,8 @@
+#TODO not compiled or tested
+[source]
+git = "https://github.com/hlsxx/tuicam"
+[build]
+template = "cargo"
+dependencies = [
+    "opencv4",
+]

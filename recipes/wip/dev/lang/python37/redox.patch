@@ -1,0 +1,91 @@
+diff -ruwN source/configure source-new/configure
+--- source/configure	2019-07-08 12:03:50.000000000 -0600
++++ source-new/configure	2019-07-16 21:25:29.432607847 -0600
+@@ -3261,6 +3261,9 @@
+ 	*-*-cygwin*)
+ 		ac_sys_system=Cygwin
+ 		;;
++	*-*-redox*)
++		ac_sys_system=Redox
++		;;
+ 	*)
+ 		# for now, limit cross builds to known configurations
+ 		MACHDEP="unknown"
+@@ -3293,7 +3296,7 @@
+ 
+ if test "$cross_compiling" = yes; then
+ 	case "$host" in
+-	*-*-linux*)
++	*-*-linux*|*-*-redox*)
+ 		case "$host_cpu" in
+ 		arm*)
+ 			_host_cpu=arm
+diff -ruwN source/Lib/distutils/util.py source-new/Lib/distutils/util.py
+--- source/Lib/distutils/util.py	2019-07-08 12:03:50.000000000 -0600
++++ source-new/Lib/distutils/util.py	2019-07-16 22:07:35.994862914 -0600
+@@ -131,7 +131,7 @@
+         if not os.path.isabs(pathname):
+             return os.path.join(new_root, pathname)
+         else:
+-            return os.path.join(new_root, pathname[1:])
++            return os.path.join(new_root, pathname.lstrip('/'))
+ 
+     elif os.name == 'nt':
+         (drive, path) = os.path.splitdrive(pathname)
+diff -ruwN source/Modules/main.c source-new/Modules/main.c
+--- source/Modules/main.c	2019-07-08 12:03:50.000000000 -0600
++++ source-new/Modules/main.c	2019-07-16 21:46:53.037866142 -0600
+@@ -56,6 +56,16 @@
+         } \
+     } while (0)
+ 
++#if defined(__redox__)
++wchar_t * wcstok(wchar_t * wcs, const wchar_t * delimiters, wchar_t ** ptr) {
++    return NULL;
++}
++
++long wcstol(const wchar_t *restrict nptr, wchar_t **restrict endptr, int base) {
++    return 0;
++}
++#endif
++
+ #ifdef MS_WINDOWS
+ #define WCSTOK wcstok_s
+ #else
+diff -ruwN source/Python/pathconfig.c source-new/Python/pathconfig.c
+--- source/Python/pathconfig.c	2019-07-08 12:03:50.000000000 -0600
++++ source-new/Python/pathconfig.c	2019-07-16 21:55:34.549726910 -0600
+@@ -5,6 +5,10 @@
+ #include "internal/pystate.h"
+ #include <wchar.h>
+ 
++#if defined(__redox__)
++wchar_t * wcstok(wchar_t * wcs, const wchar_t * delimiters, wchar_t ** ptr);
++#endif
++
+ #ifdef __cplusplus
+ extern "C" {
+ #endif
+diff -ruwN source/Python/pytime.c source-new/Python/pytime.c
+--- source/Python/pytime.c	2019-07-08 12:03:50.000000000 -0600
++++ source-new/Python/pytime.c	2019-07-16 21:36:53.233119225 -0600
+@@ -7,6 +7,19 @@
+ #include <mach/mach_time.h>   /* mach_absolute_time(), mach_timebase_info() */
+ #endif
+ 
++#if defined(__redox__)
++int clock_getres(clockid_t clk_id, struct timespec *res) {
++    if (res) {
++        res->tv_sec = 0;
++        res->tv_nsec = 1000;
++        return 0;
++    } else {
++        errno = EFAULT;
++        return -1;
++    }
++}
++#endif
++
+ #define _PyTime_check_mul_overflow(a, b) \
+     (assert(b > 0), \
+      (_PyTime_t)(a) < _PyTime_MIN / (_PyTime_t)(b) \

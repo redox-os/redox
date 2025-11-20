@@ -1,0 +1,7 @@
+#TODO compilation error
+[source]
+tar = "https://www.freedesktop.org/software/libevdev/libevdev-1.12.1.tar.xz"
+blake3 = "d4be83e6f6cb4972cf5052f5a046eb820aa529427202f043a9d95b945e73edcd"
+
+[build]
+template = "meson"

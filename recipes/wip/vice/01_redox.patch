@@ -1,0 +1,107 @@
+diff -rupNw source-original/configure source/configure
+--- source-original/configure	2018-12-19 22:25:02.000000000 +0100
++++ source/configure	2019-02-12 17:09:41.954190921 +0100
+@@ -10320,54 +10320,6 @@ done
+ test -n "$DOS2UNIX" || DOS2UNIX="dos2unix"
+ 
+ 
+-for ac_prog in xa xa65
+-do
+-  # Extract the first word of "$ac_prog", so it can be a program name with args.
+-set dummy $ac_prog; ac_word=$2
+-{ $as_echo "$as_me:${as_lineno-$LINENO}: checking for $ac_word" >&5
+-$as_echo_n "checking for $ac_word... " >&6; }
+-if ${ac_cv_prog_XA+:} false; then :
+-  $as_echo_n "(cached) " >&6
+-else
+-  if test -n "$XA"; then
+-  ac_cv_prog_XA="$XA" # Let the user override the test.
+-else
+-as_save_IFS=$IFS; IFS=$PATH_SEPARATOR
+-for as_dir in $PATH
+-do
+-  IFS=$as_save_IFS
+-  test -z "$as_dir" && as_dir=.
+-    for ac_exec_ext in '' $ac_executable_extensions; do
+-  if as_fn_executable_p "$as_dir/$ac_word$ac_exec_ext"; then
+-    ac_cv_prog_XA="$ac_prog"
+-    $as_echo "$as_me:${as_lineno-$LINENO}: found $as_dir/$ac_word$ac_exec_ext" >&5
+-    break 2
+-  fi
+-done
+-  done
+-IFS=$as_save_IFS
+-
+-fi
+-fi
+-XA=$ac_cv_prog_XA
+-if test -n "$XA"; then
+-  { $as_echo "$as_me:${as_lineno-$LINENO}: result: $XA" >&5
+-$as_echo "$XA" >&6; }
+-else
+-  { $as_echo "$as_me:${as_lineno-$LINENO}: result: no" >&5
+-$as_echo "no" >&6; }
+-fi
+-
+-
+-  test -n "$XA" && break
+-done
+-test -n "$XA" || XA="no"
+-
+-
+-if test x"$XA" = "xno"; then
+-  as_fn_error $? "xa is missing" "$LINENO" 5
+-fi
+-
+ if test x"$SVN" != "x"; then
+   svnrevision=`$SVN 2>dummy.tmp info $srcdir | grep Revision | cut -d " " -f 2`
+   rm dummy.tmp
+@@ -15132,6 +15084,9 @@ fi
+ done
+ 
+ 
++UNIX_NETWORK_FUNCS_PRESENT=no
++
++
+     if test x"$UNIX_NETWORK_FUNCS_PRESENT" = "xyes"; then
+ 
+ $as_echo "#define HAVE_NETWORK /**/" >>confdefs.h
+diff -rupNw source-original/src/arch/sdl/rs232dev.c source/src/arch/sdl/rs232dev.c
+--- source-original/src/arch/sdl/rs232dev.c	2018-08-13 20:18:45.000000000 +0200
++++ source/src/arch/sdl/rs232dev.c	2019-02-11 10:16:12.989841923 +0100
+@@ -27,7 +27,7 @@
+ #include "vice.h"
+ 
+ #ifdef UNIX_COMPILE
+-#include "rs232dev-unix.c"
++//#include "rs232dev-unix.c"
+ #endif
+ 
+ #ifdef WIN32_COMPILE
+diff -rupNw source-original/src/opencbm.h source/src/opencbm.h
+--- source-original/src/opencbm.h	2018-08-22 21:01:32.000000000 +0200
++++ source/src/opencbm.h	2019-02-11 09:28:21.775162862 +0100
+@@ -117,6 +117,10 @@ typedef unsigned char __u_char;
+ typedef unsigned char __u_char;
+ #endif
+ 
++#ifdef __redox__
++typedef unsigned char __u_char;
++#endif
++
+ #endif
+ 
+ /* specifiers for the IEC bus lines */
+diff -rupNw source-original/src/sound.c source/src/sound.c
+--- source-original/src/sound.c	2018-12-17 19:44:43.000000000 +0100
++++ source/src/sound.c	2019-02-12 08:57:18.934381713 +0100
+@@ -1001,6 +1001,9 @@ int sound_open(void)
+             break;
+     }
+ 
++    speed = 44100;
++    channels = 2;
++
+     /* find pdev */
+     for (i = 0; (pdev = sound_devices[i]); i++) {
+         if (!playname || (pdev->name && !strcasecmp(playname, pdev->name))) {

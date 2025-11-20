@@ -1,0 +1,8 @@
+#TODO winit crate error
+[source]
+git = "https://github.com/Uriopass/Egregoria"
+[build]
+template = "custom"
+script = """
+cookbook_cargo_packages native_app
+"""

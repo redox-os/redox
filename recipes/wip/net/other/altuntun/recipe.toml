@@ -1,0 +1,8 @@
+#TODO source code error
+[source]
+git = "https://github.com/cableguard/altuntun"
+[build]
+template = "custom"
+script = """
+cookbook_cargo_packages altuntun-cli
+"""

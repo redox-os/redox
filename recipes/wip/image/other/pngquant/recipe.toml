@@ -1,0 +1,5 @@
+#TODO not compiled or tested
+[source]
+git = "https://github.com/kornelski/pngquant"
+[build]
+template = "cargo"

@@ -1,0 +1,8 @@
+#TODO compiled but not tested (after cargo update)
+[source]
+git = "https://github.com/tokio-rs/console"
+[build]
+template = "custom"
+script = """
+cookbook_cargo_packages tokio-console
+"""

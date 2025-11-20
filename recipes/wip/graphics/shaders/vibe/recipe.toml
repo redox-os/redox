@@ -1,0 +1,10 @@
+#TODO not compiled or tested
+[source]
+git = "https://github.com/TornaxO7/vibe"
+[build]
+template = "cargo"
+dependencies = [
+    "libxkbcommon",
+    "libwayland",
+    "libalsa",
+]

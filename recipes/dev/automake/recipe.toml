@@ -1,0 +1,6 @@
+[source]
+tar = "https://ftp.gnu.org/gnu/automake/automake-1.16.5.tar.xz"
+blake3 = "f42cfc333aaaa11f2bcb05b5b0273b8706c820c22f9ba4367f7eb920551695cd"
+
+[build]
+template = "configure"

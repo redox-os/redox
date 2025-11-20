@@ -1,0 +1,4 @@
+name=EDuke32
+category=Games
+binary=/usr/games/eduke32
+icon=/ui/icons/apps/eduke32.png

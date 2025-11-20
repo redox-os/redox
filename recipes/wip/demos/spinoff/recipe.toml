@@ -1,0 +1,8 @@
+#TODO compiled but not tested
+[source]
+git = "https://github.com/ad4mx/spinoff"
+[build]
+template = "custom"
+script = """
+cookbook_cargo_examples simple stop_and_persist stream
+"""

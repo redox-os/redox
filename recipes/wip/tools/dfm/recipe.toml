@@ -1,0 +1,5 @@
+#TODO port to redox
+[source]
+git = "https://github.com/chasinglogic/dfm"
+[build]
+template = "cargo"

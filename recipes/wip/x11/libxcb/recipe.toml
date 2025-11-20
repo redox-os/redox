@@ -1,0 +1,20 @@
+[source]
+tar = "https://www.x.org/releases/individual/xcb/libxcb-1.17.0.tar.xz"
+blake3 = "3dce3b8adc257177dfec9b6b6cf55eeac13921520dd6c372fd8f9d867600337b"
+script = """
+DYNAMIC_INIT
+autotools_recursive_regenerate
+"""
+
+[build]
+dependencies = [
+    "libpthread-stubs",
+    "libxau",
+    "x11proto",
+    "xcb-proto",
+]
+template = "custom"
+script = """
+DYNAMIC_INIT
+cookbook_configure
+"""

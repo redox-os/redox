@@ -1,0 +1,12 @@
+#TODO make dependencies work
+[source]
+git = "https://github.com/hakolao/sandbox"
+[build]
+template = "custom"
+dependencies = [
+    "libvulkan",
+    "libxcb",
+]
+script = """
+cookbook_cargo_packages sandbox
+"""

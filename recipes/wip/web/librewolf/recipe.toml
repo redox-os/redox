@@ -1,0 +1,31 @@
+#TODO missing script for mach: https://codeberg.org/librewolf/source#librewolf-build-instructions
+# dependencies: https://packages.gentoo.org/packages/www-client/firefox/dependencies
+# feature flags: https://wiki.gentoo.org/wiki/Firefox#USE_flags
+[source]
+tar = "https://gitlab.com/api/v4/projects/32320088/packages/generic/librewolf-source/144.0.2-1/librewolf-144.0.2-1.source.tar.gz"
+[build]
+template = "custom"
+dependencies = [
+    "fontconfig",
+    "atk",
+    "cairo",
+    "dbus",
+    "libffi",
+    "freetype2",
+    "gdk-pixbuf",
+    "glib",
+    "gtk3",
+    "pango",
+    "sqlite3",
+    "nss-nspr",
+    "startup-notification",
+    "zlib",
+    "ffmpeg6",
+    "expat",
+    "libepoxy",
+    "pipewire",
+]
+script = """
+DYNAMIC_INIT
+export MOZCONFIG="${COOKBOOK_RECIPE}/mozconfig"
+"""

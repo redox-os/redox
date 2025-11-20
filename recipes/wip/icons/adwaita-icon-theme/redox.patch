@@ -1,0 +1,29 @@
+diff -ruwN source-old/meson.build source/meson.build
+--- source-old/meson.build	2025-09-12 05:48:02.000000000 -0600
++++ source/meson.build	2025-11-13 12:05:28.819996707 -0700
+@@ -90,14 +90,14 @@
+   endforeach
+ endif
+ 
+-gtk_update_icon_cache = find_program(
+-  'gtk4-update-icon-cache',
+-  'gtk-update-icon-cache',
+-  required : true,
+-)
+-meson.add_install_script(
+-  gtk_update_icon_cache,
+-  '-qtf',
+-  get_option('prefix') / adwaita_dir,
+-  skip_if_destdir: true,
+-)
++#gtk_update_icon_cache = find_program(
++#  'gtk4-update-icon-cache',
++#  'gtk-update-icon-cache',
++#  required : true,
++#)
++#meson.add_install_script(
++#  gtk_update_icon_cache,
++#  '-qtf',
++#  get_option('prefix') / adwaita_dir,
++#  skip_if_destdir: true,
++#)

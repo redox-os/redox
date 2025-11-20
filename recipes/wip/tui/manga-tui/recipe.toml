@@ -1,0 +1,8 @@
+#TODO not compiled or tested
+[source]
+git = "https://github.com/josueBarretogit/manga-tui"
+[build]
+template = "cargo"
+dependencies = [
+    "dbus",
+]

@@ -1,0 +1,20 @@
+#TODO not compiled or tested yet
+# build instructions: https://github.com/melonDS-emu/melonDS/blob/master/BUILD.md#linux
+[source]
+git = "https://github.com/melonDS-emu/melonDS"
+rev = "1.0"
+shallow_clone = true
+[build]
+template = "cmake"
+dependencies = [
+    "curl",
+    "libpcap",
+    "libenet",
+    "sdl2",
+    "qt6-base",
+    "qt6-multimedia",
+    "qt6-svg",
+    "libarchive",
+    "zstd",
+    "faad2",
+]

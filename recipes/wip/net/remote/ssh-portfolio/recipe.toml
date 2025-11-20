@@ -1,0 +1,6 @@
+#TODO not compiled or tested
+# require nerdfonts
+[source]
+git = "https://github.com/CompeyDev/ssh-portfolio"
+[build]
+template = "cargo"

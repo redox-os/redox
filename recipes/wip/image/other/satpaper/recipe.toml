@@ -1,0 +1,5 @@
+#TODO atools crate error
+[source]
+git = "https://github.com/Colonial-Dev/satpaper"
+[build]
+template = "cargo"

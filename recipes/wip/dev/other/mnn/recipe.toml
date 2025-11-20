@@ -1,0 +1,7 @@
+#TODO not compiled or tested
+# lacking English build instructions
+[source]
+git = "https://github.com/alibaba/MNN"
+rev = "1ea55f467fb231655cf1e08f77d4a0f1043c4c29"
+[build]
+template = "cmake"

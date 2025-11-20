@@ -1,0 +1,36 @@
+[source]
+git = "https://gitlab.redox-os.org/redox-os/gigalomania.git"
+branch = "master"
+
+[build]
+template = "custom"
+dependencies = [
+    "sdl1-mixer",
+    "sdl1-image",
+    "sdl1",
+    "liborbital",
+    "libogg",
+    "libpng",
+    "libjpeg",
+    "libvorbis",
+    "zlib"
+]
+script = """
+DYNAMIC_INIT
+
+rsync -av --delete "${COOKBOOK_SOURCE}/" ./
+
+export CPPHOST="${TARGET}-g++"
+
+"${REDOX_MAKE}" all -j"$(${NPROC})"
+
+"${REDOX_MAKE}" VERBOSE=1 DESTDIR="${COOKBOOK_STAGE}/usr" install
+
+rm -rf "${COOKBOOK_STAGE}/bundle"
+
+mkdir -pv "${COOKBOOK_STAGE}/ui/apps"
+cp -v "${COOKBOOK_RECIPE}/manifest" "${COOKBOOK_STAGE}/ui/apps/gigalomania"
+
+mkdir -pv "${COOKBOOK_STAGE}/ui/icons/apps"
+cp -v "gigalomania64.png" "${COOKBOOK_STAGE}/ui/icons/apps/gigalomania.png"
+"""

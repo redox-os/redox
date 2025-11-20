@@ -1,0 +1,8 @@
+#TODO not compiled or tested
+#TODO discover the minimum dependencies from cmake log
+# build instructions: https://wiki.gnucash.org/wiki/Building_On_Linux
+# dependencies: https://wiki.gnucash.org/wiki/Dependencies
+[source]
+tar = "https://sourceforge.net/projects/gnucash/files/gnucash%20(stable)/5.13/gnucash-5.13.tar.bz2"
+[build]
+template = "cmake"

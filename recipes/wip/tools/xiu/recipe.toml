@@ -1,0 +1,13 @@
+#TODO webrtc-util crate error (after cargo update)
+[source]
+git = "https://github.com/harlanc/xiu"
+[build]
+template = "custom"
+dependencies = [
+    "openssl1",
+]
+script = """
+export OPENSSL_DIR="${COOKBOOK_SYSROOT}"
+export OPENSSL_STATIC="true"
+cookbook_cargo_packages xiu
+"""

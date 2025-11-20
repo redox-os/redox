@@ -1,0 +1,18 @@
+[source]
+git = "https://gitlab.redox-os.org/redox-os/extrautils.git"
+
+[build]
+template = "custom"
+dependencies = [
+    "xz"
+]
+script = """
+# TODO: Can't be linked correctly yet
+# DYNAMIC_INIT
+
+if [ "${COOKBOOK_DYNAMIC}" != "1" ]; then
+    install_flags+=" --features=static"
+fi
+
+cookbook_cargo
+"""

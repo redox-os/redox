@@ -1,0 +1,12 @@
+#TODO missing script for gnu make
+# build instructions: https://github.com/rflament/loggedfs#installation-from-source
+[source]
+git = "https://github.com/rflament/loggedfs"
+rev = "82aba9a93489797026ad1a37b637823ece4a7093"
+[build]
+template = "custom"
+dependencies = [
+    "libfuse3",
+    "pcre2",
+    "libxml2",
+]

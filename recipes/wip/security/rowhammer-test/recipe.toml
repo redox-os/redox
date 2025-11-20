@@ -1,0 +1,5 @@
+#TODO missing script for the "make.sh" file, see https://github.com/google/rowhammer-test#readme
+[source]
+git = "https://github.com/google/rowhammer-test"
+[build]
+template = "custom"

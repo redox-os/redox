@@ -1,0 +1,9 @@
+#TODO program source code error
+#TODO configure the service
+[source]
+git = "https://github.com/pendulum-project/ntpd-rs"
+[build]
+template = "custom"
+script = """
+cookbook_cargo_packages ntpd
+"""

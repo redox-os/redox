@@ -1,0 +1,10 @@
+#TODO not compiled or tested
+# build instructions: https://redmine.lighttpd.net/projects/lighttpd/wiki/InstallFromSource
+[source]
+tar = "https://download.lighttpd.net/lighttpd/releases-1.4.x/lighttpd-1.4.82.tar.xz"
+[build]
+template = "cmake"
+dependencies = [
+    "pcre2",
+    #"openssl3", # optional
+]

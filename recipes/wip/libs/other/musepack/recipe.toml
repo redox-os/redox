@@ -1,0 +1,5 @@
+#TODO missing script for building, verify the tarball
+[source]
+tar = "https://files.musepack.net/source/musepack_src_r475.tar.gz"
+[build]
+template = "custom"

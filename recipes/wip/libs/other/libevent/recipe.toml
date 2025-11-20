@@ -1,0 +1,19 @@
+#TODO compiles, not tested
+[source]
+tar = "https://github.com/libevent/libevent/releases/download/release-2.1.12-stable/libevent-2.1.12-stable.tar.gz"
+patches = [
+    "redox.patch"
+]
+
+[build]
+template = "custom"
+dependencies = [
+    "openssl1",
+]
+script = """
+DYNAMIC_INIT
+# Can't call `cookbook_configure` because it sets DESTDIR (which causes an error)
+"${COOKBOOK_CONFIGURE}" "${COOKBOOK_CONFIGURE_FLAGS[@]}"
+"${COOKBOOK_MAKE}" -j "${COOKBOOK_MAKE_JOBS}"
+"${COOKBOOK_MAKE}" install
+"""

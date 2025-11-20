@@ -1,0 +1,63 @@
+diff -ruwN source-old/src/pty.cc source/src/pty.cc
+--- source-old/src/pty.cc	2025-10-11 14:43:24.000000000 -0600
++++ source/src/pty.cc	2025-11-17 17:54:03.387095202 -0700
+@@ -222,7 +222,7 @@
+         if (peer_fd == -1)
+                 _exit(127);
+ 
+-#ifdef TIOCSCTTY
++#if defined(TIOCSCTTY) && !defined(__redox__)
+         /* On linux, opening the PTY peer above already made it our controlling TTY (since
+          * previously there was none, after the setsid() call). However, it appears that e.g.
+          * on *BSD, that doesn't happen, so we need this explicit ioctl here.
+diff -ruwN source-old/src/spawn.cc source/src/spawn.cc
+--- source-old/src/spawn.cc	2025-10-11 14:43:24.000000000 -0600
++++ source/src/spawn.cc	2025-11-17 17:53:20.394044419 -0700
+@@ -409,7 +409,7 @@
+         if (peer_fd == -1)
+                 return ExecError::GETPTPEER;
+ 
+-#ifdef TIOCSCTTY
++#if defined(TIOCSCTTY) && !defined(__redox__)
+         /* On linux, opening the PTY peer above already made it our controlling TTY (since
+          * previously there was none, after the setsid() call). However, it appears that e.g.
+          * on *BSD, that doesn't happen, so we need this explicit ioctl here.
+diff -ruwN source-old/src/vte.cc source/src/vte.cc
+--- source-old/src/vte.cc	2025-10-11 14:43:24.000000000 -0600
++++ source/src/vte.cc	2025-11-17 17:54:44.394149937 -0700
+@@ -19,7 +19,9 @@
+ #include "config.h"
+ 
+ #include <math.h>
++#if !defined(__redox__)
+ #include <search.h>
++#endif
+ #include <stdlib.h>
+ #include <string.h>
+ #include <sys/ioctl.h>
+diff -ruwN source-old/src/vteseq.cc source/src/vteseq.cc
+--- source-old/src/vteseq.cc	2025-10-11 14:43:24.000000000 -0600
++++ source/src/vteseq.cc	2025-11-17 17:59:27.278790468 -0700
+@@ -19,7 +19,9 @@
+ 
+ #include "config.h"
+ 
++#if !defined(__redox__)
+ #include <search.h>
++#endif
+ #include <stdlib.h>
+ #include <string.h>
+ #include <limits.h>
+diff -ruwN source-old/src/widget.cc source/src/widget.cc
+--- source-old/src/widget.cc	2025-10-11 14:43:24.000000000 -0600
++++ source/src/widget.cc	2025-11-17 18:22:10.229089619 -0700
+@@ -927,6 +927,9 @@
+         }
+ 
+         if (m_terminal->terminate_child()) {
++                #ifndef W_EXITCODE
++                #define W_EXITCODE(ret, sig) ((ret) << 8 | (sig))
++                #endif
+                 int status = W_EXITCODE(0, SIGKILL);
+                 emit_child_exited(status);
+         }

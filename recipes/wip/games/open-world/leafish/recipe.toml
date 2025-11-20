@@ -1,0 +1,9 @@
+#TODO make gtk3 work
+[source]
+git = "https://github.com/Lea-fish/Leafish"
+[build]
+template = "cargo"
+dependencies = [
+    "gtk3",
+    "openssl1",
+]

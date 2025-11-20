@@ -1,0 +1,13 @@
+#TODO not compiled or tested
+# build instructions: https://github.com/opentomb/OpenTomb#compiling
+[source]
+git = "https://github.com/opentomb/OpenTomb"
+[build]
+template = "cmake"
+dependencies = [
+    "sdl2",
+    "libpng",
+    "zlib",
+    "openal",
+    "mesa",
+]

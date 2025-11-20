@@ -1,0 +1,8 @@
+#TODO the yeslogic-fontconfig-sys crate can't find the fontconfig dependency
+[source]
+git = "https://github.com/Aloxaf/silicon"
+[build]
+template = "cargo"
+dependencies = [
+    "fontconfig",
+]

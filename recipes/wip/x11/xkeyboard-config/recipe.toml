@@ -1,0 +1,10 @@
+[source]
+tar = "https://www.x.org/releases/individual/data/xkeyboard-config/xkeyboard-config-2.44.tar.xz"
+blake3 = "6156aefb0608af6b7ae2c2ef444838b72524d1e4244cb26ee253669ecede3a5a"
+
+[build]
+template = "custom"
+script = """
+DYNAMIC_INIT
+cookbook_meson
+"""

@@ -1,0 +1,6 @@
+#TODO not compiled or tested
+# build instructions: https://github.com/Matroska-Org/libebml#building-and-installing
+[source]
+tar = "https://dl.matroska.org/downloads/libebml/libebml-1.4.4.tar.xz"
+[build]
+template = "cmake"

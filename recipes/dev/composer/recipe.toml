@@ -1,0 +1,9 @@
+#TODO must be run using `php $(which composer)`
+[build]
+template = "custom"
+script = """
+mkdir -p "${COOKBOOK_STAGE}"/usr/bin
+wget -c https://getcomposer.org/download/2.8.12/composer.phar
+chmod a+x composer.phar
+cp composer.phar ${COOKBOOK_STAGE}/usr/bin/composer
+"""

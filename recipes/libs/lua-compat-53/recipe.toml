@@ -1,0 +1,11 @@
+[source]
+git = "https://github.com/lunarmodules/lua-compat-5.3.git"
+[build]
+template = "custom"
+dependencies = [
+    "lua54"
+]
+script = """
+mkdir -pv "${COOKBOOK_STAGE}/include"
+cp -r "$COOKBOOK_SOURCE/c-api/." "${COOKBOOK_STAGE}/include"
+"""

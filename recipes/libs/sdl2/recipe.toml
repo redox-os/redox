@@ -1,0 +1,29 @@
+#TODO: TEST
+[source]
+git = "https://gitlab.redox-os.org/redox-os/sdl2.git"
+
+[build]
+template = "custom"
+dependencies = [
+    "liborbital",
+    "llvm18",
+    "mesa",
+    "zlib",
+]
+script = """
+DYNAMIC_INIT
+export LDFLAGS="${LDFLAGS} -lorbital -lOSMesa -lstdc++"
+COOKBOOK_CONFIGURE_FLAGS+=(
+    --disable-pulseaudio
+    --disable-video-x11
+    --enable-audio
+    --enable-dummyaudio
+    --enable-redoxaudio
+    --enable-threads
+    --enable-video-orbital
+)
+cookbook_configure
+
+# Hack to add OSMesa
+sed -i "s/Requires:/Requires: osmesa >= 8.0.0/" "${COOKBOOK_STAGE}/usr/lib/pkgconfig/sdl2.pc"
+"""

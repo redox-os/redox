@@ -1,0 +1,5 @@
+#TODO compiled but not tested (after cargo update)
+[source]
+git = "https://github.com/24seconds/rust-sadari-cli"
+[build]
+template = "cargo"

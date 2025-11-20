@@ -1,0 +1,55 @@
+#TODO not compiled or tested
+#TODO discover minimum dependencies from cmake log
+# build instructions: https://docs.krita.org/en/untranslatable_pages/building_krita.html#building-on-linux
+[source]
+git = "https://invent.kde.org/graphics/krita"
+rev = "v5.2.13"
+shallow_clone = true
+[build]
+template = "cmake"
+# dependencies = [
+#     "gexiv2",
+#     "ffmpeg6",
+#     "fftw",
+#     "fontconfig",
+#     "freetype2",
+#     "fribidi",
+#     "libgif",
+#     "harfbuzz",
+#     "liblcms",
+#     "libpng",
+#     "libtiff",
+#     "libwebp",
+#     "qt5-base",
+#     "qt5-svg",
+#     "zlib",
+#     "libmypaint",
+#     "boost",
+#     "libheif",
+#     "libjpeg",
+#     "libjxl",
+#     "kf5-extra-cmake-modules",
+#     "kf5-completion",
+#     "kf5-config",
+#     "kf5-coreaddons",
+#     "kf5-crash",
+#     "kf5-guiaddons",
+#     "kf5-i18n",
+#     "kf5-itemviews",
+#     "kf5-widgetaddons",
+#     "kf5-windowsystem",
+#     "mlt",
+#     "opencolorio",
+#     "openexr",
+#     "openjpeg",
+#     "sdl2",
+#     "libxi",
+#     "zlib",
+#     "libeigen",
+#     "libgsl",
+#     "libseexpr-kde",
+#     "liblager",
+#     "libunibreak",
+#     "libxsimd",
+#     "libxtl",
+# ]

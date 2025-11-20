@@ -1,0 +1,5 @@
+#TODO nix, fs4 and rustix crates error
+[source]
+git = "https://github.com/GpuZelenograd/memtest_vulkan"
+[build]
+template = "cargo"

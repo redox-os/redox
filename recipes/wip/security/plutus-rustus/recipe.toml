@@ -1,0 +1,5 @@
+#TODO Not compiled or tested
+[source]
+git = "https://github.com/a137x/plutus-rustus"
+[build]
+template = "cargo"

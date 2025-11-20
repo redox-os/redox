@@ -1,0 +1,10 @@
+#TODO not compiled or tested
+# build instructions - https://svn.filezilla-project.org/filezilla/libfilezilla/trunk/INSTALL?view=markup
+[source]
+tar = "https://dl2.cdn.filezilla-project.org/libfilezilla/libfilezilla-0.48.1.tar.xz?h=ABnRzj5uctW-vLCfNWW5mQ&x=1722822577"
+[build]
+template = "configure"
+dependencies = [
+    "libnettle",
+    "gnutls3",
+]

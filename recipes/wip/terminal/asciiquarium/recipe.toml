@@ -1,0 +1,14 @@
+#TODO not compiled or tested
+[source]
+git = "https://github.com/cmatsuoka/asciiquarium"
+[build]
+template = "custom"
+script = """
+mkdir -pv "${COOKBOOK_STAGE}"/usr/bin
+cp "${COOKBOOK_SOURCE}"/asciiquarium "${COOKBOOK_STAGE}"/usr/bin/asciiquarium
+chmod a+x "${COOKBOOK_STAGE}"/usr/bin/asciiquarium
+"""
+[package]
+dependencies = [
+    "perl",
+]

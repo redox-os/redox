@@ -1,0 +1,11 @@
+#TODO need testing
+[source]
+tar = "https://ftp.gnu.org/gnu/termcap/termcap-1.3.1.tar.gz"
+[build]
+template = "custom"
+script = """
+COOKBOOK_CONFIGURE_FLAGS+=(
+    --prefix="${COOKBOOK_STAGE}/usr"
+)
+cookbook_configure
+"""

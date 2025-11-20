@@ -1,0 +1,14 @@
+#TODO missing cross-compilation variables and a command to move the executable to the package
+# build instructions - https://developer.thunderbird.net/thunderbird-development/building-thunderbird
+[source]
+tar = "https://archive.mozilla.org/pub/thunderbird/releases/128.0.1esr/source/thunderbird-128.0.1esr.source.tar.xz"
+[build]
+template = "custom"
+dependencies = [
+    "library1",
+]
+script = """
+mkdir -pv "${COOKBOOK_STAGE}"/usr
+export MOZCONFIG="{COOKBOOK_RECIPE}/mozconfig"
+./mach build
+"""
