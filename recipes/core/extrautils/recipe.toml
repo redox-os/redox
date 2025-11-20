@@ -7,7 +7,8 @@ dependencies = [
     "xz"
 ]
 script = """
-DYNAMIC_INIT
+# TODO: Can't be linked correctly yet
+# DYNAMIC_INIT
 
 if [ "${COOKBOOK_DYNAMIC}" != "1" ]; then
     install_flags+=" --features=static"
