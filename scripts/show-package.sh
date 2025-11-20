@@ -12,7 +12,7 @@ then
 fi
 
 find_recipe="target/release/find_recipe"
-if [ ! -x "cookbook/$find_recipe" ]
+if [ ! -x "$find_recipe" ]
 then
     echo "$find_recipe not found."
     echo "Please run 'make fstools' and try again."
@@ -21,6 +21,6 @@ fi
 
 for recipe in $*
 do
-    recipe_dir="$(cd cookbook; "$find_recipe" "$recipe")"
-    ls -1 "cookbook/$recipe_dir/target"/*/{stage,sysroot}
+    recipe_dir="$("$find_recipe" "$recipe")"
+    ls -1 "$recipe_dir/target"/*/{stage,sysroot}
 done
