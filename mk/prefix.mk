@@ -38,6 +38,7 @@ PREFIX_STRIP=\
 
 $(RELIBC_SOURCE): $(FSTOOLS_TAG)
 	cd ./cookbook && ./target/release/repo fetch relibc
+	touch $(RELIBC_SOURCE)
 
 $(PREFIX)/relibc: $(RELIBC_SOURCE)
 	mkdir -p "$(@D)"
