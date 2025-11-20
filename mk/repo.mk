@@ -110,7 +110,7 @@ else
 	cd ./cookbook && ./target/release/repo unfetch $(foreach f,$(subst $(comma), ,$*),$(f))
 endif
 
-# Invoke clean.sh, and repo.sh for one of more targets separated by comma
+# Invoke clean, and repo.sh for one of more targets separated by comma
 cr.%: $(FSTOOLS_TAG) FORCE
 ifeq ($(PODMAN_BUILD),1)
 	$(PODMAN_RUN) make $@
@@ -119,7 +119,7 @@ else
 	$(MAKE) r.$*
 endif
 
-# Invoke unfetch.sh, clean.sh, and repo.sh for one or more targets separated by comma
+# Invoke unfetch, clean, and repo.sh for one or more targets separated by comma
 ucr.%: $(FSTOOLS_TAG) FORCE
 ifeq ($(PODMAN_BUILD),1)
 	$(PODMAN_RUN) make $@
@@ -128,7 +128,7 @@ else
 	$(MAKE) cr.$*
 endif
 
-# Invoke unfetch.sh and clean.sh for one or more targets separated by comma
+# Invoke unfetch and clean for one or more targets separated by comma
 uc.%: $(FSTOOLS_TAG) FORCE
 ifeq ($(PODMAN_BUILD),1)
 	$(PODMAN_RUN) make $@
@@ -137,7 +137,7 @@ else
 	$(MAKE) c.$*
 endif
 
-# Invoke unfetch, clean.sh and fetch.sh for one or more targets separated by comma
+# Invoke unfetch, clean and fetch for one or more targets separated by comma
 ucf.%: $(FSTOOLS_TAG) FORCE
 ifeq ($(PODMAN_BUILD),1)
 	$(PODMAN_RUN) make $@
@@ -152,7 +152,7 @@ rp.%: $(FSTOOLS_TAG) FORCE
 	$(MAKE) r.$*
 	$(MAKE) p.$*
 
-# Invoke clean.sh, repo.sh and push for one of more targets separated by comma
+# Invoke clean, repo.sh and push for one of more targets separated by comma
 crp.%: $(FSTOOLS_TAG) FORCE
 ifeq ($(PODMAN_BUILD),1)
 	$(PODMAN_RUN) make $@
@@ -162,7 +162,7 @@ else
 	$(MAKE) p.$*
 endif
 
-# Invoke unfetch.sh. clean.sh, repo.sh and push for one of more targets separated by comma
+# Invoke unfetch. clean, repo.sh and push for one of more targets separated by comma
 ucrp.%: $(FSTOOLS_TAG) FORCE
 ifeq ($(PODMAN_BUILD),1)
 	$(PODMAN_RUN) make $@
