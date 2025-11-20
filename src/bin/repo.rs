@@ -444,13 +444,8 @@ fn parse_args(args: Vec<String>) -> anyhow::Result<(CliConfig, CliCommand, Vec<C
                     .packages
                     .iter()
                     .filter_map(|(f, v)| {
-                        // same logic as list_installer
                         match v {
-                            PackageConfig::Build(rule) if rule == "source" || rule == "local" => {}
-                            PackageConfig::Build(rule) if rule == "binary" || rule == "ignore" => {
-                                return None;
-                            }
-                            _ if conf.general.repo_binary == Some(true) => {
+                            PackageConfig::Build(rule) if rule == "ignore" => {
                                 return None;
                             }
                             _ => {}
@@ -492,18 +487,25 @@ fn parse_args(args: Vec<String>) -> anyhow::Result<(CliConfig, CliCommand, Vec<C
                     PackageConfig::Build(rule) if rule == "source" => {}
                     // keep local changes
                     PackageConfig::Build(rule) if rule == "local" => recipe.recipe.source = None,
-                    // should not gone here, but if it does, then some deps need it
-                    PackageConfig::Build(rule) if rule == "binary" || rule == "ignore" => {
+                    // download from remote build
+                    PackageConfig::Build(rule) if rule == "binary" => {
                         recipe.recipe.source = None;
                         recipe.recipe.build.set_as_remote();
                     }
+                    // don't build this recipe (unlikely to go here unless some deps need it)
+                    // TODO: Note that we're assuming this being ignored from e.g. metapackages
+                    // TODO: Will totally broke build if this recipe needed as some other build dependencies
+                    PackageConfig::Build(rule) if rule == "ignore" => {
+                        recipe.recipe.source = None;
+                        recipe.recipe.build.set_as_none();
+                    }
                     PackageConfig::Build(rule) => {
-                        return Err(anyhow!(
+                        bail!(
                             // Fail fast because we could risk losing local changes if "local" was typo'ed
                             "Invalid pkg config {} = \"{}\"\nExpecting either 'source', 'local', 'binary' or 'ignore'",
                             recipe.name.as_str(),
                             rule
-                        ));
+                        );
                     }
                     _ => {
                         if conf.general.repo_binary == Some(true) {
@@ -512,6 +514,11 @@ fn parse_args(args: Vec<String>) -> anyhow::Result<(CliConfig, CliCommand, Vec<C
                             recipe.recipe.build.set_as_remote();
                         }
                     }
+                }
+            } else {
+                if conf.general.repo_binary == Some(true) {
+                    recipe.recipe.source = None;
+                    recipe.recipe.build.set_as_remote();
                 }
             }
         }
