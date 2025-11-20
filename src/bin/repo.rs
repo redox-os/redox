@@ -507,6 +507,11 @@ fn parse_args(args: Vec<String>) -> anyhow::Result<(CliConfig, CliCommand, Vec<C
                         }
                     }
                 }
+            } else {
+                if conf.general.repo_binary == Some(true) {
+                    recipe.recipe.source = None;
+                    recipe.recipe.build.set_as_remote();
+                }
             }
         }
     }
