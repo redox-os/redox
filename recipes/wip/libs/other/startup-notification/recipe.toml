@@ -1,5 +1,0 @@
-#TODO compilation error
-[source]
-tar = "http://www.freedesktop.org/software/startup-notification/releases/startup-notification-0.12.tar.gz"
-[build]
-template = "configure"

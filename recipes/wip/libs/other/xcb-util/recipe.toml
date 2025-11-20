@@ -1,8 +1,0 @@
-#TODO make libxcb work
-[source]
-tar = "https://www.x.org/releases/individual/lib/xcb-util-0.4.1.tar.xz"
-[build]
-template = "configure"
-dependencies = [
-    "libxcb",
-]
