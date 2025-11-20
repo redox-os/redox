@@ -1,0 +1,20 @@
+#TODO: GLOB_TILDE and wordexp.h
+[source]
+tar = "https://i3wm.org/downloads/i3-4.24.tar.xz"
+blake3 = "3b54ed52759339e545a7a5f602946abc0164c37eb801e79c0cb40f93dbae53d2"
+
+[build]
+dependencies = [
+    "cairo",
+    "libev",
+    "libxkbcommon-x11",
+    "pango",
+    "pcre2",
+    "startup-notification",
+    "xcb-util-cursor",
+    "xcb-util-keysyms",
+    "xcb-util-wm",
+    "xcb-util-xrm",
+    "yajl",
+]
+template = "meson"
