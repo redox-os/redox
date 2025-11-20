@@ -19,7 +19,6 @@ use ratatui::style::{Color, Style};
 use ratatui::text::{Line, Span, Text};
 use ratatui::widgets::{Block, Borders, Clear, List, ListItem, ListState, Paragraph, Wrap};
 use redox_installer::PackageConfig;
-use redoxer::target;
 use std::borrow::Cow;
 use std::collections::{HashMap, HashSet, VecDeque};
 use std::io::{Read, Write, stderr, stdin, stdout};
@@ -661,7 +660,7 @@ fn handle_push(recipes: &Vec<CookRecipe>, config: &CliConfig) -> anyhow::Result<
         for (i, root) in roots.iter().enumerate() {
             let archive_path = config
                 .repo_dir
-                .join(target())
+                .join(redoxer::target())
                 .join(format!("{}.pkgar", root.name));
             let metadata = std::fs::metadata(&archive_path);
             handle_push_inner(
