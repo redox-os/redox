@@ -362,7 +362,7 @@ archLinux()
     gdb"
 
     if [ "$1" == "qemu" ]; then
-        packages="$packages qemu"
+        packages="$packages qemu-system-x86 qemu-system-arm qemu-system-riscv"
     elif [ "$1" == "virtualbox" ]; then
         packages="$packages virtualbox"
     else
@@ -493,7 +493,8 @@ ubuntu()
         if [ -z "$(which qemu-system-x86_64)" ]; then
             echo "Installing QEMU..."
             sudo $install_command qemu-system-x86 qemu-kvm
-            sudo $install_command qemu-efi-arm qemu-system-arm
+            sudo $install_command qemu-system-arm qemu-efi-aarch64
+            sudo $install_command qemu-system-riscv
         else
             echo "QEMU already installed!"
         fi
@@ -543,6 +544,8 @@ fedora()
         if [ -z "$(which qemu-system-x86_64)" ]; then
             echo "Installing QEMU..."
             sudo $dnf_install qemu-system-x86 qemu-kvm
+            sudo $dnf_install qemu-system-arm edk2-aarch64
+            sudo $dnf_install qemu-system-riscv
         else
             echo "QEMU already installed!"
         fi
