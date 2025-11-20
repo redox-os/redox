@@ -1,10 +1,11 @@
 #TODO not compiled or tested
+# build instructions:
 # https://mariadb.com/kb/en/generic-build-instructions/
 # https://mariadb.com/kb/en/cross-compiling-mariadb/
 [source]
 tar = "https://archive.mariadb.org/mariadb-10.11.6/source/mariadb-10.11.6.tar.gz"
 [build]
-template = "custom"
+template = "cmake"
 dependencies = [
     "ncurses",
     "zlib",
@@ -15,7 +16,3 @@ dependencies = [
     "boost",
     "libaio",
 ]
-script = """
-export CPPFLAGS="-I${COOKBOOK_SYSROOT}/include/ncurses"
-cookbook_cmake
-"""
