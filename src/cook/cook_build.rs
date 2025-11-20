@@ -344,6 +344,7 @@ pub fn build(
             command.current_dir(&cookbook_build);
             command.env("COOKBOOK_BUILD", &cookbook_build);
             command.env("COOKBOOK_NAME", name.as_str());
+            command.env("COOKBOOK_HOST_TARGET", redoxer::host_target());
             command.env("COOKBOOK_RECIPE", &cookbook_recipe);
             command.env("COOKBOOK_ROOT", &cookbook_root);
             command.env("COOKBOOK_STAGE", &cookbook_stage);

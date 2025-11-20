@@ -9,11 +9,16 @@ function DYNAMIC_INIT {
         done
     }
 
-    if [ "${TARGET}" != "x86_64-unknown-redox" ]
-    then
-        [ -z "${COOKBOOK_VERBOSE}" ] || echo "WARN: ${TARGET} does not support dynamic linking." >&2
-        return
-    fi
+    case "${TARGET}" in
+        "x86_64-unknown-redox")
+            ;;
+        "x86_64-unknown-linux-gnu")
+            ;;
+        *)
+            [ -z "${COOKBOOK_VERBOSE}" ] || echo "WARN: ${TARGET} does not support dynamic linking." >&2
+            return
+            ;;
+    esac
 
     [ -z "${COOKBOOK_VERBOSE}" ] || echo "DEBUG: Program is being compiled dynamically."
 
@@ -97,10 +102,13 @@ export CPPFLAGS="-I${COOKBOOK_SYSROOT}/include"
 export LDFLAGS="-L${COOKBOOK_SYSROOT}/lib --static"
 
 # These ensure that pkg-config gets the right flags from the sysroot
-export PKG_CONFIG_ALLOW_CROSS=1
-export PKG_CONFIG_PATH=
-export PKG_CONFIG_LIBDIR="${COOKBOOK_SYSROOT}/lib/pkgconfig"
-export PKG_CONFIG_SYSROOT_DIR="${COOKBOOK_SYSROOT}"
+if [ "${TARGET}" != "${COOKBOOK_HOST_TARGET}" ]
+then
+    export PKG_CONFIG_ALLOW_CROSS=1
+    export PKG_CONFIG_PATH=
+    export PKG_CONFIG_LIBDIR="${COOKBOOK_SYSROOT}/lib/pkgconfig"
+    export PKG_CONFIG_SYSROOT_DIR="${COOKBOOK_SYSROOT}"
+fi
 
 # To build the debug version of a Cargo program, add COOKBOOK_DEBUG=true, and
 # to not strip symbols from the final package, add COOKBOOK_NOSTRIP=true to the recipe
