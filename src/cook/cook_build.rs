@@ -1,6 +1,5 @@
 use pkg::package::PackageError;
 use pkg::{Package, PackageName};
-use redoxer::target;
 
 use crate::cook::fs::*;
 use crate::cook::pty::PtyOut;
@@ -411,7 +410,7 @@ fn build_auto_deps(
 }
 
 fn get_remote_url(name: &PackageName, ext: &str) -> String {
-    return format!("{}/{}/{}.{}", REMOTE_PKG_SOURCE, target(), name, ext);
+    return format!("{}/{}/{}.{}", REMOTE_PKG_SOURCE, redoxer::target(), name, ext);
 }
 fn get_pubkey_url() -> String {
     return format!("{}/id_ed25519.pub.toml", REMOTE_PKG_SOURCE);
