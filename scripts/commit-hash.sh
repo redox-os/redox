@@ -9,7 +9,6 @@ then
     exit 1
 fi
 
-cd cookbook
 recipe_path="$(target/release/find_recipe $1)"
 
 cd "$recipe_path"/source
